@@ -1,7 +1,7 @@
 
-/* $destdir/generated-c\u01.c Machine generated C code */
+/* $destdir\u01.c        Machine generated C code */
 
-/* Signature: 00000000 21-Aug-2010 */
+/* Signature: 00000000 28-Sep-2011 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +17,10 @@
 
 #ifndef header_machine_h
 #define header_machine_h 1
-#if !defined UNDER_CE && ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
+#if !defined UNDER_CE && !defined EMBEDDED
+#if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
 #define SOCKETS                  1
+#endif
 #endif
 #ifndef MS_CDECL
 #ifdef _MSC_VER
@@ -134,7 +136,7 @@ typedef int                 CSLbool;
 #define PAGE_POWER_OF_TWO       (((uint32_t)1) << PAGE_BITS)
 #define CSL_PAGE_SIZE           (PAGE_POWER_OF_TWO - 256U)
 #ifndef MAX_HEAPSIZE
-#  define MAX_HEAPSIZE       (SIXTY_FOUR_BIT ? 153600 : 2048)
+#  define MAX_HEAPSIZE       (SIXTY_FOUR_BIT ? (512*1024) : 2048)
 #endif 
 #ifndef MAX_BPSSIZE
 #  define MAX_BPSSIZE           64
@@ -148,8 +150,6 @@ typedef int                 CSLbool;
 #define MAX_BPS_PAGES           (MAX_BPSSIZE << (20-PAGE_BITS))
 #endif
 #define MAX_NATIVE_PAGES        MAX_BPS_PAGES
-#define PAGE_MASK               ((((uint32_t)1) << (32-PAGE_BITS)) - 1)
-#define OFFSET_MASK             ((((uint32_t)1) << PAGE_BITS) - 1)
 #define CSL_IGNORE(x)           (x = x)
 #define LONGEST_LEGAL_FILENAME 1024
 #define FP_WORD_ORDER 0x01
@@ -394,6 +394,7 @@ typedef uintptr_t Header;
 #define is_spid(x)   (((int)(x) & ODDS_MASK) == TAG_SPID)
 #define is_library(x)(((int)(x) & 0xffff)    == SPID_LIBRARY)
 #define library_number(x) (((x) >> 20) & 0xfff)
+#ifdef OLD_VERSION
 #define font_of_char(n)  (((int32_t)(n) >> 24) & 0xff)
 #define bits_of_char(n)  (((int32_t)(n) >> 16) & 0xff)
 #ifdef Kanji
@@ -406,7 +407,16 @@ typedef uintptr_t Header;
     (((uint32_t)(bits)) << 16) | (((uint32_t)(code)) << 8) | TAG_CHAR))
     
 #define CHAR_EOF pack_char(0, 0xff, 4)
- 
+#else 
+#define font_of_char(n)  (((int32_t)(n) >> 29) & 0x03)
+#define bits_of_char(n)  (0)
+#define code_of_char(n)  (((int32_t)(n) >>  8) & 0x001fffff)
+#define pack_char(bits, font, code)                                \
+    ((Lisp_Object)((((uint32_t)(font)) << 29) |                    \
+                   (((uint32_t)(code)) << 8) | TAG_CHAR))
+    
+#define CHAR_EOF ((Lisp_Object)(int32_t)0xff000402)
+#endif  
 #define data_of_bps(v)                                        \
   ((char *)(doubleword_align_up((intptr_t)                    \
                bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) +   \
@@ -567,8 +577,10 @@ typedef struct Single_Float
 #define UNWIND_THROW      0x3         
 #define UNWIND_RESTART    0x4         
 #define UNWIND_RESOURCE   0x5         
-#define UNWIND_ERROR      0x100       
-#define UNWIND_UNWIND     0x200       
+#define UNWIND_FNAME      0x100       
+#define UNWIND_ARGS       0x200       
+#define UNWIND_ERROR      (UNWIND_FNAME|UNWIND_ARGS)
+#define UNWIND_UNWIND     0x400       
 #endif 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
@@ -596,10 +608,11 @@ extern void MS_CDECL fatal_error(int code, ...);
 #define FASL_MESSAGES 0x02
 #define VERBOSE_MSGS  0x04
 #define GC_MSG_BITS   0x07
-#define HEADLINE_FLAG 0x08
-#define MESSAGES_FLAG 0x10
-#define ALWAYS_NOISY  0x20
 #define verbos_flag (miscflags & GC_MSG_BITS)
+#define HEADLINE_FLAG 0x08
+#define FNAME_FLAG    0x10
+#define ARGS_FLAG     0x20
+#define BACKTRACE_MSG_BITS 0x38
  
 #define err_bad_car               0      
 #define err_bad_cdr               1      
@@ -741,6 +754,8 @@ extern Lisp_Object *stackbase;
 extern int32_t stack_segsize;  
 extern Lisp_Object *C_stack;
 #define stack C_stack
+extern char *C_stack_limit;
+extern CSLbool restartp;
 extern char *big_chunk_start, *big_chunk_end;
 #ifdef CONSERVATIVE
 extern Lisp_Object *C_stackbase, *C_stacktop;
@@ -832,12 +847,18 @@ extern Lisp_Object *C_stackbase, *C_stacktop;
 #define GC_BPS       5
 #define GC_PRESERVE  6
 #define GC_NATIVE    7
+extern volatile char stack_contents_temp;
 #ifdef CHECK_STACK
 extern int check_stack(char *file, int line);
+extern void show_stack();
 #define if_check_stack \
-   if (check_stack(__FILE__,__LINE__)) return aerror("stack overflow");
+   if (check_stack(__FILE__,__LINE__)) \
+   {   show_stack(); return aerror("stack overflow"); }
 #else
-#define if_check_stack
+#define if_check_stack \
+   {   char *p = (char *)&p; \
+       if (p < C_stack_limit) return aerror("stack overflow"); \
+   }
 #endif
 extern int32_t software_ticks, countdown;
 #define stackcheck0(k)                                      \
@@ -1183,6 +1204,8 @@ extern int garbage_collection_permitted;
 extern char *files_to_read[MAX_INPUT_FILES],
      *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
      *fasl_paths[MAX_FASL_PATHS];
+extern int csl_argc;
+extern char **csl_argv;
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
 extern int boffop;
@@ -1200,7 +1223,7 @@ extern void flush_socket(void);
 #endif
 extern void report_file(const char *s);
 extern CSLbool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
-extern CSLbool always_noisy;
+extern int errorset_min, errorset_max;
 extern int number_of_input_files,
     number_of_symbols_to_define,
     number_of_fasl_paths,
@@ -1209,6 +1232,7 @@ extern int native_code_tag;
 extern char *standard_directory;
 extern int gc_number;
 extern CSLbool gc_method_is_copying;
+extern int force_reclaim_method, reclaim_trap_count;
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2
 #define INIT_EXPANDABLE 4
@@ -1471,7 +1495,7 @@ extern int64_t       sixty_four_bits(Lisp_Object a);
 extern void validate_string_fn(Lisp_Object a, char *f, int l);
 #define validate_string(a) validate_string_fn(a, __FILE__, __LINE__)
 #else
-#define validate_string(a) 0
+#define validate_string(a) 
 #endif
 #ifdef COMMON
 #define onevalue(r)   (exit_count=1, (r))
@@ -1579,9 +1603,9 @@ extern Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object quote_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object resource_exceeded();
-extern int time_base,  space_base,  io_base,  errors_base;
-extern int time_now,   space_now,   io_now,   errors_now;
-extern int time_limit, space_limit, io_limit, errors_limit;
+extern int64_t time_base,  space_base,  io_base,  errors_base;
+extern int64_t time_now,   space_now,   io_now,   errors_now;
+extern int64_t time_limit, space_limit, io_limit, errors_limit;
 extern CSLbool symbol_protect_flag, warn_about_protected_symbols;
 #ifdef JIT
 extern char *Jcompile(Lisp_Object def, Lisp_Object env);
@@ -2252,69 +2276,13 @@ extern Lisp_Object om_whichCDs(Lisp_Object nil, Lisp_Object lsym);
 #endif 
 
 
-/* Code for noncomp */
-
-static Lisp_Object CC_noncomp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for noncomp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v2 = v0;
-/* end of prologue */
-    v1 = qvalue(elt(env, 1)); /* !*ncmp */
-    if (v1 == nil) goto v3;
-    v1 = v2;
-    {
-        fn = elt(env, 3); /* noncomp1 */
-        return (*qfn1(fn))(qenv(fn), v1);
-    }
-
-v3:
-    v1 = qvalue(elt(env, 2)); /* nil */
-    return onevalue(v1);
-}
-
-
-
-/* Code for simpcar */
-
-static Lisp_Object CC_simpcar(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v4;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for simpcar");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v4 = v0;
-/* end of prologue */
-    v4 = qcar(v4);
-    {
-        fn = elt(env, 1); /* simp */
-        return (*qfn1(fn))(qenv(fn), v4);
-    }
-}
-
-
-
 /* Code for reval */
 
 static Lisp_Object CC_reval(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v7, v8;
+    Lisp_Object v0003, v0004;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
@@ -2322,353 +2290,14 @@ static Lisp_Object CC_reval(Lisp_Object env,
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v7 = v0;
+    v0003 = v0000;
 /* end of prologue */
-    v8 = v7;
-    v7 = qvalue(elt(env, 1)); /* t */
+    v0004 = v0003;
+    v0003 = qvalue(elt(env, 1)); /* t */
     {
         fn = elt(env, 2); /* reval1 */
-        return (*qfn2(fn))(qenv(fn), v8, v7);
+        return (*qfn2(fn))(qenv(fn), v0004, v0003);
     }
-}
-
-
-
-/* Code for terminalp */
-
-static Lisp_Object MS_CDECL CC_terminalp(Lisp_Object env, int nargs, ...)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v8;
-    CSL_IGNORE(nil);
-    argcheck(nargs, 0, "terminalp");
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for terminalp");
-#endif
-    CSL_IGNORE(env);
-/* end of prologue */
-    v8 = qvalue(elt(env, 1)); /* !*int */
-    if (v8 == nil) goto v9;
-    v8 = qvalue(elt(env, 3)); /* ifl!* */
-    v8 = (v8 == nil ? lisp_true : nil);
-    return onevalue(v8);
-
-v9:
-    v8 = qvalue(elt(env, 2)); /* nil */
-    return onevalue(v8);
-}
-
-
-
-/* Code for delcp */
-
-static Lisp_Object CC_delcp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v7, v8;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for delcp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v7 = v0;
-/* end of prologue */
-    v8 = elt(env, 1); /* delchar */
-        return Lflagp(nil, v7, v8);
-}
-
-
-
-/* Code for ordop */
-
-static Lisp_Object CC_ordop(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v17, v18, v19, v20, v21;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for ordop");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v20 = v10;
-    v21 = v0;
-/* end of prologue */
-    v17 = qvalue(elt(env, 1)); /* kord!* */
-    v19 = v17;
-    goto v22;
-
-v22:
-    v17 = v19;
-    if (v17 == nil) goto v23;
-    v18 = v21;
-    v17 = v19;
-    v17 = qcar(v17);
-    if (v18 == v17) goto v24;
-    v18 = v20;
-    v17 = v19;
-    v17 = qcar(v17);
-    if (v18 == v17) goto v25;
-    v17 = v19;
-    v17 = qcdr(v17);
-    v19 = v17;
-    goto v22;
-
-v25:
-    v17 = qvalue(elt(env, 3)); /* nil */
-    return onevalue(v17);
-
-v24:
-    v17 = qvalue(elt(env, 2)); /* t */
-    return onevalue(v17);
-
-v23:
-    v17 = v21;
-    v18 = v20;
-    {
-        fn = elt(env, 4); /* ordp */
-        return (*qfn2(fn))(qenv(fn), v17, v18);
-    }
-}
-
-
-
-/* Code for exchk */
-
-static Lisp_Object CC_exchk(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v27, v28, v29, v15;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for exchk");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v27 = v0;
-/* end of prologue */
-    v15 = v27;
-    v29 = qvalue(elt(env, 1)); /* nil */
-    v28 = qvalue(elt(env, 1)); /* nil */
-    v27 = qvalue(elt(env, 1)); /* nil */
-    {
-        fn = elt(env, 2); /* exchk1 */
-        return (*qfnn(fn))(qenv(fn), 4, v15, v29, v28, v27);
-    }
-}
-
-
-
-/* Code for noncomfp */
-
-static Lisp_Object CC_noncomfp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for noncomfp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v2 = v0;
-/* end of prologue */
-    v1 = qvalue(elt(env, 1)); /* !*ncmp */
-    if (v1 == nil) goto v3;
-    v1 = v2;
-    {
-        fn = elt(env, 3); /* noncomfp1 */
-        return (*qfn1(fn))(qenv(fn), v1);
-    }
-
-v3:
-    v1 = qvalue(elt(env, 2)); /* nil */
-    return onevalue(v1);
-}
-
-
-
-/* Code for wuconstantp */
-
-static Lisp_Object CC_wuconstantp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v31, v32;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for wuconstantp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v32 = v0;
-/* end of prologue */
-    v31 = v32;
-    v31 = (consp(v31) ? nil : lisp_true);
-    if (!(v31 == nil)) goto v22;
-    v31 = v32;
-    v31 = qcar(v31);
-    v31 = (consp(v31) ? nil : lisp_true);
-    goto v22;
-
-v22:
-    if (!(v31 == nil)) return onevalue(v31);
-    v31 = v32;
-    v31 = qcar(v31);
-    v31 = qcar(v31);
-    v31 = qcar(v31);
-    v32 = qvalue(elt(env, 1)); /* wuvarlist!* */
-    v31 = Lmemq(nil, v31, v32);
-    v31 = (v31 == nil ? lisp_true : nil);
-    return onevalue(v31);
-}
-
-
-
-/* Code for mkcopy */
-
-static Lisp_Object CC_mkcopy(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v35, v36;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for mkcopy");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-    stack[-1] = nil;
-    goto v4;
-
-v4:
-    v35 = stack[0];
-    if (!consp(v35)) goto v1;
-    v35 = stack[0];
-    v35 = qcar(v35);
-    v36 = CC_mkcopy(env, v35);
-    nil = C_nil;
-    if (exception_pending()) goto v37;
-    env = stack[-2];
-    v35 = stack[-1];
-    v35 = cons(v36, v35);
-    nil = C_nil;
-    if (exception_pending()) goto v37;
-    env = stack[-2];
-    stack[-1] = v35;
-    v35 = stack[0];
-    v35 = qcdr(v35);
-    stack[0] = v35;
-    goto v4;
-
-v1:
-    v36 = stack[-1];
-    v35 = stack[0];
-    {
-        popv(3);
-        fn = elt(env, 1); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v36, v35);
-    }
-/* error exit handlers */
-v37:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for remove!-free!-vars!-l */
-
-static Lisp_Object CC_removeKfreeKvarsKl(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v40, v41, v42;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for remove-free-vars-l");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-
-v3:
-    v40 = stack[0];
-    if (!consp(v40)) { Lisp_Object res = stack[0]; popv(3); return onevalue(res); }
-    v40 = stack[0];
-    v41 = qcar(v40);
-    v40 = elt(env, 1); /* !*sq */
-    if (v41 == v40) goto v8;
-    v40 = stack[0];
-    v40 = qcar(v40);
-    fn = elt(env, 2); /* remove!-free!-vars */
-    stack[-1] = (*qfn1(fn))(qenv(fn), v40);
-    nil = C_nil;
-    if (exception_pending()) goto v43;
-    env = stack[-2];
-    v40 = stack[0];
-    v40 = qcdr(v40);
-    v40 = CC_removeKfreeKvarsKl(env, v40);
-    nil = C_nil;
-    if (exception_pending()) goto v43;
-    env = stack[-2];
-    v40 = cons(stack[-1], v40);
-    nil = C_nil;
-    if (exception_pending()) goto v43;
-    v42 = v40;
-    v41 = v42;
-    v40 = stack[0];
-    if (equal(v41, v40)) { Lisp_Object res = stack[0]; popv(3); return onevalue(res); }
-    else { popv(3); return onevalue(v42); }
-
-v8:
-    v40 = stack[0];
-    v40 = qcdr(v40);
-    v40 = qcar(v40);
-    fn = elt(env, 3); /* prepsq!* */
-    v40 = (*qfn1(fn))(qenv(fn), v40);
-    nil = C_nil;
-    if (exception_pending()) goto v43;
-    env = stack[-2];
-    stack[0] = v40;
-    goto v3;
-/* error exit handlers */
-v43:
-    popv(3);
-    return nil;
 }
 
 
@@ -2676,19 +2305,19 @@ v43:
 /* Code for num!-exponents */
 
 static Lisp_Object CC_numKexponents(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v44;
+    Lisp_Object v0006;
     CSL_IGNORE(nil);
 #ifdef DEBUG
     if (check_env(env)) return aerror("env for num-exponents");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -2696,153 +2325,104 @@ static Lisp_Object CC_numKexponents(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    stack[0] = v0000;
 /* end of prologue */
 
-v45:
-    v44 = stack[0];
-    v44 = (consp(v44) ? nil : lisp_true);
-    if (!(v44 == nil)) goto v22;
-    v44 = stack[0];
-    v44 = qcar(v44);
-    v44 = (consp(v44) ? nil : lisp_true);
-    goto v22;
+v0007:
+    v0006 = stack[0];
+    if (!consp(v0006)) goto v0001;
+    v0006 = stack[0];
+    v0006 = qcar(v0006);
+    v0006 = (consp(v0006) ? nil : lisp_true);
+    goto v0008;
 
-v22:
-    if (!(v44 == nil)) { popv(2); return onevalue(v44); }
-    v44 = stack[0];
-    v44 = qcar(v44);
-    v44 = qcar(v44);
-    v44 = qcdr(v44);
-    v44 = integerp(v44);
-    if (v44 == nil) goto v26;
-    v44 = stack[0];
-    v44 = qcar(v44);
-    v44 = qcdr(v44);
-    v44 = CC_numKexponents(env, v44);
+v0008:
+    if (v0006 == nil) goto v0009;
+    v0006 = qvalue(elt(env, 1)); /* t */
+    { popv(2); return onevalue(v0006); }
+
+v0009:
+    v0006 = stack[0];
+    v0006 = qcar(v0006);
+    v0006 = qcar(v0006);
+    v0006 = qcdr(v0006);
+    v0006 = integerp(v0006);
+    if (v0006 == nil) goto v0010;
+    v0006 = stack[0];
+    v0006 = qcar(v0006);
+    v0006 = qcdr(v0006);
+    v0006 = CC_numKexponents(env, v0006);
     nil = C_nil;
-    if (exception_pending()) goto v37;
+    if (exception_pending()) goto v0011;
     env = stack[-1];
-    if (v44 == nil) goto v46;
-    v44 = stack[0];
-    v44 = qcdr(v44);
-    stack[0] = v44;
-    goto v45;
+    if (v0006 == nil) goto v0012;
+    v0006 = stack[0];
+    v0006 = qcdr(v0006);
+    stack[0] = v0006;
+    goto v0007;
 
-v46:
-    v44 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v44); }
+v0012:
+    v0006 = qvalue(elt(env, 2)); /* nil */
+    { popv(2); return onevalue(v0006); }
 
-v26:
-    v44 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v44); }
+v0010:
+    v0006 = qvalue(elt(env, 2)); /* nil */
+    { popv(2); return onevalue(v0006); }
+
+v0001:
+    v0006 = qvalue(elt(env, 1)); /* t */
+    goto v0008;
 /* error exit handlers */
-v37:
+v0011:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for mchkopt */
+/* Code for arraychk */
 
-static Lisp_Object CC_mchkopt(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_arraychk(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v47, v14, v48, v25;
-    Lisp_Object fn;
+    Lisp_Object v0004;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for mchkopt");
+    if (check_env(env)) return aerror("env for arraychk");
 #endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v14 = v10;
-    v48 = v0;
-/* end of prologue */
-    v47 = v14;
-    v25 = qcar(v47);
-    v47 = elt(env, 1); /* optional */
-    v47 = get(v25, v47);
-    env = stack[0];
-    v25 = v47;
-    v47 = v25;
-    if (v47 == nil) goto v27;
-    v47 = v48;
-    v48 = v25;
-    {
-        popv(1);
-        fn = elt(env, 2); /* mchkopt1 */
-        return (*qfnn(fn))(qenv(fn), 3, v47, v14, v48);
-    }
-
-v27:
-    v47 = nil;
-    { popv(1); return onevalue(v47); }
-}
-
-
-
-/* Code for nth */
-
-static Lisp_Object CC_nth(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for nth");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v1 = v10;
-    v2 = v0;
+    v0004 = v0000;
 /* end of prologue */
-    fn = elt(env, 1); /* pnth */
-    v1 = (*qfn2(fn))(qenv(fn), v2, v1);
-    errexit();
-    v1 = qcar(v1);
-    return onevalue(v1);
+    if (v0004 == nil) goto v0013;
+    v0004 = qvalue(elt(env, 2)); /* nil */
+    return onevalue(v0004);
+
+v0013:
+    v0004 = elt(env, 1); /* array */
+    return onevalue(v0004);
 }
 
 
 
-/* Code for ibalp_cec */
+/* Code for getrtypeor */
 
-static Lisp_Object CC_ibalp_cec(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_getrtypeor(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v30;
+    Lisp_Object v0014;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for ibalp_cec");
+    if (check_env(env)) return aerror("env for getrtypeor");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -2850,344 +2430,53 @@ static Lisp_Object CC_ibalp_cec(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    stack[0] = v0000;
 /* end of prologue */
 
-v3:
-    v30 = stack[0];
-    if (v30 == nil) goto v49;
-    v30 = stack[0];
-    v30 = qcar(v30);
-    fn = elt(env, 2); /* ibalp_emptyclausep */
-    v30 = (*qfn1(fn))(qenv(fn), v30);
+v0007:
+    v0014 = stack[0];
+    if (v0014 == nil) goto v0013;
+    v0014 = stack[0];
+    v0014 = qcar(v0014);
+    fn = elt(env, 2); /* getrtype */
+    v0014 = (*qfn1(fn))(qenv(fn), v0014);
     nil = C_nil;
-    if (exception_pending()) goto v50;
+    if (exception_pending()) goto v0015;
     env = stack[-1];
-    if (v30 == nil) goto v29;
-    v30 = stack[0];
-    v30 = qcar(v30);
-    { popv(2); return onevalue(v30); }
+    if (!(v0014 == nil)) { popv(2); return onevalue(v0014); }
+    v0014 = stack[0];
+    v0014 = qcdr(v0014);
+    stack[0] = v0014;
+    goto v0007;
 
-v29:
-    v30 = stack[0];
-    v30 = qcdr(v30);
-    stack[0] = v30;
-    goto v3;
-
-v49:
-    v30 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v30); }
+v0013:
+    v0014 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0014); }
 /* error exit handlers */
-v50:
+v0015:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for delall */
+/* Code for !*d2q */
 
-static Lisp_Object CC_delall(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_Hd2q(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v52, v17;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for delall");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push3(nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
-/* end of prologue */
-
-v4:
-    v52 = stack[0];
-    if (v52 == nil) goto v5;
-    v17 = stack[-1];
-    v52 = stack[0];
-    v52 = qcar(v52);
-    if (equal(v17, v52)) goto v1;
-    v52 = stack[0];
-    v52 = qcar(v52);
-    stack[-2] = ncons(v52);
-    nil = C_nil;
-    if (exception_pending()) goto v21;
-    env = stack[-3];
-    v17 = stack[-1];
-    v52 = stack[0];
-    v52 = qcdr(v52);
-    v52 = CC_delall(env, v17, v52);
-    nil = C_nil;
-    if (exception_pending()) goto v21;
-    {
-        Lisp_Object v38 = stack[-2];
-        popv(4);
-        return Lappend(nil, v38, v52);
-    }
-
-v1:
-    v52 = stack[0];
-    v52 = qcdr(v52);
-    stack[0] = v52;
-    goto v4;
-
-v5:
-    v52 = qvalue(elt(env, 1)); /* nil */
-    { popv(4); return onevalue(v52); }
-/* error exit handlers */
-v21:
-    popv(4);
-    return nil;
-}
-
-
-
-/* Code for ps!:getv */
-
-static Lisp_Object CC_psTgetv(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v58, v59, v60;
+    Lisp_Object v0023, v0024;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for ps:getv");
+    if (check_env(env)) return aerror("env for *d2q");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    v60 = v0;
-/* end of prologue */
-    v59 = v60;
-    v58 = elt(env, 1); /* !:ps!: */
-    if (!consp(v59)) goto v17;
-    v59 = qcar(v59);
-    if (!(v59 == v58)) goto v17;
-    v58 = v60;
-    v58 = qcdr(v58);
-    if (symbolp(v58)) goto v24;
-    v58 = v60;
-    v59 = qcdr(v58);
-    v58 = stack[0];
-    v58 = *(Lisp_Object *)((char *)v59 + (CELL-TAG_VECTOR) + ((int32_t)v58/(16/CELL)));
-    { popv(3); return onevalue(v58); }
-
-v24:
-    v58 = v60;
-    v58 = qcdr(v58);
-    fn = elt(env, 4); /* eval */
-    v59 = (*qfn1(fn))(qenv(fn), v58);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    v58 = stack[0];
-    v58 = *(Lisp_Object *)((char *)v59 + (CELL-TAG_VECTOR) + ((int32_t)v58/(16/CELL)));
-    { popv(3); return onevalue(v58); }
-
-v17:
-    stack[-1] = elt(env, 2); /* tps */
-    stack[0] = (Lisp_Object)17; /* 1 */
-    v58 = elt(env, 3); /* "PS:GETV: not a ps" */
-    v59 = v60;
-    v58 = list2(v58, v59);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    env = stack[-2];
-    {
-        Lisp_Object v62 = stack[-1];
-        Lisp_Object v63 = stack[0];
-        popv(3);
-        fn = elt(env, 5); /* rerror */
-        return (*qfnn(fn))(qenv(fn), 3, v62, v63, v58);
-    }
-/* error exit handlers */
-v61:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for add_prin_char */
-
-static Lisp_Object CC_add_prin_char(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v62, v63, v66;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for add_prin_char");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
-/* end of prologue */
-    v62 = qvalue(elt(env, 1)); /* !*nat */
-    if (v62 == nil) goto v4;
-    v66 = qvalue(elt(env, 3)); /* posn!* */
-    v63 = stack[0];
-    v62 = qvalue(elt(env, 4)); /* ycoord!* */
-    v66 = acons(v66, v63, v62);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-2];
-    v63 = stack[-1];
-    v62 = qvalue(elt(env, 5)); /* pline!* */
-    v62 = acons(v66, v63, v62);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-2];
-    qvalue(elt(env, 5)) = v62; /* pline!* */
-    v62 = stack[0];
-    qvalue(elt(env, 3)) = v62; /* posn!* */
-    { popv(3); return onevalue(v62); }
-
-v4:
-    v62 = stack[-1];
-    v62 = Lstringp(nil, v62);
-    env = stack[-2];
-    if (!(v62 == nil)) goto v7;
-    v63 = stack[-1];
-    v62 = elt(env, 2); /* switch!* */
-    v62 = get(v63, v62);
-    env = stack[-2];
-    if (!(v62 == nil)) goto v7;
-    v62 = stack[-1];
-    v62 = Ldigitp(nil, v62);
-    env = stack[-2];
-    if (!(v62 == nil)) goto v7;
-    v62 = stack[-1];
-    v62 = Lexplodec(nil, v62);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-2];
-    v63 = qcar(v62);
-    v62 = elt(env, 2); /* switch!* */
-    v62 = get(v63, v62);
-    if (!(v62 == nil)) goto v7;
-    v62 = stack[-1];
-        popv(3);
-        return Lprin(nil, v62);
-
-v7:
-    v62 = stack[-1];
-        popv(3);
-        return Lprinc(nil, v62);
-/* error exit handlers */
-v67:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for c!:ordxp */
-
-static Lisp_Object CC_cTordxp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v51, v52, v17;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for c:ordxp");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v51 = v10;
-    v52 = v0;
-/* end of prologue */
-    v17 = v52;
-    v17 = Lconsp(nil, v17);
-    env = stack[0];
-    if (v17 == nil) goto v22;
-    v17 = v51;
-    v17 = Lconsp(nil, v17);
-    env = stack[0];
-    if (v17 == nil) goto v31;
-    v52 = qcdr(v52);
-    v51 = qcdr(v51);
-        popv(1);
-        return Llessp(nil, v52, v51);
-
-v31:
-    v51 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v51); }
-
-v22:
-    v17 = v51;
-    v17 = Lconsp(nil, v17);
-    env = stack[0];
-    if (v17 == nil) goto v11;
-    v51 = qvalue(elt(env, 2)); /* t */
-    { popv(1); return onevalue(v51); }
-
-v11:
-        popv(1);
-        return Llessp(nil, v52, v51);
-}
-
-
-
-/* Code for dm!-abs */
-
-static Lisp_Object CC_dmKabs(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v2;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for dm-abs");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -3195,1464 +2484,47 @@ static Lisp_Object CC_dmKabs(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    stack[0] = v0000;
 /* end of prologue */
-    v2 = stack[0];
-    fn = elt(env, 1); /* !:minusp */
-    v2 = (*qfn1(fn))(qenv(fn), v2);
-    nil = C_nil;
-    if (exception_pending()) goto v26;
-    env = stack[-1];
-    if (v2 == nil) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
-    v2 = stack[0];
-    {
-        popv(2);
-        fn = elt(env, 2); /* dm!-minus */
-        return (*qfn1(fn))(qenv(fn), v2);
-    }
-/* error exit handlers */
-v26:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for evcomp */
-
-static Lisp_Object CC_evcomp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v29, v15;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for evcomp");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v29 = v10;
-    v15 = v0;
-/* end of prologue */
-    stack[0] = qvalue(elt(env, 1)); /* dipsortevcomp!* */
-    v29 = list2(v15, v29);
-    nil = C_nil;
-    if (exception_pending()) goto v24;
-    env = stack[-1];
-    {
-        Lisp_Object v30 = stack[0];
-        popv(2);
-        fn = elt(env, 2); /* apply */
-        return (*qfn2(fn))(qenv(fn), v30, v29);
-    }
-/* error exit handlers */
-v24:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for evmatrixcomp2 */
-
-static Lisp_Object MS_CDECL CC_evmatrixcomp2(Lisp_Object env, int nargs,
-                         Lisp_Object v0, Lisp_Object v10,
-                         Lisp_Object v34, ...)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v75, v76, v77, v78;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-    argcheck(nargs, 3, "evmatrixcomp2");
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for evmatrixcomp2");
-#endif
-    if (stack >= stacklimit)
-    {
-        push3(v34,v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop3(v0,v10,v34);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push4(nil, nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v34;
-    stack[-1] = v10;
-    stack[-2] = v0;
-/* end of prologue */
-
-v45:
-    v75 = stack[-2];
-    if (v75 == nil) { Lisp_Object res = stack[0]; popv(5); return onevalue(res); }
-    v75 = stack[-1];
-    if (v75 == nil) { Lisp_Object res = stack[0]; popv(5); return onevalue(res); }
-    v75 = stack[-1];
-    v75 = qcar(v75);
-    stack[-3] = v75;
-    v76 = stack[-3];
-    v75 = (Lisp_Object)1; /* 0 */
-    v75 = Leqn(nil, v76, v75);
-    nil = C_nil;
-    if (exception_pending()) goto v79;
-    env = stack[-4];
-    if (v75 == nil) goto v18;
-    v75 = stack[-2];
-    v77 = qcdr(v75);
-    v75 = stack[-1];
-    v76 = qcdr(v75);
-    v75 = stack[0];
-    stack[-2] = v77;
-    stack[-1] = v76;
-    stack[0] = v75;
-    goto v45;
-
-v18:
-    v76 = stack[-3];
-    v75 = (Lisp_Object)17; /* 1 */
-    v75 = Leqn(nil, v76, v75);
-    nil = C_nil;
-    if (exception_pending()) goto v79;
-    env = stack[-4];
-    if (v75 == nil) goto v80;
-    v75 = stack[-2];
-    v78 = qcdr(v75);
-    v75 = stack[-1];
-    v77 = qcdr(v75);
-    v76 = stack[0];
-    v75 = stack[-2];
-    v75 = qcar(v75);
-    v75 = (Lisp_Object)(int32_t)((int32_t)v76 + (int32_t)v75 - TAG_FIXNUM);
-    stack[-2] = v78;
-    stack[-1] = v77;
-    stack[0] = v75;
-    goto v45;
-
-v80:
-    v78 = stack[-2];
-    v77 = stack[-3];
-    v76 = stack[-1];
-    v75 = stack[0];
-    {
-        popv(5);
-        fn = elt(env, 1); /* evmatrixcomp3 */
-        return (*qfnn(fn))(qenv(fn), 4, v78, v77, v76, v75);
-    }
-/* error exit handlers */
-v79:
-    popv(5);
-    return nil;
-}
-
-
-
-/* Code for xval */
-
-static Lisp_Object CC_xval(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v22;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for xval");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v22 = v0;
-/* end of prologue */
-    v22 = qcar(v22);
-    v22 = qcar(v22);
-    {
-        fn = elt(env, 1); /* wedgefax */
-        return (*qfn1(fn))(qenv(fn), v22);
-    }
-}
-
-
-
-/* Code for smember */
-
-static Lisp_Object CC_smember(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v68, v51;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for smember");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
-/* end of prologue */
-
-v49:
-    v51 = stack[-1];
-    v68 = stack[0];
-    if (equal(v51, v68)) goto v4;
-    v68 = stack[0];
-    if (!consp(v68)) goto v26;
-    v51 = stack[-1];
-    v68 = stack[0];
-    v68 = qcar(v68);
-    v68 = CC_smember(env, v51, v68);
-    nil = C_nil;
-    if (exception_pending()) goto v18;
-    env = stack[-2];
-    if (!(v68 == nil)) { popv(3); return onevalue(v68); }
-    v51 = stack[-1];
-    v68 = stack[0];
-    v68 = qcdr(v68);
-    stack[-1] = v51;
-    stack[0] = v68;
-    goto v49;
-
-v26:
-    v68 = qvalue(elt(env, 2)); /* nil */
-    { popv(3); return onevalue(v68); }
-
-v4:
-    v68 = qvalue(elt(env, 1)); /* t */
-    { popv(3); return onevalue(v68); }
-/* error exit handlers */
-v18:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for convprec */
-
-static Lisp_Object CC_convprec(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v4;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for convprec");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v4 = v0;
-/* end of prologue */
-    fn = elt(env, 1); /* round!* */
-    v4 = (*qfn1(fn))(qenv(fn), v4);
-    nil = C_nil;
-    if (exception_pending()) goto v22;
-    env = stack[0];
-    {
-        popv(1);
-        fn = elt(env, 2); /* convchk */
-        return (*qfn1(fn))(qenv(fn), v4);
-    }
-/* error exit handlers */
-v22:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for quotf */
-
-static Lisp_Object CC_quotf(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v2, v23, v26;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for quotf");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v23 = v10;
-    v26 = v0;
-/* end of prologue */
-    v2 = qvalue(elt(env, 1)); /* t */
-    stack[0] = qvalue(elt(env, 2)); /* !*exp */
-    qvalue(elt(env, 2)) = v2; /* !*exp */
-    v2 = v26;
-    fn = elt(env, 3); /* quotf1 */
-    v2 = (*qfn2(fn))(qenv(fn), v2, v23);
-    nil = C_nil;
-    if (exception_pending()) goto v28;
-    env = stack[-1];
-    qvalue(elt(env, 2)) = stack[0]; /* !*exp */
-    { popv(2); return onevalue(v2); }
-/* error exit handlers */
-v28:
-    env = stack[-1];
-    qvalue(elt(env, 2)) = stack[0]; /* !*exp */
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for physopp */
-
-static Lisp_Object CC_physopp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v42, v81;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for physopp");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v81 = v0;
-/* end of prologue */
-    v42 = v81;
-    if (!consp(v42)) goto v3;
-    v42 = v81;
-    v42 = qcar(v42);
-    if (symbolp(v42)) goto v19;
-    v42 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v42); }
-
-v19:
-    v42 = v81;
-    v81 = qcar(v42);
-    v42 = elt(env, 2); /* rtype */
-    v42 = get(v81, v42);
-    env = stack[0];
-    v81 = elt(env, 3); /* physop */
-    v42 = (v42 == v81 ? lisp_true : nil);
-    { popv(1); return onevalue(v42); }
-
-v3:
-    v42 = v81;
-    if (symbolp(v42)) goto v46;
-    v42 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v42); }
-
-v46:
-    v42 = elt(env, 2); /* rtype */
-    v42 = get(v81, v42);
-    env = stack[0];
-    v81 = elt(env, 3); /* physop */
-    v42 = (v42 == v81 ? lisp_true : nil);
-    { popv(1); return onevalue(v42); }
-}
-
-
-
-/* Code for memq_edgelist */
-
-static Lisp_Object CC_memq_edgelist(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for memq_edgelist");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v1 = v10;
-    v2 = v0;
-/* end of prologue */
-    v2 = qcar(v2);
-    v1 = Lassoc(nil, v2, v1);
-    return onevalue(v1);
-}
-
-
-
-/* Code for !*n2f */
-
-static Lisp_Object CC_Hn2f(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for *n2f");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v1 = v0;
-/* end of prologue */
-    v2 = v1;
-    v2 = (Lisp_Object)zerop(v2);
-    v2 = v2 ? lisp_true : nil;
-    env = stack[0];
-    if (v2 == nil) { popv(1); return onevalue(v1); }
-    v1 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v1); }
-}
-
-
-
-/* Code for c_zero */
-
-static Lisp_Object MS_CDECL CC_c_zero(Lisp_Object env, int nargs, ...)
-{
-    Lisp_Object v34;
-    argcheck(nargs, 0, "c_zero");
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for c_zero");
-#endif
-    CSL_IGNORE(env);
-/* end of prologue */
-    v34 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v34);
-}
-
-
-
-/* Code for sieve_pv0 */
-
-static Lisp_Object MS_CDECL CC_sieve_pv0(Lisp_Object env, int nargs,
-                         Lisp_Object v0, Lisp_Object v10,
-                         Lisp_Object v34, ...)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v65, v61, v62;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-    argcheck(nargs, 3, "sieve_pv0");
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for sieve_pv0");
-#endif
-    if (stack >= stacklimit)
-    {
-        push3(v34,v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop3(v0,v10,v34);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push3(nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v34;
-    stack[-1] = v10;
-    stack[-2] = v0;
-/* end of prologue */
-    v65 = stack[-2];
-    if (!(v65 == nil)) goto v23;
-    v65 = qvalue(elt(env, 1)); /* nil */
-    { popv(4); return onevalue(v65); }
-
-v23:
-    v65 = stack[-1];
-    if (v65 == nil) goto v57;
-    v65 = stack[-1];
-    v65 = qcar(v65);
-    v65 = qcar(v65);
-    v61 = qcdr(v65);
-    v65 = stack[-2];
-    v65 = qcar(v65);
-    v65 = qcdr(v65);
-    v65 = (Lisp_Object)greaterp2(v61, v65);
-    nil = C_nil;
-    if (exception_pending()) goto v74;
-    v65 = v65 ? lisp_true : nil;
-    env = stack[-3];
-    if (v65 == nil) goto v57;
-    v65 = stack[-1];
-    v65 = qcdr(v65);
-    stack[-1] = v65;
-    goto v23;
-
-v57:
-    v65 = stack[-2];
-    if (v65 == nil) { Lisp_Object res = stack[-2]; popv(4); return onevalue(res); }
-    v65 = stack[-1];
-    if (v65 == nil) { Lisp_Object res = stack[-2]; popv(4); return onevalue(res); }
-    v62 = stack[-2];
-    v65 = stack[-1];
-    v61 = qcar(v65);
-    v65 = stack[0];
-    fn = elt(env, 2); /* reduce_pv0 */
-    v65 = (*qfnn(fn))(qenv(fn), 3, v62, v61, v65);
-    nil = C_nil;
-    if (exception_pending()) goto v74;
-    env = stack[-3];
-    stack[-2] = v65;
-    v65 = stack[-1];
-    v65 = qcdr(v65);
-    stack[-1] = v65;
-    goto v57;
-/* error exit handlers */
-v74:
-    popv(4);
-    return nil;
-}
-
-
-
-/* Code for listp */
-
-static Lisp_Object CC_listp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v29, v15;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for listp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v29 = v0;
-/* end of prologue */
-
-v45:
-    v15 = v29;
-    v15 = (v15 == nil ? lisp_true : nil);
-    if (!(v15 == nil)) return onevalue(v15);
-    v15 = v29;
-    if (!consp(v15)) goto v6;
-    v29 = qcdr(v29);
-    goto v45;
-
-v6:
-    v29 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v29);
-}
-
-
-
-/* Code for quotelist */
-
-static Lisp_Object CC_quotelist(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object v9;
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for quotelist");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v9 = v0;
-/* end of prologue */
-    v9 = elt(env, 1); /* list */
-    return onevalue(v9);
-}
-
-
-
-/* Code for revpr */
-
-static Lisp_Object CC_revpr(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for revpr");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v1 = v0;
-/* end of prologue */
-    v2 = v1;
-    v2 = qcdr(v2);
-    v1 = qcar(v1);
-    return cons(v2, v1);
-}
-
-
-
-/* Code for pnth */
-
-static Lisp_Object CC_pnth(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v82, v11, v57;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for pnth");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v11 = v10;
-    stack[0] = v0;
-/* end of prologue */
-
-v4:
-    v82 = stack[0];
-    if (v82 == nil) goto v1;
-    v57 = v11;
-    v82 = (Lisp_Object)17; /* 1 */
-    if (v57 == v82) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
-    v82 = stack[0];
-    v82 = qcdr(v82);
-    stack[0] = v82;
-    v82 = v11;
-    v82 = sub1(v82);
-    nil = C_nil;
-    if (exception_pending()) goto v68;
-    env = stack[-1];
-    v11 = v82;
-    goto v4;
-
-v1:
-    v57 = elt(env, 1); /* alg */
-    v11 = (Lisp_Object)97; /* 6 */
-    v82 = elt(env, 2); /* "Index out of range" */
-    {
-        popv(2);
-        fn = elt(env, 3); /* rerror */
-        return (*qfnn(fn))(qenv(fn), 3, v57, v11, v82);
-    }
-/* error exit handlers */
-v68:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for degr */
-
-static Lisp_Object CC_degr(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v48, v25, v35;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for degr");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v48 = v10;
-    v25 = v0;
-/* end of prologue */
-    v35 = v25;
-    if (!consp(v35)) goto v4;
-    v35 = v25;
-    v35 = qcar(v35);
-    if (!consp(v35)) goto v4;
-    v35 = v25;
-    v35 = qcar(v35);
-    v35 = qcar(v35);
-    v35 = qcar(v35);
-    if (!(v35 == v48)) goto v4;
-    v48 = v25;
-    v48 = qcar(v48);
-    v48 = qcar(v48);
-    v48 = qcdr(v48);
-    return onevalue(v48);
-
-v4:
-    v48 = (Lisp_Object)1; /* 0 */
-    return onevalue(v48);
-}
-
-
-
-/* Code for ibalp_commonlenisone */
-
-static Lisp_Object CC_ibalp_commonlenisone(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v32;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for ibalp_commonlenisone");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
-/* end of prologue */
-    v32 = stack[-1];
-    if (v32 == nil) goto v1;
-    v32 = qvalue(elt(env, 1)); /* nil */
-    goto v49;
-
-v49:
-    if (!(v32 == nil)) { popv(3); return onevalue(v32); }
-    v32 = stack[0];
-    if (v32 == nil) goto v30;
-    v32 = qvalue(elt(env, 1)); /* nil */
-    { popv(3); return onevalue(v32); }
-
-v30:
-    v32 = stack[-1];
-    {
-        popv(3);
-        fn = elt(env, 2); /* ibalp_lenisone */
-        return (*qfn1(fn))(qenv(fn), v32);
-    }
-
-v1:
-    v32 = stack[0];
-    fn = elt(env, 2); /* ibalp_lenisone */
-    v32 = (*qfn1(fn))(qenv(fn), v32);
-    nil = C_nil;
-    if (exception_pending()) goto v47;
-    env = stack[-2];
-    goto v49;
-/* error exit handlers */
-v47:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for find2 */
-
-static Lisp_Object CC_find2(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v17, v18, v19, v20;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for find2");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v18 = v10;
-    v19 = v0;
-/* end of prologue */
-
-v6:
-    v20 = v18;
-    v17 = nil;
-    if (v20 == v17) goto v49;
-    v17 = v18;
-    v17 = qcar(v17);
-    v19 = Lmember(nil, v17, v19);
-    v17 = v18;
-    v17 = qcdr(v17);
-    v18 = v17;
-    goto v6;
-
-v49:
-    v17 = v19;
-    if (v17 == nil) goto v46;
-    v17 = v19;
-    v17 = qcdr(v17);
-    return onevalue(v17);
-
-v46:
-    v17 = elt(env, 1); /* (stop) */
-    return onevalue(v17);
-}
-
-
-
-/* Code for zero2nil */
-
-static Lisp_Object CC_zero2nil(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for zero2nil");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-    v1 = stack[0];
+    v0023 = stack[0];
+    if (is_number(v0023)) goto v0013;
+    v0023 = stack[0];
     fn = elt(env, 2); /* !:zerop */
-    v1 = (*qfn1(fn))(qenv(fn), v1);
+    v0023 = (*qfn1(fn))(qenv(fn), v0023);
     nil = C_nil;
-    if (exception_pending()) goto v23;
+    if (exception_pending()) goto v0025;
     env = stack[-1];
-    if (v1 == nil) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
-    v1 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v1); }
-/* error exit handlers */
-v23:
+    if (v0023 == nil) goto v0006;
+    v0024 = qvalue(elt(env, 1)); /* nil */
+    v0023 = (Lisp_Object)17; /* 1 */
     popv(2);
-    return nil;
-}
+    return cons(v0024, v0023);
 
+v0006:
+    v0024 = stack[0];
+    v0023 = (Lisp_Object)17; /* 1 */
+    popv(2);
+    return cons(v0024, v0023);
 
-
-/* Code for binding */
-
-static Lisp_Object CC_binding(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v29, v15;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for binding");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v29 = v0;
-/* end of prologue */
-    v15 = v29;
-    v29 = elt(env, 0); /* binding */
-    v29 = get(v15, v29);
-    v15 = v29;
-    v29 = v15;
-    if (v29 == nil) goto v23;
-    v29 = v15;
-    v29 = qcar(v29);
-    return onevalue(v29);
-
-v23:
-    v29 = nil;
-    return onevalue(v29);
-}
-
-
-
-/* Code for prepf */
-
-static Lisp_Object CC_prepf(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v24, v30;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for prepf");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v24 = v0;
-/* end of prologue */
-    v30 = v24;
-    v24 = qvalue(elt(env, 1)); /* nil */
-    fn = elt(env, 2); /* prepf1 */
-    v24 = (*qfn2(fn))(qenv(fn), v30, v24);
-    nil = C_nil;
-    if (exception_pending()) goto v46;
-    env = stack[0];
-    v30 = v24;
-    v24 = v30;
-    if (v24 == nil) goto v2;
-    v24 = v30;
-    {
-        popv(1);
-        fn = elt(env, 3); /* replus */
-        return (*qfn1(fn))(qenv(fn), v24);
-    }
-
-v2:
-    v24 = (Lisp_Object)1; /* 0 */
-    { popv(1); return onevalue(v24); }
-/* error exit handlers */
-v46:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for vevmtest!? */
-
-static Lisp_Object CC_vevmtestW(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v56, v58, v59, v60;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for vevmtest?");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v58 = v10;
-    v59 = v0;
-/* end of prologue */
-
-v4:
-    v56 = v58;
-    if (v56 == nil) goto v5;
-    v56 = v59;
-    if (v56 == nil) goto v1;
-    v56 = v59;
-    v60 = qcar(v56);
-    v56 = v58;
-    v56 = qcar(v56);
-    if (((int32_t)(v60)) < ((int32_t)(v56))) goto v81;
-    v56 = v59;
-    v56 = qcdr(v56);
-    v59 = v56;
-    v56 = v58;
-    v56 = qcdr(v56);
-    v58 = v56;
-    goto v4;
-
-v81:
-    v56 = qvalue(elt(env, 2)); /* nil */
-    { popv(1); return onevalue(v56); }
-
-v1:
-    v56 = v58;
-    if (v56 == nil) goto v28;
-    v56 = v58;
-    v59 = qcar(v56);
-    v56 = (Lisp_Object)1; /* 0 */
-    if (!(v59 == v56)) goto v39;
-    v56 = v58;
-    v56 = qcdr(v56);
-    fn = elt(env, 3); /* vevzero!?1 */
-    v56 = (*qfn1(fn))(qenv(fn), v56);
-    nil = C_nil;
-    if (exception_pending()) goto v64;
-    env = stack[0];
-    if (!(v56 == nil)) goto v28;
-
-v39:
-    v56 = qvalue(elt(env, 2)); /* nil */
-    { popv(1); return onevalue(v56); }
-
-v28:
-    v56 = qvalue(elt(env, 1)); /* t */
-    { popv(1); return onevalue(v56); }
-
-v5:
-    v56 = qvalue(elt(env, 1)); /* t */
-    { popv(1); return onevalue(v56); }
-/* error exit handlers */
-v64:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for vbcsize */
-
-static Lisp_Object CC_vbcsize(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v20, v21, v38;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for vbcsize");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v21 = v10;
-    stack[0] = v0;
-/* end of prologue */
-
-v49:
-    v38 = v21;
-    v20 = (Lisp_Object)-15; /* -1 */
-    if (((int32_t)(v38)) > ((int32_t)(v20))) goto v4;
-    v20 = stack[0];
-    if (!consp(v20)) { popv(2); return onevalue(v21); }
-    v20 = stack[0];
-    v20 = qcar(v20);
-    v21 = (Lisp_Object)((int32_t)(v21) + 0x10);
-    v20 = CC_vbcsize(env, v20, v21);
-    nil = C_nil;
-    if (exception_pending()) goto v53;
+v0013:
+    v0023 = stack[0];
+    v0023 = (Lisp_Object)zerop(v0023);
+    v0023 = v0023 ? lisp_true : nil;
     env = stack[-1];
-    v21 = v20;
-    v20 = v21;
-    if (v20 == nil) goto v44;
-    v20 = stack[0];
-    v20 = qcdr(v20);
-    stack[0] = v20;
-    goto v49;
-
-v44:
-    v20 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v20); }
-
-v4:
-    v20 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v20); }
-/* error exit handlers */
-v53:
+    if (v0023 == nil) goto v0026;
+    v0024 = qvalue(elt(env, 1)); /* nil */
+    v0023 = (Lisp_Object)17; /* 1 */
     popv(2);
-    return nil;
-}
+    return cons(v0024, v0023);
 
-
-
-/* Code for ordpp */
-
-static Lisp_Object CC_ordpp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v74, v67, v83, v84, v85;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for ordpp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v83 = v10;
-    v84 = v0;
-/* end of prologue */
-    v74 = v84;
-    v67 = qcar(v74);
-    v74 = v83;
-    v74 = qcar(v74);
-    if (v67 == v74) goto v24;
-    v74 = qvalue(elt(env, 1)); /* kord!* */
-    v85 = v74;
-    v74 = v84;
-    v74 = qcar(v74);
-    v84 = v74;
-    v74 = v83;
-    v74 = qcar(v74);
-    v83 = v74;
-    goto v22;
-
-v22:
-    v74 = v85;
-    if (v74 == nil) goto v12;
-    v67 = v84;
-    v74 = v85;
-    v74 = qcar(v74);
-    if (v67 == v74) goto v20;
-    v67 = v83;
-    v74 = v85;
-    v74 = qcar(v74);
-    if (v67 == v74) goto v86;
-    v74 = v85;
-    v74 = qcdr(v74);
-    v85 = v74;
-    goto v22;
-
-v86:
-    v74 = qvalue(elt(env, 3)); /* nil */
-    return onevalue(v74);
-
-v20:
-    v74 = qvalue(elt(env, 2)); /* t */
-    return onevalue(v74);
-
-v12:
-    v74 = v84;
-    v67 = v83;
-    {
-        fn = elt(env, 4); /* ordpa */
-        return (*qfn2(fn))(qenv(fn), v74, v67);
-    }
-
-v24:
-    v74 = v84;
-    v74 = qcdr(v74);
-    v67 = v83;
-    v67 = qcdr(v67);
-        return Lgreaterp(nil, v74, v67);
-}
-
-
-
-/* Code for wedgefax */
-
-static Lisp_Object CC_wedgefax(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v16, v24, v30;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for wedgefax");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v24 = v0;
-/* end of prologue */
-    v16 = v24;
-    v30 = elt(env, 1); /* wedge */
-    if (!consp(v16)) goto v27;
-    v16 = qcar(v16);
-    if (!(v16 == v30)) goto v27;
-    v16 = v24;
-    v16 = qcdr(v16);
-    return onevalue(v16);
-
-v27:
-    v16 = v24;
-    return ncons(v16);
-}
-
-
-
-/* Code for times!: */
-
-static Lisp_Object CC_timesT(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v39, v37;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for times:");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push4(nil, nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[-1] = v10;
-    stack[-2] = v0;
-/* end of prologue */
-    stack[-3] = elt(env, 1); /* !:rd!: */
-    v39 = stack[-2];
-    v39 = qcdr(v39);
-    v37 = qcar(v39);
-    v39 = stack[-1];
-    v39 = qcdr(v39);
-    v39 = qcar(v39);
-    stack[0] = times2(v37, v39);
-    nil = C_nil;
-    if (exception_pending()) goto v68;
-    env = stack[-4];
-    v39 = stack[-2];
-    v39 = qcdr(v39);
-    v37 = qcdr(v39);
-    v39 = stack[-1];
-    v39 = qcdr(v39);
-    v39 = qcdr(v39);
-    v39 = plus2(v37, v39);
-    nil = C_nil;
-    if (exception_pending()) goto v68;
-    {
-        Lisp_Object v51 = stack[-3];
-        Lisp_Object v52 = stack[0];
-        popv(5);
-        return list2star(v51, v52, v39);
-    }
-/* error exit handlers */
-v68:
-    popv(5);
-    return nil;
-}
-
-
-
-/* Code for round!* */
-
-static Lisp_Object CC_roundH(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v2, v23;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for round*");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v2 = v0;
-/* end of prologue */
-    v23 = v2;
-    v23 = qcdr(v23);
-    if (!(!consp(v23))) return onevalue(v2);
-    v2 = qcdr(v2);
-    return onevalue(v2);
-}
-
-
-
-/* Code for noncomp2 */
-
-static Lisp_Object CC_noncomp2(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v15, v16;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for noncomp2");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v16 = v0;
-/* end of prologue */
-    v15 = v16;
-    if (!consp(v15)) goto v3;
-    v15 = v16;
-    v16 = elt(env, 1); /* noncom */
-        return Lflagpcar(nil, v15, v16);
-
-v3:
-    v15 = v16;
-    if (!symbolp(v15)) v15 = nil;
-    else { v15 = qfastgets(v15);
-           if (v15 != nil) { v15 = elt(v15, 0); /* noncom */
-#ifdef RECORD_GET
-             if (v15 == SPID_NOPROP)
-                record_get(elt(fastget_names, 0), 0),
-                v15 = nil;
-             else record_get(elt(fastget_names, 0), 1),
-                v15 = lisp_true; }
-           else record_get(elt(fastget_names, 0), 0); }
-#else
-             if (v15 == SPID_NOPROP) v15 = nil; else v15 = lisp_true; }}
-#endif
-    return onevalue(v15);
-}
-
-
-
-/* Code for union_edge */
-
-static Lisp_Object CC_union_edge(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v32, v33;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for union_edge");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    CSL_IGNORE(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
-/* end of prologue */
-    v33 = stack[-1];
-    v32 = stack[0];
-    fn = elt(env, 1); /* memq_edgelist */
-    v32 = (*qfn2(fn))(qenv(fn), v33, v32);
-    nil = C_nil;
-    if (exception_pending()) goto v14;
-    if (!(v32 == nil)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
-    v33 = stack[-1];
-    v32 = stack[0];
+v0026:
+    v0024 = stack[0];
+    v0023 = (Lisp_Object)17; /* 1 */
     popv(2);
-    return cons(v33, v32);
+    return cons(v0024, v0023);
 /* error exit handlers */
-v14:
+v0025:
     popv(2);
-    return nil;
-}
-
-
-
-/* Code for termsf */
-
-static Lisp_Object CC_termsf(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v68, v51;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for termsf");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-    v68 = (Lisp_Object)1; /* 0 */
-    v51 = v68;
-    goto v5;
-
-v5:
-    v68 = stack[0];
-    if (!consp(v68)) goto v49;
-    v68 = stack[0];
-    v68 = qcar(v68);
-    if (!consp(v68)) goto v49;
-    stack[-1] = v51;
-    v68 = stack[0];
-    v68 = qcar(v68);
-    v68 = qcdr(v68);
-    v68 = CC_termsf(env, v68);
-    nil = C_nil;
-    if (exception_pending()) goto v18;
-    env = stack[-2];
-    v68 = plus2(stack[-1], v68);
-    nil = C_nil;
-    if (exception_pending()) goto v18;
-    env = stack[-2];
-    v51 = v68;
-    v68 = stack[0];
-    v68 = qcdr(v68);
-    stack[0] = v68;
-    goto v5;
-
-v49:
-    v68 = stack[0];
-    if (v68 == nil) { popv(3); return onevalue(v51); }
-    v68 = v51;
-    popv(3);
-    return add1(v68);
-/* error exit handlers */
-v18:
-    popv(3);
     return nil;
 }
 
@@ -4663,8 +2535,7 @@ v18:
 static Lisp_Object MS_CDECL CC_readch1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v20, v21;
-    Lisp_Object fn;
+    Lisp_Object v0032, v0033;
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "readch1");
 #ifdef DEBUG
@@ -4680,81 +2551,186 @@ static Lisp_Object MS_CDECL CC_readch1(Lisp_Object env, int nargs, ...)
 /* space for vars preserved across procedure calls */
     push(nil);
 /* end of prologue */
-    fn = elt(env, 6); /* terminalp */
-    v20 = (*qfnn(fn))(qenv(fn), 0);
-    nil = C_nil;
-    if (exception_pending()) goto v73;
-    env = stack[-1];
-    if (v20 == nil) goto v22;
-    v20 = qvalue(elt(env, 4)); /* crbuf1!* */
-    if (v20 == nil) goto v39;
-    v20 = qvalue(elt(env, 4)); /* crbuf1!* */
-    v20 = qcar(v20);
-    stack[0] = v20;
-    v20 = qvalue(elt(env, 4)); /* crbuf1!* */
-    v20 = qcdr(v20);
-    qvalue(elt(env, 4)) = v20; /* crbuf1!* */
-    goto v57;
-
-v57:
-    v21 = stack[0];
-    v20 = qvalue(elt(env, 5)); /* crbuf!* */
-    v20 = cons(v21, v20);
-    nil = C_nil;
-    if (exception_pending()) goto v73;
-    env = stack[-1];
-    qvalue(elt(env, 5)) = v20; /* crbuf!* */
+    v0032 = qvalue(elt(env, 1)); /* peekchar!* */
+    if (v0032 == nil) goto v0034;
+    v0032 = qvalue(elt(env, 1)); /* peekchar!* */
+    v0032 = qcar(v0032);
+    stack[0] = v0032;
+    v0032 = qvalue(elt(env, 1)); /* peekchar!* */
+    v0032 = qcdr(v0032);
+    qvalue(elt(env, 1)) = v0032; /* peekchar!* */
     { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
 
-v39:
-    v20 = Lreadch(nil, 0);
-    nil = C_nil;
-    if (exception_pending()) goto v73;
-    env = stack[-1];
-    stack[0] = v20;
-    goto v57;
+v0034:
+    v0032 = qvalue(elt(env, 2)); /* !*int */
+    if (v0032 == nil) goto v0035;
+    v0032 = qvalue(elt(env, 3)); /* ifl!* */
+    if (!(v0032 == nil)) goto v0035;
+    v0032 = qvalue(elt(env, 7)); /* crbuf1!* */
+    if (v0032 == nil) goto v0036;
+    v0032 = qvalue(elt(env, 7)); /* crbuf1!* */
+    v0032 = qcar(v0032);
+    stack[0] = v0032;
+    v0032 = qvalue(elt(env, 7)); /* crbuf1!* */
+    v0032 = qcdr(v0032);
+    qvalue(elt(env, 7)) = v0032; /* crbuf1!* */
+    goto v0023;
 
-v22:
-    v20 = Lreadch(nil, 0);
+v0023:
+    v0033 = stack[0];
+    v0032 = qvalue(elt(env, 8)); /* crbuf!* */
+    v0032 = cons(v0033, v0032);
     nil = C_nil;
-    if (exception_pending()) goto v73;
+    if (exception_pending()) goto v0037;
     env = stack[-1];
-    stack[0] = v20;
-    v21 = stack[0];
-    v20 = qvalue(elt(env, 1)); /* !$eol!$ */
-    if (!(v21 == v20)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
-    v20 = qvalue(elt(env, 3)); /* curline!* */
-    v20 = add1(v20);
+    qvalue(elt(env, 8)) = v0032; /* crbuf!* */
+    { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+
+v0036:
+    v0032 = Lreadch(nil, 0);
     nil = C_nil;
-    if (exception_pending()) goto v73;
+    if (exception_pending()) goto v0037;
     env = stack[-1];
-    qvalue(elt(env, 3)) = v20; /* curline!* */
+    stack[0] = v0032;
+    goto v0023;
+
+v0035:
+    v0032 = Lreadch(nil, 0);
+    nil = C_nil;
+    if (exception_pending()) goto v0037;
+    env = stack[-1];
+    stack[0] = v0032;
+    v0033 = stack[0];
+    v0032 = qvalue(elt(env, 4)); /* !$eol!$ */
+    if (!(v0033 == v0032)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0032 = qvalue(elt(env, 5)); /* curline!* */
+    v0032 = add1(v0032);
+    nil = C_nil;
+    if (exception_pending()) goto v0037;
+    env = stack[-1];
+    qvalue(elt(env, 5)) = v0032; /* curline!* */
     { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
 /* error exit handlers */
-v73:
+v0037:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for mkspm */
+/* Code for quotf */
 
-static Lisp_Object CC_mkspm(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_quotf(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v41, v42;
+    Lisp_Object v0039, v0040, v0041;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for mkspm");
+    if (check_env(env)) return aerror("env for quotf");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0040 = v0029;
+    v0041 = v0000;
+/* end of prologue */
+    v0039 = qvalue(elt(env, 1)); /* t */
+    stack[0] = qvalue(elt(env, 2)); /* !*exp */
+    qvalue(elt(env, 2)) = v0039; /* !*exp */
+    v0039 = v0041;
+    fn = elt(env, 3); /* quotf1 */
+    v0039 = (*qfn2(fn))(qenv(fn), v0039, v0040);
+    nil = C_nil;
+    if (exception_pending()) goto v0042;
+    env = stack[-1];
+    qvalue(elt(env, 2)) = stack[0]; /* !*exp */
+    { popv(2); return onevalue(v0039); }
+/* error exit handlers */
+v0042:
+    env = stack[-1];
+    qvalue(elt(env, 2)) = stack[0]; /* !*exp */
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for monomcompare */
+
+static Lisp_Object CC_monomcompare(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0024, v0045, v0025, v0046;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for monomcompare");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0025 = v0029;
+    v0046 = v0000;
+/* end of prologue */
+    v0045 = qvalue(elt(env, 1)); /* fluidbibasismonomialorder */
+    v0024 = elt(env, 2); /* lex */
+    if (v0045 == v0024) goto v0042;
+    v0045 = qvalue(elt(env, 1)); /* fluidbibasismonomialorder */
+    v0024 = elt(env, 4); /* deglex */
+    if (v0045 == v0024) goto v0047;
+    v0024 = v0046;
+    v0045 = v0025;
+    {
+        fn = elt(env, 5); /* monomcomparedegrevlex */
+        return (*qfn2(fn))(qenv(fn), v0024, v0045);
+    }
+
+v0047:
+    v0024 = v0046;
+    v0045 = v0025;
+    {
+        fn = elt(env, 6); /* monomcomparedeglex */
+        return (*qfn2(fn))(qenv(fn), v0024, v0045);
+    }
+
+v0042:
+    v0024 = v0046;
+    v0045 = v0025;
+    {
+        fn = elt(env, 7); /* monomcomparelex */
+        return (*qfn2(fn))(qenv(fn), v0024, v0045);
+    }
+}
+
+
+
+/* Code for smember */
+
+static Lisp_Object CC_smember(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0018, v0049;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for smember");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -4762,80 +2738,245 @@ static Lisp_Object CC_mkspm(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0029;
+    stack[-1] = v0000;
 /* end of prologue */
-    v42 = stack[0];
-    v41 = (Lisp_Object)1; /* 0 */
-    if (v42 == v41) goto v4;
-    v41 = qvalue(elt(env, 1)); /* subfg!* */
-    if (v41 == nil) goto v24;
-    v42 = stack[-1];
-    v41 = qvalue(elt(env, 2)); /* asymplis!* */
-    v41 = Latsoc(nil, v42, v41);
-    v42 = v41;
-    if (v41 == nil) goto v24;
-    v41 = v42;
-    v42 = qcdr(v41);
-    v41 = stack[0];
-    v41 = (Lisp_Object)lesseq2(v42, v41);
-    nil = C_nil;
-    if (exception_pending()) goto v43;
-    v41 = v41 ? lisp_true : nil;
-    env = stack[-2];
-    if (v41 == nil) goto v24;
-    v41 = qvalue(elt(env, 3)); /* nil */
-    { popv(3); return onevalue(v41); }
 
-v24:
-    v41 = stack[-1];
-    fn = elt(env, 4); /* sub2chk */
-    v41 = (*qfn1(fn))(qenv(fn), v41);
+v0008:
+    v0049 = stack[-1];
+    v0018 = stack[0];
+    if (equal(v0049, v0018)) goto v0034;
+    v0018 = stack[0];
+    if (!consp(v0018)) goto v0041;
+    v0049 = stack[-1];
+    v0018 = stack[0];
+    v0018 = qcar(v0018);
+    v0018 = CC_smember(env, v0049, v0018);
     nil = C_nil;
-    if (exception_pending()) goto v43;
+    if (exception_pending()) goto v0006;
     env = stack[-2];
-    v42 = stack[-1];
-    v41 = stack[0];
-    {
-        popv(3);
-        fn = elt(env, 5); /* to */
-        return (*qfn2(fn))(qenv(fn), v42, v41);
-    }
+    if (!(v0018 == nil)) { popv(3); return onevalue(v0018); }
+    v0049 = stack[-1];
+    v0018 = stack[0];
+    v0018 = qcdr(v0018);
+    stack[-1] = v0049;
+    stack[0] = v0018;
+    goto v0008;
 
-v4:
-    v41 = (Lisp_Object)17; /* 1 */
-    { popv(3); return onevalue(v41); }
+v0041:
+    v0018 = qvalue(elt(env, 2)); /* nil */
+    { popv(3); return onevalue(v0018); }
+
+v0034:
+    v0018 = qvalue(elt(env, 1)); /* t */
+    { popv(3); return onevalue(v0018); }
 /* error exit handlers */
-v43:
+v0006:
     popv(3);
     return nil;
 }
 
 
 
-/* Code for mo_divides!? */
+/* Code for quotelist */
 
-static Lisp_Object CC_mo_dividesW(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_quotelist(Lisp_Object env,
+                         Lisp_Object v0000)
 {
-    Lisp_Object nil = C_nil;
-    Lisp_Object v2, v23;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
+    Lisp_Object v0050;
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for mo_divides?");
+    if (check_env(env)) return aerror("env for quotelist");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v2 = v10;
-    v23 = v0;
+    v0050 = v0000;
 /* end of prologue */
-    v23 = qcar(v23);
-    v2 = qcar(v2);
+    v0050 = elt(env, 1); /* list */
+    return onevalue(v0050);
+}
+
+
+
+/* Code for wuconstantp */
+
+static Lisp_Object CC_wuconstantp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0031, v0030;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for wuconstantp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0030 = v0000;
+/* end of prologue */
+    v0031 = v0030;
+    if (!consp(v0031)) goto v0001;
+    v0031 = v0030;
+    v0031 = qcar(v0031);
+    v0031 = (consp(v0031) ? nil : lisp_true);
+    goto v0008;
+
+v0008:
+    if (v0031 == nil) goto v0022;
+    v0031 = qvalue(elt(env, 1)); /* t */
+    return onevalue(v0031);
+
+v0022:
+    v0031 = v0030;
+    v0031 = qcar(v0031);
+    v0031 = qcar(v0031);
+    v0031 = qcar(v0031);
+    v0030 = qvalue(elt(env, 2)); /* wuvarlist!* */
+    v0031 = Lmemq(nil, v0031, v0030);
+    v0031 = (v0031 == nil ? lisp_true : nil);
+    return onevalue(v0031);
+
+v0001:
+    v0031 = qvalue(elt(env, 1)); /* t */
+    goto v0008;
+}
+
+
+
+/* Code for mkcopy */
+
+static Lisp_Object CC_mkcopy(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0030, v0012;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for mkcopy");
+#endif
+    if (stack >= stacklimit)
     {
-        fn = elt(env, 1); /* mo!=modiv1 */
-        return (*qfn2(fn))(qenv(fn), v23, v2);
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
     }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    stack[-1] = nil;
+    goto v0034;
+
+v0034:
+    v0030 = stack[0];
+    if (!consp(v0030)) goto v0038;
+    v0030 = stack[0];
+    v0030 = qcar(v0030);
+    v0012 = CC_mkcopy(env, v0030);
+    nil = C_nil;
+    if (exception_pending()) goto v0054;
+    env = stack[-2];
+    v0030 = stack[-1];
+    v0030 = cons(v0012, v0030);
+    nil = C_nil;
+    if (exception_pending()) goto v0054;
+    env = stack[-2];
+    stack[-1] = v0030;
+    v0030 = stack[0];
+    v0030 = qcdr(v0030);
+    stack[0] = v0030;
+    goto v0034;
+
+v0038:
+    v0012 = stack[-1];
+    v0030 = stack[0];
+    {
+        popv(3);
+        fn = elt(env, 1); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0012, v0030);
+    }
+/* error exit handlers */
+v0054:
+    popv(3);
+    return nil;
+}
+
+
+
+/* Code for remove!-free!-vars!-l */
+
+static Lisp_Object CC_removeKfreeKvarsKl(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0045, v0025, v0046;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for remove-free-vars-l");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+
+v0013:
+    v0045 = stack[0];
+    if (!consp(v0045)) { Lisp_Object res = stack[0]; popv(3); return onevalue(res); }
+    v0045 = stack[0];
+    v0025 = qcar(v0045);
+    v0045 = elt(env, 1); /* !*sq */
+    if (v0025 == v0045) goto v0004;
+    v0045 = stack[0];
+    v0045 = qcar(v0045);
+    fn = elt(env, 2); /* remove!-free!-vars */
+    stack[-1] = (*qfn1(fn))(qenv(fn), v0045);
+    nil = C_nil;
+    if (exception_pending()) goto v0057;
+    env = stack[-2];
+    v0045 = stack[0];
+    v0045 = qcdr(v0045);
+    v0045 = CC_removeKfreeKvarsKl(env, v0045);
+    nil = C_nil;
+    if (exception_pending()) goto v0057;
+    env = stack[-2];
+    v0045 = cons(stack[-1], v0045);
+    nil = C_nil;
+    if (exception_pending()) goto v0057;
+    v0046 = v0045;
+    v0025 = v0046;
+    v0045 = stack[0];
+    if (equal(v0025, v0045)) { Lisp_Object res = stack[0]; popv(3); return onevalue(res); }
+    else { popv(3); return onevalue(v0046); }
+
+v0004:
+    v0045 = stack[0];
+    v0045 = qcdr(v0045);
+    v0045 = qcar(v0045);
+    fn = elt(env, 3); /* prepsq!* */
+    v0045 = (*qfn1(fn))(qenv(fn), v0045);
+    nil = C_nil;
+    if (exception_pending()) goto v0057;
+    env = stack[-2];
+    stack[0] = v0045;
+    goto v0013;
+/* error exit handlers */
+v0057:
+    popv(3);
+    return nil;
 }
 
 
@@ -4843,10 +2984,10 @@ static Lisp_Object CC_mo_dividesW(Lisp_Object env,
 /* Code for mchk!* */
 
 static Lisp_Object CC_mchkH(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v51, v52;
+    Lisp_Object v0059, v0060;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
@@ -4854,9 +2995,9 @@ static Lisp_Object CC_mchkH(Lisp_Object env,
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -4864,507 +3005,120 @@ static Lisp_Object CC_mchkH(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0029;
+    stack[-1] = v0000;
 /* end of prologue */
-    v52 = stack[-1];
-    v51 = stack[0];
+    v0060 = stack[-1];
+    v0059 = stack[0];
     fn = elt(env, 3); /* mchk */
-    v51 = (*qfn2(fn))(qenv(fn), v52, v51);
+    v0059 = (*qfn2(fn))(qenv(fn), v0060, v0059);
     nil = C_nil;
-    if (exception_pending()) goto v19;
+    if (exception_pending()) goto v0061;
     env = stack[-2];
-    v52 = v51;
-    if (!(v51 == nil)) { popv(3); return onevalue(v52); }
-    v51 = qvalue(elt(env, 1)); /* !*mcd */
-    if (!(v51 == nil)) goto v15;
-    v51 = stack[-1];
-    fn = elt(env, 4); /* sfp */
-    v51 = (*qfn1(fn))(qenv(fn), v51);
+    v0060 = v0059;
+    if (!(v0059 == nil)) { popv(3); return onevalue(v0060); }
+    v0059 = qvalue(elt(env, 1)); /* !*mcd */
+    if (!(v0059 == nil)) goto v0014;
+    v0059 = stack[-1];
+    if (!consp(v0059)) goto v0054;
+    v0059 = stack[-1];
+    v0059 = qcar(v0059);
+    v0059 = (consp(v0059) ? nil : lisp_true);
+    v0059 = (v0059 == nil ? lisp_true : nil);
+    goto v0021;
+
+v0021:
+    if (v0059 == nil) goto v0016;
+    v0059 = stack[0];
+    if (!consp(v0059)) goto v0036;
+    v0059 = stack[0];
+    v0059 = qcar(v0059);
+    v0059 = (consp(v0059) ? nil : lisp_true);
+    v0059 = (v0059 == nil ? lisp_true : nil);
+    goto v0062;
+
+v0062:
+    if (v0059 == nil) goto v0014;
+    v0059 = stack[-1];
+    fn = elt(env, 4); /* prepf */
+    stack[-1] = (*qfn1(fn))(qenv(fn), v0059);
     nil = C_nil;
-    if (exception_pending()) goto v19;
+    if (exception_pending()) goto v0061;
     env = stack[-2];
-    if (v51 == nil) goto v15;
-    v51 = stack[0];
-    fn = elt(env, 4); /* sfp */
-    v51 = (*qfn1(fn))(qenv(fn), v51);
+    v0059 = stack[0];
+    fn = elt(env, 4); /* prepf */
+    v0059 = (*qfn1(fn))(qenv(fn), v0059);
     nil = C_nil;
-    if (exception_pending()) goto v19;
-    env = stack[-2];
-    if (v51 == nil) goto v15;
-    v51 = stack[-1];
-    fn = elt(env, 5); /* prepf */
-    stack[-1] = (*qfn1(fn))(qenv(fn), v51);
-    nil = C_nil;
-    if (exception_pending()) goto v19;
-    env = stack[-2];
-    v51 = stack[0];
-    fn = elt(env, 5); /* prepf */
-    v51 = (*qfn1(fn))(qenv(fn), v51);
-    nil = C_nil;
-    if (exception_pending()) goto v19;
+    if (exception_pending()) goto v0061;
     env = stack[-2];
     {
-        Lisp_Object v20 = stack[-1];
+        Lisp_Object v0063 = stack[-1];
         popv(3);
         fn = elt(env, 3); /* mchk */
-        return (*qfn2(fn))(qenv(fn), v20, v51);
+        return (*qfn2(fn))(qenv(fn), v0063, v0059);
     }
 
-v15:
-    v51 = qvalue(elt(env, 2)); /* nil */
-    { popv(3); return onevalue(v51); }
+v0014:
+    v0059 = qvalue(elt(env, 2)); /* nil */
+    { popv(3); return onevalue(v0059); }
+
+v0036:
+    v0059 = qvalue(elt(env, 2)); /* nil */
+    goto v0062;
+
+v0016:
+    v0059 = qvalue(elt(env, 2)); /* nil */
+    goto v0062;
+
+v0054:
+    v0059 = qvalue(elt(env, 2)); /* nil */
+    goto v0021;
 /* error exit handlers */
-v19:
+v0061:
     popv(3);
     return nil;
 }
 
 
 
-/* Code for dlesslex */
+/* Code for prepf */
 
-static Lisp_Object CC_dlesslex(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_prepf(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v68, v51, v52, v17;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for dlesslex");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v51 = v10;
-    v52 = v0;
-/* end of prologue */
-
-v4:
-    v68 = v52;
-    if (v68 == nil) goto v5;
-    v68 = v52;
-    v17 = qcar(v68);
-    v68 = v51;
-    v68 = qcar(v68);
-    if (((int32_t)(v17)) > ((int32_t)(v68))) goto v1;
-    v68 = v52;
-    v17 = qcar(v68);
-    v68 = v51;
-    v68 = qcar(v68);
-    if (((int32_t)(v17)) < ((int32_t)(v68))) goto v50;
-    v68 = v52;
-    v68 = qcdr(v68);
-    v52 = v68;
-    v68 = v51;
-    v68 = qcdr(v68);
-    v51 = v68;
-    goto v4;
-
-v50:
-    v68 = qvalue(elt(env, 2)); /* t */
-    return onevalue(v68);
-
-v1:
-    v68 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v68);
-
-v5:
-    v68 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v68);
-}
-
-
-
-/* Code for pappl */
-
-static Lisp_Object CC_pappl(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v43, v56;
+    Lisp_Object v0004, v0038;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for pappl");
+    if (check_env(env)) return aerror("env for prepf");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push5(nil, nil, nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[-2] = v10;
-    stack[-3] = v0;
-/* end of prologue */
-    stack[-4] = nil;
-    v43 = stack[-3];
-    fn = elt(env, 2); /* unpkp */
-    v43 = (*qfn1(fn))(qenv(fn), v43);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    env = stack[-5];
-    stack[-3] = v43;
-    goto v2;
-
-v2:
-    v43 = stack[-3];
-    if (v43 == nil) goto v1;
-    v43 = stack[-2];
-    stack[-1] = v43;
-    v43 = (Lisp_Object)17; /* 1 */
-    stack[0] = v43;
-    goto v25;
-
-v25:
-    v43 = stack[-3];
-    v43 = qcar(v43);
-    v56 = sub1(v43);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    env = stack[-5];
-    v43 = stack[0];
-    v43 = difference2(v56, v43);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    env = stack[-5];
-    v43 = Lminusp(nil, v43);
-    env = stack[-5];
-    if (v43 == nil) goto v33;
-    v43 = stack[-1];
-    v56 = qcar(v43);
-    v43 = stack[-4];
-    v43 = cons(v56, v43);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    env = stack[-5];
-    stack[-4] = v43;
-    v43 = stack[-3];
-    v43 = qcdr(v43);
-    stack[-3] = v43;
-    goto v2;
-
-v33:
-    v43 = stack[-1];
-    v43 = qcdr(v43);
-    stack[-1] = v43;
-    v43 = stack[0];
-    v43 = add1(v43);
-    nil = C_nil;
-    if (exception_pending()) goto v61;
-    env = stack[-5];
-    stack[0] = v43;
-    goto v25;
-
-v1:
-    v43 = stack[-4];
-        popv(6);
-        return Lnreverse(nil, v43);
-/* error exit handlers */
-v61:
-    popv(6);
-    return nil;
-}
-
-
-
-/* Code for adjoin!-term */
-
-static Lisp_Object MS_CDECL CC_adjoinKterm(Lisp_Object env, int nargs,
-                         Lisp_Object v0, Lisp_Object v10,
-                         Lisp_Object v34, ...)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v46, v50, v31, v32;
-    CSL_IGNORE(nil);
-    argcheck(nargs, 3, "adjoin-term");
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for adjoin-term");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v46 = v34;
-    v50 = v10;
-    v31 = v0;
-/* end of prologue */
-    v32 = v50;
-    if (v32 == nil) return onevalue(v46);
-    return acons(v31, v50, v46);
-}
-
-
-
-/* Code for modzerop!: */
-
-static Lisp_Object CC_modzeropT(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v8, v1;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for modzerop:");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v8 = v0;
-/* end of prologue */
-    v1 = qcdr(v8);
-    v8 = (Lisp_Object)1; /* 0 */
-    v8 = (v1 == v8 ? lisp_true : nil);
-    return onevalue(v8);
-}
-
-
-
-/* Code for reorder */
-
-static Lisp_Object CC_reorder(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v81, v86;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for reorder");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push3(nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[-1] = v0;
-/* end of prologue */
-    stack[-2] = nil;
-    goto v22;
-
-v22:
-    v81 = stack[-1];
-    if (!consp(v81)) goto v49;
-    v81 = stack[-1];
-    v81 = qcar(v81);
-    if (!consp(v81)) goto v49;
-    v81 = stack[-1];
-    v81 = qcar(v81);
-    stack[0] = qcar(v81);
-    v81 = stack[-1];
-    v81 = qcar(v81);
-    v81 = qcdr(v81);
-    v81 = CC_reorder(env, v81);
-    nil = C_nil;
-    if (exception_pending()) goto v59;
-    env = stack[-3];
-    fn = elt(env, 1); /* rmultpf */
-    v86 = (*qfn2(fn))(qenv(fn), stack[0], v81);
-    nil = C_nil;
-    if (exception_pending()) goto v59;
-    env = stack[-3];
-    v81 = stack[-2];
-    v81 = cons(v86, v81);
-    nil = C_nil;
-    if (exception_pending()) goto v59;
-    env = stack[-3];
-    stack[-2] = v81;
-    v81 = stack[-1];
-    v81 = qcdr(v81);
-    stack[-1] = v81;
-    goto v22;
-
-v49:
-    v81 = stack[-1];
-    v86 = v81;
-    goto v5;
-
-v5:
-    v81 = stack[-2];
-    if (v81 == nil) { popv(4); return onevalue(v86); }
-    v81 = stack[-2];
-    v81 = qcar(v81);
-    fn = elt(env, 2); /* raddf */
-    v81 = (*qfn2(fn))(qenv(fn), v81, v86);
-    nil = C_nil;
-    if (exception_pending()) goto v59;
-    env = stack[-3];
-    v86 = v81;
-    v81 = stack[-2];
-    v81 = qcdr(v81);
-    stack[-2] = v81;
-    goto v5;
-/* error exit handlers */
-v59:
-    popv(4);
-    return nil;
-}
-
-
-
-/* Code for noncomp1 */
-
-static Lisp_Object CC_noncomp1(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v82, v11, v57;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for noncomp1");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* copy arguments values to proper place */
-    v11 = v0;
+    v0004 = v0000;
 /* end of prologue */
-    v82 = v11;
-    v82 = Lconsp(nil, v82);
-    env = stack[0];
-    if (v82 == nil) goto v3;
-    v82 = v11;
-    v82 = qcar(v82);
-    v82 = Lconsp(nil, v82);
-    env = stack[0];
-    if (v82 == nil) goto v29;
-    v82 = v11;
-    {
-        popv(1);
-        fn = elt(env, 3); /* noncomfp */
-        return (*qfn1(fn))(qenv(fn), v82);
-    }
-
-v29:
-    v82 = v11;
-    v57 = qcar(v82);
-    v82 = elt(env, 2); /* taylor!* */
-    if (v57 == v82) goto v27;
-    v82 = v11;
-    v82 = qcar(v82);
-    if (!symbolp(v82)) v82 = nil;
-    else { v82 = qfastgets(v82);
-           if (v82 != nil) { v82 = elt(v82, 0); /* noncom */
-#ifdef RECORD_GET
-             if (v82 == SPID_NOPROP)
-                record_get(elt(fastget_names, 0), 0),
-                v82 = nil;
-             else record_get(elt(fastget_names, 0), 1),
-                v82 = lisp_true; }
-           else record_get(elt(fastget_names, 0), 0); }
-#else
-             if (v82 == SPID_NOPROP) v82 = nil; else v82 = lisp_true; }}
-#endif
-    if (!(v82 == nil)) { popv(1); return onevalue(v82); }
-    v82 = v11;
-    v82 = qcdr(v82);
-    {
-        popv(1);
-        fn = elt(env, 4); /* noncomlistp */
-        return (*qfn1(fn))(qenv(fn), v82);
-    }
-
-v27:
-    v82 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v82); }
-
-v3:
-    v82 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v82); }
-}
-
-
-
-/* Code for subs3f */
-
-static Lisp_Object CC_subs3f(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v2, v23, v26;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for subs3f");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v2 = v0;
-/* end of prologue */
-    v26 = v2;
-    v23 = qvalue(elt(env, 1)); /* !*match */
-    v2 = qvalue(elt(env, 2)); /* t */
-    {
-        fn = elt(env, 3); /* subs3f1 */
-        return (*qfnn(fn))(qenv(fn), 3, v26, v23, v2);
-    }
-}
-
-
-
-/* Code for tayexp!-lessp */
-
-static Lisp_Object CC_tayexpKlessp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v14, v48, v25;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for tayexp-lessp");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v48 = v10;
-    v25 = v0;
-/* end of prologue */
-    v14 = v25;
-    if (!(!consp(v14))) goto v46;
-    v14 = v48;
-    if (!(!consp(v14))) goto v46;
-    v14 = v25;
-        popv(1);
-        return Llessp(nil, v14, v48);
-
-v46:
-    v14 = v25;
-    fn = elt(env, 1); /* tayexp!-difference */
-    v14 = (*qfn2(fn))(qenv(fn), v14, v48);
+    v0038 = v0004;
+    v0004 = qvalue(elt(env, 1)); /* nil */
+    fn = elt(env, 2); /* prepf1a */
+    v0004 = (*qfn2(fn))(qenv(fn), v0038, v0004);
     nil = C_nil;
-    if (exception_pending()) goto v35;
+    if (exception_pending()) goto v0039;
     env = stack[0];
     {
         popv(1);
-        fn = elt(env, 2); /* !:minusp */
-        return (*qfn1(fn))(qenv(fn), v14);
+        fn = elt(env, 3); /* replus1 */
+        return (*qfn1(fn))(qenv(fn), v0004);
     }
 /* error exit handlers */
-v35:
+v0039:
     popv(1);
     return nil;
 }
@@ -5374,11 +3128,11 @@ v35:
 /* Code for get!+mat!+entry */
 
 static Lisp_Object MS_CDECL CC_getLmatLentry(Lisp_Object env, int nargs,
-                         Lisp_Object v0, Lisp_Object v10,
-                         Lisp_Object v34, ...)
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, ...)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v24, v30;
+    Lisp_Object v0044, v0026;
     Lisp_Object fn;
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "get+mat+entry");
@@ -5387,9 +3141,9 @@ static Lisp_Object MS_CDECL CC_getLmatLentry(Lisp_Object env, int nargs,
 #endif
     if (stack >= stacklimit)
     {
-        push3(v34,v10,v0);
+        push3(v0053,v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop3(v0,v10,v34);
+        pop3(v0000,v0029,v0053);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -5397,82 +3151,353 @@ static Lisp_Object MS_CDECL CC_getLmatLentry(Lisp_Object env, int nargs,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    stack[0] = v34;
-    v24 = v10;
-    v30 = v0;
+    stack[0] = v0053;
+    v0044 = v0029;
+    v0026 = v0000;
 /* end of prologue */
-    fn = elt(env, 1); /* nth */
-    v30 = (*qfn2(fn))(qenv(fn), v30, v24);
+    fn = elt(env, 1); /* pnth */
+    v0044 = (*qfn2(fn))(qenv(fn), v0026, v0044);
     nil = C_nil;
-    if (exception_pending()) goto v50;
+    if (exception_pending()) goto v0064;
     env = stack[-1];
-    v24 = stack[0];
-    {
-        popv(2);
-        fn = elt(env, 1); /* nth */
-        return (*qfn2(fn))(qenv(fn), v30, v24);
-    }
+    v0026 = qcar(v0044);
+    v0044 = stack[0];
+    fn = elt(env, 1); /* pnth */
+    v0044 = (*qfn2(fn))(qenv(fn), v0026, v0044);
+    nil = C_nil;
+    if (exception_pending()) goto v0064;
+    v0044 = qcar(v0044);
+    { popv(2); return onevalue(v0044); }
 /* error exit handlers */
-v50:
+v0064:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for butes */
+/* Code for minusf */
 
-static Lisp_Object CC_butes(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_minusf(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v68, v51, v52;
+    Lisp_Object v0057, v0032, v0033;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for butes");
+    if (check_env(env)) return aerror("env for minusf");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     CSL_IGNORE(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
 /* copy arguments values to proper place */
-    v52 = v0;
+    v0032 = v0000;
 /* end of prologue */
-    v68 = v52;
-    v68 = qcar(v68);
-    qvalue(elt(env, 1)) = v68; /* cha */
-    v51 = qvalue(elt(env, 1)); /* cha */
-    v68 = elt(env, 2); /* !  */
-    if (v51 == v68) goto v6;
-    v51 = qvalue(elt(env, 1)); /* cha */
-    v68 = elt(env, 3); /* !$ */
-    if (v51 == v68) goto v6;
-    v68 = v52;
-    stack[0] = qcar(v68);
-    v68 = v52;
-    v68 = qcdr(v68);
-    v68 = CC_butes(env, v68);
-    nil = C_nil;
-    if (exception_pending()) goto v18;
+
+v0013:
+    v0057 = v0032;
+    if (v0057 == nil) goto v0008;
+    v0057 = v0032;
+    if (!consp(v0057)) goto v0041;
+    v0057 = v0032;
+    v0057 = qcar(v0057);
+    v0057 = (consp(v0057) ? nil : lisp_true);
+    goto v0040;
+
+v0040:
+    if (v0057 == nil) goto v0045;
+    v0057 = v0032;
+    if (!consp(v0057)) goto v0031;
+    v0057 = v0032;
+    v0033 = qcar(v0057);
+    v0057 = elt(env, 3); /* minusp */
+    v0057 = get(v0033, v0057);
+        return Lapply1(nil, v0057, v0032);
+
+v0031:
+    v0057 = (Lisp_Object)1; /* 0 */
+        return Llessp(nil, v0032, v0057);
+
+v0045:
+    v0057 = v0032;
+    v0057 = qcar(v0057);
+    v0057 = qcdr(v0057);
+    v0032 = v0057;
+    goto v0013;
+
+v0041:
+    v0057 = qvalue(elt(env, 2)); /* t */
+    goto v0040;
+
+v0008:
+    v0057 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0057);
+}
+
+
+
+/* Code for qqe_rqopp */
+
+static Lisp_Object CC_qqe_rqopp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0003, v0004;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for qqe_rqopp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0003 = v0000;
+/* end of prologue */
+    v0004 = elt(env, 1); /* (qequal qneq) */
+    v0003 = Lmemq(nil, v0003, v0004);
+    return onevalue(v0003);
+}
+
+
+
+/* Code for kernels1 */
+
+static Lisp_Object CC_kernels1(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0067, v0059, v0060, v0068;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for kernels1");
+#endif
+    if (stack >= stacklimit)
     {
-        Lisp_Object v19 = stack[0];
-        popv(1);
-        return cons(v19, v68);
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push3(nil, nil, nil);
+/* copy arguments values to proper place */
+    v0060 = v0029;
+    v0067 = v0000;
+/* end of prologue */
+
+v0007:
+    v0059 = v0067;
+    if (!consp(v0059)) goto v0002;
+    v0059 = v0067;
+    v0059 = qcar(v0059);
+    v0059 = (consp(v0059) ? nil : lisp_true);
+    goto v0001;
+
+v0001:
+    if (!(v0059 == nil)) { popv(4); return onevalue(v0060); }
+    v0059 = v0067;
+    v0059 = qcar(v0059);
+    v0059 = qcar(v0059);
+    v0059 = qcar(v0059);
+    v0068 = v0059;
+    v0059 = v0067;
+    v0059 = qcar(v0059);
+    stack[-2] = qcdr(v0059);
+    stack[-1] = qcdr(v0067);
+    v0059 = v0068;
+    v0067 = v0060;
+    v0067 = Lmemq(nil, v0059, v0067);
+    if (v0067 == nil) goto v0028;
+    v0067 = v0060;
+    goto v0048;
+
+v0048:
+    v0059 = CC_kernels1(env, stack[-1], v0067);
+    nil = C_nil;
+    if (exception_pending()) goto v0069;
+    env = stack[-3];
+    v0067 = stack[-2];
+    v0060 = v0059;
+    goto v0007;
+
+v0028:
+    stack[0] = v0060;
+    v0067 = v0068;
+    v0067 = ncons(v0067);
+    nil = C_nil;
+    if (exception_pending()) goto v0069;
+    env = stack[-3];
+    v0067 = Lappend(nil, stack[0], v0067);
+    nil = C_nil;
+    if (exception_pending()) goto v0069;
+    env = stack[-3];
+    goto v0048;
+
+v0002:
+    v0059 = qvalue(elt(env, 1)); /* t */
+    goto v0001;
+/* error exit handlers */
+v0069:
+    popv(4);
+    return nil;
+}
+
+
+
+/* Code for ibalp_clmember */
+
+static Lisp_Object CC_ibalp_clmember(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0031, v0030;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for ibalp_clmember");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0029;
+    stack[-1] = v0000;
+/* end of prologue */
+
+v0007:
+    v0031 = stack[0];
+    if (v0031 == nil) goto v0034;
+    v0030 = stack[-1];
+    v0031 = stack[0];
+    v0031 = qcar(v0031);
+    fn = elt(env, 2); /* ibalp_cequal */
+    v0031 = (*qfn2(fn))(qenv(fn), v0030, v0031);
+    nil = C_nil;
+    if (exception_pending()) goto v0056;
+    env = stack[-2];
+    if (!(v0031 == nil)) { popv(3); return onevalue(v0031); }
+    v0030 = stack[-1];
+    v0031 = stack[0];
+    v0031 = qcdr(v0031);
+    stack[-1] = v0030;
+    stack[0] = v0031;
+    goto v0007;
+
+v0034:
+    v0031 = qvalue(elt(env, 1)); /* nil */
+    { popv(3); return onevalue(v0031); }
+/* error exit handlers */
+v0056:
+    popv(3);
+    return nil;
+}
+
+
+
+/* Code for adjoin!-term */
+
+static Lisp_Object MS_CDECL CC_adjoinKterm(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, ...)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0044, v0026, v0062, v0064;
+    CSL_IGNORE(nil);
+    argcheck(nargs, 3, "adjoin-term");
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for adjoin-term");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0044 = v0053;
+    v0026 = v0029;
+    v0062 = v0000;
+/* end of prologue */
+    v0064 = v0026;
+    if (v0064 == nil) return onevalue(v0044);
+    return acons(v0062, v0026, v0044);
+}
+
+
+
+/* Code for delall */
+
+static Lisp_Object CC_delall(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0071, v0065;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for delall");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push3(nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0029;
+    stack[-1] = v0000;
+/* end of prologue */
+
+v0034:
+    v0071 = stack[0];
+    if (v0071 == nil) goto v0001;
+    v0065 = stack[-1];
+    v0071 = stack[0];
+    v0071 = qcar(v0071);
+    if (equal(v0065, v0071)) goto v0038;
+    v0071 = stack[0];
+    v0071 = qcar(v0071);
+    stack[-2] = ncons(v0071);
+    nil = C_nil;
+    if (exception_pending()) goto v0036;
+    env = stack[-3];
+    v0065 = stack[-1];
+    v0071 = stack[0];
+    v0071 = qcdr(v0071);
+    v0071 = CC_delall(env, v0065, v0071);
+    nil = C_nil;
+    if (exception_pending()) goto v0036;
+    {
+        Lisp_Object v0055 = stack[-2];
+        popv(4);
+        return Lappend(nil, v0055, v0071);
     }
 
-v6:
-    v68 = qvalue(elt(env, 4)); /* nil */
-    { popv(1); return onevalue(v68); }
+v0038:
+    v0071 = stack[0];
+    v0071 = qcdr(v0071);
+    stack[0] = v0071;
+    goto v0034;
+
+v0001:
+    v0071 = qvalue(elt(env, 1)); /* nil */
+    { popv(4); return onevalue(v0071); }
 /* error exit handlers */
-v18:
-    popv(1);
+v0036:
+    popv(4);
     return nil;
 }
 
@@ -5481,10 +3506,10 @@ v18:
 /* Code for noncomfp1 */
 
 static Lisp_Object CC_noncomfp1(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v14;
+    Lisp_Object v0006;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
@@ -5492,9 +3517,9 @@ static Lisp_Object CC_noncomfp1(Lisp_Object env,
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -5502,142 +3527,203 @@ static Lisp_Object CC_noncomfp1(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    stack[0] = v0000;
 /* end of prologue */
 
-v45:
-    v14 = stack[0];
-    if (!consp(v14)) goto v3;
-    v14 = stack[0];
-    v14 = qcar(v14);
-    if (!consp(v14)) goto v3;
-    v14 = stack[0];
-    v14 = qcar(v14);
-    v14 = qcar(v14);
-    v14 = qcar(v14);
-    fn = elt(env, 2); /* noncomp */
-    v14 = (*qfn1(fn))(qenv(fn), v14);
-    nil = C_nil;
-    if (exception_pending()) goto v25;
-    env = stack[-1];
-    if (!(v14 == nil)) { popv(2); return onevalue(v14); }
-    v14 = stack[0];
-    v14 = qcar(v14);
-    v14 = qcdr(v14);
-    v14 = CC_noncomfp1(env, v14);
-    nil = C_nil;
-    if (exception_pending()) goto v25;
-    env = stack[-1];
-    if (!(v14 == nil)) { popv(2); return onevalue(v14); }
-    v14 = stack[0];
-    v14 = qcdr(v14);
-    stack[0] = v14;
-    goto v45;
+v0007:
+    v0006 = stack[0];
+    if (!consp(v0006)) goto v0001;
+    v0006 = stack[0];
+    v0006 = qcar(v0006);
+    v0006 = (consp(v0006) ? nil : lisp_true);
+    goto v0008;
 
-v3:
-    v14 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v14); }
+v0008:
+    if (v0006 == nil) goto v0013;
+    v0006 = qvalue(elt(env, 3)); /* nil */
+    { popv(2); return onevalue(v0006); }
+
+v0013:
+    v0006 = qvalue(elt(env, 2)); /* !*ncmp */
+    if (v0006 == nil) goto v0010;
+    v0006 = stack[0];
+    v0006 = qcar(v0006);
+    v0006 = qcar(v0006);
+    v0006 = qcar(v0006);
+    fn = elt(env, 4); /* noncomp1 */
+    v0006 = (*qfn1(fn))(qenv(fn), v0006);
+    nil = C_nil;
+    if (exception_pending()) goto v0011;
+    env = stack[-1];
+    goto v0015;
+
+v0015:
+    if (!(v0006 == nil)) { popv(2); return onevalue(v0006); }
+    v0006 = stack[0];
+    v0006 = qcar(v0006);
+    v0006 = qcdr(v0006);
+    v0006 = CC_noncomfp1(env, v0006);
+    nil = C_nil;
+    if (exception_pending()) goto v0011;
+    env = stack[-1];
+    if (!(v0006 == nil)) { popv(2); return onevalue(v0006); }
+    v0006 = stack[0];
+    v0006 = qcdr(v0006);
+    stack[0] = v0006;
+    goto v0007;
+
+v0010:
+    v0006 = qvalue(elt(env, 3)); /* nil */
+    goto v0015;
+
+v0001:
+    v0006 = qvalue(elt(env, 1)); /* t */
+    goto v0008;
 /* error exit handlers */
-v25:
+v0011:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for scprint */
+/* Code for ordop */
 
-static Lisp_Object CC_scprint(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_ordop(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v61, v62;
+    Lisp_Object v0065, v0006, v0072, v0011, v0036;
+    Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for scprint");
+    if (check_env(env)) return aerror("env for ordop");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0011 = v0029;
+    v0036 = v0000;
+/* end of prologue */
+    v0065 = qvalue(elt(env, 1)); /* kord!* */
+    v0072 = v0065;
+    goto v0005;
+
+v0005:
+    v0065 = v0072;
+    if (v0065 == nil) goto v0040;
+    v0006 = v0036;
+    v0065 = v0072;
+    v0065 = qcar(v0065);
+    if (v0006 == v0065) goto v0015;
+    v0006 = v0011;
+    v0065 = v0072;
+    v0065 = qcar(v0065);
+    if (v0006 == v0065) goto v0031;
+    v0065 = v0072;
+    v0065 = qcdr(v0065);
+    v0072 = v0065;
+    goto v0005;
+
+v0031:
+    v0065 = qvalue(elt(env, 3)); /* nil */
+    return onevalue(v0065);
+
+v0015:
+    v0065 = qvalue(elt(env, 2)); /* t */
+    return onevalue(v0065);
+
+v0040:
+    v0065 = v0036;
+    v0006 = v0011;
+    {
+        fn = elt(env, 4); /* ordp */
+        return (*qfn2(fn))(qenv(fn), v0065, v0006);
+    }
+}
+
+
+
+/* Code for ps!:getv */
+
+static Lisp_Object CC_psTgetv(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0037, v0066, v0058;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for ps:getv");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* space for vars preserved across procedure calls */
-    push4(nil, nil, nil, nil);
+    push(nil);
 /* copy arguments values to proper place */
-    stack[-2] = v10;
-    v62 = v0;
+    stack[0] = v0029;
+    v0058 = v0000;
 /* end of prologue */
-    v61 = (Lisp_Object)1; /* 0 */
-    qvalue(elt(env, 1)) = v61; /* posn!* */
-    v61 = v62;
-    stack[-1] = v61;
-    goto v7;
+    v0066 = v0058;
+    v0037 = elt(env, 1); /* !:ps!: */
+    if (!consp(v0066)) goto v0065;
+    v0066 = qcar(v0066);
+    if (!(v0066 == v0037)) goto v0065;
+    v0037 = v0058;
+    v0037 = qcdr(v0037);
+    if (symbolp(v0037)) goto v0015;
+    v0037 = v0058;
+    v0066 = qcdr(v0037);
+    v0037 = stack[0];
+    v0037 = *(Lisp_Object *)((char *)v0066 + (CELL-TAG_VECTOR) + ((int32_t)v0037/(16/CELL)));
+    { popv(2); return onevalue(v0037); }
 
-v7:
-    v61 = stack[-1];
-    if (v61 == nil) goto v6;
-    v61 = stack[-1];
-    v61 = qcar(v61);
-    stack[0] = v61;
-    v61 = stack[0];
-    v61 = qcar(v61);
-    v62 = qcdr(v61);
-    v61 = stack[-2];
-    if (!(equal(v62, v61))) goto v30;
-    v61 = stack[0];
-    v61 = qcar(v61);
-    v61 = qcar(v61);
-    v62 = qcar(v61);
-    v61 = qvalue(elt(env, 1)); /* posn!* */
-    v62 = difference2(v62, v61);
+v0015:
+    v0037 = v0058;
+    v0037 = qcdr(v0037);
+    fn = elt(env, 5); /* eval */
+    v0066 = (*qfn1(fn))(qenv(fn), v0037);
     nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-4];
-    stack[-3] = v62;
-    v61 = (Lisp_Object)1; /* 0 */
-    v61 = (Lisp_Object)lessp2(v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    v61 = v61 ? lisp_true : nil;
-    env = stack[-4];
-    if (!(v61 == nil)) goto v44;
-    v61 = stack[-3];
-    v61 = Lxtab(nil, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-4];
-    goto v44;
+    if (exception_pending()) goto v0059;
+    v0037 = stack[0];
+    v0037 = *(Lisp_Object *)((char *)v0066 + (CELL-TAG_VECTOR) + ((int32_t)v0037/(16/CELL)));
+    { popv(2); return onevalue(v0037); }
 
-v44:
-    v61 = stack[0];
-    v61 = qcdr(v61);
-    v61 = Lprinc(nil, v61);
+v0065:
+    v0037 = elt(env, 2); /* "PS:GETV: not a ps" */
+    v0066 = v0058;
+    v0037 = list2(v0037, v0066);
     nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-4];
-    v61 = stack[0];
-    v61 = qcar(v61);
-    v61 = qcar(v61);
-    v61 = qcdr(v61);
-    qvalue(elt(env, 1)) = v61; /* posn!* */
-    goto v30;
+    if (exception_pending()) goto v0059;
+    env = stack[-1];
+    v0066 = v0037;
+    v0037 = v0066;
+    qvalue(elt(env, 3)) = v0037; /* errmsg!* */
+    v0037 = qvalue(elt(env, 4)); /* !*protfg */
+    if (!(v0037 == nil)) goto v0046;
+    v0037 = v0066;
+    fn = elt(env, 6); /* lprie */
+    v0037 = (*qfn1(fn))(qenv(fn), v0037);
+    nil = C_nil;
+    if (exception_pending()) goto v0059;
+    env = stack[-1];
+    goto v0046;
 
-v30:
-    v61 = stack[-1];
-    v61 = qcdr(v61);
-    stack[-1] = v61;
-    goto v7;
-
-v6:
-    v61 = nil;
-    { popv(5); return onevalue(v61); }
+v0046:
+    v0037 = Lerror0(nil, 0);
+    nil = C_nil;
+    if (exception_pending()) goto v0059;
+    v0037 = nil;
+    { popv(2); return onevalue(v0037); }
 /* error exit handlers */
-v67:
-    popv(5);
+v0059:
+    popv(2);
     return nil;
 }
 
@@ -5646,10 +3732,10 @@ v67:
 /* Code for ldepends */
 
 static Lisp_Object CC_ldepends(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v51, v52;
+    Lisp_Object v0049, v0071;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
@@ -5657,9 +3743,9 @@ static Lisp_Object CC_ldepends(Lisp_Object env,
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -5667,180 +3753,910 @@ static Lisp_Object CC_ldepends(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0029;
+    stack[-1] = v0000;
 /* end of prologue */
 
-v45:
-    v51 = stack[-1];
-    if (v51 == nil) goto v4;
-    v51 = stack[-1];
-    if (!consp(v51)) goto v2;
-    v51 = stack[-1];
-    v52 = qcar(v51);
-    v51 = stack[0];
+v0007:
+    v0049 = stack[-1];
+    if (v0049 == nil) goto v0034;
+    v0049 = stack[-1];
+    if (!consp(v0049)) goto v0039;
+    v0049 = stack[-1];
+    v0071 = qcar(v0049);
+    v0049 = stack[0];
     fn = elt(env, 2); /* depends */
-    v51 = (*qfn2(fn))(qenv(fn), v52, v51);
+    v0049 = (*qfn2(fn))(qenv(fn), v0071, v0049);
     nil = C_nil;
-    if (exception_pending()) goto v19;
+    if (exception_pending()) goto v0072;
     env = stack[-2];
-    if (!(v51 == nil)) { popv(3); return onevalue(v51); }
-    v51 = stack[-1];
-    v52 = qcdr(v51);
-    v51 = stack[0];
-    stack[-1] = v52;
-    stack[0] = v51;
-    goto v45;
+    if (!(v0049 == nil)) { popv(3); return onevalue(v0049); }
+    v0049 = stack[-1];
+    v0071 = qcdr(v0049);
+    v0049 = stack[0];
+    stack[-1] = v0071;
+    stack[0] = v0049;
+    goto v0007;
 
-v2:
-    v52 = stack[-1];
-    v51 = stack[0];
+v0039:
+    v0071 = stack[-1];
+    v0049 = stack[0];
     {
         popv(3);
         fn = elt(env, 2); /* depends */
-        return (*qfn2(fn))(qenv(fn), v52, v51);
+        return (*qfn2(fn))(qenv(fn), v0071, v0049);
     }
 
-v4:
-    v51 = qvalue(elt(env, 1)); /* nil */
-    { popv(3); return onevalue(v51); }
+v0034:
+    v0049 = qvalue(elt(env, 1)); /* nil */
+    { popv(3); return onevalue(v0049); }
 /* error exit handlers */
-v19:
+v0072:
     popv(3);
     return nil;
 }
 
 
 
-/* Code for numlis */
+/* Code for c!:ordxp */
 
-static Lisp_Object CC_numlis(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_cTordxp(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v15, v16;
+    Lisp_Object v0049, v0071, v0065;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for numlis");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v15 = v0;
-/* end of prologue */
-
-v45:
-    v16 = v15;
-    v16 = (v16 == nil ? lisp_true : nil);
-    if (!(v16 == nil)) return onevalue(v16);
-    v16 = v15;
-    v16 = qcar(v16);
-    if (is_number(v16)) goto v23;
-    v15 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v15);
-
-v23:
-    v15 = qcdr(v15);
-    goto v45;
-}
-
-
-
-/* Code for !:minusp */
-
-static Lisp_Object CC_Tminusp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v33, v13, v47;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for :minusp");
+    if (check_env(env)) return aerror("env for c:ordxp");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v47 = v0;
-/* end of prologue */
-    v33 = v47;
-    if (!consp(v33)) goto v3;
-    v33 = v47;
-    v13 = qcar(v33);
-    v33 = elt(env, 1); /* minusp */
-    v33 = get(v13, v33);
-    v13 = v47;
-        return Lapply1(nil, v33, v13);
-
-v3:
-    v33 = v47;
-        return Lminusp(nil, v33);
-}
-
-
-
-/* Code for pm!:free */
-
-static Lisp_Object CC_pmTfree(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v8, v1;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for pm:free");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* copy arguments values to proper place */
-    v8 = v0;
+    v0049 = v0029;
+    v0071 = v0000;
 /* end of prologue */
-    fn = elt(env, 2); /* binding */
-    v8 = (*qfn1(fn))(qenv(fn), v8);
-    nil = C_nil;
-    if (exception_pending()) goto v2;
+    v0065 = v0071;
+    v0065 = Lconsp(nil, v0065);
     env = stack[0];
-    v1 = elt(env, 1); /* unbound */
-    v8 = (v8 == v1 ? lisp_true : nil);
-    { popv(1); return onevalue(v8); }
+    if (v0065 == nil) goto v0005;
+    v0065 = v0049;
+    v0065 = Lconsp(nil, v0065);
+    env = stack[0];
+    if (v0065 == nil) goto v0062;
+    v0071 = qcdr(v0071);
+    v0049 = qcdr(v0049);
+        popv(1);
+        return Llessp(nil, v0071, v0049);
+
+v0062:
+    v0049 = qvalue(elt(env, 1)); /* nil */
+    { popv(1); return onevalue(v0049); }
+
+v0005:
+    v0065 = v0049;
+    v0065 = Lconsp(nil, v0065);
+    env = stack[0];
+    if (v0065 == nil) goto v0048;
+    v0049 = qvalue(elt(env, 2)); /* t */
+    { popv(1); return onevalue(v0049); }
+
+v0048:
+        popv(1);
+        return Llessp(nil, v0071, v0049);
+}
+
+
+
+/* Code for zero2nil */
+
+static Lisp_Object CC_zero2nil(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0038;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for zero2nil");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    v0038 = stack[0];
+    fn = elt(env, 2); /* !:zerop */
+    v0038 = (*qfn1(fn))(qenv(fn), v0038);
+    nil = C_nil;
+    if (exception_pending()) goto v0040;
+    env = stack[-1];
+    if (v0038 == nil) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0038 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0038); }
 /* error exit handlers */
-v2:
-    popv(1);
+v0040:
+    popv(2);
     return nil;
 }
 
 
 
-/* Code for prepf1 */
+/* Code for binding */
 
-static Lisp_Object CC_prepf1(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_binding(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v90, v91;
-    Lisp_Object fn;
+    Lisp_Object v0009, v0014;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for prepf1");
+    if (check_env(env)) return aerror("env for binding");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0009 = v0000;
+/* end of prologue */
+    v0014 = v0009;
+    v0009 = elt(env, 0); /* binding */
+    v0009 = get(v0014, v0009);
+    v0014 = v0009;
+    v0009 = v0014;
+    if (v0009 == nil) goto v0040;
+    v0009 = v0014;
+    v0009 = qcar(v0009);
+    return onevalue(v0009);
+
+v0040:
+    v0009 = nil;
+    return onevalue(v0009);
+}
+
+
+
+/* Code for evcomp */
+
+static Lisp_Object CC_evcomp(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0009, v0014;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for evcomp");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0009 = v0029;
+    v0014 = v0000;
+/* end of prologue */
+    stack[0] = qvalue(elt(env, 1)); /* dipsortevcomp!* */
+    v0009 = list2(v0014, v0009);
+    nil = C_nil;
+    if (exception_pending()) goto v0015;
+    env = stack[-1];
+    {
+        Lisp_Object v0010 = stack[0];
+        popv(2);
+        fn = elt(env, 2); /* apply */
+        return (*qfn2(fn))(qenv(fn), v0010, v0009);
+    }
+/* error exit handlers */
+v0015:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for pnth */
+
+static Lisp_Object CC_pnth(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0043, v0019, v0018;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for pnth");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0019 = v0029;
+    stack[0] = v0000;
+/* end of prologue */
+
+v0034:
+    v0043 = stack[0];
+    if (v0043 == nil) goto v0001;
+    v0018 = v0019;
+    v0043 = (Lisp_Object)17; /* 1 */
+    if (v0018 == v0043) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0043 = stack[0];
+    v0043 = qcdr(v0043);
+    stack[0] = v0043;
+    v0043 = v0019;
+    v0043 = sub1(v0043);
+    nil = C_nil;
+    if (exception_pending()) goto v0071;
+    env = stack[-1];
+    v0019 = v0043;
+    goto v0034;
+
+v0001:
+    v0043 = elt(env, 1); /* "Index out of range" */
+    v0019 = v0043;
+    v0043 = v0019;
+    qvalue(elt(env, 2)) = v0043; /* errmsg!* */
+    v0043 = qvalue(elt(env, 3)); /* !*protfg */
+    if (!(v0043 == nil)) goto v0042;
+    v0043 = v0019;
+    fn = elt(env, 4); /* lprie */
+    v0043 = (*qfn1(fn))(qenv(fn), v0043);
+    nil = C_nil;
+    if (exception_pending()) goto v0071;
+    env = stack[-1];
+    goto v0042;
+
+v0042:
+    v0043 = Lerror0(nil, 0);
+    nil = C_nil;
+    if (exception_pending()) goto v0071;
+    v0043 = nil;
+    { popv(2); return onevalue(v0043); }
+/* error exit handlers */
+v0071:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for evmatrixcomp2 */
+
+static Lisp_Object MS_CDECL CC_evmatrixcomp2(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, ...)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0080, v0081, v0082, v0083;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+    argcheck(nargs, 3, "evmatrixcomp2");
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for evmatrixcomp2");
+#endif
+    if (stack >= stacklimit)
+    {
+        push3(v0053,v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop3(v0000,v0029,v0053);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push4(nil, nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0053;
+    stack[-1] = v0029;
+    stack[-2] = v0000;
+/* end of prologue */
+
+v0007:
+    v0080 = stack[-2];
+    if (v0080 == nil) goto v0003;
+    v0080 = stack[-1];
+    v0080 = (v0080 == nil ? lisp_true : nil);
+    goto v0002;
+
+v0002:
+    if (!(v0080 == nil)) { Lisp_Object res = stack[0]; popv(5); return onevalue(res); }
+    v0080 = stack[-1];
+    v0080 = qcar(v0080);
+    stack[-3] = v0080;
+    v0081 = stack[-3];
+    v0080 = (Lisp_Object)1; /* 0 */
+    v0080 = Leqn(nil, v0081, v0080);
+    nil = C_nil;
+    if (exception_pending()) goto v0084;
+    env = stack[-4];
+    if (v0080 == nil) goto v0016;
+    v0080 = stack[-2];
+    v0082 = qcdr(v0080);
+    v0080 = stack[-1];
+    v0081 = qcdr(v0080);
+    v0080 = stack[0];
+    stack[-2] = v0082;
+    stack[-1] = v0081;
+    stack[0] = v0080;
+    goto v0007;
+
+v0016:
+    v0081 = stack[-3];
+    v0080 = (Lisp_Object)17; /* 1 */
+    v0080 = Leqn(nil, v0081, v0080);
+    nil = C_nil;
+    if (exception_pending()) goto v0084;
+    env = stack[-4];
+    if (v0080 == nil) goto v0085;
+    v0080 = stack[-2];
+    v0083 = qcdr(v0080);
+    v0080 = stack[-1];
+    v0082 = qcdr(v0080);
+    v0081 = stack[0];
+    v0080 = stack[-2];
+    v0080 = qcar(v0080);
+    v0080 = (Lisp_Object)(int32_t)((int32_t)v0081 + (int32_t)v0080 - TAG_FIXNUM);
+    stack[-2] = v0083;
+    stack[-1] = v0082;
+    stack[0] = v0080;
+    goto v0007;
+
+v0085:
+    v0083 = stack[-2];
+    v0082 = stack[-3];
+    v0081 = stack[-1];
+    v0080 = stack[0];
+    {
+        popv(5);
+        fn = elt(env, 2); /* evmatrixcomp3 */
+        return (*qfnn(fn))(qenv(fn), 4, v0083, v0082, v0081, v0080);
+    }
+
+v0003:
+    v0080 = qvalue(elt(env, 1)); /* t */
+    goto v0002;
+/* error exit handlers */
+v0084:
+    popv(5);
+    return nil;
+}
+
+
+
+/* Code for xval */
+
+static Lisp_Object CC_xval(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0005;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for xval");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0005 = v0000;
+/* end of prologue */
+    v0005 = qcar(v0005);
+    v0005 = qcar(v0005);
+    {
+        fn = elt(env, 1); /* wedgefax */
+        return (*qfn1(fn))(qenv(fn), v0005);
+    }
+}
+
+
+
+/* Code for add_prin_char */
+
+static Lisp_Object CC_add_prin_char(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0068, v0087, v0061;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for add_prin_char");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0029;
+    stack[-1] = v0000;
+/* end of prologue */
+    v0068 = qvalue(elt(env, 1)); /* !*nat */
+    if (v0068 == nil) goto v0034;
+    v0061 = qvalue(elt(env, 3)); /* posn!* */
+    v0087 = stack[0];
+    v0068 = qvalue(elt(env, 4)); /* ycoord!* */
+    v0061 = acons(v0061, v0087, v0068);
+    nil = C_nil;
+    if (exception_pending()) goto v0088;
+    env = stack[-2];
+    v0087 = stack[-1];
+    v0068 = qvalue(elt(env, 5)); /* pline!* */
+    v0068 = acons(v0061, v0087, v0068);
+    nil = C_nil;
+    if (exception_pending()) goto v0088;
+    env = stack[-2];
+    qvalue(elt(env, 5)) = v0068; /* pline!* */
+    v0068 = stack[0];
+    qvalue(elt(env, 3)) = v0068; /* posn!* */
+    { popv(3); return onevalue(v0068); }
+
+v0034:
+    v0068 = stack[-1];
+    v0068 = Lstringp(nil, v0068);
+    env = stack[-2];
+    if (!(v0068 == nil)) goto v0003;
+    v0087 = stack[-1];
+    v0068 = elt(env, 2); /* switch!* */
+    v0068 = get(v0087, v0068);
+    env = stack[-2];
+    if (!(v0068 == nil)) goto v0003;
+    v0068 = stack[-1];
+    v0068 = Ldigitp(nil, v0068);
+    env = stack[-2];
+    if (!(v0068 == nil)) goto v0003;
+    v0068 = stack[-1];
+    v0068 = Lexplodec(nil, v0068);
+    nil = C_nil;
+    if (exception_pending()) goto v0088;
+    env = stack[-2];
+    v0087 = qcar(v0068);
+    v0068 = elt(env, 2); /* switch!* */
+    v0068 = get(v0087, v0068);
+    if (!(v0068 == nil)) goto v0003;
+    v0068 = stack[-1];
+        popv(3);
+        return Lprin(nil, v0068);
+
+v0003:
+    v0068 = stack[-1];
+        popv(3);
+        return Lprinc(nil, v0068);
+/* error exit handlers */
+v0088:
+    popv(3);
+    return nil;
+}
+
+
+
+/* Code for int!-equiv!-chk */
+
+static Lisp_Object CC_intKequivKchk(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0095, v0096, v0097;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for int-equiv-chk");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    v0095 = qvalue(elt(env, 1)); /* !*noequiv */
+    if (!(v0095 == nil)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0095 = stack[0];
+    if (!consp(v0095)) goto v0010;
+    v0095 = stack[0];
+    v0096 = qcar(v0095);
+    v0095 = elt(env, 3); /* zerop */
+    v0096 = get(v0096, v0095);
+    env = stack[-1];
+    v0095 = stack[0];
+    v0095 = Lapply1(nil, v0096, v0095);
+    nil = C_nil;
+    if (exception_pending()) goto v0098;
+    env = stack[-1];
+    if (v0095 == nil) goto v0032;
+    v0095 = qvalue(elt(env, 2)); /* nil */
+    { popv(2); return onevalue(v0095); }
+
+v0032:
+    v0095 = stack[0];
+    v0096 = qcar(v0095);
+    v0095 = elt(env, 4); /* onep */
+    v0096 = get(v0096, v0095);
+    env = stack[-1];
+    v0095 = stack[0];
+    v0095 = Lapply1(nil, v0096, v0095);
+    nil = C_nil;
+    if (exception_pending()) goto v0098;
+    env = stack[-1];
+    if (v0095 == nil) goto v0088;
+    v0095 = (Lisp_Object)17; /* 1 */
+    { popv(2); return onevalue(v0095); }
+
+v0088:
+    v0095 = stack[0];
+    v0096 = qcar(v0095);
+    v0095 = elt(env, 5); /* intequivfn */
+    v0095 = get(v0096, v0095);
+    env = stack[-1];
+    v0097 = v0095;
+    if (v0095 == nil) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0096 = v0097;
+    v0095 = stack[0];
+    v0095 = Lapply1(nil, v0096, v0095);
+    nil = C_nil;
+    if (exception_pending()) goto v0098;
+    env = stack[-1];
+    v0097 = v0095;
+    if (v0095 == nil) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0096 = v0097;
+    v0095 = (Lisp_Object)1; /* 0 */
+    if (!(v0096 == v0095)) { popv(2); return onevalue(v0097); }
+    v0095 = qvalue(elt(env, 2)); /* nil */
+    { popv(2); return onevalue(v0095); }
+
+v0010:
+    v0096 = stack[0];
+    v0095 = (Lisp_Object)1; /* 0 */
+    if (!(v0096 == v0095)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0095 = qvalue(elt(env, 2)); /* nil */
+    { popv(2); return onevalue(v0095); }
+/* error exit handlers */
+v0098:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for physopp */
+
+static Lisp_Object CC_physopp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0046, v0027;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for physopp");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* copy arguments values to proper place */
+    v0027 = v0000;
+/* end of prologue */
+    v0046 = v0027;
+    if (!consp(v0046)) goto v0013;
+    v0046 = v0027;
+    v0046 = qcar(v0046);
+    if (symbolp(v0046)) goto v0072;
+    v0046 = qvalue(elt(env, 1)); /* nil */
+    { popv(1); return onevalue(v0046); }
+
+v0072:
+    v0046 = v0027;
+    v0027 = qcar(v0046);
+    v0046 = elt(env, 2); /* rtype */
+    v0046 = get(v0027, v0046);
+    env = stack[0];
+    v0027 = elt(env, 3); /* physop */
+    v0046 = (v0046 == v0027 ? lisp_true : nil);
+    { popv(1); return onevalue(v0046); }
+
+v0013:
+    v0046 = v0027;
+    if (symbolp(v0046)) goto v0044;
+    v0046 = qvalue(elt(env, 1)); /* nil */
+    { popv(1); return onevalue(v0046); }
+
+v0044:
+    v0046 = elt(env, 2); /* rtype */
+    v0046 = get(v0027, v0046);
+    env = stack[0];
+    v0027 = elt(env, 3); /* physop */
+    v0046 = (v0046 == v0027 ? lisp_true : nil);
+    { popv(1); return onevalue(v0046); }
+}
+
+
+
+/* Code for memq_edgelist */
+
+static Lisp_Object CC_memq_edgelist(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0038, v0039;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for memq_edgelist");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0038 = v0029;
+    v0039 = v0000;
+/* end of prologue */
+    v0039 = qcar(v0039);
+    v0038 = Lassoc(nil, v0039, v0038);
+    return onevalue(v0038);
+}
+
+
+
+/* Code for termsf */
+
+static Lisp_Object CC_termsf(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0011, v0036;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for termsf");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    v0011 = (Lisp_Object)1; /* 0 */
+    v0036 = v0011;
+    goto v0001;
+
+v0001:
+    v0011 = stack[0];
+    if (!consp(v0011)) goto v0041;
+    v0011 = stack[0];
+    v0011 = qcar(v0011);
+    v0011 = (consp(v0011) ? nil : lisp_true);
+    goto v0040;
+
+v0040:
+    if (v0011 == nil) goto v0064;
+    v0011 = stack[0];
+    if (v0011 == nil) { popv(3); return onevalue(v0036); }
+    v0011 = v0036;
+    popv(3);
+    return add1(v0011);
+
+v0064:
+    stack[-1] = v0036;
+    v0011 = stack[0];
+    v0011 = qcar(v0011);
+    v0011 = qcdr(v0011);
+    v0011 = CC_termsf(env, v0011);
+    nil = C_nil;
+    if (exception_pending()) goto v0016;
+    env = stack[-2];
+    v0011 = plus2(stack[-1], v0011);
+    nil = C_nil;
+    if (exception_pending()) goto v0016;
+    env = stack[-2];
+    v0036 = v0011;
+    v0011 = stack[0];
+    v0011 = qcdr(v0011);
+    stack[0] = v0011;
+    goto v0001;
+
+v0041:
+    v0011 = qvalue(elt(env, 1)); /* t */
+    goto v0040;
+/* error exit handlers */
+v0016:
+    popv(3);
+    return nil;
+}
+
+
+
+/* Code for mkspm */
+
+static Lisp_Object CC_mkspm(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0046, v0027;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for mkspm");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0029;
+    stack[-1] = v0000;
+/* end of prologue */
+    v0027 = stack[0];
+    v0046 = (Lisp_Object)1; /* 0 */
+    if (v0027 == v0046) goto v0034;
+    v0046 = qvalue(elt(env, 1)); /* subfg!* */
+    if (v0046 == nil) goto v0015;
+    v0027 = stack[-1];
+    v0046 = qvalue(elt(env, 2)); /* asymplis!* */
+    v0046 = Latsoc(nil, v0027, v0046);
+    v0027 = v0046;
+    if (v0046 == nil) goto v0015;
+    v0046 = v0027;
+    v0027 = qcdr(v0046);
+    v0046 = stack[0];
+    v0046 = (Lisp_Object)lesseq2(v0027, v0046);
+    nil = C_nil;
+    if (exception_pending()) goto v0032;
+    v0046 = v0046 ? lisp_true : nil;
+    env = stack[-2];
+    if (v0046 == nil) goto v0015;
+    v0046 = qvalue(elt(env, 3)); /* nil */
+    { popv(3); return onevalue(v0046); }
+
+v0015:
+    v0046 = stack[-1];
+    fn = elt(env, 4); /* sub2chk */
+    v0046 = (*qfn1(fn))(qenv(fn), v0046);
+    nil = C_nil;
+    if (exception_pending()) goto v0032;
+    v0027 = stack[-1];
+    v0046 = stack[0];
+    popv(3);
+    return cons(v0027, v0046);
+
+v0034:
+    v0046 = (Lisp_Object)17; /* 1 */
+    { popv(3); return onevalue(v0046); }
+/* error exit handlers */
+v0032:
+    popv(3);
+    return nil;
+}
+
+
+
+/* Code for mo_comp */
+
+static Lisp_Object CC_mo_comp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0040, v0041;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for mo_comp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0040 = v0000;
+/* end of prologue */
+    v0041 = v0040;
+    v0041 = qcar(v0041);
+    if (v0041 == nil) goto v0013;
+    v0040 = qcar(v0040);
+    v0040 = qcar(v0040);
+    return onevalue(v0040);
+
+v0013:
+    v0040 = (Lisp_Object)1; /* 0 */
+    return onevalue(v0040);
+}
+
+
+
+/* Code for c_zero */
+
+static Lisp_Object MS_CDECL CC_c_zero(Lisp_Object env, int nargs, ...)
+{
+    Lisp_Object v0053;
+    argcheck(nargs, 0, "c_zero");
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for c_zero");
+#endif
+    CSL_IGNORE(env);
+/* end of prologue */
+    v0053 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0053);
+}
+
+
+
+/* Code for sieve_pv0 */
+
+static Lisp_Object MS_CDECL CC_sieve_pv0(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, ...)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0058, v0067, v0059;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+    argcheck(nargs, 3, "sieve_pv0");
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for sieve_pv0");
+#endif
+    if (stack >= stacklimit)
+    {
+        push3(v0053,v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop3(v0000,v0029,v0053);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -5848,180 +4664,137 @@ static Lisp_Object CC_prepf1(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push3(nil, nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0053;
+    stack[-1] = v0029;
+    stack[-2] = v0000;
 /* end of prologue */
-    v90 = stack[-1];
-    if (v90 == nil) goto v4;
-    v90 = stack[-1];
-    if (!consp(v90)) goto v15;
-    v90 = stack[-1];
-    v90 = qcar(v90);
-    if (!consp(v90)) goto v15;
-    v90 = stack[-1];
-    v90 = qcar(v90);
-    stack[-2] = qcdr(v90);
-    v90 = stack[-1];
-    v90 = qcar(v90);
-    v90 = qcar(v90);
-    v91 = qcar(v90);
-    v90 = elt(env, 2); /* k!* */
-    if (v91 == v90) goto v19;
-    v90 = stack[-1];
-    v90 = qcar(v90);
-    v91 = qcar(v90);
-    v90 = stack[0];
-    v90 = cons(v91, v90);
-    nil = C_nil;
-    if (exception_pending()) goto v69;
-    env = stack[-3];
-    goto v57;
+    v0058 = stack[-2];
+    if (!(v0058 == nil)) goto v0040;
+    v0058 = qvalue(elt(env, 1)); /* nil */
+    { popv(4); return onevalue(v0058); }
 
-v57:
-    stack[-2] = CC_prepf1(env, stack[-2], v90);
+v0040:
+    v0058 = stack[-1];
+    if (v0058 == nil) goto v0043;
+    v0058 = stack[-1];
+    v0058 = qcar(v0058);
+    v0058 = qcar(v0058);
+    v0067 = qcdr(v0058);
+    v0058 = stack[-2];
+    v0058 = qcar(v0058);
+    v0058 = qcdr(v0058);
+    v0058 = (Lisp_Object)greaterp2(v0067, v0058);
     nil = C_nil;
-    if (exception_pending()) goto v69;
+    if (exception_pending()) goto v0061;
+    v0058 = v0058 ? lisp_true : nil;
     env = stack[-3];
-    v90 = stack[-1];
-    v91 = qcdr(v90);
-    v90 = stack[0];
-    v90 = CC_prepf1(env, v91, v90);
-    nil = C_nil;
-    if (exception_pending()) goto v69;
-    env = stack[-3];
-    {
-        Lisp_Object v70 = stack[-2];
-        popv(4);
-        fn = elt(env, 3); /* nconc!* */
-        return (*qfn2(fn))(qenv(fn), v70, v90);
-    }
+    if (v0058 == nil) goto v0043;
+    v0058 = stack[-1];
+    v0058 = qcdr(v0058);
+    stack[-1] = v0058;
+    goto v0040;
 
-v19:
-    v90 = stack[0];
-    goto v57;
-
-v15:
-    v90 = stack[-1];
-    fn = elt(env, 4); /* prepd */
-    stack[-1] = (*qfn1(fn))(qenv(fn), v90);
+v0043:
+    v0058 = stack[-2];
+    if (v0058 == nil) { Lisp_Object res = stack[-2]; popv(4); return onevalue(res); }
+    v0058 = stack[-1];
+    if (v0058 == nil) { Lisp_Object res = stack[-2]; popv(4); return onevalue(res); }
+    v0059 = stack[-2];
+    v0058 = stack[-1];
+    v0067 = qcar(v0058);
+    v0058 = stack[0];
+    fn = elt(env, 2); /* reduce_pv0 */
+    v0058 = (*qfnn(fn))(qenv(fn), 3, v0059, v0067, v0058);
     nil = C_nil;
-    if (exception_pending()) goto v69;
+    if (exception_pending()) goto v0061;
     env = stack[-3];
-    v90 = stack[0];
-    fn = elt(env, 5); /* exchk */
-    v90 = (*qfn1(fn))(qenv(fn), v90);
-    nil = C_nil;
-    if (exception_pending()) goto v69;
-    env = stack[-3];
-    v90 = cons(stack[-1], v90);
-    nil = C_nil;
-    if (exception_pending()) goto v69;
-    env = stack[-3];
-    fn = elt(env, 6); /* retimes */
-    v90 = (*qfn1(fn))(qenv(fn), v90);
-    nil = C_nil;
-    if (exception_pending()) goto v69;
-    popv(4);
-    return ncons(v90);
-
-v4:
-    v90 = qvalue(elt(env, 1)); /* nil */
-    { popv(4); return onevalue(v90); }
+    stack[-2] = v0058;
+    v0058 = stack[-1];
+    v0058 = qcdr(v0058);
+    stack[-1] = v0058;
+    goto v0043;
 /* error exit handlers */
-v69:
+v0061:
     popv(4);
     return nil;
 }
 
 
 
-/* Code for !*d2q */
+/* Code for listp */
 
-static Lisp_Object CC_Hd2q(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_listp(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v54, v55;
-    Lisp_Object fn;
+    Lisp_Object v0015, v0010;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for *d2q");
+    if (check_env(env)) return aerror("env for listp");
 #endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
+    CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    v0015 = v0000;
 /* end of prologue */
-    v54 = stack[0];
-    if (is_number(v54)) goto v3;
-    v54 = stack[0];
-    fn = elt(env, 2); /* !:zerop */
-    v54 = (*qfn1(fn))(qenv(fn), v54);
-    nil = C_nil;
-    if (exception_pending()) goto v41;
-    env = stack[-1];
-    if (v54 == nil) goto v18;
-    v55 = qvalue(elt(env, 1)); /* nil */
-    v54 = (Lisp_Object)17; /* 1 */
-    popv(2);
-    return cons(v55, v54);
 
-v18:
-    v55 = stack[0];
-    v54 = (Lisp_Object)17; /* 1 */
-    popv(2);
-    return cons(v55, v54);
+v0007:
+    v0010 = v0015;
+    if (v0010 == nil) goto v0013;
+    v0010 = v0015;
+    if (!consp(v0010)) goto v0009;
+    v0015 = qcdr(v0015);
+    goto v0007;
 
-v3:
-    v54 = stack[0];
-    v54 = (Lisp_Object)zerop(v54);
-    v54 = v54 ? lisp_true : nil;
-    env = stack[-1];
-    if (v54 == nil) goto v50;
-    v55 = qvalue(elt(env, 1)); /* nil */
-    v54 = (Lisp_Object)17; /* 1 */
-    popv(2);
-    return cons(v55, v54);
+v0009:
+    v0015 = qvalue(elt(env, 2)); /* nil */
+    return onevalue(v0015);
 
-v50:
-    v55 = stack[0];
-    v54 = (Lisp_Object)17; /* 1 */
-    popv(2);
-    return cons(v55, v54);
-/* error exit handlers */
-v41:
-    popv(2);
-    return nil;
+v0013:
+    v0015 = qvalue(elt(env, 1)); /* t */
+    return onevalue(v0015);
 }
 
 
 
-/* Code for buchvevdivides!? */
+/* Code for modzerop!: */
 
-static Lisp_Object CC_buchvevdividesW(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_modzeropT(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v36, v44, v39;
-    Lisp_Object fn;
+    Lisp_Object v0004, v0038;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for buchvevdivides?");
+    if (check_env(env)) return aerror("env for modzerop:");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0004 = v0000;
+/* end of prologue */
+    v0038 = qcdr(v0004);
+    v0004 = (Lisp_Object)1; /* 0 */
+    v0004 = (v0038 == v0004 ? lisp_true : nil);
+    return onevalue(v0004);
+}
+
+
+
+/* Code for xcomment */
+
+static Lisp_Object CC_xcomment(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0064, v0052, v0051;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for xcomment");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -6029,754 +4802,154 @@ static Lisp_Object CC_buchvevdividesW(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    v0051 = v0029;
+    v0052 = v0000;
 /* end of prologue */
-    v44 = stack[0];
-    v36 = stack[-1];
-    fn = elt(env, 3); /* vevmtest!? */
-    v36 = (*qfn2(fn))(qenv(fn), v44, v36);
-    nil = C_nil;
-    if (exception_pending()) goto v11;
+    v0064 = v0051;
+    if (v0064 == nil) { popv(3); return onevalue(v0052); }
+    stack[-1] = elt(env, 1); /* comment */
+    v0064 = v0051;
+    stack[0] = Lnreverse(nil, v0064);
     env = stack[-2];
-    if (v36 == nil) goto v4;
-    v36 = qvalue(elt(env, 2)); /* gmodule!* */
-    v36 = (v36 == nil ? lisp_true : nil);
-    if (!(v36 == nil)) { popv(3); return onevalue(v36); }
-    v39 = stack[-1];
-    v44 = stack[0];
-    v36 = qvalue(elt(env, 2)); /* gmodule!* */
-    {
-        popv(3);
-        fn = elt(env, 4); /* gevcompatible1 */
-        return (*qfnn(fn))(qenv(fn), 3, v39, v44, v36);
-    }
-
-v4:
-    v36 = qvalue(elt(env, 1)); /* nil */
-    { popv(3); return onevalue(v36); }
+    v0064 = v0052;
+    v0064 = ncons(v0064);
+    nil = C_nil;
+    if (exception_pending()) goto v0070;
+    env = stack[-2];
+    v0064 = Lnconc(nil, stack[0], v0064);
+    nil = C_nil;
+    if (exception_pending()) goto v0070;
+    env = stack[-2];
+    v0064 = cons(stack[-1], v0064);
+    nil = C_nil;
+    if (exception_pending()) goto v0070;
+    v0052 = v0064;
+    { popv(3); return onevalue(v0052); }
 /* error exit handlers */
-v11:
+v0070:
     popv(3);
     return nil;
 }
 
 
 
-/* Code for expchk */
+/* Code for monomgetvariabledegree */
 
-static Lisp_Object CC_expchk(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_monomgetvariabledegree(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    Lisp_Object fn;
+    Lisp_Object v0057, v0032;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for expchk");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v2 = v0;
-/* end of prologue */
-    v1 = qvalue(elt(env, 1)); /* !*exp */
-    if (!(v1 == nil)) return onevalue(v2);
-    v1 = v2;
-    {
-        fn = elt(env, 2); /* offexpchk */
-        return (*qfn1(fn))(qenv(fn), v1);
-    }
-}
-
-
-
-/* Code for csl_normbf */
-
-static Lisp_Object CC_csl_normbf(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v85, v80, v92;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for csl_normbf");
+    if (check_env(env)) return aerror("env for monomgetvariabledegree");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* space for vars preserved across procedure calls */
-    push4(nil, nil, nil, nil);
+    push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[-2] = v0;
+    stack[0] = v0029;
+    v0057 = v0000;
 /* end of prologue */
-    stack[-3] = nil;
-    v85 = stack[-2];
-    v85 = qcdr(v85);
-    v80 = qcar(v85);
-    stack[0] = v80;
-    v85 = (Lisp_Object)1; /* 0 */
-    if (v80 == v85) goto v7;
-    v80 = stack[0];
-    v85 = (Lisp_Object)1; /* 0 */
-    v85 = (Lisp_Object)lessp2(v80, v85);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    v85 = v85 ? lisp_true : nil;
-    env = stack[-4];
-    if (v85 == nil) goto v46;
-    v85 = stack[0];
-    v85 = negate(v85);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    stack[0] = v85;
-    v85 = qvalue(elt(env, 2)); /* t */
-    stack[-3] = v85;
-    goto v46;
+    v0032 = v0057;
+    v0057 = (Lisp_Object)17; /* 1 */
+    v0057 = *(Lisp_Object *)((char *)v0032 + (CELL-TAG_VECTOR) + ((int32_t)v0057/(16/CELL)));
+    stack[-1] = v0057;
+    goto v0035;
 
-v46:
-    v85 = stack[0];
-    fn = elt(env, 4); /* lsd */
-    v85 = (*qfn1(fn))(qenv(fn), v85);
+v0035:
+    v0057 = stack[-1];
+    v0057 = qcar(v0057);
+    if (v0057 == nil) goto v0041;
+    v0057 = stack[-1];
+    v0032 = qcar(v0057);
+    v0057 = stack[0];
+    v0057 = (Lisp_Object)greaterp2(v0032, v0057);
     nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    stack[-1] = v85;
-    v85 = stack[-1];
-    v85 = negate(v85);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    v85 = ash(stack[0], v85);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    stack[0] = v85;
-    v85 = stack[-3];
-    if (v85 == nil) goto v41;
-    v85 = stack[0];
-    v85 = negate(v85);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    stack[0] = v85;
-    goto v41;
+    if (exception_pending()) goto v0037;
+    v0057 = v0057 ? lisp_true : nil;
+    env = stack[-2];
+    if (v0057 == nil) goto v0041;
+    v0057 = stack[-1];
+    v0057 = qcdr(v0057);
+    stack[-1] = v0057;
+    goto v0035;
 
-v41:
-    v80 = stack[-1];
-    v85 = stack[-2];
-    v85 = qcdr(v85);
-    v85 = qcdr(v85);
-    v85 = plus2(v80, v85);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    stack[-1] = v85;
-    v92 = elt(env, 3); /* !:rd!: */
-    v80 = stack[0];
-    v85 = stack[-1];
-    popv(5);
-    return list2star(v92, v80, v85);
+v0041:
+    v0057 = stack[-1];
+    v0057 = qcar(v0057);
+    if (v0057 == nil) goto v0025;
+    v0057 = stack[-1];
+    v0032 = qcar(v0057);
+    v0057 = stack[0];
+    if (!(equal(v0032, v0057))) goto v0025;
+    v0057 = (Lisp_Object)17; /* 1 */
+    { popv(3); return onevalue(v0057); }
 
-v7:
-    v85 = elt(env, 1); /* (!:rd!: 0 . 0) */
-    { popv(5); return onevalue(v85); }
+v0025:
+    v0057 = (Lisp_Object)1; /* 0 */
+    { popv(3); return onevalue(v0057); }
 /* error exit handlers */
-v93:
-    popv(5);
+v0037:
+    popv(3);
     return nil;
 }
 
 
 
-/* Code for mkround */
+/* Code for aeval */
 
-static Lisp_Object CC_mkround(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_aeval(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v29, v15;
+    Lisp_Object v0003, v0004;
+    Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for mkround");
+    if (check_env(env)) return aerror("env for aeval");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v15 = v0;
+    v0003 = v0000;
 /* end of prologue */
-    v29 = v15;
-    if (!(!consp(v29))) return onevalue(v15);
-    v29 = elt(env, 1); /* !:rd!: */
-    return cons(v29, v15);
+    v0004 = v0003;
+    v0003 = qvalue(elt(env, 1)); /* nil */
+    {
+        fn = elt(env, 2); /* reval1 */
+        return (*qfn2(fn))(qenv(fn), v0004, v0003);
+    }
 }
 
 
 
-/* Code for argsofopr */
+/* Code for rl_smupdknowl */
 
-static Lisp_Object CC_argsofopr(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object MS_CDECL CC_rl_smupdknowl(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, Lisp_Object v0050, ...)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v7, v8;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for argsofopr");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v7 = v0;
-/* end of prologue */
-    v8 = elt(env, 1); /* number!-of!-args */
-    return get(v7, v8);
-}
-
-
-
-/* Code for multf */
-
-static Lisp_Object CC_multf(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v142, v143, v144;
+    Lisp_Object v0064, v0052, v0051, v0021;
     Lisp_Object fn;
     CSL_IGNORE(nil);
+    argcheck(nargs, 4, "rl_smupdknowl");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for multf");
+    if (check_env(env)) return aerror("env for rl_smupdknowl");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push4(v0050,v0053,v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push4(nil, nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[-1] = v10;
-    stack[-2] = v0;
-/* end of prologue */
-    stack[-3] = nil;
-    goto v49;
-
-v49:
-    v142 = stack[-2];
-    if (v142 == nil) goto v7;
-    v142 = stack[-1];
-    if (v142 == nil) goto v7;
-    v143 = stack[-2];
-    v142 = (Lisp_Object)17; /* 1 */
-    if (v143 == v142) { Lisp_Object res = stack[-1]; popv(5); return onevalue(res); }
-    v143 = stack[-1];
-    v142 = (Lisp_Object)17; /* 1 */
-    if (v143 == v142) { Lisp_Object res = stack[-2]; popv(5); return onevalue(res); }
-    v142 = stack[-2];
-    if (!consp(v142)) goto v17;
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    if (!consp(v142)) goto v17;
-    v142 = stack[-1];
-    if (!consp(v142)) goto v43;
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    if (!consp(v142)) goto v43;
-    v142 = qvalue(elt(env, 2)); /* !*exp */
-    if (!(v142 == nil)) goto v6;
-    v142 = qvalue(elt(env, 3)); /* ncmp!* */
-    if (!(v142 == nil)) goto v6;
-    v142 = qvalue(elt(env, 4)); /* wtl!* */
-    if (!(v142 == nil)) goto v6;
-    v142 = stack[-3];
-    if (!(v142 == nil)) goto v6;
-    v142 = stack[-2];
-    fn = elt(env, 10); /* mkprod */
-    v142 = (*qfn1(fn))(qenv(fn), v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-2] = v142;
-    v142 = stack[-1];
-    fn = elt(env, 10); /* mkprod */
-    v142 = (*qfn1(fn))(qenv(fn), v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-1] = v142;
-    v142 = qvalue(elt(env, 5)); /* t */
-    stack[-3] = v142;
-    goto v49;
-
-v6:
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    stack[-3] = v142;
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    stack[0] = v142;
-    v142 = stack[-1];
-    fn = elt(env, 11); /* noncomfp */
-    v142 = (*qfn1(fn))(qenv(fn), v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    if (v142 == nil) goto v146;
-    v142 = stack[-3];
-    fn = elt(env, 12); /* noncomp */
-    v142 = (*qfn1(fn))(qenv(fn), v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    if (!(v142 == nil)) goto v147;
-    v142 = qvalue(elt(env, 6)); /* !*!*processed */
-    if (!(v142 == nil)) goto v146;
-
-v147:
-    v143 = stack[-2];
-    v142 = stack[-1];
-    {
-        popv(5);
-        fn = elt(env, 13); /* multfnc */
-        return (*qfn2(fn))(qenv(fn), v143, v142);
-    }
-
-v146:
-    v143 = stack[-3];
-    v142 = stack[0];
-    if (v143 == v142) goto v148;
-    v143 = stack[-3];
-    v142 = stack[0];
-    fn = elt(env, 14); /* ordop */
-    v142 = (*qfn2(fn))(qenv(fn), v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    if (v142 == nil) goto v149;
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v143 = qcdr(v142);
-    v142 = stack[-1];
-    v142 = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-3] = v142;
-    v142 = stack[-2];
-    v143 = qcdr(v142);
-    v142 = stack[-1];
-    v142 = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    stack[0] = v142;
-    v142 = stack[-3];
-    if (v142 == nil) { Lisp_Object res = stack[0]; popv(5); return onevalue(res); }
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v144 = qcar(v142);
-    v143 = stack[-3];
-    v142 = stack[0];
-    popv(5);
-    return acons(v144, v143, v142);
-
-v149:
-    v143 = stack[-2];
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v142 = qcdr(v142);
-    v142 = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-3] = v142;
-    v143 = stack[-2];
-    v142 = stack[-1];
-    v142 = qcdr(v142);
-    v142 = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    stack[0] = v142;
-    v142 = stack[-3];
-    if (v142 == nil) { Lisp_Object res = stack[0]; popv(5); return onevalue(res); }
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v144 = qcar(v142);
-    v143 = stack[-3];
-    v142 = stack[0];
-    popv(5);
-    return acons(v144, v143, v142);
-
-v148:
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v142 = qcdr(v142);
-    v142 = integerp(v142);
-    if (v142 == nil) goto v150;
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v142 = qcdr(v142);
-    v142 = integerp(v142);
-    if (v142 == nil) goto v150;
-    stack[0] = stack[-3];
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v143 = qcdr(v142);
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v142 = qcdr(v142);
-    v142 = plus2(v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    fn = elt(env, 15); /* mkspm */
-    v142 = (*qfn2(fn))(qenv(fn), stack[0], v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-3] = v142;
-    goto v151;
-
-v151:
-    v142 = stack[-2];
-    v143 = qcdr(v142);
-    v142 = stack[-1];
-    stack[0] = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v143 = ncons(v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    v142 = stack[-1];
-    v142 = qcdr(v142);
-    v142 = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    fn = elt(env, 16); /* addf */
-    v142 = (*qfn2(fn))(qenv(fn), stack[0], v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[0] = v142;
-    v142 = stack[-3];
-    if (v142 == nil) goto v152;
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v143 = qcdr(v142);
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v142 = qcdr(v142);
-    v142 = CC_multf(env, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-2] = v142;
-    if (v142 == nil) goto v152;
-    v143 = stack[-3];
-    v142 = (Lisp_Object)17; /* 1 */
-    if (v143 == v142) goto v153;
-    v142 = qvalue(elt(env, 9)); /* !*mcd */
-    if (v142 == nil) goto v154;
-    v144 = stack[-3];
-    v143 = stack[-2];
-    v142 = stack[0];
-    popv(5);
-    return acons(v144, v143, v142);
-
-v154:
-    v143 = stack[-3];
-    v142 = stack[-2];
-    v142 = cons(v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    v143 = ncons(v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    v142 = stack[0];
-    {
-        popv(5);
-        fn = elt(env, 16); /* addf */
-        return (*qfn2(fn))(qenv(fn), v143, v142);
-    }
-
-v153:
-    v143 = stack[-2];
-    v142 = stack[0];
-    {
-        popv(5);
-        fn = elt(env, 16); /* addf */
-        return (*qfn2(fn))(qenv(fn), v143, v142);
-    }
-
-v152:
-    v142 = qvalue(elt(env, 5)); /* t */
-    qvalue(elt(env, 8)) = v142; /* !*asymp!* */
-    { Lisp_Object res = stack[0]; popv(5); return onevalue(res); }
-
-v150:
-    stack[0] = stack[-3];
-    v144 = elt(env, 7); /* plus */
-    v142 = stack[-2];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v143 = qcdr(v142);
-    v142 = stack[-1];
-    v142 = qcar(v142);
-    v142 = qcar(v142);
-    v142 = qcdr(v142);
-    v142 = list3(v144, v143, v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    fn = elt(env, 17); /* reval */
-    v142 = (*qfn1(fn))(qenv(fn), v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    fn = elt(env, 18); /* to */
-    v142 = (*qfn2(fn))(qenv(fn), stack[0], v142);
-    nil = C_nil;
-    if (exception_pending()) goto v145;
-    env = stack[-4];
-    stack[-3] = v142;
-    goto v151;
-
-v43:
-    v143 = stack[-1];
-    v142 = stack[-2];
-    {
-        popv(5);
-        fn = elt(env, 19); /* multd */
-        return (*qfn2(fn))(qenv(fn), v143, v142);
-    }
-
-v17:
-    v143 = stack[-2];
-    v142 = stack[-1];
-    {
-        popv(5);
-        fn = elt(env, 19); /* multd */
-        return (*qfn2(fn))(qenv(fn), v143, v142);
-    }
-
-v7:
-    v142 = qvalue(elt(env, 1)); /* nil */
-    { popv(5); return onevalue(v142); }
-/* error exit handlers */
-v145:
-    popv(5);
-    return nil;
-}
-
-
-
-/* Code for bc_prod */
-
-static Lisp_Object CC_bc_prod(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for bc_prod");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v1 = v10;
-    v2 = v0;
-/* end of prologue */
-    fn = elt(env, 1); /* multf */
-    v1 = (*qfn2(fn))(qenv(fn), v2, v1);
-    nil = C_nil;
-    if (exception_pending()) goto v23;
-    env = stack[0];
-    {
-        popv(1);
-        fn = elt(env, 2); /* bc!=simp */
-        return (*qfn1(fn))(qenv(fn), v1);
-    }
-/* error exit handlers */
-v23:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for multdm */
-
-static Lisp_Object CC_multdm(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v65, v61, v62;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for multdm");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v61 = v10;
-    v62 = v0;
-/* end of prologue */
-    v65 = v62;
-    if (!(!consp(v65))) goto v43;
-    v65 = v61;
-    if (!(!consp(v65))) goto v43;
-    v65 = v62;
-    v65 = times2(v65, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v63;
-    env = stack[0];
-    v62 = v65;
-    v65 = qvalue(elt(env, 1)); /* dmode!* */
-    if (v65 == nil) { popv(1); return onevalue(v62); }
-    v61 = qvalue(elt(env, 1)); /* dmode!* */
-    v65 = elt(env, 2); /* convert */
-    v65 = Lflagp(nil, v61, v65);
-    env = stack[0];
-    if (v65 == nil) { popv(1); return onevalue(v62); }
-    v61 = qvalue(elt(env, 1)); /* dmode!* */
-    v65 = elt(env, 3); /* i2d */
-    v65 = get(v61, v65);
-    v61 = v62;
-        popv(1);
-        return Lapply1(nil, v65, v61);
-
-v43:
-    v65 = elt(env, 4); /* times */
-    {
-        popv(1);
-        fn = elt(env, 5); /* dcombine */
-        return (*qfnn(fn))(qenv(fn), 3, v62, v61, v65);
-    }
-/* error exit handlers */
-v63:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for negnumberchk */
-
-static Lisp_Object CC_negnumberchk(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v32, v33, v13;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for negnumberchk");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v33 = v0;
-/* end of prologue */
-    v32 = v33;
-    v13 = elt(env, 1); /* minus */
-    if (!consp(v32)) return onevalue(v33);
-    v32 = qcar(v32);
-    if (!(v32 == v13)) return onevalue(v33);
-    v32 = v33;
-    v32 = qcdr(v32);
-    v32 = qcar(v32);
-    if (!(is_number(v32))) return onevalue(v33);
-    v32 = v33;
-    v32 = qcdr(v32);
-    v32 = qcar(v32);
-    return negate(v32);
-}
-
-
-
-/* Code for reduce_pv */
-
-static Lisp_Object CC_reduce_pv(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v23, v26, v27;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for reduce_pv");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v23 = v10;
-    v26 = v0;
-/* end of prologue */
-    v27 = v26;
-    v26 = v23;
-    v23 = qvalue(elt(env, 1)); /* t */
-    {
-        fn = elt(env, 2); /* reduce_pv0 */
-        return (*qfnn(fn))(qenv(fn), 3, v27, v26, v23);
-    }
-}
-
-
-
-/* Code for noncomlistp */
-
-static Lisp_Object CC_noncomlistp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v16;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for noncomlistp");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop4(v0000,v0029,v0053,v0050);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -6784,32 +4957,1482 @@ static Lisp_Object CC_noncomlistp(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    v0064 = v0050;
+    v0052 = v0053;
+    v0051 = v0029;
+    v0021 = v0000;
+/* end of prologue */
+    stack[0] = qvalue(elt(env, 1)); /* rl_smupdknowl!* */
+    v0064 = list4(v0021, v0051, v0052, v0064);
+    nil = C_nil;
+    if (exception_pending()) goto v0070;
+    env = stack[-1];
+    {
+        Lisp_Object v0031 = stack[0];
+        popv(2);
+        fn = elt(env, 2); /* apply */
+        return (*qfn2(fn))(qenv(fn), v0031, v0064);
+    }
+/* error exit handlers */
+v0070:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for degr */
+
+static Lisp_Object CC_degr(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0071, v0065, v0006;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for degr");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0065 = v0029;
+    v0006 = v0000;
+/* end of prologue */
+    v0071 = v0006;
+    if (!consp(v0071)) goto v0039;
+    v0071 = v0006;
+    v0071 = qcar(v0071);
+    v0071 = (consp(v0071) ? nil : lisp_true);
+    goto v0038;
+
+v0038:
+    if (v0071 == nil) goto v0062;
+    v0071 = qvalue(elt(env, 1)); /* t */
+    goto v0001;
+
+v0001:
+    if (v0071 == nil) goto v0086;
+    v0071 = (Lisp_Object)1; /* 0 */
+    return onevalue(v0071);
+
+v0086:
+    v0071 = v0006;
+    v0071 = qcar(v0071);
+    v0071 = qcar(v0071);
+    v0071 = qcdr(v0071);
+    return onevalue(v0071);
+
+v0062:
+    v0071 = v0006;
+    v0071 = qcar(v0071);
+    v0071 = qcar(v0071);
+    v0071 = qcar(v0071);
+    v0071 = (v0071 == v0065 ? lisp_true : nil);
+    v0071 = (v0071 == nil ? lisp_true : nil);
+    goto v0001;
+
+v0039:
+    v0071 = qvalue(elt(env, 1)); /* t */
+    goto v0038;
+}
+
+
+
+/* Code for prepf1a */
+
+static Lisp_Object CC_prepf1a(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0041, v0035, v0042;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for prepf1a");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0041 = v0029;
+    v0035 = v0000;
+/* end of prologue */
+    v0042 = v0035;
+    v0035 = v0041;
+    v0041 = qvalue(elt(env, 1)); /* nil */
+    fn = elt(env, 2); /* prepf1a_reversed */
+    v0041 = (*qfnn(fn))(qenv(fn), 3, v0042, v0035, v0041);
+    errexit();
+        return Lnreverse(nil, v0041);
+}
+
+
+
+/* Code for setkorder */
+
+static Lisp_Object CC_setkorder(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0010, v0044, v0026;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for setkorder");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0026 = v0000;
+/* end of prologue */
+    v0010 = qvalue(elt(env, 1)); /* kord!* */
+    stack[0] = v0010;
+    v0044 = v0026;
+    v0010 = stack[0];
+    if (equal(v0044, v0010)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0010 = v0026;
+    qvalue(elt(env, 1)) = v0010; /* kord!* */
+    v0010 = qvalue(elt(env, 2)); /* nil */
+    v0010 = ncons(v0010);
+    nil = C_nil;
+    if (exception_pending()) goto v0064;
+    env = stack[-1];
+    qvalue(elt(env, 3)) = v0010; /* alglist!* */
+    { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+/* error exit handlers */
+v0064:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for ibalp_emptyclausep */
+
+static Lisp_Object CC_ibalp_emptyclausep(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0065, v0006;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for ibalp_emptyclausep");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    v0065 = stack[0];
+    v0065 = qcdr(v0065);
+    v0065 = qcdr(v0065);
+    v0065 = qcdr(v0065);
+    v0065 = qcdr(v0065);
+    v0065 = qcar(v0065);
+    if (v0065 == nil) goto v0042;
+    v0065 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0065); }
+
+v0042:
+    v0065 = stack[0];
+    v0065 = qcdr(v0065);
+    v0065 = qcdr(v0065);
+    v0006 = qcar(v0065);
+    v0065 = (Lisp_Object)1; /* 0 */
+    v0065 = Leqn(nil, v0006, v0065);
+    nil = C_nil;
+    if (exception_pending()) goto v0011;
+    env = stack[-1];
+    if (v0065 == nil) goto v0040;
+    v0065 = stack[0];
+    v0065 = qcdr(v0065);
+    v0065 = qcdr(v0065);
+    v0065 = qcdr(v0065);
+    v0006 = qcar(v0065);
+    v0065 = (Lisp_Object)1; /* 0 */
+        popv(2);
+        return Leqn(nil, v0006, v0065);
+
+v0040:
+    v0065 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0065); }
+/* error exit handlers */
+v0011:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for multiply!-by!-constant!-mod!-p */
+
+static Lisp_Object CC_multiplyKbyKconstantKmodKp(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0085, v0100;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for multiply-by-constant-mod-p");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push4(nil, nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[-1] = v0029;
+    stack[-2] = v0000;
+/* end of prologue */
+    v0085 = stack[-2];
+    if (v0085 == nil) goto v0034;
+    v0100 = stack[-1];
+    v0085 = (Lisp_Object)17; /* 1 */
+    if (v0100 == v0085) { Lisp_Object res = stack[-2]; popv(5); return onevalue(res); }
+    v0085 = stack[-2];
+    if (!consp(v0085)) goto v0044;
+    v0085 = stack[-2];
+    v0085 = qcar(v0085);
+    v0085 = (consp(v0085) ? nil : lisp_true);
+    goto v0010;
+
+v0010:
+    if (v0085 == nil) goto v0024;
+    v0100 = stack[-2];
+    v0085 = stack[-1];
+    v0085 = Lmodular_times(nil, v0100, v0085);
+    env = stack[-4];
+    v0100 = v0085;
+    v0085 = v0100;
+    v0085 = (Lisp_Object)zerop(v0085);
+    v0085 = v0085 ? lisp_true : nil;
+    env = stack[-4];
+    if (v0085 == nil) { popv(5); return onevalue(v0100); }
+    v0085 = qvalue(elt(env, 1)); /* nil */
+    { popv(5); return onevalue(v0085); }
+
+v0024:
+    v0085 = stack[-2];
+    v0085 = qcar(v0085);
+    stack[-3] = qcar(v0085);
+    v0085 = stack[-2];
+    v0085 = qcar(v0085);
+    v0100 = qcdr(v0085);
+    v0085 = stack[-1];
+    stack[0] = CC_multiplyKbyKconstantKmodKp(env, v0100, v0085);
+    nil = C_nil;
+    if (exception_pending()) goto v0101;
+    env = stack[-4];
+    v0085 = stack[-2];
+    v0100 = qcdr(v0085);
+    v0085 = stack[-1];
+    v0085 = CC_multiplyKbyKconstantKmodKp(env, v0100, v0085);
+    nil = C_nil;
+    if (exception_pending()) goto v0101;
+    env = stack[-4];
+    {
+        Lisp_Object v0091 = stack[-3];
+        Lisp_Object v0092 = stack[0];
+        popv(5);
+        fn = elt(env, 3); /* adjoin!-term */
+        return (*qfnn(fn))(qenv(fn), 3, v0091, v0092, v0085);
+    }
+
+v0044:
+    v0085 = qvalue(elt(env, 2)); /* t */
+    goto v0010;
+
+v0034:
+    v0085 = qvalue(elt(env, 1)); /* nil */
+    { popv(5); return onevalue(v0085); }
+/* error exit handlers */
+v0101:
+    popv(5);
+    return nil;
+}
+
+
+
+/* Code for find2 */
+
+static Lisp_Object CC_find2(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0065, v0006, v0072, v0011;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for find2");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0006 = v0029;
+    v0072 = v0000;
 /* end of prologue */
 
-v45:
-    v16 = stack[0];
-    v16 = Lconsp(nil, v16);
-    env = stack[-1];
-    if (v16 == nil) goto v3;
-    v16 = stack[0];
-    v16 = qcar(v16);
-    fn = elt(env, 2); /* noncomp1 */
-    v16 = (*qfn1(fn))(qenv(fn), v16);
-    nil = C_nil;
-    if (exception_pending()) goto v30;
-    env = stack[-1];
-    if (!(v16 == nil)) { popv(2); return onevalue(v16); }
-    v16 = stack[0];
-    v16 = qcdr(v16);
-    stack[0] = v16;
-    goto v45;
+v0002:
+    v0011 = v0006;
+    v0065 = nil;
+    if (v0011 == v0065) goto v0008;
+    v0065 = v0006;
+    v0065 = qcar(v0065);
+    v0072 = Lmember(nil, v0065, v0072);
+    v0065 = v0006;
+    v0065 = qcdr(v0065);
+    v0006 = v0065;
+    goto v0002;
 
-v3:
-    v16 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v16); }
+v0008:
+    v0065 = v0072;
+    if (v0065 == nil) goto v0044;
+    v0065 = v0072;
+    v0065 = qcdr(v0065);
+    return onevalue(v0065);
+
+v0044:
+    v0065 = elt(env, 1); /* (stop) */
+    return onevalue(v0065);
+}
+
+
+
+/* Code for butes */
+
+static Lisp_Object CC_butes(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0011, v0036, v0055;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for butes");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    CSL_IGNORE(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0055 = v0000;
+/* end of prologue */
+    v0011 = v0055;
+    v0011 = qcar(v0011);
+    qvalue(elt(env, 1)) = v0011; /* cha */
+    v0036 = qvalue(elt(env, 1)); /* cha */
+    v0011 = elt(env, 2); /* !  */
+    if (v0036 == v0011) goto v0039;
+    v0036 = qvalue(elt(env, 1)); /* cha */
+    v0011 = elt(env, 4); /* !$ */
+    v0011 = (v0036 == v0011 ? lisp_true : nil);
+    goto v0038;
+
+v0038:
+    if (v0011 == nil) goto v0086;
+    v0011 = qvalue(elt(env, 5)); /* nil */
+    { popv(1); return onevalue(v0011); }
+
+v0086:
+    v0011 = v0055;
+    stack[0] = qcar(v0011);
+    v0011 = v0055;
+    v0011 = qcdr(v0011);
+    v0011 = CC_butes(env, v0011);
+    nil = C_nil;
+    if (exception_pending()) goto v0016;
+    {
+        Lisp_Object v0023 = stack[0];
+        popv(1);
+        return cons(v0023, v0011);
+    }
+
+v0039:
+    v0011 = qvalue(elt(env, 3)); /* t */
+    goto v0038;
 /* error exit handlers */
-v30:
+v0016:
+    popv(1);
+    return nil;
+}
+
+
+
+/* Code for mtp */
+
+static Lisp_Object CC_mtp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0006, v0072, v0011;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for mtp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0072 = v0000;
+/* end of prologue */
+
+v0007:
+    v0006 = v0072;
+    if (v0006 == nil) goto v0013;
+    v0006 = v0072;
+    v0011 = qcar(v0006);
+    v0006 = qvalue(elt(env, 2)); /* frlis!* */
+    v0006 = Lmemq(nil, v0011, v0006);
+    if (v0006 == nil) goto v0038;
+    v0006 = v0072;
+    v0011 = qcar(v0006);
+    v0006 = v0072;
+    v0006 = qcdr(v0006);
+    v0006 = Lmember(nil, v0011, v0006);
+    if (v0006 == nil) goto v0051;
+    v0006 = qvalue(elt(env, 3)); /* nil */
+    return onevalue(v0006);
+
+v0051:
+    v0006 = v0072;
+    v0006 = qcdr(v0006);
+    v0072 = v0006;
+    goto v0007;
+
+v0038:
+    v0006 = qvalue(elt(env, 3)); /* nil */
+    return onevalue(v0006);
+
+v0013:
+    v0006 = qvalue(elt(env, 1)); /* t */
+    return onevalue(v0006);
+}
+
+
+
+/* Code for nil2zero */
+
+static Lisp_Object CC_nil2zero(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0004, v0038;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for nil2zero");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0004 = v0000;
+/* end of prologue */
+    v0038 = v0004;
+    if (!(v0038 == nil)) return onevalue(v0004);
+    v0004 = (Lisp_Object)1; /* 0 */
+    return onevalue(v0004);
+}
+
+
+
+/* Code for pm!:free */
+
+static Lisp_Object CC_pmTfree(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0004, v0038;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for pm:free");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* copy arguments values to proper place */
+    v0004 = v0000;
+/* end of prologue */
+    fn = elt(env, 2); /* binding */
+    v0004 = (*qfn1(fn))(qenv(fn), v0004);
+    nil = C_nil;
+    if (exception_pending()) goto v0039;
+    env = stack[0];
+    v0038 = elt(env, 1); /* unbound */
+    v0004 = (v0004 == v0038 ? lisp_true : nil);
+    { popv(1); return onevalue(v0004); }
+/* error exit handlers */
+v0039:
+    popv(1);
+    return nil;
+}
+
+
+
+/* Code for vbcsize */
+
+static Lisp_Object CC_vbcsize(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0011, v0036, v0055;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for vbcsize");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0036 = v0029;
+    stack[0] = v0000;
+/* end of prologue */
+
+v0008:
+    v0055 = v0036;
+    v0011 = (Lisp_Object)-15; /* -1 */
+    if (((int32_t)(v0055)) > ((int32_t)(v0011))) goto v0034;
+    v0011 = stack[0];
+    if (!consp(v0011)) { popv(2); return onevalue(v0036); }
+    v0011 = stack[0];
+    v0011 = qcar(v0011);
+    v0036 = (Lisp_Object)((int32_t)(v0036) + 0x10);
+    v0011 = CC_vbcsize(env, v0011, v0036);
+    nil = C_nil;
+    if (exception_pending()) goto v0016;
+    env = stack[-1];
+    v0036 = v0011;
+    v0011 = v0036;
+    if (v0011 == nil) goto v0047;
+    v0011 = stack[0];
+    v0011 = qcdr(v0011);
+    stack[0] = v0011;
+    goto v0008;
+
+v0047:
+    v0011 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0011); }
+
+v0034:
+    v0011 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0011); }
+/* error exit handlers */
+v0016:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for wedgefax */
+
+static Lisp_Object CC_wedgefax(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0022, v0015, v0010;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for wedgefax");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0015 = v0000;
+/* end of prologue */
+    v0022 = v0015;
+    v0010 = elt(env, 1); /* wedge */
+    if (!consp(v0022)) goto v0035;
+    v0022 = qcar(v0022);
+    if (!(v0022 == v0010)) goto v0035;
+    v0022 = v0015;
+    v0022 = qcdr(v0022);
+    return onevalue(v0022);
+
+v0035:
+    v0022 = v0015;
+    return ncons(v0022);
+}
+
+
+
+/* Code for csl_normbf */
+
+static Lisp_Object CC_csl_normbf(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0078, v0102, v0079;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for csl_normbf");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push4(nil, nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[-2] = v0000;
+/* end of prologue */
+    stack[-3] = nil;
+    v0078 = stack[-2];
+    v0078 = qcdr(v0078);
+    v0102 = qcar(v0078);
+    stack[0] = v0102;
+    v0078 = (Lisp_Object)1; /* 0 */
+    if (v0102 == v0078) goto v0003;
+    v0102 = stack[0];
+    v0078 = (Lisp_Object)1; /* 0 */
+    v0078 = (Lisp_Object)lessp2(v0102, v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    v0078 = v0078 ? lisp_true : nil;
+    env = stack[-4];
+    if (v0078 == nil) goto v0044;
+    v0078 = stack[0];
+    v0078 = negate(v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    env = stack[-4];
+    stack[0] = v0078;
+    v0078 = qvalue(elt(env, 2)); /* t */
+    stack[-3] = v0078;
+    goto v0044;
+
+v0044:
+    v0078 = stack[0];
+    fn = elt(env, 4); /* lsd */
+    v0078 = (*qfn1(fn))(qenv(fn), v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    env = stack[-4];
+    stack[-1] = v0078;
+    v0078 = stack[-1];
+    v0078 = negate(v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    env = stack[-4];
+    v0078 = ash(stack[0], v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    env = stack[-4];
+    stack[0] = v0078;
+    v0078 = stack[-3];
+    if (v0078 == nil) goto v0025;
+    v0078 = stack[0];
+    v0078 = negate(v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    env = stack[-4];
+    stack[0] = v0078;
+    goto v0025;
+
+v0025:
+    v0102 = stack[-1];
+    v0078 = stack[-2];
+    v0078 = qcdr(v0078);
+    v0078 = qcdr(v0078);
+    v0078 = plus2(v0102, v0078);
+    nil = C_nil;
+    if (exception_pending()) goto v0085;
+    env = stack[-4];
+    stack[-1] = v0078;
+    v0079 = elt(env, 3); /* !:rd!: */
+    v0102 = stack[0];
+    v0078 = stack[-1];
+    popv(5);
+    return list2star(v0079, v0102, v0078);
+
+v0003:
+    v0078 = elt(env, 1); /* (!:rd!: 0 . 0) */
+    { popv(5); return onevalue(v0078); }
+/* error exit handlers */
+v0085:
+    popv(5);
+    return nil;
+}
+
+
+
+/* Code for !*physopp */
+
+static Lisp_Object CC_Hphysopp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0049, v0071;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for *physopp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0071 = v0000;
+/* end of prologue */
+    v0049 = v0071;
+    if (!consp(v0049)) goto v0013;
+    v0049 = v0071;
+    v0049 = qcar(v0049);
+    if (symbolp(v0049)) goto v0047;
+    v0049 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0049);
+
+v0047:
+    v0049 = v0071;
+    v0049 = qcar(v0049);
+    v0071 = elt(env, 2); /* phystype */
+    return get(v0049, v0071);
+
+v0013:
+    v0049 = v0071;
+    if (symbolp(v0049)) goto v0035;
+    v0049 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0049);
+
+v0035:
+    v0049 = v0071;
+    v0071 = elt(env, 2); /* phystype */
+    return get(v0049, v0071);
+}
+
+
+
+/* Code for union_edge */
+
+static Lisp_Object CC_union_edge(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0064, v0052;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for union_edge");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    CSL_IGNORE(env);
+/* space for vars preserved across procedure calls */
+    push2(nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0029;
+    stack[-1] = v0000;
+/* end of prologue */
+    v0052 = stack[-1];
+    v0064 = stack[0];
+    fn = elt(env, 1); /* memq_edgelist */
+    v0064 = (*qfn2(fn))(qenv(fn), v0052, v0064);
+    nil = C_nil;
+    if (exception_pending()) goto v0020;
+    if (!(v0064 == nil)) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0052 = stack[-1];
+    v0064 = stack[0];
+    popv(2);
+    return cons(v0052, v0064);
+/* error exit handlers */
+v0020:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for addf */
+
+static Lisp_Object CC_addf(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0123, v0124, v0125;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for addf");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push4(nil, nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[-1] = v0029;
+    stack[-2] = v0000;
+/* end of prologue */
+    stack[0] = nil;
+    goto v0005;
+
+v0005:
+    v0123 = stack[-2];
+    if (v0123 == nil) goto v0039;
+    v0123 = stack[-1];
+    if (v0123 == nil) goto v0026;
+    v0123 = stack[-2];
+    if (!consp(v0123)) goto v0047;
+    v0123 = stack[-2];
+    v0123 = qcar(v0123);
+    v0123 = (consp(v0123) ? nil : lisp_true);
+    goto v0012;
+
+v0012:
+    if (v0123 == nil) goto v0031;
+    v0124 = stack[-2];
+    v0123 = stack[-1];
+    fn = elt(env, 2); /* addd */
+    v0123 = (*qfn2(fn))(qenv(fn), v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    {
+        Lisp_Object v0127 = stack[0];
+        popv(5);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0127, v0123);
+    }
+
+v0031:
+    v0123 = stack[-1];
+    if (!consp(v0123)) goto v0099;
+    v0123 = stack[-1];
+    v0123 = qcar(v0123);
+    v0123 = (consp(v0123) ? nil : lisp_true);
+    goto v0033;
+
+v0033:
+    if (v0123 == nil) goto v0101;
+    v0124 = stack[-1];
+    v0123 = stack[-2];
+    fn = elt(env, 2); /* addd */
+    v0123 = (*qfn2(fn))(qenv(fn), v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    {
+        Lisp_Object v0128 = stack[0];
+        popv(5);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0128, v0123);
+    }
+
+v0101:
+    v0123 = stack[-2];
+    v0123 = qcar(v0123);
+    v0124 = qcar(v0123);
+    v0123 = stack[-1];
+    v0123 = qcar(v0123);
+    v0123 = qcar(v0123);
+    if (equal(v0124, v0123)) goto v0090;
+    v0123 = stack[-2];
+    v0123 = qcar(v0123);
+    v0124 = qcar(v0123);
+    v0123 = stack[-1];
+    v0123 = qcar(v0123);
+    v0123 = qcar(v0123);
+    fn = elt(env, 4); /* ordpp */
+    v0123 = (*qfn2(fn))(qenv(fn), v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    if (v0123 == nil) goto v0129;
+    v0123 = stack[-2];
+    v0124 = qcar(v0123);
+    v0123 = stack[0];
+    v0123 = cons(v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    stack[0] = v0123;
+    v0123 = stack[-2];
+    v0123 = qcdr(v0123);
+    stack[-2] = v0123;
+    goto v0005;
+
+v0129:
+    v0123 = stack[-1];
+    v0124 = qcar(v0123);
+    v0123 = stack[0];
+    v0123 = cons(v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    stack[0] = v0123;
+    v0123 = stack[-1];
+    v0123 = qcdr(v0123);
+    stack[-1] = v0123;
+    goto v0005;
+
+v0090:
+    stack[-3] = stack[0];
+    v0123 = stack[-2];
+    v0123 = qcar(v0123);
+    v0124 = qcdr(v0123);
+    v0123 = stack[-1];
+    v0123 = qcar(v0123);
+    v0123 = qcdr(v0123);
+    stack[0] = CC_addf(env, v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    v0123 = stack[-2];
+    v0124 = qcdr(v0123);
+    v0123 = stack[-1];
+    v0123 = qcdr(v0123);
+    v0123 = CC_addf(env, v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    v0124 = stack[0];
+    v0125 = v0124;
+    if (v0125 == nil) goto v0084;
+    v0125 = stack[-2];
+    v0125 = qcar(v0125);
+    v0125 = qcar(v0125);
+    v0123 = acons(v0125, v0124, v0123);
+    nil = C_nil;
+    if (exception_pending()) goto v0126;
+    env = stack[-4];
+    goto v0084;
+
+v0084:
+    {
+        Lisp_Object v0130 = stack[-3];
+        popv(5);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0130, v0123);
+    }
+
+v0099:
+    v0123 = qvalue(elt(env, 1)); /* t */
+    goto v0033;
+
+v0047:
+    v0123 = qvalue(elt(env, 1)); /* t */
+    goto v0012;
+
+v0026:
+    v0124 = stack[0];
+    v0123 = stack[-2];
+    {
+        popv(5);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0124, v0123);
+    }
+
+v0039:
+    v0124 = stack[0];
+    v0123 = stack[-1];
+    {
+        popv(5);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0124, v0123);
+    }
+/* error exit handlers */
+v0126:
+    popv(5);
+    return nil;
+}
+
+
+
+/* Code for expdrmacro */
+
+static Lisp_Object CC_expdrmacro(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0023, v0024, v0045;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for expdrmacro");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    v0023 = stack[0];
+    fn = elt(env, 7); /* getrmacro */
+    v0023 = (*qfn1(fn))(qenv(fn), v0023);
+    nil = C_nil;
+    if (exception_pending()) goto v0046;
+    env = stack[-1];
+    v0045 = v0023;
+    if (v0023 == nil) goto v0004;
+    v0024 = stack[0];
+    v0023 = elt(env, 2); /* noexpand */
+    v0023 = Lflagp(nil, v0024, v0023);
+    env = stack[-1];
+    goto v0003;
+
+v0003:
+    if (v0023 == nil) goto v0001;
+    v0023 = qvalue(elt(env, 3)); /* nil */
+    { popv(2); return onevalue(v0023); }
+
+v0001:
+    v0023 = qvalue(elt(env, 4)); /* !*cref */
+    if (v0023 == nil) { popv(2); return onevalue(v0045); }
+    v0024 = stack[0];
+    v0023 = elt(env, 5); /* expand */
+    v0023 = Lflagp(nil, v0024, v0023);
+    env = stack[-1];
+    if (v0023 == nil) goto v0012;
+    v0023 = qvalue(elt(env, 3)); /* nil */
+    goto v0030;
+
+v0030:
+    if (v0023 == nil) { popv(2); return onevalue(v0045); }
+    v0023 = qvalue(elt(env, 3)); /* nil */
+    { popv(2); return onevalue(v0023); }
+
+v0012:
+    v0023 = qvalue(elt(env, 6)); /* !*force */
+    v0023 = (v0023 == nil ? lisp_true : nil);
+    goto v0030;
+
+v0004:
+    v0023 = qvalue(elt(env, 1)); /* t */
+    goto v0003;
+/* error exit handlers */
+v0046:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for getrtypecar */
+
+static Lisp_Object CC_getrtypecar(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0034;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for getrtypecar");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0034 = v0000;
+/* end of prologue */
+    v0034 = qcar(v0034);
+    {
+        fn = elt(env, 1); /* getrtype */
+        return (*qfn1(fn))(qenv(fn), v0034);
+    }
+}
+
+
+
+/* Code for addd */
+
+static Lisp_Object CC_addd(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0032, v0033;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for addd");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push3(nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[0] = v0029;
+    stack[-1] = v0000;
+/* end of prologue */
+    v0033 = nil;
+    goto v0005;
+
+v0005:
+    v0032 = stack[0];
+    if (v0032 == nil) goto v0041;
+    v0032 = stack[0];
+    if (!consp(v0032)) goto v0026;
+    v0032 = stack[0];
+    v0032 = qcar(v0032);
+    v0032 = (consp(v0032) ? nil : lisp_true);
+    goto v0044;
+
+v0044:
+    if (v0032 == nil) goto v0017;
+    stack[-2] = v0033;
+    v0033 = stack[-1];
+    v0032 = stack[0];
+    fn = elt(env, 2); /* adddm */
+    v0032 = (*qfn2(fn))(qenv(fn), v0033, v0032);
+    nil = C_nil;
+    if (exception_pending()) goto v0058;
+    env = stack[-3];
+    {
+        Lisp_Object v0067 = stack[-2];
+        popv(4);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0067, v0032);
+    }
+
+v0017:
+    v0032 = stack[0];
+    v0032 = qcar(v0032);
+    v0032 = cons(v0032, v0033);
+    nil = C_nil;
+    if (exception_pending()) goto v0058;
+    env = stack[-3];
+    v0033 = v0032;
+    v0032 = stack[0];
+    v0032 = qcdr(v0032);
+    stack[0] = v0032;
+    goto v0005;
+
+v0026:
+    v0032 = qvalue(elt(env, 1)); /* t */
+    goto v0044;
+
+v0041:
+    v0032 = stack[-1];
+    {
+        popv(4);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0033, v0032);
+    }
+/* error exit handlers */
+v0058:
+    popv(4);
+    return nil;
+}
+
+
+
+/* Code for sub2chk */
+
+static Lisp_Object CC_sub2chk(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0054, v0086, v0048;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for sub2chk");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0048 = v0000;
+/* end of prologue */
+    v0054 = qvalue(elt(env, 1)); /* subfg!* */
+    if (v0054 == nil) goto v0034;
+    v0086 = v0048;
+    v0054 = qvalue(elt(env, 2)); /* powlis!* */
+    v0054 = Latsoc(nil, v0086, v0054);
+    if (!(v0054 == nil)) goto v0013;
+    v0054 = v0048;
+    if (!consp(v0054)) goto v0030;
+    v0054 = v0048;
+    v0086 = qcar(v0054);
+    v0054 = elt(env, 3); /* (expt sqrt) */
+    v0054 = Lmemq(nil, v0086, v0054);
+    goto v0022;
+
+v0022:
+    if (!(v0054 == nil)) goto v0013;
+
+v0034:
+    v0054 = nil;
+    return onevalue(v0054);
+
+v0013:
+    v0054 = qvalue(elt(env, 5)); /* t */
+    qvalue(elt(env, 6)) = v0054; /* !*sub2 */
+    return onevalue(v0054);
+
+v0030:
+    v0054 = qvalue(elt(env, 4)); /* nil */
+    goto v0022;
+}
+
+
+
+/* Code for mo_divides!? */
+
+static Lisp_Object CC_mo_dividesW(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0039, v0040;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for mo_divides?");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0039 = v0029;
+    v0040 = v0000;
+/* end of prologue */
+    v0040 = qcar(v0040);
+    v0039 = qcar(v0039);
+    {
+        fn = elt(env, 1); /* mo!=modiv1 */
+        return (*qfn2(fn))(qenv(fn), v0040, v0039);
+    }
+}
+
+
+
+/* Code for multdm */
+
+static Lisp_Object CC_multdm(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0079, v0077, v0131;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for multdm");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* copy arguments values to proper place */
+    v0077 = v0029;
+    v0131 = v0000;
+/* end of prologue */
+    v0079 = v0131;
+    if (!consp(v0079)) goto v0002;
+    v0079 = qvalue(elt(env, 1)); /* nil */
+    goto v0001;
+
+v0001:
+    if (v0079 == nil) goto v0061;
+    v0079 = v0131;
+    v0079 = times2(v0079, v0077);
+    nil = C_nil;
+    if (exception_pending()) goto v0093;
+    env = stack[0];
+    v0131 = v0079;
+    v0079 = qvalue(elt(env, 2)); /* dmode!* */
+    if (v0079 == nil) goto v0031;
+    v0077 = qvalue(elt(env, 2)); /* dmode!* */
+    v0079 = elt(env, 4); /* convert */
+    v0079 = Lflagp(nil, v0077, v0079);
+    env = stack[0];
+    v0079 = (v0079 == nil ? lisp_true : nil);
+    goto v0070;
+
+v0070:
+    if (!(v0079 == nil)) { popv(1); return onevalue(v0131); }
+    v0077 = qvalue(elt(env, 2)); /* dmode!* */
+    v0079 = elt(env, 5); /* i2d */
+    v0079 = get(v0077, v0079);
+    v0077 = v0131;
+        popv(1);
+        return Lapply1(nil, v0079, v0077);
+
+v0031:
+    v0079 = qvalue(elt(env, 3)); /* t */
+    goto v0070;
+
+v0061:
+    v0079 = elt(env, 6); /* times */
+    {
+        popv(1);
+        fn = elt(env, 7); /* dcombine */
+        return (*qfnn(fn))(qenv(fn), 3, v0131, v0077, v0079);
+    }
+
+v0002:
+    v0079 = v0077;
+    v0079 = (consp(v0079) ? nil : lisp_true);
+    goto v0001;
+/* error exit handlers */
+v0093:
+    popv(1);
+    return nil;
+}
+
+
+
+/* Code for dssoc */
+
+static Lisp_Object CC_dssoc(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0021, v0020, v0070, v0031;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for dssoc");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0070 = v0029;
+    v0031 = v0000;
+/* end of prologue */
+
+v0034:
+    v0021 = v0070;
+    if (v0021 == nil) goto v0001;
+    v0020 = v0031;
+    v0021 = v0070;
+    v0021 = qcar(v0021);
+    v0021 = qcdr(v0021);
+    if (equal(v0020, v0021)) goto v0038;
+    v0021 = v0070;
+    v0021 = qcdr(v0021);
+    v0070 = v0021;
+    goto v0034;
+
+v0038:
+    v0021 = v0070;
+    v0021 = qcar(v0021);
+    return onevalue(v0021);
+
+v0001:
+    v0021 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0021);
+}
+
+
+
+/* Code for noncomlistp */
+
+static Lisp_Object CC_noncomlistp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0022;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for noncomlistp");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+
+v0007:
+    v0022 = stack[0];
+    v0022 = Lconsp(nil, v0022);
+    env = stack[-1];
+    if (v0022 == nil) goto v0013;
+    v0022 = stack[0];
+    v0022 = qcar(v0022);
+    fn = elt(env, 2); /* noncomp1 */
+    v0022 = (*qfn1(fn))(qenv(fn), v0022);
+    nil = C_nil;
+    if (exception_pending()) goto v0010;
+    env = stack[-1];
+    if (!(v0022 == nil)) { popv(2); return onevalue(v0022); }
+    v0022 = stack[0];
+    v0022 = qcdr(v0022);
+    stack[0] = v0022;
+    goto v0007;
+
+v0013:
+    v0022 = qvalue(elt(env, 1)); /* nil */
+    { popv(2); return onevalue(v0022); }
+/* error exit handlers */
+v0010:
     popv(2);
     return nil;
 }
@@ -6819,23 +6442,23 @@ v30:
 /* Code for rnzerop!: */
 
 static Lisp_Object CC_rnzeropT(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
+    Lisp_Object v0038, v0039;
     CSL_IGNORE(nil);
 #ifdef DEBUG
     if (check_env(env)) return aerror("env for rnzerop:");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v1 = v0;
+    v0038 = v0000;
 /* end of prologue */
-    v1 = qcdr(v1);
-    v2 = qcar(v1);
-    v1 = (Lisp_Object)1; /* 0 */
-    v1 = (v2 == v1 ? lisp_true : nil);
-    return onevalue(v1);
+    v0038 = qcdr(v0038);
+    v0039 = qcar(v0038);
+    v0038 = (Lisp_Object)1; /* 0 */
+    v0038 = (v0039 == v0038 ? lisp_true : nil);
+    return onevalue(v0038);
 }
 
 
@@ -6843,128 +6466,103 @@ static Lisp_Object CC_rnzeropT(Lisp_Object env,
 /* Code for modonep!: */
 
 static Lisp_Object CC_modonepT(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v8, v1;
+    Lisp_Object v0004, v0038;
     CSL_IGNORE(nil);
 #ifdef DEBUG
     if (check_env(env)) return aerror("env for modonep:");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v8 = v0;
+    v0004 = v0000;
 /* end of prologue */
-    v1 = qcdr(v8);
-    v8 = (Lisp_Object)17; /* 1 */
-    v8 = (v1 == v8 ? lisp_true : nil);
-    return onevalue(v8);
+    v0038 = qcdr(v0004);
+    v0004 = (Lisp_Object)17; /* 1 */
+    v0004 = (v0038 == v0004 ? lisp_true : nil);
+    return onevalue(v0004);
 }
 
 
 
-/* Code for mksp */
+/* Code for eolcheck */
 
-static Lisp_Object CC_mksp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object MS_CDECL CC_eolcheck(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
+    Lisp_Object v0086, v0048;
     Lisp_Object fn;
     CSL_IGNORE(nil);
+    argcheck(nargs, 0, "eolcheck");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for mksp");
+    if (check_env(env)) return aerror("env for eolcheck");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    v1 = v0;
 /* end of prologue */
-    fn = elt(env, 1); /* fkern */
-    v2 = (*qfn1(fn))(qenv(fn), v1);
+    v0086 = qvalue(elt(env, 1)); /* !*eoldelimp */
+    if (!(v0086 == nil)) goto v0035;
+    v0086 = qvalue(elt(env, 2)); /* nil */
+    { popv(1); return onevalue(v0086); }
+
+v0035:
+    v0048 = qvalue(elt(env, 3)); /* nxtsym!* */
+    v0086 = qvalue(elt(env, 4)); /* !$eol!$ */
+    if (v0048 == v0086) goto v0052;
+    v0086 = nil;
+    { popv(1); return onevalue(v0086); }
+
+v0052:
+    v0048 = qvalue(elt(env, 5)); /* cursym!* */
+    v0086 = elt(env, 6); /* end */
+    if (v0048 == v0086) goto v0062;
+    fn = elt(env, 8); /* token1 */
+    v0086 = (*qfnn(fn))(qenv(fn), 0);
     nil = C_nil;
-    if (exception_pending()) goto v26;
-    env = stack[-1];
-    v1 = stack[0];
-    {
-        popv(2);
-        fn = elt(env, 2); /* getpower */
-        return (*qfn2(fn))(qenv(fn), v2, v1);
-    }
-/* error exit handlers */
-v26:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for prin2x */
-
-static Lisp_Object CC_prin2x(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v7, v8;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for prin2x");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v7 = v0;
-/* end of prologue */
-    v8 = v7;
-    v7 = qvalue(elt(env, 1)); /* outl!* */
-    v7 = cons(v8, v7);
-    nil = C_nil;
-    if (exception_pending()) goto v1;
+    if (exception_pending()) goto v0043;
     env = stack[0];
-    qvalue(elt(env, 1)) = v7; /* outl!* */
-    { popv(1); return onevalue(v7); }
+    goto v0026;
+
+v0026:
+    qvalue(elt(env, 3)) = v0086; /* nxtsym!* */
+    goto v0035;
+
+v0062:
+    v0086 = elt(env, 7); /* !; */
+    goto v0026;
 /* error exit handlers */
-v1:
+v0043:
     popv(1);
     return nil;
 }
 
 
 
-/* Code for rmultpf */
+/* Code for mtchp1 */
 
-static Lisp_Object CC_rmultpf(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object MS_CDECL CC_mtchp1(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, Lisp_Object v0050, ...)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v80, v92;
+    Lisp_Object v0143, v0103, v0104;
     Lisp_Object fn;
     CSL_IGNORE(nil);
+    argcheck(nargs, 4, "mtchp1");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for rmultpf");
+    if (check_env(env)) return aerror("env for mtchp1");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push4(v0050,v0053,v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop4(v0000,v0029,v0053,v0050);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -6972,582 +6570,260 @@ static Lisp_Object CC_rmultpf(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push4(nil, nil, nil, nil);
 /* copy arguments values to proper place */
-    stack[-1] = v10;
-    stack[-2] = v0;
+    v0143 = v0050;
+    stack[0] = v0053;
+    stack[-1] = v0029;
+    stack[-2] = v0000;
 /* end of prologue */
-    stack[-3] = nil;
-    goto v22;
+    v0103 = stack[-2];
+    v0143 = stack[-1];
+    if (equal(v0103, v0143)) goto v0003;
+    v0143 = stack[-2];
+    v0103 = qcar(v0143);
+    v0143 = stack[-1];
+    v0143 = qcar(v0143);
+    fn = elt(env, 5); /* mchk!* */
+    v0143 = (*qfn2(fn))(qenv(fn), v0103, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    env = stack[-4];
+    stack[-3] = v0143;
+    if (v0143 == nil) goto v0015;
+    v0143 = stack[-1];
+    v0103 = qcdr(v0143);
+    v0143 = qvalue(elt(env, 2)); /* frlis!* */
+    v0143 = Lmemq(nil, v0103, v0143);
+    if (v0143 == nil) goto v0047;
+    v0143 = stack[-2];
+    v0103 = qcdr(v0143);
+    v0143 = (Lisp_Object)17; /* 1 */
+    if (v0103 == v0143) goto v0017;
+    v0143 = stack[-1];
+    v0104 = qcdr(v0143);
+    v0103 = stack[-3];
+    v0143 = stack[-2];
+    v0143 = qcdr(v0143);
+    fn = elt(env, 6); /* powmtch */
+    v0143 = (*qfnn(fn))(qenv(fn), 3, v0104, v0103, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    env = stack[-4];
+    stack[-3] = v0143;
+    v0143 = (v0143 == nil ? lisp_true : nil);
+    goto v0055;
 
-v22:
-    v80 = stack[-1];
-    if (v80 == nil) goto v6;
-    v80 = stack[-1];
-    if (!consp(v80)) goto v39;
-    v80 = stack[-1];
-    v80 = qcar(v80);
-    if (!consp(v80)) goto v39;
-    v80 = stack[-2];
-    v92 = qcar(v80);
-    v80 = stack[-1];
-    v80 = qcar(v80);
-    v80 = qcar(v80);
-    v80 = qcar(v80);
-    fn = elt(env, 1); /* reordop */
-    v80 = (*qfn2(fn))(qenv(fn), v92, v80);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    if (!(v80 == nil)) goto v39;
-    v80 = stack[-1];
-    v80 = qcar(v80);
-    stack[0] = qcar(v80);
-    v92 = stack[-2];
-    v80 = stack[-1];
-    v80 = qcar(v80);
-    v80 = qcdr(v80);
-    v92 = CC_rmultpf(env, v92, v80);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    v80 = stack[-3];
-    v80 = acons(stack[0], v92, v80);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    stack[-3] = v80;
-    v80 = stack[-1];
-    v80 = qcdr(v80);
-    stack[-1] = v80;
-    goto v22;
+v0055:
+    if (v0143 == nil) goto v0094;
+    v0143 = qvalue(elt(env, 1)); /* nil */
+    { popv(5); return onevalue(v0143); }
 
-v39:
+v0094:
     stack[0] = stack[-3];
-    v92 = stack[-2];
-    v80 = stack[-1];
-    v80 = cons(v92, v80);
+    v0143 = stack[-1];
+    v0103 = qcdr(v0143);
+    v0143 = stack[-2];
+    v0143 = qcdr(v0143);
+    v0143 = cons(v0103, v0143);
     nil = C_nil;
-    if (exception_pending()) goto v93;
-    env = stack[-4];
-    v80 = ncons(v80);
-    nil = C_nil;
-    if (exception_pending()) goto v93;
+    if (exception_pending()) goto v0125;
     env = stack[-4];
     {
-        Lisp_Object v155 = stack[0];
+        Lisp_Object v0144 = stack[0];
         popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v155, v80);
+        fn = elt(env, 7); /* mapcons */
+        return (*qfn2(fn))(qenv(fn), v0144, v0143);
     }
 
-v6:
-    v80 = stack[-3];
-    {
-        popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn1(fn))(qenv(fn), v80);
-    }
+v0017:
+    v0143 = qvalue(elt(env, 3)); /* t */
+    goto v0055;
+
+v0047:
+    v0143 = stack[0];
+    if (v0143 == nil) goto v0145;
+    v0143 = stack[-2];
+    v0103 = qcdr(v0143);
+    v0143 = stack[-1];
+    v0143 = qcdr(v0143);
+    if (!(equal(v0103, v0143))) goto v0082;
+
+v0145:
+    v0143 = stack[-1];
+    v0143 = qcdr(v0143);
+    if (is_number(v0143)) goto v0146;
+    v0143 = qvalue(elt(env, 3)); /* t */
+    goto v0119;
+
+v0119:
+    if (v0143 == nil) { Lisp_Object res = stack[-3]; popv(5); return onevalue(res); }
+    else goto v0082;
+
+v0082:
+    v0143 = qvalue(elt(env, 1)); /* nil */
+    { popv(5); return onevalue(v0143); }
+
+v0146:
+    v0143 = stack[-2];
+    v0143 = qcdr(v0143);
+    if (is_number(v0143)) goto v0114;
+    v0143 = qvalue(elt(env, 3)); /* t */
+    goto v0119;
+
+v0114:
+    v0143 = qvalue(elt(env, 4)); /* !*mcd */
+    if (v0143 == nil) goto v0147;
+    v0143 = stack[-2];
+    v0103 = qcdr(v0143);
+    v0143 = stack[-1];
+    v0143 = qcdr(v0143);
+    v0143 = (Lisp_Object)lessp2(v0103, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    v0143 = v0143 ? lisp_true : nil;
+    env = stack[-4];
+    goto v0119;
+
+v0147:
+    v0143 = stack[-2];
+    v0103 = qcdr(v0143);
+    v0143 = stack[-1];
+    v0143 = qcdr(v0143);
+    v0103 = times2(v0103, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    env = stack[-4];
+    v0143 = (Lisp_Object)1; /* 0 */
+    v0143 = (Lisp_Object)lessp2(v0103, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    v0143 = v0143 ? lisp_true : nil;
+    env = stack[-4];
+    if (!(v0143 == nil)) goto v0119;
+    v0143 = stack[-2];
+    v0143 = qcdr(v0143);
+    stack[0] = Labsval(nil, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    env = stack[-4];
+    v0143 = stack[-1];
+    v0143 = qcdr(v0143);
+    v0143 = Labsval(nil, v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    env = stack[-4];
+    v0143 = (Lisp_Object)lessp2(stack[0], v0143);
+    nil = C_nil;
+    if (exception_pending()) goto v0125;
+    v0143 = v0143 ? lisp_true : nil;
+    env = stack[-4];
+    goto v0119;
+
+v0015:
+    v0143 = qvalue(elt(env, 1)); /* nil */
+    { popv(5); return onevalue(v0143); }
+
+v0003:
+    v0143 = qvalue(elt(env, 1)); /* nil */
+    popv(5);
+    return ncons(v0143);
 /* error exit handlers */
-v93:
+v0125:
     popv(5);
     return nil;
 }
 
 
 
-/* Code for arrayp */
+/* Code for mri_floorkernelp */
 
-static Lisp_Object CC_arrayp(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_mri_floorkernelp(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v28, v29;
+    Lisp_Object v0004, v0038;
+    Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for arrayp");
+    if (check_env(env)) return aerror("env for mri_floorkernelp");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* copy arguments values to proper place */
-    v28 = v0;
+    v0004 = v0000;
 /* end of prologue */
-    v29 = v28;
-    v28 = elt(env, 1); /* rtype */
-    v28 = get(v29, v28);
+    v0038 = v0004;
+    v0004 = qvalue(elt(env, 1)); /* nil */
+    fn = elt(env, 2); /* kernels1 */
+    v0004 = (*qfn2(fn))(qenv(fn), v0038, v0004);
+    nil = C_nil;
+    if (exception_pending()) goto v0039;
     env = stack[0];
-    v29 = elt(env, 2); /* array */
-    v28 = (v28 == v29 ? lisp_true : nil);
-    { popv(1); return onevalue(v28); }
-}
-
-
-
-/* Code for finde */
-
-static Lisp_Object CC_finde(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v47, v14, v48, v25;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for finde");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v25 = v10;
-    v48 = v0;
-/* end of prologue */
-
-v4:
-    v47 = v48;
-    if (v47 == nil) goto v5;
-    v14 = v25;
-    v47 = v48;
-    v47 = qcar(v47);
-    v47 = qcdr(v47);
-    v47 = Lmemq(nil, v14, v47);
-    if (!(v47 == nil)) return onevalue(v48);
-    v47 = v48;
-    v47 = qcdr(v47);
-    v48 = v47;
-    goto v4;
-
-v5:
-    v47 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v47);
-}
-
-
-
-/* Code for nocp */
-
-static Lisp_Object CC_nocp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v24;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for nocp");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-
-v45:
-    v24 = stack[0];
-    v24 = (v24 == nil ? lisp_true : nil);
-    if (!(v24 == nil)) { popv(2); return onevalue(v24); }
-    v24 = stack[0];
-    v24 = qcar(v24);
-    v24 = qcar(v24);
-    fn = elt(env, 2); /* noncomp */
-    v24 = (*qfn1(fn))(qenv(fn), v24);
-    nil = C_nil;
-    if (exception_pending()) goto v46;
-    env = stack[-1];
-    if (v24 == nil) goto v6;
-    v24 = stack[0];
-    v24 = qcdr(v24);
-    stack[0] = v24;
-    goto v45;
-
-v6:
-    v24 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v24); }
-/* error exit handlers */
-v46:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for quotsq */
-
-static Lisp_Object CC_quotsq(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for quotsq");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v1 = v10;
-    v2 = v0;
-/* end of prologue */
-    stack[0] = v2;
-    fn = elt(env, 1); /* invsq */
-    v1 = (*qfn1(fn))(qenv(fn), v1);
-    nil = C_nil;
-    if (exception_pending()) goto v26;
-    env = stack[-1];
-    {
-        Lisp_Object v27 = stack[0];
-        popv(2);
-        fn = elt(env, 2); /* multsq */
-        return (*qfn2(fn))(qenv(fn), v27, v1);
-    }
-/* error exit handlers */
-v26:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for kernlp */
-
-static Lisp_Object CC_kernlp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v31, v32;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for kernlp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v31 = v0;
-/* end of prologue */
-
-v3:
-    v32 = v31;
-    if (!consp(v32)) return onevalue(v31);
-    v32 = v31;
-    v32 = qcar(v32);
-    if (!consp(v32)) return onevalue(v31);
-    v32 = v31;
-    v32 = qcdr(v32);
-    if (v32 == nil) goto v26;
-    v31 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v31);
-
-v26:
-    v31 = qcar(v31);
-    v31 = qcdr(v31);
-    goto v3;
-}
-
-
-
-/* Code for ibalp_calcmom */
-
-static Lisp_Object CC_ibalp_calcmom(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v54, v55;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for ibalp_calcmom");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-    v54 = stack[0];
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v55 = qcar(v54);
-    v54 = stack[0];
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcar(v54);
-    v55 = plus2(v55, v54);
-    nil = C_nil;
-    if (exception_pending()) goto v42;
-    env = stack[-2];
-    v54 = (Lisp_Object)513; /* 32 */
-    stack[-1] = times2(v55, v54);
-    nil = C_nil;
-    if (exception_pending()) goto v42;
-    env = stack[-2];
-    v54 = stack[0];
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v55 = qcar(v54);
-    v54 = stack[0];
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcdr(v54);
-    v54 = qcar(v54);
-    v54 = times2(v55, v54);
-    nil = C_nil;
-    if (exception_pending()) goto v42;
-    {
-        Lisp_Object v81 = stack[-1];
-        popv(3);
-        return plus2(v81, v54);
-    }
-/* error exit handlers */
-v42:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for compress!* */
-
-static Lisp_Object CC_compressH(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v76, v77, v78, v156;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for compress*");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v76 = v0;
-/* end of prologue */
-    v156 = nil;
-    v77 = v76;
-    v77 = qcar(v77);
-    v77 = Ldigitp(nil, v77);
-    env = stack[-1];
-    if (v77 == nil) goto v22;
-        popv(2);
-        return Lcompress(nil, v76);
-
-v22:
-    stack[0] = v76;
-    goto v28;
-
-v28:
-    v76 = stack[0];
-    if (v76 == nil) goto v27;
-    v76 = stack[0];
-    v76 = qcar(v76);
-    v78 = v76;
-    v77 = v78;
-    v76 = elt(env, 2); /* !/ */
-    if (v77 == v76) goto v64;
-    v77 = v78;
-    v76 = elt(env, 3); /* !- */
-    if (v77 == v76) goto v64;
-    v77 = v78;
-    v76 = elt(env, 4); /* !; */
-    if (v77 == v76) goto v64;
-    v77 = v78;
-    v76 = elt(env, 5); /* !. */
-    if (v77 == v76) goto v64;
-    v76 = v78;
-    v77 = v156;
-    v76 = cons(v76, v77);
-    nil = C_nil;
-    if (exception_pending()) goto v157;
-    env = stack[-1];
-    v156 = v76;
-    goto v47;
-
-v47:
-    v76 = stack[0];
-    v76 = qcdr(v76);
-    stack[0] = v76;
-    goto v28;
-
-v64:
-    v77 = v78;
-    v76 = elt(env, 6); /* !! */
-    v78 = v156;
-    v76 = list2star(v77, v76, v78);
-    nil = C_nil;
-    if (exception_pending()) goto v157;
-    env = stack[-1];
-    v156 = v76;
-    goto v47;
-
-v27:
-    v76 = v156;
-    v76 = Lnreverse(nil, v76);
-    env = stack[-1];
-    v76 = Lcompress(nil, v76);
-    nil = C_nil;
-    if (exception_pending()) goto v157;
-        popv(2);
-        return Lintern(nil, v76);
-/* error exit handlers */
-v157:
-    popv(2);
-    return nil;
-}
-
-
-
-/* Code for ps!:order */
-
-static Lisp_Object CC_psTorder(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v11, v57, v12;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for ps:order");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* copy arguments values to proper place */
-    v57 = v0;
-/* end of prologue */
-    v11 = v57;
-    if (!consp(v11)) goto v3;
-    v11 = v57;
-    v12 = qcar(v11);
-    v11 = elt(env, 1); /* !:ps!: */
-    if (v12 == v11) goto v36;
-    v11 = v57;
-    v12 = qcar(v11);
-    v11 = elt(env, 2); /* dname */
-    v11 = get(v12, v11);
-    env = stack[0];
-    if (!(v11 == nil)) goto v3;
-
-v36:
-    v11 = (Lisp_Object)1; /* 0 */
     {
         popv(1);
-        fn = elt(env, 3); /* ps!:getv */
-        return (*qfn2(fn))(qenv(fn), v57, v11);
+        fn = elt(env, 3); /* mri_floorp */
+        return (*qfn1(fn))(qenv(fn), v0004);
     }
-
-v3:
-    v11 = (Lisp_Object)1; /* 0 */
-    { popv(1); return onevalue(v11); }
+/* error exit handlers */
+v0039:
+    popv(1);
+    return nil;
 }
 
 
 
-/* Code for !:onep */
+/* Code for qqe_qoptailp */
 
-static Lisp_Object CC_Tonep(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_qqe_qoptailp(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v33, v13, v47;
+    Lisp_Object v0041, v0035;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for :onep");
+    if (check_env(env)) return aerror("env for qqe_qoptailp");
 #endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v47 = v0;
+    v0041 = v0000;
 /* end of prologue */
-    v33 = v47;
-    if (!consp(v33)) goto v3;
-    v33 = v47;
-    v13 = qcar(v33);
-    v33 = elt(env, 1); /* onep */
-    v33 = get(v13, v33);
-    v13 = v47;
-        return Lapply1(nil, v33, v13);
+    v0035 = v0041;
+    v0041 = elt(env, 1); /* (rtail ltail) */
+    v0041 = Lmemq(nil, v0035, v0041);
+    if (v0041 == nil) goto v0034;
+    v0041 = qvalue(elt(env, 2)); /* t */
+    return onevalue(v0041);
 
-v3:
-    v33 = v47;
-        return Lonep(nil, v33);
+v0034:
+    v0041 = nil;
+    return onevalue(v0041);
 }
 
 
 
-/* Code for bcprod */
+/* Code for lto_setequalq */
 
-static Lisp_Object CC_bcprod(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_lto_setequalq(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v68, v51, v52;
+    Lisp_Object v0102, v0079, v0077;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for bcprod");
+    if (check_env(env)) return aerror("env for lto_setequalq");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -7555,138 +6831,259 @@ static Lisp_Object CC_bcprod(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0029;
+    stack[-1] = v0000;
 /* end of prologue */
-    v68 = qvalue(elt(env, 1)); /* !*grmod!* */
-    if (v68 == nil) goto v46;
-    v51 = stack[-1];
-    v68 = stack[0];
-    v68 = times2(v51, v68);
+    v0102 = qvalue(elt(env, 1)); /* !*rlsetequalqhash */
+    if (v0102 == nil) goto v0070;
+    v0079 = stack[-1];
+    v0102 = stack[0];
+    fn = elt(env, 4); /* lto_hashequalq */
+    v0102 = (*qfn2(fn))(qenv(fn), v0079, v0102);
     nil = C_nil;
-    if (exception_pending()) goto v19;
+    if (exception_pending()) goto v0094;
     env = stack[-2];
-    {
-        popv(3);
-        fn = elt(env, 3); /* bcfi */
-        return (*qfn1(fn))(qenv(fn), v68);
-    }
+    goto v0035;
 
-v46:
-    v52 = stack[-1];
-    v51 = stack[0];
-    v68 = elt(env, 2); /* times */
-    fn = elt(env, 4); /* bcint2op */
-    v68 = (*qfnn(fn))(qenv(fn), 3, v52, v51, v68);
+v0035:
+    if (v0102 == nil) goto v0043;
+    v0102 = qvalue(elt(env, 3)); /* t */
+    v0077 = v0102;
+    goto v0072;
+
+v0072:
+    v0102 = v0077;
+    if (v0102 == nil) { popv(3); return onevalue(v0077); }
+    v0102 = stack[-1];
+    if (v0102 == nil) { popv(3); return onevalue(v0077); }
+    v0102 = stack[-1];
+    v0102 = qcar(v0102);
+    v0079 = v0102;
+    v0102 = stack[0];
+    v0102 = Lmemq(nil, v0079, v0102);
+    if (v0102 == nil) goto v0063;
+    v0102 = stack[-1];
+    v0102 = qcdr(v0102);
+    stack[-1] = v0102;
+    goto v0072;
+
+v0063:
+    v0102 = qvalue(elt(env, 2)); /* nil */
+    v0077 = v0102;
+    goto v0072;
+
+v0043:
+    v0102 = qvalue(elt(env, 2)); /* nil */
+    { popv(3); return onevalue(v0102); }
+
+v0070:
+    v0079 = stack[-1];
+    v0102 = stack[0];
+    fn = elt(env, 5); /* lto_equallengthp */
+    v0102 = (*qfn2(fn))(qenv(fn), v0079, v0102);
     nil = C_nil;
-    if (exception_pending()) goto v19;
+    if (exception_pending()) goto v0094;
     env = stack[-2];
-    if (!(v68 == nil)) { popv(3); return onevalue(v68); }
-    v51 = stack[-1];
-    v68 = stack[0];
-    fn = elt(env, 5); /* multsq */
-    v68 = (*qfn2(fn))(qenv(fn), v51, v68);
-    nil = C_nil;
-    if (exception_pending()) goto v19;
-    env = stack[-2];
-    {
-        popv(3);
-        fn = elt(env, 6); /* bccheckz */
-        return (*qfn1(fn))(qenv(fn), v68);
-    }
+    goto v0035;
 /* error exit handlers */
-v19:
+v0094:
     popv(3);
     return nil;
 }
 
 
 
-/* Code for ordad */
+/* Code for numlis */
 
-static Lisp_Object CC_ordad(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_numlis(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v61, v62;
-    Lisp_Object fn;
+    Lisp_Object v0010, v0044;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for ordad");
+    if (check_env(env)) return aerror("env for numlis");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0010 = v0000;
+/* end of prologue */
+
+v0007:
+    v0044 = v0010;
+    if (v0044 == nil) goto v0013;
+    v0044 = v0010;
+    v0044 = qcar(v0044);
+    if (is_number(v0044)) goto v0042;
+    v0010 = qvalue(elt(env, 2)); /* nil */
+    return onevalue(v0010);
+
+v0042:
+    v0010 = qcdr(v0010);
+    goto v0007;
+
+v0013:
+    v0010 = qvalue(elt(env, 1)); /* t */
+    return onevalue(v0010);
+}
+
+
+
+/* Code for constp */
+
+static Lisp_Object CC_constp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0062, v0064;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for constp");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* copy arguments values to proper place */
+    v0062 = v0000;
+/* end of prologue */
+    v0064 = v0062;
+    v0064 = (is_number(v0064) ? lisp_true : nil);
+    if (!(v0064 == nil)) { popv(1); return onevalue(v0064); }
+    v0064 = v0062;
+    v0064 = Lconsp(nil, v0064);
+    env = stack[0];
+    if (v0064 == nil) goto v0002;
+    v0062 = qcar(v0062);
+    v0064 = qvalue(elt(env, 2)); /* domainlist!* */
+    v0062 = Lmemq(nil, v0062, v0064);
+    { popv(1); return onevalue(v0062); }
+
+v0002:
+    v0062 = qvalue(elt(env, 1)); /* nil */
+    { popv(1); return onevalue(v0062); }
+}
+
+
+
+/* Code for replus1 */
+
+static Lisp_Object CC_replus1(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0016, v0023, v0024;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for replus1");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0024 = v0000;
+/* end of prologue */
+    v0016 = v0024;
+    if (v0016 == nil) goto v0013;
+    v0016 = v0024;
+    if (!consp(v0016)) goto v0038;
+    v0023 = v0024;
+    v0016 = elt(env, 2); /* plus */
+    if (!consp(v0023)) goto v0031;
+    v0023 = qcar(v0023);
+    if (!(v0023 == v0016)) goto v0031;
+    v0016 = v0024;
+    v0016 = qcdr(v0016);
+    goto v0004;
+
+v0004:
+    if (!(v0016 == nil)) return onevalue(v0024);
+    v0016 = v0024;
+    v0016 = qcdr(v0016);
+    if (v0016 == nil) goto v0056;
+    v0016 = elt(env, 2); /* plus */
+    v0023 = v0024;
+    return cons(v0016, v0023);
+
+v0056:
+    v0016 = v0024;
+    v0016 = qcar(v0016);
+    return onevalue(v0016);
+
+v0031:
+    v0016 = qvalue(elt(env, 3)); /* nil */
+    goto v0004;
+
+v0038:
+    v0016 = qvalue(elt(env, 1)); /* t */
+    goto v0004;
+
+v0013:
+    v0016 = (Lisp_Object)1; /* 0 */
+    return onevalue(v0016);
+}
+
+
+
+/* Code for buchvevdivides!? */
+
+static Lisp_Object CC_buchvevdividesW(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0054, v0086, v0048;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for buchvevdivides?");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* space for vars preserved across procedure calls */
-    push3(nil, nil, nil);
+    push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0029;
+    stack[-1] = v0000;
 /* end of prologue */
-    stack[-2] = nil;
-    goto v5;
+    v0086 = stack[0];
+    v0054 = stack[-1];
+    fn = elt(env, 4); /* vevmtest!? */
+    v0054 = (*qfn2(fn))(qenv(fn), v0086, v0054);
+    nil = C_nil;
+    if (exception_pending()) goto v0018;
+    env = stack[-2];
+    if (v0054 == nil) goto v0034;
+    v0054 = qvalue(elt(env, 2)); /* gmodule!* */
+    if (v0054 == nil) goto v0022;
+    v0048 = stack[-1];
+    v0086 = stack[0];
+    v0054 = qvalue(elt(env, 2)); /* gmodule!* */
+    {
+        popv(3);
+        fn = elt(env, 5); /* gevcompatible1 */
+        return (*qfnn(fn))(qenv(fn), 3, v0048, v0086, v0054);
+    }
 
-v5:
-    v61 = stack[0];
-    if (v61 == nil) goto v82;
-    v62 = stack[-1];
-    v61 = stack[0];
-    v61 = qcar(v61);
-    fn = elt(env, 2); /* ordp */
-    v61 = (*qfn2(fn))(qenv(fn), v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v74;
-    env = stack[-3];
-    if (!(v61 == nil)) goto v82;
-    v61 = stack[0];
-    v62 = qcar(v61);
-    v61 = stack[-2];
-    v61 = cons(v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v74;
-    env = stack[-3];
-    stack[-2] = v61;
-    v61 = stack[0];
-    v61 = qcdr(v61);
-    stack[0] = v61;
-    goto v5;
+v0022:
+    v0054 = qvalue(elt(env, 3)); /* t */
+    { popv(3); return onevalue(v0054); }
 
-v82:
-    v62 = stack[-1];
-    v61 = stack[0];
-    v61 = cons(v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v74;
-    env = stack[-3];
-    stack[0] = v61;
-    goto v19;
-
-v19:
-    v61 = stack[-2];
-    if (v61 == nil) { Lisp_Object res = stack[0]; popv(4); return onevalue(res); }
-    v61 = stack[-2];
-    v61 = qcdr(v61);
-    stack[-1] = v61;
-    v62 = stack[-2];
-    v61 = stack[0];
-    v61 = Lrplacd(nil, v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v74;
-    env = stack[-3];
-    v61 = stack[-2];
-    stack[0] = v61;
-    v61 = stack[-1];
-    stack[-2] = v61;
-    goto v19;
+v0034:
+    v0054 = qvalue(elt(env, 1)); /* nil */
+    { popv(3); return onevalue(v0054); }
 /* error exit handlers */
-v74:
-    popv(4);
+v0018:
+    popv(3);
     return nil;
 }
 
@@ -7695,19 +7092,19 @@ v74:
 /* Code for sublistp */
 
 static Lisp_Object CC_sublistp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v12, v68, v51, v52;
+    Lisp_Object v0071, v0065, v0006, v0072;
     CSL_IGNORE(nil);
 #ifdef DEBUG
     if (check_env(env)) return aerror("env for sublistp");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -7715,123 +7112,99 @@ static Lisp_Object CC_sublistp(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push(nil);
 /* copy arguments values to proper place */
-    v68 = v10;
-    v51 = v0;
+    v0065 = v0029;
+    v0006 = v0000;
 /* end of prologue */
 
-v45:
-    v12 = v51;
-    v12 = (v12 == nil ? lisp_true : nil);
-    if (!(v12 == nil)) { popv(2); return onevalue(v12); }
-    v12 = v51;
-    v52 = qcar(v12);
-    v12 = v68;
-    v12 = Lmember(nil, v52, v12);
-    if (v12 == nil) goto v7;
-    v12 = v51;
-    stack[0] = qcdr(v12);
-    v12 = v51;
-    v12 = qcar(v12);
-    v12 = Ldelete(nil, v12, v68);
+v0007:
+    v0071 = v0006;
+    if (v0071 == nil) goto v0034;
+    v0071 = v0006;
+    v0072 = qcar(v0071);
+    v0071 = v0065;
+    v0071 = Lmember(nil, v0072, v0071);
+    if (v0071 == nil) goto v0039;
+    v0071 = v0006;
+    stack[0] = qcdr(v0071);
+    v0071 = v0006;
+    v0071 = qcar(v0071);
+    v0071 = Ldelete(nil, v0071, v0065);
     nil = C_nil;
-    if (exception_pending()) goto v18;
+    if (exception_pending()) goto v0036;
     env = stack[-1];
-    v51 = stack[0];
-    v68 = v12;
-    goto v45;
+    v0006 = stack[0];
+    v0065 = v0071;
+    goto v0007;
 
-v7:
-    v12 = qvalue(elt(env, 1)); /* nil */
-    { popv(2); return onevalue(v12); }
+v0039:
+    v0071 = qvalue(elt(env, 2)); /* nil */
+    { popv(2); return onevalue(v0071); }
+
+v0034:
+    v0071 = qvalue(elt(env, 1)); /* t */
+    { popv(2); return onevalue(v0071); }
 /* error exit handlers */
-v18:
+v0036:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for addcomment */
+/* Code for !:times */
 
-static Lisp_Object CC_addcomment(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object v9;
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for addcomment");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v9 = v0;
-/* end of prologue */
-    qvalue(elt(env, 1)) = v9; /* cursym!* */
-    return onevalue(v9);
-}
-
-
-
-/* Code for order!: */
-
-static Lisp_Object CC_orderT(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_Ttimes(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v35, v36;
+    Lisp_Object v0017, v0016, v0023;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for order:");
+    if (check_env(env)) return aerror("env for :times");
 #endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
+    CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    v0016 = v0029;
+    v0023 = v0000;
 /* end of prologue */
-    v35 = stack[0];
-    v35 = qcdr(v35);
-    v36 = qcar(v35);
-    v35 = (Lisp_Object)1; /* 0 */
-    if (v36 == v35) goto v3;
-    v35 = stack[0];
-    v35 = qcdr(v35);
-    v35 = qcar(v35);
-    v35 = Labsval(nil, v35);
-    nil = C_nil;
-    if (exception_pending()) goto v37;
-    env = stack[-2];
-    fn = elt(env, 1); /* msd */
-    stack[-1] = (*qfn1(fn))(qenv(fn), v35);
-    nil = C_nil;
-    if (exception_pending()) goto v37;
-    env = stack[-2];
-    v35 = stack[0];
-    v35 = qcdr(v35);
-    v35 = qcdr(v35);
-    v35 = sub1(v35);
-    nil = C_nil;
-    if (exception_pending()) goto v37;
+    v0017 = v0023;
+    if (v0017 == nil) goto v0002;
+    v0017 = v0016;
+    v0017 = (v0017 == nil ? lisp_true : nil);
+    goto v0001;
+
+v0001:
+    if (v0017 == nil) goto v0005;
+    v0017 = qvalue(elt(env, 2)); /* nil */
+    return onevalue(v0017);
+
+v0005:
+    v0017 = v0023;
+    if (!consp(v0017)) goto v0010;
+    v0017 = qvalue(elt(env, 2)); /* nil */
+    goto v0015;
+
+v0015:
+    if (v0017 == nil) goto v0065;
+    v0017 = v0023;
+    return times2(v0017, v0016);
+
+v0065:
+    v0017 = elt(env, 3); /* times */
     {
-        Lisp_Object v82 = stack[-1];
-        popv(3);
-        return plus2(v82, v35);
+        fn = elt(env, 4); /* dcombine */
+        return (*qfnn(fn))(qenv(fn), 3, v0023, v0016, v0017);
     }
 
-v3:
-    v35 = (Lisp_Object)1; /* 0 */
-    { popv(3); return onevalue(v35); }
-/* error exit handlers */
-v37:
-    popv(3);
-    return nil;
+v0010:
+    v0017 = v0016;
+    v0017 = (consp(v0017) ? nil : lisp_true);
+    goto v0015;
+
+v0002:
+    v0017 = qvalue(elt(env, 1)); /* t */
+    goto v0001;
 }
 
 
@@ -7839,19 +7212,19 @@ v37:
 /* Code for pprin2 */
 
 static Lisp_Object CC_pprin2(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v30, v46;
+    Lisp_Object v0010, v0044;
     CSL_IGNORE(nil);
 #ifdef DEBUG
     if (check_env(env)) return aerror("env for pprin2");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -7859,100 +7232,35 @@ static Lisp_Object CC_pprin2(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v0;
+    stack[0] = v0000;
 /* end of prologue */
-    v46 = stack[0];
-    v30 = qvalue(elt(env, 1)); /* !*pprinbuf!* */
-    v30 = cons(v46, v30);
+    v0044 = stack[0];
+    v0010 = qvalue(elt(env, 1)); /* !*pprinbuf!* */
+    v0010 = cons(v0044, v0010);
     nil = C_nil;
-    if (exception_pending()) goto v32;
+    if (exception_pending()) goto v0064;
     env = stack[-2];
-    qvalue(elt(env, 1)) = v30; /* !*pprinbuf!* */
+    qvalue(elt(env, 1)) = v0010; /* !*pprinbuf!* */
     stack[-1] = qvalue(elt(env, 2)); /* !*posn!* */
-    v30 = stack[0];
-    v30 = Lexplodec(nil, v30);
+    v0010 = stack[0];
+    v0010 = Lexplodec(nil, v0010);
     nil = C_nil;
-    if (exception_pending()) goto v32;
+    if (exception_pending()) goto v0064;
     env = stack[-2];
-    v30 = Llength(nil, v30);
+    v0010 = Llength(nil, v0010);
     nil = C_nil;
-    if (exception_pending()) goto v32;
+    if (exception_pending()) goto v0064;
     env = stack[-2];
-    v30 = plus2(stack[-1], v30);
+    v0010 = plus2(stack[-1], v0010);
     nil = C_nil;
-    if (exception_pending()) goto v32;
+    if (exception_pending()) goto v0064;
     env = stack[-2];
-    qvalue(elt(env, 2)) = v30; /* !*posn!* */
-    v30 = nil;
-    { popv(3); return onevalue(v30); }
+    qvalue(elt(env, 2)) = v0010; /* !*posn!* */
+    v0010 = nil;
+    { popv(3); return onevalue(v0010); }
 /* error exit handlers */
-v32:
+v0064:
     popv(3);
-    return nil;
-}
-
-
-
-/* Code for gcdfd1 */
-
-static Lisp_Object CC_gcdfd1(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v12, v68;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for gcdfd1");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    v12 = v0;
-/* end of prologue */
-
-v4:
-    v68 = stack[0];
-    if (v68 == nil) { popv(2); return onevalue(v12); }
-    v68 = stack[0];
-    if (!consp(v68)) goto v16;
-    v68 = stack[0];
-    v68 = qcar(v68);
-    if (!consp(v68)) goto v16;
-    v68 = v12;
-    v12 = stack[0];
-    v12 = qcar(v12);
-    v12 = qcdr(v12);
-    v12 = CC_gcdfd1(env, v68, v12);
-    nil = C_nil;
-    if (exception_pending()) goto v52;
-    env = stack[-1];
-    v68 = stack[0];
-    v68 = qcdr(v68);
-    stack[0] = v68;
-    goto v4;
-
-v16:
-    v68 = v12;
-    v12 = stack[0];
-    {
-        popv(2);
-        fn = elt(env, 1); /* gcddd */
-        return (*qfn2(fn))(qenv(fn), v68, v12);
-    }
-/* error exit handlers */
-v52:
-    popv(2);
     return nil;
 }
 
@@ -7961,10 +7269,10 @@ v52:
 /* Code for isanindex */
 
 static Lisp_Object CC_isanindex(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v43, v56, v58;
+    Lisp_Object v0033, v0099, v0037;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
@@ -7972,73 +7280,75 @@ static Lisp_Object CC_isanindex(Lisp_Object env,
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* copy arguments values to proper place */
-    v58 = v0;
+    v0037 = v0000;
 /* end of prologue */
-    v43 = v58;
-    if (symbolp(v43)) goto v2;
-    v43 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v43); }
+    v0033 = v0037;
+    if (symbolp(v0033)) goto v0039;
+    v0033 = qvalue(elt(env, 1)); /* nil */
+    { popv(1); return onevalue(v0033); }
 
-v2:
-    v56 = v58;
-    v43 = qvalue(elt(env, 2)); /* physopindices!* */
-    v43 = Lmemq(nil, v56, v43);
-    if (!(v43 == nil)) { popv(1); return onevalue(v43); }
-    v56 = v58;
-    v43 = qvalue(elt(env, 3)); /* physopvarind!* */
-    v43 = Lmember(nil, v56, v43);
-    if (!(v43 == nil)) { popv(1); return onevalue(v43); }
-    v56 = v58;
-    v43 = qvalue(elt(env, 4)); /* frlis!* */
-    v43 = Lmemq(nil, v56, v43);
-    if (v43 == nil) goto v25;
-    v56 = v58;
-    v43 = qvalue(elt(env, 5)); /* frasc!* */
+v0039:
+    v0099 = v0037;
+    v0033 = qvalue(elt(env, 2)); /* physopindices!* */
+    v0033 = Lmemq(nil, v0099, v0033);
+    if (!(v0033 == nil)) { popv(1); return onevalue(v0033); }
+    v0099 = v0037;
+    v0033 = qvalue(elt(env, 3)); /* physopvarind!* */
+    v0033 = Lmember(nil, v0099, v0033);
+    if (!(v0033 == nil)) { popv(1); return onevalue(v0033); }
+    v0099 = v0037;
+    v0033 = qvalue(elt(env, 4)); /* frlis!* */
+    v0033 = Lmemq(nil, v0099, v0033);
+    if (v0033 == nil) goto v0012;
+    v0099 = v0037;
+    v0033 = qvalue(elt(env, 5)); /* frasc!* */
     fn = elt(env, 6); /* revassoc */
-    v43 = (*qfn2(fn))(qenv(fn), v56, v43);
+    v0033 = (*qfn2(fn))(qenv(fn), v0099, v0033);
     nil = C_nil;
-    if (exception_pending()) goto v59;
+    if (exception_pending()) goto v0066;
     env = stack[0];
-    v56 = qvalue(elt(env, 2)); /* physopindices!* */
-    v43 = Lmember(nil, v43, v56);
-    { popv(1); return onevalue(v43); }
+    v0099 = qvalue(elt(env, 2)); /* physopindices!* */
+    v0033 = Lmember(nil, v0033, v0099);
+    { popv(1); return onevalue(v0033); }
 
-v25:
-    v43 = qvalue(elt(env, 1)); /* nil */
-    { popv(1); return onevalue(v43); }
+v0012:
+    v0033 = qvalue(elt(env, 1)); /* nil */
+    { popv(1); return onevalue(v0033); }
 /* error exit handlers */
-v59:
+v0066:
     popv(1);
     return nil;
 }
 
 
 
-/* Code for addf */
+/* Code for formlis */
 
-static Lisp_Object CC_addf(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object MS_CDECL CC_formlis(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, ...)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v172, v131, v173;
+    Lisp_Object v0056, v0054, v0086;
     Lisp_Object fn;
     CSL_IGNORE(nil);
+    argcheck(nargs, 3, "formlis");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for addf");
+    if (check_env(env)) return aerror("env for formlis");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push3(v0053,v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop3(v0000,v0029,v0053);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -8046,435 +7356,397 @@ static Lisp_Object CC_addf(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push4(nil, nil, nil, nil);
 /* copy arguments values to proper place */
-    stack[-1] = v10;
-    stack[-2] = v0;
+    stack[0] = v0053;
+    stack[-1] = v0029;
+    stack[-2] = v0000;
 /* end of prologue */
-    stack[0] = nil;
-    goto v22;
+    stack[-3] = nil;
+    goto v0008;
 
-v22:
-    v172 = stack[-2];
-    if (v172 == nil) goto v2;
-    v172 = stack[-1];
-    if (v172 == nil) goto v50;
-    v172 = stack[-2];
-    if (!consp(v172)) goto v18;
-    v172 = stack[-2];
-    v172 = qcar(v172);
-    if (!consp(v172)) goto v18;
-    v172 = stack[-1];
-    if (!consp(v172)) goto v62;
-    v172 = stack[-1];
-    v172 = qcar(v172);
-    if (!consp(v172)) goto v62;
-    v172 = stack[-2];
-    v172 = qcar(v172);
-    v131 = qcar(v172);
-    v172 = stack[-1];
-    v172 = qcar(v172);
-    v172 = qcar(v172);
-    if (equal(v131, v172)) goto v72;
-    v172 = stack[-2];
-    v172 = qcar(v172);
-    v131 = qcar(v172);
-    v172 = stack[-1];
-    v172 = qcar(v172);
-    v172 = qcar(v172);
-    fn = elt(env, 1); /* ordpp */
-    v172 = (*qfn2(fn))(qenv(fn), v131, v172);
+v0008:
+    v0056 = stack[-2];
+    if (v0056 == nil) goto v0003;
+    v0056 = stack[-2];
+    v0086 = qcar(v0056);
+    v0054 = stack[-1];
+    v0056 = stack[0];
+    fn = elt(env, 1); /* form1 */
+    v0054 = (*qfnn(fn))(qenv(fn), 3, v0086, v0054, v0056);
     nil = C_nil;
-    if (exception_pending()) goto v174;
+    if (exception_pending()) goto v0049;
     env = stack[-4];
-    if (v172 == nil) goto v175;
-    v172 = stack[-2];
-    v131 = qcar(v172);
-    v172 = stack[0];
-    v172 = cons(v131, v172);
+    v0056 = stack[-3];
+    v0056 = cons(v0054, v0056);
     nil = C_nil;
-    if (exception_pending()) goto v174;
+    if (exception_pending()) goto v0049;
     env = stack[-4];
-    stack[0] = v172;
-    v172 = stack[-2];
-    v172 = qcdr(v172);
-    stack[-2] = v172;
-    goto v22;
+    stack[-3] = v0056;
+    v0056 = stack[-2];
+    v0056 = qcdr(v0056);
+    stack[-2] = v0056;
+    goto v0008;
 
-v175:
-    v172 = stack[-1];
-    v131 = qcar(v172);
-    v172 = stack[0];
-    v172 = cons(v131, v172);
-    nil = C_nil;
-    if (exception_pending()) goto v174;
-    env = stack[-4];
-    stack[0] = v172;
-    v172 = stack[-1];
-    v172 = qcdr(v172);
-    stack[-1] = v172;
-    goto v22;
-
-v72:
-    stack[-3] = stack[0];
-    v172 = stack[-2];
-    v172 = qcar(v172);
-    v131 = qcdr(v172);
-    v172 = stack[-1];
-    v172 = qcar(v172);
-    v172 = qcdr(v172);
-    stack[0] = CC_addf(env, v131, v172);
-    nil = C_nil;
-    if (exception_pending()) goto v174;
-    env = stack[-4];
-    v172 = stack[-2];
-    v131 = qcdr(v172);
-    v172 = stack[-1];
-    v172 = qcdr(v172);
-    v172 = CC_addf(env, v131, v172);
-    nil = C_nil;
-    if (exception_pending()) goto v174;
-    env = stack[-4];
-    v131 = stack[0];
-    v173 = v131;
-    if (v173 == nil) goto v77;
-    v173 = stack[-2];
-    v173 = qcar(v173);
-    v173 = qcar(v173);
-    v172 = acons(v173, v131, v172);
-    nil = C_nil;
-    if (exception_pending()) goto v174;
-    env = stack[-4];
-    goto v77;
-
-v77:
-    {
-        Lisp_Object v176 = stack[-3];
+v0003:
+    v0056 = stack[-3];
         popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v176, v172);
-    }
-
-v62:
-    v131 = stack[-1];
-    v172 = stack[-2];
-    fn = elt(env, 3); /* addd */
-    v172 = (*qfn2(fn))(qenv(fn), v131, v172);
-    nil = C_nil;
-    if (exception_pending()) goto v174;
-    env = stack[-4];
-    {
-        Lisp_Object v177 = stack[0];
-        popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v177, v172);
-    }
-
-v18:
-    v131 = stack[-2];
-    v172 = stack[-1];
-    fn = elt(env, 3); /* addd */
-    v172 = (*qfn2(fn))(qenv(fn), v131, v172);
-    nil = C_nil;
-    if (exception_pending()) goto v174;
-    env = stack[-4];
-    {
-        Lisp_Object v178 = stack[0];
-        popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v178, v172);
-    }
-
-v50:
-    v131 = stack[0];
-    v172 = stack[-2];
-    {
-        popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v131, v172);
-    }
-
-v2:
-    v131 = stack[0];
-    v172 = stack[-1];
-    {
-        popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v131, v172);
-    }
+        return Lnreverse(nil, v0056);
 /* error exit handlers */
-v174:
+v0049:
     popv(5);
     return nil;
 }
 
 
 
-/* Code for getrtypecar */
+/* Code for aeval!* */
 
-static Lisp_Object CC_getrtypecar(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_aevalH(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v4;
+    Lisp_Object v0041, v0035;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for getrtypecar");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v4 = v0;
-/* end of prologue */
-    v4 = qcar(v4);
-    {
-        fn = elt(env, 1); /* getrtype */
-        return (*qfn1(fn))(qenv(fn), v4);
-    }
-}
-
-
-
-/* Code for sub2chk */
-
-static Lisp_Object CC_sub2chk(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v25, v35, v36;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for sub2chk");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v36 = v0;
-/* end of prologue */
-    v25 = qvalue(elt(env, 1)); /* subfg!* */
-    if (v25 == nil) goto v4;
-    v35 = v36;
-    v25 = qvalue(elt(env, 2)); /* powlis!* */
-    v25 = Latsoc(nil, v35, v25);
-    if (!(v25 == nil)) goto v3;
-    v25 = v36;
-    if (!consp(v25)) goto v4;
-    v25 = v36;
-    v35 = qcar(v25);
-    v25 = elt(env, 3); /* (expt sqrt) */
-    v25 = Lmemq(nil, v35, v25);
-    if (!(v25 == nil)) goto v3;
-
-v4:
-    v25 = nil;
-    return onevalue(v25);
-
-v3:
-    v25 = qvalue(elt(env, 4)); /* t */
-    qvalue(elt(env, 5)) = v25; /* !*sub2 */
-    return onevalue(v25);
-}
-
-
-
-/* Code for ring_ecart */
-
-static Lisp_Object CC_ring_ecart(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v7, v8;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for ring_ecart");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v7 = v0;
-/* end of prologue */
-    v8 = v7;
-    v7 = (Lisp_Object)81; /* 5 */
-    {
-        fn = elt(env, 1); /* nth */
-        return (*qfn2(fn))(qenv(fn), v8, v7);
-    }
-}
-
-
-
-/* Code for mtp */
-
-static Lisp_Object CC_mtp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v11, v57, v12;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for mtp");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v57 = v0;
-/* end of prologue */
-
-v45:
-    v11 = v57;
-    v11 = (v11 == nil ? lisp_true : nil);
-    if (!(v11 == nil)) return onevalue(v11);
-    v11 = v57;
-    v12 = qcar(v11);
-    v11 = qvalue(elt(env, 1)); /* frlis!* */
-    v11 = Lmemq(nil, v12, v11);
-    if (v11 == nil) goto v6;
-    v11 = v57;
-    v12 = qcar(v11);
-    v11 = v57;
-    v11 = qcdr(v11);
-    v11 = Lmember(nil, v12, v11);
-    if (v11 == nil) goto v36;
-    v11 = qvalue(elt(env, 2)); /* nil */
-    return onevalue(v11);
-
-v36:
-    v11 = v57;
-    v11 = qcdr(v11);
-    v57 = v11;
-    goto v45;
-
-v6:
-    v11 = qvalue(elt(env, 2)); /* nil */
-    return onevalue(v11);
-}
-
-
-
-/* Code for unpkp */
-
-static Lisp_Object CC_unpkp(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v181, v182, v183;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for unpkp");
+    if (check_env(env)) return aerror("env for aeval*");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* space for vars preserved across procedure calls */
-    push3(nil, nil, nil);
+    push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[-1] = v0;
+    stack[0] = v0000;
 /* end of prologue */
-    stack[-2] = nil;
-    v181 = stack[-1];
-    if (!(!consp(v181))) { Lisp_Object res = stack[-1]; popv(4); return onevalue(res); }
-    v181 = stack[-1];
-    v181 = Lexplode(nil, v181);
+    stack[-1] = qvalue(elt(env, 1)); /* alglist!* */
+    qvalue(elt(env, 1)) = nil; /* alglist!* */
+    v0041 = qvalue(elt(env, 2)); /* nil */
+    v0041 = ncons(v0041);
     nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    stack[-1] = v181;
-    v181 = stack[-1];
-    v182 = Llength(nil, v181);
+    if (exception_pending()) goto v0014;
+    env = stack[-2];
+    qvalue(elt(env, 1)) = v0041; /* alglist!* */
+    v0035 = stack[0];
+    v0041 = qvalue(elt(env, 2)); /* nil */
+    fn = elt(env, 3); /* reval1 */
+    v0041 = (*qfn2(fn))(qenv(fn), v0035, v0041);
     nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    v181 = (Lisp_Object)161; /* 10 */
-    v181 = (Lisp_Object)geq2(v182, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    v181 = v181 ? lisp_true : nil;
-    env = stack[-3];
-    stack[0] = v181;
-    v181 = stack[0];
-    if (v181 == nil) goto v52;
-    v181 = stack[-1];
-    v181 = Llength(nil, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    v181 = Levenp(nil, v181);
-    env = stack[-3];
-    if (!(v181 == nil)) goto v52;
-    v182 = elt(env, 1); /* !0 */
-    v181 = stack[-1];
-    v181 = cons(v182, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    stack[-1] = v181;
-    goto v52;
-
-v52:
-    v181 = stack[-1];
-    if (v181 == nil) goto v51;
-    v181 = stack[0];
-    if (v181 == nil) goto v185;
-    v181 = stack[-1];
-    v182 = qcar(v181);
-    v181 = qvalue(elt(env, 3)); /* diglist!* */
-    v181 = Lassoc(nil, v182, v181);
-    v181 = qcdr(v181);
-    v182 = v181;
-    v181 = stack[-1];
-    v181 = qcdr(v181);
-    stack[-1] = v181;
-    v181 = (Lisp_Object)161; /* 10 */
-    v183 = times2(v182, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    v181 = stack[-1];
-    v182 = qcar(v181);
-    v181 = qvalue(elt(env, 3)); /* diglist!* */
-    v181 = Lassoc(nil, v182, v181);
-    v181 = qcdr(v181);
-    v182 = plus2(v183, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    v181 = stack[-2];
-    v181 = cons(v182, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    stack[-2] = v181;
-    goto v53;
-
-v53:
-    v181 = stack[-1];
-    v181 = qcdr(v181);
-    stack[-1] = v181;
-    goto v52;
-
-v185:
-    v181 = stack[-1];
-    v182 = qcar(v181);
-    v181 = qvalue(elt(env, 3)); /* diglist!* */
-    v181 = Lassoc(nil, v182, v181);
-    v182 = qcdr(v181);
-    v181 = stack[-2];
-    v181 = cons(v182, v181);
-    nil = C_nil;
-    if (exception_pending()) goto v184;
-    env = stack[-3];
-    stack[-2] = v181;
-    goto v53;
-
-v51:
-    v181 = stack[-2];
-        popv(4);
-        return Lnreverse(nil, v181);
+    if (exception_pending()) goto v0014;
+    env = stack[-2];
+    qvalue(elt(env, 1)) = stack[-1]; /* alglist!* */
+    { popv(3); return onevalue(v0041); }
 /* error exit handlers */
-v184:
-    popv(4);
+v0014:
+    env = stack[-2];
+    qvalue(elt(env, 1)) = stack[-1]; /* alglist!* */
+    popv(3);
+    return nil;
+}
+
+
+
+/* Code for bc_prod */
+
+static Lisp_Object CC_bc_prod(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0038, v0039;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for bc_prod");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* copy arguments values to proper place */
+    v0038 = v0029;
+    v0039 = v0000;
+/* end of prologue */
+    fn = elt(env, 1); /* multf */
+    v0038 = (*qfn2(fn))(qenv(fn), v0039, v0038);
+    nil = C_nil;
+    if (exception_pending()) goto v0040;
+    env = stack[0];
+    {
+        popv(1);
+        fn = elt(env, 2); /* bc!=simp */
+        return (*qfn1(fn))(qenv(fn), v0038);
+    }
+/* error exit handlers */
+v0040:
+    popv(1);
+    return nil;
+}
+
+
+
+/* Code for dlesslex */
+
+static Lisp_Object CC_dlesslex(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0018, v0049, v0071, v0065;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for dlesslex");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0049 = v0029;
+    v0071 = v0000;
+/* end of prologue */
+
+v0034:
+    v0018 = v0071;
+    if (v0018 == nil) goto v0001;
+    v0018 = v0071;
+    v0065 = qcar(v0018);
+    v0018 = v0049;
+    v0018 = qcar(v0018);
+    if (((int32_t)(v0065)) > ((int32_t)(v0018))) goto v0038;
+    v0018 = v0071;
+    v0065 = qcar(v0018);
+    v0018 = v0049;
+    v0018 = qcar(v0018);
+    if (((int32_t)(v0065)) < ((int32_t)(v0018))) goto v0026;
+    v0018 = v0071;
+    v0018 = qcdr(v0018);
+    v0071 = v0018;
+    v0018 = v0049;
+    v0018 = qcdr(v0018);
+    v0049 = v0018;
+    goto v0034;
+
+v0026:
+    v0018 = qvalue(elt(env, 2)); /* t */
+    return onevalue(v0018);
+
+v0038:
+    v0018 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0018);
+
+v0001:
+    v0018 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0018);
+}
+
+
+
+/* Code for reduce_pv0 */
+
+static Lisp_Object MS_CDECL CC_reduce_pv0(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, ...)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0111, v0112;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+    argcheck(nargs, 3, "reduce_pv0");
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for reduce_pv0");
+#endif
+    if (stack >= stacklimit)
+    {
+        push3(v0053,v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop3(v0000,v0029,v0053);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push5(nil, nil, nil, nil, nil);
+    push(nil);
+/* copy arguments values to proper place */
+    stack[-3] = v0053;
+    stack[-4] = v0029;
+    stack[0] = v0000;
+/* end of prologue */
+    v0111 = stack[-4];
+    if (v0111 == nil) { Lisp_Object res = stack[0]; popv(7); return onevalue(res); }
+    v0111 = stack[0];
+    if (v0111 == nil) goto v0003;
+    v0111 = stack[0];
+    stack[-5] = v0111;
+    goto v0044;
+
+v0044:
+    v0111 = stack[-5];
+    if (v0111 == nil) goto v0010;
+    v0111 = stack[-4];
+    if (v0111 == nil) goto v0010;
+    v0111 = stack[-5];
+    v0111 = qcar(v0111);
+    v0112 = qcdr(v0111);
+    v0111 = stack[-4];
+    v0111 = qcar(v0111);
+    v0111 = qcdr(v0111);
+    v0111 = (Lisp_Object)greaterp2(v0112, v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    v0111 = v0111 ? lisp_true : nil;
+    env = stack[-6];
+    if (v0111 == nil) goto v0010;
+    v0111 = stack[-5];
+    v0111 = qcdr(v0111);
+    stack[-5] = v0111;
+    goto v0044;
+
+v0010:
+    v0111 = stack[-5];
+    if (v0111 == nil) { Lisp_Object res = stack[0]; popv(7); return onevalue(res); }
+    v0111 = stack[-4];
+    if (v0111 == nil) { Lisp_Object res = stack[0]; popv(7); return onevalue(res); }
+    v0111 = stack[-4];
+    v0111 = qcar(v0111);
+    v0112 = qcdr(v0111);
+    v0111 = stack[-5];
+    v0111 = qcar(v0111);
+    v0111 = qcdr(v0111);
+    if (!(equal(v0112, v0111))) { Lisp_Object res = stack[0]; popv(7); return onevalue(res); }
+    v0111 = stack[-5];
+    v0111 = qcar(v0111);
+    v0112 = qcar(v0111);
+    v0111 = stack[-4];
+    v0111 = qcar(v0111);
+    v0111 = qcar(v0111);
+    fn = elt(env, 3); /* lcm */
+    v0111 = (*qfn2(fn))(qenv(fn), v0112, v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    stack[-2] = v0111;
+    v0112 = stack[-2];
+    v0111 = stack[-5];
+    v0111 = qcar(v0111);
+    v0111 = qcar(v0111);
+    v0111 = quot2(v0112, v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    fn = elt(env, 4); /* pv_multc */
+    stack[-1] = (*qfn2(fn))(qenv(fn), stack[0], v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    stack[0] = stack[-4];
+    v0112 = stack[-2];
+    v0111 = stack[-4];
+    v0111 = qcar(v0111);
+    v0111 = qcar(v0111);
+    v0111 = quot2(v0112, v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    v0111 = negate(v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    fn = elt(env, 4); /* pv_multc */
+    v0111 = (*qfn2(fn))(qenv(fn), stack[0], v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    fn = elt(env, 5); /* pv_add */
+    v0111 = (*qfn2(fn))(qenv(fn), stack[-1], v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    stack[0] = v0111;
+    v0111 = stack[-3];
+    if (v0111 == nil) goto v0115;
+    v0111 = (Lisp_Object)17; /* 1 */
+    qvalue(elt(env, 2)) = v0111; /* pv_den */
+    { Lisp_Object res = stack[0]; popv(7); return onevalue(res); }
+
+v0115:
+    stack[-1] = qvalue(elt(env, 2)); /* pv_den */
+    v0112 = stack[-2];
+    v0111 = stack[-5];
+    v0111 = qcar(v0111);
+    v0111 = qcar(v0111);
+    v0111 = quot2(v0112, v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    v0111 = times2(stack[-1], v0111);
+    nil = C_nil;
+    if (exception_pending()) goto v0136;
+    env = stack[-6];
+    qvalue(elt(env, 2)) = v0111; /* pv_den */
+    { Lisp_Object res = stack[0]; popv(7); return onevalue(res); }
+
+v0003:
+    v0111 = qvalue(elt(env, 1)); /* nil */
+    { popv(7); return onevalue(v0111); }
+/* error exit handlers */
+v0136:
+    popv(7);
+    return nil;
+}
+
+
+
+/* Code for upbve */
+
+static Lisp_Object CC_upbve(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0040;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for upbve");
+#endif
+    if (stack >= stacklimit)
+    {
+        push(v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
+/* end of prologue */
+    v0040 = stack[0];
+    v0040 = Lupbv(nil, v0040);
+    nil = C_nil;
+    if (exception_pending()) goto v0035;
+    env = stack[-1];
+    if (v0040 == nil) goto v0013;
+    v0040 = stack[0];
+    v0040 = Lupbv(nil, v0040);
+    nil = C_nil;
+    if (exception_pending()) goto v0035;
+    popv(2);
+    return add1(v0040);
+
+v0013:
+    v0040 = (Lisp_Object)1; /* 0 */
+    { popv(2); return onevalue(v0040); }
+/* error exit handlers */
+v0035:
+    popv(2);
     return nil;
 }
 
@@ -8483,393 +7755,31 @@ v184:
 /* Code for rnequiv */
 
 static Lisp_Object CC_rnequiv(Lisp_Object env,
-                         Lisp_Object v0)
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v16, v24, v30;
+    Lisp_Object v0022, v0015, v0010;
     CSL_IGNORE(nil);
 #ifdef DEBUG
     if (check_env(env)) return aerror("env for rnequiv");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
-    v24 = v0;
+    v0015 = v0000;
 /* end of prologue */
-    v16 = v24;
-    v16 = qcdr(v16);
-    v24 = v16;
-    v30 = qcdr(v16);
-    v16 = (Lisp_Object)17; /* 1 */
-    if (v30 == v16) goto v3;
-    v16 = qvalue(elt(env, 1)); /* nil */
-    return onevalue(v16);
+    v0022 = v0015;
+    v0022 = qcdr(v0022);
+    v0015 = v0022;
+    v0010 = qcdr(v0022);
+    v0022 = (Lisp_Object)17; /* 1 */
+    if (v0010 == v0022) goto v0013;
+    v0022 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0022);
 
-v3:
-    v16 = v24;
-    v16 = qcar(v16);
-    return onevalue(v16);
-}
-
-
-
-/* Code for multiply!-by!-constant!-mod!-p */
-
-static Lisp_Object CC_multiplyKbyKconstantKmodKp(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v61, v62;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for multiply-by-constant-mod-p");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push4(nil, nil, nil, nil);
-/* copy arguments values to proper place */
-    stack[-1] = v10;
-    stack[-2] = v0;
-/* end of prologue */
-    v61 = stack[-2];
-    if (v61 == nil) goto v4;
-    v62 = stack[-1];
-    v61 = (Lisp_Object)17; /* 1 */
-    if (v62 == v61) { Lisp_Object res = stack[-2]; popv(5); return onevalue(res); }
-    v61 = stack[-2];
-    if (!consp(v61)) goto v13;
-    v61 = stack[-2];
-    v61 = qcar(v61);
-    if (!consp(v61)) goto v13;
-    v61 = stack[-2];
-    v61 = qcar(v61);
-    stack[-3] = qcar(v61);
-    v61 = stack[-2];
-    v61 = qcar(v61);
-    v62 = qcdr(v61);
-    v61 = stack[-1];
-    stack[0] = CC_multiplyKbyKconstantKmodKp(env, v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-4];
-    v61 = stack[-2];
-    v62 = qcdr(v61);
-    v61 = stack[-1];
-    v61 = CC_multiplyKbyKconstantKmodKp(env, v62, v61);
-    nil = C_nil;
-    if (exception_pending()) goto v67;
-    env = stack[-4];
-    {
-        Lisp_Object v83 = stack[-3];
-        Lisp_Object v84 = stack[0];
-        popv(5);
-        fn = elt(env, 2); /* adjoin!-term */
-        return (*qfnn(fn))(qenv(fn), 3, v83, v84, v61);
-    }
-
-v13:
-    v62 = stack[-2];
-    v61 = stack[-1];
-    v61 = Lmodular_times(nil, v62, v61);
-    env = stack[-4];
-    {
-        popv(5);
-        fn = elt(env, 3); /* !*n2f */
-        return (*qfn1(fn))(qenv(fn), v61);
-    }
-
-v4:
-    v61 = qvalue(elt(env, 1)); /* nil */
-    { popv(5); return onevalue(v61); }
-/* error exit handlers */
-v67:
-    popv(5);
-    return nil;
-}
-
-
-
-/* Code for reordop */
-
-static Lisp_Object CC_reordop(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v47, v14;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for reordop");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
-/* end of prologue */
-    v47 = qvalue(elt(env, 1)); /* !*ncmp */
-    if (v47 == nil) goto v5;
-    v47 = stack[-1];
-    fn = elt(env, 3); /* noncomp1 */
-    v47 = (*qfn1(fn))(qenv(fn), v47);
-    nil = C_nil;
-    if (exception_pending()) goto v35;
-    env = stack[-2];
-    if (v47 == nil) goto v1;
-    v47 = stack[0];
-    fn = elt(env, 3); /* noncomp1 */
-    v47 = (*qfn1(fn))(qenv(fn), v47);
-    nil = C_nil;
-    if (exception_pending()) goto v35;
-    env = stack[-2];
-    goto v49;
-
-v49:
-    if (!(v47 == nil)) { popv(3); return onevalue(v47); }
-    v14 = stack[-1];
-    v47 = stack[0];
-    {
-        popv(3);
-        fn = elt(env, 4); /* ordop */
-        return (*qfn2(fn))(qenv(fn), v14, v47);
-    }
-
-v1:
-    v47 = qvalue(elt(env, 2)); /* nil */
-    goto v49;
-
-v5:
-    v47 = qvalue(elt(env, 2)); /* nil */
-    goto v49;
-/* error exit handlers */
-v35:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for aconc!* */
-
-static Lisp_Object CC_aconcH(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for aconc*");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    CSL_IGNORE(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v1 = v10;
-    v2 = v0;
-/* end of prologue */
-    stack[0] = v2;
-    v1 = ncons(v1);
-    nil = C_nil;
-    if (exception_pending()) goto v26;
-    {
-        Lisp_Object v27 = stack[0];
-        popv(1);
-        return Lnconc(nil, v27, v1);
-    }
-/* error exit handlers */
-v26:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for aconc */
-
-static Lisp_Object CC_aconc(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v1, v2;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for aconc");
-#endif
-    if (stack >= stacklimit)
-    {
-        push2(v10,v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    CSL_IGNORE(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v1 = v10;
-    v2 = v0;
-/* end of prologue */
-    stack[0] = v2;
-    v1 = ncons(v1);
-    nil = C_nil;
-    if (exception_pending()) goto v26;
-    {
-        Lisp_Object v27 = stack[0];
-        popv(1);
-        return Lnconc(nil, v27, v1);
-    }
-/* error exit handlers */
-v26:
-    popv(1);
-    return nil;
-}
-
-
-
-/* Code for exptchksq */
-
-static Lisp_Object CC_exptchksq(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v46;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for exptchksq");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    push(env);
-/* space for vars preserved across procedure calls */
-    push2(nil, nil);
-/* copy arguments values to proper place */
-    stack[0] = v0;
-/* end of prologue */
-    v46 = qvalue(elt(env, 1)); /* !*combineexpt */
-    if (v46 == nil) { Lisp_Object res = stack[0]; popv(3); return onevalue(res); }
-    v46 = stack[0];
-    v46 = qcar(v46);
-    fn = elt(env, 2); /* exptchk */
-    stack[-1] = (*qfn1(fn))(qenv(fn), v46);
-    nil = C_nil;
-    if (exception_pending()) goto v32;
-    env = stack[-2];
-    v46 = stack[0];
-    v46 = qcdr(v46);
-    fn = elt(env, 2); /* exptchk */
-    v46 = (*qfn1(fn))(qenv(fn), v46);
-    nil = C_nil;
-    if (exception_pending()) goto v32;
-    env = stack[-2];
-    fn = elt(env, 3); /* invsq */
-    v46 = (*qfn1(fn))(qenv(fn), v46);
-    nil = C_nil;
-    if (exception_pending()) goto v32;
-    env = stack[-2];
-    {
-        Lisp_Object v33 = stack[-1];
-        popv(3);
-        fn = elt(env, 4); /* multsq */
-        return (*qfn2(fn))(qenv(fn), v33, v46);
-    }
-/* error exit handlers */
-v32:
-    popv(3);
-    return nil;
-}
-
-
-
-/* Code for replus */
-
-static Lisp_Object CC_replus(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v47, v14;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for replus");
-#endif
-    if (stack >= stacklimit)
-    {
-        push(v0);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
-        nil = C_nil;
-        if (exception_pending()) return nil;
-    }
-    CSL_IGNORE(env);
-/* space for vars preserved across procedure calls */
-    push(nil);
-/* copy arguments values to proper place */
-    v14 = v0;
-/* end of prologue */
-    v47 = v14;
-    if (v47 == nil) goto v3;
-    v47 = v14;
-    if (!consp(v47)) { popv(1); return onevalue(v14); }
-    v47 = v14;
-    v47 = qcdr(v47);
-    if (v47 == nil) goto v1;
-    stack[0] = elt(env, 1); /* plus */
-    v47 = v14;
-    fn = elt(env, 2); /* unplus */
-    v47 = (*qfn1(fn))(qenv(fn), v47);
-    nil = C_nil;
-    if (exception_pending()) goto v25;
-    {
-        Lisp_Object v35 = stack[0];
-        popv(1);
-        return cons(v35, v47);
-    }
-
-v1:
-    v47 = v14;
-    v47 = qcar(v47);
-    { popv(1); return onevalue(v47); }
-
-v3:
-    v47 = (Lisp_Object)1; /* 0 */
-    { popv(1); return onevalue(v47); }
-/* error exit handlers */
-v25:
-    popv(1);
-    return nil;
+v0013:
+    v0022 = v0015;
+    v0022 = qcar(v0022);
+    return onevalue(v0022);
 }
 
 
@@ -8877,10 +7787,10 @@ v25:
 /* Code for multd */
 
 static Lisp_Object CC_multd(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+                         Lisp_Object v0000, Lisp_Object v0029)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v87, v88;
+    Lisp_Object v0121, v0122;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
@@ -8888,9 +7798,9 @@ static Lisp_Object CC_multd(Lisp_Object env,
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push2(v0029,v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -8898,102 +7808,210 @@ static Lisp_Object CC_multd(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push4(nil, nil, nil, nil);
 /* copy arguments values to proper place */
-    stack[-1] = v10;
-    stack[-2] = v0;
+    stack[-1] = v0029;
+    stack[-2] = v0000;
 /* end of prologue */
     stack[-3] = nil;
-    goto v22;
+    goto v0005;
 
-v22:
-    v87 = stack[-1];
-    if (v87 == nil) goto v6;
-    v88 = stack[-1];
-    v87 = (Lisp_Object)17; /* 1 */
-    if (v88 == v87) goto v50;
-    v87 = stack[-1];
-    if (!consp(v87)) goto v11;
-    v87 = stack[-1];
-    v87 = qcar(v87);
-    if (!consp(v87)) goto v11;
-    v87 = stack[-1];
-    v87 = qcar(v87);
-    stack[0] = qcar(v87);
-    v88 = stack[-2];
-    v87 = stack[-1];
-    v87 = qcar(v87);
-    v87 = qcdr(v87);
-    v88 = CC_multd(env, v88, v87);
-    nil = C_nil;
-    if (exception_pending()) goto v186;
-    env = stack[-4];
-    v87 = stack[-3];
-    v87 = acons(stack[0], v88, v87);
-    nil = C_nil;
-    if (exception_pending()) goto v186;
-    env = stack[-4];
-    stack[-3] = v87;
-    v87 = stack[-1];
-    v87 = qcdr(v87);
-    stack[-1] = v87;
-    goto v22;
+v0005:
+    v0121 = stack[-1];
+    if (v0121 == nil) goto v0002;
+    v0122 = stack[-1];
+    v0121 = (Lisp_Object)17; /* 1 */
+    if (v0122 == v0121) goto v0026;
+    v0121 = stack[-1];
+    if (!consp(v0121)) goto v0047;
+    v0121 = stack[-1];
+    v0121 = qcar(v0121);
+    v0121 = (consp(v0121) ? nil : lisp_true);
+    goto v0012;
 
-v11:
+v0012:
+    if (v0121 == nil) goto v0033;
     stack[0] = stack[-3];
-    v88 = stack[-2];
-    v87 = stack[-1];
-    fn = elt(env, 1); /* multdm */
-    v87 = (*qfn2(fn))(qenv(fn), v88, v87);
+    v0122 = stack[-2];
+    v0121 = stack[-1];
+    fn = elt(env, 2); /* multdm */
+    v0121 = (*qfn2(fn))(qenv(fn), v0122, v0121);
     nil = C_nil;
-    if (exception_pending()) goto v186;
+    if (exception_pending()) goto v0092;
     env = stack[-4];
     {
-        Lisp_Object v69 = stack[0];
+        Lisp_Object v0073 = stack[0];
         popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v69, v87);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0073, v0121);
     }
 
-v50:
-    v88 = stack[-3];
-    v87 = stack[-2];
+v0033:
+    v0121 = stack[-1];
+    v0121 = qcar(v0121);
+    stack[0] = qcar(v0121);
+    v0122 = stack[-2];
+    v0121 = stack[-1];
+    v0121 = qcar(v0121);
+    v0121 = qcdr(v0121);
+    v0122 = CC_multd(env, v0122, v0121);
+    nil = C_nil;
+    if (exception_pending()) goto v0092;
+    env = stack[-4];
+    v0121 = stack[-3];
+    v0121 = acons(stack[0], v0122, v0121);
+    nil = C_nil;
+    if (exception_pending()) goto v0092;
+    env = stack[-4];
+    stack[-3] = v0121;
+    v0121 = stack[-1];
+    v0121 = qcdr(v0121);
+    stack[-1] = v0121;
+    goto v0005;
+
+v0047:
+    v0121 = qvalue(elt(env, 1)); /* t */
+    goto v0012;
+
+v0026:
+    v0122 = stack[-3];
+    v0121 = stack[-2];
     {
         popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v88, v87);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn2(fn))(qenv(fn), v0122, v0121);
     }
 
-v6:
-    v87 = stack[-3];
+v0002:
+    v0121 = stack[-3];
     {
         popv(5);
-        fn = elt(env, 2); /* nreverse */
-        return (*qfn1(fn))(qenv(fn), v87);
+        fn = elt(env, 3); /* nreverse */
+        return (*qfn1(fn))(qenv(fn), v0121);
     }
 /* error exit handlers */
-v186:
+v0092:
     popv(5);
     return nil;
 }
 
 
 
-/* Code for delq */
+/* Code for !*i2mod */
 
-static Lisp_Object CC_delq(Lisp_Object env,
-                         Lisp_Object v0, Lisp_Object v10)
+static Lisp_Object CC_Hi2mod(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v38, v73, v53;
+    Lisp_Object v0034;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for delq");
+    if (check_env(env)) return aerror("env for *i2mod");
 #endif
     if (stack >= stacklimit)
     {
-        push2(v10,v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v0,v10);
+        pop(v0000);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* copy arguments values to proper place */
+    v0034 = v0000;
+/* end of prologue */
+    fn = elt(env, 1); /* general!-modular!-number */
+    v0034 = (*qfn1(fn))(qenv(fn), v0034);
+    nil = C_nil;
+    if (exception_pending()) goto v0005;
+    env = stack[0];
+    {
+        popv(1);
+        fn = elt(env, 2); /* !*modular2f */
+        return (*qfn1(fn))(qenv(fn), v0034);
+    }
+/* error exit handlers */
+v0005:
+    popv(1);
+    return nil;
+}
+
+
+
+/* Code for general!-modular!-times */
+
+static Lisp_Object CC_generalKmodularKtimes(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0018, v0049;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for general-modular-times");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push(nil);
+/* copy arguments values to proper place */
+    v0018 = v0029;
+    v0049 = v0000;
+/* end of prologue */
+    v0049 = times2(v0049, v0018);
+    nil = C_nil;
+    if (exception_pending()) goto v0065;
+    env = stack[-1];
+    v0018 = qvalue(elt(env, 1)); /* current!-modulus */
+    v0018 = Cremainder(v0049, v0018);
+    nil = C_nil;
+    if (exception_pending()) goto v0065;
+    env = stack[-1];
+    stack[0] = v0018;
+    v0049 = stack[0];
+    v0018 = (Lisp_Object)1; /* 0 */
+    v0018 = (Lisp_Object)lessp2(v0049, v0018);
+    nil = C_nil;
+    if (exception_pending()) goto v0065;
+    v0018 = v0018 ? lisp_true : nil;
+    env = stack[-1];
+    if (v0018 == nil) { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+    v0049 = stack[0];
+    v0018 = qvalue(elt(env, 1)); /* current!-modulus */
+    v0018 = plus2(v0049, v0018);
+    nil = C_nil;
+    if (exception_pending()) goto v0065;
+    stack[0] = v0018;
+    { Lisp_Object res = stack[0]; popv(2); return onevalue(res); }
+/* error exit handlers */
+v0065:
+    popv(2);
+    return nil;
+}
+
+
+
+/* Code for getpower */
+
+static Lisp_Object CC_getpower(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0019, v0018;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for getpower");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
@@ -9001,289 +8019,990 @@ static Lisp_Object CC_delq(Lisp_Object env,
 /* space for vars preserved across procedure calls */
     push2(nil, nil);
 /* copy arguments values to proper place */
-    stack[0] = v10;
-    stack[-1] = v0;
+    stack[0] = v0029;
+    stack[-1] = v0000;
 /* end of prologue */
-    v53 = nil;
-    goto v22;
-
-v22:
-    v38 = stack[0];
-    if (v38 == nil) goto v18;
-    v38 = stack[0];
-    v73 = qcar(v38);
-    v38 = stack[-1];
-    if (v73 == v38) goto v31;
-    v38 = stack[0];
-    v38 = qcar(v38);
-    v73 = v53;
-    v38 = cons(v38, v73);
+    v0019 = stack[-1];
+    v0018 = qcar(v0019);
+    v0019 = elt(env, 1); /* expt */
+    if (!consp(v0018)) goto v0051;
+    v0018 = qcar(v0018);
+    if (!(v0018 == v0019)) goto v0051;
+    v0018 = stack[0];
+    v0019 = (Lisp_Object)17; /* 1 */
+    v0019 = (Lisp_Object)greaterp2(v0018, v0019);
     nil = C_nil;
-    if (exception_pending()) goto v40;
+    if (exception_pending()) goto v0065;
+    v0019 = v0019 ? lisp_true : nil;
     env = stack[-2];
-    v53 = v38;
-    v38 = stack[0];
-    v38 = qcdr(v38);
-    stack[0] = v38;
-    goto v22;
+    goto v0001;
 
-v31:
-    v73 = v53;
-    v38 = stack[0];
-    v38 = qcdr(v38);
-    {
-        popv(3);
-        fn = elt(env, 1); /* nreverse */
-        return (*qfn2(fn))(qenv(fn), v73, v38);
-    }
+v0001:
+    if (v0019 == nil) goto v0030;
+    v0019 = qvalue(elt(env, 3)); /* t */
+    qvalue(elt(env, 4)) = v0019; /* !*sub2 */
+    goto v0030;
 
-v18:
-    v38 = v53;
-    {
-        popv(3);
-        fn = elt(env, 1); /* nreverse */
-        return (*qfn1(fn))(qenv(fn), v38);
-    }
+v0030:
+    v0019 = stack[-1];
+    v0018 = qcar(v0019);
+    v0019 = stack[0];
+    popv(3);
+    return cons(v0018, v0019);
+
+v0051:
+    v0019 = qvalue(elt(env, 2)); /* nil */
+    goto v0001;
 /* error exit handlers */
-v40:
+v0065:
     popv(3);
     return nil;
 }
 
 
 
-/* Code for get_token */
+/* Code for anform */
 
-static Lisp_Object MS_CDECL CC_get_token(Lisp_Object env, int nargs, ...)
+static Lisp_Object CC_anform(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v39, v37;
+    Lisp_Object v0093, v0094;
+    Lisp_Object fn;
     CSL_IGNORE(nil);
-    argcheck(nargs, 0, "get_token");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for get_token");
+    if (check_env(env)) return aerror("env for anform");
 #endif
     if (stack >= stacklimit)
     {
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
 /* space for vars preserved across procedure calls */
     push(nil);
+/* copy arguments values to proper place */
+    stack[0] = v0000;
 /* end of prologue */
-    v39 = qvalue(elt(env, 1)); /* nil */
-    stack[0] = v39;
-    goto v1;
+    v0093 = stack[0];
+    if (!consp(v0093)) goto v0013;
+    v0093 = stack[0];
+    {
+        popv(2);
+        fn = elt(env, 6); /* anform1 */
+        return (*qfn1(fn))(qenv(fn), v0093);
+    }
 
-v1:
-    v37 = Lreadch(nil, 0);
-    nil = C_nil;
-    if (exception_pending()) goto v11;
-    env = stack[-1];
-    qvalue(elt(env, 2)) = v37; /* ch */
-    v39 = elt(env, 3); /* !> */
-    if (v37 == v39) goto v47;
-    v37 = qvalue(elt(env, 2)); /* ch */
-    v39 = stack[0];
-    v39 = cons(v37, v39);
-    nil = C_nil;
-    if (exception_pending()) goto v11;
-    env = stack[-1];
-    stack[0] = v39;
-    goto v1;
+v0013:
+    v0093 = qvalue(elt(env, 1)); /* !*globals */
+    if (v0093 == nil) goto v0003;
+    v0093 = stack[0];
+    if (v0093 == nil) goto v0003;
+    v0094 = stack[0];
+    v0093 = lisp_true;
+    if (v0094 == v0093) goto v0065;
+    v0093 = stack[0];
+    if (symbolp(v0093)) goto v0056;
+    v0093 = qvalue(elt(env, 2)); /* nil */
+    goto v0009;
 
-v47:
-    v37 = elt(env, 4); /* !$ */
-    v39 = stack[0];
-    popv(2);
-    return cons(v37, v39);
+v0009:
+    if (v0093 == nil) goto v0003;
+    v0094 = stack[0];
+    v0093 = elt(env, 4); /* glb2rf */
+    v0093 = Lflagp(nil, v0094, v0093);
+    env = stack[-1];
+    if (v0093 == nil) goto v0032;
+    v0093 = nil;
+    { popv(2); return onevalue(v0093); }
+
+v0032:
+    v0093 = stack[0];
+    v0094 = ncons(v0093);
+    nil = C_nil;
+    if (exception_pending()) goto v0100;
+    env = stack[-1];
+    v0093 = elt(env, 4); /* glb2rf */
+    v0093 = Lflag(nil, v0094, v0093);
+    nil = C_nil;
+    if (exception_pending()) goto v0100;
+    env = stack[-1];
+    v0094 = stack[0];
+    v0093 = qvalue(elt(env, 5)); /* globs!* */
+    v0093 = cons(v0094, v0093);
+    nil = C_nil;
+    if (exception_pending()) goto v0100;
+    env = stack[-1];
+    qvalue(elt(env, 5)) = v0093; /* globs!* */
+    { popv(2); return onevalue(v0093); }
+
+v0003:
+    v0093 = nil;
+    { popv(2); return onevalue(v0093); }
+
+v0056:
+    v0094 = stack[0];
+    v0093 = qvalue(elt(env, 3)); /* locls!* */
+    v0093 = Lassoc(nil, v0094, v0093);
+    v0093 = (v0093 == nil ? lisp_true : nil);
+    goto v0009;
+
+v0065:
+    v0093 = qvalue(elt(env, 2)); /* nil */
+    goto v0009;
 /* error exit handlers */
-v11:
+v0100:
     popv(2);
     return nil;
 }
 
 
 
-/* Code for ps!:last!-term */
+/* Code for reorder */
 
-static Lisp_Object CC_psTlastKterm(Lisp_Object env,
-                         Lisp_Object v0)
+static Lisp_Object CC_reorder(Lisp_Object env,
+                         Lisp_Object v0000)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object v11, v57, v12;
+    Lisp_Object v0037, v0066;
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for ps:last-term");
+    if (check_env(env)) return aerror("env for reorder");
 #endif
     if (stack >= stacklimit)
     {
-        push(v0);
+        push(v0000);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v0);
+        pop(v0000);
         nil = C_nil;
         if (exception_pending()) return nil;
     }
     push(env);
+/* space for vars preserved across procedure calls */
+    push3(nil, nil, nil);
 /* copy arguments values to proper place */
-    v57 = v0;
+    stack[-1] = v0000;
 /* end of prologue */
-    v11 = v57;
-    if (!consp(v11)) goto v3;
-    v11 = v57;
-    v12 = qcar(v11);
-    v11 = elt(env, 1); /* !:ps!: */
-    if (v12 == v11) goto v36;
-    v11 = v57;
-    v12 = qcar(v11);
-    v11 = elt(env, 2); /* dname */
-    v11 = get(v12, v11);
-    env = stack[0];
-    if (!(v11 == nil)) goto v3;
+    stack[-2] = nil;
+    goto v0005;
 
-v36:
-    v11 = (Lisp_Object)17; /* 1 */
+v0005:
+    v0037 = stack[-1];
+    if (!consp(v0037)) goto v0041;
+    v0037 = stack[-1];
+    v0037 = qcar(v0037);
+    v0037 = (consp(v0037) ? nil : lisp_true);
+    goto v0040;
+
+v0040:
+    if (v0037 == nil) goto v0070;
+    v0037 = stack[-1];
+    v0066 = v0037;
+    goto v0001;
+
+v0001:
+    v0037 = stack[-2];
+    if (v0037 == nil) { popv(4); return onevalue(v0066); }
+    v0037 = stack[-2];
+    v0037 = qcar(v0037);
+    fn = elt(env, 2); /* raddf */
+    v0037 = (*qfn2(fn))(qenv(fn), v0037, v0066);
+    nil = C_nil;
+    if (exception_pending()) goto v0060;
+    env = stack[-3];
+    v0066 = v0037;
+    v0037 = stack[-2];
+    v0037 = qcdr(v0037);
+    stack[-2] = v0037;
+    goto v0001;
+
+v0070:
+    v0037 = stack[-1];
+    v0037 = qcar(v0037);
+    stack[0] = qcar(v0037);
+    v0037 = stack[-1];
+    v0037 = qcar(v0037);
+    v0037 = qcdr(v0037);
+    v0037 = CC_reorder(env, v0037);
+    nil = C_nil;
+    if (exception_pending()) goto v0060;
+    env = stack[-3];
+    fn = elt(env, 3); /* rmultpf */
+    v0066 = (*qfn2(fn))(qenv(fn), stack[0], v0037);
+    nil = C_nil;
+    if (exception_pending()) goto v0060;
+    env = stack[-3];
+    v0037 = stack[-2];
+    v0037 = cons(v0066, v0037);
+    nil = C_nil;
+    if (exception_pending()) goto v0060;
+    env = stack[-3];
+    stack[-2] = v0037;
+    v0037 = stack[-1];
+    v0037 = qcdr(v0037);
+    stack[-1] = v0037;
+    goto v0005;
+
+v0041:
+    v0037 = qvalue(elt(env, 1)); /* t */
+    goto v0040;
+/* error exit handlers */
+v0060:
+    popv(4);
+    return nil;
+}
+
+
+
+/* Code for ofsf_smwupdknowl */
+
+static Lisp_Object MS_CDECL CC_ofsf_smwupdknowl(Lisp_Object env, int nargs,
+                         Lisp_Object v0000, Lisp_Object v0029,
+                         Lisp_Object v0053, Lisp_Object v0050, ...)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0043, v0019, v0018, v0049, v0071;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+    argcheck(nargs, 4, "ofsf_smwupdknowl");
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for ofsf_smwupdknowl");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0019 = v0050;
+    v0018 = v0053;
+    v0049 = v0029;
+    v0071 = v0000;
+/* end of prologue */
+    v0043 = qvalue(elt(env, 1)); /* !*rlsusi */
+    if (v0043 == nil) goto v0052;
+    v0043 = v0071;
     {
-        popv(1);
-        fn = elt(env, 4); /* ps!:getv */
-        return (*qfn2(fn))(qenv(fn), v57, v11);
+        fn = elt(env, 2); /* cl_susiupdknowl */
+        return (*qfnn(fn))(qenv(fn), 4, v0043, v0049, v0018, v0019);
     }
 
-v3:
-    v11 = qvalue(elt(env, 3)); /* ps!:max!-order */
-    { popv(1); return onevalue(v11); }
+v0052:
+    v0043 = v0071;
+    {
+        fn = elt(env, 3); /* ofsf_smupdknowl */
+        return (*qfnn(fn))(qenv(fn), 4, v0043, v0049, v0018, v0019);
+    }
+}
+
+
+
+/* Code for finde */
+
+static Lisp_Object CC_finde(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0021, v0020, v0070, v0031;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for finde");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0031 = v0029;
+    v0070 = v0000;
+/* end of prologue */
+
+v0034:
+    v0021 = v0070;
+    if (v0021 == nil) goto v0001;
+    v0020 = v0031;
+    v0021 = v0070;
+    v0021 = qcar(v0021);
+    v0021 = qcdr(v0021);
+    v0021 = Lmemq(nil, v0020, v0021);
+    if (!(v0021 == nil)) return onevalue(v0070);
+    v0021 = v0070;
+    v0021 = qcdr(v0021);
+    v0070 = v0021;
+    goto v0034;
+
+v0001:
+    v0021 = qvalue(elt(env, 1)); /* nil */
+    return onevalue(v0021);
+}
+
+
+
+/* Code for mchk */
+
+static Lisp_Object CC_mchk(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0203, v0204, v0205;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for mchk");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push5(nil, nil, nil, nil, nil);
+    push(nil);
+/* copy arguments values to proper place */
+    stack[-3] = v0029;
+    stack[-4] = v0000;
+/* end of prologue */
+
+v0003:
+    v0204 = stack[-4];
+    v0203 = stack[-3];
+    if (equal(v0204, v0203)) goto v0001;
+    v0204 = stack[-4];
+    v0203 = elt(env, 2); /* !*sq */
+    if (!consp(v0204)) goto v0056;
+    v0204 = qcar(v0204);
+    if (!(v0204 == v0203)) goto v0056;
+    v0203 = stack[-4];
+    v0203 = qcdr(v0203);
+    v0203 = qcar(v0203);
+    fn = elt(env, 9); /* prepsqxx */
+    v0203 = (*qfn1(fn))(qenv(fn), v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    stack[-4] = v0203;
+    goto v0003;
+
+v0056:
+    v0204 = stack[-3];
+    v0203 = elt(env, 2); /* !*sq */
+    if (!consp(v0204)) goto v0012;
+    v0204 = qcar(v0204);
+    if (!(v0204 == v0203)) goto v0012;
+    v0203 = stack[-3];
+    v0203 = qcdr(v0203);
+    v0203 = qcar(v0203);
+    fn = elt(env, 9); /* prepsqxx */
+    v0203 = (*qfn1(fn))(qenv(fn), v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    stack[-3] = v0203;
+    goto v0003;
+
+v0012:
+    v0203 = stack[-3];
+    if (!consp(v0203)) goto v0024;
+    v0203 = stack[-4];
+    if (!consp(v0203)) goto v0088;
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = elt(env, 6); /* difference */
+    if (v0204 == v0203) goto v0112;
+    v0203 = stack[-4];
+    v0204 = qcar(v0203);
+    v0203 = elt(env, 8); /* dname */
+    v0203 = get(v0204, v0203);
+    env = stack[-6];
+    if (!(v0203 == nil)) goto v0105;
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = elt(env, 8); /* dname */
+    v0203 = get(v0204, v0203);
+    env = stack[-6];
+    if (!(v0203 == nil)) goto v0105;
+    v0203 = stack[-4];
+    v0204 = qcar(v0203);
+    v0203 = stack[-3];
+    v0203 = qcar(v0203);
+    if (v0204 == v0203) goto v0207;
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = qvalue(elt(env, 3)); /* frlis!* */
+    v0203 = Lmemq(nil, v0204, v0203);
+    if (v0203 == nil) goto v0208;
+    v0203 = stack[-4];
+    v0205 = qcar(v0203);
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = stack[-4];
+    v0203 = qcdr(v0203);
+    stack[0] = Lsubst(nil, 3, v0205, v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = stack[-4];
+    v0205 = qcar(v0203);
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = stack[-3];
+    v0203 = qcdr(v0203);
+    v0204 = Lsubst(nil, 3, v0205, v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = stack[-4];
+    v0203 = qcar(v0203);
+    fn = elt(env, 10); /* mcharg */
+    v0203 = (*qfnn(fn))(qenv(fn), 3, stack[0], v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    stack[-5] = v0203;
+    v0203 = stack[-5];
+    if (v0203 == nil) goto v0209;
+    v0203 = stack[-5];
+    v0203 = qcar(v0203);
+    v0204 = stack[-3];
+    v0205 = qcar(v0204);
+    v0204 = stack[-4];
+    v0204 = qcar(v0204);
+    v0203 = acons(v0205, v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = ncons(v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    stack[-1] = v0203;
+    stack[-2] = v0203;
+    goto v0210;
+
+v0210:
+    v0203 = stack[-5];
+    v0203 = qcdr(v0203);
+    stack[-5] = v0203;
+    v0203 = stack[-5];
+    if (v0203 == nil) { Lisp_Object res = stack[-2]; popv(7); return onevalue(res); }
+    stack[0] = stack[-1];
+    v0203 = stack[-5];
+    v0203 = qcar(v0203);
+    v0204 = stack[-3];
+    v0205 = qcar(v0204);
+    v0204 = stack[-4];
+    v0204 = qcar(v0204);
+    v0203 = acons(v0205, v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = ncons(v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = Lrplacd(nil, stack[0], v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = stack[-1];
+    v0203 = qcdr(v0203);
+    stack[-1] = v0203;
+    goto v0210;
+
+v0209:
+    v0203 = qvalue(elt(env, 1)); /* nil */
+    { popv(7); return onevalue(v0203); }
+
+v0208:
+    v0203 = stack[-4];
+    v0204 = qcar(v0203);
+    v0203 = elt(env, 4); /* minus */
+    if (v0204 == v0203) goto v0211;
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = elt(env, 5); /* optional */
+    v0203 = get(v0204, v0203);
+    env = stack[-6];
+    v0204 = v0203;
+    if (v0204 == nil) goto v0212;
+    v0205 = stack[-4];
+    v0204 = stack[-3];
+    {
+        popv(7);
+        fn = elt(env, 11); /* mchkopt1 */
+        return (*qfnn(fn))(qenv(fn), 3, v0205, v0204, v0203);
+    }
+
+v0212:
+    v0203 = nil;
+    { popv(7); return onevalue(v0203); }
+
+v0211:
+    v0203 = stack[-4];
+    v0203 = qcdr(v0203);
+    v0204 = qcar(v0203);
+    v0203 = stack[-3];
+    {
+        popv(7);
+        fn = elt(env, 12); /* mchkminus */
+        return (*qfn2(fn))(qenv(fn), v0204, v0203);
+    }
+
+v0207:
+    v0203 = stack[-4];
+    v0205 = qcdr(v0203);
+    v0203 = stack[-3];
+    v0204 = qcdr(v0203);
+    v0203 = stack[-4];
+    v0203 = qcar(v0203);
+    {
+        popv(7);
+        fn = elt(env, 10); /* mcharg */
+        return (*qfnn(fn))(qenv(fn), 3, v0205, v0204, v0203);
+    }
+
+v0105:
+    v0203 = qvalue(elt(env, 1)); /* nil */
+    { popv(7); return onevalue(v0203); }
+
+v0112:
+    stack[-1] = elt(env, 7); /* plus */
+    v0203 = stack[-3];
+    v0203 = qcdr(v0203);
+    stack[0] = qcar(v0203);
+    v0204 = elt(env, 4); /* minus */
+    v0203 = stack[-3];
+    v0203 = qcdr(v0203);
+    v0203 = qcdr(v0203);
+    v0203 = qcar(v0203);
+    v0203 = list2(v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = list3(stack[-1], stack[0], v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    stack[-3] = v0203;
+    goto v0003;
+
+v0088:
+    v0203 = stack[-4];
+    if (!(is_number(v0203))) goto v0119;
+    v0204 = stack[-4];
+    v0203 = (Lisp_Object)1; /* 0 */
+    v0203 = (Lisp_Object)lessp2(v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    v0203 = v0203 ? lisp_true : nil;
+    env = stack[-6];
+    if (v0203 == nil) goto v0119;
+    v0204 = stack[-3];
+    v0203 = elt(env, 4); /* minus */
+    if (!consp(v0204)) goto v0119;
+    v0204 = qcar(v0204);
+    if (!(v0204 == v0203)) goto v0119;
+    stack[0] = elt(env, 4); /* minus */
+    v0203 = stack[-4];
+    v0203 = negate(v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = list2(stack[0], v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    stack[-4] = v0203;
+    goto v0003;
+
+v0119:
+    v0203 = stack[-3];
+    v0204 = qcar(v0203);
+    v0203 = elt(env, 5); /* optional */
+    v0203 = get(v0204, v0203);
+    env = stack[-6];
+    v0204 = v0203;
+    if (v0204 == nil) goto v0213;
+    v0205 = stack[-4];
+    v0204 = stack[-3];
+    {
+        popv(7);
+        fn = elt(env, 11); /* mchkopt1 */
+        return (*qfnn(fn))(qenv(fn), 3, v0205, v0204, v0203);
+    }
+
+v0213:
+    v0203 = nil;
+    { popv(7); return onevalue(v0203); }
+
+v0024:
+    v0204 = stack[-3];
+    v0203 = qvalue(elt(env, 3)); /* frlis!* */
+    v0203 = Lmemq(nil, v0204, v0203);
+    if (v0203 == nil) goto v0061;
+    v0204 = stack[-3];
+    v0203 = stack[-4];
+    v0203 = cons(v0204, v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    env = stack[-6];
+    v0203 = ncons(v0203);
+    nil = C_nil;
+    if (exception_pending()) goto v0206;
+    popv(7);
+    return ncons(v0203);
+
+v0061:
+    v0203 = qvalue(elt(env, 1)); /* nil */
+    { popv(7); return onevalue(v0203); }
+
+v0001:
+    v0203 = qvalue(elt(env, 1)); /* nil */
+    popv(7);
+    return ncons(v0203);
+/* error exit handlers */
+v0206:
+    popv(7);
+    return nil;
+}
+
+
+
+/* Code for multsq */
+
+static Lisp_Object CC_multsq(Lisp_Object env,
+                         Lisp_Object v0000, Lisp_Object v0029)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0220, v0221;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for multsq");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v0029,v0000);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0000,v0029);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push5(nil, nil, nil, nil, nil);
+/* copy arguments values to proper place */
+    stack[-2] = v0029;
+    stack[-3] = v0000;
+/* end of prologue */
+    v0220 = stack[-3];
+    v0220 = qcar(v0220);
+    if (v0220 == nil) goto v0002;
+    v0220 = stack[-2];
+    v0220 = qcar(v0220);
+    v0220 = (v0220 == nil ? lisp_true : nil);
+    goto v0001;
+
+v0001:
+    if (v0220 == nil) goto v0030;
+    v0221 = qvalue(elt(env, 2)); /* nil */
+    v0220 = (Lisp_Object)17; /* 1 */
+    popv(6);
+    return cons(v0221, v0220);
+
+v0030:
+    v0220 = stack[-3];
+    v0221 = qcdr(v0220);
+    v0220 = (Lisp_Object)17; /* 1 */
+    if (v0221 == v0220) goto v0019;
+    v0220 = qvalue(elt(env, 2)); /* nil */
+    goto v0020;
+
+v0020:
+    if (v0220 == nil) goto v0079;
+    v0220 = stack[-3];
+    v0221 = qcar(v0220);
+    v0220 = stack[-2];
+    v0220 = qcar(v0220);
+    fn = elt(env, 3); /* multf */
+    v0221 = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    v0220 = (Lisp_Object)17; /* 1 */
+    popv(6);
+    return cons(v0221, v0220);
+
+v0079:
+    v0220 = stack[-3];
+    v0221 = qcar(v0220);
+    v0220 = stack[-2];
+    v0220 = qcdr(v0220);
+    fn = elt(env, 4); /* gcdf */
+    v0220 = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    stack[-4] = v0220;
+    v0220 = stack[-2];
+    v0221 = qcar(v0220);
+    v0220 = stack[-3];
+    v0220 = qcdr(v0220);
+    fn = elt(env, 4); /* gcdf */
+    v0220 = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    stack[-1] = v0220;
+    v0220 = stack[-3];
+    v0221 = qcar(v0220);
+    v0220 = stack[-4];
+    fn = elt(env, 5); /* quotf */
+    stack[0] = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    v0220 = stack[-2];
+    v0221 = qcar(v0220);
+    v0220 = stack[-1];
+    fn = elt(env, 5); /* quotf */
+    v0220 = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    fn = elt(env, 3); /* multf */
+    v0220 = (*qfn2(fn))(qenv(fn), stack[0], v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    stack[0] = v0220;
+    v0220 = stack[-3];
+    v0221 = qcdr(v0220);
+    v0220 = stack[-1];
+    fn = elt(env, 5); /* quotf */
+    stack[-1] = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    v0220 = stack[-2];
+    v0221 = qcdr(v0220);
+    v0220 = stack[-4];
+    fn = elt(env, 5); /* quotf */
+    v0220 = (*qfn2(fn))(qenv(fn), v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    fn = elt(env, 3); /* multf */
+    v0220 = (*qfn2(fn))(qenv(fn), stack[-1], v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    stack[-4] = v0220;
+    v0221 = stack[0];
+    v0220 = stack[-4];
+    v0220 = cons(v0221, v0220);
+    nil = C_nil;
+    if (exception_pending()) goto v0196;
+    env = stack[-5];
+    {
+        popv(6);
+        fn = elt(env, 6); /* canonsq */
+        return (*qfn1(fn))(qenv(fn), v0220);
+    }
+
+v0019:
+    v0220 = stack[-2];
+    v0221 = qcdr(v0220);
+    v0220 = (Lisp_Object)17; /* 1 */
+    v0220 = (v0221 == v0220 ? lisp_true : nil);
+    goto v0020;
+
+v0002:
+    v0220 = qvalue(elt(env, 1)); /* t */
+    goto v0001;
+/* error exit handlers */
+v0196:
+    popv(6);
+    return nil;
+}
+
+
+
+/* Code for kernlp */
+
+static Lisp_Object CC_kernlp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0070, v0031;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for kernlp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0070 = v0000;
+/* end of prologue */
+
+v0013:
+    v0031 = v0070;
+    if (!consp(v0031)) goto v0004;
+    v0031 = v0070;
+    v0031 = qcar(v0031);
+    v0031 = (consp(v0031) ? nil : lisp_true);
+    goto v0003;
+
+v0003:
+    if (!(v0031 == nil)) return onevalue(v0070);
+    v0031 = v0070;
+    v0031 = qcdr(v0031);
+    if (v0031 == nil) goto v0015;
+    v0070 = qvalue(elt(env, 2)); /* nil */
+    return onevalue(v0070);
+
+v0015:
+    v0070 = qcar(v0070);
+    v0070 = qcdr(v0070);
+    goto v0013;
+
+v0004:
+    v0031 = qvalue(elt(env, 1)); /* t */
+    goto v0003;
+}
+
+
+
+/* Code for qqe_rbopp */
+
+static Lisp_Object CC_qqe_rbopp(Lisp_Object env,
+                         Lisp_Object v0000)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v0003, v0004;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for qqe_rbopp");
+#endif
+    CSL_IGNORE(env);
+/* copy arguments values to proper place */
+    v0003 = v0000;
+/* end of prologue */
+    v0004 = elt(env, 1); /* (equal neq lessp leq geq greaterp) */
+    v0003 = Lmemq(nil, v0003, v0004);
+    return onevalue(v0003);
 }
 
 
 
 setup_type const u01_setup[] =
 {
-    {"noncomp",                 CC_noncomp,     too_many_1,    wrong_no_1},
-    {"simpcar",                 CC_simpcar,     too_many_1,    wrong_no_1},
     {"reval",                   CC_reval,       too_many_1,    wrong_no_1},
-    {"terminalp",               wrong_no_na,    wrong_no_nb,   (n_args *)CC_terminalp},
-    {"delcp",                   CC_delcp,       too_many_1,    wrong_no_1},
-    {"ordop",                   too_few_2,      CC_ordop,      wrong_no_2},
-    {"exchk",                   CC_exchk,       too_many_1,    wrong_no_1},
-    {"noncomfp",                CC_noncomfp,    too_many_1,    wrong_no_1},
+    {"num-exponents",           CC_numKexponents,too_many_1,   wrong_no_1},
+    {"arraychk",                CC_arraychk,    too_many_1,    wrong_no_1},
+    {"getrtypeor",              CC_getrtypeor,  too_many_1,    wrong_no_1},
+    {"*d2q",                    CC_Hd2q,        too_many_1,    wrong_no_1},
+    {"readch1",                 wrong_no_na,    wrong_no_nb,   (n_args *)CC_readch1},
+    {"quotf",                   too_few_2,      CC_quotf,      wrong_no_2},
+    {"monomcompare",            too_few_2,      CC_monomcompare,wrong_no_2},
+    {"smember",                 too_few_2,      CC_smember,    wrong_no_2},
+    {"quotelist",               CC_quotelist,   too_many_1,    wrong_no_1},
     {"wuconstantp",             CC_wuconstantp, too_many_1,    wrong_no_1},
     {"mkcopy",                  CC_mkcopy,      too_many_1,    wrong_no_1},
     {"remove-free-vars-l",      CC_removeKfreeKvarsKl,too_many_1,wrong_no_1},
-    {"num-exponents",           CC_numKexponents,too_many_1,   wrong_no_1},
-    {"mchkopt",                 too_few_2,      CC_mchkopt,    wrong_no_2},
-    {"nth",                     too_few_2,      CC_nth,        wrong_no_2},
-    {"ibalp_cec",               CC_ibalp_cec,   too_many_1,    wrong_no_1},
+    {"mchk*",                   too_few_2,      CC_mchkH,      wrong_no_2},
+    {"prepf",                   CC_prepf,       too_many_1,    wrong_no_1},
+    {"get+mat+entry",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_getLmatLentry},
+    {"minusf",                  CC_minusf,      too_many_1,    wrong_no_1},
+    {"qqe_rqopp",               CC_qqe_rqopp,   too_many_1,    wrong_no_1},
+    {"kernels1",                too_few_2,      CC_kernels1,   wrong_no_2},
+    {"ibalp_clmember",          too_few_2,      CC_ibalp_clmember,wrong_no_2},
+    {"adjoin-term",             wrong_no_na,    wrong_no_nb,   (n_args *)CC_adjoinKterm},
     {"delall",                  too_few_2,      CC_delall,     wrong_no_2},
+    {"noncomfp1",               CC_noncomfp1,   too_many_1,    wrong_no_1},
+    {"ordop",                   too_few_2,      CC_ordop,      wrong_no_2},
     {"ps:getv",                 too_few_2,      CC_psTgetv,    wrong_no_2},
-    {"add_prin_char",           too_few_2,      CC_add_prin_char,wrong_no_2},
+    {"ldepends",                too_few_2,      CC_ldepends,   wrong_no_2},
     {"c:ordxp",                 too_few_2,      CC_cTordxp,    wrong_no_2},
-    {"dm-abs",                  CC_dmKabs,      too_many_1,    wrong_no_1},
+    {"zero2nil",                CC_zero2nil,    too_many_1,    wrong_no_1},
+    {"binding",                 CC_binding,     too_many_1,    wrong_no_1},
     {"evcomp",                  too_few_2,      CC_evcomp,     wrong_no_2},
+    {"pnth",                    too_few_2,      CC_pnth,       wrong_no_2},
     {"evmatrixcomp2",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_evmatrixcomp2},
     {"xval",                    CC_xval,        too_many_1,    wrong_no_1},
-    {"smember",                 too_few_2,      CC_smember,    wrong_no_2},
-    {"convprec",                CC_convprec,    too_many_1,    wrong_no_1},
-    {"quotf",                   too_few_2,      CC_quotf,      wrong_no_2},
+    {"add_prin_char",           too_few_2,      CC_add_prin_char,wrong_no_2},
+    {"int-equiv-chk",           CC_intKequivKchk,too_many_1,   wrong_no_1},
     {"physopp",                 CC_physopp,     too_many_1,    wrong_no_1},
     {"memq_edgelist",           too_few_2,      CC_memq_edgelist,wrong_no_2},
-    {"*n2f",                    CC_Hn2f,        too_many_1,    wrong_no_1},
+    {"termsf",                  CC_termsf,      too_many_1,    wrong_no_1},
+    {"mkspm",                   too_few_2,      CC_mkspm,      wrong_no_2},
+    {"mo_comp",                 CC_mo_comp,     too_many_1,    wrong_no_1},
     {"c_zero",                  wrong_no_na,    wrong_no_nb,   (n_args *)CC_c_zero},
     {"sieve_pv0",               wrong_no_na,    wrong_no_nb,   (n_args *)CC_sieve_pv0},
     {"listp",                   CC_listp,       too_many_1,    wrong_no_1},
-    {"quotelist",               CC_quotelist,   too_many_1,    wrong_no_1},
-    {"revpr",                   CC_revpr,       too_many_1,    wrong_no_1},
-    {"pnth",                    too_few_2,      CC_pnth,       wrong_no_2},
-    {"degr",                    too_few_2,      CC_degr,       wrong_no_2},
-    {"ibalp_commonlenisone",    too_few_2,      CC_ibalp_commonlenisone,wrong_no_2},
-    {"find2",                   too_few_2,      CC_find2,      wrong_no_2},
-    {"zero2nil",                CC_zero2nil,    too_many_1,    wrong_no_1},
-    {"binding",                 CC_binding,     too_many_1,    wrong_no_1},
-    {"prepf",                   CC_prepf,       too_many_1,    wrong_no_1},
-    {"vevmtest?",               too_few_2,      CC_vevmtestW,  wrong_no_2},
-    {"vbcsize",                 too_few_2,      CC_vbcsize,    wrong_no_2},
-    {"ordpp",                   too_few_2,      CC_ordpp,      wrong_no_2},
-    {"wedgefax",                CC_wedgefax,    too_many_1,    wrong_no_1},
-    {"times:",                  too_few_2,      CC_timesT,     wrong_no_2},
-    {"round*",                  CC_roundH,      too_many_1,    wrong_no_1},
-    {"noncomp2",                CC_noncomp2,    too_many_1,    wrong_no_1},
-    {"union_edge",              too_few_2,      CC_union_edge, wrong_no_2},
-    {"termsf",                  CC_termsf,      too_many_1,    wrong_no_1},
-    {"readch1",                 wrong_no_na,    wrong_no_nb,   (n_args *)CC_readch1},
-    {"mkspm",                   too_few_2,      CC_mkspm,      wrong_no_2},
-    {"mo_divides?",             too_few_2,      CC_mo_dividesW,wrong_no_2},
-    {"mchk*",                   too_few_2,      CC_mchkH,      wrong_no_2},
-    {"dlesslex",                too_few_2,      CC_dlesslex,   wrong_no_2},
-    {"pappl",                   too_few_2,      CC_pappl,      wrong_no_2},
-    {"adjoin-term",             wrong_no_na,    wrong_no_nb,   (n_args *)CC_adjoinKterm},
     {"modzerop:",               CC_modzeropT,   too_many_1,    wrong_no_1},
-    {"reorder",                 CC_reorder,     too_many_1,    wrong_no_1},
-    {"noncomp1",                CC_noncomp1,    too_many_1,    wrong_no_1},
-    {"subs3f",                  CC_subs3f,      too_many_1,    wrong_no_1},
-    {"tayexp-lessp",            too_few_2,      CC_tayexpKlessp,wrong_no_2},
-    {"get+mat+entry",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_getLmatLentry},
+    {"xcomment",                too_few_2,      CC_xcomment,   wrong_no_2},
+    {"monomgetvariabledegree",  too_few_2,      CC_monomgetvariabledegree,wrong_no_2},
+    {"aeval",                   CC_aeval,       too_many_1,    wrong_no_1},
+    {"rl_smupdknowl",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_rl_smupdknowl},
+    {"degr",                    too_few_2,      CC_degr,       wrong_no_2},
+    {"prepf1a",                 too_few_2,      CC_prepf1a,    wrong_no_2},
+    {"setkorder",               CC_setkorder,   too_many_1,    wrong_no_1},
+    {"ibalp_emptyclausep",      CC_ibalp_emptyclausep,too_many_1,wrong_no_1},
+    {"multiply-by-constant-mod-p",too_few_2,    CC_multiplyKbyKconstantKmodKp,wrong_no_2},
+    {"find2",                   too_few_2,      CC_find2,      wrong_no_2},
     {"butes",                   CC_butes,       too_many_1,    wrong_no_1},
-    {"noncomfp1",               CC_noncomfp1,   too_many_1,    wrong_no_1},
-    {"scprint",                 too_few_2,      CC_scprint,    wrong_no_2},
-    {"ldepends",                too_few_2,      CC_ldepends,   wrong_no_2},
-    {"numlis",                  CC_numlis,      too_many_1,    wrong_no_1},
-    {":minusp",                 CC_Tminusp,     too_many_1,    wrong_no_1},
+    {"mtp",                     CC_mtp,         too_many_1,    wrong_no_1},
+    {"nil2zero",                CC_nil2zero,    too_many_1,    wrong_no_1},
     {"pm:free",                 CC_pmTfree,     too_many_1,    wrong_no_1},
-    {"prepf1",                  too_few_2,      CC_prepf1,     wrong_no_2},
-    {"*d2q",                    CC_Hd2q,        too_many_1,    wrong_no_1},
-    {"buchvevdivides?",         too_few_2,      CC_buchvevdividesW,wrong_no_2},
-    {"expchk",                  CC_expchk,      too_many_1,    wrong_no_1},
+    {"vbcsize",                 too_few_2,      CC_vbcsize,    wrong_no_2},
+    {"wedgefax",                CC_wedgefax,    too_many_1,    wrong_no_1},
     {"csl_normbf",              CC_csl_normbf,  too_many_1,    wrong_no_1},
-    {"mkround",                 CC_mkround,     too_many_1,    wrong_no_1},
-    {"argsofopr",               CC_argsofopr,   too_many_1,    wrong_no_1},
-    {"multf",                   too_few_2,      CC_multf,      wrong_no_2},
-    {"bc_prod",                 too_few_2,      CC_bc_prod,    wrong_no_2},
+    {"*physopp",                CC_Hphysopp,    too_many_1,    wrong_no_1},
+    {"union_edge",              too_few_2,      CC_union_edge, wrong_no_2},
+    {"addf",                    too_few_2,      CC_addf,       wrong_no_2},
+    {"expdrmacro",              CC_expdrmacro,  too_many_1,    wrong_no_1},
+    {"getrtypecar",             CC_getrtypecar, too_many_1,    wrong_no_1},
+    {"addd",                    too_few_2,      CC_addd,       wrong_no_2},
+    {"sub2chk",                 CC_sub2chk,     too_many_1,    wrong_no_1},
+    {"mo_divides?",             too_few_2,      CC_mo_dividesW,wrong_no_2},
     {"multdm",                  too_few_2,      CC_multdm,     wrong_no_2},
-    {"negnumberchk",            CC_negnumberchk,too_many_1,    wrong_no_1},
-    {"reduce_pv",               too_few_2,      CC_reduce_pv,  wrong_no_2},
+    {"dssoc",                   too_few_2,      CC_dssoc,      wrong_no_2},
     {"noncomlistp",             CC_noncomlistp, too_many_1,    wrong_no_1},
     {"rnzerop:",                CC_rnzeropT,    too_many_1,    wrong_no_1},
     {"modonep:",                CC_modonepT,    too_many_1,    wrong_no_1},
-    {"mksp",                    too_few_2,      CC_mksp,       wrong_no_2},
-    {"prin2x",                  CC_prin2x,      too_many_1,    wrong_no_1},
-    {"rmultpf",                 too_few_2,      CC_rmultpf,    wrong_no_2},
-    {"arrayp",                  CC_arrayp,      too_many_1,    wrong_no_1},
-    {"finde",                   too_few_2,      CC_finde,      wrong_no_2},
-    {"nocp",                    CC_nocp,        too_many_1,    wrong_no_1},
-    {"quotsq",                  too_few_2,      CC_quotsq,     wrong_no_2},
-    {"kernlp",                  CC_kernlp,      too_many_1,    wrong_no_1},
-    {"ibalp_calcmom",           CC_ibalp_calcmom,too_many_1,   wrong_no_1},
-    {"compress*",               CC_compressH,   too_many_1,    wrong_no_1},
-    {"ps:order",                CC_psTorder,    too_many_1,    wrong_no_1},
-    {":onep",                   CC_Tonep,       too_many_1,    wrong_no_1},
-    {"bcprod",                  too_few_2,      CC_bcprod,     wrong_no_2},
-    {"ordad",                   too_few_2,      CC_ordad,      wrong_no_2},
+    {"eolcheck",                wrong_no_na,    wrong_no_nb,   (n_args *)CC_eolcheck},
+    {"mtchp1",                  wrong_no_na,    wrong_no_nb,   (n_args *)CC_mtchp1},
+    {"mri_floorkernelp",        CC_mri_floorkernelp,too_many_1,wrong_no_1},
+    {"qqe_qoptailp",            CC_qqe_qoptailp,too_many_1,    wrong_no_1},
+    {"lto_setequalq",           too_few_2,      CC_lto_setequalq,wrong_no_2},
+    {"numlis",                  CC_numlis,      too_many_1,    wrong_no_1},
+    {"constp",                  CC_constp,      too_many_1,    wrong_no_1},
+    {"replus1",                 CC_replus1,     too_many_1,    wrong_no_1},
+    {"buchvevdivides?",         too_few_2,      CC_buchvevdividesW,wrong_no_2},
     {"sublistp",                too_few_2,      CC_sublistp,   wrong_no_2},
-    {"addcomment",              CC_addcomment,  too_many_1,    wrong_no_1},
-    {"order:",                  CC_orderT,      too_many_1,    wrong_no_1},
+    {":times",                  too_few_2,      CC_Ttimes,     wrong_no_2},
     {"pprin2",                  CC_pprin2,      too_many_1,    wrong_no_1},
-    {"gcdfd1",                  too_few_2,      CC_gcdfd1,     wrong_no_2},
     {"isanindex",               CC_isanindex,   too_many_1,    wrong_no_1},
-    {"addf",                    too_few_2,      CC_addf,       wrong_no_2},
-    {"getrtypecar",             CC_getrtypecar, too_many_1,    wrong_no_1},
-    {"sub2chk",                 CC_sub2chk,     too_many_1,    wrong_no_1},
-    {"ring_ecart",              CC_ring_ecart,  too_many_1,    wrong_no_1},
-    {"mtp",                     CC_mtp,         too_many_1,    wrong_no_1},
-    {"unpkp",                   CC_unpkp,       too_many_1,    wrong_no_1},
+    {"formlis",                 wrong_no_na,    wrong_no_nb,   (n_args *)CC_formlis},
+    {"aeval*",                  CC_aevalH,      too_many_1,    wrong_no_1},
+    {"bc_prod",                 too_few_2,      CC_bc_prod,    wrong_no_2},
+    {"dlesslex",                too_few_2,      CC_dlesslex,   wrong_no_2},
+    {"reduce_pv0",              wrong_no_na,    wrong_no_nb,   (n_args *)CC_reduce_pv0},
+    {"upbve",                   CC_upbve,       too_many_1,    wrong_no_1},
     {"rnequiv",                 CC_rnequiv,     too_many_1,    wrong_no_1},
-    {"multiply-by-constant-mod-p",too_few_2,    CC_multiplyKbyKconstantKmodKp,wrong_no_2},
-    {"reordop",                 too_few_2,      CC_reordop,    wrong_no_2},
-    {"aconc*",                  too_few_2,      CC_aconcH,     wrong_no_2},
-    {"aconc",                   too_few_2,      CC_aconc,      wrong_no_2},
-    {"exptchksq",               CC_exptchksq,   too_many_1,    wrong_no_1},
-    {"replus",                  CC_replus,      too_many_1,    wrong_no_1},
     {"multd",                   too_few_2,      CC_multd,      wrong_no_2},
-    {"delq",                    too_few_2,      CC_delq,       wrong_no_2},
-    {"get_token",               wrong_no_na,    wrong_no_nb,   (n_args *)CC_get_token},
-    {"ps:last-term",            CC_psTlastKterm,too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u01", (two_args *)"14536 6814783 5930663", 0}
+    {"*i2mod",                  CC_Hi2mod,      too_many_1,    wrong_no_1},
+    {"general-modular-times",   too_few_2,      CC_generalKmodularKtimes,wrong_no_2},
+    {"getpower",                too_few_2,      CC_getpower,   wrong_no_2},
+    {"anform",                  CC_anform,      too_many_1,    wrong_no_1},
+    {"reorder",                 CC_reorder,     too_many_1,    wrong_no_1},
+    {"ofsf_smwupdknowl",        wrong_no_na,    wrong_no_nb,   (n_args *)CC_ofsf_smwupdknowl},
+    {"finde",                   too_few_2,      CC_finde,      wrong_no_2},
+    {"mchk",                    too_few_2,      CC_mchk,       wrong_no_2},
+    {"multsq",                  too_few_2,      CC_multsq,     wrong_no_2},
+    {"kernlp",                  CC_kernlp,      too_many_1,    wrong_no_1},
+    {"qqe_rbopp",               CC_qqe_rbopp,   too_many_1,    wrong_no_1},
+    {NULL, (one_args *)"u01", (two_args *)"22238 7946220 5378968", 0}
 };
 
 /* end of generated code */

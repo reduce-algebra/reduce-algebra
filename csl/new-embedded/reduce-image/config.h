@@ -178,6 +178,9 @@
 /* Define to 1 if you have the `waitpid' function. */
 /* #undef HAVE_WAITPID */
 
+/* System identification for internal use */
+#define BUILTFOR "generic"
+
 /* Name of CPU */
 #define HOST_CPU "generic"
 
