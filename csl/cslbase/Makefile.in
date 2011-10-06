@@ -72,7 +72,8 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 @fox_TRUE@am__EXEEXT_1 = foxdemo$(EXEEXT) fontdemo$(EXEEXT) \
 @fox_TRUE@	showmathdemo$(EXEEXT)
 @wx_TRUE@am__EXEEXT_2 = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) \
-@wx_TRUE@	wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
+@wx_TRUE@	wxfontdemo1$(EXEEXT) wxdvi$(EXEEXT) \
+@wx_TRUE@	wxshowmathdemo$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__bootstrapreduce_SOURCES_DIST = arith01.c arith02.c arith03.c \
 	arith04.c arith05.c arith06.c arith07.c arith08.c arith09.c \
@@ -187,6 +188,8 @@ am_wxdvi_OBJECTS = wxdvi.$(OBJEXT)
 wxdvi_OBJECTS = $(am_wxdvi_OBJECTS)
 am_wxfontdemo_OBJECTS = wxfontdemo.$(OBJEXT)
 wxfontdemo_OBJECTS = $(am_wxfontdemo_OBJECTS)
+am_wxfontdemo1_OBJECTS = wxfontdemo1.$(OBJEXT)
+wxfontdemo1_OBJECTS = $(am_wxfontdemo1_OBJECTS)
 am__wxpsl_SOURCES_DIST = wxpsl.cpp fwin.c termed.c wxfwin.c \
 	wxterminal.cpp
 @wx_TRUE@am_wxpsl_OBJECTS = wxpsl.$(OBJEXT) $(am__objects_3)
@@ -210,14 +213,15 @@ SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
 	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
 	$(wxdemo_SOURCES) $(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
-	$(wxpsl_SOURCES) $(wxshowmathdemo_SOURCES)
+	$(wxfontdemo1_SOURCES) $(wxpsl_SOURCES) \
+	$(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
 	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
 	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
-	$(wxfontdemo_SOURCES) $(am__wxpsl_SOURCES_DIST) \
-	$(wxshowmathdemo_SOURCES)
+	$(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) \
+	$(am__wxpsl_SOURCES_DIST) $(wxshowmathdemo_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -384,6 +388,8 @@ top_srcdir = @top_srcdir@
 @exeext_TRUE@plain_wxdemo = wxdemo
 @exeext_FALSE@plain_wxfontdemo = wxfontdemo.unnecessary.except.on.windows
 @exeext_TRUE@plain_wxfontdemo = wxfontdemo
+@exeext_FALSE@plain_wxfontdemo1 = wxfontdemo.unnecessary.except.on.windows
+@exeext_TRUE@plain_wxfontdemo1 = wxfontdemo1
 @exeext_FALSE@plain_wxdvi = wxdvi.unnecessary.except.on.windows
 @exeext_TRUE@plain_wxdvi = wxdvi
 @exeext_FALSE@plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
@@ -416,7 +422,7 @@ RM = rm
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@wxdemotarget = 
-@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
+@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @wx_FALSE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 @wx_TRUE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
@@ -588,6 +594,9 @@ wxdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+wxfontdemo1_SOURCES = wxfontdemo1.cpp
+wxfontdemo1_LDADD = $(fwin_icon)
+wxfontdemo1_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -717,7 +726,7 @@ COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 @windows_TRUE@dyndep = 
 DLLIB = 
 @fox_FALSE@@wx_FALSE@guisrc = 
-@fox_FALSE@@wx_TRUE@guisrc = $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
+@fox_FALSE@@wx_TRUE@guisrc = $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) $(wxshowmathdemo_SOURCES)
 
 #
 # The target "bytes1a.$(OBJEXT)" recompiles bytes1.c, but with the flag set that
@@ -738,7 +747,7 @@ DLLIB =
 @wx_TRUE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
 srcfiles = $(mainsrc) $(csl_SOURCES)
 @fox_FALSE@@wx_FALSE@guibin = 
-@fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
+@fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 @wx_FALSE@	reduce$(EXEEXT) $(am__append_9) $(am__append_10)
@@ -856,6 +865,9 @@ termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
 @wx_FALSE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxfontdemo$(EXEEXT)
 @wx_FALSE@	$(CXXLINK) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS)
+@wx_FALSE@wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxfontdemo1$(EXEEXT)
+@wx_FALSE@	$(CXXLINK) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(LIBS)
 @wx_FALSE@wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxpsl$(EXEEXT)
 @wx_FALSE@	$(CXXLINK) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS)
@@ -984,6 +996,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdvi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxpsl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmathdemo.Po@am__quote@
@@ -2215,6 +2228,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 .PHONY: $(plain_showmathdemo)
 .PHONY: $(plain_wxdemo)
 .PHONY: $(plain_wxfontdemo)
+.PHONY: $(plain_wxfontdemo1)
 .PHONY: $(plain_wxdvi)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
@@ -2317,6 +2331,12 @@ $(srcdir)/Makefile.am:
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
+
+@wx_TRUE@wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-rm -f wxfontdemo1$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo1$(EXEEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo1 $(srcdir)
 
 @wx_TRUE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdvi$(EXEEXT)
@@ -2456,6 +2476,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+# With Windows I will want a .ttf version for any time I am using gdiplus.
+# But when I am not the original .otf version might be better.
+@mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
 # The DejaVu Sans Mono font covers a range of characters that CMTT does not..
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32
@@ -2552,6 +2575,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxfontdemo):	wxfontdemo.exe
 @exeext_TRUE@@wx_TRUE@	echo "make wxfontdemo.exe is preferred"
+
+@exeext_TRUE@@wx_TRUE@$(plain_wxfontdemo1):	wxfontdemo1.exe
+@exeext_TRUE@@wx_TRUE@	echo "make wxfontdemo1.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxdvi):	wxdvi.exe
 @exeext_TRUE@@wx_TRUE@	echo "make wxdvi.exe is preferred"
