@@ -47,19 +47,26 @@ struct Quantifier checked by idp;
 
 
 %DS
+% TaggedContainerElementL ::= Status . ContainerElementL
+% Status ::= "elim" | "failed" | "local" | "nonocc"
+% ContainerElementL ::= (ContainerElement, ...)
 % ContainerElement ::= (VarList . QfFormula) . (Answer . AnswerTranslation)
 % VarList ::= VariableL | "'break"
 % Answer ::= (SubstTriplet, ...) (* "nil" if not ans *)
 % SubstTriplet ::= (Variable, SubstFunction, ArgumentList, Atr)
 % AnswerTranslation ::= (* context dependent, "nil" if not ans *)
-% ContainerElementL ::= (ContainerElement, ...)
 
+struct TaggedContainerElementL checked by taggedContainerElementLP;
+struct ContainerElementL checked by listp;
 struct ContainerElement checked by containerElementP;
 struct VarList checked by varListP;
 struct Answer checked by listp;
 struct SubstTriplet checked by substTripletP;
 struct AnswerTranslation;
-struct ContainerElementL checked by listp;
+
+
+procedure taggedContainerElementLP(x);
+   pairp x and car x memq '(elim failed local nonocc) and listp cdr x;
 
 procedure containerElementP(x);
    pairp x and pairp car x and pairp cdr x;
@@ -427,8 +434,10 @@ procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
    % Iteratively apply [cl_qeblock] to the quantifier blocks.
    begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,q,varl,rvl,jl;
       svrlidentify := !*rlidentify;
+      jl := {cl_mkJ(f,nil,nil)};
       while null rvl and ql do <<
 	 on1 'rlidentify;
+      	 f := cl_jF car jl;
       	 q := pop ql;
       	 varl := pop varll;
       	 if !*rlverbose then
@@ -444,7 +453,6 @@ procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
 	    onoff('rlqeprecise,svrlqeprecise);
 	    onoff('rlqeaprecise,svrlqeaprecise)
 	 >>;
-      	 f := cl_jF car jl;
 	 off1 'rlidentify
       >>;
       onoff('rlidentify,svrlidentify);
@@ -546,7 +554,7 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
       >>;
       cvl := varl;
       if !*rlqegsd then f := rl_gsd(f,theo);
-      if rl_op f = 'or then
+      if rl_op f eq 'or then
 	 for each x in rl_argn f do
 	    co := cl_save(co,{cl_mkCE(cvl,x,nil,nil)})
       else
@@ -604,6 +612,9 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
       return {remvl,
 	 {cl_mkJ(rl_smkn('or,for each x in newj collect car x),nil,nil)}, theo}
    end;
+
+
+declare cl_qevar: (QfFormula,KernelL,Answer,AnswerTranslation,Theory,Boolean,KernelL) -> DottedPair;
 
 procedure cl_qevar(f,vl,an,atr,theo,ans,bvl);
    % Quantifier eliminate one variable. [f] is a quantifier-free formula; [vl]
@@ -677,6 +688,9 @@ procedure cl_varsel(f,vl,theo);
 	 candvl := {car vl};
       return candvl
    end;
+
+
+declare cl_process!-candvl: (QfFormula,KernelL,Answer,AnswerTranslation,Theory,Boolean,KernelL,KernelL) -> TaggedContainerElementL;
 
 procedure cl_process!-candvl(f,vl,an,atr,theo,ans,bvl,candvl);
    begin scalar w,ww,v,alp,hit,ww,status;

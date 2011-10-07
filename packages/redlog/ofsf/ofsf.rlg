@@ -117,6 +117,36 @@ rlghqe phi;
  not(2*a  - 2*a*c + b  = 0 or (4*a*c - b  > 0 and a <> 0))}
 
 
+% Examples from a talk on Isabel by T. Nipkow
+wnip := rlall(a>=3/4 and a^2<=b*(c+1) and b<=4c impl (a-1)^2<b*c)$
+
+
+rlqe wnip;
+
+
+false
+
+rlqea wnip;
+
+
+              3       1       1
+{{false,{a = ---,b = ---,c = ---}}}
+              4       2       8
+
+snip := rlall(a>3/4 and a^2<=b*(c+1) and b<=4c impl (a-1)^2<b*c)$
+
+
+rlqe snip;
+
+
+true
+
+rlqea snip;
+
+
+{}
+
+
 %%% Test rlqe (xopt-qe)
 mtp2 := ex(x11,ex(x12,ex(x13,ex(x21,ex(x22,ex(x23,ex(x31,ex(x32,ex(x33,
 x11+x12+x13=a1 and x21+x22+x23=a2 and x31+x32+x33=a3 and
@@ -1575,8 +1605,6 @@ true
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 10540 ms  plus GC time: 262 ms
-real	0m11.708s
-user	0m0.030s
-sys	0m0.154s
+Tested on x86_64-mac_10.7_lion-darwin11.1.0-nogui CSL
+Time (counter 1): 12279 ms  plus GC time: 380 ms
+real	0m13.011s

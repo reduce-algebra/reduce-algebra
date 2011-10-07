@@ -16,6 +16,14 @@ rlgcad phi;
 rlhqe phi;
 rlghqe phi;
 
+% Examples from a talk on Isabel by T. Nipkow
+wnip := rlall(a>=3/4 and a^2<=b*(c+1) and b<=4c impl (a-1)^2<b*c)$
+rlqe wnip;
+rlqea wnip;
+snip := rlall(a>3/4 and a^2<=b*(c+1) and b<=4c impl (a-1)^2<b*c)$
+rlqe snip;
+rlqea snip;
+
 %%% Test rlqe (xopt-qe)
 mtp2 := ex(x11,ex(x12,ex(x13,ex(x21,ex(x22,ex(x23,ex(x31,ex(x32,ex(x33,
 x11+x12+x13=a1 and x21+x22+x23=a2 and x31+x32+x33=a3 and
