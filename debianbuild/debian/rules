@@ -1,0 +1,53 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+OSVER=$(shell ../script/findos.sh)
+BUILDDIR=$(shell ../scripts/findhost.sh `../config.guess`)
+
+INSTALLDIR=debian/`dh_listpackages`
+SHAREDIR=$(INSTALLDIR)/usr/share/reduce
+LIBDIR=$(INSTALLDIR)/usr/lib/reduce
+TTFONTDIR=$(INSTALLDIR)/usr/share/fonts/truetype/reduce
+TYPE1FONTDIR=$(INSTALLDIR)/usr/share/fonts/X11/Type1
+DOCDIR=$(INSTALLDIR)/usr/share/doc/reduce
+BINDIR=$(INSTALLDIR)/usr/bin
+
+RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
+%:
+	dh $@ 
+
+override_dh_configure:
+	cd .. ; ./configure --with-csl ; ./configure --with-psl
+
+override_dh_build:
+	cd .. ; make
+
+override_dh_auto_install:
+	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
+	cp ../cslbuild/$(BUILDDIR)/csl/reduce.img ../cslbuild/$(BUILDDIR)/csl/reduce $(LIBDIR)/cslbuild/csl
+	$(RSYNC_CMD) --no-perms ../cslbuild/$(BUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
+	$(RSYNC_CMD) --exclude "/src/***" ../cslbuild/$(BUILDDIR)/csl/reduce.fonts/ $(SHAREDIR)/reduce.fonts
+	chmod -x $(SHAREDIR)/reduce.fonts/*.ttf
+	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" ../pslbuild/$(BUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
+	$(RSYNC_CMD) ../pslbuild/$(BUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
+	$(RSYNC_CMD) --no-perms ../packages/ $(SHAREDIR)/packages/
+#	cp ../scripts/run.sh ../scripts/runpsl.sh $(SHAREDIR)/scripts
+	ln -f -s ../../../../share/reduce/reduce.fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
+#	ln -f -s ../../../../share/reduce/reduce.fonts $(SHAREDIR)/cslbuild/csl/reduce.fonts
+	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
+	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
+	ln -f -s ../../lib/reduce/cslbuild $(SHAREDIR)/cslbuild
+#	mkdir -p $(TTFONTDIR)
+#	cp ../cslbuild/$(BUILDDIR)/csl/reduce.fonts/*.ttf $(TTFONTDIR)
+#	cp ../cslbuild/$(BUILDDIR)/csl/reduce.fonts/*.pfb $(TYPE1FONTDIR)
+#	chmod -x $(TTFONTDIR)/*
+	ln -f -s /usr/lib/reduce/cslbuild/csl/reduce $(BINDIR)/redcsl
+	cp -a runpsl.sh $(BINDIR)/redpsl
