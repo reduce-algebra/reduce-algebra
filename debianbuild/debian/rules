@@ -49,5 +49,6 @@ override_dh_auto_install:
 #	cp ../cslbuild/$(BUILDDIR)/csl/reduce.fonts/*.ttf $(TTFONTDIR)
 #	cp ../cslbuild/$(BUILDDIR)/csl/reduce.fonts/*.pfb $(TYPE1FONTDIR)
 #	chmod -x $(TTFONTDIR)/*
-	ln -f -s /usr/lib/reduce/cslbuild/csl/reduce $(BINDIR)/redcsl
+#	ln -f -s /usr/lib/reduce/cslbuild/csl/reduce $(BINDIR)/redcsl
 	cp -a runpsl.sh $(BINDIR)/redpsl
+	cp -a runcsl.sh $(BINDIR)/redcsl
