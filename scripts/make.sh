@@ -77,6 +77,8 @@ fi
 
 echo host=${host} os=${os}
 
+rc=0
+
 for l in cslbuild/*-${os}* pslbuild/*${host}*
 do
    if test -f ${l}/Makefile
@@ -85,8 +87,9 @@ do
      cd ${l}
      echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
      $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+     rc=$(($?>$rc ? $? : $rc))
      cd ../..
    fi
 done
 
-exit 0
+exit $rc
