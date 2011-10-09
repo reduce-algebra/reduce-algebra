@@ -91,12 +91,12 @@ ipower := {i^~n => cos(n*pi/2) + i*sin(n*pi/2),
 
 >> $
 
-% We can't set atan2eval rules if rounded is on.
+% We can't set atan2eval rules if rounded or modular (and possibly another mode) is on.
 
 begin scalar oldmode;
-      if !*rounded then oldmode := setdmode('rounded,nil);
+      if dmode!* then oldmode := setdmode(dmode!*,nil);
       algebraic let ipower,atan2eval;
-      if oldmode then setdmode('rounded,t)
+      if oldmode then setdmode(oldmode,t)
    end;
 
 %algebraic let logcomplex,atan2eval;

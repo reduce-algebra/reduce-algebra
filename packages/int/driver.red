@@ -843,7 +843,13 @@ intrules :=
    int(~x^~n/log(x),x) => ei((n+1)*log(x)) when fixp n,
    int(1/(~x^~n*log(x)),x) => ei((-n+1)*log(x)) when fixp n};
 
-let intrules;
+% We can't set intrules if modular (and possibly another mode) is on.
+
+symbolic begin scalar oldmode;
+      if dmode!* then oldmode := setdmode(dmode!*,nil);
+      algebraic let intrules;
+      if oldmode then setdmode(oldmode,t)
+   end;
 
 endmodule;
 
