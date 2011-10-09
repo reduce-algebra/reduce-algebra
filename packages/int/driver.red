@@ -765,6 +765,12 @@ begin
        then <<if !*trint then printc "Substituted integral FAILED";
               return nil>>
      else res := car res;
+%    if not null numr cdr res then <<
+%       % cdr res is the badpart
+%       % check whether it can be integrated by, e.g. pattern matching
+%       (if x freeof 'int then res := addsq(car res,x) . (nil ./ 1))
+%         where x := simpint1 {cdr res,newvar};
+%    >>;
     ss := list(newvar . list('expt, var, 2));
     res := subsq(car res, ss) . multsq((((var .^ 1) .* 2) .+ nil) ./ 1,
                                        subsq(cdr res, ss));
@@ -794,51 +800,57 @@ intrules :=
    cosh(log(~x)) => (x^2+1)/(2*x),
    sinh(log(~x)) => (x^2-1)/(2*x),
    % These next two are rather uncertain.
-   int(log(~x)/(~b-x),x) => dilog(x/b),
-   int(log(~x)/(~b*x-x^2),x) => dilog(x/b)/b + log(x)^2/(2b),
+   int(log(~x)/(~b-x),x) => dilog(x/b) when b freeof x,
+   int(log(~x)/(~b*x-x^2),x) => dilog(x/b)/b + log(x)^2/(2b) when b freeof x,
 
 %% FJW: Next 2 rules replaced by ~~ rules below
 %% int(e^(~x^2),x) => erf(i*x)*sqrt(pi)/(2i),
 %% int(1/e^(~x^2),x) => erf(x) * sqrt(pi)/2,
 %% FJW: Missing sqrt(b):
 %% int(e^(~b*~x^2),x) => erf(i*x)*sqrt(pi)/(2i*sqrt(b)),
-   int(e^(~~b*~x^2),x) => erf(i*sqrt(b)*x)*sqrt(pi)/(2i*sqrt(b)),
+%   int(e^(~~b*~x^2),x) => erf(i*sqrt(b)*x)*sqrt(pi)/(2i*sqrt(b)),
+   int(~f^(~~b*~x^2),x) => erf(i*sqrt(b*log(f))*x)*sqrt(pi)/(2i*sqrt(b*log(f)))
+              when f freeof x and b freeof x,
 %% FJW: Rule missing:
-   int(e^(~x^2/~b),x) => erf(i*x/sqrt(b))*sqrt(pi)*sqrt(b)/(2i),
+   int(e^(~x^2/~b),x) => erf(i*x/sqrt(b))*sqrt(pi)*sqrt(b)/(2i) when b freeof x,
 %% FJW: Missing sqrt(b):
 %% int(1/e^(~b*~x^2),x) => erf(x)*sqrt(pi)/(2sqrt(b)),
-   int(1/e^(~~b*~x^2),x) => erf(sqrt(b)*x)*sqrt(pi)/(2sqrt(b)),
+%   int(1/e^(~~b*~x^2),x) => erf(sqrt(b)*x)*sqrt(pi)/(2sqrt(b)),
+   int(1/~f^(~~b*~x^2),x) => erf(sqrt(b*log(f))*x)*sqrt(pi)/(2sqrt(b*log(f)))
+              when f freeof x and b freeof x,
 %% FJW: Rule missing:
-   int(1/e^(~x^2/~b),x) => erf(x/sqrt(b))*sqrt(pi)*sqrt(b)/2,
+%   int(1/e^(~x^2/~b),x) => erf(x/sqrt(b))*sqrt(pi)*sqrt(b)/2,
+   int(1/~f^(~x^2/~b),x) => erf(x/sqrt(b*log(f)))*sqrt(pi)*sqrt(b*log(f))/2
+              when f freeof x and b freeof x,
 
    df(ei(~x),x) => exp(x)/x,
    int(e^(~~b*~x)/x,x) => ei(b*x),      % FJW
    int(e^(~x/~b)/x,x) => ei(x/b),
-   int(1/(exp(~x*~~b)*x),x) => ei(-x*b), % FJW
-   int(1/(exp(~x/~b)*x),x) => ei(-x/b),
+   int(1/(exp(~x*~~b)*x),x) => ei(-x*b) when b freeof x, % FJW
+   int(1/(exp(~x/~b)*x),x) => ei(-x/b) when b freeof x,
 %% FJW: Next 2 rules replaced by ~~ rules above
 %% int(e^~x/x,x) => ei(x),
 %% int(1/(e^~x*x),x) => ei(-x),
-   int(~a^~x/x,x) => ei(x*log(a)),
-   int(1/((~a^~x)*x),x) => ei(-x*log(a)),
+   int(~a^(~~b*~x)/x,x) => ei(x*b*log(a)) when a freeof x and b freeof x,
+   int(1/((~a^(~~b*~x))*x),x) => ei(-x*b*log(a)) when a freeof x and b freeof x,
    df(si(~x),x) => sin(x)/x,
-   int(sin(~~b*~x)/x,x) => si(b*x),     % FJW
-   int(sin(~x/~b)/x,x) => si(x/b),      % FJW
+   int(sin(~~b*~x)/x,x) => si(b*x) when b freeof x,     % FJW
+   int(sin(~x/~b)/x,x) => si(x/b) when b freeof x,      % FJW
 %% int(sin(~x)/x,x) => si(x),           % FJW
    int(sin(~x)/x^2,x) => -sin(x)/x +ci(x),
    int(sin(~x)^2/x,x) =>(log(x)-ci(2x))/2,
    df(ci(~x),x) => cos(x)/x,
-   int(cos(~~b*~x)/x,x) => ci(b*x),     % FJW
-   int(cos(~x/~b)/x,x) => ci(x/b),      % FJW
+   int(cos(~~b*~x)/x,x) => ci(b*x) when b freeof x,     % FJW
+   int(cos(~x/~b)/x,x) => ci(x/b) when b freeof x,      % FJW
 %% int(cos(~x)/x,x) => ci(x),           % FJW
    int(cos(~x)/x^2,x) => -cos(x)/x -si(x),
    int(cos(~x)^2/x,x) =>(log(x)+ci(2x)/2),
-   int(1/log(~~b*~x),x) => ei(log(b*x))/b, % FJW
-   int(1/log(~x/~b),x) => ei(log(x/b))*b, % FJW
+   int(1/log(~~b*~x),x) => ei(log(b*x))/b when b freeof x, % FJW
+   int(1/log(~x/~b),x) => ei(log(x/b))*b when b freeof x, % FJW
 %% int(1/log(~x),x) => ei(log(x)),      % FJW
-%% int(1/log(~x+~b),x) => ei(log(x+b)), % FJW
-   int(1/log(~~a*~x+~b),x) => ei(log(a*x+b))/b, % FJW
-   int(1/log(~x/~a+~b),x) => ei(log(x/a+b))/b, % FJW
+%% int(1/log(~x+~b),x) => ei(log(x+b)) when b freeof x, % FJW
+   int(1/log(~~a*~x+~b),x) => ei(log(a*x+b))/b when a freeof x and b freeof x, % FJW
+   int(1/log(~x/~a+~b),x) => ei(log(x/a+b))/b when a freeof x and b freeof x, % FJW
    int(~x/log(~x),x) => ei(2*log(x)),
    int(~x^~n/log(x),x) => ei((n+1)*log(x)) when fixp n,
    int(1/(~x^~n*log(x)),x) => ei((-n+1)*log(x)) when fixp n};
