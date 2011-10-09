@@ -29,10 +29,12 @@ module dint;  % Definite integration support.
 fluid '(!*precise);
 
 symbolic procedure simpdint u;
-   begin scalar low,upp,fn,var,x,y;
+   begin scalar low,upp,fn,var,x,y,oldmode;
       if length u neq 4
         then rerror(int,2,"Improper number of arguments to INT");
+      if dmode!* then oldmode := setdmode(dmode!*,nil);
       load!-package 'defint;
+      if oldmode then setdmode(oldmode,t);
       fn := car u;
       var := cadr u;
       low := caddr u;
