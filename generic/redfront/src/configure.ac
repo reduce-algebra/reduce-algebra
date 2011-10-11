@@ -131,11 +131,19 @@ esac
 
 AC_CONFIG_HEADER(config.h)
 
-AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$COMEXT",
+AC_ARG_WITH(csl-reduce,[  --with-csl-reduce=FILE  location of the executable CSL REDUCE],
+        cslreduce="$withval",cslreduce="$abssrcdir/cslbuild/$RBUILD/csl/reduce$COMEXT")
+AC_DEFINE_UNQUOTED(REDUCE,"$cslreduce",
 	[Define your executable REDUCE (with CSL)])
-AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT",
+
+AC_ARG_WITH(bpsl,[  --with-bpsl=FILE        location of executable bpsl (with PSL)],
+        bpsl="$withval",bpsl="$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT")
+AC_DEFINE_UNQUOTED(BPSL,"$bpsl",
 	[Define your executable bpsl (with PSL)])
-AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
+
+AC_ARG_WITH(reduce-img,[  --with-reduce-img=FILE  location of the REDUCE image (with PSL)],
+        redimg="$withval",redimg="$abssrcdir/pslbuild/$RBUILD/red/reduce.img")
+AC_DEFINE_UNQUOTED(REDIMG,"$redimg",
 	[Define your REDUCE image (with PSL)])
 AC_ARG_WITH(td,AC_HELP_STRING([--with-td=BYTES],
 	[the default argument for bpsl -td]),defmem=$withval,defmem=0)
@@ -176,10 +184,14 @@ dnl else
 dnl    AC_MSG_ERROR("use one of --with-csl or --with-psl")
 dnl fi
 
-AC_DEFINE_UNQUOTED(REDFRONTROOT,"$abssrcdir/packages/redfront",
+AC_ARG_WITH(redfront-root,[  --with-redfront-root=DIR  location of the redfront.red file],
+        redfrontroot="$withval",redfrontroot="$abssrcdir/packages/redfront")
+AC_DEFINE_UNQUOTED(REDFRONTROOT,"$redfrontroot",
 	[Define the location of redfront.red])
 
-AC_DEFINE_UNQUOTED(PACKAGE_MAP,"$abssrcdir/packages/package.map",
+AC_ARG_WITH(package-map,[  --with-package-map=FILE location of the pacakge.map file],
+        packagemap="$withval",packagemap="$abssrcdir/packages/package.map")
+AC_DEFINE_UNQUOTED(PACKAGE_MAP,"$packagemap",
 	[Define the location of package.map])
 
 dnl Checks for libraries.
@@ -248,9 +260,14 @@ fi
 )
 
 editline=yes
+editlinepath="$abssrcdir/generic/redfront/$RBUILD/libedit"
 AC_ARG_WITH(libedit,
    AC_HELP_STRING([--without-libedit],[do not use libedit]),
-if test "$withval" = no ; then editline=no; fi)
+if test "$withval" = no 
+  then editline=no
+elif test -n "$withval"
+  then editlinepath="$withval"
+fi)
 
 if test "$editline" = yes ; then
   AC_DEFINE(HAVE_LIBEDIT,1,[use libedit])
@@ -269,7 +286,9 @@ AS_IF([test "$editline" = no],
 
 AS_IF([test "$editline" = yes &&
          { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
-  [ebd=$abssrcdir/generic/redfront/$RBUILD/libedit
+  [AC_CHECK_HEADERS(filecomplete.h,
+      AC_DEFINE(HAVE_FILECOMPLETE_H,1))
+   ebd=$editlinepath
    CFLAGS="$CFLAGS -I$ebd/include"
    LDFLAGS="$LDFLAGS -L$ebd/lib"
    if test "X$on_windows" != Xyes && test "X$on_darwin" != Xyes ; then
@@ -281,7 +300,7 @@ AS_IF([test "$editline" = yes],
       [LIBS="-ledit $LIBS"
 dnl I am adding the libedit/src for filecomplete.h. This is going to
 dnl be used even with the system libedit for Darwin universal builds.
-       CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/src"
+#       CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/src"
        AC_DEFINE(HAVE_HISTORY,1,[history provided by libedit])],
       AC_MSG_ERROR("libedit not found")))
 

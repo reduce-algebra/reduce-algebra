@@ -207,42 +207,42 @@ int parse_colarg(char *s) {
   redfrontcolor = (c<0) ? DEFAULT_REDFRONTCOLOR : c;
   if (*s == 0) return 0;
 
-  *s++;
+  s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   normalcolor = (c<0) ? DEFAULT_NORMALCOLOR : c;
   if (*s == 0) return 0;
 
-  *s++;
+  s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   promptcolor = (c<0) ? DEFAULT_PROMPTCOLOR : c;
   if (*s == 0) return 0;
 
-  *s++;
+  s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   inputcolor = (c<0) ? DEFAULT_INPUTCOLOR : c;
   if (*s == 0) return 0;
 
-  *s++;
+  s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   outputcolor = (c<0) ? DEFAULT_OUTPUTCOLOR : c;
   if (*s == 0) return 0;
 
-  *s++;
+  s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   debugcolor = (c<0) ? DEFAULT_DEBUGCOLOR : c;
   if (*s == 0) return 0;
 
-  *s++;
+  s++;
   if (*s == 0) return 0;
 
   return 1;

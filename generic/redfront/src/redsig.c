@@ -89,11 +89,12 @@ void sig_killChild(void) {
 
 RETSIGTYPE sig_sigInt(int arg) {
   /* Only used for CSL */
+  ssize_t ret; 
 
   deb_fprintf(stderr,"sig_sigInt(%d)\n",arg);
   kill(reduceProcessID,SIGINT);
   sig_skipUntilString(ReduceToMe[0],CSL_SIGINT_MSG);
-  write(MeToReduce[1],"a\n",2);
+  ret = write(MeToReduce[1],"a\n",2);
   printf("\n");
 }
 
@@ -101,16 +102,17 @@ void sig_skipUntilString(int handle,const char string[]) {
   char *buffer;
   int len;
   int i;
+  ssize_t ret;
 
   len = strlen(string);
   buffer = malloc(len * sizeof(char) + 1);
-  read(handle,buffer,len);
+  ret = read(handle,buffer,len);
 
-  while (strcmp(buffer,string) != 0) {
+  while (ret >= 0 && strcmp(buffer,string) != 0) {
     deb_fprintf(stderr,"sig_skipUntilString(): buffer=|%s|\n",buffer);
     for (i=0; i < len-1; i++)
       buffer[i] = buffer[i+1];
-    read(handle,buffer+len-1,1);
+    ret = read(handle,buffer+len-1,1);
   }
   free(buffer);
 }

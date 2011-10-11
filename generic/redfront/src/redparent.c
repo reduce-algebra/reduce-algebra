@@ -245,7 +245,7 @@ char *append_line(char *c,char *l) {
 	strcat(s,"\x0a");
       else {
 	strcat(s," ");
-	while (l && (*l == ' ' || *l == '\t' || l == '\n'))
+	while (l && isspace(*l))
 	  l++;
       }
     }
@@ -264,25 +264,26 @@ void send_reduce(char line[]) {
   char dummy_prompt[50];
   char ch;
   int ii;
+  ssize_t ret;
 
   deb_fprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
 
   if (line == (char *)NULL) {
     ch=0x04;
-    write(MeToReduce[1],&ch,1);
+    ret = write(MeToReduce[1],&ch,1);
     ch = 0x0a;
-    write(MeToReduce[1],&ch,1);
+    ret = write(MeToReduce[1],&ch,1);
   } else {
     for (ii=0; line[ii] != 0; ii++) {
       ch = line[ii] & 0x7f;
-      write(MeToReduce[1],&ch,1);
+      ret = write(MeToReduce[1],&ch,1);
       if (ch == 0x0a) {
 	strcpy(dummy_prompt,"dummy_prompt");
 	read_until_prompt(dummy_prompt);
       }
     }
     ch = 0x0a;
-    write(MeToReduce[1],&ch,1);
+    ret = write(MeToReduce[1],&ch,1);
   }
 
   deb_fprintf(stderr,"parent: ... leaving send_reduce()\n");

@@ -41,21 +41,45 @@ extern int debugcolor;
 
 extern int color;
 
-#ifdef HAVE_LIBEDIT
-
-#include <filecomplete.h>
-#include <sys/stat.h>
-
-#define PROMPT_IGNORE '@'
-
-#define QUERY_ITEMS 100
-
 #define SKIPPING_WHITESPACE 1
 #define READING_PROMPT 2
 #define LEARNING 3
 #define FINISHED 0
 
 extern int ReduceToMe[];
+
+static strl line_switchlist = NULL;
+static strl line_packlist = NULL;
+static strl line_loadlist = NULL;
+static strl line_adhoclist = NULL;
+
+
+#ifdef HAVE_LIBEDIT
+
+#ifdef HAVE_FILECOMPLETE_H
+#include <filecomplete.h>
+#else
+
+int fn_complete(EditLine *,
+    char *(*)(const char *, int),
+    char **(*)(const char *, int, int),
+    const char *, const char *, const char *(*)(const char *), size_t,
+    int *, int *, int *, int *);
+
+void fn_display_match_list(EditLine *, char **, size_t, size_t);
+char *fn_tilde_expand(const char *);
+char *fn_filename_completion_function(const char *, int);
+
+#endif
+
+#include <sys/stat.h>
+
+#if LIBEDIT_MAJOR > 2
+#define PROMPT_IGNORE '@'
+#endif
+
+#define QUERY_ITEMS 100
+
 extern int verbose;
 
 static EditLine *e;
@@ -66,11 +90,6 @@ static char line_prompt[50];
 static char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
 				  '$', '>', '<', '=', ';', '|', '&', '{', '(',
 				  ',', '\0'};
-
-static strl line_switchlist = NULL;
-static strl line_packlist = NULL;
-static strl line_loadlist = NULL;
-static strl line_adhoclist = NULL;
 
 void line_init(void);
 unsigned char _line_learn_completion(EditLine *,int);
@@ -103,8 +122,12 @@ char *line_histname(void);
 void line_init(void) {
   e = el_init("redfront",stdin,stdout,stderr);
   el_set(e,EL_SIGNAL,0);
+#if LIBEDIT_MAJOR > 2
   el_set(e,EL_PROMPT_ESC,line_get_prompt,PROMPT_IGNORE);
-/*   el_set(e,EL_RPROMPT,line_get_rprompt); */
+#else
+  el_set(e,EL_PROMPT,line_get_prompt);
+#endif
+  /*  el_set(e,EL_RPROMPT,line_get_rprompt); */
   el_set(e,EL_EDITOR,"emacs");
   el_set(e,EL_BIND,"^R","em-inc-search-prev",NULL);
   el_set(e,EL_ADDFN,"line_complete","ReadLine style completion",line_complete);
@@ -124,86 +147,6 @@ unsigned char _line_learn_completion(EditLine *ignore,int invoking_key) {
   return CC_REDISPLAY;
 }
 
-void line_learn_completion(char der_prompt[]) {
-  char tmp[1024];
-
-  vbprintf("Redfront learned ");
-
-  sprintf(tmp,"lisp redfront_send!-packages(\"%s\")$",PACKAGE_MAP);
-  line_packlist = strl_delete(line_packlist);
-  send_reduce(tmp);
-  line_packlist = line_learn_until_prompt(der_prompt,"packages");
-
-  if (dist == CSL) {
-    vbprintf(", ");
-    line_loadlist = strl_delete(line_loadlist);
-    send_reduce("lisp redfront_send!-modules()$");
-    line_loadlist = line_learn_until_prompt(der_prompt,"modules");
-  } else
-    line_loadlist = line_packlist;
-
-  vbprintf(", ");
-
-  line_switchlist = strl_delete(line_switchlist);
-  send_reduce("lisp redfront_send!-switches()$");
-  line_switchlist = line_learn_until_prompt(der_prompt,"switches");
-
-  vbprintf("\n");
-
-  line_adhoclist = strl_delete(line_adhoclist);
-  line_adhoclist = strl_cadd(line_adhoclist,"load_package ");
-}
-
-strl line_learn_until_prompt(char der_prompt[],const char *what){
-  int status=SKIPPING_WHITESPACE;
-  char buffer[1000];
-  int ncharread;
-  int ii;
-  int pii=0;
-  char ch;
-  char current[256];  // I assume that there are no longer switch names for now
-  int i;
-  int learned=0;
-  strl clist=NULL;
-
-  deb_fprintf(stderr,
-	      "parent: entering line_learn_until_prompt() ... der_prompt=%s\n",
-	      der_prompt);
-
-  while(status != FINISHED) {
-    ncharread = read(ReduceToMe[0],buffer,1000);
-    for (ii=0; ii < ncharread; ii++) {
-      ch = buffer[ii];
-      if (ch == (char) 0x01) {
-	pii = 0;
-	status = READING_PROMPT;
-      } else if (ch == (char) 0x02) {
-	status = FINISHED;
-      } else if (ch == (char) 0x05) {
-	i = 0;
-	status = LEARNING;
-      } else if (ch == (char) 0x06) {
-	current[i] = 0;
-	clist = strl_cadd(clist,current);
-	learned++;
-	status = SKIPPING_WHITESPACE;
-      } else if (status == LEARNING) {
-	current[i++] = ch;
-      } else if (status == READING_PROMPT) {
-	if ((int) ch > 31)
-	  der_prompt[pii++] = ch;
-      } else {	/* (status == FINISHED) */
-	der_prompt[pii] = 0x00;
-      }
-    }
-  }
-
-  vbprintf("%d %s",learned,what);
-
-  deb_fprintf(stderr,"parent: ... leaving learn_until_prompt()\n");
-
-  return clist;
-}
 
 char *line_get_prompt(EditLine *e) {
   return line_prompt;
@@ -431,10 +374,17 @@ char *line_color_prompt(char der_prompt[]) {
     char tmp[50];
 
     strcpy(tmp,der_prompt);
+#if LIBEDIT_MAJOR > 2        
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
 	    PROMPT_IGNORE,0x1B,0,promptcolor+30,9+40,PROMPT_IGNORE,
 	    tmp,
 	    PROMPT_IGNORE,0x1B,0,inputcolor+30,9+40,PROMPT_IGNORE);
+#else
+    sprintf(der_prompt,"%c[%d;%d;%dm%s%c[%d;%d;%dm",
+	    0x1B,0,promptcolor+30,9+40,
+	    tmp,
+	    0x1B,0,inputcolor+30,9+40);
+#endif
   }
   return der_prompt;
 }
@@ -480,6 +430,8 @@ void line_end_history(void) {
 #else
 
 void line_init(void);
+void line_learn_completion(char *);
+strl line_learn_until_prompt(char *,const char *);
 char *line_read(char *);
 char *line_quit(const char *);
 char *line_color_prompt(char *);
@@ -488,8 +440,85 @@ void line_init_history(void);
 void line_add_history(char *);
 void line_end_history(void);
 char *line_histname(void);
+char *line_switch_completion_function(const char *, int);
+char *line_pack_completion_function(const char *, int);
+char *line_load_completion_function(const char *, int);
+char *line_strl_completion_function(const char *, int, strl);
+
+
+
+
+char **line_completion_list(const char *text, int start, int end) {
+  char **matches = (char **)NULL;
+  char *ctemp = rl_line_buffer;
+  int i = 0;
+
+  /* skip whitespace at beginning of line before completion */
+  while (i < rl_point && isspace(rl_line_buffer[i])) {
+    i++;
+  }
+  ctemp += i;
+
+  if (strncmp(ctemp,"load_package",12) == 0) {
+    return rl_completion_matches(text, line_pack_completion_function);
+  }
+  else if (strncmp(ctemp,"load",4) == 0) {
+    return rl_completion_matches(text, line_load_completion_function);   
+  }
+  else if (*ctemp=='"') {
+    return rl_completion_matches(text, rl_filename_completion_function);
+  }
+  else if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0) {
+    return rl_completion_matches(text, line_switch_completion_function);
+  }
+
+  return matches;
+}
+
+char *line_switch_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_switchlist);
+}
+
+char *line_pack_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_packlist);
+}
+
+char *line_load_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_loadlist);
+}
+
+char *line_strl_completion_function(const char *text, int state,strl clist) {
+  char *res;
+  const char *this;
+  static strl clist_current = NULL;
+
+  if (!state) {
+    clist_current = clist;
+  }
+
+  while (clist_current) {
+    this = clist_current->this;
+    clist_current = clist_current->next;
+    // printf("\nclist_current=%d, text=%s, this=%s",clist_current,text,this);
+    if (strncmp(text,this,strlen(text)) == 0) {
+      // printf("\nHit!");
+      res = malloc((strlen(this)+1)*sizeof(char));
+      strcpy(res,this);
+      return res;
+    }
+  }
+
+  return NULL;
+}
+
+
 
 void line_init(void) {
+  /* Allow conditional parsing of the ~/.inputrc file. */
+  rl_readline_name = "redfront";
+
+  /* Tell the completer that we want a crack first. */
+  rl_attempted_completion_function = line_completion_list;
 };
 
 char *line_read(char *prompt) {
@@ -572,6 +601,86 @@ void line_end_history(void) {
 
 #endif
 
+void line_learn_completion(char der_prompt[]) {
+  char tmp[1024];
+
+  vbprintf("Redfront learned ");
+
+  sprintf(tmp,"lisp redfront_send!-packages(\"%s\")$",PACKAGE_MAP);
+  line_packlist = strl_delete(line_packlist);
+  send_reduce(tmp);
+  line_packlist = line_learn_until_prompt(der_prompt,"packages");
+
+  if (dist == CSL) {
+    vbprintf(", ");
+    line_loadlist = strl_delete(line_loadlist);
+    send_reduce("lisp redfront_send!-modules()$");
+    line_loadlist = line_learn_until_prompt(der_prompt,"modules");
+  } else
+    line_loadlist = line_packlist;
+
+  vbprintf(", ");
+
+  line_switchlist = strl_delete(line_switchlist);
+  send_reduce("lisp redfront_send!-switches()$");
+  line_switchlist = line_learn_until_prompt(der_prompt,"switches");
+
+  vbprintf("\n");
+
+  line_adhoclist = strl_delete(line_adhoclist);
+  line_adhoclist = strl_cadd(line_adhoclist,"load_package ");
+}
+
+strl line_learn_until_prompt(char der_prompt[],const char *what){
+  int status=SKIPPING_WHITESPACE;
+  char buffer[1000];
+  int ncharread;
+  int ii;
+  int pii=0;
+  char ch;
+  char current[256];  // I assume that there are no longer switch names for now
+  int i = 0;
+  int learned=0;
+  strl clist=NULL;
+
+  deb_fprintf(stderr,
+	      "parent: entering line_learn_until_prompt() ... der_prompt=%s\n",
+	      der_prompt);
+
+  while(status != FINISHED) {
+    ncharread = read(ReduceToMe[0],buffer,1000);
+    for (ii=0; ii < ncharread; ii++) {
+      ch = buffer[ii];
+      if (ch == (char) 0x01) {
+	pii = 0;
+	status = READING_PROMPT;
+      } else if (ch == (char) 0x02) {
+	status = FINISHED;
+      } else if (ch == (char) 0x05) {
+	i = 0;
+	status = LEARNING;
+      } else if (ch == (char) 0x06) {
+	current[i] = 0;
+	clist = strl_cadd(clist,current);
+	learned++;
+	status = SKIPPING_WHITESPACE;
+      } else if (status == LEARNING) {
+	current[i++] = ch;
+      } else if (status == READING_PROMPT) {
+	if ((int) ch > 31)
+	  der_prompt[pii++] = ch;
+      } else {	/* (status == FINISHED) */
+	der_prompt[pii] = 0x00;
+      }
+    }
+  }
+
+  vbprintf("%d %s",learned,what);
+
+  deb_fprintf(stderr,"parent: ... leaving learn_until_prompt()\n");
+
+  return clist;
+}
 
 char *line_histname(void) {
   char *hname;
