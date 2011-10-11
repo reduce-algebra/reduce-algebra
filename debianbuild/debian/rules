@@ -9,14 +9,15 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-OSVER=$(shell ../script/findos.sh)
-BUILDDIR=$(shell ../scripts/findhost.sh `../config.guess`)
-
 TOPDIR=..
+
+OSVER=$(shell $(TOPDIR)/script/findos.sh)
+BUILDDIR=$(shell $(TOPDIR)/scripts/findhost.sh $(shell $(TOPDIR)/config.guess))
+
 CSLBUILDDIR=$(TOPDIR)/cslbuild/$(BUILDDIR)
 PSLBUILDDIR=$(TOPDIR)/pslbuild/$(BUILDDIR)
 
-INSTALLDIR=debian/`dh_listpackages`
+INSTALLDIR:=debian/$(shell dh_listpackages)
 SHAREDIR=$(INSTALLDIR)/usr/share/reduce
 LIBDIR=$(INSTALLDIR)/usr/lib/reduce
 TTFONTDIR=$(INSTALLDIR)/usr/share/fonts/truetype/reduce
@@ -24,32 +25,51 @@ TYPE1FONTDIR=$(INSTALLDIR)/usr/share/fonts/X11/Type1
 FONTDIR=$(INSTALLDIR)/usr/share/reduce/fonts
 DOCDIR=$(INSTALLDIR)/usr/share/doc/reduce
 BINDIR=$(INSTALLDIR)/usr/bin
+MANDIR=$(INSTALLDIR)/usr/share/man
 
 RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
+
+
 %:
 	dh $@ 
 
-override_dh_auto_configure:
+clean: 
+	dh_clean
+	cd $(TOPDIR) ; make clean
+
+#override_dh_auto_configure:
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
 	cd $(TOPDIR) ; ./configure --with-csl ; ./configure --with-psl
 
-override_dh_auto_build:
+#override_dh_auto_build:
+build:	configure-stamp build-stamp
+build-stamp:
+	dh_testdir
 	cd $(TOPDIR) ; make
 
-override_dh_auto_install:
+override_dh_installdirs:
 	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
-	cp $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(LIBDIR)/cslbuild/csl
+
+override_dh_installdocs:
 	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
+
+#override_dh_auto_install:
+override_dh_install:
+#	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
+	cp $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(LIBDIR)/cslbuild/csl
+#	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
 	$(RSYNC_CMD) --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
 	chmod -x $(FONTDIR)/*.ttf
 	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" $(PSLBUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
 	$(RSYNC_CMD) $(PSLBUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
-	$(RSYNC_CMD) --no-perms ../packages/ $(SHAREDIR)/packages/
-#	cp ../scripts/run.sh ../scripts/runpsl.sh $(SHAREDIR)/scripts
-	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
+	$(RSYNC_CMD) --no-perms --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
+#	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
 #	ln -f -s ../../../../share/reduce/fonts $(SHAREDIR)/cslbuild/csl/reduce.fonts
-	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
-	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
-	ln -f -s ../../lib/reduce/cslbuild $(SHAREDIR)/cslbuild
+#	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
+#	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
+#	ln -f -s ../../lib/reduce/cslbuild $(SHAREDIR)/cslbuild
 #	mkdir -p $(TTFONTDIR)
 #	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.ttf $(TTFONTDIR)
 #	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.pfb $(TYPE1FONTDIR)
