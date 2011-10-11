@@ -33,6 +33,7 @@ RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
 clean:
 	dh clean
 	rm -rf $(GENTOPDIR)/redfront/$(BUILDDIR)
+	rm -f $(REDFRONTSRCDIR)/Makefile $(REDFRONTSRCDIR)/config.h
 
 #override_dh_auto_configure:
 configure: configure-stamp
@@ -40,7 +41,7 @@ configure-stamp:
 	dh_testdir
 	mkdir -p $(REDFRONTBUILDDIR)
 	cd $(GENTOPDIR)/redfront/src ; autoconf ; autoheader
-	cd $(REDFRONTBUILDDIR) ; ../../src/configure --without-libedit --with-redfront-root=/usr/share/reduce-utils/redfront --with-package-map=/usr/share/reduce/packages/package.map --with-csl-reduce=/usr/share/reduce/cslbuild/csl/reduce --with-bpsl=/usr/share/reduce/pslbuild/psl/bpsl --with-reduce-img=/usr/share/reduce/pslbuild/red/reduce.img
+	cd $(REDFRONTBUILDDIR) ; ../../src/configure --with-libedit --with-redfront-root=/usr/share/reduce-utils/redfront --with-package-map=/usr/share/reduce/packages/package.map --with-csl-reduce=/usr/share/reduce/cslbuild/csl/reduce --with-bpsl=/usr/share/reduce/pslbuild/psl/bpsl --with-reduce-img=/usr/share/reduce/pslbuild/red/reduce.img
 	touch configure-stamp
 
 build:	configure-stamp build-stamp
@@ -50,11 +51,7 @@ build-stamp:
 	touch build-stamp
 
 #override_dh_auto_install:
-install: build
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_installdirs
+override_dh_install:
 	mkdir -p $(SHAREDIR)/redfront $(BINDIR) $(DOCDIR) $(EMACSSITELISPDIR) $(EMACSSITESTARTDIR) $(MANDIR)/man1
 	cp $(REDFRONTBUILDDIR)/redfront $(BINDIR)
 	ln -s redfront $(BINDIR)/rfcsl

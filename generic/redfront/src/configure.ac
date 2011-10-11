@@ -260,7 +260,8 @@ fi
 )
 
 editline=yes
-editlinepath="$abssrcdir/generic/redfront/$RBUILD/libedit"
+#editlinepath="$abssrcdir/generic/redfront/$RBUILD/libedit"
+editlinepath=""
 AC_ARG_WITH(libedit,
    AC_HELP_STRING([--without-libedit],[do not use libedit]),
 if test "$withval" = no 
@@ -286,14 +287,17 @@ AS_IF([test "$editline" = no],
 
 AS_IF([test "$editline" = yes &&
          { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
-  [AC_CHECK_HEADERS(filecomplete.h,
+  [if test "$editlinepath" != "yes" ; then
+     ebd=$editlinepath
+     CFLAGS="$CFLAGS -I$ebd/include"
+     LDFLAGS="$LDFLAGS -L$ebd/lib"
+     if test "X$on_windows" != Xyes && test "X$on_darwin" != Xyes ; then
+         LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib"
+     fi
+   fi
+   AC_CHECK_HEADERS(filecomplete.h,
       AC_DEFINE(HAVE_FILECOMPLETE_H,1))
-   ebd=$editlinepath
-   CFLAGS="$CFLAGS -I$ebd/include"
-   LDFLAGS="$LDFLAGS -L$ebd/lib"
-   if test "X$on_windows" != Xyes && test "X$on_darwin" != Xyes ; then
-       LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib"
-   fi])
+])
 
 AS_IF([test "$editline" = yes],
    AC_CHECK_LIB(edit,using_history,
