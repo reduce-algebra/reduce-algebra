@@ -42,9 +42,9 @@ $(BUILD)/redfront/redfront: $(BUILD)/libedit/include/editline/readline.h
 	cd src; \
 	autoconf; \
 	autoheader
-	mkdir -p $(BUILD)/redfront; \
+	mkdir -p $(BUILD)/redfront
 	cd $(BUILD)/redfront; \
-	../../src/configure; \
+	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit) ; \
 	make
 
 $(BUILD)/libedit/include/editline/readline.h:
