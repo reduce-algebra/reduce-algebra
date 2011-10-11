@@ -1,0 +1,73 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+TOPDIR=../..
+GENTOPDIR=..
+
+OSVER=$(shell $(TOPDIR)/script/findos.sh)
+BUILDDIR=$(shell $(TOPDIR)/scripts/findhost.sh $(shell $(TOPDIR)/config.guess))
+
+REDFRONTSRCDIR=$(GENTOPDIR)/redfront/src
+REDFRONTBUILDDIR=$(GENTOPDIR)/redfront/$(BUILDDIR)/redfront
+
+INSTALLDIR=debian/`dh_listpackages`
+REDUCESHAREDIR=$(INSTALLDIR)/usr/share/reduce
+SHAREDIR=$(INSTALLDIR)/usr/share/reduce-utils
+LIBDIR=$(INSTALLDIR)/usr/lib/reduce
+TTFONTDIR=$(INSTALLDIR)/usr/share/fonts/truetype/reduce
+TYPE1FONTDIR=$(INSTALLDIR)/usr/share/fonts/X11/Type1
+FONTDIR=$(INSTALLDIR)/usr/share/reduce/fonts
+DOCDIR=$(INSTALLDIR)/usr/share/doc/reduce-utils
+BINDIR=$(INSTALLDIR)/usr/bin
+MANDIR=$(INSTALLDIR)/usr/share/man
+EMACSSITELISPDIR=$(INSTALLDIR)/usr/share/emacs/site-lisp/reduce
+EMACSSITESTARTDIR=$(INSTALLDIR)/etc/emacs/site-start.d
+
+RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
+%:
+	dh $@ 
+
+clean:
+	dh clean
+	rm -rf $(GENTOPDIR)/redfront/$(BUILDDIR)
+
+#override_dh_auto_configure:
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	mkdir -p $(REDFRONTBUILDDIR)
+	cd $(GENTOPDIR)/redfront/src ; autoconf ; autoheader
+	cd $(REDFRONTBUILDDIR) ; ../../src/configure --without-libedit --with-redfront-root=/usr/share/reduce-utils/redfront --with-package-map=/usr/share/reduce/packages/package.map --with-csl-reduce=/usr/share/reduce/cslbuild/csl/reduce --with-bpsl=/usr/share/reduce/pslbuild/psl/bpsl --with-reduce-img=/usr/share/reduce/pslbuild/red/reduce.img
+	touch configure-stamp
+
+build:	configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	cd $(REDFRONTBUILDDIR) ; make
+	touch build-stamp
+
+#override_dh_auto_install:
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	mkdir -p $(SHAREDIR)/redfront $(BINDIR) $(DOCDIR) $(EMACSSITELISPDIR) $(EMACSSITESTARTDIR) $(MANDIR)/man1
+	cp $(REDFRONTBUILDDIR)/redfront $(BINDIR)
+	ln -s redfront $(BINDIR)/rfcsl
+	ln -s redfront $(BINDIR)/rfpsl
+	gzip < $(REDFRONTSRCDIR)/redfront.1 > $(MANDIR)/man1/redfront.1.gz
+	ln -s redfront.1.gz $(MANDIR)/man1/rfcsl.1.gz
+	ln -s redfront.1.gz $(MANDIR)/man1/rfpsl.1.gz
+	gzip < $(REDFRONTSRCDIR)/README > $(DOCDIR)/README.gz
+	cp $(GENTOPDIR)/emacs/reduce-mode.el $(EMACSSITELISPDIR)
+	cp 50reduce-emacs.el $(EMACSSITESTARTDIR)
+	cp ../breduce/breduce.pdf $(DOCDIR)
+	gzip < ../breduce/breduce.tex >$(DOCDIR)/breduce.tex.gz
+	gzip < ../breduce/breduce.bbl >$(DOCDIR)/breduce.bbl.gz
+	cp ../breduce/breduce $(BINDIR)
+	gzip < ../breduce/breduce.1 >$(MANDIR)/man1/breduce.1.gz
+
