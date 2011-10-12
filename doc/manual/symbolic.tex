@@ -41,7 +41,7 @@ level, it will then be handled as if the global system mode had been
 changed for the scope of that particular calculation.
 
 For example, if the current mode is {\tt ALGEBRAIC}, then the commands
-\extendedmanual{\newpage}
+%\extendedmanual{\newpage}
 \begin{verbatim}
         symbolic car '(a);
         x+y;
@@ -501,14 +501,15 @@ calculated.
 share x,y;                   % declare X and Y as shared
 x := (a+b)^2;                % store (a+b)^2 in X
 symbolic;                    % transfer to symbolic mode
-z := cadr x;                 % store a true standard quotient in Z
+z := cadr x;                 % store a true standard quotient
+                             % in Z
 lt numr z;                   % print the leading term of the
-			     % numerator of Z
+                             % numerataor of Z
 y := mk!*sq !*t2q lt numr z; % store the prefix form of this
-			     % leading term in Y
+                             % leading term in Y
 algebraic;                   % return to algebraic mode
-y^2;                         % evaluate square of the leading term
-			     % of (a+b)^2
+y^2;                         % evaluate square of the
+                             % leading term of (a+b)^2
 \end{verbatim}
 
 \subsection{Defining Procedures for Intermode Communication}

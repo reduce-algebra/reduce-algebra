@@ -67,7 +67,7 @@ occurs if the argument is not a list or has no third element.
 {\tt REST}\ttindex{REST} returns its argument with the first element
 removed.  An error occurs if the argument is not a list, or is empty.
 
-\subsection{$.$ (Cons) Operator}
+\subsection{\textbf{.} (Cons) Operator}
 \hypertarget{operator:CONS}{}
 \hypertarget{reserved:consop}{}
 
@@ -147,7 +147,7 @@ example:
           list_1_n := delete(hit,list_1_n);
           luckies := hit . luckies >>;
      return luckies;
-  end;                             % In Germany, try lotto (49,6);
+  end;                         % In Germany, try lotto (49,6);
 \end{verbatim}
 
 {\it Another example:} Find all coefficients of a multivariate
@@ -159,7 +159,7 @@ procedure allcoeffs(q,lis); % q : polynomial, lis: list of vars
 
 procedure allcoeffs1(q,lis);
   if lis={} then q else
-    allcoeffs1(foreach qq in q join coeff(qq,first lis),rest lis);
-
+    allcoeffs1(foreach qq in q join coeff(qq,first lis),
+               rest lis);
 \end{verbatim}
 

@@ -213,6 +213,7 @@ positive only as long as the switch {\tt COMPLEX} is off.
 \hypertarget{operator:ATAN}{}
 \hypertarget{operator:ATANH}{}
 \hypertarget{operator:ATAN2}{}
+\hypertarget{operator:CI}{}
 \hypertarget{operator:COS}{}
 \hypertarget{operator:COSH}{}
 \hypertarget{operator:COT}{}
@@ -229,6 +230,7 @@ positive only as long as the switch {\tt COMPLEX} is off.
 \hypertarget{operator:LOG10}{}
 \hypertarget{operator:SEC}{}
 \hypertarget{operator:SECH}{}
+\hypertarget{operator:SI}{}
 \hypertarget{operator:SIN}{}
 \hypertarget{operator:SINH}{}
 \hypertarget{operator:SQRT}{}
@@ -239,19 +241,19 @@ positive only as long as the switch {\tt COMPLEX} is off.
 \index{Mathematical function} that can
 take arbitrary scalar expressions as their single argument:
 \begin{verbatim}
-       ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
-       ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH DILOG EI EXP
-       HYPOT LN LOG LOGB LOG10 SEC SECH SIN SINH SQRT TAN TANH
+   ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
+   ATAN ATANH ATAN2 CI COS COSH COT COTH CSC CSCH DILOG EI EXP
+   HYPOT LN LOG LOGB LOG10 SEC SECH SI SIN SINH SQRT TAN TANH
 \end{verbatim}
 \ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}
 \ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}
 \ttindex{ASECH}\ttindex{ASIN}
 \ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
-\ttindex{ATAN2}\ttindex{COS}
+\ttindex{ATAN2}\ttindex{CI}\ttindex{COS}
 \ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
 \ttindex{CSCH}\ttindex{DILOG}\ttindex{Ei}\ttindex{EXP}
 \ttindex{HYPOT}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
-\ttindex{SEC}\ttindex{SECH}\ttindex{SIN}
+\ttindex{SEC}\ttindex{SECH}\ttindex{SI}\ttindex{SIN}
 \ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
 where {\tt LOG} is the natural logarithm (and equivalent to {\tt LN}),
 and {\tt LOGB} has two arguments of which the second is the logarithmic base.
@@ -328,7 +330,6 @@ these operators by using the {\tt LET}\ttindex{LET} command.
 
 \hypertarget{switch:COMBINELOGS}{}
 \hypertarget{switch:EXPANDLOGS}{}
-\hypertarget{switch:PRECISE}{}
 In many cases it is desirable to expand product arguments of logarithms,
 or collect a sum of logarithms into a single logarithm.  Since these are
 inverse operations, it is not possible to provide rules for doing both at
@@ -418,6 +419,21 @@ With % both {\tt REDUCED} and
 {\tt PRECISE} on then, the above example would become
 \begin{verbatim}
 	2*abs(a)*sqrt(-2*b).
+\end{verbatim}
+
+\hypertarget{switch:PRECISE_COMPLEX}{} 
+However, this is incorrect in the complex domain, where the
+$\sqrt{x^{2}}$ is not identical to $|x|$. To avoid the above
+simplification, the switch
+\texttt{PRECISE\_COMPLEX}\ttindex{PRECISE\_COMPLEX} should be set on
+(default is off). For example:
+\begin{verbatim}
+on precise_complex; sqrt(-8a^2*b);
+\end{verbatim}
+yields the output
+\begin{verbatim}
+             2
+2*sqrt( - 2*a *b)
 \end{verbatim}
 
 The statement that {\REDUCE} knows very little about these functions
@@ -534,7 +550,7 @@ Both switches are off by default.
 
 
 \subsection{Adding Differentiation Rules}
-\hypertarget{command:LET}{}
+\hypertarget{command:LETdf}{}
 
 The {\tt LET}\ttindex{LET} statement can be used to introduce
 rules for differentiation of user-defined operators.  Its general form is

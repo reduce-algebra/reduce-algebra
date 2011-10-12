@@ -4,13 +4,17 @@
 \documentclass[11pt,a4paper]{book}
 
 \usepackage{makeidx}
-\usepackage{times}
+%\usepackage{times}
+%\usepackage{cmbright}
+%\usepackage{charter}
+\renewcommand{\rmdefault}{uaq}
+\renewcommand{\sfdefault}{ugq}
 \usepackage[]{hyperref}
 \hypersetup{
   colorlinks=true,linkbordercolor={1 1 1},
   linkcolor=blue,urlcolor=blue,
   bookmarksnumbered=true,
-  pdftitle={REDUCE User's Manual, Version 3.8},
+  pdftitle={REDUCE User's Manual, Free Version \today},
   pdfauthor={\textcopyright Anthony C. Hearn},
   pdfdisplaydoctitle=true,
 }
@@ -148,6 +152,7 @@
 \include{util}
 \include{maintain}
 \include{appenda}
+\include{changes}
 
 \pdfbookmark[0]{Index}{Index}
 \printindex
