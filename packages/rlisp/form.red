@@ -212,9 +212,7 @@ flag('(cond and or list list!* plus times logand logor
        iplus itimes ilogand ilogor defautoload
        restart!-csl preserve checkpoint filestatus
        bldmsg plotdriver fdeclare !& !| lpdotimes
-% I do not at present understand why a1 is needed here - but it arises via
-% the assert package.
-       a1), 'variadic);
+       ), 'variadic);
 
 symbolic procedure argsofopr u;
    % This function may be optimizable in various implementations.
