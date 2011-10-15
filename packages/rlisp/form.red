@@ -209,7 +209,7 @@ symbolic procedure argnochk u;
    end;
 
 flag('(cond and or list list!* plus times logand logor
-       iplus itimes ilogand ilogor defautoload
+       iplus itimes ilogand ilogor defautoload gethash
        restart!-csl preserve checkpoint filestatus
        bldmsg plotdriver fdeclare !& !| lpdotimes
        ), 'variadic);
