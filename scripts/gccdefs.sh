@@ -11,4 +11,7 @@
 # This hack was noted on stackoverflow.org and answers a question I have
 # had for AGES. Thank you stackoverflow.
 
-echo | gcc $CFLAGS -E -dM -
+# Arg1 can be used to specify which gcc I am using, so eg
+#   gccdefs.sh i686-w64-mingw32-gcc
+
+echo | ${1:-gcc} $CFLAGS -E -dM -
