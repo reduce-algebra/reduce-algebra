@@ -2599,9 +2599,20 @@ class TimeFn extends BuiltinFunction
 
 class TmpnamFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1) throws Exception
+    public LispObject op0() throws Exception
     {
-        return error(name + " not yet implemented");
+// Not really satisfactory - but I hope that nobody uses this!
+        return new LispString("tempfile.tmp");
+    }
+    public LispObject op1(LispObject arg1) throws Exception
+    {   String s;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
+        else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
+        else s = "tmp";
+        return new LispString("tempfile." + s);
     }
 }
 

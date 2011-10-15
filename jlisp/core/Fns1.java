@@ -1564,6 +1564,12 @@ class DateFn extends BuiltinFunction
         String s = DateFormat.getDateTimeInstance().format(now);
         return new LispString(s);
     }
+    public LispObject op1(LispObject a1)
+    {
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yy");
+        String s = df.format(new Date());
+        return new LispString(s);
+    }
 }
 
 class Dated_nameFn extends BuiltinFunction
@@ -3201,7 +3207,14 @@ class List_directoryFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+        String s;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
+        else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
+        else return Jlisp.nil;
+        return LispStream.listDirectory(s);
     }
 }
 

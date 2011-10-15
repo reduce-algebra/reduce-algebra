@@ -755,6 +755,21 @@ class LispStream extends LispObject
         }
     }
     
+    static LispObject listDirectory(String s)
+    {
+        try
+        {   File f = new File(nameConvert(s));
+            if (!f.isDirectory()) return Jlisp.nil;
+            LispObject r = Jlisp.nil;
+            for (String n : f.list())
+               r = new Cons(new LispString(n), r);
+            return Fns.reversip(r);
+        }
+        catch (Exception e)
+        {   return Jlisp.nil;
+        }
+    }
+    
     void scan()
     {
         if (Jlisp.objects.contains(this)) // seen before?
