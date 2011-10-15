@@ -562,6 +562,17 @@ then
 # same as "--without-fox" (etc). I use "--with-fox=default" as the situation
 # if the user does not specify "--with-fox" at all.
 
+  case $host in
+*mingw32*)
+# This is something of a hack. With wxWidgets I want to have gdiplus.h
+# available. But (perhaps) the mingw32 cross compilers do not put that in
+# their version of w32api. However at least on my system I find it in
+# the location indicated here...
+    CFLAGS="$CFLAGS -I/usr/include/w32api"
+    CXXFLAGS="$CXXFLAGS -I/usr/include/w32api"
+    ;;
+  esac
+
   if test "x$with_gui" = "xno" && (test "x$with_fox" != "xdefault" || test "x$with_wx" != "xdefault")
   then
     AC_MSG_ERROR([If you say --without-gui you must not say --with-fox or --with-wx as well
@@ -841,7 +852,7 @@ then
               --without-libtiff --with-libsvg=no \
               --with-sdl=no --with-zlib=builtin \
               --without-expat --with-regex=builtin \
-              --disable-gif --disable-pcx \
+              --disable-gif --disable-pcx --enable-graphics_ctx \
               --disable-tga --disable-pnm \
               --disable-svg --prefix=\"$builddir\""
       if test "x$enable_debug" != "xno"
