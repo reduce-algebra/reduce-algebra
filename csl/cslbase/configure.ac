@@ -212,8 +212,8 @@ x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
   AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
   CPPFLAGS="$CPPFLAGS"
-  CFLAGS="$CFLAGS -funsigned-char -I /usr/include/w32api"
-  CXXFLAGS="$CXXFLAGS -funsigned-char -I /usr/include/w32api"
+  CFLAGS="$CFLAGS -funsigned-char"
+  CXXFLAGS="$CXXFLAGS -funsigned-char"
   DLL_CFLAGS="$CFLAGS -shared"
   LDFLAGS="$LDFLAGS -static"
   windows_build="yes"
@@ -273,8 +273,8 @@ x86_64-w64-*)
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
     CPPFLAGS="$CPPFLAGS "
-    CFLAGS="$CFLAGS -funsigned-char -I /usr/include/w32api"
-    CXXFLAGS="$CXXFLAGS -funsigned-char -I /usr/include/w32api"
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some

@@ -3482,8 +3482,8 @@ $as_echo "#define WIN32 1" >>confdefs.h
 $as_echo "#define WIN64 1" >>confdefs.h
 
   CPPFLAGS="$CPPFLAGS"
-  CFLAGS="$CFLAGS -funsigned-char -I /usr/include/w32api"
-  CXXFLAGS="$CXXFLAGS -funsigned-char -I /usr/include/w32api"
+  CFLAGS="$CFLAGS -funsigned-char"
+  CXXFLAGS="$CXXFLAGS -funsigned-char"
   DLL_CFLAGS="$CFLAGS -shared"
   LDFLAGS="$LDFLAGS -static"
   windows_build="yes"
@@ -3560,8 +3560,8 @@ $as_echo "$as_me: Windows built creating native binary" >&6;}
 $as_echo "#define WIN32 1" >>confdefs.h
 
     CPPFLAGS="$CPPFLAGS "
-    CFLAGS="$CFLAGS -funsigned-char -I /usr/include/w32api"
-    CXXFLAGS="$CXXFLAGS -funsigned-char -I /usr/include/w32api"
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some
