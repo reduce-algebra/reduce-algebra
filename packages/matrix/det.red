@@ -56,7 +56,7 @@ fluid '(!$hash);
 symbolic procedure matrix_gethash key;
   begin
     scalar r;
-    r := gethash(!$hash, key, '!*nothing!*);
+    r := gethash(key, !$hash, '!*nothing!*);
     if r = '!*nothing!* then return nil
     else return (key . r)
   end;
