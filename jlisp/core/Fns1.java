@@ -1811,15 +1811,20 @@ class Enable_backtraceFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+// Not actually doing anything yet
+        System.out.printf("enable-backtrace called%n");
+        return Jlisp.nil;
     }
 }
 
 class Enable_errorsetFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1) throws Exception
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        return error(name + " not yet implemented");
+// Not actually doing anything yet
+        System.out.printf("enable-errorset called%n");
+        return new Cons(LispInteger.valueOf(1),
+                        LispInteger.valueOf(1));
     }
 }
 

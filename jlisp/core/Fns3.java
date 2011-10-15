@@ -1843,7 +1843,8 @@ class RemobFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+        if (arg1 instanceof Symbol) Symbol.remob((Symbol)arg1);
+        return arg1;
     }
 }
 

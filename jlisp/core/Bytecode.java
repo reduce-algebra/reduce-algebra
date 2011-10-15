@@ -2232,7 +2232,7 @@ case BIGSTACK:
         }
 case BIGCALL:
         iw = bytecodes[pc++] & 0xff;
-        System.out.printf("BIGCALL %x%n", iw);
+//      System.out.printf("BIGCALL %x%n", iw);
         fname = (bytecodes[pc++] & 0xff) + ((iw & 0xf) << 8);
         switch (iw >> 4)
         {

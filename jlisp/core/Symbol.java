@@ -67,7 +67,8 @@ public class Symbol extends LispObject
 // intern() looks up a Java String and find the Lisp
 // symbol with that name. It creates it if needbe. This version
 // always sets the (pre-defined) function call of this symbol. It is
-// only used from cold-start code.
+// only used from cold-start code. So at that stage nothing will ever have
+// been subject to "remob" and so I do not need to fuss about tombstones.
 
     static Symbol intern(String name, 
                          LispFunction fn, 
@@ -103,20 +104,42 @@ public class Symbol extends LispObject
         return p;
     }
 
+    static void remob(Symbol p)
+    {
+        p.completeName();
+        String name = p.pname;
+        int inc = name.hashCode();
+        int hash = ((169*inc) & 0x7fffffff) % Jlisp.oblistSize;
+        inc = 1 + (inc & 0x7fffffff) % (Jlisp.oblistSize-1);
+        for (;;)
+        {   LispObject p1 = Jlisp.oblist[hash];
+            if (p1 == null) return;    // symbol is not in oblist
+            if (p1 == p) break;
+            hash += inc;
+            if (hash >= Jlisp.oblistSize) hash -= Jlisp.oblistSize;
+        }
+// Although the undefined value goes into the hash table at the start
+// I use that value there as a tombstone marker.
+        Jlisp.oblist[hash] = (Symbol)Jlisp.lit[Lit.undefined];
+    }       
+
 // now the version of intern() for normal use
     static Symbol intern(String name)
     {
         Symbol p;
         int inc = name.hashCode();
         int hash = ((169*inc) & 0x7fffffff) % Jlisp.oblistSize;
+        int tomb = -1;
         inc = 1 + (inc & 0x7fffffff) % (Jlisp.oblistSize-1);
         for (;;)
         {   p = Jlisp.oblist[hash];
+            if (p == Jlisp.lit[Lit.undefined]) tomb = hash; 
             if (p == null) break;    // symbol is not in oblist
             if (p.pname.equals(name)) return p;
             hash += inc;
             if (hash >= Jlisp.oblistSize) hash -= Jlisp.oblistSize;
         }
+        if (tomb != -1) hash = tomb;
 // not found on object-list, so create it.
         p = new Symbol();
         p.pname = name;
