@@ -1180,7 +1180,7 @@ symbolic procedure fancy!-exptpri(l,p);
           if fancy!-in!-brackets({'fancy!-maprint, mkquote w1,mkquote q},
                                  '!(, '!))='failed
             then return fancy!-fail(pos,tpos,fl) >>
-      else if fancy!-maprint(w1,q)='failed
+      else if fancy!-maprint(w1,get('expt,'infix))='failed
             then return fancy!-fail(pos,tpos,fl);
      fancy!-prin2!*("^",0);
      if eqcar(w2,'quotient) and fixp cadr w2 and fixp caddr w2 then
