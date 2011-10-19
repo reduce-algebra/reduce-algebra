@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 606373fd 12-Apr-2011 */
+/* Signature: 6412ac3c 19-Oct-2011 */
 
 
 
@@ -54,6 +54,7 @@
 #endif
 
 #include <wx/display.h>
+#include <wx/filename.h>
 
 #include "config.h"
 
@@ -709,112 +710,153 @@ IMPLEMENT_APP_NO_MAIN(dviApp)
 // are forced by the structure that wxWidgets requires!
 
 
-typedef struct localFonts
-{
-    const char *name;
-    char *path;
-} localFonts;
 
-static localFonts fontNames[] =
+static const char *fontNames[] =
 {
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
-    {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
-    {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
-    {"csl-cmbx10",   NULL},        {"csl-cmbx12",   NULL},
-    {"csl-cmbx5",    NULL},        {"csl-cmbx6",    NULL},
-    {"csl-cmbx7",    NULL},        {"csl-cmbx8",    NULL},
-    {"csl-cmbx9",    NULL},        {"csl-cmbxsl10", NULL},
-    {"csl-cmbxti10", NULL},        {"csl-cmcsc10",  NULL},
-    {"csl-cmcsc8",   NULL},        {"csl-cmcsc9",   NULL},
-    {"csl-cmdunh10", NULL},        {"csl-cmex10",   NULL},
-    {"csl-cmex7",    NULL},        {"csl-cmex8",    NULL},
-    {"csl-cmex9",    NULL},        {"csl-cmff10",   NULL},
-    {"csl-cmfi10",   NULL},        {"csl-cmfib8",   NULL},
-    {"csl-cminch",   NULL},        {"csl-cmitt10",  NULL},
-    {"csl-cmmi10",   NULL},        {"csl-cmmi12",   NULL},
-    {"csl-cmmi5",    NULL},        {"csl-cmmi6",    NULL},
-    {"csl-cmmi7",    NULL},        {"csl-cmmi8",    NULL},
-    {"csl-cmmi9",    NULL},        {"csl-cmmib10",  NULL},
-    {"csl-cmmib6",   NULL},        {"csl-cmmib7",   NULL},
-    {"csl-cmmib8",   NULL},        {"csl-cmmib9",   NULL},
-    {"csl-cmr10",    NULL},        {"csl-cmr12",    NULL},
-    {"csl-cmr17",    NULL},        {"csl-cmr5",     NULL},
-    {"csl-cmr6",     NULL},        {"csl-cmr7",     NULL},
-    {"csl-cmr8",     NULL},        {"csl-cmr9",     NULL},
-    {"csl-cmsl10",   NULL},        {"csl-cmsl12",   NULL},
-    {"csl-cmsl8",    NULL},        {"csl-cmsl9",    NULL},
-    {"csl-cmsltt10", NULL},        {"csl-cmss10",   NULL},
-    {"csl-cmss12",   NULL},        {"csl-cmss17",   NULL},
-    {"csl-cmss8",    NULL},        {"csl-cmss9",    NULL},
-    {"csl-cmssbx10", NULL},        {"csl-cmssdc10", NULL},
-    {"csl-cmssi10",  NULL},        {"csl-cmssi12",  NULL},
-    {"csl-cmssi17",  NULL},        {"csl-cmssi8",   NULL},
-    {"csl-cmssi9",   NULL},        {"csl-cmssq8",   NULL},
-    {"csl-cmssqi8",  NULL},        {"csl-cmsy10",   NULL},
-    {"csl-cmsy5",    NULL},        {"csl-cmsy6",    NULL},
-    {"csl-cmsy7",    NULL},        {"csl-cmsy8",    NULL},
-    {"csl-cmsy9",    NULL},        {"csl-cmtcsc10", NULL},
-    {"csl-cmtex10",  NULL},        {"csl-cmtex8",   NULL},
-    {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
-    {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
-    {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
-    {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
-    {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
-    {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
-    {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
-    {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
-    {"csl-eufb10",   NULL},        {"csl-eufb5",    NULL},
-    {"csl-eufb6",    NULL},        {"csl-eufb7",    NULL},
-    {"csl-eufb8",    NULL},        {"csl-eufb9",    NULL},
-    {"csl-eufm10",   NULL},        {"csl-eufm5",    NULL},
-    {"csl-eufm6",    NULL},        {"csl-eufm7",    NULL},
-    {"csl-eufm8",    NULL},        {"csl-eufm9",    NULL},
-    {"csl-eurb10",   NULL},        {"csl-eurb5",    NULL},
-    {"csl-eurb6",    NULL},        {"csl-eurb7",    NULL},
-    {"csl-eurb8",    NULL},        {"csl-eurb9",    NULL},
-    {"csl-eurm10",   NULL},        {"csl-eurm5",    NULL},
-    {"csl-eurm6",    NULL},        {"csl-eurm7",    NULL},
-    {"csl-eurm8",    NULL},        {"csl-eurm9",    NULL},
-    {"csl-eusb10",   NULL},        {"csl-eusb5",    NULL},
-    {"csl-eusb6",    NULL},        {"csl-eusb7",    NULL},
-    {"csl-eusb8",    NULL},        {"csl-eusb9",    NULL},
-    {"csl-eusm10",   NULL},        {"csl-eusm5",    NULL},
-    {"csl-eusm6",    NULL},        {"csl-eusm7",    NULL},
-    {"csl-eusm8",    NULL},        {"csl-eusm9",    NULL},
-    {"csl-msam10",   NULL},        {"csl-msam5",    NULL},
-    {"csl-msam6",    NULL},        {"csl-msam7",    NULL},
-    {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
-    {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
-    {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
-    {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
+    "csl-cmb10",
+    "csl-cmbsy10", 
+    "csl-cmbsy6",
+    "csl-cmbsy7",  
+    "csl-cmbsy8",
+    "csl-cmbsy9",  
+    "csl-cmbx10",
+    "csl-cmbx12",  
+    "csl-cmbx5",
+    "csl-cmbx6",   
+    "csl-cmbx7",
+    "csl-cmbx8",   
+    "csl-cmbx9",
+    "csl-cmbxsl10",
+    "csl-cmbxti10",
+    "csl-cmcsc10", 
+    "csl-cmcsc8",
+    "csl-cmcsc9",  
+    "csl-cmdunh10",
+    "csl-cmex10",  
+    "csl-cmex7",
+    "csl-cmex8",   
+    "csl-cmex9",
+    "csl-cmff10",  
+    "csl-cmfi10",
+    "csl-cmfib8",  
+    "csl-cminch",
+    "csl-cmitt10", 
+    "csl-cmmi10",
+    "csl-cmmi12",  
+    "csl-cmmi5",
+    "csl-cmmi6",   
+    "csl-cmmi7",
+    "csl-cmmi8",   
+    "csl-cmmi9",
+    "csl-cmmib10", 
+    "csl-cmmib6",
+    "csl-cmmib7",  
+    "csl-cmmib8",
+    "csl-cmmib9",  
+    "csl-cmr10",
+    "csl-cmr12",   
+    "csl-cmr17",
+    "csl-cmr5",    
+    "csl-cmr6",
+    "csl-cmr7",    
+    "csl-cmr8",
+    "csl-cmr9",    
+    "csl-cmsl10",
+    "csl-cmsl12",  
+    "csl-cmsl8",
+    "csl-cmsl9",   
+    "csl-cmsltt10",
+    "csl-cmss10",  
+    "csl-cmss12",
+    "csl-cmss17",  
+    "csl-cmss8",
+    "csl-cmss9",   
+    "csl-cmssbx10",
+    "csl-cmssdc10",
+    "csl-cmssi10",
+    "csl-cmssi12", 
+    "csl-cmssi17",
+    "csl-cmssi8",  
+    "csl-cmssi9",
+    "csl-cmssq8",  
+    "csl-cmssqi8",
+    "csl-cmsy10",  
+    "csl-cmsy5",
+    "csl-cmsy6",   
+    "csl-cmsy7",
+    "csl-cmsy8",   
+    "csl-cmsy9",
+    "csl-cmtcsc10",
+    "csl-cmtex10",
+    "csl-cmtex8",  
+    "csl-cmtex9",
+    "csl-cmti10",  
+    "csl-cmti12",
+    "csl-cmti7",   
+    "csl-cmti8",
+    "csl-cmti9",   
+    "csl-cmtt10",
+    "csl-cmtt12",  
+    "csl-cmtt8",
+    "csl-cmtt9",   
+    "csl-cmu10",
+    "csl-cmvtt10", 
+    "csl-euex10",
+    "csl-euex7",   
+    "csl-euex8",
+    "csl-euex9",   
+    "csl-eufb10",
+    "csl-eufb5",   
+    "csl-eufb6",
+    "csl-eufb7",   
+    "csl-eufb8",
+    "csl-eufb9",   
+    "csl-eufm10",
+    "csl-eufm5",   
+    "csl-eufm6",
+    "csl-eufm7",   
+    "csl-eufm8",
+    "csl-eufm9",   
+    "csl-eurb10",
+    "csl-eurb5",   
+    "csl-eurb6",
+    "csl-eurb7",   
+    "csl-eurb8",
+    "csl-eurb9",   
+    "csl-eurm10",
+    "csl-eurm5",   
+    "csl-eurm6",
+    "csl-eurm7",   
+    "csl-eurm8",
+    "csl-eurm9",   
+    "csl-eusb10",
+    "csl-eusb5",   
+    "csl-eusb6",
+    "csl-eusb7",   
+    "csl-eusb8",
+    "csl-eusb9",   
+    "csl-eusm10",
+    "csl-eusm5",   
+    "csl-eusm6",
+    "csl-eusm7",   
+    "csl-eusm8",
+    "csl-eusm9",   
+    "csl-msam10",
+    "csl-msam5",   
+    "csl-msam6",
+    "csl-msam7",   
+    "csl-msam8",
+    "csl-msam9",   
+    "csl-msbm10",
+    "csl-msbm5",   
+    "csl-msbm6",
+    "csl-msbm7",   
+    "csl-msbm8",
+    "csl-msbm9"
 };
-
-#ifdef WIN32
-
-// The next two flags instruct AddFontResourceEx that a font should be
-// available only to this application and that other application should
-// not even be able to see that it exists. I provide definitions here
-// in case MinGW32 does not have them in its header files.
-
-#ifndef FR_PRIVATE
-#define FR_PRIVATE   0x10
-#endif
-
-#ifndef FR_NOT_ENUM
-#define FR_NOT_ENUM  0x20
-#endif
-
-// It seems that when using wxWidgets that if I use the NOT_ENUM flag
-// that the font can not be found at all, and hence not used! So I just
-// tag it as PRIVATE.
-
-// #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM)
-#define PRIVATE_FONT FR_PRIVATE
-
-#endif
 
 
 #ifndef fontsdir
@@ -824,56 +866,20 @@ static localFonts fontNames[] =
 #define toString(x) toString1(x)
 #define toString1(x) #x
 
-int add_custom_fonts() // return 0 on success.
+void add_custom_fonts() // return 0 on success.
 {
-#ifdef WIN32
-    int newFontAdded = 0;
+#ifndef MACINTOSH
+// Note that on a Mac I put the required fonts in the Application Bundle.
+    wxArrayFileNamePtr fonts;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        strcpy(nn, programDir);
-        strcat(nn, "\\" toString(fontsdir) "\\");
-        strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
-        if (AddFontResourceExA(nn, PRIVATE_FONT, 0) == 0)
-            logprintf("Failed to add font %s\n", nn);
-        else newFontAdded = 1;
+        sprintf(nn, "%s/%s/%s.ttf",
+                    programDir, toString(fontsdir), fontNames[i]);
+        wxString widename(nn);
+        fonts.Add(new wxFileName(widename));
     }
-    if (newFontAdded)
-    {   // This call to SendMessage may sometimes cause a long delay.
-        SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    }
-    return 0;
-#else // WIN32
-#ifdef MACINTOSH
-
-// Custom fonts are supported by including them in the Application Bundle
-// and mentioning them in a Plist there, so I do not need and code here to
-// deal with anything!
-    return 1;
-
-#else // Assume all that is left is X11, and that Xft/fontconfig are available
-    int screen = 0;
-    FcConfig *config = FcConfigCreate();
-    dpy = XOpenDisplay(NULL);
-    if (dpy == NULL)
-    {   printf("Unable to access the display\n");
-        exit(1);
-    }
-    screen = DefaultScreen(dpy);
-
-// It might make sense to add just the fonts that I will be using rather than
-// use extra resources adding all that are available. But for now I prefer
-// simplicity.
-    char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   sprintf(fff,
-            "%s/" toString(fontsdir) "/%s.ttf",
-            programDir, fontNames[i].name);
-        FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
-    }
-    FcConfigSetCurrent(config);
-    return 0;
+    wxFont::wxAddPrivateFonts(fonts);
 #endif // MACINTOSH
-#endif // WIN32
 }
 
 
@@ -1746,7 +1752,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
         }
         firstPaint = false;
     }
-// Sort of fof fun I put a row of 80 characters at the top of the screen
+// Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
     mydc.SetFont(*fixedPitch);
     mydc.SetBrush(*wxBLACK_BRUSH);
