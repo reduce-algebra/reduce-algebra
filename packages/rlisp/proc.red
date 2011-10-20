@@ -102,7 +102,7 @@ symbolic procedure formproc(u,vars,mode);
                 if !*strict_argcount then
                   lprie list ("Definition of", name,
                       "different count from args previously called with")
-                else lprim list(name, "defined with", length varlist,
+                else lprim list(name, "defined with", length varlis,
                     "but previously called with",n,"arguments") >>;
            body := mkprogn(list('put,mkquote name,
                                     mkquote 'number!-of!-args,
