@@ -1,6 +1,0 @@
-LIBRARY dynmodule.dll
-EXPORTS
-   callme
-IMPORTS
-   dyndemo.exe.function_in_base
-   dyndemo.exe.variable_in_base

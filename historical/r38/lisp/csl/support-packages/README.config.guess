@@ -1,7 +1,0 @@
-The file "config.guess" identifies the machine that it is run on,
-returning a GNU-style triple, eg i686-pc-linux. While the file is
-licensed under the GPL it comes with a special exception whereby it can
-be propagated under other licenses provided it accompanies a program
-that uses the GNU autoconf mechanisms. Both FOX and CSL use autoconf, and
-so between them they clearly allow this file to be distributed here along
-with them.

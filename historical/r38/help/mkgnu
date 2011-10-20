@@ -1,5 +1,0 @@
-#! /bin/csh
-makeinfo  --no-split -o $1.info $1.x
-
-# To use the resulting $1.info, you need Xr, or the Gnu "info" program.
-# If you use the latter, say "info -f $1.info".

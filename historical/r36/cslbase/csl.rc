@@ -1,8 +1,0 @@
-// csl.rc
-
-
-CWIN              ICON csl.ico
-
-#include "cwin.rc"
-
-// end of csl.rc

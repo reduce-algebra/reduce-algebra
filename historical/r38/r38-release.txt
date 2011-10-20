@@ -1,7 +1,0 @@
-
-                        REDUCE 3.8
-                        ==========
-
-Released 15 April 2004
-
-

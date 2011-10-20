@@ -1,8 +1,0 @@
-#!/bin/csh -f
-
-# reduce --- Script to load REDUCE. It should be installed in
-#            /usr/local/bin, or equivalent directory.
-
-setenv reduce /reduce   # location of actual reduce directory.
-
-$reduce/reduce          # or wherever the reduce executable resides.

@@ -1,7 +1,0 @@
-# The REDUCE User's Manual --- LaTeX version.
-
-latex reduce
-latex reduce
-latex reduce
-makeindex reduce
-latex reduce

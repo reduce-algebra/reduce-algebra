@@ -1,3 +1,0 @@
-Fist run "mkman2" which creates a single file r38.tex
-Then run "mkpdf" which processes it with latex and turns it into
-a pdf version of the complete manual.

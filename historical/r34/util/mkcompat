@@ -1,5 +1,0 @@
-$psys/pslcomp << ENDE
-(faslout "$reduce/psl/compat")
-(dskin "$reduce/src/compat.sl")
-(faslend)
-ENDE

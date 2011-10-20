@@ -1,6 +1,0 @@
-#!/bin/csh -f
-# Script to load PSL REDUCE. It should be installed in /usr/local/bin,
-# somewhere in your search path.
-setenv reduce reducevar
-reducevar/lisp/psl/MACHINEvar/psl/bpsl -td 16000000 \
-      -f reducevar/lisp/psl/MACHINEvar/red/reduce.img

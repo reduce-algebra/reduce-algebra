@@ -1,8 +1,0 @@
-# Compile REDUCE help info for Microsoft help compiler format
-
-$reduce/lisp/csl/$MACHINE/reduce -i $reduce/lisp/csl/$MACHINE/reduce.img \
-   -k8000 mkhelpw.red -Dpackage=redhelp -v -l mkhelpw.log
-
-echo "***** Please run 'hc reduce.hpj' with redhelp.rtf and reduce.hpj"
-echo "         on a Windows machine."
-

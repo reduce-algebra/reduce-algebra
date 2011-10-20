@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# apply current patches to an existing REDUCE image
-
-./r37 ../util/patchup.red -l log/patchup.log
-
-

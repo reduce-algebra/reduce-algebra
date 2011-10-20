@@ -1,4 +1,0 @@
-Distorm is a disassembler for x86 and x86_64
-that is at least used here in experiments involving
-native JIT compilation for CSL. 
-
