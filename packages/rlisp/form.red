@@ -289,12 +289,14 @@ symbolic procedure symbid(u,vars);
 put('algebraic,'idfn,'algid);
 
 symbolic procedure algid(u,vars);
-   if atsoc(u,vars) or flagp(u,'share) then u else mkquote u;
+   <<u := map!-reserved!-id u;
+     if atsoc(u,vars) or flagp(u,'share) then u else mkquote u>>;
 
 put('integer,'idfn,'intid);
 
 symbolic procedure intid(u,vars);
    begin scalar x,y;
+      u := map!-reserved!-id u;
       return if (x := atsoc(u,vars))
         then if cdr x eq 'integer then u
                else if y := get(cdr x,'integer)

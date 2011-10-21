@@ -156,10 +156,11 @@ symbolic procedure procstat1 mode;
        else if atom (x := car x) then x := list x;   % No arguments.
       fname!* := car x;   % Function name.
       if idp fname!* % and null(type memq ftypes!*)
-           and (null fname!*
-                or (z := gettype fname!*)
-                    and null(z memq '(procedure operator)))
-        then progn(typerr(list(z,fname!*),"procedure"), go to a3);
+        then if null fname!* 
+               then progn(rsverr fname!*, go to a3)
+              else if (z := gettype fname!*)
+                       and null(z memq '(procedure operator))
+               then progn(typerr(list(z,fname!*),"procedure"), go to a3);
       u := cdr x;
       y := u;   % Variable list.
       if idlistp y then x := car x . y

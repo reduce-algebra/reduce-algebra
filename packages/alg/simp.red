@@ -388,7 +388,7 @@ symbolic procedure share u;
       for each v in u do
          if not idp v then typerr(v,"id")
          else if flagp(v,'share) then nil
-         else if flagp(v,'reserved) then rsverr v
+         else if flagp(v,'reserved) or v eq 't then rsverr v
          else if (y := getrtype v) and y neq 'list
             then rerror(alg,13,list(y,v,"cannot be shared"))
          else

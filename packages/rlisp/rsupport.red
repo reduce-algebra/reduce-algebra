@@ -207,6 +207,20 @@ symbolic procedure gettype u;
     else if flagp(u,'parm) then 'parameter
     else get(u,'rtype);
 
+% The following function maps reserved identifiers to internal names.
+% This is needed for t and nil, and possibly others.
+
+symbolic procedure map!-reserved!-id u;
+  get(u,'map!-reserved) or u;
+
+put('t,'map!-reserved,'reserved!-t);
+put('reserved!-t,'oldnam,'t);
+
+%% nil will be done later, needs more modifications to the parser
+%put('nil,'map!-reserved,'reserved!-nil);
+% The following doesn work, as get('reserved!-nil,'oldnam) returns nil
+%put('reserved!-nil,'oldnam,'nil);
+
 endmodule;
 
 end;

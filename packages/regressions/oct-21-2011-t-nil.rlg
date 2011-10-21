@@ -1,0 +1,66 @@
+for all t,f,nt,nf let fun( t,f,nt,nf) =
+fun_t * t + fun_f * f + fun_nt * nt + fun_nf * nf + fun_0
+$
+
+
+*** fun declared operator 
+
+
+x := fun( 1,b,c,d) ;
+
+
+x := b*fun_f + c*fun_nt + d*fun_nf + fun_0 + fun_t
+
+y := fun( a,b,c,d) ;
+
+
+y := a*fun_t + b*fun_f + c*fun_nt + d*fun_nf + fun_0
+
+
+share t;
+
+
+***** t is a reserved identifier 
+
+
+symbolic procedure ws(u);
+***** global ws invalid as procedure
+
+ u;
+
+
+u
+
+
+symbolic procedure nil(u);
+***** nil is a reserved identifier 
+
+ u;
+
+
+u
+
+
+algebraic procedure nil(u);
+***** nil is a reserved identifier 
+
+ u;
+
+
+u
+
+
+for all nil let fun(nil,nil) = nil;
+
+
+***** nil is a reserved identifier 
+
+
+showrules fun;
+
+
+{fun(~t,~f,~nt,~nf) => fun_t*t + fun_f*f + fun_nt*nt + fun_nf*nf + fun_0}
+
+
+end;
+
