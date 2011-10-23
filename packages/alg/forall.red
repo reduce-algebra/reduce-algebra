@@ -61,10 +61,10 @@ symbolic procedure forallstat;
 symbolic procedure forall u;
    begin scalar v,x,y;
       v := for each j in car u collect 
-             if null j then rsverr j else map!-reserved!-id j;
+             if null j then rsverr j else j;
       x := for each j in v collect newvar j;
       y := pair(v,x);
-      mcond!* := subla(y,cadr u);
+      mcond!* := if cadr u eq 't then t else subla(y,cadr u);
 %     mcond!* := formbool(subla(y,eval cadr u),nil,'algebraic);
       frasc!* := y;
       frlis!* := union(x,frlis!*);

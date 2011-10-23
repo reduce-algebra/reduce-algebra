@@ -211,15 +211,28 @@ symbolic procedure gettype u;
 % This is needed for t and nil, and possibly others.
 
 symbolic procedure map!-reserved!-id u;
-  get(u,'map!-reserved) or u;
+   get(u,'map!-reserved) or u;
 
-put('t,'map!-reserved,'reserved!-t);
-put('reserved!-t,'oldnam,'t);
+% The same for a list of variables
+
+symbolic procedure map!-reserved!-ids l;
+   begin scalar v;
+    a: if null l then return reversip v;
+       v := map!-reserved!-id car l . v;
+       l := cdr l;
+       go to a;
+   end;    
+
+symbolic procedure get!-print!-name u;
+   idp u and get(u,'oldnam) or u;
+
+put('t,'map!-reserved,'t!-reserved);
+put('t!-reserved,'oldnam,'t);
 
 %% nil will be done later, needs more modifications to the parser
-%put('nil,'map!-reserved,'reserved!-nil);
+%put('nil,'map!-reserved,'nil!-reserved);
 % The following doesn work, as get('reserved!-nil,'oldnam) returns nil
-%put('reserved!-nil,'oldnam,'nil);
+%put('nil!-reserved,'oldnam,'nil);
 
 endmodule;
 

@@ -1,9 +1,11 @@
+operator fun;
+
+
+
 for all t,f,nt,nf let fun( t,f,nt,nf) =
 fun_t * t + fun_f * f + fun_nt * nt + fun_nf * nf + fun_0
 $
 
-
-*** fun declared operator 
 
 
 x := fun( 1,b,c,d) ;
@@ -50,6 +52,10 @@ algebraic procedure nil(u);
 u
 
 
+for all t let fun(t,t^2)=t;
+
+
+
 for all nil let fun(nil,nil) = nil;
 
 
@@ -59,7 +65,167 @@ for all nil let fun(nil,nil) = nil;
 showrules fun;
 
 
+          2
+{fun(~t,~t ) => t,
+
+ fun(~t,~f,~nt,~nf) => fun_t*t + fun_f*f + fun_nt*nt + fun_nf*nf + fun_0}
+
+
+for all t clear fun(t,t^2);
+
+
+
+showrules fun;
+
+
 {fun(~t,~f,~nt,~nf) => fun_t*t + fun_f*f + fun_nt*nt + fun_nf*nf + fun_0}
+
+
+for all nil clear fun(nil,nil);
+
+
+***** nil is a reserved identifier 
+
+
+showrules fun;
+
+
+{fun(~t,~f,~nt,~nf) => fun_t*t + fun_f*f + fun_nt*nt + fun_nf*nf + fun_0}
+
+
+fun(t);
+
+
+fun(t)
+
+
+fun(nil);
+
+
+fun()
+
+
+algebraic procedure x1(t);t;
+
+
+x1
+
+
+x1(1);
+
+***** T and NIL cannot be rebound
+
+
+algebraic procedure x2(t); begin scalar nil; return (t+nil); end;
+
+
+x2
+
+
+x2(a);
+
+***** T and NIL cannot be rebound
+
+
+x2(1);
+
+***** T and NIL cannot be rebound
+
+
+%% next line commented out sine it crashes CSL
+%x2(nil);
+
+algebraic procedure y1(t); begin integer nil; return (t+nil); end;
+
+
+y1
+
+
+y1(1);
+
+***** T and NIL cannot be rebound
+
+
+y1(nil);
+
+***** T and NIL cannot be rebound
+
+
+algebraic procedure z1(t,u); begin t := t + u^2; return t; end;
+
+
+z1
+
+
+z1(1,2);
+
+***** T and NIL cannot be rebound
+
+
+z1(a,b);
+
+***** T and NIL cannot be rebound
+
+
+t(u);
+
+
+*** t declared operator 
+
+t(u)
+
+
+clear t;
+
+
+
+algebraic procedure t(x); x;
+
+
+t
+
+
+t(u);
+
+
+u
+
+
+t(t);
+
+
+t
+
+
+t(nil);
+
+
+
+algebraic procedure nil(x);
+***** nil is a reserved identifier 
+
+ x;
+
+
+b*fun_f + c*fun_nt + d*fun_nf + fun_0 + fun_t
+
+
+nil(u);
+
+
+***** nil invalid as operator
+
+
+nil(t);
+
+
+***** nil invalid as operator
+
+
+nil(nil);
+
+
+***** nil invalid as operator
 
 
 end;
