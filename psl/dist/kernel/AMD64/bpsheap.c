@@ -389,6 +389,7 @@ int increment;
 
   int heapsize;
   int current_size_in_bytes;
+  long long diff;
 
 #if (NUMBEROFHEAPS == 1)
   int gcarraysize, newbreakvalue;
@@ -430,6 +431,7 @@ int increment;
 #else
   /* assumes the current heap is the 'lower' one */
   int newbreakvalue;
+  void * realo;
 
   if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
       {  printf(" unable to allocate %x %x\n",sbrk(0),oldbreakvalue);
@@ -440,17 +442,40 @@ int increment;
   if ((current_size_in_bytes + 2* increment) >= max_image_size)
     return(-1);
 
-  if ((long long)sbrk(2 * increment) != 0)       /* the sbrk failed. */
-     return(-2);
+  realo = realloc(heaplowerbound,
+               oldheapupperbound - heaplowerbound + 2*increment);
+  if (realo == (void *) NULL) return (-2);
+  diff =  realo - heaplowerbound;
+  if (realo < heaplowerbound)
+             {creloc((long long) &symval,325000,diff,realo -1);}
+        else {creloc((long long) &symval,325000,diff, heaplowerbound -1);}
+   if (realo < heaplowerbound)
+             {creloc(realo,(heapupperbound - heaplowerbound)/8,diff,realo -1);}
+        else {creloc(realo,(heapupperbound - heaplowerbound)/8,diff, 
+              heaplowerbound -1);}
+
+
 
   newbreakvalue = (long long) sbrk(0);
 
+  heaplowerbound        = realo;
+  heaplast              = heaplast + diff ;
+  heapupperbound        = heapupperbound  + diff + increment ;
+  heaptrapbound         = heapupperbound - 120;
+  oldheaplowerbound     = oldheaplowerbound + diff + increment;
+  oldheapupperbound     = oldheapupperbound + diff + 2* increment ;
+  oldheaplast           = oldheaplowerbound + diff ;
+  oldheaptrapbound      = oldheapupperbound -120;
+
+  
+/*
   heapupperbound        = heapupperbound + increment ;
   heaptrapbound         = heapupperbound - 120;
   oldheaplowerbound     = oldheaplowerbound + increment;
   oldheapupperbound     = oldheapupperbound + 2* increment ;
   oldheaplast           = oldheaplowerbound;
   oldheaptrapbound      = oldheapupperbound -120;
+*/
 
 
   oldbreakvalue = newbreakvalue;

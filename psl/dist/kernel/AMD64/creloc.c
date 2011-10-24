@@ -3,7 +3,7 @@
  * after a Savesystem.
  * Is needed for the image model in newer Linuxes,
  * after say 2008.
- * Heaplowerbound can be very far away then.i
+ * Heaplowerbound can be very far away then.
  * Winfried Neun, ZIB
  * */
 
