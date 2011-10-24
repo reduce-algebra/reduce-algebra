@@ -226,8 +226,8 @@ symbolic procedure map!-reserved!-ids l;
 symbolic procedure get!-print!-name u;
    idp u and get(u,'oldnam) or u;
 
-put('t,'map!-reserved,'t!-reserved);
-put('t!-reserved,'oldnam,'t);
+%put('t,'map!-reserved,'t!-reserved);
+%put('t!-reserved,'oldnam,'t);
 
 %% nil will be done later, needs more modifications to the parser
 %put('nil,'map!-reserved,'nil!-reserved);
