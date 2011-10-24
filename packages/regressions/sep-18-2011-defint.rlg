@@ -156,11 +156,7 @@ df(ws,x);
 int(ws,x,-infinity, infinity);
 
 
-     2*sqrt(pi)*sqrt(log(2))
-int(-------------------------,x, - infinity,infinity)
-               2
-              x
-             2  *pi
+2
 
 
 int(exp(-5*x^2),x,-infinity, infinity);
@@ -205,7 +201,6 @@ int(exp(-a*x^2),x,-infinity, infinity);
 int(exp( - a*x ),x, - infinity,infinity)
 
 
-
 int(exp(-abs(a)*x^2),x,-infinity, infinity);
 
 
@@ -213,12 +208,40 @@ int(exp(-abs(a)*x^2),x,-infinity, infinity);
 int(exp( - abs(a)*x ),x, - infinity,infinity)
 
 
+int(e^(-abs(a)^2*x^2),x,-infinity,infinity);
+
+
+              2  2
+      - abs(a) *x
+int(e             ,x, - infinity,infinity)
+
+
+int(e^(-abs(a^2)*x^2),x,-infinity,infinity);
+
+
+             2   2
+      - abs(a )*x
+int(e             ,x, - infinity,infinity)
+
+
+% not simplified since a may be complex
+int(exp(-a^2*x^2),x,-infinity, infinity);
+
+
+            2  2
+int(exp( - a *x ),x, - infinity,infinity)
+
+
+% but works if a is real
+let impart(a)=0;
+
+
 int(exp(-a^2*x^2),x,-infinity, infinity);
 
 
  sqrt(pi)
 ----------
-  abs(a)
+    a
 
 
 end;

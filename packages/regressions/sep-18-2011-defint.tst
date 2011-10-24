@@ -54,6 +54,15 @@ int(exp(-a*x^2),x,-infinity, infinity);
 
 int(exp(-abs(a)*x^2),x,-infinity, infinity);
 
+int(e^(-abs(a)^2*x^2),x,-infinity,infinity);
+
+int(e^(-abs(a^2)*x^2),x,-infinity,infinity);
+
+% not simplified since a may be complex
+int(exp(-a^2*x^2),x,-infinity, infinity);
+
+% but works if a is real
+let impart(a)=0;
 int(exp(-a^2*x^2),x,-infinity, infinity);
 
 end;

@@ -28,7 +28,9 @@ algebraic ;
 
  defint_choose_data :=
 
-{ defint_choose(1/e**(~x),~var) => f1(1,x),
+{ %defint_choose(1/e**(~x),~var) => f1(1,x),
+  defint_choose(1/~a**(~~b*~x),~var) => f1(1,x*log(a)*b)
+        when a freeof var and b freeof var,
   defint_choose(sin(~x),~var)   => f1(2,x),
   defint_choose(-sin(~x),~var)   => f1(25,x),
   defint_choose(cos(~x),~var)   => f1(3,x),
