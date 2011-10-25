@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 4f80c1a4 22-Aug-2011 */
+/* Signature: 20d06670 25-Oct-2011 */
 
 #include "headers.h"
 
@@ -494,7 +494,7 @@ static Lisp_Object progv_fn(Lisp_Object args, Lisp_Object env)
         }
         else w = unset_var;
         syms = qcdr(syms);
-        if (!is_symbol(v)) continue;
+        if (!is_symbol(v) || v==nil || v==lisp_true) continue;
         w1 = cons(v, qvalue(v));
 /*
  * If I were to take the error exit here then some variables would have

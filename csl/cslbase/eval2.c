@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 6c2e77c3 09-Aug-2011 */
+/* Signature: 21d72509 25-Oct-2011 */
 
 #include "headers.h"
 
@@ -672,7 +672,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
             if (consp(z)) z = qcar(z); else z = nil;
         }
         else z = nil;
-        if (!is_symbol(q))
+        if (!is_symbol(q) || q==nil || q==lisp_true)
         {   Lisp_Object qq = q;
             Return(error(1, err_bad_bvl, qq));
         }
@@ -1206,7 +1206,7 @@ static Lisp_Object letstar_fn(Lisp_Object args, Lisp_Object env)
             if (consp(z)) z = qcar(z); else z = nil;
         }
         else z = nil;
-        if (!is_symbol(q))
+        if (!is_symbol(q) || q==nil || q==lisp_true)
         {   error(1, err_bad_bvl, q);
             goto unwind_special_bindings;
         }

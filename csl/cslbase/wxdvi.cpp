@@ -54,6 +54,7 @@
 #endif
 
 #include <wx/display.h>
+#include <wx/graphics.h>
 #include <wx/filename.h>
 
 #include "config.h"
@@ -179,6 +180,7 @@ public:
 
 private:
     wxFont *fixedPitch;
+    wxGraphicsFont graphicsFixedPitch;
     double em;
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
     double scaleAdjustment;
@@ -217,6 +219,7 @@ private:
 //
 #define MAX_FONTS 256
     wxFont *font[MAX_FONTS];       // the fonts I use here
+    wxGraphicsFont *graphicsFont[MAX_FONTS];       // the fonts I use here
     font_width *fontWidth[MAX_FONTS], *currentFontWidth;
     double fontScale[MAX_FONTS], currentFontScale;
 
@@ -1228,7 +1231,9 @@ void dviPanel::SetChar(int32_t c)
     wxString s = (wchar_t)MapChar(c);
     wxCoord width, height, descent;
     dcp->GetTextExtent(s, &width, &height, &descent);
-    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+//    double dwidth, dheight, ddescent, dleading;
+//    dcp->GetTextExtent(s, &dwidth, &dheight, &ddescent, &dleading);
+//    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
 // Now I must increase h by the width (in scaled points) of the character
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.
@@ -1703,6 +1708,7 @@ void dviPanel::OnMouse(wxMouseEvent &event)
 void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
+    wxGraphicsContext *gc = wxGraphicsContext::Create(mydc);
 
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
@@ -1711,11 +1717,16 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 //    mydc.SetTextBackground(c1);
     mydc.Clear(); // explicitly clear background
 
+    gc->SetBrush(b1);
+    gc->DrawRectangle(0.0, 0.0, 800.0, 600.0); // needs to scale to be window size
     if (firstPaint)
     {   if (fixedPitch == NULL)
         {   fixedPitch = new wxFont();
             fixedPitch->SetNativeFontInfoUserDesc("csl-cmtt10 1000");
 
+            graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
+// font_width records metric information extracted from a ".tfm" file
+// and popped into cmfont-widths.c.
             font_width *p = cm_font_width;
             while (p->name != NULL &&
                    strcmp(p->name, "cmtt10") != 0) p++;
@@ -1726,11 +1737,16 @@ void dviPanel::OnPaint(wxPaintEvent &event)
             wxCoord width, height, depth, leading;
             mydc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
             em = (double)width/100.0;
+            double dwidth, dheight, ddepth, dleading;
+            gc->SetFont(graphicsFixedPitch);
+            gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
+            em = width;
             double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
             logprintf("em=%#.3g fmEm = %#.3g\n", em, fmEm);
             logprintf("height = %#.3g total height = %#.3g leading = %#.3g\n",
                 (double)(height-depth-leading)/100.0, (double)height/100.0,
                 (double)leading/100.0);
+//                (height-depth-leading), height, leading);
             pixelsPerPoint = em/fmEm;
             logprintf("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
             fixedPitch->SetPointSize(10);

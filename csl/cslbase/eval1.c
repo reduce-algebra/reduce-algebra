@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 0f92bfdb 09-Aug-2011 */
+/* Signature: 34888e47 25-Oct-2011 */
 
 #include "headers.h"
 
@@ -667,21 +667,24 @@ process_keyword_parameter:
             {   Lisp_Object keyname = nil;
                 w = nil;
                 if (!consp(v))
-                {   if (!is_symbol(v)) BAD2(err_bad_bvl, v);
+                {   if (!is_symbol(v) || v==nil || v==lisp_true)
+                        BAD2(err_bad_bvl, v);
                     keyname = keywordify(v);
                 }
                 else
                 {   w = qcdr(v);
                     v = qcar(v);
                     if (!consp(v))
-                    {   if (!is_symbol(v)) BAD2(err_bad_bvl, v);
+                    {   if (!is_symbol(v) || v==nil || v==lisp_true)
+                            BAD2(err_bad_bvl, v);
                         keyname = keywordify(v);
                         nil = C_nil;
                         if (exception_pending()) goto unwind_special_bindings;
                     }
                     else
                     {   keyname = qcar(v);
-                        if (!is_symbol(keyname)) BAD2(err_bad_bvl, v);
+                        if (!is_symbol(keyname) || v==nil || v ==lisp_true)
+                            BAD2(err_bad_bvl, v);
                         keyname = keywordify(keyname);
                         nil = C_nil;
                         if (exception_pending()) goto unwind_special_bindings;
@@ -750,7 +753,8 @@ process_keyword_parameter:
  * and so is MUCH shorter and neater. I always shallow bind
  */
 #define instate_binding(var, val, local_decs1, lab)                     \
-        {   if (!is_symbol(var)) BAD2(err_bad_bvl, var);                \
+        {   if (!is_symbol(var) || var==nil || var==lisp_true)       \
+                BAD2(err_bad_bvl, var);                                 \
             w = acons(var, qvalue(var), specenv);                       \
             nil = C_nil;                                                \
             if (exception_pending()) goto unwind_special_bindings;      \
@@ -760,7 +764,8 @@ process_keyword_parameter:
 #else
 #define instate_binding(var, val, local_decs1, lab)                     \
         {   Header h;                                                   \
-            if (!is_symbol(var)) BAD2(err_bad_bvl, var);                \
+            if (!is_symbol(var) || var==nil || var==lisp_true)          \
+                BAD2(err_bad_bvl, var);                                 \
             h = qheader(var);                                           \
             if ((h & SYM_SPECIAL_VAR) != 0)                             \
             {   w = acons(var, qvalue(var), specenv);                   \
@@ -878,7 +883,7 @@ case STATE_AUX:
 /*
  * note that exit_count has not been disturbed since I called progn_fn,
  * so the numbert of values that will be returned remains correctly
- * established (in Common Lisp mode where it is needed.
+ * established (in Common Lisp mode where it is needed).
  */
             return bodyx;
         }
