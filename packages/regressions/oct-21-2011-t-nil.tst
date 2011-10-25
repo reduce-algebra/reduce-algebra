@@ -33,6 +33,20 @@ fun(t);
 
 fun(nil);
 
+% test empty variable list in declaration
+
+begin scalar; return 0 end;
+
+% test binding nil or t
+
+begin scalar nil; return nil end;
+
+begin scalar t; return t end;
+
+(lambda(t); 0)(a);
+
+(lambda(nil,t); 0)(a,b);
+
 algebraic procedure x1(t);t;
 
 x1(1);

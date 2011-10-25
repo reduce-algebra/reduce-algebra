@@ -105,66 +105,109 @@ fun(nil);
 fun()
 
 
+% test empty variable list in declaration
+
+begin scalar;
+*** Empty variable list in scalar declaration 
+ return 0 end;
+
+
+0
+
+
+% test binding nil or t
+
+begin scalar nil; return nil end;
+***** nil is a reserved identifier 
+
+
+
+begin scalar t; return t end;
+***** t is a reserved identifier 
+
+
+
+(lambda(t); 0)(a);
+***** t is a reserved identifier 
+
+
+
+(lambda(nil,t); 0)(a,b);
+***** nil is a reserved identifier 
+
+
+
 algebraic procedure x1(t);t;
+***** t is a reserved identifier 
 
-
-x1
 
 
 x1(1);
 
-***** T and NIL cannot be rebound
+
+*** x1 declared operator 
+
+x1(1)
 
 
 algebraic procedure x2(t); begin scalar nil; return (t+nil); end;
+***** t is a reserved identifier 
 
-
-x2
 
 
 x2(a);
 
-***** T and NIL cannot be rebound
+
+*** x2 declared operator 
+
+x2(a)
 
 
 x2(1);
 
-***** T and NIL cannot be rebound
+
+x2(1)
 
 
 %% next line commented out sine it crashes CSL
 %x2(nil);
 
 algebraic procedure y1(t); begin integer nil; return (t+nil); end;
+***** t is a reserved identifier 
 
-
-y1
 
 
 y1(1);
 
-***** T and NIL cannot be rebound
+
+*** y1 declared operator 
+
+y1(1)
 
 
 y1(nil);
 
-***** T and NIL cannot be rebound
+
+y1()
 
 
 algebraic procedure z1(t,u); begin t := t + u^2; return t; end;
+***** t is a reserved identifier 
 
-
-z1
 
 
 z1(1,2);
 
-***** T and NIL cannot be rebound
+
+*** z1 declared operator 
+
+z1(1,2)
 
 
 z1(a,b);
 
-***** T and NIL cannot be rebound
+
+z1(a,b)
 
 
 t(u);
@@ -179,26 +222,33 @@ clear t;
 
 
 
-algebraic procedure t(x); x;
+algebraic procedure t(x);
+***** t is a reserved identifier 
+
+ x;
 
 
-t
+b*fun_f + c*fun_nt + d*fun_nf + fun_0 + fun_t
 
 
 t(u);
 
 
-u
+*** t declared operator 
+
+t(u)
 
 
 t(t);
 
 
-t
+t(t)
 
 
 t(nil);
 
+
+t()
 
 
 algebraic procedure nil(x);

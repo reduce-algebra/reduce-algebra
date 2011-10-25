@@ -56,6 +56,10 @@ symbolic procedure formproc(u,vars,mode);
          else if !*redeflg!* and getd name
           then lprim list(name,"redefined");
         varlis := cadr u;
+   v1:  if null varlis then go to v2;
+        if null car varlis or car varlis eq 't then rsverr car varlis;
+        varlis := cdr varlis;
+   v2:  varlis := cadr u;
 !#if (memq 'csl lispsystem!*)
    l:   if null varlis then go to x;
         if fluidp car varlis or globalp car varlis then
@@ -156,7 +160,7 @@ symbolic procedure procstat1 mode;
        else if atom (x := car x) then x := list x;   % No arguments.
       fname!* := car x;   % Function name.
       if idp fname!* % and null(type memq ftypes!*)
-        then if null fname!* 
+        then if null fname!* or fname!* eq 't
                then progn(rsverr fname!*, go to a3)
               else if (z := gettype fname!*)
                        and null(z memq '(procedure operator))

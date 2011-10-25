@@ -65,6 +65,10 @@ put('cond,'formfn,'formcond);
 symbolic procedure formlamb(u,vars,mode);
    begin scalar v, b, fl;
       v := cadr u;
+v1:   if null v then go to v2;
+      if null car v or car v eq 't then rsverr car v;
+      v := cdr v;
+v2:   v := cadr u;
       b := list form1(caddr u, pairvars(v,vars,mode),mode);
 !#if (memq 'csl lispsystem!*)
 l:    if null v then go to x;

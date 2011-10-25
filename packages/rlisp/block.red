@@ -60,6 +60,9 @@ symbolic procedure decl u;
       scan();
       if null !*reduce4
         then if cursym!* eq 'procedure then return procstat1 w
+              else if cursym!* eq '!*semicol!*
+               then progn(lprim list("Empty variable list in",w,"declaration"),
+                          return nil)
               else varlis
                   := append(varlis,pairvars(remcomma xread1 nil,nil,w))
        else varlis := append(varlis,read_param_list nil);
@@ -166,6 +169,7 @@ symbolic procedure formblock(u,vars,mode);
 symbolic procedure initprogvars u;
    begin scalar x,y,z;
     a: if null u then return(reversip!* x . reversip!* y)
+       else if null caar u or caar u eq 't then rsverr caar u
        else if (z := get(caar u,'initvalue!*))
           or (z := get(cdar u,'initvalue!*))
         then y := mksetq(caar u,z) . y;
