@@ -54,8 +54,8 @@ REDUCE	= java -Xmx$(MEM) -Xms$(MEM) -Xss$(STK) -jar reduce.jar $(FLAGS)
 # Part of redlog does load-time calculation based on the path passed
 # here that probably requires it to be an absolute path...
 
-ifeq ($(findstring Windows, $(OS)), Windows)
-C = $(shell cygpath -m $(abspath ../csl/cslbase))
+ifeq ($(findstring Windows, "$(OS)"), Windows)
+C = $(shell cygpath -m "$(abspath ../csl/cslbase)")
 else
 C = $(abspath ../csl/cslbase)
 endif
@@ -69,7 +69,7 @@ jlisp.img:
 	javac -d . core/*.java
 	-rm -f jlisp.img
 	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o jlisp.img \
-	$(C)/buildcsl.lsp -D@cslbase="$(C)" -- jlispimg.log
+	"$(C)/buildcsl.lsp" -D@cslbase="$(C)" -- jlispimg.log
 
 
 
@@ -78,7 +78,7 @@ reduce.img:
 	javac -d . core/*.java
 	-rm -f reduce.img
 	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o reduce.img \
-	$(C)/buildreduce.lsp -D@srcdir="$(C)" -- reduce.log
+	"$(C)/buildreduce.lsp" -D@srcdir="$(C)" -- reduce.log
 
 
 .PHONY:	minireduce.img
@@ -86,31 +86,31 @@ minireduce.img:
 	javac -d . core/*.java
 	-rm -f minireduce.img
 	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o minireduce.img \
-	$(C)/buildreduce.lsp -Dminireduce -D@srcdir="$(C)" -- reduce.log
+	"$(C)/buildreduce.lsp" -Dminireduce -D@srcdir="$(C)" -- reduce.log
 
 
 .PHONY:	testall
 testall:
 	mkdir -p testlogs
-	$(REDUCE) -w $(C)/testall.red -D@srcdir=$(C) -- testlogs/testreduce.log
-	$(REDUCE) -w $(C)/checkall.red -D@srcdir=$(C) -- testlogs/checkall.log
+	$(REDUCE) -w "$(C)/testall.red" -D@srcdir="$(C)" -- testlogs/testreduce.log
+	$(REDUCE) -w "$(C)/checkall.red" -D@srcdir="$(C)" -- testlogs/checkall.log
 
 .PHONY:	test1
 # Use:    make test1 which=modulename
 test1:
 	mkdir -p testlogs
-	$(REDUCE) -w -v $(C)/testall.red -D@srcdir=$(C) -Dwhich=$(which) -- testlogs/test$(which).log
+	$(REDUCE) -w -v "$(C)/testall.red" -D@srcdir="$(C)" -Dwhich=$(which) -- testlogs/test$(which).log
 
 .PHONY:	debug1
 # Use:    make debug1 which=modulename
 #         as test1 but passes the "-g" flag that makes all backtraces noisy.
 debug1:
 	mkdir -p testlogs
-	$(REDUCE) -w -v -g $(C)/testall.red -D@srcdir=$(C) -Dwhich=$(which) -- testlogs/test$(which).log
+	$(REDUCE) -w -v -g "$(C)/testall.red" -D@srcdir="$(C)" -Dwhich=$(which) -- testlogs/test$(which).log
 
 .PHONY:	checkall
 checkall:
 	mkdir -p testlogs
-	$(REDUCE) -w $(C)/checkall.red -D@srcdir=$(C) -- testlogs/checkall.log
+	$(REDUCE) -w "$(C)/checkall.red" -D@srcdir="$(C)" -- testlogs/checkall.log
 
 # end of Makefile
