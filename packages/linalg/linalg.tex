@@ -90,7 +90,7 @@ coeff\_matrix      & \ldots & 3. 11 \\
 companion          & \ldots & 3. 13 & 
 hessian            & \ldots & 3. 22 \\
 hilbert            & \ldots & 3. 23 & 
-jacobian           & \ldots & 3. 24 \\
+mat\_jacobian      & \ldots & 3. 24 \\
 jordan\_block      & \ldots & 3. 25 & 
 make\_identity     & \ldots & 3. 27 \\
 random\_matrix     & \ldots & 3. 36 & 
@@ -1129,7 +1129,7 @@ This is the symmetric matrix in
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt jacobian(expr\_list,variable\_list);}
+\hspace*{0.175in} {\tt mat\_jacobian(expr\_list,variable\_list);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
@@ -1146,7 +1146,7 @@ variable\_list &:-& either a single variable or a list of variables.
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt jacobian} computes the jacobian matrix of expr\_list w.r.t. 
+{\tt mat\_jacobian} computes the jacobian matrix of expr\_list w.r.t. 
 variable\_list. 
 
 This is a matrix whose (i,$\,$j)'th entry is df(expr\_list(i),
@@ -1160,7 +1160,7 @@ The matrix is n by m where n is the
 {\bf Examples:}
 
 \hspace*{0.175in} 
-{\tt jacobian(\{$x^4,x*y^2,x*y*z^3$\},\{$w,x,y,z$\})} = 
+{\tt mat\_jacobian(\{$x^4,x*y^2,x*y*z^3$\},\{$w,x,y,z$\})} = 
 
 \vspace*{0.1in}
 
@@ -1177,6 +1177,9 @@ The matrix is n by m where n is the
 
 \hspace*{0.175in} {\tt hessian}, {\tt df}\footnote{standard reduce call 
 for differentiation - see {\REDUCE} User's Manual[2].}.
+
+NOTE: The function \texttt{mat\_jacobian} used to be called just "\texttt{jacobian}"
+however us of that name was in conflict with another Reduce package.
 
 
 \subsection{jordan\_block}
