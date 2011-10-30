@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6412ac3c 19-Oct-2011 */
+/* Signature: 61064ed5 30-Oct-2011 */
 
 
 
@@ -179,14 +179,11 @@ public:
     bool firstPaint;
 
 private:
-    wxFont *fixedPitch;
     wxGraphicsFont graphicsFixedPitch;
-    double em;
-    double pixelsPerPoint;    // conversion from TeX to screen coordinates
-    double scaleAdjustment;
+    boolean fixedPitchValid;
 
     void RenderDVI();        // sub-function used by OnPaint
-    wxPaintDC *dcp;          // pointer to device context to draw on
+    wxGraphicsContext *gc;   // ditto but in wxGraphics mode
 
     unsigned char *dviData;  // the .dvi file's contents are stored here
     unsigned const char *stringInput;
@@ -204,8 +201,8 @@ private:
     void SetChar(int c);     // dvi display charcter and move on
     void PutChar(int c);     // dvi just display character
     void SetRule(int height, int width);
-    int DVItoScreen(int n);  // map coordinates
-    int DVItoScreenUP(int n);// ditto but used for rule widths
+    double DVItoScreen(int n);  // map coordinates
+    double DVItoScreenUP(int n);// ditto but used for rule widths
 
     int32_t h, v, w, x, y, z;// working values used in DVI decoding
 
@@ -218,10 +215,10 @@ private:
 // I will use a fixed limit.
 //
 #define MAX_FONTS 256
-    wxFont *font[MAX_FONTS];       // the fonts I use here
-    wxGraphicsFont *graphicsFont[MAX_FONTS];       // the fonts I use here
+    wxGraphicsFont graphicsFont[MAX_FONTS];       // the fonts I use here
+    boolean graphicsFontValid[MAX_FONTS];         // the fonts I use here
     font_width *fontWidth[MAX_FONTS], *currentFontWidth;
-    double fontScale[MAX_FONTS], currentFontScale;
+    double em;
 
 // dvi files use a stack, and at the end of the file is an indication of
 // the greatest stack depth that will be used. I just give myself a fixed
@@ -713,7 +710,6 @@ IMPLEMENT_APP_NO_MAIN(dviApp)
 // are forced by the structure that wxWidgets requires!
 
 
-
 static const char *fontNames[] =
 {
 // Right now I will add in ALL the fonts from the BaKoMa collection.
@@ -869,7 +865,7 @@ static const char *fontNames[] =
 #define toString(x) toString1(x)
 #define toString1(x) #x
 
-void add_custom_fonts() // return 0 on success.
+void add_custom_fonts()
 {
 #ifndef MACINTOSH
 // Note that on a Mac I put the required fonts in the Application Bundle.
@@ -898,7 +894,7 @@ void add_custom_fonts() // return 0 on success.
  * This is the ".dvi" file created by running LaTeX on the following
  * small input file. It is provided as a sequence of hex bytes so that
  * I have something to test and demonstrate even if there is no file
- * containig any .dvi stuff readily available.
+ * containing any .dvi stuff readily available.
  *
  * \documentclass{article}
  * \begin{document}
@@ -1101,7 +1097,7 @@ void dviPanel::DefFont(int k)
     strcpy(fontname, "csl-");
     for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
     fontname[namelen+4] = 0;
-    if (font[k] != NULL) return;
+    if (graphicsFontValid[k]) return;
 #if 1
     logprintf("checksum = %.8x\n", checksum);
     logprintf("size = %d %g\n", size, (double)size/65536.0);
@@ -1134,34 +1130,10 @@ void dviPanel::DefFont(int k)
                designsize, p->designsize, fontname);
 // Continue in a spirit of optimism!
     }
-    wxFont *f = new wxFont();
-    char sizer[8]; // merely big enough for the size. Which will
-                   // always be between 7 and 17!
     logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
-    sprintf(sizer, " %d", (int)(designsize/1048576.0 + 0.5));
-    strcat(fontname, sizer);
-#if 1
-    logprintf("Name + size = %s\n", fontname);
-#endif
-    f->SetNativeFontInfoUserDesc(fontname);
-    double scaleBy = (double)size/(double)(p->designsize)*16.0;
-    f->Scale((float)(scaleAdjustment*scaleBy));
-#if 1
-// This is merely to display information about the font while I debug things.
-    wxString s1(f->GetNativeFontInfoDesc());
-    wxString s2(f->GetNativeFontInfoUserDesc());
-    const char *ss1 = s1.c_str();
-    const char *ss2 = s2.c_str();
-    logprintf("New font Native \"%s\"\nFont NativeUser \"%s\"\n", ss1, ss2);
-#endif
-    font[k] = f;
+    graphicsFont[k] = gc->CreateFont(designsize/1048576.0, fontname);
+    graphicsFontValid[k] = true;
     fontWidth[k] = p;
-// I need to record a scale factor used with the font so that when I look
-// up character widths in the metric table I can allow for it.
-    fontScale[k] = scaleBy;
-#if 1
-    logprintf("Scale factor for %s = %.3g\n", fontname, scaleBy);
-#endif
 }
 
 void dviPanel::SelectFont(int n)
@@ -1170,13 +1142,12 @@ void dviPanel::SelectFont(int n)
     {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
     }
-    if (font[n] == NULL)
+    if (!graphicsFontValid[n])
     {   logprintf("font %d seems not to be set\n", n);
         return;
     }
-    dcp->SetFont(*font[n]);
+    gc->SetFont(graphicsFont[n]);
     currentFontWidth = fontWidth[n];
-    currentFontScale = fontScale[n];
 }
 
 
@@ -1199,22 +1170,24 @@ int dviPanel::MapChar(int c)
     else return c;
 }
 
-int dviPanel::DVItoScreen(int n)
+double dviPanel::DVItoScreen(int n)
 {
 // At present this is a fixed scaling. I may well want to make it variable
 // at some later stage. The scaling here, which is based on an assumption
 // I make about the dots-per-inch resolution of my display, will end up
 // important when establishing fonts.
-    return (int)(scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
+    return (double)n/65536.0;
 }
 
-int dviPanel::DVItoScreenUP(int n)
+double dviPanel::DVItoScreenUP(int n)
 {
 // This ROUND UP to the next integer, and that is needed so that (eg)
 // very thin rules end up at least one pixel wide. Well I round up by
 // adding a value just under 1.0 then truncating. That recipe works OK for
 // positive arguments!
-    return (int)(0.999999999 + scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
+// well using wxGraphicsContext I do not need to round.
+    return (double)n/65536.0;
+//    return 0.999999999 + (double)n/65536.0;
 }
 
 static int rendered = 0;
@@ -1222,18 +1195,16 @@ static int rendered = 0;
 void dviPanel::SetChar(int32_t c)
 {
 #ifdef DEBUG
-    if (!rendered) // only trace the first time
+//  if (!rendered) // only trace the first time
 //    logprintf("Set (%.2f,%.2f) char %.2x (%c)\n",
 //        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
 //            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
     logprintf("SetChar%d [%c] %d %d\n", (int)c, (c <  0x20 || c >= 0x7f ? ' ' : (int)c), (int)h, (int)v);
 #endif
     wxString s = (wchar_t)MapChar(c);
-    wxCoord width, height, descent;
-    dcp->GetTextExtent(s, &width, &height, &descent);
-//    double dwidth, dheight, ddescent, dleading;
-//    dcp->GetTextExtent(s, &dwidth, &dheight, &ddescent, &dleading);
-//    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+    double width, height, descent, xleading;
+    gc->GetTextExtent(s, &width, &height, &descent, &xleading);
+    gc->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
 // Now I must increase h by the width (in scaled points) of the character
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.
@@ -1243,16 +1214,16 @@ void dviPanel::SetChar(int32_t c)
 // to the glyph if it is set at its standard size. So adjust for all of
 // that and end up in TeX coordinate units.
     int32_t texwidth =
-        (int32_t)(0.5 + currentFontScale*(double)design*(double)ww/
+        (int32_t)(0.5 + (double)design*(double)ww/
                         (double)(1<<24));
     h += texwidth;
-#if 0
+#if 1
 // Now I want to compare the width that TeX thinks the character has with
 // what wxWidgets thinks. So I convert the TeX width to pixels.
-    double twp = scaleAdjustment*(double)screenDPI*(double)texwidth/
+    double twp = (double)(1024*1024)*(double)texwidth/
                  (72.0*65536.0*1000.0);
-    logprintf("TeX says %#.4g wxWidgets says %d (%.3g)\n",
-        twp, width, twp/(double)width);
+    logprintf("TeX says %#.6g wxWidgets says %.6g (%.6g)\n",
+        twp, (double)width, twp/(double)width);
 #endif
 }
 
@@ -1265,9 +1236,22 @@ void dviPanel::PutChar(int32_t c)
             c < 0x20 || c > 0x7f ? ' ' :  (int)c);
 #endif
     wxString s = (wchar_t)MapChar(c);
-    wxCoord width, height, descent;
-    dcp->GetTextExtent(s, &width, &height, &descent);
-    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+    double width, height, descent, xleading;
+    gc->GetTextExtent(s, &width, &height, &descent, &xleading);
+    gc->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+#if 0
+// Now I want to compare the width that TeX thinks the character has with
+// what wxWidgets thinks. So I convert the TeX width to pixels.
+    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    int32_t design = currentFontWidth->designsize;
+    int32_t texwidth =
+        (int32_t)(0.5 + (double)design*(double)ww/
+                        (double)(1<<24));
+    double twp = (double)96*(double)texwidth/
+                 (72.0*65536.0*1000.0);
+    logprintf("TeX says %#.4g wxWidgets says %d (%.3g)\n",
+        twp, width, twp/(double)width);
+#endif
 }
 
 void dviPanel::SetRule(int height, int width)
@@ -1276,15 +1260,20 @@ void dviPanel::SetRule(int height, int width)
     logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
                                         height, (double)height/65537.0);
 #endif
-    dcp->DrawRectangle(DVItoScreen(h), DVItoScreen(v-height),
-                       DVItoScreenUP(width), DVItoScreenUP(height));
+// The curious re-scaling here is so that the border of the rectangle does not
+// end up fatter than the rectangle itself.
+    wxGraphicsMatrix xform = gc->GetTransform();
+    gc->Scale(0.01, 0.01);
+    gc->DrawRectangle(100.0*DVItoScreen(h), 100.0*DVItoScreen(v-height),
+                      100.0*DVItoScreenUP(width), 100.0*DVItoScreenUP(height));
+    gc->SetTransform(xform);
 }
 
 void dviPanel::RenderDVI()
 {
 
-    dcp->SetBrush(*wxBLACK_BRUSH);
-    dcp->SetPen(*wxBLACK_PEN);
+    gc->SetBrush(*wxRED_BRUSH);
+    gc->SetPen(*wxGREEN_PEN);
 
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
@@ -1636,8 +1625,8 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         for (int i=0; i<len; i++) dviData[i] = getc(f);
         fclose(f);
     }
-    for (int i=0; i<MAX_FONTS; i++) font[i] = NULL;
-    fixedPitch = NULL;
+    for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
+    fixedPitchValid = false;
     firstPaint = true;
 }
 
@@ -1708,22 +1697,29 @@ void dviPanel::OnMouse(wxMouseEvent &event)
 void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
-    wxGraphicsContext *gc = wxGraphicsContext::Create(mydc);
+    gc = wxGraphicsContext::Create(mydc);
+    logprintf("Antialias mode = %d\n", gc->GetAntialiasMode());
+    logprintf("Setting it = %d\n", gc->SetAntialiasMode(wxANTIALIAS_DEFAULT));
+    logprintf("Antialias mode = %d\n", gc->GetAntialiasMode());
+    logprintf("InterpolationQuality = %d\n", gc->GetInterpolationQuality());
+    logprintf("Setting it = %d\n", gc->SetInterpolationQuality(wxINTERPOLATION_GOOD));
+    logprintf("InterpolationQuality = %d\n", gc->GetInterpolationQuality());
+    gc->Scale(5.0, 5.0);
 
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
-    mydc.SetBackground(b1);
-//    mydc.SetTextBackground(c1);
-    mydc.Clear(); // explicitly clear background
+//    dcp->SetBackground(b1);
+//    dcp->SetTextBackground(c1);
+//    dcp->Clear(); // explicitly clear background
 
     gc->SetBrush(b1);
-    gc->DrawRectangle(0.0, 0.0, 800.0, 600.0); // needs to scale to be window size
+    gc->DrawRectangle(100.0, 100.0, 80.0, 80.0); // needs to scale to be window size
     if (firstPaint)
-    {   if (fixedPitch == NULL)
-        {   fixedPitch = new wxFont();
-            fixedPitch->SetNativeFontInfoUserDesc("csl-cmtt10 1000");
-
+    {   if (!fixedPitchValid)
+        {
+// The graphicsFixedPitch font will be for a line spacing of exactly 10
+// pixels. This is of course TINY, but I will scale it as relevant.
             graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
 // font_width records metric information extracted from a ".tfm" file
 // and popped into cmfont-widths.c.
@@ -1734,51 +1730,28 @@ void dviPanel::OnPaint(wxPaintEvent &event)
             {   logprintf("Oops - font data not found\n");
                 exit(1);
             }
-            wxCoord width, height, depth, leading;
-            mydc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
-            em = (double)width/100.0;
+// for the font-metric prediction of width I know that I am working with a
+// 10-point version of the font.
             double dwidth, dheight, ddepth, dleading;
             gc->SetFont(graphicsFixedPitch);
             gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-            em = width;
-            double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
-            logprintf("em=%#.3g fmEm = %#.3g\n", em, fmEm);
-            logprintf("height = %#.3g total height = %#.3g leading = %#.3g\n",
-                (double)(height-depth-leading)/100.0, (double)height/100.0,
-                (double)leading/100.0);
-//                (height-depth-leading), height, leading);
-            pixelsPerPoint = em/fmEm;
-            logprintf("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
-            fixedPitch->SetPointSize(10);
+            em = dwidth;
+            logprintf("(D)em=%#.3g\n", em);
+            logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+                dheight-ddepth-dleading, dheight, dleading);
+            fixedPitchValid = true;
         }
-        wxSize window(mydc.GetSize());
-        int spacePerChar = window.GetWidth()/80;
-        scaleAdjustment = (double)spacePerChar/em;
-        fixedPitch->SetPointSize(10);
-        fixedPitch->Scale(scaleAdjustment);
-        if (firstPaint)
-        {
-// Now I need to re-size any fonts that have already been created
-            for (int i=0; i<MAX_FONTS; i++)
-            {   wxFont *ff = font[i];
-                if (ff == NULL) continue;
-                ff->SetPointSize(fontWidth[i]->designsize/1048576);
-                ff->Scale(scaleAdjustment*fontScale[i]);
-            }
-        }
+//      wxSize window(dcp->GetSize());
         firstPaint = false;
     }
 // Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
-    mydc.SetFont(*fixedPitch);
-    mydc.SetBrush(*wxBLACK_BRUSH);
-    mydc.SetPen(*wxBLACK_PEN);
-    wxSize window(mydc.GetSize());
-//    for (int i=0; i<80; i++)
-//    {   wxString c = (wchar_t)('0' + (i % 10));
-//        mydc.DrawText(c, (int)((double)i*window.GetWidth()/80.0), 0);
-//    }
-    dcp = &mydc;
+    gc->SetFont(graphicsFixedPitch);
+//  wxSize window(dcp->GetSize());
+    for (int i=0; i<80; i++)
+    {   wxString c1 = (wchar_t)MapChar(i);
+        gc->DrawText(c1, (double)i*em, 10.0);
+    }
     RenderDVI();
     return;
 }
