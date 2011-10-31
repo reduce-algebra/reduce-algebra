@@ -555,7 +555,7 @@ int find_program_directory(const char *argv0)
 
 #endif /* WIN32 */
 
-extern int add_custom_fonts();
+extern void add_custom_fonts();
 
 
 int main(int argc, char *argv[])
@@ -739,49 +739,20 @@ static localFonts fontNames[] =
 #define toString(x) toString1(x)
 #define toString1(x) #x
 
-int add_custom_fonts() // return 0 on success.
+void add_custom_fonts()
 {
+#ifndef MACINTOSH
+// Note that on a Mac I put the required fonts in the Application Bundle.
     wxArrayFileNamePtr fonts;
-#ifdef WIN32
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        strcpy(nn, programDir);
-        strcat(nn, "\\" toString(fontsdir) "\\");
-        strcat(nn, fontNames[i].name);
-        strcat(nn, ".ttf");
-        char *nn1 = (char *)malloc(strlen(nn) + 1);
-        strcpy(nn1, nn);
-        fontNames[i].path = nn1;
-        wchar_t widename[LONGEST_LEGAL_FILENAME];
-        char *p = nn1;
-        wchar_t *q = widename;
-        while (*p != 0) *q++ = (*p++ & 0xff);
-        *q = 0;
+        sprintf(nn, "%s/%s/%s.ttf",
+                    programDir, toString(fontsdir), fontNames[i]);
+        wxString widename(nn);
         fonts.Add(new wxFileName(widename));
     }
     wxFont::wxAddPrivateFonts(fonts);
-#else // WIN32
-#ifdef MACINTOSH
-
-// Custom fonts are supported by including them in the Application Bundle
-// and mentioning them in a Plist there, so I do not need and code here to
-// deal with anything!
-    return 1;
-
-#else // Assume all that is left is X11, and that Xft/fontconfig are available
-    char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   int w;
-        sprintf(fff,
-            (i < 3 ? "%s/" toString(fontsdir) "/%s.otf" :
-                     "%s/" toString(fontsdir) "/%s.ttf"),
-            programDir, fontNames[i].name);
-        fonts.Add(new wxFileName(fff));
-    }
-    wxFont::wxAddPrivateFonts(fonts);
-    return 0;
 #endif // MACINTOSH
-#endif // WIN32
 }
 
 
