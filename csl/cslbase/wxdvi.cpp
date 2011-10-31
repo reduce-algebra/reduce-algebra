@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2bfe3f52 31-Oct-2011 */
+/* Signature: 2e93b6c3 31-Oct-2011 */
 
 
 
@@ -65,6 +65,7 @@
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <wingdi.h>
+#include <gdiplus.h>
 #include <io.h>
 #else
 #ifdef MACINTOSH
@@ -1187,7 +1188,6 @@ double dviPanel::DVItoScreenUP(int n)
 // positive arguments!
 // well using wxGraphicsContext I do not need to round.
     return (double)n/65536.0;
-//    return 0.999999999 + (double)n/65536.0;
 }
 
 static int rendered = 0;
@@ -1272,8 +1272,8 @@ void dviPanel::SetRule(int height, int width)
 void dviPanel::RenderDVI()
 {
 
-    gc->SetBrush(*wxRED_BRUSH);
-    gc->SetPen(*wxGREEN_PEN);
+    gc->SetBrush(*wxBLACK_BRUSH);
+    gc->SetPen(*wxBLACK_PEN);
 
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
@@ -1698,13 +1698,17 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
+#ifdef WIN32
+    Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
+    g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
+#endif
     logprintf("Antialias mode = %d\n", gc->GetAntialiasMode());
     logprintf("Setting it = %d\n", gc->SetAntialiasMode(wxANTIALIAS_DEFAULT));
     logprintf("Antialias mode = %d\n", gc->GetAntialiasMode());
     logprintf("InterpolationQuality = %d\n", gc->GetInterpolationQuality());
     logprintf("Setting it = %d\n", gc->SetInterpolationQuality(wxINTERPOLATION_GOOD));
     logprintf("InterpolationQuality = %d\n", gc->GetInterpolationQuality());
-    gc->Scale(5.0, 5.0);
+    gc->Scale(4.0, 4.0);
 
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
