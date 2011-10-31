@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 61064ed5 30-Oct-2011 */
+/* Signature: 2bfe3f52 31-Oct-2011 */
 
 
 
@@ -180,7 +180,7 @@ public:
 
 private:
     wxGraphicsFont graphicsFixedPitch;
-    boolean fixedPitchValid;
+    bool fixedPitchValid;
 
     void RenderDVI();        // sub-function used by OnPaint
     wxGraphicsContext *gc;   // ditto but in wxGraphics mode
@@ -216,7 +216,7 @@ private:
 //
 #define MAX_FONTS 256
     wxGraphicsFont graphicsFont[MAX_FONTS];       // the fonts I use here
-    boolean graphicsFontValid[MAX_FONTS];         // the fonts I use here
+    bool graphicsFontValid[MAX_FONTS];         // the fonts I use here
     font_width *fontWidth[MAX_FONTS], *currentFontWidth;
     double em;
 
