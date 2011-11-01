@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2e93b6c3 31-Oct-2011 */
+/* Signature: 603abc37 01-Nov-2011 */
 
 
 
@@ -176,8 +176,6 @@ public:
     void OnKeyDown(wxKeyEvent &event);
     void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
-
-    bool firstPaint;
 
 private:
     wxGraphicsFont graphicsFixedPitch;
@@ -1194,11 +1192,7 @@ static int rendered = 0;
 
 void dviPanel::SetChar(int32_t c)
 {
-#ifdef DEBUG
-//  if (!rendered) // only trace the first time
-//    logprintf("Set (%.2f,%.2f) char %.2x (%c)\n",
-//        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
-//            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
+#if 0
     logprintf("SetChar%d [%c] %d %d\n", (int)c, (c <  0x20 || c >= 0x7f ? ' ' : (int)c), (int)h, (int)v);
 #endif
     wxString s = (wchar_t)MapChar(c);
@@ -1217,7 +1211,7 @@ void dviPanel::SetChar(int32_t c)
         (int32_t)(0.5 + (double)design*(double)ww/
                         (double)(1<<24));
     h += texwidth;
-#if 1
+#if 0
 // Now I want to compare the width that TeX thinks the character has with
 // what wxWidgets thinks. So I convert the TeX width to pixels.
     double twp = (double)(1024*1024)*(double)texwidth/
@@ -1627,7 +1621,6 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
     }
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
     fixedPitchValid = false;
-    firstPaint = true;
 }
 
 
@@ -1654,7 +1647,6 @@ void dviFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {
     wxSize client(GetClientSize());
     panel->SetSize(client);
-    panel->firstPaint = true;
     panel->Refresh();
 }
 
@@ -1698,65 +1690,62 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
-#ifdef WIN32
-    Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
-    g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
-#endif
-    logprintf("Antialias mode = %d\n", gc->GetAntialiasMode());
-    logprintf("Setting it = %d\n", gc->SetAntialiasMode(wxANTIALIAS_DEFAULT));
-    logprintf("Antialias mode = %d\n", gc->GetAntialiasMode());
-    logprintf("InterpolationQuality = %d\n", gc->GetInterpolationQuality());
-    logprintf("Setting it = %d\n", gc->SetInterpolationQuality(wxINTERPOLATION_GOOD));
-    logprintf("InterpolationQuality = %d\n", gc->GetInterpolationQuality());
-    gc->Scale(4.0, 4.0);
-
+    logprintf("OnPaint: graphicsContext created at %p\n", gc);
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
-//    dcp->SetBackground(b1);
-//    dcp->SetTextBackground(c1);
-//    dcp->Clear(); // explicitly clear background
-
     gc->SetBrush(b1);
-    gc->DrawRectangle(100.0, 100.0, 80.0, 80.0); // needs to scale to be window size
-    if (firstPaint)
-    {   if (!fixedPitchValid)
-        {
+    wxSize window(mydc.GetSize());
+    gc->DrawRectangle(0.0, 0.0,
+                      (double)window.GetWidth(),
+                      (double)window.GetHeight());
+
+    if (!fixedPitchValid)
+    {
+#ifdef WIN32
+// I should only need to do this once.
+        Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
+        g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
+#endif
+        logprintf("Need to create fixed pitch font\n");
 // The graphicsFixedPitch font will be for a line spacing of exactly 10
 // pixels. This is of course TINY, but I will scale it as relevant.
-            graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
+        graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
 // font_width records metric information extracted from a ".tfm" file
 // and popped into cmfont-widths.c.
-            font_width *p = cm_font_width;
-            while (p->name != NULL &&
-                   strcmp(p->name, "cmtt10") != 0) p++;
-            if (p->name == NULL)
-            {   logprintf("Oops - font data not found\n");
-                exit(1);
-            }
+        font_width *p = cm_font_width;
+        while (p->name != NULL &&
+               strcmp(p->name, "cmtt10") != 0) p++;
+        if (p->name == NULL)
+        {   logprintf("Oops - font data not found\n");
+            exit(1);
+        }
 // for the font-metric prediction of width I know that I am working with a
 // 10-point version of the font.
-            double dwidth, dheight, ddepth, dleading;
-            gc->SetFont(graphicsFixedPitch);
-            gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-            em = dwidth;
-            logprintf("(D)em=%#.3g\n", em);
-            logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
-                dheight-ddepth-dleading, dheight, dleading);
-            fixedPitchValid = true;
-        }
-//      wxSize window(dcp->GetSize());
-        firstPaint = false;
+        double dwidth, dheight, ddepth, dleading;
+        gc->SetFont(graphicsFixedPitch);
+        gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
+        em = dwidth;
+        logprintf("(D)em=%#.3g\n", em);
+        logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+            dheight-ddepth-dleading, dheight, dleading);
+        fixedPitchValid = true;
     }
+    double screenWidth = (double)window.GetWidth();
+    double lineWidth = 80.0*em;
+    double scale = screenWidth/lineWidth;
+    gc->Scale(scale, scale);
+
 // Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
     gc->SetFont(graphicsFixedPitch);
-//  wxSize window(dcp->GetSize());
     for (int i=0; i<80; i++)
     {   wxString c1 = (wchar_t)MapChar(i);
         gc->DrawText(c1, (double)i*em, 10.0);
     }
     RenderDVI();
+    logprintf("About to delete gc\n");
+    delete gc;
     return;
 }
 
