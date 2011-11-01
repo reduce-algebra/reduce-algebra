@@ -1691,50 +1691,53 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
     logprintf("OnPaint: graphicsContext created at %p\n", gc);
+    if (gc == NULL) return;
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
+    logprintf("colour and brush made\n");
     gc->SetBrush(b1);
+    logprintf("setbrush done\n");
     wxSize window(mydc.GetSize());
+    logprintf("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
     gc->DrawRectangle(0.0, 0.0,
                       (double)window.GetWidth(),
                       (double)window.GetHeight());
+    logprintf("background drawn\n");
 
-    if (!fixedPitchValid)
-    {
 #ifdef WIN32
-// I should only need to do this once.
-        Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
-        g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
+// I should only need to do this once?
+    Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
+    g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
 #endif
-        logprintf("Need to create fixed pitch font\n");
+    logprintf("Need to create fixed pitch font\n");
 // The graphicsFixedPitch font will be for a line spacing of exactly 10
 // pixels. This is of course TINY, but I will scale it as relevant.
-        graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
+    graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
 // font_width records metric information extracted from a ".tfm" file
 // and popped into cmfont-widths.c.
-        font_width *p = cm_font_width;
-        while (p->name != NULL &&
-               strcmp(p->name, "cmtt10") != 0) p++;
-        if (p->name == NULL)
-        {   logprintf("Oops - font data not found\n");
-            exit(1);
-        }
+    font_width *p = cm_font_width;
+    while (p->name != NULL &&
+           strcmp(p->name, "cmtt10") != 0) p++;
+    if (p->name == NULL)
+    {   logprintf("Oops - font data not found\n");
+        exit(1);
+    }
 // for the font-metric prediction of width I know that I am working with a
 // 10-point version of the font.
-        double dwidth, dheight, ddepth, dleading;
-        gc->SetFont(graphicsFixedPitch);
-        gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-        em = dwidth;
-        logprintf("(D)em=%#.3g\n", em);
-        logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
-            dheight-ddepth-dleading, dheight, dleading);
-        fixedPitchValid = true;
-    }
+    double dwidth, dheight, ddepth, dleading;
+    gc->SetFont(graphicsFixedPitch);
+    gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
+    em = dwidth;
+    logprintf("(D)em=%#.3g\n", em);
+    logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+        dheight-ddepth-dleading, dheight, dleading);
+
     double screenWidth = (double)window.GetWidth();
     double lineWidth = 80.0*em;
     double scale = screenWidth/lineWidth;
     gc->Scale(scale, scale);
+    logprintf("Scale now %.6g\n", scale);
 
 // Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
@@ -1746,6 +1749,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     RenderDVI();
     logprintf("About to delete gc\n");
     delete gc;
+    gc = NULL; // just to be tidy!
     return;
 }
 
