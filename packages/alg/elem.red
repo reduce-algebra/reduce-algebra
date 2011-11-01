@@ -542,7 +542,12 @@ for all x,y let df(x**y,x)= y*x**(y-1),
 
 operator dilog,ei,erf,exp;
 
-let dilog(0)=pi**2/6;
+let {
+   dilog(0) => pi**2/6,
+   dilog(1) => 0,
+   dilog(2) => -pi^2/12,
+   dilog(-1) => pi^2/4-i*pi*log(2)
+};
 
 for all x let df(dilog x,x)=-log x/(x-1);
 
