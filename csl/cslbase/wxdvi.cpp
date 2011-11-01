@@ -1,4 +1,4 @@
-// wxdvi.cpp
+;// wxdvi.cpp
 
 // A sample wxWidgets application to display dvi files.
 // This will ONLY cope with a set of fonts that it itself
@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 603abc37 01-Nov-2011 */
+/* Signature: 2e922d95 01-Nov-2011 */
 
 
 
@@ -60,32 +60,15 @@
 #include "config.h"
 
 #ifdef WIN32
-// I will need windows-specific functions so I can set up private fonts
+// I will need a few windows-specific headers. Mainly to let me set
+// gdi+ antialiasing options.
+
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <wingdi.h>
 #include <gdiplus.h>
 #include <io.h>
-#else
-#ifdef MACINTOSH
-
-// If I need Mac-specific includes here is where to set them up!
-
-#else // MACINTOSH
-#ifdef HAVE_LIBXFT
-
-#include <X11/Xlib.h>
-#include <X11/Xft/Xft.h>
-
-static Display *dpy;
-
-#else   // HAVE_LIBXFT
-
-#error Other than on Windows you must have Xft installed.
-
-#endif  // HAVE_LIBXFT
-#endif  // MACINTOSH
 #endif  // WIN32
 
 // I may be old fashioned, but I will be happier using C rather than C++
@@ -179,7 +162,6 @@ public:
 
 private:
     wxGraphicsFont graphicsFixedPitch;
-    bool fixedPitchValid;
 
     void RenderDVI();        // sub-function used by OnPaint
     wxGraphicsContext *gc;   // ditto but in wxGraphics mode
@@ -1620,7 +1602,6 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
-    fixedPitchValid = false;
 }
 
 
@@ -1706,7 +1687,10 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     logprintf("background drawn\n");
 
 #ifdef WIN32
-// I should only need to do this once?
+// The Windows default behaviour fails to antialias some of the cmex10
+// tall characters, and so unless I force antialiasing here I get MOST
+// symbols rendered nicely, but big integral signs and parentheses badly
+// blocky. I do not fully understand!
     Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
     g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
 #endif
@@ -1714,17 +1698,6 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 // The graphicsFixedPitch font will be for a line spacing of exactly 10
 // pixels. This is of course TINY, but I will scale it as relevant.
     graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
-// font_width records metric information extracted from a ".tfm" file
-// and popped into cmfont-widths.c.
-    font_width *p = cm_font_width;
-    while (p->name != NULL &&
-           strcmp(p->name, "cmtt10") != 0) p++;
-    if (p->name == NULL)
-    {   logprintf("Oops - font data not found\n");
-        exit(1);
-    }
-// for the font-metric prediction of width I know that I am working with a
-// 10-point version of the font.
     double dwidth, dheight, ddepth, dleading;
     gc->SetFont(graphicsFixedPitch);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
@@ -1747,9 +1720,12 @@ void dviPanel::OnPaint(wxPaintEvent &event)
         gc->DrawText(c1, (double)i*em, 10.0);
     }
     RenderDVI();
+// I will mark all the fonts I might have created as invalid now
+// that the context they were set up for is being left.
+    for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
     logprintf("About to delete gc\n");
     delete gc;
-    gc = NULL; // just to be tidy!
+    gc = NULL;
     return;
 }
 
