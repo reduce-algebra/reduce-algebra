@@ -125,6 +125,8 @@ static power(x, n)
 
 int creloc (long long array, long len, long long diff, long long lowb);
 
+long sizeofsymvectors = 0;
+
 setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
@@ -254,6 +256,8 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
        if (hlb < heaplowerbound)
              {creloc((long long) &symval,headerword[0]/8,diff,hlb -1);} 
         else {creloc((long long) &symval,headerword[0]/8,diff, heaplowerbound -1);}
+
+       sizeofsymvectors = headerword[0]/8;
 
        if (hugo != headerword[0]) read_error();
 
@@ -447,8 +451,8 @@ int increment;
   if (realo == (void *) NULL) return (-2);
   diff =  realo - heaplowerbound;
   if (realo < heaplowerbound)
-             {creloc((long long) &symval,325000,diff,realo -1);}
-        else {creloc((long long) &symval,325000,diff, heaplowerbound -1);}
+             {creloc((long long) &symval,sizeofsymvectors,diff,realo -1);}
+        else {creloc((long long) &symval,sizeofsymvectors,diff, heaplowerbound -1);}
    if (realo < heaplowerbound)
              {creloc(realo,(heapupperbound - heaplowerbound)/8,diff,realo -1);}
         else {creloc(realo,(heapupperbound - heaplowerbound)/8,diff, 
