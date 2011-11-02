@@ -1,5 +1,3 @@
-//#define LISTFONTS 1 /* while I debug */
-
 // wxfontdemo1.cpp
 
 // A sample wxWidgets application to display fonts.
@@ -46,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 149a4633 06-Oct-2011 */
+/* Signature: 1be0e895 02-Nov-2011 */
 
 
 
@@ -169,8 +167,6 @@ private:
     class fontFrame *frame;
     const char *fontname;
     int fontsize;
-    wxFont *ff;
-    bool fontScaled;
     DECLARE_EVENT_TABLE()
 };
 
@@ -187,6 +183,7 @@ class fontFrame : public wxFrame
 public:
     fontFrame(const char *font, int size);
 
+    void OnClose(wxCloseEvent &event);
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
 
@@ -196,6 +193,7 @@ private:
 };
 
 BEGIN_EVENT_TABLE(fontFrame, wxFrame)
+    EVT_CLOSE(           fontFrame::OnClose)
     EVT_MENU(wxID_EXIT,  fontFrame::OnExit)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
@@ -763,27 +761,39 @@ fontFrame::fontFrame(const char *fname, int fsize)
 fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
        : wxPanel(parent)
 {
-// I *think* I want to make the font have a size specified in pixels
-// not points here... however that appears to be delicate. So I will
-// create one at a plausible point size then adjust it later. I will
-// use "fontScaled" to ensure I only adjust it once.
     frame = parent;
     fontname = fname;
     fontsize = fsize;
-    ff = new wxFont();
-    ff->SetFaceName(fontname);
-    ff->SetPointSize(10);
-    frame->SetTitle(ff->GetNativeFontInfoUserDesc());
-    fontScaled = false;
-
-    printf("Font %s ...[%s]\n", fontname, (const char *)(ff->GetNativeFontInfoUserDesc().c_str()));
+    frame->SetTitle(fontname);
 }
 
+
+void fontFrame::OnClose(wxCloseEvent &WXUNUSED(event))
+{
+    Destroy();
+#ifdef WIN32
+// On Windows XP I seem to have a horrid effect whereby when I try to
+// close the application by closing its window there is a failure that pops
+// up a rather unspecific message box, and then the application is
+// re-launched. To get around that I kill the process here with extreme
+// prejudice! On Windows 7 I do not observe the bad behaviour, but doing a
+// heavy duty kill operation here is probably fairly harmless. What it will
+// mean is that any "atexit" operations are not completed, and I might
+// worry about incompletely written-out files.
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
+    exit(0);    // I want the whole application to terminate here!
+#endif
+}
 
 void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 {
     Destroy();
+#ifdef WIN32
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
     exit(0);    // I want the whole application to terminate here!
+#endif
 }
 
 void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
@@ -840,9 +850,9 @@ void fontPanel::OnPaint(wxPaintEvent &event)
     wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
     if (gc)
     {   gc->Scale(3.0, 3.0);
-
         printf("fontname = %s\n", fontname);
-        wxGraphicsFont gff = gc->CreateFont(*ff, *wxRED);
+        wxGraphicsFont gff = gc->CreateFont(10.0, fontname,
+                                            wxFONTFLAG_DEFAULT, *wxRED);
         gc->SetFont(gff);
 
         wxColour c1(230, 200, 255);
@@ -857,9 +867,6 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                 gc->DrawRectangle(10*x, 15*(y/32), 10, 15);
             }
         }
-        wxString f = ff->GetNativeFontInfoDesc();
-        wxPrintf("Font = %s\n", f);
-        dc.DrawText(f, 100, 100);
         wxDouble w1, h1, d1, xl1;
         gc->GetTextExtent("X", &w1, &h1, &d1, &xl1);
         printf("letter X w:%.3g h:%.3g d:%.3g xl:%.3g\n", w1, h1, d1, xl1);

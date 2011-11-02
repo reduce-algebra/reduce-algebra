@@ -1,4 +1,4 @@
-;// wxdvi.cpp
+// wxdvi.cpp
 
 // A sample wxWidgets application to display dvi files.
 // This will ONLY cope with a set of fonts that it itself
@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2e922d95 01-Nov-2011 */
+/* Signature: 0fc2143d 02-Nov-2011 */
 
 
 
@@ -162,6 +162,7 @@ public:
 
 private:
     wxGraphicsFont graphicsFixedPitch;
+    bool fixedPitchValid;
 
     void RenderDVI();        // sub-function used by OnPaint
     wxGraphicsContext *gc;   // ditto but in wxGraphics mode
@@ -224,6 +225,7 @@ class dviFrame : public wxFrame
 public:
     dviFrame(const char *dvifilename);
 
+    void OnClose(wxCloseEvent &event);
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnSize(wxSizeEvent &event);
@@ -236,6 +238,7 @@ private:
 };
 
 BEGIN_EVENT_TABLE(dviFrame, wxFrame)
+    EVT_CLOSE(           dviFrame::OnClose)
     EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
     EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
     EVT_SIZE(            dviFrame::OnSize)
@@ -696,146 +699,41 @@ static const char *fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    "csl-cmb10",
-    "csl-cmbsy10", 
-    "csl-cmbsy6",
-    "csl-cmbsy7",  
-    "csl-cmbsy8",
-    "csl-cmbsy9",  
-    "csl-cmbx10",
-    "csl-cmbx12",  
-    "csl-cmbx5",
-    "csl-cmbx6",   
-    "csl-cmbx7",
-    "csl-cmbx8",   
-    "csl-cmbx9",
-    "csl-cmbxsl10",
-    "csl-cmbxti10",
-    "csl-cmcsc10", 
-    "csl-cmcsc8",
-    "csl-cmcsc9",  
-    "csl-cmdunh10",
-    "csl-cmex10",  
-    "csl-cmex7",
-    "csl-cmex8",   
-    "csl-cmex9",
-    "csl-cmff10",  
-    "csl-cmfi10",
-    "csl-cmfib8",  
-    "csl-cminch",
-    "csl-cmitt10", 
-    "csl-cmmi10",
-    "csl-cmmi12",  
-    "csl-cmmi5",
-    "csl-cmmi6",   
-    "csl-cmmi7",
-    "csl-cmmi8",   
-    "csl-cmmi9",
-    "csl-cmmib10", 
-    "csl-cmmib6",
-    "csl-cmmib7",  
-    "csl-cmmib8",
-    "csl-cmmib9",  
-    "csl-cmr10",
-    "csl-cmr12",   
-    "csl-cmr17",
-    "csl-cmr5",    
-    "csl-cmr6",
-    "csl-cmr7",    
-    "csl-cmr8",
-    "csl-cmr9",    
-    "csl-cmsl10",
-    "csl-cmsl12",  
-    "csl-cmsl8",
-    "csl-cmsl9",   
-    "csl-cmsltt10",
-    "csl-cmss10",  
-    "csl-cmss12",
-    "csl-cmss17",  
-    "csl-cmss8",
-    "csl-cmss9",   
-    "csl-cmssbx10",
-    "csl-cmssdc10",
-    "csl-cmssi10",
-    "csl-cmssi12", 
-    "csl-cmssi17",
-    "csl-cmssi8",  
-    "csl-cmssi9",
-    "csl-cmssq8",  
-    "csl-cmssqi8",
-    "csl-cmsy10",  
-    "csl-cmsy5",
-    "csl-cmsy6",   
-    "csl-cmsy7",
-    "csl-cmsy8",   
-    "csl-cmsy9",
-    "csl-cmtcsc10",
-    "csl-cmtex10",
-    "csl-cmtex8",  
-    "csl-cmtex9",
-    "csl-cmti10",  
-    "csl-cmti12",
-    "csl-cmti7",   
-    "csl-cmti8",
-    "csl-cmti9",   
-    "csl-cmtt10",
-    "csl-cmtt12",  
-    "csl-cmtt8",
-    "csl-cmtt9",   
-    "csl-cmu10",
-    "csl-cmvtt10", 
-    "csl-euex10",
-    "csl-euex7",   
-    "csl-euex8",
-    "csl-euex9",   
-    "csl-eufb10",
-    "csl-eufb5",   
-    "csl-eufb6",
-    "csl-eufb7",   
-    "csl-eufb8",
-    "csl-eufb9",   
-    "csl-eufm10",
-    "csl-eufm5",   
-    "csl-eufm6",
-    "csl-eufm7",   
-    "csl-eufm8",
-    "csl-eufm9",   
-    "csl-eurb10",
-    "csl-eurb5",   
-    "csl-eurb6",
-    "csl-eurb7",   
-    "csl-eurb8",
-    "csl-eurb9",   
-    "csl-eurm10",
-    "csl-eurm5",   
-    "csl-eurm6",
-    "csl-eurm7",   
-    "csl-eurm8",
-    "csl-eurm9",   
-    "csl-eusb10",
-    "csl-eusb5",   
-    "csl-eusb6",
-    "csl-eusb7",   
-    "csl-eusb8",
-    "csl-eusb9",   
-    "csl-eusm10",
-    "csl-eusm5",   
-    "csl-eusm6",
-    "csl-eusm7",   
-    "csl-eusm8",
-    "csl-eusm9",   
-    "csl-msam10",
-    "csl-msam5",   
-    "csl-msam6",
-    "csl-msam7",   
-    "csl-msam8",
-    "csl-msam9",   
-    "csl-msbm10",
-    "csl-msbm5",   
-    "csl-msbm6",
-    "csl-msbm7",   
-    "csl-msbm8",
-    "csl-msbm9"
+    "csl-cmb10",      "csl-cmbsy10",   "csl-cmbsy6",     "csl-cmbsy7",  
+    "csl-cmbsy8",     "csl-cmbsy9",    "csl-cmbx10",     "csl-cmbx12",  
+    "csl-cmbx5",      "csl-cmbx6",     "csl-cmbx7",      "csl-cmbx8",   
+    "csl-cmbx9",      "csl-cmbxsl10",  "csl-cmbxti10",   "csl-cmcsc10", 
+    "csl-cmcsc8",     "csl-cmcsc9",    "csl-cmdunh10",   "csl-cmex10",  
+    "csl-cmex7",      "csl-cmex8",     "csl-cmex9",      "csl-cmff10",  
+    "csl-cmfi10",     "csl-cmfib8",    "csl-cminch",     "csl-cmitt10", 
+    "csl-cmmi10",     "csl-cmmi12",    "csl-cmmi5",      "csl-cmmi6",   
+    "csl-cmmi7",      "csl-cmmi8",     "csl-cmmi9",      "csl-cmmib10",
+    "csl-cmmib6",     "csl-cmmib7",    "csl-cmmib8",     "csl-cmmib9",  
+    "csl-cmr10",      "csl-cmr12",     "csl-cmr17",      "csl-cmr5",    
+    "csl-cmr6",       "csl-cmr7",      "csl-cmr8",       "csl-cmr9",    
+    "csl-cmsl10",     "csl-cmsl12",    "csl-cmsl8",      "csl-cmsl9",   
+    "csl-cmsltt10",   "csl-cmss10",    "csl-cmss12",     "csl-cmss17",  
+    "csl-cmss8",      "csl-cmss9",     "csl-cmssbx10",   "csl-cmssdc10",
+    "csl-cmssi10",    "csl-cmssi12",   "csl-cmssi17",    "csl-cmssi8",  
+    "csl-cmssi9",     "csl-cmssq8",    "csl-cmssqi8",    "csl-cmsy10",  
+    "csl-cmsy5",      "csl-cmsy6",     "csl-cmsy7",      "csl-cmsy8",   
+    "csl-cmsy9",      "csl-cmtcsc10",  "csl-cmtex10",    "csl-cmtex8",  
+    "csl-cmtex9",     "csl-cmti10",    "csl-cmti12",     "csl-cmti7",   
+    "csl-cmti8",      "csl-cmti9",     "csl-cmtt10",     "csl-cmtt12",  
+    "csl-cmtt8",      "csl-cmtt9",     "csl-cmu10",      "csl-cmvtt10", 
+    "csl-euex10",     "csl-euex7",     "csl-euex8",      "csl-euex9",   
+    "csl-eufb10",     "csl-eufb5",     "csl-eufb6",      "csl-eufb7",   
+    "csl-eufb8",      "csl-eufb9",     "csl-eufm10",     "csl-eufm5",   
+    "csl-eufm6",      "csl-eufm7",     "csl-eufm8",      "csl-eufm9",   
+    "csl-eurb10",     "csl-eurb5",     "csl-eurb6",      "csl-eurb7",   
+    "csl-eurb8",      "csl-eurb9",     "csl-eurm10",     "csl-eurm5",   
+    "csl-eurm6",      "csl-eurm7",     "csl-eurm8",      "csl-eurm9",   
+    "csl-eusb10",     "csl-eusb5",     "csl-eusb6",      "csl-eusb7",   
+    "csl-eusb8",      "csl-eusb9",     "csl-eusm10",     "csl-eusm5",   
+    "csl-eusm6",      "csl-eusm7",     "csl-eusm8",      "csl-eusm9",   
+    "csl-msam10",     "csl-msam5",     "csl-msam6",      "csl-msam7",   
+    "csl-msam8",      "csl-msam9",     "csl-msbm10",     "csl-msbm5",   
+    "csl-msbm6",      "csl-msbm7",     "csl-msbm8",      "csl-msbm9"
 };
 
 
@@ -1602,13 +1500,30 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
+    fixedPitchValid = false;
 }
 
+
+void dviFrame::OnClose(wxCloseEvent &WXUNUSED(event))
+{
+    Destroy();
+#ifdef WIN32
+// Otherwise under XP bad things happen for me. Like the application
+// re-launching.
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
+    exit(0);    // I want the whole application to terminate here!
+#endif
+}
 
 void dviFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 {
     Destroy();
+#ifdef WIN32
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
     exit(0);    // I want the whole application to terminate here!
+#endif
 }
 
 void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
@@ -1725,7 +1640,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
     logprintf("About to delete gc\n");
     delete gc;
-    gc = NULL;
+    gc = NULL; // just to be tidy!
     return;
 }
 
