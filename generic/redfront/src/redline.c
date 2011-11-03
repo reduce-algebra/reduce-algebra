@@ -74,7 +74,7 @@ char *fn_filename_completion_function(const char *, int);
 
 #include <sys/stat.h>
 
-#if LIBEDIT_MAJOR > 2
+#ifdef EL_PROMPT_ESC
 #define PROMPT_IGNORE '@'
 #endif
 
@@ -122,7 +122,7 @@ char *line_histname(void);
 void line_init(void) {
   e = el_init("redfront",stdin,stdout,stderr);
   el_set(e,EL_SIGNAL,0);
-#if LIBEDIT_MAJOR > 2
+#ifdef EL_PROMPT_ESC
   el_set(e,EL_PROMPT_ESC,line_get_prompt,PROMPT_IGNORE);
 #else
   el_set(e,EL_PROMPT,line_get_prompt);
@@ -374,7 +374,7 @@ char *line_color_prompt(char der_prompt[]) {
     char tmp[50];
 
     strcpy(tmp,der_prompt);
-#if LIBEDIT_MAJOR > 2        
+#ifdef EL_PROMPT_ESC
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
 	    PROMPT_IGNORE,0x1B,0,promptcolor+30,9+40,PROMPT_IGNORE,
 	    tmp,
