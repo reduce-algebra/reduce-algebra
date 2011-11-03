@@ -3,6 +3,7 @@
 
 
 gcc  -o bpsl -arch x86_64 -DBPSSIZE=20000000 -G -w  bps.c bpsheap.c echo.c file-status.c float.c \
+  creloc.c \
   os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
    -DLINUX main.o dmain.o -lc -lm 
 
