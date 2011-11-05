@@ -134,6 +134,9 @@ symbolic procedure token!-number x;
                else progn(dotp := t, go to num2)
        else if digit x then go to num1
        else if y = '(!0) and (x eq '!x or x eq '!X) then go to hexnum
+% For whatever original reason this ignores backslashes within numbers. This
+% I guess lets one write 12\34567\89000 and group digits in fives if you like.
+% I can not see this mentioned in the manual and wonder if anybody uses it.
        else if x eq '!\ then progn(readch(), go to num2)
        else if null(x eq '!e or x eq '!E) then go to ret;
       % Case of number with embedded or trailing E.
@@ -206,6 +209,10 @@ symbolic procedure token1;
 % starts with one. In this case I am adjusting the main source either to
 % parenthesize one of the loop limits or to put whitespace around the ":".
 %
+% Therefore when (and if) this is ever activated the case of a single colon
+% will merely be treated as it used to be, while perhaps the usage
+%   package::name
+% can be used for something interesting.
    begin scalar x,y,packname;
         x := crchar!*;
     a:  if seprp x and null(x eq !$eol!$ and !*eoldelimp)
