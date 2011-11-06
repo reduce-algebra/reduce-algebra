@@ -107,7 +107,7 @@ symbolic procedure gcdf1(u,v);
 % "off anygcd" can prevent anything that could even possibly be expensive.
        else if not !*anygcd or
                not num!-exponents u or
-               not num!-exponents v then 1
+               not num!-exponents v then return 1
        else if quotf1(u,v) then return v
        else if quotf1(v,u) then return u;
       w := gcdf2(u,v);
