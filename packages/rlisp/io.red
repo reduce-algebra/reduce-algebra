@@ -84,7 +84,7 @@ symbolic procedure mkfil!* u;
    end;
 
 symbolic procedure in_list1(fl,echop);
-   in_list1a(fl,echop.prefixchars);
+   in_list1a(fl,echop,nil);
 
 symbolic procedure in_list1a(fl,echop,prefixchars);
    begin scalar chan,echo,ochan,w,w1;
