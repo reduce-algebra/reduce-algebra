@@ -765,8 +765,8 @@ symbolic smacro procedure emtch u;
    if atom u then u else (lambda x; if x then x else u) opmtch u;
 
 
-symbolic smacro procedure endstat; 
-   begin scalar x; setq(x,cursym!*); comm1 'end; return {x} end;
+%symbolic smacro procedure endstat; 
+%   begin scalar x; setq(x,cursym!*); comm1 'end; return {x} end;
 
 
 symbolic smacro procedure eofcheck; 
@@ -1074,7 +1074,7 @@ symbolic smacro procedure imports u;
    begin setq(importslist!*,union(u,importslist!*)) end;
 
 
-symbolic smacro procedure in u; in_non_empty_list u;
+% symbolic smacro procedure in u; in_non_empty_list u;
 
 
 symbolic smacro procedure infinityp u; 

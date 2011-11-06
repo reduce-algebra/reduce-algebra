@@ -28,6 +28,13 @@ module tok; % Identifier and reserved character reading.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% Parts of the coding style here look antique and ugly with lots of
+% goto statements. The notation "<< ... >>" for a local block is not
+% used. What is worse is that there are not even "for" and "while" loops.
+% This is not because we do not care about style, but because in the
+% process of bootstrapping Reduce this file is first read by a somewhat
+% minimalist cut-down version of the parser that does not support the
+% full language syntax.
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
         !*quotenewnam semic!* !*report!_colons);
@@ -92,7 +99,9 @@ symbolic procedure readch1;
 % I will not preserve peekchar!* across file-selection (I note that
 % curchr!* is not preserved either). This is OK provided that the Reduce
 % directive to read in a file (ie 'in "filename";') can not properly end in
-% a symbol that has colons at the end of it. 
+% a symbol that has colons at the end of it. And also that the "in" command
+% can not end with something that messed with backslashes. This is UGLY and
+% delicate but probably OK at present. 
       if peekchar!* then progn(x := car peekchar!*,
                               peekchar!* := cdr peekchar!*,
                               return x);
@@ -137,7 +146,7 @@ symbolic procedure token!-number x;
 % For whatever original reason this ignores backslashes within numbers. This
 % I guess lets one write 12\34567\89000 and group digits in fives if you like.
 % I can not see this mentioned in the manual and wonder if anybody uses it.
-       else if x eq '!\ then progn(readch(), go to num2)
+       else if x eq '!\ then progn(readch1(), go to num2)
        else if null(x eq '!e or x eq '!E) then go to ret;
       % Case of number with embedded or trailing E.
       dotp := t;
@@ -190,30 +199,28 @@ symbolic procedure token1;
 %
 % The current syntax for an identifier is that it starts with a letter (or
 % an escaped character) and can continue with letters, digits or underscores.
-% I wish to support identifiers that contain an internal unescaped ":" or "::"
-% (but just one such). In detecting this case I need to be careful that
-% the currently common case as in
-%         assignable:=123;
-% and     label:
-% are not so treated.
+% I wish to support identifiers that contain an internal unescaped "::"
+% (but just one such).
+% When I started considering this I had wondered about also allowing
+% an embedded single ":" too. However it became clear that that would cause
+% trouble in common occuring cases such in
+%         label:x:=y;
+% and     for i:=m:n dp ...
 %
-% This will be an INCOMPATIBLE change as illustrated by the fragment:
-%   ....   label:name:=x ....
-% which in the old world would have been a labelled assignment to "name", but
-% now will become an assignment to the package-decorated symbol "label:name".
-% I believe that this will not be a practical problem and it can always be
-% worked around by putting whitespace after a label.
+% I believe that little existing code will be troubled if double colons are
+% treated specially. The only use of them that I can see in the current source
+% is where gentran enables :: to indicate a range in a declaration. If both
+% ends of the range have alpabetic names then extra whitespace would be
+% required.
 %
-% On checking the Reduce sources another incompatibility that hurts
-% is "for v = n : m do ..." where n ends with an identifier and m
-% starts with one. In this case I am adjusting the main source either to
-% parenthesize one of the loop limits or to put whitespace around the ":".
-%
-% Therefore when (and if) this is ever activated the case of a single colon
-% will merely be treated as it used to be, while perhaps the usage
+% When (and if) this is ever activated the case of a single colon
+% will merely be treated as it used to be (so avoiding incompatibility),
+% while perhaps the usage
 %   package::name
-% can be used for something interesting.
-   begin scalar x,y,packname;
+% can be used for something interesting. But initially package::name will
+% merely denote a name that has embedded colons.
+%
+   begin scalar x,y,z;
         x := crchar!*;
     a:  if seprp x and null(x eq !$eol!$ and !*eoldelimp)
           then progn(x := readch1(), go to a)
@@ -223,7 +230,8 @@ symbolic procedure token1;
          else if x eq '!% and null !*savecomments!* then go to coment
          else if x eq '!! and null(!*micro!-version and null !*defn)
           then go to escape
-         else if x eq '!" then go to string;
+         else if x eq '!" then go to string
+         else if x eq '!\ then go to backslash;
         ttype!* := 3;
         if x eq !$eof!$ then prog2(crchar!* := '! ,filenderr());
         nxtsym!* := x;
@@ -255,15 +263,48 @@ symbolic procedure token1;
     ordinarysym:
         y := intern compress reversip!* y;
 % If I implement a package system I might want to check if the name
-% y here should name onto ppp:y for some package ppp.
+% y here should map onto ppp:y for some package ppp.
         if y = !*line!-marker then nxtsym!* := curline!*
         else nxtsym!* := y;
         crchar!* := x;
     c:  return nxtsym!*;
+    backslash:
+        y := '(!\ e n d !{ r e d u c e !});
+        z := nil;
+    bsloop:
+        z := x . z;
+        x := readch1();
+        y := cdr y;
+        if null y then go to bsfound
+        else if x eq car y then go to bsloop;
+% Here I need to set things back so that all the peeked-ahead stuff is
+% put ready for re-scanning and I can merely return the "\".
+        peekchar!* := cdr reverse (x . z); 
+        ttype!* := 3;
+        crchar!* := readch1();
+        nxtsym!* := '!\;
+        return nxtsym!*;
+    bsfound:
+% At this stage I have just found the text "\end{reduce}" and what I will do
+% is to discard all stuff until I find either end of file of "\begin{reduce}".
+        y := '(!\ b e g i n !{ r e d u c e !});
+        ttype!* := 3;
+    bssrch:
+        if x eq !$eof!$ then progn(
+           crchar!* := '! ,
+           filenderr(),
+           nxtsym!* := x,
+           return x);
+% If I have found \begin{reduce} go back to scanning input normally.
+        if null y then go to a;
+        z := x;
+        x := readch1();
+        if not (z eq car y) then go to bsfound;
+        y := cdr y;
+        go to bssrch;
     maybepackage:                               % Seen abc:
         x := readch1();
-        if x eq '!: then go to maybeextpackage
-        else if liter x then go to ispackage;
+        if x eq '!: then go to maybeextpackage;
         peekchar!* := list x;
         x := '!:;
         go to ordinarysym; 
@@ -273,53 +314,10 @@ symbolic procedure token1;
         peekchar!* := list('!:, x);
         x := '!:;
         go to ordinarysym;
-    ispackage:
-% At present I merely (optonally) report the dubious name...
-           peekchar!* := list x;
-           x := '!:;
-           if !*report!_colons then
-             lprim list("Symbol with colon in starts as",
-                        compress reverse y);
-           go to ordinarysym;
-% what follows lexes the full qualifies name but does not actually look
-% it up anywhere.
-        packname := intern compress reverse y;
-        y := '!: . '!! . y;
-    packmore:
-        y := x . y;
-        if digit (x := readch1()) or liter x then go to packmore
-         else if x eq '!! then go to packescape
-         else if x eq '!- and !*minusliter
-          then progn(y := '!! . y, go to packmore)
-         else if x eq '!_ then go to packmore;    % Allow _ as letter.
-        y := intern compress reversip!* y;
-        lprim list("Name with colon in detected:", y);
-% Here the symbol was of the form ppp:nnn and the variable packname holds
-% ppp, while y is now the full token ppp!:nnn. I could as relevant map
-% the name depending on symbols tagged internal or external in the package.
-% Right now I am in a trransitional state and do not do ANYTHING beyond
-% accepting names with unescaped colons within them.
-        nxtsym!* := y;
-        crchar!* := x;
-        return nxtsym!*;
-    packescape:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
-           y := x . y;
-           x := readch1();
-           !*raise := raise
-        end;
-        go to packmore;
     isextpackage:
-           peekchar!* := list('!:, x);
-           x := '!:;
-           if !*report!_colons then
-             lprim list("Symbol with double colon in starts as",
-                         compress reverse y);
-           go to ordinarysym;
-% Again what follows lexes a name of the form ppp::xxx
-        packname := intern compress reverse y;
+% What follows lexes a name of the form ppp::xxx
+        z := intern compress reverse y;
+% In case it is useful I set z to the name of the "package" part ppp
         y := '!: . '!! . '!: . '!! . y;
     extpackmore:
         y := x . y;
@@ -329,9 +327,13 @@ symbolic procedure token1;
           then progn(y := '!! . y, go to extpackmore)
          else if x eq '!_ then go to extpackmore;    % Allow _ as letter.
         y := intern compress reversip!* y;
+% At this stage I will always display a message reporting what I have seen.
         lprim list("Name with double colon in detected:", y);
         nxtsym!* := y;
         crchar!* := x;
+% This is where I merely return the symbol with an embedded "::". If I
+% ever implement a genuine package system this should be where I put a
+% major hook that manages extra symbol tables.
         return nxtsym!*;
     extpackescape:
         begin scalar raise,!*lower;

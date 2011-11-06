@@ -224,12 +224,17 @@ symbolic procedure update!_prompt;
    end;
 
 symbolic procedure begin1;
+   begin1a nil;
+
+
+symbolic procedure begin1a prefixchars;
    begin scalar parserr,result,x;
       otime!* := time();
       % The next line is that way for bootstrapping purposes.
       if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
       otime1!* := otime2!* := otime3!* := otime!*;
       ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
+      peekchar!* := prefixchars;
       cursym!* := '!*semicol!*;
   a:  if terminalp()
         then progn((if !*nosave!* or statcounter=0 then nil

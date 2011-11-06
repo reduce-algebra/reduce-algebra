@@ -55,12 +55,18 @@ symbolic procedure infile u;
 
 symbolic procedure in u; in_non_empty_list u;  % REDUCE 3 hook.
 
-symbolic procedure in_non_empty_list u;
+symbolic procedure in_tex u;
+   in_non_empty_list1(u,
+      '(!\ e n d !{ r e d u c e !}));
+
+symbolic procedure in_non_empty_list u; in_non_empty_list1(u, nil);
+
+symbolic procedure in_non_empty_list1(u, prefixchars);
    begin scalar echop;
       echop := null(semic!* eq '!$); % Record echo character from input.
       if null ifl!* then techo!* := !*echo;   % Terminal echo status.
       if !*reduce4 then u := value u;
-      for each fl in u do in_list1(fl,echop);
+      for each fl in u do in_list1a(fl,echop,prefixchars);
       if ipl!* then ifl!* := car ipl!* else ifl!* := nil;
       if ifl!* then curline!* := caddr ifl!*;
       if !*reduce4 then return mkobject(nil,'noval)
@@ -78,6 +84,9 @@ symbolic procedure mkfil!* u;
    end;
 
 symbolic procedure in_list1(fl,echop);
+   in_list1a(fl,echop.prefixchars);
+
+symbolic procedure in_list1a(fl,echop,prefixchars);
    begin scalar chan,echo,ochan,w,w1;
       echo := !*echo;   % Save current echo status.
       if !*reduce4 then if type fl neq 'string then typerr(fl,'string)
@@ -107,7 +116,7 @@ symbolic procedure in_list1(fl,echop);
       ifl!* := list(fl,chan,1);
       ipl!* := ifl!* . ipl!*;  % Add to input file stack.
       !*echo := echop;
-      begin1();
+      begin1a(prefixchars);
       rds ochan;
       close chan;
       !*echo := echo;   % Restore echo status.
@@ -163,11 +172,11 @@ symbolic procedure shut_non_empty_list u;
       if !*reduce4 then return mkobject(nil,'noval)
    end;
 
-deflist ('((in rlis) (out rlis) (shut rlis)),'stat);  % REDUCE 3 only.
+deflist ('((in rlis) (in_tex rlis) (out rlis) (shut rlis)),'stat);  % REDUCE 3 only.
 
-flag ('(in out shut),'eval);
+flag ('(in in_tex out shut),'eval);
 
-flag ('(in out shut),'ignore);
+flag ('(in in_tex out shut),'ignore);
 
 endmodule;
 
