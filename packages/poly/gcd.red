@@ -28,7 +28,8 @@ module gcd; % Greatest common divisor routines.
 %
 
 
-fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heugcd !*mcd asymplis!* dmode!*);
+fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heugcd !*mcd asymplis!* dmode!*
+        !*combineexpt);
 
 switch anygcd,ezgcd,heugcd;
 !*anygcd := t;
@@ -76,7 +77,7 @@ symbolic procedure gcdf!*(u,v);
 symbolic procedure gcdf(u,v);
    % U and V are standard forms.
    % Value is the gcd of U and V, complete only if *GCD is true.
-   begin scalar !*exp,!*rounded;
+   begin scalar !*exp,!*rounded,mcdsaved;
       % The next line was to prevent numerators moving to denominators
       % as in weight x=1,y=2$ wtlevel 4$ wtest:=(z^4-z^3*y-z^3*x+z^2*y^2
       % +2*z^2*x*y+z^2*x^2-3*z*x^2*y-z*x^3+x^4)/z^5; wtest where z=>a;
@@ -88,8 +89,10 @@ symbolic procedure gcdf(u,v);
       %       or dmode!* memq '(!:rn!: !:rd!:)  % Should be generalized.
               or dmode!* % I don't know what to do in this case.
               or free!-powerp u or free!-powerp v
-             then gcdf1(u,v)
+             then <<if !*combineexpt then !*mcd := t;
+                    gcdf1(u,v)>>
             else ezgcdf(u,v);
+      !*mcd := mcdsaved;
       return if minusf u then negf u else u
    end;
 
