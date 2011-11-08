@@ -84,6 +84,7 @@ symbolic procedure gcdf(u,v);
       % However, the results are formally correct without it, and it
       % causes other problems.
       % if wtl!* then return 1;
+      mcdsaved := !*mcd;
       !*exp := t;
       u := if domainp u or domainp v or not !*ezgcd
       %       or dmode!* memq '(!:rn!: !:rd!:)  % Should be generalized.
