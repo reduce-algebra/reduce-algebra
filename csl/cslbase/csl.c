@@ -35,9 +35,54 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/*
+ * There are a number of comments here introduced with exclamation
+ * mark after the "/" and "*" that start them. These contain material
+ * to be extracted to form documentation.
+ */
+
+/*!!! csl
+ * \documentclass[a4paper,11pt]{article}
+ * \title{CSL reference}
+ * \author{A C Norman}
+ * \begin{document}
+ * \maketitle
+ */
+
+/*!! intro [00] Introduction
+ * This is reference material for CSL. The Lisp identifiers mentioned here
+ * are the ones that are initially present in a raw CSL image. Some
+ * proportion of them are not really intended to be used by end-users but
+ * are merely the internal components of some feature.
+ */
+
+/*!! options [01] Command-line options
+ * The items shown here are the ones that are recognized on the CSL command
+ * line. In general an option that requires an argument can be written as either
+ * {\ttfamily -x yyy} or as {\ttfamily -xyyy}. Arguments should be case
+ * insensitive. 
+ */
+
+/*!! predef [02] Predefined variables
+ */
+
+/*!! lispsys [03] Items that can appear in {\ttfamily lispsystem!*}
+ */
+
+/*!! flags [04] Flags and Properties
+ */
+
+/*!! fns [05] Functions and Special Forms
+ */
 
 
-/* Signature: 4aaa2c4f 22-Aug-2011 */
+
+
+
+
+
+
+/* Signature: 0e5059a2 10-Nov-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1511,20 +1556,38 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * issue a message about unrecognised options that will help anybody caught
  * by it.
  */
+/*! options --
+ * If the application is run in console mode then its standard output could
+ * be redirected to a file using shell facilities. But the {\ttfamily --}
+ * directive (followed by a file name) redirects output within the Lisp rather
+ * than outside it. If this is done a very limited capability for sending
+ * progress or status reports to stderr (or the title-bar when running in windowed
+ * mode) remains via the {\ttfamily report!-right} function.
+ *
+ * The {\ttfamily -w} option may frequently make sense in such cases, but if that
+ * is not used and the system tries to run in a window it will create it
+ * starting off minimised.
+ */
         case '-':
                 if (c2 != 0) 
                 {   w = &opt[2];
-/*
- * The option "--texmacs" has been detected earlier in fwin.c, so I just
- * detect and ignore it here.
+/*! options --texmacs
+ * If CSL/Reduce is launched from texmacs this command-line flag should be
+ * used to arrange that the {\ttfamily texmacs} flag is set in
+ * {\ttfamily lispsystem!*}, and the code may then do special things.
  */
+
+
                     if (strcmp(w, "texmacs") == 0)
                     { }
-/*
- * "--help" will now try to produce a summary of command-line options. I
- * bet that anything I write will not really be enough, but here is a first
- * attempt!
+/*! options --help
+ * It is probably obvious what this option does! Note that on Windows the
+ * application was linked as a windows binary so it carefully creates a
+ * console to display the help text in, and organizes a delay to give
+ * people a chance to read it.
  */
+
+
                     else if (strcmp(w, "help") == 0)
                     {
 /*
@@ -1701,30 +1764,44 @@ term_printf(
                 }
                 continue;
 
-/*
- * -a is a curious option, not intended for general or casual use. If given
- * it causes the (batchp) function to return the opposite result from
- * normal!  Without "-a" (batchp) returns T either if at least one file
- * was specified on the command line, or if the standard input is "not
- * a tty" (under some operating systems this makes sense - for instance
- * the standard input might not be a "tty" if it is provided via file
- * redirection).  Otherwise (ie primary input is directly from a keyboard)
- * (batchp) returns nil.  Sometimes this judgement about how "batch" the
- * current run is will be wrong or unhelpful, so "-a" allows the user to
- * coax the system into better behaviour.  I hope that this is never used!
- * At one stage this option was called "-b" not "-a" (so I will now pretend
- * that "-a" is for "alternate" or some such nonsense.
+/*! options --my-path
+ * At some time I had felt the need for this option, but I now forget what I
+ * expected to use it for! It leads the executable to display the fully
+ * rooted name of the directory it was in and then terminate. It may be useful
+ * in some script?
+ */
+
+
+
+/*! options -a
+ * {\ttfamily -a} is a curious option, not intended for general or casual use.
+ * If given it causes the {\ttfamily (batchp)} function to return the opposite
+ * result from normal!  Without ``{attfamily -a}'' {\ttfamily (batchp)} returns
+ * {\ttfamily T} either if at least one file was specified on the command line,
+ * or if the standard input is ``not a tty'' (under some operating systems this
+ * makes sense -- for instance the standard input might not be a ``tty'' if it
+ * is provided via file redirection).  Otherwise (ie primary input is directly
+ * from a keyboard) {\ttfamily (batchp)} returns {\ttfamily nil}.  Sometimes
+ * this judgement about how ``batch'' the current run is will be wrong or
+ * unhelpful, so {\ttfamily -a} allows the user to coax the system into better
+ * behaviour.  I hope that this is never used!
  */
         case 'a':
                 batch_flag = YES;
                 continue;
-/*
- * -b tells the system to avoid any attempt to recolour prompts and
- * input text. It will mainly be needed on X terminals that have been set up
- * so that they use colours that make the defaults here unhelpful.
+/*! options -b
+ * {\ttfamily -b} tells the system to avoid any attempt to recolour prompts
+ * and input text. It will mainly be needed on X terminals that have been
+ * set up so that they use colours that make the defaults here unhelpful.
  * Specifically white-on-black and so on.
- * -b can be followed by colour specifications to make things yet
- * more specific.
+ * {\ttfamily -b} can be followed by colour specifications to make things yet
+ * more specific. It is supposed to be the idea that three colours can be
+ * specified after it for output, input and prompts, with the letters KRGYbMCW
+ * standing for blacK, Red, Green, Yellow, blue, Magenta, Cyan and White.
+ * This may not fully work yet!
+ */
+
+
  */
         case 'b':
 /*
@@ -1734,17 +1811,13 @@ term_printf(
  */
                continue;
 
-/*
- * The option "-C" just prints a dull and unimaginative copyright notice -
- * having this option in there will tend to ensure that a copyright
- * message is embedded in the object code somehow, while with luck nobody
- * will be bothered too much by the fact that there is a stray option to get
- * it displayed.  Note that on some systems there is a proper character
- * for the Copyright symbol... but there is little agreement about what
- * that code is! Furthermore to avoid needing to include Copyright statements
- * on behalf of any and all LGPL components I will make this an authorship
- * statement rather than a copyright claim!
+/*! options -c
+ * Displays a notice relating to the authorship of CSL. Note that this
+ * is an authorship statement not a Copyright notice, because if any
+ * (L)GPL code is involved that would place requirements on what was
+ * displayed in a Copyright Notice.
  */
+
         case 'c':
                 fwin_restore();
                 term_printf("\nCSL was coded by Codemist Ltd, 1988-2010\n");
@@ -1752,12 +1825,14 @@ term_printf(
                 term_printf("See also --help\n");
                 continue;
 
-/*
- * -D name=val   defines a symbol at the start of a run
- * I permit either
- *                  -Dname=val
- * or               -D name=val
+/*! options -d
+ * A command line entry {\ttfamily -Dname=value} or {\ttfamily -D name=value}
+ * sets the value of the named lisp variable to the value (as a string).
+ * Note that the value set is a {\em string} so if you wish to retrieve
+ * it and use it as a symbold or number within your code you will have to
+ * perform some conversion.
  */
+
         case 'd':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1772,14 +1847,11 @@ term_printf(
                 }
                 continue;
 
-/*
- *                      -E
- * This option is for an EXPERIMENT.  It may do different things in different
- * releases of CSL. In most cases it will not do anything! And certainly
- * I may change what it does without notice or upwards compatibility. Right
- * now it controls a way that can limit the loading of dynamically loadable
- * native code, and I need that for performance measurement and debugging.
+/*! options -e
+ * A ``spare'' option used from time to time to activate experiments within
+ * CSL.
  */
+
         case 'e':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1789,14 +1861,17 @@ term_printf(
                 continue;
 
 #if 0
-/*
- * I am REMOVING this option since I suspect that nobody is using it. If they
- * are they may scream at me and I camn reinstate it! If I leave the code in
- * for now it may inspire somebody to think about whether something of this
- * nature is really useful. By removing this I free up the option "-f", and
- * it may be that having a spare option is more important that being able
- * to hadle sockets.
+
+/*! options -f
+ * At one stage CSL could run as a socket server, and {\ttfamily -f portnumber}
+ * activated that mode. {\ttfamily -f-} used a default port, 1206 (a number
+ * inspired by an account number on Titan that I used in the 1960s). The code
+ * that supports this may be a useful foundation to others who want to make a
+ * network service out of this code-base, but is currently disabled.
  */
+
+
+
 #ifdef SOCKETS
         case 'f':
 /*
@@ -1983,16 +2058,13 @@ term_printf(
 #endif /* SOCKETS */
 #endif /* 0 */
 
-/*
- *                      -G
- * is a debugging option - it sets !*backtrace to true, which applications
- * may inspect when they want to do errorsets etc.  These days I will
- * make it FORCE all errors to be noisy whatever the user tries to do! The
- * rationale for that is that some user code may have said
- *            (errorset X nil nil)
- * and then errors within X become very hard to track. The "-g" option
- * overrides the "nil nil" bit!
+/*! options -g
+ * In line with the implication of this option for C compilers, this enables
+ * a debugging mode. It sets a lisp variable {\ttfamily !*backtrace} and
+ * arranges that all backtraces are displayed notwithstanding use of
+ *{\ttfamily errorset}.
  */
+
         case 'g':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                     symbols_to_define[number_of_symbols_to_define] =
@@ -2006,13 +2078,16 @@ term_printf(
                 errorset_min = 3;
                 errorset_max = 3;
                 continue;
-/*
- *                      -H
- * render fonts on X host rather than X client (ie disable use of Xft and
- * and Xrender if they might otherwise have been in use). This should have
- * no effect on Windows and no effect if the system that the code was built
- * on did not support Xft.
+
+/*! options -h
+ * This option is a left-over. When the X-windows version of the code first
+ * started to use Xft it viewed that as optional and could allow a build even when
+ * it was not available. And then even if Xft was detected and liable to be used
+ * by default it provided this option to disable its use. The remnants of the
+ * switch that disabled use of Xft (relating to fonts living on the Host or
+ * the Server) used this switch, but it now has no effect.
  */
+
         case 'h':
 #ifndef HAVE_LIBWX
 /*
@@ -2029,11 +2104,18 @@ term_printf(
  */
                 continue;
 
-/*
- * -I is used to specify an image file to be used when CSL starts up.
- * The case -I- indicated the "standard" file associated with this
- * executable binary.  Several images can be given.
+/*! options -i
+ * CSL and Reduce use image files to keep both initial heap images and
+ * ``fasl'' loadable modules. By default if the executable launched has some name,
+ * say xxx, then an image file xxx.img is used. But to support greater
+ * generality {\ttfamily -i} introduces a new image, {\ttfamily -i-} indicates
+ * the default one and a sequence of such directives list image files that are
+ * searched in the order given. These are read-only. The similar option
+ * {\ttfamily -o} equally introduces image files that are scanned for input, but
+ * that can also be used for output. Normally there would only be one
+ * {\ttfamily -o} directive.
  */
+
         case 'i':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2048,12 +2130,12 @@ term_printf(
                 }
                 continue;
 
-/*
- * -J enabled the "track dependencies" hack that I have. Every time
- * that a file is opened for reading it records the file-name concerned
- * and at the end of everything it dumps a record of all the distinct
- * files to the named place, as in "-J fileuse.dat"
+/*! options -j
+ * Follow this directive with a file-name, and a record of all the files read
+ * during the Lisp run will be dumped there with a view that it can be included
+ * in a Makefile to document dependencies.
  */
+
         case 'j':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2061,20 +2143,25 @@ term_printf(
                 dependency_file = w;
                 continue;
 
-/*
- * -K nnn sets the size of heap to be used.  If it is given then that much
+/*! options -k
+ * {\ttfamily -K nnn} sets the size of heap to be used.  If it is given then that much
  * memory will be allocated and the heap will never expand.  Without this
  * option a default amount is used, and (on many machines) it will grow
  * if space seems tight.
- * The extended version of this option is "-K nnn/ss" and then ss is the
- * number of "CSL pages" to be allocated to the Lisp stack. The default
+ *
+ * The extended version of this option is {\ttfamily -K nnn/ss} and then ss is the
+ * number of ``CSL pages'' to be allocated to the Lisp stack. The default
  * value (which is 1) should suffice for almost all users, and it should
  * be noted that the C stack is separate from and independent of this one and
  * it too could overflow.
- * A form like -K6000K              indicates that many kilobytes
- *             -K200M or just -K200 indicates that many megabytes
- *             -K1.6G               indicates that many gigabytes
+ *
+ * A suffix K, M or G on the number indicates units of kilobytes, megabytes or
+ * gigabytes, with megabytes being the default. So {\ttfamily -K200M} might
+ * represent typical usage for common-sized computations. In general CSL
+ * will automatically expand its heap, and so it should normally never be
+ * necessary to use this option.
  */
+
         case 'k':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2153,11 +2240,12 @@ term_printf(
                 }
                 continue;
 
-/*
- * -L <logfile> arranges that a transcript of the standard output is
- * sent to the given file, just as if (spool '<logfile>) had been executed
- * at the start of the run.
+/*! options -l
+ * This is to send a copy of the standard output to a named log file. It is
+ * very much as if the Lisp function {\ttfamily (spool ``logfile'')} had been
+ * invoked at the start of the run.
  */
+
         case 'l':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2195,6 +2283,14 @@ term_printf(
  * This interrupts after n memory records when a reference in the (inclusive)
  * range l..h is next made.
  */
+/*! options -m
+ * Memory trace mode. An option that represents an experiment from the past,
+ * and no longer reliably in use. It make it possible to force an
+ * exception at stages whene reference to a specified part of memory was made
+ * and that could be useful for some low level debugging. It is not supported
+ * at present.
+ */
+
         case 'm':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2210,22 +2306,27 @@ term_printf(
                 continue;
 #endif
 
-/*
- * -N tells CSL that even if the image being loaded contains a restart-
- * function this should be ignored, and Lisp should run the default
- * read-eval-print loop. The only expected use for this is when an image
- * has been created but it is seriously broken, so the way it would
- * usually restart would crash - then "-N" may allow a suitable expert to
- * test and diagnose the trouble at the Lisp level. Ordinary users are
- * NOT expected to want to know about this!
+
+/*! options -n
+ * Normally when the system is started it will run a ``restart function'' as
+ * indicated in its heap image. There can be cases where a heap image has been
+ * created in a bad way such that the saved restart function always fails
+ * abruptly, and hence working out what was wrong becomes hard. In such cases
+ * it may be useful to give the {\ttfamily -n} option that forces CSL to
+ * ignore any startup function and merely always begin in a minimal Lisp-style
+ * read-eval-print loop. This is intended for experts to do disaster recovery
+ * and diagnosis of damaged image files.
  */
+
         case 'n':               /* Ignore restart function (-N) */
                 ignore_restart_fn = YES;
                 continue;
 
-/*
- * -O <file>  specifies an image file for output (via FASLOUT or PRESERVE).
+/*! options -o
+ * See {\ttfamily -i}. This specifies an image file used for output via
+{\ttfamily faslout} and {\ttfamily reserve}.
  */
+
         case 'o':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2242,9 +2343,11 @@ term_printf(
                 }
                 continue;
 
-/*
- * -P is reserved for profile options.
+/*! options -p
+ * If a suitable profile option gets implemented one day this will activate it,
+ * but for now it has no effect.
  */
+
         case 'p':
 /*
  * Please implement something for your favourite system here... what I would
@@ -2254,9 +2357,11 @@ term_printf(
                 term_printf("Unimplemented option \"-%c\"\n", c1);
                 continue;
 
-/*
- * -Q selects "quiet" mode.  See -V for the converse.
+/*! options -q
+ * This option sets {\ttfamily !*echo} to {\ttfamily nil} and switches off
+ * garbage collector messages to give a slightly quieter run.
  */
+
         case 'q':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
 /*
@@ -2273,11 +2378,18 @@ term_printf(
                 }
                 continue;
 
-/*
- * -R nnn   sets the initial random seed, for reproducible runs.  -R 0
- * (the default) sets the initial seed based on the time of day etc.
- * The version -R  nnn,mmm makes it possible to pass 64-bits of seed info.
+/*! options -r
+ * The random-number generator in CSL is normally initialised to a value
+ * based on the time of day and is hence not reproducible from run to run.
+ * In many cases that behavious is desirable, but for debugging it can be useful
+ * to force a seed. The directive {\ttfamily -r nnn,mmm} sets the seed to
+ * up to 64 bits taken from the values nnn and mmm. The second value if optional,
+ * and specifying {\ttfamily -r0}  explicitly asks for the non-reproducible
+ * behaviour (I hope). Note that the main Reduce-level random number source is
+ * coded at a higher level and does not get reset this way -- this is the
+ * lower level CSL generator.
  */
+
         case 'r':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2288,11 +2400,11 @@ term_printf(
                 }
                 continue;
 
-/*
- * -S  sets the variable !*plap, which causes the compiler to list the
- * bytecodes that it generates. This is probably frivolous but is
- * provided inspired by the typical C compilers "cc -S" option.
+/*! options -s
+ * Sets the Lisp variable {\ttfamily !*plap} and hence the compiler generates
+ * an assembly listing.
  */
+
         case 's':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                     symbols_to_define[number_of_symbols_to_define] =
@@ -2304,17 +2416,17 @@ term_printf(
                     term_printf("Too many requests: \"-S\" ignored\n");
                 }
                 continue;
-/*
- * -T name     reports the time-stamp on the named module, and then
- *             exits. This is for use in perl scripts and the like, and is
- *             needed because the stamps on modules within an image or
- *             library file are not otherwise instantly available.
+/*! options -t
+ * {\ttfamily -t name} reports the time-stamp on the named module, and then
+ * exits. This is for use in perl scripts and the like, and is
+ * needed because the stamps on modules within an image or
+ * library file are not otherwise instantly available.
  *
- *             Note that especially on windowed systems it may be
- *             necessary to use this with "-- filename" since the information
- *             generated here goes to the default output unit, which in
- *             some cases is just the screen.
+ * Note that especially on windowed systems it may be necessary to use this
+ * with {\ttfamily -- filename} since the information generated here goes to
+ * the default output, which in some cases is just the screen.
  */
+
         case 't':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2322,9 +2434,12 @@ term_printf(
                 module_enquiry = w;
                 continue;
 
-/*
- * -U name     undefines the symbol <name> at the start of the run
+/*! options -u
+ * See {\ttfamily -d}, but this forcibly undefines a symbol. There are probably
+ * very very few cases where it is useful since I do not have a large
+ * number of system-specific predefined names.
  */
+
         case 'u':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -2338,9 +2453,11 @@ term_printf(
                     term_printf("Too many \"-U\" requests: ignored\n");
                 }
                 continue;
-/*
- * -V selects "verbose" options at the start of the run
+/*! options -v
+ * An option to make things mildly more verbose. It displays more of a banner
+ * at startup and switches garbage collection messages on.
  */
+
         case 'v':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
 /*
@@ -2358,10 +2475,25 @@ term_printf(
                 continue;
     
 #ifdef WINDOW_SYSTEM
-/*
- * On systems where I can run in either windowed or command-line mode this
- * flag controls that aspect of behaviour.
+/*! options -w
+ * On a typical system if the system is launched it creates a new window and uses
+ * its own windowed intarface in that. If it is run such that at startup the
+ * standard input or output are associated with a file or pipe, or under X the
+ * variable {\ttfamily DISPLAY} is not set it will try to start up in console
+ * mode. The flag {\ttfamily -w} indicates that the system should run in console
+ * more regadless, while {\ttfamily -w+} attempts a window even if that seems
+ * doomed to failure. When running the system to obey a script it will often make
+ * sense to use the {\ttfamily -w} option. Note that on Windows the system is
+ * provided as two separate (but almost identical) binaries. For example the
+ * file {\ttfamily csl.exe} is linked in windows mode. A result is that if
+ * launched from the command line it detaches from its console, and if launched
+ * by double-clicking it does not create a console. It is in fact very ugly when
+ * double clicking on an application causes an unwanted console window to appear.
+ * In contrast {\ttfamily csl.com} is a console mode version of just the same
+ * program, so when launched from a command line it can communicate with the
+ * console in the ordinary expected manner.
  */
+
         case 'w':
 /*
  * I need to detect and process this flag especially early, and so by the time
@@ -2376,13 +2508,15 @@ term_printf(
                 continue;
 #endif
 
-/*
- * -x is an "undocumented" option intended for use only by system
- * support experts - it disables trapping if segment violations by
- * errorset and so makes it easier to track down low level disasters -
- * maybe!  Only those who have access to the source code can make
- * good use of the -X option, so it is only described here!
+/*! options -x
+ * {\ttfamily -x} is an option intended for use only by system
+ * support experts -- it disables trapping if segment violations by
+ * errorset and so makes it easier to track down low level disasters --
+ * maybe!  This can be valuable when running under a debugger since if the
+ * code traps signals in its usual way and tries to recover it can make it a lot
+ * harder to find out just what was going wrong.
  */
+
         case 'x':
                 segvtrap = NO;
                 continue;
@@ -2394,6 +2528,15 @@ term_printf(
  * This was part of the Internationalisation effort for CSL but I repeat
  * that it is no longer supported.
  */
+/*! options -y
+ * {\ttfamily -y } sets the variable {\ttfamily !*hankaku}, which causes the
+ * lisp reader convert a Zenkaku code to Hankaku one when read. I leave this
+ * option decoded on the command line even if the Kanji support code is not
+ * otherwise compiled into CSL just so I can reduce conditional compilation.
+ * This was part of the Internationalisation effort for CSL bu this is no longer
+ * supported.
+ */
+
         case 'y':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                     symbols_to_define[number_of_symbols_to_define] =
@@ -2403,11 +2546,18 @@ term_printf(
                     term_printf("Too many requests: \"-Y\" ignored\n");
                 continue;
 
-/*
- * -Z tells CSL that it should not load an initial heap image, but should
- * run in "cold start" mode.  This is only intended to be useful for
- * system builders.
+/*! options -z
+ * When bootstrapping it is necessary to start up the system for one initial time
+ * without the benefit of any image file at all. The option {\ttfamily -z} makes
+ * this happen, so when it is specified the system starts up with a minimal
+ * environment and only those capabilities that are present in the CSL
+ * kernel. It will normally make sense to start loading some basic Lisp
+ * definitions rather rapidly. The files {\ttfamily compat.lsp},
+ * {\ttfamily extras.lsp} and {\ttfamily compiler.lsp} have Lisp source for the
+ * main things I use, and once they are loaded the Lisp compiler can be used
+ * to compile itself.
  */
+
         case 'z':               /* Cold start option -z */
                 restartp = NO;
                 continue;

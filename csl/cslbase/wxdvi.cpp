@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0fc2143d 02-Nov-2011 */
+/* Signature: 761e6706 09-Nov-2011 */
 
 
 
@@ -67,7 +67,11 @@
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <wingdi.h>
+if 0
+// But gdiplus.h is not automatically available with all the compilers
+// that I use...
 #include <gdiplus.h>
+#endif
 #include <io.h>
 #endif  // WIN32
 
@@ -1601,7 +1605,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
                       (double)window.GetHeight());
     logprintf("background drawn\n");
 
-#ifdef WIN32
+#if defined WIN32 && 0
 // The Windows default behaviour fails to antialias some of the cmex10
 // tall characters, and so unless I force antialiasing here I get MOST
 // symbols rendered nicely, but big integral signs and parentheses badly

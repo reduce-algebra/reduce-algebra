@@ -76,6 +76,14 @@
    (symbol!-set!-env 'logeqv 9))
 
 (make!-special '!!fleps1)
+
+%%! predef [!fleps] !!fleps1
+%% There is a function safe!-fp!-plus that performs floating point
+%% arithmetic but guarantees never to raise an exception. This value was
+%% at one stage related to when small values created there got truncated to zero,
+%% but the current code does not use the Lisp variable at all and instead does
+%% things based on the bitwise representation of the numbers.
+
 (make!-special '!!plumax)
 (make!-special '!!plumin)
 (make!-special '!!timmax)
@@ -103,7 +111,7 @@
 (make!-global 'crbuf!*)
 
 (make!-global 'blank)
-(make!-global ' !$eol!$)
+(make!-global '!$eol!$)
 (make!-global 'tab)
 (make!-global '!$eof!$)
 (make!-global 'esc!*)
@@ -127,10 +135,28 @@
 % relevance beyond the initial build stages of this Lisp. In particular they
 % have little or no resemblance to any widely used character code schemes.
    (setq blank   (compress (list '!! (special!-char 0))))
+%%! predef [blank] blank
+%% The value of this variable is an space or blank character. This
+%% might otherwise be written as ''{\ttfamily ! }''.
+
    (setq !$eol!$ (compress (list '!! (special!-char 1))))
+%%! predef [$eol$] !\$eol!\$
+%% The value of this variable is an end-of-line character.
+
    (setq tab     (compress (list '!! (special!-char 3))))
+%%! predef [tab] tab
+%% The value of this variable is a tab character.
+
    (setq esc!*   (compress (list '!! (special!-char 9))))
+%%! predef [esc*] esc!*
+%% The value of this variable is the character ``escape''. As a non-printing
+%% character use of this is to be viewed as delicate.
+
    (setq !$eof!$ (special!-char 8))
+%%! predef [$eof$] !\$eof\!$
+%% The value of this variable is a pseudo-character returned from various
+%% read functions to signal end-of-file.
+
    nil)
 
 (setq crbuf!* (list !$eol!$))    % may not be necessary

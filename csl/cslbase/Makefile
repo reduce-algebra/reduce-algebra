@@ -7,4 +7,11 @@ csl.pdf:	csl.tex
 lispfile:
 	./lispfile.sh
 
+
+doxtract:	doxtract.c
+	gcc doxtract.c -o doxtract
+
+csl.tex:	doxtract
+	./doxtract -p csl -o csl.tex *.h *.c *.cpp *.red *.lsp
+
 # end of Makefile in cslbase
