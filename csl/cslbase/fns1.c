@@ -40,7 +40,8 @@
 #include "headers.h"
 
 
-
+/*!!! csl
+*/
 
 /*****************************************************************************/
 /*      Some basic functions                                                 */
@@ -228,6 +229,19 @@ Lisp_Object list3(Lisp_Object a, Lisp_Object b, Lisp_Object c)
  * are fairly important for performance...
  */
 
+/*! fns car expr
+ * For a non-empty list the function {\ttfamily car} will return the
+ * first element. For a dotted pair (created using {\ttfamily cons})
+ * it extracts the first component. This is the fundamental low-level
+ * data structure access function in Lisp. See {\ttfamily cdr} for the
+ * function that returns the tail or a list or the second component of
+ * a dotted pair. In CSL any attempt to tape {\ttfamily car} of an atom
+ * should be detected and will be treated as an error. If CSL had been
+ * compiled in Common Lisp mode (which is now not probable) a special
+ * exemption would apply and {\ttfamily car} and {\ttfamily} cdr of the
+ * empty lisp {\ttfamily nil} would be {\ttfamily nil}.
+ */
+
 Lisp_Object Lcar(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -239,6 +253,12 @@ Lisp_Object Lcar(Lisp_Object nil, Lisp_Object a)
  * (car* a) = (car a) if a is non-atomic, but just a otherwise.
  */
 
+/*! fns [car*} car!* expr
+ * This function behaves like {\ttfamily car} except that if its argument
+ * is atomic then the argument is returned unaltered rather than that case
+ * being treated as an error.
+ */
+
 Lisp_Object Lcar_star(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -246,12 +266,25 @@ Lisp_Object Lcar_star(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns cdr expr
+ * See {\ttfamily car}.
+ */
+
 Lisp_Object Lcdr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns caar \ldots cddddr expr
+ * Names that start with {\ttfamily c}, then have a sequence of
+ * {\ttfamily a} or {\ttfamily d}s and finally {\ttfamily r} provide
+ * shorthand functions for chains of uses of {\ttfamily car} and
+ * {\ttfamily cdr}. Thus for instance
+ * {\ttfamily (cadar x)} has the same meaning as
+ * {\ttfamily (car (cdr (car x)))}.
+ */
 
 Lisp_Object Lcaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -262,6 +295,10 @@ Lisp_Object Lcaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns cadr expr
+ * see {\ttfamily caar} and {\ttfamily second}.
+ */
+
 Lisp_Object Lcadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -270,6 +307,10 @@ Lisp_Object Lcadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns cdar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcdar(Lisp_Object nil, Lisp_Object a)
 {
@@ -280,6 +321,10 @@ Lisp_Object Lcdar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cddr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -288,6 +333,10 @@ Lisp_Object Lcddr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns caaar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcaaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -300,6 +349,10 @@ Lisp_Object Lcaaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns caadr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcaadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -310,6 +363,10 @@ Lisp_Object Lcaadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns cadar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcadar(Lisp_Object nil, Lisp_Object a)
 {
@@ -322,6 +379,10 @@ Lisp_Object Lcadar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns caddr expr
+ * see {\ttfamily caar} and {\ttfamily third}.
+ */
+
 Lisp_Object Lcaddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -332,6 +393,10 @@ Lisp_Object Lcaddr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns cdaar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcdaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -344,6 +409,10 @@ Lisp_Object Lcdaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cdadr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcdadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -354,6 +423,10 @@ Lisp_Object Lcdadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns cddar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcddar(Lisp_Object nil, Lisp_Object a)
 {
@@ -366,6 +439,10 @@ Lisp_Object Lcddar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cdddr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcdddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -376,6 +453,10 @@ Lisp_Object Lcdddr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns caaaar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcaaaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -390,6 +471,10 @@ Lisp_Object Lcaaaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns caaadr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcaaadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -402,6 +487,10 @@ Lisp_Object Lcaaadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns caaadr expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcaadar(Lisp_Object nil, Lisp_Object a)
 {
@@ -416,6 +505,10 @@ Lisp_Object Lcaadar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns caaddr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcaaddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -428,6 +521,10 @@ Lisp_Object Lcaaddr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns cadaar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcadaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -442,6 +539,10 @@ Lisp_Object Lcadaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns cadadr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcadadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -454,6 +555,10 @@ Lisp_Object Lcadadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns caddar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcaddar(Lisp_Object nil, Lisp_Object a)
 {
@@ -468,6 +573,10 @@ Lisp_Object Lcaddar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
+/*! fns cadddr expr
+ * see {\ttfamily caar} and {\ttfamily fourth}.
+ */
+
 Lisp_Object Lcadddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -480,6 +589,10 @@ Lisp_Object Lcadddr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
+
+/*! fns cdaaar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcdaaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -494,6 +607,10 @@ Lisp_Object Lcdaaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cdaadr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcdaadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -506,6 +623,10 @@ Lisp_Object Lcdaadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns cdadar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcdadar(Lisp_Object nil, Lisp_Object a)
 {
@@ -520,6 +641,10 @@ Lisp_Object Lcdadar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cdaddr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcdaddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -532,6 +657,10 @@ Lisp_Object Lcdaddr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns cddaar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcddaar(Lisp_Object nil, Lisp_Object a)
 {
@@ -546,6 +675,10 @@ Lisp_Object Lcddaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cddadr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcddadr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -558,6 +691,10 @@ Lisp_Object Lcddadr(Lisp_Object nil, Lisp_Object a)
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
+
+/*! fns cdddar expr
+ * see {\ttfamily caar}.
+ */
 
 Lisp_Object Lcdddar(Lisp_Object nil, Lisp_Object a)
 {
@@ -572,6 +709,10 @@ Lisp_Object Lcdddar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns cddddr expr
+ * see {\ttfamily caar}.
+ */
+
 Lisp_Object Lcddddr(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -585,6 +726,13 @@ Lisp_Object Lcddddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
+/*! fns rplaca expr
+ * This is a destructive function in that it alters the data structure
+ * that it is given as its first argument by updating its {\ttfamily car}
+ * component. The result is the updated object. See {\ttfamily rplacd}
+ * for the corresponding function for updating the {\ttfamily cdr} component.
+ */
+
 Lisp_Object Lrplaca(Lisp_Object nil,
                            Lisp_Object a, Lisp_Object b)
 {
@@ -593,6 +741,10 @@ Lisp_Object Lrplaca(Lisp_Object nil,
     qcar(a) = b;
     return onevalue(a);
 }
+
+/*! fnd rplacd expr
+ * See {\ttfamily rplaca}
+ */
 
 Lisp_Object Lrplacd(Lisp_Object nil,
                            Lisp_Object a, Lisp_Object b)

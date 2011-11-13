@@ -238,10 +238,6 @@
  * Not yet written
  */
 
-/*! predef blank
- * Not yet written
- */
-
 /*! predef bn
  * Not yet written
  */
@@ -267,10 +263,6 @@
  */
 
 /*! predef [eof*] eof!*
- * Not yet written
- */
-
-/*! predef [esc*] esc!*
  * Not yet written
  */
 
@@ -331,10 +323,6 @@
  */
 
 /*! predef t
- * Not yet written
- */
-
-/*! predef tab
  * Not yet written
  */
 
@@ -795,70 +783,6 @@
  * Not yet written
  */
 
-/*! fns caaaar expr
- * Not yet written
- */
-
-/*! fns caaadr expr
- * Not yet written
- */
-
-/*! fns caaar expr
- * Not yet written
- */
-
-/*! fns caadar expr
- * Not yet written
- */
-
-/*! fns caaddr expr
- * Not yet written
- */
-
-/*! fns caadr expr
- * Not yet written
- */
-
-/*! fns caar expr
- * Not yet written
- */
-
-/*! fns cadaar expr
- * Not yet written
- */
-
-/*! fns cadadr expr
- * Not yet written
- */
-
-/*! fns cadar expr
- * Not yet written
- */
-
-/*! fns caddar expr
- * Not yet written
- */
-
-/*! fns cadddr expr
- * Not yet written
- */
-
-/*! fns caddr expr
- * Not yet written
- */
-
-/*! fns cadr expr
- * Not yet written
- */
-
-/*! fns car expr
- * Not yet written
- */
-
-/*! fns [car*] car!* expr
- * Not yet written
- */
-
 /*! fns carcheck expr
  * Not yet written
  */
@@ -868,66 +792,6 @@
  */
 
 /*! fns cbrt expr
- * Not yet written
- */
-
-/*! fns cdaaar expr
- * Not yet written
- */
-
-/*! fns cdaadr expr
- * Not yet written
- */
-
-/*! fns cdaar expr
- * Not yet written
- */
-
-/*! fns cdadar expr
- * Not yet written
- */
-
-/*! fns cdaddr expr
- * Not yet written
- */
-
-/*! fns cdadr expr
- * Not yet written
- */
-
-/*! fns cdar expr
- * Not yet written
- */
-
-/*! fns cddaar expr
- * Not yet written
- */
-
-/*! fns cddadr expr
- * Not yet written
- */
-
-/*! fns cddar expr
- * Not yet written
- */
-
-/*! fns cdddar expr
- * Not yet written
- */
-
-/*! fns cddddr expr
- * Not yet written
- */
-
-/*! fns cdddr expr
- * Not yet written
- */
-
-/*! fns cddr expr
- * Not yet written
- */
-
-/*! fns cdr expr
  * Not yet written
  */
 
@@ -2603,13 +2467,6 @@
  * Not yet written
  */
 
-/*! fns rplaca expr
- * Not yet written
- */
-
-/*! fns rplacd expr
- * Not yet written
- */
 
 /*! fns rplacw expr
  * Not yet written

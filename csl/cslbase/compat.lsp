@@ -37,7 +37,7 @@
 (cond
   ((not (fluidp '!!fleps1)) (progn
 
-
+%%!!! csl
 
 (setpchar "> ")
 
@@ -153,7 +153,7 @@
 %% character use of this is to be viewed as delicate.
 
    (setq !$eof!$ (special!-char 8))
-%%! predef [$eof$] !\$eof\!$
+%%! predef [$eof$] !\$eof!\$
 %% The value of this variable is a pseudo-character returned from various
 %% read functions to signal end-of-file.
 

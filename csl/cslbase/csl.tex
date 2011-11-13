@@ -1,2669 +1,2706 @@
-% Generated using doxtract Sat Nov 12 10:47:25 2011
-   \documentclass[a4paper,11pt]{article}
-   \title{CSL reference}
-   \author{A C Norman}
-   \begin{document}
-   \maketitle
+% Generated using doxtract Sun Nov 13 21:01:24 2011
+\documentclass[a4paper,11pt]{article}
+\title{CSL reference}
+\author{A C Norman}
+\begin{document}
+\maketitle
 \section{Introduction}
-   This is reference material for CSL. The Lisp identifiers mentioned here
-   are the ones that are initially present in a raw CSL image. Some
-   proportion of them are not really intended to be used by end-users but
-   are merely the internal components of some feature.
+This is reference material for CSL. The Lisp identifiers mentioned here
+are the ones that are initially present in a raw CSL image. Some
+proportion of them are not really intended to be used by end-users but
+are merely the internal components of some feature.
 
 \section{Command-line options}
-   The items shown here are the ones that are recognized on the CSL command
-   line. In general an option that requires an argument can be written as either
-   {\ttfamily -x yyy} or as {\ttfamily -xyyy}. Arguments should be case
-   insensitive. 
+The items shown here are the ones that are recognized on the CSL command
+line. In general an option that requires an argument can be written as either
+{\ttfamily -x yyy} or as {\ttfamily -xyyy}. Arguments should be case
+insensitive. 
 
 \subsection{\ttfamily --}
-   If the application is run in console mode then its standard output could
-   be redirected to a file using shell facilities. But the {\ttfamily --}
-   directive (followed by a file name) redirects output within the Lisp rather
-   than outside it. If this is done a very limited capability for sending
-   progress or status reports to stderr (or the title-bar when running in windowed
-   mode) remains via the {\ttfamily report!-right} function.
+If the application is run in console mode then its standard output could
+be redirected to a file using shell facilities. But the {\ttfamily --}
+directive (followed by a file name) redirects output within the Lisp rather
+than outside it. If this is done a very limited capability for sending
+progress or status reports to stderr (or the title-bar when running in windowed
+mode) remains via the {\ttfamily report!-right} function.
   
-   The {\ttfamily -w} option may frequently make sense in such cases, but if that
-   is not used and the system tries to run in a window it will create it
-   starting off minimised.
+The {\ttfamily -w} option may frequently make sense in such cases, but if that
+is not used and the system tries to run in a window it will create it
+starting off minimised.
 
 \subsection{\ttfamily --help}
-   It is probably obvious what this option does! Note that on Windows the
-   application was linked as a windows binary so it carefully creates a
-   console to display the help text in, and organizes a delay to give
-   people a chance to read it.
+It is probably obvious what this option does! Note that on Windows the
+application was linked as a windows binary so it carefully creates a
+console to display the help text in, and organizes a delay to give
+people a chance to read it.
 
 \subsection{\ttfamily --my-path}
-   At some time I had felt the need for this option, but I now forget what I
-   expected to use it for! It leads the executable to display the fully
-   rooted name of the directory it was in and then terminate. It may be useful
-   in some script?
+At some time I had felt the need for this option, but I now forget what I
+expected to use it for! It leads the executable to display the fully
+rooted name of the directory it was in and then terminate. It may be useful
+in some script?
 
 \subsection{\ttfamily --texmacs}
-   If CSL/Reduce is launched from texmacs this command-line flag should be
-   used to arrange that the {\ttfamily texmacs} flag is set in
-   {\ttfamily lispsystem!*}, and the code may then do special things.
+If CSL/Reduce is launched from texmacs this command-line flag should be
+used to arrange that the {\ttfamily texmacs} flag is set in
+{\ttfamily lispsystem!*}, and the code may then do special things.
 
 \subsection{\ttfamily -a}
-   {\ttfamily -a} is a curious option, not intended for general or casual use.
-   If given it causes the {\ttfamily (batchp)} function to return the opposite
-   result from normal!  Without ``{attfamily -a}'' {\ttfamily (batchp)} returns
-   {\ttfamily T} either if at least one file was specified on the command line,
-   or if the standard input is ``not a tty'' (under some operating systems this
-   makes sense -- for instance the standard input might not be a ``tty'' if it
-   is provided via file redirection).  Otherwise (ie primary input is directly
-   from a keyboard) {\ttfamily (batchp)} returns {\ttfamily nil}.  Sometimes
-   this judgement about how ``batch'' the current run is will be wrong or
-   unhelpful, so {\ttfamily -a} allows the user to coax the system into better
-   behaviour.  I hope that this is never used!
+{\ttfamily -a} is a curious option, not intended for general or casual use.
+If given it causes the {\ttfamily (batchp)} function to return the opposite
+result from normal!  Without ``{attfamily -a}'' {\ttfamily (batchp)} returns
+{\ttfamily T} either if at least one file was specified on the command line,
+or if the standard input is ``not a tty'' (under some operating systems this
+makes sense -- for instance the standard input might not be a ``tty'' if it
+is provided via file redirection).  Otherwise (ie primary input is directly
+from a keyboard) {\ttfamily (batchp)} returns {\ttfamily nil}.  Sometimes
+this judgement about how ``batch'' the current run is will be wrong or
+unhelpful, so {\ttfamily -a} allows the user to coax the system into better
+behaviour.  I hope that this is never used!
 
 \subsection{\ttfamily -b}
-   {\ttfamily -b} tells the system to avoid any attempt to recolour prompts
-   and input text. It will mainly be needed on X terminals that have been
-   set up so that they use colours that make the defaults here unhelpful.
-   Specifically white-on-black and so on.
-   {\ttfamily -b} can be followed by colour specifications to make things yet
-   more specific. It is supposed to be the idea that three colours can be
-   specified after it for output, input and prompts, with the letters KRGYbMCW
-   standing for blacK, Red, Green, Yellow, blue, Magenta, Cyan and White.
-   This may not fully work yet!
+{\ttfamily -b} tells the system to avoid any attempt to recolour prompts
+and input text. It will mainly be needed on X terminals that have been
+set up so that they use colours that make the defaults here unhelpful.
+Specifically white-on-black and so on.
+{\ttfamily -b} can be followed by colour specifications to make things yet
+more specific. It is supposed to be the idea that three colours can be
+specified after it for output, input and prompts, with the letters KRGYbMCW
+standing for blacK, Red, Green, Yellow, blue, Magenta, Cyan and White.
+This may not fully work yet!
 
 \subsection{\ttfamily -c}
-   Displays a notice relating to the authorship of CSL. Note that this
-   is an authorship statement not a Copyright notice, because if any
-   (L)GPL code is involved that would place requirements on what was
-   displayed in a Copyright Notice.
+Displays a notice relating to the authorship of CSL. Note that this
+is an authorship statement not a Copyright notice, because if any
+(L)GPL code is involved that would place requirements on what was
+displayed in a Copyright Notice.
 
 \subsection{\ttfamily -d}
-   A command line entry {\ttfamily -Dname=value} or {\ttfamily -D name=value}
-   sets the value of the named lisp variable to the value (as a string).
-   Note that the value set is a {\em string} so if you wish to retrieve
-   it and use it as a symbold or number within your code you will have to
-   perform some conversion.
+A command line entry {\ttfamily -Dname=value} or {\ttfamily -D name=value}
+sets the value of the named lisp variable to the value (as a string).
+Note that the value set is a {\em string} so if you wish to retrieve
+it and use it as a symbold or number within your code you will have to
+perform some conversion.
 
 \subsection{\ttfamily -e}
-   A ``spare'' option used from time to time to activate experiments within
-   CSL.
+A ``spare'' option used from time to time to activate experiments within
+CSL.
 
 \subsection{\ttfamily -f}
-   At one stage CSL could run as a socket server, and {\ttfamily -f portnumber}
-   activated that mode. {\ttfamily -f-} used a default port, 1206 (a number
-   inspired by an account number on Titan that I used in the 1960s). The code
-   that supports this may be a useful foundation to others who want to make a
-   network service out of this code-base, but is currently disabled.
+At one stage CSL could run as a socket server, and {\ttfamily -f portnumber}
+activated that mode. {\ttfamily -f-} used a default port, 1206 (a number
+inspired by an account number on Titan that I used in the 1960s). The code
+that supports this may be a useful foundation to others who want to make a
+network service out of this code-base, but is currently disabled.
 
 \subsection{\ttfamily -g}
-   In line with the implication of this option for C compilers, this enables
-   a debugging mode. It sets a lisp variable {\ttfamily !*backtrace} and
-   arranges that all backtraces are displayed notwithstanding use of
+In line with the implication of this option for C compilers, this enables
+a debugging mode. It sets a lisp variable {\ttfamily !*backtrace} and
+arranges that all backtraces are displayed notwithstanding use of
  *{\ttfamily errorset}.
 
 \subsection{\ttfamily -h}
-   This option is a left-over. When the X-windows version of the code first
-   started to use Xft it viewed that as optional and could allow a build even when
-   it was not available. And then even if Xft was detected and liable to be used
-   by default it provided this option to disable its use. The remnants of the
-   switch that disabled use of Xft (relating to fonts living on the Host or
-   the Server) used this switch, but it now has no effect.
+This option is a left-over. When the X-windows version of the code first
+started to use Xft it viewed that as optional and could allow a build even when
+it was not available. And then even if Xft was detected and liable to be used
+by default it provided this option to disable its use. The remnants of the
+switch that disabled use of Xft (relating to fonts living on the Host or
+the Server) used this switch, but it now has no effect.
 
 \subsection{\ttfamily -i}
-   CSL and Reduce use image files to keep both initial heap images and
-   ``fasl'' loadable modules. By default if the executable launched has some name,
-   say xxx, then an image file xxx.img is used. But to support greater
-   generality {\ttfamily -i} introduces a new image, {\ttfamily -i-} indicates
-   the default one and a sequence of such directives list image files that are
-   searched in the order given. These are read-only. The similar option
-   {\ttfamily -o} equally introduces image files that are scanned for input, but
-   that can also be used for output. Normally there would only be one
-   {\ttfamily -o} directive.
+CSL and Reduce use image files to keep both initial heap images and
+``fasl'' loadable modules. By default if the executable launched has some name,
+say xxx, then an image file xxx.img is used. But to support greater
+generality {\ttfamily -i} introduces a new image, {\ttfamily -i-} indicates
+the default one and a sequence of such directives list image files that are
+searched in the order given. These are read-only. The similar option
+{\ttfamily -o} equally introduces image files that are scanned for input, but
+that can also be used for output. Normally there would only be one
+{\ttfamily -o} directive.
 
 \subsection{\ttfamily -j}
-   Follow this directive with a file-name, and a record of all the files read
-   during the Lisp run will be dumped there with a view that it can be included
-   in a Makefile to document dependencies.
+Follow this directive with a file-name, and a record of all the files read
+during the Lisp run will be dumped there with a view that it can be included
+in a Makefile to document dependencies.
 
 \subsection{\ttfamily -k}
-   {\ttfamily -K nnn} sets the size of heap to be used.  If it is given then that much
-   memory will be allocated and the heap will never expand.  Without this
-   option a default amount is used, and (on many machines) it will grow
-   if space seems tight.
+{\ttfamily -K nnn} sets the size of heap to be used.  If it is given then that much
+memory will be allocated and the heap will never expand.  Without this
+option a default amount is used, and (on many machines) it will grow
+if space seems tight.
   
-   The extended version of this option is {\ttfamily -K nnn/ss} and then ss is the
-   number of ``CSL pages'' to be allocated to the Lisp stack. The default
-   value (which is 1) should suffice for almost all users, and it should
-   be noted that the C stack is separate from and independent of this one and
-   it too could overflow.
+The extended version of this option is {\ttfamily -K nnn/ss} and then ss is the
+number of ``CSL pages'' to be allocated to the Lisp stack. The default
+value (which is 1) should suffice for almost all users, and it should
+be noted that the C stack is separate from and independent of this one and
+it too could overflow.
   
-   A suffix K, M or G on the number indicates units of kilobytes, megabytes or
-   gigabytes, with megabytes being the default. So {\ttfamily -K200M} might
-   represent typical usage for common-sized computations. In general CSL
-   will automatically expand its heap, and so it should normally never be
-   necessary to use this option.
+A suffix K, M or G on the number indicates units of kilobytes, megabytes or
+gigabytes, with megabytes being the default. So {\ttfamily -K200M} might
+represent typical usage for common-sized computations. In general CSL
+will automatically expand its heap, and so it should normally never be
+necessary to use this option.
 
 \subsection{\ttfamily -l}
-   This is to send a copy of the standard output to a named log file. It is
-   very much as if the Lisp function {\ttfamily (spool ``logfile'')} had been
-   invoked at the start of the run.
+This is to send a copy of the standard output to a named log file. It is
+very much as if the Lisp function {\ttfamily (spool ``logfile'')} had been
+invoked at the start of the run.
 
 \subsection{\ttfamily -m}
-   Memory trace mode. An option that represents an experiment from the past,
-   and no longer reliably in use. It make it possible to force an
-   exception at stages whene reference to a specified part of memory was made
-   and that could be useful for some low level debugging. It is not supported
-   at present.
+Memory trace mode. An option that represents an experiment from the past,
+and no longer reliably in use. It make it possible to force an
+exception at stages whene reference to a specified part of memory was made
+and that could be useful for some low level debugging. It is not supported
+at present.
 
 \subsection{\ttfamily -n}
-   Normally when the system is started it will run a ``restart function'' as
-   indicated in its heap image. There can be cases where a heap image has been
-   created in a bad way such that the saved restart function always fails
-   abruptly, and hence working out what was wrong becomes hard. In such cases
-   it may be useful to give the {\ttfamily -n} option that forces CSL to
-   ignore any startup function and merely always begin in a minimal Lisp-style
-   read-eval-print loop. This is intended for experts to do disaster recovery
-   and diagnosis of damaged image files.
+Normally when the system is started it will run a ``restart function'' as
+indicated in its heap image. There can be cases where a heap image has been
+created in a bad way such that the saved restart function always fails
+abruptly, and hence working out what was wrong becomes hard. In such cases
+it may be useful to give the {\ttfamily -n} option that forces CSL to
+ignore any startup function and merely always begin in a minimal Lisp-style
+read-eval-print loop. This is intended for experts to do disaster recovery
+and diagnosis of damaged image files.
 
 \subsection{\ttfamily -o}
-   See {\ttfamily -i}. This specifies an image file used for output via
+See {\ttfamily -i}. This specifies an image file used for output via
 {\ttfamily faslout} and {\ttfamily reserve}.
 
 \subsection{\ttfamily -p}
-   If a suitable profile option gets implemented one day this will activate it,
-   but for now it has no effect.
+If a suitable profile option gets implemented one day this will activate it,
+but for now it has no effect.
 
 \subsection{\ttfamily -q}
-   This option sets {\ttfamily !*echo} to {\ttfamily nil} and switches off
-   garbage collector messages to give a slightly quieter run.
+This option sets {\ttfamily !*echo} to {\ttfamily nil} and switches off
+garbage collector messages to give a slightly quieter run.
 
 \subsection{\ttfamily -r}
-   The random-number generator in CSL is normally initialised to a value
-   based on the time of day and is hence not reproducible from run to run.
-   In many cases that behavious is desirable, but for debugging it can be useful
-   to force a seed. The directive {\ttfamily -r nnn,mmm} sets the seed to
-   up to 64 bits taken from the values nnn and mmm. The second value if optional,
-   and specifying {\ttfamily -r0}  explicitly asks for the non-reproducible
-   behaviour (I hope). Note that the main Reduce-level random number source is
-   coded at a higher level and does not get reset this way -- this is the
-   lower level CSL generator.
+The random-number generator in CSL is normally initialised to a value
+based on the time of day and is hence not reproducible from run to run.
+In many cases that behavious is desirable, but for debugging it can be useful
+to force a seed. The directive {\ttfamily -r nnn,mmm} sets the seed to
+up to 64 bits taken from the values nnn and mmm. The second value if optional,
+and specifying {\ttfamily -r0}  explicitly asks for the non-reproducible
+behaviour (I hope). Note that the main Reduce-level random number source is
+coded at a higher level and does not get reset this way -- this is the
+lower level CSL generator.
 
 \subsection{\ttfamily -s}
-   Sets the Lisp variable {\ttfamily !*plap} and hence the compiler generates
-   an assembly listing.
+Sets the Lisp variable {\ttfamily !*plap} and hence the compiler generates
+an assembly listing.
 
 \subsection{\ttfamily -t}
-   {\ttfamily -t name} reports the time-stamp on the named module, and then
-   exits. This is for use in perl scripts and the like, and is
-   needed because the stamps on modules within an image or
-   library file are not otherwise instantly available.
+{\ttfamily -t name} reports the time-stamp on the named module, and then
+exits. This is for use in perl scripts and the like, and is
+needed because the stamps on modules within an image or
+library file are not otherwise instantly available.
   
-   Note that especially on windowed systems it may be necessary to use this
-   with {\ttfamily -- filename} since the information generated here goes to
-   the default output, which in some cases is just the screen.
+Note that especially on windowed systems it may be necessary to use this
+with {\ttfamily -- filename} since the information generated here goes to
+the default output, which in some cases is just the screen.
 
 \subsection{\ttfamily -u}
-   See {\ttfamily -d}, but this forcibly undefines a symbol. There are probably
-   very very few cases where it is useful since I do not have a large
-   number of system-specific predefined names.
+See {\ttfamily -d}, but this forcibly undefines a symbol. There are probably
+very very few cases where it is useful since I do not have a large
+number of system-specific predefined names.
 
 \subsection{\ttfamily -v}
-   An option to make things mildly more verbose. It displays more of a banner
-   at startup and switches garbage collection messages on.
+An option to make things mildly more verbose. It displays more of a banner
+at startup and switches garbage collection messages on.
 
 \subsection{\ttfamily -w}
-   On a typical system if the system is launched it creates a new window and uses
-   its own windowed intarface in that. If it is run such that at startup the
-   standard input or output are associated with a file or pipe, or under X the
-   variable {\ttfamily DISPLAY} is not set it will try to start up in console
-   mode. The flag {\ttfamily -w} indicates that the system should run in console
-   more regadless, while {\ttfamily -w+} attempts a window even if that seems
-   doomed to failure. When running the system to obey a script it will often make
-   sense to use the {\ttfamily -w} option. Note that on Windows the system is
-   provided as two separate (but almost identical) binaries. For example the
-   file {\ttfamily csl.exe} is linked in windows mode. A result is that if
-   launched from the command line it detaches from its console, and if launched
-   by double-clicking it does not create a console. It is in fact very ugly when
-   double clicking on an application causes an unwanted console window to appear.
-   In contrast {\ttfamily csl.com} is a console mode version of just the same
-   program, so when launched from a command line it can communicate with the
-   console in the ordinary expected manner.
+On a typical system if the system is launched it creates a new window and uses
+its own windowed intarface in that. If it is run such that at startup the
+standard input or output are associated with a file or pipe, or under X the
+variable {\ttfamily DISPLAY} is not set it will try to start up in console
+mode. The flag {\ttfamily -w} indicates that the system should run in console
+more regadless, while {\ttfamily -w+} attempts a window even if that seems
+doomed to failure. When running the system to obey a script it will often make
+sense to use the {\ttfamily -w} option. Note that on Windows the system is
+provided as two separate (but almost identical) binaries. For example the
+file {\ttfamily csl.exe} is linked in windows mode. A result is that if
+launched from the command line it detaches from its console, and if launched
+by double-clicking it does not create a console. It is in fact very ugly when
+double clicking on an application causes an unwanted console window to appear.
+In contrast {\ttfamily csl.com} is a console mode version of just the same
+program, so when launched from a command line it can communicate with the
+console in the ordinary expected manner.
 
 \subsection{\ttfamily -x}
-   {\ttfamily -x} is an option intended for use only by system
-   support experts -- it disables trapping if segment violations by
-   errorset and so makes it easier to track down low level disasters --
-   maybe!  This can be valuable when running under a debugger since if the
-   code traps signals in its usual way and tries to recover it can make it a lot
-   harder to find out just what was going wrong.
+{\ttfamily -x} is an option intended for use only by system
+support experts -- it disables trapping if segment violations by
+errorset and so makes it easier to track down low level disasters --
+maybe!  This can be valuable when running under a debugger since if the
+code traps signals in its usual way and tries to recover it can make it a lot
+harder to find out just what was going wrong.
 
 \subsection{\ttfamily -y}
-   {\ttfamily -y } sets the variable {\ttfamily !*hankaku}, which causes the
-   lisp reader convert a Zenkaku code to Hankaku one when read. I leave this
-   option decoded on the command line even if the Kanji support code is not
-   otherwise compiled into CSL just so I can reduce conditional compilation.
-   This was part of the Internationalisation effort for CSL bu this is no longer
-   supported.
+{\ttfamily -y } sets the variable {\ttfamily !*hankaku}, which causes the
+lisp reader convert a Zenkaku code to Hankaku one when read. I leave this
+option decoded on the command line even if the Kanji support code is not
+otherwise compiled into CSL just so I can reduce conditional compilation.
+This was part of the Internationalisation effort for CSL bu this is no longer
+supported.
 
 \subsection{\ttfamily -z}
-   When bootstrapping it is necessary to start up the system for one initial time
-   without the benefit of any image file at all. The option {\ttfamily -z} makes
-   this happen, so when it is specified the system starts up with a minimal
-   environment and only those capabilities that are present in the CSL
-   kernel. It will normally make sense to start loading some basic Lisp
-   definitions rather rapidly. The files {\ttfamily compat.lsp},
-   {\ttfamily extras.lsp} and {\ttfamily compiler.lsp} have Lisp source for the
-   main things I use, and once they are loaded the Lisp compiler can be used
-   to compile itself.
+When bootstrapping it is necessary to start up the system for one initial time
+without the benefit of any image file at all. The option {\ttfamily -z} makes
+this happen, so when it is specified the system starts up with a minimal
+environment and only those capabilities that are present in the CSL
+kernel. It will normally make sense to start loading some basic Lisp
+definitions rather rapidly. The files {\ttfamily compat.lsp},
+{\ttfamily extras.lsp} and {\ttfamily compiler.lsp} have Lisp source for the
+main things I use, and once they are loaded the Lisp compiler can be used
+to compile itself.
 
 \section{Predefined variables}
 
 \subsection{\ttfamily !!fleps1}
-   There is a function safe!-fp!-plus that performs floating point
-   arithmetic but guarantees never to raise an exception. This value was
-   at one stage related to when small values created there got truncated to zero,
-   but the current code does not use the Lisp variable at all and instead does
-   things based on the bitwise representation of the numbers.
+There is a function safe!-fp!-plus that performs floating point
+arithmetic but guarantees never to raise an exception. This value was
+at one stage related to when small values created there got truncated to zero,
+but the current code does not use the Lisp variable at all and instead does
+things based on the bitwise representation of the numbers.
+
+\subsection{\ttfamily !!fleps1}
+There is a function safe!-fp!-plus that performs floating point
+arithmetic but guarantees never to raise an exception. This value was
+at one stage related to when small values created there got truncated to zero,
+but the current code does not use the Lisp variable at all and instead does
+things based on the bitwise representation of the numbers.
 
 \subsection{\ttfamily !\$eof!\$}
-   The value of this variable is a special ``character'' used to denote an
-   end-of-file condition.
+The value of this variable is a special ``character'' used to denote an
+end-of-file condition.
   
 
+\subsection{\ttfamily !\$eof!\$}
+The value of this variable is a pseudo-character returned from various
+read functions to signal end-of-file.
+
 \subsection{\ttfamily !\$eol!\$}
-   The value of this variable is an end-of-line character.
+The value of this variable is an end-of-line character.
+
+\subsection{\ttfamily !\$eol!\$}
+The value of this variable is an end-of-line character.
 
 \subsection{\ttfamily !*plap}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*applyhook!*}
-   If this is set it might be supposed to be the name of a function used
-   by the interpreter as a callbackm but at presnet it does not actually do
-   anything!
+If this is set it might be supposed to be the name of a function used
+by the interpreter as a callbackm but at presnet it does not actually do
+anything!
 
 \subsection{\ttfamily !*break!-loop!*}
-   If the value of this is a symbol that is defined as a function of one
-   argument then it is called during the processing on an error. This has not
-   been used in anger and so its whole status may be dubious!
+If the value of this is a symbol that is defined as a function of one
+argument then it is called during the processing on an error. This has not
+been used in anger and so its whole status may be dubious!
 
 \subsection{\ttfamily !*carcheckflag}
-   In general CSL arranges that every {\ttfamily car} or {\ttfamily cdr} access
-   is checked for validity. Once upon a time setting this variable to nil
-   turned such checks off in the hope of gaining a little speed. But it no
-   longer does that. It may have a minor effect on array access primitives.
+In general CSL arranges that every {\ttfamily car} or {\ttfamily cdr} access
+is checked for validity. Once upon a time setting this variable to nil
+turned such checks off in the hope of gaining a little speed. But it no
+longer does that. It may have a minor effect on array access primitives.
 
 \subsection{\ttfamily !*comp}
-   When set each function is compiled (into bytecodes) as it gets defined.
+When set each function is compiled (into bytecodes) as it gets defined.
 
 \subsection{\ttfamily !*debug!-io!*}
-   An I/O channel intended to be used for diagnostic interactions.
+An I/O channel intended to be used for diagnostic interactions.
 
 \subsection{\ttfamily !*echo}
-   When this is non-nil characters that are read from an input file are
-   echoed to the standard output. This gives a more comlete transcript in
-   a log file, but can sometimes amount to over-verbose output.
+When this is non-nil characters that are read from an input file are
+echoed to the standard output. This gives a more comlete transcript in
+a log file, but can sometimes amount to over-verbose output.
 
 \subsection{\ttfamily !*error!-messages!*}
-   Has the value nil and does not do anything!
+Has the value nil and does not do anything!
 
 \subsection{\ttfamily !*error!-output!*}
-   An I/O channel intended for diagnostic output.
+An I/O channel intended for diagnostic output.
 
 \subsection{\ttfamily !*evalhook!*}
-   See {\ttfamily !*applyhool!*}. This also does not do anything at present.
+See {\ttfamily !*applyhool!*}. This also does not do anything at present.
 
 \subsection{\ttfamily !*gc!-hook!*}
-   If this is set to have as its value that is a function of one argument then
-   that function is called with {\ttfamily nil} on every minor entry to the
-   garbage collection, and with argument {\ttfamily t} at the end of a ``genuine''
-   full garbage collection.
+If this is set to have as its value that is a function of one argument then
+that function is called with {\ttfamily nil} on every minor entry to the
+garbage collection, and with argument {\ttfamily t} at the end of a ``genuine''
+full garbage collection.
 
 \subsection{\ttfamily !*hankaku}
-   This was concerned with internationalisation to support a Japanese
-   locale but has not been activated for some while.
+This was concerned with internationalisation to support a Japanese
+locale but has not been activated for some while.
 
 \subsection{\ttfamily !*loop!-print!*}
-   Probably not used at present.
+Probably not used at present.
 
 \subsection{\ttfamily !*lower}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*macroexpand!-hook!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*math!-output!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*native\_code}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*notailcall}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*package!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*pgwd}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*pretty!-symmetric}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*prinl!-fn!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*prinl!-index!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*prinl!-visited!-nodes!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*print!-array!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*print!-length!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*print!-level!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*pwrds}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*query!-io!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*quotes}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*raise}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*redefmsg}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*resources!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*savedef}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*spool!-output!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*standard!-input!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*standard!-output!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*terminal!-io!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !*trace!-output!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !@cslbase}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily blank}
-   Not yet written
+The value of this variable is an space or blank character. This
+might otherwise be written as ''{\ttfamily ! }''.
 
 \subsection{\ttfamily bn}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily bufferi}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily buffero}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily common!-lisp!-mode}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily crbuf!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily emsg!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eof!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily esc!*}
-   Not yet written
+The value of this variable is the character ``escape''. As a non-printing
+character use of this is to be viewed as delicate.
 
 \subsection{\ttfamily indblanks}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily indentlevel}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily initialblanks}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lispsystem!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lmar}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily load!-source}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily nil}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ofl!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily pendingrpars}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily program!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rmar}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rparcount}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:gensym!-serial}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily stack}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily t}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tab}
-   Not yet written
+The value of this variable is a tab character.
 
 \subsection{\ttfamily thin!*}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ttype!*}
-   Not yet written
+Not yet written
 
 /*!! lispsys [03] Items that can appear in {\ttfamily lispsystem!*}
   
-   There is a global variable called {\ttfamily lispsystem!*} whose value is
-   reset in the process of CSL starting up. An effect of this is that if the
-   user changes its value those changes do not survice a preserving and
-   re-loading a heap image: this is deliberate since the heap image may be
-   re-loaded on a different instance of CSL possibly on a quite different
-   computer of with a different configuration. The value of {\ttfamily
-   lispsystem!*} is a list of items, where each item is either an atomic tag
-   of a pair whose first component is a key. In general it would be unwise
-   to rely on exactly what information is present without review of the code
-   that sets it up. The information may be of interest to anybody but some tags
-   and keys are reflections of experiments rather than fullt stable facilities.
+There is a global variable called {\ttfamily lispsystem!*} whose value is
+reset in the process of CSL starting up. An effect of this is that if the
+user changes its value those changes do not survice a preserving and
+re-loading a heap image: this is deliberate since the heap image may be
+re-loaded on a different instance of CSL possibly on a quite different
+computer of with a different configuration. The value of {\ttfamily
+lispsystem!*} is a list of items, where each item is either an atomic tag
+of a pair whose first component is a key. In general it would be unwise
+to rely on exactly what information is present without review of the code
+that sets it up. The information may be of interest to anybody but some tags
+and keys are reflections of experiments rather than fullt stable facilities.
   
 
 \section{Items that can appear in {\ttfamily lispsystem!*}}
 
 \subsection{\ttfamily (c!-code . count)}
-   This will be present if code has been optimised into C through the source
-   files u01.c to u60.c, and in that case the value tells you how many functions
-   have been optimised in this manner.
+This will be present if code has been optimised into C through the source
+files u01.c to u60.c, and in that case the value tells you how many functions
+have been optimised in this manner.
   
 
 \subsection{\ttfamily common!-lisp}
-   For a project some while ago a limited Common Lisp compatibility mode was
-   being developed, and this tag indicated that it was active. In that case all
-   entries are in upper case and the variable is called {\ttfamily *FEATURES*
-   rather than {\ttfamily lispsystem!*}. But note that this Lisp has never even
-   aspired to be a full Common Lisp, since its author considers Common Lisp to
-   have been a sad mistake that must bear significant responsibility for the
-   fact that interest in Lisp has faded dramatically since its introduction.
+For a project some while ago a limited Common Lisp compatibility mode was
+being developed, and this tag indicated that it was active. In that case all
+entries are in upper case and the variable is called {\ttfamily *FEATURES*
+rather than {\ttfamily lispsystem!*}. But note that this Lisp has never even
+aspired to be a full Common Lisp, since its author considers Common Lisp to
+have been a sad mistake that must bear significant responsibility for the
+fact that interest in Lisp has faded dramatically since its introduction.
   
 
 \subsection{\ttfamily (compiler!-command . command)}
-   The value associated with this key is a string that was used to compile the
-   files of C code making up CSL. It should contain directives to set up
-   search paths and predefined symbols. It is intended to be used in an
-   experiment that generates C code synamically, uses a command based on this
-   string to compile it and then dynamically links the resulting code in with
-   the running system.
+The value associated with this key is a string that was used to compile the
+files of C code making up CSL. It should contain directives to set up
+search paths and predefined symbols. It is intended to be used in an
+experiment that generates C code synamically, uses a command based on this
+string to compile it and then dynamically links the resulting code in with
+the running system.
 
 \subsection{\ttfamily csl}
-   A simple tag intended to indicate that this Lisp system is CSL and not any
-   other. This can of course only work properly if all other Lisp systems
-   agree not to set this tag! In the context of Reduce I note that the PSL
-   Lisp system sets a tag {\ttfamily psl} on {\ttfamily lispsystem!*} and
-   the realistic use of this is to discriminate between CSL and PSL hosted
-   copies of Reduce.
+A simple tag intended to indicate that this Lisp system is CSL and not any
+other. This can of course only work properly if all other Lisp systems
+agree not to set this tag! In the context of Reduce I note that the PSL
+Lisp system sets a tag {\ttfamily psl} on {\ttfamily lispsystem!*} and
+the realistic use of this is to discriminate between CSL and PSL hosted
+copies of Reduce.
 
 \subsection{\ttfamily debug}
-   If CSL was compiled with debugging options this is present, and one can imagine
-   various bits of code being more cautious or more verbose if it is detected.
+If CSL was compiled with debugging options this is present, and one can imagine
+various bits of code being more cautious or more verbose if it is detected.
 
 \subsection{\ttfamily (executable . name)}
-   The value is the fully rooted name of the executable file that was launched.
+The value is the fully rooted name of the executable file that was launched.
 
 \subsection{\ttfamily fox}
-   Used to be present if the FOX GUI toolkit was detected and incorporated as
-   part of CSL, but now probably never used!
+Used to be present if the FOX GUI toolkit was detected and incorporated as
+part of CSL, but now probably never used!
 
 \subsection{\ttfamily (linker . type)}
-   Intended for use in association with {\ttfamily compiler!-command}, the value
-   is {\ttfamily win32} on Windows, {\ttfamily x86\_64} on 64-bit Linux and
-   other things on other systems, as detected using the program {\ttfamily
-   objtype.c}.
+Intended for use in association with {\ttfamily compiler!-command}, the value
+is {\ttfamily win32} on Windows, {\ttfamily x86\_64} on 64-bit Linux and
+other things on other systems, as detected using the program {\ttfamily
+objtype.c}.
 
 \subsection{\ttfamily (name . name)}
-   Some indication of the platform. For instance on one system I use it
-   is {\ttfamily linux-gnu:x86\_64} and on anther it is just {\ttfamily win32}.
+Some indication of the platform. For instance on one system I use it
+is {\ttfamily linux-gnu:x86\_64} and on anther it is just {\ttfamily win32}.
 
 \subsection{\ttfamily (native . tag)}
-   One of the many experiments within CSL that were active at one stage but are
-   not current involved compilation directly into machine code. The strong
-   desire to ensure that image files coudl be used on a cross-platform basis
-   led to saved compiled code being tagged with a numeric ``native code tag'',
-   and this key/value pair identified the value to be used on the current
-   machine.
+One of the many experiments within CSL that were active at one stage but are
+not current involved compilation directly into machine code. The strong
+desire to ensure that image files coudl be used on a cross-platform basis
+led to saved compiled code being tagged with a numeric ``native code tag'',
+and this key/value pair identified the value to be used on the current
+machine.
 
 \subsection{\ttfamily (opsys . operating-system)}
-   Some crude indication of the host operating system.
+Some crude indication of the host operating system.
 
 \subsection{\ttfamily pipes}
-   In the earlier days of CSL there were computers where pipes were not
-   supported, so this tag notes when they are present and hance the facility
-   to create sub-tasks through them can be used.
+In the earlier days of CSL there were computers where pipes were not
+supported, so this tag notes when they are present and hance the facility
+to create sub-tasks through them can be used.
 
 \subsection{\ttfamily record\_get}
-   An an extension to the CSL profiling scheme it it possible to compile
-   a special version that tracks and counts each use of property-list access
-   functions. This can be useful because there are ways to give special
-   treatment to a small number of flags and a small number of properties. The
-   special-case flage end up stored as a bitmap in the symbol-header so avoid
-   need for property-list searching. But of course recording this extra
-   information slows things down. This tag notes when the slow version is
-   in use. It might be used to trigger a display of statistics at the end of
-   a calculation.
+An an extension to the CSL profiling scheme it it possible to compile
+a special version that tracks and counts each use of property-list access
+functions. This can be useful because there are ways to give special
+treatment to a small number of flags and a small number of properties. The
+special-case flage end up stored as a bitmap in the symbol-header so avoid
+need for property-list searching. But of course recording this extra
+information slows things down. This tag notes when the slow version is
+in use. It might be used to trigger a display of statistics at the end of
+a calculation.
 
 \subsection{\ttfamily reduce}
-   This is intended to report if the initial heap image is for Reduce rather than
-   merely for Lisp.
+This is intended to report if the initial heap image is for Reduce rather than
+merely for Lisp.
 
 \subsection{\ttfamily (shortname . name)}
-   Gives the short name of the current executable, without its full path.
+Gives the short name of the current executable, without its full path.
 
 \subsection{\ttfamily showmath}
-   If the ``showmath'' capability has been compiled into CSL this will be present
-   so that Lisp code can know it is reasonable to try to use it.
+If the ``showmath'' capability has been compiled into CSL this will be present
+so that Lisp code can know it is reasonable to try to use it.
 
 \subsection{\ttfamily sixty!-four}
-   Present if the Lisp was compiled for a 64-bit computer.
+Present if the Lisp was compiled for a 64-bit computer.
 
 \subsection{\ttfamily termed}
-   Present if a cursor-addressable console was detected.
+Present if a cursor-addressable console was detected.
 
 \subsection{\ttfamily texmacs}
-   Present if the system was launched with the {\ttfamily --texmacs} flag.
-   The intent is that this should only be done when it has been launched with
-   texmacs as a front-end.
+Present if the system was launched with the {\ttfamily --texmacs} flag.
+The intent is that this should only be done when it has been launched with
+texmacs as a front-end.
 
 \subsection{\ttfamily (version . ver)}
-   The CSL version number.
+The CSL version number.
 
 \subsection{\ttfamily win32}
-   Present on Windows platforms, both the 32 and 64-bit variants!
+Present on Windows platforms, both the 32 and 64-bit variants!
 
 \subsection{\ttfamily windowed}
-   Present if CSL is running in its own window rather than in console mode.
+Present if CSL is running in its own window rather than in console mode.
 
 \section{Flags and Properties}
   
-   Most of tags here are probably not much use to end-users, but I am noting them
-   as a matter of completeness.
+Most of tags here are probably not much use to end-users, but I am noting them
+as a matter of completeness.
   
 
 \subsection{\ttfamily lose}
-   If a name is flagged as {ttfamily lose} then a subsequent attempt to
-   define or redefine it will be ignored.
+If a name is flagged as {ttfamily lose} then a subsequent attempt to
+define or redefine it will be ignored.
 
 \subsection{\ttfamily s!:ppchar and s!:ppformat}
-   These are used in the prettyprint code found in {\ttfamily extras.red}. A
-   name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
-   its first few arguments should appear on the same line as it if at all
-   possible. The {\ttfamily s!:ppchar} property is used to make the display of
-   bracket characters a little more tide in the source code.
+These are used in the prettyprint code found in {\ttfamily extras.red}. A
+name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
+its first few arguments should appear on the same line as it if at all
+possible. The {\ttfamily s!:ppchar} property is used to make the display of
+bracket characters a little more tide in the source code.
 
 \subsection{\ttfamily switch}
-   In the Reduce parser some names are ``switches'', and then directives such
-   as {\ttfamily on xxx} and {\ttfamily off xx} have the effect of setting or
-   clearing the value of a variable {\ttfamily !*xxx}. This is managed by
-   setting the {\ttfamily switch} flag om {\ttfamily xxx}. CSL sets some
-   things as switches ready for when they may be used by the Reduce parser.
+In the Reduce parser some names are ``switches'', and then directives such
+as {\ttfamily on xxx} and {\ttfamily off xx} have the effect of setting or
+clearing the value of a variable {\ttfamily !*xxx}. This is managed by
+setting the {\ttfamily switch} flag om {\ttfamily xxx}. CSL sets some
+things as switches ready for when they may be used by the Reduce parser.
 
 \subsection{\ttfamily !$\sim$magic!-internal!-symbol!$\sim$}
-   CSL does not have a clear representation for functions that is separated from
-   the representation of an identifier, and so when you ask to get the value
-   of a raw function you get an identifier (probably a gensym) and this
-   tag is used to link such values with the symbols they were originally
-   extracted from.
+CSL does not have a clear representation for functions that is separated from
+the representation of an identifier, and so when you ask to get the value
+of a raw function you get an identifier (probably a gensym) and this
+tag is used to link such values with the symbols they were originally
+extracted from.
 
 \section{Functions and Special Forms}
   
-   Each line here shows a name and then one of the words {\ttfamily expr},
-   {\ttfamily fexpr} or {\ttfamily macro}. In some cases there can also be special
-   treatment of functions by the compiler so that they get compiled in-line.
+Each line here shows a name and then one of the words {\ttfamily expr},
+{\ttfamily fexpr} or {\ttfamily macro}. In some cases there can also be special
+treatment of functions by the compiler so that they get compiled in-line.
   
 
 \subsection{\ttfamily abs expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acons expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acos expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acosd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acosh expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acot expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acotd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acoth expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acsc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acscd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily acsch expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily add1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily and fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily append expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily apply expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily apply0 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily apply1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily apply2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily apply3 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily asec expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily asecd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily asech expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ash1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily asin expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily asind expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily asinh expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily assoc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily assoc!*!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atan expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atan2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atan2d expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atand expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atanh expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atom expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily atsoc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily batchp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_close\_input expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_close\_output expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_open\_input expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_open\_output expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_prin1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_prin2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_prin3 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_prinbyte expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_princ expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_prinfloat expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_read2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_read3 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_read4 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_readbyte expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_readfloat expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_select\_input expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binary\_terpri expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily binopen expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily boundp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily bps!-getv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily bps!-putv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily bps!-upbv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily bpsp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily break!-loop expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily byte!-getv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily bytecounts expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily c\_out expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily caaaar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily caaadr expr}
-   Not yet written
+see {\ttfamily caar}.
+
+\subsection{\ttfamily caaadr expr}
+see {\ttfamily caar}.
 
 \subsection{\ttfamily caaar expr}
-   Not yet written
-
-\subsection{\ttfamily caadar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily caaddr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily caadr expr}
-   Not yet written
+see {\ttfamily caar}.
 
-\subsection{\ttfamily caar expr}
-   Not yet written
+\subsection{\ttfamily caar \ldots cddddr expr}
+Names that start with {\ttfamily c}, then have a sequence of
+{\ttfamily a} or {\ttfamily d}s and finally {\ttfamily r} provide
+shorthand functions for chains of uses of {\ttfamily car} and
+{\ttfamily cdr}. Thus for instance
+{\ttfamily (cadar x)} has the same meaning as
+{\ttfamily (car (cdr (car x)))}.
 
 \subsection{\ttfamily cadaar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cadadr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cadar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily caddar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cadddr expr}
-   Not yet written
+see {\ttfamily caar} and {\ttfamily fourth}.
 
 \subsection{\ttfamily caddr expr}
-   Not yet written
+see {\ttfamily caar} and {\ttfamily third}.
 
 \subsection{\ttfamily cadr expr}
-   Not yet written
+see {\ttfamily caar} and {\ttfamily second}.
 
 \subsection{\ttfamily car expr}
-   Not yet written
+For a non-empty list the function {\ttfamily car} will return the
+first element. For a dotted pair (created using {\ttfamily cons})
+it extracts the first component. This is the fundamental low-level
+data structure access function in Lisp. See {\ttfamily cdr} for the
+function that returns the tail or a list or the second component of
+a dotted pair. In CSL any attempt to tape {\ttfamily car} of an atom
+should be detected and will be treated as an error. If CSL had been
+compiled in Common Lisp mode (which is now not probable) a special
+exemption would apply and {\ttfamily car} and {\ttfamily} cdr of the
+empty lisp {\ttfamily nil} would be {\ttfamily nil}.
 
-\subsection{\ttfamily car!* expr}
-   Not yet written
+\subsection{\ttfamily Special Forms}
+This function behaves like {\ttfamily car} except that if its argument
+is atomic then the argument is returned unaltered rather than that case
+being treated as an error.
 
 \subsection{\ttfamily carcheck expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily catch fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cbrt expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cdaaar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdaadr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdaar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdadar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdaddr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdadr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cddaar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cddadr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cddar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdddar expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cddddr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdddr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cddr expr}
-   Not yet written
+see {\ttfamily caar}.
 
 \subsection{\ttfamily cdr expr}
-   Not yet written
+See {\ttfamily car}.
 
 \subsection{\ttfamily ceiling expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily char!-code expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily char!-downcase expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily char!-upcase expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily chdir expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily check!-c!-code expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily checkpoint expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cl!-equal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily close expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily close!-library expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily clrhash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily code!-char expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily codep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily compile expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily compile!-all expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily compress expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cond fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cons expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily consp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily constantp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily contained expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily convert!-to!-evector expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily copy expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily copy!-module expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily copy!-native expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cos expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cosd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cosh expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cot expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cotd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily coth expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily create!-directory expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily csc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily cscd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily csch expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily date expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily dated!-name expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily datelessp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily datestamp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily de fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily define!-in!-module expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily deflist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily deleq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily delete expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily delete!-file expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily delete!-module expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily difference expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily digit expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily directoryp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily divide expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily dm fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily do macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily do!* macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily dolist macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily dotimes macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily double!-execute expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily egetv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eject expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily enable!-backtrace expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily enable!-errorset expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily encapsulatedp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily endp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eputv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eq!-safe expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eqcar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eql expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eqlhash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eqn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily equal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily equalcar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily equalp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily error expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily error1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily errorset expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eupbv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eval expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily eval!-when fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily evectorp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily evenp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily evlis expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily exp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily expand expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode2lc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode2lcn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode2n expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode2uc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explode2ucn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explodebinary expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explodec expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explodecn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explodehex expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily exploden expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily explodeoctal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily expt expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily faslout expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fetch!-url expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fgetv32 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fgetv64 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily file!-length expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily file!-readablep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily file!-writeablep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily filedate expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily filep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fix expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fixp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily flag expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily flagp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily flagp!*!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily flagpcar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily float expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily floatp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily floor expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fluid expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fluidp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily flush expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily format macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fp!-evaluate expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fputv32 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily fputv64 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily frexp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily funcall expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily funcall!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily function fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gcdn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gctime expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gensym expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gensym1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gensym2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gensymp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily geq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily get expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily get!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily get!-current!-directory expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily get!-lisp!-directory expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily getd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily getenv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily gethash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily getv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily getv16 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily getv32 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily getv8 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily global expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily globalp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily go fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily greaterp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily hash!-table!-p expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily hashcontents expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily hashtagged!-name expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily hypot expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iadd1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily idapply expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily idifference expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily idp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iequal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily if fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily igeq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily igreaterp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ileq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ilessp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ilogand expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ilogor expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ilogxor expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily imax expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily imin expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iminus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iminusp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily indirect expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily inorm expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily input!-libraries fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily instate!-c!-code expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily integerp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily internal!-open expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily intern expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily intersection expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ionep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iplus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iplus2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iquotient expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily iremainder expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily irightshift expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily is!-console expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily isub1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily itimes expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily itimes2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily izerop expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily last expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lastcar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lastpair expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lcmn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily length expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lengthc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily leq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lessp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily let!* fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily library!-members expr}
-   Returns a list of all the modules that could potentially be loaded using
-   {\ttfamily load!-module}. See {\ttfamily list!-modules} to get a human
-   readable display that looks more like the result of listing a directory, or
-   {\ttfamily modulep} for checking the state of a particular named module.
+Returns a list of all the modules that could potentially be loaded using
+{\ttfamily load!-module}. See {\ttfamily list!-modules} to get a human
+readable display that looks more like the result of listing a directory, or
+{\ttfamily modulep} for checking the state of a particular named module.
   
 
 \subsection{\ttfamily library!-name expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily linelength expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list!* fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list!-directory expr}
-   Not yet written
+Not yet written
   
 
 \subsection{\ttfamily list!-modules expr}
-   This prints a human-readable display of the modules present in the current
-   image files. This will include ``InitialImage'' which is the heap-image
-   loaded at system startup. For example
-   \begin{verbatim}
-   > (list!-modules)
+This prints a human-readable display of the modules present in the current
+image files. This will include ``InitialImage'' which is the heap-image
+loaded at system startup. For example
+\begin{verbatim}
+> (list!-modules)
   
-   File d:\csl\csl.img (dirsize 8  length 155016, Writable):
-     compat       Sat Jul 26 10:20:08 2008  position 556   size: 9320
-     compiler     Sat Jul 26 10:20:08 2008  position 9880  size: 81088
-     InitialImage Sat Jul 26 10:20:09 2008  position 90972 size: 64040
+File d:\csl\csl.img (dirsize 8  length 155016, Writable):
+  compat       Sat Jul 26 10:20:08 2008  position 556   size: 9320
+  compiler     Sat Jul 26 10:20:08 2008  position 9880  size: 81088
+  InitialImage Sat Jul 26 10:20:09 2008  position 90972 size: 64040
   
-   nil
-   \end{verbatim}
+nil
+\end{verbatim}
   
-   See {\ttfamily library!-members} and {\ttfamily modulep} for functions that
-   make it possible for Lisp code to discover about the loadable modules that are
-   available.
+See {\ttfamily library!-members} and {\ttfamily modulep} for functions that
+make it possible for Lisp code to discover about the loadable modules that are
+available.
 
 \subsection{\ttfamily list!-to!-string expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list!-to!-symbol expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list!-to!-vector expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list2!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list3 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list3!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily list4 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily liter expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ln expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily load!-module expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily load!-source expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily log expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily log10 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily logand expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily logb expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily logeqv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lognot expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily logor expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily logxor expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lose!-precision expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lposn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily lsd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily macro!-function expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily macroexpand expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily macroexpand!-1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-bps expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-function!-stream expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-global expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-native expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-random!-state expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-simple!-string expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily make!-special expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily map expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mapc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mapcan expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mapcar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mapcon expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maphash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maple\_atomic\_value expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maple\_component expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maple\_integer expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maple\_length expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maple\_string\_data expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maple\_tag expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily maplist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mapstore expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily math!-display expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily max expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily max2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily md5 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily md60 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily member expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily member!*!* expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily memq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily min expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily min2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily minus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily minusp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkevect expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkfvect32 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkfvect64 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkhash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkquote expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkvect expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkvect16 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkvect32 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkvect8 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mkxvect expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mod expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-difference expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-expt expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-minus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-number expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-plus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-quotient expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-reciprocal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modular!-times expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily modulep expr}
-   This takes a single argument and checks whether there is a loadable module
-   of that name. If there is not then {\ttfamily nil} is returned, otherwise a
-   string that indicates the date-stamp on the module is given. See
-   {\ttfamily datelessp} for working with such dates, and {\ttfamily
-   library!-members} for finding a list of all modules that are available.
+This takes a single argument and checks whether there is a loadable module
+of that name. If there is not then {\ttfamily nil} is returned, otherwise a
+string that indicates the date-stamp on the module is given. See
+{\ttfamily datelessp} for working with such dates, and {\ttfamily
+library!-members} for finding a list of all modules that are available.
   
 
 \subsection{\ttfamily mpi\_allgather expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_alltoall expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_barrier expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_bcast expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_comm\_rank expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_comm\_size expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_gather expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_iprobe expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_irecv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_isend expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_probe expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_recv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_scatter expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_send expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_sendrecv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_test expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily mpi\_wait expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily msd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily native!-address expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily native!-getv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily native!-putv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily native!-type expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily nconc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ncons expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily neq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily noisy!-setq fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily not expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily nreverse expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily null expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily numberp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily oblist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily oddp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily oem!-supervisor expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily onep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily open expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily open!-library expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily open!-url expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily or fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily orderp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ordp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily output!-library fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily pagelength expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily pair expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily pairp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily parallel expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily peekch expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily pipe!-open expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily plist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily plus fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily plus2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily plusp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily posn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily preserve expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prettyprint expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prin expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prin1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prin2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prin2a expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prinbinary expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily princ expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily princ!-downcase expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily princ!-upcase expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily princl expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prinhex expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prinl expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prinoctal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prinraw expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily print expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily print!-config!-header expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily print!-csl!-headers expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily print!-imports expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily printc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily printcl expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily printl expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily printprompt expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prog fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prog1 fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily prog2 fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily progn fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily protect!-symbols expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily protected!-symbol!-warn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily psetq macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily put expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily puthash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putv!-char expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putv16 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putv32 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily putv8 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qcaar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qcadr expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qcar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qcdar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qcddr expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qcdr expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qgetv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily qputv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily quote fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily quotient expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily random!-fixnum expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily random!-number expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rassoc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rational expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rdf expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rds expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily read expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily readb expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily readch expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily readline expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily reclaim expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily remainder expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily remd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily remflag expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily remhash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily remob expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily remprop expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rename!-file expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily representation expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily resource!-exceeded expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily resource!-limit expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily restart!-csl expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily restore!-c!-code expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily return fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily reverse expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily reversip expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily round expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rplaca expr}
-   Not yet written
-
-\subsection{\ttfamily rplacd expr}
-   Not yet written
+This is a destructive function in that it alters the data structure
+that it is given as its first argument by updating its {\ttfamily car}
+component. The result is the updated object. See {\ttfamily rplacd}
+for the corresponding function for updating the {\ttfamily cdr} component.
 
 \subsection{\ttfamily rplacw expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rseek expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily rtell expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:blankcount macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:blanklist macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:blankp macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:depth macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:do!-bindings expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:do!-endtest expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:do!-result expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:do!-updates expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:endlist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:expand!-do expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:expand!-dolist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:expand!-dotimes expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:explodes expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:finishpending expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:format expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:indenting macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:make!-psetq!-assignments expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:make!-psetq!-bindings expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:make!-psetq!-vars expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:newframe macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:oblist expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:oblist1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:overflow expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:prindent expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:prinl0 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:prinl1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:prinl2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:prvector expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:putblank expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:putch expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:quotep expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:setblankcount macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:setblanklist macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:setindenting macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:stamp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily s!:top macro}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily safe!-fp!-pl expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily safe!-fp!-pl0 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily safe!-fp!-plus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily safe!-fp!-quot expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily safe!-fp!-times expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sample expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sassoc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily schar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily scharn expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sec expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily secd expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sech expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily seprp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily set expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily set!-autoload expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily set!-help!-file expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily set!-print!-precision expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily set!-small!-modulus expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily setpchar expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily setq fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily silent!-system expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily simple!-string!-p expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily simple!-vector!-p expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sin expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sind expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sinh expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily smemq expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sort expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sortip expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily spaces expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily special!-char expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily special!-form!-p expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily spool expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sqrt expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily stable!-sort expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily stable!-sortip expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily start!-module expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily startup!-banner expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily stop expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily streamp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily stringp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sub1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily subla expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sublis expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily subst expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily superprinm expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily superprintm expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily sxhash expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-argcode expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-argcount expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-env expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-fastgets expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-fn!-cell expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-function expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-make!-fastget expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-name expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-protect expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-restore!-fns expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-set!-definition expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-set!-env expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-set!-native expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbol!-value expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily symbolp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily system expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tagbody fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tan expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tand expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tanh expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily terpri expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily threevectorp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily throw fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily time expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily times fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily times2 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tmpnam expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily trace expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily trace!-all expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily traceset expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily traceset1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily truename expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily truncate expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily ttab expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily tyo expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily undouble!-execute expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unfluid expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unglobal expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily union expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unless fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unmake!-global expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unmake!-special expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unreadch expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily untrace expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily untraceset expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily untraceset1 expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily unwind!-protect fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily upbv expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily user!-homedir!-pathname expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily vectorp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily verbos expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily when fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily where!-was!-that expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily window!-heading expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily writable!-libraryp expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily write!-module expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily wrs expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily xassoc expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily xcons expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily xdifference expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily xtab expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily zerop expr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !$\sim$block fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !$\sim$let fexpr}
-   Not yet written
+Not yet written
 
 \subsection{\ttfamily !$\sim$tyi expr}
-   Not yet written
+Not yet written
+
+\section{unset section header}
+
+\subsection{\ttfamily rplacd expr}
+See {\ttfamily rplaca}
 
 \end{document}

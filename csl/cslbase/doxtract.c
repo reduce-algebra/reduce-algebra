@@ -30,7 +30,7 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
-/* Signature: 7de832b6 12-Nov-2011 */
+/* Signature: 245ecd02 13-Nov-2011 */
 
 
 //
@@ -207,7 +207,14 @@ enum Context
 
 static int context = Standard;
 static int active = 0;
-static void process_doc_comment(FILE *f, int c, int lisp_mode);
+static void C_doc_comment(FILE *f, int c);
+static void lisp_product_comment(FILE *f);
+static void lisp_section_comment(FILE *f);
+static void lisp_doc_comment(FILE *f);
+
+#define MAX_LINE 512
+static char line[MAX_LINE+1];
+int n_line = 0;
 
 static void process_file(const char *file)
 {
@@ -225,7 +232,26 @@ static void process_file(const char *file)
 
     context = Standard;
     active = 0;
-    while ((c = getc(f)) != EOF)
+    if (lisp_mode)
+    {   for (;;)
+        {   n_line = 0;
+            while ((c = getc(f)) != EOF && c != '\n')
+            {   if (c == '\r') continue;
+                if (n_line < MAX_LINE) line[n_line++] = c;
+            }
+            if (c == EOF && n_line == 0) break;
+            line[n_line] = 0;
+            if (line[0] == '%' &&
+                line[1] == '%' &&
+                line[2] == '!')
+            {   if (line[3] == '!' &&
+                    line[4] == '!') lisp_product_comment(f);
+                else if (line[3] == '!') lisp_section_comment(f);
+                else lisp_doc_comment(f);
+            }
+        }
+    }
+    else while ((c = getc(f)) != EOF)
     {   if (c == '\r') continue;
         switch (context)
         {
@@ -276,7 +302,7 @@ static void process_file(const char *file)
             else context = SlashStarPlain;
             continue;
    case SlashStarBang:
-            process_doc_comment(f, c, lisp_mode);
+            C_doc_comment(f, c);
             context = Standard;
             continue;
         }
@@ -295,10 +321,10 @@ static char *heap(const char *s)
     return r;
 }
 
-static char *text_until_comment_end(FILE *f, int keep, int lisp_mode);
-static void process_section_comment(FILE *f, int lisp_mode);
+static char *C_until_comment_end(FILE *f, int active);
+static void C_section_comment(FILE *f);
 
-#define MAX_HEADER 256
+#define MAX_HEADER MAX_LINE
 static char header[MAX_HEADER+1];
 static int n_header = 0;
 
@@ -372,20 +398,19 @@ static section *find_section(const char *name)
     return r;
 }
 
-static void process_doc_comment(FILE *f, int c, int lisp_mode)
+static void C_doc_comment(FILE *f, int c)
 {
     char *p;
     section *s;
     while (c == '\r') c = getc(f);
     if (c == '!')
-    {   process_section_comment(f, lisp_mode);
+    {   C_section_comment(f);
         return;
     }
     read_header(f, c, "subsection");
 /* Here I have the case
  *    /*! section subsection-title
  * or /*! section [alphakey] subsection-title
- * and the order that things should be put in.
  */
     p = header;
     while (*p == ' ') p++;
@@ -426,7 +451,7 @@ static void process_doc_comment(FILE *f, int c, int lisp_mode)
 //  printf("Section: %s\n", secname);
 //  printf("AlphaKey: %s\n", alphakey);
 //  printf("Sub Heading: %s\n", subsechdr);
-    p = text_until_comment_end(f, active, lisp_mode);
+    p = C_until_comment_end(f, active);
     s = find_section(secname);
     s->parts = make_subsection(heap(alphakey), heap(subsechdr),
                                heap(p), s->parts);
@@ -448,16 +473,16 @@ static void read_header(FILE *f, int c, const char *msg)
     printf("%s header <%s>\n", msg, header);
 }
 
-static void process_product_comment(FILE *f, int lisp_mode);
+static void C_product_comment(FILE *f);
 
-static void process_section_comment(FILE *f, int lisp_mode)
+static void C_section_comment(FILE *f)
 {
     int c = getc(f);
     char *p;
     section *s;
     while (c == '\r') c = getc(f);
     if (c == '!')
-    {   process_product_comment(f, lisp_mode);
+    {   C_product_comment(f);
         return;
     }
     read_header(f, c, "section");
@@ -503,7 +528,7 @@ static void process_section_comment(FILE *f, int lisp_mode)
 //  printf("Section: %s\n", secname);
 //  printf("AlphaKey: %s\n", alphakey);
 //  printf("Heading: %s\n", sechdr);
-    p = text_until_comment_end(f, active, lisp_mode);
+    p = C_until_comment_end(f, active);
     s = find_section(secname);
     s->alphakey = heap(alphakey);
     s->sechdr = heap(sechdr);
@@ -512,7 +537,7 @@ static void process_section_comment(FILE *f, int lisp_mode)
 
 static const char *top_heading = "";
 
-static void process_product_comment(FILE *f, int lisp_mode)
+static void C_product_comment(FILE *f)
 {
     const char *p;
     int c = getc(f);
@@ -530,21 +555,16 @@ static void process_product_comment(FILE *f, int lisp_mode)
     if (product != NULL)
     {   const char *l = header , *s;
         int n = strlen(product);
-printf("Look for <%s> in <%s>\n", product, l);
         while ((s = strstr(l, product)) != NULL)
-        {   printf("Match found as %s\n", s);
-            printf("%x %x\n", *(s-1), s[n]);
-            if ((s == header|| isspace(*(s-1))) &&
+        {   if ((s == header|| isspace(*(s-1))) &&
                 (s[n] == 0 || isspace(s[n]))) break;
             l = s+1;
         }
-printf("No match for %s found in %s\n", product, l);
         if (s == NULL) active = 0;
         else printf("Found product tag %s\n", product);
     }
-    else printf("No product tag specified, so accepting this <%s>\n", header);
-    p = text_until_comment_end(f, active, lisp_mode);
-    if (strlen(p ) > strlen(top_heading)) top_heading = p;
+    p = C_until_comment_end(f, active);
+    if (p!=NULL && strlen(p) > strlen(top_heading)) top_heading = p;
 }
 
 /*
@@ -560,9 +580,10 @@ printf("No match for %s found in %s\n", product, l);
 static char text[MAX_TEXT+1];
 static int n_text;
 
-static char *text_until_comment_end(FILE *f, int keep, int lisp_mode)
+static char *C_until_comment_end(FILE *f, int active)
 {
     int c;
+    int first = 1;
     n_text = 0;
     text[n_text] = 0;
 /*
@@ -572,6 +593,7 @@ static char *text_until_comment_end(FILE *f, int keep, int lisp_mode)
  */
     while ((c = getc(f)) != EOF)
     {   if (c == '\r') continue;
+        if (c == '\n') first = 1;
         if (n_text < MAX_TEXT)
         {   text[n_text++] = c;
             text[n_text] = 0; /* keep neatly terminated at all times */
@@ -586,12 +608,194 @@ static char *text_until_comment_end(FILE *f, int keep, int lisp_mode)
                  n_text==3 && strcmp(&text[n_text-3], " *\n") == 0 ||
                  n_text==3 && strcmp(&text[n_text-3], " * ") == 0)
            text[n_text-2] = ' ';
+        if (first && strncmp(&text[n_text-3], "   ", 3) == 0)
+        {   first = 0;
+            n_text -= 3;
+        }
     }
     if (c == EOF)
     {   printf("Documentation comment not properly terminated\n");
     }
     text[n_text++] = 0;
-    if (!keep)
+    if (!active)
+    {   printf("Ignoring section because processing is inactive\n");
+        return NULL;
+    }
+//  printf("Found text: <<<<<<<<\n%s\n>>>>>>>>\n", text);
+    return heap(text);
+}
+
+static void lisp_header(const char *msg);
+static char *lisp_until_comment_end(FILE *f, int active);
+
+static void lisp_doc_comment(FILE *f)
+{
+    int c;
+    char *p;
+    section *s;
+/* Here I have the case
+ *    %%! section subsection-title
+ * or %%! section [alphakey] subsection-title
+ */
+    p = line+3;
+    while (*p == ' ') p++;
+    if (*p == 0)
+    {   printf("Empty subsection directive\n");
+        exit(1);
+    }
+    n_secname = n_alphakey = n_subsechdr = 0;
+    secname[0] = 0;
+    alphakey[0] = 0;
+    subsechdr[0] = 0;
+    for (;;)
+    {   c = *p++;
+        if (n_secname < MAX_SECNAME) secname[n_secname++] = c;
+        if (*p == 0 || *p == ' ') break;
+    }
+    while (*p == ' ') p++;
+    if (*p == '[')
+    {   p++;
+        while ((c = *p++) != 0 && c != ']')
+        {   if (n_alphakey < MAX_ALPHAKEY) alphakey[n_alphakey++] = c;
+        }
+        if (c == ']') p++;
+    }
+    while (*p == ' ') p++;
+    if (*p != 0)
+    {   for (;;)
+        {   c = *p++;
+            if (n_subsechdr < MAX_SUBSECHDR) subsechdr[n_subsechdr++] = c;
+            if (*p == 0) break;
+        }
+    }
+    secname[n_secname] = 0;
+    alphakey[n_alphakey] = 0;
+    subsechdr[n_subsechdr] = 0;
+/* If no alphakey is explicitly given then use the subsection heading */
+    if (n_alphakey == 0) strcpy(alphakey, subsechdr);
+//  printf("Section: %s\n", secname);
+//  printf("AlphaKey: %s\n", alphakey);
+//  printf("Sub Heading: %s\n", subsechdr);
+    p = lisp_until_comment_end(f, active);
+    s = find_section(secname);
+    s->parts = make_subsection(heap(alphakey), heap(subsechdr),
+                               heap(p), s->parts);
+}
+
+static void lisp_section_comment(FILE *f)
+{
+/* Here I have the case
+ *    /*!! section [alphakey] title
+ */
+    int c;
+    char *p = line+4;
+    section *s;
+    while (*p == ' ') p++;
+    if (*p == 0)
+    {   printf("Empty section directive\n");
+        exit(1);
+    }
+    n_secname = n_alphakey = n_sechdr = 0;
+    secname[0] = 0;
+    alphakey[0] = 0;
+    sechdr[0] = 0;
+    for (;;)
+    {   c = *p++;
+        if (n_secname < MAX_SECNAME) secname[n_secname++] = c;
+        if (*p == 0 || *p == ' ') break;
+    }
+    while (*p == ' ') p++;
+    if (*p == '[')
+    {   p++;
+        while ((c = *p++) != 0 && c != ']')
+        {   if (n_alphakey < MAX_ALPHAKEY) alphakey[n_alphakey++] = c;
+        }
+        if (c == ']') p++;
+    }
+    while (*p == ' ') p++;
+    if (*p != 0)
+    {   for (;;)
+        {   c = *p++;
+            if (n_sechdr < MAX_SECHDR) sechdr[n_sechdr++] = c;
+            if (*p == 0) break;
+        }
+    }
+    secname[n_secname] = 0;
+    alphakey[n_alphakey] = 0;
+    sechdr[n_sechdr] = 0;
+/* If no alphakey is explicitly given then use the section heading */
+    if (n_alphakey == 0) strcpy(alphakey, sechdr);
+//  printf("Section: %s\n", secname);
+//  printf("AlphaKey: %s\n", alphakey);
+//  printf("Heading: %s\n", sechdr);
+    p = lisp_until_comment_end(f, active);
+    s = find_section(secname);
+    s->alphakey = heap(alphakey);
+    s->sechdr = heap(sechdr);
+    s->text = heap(p);
+}
+
+static void lisp_product_comment(FILE *f)
+{
+    const char *p;
+/* Here I have the case
+ *    /*!!! product ...
+ */
+    active = 1;
+/*
+ * Now if the user had specified "-P product" on the command line I will
+ * only enable processing for the rest of this file if the product specified
+ * is mentioned as a word on the line.
+ */
+    if (product != NULL)
+    {   const char *l = line+5 , *s;
+        int n = strlen(product);
+        while ((s = strstr(l, product)) != NULL)
+        {   if ((s == header|| isspace(*(s-1))) &&
+                (s[n] == 0 || isspace(s[n]))) break;
+            l = s+1;
+        }
+        if (s == NULL) active = 0;
+        else printf("Found product tag %s\n", product);
+    }
+    p = lisp_until_comment_end(f, active);
+    if (p != NULL && strlen(p) > strlen(top_heading)) top_heading = p;
+}
+
+static char *lisp_until_comment_end(FILE *f, int active)
+{
+    int c;
+    n_text = 0;
+    text[n_text] = 0;
+/*
+ * In the text that I read here I will spot an end of comment as any line
+ * NOT starting "%% ". Since that can not be the start of a new document
+ * comment I can of course merely disard it.
+ */
+    for (;;)
+    {   char *p;
+        n_line = 0;
+        while ((c = getc(f)) != EOF && c != '\n')
+        {   if (c == '\r') continue;
+            if (n_line < MAX_LINE)
+            {   line[n_line++] = c;
+                line[n_line] = 0; /* keep neatly terminated at all times */
+            }
+        }
+        line[n_line] = 0;
+        if (line[0] != '%' ||
+            line[1] != '%' ||
+            line[2] != ' ') break;
+        p = line+3;
+        while (*p != 0) text[n_text++] = *p++;
+        text[n_text++] = '\n';
+        text[n_text] = 0;
+    }
+    if (c == EOF)
+    {   printf("Documentation comment not properly terminated\n");
+    }
+    text[n_text++] = 0;
+    if (!active)
     {   printf("Ignoring section because processing is inactive\n");
         return NULL;
     }
