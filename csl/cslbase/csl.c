@@ -66,8 +66,6 @@
 /*!! predef [02] Predefined variables
  */
 
-/*!! lispsys [03] Items that can appear in {\ttfamily lispsystem!*}
- */
 
 /*!! flags [04] Flags and Properties
  */
@@ -1789,6 +1787,7 @@ term_printf(
         case 'a':
                 batch_flag = YES;
                 continue;
+
 /*! options -b
  * {\ttfamily -b} tells the system to avoid any attempt to recolour prompts
  * and input text. It will mainly be needed on X terminals that have been
@@ -1802,7 +1801,6 @@ term_printf(
  */
 
 
- */
         case 'b':
 /*
  * Actually "-b" is detected and processed by fwin (if present) before

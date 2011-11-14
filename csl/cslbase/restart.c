@@ -4916,6 +4916,27 @@ static void set_up_variables(CSLbool restart_flag)
  * keyword package. Otherwise they are just regular symbols. This makes it
  * slightly hard to use code that tests this list in a generic environment!
  */
+
+/*!!! csl
+ */
+
+/*!! lispsys [03] Items that can appear in {\ttfamily lispsystem!*}
+ *
+ * There is a global variable called {\ttfamily lispsystem!*} whose value is
+ * reset in the process of CSL starting up. An effect of this is that if the
+ * user changes its value those changes do not survice a preserving and
+ * re-loading a heap image: this is deliberate since the heap image may be
+ * re-loaded on a different instance of CSL possibly on a quite different
+ * computer of with a different configuration. The value of {\ttfamily
+ * lispsystem!*} is a list of items, where each item is either an atomic tag
+ * of a pair whose first component is a key. In general it would be unwise
+ * to rely on exactly what information is present without review of the code
+ * that sets it up. The information may be of interest to anybody but some tags
+ * and keys are reflections of experiments rather than fullt stable facilities.
+ *
+ */
+
+
     {
 #ifdef COMMON
         Lisp_Object n = features_symbol;
@@ -4925,6 +4946,10 @@ static void set_up_variables(CSLbool restart_flag)
         int ii;
         while ((*p1++ = toupper(*p2++)) != 0);
         *p1 = 0;
+/*! lispsys [opsys] operating system identity
+ * The name of the current operating system is put on the list. Exactly what
+ * form is not explicitly defined!
+ */
         w = cons(make_keyword(opsys), nil);
 #if defined WIN64 || defined __WIN64__ || defined WIN32
         w = cons(make_keyword("WIN32"), w);
@@ -4932,6 +4957,18 @@ static void set_up_variables(CSLbool restart_flag)
 #if defined WIN64 || defined __WIN64__
         w = cons(make_keyword("WIN64"), w);
 #endif
+/*! lispsys [win32] win32, win64
+ * Any windows system puts {\ttfamily win32} in {\ttfamily lispsystem!*}.
+ * If 64-bit windows is is use then {\ttfamily win64} is also included
+ */
+
+/*! lispsys [linker] (linker . type)
+ * Intended for use in association with {\ttfamily compiler!-command}, the value
+ * is {\ttfamily win32} on Windows, {\ttfamily x86\_64} on 64-bit Linux and
+ * other things on other systems, as detected using the program {\ttfamily
+ * objtype.c}.
+ */
+
         w = acons(make_keyword("LINKER"),
                   make_undefined_symbol(linker_type), w);
         w1 = nil;
@@ -4939,9 +4976,132 @@ static void set_up_variables(CSLbool restart_flag)
              ii>=0;
              ii--)
             w1 = cons(make_undefined_symbol(compiler_command[ii]), w1);
+
+/*! lispsys [compiler-command] (compiler!-command . command)
+ * The value associated with this key is a string that was used to compile the
+ * files of C code making up CSL. It should contain directives to set up
+ * search paths and predefined symbols. It is intended to be used in an
+ * experiment that generates C code synamically, uses a command based on this
+ * string to compile it and then dynamically links the resulting code in with
+ * the running system.
+ */
+
         w = acons(make_keyword("COMPILER-COMMAND"), w1, w);
 #else
         Lisp_Object n = make_undefined_symbol("lispsystem*");
+/*! lispsys [c-code] (c!-code . count)
+ * This will be present if code has been optimised into C through the source
+ * files u01.c to u60.c, and in that case the value tells you how many functions
+ * have been optimised in this manner.
+ *
+ */
+
+/*! lispsys [common-lisp] common!-lisp
+ * For a project some while ago a limited Common Lisp compatibility mode was
+ * being developed, and this tag indicated that it was active. In that case all
+ * entries are in upper case and the variable is called {\ttfamily *FEATURES*
+ * rather than {\ttfamily lispsystem!*}. But note that this Lisp has never even
+ * aspired to be a full Common Lisp, since its author considers Common Lisp to
+ * have been a sad mistake that must bear significant responsibility for the
+ * fact that interest in Lisp has faded dramatically since its introduction.
+ *
+ */
+/*! lispsys csl
+ * A simple tag intended to indicate that this Lisp system is CSL and not any
+ * other. This can of course only work properly if all other Lisp systems
+ * agree not to set this tag! In the context of Reduce I note that the PSL
+ * Lisp system sets a tag {\ttfamily psl} on {\ttfamily lispsystem!*} and
+ * the realistic use of this is to discriminate between CSL and PSL hosted
+ * copies of Reduce.
+ */
+
+/*! lispsys debug
+ * If CSL was compiled with debugging options this is present, and one can imagine
+ * various bits of code being more cautious or more verbose if it is detected.
+ */
+
+/*! lispsys [executable] (executable . name)
+ * The value is the fully rooted name of the executable file that was launched.
+ */
+
+/*! lispsys fox
+ * Used to be present if the FOX GUI toolkit was detected and incorporated as
+ * part of CSL, but now probably never used!
+ */
+
+/*! lispsys [name] (name . name)
+ * Some indication of the platform. For instance on one system I use it
+ * is {\ttfamily linux-gnu:x86\_64} and on anther it is just {\ttfamily win32}.
+ */
+
+/*! lispsys [native] (native . tag)
+ * One of the many experiments within CSL that were active at one stage but are
+ * not current involved compilation directly into machine code. The strong
+ * desire to ensure that image files coudl be used on a cross-platform basis
+ * led to saved compiled code being tagged with a numeric ``native code tag'',
+ * and this key/value pair identified the value to be used on the current
+ * machine.
+ */
+
+/*! lispsys [opsys] (opsys . operating-system)
+ * Some crude indication of the host operating system.
+ */
+
+/*! lispsys pipes
+ * In the earlier days of CSL there were computers where pipes were not
+ * supported, so this tag notes when they are present and hance the facility
+ * to create sub-tasks through them can be used.
+ */
+
+/*! lispsys [record_get] record\_get
+ * An an extension to the CSL profiling scheme it it possible to compile
+ * a special version that tracks and counts each use of property-list access
+ * functions. This can be useful because there are ways to give special
+ * treatment to a small number of flags and a small number of properties. The
+ * special-case flage end up stored as a bitmap in the symbol-header so avoid
+ * need for property-list searching. But of course recording this extra
+ * information slows things down. This tag notes when the slow version is
+ * in use. It might be used to trigger a display of statistics at the end of
+ * a calculation.
+ */
+
+/*! lispsys reduce
+ * This is intended to report if the initial heap image is for Reduce rather than
+ * merely for Lisp.
+ */
+
+/*! lispsys [shortname] (shortname . name)
+ * Gives the short name of the current executable, without its full path.
+ */
+
+/*! lispsys showmath
+ * If the ``showmath'' capability has been compiled into CSL this will be present
+ * so that Lisp code can know it is reasonable to try to use it.
+ */
+
+/*! lispsys [sixty-four] sixty!-four
+ * Present if the Lisp was compiled for a 64-bit computer.
+ */
+
+/*! lispsys termed
+ * Present if a cursor-addressable console was detected.
+ */
+
+/*! lispsys texmacs
+ * Present if the system was launched with the {\ttfamily --texmacs} flag.
+ * The intent is that this should only be done when it has been launched with
+ * texmacs as a front-end.
+ */
+
+/*! lispsys [version] (version . ver)
+ * The CSL version number.
+ */
+
+
+/*! lispsys windowed
+ * Present if CSL is running in its own window rather than in console mode.
+ */
+
         Lisp_Object w = cons(make_keyword(OPSYS), nil), w1;
         int ii;
 #if defined WIN64 || defined __WIN64__ || defined WIN32

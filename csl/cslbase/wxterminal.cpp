@@ -3072,7 +3072,7 @@ void fwinFrame::CloseAction()
 // The worker might not close down utterly instantly, and it might have
 // been in the middle of a computation, so I set more flags that ask it
 // to close down. It SEEMS that the call to Delete() here will not
-// actually return to me until it has baan processed.
+// actually return to me until it has been processed.
     {   wxCriticalSectionLocker lock(panel->work);
         if (panel->frame->worker != NULL)
         {   FWIN_LOG("About to ask the worker to stop\n");
