@@ -7405,7 +7405,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
       fi
-      test "x$sysroot" = "x"
+      if test "x$sysroot" = "x"
       then
         as_fn_error $? "Need MACOSX SDK 10.6 or 10.7" "$LINENO" 5
       fi

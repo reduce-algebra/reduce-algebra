@@ -501,7 +501,7 @@ then
           [CFLAGS="$OLDCFLAGS"
            AC_MSG_NOTICE([MacOS10.6 SKD NOT found])])
       fi
-      test "x$sysroot" = "x"
+      if test "x$sysroot" = "x"
       then
         AC_MSG_ERROR([Need MACOSX SDK 10.6 or 10.7])
       fi
