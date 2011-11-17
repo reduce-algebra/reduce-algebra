@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 761e6706 09-Nov-2011 */
+/* Signature: 71054510 17-Nov-2011 */
 
 
 
@@ -61,7 +61,10 @@
 
 #ifdef WIN32
 // I will need a few windows-specific headers. Mainly to let me set
-// gdi+ antialiasing options.
+// gdi+ antialiasing options. However the gdiplus headers are not distributed
+// with cygwin for i686-w64-mingw32 (at the time of writing this comment)
+// so to compile this I need "-I/usr/include/w32api" to pick them up
+// from elsewhere in the tree that cygwin installs for me.
 
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
@@ -73,6 +76,8 @@ if 0
 #include <gdiplus.h>
 #endif
 #include <io.h>
+
+
 #endif  // WIN32
 
 // I may be old fashioned, but I will be happier using C rather than C++
@@ -1609,7 +1614,11 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 // The Windows default behaviour fails to antialias some of the cmex10
 // tall characters, and so unless I force antialiasing here I get MOST
 // symbols rendered nicely, but big integral signs and parentheses badly
-// blocky. I do not fully understand!
+// blocky when the display exceeds a certain size. This is clearly down to
+// the system default smoothing switching off for characters over a certain
+// size, but it is far from clear that there is a trivial place where I
+// can adjust for that, and anyway nobody wants to have to set a system-
+// wide option just for the benefit of this application.
     Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
     g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
 #endif
