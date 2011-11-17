@@ -47,290 +47,275 @@
 /*!!! csl
  */
 
-/*! predef [!fleps1] !!fleps1
- * There is a function safe!-fp!-plus that performs floating point
- * arithmetic but guarantees never to raise an exception. This value was
- * at one stage related to when small values created there got truncated to zero,
- * but the current code does not use the Lisp variable at all and instead does
- * things based on the bitwise representation of the numbers.
- */
-
-/*! predef [$eof$] !\$eof!\$
- * The value of this variable is a special ``character'' used to denote an
- * end-of-file condition.
- *
- */
-
-/*! predef [$eol$] !\$eol!\$
- * The value of this variable is an end-of-line character.
- */
-
-/*! predef [*applyhook] !*applyhook!*
+/*! predef [*applyhook] \item [{\ttfamily !*applyhook!*}]
  * If this is set it might be supposed to be the name of a function used
  * by the interpreter as a callbackm but at presnet it does not actually do
  * anything!
  */
 
-/*! predef [*break-loop*] !*break!-loop!*
+/*! predef [*break-loop*] \item [{\ttfamily !*break!-loop!*}]
  * If the value of this is a symbol that is defined as a function of one
  * argument then it is called during the processing on an error. This has not
  * been used in anger and so its whole status may be dubious!
  */
 
-/*! predef [*carcheckflag] !*carcheckflag
+/*! predef [*carcheckflag] \item [{\ttfamily !*carcheckflag}]
  * In general CSL arranges that every {\ttfamily car} or {\ttfamily cdr} access
  * is checked for validity. Once upon a time setting this variable to nil
  * turned such checks off in the hope of gaining a little speed. But it no
  * longer does that. It may have a minor effect on array access primitives.
  */
 
-/*! predef [*comp] !*comp
+/*! predef [*comp] \item [{\ttfamily !*comp}]
  * When set each function is compiled (into bytecodes) as it gets defined.
  */
 
-/*! predef [*debug-io] !*debug!-io!*
+/*! predef [*debug-io] \item [{\ttfamily !*debug!-io!*}]
  * An I/O channel intended to be used for diagnostic interactions.
  */
 
-/*! predef [*echo] !*echo
+/*! predef [*echo] \item [{\ttfamily !*echo}]
  * When this is non-nil characters that are read from an input file are
  * echoed to the standard output. This gives a more comlete transcript in
  * a log file, but can sometimes amount to over-verbose output.
  */
 
-/*! predef [*error-message*] !*error!-messages!*
+/*! predef [*error-message*] \item [{\ttfamily !*error!-messages!*}]
  * Has the value nil and does not do anything!
  */
 
-/*! predef [*error-output*] !*error!-output!*
+/*! predef [*error-output*] \item [{\ttfamily !*error!-output!*}]
  * An I/O channel intended for diagnostic output.
  */
 
-/*! predef [*evalhook] !*evalhook!*
- * See {\ttfamily !*applyhool!*}. This also does not do anything at present.
+/*! predef [*evalhook] \item [{\ttfamily !*evalhook!*}]
+ * See {\ttfamily !*applyhook!*}. This also does not do anything at present.
  */
 
-/*! predef [*gchook*] !*gc!-hook!*
+/*! predef [*gchook*] \item [{\ttfamily !*gc!-hook!*}]
  * If this is set to have as its value that is a function of one argument then
  * that function is called with {\ttfamily nil} on every minor entry to the
  * garbage collection, and with argument {\ttfamily t} at the end of a ``genuine''
  * full garbage collection.
  */
 
-/*! predef [*hanaku] !*hankaku
+/*! predef [*hanaku] \item [{\ttfamily !*hankaku}]
  * This was concerned with internationalisation to support a Japanese
- * locale but has not been activated for some while.
+ * locale but has not been activated for some while. In the fullness of time I
+ * hope to migrate CSL to use an UTF8 representation of Unicode characters
+ * internally, but that upgrade is at present an ideal and a project not
+ * a reality. Volunteers to help welcomed.
  */
 
-/*! predef [*loop-print*] !*loop!-print!*
+/*! predef [*loop-print*] \item [{\ttfamily !*loop!-print!*}]
  * Probably not used at present.
  */
 
-/*! predef [*lower] !*lower
+/*! predef [*lower] \item [{\ttfamily !*lower}]
  * Not yet written
  */
 
-/*! predef [*macroexpand-hook*] !*macroexpand!-hook!*
+/*! predef [*macroexpand-hook*] \item [{\ttfamily !*macroexpand!-hook!*}]
  * Not yet written
  */
 
-/*! predef [*math-output*] !*math!-output!*
+/*! predef [*math-output*] \item [{\ttfamily !*math!-output!*}]
  * Not yet written
  */
 
-/*! predef [*native_code] !*native\_code
+/*! predef [*native_code] \item [{\ttfamily !*native\_code}]
  * Not yet written
  */
 
-/*! predef [*notailcall] !*notailcall
+/*! predef [*notailcall] \item [{\ttfamily !*notailcall}]
  * Not yet written
  */
 
-/*! predef [*package*] !*package!*
+/*! predef [*package*] \item [{\ttfamily !*package!*}]
  * Not yet written
  */
 
-/*! predef [*pgwd] !*pgwd
+/*! predef [*pgwd] \item [{\ttfamily !*pgwd}]
  * Not yet written
  */
 
-/*! predef [*[lap] !*plap
+/*! predef [*[lap] \item [{\ttfamily !*plap}]
  * Not yet written
  */
 
-/*! predef [*pretty-symamtic] !*pretty!-symmetric
+/*! predef [*pretty-symamtic] \item [{\ttfamily !*pretty!-symmetric}]
  * Not yet written
  */
 
-/*! predef [*prinl-fn!*] !*prinl!-fn!*
+/*! predef [*prinl-fn!*] \item [{\ttfamily !*prinl!-fn!*}]
  * Not yet written
  */
 
-/*! predef [*prinl-index] !*prinl!-index!*
+/*! predef [*prinl-index] \item [{\ttfamily !*prinl!-index!*}]
  * Not yet written
  */
 
-/*! predef [*prinl-visited-nodes*] !*prinl!-visited!-nodes!*
+/*! predef [*prinl-visited-nodes*] \item [{\ttfamily !*prinl!-visited!-nodes!*}]
  * Not yet written
  */
 
-/*! predef [*print-array*] !*print!-array!*
+/*! predef [*print-array*] \item [{\ttfamily !*print!-array!*}]
  * Not yet written
  */
 
-/*! predef [*print-length*] !*print!-length!*
+/*! predef [*print-length*] \item [{\ttfamily !*print!-length!*}]
  * Not yet written
  */
 
-/*! predef [*print-level*] !*print!-level!*
+/*! predef [*print-level*] \item [{\ttfamily !*print!-level!*}]
  * Not yet written
  */
 
-/*! predef [*pwrds] !*pwrds
+/*! predef [*pwrds] \item [{\ttfamily !*pwrds}]
  * Not yet written
  */
 
-/*! predef [*query-io*] !*query!-io!*
+/*! predef [*query-io*] \item [{\ttfamily !*query!-io!*}]
  * Not yet written
  */
 
-/*! predef [*quotes] !*quotes
+/*! predef [*quotes] \item [{\ttfamily !*quotes}]
  * Not yet written
  */
 
-/*! predef [*raise] !*raise
+/*! predef [*raise] \item [{\ttfamily !*raise}]
  * Not yet written
  */
 
-/*! predef [*redefmsg] !*redefmsg
+/*! predef [*redefmsg] \item [{\ttfamily !*redefmsg}]
  * Not yet written
  */
 
-/*! predef [*resources*] !*resources!*
+/*! predef [*resources*] \item [{\ttfamily !*resources!*}]
  * Not yet written
  */
 
-/*! predef [*savedef] !*savedef
+/*! predef [*savedef] \item [{\ttfamily !*savedef}]
  * Not yet written
  */
 
-/*! predef [*spool-output*] !*spool!-output!*
+/*! predef [*spool-output*] \item [{\ttfamily !*spool!-output!*}]
  * Not yet written
  */
 
-/*! predef [*standard-input*] !*standard!-input!*
+/*! predef [*standard-input*] \item [{\ttfamily !*standard!-input!*}]
  * Not yet written
  */
 
-/*! predef [*standard-output*] !*standard!-output!*
+/*! predef [*standard-output*] \item [{\ttfamily !*standard!-output!*}]
  * Not yet written
  */
 
-/*! predef [*terminal-io*] !*terminal!-io!*
+/*! predef [*terminal-io*] \item [{\ttfamily !*terminal!-io!*}]
  * Not yet written
  */
 
-/*! predef [*trace-output*] !*trace!-output!*
+/*! predef [*trace-output*] \item [{\ttfamily !*trace!-output!*}]
  * Not yet written
  */
 
-/*! predef [@cslbase] !@cslbase
+/*! predef [@cslbase] \item [{\ttfamily !@cslbase}]
  * Not yet written
  */
 
-/*! predef bn
+/*! predef [bn] \item [{\ttfamily bn}]
  * Not yet written
  */
 
-/*! predef bufferi
+/*! predef [bufferi]  \item [{\ttfamily bufferi}]
  * Not yet written
  */
 
-/*! predef buffero
+/*! predef [buffero]  \item [{\ttfamily bufferp}]
  * Not yet written
  */
 
-/*! predef [common-lisp-mode] common!-lisp!-mode
+/*! predef [common-lisp-mode]  \item [{\ttfamily common!-lisp!-mode}]
  * Not yet written
  */
 
-/*! predef [crbuf*] crbuf!*
+/*! predef [crbuf*]  \item [{\ttfamily crbuf!*}]
  * Not yet written
  */
 
-/*! predef [emsg*] emsg!*
+/*! predef [emsg*]  \item [{\ttfamily emsg!*}]
  * Not yet written
  */
 
-/*! predef [eof*] eof!*
+/*! predef [eof*]  \item [{\ttfamily eof!*}]
  * Not yet written
  */
 
-/*! predef indblanks
+/*! predef [indblanks]  \item [{\ttfamily indblanks}]
  * Not yet written
  */
 
-/*! predef indentlevel
+/*! predef [indentlevel]  \item [{\ttfamily indentlevel}]
  * Not yet written
  */
 
-/*! predef initialblanks
+/*! predef [initialblanls]  \item [{\ttfamily initialblanks}]
  * Not yet written
  */
 
-/*! predef [lispsystem*] lispsystem!*
+/*! predef [lispsystem*]  \item [{\ttfamily lispsystem!*}]
  * Not yet written
  */
 
-/*! predef lmar
+/*! predef [lmar]  \item [{\ttfamily lmar}]
  * Not yet written
  */
 
-/*! predef [load-source] load!-source
+/*! predef [load-source]  \item [{\ttfamily load!-source}]
  * Not yet written
  */
 
-/*! predef nil
+/*! predef [nil]  \item [{\ttfamily nil}]
  * Not yet written
  */
 
-/*! predef [ofl*] ofl!*
+/*! predef [ofl*]  \item [{\ttfamily ofl!*}]
  * Not yet written
  */
 
-/*! predef pendingrpars
+/*! predef ]pendingrpars]  \item [{\ttfamily pendingrpars}]
  * Not yet written
  */
 
-/*! predef [program*] program!*
+/*! predef [program*]  \item [{\ttfamily program!*}]
  * Not yet written
  */
 
-/*! predef rmar
+/*! predef [rmar]  \item [{\ttfamily rmar}]
  * Not yet written
  */
 
-/*! predef rparcount
+/*! predef [rparcount]  \item [{\ttfamily rparcount}]
  * Not yet written
  */
 
-/*! predef [s:gensym-serial] s!:gensym!-serial
+/*! predef [s:gensym-serial]  \item [{\ttfamily s!:gensym!-serial}]
  * Not yet written
  */
 
-/*! predef stack
+/*! predef [stack]  \item [{\ttfamily stack}]
  * Not yet written
  */
 
-/*! predef t
+/*! predef [t]  \item [{\ttfamily t}]
  * Not yet written
  */
 
-/*! predef [thin*] thin!*
+/*! predef [thin*]  \item [{\ttfamily thin!*}]
  * Not yet written
  */
 
-/*! predef [ttype*] ttype!*
+/*! predef [ttype*]  \item [{\ttfamily ttype!*}]
  * Not yet written
 
 /*!! flags [04] Flags and Properties
@@ -340,7 +325,7 @@
  *
  */
 
-/*! flags [s:ppchar] s!:ppchar and s!:ppformat
+/*! flags [s:ppchar]  \item [{\ttfamily s!:ppchar} and {\ttfamily s!:ppformat}]
  * These are used in the prettyprint code found in {\ttfamily extras.red}. A
  * name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
  * its first few arguments should appear on the same line as it if at all
@@ -348,7 +333,7 @@
  * bracket characters a little more tide in the source code.
  */
 
-/*! flags switch
+/*! flags [switch]  \item [{\ttfamily switch}]
  * In the Reduce parser some names are ``switches'', and then directives such
  * as {\ttfamily on xxx} and {\ttfamily off xx} have the effect of setting or
  * clearing the value of a variable {\ttfamily !*xxx}. This is managed by
@@ -356,12 +341,12 @@
  * things as switches ready for when they may be used by the Reduce parser.
  */
 
-/*! flags lose
+/*! flags [lose]  \item [{\ttfamily lose}]
  * If a name is flagged as {ttfamily lose} then a subsequent attempt to
  * define or redefine it will be ignored.
  */
 
-/*! flags [~magic-internal-symbol~] !$\sim$magic!-internal!-symbol!$\sim$
+/*! flags [~magic-internal-symbol~]  \item [{\ttfamily !$\sim$magic!-internal!-symbol!$\sim$}]
  * CSL does not have a clear representation for functions that is separated from
  * the representation of an identifier, and so when you ask to get the value
  * of a raw function you get an identifier (probably a gensym) and this
@@ -369,15 +354,18 @@
  * extracted from.
  */
 
-/*!! fns [05] Functions and Special Forms
+/*!! fns [05] \section{Functions and Special Forms}
  *
- * Each line here shows a name and then one of the words {\ttfamily expr},
- * {\ttfamily fexpr} or {\ttfamily macro}. In some cases there can also be special
+ * Each line here shows a name and then one of the words {\itshape expr},
+ * {\itshape fexpr} or {\itshape macro}. In some cases there can also be special
  * treatment of functions by the compiler so that they get compiled in-line.
- *
+ * \begin{description}
  */
 
-/*! fns abs expr
+/*! fns [~~~~~~~~] \end{description}
+ */
+
+/*! fns [abs] \item[{\ttfamily abs} {\itshape expr}]
  * Not yet written
  */
 

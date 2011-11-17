@@ -4932,8 +4932,11 @@ static void set_up_variables(CSLbool restart_flag)
  * of a pair whose first component is a key. In general it would be unwise
  * to rely on exactly what information is present without review of the code
  * that sets it up. The information may be of interest to anybody but some tags
- * and keys are reflections of experiments rather than fullt stable facilities.
- *
+ * and keys are reflections of experiments rather than fully stable facilities.
+ * \begin{description}
+ */
+
+/*! lispsys [~~~~~~~~] \end{description}
  */
 
 
@@ -4946,7 +4949,7 @@ static void set_up_variables(CSLbool restart_flag)
         int ii;
         while ((*p1++ = toupper(*p2++)) != 0);
         *p1 = 0;
-/*! lispsys [opsys] operating system identity
+/*! lispsys [opsys] \item [operating system identity]
  * The name of the current operating system is put on the list. Exactly what
  * form is not explicitly defined!
  */
@@ -4957,12 +4960,12 @@ static void set_up_variables(CSLbool restart_flag)
 #if defined WIN64 || defined __WIN64__
         w = cons(make_keyword("WIN64"), w);
 #endif
-/*! lispsys [win32] win32, win64
+/*! lispsys [win32] \item[{\ttfamily win32}, {\ttfamily win64}]
  * Any windows system puts {\ttfamily win32} in {\ttfamily lispsystem!*}.
  * If 64-bit windows is is use then {\ttfamily win64} is also included
  */
 
-/*! lispsys [linker] (linker . type)
+/*! lispsys [linker] \item[{\ttfamily (linker . type)}]
  * Intended for use in association with {\ttfamily compiler!-command}, the value
  * is {\ttfamily win32} on Windows, {\ttfamily x86\_64} on 64-bit Linux and
  * other things on other systems, as detected using the program {\ttfamily
@@ -4977,7 +4980,7 @@ static void set_up_variables(CSLbool restart_flag)
              ii--)
             w1 = cons(make_undefined_symbol(compiler_command[ii]), w1);
 
-/*! lispsys [compiler-command] (compiler!-command . command)
+/*! lispsys [compiler-command] \item[{\ttfamily (compiler!-command . command)}]
  * The value associated with this key is a string that was used to compile the
  * files of C code making up CSL. It should contain directives to set up
  * search paths and predefined symbols. It is intended to be used in an
@@ -4989,24 +4992,24 @@ static void set_up_variables(CSLbool restart_flag)
         w = acons(make_keyword("COMPILER-COMMAND"), w1, w);
 #else
         Lisp_Object n = make_undefined_symbol("lispsystem*");
-/*! lispsys [c-code] (c!-code . count)
+/*! lispsys [c-code] \item[{\ttfamily (c!-code . count)}]
  * This will be present if code has been optimised into C through the source
  * files u01.c to u60.c, and in that case the value tells you how many functions
  * have been optimised in this manner.
  *
  */
 
-/*! lispsys [common-lisp] common!-lisp
+/*! lispsys [common-lisp] \item[{\ttfamily  common!-lisp}]
  * For a project some while ago a limited Common Lisp compatibility mode was
  * being developed, and this tag indicated that it was active. In that case all
- * entries are in upper case and the variable is called {\ttfamily *FEATURES*
+ * entries are in upper case and the variable is called {\ttfamily *FEATURES*}
  * rather than {\ttfamily lispsystem!*}. But note that this Lisp has never even
  * aspired to be a full Common Lisp, since its author considers Common Lisp to
  * have been a sad mistake that must bear significant responsibility for the
  * fact that interest in Lisp has faded dramatically since its introduction.
  *
  */
-/*! lispsys csl
+/*! lispsys [csl] \item[{\ttfamily csl}]
  * A simple tag intended to indicate that this Lisp system is CSL and not any
  * other. This can of course only work properly if all other Lisp systems
  * agree not to set this tag! In the context of Reduce I note that the PSL
@@ -5015,26 +5018,26 @@ static void set_up_variables(CSLbool restart_flag)
  * copies of Reduce.
  */
 
-/*! lispsys debug
+/*! lispsys [debug] \item[{\ttfamily debug}]
  * If CSL was compiled with debugging options this is present, and one can imagine
  * various bits of code being more cautious or more verbose if it is detected.
  */
 
-/*! lispsys [executable] (executable . name)
+/*! lispsys [executable] \item[{\ttfamily  (executable . name)}]
  * The value is the fully rooted name of the executable file that was launched.
  */
 
-/*! lispsys fox
+/*! lispsys [fox] \item[{\ttfamily fox}]
  * Used to be present if the FOX GUI toolkit was detected and incorporated as
  * part of CSL, but now probably never used!
  */
 
-/*! lispsys [name] (name . name)
+/*! lispsys [name] \item[{\ttfamily  (name . name)}]
  * Some indication of the platform. For instance on one system I use it
  * is {\ttfamily linux-gnu:x86\_64} and on anther it is just {\ttfamily win32}.
  */
 
-/*! lispsys [native] (native . tag)
+/*! lispsys [native] \item[{\ttfamily  (native . tag)}]
  * One of the many experiments within CSL that were active at one stage but are
  * not current involved compilation directly into machine code. The strong
  * desire to ensure that image files coudl be used on a cross-platform basis
@@ -5043,17 +5046,17 @@ static void set_up_variables(CSLbool restart_flag)
  * machine.
  */
 
-/*! lispsys [opsys] (opsys . operating-system)
+/*! lispsys [opsys] \item[{\ttfamily  (opsys . operating-system)}]
  * Some crude indication of the host operating system.
  */
 
-/*! lispsys pipes
+/*! lispsys [pipes] \item[{\ttfamily pipes}]
  * In the earlier days of CSL there were computers where pipes were not
  * supported, so this tag notes when they are present and hance the facility
  * to create sub-tasks through them can be used.
  */
 
-/*! lispsys [record_get] record\_get
+/*! lispsys [record_get] \item[{\ttfamily  record\_get}]
  * An an extension to the CSL profiling scheme it it possible to compile
  * a special version that tracks and counts each use of property-list access
  * functions. This can be useful because there are ways to give special
@@ -5065,40 +5068,40 @@ static void set_up_variables(CSLbool restart_flag)
  * a calculation.
  */
 
-/*! lispsys reduce
+/*! lispsys [reduce] \item[{\ttfamily reduce}]
  * This is intended to report if the initial heap image is for Reduce rather than
  * merely for Lisp.
  */
 
-/*! lispsys [shortname] (shortname . name)
+/*! lispsys [shortname] \item[{\ttfamily  (shortname . name)}]
  * Gives the short name of the current executable, without its full path.
  */
 
-/*! lispsys showmath
+/*! lispsys [showmath] \item[{\ttfamily showmath}]
  * If the ``showmath'' capability has been compiled into CSL this will be present
  * so that Lisp code can know it is reasonable to try to use it.
  */
 
-/*! lispsys [sixty-four] sixty!-four
+/*! lispsys [sixty-four] \item[{\ttfamily  sixty!-four}]
  * Present if the Lisp was compiled for a 64-bit computer.
  */
 
-/*! lispsys termed
+/*! lispsys [termed] \item[{\ttfamily termed}]
  * Present if a cursor-addressable console was detected.
  */
 
-/*! lispsys texmacs
+/*! lispsys [texmacs] \item[{\ttfamily texmacs}]
  * Present if the system was launched with the {\ttfamily --texmacs} flag.
  * The intent is that this should only be done when it has been launched with
  * texmacs as a front-end.
  */
 
-/*! lispsys [version] (version . ver)
+/*! lispsys [version] \item[{\ttfamily  (version . ver)}]
  * The CSL version number.
  */
 
 
-/*! lispsys windowed
+/*! lispsys [windowed] \item[{\ttfamily windowed}]
  * Present if CSL is running in its own window rather than in console mode.
  */
 
