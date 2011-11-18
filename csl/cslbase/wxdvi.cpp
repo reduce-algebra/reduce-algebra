@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 71054510 17-Nov-2011 */
+/* Signature: 627d7826 18-Nov-2011 */
 
 
 
@@ -70,11 +70,7 @@
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <wingdi.h>
-if 0
-// But gdiplus.h is not automatically available with all the compilers
-// that I use...
 #include <gdiplus.h>
-#endif
 #include <io.h>
 
 

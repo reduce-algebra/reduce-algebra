@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 34b4a6e3 18-Nov-2011 */
+/* Signature: 030799d4 18-Nov-2011 */
 
 
 /*
@@ -1804,7 +1804,6 @@ term_printf(
  */
 
 
- */
         case 'b':
 /*
  * Actually "-b" is detected and processed by fwin (if present) before
