@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 53a5e1ac 26-Sep-2011 */
+/* Signature: 2f772693 18-Nov-2011 */
 
 #include "headers.h"
 
@@ -229,7 +229,7 @@ Lisp_Object list3(Lisp_Object a, Lisp_Object b, Lisp_Object c)
  * are fairly important for performance...
  */
 
-/*! fns car expr
+/*! fns [car] \item [{\ttfamily car} {\itshape expr}] ~\newline
  * For a non-empty list the function {\ttfamily car} will return the
  * first element. For a dotted pair (created using {\ttfamily cons})
  * it extracts the first component. This is the fundamental low-level
@@ -253,7 +253,7 @@ Lisp_Object Lcar(Lisp_Object nil, Lisp_Object a)
  * (car* a) = (car a) if a is non-atomic, but just a otherwise.
  */
 
-/*! fns [car*} car!* expr
+/*! fns [car*] \item[{\ttfamily car!*} {\itshape expr}] ~\newline
  * This function behaves like {\ttfamily car} except that if its argument
  * is atomic then the argument is returned unaltered rather than that case
  * being treated as an error.
@@ -266,7 +266,7 @@ Lisp_Object Lcar_star(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cdr expr
+/*! fns [cdr] \item [{\ttfamily cdr} {\itshape expr}] ~\newline
  * See {\ttfamily car}.
  */
 
@@ -277,7 +277,7 @@ Lisp_Object Lcdr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns caar \ldots cddddr expr
+/*! fns [caar] \item [{\ttfamily caar \ldots cddddr} {\itshape expr}] ~\newline
  * Names that start with {\ttfamily c}, then have a sequence of
  * {\ttfamily a} or {\ttfamily d}s and finally {\ttfamily r} provide
  * shorthand functions for chains of uses of {\ttfamily car} and
@@ -295,7 +295,7 @@ Lisp_Object Lcaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cadr expr
+/*! fns [cadr] \item [{\ttfamily  cadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar} and {\ttfamily second}.
  */
 
@@ -308,7 +308,7 @@ Lisp_Object Lcadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cdar expr
+/*! fns [cdar] \item[{\ttfamily} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -321,7 +321,7 @@ Lisp_Object Lcdar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cddr expr
+/*! fns [cddr] \item[{\ttfamily cddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -334,7 +334,7 @@ Lisp_Object Lcddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns caaar expr
+/*! fns [caaar] \item[{\ttfamily caaar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -349,7 +349,7 @@ Lisp_Object Lcaaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns caadr expr
+/*! fns [caadr] \item[{\ttfamily caadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -364,7 +364,7 @@ Lisp_Object Lcaadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cadar expr
+/*! fns [cadar] \item[{\ttfamily cadar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -379,7 +379,7 @@ Lisp_Object Lcadar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns caddr expr
+/*! fns [caddr] \item[{\ttfamily caddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar} and {\ttfamily third}.
  */
 
@@ -394,7 +394,7 @@ Lisp_Object Lcaddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cdaar expr
+/*! fns [cdaar] \item[{\ttfamily cdaar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -409,7 +409,7 @@ Lisp_Object Lcdaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cdadr expr
+/*! fns [cdadr] \item[{\ttfamily cdadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -424,7 +424,7 @@ Lisp_Object Lcdadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cddar expr
+/*! fns [cddar] \item[{\ttfamily cddar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -439,7 +439,7 @@ Lisp_Object Lcddar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cdddr expr
+/*! fns [cdddr] \item[{\ttfamily cdddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -454,7 +454,7 @@ Lisp_Object Lcdddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns caaaar expr
+/*! fns [caaaar] \item[{\ttfamily caaaar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -471,7 +471,7 @@ Lisp_Object Lcaaaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns caaadr expr
+/*! fns [caaadr] \item[{\ttfamily caaadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -488,7 +488,7 @@ Lisp_Object Lcaaadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns caaadr expr
+/*! fns [caadar] \item[{\ttfamily caadar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -505,7 +505,7 @@ Lisp_Object Lcaadar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns caaddr expr
+/*! fns [caaddr] \item[{\ttfamily caaddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -522,7 +522,7 @@ Lisp_Object Lcaaddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cadaar expr
+/*! fns [cadaar] \item[{\ttfamily cadaar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -539,7 +539,7 @@ Lisp_Object Lcadaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cadadr expr
+/*! fns [cadadr] \item[{\ttfamily cadadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -556,7 +556,7 @@ Lisp_Object Lcadadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns caddar expr
+/*! fns [caddar] \item[{\ttfamily caddar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -573,7 +573,7 @@ Lisp_Object Lcaddar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cadddr expr
+/*! fns [cadddr] \item[{\ttfamily cadddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar} and {\ttfamily fourth}.
  */
 
@@ -590,7 +590,7 @@ Lisp_Object Lcadddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcar(a));
 }
 
-/*! fns cdaaar expr
+/*! fns [cdaaar] \item[{\ttfamily cdaaar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -607,7 +607,7 @@ Lisp_Object Lcdaaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cdaadr expr
+/*! fns [cdaadr] \item[{\ttfamily cdaadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -624,7 +624,7 @@ Lisp_Object Lcdaadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cdadar expr
+/*! fns [cdadar] \item[{\ttfamily cdadar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -641,7 +641,7 @@ Lisp_Object Lcdadar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cdaddr expr
+/*! fns [cdaddr] \item[{\ttfamily cdaddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -658,7 +658,7 @@ Lisp_Object Lcdaddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cddaar expr
+/*! fns [cddaar] \item[{\ttfamily cddaar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -675,7 +675,7 @@ Lisp_Object Lcddaar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cddadr expr
+/*! fns [cddadr] \item[{\ttfamily cddadr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -692,7 +692,7 @@ Lisp_Object Lcddadr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cdddar expr
+/*! fns [cdddar] \item[{\ttfamily cdddar} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -709,7 +709,7 @@ Lisp_Object Lcdddar(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns cddddr expr
+/*! fns [cddddr] \item[{\ttfamily cddddr} {\itshape expr}] ~\newline
  * see {\ttfamily caar}.
  */
 
@@ -726,7 +726,7 @@ Lisp_Object Lcddddr(Lisp_Object nil, Lisp_Object a)
     else return onevalue(qcdr(a));
 }
 
-/*! fns rplaca expr
+/*! fns [rplaca] \item[{\ttfamily rplaca} {\itshape expr}] ~\newline
  * This is a destructive function in that it alters the data structure
  * that it is given as its first argument by updating its {\ttfamily car}
  * component. The result is the updated object. See {\ttfamily rplacd}
@@ -742,7 +742,7 @@ Lisp_Object Lrplaca(Lisp_Object nil,
     return onevalue(a);
 }
 
-/*! fnd rplacd expr
+/*! fns [rplacd] \item [{\ttfamily rplacd} {\itshape expr}] ~\newline
  * See {\ttfamily rplaca}
  */
 

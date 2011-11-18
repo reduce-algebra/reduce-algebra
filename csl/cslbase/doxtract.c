@@ -30,7 +30,7 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
-/* Signature: 245ecd02 13-Nov-2011 */
+/* Signature: 13e37e4d 18-Nov-2011 */
 
 
 //
@@ -83,7 +83,7 @@
 //     */
 // This defines a section and alphakey indicates the order in which sections
 // will appear. The resulting LaTeX will read
-//          \section{title}
+//          title
 //          Any initial ...
 //
 // Note that I will insist that the lines within the block all start with
@@ -102,7 +102,7 @@
 // could cause confusion the form "/* section [plain text] subsection-title"
 // can be used and the plain text is purely used for sorting. The
 // resulting LaTeX will be of the form
-//          \subsection{\ttfamily subsection-title}
+//          subsection-title
 //          Arbitrary TeX material...
 //
 // At the end of the generated LaTeX the system will automatically place
@@ -890,9 +890,9 @@ static void dump_tex()
             s->sechdr = "Unknown";
         }
         if (s->text == NULL) s->text = "";
-        fprintf(f, "\\section{%s}\n%s\n", s->sechdr, s->text);
+        fprintf(f, "%s\n%s\n", s->sechdr, s->text);
         for (ss=sort_subsections(s->parts); ss!=NULL; ss=ss->next)
-        {   fprintf(f, "\\subsection{\\ttfamily %s}\n%s\n",
+        {   fprintf(f, "%s\n%s\n",
                     ss->subsechdr, ss->text);
         }
     }
