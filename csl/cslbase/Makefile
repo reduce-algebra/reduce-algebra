@@ -1,7 +1,9 @@
 # Do local maintenance in the cslbase directory
 
 csl.pdf:	csl.tex
+	rm -f csl.ind
 	pdflatex csl
+	makeindex csl
 	pdflatex csl
 
 lispfile:

@@ -77,7 +77,7 @@
 
 (make!-special '!!fleps1)
 
-%%! predef [!fleps] \item [{\ttfamily !!fleps1}]
+%%! predef [!fleps] \item [{\ttfamily !!fleps1}] \index{{\ttfamily "!fleps}} ~\newline
 %% There is a function safe!-fp!-plus that performs floating point
 %% arithmetic but guarantees never to raise an exception. This value was
 %% at one stage related to when small values created there got truncated to zero,
@@ -135,25 +135,25 @@
 % relevance beyond the initial build stages of this Lisp. In particular they
 % have little or no resemblance to any widely used character code schemes.
    (setq blank   (compress (list '!! (special!-char 0))))
-%%! predef [blank] \item [{\ttfamily blank}]
+%%! predef [blank] \item [{\ttfamily blank}] \index{{\ttfamily blank}} ~\newline
 %% The value of this variable is an space or blank character. This
 %% might otherwise be written as ''{\ttfamily ! }''.
 
    (setq !$eol!$ (compress (list '!! (special!-char 1))))
-%%! predef [$eol$] \item [{\ttfamily !\$eol!\$}]
+%%! predef [$eol$] \item [{\ttfamily !\$eol!\$}] \index{{\ttfamily "!\$eol"!\$}}~\newline
 %% The value of this variable is an end-of-line character.
 
    (setq tab     (compress (list '!! (special!-char 3))))
-%%! predef [tab] \item [{\ttfamily tab}]
+%%! predef [tab] \item [{\ttfamily tab}] \index{{\ttfamily tab}} ~\newline
 %% The value of this variable is a tab character.
 
    (setq esc!*   (compress (list '!! (special!-char 9))))
-%%! predef [esc*] \item [{\ttfamily esc!*}]
+%%! predef [esc*] \item [{\ttfamily esc!*}] \index{{\ttfamily esc"!*}} ~\newline
 %% The value of this variable is the character ``escape''. As a non-printing
 %% character use of this is to be viewed as delicate.
 
    (setq !$eof!$ (special!-char 8))
-%%! predef [$eof$] \item [{\ttfamily !\$eof!\$}]
+%%! predef [$eof$] \item [{\ttfamily !\$eof!\$}] \index{{\ttfamily "!\$eof"!\$}} ~\newline
 %% The value of this variable is a pseudo-character returned from various
 %% read functions to signal end-of-file.
 

@@ -30,7 +30,7 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
-/* Signature: 13e37e4d 18-Nov-2011 */
+/* Signature: 7963e1b8 19-Nov-2011 */
 
 
 //
@@ -44,6 +44,11 @@
 // something I could have used instead of this, but if the code here is
 // short enough I do not mind.
 //
+// This code does not really do ANYTHING to insert or adjust markup. All it
+// does is sort fragments of documentation so they end up in the desired order.
+// Thus the documentation comments may end up containing a great load of
+// messy-looking LaTeX directives.
+//
 // Usage:
 //    doxtract -p product -t tag -o outfile files
 //
@@ -52,17 +57,8 @@
 // behaviour as Lisp code. There can also be some things implemented in
 // either raw Lisp or in Rlisp.
 //
-// The things that can be documented are
-//    prologue
-//    general introduction
-//    command-line options
-//    predefined variables
-//    tags used in the lispsystem* variable
-//    flags and properties
-//    functions and special forms
-// and I may need some others that I have not yet thought about.
 //
-// The syntax used for all these will be one thing in C/C++ code and another
+// The syntax used will be one thing in C/C++ code and another
 // in Lisp/Rlisp. For C++ I will support
 //
 //    /*!!! product1 product2 ...
@@ -105,9 +101,6 @@
 //          subsection-title
 //          Arbitrary TeX material...
 //
-// At the end of the generated LaTeX the system will automatically place
-// "\end{document}". Any tables of contents, index etc etc need to be
-// specified directly.
 //
 // In Lisp or Rlisp code the corresponding idiom for including documentation
 // will be
@@ -161,6 +154,8 @@ static int n_files = 0;
 
 static void process_file(const char *fname);
 static void dump_tex();
+
+#define PAD   int temp[300]
 
 int main(int argc, char *argv[])
 {
@@ -218,6 +213,7 @@ int n_line = 0;
 
 static void process_file(const char *file)
 {
+    PAD;
     FILE *f = fopen(file, "r");
     int c, lisp_mode = 0;
     if (f == NULL)
@@ -312,6 +308,7 @@ static void process_file(const char *file)
 
 static char *heap(const char *s)
 {
+    PAD;
     char *r = (char *)malloc(strlen(s)+1);
     if (r == NULL)
     {   printf("malloc failure\n");
@@ -357,6 +354,7 @@ typedef struct subsection
 static subsection *make_subsection(const char *alphakey, const char *subsechdr,
                                    const char *text, subsection *next)
 {
+    PAD;
     subsection *r = (subsection *)malloc(sizeof(subsection));
     r->alphakey = alphakey;
     r->subsechdr = subsechdr;
@@ -382,6 +380,7 @@ static section *list_of_sections = NULL;
  */
 static section *find_section(const char *name)
 {
+    PAD;
     section *r = list_of_sections;
     while (r != NULL)
     {   if (strcmp(name, r->name) == 0) return r;
@@ -400,6 +399,7 @@ static section *find_section(const char *name)
 
 static void C_doc_comment(FILE *f, int c)
 {
+    PAD;
     char *p;
     section *s;
     while (c == '\r') c = getc(f);
@@ -459,6 +459,7 @@ static void C_doc_comment(FILE *f, int c)
 
 static void read_header(FILE *f, int c, const char *msg)
 {
+    PAD;
     if (c == '\n' || c == EOF)
     {   printf("Documentation comment with no header information\n");
         exit(1);
@@ -470,13 +471,14 @@ static void read_header(FILE *f, int c, const char *msg)
         if (n_header < MAX_HEADER) header[n_header++] = c;
     }
     header[n_header] = 0;
-    printf("%s header <%s>\n", msg, header);
+//  printf("%s header <%s>\n", msg, header);
 }
 
 static void C_product_comment(FILE *f);
 
 static void C_section_comment(FILE *f)
 {
+    PAD;
     int c = getc(f);
     char *p;
     section *s;
@@ -539,6 +541,7 @@ static const char *top_heading = "";
 
 static void C_product_comment(FILE *f)
 {
+    PAD;
     const char *p;
     int c = getc(f);
     while (c == '\r') c = getc(f);
@@ -561,7 +564,7 @@ static void C_product_comment(FILE *f)
             l = s+1;
         }
         if (s == NULL) active = 0;
-        else printf("Found product tag %s\n", product);
+//      else printf("Found product tag %s\n", product);
     }
     p = C_until_comment_end(f, active);
     if (p!=NULL && strlen(p) > strlen(top_heading)) top_heading = p;
@@ -582,6 +585,7 @@ static int n_text;
 
 static char *C_until_comment_end(FILE *f, int active)
 {
+    PAD;
     int c;
     int first = 1;
     n_text = 0;
@@ -630,6 +634,7 @@ static char *lisp_until_comment_end(FILE *f, int active);
 
 static void lisp_doc_comment(FILE *f)
 {
+    PAD;
     int c;
     char *p;
     section *s;
@@ -687,6 +692,7 @@ static void lisp_section_comment(FILE *f)
 /* Here I have the case
  *    /*!! section [alphakey] title
  */
+    PAD;
     int c;
     char *p = line+4;
     section *s;
@@ -737,6 +743,7 @@ static void lisp_section_comment(FILE *f)
 
 static void lisp_product_comment(FILE *f)
 {
+    PAD;
     const char *p;
 /* Here I have the case
  *    /*!!! product ...
@@ -756,7 +763,7 @@ static void lisp_product_comment(FILE *f)
             l = s+1;
         }
         if (s == NULL) active = 0;
-        else printf("Found product tag %s\n", product);
+//      else printf("Found product tag %s\n", product);
     }
     p = lisp_until_comment_end(f, active);
     if (p != NULL && strlen(p) > strlen(top_heading)) top_heading = p;
@@ -764,6 +771,7 @@ static void lisp_product_comment(FILE *f)
 
 static char *lisp_until_comment_end(FILE *f, int active)
 {
+    PAD;
     int c;
     n_text = 0;
     text[n_text] = 0;
@@ -805,16 +813,20 @@ static char *lisp_until_comment_end(FILE *f, int active)
 
 static int compare_sections(const void *a1, const void *a2)
 {
+    PAD;
     section *s1 = *(section **)a1;
     section *s2 = *(section **)a2;
+//  printf("Sections %s %s\n", s1->alphakey, s2->alphakey);
     return strcmp(s1->alphakey, s2->alphakey);
 }
 
 static section *sort_sections(section *s)
 {
+    PAD;
     section *s1;
     int i = 0;
     section **v;
+    if (s == NULL) return NULL;
     for (s1=s; s1!=NULL; s1=s1->next) i++;
     v = (section **)malloc(i*sizeof(section *));
     if (v == NULL)
@@ -836,16 +848,20 @@ static section *sort_sections(section *s)
 
 static int compare_subsections(const void *a1, const void *a2)
 {
+    PAD;
     subsection *s1 = *(subsection **)a1;
     subsection *s2 = *(subsection **)a2;
+//  printf("Subsections %s %s\n", s1->alphakey, s2->alphakey);
     return strcmp(s1->alphakey, s2->alphakey);
 }
 
 static subsection *sort_subsections(subsection *s)
 {
+    PAD;
     subsection *s1;
     int i = 0;
     subsection **v;
+    if (s == NULL) return NULL;
     for (s1=s; s1!=NULL; s1=s1->next) i++;
     v = (subsection **)malloc(i*sizeof(subsection *));
     if (v == NULL)
@@ -868,6 +884,7 @@ static subsection *sort_subsections(subsection *s)
 
 static void dump_tex()
 {
+    PAD;
     FILE *f = fopen(output, "w");
     section *s;
     time_t t;
@@ -885,18 +902,20 @@ static void dump_tex()
  */
     for (s=sort_sections(list_of_sections); s!=NULL; s=s->next)
     {   subsection *ss;
+        int i = 0;
         if (s->sechdr == NULL)
         {   printf("Section without a name?\n");
             s->sechdr = "Unknown";
         }
         if (s->text == NULL) s->text = "";
+        for (ss=s->parts; ss!=NULL; ss=ss->next) i++;
+        printf("Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
+        fprintf(f, "%% Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
         fprintf(f, "%s\n%s\n", s->sechdr, s->text);
         for (ss=sort_subsections(s->parts); ss!=NULL; ss=ss->next)
-        {   fprintf(f, "%s\n%s\n",
-                    ss->subsechdr, ss->text);
+        {   fprintf(f, "%s\n%s\n", ss->subsechdr, ss->text);
         }
     }
-    fprintf(f, "\\end{document}\n");
     fclose(f);
 }
 

@@ -1,15 +1,19 @@
-% Generated using doxtract Fri Nov 18 09:43:42 2011
+% Generated using doxtract Sat Nov 19 21:42:53 2011
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
+\usepackage{makeidx}
+\makeindex
 \begin{document}
 \maketitle
+% Generating section 00 [intro] with 0 subsections
 \section{Introduction}
 This is reference material for CSL. The Lisp identifiers mentioned here
 are the ones that are initially present in a raw CSL image. Some
 proportion of them are not really intended to be used by end-users but
 are merely the internal components of some feature.
 
+% Generating section 01 [options] with 31 subsections
 \section{Command-line options}
 The items shown here are the ones that are recognized on the CSL command
 line. In general an option that requires an argument can be written as either
@@ -17,7 +21,7 @@ line. In general an option that requires an argument can be written as either
 insensitive.
 \begin{description} 
 
-\item [{\ttfamily --}]
+\item [{\ttfamily --}] \index{{\ttfamily --}}
 If the application is run in console mode then its standard output could
 be redirected to a file using shell facilities. But the {\ttfamily --}
 directive (followed by a file name) redirects output within the Lisp rather
@@ -29,24 +33,24 @@ The {\ttfamily -w} option may frequently make sense in such cases, but if that
 is not used and the system tries to run in a window it will create it
 starting off minimised.
 
-\item [{\ttfamily --help}]
+\item [{\ttfamily --help}] \index{{\ttfamily --help}}
 It is probably obvious what this option does! Note that on Windows the
 application was linked as a windows binary so it carefully creates a
 console to display the help text in, and organizes a delay to give
 people a chance to read it.
 
-\item [{\ttfamily --my-path}]
+\item [{\ttfamily --my-path}] \index{{\ttfamily --my-path}}
 At some time I had felt the need for this option, but I now forget what I
 expected to use it for! It leads the executable to display the fully
 rooted name of the directory it was in and then terminate. It may be useful
 in some script?
 
-\item [{\ttfamily --texmacs}]
+\item [{\ttfamily --texmacs}] \index{{\ttfamily --texmacs}}
 If CSL/Reduce is launched from texmacs this command-line flag should be
 used to arrange that the {\ttfamily texmacs} flag is set in
 {\ttfamily lispsystem!*}, and the code may then do special things.
 
-\item [{\ttfamily -a}]
+\item [{\ttfamily -a}] \index{{\ttfamily -a}}
 {\ttfamily -a} is a curious option, not intended for general or casual use.
 If given it causes the {\ttfamily (batchp)} function to return the opposite
 result from normal!  Without ``{attfamily -a}'' {\ttfamily (batchp)} returns
@@ -59,7 +63,7 @@ this judgement about how ``batch'' the current run is will be wrong or
 unhelpful, so {\ttfamily -a} allows the user to coax the system into better
 behaviour.  I hope that this is never used!
 
-\item [{\ttfamily -b}]
+\item [{\ttfamily -b}] \index{{\ttfamily -b}}
 {\ttfamily -b} tells the system to avoid any attempt to recolour prompts
 and input text. It will mainly be needed on X terminals that have been
 set up so that they use colours that make the defaults here unhelpful.
@@ -70,37 +74,37 @@ specified after it for output, input and prompts, with the letters KRGYbMCW
 standing for blacK, Red, Green, Yellow, blue, Magenta, Cyan and White.
 This may not fully work yet!
 
-\item [{\ttfamily -c}]
+\item [{\ttfamily -c}] \index{{\ttfamily -c}}
 Displays a notice relating to the authorship of CSL. Note that this
 is an authorship statement not a Copyright notice, because if any
 (L)GPL code is involved that would place requirements on what was
 displayed in a Copyright Notice.
 
-\item [{\ttfamily -d}]
+\item [{\ttfamily -d}] \index{{\ttfamily -d}}
 A command line entry {\ttfamily -Dname=value} or {\ttfamily -D name=value}
 sets the value of the named lisp variable to the value (as a string).
 Note that the value set is a {\em string} so if you wish to retrieve
 it and use it as a symbold or number within your code you will have to
 perform some conversion.
 
-\item [{\ttfamily -e}]
+\item [{\ttfamily -e}] \index{{\ttfamily -e}}
 A ``spare'' option used from time to time to activate experiments within
 CSL.
 
-\item [{\ttfamily -f}]
+\item [{\ttfamily -f}] \index{{\ttfamily -f}}
 At one stage CSL could run as a socket server, and {\ttfamily -f portnumber}
 activated that mode. {\ttfamily -f-} used a default port, 1206 (a number
 inspired by an account number on Titan that I used in the 1960s). The code
 that supports this may be a useful foundation to others who want to make a
 network service out of this code-base, but is currently disabled.
 
-\item [{\ttfamily -g}]
+\item [{\ttfamily -g}] \index{{\ttfamily -g}}
 In line with the implication of this option for C compilers, this enables
 a debugging mode. It sets a lisp variable {\ttfamily !*backtrace} and
 arranges that all backtraces are displayed notwithstanding use of
 {\ttfamily errorset}.
 
-\item [{\ttfamily -h}]
+\item [{\ttfamily -h}] \index{{\ttfamily -h}}
 This option is a left-over. When the X-windows version of the code first
 started to use Xft it viewed that as optional and could allow a build even when
 it was not available. And then even if Xft was detected and liable to be used
@@ -108,7 +112,7 @@ by default it provided this option to disable its use. The remnants of the
 switch that disabled use of Xft (relating to fonts living on the Host or
 the Server) used this switch, but it now has no effect.
 
-\item [{\ttfamily -i}]
+\item [{\ttfamily -i}] \index{{\ttfamily -i}}
 CSL and Reduce use image files to keep both initial heap images and
 ``fasl'' loadable modules. By default if the executable launched has some name,
 say xxx, then an image file xxx.img is used. But to support greater
@@ -119,12 +123,12 @@ searched in the order given. These are read-only. The similar option
 that can also be used for output. Normally there would only be one
 {\ttfamily -o} directive.
 
-\item [{\ttfamily -j}]
+\item [{\ttfamily -j}] \index{{\ttfamily -j}}
 Follow this directive with a file-name, and a record of all the files read
 during the Lisp run will be dumped there with a view that it can be included
 in a Makefile to document dependencies.
 
-\item [{\ttfamily -k}]
+\item [{\ttfamily -k}] \index{{\ttfamily -k}}
 {\ttfamily -K nnn} sets the size of heap to be used.  If it is given then that much
 memory will be allocated and the heap will never expand.  Without this
 option a default amount is used, and (on many machines) it will grow
@@ -142,19 +146,19 @@ represent typical usage for common-sized computations. In general CSL
 will automatically expand its heap, and so it should normally never be
 necessary to use this option.
 
-\item [{\ttfamily -l}]
+\item [{\ttfamily -l}] \index{{\ttfamily -l}}
 This is to send a copy of the standard output to a named log file. It is
 very much as if the Lisp function {\ttfamily (spool ``logfile'')} had been
 invoked at the start of the run.
 
-\item [{\ttfamily -m}]
+\item [{\ttfamily -m}] \index{{\ttfamily -m}}
 Memory trace mode. An option that represents an experiment from the past,
 and no longer reliably in use. It make it possible to force an
 exception at stages whene reference to a specified part of memory was made
 and that could be useful for some low level debugging. It is not supported
 at present.
 
-\item [{\ttfamily -n}]
+\item [{\ttfamily -n}] \index{{\ttfamily -n}}
 Normally when the system is started it will run a ``restart function'' as
 indicated in its heap image. There can be cases where a heap image has been
 created in a bad way such that the saved restart function always fails
@@ -164,19 +168,19 @@ ignore any startup function and merely always begin in a minimal Lisp-style
 read-eval-print loop. This is intended for experts to do disaster recovery
 and diagnosis of damaged image files.
 
-\item [{\ttfamily -o}]
+\item [{\ttfamily -o}] \index{{\ttfamily -o}}
 See {\ttfamily -i}. This specifies an image file used for output via
 {\ttfamily faslout} and {\ttfamily reserve}.
 
-\item [{\ttfamily -p}]
+\item [{\ttfamily -p}] \index{{\ttfamily -p}}
 If a suitable profile option gets implemented one day this will activate it,
 but for now it has no effect.
 
-\item [{\ttfamily -q}]
+\item [{\ttfamily -q}] \index{{\ttfamily -q}}
 This option sets {\ttfamily !*echo} to {\ttfamily nil} and switches off
 garbage collector messages to give a slightly quieter run.
 
-\item [{\ttfamily -r}]
+\item [{\ttfamily -r}] \index{{\ttfamily -r}}
 The random-number generator in CSL is normally initialised to a value
 based on the time of day and is hence not reproducible from run to run.
 In many cases that behavious is desirable, but for debugging it can be useful
@@ -187,11 +191,11 @@ behaviour (I hope). Note that the main Reduce-level random number source is
 coded at a higher level and does not get reset this way -- this is the
 lower level CSL generator.
 
-\item [{\ttfamily -s}]
+\item [{\ttfamily -s}] \index{{\ttfamily -s}}
 Sets the Lisp variable {\ttfamily !*plap} and hence the compiler generates
 an assembly listing.
 
-\item [{\ttfamily -t}]
+\item [{\ttfamily -t}] \index{{\ttfamily -t}}
 {\ttfamily -t name} reports the time-stamp on the named module, and then
 exits. This is for use in perl scripts and the like, and is
 needed because the stamps on modules within an image or
@@ -201,16 +205,16 @@ Note that especially on windowed systems it may be necessary to use this
 with {\ttfamily -- filename} since the information generated here goes to
 the default output, which in some cases is just the screen.
 
-\item [{\ttfamily -u}]
+\item [{\ttfamily -u}] \index{{\ttfamily -u}}
 See {\ttfamily -d}, but this forcibly undefines a symbol. There are probably
 very very few cases where it is useful since I do not have a large
 number of system-specific predefined names.
 
-\item [{\ttfamily -v}]
+\item [{\ttfamily -v}] \index{{\ttfamily -v}}
 An option to make things mildly more verbose. It displays more of a banner
 at startup and switches garbage collection messages on.
 
-\item [{\ttfamily -w}]
+\item [{\ttfamily -w}] \index{{\ttfamily -w}}
 On a typical system if the system is launched it creates a new window and uses
 its own windowed intarface in that. If it is run such that at startup the
 standard input or output are associated with a file or pipe, or under X the
@@ -228,7 +232,7 @@ In contrast {\ttfamily csl.com} is a console mode version of just the same
 program, so when launched from a command line it can communicate with the
 console in the ordinary expected manner.
 
-\item [{\ttfamily -x}]
+\item [{\ttfamily -x}] \index{{\ttfamily -x}}
 {\ttfamily -x} is an option intended for use only by system
 support experts -- it disables trapping if segment violations by
 errorset and so makes it easier to track down low level disasters --
@@ -236,7 +240,7 @@ maybe!  This can be valuable when running under a debugger since if the
 code traps signals in its usual way and tries to recover it can make it a lot
 harder to find out just what was going wrong.
 
-\item [{\ttfamily -y}]
+\item [{\ttfamily -y}] \index{{\ttfamily -y}}
 {\ttfamily -y } sets the variable {\ttfamily !*hankaku}, which causes the
 lisp reader convert a Zenkaku code to Hankaku one when read. I leave this
 option decoded on the command line even if the Kanji support code is not
@@ -244,7 +248,7 @@ otherwise compiled into CSL just so I can reduce conditional compilation.
 This was part of the Internationalisation effort for CSL bu this is no longer
 supported.
 
-\item [{\ttfamily -z}]
+\item [{\ttfamily -z}] \index{{\ttfamily -z}}
 When bootstrapping it is necessary to start up the system for one initial time
 without the benefit of any image file at all. The option {\ttfamily -z} makes
 this happen, so when it is specified the system starts up with a minimal
@@ -255,252 +259,248 @@ definitions rather rapidly. The files {\ttfamily compat.lsp},
 main things I use, and once they are loaded the Lisp compiler can be used
 to compile itself.
 
-\end{description}
+\end{description} % end of options section [csl.c]
 
+% Generating section 02 [predef] with 71 subsections
 \section{Predefined variables}
 \begin{description}
 
-\item [{\ttfamily !!fleps1}]
+\item [{\ttfamily !!fleps1}] \index{{\ttfamily "!fleps}} ~\newline
 There is a function safe!-fp!-plus that performs floating point
 arithmetic but guarantees never to raise an exception. This value was
 at one stage related to when small values created there got truncated to zero,
 but the current code does not use the Lisp variable at all and instead does
 things based on the bitwise representation of the numbers.
 
-\item [{\ttfamily !\$eof!\$}]
+\item [{\ttfamily !\$eof!\$}] \index{{\ttfamily "!\$eof"!\$}} ~\newline
 The value of this variable is a pseudo-character returned from various
 read functions to signal end-of-file.
 
-\item [{\ttfamily !\$eol!\$}]
+\item [{\ttfamily !\$eol!\$}] \index{{\ttfamily "!\$eol"!\$}}~\newline
 The value of this variable is an end-of-line character.
 
-\item [{\ttfamily !*plap}]
+\item [{\ttfamily !*plap}] \index{{\ttfamily "!*plap}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*applyhook!*}]
+\item [{\ttfamily !*applyhook!*}] \index{{\ttfamily "!*applyhook"!*}} ~\newline
 If this is set it might be supposed to be the name of a function used
 by the interpreter as a callbackm but at presnet it does not actually do
 anything!
 
-\item [{\ttfamily !*break!-loop!*}]
+\item [{\ttfamily !*break!-loop!*}] \index{{\ttfamily "!*break"!-loop"!*}} ~\newline
 If the value of this is a symbol that is defined as a function of one
 argument then it is called during the processing on an error. This has not
 been used in anger and so its whole status may be dubious!
 
-\item [{\ttfamily !*carcheckflag}]
+\item [{\ttfamily !*carcheckflag}] \index{{\ttfamily "!*carcheckflag}} ~\newline
 In general CSL arranges that every {\ttfamily car} or {\ttfamily cdr} access
 is checked for validity. Once upon a time setting this variable to nil
 turned such checks off in the hope of gaining a little speed. But it no
 longer does that. It may have a minor effect on array access primitives.
 
-\item [{\ttfamily !*comp}]
+\item [{\ttfamily !*comp}] \index{{\ttfamily "!*comp}} ~\newline
 When set each function is compiled (into bytecodes) as it gets defined.
 
-\item [{\ttfamily !*debug!-io!*}]
+\item [{\ttfamily !*debug!-io!*}] \index{{\ttfamily "!*debug"!-io"!*}} ~\newline
 An I/O channel intended to be used for diagnostic interactions.
 
-\item [{\ttfamily !*echo}]
+\item [{\ttfamily !*echo}] \index{{\ttfamily "!*echo}} ~\newline
 When this is non-nil characters that are read from an input file are
 echoed to the standard output. This gives a more comlete transcript in
 a log file, but can sometimes amount to over-verbose output.
 
-\item [{\ttfamily !*error!-messages!*}]
+\item [{\ttfamily !*error!-messages!*}] \index{{\ttfamily "!*error"!-messages"!*}} ~\newline
 Has the value nil and does not do anything!
 
-\item [{\ttfamily !*error!-output!*}]
+\item [{\ttfamily !*error!-output!*}] \index{{\ttfamily "!*error"!-output"!*}} ~\newline
 An I/O channel intended for diagnostic output.
 
-\item [{\ttfamily !*evalhook!*}]
+\item [{\ttfamily !*evalhook!*}] \index{{\ttfamily "!*evalhook"!*}} ~\newline
 See {\ttfamily !*applyhook!*}. This also does not do anything at present.
 
-\item [{\ttfamily !*gc!-hook!*}]
+\item [{\ttfamily !*gc!-hook!*}] \index{{\ttfamily "!*gc"!-hook"!*}} ~\newline
 If this is set to have as its value that is a function of one argument then
 that function is called with {\ttfamily nil} on every minor entry to the
 garbage collection, and with argument {\ttfamily t} at the end of a ``genuine''
 full garbage collection.
 
-\item [{\ttfamily !*hankaku}]
+\item [{\ttfamily !*hankaku}] \index{{\ttfamily "!*hankaku}} ~\newline
 This was concerned with internationalisation to support a Japanese
 locale but has not been activated for some while. In the fullness of time I
 hope to migrate CSL to use an UTF8 representation of Unicode characters
 internally, but that upgrade is at present an ideal and a project not
 a reality. Volunteers to help welcomed.
 
-\item [{\ttfamily !*loop!-print!*}]
+\item [{\ttfamily !*loop!-print!*}] \index{{\ttfamily "!*loop"!-print"!*}} ~\newline
 Probably not used at present.
 
-\item [{\ttfamily !*lower}]
+\item [{\ttfamily !*lower}] \index{{\ttfamily "!*lower}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*macroexpand!-hook!*}]
+\item [{\ttfamily !*macroexpand!-hook!*}] \index{{\ttfamily "!*macroexpand"!-hook"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*math!-output!*}]
+\item [{\ttfamily !*math!-output!*}] \index{{\ttfamily "!*math"!-output"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*native\_code}]
+\item [{\ttfamily !*native\_code}] \index{{\ttfamily "!*native\_code}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*notailcall}]
+\item [{\ttfamily !*notailcall}] \index{{\ttfamily "!*notailcall}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*package!*}]
+\item [{\ttfamily !*package!*}] \index{{\ttfamily "!*package"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*pgwd}]
+\item [{\ttfamily !*pgwd}] \index{{\ttfamily "!*pgwd}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*pretty!-symmetric}]
+\item [{\ttfamily !*pretty!-symmetric}] \index{{\ttfamily "!*pretty"!-symmetric}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*prinl!-fn!*}]
+\item [{\ttfamily !*prinl!-fn!*}] \index{{\ttfamily "!*prinl"!-fn"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*prinl!-index!*}]
+\item [{\ttfamily !*prinl!-index!*}] \index{{\ttfamily "!*prinl"!-index"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*prinl!-visited!-nodes!*}]
+\item [{\ttfamily !*prinl!-visited!-nodes!*}] \index{{\ttfamily "!*prinl"!-visited"!-nodes"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*print!-array!*}]
+\item [{\ttfamily !*print!-array!*}] \index{{\ttfamily "!*print"!-array"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*print!-length!*}]
+\item [{\ttfamily !*print!-length!*}] \index{{\ttfamily "!*print"!-length"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*print!-level!*}]
+\item [{\ttfamily !*print!-level!*}] \index{{\ttfamily "!*print"!-level"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*pwrds}]
+\item [{\ttfamily !*pwrds}] \index{{\ttfamily "!*pwrds}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*query!-io!*}]
+\item [{\ttfamily !*query!-io!*}] \index{{\ttfamily "!*query"!-io"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*quotes}]
+\item [{\ttfamily !*quotes}] \index{{\ttfamily "!*quotes}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*raise}]
+\item [{\ttfamily !*raise}] \index{{\ttfamily "!*raise}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*redefmsg}]
+\item [{\ttfamily !*redefmsg}] \index{{\ttfamily "!*redefmsg}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*resources!*}]
+\item [{\ttfamily !*resources!*}] \index{{\ttfamily "!*resources"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*savedef}]
+\item [{\ttfamily !*savedef}] \index{{\ttfamily "!*savedef}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*spool!-output!*}]
+\item [{\ttfamily !*spool!-output!*}] \index{{\ttfamily "!*spool"!-output"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*standard!-input!*}]
+\item [{\ttfamily !*standard!-input!*}] \index{{\ttfamily "!*standard"!-input"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*standard!-output!*}]
+\item [{\ttfamily !*standard!-output!*}] \index{{\ttfamily "!*standard"!-output"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*terminal!-io!*}]
+\item [{\ttfamily !*terminal!-io!*}] \index{{\ttfamily "!*terminal"!-io"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !*trace!-output!*}]
+\item [{\ttfamily !*trace!-output!*}] \index{{\ttfamily "!*trace"!-output"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily !@cslbase}]
+\item [{\ttfamily !@cslbase}] \index{{\ttfamily "!"@cslbase}} ~\newline
 Not yet written
 
-]pendingrpars]  \item [{\ttfamily pendingrpars}]
+]pendingrpars]  \item [{\ttfamily pendingrpars}] \index{{\ttfamily pendingrpars}} ~\newline
 Not yet written
 
-\item [{\ttfamily blank}]
+\item [{\ttfamily blank}] \index{{\ttfamily blank}} ~\newline
 The value of this variable is an space or blank character. This
 might otherwise be written as ''{\ttfamily ! }''.
 
-\item [{\ttfamily bn}]
+\item [{\ttfamily bn}] \index{{\ttfamily bn}} ~\newline
 Not yet written
 
-\item [{\ttfamily bufferi}]
+\item [{\ttfamily bufferi}] \index{{\ttfamily bufferi}} ~\newline
 Not yet written
 
-\item [{\ttfamily bufferp}]
+\item [{\ttfamily bufferp}] \index{{\ttfamily bufferp}} ~\newline
 Not yet written
 
-\item [{\ttfamily common!-lisp!-mode}]
+\item [{\ttfamily common!-lisp!-mode}] \index{{\ttfamily common"!-lisp"!-mode}} ~\newline
 Not yet written
 
-\item [{\ttfamily crbuf!*}]
+\item [{\ttfamily crbuf!*}] \index{{\ttfamily crbuf"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily emsg!*}]
+\item [{\ttfamily emsg!*}] \index{{\ttfamily emsg"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily eof!*}]
+\item [{\ttfamily eof!*}] \index{{\ttfamily eof"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily esc!*}]
+\item [{\ttfamily esc!*}] \index{{\ttfamily esc"!*}} ~\newline
 The value of this variable is the character ``escape''. As a non-printing
 character use of this is to be viewed as delicate.
 
-\item [{\ttfamily indblanks}]
+\item [{\ttfamily indblanks}] \index{{\ttfamily indblanks}} ~\newline
 Not yet written
 
-\item [{\ttfamily indentlevel}]
+\item [{\ttfamily indentlevel}] \index{{\ttfamily indentlevel}} ~\newline
 Not yet written
 
-\item [{\ttfamily initialblanks}]
+\item [{\ttfamily initialblanks}] \index{{\ttfamily initialblanks}} ~\newline
 Not yet written
 
-\item [{\ttfamily lispsystem!*}]
+\item [{\ttfamily lispsystem!*}] \index{{\ttfamily lispsystem"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily lmar}]
+\item [{\ttfamily lmar}] \index{{\ttfamily lmar}} ~\newline
 Not yet written
 
-\item [{\ttfamily load!-source}]
+\item [{\ttfamily load!-source}] \index{{\ttfamily load"!-source}} ~\newline
 Not yet written
 
-\item [{\ttfamily nil}]
+\item [{\ttfamily nil}] \index{{\ttfamily nil}} ~\newline
 Not yet written
 
-\item [{\ttfamily ofl!*}]
+\item [{\ttfamily ofl!*}] \index{{\ttfamily ofl"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily program!*}]
+\item [{\ttfamily program!*}] \index{{\ttfamily program"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily rmar}]
+\item [{\ttfamily rmar}] \index{{\ttfamily rmar}} ~\newline
 Not yet written
 
-\item [{\ttfamily rparcount}]
+\item [{\ttfamily rparcount}] \index{{\ttfamily rparcount}} ~\newline
 Not yet written
 
-\item [{\ttfamily s!:gensym!-serial}]
+\item [{\ttfamily s!:gensym!-serial}] \index{{\ttfamily s"!:gensym"!-serial}} ~\newline
 Not yet written
 
-\item [{\ttfamily stack}]
+\item [{\ttfamily stack}] \index{{\ttfamily stack}} ~\newline
 Not yet written
 
-\item [{\ttfamily t}]
+\item [{\ttfamily t}] \index{{\ttfamily t}} ~\newline
 Not yet written
 
-\item [{\ttfamily tab}]
+\item [{\ttfamily tab}] \index{{\ttfamily tab}} ~\newline
 The value of this variable is a tab character.
 
-\item [{\ttfamily thin!*}]
+\item [{\ttfamily thin!*}] \index{{\ttfamily thin"!*}} ~\newline
 Not yet written
 
-\item [{\ttfamily ttype!*}]
+\item [{\ttfamily ttype!*}] \index{{\ttfamily ttype"!*}} ~\newline
 Not yet written
 
-/*!! flags [04] Flags and Properties
-  
-Most of tags here are probably not much use to end-users, but I am noting them
-as a matter of completeness.
-  
+\end{description} % end of predef section [csl.c]
 
-\end{description}
-
+% Generating section 03 [lispsys] with 24 subsections
 Items that can appear in {\ttfamily lispsystem!*}
   
 There is a global variable called {\ttfamily lispsystem!*} whose value is
@@ -516,13 +516,13 @@ that sets it up. The information may be of interest to anybody but some tags
 and keys are reflections of experiments rather than fully stable facilities.
 \begin{description}
 
-\item[{\ttfamily (c!-code . count)}]
+\item[{\ttfamily (c!-code . count)}] \index{{\ttfamily (c"!-code . count)}}
 This will be present if code has been optimised into C through the source
 files u01.c to u60.c, and in that case the value tells you how many functions
 have been optimised in this manner.
   
 
-\item[{\ttfamily  common!-lisp}]
+\item[{\ttfamily  common!-lisp}] \index{{\ttfamily  common"!-lisp}}
 For a project some while ago a limited Common Lisp compatibility mode was
 being developed, and this tag indicated that it was active. In that case all
 entries are in upper case and the variable is called {\ttfamily *FEATURES*}
@@ -532,7 +532,7 @@ have been a sad mistake that must bear significant responsibility for the
 fact that interest in Lisp has faded dramatically since its introduction.
   
 
-\item[{\ttfamily (compiler!-command . command)}]
+\item[{\ttfamily (compiler!-command . command)}] \index{{\ttfamily (compiler"!-command . command)}}
 The value associated with this key is a string that was used to compile the
 files of C code making up CSL. It should contain directives to set up
 search paths and predefined symbols. It is intended to be used in an
@@ -540,7 +540,7 @@ experiment that generates C code synamically, uses a command based on this
 string to compile it and then dynamically links the resulting code in with
 the running system.
 
-\item[{\ttfamily csl}]
+\item[{\ttfamily csl}] \index{{\ttfamily csl}}
 A simple tag intended to indicate that this Lisp system is CSL and not any
 other. This can of course only work properly if all other Lisp systems
 agree not to set this tag! In the context of Reduce I note that the PSL
@@ -548,28 +548,28 @@ Lisp system sets a tag {\ttfamily psl} on {\ttfamily lispsystem!*} and
 the realistic use of this is to discriminate between CSL and PSL hosted
 copies of Reduce.
 
-\item[{\ttfamily debug}]
+\item[{\ttfamily debug}] \index{{\ttfamily debug}}
 If CSL was compiled with debugging options this is present, and one can imagine
 various bits of code being more cautious or more verbose if it is detected.
 
-\item[{\ttfamily  (executable . name)}]
+\item[{\ttfamily  (executable . name)}] \index{{\ttfamily  (executable . name)}}
 The value is the fully rooted name of the executable file that was launched.
 
-\item[{\ttfamily fox}]
+\item[{\ttfamily fox}] \index{{\ttfamily fox}}
 Used to be present if the FOX GUI toolkit was detected and incorporated as
 part of CSL, but now probably never used!
 
-\item[{\ttfamily (linker . type)}]
+\item[{\ttfamily (linker . type)}] \index{{\ttfamily (linker . type)}}
 Intended for use in association with {\ttfamily compiler!-command}, the value
 is {\ttfamily win32} on Windows, {\ttfamily x86\_64} on 64-bit Linux and
 other things on other systems, as detected using the program {\ttfamily
 objtype.c}.
 
-\item[{\ttfamily  (name . name)}]
+\item[{\ttfamily  (name . name)}] \index{{\ttfamily  (name . name)}}
 Some indication of the platform. For instance on one system I use it
 is {\ttfamily linux-gnu:x86\_64} and on anther it is just {\ttfamily win32}.
 
-\item[{\ttfamily  (native . tag)}]
+\item[{\ttfamily  (native . tag)}] \index{{\ttfamily  (native . tag)}}
 One of the many experiments within CSL that were active at one stage but are
 not current involved compilation directly into machine code. The strong
 desire to ensure that image files coudl be used on a cross-platform basis
@@ -577,19 +577,19 @@ led to saved compiled code being tagged with a numeric ``native code tag'',
 and this key/value pair identified the value to be used on the current
 machine.
 
-\item[{\ttfamily  (opsys . operating-system)}]
+\item[{\ttfamily  (opsys . operating-system)}] \index{{\ttfamily  (opsys . operating-system)}}
 Some crude indication of the host operating system.
 
-\item [operating system identity]
+\item [{\itshape operating system identity}] \index{{\ttfamily operating system identity}}
 The name of the current operating system is put on the list. Exactly what
 form is not explicitly defined!
 
-\item[{\ttfamily pipes}]
+\item[{\ttfamily pipes}] \index{{\ttfamily pipes}}
 In the earlier days of CSL there were computers where pipes were not
 supported, so this tag notes when they are present and hance the facility
 to create sub-tasks through them can be used.
 
-\item[{\ttfamily  record\_get}]
+\item[{\ttfamily  record\_get}] \index{{\ttfamily  record\_get}}
 An an extension to the CSL profiling scheme it it possible to compile
 a special version that tracks and counts each use of property-list access
 functions. This can be useful because there are ways to give special
@@ -600,70 +600,76 @@ information slows things down. This tag notes when the slow version is
 in use. It might be used to trigger a display of statistics at the end of
 a calculation.
 
-\item[{\ttfamily reduce}]
+\item[{\ttfamily reduce}] \index{{\ttfamily reduce}}
 This is intended to report if the initial heap image is for Reduce rather than
 merely for Lisp.
 
-\item[{\ttfamily  (shortname . name)}]
+\item[{\ttfamily  (shortname . name)}] \index{{\ttfamily  (shortname . name)}}
 Gives the short name of the current executable, without its full path.
 
-\item[{\ttfamily showmath}]
+\item[{\ttfamily showmath}] \index{{\ttfamily showmath}}
 If the ``showmath'' capability has been compiled into CSL this will be present
 so that Lisp code can know it is reasonable to try to use it.
 
-\item[{\ttfamily  sixty!-four}]
+\item[{\ttfamily  sixty!-four}] \index{{\ttfamily  sixty"!-four}}
 Present if the Lisp was compiled for a 64-bit computer.
 
-\item[{\ttfamily termed}]
+\item[{\ttfamily termed}] \index{{\ttfamily termed}}
 Present if a cursor-addressable console was detected.
 
-\item[{\ttfamily texmacs}]
+\item[{\ttfamily texmacs}] \index{{\ttfamily texmacs}}
 Present if the system was launched with the {\ttfamily --texmacs} flag.
 The intent is that this should only be done when it has been launched with
 texmacs as a front-end.
 
-\item[{\ttfamily  (version . ver)}]
+\item[{\ttfamily  (version . ver)}] \index{{\ttfamily  (version . ver)}}
 The CSL version number.
 
-\item[{\ttfamily win32}, {\ttfamily win64}]
+\item[{\ttfamily win32}, {\ttfamily win64}] \index{{\ttfamily win32}, {\ttfamily win64}}
 Any windows system puts {\ttfamily win32} in {\ttfamily lispsystem!*}.
 If 64-bit windows is is use then {\ttfamily win64} is also included
 
-\item[{\ttfamily windowed}]
+\item[{\ttfamily windowed}] \index{{\ttfamily windowed}}
 Present if CSL is running in its own window rather than in console mode.
 
-\end{description}
+\end{description} % end of lispsystem* section [restart.c]
 
+% Generating section 04 [flags] with 5 subsections
 \section{Flags and Properties}
+  
+Most of tags here are probably not much use to end-users, but I am
+noting them as a matter of completeness.
+  
 \begin{description}
 
-\item [{\ttfamily lose}]
+\item [{\ttfamily lose}] \index{{\ttfamily lose}}
 If a name is flagged as {ttfamily lose} then a subsequent attempt to
 define or redefine it will be ignored.
 
-\item [{\ttfamily s!:ppchar} and {\ttfamily s!:ppformat}]
+\item [{\ttfamily s!:ppchar} and {\ttfamily s!:ppformat}] \index{{\ttfamily s"!:ppchar} and {\ttfamily s!:ppformat}}
 These are used in the prettyprint code found in {\ttfamily extras.red}. A
 name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
 its first few arguments should appear on the same line as it if at all
 possible. The {\ttfamily s!:ppchar} property is used to make the display of
 bracket characters a little more tide in the source code.
 
-\item [{\ttfamily switch}]
+\item [{\ttfamily switch}] \index{{\ttfamily switch}}
 In the Reduce parser some names are ``switches'', and then directives such
 as {\ttfamily on xxx} and {\ttfamily off xx} have the effect of setting or
 clearing the value of a variable {\ttfamily !*xxx}. This is managed by
 setting the {\ttfamily switch} flag om {\ttfamily xxx}. CSL sets some
 things as switches ready for when they may be used by the Reduce parser.
 
-\item [{\ttfamily !$\sim$magic!-internal!-symbol!$\sim$}]
+\item [{\ttfamily !$\sim$magic!-internal!-symbol!$\sim$}] \index{{\ttfamily "!$\sim$magic"!-internal"!-symbol"!$\sim$}}
 CSL does not have a clear representation for functions that is separated from
 the representation of an identifier, and so when you ask to get the value
 of a raw function you get an identifier (probably a gensym) and this
 tag is used to link such values with the symbols they were originally
 extracted from.
 
-\end{description}
+\end{description} % end of flags section [csl.c]
 
+% Generating section 05 [fns] with 122 subsections
 \section{Functions and Special Forms}
   
 Each line here shows a name and then one of the words {\itshape  expr},
@@ -671,94 +677,94 @@ Each line here shows a name and then one of the words {\itshape  expr},
 treatment of functions by the compiler so that they get compiled in-line.
 \begin{description}
 
-\item [{\ttfamily abs} {\itshape  expr}] ~\newline
+\item [{\ttfamily abs} {\itshape  expr}] \index{{\ttfamily abs} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_close\_input} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_close\_input} {\itshape  expr}] \index{{\ttfamily binary\_close\_input} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_close\_output} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_close\_output} {\itshape  expr}] \index{{\ttfamily binary\_close\_output} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_open\_input} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_open\_input} {\itshape  expr}] \index{{\ttfamily binary\_open\_input} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_open\_output} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_open\_output} {\itshape  expr}] \index{{\ttfamily binary\_open\_output} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_prin1} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_prin1} {\itshape  expr}] \index{{\ttfamily binary\_prin1} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_prin2} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_prin2} {\itshape  expr}] \index{{\ttfamily binary\_prin2} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_prin3} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_prin3} {\itshape  expr}] \index{{\ttfamily binary\_prin3} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_prinbyte} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_prinbyte} {\itshape  expr}] \index{{\ttfamily binary\_prinbyte} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_princ} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_princ} {\itshape  expr}] \index{{\ttfamily binary\_princ} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_prinfloat} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_prinfloat} {\itshape  expr}] \index{{\ttfamily binary\_prinfloat} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_read2} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_read2} {\itshape  expr}] \index{{\ttfamily binary\_read2} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_read3} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_read3} {\itshape  expr}] \index{{\ttfamily binary\_read3} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_read4} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_read4} {\itshape  expr}] \index{{\ttfamily binary\_read4} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_readbyte} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_readbyte} {\itshape  expr}] \index{{\ttfamily binary\_readbyte} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_readfloat} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_readfloat} {\itshape  expr}] \index{{\ttfamily binary\_readfloat} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_select\_input} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_select\_input} {\itshape  expr}] \index{{\ttfamily binary\_select\_input} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily binary\_terpri} {\itshape  expr}] ~\newline
+\item [{\ttfamily binary\_terpri} {\itshape  expr}] \index{{\ttfamily binary\_terpri} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily bps!-getv} {\itshape  expr}] ~\newline
+\item [{\ttfamily bps!-getv} {\itshape  expr}] \index{{\ttfamily bps"!-getv} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily bps!-putv} {\itshape  expr}] ~\newline
+\item [{\ttfamily bps!-putv} {\itshape  expr}] \index{{\ttfamily bps"!-putv} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily bps!-upbv} {\itshape  expr}] ~\newline
+\item [{\ttfamily bps!-upbv} {\itshape  expr}] \index{{\ttfamily bps"!-upbv} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily break!-loop} {\itshape  expr}] ~\newline
+\item [{\ttfamily break!-loop} {\itshape  expr}] \index{{\ttfamily break"!-loop} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily c\_out} {\itshape  expr}] ~\newline
+\item [{\ttfamily c\_out} {\itshape  expr}] \index{{\ttfamily c\_out} {\itshape  expr}} ~\newline
 Not yet written
 
-\item[{\ttfamily caaaar} {\itshape expr}] ~\newline
+\item[{\ttfamily caaaar} {\itshape expr}] \index{{\ttfamily caaaar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily caaadr} {\itshape expr}] ~\newline
+\item[{\ttfamily caaadr} {\itshape expr}] \index{{\ttfamily caaadr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily caaar} {\itshape expr}] ~\newline
+\item[{\ttfamily caaar} {\itshape expr}] \index{{\ttfamily caaar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily caadar} {\itshape expr}] ~\newline
+\item[{\ttfamily caadar} {\itshape expr}] \index{{\ttfamily caadar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily caaddr} {\itshape expr}] ~\newline
+\item[{\ttfamily caaddr} {\itshape expr}] \index{{\ttfamily caaddr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily caadr} {\itshape expr}] ~\newline
+\item[{\ttfamily caadr} {\itshape expr}] \index{{\ttfamily caadr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item [{\ttfamily caar \ldots cddddr} {\itshape expr}] ~\newline
+\item [{\ttfamily caar \ldots cddddr} {\itshape expr}] \index{{\ttfamily caar \ldots cddddr} {\itshape expr}} ~\newline
 Names that start with {\ttfamily c}, then have a sequence of
 {\ttfamily a} or {\ttfamily d}s and finally {\ttfamily r} provide
 shorthand functions for chains of uses of {\ttfamily car} and
@@ -766,28 +772,28 @@ shorthand functions for chains of uses of {\ttfamily car} and
 {\ttfamily (cadar x)} has the same meaning as
 {\ttfamily (car (cdr (car x)))}.
 
-\item[{\ttfamily cadaar} {\itshape expr}] ~\newline
+\item[{\ttfamily cadaar} {\itshape expr}] \index{{\ttfamily cadaar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cadadr} {\itshape expr}] ~\newline
+\item[{\ttfamily cadadr} {\itshape expr}] \index{{\ttfamily cadadr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cadar} {\itshape expr}] ~\newline
+\item[{\ttfamily cadar} {\itshape expr}] \index{{\ttfamily cadar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily caddar} {\itshape expr}] ~\newline
+\item[{\ttfamily caddar} {\itshape expr}] \index{{\ttfamily caddar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cadddr} {\itshape expr}] ~\newline
+\item[{\ttfamily cadddr} {\itshape expr}] \index{{\ttfamily cadddr} {\itshape expr}} ~\newline
 see {\ttfamily caar} and {\ttfamily fourth}.
 
-\item[{\ttfamily caddr} {\itshape expr}] ~\newline
+\item[{\ttfamily caddr} {\itshape expr}] \index{{\ttfamily caddr} {\itshape expr}} ~\newline
 see {\ttfamily caar} and {\ttfamily third}.
 
-\item [{\ttfamily  cadr} {\itshape expr}] ~\newline
+\item [{\ttfamily  cadr} {\itshape expr}] \index{{\ttfamily  cadr} {\itshape expr}} ~\newline
 see {\ttfamily caar} and {\ttfamily second}.
 
-\item [{\ttfamily car} {\itshape expr}] ~\newline
+\item [{\ttfamily car} {\itshape expr}] \index{{\ttfamily car} {\itshape expr}} ~\newline
 For a non-empty list the function {\ttfamily car} will return the
 first element. For a dotted pair (created using {\ttfamily cons})
 it extracts the first component. This is the fundamental low-level
@@ -799,188 +805,188 @@ compiled in Common Lisp mode (which is now not probable) a special
 exemption would apply and {\ttfamily car} and {\ttfamily} cdr of the
 empty lisp {\ttfamily nil} would be {\ttfamily nil}.
 
-\item[{\ttfamily car!*} {\itshape expr}] ~\newline
+\item[{\ttfamily car!*} {\itshape expr}] \index{{\ttfamily car"!*} {\itshape expr}} ~\newline
 This function behaves like {\ttfamily car} except that if its argument
 is atomic then the argument is returned unaltered rather than that case
 being treated as an error.
 
-\item[{\ttfamily cdaaar} {\itshape expr}] ~\newline
+\item[{\ttfamily cdaaar} {\itshape expr}] \index{{\ttfamily cdaaar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdaadr} {\itshape expr}] ~\newline
+\item[{\ttfamily cdaadr} {\itshape expr}] \index{{\ttfamily cdaadr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdaar} {\itshape expr}] ~\newline
+\item[{\ttfamily cdaar} {\itshape expr}] \index{{\ttfamily cdaar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdadar} {\itshape expr}] ~\newline
+\item[{\ttfamily cdadar} {\itshape expr}] \index{{\ttfamily cdadar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdaddr} {\itshape expr}] ~\newline
+\item[{\ttfamily cdaddr} {\itshape expr}] \index{{\ttfamily cdaddr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdadr} {\itshape expr}] ~\newline
+\item[{\ttfamily cdadr} {\itshape expr}] \index{{\ttfamily cdadr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily} {\itshape expr}] ~\newline
+\item[{\ttfamily cdar} {\itshape expr}] \index{{\ttfamily cdar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cddaar} {\itshape expr}] ~\newline
+\item[{\ttfamily cddaar} {\itshape expr}] \index{{\ttfamily cddaar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cddadr} {\itshape expr}] ~\newline
+\item[{\ttfamily cddadr} {\itshape expr}] \index{{\ttfamily cddadr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cddar} {\itshape expr}] ~\newline
+\item[{\ttfamily cddar} {\itshape expr}] \index{{\ttfamily cddar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdddar} {\itshape expr}] ~\newline
+\item[{\ttfamily cdddar} {\itshape expr}] \index{{\ttfamily cdddar} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cddddr} {\itshape expr}] ~\newline
+\item[{\ttfamily cddddr} {\itshape expr}] \index{{\ttfamily cddddr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cdddr} {\itshape expr}] ~\newline
+\item[{\ttfamily cdddr} {\itshape expr}] \index{{\ttfamily cdddr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item[{\ttfamily cddr} {\itshape expr}] ~\newline
+\item[{\ttfamily cddr} {\itshape expr}] \index{{\ttfamily cddr} {\itshape expr}} ~\newline
 see {\ttfamily caar}.
 
-\item [{\ttfamily cdr} {\itshape expr}] ~\newline
+\item [{\ttfamily cdr} {\itshape expr}] \index{{\ttfamily cdr} {\itshape expr}} ~\newline
 See {\ttfamily car}.
 
-\item [{\ttfamily char!-code} {\itshape  expr}] ~\newline
+\item [{\ttfamily char!-code} {\itshape  expr}] \index{{\ttfamily char"!-code} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily char!-downcase} {\itshape  expr}] ~\newline
+\item [{\ttfamily char!-downcase} {\itshape  expr}] \index{{\ttfamily char"!-downcase} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily char!-upcase} {\itshape  expr}] ~\newline
+\item [{\ttfamily char!-upcase} {\itshape  expr}] \index{{\ttfamily char"!-upcase} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily check!-c!-code} {\itshape  expr}] ~\newline
+\item [{\ttfamily check!-c!-code} {\itshape  expr}] \index{{\ttfamily check"!-c"!-code} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily cl!-equal} {\itshape  expr}] ~\newline
+\item [{\ttfamily cl!-equal} {\itshape  expr}] \index{{\ttfamily cl"!-equal} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily close!-library} {\itshape  expr}] ~\newline
+\item [{\ttfamily close!-library} {\itshape  expr}] \index{{\ttfamily close"!-library} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily code!-char} {\itshape  expr}] ~\newline
+\item [{\ttfamily code!-char} {\itshape  expr}] \index{{\ttfamily code"!-char} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily compile!-all} {\itshape  expr}] ~\newline
+\item [{\ttfamily compile!-all} {\itshape  expr}] \index{{\ttfamily compile"!-all} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily convert!-to!-evector} {\itshape  expr}] ~\newline
+\item [{\ttfamily convert!-to!-evector} {\itshape  expr}] \index{{\ttfamily convert"!-to"!-evector} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily copy!-module} {\itshape  expr}] ~\newline
+\item [{\ttfamily copy!-module} {\itshape  expr}] \index{{\ttfamily copy"!-module} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily copy!-native} {\itshape  expr}] ~\newline
+\item [{\ttfamily copy!-native} {\itshape  expr}] \index{{\ttfamily copy"!-native} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily create!-directory} {\itshape  expr}] ~\newline
+\item [{\ttfamily create!-directory} {\itshape  expr}] \index{{\ttfamily create"!-directory} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily dated!-name} {\itshape  expr}] ~\newline
+\item [{\ttfamily dated!-name} {\itshape  expr}] \index{{\ttfamily dated"!-name} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily define!-in!-module} {\itshape  expr}] ~\newline
+\item [{\ttfamily define!-in!-module} {\itshape  expr}] \index{{\ttfamily define"!-in"!-module} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily delete!-file} {\itshape  expr}] ~\newline
+\item [{\ttfamily delete!-file} {\itshape  expr}] \index{{\ttfamily delete"!-file} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily delete!-module} {\itshape  expr}] ~\newline
+\item [{\ttfamily delete!-module} {\itshape  expr}] \index{{\ttfamily delete"!-module} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily do!*} {\itshape macro}] ~\newline
+\item [{\ttfamily do!*} {\itshape macro}] \index{{\ttfamily do"!*} {\itshape macro}} ~\newline
 Not yet written
 
-\item [{\ttfamily double!-execute} {\itshape  expr}] ~\newline
+\item [{\ttfamily double!-execute} {\itshape  expr}] \index{{\ttfamily double"!-execute} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily enable!-backtrace} {\itshape  expr}] ~\newline
+\item [{\ttfamily enable!-backtrace} {\itshape  expr}] \index{{\ttfamily enable"!-backtrace} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily enable!-errorset} {\itshape  expr}] ~\newline
+\item [{\ttfamily enable!-errorset} {\itshape  expr}] \index{{\ttfamily enable"!-errorset} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily eq!-safe} {\itshape  expr}] ~\newline
+\item [{\ttfamily eq!-safe} {\itshape  expr}] \index{{\ttfamily eq"!-safe} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily eval!-when} {\itshape  fexpr}] ~\newline
+\item [{\ttfamily eval!-when} {\itshape  fexpr}] \index{{\ttfamily eval"!-when} {\itshape  fexpr}} ~\newline
 Not yet written
 
-\item [{\ttfamily file!-length} {\itshape  expr}] ~\newline
+\item [{\ttfamily file!-length} {\itshape  expr}] \index{{\ttfamily file"!-length} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily file!-readablep} {\itshape  expr}] ~\newline
+\item [{\ttfamily file!-readablep} {\itshape  expr}] \index{{\ttfamily file"!-readablep} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily file!-writeablep} {\itshape  expr}] ~\newline
+\item [{\ttfamily file!-writeablep} {\itshape  expr}] \index{{\ttfamily file"!-writeablep} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily flagp!*!*} {\itshape  expr}] ~\newline
+\item [{\ttfamily flagp!*!*} {\itshape  expr}] \index{{\ttfamily flagp"!*"!*} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily fp!-evaluate} {\itshape  expr}] ~\newline
+\item [{\ttfamily fp!-evaluate} {\itshape  expr}] \index{{\ttfamily fp"!-evaluate} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily funcall!*} {\itshape  expr}] ~\newline
+\item [{\ttfamily funcall!*} {\itshape  expr}] \index{{\ttfamily funcall"!*} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily get!*} {\itshape  expr}] ~\newline
+\item [{\ttfamily get!*} {\itshape  expr}] \index{{\ttfamily get"!*} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily get!-current!-directory} {\itshape  expr}] ~\newline
+\item [{\ttfamily get!-current!-directory} {\itshape  expr}] \index{{\ttfamily get"!-current"!-directory} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily get!-lisp!-directory} {\itshape  expr}] ~\newline
+\item [{\ttfamily get!-lisp!-directory} {\itshape  expr}] \index{{\ttfamily get"!-lisp"!-directory} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily hash!-table!-p} {\itshape  expr}] ~\newline
+\item [{\ttfamily hash!-table!-p} {\itshape  expr}] \index{{\ttfamily hash"!-table"!-p} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily hashtagged!-name} {\itshape  expr}] ~\newline
+\item [{\ttfamily hashtagged!-name} {\itshape  expr}] \index{{\ttfamily hashtagged"!-name} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily input!-libraries} {\itshape  fexpr}] ~\newline
+\item [{\ttfamily input!-libraries} {\itshape  fexpr}] \index{{\ttfamily input"!-libraries} {\itshape  fexpr}} ~\newline
 Not yet written
 
-\item [{\ttfamily instate!-c!-code} {\itshape  expr}] ~\newline
+\item [{\ttfamily instate!-c!-code} {\itshape  expr}] \index{{\ttfamily instate"!-c"!-code} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily internal!-open} {\itshape  expr}] ~\newline
+\item [{\ttfamily internal!-open} {\itshape  expr}] \index{{\ttfamily internal"!-open} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily is!-console} {\itshape  expr}] ~\newline
+\item [{\ttfamily is!-console} {\itshape  expr}] \index{{\ttfamily is"!-console} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily let!*} {\itshape  fexpr}] ~\newline
+\item [{\ttfamily let!*} {\itshape  fexpr}] \index{{\ttfamily let"!*} {\itshape  fexpr}} ~\newline
 Not yet written
 
-\item [{\ttfamily library!-members} {\itshape  expr}] ~\newline
+\item [{\ttfamily library!-members} {\itshape  expr}] \index{{\ttfamily library"!-members} {\itshape  expr}} ~\newline
 Returns a list of all the modules that could potentially be loaded using
 {\ttfamily load!-module}. See {\ttfamily list!-modules} to get a human
 readable display that looks more like the result of listing a directory, or
 {\ttfamily modulep} for checking the state of a particular named module.
   
 
-\item [{\ttfamily library!-name} {\itshape  expr}] ~\newline
+\item [{\ttfamily library!-name} {\itshape  expr}] \index{{\ttfamily library"!-name} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily list!*} {\itshape  fexpr}] ~\newline
+\item [{\ttfamily list!*} {\itshape  fexpr}] \index{{\ttfamily list"!*} {\itshape  fexpr}} ~\newline
 Not yet written
 
-\item [{\ttfamily list!-directory} {\itshape  expr}] ~\newline
+\item [{\ttfamily list!-directory} {\itshape  expr}] \index{{\ttfamily list"!-directory} {\itshape  expr}} ~\newline
 Not yet written
   
 
-\item [{\ttfamily list!-modules} {\itshape  expr}] ~\newline
+\item [{\ttfamily list!-modules} {\itshape  expr}] \index{{\ttfamily list"!-modules} {\itshape  expr}} ~\newline
 This prints a human-readable display of the modules present in the current
 image files. This will include ``InitialImage'' which is the heap-image
 loaded at system startup. For example
@@ -999,81 +1005,85 @@ See {\ttfamily library!-members} and {\ttfamily modulep} for functions that
 make it possible for Lisp code to discover about the loadable modules that are
 available.
 
-\item [{\ttfamily list!-to!-string} {\itshape  expr}] ~\newline
+\item [{\ttfamily list!-to!-string} {\itshape  expr}] \index{{\ttfamily list"!-to"!-string} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily list!-to!-symbol} {\itshape  expr}] ~\newline
+\item [{\ttfamily list!-to!-symbol} {\itshape  expr}] \index{{\ttfamily list"!-to"!-symbol} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily list!-to!-vector} {\itshape  expr}] ~\newline
+\item [{\ttfamily list!-to!-vector} {\itshape  expr}] \index{{\ttfamily list"!-to"!-vector} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily list2!*} {\itshape  expr}] ~\newline
+\item [{\ttfamily list2!*} {\itshape  expr}] \index{{\ttfamily list2"!*} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily list3!*} {\itshape  expr}] ~\newline
+\item [{\ttfamily list3!*} {\itshape  expr}] \index{{\ttfamily list3"!*} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily load!-module} {\itshape  expr}] ~\newline
+\item [{\ttfamily load!-module} {\itshape  expr}] \index{{\ttfamily load"!-module} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily load!-source} {\itshape  expr}] ~\newline
+\item [{\ttfamily load!-source} {\itshape  expr}] \index{{\ttfamily load"!-source} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily lose!-precision} {\itshape  expr}] ~\newline
+\item [{\ttfamily lose!-precision} {\itshape  expr}] \index{{\ttfamily lose"!-precision} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily macro!-function} {\itshape  expr}] ~\newline
+\item [{\ttfamily macro!-function} {\itshape  expr}] \index{{\ttfamily macro"!-function} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily macroexpand!-1} {\itshape  expr}] ~\newline
+\item [{\ttfamily macroexpand!-1} {\itshape  expr}] \index{{\ttfamily macroexpand"!-1} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-bps} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-bps} {\itshape  expr}] \index{{\ttfamily make"!-bps} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-function!-stream} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-function!-stream} {\itshape  expr}] \index{{\ttfamily make"!-function"!-stream} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-global} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-global} {\itshape  expr}] \index{{\ttfamily make"!-global} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-native} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-native} {\itshape  expr}] \index{{\ttfamily make"!-native} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-random!-state} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-random!-state} {\itshape  expr}] \index{{\ttfamily make"!-random"!-state} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-simple!-string} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-simple!-string} {\itshape  expr}] \index{{\ttfamily make"!-simple"!-string} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily make!-special} {\itshape  expr}] ~\newline
+\item [{\ttfamily make!-special} {\itshape  expr}] \index{{\ttfamily make"!-special} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily math!-display} {\itshape  expr}] ~\newline
+\item [{\ttfamily math!-display} {\itshape  expr}] \index{{\ttfamily math"!-display} {\itshape  expr}} ~\newline
 Not yet written
 
-\item [{\ttfamily member!*!*} {\itshape  expr}] ~\newline
+\item [{\ttfamily member!*!*} {\itshape  expr}] \index{{\ttfamily member"!*"!*} {\itshape  expr}} ~\newline
 Not yet written
 
-\item[{\ttfamily rplaca} {\itshape expr}] ~\newline
+\item[{\ttfamily rplaca} {\itshape expr}] \index{{\ttfamily rplaca} {\itshape expr}} ~\newline
 This is a destructive function in that it alters the data structure
 that it is given as its first argument by updating its {\ttfamily car}
 component. The result is the updated object. See {\ttfamily rplacd}
 for the corresponding function for updating the {\ttfamily cdr} component.
 
-\item [{\ttfamily rplacd} {\itshape expr}] ~\newline
+\item [{\ttfamily rplacd} {\itshape expr}] \index{{\ttfamily rplacd} {\itshape expr}} ~\newline
 See {\ttfamily rplaca}
 
-\item [{\ttfamily !$\sim$block} {\itshape  fexpr}] ~\newline
+\item [{\ttfamily !$\sim$block} {\itshape  fexpr}] \index{{\ttfamily "!$\sim$block} {\itshape  fexpr}} ~\newline
 Not yet written
 
-\item [{\ttfamily !$\sim$let} {\itshape  fexpr}] ~\newline
+\item [{\ttfamily !$\sim$let} {\itshape  fexpr}] \index{{\ttfamily "!$\sim$let} {\itshape  fexpr}} ~\newline
 Not yet written
 
-\item [{\ttfamily !$\sim$tyi} {\itshape  expr}] ~\newline
+\item [{\ttfamily !$\sim$tyi} {\itshape  expr}] \index{{\ttfamily "!$\sim$tyi} {\itshape  expr}} ~\newline
 Not yet written
 
-\end{description}
+\end{description} % end of fns section [tempdoc.c]
 
+% Generating section ~~~~~~~~ [index] with 0 subsections
+% The index will go here
+\printindex
 \end{document}
+
