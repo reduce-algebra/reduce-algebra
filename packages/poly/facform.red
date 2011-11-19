@@ -141,7 +141,19 @@ symbolic procedure facform2list2 u;
 
 symbolic procedure old_factorize u; factorize u where !*nopowers=t;
 
-flag('(factorize old_factorize),'opfn);
+symbolic procedure factorize!-mod!-p(u, p);
+  begin
+     scalar r, s1, s2;
+     s1 := setmod p;
+     s2 := !*modular;
+     if not s2 then setdmode('modular, t);
+     r := factorize u;
+     if not s2 then setdmode('modular, nil);
+     setmod s1;
+     return r;
+  end;
+
+flag('(factorize old_factorize factorize!-mod!-p),'opfn);
 
 symbolic procedure pairlist2list u;
    for each x in u conc nlist(car x,cdr x);
