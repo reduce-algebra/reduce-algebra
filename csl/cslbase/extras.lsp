@@ -94,7 +94,7 @@ l2) (setq l2 (cdr l2)))) (t (progn (rplacd w l1) (setq w l1) (setq l1 (cdr l1
 )
 
 (fluid (quote (!*prinl!-visited!-nodes!* !*prinl!-index!* !*prinl!-fn!* 
-!*loop!-print!* !*print!-array!* !*print!-length!* !*print!-level!*)))
+!*print!-array!* !*print!-length!* !*print!-level!*)))
 
 (setq !*print!-length!* (setq !*print!-level!* nil))
 

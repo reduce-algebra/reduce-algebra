@@ -260,7 +260,7 @@ symbolic procedure stable!-sortip(l, pred);
 %
 
 fluid '(!*prinl!-visited!-nodes!* !*prinl!-index!* 
-        !*prinl!-fn!* !*loop!-print!* !*print!-array!*
+        !*prinl!-fn!* !*print!-array!*
         !*print!-length!* !*print!-level!*);
 
 !*print!-length!* := !*print!-level!* := nil;

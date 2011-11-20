@@ -1,4 +1,4 @@
-% Generated using doxtract Sat Nov 19 21:42:53 2011
+% Generated using doxtract Sun Nov 20 12:01:40 2011
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
@@ -261,7 +261,7 @@ to compile itself.
 
 \end{description} % end of options section [csl.c]
 
-% Generating section 02 [predef] with 71 subsections
+% Generating section 02 [predef] with 70 subsections
 \section{Predefined variables}
 \begin{description}
 
@@ -278,9 +278,6 @@ read functions to signal end-of-file.
 
 \item [{\ttfamily !\$eol!\$}] \index{{\ttfamily "!\$eol"!\$}}~\newline
 The value of this variable is an end-of-line character.
-
-\item [{\ttfamily !*plap}] \index{{\ttfamily "!*plap}} ~\newline
-Not yet written
 
 \item [{\ttfamily !*applyhook!*}] \index{{\ttfamily "!*applyhook"!*}} ~\newline
 If this is set it might be supposed to be the name of a function used
@@ -302,7 +299,9 @@ longer does that. It may have a minor effect on array access primitives.
 When set each function is compiled (into bytecodes) as it gets defined.
 
 \item [{\ttfamily !*debug!-io!*}] \index{{\ttfamily "!*debug"!-io"!*}} ~\newline
-An I/O channel intended to be used for diagnostic interactions.
+An I/O channel intended to be used for diagnostic interactions. The concept
+and name is taken from Common Lisp, but there is in fact no real separation
+between this and the standard input and output streams.
 
 \item [{\ttfamily !*echo}] \index{{\ttfamily "!*echo}} ~\newline
 When this is non-nil characters that are read from an input file are
@@ -310,101 +309,196 @@ echoed to the standard output. This gives a more comlete transcript in
 a log file, but can sometimes amount to over-verbose output.
 
 \item [{\ttfamily !*error!-messages!*}] \index{{\ttfamily "!*error"!-messages"!*}} ~\newline
-Has the value nil and does not do anything!
+Has the value nil and does not do anything! At one stage the idea had been
+that CSL's error messages would be in this table so as to be available
+from Lisp, but that never happened.
 
 \item [{\ttfamily !*error!-output!*}] \index{{\ttfamily "!*error"!-output"!*}} ~\newline
-An I/O channel intended for diagnostic output.
+An I/O channel intended for diagnostic output. The concept comes from
+Common Lisp but Standard Lisp (and hence CSL) does not really exploit it.
 
 \item [{\ttfamily !*evalhook!*}] \index{{\ttfamily "!*evalhook"!*}} ~\newline
-See {\ttfamily !*applyhook!*}. This also does not do anything at present.
+See {\ttfamily !*applyhook!*}. This also does not do anything at present,
+but it it did it would be a place to put the name of a function that
+would be called by the interpreter when applying a function.
 
 \item [{\ttfamily !*gc!-hook!*}] \index{{\ttfamily "!*gc"!-hook"!*}} ~\newline
 If this is set to have as its value that is a function of one argument then
 that function is called with {\ttfamily nil} on every minor entry to the
 garbage collection, and with argument {\ttfamily t} at the end of a ``genuine''
-full garbage collection.
+full garbage collection. This may sometimes be of interest for those who
+want to notice when garbage collection happens but want to control how
+they are informed rather than relying on the displayed text that the
+{\ttfamily verbos} function controls.
 
 \item [{\ttfamily !*hankaku}] \index{{\ttfamily "!*hankaku}} ~\newline
 This was concerned with internationalisation to support a Japanese
 locale but has not been activated for some while. In the fullness of time I
 hope to migrate CSL to use an UTF8 representation of Unicode characters
 internally, but that upgrade is at present an ideal and a project not
-a reality. Volunteers to help welcomed.
-
-\item [{\ttfamily !*loop!-print!*}] \index{{\ttfamily "!*loop"!-print"!*}} ~\newline
-Probably not used at present.
+a reality. Volunteers to help welcome!
 
 \item [{\ttfamily !*lower}] \index{{\ttfamily "!*lower}} ~\newline
-Not yet written
+In CSL if the fluid variable {\ttfamily !*lower} is set (which it is
+by default) then when characters are read they are folded to lower case.
+The related variable {\ttfamily !*raise} causes input to be folded to
+upper case on input. In the original Standard Lisp the true internal names
+of all functions were in upper case, and {\ttfamily !*raise} was used so
+that code using it could be written in mixed or lower case. At some stage
+it was accepted that upper case was a throw-back to the days of FORTRAN
+and punched cards, so the CSL switched to using lower case
+internally and the {\ttfamily !*lower} flag allowed the existing Reduce
+sources to survive. At some time in the future I hope that Reduce will
+arrange to have both {\ttfamily *raise} and {\ttfamily !*lower} set to
+{\ttfamily nil} so that it becomes a case-sensitive system.
+  
+Note that the PSL Lisp system once (but not now) used {\ttfamily !*lower}
+to cause internally upper case symbols to be printed in lower case,
+so that there it is a control of output rather than input case folding.
+PSL has functions {\ttfamily input!-case} and {\ttfamily output!-case}
+that are relevant in this respect.
+So code that is to be portable between the two Lisps needs to take care.
 
 \item [{\ttfamily !*macroexpand!-hook!*}] \index{{\ttfamily "!*macroexpand"!-hook"!*}} ~\newline
-Not yet written
+Common Lisp would like it to be possible to specify a function that would
+be called to allow overriding of the normal method of expanding macros. This
+variable exists in CSL in case at any stage a serious need for this
+capability arises, but at present any use of this variable has no effect.
 
 \item [{\ttfamily !*math!-output!*}] \index{{\ttfamily "!*math"!-output"!*}} ~\newline
-Not yet written
+In the case that CSL is being used with Reduce and its ``fancy'' maths mode
+display is available in a GUI then this provides a special output
+stream that displayable layout information in a {\TeX}-like notation that
+is not documented here because it is potentially in the process of being
+updated. The {\ttfamily tmprint} package in Reduce generates this
+material and collaborates with the mathematical display parts of CSL.
 
 \item [{\ttfamily !*native\_code}] \index{{\ttfamily "!*native\_code}} ~\newline
-Not yet written
+An experimental additional compiler for CSL that maps Lisp directly onto
+native code for the current platform has been in development for some time,
+but it is not in a state such as to make it useful for other than
+people who wish to experiment, extend and debug it. This flag is to do
+with enabling it. It is not supported but may possibly become so one day.
 
 \item [{\ttfamily !*notailcall}] \index{{\ttfamily "!*notailcall}} ~\newline
-Not yet written
+The CSL compiler normally tries to detect patterns of recursion that it
+can convert into iteration. This can dramatically reduce stack use and
+so allow calculations to succeed when otherwise they would have failed.
+This flag can disable that optimisation. The most plausible reason to
+want to do that would be if there was serious cause to believe that the
+code performorming the optimisation was faulty, and results without it were
+needed as part of the process of tracking down the bug.
 
 \item [{\ttfamily !*package!*}] \index{{\ttfamily "!*package"!*}} ~\newline
-Not yet written
+Interrnally CSL stores the table that maps names into symbols in a way
+following the style of the Common Lisp package system. When used as
+a Standard Lisp there is only one package and no distinction between
+internal and external name visibility, but this name provides access to
+the main tdata-structure involved. It is in general expected that this
+will be used via the {\ttfamily oblist} function, not directly be users.
 
 \item [{\ttfamily !*pgwd}] \index{{\ttfamily "!*pgwd}} ~\newline
-Not yet written
+See {\ttfamily !*plap}.
+
+\item [{\ttfamily !*plap}] \index{{\ttfamily "!*plap}} ~\newline
+When the CSL compiler runs to generate byte-codes if {\ttfamily !*plap} or
+{\ttfamily !*pgwd} is set then the generated code is displayed. This may
+be of interest when debugging or for anybody who wants to explore the
+Lisp bytecode model that is used. If at some stage a full native compiler
+is released then {\ttfamily !*plap} will control display of any intermediate
+Lisp-specific material and {\ttfamily !*pgwd} will control display of the
+final generated platform dependent machine code.
 
 \item [{\ttfamily !*pretty!-symmetric}] \index{{\ttfamily "!*pretty"!-symmetric}} ~\newline
-Not yet written
+The {\ttfamily prettyprint} function displays a Lisp expression neatly
+indended. If this variable is set (which by default it is) symbols and
+strings are shown with escape characters and quotation marks so that the
+indented form could be re-input. If this variable is set to {\ttfamily nil}
+that does not happen -- the output may not be re-readable by CSL but in
+some cases it may be easier for a human reader to decipher.
 
 \item [{\ttfamily !*prinl!-fn!*}] \index{{\ttfamily "!*prinl"!-fn"!*}} ~\newline
-Not yet written
+Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
+that can print data structures that are re-entrant or looped. Not for use
+by end-users.
 
 \item [{\ttfamily !*prinl!-index!*}] \index{{\ttfamily "!*prinl"!-index"!*}} ~\newline
-Not yet written
+Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
+that can print data structures that are re-entrant or looped. Not for use
+by end-users.
 
 \item [{\ttfamily !*prinl!-visited!-nodes!*}] \index{{\ttfamily "!*prinl"!-visited"!-nodes"!*}} ~\newline
-Not yet written
+Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
+that can print data structures that are re-entrant or looped. Not for use
+by end-users.
 
 \item [{\ttfamily !*print!-array!*}] \index{{\ttfamily "!*print"!-array"!*}} ~\newline
-Not yet written
+In {\ttfamily prinl} if this variable is {\ttfamily nil} arrays and
+structures are not printed in full. In some cases this merely loses valuable
+information, while in others it leads to output that is more concise and
+legible and hence nore useful.
 
 \item [{\ttfamily !*print!-length!*}] \index{{\ttfamily "!*print"!-length"!*}} ~\newline
-Not yet written
+In {\ttfamily prinl} if this variable is set to an integer then that specifies
+the largest number of items in a list that will be displayed.
 
 \item [{\ttfamily !*print!-level!*}] \index{{\ttfamily "!*print"!-level"!*}} ~\newline
-Not yet written
+In {\ttfamily prinl} if this variable is set to an integer then that specifies
+the greatest depth of nesting of lists before the printing gives up. This
+and {\ttfamily !*print!-length!*} may very occasionally be useful when
+faced with huge lists of whihc only the top few layers are relevant.
 
 \item [{\ttfamily !*pwrds}] \index{{\ttfamily "!*pwrds}} ~\newline
-Not yet written
+This is normally set, and it causes the compiler to display a message
+commenting on how many bytes were used in the compiled version of each
+function that is processed.
 
 \item [{\ttfamily !*query!-io!*}] \index{{\ttfamily "!*query"!-io"!*}} ~\newline
-Not yet written
+An I/O channel intended to be used for query interactions. The concept
+and name is taken from Common Lisp, but there is in fact no real separation
+between this and the standard input and output streams.
 
 \item [{\ttfamily !*quotes}] \index{{\ttfamily "!*quotes}} ~\newline
-Not yet written
+Used in the prettyprinter to determine whether the form {\ttfamily (quote x)}
+should be displayed as {\ttfamily 'x}. By default it is.
 
 \item [{\ttfamily !*raise}] \index{{\ttfamily "!*raise}} ~\newline
-Not yet written
+See {\ttfamily !*lower}.
 
 \item [{\ttfamily !*redefmsg}] \index{{\ttfamily "!*redefmsg}} ~\newline
-Not yet written
+If this is set a message is displayed when a function is redefined.
 
 \item [{\ttfamily !*resources!*}] \index{{\ttfamily "!*resources"!*}} ~\newline
-Not yet written
+See the {\ttfamily resource!-limit} function.
 
 \item [{\ttfamily !*savedef}] \index{{\ttfamily "!*savedef}} ~\newline
-Not yet written
+If this variable is set then when you define a function and compile it the
+original interpratable Lisp form of the defintion is saved under the
+property-name {\ttfamily !*savedef} so that it could be recovered using
+{\ttfamily get}. If the function is being compiled into a fasl-file for
+later reloading the lisp form of the definition is saved there so that when
+{\ttfamily load!-module} or {\ttfamily load!-source} is used it can be
+retrieved. This facility is activated when the ``bootstrap'' version of
+Reduce is built so that in effect the full source code is available at
+run-time. The availability of source in that way can be useful for forms
+of global analysis or optimisation of the code -- for instance Reduce
+uses it to find the definitions of functions that it wants to optimise
+int C code rather than the slower (but more compact) bytecodes it uses
+for most things.
 
 \item [{\ttfamily !*spool!-output!*}] \index{{\ttfamily "!*spool"!-output"!*}} ~\newline
-Not yet written
+The {\ttfamily spool} function or the command-line option {\ttfamily -l}
+can establish a file that normal output is copied to as a log. This variable
+holds a handle to that file.
 
 \item [{\ttfamily !*standard!-input!*}] \index{{\ttfamily "!*standard"!-input"!*}} ~\newline
-Not yet written
+Standard Lisp specifies that to select input from the ``standrad'' source
+one goes {\ttfamily (rdf nil)}. In CSL this is underpinned by having an
+input stream as stored in this variable following the naming convention used
+by Common Lisp.
 
 \item [{\ttfamily !*standard!-output!*}] \index{{\ttfamily "!*standard"!-output"!*}} ~\newline
-Not yet written
+As {\ttfamily !*standard!-input!*} but for output.
 
 \item [{\ttfamily !*terminal!-io!*}] \index{{\ttfamily "!*terminal"!-io"!*}} ~\newline
 Not yet written
@@ -413,9 +507,6 @@ Not yet written
 Not yet written
 
 \item [{\ttfamily !@cslbase}] \index{{\ttfamily "!"@cslbase}} ~\newline
-Not yet written
-
-]pendingrpars]  \item [{\ttfamily pendingrpars}] \index{{\ttfamily pendingrpars}} ~\newline
 Not yet written
 
 \item [{\ttfamily blank}] \index{{\ttfamily blank}} ~\newline
@@ -469,6 +560,9 @@ Not yet written
 Not yet written
 
 \item [{\ttfamily ofl!*}] \index{{\ttfamily ofl"!*}} ~\newline
+Not yet written
+
+\item [{\ttfamily pendingrpars}] \index{{\ttfamily pendingrpars}} ~\newline
 Not yet written
 
 \item [{\ttfamily program!*}] \index{{\ttfamily program"!*}} ~\newline
