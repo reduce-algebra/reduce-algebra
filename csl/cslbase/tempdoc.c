@@ -1548,7 +1548,7 @@
  * This prints a human-readable display of the modules present in the current
  * image files. This will include ``InitialImage'' which is the heap-image
  * loaded at system startup. For example
- * \begin{verbatim}
+ * {\footnotesize \begin{verbatim}
  * > (list!-modules)
  *
  * File d:\csl\csl.img (dirsize 8  length 155016, Writable):
@@ -1557,7 +1557,7 @@
  *   InitialImage Sat Jul 26 10:20:09 2008  position 90972 size: 64040
  *
  * nil
- * \end{verbatim}
+ * \end{verbatim}}
  *
  * See {\ttfamily library!-members} and {\ttfamily modulep} for functions that
  * make it possible for Lisp code to discover about the loadable modules that are
