@@ -4920,7 +4920,7 @@ static void set_up_variables(CSLbool restart_flag)
 /*!!! csl
  */
 
-/*!! lispsys [03] Items that can appear in {\ttfamily lispsystem!*}
+/*!! lispsys [03] \section{Items that can appear in {\ttfamily lispsystem!*}} \label{lispsys}
  *
  * There is a global variable called {\ttfamily lispsystem!*} whose value is
  * reset in the process of CSL starting up. An effect of this is that if the

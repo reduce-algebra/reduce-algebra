@@ -466,17 +466,17 @@ symbolic macro procedure format(u, !&optional, env);
 
 !#endif
 
-fluid '(bn
-        bufferi
-        buffero
-        indblanks
-        indentlevel
-        initialblanks
-        lmar
-        pendingrpars
-        rmar
-        rparcount
-        stack);
+fluid '(s!:bn
+        s!:bufferi
+        s!:buffero
+        s!:indblanks
+        s!:indentlevel
+        s!:initialblanks
+        s!:lmar
+        s!:pendingrpars
+        s!:rmar
+        s!:rparcount
+        s!:stack);
 
 global '(!*quotes !*pretty!-symmetric thin!*);
 
@@ -524,34 +524,34 @@ symbolic procedure prettyprint x;
     terpri();
     nil>>;
 
-symbolic procedure superprintm(x,lmar);
-  << superprinm(x,lmar); terpri(); x >>;
+symbolic procedure superprintm(x,s!:lmar);
+  << superprinm(x,s!:lmar); terpri(); x >>;
 
 
 % From here down the functions are not intended for direct use.
 
-symbolic procedure superprinm(x,lmar);
+symbolic procedure superprinm(x,s!:lmar);
   begin
-    scalar stack,bufferi,buffero,bn,initialblanks,rmar,
-           pendingrpars,indentlevel,indblanks,rparcount,w;
-    bufferi:=buffero:=list nil; %fifo buffer.
-    initialblanks:=0;
-    rparcount:=0;
-    indblanks:=0;
-    rmar:=linelength(nil); % right margin.
+    scalar s!:stack,s!:bufferi,s!:buffero,s!:bn,s!:initialblanks,s!:rmar,
+           s!:pendingrpars,s!:indentlevel,s!:indblanks,s!:rparcount,w;
+    s!:bufferi:=s!:buffero:=list nil; %fifo buffer.
+    s!:initialblanks:=0;
+    s!:rparcount:=0;
+    s!:indblanks:=0;
+    s!:rmar:=linelength(nil); % right margin.
     linelength 500;        % To try to be extra cautious
-    if rmar<25 then error(0,list(rmar,
+    if s!:rmar<25 then error(0,list(s!:rmar,
         "Linelength too short for superprinting"));
-    bn:=0; %characters in buffer.
-    indentlevel:=0; %no indentation needed, yet.
-    if lmar+20>=rmar then lmar:=rmar - 21; %no room for specified margin
+    s!:bn:=0; %characters in buffer.
+    s!:indentlevel:=0; %no indentation needed, yet.
+    if s!:lmar+20>=s!:rmar then s!:lmar:=s!:rmar - 21; %no room for specified margin
     w:=posn();
-    if w>lmar then << terpri(); w:=0 >>;
-    if w<lmar then initialblanks:=lmar - w;
-    s!:prindent(x,lmar+3); %main recursive print routine.
+    if w>s!:lmar then << terpri(); w:=0 >>;
+    if w<s!:lmar then s!:initialblanks:=s!:lmar - w;
+    s!:prindent(x,s!:lmar+3); %main recursive print routine.
 % traverse routine finished - now tidy up buffers.
     s!:overflow 'none; %flush out the buffer.
-    linelength rmar;
+    linelength s!:rmar;
     return x
   end;
 
@@ -560,7 +560,7 @@ symbolic procedure superprinm(x,lmar);
 
 
 symbolic macro procedure s!:top(u,!&optional,v);
-   '(car stack);
+   '(car s!:stack);
 
 symbolic macro procedure s!:depth(u,!&optional,v);
    list('car, cadr u);
@@ -602,13 +602,13 @@ symbolic procedure s!:prindent(x,n);
         s!:prindent(cadr x,n+1) >>
     else begin
         scalar cx;
-        if 4*n>3*rmar then << %list is too deep for sanity.
+        if 4*n>3*s!:rmar then << %list is too deep for sanity.
             s!:overflow 'all;
             n:=truncate(n, 8);
-            if initialblanks>n then <<
-                lmar:=lmar - initialblanks+n;
-                initialblanks:=n >> >>;
-        stack := (s!:newframe n) . stack;
+            if s!:initialblanks>n then <<
+                s!:lmar:=s!:lmar - s!:initialblanks+n;
+                s!:initialblanks:=n >> >>;
+        s!:stack := (s!:newframe n) . s!:stack;
         s!:putch ('lpar . s!:top());
         cx:=car x;
         s!:prindent(cx,n+1);
@@ -628,14 +628,14 @@ symbolic procedure s!:prindent(x,n);
          s!:finishpending(); %about to print a blank.
          if cx='prog then <<
              s!:putblank();
-             s!:overflow bufferi; %force format for prog.
+             s!:overflow s!:bufferi; %force format for prog.
              if atom car x then << % a label.
-                 lmar:=initialblanks:=max(lmar - 6,0);
+                 s!:lmar:=s!:initialblanks:=max(s!:lmar - 6,0);
                  s!:prindent(car x,n - 3); % print the label.
                  x:=cdr x;
                  if not atom x and atom car x then go to scan;
-                 if lmar+bn>n then s!:putblank()
-                 else for i:=lmar+bn:n - 1 do s!:putch '! ;
+                 if s!:lmar+s!:bn>n then s!:putblank()
+                 else for i:=s!:lmar+s!:bn:n - 1 do s!:putch '! ;
                  if atom x then go to outt>> >>
          else if numberp cx then <<
              cx:=cx - 1;
@@ -656,7 +656,7 @@ symbolic procedure s!:prindent(x,n);
         if s!:indenting s!:top()='indent and not null s!:blanklist s!:top() then
                s!:overflow car s!:blanklist s!:top()
         else s!:endlist s!:top();
-        stack:=cdr stack
+        s!:stack:=cdr s!:stack
       end;
 
 symbolic procedure s!:explodes x;
@@ -667,7 +667,7 @@ symbolic procedure s!:prvector(x,n);
   begin
     scalar bound;
     bound:=upbv x; % length of the vector.
-    stack:=(s!:newframe n) . stack;
+    s!:stack:=(s!:newframe n) . s!:stack;
     s!:putch ('lsquare . s!:top());
     s!:prindent(getv(x,0),n+3);
     for i:=1:bound do <<
@@ -676,16 +676,16 @@ symbolic procedure s!:prvector(x,n);
         s!:prindent(getv(x,i),n+3) >>;
     s!:putch('rsquare . (n - 3));
     s!:endlist s!:top();
-    stack:=cdr stack
+    s!:stack:=cdr s!:stack
   end;
 
 symbolic procedure s!:putblank();
   begin
     s!:putch s!:top(); %represents a blank character.
     s!:setblankcount(s!:top(),s!:blankcount s!:top()+1);
-    s!:setblanklist(s!:top(),bufferi . s!:blanklist s!:top());
+    s!:setblanklist(s!:top(),s!:bufferi . s!:blanklist s!:top());
          %remember where I was.
-    indblanks:=indblanks+1
+    s!:indblanks:=s!:indblanks+1
   end;
 
 
@@ -694,7 +694,7 @@ symbolic procedure s!:putblank();
 symbolic procedure s!:endlist l;
 %Fix up the blanks in a complete list so that they
 %will not be turned into indentations.
-     pendingrpars:=l . pendingrpars;
+     s!:pendingrpars:=l . s!:pendingrpars;
 
 % When I have printed a ')' I want to mark all of the blanks
 % within the parentheses as being unindented, ordinary blank
@@ -703,18 +703,18 @@ symbolic procedure s!:endlist l;
 % marking should be delayed until I get round to printing
 % a further blank (which will be a candidate for a place to
 % split lines). This delay is dealt with by the list
-% pendingrpars which holds a list of levels that, when
+% s!:pendingrpars which holds a list of levels that, when
 % convenient, can be tidied up and closed out.
 
 symbolic procedure s!:finishpending();
- << for each stackframe in pendingrpars do <<
+ << for each stackframe in s!:pendingrpars do <<
         if s!:indenting stackframe neq 'indent then
             for each b in s!:blanklist stackframe do
-              << rplaca(b,'! ); indblanks:=indblanks - 1>>;
+              << rplaca(b,'! ); s!:indblanks:=s!:indblanks - 1>>;
 % s!:blanklist of stackframe must be non-nil so that overflow
 % will not treat the '(' specially.
         s!:setblanklist(stackframe,t) >>;
-    pendingrpars:=nil >>;
+    s!:pendingrpars:=nil >>;
 
 
 
@@ -760,18 +760,18 @@ put('foreach,'s!:ppformat,4); % (foreach x in y do ...) etc.
 
 symbolic procedure s!:putch c;
   begin
-    if atom c then rparcount:=0
-    else if s!:blankp c then << rparcount:=0; go to nocheck >>
+    if atom c then s!:rparcount:=0
+    else if s!:blankp c then << s!:rparcount:=0; go to nocheck >>
     else if car c='rpar then <<
-        rparcount:=rparcount+1;
+        s!:rparcount:=s!:rparcount+1;
 % format for a long string of rpars is:
 %    )))) ))) ))) ))) )))   ;
-        if rparcount>4 then << s!:putch '! ; rparcount:=2 >> >>
-    else rparcount:=0;
-    while lmar+bn>=rmar do s!:overflow 'more;
+        if s!:rparcount>4 then << s!:putch '! ; s!:rparcount:=2 >> >>
+    else s!:rparcount:=0;
+    while s!:lmar+s!:bn>=s!:rmar do s!:overflow 'more;
 nocheck:
-    bufferi:=cdr rplacd(bufferi,list c);
-    bn:=bn+1 
+    s!:bufferi:=cdr rplacd(s!:bufferi,list c);
+    s!:bn:=s!:bn+1 
   end;
 
 symbolic procedure s!:overflow flg;
@@ -785,36 +785,36 @@ symbolic procedure s!:overflow flg;
 %      <a pointer into the buffer>
 %                  prints up to and including that character, which
 %                  should be a blank.
-    if indblanks=0 and initialblanks>3 and flg='more then <<
-        initialblanks:=initialblanks - 3;
-        lmar:=lmar - 3;
+    if s!:indblanks=0 and s!:initialblanks>3 and flg='more then <<
+        s!:initialblanks:=s!:initialblanks - 3;
+        s!:lmar:=s!:lmar - 3;
         return 'moved!-left >>;
 fblank:
-    if bn=0 then <<
+    if s!:bn=0 then <<
 % No blank found - can do no more for now.
 % If flg='more I am in trouble and so have to print
 % a continuation mark. in the other cases I can just exit.
         if not(flg = 'more) then return 'empty;
-        if atom car buffero then
+        if atom car s!:buffero then
 % continuation mark not needed if last char printed was
 % special (e.g. lpar or rpar).
             prin2 "%+"; %continuation marker.
         terpri();
-        lmar:=0;
+        s!:lmar:=0;
         return 'continued >>
     else <<
-        spaces initialblanks;
-        initialblanks:=0 >>;
-    buffero:=cdr buffero;
-    bn:=bn - 1;
-    lmar:=lmar+1;
-    c:=car buffero;
+        spaces s!:initialblanks;
+        s!:initialblanks:=0 >>;
+    s!:buffero:=cdr s!:buffero;
+    s!:bn:=s!:bn - 1;
+    s!:lmar:=s!:lmar+1;
+    c:=car s!:buffero;
     if atom c then <<
        prin2 c;
        go to fblank >>
     else if s!:blankp c then if not atom blankstoskip then <<
         prin2 '! ;
-        indblanks:=indblanks - 1;
+        s!:indblanks:=s!:indblanks - 1;
 % blankstoskip = (stack-frame . skip-count).
         if c eq car blankstoskip then <<
             rplacd(blankstoskip,cdr blankstoskip - 1);
@@ -827,44 +827,44 @@ fblank:
 % now I want to flag this level for indentation.
         c:=cdr c; %the stack frame.
         if not null s!:blanklist c then go to fblank;
-        if s!:depth c>indentlevel then << %new indentation.
+        if s!:depth c>s!:indentlevel then << %new indentation.
 % this level has not emitted any blanks yet.
-            indentlevel:=s!:depth c;
+            s!:indentlevel:=s!:depth c;
             s!:setindenting(c,'indent) >>;
         go to fblank >>
     else if car c='rpar or car c='rsquare then <<
-        if cdr c<indentlevel then indentlevel:=cdr c;
+        if cdr c<s!:indentlevel then s!:indentlevel:=cdr c;
         prin2 get(car c,'s!:ppchar);
         go to fblank >>
     else error(0,list(c,"UNKNOWN TAG IN OVERFLOW"));
 blankfound:
-    if eqcar(s!:blanklist c,buffero) then
+    if eqcar(s!:blanklist c,s!:buffero) then
         s!:setblanklist(c,nil);
 % at least one entry on blanklist ought to be valid, so if I
 % print the last blank I must kill blanklist totally.
-    indblanks:=indblanks - 1;
+    s!:indblanks:=s!:indblanks - 1;
 % check if next level represents new indentation.
-    if s!:depth c>indentlevel then <<
+    if s!:depth c>s!:indentlevel then <<
         if flg='none then << %just print an ordinary blank.
             prin2 '! ;
             go to fblank >>;
 % here I increase the indentation level by one.
         if blankstoskip then blankstoskip:=nil
         else <<
-            indentlevel:=s!:depth c;
+            s!:indentlevel:=s!:depth c;
             s!:setindenting(c,'indent) >> >>;
 %otherwise I was indenting at that level anyway.
     if s!:blankcount c>(thin!* - 1) then << %long thin list fix-up here.
         blankstoskip:=c . ((s!:blankcount c) - 2);
         s!:setindenting(c,'thin);
         s!:setblankcount(c,1);
-        indentlevel:=(s!:depth c) - 1;
+        s!:indentlevel:=(s!:depth c) - 1;
         prin2 '! ;
         go to fblank >>;
     s!:setblankcount(c,(s!:blankcount c) - 1);
     terpri();
-    lmar:=initialblanks:=s!:depth c;
-    if buffero eq flg then return 'to!-flg;
+    s!:lmar:=s!:initialblanks:=s!:depth c;
+    if s!:buffero eq flg then return 'to!-flg;
     if blankstoskip or not (flg='more) then go to fblank;
 % keep going unless call was of type 'more'.
     return 'more; %try some more.
@@ -899,4 +899,5 @@ symbolic procedure fetch!-url(url, !&optional, dest);
 
 
 end;
+
 % end of extras.red

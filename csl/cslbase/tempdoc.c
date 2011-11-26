@@ -299,8 +299,8 @@
  */
 
 /*! predef [*standard-input*] \item [{\ttfamily !*standard!-input!*}] \index{{\ttfamily "!*standard"!-input"!*}} ~\newline
- * Standard Lisp specifies that to select input from the ``standrad'' source
- * one goes {\ttfamily (rdf nil)}. In CSL this is underpinned by having an
+ * Standard Lisp specifies that to select input from the ``standard'' source
+ * one goes {\ttfamily (rds nil)}. In CSL this is underpinned by having an
  * input stream as stored in this variable following the naming convention used
  * by Common Lisp.
  */
@@ -310,111 +310,196 @@
  */
 
 /*! predef [*terminal-io*] \item [{\ttfamily !*terminal!-io!*}] \index{{\ttfamily "!*terminal"!-io"!*}} ~\newline
- * Not yet written
+ * A Common Lisp motivated variable which is intended to provide access to
+ * the ``terminal''. In Standard Lisp you are expected to use {\ttfamily rds}
+ * and the precise concept of a terminal is not really defined.
  */
 
 /*! predef [*trace-output*] \item [{\ttfamily !*trace!-output!*}] \index{{\ttfamily "!*trace"!-output"!*}} ~\newline
- * Not yet written
+ * The Lisp trace facility tends to send output to this which is a synonym
+ * for the original standard output.
  */
 
 /*! predef [@cslbase] \item [{\ttfamily !@cslbase}] \index{{\ttfamily "!"@cslbase}} ~\newline
- * Not yet written
+ * This variable is not actually predefined, but I will nevertheless give some
+ * explanation of how it is used during the bootstrapping process that makes
+ * a CSL or a Reduce image. When you attempt to open a file you mau give
+ * a path starting with an initial ``\$word/\ldots'' or ``\$\{word\}/\ldots''.
+ * these notations of course model typical Unix-style parameter substitution.
+ * The expansion proceeds by first checking if a Lisp variable ``@word''
+ * exists with a string or a symbol as its name. If so that value is used
+ * as the expansion. If that scheme fails the system next looks for an
+ * environment variable and uses its value. This the use of a Lisp variable
+ * ``@word'' takes priority over the system environment. Finally if there is
+ * no environment variable available a Lisp variable with name ``\$word'' is
+ * checked and if its value is a string or symbol that is the expansion,
+ * otherwise the expansion will be empty.
+ *
+ * This is used in the CSL and Reduce build sequences by passing
+ * {\ttfamily -D@cslbase=...} as a command-line option to predefine
+ * {\ttfamily @cslbase} to a key directory where necessary files can be found.
+ * by defining this rather than {\ttfamily \$cslbase} there is no chance that
+ * any odd values in the (shell) environment will cause trouble, and the
+ * lines such as {\ttfamily (rdf~"\$cslbase/compat.lsp")} can appear in the build
+ * code without any need for absolute path names or any
+ * reliance on the setting of a current directory.
+ *
+ * In a file-name a path that starts with {\ttfamily !$\sim$/} or
+ * {\ttfamily !$\sim$name/} tries to identify the home directory of the
+ * current or named user.
  */
 
-/*! predef [bn] \item [{\ttfamily bn}] \index{{\ttfamily bn}} ~\newline
- * Not yet written
+/*! predef [$cslbase] \item [{\ttfamily !\$cslbase}] \index{{\ttfamily "!\$cslbase}} ~\newline
+ * See {\ttfamily !@cslbase}.
  */
 
-/*! predef [bufferi]  \item [{\ttfamily bufferi}] \index{{\ttfamily bufferi}} ~\newline
- * Not yet written
+/*! predef [s:bn] \item [{\ttfamily s!:bn}]  ~\newline
+ * Used internally by the prettyprint function.
  */
 
-/*! predef [buffero]  \item [{\ttfamily bufferp}] \index{{\ttfamily bufferp}} ~\newline
- * Not yet written
+/*! predef [s:bufferi]  \item [{\ttfamily s!:bufferi}] ~\newline
+ * Used internally by the prettyprint function.
+ */
+
+/*! predef [s:buffero]  \item [{\ttfamily s!:bufferp}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
 /*! predef [common-lisp-mode]  \item [{\ttfamily common!-lisp!-mode}] \index{{\ttfamily common"!-lisp"!-mode}} ~\newline
- * Not yet written
+ * The CSL Lisp system was designed so that if necessary much of the code could
+ * be shared with a version that met the Common Lisp Standard. At no stage has
+ * there been anything like a complete Common version. This is both because the
+ * main use of CSL has been to support Reduce and that wants Standard (not
+ * Common) Lisp, and because providing complete support for all the
+ * functionality in Common Lisp would be a lot of work and would tend to make
+ * the code bulkier (and hence necessarily less reliable) and slower. However
+ * various key underpinnings for Common Lisp are present in the C-coded sources,
+ * generally guarded by ``{\ttfamily \#ifdef COMMON}''. If the Lisp has been
+ * built in this way then this variable will be set in order that users can
+ * readily detect the situation.  At one stage the Axiom algebra system could
+ * be built using the limited Common Lisp compatibility mode, but the recent
+ * Open Source versions of Axiom have probably changed leaving that not an
+ * easy option.
  */
 
 /*! predef [crbuf*]  \item [{\ttfamily crbuf!*}] \index{{\ttfamily crbuf"!*}} ~\newline
- * Not yet written
+ * This is a variable used by the Reduce parser, and as a matter of caution it
+ * is to be treated as reserved in the Lisp system. 
  */
 
 /*! predef [emsg*]  \item [{\ttfamily emsg!*}] \index{{\ttfamily emsg"!*}} ~\newline
- * Not yet written
+ * After a call {\ttfamily (error nn msg)} this variable gets set to the
+ * value of the second argument ({\ttfamily msg}). This may help if you have had
+ * a failure and want to see if it resulted from a call to the {\ttfamily error}
+ * function and if so what message had been used with it!
  */
 
 /*! predef [eof*]  \item [{\ttfamily eof!*}] \index{{\ttfamily eof"!*}} ~\newline
- * Not yet written
+ * Used in Reduce in association with detecting and handling end-of-file
+ * conditions, and reserved in the Lisp to avoid potential interference with
+ * that.
  */
 
-/*! predef [indblanks]  \item [{\ttfamily indblanks}] \index{{\ttfamily indblanks}} ~\newline
- * Not yet written
+/*! predef [s:indblanks]  \item [{\ttfamily s!:indblanks}]  ~\newline
+ * Used internally by the prettyprint function.
  */
 
-/*! predef [indentlevel]  \item [{\ttfamily indentlevel}] \index{{\ttfamily indentlevel}} ~\newline
- * Not yet written
+/*! predef [s:indentlevel]  \item [{\ttfamily s!:indentlevel}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
-/*! predef [initialblanls]  \item [{\ttfamily initialblanks}] \index{{\ttfamily initialblanks}} ~\newline
- * Not yet written
+/*! predef [s:initialblanls]  \item [{\ttfamily s!:initialblanks}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
 /*! predef [lispsystem*]  \item [{\ttfamily lispsystem!*}] \index{{\ttfamily lispsystem"!*}} ~\newline
- * Not yet written
+ * This variable is initialised at the start of any run of Lisp to hold
+ * information about the computer in use and the collection of features
+ * available in the Lisp. The items that might be present are explained
+ * further in Section \ref{lispsys}.
  */
 
-/*! predef [lmar]  \item [{\ttfamily lmar}] \index{{\ttfamily lmar}} ~\newline
- * Not yet written
+/*! predef [s:lmar]  \item [{\ttfamily s!:lmar}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
 /*! predef [load-source]  \item [{\ttfamily load!-source}] \index{{\ttfamily load"!-source}} ~\newline
- * Not yet written
+ * The function {\ttfamily load!-source} will load data from a fasl file
+ * and is intended to make it possible to have saved uncompiled Lisp forms
+ * for functions there -- and to be able to reload then in a selective
+ * way. The {\ttfamily load!-source} variable can tune this behaviour. See the
+ * explanation of the function for further details.
  */
 
 /*! predef [nil]  \item [{\ttfamily nil}] \index{{\ttfamily nil}} ~\newline
- * Not yet written
+ * {\ttfamily nil} is the fundamental Lisp atom used to stand for ``false'',
+ * used to terminate lists and generally something that every Lisp programmer
+ * will already understand about. In Standard Lisp {\ttfamily nil} is a
+ * symbol and as such you may not take {\ttfamily car} or {\ttfamily cdr} of
+ * it. So any code that had been developed for Common Lisp and relies on being
+ * able to treat it as if it was a non-empty list will need revision. CSL
+ * always checks for valid access so not only would {\ttfamily (car~nil)} be
+ * a mistake,  but any attempt to do it will lead to an exception being
+ * raised. {\ttfamily nil} must not be used as a name of an argument or a
+ * {\ttfamily prog} variable or in any other context that could attempt to
+ * alter its value.
  */
 
 /*! predef [ofl*]  \item [{\ttfamily ofl!*}] \index{{\ttfamily ofl"!*}} ~\newline
- * Not yet written
+ * Used in Reduce in association with tracking output files, and reserved in
+ * CSL to avoid conflict with that.
  */
 
-/*! predef [pendingrpars]  \item [{\ttfamily pendingrpars}] \index{{\ttfamily pendingrpars}} ~\newline
- * Not yet written
+/*! predef [s:pendingrpars]  \item [{\ttfamily s!:pendingrpars}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
 /*! predef [program*]  \item [{\ttfamily program!*}] \index{{\ttfamily program"!*}} ~\newline
- * Not yet written
+ * Used by the Reduce parser to hold a command that has just been parsed, and
+ * reserved in CSL in order to ensure that there is no conflict with that.
  */
 
-/*! predef [rmar]  \item [{\ttfamily rmar}] \index{{\ttfamily rmar}} ~\newline
- * Not yet written
+/*! predef [s:rmar]  \item [{\ttfamily s!:rmar}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
-/*! predef [rparcount]  \item [{\ttfamily rparcount}] \index{{\ttfamily rparcount}} ~\newline
- * Not yet written
+/*! predef [s:rparcount]  \item [{\ttfamily s!:rparcount}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
 /*! predef [s:gensym-serial]  \item [{\ttfamily s!:gensym!-serial}] \index{{\ttfamily s"!:gensym"!-serial}} ~\newline
- * Not yet written
+ * internal variable used by {\ttfamily dated!-name}.
  */
 
-/*! predef [stack]  \item [{\ttfamily stack}] \index{{\ttfamily stack}} ~\newline
- * Not yet written
+/*! predef [s:stack]  \item [{\ttfamily s!:stack}] ~\newline
+ * Used internally by the prettyprint function.
  */
 
 /*! predef [t]  \item [{\ttfamily t}] \index{{\ttfamily t}} ~\newline
- * Not yet written
+ * The Lisp value that stands for ``true''. Any attempt to reset or
+ * rebind {\ttfamily t} will be an error. The value of {\ttfamily t} is
+ * itself. Yoy may recall that in Lisp 1.5 the value of {\ttfamily t}
+ * had been {\ttfamily *t*}, but Standard Lisp mandates the behaviour
+ * implemented here. As far as truth values are concerned, {\ttfamily nil}
+ * is treated as meaning ``false'' and anything that is non-{\ttfamily nil}
+ * is true, including as an obvious special case {\ttfamily t}.
  */
 
 /*! predef [thin*]  \item [{\ttfamily thin!*}] \index{{\ttfamily thin"!*}} ~\newline
- * Not yet written
+ * In the prettyprinter if {\ttfamily thin!*} values (default 5) can be
+ * fitted on a single line. The idea behind this is so that long lists can
+ * in relevant cases be displayed almost horizontalloy rather than
+ * vertically, as in
+ * {\footnotesize\begin{verbatim}
+ *   (one two three four five             (one 
+ *    six seven eight nine ten   vs.       two
+ *    eleven twelve)                       three
+ *                                         ...
+ * \end{verbatim}}
  */
 
 /*! predef [ttype*]  \item [{\ttfamily ttype!*}] \index{{\ttfamily ttype"!*}} ~\newline
- * Not yet written
+ * Used by the Reduce parser, and so best not used for other purposes.
  */
 
 /*! flags [s:ppchar]  \item [{\ttfamily s!:ppchar} and {\ttfamily s!:ppformat}] \index{{\ttfamily s"!:ppchar} and {\ttfamily s!:ppformat}}
@@ -422,7 +507,7 @@
  * name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
  * its first few arguments should appear on the same line as it if at all
  * possible. The {\ttfamily s!:ppchar} property is used to make the display of
- * bracket characters a little more tide in the source code.
+ * bracket characters a little more tidy in the source code.
  */
 
 /*! flags [switch]  \item [{\ttfamily switch}] \index{{\ttfamily switch}}
