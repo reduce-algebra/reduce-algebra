@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 21c03899 19-Nov-2011 */
+/* Signature: 2495ff99 27-Nov-2011 */
 
 
 /*
@@ -1391,7 +1391,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * using all the space that I have.
  */
             if (stackLimit < 200*1024) stackLimit = 200*1024;
-/* I also assume that any sigure over 20 Mbytes is a mess so ignore it */
+/* I also assume that any figure over 20 Mbytes is a mess so ignore it */
             if (stackLimit <= 20*1024*1024)
             {   /* I try to give myself 64K spare... */
                 C_stack_limit = (char *)&argc - stackLimit + 0x10000;

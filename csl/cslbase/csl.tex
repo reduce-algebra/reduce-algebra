@@ -1,4 +1,4 @@
-% Generated using doxtract Sat Nov 26 16:08:04 2011
+% Generated using doxtract Sun Nov 27 20:24:21 2011
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
@@ -527,10 +527,11 @@ no environment variable available a Lisp variable with name ``\$word'' is
 checked and if its value is a string or symbol that is the expansion,
 otherwise the expansion will be empty.
   
-This is used in the CSL and Reduce build sequences by passing
-{\ttfamily -D@cslbase=...} as a command-line option to predefine
-{\ttfamily @cslbase} to a key directory where necessary files can be found.
-by defining this rather than {\ttfamily \$cslbase} there is no chance that
+This is used in the build sequences by passing a command-line
+option {\ttfamily -D@cslbase=...} that predefines
+{\ttfamily @cslbase} to refer to a key directory where necessary files
+can be found.
+By defining this rather than {\ttfamily \$cslbase} there is no chance that
 any odd values in the (shell) environment will cause trouble, and the
 lines such as {\ttfamily (rdf~"\$cslbase/compat.lsp")} can appear in the build
 code without any need for absolute path names or any
@@ -856,7 +857,10 @@ treatment of functions by the compiler so that they get compiled in-line.
 \begin{description}
 
 \item [{\ttfamily abs} {\itshape  expr}] \index{{\ttfamily abs} {\itshape  expr}} ~\newline
-Not yet written
+This takes one argument that should be a number -- and returns its absolute
+value. In Common Lisp mode it would find the magnitude of a complex
+number, but in normal Standard Lisp mode the only cases that arise are
+integers are floating point values.
 
 \item [{\ttfamily binary\_close\_input} {\itshape  expr}] \index{{\ttfamily binary\_close\_input} {\itshape  expr}} ~\newline
 Not yet written
@@ -977,10 +981,10 @@ first element. For a dotted pair (created using {\ttfamily cons})
 it extracts the first component. This is the fundamental low-level
 data structure access function in Lisp. See {\ttfamily cdr} for the
 function that returns the tail or a list or the second component of
-a dotted pair. In CSL any attempt to tape {\ttfamily car} of an atom
+a dotted pair. In CSL any attempt to take {\ttfamily car} of an atom
 should be detected and will be treated as an error. If CSL had been
 compiled in Common Lisp mode (which is now not probable) a special
-exemption would apply and {\ttfamily car} and {\ttfamily} cdr of the
+exemption would apply and {\ttfamily car} and {\ttfamily cdr} of the
 empty lisp {\ttfamily nil} would be {\ttfamily nil}.
 
 \item[{\ttfamily car!*} {\itshape expr}] \index{{\ttfamily car"!*} {\itshape expr}} ~\newline

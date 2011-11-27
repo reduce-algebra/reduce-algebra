@@ -235,10 +235,10 @@ Lisp_Object list3(Lisp_Object a, Lisp_Object b, Lisp_Object c)
  * it extracts the first component. This is the fundamental low-level
  * data structure access function in Lisp. See {\ttfamily cdr} for the
  * function that returns the tail or a list or the second component of
- * a dotted pair. In CSL any attempt to tape {\ttfamily car} of an atom
+ * a dotted pair. In CSL any attempt to take {\ttfamily car} of an atom
  * should be detected and will be treated as an error. If CSL had been
  * compiled in Common Lisp mode (which is now not probable) a special
- * exemption would apply and {\ttfamily car} and {\ttfamily} cdr of the
+ * exemption would apply and {\ttfamily car} and {\ttfamily cdr} of the
  * empty lisp {\ttfamily nil} would be {\ttfamily nil}.
  */
 

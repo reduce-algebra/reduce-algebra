@@ -335,10 +335,11 @@
  * checked and if its value is a string or symbol that is the expansion,
  * otherwise the expansion will be empty.
  *
- * This is used in the CSL and Reduce build sequences by passing
- * {\ttfamily -D@cslbase=...} as a command-line option to predefine
- * {\ttfamily @cslbase} to a key directory where necessary files can be found.
- * by defining this rather than {\ttfamily \$cslbase} there is no chance that
+ * This is used in the build sequences by passing a command-line
+ * option {\ttfamily -D@cslbase=...} that predefines
+ * {\ttfamily @cslbase} to refer to a key directory where necessary files
+ * can be found.
+ * By defining this rather than {\ttfamily \$cslbase} there is no chance that
  * any odd values in the (shell) environment will cause trouble, and the
  * lines such as {\ttfamily (rdf~"\$cslbase/compat.lsp")} can appear in the build
  * code without any need for absolute path names or any
@@ -543,55 +544,83 @@
  */
 
 /*! fns [abs]  \item [{\ttfamily abs} {\itshape  expr}] \index{{\ttfamily abs} {\itshape  expr}} ~\newline
- * Not yet written
+ * This takes one argument that should be a number -- and returns its absolute
+ * value. In Common Lisp mode it would find the magnitude of a complex
+ * number, but in normal Standard Lisp mode the only cases that arise are
+ * integers are floating point values.
  */
 
 /* fns [acons expr] \item [{\ttfamily acons} {\itshape  expr}] \index{{\ttfamily acons} {\itshape  expr}} ~\newline
- * Not yet written
+ * {\ttfamily (acons a b c)} = {\ttfamily (cons (cons a b) x)}. The name
+ * arises because this may be used to add a new key-value pair on the
+ * front of an association list. Use of {\ttfamily acons} may be just
+ * marginally faster than using the two simple uses of {\ttfamily cons}
+ * that it stands for.
  */
 
 /* fns [acos expr] \item [{\ttfamily acos} {\itshape  expr}] \index{{\ttfamily acos} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse or arc-cosine (working in radians). In Common Lisp mode this
+ * will cope with complex numbers, but for Standard Lisp it only needs to
+ * handle floating point values. Well the integers -1, 0 and 1 are also
+ * accepted and are converted to -1.0, 0.0 and 1.0 before use. The result
+ * (when given a real argument) will be in the range 0.0 to $\pi$.
  */
 
 /* fns [acosd expr] \item [{\ttfamily acosd} {\itshape  expr}] \index{{\ttfamily acosd} {\itshape  expr}} ~\newline
- * Not yet written
+ * The inverse cosine function (see {\ttfamily acos}) but delivering a result
+ * in degrees from 0.0 to 180.0.
  */
 
 /* fns [acosh expr] \item [{\ttfamily acosh} {\itshape  expr}] \index{{\ttfamily acosh} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse hyperbolic cosine. For the result to be real (and hence valid with
+ * Standard Lisp) the argument must be at least 1.0.
  */
 
 /* fns [acot expr] \item [{\ttfamily acot} {\itshape  expr}] \index{{\ttfamily acot} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse cotangent, expressed in radians. The result will be in the range
+ * 0 to $\pi$.
  */
 
 /* fns [acotd expr] \item [{\ttfamily acotd} {\itshape  expr}] \index{{\ttfamily acotd} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse cotangent with result in degrees, in range 0.0 to 180.0.
  */
 
 /* fns [acoth expr] \item [{\ttfamily acoth} {\itshape  expr}] \index{{\ttfamily acoth} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse hyperbolic cotangent. The argument must not be in the range
+ * $(-1.0 \ldots 1.0)$.
  */
 
 /* fns [acsc expr] \item [{\ttfamily acsc} {\itshape  expr}] \index{{\ttfamily acsc} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse cosecant (in radians). Recall that {\fffamily (csc x)} gives the
+ * reciprocal of {\ttfamily (sin x)}. Argument must be at least 1.0 in absolute
+ * value and result will be in the range $- \pi/2$ to $\pi/2}.
  */
 
 /* fns [acscd expr] \item [{\ttfamily acscd} {\itshape  expr}] \index{{\ttfamily acscd} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse cosecant in degrees.
  */
 
 /* fns [acsch expr] \item [{\ttfamily acsch} {\itshape  expr}] \index{{\ttfamily acsch} {\itshape  expr}} ~\newline
- * Not yet written
+ * Inverse hyperbolic cosecant.
  */
 
 /* fns [add1 expr] \item [{\ttfamily add1} {\itshape  expr}] \index{{\ttfamily add1} {\itshape  expr}} ~\newline
- * Not yet written
+ * This function takes one argument and adds 1 to it. If you know that you will
+ * be working with a small integer you may wish to use {\ttfamily iadd1}
+ * instead. {\ttfamily (add1~x)} is basically a shorthand for {\ttfamily
+ * (plus~x~1)}.
  */
 
 /* fns [and fexpr] \item [{\ttfamily and} {\itshape  fexpr}] \index{{\ttfamily and} {\itshape  fexpr}} ~\newline
- * Not yet written
+ * A form {\ttfamily (and~a~b~\ldots~z)} evaluates its arguments sequentially
+ * until either one returns {\ttfamily nil} or until it reaches the last.
+ * It returns the last value it evaluates. This is treating the values
+ * as booleans with {\ttfamily nil} standing for false and anything else for
+ * true, and only doing the minimum evaluation needed to yield a result.
+ * One could interpret {\ttfamily (and~a~b}} as standing for the more
+ * explictly sequential evaluation {\ttfamily
+ * (cond~(a~b)~(t~nil))}, with related expansions if more arguments were
+ * provided. See also {\ttfamily or}.
  */
 
 /* fns [append expr] \item [{\ttfamily append} {\itshape  expr}] \index{{\ttfamily append} {\itshape  expr}} ~\newline
