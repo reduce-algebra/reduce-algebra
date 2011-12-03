@@ -619,11 +619,41 @@ symbolic procedure remove!-free!-vars u;
           else remove!-free!-vars!-l u
    end;
 
+%symbolic procedure remove!-free!-vars!-l u;
+%   if atom u then u
+%    else if car u eq '!*sq then remove!-free!-vars!-l prepsq!* cadr u
+%    else (if x=u then u else x)
+%         where x=remove!-free!-vars car u . remove!-free!-vars!-l cdr u;
+
+% The version that follows is supposed to have exactly the same external
+% behaviour as the above simpler one apart from it using a LOT less stack.
+% ACN December 2011.
+
 symbolic procedure remove!-free!-vars!-l u;
-   if atom u then u
-    else if car u eq '!*sq then remove!-free!-vars!-l prepsq!* cadr u
-    else (if x=u then u else x)
-         where x=remove!-free!-vars car u . remove!-free!-vars!-l cdr u;
+  begin
+    scalar r, w, changed;
+  top:
+    if atom u then <<
+       while r do <<
+          if not changed then <<
+             if caar w = car r then u := car w
+             else <<
+               u := car r . u;
+               changed := t >> >>
+          else u := car r . u;
+          w := cdr w;
+          r := cdr r >>;
+       return u >>
+    else if car u eq '!*sq then <<
+       u := prepsq!* cadr u;
+       changed := t;
+       go to top >>;
+    w := u . w;
+    r := remove!-free!-vars car u . r;
+    u := cdr u;
+    go to top
+  end;
+
 
 symbolic procedure get!-free!-form u;
    begin scalar x,opt;
