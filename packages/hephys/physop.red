@@ -2074,9 +2074,9 @@ symbolic procedure statemult(u,v); % recoded 0.99c
 begin scalar x,y,res,flg;
 if not (statep!* u or statep!* v) then
       rederr2 ('statemult,"invalid args to statemult");
-if (not atom u and car v eq 'opapply) then
+if (not atom u and eqcar(v,'opapply)) then
              return expectval(u,cadr v,caddr v);
-if (not atom u and car u eq 'opapply) then
+if (not atom u and eqcar(u,'opapply)) then
         return expectval(cadr u,caddr u,v);
 u := physopaeval physopsim!* u;
 v := physopaeval physopsim!* v;
