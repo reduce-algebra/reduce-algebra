@@ -2,14 +2,14 @@ Source: reduce
 Section: math
 Priority: optional
 Maintainer: REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net>
-Build-Depends: debhelper (>= 7.0.50~)
+Build-Depends: texlive-latex-base, texlive-fonts-extra, tex4ht, debhelper (>= 7.0.50~)
 Standards-Version: 3.9.1
 Homepage: http://reduce-algebra.sf.net/
 
 Package: reduce
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: The REDUCE computer algebra system
+Description: REDUCE Computer Algebra System
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
  interfaces to gnuplot to provide graphics. It can be used interactively
