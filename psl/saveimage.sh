@@ -1,10 +1,10 @@
 #! /bin/sh
 
 # Extract for buildsh to only save a new image.
-# Takes image file dir and toplevel pslbuild dir pathname as arguments
+# Takes build dir and toplevel pslbuild dir pathname as arguments
 #
 # Usage:
-#         .../psl/saveimage.sh .../imagedir /usr/lib/reduce/pslbuild
+#         .../psl/saveimage.sh .../builddir /usr/lib/reduce/pslbuild
 
 # This script must live in the PSL directory, but it builds things in the
 # current directory.
@@ -39,10 +39,26 @@ case $a in
   ;;
 esac
 
+builddir="$1"
+imagedir="$2"
+if test -d "$imagedir"
+then
+  :
+else
+  mkdir -p "$imagedir"
+fi
+
+if test -z "$3"
+then
+  topdir="$here"
+else
+  topdir="$3"
+fi
+
 cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
 creduce=$cpsldir/..
 chere=`pwd`
-cfasl=$chere/red
+cfasl="$builddir/red"
 
 if test -x /usr/bin/cygpath
 then
@@ -55,21 +71,6 @@ else
   reduce="$creduce"
   here="$chere"
   fasl="$cfasl"
-fi
-
-imagedir="$1"
-if test -d "$imagedir"
-then
-  :
-else
-  mkdir -p "$imagedir"
-fi
-
-if test -z "$2"
-then
-  topdir="$here"
-else
-  topdir="$2"
 fi
 
 if test -f psl/64
@@ -88,15 +89,17 @@ else
   mkdir -p "$chere/log"
 fi
 
+cd "$builddir"
+bhere=`pwd`
 cd psl
 
-./bpsl -td $STORE <<XXX > $chere/log/reduce.blg
+./bpsl -td $STORE <<XXX > "$here/log/reduce.blg"
 % This re-starts a bare reduce and loads in the modules compiled
 % by the very first step. It then checkpoints a system that can be
 % used to rebuild all other modules.
 
-(setq symbolfilename!* "$here/psl/bpsl")
-(setq loaddirectories!* (quote ("" "$here/red/" "$here/psl/")))
+(setq symbolfilename!* "$bhere/psl/bpsl")
+(setq loaddirectories!* (quote ("" "$bhere/red/" "$bhere/psl/")))
 
 (reclaim)
 (setq !*init!-stats!* (list (time) (gtheap nil) (free-bps) nextsymbol))

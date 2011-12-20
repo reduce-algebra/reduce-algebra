@@ -68,7 +68,7 @@ override_dh_install:
 	chmod -x $(FONTDIR)/*.ttf
 	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" $(PSLBUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
 	$(RSYNC_CMD) $(PSLBUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
-	(cd $(PSLBUILDDIR) ; ../../psl/saveimage.sh $(abspath $(LIBDIR)/pslbuild/red) /usr/lib/reduce/pslbuild)
+	$(TOPDIR)/psl/saveimage.sh $(PSLBUILDDIR) $(abspath $(LIBDIR)/pslbuild/red) /usr/lib/reduce/pslbuild
 	$(RSYNC_CMD) --no-perms --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
 #	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
 #	ln -f -s ../../../../share/reduce/fonts $(SHAREDIR)/cslbuild/csl/reduce.fonts
