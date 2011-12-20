@@ -58,6 +58,13 @@ else
 fi
 
 imagedir="$1"
+if test -d "$imagedir"
+then
+  :
+else
+  mkdir -p "$imagedir"
+fi
+
 if test -z "$2"
 then
   topdir="$here"
@@ -74,7 +81,12 @@ fi
 
 export here fasl psldir reduce
 
-set -xv
+if test -d "$chere/log"
+then
+  :
+else
+  mkdir -p "$chere/log"
+fi
 
 cd psl
 
