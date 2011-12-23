@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 20d06670 25-Oct-2011 */
+/* Signature: 491bd9e7 23-Dec-2011 */
 
 #include "headers.h"
 
@@ -1387,7 +1387,7 @@ Lisp_Object Lerrorset2(Lisp_Object nil, Lisp_Object form, Lisp_Object ffg1)
 }
 
 /*
- * (resource!-limit form time space io errors)
+ * (resource!-limit form time space io errors C_stack Lisp_stack)
  *   Evaluate the given form and if it succeeds return a
  *   list whose first item is its value. If it fails in the ordinary manner
  *   then its failure (error/throw/restart etc) gets passed back through
@@ -1407,6 +1407,10 @@ Lisp_Object Lerrorset2(Lisp_Object nil, Lisp_Object form, Lisp_Object ffg1)
  *      errors:an integer limiting the number of times traditional
  *             Lisp errors can occur. Note that if errorset is used
  *             you could have very many errors raised.
+ *      C_stack:in integer limiting (in Kbytes) the max depth of C
+ *             stack that may be used. The cut-off may be imprecise.
+ *      Lisp_stack: an integer limiting (in Kbytes) the max depth of
+ *             the Lisp stack that may be used.
  *   In each case specifying a negative limit means that that limit does
  *   not apply. But at least one limit must be specified.
  *   If calls to resource!-limit are nested the inner ones can only
@@ -1420,14 +1424,22 @@ Lisp_Object Lerrorset2(Lisp_Object nil, Lisp_Object form, Lisp_Object ffg1)
 int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
 int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
 int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
+int64_t Cstack_base = 0,   Lispstack_base = 0;
+int64_t Cstack_now = 0,    Lispstack_now = 0;
+int64_t Cstack_limit = -1, Lispstack_limit = -1;
 
 /* form and env "volatile" to get rid of gcc warnings re longjmp */
 
-static Lisp_Object resource_limit5(volatile Lisp_Object env,
+static Lisp_Object resource_limit7(volatile Lisp_Object env,
                              volatile Lisp_Object form,
                              Lisp_Object ltime, Lisp_Object lspace,
-                             Lisp_Object lio, Lisp_Object lerrors)
+                             Lisp_Object lio, Lisp_Object lerrors,
+                             Lisp_Object Csk, Lisp_Object Lsk)
 {
+/*
+ * This is being extended to make it possible to limit the C and Lisp stack
+ * usage. At present the controls for that are not in place!
+ */
     Lisp_Object nil = C_nil, r;
     int64_t lltime, llspace, llio, llerrors;
     int64_t save_time_base  = time_base,  save_space_base   = space_base,
@@ -1640,30 +1652,40 @@ static Lisp_Object resource_limit5(volatile Lisp_Object env,
 
 Lisp_Object MS_CDECL Lresource_limitn(Lisp_Object env, int nargs, ...)
 {
-    Lisp_Object form, ltime, lspace, lio, lerrors;
+    Lisp_Object form, ltime, lspace, lio, lerrors, Csk, Lsk;
     va_list a;
-    if (nargs < 2 || nargs > 5) return aerror("resource_limit");
+    if (nargs < 2 || nargs > 7) return aerror("resource_limit");
     va_start(a, nargs);
     form = va_arg(a, Lisp_Object);
-    ltime = lspace = lio = lerrors = fixnum_of_int(0);
+    ltime = lspace = lio = lerrors = Csk = Lsk = fixnum_of_int(-1);
     if (nargs >= 2)
     {   ltime = va_arg(a, Lisp_Object);
         if (nargs >= 3)
         {   lspace = va_arg(a, Lisp_Object);
             if (nargs >= 4)
             {   lio = va_arg(a, Lisp_Object);
-                if (nargs >= 5) lerrors = va_arg(a, Lisp_Object);
+                if (nargs >= 5)
+                {   lerrors = va_arg(a, Lisp_Object);
+                    if (nargs >= 6)
+                    {   Csk = va_arg(a, Lisp_Object);
+                        if (nargs >= 7)
+                        {   Lsk = va_arg(a, Lisp_Object);
+                        }
+                    }
+                }
             }
         }
     }
     va_end(a);
-    return resource_limit5(env, form, ltime, lspace, lio, lerrors);
+    return resource_limit7(env, form, ltime, lspace, lio, lerrors, Csk, Lsk);
 }
 
 
 Lisp_Object Lresource_limit2(Lisp_Object nil, Lisp_Object form, Lisp_Object ltime)
 {
-    return resource_limit5(nil, form, ltime,
+    return resource_limit7(nil, form, ltime,
+                           fixnum_of_int(-1),
+                           fixnum_of_int(-1),
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
                            fixnum_of_int(-1));

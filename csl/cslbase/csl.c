@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2495ff99 27-Nov-2011 */
+/* Signature: 66dba935 23-Dec-2011 */
 
 
 /*
@@ -214,7 +214,7 @@ int check_stack(char *file, int line)
     {   int i;
         term_printf("Stack depth %u at file %s line %d\n",
                      (unsigned int)(spbase-temp), file, line);
-        for (i=c_stack_ptr; i>=0 && i > c_stack_ptr-10; i--)
+        for (i=c_stack_ptr; i>=0 && i > c_stack_ptr-20; i--)
             term_printf(" %s:%d", stack_file[i], stack_line[i]);
         term_printf("\n");
         spmin = temp;
@@ -1360,21 +1360,22 @@ char **csl_argv;
 
 CSLbool restartp;
 
-char *C_stack_limit = NULL;
+char *C_stack_base = NULL, *C_stack_limit = NULL;
 
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
     double store_size = 0.0;
-#ifdef CONSERVATIVE
     volatile Lisp_Object sp;
+#ifdef CONSERVATIVE
     C_stackbase = (Lisp_Object *)&sp;
 #endif
+    C_stack_base = (char *)&sp;
 
     C_stack_limit = NULL;
 #ifdef EMBEDDED
 /* This provides a fixed limit in the embedded build */
-    C_stack_limit = (char *)&argc - 2*1024*1024 + 0x10000;
+    C_stack_limit = C_stack_base - 2*1024*1024 + 0x10000;
 #else /* EMBEDDED */
 #ifdef WIN32
     {   HMODULE h = GetModuleHandle(NULL); /* For current executable */
@@ -1394,7 +1395,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 /* I also assume that any figure over 20 Mbytes is a mess so ignore it */
             if (stackLimit <= 20*1024*1024)
             {   /* I try to give myself 64K spare... */
-                C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+                C_stack_limit = C_stack_base - stackLimit + 0x10000;
 #ifdef DEBUG
                 fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
 #endif
@@ -1419,7 +1420,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
             {   if (stackLimit == RLIM_INFINITY) stackLimit = 20*1024*1024;
 /* I view values under 200K as silly and ignore them! */
                 if (stackLimit >= 200*1024)
-                {   C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+                {   C_stack_limit = C_stack_base - stackLimit + 0x10000;
 #ifdef DEBUG
                     fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
 #endif
@@ -1431,7 +1432,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 #endif /* WIN32 */
 /* If I can not read a value then I will set a limit at 4 Mbytes... */
     if (C_stack_limit == NULL)
-    {   C_stack_limit = (char *)&argc - 4*1024*1024 + 0x10000;
+    {   C_stack_limit = C_stack_base - 4*1024*1024 + 0x10000;
 #ifdef DEBUG
         fprintf(stderr, "[debug] stack defaulting to 4Mb\n");
 #endif
@@ -2761,7 +2762,7 @@ term_printf(
  * I thought/hoped that doing it this way would be safer than relying on having
  * pre-defined symbols that tracked the machine architecture.
  */
-        {   union fpch { double d; unsigned char c[8]; } d;
+        {   volatile union fpch { double d; unsigned char c[8]; } d;
 /*
  * The following looks at the floating point representation of the
  * number 1/7 (in double precision) and picks out two bytes from
@@ -2772,8 +2773,11 @@ term_printf(
  * heap-images in a way that allows images to be portable across
  * different architectures.
  */
+            int w;
             d.d = 1.0/7.0;
-            switch ((d.c[1] << 8) | d.c[2])
+/* The coding here was adjusted to survice a Debian ARM Linux port. */
+            w = ((d.c[1] & 0xff) << 8) | (d.c[2] & 0xff);
+            switch (w)
             {
 /*
  * At one stage I detected (on of the) VAX representations and the one used
@@ -2784,7 +2788,7 @@ term_printf(
  * ways! Well the mere shuffling of bytes is something I can deal with. If I
  * really needed to make image files portable to old-style IBM mainframes
  * or on a xArch machine set up to use hexadecimal floating point mode then
- * what I have gere would moan. But if I just override the moan I will
+ * what I have here would moan. But if I just override the moan I will
  * be able to build images and reload them on that particular machine.
  */
         case 0x2449:    current_fp_rep = 0;
@@ -2799,7 +2803,7 @@ term_printf(
  * The next line is probably not very good under a window manager, but
  * it is a case that ought never to arise, so I will not bother.
  */
-        default:        term_printf("Unknown floating point format\n");
+        default:        term_printf("Unknown floating point format %.4x\n", w);
                         my_exit(EXIT_FAILURE);
             }
         }

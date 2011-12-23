@@ -61,10 +61,9 @@
 
 #ifdef WIN32
 // I will need a few windows-specific headers. Mainly to let me set
-// gdi+ antialiasing options. However the gdiplus headers are not distributed
-// with cygwin for i686-w64-mingw32 (at the time of writing this comment)
-// so to compile this I need "-I/usr/include/w32api" to pick them up
-// from elsewhere in the tree that cygwin installs for me.
+// gdi+ antialiasing options. The newest versions of the i686-w64-mingw32
+// toolchain provide gdiplus.h, but ones from a while back may not, so if
+// necessary ensure you are fully up to date.
 
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500

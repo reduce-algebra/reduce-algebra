@@ -3559,8 +3559,6 @@ $as_echo "$as_me: Windows built creating native binary" >&6;}
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
-# I arrange to scan /usr/include/w32api in case I need gdiplus.h
-    CPPFLAGS="$CPPFLAGS -I/usr/include/w32api"
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -static"

@@ -272,8 +272,6 @@ x86_64-w64-*)
   else
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-# I arrange to scan /usr/include/w32api in case I need gdiplus.h
-    CPPFLAGS="$CPPFLAGS -I/usr/include/w32api"
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -static"

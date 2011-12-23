@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 63ca4800 22-Aug-2011 */
+/* Signature: 24ded454 29-Nov-2011 */
 
 #include "headers.h"
 
@@ -3361,7 +3361,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         trace_printf(
             "bignums=%" PRIdPTR ", floats=%" PRIdPTR ", bytestreams=%" PRIdPTR ", other=%" PRIdPTR ", litvecs=%d\n",
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
-        trace_printf("getvecs=%" PRIdPTR "\n", getvecs);
+        trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
+            getvecs, ((C_stack_base-(char *)&sp)+1023)/1024,
+            (intptr_t)((stack-stackbase)+1023)/1024);
     }
 
     pop(p);
