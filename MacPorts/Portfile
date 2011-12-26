@@ -1,0 +1,109 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+
+name                reduce-algebra
+svn.revision        1534
+version             3.8.0-r${svn.revision}
+revision            1
+categories          math
+platforms           darwin
+license             BSD
+maintainers         gmail.com:mark.brethen
+
+description         REDUCE algebra system
+
+long_description    REDUCE is an interactive program designed for general \
+                    algebraic computations of interest to mathematicians, \
+                    scientists and engineers. It also supports numerical \
+                    approximation with arbitrary precision and interfaces \
+                    with gnuplot to provide graphics.
+
+homepage            http://reduce-algebra.sourceforge.net/
+
+fetch.type          svn
+svn.url             https://reduce-algebra.svn.sourceforge.net/svnroot/reduce-algebra/trunk
+svn.method          checkout
+worksrcdir          trunk
+
+depends_build       port:pkgconfig
+
+depends_lib         port:ncurses \
+                    port:Xft2 \
+                    port:xorg-libX11 \
+                    port:xorg-libXext
+
+configure.args      --with-psl
+
+use_parallel_build  no
+universal_variant   no
+
+set topdir ${prefix}/libexec/${name}
+
+destroot {
+# 'make install' is outdated, so manually install required files
+    set builddir   [exec ${worksrcpath}/scripts/findhost.sh [exec ${worksrcpath}/config.guess]]
+    set pslbuildir ${worksrcpath}/pslbuild/${builddir}
+
+    set sharedir   ${destroot}${prefix}/share/${name}
+    set libexecdir ${destroot}${prefix}/libexec/${name}
+    set docdir     ${destroot}${prefix}/share/doc/${name}
+    set bindir     ${destroot}${prefix}/bin
+
+    xinstall -d ${bindir} ${docdir} ${sharedir}/scripts ${sharedir}/packages ${libexecdir}/psl \
+         ${libexecdir}/pslbuild/psl ${libexecdir}/pslbuild/red ${libexecdir}/pslbuild/buildlogs
+         
+    eval copy [glob ${worksrcpath}/doc/manual/*] ${docdir}
+    eval copy [glob ${worksrcpath}/packages/*] ${sharedir}/packages
+    eval copy [glob ${worksrcpath}/psl/*] ${libexecdir}/psl
+    eval copy [glob ${pslbuildir}/psl/*] ${libexecdir}/pslbuild/psl
+    eval copy [glob ${pslbuildir}/red/*] ${libexecdir}/pslbuild/red
+    eval copy [glob ${pslbuildir}/buildlogs/*] ${libexecdir}/pslbuild/buildlogs
+    xinstall ${filespath}/runpsl.in ${bindir}/redpsl
+    reinplace "s|@LIBEXECDIR@|${prefix}/libexec/${name}|g" ${bindir}/redpsl
+}
+
+variant html description {Install documentation in HTML format} {
+    depends_build-append bin:makeindex:texlive-basic
+    depends_build-append bin:mk4ht:texlive-htmlxml
+
+    post-build {
+        system -W ${worksrcpath}/doc/manual "./mkhtml.sh"
+    }
+
+    post-destroot {
+        xinstall -d ${destroot}${topdir}/doc/html
+        eval xinstall -m 0644 [glob ${worksrcpath}/doc/manual/*.html] ${docdir}
+    }
+}
+
+variant pdf description {Install documentation in PDF format} {
+    depends_build-append bin:makeindex:texlive-basic
+    depends_build-append bin:pdflatex:texlive-basic
+
+    post-build {
+        system -W ${worksrcpath}/doc/manual "./mkpdf.sh"
+    }
+
+    post-destroot {
+        xinstall -d ${destroot}${topdir}/doc/pdf
+        xinstall -m 0644 ${worksrcpath}/doc/manual/manual-pdf.pdf ${docdir}
+    }
+}
+
+post-activate {
+# create a second image after all modules have been built, with the final value of 
+# loaddirectories!*. Otherwise loading a module will always search the build directories
+# in worksrcpath (which don't exist).
+    set pslbuildir ${topdir}/pslbuild
+
+    system "cd ${pslbuildir}; exec sh -xv ${topdir}/psl/saveimage.sh ${pslbuildir}/red \
+        ${pslbuildir}"
+
+    file rename -force ${pslbuildir}/log/reduce.blg \
+                       ${pslbuildir}/buildlogs/reduce.img.blg
+    file delete -force ${pslbuildir}/log
+}
+
+livecheck.type      none
