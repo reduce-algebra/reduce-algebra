@@ -1,0 +1,9 @@
+This is a snapshot of all the test scripts for Reduce and the
+corresponding reference logs. The definitive versions of these are
+held within the packages directory, but users who do not need the
+full set of Reduce source files may find the copies here useful.
+
+Every so often there will be a maintanance task refreshing this set
+from the master versions. In case of uncertaity please fetch the
+packages directory from subversion and inspect the version there.
+
