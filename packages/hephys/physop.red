@@ -1051,7 +1051,8 @@ if not contractflg then return u
   end;
 
 symbolic procedure physopsim!* u;
-  if !*physopp!* u then physopsm!* u else u;
+   if eqcar(u,'!:dn!:) then prepsq simp u
+    else if !*physopp!* u then physopsm!* u else u;
 
 symbolic  procedure physop2sq u; %modified 1.01
 % u is a physop expr
