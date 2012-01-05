@@ -2014,7 +2014,8 @@ else if not physopp op then
                    physopapply list(cadr op,wave),physop2sq caddr op)
         else if car op eq 'times then
                <<op := reverse cdr op;
-                 while op and not !*hardstop do
+                 while op do 
+                       %and not !*hardstop do %%% E.S.
                     << x := car op; op := cdr op;
                        wave := physopapply list(x,wave) >>;
                        if !*hardstop then
@@ -2038,7 +2039,7 @@ else if not physopp op then
              else rederr2('opapply, "invalid operator to opapply")
 % special hack here for unit operator  0.99c
 else if op = 'unit then res := mk!*sq physop2sq wave
-else if physopp wave or
+else if physopp wave or eqcar(wave,'opapply) or %%% E.S.
         (flagp(car wave,'physopmapping) and statep!* cdr wave) then
              <<x := opmtch!* list('opapply,op,wave);
                if null x then x := physopadj list(
