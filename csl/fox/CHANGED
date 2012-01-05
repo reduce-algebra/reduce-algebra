@@ -29,6 +29,7 @@ src/FXWindow.cpp               HANDLE vs FXuint to be win64-safe
 src/Makefile.am                support 64-bit windows build using
                                command-line tools, add in my new files,
                                remove use of libtool.
+src/vsscanf.cpp                fixed to cope with i686-w64-mingw32-g++
 utils/Makefile.am              if cross-building use gcc to compile utils.
 
 fox.pc.in                      insert quote marks so that paths with whitespace

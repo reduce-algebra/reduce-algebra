@@ -287,10 +287,14 @@ symbolic procedure token1;
     bsfound:
 % At this stage I have just found the text "\end{reduce}" and what I will do
 % is to discard all stuff until I find either end of file of "\begin{reduce}".
+% However note that at this stage I am expecting to be scanning TeX code and
+% so if there are any TeX comments (introduced by "%") I do not want to
+% detect the magic within them.
         y := '(!\ b e g i n !{ r e d u c e !});
         ttype!* := 3;
     bssrch:
-        if x eq !$eof!$ then progn(
+        if x eq '!% then go to bscomm
+        else if x eq !$eof!$ then progn(
            crchar!* := '! ,
            filenderr(),
            nxtsym!* := x,
@@ -302,6 +306,11 @@ symbolic procedure token1;
         if not (z eq car y) then go to bsfound;
         y := cdr y;
         go to bssrch;
+    bscomm:
+        x := readch1();
+        if x eq !$eof!$ then go to bssrch
+        else if x eq !$eol!$ then go to bsfound
+        else go to bscomm;
     maybepackage:                               % Seen abc:
         x := readch1();
         if x eq '!: then go to maybeextpackage;
