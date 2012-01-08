@@ -1,0 +1,68 @@
+README  -*- text -*-
+GNU Emacs REDUCE Integrated Development Environment:
+Major Modes for Editing and Running REDUCE Source Code
+
+Author: Francis J. Wright <fjwright@users.sourceforge.net>
+Time-stamp: <2012-01-08 10:45:06 fjw>
+
+REDUCE IDE is a package that provides an Integrated Development
+Environment for the REDUCE computer algebra system within the GNU
+Emacs editor. Its two major components are Emacs Lisp libraries that
+provide major modes for respectively editing REDUCE source code and
+running a *command-line version* of REDUCE in an Emacs window.
+However, many of the facilities require that Emacs is running under a
+GUI such as Microsoft Windows, or the X Window System under some
+flavour of UNIX or Linux.
+
+REDUCE IDE requires GNU Emacs 21 or later. I don't explicitly support
+XEmacs.
+
+All files should in principle be OS-independent. However, the
+environment I use currently consists of Microsoft Windows 7, a recent
+version of the native Windows port of GNU Emacs, and Cygwin for other
+GNU software. I probably can't help with problems that are specific to
+a different setup, especially a different OS.
+
+This release is essentially a lightly edited updated for SourceForge
+of the files formerly available from
+http://centaur.maths.qmul.ac.uk/Emacs/REDUCE_IDE/, which I last
+updated around 2001. The current update is mainly to the comments and
+documentation to update my contact details and the status of REDUCE,
+plus some enhancements to reduce-mode.el by Thomas Sturm.
+
+Description of Distributed Files
+
+Required:
+
+reduce-mode.el		- REDUCE source editing mode
+
+Optional:
+
+reduce-run.el		- runs REDUCE in an Emacs buffer
+reduce-ide.texinfo	- texinfo documentation source
+
+The above files are all more-or-less human-readable. There are
+detailed installation instructions in reduce-ide.texinfo (but for now
+ignore the suggestion to use reduce-ide-install.el) and brief
+installation instructions as comments near the start of the ELisp
+files.
+
+In a nutshell, byte-compile the ELisp files and ensure that they are
+in your Emacs lisp load path. Then you can at least explicitly switch
+to reduce mode to edit a file of REDUCE source code.
+
+You can generate documentation in various formats, including info,
+html and pdf, from reduce-ide.texinfo, but you need the GNU Texinfo
+package; see http://www.gnu.org/software/texinfo/. If you have TeX
+installed then it might include Texinfo (possibly as an optional
+package); e.g. MiKTeX for Windows offers the main components. To
+generate info or html it is probably best to run makeinfo; to generate
+pdf you need to run TeX, possibly indirectly, so you also need a TeX
+installation. For further details, please read sections 20 to 22 of
+the Texinfo manual, available online at
+http://www.gnu.org/software/texinfo/manual/texinfo/. For a quick
+summary, see http://en.wikipedia.org/wiki/Texinfo.
+
+At some later date I might release an installer (that works) and/or a
+a package containing the documentation in various formats and/or put
+the documentation online via the REDUCE web site.

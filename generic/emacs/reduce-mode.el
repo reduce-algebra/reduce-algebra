@@ -1,17 +1,17 @@
 ;;; reduce-mode -- REDUCE code editing mode for GNU Emacs
 
-;; Author: Francis J. Wright <F.J.Wright@QMW.ac.uk>
+;; Author: Francis J. Wright <fjwright@users.sourceforge.net>
 ;; Keywords: REDUCE, languages
 
 ;; $Id$
 
-(defconst reduce-mode-version "1.1 beta, Time-stamp: <03 September 2001>"
+(defconst reduce-mode-version "1.1 beta, Time-stamp: <2012-01-05 18:54:44 fjw>"
   "Version information for REDUCE Mode.")
 
 ;; This version REQUIRES GNU Emacs 21.1+
 
 ;; The latest version of REDUCE Mode is available from the URL
-;; http://centaur.maths.qmw.ac.uk/Emacs/REDUCE/
+;; http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/
 
 ;; Copyright (c) 1994--2001 Francis J. Wright
 
