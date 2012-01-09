@@ -191,27 +191,40 @@ x86_64-w64-*)
   AC_MSG_NOTICE([Building for Macintosh/Darwin with X11])
   darwin_build="yes"
   AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
-  CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
-  CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
-  CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
-  AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
-  XLIBS="-lXext -lX11"
-  macintosh_build="yes"
-  darwin_build="yes"
-  LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-  AC_LANG_CONFTEST(
-    [AC_LANG_PROGRAM([], [])])
-  if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
+# If the person who invoked the configure script had set CC or CXX so as to
+# override any default selection of which C and C++ compiler to use then
+# it will be THEIR business to set up any associated CFLAGS, LDFLAGS etc so
+# as to access an appropriate SDK. If I am on a Mac and the person who
+# invoked configure did NOT specify options to force which compilers were to
+# be used I will feel entitled to use "gcc" and "g++", and with them I
+# will make assumptions about where the proper SDKs will have been installed
+# and what compiler options will behave properly. Once again any individual or
+# script that forces CC or CXX to values other the gcc or g++ have to take
+# responsibility for ALL consequences of their actions, and they must also
+# pass CFLAGS, LDFLAGS, LIBS and anything else needed.
+  if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
   then
-    AC_MSG_NOTICE([x96_64 binary creation will probably be possible using 10.7])
-#   enable_dependency_tracking="no"
-  else
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
+    CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
+    CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
+    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
+    AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
+    XLIBS="-lXext -lX11"
+    macintosh_build="yes"
+    darwin_build="yes"
+    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
+    AC_LANG_CONFTEST(
+      [AC_LANG_PROGRAM([], [])])
+    if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
     then
-      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.6])
+      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.7])
 #     enable_dependency_tracking="no"
-#-- else
+    else
+      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
+      then
+        AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.6])
+#     enable_dependency_tracking="no"
+#--   else
 #--   if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
 #--   then
 #--     AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
@@ -225,8 +238,9 @@ x86_64-w64-*)
 #--       AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
 #--       AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
 #--     fi
-    else
-      AC_MSG_ERROR([Need MACOSX SDK version 10.6 or 10.7])
+      else
+        AC_MSG_ERROR([Need MACOSX SDK version 10.6 or 10.7])
+      fi
     fi
   fi
   ;;

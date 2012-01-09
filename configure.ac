@@ -235,10 +235,6 @@ AC_ARG_WITH(smallpage,
 # windows, and sometimes I might want to build 64-bit executables even though
 # I am only in a 32-bit world.
 #
-# In a while I will retire all option of using gcc-3 and "-mno-cygwin" and
-# I will insist on use of the cross-compiler. But I need to give people
-# time to catch up...
-#
 # The behaviour I intend to establish is that the user can find-tune things
 # using the option "--with-mingw64":
 #    --with-mingw64 or --with-mingw64=yes:
@@ -259,6 +255,9 @@ AC_ARG_WITH(smallpage,
 #         while if you are on a 32-bit system you will need to go
 #         "--with-mingw64" explicitly to build 64-bit executables. 
 #
+# Note that on Windows under cygwin i686-w64-mingw32 and/or x86_64-w64-mingw32
+# compilers MUST be installed.
+#
 # When testing for build environents I will look to see if <host>-g++ is
 # available, and if it is I will assume the <host>-gcc and any other
 # relevant build tools and libraries will be installed. This is just to
@@ -275,11 +274,16 @@ then
 fi
 
 case $ac_configure_args in
-*--host=* | *CC=* | *CXX=* | *CFLAGS=* | *CXXFLAGS=*)
+*--host=* | *CC=* | *CXX=*) | *CFLAGS=* | *CXXFLAGS=*)
 # The above items in ac_configure_args either indicate me having already
 # made my adjustments or they show the use explicitly setting options that
 # I perhaps ought to respect.
   considermingw="no"
+  explicitcc="yes"
+  ;;
+*CFLAGS=* | *CXXFLAGS=*)
+  considermingw="no"
+  ;;
 esac
 
 case `uname` in
@@ -300,7 +304,6 @@ then
 # check for the availability of compilers that might matter to me.
   AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-g++, "yes", "no")
   AC_CHECK_PROG(X32_GCC, i686-w64-mingw32-g++, "yes", "no")
-  AC_CHECK_PROG(GCC_3, g++-3, "yes", "no")
   if test "x$with_mingw64" = "xyes"
   then
     if test "x$X64_GCC" = "xno"

@@ -70,39 +70,46 @@ case $host in
  *darwin*)
     AC_MSG_NOTICE([Building for Macintosh/Darwin with X])
     darwin_build=yes
-    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
     macintosh_build=yes
+# If the person who invoked configure provide an override for CC or CXX so
+# as to force use of a compiler other than gcc/g++ then it becomes entirely
+# their responsibility to arrange access to a suitable SDK and to set
+# any other Mac-specific compiler options that are needed.
+    if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
+    then
+      LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The
 # mode of dependency tracking gets decided during the elaboration of
 # AC_PROG_CC, and the "proper" test for fat binary support can only happen
-# after I have found myself a C compiler. 
-    echo "#include <stdio.h>" > conftest.c
-    echo "int main()" >> conftest.c
+# after I have found myself a C compiler.
+      echo "#include <stdio.h>" > conftest.c
+      echo "int main()" >> conftest.c
 # Until recently I had "\\n" after Hello here, but then some versions of echo
 # as built-ins in "sh" truned that into a newline in a way that hury me. Since
 # the C code here is never going to be used I will just avoid that delicacy!
-    echo "{   printf(\"Hello\");" >> conftest.c
-    echo "    return 0;" >> conftest.c
-    echo "}" >> conftest.c
+      echo "{   printf(\"Hello\");" >> conftest.c
+      echo "    return 0;" >> conftest.c
+      echo "}" >> conftest.c
 # First check a path that is best for Snow Leopard (10.6) in September 2009.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
-    then
-      AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
-      enable_dependency_tracking="no"
-    else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
+      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
       then
-        AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
+        AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
         enable_dependency_tracking="no"
       else
-# This is path works if I am on Tiger (10.4) in Spring 2007!
-        if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
+        if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
         then
-          AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
+          AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
           enable_dependency_tracking="no"
         else
-          AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
+# This is path works if I am on Tiger (10.4) in Spring 2007!
+          if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
+          then
+            AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
+            enable_dependency_tracking="no"
+          else
+            AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
+          fi
         fi
       fi
     fi

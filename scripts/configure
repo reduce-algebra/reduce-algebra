@@ -2184,5 +2184,5 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
-# end of "configver.ac"
+# end of "configure.ac"
 

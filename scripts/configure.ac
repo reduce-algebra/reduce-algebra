@@ -15,5 +15,5 @@ AC_PREREQ(2.59)
 
 AM_INIT_AUTOMAKE([1.8.3])
 
-# end of "configver.ac"
+# end of "configure.ac"
 

@@ -2977,45 +2977,52 @@ fi
 
 case $host in
   *darwin*)
-    echo "#include <stdio.h>" > conftest.c
-    echo "int main() { printf(\"hello\"); return 0; }" >> conftest.c
+# See comments elsewhere. If any user specifically forces CC or CXX to
+# something other than gcc/g++ then by doing so they are indicating that
+# they take full responsibility for forcing CFLAGS, LDFLAGS, LIBS and
+# anything else so as to find relevant SDKs and in general behave well.
+    if test "x$CC$CXX" != "x" && (test "x$CC != "xgcc" || test "x$CXX" != "xg++")
+    then
+      echo "#include <stdio.h>" > conftest.c
+      echo "int main() { printf(\"hello\"); return 0; }" >> conftest.c
 # On the next line gcc will fail if the 10.6 SDK is not available, and in
 # such cases it will moan about "no include path in which to search for
 # stdio.h"  and then that the built-in function printf has been implicitly
 # declared in a way that is messed up. The result would look ugly for something
 # where the fail-safe response is just to avoid using it, and that is why
 # I redirect stdout and stderr to /dev/null.
-    if test "x$with_lionSDK" != "xno" &&
-       gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
-    then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh x86_64 binaries via 10.7\"" >&5
-$as_echo "$as_me: \"Macintosh x86_64 binaries via 10.7\"" >&6;}
-#     enable_dependency_tracking="no"
-      archflags="-arch x86_64 "
-    else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      if test "x$with_lionSDK" != "xno" &&
+         gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
       then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh x86_64 binaries via 10.6\"" >&5
-$as_echo "$as_me: \"Macintosh x86_64 binaries via 10.6\"" >&6;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh x86_64 binaries via 10.7\"" >&5
+$as_echo "$as_me: \"Macintosh x86_64 binaries via 10.7\"" >&6;}
 #       enable_dependency_tracking="no"
         archflags="-arch x86_64 "
       else
-#--     if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
-#--     then
-#--       AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
-#--       enable_dependency_tracking="no"
-#--       archflags="-arch ppc -arch i386 -arch x86_64"
-#--     else
-#--       if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+        if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+        then
+          { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh x86_64 binaries via 10.6\"" >&5
+$as_echo "$as_me: \"Macintosh x86_64 binaries via 10.6\"" >&6;}
+#         enable_dependency_tracking="no"
+          archflags="-arch x86_64 "
+        else
+#--       if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
 #--       then
-#--         AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
+#--         AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
 #--         enable_dependency_tracking="no"
-#--         archflags="-arch ppc -arch i386"
+#--         archflags="-arch ppc -arch i386 -arch x86_64"
 #--       else
-#--         AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
+#--         if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+#--         then
+#--           AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
+#--           enable_dependency_tracking="no"
+#--           archflags="-arch ppc -arch i386"
+#--         else
+#--           AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
+#--         fi
 #--       fi
-#--     fi
-        as_fn_error $? "SDK not found - need at least the 10.6 version" "$LINENO" 5
+          as_fn_error $? "SDK not found - need at least the 10.6 version" "$LINENO" 5
+        fi
       fi
     fi
     ;;

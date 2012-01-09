@@ -76,11 +76,6 @@ AC_ARG_WITH(mingw64,
   [],
   [])
 
-AC_ARG_WITH(gcc3,
-  AC_HELP_STRING([--with-gcc3], [this option is ignored here!]),
-  [],
-  [])
-
 # For now I will use the Snow Leopard SDK even if I am on Lion.
 AC_ARG_WITH(lionSDK,
   AC_HELP_STRING([--with-lionSDK], [can be used to disable use of MacOSX SDK 10.7]),
@@ -267,8 +262,8 @@ x86_64-w64-*)
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
-# that means using the mingw-style version of the compiler either via
-# "i686-w64-mingw32-gcc" or via "gcc-3 -mno-cygwin"
+# that means using the mingw-style version of the compiler via
+# "i686-w64-mingw32-gcc".
   else
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
@@ -334,6 +329,15 @@ x86_64-w64-*)
   AC_MSG_NOTICE([Building for Macintosh/Darwin with X11])
   darwin_build="yes"
   AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
+# Here if the person who invoked configure had arranged to specify
+# CC or CXX (to something other than gcc and g++) then it becomes
+# THEIR responsibility to arrange all other relavant flags (eg CFLAGS,
+# LDFLAGS, LIBS) to as to access a relevant SDK etc etc. ANY problems
+# that arise because they hand down options that lead to failures in
+# compilation of any sort at all are then THEIR job to resolve by providing
+# settings that are satisfactory.
+  if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
+  then
 # The following line was suggested by the libEDIT configuration files.
 # Even though I no longer use libEDIT I will keep it!
 #
@@ -344,20 +348,20 @@ x86_64-w64-*)
 #     found that the Apple pre-processor gave them trouble, so I think it
 #     arranges a slower but possibly safer compilation. It is probably not
 #     needed at all these days.
-  CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
-  CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
+    CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
+    CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
 # At least maybe MacOS 10.2 may not put X11 headers on the standard include
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
 # Note that 10.2 now counts as seriously archaic.
-  CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
-  DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
-  AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
-  XLIBS="-lXext -lX11"
-  macintosh_build="yes"
-  darwin_build="yes"
-  LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
+    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
+    DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
+    AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
+    XLIBS="-lXext -lX11"
+    macintosh_build="yes"
+    darwin_build="yes"
+    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The
 # mode of dependency tracking gets decided during the elaboration of
@@ -365,43 +369,44 @@ x86_64-w64-*)
 # after I have found myself a C compiler. Since I KNOW I am on MacOSX here
 # I will make the test command-line simple and explicit, not using $CFLAGS
 # or any such.
-  archflags=""
-  AC_LANG_CONFTEST(
-    [AC_LANG_PROGRAM([], [])])
+    archflags=""
+    AC_LANG_CONFTEST(
+      [AC_LANG_PROGRAM([], [])])
 # First check a path that is for Lion (10.7) in July 2011.
-  if test "x$with_lionSDK" != "xno" &&
-    gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
-  then
-#   enable_dependency_tracking="no"
-    archflags="-arch x86_64"
-  else
-# Check a path that is for Snow Leopard (10.6) in September 2009.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    if test "x$with_lionSDK" != "xno" &&
+      gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
-      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.6])
 #     enable_dependency_tracking="no"
       archflags="-arch x86_64"
     else
+# Check a path that is for Snow Leopard (10.6) in September 2009.
+      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+      then
+        AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.6])
+#       enable_dependency_tracking="no"
+        archflags="-arch x86_64"
+      else
 #-- # This is path works if I am on Leopard (10.5).
-#--       if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
-#--       then
-#--         AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
-#--         enable_dependency_tracking="no"
-#--         archflags="-arch ppc -arch i386 -arch x86_64"
-#--       else
+#--     if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+#--     then
+#--       AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
+#--       enable_dependency_tracking="no"
+#--       archflags="-arch ppc -arch i386 -arch x86_64"
+#--     else
 #-- # Note that if the best SDK I can find is the 10.4 one I will not even try
 #-- # to build in 64-bit mode.
-#--         if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-#--         then
-#--           AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
-#--           enable_dependency_tracking="no"
-#--           archflags="-arch ppc -arch i386"
-#--         else
-#--           AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
-#--           AC_MSG_NOTICE([If you have a MacOSX later than 10.7 this script may need adjustment])
-#--         fi
+#--       if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+#--       then
+#--         AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
+#--         enable_dependency_tracking="no"
+#--         archflags="-arch ppc -arch i386"
+#--       else
+#--         AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
+#--         AC_MSG_NOTICE([If you have a MacOSX later than 10.7 this script may need adjustment])
 #--       fi
-      AC_MSG_ERROR([No SDK found - I need at least the 10.6 version])
+#--     fi
+        AC_MSG_ERROR([No SDK found - I need at least the 10.6 version])
+      fi
     fi
   fi
   ;;
