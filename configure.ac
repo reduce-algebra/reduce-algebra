@@ -274,7 +274,7 @@ then
 fi
 
 case $ac_configure_args in
-*--host=* | *CC=* | *CXX=*) | *CFLAGS=* | *CXXFLAGS=*)
+*--host=* | *CC=* | *CXX=* | *CFLAGS=* | *CXXFLAGS=*)
 # The above items in ac_configure_args either indicate me having already
 # made my adjustments or they show the use explicitly setting options that
 # I perhaps ought to respect.
