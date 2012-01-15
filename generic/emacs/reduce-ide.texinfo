@@ -1,10 +1,9 @@
 \input texinfo   @c -*-texinfo-*-
-@c $Id: reduce-ide.texinfo 1.1 1999-11-26 16:00:53+00 fjw Rel $
 @c %**start of header
 @setfilename reduce-ide.info
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Manual last updated:
-@set UPDATED Time-stamp: <2012-01-07 18:52:43 fjw>
+@set UPDATED Time-stamp: <2012-01-15 15:03:13 fjw>
 @c Software version:
 @set VERSION 1.0
 @afourpaper
@@ -52,17 +51,10 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @title GNU Emacs REDUCE IDE
 @subtitle An Integrated Development Environment for REDUCE:
-@subtitle Major Modes for Editing and Running REDUCE Source Code
-@subtitle [Software Version @value{VERSION}]
-@author Francis J. Wright
-@sp 2
-@author School of Mathematical Sciences
-@author Queen Mary, University of London
-@author Mile End Road, London E1 4NS, UK
-@author @email{fjwright@@users.sourceforge.net}
-@author @url{http://www.maths.qmul.ac.uk/~fjw}
-@sp 2
-@author Manual Last Updated @value{UPDATED}
+@subtitle Major modes for editing and running REDUCE source code
+@subtitle Software version @value{VERSION}
+@author @uref{http://fjwright.users.sourceforge.net/, Francis J. Wright}
+Manual last updated @value{UPDATED}
 
 @comment  The following two commands start the copyright page.
 @page
@@ -96,14 +88,10 @@ into another language, under the above conditions for modified versions.
 @top REDUCE Integrated Development Environment
 
 @display
-GNU Emacs Major Modes for Editing and Running REDUCE Source Code
-[Software Version @value{VERSION}]
-Manual Last Updated @value{UPDATED}
-
-@email{fjwright@@users.sourceforge.net, Francis J. Wright}
-@uref{http://www.maths.qmul.ac.uk/~fjw, School of Mathematical Sciences}
-Queen Mary, University of London
-Mile End Road, London E1 4NS, UK
+GNU Emacs major modes for editing and running REDUCE source code
+Software Version @value{VERSION}
+@uref{http://fjwright.users.sourceforge.net/, Francis J. Wright}
+Manual last updated @value{UPDATED}
 @end display
 @end ifnottex
 
@@ -1027,14 +1015,13 @@ argument (in raw form).
 @cindex Keyword highlighting
 
 Font-lock mode causes Emacs to select automatically the font in which
-text is displayed (``fontify'' it) so as to indicate its logical status.
-@xref{Font Lock,, Font Lock mode, emacs, The Emacs Editor}.  The first
-version of font-lock support for REDUCE mode was contributed by
-@email{Schoepf@@goofy.zdv.Uni-Mainz.DE, Rainer Schoepf}.  The current
-version provides 4 levels of decoration, which can be selected using the
-standard font-lock facilities, or interactively most easily via the
-REDUCE mode font-lock sub-menu.  The levels and corresponding
-highlighting are as follows.
+text is displayed (``fontify'' it) so as to indicate its logical
+status. @xref{Font Lock,, Font Lock mode, emacs, The Emacs Editor}.
+The first version of font-lock support for REDUCE mode was contributed
+by Rainer Schoepf. The current version provides 4 levels of
+decoration, which can be selected using the standard font-lock
+facilities, or interactively most easily via the REDUCE mode font-lock
+sub-menu. The levels and corresponding highlighting are as follows.
 
 @enumerate
 @item
@@ -1978,10 +1965,9 @@ the buffer} if necessary.
 @cindex Comments
 @cindex Contact
 
-Feedback to the author @email{fjwright@@users.sourceforge.net, by
-e-mail} is welcome. Reports of errors or features that do not work
-well and suggestions for improvements or additional features are all
-welcome.
+Feedback to the author via SourceForge is welcome, including reports
+of errors or features that do not work well and suggestions for
+improvements or additional features.
 
 If possible, please include details of the version of Emacs that you
 are using, the platform on which you are using it, and the version of
