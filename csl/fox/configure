@@ -2981,7 +2981,7 @@ case $host in
 # something other than gcc/g++ then by doing so they are indicating that
 # they take full responsibility for forcing CFLAGS, LDFLAGS, LIBS and
 # anything else so as to find relevant SDKs and in general behave well.
-    if test "x$CC$CXX" != "x" && (test "x$CC != "xgcc" || test "x$CXX" != "xg++")
+    if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
     then
       echo "#include <stdio.h>" > conftest.c
       echo "int main() { printf(\"hello\"); return 0; }" >> conftest.c
