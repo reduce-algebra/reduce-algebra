@@ -3671,7 +3671,7 @@ $as_echo "$as_me: Building for Macintosh/Darwin with X11" >&6;}
 
 $as_echo "#define MACINTOSH 1" >>confdefs.h
 
-  if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
+  if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
   then
 # The following line was suggested by the libEDIT configuration files.
 # Even though I no longer use libEDIT I will keep it!

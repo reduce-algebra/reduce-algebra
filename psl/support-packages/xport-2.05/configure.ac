@@ -75,7 +75,7 @@ case $host in
 # as to force use of a compiler other than gcc/g++ then it becomes entirely
 # their responsibility to arrange access to a suitable SDK and to set
 # any other Mac-specific compiler options that are needed.
-    if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
+    if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
     then
       LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting

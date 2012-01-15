@@ -202,7 +202,7 @@ x86_64-w64-*)
 # script that forces CC or CXX to values other the gcc or g++ have to take
 # responsibility for ALL consequences of their actions, and they must also
 # pass CFLAGS, LDFLAGS, LIBS and anything else needed.
-  if test "x$CC$CXX" != "x" && (test "x$CC" != "xgcc" || test "x$CXX" != "xg++")
+  if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
   then
     CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
     CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
