@@ -46,9 +46,13 @@ host_triplet = @host@
 @wx_TRUE@@wxbuiltin_FALSE@am__append_6 = $(shell wx-config --cflags)
 @wx_TRUE@@wxbuiltin_FALSE@am__append_7 = $(shell wx-config --cxxflags)
 @wx_TRUE@@wxbuiltin_FALSE@am__append_8 = $(shell wx-config --libs)
-noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(am__EXEEXT_1) dyndemo$(EXEEXT) \
-	$(am__EXEEXT_2)
+@mac_framework_FALSE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
+@mac_framework_FALSE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
+@mac_framework_FALSE@	$(am__EXEEXT_1) dyndemo$(EXEEXT) \
+@mac_framework_FALSE@	$(am__EXEEXT_2)
+@mac_framework_TRUE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
+@mac_framework_TRUE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
+@mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
 @windows_TRUE@@wx_TRUE@am__append_9 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
 @windows_TRUE@@wx_FALSE@am__append_10 = fwindemo$(COM) reduce$(COM)
 @windows_TRUE@am__append_11 = csl$(COM)

@@ -156,9 +156,15 @@ bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 else !wx
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 endif !wx
+if mac_framework
+noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
+	termdemo$(EXEEXT) $(foxdemotarget) \
+	$(wxdemotarget)
+else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
 	$(wxdemotarget)
+endif !mac_framework
 
 if cygwin
 all-local:	report-dlls csl.img reduce.img
