@@ -336,6 +336,9 @@ x86_64-w64-*)
 # that arise because they hand down options that lead to failures in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
+  XLIBS="-lXext -lX11"
+  macintosh_build="yes"
+  darwin_build="yes"
   if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
   then
 # The following line was suggested by the libEDIT configuration files.
@@ -358,9 +361,6 @@ x86_64-w64-*)
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
-    XLIBS="-lXext -lX11"
-    macintosh_build="yes"
-    darwin_build="yes"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The
