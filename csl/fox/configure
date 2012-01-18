@@ -2983,8 +2983,17 @@ case $host in
 # anything else so as to find relevant SDKs and in general behave well.
     if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
     then
-      echo "#include <stdio.h>" > conftest.c
-      echo "int main() { printf(\"hello\"); return 0; }" >> conftest.c
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
 # On the next line gcc will fail if the 10.6 SDK is not available, and in
 # such cases it will moan about "no include path in which to search for
 # stdio.h"  and then that the built-in function printf has been implicitly
