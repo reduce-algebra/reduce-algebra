@@ -3668,6 +3668,7 @@ $as_echo "#define SOLARIS 1" >>confdefs.h
 $as_echo "$as_me: Building for Macintosh/Darwin with X11" >&6;}
   macintosh_build="yes"
   darwin_build="yes"
+  XLIBS="-lXext -lX11"
 
 $as_echo "#define MACINTOSH 1" >>confdefs.h
 
@@ -3694,7 +3695,6 @@ $as_echo "#define MACINTOSH 1" >>confdefs.h
 $as_echo "#define UNIX 1" >>confdefs.h
 
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
-    XLIBS="-lXext -lX11"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The

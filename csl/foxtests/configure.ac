@@ -191,6 +191,7 @@ x86_64-w64-*)
   AC_MSG_NOTICE([Building for Macintosh/Darwin with X11])
   macintosh_build="yes"
   darwin_build="yes"
+  XLIBS="-lXext -lX11"
   AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
   if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
   then 
@@ -213,7 +214,6 @@ x86_64-w64-*)
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
-    XLIBS="-lXext -lX11"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The
