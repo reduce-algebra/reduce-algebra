@@ -3,8 +3,10 @@ README  -*- text -*-
 GNU Emacs REDUCE Integrated Development Environment:
 Major modes for editing and running REDUCE source code
 
-Author: Francis J. Wright <fjwright@users.sourceforge.net>
-Time-stamp: <2012-01-15 16:46:16 fjw>
+$Id$
+
+Author: Francis J. Wright <fjwright AT users.sourceforge.net>
+Time-stamp: <2012-01-17 09:46:43 fjw>
 
 REDUCE IDE is a package that provides an Integrated Development
 Environment for the REDUCE computer algebra system within the GNU
@@ -15,7 +17,7 @@ However, many of the facilities require that Emacs is running under a
 GUI such as Microsoft Windows, or the X Window System under some
 flavour of UNIX or Linux.
 
-REDUCE IDE requires GNU Emacs 21 or later. I don't explicitly support
+REDUCE IDE requires GNU Emacs 23 or later. I don't explicitly support
 XEmacs.
 
 All files should in principle be OS-independent. However, the
@@ -27,9 +29,10 @@ a different setup, especially a different OS.
 This release is essentially a lightly edited updated for SourceForge
 of the files formerly available from
 http://centaur.maths.qmul.ac.uk/Emacs/REDUCE_IDE/, which I last
-updated around 2001. The current update is mainly to the comments and
+updated around 2001. The current update is to the comments and
 documentation to update my contact details and the status of REDUCE,
-plus some enhancements to reduce-mode.el by Thomas Sturm.
+some enhancements to reduce-mode.el by Thomas Sturm and some minor
+code updates to accommodate GNU Emacs 23 and 24.
 
 Description of Distributed Files
 

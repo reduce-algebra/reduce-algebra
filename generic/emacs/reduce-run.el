@@ -1,11 +1,11 @@
 ;;; reduce-run -- Run REDUCE in a GNU Emacs buffer
 
-;; Author: Francis J. Wright <fjwright@users.sourceforge.net>
+;; Author: Francis J. Wright <fjwright AT users.sourceforge.net>
 ;; Keywords: REDUCE, processes
 
-;; $Id: reduce-run.el,v 1.33 2001-08-29 21:22:30+01 fjw Exp fjw $
+;; $Id$
 
-(defconst reduce-run-version "1.1 beta, Time-stamp: <2012-01-07 17:44:12 fjw>,
+(defconst reduce-run-version "1.2, Time-stamp: <2012-01-19 19:31:45 fjw>,
 for use with REDUCE Mode version 1.1+"
   "Version information for REDUCE Run.")
 
@@ -15,12 +15,10 @@ for use with REDUCE Mode version 1.1+"
 ;; control echoing from input of statement, proc or region?
 
 
-;; This version REQUIRES GNU Emacs 21.1+
-
 ;; The latest version of REDUCE Run is available from the URL
 ;; http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/
 
-;; Copyright (C) 1998--2001 Francis J. Wright
+;; Copyright (C) 1998--2001, 2012 Francis J. Wright
 
 ;; This file is not part of GNU Emacs.
 
@@ -55,10 +53,10 @@ for use with REDUCE Mode version 1.1+"
 ;; the hooks available for customising it, see the file comint.el.
 ;; For further information on REDUCE Run, see the comments below.
 
-;; REDUCE Run is part of the REDUCE IDE, which is normally best
-;; installed by running the installer program `reduce-ide-install.el'.
-;; All related files should be available in the same directory or
-;; archive as this file.
+;; REDUCE Run is part of REDUCE IDE, which is normally best installed
+;; by running the installer program `reduce-ide-install.el'. All
+;; related files should be available in the same directory or archive
+;; as this file.
 
 ;; It requires `reduce-mode.el' (REDUCE code editing mode for GNU
 ;; Emacs) also available from the above URL.
@@ -325,7 +323,7 @@ to continue it."
   (interactive)
   (kill-all-local-variables)
   (comint-mode)
-  (set (make-local-variable 'comint-use-prompt-regexp-instead-of-fields) nil)
+  (set (make-local-variable 'comint-use-prompt-regexp) nil)
   (setq major-mode 'reduce-run-mode)
   (setq mode-name "REDUCE Run")
   (setq mode-line-process '(":%s"))
@@ -611,6 +609,10 @@ The user chooses whether to echo file input."
 	    (setq result (concat dir "/packages/")))
 	   result))))
 
+(defvar reduce-package-completion-alist nil
+  "Alist of REDUCE packages used for completion by `reduce-load-package'.
+Not intended to be set directly but by customizing `reduce-packages'.")
+
 (defcustom reduce-packages (reduce-packages-default)
   "*File, directory or list of REDUCE packages, or nil.
 The file should be \"reduce/package.ini\", the directory should be
@@ -641,10 +643,6 @@ Used for completion by `reduce-load-package'."
 	   (setq reduce-package-completion-alist
 		 (and packages (mapcar 'list packages)))
 	   (set-default symbol value))))
-
-(defvar reduce-package-completion-alist nil
-  "Alist of REDUCE packages used for completion by `reduce-load-package'.
-Not intended to be set directly but by customizing `reduce-packages'.")
 
 (defun reduce-load-package (package)
   "Load a Reduce package into the REDUCE process."
@@ -762,7 +760,7 @@ process if necessary."
 		    (reduce-send-bye proc)
 		    ;; The time may need tuning on different systems.
 		    ;; For me, anything less than 1 second is unreliable.
-		    (sit-for 1 nil t)		; no redisplay
+		    (sit-for 1 t)	; no redisplay
 		    ))))
 	  (process-list)))
 
