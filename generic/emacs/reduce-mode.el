@@ -5,7 +5,7 @@
 
 ;; $Id$
 
-(defconst reduce-mode-version "1.2, Time-stamp: <2012-01-21 19:08:06 fjw>"
+(defconst reduce-mode-version "1.21, Time-stamp: <2012-01-28 17:45:38 fjw>"
   "Version information for REDUCE Mode.")
 
 ;; The latest version of REDUCE Mode is available from the URL
@@ -232,8 +232,9 @@ Optional `cdr' is a replacement string or nullary function (for structures)."
   :type 'boolean
   :group 'reduce-format-display)
 
-(defcustom reduce-comment-region "%% "
+(defcustom reduce-comment-region-string "%% "
   "*String inserted by \\[reduce-comment-region] at start of each line."
+  :version "1.21" ; Names was reduce-comment-region up to version 1555!
   :type 'string
   :group 'reduce-format-display)
 
@@ -286,8 +287,8 @@ Default is the same as for Show Paren mode."
   :group 'reduce-format-display)
 
 (defcustom reduce-show-proc-mode nil
-  "*If non-nil then display current procedure name in mode line
-after `reduce-show-proc-delay' seconds of Emacs idle time."
+  "*If non-nil then display current procedure name in mode line.
+Update after `reduce-show-proc-delay' seconds of Emacs idle time."
   :set (lambda (symbol value)
 	 (reduce-show-proc-mode (or value 0)))
   :initialize 'custom-initialize-default
@@ -313,7 +314,7 @@ after `reduce-show-proc-delay' seconds of Emacs idle time."
 ;; Internal variables:
 
 (defvar reduce-imenu-done nil
-  "Buffer-local: set to true if `reduce-imenu' has been called.")
+  "Buffer-local: set to true if `reduce-imenu-add-to-menubar' has been called.")
 (make-variable-buffer-local 'reduce-imenu-done)
 
 (defvar reduce-mode-map nil
@@ -342,7 +343,6 @@ Each is assigned a `font-lock-keywords' value for REDUCE mode.")
   '(("[^'\(]\\(!\\)\"" 1 (1 . nil)))
   "Mark ! followed by \" as having punctuation syntax (syntax-code 1)
 unless preceded by ' or (, for correct syntax highlighing of strings.")
-
 
 
 ;;;; *****************
@@ -380,7 +380,7 @@ the latter optionally on a single line.
 The command `reduce-complete-symbol' (`\\[reduce-complete-symbol]') performs REDUCE
 keyword/phrase/structure completion.
 
-Text highlighting is supported by turning on `font-lock-mode', and
+Text highlighting is supported via the command `font-lock-mode', and
 the style of highlighting may be controlled by setting
 `font-lock-maximum-decoration' to one of:
 
@@ -436,7 +436,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   (set (make-local-variable 'imenu-space-replacement) " ")
   ;; Necessary to avoid re-installing the same imenu:
   (setq reduce-imenu-done nil)
-  (if reduce-imenu (reduce-imenu))
+  (if reduce-imenu (reduce-imenu-add-to-menubar))
   ;; ChangeLog support:
   (set (make-local-variable 'add-log-current-defun-function)
        'reduce-current-proc)
@@ -465,8 +465,8 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   (set (make-local-variable 'parse-sexp-ignore-comments) t) ; RS
  )
 
-(defun reduce-imenu (&optional redraw)
-  "Add a \"Contents\" menu to the menubar."
+(defun reduce-imenu-add-to-menubar (&optional redraw)
+  "Add \"Contents\" menu to menubar; if REDRAW force update."
   (interactive)
   (if reduce-imenu-done
       ;; This is PRIMARILY to avoid a bug in imenu-add-to-menubar that
@@ -476,7 +476,6 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
     (setq reduce-imenu-done t)
     (imenu-add-to-menubar reduce-imenu-title)
     (if redraw (force-mode-line-update))))
-
 
 
 ;;;; **********************
@@ -555,7 +554,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
     ["Show Current Proc" reduce-show-proc-mode
      :style toggle :selected reduce-show-proc-mode :active t
      :help "Toggle display of the current procedure name"]
-    ["Make Proc/Op Menu" (reduce-imenu t) :active (not reduce-imenu-done)
+    ["Make Proc/Op Menu" (reduce-imenu-add-to-menubar t) :active (not reduce-imenu-done)
      :help "Show an imenu of procedures and operators"]
     "--"
     ["Find Tag..." find-tag :active t
@@ -589,7 +588,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
     :help "Show a REDUCE Mode command summary"]
    ["Customize..." (customize-group 'reduce) :active t
     :help "Customize REDUCE Mode"]
-   ["Show Version" reduce-mode-version :active t
+   ["Show Version" reduce-mode-show-version :active t
     :help "Show the REDUCE Mode version"]
    ["Outline" outline-minor-mode
     :style toggle :selected outline-minor-mode :active t
@@ -598,7 +597,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
     :help "Add change log entry other window"]
    ))
 
-(defun reduce-mode-version ()
+(defun reduce-mode-show-version ()
   "Echo version information for REDUCE Major Mode."
   (interactive)
   (message "REDUCE Major Mode %s" reduce-mode-version))
@@ -643,7 +642,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
 ;;;; ********************
 
 (defun reduce-indent-line (&optional arg)
-  "Indent current line as REDUCE code.
+  "Indent current line; if ARG indent whole statement rigidly.
 Indents to fixed style determined by current and previous non-blank line.
 Subsequent consecutive calls indent additionally by `reduce-indentation'
 unless `reduce-indent-line-conservative' is non-nil. With argument,
@@ -686,13 +685,13 @@ this one."
   "Regexp for use in a SEARCH to find a procedure header.")
 
 (defsubst looking-at-procedure ()
+  "Return t if text after point matches the start of a procedure."
   (looking-at ".*\\<procedure[ \(]"))
 
 (defun reduce-calculate-indent-proc ()
   ;; "Handle comment lines, or if immediately following a procedure body
   ;; then return 0, otherwise return nil."
-  "If immediately following a procedure body then return 0,
-otherwise return nil."
+  "Return 0 if immediately following procedure body, else return nil."
   (save-excursion
     (beginning-of-line)
     (cond
@@ -854,10 +853,10 @@ of the construct; otherwise return nil."
 	   ))))))
 
 (defun reduce-calculate-indent-prev1 ()
-  ;; If beginning new statement or comma-separated element
-  ;; or sub-expression ending with `+', `-', `or' or `and'
-  ;; then indent to previous statement or element
-  ;; unless it is a first argument ...
+  "Sub-function of `reduce-calculate-indent-prev'.
+If beginning new statement or comma-separated element or
+sub-expression ending with `+', `-', `or' or `and' then indent to
+previous statement or element unless it is a first argument ..."
   (if (looking-at ".*\\(\\([,+-]\\|\\<or\\|\\<and\\)\\|[\;$]\\)[ \t]*[%\n]")
       (let* ((second_arg (match-string 2))
 	     (open (or second_arg
@@ -884,7 +883,7 @@ of the construct; otherwise return nil."
 	  (current-column)))))
 
 (defun reduce-unindent-line (arg)
-  "Unindent current line as REDUCE code.  (back-tab)
+  "Unindent current line; if ARG indent whole statement rigidly.
 Delete `reduce-indentation' spaces from beginning of line.
 With argument, unindent any additional lines of the same statement
 rigidly along with this one."
@@ -906,6 +905,7 @@ rigidly along with this one."
 
 
 (defun reduce-comment-indent ()
+  "Value of `comment-indent-function'."
   ;; Called only by indent-for-comment and
   ;; (hence) indent-new-comment-line.
   (if (looking-at "%%%")
@@ -919,7 +919,8 @@ rigidly along with this one."
 
 
 (defun reduce-indent-procedure (arg)
-  "Indent the procedure (and trailing white space) ending after point.
+  "Indent this and following ARG procedures.
+Indent the procedure (and trailing white space) ending after point.
 With arg, indent the following arg procedures including this one."
   (interactive "*p")			; error if buffer read-only
   (save-excursion
@@ -929,7 +930,8 @@ With arg, indent the following arg procedures including this one."
       )))
 
 (defun reduce-indent-region (beg-region end-region)
-  "Indent the region.  With prefix arg, indent the whole buffer."
+  "Interactively indent region; otherwise BEG-REGION to END-REGION.
+Interactively with prefix arg, indent the whole buffer."
   ;; (interactive "*r")			; error if buffer read-only
   (interactive
    (if current-prefix-arg
@@ -982,8 +984,7 @@ current line if the text just typed matches `reduce-auto-indent-regexp'."
     (reduce-auto-indent-function)))
 
 (defun reduce-auto-indent-function ()
-  "Re-indent current line if a match with `reduce-auto-indent-regexp'
-has just be typed."
+  "Re-indent current line if match with `reduce-auto-indent-regexp' just typed."
   (and (eq major-mode 'reduce-mode)
        (eq last-command 'self-insert-command)
        (save-excursion
@@ -998,7 +999,7 @@ has just be typed."
 ;;;; ******************************
 
 (defun reduce-backward-procedure (arg)
-  "Move backward to next start of procedure.  With arg, do it arg times."
+  "Move backward to next start of procedure. With ARG, do it ARG times."
   (interactive "p")
   (let ((case-fold-search t) (count arg))
     (while (and (> count 0) (reduce-re-search-backward procedure-regexp))
@@ -1018,7 +1019,7 @@ has just be typed."
       )))
 
 (defun reduce-forward-procedure (arg)
-  "Move forward to next end of procedure.  With arg, do it arg times."
+  "Move forward to next end of procedure. With ARG, do it ARG times."
   (interactive "p")
   (let ((case-fold-search t) (start (point)) count)
     ;; Move to end of procedure starting before point:
@@ -1042,10 +1043,10 @@ has just be typed."
   )
 
 (defun reduce-mark-procedure (arg)
-  "Put mark after next end of procedure, point at start of that procedure.
+  "Mark this and following ARG procedures.
+Put mark after next end of procedure, point at start of that procedure.
 Procedure ends AFTER any trailing white space.
-Returns t is successful, nil otherwise.
-With arg, mark the following arg procedures including this one."
+Return t is successful, nil otherwise."
   ;; Could be more efficient by hacking reduce-forward-procedure!
   (interactive "p")
   (let ((start (point)) transient-mark-mode)
@@ -1068,9 +1069,9 @@ With arg, mark the following arg procedures including this one."
 
 (defun reduce-narrow-to-procedure (arg)
   ;; Based on `narrow-to-defun' in `lisp.el'.
-  "Make text outside current procedure invisible.
-The procedure visible is the one that contains point or follows point.
-With arg, narrow to the following arg procedures including this one."
+  "Narrow to this and following ARG procedures.
+Make text outside current procedure invisible.
+The procedure visible is the one that contains point or follows point."
   (interactive "p")
   (save-excursion
     (widen)
@@ -1079,14 +1080,13 @@ With arg, narrow to the following arg procedures including this one."
       (reduce-backward-procedure arg)
       (narrow-to-region (point) end))))
 
-
 
 ;;;; ******************************
 ;;;; Operations based on statements
 ;;;; ******************************
 
 (defvar reduce-up-tries 1
-  "Repeat count of reduce-forward/backward-statement at end of block or group")
+  "Repeat count of reduce-forward/backward-statement at end of block or group.")
 
 (defun reduce-up-block-or-group-maybe (found start)
   "Move over `<<', `begin', `>>' or `end' (including end-of-file marker)
@@ -1106,7 +1106,7 @@ after reduce-max-up-tries repeated interactive attempts."
 
 
 (defun reduce-forward-statement (arg)
-  "Move forward to end of statement.  With arg, do it arg times.
+  "Move forward to end of statement. With ARG, do it ARG times.
 If looking at the end of a block or group, or the end-of-file marker,
 move over it after `reduce-max-up-tries' consecutive interactive tries."
   (interactive "p")
@@ -1125,7 +1125,7 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
     ))
 
 (defun reduce-forward-statement1 (pattern)
-  ;; Move forward to next statement end and return t if successful
+  "Move forward to next statement end and return t if successful."
   (if (looking-at "[;$]")
       ;; (forward-char 1)
       (not (forward-char 1))
@@ -1153,13 +1153,8 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
       )))
 
 
-(defvar not-eof nil
-  "Free variable, bound in reduce-backward-statement,
-used in reduce-backward-statement1.
-True if point not after end-of-file marker.")
-
 (defun reduce-backward-statement (arg)
-  "Move backward to start of statement.  With arg, do it arg times.
+  "Move backward to start of statement. With ARG, do it ARG times.
 If looking at the beginning of a block or group move over it after
 `reduce-max-up-tries' consecutive interactive tries.
 The end-of-file marker is treated as a statement.
@@ -1184,7 +1179,7 @@ Returns the count of statements left to move."
 		      (= (char-syntax (following-char)) ?\( ))))
 	(forward-char 1))
     (while (and (> arg 0) found)
-      (setq found (reduce-backward-statement1 pattern))
+      (setq found (reduce-backward-statement1 pattern not-eof))
       (setq arg (1- arg)))
     (if found
 	(cond ((= (following-char) ?<)
@@ -1202,20 +1197,20 @@ Returns the count of statements left to move."
     arg
     ))
 
-(defun reduce-backward-statement1 (pattern)
-  ;; Move backward to next statement beginning.
-  ;; Returns t if successful, nil if reaches beginning of buffer.
+(defun reduce-backward-statement1 (pattern not-eof)
+  "Move backward to next statement beginning.
+Return t if successful, nil if reaches beginning of buffer."
   (if (reduce-re-search-backward pattern 'move)
       (cond
        ((= (following-char) ?>)		; end of group
-	(reduce-backward-group) (reduce-backward-statement1 pattern))
+	(reduce-backward-group) (reduce-backward-statement1 pattern not-eof))
        ((memq (following-char) '(?e ?E)) ; end of block (or file)
 	(if not-eof
 	    (progn (reduce-backward-block) (setq not-eof nil)))
-	(reduce-backward-statement1 pattern))
+	(reduce-backward-statement1 pattern not-eof))
        ((= (char-syntax (following-char)) ?\) )
 	(forward-char) (backward-list) ; skip balanced brackets
-	(reduce-backward-statement1 pattern))
+	(reduce-backward-statement1 pattern not-eof))
        ((= (char-syntax (following-char)) ?\( )
 	(forward-char) (skip-chars-forward " \t\n") (backward-char) t)
        (t t))
@@ -1223,7 +1218,8 @@ Returns the count of statements left to move."
 
 
 (defun reduce-kill-statement (&optional arg)
-  "Kill the rest of the current statement; if no nonblanks kill thru newline.
+  "Kill the rest of the current statement or ARG statements from point.
+If no nonblanks kill thru newline.
 With prefix argument, kill that many statements from point.
 Negative arguments kill complete statements backwards, cf. `kill-line'."
   ;; Based on kill-line in simple.el
@@ -1246,10 +1242,10 @@ Negative arguments kill complete statements backwards, cf. `kill-line'."
 ;;;; ************************
 
 (defun reduce-up-block-or-group (arg)
-  "Move backward up one level of block or group
-  to beginning of nearest unpaired  `begin'  or  `<<'.
-A universal argument means move forward
-  to end of nearest unpaired  `end'  or  `>>'.
+  "Move backwards up one level of block or group; if ARG move forwards.
+Move to beginning of nearest unpaired  `begin'  or  `<<'.
+A universal argument means move forwards
+to end of nearest unpaired  `end'  or  `>>'.
 With a numeric argument, do it that many times, where a
 negative argument means move forward instead of backward."
   (interactive "P")
@@ -1260,6 +1256,7 @@ negative argument means move forward instead of backward."
       )))
 
 (defun reduce-up-block-or-group1 (arg)
+  "Sub-function of `reduce-up-block-or-group'."
   (let ((start (point)))
     (if (or
 	 (and (> arg 0) (reduce-backward-block-or-group))
@@ -1293,10 +1290,10 @@ negative argument means move forward instead of backward."
 
 
 (defun reduce-down-block-or-group (arg)
-  "Move forward down one level of block or group
-  to end of nearest unpaired  `begin'  or  `<<'.
+  "Move forward down one level of block or group; if ARG move backwards.
+Move to end of nearest unpaired  `begin'  or  `<<'.
 A universal argument means move backward
-  to beginning of nearest unpaired  `end'  or  `>>'.
+to beginning of nearest unpaired  `end'  or  `>>'.
 With a numeric argument, do it that many times, where a
 negative argument means move backward instead of forward."
   (interactive "P")
@@ -1307,6 +1304,7 @@ negative argument means move backward instead of forward."
       )))
 
 (defun reduce-down-block-or-group1 (arg)
+  "Sub-function of `reduce-down-block-or-group'."
   (let ((start (point)))
     (if
 	(if (> arg 0)
@@ -1323,13 +1321,13 @@ negative argument means move backward instead of forward."
 
 
 (defun reduce-prefix-numeric-value (arg)
-  "Interpret universal -> -1, otherwise apply prefix-numeric-value."
+  "Interpret universal ARG as -1, otherwise apply `prefix-numeric-value'."
   (if (and arg (listp arg)) -1 (prefix-numeric-value arg)))
 
 
 (defun reduce-forward-block ()
-  "Move forward to end of block containing point and return t, or move
-as far as possible and return nil."
+  "Move forwards to end of block containing point.
+Return t if successful; otherwise move as far as possible and return nil."
   (let (return)
     (while (and (setq return (reduce-re-search-forward
 			      "\\<end\\>\\|\\<begin\\>" 'move))
@@ -1338,8 +1336,8 @@ as far as possible and return nil."
     return))
 
 (defun reduce-backward-block ()
-  "Move backward to start of block containing point and return t, or move
-as far as possible and return nil."
+  "Move backwards to start of block containing point.
+Return t if successful; otherwise move as far as possible and return nil."
   (let (return)
     (while (and (setq return (reduce-re-search-backward
 			      "\\<begin\\>\\|\\<end\\>" 'move))
@@ -1348,8 +1346,8 @@ as far as possible and return nil."
     return))
 
 (defun reduce-forward-group ()
-  "Move forward to end of group containing point and return t, or move
-as far as possible and return nil."
+  "Move forwards to end of group containing point.
+Return t if successful; otherwise move as far as possible and return nil."
   (let (return)
     (while (and (setq return (reduce-re-search-forward ">>\\|<<" 'move))
 		(= (preceding-char) ?<))
@@ -1357,27 +1355,25 @@ as far as possible and return nil."
     return))
 
 (defun reduce-backward-group ()
-  "Move backward to start of group containing point and return t, or move
-as far as possible and return nil."
+  "Move backwards to start of group containing point.
+Return t if successful; otherwise move as far as possible and return nil."
   (let (return)
     (while (and (setq return (reduce-re-search-backward "<<\\|>>" 'move))
 		(= (following-char) ?>))
       (reduce-backward-group))
     return))
 
-
 
 ;;;; *****************************************************************
 ;;;; Searching for syntactic elements ignoring comments, strings, etc.
 ;;;; *****************************************************************
 
-(defun reduce-re-search-forward (REGEXP &optional MOVE)
-  "Regexp syntactic search forward, skipping REDUCE comments, strings,
-escaped tokens, and quoted tokens other than `('.
-Return t if match found, nil otherwise.
-If no match and optional arg MOVE is non-nil then move to end."
+(defun reduce-re-search-forward (regexp &optional MOVE)
+  "Syntactic search forwards for REGEXP; if no match and MOVE then move to end.
+Skip comments, strings, escaped tokens, and quoted tokens other than `('.
+Return t if match found, nil otherwise."
   (let ((start (point))
-	(pattern (concat REGEXP "\\|%\\|\\<comment\\>"))
+	(pattern (concat regexp "\\|%\\|\\<comment\\>"))
 	(move (if MOVE 'move t)))
     (if (reduce-re-search-forward1 pattern move)
 	t
@@ -1386,7 +1382,7 @@ If no match and optional arg MOVE is non-nil then move to end."
     ))
 
 (defun reduce-re-search-forward1 (pattern move)
-  ;; Skip strings
+  "Skip strings."
   (if (reduce-re-search-forward2 pattern move)
       (if (reduce-in-string)		; try again!
 	  (reduce-re-search-forward1 pattern move)
@@ -1394,7 +1390,7 @@ If no match and optional arg MOVE is non-nil then move to end."
     nil))
 
 (defun reduce-re-search-forward2 (pattern move)
-  ;; Skip escaped, quoted or commented text
+  "Skip escaped, quoted or commented text."
   (if (re-search-forward pattern nil move)
       (let ((match-data (match-data))
 	    before)
@@ -1421,9 +1417,8 @@ If no match and optional arg MOVE is non-nil then move to end."
 
 
 (defun reduce-re-search-backward (regexp &optional MOVE)
-  "Regexp syntactic search backward, skipping REDUCE comments and strings.
-Return t if match found, nil otherwise.
-If no match and optional arg MOVE is non-nil then move to end."
+  "Syntactic search backwards for REGEXP else if MOVE then move to start.
+Skip REDUCE comments and strings. Return t if match found, nil otherwise."
   (let ((start (point))
 	(move (if MOVE 'move t)))
     (if (reduce-re-search-backward1 regexp move)
@@ -1433,7 +1428,8 @@ If no match and optional arg MOVE is non-nil then move to end."
     ))
 
 (defun reduce-re-search-backward1 (regexp move)
-  ;; Skip strings
+  "Sub-function of `reduce-re-search-backward'.
+Skip strings backwards."
   (if (reduce-re-search-backward2 regexp move)
       (if (reduce-in-string)		; try again!
 	  (reduce-re-search-backward1 regexp move)
@@ -1441,7 +1437,7 @@ If no match and optional arg MOVE is non-nil then move to end."
     nil))
 
 (defun reduce-re-search-backward2 (regexp move)
-  ;; Skip escaped, quoted or commented text
+  "Skip escaped, quoted or commented text backwards."
   (if (re-search-backward regexp nil move)
       (let ((match-data (match-data)))
 	(if (or (= (preceding-char) ?!) ; escaped
@@ -1456,8 +1452,8 @@ If no match and optional arg MOVE is non-nil then move to end."
 
 
 (defun reduce-back-to-comment-start ()
-  "If point is in a comment then move to its start and return t,
-otherwise do not move and return nil."
+  "If point is in a comment then move to its start and return t.
+Otherwise do not move and return nil."
   (or
    ;; Check whether in % comment:
    (reduce-back-to-percent-comment-start)
@@ -1481,8 +1477,8 @@ if it is `comment' then save its start position in `found'."
   (if (looking-at "comment") (setq found (point))) )
 
 (defun reduce-back-to-percent-comment-start ()
-  "If point is in a percent comment then move to its start and return t,
-otherwise do not move and return nil."
+  "If point is in a percent comment then move to its start and return t.
+Otherwise do not move and return nil."
 ;;;  (re-search-backward
 ;;;   "^%\\|[^!]%" (save-excursion (beginning-of-line) (point)) t)
   ;; Note that a % may appear at the end of, or alone on, a line!
@@ -1494,7 +1490,7 @@ otherwise do not move and return nil."
       )))
 
 (defun reduce-in-string ()
-  "Returns t if point is within a string, assuming no multi-line strings."
+  "Return t if point is within a string, assuming no multi-line strings."
   (let ((start (point)) (in-string nil))
     (beginning-of-line)
     (while (< (point) start)
@@ -1514,9 +1510,10 @@ otherwise do not move and return nil."
 ;;;; ****************
 
 (defun reduce-comment-region (beg-region end-region arg)
-  "Comment/uncomment every line in the region.  With interactive arg,
-comment if non-negative, uncomment if null or negative (cf. minor modes).
-Puts `reduce-comment-region' at the beginning of every line in the region.
+  "Comment/uncomment every line in region, from BEG-REGION to END-REGION.
+With interactive ARG, comment if non-negative, uncomment if null
+or negative (cf. minor modes).
+Put `reduce-comment-region-string' at the beginning of every line in the region.
 First two args specify the region boundaries, third arg is interactive."
   ;; Taken almost directly from fortran.el
   ;; by Michael D. Prange (prange@erl.mit.edu).
@@ -1537,10 +1534,10 @@ First two args specify the region boundaries, third arg is interactive."
 	    (if (looking-at com)
 		(delete-region (point) (match-end 0)))))
       ;; Comment the region:
-      (progn (insert reduce-comment-region)
+      (progn (insert reduce-comment-region-string)
 	     (while (and (= (forward-line 1) 0)
 			 (< (point) end-region-mark))
-	       (insert reduce-comment-region)))
+	       (insert reduce-comment-region-string)))
       )
     (goto-char save-point)
     (set-marker end-region-mark nil)
@@ -1548,7 +1545,8 @@ First two args specify the region boundaries, third arg is interactive."
 
 
 (defun reduce-comment-procedure (arg)
-  "Comment/uncomment every line of the procedure ending after point.
+  "Comment/uncomment every line of this procedure.
+This procedure is the one that ends after point.
 With interactive arg, if non-negative comment out procedure, if null
 or negative uncomment all consecutive commented-out lines containing
 or following point (cf. minor modes)."
@@ -1574,7 +1572,8 @@ or following point (cf. minor modes)."
 
 
 (defun reduce-fill-comment (justify)
-  "Fill successive %-comment lines around or immediately following point.
+  "Fill successive %-comment lines; if JUSTIFY then also justify.
+Lines are around or immediately following point.
 Prefix arg means justify as well."
   ;; Should perhaps add support for comment statements as well.
   (interactive "*P")
@@ -1611,14 +1610,14 @@ Prefix arg means justify as well."
 	    (fill-region-as-paragraph (point) last justify)
 	    )))))
 
-
 
 ;;;; ***************************
 ;;;; Structure template commands
 ;;;; ***************************
 
 (defun reduce-insert-if-then (&optional else)
-  "Insert `if ... then' and position point inside.
+  "Insert `if ... then'; if ELSE then include `else'.
+Position point after `if'.
 With argument include a correctly indented `else' on a second line."
   (interactive "*P")			; error if buffer read-only
   (insert "if ")
@@ -1634,16 +1633,18 @@ With argument include a correctly indented `else' on a second line."
     ))
 
 (defun reduce-insert-block (&optional nosplit)
-  "Insert and indent `begin ... end' block and position point inside.
+  "Insert and indent `begin ... end' block; if NOSPLIT then on same line.
+Position point inside.
 With argument put `begin' and `end' on the same line
-(see reduce-insert-block-or-group)."
+\(see `reduce-insert-block-or-group')."
   (interactive "*P")			; error if buffer read-only
   (reduce-insert-block-or-group "begin" "end" t nosplit))
 
 (defun reduce-insert-group (&optional nosplit)
-  "Insert and indent `<<  >>' group and position point inside.
+  "Insert and indent `<<  >>' group; if NOSPLIT then on same line.
+Position point inside.
 With argument put `<<' and `>>' on the same line
-(see reduce-insert-block-or-group)."
+\(see `reduce-insert-block-or-group')."
   (interactive "*P")			; error if buffer read-only
   (reduce-insert-block-or-group "<<" ">>" nil nosplit))
 
@@ -1697,13 +1698,12 @@ If `nosplit' is true then put `open' and `close' on the same line."
 ;; provided solely to ignore any argument:
 
 (defun reduce-expand-if-then (&optional arg)
-  "Insert `if ... then' and position point inside."
+  "Insert `if ... then' and position point inside, ignoring ARG."
   (reduce-insert-if-then))
 
 (defun reduce-expand-if-then-else (&optional arg)
-  "Insert `if ... then ... else' and position point after `if'."
+  "Insert `if ... then ... else' and position point after `if', ignoring ARG."
   (reduce-insert-if-then 'else))
-
 
 
 ;;;; **********************************
@@ -1711,7 +1711,7 @@ If `nosplit' is true then put `open' and `close' on the same line."
 ;;;; **********************************
 
 (defun reduce-forward-sexp (&optional arg)
-  "Move forward across one balanced expression.
+  "Move forward across one, or ARG, balanced expression(s).
 With argument, do it that many times."
   (interactive "p")
   (let ((case-fold-search t))
@@ -1727,7 +1727,7 @@ With argument, do it that many times."
   )
 
 (defun reduce-backward-sexp (&optional arg)
-  "Move backward across one balanced expression.
+  "Move backward across one, or ARG, balanced expression(s).
 With argument, do it that many times."
   (interactive "p")
   (skip-chars-backward " \t\n;$")
@@ -1744,7 +1744,6 @@ With argument, do it that many times."
       ))
   (if (and arg (> arg 1)) (reduce-backward-sexp (1- arg)))
   )
-
 
 
 ;;;; *************************************
@@ -1965,7 +1964,6 @@ after `show-paren-delay' seconds of Emacs idle time."
 	;; Always set the overlay face, since it varies.
 	(overlay-put reduce-show-delim-overlay 'face face)))))
 
-
 
 ;;;; *****************************
 ;;;; Support for reposition-window
@@ -1989,7 +1987,7 @@ after `show-paren-delay' seconds of Emacs idle time."
     (reduce-forward-procedure 1)))
 
 (defun reduce-reposition-window ()
-  "See reposition-window for details."
+  "See `reposition-window' for details."
   (interactive)
   (let ((beginning-of-defun (symbol-function 'beginning-of-defun))
 	(end-of-defun (symbol-function 'end-of-defun)))
@@ -2002,15 +2000,14 @@ after `show-paren-delay' seconds of Emacs idle time."
     (fset 'end-of-defun end-of-defun)
     ))
 
-
 
 ;;;; ******************************************************
 ;;;; Support for REDUCE keyword/phrase/structure completion
 ;;;; ******************************************************
 
 (defun reduce-complete-symbol (arg)
-  "Perform completion on REDUCE symbol preceding point or region
-if mark is transient and active.
+  "Perform completion on REDUCE symbol preceding point or region.
+Do this only if mark is transient and active.
 Compare that symbol against the elements of `reduce-completion-alist'.
 If a perfect match (only) has a cdr then delete the match and insert
 the cdr if it is a string or call it if it is a (nullary) function,
@@ -2039,7 +2036,7 @@ passing on any prefix argument (in raw form)."
 	     (if fn
 		 (cond ((stringp fn) (delete-region beg end) (insert fn))
 		       ((fboundp fn) (delete-region beg end) (funcall fn arg))
-		       (t (error "Completion for \"%s\" not a string or function." pattern)))
+		       (t (error "Completion for \"%s\" not a string or function" pattern)))
 	       )))
 	  ((null completion)
 	   (message "Can't find completion for \"%s\"" pattern)
@@ -2055,7 +2052,6 @@ passing on any prefix argument (in raw form)."
 	     (with-output-to-temp-buffer "*Completions*"
 	       (display-completion-list list)))
 	   (message "Making completion list...%s" "done")))))
-
 
 
 ;;;; ****************************************************
@@ -2149,7 +2145,7 @@ passing on any prefix argument (in raw form)."
    '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
      (1 font-lock-type-face))
    )
-  "Default minimal REDUCE fontification rules"
+  "Default minimal REDUCE fontification rules."
   )
 
 (defconst reduce-font-lock-keywords-basic
@@ -2205,7 +2201,7 @@ passing on any prefix argument (in raw form)."
    (cons (concat "^\\s *\\(" reduce-identifier-regexp "\\)\\s *:[^=]")
 	 '(1 font-lock-constant-face))	; was font-lock-reference-face
    )
-  "Basic REDUCE fontification sub-rules"
+  "Basic REDUCE fontification sub-rules."
   )
 
 (defconst reduce-font-lock-keywords-algebraic
@@ -2221,7 +2217,7 @@ passing on any prefix argument (in raw form)."
 	       nil nil
 	       '(1 font-lock-variable-name-face))
 	 ))
-  "More algebraic-mode REDUCE fontification sub-rules"
+  "More algebraic-mode REDUCE fontification sub-rules."
   )
 
 (defconst reduce-font-lock-keywords-symbolic
@@ -2263,7 +2259,7 @@ passing on any prefix argument (in raw form)."
 	  )
 	 '(2 font-lock-type-face))
    )
-  "More symbolic-mode REDUCE fontification sub-rules"
+  "More symbolic-mode REDUCE fontification sub-rules."
   )
 
 (defconst reduce-font-lock-keywords-full
@@ -2319,19 +2315,19 @@ passing on any prefix argument (in raw form)."
 	 ;; and avoid mis-highlighting variables:
 	 '(1 font-lock-function-name-face keep))
    )
-  "Full maximal REDUCE fontification sub-rules"
+  "Full maximal REDUCE fontification sub-rules."
   )
 
 (defconst reduce-font-lock-keywords-1
   (append reduce-font-lock-keywords-basic
 	  reduce-font-lock-keywords-algebraic)
-  "Standard algebraic-mode REDUCE fontification rules"
+  "Standard algebraic-mode REDUCE fontification rules."
   )
 
 (defconst reduce-font-lock-keywords-2
   (append reduce-font-lock-keywords-basic
 	  reduce-font-lock-keywords-symbolic)
-  "Standard symbolic-mode REDUCE fontification rules"
+  "Standard symbolic-mode REDUCE fontification rules."
   )
 
 (defconst reduce-font-lock-keywords-3
@@ -2339,7 +2335,7 @@ passing on any prefix argument (in raw form)."
 	  reduce-font-lock-keywords-algebraic
 	  reduce-font-lock-keywords-symbolic
 	  reduce-font-lock-keywords-full)
-  "Full REDUCE fontification rules"
+  "Full REDUCE fontification rules."
   )
 
 ;; Provide a REDUCE font-lock menu, based on font-lock-menu.el by
@@ -2528,26 +2524,26 @@ in mode line after `reduce-show-proc-delay' seconds of Emacs idle time."
 ;;;; *****************************************
 
 (defun reduce-tagify-dir (dir)
-  "Generate a REDUCE TAGS file for (all `.red' files in) a directory,
-by default the current directory."
+  "Generate a REDUCE TAGS file for all `.red' files in directory DIR.
+By default DIR is the current directory."
   (interactive
    (list (read-directory-name
 	  "Tag files in dir: "		; PROMPT
-	  nil				; DIRECTORY (default cwd)
-	  nil				; DEFAULT
-	  t				; EXISTING
+	  nil				; DIR (default cwd)
+	  nil				; DEFAULT-DIRNAME
+	  t				; MUSTMATCH
 	  )))
   (reduce-tagify dir "*.red"))
 
 (defun reduce-tagify-subdirs (dir)
-  "Generate a REDUCE TAGS file for all subdirectories of a directory,
-by default the parent of the current directory."
+  "Generate a REDUCE TAGS file in directory DIR for all its subdirectories.
+By default DIR is the parent of the current directory."
   (interactive
    (list (read-directory-name
 	  "Tag subdirs of dir: "	; PROMPT
-	  (expand-file-name "..")	; DIRECTORY
-	  ".."				; DEFAULT
-	  t				; EXISTING
+	  (expand-file-name "..")	; DIR
+	  nil				; DEFAULT-DIRNAME
+	  t				; MUSTMATCH
 	  )))
   (reduce-tagify dir "*/*.red"))
 
@@ -2560,8 +2556,8 @@ by default the parent of the current directory."
 ;  )
 
 (defun reduce-tagify (dir files)
-  "Generate a REDUCE TAGS file in directory DIR as cwd for specified FILES
-\(a UNIX shell regexp)."
+  "Generate a REDUCE TAGS file in directory DIR as cwd for specified FILES.
+FILES can be a UNIX shell regexp."
   ;; Assumes a UNIX shell called `sh' in `exec-path'!
   ;; (Could avoid use of `sh' by constructing file list in lisp.)
   (unless (file-directory-p dir) (error "Not a directory: %s" dir))
@@ -2572,7 +2568,7 @@ by default the parent of the current directory."
     (set-process-sentinel
      (start-process-shell-command ; creates an asynchronous shell process
       "*rtags*"			  ; NAME for process
-      "*rtags-log*"		  ; BUFFER-OR-NAME for stdout
+      "*rtags-log*"		  ; BUFFER for stdout
       (concat		    ; COMMAND: program in `exec-path' and args
        "etags --lang=none '--regex=/[^%\n]*procedure[ \t]+\\([^ \t()]+\\)/\\1/' "
        files))
