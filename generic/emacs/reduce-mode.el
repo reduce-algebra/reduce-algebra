@@ -1,34 +1,26 @@
-;;; reduce-mode -- REDUCE code editing mode for GNU Emacs
+;;; reduce-mode.el --- Major mode to edit REDUCE computer-algebra code
 
-;; Author: Francis J. Wright <fjwright AT users.sourceforge.net>
-;; Keywords: REDUCE, languages
+;; Copyright (c) 1994-2001, 2012 Francis J. Wright
 
-;; $Id$
+;; Author: Francis J. Wright <http://sourceforge.net/users/fjwright>
+;; Created: late 1992
+;; Version: $Id$
+;; Keywords: languages
+;; Package-Version: 1.21
 
-(defconst reduce-mode-version "1.21, Time-stamp: <2012-01-28 17:45:38 fjw>"
-  "Version information for REDUCE Mode.")
+;; This program is free software: you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of
+;; the License, or (at your option) any later version.
 
-;; The latest version of REDUCE Mode is available from the URL
-;; http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/
-
-;; Copyright (c) 1994--2001, 2012 Francis J. Wright
-
-;; This file is not part of GNU Emacs.
-
-;; This is free software; you can redistribute it and/or modify it
-;; under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; It is distributed in the hope that it will be useful, but WITHOUT
-;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-;; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-;; License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see
+;; <http://www.gnu.org/licenses/>.
 
 ;; Contributions by Rainer Schoepf flagged ; RS
 ;; Schoepf@goofy.zdv.Uni-Mainz.DE
@@ -36,17 +28,14 @@
 ;; Contributions by Thomas Sturm flagged ; TS
 ;; sturm@redlog.eu
 
-
 ;;; Commentary:
 
-;;;; ******************
-;;;; USE OF REDUCE MODE
-;;;; ******************
+;; REDUCE mode is a major mode for editing source code for the REDUCE
+;; computer algebra system, which is Open Source and available from
+;; <http://reduce-algebra.svn.sourceforge.net/>.
 
-;; REDUCE mode is part of REDUCE IDE, which is normally best installed
-;; by running the installer program `reduce-ide-install.el'. All
-;; related files should be available in the same directory or archive
-;; as this file.
+;; The latest version of REDUCE mode is available from
+;; <http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/>.
 
 ;; Full documentation covering the installation and use of REDUCE mode
 ;; is provided by a texinfo source file called `reduce-ide.texinfo'.
@@ -55,22 +44,38 @@
 ;; The info file can be browsed using the independent info browsing
 ;; program called `info', or installed into the Emacs info browser.
 
-;; All commands also self-document, as usual in Emacs.
+;;; Usage:
+
+;; To install in GNU Emacs 24+, download this file to any convenient
+;; directory and run the Emacs command `package-install-file' on it.
+
 ;; Brief manual installation instructions follow.
 
-;; Put the following in your `.emacs' file (a) to install REDUCE mode,
-;; [assuming that the compiled file reduce-mode.elc is in your load-path]:
+;; Byte-compile this file, put it somewhere in your `load-path', and
+;; put the following in your `.emacs' file:
+
 ;; (autoload 'reduce-mode "reduce-mode" "Major mode for REDUCE code editing" t)
-;; and (b) to run it automatically on files with extension ".red":
-;; (add-to-list 'auto-mode-alist '("\\.red\\'" . reduce-mode))
+
+;; To run REDUCE mode automatically on files with extension ".red" or
+;; ".tst" put the following (after `autoload') in your `.emacs' file:
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.\\(red\\|tst\\)\\'" . reduce-mode))
+
+;; To make REDUCE mode customization always available put the
+;; following (after `autoload') in your `.emacs' file:
+
+;;;###autoload
+(defgroup reduce nil
+  "Support for editing and running REDUCE code."
+  :tag "REDUCE" :group 'languages :load "reduce-mode")
 
 ;; To turn on only REDUCE font-lock mode by default include
 ;; (add-hook 'reduce-mode-hook 'turn-on-font-lock)
 ;; or to turn on all supported font-lock modes by default include
 ;; (global-font-lock-mode 1)
 
-
-;; To do:
+;;; To do:
 
 ;;	BUGS
 ;;	====
@@ -85,11 +90,13 @@
 ;;	add RLisp88 support (?)
 ;;	more structure templates (?) -- while, repeat
 ;;      faster font-lock (function rather than just regexps)?
-
 
 ;;; Code:
 
-;; (message "Loading reduce-mode")		; TEMPORARY!
+(defconst reduce-mode-version "1.21"	  ; TO DO: extract version
+  "Version information for REDUCE mode.") ; from the file header
+
+;; (message "Loading reduce-mode")	; TEMPORARY!
 
 (eval-when-compile			; keep compiler happy!
   (require 'font-lock)
@@ -355,7 +362,7 @@ unless preceded by ' or (, for correct syntax highlighing of strings.")
 ;;;###autoload
 (defun reduce-mode ()
   "Major mode for editing REDUCE source code -- part of REDUCE IDE.
-Author: F.J.Wright@Maths.QMW.ac.uk
+Author: Francis Wright <http://sourceforge.net/users/fjwright>
 Version: see `reduce-mode-version'
 Comments, suggestions, bug reports, etc. are welcome.
 Full texinfo documentation is provided in the file `reduce-ide.texinfo'.
@@ -1104,6 +1111,9 @@ after reduce-max-up-tries repeated interactive attempts."
 	  ))
     (setq reduce-up-tries 1)))
 
+(defvar reduce-forward-statement-found nil
+  "Free variable bound in `reduce-forward-statement'")
+;; Consider replacing with lexical binding.
 
 (defun reduce-forward-statement (arg)
   "Move forward to end of statement. With ARG, do it ARG times.
@@ -1113,7 +1123,7 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
   (let ((case-fold-search t)
 	(pattern "[;$]\\|>>\\|\\<end\\>\\|<<\\|\\<begin\\>\\|\\s(\\|\\s)")
 	(start (point))
-	found)
+	reduce-forward-statement-found)
     ;; Skip an immediate closing bracket:
     (if (looking-at "[ \t\n]*\\s)") (goto-char (match-end 0)))
     (while (and (> arg 0) (reduce-forward-statement1 pattern))
@@ -1121,7 +1131,7 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
     ;; Never move backwards:
     (if (< (point) start) (goto-char start))
     ;; Move over  >>  or  end  on repeated interactive attempt:
-    (reduce-up-block-or-group-maybe found start)
+    (reduce-up-block-or-group-maybe reduce-forward-statement-found start)
     ))
 
 (defun reduce-forward-statement1 (pattern)
@@ -1131,9 +1141,11 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
       (not (forward-char 1))
     (if (reduce-re-search-forward pattern)
 	(cond
-	 ((= (preceding-char) ?>) (setq found (point))
+	 ((= (preceding-char) ?>)
+	  (setq reduce-forward-statement-found (point))
 	  (backward-char 2) (skip-chars-backward " \t\n") t)
-	 ((memq (preceding-char) '(?d ?D)) (setq found (point))
+	 ((memq (preceding-char) '(?d ?D))
+	  (setq reduce-forward-statement-found (point))
 	  (backward-char 3) (skip-chars-backward " \t\n") t)
 	 ((= (preceding-char) ?<)
 	  (reduce-forward-group) (reduce-forward-statement1 pattern))
@@ -1459,22 +1471,20 @@ Otherwise do not move and return nil."
    (reduce-back-to-percent-comment-start)
    ;; Check whether in comment statement:
    (let ((start (point))
-	 found
 	 (pattern "[^!][;$]\\|\\<comment\\>"))
-     (reduce-back-to-comment-statement-start pattern)
      (cond
-      (found				; in comment statement --
-       (reduce-back-to-comment-statement-start pattern)	; find its true beginning
-       (goto-char found) t)
+      ((reduce-back-to-comment-statement-start pattern)
+       ;; in comment statement -- go to its true beginning
+       (goto-char (reduce-back-to-comment-statement-start pattern)) t)
       (t (goto-char start) nil))	; not in comment statement
      )))
 
 (defun reduce-back-to-comment-statement-start (pattern)
-  "Move backwards to the nearest `comment' keyword or separator;
-if it is `comment' then save its start position in `found'."
+  "Move backwards to the nearest `comment' keyword or separator.
+If it is `comment' then return its start position."
   (while (and (re-search-backward pattern nil 'move)
 	      (reduce-back-to-percent-comment-start)))
-  (if (looking-at "comment") (setq found (point))) )
+  (if (looking-at "comment") (point)) )
 
 (defun reduce-back-to-percent-comment-start ()
   "If point is in a percent comment then move to its start and return t.

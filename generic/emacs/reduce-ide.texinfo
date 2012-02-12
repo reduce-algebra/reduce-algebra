@@ -3,7 +3,7 @@
 @setfilename reduce-ide.info
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Manual last updated:
-@set UPDATED Time-stamp: <2012-01-15 15:03:13 fjw>
+@set UPDATED Time-stamp: <2012-02-09 19:02:15 fjw>
 @c Software version:
 @set VERSION 1.0
 @afourpaper
@@ -53,7 +53,7 @@ into another language, under the above conditions for modified versions.
 @subtitle An Integrated Development Environment for REDUCE:
 @subtitle Major modes for editing and running REDUCE source code
 @subtitle Software version @value{VERSION}
-@author @uref{http://fjwright.users.sourceforge.net/, Francis J. Wright}
+@author @uref{http://sourceforge.net/users/fjwright, Francis J. Wright}
 Manual last updated @value{UPDATED}
 
 @comment  The following two commands start the copyright page.
@@ -90,7 +90,7 @@ into another language, under the above conditions for modified versions.
 @display
 GNU Emacs major modes for editing and running REDUCE source code
 Software Version @value{VERSION}
-@uref{http://fjwright.users.sourceforge.net/, Francis J. Wright}
+@uref{http://sourceforge.net/users/fjwright, Francis J. Wright}
 Manual last updated @value{UPDATED}
 @end display
 @end ifnottex
@@ -676,7 +676,7 @@ given an interactive argument, they remove any start-commenting of the
 specified section of text if the argument is negative (or null) and
 insert start-commenting if the argument is positive.  The precise text
 that is added to or removed from each line is the value of the variable
-@code{reduce-comment-region}, which defaults to @samp{%% }.
+@code{reduce-comment-region-string}, which defaults to @samp{%% }.
 
 @table @kbd
 @item  C-c ;
@@ -688,7 +688,7 @@ commenting, i.e.@: it comments the region if it is uncommented and
 uncomments if it is commented.  With an interactive argument, comment if
 non-negative, uncomment if null or negative (cf.@: minor modes).  When
 commenting, it puts the value of the variable
-@code{reduce-comment-region} at the beginning of every line in the
+@code{reduce-comment-region-string} at the beginning of every line in the
 region.
 
 @item  C-c :
@@ -1499,10 +1499,10 @@ and the @code{cdr} inserted if it is a string or called if it is a
 @item reduce-indentation
 Default value 3.  Depth of successive indentation in REDUCE code.
 
-@item reduce-comment-region
+@item reduce-comment-region-string
 Default value @samp{%% }.  String inserted by
 @code{reduce-comment-region} or @code{reduce-comment-procedure} at the
-start of each line.
+start of each line. Was named @code{reduce-comment-region} up to version 1555!
 
 @item reduce-auto-indent-mode
 Default value @code{t}.  If non-nil then conditionally re-indent the

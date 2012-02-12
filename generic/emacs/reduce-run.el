@@ -1,79 +1,80 @@
-;;; reduce-run -- Run REDUCE in a GNU Emacs buffer
+;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer
 
-;; Author: Francis J. Wright <fjwright AT users.sourceforge.net>
-;; Keywords: REDUCE, processes
+;; Copyright (C) 1998-2001, 2012 Francis J. Wright
 
-;; $Id$
+;; Author: Francis J. Wright <http://sourceforge.net/users/fjwright>
+;; Created: late 1998
+;; Version: $Id$
+;; Keywords: languages, processes
+;; Package-Version: 1.21
+;; Package-Requires: ((reduce-mode "1.21"))
 
-(defconst reduce-run-version "1.2, Time-stamp: <2012-01-19 19:31:45 fjw>,
-for use with REDUCE Mode version 1.1+"
-  "Version information for REDUCE Run.")
+;; This program is free software: you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of
+;; the License, or (at your option) any later version.
 
-
-;; TO DO:
-;; phase out prompt regexp completely
-;; control echoing from input of statement, proc or region?
-
-
-;; The latest version of REDUCE Run is available from the URL
-;; http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/
-
-;; Copyright (C) 1998--2001, 2012 Francis J. Wright
-
-;; This file is not part of GNU Emacs.
-
-;; This is free software; you can redistribute it and/or modify it
-;; under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; It is distributed in the hope that it will be useful, but WITHOUT
-;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-;; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-;; License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see
+;; <http://www.gnu.org/licenses/>.
 
-
 ;;; Commentary:
+
+;; REDUCE run is a package for running the REDUCE computer algebra
+;; system, which is Open Source and available from
+;; <http://reduce-algebra.svn.sourceforge.net/>.
+
+;; The latest version of REDUCE run is available from
+;; <http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/>.
 
 ;; Hacked from inf-lisp.el by Olin Shivers <shivers@cs.cmu.edu>
 
-;; This file defines a REDUCE-in-a-buffer package (REDUCE Run) built
-;; on top of comint mode.  Since this mode is built on top of the
-;; general command-interpreter-in-a-buffer mode (comint mode), it
-;; shares a common base functionality, and a common set of bindings,
-;; with all modes derived from comint mode.  This makes these modes
-;; easier to use.
+;; This file defines a REDUCE-in-a-buffer package built on top of
+;; comint mode. Since this mode is built on top of the general
+;; command-interpreter-in-a-buffer mode (comint mode), it shares a
+;; common base functionality, and a common set of bindings, with all
+;; modes derived from comint mode. This makes these modes easier to
+;; use.
 
 ;; For documentation on the functionality provided by comint mode, and
 ;; the hooks available for customising it, see the file comint.el.
-;; For further information on REDUCE Run, see the comments below.
 
-;; REDUCE Run is part of REDUCE IDE, which is normally best installed
-;; by running the installer program `reduce-ide-install.el'. All
-;; related files should be available in the same directory or archive
-;; as this file.
+;;; Usage:
 
-;; It requires `reduce-mode.el' (REDUCE code editing mode for GNU
-;; Emacs) also available from the above URL.
+;; To install in GNU Emacs 24+, download this file to any convenient
+;; directory and run the Emacs command `package-install-file' on it.
+
+;; REDUCE run requires `reduce-mode.el' also available from the above
+;; URL, which must be installed first.
+
+;; Brief manual installation instructions follow.
 
 ;; Byte-compile this file, put it somewhere in your `load-path', and
 ;; put the following in your `.emacs' file:
 
 ;; (autoload 'run-reduce "reduce-run" "Run a REDUCE process" t)
 
-;; If you would like to have automatic full access to the features of
-;; REDUCE Run from REDUCE Mode then also put the following in your
-;; `.emacs' file:
+;; To have automatic access to REDUCE run from REDUCE mode, and make
+;; REDUCE mode customization always available, put the following
+;; (after `autoload') in your `.emacs' file:
 
-;; (add-hook 'reduce-mode-hook 'require-reduce-run)
+;;;###autoload
+(add-hook 'reduce-mode-load-hook 'require-reduce-run)
 
-
+;;; To do:
+
+;; phase out prompt regexp completely
+;; control echoing from input of statement, proc or region?
+
 ;;; Code:
+
+(defconst reduce-run-version "1.21"	 ; TO DO: extract version
+  "Version information for REDUCE run.") ; from the file header
 
 ;; (message "Loading reduce-run")		; TEMPORARY!
 
@@ -99,8 +100,11 @@ for use with REDUCE Mode version 1.1+"
   :group 'reduce)
 
 (defcustom reduce-run-program "reduce"
-  "*Program name for invoking REDUCE for REDUCE Run mode.
-This must be a command-line version of REDUCE. A GUI version will not work!"
+  "*Command to invoke REDUCE.
+It can also be a relative or absolute path name.
+It must invoke a command\-line version of REDUCE. A GUI version will not work!
+If running CSL REDUCE on Windows, this should be `reduce.com' (if in your path)
+or (for example) `C:/REDUCE/reduce-windows64-20110414/reduce.com'."
   :type 'string
   :group 'reduce-run)
 
@@ -130,7 +134,7 @@ It is a good place to put keybindings."
 
 (defcustom reduce-input-filter "\\`\\([ \t;$]*\\|[ \t]*.[ \t]*\\)\\'"
   "*What not to save on REDUCE Run mode's input history.
-The value is a regexp.  The default matches any combination of zero or
+The value is a regexp. The default matches any combination of zero or
 more whitespace characters and/or statement terminators, or any single
 character (e.g. y or n) possibly surrounded by whitespace."
   :type 'regexp
@@ -247,10 +251,10 @@ Used by these commands to determine defaults."
   (cons "Run REDUCE" reduce-mode-run-menu) 'REDUCE)
 
 (defun reduce-run-install-letter-bindings ()
-  "Bind many REDUCE Run Mode commands to C-c <letter> bindings,
-where they are more accessible.  C-c <letter> bindings are reserved
-for the user, so these bindings are non-standard.  If you want them,
-you should have this function called by the reduce-run-load-hook:
+  "Bind many REDUCE run commands to C-c <letter> bindings.
+This makes them more accessible. These bindings are reserved for
+the user and so are non-standard. If you want to use them, you
+should have this function called by the `reduce-run-load-hook':
    (add-hook 'reduce-run-load-hook
              'reduce-run-install-letter-bindings)
 You can modify this function to install just the bindings you want."
@@ -280,14 +284,14 @@ You can modify this function to install just the bindings you want."
 
 (defun reduce-run-mode ()
   "Major mode for interacting with a REDUCE process -- part of REDUCE IDE.
-Author: F.J.Wright@Maths.QMW.ac.uk
-Version: see `reduce-mode-version'
+Author: Francis Wright <http://sourceforge.net/users/fjwright>
+Version: see `reduce-run-version'
 Comments, suggestions, bug reports, etc. are welcome.
 Full texinfo documentation is provided in the file `reduce-ide.texinfo'.
 
 Runs REDUCE as a subprocess of Emacs, with I/O through an Emacs
-buffer.  Variable `reduce-run-program' controls which REDUCE is
-run.  Variable `reduce-run-prompt' can customize this mode for
+buffer. Variable `reduce-run-program' controls which REDUCE is
+run. Variable `reduce-run-prompt' can customize this mode for
 different REDUCE implementations.
 
 For information on running multiple processes in multiple buffers, see
@@ -314,10 +318,11 @@ Commands:
  * Return before the end of the process' output copies the statement
    ending at point to the end of the process' output, and sends it.
  * Delete converts tabs to spaces as it moves back.
- * Tab indents for REDUCE; with argument, shifts rest of expression
-   rigidly with the current line.
- * C-M-q does Tab on each line starting within following expression.
-Paragraphs are separated only by blank lines.  Percent signs start comments.
+ * \\[reduce-indent-line] indents for REDUCE; with argument,
+   shifts rest of expression rigidly with the current line.
+ * \\[reduce-indent-procedure] does `reduce-indent-line' on each
+   line starting within following expression.
+Paragraphs are separated only by blank lines. Percent signs start comments.
 If you accidentally suspend your process, use \\[comint-continue-subjob]
 to continue it."
   (interactive)
@@ -356,10 +361,10 @@ to continue it."
 
 ;;;###autoload
 (defun run-reduce (cmd)
-  "Run a REDUCE process, input and output via buffer `*REDUCE*'.
+  "Run CMD as a REDUCE process with input and output via buffer `*REDUCE*'.
 If there is a process already running in `*REDUCE*', just switch to
 that buffer.  With argument, allows you to edit the command line
-\(default is value of `reduce-run-program').  Runs the hooks from
+\(default is value of `reduce-run-program'). Runs the hooks from
 `reduce-run-mode-hook' (after the `comint-mode-hook' is run).
 \(Type \\[describe-mode] in the process buffer for a list of
 commands.)"
@@ -375,12 +380,13 @@ commands.)"
   (setq reduce-run-buffer "*REDUCE*")
   (pop-to-buffer "*REDUCE*"))
 
-;;;###autoload (add-hook 'same-window-buffer-names "*REDUCE*")
+;;;###autoload
+(add-hook 'same-window-buffer-names "*REDUCE*")
 
-;;; Break a string up into a list of arguments.
-;;; This will break if you have an argument with whitespace, as in
-;;; string = "-ab +c -x 'you lose'".
 (defun reduce-run-args-to-list (string)
+  "Break STRING into a list of arguments.
+This will fail if you have an argument with whitespace, as in
+string = \"-ab +c -x 'you lose'\"."
   (let ((where (string-match "[ \t]" string)))
     (cond ((null where) (list string))
 	  ((not (= where 0))
@@ -482,7 +488,7 @@ Prefix argument SWITCH means also switch to the REDUCE window."
        (get-buffer-process (current-buffer))))
 
 (defun switch-to-reduce (eob-p &optional no-mark)
-  "Switch to the REDUCE process buffer.
+  "Go to REDUCE process buffer, at end if EOB-P; if NO-MARK do not save mark.
 With argument, position cursor at end of buffer.
 If `reduce-run-autostart' is non-nil then automatically start a REDUCE
 process if necessary."
@@ -544,7 +550,7 @@ last `reduce-input-file' or `reduce-fasl-file' command.")
      "A history list for reduce-run source file-name arguments.")
 
 (defun reduce-run-get-source (prompt)
-  "Get, check and save a REDUCE source file-name."
+  "Get, check and save a REDUCE source file-name using prompt string PROMPT."
   ;; Need to rewrite this messy function!
   (let* ((file-name-history reduce-run-file-name-history)
 	 (file-name
@@ -560,7 +566,7 @@ last `reduce-input-file' or `reduce-fasl-file' command.")
     ))
 
 (defun reduce-input-file (file-name)
-  "Input a REDUCE source file into the REDUCE process.
+  "Input REDUCE source file FILE-NAME into the REDUCE process.
 The user chooses whether to echo file input."
   (interactive (reduce-run-get-source "Input REDUCE file: "))
   (reduce-send-string
@@ -583,7 +589,7 @@ The user chooses whether to echo file input."
 (defalias 'reduce-compile-file 'reduce-fasl-file)
 
 (defun reduce-fasl-file (file-name)
-  "Compile a REDUCE source file to a FASL image in the REDUCE process.
+  "Compile REDUCE source file FILE-NAME to a FASL image in the REDUCE process.
 The user chooses whether to echo file input."
   (interactive (reduce-run-get-source "Compile REDUCE file: "))
   (let* ((fasl-name (file-name-sans-extension (cdr reduce-prev-dir/file)))
@@ -645,7 +651,7 @@ Used for completion by `reduce-load-package'."
 	   (set-default symbol value))))
 
 (defun reduce-load-package (package)
-  "Load a Reduce package into the REDUCE process."
+  "Load Reduce package PACKAGE into the REDUCE process."
   (interactive
    (let ((default
 	   (or (and reduce-prev-package
@@ -690,7 +696,7 @@ Used for completion by `reduce-load-package'."
 ;; `comint-copy-old-input'.  [Reported]
 
 (defun comint-insert-clicked-input (event)
-  "In a comint buffer, set the current input to the clicked-on previous input."
+  "Set current comint buffer input to previous via clicked mouse event EVENT."
   (interactive "e")
   (let ((over (catch 'found
 		;; Ignore non-input overlays
@@ -716,7 +722,7 @@ Used for completion by `reduce-load-package'."
 
 
 (defun reduce-run-proc ()
-  "Returns the current REDUCE process.
+  "Return the current REDUCE process.
 See variable `reduce-run-buffer'.
 If `reduce-run-autostart' is non-nil then automatically start a REDUCE
 process if necessary."
