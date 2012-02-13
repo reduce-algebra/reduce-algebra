@@ -348,7 +348,7 @@ rds(xxx := open("../packages/support/build.red", 'input));
 (load!-package!-sources 'fmprint       'rprint)
 (load!-package!-sources 'pretty        'rprint)
 
-(preserve)
+(preserve 'begin)
 (stop 0)
 
 (load!-package!-sources 'solve         'solve)

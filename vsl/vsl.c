@@ -2855,7 +2855,7 @@ void setup()
     qvalue(raise = lookup("*raise")) = nil;
     qvalue(lower = lookup("*lower")) = lisptrue;
     cursym = nil;
-    work1 = work2 = restartfn = nil;
+    work1 = work2 = nil;
     p = fnsetup;
     while (p->name != NULL)
     {   LispObject w = lookup(p->name);
@@ -2876,8 +2876,8 @@ void cold_setup()
     setup();
 // The following fields could not be set up quite early enough in the
 // cold start case, so I repair them now.
-    qplist(undefined) = qlits(undefined) = nil;
-    qplist(nil) = qlits(nil) = nil;
+    restartfn = qplist(undefined) = qlits(undefined) =
+        qplist(nil) = qlits(nil) = nil;
 }
 
 LispObject relocate(LispObject a, LispObject change)

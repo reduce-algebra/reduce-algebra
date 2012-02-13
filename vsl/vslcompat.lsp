@@ -846,6 +846,8 @@ top (cond ((null a) (return (reversip r))))
 
 (de setpchar (x) nil)
 
+(de eqn (a b) (equal a b))
+
 % End of vslcompat.lsp
 
 

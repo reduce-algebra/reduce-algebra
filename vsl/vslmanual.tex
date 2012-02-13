@@ -75,14 +75,15 @@ full information. In particular there is a manual hidden there) you go
 {\sverb
   make reduce
   ./vsl
-  (begin}
 \end{verbatim}}
 
 The ``{\tx make reduce}'' step builds (much of) Reduce and saves
 the result in {\tx vsl.img}. When you next start \vsl it reloads that
-image file. At the time of writing this manual you need to start Reduce
-manually by calling the Lisp function {\tx (begin)}, but then you can
-try various algebraic examples.
+image file. Then you can try various algebraic examples. One of my
+favourites is
+{\sverb
+  int(1/(x^6-1), x);
+\end{verbatim}}
 
 The \vsl-hosted Reduce will be significantly slower than other versions
 and it certainly has severe limitations because \vsl{} does not provide
