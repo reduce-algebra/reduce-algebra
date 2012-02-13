@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 66dba935 23-Dec-2011 */
+/* Signature: 6999a848 13-Feb-2012 */
 
 
 /*
@@ -1371,7 +1371,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     C_stackbase = (Lisp_Object *)&sp;
 #endif
     C_stack_base = (char *)&sp;
-
     C_stack_limit = NULL;
 #ifdef EMBEDDED
 /* This provides a fixed limit in the embedded build */
