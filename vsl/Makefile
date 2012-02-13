@@ -8,7 +8,7 @@ CC = gcc
 CXX = g++
 endif
 
-all:	vsl vsl.img
+all:	vsl vsl.img vslmanual.pdf
 
 vsl:	vsl.c
 	$(CC) -O2 -Wall vsl.c -lm -o vsl
@@ -21,6 +21,19 @@ reduce:
 
 clean:
 	rm -f *.o *.bak *.exe *.log *.img vsl
+
+vslmanual.pdf:	vslmanual.tex vslfunctions.tex
+	touch vslmanual.ind
+	pdflatex vslmanual.tex
+	makeindex vslmanual.idx
+	pdflatex vslmanual.tex
+	pdflatex vslmanual.tex
+
+
+# end of Makefile
+
+
+
 
 # end of Makefile
 

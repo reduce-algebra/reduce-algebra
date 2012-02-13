@@ -1,0 +1,980 @@
+\begin{description}
+\item[{\tx !\$eof!\$~~~~~~} \hspace{1cm} {\em predefined variable}]\index{"!\$eof"!\$}~\newline
+When the {\tx read} function (or its relatives) detect and end of file
+condition it returns this value of this variable. So a code fragment such as
+{\tx (eq (setq x (read)) !\$eof!\$))} will read a Lisp expression,
+store it in a variable called {\tx x} and test if it was in fact
+an end of file marker.
+\item[{\tx !\$eol!\$~~~~~~} \hspace{1cm} {\em predefined variable}]\index{"!\$eol"!\$}~\newline
+This value of this predefined variable is a newline character, so if you
+use {\tx readch} it may be convenient to compare the result against this.
+See {\tx blank}, {\tx lpar} and {\tx rpar} for other character values where
+it is convenient to have a name rather than needing to enter the (escaped)
+character directly.
+\item[{\tx !*echo~~~~~~~} \hspace{1cm} {\em variable}]\index{"!*echo}~\newline
+When Lisp reads in any input the variable {\tx !*echo} is inspected. If
+its value is non-nil then the characters that are read get echoed to the
+current Lisp output stream. This is often useful when reading from a file. But
+often if you are accepting input in an interactive manner from the keyboard
+you would prefer {\tx !*echo} to be {\tx nil}. So \vsl{} arranges that if
+it is started up with a file to read specified on its command line it
+makes {\tx echo} default to {\tx t}, while if no command-line arguments are
+given it defaults to \nil. This often results in comfortable behaviour, but
+the user is free to set the variable explicity at any time to make things
+fit their needs.
+\item[{\tx !,~~~~~~~~~~~} \hspace{1cm} {\em marker}]\index{", (comma)}~\newline
+See the backquote entry.
+\item[{\tx !,!@~~~~~~~~~} \hspace{1cm} {\em marker}]\index{","@ (comma-at)}~\newline
+See the backquote entry.
+\item[{\tx `~~~~~~~~~~~~} \hspace{1cm} {\em marker}]\index{{\tx `} (backquote)}~\newline
+Lisp input can contain an ordinary Lisp expression preceeded by a backquote
+mark. Within the expression various sub-parts can be marked with
+either a comma, or a comma followed by an ``at'' sign. This notation is
+commonly used when defining Lisp macros. The effect is as if a longer
+segment of Lisp had been written to create a structures that is the same
+shape as the one given, but with the comma-introduced sub-parts expanded.
+This may be shown with an example. The form {\tx `(a ,b c ,(car d))}
+might behave like {\tx (list 'a b 'c (car d))}. The rules for backquote
+do not guarantee exactly what expansion will be generated -- just that when
+it is executed it will construct the required structure. In \vsl{} the code
+will in fact use many calls to {\tx cons} rather than the neat use of
+{\tx list} shown here. An embedded ``{\tx ,@}'' within a backquoted
+expression is expected to stand for a list, whose values are spliced into
+the evantual result. This {\tx `(a ,@(car b) c)} might expand as
+{\tx (append '(a) (append (car b) '(c)))}. In many some Lisp
+systems the full expansion is performed while reading the input. In \vsl{} the
+reader leaves backquote and comma markers in the structure it returns, and
+macros expand those when it is time to execute them.
+\item[{\tx add1~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{add1}~\newline
+{\tx (add1 n)} is merely a shorthand for {\tx (plus n 1)}, in
+other words it adds one to its argument. It is often useful when counting. See
+alse {\tx sub1}.
+\item[{\tx and~~~~~~~~~~} \hspace{1cm} {\em function n args}]\index{and}~\newline
+In \vsl{} {\tx and} is implemented as a special form. If evaluates its
+arguments one at a time, and returns \nil{} if one of them evaluates
+to \nil. If none of them yield \nil{} its value if the value of the final
+argument. If you interpret \nil{} as {\em false} and anything else as
+{\em true} then this matches a simple understanding of the of an operation that
+could reasonably called {\tx and}. See also {\tx or}.
+A different way of explaining {\tx and} would be to give an
+equivalence: {\tx (and a b c)} could be replaced by
+{\tx (if a (if b c nil) nil)}, with similar expansion for cases with
+larger or smaller number of arguments. In \vsl{} {\tx (and)} (ie without
+any arguments) yields {\tx t}.
+\item[{\tx append~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{append}~\newline
+If you have two lists then {\tx append} can form their concatenation.
+So {\tx (append '(a b) '(c d))} yields {\tx (a b c d)}. The
+result will share structure with the second argument -- a fact that only
+matters if you later use {\tx rplaca} or {\tx rplacd}. Some
+other Lisps may permit you to give {\tx append} more than two arguments,
+and will then append all the lists into one, but \vsl{} does not.
+\item[{\tx apply~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{apply}~\newline
+If you have either the name of a function or a lambda-expression (see
+{\tx lambda} for more explanation) you can call it on a collection of
+arguments that are provided in a list. The function {\tx apply} that
+does this is really there just because its capability has to be part of the
+Lisp interpreter. For instance since {\tx cons} takes just two
+arguments you could invoke it by giving the symbol {\tx cons} as
+{\tx apply}'s first argument and a list of length two as its second:
+{\tx (apply 'cons '(a b))}. This would return {\tx (a . b)}.
+If the first argument to {\tx apply} is a macro rather than an ordinary
+function this can be used to perform macro expansion. You should not
+try using {\tx apply} on a special form ({\tx fsubr}).
+\item[{\tx assoc~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{assoc}~\newline
+An association list is a list of pairs, and each pair ({\tx cons}) is
+though of as constisting of a key and a value. {\tx assoc} searches
+an association list looking for a given key. If it find it then it returns
+the pair that contains it. Othewise it returns \nil. Thus
+{\tx (assoc 'b '((a . 1) (b . 2) (c . 3)))} will return
+{\tx (b . 2)}. The test for keys is make using the {\tx equal}
+function.
+\item[{\tx atan~~~~~~~~~} \hspace{1cm} {\em special form}]\index{atan}~\newline
+The arctangent function, working in radians. See {\tx sin} and {\tx cos}.
+\item[{\tx atom~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{atom}~\newline
+Any Lisp object that is not a list or a pair -- that is to say that could
+not have been created by the {\tx cons} function, is known as an {\em atom}.
+Thus symbols, numbers, strings and vectors are all atoms. The function
+{\tx atom} checks its argument and returns {\tx t} (for {\em true})
+if it is atomic and \nil{} otherwise.
+\item[{\tx blank~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{blank}~\newline
+A predefined variable whose value is the symbol whose name is a single
+space character. One could otherwise refer to that symbol by writing
+{\tx '!\textvisiblespace}, but many people find writing the
+word {\tx blank} makes things clearer because it does not involve
+having a significant but non-printing character.
+\item[{\tx caaar~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{caaar}~\newline
+A range of names of the form {\tx c}{\em xxx}{\tx r} with the
+intermediate letters being either {\tx a} or {\tx d} are
+provided as functions that are merely combinations of uses of {\tx car}
+and {\tx cdr}. Thus {\tx (caaar x)} means just the same
+as {\tx (car (car (car x)))}, and {\tx (caddr x)} means 
+{\tx (car (cdr (cdr x)))}. In \vsl{} these are provided for up to three
+intermediate letters. 
+\item[{\tx caadr~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{caadr}~\newline
+See {\tx caaar}.
+\item[{\tx caar~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{caar}~\newline
+See {\tx caaar}.
+\item[{\tx cadar~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cadar}~\newline
+See {\tx caaar}.
+\item[{\tx caddr~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{caddr}~\newline
+See {\tx caaar}. Can be though of as returning the third item in a list.
+\item[{\tx cadr~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cadr}~\newline
+See {\tx caaar}. Can be though of as returning the second item in a list.
+\item[{\tx car~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{car}~\newline
+Data structures in Lisp are made up with the various sorts of atom (symbols,
+numbers, strings and so on) as basic elements and with {\tx cons} cells
+used to build them up into potentially large and complicated lists and trees.
+If you think of a structure as a list then {\tx car} extracts its first
+element (and {\tx cdr} its tail). If you think of it as a binary
+tree then {\tx car} gets the left part and {\tx cdr} the right.
+The basic identity is that {\tx (car (cons a b))} = {\tx a}.
+See also {\tx cdr}.
+\item[{\tx cdaar~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cdaar}~\newline
+See {\tx caaar}.
+\item[{\tx cdadr~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cdadr}~\newline
+See {\tx caaar}.
+\item[{\tx cdar~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cdar}~\newline
+See {\tx caaar}.
+\item[{\tx cddar~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cddar}~\newline
+See {\tx caaar}.
+\item[{\tx cdddr~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cdddr}~\newline
+See {\tx caaar}.
+\item[{\tx cddr~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cddr}~\newline
+See {\tx caaar}.
+\item[{\tx cdr~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cdr}~\newline
+{\tx (cdr (cons a b))} = {\tx b}. See {\tx car}.
+\item[{\tx char!-code~~~} \hspace{1cm} {\em function 1 arg}]\index{char"!-code}~\newline
+If you have a symbol or a string denoting a single character then the function
+{\tx char!-code} will return a numeric code for it. The code used in
+\vsl{} is ASCII so for instance the code for a blank character is 32, that for
+the digit ``0'' is 46 and a capital ``A'' is 65. See {\tx code!-char} for
+conversion in the other direction.
+\item[{\tx close~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{close}~\newline
+When an input file has been opened for reading or writing you should
+use {\tx close} it once finished with it. This is especially important
+for output files because it could be that some material will remain
+buffered and so will not be written until the file is closed. See {\tx open}.
+\item[{\tx code!-char~~~} \hspace{1cm} {\em function 1 arg}]\index{code"!-char}~\newline
+{\tx (code!-char 97)} would return a symbol whose name is the character
+with code 97 (in this case a lower case ``a''). Similarly for other codes
+typically in the range 0 to 255.
+\item[{\tx compress~~~~~} \hspace{1cm} {\em function 1 arg}]\index{compress}~\newline
+If you have a list of identifiers or strings then {\tx compress} treats each
+as standing for its first character and returns the Lisp expression you would
+get if ytou read from a document that contained those characters. This
+would normally be used when each item in the input list was just a single
+character. Because in \vsl{} the {\tx compress} function is implemented by
+just involing {\tx read} with input redirected from the list you can create
+symbols, numbers, strings and even lists this way. See {\tx explode}.
+\item[{\tx cond~~~~~~~~~} \hspace{1cm} {\em special form}]\index{cond}~\newline
+The primitive comditional operator in Lisp is {\tx cond}. It is a special
+form (i.e.\ it does not evaluate its arguments in the standard way. Its use is
+as in
+{\sverb
+   (cond
+      (p1 e1a e1b e1c ...)
+      (p2 e2a e2b ...)
+      ...
+\end{verbatim}}
+\noindent where {\tx p1}, {\tx p2} etc.\ are predicates, and the sequence of
+expressions (for instance {\tx e1a\ldots}) that follow the first one that yields
+a non-\nil{} value are computed. The result returned is the final thing that
+{\tx cond} evaluates. There are many examples of uses of {\tx cond} in the
+sample code here. Some people prefer to use {\tx if} or {\tx when} instead,
+but at least historically {\tx cond} came first.
+\item[{\tx cons~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{cons}~\newline
+Lisp data is based on lists and trees, and {\tx cons} is the key function
+for creating them. The term {\tx cons}-cell is used for the object that
+the function creates. Such a cell has two componente, is {\tx car} and
+its {\tx cdr}. The apparently strange names for these related to the
+atchitecture of an early computer on which Lisp was first developed.
+If you have a list structure {\tx l} and an item {\tx a} then
+{\tx (cons a l)} is a list just one element longer than {\tx l} was formed
+by putting {\tx a} in front of the original. In Lisp it is much more
+expensive to attach a new item to the tail of a list. To do that
+would typically involve {\tx (append l (list a))} and especially if {\tx l}
+was long could be slow. So in Lisp it is normal to build up lists by
+succesively addint items to the head using {\tx cons}. See also {\tx car},
+{\tx cdr} and {\tx list}.
+\item[{\tx copy~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{copy}~\newline
+It is normally only necessary (or indeed useful) to make a copy of a Lisp
+structure if you are then about to use destructive operations such as
+{\tx rplaca} on the original, but this function is provided in case you
+do ever need to.
+\item[{\tx cos~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{cos}~\newline
+It would be easy to extend the \vsl{} implementation to provide a full set
+of mathematical functions, but to keep things small the initial version only
+provides a few key cases: {\tx sin}, {\tx cos}, {\tx atan},
+{\tx exp}, {\tx log} and {\tx sqrt}. Each of these can be given
+either an integer or floating point argument but they always return a floating
+point result. The trigonometric functions work in radians rather than
+degrees.
+\item[{\tx de~~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{de}~\newline
+To define a new function evaluate {\tx (de name arglist body)}, the special
+form that is provided for this purpose. After you have defined something
+you could retrieve the definition you had set up using {\tx (getd 'name)}.
+\item[{\tx deflist~~~~~~} \hspace{1cm} {\em function 2 args}]\index{deflist}~\newline
+Sometimes when setting up data you need to perform a succession of
+{\tx put} operations all using the same property name. {\tx deflist} provides
+a short-cut so you can write something like
+{\sverb
+   (deflist
+      '((a A)
+        (b B)
+        (c C))
+      'propname)
+\end{verbatim}}
+\noindent and have the same effect as
+{\sverb
+   (put 'a 'propname 'A)
+   (put 'b 'propname 'B)
+   (put 'c 'propname 'C)
+\end{verbatim}}
+\item[{\tx df~~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{df}~\newline
+{\tx df} is rather like {\tx de} except that it allows you to defined a new
+special form. A special form must be defined as if it has just one
+argument, and this will receive the whole of the ``argument'' information from
+any call without any evaluation having happened. Often the body of a special
+form will thus wish to use {\tx eval} to make evaluation happen. In most
+Lisp programs it will be unusual to introduce new special forms. See also
+{\tx dm} for an alternative way (also sometimes controversial)
+for extending the syntax of Lisp.
+\item[{\tx difference~~~} \hspace{1cm} {\em function 2 args}]\index{difference}~\newline
+Subtract one number from another. If either value is floating point the
+result will be floating point.
+\item[{\tx divide~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{divide}~\newline
+Divide one integer from another and return the {\tx cons} of the quotient and
+remainder. The idea behind this function was that when integers are divided
+it is common to require both quotient and remainder, so having a one function
+to return both might be helpful. In Lisp systems that support very high
+precision arithmetic this can indeed save time. In \vsl{} you will probably
+do as well calling {\tx quotient} and then {\tx remainder}. 
+\item[{\tx dm~~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{dm}~\newline
+A Lisp Macro is something that when evaluated produces futher executable
+Lisp to be its replacement.
+The special
+form introduced by {\tx dm} can defined a new one. In general it will be
+sensible to define macros before you define any functions that use them.
+Some people believe that extensive use of macros can make your code harder
+to read and debug, and so would rather you did not use them at all.
+\item[{\tx do~~~~~~~~~~~} \hspace{1cm} {\em macro}]\index{do}~\newline
+A perhaps over-general form of loop can be specified by the {\tx do} macro
+or its close cousin {\tx do!*}. The structure of aan invocation of it is
+{\sverb
+   (do ((var1 init1 step1)
+        (var2 init2 step2)
+        ..)
+       (endtest result ...)
+       body
+       ...)
+\end{verbatim}}
+\noindent and a concrete exammple is
+{\sverb
+   (do ((x 10 (add1 x)))
+       ((greaterp x 20) 'done)
+       (print (list x (times x x))))
+\end{verbatim}}
+The difference between {\tx do} and {\tx do!*} is that the former processes
+all its initialisation and update of variables in parallel, while the latter
+acts sequentially. This is similar to the relationship between {\tx let} and
+{\tx let!*}.
+\item[{\tx do!*~~~~~~~~~} \hspace{1cm} {\em macro}]\index{do"!*}~\newline
+See {\tx do}.
+\item[{\tx dolist~~~~~~~} \hspace{1cm} {\em macro}]\index{dolist}~\newline
+Simple iteration over a lisp can be performed using the {\tx dolist} macro,
+where a typical tiny example might be
+{\sverb
+   (dolist (x '(1 2 3) 'result) (print x))
+\end{verbatim}}
+\noindent which prints the numbers 1, 2 and 3 and then returns the
+value {\tx result}. In many cases you will merely omit the result part of the
+expression and then {\tx dolist} will return \nil.
+\item[{\tx dollar~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{dollar}~\newline
+A predefined variable whose value is the symbol whose name is a dollar
+character. See {\tx blank} for another similarly predefined name.
+\item[{\tx dotimes~~~~~~} \hspace{1cm} {\em macro}]\index{dotimes}~\newline
+Counting is easy with {\tx dotimes}. It starts from zero, so
+{\sverb
+   (dotimes (x 5 'result) (print x))
+\end{verbatim}}
+\noindent will print values 0, 1, 2, 3 and 4 before returning {\tx result}.
+\item[{\tx eq~~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{eq}~\newline
+If you wish to test two Lisp items for absolute identity then {\tx eq} is the
+function to use. If you enter the same spelling for a symbol twice Lisp arranges
+that you get the same symbol, but it is possible -- even probable -- that strings
+or large numbers can fail to be {\tx eq} even if they look the same. Two list
+structures are {\tx eq} only if their top-level {\tx cons} cells are identical
+in the sense that even if you received them via different paths they are the
+output from the same call to {\tx cons}. See {\tx equal} for a more
+expensive but perhaps more generous equality test.
+\item[{\tx eqcar~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{eqcar}~\newline
+{\tx (excar a b)} is like {\tx (and (not (atom a)) (eq (car a) b))}.
+\item[{\tx equal~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{equal}~\newline
+Wile {\tx eq} compares objects for absolute identity, {\tx equal} compares
+them to see if they have the same structure. {\tx equal} understands how to
+compare big and floating point numbers, strings and vectors as well as
+lists. To illustrate the difference between the two functions consider
+{\begin{verbatim}
+(setq a (cons 1 1000000000))
+(setq b (cons 1 1000000000))
+(eq a b)
+(equal a b)
+(eq (cdr a) (cdr b))
+(equal (cdr a) (cdr b))
+\end{verbatim}}
+In each case {\tx eq} returns \nil{} wiile {\tx equal} will return  {\tx t}.
+Although you should not in general rely on {\tx eq} when comparing numbers,
+in \vsl{} all small numbers are represented in a way that will allow {\tx eq}
+to handle them reliably. If \vsl{} is runing on a 32-bit system the
+range is -268435456 to 268435455. If the system had been built for a 64-bit
+machine it is much larger.
+\item[{\tx error~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{error}~\newline
+If a user wants to report that something has gone wrong it can call the
+{\tx error} function. This is given two arguments, and they will be displayed
+in any message that is printed. See {\tx errorset} for information about how
+to control the amount of information displayed when an error occurs.
+\item[{\tx errorset~~~~~} \hspace{1cm} {\em function 3 args}]\index{errorset}~\newline
+The default situation is that when \vsl{} encounters and error it unwinds
+from whatever it was doing and awaits the next item of input from the user.
+The function {\tx errorset} can be used to trap errors so that a program can
+respond or continue in its own way. It can also control how much diagnostic
+output is generated. A call {\tx (errorset form msg trace)} will evaluate
+the Lisp expression {\tx form} rather in the way that {\tx eval} would have.
+If there is no error it returns a list of length one whose element is the
+value that was computed. If the evaluation of {\tx form} failed then
+{\tx errorset} returns an atom rather than a list, so its caller can be
+aware of the situation. The argument {\tx msg} can be non-\nil{} to indicate
+that a short (typically one line) report is displayed on any error. If
+{\tx trace} is non-nil then a report showing the nesting of function calls
+will also be shown. If both arguments are \nil{} then the error and recovery
+from it should be silent. See {\tx eval} for a sample use.
+\item[{\tx eval~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{eval}~\newline
+An approximation to how Lisp interacts with the user is
+{\sverb
+   (while t
+       (errorset '(print (eval (read))) t t))
+\end{verbatim}}
+\noindent where {\tx eval} takes whatever form was read and evaluates it. The
+{\tx eval} function (and its relative {\tx apply}) can be used anywhere in Lisp
+code where a data structure needs to be interpreted as a bit of Lisp code and
+obeyed.
+\item[{\tx exp~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{exp}~\newline
+The exponential function. See {\tx log}.
+\item[{\tx expand~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{expand}~\newline
+In some Lisp implementations it would be useful (for instance for efficiency)
+to transform some uses of functions taking an indefinite number of arguments
+(for instance {\tx plus}) into sequences of calls to versions taking just
+two arguments. The {\tx expand} function is intended to help with this. Its
+first argument is a list of expressions, the second a (two argument) function
+to be used to combine them. For instance {\tx (expand '(a b c) 'plus2)} will
+yield {\tx (plus2 a (plus2 b c))}. This could be useful if {\tx plus} were
+to have been implemented as a macro expanding to multiple uses of {\tx plus2}
+rather than as a special form, and if \vsl{} provided the two-argument
+function concerned (which at present it does not!).
+\item[{\tx explode~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{explode}~\newline
+Any Lisp item can be processes as by {\tx prin} but with the resulting sequence
+of characters being collected as a list rather than being printed directly.
+{\tx explode} does this, while {\tx explodec} behaves like {\tx princ}. So
+{\tx (explode '("a" . 3))} will be {\tx (!( !" a !" !  !. !  !3 !))}.
+{\tx explode} can be useful to find the sequence of letters making up the name
+of a symbol (or just to make it possible to see how many there are).
+\item[{\tx explodec~~~~~} \hspace{1cm} {\em function 1 arg}]\index{explodec}~\newline
+See {\tx explode}
+\item[{\tx expr~~~~~~~~~} \hspace{1cm} {\em symbol}]\index{expr}~\newline
+The function {\tx getd} can retrieve the function definition (if any) associated
+with a symbol. The value returned is {\tx (type . value)} where the {\tx type}
+is one of the symbols {\tx expr}, {\tx subr}, {\tx fexpr}, {\tx fsubr} or
+{\tx macrp}. The case {\tx expr} indicates that the function is a normal-style
+function that has been defined in Lisp. The value information following it
+in the result of {\tx getd} is the Lisp structure representing it. {\tx fexpr}
+is for special forms defined in Lisp (using {\tx df}. {\tx subr} and {\tx fsubr}
+and ordinary and special functions that have been defined at a lower level than
+Lisp (in other words things that form part ofthe \vsl{} kernel). {\tx macro}
+marks a macro as defined using {\tx dm}. With the default
+\vsl{} image {\tx (getd 'caar)} returns {\tx (expr lambda (x) (car (car x)))}.
+\item[{\tx f~~~~~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{f}~\newline
+{\tx f} is a variable pre-set to have the value \nil. This exists because at
+one stage people tended to want to use {\tx t} for {\em true} and {\tx f}
+for {\em false}. In most cases it will be safer to use \nil{} directly if that
+is what you mean, and attempts to use {\tx f} as a definitive denotation
+of {\em false} cause trouble when you try using the name as an ordinary variable,
+as in {\tx (de fff (a b c d e f g) \ldots)}.
+\item[{\tx fexpr~~~~~~~~} \hspace{1cm} {\em symbol}]\index{fexpr}~\newline
+See {\tx expr}.
+\item[{\tx fix~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{fix}~\newline
+If you have a floating point number and want convert it to an integer you can
+use the function {\tx fix}. It truncates the value towards zero while
+doing the conversion.
+\item[{\tx fixp~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{fixp}~\newline
+The predicate {\tx fixp} tests if its argument is an integer, and if it is
+it returns {\tx t}. See also {\tx numberp} and {\tx floatp}. You are
+permitted to test any Lisp object using {\tx fixp} and note that
+{\tx (fixp 2.0)} will be \nil{} because 2.0 is a floating point number even
+if its value is an integer.
+\item[{\tx float~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{float}~\newline
+Converts from an integer to a floating point number.
+\item[{\tx floatp~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{floatp}~\newline
+Test if an object is a floating point number. See {\tx fixp}.
+\item[{\tx fsubr~~~~~~~~} \hspace{1cm} {\em symbol}]\index{fsubr}~\newline
+See {\tx expr}.
+\item[{\tx gensym~~~~~~~} \hspace{1cm} {\em function 0 args}]\index{gensym}~\newline
+Sometime in a Lisp program you need a new sybol. One that is certain not to
+clash with any others you may have used already. {\tx (gensym)} will create
+a fresh symbol for you. Such symbols should be though of as being anonymous.
+In \vsl{} they do not even have a name unless and until you print them. At
+that stage a name will be allocated, and it will be of one from the
+sequence {\tx g001}, {\tx g002},\ldots. However if you type in the characters
+{\tx g001} that will not refer to the generated symbol that was displayed
+that way -- you will get an ordinary symbol that you may confuse with the
+gensym but that Lisp will not.
+\item[{\tx geq~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{geq}~\newline
+This is a predicate that returns {\tx t} if its first argument is
+greater than or equal to its second. Both arguments must be numbers. See
+{\tx leq}, {\tx greaterp} and {\tx lessp}.
+\item[{\tx get~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{get}~\newline
+Every symbol has a property-list, which can be retrieved directly using
+{\tx plist}. The main functions for saving and retrieving information
+on property lists are {\tx put} and {\tx get}. After you have gone
+{\tx (put 'name 'tag 'value)} a call {\tx (get 'name 'tag)} will return {\tx
+value}. See also {\tx remprop}. An extended version of the library could define
+functions {\tx flag}, {\tx flagp} and {\tx remflag} to store flags rather
+then more general properties, but \vsl{} only supplies the basics.
+\item[{\tx getd~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{getd}~\newline
+See {\tx expr}.
+\item[{\tx gethash~~~~~~} \hspace{1cm} {\em function 2 args}]\index{gethash}~\newline
+If {\tx h} is a hash table then {\tx (gethash 'key h)} retrieves the value
+stored in it under the indicated {\tx key} by some previous call to
+{\tx (puthash 'key h 'value)}. See {\tx mkhash}, {\tx puthash} and {\tx remhash}.
+\item[{\tx getv~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{getv}~\newline
+If {tx v} is a vector then {\tx (getv v n)} returns the {\tx n}th element
+ot if. See {\tx mkvect}, {\tx putv} and {\tx upbv}.
+\item[{\tx go~~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{go}~\newline
+See {\tx prog}.
+\item[{\tx greaterp~~~~~} \hspace{1cm} {\em function 2 args}]\index{greaterp}~\newline
+{\tx (greaterp x y)} is true if {\tx x} and {\tx y} are numbers with
+{\tx x} larger then {\tx y}. See {\tx geq}, {\tx lessp} and {\tx leq}.
+\item[{\tx if~~~~~~~~~~~} \hspace{1cm} {\em macro}]\index{if}~\newline
+The fundamental conditional form in Lisp is {\tx cons}, but for convenience
+the macros {\tx if} amd {\tx when} are supplied. {\tx if} takes two
+or three arguments. The first is a predicate -- the condition that
+is to be tested. The next is the value to return, while the last is the
+result required if the condition is {\em false} and defaults to \nil.
+{\tx when} also takes a predicate, but all its further arguments are things
+to be obeyed in sequence if the condition holds. Thus
+{\tx (when p a b c)} behaves like {\tx (if p (progn a b c) nil)}.
+\item[{\tx input~~~~~~~~} \hspace{1cm} {\em symbol}]\index{input}~\newline
+See {\tx open}.
+\item[{\tx lambda~~~~~~~} \hspace{1cm} {\em symbol}]\index{lambda}~\newline
+Some people will believe that {\tx lambda} is the key symbol standing for the
+essence of Lisp. Others view it as a slight curiosity mostly of interest
+to obsessive specialists. It introduces a notation for a function that does
+not require that the function be given a name. This is inspired by
+Alonzo Chruch's $\lambda$-calculus. The denotation of a function is a list
+with {\tx lambda} as its first element, then a list of its formal parameters,
+and finally a sequence of values that are to be evaluated when the function
+is invoked. So {\tx (lambda (x) (plus x 1))} is a function that adds one to
+its argument. If you try writing lambda expressions with bodies that refer to
+variables other than their formal arguments then you will need to read
+and understand the secion of this book that discusses deep and shallow
+binding strategies in an implementation of Lisp. This issue in fact arises
+with named functions defined using {\tx de} as well.
+\item[{\tx last~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{last}~\newline
+If you have a list then {\tx last} can return the final element in it. Recall
+that the first item in a list can be extracted using {\tx car}, and note that
+{\tx last} is goig to be slower, so where possible arrange what you do so
+that you access the start of your lists more often than their ends.
+\item[{\tx lastcar~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{lastcar}~\newline
+This function is just like {\tx last} except that if {\tx last} is called on
+an empty list if reports an error, while {\tx lastcar} merely returns nil.
+\item[{\tx leftshift~~~~} \hspace{1cm} {\em function 2 args}]\index{leftshift}~\newline
+Take an integer value, treat it as a bit-pattern and shift that leftwards
+by the specified amount. Return the result as an integer. Generally
+{\tx (leftshift x $n$)} has the same effect as multiplying {\tx x} by
+$2^{n}$. See {\tx rightshift}.
+\item[{\tx length~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{length}~\newline
+This function returns the length of a list. If its argument is \nil{} it returns
+0.
+\item[{\tx leq~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{leq}~\newline
+A test for ``less than or equal''. See {\tx geq}, {\tx greaterp} and {\tx lessp}.
+\item[{\tx lessp~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{lessp}~\newline
+A test for ``less then''. See {\tx geq}, {\tx greaterp} and {\tx leq}.
+\item[{\tx let~~~~~~~~~~} \hspace{1cm} {\em macro}]\index{let}~\newline
+Sometimes it is convenient to introduce a new name for some result you
+have just computed and are about to use. The {\tx let} macro provides
+a way to do this. So as an example where four temporary values are
+being introduced, consider
+{\sverb
+   (let ((u (plus x y))
+         (v (difference x y))
+         (xx (times x x))
+         (yy (times y y)))
+      (list (difference xx yy)
+            (times u v)))
+\end{verbatim}}
+In really old fashioned Lisp this would have been achieved using {\tx prog}
+as in
+{\sverb
+   (prog (u v xx yy)
+       (setq u (plus x y))
+       (setq v (difference x y))
+       ...
+       (return (list (difference xx yy) ...)))
+\end{verbatim}}
+\noindent and yet another scheme would use an explicit lambda-expression
+{\sverb
+   ((lambda (u v xx yy)
+       (list (difference xx yy) (times u v)))
+    (plus x y)
+    (difference x y)
+    (times x x)
+    (times y y))
+\end{verbatim}}
+Of all these the version using {\tx let} is liable to be the clearest and
+neatest. Actually the versions using {\tx prog} and {\tx lambda} can
+have different behaviours sometimes. {\tx let}
+and {\tx lambda} introduce all their new variable simultaneously, and so the
+definition given for a later one can not depend on an earlier one. {\tx let!*}
+is like {\tx let} but introduces one variable at a time so that subsequent
+ones can depend on it, and that is closer to how the naive use of {\tx prog}
+would work. Thus
+{\sverb
+   (let!* ((x2 (times x x))
+           (x4 (times x2 x2))
+           (x8 (times x4 x4)))
+      (times x x4 x8))
+\end{verbatim}}
+\noindent returns the thirteenth power of {\tx x}, while if {\tx let} had
+been used rather than {\tx let!*} you would have received an error message
+about {\tx x2} being undefined that arose when it was used to define {\tx x4}.
+\item[{\tx let!*~~~~~~~~} \hspace{1cm} {\em macro}]\index{let"!*}~\newline
+ASee {\tx let}.
+\item[{\tx lispsystem!*~} \hspace{1cm} {\em predefined variable}]\index{lispsystem"!*}~\newline
+It is sometimes useful to allow Lisp code to adapt based on knowing
+something about the particular Lisp implementation it is running on. In
+Standard Lisp (and hence \vsl) environment information is provided in
+a predefined variables called {\tx lispsystem!*}. In \vsl{} the only information
+put there is a symbol \vsl{} to identify the Lisp system in use. But it would
+be easy to extent the code in {\tx vsl.c} to put in whatever extra information
+about the host computer anybody felt might be relevant.
+\item[{\tx list~~~~~~~~~} \hspace{1cm} {\em special form}]\index{list}~\newline
+The fundamental function for building Lisp data-structures is {\tx cons},
+but by convention a list is a chain of {\tx cons} cells ending with \nil.
+Created in the fundamental manner a list of length 4 might be
+built using {\tx (cons 'a (cons 'b (cons c (cons 'd nil))))}. That is correct
+but clumsy!. The special form {\tx list} accepts an arbitrary number of
+arguments and forms a list out of them: {\tx (list 'a 'b 'c 'd)}. It will
+therefore be common to use one call to {\tx list} in place of
+multiple uses of {\tx cons} whenever possible.
+\item[{\tx list!*~~~~~~~} \hspace{1cm} {\em special form}]\index{list"!*}~\newline
+The structures created using {\tx list} are always automatically provided
+with a \nil{} termination. Sometimes a list-like structure is
+wanted with some other end. This may arise for instance when putting
+multiple items onto the front of an existing list. The function {\tx list!*}
+can achieve this, and taking an example that puts 4 items ahead of the
+termination, the long-winded form
+{\tx (cons 'a (cons 'b (cons c (cons 'd 'e))))} could be replaced by the
+much more concise {\tx (list!* 'a 'b 'c 'd 'e)}. As a special case
+{\tx list!*} with just two arguments degenerates to being exactly the same
+as {\tx cons}.
+\item[{\tx log~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{log}~\newline
+The (natural) logarithm of a value. See {\tx exp}.
+\item[{\tx logand~~~~~~~} \hspace{1cm} {\em special form}]\index{logand}~\newline
+If integers in Lisp are represented in binary form (and for those who want the
+full story, negative values in two's complement) then a number can be thought
+of as a string of bits. {\tx logand} takes an arbitrary number of integers
+and performs an logical ``and'' operation on each bit position, so that a ``1''
+is present in the output only all of the inputs have a ``1'' in that position.
+The result is returned as an integer. See also {\tx logor}, {\tx lognot}
+and {\tx logxor} for operations, and {\tx leftshift} and {\tx rightshift}
+for re-aligning bits.
+\item[{\tx lognot~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{lognot}~\newline
+See {\tx logand}. This function negates each bit.
+\item[{\tx logor~~~~~~~~} \hspace{1cm} {\em special form}]\index{logor}~\newline
+See {\tx logand}. This function yields a ``1'' when any input has
+a ``1'' in that place.
+\item[{\tx logxor~~~~~~~} \hspace{1cm} {\em special form}]\index{logxor}~\newline
+See {\tx logand}. This yields a ``1'' if an odd number of inputs have a ``1''
+in the cooresponding place, and is ``exclusive or''.
+\item[{\tx lpar~~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{lpar}~\newline
+A predefined symbol whose value is the symbole whose name is a left
+parenthesis. See also {\tx rpar}.
+\item[{\tx macro~~~~~~~~} \hspace{1cm} {\em symbol}]\index{macro}~\newline
+See {\tx expr}.
+\item[{\tx map~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{map}~\newline
+There are a number of functions whose names begin with {\tx map}. These
+take two arguments, on a list and the second a function. Each of them
+traverses the list calling the given function for each position on it.
+{\tx map}, {\tx maplist} and {\tx mapcon} each pass first the original list
+and then each succesive tail of it. {\tx mapc}, {\tx mapcar} and {\tx mapcan}
+pass the successive items in the list.
+
+In each case the three variants do different things with the results returned
+by the function. {\tx map} and {\tx mapc} ignore it and in the end just return
+\nil. This is only useful if the function that is provided has side-effects. For
+instance it might print something. {\tx maplist} and {\tx mapcar} build a new
+list out of the results, and so theior overall result is a list the same
+length as the input one. Finally {\tx mapcon} and {\tx mapcan} expect the
+function to return \nil{} or some list, and they use {\tx nconc} to
+concatenate all those lists.
+
+Many people find {\tx mapc} is the most useful, but then that the
+{\tx dotimes} macro (which achieves a similar effect) is easier to use:
+compare
+{\sverb
+   (setq a '(1 2 3 4))
+   (mapc a '(lambda (x) (print (times x x))))
+   (dolist (x a) (print (times x x)))
+\end{verbatim}}
+\noindent which achieve similar effects.
+\item[{\tx mapc~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{mapc}~\newline
+See {\tx map}.
+\item[{\tx mapcan~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{mapcan}~\newline
+See {\tx map}.
+\item[{\tx mapcar~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{mapcar}~\newline
+See {\tx map}.
+\item[{\tx mapcon~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{mapcon}~\newline
+See {\tx map}.
+\item[{\tx maplist~~~~~~} \hspace{1cm} {\em function 2 args}]\index{maplist}~\newline
+See {\tx map}.
+\item[{\tx minus~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{minus}~\newline
+Negates a number.
+\item[{\tx minusp~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{minusp}~\newline
+Tests if a value is a negative number. Note that in \vsl{} it is legal
+to call {\tx minus} with an argument that is not even a number, in which
+case it will return \nil{} to indicate that it is not negative, but in many
+other Lisp dialects you should only give {\tx minusp} numeric input.
+\item[{\tx mkhash~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{mkhash}~\newline
+The hash-table capability built into \vsl{} uses {\tx (mkhash n)} to create
+a table, {\tx puthash} to insert data and {\tx gethash} to retrieve
+it. {\tx remhash} can remove data. The argument to {\tx mkhash} is used to
+control the size of the table,
+and might reasonable by chosen to be a fifth or a tenth of the number
+of keys you expect to store. Searches within hash tables are based on
+{\tx eq}-style identity and are expected to be faster than various
+alternative (if simpler) schemes that could be considered.
+\item[{\tx mkvect~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{mkvect}~\newline
+In \vsl{} a call {\tx (mkvect $n$)} creates a vector where subsequent uses
+of {\tx putv} and {\tx getv} can use index values in the range from $0$
+to $n$. This results in the vector having $n+1$ elements. A whole vector
+counts as an atom in Lisp, not as a list.  If {\tx v} is a vector then
+{\tx (upbv v)} returns its upper bound -- the largest subscript legal for
+use with it.
+\item[{\tx nconc~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{nconc}~\newline
+Given two lists, {\tx nconc} concatenates them using a {\tx rplacd} on the
+final cell of the first list. This avoids some extra storage allocation that
+{\tx append} would have had to make, but overwrites part of the
+first list, and unless used with sensitivity that can cause trouble.
+\item[{\tx neq~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{neq}~\newline
+{\tx (neq a b)} yields exactly the same result as {\tx (not (equal a b))}.
+\item[{\tx nil~~~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{nil}~\newline
+The symbol {\tx nil} is used in Lisp to denote an empty list, or to mark
+the end of a non-empty one. It is used to mean {\em false}, with anything
+non-nil being treated as {\em true}. The value of {\tx nil} is {\tx nil}. In
+some Lisp systems (but not this one or its close relatives) it is arranged
+that {\tx car} and {\tx cdr} may accept {\tx nil} as an argument and yield
+{\tx nil}. Here you are not allowed to do that so {\tx (cdr nil)} will
+report an error just as {\tx (cdr 'any\_other\_atom)} would.
+\item[{\tx not~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{not}~\newline
+When a value is being thought of as a truth-value the function {\tx not}
+can be used to invert it. Because {\em false} is represented by \nil{} it
+turns out that {\tx not} behaves identically to {\tx null}.
+\item[{\tx null~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{null}~\newline
+Tests if its argument is \nil. Often used to detect when a list is empty.
+\item[{\tx numberp~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{numberp}~\newline
+Returns {\tx t} if its argument is a number. See also {\tx fixp} and
+{\tx floatp} that check for specific sub-categories of numbers.
+\item[{\tx oblist~~~~~~~} \hspace{1cm} {\em function 0 args}]\index{oblist}~\newline
+The term ``object list'' is historically used in Lisp to refer to the
+symbol table that keeps track of all the identifiers that are in use. Its
+purpose is to arrange that every time you enter the same sequence of characters
+you get the same symbol back. The function {\tx (oblist)} returns a list of
+all symbols in this table. This table of symbols important to Lisp was
+started by taking the output from {\tx oblist} and sorting and
+formatting it. The number of symbols in the object list gives some idea
+of the size of the Lisp implementation. With \vsl{} there are a couple of hundred
+symbols known before you start adding more. With the C and the Java coded
+implementations of Standard Lisp used with the Reduce algebra system there are
+around four times as many.
+\item[{\tx onep~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{onep}~\newline
+Test it its argument is 1 or 1.0. See {\tx zerop}.
+\item[{\tx open~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{open}~\newline
+To access data in a file you first {\tx open} the file. A file can be
+opened either for reading or writing, as in {\tx (open "input.dat" 'input)}
+or {\tx (open "newfile.out", 'output)}. In each case {\tx open} returns
+an object that can be passed to {\tx rds} or {\tx wrs} to select that stream
+for use. When finished with any file that has bene open should be
+tidied up by handing its descriptor to the {\tx close} function.
+As well as providing access to files, {\tx open} can be used to launch
+another program, with Lisp output to the associated stream made available to
+that program as its standard input. This is done using the
+construction {\tx (open "programname" 'pipe)}.
+\item[{\tx or~~~~~~~~~~~} \hspace{1cm} {\em special form}]\index{or}~\newline
+See {\tx and}.
+\item[{\tx output~~~~~~~} \hspace{1cm} {\em symbol}]\index{output}~\newline
+See {\tx open}.
+\item[{\tx pipe~~~~~~~~~} \hspace{1cm} {\em symbol}]\index{pipe}~\newline
+See {\tx open}.
+\item[{\tx plist~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{plist}~\newline
+Every symbol has a property-list and the {\tx plist} function returns it. Normally
+this will only be used as a matter of interest, since {\tx put} and {\tx get}
+are the proper functions for storing and retrieving information from property
+lists.
+\item[{\tx plus~~~~~~~~~} \hspace{1cm} {\em special form}]\index{plus}~\newline
+Adds an arbitrary number of values. If any one of them is floating
+point the result will be floating point.
+\item[{\tx preserve~~~~~} \hspace{1cm} {\em function 0 or 1 arg}]\index{preserve}~\newline
+If you call {\tx preserve} a copy of the current status of everything in your
+Lisp world is written to a file called {\tx vsl.img}. When \vsl{} next starts
+it reloads this file (unless the {\tx -z} command line option is used). This
+capability can be used to build an image file containing all the definitions
+and settings that make up a program so that when {\tx vsl} is started
+they are all immediately available.
+\item[{\tx prettyprint~~} \hspace{1cm} {\em function 1 arg}]\index{prettyprint}~\newline
+The ordinary print functions in \vsl{} fit as much on a line as they can. In
+contrast {\tx prettyprint} attempts to make its output more human-readable
+by indenting everything in a systematic manner. Su of you want to print out
+some Lisp code in a format where it is easier to read it may be useful.
+\item[{\tx prin~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{prin}~\newline
+The family of print functions supplied with \vsl{} consists of
+{\tx prin}, {\tx princ}, {\tx print} and {\tx printc}. The basic behaviour
+of each is that they print their argument to the current output stream. The versions
+with a ``{\tx c}'' omit any escape marks, and when printing strings do not
+print quote marks, and so the output is perhaps nice for a human reader
+but could not be presented back to Lisp. The ones without a ``{\tx c}''
+insert escapes (exclamation marks) in names that include characters other
+than letters and digits, and do put quote marks around strings. The versions
+with a ``{\tx t}'' terminate the output line after displaying their
+argument, so that a sequence of calls to {\tx prin} display all the
+values on one line, while {\tx print} puts each Lisp form on a separate line.
+See {\tx terpri} and {\tx wrs}.
+\item[{\tx princ~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{princ}~\newline
+See {\tx prin}.
+\item[{\tx print~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{print}~\newline
+See {\tx prin}.
+\item[{\tx printc~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{printc}~\newline
+See {\tx prin}.
+\item[{\tx prog~~~~~~~~~} \hspace{1cm} {\em special form}]\index{prog}~\newline
+{\tx prog} feels like an archaic feature inherited from the early days of Lisp,
+amd provides a range of capabilities. Firstly it itroduces some local
+variables, then it allows for the sequential execution of a sequence of
+Lisp forms, with a labels and a {\tx go} statement to provide control. Finally
+a {\tx prog} block only returns a non-nil value if the {\tx return} function
+is called within it to provide one. Here is an illustration of the
+use of these to compute and print some Fibonacci numbers and then return the
+symbol {\tx finished}
+{\sverb
+   (prog (a b n c)
+      (setq a 0 b 1 n 0)
+   top(when (greaterp n 10) (return 'finished))
+      (setq c b b (print (plus a b)) a c n (add1 n))
+      (go top))
+\end{verbatim}}
+\item[{\tx progn~~~~~~~~} \hspace{1cm} {\em special form}]\index{progn}~\newline
+There are a number of contexts in Lisp where you can write a sequence of
+expressions and these are evaluated in turn with the result of the
+final one as the overall result. {\tx progn} can provide this capability
+in any other situation where it is useful.
+\item[{\tx psetq~~~~~~~~} \hspace{1cm} {\em macro}]\index{psetq}~\newline
+See {tx setq}, but {\tx psetq} arranges to evaluate all the new values before
+updating any of the variables. A typical use of it would be to exchange the
+values in two variables, as in {\tx (psetq a b b a)}.
+\item[{\tx put~~~~~~~~~~} \hspace{1cm} {\em function 3 args}]\index{put}~\newline
+See {\tx get} and {\tx deflist}.
+\item[{\tx puthash~~~~~~} \hspace{1cm} {\em function 3 args}]\index{puthash}~\newline
+See {\tx mkhash}, {\tx gethash} and {\tx remhash}.
+\item[{\tx putv~~~~~~~~~} \hspace{1cm} {\em function 3 args}]\index{putv}~\newline
+See {\tx mkvect} and {\tx getvec}.
+\item[{\tx quote~~~~~~~~} \hspace{1cm} {\em special form}]\index{quote}~\newline
+Normally each sub-part of a Lisp program will be evaluated -- that is to say
+treated as program not data. The special form {\tx quote} protects its
+argument from evaluation and so is used when you wish to specify data.
+This is so common and so important that Lisp provides special syntax for it.
+A Lisp expression preceeded by a single quote mark {\tx '} is expanded into
+an application of the {\tx quote} function. Thus {\tx '(a b c)} means
+exactly the sane as {\tx (quote (a b c))}.
+\item[{\tx quotient~~~~~} \hspace{1cm} {\em function 2 args}]\index{quotient}~\newline
+Form the quotient of two numeric arguments.
+\item[{\tx rassoc~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{rassoc}~\newline
+{\tx rassoc} is just like {\tx assoc} except that it looks for a match
+against the second component of one of the pairs in a list rather than
+the first. So it is a sort of reversed-{\tx assoc}. Thus
+{\tx (rassoc 2 '((a . 1) (b . 2) (c . 3)))} returns {\tx (b . 2)}.
+\item[{\tx rdf~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{rdf}~\newline
+{\tx rdf} reads and interprets all the Lisp code in the file whose name
+it is given as an argument.
+\item[{\tx rds~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{rds}~\newline
+To read data from a file you first open the file (using {\tx open}) then select
+it as the current input stream using {\tx rds}. A call to {\tx rds} returns the
+previously selected input stream, and very often you will want to save that
+so you can restore it later. A reasonably complete (and slightly cautious)
+example would be
+{\sverb
+   (let* ((instream (open "filename" 'input))
+          (oldstream (rds instream)))
+      (errorset '(process (read)) t t)
+      (rds oldstream)
+      (close instream))
+\end{verbatim}}
+This shows saving the existing input stream and restoring it at the
+end. It
+uses {\tx errorset} to ensure that this happens even if processing the
+input from the file fails.
+\item[{\tx read~~~~~~~~~} \hspace{1cm} {\em function 0 args}]\index{read}~\newline
+This reads a full Lisp object from the current input stream (which is by
+default from the keyboard, but can be changed using {\tx rds}). The item can
+be a symbol, a number, a string or a list. It can also start with a quote
+mark or backquote. The function {\tx read} is the one that is normally
+used when Lisp wants to grab input from the user, so the standard
+Lisp top level behaviour is as if it were obeying
+{\tx (while t (print (eval (read))))}.
+If {\tx read} finds the end of an input file it returns {\tx !$eof!$}.
+\item[{\tx readch~~~~~~~} \hspace{1cm} {\em function 0 args}]\index{readch}~\newline
+This reads a single character, returning a Lisp symbol that has that character
+as its name. If {\tx readch} finds the end of an input file it returns {\tx !$eof!$}.
+\item[{\tx readline~~~~~} \hspace{1cm} {\em function 0 args}]\index{readline}~\newline
+This reads a whole line and returns a symbol made up from the characters
+found. If {\tx readlione} finds the end of an input file it returns
+{\tx !$eof!$}.
+\item[{\tx remainder~~~~} \hspace{1cm} {\em function 2 args}]\index{remainder}~\newline
+This divides a pair of integers and returns the remainder.
+\item[{\tx remhash~~~~~~} \hspace{1cm} {\em function 2 args}]\index{remhash}~\newline
+{\tx (remhash 'key table)} removes a hash table entry previously
+inserted by {\tx puthash}.
+\item[{\tx remprop~~~~~~} \hspace{1cm} {\em function 2 args}]\index{remprop}~\newline
+{\tx (remprop 'symbol 'indicator)} removes a property previously
+set up using {\tx put}.
+\item[{\tx return~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{return}~\newline
+This is used with {\tx prog}.
+\item[{\tx reverse~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{reverse}~\newline
+The ordinary function for reversing a list.
+\item[{\tx reversip~~~~~} \hspace{1cm} {\em function 1 arg}]\index{reversip}~\newline
+A function that reverses a list in a way that re-uses the existing {\tx cons}-cells
+so as to avoid any need to allocate fresh ones. This necessarily destroys
+the input list by overwriting parts of it (using {\tx rplacd})
+so should only be used when you are certain that nobody else needs that list.
+\item[{\tx rightshift~~~} \hspace{1cm} {\em function 2 args}]\index{rightshift}~\newline
+See {\tx logand} and friends. This shifts the bits in a number right, and
+at least for positive values {\tx (rightshift a $n$)} has the same
+effect as dividing {\tx a} by $2^{n}$.
+\item[{\tx rpar~~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{rpar}~\newline
+A predefined symbol whose value is the symbole whose name is a right
+parenthesis. See also {\tx lpar}.
+\item[{\tx rplaca~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{rplaca}~\newline
+If you have a {\tx cons}-cell you can use {\tx rplaca} to replace the
+{\tx car} field, {\tx rplacd} to replace the {\tx cdr} field or
+{\tx rplacw} to replace both. In each case the result of the function is the
+{\tx cons} cell that has been updated. Use of these functions can corrupt
+existing structures and create cyclic ones that lead to all sorts of trouble,
+and so they should only be used when there is a compelling reason to need
+a side-effect.
+\item[{\tx rplacd~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{rplacd}~\newline
+See {\tx rplaca}.
+\item[{\tx rplacw~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{replacw}~\newline
+See {\tx rplaca}.
+\item[{\tx sassoc~~~~~~~} \hspace{1cm} {\em function 3 args}]\index{sassoc}~\newline
+Here we have another variant on {\tx assoc}. In fact {\tx sassoc} is like
+{\tx assoc} except that it has an extra argument, and if the key it is looking
+for is not found in the association list rather then returning a simple value
+\nil{} it returns the result from calling that final argument as a function
+with no arguments. While this has a long history of being part of Lisp
+I suspect that very few people use it these days.
+\item[{\tx set~~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{set}~\newline
+This behaves like {\tx setq} except that rather than being a special form it
+takes exactly two arguments, and treats the first as the name of a variable
+and the second as a value to store into that variable. It is not very common
+to need to make the name of a variable that you are assigning to a computed
+value in this manner.
+\item[{\tx setq~~~~~~~~~} \hspace{1cm} {\em special form}]\index{setq}~\newline
+When you have a Lisp variable you can change its value using {\tx setq}. In
+fact {\tx setq} allows you to make several updates, one after another, in one
+call. Its arguments alternate between being variable names and expressions
+to compute values to set them to. So for instance {\tx (setq a 1 b 2)} sets
+{\tx a} to {\tx 1} and {\tx b} to {\tx 2}. See {\tx psetq} for a variant that
+does all the assignments in parallel.
+\item[{\tx sin~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{sin}~\newline
+This is the usual trigonometic function, accepting its argument in
+radianc. See {\tx cos} and {\tx sqrt}.
+%\item[{\tx sort~~~~~~~~~} \hspace{1cm} {\em function 2 args}]\index{sort}~\newline
+%~
+\item[{\tx spaces~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{spaces}~\newline
+{\tx (spaces $n$)} prints $n$ blanks.
+\item[{\tx sqrt~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{sqrt}~\newline
+Computes the square root of a number, returning the result as a floating
+point value whether the input was floating or an integer.
+\item[{\tx stop~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{stop}~\newline
+To quit Lisp you can call {\tx stop} giving it an argument that is used as
+a return code from the system. This quits Lisp instantly and unconditionally
+and so should be used with some consideration.
+\item[{\tx stringp~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{stringp}~\newline
+Tests if its argument is a string. See {\tx atom}, {\tx numberp} and
+{\tx symbolp}.
+\item[{\tx sub1~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{sub1}~\newline
+Subtracts one from its argument.
+\item[{\tx subr~~~~~~~~~} \hspace{1cm} {\em symbol}]\index{subr}~\newline
+See {\tx expr}.
+\item[{\tx subst~~~~~~~~} \hspace{1cm} {\em function 3 args}]\index{subst}~\newline
+If you have a list or set of nested lists then {\tx (subst a b c)} replaces every
+item in {\tx c} that is equal to {\tx b} with an {\tx a}. In other
+words ``substitute a for b in c''. This only scans its input down to the
+level of atoms, so for instance vectors and hash tables do not have their
+components or contents looked at.
+\item[{\tx symbolp~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{symbolp}~\newline
+Test if an onject is a symbol.
+\item[{\tx t~~~~~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{t}~\newline
+In Lisp the symbol \nil{} is used for {\em false}. If there is no better
+non-\nil{} value to be used for {\em true} then {\tx t} is used, and the
+symbol {\tx t} starts off as a variable that has itself as its value.
+\item[{\tx tab~~~~~~~~~~} \hspace{1cm} {\em predefined variable}]\index{tab}~\newline
+A symbol whose initial value is a tab character. See {\tx blank}.
+\item[{\tx terpri~~~~~~~} \hspace{1cm} {\em function 0 args}]\index{terpri}~\newline
+This TERminates the PRInt Line. It is equivalent to {\tx (princ !$eol!$)}.
+\item[{\tx time~~~~~~~~~} \hspace{1cm} {\em function 0 args}]\index{time}~\newline
+If you wish to measure the amount of CPU time that some calculation takes then
+you can use {\tx (time)} to read a timer both before and after. The difference
+between the two values will be the processor time used, measured in
+milliseconds.
+\item[{\tx times~~~~~~~~} \hspace{1cm} {\em special form}]\index{times}~\newline
+Multiplies all of its arguments together.
+\item[{\tx trace~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{trace}~\newline
+If you go {\tx (trace '(f1 f2 \ldots))} then each of the functions {\tx f1},\ldots
+is marked for tracing. When this has happened \vsl{} prints messages each time
+the function concerned is called and each time it returns a result. This
+can be a great help when your code is misbehaving: you {\tx trace} a suitable
+set of key functions and try some test examples. The extra output may be
+bulky but with luck will allow you to understand exactly what is happening.
+When fimished you can call {\tx (untrace '(f1 f2 \ldots))} to restore
+things to their normal state. 
+\item[{\tx upbv~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{upbv}~\newline
+Given a vector, {\tx upbv} returns the highest legal subscript that can be
+used with it. See {\tx mkvect}, {\tx putv} and {\tx getv}.
+\item[{\tx untrace~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{untrace}~\newline
+See {\tx trace}.
+\item[{\tx vectorp~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{vectorp}~\newline
+Tests if an object is a vector. See {\tx mkvect}.
+\item[{\tx vsl~~~~~~~~~~} \hspace{1cm} {\em symbol in lispsystem!*}]\index{vsl}~\newline
+A predefined variable {\tx lispsystem!*} has items in it that
+can give information about the Lisp system that is in use. Here the only
+information provided is the symbol \vsl{} which (obviously) identifies the
+Lisp version.
+\item[{\tx while~~~~~~~~} \hspace{1cm} {\em macro}]\index{while}~\newline
+{\tx while} is a macro that is provided with a predicate and then a sequence
+of expressions to be evaluated repeatedly for so long as the predicate yields
+something non-\nil.
+{\sverb
+   (let ((n 1))
+      (while (lessp n 1000000)
+         (printc (list n "is too small"))
+         (setq n (times 3 n)))
+      n)
+\end{verbatim}}
+\noindent would return the first power of three that is at least a million,
+prionting reports on its progress.
+\item[{\tx wrs~~~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{wrs}~\newline
+If you need to direct output to somewhere other than the terminal (for instance
+to a file or pipe) then you can use {\tx wrs} to select the relevant stream as
+the one to print to. {\tx wrs} returns the previously selected stream, and
+often you will wish to save that so you can restore it later. See {\tx open},
+{\tx rds} and {\tx close}.
+\item[{\tx zerop~~~~~~~~} \hspace{1cm} {\em function 1 arg}]\index{zerop}~\newline
+Tests to see if its argument is 0 or 0.0. See {\tx onep}.
+\end{description}
