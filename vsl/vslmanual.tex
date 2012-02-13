@@ -13,10 +13,84 @@
 \maketitle
 
 
-There is a separate larger document that explais what \vsl is
+There is a separate larger document that explaims what \vsl is
 and how it is implemented. This merely contains an explanation of how
 to fetch the sources and compile them, and a list of the functions
 that \vsl then provides.
+
+
+\section{Fetching and building vsl}
+You can fetch \vsl sources using {\tx subversion}. If you do not have that
+installed on your computer already you need to discover how to fetch it.
+On Linux this will be easy using a package manager (typically {\tx yum}
+on Fedora or {\tx apt-get} on Debian or Ubuntu). On Windows if you visit
+{\tx www.cygwin.com} you can fetch their setup program and install their
+environment -- ensuring that you install {\tx make}, {\tx gcc} and
+{\tx subversion}, and probably {\tx tex}.
+
+Then you can go
+{\sverb
+U=https://reduce-algebra.svn.sourceforge.net
+V=$U/svnroot/reduce-algebra/trunk
+svn co $V/vsl
+\end{verbatim}}
+which should create a directory called {\tx vsl} and put a collection of
+files in it. The above instructions build up the path at {\tx sourceforge}
+to fetch this from in parts so you only have to type a modest
+amount on each line. The files you will fetch amount to about a megabyte,
+and so should not be a severe strain on anything.
+
+If you also want to use \vsl{} to build a version of the Reduce algebra
+system you should follow up the subversion calls with another call (relying
+on the variable {\tx \$V} you set up to point to the subversion repository).
+{\sverb
+svn co $V/packages
+\end{verbatim}}
+This time you will end up with around 60 Mbytes in a directory called
+{\tx packages}. That is the full set of sources for Reduce. Even though you
+are not liable to be able to make us eof all of them the easiest recipe
+involves you fetching everything.
+
+To build \vsl{} and then try it you can then go
+{\sverb
+   cd vsl
+   make
+   ./vsl
+   (oblist)
+   (stop 0)
+\end{verbatim}}
+
+For the build to succeed you will need to have the {\tx gcc} C compiler
+installed, and to rebuild the manual the {\tx pdflatex}\footnote{typically
+instaled for you as part of some broader \LaTeX package such as texlive.}
+command is required. Again you may need to use a package manager to ensure
+that they are available.
+
+In the above small example you verify that \vsl{} will run by calling the
+function {\tx (oblist)} to display a list of all \vsl's built-in
+symbols, then you use {\tx (stop 0)} to exit from the system.
+
+To try Reduce (see {\tx http://reduce-algebra/sourceforge.net} for
+full information. In particular there is a manual hidden there) you go
+{\sverb
+  make reduce
+  ./vsl
+  (begin}
+\end{verbatim}}
+
+The ``{\tx make reduce}'' step builds (much of) Reduce and saves
+the result in {\tx vsl.img}. When you next start \vsl it reloads that
+image file. At the time of writing this manual you need to start Reduce
+manually by calling the Lisp function {\tx (begin)}, but then you can
+try various algebraic examples.
+
+The \vsl-hosted Reduce will be significantly slower than other versions
+and it certainly has severe limitations because \vsl{} does not provide
+arbitrary prevision arithmetic. It is expected that there will be cases
+where some Reduce facilities try to use functions that \vsl{} does not
+provide -- and then crashes. It would be helpful if such cases can be
+collected and reported at least so that a section can be inserted here
+documenting Reduce limitations under \vsl.
 
 
 \section{Summary of functions in \vsl}
