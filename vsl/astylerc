@@ -1,0 +1,28 @@
+# This file should go into $(HOME)/.astylerc to get the
+# default layout that I prefer
+
+# Overall strategy is "horstmann" and that arranges that a close
+# brace is always vertically below the corresponding opening brace.
+
+--style=horstmann
+
+# "-L" positions labels indented relative to the block of code they
+# relate to.
+-L
+
+# "-y" arranges that in "if (a) C; else {..." the "{" is on a separate
+# line from the "else".
+-y
+
+# "-o" specifies that if the input code had several statement on one line
+# this situation is preserved.
+-o
+
+# "-c" forces the output to be indented using just spaced never tabs.
+-c
+
+# "-m0" helps with indentation of "if" statements where the condition
+# is long and splits over several lines.
+-m0
+
+# end of .astylerc

@@ -1,0 +1,11 @@
+This is the VSL Lisp system. Its key attribute is that it is SMALL.
+The source file (vsl.c) is around 3000 lines long, but despite that
+the system can build and run much of Reduce. Since there is only
+an interpreter it will be slow, but for teaching purposes and for
+fun it may still be of interest.
+
+As always with things like this I would view it as nice if a couple of
+people were willing to join in debugging and getting this straight with
+me.
+
+Arthur Norman.   February 2012
