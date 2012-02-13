@@ -755,32 +755,32 @@ top (cond ((null a) (return (reversip r))))
    (prog (tree)
       (dolist (x items)
          (setq tree (insert x tree fn)))
-      (return (flatten tree))))
+      (return (sort_flatten tree))))
 
 (de insert (item tree fn)
    (cond
       ((null tree) (list!* item nil nil))
       ((apply2 fn item (car tree))
-         (insertleft item tree))
-      (t (insertright item tree))))
+         (insertleft item tree fn))
+      (t (insertright item tree fn))))
 
-(de insertleft (item tree)
+(de insertleft (item tree fn)
    (list!*
       (car tree)
-      (insert item (cadr tree))
+      (insert item (cadr tree) fn)
       (cddr tree)))
 
-(de insertright (item tree)
+(de insertright (item tree fn)
    (list!*
-      (getval tree)
+      (car tree)
       (cadr tree)
-      (insert item (cddr tree))))
+      (insert item (cddr tree) fn)))
 
-(de flatten (x)
+(de sort_flatten (x)
    (cond
       ((null x) nil)
-      (t (append (flatten (cadr x))
-         (cons (getval x) (flatten  (cddr x)))))))
+      (t (append (sort_flatten (cadr x))
+         (cons (car x) (sort_flatten (cddr x)))))))
 
 (de gcdn (a b)
    (cond
@@ -843,6 +843,8 @@ top (cond ((null a) (return (reversip r))))
 (de lengthc (x) (length (explodec x)))
 
 (de gctime () 0)
+
+(de setpchar (x) nil)
 
 % End of vslcompat.lsp
 
