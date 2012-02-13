@@ -393,7 +393,7 @@ set!-small!-modulus 3;
 
 % The following are now built into CSL, where by using the C library
 % and (hence?) maybe low level tricks or special floating point
-% microcode things can go fast.
+% tricks can help with speed.
 
 flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        asech asin asind asinh atan atand atan2 atan2d atanh cbrt cos

@@ -150,7 +150,7 @@ symbolic procedure subs2 u;
 % table abstract via small procedures here.
 
 
-!#if (memq 'csl lispsystem!*)
+!#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
 
 % With CSL I have hash tables and I am fairly confident both that for
 % cases where alglist!* becomes long they are a significant win and that
