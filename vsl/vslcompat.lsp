@@ -842,6 +842,8 @@ top (cond ((null a) (return (reversip r))))
 
 (de lengthc (x) (length (explodec x)))
 
+(de gctime () 0)
+
 % End of vslcompat.lsp
 
 
