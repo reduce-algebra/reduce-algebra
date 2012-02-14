@@ -375,5 +375,7 @@ rds(xxx := open("packages/support/build.red", 'input));
 
 (setq !*int t)
 
+(preserve 'begin)
+
 (stop 0)
 
