@@ -5,7 +5,7 @@
 
 (rdf "vslcompat.lsp")
 
-(setq !*echo t)
+(dotimes (i 1000000) nil)
 
 (de concat (u v)
     (compress (cons '!" (append (explode2 u)
@@ -307,7 +307,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 
 (begin2)
 
-rds(xxx := open("../packages/support/build.red", 'input));
+rds(xxx := open("packages/support/build.red", 'input));
 
 (close xxx)
 
@@ -343,14 +343,11 @@ rds(xxx := open("../packages/support/build.red", 'input));
 (load!-package!-sources 'hephys        'hephys)
 (load!-package!-sources 'int           'int)
 (load!-package!-sources 'matrix        'matrix)
-(load!-package!-sources 'rlisp88       'rlisp88)
+% rlisp88 could change the syntax!
+%(load!-package!-sources 'rlisp88       'rlisp88)
 (load!-package!-sources 'rprint        'rprint)
 (load!-package!-sources 'fmprint       'rprint)
 (load!-package!-sources 'pretty        'rprint)
-
-(preserve 'begin)
-(stop 0)
-
 (load!-package!-sources 'solve         'solve)
 (load!-package!-sources 'desir         'solve)
 (load!-package!-sources 'ineq          'solve)
@@ -376,7 +373,7 @@ rds(xxx := open("../packages/support/build.red", 'input));
 (load!-package!-sources 'dfpart        'misc)
 (load!-package!-sources 'lie           'misc)
 
-(preserve)
+(setq !*int t)
 
-(stop)
+(stop 0)
 

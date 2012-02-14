@@ -848,6 +848,21 @@ top (cond ((null a) (return (reversip r))))
 
 (de eqn (a b) (equal a b))
 
+(de threevectorp (x)
+   (and (vectorp x) (equal (upbv x) 2)))
+
+(de frexp (x)
+   (prog (n)
+      (if (zerop x) (return '(0 . 0.0)))
+      (setq n 0)
+      (while (geq x 1.0)
+             (setq x (times x 0.5))
+             (setq n (add1 n)))
+      (while (lessp x 0.5)
+             (setq x (times x 2.0))
+             (setq n (sub1 n)))
+      (return (cons n x))))
+
 % End of vslcompat.lsp
 
 
