@@ -361,8 +361,7 @@ rds(xxx := open("../packages/support/build.red", 'input));
 (load!-package!-sources 'atensor       'atensor)
 % avector confuses many other packages by redefining "^".
 %(load!-package!-sources 'avector       'avector)
-% invbase makes gg fluid and thereby hurts alg/alg.tst
-%(load!-package!-sources 'invbase       'invbase)
+(load!-package!-sources 'invbase       'invbase)
 (load!-package!-sources 'misc          'misc)
 (load!-package!-sources 'boolean       'misc)
 (load!-package!-sources 'cedit         'misc)
