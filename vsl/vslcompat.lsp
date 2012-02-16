@@ -754,27 +754,27 @@ top (cond ((null a) (return (reversip r))))
 (de sort (items fn)
    (prog (tree)
       (dolist (x items)
-         (setq tree (insert x tree fn)))
+         (setq tree (sort_insert x tree fn)))
       (return (sort_flatten tree))))
 
-(de insert (item tree fn)
+(de sort_insert (item tree fn)
    (cond
       ((null tree) (list!* item nil nil))
       ((apply2 fn item (car tree))
-         (insertleft item tree fn))
-      (t (insertright item tree fn))))
+         (sort_insertleft item tree fn))
+      (t (sort_insertright item tree fn))))
 
-(de insertleft (item tree fn)
+(de sort_insertleft (item tree fn)
    (list!*
       (car tree)
-      (insert item (cadr tree) fn)
+      (sort_insert item (cadr tree) fn)
       (cddr tree)))
 
-(de insertright (item tree fn)
+(de sort_insertright (item tree fn)
    (list!*
       (car tree)
       (cadr tree)
-      (insert item (cddr tree) fn)))
+      (sort_insert item (cddr tree) fn)))
 
 (de sort_flatten (x)
    (cond

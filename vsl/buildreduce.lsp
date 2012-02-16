@@ -307,7 +307,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 
 (begin2)
 
-rds(xxx := open("packages/support/build.red", 'input));
+rds(xxx := open("../packages/support/build.red", 'input));
 
 (close xxx)
 
@@ -359,8 +359,10 @@ rds(xxx := open("packages/support/build.red", 'input));
 (load!-package!-sources 'dummy         'assist)
 (load!-package!-sources 'cantens       'assist)
 (load!-package!-sources 'atensor       'atensor)
-(load!-package!-sources 'avector       'avector)
-(load!-package!-sources 'invbase       'invbase)
+% avector confuses many other packages by redefining "^".
+%(load!-package!-sources 'avector       'avector)
+% invbase makes gg fluid and thereby hurts alg/alg.tst
+%(load!-package!-sources 'invbase       'invbase)
 (load!-package!-sources 'misc          'misc)
 (load!-package!-sources 'boolean       'misc)
 (load!-package!-sources 'cedit         'misc)
