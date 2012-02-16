@@ -82,11 +82,11 @@ fi
 
 export here fasl psldir reduce
 
-if test -d "$chere/log"
+if test -d "$here/log"
 then
   :
 else
-  mkdir -p "$chere/log"
+  mkdir -p "$here/log"
 fi
 
 cd "$builddir"
