@@ -344,7 +344,7 @@ AC_ARG_WITH(fox-pending, [  --with-fox-pending        do not check dir from --wi
 # rather than
 #     i686-pc=linux-gnu   OR   powerpc-apple-darwin8.8.0
 
-distrib=`$srcdir/../../scripts/findos.sh`
+distrib=`"$srcdir/../../scripts/findos.sh"`
 AC_MSG_NOTICE([distrib = $distrib])
 
 if test "x$distrib" != "xunknown"

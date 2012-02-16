@@ -38,7 +38,7 @@ esac
 
 here=`echo $c | sed -e 's+/[^/]*$++'`
 
-host=`$here/../config.guess`
+host=`"$here/../config.guess"`
 
 #
 # The decoding here is very probably inadequate, however I hope that

@@ -88,10 +88,10 @@ endif
 # arrange that that happens at most once by putting the following rules:
 
 $(srcdir)/configure.ac:
-	touch $(srcdir)/configure.ac
+	touch "$(srcdir)/configure.ac"
 
 $(srcdir)/Makefile.am:
-	touch $(srcdir)/Makefile.am
+	touch "$(srcdir)/Makefile.am"
 
 endif
 
