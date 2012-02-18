@@ -508,7 +508,7 @@ AC_MSG_NOTICE([--with-fox-pending=$with_fox_pending])
 # rather than
 #     i686-pc=linux-gnu   OR   powerpc-apple-darwin8.8.0
 
-distrib=`$srcdir/findos.sh`
+distrib=`"$srcdir/findos.sh"`
 AC_MSG_NOTICE([distrib = $distrib])
 
 if test "x$distrib" != "xunknown"
@@ -1335,9 +1335,9 @@ then
     FOXLIB="$with_fox/lib/libFOX*"
     AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
 # Display FOX level (ie minor version number) if actually present
-    if test -f $with_fox/include/fox-1.6/fxver.h
+    if test -f "$with_fox/include/fox-1.6/fxver.h"
     then
-      grep LEVEL $with_fox/include/fox-1.6/fxver.h
+      grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
     fi
   else
     if test "x$with_fox" = "x"
@@ -1349,7 +1349,7 @@ then
       fi
     fi
 
-    if test -d $with_fox/$foxdir
+    if test -d "$with_fox/$foxdir"
     then
       with_fox="$with_fox/$foxdir"
     fi
@@ -1411,7 +1411,7 @@ then
       FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
       FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
 # Display FOX level (ie minor version number)
-      grep LEVEL $with_fox/include/fox-1.6/fxver.h
+      grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
     fi
 
   fi
