@@ -2,4 +2,3 @@ usr/share/reduce/fonts usr/lib/reduce/cslbuild/csl/reduce.fonts
 usr/share/doc/reduce usr/lib/reduce/cslbuild/csl/reduce.doc
 usr/lib/reduce/cslbuild usr/share/reduce/cslbuild
 usr/lib/reduce/pslbuild usr/share/reduce/pslbuild
-usr/share/doc/reduce/manual-pdf.html usr/share/doc/reduce/index.html
