@@ -41,9 +41,9 @@ fluid '(ordering redtails);                                % modes
 fluid '(path tred stars);                                  % tracing
 fluid '(reductions!* nforms!* zeros!* maxord!* title!*);   % statistics
 fluid '(invsysvars!* !*trinvbase alfa!* beta!* shortway!* thirdway!*
-         invtempbasis!*);
+         invtempbasis);
 
-share invtempbasis!*;
+share invtempbasis;
 
 ordering := 'grev;
 

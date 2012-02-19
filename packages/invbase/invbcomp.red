@@ -370,7 +370,7 @@ l: gg1 := reverse gg!*;
          if p > lb then
          << gg!*:=redall(nil,gg!*,0);
             newbasis(gg!*,0);
-            invtempbasis!* := 'list .
+            invtempbasis := 'list .
                 for each x in gg!*
                    collect 'plus . for each m in getv(gv!*,car x)
                       collect prepsq !*di2q(list m,varlist!*);
