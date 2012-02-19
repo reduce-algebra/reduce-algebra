@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 78988893 29-Nov-2011 */
+/* Signature: 08f02418 19-Feb-2012 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -414,6 +414,7 @@ extern intptr_t nwork;
 extern intptr_t exit_count;
 extern intptr_t gensym_ser, print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
+extern intptr_t modulus_is_large;
 
 extern Lisp_Object lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern Lisp_Object quote_symbol, function_symbol, comma_symbol;
@@ -455,7 +456,7 @@ extern Lisp_Object format_symbol;
 extern Lisp_Object expand_def_symbol, allow_key_key;
 #endif
 
-extern Lisp_Object declare_symbol, special_symbol;
+extern Lisp_Object declare_symbol, special_symbol, large_modulus;
 
 #ifdef OPENMATH
 extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
@@ -574,7 +575,8 @@ extern Lisp_Object * volatile stacklimit;
 #define current_modulus       BASE[29]
 #define fastget_size          BASE[30]
 #define package_bits          BASE[31]
-/* offsets 32-49 spare at present */
+#define modulus_is_large      BASE[32]
+/* offsets 33-49 spare at present */
 
 /* Offset 50 used for EQ hash table list    */
 /* Offset 51 used for EQUAL hash table list */
@@ -694,6 +696,7 @@ extern Lisp_Object * volatile stacklimit;
 
 #define declare_symbol        BASE[182]
 #define special_symbol        BASE[183]
+#define large_modulus         BASE[184]
 
 /*
  * The next are intended for use by people building custom versions

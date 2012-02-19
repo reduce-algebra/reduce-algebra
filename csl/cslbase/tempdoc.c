@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 21325c57 19-Nov-2011 */
+/* Signature: 67864428 19-Feb-2012 */
 
 
 /*
@@ -54,7 +54,7 @@
 
 /*! predef [*applyhook] \item [{\ttfamily !*applyhook!*}] \index{{\ttfamily "!*applyhook"!*}} ~\newline
  * If this is set it might be supposed to be the name of a function used
- * by the interpreter as a callbackm but at presnet it does not actually do
+ * by the interpreter as a callback, but at present it does not actually do
  * anything!
  */
 

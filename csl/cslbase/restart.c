@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 0974b0d1 19-Nov-2011 */
+/* Signature: 7dab95a1 03-Feb-2012 */
 
 #include "headers.h"
 
@@ -249,7 +249,7 @@ Lisp_Object vfringe;
 intptr_t nwork;
 intptr_t exit_count;
 intptr_t gensym_ser, print_precision, miscflags;
-intptr_t current_modulus, fastget_size, package_bits;
+intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 Lisp_Object lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 Lisp_Object quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 Lisp_Object cons_symbol, eval_symbol, work_symbol, evalhook, applyhook;
@@ -276,7 +276,7 @@ Lisp_Object progn_symbol;
 #ifdef COMMON
 Lisp_Object expand_def_symbol, allow_key_key;
 #endif
-Lisp_Object declare_symbol, special_symbol;
+Lisp_Object declare_symbol, special_symbol, large_modulus;
 Lisp_Object lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 Lisp_Object codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
 Lisp_Object compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
@@ -3392,6 +3392,7 @@ static void warm_setup()
     current_modulus = flip_bytes(current_modulus);
     fastget_size = flip_bytes(fastget_size);
     package_bits = flip_bytes(package_bits);
+    modulus_is_large = flip_bytes(modulus_is_large);
 /*
  * The adjustments used here can arise when I have read a 32-bit image in
  * on a 64-bit machine, but may possibly arise if I load an ancient 64-bit
@@ -3422,6 +3423,9 @@ static void warm_setup()
         if ((int32_t)package_bits==0)
              package_bits =
                  (Lisp_Object)(((int64_t)package_bits)>>32) & 0x7fffffff;
+        if ((int32_t)modulus_is_large==0)
+             modulus_is_large =
+                 (Lisp_Object)(((int64_t)modulus_is_large)>>32) & 0x7fffffff;
     }
 
     set_up_functions(1);
@@ -4543,6 +4547,7 @@ static void cold_setup()
     current_modulus = 1;
     fastget_size = 32;
     package_bits = 0;
+    modulus_is_large = 0;
     unset_var = nil;
 /*
  * there had better not be a need for garbage collection here...
@@ -4790,6 +4795,7 @@ void set_up_functions(CSLbool restart_flag)
     declare_symbol           = make_symbol("declare", restart_flag, declare_fn, bad_special2, bad_specialn);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
     special_symbol           = make_undefined_symbol("special");
+    large_modulus            = fixnum_of_int(1);
     cons_symbol              = make_symbol("cons", restart_flag, too_few_2, Lcons, wrong_no_2);
     eval_symbol              = make_symbol("eval", restart_flag, Leval, too_many_1, wrong_no_1);
     loadsource_symbol        = make_symbol("load-source", restart_flag, Lload_source, too_many_1, wrong_no_1);
@@ -6309,6 +6315,7 @@ void copy_into_nilseg(int fg)
         BASE[29]                             = current_modulus;
         BASE[30]                             = fastget_size;
         BASE[31]                             = package_bits;
+        BASE[32]                             = modulus_is_large;
     }
 /*
  * Entries 50 and 51 are used for chains of hash tables, and so get
@@ -6429,6 +6436,7 @@ void copy_into_nilseg(int fg)
  */
     BASE[182]    = declare_symbol;
     BASE[183]    = special_symbol;
+    BASE[184]    = large_modulus;
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -6480,6 +6488,7 @@ void copy_out_of_nilseg(int fg)
         current_modulus  = BASE[29];
         fastget_size     = BASE[30];
         package_bits     = BASE[31];
+        modulus_is_large = BASE[32];
     }
 
     current_package       = BASE[52];
@@ -6596,6 +6605,7 @@ void copy_out_of_nilseg(int fg)
 
     declare_symbol        = BASE[182];
     special_symbol        = BASE[183];
+    large_modulus         = BASE[184];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

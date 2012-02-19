@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 36834886 29-Aug-2011 */
+/* Signature: 05a7a325 19-Feb-2012 */
 
 #include "headers.h"
 
@@ -2006,7 +2006,7 @@ static Lisp_Object Lrestart_csl2(Lisp_Object nil,
  * on the named module and finally calls the given restart function.
  * This last option can be useful since otherwise the function to be called
  * in (restart!-csl 'xx) would need to be in the base image as re-loaded.
- * The second argument is passed through (vis serialisation as a string
+ * The second argument is passed through (via serialisation as a string
  * of characters) and remade as a Lisp object to be passed to the restart
  * function as an argument.
  */

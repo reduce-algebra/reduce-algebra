@@ -36,7 +36,7 @@
  *************************************************************************/
 
 
-/* Signature: 2b5efe40 04-Dec-2010 */
+/* Signature: 41d37ed6 19-Feb-2012 */
 
 
 #include "headers.h"
@@ -61,44 +61,100 @@ Lisp_Object Lmodular_difference(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     int32_t r;
     CSL_IGNORE(nil);
-    r = int_of_fixnum(a) - int_of_fixnum(b);
-    if (r < 0) r += current_modulus;
-    return onevalue(fixnum_of_int(r));
+    if (!modulus_is_large)
+    {   r = int_of_fixnum(a) - int_of_fixnum(b);
+        if (r < 0) r += current_modulus;
+        return onevalue(fixnum_of_int(r));
+    }
+    a = difference2(a, b);
+    errexit();
+    return modulus(a, large_modulus);
 }
 
 Lisp_Object Lmodular_minus(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
-    if (a != fixnum_of_int(0))
-    {   int32_t r = current_modulus - int_of_fixnum(a);
-        a = fixnum_of_int(r);
+    if (!modulus_is_large)
+    {   if (a != fixnum_of_int(0))
+        {   int32_t r = current_modulus - int_of_fixnum(a);
+            a = fixnum_of_int(r);
+        }
+        return onevalue(a);
     }
-    return onevalue(a);
+    a = negate(a);
+    errexit();
+    return modulus(a, large_modulus);
 }
 
 Lisp_Object Lmodular_number(Lisp_Object nil, Lisp_Object a)
 {
     int32_t r;
-    a = Cremainder(a, fixnum_of_int(current_modulus));
-    errexit();
-    r = int_of_fixnum(a);
-    if (r < 0) r += current_modulus;
-    return onevalue(fixnum_of_int(r));
+    if (!modulus_is_large)
+    {   a = Cremainder(a, fixnum_of_int(current_modulus));
+        errexit();
+        r = int_of_fixnum(a);
+        if (r < 0) r += current_modulus;
+        return onevalue(fixnum_of_int(r));
+    }
+    return modulus(a, large_modulus);
 }
 
 Lisp_Object Lmodular_plus(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     int32_t r;
     CSL_IGNORE(nil);
-    r = int_of_fixnum(a) + int_of_fixnum(b);
-    if (r >= current_modulus) r -= current_modulus;
-    return onevalue(fixnum_of_int(r));
+    if (!modulus_is_large)
+    {   r = int_of_fixnum(a) + int_of_fixnum(b);
+        if (r >= current_modulus) r -= current_modulus;
+        return onevalue(fixnum_of_int(r));
+    }
+    a = plus2(a, b);
+    errexit();
+    return modulus(a, large_modulus);
+}
+
+Lisp_Object large_modular_reciprocal(Lisp_Object n, int safe)
+{
+    Lisp_Object a, b, x, y, nil = C_nil;
+    a = large_modulus;
+    b = n;
+    x = fixnum_of_int(0);
+    y = fixnum_of_int(1);
+    if (b == fixnum_of_int(0))
+    {   if (safe) return onevalue(nil);
+        else return aerror1("modular-reciprocal", n);
+    }
+/*
+ * This code is not garbage-collector safe and also needs loads or errexit()
+ * escapes in case it is interrupted part way through. But even in this
+ * state it can be subjected to some initial testing.
+ */
+    b = modulus(b, large_modulus);
+    errexit();
+    while (b != fixnum_of_int(1))
+    {   Lisp_Object w, t;
+        if (b == fixnum_of_int(0))
+        {   if (safe) return onevalue(nil);
+            else return aerror2("non-prime modulus in modular-reciprocal",
+                           large_modulus, n);
+        }
+        w = quot2(a, b);
+        t = b;
+        b = difference2(a, times2(b, w));
+        a = t;
+        t = y;
+        y = difference2(x, times2(y, w));
+        x = t;
+    }
+    y = modulus(y, large_modulus);
+    return onevalue(y);
 }
 
 Lisp_Object Lmodular_reciprocal(Lisp_Object nil, Lisp_Object n)
 {
     int32_t a, b, x, y;
     CSL_IGNORE(nil);
+    if (modulus_is_large) return large_modular_reciprocal(n, 0);
     a = current_modulus;
     b = int_of_fixnum(n);
     x = 0;
@@ -126,6 +182,7 @@ Lisp_Object Lsafe_modular_reciprocal(Lisp_Object nil, Lisp_Object n)
 {
     int32_t a, b, x, y;
     CSL_IGNORE(nil);
+    if (modulus_is_large) return large_modular_reciprocal(n, 1);
     a = current_modulus;
     b = int_of_fixnum(n);
     x = 0;
@@ -155,9 +212,10 @@ Lisp_Object Lmodular_times(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     uint32_t r, cm;
     int32_t aa, bb;
     CSL_IGNORE(nil);
-    cm = (uint32_t)current_modulus;
-    aa = int_of_fixnum(a);
-    bb = int_of_fixnum(b);
+    if (!modulus_is_large)
+    {   cm = (uint32_t)current_modulus;
+        aa = int_of_fixnum(a);
+        bb = int_of_fixnum(b);
 /*
  * The constant 46341 is sqrt(2^31) suitable rounded - if my modulus
  * is no bigger than that then a and b will both be strictly smaller,
@@ -166,17 +224,21 @@ Lisp_Object Lmodular_times(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
  * to be pretty painful, while regular C multiplication and division are
  * (probably!) much better.
  */
-    if (cm <= 46341U) r = (aa * bb) % cm;
-    else
-    {
+        if (cm <= 46341U) r = (aa * bb) % cm;
+        else
+        {
 #ifdef HAVE_UINT64_T
-        r = (uint32_t)(((uint64_t)aa * (uint64_t)bb) % (uint32_t)cm);
+            r = (uint32_t)(((uint64_t)aa * (uint64_t)bb) % (uint32_t)cm);
 #else
-        Dmultiply(h, l, aa, bb, 0);
-        Ddivide(r, l, h, l, cm);
+            Dmultiply(h, l, aa, bb, 0);
+            Ddivide(r, l, h, l, cm);
 #endif
+        }
+        return onevalue(fixnum_of_int(r));
     }
-    return onevalue(fixnum_of_int(r));
+    a = times2(a, b);
+    errexit();
+    return modulus(a, large_modulus);
 }
 
 Lisp_Object Lmodular_quotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
@@ -189,6 +251,34 @@ Lisp_Object Lmodular_quotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return Lmodular_times(nil, a, b);
 }
 
+Lisp_Object large_modular_expt(Lisp_Object a, int x)
+{
+    Lisp_Object r, p, w, nil = C_nil;
+    p = modulus(a, large_modulus);
+    errexit();
+/*
+ * This is not yet GC safe.
+ */
+    while ((x & 1) == 0)
+    {   w = times2(p, p);
+        errexit();
+        p = modulus(p, large_modulus);
+        errexit();
+        x = x/2;
+    }
+    r = p;
+    while (x != 1)
+    {   w = times2(p, p);
+        p = modulus(w, large_modulus); 
+        x = x/2;
+        if ((x & 1) != 0)
+        {   w = times2(r, p);
+            r = modulus(w, large_modulus);
+        }
+    }
+    return onevalue(r);
+}
+
 Lisp_Object Lmodular_expt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     int32_t x, r, p;
@@ -196,6 +286,7 @@ Lisp_Object Lmodular_expt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     CSL_IGNORE(nil);
     x = int_of_fixnum(b);
     if (x == 0) return onevalue(fixnum_of_int(1));
+    if (modulus_is_large) return large_modular_expt(a, x);
     p = int_of_fixnum(a);
 /*
  * I could play games here on half-length current_modulus and use
@@ -224,19 +315,33 @@ Lisp_Object Lmodular_expt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 Lisp_Object Lset_small_modulus(Lisp_Object nil, Lisp_Object a)
 {
-    int32_t r, old = current_modulus;
+    int32_t r;
+    Lisp_Object old = modulus_is_large ? large_modulus :
+                      fixnum_of_int(current_modulus);
     CSL_IGNORE(nil);
-    if (a==nil) return onevalue(fixnum_of_int(old));
-    else if (!is_fixnum(a)) return aerror1("set-small-modulus", a);
+    if (a==nil) return onevalue(old);
+    else if (!is_fixnum(a))
+    {   if (!is_numbers(a) || !is_bignum(a))
+            return aerror1("set-small-modulus", a);
+        modulus_is_large = 1;
+        large_modulus = a;
+        return old;
+    }
     r = int_of_fixnum(a);
 /*
  * I now allow a small modulus of up to 2^27. One I stopped at 2^24
  * for compatibility with Cambridge Lisp, but that is now so long in the
  * past that worrying about it seems unnecessary.
  */
-    if (r > 0x07ffffff) return aerror1("set-small-modulus", a);
+    if (r > 0x07ffffff)
+    {   // return aerror1("set-small-modulus", a);
+        modulus_is_large = 1;
+        large_modulus = a;
+        return old;
+    }
+    modulus_is_large = 0;
     current_modulus = r;
-    return onevalue(fixnum_of_int(old));
+    return onevalue(old);
 }
 
 Lisp_Object Liadd1(Lisp_Object nil, Lisp_Object a)

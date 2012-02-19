@@ -1275,7 +1275,7 @@ if canrun
 # before starting the build job.
 	mkdir -p buildlogs
 	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
-		-D@srcdir=$(CYGSRC) \
+		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
@@ -1306,7 +1306,7 @@ if canrun
 # before starting the build job.
 	mkdir -p buildlogs
 	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
-		-D@srcdir=$(CYGSRC) \
+		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o ./reduce.img/ \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
@@ -1321,7 +1321,7 @@ bootstraprecompile:	bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not build images on this platfrom
@@ -1331,7 +1331,7 @@ recompile:	reduce.img
 if canrun
 	mkdir -p buildlogs
 	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not build images on this platfrom
@@ -1386,7 +1386,7 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
-		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) \
+		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
@@ -1404,7 +1404,7 @@ profile:	bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
-		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) \
+		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
                 -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
@@ -1498,10 +1498,10 @@ testslow:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/testslow.log
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/checkall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkslow.log
 else !canrun
 	echo Can not run tests on this platfrom
@@ -1511,11 +1511,11 @@ testall:	reduce.img
 if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
                 -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
 	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
 else !canrun
 	echo Can not run tests on this platfrom
@@ -1525,7 +1525,7 @@ testslow1:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
                 -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
 else !canrun
@@ -1538,7 +1538,7 @@ countall:	reduce.img
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
 		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
                 -Dcpulimit=30000 -Dconslimit=$(conslimit) \
 		-- testlogs/countreduce.log
 
@@ -1550,7 +1550,7 @@ test1:	reduce.img
 if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/test$(which).log -Dwhich=$(which) \
                 -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
 else !canrun
@@ -1563,7 +1563,7 @@ count1:	reduce.img
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
 		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/count$(which).log -Dwhich=$(which) \
                 -Dcpulimit=30000 -Dconslimit=$(conslimit)
 
@@ -1573,7 +1573,7 @@ checkall:	reduce.img
 if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
-		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
 else !canrun
 	echo Can not check test results on this platfrom
