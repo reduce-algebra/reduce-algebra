@@ -36,9 +36,20 @@ flag('(on),'eval);
 
 on force;
 
+!#if (greaterp (length (explode (expt 10 100))) 100)
+
+% The conditional compilation here is so that on a system that does
+% not support bignums there is no waste of effort tabulating
+% meaningless overflowed values.
+
 symbolic macro procedure mk!-bernoulli u;
    <<for i := 1:300 do retrieve!*bern i;
      list('quote, bernoulli!-alist) >>;
+!#else
+symbolic macro procedure mk!-bernoulli u;
+   <<for i := 1:20 do retrieve!*bern i;
+     list('quote, bernoulli!-alist) >>;
+!#endif
 
 % When I read in save!-bernoulli the macro mk!-bernoulli() will get
 % expanded.  This is because of the RLISP flag "*force".  The effect

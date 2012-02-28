@@ -85,7 +85,7 @@ symbolic procedure logfp x;
     where p=(preci!: x - 1) where m=mt!: x;
 
 symbolic procedure roundconstants;
-   <<!!plumax := float(2**(!!maxbflexp -1));
+   <<!!plumax := 2.0**(!!maxbflexp -1);
      !!minflbf := invbf(!!maxflbf := make!:ibf (1,!!maxbflexp));
     % plumin must be large enough to avoid underflow from difference.
      !!plumin := 10.0**!!flprec/!!plumax;
