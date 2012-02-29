@@ -76,8 +76,8 @@ symbolic procedure fl2bf x;
      % convert x to an integer equivalent;
       r := normbf read!:num x;
       d := ep!: r+msd!: mt!: r;
-      x := x*2.0**-d; x := x + 0.5/2**!:bprec!:;
-      x := fix(x*2**!:bprec!:);
+      x := x*2.0**-d; x := x + 0.5/2.0**!:bprec!:;
+      x := fix(x*2.0**!:bprec!:);
       return make!:ibf (if s then -x else x, d - !:bprec!:) end)
         where !:bprec!:=!!nbfpd;
 

@@ -47,8 +47,7 @@ symbolic macro procedure mk!-bernoulli u;
      list('quote, bernoulli!-alist) >>;
 !#else
 symbolic macro procedure mk!-bernoulli u;
-   <<for i := 1:20 do retrieve!*bern i;
-     list('quote, bernoulli!-alist) >>;
+   nil;
 !#endif
 
 % When I read in save!-bernoulli the macro mk!-bernoulli() will get
