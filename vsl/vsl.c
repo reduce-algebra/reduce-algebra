@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <setjmp.h>
 
 // A Lisp item is represented as an integer and the low 3 bits
 // contain tag information that specify how the rest will be used.
@@ -121,8 +122,10 @@ typedef intptr_t LispObject;
 // The Lisp heap will have fixed size. Here I make it 32 Mbytes which should
 // fit comfortable on a Raspberry Pi but will also be ample for many serious
 // applications. On a 64-bit machine twice as much memory will be used.
-
-#define HEAPSIZE (8*1024*1024*sizeof(LispObject))
+#ifndef MEM
+#define MEM 8
+#endif
+#define HEAPSIZE (MEM*1024*1024*sizeof(LispObject))
 #define STACKSIZE (128*1024*sizeof(LispObject))
 
 // I force sizes to be multiples of some power of 2 mostly because I view
@@ -183,7 +186,8 @@ LispObject stackbase, *sp, stacktop;
 #define pipe       bases[22]
 #define raise      bases[23]
 #define lower      bases[24]
-#define BASES_SIZE       25
+#define dfprint    bases[25]
+#define BASES_SIZE       26
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -209,7 +213,7 @@ void allocateheap()
 {   void *pool = (void *)
         malloc(ROUNDED_HEAPSIZE+BITMAPSIZE+ROUNDED_STACKSIZE+16);
     if (pool == NULL)
-    {   fprintf(stderr, "Not enough memory available: Unable to proceed\n");
+    {   printf("Not enough memory available: Unable to proceed\n");
         exit(1);
     }
     heap1base = (LispObject)pool;
@@ -223,7 +227,6 @@ void allocateheap()
     stackbase = heap2top;
     stacktop = stackbase + ROUNDED_STACKSIZE;
     bitmap = stacktop;
-    sp = (LispObject *)stackbase;
 }
 
 // Now I have enough to let me define various allocation functions.
@@ -231,7 +234,8 @@ void allocateheap()
 extern void reclaim();
 
 LispObject cons(LispObject a, LispObject b)
-{   if (fringe1 >= fpfringe1)
+{
+    if (fringe1 >= fpfringe1)
     {   push2(a, b);
         reclaim();
         pop2(b, a);
@@ -244,8 +248,7 @@ LispObject cons(LispObject a, LispObject b)
 }
 
 LispObject list2star(LispObject a, LispObject b, LispObject c)
-{
-// (cons a (cons b c))
+{   // (cons a (cons b c))
     if (fringe1 + 2*sizeof(LispObject) >= fpfringe1)
     {   push3(a, b, c);
         reclaim();
@@ -262,8 +265,7 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject acons(LispObject a, LispObject b, LispObject c)
-{
-// (cons (cons a b) c)
+{   // (cons (cons a b) c)
     if (fringe1 + 2*sizeof(LispObject) >= fpfringe1)
     {   push3(a, b, c);
         reclaim();
@@ -339,8 +341,8 @@ LispObject boxint64(int64_t a)
 }
 
 void disaster(int line)
-{   fprintf(stderr, "\nInternal inconsistency detected on line %d\n", line);
-    fprintf(stderr, "Unable to continue. Apologies.\n");
+{   printf("\nInternal inconsistency detected on line %d\n", line);
+    printf("Unable to continue. Apologies.\n");
     abort();
 }
 
@@ -460,7 +462,7 @@ LispObject Nlogxor2(LispObject a, LispObject b)
 #undef FF
 #undef BB
 
-#define BOFFO_SIZE 256
+#define BOFFO_SIZE 4096
 char boffo[BOFFO_SIZE+4];
 int boffop;
 
@@ -475,8 +477,7 @@ void reclaim()
 // The strategy here is due to C J Cheyney ("A Nonrecursive List Compacting
 // Algorithm". Communications of the ACM 13 (11): 677-678, 1970).
     LispObject *s, w;
-    fprintf(stderr, "+++ GC number %d", gccount++);
-    fflush(stderr);
+    printf("+++ GC number %d", gccount++);
 // I need to clear the part of the bitmap that could be relevant for floating
 // point values.
     int o = (fpfringe1 - heap1base)/(8*8);
@@ -548,11 +549,11 @@ void reclaim()
 // that still point there are liable to lead to prompt crashes.
     memset((void *)heap2base, 0x56, (size_t)(heap2top-heap2base));
     if (fpfringe1 - fringe1 < 1000*sizeof(LispObject))
-    {   fprintf(stderr, "\nRun out of memory.\n");
-        fprintf(stderr, "Unable to continue. Apologies.\n");
+    {   printf("\nRun out of memory.\n");
+        printf("Unable to continue. Apologies.\n");
         exit(1);
     }
-    fprintf(stderr, " - collection complete\n");
+    printf(" - collection complete\n");
 }
 
 LispObject copy(LispObject x)
@@ -638,8 +639,7 @@ LispObject copy(LispObject x)
 //case tagFORWARD:
 //case tagHDR:
             disaster(__LINE__);
-            return 0;  // gcc does not know that the "disaster" function will
-            // never return, so this is to avoid a moan from it.
+            return 0;  // avoid GCC moans.
     }
 }
 
@@ -648,15 +648,25 @@ LispObject copy(LispObject x)
 
 int linelength = 80, linepos = 0, printflags = printESCAPES;
 
-#define MAX_LISPFILES 10
+#define MAX_LISPFILES 30
 FILE *lispfiles[MAX_LISPFILES];
 int32_t file_direction = 0, interactive = 0;
-int lispin, lispout;
+int lispin = 0, lispout = 1;
 
-extern LispObject lookup(const char *s);
+extern LispObject lookup(const char *s, int n, int createp);
 
 void wrch(int c)
-{   if (lispout != -1)
+{
+    if (lispout == -1)
+    {   char w[4];
+// This bit is for the benefit of explode and explodec
+        LispObject r;
+        w[0] = c; w[1] = 0;
+        r = lookup(w, 1, 1);
+        work1 = cons(r, work1);
+    }
+    else if (lispout == -2) boffo[boffop++] = c;
+    else
     {   putc(c, lispfiles[lispout]);
         if (c == '\n')
         {   linepos = 0;
@@ -664,29 +674,23 @@ void wrch(int c)
         }
         else linepos++;
     }
-    else
-    {   char w[4];
-// This bit is for the benefit of explode and explodec
-        LispObject r;
-        w[0] = c; w[1] = 0;
-        r = lookup(w);
-        work1 = cons(r, work1);
-    }
 }
 
 int rdch()
 {   LispObject w;
-    if (lispin != -1)
+    if (lispin == -1)
+    {   if (!isCONS(work1)) return EOF;
+        w = qcar(work1);
+        work1 = qcdr(work1);
+        if (isSYMBOL(w)) w = qpname(w);
+        if (!isSTRING(w)) return EOF;
+        return *qstring(w);
+    }
+    else
     {   int c = getc(lispfiles[lispin]);
         if (c != EOF && qvalue(echo) != nil) wrch(c);
         return c;
     }
-    else if (!isCONS(work1)) return EOF;
-    w = qcar(work1);
-    work1 = qcdr(work1);
-    if (isSYMBOL(w)) w = qpname(w);
-    if (!isSTRING(w)) return EOF;
-    return *qstring(w);
 }
 
 int gensymcounter = 1;
@@ -709,7 +713,7 @@ void internalprint(LispObject x)
             }
             while (isCONS(x))
             {   checkspace(1);
-                if (linepos != 0 || sep != ' ') wrch(sep);
+                if (linepos != 0 || sep != ' ' || lispout < 0) wrch(sep);
                 sep = ' ';
                 push(x);
                 internalprint(qcar(x));
@@ -742,17 +746,17 @@ void internalprint(LispObject x)
             }
             else if (len != 0)
             {   esc = 0;
-                if (!isalpha((int)s[0])) esc++;
+                if (!islower((int)s[0])) esc++;
                 for (i=1; i<len; i++)
-                {   if (!isalpha((int)s[i]) &&
+                {   if (!islower((int)s[i]) &&
                         !isdigit((int)s[i]) &&
                         s[i]!='_') esc++;
                 }
                 checkspace(len + esc);
-                if (!isalpha((int)s[0])) wrch('!');
+                if (!islower((int)s[0])) wrch('!');
                 wrch(s[0]);
                 for (i=1; i<len; i++)
-                {   if (!isalpha((int)s[i]) &&
+                {   if (!islower((int)s[i]) &&
                         !isdigit((int)s[i]) &&
                         s[i]!='_')
                         wrch('!');
@@ -934,7 +938,7 @@ LispObject token()
             }
         }
         boffo[boffop] = 0;
-        return lookup(boffo);
+        return lookup(boffo, boffop, 1);
     }
     if (curchar == '"')                     // Start a string
     {   curchar = rdch();
@@ -960,7 +964,7 @@ LispObject token()
 // introduce a (signed) number, but otherwise they are treated as punctuation.
         if (!isdigit(curchar))
         {   boffo[boffop] = 0;
-            return lookup(boffo);
+            return lookup(boffo, boffop, 1);
         }
     }
 // Note that in some cases after a + or - I drop through to here.
@@ -1044,7 +1048,7 @@ LispObject token()
     curchar = rdch();
     boffo[boffop] = 0;
     symtype = 'a';
-    return lookup(boffo);
+    return lookup(boffo, boffop, 1);
 }
 
 // Syntax for Lisp input
@@ -1131,9 +1135,8 @@ LispObject readT()
     }
 }
 
-LispObject lookup(const char *s)
+LispObject lookup(const char *s, int len, int createp)
 {   LispObject w, pn;
-    int len = strlen(s);
     int i, hash = 1;
     for (i=0; i<len; i++) hash = 13*hash + s[i];
     hash = (hash & 0x7fffffff) % OBHASH_SIZE;
@@ -1148,6 +1151,7 @@ LispObject lookup(const char *s)
         w = qcdr(w);
     }
 // here the symbol as required was not already present.
+    if (!createp) return undefined;
     pn = makestring(s, len);
     push(pn);
     w = allocatesymbol();
@@ -1177,12 +1181,9 @@ int backtraceflag = -1;
 #define backtraceTRACE  2
 
 LispObject error1(const char *msg, LispObject data)
-{   int f = lispout;
-    if ((backtraceflag & backtraceHEADER) != 0)
-    {   linepos = fprintf(stderr, "\n+++ Error: %s: ", msg);
-        lispout = 2;
+{   if ((backtraceflag & backtraceHEADER) != 0)
+    {   linepos = printf("\n+++ Error: %s: ", msg);
         print(data);
-        lispout = f;
     }
     unwindflag = (backtraceflag & backtraceTRACE) != 0 ? unwindBACKTRACE :
                  unwindERROR;
@@ -1191,7 +1192,7 @@ LispObject error1(const char *msg, LispObject data)
 
 LispObject error1s(const char *msg, const char *data)
 {   if ((backtraceflag & backtraceHEADER) != 0)
-        fprintf(stderr, "\n+++ Error: %s %s\n", msg, data);
+        printf("\n+++ Error: %s %s\n", msg, data);
     unwindflag = (backtraceflag & backtraceTRACE) != 0 ? unwindBACKTRACE :
                  unwindERROR;
     return nil;
@@ -1208,17 +1209,15 @@ LispObject applytostack(int n)
 // expect that almost all Lisp functions have at most 4 arguments, so
 // if there are more than that I will pass the fifth and beyond all in a list.
     LispObject f, w;
-    int saveout = lispout,
-        traced = (qflags(sp[-n-1]) & flagTRACED) != 0;
+    int traced = (qflags(sp[-n-1]) & flagTRACED) != 0;
     if (traced)
     {   int i;
-        fprintf(stderr, "Calling: "); linepos = 9;
-        lispout = 2; print(sp[-n-1]);
+        linepos = printf("Calling: ");
+        print(sp[-n-1]);
         for (i=1; i<=n; i++)
-        {   linepos = fprintf(stderr, "Arg%d: ", i);
+        {   linepos = printf("Arg%d: ", i);
             print(sp[i-n-1]);
         }
-        lispout = saveout;
     }
     if (n >= 5)
     {   push(nil);
@@ -1285,14 +1284,15 @@ LispObject applytostack(int n)
     }
     pop(f);
     if (unwindflag == unwindBACKTRACE)
-    {   saveout = lispout; lispout = 2;
-        linepos = fprintf(stderr, "Calling: ");
-        print(f); lispout = saveout;
+    {   linepos = printf("Calling: ");
+        print(f);
     }
     else if (traced)
-    {   push(w); saveout = lispout; lispout = 2;
-        prin(f); fprintf(stderr, " = "); linepos += 3;
-        print(w); lispout = saveout; pop(w);
+    {   push(w);
+        prin(f);
+        linepos += printf(" = ");
+        print(w);
+        pop(w);
     }
     return w;
 }
@@ -1536,12 +1536,11 @@ LispObject definer(LispObject x, int flags, void *fn)
     qflags(name) |= flags;
     qdefn(name) = fn;
     qlits(name) = def;
-// Now I will try to call macroexpand_list to expand all macros
-    push2(name, def);
-    x = lookup("macroexpand_list");
-    if (qdefn(x) != NULL)
-    {   def = qcdr(TOS);
-        push2(x, def);
+// Now I will try to call macroexpand_list to expand all macros.
+    x = lookup("macroexpand_list", 16, 0);
+    if (x != undefined && qdefn(x) != NULL)
+    {   push2(name, def);
+        push2(x, qcdr(def));
         x = applytostack(1);
         pop2(def, name);
         if (unwindflag != unwindNONE) return name;
@@ -1788,6 +1787,16 @@ LispObject Lliststar(LispObject lits, LispObject x)
     z = va_arg(a, LispObject);  \
     va_end(a)
 
+#define ARG0123(name, x, y, z)                        \
+    va_list a;                                        \
+    LispObject x=NULLATOM, y=NULLATOM, z=NULLATOM;    \
+    if (nargs > 3) return error1s("wrong number of arguments for", name); \
+    va_start(a, nargs);                               \
+    if (nargs > 0) x = va_arg(a, LispObject);         \
+    if (nargs > 1) y = va_arg(a, LispObject);         \
+    if (nargs > 2) z = va_arg(a, LispObject);         \
+    va_end(a)
+
 LispObject Lcar(LispObject lits, int nargs, ...)
 {   ARG1("car", x);
     if (isCONS(x)) return qcar(x);
@@ -1967,6 +1976,11 @@ LispObject Lset(LispObject lits, int nargs, ...)
     return (qvalue(x) = y);
 }
 
+LispObject Lboundp(LispObject lits, int nargs, ...)
+{   ARG1("boundp", x);
+    return (isSYMBOL(x) && qvalue(x)!=undefined) ? lisptrue : nil;
+}
+
 LispObject Lgensym(LispObject lits, int nargs, ...)
 {   LispObject r;
     ARG0("gensym");
@@ -1992,8 +2006,9 @@ LispObject Loblist(LispObject lits, int nargs, ...)
     work1 = nil;
     for (i=0; i<OBHASH_SIZE; i++)
         for (work2=obhash[i]; isCONS(work2); work2 = qcdr(work2))
-            if (qcar(work2) != undefined)
+        {   if (qcar(work2) != undefined)
                 work1 = cons(qcar(work2), work1);
+        }
     return work1;
 }
 
@@ -2358,8 +2373,10 @@ LispObject Ldifference(LispObject lits, int nargs, ...)
 
 #undef FF
 #undef BB
-#define FF(a, b) boxfloat((a) / (b))
-#define BB(a, b) makeinteger((a) / (b))
+#define FF(a, b) ((b) == 0.0 ? error1("division by 0.0", nil) : \
+                  boxfloat((a) / (b)))
+#define BB(a, b) ((b) == 0 ? error1("division by 0", nil) : \
+                  makeinteger((a) / (b)))
 
 LispObject Lquotient(LispObject lits, int nargs, ...)
 {   ARG2("quotient", x, y);
@@ -2367,7 +2384,8 @@ LispObject Lquotient(LispObject lits, int nargs, ...)
 }
 
 #undef BB
-#define BB(a, b) makeinteger((a) % (b))
+#define BB(a, b) ((b) == 0 ? error1("remainder by 0", nil) : \
+                  makeinteger((a) % (b)))
 
 LispObject Lremainder(LispObject lits, int nargs, ...)
 {   ARG2("remainder", x, y);
@@ -2375,7 +2393,8 @@ LispObject Lremainder(LispObject lits, int nargs, ...)
 }
 
 #undef BB
-#define BB(a, b) cons(makeinteger((a) / (b)), makeinteger((a) % (b)))
+#define BB(a, b) ((b) == 0 ? error1("division by 0", nil) : \
+                  cons(makeinteger((a) / (b)), makeinteger((a) % (b))))
 
 LispObject Ldivide(LispObject lits, int nargs, ...)
 {   ARG2("divide", x, y);
@@ -2413,24 +2432,20 @@ LispObject Lrightshift(LispObject lits, int nargs, ...)
 #define FILEID (('v' << 0) | ('s' << 8) | ('l' << 16) |   \
                 (('0' + sizeof(LispObject)) << 24))
 
+static const char *imagename = "vsl.img";
+
 LispObject Lpreserve(LispObject lits, int nargs, ...)
 {
 // preserve can take either 0 or 1 args. If it has a (non-nil) arg that will
 // be a startup function for the image when restored.
-    va_list a;
-    LispObject x;
     FILE *f;
-    if (nargs == 0) x = nil;
-    else
-    {   if (nargs != 1)
-            return error1s("wrong number of arguments for", "preserve");
-        va_start(a, nargs);
-        x = va_arg(a, LispObject);
-        va_end(a);
-    }
-    restartfn = x;
-    f = fopen("vsl.img", "wb");
-    if (f == NULL) return error1("unable to open vsl.img for writing", nil);
+    ARG0123("preserve", x,y,z);
+    if (y != NULLATOM || z != NULLATOM)
+        return error1s("wrong number of arguments for", "preserve");
+    restartfn = (x == NULLATOM ? nil : x);
+printf("Preserve with restartfn = "); print(restartfn);
+    f = fopen(imagename, "wb");
+    if (f == NULL) return error1("unable to open image for writing", nil);
     headerword = FILEID;
     reclaim(); // To compact memory.
 // I write this stuff out as a bunch of bytes, since I only intend to
@@ -2448,10 +2463,28 @@ LispObject Lpreserve(LispObject lits, int nargs, ...)
     return nil;
 }
 
+jmp_buf restart_buffer;
+int coldstart = 0;
+
+LispObject Lrestart_csl(LispObject lits, int nargs, ...)
+{   LispObject save = lispout;
+    ARG0123("restart-csl", x, y, z);
+    if (z != NULLATOM)
+        return error1s("wrong number of arguments for", "restart-csl");
+    coldstart = 0;
+    if (x == nil || x == NULLATOM) coldstart = 1, x = nil;
+    if (y == NULLATOM) x = cons(x, nil);
+    else x = list2star(x, y, nil);
+    boffop = 0;
+    lispout = -2;
+    prin(x);
+    lispout = save;
+    longjmp(restart_buffer, 1);
+}
+
 LispObject Lstop(LispObject lits, int nargs, ...)
 {   ARG1("stop", x);
     exit(isFIXNUM(x) ? (int)qfixnum(x) : 0);
-    return nil; // well this will in fact neber be executed!
 }
 
 LispObject Lprin(LispObject lits, int nargs, ...)
@@ -2517,7 +2550,7 @@ LispObject Lcodechar(LispObject lits, int nargs, ...)
     ARG1("code-char", x);
     if (!isFIXNUM(x)) return error1("bad arg for code-char", x);
     b[0] = (char)qfixnum(x); b[1] = 0;
-    return lookup(b);
+    return lookup(b, 1, 1);
 }
 
 LispObject Lreadch(LispObject lits, int nargs, ...)
@@ -2527,7 +2560,7 @@ LispObject Lreadch(LispObject lits, int nargs, ...)
             qvalue(raise) != nil ? toupper(curchar) : curchar;
     ch[1] = 0;
     curchar = rdch();
-    return lookup(ch);
+    return lookup(ch, 1, 1);
 }
 
 LispObject Lreadline(LispObject lits, int nargs, ...)
@@ -2540,7 +2573,7 @@ LispObject Lreadline(LispObject lits, int nargs, ...)
         curchar = rdch();
     }
     ch[n] = 0;
-    return lookup(ch);
+    return lookup(ch, n, 1);
 }
 
 LispObject Lread(LispObject lits, int nargs, ...)
@@ -2603,18 +2636,31 @@ char filename[LONGEST_FILENAME];
 
 LispObject Lopen(LispObject lits, int nargs, ...)
 {   FILE *f;
-    int n;
+    int n, loadp = (lits != nil), how = 0;
+    char *p;
     ARG2("open", x, y);
+    if (isSYMBOL(x)) x = qpname(x);
     if (!isSTRING(x) ||
-        (y != input && y != output && y != pipe))
+        !((y == input && (how=1)!=0) ||
+          (y == output && (how=2)!=0) ||
+          (y == pipe && (how=3)!=0)))
         return error1("bad arg for open", cons(x, y));
-    memset(filename, 0, LONGEST_FILENAME);
-    memcpy(filename, qstring(x), (size_t)veclength(qheader(x)));
+    if (loadp) sprintf(filename, "modules/%.*s.fasl",
+                                 (int)veclength(qheader(x)), qstring(x));
+    else if (*qstring(x)=='$' && (p=strchr(qstring(x), '/'))!=NULL)
+    {   sprintf(filename, "@%.*s", (int)(p-qstring(x))-1, 1+qstring(x));
+        lits = qvalue(lookup(filename, strlen(filename), 0));
+        if (isSTRING(lits)) sprintf(filename, "%.*s%.*s",
+           (int)veclength(qheader(lits)), qstring(lits),
+           (int)(veclength(qheader(x)) - (p-qstring(x))), p);
+        else sprintf(filename, "%.*s", (int)veclength(qheader(x)), qstring(x));
+    }
+    else sprintf(filename, "%.*s", (int)veclength(qheader(x)), qstring(x));
 #ifdef _WIN32
     while (strchr(filename, '/') != NULL) *strchr(filename, '/') = '\\';
 #endif
-    if (y == pipe) f = popen(filename, "w");
-    else f = fopen(filename, (y == input ? "r" : "w"));
+    if (how == 3) f = popen(filename, "w");
+    else f = fopen(filename, (how == 1 ? "r" : "w"));
     if (f == NULL) return error1("file could not be opened", x);
     for (n=4; n<MAX_LISPFILES && lispfiles[n]!=NULL; n++);
     if (n<MAX_LISPFILES)
@@ -2640,23 +2686,40 @@ LispObject Lclose(LispObject lits, int nargs, ...)
     return nil;
 }
 
+void readevalprint(int loadp)
+{   while (symtype != EOF)
+    {   LispObject r;
+        push(qvalue(echo));
+        unwindflag = unwindNONE;
+        if (loadp) qvalue(echo) = nil; 
+        backtraceflag = backtraceHEADER | backtraceTRACE;
+        r = readS();
+        pop(qvalue(echo));
+        if (loadp || qvalue(dfprint) == nil ||
+            (isCONS(r) && (qcar(r) == lookup("rdf", 3, 0) ||
+                           qcar(r) == lookup("faslend", 7, 0))))
+        {   r = eval(r);
+            if (unwindflag == unwindNONE && !loadp)
+            {   linepos += printf("Value: ");
+                print(r);
+            }
+        }
+        else Lapply(nil, 2, qvalue(dfprint), cons(r, nil));
+    }
+}
+
 LispObject Lrdf(LispObject lits, int nargs, ...)
-{   int f, f1;
+{   int f, f1, loadp = (lits != nil), savech = curchar, savetype = symtype;
     ARG1("rdf", x);
-    f1 = Lopen(nil, 2, x, input);
+    f1 = Lopen(lits, 2, x, input);
     if (unwindflag != unwindNONE) return nil;
     f = Lrds(nil, 1, f1);
-    while (symtype != EOF)
-    {   LispObject r;
-        unwindflag = unwindNONE;
-        backtraceflag = backtraceHEADER | backtraceTRACE;
-        r = eval(readS());
-        if (unwindflag == unwindNONE) print(r);
-    }
-    curchar = '\n';
-    symtype = '?';
+    readevalprint(loadp);
     Lrds(nil, 1, f);
     Lclose(nil, 1, f1);
+    curchar = savech;
+    symtype = savetype;
+    if (!loadp) printf("+++ End of rdf\n");
     return nil;
 }
 
@@ -2736,6 +2799,7 @@ struct defined_functions fnsetup[] =
     {"apply",      0,            (void *)Lapply},
     {"atan",       0,            (void *)Latan},
     {"atom",       0,            (void *)Latom},
+    {"boundp",     0,            (void *)Lboundp},
     {"car",        0,            (void *)Lcar},
     {"cdr",        0,            (void *)Lcdr},
     {"char-code",  0,            (void *)Lcharcode},
@@ -2770,6 +2834,7 @@ struct defined_functions fnsetup[] =
     {"leftshift",  0,            (void *)Lleftshift},
     {"leq",        0,            (void *)Lleq},
     {"lessp",      0,            (void *)Llessp},
+    {"load-module",0,            (void *)Lrdf},
     {"log",        0,            (void *)Llog},
     {"lognot",     0,            (void *)Llognot},
     {"minus",      0,            (void *)Lminus},
@@ -2790,7 +2855,7 @@ struct defined_functions fnsetup[] =
     {"put",        0,            (void *)Lput},
     {"puthash",    0,            (void *)Lputhash},
     {"putv",       0,            (void *)Lputv},
-    {"quotient",   0,            (void *)Lquotient},
+    {"~quotient",  0,            (void *)Lquotient},
     {"rdf",        0,            (void *)Lrdf},
     {"rds",        0,            (void *)Lrds},
     {"read",       0,            (void *)Lread},
@@ -2799,6 +2864,7 @@ struct defined_functions fnsetup[] =
     {"remainder",  0,            (void *)Lremainder},
     {"remhash",    0,            (void *)Lremhash},
     {"remprop",    0,            (void *)Lremprop},
+    {"restart-csl",0,            (void *)Lrestart_csl},
     {"return",     0,            (void *)Lreturn},
     {"rightshift", 0,            (void *)Lrightshift},
     {"rplaca",     0,            (void *)Lrplaca},
@@ -2828,37 +2894,40 @@ void setup()
 // way to do things. I am going to assume that nothing can fail within this
 // setup code, so I can omit all checks for error conditions.
     struct defined_functions *p;
-    undefined = lookup("~indefinite-value~");
+    undefined = lookup("~indefinite-value~", 18, 1);
     qvalue(undefined) = undefined;
-    nil = lookup("nil");
+    nil = lookup("nil", 3, 1);
     qvalue(nil) = nil;
-    lisptrue = lookup("t");
+    lisptrue = lookup("t", 1, 1);
     qvalue(lisptrue) = lisptrue;
-    qvalue(echo = lookup("*echo")) = interactive ? nil : lisptrue;
-    qvalue(lispsystem = lookup("lispsystem*")) =
-       list2star(lookup("vsl"), lookup("csl"), nil);
-    quote = lookup("quote");
-    backquote = lookup("`");
-    comma = lookup(",");
-    comma_at = lookup(",@");
-    eofsym = lookup("$eof$");
+    qvalue(echo = lookup("*echo", 5, 1)) = interactive ? nil : lisptrue;
+    qvalue(lispsystem = lookup("lispsystem*", 11, 1)) =
+       list2star(lookup("vsl", 3, 1), lookup("csl", 3, 1),
+                 cons(lookup("embedded", 8, 1), nil));
+    quote = lookup("quote", 5, 1);
+    backquote = lookup("`", 1, 1);
+    comma = lookup(",", 1, 1);
+    comma_at = lookup(",@", 2, 1);
+    eofsym = lookup("$eof$", 5, 1);
     qvalue(eofsym) = eofsym;
-    lambda = lookup("lambda");
-    expr = lookup("expr");
-    subr = lookup("subr");
-    fexpr = lookup("fexpr");
-    fsubr = lookup("fsubr");
-    macro = lookup("macro");
-    input = lookup("input");
-    output = lookup("output");
-    pipe = lookup("pipe");
-    qvalue(raise = lookup("*raise")) = nil;
-    qvalue(lower = lookup("*lower")) = lisptrue;
+    lambda = lookup("lambda", 6, 1);
+    expr = lookup("expr", 4, 1);
+    subr = lookup("subr", 4, 1);
+    fexpr = lookup("fexpr", 5, 1);
+    fsubr = lookup("fsubr", 5, 1);
+    macro = lookup("macro", 5, 1);
+    input = lookup("input", 5, 1);
+    output = lookup("output", 6, 1);
+    pipe = lookup("pipe", 4, 1);
+    qvalue(raise = lookup("*raise", 6, 1)) = nil;
+    qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
+    qvalue(dfprint = lookup("dfprint*", 6, 1)) = nil;
+    qlits(lookup("load-module", 11, 1)) = lisptrue;
     cursym = nil;
     work1 = work2 = nil;
     p = fnsetup;
     while (p->name != NULL)
-    {   LispObject w = lookup(p->name);
+    {   LispObject w = lookup(p->name, strlen(p->name), 1);
         qflags(w) |= p->flags;
         qdefn(w) = p->entrypoint;
         p++;
@@ -2873,20 +2942,23 @@ void cold_setup()
 // because I want to create the hash table before even the symbol nil
 // exists.
     for (i=0; i<OBHASH_SIZE; i++) obhash[i] = tagFIXNUM;
+    for (i=0; i<BASES_SIZE; i++) bases[i] = NULLATOM;
     setup();
 // The following fields could not be set up quite early enough in the
 // cold start case, so I repair them now.
     restartfn = qplist(undefined) = qlits(undefined) =
         qplist(nil) = qlits(nil) = nil;
+printf("restartfn = "); print(restartfn);
 }
 
 LispObject relocate(LispObject a, LispObject change)
 {
 // Used to update a LispObject when reloaded from a saved heap image.
     switch (a & TAGBITS)
-    {   case tagCONS:
+    {   case tagATOM:
+           if (a == NULLATOM) return a;
+        case tagCONS:
         case tagSYMBOL:
-        case tagATOM:
         case tagFLOAT:
             return a + change;
         default:
@@ -2901,18 +2973,18 @@ void warm_setup()
 {
 // The idea here is that a file called "vsl.img" will already have been
 // created by a previous use of vsl, and it should be re-loaded.
-    FILE *f = fopen("vsl.img", "rb");
+    FILE *f = fopen(imagename, "rb");
     int i;
     LispObject currentbase = heap1base, change, *s;
     if (f == NULL)
-    {   fprintf(stderr, "Error: unable to open vsl.img for reading\n");
+    {   printf("Error: unable to open image for reading\n");
         exit(1);
     }
     if (fread(nonbases, 1, sizeof(nonbases), f) != sizeof(nonbases) ||
         headerword != FILEID ||
         fread(bases, 1, sizeof(bases), f) != sizeof(bases) ||
         fread(obhash, 1, sizeof(obhash), f) != sizeof(obhash))
-    {   fprintf(stderr, "Error: Image file corrupted or incompatible\n");
+    {   printf("Error: Image file corrupted or incompatible\n");
         exit(1);
     }
     change = currentbase - heap1base;
@@ -2926,7 +2998,7 @@ void warm_setup()
               (size_t)(fringe1-heap1base) ||
         fread((void *)fpfringe1, 1, (size_t)(heap1top-fpfringe1), f) !=
               (size_t)(heap1top-fpfringe1))
-    {   fprintf(stderr, "Error: Unable to read image file\n");
+    {   printf("Error: Unable to read image file\n");
         exit(1);
     }
     fclose(f);
@@ -2987,16 +3059,17 @@ void warm_setup()
 int main(int argc, char *argv[])
 {   int i;
     const char *inputfilename = NULL;
-    int coldstart = 0;
+    coldstart = 0;
     interactive = 1;
     for (i=1; i<argc; i++)
     {
 // I have some VERY simple command-line options here.
-//        -z        do a "cold start" rather than re-loading an existing
-//                  heap image.
-//        filename  read from that file rather than from the standard input.
+//        -z         do a "cold start".
+//        -ifilename use that as image file
+//        filename   read from that file rather than from the standard input.
         if (strcmp(argv[i], "-z") == 0) coldstart = 1;
-        if (argv[i][0] != '-') inputfilename = argv[i], interactive = 0;
+        else if (strncmp(argv[i], "-i", 2) == 0) imagename=argv[i]+2;
+        else if (argv[i][0] != '-') inputfilename = argv[i], interactive = 0;
     }
     printf("VSL version 1.00\n");
     linepos = 0;
@@ -3008,32 +3081,51 @@ int main(int argc, char *argv[])
     if (inputfilename != NULL)
     {   FILE *in = fopen(inputfilename, "r");
         if (in == NULL)
-            fprintf(stderr,
-                    "Unable to read from %s, so using standard input\n",
-                    inputfilename);
+            printf("Unable to read from %s, so using standard input\n",
+                   inputfilename);
         else lispfiles[3] = in;
     }
     allocateheap();
 // A warm start will read a file "vsl.img" which it expects to have been
 // made by a previous use of vsl.
+    boffop = 0; setjmp(restart_buffer);
+    sp = (LispObject *)stackbase;
     if (coldstart) cold_setup();
     else warm_setup();
-    curchar = '\n'; symtype = '?'; cursym = nil;
-// If a heap image had been built specifying a restart function then
-// call that here rather than using the normal read-eval-print loop.
-    if (restartfn != nil)
-    {   Lapply(nil, 2, restartfn, nil);
-    }
-    else while (symtype != EOF)
-        {   LispObject r;
-            unwindflag = unwindNONE;
-            backtraceflag = backtraceHEADER | backtraceTRACE;
-            r = eval(readS());
-            if (unwindflag == unwindNONE)
-            {   printf("Value: "); linepos += 7;
-                print(r);
-            }
+    for (i=1; i<argc; i++)
+    {   if (argv[i][0] == '-' && argv[i][1] == 'D')
+        {   const char *d1 = strchr(argv[i], '=');
+            if (d1 == NULL) continue;
+            qvalue(lookup(argv[i]+2, (d1-argv[i])-2, 1)) =
+                makestring(d1+1, strlen(d1+1));
         }
+    }
+    curchar = '\n'; symtype = '?'; cursym = nil;
+    if (boffop == 0)          // normal start, not following restart-csl
+    {   if (restartfn != nil) // restart function saved by preserve
+        {
+            Lapply(nil, 2, restartfn, nil);
+            return 0;
+        }
+    }
+    else
+    {   LispObject x, data = makestring(boffo, boffop);
+        data = Lcompress(nil, 1, Lexplodec(nil, 1, data));
+        x = qcar(data);
+printf("restartfn = "); print(restartfn);
+        if (x != nil)
+        {   if (x == lisptrue) x = restartfn;
+            else if (isCONS(x) && isCONS(qcdr(x)))
+            {   LispObject m = qcar(x);
+                push2(data, qcar(qcdr(x)));
+                Lrdf(lisptrue, 1, m);
+                pop2(x, data);
+            }
+            Lapply(nil, 2, x, qcdr(data));
+            return 0;
+        }
+    }
+    readevalprint(0);
     return 0;
 }
 

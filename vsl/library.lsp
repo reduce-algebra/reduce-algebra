@@ -8,9 +8,6 @@
 % flag (-z) does not then have to be used and all these
 % extra functions will be available.
 
-% Because this uses (preserve) this will only work on full vsl
-% not minivsl.
-
 (setq blank   '! )
 (setq tab     (code!-char 9))
 (setq !$eol!$ (code!-char 10))
@@ -57,6 +54,8 @@
 
 (de not (x)
    (null x))
+
+(de quotient (a b) (!~quotient a b))
 
 (de reverse_sub (a b)                  % Sub-function for reverse.
    (cond

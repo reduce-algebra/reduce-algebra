@@ -17,7 +17,16 @@ vsl.img:	vsl library.lsp
 	./vsl -z library.lsp
 
 reduce:
-	./vsl -z buildreduce.lsp > reduce.log 2>&1
+	mkdir -p modules
+	rm -f modules/* reduce.img
+	./vsl -z -ireduce.img -D@srcdir=. -D@reduce=.. \
+	  buildreduce.lsp > reduce.log
+
+# To run Reduce go
+#    ./vsl -ireduce.img
+# then
+#    in "alg.tst";
+# runs a test/demo script.
 
 clean:
 	rm -f *.o *.bak *.exe *.log *.img vsl
