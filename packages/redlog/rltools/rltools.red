@@ -190,7 +190,7 @@ procedure meminfocomma(n,comma);
 
 !#if (memq 'csl lispsystem!*)
    procedure rltools_trunk();
-      rltools_dotdotx(!@srcdir,2);
+      compress('!" . append(explodec !@reduce, '(!/ !")));
 !#endif
 
 procedure rltools_dotdotx(s,n);
