@@ -60,6 +60,10 @@ cp  $srcdir/sazanami-20040629/doc/misaki/misakib8.txt $F/doc.sazanami/misaki
 cp  $srcdir/sazanami-20040629/doc/mplus/LICENSE_J     $F/doc.sazanami/mplus
 cp  $srcdir/sazanami-20040629/doc/oradano/README.txt  $F/doc.sazanami/oradano
 cp  $srcdir/sazanami-20040629/doc/shinonome/LICENSE   $F/doc.sazanami/shinonome
+mkdir -p $1.app/Contents/Resources/reduce.resources
+AA="$1.app/Contents/Resources/reduce.resources"
+cp $srcdir/../../packages/redlog/mma/mma.awk          $AA
+cp $srcdir/../../packages/redlog/qepcad/qepcad.awk    $AA
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $P
 echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $P
 echo "<plist version=\"0.9\">" >> $P

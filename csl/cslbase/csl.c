@@ -2631,7 +2631,7 @@ term_printf(
  * at least some modules from one to another under program control.
  *
  * At present I still view the one-file solution as neater and so it is the
- * default. The names used for files witin a directory are discussed in the
+ * default. The names used for files within a directory are discussed in the
  * places where I manage them.
  */
         if (standard_directory[0] == '.' &&

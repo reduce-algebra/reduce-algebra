@@ -636,6 +636,7 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@GP = wgnuplot.exe
 @windows_TRUE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
+@windows_TRUE@AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
 @windows_TRUE@fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 @windows_FALSE@csl_LDADD = $(FOX_LIBS)
@@ -649,17 +650,17 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@		$(FONTDEP) $(WXC)
 
 @windows_FALSE@bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
-@windows_FALSE@		reduce.doc/index.html $(GP) $(WXC)
+@windows_FALSE@		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 
 @windows_TRUE@bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 @windows_TRUE@		fwin-csl.$(OBJEXT) $(FONTDEP) \
-@windows_TRUE@		reduce.doc/index.html $(GP) $(WXC)
+@windows_TRUE@		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 
 @windows_FALSE@reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
-@windows_FALSE@		$(GP) $(WXC)
+@windows_FALSE@		$(AWKFILES) $(GP) $(WXC)
 
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
-@windows_TRUE@		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
+@windows_TRUE@		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC) $(AWKFILES)
 
 @windows_FALSE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_FALSE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -692,8 +693,8 @@ fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 @wx_TRUE@wxpsl_SOURCES = wxpsl.cpp $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
 termdemo_LIBS = 
-@mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
-@mac_framework_TRUE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) *.app
+@mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
+@mac_framework_TRUE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live
@@ -703,7 +704,7 @@ termdemo_LIBS =
 # code I look in xxx.app/Contents/...
 # But initially the images get built next to the executable.
 #
-@windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
+@windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 @gui_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COM) reduce$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
@@ -2815,6 +2816,12 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.txt reduce.doc
+
+$(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
+	$(srcdir)/../../packages/redlog/qepcad/qepcad.awk
+	-mkdir -p reduce.resources
+	cp $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
+	cp $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
 
 #
 # I also copy a set of gnuplot binaries into this directory.

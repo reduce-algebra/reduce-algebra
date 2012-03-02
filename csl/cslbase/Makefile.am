@@ -451,6 +451,8 @@ dyndemo_LDADD = $(srcdir)/dyndemo.def
 
 reduceres = fwin-reduce.$(OBJEXT)
 
+AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
+
 fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
@@ -460,9 +462,9 @@ csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 		$(FONTDEP) $(WXC)
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 		fwin-csl.$(OBJEXT) $(FONTDEP) \
-		reduce.doc/index.html $(GP) $(WXC)
+		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
-		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
+		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC) $(AWKFILES)
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -503,9 +505,9 @@ reduce_LDADD = $(FOX_LIBS)
 
 csl_DEPENDENCIES = $(FONTDEP) $(WXC)
 bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
-		reduce.doc/index.html $(GP) $(WXC)
+		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
-		$(GP) $(WXC)
+		$(AWKFILES) $(GP) $(WXC)
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -1046,12 +1048,12 @@ termdemo_LIBS=
 #
 
 if windows
-image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
+image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 else !windows
 if mac_framework
-image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) *.app
+image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
 else
-image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
+image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 endif
 endif !windows
 install-data-local: $(image_files)
@@ -1347,6 +1349,12 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.txt reduce.doc
+
+$(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
+	$(srcdir)/../../packages/redlog/qepcad/qepcad.awk
+	-mkdir -p reduce.resources
+	cp $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
+	cp $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
 
 if windows
 #
