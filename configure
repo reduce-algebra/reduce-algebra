@@ -1805,7 +1805,7 @@ fi
 
 
 
-abssrcdir=`$srcdir/scripts/here.sh`
+abssrcdir=`"$srcdir/scripts/here.sh"`
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Absolute path to source directory = $abssrcdir" >&5
 $as_echo "$as_me: Absolute path to source directory = $abssrcdir" >&6;}
@@ -2317,7 +2317,7 @@ fi
     then
       as_fn_error $? "Attempt to build Windows-64 system without correct cross ocmpiler installed" "$LINENO" 5
     fi
-    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
              --host=x86_64-w64-mingw32"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
@@ -2336,7 +2336,7 @@ $as_echo "$as_me: $doconfig" >&6;}
     if test "$X32_GCC" = "yes"
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
-      doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+      doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
                --host=i686-w64-mingw32"
       { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
@@ -2350,12 +2350,12 @@ $as_echo "$as_me: $doconfig" >&6;}
 # This final case is when I have not said anything explicit about with or
 # without mingw64 but I am running on a 64-bit windows and have the 64-bit
 # compilers installed. In this case I will try to configure both versions.
-    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
              --with-mingw64=no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
     eval "$doconfig"
-    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
              --with-mingw64=yes"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
@@ -2370,8 +2370,8 @@ fi
 # detected. But the reconfig step messes that up and anyway it is a delicate
 # cheat. So here is a different delicate cheat!
 
-rm -f ./testfile.tst $srcdir/testfile.tst
-touch $srcdir/testfile.tst
+rm -f ./testfile.tst "$srcdir/testfile.tst"
+touch "$srcdir/testfile.tst"
 if test -f ./testfile.tst
 then
   rm -f ./testfile.tst
@@ -2401,13 +2401,13 @@ echo in-place build attempt = $inplace
 { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host args=$ac_configure_args" >&5
 $as_echo "$as_me: host=$host args=$ac_configure_args" >&6;}
 
-pslbuild=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+pslbuild=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
 
 if test "x$with_psl" != "xno"
 then
   build="$pslbuild"
 else
-  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
+  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
 
 #####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2442,12 +2442,12 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
-    if ! test -d $abssrcdir/cslbuild/generated-c ||
-       ! test -f $abssrcdir/cslbuild/generated-c/profile.dat
+    if ! test -d "$abssrcdir/cslbuild/generated-c" ||
+       ! test -f "$abssrcdir/cslbuild/generated-c/profile.dat"
     then
-      rm -rf $abssrcdir/cslbuild/generated-c
-      mkdir -p $abssrcdir/cslbuild/generated-c
-      cp -r $abssrcdir/csl/generated-c $abssrcdir/cslbuild
+      rm -rf "$abssrcdir/cslbuild/generated-c"
+      mkdir -p "$abssrcdir/cslbuild/generated-c"
+      cp -r "$abssrcdir/csl/generated-c" "$abssrcdir/cslbuild"
     fi
     cd "$abssrcdir/cslbuild/$build"
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
@@ -2457,14 +2457,14 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
             $passcc $pass_build"
     { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
-    cd $abssrcdir
+    cd "$abssrcdir"
   fi
   if test "x$with_psl" != "xno"
   then
@@ -2478,14 +2478,14 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/pslbuild/$build" >&6;}
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
     pass_build="--with-build=\"$build\""
-    eval "$SHELL $abssrcdir/psl/configure $ac_configure_args $pass_build"
-    cd $abssrcdir
+    eval "$SHELL \"$abssrcdir/psl/configure\" $ac_configure_args $pass_build"
+    cd "$abssrcdir"
   fi
   exit 0
   ;;
   *)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: +++ standard build case, srcdir = $srcdir = $abssrcdir" >&5
-$as_echo "$as_me: +++ standard build case, srcdir = $srcdir = $abssrcdir" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: +++ standard build case, srcdir = $srcdir = \"$abssrcdir\"" >&5
+$as_echo "$as_me: +++ standard build case, srcdir = $srcdir = \"$abssrcdir\"" >&6;}
   ;;
 esac
 
@@ -3197,15 +3197,15 @@ $as_echo "$as_me: after checking for system wxWidgets with_wx=$with_wx" >&6;}
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-wx=\"$with_wx\" $pass_build --without-fox"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost $pass_build --without-fox --without-wx"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost $pass_build --without-fox --without-wx"
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
@@ -3225,7 +3225,7 @@ $as_echo "$as_me: About to configure FOX" >&6;}
 
     # The Makefile that comes with FOX seems to require these GIF files
     # in the build directory.
-    cp $abssrcdir/csl/fox/src/*.gif fox/src
+    cp "$abssrcdir/csl/fox/src/"*.gif fox/src
   fi
 
   extras=
@@ -3312,7 +3312,7 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-      doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
+      doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
               $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
               --disable-shared --enable-unicode \
@@ -3342,7 +3342,7 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-    doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
+    doconfig="$SHELL \"$abssrcdir/csl/fox/configure\" $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $sethost --enable-release --with-opengl=no \
@@ -3353,7 +3353,7 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
     cd "$builddir"
 
-    if test -d $abssrcdir/csl/foxtests
+    if test -d "$abssrcdir/csl/foxtests"
     then
       { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure FOX tests" >&5
 $as_echo "$as_me: About to configure FOX tests" >&6;}
@@ -3366,7 +3366,7 @@ $as_echo "$as_me: About to configure FOX tests" >&6;}
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-      doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
+      doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
             $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=\"$builddir\" --with-fox-pending=yes $extras"

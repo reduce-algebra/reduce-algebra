@@ -477,10 +477,10 @@ all:	$(FOXDEP) $(WXDEP)
 # arrange that that happens at most once by putting the following rules:
 
 @csl_TRUE@$(srcdir)/configure.ac:
-@csl_TRUE@	touch $(srcdir)/configure.ac
+@csl_TRUE@	touch "$(srcdir)/configure.ac"
 
 @csl_TRUE@$(srcdir)/Makefile.am:
-@csl_TRUE@	touch $(srcdir)/Makefile.am
+@csl_TRUE@	touch "$(srcdir)/Makefile.am"
 
 %::	$(FOXDEP) $(WXDEP)
 	echo $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) makecmdgoals=$(MAKECMDGOALS)

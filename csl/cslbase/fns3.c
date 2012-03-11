@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 3adff7c0 19-Aug-2011 */
+/* Signature: 0c6e662c 11-Mar-2012 */
 
 #include "headers.h"
 
@@ -324,6 +324,8 @@ static Lisp_Object get_hash_vector(int32_t n)
     return v;
 }
 
+#ifdef DEBUG
+
 static void simple_print(Lisp_Object x)
 {
     Lisp_Object nil = C_nil;
@@ -379,11 +381,20 @@ static void simple_print(Lisp_Object x)
 
 void simple_msg(const char *s, Lisp_Object x)
 {
-    return;
+    return;   /* Edit this when debugging! */
     printf("%s", s);
     simple_print(x);
     printf("\n");
 }
+
+#else
+
+void simple_msg(const char *s, Lisp_Object x)
+{
+    return;
+}
+
+#endif
 
 Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
 /*
@@ -472,7 +483,7 @@ Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
     }
 #else
 /*
- * My newer understanding is that symbols always has on the basis of EQ.
+ * My newer understanding is that symbols always hash on the basis of EQ.
  * Thus ALL hash tables need to be rehashed by the garbage collector.
  */
     qcdr(v) = eq_hash_tables;
@@ -1543,6 +1554,10 @@ Lisp_Object Lget_hash_2(Lisp_Object nil, Lisp_Object key, Lisp_Object tab)
     return Lget_hash(nil, 3, key, tab, nil);
 }
 
+#ifdef DEBUG
+static int biggest_hash = 0;
+#endif
+
 Lisp_Object MS_CDECL Lput_hash(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
@@ -1564,6 +1579,12 @@ Lisp_Object MS_CDECL Lput_hash(Lisp_Object nil, int nargs, ...)
         ht_elt(work_0, hashoffset+1) = key;
         ht_elt(work_0, hashoffset+2) = val;
         elt(tab, 1) += 0x10;    /* increment count of used entries */
+#ifdef DEBUG
+        if (elt(tab, 1) > biggest_hash+10000)
+        {   err_printf("Hash size now %d\n", (int)int_of_fixnum(elt(tab, 1)));
+            biggest_hash = elt(tab, 1);
+        }
+#endif
         if (elt(tab, 1) > elt(tab, 2))
         {   Lisp_Object size = elt(tab, 2),
                         growth = elt(tab, 3),
