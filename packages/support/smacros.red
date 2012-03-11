@@ -1500,9 +1500,6 @@ symbolic smacro procedure printcl x; <<princl x; terpri(); x>>;
 symbolic smacro procedure printl x; <<prinl x; terpri(); x>>;
 
 
-symbolic smacro procedure printprompt u; nil;
-
-
 symbolic smacro procedure printsf u; 
    <<if null u then prin2!* 0 else xprinf2 u; terpri!* nil; u>>;
 

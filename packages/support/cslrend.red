@@ -381,7 +381,7 @@ largest!-small!-modulus := 2**23;
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
        modular!-times modular!-expt set!-small!-modulus
-       safe!-modular!-reciprocal), 'lose);
+       safe!-modular!-reciprocal), 'lose));
 
 !#endif
 
@@ -399,7 +399,7 @@ set!-small!-modulus 3;
 % and (hence?) maybe low level tricks or special floating point
 % tricks can help with speed.
 
-!#if (memq 'vsl lispsystem!*)
+!#if (memq  'vsl lispsystem!*)
 
 flag('(cos exp expt log sin sqrt fix
        ceiling floor round clrhash puthash gethash remhash), 'lose);
@@ -689,7 +689,7 @@ flag('(mkquote spaces subla boundp error1),'lose);
 % to REDUCE.
 flag('(union intersection), 'lose);
 
-!#if (not (memq 'vsl lispsystem!*))
+!#if (null (memq 'vsl lispsystem!*))
 
 flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot), 'lose);
 

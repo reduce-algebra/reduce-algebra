@@ -44,7 +44,7 @@ symbolic procedure set!-general!-modulus p;
      current!-modulus:=p;
      modulus!/2 := p/2;
      % Allow for use of small moduli where appropriate.
-!#if (not (memq 'csl lispsystem!*))
+!#if (or (not (memq 'csl lispsystem!*)) (memq 'vsl lispsystem!*))
      if p <= largest!-small!-modulus then
 !#endif
         set!-small!-modulus p;
