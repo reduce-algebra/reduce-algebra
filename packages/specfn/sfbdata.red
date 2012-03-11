@@ -40,10 +40,13 @@ on force;
 
 % The conditional compilation here is so that on a system that does
 % not support bignums there is no waste of effort tabulating
-% meaningless overflowed values.
+% meaningless overflowed values. I have also adjusted this code so that
+% it displays the values that it computes at build-time so that especially
+% if anything goes wrong it will be possible to observe the progress that
+% has been made.
 
 symbolic macro procedure mk!-bernoulli u;
-   <<for i := 1:300 do retrieve!*bern i;
+   <<for i := 1:300 do print list(i, retrieve!*bern i);
      list('quote, bernoulli!-alist) >>;
 !#else
 symbolic macro procedure mk!-bernoulli u;
