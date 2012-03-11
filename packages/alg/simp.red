@@ -197,10 +197,29 @@ symbolic procedure delete_from_alglist(key, l);
 
 !#else
 
+% If I just cache EVERYTHING then alglist can end up huge. This may be
+% bad in general since it keep stuff that may be stale in memory forever.
+% Also in CSL for HUGE calculations it can lead to exceeding the maximum
+% capacity of my hash tables where I believe there is a case that can
+% lead to crashes. So when the cache has had a certain number of entries
+% inserted I will just clear it. The effect will be to lead to some
+% recomputation at that stage. alglist_limit!* sets the limit, and
+% I expect that only truly large computations will even trigger it. A
+% really keen person wanting to tune behaviour here could go
+% "lisp alglist_limit!* := nnnn;" for suitable nnnn and experiment to
+% see just what works best for them.
+
+global '(alglist_count!* alglist_limit!*);
+alglist_count!* := 0;
+alglist_limit!* := 1000000;
+
 smacro procedure add_to_alglist(key, val, l);
 <<
-  if null l then l := mkhash(10, 3, 2.0);
+  if null l or alglist_count!* > alglist_limit!* then <<
+     l := mkhash(10, 3, 2.0);
+     alglist_count!* := 0 >>;
   puthash(key, l, val);
+  alglist_count!* := add1 alglist_count!*;
   l
 >>;
 
