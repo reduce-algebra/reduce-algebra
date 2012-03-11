@@ -187,7 +187,8 @@ LispObject stackbase, *sp, stacktop;
 #define raise      bases[23]
 #define lower      bases[24]
 #define dfprint    bases[25]
-#define BASES_SIZE       26
+#define bignum     bases[26]
+#define BASES_SIZE       27
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -545,15 +546,12 @@ void reclaim()
     fpfringe1 = fpfringe2;
     fringe2 = heap2base;
     fpfringe2 = heap2top;
-// I fill the alternative half-space with junk so that any refereces
-// that still point there are liable to lead to prompt crashes.
-    memset((void *)heap2base, 0x56, (size_t)(heap2top-heap2base));
     if (fpfringe1 - fringe1 < 1000*sizeof(LispObject))
     {   printf("\nRun out of memory.\n");
-        printf("Unable to continue. Apologies.\n");
         exit(1);
     }
     printf(" - collection complete\n");
+    fflush(stdout);
 }
 
 LispObject copy(LispObject x)
@@ -643,8 +641,8 @@ LispObject copy(LispObject x)
     }
 }
 
-#define printPLAIN   0
-#define printESCAPES 1
+#define printPLAIN   1
+#define printESCAPES 2
 
 int linelength = 80, linepos = 0, printflags = printESCAPES;
 
@@ -701,6 +699,9 @@ void checkspace(int n)
 
 char printbuffer[32];
 
+extern LispObject call1(const char *name, LispObject a1);
+extern LispObject call2(const char *name, LispObject a1, LispObject a2);
+
 void internalprint(LispObject x)
 {   int sep = '(', i, esc, len;
     char *s;
@@ -712,7 +713,16 @@ void internalprint(LispObject x)
                 return;
             }
             while (isCONS(x))
-            {   checkspace(1);
+            {   i = printflags;
+                if (qcar(x) == bignum &&
+                    (pn = call1("~big2str", qcdr(x))) != nil)
+                {   printflags = printPLAIN;
+                    internalprint(pn);
+                    printflags = i;
+                    return;
+                }
+                printflags = i;
+                checkspace(1);
                 if (linepos != 0 || sep != ' ' || lispout < 0) wrch(sep);
                 sep = ' ';
                 push(x);
@@ -876,6 +886,14 @@ LispObject print(LispObject a)
     return a;
 }
 
+void errprint(LispObject a)
+{   int saveout = lispout, saveflags = printflags;
+    lispout = 1; printflags = printESCAPES;
+    internalprint(a);
+    wrch('\n');
+    lispout = saveout; printflags = saveflags;
+}
+
 LispObject printc(LispObject a)
 {   printflags = printPLAIN;
     push(a);
@@ -982,7 +1000,7 @@ LispObject token()
             r = packfixnum(0);
             boffop = 0;
             while (boffo[boffop] != 0)
-            {   r = Nplus2(Ntimes2(packfixnum(16), r),
+            {   r = call2("plus2", call2("times2", packfixnum(16), r),
                            packfixnum(hexval(boffo[boffop++])));
             }
             return r;
@@ -1032,7 +1050,7 @@ LispObject token()
             if (boffo[boffop] == '+') boffop++;
             else if (boffo[boffop] == '-') neg=1, boffop++;
             while (boffo[boffop] != 0)
-            {   r = Nplus2(Ntimes2(packfixnum(10), r),
+            {   r = call2("plus2", call2("times2", packfixnum(10), r),
                            packfixnum(boffo[boffop++] - '0'));
             }
             if (neg) r = Nminus(r);
@@ -1183,7 +1201,7 @@ int backtraceflag = -1;
 LispObject error1(const char *msg, LispObject data)
 {   if ((backtraceflag & backtraceHEADER) != 0)
     {   linepos = printf("\n+++ Error: %s: ", msg);
-        print(data);
+        errprint(data);
     }
     unwindflag = (backtraceflag & backtraceTRACE) != 0 ? unwindBACKTRACE :
                  unwindERROR;
@@ -1213,10 +1231,10 @@ LispObject applytostack(int n)
     if (traced)
     {   int i;
         linepos = printf("Calling: ");
-        print(sp[-n-1]);
+        errprint(sp[-n-1]);
         for (i=1; i<=n; i++)
         {   linepos = printf("Arg%d: ", i);
-            print(sp[i-n-1]);
+            errprint(sp[i-n-1]);
         }
     }
     if (n >= 5)
@@ -1285,16 +1303,32 @@ LispObject applytostack(int n)
     pop(f);
     if (unwindflag == unwindBACKTRACE)
     {   linepos = printf("Calling: ");
-        print(f);
+        errprint(f);
     }
     else if (traced)
     {   push(w);
         prin(f);
         linepos += printf(" = ");
-        print(w);
+        errprint(w);
         pop(w);
     }
     return w;
+}
+
+LispObject call1(const char *name, LispObject a1)
+{
+    LispObject fn = lookup(name, strlen(name), 0);
+    if (fn == undefined || qdefn(fn) == NULL) return nil;
+    push2(fn, a1);
+    return applytostack(1);
+}
+
+LispObject call2(const char *name, LispObject a1, LispObject a2)
+{
+    LispObject fn = lookup(name, strlen(name), 0);
+    if (fn == undefined || qdefn(fn) == NULL) return nil;
+    push3(fn, a1, a2);
+    return applytostack(2);
 }
 
 LispObject interpret(LispObject def, int nargs, ...);
@@ -1798,7 +1832,7 @@ LispObject Lliststar(LispObject lits, LispObject x)
     va_end(a)
 
 LispObject Lcar(LispObject lits, int nargs, ...)
-{   ARG1("car", x);
+{   ARG1("car", x);  // Note that this WILL take car of a bignum!
     if (isCONS(x)) return qcar(x);
     else return error1("car of an atom", x);
 }
@@ -1833,8 +1867,13 @@ LispObject Lcons(LispObject lits, int nargs, ...)
 }
 
 LispObject Latom(LispObject lits, int nargs, ...)
-{   ARG1("atom", x);
-    return (isCONS(x) ? nil : lisptrue);
+{   ARG1("atom", x); // Observe treatment of bignums!
+    return (isCONS(x) && qcar(x) != bignum ? nil : lisptrue);
+}
+
+LispObject Lbignump(LispObject lits, int nargs, ...)
+{   ARG1("bignump", x);
+    return (isCONS(x) && qcar(x) == bignum ? lisptrue : nil);
 }
 
 LispObject Lsymbolp(LispObject lits, int nargs, ...)
@@ -1964,7 +2003,7 @@ LispObject Lequal(LispObject lits, int nargs, ...)
         {   int i;
             const char *xx = qstring(x), *yy = qstring(y);
             for (i=0; i<veclength(qheader(x)); i++)
-                if (xx[1] != yy[1]) return nil;
+                if (xx[i] != yy[i]) return nil;
             return lisptrue;
         }
     }
@@ -2443,7 +2482,6 @@ LispObject Lpreserve(LispObject lits, int nargs, ...)
     if (y != NULLATOM || z != NULLATOM)
         return error1s("wrong number of arguments for", "preserve");
     restartfn = (x == NULLATOM ? nil : x);
-printf("Preserve with restartfn = "); print(restartfn);
     f = fopen(imagename, "wb");
     if (f == NULL) return error1("unable to open image for writing", nil);
     headerword = FILEID;
@@ -2789,28 +2827,29 @@ struct defined_functions fnsetup[] =
 // could be treated a sorts of "ordinary" function.
     {"list",       flagSPECFORM, (void *)Llist},
     {"list*",      flagSPECFORM, (void *)Lliststar},
-    {"plus",       flagSPECFORM, (void *)Lplus},
-    {"times",      flagSPECFORM, (void *)Ltimes},
-    {"logand",     flagSPECFORM, (void *)Llogand},
-    {"logor",      flagSPECFORM, (void *)Llogor},
-    {"logxor",     flagSPECFORM, (void *)Llogxor},
+    {"iplus",      flagSPECFORM, (void *)Lplus},
+    {"itimes",     flagSPECFORM, (void *)Ltimes},
+    {"ilogand",    flagSPECFORM, (void *)Llogand},
+    {"ilogor",     flagSPECFORM, (void *)Llogor},
+    {"ilogxor",    flagSPECFORM, (void *)Llogxor},
 // Now ordinary functions. I have put these in alphabetic order.
-    {"add1",       0,            (void *)Ladd1},
+    {"iadd1",      0,            (void *)Ladd1},
     {"apply",      0,            (void *)Lapply},
     {"atan",       0,            (void *)Latan},
     {"atom",       0,            (void *)Latom},
+    {"bignump",    0,            (void *)Lbignump},
     {"boundp",     0,            (void *)Lboundp},
     {"car",        0,            (void *)Lcar},
     {"cdr",        0,            (void *)Lcdr},
     {"char-code",  0,            (void *)Lcharcode},
-    {"ceiling",    0,            (void *)Lceiling},
+    {"iceiling",   0,            (void *)Lceiling},
     {"close",      0,            (void *)Lclose},
     {"code-char",  0,            (void *)Lcodechar},
     {"compress",   0,            (void *)Lcompress},
     {"cons",       0,            (void *)Lcons},
     {"cos",        0,            (void *)Lcos},
-    {"difference", 0,            (void *)Ldifference},
-    {"divide",     0,            (void *)Ldivide},
+    {"idifference",0,            (void *)Ldifference},
+    {"idivide",    0,            (void *)Ldivide},
     {"eq",         0,            (void *)Leq},
     {"equal",      0,            (void *)Lequal},
     {"error",      0,            (void *)Lerror},
@@ -2819,30 +2858,30 @@ struct defined_functions fnsetup[] =
     {"exp",        0,            (void *)Lexp},
     {"explode",    0,            (void *)Lexplode},
     {"explodec",   0,            (void *)Lexplodec},
-    {"fix",        0,            (void *)Lfix},
-    {"fixp",       0,            (void *)Lfixp},
-    {"float",      0,            (void *)Lfloat},
+    {"ifix",       0,            (void *)Lfix},
+    {"ifixp",      0,            (void *)Lfixp},
+    {"ifloat",     0,            (void *)Lfloat},
     {"floatp",     0,            (void *)Lfloatp},
-    {"floor",      0,            (void *)Lfloor},
+    {"ifloor",     0,            (void *)Lfloor},
     {"gensym",     0,            (void *)Lgensym},
-    {"geq",        0,            (void *)Lgeq},
+    {"igeq",       0,            (void *)Lgeq},
     {"get",        0,            (void *)Lget},
     {"getd",       0,            (void *)Lgetd},
     {"gethash",    0,            (void *)Lgethash},
     {"getv",       0,            (void *)Lgetv},
-    {"greaterp",   0,            (void *)Lgreaterp},
-    {"leftshift",  0,            (void *)Lleftshift},
-    {"leq",        0,            (void *)Lleq},
-    {"lessp",      0,            (void *)Llessp},
+    {"igreaterp",  0,            (void *)Lgreaterp},
+    {"ileftshift", 0,            (void *)Lleftshift},
+    {"ileq",       0,            (void *)Lleq},
+    {"ilessp",     0,            (void *)Llessp},
     {"load-module",0,            (void *)Lrdf},
     {"log",        0,            (void *)Llog},
-    {"lognot",     0,            (void *)Llognot},
-    {"minus",      0,            (void *)Lminus},
-    {"minusp",     0,            (void *)Lminusp},
+    {"ilognot",    0,            (void *)Llognot},
+    {"iminus",     0,            (void *)Lminus},
+    {"iminusp",    0,            (void *)Lminusp},
     {"mkhash",     0,            (void *)Lmkhash},
     {"mkvect",     0,            (void *)Lmkvect},
     {"null",       0,            (void *)Lnull},
-    {"numberp",    0,            (void *)Lnumberp},
+    {"inumberp",   0,            (void *)Lnumberp},
     {"oblist",     0,            (void *)Loblist},
     {"onep",       0,            (void *)Lonep},
     {"open",       0,            (void *)Lopen},
@@ -2855,18 +2894,18 @@ struct defined_functions fnsetup[] =
     {"put",        0,            (void *)Lput},
     {"puthash",    0,            (void *)Lputhash},
     {"putv",       0,            (void *)Lputv},
-    {"~quotient",  0,            (void *)Lquotient},
+    {"iquotient",  0,            (void *)Lquotient},
     {"rdf",        0,            (void *)Lrdf},
     {"rds",        0,            (void *)Lrds},
     {"read",       0,            (void *)Lread},
     {"readch",     0,            (void *)Lreadch},
     {"readline",   0,            (void *)Lreadline},
-    {"remainder",  0,            (void *)Lremainder},
+    {"iremainder", 0,            (void *)Lremainder},
     {"remhash",    0,            (void *)Lremhash},
     {"remprop",    0,            (void *)Lremprop},
     {"restart-csl",0,            (void *)Lrestart_csl},
     {"return",     0,            (void *)Lreturn},
-    {"rightshift", 0,            (void *)Lrightshift},
+    {"irightshift",0,            (void *)Lrightshift},
     {"rplaca",     0,            (void *)Lrplaca},
     {"rplacd",     0,            (void *)Lrplacd},
     {"set",        0,            (void *)Lset},
@@ -2874,7 +2913,7 @@ struct defined_functions fnsetup[] =
     {"sqrt",       0,            (void *)Lsqrt},
     {"stop",       0,            (void *)Lstop},
     {"stringp",    0,            (void *)Lstringp},
-    {"sub1",       0,            (void *)Lsub1},
+    {"isub1",      0,            (void *)Lsub1},
     {"symbolp",    0,            (void *)Lsymbolp},
     {"terpri",     0,            (void *)Lterpri},
     {"time",       0,            (void *)Ltime},
@@ -2922,6 +2961,7 @@ void setup()
     qvalue(raise = lookup("*raise", 6, 1)) = nil;
     qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
     qvalue(dfprint = lookup("dfprint*", 6, 1)) = nil;
+    bignum = lookup("~bignum", 7, 1);
     qlits(lookup("load-module", 11, 1)) = lisptrue;
     cursym = nil;
     work1 = work2 = nil;
@@ -2948,7 +2988,6 @@ void cold_setup()
 // cold start case, so I repair them now.
     restartfn = qplist(undefined) = qlits(undefined) =
         qplist(nil) = qlits(nil) = nil;
-printf("restartfn = "); print(restartfn);
 }
 
 LispObject relocate(LispObject a, LispObject change)
@@ -3112,7 +3151,6 @@ int main(int argc, char *argv[])
     {   LispObject x, data = makestring(boffo, boffop);
         data = Lcompress(nil, 1, Lexplodec(nil, 1, data));
         x = qcar(data);
-printf("restartfn = "); print(restartfn);
         if (x != nil)
         {   if (x == lisptrue) x = restartfn;
             else if (isCONS(x) && isCONS(qcdr(x)))

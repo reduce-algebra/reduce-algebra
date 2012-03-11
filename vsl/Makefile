@@ -20,7 +20,9 @@ reduce:
 	mkdir -p modules
 	rm -f modules/* reduce.img
 	./vsl -z -ireduce.img -D@srcdir=. -D@reduce=.. \
-	  buildreduce.lsp > reduce.log
+	  buildreduce.lsp | tee reduce.log
+# I will protect the image from writing so I feel safe!
+	chmod -w reduce.img
 
 # To run Reduce go
 #    ./vsl -ireduce.img
