@@ -376,10 +376,14 @@ single precision integers should be used;
 
 largest!-small!-modulus := 2**23;
 
+!#if (not (memq 'vsl lispsystem!*))
+
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
        modular!-times modular!-expt set!-small!-modulus
        safe!-modular!-reciprocal), 'lose);
+
+!#endif
 
 % See comments about gensym() below - which apply also to the
 % effects of having different random number generators in different
@@ -395,11 +399,20 @@ set!-small!-modulus 3;
 % and (hence?) maybe low level tricks or special floating point
 % tricks can help with speed.
 
+!#if (memq 'vsl lispsystem!*)
+
+flag('(cos exp expt log sin sqrt fix
+       ceiling floor round clrhash puthash gethash remhash), 'lose);
+
+!#else
+
 flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        asech asin asind asinh atan atand atan2 atan2d atanh cbrt cos
        cosd cosh cot cotd coth csc cscd csch exp expt hypot ln log
        logb log10 sec secd sech sin sind sinh sqrt tan tand tanh fix
        ceiling floor round clrhash puthash gethash remhash), 'lose);
+
+!#endif
 
 % remflag('(int!-gensym1),'lose);
 
@@ -676,7 +689,11 @@ flag('(mkquote spaces subla boundp error1),'lose);
 % to REDUCE.
 flag('(union intersection), 'lose);
 
+!#if (not (memq 'vsl lispsystem!*))
+
 flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot), 'lose);
+
+!#endif
 
 % I USED to flag ordp as LOSE, but there are three different definitions in
 % different places within Reduce and the LOSE mechanism is not quite
