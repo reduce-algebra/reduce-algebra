@@ -381,7 +381,7 @@ largest!-small!-modulus := 2**23;
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
        modular!-times modular!-expt set!-small!-modulus
-       safe!-modular!-reciprocal), 'lose));
+       safe!-modular!-reciprocal), 'lose);
 
 !#endif
 
