@@ -75,6 +75,14 @@ rlgqea phi;
    {x = -------------------------}}}}
                    2*a
 
+rllqe(phi,{},{b=1});
+
+
+{{b > 0},
+
+          2
+ 4*a*c - b  <= 0 or a = 0}
+
 rlposqe phi;
 
 
@@ -1605,6 +1613,6 @@ true
 
 end;
 
-Tested on x86_64-mac_10.7_lion-darwin11.1.0-nogui CSL
-Time (counter 1): 12279 ms  plus GC time: 380 ms
-real	0m13.011s
+Tested on x86_64-mac_10.7_lion-darwin11.3.0-nogui CSL
+Time (counter 1): 12759 ms  plus GC time: 500 ms
+real	0m13.614s
