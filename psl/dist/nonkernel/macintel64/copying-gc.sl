@@ -351,7 +351,7 @@
         (setq x (getmem i))
         (setq tg (tag x))
         (setq info (inf x))
-(when (wgeq gcknt!* 77)
+(commentoutcode when (wgeq gcknt!* 77)
       (Unixputn i)
       (console!-print!-string " ")
       (Unixputn x)
