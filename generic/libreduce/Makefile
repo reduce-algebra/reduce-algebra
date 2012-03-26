@@ -21,7 +21,7 @@ all:
 	autoheader
 	mkdir -p $(BUILD); \
 	cd $(BUILD); \
-	../src/configure; \
+	../src/configure --disable-universal; \
 	make
 
 clean:
