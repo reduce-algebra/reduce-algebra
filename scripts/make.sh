@@ -87,7 +87,7 @@ do
      cd ${l}
      echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
      $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-     rc=$(($?>$rc ? $? : $rc))
+     test $? -gt $rc && rc=$?
      cd ../..
    fi
 done

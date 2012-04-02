@@ -87,6 +87,10 @@
 #endif
 #endif
 
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
 #ifdef WIN64
 /* The mingw64 build that I use seems to get messed up by inttypes.h */
 #undef PRIdPTR

@@ -1211,6 +1211,11 @@ AC_CHECK_TYPES([struct tms], [], [],
     #include <sys/times.h>
     #endif])
 
+AC_CHECK_TYPES([struct timeval], [], [],
+   [#ifdef HAVE_SYS_TIME_H
+    #include <sys/time.h>
+    #endif])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STAT
 AC_C_CONST
@@ -1274,6 +1279,13 @@ AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday times])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
+   
+if test x$ac_cv_header_sys_resource_h = "xyes"
+then
+  AC_CHECK_DECLS([RLIM_SAVED_CUR, RLIM_SAVED_MAX], [], [],
+    [[#include <sys/resource.h>]])
+fi
+
 # sigsetjmp will be a macro not a function, and so the various predefined
 # tests are not very good at detecting it. So I have a custom test here.
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <setjmp.h>]],

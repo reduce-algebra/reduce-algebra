@@ -1414,16 +1414,25 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * of that! Results of RLIM_SAVED_MAX represent a sort of "give up" from
  * getrlimit so I will treat them as failure.
  */
-            if (stackLimit != RLIM_SAVED_MAX &&
-                stackLimit != RLIM_SAVED_CUR)
-            {   if (stackLimit == RLIM_INFINITY) stackLimit = 20*1024*1024;
-/* I view values under 200K as silly and ignore them! */
-                if (stackLimit >= 200*1024)
-                {   C_stack_limit = C_stack_base - stackLimit + 0x10000;
-#ifdef DEBUG
-                    fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
+#if HAVE_DECL_RLIM_SAVED_MAX
+	    if (stacklimit == RLIM_SAVED_MAX &&
+                RLIM_SAVED_MAX != RLIM_INFINITY) 
+            { /* do nothing */ }
+            else
 #endif
-                }
+#if HAVE_DECL_RLIM_SAVED_CUR
+            if (stackLimit == RLIM_SAVED_CUR &&
+                RLIM_SAVED_CUR != RLIM_INFINITY)
+            { /* do nothing */ }
+            else
+#endif
+            if (stackLimit == RLIM_INFINITY) stackLimit = 20*1024*1024;
+/* I view values under 200K as silly and ignore them! */
+            if (stackLimit >= 200*1024)
+            {   C_stack_limit = C_stack_base - stackLimit + 0x10000;
+#ifdef DEBUG
+                fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
+#endif
             }
         }
     }
