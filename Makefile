@@ -31,7 +31,10 @@ csl:
 psl:
 	+$(SHELL) scripts/make.sh $(MFLAGS)  $(MAKECMDGOALS)
 
+install:
+	@echo No install: target yet!
+
 %::
-	+$(SHELL) scripts/make.sh $(MFLAGS)  $(MAKECMDGOALS)
+	+$(SHELL) scripts/make.sh $(MFLAGS) @@@ $(MAKECMDGOALS)
 
 # end of Makefile
