@@ -412,6 +412,8 @@ procedure cl_split(f);
    % matrix, and a flat list of all quantified variables.
    begin scalar q,op,ql,varl,varll,bvl;
       q := op := rl_op f;
+      if not rl_quap q then
+	 return {nil,nil,f,nil};
       repeat <<
    	 if op neq q then <<
       	    push(q,ql);
