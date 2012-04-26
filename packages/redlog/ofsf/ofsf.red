@@ -53,6 +53,9 @@ loadtime load!-package 'matrix;
 loadtime load!-package 'factor;
 loadtime load!-package 'cgb;
 
+load!-package 'assert;
+on1 'assert;
+
 exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_simpat,ofsf_op,ofsf_arg2l,ofsf_arg2r,ofsf_argn,ofsf_mk2,ofsf_0mk2,
    ofsf_mkn,ofsf_opp,ofsf_mkstrict,ofsf_simplat1,ofsf_smrmknowl,ofsf_smcpknowl,
@@ -158,6 +161,8 @@ put('ofsf,'rl_params,'(
    (rl_specelim!* . ofsf_specelim)
    (rl_fbqe!* . ofsf_fbqe)
    (rl_mkequation!* . ofsf_mkequation)
+   (rl_dfgPrintV!* . ofsf_dfgPrintV)
+   (rl_dfgPrintAt!* . ofsf_dfgPrintAt)
    (rl_rxffn!* . ofsf_rxffn)));
 
 % Services
@@ -237,6 +242,7 @@ put('ofsf,'rl_services,'(
    (sl_simpl!* . cl_ssimpl)
    (sl_atnum!* . cl_satnum)
    (sl_pnf!* . cl_spnf)
+   (rl_dfgprint!* . cl_dfgPrint)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin

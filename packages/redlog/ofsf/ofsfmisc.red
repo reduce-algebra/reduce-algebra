@@ -454,6 +454,70 @@ algebraic operator tn;
 procedure ofsf_mktan2(phi);
    {'tan,{'quotient,phi,2}};
 
+
+declare ofsf_dfgPrintV: (id) -> id;
+
+procedure ofsf_dfgPrintV(v);
+   % DFG print variable.
+   <<
+      prin2 v;
+      prin2 ":Real"
+   >>;
+
+procedure ofsf_dfgPrintAt(f);
+   begin scalar opal,op,lhs,w;
+      op := rl_op f;
+      lhs := prepf ofsf_arg2l f;
+      if op eq 'neq then
+      	 cl_dfgPrintQff rl_mk1('not,ofsf_0mk2('equal,lhs))
+      else <<
+      	 opal := '((lessp . ls) (leq . le) (greaterp . gs) (geq . ge));
+      	 prin2(if w := atsoc(op,opal) then cdr w else op);
+      	 prin2 "(";
+      	 ofsf_dfgPrintT lhs;
+      	 prin2 ",";
+      	 prin2 "0)"
+      >>
+   end;
+
+procedure ofsf_dfgPrintT(u);
+   if numberp u or idp u then
+      prin2 u
+   else
+      ofsf_dfgPrintT1(car u,cdr u);
+
+procedure ofsf_dfgPrintT1(op,argl);
+   if op eq 'minus then <<
+      prin2 "minus(";
+      prin2 "0";
+      prin2 ",";
+      ofsf_dfgPrintT car argl;
+      prin2 ")"
+   >> else if op eq 'difference then <<
+      prin2 "minus(";
+      ofsf_dfgPrintT car argl;
+      prin2 ",";
+      ofsf_dfgPrintT cadr argl;
+      prin2 ")"
+   >> else if op eq 'expt then <<
+      prin2 "pow(";
+      ofsf_dfgPrintT car argl;
+      prin2 ",";
+      ofsf_dfgPrintT cadr argl;
+      prin2 ")"
+   >> else <<  % op is plus or times
+      if not cdr argl then
+	 ofsf_dfgPrintT car argl
+      else <<
+	 prin2 if op eq 'times then "mult" else op;
+	 prin2 "(";
+	 ofsf_dfgPrintT car argl;
+	 prin2 ",";
+	 ofsf_dfgPrintT1(op,cdr argl);
+	 prin2 ")"
+      >>
+   >>;
+
 endmodule;  % [ofsfmisc]
 
 end;  % of file
