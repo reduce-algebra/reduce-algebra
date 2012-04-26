@@ -42,6 +42,7 @@ module dcfsf;
 
 create!-package('(dcfsf dcfsfmisc dcfsfqe dcfsfsism dcfsfkacem),nil);
 
+load!-package 'redlog;
 loadtime load!-package 'rltools;
 loadtime load!-package 'cl;
 loadtime load!-package 'cgb;
