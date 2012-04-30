@@ -93,8 +93,12 @@
 
 ;;; Code:
 
-(defconst reduce-mode-version "1.21"	  ; TO DO: extract version
-  "Version information for REDUCE mode.") ; from the file header
+(defconst reduce-mode-version
+  ;; Extract version from `package-version' in file header:
+  (eval-when-compile
+    (require 'lisp-mnt)
+    (save-excursion (lm-header "package-version")))
+  "Version information for REDUCE Mode.")
 
 ;; (message "Loading reduce-mode")	; TEMPORARY!
 
@@ -607,7 +611,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
 (defun reduce-mode-show-version ()
   "Echo version information for REDUCE Major Mode."
   (interactive)
-  (message "REDUCE Major Mode %s" reduce-mode-version))
+  (message "REDUCE Major Mode version: %s" reduce-mode-version))
 
 
 ;;;; ************

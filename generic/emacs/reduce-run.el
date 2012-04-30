@@ -73,8 +73,12 @@
 
 ;;; Code:
 
-(defconst reduce-run-version "1.21"	 ; TO DO: extract version
-  "Version information for REDUCE run.") ; from the file header
+(defconst reduce-run-version
+  ;; Extract version from `package-version' in file header:
+  (eval-when-compile
+    (require 'lisp-mnt)
+    (save-excursion (lm-header "package-version")))
+  "Version information for REDUCE Run.")
 
 ;; (message "Loading reduce-run")		; TEMPORARY!
 
@@ -242,7 +246,15 @@ Used by these commands to determine defaults."
    "--"
    ,@reduce-run-menu2
    ["Switch To REDUCE" switch-to-reduce t]
+   "--"
+   ["Show Version" reduce-run-show-version :active t
+    :help "Show the REDUCE Run version"]
    ))
+
+(defun reduce-run-show-version ()
+  "Echo version information for REDUCE Run."
+  (interactive)
+  (message "REDUCE Run version: %s" reduce-run-version))
 
 ;; Put the Run REDUCE menu on the menu bar AFTER the REDUCE menu:
 (define-key-after
