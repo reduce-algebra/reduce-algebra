@@ -1,0 +1,36 @@
+This directory contains everything necessary to build a Debian/Ubuntu
+package for REDUCE. To use it, you should have already installed the 
+package
+
+  devscripts
+
+To build the package, run the following command from the debianbuild
+directory:
+
+  debuild -B -uc -us
+
+At the moment, this is an unsigned (switches -uc -us) binary package
+(-B switch), although it contains the files from the packages directory. 
+
+After successful completion, you cmay check the package content with
+
+  dpkg --contents reduce_3.9_i386.deb
+
+Install the package with
+
+  dpkg --install reduce_3.9_i386.deb
+
+An rpm package can be built from this by running (You need Ubuntu packages 
+fakeroot and alien)
+
+ fakeroot alien -r reduce_3.9_i386.deb
+
+The CSL and PSL versions of REDUCE are run with
+
+  /usr/bin/redpsl 
+
+and 
+  
+  /usr/bin/redcsl
+
+respectively.
