@@ -784,7 +784,7 @@ Lisp_Object quotbb(Lisp_Object a, Lisp_Object b)
  * the next line is a cop-out for now - if my estimated quotient
  * was close enough to the true value than the residual I get here
  * ought to be fairly small - if it is not I have bungled.  Over several years
- * of testa and use I have not seen the disaster message triggered, but the
+ * of tests and use I have not seen the disaster message triggered, but the
  * code should stay in until I can write the paragraph of comment that
  * should go here explaing why all is well...
  */

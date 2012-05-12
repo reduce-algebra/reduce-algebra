@@ -1616,7 +1616,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * can ONLY cope when the output it generates is at most 256 bytes long.
  * Beyond that there can be an internal buffer overflow. Hence each line
  * of text here is printed as a separate call. If I was certain that
- * a vsnprintf function was ALWAYS available the interbal behaviour could
+ * a vsnprintf function was ALWAYS available the internal behaviour could
  * at least be a bit safer...
  */
 term_printf(
@@ -1714,7 +1714,25 @@ term_printf(
 term_printf(
   "--<other> reserved for additional extended options.\n");
 term_printf(
+  "--version display some version information then exit.\n");
+term_printf(
   "--help this output!\n");
+                        my_exit(0);
+                    }
+/*! options [--version] \item [{\ttfamily --version}] \index{{\ttfamily --version}}
+ * It is probably obvious what this option does! But note that there is an
+ * issue here about whether one is looking at the CSL version identification or
+ * one for the Lisp application from an image file (eg often Reduce).
+ */
+                    else if (strcmp(w, "version") == 0)
+                    {
+#ifndef COMMON
+                        term_printf("Codemist Standard Lisp %s for %s: %s\n",
+                                    VERSION, IMPNAME, __DATE__);
+#else
+                        term_printf("Codemist Common Lisp %s for %s: %s\n",
+                                    VERSION, IMPNAME, __DATE__);
+#endif
                         my_exit(0);
                     }
                     else
@@ -1840,7 +1858,7 @@ term_printf(
 
         case 'c':
                 fwin_restore();
-                term_printf("\nCSL was coded by Codemist Ltd, 1988-2010\n");
+                term_printf("\nCSL was coded by Codemist Ltd, 1988-2012\n");
                 term_printf("Distributed under the Modified BSD License\n");
                 term_printf("See also --help\n");
                 continue;
