@@ -1,4 +1,4 @@
-#! /bin/sh
+! /bin/sh
 a=$0
 c=unknown
 case $a in
@@ -29,7 +29,7 @@ case $a in
   ;;
 esac
 while test -h "$c"; do
-  lt=`ls -l "$c" | sed 's/.*->[ ]\+//'`
+  lt=`ls -l "$c" | sed 's/.*->[ ][ ]*//'`
   if echo "$lt" | grep -q '^/'; then
     c="$lt"
   else
