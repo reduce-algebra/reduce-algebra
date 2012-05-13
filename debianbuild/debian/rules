@@ -17,6 +17,8 @@ BUILDDIR=$(shell $(TOPDIR)/scripts/findhost.sh $(shell $(TOPDIR)/config.guess))
 CSLBUILDDIR=$(TOPDIR)/cslbuild/$(BUILDDIR)
 PSLBUILDDIR=$(TOPDIR)/pslbuild/$(BUILDDIR)
 
+DOCSRCDIR=$(TOPDIR)/doc/manual
+
 INSTALLDIR:=debian/$(shell dh_listpackages)
 SHAREDIR=$(INSTALLDIR)/usr/share/reduce
 LIBDIR=$(INSTALLDIR)/usr/lib/reduce
@@ -48,6 +50,7 @@ build:	configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 	cd $(TOPDIR) ; make
+	cd $(DOCSRCDIR) ; make
 
 #override_dh_installdirs:
 #	mkdir -p $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
