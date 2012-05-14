@@ -1,10 +1,11 @@
 #! /bin/sh
 
-# Extract for buildsh to only save a new image.
+# Extract from build.sh to only save a new image.
 # Takes build dir and toplevel pslbuild dir pathname as arguments
+# Optional third argument is topdir to be used for load-path in saved image
 #
 # Usage:
-#         .../psl/saveimage.sh .../builddir /usr/lib/reduce/pslbuild
+#         .../psl/saveimage.sh .../builddir /usr/lib/reduce/pslbuild [topdir]
 
 # This script must live in the PSL directory, but it builds things in the
 # current directory.
