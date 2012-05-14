@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 01d4f834 03-Jan-2011 */
+/* Signature: 4d8f3326 12-May-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -83,6 +83,7 @@ extern int fwin_main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     fwin_startup(argc, argv, fwin_main);
+    return 0;
 }
 
 
@@ -174,7 +175,8 @@ extern char *getcwd(char *s, size_t n);
 #ifdef DEBUG
 
 /*
- * This will be used as in FWIN_LOG(format,arg,...) using a variadic macro.
+ * This will be used as in FWIN_LOG((format,arg,...))
+ * *NOT* using a variadic macro, hence doubled parentheses.
  * If DEBUG was enabled it send log information
  * to a file with the name fwin-debug.log: I hope that will not (often)
  * clash with any file the user has or requires. if programDir has been
@@ -197,6 +199,7 @@ void fwin_write_log(const char *s, ...)
  */
     if (create)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
+        memset(logfile_name, 0, sizeof(logfile_name));
         if (strcmp(programDir, ".") == 0)
             sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
@@ -362,6 +365,9 @@ int main(int argc, char *argv[])
  *    (d) windows, but launched by a double-click, .exe version
  *    (e) cygwin shell : normal case
  *    (f) cygwin shell : stdin redirected via "<"
+ * HAH at some stage cygwin changed to install a different default terminal
+ * to run bash in, altering behaviour here I believe...
+ *
  * leave me in a state
  *    (a) stdin exists and is a tty, a char device and a Console
  *    (b) stdin exists and is a pipe or a file not a tty
@@ -376,6 +382,9 @@ int main(int argc, char *argv[])
  * user must go "-w" to specify windowed mode.
  */
 
+#ifdef TRACEDECISION
+    printf(".com = %d\n", program_name_dot_com);
+#endif
     if (program_name_dot_com)
     {
 /* The program was named "xxx.com". I will assume that that means it was
@@ -408,12 +417,48 @@ int main(int argc, char *argv[])
  * will defer that worry since the ".exe" not the ".com" file is the version
  * with windowed use its prime interface.
  */
+/*
+ * New versions of cygwin install a terminal that is not just a regular
+ * DOS window running bash, but is closer to everything a Unix user might
+ * expect - however this possibly messes up the tests I make to see if I
+ * want to run a terminal or a windowed version of everything. On a
+ * temporary basis TRACEDECISION will guard code I use to investigate
+ * the sorts of things I am liable to test to make that choice.
+ * #define TRACEDECISION
+ */
+#ifdef TRACEDECISION
+        printf(".com case in play\n");
+#endif
         h = GetStdHandle(STD_INPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-        else if (!GetConsoleMode(h, &w)) windowed = 0;
+        if (GetFileType(h) != FILE_TYPE_CHAR)
+        {
+#ifdef TRACEDECISION
+            printf("STDIN not FILE_TYPE_CHAR\n");
+#endif
+            windowed = 0;
+        }
+        else if (!GetConsoleMode(h, &w))
+        {
+#ifdef TRACEDECISION
+            printf("!GetConsoleMode\n");
+#endif
+            windowed = 0;
+        }
         h = GetStdHandle(STD_OUTPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-        else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
+        if (GetFileType(h) != FILE_TYPE_CHAR)
+        {
+#ifdef TRACEDECISION
+            printf("STDOUT not FILE_TYPE_CHAR\n");
+#endif
+            windowed = 0;
+        }
+        else if (!GetConsoleScreenBufferInfo(h, &csb))
+        {
+#ifdef TRACEDECISION
+            printf("!GetConsoleScreenBuffer\n");
+#endif
+            windowed = 0;
+        }
     }
     else
     {
@@ -469,6 +514,9 @@ int main(int argc, char *argv[])
  *    -w  forces command-line rather than windowed use (can also write
  *        "-w-" for this case).
  */
+#ifdef TRACEDECISION
+    printf("win = %d\n", windowed);
+#endif
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
         if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
@@ -536,6 +584,9 @@ int main(int argc, char *argv[])
         }
     }
 
+#ifdef TRACEDECISION
+    printf("win = %d at end\n", windowed);
+#endif
 #ifdef PART_OF_FOX
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
     return windowed_worker(argc, argv, fwin_main);
@@ -940,6 +991,7 @@ int find_program_directory(char *argv0)
     char pgmname[LONGEST_LEGAL_FILENAME];
     char *w;
     int n, n1;
+    memset(pgmname, 0, sizeof(pgmname));
 /*
  * If the main reduce executable is has a full path-name /xxx/yyy/zzz then
  * I will use /xxx/yyy as its directory To find this I need to find the full
@@ -1047,6 +1099,7 @@ int find_program_directory(char *argv0)
  */
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
+                memset(temp, 0, sizeof(temp));
                 strcpy(temp, pgmname);
                 n = get_current_directory(pgmname, sizeof(pgmname));
                 if (n < 0) return 1;    /* fail! 1=current directory failure */
@@ -1063,6 +1116,7 @@ int find_program_directory(char *argv0)
  */
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
+        memset(temp, 0, sizeof(temp));
         if (lstat(fullProgramName, &buf) != -1 &&
             S_ISLNK(buf.st_mode) &&
             (n1 = readlink(fullProgramName,
@@ -1358,6 +1412,7 @@ void process_file_name(char *filename, char *old, size_t n)
     {   char alias[LONGEST_LEGAL_FILENAME];
         FSRef ref;
         Boolean is_folder, is_alias;
+        memset(alias, 0, sizeof(alias));
 /*
  * This works by converting from a path to an FSRef object, which is the Mac
  * internal handle. It can then resolve the alias. I use the option that
@@ -2162,6 +2217,7 @@ char *get_truename(char *filename, char *old, size_t n)
     struct stat buf;
     char *temp, *fn, *dir;
     char pwd[LONGEST_LEGAL_FILENAME];
+    memset(pwd, 0, sizeof(pwd));
 
     process_file_name(filename, old, n);
     if (*filename == 0)
@@ -2214,6 +2270,7 @@ char *get_truename(char *filename, char *old, size_t n)
         if (temp) 
         {   /* Found a directory component */
             char theDir[LONGEST_LEGAL_FILENAME];
+            memset(theDir, 0, sizeof(theDir));
             fn   = (char *)malloc(1+strlen(temp));
             strcpy(fn, temp);
             *temp = '\0';
@@ -2335,6 +2392,7 @@ const char *my_getenv(const char *s)
     char uppercasename[LONGEST_LEGAL_FILENAME];
     char *p = uppercasename;
     int c;
+    memset(uppercasename, 0, sizeof(uppercasename));
     while ((c = *s++) != 0) *p++ = toupper(c);
     *p = 0;
     return getenv(uppercasename);

@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2eba29d3 19-Feb-2012 */
+/* Signature: 66f07d50 12-May-2012 */
 
 #include "wx/wxprec.h"
 
@@ -797,7 +797,7 @@ fwinWorker::~fwinWorker()
 
 void fwinText::OnWorkerFinished(wxThreadEvent& event)
 {
-    FWIN_LOG("worker thread terminated\n");
+    FWIN_LOG(("worker thread terminated\n"));
 // In which case quit!
     Destroy();
     exit(returncode);
@@ -810,8 +810,8 @@ wxThread::ExitCode fwinWorker::Entry()
     int rc = (*fwin_main_entry)(fwin_argc, fwin_argv);
     fwin_ensure_screen();
 #define pause_on_exit 0
-    FWIN_LOG("return from fwin_main_entry is %d pause_on_exit=%d\n",
-             rc, pause_on_exit);
+    FWIN_LOG(("return from fwin_main_entry is %d pause_on_exit=%d\n",
+             rc, pause_on_exit));
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
     wxQueueEvent(panel, event);
     return (wxThread::ExitCode)rc;
@@ -1713,7 +1713,7 @@ int add_custom_fonts() // return 0 on success.
         if (i == 0) strcat(nn, ".otf");
         else strcat(nn, ".ttf");
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
-            FWIN_LOG("Failed to add font %s\n", nn);
+            FWIN_LOG(("Failed to add font %s\n", nn));
         else newFontAdded = 1;
     }
     if (newFontAdded)
@@ -1881,7 +1881,7 @@ fwinFrame::fwinFrame()
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
     if (numDisplays != 1)
-    {   FWIN_LOG("There seem to be %d displays\n", numDisplays);
+    {   FWIN_LOG(("There seem to be %d displays\n", numDisplays));
     }
     wxDisplay d0(0);                         // just look at display 0
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
@@ -1903,11 +1903,11 @@ fwinFrame::fwinFrame()
     }
     panel = new fwinText(this);
     worker = new fwinWorker(panel);
-    FWIN_LOG("worker = %p\n", worker);
+    FWIN_LOG(("worker = %p\n", worker));
     int rc = worker->Create(512*1024);  // Argument is stack size
-    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread creation error = %d\n", rc);
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG(("Thread creation error = %d\n", rc));
     rc = worker->Run();
-    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread run error = %d\n", rc);
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG(("Thread run error = %d\n", rc));
 // Note horribly well that the pointer "worker" may become invalid at any
 // stage from here on. I have a wxCriticalSection called "work" that I can use
 // to avoid trouble with that.
@@ -2566,10 +2566,10 @@ void fwinText::insertNewline()
     insertChar('\n');
 // stuff from promptEnd to textEnd should now be moved to inputBuffer.
     int n = 0;
-    FWIN_LOG("promptEnd = %d textEnd = %d\n", promptEnd, textEnd);
+    FWIN_LOG(("promptEnd = %d textEnd = %d\n", promptEnd, textEnd));
     for (int i=promptEnd; i<textEnd; i++)
     {   int c = TXT(i);    // Just the character - no colour etc info
-        FWIN_LOG("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n);
+        FWIN_LOG(("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n));
         if (n > inputBufferSize - 5)
         {   inputBufferSize = (4*inputBufferSize)/3;
             inputBuffer = (char *)realloc(inputBuffer, inputBufferSize);
@@ -2662,7 +2662,7 @@ void fwinText::insertString(wxString s)
 // insertString has a LIMITED capability as regarsd the string length.
 // it is probably onnly really intended for debugging use.
     if (n > 100)
-    {   FWIN_LOG("Truncating in insertString\n");
+    {   FWIN_LOG(("Truncating in insertString\n"));
         n = 100;
     }
     uint32_t b[100];
@@ -2814,7 +2814,7 @@ void fwinText::makePositionVisible(int p)
 // zero rather than 1 than I had at first expected!
     int n = r + 1 - rowCount;
     if (n < 0) n = 0;
-    FWIN_LOG("Scroll to offset %d r=%d rowCount=%d\n", n, r, rowCount);
+    FWIN_LOG(("Scroll to offset %d r=%d rowCount=%d\n", n, r, rowCount));
     Scroll(0, n);
 }
 
@@ -2975,10 +2975,10 @@ void fwinText::copyRegion()
 void fwinText::beep()
 {
 #ifdef WIN32
-    FWIN_LOG("Use Windows Beep\n");
+    FWIN_LOG(("Use Windows Beep\n"));
     ::Beep(900, 60);
 #else
-    FWIN_LOG("Play wxBell\n");
+    FWIN_LOG(("Play wxBell\n"));
     ::wxBell();
 #endif
 }
@@ -3067,7 +3067,7 @@ void fwinFrame::CloseAction()
     shouldExit = true;
     panel->reading.Post();
     panel->writing.Post();
-    FWIN_LOG("Have just set shouldExit and done some Posts\n");
+    FWIN_LOG(("Have just set shouldExit and done some Posts\n"));
     wxMilliSleep(1); // give worker a chance to respond.
 // The worker might not close down utterly instantly, and it might have
 // been in the middle of a computation, so I set more flags that ask it
@@ -3075,20 +3075,20 @@ void fwinFrame::CloseAction()
 // actually return to me until it has been processed.
     {   wxCriticalSectionLocker lock(panel->work);
         if (panel->frame->worker != NULL)
-        {   FWIN_LOG("About to ask the worker to stop\n");
-FWIN_LOG("%p %p %p\n", panel, panel->frame, panel->frame->worker);
+        {   FWIN_LOG(("About to ask the worker to stop\n"));
+            FWIN_LOG(("%p %p %p\n", panel, panel->frame, panel->frame->worker));
             panel->frame->worker->Delete();
-            FWIN_LOG("Delete() called on worker\n");
+            FWIN_LOG(("Delete() called on worker\n"));
         }
         else
         {   closedDown = true;
-            FWIN_LOG("worker already terminated\n");
+            FWIN_LOG(("worker already terminated\n"));
         }
     }
 // I will then give it 100ms to do so. Within that time it will need to
 // call TestDestroy() in order to notice my request.
     if (!closedDown) for (int i=0; i<10; i++)
-    {   FWIN_LOG("Poll %d for worker finished\n", i);
+    {   FWIN_LOG(("Poll %d for worker finished\n", i));
         {   wxCriticalSectionLocker lock(panel->work);
             if (panel->frame->worker == NULL)
             {   closedDown = true;
@@ -3101,7 +3101,7 @@ FWIN_LOG("%p %p %p\n", panel, panel->frame, panel->frame->worker);
 // tidily I will apply extreme prejudice and dispose of the worker
 // forcibly.
     if (!closedDown)
-    {   FWIN_LOG("worker did not close down by itself\n");
+    {   FWIN_LOG(("worker did not close down by itself\n"));
         wxCriticalSectionLocker lock(panel->work);
 // the wxWidgets documentation suggests that Kill is a BAD thing to
 // do. It will not let any onexit() functions registered by the worker
@@ -3109,10 +3109,10 @@ FWIN_LOG("%p %p %p\n", panel, panel->frame, panel->frame->worker);
 // just about to exit from my entire application, so I think I do not mind
 // very much. But using Delete() first might be kind...
         if (panel->frame->worker != NULL)
-        {   FWIN_LOG("About to kill the worker\n");
+        {   FWIN_LOG(("About to kill the worker\n"));
             panel->frame->worker->Kill();
         }
-        else FWIN_LOG("worker had closed down nicely after all\n");
+        else FWIN_LOG(("worker had closed down nicely after all\n"));
     }
 // Now I can close myself down too.
     Destroy();
@@ -3148,7 +3148,7 @@ void fwinFrame::OnSize(wxSizeEvent &event)
 {
     int i;
     double w;
-    FWIN_LOG("OnSize\n");
+    FWIN_LOG(("OnSize\n"));
     if (panel == NULL) return; // too early!
     wxSize client(GetClientSize());
     w = ((double)(client.GetWidth() - panel->sbWidth))/80.0;
@@ -3173,22 +3173,22 @@ void fwinText::enlargeTextBuffer()
 
 void fwinText::OnFileRead()
 {
-    FWIN_LOG("READ\n");
+    FWIN_LOG(1;5q("READ\n"));
 }
 
 void fwinText::OnFileSave()
 {
-    FWIN_LOG("SAVE\n");
+    FWIN_LOG(("SAVE\n"));
 }
 
 void fwinText::OnFileSaveSelection()
 {
-    FWIN_LOG("SAVE SELECTION\n");
+    FWIN_LOG(("SAVE SELECTION\n"));
 }
 
 void fwinText::OnFilePageSetup()
 {
-    FWIN_LOG("PAGESETUP\n");
+    FWIN_LOG(("PAGESETUP\n"));
 // The wxWidgets "printing" sample shows how to arrange these calls.
     *pageSetupData = *printData;
     wxPageSetupDialog pageSetupDialog(this, pageSetupData);
@@ -3205,21 +3205,21 @@ void fwinText::OnFilePrint()
     if (!printer.Print(this, &printout, true))
     {   if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
             wxLogError("Printer error\n");
-        else FWIN_LOG("Printing cancelled");
+        else FWIN_LOG(("Printing cancelled"));
     }
     else *printData = printer.GetPrintDialogData().GetPrintData();
 }
 
 void fwinText::OnFilePrintPreview()
 {
-    FWIN_LOG("PRINT PREVIEW\n");
+    FWIN_LOG(("PRINT PREVIEW\n"));
     wxPrintDialogData printDialogData(*printData);
     wxPrintPreview *preview =
         new wxPrintPreview(new fwinPrintout(this),
                            new fwinPrintout(this), &printDialogData);
     if (!preview->IsOk())
     {   delete preview;
-        FWIN_LOG("Problem with print preview\n");
+        FWIN_LOG(("Problem with print preview\n"));
         return;
     }
     wxPreviewFrame *frame =
@@ -3247,25 +3247,25 @@ bool fwinPrintout::HasPage(int page)
 
 bool fwinPrintout::OnPrintPage(int page)
 {
-    FWIN_LOG("Print page %d\n", page);
+    FWIN_LOG(("Print page %d\n", page));
     if (!HasPage(page)) return false;
     wxDC *dc = GetDC();
     FitThisSizeToPageMargins(
         wxSize(parent->windowWidth, parent->windowHeight),
         *pageSetupData);
     wxRect fit = GetLogicalPageMarginsRect(*pageSetupData);
-    FWIN_LOG("Print about to OnDraw\n");
+    FWIN_LOG(("Print about to OnDraw\n"));
 // In the window size had changed recently and I have not yet redrawn it
 // the fonts and measurements may be out of date. So here I create a
 // clientDC that would let me draw on the screen - but I only use it to
 // measure fonts.
     if (parent->firstPaint)
     {   wxClientDC dc1(parent);
-        FWIN_LOG("SetupFonts in print framework\n");
+        FWIN_LOG(("SetupFonts in print framework\n"));
         parent->SetupFonts(dc1);
     }
 // MainDraw always displays the first row it is asked to draw at y=0.
-    FWIN_LOG("MainDraw from OnPrintPage\n");
+    FWIN_LOG(("MainDraw from OnPrintPage\n"));
     parent->MainDraw(*dc, 0, parent->virtualRowCount);
     dc->SetFont(*(parent->fixedPitch));
     dc->SetTextForeground(*wxBLACK);
@@ -3282,154 +3282,154 @@ bool fwinPrintout::OnPrintPage(int page)
 
 void fwinText::OnEditCut()
 {
-    FWIN_LOG("CUT\n");
+    FWIN_LOG(("CUT\n"));
 }
 
 void fwinText::OnEditCopy()
 {
-    FWIN_LOG("COPY\n");
+    FWIN_LOG(("COPY\n"));
 }
 
 void fwinText::OnEditCopyText()
 {
-    FWIN_LOG("COPY TEXT\n");
+    FWIN_LOG(("COPY TEXT\n"));
 }
 
 void fwinText::OnEditPaste()
 {
-    FWIN_LOG("PASTE\n");
+    FWIN_LOG(("PASTE\n"));
 }
 
 void fwinText::OnEditReinput()
 {
-    FWIN_LOG("REINPUT\n");
+    FWIN_LOG(("REINPUT\n"));
 }
 
 void fwinText::OnEditSelectAll()
 {
-    FWIN_LOG("SELECTALL\n");
+    FWIN_LOG(("SELECTALL\n"));
 }
 
 void fwinText::OnEditClear()
 {
-    FWIN_LOG("CLEAR\n");
+    FWIN_LOG(("CLEAR\n"));
 }
 
 void fwinText::OnEditRedraw()
 {
-    FWIN_LOG("REDRAW\n");
+    FWIN_LOG(("REDRAW\n"));
 }
 
 void fwinText::OnEditHome()
 {
-    FWIN_LOG("HOME\n");
+    FWIN_LOG(("HOME\n"));
 }
 
 void fwinText::OnEditEnd()
 {
-    FWIN_LOG("END\n");
+    FWIN_LOG(("END\n"));
 }
 
 void fwinText::OnFontCMTT()
 {
-    FWIN_LOG("OnFontCMTT");
+    FWIN_LOG(("OnFontCMTT"));
 }
 
 void fwinText::OnFontDeja()
 {
-    FWIN_LOG("OnFontDeja");
+    FWIN_LOG(("OnFontDeja"));
 }
 
 void fwinText::OnFontSazanami()
 {
-    FWIN_LOG("OnFontSazanami");
+    FWIN_LOG(("OnFontSazanami"));
 }
 
 void fwinText::OnFontFirefly()
 {
-    FWIN_LOG("OnFontFirefly");
+    FWIN_LOG(("OnFontFirefly"));
 }
 
 void fwinText::OnFontPoint10()
 {
-    FWIN_LOG("OnFontPoint10");
+    FWIN_LOG(("OnFontPoint10"));
 }
 
 void fwinText::OnFontPoint12()
 {
-    FWIN_LOG("OnFontPoint12");
+    FWIN_LOG(("OnFontPoint12"));
 }
 
 void fwinText::OnFontPoint14()
 {
-    FWIN_LOG("OnFontPoint14");
+    FWIN_LOG(("OnFontPoint14"));
 }
 
 void fwinText::OnFontPoint17()
 {
-    FWIN_LOG("OnFontPoint17");
+    FWIN_LOG(("OnFontPoint17"));
 }
 
 void fwinText::OnFontPoint20()
 {
-    FWIN_LOG("OnFontPoint20");
+    FWIN_LOG(("OnFontPoint20"));
 }
 
 void fwinText::OnFontPoint24()
 {
-    FWIN_LOG("OnFontPoint24");
+    FWIN_LOG(("OnFontPoint24"));
 }
 
 void fwinText::OnFontPoint28()
 {
-    FWIN_LOG("OnFontPoint28");
+    FWIN_LOG(("OnFontPoint28"));
 }
 
 void fwinText::OnFontPoint34()
 {
-    FWIN_LOG("OnFontPoint34");
+    FWIN_LOG(("OnFontPoint34"));
 }
 
 void fwinText::OnFontPoint40()
 {
-    FWIN_LOG("OnFontPoint40");
+    FWIN_LOG(("OnFontPoint40"));
 }
 
 
 
 void fwinText::OnBreakBreak()
 {
-    FWIN_LOG("BREAK\n");
+    FWIN_LOG(("BREAK\n"));
 }
 
 void fwinText::OnBreakBacktrace()
 {
-    FWIN_LOG("BACKTRACE\n");
+    FWIN_LOG(("BACKTRACE\n"));
 }
 
 void fwinText::OnBreakPause()
 {
-    FWIN_LOG("PAUSE\n");
+    FWIN_LOG(("PAUSE\n"));
 }
 
 void fwinText::OnBreakResume()
 {
-    FWIN_LOG("RESUME\n");
+    FWIN_LOG(("RESUME\n"));
 }
 
 void fwinText::OnBreakStopGo()
 {
-    FWIN_LOG("STOP_GO\n");
+    FWIN_LOG(("STOP_GO\n"));
 }
 
 void fwinText::OnBreakDiscardOutput()
 {
-    FWIN_LOG("DISCARDOUTPUT\n");
+    FWIN_LOG(("DISCARDOUTPUT\n"));
 }
 
 void fwinText::OnHelpHelp()
 {
-    FWIN_LOG("HELP\n");
+    FWIN_LOG(("HELP\n"));
 }
 
 
@@ -3444,9 +3444,9 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
     uint32_t c = event.GetUnicodeKey();
     uint32_t r = event.GetKeyCode();
     uint32_t m = event.GetModifiers();
-//-    FWIN_LOG("SHIFT=%x ALT=%x META=%x CONTROL=%x\n",
-//-       wxMOD_SHIFT, wxMOD_ALT, wxMOD_META, wxMOD_CONTROL);
-//-    FWIN_LOG("KeyDown raw:%x unicode:%x modifiers:%x\n", r, c, m);
+//-    FWIN_LOG(("SHIFT=%x ALT=%x META=%x CONTROL=%x\n",
+//-       wxMOD_SHIFT, wxMOD_ALT, wxMOD_META, wxMOD_CONTROL));
+//-    FWIN_LOG(("KeyDown raw:%x unicode:%x modifiers:%x\n", r, c, m));
 // I appear to get streams of OnKeyDown(0) messages that do not seem
 // helpful to me. So I will just ignore them.
     if (r == 0)
@@ -3458,7 +3458,7 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
 // leave them to be sorted out by OnChar.
     if (r < 256 && (m & (wxMOD_ALT|wxMOD_CMD)) == 0)
     {   event.Skip();
-//-        FWIN_LOG("leave for OnChar since real key with no modifiers\n");
+//-        FWIN_LOG(("leave for OnChar since real key with no modifiers\n"));
         return;
     }
 // Next I will try to cope with ordinary characters but with ALT or CTRL.
@@ -3467,7 +3467,7 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
 // processChar.
     if (r < 256 && (m & wxMOD_ALT) != 0)
     {
-//-        FWIN_LOG("Char with ALT pressed\n");
+//-        FWIN_LOG(("Char with ALT pressed\n"));
         if (processChar(c, r, m)) event.Skip();
         return;
     }
@@ -3475,13 +3475,13 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
 // low 5 bits.
     if (r < 256)
     {
-//-        FWIN_LOG("Char with CMD pressed\n");
+//-        FWIN_LOG(("Char with CMD pressed\n"));
         if (processChar(r & 0x1f, r, m)) event.Skip();
         return;
     }
 // Now finally I have something where the key pressed seems to be a "special"
 // one (eg function key, numeric key-pad, arrow key etc etc.
-//-    FWIN_LOG("make unicode WXK_NONE=%x\n", WXK_NONE);
+//-    FWIN_LOG(("make unicode WXK_NONE=%x\n", WXK_NONE));
     if (processChar(WXK_NONE, r, m)) event.Skip();
 // because I do nothing special here this has accepted and processed the
 // key event and it will not re-appear later on via OnChar.
@@ -3499,7 +3499,7 @@ void fwinText::OnChar(wxKeyEvent &event)
 
 bool fwinText::processChar(int c, int r, int m)
 {
-//-    FWIN_LOG("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m);
+//-    FWIN_LOG(("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m));
     char *history_string = NULL;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
@@ -3662,7 +3662,7 @@ bool fwinText::processChar(int c, int r, int m)
 // If I "break" from the above switch block it means I have translated
 // the raw character into a Unicode on in C.
     }
-//  FWIN_LOG("Character %#x modifiers %x\n", c, m);
+//  FWIN_LOG(("Character %#x modifiers %x\n", c, m));
 // I will let the Search Pending code drop through in cases where the
 // keystroke should be treated as a return to "ordinary" processing. Also
 // note that I only expect to find myself in search mode in cases where the
@@ -4231,7 +4231,7 @@ defaultlabel:
 #ifdef RECONSTRUCTED
         insertChar(c); // @@@@
         if (c == 'X' && frame->worker != NULL)
-        {   FWIN_LOG("X test case\n");
+        {   FWIN_LOG(("X test case\n"));
             frame->worker->sendToScreen("Hi there @\n"); // @@@@
         }
 #ifdef XXXXXX
@@ -4355,7 +4355,7 @@ char *fwinText::historyGet(int n)
 
 void fwinText::OnMouse(wxMouseEvent &event)
 {
-    FWIN_LOG("Mouse event\n");
+    FWIN_LOG(("Mouse event\n"));
     event.Skip();
 }
 
@@ -4392,13 +4392,13 @@ void fwinWorker::sendToScreen(wxString s)
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, TO_SCREEN);
     event->SetString(s.c_str());  // careful to copy the string
     wxQueueEvent(panel, event);
-    FWIN_LOG("sendToScreen \"%s\"\n", (const char *)s.c_str());
+    FWIN_LOG(("sendToScreen \"%s\"\n", (const char *)s.c_str()));
 }
 
 void fwinText::OnToScreen(wxThreadEvent& event)
 {
     wxString text = event.GetString();
-    FWIN_LOG("receive in OnToScreen \"%s\"\n", (const char *)text.ToAscii());
+    FWIN_LOG(("receive in OnToScreen \"%s\"\n", (const char *)text.ToAscii()));
     insertString(text);
 }
 
@@ -4412,15 +4412,15 @@ int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
         k++;
         switch (state)
         {
-    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG(("Malformed UTF-8 sequence\n"));
             uc |= ((c & 0x3f) << 12);
             state = 2;
             break;
-    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG(("Malformed UTF-8 sequence\n"));
             uc |= ((c & 0x3f) << 6);
             state = 1;
             break;
-    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG(("Malformed UTF-8 sequence\n"));
             uc |= (c & 0x3f);
             u[n++] = uc;
             uc = 0;
@@ -4439,7 +4439,7 @@ int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
             {   uc = (c & 0x07) << 18;
                 state = 3;
             }
-            else FWIN_LOG("Malformed UTF-8 sequence\n");
+            else FWIN_LOG(("Malformed UTF-8 sequence\n"));
             break;
         }
     }
@@ -4449,7 +4449,7 @@ int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
 void fwinText::OnSetPrompt(wxThreadEvent& event)
 {
     wxString text = event.GetString();
-    FWIN_LOG("OnSetPrompt %s\n", fwin_prompt_string);
+    FWIN_LOG(("OnSetPrompt %s\n", fwin_prompt_string));
     unicodePromptLength = unpackUTF8chars(&unicodePrompt[0],
                                           &fwin_prompt_string[0],
                                           strlen(fwin_prompt_string));
@@ -4460,13 +4460,13 @@ void fwinText::OnSetPrompt(wxThreadEvent& event)
 
 void fwinText::OnSetMenus(wxThreadEvent& event)
 {
-    FWIN_LOG("OnSetMenus\n");
+    FWIN_LOG(("OnSetMenus\n"));
     writing.Post();
 }
 
 void fwinText::OnRefreshSwitches(wxThreadEvent& event)
 {
-    FWIN_LOG("OnRefreshSwitches\n");
+    FWIN_LOG(("OnRefreshSwitches\n"));
     writing.Post();
 }
 
@@ -4474,21 +4474,21 @@ void fwinText::OnRefreshSwitches(wxThreadEvent& event)
 void fwinText::OnSetLeft(wxThreadEvent& event)
 {
     wxString text = event.GetString();
-    FWIN_LOG("OnSetLeft %s\n", (const char *)text.ToAscii());
+    FWIN_LOG(("OnSetLeft %s\n", (const char *)text.ToAscii()));
     writing.Post();
 }
 
 void fwinText::OnSetMid(wxThreadEvent& event)
 {
     wxString text = event.GetString();
-    FWIN_LOG("OnSetMid %s\n", (const char *)text.ToAscii());
+    FWIN_LOG(("OnSetMid %s\n", (const char *)text.ToAscii()));
     writing.Post();
 }
 
 void fwinText::OnSetRight(wxThreadEvent& event)
 {
     wxString text = event.GetString();
-    FWIN_LOG("OnSetRight %s\n", (const char *)text.ToAscii());
+    FWIN_LOG(("OnSetRight %s\n", (const char *)text.ToAscii()));
     writing.Post();
 }
 
@@ -4531,7 +4531,7 @@ void fwinText::OnRequestInput(wxThreadEvent& event)
 // cause OnChar to put anything it receives into inputBuffer not the
 // type-ahead buffer. When OnChar sees an ENTER it can clear the awaiting
 // flag and signal the worker thread.
-    FWIN_LOG("OnRequestInput\n");
+    FWIN_LOG(("OnRequestInput\n"));
     caretPos = textEnd;
     insertChars(unicodePrompt, unicodePromptLength);
     promptEnd = textEnd;
@@ -4548,21 +4548,21 @@ void fwinText::OnRequestInput(wxThreadEvent& event)
 
 void fwinText::OnMinimiseWindow(wxThreadEvent& event)
 {
-    FWIN_LOG("OnMinimiseWindow\n");
+    FWIN_LOG(("OnMinimiseWindow\n"));
     Hide();
     writing.Post();
 }
 
 void fwinText::OnRestoreWindow(wxThreadEvent& event)
 {
-    FWIN_LOG("OnRestoreWindow\n");
+    FWIN_LOG(("OnRestoreWindow\n"));
     Show();
     writing.Post();
 }
 
 void fwinText::SetupFonts(wxDC &dc)
 {
-    FWIN_LOG("SetupFonts called, fixedPitch = %p\n", fixedPitch);
+    FWIN_LOG(("SetupFonts called, fixedPitch = %p\n", fixedPitch));
     wxSize window(GetClientSize());
     windowWidth = window.GetWidth();
     windowHeight = window.GetHeight();
@@ -4586,24 +4586,24 @@ void fwinText::SetupFonts(wxDC &dc)
         while (p->name != NULL &&
                strcmp(p->name, "cmtt10") != 0) p++;
         if (p->name == NULL)
-        {   FWIN_LOG("Oops - font data not found\n");
+        {   FWIN_LOG(("Oops - font data not found\n"));
             exit(1);
         }
         wxCoord width, height, depth, leading;
         dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
-        FWIN_LOG("width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+        FWIN_LOG(("width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading));
         em = (double)width/100.0;
         double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
         pixelsPerPoint = em/fmEm;
         fixedPitch->SetPointSize(10);
         dc.GetTextExtent((wchar_t)0x21d0, &width, &height, &depth, &leading, fixedAlternate);
-        FWIN_LOG("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+        FWIN_LOG(("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading));
         dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
-        FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+        FWIN_LOG(("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading));
     }
     int spacePerChar = windowWidth/80;
     scaleAdjustment = (double)spacePerChar/em;
-    FWIN_LOG("windowWidth = %d scaleAdjustment = %.3g\n", windowWidth, scaleAdjustment);
+    FWIN_LOG(("windowWidth = %d scaleAdjustment = %.3g\n", windowWidth, scaleAdjustment));
     fixedPitch->SetPointSize(10);
     fixedPitch->Scale(scaleAdjustment);
     fixedAlternate->SetPointSize(10);
@@ -4612,7 +4612,7 @@ void fwinText::SetupFonts(wxDC &dc)
     fixedCJK->Scale(scaleAdjustment);
     dc.SetFont(*fixedPitch);
     rowHeight = dc.GetCharHeight();
-    FWIN_LOG("Setting rowHeight = %d\n", rowHeight);
+    FWIN_LOG(("Setting rowHeight = %d\n", rowHeight));
     spacePerChar = dc.GetCharWidth();
 // rowCount is the number of full rows that will fit on the screen. If the
 // window depth is not a multiple of rowHeight there could be a further
@@ -4672,7 +4672,7 @@ void fwinText::MainDraw(wxDC &dc,
 void fwinText::OnDraw(wxDC &dc)
 {
     if (firstPaint)
-    {   FWIN_LOG("SetupFonts fronm OnDraw\n");
+    {   FWIN_LOG(("SetupFonts fronm OnDraw\n"));
         SetupFonts(dc);
     }
     wxRect updateRegion = GetUpdateRegion().GetBox();
@@ -4680,8 +4680,8 @@ void fwinText::OnDraw(wxDC &dc)
                            &updateRegion.x, &updateRegion.y);
     int firstUpdateRow = updateRegion.y/rowHeight;
     int lastUpdateRow = updateRegion.GetBottom()/rowHeight;
-    FWIN_LOG("update height = %d rowHeight = %d\n", updateRegion.GetBottom(), rowHeight);
-    FWIN_LOG("Update rows %d to %d\n", firstUpdateRow, lastUpdateRow);
+    FWIN_LOG(("update height = %d rowHeight = %d\n", updateRegion.GetBottom(), rowHeight));
+    FWIN_LOG(("Update rows %d to %d\n", firstUpdateRow, lastUpdateRow));
     MainDraw(dc, firstUpdateRow, lastUpdateRow);
 }
 
@@ -4863,7 +4863,7 @@ int fwin_windowmode()
 void fwin_exit(int return_code)
 {
     fwin_ensure_screen();
-    FWIN_LOG("fwin_exit(%d)\n", return_code);
+    FWIN_LOG(("fwin_exit(%d)\n", return_code));
     if (windowed)
     {   returncode = return_code;
         panel->frame->worker->DoExit();
@@ -4875,7 +4875,7 @@ void fwin_abrupt_exit()
 {
 // This is used e.g. when the user closes the window that you are running
 // in.
-    FWIN_LOG("fwin_abrupt_exit\n");
+    FWIN_LOG(("fwin_abrupt_exit\n"));
     if (windowed)
     {   returncode = 0;
         panel->frame->worker->DoExit();
@@ -4964,7 +4964,7 @@ void fwin_putcode(int c)
 {
 // This expands a character code into an UTF sequence for transmission to
 // the GUI and for inclusion in any log file.
-    FWIN_LOG("fwin_putcode %#x\n", c);
+    FWIN_LOG(("fwin_putcode %#x\n", c));
     if (c < 0x80) fwin_putchar(c);
     else if (c <= 0x800)
     {   fwin_putchar(0xc0 | ((c>>6) & 0x1f));
@@ -4981,7 +4981,7 @@ void fwin_putcode(int c)
         fwin_putchar(0x80 | ((c>>6) & 0x3f));
         fwin_putchar(0x80 | (c & 0x3f));
     }
-    else FWIN_LOG("Illegal character code %#x\n", c);
+    else FWIN_LOG(("Illegal character code %#x\n", c));
 }
 
 void fwin_puts(const char *s)
@@ -4999,7 +4999,7 @@ void fwin_puts(const char *s)
         return;
     }
     int len = strlen(s);
-    FWIN_LOG("fwin_puts(\"%s\")\n", s);
+    FWIN_LOG(("fwin_puts(\"%s\")\n", s));
     char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
     int in = panel->fwin_in;
     while (len > 0)
@@ -5103,7 +5103,7 @@ void fwin_vfprintf(const char *fmt, va_list a)
 #endif
         return;
     }
-    FWIN_LOG("fwin_vfprintf(\"%s\",...)\n", fmt);
+    FWIN_LOG(("fwin_vfprintf(\"%s\",...)\n", fmt));
 // see comments above.
     if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
         fwin_ensure_screen();
@@ -5125,7 +5125,7 @@ const char *fwin_maths = NULL;
 void fwin_showmath(const char *s)
 {
     if (!windowed) return;
-    FWIN_LOG("fwin_showmath called\n");
+    FWIN_LOG(("fwin_showmath called\n"));
 // The current version of this is going to be pretty outrageous!
 // It will suppose you have latex installed on your computer and will
 // invoke it to convert the formula you just created into .dvi format.
@@ -5147,9 +5147,9 @@ void fwin_showmath(const char *s)
 #endif
     int dirlen = strlen(tempd);
     if (tempd[dirlen-1] == '/') dirlen--;
-    FWIN_LOG("temp = \"%s\" length %d\n", tempd, dirlen);
+    FWIN_LOG(("temp = \"%s\" length %d\n", tempd, dirlen));
     sprintf(&tempd[dirlen], "/reduce-%d.tex", (int)procid);
-    FWIN_LOG("TeX file will be in \"%s\"\n", tempd);
+    FWIN_LOG(("TeX file will be in \"%s\"\n", tempd));
     FILE *f = fopen(tempd, "w");
     fprintf(f, "\\documentclass{article}\n");
     fprintf(f, "\\pagestyle{empty}\n");
@@ -5184,16 +5184,16 @@ void fwin_showmath(const char *s)
     sprintf(cmd, "latex --output-directory=%.*s reduce-%d.tex",
                  dirlen, tempd, procid);
 #endif
-    FWIN_LOG("TeX is: \"%s\"\n", s);
-    FWIN_LOG("Command: \"%s\"\n", cmd);
+    FWIN_LOG(("TeX is: \"%s\"\n", s));
+    FWIN_LOG(("Command: \"%s\"\n", cmd));
     int src = system(cmd);
-    FWIN_LOG("system returns %d\n", src);
+    FWIN_LOG(("system returns %d\n", src));
 #ifdef WIN32
     sprintf(cmd, ".\\wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, procid);
 #else
     sprintf(cmd, "./wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, procid);
 #endif
-    FWIN_LOG("Cmd: \"%s\"\n", cmd);
+    FWIN_LOG(("Cmd: \"%s\"\n", cmd));
     system(cmd);
 #ifdef WIN32
 #define delfile DeleteFileA
@@ -5222,10 +5222,10 @@ void fwin_ensure_screen()
         return;
     }
     if (panel->fwin_in == 0) return;
-    FWIN_LOG("fwin_ensure_screen\n");
+    FWIN_LOG(("fwin_ensure_screen\n"));
     if (panel->use_buffer1)
-        FWIN_LOG("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0]));
-    else FWIN_LOG("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0]));
+        FWIN_LOG(("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0])));
+    else FWIN_LOG(("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0])));
 // Wait until GUI thread is ready, ie has finshed emptying the other
 // buffer.
     panel->writing.Wait();

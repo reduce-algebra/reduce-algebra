@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 1d6785c4 01-Jan-2011 */
+/* Signature: 447df4a7 12-May-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -165,7 +165,7 @@ static int outputColour = -1;  /* whatever user had been using */
 
 #ifndef DEBUG
 
-#define LOG(...)
+#define LOG(a)
 
 #else
 
@@ -182,7 +182,7 @@ static void write_log(char *s, ...)
     va_end(x);
 }
 
-#define LOG(...) write_log(__VA_ARGS__);
+#define LOG(a) write_log a
 
 #endif
 
@@ -591,7 +591,7 @@ static void measure_screen(void)
 #endif /* TIOCGWINSZ */
 #endif /* HAVE_SYS_IOCTL_H */
 #endif /* WIN32 */
-    LOG("[screen:%dx%d]", columns, lines);
+    LOG(("[screen:%dx%d]", columns, lines));
 }
 
 #ifdef WIN32
@@ -993,7 +993,7 @@ static int term_getchar(void)
  * in case that is really for "'") do I test for that. Anyway at least
  * with my keyboard this lets "^@" get through!
  */
-            if (key != 0x11) LOG("\nascii=%x VK=%x ctrl=%x\n", ascii, key, ctrl);
+            if (key != 0x11) LOG(("\nascii=%x VK=%x ctrl=%x\n", ascii, key, ctrl));
             if (ascii != 0 || key == 0xc0)
             {   if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
                     ascii |= 0x100;
@@ -1074,7 +1074,7 @@ static int term_getchar(void)
     int state = BASE_STATE, esc_esc = 0, ch, numval1=0, numval2=0;
     for (;;)
     {   ch = getchar();
-        LOG("RAW ch=%.2x : <%c>\n", ch, ch | 0x40);
+        LOG(("RAW ch=%.2x : <%c>\n", ch, ch | 0x40));
         if (ch == EOF) return EOF;
         switch (state)
         {

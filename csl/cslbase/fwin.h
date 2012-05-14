@@ -52,7 +52,7 @@
  * and not under any more restrictice license.
  */
 
-/* Signature: 77dd5638 23-Dec-2010 */
+/* Signature: 523374d5 12-May-2012 */
 
 #ifndef header_fwin_h
 #define header_fwin_h 1
@@ -86,16 +86,17 @@ extern "C" {
  * Logging support. This will give a no-op unless the preprocessor symbol
  * DEBUG is defined at compile time.
  *
- * Usage (eg):  FWIN_LOG("I reached %d of %s\n", __LINE__, __FILE__);
- * Note the use of a C variadic macro. These were introduced in C99 and so
- * by using them I am assuming I have a C compiler that is that new.
+ * Usage (eg):  FWIN_LOG(("I reached %d of %s\n", __LINE__, __FILE__));
+ * Note the use of doubled parentheses so I avoid using the c99
+ * variadic macro scheme in case anybody wants to use a C compiler
+ * dating from before then.
  */
 
 #ifdef DEBUG
 extern void fwin_write_log(const char *s, ...);
-#define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
+#define FWIN_LOG(a) fwin_write_log a
 #else
-#define FWIN_LOG(...) /* nothing */
+#define FWIN_LOG(a) /* nothing */
 #endif
 
 

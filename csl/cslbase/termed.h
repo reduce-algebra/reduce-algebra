@@ -40,7 +40,7 @@
  */
 
 
-/* Signature: 554d413d 02-Jan-2011 */
+/* Signature: 554d413d 12-May-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
