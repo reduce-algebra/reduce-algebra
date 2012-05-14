@@ -788,7 +788,7 @@ then
               $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
               --disable-shared --enable-unicode \
-              --disable-compat26 --disable-compat28 \
+              --disable-compat26 \
               --with-png=builtin --without-libjpeg \
               --without-libtiff --with-libsvg=no \
               --with-sdl=no --with-zlib=builtin \
