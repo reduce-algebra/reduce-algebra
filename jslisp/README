@@ -25,7 +25,7 @@ Various versions of this file can be found at http://206.21.94.61/misc/ .
 3) Obtain a copy of the Google Web Toolkit GWT2.4.0.beta SDK from here:
 http://code.google.com/p/google-web-toolkit/downloads/list
 
-4) See /home/tkosan/NetBeansProjects/mpreduce_javascript_branch/lib/google_web_toolkit/compile.sh
+4) See lib/google_web_toolkit/compile.sh
 for which .jar files to use from GWT2.4.0.beta and where to place them.
 
 5) Execute "ant gwt_dist". A "build" directory will be created and inside of it
