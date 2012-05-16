@@ -1,4 +1,4 @@
-! /bin/sh
+#! /bin/sh
 a=$0
 c=unknown
 case $a in
