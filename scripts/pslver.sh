@@ -132,6 +132,12 @@ EOF
 *alpha*)
   echo "alpha"
   ;;
+x86_64*freebsd*)
+  echo "freeBSD64"
+  ;;
+i686*freebsd*)
+  echo "freeBSD"
+  ;;
 *)
   echo "unknown"
   ;;
