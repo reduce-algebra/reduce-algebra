@@ -2,5 +2,5 @@
 all:	reduce-packages
 
 reduce-packages:
-	cd reduce ; debuild -B -us -uc 
-	fakeroot alien -k -r reduce_*.deb
+	cd reduce ; debuild -b -us -uc 
+	fakeroot alien -k -r reduce-*.deb

@@ -11,15 +11,17 @@ export DH_VERBOSE=1
 
 TOPDIR=../..
 
+SYSTEMNAME=$(shell $(TOPDIR)/config.guess)
+
 OSVER=$(shell $(TOPDIR)/script/findos.sh)
-BUILDDIR=$(shell $(TOPDIR)/scripts/findhost.sh $(shell $(TOPDIR)/config.guess))
+BUILDDIR=$(shell $(TOPDIR)/scripts/findhost.sh $(SYSTEMNAME))
 
 CSLBUILDDIR=$(TOPDIR)/cslbuild/$(BUILDDIR)
 PSLBUILDDIR=$(TOPDIR)/pslbuild/$(BUILDDIR)
 
 DOCSRCDIR=$(TOPDIR)/doc/manual
 
-INSTALLDIR:=debian/$(shell dh_listpackages)
+INSTALLDIR:=debian/tmp
 SHAREDIR=$(INSTALLDIR)/usr/share/reduce
 LIBDIR=$(INSTALLDIR)/usr/lib/reduce
 TTFONTDIR=$(INSTALLDIR)/usr/share/fonts/truetype/reduce
@@ -45,12 +47,12 @@ configure-stamp:
 	dh_testdir
 	cd $(TOPDIR) ; ./configure --prefix=/usr --with-csl ; ./configure --with-psl
 
-#override_dh_auto_build:
 build:	configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 	cd $(TOPDIR) ; make
 	cd $(DOCSRCDIR) ; make
+	touch build-stamp
 
 #override_dh_installdirs:
 #	mkdir -p $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
@@ -60,28 +62,93 @@ build-stamp:
 #	cp $(DOCMISCDIR)/primer.tex $(DOCMISCDIR)/sl.tex $(DOCMISCDIR)/sl.bib $(DOCDIR)/
 
 #override_dh_auto_install:
-override_dh_install:
-	cp debian/reduce.docs.template debian/reduce.docs
-	echo $(DOCSRCDIR)/*.tex >>debian/reduce.docs
-	echo $(DOCSRCDIR)/manual-pdf.pdf $(DOCSRCDIR)/manual-pdf*.html $(DOCSRCDIR)/manual-pdf*.png $(DOCSRCDIR)/manual-pdf.css >>debian/reduce.docs
-#	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
+#override_dh_install:
+install: install-stamp
+install-stamp: build-stamp
+# create target directories
+	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR) $(MANDIR)/man1
+# copy documentation files
+	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf $(TOPDIR)/csl/reduce.doc/BINARY-LICENSE.txt $(TOPDIR)/csl/reduce.doc/BSD-LICENSE.txt $(TOPDIR)/csl/reduce.doc/LGPL-2.1.txt $(TOPDIR)/doc/manual/redlogo.png $(DOCDIR)
+	cp $(DOCSRCDIR)/*.tex $(DOCDIR)
+	cp $(DOCSRCDIR)/manual-pdf.pdf $(DOCSRCDIR)/manual-pdf*.html $(DOCSRCDIR)/manual-pdf*.png $(DOCSRCDIR)/manual-pdf.css $(DOCDIR)
+# copy man files
+	cp debian/redcsl.1 debian/redpsl.1 $(MANDIR)/man1
+# copy CSL files
 	cp $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(LIBDIR)/cslbuild/csl
 #	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
+	mkdir -p $(FONTDIR)
 	$(RSYNC_CMD) --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
 	chmod -x $(FONTDIR)/*.ttf
+# copy PSL files
 	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" $(PSLBUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
 	$(RSYNC_CMD) $(PSLBUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
 	$(TOPDIR)/psl/saveimage.sh $(PSLBUILDDIR) $(abspath $(LIBDIR)/pslbuild/red) /usr/lib/reduce/pslbuild
+# copy common files
 	$(RSYNC_CMD) --no-perms --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
-#	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
-#	ln -f -s ../../../../share/reduce/fonts $(SHAREDIR)/cslbuild/csl/reduce.fonts
-#	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
-#	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
-#	ln -f -s ../../lib/reduce/cslbuild $(SHAREDIR)/cslbuild
-#	mkdir -p $(TTFONTDIR)
-#	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.ttf $(TTFONTDIR)
-#	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.pfb $(TYPE1FONTDIR)
-#	chmod -x $(TTFONTDIR)/*
-#	ln -f -s /usr/lib/reduce/cslbuild/csl/reduce $(BINDIR)/redcsl
+	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
+	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
+	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
+	ln -f -s ../../lib/reduce/cslbuild $(SHAREDIR)/cslbuild
+# copy font files for CSL
+	mkdir -p $(TTFONTDIR) $(TYPE1FONTDIR)
+	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.ttf $(TTFONTDIR)
+	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.pfb $(TYPE1FONTDIR)
+	chmod -x $(TTFONTDIR)/*
+# copy shell scripts for running REDUCE
 	cp -a debian/runpsl.sh $(BINDIR)/redpsl
 	cp -a debian/runcsl.sh $(BINDIR)/redcsl
+
+# run dh_install to copy the files into the package build dirs
+	dh_install
+
+	touch install-stamp
+
+
+# Build architecture-dependent files here.
+binary-indep: install
+	dh_testdir -i
+	dh_testroot -i
+	dh_installdocs -i
+	dh_installexamples -i
+	dh_installmenu -i
+	dh_installemacsen -i
+	dh_installcron -i
+	dh_installman -i
+#	dh_desktop -i
+	dh_installinfo -i
+	dh_installchangelogs  -i
+	dh_link -i
+	dh_strip -i
+	dh_compress -i 
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_shlibdeps -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+# Build architecture-dependent files here.
+binary-arch: install
+	dh_testdir -a
+	dh_testroot -a
+	dh_installdocs -a
+	dh_installexamples -a
+	dh_installmenu -a
+	dh_installemacsen -a
+	dh_installcron -a
+	dh_installman -a
+#	dh_desktop -a
+	dh_installinfo -a
+	dh_installchangelogs  -a
+	dh_link -a
+	dh_strip -a $(NO_STRIP)
+	dh_compress -a
+	dh_fixperms -a
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

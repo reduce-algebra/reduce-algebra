@@ -2,17 +2,48 @@ Source: reduce
 Section: math
 Priority: optional
 Maintainer: REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net>
-Build-Depends: texlive-latex-base, texlive-fonts-extra, tex4ht, debhelper (>= 7.0.50~)
+Build-Depends: libx11-dev, libxext-dev, libxft-dev, texlive-latex-base, texlive-fonts-extra, tex4ht, debhelper (>= 7.0.50~)
 Standards-Version: 3.9.1
 Homepage: http://reduce-algebra.sf.net/
 
-Package: reduce
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: REDUCE Computer Algebra System
+Package: reduce-common
+Architecture: all
+Depends: ${misc:Depends}
+Description: REDUCE Computer Algebra System -- common files
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
  interfaces to gnuplot to provide graphics. It can be used interactively
  for simple calculations (as illustrated in the screenshot above) but also
  provides a full programming language, with a syntax similar to other
  modern programming languages.
+ .
+ This package contains the files that are independent of the Lisp system used.
+
+Package: reduce-csl
+Architecture: any
+Depends: reduce-common (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: REDUCE Computer Algebra System -- CSL version
+ REDUCE is a system for doing scalar, vector and matrix algebra by computer,
+ which also supports arbitrary precision numerical approximation and
+ interfaces to gnuplot to provide graphics. It can be used interactively
+ for simple calculations (as illustrated in the screenshot above) but also
+ provides a full programming language, with a syntax similar to other
+ modern programming languages.
+ .
+ This package contains the files for the CSL (Codemist Standard Lisp)
+ version of REDUCE.
+
+
+Package: reduce-psl
+Architecture: i386 amd64 kfreebsd-amd64 kfreebsd-i386 mips powerpc sparc alpha hppa
+Depends: reduce-common (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: REDUCE Computer Algebra System -- PSL version
+ REDUCE is a system for doing scalar, vector and matrix algebra by computer,
+ which also supports arbitrary precision numerical approximation and
+ interfaces to gnuplot to provide graphics. It can be used interactively
+ for simple calculations (as illustrated in the screenshot above) but also
+ provides a full programming language, with a syntax similar to other
+ modern programming languages.
+ .
+ This package contains the files for the PSL (Portable Standard Lisp)
+ version of REDUCE.

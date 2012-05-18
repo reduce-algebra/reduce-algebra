@@ -4,26 +4,26 @@ package
 
   devscripts
 
-To build the package, run the following command from the debianbuild/reduce
+To build the packages, run the following command from the debianbuild/reduce
 directory:
 
-  debuild -B -uc -us
+  debuild -b -uc -us
 
-At the moment, this is an unsigned (switches -uc -us) binary package
-(-B switch), although it contains the files from the packages directory. 
+After successful completion, you should have three .deb package files for
+CSL, PSL and common files, respectively.
 
-After successful completion, you may check the package content with
+You may check the package content with, e.g.,
 
-  dpkg --contents reduce_20120514_i386.deb
+  dpkg --contents reduce-common_20120514_i386.deb
 
 Install the package with
 
-  dpkg --install reduce_20120514_i386.deb
+  dpkg --install reduce-common_20120514_i386.deb
 
-An rpm package can be built from this by running (You need Ubuntu packages 
+Rpm packagies can be built from this by running (You need Ubuntu packages 
 fakeroot and alien)
 
- fakeroot alien -r -k reduce_20120514_i386.deb
+ fakeroot alien -r -k reduce-*.deb
 
 The CSL and PSL versions of REDUCE are run with
 
