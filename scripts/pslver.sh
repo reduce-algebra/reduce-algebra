@@ -73,6 +73,9 @@ case $host in
 *x86_64*linux*)
   echo "amd64"
   ;;
+*arm*)
+  echo "arm"
+  ;;
 *linux*)
 # linux32 or linux_a.out
   gcc -x c - -o /tmp/pslver <<EOF
