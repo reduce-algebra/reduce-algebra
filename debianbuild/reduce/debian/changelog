@@ -1,3 +1,9 @@
+reduce (20120521) unstable; urgency=low 
+
+  * New snapshot.
+
+ -- REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net>  Fri, 	21 May 2012 13:12:24 +0200
+
 reduce (20120514) unstable; urgency=low
 
   * Snapshot.
