@@ -42,9 +42,20 @@ RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
 %:
 	dh $@ 
 
+distclean:
+	dh_distclean
+	cd $(CSLBUILDDIR) ; make distclean
+ifneq ($(BUILDPSL),)
+	cd $(PSLBUILDDIR) ; make distclean
+endif
+
 clean: 
 	dh_clean
-	cd $(TOPDIR) ; make clean
+#	cd $(TOPDIR) ; make clean
+	cd $(CSLBUILDDIR) ; make clean
+ifneq ($(BUILDPSL),)   
+	cd $(PSLBUILDDIR) ; make clean
+endif
 
 #override_dh_auto_configure:
 configure: configure-stamp
@@ -58,7 +69,11 @@ endif
 build:	configure-stamp build-stamp
 build-stamp:
 	dh_testdir
-	cd $(TOPDIR) ; make
+#	cd $(TOPDIR) ; make
+	cd $(CSLBUILDDIR) ; make
+ifneq ($(BUILDPSL),)
+	cd $(PSLBUILDDIR) ; make
+endif
 	cd $(DOCSRCDIR) ; make
 	touch build-stamp
 
