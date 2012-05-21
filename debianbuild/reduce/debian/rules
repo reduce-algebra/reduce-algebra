@@ -13,7 +13,12 @@ TOPDIR=../..
 
 SYSTEMNAME=$(shell $(TOPDIR)/config.guess)
 
-OSVER=$(shell $(TOPDIR)/script/findos.sh)
+OSVER=$(shell $(TOPDIR)/scripts/findos.sh)
+PSLVER=$(shell $(TOPDIR)/scripts/pslver.sh)
+KNOWNPSLVER=amd64 linux
+
+BUILDPSL=$(filter $(PSLVER),$(KNOWNPSLVER))
+
 BUILDDIR=$(shell $(TOPDIR)/scripts/findhost.sh $(SYSTEMNAME))
 
 CSLBUILDDIR=$(TOPDIR)/cslbuild/$(BUILDDIR)
@@ -45,7 +50,10 @@ clean:
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	cd $(TOPDIR) ; ./configure --prefix=/usr --with-csl ; ./configure --with-psl
+	cd $(TOPDIR) ; ./configure --prefix=/usr --with-csl
+ifneq ($(BUILDPSL),)
+	cd $(TOPDIR) ; ./configure --with-psl
+endif
 
 build:	configure-stamp build-stamp
 build-stamp:
@@ -79,10 +87,11 @@ install-stamp: build-stamp
 	mkdir -p $(FONTDIR)
 	$(RSYNC_CMD) --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
 	chmod -x $(FONTDIR)/*.ttf
-# copy PSL files
+ifneq ($(BUILDPSL),)                                                          # copy PSL files
 	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" $(PSLBUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
 	$(RSYNC_CMD) $(PSLBUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
 	$(TOPDIR)/psl/saveimage.sh $(PSLBUILDDIR) $(abspath $(LIBDIR)/pslbuild/red) /usr/lib/reduce/pslbuild
+endif
 # copy common files
 	$(RSYNC_CMD) --no-perms --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
 	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
