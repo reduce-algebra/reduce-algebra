@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 24470e7a 22-May-2012 */
+/* Signature: 29766889 22-May-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1859,6 +1859,7 @@ BrowserBox::BrowserBox(FXApp *a, const char *p) :
         choices[i] = NULL;
     nbr = 0;
     addbutton(v, "firefox", p);
+    addbutton(v, "midori", p);
     addbutton(v, "iceweasel", p);
     addbutton(v, "safari", p);
     addbutton(v, "galeon", p);
@@ -1944,7 +1945,7 @@ long FXTerminal::onCmdSelectBrowser(FXObject *c, FXSelector s, void *ptr)
 {
     FXRegistry *reg = &application_object->reg();
     const char *preferred = reg->readStringEntry("browser", "preferred");
-    if (preferred == NULL || *preferred == 0) preferred = "mozilla";
+    if (preferred == NULL || *preferred == 0) preferred = "firefox";
     selectBrowser(reg, preferred);
     setFocus();
     return 1;
@@ -2016,7 +2017,7 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     FXRegistry *reg = &application_object->reg();
     const char *preferred = reg->readStringEntry("browser", "preferred");
     if (preferred == NULL || *preferred == 0)
-        preferred = selectBrowser(reg, "mozilla");
+        preferred = selectBrowser(reg, "firefox");
     char helpFile[256];
     sprintf(helpFile, "file://%s/%s.doc/index.html", programDir, programName);
 // For non-windows the browsers I might imagine include
@@ -2028,6 +2029,9 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     {   const char *browsers[] = {
             NULL,
             "opera",
+            "firefox",
+            "midori",
+            "safari",
             "mozilla",
             "konqueror",
             "galeon",
