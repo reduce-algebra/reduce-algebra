@@ -25,11 +25,11 @@ reduce-packages:
 source-archive:
 	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
 	svn export .. reduce-source-$(SNAPSHOT)
-	$(MAKE) reduce-source-core-$(SNAPSHOT).tar.bz2:
-	$(MAKE) reduce-source-csl-$(SNAPSHOT).tar.bz2:
-	$(MAKE) reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2:
-	$(MAKE) reduce-source-csl-support-$(SNAPSHOT).tar.bz2:
-	$(MAKE) reduce-source-psl-$(SNAPSHOT).tar.bz2:
+	$(MAKE) reduce-source-core-$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-csl-$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-csl-support-$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-psl-$(SNAPSHOT).tar.bz2
 	ls -lh *.tar.bz2
 #	-rm -rf reduce-source-$(SNAPSHOT)
 
