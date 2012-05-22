@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 273194ec 07-Jul-2010 */
+/* Signature: 24470e7a 22-May-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1859,6 +1859,8 @@ BrowserBox::BrowserBox(FXApp *a, const char *p) :
         choices[i] = NULL;
     nbr = 0;
     addbutton(v, "firefox", p);
+    addbutton(v, "iceweasel", p);
+    addbutton(v, "safari", p);
     addbutton(v, "galeon", p);
     addbutton(v, "konqueror", p);
     addbutton(v, "mozilla", p);
