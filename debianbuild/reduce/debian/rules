@@ -94,6 +94,7 @@ install-stamp: build-stamp
 	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf $(TOPDIR)/csl/reduce.doc/BINARY-LICENSE.txt $(TOPDIR)/csl/reduce.doc/BSD-LICENSE.txt $(TOPDIR)/csl/reduce.doc/LGPL-2.1.txt $(TOPDIR)/doc/manual/redlogo.png $(DOCDIR)
 	cp $(DOCSRCDIR)/*.tex $(DOCDIR)
 	cp $(DOCSRCDIR)/manual-pdf.pdf $(DOCSRCDIR)/manual-pdf*.html $(DOCSRCDIR)/manual-pdf*.png $(DOCSRCDIR)/manual-pdf.css $(DOCDIR)
+	ln -s manual-pdf.html $(DOCDIR)/index.html
 # copy man files
 	cp debian/redcsl.1 debian/redpsl.1 $(MANDIR)/man1
 # copy CSL files

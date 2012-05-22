@@ -18,9 +18,14 @@ update-changelog:
         fi
  
 
-reduce-packages:
+reduce-packages:	debpackages rpmpackages
+
+debpackages:
 	cd reduce ; debuild -b -us -uc 
-	fakeroot alien -k -r reduce-$(SNAPSHOT)_*.deb
+
+rpmpackages:
+	fakeroot alien -k -r reduce-*_$(SNAPSHOT)_*.deb
+
 
 source-archive:
 	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
