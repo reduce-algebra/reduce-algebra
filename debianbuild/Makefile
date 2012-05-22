@@ -21,3 +21,50 @@ update-changelog:
 reduce-packages:
 	cd reduce ; debuild -b -us -uc 
 	fakeroot alien -k -r reduce-$(SNAPSHOT)_*.deb
+
+source-archive:
+	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
+	svn export .. reduce-source-$(SNAPSHOT)
+	$(MAKE) reduce-source-core-$(SNAPSHOT).tar.bz2:
+	$(MAKE) reduce-source-csl-$(SNAPSHOT).tar.bz2:
+	$(MAKE) reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2:
+	$(MAKE) reduce-source-csl-support-$(SNAPSHOT).tar.bz2:
+	$(MAKE) reduce-source-psl-$(SNAPSHOT).tar.bz2:
+	ls -lh *.tar.bz2
+#	-rm -rf reduce-source-$(SNAPSHOT)
+
+reduce-source-core-$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-core-$(SNAPSHOT).tar.bz2 \
+		--owner=root --group=root \
+		--exclude=reduce-source-$(SNAPSHOT)/csl \
+		--exclude=reduce-source-$(SNAPSHOT)/psl \
+		reduce-source-$(SNAPSHOT)
+
+reduce-source-csl-$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-csl-$(SNAPSHOT).tar.bz2 \
+		--owner=root --group=root \
+		--exclude=reduce-source-$(SNAPSHOT)/csl/support-packages \
+		--exclude=reduce-source-$(SNAPSHOT)/csl/embedded \
+		--exclude=reduce-source-$(SNAPSHOT)/csl/new-embedded \
+		--exclude=reduce-source-$(SNAPSHOT)/csl/generated-c \
+		reduce-source-$(SNAPSHOT)/csl
+
+reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2 \
+		--owner=root --group=root \
+		reduce-source-$(SNAPSHOT)/csl/embedded \
+		reduce-source-$(SNAPSHOT)/csl/new-embedded \
+		reduce-source-$(SNAPSHOT)/csl/generated-c
+
+reduce-source-csl-support-$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-csl-support-$(SNAPSHOT).tar.bz2 \
+		--owner=root --group=root \
+		reduce-source-$(SNAPSHOT)/csl/support-packages
+
+reduce-source-psl-$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-psl-$(SNAPSHOT).tar.bz2 \
+		--owner=root --group=root \
+		reduce-source-$(SNAPSHOT)/psl
+
+
+# end of Makefile
