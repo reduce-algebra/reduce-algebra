@@ -6,3 +6,5 @@ manual-pdf.pdf:	manual-pdf.tex
 
 index.html:	manual-pdf.tex
 	./mkhtml.sh
+
+

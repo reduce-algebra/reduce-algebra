@@ -18,7 +18,7 @@ makeindex -o ${JOBNAME}.ind ${JOBNAME}.4dx
 
 mk4ht htlatex ${JOBNAME} ${CONFIG},3
 
-mv ${JOBNAME}.html index.html
+cp ${JOBNAME}.html index.html
 
 exit 0
 
