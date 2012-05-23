@@ -1,4 +1,4 @@
-1;5t//
+//
 // "FXWorker.cpp"                          Copyright A C Norman 2003-2010
 //
 //
@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 7e279a25 23-May-2012 */
+/* Signature: 62c7d19e 23-May-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
