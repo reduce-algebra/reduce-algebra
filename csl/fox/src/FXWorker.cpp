@@ -1,4 +1,4 @@
-//
+1;5t//
 // "FXWorker.cpp"                          Copyright A C Norman 2003-2010
 //
 //
@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 1d92b0f9 14-May-2011 */
+/* Signature: 7e279a25 23-May-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -289,7 +289,8 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
 
     if (screenx < 0 || screeny < 0 || screenw <= 100 || screenh < 20)
     {   screenx = screeny = 50; // When I had 0 here that was off the screen!
-        screenw = screenh = 0;
+        screenw = 0;
+        screenh = (2*rootHeight)/3;
     }
     int fontsize =
         reg->readIntEntry("screen", "fontsize", -1);
