@@ -9,7 +9,7 @@ However, many must be specifically loaded before they can be used. (Those
 that are loaded automatically are so noted in their description.) You should
 also consult the user notes for your particular implementation for further
 information on whether this is necessary.  If it is, the relevant command is
-{\tt LOAD\_PACKAGE},\ttindex{LOAD\_PACKAGE} which takes a list of one or
+\f{LOAD\_PACKAGE},\ttindex{LOAD\_PACKAGE} which takes a list of one or
 more package names as argument, for example:
 
 \begin{verbatim}
@@ -43,21 +43,22 @@ Davenport, ``On the Integration of Algebraic Functions", LNCS 102,
 Springer Verlag, 1981.  Both this and the source code should be consulted
 for a more detailed description of this work.
 
-Once the {\tt ALGINT} package has been loaded, using {\tt LOAD\_PACKAGE},
-one enters an expression for integration, as with the regular integrator,
+\hypertarget{switch:ALGINT}{}
+The \texttt{ALGINT} package is loaded automatically when the switch \sw{ALGINT}
+is turned on.  
+One enters an expression for integration, as with the regular integrator,
 for example:
 \begin{verbatim}
         int(sqrt(x+sqrt(x**2+1))/x,x);
 \end{verbatim}
-\hypertarget{switch:ALGINT}{}
 If one later wishes to integrate expressions without using the facilities of
-this package, the switch {\tt ALGINT} \ttindex{ALGINT} should be turned
-off.  This is turned on automatically when the package is loaded.
+this package, the switch \sw{ALGINT} \ttindex{ALGINT} should be turned
+off. 
 
 \hypertarget{switch:TRA}{}
-The switches supported by the standard integrator (e.g., {\tt TRINT})
+The switches supported by the standard integrator (e.g., \sw{TRINT})
 \ttindex{TRINT} are also supported by this package.  In addition, the
-switch {\tt TRA}, \ttindex{TRA} if on, will give further tracing
+switch \sw{TRA}, \ttindex{TRA} if on, will give further tracing
 information about the specific functioning of the algebraic integrator.
 
 There is no additional documentation for this package.
@@ -832,6 +833,8 @@ Author: Karin Gatermann.
 
 \section{TAYLOR: Manipulation of Taylor series}
 \ttindex{TAYLOR}
+\index{Taylor Series} \index{TAYLOR package}
+\index{Laurent series} \index{Puiseux series}
 
 This package carries out the Taylor expansion of an expression in one or
 more variables and efficient manipulation of the resulting Taylor series.
@@ -840,6 +843,8 @@ multiplication and division) and also application of certain algebraic and
 transcendental functions.
 
 Author: Rainer Sch\"opf.
+
+\input{taylor}
 
 \section{TPS: A truncated power series package} \ttindex{TPS} \ttindex{PS}
 
