@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 75a978f3 22-Aug-2011 */
+/* Signature: 408ee60f 24-May-2012 */
 
 #include "headers.h"
 
@@ -350,6 +350,7 @@ static directory *make_empty_directory(char *name)
     d->h.dirext = 0;
     d->h.updated = 0;   /* NB read-only */
     d->f = NULL;
+    d->full_filename = NULL;
     strncpy(d->filename, name, DIRNAME_LENGTH);
     d->filename[DIRNAME_LENGTH-1] = 0;
     memset(d->h.eof, 0, 4);
