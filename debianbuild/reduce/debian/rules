@@ -45,17 +45,19 @@ RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
 
 distclean:
 	dh_distclean
-	cd $(CSLBUILDDIR) ; make distclean
+	-make -C $(DOCSRCDIR) clean
+	-make -C $(CSLBUILDDIR) distclean
 ifneq ($(BUILDPSL),)
-	cd $(PSLBUILDDIR) ; make distclean
+	-make -C $(PSLBUILDDIR) distclean
 endif
 
 clean: 
 	dh_clean
 #	cd $(TOPDIR) ; make clean
-	cd $(CSLBUILDDIR) ; make clean
+	-make -C $(DOCSRCDIR) clean
+	-make -C $(CSLBUILDDIR) clean 
 ifneq ($(BUILDPSL),)   
-	cd $(PSLBUILDDIR) ; make clean
+	-make -C $(PSLBUILDDIR) clean
 endif
 
 #override_dh_auto_configure:
@@ -78,15 +80,7 @@ endif
 	cd $(DOCSRCDIR) ; make
 	touch build-stamp
 
-#override_dh_installdirs:
-#	mkdir -p $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR)
 
-#override_dh_installdocs:
-#	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
-#	cp $(DOCMISCDIR)/primer.tex $(DOCMISCDIR)/sl.tex $(DOCMISCDIR)/sl.bib $(DOCDIR)/
-
-#override_dh_auto_install:
-#override_dh_install:
 install: install-stamp
 install-stamp: build-stamp
 # create target directories
