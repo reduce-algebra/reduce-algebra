@@ -766,6 +766,8 @@ symbolic procedure expf(u,n);
     else if atom u then mkrn(1,u**(-n))
     else if domainp u then !:expt(u,n)
     else if red u then mksp!*(u,n)
+    else if ldeg u memq frlis!*
+     then car fkern {'expt,mvar u,ldeg u} .** n .* expf(lc u,n) .+ nil
     else (lambda x; if x>0 and sfp mvar u
              then multf(exptf(mvar u,x),expf(lc u,n))
             else mvar u .** x .* expf(lc u,n) .+ nil)
