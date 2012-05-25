@@ -46,18 +46,18 @@ RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
 distclean:
 	dh_distclean
 	-make -C $(DOCSRCDIR) clean
-	-make -C $(CSLBUILDDIR) distclean
+	-test -d $(CSLBUILDDIR) && make -C $(CSLBUILDDIR) distclean
 ifneq ($(BUILDPSL),)
-	-make -C $(PSLBUILDDIR) distclean
+	-test -d $(PSLBUILDDIR) && make -C $(PSLBUILDDIR) distclean
 endif
 
 clean: 
 	dh_clean
 #	cd $(TOPDIR) ; make clean
 	-make -C $(DOCSRCDIR) clean
-	-make -C $(CSLBUILDDIR) clean 
+	-test -d $(CSLBUILDDIR) && make -C $(CSLBUILDDIR) clean 
 ifneq ($(BUILDPSL),)   
-	-make -C $(PSLBUILDDIR) clean
+	-test -d $(PSLBUILDDIR) && make -C $(PSLBUILDDIR) clean
 endif
 
 #override_dh_auto_configure:
