@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 403cf454 22-Aug-2011 */
+/* Signature: 0f3050d1 26-May-2012 */
 
 #include "headers.h"
 
@@ -157,10 +157,8 @@ static Lisp_Object copy_string(Lisp_Object str, int32_t n)
     s = (char *)r - TAG_VECTOR;
     k = doubleword_align_up(CELL+n);
     errexit();
-/* Here I go to some trouble to zero out the last doubleword of the vector */
-    *(int32_t *)(s + k - 4) = 0;
-    if (k != 8) *(int32_t *)(s + k - 8) = 0;
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
+    while (n < k) s[CELL+n++] = 0;
     validate_string(r);
     return r;
 }
