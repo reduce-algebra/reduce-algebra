@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 0f3050d1 26-May-2012 */
+/* Signature: 4e970314 27-May-2012 */
 
 #include "headers.h"
 
@@ -106,10 +106,8 @@ Lisp_Object make_string(const char *b)
     int32_t k = doubleword_align_up(CELL+n);
     Lisp_Object nil;
     errexit();
-/* Here I go to some trouble to zero out the last doubleword of the vector */
-    *(int32_t *)(s + k - 4) = 0;
-    if (k != 8) *(int32_t *)(s + k - 8) = 0;
     memcpy(s + CELL, b, (size_t)n);
+    while (n < k) s[CELL+n++] = 0;
     validate_string(r);
     return r;
 }
