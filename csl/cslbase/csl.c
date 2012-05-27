@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7283288f 12-May-2012 */
+/* Signature: 7c7d8af1 27-May-2012 */
 
 
 /*
@@ -2801,7 +2801,7 @@ term_printf(
  */
             int w;
             d.d = 1.0/7.0;
-/* The coding here was adjusted to survice a Debian ARM Linux port. */
+/* The coding here was adjusted to survive a Debian ARM Linux port. */
             w = ((d.c[1] & 0xff) << 8) | (d.c[2] & 0xff);
             switch (w)
             {
