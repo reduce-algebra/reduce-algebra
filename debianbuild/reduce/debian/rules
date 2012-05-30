@@ -25,6 +25,8 @@ CSLBUILDDIR=$(TOPDIR)/cslbuild/$(BUILDDIR)
 PSLBUILDDIR=$(TOPDIR)/pslbuild/$(BUILDDIR)
 
 DOCSRCDIR=$(TOPDIR)/doc/manual
+DOCMISCDIR=$(TOPDIR)/doc/misc
+
 DOCBASENAME=manual-pdf
 
 INSTALLDIR:=debian/tmp
@@ -45,6 +47,7 @@ RSYNC_CMD=rsync -a --cvs-exclude --delete --delete-excluded
 
 distclean:
 	dh_distclean
+	-make -C $(DOCMISCDIR) clean
 	-make -C $(DOCSRCDIR) clean
 	-test -d $(CSLBUILDDIR) && make -C $(CSLBUILDDIR) distclean
 ifneq ($(BUILDPSL),)
@@ -54,6 +57,7 @@ endif
 clean: 
 	dh_clean
 #	cd $(TOPDIR) ; make clean
+	-make -C $(DOCMISCDIR) clean
 	-make -C $(DOCSRCDIR) clean
 	-test -d $(CSLBUILDDIR) && make -C $(CSLBUILDDIR) clean 
 ifneq ($(BUILDPSL),)   
@@ -77,6 +81,7 @@ build-stamp:
 ifneq ($(BUILDPSL),)
 	cd $(PSLBUILDDIR) ; make
 endif
+        cd $(DOCMISCDIR) ; make
 	cd $(DOCSRCDIR) ; make
 	touch build-stamp
 

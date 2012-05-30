@@ -1,7 +1,11 @@
-\documentstyle[11pt,reduce]{article}
+\documentclass[11pt]{article}
+
+\usepackage{hyperref}
+\usepackage{reduce}
+
 \title{The Standard Lisp Report}
 \date{}
-\author{Jed Marti \\ A. C. Hearn \\ M. L. Griss \\ C. Griss}
+\author{Jed Marti \and A. C. Hearn \and M. L. Griss \and C. Griss}
 
 %%% Function/method definition.
 %%% de{fname}{arglist}{type}{text}          For short arg lists.
@@ -29,13 +33,13 @@
 %%% Command to display an error or warning message in teletype format. Also
 %%% leaves blank vertical space around it.
 \newcommand{\errormessage}[1]
-{\vspace{.1in} \noindent {\tt #1} \\ \vspace{.1in}}
+{\vspace{.1in} \noindent \texttt{#1} \\ \vspace{.1in}}
 
 
 %%% \p is a parameter name (or argument). Just do this as bf.
-\newcommand{\p}[1] {{\bf #1}}
+\newcommand{\p}[1] {\textbf{#1}}
 %%% \ty is a type - do as italics.
-\newcommand{\ty}[1] {{\em #1}}
+\newcommand{\ty}[1] {\textit{#1}}
 \begin{document}
 \maketitle
 
