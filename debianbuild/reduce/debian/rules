@@ -81,7 +81,7 @@ build-stamp:
 ifneq ($(BUILDPSL),)
 	cd $(PSLBUILDDIR) ; make
 endif
-        cd $(DOCMISCDIR) ; make
+	cd $(DOCMISCDIR) ; make
 	cd $(DOCSRCDIR) ; make
 	touch build-stamp
 
