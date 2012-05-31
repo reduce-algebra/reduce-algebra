@@ -1,0 +1,70 @@
+Launching Reduce
+================
+
+When Reduce is launched it can start up in either command line or
+windowed mode. The simple situation is when the user provides explicit
+command-line options that instruct it which to try:
+
+   reduce --gui       open a window.
+   reduce --nogui     run in current terminal.
+   reduce --guimin    open a window, but initially minimised.
+
+When one of these options is given the system tries to follow instructions.
+If that leads to failure then it will make a "best efforts" attempt to
+report back to the user, but in extreme cases it may be failing because
+it is unable to establish any communication link at all, and the failure
+will necessarily be fairly silent.
+
+The above options have short forms that were the only versions present in
+earlier releases of the software:
+
+   --gui       -w+
+   --nogui     -w   or   -w-
+   --guimin    -w.
+
+These short options act as simple synonyms for the longer names and so do
+not introduce any additional functionality.
+
+The interesting case arises when none of these options are specified. The
+system will try to make what it hopes will count as an intelligent choice.
+The principle followed is that if Reduce is being invoked via a pipe or
+with its standard input or output redirected then that suggests that it
+is expected to take its input from the standard input, and hence it should
+run in console mode. Also if it will be unable to create a window it
+should run in console mode. Otherwise (and this is expected to be the most
+common case) it should run in windowed mode.
+
+On a system that uses X11 the policy can be well approximated by testing
+isatty(fileno(stdin)) and getenv("DISPLAY"). If stdin (or stdout) is
+not attached to a "tty" or if there is no display for X11 to use then the
+code should run in console mode. In some ways this is logically twisted
+since the test is as to whether stdin and stdout are available and connect
+directly to the user, and if they are the program will launch a window and
+interact via that rather than via the standard streams! But the reasoning is
+that stdin and stdout not being attached to the console represents a special
+circumstance that calls for IO involving them to be performed.
+
+On Windows there are a number of issues that make the situation seriously
+more messy:
+ (1) an application can be linked in "windowed" or "console" mode. A
+     windowed application detaches from any console it may have during
+     its startup (before code could override that behaviour) while a
+     console application will tend to create a visible console to use
+     in a way that is most distracting in the case that that is not
+     actually required.
+ (2) When run from the current standard cygwin terminal (mintty) the
+     Windows API reports both stdin and stdout as connected to pipes
+     not the keyboard or screen, and Windows screen management calls
+     are not available - making line-editing of input a serious problem.
+     However when the same binary is run from the older (cmd-based)
+     cygwin shell stdin and stdout do show up as "tty"s, and the proper
+     way to manage the screen will be via the Windows API.
+     Windows appears not to provide a (clean?) way to identify a parent
+     process or distinguish nicely between these cases.
+ (3) Windows executables can have suffixes ".com" or ".exe" and different
+     shells will choose one over the other. And programs can be launched
+     by double-clicking an icon as well as by typing a program name.
+     This multiplies the number of variations on launch configurations
+     painfully.
+
+
