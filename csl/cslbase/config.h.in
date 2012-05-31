@@ -30,6 +30,14 @@
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
 
+/* Define to 1 if you have the declaration of `RLIM_SAVED_CUR', and to 0 if
+   you don't. */
+#undef HAVE_DECL_RLIM_SAVED_CUR
+
+/* Define to 1 if you have the declaration of `RLIM_SAVED_MAX', and to 0 if
+   you don't. */
+#undef HAVE_DECL_RLIM_SAVED_MAX
+
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
@@ -236,6 +244,9 @@
 
 /* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
+
+/* Define to 1 if the system has the type `struct timeval'. */
+#undef HAVE_STRUCT_TIMEVAL
 
 /* Define to 1 if the system has the type `struct tms'. */
 #undef HAVE_STRUCT_TMS
