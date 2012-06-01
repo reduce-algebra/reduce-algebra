@@ -38,6 +38,14 @@ while test -h "$c"; do
   fi
 done
 here=`echo $c | sed -e 's+/[^/]*$++'`
+
+if $here/cygwin-isatty
+then
+  echo "seems to be tty"
+else
+  echo "seems NOT to be tty"
+fi
+
 if $here/not-under-cygwin.exe
 then
   $here/reduce.com $*
