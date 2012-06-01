@@ -68,3 +68,70 @@ more messy:
      painfully.
 
 
+On Windows my resolution of this will be that in the directory where binary
+versions of Reduce live I will have the following five files:
+
+    reduce             a /bin/sh shell script
+    reduce.com         a native windows console binary
+    reduce.exe         a native windows "windows mode" binary
+    cygwin-reduce.exe  reduce build for use under cygwin, with X11 support
+    not-under-cygwin.exe   a utility program explained below
+
+The script named plain "reduce" will have at its core
+   if not-under-cygwin $*
+   then
+      reduce.com $*
+   else
+      cygwin-reduce.exe $*
+   fi
+but will need additional coding to allow it to specify reliable paths
+to find the various executables on. Any desktop or start-menu link should
+refer to reduce.exe.
+
+The behaviour should then be as follows:
+
+If Reduce is launched by double-clicking an icon then that starts up
+reduce.exe, which had been linked as a window-mode application and so
+does not create a spurious console. In this case only windowed execution
+is supported.
+
+If the launch is from a traditional DOS shell and the user types the
+word "reduce" then "reduce.com" will be launched in preference to either
+"reduce" or "reduce.exe". This is the native Windows console mode version.
+It can start a window if it wants to, but it also has full access to the
+Windows console that launched it.
+
+There are several cases to consider when Reduce is being launched
+from some other form of command-line, but in all cases the expectation is
+this is some Unix-compatible shell. In such a case the command "reduce"
+should resolve and run the script "reduce". This runs a program to judge
+which version of Reduce to use. Such a step slows down the process of
+starting the system but provides a great deal of flexibility. So all the
+uncertainty gets migrated into the "reduce" script and the program that
+it invokes.
+
+The program is compiled as a native windows program and so does not need
+any external resources (eg special dlls etc). It starts by calling
+the function GetConsoleScreenBufferInfo() on a handle that should refer
+to the standard output. If this call succeeds then the scripts is presumed
+to have been called from some Unix-like shell (eg perhaps "bash") running
+directly from an ordinary Windows console. In that case invoking reduce.com
+will be sensible because all normal aspects of the Windows API will be
+available.
+
+If GetConsoleScreenBufferInfo() fails then the shell script is liable to
+have been invoked from mintty, a terminal running in an X-window (eg
+xterm) or via ssh. In all those cases if Reduce is going to end up running
+in console mode then it should be invoked as cygwin-reduce.exe since that
+binary will know how to interact with the cygwin modelling of ptys that
+provide terminal control. Just for now I intend to ignore the though of
+some X server other than the cygwin one...
+
+In the case that the invocation is from mintty then the best default
+behaviour would be that any attempt to run as windowed should be via the
+native Windows scheme (ie using reduce.com), but if use is from an X
+terminal or ssh that should not be attempted and windowing if at all should
+use X11.
+
+
+
