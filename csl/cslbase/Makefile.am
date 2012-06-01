@@ -162,7 +162,7 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	$(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
+	termdemo$(EXEEXT) $(foxdemotarget) \
 	$(wxdemotarget)
 endif !mac_framework
 

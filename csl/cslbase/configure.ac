@@ -220,6 +220,7 @@ x86_64-w64-*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_MSG_NOTICE([with_cygwin=<$with_cygwin>])
   x86="yes"
+  exeext="yes"
   if test "x$with_cygwin" != "xno"
   then
 # If you go "--with-cygwin" in the call to configure then I will build
@@ -252,8 +253,8 @@ x86_64-w64-*)
 # The next line gives further refinement in case there are places where
 # I have to take account of the very special case I am in. 
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
-    CFLAGS="$CFLAGS -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -funsigned-char"
+    CFLAGS="$CFLAGS -funsigned-char -I/usr/include/ncurses"
+    CXXFLAGS="$CXXFLAGS -funsigned-char -I/usr/include/ncurses"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"

@@ -2188,6 +2188,52 @@ rm -f conftest.val
 
 } # ac_fn_c_compute_int
 
+# ac_fn_c_check_decl LINENO SYMBOL VAR INCLUDES
+# ---------------------------------------------
+# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
+# accordingly.
+ac_fn_c_check_decl ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_decl
+
 # ac_fn_cxx_try_link LINENO
 # -------------------------
 # Try to link conftest.$ac_ext, and return whether this succeeded.
@@ -3488,6 +3534,7 @@ $as_echo "$as_me: Building under cygwin" >&6;}
   { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin>" >&5
 $as_echo "$as_me: with_cygwin=<$with_cygwin>" >&6;}
   x86="yes"
+  exeext="yes"
   if test "x$with_cygwin" != "xno"
   then
 # If you go "--with-cygwin" in the call to configure then I will build
@@ -3532,8 +3579,8 @@ $as_echo "#define UNIX 1" >>confdefs.h
 
 $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
-    CFLAGS="$CFLAGS -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -funsigned-char"
+    CFLAGS="$CFLAGS -funsigned-char -I/usr/include/ncurses"
+    CXXFLAGS="$CXXFLAGS -funsigned-char -I/usr/include/ncurses"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
@@ -9305,6 +9352,20 @@ _ACEOF
 fi
 
 
+ac_fn_c_check_type "$LINENO" "struct timeval" "ac_cv_type_struct_timeval" "#ifdef HAVE_SYS_TIME_H
+    #include <sys/time.h>
+    #endif
+"
+if test "x$ac_cv_type_struct_timeval" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_TIMEVAL 1
+_ACEOF
+
+
+fi
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether stat file-mode macros are broken" >&5
 $as_echo_n "checking whether stat file-mode macros are broken... " >&6; }
@@ -10524,6 +10585,34 @@ _ACEOF
 fi
 done
 
+
+if test x$ac_cv_header_sys_resource_h = "xyes"
+then
+  ac_fn_c_check_decl "$LINENO" "RLIM_SAVED_CUR" "ac_cv_have_decl_RLIM_SAVED_CUR" "#include <sys/resource.h>
+"
+if test "x$ac_cv_have_decl_RLIM_SAVED_CUR" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_RLIM_SAVED_CUR $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "RLIM_SAVED_MAX" "ac_cv_have_decl_RLIM_SAVED_MAX" "#include <sys/resource.h>
+"
+if test "x$ac_cv_have_decl_RLIM_SAVED_MAX" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_RLIM_SAVED_MAX $ac_have_decl
+_ACEOF
+
+fi
+
 # sigsetjmp will be a macro not a function, and so the various predefined
 # tests are not very good at detecting it. So I have a custom test here.
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -10636,7 +10725,7 @@ then
     { $as_echo "$as_me:${as_lineno-$LINENO}: Will expect FOX to be in $with_fox" >&5
 $as_echo "$as_me: Will expect FOX to be in $with_fox" >&6;}
     FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
-    FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
+    FOX_LIBS="-L\"$with_fox/lib\" -lFOX-1.6"
 
     FOXLIB="$with_fox/lib/libFOX*"
 
@@ -10742,7 +10831,7 @@ $as_echo "$as_me: FOX libraries not found: will not build GUI code" >&6;}
       LDFLAGS="$ldflags_save"
       LIBS="$libs_save"
       FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
-      FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
+      FOX_LIBS="-L\"$with_fox/lib\" -lFOX-1.6"
 # Display FOX level (ie minor version number)
       grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
     fi
