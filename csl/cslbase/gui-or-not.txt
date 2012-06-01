@@ -127,11 +127,49 @@ binary will know how to interact with the cygwin modelling of ptys that
 provide terminal control. Just for now I intend to ignore the though of
 some X server other than the cygwin one...
 
-In the case that the invocation is from mintty then the best default
-behaviour would be that any attempt to run as windowed should be via the
-native Windows scheme (ie using reduce.com), but if use is from an X
-terminal or ssh that should not be attempted and windowing if at all should
-use X11.
+If the command-line for Reduce includes "-w", "-w-" or "--nogui" then the
+system will unconditionally start up in console mode, so if run from
+mintty (etc) it should definitely use cygwin-reduce.exe. If the command
+line contains "-w+", "-w.", "-gui" or "--guimin" then it should
+unconditionally try to start up windowed. To give the best chance of success
+if DISPLAY is set and looks reasonable cygwin-reduce will be used. If
+DISPLAY is not set an attempt with reduce.com will be made.
+
+This leaves the case where reduce is called via mintty but is left
+to choose for itself whether to run windowed or not. If DISPLAY or
+SSH_HOST is set then cywin-reduce will be used, in the expectation that
+having DISPLAY set indicates a willingness to work via X. So we are
+finally left with a state where the call is via mintty (or equivalent)
+and the user has not given explicit guidance as to whether windowed
+use is desired. The normal idea would be that command-line use would
+be used in the case that stdin or stdout had been redirected from a file
+or via a pipe. To test for this involves another small utility program,
+"cygwin.isatty". This can not be combined with the previous one because
+it has to link with cygwin1.dll in order to test the cygwin understanding
+of ptys.
+
+A further confusion arises in the build and maintenance scripts for all this.
+Cygwin often views the name "reduce" as referring to "reduce.exe", so once
+"reduce.exe" exists an attempt to create mere undecorated "reduce" gets
+into difficulty. Thus some delicacy is involved in setting up the desired
+final configuration.
+
+Finally I note some inconveniences that result from all of this:
+ (1) There are several extra binaries in the Reduce directory.
+ (2) Starting Reduce on Windows will be slightly slowed down.
+ (3) In cases where the scheme falls back to use of cygwin-reduce.exe
+     that is necessarily only a 32-bit version of the code. So a
+     user wishing to run a 64-bit Reduce so they have more memory
+     may be inconvenienced. Such users can force use of the native
+     version of Reduce by using "reduce.com" explicitly, but perhaps
+     a command-line flag is also needed.
+ (4) In order that cygwin-reduce.exe can share an image file with
+     reduce.com the default search scheme for image files needs internal
+     adjustment for that case.
+
+
+
+                                                       A C Norman June 2012
 
 
 
