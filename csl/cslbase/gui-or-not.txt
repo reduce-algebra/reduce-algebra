@@ -8,6 +8,7 @@ command-line options that instruct it which to try:
    reduce --gui       open a window.
    reduce --nogui     run in current terminal.
    reduce --guimin    open a window, but initially minimised.
+   reduce -- logfile  send output to file not screen or console
 
 When one of these options is given the system tries to follow instructions.
 If that leads to failure then it will make a "best efforts" attempt to
@@ -19,7 +20,7 @@ The above options have short forms that were the only versions present in
 earlier releases of the software:
 
    --gui       -w+
-   --nogui     -w   or   -w-
+   --nogui     -w   or   -w-    (-- has the same sort of effect)
    --guimin    -w.
 
 These short options act as simple synonyms for the longer names and so do
@@ -71,11 +72,12 @@ more messy:
 On Windows my resolution of this will be that in the directory where binary
 versions of Reduce live I will have the following five files:
 
-    reduce             a /bin/sh shell script
-    reduce.com         a native windows console binary
-    reduce.exe         a native windows "windows mode" binary
-    cygwin-reduce.exe  reduce build for use under cygwin, with X11 support
-    not-under-cygwin.exe   a utility program explained below
+    reduce             a /bin/sh shell script.
+    reduce.com         a native windows "console mode" binary.
+    reduce.exe         a native windows "windows mode" binary.
+    cygwin-reduce.exe  reduce build for use under cygwin, with X11 support.
+    not-under-cygwin.exe   a utility program explained below.
+    cygwin-isatty.exe      ditto.
 
 The script named plain "reduce" will have at its core
    if not-under-cygwin $*
@@ -111,16 +113,21 @@ uncertainty gets migrated into the "reduce" script and the program that
 it invokes.
 
 The program is compiled as a native windows program and so does not need
-any external resources (eg special dlls etc). It starts by calling
-the function GetConsoleScreenBufferInfo() on a handle that should refer
-to the standard output. If this call succeeds then the scripts is presumed
-to have been called from some Unix-like shell (eg perhaps "bash") running
-directly from an ordinary Windows console. In that case invoking reduce.com
+any external resources (eg special dlls etc). This is desirable because
+the shell it is called from may be msys with no cygwin1.dll available
+anywhere.
+
+It starts by calling the function GetConsoleScreenBufferInfo() on a handle
+that should refer to the standard output. If this call succeeds then the
+scripts is presumed to have been called from a shell that is running
+directly from an ordinary Windows console. Then invoking reduce.com
 will be sensible because all normal aspects of the Windows API will be
-available.
+available. This situation arises with the old-style Cygwin arrangements when
+bash ran within a Windows console, and I hope it often applies with
+msys.
 
 If GetConsoleScreenBufferInfo() fails then the shell script is liable to
-have been invoked from mintty, a terminal running in an X-window (eg
+have been invoked from one of mintty, a terminal running in an X-window (eg
 xterm) or via ssh. In all those cases if Reduce is going to end up running
 in console mode then it should be invoked as cygwin-reduce.exe since that
 binary will know how to interact with the cygwin modelling of ptys that
@@ -166,6 +173,55 @@ Finally I note some inconveniences that result from all of this:
  (4) In order that cygwin-reduce.exe can share an image file with
      reduce.com the default search scheme for image files needs internal
      adjustment for that case.
+ (5) With all these variations and options it is essentially certain that
+     somebody can come up with a combination that has not been covered
+     gracefully.
+
+
+
+Summary flowchart of decision:
+
+   Double-click on reduce.exe                 no choice to make
+   say "reduce" to DOS prompt                 will run reduce.com
+   say "reduce.com" or "reduce.exe"           no choice to make
+
+The remaining cases are then when a command-line user types just "reduce"
+from a prompt that is not just running the "cmd" commmand processor. I will
+assume it is running one of the various Unix-style shells, and hence will
+start the "reduce" shell script.
+
+(1) GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE)) succeeds.
+  This means that there is a "windows console" available and so
+  the script will launch reduce.com
+(2) GetFileType(GetStdHandle(STD_OUTPUT_HANDLE)) == FILE_TYPE_DISK
+    or the same for STD_INPUT_HANDLE.
+  This means that input or output had been redirected from a disk file. In
+  such cases even if there is no console directly attached the supposition
+  will be that things are being run in non-interactive mode and so
+  reduce.com will be used. In the case "reduce > some.file" with input
+  coming from a terminal the effect will be that line-editing of typed
+  input is not available if the code is run via ssh or under mintty.
+(3) The command-line contains an item "--".
+  The "--" option redirects standard output to a file, and so the behaviour
+  adopted will be as in (2) above. Note that the parsing of the command
+  line will be incomplete and so if "--" appears somewhere where it will
+  end up being treated as data not a keyword it will still trigger this
+  behaviour. So for instance an attempt to use an image file called "--"
+  by specifying the sequence "-i --" will confuse matters.
+(4) Now because of (1) we are running in a window that is not based on
+  a Windows console. The cases that obviously arise are
+     (a) a mintty console
+     (b) an X terminal, or via SSH with X forwarding enabled
+     (c) via SSH but without X available
+  Run a cygwin test program that checks isatty(fileno(stdin)),
+  isatty(fileno(stdout)), getenv("DISPLAY") and getenv("SSH_HOST").
+(5) If DISPLAY and SSH_HOST are both unset and the two isatty calls both
+  say "1" (ie that IO is direct to a (cygwin-style) terminal), add
+  "--gui" to the command-line and invoke reduce.com. The belief is that
+  this should be a case of usage directly from mintty.
+(6) If at least one isatty says "0" then use reduce.com.
+(7) use cygwin-reduce.exe
+
 
 
 

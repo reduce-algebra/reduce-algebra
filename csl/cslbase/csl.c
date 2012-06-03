@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7c7d8af1 27-May-2012 */
+/* Signature: 57a4d72a 03-Jun-2012 */
 
 
 /*
@@ -1597,9 +1597,26 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * used to arrange that the {\ttfamily texmacs} flag is set in
  * {\ttfamily lispsystem!*}, and the code may then do special things.
  */
-
-
                     if (strcmp(w, "texmacs") == 0)
+                    { }
+/*! options [--gui] \item [{\ttfamily --gui}] \index{{\ttfamily --gui}}
+ * Encourage the system to run in its own window. Similar behaviour
+ * to {\ttfamily -w+}.
+ */
+                    else if (strcmp(w, "gui") == 0)
+                    { }
+/*! options [--nogui] \item [{\ttfamily --nogui}] \index{{\ttfamily --nogui}}
+ * Encourage the system to run as a console-style application. Similar
+ * to {\ttfamily -w-} or just simply {\ttfamily -w}.
+ */
+                    else if (strcmp(w, "nogui") == 0)
+                    { }
+/*! options [--guimin] \item [{\ttfamily --guimin}] \index{{\ttfamily --guimin}}
+ * Encourage the system to run as in its own window, but
+ * start that window off minimised. Similar
+ * to {\ttfamily -w.}.
+ */
+                    else if (strcmp(w, "guimin") == 0)
                     { }
 /*! options [--help] \item [{\ttfamily --help}] \index{{\ttfamily --help}}
  * It is probably obvious what this option does! Note that on Windows the
@@ -1607,8 +1624,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * console to display the help text in, and organizes a delay to give
  * people a chance to read it.
  */
-
-
                     else if (strcmp(w, "help") == 0)
                     {
 /*
@@ -1691,6 +1706,10 @@ term_printf(
   "-w   controls if code runs in a window or in console. Also -w+ and -w-\n");
 term_printf(
   "     can override cases where the system really wants to go one way.\n");
+term_printf(
+  "     Prefered usage is --gui, --nogui or --guimin rather than the\n");
+term_printf(
+  "     short-form versions.\n");
 term_printf(
   "-x   avoid trapping exceptions so you can use a low-level debugger\n");
 term_printf(

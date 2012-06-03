@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2010
+ * "fwin.c"                                 Copyright A C Norman 2003-2012
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 4d8f3326 12-May-2012 */
+/* Signature: 777abf3c 03-Jun-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -351,41 +351,135 @@ int main(int argc, char *argv[])
  * and use it to flag up a request to run minimised.
  * Note that "-w" takes precedence over "--" here...
  *
+ * Well the fuller explanation of the options goes:
+ *     (none)               run in gui mode in "sensible" cases
+ *     -w   -w-   --nogui   run in console mode
+ *     -w+  --gui           run in gui mode if at all possible, fail otherwise.
+ *     -w.  --guimin        run in guie mode but start minimised.
+ *
  * I run as a minimise window (by default) in the "--" case since I can use
  * the window title-bar to report progress even when all output is directed to
  * file.
  */
-    windowed = 1;
-#ifdef WIN32
+    windowed = 2;
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strncmp(argv[i], "-w", 2) == 0)
+        {   if (argv[i][2] == '+') windowed = 1;
+            else if (argv[i][2] == '.') windowed = -1;
+            else windowed = 0;
+            break;
+        }
+        else if (strcmp(argv[i], "--gui") == 0) windowed  = 1;
+        else if (strcmp(argv[i], "--nogui") == 0) windowed  = 0;
+        else if (strcmp(argv[i], "--guimin") == 0) windowed  = -1;
+        else if (strcmp(argv[i], "-h") == 0 ||
+                 strcmp(argv[i], "-H") == 0) 
+#ifdef HAVE_LIBXFT
+                 fwin_use_xft = 0;
+#else
+                 ; /* Ignore "-h" option if Xft not available */
+#endif
+/*
+ * Note well that I detect just "--" as an entire argument here, so that
+ * extended options "--option" do not interfere.
+ */
+        else if ((strcmp(argv[i], "--") == 0
+#if 0
+                  || strcmp(argv[i], "-f") == 0
+                  || strcmp(argv[i], "-F") == 0
+#endif
+                 ) &&
+                 windowed != 0) windowed = -1;
+    }
+    if (texmacs_mode) windowed = 0;
+/*
+ * If there had not been any command-line option to give direction
+ * about whether to run in a window I will use system-dependent
+ * schemes to try to decide what to do. The overall policy I want to
+ * follow is that if I have a graphical environment available I should
+ * use it. On an X11-based system this can usually be judged by
+ * looking for a DISPLAY environment variable. On both Windows and
+ * other systems if the application has been invoked from a pipe
+ * or using input (or output) redirection then that signals that it
+ * is expected to use stdin/stdout rather than a GUI.
+ */
+#ifndef WIN32
+/*
+ * I will show the non-Windows code here first because it will be MUCH
+ * simpler. 
+ * If stdin or stdout is not from a "tty" I will run in non-windowed mode.
+ * This may help when the system is used in scripts. I worry a bit about
+ * what the status of stdin/stdout are when launched not from a command line
+ * but by clicking on an icon...
+ */
+    if (windowed != 0)
+    {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
+
+/*
+ * On Unix-like systems I will check the DISPLAY variable, and if it is not
+ * set I will suppose that I can not create a window. That case will normally
+ * arise when you have gained remote access to the system eg via telnet or
+ * ssh without X forwarding. I will also insist that if set it has a ":" in
+ * its value... that is to avoid trouble with it getting set to an empty
+ * string. Note that on a Macintosh when I am using the FOX GUI toolkit (as
+ * is the case here) I need X11 and hence DISPLAY. If I was using the Mac
+ * native display I would merely omit this test.
+ */
+        disp = my_getenv("DISPLAY");
+        if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+    }
+#else   /* WIN32 */
+/*
+ * Before I try to decide what to do I will (sometimes) collect information
+ * on what cygwin would make of the state of stdin and stdout.
+ */
+/*
+ * The decision on Windows is in fact a lot messier.
+ *
+ * I have tried various messy Windows API calls here to get this right.
 /* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line
+ *                                 or application invoked via a pipe
  *    (c) windows, but launched by a double-click, .com version
  *    (d) windows, but launched by a double-click, .exe version
- *    (e) cygwin shell : normal case
- *    (f) cygwin shell : stdin redirected via "<"
- * HAH at some stage cygwin changed to install a different default terminal
- * to run bash in, altering behaviour here I believe...
+ *    (e) old (cmd based) cygwin shell : normal case
+ *    (f) old (cmd based) cygwin shell : stdin redirected via "<"
+ *    (g) mintty or via ssh : normal case
+ *    (h) mintty or via ssh : stdin redirected
  *
- * leave me in a state
+ * For each of the above I now document what the windows API tells
+ * me about my situation... 
  *    (a) stdin exists and is a tty, a char device and a Console
- *    (b) stdin exists and is a pipe or a file not a tty
+ *    (b) stdin exists and is a pipe or a file NOT a tty
+ *        (is "< /dev/null" a special case here?)
  *    (c) as (a)
  *    (d) stdin seems to exist but is not a tty
- *    (e) stdin exists and is a pipe
- *    (f) as (e)
- * I want (b), (c) and (f) to force a non-windowed treatment.  But you may see
- * that various cases are not readily properly distinguished...
+ *    (e) as (a)
+ *    (f) as (b)
+ *    (g) stdin exists and is a pipe
+ *    (h) as (g)
+      
+ * I want (b), (c) and (f) to force a non-windowed treatment.
+ * I also want (g) to force a non-windowed treatment, but when that
+ * happens it needs to use curses rather than the Windows Console API to
+ * cope with local editing and prompt colouring, because there is no
+ * (visible) Windows console available. So far as I can see there is no
+ * way for an application not linked against cygwin1.dll to distinguish
+ * between cases (g) and (h), and no way for it then switch its input
+ * into raw mode, however a cygwin application can use its version of
+ * isatty to make this test...
  *
- * So for now I will leave the code not doing ANYTHING special so that the
- * user must go "-w" to specify windowed mode.
+ * So I will need to make some decisions before actually starting this
+ * code, and the file "gui-or-not.txt" in the source tree discusses just
+ * what I do.
+ *
  */
 
-#ifdef TRACEDECISION
-    printf(".com = %d\n", program_name_dot_com);
-#endif
-    if (program_name_dot_com)
+    if (program_name_dot_com && windowed == 2)
     {
 /* The program was named "xxx.com". I will assume that that means it was
  * a console-mode application and it is being launched directly from a
@@ -407,7 +501,7 @@ int main(int argc, char *argv[])
 /* If either standard input or output has been redirected I will force use
  * of console rather than windowed mode. Thus
  *         xxx             launch in a window
- *         xxx -w          run as console application
+ *         xxx --nogui     run as console application
  *         xxx < yyy       run as console application
  *         xxx > yyy       run as console application
  * My hope is that the detection of redirected stdin/stdout will help
@@ -421,46 +515,16 @@ int main(int argc, char *argv[])
  * New versions of cygwin install a terminal that is not just a regular
  * DOS window running bash, but is closer to everything a Unix user might
  * expect - however this possibly messes up the tests I make to see if I
- * want to run a terminal or a windowed version of everything. On a
- * temporary basis TRACEDECISION will guard code I use to investigate
- * the sorts of things I am liable to test to make that choice.
- * #define TRACEDECISION
+ * want to run a terminal or a windowed version of everything.
  */
-#ifdef TRACEDECISION
-        printf(".com case in play\n");
-#endif
         h = GetStdHandle(STD_INPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR)
-        {
-#ifdef TRACEDECISION
-            printf("STDIN not FILE_TYPE_CHAR\n");
-#endif
-            windowed = 0;
-        }
-        else if (!GetConsoleMode(h, &w))
-        {
-#ifdef TRACEDECISION
-            printf("!GetConsoleMode\n");
-#endif
-            windowed = 0;
-        }
+        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
+        else if (!GetConsoleMode(h, &w)) windowed = 0;
         h = GetStdHandle(STD_OUTPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR)
-        {
-#ifdef TRACEDECISION
-            printf("STDOUT not FILE_TYPE_CHAR\n");
-#endif
-            windowed = 0;
-        }
-        else if (!GetConsoleScreenBufferInfo(h, &csb))
-        {
-#ifdef TRACEDECISION
-            printf("!GetConsoleScreenBuffer\n");
-#endif
-            windowed = 0;
-        }
+        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
+        else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
     }
-    else
+    else if (windowed == 2)
     {
 /* The program was named "xxx.exe". I am going to suppose that this has NOT
  * been launched from a normal Windows command prompt (since xxx.com would
@@ -487,65 +551,16 @@ int main(int argc, char *argv[])
  */
         if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
     }
-#else  /* WIN32 */
-/* If stdin or stdout is not from a "tty" I will run in non-windowed mode.
- * This may help when the system is used in scripts. I worry a bit about
- * what the status of stdin/stdout are when launched not from a command line
- * but by clicking on an icon...
- */
-    if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
-
-/* On Unix-like systems I will check the DISPLAY variable, and if it is not
- * set I will suppose that I can not create a window. That case will normally
- * arise when you have gained remote access to the system eg via telnet or
- * ssh without X forwarding. I will also insist that if set it has a ":" in
- * its value... that is to avoid trouble with it getting set to an empty
- * string.
- */
-    disp = my_getenv("DISPLAY");
-    if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
 #endif  /* WIN32 */
 /*
- * REGARDLESS of any decisions about windowing made so for things can be
- * forced by command line options.
- *    -w+ forces an attempt to run in a window even if it looks as if that
- *        would not make sense or would fail. It is mainly for debugging.
- *    -w. forces use of a window, but starts it minimised.
- *    -w  forces command-line rather than windowed use (can also write
- *        "-w-" for this case).
+ * I have windowed with values
+ *    2     decision pending (but default to windowed);
+ *    1     in a window;
+ *    0     not in a window;
+ *    -1    windowed but start minimised.
  */
-#ifdef TRACEDECISION
-    printf("win = %d\n", windowed);
-#endif
-    for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
-        else if (strncmp(argv[i], "-w", 2) == 0)
-        {   if (argv[i][2] == '+') windowed = 1;
-            else if (argv[i][2] == '.') windowed = -1;
-            else windowed = 0;
-            break;
-        }
-        else if (strcmp(argv[i], "-h") == 0 ||
-                 strcmp(argv[i], "-H") == 0) 
-#ifdef HAVE_LIBXFT
-                 fwin_use_xft = 0;
-#else
-                 ; /* Ignore "-h" option if Xft not available */
-#endif
-/*
- * Note well that I detect just "--" as an entire argument here, so that
- * extended options "--option" do not interfere.
- */
-        else if ((strcmp(argv[i], "--") == 0
-#if 0
-                  || strcmp(argv[i], "-f") == 0
-                  || strcmp(argv[i], "-F") == 0
-#endif
-                 ) &&
-                 windowed != 0) windowed = -1;
-    }
-    if (texmacs_mode) windowed = 0;
+    if (windowed == 2) windowed = 1;
+
 #ifdef WIN32
 /*
  * If I am running under Windows and I have set command line options
@@ -584,9 +599,6 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef TRACEDECISION
-    printf("win = %d at end\n", windowed);
-#endif
 #ifdef PART_OF_FOX
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
     return windowed_worker(argc, argv, fwin_main);
@@ -1021,7 +1033,7 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/') fullProgramName = argv0;
+    if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */
@@ -1150,7 +1162,16 @@ int find_program_directory(char *argv0)
               tolower(w[2]) == 'o' &&
               tolower(w[3]) == 'm'))) w[0] = 0;
     }
-#endif
+    w = fullProgramName;
+    while (*w != 0) w++;
+    while (w != fullProgramName && *w != '/'  && *w != '\\') w--;
+    if (*w == '/' || *w == '\\') w++;
+    if (strncmp(w, "cygwin-", 7) == 0)
+    {   char *w1 = w + 7;
+        while (*w1 != 0) *w++ = *w1++;
+        *w = 0;
+    }
+#endif /* RAW_CYGWIN */
 /* OK now I have the full name, which is of the form
  *   abc/def/fgi/xyz
  * and I need to split it at the final "/" (and by now I very fully expect

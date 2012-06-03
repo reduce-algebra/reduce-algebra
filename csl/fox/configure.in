@@ -103,6 +103,15 @@ AC_ARG_WITH(lionSDK,
   [],
   [with_lionSDK="yes"])
 
+AC_ARG_WITH(cygwin,
+  AC_HELP_STRING([--with-cygwin], [When building cywin/X11 version]),
+  [],
+  [with_cygwin="no"])
+
+if test "x$with_cygwin" != "xno"; then
+  AC_DEFINE(RAW_CYGWIN)
+fi
+
 FASTMATH=" -ffast-math "
 WSOCK="wsock32"
 

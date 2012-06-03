@@ -98,11 +98,18 @@ AC_ARG_WITH(build,
 BUILTFOR="$with_build"
 
 AC_ARG_WITH(pslbuild,
-   AC_HELP_STRING([--with-pslbuild], [used to invoke the PSL version]),
+   AC_HELP_STRING([--with-pslbuild], [used if I wish to call the PSL version]),
    [],
-   [with_build="unknown"])
+   [with_pslbuild="unknown"])
 
 AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might live])
+
+AC_ARG_WITH(cygbuild,
+   AC_HELP_STRING([--with-cygbuild], [used if I wish to call the cygwin version]),
+   [],
+   [with_cygbuild="unknown"])
+
+AC_SUBST(with_cygbuild)
 
 if test "x$BUILTFOR" = "xunknown"
 then
@@ -1464,7 +1471,7 @@ then
 # 10.6  Snow Leopard   [Since my test machine runs Lion I will not
 #                      be (easily) able to test anything on Snow Leopard]
 # 10.7  Lion
-# 10.8  ???
+# 10.8  Mountain Lion
 
 # Well now that 10.7 has been released I will always target
 # 10.6 and support for earlier versions is no longer guaranteed.

@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 4d8f3326 12-May-2012 */
+/* Signature: 777abf3c 03-Jun-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -362,17 +362,6 @@ int main(int argc, char *argv[])
  * file.
  */
     windowed = 2;
-/*
- * Use (or otherwise) of windows can forced by command line options.
- *    -w+ forces an attempt to run in a window even if it looks as if that
- *        would not make sense or would fail. It is mainly for debugging.
- *    --gui      as -w+
- *    -w. forces use of a window, but starts it minimised.
- *    --guimin   as -w.
- *    -w  forces command-line rather than windowed use (can also write
- *        "-w-" for this case).
- *    --nogui    as -w-
- */
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
         if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
@@ -382,9 +371,9 @@ int main(int argc, char *argv[])
             else windowed = 0;
             break;
         }
-        else if (strcmp(argv[i], "--gui") windowed  = 1;
-        else if (strcmp(argv[i], "--nogui") windowed  = 0;
-        else if (strcmp(argv[i], "--guimin") windowed  = -1;
+        else if (strcmp(argv[i], "--gui") == 0) windowed  = 1;
+        else if (strcmp(argv[i], "--nogui") == 0) windowed  = 0;
+        else if (strcmp(argv[i], "--guimin") == 0) windowed  = -1;
         else if (strcmp(argv[i], "-h") == 0 ||
                  strcmp(argv[i], "-H") == 0) 
 #ifdef HAVE_LIBXFT
@@ -450,6 +439,7 @@ int main(int argc, char *argv[])
  * The decision on Windows is in fact a lot messier.
  *
  * I have tried various messy Windows API calls here to get this right.
+/* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line
@@ -483,21 +473,21 @@ int main(int argc, char *argv[])
  * into raw mode, however a cygwin application can use its version of
  * isatty to make this test...
  *
+ * So I will need to make some decisions before actually starting this
+ * code, and the file "gui-or-not.txt" in the source tree discusses just
+ * what I do.
+ *
  */
 
-#ifdef TRACEDECISION
-    printf(".com = %d\n", program_name_dot_com);
-#endif
-    if (program_name_dot_com)
+    if (program_name_dot_com && windowed == 2)
     {
 /* The program was named "xxx.com". I will assume that that means it was
  * a console-mode application and it is being launched directly from a
  * Windows console.  Why do I feel these are plausible:
  *  . The Makefile.in & configure.ac stuff arranges to build xxx.com as
  *    console mode and xxx.exe as subsystem:windows
- *  . A simple Windows command prompt will launch xxx.com in preference
- *    to xxx.exe if both are present. However note that neither old (cmd)
- *    cygwin shells nor mintty ones do this - both use the .exe version.
+ *  . A Windows command prompt will launch xxx.com in preference to xxx.exe
+ *    if both are present
  *  . xxx.com is not given an icon, while xxx.exe is - people should not
  *    double-click on the .com version (please)
  * Obviously users can subvert this by copying xxx.exe to yyy.com, by
@@ -521,6 +511,12 @@ int main(int argc, char *argv[])
  * will defer that worry since the ".exe" not the ".com" file is the version
  * with windowed use its prime interface.
  */
+/*
+ * New versions of cygwin install a terminal that is not just a regular
+ * DOS window running bash, but is closer to everything a Unix user might
+ * expect - however this possibly messes up the tests I make to see if I
+ * want to run a terminal or a windowed version of everything.
+ */
         h = GetStdHandle(STD_INPUT_HANDLE);
         if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
         else if (!GetConsoleMode(h, &w)) windowed = 0;
@@ -528,7 +524,7 @@ int main(int argc, char *argv[])
         if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
         else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
     }
-    else
+    else if (windowed == 2)
     {
 /* The program was named "xxx.exe". I am going to suppose that this has NOT
  * been launched from a normal Windows command prompt (since xxx.com would
@@ -556,7 +552,6 @@ int main(int argc, char *argv[])
         if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
     }
 #endif  /* WIN32 */
-
 /*
  * I have windowed with values
  *    2     decision pending (but default to windowed);
@@ -604,9 +599,6 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef TRACEDECISION
-    printf("win = %d at end\n", windowed);
-#endif
 #ifdef PART_OF_FOX
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
     return windowed_worker(argc, argv, fwin_main);
@@ -1041,7 +1033,7 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/') fullProgramName = argv0;
+    if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */
@@ -1170,7 +1162,16 @@ int find_program_directory(char *argv0)
               tolower(w[2]) == 'o' &&
               tolower(w[3]) == 'm'))) w[0] = 0;
     }
-#endif
+    w = fullProgramName;
+    while (*w != 0) w++;
+    while (w != fullProgramName && *w != '/'  && *w != '\\') w--;
+    if (*w == '/' || *w == '\\') w++;
+    if (strncmp(w, "cygwin-", 7) == 0)
+    {   char *w1 = w + 7;
+        while (*w1 != 0) *w++ = *w1++;
+        *w = 0;
+    }
+#endif /* RAW_CYGWIN */
 /* OK now I have the full name, which is of the form
  *   abc/def/fgi/xyz
  * and I need to split it at the final "/" (and by now I very fully expect

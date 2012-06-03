@@ -39,17 +39,20 @@ while test -h "$c"; do
 done
 here=`echo $c | sed -e 's+/[^/]*$++'`
 
-if $here/cygwin-isatty
-then
-  echo "seems to be tty"
-else
-  echo "seems NOT to be tty"
-fi
-
-if $here/not-under-cygwin.exe
+if $here/not-under-cygwin.exe $*
 then
   $here/reduce.com $*
 else
-  $here/cygwin-reduce.exe $*
+  $here/cygwin-isatty.exe $*
+  case $? in
+  0)
+    $here/reduce.com --gui $*
+    ;;
+  1)
+    $here/cygwin-reduce.exe $*
+    ;;
+  2)
+    $here/reduce.com $*
+    ;;
+  esac
 fi
-

@@ -162,7 +162,7 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	$(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) \
+	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
 	$(wxdemotarget)
 endif !mac_framework
 
@@ -458,18 +458,39 @@ csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
 
+# The purpose of these two tiny programs is explained in the
+# file $(srcdir)/gui-or-not.txt and both are only for use on Windows.
+# They are not compiled with the general configure-detected compilation
+# options.
+
+if cygwin
+WINHELPERS=
+else !cygwin
+WINHELPERS=cygwin-isatty.exe not-under-cygwin.exe
+endif !cygwin
+
+cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
+	gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
+	strip cygwin-isatty.exe
+
+not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
+	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
+	strip not-under-cygwin.exe
+
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 		$(FONTDEP) $(WXC)
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 		fwin-csl.$(OBJEXT) $(FONTDEP) \
 		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
-		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC) $(AWKFILES)
+		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC) \
+		$(AWKFILES)
+
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
-fwindemo_DEPENDENCIES = $(fwin_icon)
+fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
 endif !wx
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
@@ -647,8 +668,13 @@ else !wx
 WXDEPS=
 endif !wx
 
-csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
 	-rm -f csl$(EXEEXT)
+if windows
+	cp $(srcdir)/csl .
+	cd ../../$(with_cygbuild)/csl && make csl.exe
+	cp ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+endif windows
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
@@ -678,8 +704,14 @@ endif mac_framework
 endif !wx
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
-			$(WXDEPS) $(generated_lisp)
+			$(WXDEPS) $(generated_lisp) $(WINHELPERS)
 	-rm -f reduce$(EXEEXT)
+if windows
+# See "gui-or-not.txt" for an explanation of what this is about...
+	cp $(srcdir)/reduce .
+	cd ../../$(with_cygbuild)/csl && make reduce.exe
+	cp ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+endif windows
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
@@ -739,8 +771,13 @@ if mac_framework
 endif mac_framework
 endif !wx
 
-fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
 	-rm -f fwindemo$(EXEEXT)
+if windows
+	cp $(srcdir)/fwindemo .
+	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
+	cp ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
@@ -1728,4 +1765,3 @@ showhost:
 	echo host = $(HOST)
 
 # end of Makefile
-

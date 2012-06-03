@@ -16,7 +16,7 @@
  * this code build on a wide range of systems via the usual
  *    ./configure ; make
  * sequence. This (obviously) involves a Unix-like build environment
- * but mingw-under-cygwin provides that for Windows.
+ * but cygwin provides that for Windows.
  */
 
 /**************************************************************************
@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 3096af46 06-Oct-2011 */
+/* Signature: 30f37eea 03-Jun-2012 */
 
 #include "headers.h"
 

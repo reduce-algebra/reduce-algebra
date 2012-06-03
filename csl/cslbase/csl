@@ -38,10 +38,21 @@ while test -h "$c"; do
   fi
 done
 here=`echo $c | sed -e 's+/[^/]*$++'`
-if $here/not-under-cygwin.exe
+
+if $here/not-under-cygwin.exe $*
 then
   $here/csl.com $*
 else
-  $here/cygwin-csl.exe $*
+  $here/cygwin-isatty.exe $*
+  case $? in
+  0)
+    $here/csl.com --gui $*
+    ;;
+  1)
+    $here/cygwin-csl.exe $*
+    ;;
+  2)
+    $here/csl.com $*
+    ;;
+  esac
 fi
-

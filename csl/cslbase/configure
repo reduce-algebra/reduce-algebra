@@ -679,6 +679,7 @@ MAKE
 DLL_CFLAGS
 PSLBUILD
 BUILTFOR
+with_cygbuild
 host_os
 host_vendor
 host_cpu
@@ -758,6 +759,7 @@ with_lionSDK
 with_gui
 with_build
 with_pslbuild
+with_cygbuild
 with_lto
 with_m32
 with_m64
@@ -1426,7 +1428,8 @@ Optional Packages:
   --with-lionSDK          can be used to disable use of MacOSX SDK 10.7
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
-  --with-pslbuild         used to invoke the PSL version
+  --with-pslbuild         used if I wish to call the PSL version
+  --with-cygbuild         used if I wish to call the cygwin version
   --with-lto              Force extreme optimisation with gcc
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
@@ -3268,7 +3271,7 @@ BUILTFOR="$with_build"
 if test "${with_pslbuild+set}" = set; then :
   withval=$with_pslbuild;
 else
-  with_build="unknown"
+  with_pslbuild="unknown"
 fi
 
 
@@ -3276,6 +3279,17 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define PSLBUILD "$with_pslbuild"
 _ACEOF
+
+
+
+# Check whether --with-cygbuild was given.
+if test "${with_cygbuild+set}" = set; then :
+  withval=$with_cygbuild;
+else
+  with_cygbuild="unknown"
+fi
+
+
 
 
 if test "x$BUILTFOR" = "xunknown"
@@ -10875,7 +10889,7 @@ then
 # 10.6  Snow Leopard   [Since my test machine runs Lion I will not
 #                      be (easily) able to test anything on Snow Leopard]
 # 10.7  Lion
-# 10.8  ???
+# 10.8  Mountain Lion
 
 # Well now that 10.7 has been released I will always target
 # 10.6 and support for earlier versions is no longer guaranteed.

@@ -731,6 +731,7 @@ with_build
 with_pslbuild
 enable_test
 with_lionSDK
+with_cygwin
 enable_dependency_tracking
 with_x
 with_xft
@@ -1412,6 +1413,7 @@ Optional Packages:
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
   --without-lionSDKl      can be used to avoid use of MacOSX SDK10.7
+  --with-cygwin           When building cywin/X11 version
   --with-x                use the X Window System
   --with-xft              enable Xft support
   --with-xcursor          compile with Xcursor support
@@ -2841,6 +2843,20 @@ else
   with_lionSDK="yes"
 fi
 
+
+
+# Check whether --with-cygwin was given.
+if test "${with_cygwin+set}" = set; then :
+  withval=$with_cygwin;
+else
+  with_cygwin="no"
+fi
+
+
+if test "x$with_cygwin" != "xno"; then
+  $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
+
+fi
 
 FASTMATH=" -ffast-math "
 WSOCK="wsock32"

@@ -30,9 +30,10 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7ede1d14 01-Jun-2012 */
+/* Signature: 7a0a7e17 03-Jun-2012 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 /*
@@ -43,6 +44,21 @@
 int main(int argc, char *argv[])
 {
     int n = isatty(0) && isatty(1);
-    return (n == 0);
+    const char *display = getenv("DISPLAY");
+    const char *ssh_host = getenv("SSH_HOST");
+    int nogui = 0;
+    int i;
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[1], "--nogui") == 0 ||
+            strcmp(argv[1], "-w") == 0 ||
+            strcmp(argv[1], "-w-") == 0)
+        {   nogui = 1;
+            break;
+        }
+    }
+    return (n && display==NULL && ssh_host==NULL && !nogui) ?
+               0 :   /* reduce.com --gui ... */
+           n ? 1 :   /* cygwin-reduce.exe */
+               2;    /* reduce.com */
 }
 
