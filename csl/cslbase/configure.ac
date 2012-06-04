@@ -266,7 +266,9 @@ x86_64-w64-*)
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     fi
-    DLL_CFLAGS="$CFLAGS -shared"
+# It appears that under cygwin the "-c" option is required here, even though
+# in all other cases it is either not needed or use of it leads to failure.
+    DLL_CFLAGS="$CFLAGS -c -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
