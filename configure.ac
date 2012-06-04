@@ -314,9 +314,9 @@ then
 # there is a Makefile present then the configure step has happened.
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
   cygbuild=`echo $build | sed -e \
-      's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-pc-windows+i686-pc-cygwin+'`
+      's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-w64-windows+i686-pc-cygwin+'`
   AC_MSG_NOTICE([Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile])
-  if ! test -f $cygbuild/Makefile
+  if ! test -f cslbuild/$cygbuild/Makefile
   then
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
              --with-cygwin"
