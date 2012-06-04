@@ -1139,8 +1139,11 @@ uninstall-local:
 
 local_image_files = bootstrapreduce.img
 
+win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
+	not-under-cygwin.exe cygwin-isatty.exe csl reduce fwindemo
+
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
-	$(image_files) $(local_image_files) \
+	$(image_files) $(local_image_files) $(win_specials) \
 	objtype* cl-wrap* makeheaders* *.def machineid.c dynmodule*
 
 clean-local:

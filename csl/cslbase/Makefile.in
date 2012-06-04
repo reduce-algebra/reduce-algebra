@@ -721,12 +721,15 @@ termdemo_LIBS =
 @gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COM)
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
+@windows_TRUE@win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
+@windows_TRUE@	not-under-cygwin.exe cygwin-isatty.exe csl reduce fwindemo
+
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
 @windows_FALSE@	objtype makeheaders machineid.c dynmodule* \
 @windows_FALSE@	$(macr)
 
 @windows_TRUE@generatedfiles = $(console_binaries) $(noinstall_console_binaries) \
-@windows_TRUE@	$(image_files) $(local_image_files) \
+@windows_TRUE@	$(image_files) $(local_image_files) $(win_specials) \
 @windows_TRUE@	objtype* cl-wrap* makeheaders* *.def machineid.c dynmodule*
 
 @mac_framework_FALSE@@windows_FALSE@macr = 

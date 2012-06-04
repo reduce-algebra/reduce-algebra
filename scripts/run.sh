@@ -9,19 +9,35 @@ shift
 shift
 case "x$OS" in
 xWindows_NT)
+
+  pre=""
+  suffix=".com"
+  xtra=""
+  if ! $here/../bin/not-under-cygwin.exe $*
+  then
+    $here/../bin/cygwin-isatty.exe $*
+    case $? in
+    0)
+      xtra="--gui"
+      ;;
+    1)
+      pre="cygwin-"
+      suffix=".exe"
+      ;;
+    *)
+      ;;
+    esac
+  fi
+
   for hx in "x86_64-w64-windows" "x86_64-w64-windows-debug" \
             "i686-pc-windows" "i686-pc-windows-debug" \
             "x86_64-w64-windows-nogui" "x86_64-w64-windows-nogui-debug" \
             "i686-pc-windows-nogui" "i686-pc-windows-nogui-debug"
   do
-    if test -x $here/../cslbuild/$hx/csl/$ap.com
+#   echo Try: -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
+    if test -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     then
-      exec $here/../cslbuild/$hx/csl/$ap.com $*
-      exit 0
-    fi
-    if test -x $here/../cslbuild/$hx/csl/$ap.exe
-    then
-      exec $here/../cslbuild/$hx/csl/$ap.exe $*
+      exec $here/../cslbuild/$hx/csl/$pre$ap$suffix $xtra $*
       exit 0
     fi
   done

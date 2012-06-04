@@ -660,6 +660,7 @@ with_csl
 with_psl
 with_build
 with_pslbuild
+with_cygbuild
 with_mingw64
 with_lionSDK
 with_lto
@@ -1315,6 +1316,7 @@ Optional Packages:
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
+  --with-cygbuild         Used internally to control build directory
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
   --without-lionSDK       can be used to avoid use of MacOSX SDK 10.7 (CSL
@@ -1947,6 +1949,15 @@ else
 fi
 
 
+
+# Check whether --with-cygbuild was given.
+if test "${with_cygbuild+set}" = set; then :
+  withval=$with_cygbuild;
+else
+  with_cygbuild="unknown"
+fi
+
+
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
@@ -2191,6 +2202,9 @@ fi
 # Note that on Windows under cygwin i686-w64-mingw32 and/or x86_64-w64-mingw32
 # compilers MUST be installed.
 #
+# Further to the above, if I configure ANY Windows version I will also
+# ensure that the (raw) cygwin Windows version is configured as well.
+#
 # When testing for build environents I will look to see if <host>-g++ is
 # available, and if it is I will assume the <host>-gcc and any other
 # relevant build tools and libraries will be installed. This is just to
@@ -2234,6 +2248,22 @@ esac
 
 if test "x$considermingw" != "xno"
 then
+# This should ensure that a (raw) cygwin version to match the current version
+# will be built. It assumes (perhaps slightly optimistically) that if
+# there is a Makefile present then the configure step has happened.
+  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
+  cygbuild=`echo $build | sed -e \
+      's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-pc-windows+i686-pc-cygwin+'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile" >&5
+$as_echo "$as_me: Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile" >&6;}
+  if ! test -f $cygbuild/Makefile
+  then
+    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+             --with-cygwin"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
+$as_echo "$as_me: $doconfig" >&6;}
+    eval "$doconfig"
+  fi
 # check for the availability of compilers that might matter to me.
   # Extract the first word of "x86_64-w64-mingw32-g++", so it can be a program name with args.
 set dummy x86_64-w64-mingw32-g++; ac_word=$2
@@ -2318,7 +2348,7 @@ fi
       as_fn_error $? "Attempt to build Windows-64 system without correct cross ocmpiler installed" "$LINENO" 5
     fi
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --host=x86_64-w64-mingw32"
+             --host=x86_64-w64-mingw32 --with-cygbuild=$cygbuild"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
     eval "$doconfig"
@@ -2337,7 +2367,7 @@ $as_echo "$as_me: $doconfig" >&6;}
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-               --host=i686-w64-mingw32"
+               --host=i686-w64-mingw32 --with-cygbuild=$cygbuild"
       { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
       eval "$doconfig"
@@ -2351,12 +2381,12 @@ $as_echo "$as_me: $doconfig" >&6;}
 # without mingw64 but I am running on a 64-bit windows and have the 64-bit
 # compilers installed. In this case I will try to configure both versions.
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=no"
+             --with-mingw64=no --with-cygbuild=$cygbuild"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
     eval "$doconfig"
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=yes"
+             --with-mingw64=yes --with-cygbuild=$cygbuild"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
     eval "$doconfig"
@@ -2409,16 +2439,6 @@ then
 else
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
-
-#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# The following two lines are outrageous hacks so that I can see if what
-# follows is robust against file-names with parens and whitespace. At present
-# it appears that I can build the FOX-based version with these active, but not
-# build wxWidgets (unless and until I hack wxWidgets!).
-#pslbuild="$pslbuild(for psl)"
-#build="$build(for csl)"
-#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Will build in the $build subdirectory" >&5
 $as_echo "$as_me: Will build in the $build subdirectory" >&6;}

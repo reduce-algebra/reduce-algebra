@@ -61,6 +61,11 @@ AC_ARG_WITH(pslbuild,
   [],
   [with_pslbuild="unknown"])
 
+AC_ARG_WITH(cygbuild,
+  AC_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
+  [],
+  [with_cygbuild="unknown"])
+
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
@@ -258,6 +263,9 @@ AC_ARG_WITH(smallpage,
 # Note that on Windows under cygwin i686-w64-mingw32 and/or x86_64-w64-mingw32
 # compilers MUST be installed.
 #
+# Further to the above, if I configure ANY Windows version I will also
+# ensure that the (raw) cygwin Windows version is configured as well.
+#
 # When testing for build environents I will look to see if <host>-g++ is
 # available, and if it is I will assume the <host>-gcc and any other
 # relevant build tools and libraries will be installed. This is just to
@@ -301,6 +309,20 @@ esac
 
 if test "x$considermingw" != "xno"
 then
+# This should ensure that a (raw) cygwin version to match the current version
+# will be built. It assumes (perhaps slightly optimistically) that if
+# there is a Makefile present then the configure step has happened.
+  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
+  cygbuild=`echo $build | sed -e \
+      's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-pc-windows+i686-pc-cygwin+'`
+  AC_MSG_NOTICE([Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile])
+  if ! test -f $cygbuild/Makefile
+  then
+    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+             --with-cygwin"
+    AC_MSG_NOTICE([$doconfig])
+    eval "$doconfig"
+  fi
 # check for the availability of compilers that might matter to me.
   AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-g++, "yes", "no")
   AC_CHECK_PROG(X32_GCC, i686-w64-mingw32-g++, "yes", "no")
@@ -311,7 +333,7 @@ then
       AC_MSG_ERROR([Attempt to build Windows-64 system without correct cross ocmpiler installed])
     fi
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --host=x86_64-w64-mingw32"
+             --host=x86_64-w64-mingw32 --with-cygbuild=$cygbuild"
     AC_MSG_NOTICE([$doconfig])
     eval "$doconfig"
     exit
@@ -329,7 +351,7 @@ then
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-               --host=i686-w64-mingw32"
+               --host=i686-w64-mingw32 --with-cygbuild=$cygbuild"
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"
       exit
@@ -342,11 +364,11 @@ then
 # without mingw64 but I am running on a 64-bit windows and have the 64-bit
 # compilers installed. In this case I will try to configure both versions.
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=no"
+             --with-mingw64=no --with-cygbuild=$cygbuild"
     AC_MSG_NOTICE([$doconfig])
     eval "$doconfig"
     doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=yes"
+             --with-mingw64=yes --with-cygbuild=$cygbuild"
     AC_MSG_NOTICE([$doconfig])
     eval "$doconfig"
     exit
@@ -397,16 +419,6 @@ then
 else
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
-
-#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# The following two lines are outrageous hacks so that I can see if what
-# follows is robust against file-names with parens and whitespace. At present
-# it appears that I can build the FOX-based version with these active, but not
-# build wxWidgets (unless and until I hack wxWidgets!).
-#pslbuild="$pslbuild(for psl)"
-#build="$build(for csl)"
-#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
 AC_MSG_NOTICE([Will build in the $build subdirectory])
 
