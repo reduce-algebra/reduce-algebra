@@ -1,7 +1,7 @@
-/* termed.c                          Copyright (C) 2004-2010 Codemist Ltd */
+/* termed.c                          Copyright (C) 2004-2012 Codemist Ltd */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 447df4a7 12-May-2012 */
+/* Signature: 4060eefa 04-Jun-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -264,9 +264,10 @@ static int searchFlags;
 
 
 static const char *prompt_string = ">";
-static char *input_line, *display_line;
-static int prompt_length = 1, input_line_size;
-static int unicode_flag = 0;
+char *input_line;
+static char *display_line;
+int prompt_length = 1;
+static int input_line_size;
 
 /*
  * term_plain_getline() can be called when cursor addressing is not
@@ -519,7 +520,7 @@ static void my_reset_prog_mode(void)
 static int term_enabled;
 
 static int cursorx, cursory, final_cursorx, final_cursory, max_cursory;
-static int insert_point;
+int insert_point;
 
 static int term_can_invert, invert_start, invert_end;
 
@@ -545,13 +546,51 @@ static DWORD stdin_attributes, stdout_attributes;
 
 static void term_putchar(int c)
 {
+/*
+ * This can either be given a single 8 bit character r a word with its
+ * top 8 bits non-zero. In the later case it stands for 2, 3 or 4 characters,
+ * which in the Windows case must be printed all at once.
+ */
 #ifdef WIN32
-    DWORD nbytes;
-    char buffer[1];
-    buffer[0] = c;
-    WriteFile(stdout_handle, buffer, 1, &nbytes, NULL);
+    DWORD nbytes = 1;
+    char buffer[4];
+    if ((c & 0xffffff00) == 0) buffer[0] = c;
+    else if ((c & 0xffff0000) == 0xffff0000)
+    {   buffer[0] = c >> 8;
+        buffer[1] = c;
+        nbytes = 2;
+    }
+    else if ((c & 0xff000000) == 0xff000000)
+    {   buffer[0] = c >> 16;
+        buffer[1] = c >> 8;
+        buffer[2] = c;
+        nbytes = 3;
+    }
+    else
+    {   buffer[0] = c >> 24;
+        buffer[1] = c >> 16;
+        buffer[2] = c >> 8;
+        buffer[3] = c;
+        nbytes = 3;
+    }
+    WriteFile(stdout_handle, buffer, nbytes, &nbytes, NULL);
 #else
-    putchar(c);
+    if ((c & 0xffffff00) == 0) putchar(c);
+    else if ((c & 0xffff0000) == 0xffff0000)
+    {   putchar(c >> 8);
+        putchar(c);
+    }
+    else if ((c & 0xff000000) == 0xff000000)
+    {   putchar(c >> 16);
+        putchar(c >> 8);
+        putchar(c);
+    }
+    else
+    {   putchar(c >> 24);
+        putchar(c >> 16);
+        putchar(c >> 8);
+        putchar(c);
+    }
 #endif
 }
 
@@ -591,7 +630,9 @@ static void measure_screen(void)
 #endif /* TIOCGWINSZ */
 #endif /* HAVE_SYS_IOCTL_H */
 #endif /* WIN32 */
-    LOG(("[screen:%dx%d]", columns, lines));
+/*
+ *  LOG(("[screen:%dx%d]", columns, lines));
+ */
 }
 
 #ifdef WIN32
@@ -659,6 +700,14 @@ static void record_keys(void)
 
 #ifdef WIN32
 static INPUT_RECORD keyboard_buffer[1];
+
+static UINT originalCodePage = 0;
+
+static void resetCP()
+{
+    SetConsoleOutputCP(originalCodePage);
+}
+
 #endif
 
 int term_setup(int flag, const char *colour)
@@ -785,6 +834,12 @@ int term_setup(int flag, const char *colour)
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
     SetConsoleMode(stdout_handle, stdout_attributes);
     term_can_invert = 1;
+    originalCodePage = GetConsoleOutputCP();
+    atexit(resetCP);
+    SetConsoleOutputCP(CP_UTF8);
+#ifdef TEST
+    printf("Original page = %d.  \xc3\xbc\n", originalCodePage);
+#endif
 #else /* WIN32 */
     int errval, errcode;
     char *s;
@@ -1343,11 +1398,46 @@ static void term_bell(void)
 
 /*
  * line_wrap() is a part of refresh_display(), and it prints a character
- * taking care of line-wrapping.
+ * taking care of line-wrapping. It also needs to cope a bit with
+ * multi-byte characters.
  */
+
+static int pending = 0;
 
 static int line_wrap(int ch, int tab_offset)
 {
+    ch &= 0xff; /* Just to be on the safe side, in case char type is signed */
+    switch (ch & 0xf0)
+    {
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        /* A continuation character */
+        pending = (pending << 8) | ch;
+        if ((pending & 0xff000000) != 0)
+        {   ch = pending;
+            pending = 0;
+            break;
+        }
+        return tab_offset;
+case 0xc0:
+case 0xd0:
+        /* Start of 2-byte sequence */
+        pending = 0x00ffff00 | ch;
+        return tab_offset;
+case 0xe0:
+        /* Start of 3-byte sequence */
+        pending = 0x0000ff00 | ch;
+        return tab_offset;
+case 0xf0:
+        /* Start of 4 byte sequence */
+        pending = ch & 0xf7; /* clean it up just in case */
+        return tab_offset;
+default:
+        pending = 0;
+        break;
+    }
     cursorx++;
     if (cursorx >= columns)
     {   tab_offset += cursorx;
@@ -1474,8 +1564,7 @@ static void refresh_display(void)
             finy++;
         }
         else if (ch < 0x20) finx += 2;
-        else if (ch < 0x7f) finx += 1;
-        else finx += 4;
+        else if ((ch & 0xc0) != 0x80) finx += 1; /* continuation byte */
         if (finx >= columns)
         {   tab_offset += finx;
             finx -= columns;
@@ -1552,19 +1641,15 @@ static void refresh_display(void)
             /* Turn into @, A, B etc */
             tab_offset = line_wrap(ch | 0x40, tab_offset);
         }
-        else if (ch <= 0x7f) tab_offset = line_wrap(ch, tab_offset);
-        else
-        {   char b[5];
 /*
- * Characters from 0x7f to 0xff are displayed as "[dd]" with 2 hex digits.
- * This may not be a universal standard notation and it does mean that any
- * characters in that range that are desirable (eg maybe some accented
- * letters) do not get displayed. But it avoids risk of
+ * Well bytes in the range 0x80 to 0xff should be viewed here as part of
+ * multi-byte characters. That gives two severe issues for line_wrap etc -
+ * the first is that several bytes will end up counting as only one column.
+ * The second is that at least on Windows it seems to be vital to print
+ * all bytes of a multi-byte characters at once for there to be even a chance
+ * of it being recognised.
  */
-            int j;
-            sprintf(b, "[%.2x]", ch);
-            for (j=0; j<4; j++) tab_offset = line_wrap(b[j], tab_offset);
-        }
+        else tab_offset = line_wrap(ch, tab_offset);
     }
 /*
  * Clear inverse video mode.
@@ -2273,12 +2358,6 @@ static int hexval(int c)
     else return c + (10 - 'a');
 }
 
-typedef struct uniname
-{
-    const char *name;
-    int code;
-} uniname;
-
 /*
  * The table here is the set of names used in HTML to denote characters
  * and so I hope that many of the names will be familiar to many people.
@@ -2543,7 +2622,8 @@ uniname unicode_names[] =
     {"yuml",    255},    /* latin small letter y with diaeresis */
     {"zeta",    950},    /* greek small letter zeta */
     {"zwj",     8205},   /* zero width joiner */
-    {"zwnj",    8204}    /* zero width non-joiner */
+    {"zwnj",    8204},   /* zero width non-joiner */
+    {NULL,      -1}      /* dummy entry so end of table is easy to detect */ 
 };
 
 static int compare_strings(const void *a, const void *b)
@@ -2553,12 +2633,13 @@ static int compare_strings(const void *a, const void *b)
     return strcmp(a1->name, b1->name);
 }
 
-int lookup_name(const char *s)
+static int lookup_name(const char *s)
 {
     uniname k, *p;
     k.name = s;
     p = bsearch(&k, unicode_names,
-                sizeof(unicode_names)/sizeof(unicode_names[0]),
+                sizeof(unicode_names)/sizeof(unicode_names[0]) -
+                    sizeof(unicode_names[0]), /* allow for the terminator */
                 sizeof(unicode_names[0]),
                 compare_strings);
     if (p == NULL) return -1; /* not found */
@@ -2570,9 +2651,10 @@ const char *lookup_code(int c)
     int i;
 /*
  * I do a simple linear search here. It is cheap-enough given that it is
- * only needed when the user types a special command, ALT-x.
+ * only needed when the user types a special command, ALT-x. It does not
+ * matter here that I scan the very final NULL entry.
  */
-    for (i=0; i<(int)(sizeof(unicode_names)/sizeof(unicode_names[0])); i++)
+    for (i=0; i<sizeof(unicode_names)/sizeof(unicode_names[0]); i++)
     {   if (unicode_names[i].code == c) return unicode_names[i].name;
     }
     return NULL;
@@ -2624,36 +2706,39 @@ static void term_ctrl_z_command(void)
 /*
  * Encode into buffer b as up to 4 characters (plus a nul). Because I
  * am only concerned with Unicode I only need encode values in the
- * range 0 to 0x10ffff.
+ * range 0 to 0x10ffff. Returns the number of chars packed (not counting
+ * the terminating '\0').
  */
 
-static void utf_encode(char *b, int c)
+int utf_encode(char *b, int c)
 {
+    char *p = b;
     c &= 0x1fffff;   /* limit myself to 21-bit values here */
-    if (c <= 0x7f) *b++ = c;
+    if (c <= 0x7f) *p++ = c;
     else if (c <= 0x7ff)
-    {   *b++ = 0xc0 | (c >> 6);
-        *b++ = 0x80 | (c & 0x3f);
+    {   *p++ = 0xc0 | (c >> 6);
+        *p++ = 0x80 | (c & 0x3f);
     }
     else if (c <= 0xffff)
-    {   *b++ = 0xe0 | (c >> 12);
-        *b++ = 0x80 | ((c >> 6) & 0x3f);
-        *b++ = 0x80 | (c & 0x3f);
+    {   *p++ = 0xe0 | (c >> 12);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
     }
     else
-    {   *b++ = 0xf0 | (c >> 18);
-        *b++ = 0x80 | ((c >> 12) & 0x3f);
-        *b++ = 0x80 | ((c >> 6) & 0x3f);
-        *b++ = 0x80 | (c & 0x3f);
+    {   *p++ = 0xf0 | (c >> 18);
+        *p++ = 0x80 | ((c >> 12) & 0x3f);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
     }
-    *b = 0;
+    *p = 0;
+    return (int)(p - b);
 }
 
 /*
  * Decode utf-8 or return -1 if invalid.
  */
 
-static int utf_decode(char *b)
+int utf_decode(char *b)
 {
     int c = *b++ & 0xff, c1, c2, c3;
     switch (c & 0xf0)
@@ -2699,7 +2784,7 @@ case 0xf0:
     }
 }
 
-static void term_unicode_input(void)
+void term_unicode_convert(void)
 {
 /*
  * If you position the caret to the right of (up to) 6 hex digits and
@@ -2790,7 +2875,6 @@ static void term_unicode_input(void)
         if (c == -1) continue;    /* not a recognised name */
         utf_encode(output_word, c);
         term_replace_chars_backwards(n, output_word);
-        refresh_display();
         return;
     }
 /*
@@ -2812,7 +2896,6 @@ static void term_unicode_input(void)
             if (c > 0)
             {   utf_encode(output_word, c);
                 term_replace_chars_backwards(6, output_word);
-                refresh_display();
                 return;
             }
         }
@@ -2883,7 +2966,6 @@ static void term_unicode_input(void)
         {   strcpy(output_word, p);
             utf_encode(&output_word[p1-p], w);
             term_replace_chars_backwards(n, output_word);
-            refresh_display();
             return;
         }
 /*
@@ -2907,7 +2989,6 @@ static void term_unicode_input(void)
                 if (lookup_name(input_word) != -1)
                 {   sprintf(output_word, "%.4x", c);
                     term_replace_chars_backwards(n, output_word);
-                    refresh_display();
                     return;
                 }
             }
@@ -2922,7 +3003,6 @@ static void term_unicode_input(void)
     if (c > 0xffff && (p = lookup_code(c & 0xffff)) != NULL)
     {   sprintf(output_word, "%.2x%s", (c >> 16) & 0x3f, p);
         term_replace_chars_backwards(n, output_word);
-        refresh_display();
         return;
     }
 /*
@@ -2933,7 +3013,6 @@ static void term_unicode_input(void)
     if (c > 0x7f && c <= 0xffff)
     {   sprintf(output_word, "%.4x", c);
         term_replace_chars_backwards(n, output_word);
-        refresh_display();
         return;
     }
 /*
@@ -2949,45 +3028,41 @@ static void term_unicode_input(void)
         c = (c << 4) | hexval(input_line[insert_point-3]);
         c = (c << 4) | hexval(input_line[insert_point-2]);
         c = (c << 4) | hexval(input_line[insert_point-1]);
-/* Now c is the relevant code. Maybe it names a character */
-        if ((p = lookup_code(c)) != NULL)  /* yes it does! */
-        {
+/*
+ * Now c is the integer corresponding to the 4 hex digits. If it is in the
+ * range 0xd800 to 0xdfff it would be a surrogate - in that case I will
+ * reject it. I need to see if the code has an associated name.
+ */
+        if (c < 0xd800 || c > 0xdfff)
+        {   if ((p = lookup_code(c)) != NULL)  /* yes it does! */
+            {
 /*
  * Now if the buffer contains characters that would form a prefix to the
  * name I just found I will convert to the hex representation of the
  * character corresponding to the longer name.
  * This prefix processing is rather similar to a case considered earlier.
  */
-            for (i=1; i+strlen(p)<9; i++)
-            {   /* i is the number of prefix characters to test for */
-                int c1;
-                if (insert_point - prompt_length >= i+4)
-                {   memcpy(input_word, &input_line[insert_point-i-4], i);
-                    strcpy(&input_word[i], p);
-                    if ((c1 = lookup_name(input_word)) != -1)
-                    {   sprintf(output_word, "%.4x", c1);
-                        term_replace_chars_backwards(i+4, output_word);
-                        refresh_display();
-                        return;
+                for (i=1; i+strlen(p)<9; i++)
+                {   /* i is the number of prefix characters to test for */
+                    int c1;
+                    if (insert_point - prompt_length >= i+4)
+                    {   memcpy(input_word, &input_line[insert_point-i-4], i);
+                        strcpy(&input_word[i], p);
+                        if ((c1 = lookup_name(input_word)) != -1)
+                        {   sprintf(output_word, "%.4x", c1);
+                            term_replace_chars_backwards(i+4, output_word);
+                            return;
+                        }
                     }
                 }
+                term_replace_chars_backwards(4, p);
+                return;
             }
-            term_replace_chars_backwards(4, p);
-            refresh_display();
+            utf_encode(output_word, c);
+            term_replace_chars_backwards(4, output_word);
             return;
         }
-        utf_encode(output_word, c);
-        term_replace_chars_backwards(4, output_word);
-        refresh_display();
-        return;
     }
-
-/*
- * 4 hex of name with prefix     -> hex expanded    oli2260    -> 203e
- * 4 hex of name                 -> name            203e       -> oline
- * 4 hex of unnamed character    -> character       1234       -> (u+1234)
- */
-
 /*
  * If I do not recognise any of the situations I will give an alert and
  * not change the buffer at all.
@@ -3076,6 +3151,28 @@ static void term_switch_menu(void)
 
 /****************************************************************************/
 
+#ifdef SOLARIS
+/*
+ * the tparm function on Solaris bites me, as it has bitten many people
+ * before. On a 64-bit machine the prototype requires a load of arguments,
+ * most of which will often be ignored. On a 32-bit system it can cope with
+ * only the args that are needed. At one time I had two calls one with
+ * all the extra args and one not, with "if (sizeof(void *)==8)" to select
+ * which to use, but a recent test has shown a compiler on Solaris treating
+ * the odd number of args (even in code that could never be executed) as
+ * an ERROR not just a WARNING. So for now I will try passing the junk
+ * extra args and keeping fingers crossed.
+ */
+
+static void solaris_foreground(int n)
+{
+    if (set_a_foreground)
+        putp(tparm(set_a_foreground, n,0,0,0,0,0,0,0,0));
+    else if (set_foreground)
+        putp(tparm(set_foreground, n,0,0,0,0,0,0,0,0));
+}
+
+#endif
 
 static void set_fg(int n)
 {
@@ -3091,17 +3188,11 @@ static void set_fg(int n)
     if (*term_colour == 0) return;
     fflush(stdout);
 #ifdef SOLARIS
-    if (sizeof(void *) == 8)
-    {   if (set_a_foreground)
-            putp(tparm(set_a_foreground, n,0,0,0,0,0,0,0,0));
-        else if (set_foreground)
-            putp(tparm(set_foreground, n,0,0,0,0,0,0,0,0));
-    }
-    else
+    solaris_foreground(n);
+#else
+    if (set_a_foreground) putp(tparm(set_a_foreground, n));
+    else if (set_foreground) putp(tparm(set_foreground, n));
 #endif
-    {   if (set_a_foreground) putp(tparm(set_a_foreground, n));
-        else if (set_foreground) putp(tparm(set_foreground, n));
-    }
 #endif
 }
 
@@ -3120,11 +3211,10 @@ static void set_normal(void)
     else if (set_a_foreground)
     {
 #ifdef SOLARIS
-        if (sizeof(void *) == 8)
-            putp(tparm(set_a_foreground, 0,0,0,0,0,0,0,0,0));
-        else
+        solaris_foreground(0);    
+#else
+        putp(tparm(set_a_foreground, 0));
 #endif
-            putp(tparm(set_a_foreground, 0));
     }
     fflush(stdout);
     my_reset_shell_mode();
@@ -3146,11 +3236,10 @@ static void set_shell(void)
     else if (set_a_foreground)
     {
 #ifdef SOLARIS
-        if (sizeof(void *)==8)
-            putp(tparm(set_a_foreground, 0,0,0,0,0,0,0,0,0));
-        else
+        solaris_foreground(0);
+#else
+        putp(tparm(set_a_foreground, 0));
 #endif
-            putp(tparm(set_a_foreground, 0));
     }
     fflush(stdout);
     my_reset_shell_mode();
@@ -3160,10 +3249,6 @@ static void set_shell(void)
 static char *term_fancy_getline(void)
 {
     int ch, any_keys = 0;
-#ifdef TEST
-    fprintf(stderr, "term_fancy_getline\n");
-    fflush(stderr);
-#endif
 #ifdef WIN32
     SetConsoleMode(stdout_handle, 0);
 #else
@@ -3191,19 +3276,6 @@ static char *term_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
-/*
- * I want several successibe ALT-X hits to be able to cycle through cases
- * using unicode_flag to maintain status information. But ANY other key
- * resets that to the starting situation.
- */
-        switch (ch)
-        {
-    case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
-            break;
-    default:
-            unicode_flag = 0;
-        }
-
         if (ch == EOF || (ch == CTRL('D') && !any_keys))
         {   set_normal();
             return NULL;
@@ -3456,7 +3528,8 @@ static char *term_fancy_getline(void)
             term_copy_region();
             continue;
     case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
-            term_unicode_input();
+            term_unicode_convert();
+            refresh_display();
             continue;
     case CTRL('Y') + 0x100: case 'Y' + 0x100: case 'y' + 0x100:
             term_yank();

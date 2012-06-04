@@ -1,9 +1,8 @@
-/* termed.h                       Copyright (C) 2004-2008 Codemist Ltd */
-
+/* termed.h                       Copyright (C) 2004-2012 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -40,7 +39,7 @@
  */
 
 
-/* Signature: 554d413d 12-May-2012 */
+/* Signature: 74520ec2 04-Jun-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode

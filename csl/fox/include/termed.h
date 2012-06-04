@@ -1,9 +1,8 @@
-/* termed.h                       Copyright (C) 2004-2008 Codemist Ltd */
-
+/* termed.h                       Copyright (C) 2004-2012 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -40,7 +39,7 @@
  */
 
 
-/* Signature: 0c84fc53 12-May-2012 */
+/* Signature: 74520ec2 04-Jun-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -109,6 +108,23 @@ extern void input_history_end(void);
 extern void input_history_add(const char *s);
 
 extern const char *input_history_get(int n);
+
+/*
+ * The next few are so I can access the Unicode conversion code here
+ * by pretending to be in console mode even if I am not.
+ */
+
+extern char *input_line;
+extern int prompt_length, insert_point;
+extern int utf_encode(char *b, int c);
+extern int utf_decode(char *b);
+extern void term_unicode_convert();
+typedef struct uniname
+{
+    const char *name;
+    int code;
+} uniname;
+extern uniname unicode_names[];
 
 #ifdef __cplusplus
 }

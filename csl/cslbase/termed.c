@@ -1,7 +1,7 @@
-/* termed.c                          Copyright (C) 2004-2010 Codemist Ltd */
+/* termed.c                          Copyright (C) 2004-2012 Codemist Ltd */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 2e761e94 12-May-2012 */
+/* Signature: 4060eefa 04-Jun-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -182,7 +182,7 @@ static void write_log(char *s, ...)
     va_end(x);
 }
 
-#define LOG(a) write_log a;
+#define LOG(a) write_log a
 
 #endif
 
@@ -548,8 +548,8 @@ static void term_putchar(int c)
 {
 /*
  * This can either be given a single 8 bit character r a word with its
- * top 8 bits non-zero. In the later case it stands for 2, 3 or 4 characfters,
- * whihc in the Windows case must be printed all at once.
+ * top 8 bits non-zero. In the later case it stands for 2, 3 or 4 characters,
+ * which in the Windows case must be printed all at once.
  */
 #ifdef WIN32
     DWORD nbytes = 1;
@@ -3151,6 +3151,28 @@ static void term_switch_menu(void)
 
 /****************************************************************************/
 
+#ifdef SOLARIS
+/*
+ * the tparm function on Solaris bites me, as it has bitten many people
+ * before. On a 64-bit machine the prototype requires a load of arguments,
+ * most of which will often be ignored. On a 32-bit system it can cope with
+ * only the args that are needed. At one time I had two calls one with
+ * all the extra args and one not, with "if (sizeof(void *)==8)" to select
+ * which to use, but a recent test has shown a compiler on Solaris treating
+ * the odd number of args (even in code that could never be executed) as
+ * an ERROR not just a WARNING. So for now I will try passing the junk
+ * extra args and keeping fingers crossed.
+ */
+
+static void solaris_foreground(int n)
+{
+    if (set_a_foreground)
+        putp(tparm(set_a_foreground, n,0,0,0,0,0,0,0,0));
+    else if (set_foreground)
+        putp(tparm(set_foreground, n,0,0,0,0,0,0,0,0));
+}
+
+#endif
 
 static void set_fg(int n)
 {
@@ -3166,17 +3188,11 @@ static void set_fg(int n)
     if (*term_colour == 0) return;
     fflush(stdout);
 #ifdef SOLARIS
-    if (sizeof(void *) == 8)
-    {   if (set_a_foreground)
-            putp(tparm(set_a_foreground, n,0,0,0,0,0,0,0,0));
-        else if (set_foreground)
-            putp(tparm(set_foreground, n,0,0,0,0,0,0,0,0));
-    }
-    else
+    solaris_foreground(n);
+#else
+    if (set_a_foreground) putp(tparm(set_a_foreground, n));
+    else if (set_foreground) putp(tparm(set_foreground, n));
 #endif
-    {   if (set_a_foreground) putp(tparm(set_a_foreground, n));
-        else if (set_foreground) putp(tparm(set_foreground, n));
-    }
 #endif
 }
 
@@ -3195,11 +3211,10 @@ static void set_normal(void)
     else if (set_a_foreground)
     {
 #ifdef SOLARIS
-        if (sizeof(void *) == 8)
-            putp(tparm(set_a_foreground, 0,0,0,0,0,0,0,0,0));
-        else
+        solaris_foreground(0);    
+#else
+        putp(tparm(set_a_foreground, 0));
 #endif
-            putp(tparm(set_a_foreground, 0));
     }
     fflush(stdout);
     my_reset_shell_mode();
@@ -3221,11 +3236,10 @@ static void set_shell(void)
     else if (set_a_foreground)
     {
 #ifdef SOLARIS
-        if (sizeof(void *)==8)
-            putp(tparm(set_a_foreground, 0,0,0,0,0,0,0,0,0));
-        else
+        solaris_foreground(0);
+#else
+        putp(tparm(set_a_foreground, 0));
 #endif
-            putp(tparm(set_a_foreground, 0));
     }
     fflush(stdout);
     my_reset_shell_mode();
