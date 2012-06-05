@@ -1,0 +1,11 @@
+usr/bin/redfront
+usr/bin/rfcsl
+usr/bin/rfpsl
+usr/bin/breduce
+usr/share/reduce-addons
+usr/share/man/man1/breduce.1
+usr/share/man/man1/redfront.1
+usr/share/man/man1/rfcsl.1
+usr/share/man/man1/rfpsl.1
+usr/share/emacs/site-lisp/reduce/reduce-mode.el
+etc/emacs/site-start.d/50reduce-emacs.el

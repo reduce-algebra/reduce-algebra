@@ -2,7 +2,7 @@ Source: reduce
 Section: math
 Priority: optional
 Maintainer: REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net>
-Build-Depends: libx11-dev, libxext-dev, libxft-dev, texlive-latex-base, texlive-fonts-extra, tex4ht, debhelper (>= 7.0.50~)
+Build-Depends: autoconf, libedit-dev, libx11-dev, libxext-dev, libxft-dev, texlive-latex-base, texlive-fonts-extra, tex4ht, debhelper (>= 7.0.50~)
 Standards-Version: 3.9.1
 Homepage: http://reduce-algebra.sf.net/
 
@@ -47,3 +47,13 @@ Description: REDUCE Computer Algebra System -- PSL version
  .
  This package contains the files for the PSL (Portable Standard Lisp)
  version of REDUCE.
+
+Package: reduce-addons
+Architecture: any
+Depends: reduce-csl (= ${source:Version}) | reduce-psl (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Useful addons for the REDUCE Computer Algebra System
+ These include:
+   reduce-mode, an emacs mode
+   redfront, a frontend with line editing and color output
+   breduce, a REDUCE batch processing utility
+
