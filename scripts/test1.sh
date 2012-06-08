@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 # Test a package
 # An option "--csl" or "--psl" can specify that only that one Lisp
@@ -155,7 +155,7 @@ then
 
 mkdir -p csl-times
 
-time ($here/bin/redcsl -w <<XXX > csl-times/$p.rlg.tmp) 2>howlong.tmp
+time sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -212,7 +212,7 @@ then
 
 mkdir -p psl-times
 
-time ($here/bin/redpsl <<XXX > psl-times/$p.rlg.tmp) 2>howlong.tmp
+time sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);

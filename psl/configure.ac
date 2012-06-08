@@ -48,7 +48,7 @@ fi
 
 AC_SUBST(BUILD)
 
-pslver=`$srcdir/../scripts/pslver.sh`
+pslver=`"$srcdir/../scripts/pslver.sh"`
 
 # Here if "--with-m32" is set I demote some 64-bit hosts to run in 32-bit
 # mode. This has in thge past been useful when running on a 64-bit Linux
@@ -74,7 +74,7 @@ fi
 
 mkdir -p xport
 cd xport
-$srcdir/support-packages/xport-2.05/configure
+"$srcdir"/support-packages/xport-2.05/configure
 make
 cd ..
 
@@ -91,8 +91,11 @@ cp -r $srcdir/psl-$pslver/* psl
 # available NOW while a full source release is still being worked on.
 
 cd psl
-AC_MSG_NOTICE([About to update PSL binaries from master web-site at ZIB])
-../xport/xport -fetch
+# If there is no xport.pat file, do not try to update the files
+if test -f xport.pat; then
+  AC_MSG_NOTICE([About to update PSL binaries from master web-site at ZIB])
+  ../xport/xport -fetch
+fi
 # xport.pat should really have "executable bpsl" in it, but in case it does
 # not I will force executable status here...
 chmod +x bpsl*

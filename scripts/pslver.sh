@@ -138,7 +138,7 @@ EOF
 x86_64*freebsd*)
   echo "freeBSD64"
   ;;
-i686*freebsd*)
+i386*freebsd*)
   echo "freeBSD"
   ;;
 *)
