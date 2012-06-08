@@ -199,7 +199,7 @@ if test -s csl-times/$p.rlg.diff
 fi
 echo "Tested on $mc CSL" > csl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | \
-  sed -e '/^1: /d;' >>csl-times/$p.time
+  sed -e '/^1: *$/d;' >>csl-times/$p.time
 if test "x$keep" = "xno"
 then
   rm csl-times/$p.rlg.tmp
@@ -251,7 +251,7 @@ if test -s psl-times/$p.rlg.diff
 fi
 echo "Tested on $mc PSL" > psl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
-  sed -e '/^1: /d;' >psl-times/$p.time
+  sed -e '/^1: /d;' >>psl-times/$p.time
 if test "x$keep" = "xno"
 then
   rm  psl-times/$p.rlg.tmp
