@@ -2337,19 +2337,21 @@ $(srcdir)/Makefile.am:
 # "--host=..." option to the configure script. A result of that is that
 # the libraries get installed with names that include the host identity.
 # The script here makes symbolic links from the host-qualified names from
-# plain undecorated ones as mentioned by "wx-config --libs"
+# plain undecorated ones as mentioned by "wx-config --libs". Well actually
+# if I build under raw cygwin that is not the case, so I disable this
+# hack in that situation.
 
-@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
-@wx_TRUE@@wxbuiltin_TRUE@	cd ../lib; \
-@wx_TRUE@@wxbuiltin_TRUE@	for x in *$(HOST).a; \
-@wx_TRUE@@wxbuiltin_TRUE@	do \
-@wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-$(HOST).a}.a; \
-@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s -f $$x $$y; \
-@wx_TRUE@@wxbuiltin_TRUE@	  ln -s -f $$x $$y; \
-@wx_TRUE@@wxbuiltin_TRUE@	done
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	cd ../lib; \
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	for x in *$(HOST).a; \
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	do \
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-$(HOST).a}.a; \
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s -f $$x $$y; \
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	  ln -s -f $$x $$y; \
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	done
 
-@wx_TRUE@@wxbuiltin_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
-@wx_TRUE@@wxbuiltin_TRUE@	@cd ../wxWidgets && $(MAKE) install
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
+@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	@cd ../wxWidgets && $(MAKE) install
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)

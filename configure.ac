@@ -805,12 +805,17 @@ then
               --without-libtiff --with-libsvg=no \
               --with-sdl=no --with-zlib=builtin \
               --without-expat --with-regex=builtin \
+              --disable-richtext \
               --disable-gif --disable-pcx --enable-graphics_ctx \
               --disable-tga --disable-pnm \
               --disable-svg --prefix=\"$builddir\""
       if test "x$enable_debug" != "xno"
       then
         doconfig="$doconfig --enable-debug"
+      fi
+      if test "x$with_cygwin" != "xno"
+      then
+        doconfig="$doconfig --with-gtk --without-msw"
       fi
       AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"

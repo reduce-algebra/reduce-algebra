@@ -1,7 +1,7 @@
 #define DEBUG 1 /* regardless of overall build mode! */
 
 //
-// "wxterminal.cpp"                              Copyright A C Norman 2011
+// "wxterminal.cpp"                              Copyright A C Norman 2012
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -11,7 +11,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 66f07d50 12-May-2012 */
+/* Signature: 58b949ca 05-Jun-2012 */
 
 #include "wx/wxprec.h"
 
@@ -3173,7 +3173,7 @@ void fwinText::enlargeTextBuffer()
 
 void fwinText::OnFileRead()
 {
-    FWIN_LOG(1;5q("READ\n"));
+    FWIN_LOG(("READ\n"));
 }
 
 void fwinText::OnFileSave()
@@ -5179,7 +5179,7 @@ void fwin_showmath(const char *s)
 //
 #ifdef WIN32
     sprintf(cmd, "bash -c \"latex --output-directory=%.*s reduce-%d.tex\"",
-                 dirlen, tempd, procid);
+                 dirlen, tempd, (int)procid);
 #else
     sprintf(cmd, "latex --output-directory=%.*s reduce-%d.tex",
                  dirlen, tempd, procid);
@@ -5189,9 +5189,9 @@ void fwin_showmath(const char *s)
     int src = system(cmd);
     FWIN_LOG(("system returns %d\n", src));
 #ifdef WIN32
-    sprintf(cmd, ".\\wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, procid);
+    sprintf(cmd, ".\\wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, (int)procid);
 #else
-    sprintf(cmd, "./wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, procid);
+    sprintf(cmd, "./wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, (int)procid);
 #endif
     FWIN_LOG(("Cmd: \"%s\"\n", cmd));
     system(cmd);
@@ -5201,11 +5201,11 @@ void fwin_showmath(const char *s)
 #define delfile remove
 #endif
 //  delfile(tempd);     // Preserve the TeX file...
-    sprintf(&tempd[dirlen], "/reduce-%d.aux", procid);
+    sprintf(&tempd[dirlen], "/reduce-%d.aux", (int)procid);
     delfile(tempd); 
-    sprintf(&tempd[dirlen], "/reduce-%d.log", procid);
+    sprintf(&tempd[dirlen], "/reduce-%d.log", (int)procid);
     delfile(tempd); 
-    sprintf(&tempd[dirlen], "/reduce-%d.dvi", procid);
+    sprintf(&tempd[dirlen], "/reduce-%d.dvi", (int)procid);
 // Just for now I will leave the .dvi file around...
 //  delfile(tempd); 
 }

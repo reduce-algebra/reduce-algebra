@@ -582,11 +582,14 @@ if wxbuiltin
 BASELIB=../lib/libwx_baseu-2.9.a
 WXDEPS=../bin/wx-config $(BASELIB)
 
+if !cygwin
 # When I build wxWidgets locally I *ALWAYS* end up passing an explicit
 # "--host=..." option to the configure script. A result of that is that
 # the libraries get installed with names that include the host identity.
 # The script here makes symbolic links from the host-qualified names from
-# plain undecorated ones as mentioned by "wx-config --libs"
+# plain undecorated ones as mentioned by "wx-config --libs". Well actually
+# if I build under raw cygwin that is not the case, so I disable this
+# hack in that situation.
 
 $(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
 	cd ../lib; \
@@ -599,6 +602,7 @@ $(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
 
 ../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
 	@cd ../wxWidgets && $(MAKE) install
+endif !cygwin
 
 else !wxbuiltin
 WXDEPS=

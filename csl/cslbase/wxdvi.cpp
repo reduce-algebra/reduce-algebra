@@ -752,15 +752,13 @@ void add_custom_fonts()
 {
 #ifndef MACINTOSH
 // Note that on a Mac I put the required fonts in the Application Bundle.
-    wxArrayFileNamePtr fonts;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s/%s/%s.ttf",
                     programDir, toString(fontsdir), fontNames[i]);
         wxString widename(nn);
-        fonts.Add(new wxFileName(widename));
+        wxFont::wxAddPrivateFont(widename);
     }
-    wxFont::wxAddPrivateFonts(fonts);
 #endif // MACINTOSH
 }
 

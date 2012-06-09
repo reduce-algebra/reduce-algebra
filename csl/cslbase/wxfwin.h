@@ -53,7 +53,7 @@
  * Cocoa) support on a Macintosh.
  */
 
-/* Signature: 170829cd 26-Dec-2010 */
+/* Signature: 7bf2efe0 05-Jun-2012 */
 
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1
@@ -87,15 +87,15 @@ extern "C" {
  * Logging support. This will give a no-op unless the preprocessor symbol
  * DEBUG is defined at compile time.
  *
- * Usage (eg):  FWIN_LOG("I reached %d of %s\n", __LINE__, __FILE__);
- * Note use of variadic macros here.
+ * Usage (eg):  FWIN_LOG(("I reached %d of %s\n", __LINE__, __FILE__));
+ * Note avoidance of variadic macros...
  */
 
 #ifdef DEBUG
 extern void fwin_write_log(const char *s, ...);
-#define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
+#define FWIN_LOG(a) fwin_write_log a
 #else
-#define FWIN_LOG(...) /* nothing */
+#define FWIN_LOG(a) /* nothing */
 #endif
 
 

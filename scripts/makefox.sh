@@ -43,6 +43,8 @@ for x in $here/cslbuild/*/fox
 do
   echo "Rebuild in $x"
   cd $x
+  ./config.status --recheck
+  ./config.status
   make install
   cd $here
 done

@@ -85,6 +85,11 @@ AC_ARG_WITH(pslbuild,
   [],
   [with_pslbuild="unknown"])
 
+AC_ARG_WITH(cygbuild,
+  AC_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
+  [],
+  [with_cygbuild="unknown"])
+
 AC_ARG_WITH(lionSDK,
   AC_HELP_STRING([--without-lionSDKl], [can disable use of MacOSX SDK10.7]),
   [],

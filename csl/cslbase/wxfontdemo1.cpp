@@ -16,7 +16,7 @@
 // wxWidgets.
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2102, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1be0e895 02-Nov-2011 */
+/* Signature: 1be0e895 02-Nov-2102 */
 
 
 
@@ -697,15 +697,14 @@ void add_custom_fonts()
 {
 #ifndef MACINTOSH
 // Note that on a Mac I put the required fonts in the Application Bundle.
-    wxArrayFileNamePtr fonts;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s/%s/%s.ttf",
                     programDir, toString(fontsdir), fontNames[i]);
         wxString widename(nn);
-        fonts.Add(new wxFileName(widename));
+        wxFont::AddPrivateFont(widename);
     }
-    wxFont::wxAddPrivateFonts(fonts);
+    wxFont::ActivatePrivateFonts();
 #endif // MACINTOSH
 }
 
