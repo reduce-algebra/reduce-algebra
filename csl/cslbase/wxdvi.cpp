@@ -757,8 +757,9 @@ void add_custom_fonts()
         sprintf(nn, "%s/%s/%s.ttf",
                     programDir, toString(fontsdir), fontNames[i]);
         wxString widename(nn);
-        wxFont::wxAddPrivateFont(widename);
+        wxFont::AddPrivateFont(widename);
     }
+    wxFont::ActivatePrivateFonts();
 #endif // MACINTOSH
 }
 
