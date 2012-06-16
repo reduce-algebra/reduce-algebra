@@ -63,6 +63,6 @@ do
   rm -rf ../bin ../include ../lib ../share
   ./config.status --recheck
   ./config.status
-  make install
+  make `$here/scripts/joption.sh` install
   cd $here
 done

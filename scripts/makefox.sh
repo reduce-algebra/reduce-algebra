@@ -45,6 +45,6 @@ do
   cd $x
   ./config.status --recheck
   ./config.status
-  make install
+  make `$here/scripts/joption.sh` install
   cd $here
 done
