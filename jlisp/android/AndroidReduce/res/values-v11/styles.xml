@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ApplicationThemeSelector" parent="android:Theme.Holo"></style>
+    <color name="yellow">#FFDDDD00</color>
+    <color name="red">#FFFF3333</color>
+    
+</resources>

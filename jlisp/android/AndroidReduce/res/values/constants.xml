@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="buttonWidth">45dp</dimen>
+    <dimen name="buttonHeight">50dp</dimen>
+    <color name="background">#FFFFFFFF</color>
+    <color name="input_output">#FFFFCCCC</color>
+    <color name="darkyellow">#FF666600</color>
+
+    
+</resources>

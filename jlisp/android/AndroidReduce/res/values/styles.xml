@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ApplicationThemeSelector" parent="android:Theme.Black"></style>
+    <color name="yellow">#FF444400</color>
+    <color name="red">#FFDD0000</color>
+    
+</resources>

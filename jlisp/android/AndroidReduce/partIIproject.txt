@@ -1,0 +1,162 @@
+////////////////////////////////
+	    Drawables
+////////////////////////////////
+
+
+
+scaling
+splitting
+calculating dimensions
+event handling
+
+latex string => token stream => parse tree
+known nodes constructed, unknown nodes replaced with some arbitrary symbol
+
+
+a library for structures to be drawn
+a library for structures to be fed into Reduce
+
+[bracket constants]
+bracket maximum shortfall
+
+[remaining structures]
+ScriptBox
+accents
+sqrt
+Large Operator with limits
+operation
+relation
+
+
+[optimize]
+Box (check)
+SymbolBox (check)
+sequenceBox (check)
+
+[ideas for ScriptBox]
+
+abstract getSuperscriptSpace();
+abstract getSubscriptSpace();
+
+[ideas for line breaking]
+1 - BreakableBox
+2 - protected abstract BreakageInfo break(float maxWidth)
+3 - BreakageInfo { 
+	original width, 
+	new width,
+	priority,
+	break()
+}
+
+Box Type			squeezing	splitting
+
+DelimiterBox		(check)		(check)
+FractionBox		(check)		(check)
+IntegralBox		
+LargeOperatorSymbolBox	(check)
+OperationBox		(check)		(check)
+RelationBox		(check)		(check)
+ScriptBox		
+SequenceBox		(check)		(check)
+SpaceBox		(check)		(check)
+SqrtBox			(check)		(check)
+SymbolBox		(check)		(check)
+MultilineBox		
+
+
+[fixes]
+sum and product limits
+scriptBox width should take into account cover rare cases, when superscript is completely engulfed by the base
+measure superscript and subscript shift for all letters
+very much
+	PVY
+much
+	fFHIJMNTUW
+
+little
+	gjklvyzBCDEKLOSYXZ
+
+square root axis does not take into account the bar thickness
+multilinebox should use the axis of each line
+tiny square root followed by large paren problem
+
+
+
+
+////////////////////////////////
+	 Input system
+////////////////////////////////
+
+
+[structures]
+Integral
+Differential
+Power
+Sqrt
+Symbol
+Sequence
+
+
+
+[TODO]
+(solved) figure a solution to the raise to the power last group of symbols only problem
+(solved) figure a solution to the navigation problem
+(solved) add the onTouch functionality
+(solved) figure out the undo problem.
+(solved) figure out the visual pointer problem
+figure out a solution to the blinking problem
+
+[remember]
+symbol == added after one click
+group of symbols == raised to the power in one click
+
+[Keyboard]
+numbers [0-9 .]
+operators [+ - times div =]
+trigonometry [sin cos tan] arcsin arccos arctan, sec, cosec, cot, sinh cosh tanh arcsinh arccosh arctanh
+variables [a b c] d-w [x y z]
+other [sqrt square cube power differentiate integrate ln i e pi]
+
+[fixes]
+"pointer in the middle => enter => undo" problem
+(solved) identifiers in reduce should be surrounded with spaces
+(solved) shiftable keyboard buttons should be only one at a time
+(solved) shift and var should return to normal after one click.
+(solved) formulae width should adjust upon screen orientation
+Make undo work while the answer is being calculated
+(solved) x10 button
+(solved) the touch and undo problem
+(solved) all pointer movements should not count in undo
+(solved) if the user forgets to close a bracket it shouldn't be a problem
+Preferences screen should be effective
+add the KernalSequence
+make it always scroll to the end properly.
+(solved) add the copy functionality
+refactor all input system constants into one place
+rename pointer to cursor
+(solved) See why wrapper expressions are jammed at the end when you copy the expression by touching it
+(solved) solve the problem with the input not fitting on the screen
+make left and right buttons repeat when held down
+fix the (enter=>copy=>undo=>undo=>redo=>redo) bug
+make sure the app completely remembers its state
+(not needed) in copy, maybe a better idea to insert instead of replace
+fix the bug with undoing and redoing a superscript
+(solved) add a splash screen
+allow arbitrary dimensions matrices.
+numbers after letters should be subscripts
+letters followed by numbers count as a variables (hence should insert *)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

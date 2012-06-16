@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <CheckBoxPreference android:key="onRoundedCheckBox" android:title="On rounded" android:summary="Round expressions or keep them exact"/>
+    <EditTextPreference android:numeric="integer" android:dialogMessage="Enter precision" android:dialogTitle="Precision" android:summary="Number of decimal places" android:title="Precision"/>
+    
+
+</PreferenceScreen>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="private" author="true" classpath="." destdir="C:\Users\Ahmad%20Akra\Documents\PartIIProject\AndroidReduce\doc" doctitle="Android REDUCE" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="uk.ac.cam.aa582.structures.reducible,uk.ac.cam.aa582,uk.ac.cam.aa582.interactivity,uk.ac.cam.aa582.structures.tex,uk.ac.cam.aa582.reduce,uk.ac.cam.aa582.structures.boxes" source="1.6" sourcepath="gen;src" splitindex="true" use="true" version="true">
+            <link href="file:/C:/Users/Ahmad Akra/android-sdks/docs/reference"/>
+        </javadoc>
+    </target>
+</project>
