@@ -60,6 +60,9 @@ endif
 if ($MACHINE == macintel64) then
   set imagesize=1000
 endif
+if ($MACHINE == freeBSD64) then
+  set imagesize=1000
+endif
 
 pushd $psys
 if ( -e $psys/.imago) then
@@ -90,10 +93,12 @@ chmod +x $psys/pslcomp
 
 @ pslcompstatus = $status
 popd
-if ( -e $psys/.imago) then
-    $psys/sparsify $psys/pslcomp.img
-  else
-    $psys/sparsify $psys/pslcomp
+if ( -x $psys/sparsify ) then
+    if ( -e $psys/.imago) then
+        $psys/sparsify $psys/pslcomp.img
+      else
+        $psys/sparsify $psys/pslcomp
+    endif
 endif
 
 @ status = $pslcompstatus

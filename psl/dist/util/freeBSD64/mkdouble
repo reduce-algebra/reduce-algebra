@@ -1,0 +1,26 @@
+$psys/lpslcomp <<EOF
+
+(off usermode)
+(faslout "double32")
+(dskin "double32.sl")
+(faslend)
+
+
+(faslout "$pl/muls32")
+(dskin "$pxc/muls32.sl")
+(faslend)
+
+(quit)
+
+EOF
+
+$psys/lpslcomp <<EOF
+
+(off usermode)
+(faslout "$pl/mbarith")
+(dskin "mbarith.sl")
+(faslend)
+(quit)
+
+EOF
+

@@ -9,30 +9,35 @@ export PROOT=`pwd`
 guess=`../config.guess`
 
 
-if test $guess = "x86_64-unknown-linux-gnu"
- then
-        export MACHINE=AMD64
-fi
+case "guess:$guess" in
 
-if test $guess = "x86_64-apple-darwin10.5.0"
- then
-        export MACHINE=macintel64
-fi
+  guess:x86_64-unknown-linux-gnu )
+        MACHINE=AMD64
+        ;;
 
-if test $guess = "x86_64-apple-darwin10.4.0"
- then
-        export MACHINE=macintel64
-fi
+  guess:i686-pc-linux-gnu )
+	MACHINE=linux
+	;;
 
-if test $guess = "i386-apple-darwin10.4.0"
- then
-        export MACHINE=macintel
-fi
+  guess:i386-apple-darwin10.4.0 )
+	MACHINE=macintel
+	;;
 
-if test $guess = "i686-pc-linux-gnu"
- then
-        export MACHINE=linux
-fi
+  guess:x86_64-apple-darwin10.4.0 | guess:x86_64-apple-darwin10.5.0 )
+	MACHINE=macintel64
+	;;
+
+  x86_64-unknown-freebsd8.* )
+	MACHINE=freeBSD64
+	;;
+
+  i386-unknown-freebsd8.* )
+	export MACHINE=freeBSD
+	;;
+
+esac
+
+export MACHINE
 
 pdist=$PROOT/dist/distrib
 

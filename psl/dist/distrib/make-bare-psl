@@ -55,32 +55,34 @@ if ($MACHINE == apollo) then
   else
    if ($MACHINE == Alpha) then
    set imagesize=12000000
+  else 
+   if ($MACHINE == Mips_dec) then
+   set imagesize=8000000
+  else
+   if ($MACHINE == Mips_iris) then
+   set imagesize=8000000
+  else
+   if ($MACHINE == Ibmrs) then
+   set imagesize=8000000
+  else
+   if ($MACHINE == brock) then
+   set imagesize=1000
+  else
+   if ($MACHINE == AMD64) then
+   set imagesize=1000
+  else
+   if ($MACHINE == AMD64_ext) then
+   set imagesize=1000
+  else
+   if ($MACHINE == macintel64) then
+   set imagesize=1000
+  else
+   if ($MACHINE == freeBSD64) then
+   set imagesize=1000
   else
    set imagesize=10000000 
- endif
- endif
+endif  
 
-if ($MACHINE == Mips_dec) then
-   set imagesize=8000000
-endif
-if ($MACHINE == Mips_iris) then
- set imagesize=8000000
-endif
-if ($MACHINE == Ibmrs) then
-  set imagesize=8000000
-endif  
-if ($MACHINE == brock) then
-  set imagesize=1000   
-endif  
-if ($MACHINE == AMD64) then
-  set imagesize=1000   
-endif  
-if ($MACHINE == AMD64_ext) then
-  set imagesize=1000   
-endif  
-if ($MACHINE == macintel64) then
-  set imagesize=1000   
-endif  
 
 pushd $pnkl			# Go where the files to be loaded are.
 setenv SavingPSL yes		# skip user startup before savesystem
@@ -120,10 +122,12 @@ EOFF
 @ pslcompstatus = $status
 popd
 
-if ( -e $psys/.imago) then
-    $psys/sparsify $psys/bare-psl.img
-  else
-    $psys/sparsify $psys/bare-psl
+if ( -x $psys/sparsify ) then
+    if ( -e $psys/.imago) then
+        $psys/sparsify $psys/bare-psl.img
+      else
+        $psys/sparsify $psys/bare-psl
+    endif
 endif
 
 @ status = $pslcompstatus

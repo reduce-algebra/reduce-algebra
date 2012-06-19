@@ -1,0 +1,3 @@
+#
+as -o dmain.o dmain.s
+as -o main.o main.s

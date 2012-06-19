@@ -1,0 +1,6 @@
+rm bpsl_pvm
+		 
+cc -o bpsl_pvm bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pwd-fn.c sigs.c unix-io.c pvmextras.c \
+   -DLINUX main_pvm.o dmain_pvm.o -L/zib/pvm3.2/lib/LINUX -lpvm3 -lgpvm3 -lm 
+
