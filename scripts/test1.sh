@@ -92,11 +92,11 @@ p=${1:-alg}
 if test "x$p" = "xregressions"
 then
   r=${2:-aug-29-2011}
-  echo -n "Regression test $r: "
+  printf "Regression test $r: "
   p="$r"
   d="regressions"
 else
-  echo -n "Package to test is $p: "
+  printf "Package to test is $p: "
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
   *$p*) ;;
@@ -169,7 +169,7 @@ showtime1$
 quit$
 XXX
 cat howlong.tmp >> csl-times/$p.rlg.tmp
-echo -n CSL...
+printf CSL...
 sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg |
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
       -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
@@ -227,7 +227,7 @@ showtime1$
 quit$
 XXX
 cat howlong.tmp >> psl-times/$p.rlg.tmp
-echo -n "PSL..."
+printf "PSL..."
 sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | \
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
       -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \

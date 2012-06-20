@@ -49,8 +49,8 @@ cd ..
 rm -rf wxWidgets
 echo About to unpack wxWidgets from $a
 tar xfj support-packages/$a
-chmod -R +rw wxWidgets-*
-mv wxWidgets-* wxWidgets
+chmod -R +rw $b
+mv $b wxWidgets
 echo wxWidgets unpacked from archive $a
 cd $here
 
