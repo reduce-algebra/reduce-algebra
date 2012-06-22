@@ -86,7 +86,7 @@ rl_mkserv('lqe,'(rl_simp rl_a2s!-atl rl_a2s!-pt),nil,nil,'rl_s2a!-gqe,T);
 
 rl_mkserv('aqe,'(rl_simp rl_a2s!-atl rl_a2s!-aqepoints),nil,nil,'rl_s2a!-gqe,T);
 
-rl_mkserv('qe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('qe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qe,T);
 
 rl_mkserv('posqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
 

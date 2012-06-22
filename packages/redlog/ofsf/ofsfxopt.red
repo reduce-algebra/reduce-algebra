@@ -303,12 +303,12 @@ procedure ofsf_xopt!-xopt(f);
       	 return ofsf_xopt!-backsub ofsf_xopt!-elim co;
       w := ofsf_xopt!-backsub ofsf_xopt!-elim co;
       if !*rlverbose then
-	 ioto_prin2t "Constructing result formula...";
+	 ioto_prin2 "Constructing result formula ... ";
       w := for each ans in ofsf_xopt!-ansl!-ansl w collect
 	 ofsf_xopt!-ans!-gd ans;
       w := cl_simpl(rl_smkn('or,w),nil,-1);
       if !*rlverbose then
-	 ioto_prin2t "...done.";
+	 ioto_prin2t "done.";
       return w
    end;
 

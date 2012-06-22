@@ -650,10 +650,10 @@ procedure rl_s2a!-simpl(f);
       rl_mk!*fof f;
 
 procedure rl_s2a!-qe(res);
-   if rl_exceptionp res and cdr red eq 'inctheo then
+   if rl_exceptionp res and cdr res eq 'inctheo then
       rederr "inconsistent theory"
    else
-      rl_mk!*fof f;
+      rl_mk!*fof res;
 
 procedure rl_s2a!-gqe(res);
    if rl_exceptionp res and cdr res eq 'inctheo then

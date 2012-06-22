@@ -181,7 +181,8 @@ procedure ofsf_transform(f,v);
       dgcd := ofsf_decdeg2(f,v);
       if dgcd = 1 then
 	 return f . nil;
-      if !*rlverbose then ioto_prin2 {"(",v,"^",dgcd,")"};
+      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
+ 	 ioto_prin2 {"(",v,"^",dgcd,")"};
       f := ofsf_decdeg3(f,v,dgcd);
       if evenp dgcd then
 	 f := rl_mkn('and,{ofsf_0mk2('geq,numr simp v),f});

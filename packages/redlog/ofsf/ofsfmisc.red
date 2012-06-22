@@ -121,14 +121,14 @@ procedure ofsf_ordatp(a1,a2);
    begin scalar lhs1,lhs2;
       lhs1 := ofsf_arg2l a1;
       lhs2 := ofsf_arg2l a2;
-      if lhs1 neq lhs2 then return ordp(lhs1,lhs2);
+      if lhs1 neq lhs2 then return not ordp(lhs1,lhs2);
       return ofsf_ordrelp(ofsf_op a1,ofsf_op a2)
    end;
 
 procedure ofsf_ordrelp(r1,r2);
    % Ordered field standard form relation order predicate.
    % [r1] and [r2] are ofsf-relations. Returns a [T] iff $[r1] < [r2]$.
-   not not (r2 memq (r1 memq '(equal neq leq lessp geq greaterp)));
+   r2 memq cdr (r1 memq '(equal neq leq lessp geq greaterp));
 
 procedure ofsf_a2cdl(atml);
    % Ordered field standard form atomic to case distinction list.
