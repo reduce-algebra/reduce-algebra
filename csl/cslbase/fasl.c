@@ -54,7 +54,6 @@
 CSLbool fasl_output_file = NO;  /* An output file is open? */
 static int skipping_input = 0, skipping_output = 0;
 static int32_t recent_pointer = 0, hits = 0 , misses = 0, fasl_byte_count = 0;
-static CSLbool fp_rep_set = NO;
 
 /*
  * FASL files are binary, and are treated as containing sequences of
@@ -113,7 +112,11 @@ static CSLbool fp_rep_set = NO;
 #define F_DEF2      45 /* function definition, 2 args */
 #define F_DEF3      46 /* function definition, 3 args */
 #define F_DEFN      47 /* function definition, 4 or more args */
-#define F_REP       48 /* followed by 2 bytes giving FP rep */
+/*
+ * F_REP is now retired, but I will leave it present (albeit acting as a
+ * no-op) for a transitional period.
+ */
+#define F_REP       48 /* Used to be followed by 2 bytes giving FP rep */
 #define F_CHAR      49 /* bits, font, code */
 #define F_SDEF      50 /* associated with fn definition - Lisp coded version */
 #define F_STRUCT    51 /* Structure or e-vector */
@@ -152,7 +155,7 @@ static char *fasl_code_names[] =
     "LST",      "LS1",      "LS2",      "LS3",
     "LS4",      "DOT",      "QUT",      "DEF0",
     "DEF1",     "DEF2",     "DEF3",     "DEFN",
-    "REP",      "CHAR",     "SDEF",     "STRUCT",
+    "oldREP",   "CHAR",     "SDEF",     "STRUCT",
     "DEFOPT",   "DEFHOPT",  "DEFREST",  "DEFHREST",
 #ifdef COMMON
     "ARRAY",    "BITVEC",   "PKGINT",   "PKGEXT"
@@ -176,8 +179,6 @@ static char *fasl_code(int n)
 
 
 #define boffo_char(i) celt(boffo, i)
-
-static int fp_rep = 0; /* representation used when FASL file was written */
 
 static Lisp_Object fastread(void);
 
@@ -939,7 +940,7 @@ static Lisp_Object fastread(void)
                        ((b3 & 0xff)<<8) | TAG_CHAR;
             }
 
-    case F_REP:
+    case F_REP:  /* Now no longer useful! */
             {   int c1, c2;
                 c1 = Igetc();
                 fasl_byte_count++;
@@ -947,7 +948,6 @@ static Lisp_Object fastread(void)
                 c2 = Igetc();
                 fasl_byte_count++;
                 if (c2 == EOF) return aerror("premature EOF in FASL file");
-                fp_rep = (c1 & 0xff) + ((c2 & 0xff) << 8);
                 ch = Igetc();
                 fasl_byte_count++;
                 if (ch == EOF) return aerror("premature EOF in FASL file");
@@ -979,11 +979,22 @@ static Lisp_Object fastread(void)
                 if (Iread((char *)&w1, 4) != 4)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += 4;
-                convert_fp_rep(&w1, fp_rep, current_fp_rep, 0);
+                convert_fp_rep(&w1, 0, current_fp_rep, 0);
                 return w1;
             }
 
     case F_FPF:
+/*
+ * Floating point values go into FASL files with bytes swapped around
+ * (if necessary) so that they are in little endian form arranged as
+ * things are on the Intel architecture. They are converted to that
+ * layout when written to the fasl file and converted back to native
+ * layout when read back in. This should mean that fasl files created on
+ * any one sort of computer will be interpreted correctly by any other
+ * sort. Well that is subject to use of IEEE formats. Anybody using the
+ * old-style IBM radix-16 scheme or one of the interesting VAX layouts
+ * will end up unlucky.
+ */
             r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT,
                           sizeof(Single_Float));
             errexit();
@@ -991,7 +1002,7 @@ static Lisp_Object fastread(void)
                 return aerror("FASL file corrupted");
             fasl_byte_count += 4;
             convert_fp_rep((char *)r + CELL - TAG_BOXFLOAT,
-                           fp_rep, current_fp_rep, 1);
+                           0, current_fp_rep, 1);
             return r;
 #endif
 
@@ -1005,7 +1016,7 @@ static Lisp_Object fastread(void)
                 return aerror("FASL file corrupted");
             fasl_byte_count += 8;
             convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
-                           fp_rep, current_fp_rep, 2);
+                           0, current_fp_rep, 2);
             return r;
 
 #ifdef COMMON
@@ -1019,7 +1030,7 @@ static Lisp_Object fastread(void)
             fasl_byte_count += 8;
 /* Beware offset of 8 here if long floats -> 3 words */
             convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
-                           fp_rep, current_fp_rep, 3);
+                           0, current_fp_rep, 3);
             return r;
 #endif
 
@@ -1614,7 +1625,6 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
 #endif
     recent_pointer = 0;
     skipping_output = 0;
-    fp_rep_set = NO;
     if (name == nil)
     {   if (fasl_output_file)
         {   int k = (int)Ioutsize() & 0x3;
@@ -1814,12 +1824,7 @@ static Lisp_Object write_module1(Lisp_Object a)
     Lisp_Object nil = C_nil;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
-        if (!fp_rep_set)
-        {   fp_rep_set = YES;
-            Iputc(F_REP);
-            Iputc(current_fp_rep & 0xff);
-            Iputc((current_fp_rep >> 8) & 0xff);
-        }
+        uint32_t bits[2];
         switch (type_of_header(h))
         {
     default:
@@ -1827,18 +1832,26 @@ static Lisp_Object write_module1(Lisp_Object a)
 #ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             Iputc(F_FPF);
-            Iwrite((char *)a + CELL - TAG_BOXFLOAT, 4);
+            bits[0] = ((uint32_t *)((char *)a + CELL - TAG_BOXFLOAT))[0];
+            convert_fp_rep(bits, current_fp_rep, 0, 1);
+            Iwrite(bits, 4);
             break;
 #endif
     case TYPE_DOUBLE_FLOAT:
             Iputc(F_FPD);
             /* nb offset here is 8 in both 32 and 64 bit modes */
-            Iwrite((char *)a + 8L - TAG_BOXFLOAT, 8);
+            bits[0] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[0];
+            bits[1] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[1];
+            convert_fp_rep(bits, current_fp_rep, 0, 2);
+            Iwrite(bits, 8);
             break;
 #ifdef COMMON
     case TYPE_LONG_FLOAT:
             Iputc(F_FPL);
-            Iwrite((char *)a + 8 - TAG_BOXFLOAT, 8);
+            bits[0] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[0];
+            bits[1] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[1];
+            convert_fp_rep(bits, current_fp_rep, 0, 3);
+            Iwrite(bits, 8);
             break;
 #endif
         }
@@ -2306,19 +2319,8 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
     }
 #ifdef COMMON
     else if (is_sfloat(a))
-    {   Lisp_Object w = a;
-/*
- * I write out floating point values in whatever the natural host
- * representation is - but prefix the first FP value with a marker that
- * identifies what that representation is so that when the file is re-loaded
- * a conversion can be applied as necessary.
- */
-        if (!fp_rep_set)
-        {   fp_rep_set = YES;
-            Iputc(F_REP);
-            Iputc(current_fp_rep & 0xff);
-            Iputc((current_fp_rep >> 8) & 0xff);
-        }
+    {   uint32_t w = (uint32_t)a;
+        convert_fp_rep(&w, current_fp_rep, 0, 0);
         Iputc(F_FPS);
         Iwrite((char *)&w, 4);
     }

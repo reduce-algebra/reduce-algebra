@@ -2293,29 +2293,6 @@ static void unadjust_consheap(void)
     }
 }
 
-static void convert_word_order(void *p)
-{
-/*
- * This bit seems a bit strange to me. I cope with all other
- * byte order issues by having the exporting machine dump data
- * in its own native format and then fixing things up again when
- * I re-load. Why not do that here? However what I *do* do is to keep
- * image files in a single WORD order in image files but let the bytes
- * within words fall how they do. But during the transition to support
- * of full 64-bit machines I will disable all attempts at byte correction
- * when in 64-bit mode... That may mean that in fact 64-bit images are not
- * as portable as I had thought! Floats saved on a little-endian machine
- * may get messed up if re-loaded on a big-endian system. Ugh!
- */
-    if (SIXTY_FOUR_BIT) return;
-    if ((current_fp_rep & FP_WORD_ORDER) != 0)
-    {   uint32_t *f = (uint32_t *)p;
-        uint32_t w = f[0];
-        f[0] = f[1];
-        f[1] = w;
-    }
-}
-
 static void unadjust_vecheap(void)
 {
     int32_t page_number, i;
@@ -2402,14 +2379,11 @@ static void unadjust_vecheap(void)
                     unadjust((Lisp_Object *)(low+i));
                 break;
         case TYPE_DOUBLE_FLOAT:
-                convert_word_order((void *)(low + 8));
                 break;
 #ifdef COMMON
         case TYPE_SINGLE_FLOAT:
                 break;
         case TYPE_LONG_FLOAT:
-/* If long floats were 3 words long I might need to adjust this code... */
-                convert_word_order((void *)(low + 8));
                 break;
 #endif
         default:
