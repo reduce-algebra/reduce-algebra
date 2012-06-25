@@ -1,4 +1,3 @@
-#define DEBUG_WIDTH 1
 /*  restart.c                       Copyright (C) 1989-2012 Codemist Ltd */
 
 /*
@@ -39,7 +38,7 @@
 
 
 
-/* Signature: 7dab95a1 03-Feb-2012 */
+/* Signature: 1a86a995 25-Jun-2012 */
 
 #include "headers.h"
 
