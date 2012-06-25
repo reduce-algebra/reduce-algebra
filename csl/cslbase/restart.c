@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 1a86a995 25-Jun-2012 */
+/* Signature: 231e0172 25-Jun-2012 */
 
 #include "headers.h"
 
@@ -1507,7 +1507,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  */
                 len = doubleword_align_up(length_of_header(h));
 #ifdef DEBUG_WIDTH
-                printf("Shrinking vec to 32 bits:\n");
+                printf("Shrinking vec (%d) to 32 bits:\n", len);
                 for (i=0; i<len; i+=4)
                 {   printf("%.8x ", *(int32_t *)(p+i));
                     if (((i/4) % 8) == 7) printf("\n");
@@ -1531,7 +1531,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 #endif
                 *(Lisp_Object *)p = flip_32(h1); /* write back header */
                 if ((4 & (intptr_t)newp) == 0)
-                    *++newp = SPID_NIL; /* fill to doubleword */
+                    *++newp = flip_32(SPID_NIL); /* fill to doubleword */
                 p += len;
 /*
  * Now I must put in a padding object if needed to fill any gap left.

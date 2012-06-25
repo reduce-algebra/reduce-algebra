@@ -1,4 +1,4 @@
-/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2011 */
+/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2012 */
 
 /*
  * Garbage collection.
@@ -43,7 +43,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4db7ac97 19-Feb-2012 */
+/* Signature: 16cedb27 25-Jun-2012 */
 
 #include "headers.h"
 
@@ -98,7 +98,7 @@
 
 
 static char *validate_why, *validate_file;
-static int validate_line;
+static int validate_line, validate_line1;
 
 /*
  * p is a (reference to a) cons cell. Verify it is within a
@@ -116,14 +116,20 @@ static int bitmap_mark_cons(Lisp_Object p)
     Lisp_Object nil = C_nil;
     if (!consp(p))
     {   term_printf("\n%p is not a cons pointer\n", (void *)p);
-        term_printf("Validation for %s at line %d of file %s\n",
-                    validate_why, validate_line, validate_file);
+        term_printf("Validation for %s at line %d of file %s (%d)\n",
+                    validate_why, validate_line, validate_file, validate_line1);
         ensure_screen();
         abort();
     }
     for (i=0; i<heap_pages_count; i++)
     {   void *page = heap_pages[i];
         char *base = (char *)quadword_align_up((intptr_t)page);
+/*
+ * This checking is INCORRECT just after you have loaded a 32-bit image
+ * on a 64-bit machine because in that situation the pages can be
+ * twice the regular size until the first copying garbage collection has
+ * regularised matters.
+ */
         if ((intptr_t)base <= (intptr_t)p &&
              (intptr_t)p <= (intptr_t)(base+CSL_PAGE_SIZE))
         {   unsigned int offset = ((unsigned int)((char *)p - base)) >> 3;
@@ -135,8 +141,8 @@ static int bitmap_mark_cons(Lisp_Object p)
         }
     }
     term_printf("\nCons address %p not found in heap\n", (void *)p);
-    term_printf("Validation for %s at line %d of file %s\n",
-                validate_why, validate_line, validate_file);
+    term_printf("Validation for %s at line %d of file %s (%d)\n",
+                validate_why, validate_line, validate_file, validate_line1);
     term_printf("nil = %p\n", (void *)nil);
     term_printf("Heap: %d\n", heap_pages_count);
     for (i=0; i<heap_pages_count; i++)
@@ -175,8 +181,8 @@ static int bitmap_mark_vec(Lisp_Object p)
         !is_vector(p) &&
         !is_bfloat(p))
     {   term_printf("\n%p is not a vector pointer\n", (void *)p);
-        term_printf("Validation for %s at line %d of file %s\n",
-                    validate_why, validate_line, validate_file);
+        term_printf("Validation for %s at line %d of file %s (%d)\n",
+                    validate_why, validate_line, validate_file, validate_line1);
         ensure_screen();
         abort();
     }
@@ -205,8 +211,8 @@ static int bitmap_mark_vec(Lisp_Object p)
         }
     }
     term_printf("\nVector address %p not found in heap\n", (void *)p);
-    term_printf("Validation for %s at line %d of file %s\n",
-                validate_why, validate_line, validate_file);
+    term_printf("Validation for %s at line %d of file %s (%d)\n",
+                validate_why, validate_line, validate_file, validate_line1);
     term_printf("info = %s\n", info);
     term_printf("nil = %p\n", (void *)nil);
     term_printf("Heap: %d\n", heap_pages_count);
@@ -239,18 +245,19 @@ static int bitmap_mark_vec(Lisp_Object p)
  * from that object.
  */
 
-static void validate(Lisp_Object p)
+static void validate(Lisp_Object p, int line1)
 {
     Lisp_Object nil = C_nil;
     char *info = "unknown";
     Header h = 0;
+    validate_line1 = line1;
     intptr_t i = 0;
 top:
     if (p == nil) return;
     if (p == 0)
     {   term_printf("NULL item found\n");
-        term_printf("Validation for %s at line %d of file %s\n",
-                    validate_why, validate_line, validate_file);
+        term_printf("Validation for %s at line %d of file %s (%d)\n",
+                    validate_why, validate_line, validate_file, validate_line1);
         ensure_screen();
         abort();
     }
@@ -264,7 +271,7 @@ top:
     {   if (!is_cons(p)) return;
         info = "cons cell";
         if (bitmap_mark_cons(p)) return;
-        validate(qcar(p));
+        validate(qcar(p), __LINE__);
         p = qcdr(p);
         info = "unknown";
         h = 0;
@@ -282,8 +289,8 @@ case TAG_ODDS:      /* Invalid here */
 case TAG_SFLOAT:    /* Invalid here */
 #endif /* COMMON */
         term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
-        term_printf("Validation for %s at line %d of file %s\n",
-                    validate_why, validate_line, validate_file);
+        term_printf("Validation for %s at line %d of file %s (%d)\n",
+                    validate_why, validate_line, validate_file, validate_line1);
         ensure_screen();
         abort();
 
@@ -293,13 +300,13 @@ case TAG_SYMBOL:
             type_of_header(vechdr(qpname(p))) == TYPE_STRING)
             info = &celt(qpname(p), 0);
         if (bitmap_mark_vec(p)) return;
-        validate(qvalue(p));
-        validate(qenv(p));
-        validate(qpname(p));
+        validate(qvalue(p), __LINE__);
+        validate(qenv(p), __LINE__);
+        validate(qpname(p), __LINE__);
 #ifdef COMMON
-        validate(qpackage(p));
+        validate(qpackage(p), __LINE__);
 #endif /* COMMON */
-        validate(qplist(p));
+        validate(qplist(p), __LINE__);
         return;
 
 case TAG_NUMBERS:
@@ -308,13 +315,13 @@ case TAG_NUMBERS:
         h = numhdr(p);
         if (is_bignum_header(h)) return;
 #ifdef COMMON
-        validate(real_part(p));
-        validate(imag_part(p));
+        validate(real_part(p), __LINE__);
+        validate(imag_part(p), __LINE__);
         return;
 #else /* COMMON */
         term_printf("Bad numeric type found %.8lx\n", (long)h);
-        term_printf("Validation for %s at line %d of file %s\n",
-                    validate_why, validate_line, validate_file);
+        term_printf("Validation for %s at line %d of file %s (%d)\n",
+                    validate_why, validate_line, validate_file, validate_line1);
         ensure_screen();
         abort();
         return;
@@ -336,7 +343,7 @@ case TAG_VECTOR:
             i = 4*CELL;  /* Only use first few pointers */
         while (i >= 2*CELL)
         {   i -= CELL;
-            validate(*(Lisp_Object *)((char *)p - TAG_VECTOR + i));
+            validate(*(Lisp_Object *)((char *)p - TAG_VECTOR + i), __LINE__);
         }
         return;
     }
@@ -349,6 +356,7 @@ void validate_all(char *why, int line, char *file)
     int i;
     validate_why = why;
     validate_line = line;
+    validate_line1 = 0;
     validate_file = file;   /* In case a diagnostic is needed */
 /*  term_printf("Validate heap for %s at line %d of %s\n", why, line, file); */
     if (heap_map == NULL)
@@ -374,14 +382,14 @@ void validate_all(char *why, int line, char *file)
  * (c) everything on the Lisp stack,
  * (d) the package structure,
  */
-    validate(qplist(nil));
-    validate(qpname(nil));
-    validate(qfastgets(nil));
+    validate(qplist(nil), __LINE__);
+    validate(qpname(nil), __LINE__);
+    validate(qfastgets(nil), __LINE__);
 
-    for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i]);
-    for (sp=stack; sp>(Lisp_Object *)stackbase; sp--) validate(*sp);
-    validate(eq_hash_tables);
-    validate(equal_hash_tables);
+    for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i], __LINE__);
+    for (sp=stack; sp>(Lisp_Object *)stackbase; sp--) validate(*sp, __LINE__);
+    validate(eq_hash_tables, __LINE__);
+    validate(equal_hash_tables, __LINE__);
 /*  term_printf("Validation complete\n"); */
 }
 
@@ -3478,3 +3486,4 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 }
 
 /* end of file gc.c */
+ 
