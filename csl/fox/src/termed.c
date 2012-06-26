@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 24396f76 26-Jun-2012 */
+/* Signature: 53a22d85 26-Jun-2012 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -72,7 +72,7 @@
 #endif
 #endif
 
-#ifi defined HAVE_NCURSES_H && defined HAVE_NCURSES_TERM_H
+#if defined HAVE_NCURSES_H && defined HAVE_NCURSES_TERM_H
 #include <ncurses/term.h>
 #else
 #ifdef HAVE_TERM_H
