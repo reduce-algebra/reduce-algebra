@@ -1,7 +1,7 @@
 #! /bin/bash
 if test -f /proc/cpuinfo
 then
-  case `grep ^processor /proc/cpuinfo | wc -l`
+  case `grep -i ^processor /proc/cpuinfo | wc -l`
   in
   1 | 2)
     ;;
@@ -11,8 +11,10 @@ then
   5 | 6)
     echo "-j4"
     ;;
-  *)
+  7 | 8 | 9 | 1* | 2* | 3* | 4* | 5* | 6*)
     echo "-j6"
+    ;;
+  *)
     ;;
   esac
 fi
