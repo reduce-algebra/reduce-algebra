@@ -86,6 +86,9 @@ here=`echo $here | sed -e 's+/[^/]*$++'`
 
 loader=""
 
+# Make sure that all messages are in english
+LANG=C ; export LANG
+
 # If no argument is provided then this runs alg.tst
 p=${1:-alg}
 # WARNING - the "-n" option to echo is not portable.
@@ -115,6 +118,25 @@ else
   p=${2:-$p}
 fi
 
+# Tricky logic to always use the external time command, even if
+# the shell has a time builtin, or not collecting times if no external
+# time command can be found
+if test "x$BASH_VERSION" != "x"
+then
+  # do a search for time in $PATH
+  timecmd=`type -P time`
+else
+  testfortime=`type time 2>&1 | grep -v "not found"`
+  if test -n "$testfortime"
+  then
+    set -- $testfortime
+    # remove all but last parameter
+    shift `expr $# - 1`
+    timecmd=$1
+  else
+    timecmd=""
+  fi
+fi
 
 # If I am running on Windows I need to have the file name in
 # (close to) native windows form. I can usefully retain "/" rather than
@@ -155,7 +177,7 @@ then
 
 mkdir -p csl-times
 
-time sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
+$timecmd -p sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -212,7 +234,7 @@ then
 
 mkdir -p psl-times
 
-time sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
+$timecmd -p sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
