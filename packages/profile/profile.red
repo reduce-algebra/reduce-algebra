@@ -75,7 +75,7 @@ procedure profile_profile(fn);
 	 return
       >>;
       d := getd fn;
-      if car d neq 'expr then
+      if not d or car d neq 'expr then
 	 rederr {fn,"is not an expr procedure"};
       profile_list!* := fn . profile_list!*;
       profile_updAlist();
