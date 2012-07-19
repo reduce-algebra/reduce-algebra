@@ -45,7 +45,7 @@ loadtime <<
    prin2t "       unprofile p_1, ..., p_n;   stop profiling p_1, ..., p_n";
    prin2t "       proprint();                output collected data in tables";
    prin2t "       proreset();                delete all collected data";
-   prin2t "       prorefresh();              make the current time the reference time";
+   prin2t "       prorefresh();              make the current time the reference time"
 >>;
 
 put('profile,'stat,'rlis);
@@ -84,7 +84,7 @@ procedure profile_profile(fn);
       put(fn,'profile_origfn,d);
       svcomp := !*comp;
       !*comp := t;
-      errorset(eval {'de,fn,args,{'apply,''profile_exec,
+      errorset({'de,fn,args,{'apply,''profile_exec,
 	 {'list,mkquote fn,mkquote d,'list . args}}},t,nil);
       !*comp := svcomp;
       profile_refresh()
