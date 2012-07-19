@@ -45,7 +45,7 @@ loadtime <<
    prin2t "       unprofile p_1, ..., p_n;   stop profiling p_1, ..., p_n";
    prin2t "       proprint();                output collected data in tables";
    prin2t "       proreset();                delete all collected data";
-   prin2t "       prorefresh();              make the current time the reference time"
+%%   prin2t "       prorefresh();              make the current time the reference time"
 >>;
 
 put('profile,'stat,'rlis);
@@ -87,7 +87,7 @@ procedure profile_profile(fn);
       errorset({'de,fn,args,{'apply,''profile_exec,
 	 {'list,mkquote fn,mkquote d,'list . args}}},t,nil);
       !*comp := svcomp;
-      profile_refresh()
+      profile_reset()
    end;
 
 procedure profile_updAlist();
@@ -110,7 +110,7 @@ procedure profile_unprofile(fn);
       else <<
       	 putd(fn,'expr,remprop(fn,'profile_origfn));
       	 profile_list!* := delqip(fn,profile_list!*);
-      	 profile_refresh()
+      	 profile_reset()
       >>
    >>;
 
@@ -187,8 +187,7 @@ procedure profile_print();
       terpri();
       for each pr in alist do
 	 if not cdr car pr then
-      	    profile_special!-table(alist,caar pr,ts2,ts3);
-      profile_refresh()
+      	    profile_special!-table(alist,caar pr,ts2,ts3)
    end;
 
 procedure profile_percent(part,all);
