@@ -40,13 +40,20 @@ fluid '(!*utf8);
 fluid '(profile_alist!* profile_list!* profile_time!* profile_gctime!*
         profile_stack!* profile_recursion1l!* profile_recursion2l!*);
 
-loadtime <<
-   prin2t "Usage: profile p_1, ..., p_n;     profile expr procedures p_1, ..., p_n";
-   prin2t "       unprofile p_1, ..., p_n;   stop profiling p_1, ..., p_n";
-   prin2t "       proprint();                output collected data in tables";
-   prin2t "       proreset();                delete all collected data";
-%%   prin2t "       prorefresh();              make the current time the reference time"
+operator prousage;
+procedure prousage();
+   <<
+      prin2t "Usage: profile p_1, ..., p_n;           profile expr procedures p_1, ..., p_n";
+      prin2t "       unprofile p_1, ..., p_n;         stop profiling p_1, ..., p_n";
+      prin2t "       proprint([p_1,..., p_n | all]);  print collected data in tables";
+      prin2t "       proall();                        list all profiled procedures";
+      prin2t "       pronested();                     list procedures with nested calls";
+      prin2t "       proreset();                      delete all collected data";
+      prin2t "       prousage();                      this information";
+      nil
 >>;
+
+loadtime prousage();
 
 put('profile,'stat,'rlis);
 procedure profile(fnl);
@@ -56,9 +63,14 @@ put('unprofile,'stat,'rlis);
 procedure unprofile(fnl);
    for each fn in fnl do profile_unprofile fn;
 
-operator proprint;
-procedure proprint();
-   profile_print();
+put('proprint,'psopfn,'proprint);
+procedure proprint(argl);
+   if not argl then
+      profile_print nil
+   else if eqcar(car argl,'list) and not cdr argl then
+      profile_print cdar argl
+   else
+      profile_print argl;
 
 operator proreset;
 procedure proreset();
@@ -67,6 +79,15 @@ procedure proreset();
 operator prorefresh;
 procedure prorefresh();
    profile_refresh();
+
+operator proall;
+procedure proall();
+   'list . sort(profile_list!*,'ordp);
+
+operator pronested;
+procedure pronested();
+   'list . sort(for each fn in profile_list!* join
+      if profile_nestedp fn then {fn}, 'ordp);
 
 procedure profile_profile(fn);
    begin scalar fn,d,args,svcomp;
@@ -164,7 +185,7 @@ procedure profile_exec(fn,fvalue,args);
       return res
    end;
 
-procedure profile_print();
+procedure profile_print(argl);
    % Print. Format and print the information collected in fluids during
    % computation.
    begin scalar alist,d,p2,p3; integer ts2,ts3;
@@ -183,12 +204,27 @@ procedure profile_print();
 	 p3 := profile_percent(caddr d,ts3);
 	 cdr pr := {car d,cadr d,p2,caddr d,p3}
       >>;
-      profile_toplevel!-table(alist,ts2,ts3);
-      terpri();
-      for each pr in alist do
-	 if not cdr car pr then
-      	    profile_special!-table(alist,caar pr,ts2,ts3)
+      if not argl or argl = '(all) then <<
+      	 profile_toplevel!-table(alist,ts2,ts3);
+      	 terpri()
+      >>;
+      if argl = '(all) then <<
+      	 for each pr in alist do
+	    if not cdr car pr then
+	       profile_special!-table(alist,caar pr,ts2,ts3);
+	 return
+      >>;
+      for each arg in argl do
+	 if profile_nestedp arg then
+	    profile_special!-table(alist,arg,ts2,ts3)
    end;
+
+procedure profile_nestedp(fn);
+   profile_nestedp1(fn,profile_alist!*);
+
+procedure profile_nestedp1(fn,alist);
+   alist and (caaar alist eq fn and cdaar alist or
+      profile_nestedp1(fn,cdr alist));
 
 procedure profile_percent(part,all);
    if eqn(part,0) then
