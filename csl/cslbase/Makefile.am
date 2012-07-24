@@ -759,6 +759,12 @@ endif !wx
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
+if windows
+# See "gui-or-not.txt" for an explanation of what this is about...
+	cp $(srcdir)/bootstrapreduce .
+	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
+	cp ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+endif windows
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin

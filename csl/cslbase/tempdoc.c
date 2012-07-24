@@ -864,7 +864,8 @@
  */
 
 /* fns [checkpoint expr] \item [{\ttfamily checkpoint} {\itshape  expr}] \index{{\ttfamily checkpoint} {\itshape  expr}} ~\newline
- * Not yet written
+ * A function by this name used to exist, but its functionality has now
+ * been subsumed into {\ttfamily (preserve)}
  */
 
 /*! fns [cl-equal]  \item [{\ttfamily cl!-equal} {\itshape  expr}] \index{{\ttfamily cl"!-equal} {\itshape  expr}} ~\newline
@@ -2208,7 +2209,24 @@
  */
 
 /* fns [preserve expr] \item [{\ttfamily preserve} {\itshape  expr}] \index{{\ttfamily preserve} {\itshape  expr}} ~\newline
- * Not yet written
+ * If {\ttfamily preserve} is not given any arguments or is given {\ttfamily
+ * nil} as its first argument if writes a new image file that, when restarted,
+ * will run whatever startup-function was currently active. For a raw Lisp this
+ * is a simple read-eval-print loop, but if the system had been loaded
+ * from a previous image that had been saved by {\ttfamily preserve} with
+ * a non-{\ttfamily nil} first argument it is the function specified there.
+ * If the second argument is non-{\ttfamily nil} it should really be a string
+ * of length no more than 40 that will be used as a banner to be displayed
+ * when the new image is loaded. The arrangements are that the banner is
+ * displayed right at the start of the image-loading process, and so can
+ * give the user reassurance even if the loading were to take some time (for
+ * instance because a very slow computer was in use).
+ *
+ * Normally {\ttfamily preserve} exits. If a third argument and is
+ * non-{\ttfamily nil} then after creating the image file the system
+ * re-loads it and invokes its start-up function. This exits from the
+ * current computation. The behaviour should be as if {\ttfamily
+ * (restart!-csl t)} had been called. 
  */
 
 /* fns [prettyprint expr] \item [{\ttfamily prettyprint} {\itshape  expr}] \index{{\ttfamily prettyprint} {\itshape  expr}} ~\newline
@@ -2488,7 +2506,28 @@
  */
 
 /* fns [restart!-csl expr] \item [{\ttfamily restart!-csl} {\itshape  expr}] \index{{\ttfamily restart"!-csl} {\itshape  expr}} ~\newline
- * Not yet written
+ * {\ttfamily restart!-csl} can be called with 1 or 2 arguments. If the
+ * first argument is {\ttfamily nil} it does a ``cold'' restart, so that
+ * the lisp-system re-initialises itself from scratch with only a minimum
+ * amount of functionality. This should only be used by people who are
+ * bootstrapping the whole system. If the first argument is {\ttfamily t}
+ * the restart is a normal one that expects to reload an image previously
+ * created by {\ttfamily preserve} abd invoke its default restart function.
+ * If the argument is another name then that image is re-loaded but the
+ * named function is called. Finally of the argument is a list of the
+ * form {\itshape (module fname)} then the standard image is loaded, then
+ * the named module is loaded into it (as by {\ttfamily load!-module}) and
+ * the function named is called.
+ *
+ * If {\ttfamily restart!-csl} is called with two arguments then the second
+ * is used as an argument for the restart function in the restored image.
+ * Because everything has been re-initialised it is an expression that is
+ * as if the value had been printed and then the new image read it back in
+ * that is used. In simple cases this will not make any difference, but
+ * it does mean that sub-structure sharing etc.\ is not reliable as from the
+ * data presented to the argument passed on restart, and some data objects may
+ * not be passable. Simple lists, symbols, numbers and strings should work
+ * in an unremarkable and straightforward manner.
  */
 
 /* fns [restore!-c!-code expr] \item [{\ttfamily restore!-c!-code} {\itshape  expr}] \index{{\ttfamily restore"!-c"!-code} {\itshape  expr}} ~\newline
