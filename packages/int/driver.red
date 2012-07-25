@@ -946,7 +946,30 @@ intrules :=
    int(1/log(~x/~a+~b),x) => ei(log(x/a+b))/b when a freeof x and b freeof x, % FJW
    int(~x/log(~x),x) => ei(2*log(x)),
    int(~x^~n/log(x),x) => ei((n+1)*log(x)) when fixp n,
-   int(1/(~x^~n*log(x)),x) => ei((-n+1)*log(x)) when fixp n};
+   int(1/(~x^~n*log(x)),x) => ei((-n+1)*log(x)) when fixp n,
+
+   int(asin(~~a*~x+~~b),~x) => 1/a*((a*x+b)*asin(a*x+b)+sqrt(1-(a*x+b)^2))
+                                 when a freeof x and b freeof x,
+   int(~x^~~n*asin(~~a*~x+~~b),~x) =>
+       x^(n+1)/(n+1)*asin(a*x+b)-a/(n+1)*int(x^(n+1)*sqrt(1-(a*x+b)^2)/(1-(a*x+b)^2),x)
+                                 when fixp n and n>0 and a freeof x and b freeof x,
+   int(acos(~~a*~x+~~b),~x) => 1/a*((a*x+b)*acos(a*x+b)-sqrt(1-(a*x+b)^2))
+                                 when a freeof x and b freeof x,
+   int(~x^~~n*acos(~~a*~x+~~b),~x) =>
+       x^(n+1)/(n+1)*acos(a*x+b)+a/(n+1)*int(x^(n+1)*sqrt(1-(a*x+b)^2)/(1-(a*x+b)^2),x)
+                                 when fixp n and n>0 and a freeof x and b freeof x,
+   int(asinh(~~a*~x+~~b),~x) => 1/a*((a*x+b)*asinh(a*x+b)-sqrt(1+(a*x+b)^2))
+                                 when a freeof x and b freeof x,
+   int(~x^~~n*asinh(~~a*~x+~~b),~x) =>
+       x^(n+1)/(n+1)*asinh(a*x+b)-a/(n+1)*int(x^(n+1)*sqrt(1+(a*x+b)^2)/(1+(a*x+b)^2),x)
+                                 when fixp n and n>0 and a freeof x and b freeof x,
+   int(acosh(~~a*~x+~~b),~x) => 1/a*((a*x+b)*acosh(a*x+b)-sqrt((a*x+b)^2-1))
+                                 when a freeof x and b freeof x,
+   int(~x^~~n*acosh(~~a*~x+~~b),~x) =>
+       x^(n+1)/(n+1)*acosh(a*x+b)+a/(n+1)*int(x^(n+1)*sqrt((a*x+b)^2-1)/(1-(a*x+b)^2),x)
+                                 when fixp n and n>0 and a freeof x and b freeof x
+
+};
 
 % We can't set intrules if modular (and possibly another mode) is on.
 
