@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 231e0172 25-Jun-2012 */
+/* Signature: 6cba1243 25-Jul-2012 */
 
 #include "headers.h"
 
@@ -1802,7 +1802,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
  * some padding here.
  */
                 *newp = flip_64(make_padder(len));
-                newp = (int64_t)((char *)newp + len);
+                newp = (int64_t *)((char *)newp + len);
                 break;
         case TYPE_STRING:
 #ifdef DEBUG_WIDTH

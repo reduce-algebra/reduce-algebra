@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 57a4d72a 03-Jun-2012 */
+/* Signature: 3c36f1cb 25-Jul-2012 */
 
 
 /*
@@ -988,6 +988,67 @@ static void lisp_main(void)
                     {   flip_exception();
                         return_code = EXIT_FAILURE;
                     }
+                }
+                else if (exit_tag == fixnum_of_int(3)) /* "preserve & restart" */
+                {   char *msg = "";
+                    int len = 0;
+                    int32_t fd = stream_pushed_char(lisp_terminal_io);
+                    Lrds(nil, nil);
+                    Lwrs(nil, nil);
+                    return_code = EXIT_SUCCESS;
+                    compression_worth_while = 128;
+                    if (is_vector(exit_value) &&
+                        type_of_header(vechdr(exit_value)) == TYPE_STRING)
+                    {   msg = &celt(exit_value, 0);
+                        len = (int)(length_of_header(vechdr(exit_value)) - CELL);
+                    }
+                    preserve(msg, len);
+                    nil = C_nil;
+                    if (exception_pending())
+                    {   flip_exception();
+                        return_code = EXIT_FAILURE;
+                    }
+                    for (i=0; i<pages_count; i++)
+                    {   char *w = (char *)pages[i];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            continue;
+                        pages[i] = pages[--pages_count];
+                        i--;
+                    }
+                    while (vheap_pages_count != 0)
+                    {   char *w = (char *)vheap_pages[--vheap_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
+                    while (heap_pages_count != 0)
+                    {   char *w = (char *)heap_pages[--heap_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
+                    while (bps_pages_count != 0)
+                    {   char *w = (char *)bps_pages[--bps_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
+                    {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
+                        char *w1 = w + CSL_PAGE_SIZE + 16;
+                        while (w1 <= big_chunk_end)
+                        {   if (w != (char *)stacksegment)
+                                pages[pages_count++] = w;
+                            w = w1;
+                            w1 = w + CSL_PAGE_SIZE + 16;
+                        }
+                    }
+                    CSL_MD5_Init();
+                    CSL_MD5_Update((unsigned char *)"Initial State", 13);
+                    IreInit();
+                    setup(1, 0.0);
+                    exit_tag = exit_value = nil;
+                    exit_reason = UNWIND_NULL;
+                    stream_pushed_char(lisp_terminal_io) = fd;
+                    interrupt_pending = already_in_gc = NO;
+                    tick_pending = tick_on_gc_exit  = NO;
+                    continue;
                 }
                 else                                   /* "restart" */
                 {   int32_t fd = stream_pushed_char(lisp_terminal_io);

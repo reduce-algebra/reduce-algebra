@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4cf387d0 09-Aug-2011 */
+/* Signature: 39ab67e9 25-Jul-2012 */
 
 
 #ifndef header_tags_h
@@ -597,7 +597,7 @@ typedef uintptr_t Header;
  * pairs of 8-bit transfers.
  * NOTE NOTE NOTE that by doing this I am imposing my own idea of
  * byte ordering on 16-bit values in memory. But if the two macros
- * hare are the only use I make I will be safe unless a preserve/restart
+ * here are the only use I make I will be safe unless a preserve/restart
  * operation flips things around for me!
  */
 #define helt(v, n) \

@@ -11,7 +11,7 @@ should work the way they always have.
 All custmisations here should be guarded by "#if(n)def EMBEDDED". And the
 *.h and *.c files that are in this directory should eventually be
 exectly the same as the ones in cslbase. Just this set has a ready-build
-reduce.img file, a set of u01,c to u12.c, and its own private and vey
+reduce.img file, a set of u01,c to u12.c, and its own private and very
 simple Makefile
 
                                              Arthur Norman.   July 2009
@@ -27,3 +27,10 @@ image file (reduce.img) should work whether the code is built in 32 or
 64-bit mode.
 
                                                               May 2010
+
+Basically I now suggest you look at the new-embedded directory rather than
+this one. I will keep this here for a while, but be aware that it will
+be deleted in due course...
+
+                                                              July 2012
+

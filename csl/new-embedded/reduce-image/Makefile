@@ -57,6 +57,7 @@ endif
 endif
 
 S=../../cslbase
+R=../../..
 
 VPATH=$(S)
 
@@ -85,7 +86,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 reduce.img:	reduce
 	-rm -f reduce.img
 	./reduce -z -Dno_init_file $(S)/buildreduce.lsp \
-		-D@srcdir=$(S) -o reduce.img -- image.log
+		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -- image.log
 
 clean:
 	-rm -f *.o reduce hello reduce.img image.log

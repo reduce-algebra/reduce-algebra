@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 05a7a325 19-Feb-2012 */
+/* Signature: 4a5a9e98 25-Jul-2012 */
 
 #include "headers.h"
 
@@ -2063,8 +2063,43 @@ static Lisp_Object Lrestart_csl(Lisp_Object nil, Lisp_Object a)
     return Lrestart_csl2(nil, a, SPID_NOARG);
 }
 
-static Lisp_Object Lpreserve(Lisp_Object nil,
-                             Lisp_Object startup, Lisp_Object banner)
+static Lisp_Object MS_CDECL Lpreserve_03(Lisp_Object nil, int nargs, ...)
+{
+    Lisp_Object startup = nil, banner = nil, resume = nil;
+    char filename[LONGEST_LEGAL_FILENAME];
+    CSLbool failed;
+    if (nargs!=0)
+    {   va_list a;
+        argcheck(nargs, 3, "preserve");
+        va_start(a, nargs);
+        startup = va_arg(a, Lisp_Object);
+        banner = va_arg(a, Lisp_Object);
+        resume = va_arg(a, Lisp_Object);
+        va_end(a);
+    }
+    memset(filename, 0, sizeof(filename));
+    if (startup != nil) supervisor = startup;
+    failed = Iwriterootp(filename);  /* Can I open image file for writing? */
+    term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
+    if (failed) return aerror("preserve");
+    ensure_screen();
+    exit_count = 0;
+    nil = C_nil;
+    exit_value = banner;
+    exit_tag = resume == nil ? fixnum_of_int(1) : /* Flag to say "preserve" */
+               fixnum_of_int(3);                  /* preserve and restart   */
+    exit_reason = UNWIND_RESTART;
+    flip_exception();
+    return nil;
+}
+
+static Lisp_Object Lpreserve_1(Lisp_Object nil, Lisp_Object startup)
+{
+    return Lpreserve_03(nil, 3, startup, nil, nil);
+}
+
+static Lisp_Object Lpreserve_2(Lisp_Object nil,
+                               Lisp_Object startup, Lisp_Object banner)
 /*
  * (preserve <startup-fn>) saves a Lisp image in a standard place
  * and arranges that when restarted the saved image will call the specified
@@ -2076,43 +2111,11 @@ static Lisp_Object Lpreserve(Lisp_Object nil,
  * when the system restart.
  */
 {
-    char filename[LONGEST_LEGAL_FILENAME];
-    CSLbool failed;
-    memset(filename, 0, sizeof(filename));
+    return Lpreserve_03(nil, 3, startup, banner, nil);
+}
+
+
 #if 0
-#ifdef SOCKETS
-/*
- * Security measure - deny preserve to remote users
- */
-    if (socket_server != 0) return aerror("preserve");
-#endif
-#endif
-    if (startup != nil) supervisor = startup;
-    failed = Iwriterootp(filename);  /* Can I open image file for writing? */
-    term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
-    if (failed) return aerror("preserve");
-    ensure_screen();
-    exit_count = 0;
-    nil = C_nil;
-    exit_value = banner;
-    exit_tag = fixnum_of_int(1);   /* Flag to say "preserve" */
-    exit_reason = UNWIND_RESTART;
-    flip_exception();
-    return nil;
-}
-
-static Lisp_Object MS_CDECL Lpreserve_0(Lisp_Object nil, int nargs, ...)
-{
-    argcheck(nargs, 0, "preserve");
-    return Lpreserve(nil, nil, nil);
-}
-
-static Lisp_Object Lpreserve_1(Lisp_Object nil, Lisp_Object startup)
-{
-    return Lpreserve(nil, startup, nil);
-}
-
-
 /*
  * This is an experimental addition - a version of PRESERVE that allows
  * CSL to continue executing after it has written out an image file.
@@ -2126,14 +2129,6 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     char *msg = "";
     int len = 0;
     memset(filename, 0, sizeof(filename));
-#if 0
-#ifdef SOCKETS
-/*
- * Security measure - deny checkpoint to remote users
- */
-    if (socket_server != 0) return aerror("checkpoint");
-#endif
-#endif
     ensure_screen();
     if (startup != nil) supervisor = startup;
     failed = Iwriterootp(filename);  /* Can I open image file for writing? */
@@ -2182,6 +2177,8 @@ static Lisp_Object Lcheckpoint_1(Lisp_Object nil, Lisp_Object startup)
 {
     return Lcheckpoint(nil, startup, nil);
 }
+
+#endif
 
 /*
  * Drop out to the next enclosing code that limits resources, as if there had
@@ -4440,8 +4437,11 @@ setup_type const funcs2_setup[] =
     {"plist",                   Lplist, too_many_1, wrong_no_1},
     {"delete",                  too_few_2, Ldelete, wrong_no_2},
     {"deleq",                   too_few_2, Ldeleq, wrong_no_2},
-    {"preserve",                Lpreserve_1, Lpreserve, Lpreserve_0},
+    {"preserve",                Lpreserve_1, Lpreserve_2, Lpreserve_03},
+#if 0
+/* This experiment is cancelled in favour of an upgrade to preserve() */
     {"checkpoint",              Lcheckpoint_1, Lcheckpoint, Lcheckpoint_0},
+#endif
     {"mkvect",                  Lmkvect, too_many_1, wrong_no_1},
     {"nconc",                   too_few_2, Lnconc, wrong_no_2},
     {"neq",                     too_few_2, Lneq, wrong_no_2},
