@@ -129,7 +129,6 @@ class Fns1
         {"char-downcase",               new Char_downcaseFn()},
         {"char-upcase",                 new Char_upcaseFn()},
         {"chdir",                       new ChdirFn()},
-        {"checkpoint",                  new CheckpointFn()},
         {"cl-equal",                    new Cl_equalFn()},
         {"close",                       new CloseFn()},
         {"close-library",               new Close_libraryFn()},
@@ -1326,25 +1325,6 @@ class ChdirFn extends BuiltinFunction
     }
 }
 
-class CheckpointFn extends BuiltinFunction
-{
-    public LispObject op0() throws Exception
-    {
-        return op1(Jlisp.nil);
-    }
-    
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return op2(arg1, Jlisp.nil);
-    }
-    
-    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
-    {
-        Jlisp.preserve(arg1, arg2);
-        return Jlisp.nil;
-    }
-}
-
 class Cl_equalFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
@@ -1986,6 +1966,7 @@ class ErrorsetFn extends BuiltinFunction
                     {
                 case ProgEvent.STOP:
                 case ProgEvent.PRESERVE:
+                case ProgEvent.PRESERVERESTART:
                 case ProgEvent.RESTART:
                 case ProgEvent.THROW:
                         throw e;

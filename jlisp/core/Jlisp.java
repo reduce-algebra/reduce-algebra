@@ -694,10 +694,15 @@ System.out.printf("set up standard streams%n");
                     restarting = false;
                     break;
             case ProgEvent.PRESERVE:
-                    Cons w = (Cons)e.details;
-                    preserve(w.car, w.cdr);
+                    Cons www1 = (Cons)e.details;
+                    preserve(www1.car, www1.cdr);
                     restarting = false;
                     break;
+            case ProgEvent.PRESERVERESTART:
+                    Cons www2 = (Cons)e.details;
+                    preserve(www2.car, www2.cdr);
+                    e.details = lispTrue;
+                    // Drop through to restart.
             case ProgEvent.RESTART:
                     println();
                     println("Restart Lisp...");
@@ -781,6 +786,11 @@ System.out.printf("set up standard streams%n");
                             i = inputCount;
                             restarting = false;
                             break;
+                    case ProgEvent.PRESERVERESTART:
+                            Cons www2 = (Cons)e.details;
+                            preserve(www2.car, www2.cdr);
+                            e.details = lispTrue;
+                            // Drop through to restart.
                     case ProgEvent.RESTART:
                             println();
                             println("Restart Lisp...");
@@ -2166,6 +2176,7 @@ static void readEvalPrintLoop(boolean noRestart) throws ProgEvent, ResourceExcep
                     {
                 case ProgEvent.STOP:
                 case ProgEvent.PRESERVE:
+                case ProgEvent.PRESERVERESTART:
                 case ProgEvent.RESTART:
                         throw ep;
                 default:
