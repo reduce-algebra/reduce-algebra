@@ -98,6 +98,11 @@ if test "x$enable_test" = "xyes"; then
    AC_DEFINE(TEST)
 fi
 
+AC_ARG_WITH(mountainlionSDK,
+  AC_HELP_STRING([--without-mountainlionSDKl], [can be used to avoid use of MacOSX SDK10.8]),
+  [],
+  [with_mountainlionSDK="yes"])
+
 AC_ARG_WITH(lionSDK,
   AC_HELP_STRING([--without-lionSDKl], [can be used to avoid use of MacOSX SDK10.7]),
   [],
@@ -191,7 +196,13 @@ case $host in
 # declared in a way that is messed up. The result would look ugly for something
 # where the fail-safe response is just to avoid using it, and that is why
 # I redirect stdout and stderr to /dev/null.
-      if test "x$with_lionSDK" != "xno" &&
+      if test "x$with_mountainlionSDK" != "xno" &&
+         gcc -isysroot /Developer/SDKs/MacOSX10.8.sdk -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      then
+        AC_MSG_NOTICE("Macintosh x86_64 binaries via 10.8")
+#       enable_dependency_tracking="no"
+        archflags="-arch x86_64 "
+      elif test "x$with_lionSDK" != "xno" &&
          gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
       then
         AC_MSG_NOTICE("Macintosh x86_64 binaries via 10.7")
@@ -247,11 +258,21 @@ case $host_os in
 # mechanisms that automake usually tries to use will FAIL. If I am running on
 # 10.5 or 10.6 I will also include x86_64.
 #
-# First I check if I can use the 10.7, 10.6, 10.5 or 10.4u SDK.
+# First I check if I can use the 10.8, 10.7, 10.6, 10.5 or 10.4u SDK.
   if test "x$GCC" = "xyes"
   then
     OLDCFLAGS="$CFLAGS"
     sysroot=""
+    if test "x$with_mountainlionSDK" != "xno"
+    then
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                      [[printf("Hello\n");]])],
+        [sysroot="/Developer/SDKs/MacOSX10.8.sdk"
+         CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+         LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"],
+        [CFLAGS="$OLDCFLAGS"])
+    fi
     if test "x$with_lionSDK" != "xno"
     then
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"

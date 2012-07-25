@@ -756,6 +756,7 @@ with_csl
 with_psl
 with_mingw64
 with_lionSDK
+with_mountainlionSDK
 with_gui
 with_build
 with_pslbuild
@@ -1425,7 +1426,8 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system. Do not use here!
   --with-mingw64          this option is ignored here!
-  --with-lionSDK          can be used to disable use of MacOSX SDK 10.7
+  --with-lionSDK          can be used to enable/disable use of MacOSX SDK 10.7
+  --with-mountainlionSDK  can be used to enable/disable use of MacOSX SDK 10.8
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
   --with-pslbuild         used if I wish to call the PSL version
@@ -3165,11 +3167,22 @@ if test "${with_mingw64+set}" = set; then :
 fi
 
 
-# For now I will use the Snow Leopard SDK even if I am on Lion.
+# For now I will use the Snow Leopard SDK even if I am on Lion or later.
+# to use a later SDK go "--with-lionSDK" or "--with-mountainlionSDK"
+
 
 # Check whether --with-lionSDK was given.
 if test "${with_lionSDK+set}" = set; then :
   withval=$with_lionSDK;
+else
+  with_lionSDK="no"
+fi
+
+
+
+# Check whether --with-mountainlionSDK was given.
+if test "${with_mountainlionSDK+set}" = set; then :
+  withval=$with_mountainlionSDK;
 else
   with_lionSDK="no"
 fi
@@ -4011,7 +4024,14 @@ main ()
   return 0;
 }
 _ACEOF
-# First check a path that is for Lion (10.7) in July 2011.
+# check a path that is for MountainLion (10.8) in July 2012.
+    if test "x$with_mountainlionSDK" != "xno" &&
+      gcc -isysroot /Developer/SDKs/MacOSX10.8.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    then
+#     enable_dependency_tracking="no"
+      archflags="-arch x86_64"
+    else
+# check a path that is for Lion (10.7) in July 2011.
     if test "x$with_lionSDK" != "xno" &&
       gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
@@ -7606,6 +7626,36 @@ $as_echo "$as_me: Checking for ability to build multi-arch binaries" >&6;}
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
+      if test "x$with_mountainlionSDK" != "xno"
+      then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.8 framework" >&5
+$as_echo "$as_me: Checking for OSX10.8 framework" >&6;}
+        OLDCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+printf("\n");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.8 SDK found" >&5
+$as_echo "$as_me: MacOS10.8 SDK found" >&6;}
+           sysroot="/Developer/SDKs/MacOSX10.8.sdk"
+else
+  CFLAGS="$OLDCFLAGS"
+           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.8 SKD NOT found" >&5
+$as_echo "$as_me: MacOS10.8 SKD NOT found" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      fi
       if test "x$with_lionSDK" != "xno"
       then
         { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.7 framework" >&5

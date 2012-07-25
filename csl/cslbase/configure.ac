@@ -76,9 +76,16 @@ AC_ARG_WITH(mingw64,
   [],
   [])
 
-# For now I will use the Snow Leopard SDK even if I am on Lion.
+# For now I will use the Snow Leopard SDK even if I am on Lion or later.
+# to use a later SDK go "--with-lionSDK" or "--with-mountainlionSDK"
+
 AC_ARG_WITH(lionSDK,
-  AC_HELP_STRING([--with-lionSDK], [can be used to disable use of MacOSX SDK 10.7]),
+  AC_HELP_STRING([--with-lionSDK], [can be used to enable/disable use of MacOSX SDK 10.7]),
+  [],
+  [with_lionSDK="no"])
+
+AC_ARG_WITH(mountainlionSDK,
+  AC_HELP_STRING([--with-mountainlionSDK], [can be used to enable/disable use of MacOSX SDK 10.8]),
   [],
   [with_lionSDK="no"])
 
@@ -382,7 +389,14 @@ x86_64-w64-*)
     archflags=""
     AC_LANG_CONFTEST(
       [AC_LANG_PROGRAM([], [])])
-# First check a path that is for Lion (10.7) in July 2011.
+# check a path that is for MountainLion (10.8) in July 2012.
+    if test "x$with_mountainlionSDK" != "xno" &&
+      gcc -isysroot /Developer/SDKs/MacOSX10.8.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    then
+#     enable_dependency_tracking="no"
+      archflags="-arch x86_64"
+    else
+# check a path that is for Lion (10.7) in July 2011.
     if test "x$with_lionSDK" != "xno" &&
       gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
@@ -791,6 +805,19 @@ then
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
+      if test "x$with_mountainlionSDK" != "xno"
+      then
+        AC_MSG_NOTICE([Checking for OSX10.8 framework])
+        OLDCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                        [[printf("\n");]])],
+          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+           AC_MSG_NOTICE([MacOS10.8 SDK found])
+           sysroot="/Developer/SDKs/MacOSX10.8.sdk"],
+          [CFLAGS="$OLDCFLAGS"
+           AC_MSG_NOTICE([MacOS10.8 SKD NOT found])])
+      fi
       if test "x$with_lionSDK" != "xno"
       then
         AC_MSG_NOTICE([Checking for OSX10.7 framework])
