@@ -953,21 +953,33 @@ intrules :=
    int(~x^~~n*asin(~~a*~x+~~b),~x) =>
        x^(n+1)/(n+1)*asin(a*x+b)-a/(n+1)*int(x^(n+1)*sqrt(1-(a*x+b)^2)/(1-(a*x+b)^2),x)
                                  when fixp n and n>0 and a freeof x and b freeof x,
+   int(asin(~~a*~x+~~b)/~x^~n,x) =>
+       x^(1-n)/(1-n)*asin(a*x+b)-a/(1-n)*int(x^(1-n)*sqrt(1-(a*x+b)^2)/(1-(a*x+b)^2),x)
+                                 when fixp n and n>1 and a freeof x and b freeof x,
    int(acos(~~a*~x+~~b),~x) => 1/a*((a*x+b)*acos(a*x+b)-sqrt(1-(a*x+b)^2))
                                  when a freeof x and b freeof x,
    int(~x^~~n*acos(~~a*~x+~~b),~x) =>
        x^(n+1)/(n+1)*acos(a*x+b)+a/(n+1)*int(x^(n+1)*sqrt(1-(a*x+b)^2)/(1-(a*x+b)^2),x)
                                  when fixp n and n>0 and a freeof x and b freeof x,
+   int(acos(~~a*~x+~~b)/~x^~n,x) =>
+       x^(1-n)/(1-n)*acos(a*x+b)+a/(1-n)*int(x^(1-n)*sqrt(1-(a*x+b)^2)/(1-(a*x+b)^2),x)
+                                 when fixp n and n>1 and a freeof x and b freeof x,
    int(asinh(~~a*~x+~~b),~x) => 1/a*((a*x+b)*asinh(a*x+b)-sqrt(1+(a*x+b)^2))
                                  when a freeof x and b freeof x,
    int(~x^~~n*asinh(~~a*~x+~~b),~x) =>
        x^(n+1)/(n+1)*asinh(a*x+b)-a/(n+1)*int(x^(n+1)*sqrt(1+(a*x+b)^2)/(1+(a*x+b)^2),x)
                                  when fixp n and n>0 and a freeof x and b freeof x,
+   int(asinh(~~a*~x+~~b)/~x^~n,x) =>
+       x^(1-n)/(1-n)*asinh(a*x+b)-a/(1-n)*int(x^(1-n)*sqrt(1+(a*x+b)^2)/(1+(a*x+b)^2),x)
+                                 when fixp n and n>1 and a freeof x and b freeof x,
    int(acosh(~~a*~x+~~b),~x) => 1/a*((a*x+b)*acosh(a*x+b)-sqrt((a*x+b)^2-1))
                                  when a freeof x and b freeof x,
    int(~x^~~n*acosh(~~a*~x+~~b),~x) =>
        x^(n+1)/(n+1)*acosh(a*x+b)+a/(n+1)*int(x^(n+1)*sqrt((a*x+b)^2-1)/(1-(a*x+b)^2),x)
-                                 when fixp n and n>0 and a freeof x and b freeof x
+                                 when fixp n and n>0 and a freeof x and b freeof x,
+   int(acosh(~~a*~x+~~b)/~x^~n,x) =>
+       x^(1-n)/(1-n)*acosh(a*x+b)-a/(1-n)*int(x^(1-n)*sqrt((a*x+b)^2-1)/(1-(a*x+b)^2),x)
+                                 when fixp n and n>1 and a freeof x and b freeof x
 
 };
 

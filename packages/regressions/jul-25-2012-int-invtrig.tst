@@ -25,6 +25,15 @@ int(x^2*asinh(3*x),x);
 
 int(x^2*acosh(3*x),x);
 
+int(asin(3*x)/x^3,x);
+
+int(acos(3*x)/x^3,x);
+
+int(asinh(3*x)/x^3,x);
+
+int(acosh(3*x)/x^3,x);
+
+
 % The following is correct, but not optimal
 
 int(x*acos(x-1),x);
