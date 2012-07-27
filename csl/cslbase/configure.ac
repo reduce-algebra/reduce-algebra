@@ -384,10 +384,10 @@ x86_64-w64-*)
       [AC_LANG_PROGRAM([], [])])
     oldSDKloc=/Developer/SDKs
     newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
-    if test -f $newSDKloc/MacOSX$with_SDK.sdk
+    if test -e $newSDKloc/MacOSX$with_SDK.sdk
     then
       SDK=$newSDKloc/MacOSX$with_SDK.sdk
-    elif test -f $oldSDKloc/MacOSX$with_SDK.sdk
+    elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
     then
       SDK=$oldSDKloc/MacOSX$with_SDK.sdk
     else
