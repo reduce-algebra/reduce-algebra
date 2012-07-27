@@ -95,11 +95,11 @@ AC_ARG_WITH(mingw64,
    [],
    [with_mingw64="default"])
 
-AC_ARG_WITH(lionSDK,
-   AC_HELP_STRING([--without-lionSDK],
-                  [can be used to avoid use of MacOSX SDK 10.7 (CSL ONLY)]),
+AC_ARG_WITH(SDK,
+   AC_HELP_STRING([--with-SDK],
+                  [Select MacOSX SDK (eg --with-SDK=10.8) (CSL ONLY)]),
    [],
-   [with_lionSDK="yes"])
+   [with_SDK="10.8"])
 
 AC_ARG_WITH(lto,
    AC_HELP_STRING([--with-lto],
@@ -737,20 +737,22 @@ then
 # prior to Snow Leopard. I will now build JUST for x86_64 because there
 # are not liable to be Intel Macs that do not support 64-bit mode, and ppc
 # can now be viewed as obsolete.
-# As of mid July 2011 when Lion (10.7) has just been released wxWidgets does
-# not survive the 10.7 SDK, so I support a "--without-lionSDK" configuration
-# option to drop back...
-      if test -d /Developer/SDKs/MacOSX10.7.sdk && test "x$with_lionSDK" != "xno"
+      oldSDKloc=/Developer/SDKs
+      newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+      if test -e $newSDKloc/MacOSX$with_SDK.sdk
       then
-        CFLAGS="$CFLAGS -msse2"
-        CXXFLAGS="$CXXFLAGS -msse2"
-        SDK=/Developer/SDKs/MacOSX10.7.sdk
-        MACARCH="--enable-macos_arch=x86_64" 
+        SDK=$newSDKloc/MacOSX$with_SDK.sdk
+      elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
+      then
+        SDK=$oldSDKloc/MacOSX$with_SDK.sdk
       else
-        SDK=/Developer/SDKs/MacOSX10.6.sdk
-#       MACARCH="--enable-univeral_binaries" 
-        MACARCH="--enable-macos_arch=x86_64" 
+        AC_MSG_ERROR([SDK $with_SDK not found])
       fi
+      CFLAGS="$CFLAGS -msse2"
+      CXXFLAGS="$CXXFLAGS -msse2"
+# For wxWidgets I will ONLY support x86_64, and you should only at all
+# expect 10.6, 10.7 and 10.8 versions of the SDK to be useful.
+      MACARCH="--enable-macos_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
           --with-macosx-sdk=$SDK \

@@ -298,6 +298,7 @@ LispObject allocatesymbol()
 {   LispObject r;
     if (fringe1 + 4*sizeof(LispObject) >= fpfringe1) reclaim();
     r = fringe1 + tagSYMBOL;
+    qflags(r) = tagHDR + typeSYM;
     fringe1 += 6*sizeof(LispObject);
     return r;
 }
