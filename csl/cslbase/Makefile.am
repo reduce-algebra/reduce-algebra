@@ -702,7 +702,7 @@ if mac_framework
 endif mac_framework
 else !wx
 if mac_framework
-	/Developer/Tools/Rez -t APPL -o csl $(srcdir)/mac.r
+	$(REZ) -t APPL -o csl $(srcdir)/mac.r
 endif mac_framework
 
 endif !wx
@@ -740,7 +740,7 @@ endif mac_framework
 else !wx
 if mac_framework
 # on Darwin I want to go
-# /Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
+# $(REZ) -t APPL -o reduce $(srcdir)/mac.r
 # (and similarly for csl) after linking, so that the items concerned
 # become clickable. Note that "mac.r" is copied directly from the
 # FLTK distribution (www.fltk.org) and it is released there under
@@ -753,7 +753,7 @@ if mac_framework
 #
 # Rez is now an rather old fashioned way of doing things. With wxWidgets I
 # will replace this with stuff that creates application bundles.
-	/Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
+	$(REZ) -t APPL -o reduce $(srcdir)/mac.r
 endif mac_framework
 endif !wx
 
@@ -777,7 +777,7 @@ if mac_framework
 endif mac_framework
 else !wx
 if mac_framework
-	/Developer/Tools/Rez -t APPL -o bootstrapreduce $(srcdir)/mac.r
+	$(REZ) -t APPL -o bootstrapreduce $(srcdir)/mac.r
 endif mac_framework
 endif !wx
 

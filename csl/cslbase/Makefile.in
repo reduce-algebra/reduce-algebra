@@ -302,6 +302,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PSLBUILD = @PSLBUILD@
+REZ = @REZ@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -2394,7 +2395,7 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 @darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh csl $(srcdir) csl
-@mac_framework_TRUE@@wx_FALSE@	/Developer/Tools/Rez -t APPL -o csl $(srcdir)/mac.r
+@mac_framework_TRUE@@wx_FALSE@	$(REZ) -t APPL -o csl $(srcdir)/mac.r
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(WINHELPERS)
@@ -2410,7 +2411,7 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
 # on Darwin I want to go
-# /Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
+# $(REZ) -t APPL -o reduce $(srcdir)/mac.r
 # (and similarly for csl) after linking, so that the items concerned
 # become clickable. Note that "mac.r" is copied directly from the
 # FLTK distribution (www.fltk.org) and it is released there under
@@ -2423,7 +2424,7 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 #
 # Rez is now an rather old fashioned way of doing things. With wxWidgets I
 # will replace this with stuff that creates application bundles.
-@mac_framework_TRUE@@wx_FALSE@	/Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
+@mac_framework_TRUE@@wx_FALSE@	$(REZ) -t APPL -o reduce $(srcdir)/mac.r
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
@@ -2434,7 +2435,7 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
-@mac_framework_TRUE@@wx_FALSE@	/Developer/Tools/Rez -t APPL -o bootstrapreduce $(srcdir)/mac.r
+@mac_framework_TRUE@@wx_FALSE@	$(REZ) -t APPL -o bootstrapreduce $(srcdir)/mac.r
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
 	-rm -f fwindemo$(EXEEXT)
