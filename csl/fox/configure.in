@@ -98,15 +98,10 @@ if test "x$enable_test" = "xyes"; then
    AC_DEFINE(TEST)
 fi
 
-AC_ARG_WITH(mountainlionSDK,
-  AC_HELP_STRING([--without-mountainlionSDKl], [can be used to avoid use of MacOSX SDK10.8]),
+AC_ARG_WITH(SDK,
+  AC_HELP_STRING([--with-SDKl], [Specify which MacOSX SDK to use, eg --with-sdk=10.8]),
   [],
-  [with_mountainlionSDK="yes"])
-
-AC_ARG_WITH(lionSDK,
-  AC_HELP_STRING([--without-lionSDKl], [can be used to avoid use of MacOSX SDK10.7]),
-  [],
-  [with_lionSDK="yes"])
+  [with_SDK="10.8"])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin], [When building cywin/X11 version]),
@@ -190,48 +185,28 @@ case $host in
     then
       AC_LANG_CONFTEST(
         [AC_LANG_PROGRAM([], [])])
-# On the next line gcc will fail if the 10.6 SDK is not available, and in
-# such cases it will moan about "no include path in which to search for
-# stdio.h"  and then that the built-in function printf has been implicitly
-# declared in a way that is messed up. The result would look ugly for something
-# where the fail-safe response is just to avoid using it, and that is why
-# I redirect stdout and stderr to /dev/null.
-      if test "x$with_mountainlionSDK" != "xno" &&
-         gcc -isysroot /Developer/SDKs/MacOSX10.8.sdk -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      oldSDKloc=/Developer/SDKs
+      newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+      if test -e $newSDKloc/MacOSX$with_SDK.sdk
       then
-        AC_MSG_NOTICE("Macintosh x86_64 binaries via 10.8")
-#       enable_dependency_tracking="no"
-        archflags="-arch x86_64 "
-      elif test "x$with_lionSDK" != "xno" &&
-         gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+        SDK=$newSDKloc/MacOSX$with_SDK.sdk
+      elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
       then
-        AC_MSG_NOTICE("Macintosh x86_64 binaries via 10.7")
-#       enable_dependency_tracking="no"
-        archflags="-arch x86_64 "
+        SDK=$oldSDKloc/MacOSX$with_SDK.sdk
       else
-        if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
-        then
-          AC_MSG_NOTICE("Macintosh x86_64 binaries via 10.6")
-#         enable_dependency_tracking="no"
-          archflags="-arch x86_64 "
-        else
-#--       if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
-#--       then
-#--         AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
-#--         enable_dependency_tracking="no"
-#--         archflags="-arch ppc -arch i386 -arch x86_64"
-#--       else
-#--         if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
-#--         then
-#--           AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
-#--           enable_dependency_tracking="no"
-#--           archflags="-arch ppc -arch i386"
-#--         else
-#--           AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
-#--         fi
-#--       fi
-          AC_MSG_ERROR([SDK not found - need at least the 10.6 version])
-        fi
+        AC_MSG_ERROR([SDK $with_SDK not found])
+      fi
+      if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
+      then
+        archflags="-arch x86_64 -arch ppc"
+      elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+      then
+        archflags="-arch x86_64"
+      elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
+      then
+        archflags="-arch ppc"
+      else
+        AC_MSG_ERROR([Failed to compile test code-fragment using SDK $with_SDK])
       fi
     fi
     ;;
@@ -263,58 +238,17 @@ case $host_os in
   then
     OLDCFLAGS="$CFLAGS"
     sysroot=""
-    if test "x$with_mountainlionSDK" != "xno"
-    then
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [sysroot="/Developer/SDKs/MacOSX10.8.sdk"
-         CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
-         LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"],
-        [CFLAGS="$OLDCFLAGS"])
-    fi
-    if test "x$with_lionSDK" != "xno"
-    then
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [sysroot="/Developer/SDKs/MacOSX10.7.sdk"
-         CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-         LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"],
-        [CFLAGS="$OLDCFLAGS"])
-    fi
+    CFLAGS="$CFLAGS -isysroot $SDK"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                    [[printf("Hello\n");]])],
+      [sysroot="$SDK"
+       CXXFLAGS="$CXXFLAGS -isysroot $SDK"
+       LDFLAGS="$LDFLAGS -isysroot $SDK"],
+      [CFLAGS="$OLDCFLAGS"])
     if test "x$sysroot" = "x"
     then
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [sysroot="/Developer/SDKs/MacOSX10.6.sdk"
-         CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-         LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.6.Sdk"],
-        [CFLAGS="$OLDCFLAGS"])
+      AC_MSG_ERROR([SDK not found])
     fi
-    if test "x$sysroot" = "x"
-    then
-      AC_MSG_ERROR([SDK not fonud - need at least the 10.6 one])
-    fi
-#-- if test "x$sysroot" = "x"
-#-- then
-#--   CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-#--   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-#--                                   [[printf("Hello\n");]])],
-#--     [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-#--     LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"],
-#--     [CFLAGS="$OLDCFLAGS"])
-#-- fi
-#-- if test "x$sysroot" = "x"
-#-- then
-#--   CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-#--   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-#--                                   [[printf("Hello\n");]])],
-#--     [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-#--     LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"],
-#--     [CFLAGS="$OLDCFLAGS"])
-#-- fi
   fi
   if test "x$GCC" = "xyes"
   then

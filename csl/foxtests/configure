@@ -719,7 +719,8 @@ with_psl
 with_mingw64
 with_build
 with_pslbuild
-with_lionSDK
+with_cygbuild
+with_SDK
 with_cygwin
 with_fox
 with_fox_pending
@@ -1375,7 +1376,8 @@ Optional Packages:
   --with-mingw64          Use internally with CSL
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
-  --without-lionSDKl      can disable use of MacOSX SDK10.7
+  --with-cygbuild         Used internally to control build directory
+  --with-SDKl             Eg --with-sdk=10.7
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-fox=DIR          FOX installation location
   --with-fox-pending        do not check dir from --with-fox
@@ -3178,11 +3180,20 @@ fi
 
 
 
-# Check whether --with-lionSDK was given.
-if test "${with_lionSDK+set}" = set; then :
-  withval=$with_lionSDK;
+# Check whether --with-cygbuild was given.
+if test "${with_cygbuild+set}" = set; then :
+  withval=$with_cygbuild;
 else
-  with_lionSDK="yes"
+  with_cygbuild="unknown"
+fi
+
+
+
+# Check whether --with-SDK was given.
+if test "${with_SDK+set}" = set; then :
+  withval=$with_SDK;
+else
+  with_SDK="10.8"
 fi
 
 
@@ -3703,6 +3714,7 @@ $as_echo "#define UNIX 1" >>confdefs.h
 # after I have found myself a C compiler. Since I KNOW I am on MacOSX here
 # I will make the test command-line simple and explicit, not using $CFLAGS
 # or any such.
+    archflags=""
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -3714,38 +3726,28 @@ main ()
   return 0;
 }
 _ACEOF
-# Check a path that is for Snow Leopard (10.7) in July 2011.
-    if test "x$with_lionSDK" != "xno" &&
-       gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    oldSDKloc=/Developer/SDKs
+    newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+    if test -e $newSDKloc/MacOSX$with_SDK.sdk
     then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Can probably use SDK version 10.7" >&5
-$as_echo "$as_me: Can probably use SDK version 10.7" >&6;}
-#     enable_dependency_tracking="no"
+      SDK=$newSDKloc/MacOSX$with_SDK.sdk
+    elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
+    then
+      SDK=$oldSDKloc/MacOSX$with_SDK.sdk
     else
-# Check a path that is for Snow Leopard (10.6) in September 2009.
-      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
-      then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: Can probably use SDK version 10.6" >&5
-$as_echo "$as_me: Can probably use SDK version 10.6" >&6;}
-#       enable_dependency_tracking="no"
-      else
-#--     if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-#--     then
-#--       AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
-#--       enable_dependency_tracking="no"
-#--     else
-# This is path works if I am on Tiger (10.4). Tested from Spring 2007 onwards.
-#--     if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-#--       then
-#--         AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
-#--         enable_dependency_tracking="no"
-#-  -     else
-#--         AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
-#--         AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
-#--       fi
-#--     fi
-        as_fn_error $? "Need SDK 10.6 or 10.7" "$LINENO" 5
-      fi
+      as_fn_error $? "SDK $with_SDK not found" "$LINENO" 5
+    fi
+    if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
+    then
+      archflags="-arch x86_64 -arch ppc"
+    elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    then
+      archflags="-arch x86_64"
+    elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
+    then
+      archflags="-arch ppc"
+    else
+      as_fn_error $? "Failed to compile test code-fragment using SDK $with_SDK" "$LINENO" 5
     fi
   fi
   ;;
@@ -6990,13 +6992,11 @@ $as_echo "$as_me: Checking for ability to build dual arch binaries" >&6;}
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      if test "x$with_lionSDK" != "xno"
-      then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.7 framework" >&5
-$as_echo "$as_me: Checking for OSX10.7 framework" >&6;}
-        OLDCFLAGS="$CFLAGS"
-        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX framework" >&5
+$as_echo "$as_me: Checking for OSX framework" >&6;}
+      OLDCFLAGS="$CFLAGS"
+      CFLAGS="$CFLAGS -isysroot $SDK"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdio.h>
 int
@@ -7008,83 +7008,20 @@ printf("Hello\n");
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.7 SDK found" >&5
-$as_echo "$as_me: MacOS10.7 SDK found" >&6;}
-           sysroot="/Developer/SDKs/MacOSX10.7.sdk"
+  CXXFLAGS="$CXXFLAGS -isysroot $SDK"
+         { $as_echo "$as_me:${as_lineno-$LINENO}: MacOSX SDK found" >&5
+$as_echo "$as_me: MacOSX SDK found" >&6;}
+         sysroot="$SDK"
 else
   CFLAGS="$OLDCFLAGS"
-           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.7 SKD NOT found" >&5
-$as_echo "$as_me: MacOS10.7 SKD NOT found" >&6;}
+         { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS SKD NOT found" >&5
+$as_echo "$as_me: MacOS SKD NOT found" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-      fi
       if test "x$sysroot" = "x"
       then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.6 framework" >&5
-$as_echo "$as_me: Checking for OSX10.6 framework" >&6;}
-        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("Hello\n");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.6 SDK found" >&5
-$as_echo "$as_me: MacOS10.6 SDK found" >&6;}
-           sysroot="/Developer/SDKs/MacOSX10.6"
-else
-  CFLAGS="$OLDCFLAGS"
-           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.6 SKD NOT found" >&5
-$as_echo "$as_me: MacOS10.6 SKD NOT found" >&6;}
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      fi
-#--    if test "x$sysroot" = "x"
-#--    then
-#--      AC_MSG_NOTICE([Checking for OSX10.5 framework])
-#--      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-#--      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-#--                                      [[printf("Hello\n");]])],
-#--        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-#--         AC_MSG_NOTICE([MacOS10.5 SDK found])
-#--         sysroot="/Developer/SDKs/MacOSX10.5"],
-#--        [CFLAGS="$OLDCFLAGS"
-#--         AC_MSG_NOTICE([MacOS10.5 SKD NOT found])])
-#--    fi
-#--    if test "x$sysroot" = "x"
-#--    then
-#--      AC_MSG_NOTICE([Checking for OSX10.4u framework])
-#--      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-#--      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-#--                                      [[printf("Hello\n");]])],
-#--        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-#--         AC_MSG_NOTICE([MacOS10.4u SDK found])
-#--         sysroot="/Developer/SDKs/MacOSX10.4u"],
-#--        [CFLAGS="$OLDCFLAGS"
-#--         AC_MSG_NOTICE([MacOS10.4u SKD NOT found])])
-#--    fi
-#--    OLDCFLAGS="$CFLAGS"
-#--    CFLAGS="$CFLAGS -arch ppc -arch i386"
-#--    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-#--                                    [[printf("Hello\n");]])],
-#--      [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
-#--       LDFLAGS="$LDFLAGS -arch ppc -arch i386"
-#--       fat_support_available="yes"],
-#--      [CFLAGS="$OLDCFLAGS"
-#--       fat_support_available="no"])
-      if test "x$sysroot" = "x"
-      then
-        as_fn_error $? "Need SDK 10.6 or 10.7" "$LINENO" 5
+        as_fn_error $? "Need MacOSX SDK" "$LINENO" 5
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: fat_support=$fat_support_available" >&5
 $as_echo "$as_me: fat_support=$fat_support_available" >&6;}
