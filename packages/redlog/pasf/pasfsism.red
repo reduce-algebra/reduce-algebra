@@ -197,7 +197,7 @@ procedure pasf_susibineqcong(u,oop,nop,level);
 	    ('add . (pasf_0mk2(pasf_mkop('cong,lcm(m,n)),u) . level))};
       % Old formula is a congruence and new is a incongruence
       if car oop eq 'cong and car nop eq 'ncong then <<
-	 if m = 2*n then
+	 if (nil and m = 2*n) then
 	    return{'(delete . T),('delete . nil),('add .
 	       (pasf_0mk2(pasf_mkop('ncong,m),addf(u,negf n)) . level))}
 	 else <<
@@ -218,7 +218,7 @@ procedure pasf_susibineqcong(u,oop,nop,level);
       >>;	    
       % Old formula is an incongruence and new is a congurence
       if car oop eq 'ncong and car nop eq 'cong then <<
-	 if n = 2*m then
+	 if (nil and n = 2*m) then
 	    return{'(delete . nil),'(delete . T),('add .
 	       (pasf_0mk2(pasf_mkop('ncong,n),addf(u,negf m)) . level))}
 	 else <<
