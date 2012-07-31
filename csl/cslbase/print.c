@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 18657e52 21-Sep-2011 */
+/* Signature: 5835181b 31-Jul-2012 */
 
 #include "headers.h"
 
@@ -1720,6 +1720,13 @@ Lisp_Object MS_CDECL Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
     w = make_string(filename);
     errexit();
     return onevalue(w);
+}
+
+Lisp_Object MS_CDECL Lgetpid(Lisp_Object nil, int nargs, ...)
+{
+    Lisp_Object w;
+    argcheck(nargs, 0, "getpid");
+    return onevalue(fixnum_of_int(getpid()));
 }
 
 Lisp_Object Lrename_file(Lisp_Object nil, Lisp_Object from, Lisp_Object to)
@@ -5033,6 +5040,7 @@ setup_type const print_setup[] =
     {"get-current-directory",   wrong_no_na, wrong_no_nb, Lget_current_directory},
     {"user-homedir-pathname",	wrong_no_na, wrong_no_nb, Luser_homedir_pathname},
     {"get-lisp-directory",      wrong_no_na, wrong_no_nb, Lget_lisp_directory},
+    {"getpid",                  wrong_no_na, wrong_no_nb, Lgetpid},
     {"pagelength",              Lpagelength, too_many_1, wrong_no_1},
     {"posn",                    Lposn_1, wrong_no_nb, Lposn},
     {"spaces",                  Lxtab, too_many_1, wrong_no_1},
