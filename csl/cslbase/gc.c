@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 16cedb27 25-Jun-2012 */
+/* Signature: 724943a1 02-Aug-2012 */
 
 #include "headers.h"
 
@@ -2672,27 +2672,27 @@ int async_interrupt(int type)
 
 static void report_at_end(Lisp_Object nil)
 {
+    int n = heap_pages_count + vheap_pages_count + bps_pages_count;
+    int n1 = n + pages_count;
+    double fn = (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0));
+    double fn1 = (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0));
+    double z = (100.0*n)/n1;
 #ifdef WINDOW_SYSTEM
-    {   int n = heap_pages_count + vheap_pages_count + bps_pages_count;
-        int n1 = n + pages_count;
-        double z = (100.0*n)/n1;
-        report_space(gc_number, z);
+    {   report_space(gc_number, z);
         if (verbos_flag & 1) trace_printf(
            "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
-           ((double)n)*(CSL_PAGE_SIZE/(1024.0*1024.0)),
-           ((double)n1)*(CSL_PAGE_SIZE/(1024.0*1024.0)), z);
+           fn, fn1, z);
     }
 #else /* WINDOW_SYSTEM */
     if (verbos_flag & 1)
-    {   int n = heap_pages_count + vheap_pages_count + bps_pages_count;
-        int n1 = n + pages_count;
-        trace_printf(
+    {   trace_printf(
             "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
-            (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0)),
-            (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0)),
-            (100.0*n)/n1);
+            fn, fn1, z);
     }
 #endif /* WINDOW_SYSTEM */
+/* This reports in Kbytes, and does not overflow until over 100 Gbytes */
+    qvalue(used_space) = fixnum_of_int((int)(1024.0*fn));
+    qvalue(avail_space) = fixnum_of_int((int)(1024.0*fn1));
 }
 
 #ifdef CONSERVATIVE

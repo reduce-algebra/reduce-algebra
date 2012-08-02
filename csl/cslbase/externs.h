@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 08f02418 19-Feb-2012 */
+/* Signature: 39e47105 02-Aug-2012 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -457,6 +457,7 @@ extern Lisp_Object expand_def_symbol, allow_key_key;
 #endif
 
 extern Lisp_Object declare_symbol, special_symbol, large_modulus;
+extern Lisp_Object used_space, avail_space;
 
 #ifdef OPENMATH
 extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
@@ -697,6 +698,8 @@ extern Lisp_Object * volatile stacklimit;
 #define declare_symbol        BASE[182]
 #define special_symbol        BASE[183]
 #define large_modulus         BASE[184]
+#define used_space            BASE[185]
+#define avail_space           BASE[186]
 
 /*
  * The next are intended for use by people building custom versions

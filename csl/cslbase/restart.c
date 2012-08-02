@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 6cba1243 25-Jul-2012 */
+/* Signature: 5705764f 02-Aug-2012 */
 
 #include "headers.h"
 
@@ -293,6 +293,7 @@ Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 Lisp_Object gchook, resources, callstack, procstack, procmem;
+Lisp_Object used_space, avail_space;
 Lisp_Object workbase[51];
 
 
@@ -4746,7 +4747,8 @@ static void cold_setup()
     break_function      = make_undefined_symbol("*break-loop*");
     gchook              = make_undefined_symbol("*gc-hook*");
     resources           = make_undefined_symbol("*resources*");
-    qheader(raise_symbol) |= SYM_SPECIAL_VAR;
+    used_space          = make_undefined_symbol("*used-space*");
+    avail_space         = make_undefined_symbol("*avail-space*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
     qheader(hankaku_symbol) |= SYM_SPECIAL_VAR;
@@ -4761,6 +4763,10 @@ static void cold_setup()
     qvalue(gchook)         = nil;
     qheader(resources)    |= SYM_SPECIAL_VAR;
     qvalue(resources)      = nil;
+    qheader(used_space)   |= SYM_SPECIAL_VAR;
+    qvalue(used_space)     = fixnum_of_int(0);
+    qheader(avail_space)  |= SYM_SPECIAL_VAR;
+    qvalue(avail_space)    = fixnum_of_int(0);
     {   Lisp_Object common = make_undefined_symbol("common-lisp-mode");
         qheader(common)   |= SYM_SPECIAL_VAR;
 #ifdef COMMON
@@ -6488,6 +6494,8 @@ void copy_into_nilseg(int fg)
     BASE[182]    = declare_symbol;
     BASE[183]    = special_symbol;
     BASE[184]    = large_modulus;
+    BASE[185]    = used_space;
+    BASE[186]    = avail_space;
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -6657,6 +6665,8 @@ void copy_out_of_nilseg(int fg)
     declare_symbol        = BASE[182];
     special_symbol        = BASE[183];
     large_modulus         = BASE[184];
+    used_space            = BASE[185];
+    avail_space           = BASE[186];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];
