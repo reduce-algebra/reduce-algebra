@@ -2745,8 +2745,10 @@ asin(x)*x + sqrt( - x  + 1)
 testint(x**2*asin x,x);
 
 
-             2
-int(asin(x)*x ,x)
+            3            2       2              2
+ 3*asin(x)*x  + sqrt( - x  + 1)*x  + 2*sqrt( - x  + 1)
+-------------------------------------------------------
+                           9
 
 testint(sec x**2/(1+sec x**2-3*tan x),x);
 
@@ -3029,7 +3031,7 @@ Number of integrals tested: 280
 
 Number of incorrect integrals: 0
 
-Number of unevaluated integrals: 19
+Number of unevaluated integrals: 18
 
 Integrands of unevaluated integrals are:
 
@@ -3109,10 +3111,6 @@ sqrt( - cos(x) + 1)
        x  + 2
 
 
-         2
-asin(x)*x
-
-
              2     5           2     4           2     3           2     2
 ( - 1)/(log(x  + 1)  - 10*log(x  + 1)  + 40*log(x  + 1)  - 80*log(x  + 1)
 
@@ -3131,8 +3129,3 @@ erf(a + x)
 
 end;
 
-Tested on x86_64-unknown-ubuntu11.10 CSL
-Time (counter 1): 490 ms  plus GC time: 20 ms
-real	0m0.709s
-user	0m0.624s
-sys	0m0.032s
