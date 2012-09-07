@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4a5a9e98 25-Jul-2012 */
+/* Signature: 024f5f93 20-Aug-2012 */
 
 #include "headers.h"
 
@@ -1989,26 +1989,36 @@ Lisp_Object Lsymbol_package(Lisp_Object nil, Lisp_Object a)
 
 #endif
 
-static Lisp_Object Lrestart_csl2(Lisp_Object nil,
-                                 Lisp_Object a, Lisp_Object b)
+static Lisp_Object Lrestart_lisp2(Lisp_Object nil,
+                                  Lisp_Object a, Lisp_Object b)
 /*
  * If the argument is given as nil then this is a cold-start, and when
  * I begin again it would be a VERY good idea to do a (load!-module 'compat)
  * rather promptly (otherwise some Lisp functions will not work at all).
  * I do not automate that because this function is intended for use in
  * delicate system rebuilding contexts and I want the user to have ultimate
- * control.  (restart!-csl t) reloads a heap-image in the normal way.
- * (restart!-csl 'xx) where xx is neither nil nor t starts by reloading a
+ * control.  (restart!-lisp t) reloads a heap-image in the normal way.
+ * (restart!-lisp 'xx) where xx is neither nil nor t starts by reloading a
  * heap image, but then it looks for a function with the same name as xx
  * (since a heap image is reloaded it is NOT easy (possible?) to keep the
  * symbol) and calls it as a function. Finally the case
- * (restart!-csl '(module fn)) restart the system, then calls load-module
+ * (restart!-lisp '(module xx)) reloads the heap image, calls load-module
  * on the named module and finally calls the given restart function.
  * This last option can be useful since otherwise the function to be called
- * in (restart!-csl 'xx) would need to be in the base image as re-loaded.
- * The second argument is passed through (via serialisation as a string
- * of characters) and remade as a Lisp object to be passed to the restart
- * function as an argument.
+ * in (restart!-lisp 'xx) would need to be in the base image as re-loaded.
+ * There is no provision here to force a cold start followed by a reload
+ * of some particular module.
+ *
+ * The second argument (if provided) is passed through (via serialisation
+ * as a string of characters) and remade as a Lisp object to be passed to
+ * the custom restart function as an argument. Thus in (restart!-lisp 'xx) the
+ * function xx should not take any arguments, while in the call
+ * (restart!-list 'xx 'argument) the function xx must accept one argument.
+ *
+ * The expectation is that when this function is called Lisp will be reading
+ * from its initial default input source, and that will be preserved across
+ * the restart. A log file and the standard output should also be safe,
+ * but no other files should be active when restart!-lisp is called.
  */
 {
     int n;
@@ -2026,7 +2036,7 @@ static Lisp_Object Lrestart_csl2(Lisp_Object nil,
     v = NULL;
 /*
  * A comment seems in order here. The case b==SPID_NOARG should only
- * arise if I came from Lrestart_csl: it indicates that there was
+ * arise if I came from Lrestart_lisp: it indicates that there was
  * no second argument provided.
  */
     if (b != SPID_NOARG)
@@ -2058,9 +2068,9 @@ static Lisp_Object Lrestart_csl2(Lisp_Object nil,
     return nil;
 }
 
-static Lisp_Object Lrestart_csl(Lisp_Object nil, Lisp_Object a)
+static Lisp_Object Lrestart_lisp(Lisp_Object nil, Lisp_Object a)
 {
-    return Lrestart_csl2(nil, a, SPID_NOARG);
+    return Lrestart_lisp2(nil, a, SPID_NOARG);
 }
 
 static Lisp_Object MS_CDECL Lpreserve_03(Lisp_Object nil, int nargs, ...)
@@ -2118,7 +2128,10 @@ static Lisp_Object Lpreserve_2(Lisp_Object nil,
 #if 0
 /*
  * This is an experimental addition - a version of PRESERVE that allows
- * CSL to continue executing after it has written out an image file.
+ * CSL to continue executing after it has written out an image file. I am
+ * now removing it because I have arranged that if PRESERVE is given a
+ * non-nil third argument it reloads the image that it creates rather than
+ * quitting lisp.
  */
 
 static Lisp_Object Lcheckpoint(Lisp_Object nil,
@@ -4397,7 +4410,14 @@ setup_type const funcs2_setup[] =
     {"member**",                too_few_2, Lmember, wrong_no_2},
     {"memq",                    too_few_2, Lmemq, wrong_no_2},
     {"contained",               too_few_2, Lcontained, wrong_no_2},
-    {"restart-csl",             Lrestart_csl, Lrestart_csl2, wrong_no_1},
+/*
+ * I originally called this restart!-csl but I am now changing the name
+ * to be restart!-lisp to be a little less specific about exactly which
+ * implementation of Lisp is involved. IN the fullness of time I will
+ * remove the name restart!-csl...
+ */
+    {"restart-lisp",            Lrestart_lisp, Lrestart_lisp2, wrong_no_1},
+    {"restart-csl",             Lrestart_lisp, Lrestart_lisp2, wrong_no_1},
     {"eq",                      too_few_2, Leq, wrong_no_2},
     {"iequal",                  too_few_2, Leq, wrong_no_2},
     {"eqcar",                   too_few_2, Leqcar, wrong_no_2},

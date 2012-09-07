@@ -31,7 +31,6 @@ plain_wxfontdemo = wxfontdemo
 plain_wxfontdemo1 = wxfontdemo1
 plain_wxdvi = wxdvi
 plain_wxshowmathdemo = wxshowmathdemo
-plain_dyndemo = dyndemo
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_reduce = reduce.unnecessary.except.on.windows
@@ -47,7 +46,6 @@ plain_wxfontdemo = wxfontdemo.unnecessary.except.on.windows
 plain_wxfontdemo1 = wxfontdemo.unnecessary.except.on.windows
 plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
-plain_dyndemo = dyndemo.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -64,7 +62,6 @@ endif !exeext
 .PHONY: $(plain_wxdvi)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
-.PHONY: $(plain_dyndemo)
 
 .PHONY: report-dlls
 .PHONY:	bootstraprecompile
@@ -162,7 +159,7 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	$(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
+	termdemo$(EXEEXT) $(foxdemotarget) \
 	$(wxdemotarget)
 endif !mac_framework
 
@@ -387,19 +384,6 @@ wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-
-if windows
-DLLEXT=dll
-else !windows
-DLLEXT=so
-endif !windows
-
-dyndemo_SOURCES = dyndemo.c
-
-if !windows
-dyndemo_DEPENDENCIES = dynmodule.so
-endif !windows
-
 if windows
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
@@ -447,8 +431,6 @@ endif !gui
 
 GP=wgnuplot.exe
 
-dyndemo_LDADD = $(srcdir)/dyndemo.def
-
 reduceres = fwin-reduce.$(OBJEXT)
 
 AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
@@ -492,7 +474,6 @@ wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
 endif !wx
-dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
 	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
@@ -1061,9 +1042,6 @@ endif wx
 $(plain_termdemo):	termdemo.exe
 	echo "make termdemo.exe is preferred"
 
-$(plain_dyndemo):	dyndemo.exe dynmodule.dll
-	echo "make dyndemo.exe is preferred"
-
 endif exeext
 
 if cygwin
@@ -1154,7 +1132,7 @@ win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
-	objtype* cl-wrap* makeheaders* *.def machineid.c dynmodule*
+	objtype* cl-wrap* makeheaders* *.def machineid.c
 
 clean-local:
 	-rm -rf $(generatedfiles)
@@ -1178,7 +1156,7 @@ macr =
 endif !mac_framework
 
 generatedfiles=$(image_files) $(local_image_files) \
-	objtype makeheaders machineid.c dynmodule* \
+	objtype makeheaders machineid.c \
 	$(macr)
 
 clean-local:
@@ -1230,26 +1208,12 @@ endif !windows
 
 default:	reduce$(EXEEXT) reduce.img
 
-# This is the command needed to compile a module for use as a DLL or other
-# dynamically loaded module
-
 DLL_CFLAGS = @DLL_CFLAGS@
 
 COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
 
-if windows
-dyndef =  $(srcdir)/dynmodule1.def
-dyndep =
-else !windows
-dyndef =
-dyndep =
-endif !windows
-
 DLLIB=
-
-dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(srcdir)/dynmodule.def $(dyndep)
-	$(COMPILE_DLL) $(dyndef) $(srcdir)/dynmodule.c $(DLLIB) $(DEST)dynmodule.$(DLLEXT)
 
 if canrun
 
