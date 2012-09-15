@@ -32,7 +32,7 @@ case "guess:$guess" in
 	;;
 
   i386-unknown-freebsd8.* )
-	export MACHINE=freeBSD
+	MACHINE=freeBSD
 	;;
 
 esac
