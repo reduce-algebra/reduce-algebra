@@ -25,31 +25,36 @@ if test "x$2" != "x"
 
 guess=`../config.guess`
 
-if test $guess = "x86_64-unknown-linux-gnu"
- then
-        export MACHINE=AMD64
-fi
 
-if test $guess = "x86_64-apple-darwin10.4.0"
- then
-        export MACHINE=macintel64
-fi
+case "guess:$guess" in
 
-if test $guess = "x86_64-apple-darwin10.5.0"
- then
-        export MACHINE=macintel64
-fi
+  guess:x86_64-unknown-linux-gnu )
+        MACHINE=AMD64
+        ;;
 
-if test $guess = "i386-apple-darwin10.4.0"
- then
-        export MACHINE=macintel
-fi
+  guess:i686-pc-linux-gnu )
+	MACHINE=linux
+	;;
 
-if test $guess = "i686-pc-linux-gnu"
- then
-        export MACHINE=linux
+  guess:i386-apple-darwin10.4.0 )
+	MACHINE=macintel
+	;;
 
-fi
+  guess:x86_64-apple-darwin10.4.0 | guess:x86_64-apple-darwin10.5.0 )
+	MACHINE=macintel64
+	;;
+
+  x86_64-unknown-freebsd8.* )
+	MACHINE=freeBSD64
+	;;
+
+  i386-unknown-freebsd8.* )
+	MACHINE=freeBSD
+	;;
+
+esac
+
+export MACHINE
 
 echo
 echo "PSL REDUCE is made for " $MACHINE " from " $host
