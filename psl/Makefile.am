@@ -72,7 +72,7 @@ deps/noncore-packages.psl-depend:
 -include deps/noncore-packages.psl-depend
 
 red/reduce.img:  red/hugo
-	if  test -f "../../psl/mkreduce"; then rm ../../psl/mkreduce; \
+	if  test -f "../../psl/mkreduce"; then rm -f ../../psl/mkreduce; \
 	"$(srcdir)/reduce.img.sh" $(BUILD); \
 	fi
 
