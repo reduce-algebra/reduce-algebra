@@ -62,6 +62,16 @@ procedure ofsf_gsc(f,atl);
    end;
 
 procedure ofsf_gsc1(f,atl);
+   % This is to mind !*rlpos at the end.
+   begin scalar ql,varll,w;
+      if !*rlqepnf then
+	 f := cl_pnf f;
+      {ql,varll,f} := cl_split f;
+      w := ofsf_gsc2(f,atl);
+      return cl_unsplit(ql,varll,w)
+   end;
+
+procedure ofsf_gsc2(f,atl);
    % Ordered field standard form groebner simplification via
    % conjunctive normal form. [f] is an formula; [atl] is a list of
    % atomic formulas, which are considered to describe a theory. An
@@ -98,7 +108,13 @@ procedure ofsf_gsd(f,atl);
 
 procedure ofsf_gsd1(f,atl);
    % This is to mind !*rlpos at the end.
-   cl_simpl(ofsf_gsd2(f,atl),atl,-1);
+   begin scalar ql,varll,w;
+      if !*rlqepnf then
+	 f := cl_pnf f;
+      {ql,varll,f} := cl_split f;
+      w := cl_simpl(ofsf_gsd2(f,atl),atl,-1);
+      return cl_unsplit(ql,varll,w)
+   end;
 
 procedure ofsf_gsd2(f,atl);
    % Ordered field standard form groebner simplification via
@@ -122,6 +138,16 @@ procedure ofsf_gsd2(f,atl);
    end;
 
 procedure ofsf_gsn(f,atl);
+   % This is to mind !*rlpos at the end.
+   begin scalar ql,varll,w;
+      if !*rlqepnf then
+	 f := cl_pnf f;
+      {ql,varll,f} := cl_split f;
+      w := ofsf_gsn1(f,atl);
+      return cl_unsplit(ql,varll,w)
+   end;
+
+procedure ofsf_gsn1(f,atl);
    % Ordered field standard form groebner simplification via boolean
    % normal form. [f] is an formula; [atl] is a list of atomic
    % formulas, which are considered to describe a theory. An formula
@@ -144,7 +170,7 @@ procedure ofsf_gssimplify0(f,atl);
    % conjunction over disjunctions of atomic formulas or a
    % disjunctions of atomic formulas or an atomic formula; [atl] is a
    % list of atomic formulas, which are considered to describe a
-   % theory. A formula is returned. 
+   % theory. A formula is returned.
    begin scalar ofsf_gstv!*,!*cgbverbose,!*groebopt;
       return ofsf_gssimplify(f,atl)
    end;

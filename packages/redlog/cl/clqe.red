@@ -580,6 +580,17 @@ procedure cl_split(f);
       return {ql,varll,f,bvl}
    end;
 
+procedure cl_unsplit(ql,varll,f);
+   begin scalar res,varl;
+      res := f;
+      for each q in ql do <<
+	 varl := pop varll;
+	 for each v in varl do
+	    res := rl_mkq(q,v,res)
+      >>;
+      return res
+   end;
+
 declare cl_qe1!-iterate: (List,List,Formula,Theory,KernelL) -> List6;
 
 procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
