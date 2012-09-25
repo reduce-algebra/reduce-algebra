@@ -76,6 +76,8 @@ rl_set '(ofsf);
 
 procedure qepcad_qepcad(f,fn);
    begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,oldutf8,isfancy;
+      if rl_tvalp f then
+	 return f;
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
       scsemic := semic!*;
