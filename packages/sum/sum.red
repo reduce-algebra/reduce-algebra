@@ -37,7 +37,8 @@ put('sum,'simpfn,'simp!-sum);
 
 symbolic procedure freeof!-df(u, v);
    % check u contains differential operator with respect to v;
-   if atom u then t
+   if atom u or car u eq '!:dn!: or get(car u,'dname) then t
+    else if car u eq '!*sq then freeof!-df(prepsq cadr u,v)
     else if car(u) eq 'df
      then freeof!-df(cadr u,v) and not smember(v,cddr u)
     else freeof!-dfl(cdr u,v);
