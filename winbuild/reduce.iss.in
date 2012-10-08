@@ -1,0 +1,126 @@
+;;----------------------------------------------------------------;;
+;; -- reduce.iss --  REDUCE InnoSetup installation script         ;;
+;;----------------------------------------------------------------;;
+;;                                                                ;;
+;;  * InnoSetup version 5.1.7 or above is recommended             ;;
+;;                                                                ;;
+;;  * IMPORTANT!                                                  ;;
+;;    Section [CustomMessages] below contains messages            ;;
+;;    in several 8-bit encodings (code pages 1251, 1252).         ;;
+;;    Don't use any encoding conversion tool (e.g. iconv,         ;;
+;;    recode) on this file directly!                              ;;
+;;                                                                ;;
+;;----------------------------------------------------------------;;
+
+
+[Setup]
+AppName=REDUCE
+AppVerName=REDUCE
+AppId=REDUCE
+UsePreviousAppDir=yes
+AppPublisher=REDUCE Developers
+AppPublisherURL=http://reduce-algebra.sourceforge.net/
+AppSupportURL=http://reduce-algebra.sourceforge.net/
+AppUpdatesURL=http://reduce-algebra.sourceforge.net/
+AppVersion=@VERSION@
+OutputBaseFilename=Reduce
+DefaultDirName={pf}\Reduce
+DefaultGroupName=Reduce
+AllowNoIcons=yes
+LicenseFile=@srcdir@\csl\reduce.doc\BINARY-LICENSE.txt
+Compression=lzma/ultra
+SolidCompression=yes
+Uninstallable=yes
+UninstallFilesDir={app}\uninst
+ShowLanguageDialog=yes
+ChangesAssociations=yes
+PrivilegesRequired=none
+
+
+[Languages]
+Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "de"; MessagesFile: "compiler:Languages\German.isl"
+
+
+[Types]
+Name: "full"; Description: "{cm:FullInstallation}"
+Name: "cslonly"; Description: "{cm:CslOnlyInstallation}"
+Name: "pslonly"; Description: "{cm:PslOnlyInstallation}"
+Name: "custom"; Description: "{cm:CustomInstallation}"; Flags: iscustom
+
+
+[Components]
+Name: "common"; Description: "{cm:ReduceCommon}"; Types: full cslonly pslonly custom; Flags: fixed
+Name: "csl"; Description: "{cm:ReduceCSL}"; Types: full cslonly custom
+Name: "psl"; Description: "{cm:ReducePSL}"; Types: full pslonly custom
+
+
+[Files]
+; common
+Source: "@srcdir@\csl\reduce.doc\BINARY-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\csl\reduce.doc\BSD-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\csl\reduce.doc\LGPL-2.1.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\misc\primer.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+;Source: "@srcdir@\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\misc\sl.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\misc\sl.bib"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+;Source: "@srcdir@\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\manual\redlogo.png"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\manual\*.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+;Source: "@srcdir@\doc\manual\manual-pdf.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+;Source: "@srcdir@\doc\manual\manual-pdf*.html"; DestDir: "{app}\doc\"; Components: "common"
+;Source: "@srcdir@\doc\manual\manual-pdf*.png"; DestDir: "{app}\doc\"; Components: "common"
+;Source: "@srcdir@\doc\manual\manual-pdf.css"; DestDir: "{app}\doc\"; Components: "common"
+;Source: "@srcdir@\doc\manual\manual-pdf.html"; DestDir: "{app}\doc\"; DestName: "index.html"; Components: "common"
+
+Source: "@srcdir@\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
+
+; csl
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.fonts\*.*"; DestDir: "{app}\share\fonts"; Components: "csl"
+Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
+
+
+;psl
+Source: "@srcdir@\pslbuild\@build@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"
+Source: "@srcdir@\pslbuild\@build@\red\*"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
+Source: "@srcdir@\bin\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"
+
+
+[Icons]
+;Name: "{group}\redcsl"; Filename: "{app}\bin\redcsl.bat"; IconFileName: "{app}\bin\redcsl.bat"; Components: "csl"
+Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\reduce.exe"; Components: "csl"
+Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\bin\redpsl.bat"; Components: "psl"
+
+
+[CustomMessages]
+
+
+;=== English === LID=$0409 CodePage=0
+
+FullInstallation=Full Installation
+CslOnlyInstallation=Install CSL only
+PslOnlyInstallation=Install PSL Only
+CustomInstallation=Custom Installation
+
+ReduceCommon=Files common to CSL and PSL
+ReduceCSL=Files for CSL
+ReducePSL=Files for PSL
+
+German=German
+
+
+;=== German === LID=$0407 CodePage=1252
+
+de.FullInstallation=Vollständige Installation
+de.CslOnlyInstallation=Nur CSL installieren
+de.PslOnlyInstallation=Nur PSL installieren
+de.CustomInstallation=Benutzerdefinierte Installation
+de.Uninstall=Deinstallation
+
+ReduceCommon=Gemeinsame Dateien
+ReduceCSL=CSL-Dateien
+ReducePSL=PSL-Dateien
+
+de.German=Deutsch
