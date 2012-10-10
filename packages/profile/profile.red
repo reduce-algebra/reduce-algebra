@@ -31,7 +31,6 @@
 module profile;
 
 loadtime load!-package 'rltools;
-loadtime load!-package 'utf8;
 
 global '(!*comp);
 
