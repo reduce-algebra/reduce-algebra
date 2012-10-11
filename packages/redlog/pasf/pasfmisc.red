@@ -86,7 +86,7 @@ procedure pasf_qff2ivl(f);
       rederr{"pasf_qff2ivl : uniform Presburger arithmetic formula in input"}
    else
       pasf_qff2ivl1 pasf_dnf f;
-
+      
 procedure pasf_qff2ivl1(f);
    % Presburger arithmetic standard form positive quantifier free formula to
    % interval subprocedure. [f] is a quantifier free formula in one variable.
@@ -213,8 +213,8 @@ procedure pasf_b2terml(b,var);
    % $\{1,2,3,10\}$).
    begin scalar ivl;
       % Term list for uniform bounds not possible
-      if length cl_fvarl b > 1 then
-	 rederr{"pasf_b2terml called with a parametric bound"};
+%%       if length cl_fvarl b > 1 then
+%% 	 rederr{"pasf_b2terml called with a parametric bound"};
       % Note: imprudent use of this code is extremely space- and time-critical
       ivl := pasf_qff2ivl b;
       return for each iv in ivl join
@@ -524,9 +524,9 @@ procedure pasf_expand(f);
    % so that the bounded variables, and free variables are distinct.
    begin scalar fdec,flag,tmp;
       if !*rlverbose then ioto_tprin2 {"++++ Entering pasf_expand"};
-      % TS: Blindly use pasf_exprng1 for now
-      if !*rlverbose then ioto_prin2t " (exprng1)";
-      return cl_simpl(pasf_exprng1 f,nil,-1);
+      % TS: Blindly use pasf_exprng for now
+      if !*rlverbose then ioto_prin2t " (exprng)";
+      return cl_simpl(pasf_exprng f, nil, -1);
       %
       fdec := fdec_new(pasf_pnf f,nil);
       for each b in fdec_bvl fdec do <<
@@ -606,7 +606,7 @@ procedure pasf_exprng2(f);
 	       % Unknown operator
 	       rederr{"pasf_expand : unknown or illegal quantifier",rl_op f};
 	 tmp := cl_fvarl rl_b f;
-	 if length tmp > 1 or (length tmp = 1 and rl_var f neq car tmp) then
+	 if cdr tmp or not eqcar(tmp, rlvar f) then
 	    rederr {"Expanding a parametric bounded formula is impossible"};
 	 terml := pasf_b2terml(rl_b f,rl_var f);
 	 matr := pasf_exprng2 rl_mat f;
@@ -623,6 +623,86 @@ procedure pasf_exprng2(f);
       if rl_quap rl_op f then
       	 rl_mkq(rl_op f, rl_var f, pasf_exprng2 rl_mat f);
       return f
+   end;
+
+procedure pasf_exprng(f);
+   % Expand range. [f] is a weakly quantifier-free formula. Returns a
+   % quantifier-free formula.
+   begin scalar op, w, res, !*rlsism;
+      op := rl_op f;
+      if op eq 'and then
+	 return pasf_exprng!-gand('and, rl_argn f, 'true, 'false);
+      if op eq 'or then
+	 return pasf_exprng!-gand('or, rl_argn f, 'false, 'true);
+      if rl_boolp op then <<
+	 w := for each subf in rl_argn f collect pasf_exprng subf;
+	 return cl_simpl(rl_smkn(op, w), nil, -1)
+      >>;
+      if rl_bquap op then <<
+      	 w := cl_fvarl rl_b f;
+	 if not eqcar(w,rl_var f) or cdr w then
+	    rederr {"pasf_exprng: bad bound"};
+	 w := pasf_exprng rl_mat f;
+	 res := for each iv in pasf_qff2ivl rl_b f join
+	    for u := car iv : cdr iv collect
+	       pasf_sisub(w, rl_var f, u);
+	 return rl_smkn(if op eq 'bex then 'or else 'and, res)
+      >>;
+      % [f] is atomic or a truth value.
+      return f
+   end;
+
+procedure pasf_exprng!-gand(gand, argl, gtrue, gfalse);
+   begin scalar c, a, w, nargl;
+      c := t; while c and argl do <<
+	 a := pop argl;
+	 w := pasf_exprng a;
+	 if w eq gfalse then
+	    c := nil
+	 else if w neq gtrue then
+	    nargl := w . nargl
+      >>;
+      if not c then
+	 return gfalse;
+      return rl_smkn(gand, nargl)
+   end;
+
+procedure pasf_sisub(f, v, n);
+   % Simplifying substitution. [f] is a formula, [v] is a variable, [n] is an
+   % integer.
+   begin scalar op;
+      op := rl_op f;
+      if rl_quap op then
+	 return rl_mkq(op, rl_var f, pasf_sisub(rl_mat f, v, n));
+      if rl_bquap op then
+	 return rl_mkbq(op, rl_var f, rl_b f, pasf_sisub(rl_mat f, v, n));
+      if op eq 'and then
+	 pasf_sisub!-gand('and, rl_argn f, v, n, 'true, 'false);
+      if op eq 'or then
+	 pasf_sisub!-gand('or, rl_argn f, v, n, 'false, 'true);
+      if rl_boolp op then
+	 return rl_smkn(op, for each sf in rl_argn f collect
+	    pasf_sisub(sf, v, n));
+      if rl_tvalp op then
+	 return f;
+      % [f] is atomic.
+      return pasf_simplat1(
+	 pasf_0mk2(pasf_op f, numr subf(pasf_arg2l f, {v . n})), op)
+   end;
+
+procedure pasf_sisub!-gand(gand, argl, v, n, gtrue, gfalse);
+   begin scalar c, w, a, nargl;
+      c := t; while c and argl do <<
+	 a := pop argl;
+	 w := pasf_sisub(a, v, n);
+	 if w eq gfalse then
+	    c := nil
+	 else if w neq gtrue then
+	    nargl := w . nargl	 	    
+      >>;
+      if not c then
+	 return gfalse;
+      return rl_smkn(gand, nargl)
    end;
 
 switch hack;
