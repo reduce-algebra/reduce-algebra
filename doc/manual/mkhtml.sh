@@ -7,7 +7,7 @@ CONFIG=reduce
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
 # Remove .ind file, could be left over from latex run
-rm ${JOBNAME}.ind
+rm -f ${JOBNAME}.ind
 
 mk4ht htlatex ${JOBNAME} ${CONFIG},3
 

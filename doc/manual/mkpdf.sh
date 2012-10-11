@@ -7,7 +7,7 @@ SUCCESS=0
 RUNS=0
 
 # Remove .ind file, could be left over from tex4ht run
-rm ${JOBNAME}.ind
+rm -f ${JOBNAME}.ind
 
 # Run latex until it no longer complains about cross references
 until [ ${SUCCESS} = 1 ] ; do
@@ -18,7 +18,7 @@ until [ ${SUCCESS} = 1 ] ; do
       echo >&2 Maximum number of runs reached. Stop.
       exit 1
    fi
-   checksum ${JOBNAME}.aux
+#   checksum ${JOBNAME}.aux
 done
 
 # finally, run makeindex and latex once
