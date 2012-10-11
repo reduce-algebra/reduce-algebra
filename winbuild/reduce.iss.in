@@ -61,24 +61,24 @@ Source: "@srcdir@\csl\reduce.doc\BINARY-LICENSE.txt"; DestDir: "{app}\doc\"; Fla
 Source: "@srcdir@\csl\reduce.doc\BSD-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
 Source: "@srcdir@\csl\reduce.doc\LGPL-2.1.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
 Source: "@srcdir@\doc\misc\primer.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-;Source: "@srcdir@\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
 Source: "@srcdir@\doc\misc\sl.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
 Source: "@srcdir@\doc\misc\sl.bib"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-;Source: "@srcdir@\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
 Source: "@srcdir@\doc\manual\redlogo.png"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
 Source: "@srcdir@\doc\manual\*.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-;Source: "@srcdir@\doc\manual\manual-pdf.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-;Source: "@srcdir@\doc\manual\manual-pdf*.html"; DestDir: "{app}\doc\"; Components: "common"
-;Source: "@srcdir@\doc\manual\manual-pdf*.png"; DestDir: "{app}\doc\"; Components: "common"
-;Source: "@srcdir@\doc\manual\manual-pdf.css"; DestDir: "{app}\doc\"; Components: "common"
-;Source: "@srcdir@\doc\manual\manual-pdf.html"; DestDir: "{app}\doc\"; DestName: "index.html"; Components: "common"
+Source: "@srcdir@\doc\manual\manual-pdf.pdf"; DestDir: "{app}\lib\csl\reduce.doc\"; Flags: ignoreversion; Components: "common"
+Source: "@srcdir@\doc\manual\manual-pdf*.html"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
+Source: "@srcdir@\doc\manual\manual-pdf*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
+Source: "@srcdir@\doc\manual\manual-pdf.css"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
+Source: "@srcdir@\doc\manual\manual-pdf.html"; DestDir: "{app}\lib\csl\reduce.doc\"; DestName: "index.html"; Components: "common"
 
 Source: "@srcdir@\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
 
 ; csl
 Source: "@srcdir@\cslbuild\@build@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"
 Source: "@srcdir@\cslbuild\@build@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.fonts\*.*"; DestDir: "{app}\share\fonts"; Components: "csl"
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl"
 Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
 
 

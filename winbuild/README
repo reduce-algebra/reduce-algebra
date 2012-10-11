@@ -1,0 +1,15 @@
+BUILDING THE WINDOWS distributable PACKAGE
+
+Packing is done using InnoSetup, so you better install that first.
+
+Building the documentation requires the following cygwin packages:
+
+imagemagick
+texlive
+texlive-collection-basic
+texlive-collection-documentation-base
+texlive-collection-htmlxml
+texlive-collection-latex
+texlive-collection-latexextra
+texlive-collection-latexrecommended
+
