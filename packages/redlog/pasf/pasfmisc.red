@@ -666,7 +666,7 @@ procedure pasf_exprng!-gand(gand, argl, gtrue, gfalse);
 % Experimental option to expand from the outside to the inside instead of a
 % natural recursion. This might be statistically better but there is no
 % evidence.
-switch !*rlexprngunnatural;
+switch rlexprngunnatural;
 off1 'rlexprngunnatural;
 
 procedure pasf_exprng!-gball(v, b, m, gand, gtrue, gfalse);
