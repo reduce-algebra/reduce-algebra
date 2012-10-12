@@ -86,7 +86,7 @@ procedure pasf_qff2ivl(f);
       rederr{"pasf_qff2ivl : uniform Presburger arithmetic formula in input"}
    else
       pasf_qff2ivl1 pasf_dnf f;
-      
+
 procedure pasf_qff2ivl1(f);
    % Presburger arithmetic standard form positive quantifier free formula to
    % interval subprocedure. [f] is a quantifier free formula in one variable.
@@ -628,25 +628,21 @@ procedure pasf_exprng2(f);
 procedure pasf_exprng(f);
    % Expand range. [f] is a weakly quantifier-free formula. Returns a
    % quantifier-free formula.
-   begin scalar op, w, res, !*rlsism;
+   begin scalar op, w, !*rlsism;
       op := rl_op f;
       if op eq 'and then
 	 return pasf_exprng!-gand('and, rl_argn f, 'true, 'false);
       if op eq 'or then
 	 return pasf_exprng!-gand('or, rl_argn f, 'false, 'true);
+      if op eq 'ball then
+	 return pasf_exprng!-gball(
+	    rl_var f, rl_b f, rl_mat f, 'and, 'true, 'false);
+      if op eq 'bex then
+	 return pasf_exprng!-gball(
+	    rl_var f, rl_b f, rl_mat f, 'or, 'false, 'true);
       if rl_boolp op then <<
 	 w := for each subf in rl_argn f collect pasf_exprng subf;
 	 return cl_simpl(rl_smkn(op, w), nil, -1)
-      >>;
-      if rl_bquap op then <<
-      	 w := cl_fvarl rl_b f;
-	 if not eqcar(w,rl_var f) or cdr w then
-	    rederr {"pasf_exprng: bad bound"};
-	 w := pasf_exprng rl_mat f;
-	 res := for each iv in pasf_qff2ivl rl_b f join
-	    for u := car iv : cdr iv collect
-	       pasf_sisub(w, rl_var f, u);
-	 return rl_smkn(if op eq 'bex then 'or else 'and, res)
       >>;
       % [f] is atomic or a truth value.
       return f
@@ -667,6 +663,42 @@ procedure pasf_exprng!-gand(gand, argl, gtrue, gfalse);
       return rl_smkn(gand, nargl)
    end;
 
+% Experimental option to expand from the outside to the inside instead of a
+% natural recursion. This might be statistically better but there is no
+% evidence.
+switch !*rlexprngunnatural;
+off1 'rlexprngunnatural;
+
+procedure pasf_exprng!-gball(v, b, m, gand, gtrue, gfalse);
+   begin scalar c, u, w, argl, ivl, iv;
+      w := cl_fvarl b;
+      if not eqcar(w, v) or cdr w then
+	 rederr {"pasf_exprng: bad bound"};
+      if not !*rlexprngunnatural then
+      	 m := pasf_exprng m;
+      ivl := pasf_qff2ivl b;
+      c := t; while c and ivl do <<
+	 iv := pop ivl;
+	 u := car iv;
+	 while c and u leq cdr iv do <<
+	    w := pasf_sisub(m, v, u);
+	    if !*rlexprngunnatural then
+ 	       w := pasf_exprng w;
+	    if w eq gfalse then
+	       c := nil
+	    else <<
+	       if w neq gtrue then
+	       	  argl := w . argl;
+	       u := u + 1
+	    >>
+	 >>
+      >>;
+      if not c then
+	 return gfalse;
+      return rl_smkn(gand, argl)
+   end;
+
+
 procedure pasf_sisub(f, v, n);
    % Simplifying substitution. [f] is a formula, [v] is a variable, [n] is an
    % integer.
@@ -677,9 +709,9 @@ procedure pasf_sisub(f, v, n);
       if rl_bquap op then
 	 return rl_mkbq(op, rl_var f, rl_b f, pasf_sisub(rl_mat f, v, n));
       if op eq 'and then
-	 pasf_sisub!-gand('and, rl_argn f, v, n, 'true, 'false);
+	 return pasf_sisub!-gand('and, rl_argn f, v, n, 'true, 'false);
       if op eq 'or then
-	 pasf_sisub!-gand('or, rl_argn f, v, n, 'false, 'true);
+	 return pasf_sisub!-gand('or, rl_argn f, v, n, 'false, 'true);
       if rl_boolp op then
 	 return rl_smkn(op, for each sf in rl_argn f collect
 	    pasf_sisub(sf, v, n));
@@ -698,7 +730,7 @@ procedure pasf_sisub!-gand(gand, argl, v, n, gtrue, gfalse);
 	 if w eq gfalse then
 	    c := nil
 	 else if w neq gtrue then
-	    nargl := w . nargl	 	    
+	    nargl := w . nargl
       >>;
       if not c then
 	 return gfalse;
