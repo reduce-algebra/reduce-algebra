@@ -11,10 +11,10 @@ rem # Machine-independent kernel sources
 set pxk=%psl%\dist\kernel\win32
 rem # Machine specific kernel sources
 
-set pnk=%psl%dist\\nonkernel
+set pnk=%psl%\dist\nonkernel
 rem # Machine-independent non-kernel
-set pxnk=%psl%dist\nonkernel\win32
-remi # Machine specific non-kernel
+set pxnk=%psl%\dist\nonkernel\win32
+rem # Machine specific non-kernel
 set pnkl=%psl%\dist\nonkernel\win32\lap
 rem # Non-Kernel binaries
 
