@@ -373,7 +373,7 @@ defautoload(simplimit,limits);
 
 % Partial fractions entry point.
 
-put('pf,'simpfn,'simpiden);
+flag('(pf),'opfn);
 
 flag('(pf),'noval);
 
