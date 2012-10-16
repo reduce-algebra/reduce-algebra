@@ -84,14 +84,17 @@ Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
 
 ;psl
 Source: "@srcdir@\pslbuild\@build@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"
-Source: "@srcdir@\pslbuild\@build@\red\*"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
-Source: "@srcdir@\bin\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"
+Source: "@srcdir@\pslbuild\@build@\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
+Source: "@srcdir@\pslbuild\@build@\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
+Source: "@srcdir@\winbuild\reduce.img"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
+Source: "@srcdir@\winbuild\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"
+Source: "@srcdir@\winbuild\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"
 
 
 [Icons]
 ;Name: "{group}\redcsl"; Filename: "{app}\bin\redcsl.bat"; IconFileName: "{app}\bin\redcsl.bat"; Components: "csl"
 Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\reduce.exe"; Components: "csl"
-Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\bin\redpsl.bat"; Components: "psl"
+Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; Components: "psl"
 
 
 [CustomMessages]

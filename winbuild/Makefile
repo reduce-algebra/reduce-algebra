@@ -6,6 +6,7 @@ configure-all:	configure-csl configure-psl
 build-all:	build-csl build-psl build-docs
 
 package-win:
+	../psl/saveimage.sh ../pslbuild/i686-pc-windows $(abspath .) '$reduce/lib/psl'
 	@echo Please run Innosetup on winbuild/reduce.iss
 
 configure-csl:
