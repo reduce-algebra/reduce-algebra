@@ -19,6 +19,7 @@ AppVerName=REDUCE
 AppId=REDUCE
 UsePreviousAppDir=yes
 AppPublisher=REDUCE Developers
+VersionInfoCopyright=REDUCE Developers
 AppPublisherURL=http://reduce-algebra.sourceforge.net/
 AppSupportURL=http://reduce-algebra.sourceforge.net/
 AppUpdatesURL=http://reduce-algebra.sourceforge.net/
@@ -72,6 +73,7 @@ Source: "@srcdir@\doc\manual\manual-pdf*.html"; DestDir: "{app}\lib\csl\reduce.d
 Source: "@srcdir@\doc\manual\manual-pdf*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
 Source: "@srcdir@\doc\manual\manual-pdf.css"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
 Source: "@srcdir@\doc\manual\manual-pdf.html"; DestDir: "{app}\lib\csl\reduce.doc\"; DestName: "index.html"; Components: "common"
+Source: "@srcdir@\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: "common"
 
 Source: "@srcdir@\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
 
@@ -95,6 +97,41 @@ Source: "@srcdir@\winbuild\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl
 ;Name: "{group}\redcsl"; Filename: "{app}\bin\redcsl.bat"; IconFileName: "{app}\bin\redcsl.bat"; Components: "csl"
 Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\reduce.exe"; Components: "csl"
 Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; Components: "psl"
+
+
+[Run]
+Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
+
+
+[Code]
+var
+  NeedGnuPlotInstall: Boolean;
+  GnuPlotPath: String;
+
+
+function InitializeSetup(): Boolean;
+var
+  RegVal: String;
+begin
+  Log('InitializeSetup called');
+  if not RegQueryStringValue(HKEY_CLASSES_ROOT, 'gnuplot\shell\open\command', '', RegVal) then begin
+    NeedGnuPlotInstall := True;
+    Log('No Gnuplot Installed');
+  end else begin
+    NeedGnuPlotInstall := False;
+    GnuPlotPath := RegVal;
+    Delete(GnuPlotPath, Pos(' -p ', RegVal), Length(RegVal));
+    Log('Gnuplot found at '+GnuPlotPath);
+  end
+  Result := True;
+end;
+
+
+function MyGnuPlotCheck(): Boolean;
+begin
+  Result := NeedGnuPlotInstall;
+end;
+
 
 
 [CustomMessages]
