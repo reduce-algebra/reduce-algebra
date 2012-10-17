@@ -1,2 +1,3 @@
 #!/bin/bash
-$trunk/pslbuild/x86_64-mac_10.8_mountainlion-darwin12.2.0/psl/bpsl -td 1000 -f $trunk/generic/rlsmt/rlsmt.img < $1 | grep -v -e Loading -e Quitting -e ^$
+ARCH=$($trunk/scripts/findhost.sh $($trunk/config.guess))
+$trunk/pslbuild/$ARCH/psl/bpsl -td 1000 -f $trunk/generic/rlsmt/rlsmt.img < $1 | grep -v -e Loading -e Quitting -e ^$
