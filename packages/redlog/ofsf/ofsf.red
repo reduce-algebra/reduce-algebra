@@ -163,6 +163,7 @@ put('ofsf,'rl_params,'(
    (rl_mkequation!* . ofsf_mkequation)
    (rl_dfgPrintV!* . ofsf_dfgPrintV)
    (rl_dfgPrintAt!* . ofsf_dfgPrintAt)
+   (rl_smt2PrintAt!* . ofsf_smt2PrintAt)
    (rl_rxffn!* . ofsf_rxffn)));
 
 % Services
@@ -243,6 +244,7 @@ put('ofsf,'rl_services,'(
    (sl_atnum!* . cl_satnum)
    (sl_pnf!* . cl_spnf)
    (rl_dfgprint!* . cl_dfgPrint)
+   (rl_smt2print!* . cl_smt2Print)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin
