@@ -720,9 +720,12 @@ procedure cl_smt2Print(f,fname);
 
 procedure cl_smt2Print1(f);
    % Prefix print.
-   begin scalar ql,vll,vl;
-      f := cl_pnf f;
-      {ql,vll,f,vl} := cl_split f;
+   begin scalar vl;
+      vl := cl_varl1 f;
+      if car vl then
+	 rederr {"cl_smt2Print1: found free variables ", car vl};
+      vl := cdr vl;
+      f := cl_matrix cl_pnf f;
       for each v in vl do
 	 ioto_prin2t {"(declare-const ", v, " Real)"};
       prin2 "(assert ";
