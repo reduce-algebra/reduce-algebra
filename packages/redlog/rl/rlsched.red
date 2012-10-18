@@ -252,7 +252,9 @@ sl_alias('unsfy,'unstraightify);
 
 rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
-rl_mkserv('smt2print,'(rl_simp),'(reval),'(nil),'aeval,t);
+rl_mkserv('smt2Print,'(rl_simp),'(reval),'(nil),'aeval,t);
+
+rl_mkserv('smt2Read,'(dummy),nil,nil,nil,nil);
 
 % Black box scheduler.
 
@@ -385,6 +387,8 @@ rl_mkbb('rl_dfgPrintV,1);
 rl_mkbb('rl_dfgPrintAt,1);
 
 rl_mkbb('rl_smt2PrintAt,1);
+
+rl_mkbb('rl_smt2ReadAt,1);
 
 endmodule;  % [rlsched]
 

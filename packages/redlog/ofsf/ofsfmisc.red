@@ -554,22 +554,51 @@ procedure ofsf_smt2PrintT1(op,argl);
       prin2 ")"
    >> else if op eq 'plus then <<
       prin2 "(+ ";
-      for each rargl on argl do <<	 
+      for each rargl on argl do <<
       	 ofsf_smt2PrintT car rargl;
-	 if cdr rargl then	    
+	 if cdr rargl then
       	    prin2 " "
-      >>;	 
+      >>;
       prin2 ")"
    >> else if op eq 'times then <<
       prin2 "(* ";
-      for each rargl on argl do <<	 
+      for each rargl on argl do <<
       	 ofsf_smt2PrintT car rargl;
-	 if cdr rargl then	    
+	 if cdr rargl then
       	    prin2 " "
-      >>;	 
+      >>;
       prin2 ")"
    >> else if op eq 'expt then
       ofsf_smt2PrintT1('times, for i:=1:cadr argl collect car argl);
+
+procedure ofsf_smt2ReadAt(form);
+   begin scalar op, w;
+      op := car form;
+      w := atsoc(op, '((!>!= . geq) (!<!= . leq) (!< . lessp) (!> . greaterp)
+   	 (!= . equal)));
+      if not w then
+	 cl_smt2ReadError {"error: expecting logical symbol but found ", op};
+      op := cdr w;
+      return ofsf_0mk2(op,
+      	 addf(ofsf_smt2ReadTerm cadr form, negf(ofsf_smt2ReadTerm caddr form)))
+   end;
+
+procedure ofsf_smt2ReadTerm(u);
+   numr simp ofsf_smt2ReadTerm1 u;
+
+procedure ofsf_smt2ReadTerm1(u);
+   begin scalar op, w;
+      if atom u then
+ 	 return u;
+      op := car u;
+      w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times)));
+      if not w then
+	 cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
+      op := cdr w;
+      if op eq 'minus and cddr u then
+	 cl_smt2ReadError {"error: found non-unary '-'"};
+      return op . for each arg in cdr u collect ofsf_smt2ReadTerm1 arg
+   end;
 
 endmodule;  % [ofsfmisc]
 

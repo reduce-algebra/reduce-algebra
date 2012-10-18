@@ -126,7 +126,7 @@ off1 'rladdcond;
 off1 'rlqeqsc;
 off1 'rlqesqsc;
 off1 'rlsusi;
-on1 'rlsusimult;
+off1 'rlsusimult;
 off1 'rlsusigs;
 on1 'rlsusiadd;
 on1  'rlcadfac;

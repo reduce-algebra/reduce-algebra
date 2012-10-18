@@ -263,7 +263,7 @@ procedure cl_closure(q,f,nl);
    % variables of [f] that are not in [nl].
    begin scalar freevarl,result;
       % Create a list of all free variables.
-      freevarl := car cl_varl1 f;
+      freevarl := reversip car cl_varl f;
       % Remove the variables of the negative list.
       for each v in nl do
  	 freevarl := delqip(v,freevarl);
@@ -734,7 +734,7 @@ procedure cl_smt2Print1(f);
    end;
 
 procedure cl_smt2PrintQff(f);
-   begin scalar op,l,r;
+   begin scalar op;
       op := rl_op f;
       if op eq 'impl then
 	 cl_smt2PrefixPrint("=>", rl_argn f)
@@ -763,6 +763,23 @@ procedure cl_smt2PrefixPrint(op, argl);
       >>;
       prin2 ")"
    >>;
+
+lisp procedure cl_smt2Read(form);
+   % SMT lib 2 read. Form is the argument of an assert form in the smt2 format.
+   % Returns a quantifier-free formula.
+   begin scalar op, w;
+      op := car form;
+      if op eq '!=!> then
+ 	 op := 'impl;
+      if op memq '(not impl) then
+	 return rl_mkn(op, for each arg in cdr form collect cl_smt2Read arg);
+      if op memq '(and or) then
+	 return rl_smkn(op, for each arg in cdr form collect cl_smt2Read arg);
+      return rl_smt2ReadAt(form)
+   end;
+
+procedure cl_smt2ReadError(x);
+   rederr x;
 
 endmodule;  % [clmisc]
 
