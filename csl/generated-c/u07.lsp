@@ -1,13 +1,26 @@
 
 % u07.lsp           Machine generated Lisp
 
-(c!:install "u07" 3534 3818461 8332700)
+(c!:install "u07" 19162 7490797 3339080)
+
+(c!:install 'pv_sort2a '(pv_sort2a) 1824137972577004746)
+
+(c!:install 'ordn '(ordn nil ordad ordp) 1951851007915704415)
+
+(c!:install 'polynomadd '(polynomadd nil monomcompare) 
+974150726482038692)
+
+(c!:install 'setdiff '(setdiff nil) 1659014747889895446)
 
 (c!:install 'mcharg2 '(mcharg2 nil mchk updtemplate msappend lastpair) 
 1393188779926853418)
 
+(c!:install 'symbol '(symbol symbol!-character) 1629288704270816226)
+
 (c!:install 'mri_pasf2mriat '(mri_pasf2mriat mri_0mk2) 
 1780723413708049718)
+
+(c!:install 'pasf_susipost '(pasf_susipost) 200211524601506405)
 
 (c!:install 'ibalp_varlt1 '(ibalp_varlt1 t nil ibalp_argn lto_insertq) 
 1238347319408794872)
@@ -31,38 +44,21 @@ getrtype lprie rmmbreval opfneval getelv prepsqxx) 628407640481382871)
 phystype phystypefn "PHYSOP type conflict in" physopp scalopp vecopp
 tensopp statep collectphystype rederr2) 1541198464352777992)
 
-(c!:install 'form '(form always_nform nil !*rlisp88 !*vars!* !*mode
-symbolic t modefn "algebraic expression" "Rlisp88 form" n_form typerr
-form1) 763742554487307714)
+(c!:install 'symbid '(symbid fname!* ftype!* (macro smacro) t share
+!*comp !*cref constant!? nil !*msg "***"
+"nonlocal use of undeclared variable" "in procedure" lpriw) 
+1915864146556810848)
 
 (c!:install 'dp_ecart '(dp_ecart dp!=ecart dp_lmon mo_ecart) 
 1479845919539339911)
 
-(c!:install 'maprint '(maprint p!*!* nil t minus infix "(" ")" pprifn
-failed prifn orig!* posn!* obrkp!* !*comma!* prin2!* inprint vec!-maprin
-) 1329401496558268994)
-
 (c!:install 'gperm1 '(gperm1 rev) 509176850750202277)
 
-(c!:install 'sfto_dcontentf1 '(sfto_dcontentf1 t minusf negf sfto_gcdf) 
-1188175260126615887)
-
 (c!:install 'ckrn1 '(ckrn1 t !*ncmp gck2 noncomp1) 2129272416879352252)
-
-(c!:install 'ofsf_smwcpknowl '(ofsf_smwcpknowl !*rlsusi cl_susicpknowl
-ofsf_smcpknowl) 172017522939197164)
-
-(c!:install 'symbol '(symbol symbol!-character) 1629288704270816226)
-
-(c!:install 'kernord '(kernord kernord!-split kernord!-sort) 
-1705461217576309226)
 
 (c!:install 'ibalp_istotal '(ibalp_istotal t nil) 100607929419009270)
 
 (c!:install 'multiom '(multiom nil objectom) 2094134687796705634)
-
-(c!:install 'ps!:get!-term '(ps!:get!-term nil t !:ps!: dname ps!:order
-ps!:last!-term ps!:getv) 1633553072381703801)
 
 (c!:install 'groebsearchinlist '(groebsearchinlist nil buchvevdivides!?)
  1906586905916983737)
@@ -77,12 +73,16 @@ times deg!*farg addd negf addf) 835050311016446263)
 
 (c!:install 'sroad '(sroad nreverse) 1510482062667170470)
 
-(c!:install 'assert_analyze '(assert_analyze assertstatistics!*
-lambda_lqlbvb_1 nil (function !#calls !#bad! calls
-!#assertion! violations) sum " " "-" sort) 1981515460151596941)
+(c!:install 'token1 '(token1 crchar!* !$eol!$ !*eoldelimp nil tokprop !%
+!*savecomments!* !! !*micro!-version !*defn !" !\ ttype!* !$eof!$ ! 
+nxtsym!* delchar !- !*minusliter minus !*lower !*raise !_ !:
+!*line!-marker curline!* (!\ e n d !{ r e d u c e !}) peekchar!* (!\ b e
+g i n !{ r e d u c e !}) !*msg "***"
+"Name with double colon in detected:" "***** End-of-file in string"
+readch1 token!-number lispapply filenderr lpriw) 2052058514188453399)
 
-(c!:install 'lambda_lqlbvb_1 '(lambda_lqlbvb_1 ordp) 2208832028529954577
-)
+(c!:install 'ckpreci!# '(ckpreci!# times i nil !*complex ckprec2!#) 
+897017980853818743)
 
 (c!:install 'red!-ratios2 '(red!-ratios2 nil red!-lowest!-terms) 
 588106545438330009)
@@ -95,8 +95,7 @@ lambda_lqlbvb_1 nil (function !#calls !#bad! calls
 (c!:install 'polynommultiplybymonom '(polynommultiplybymonom nil
 polynomclone polynommultiplybyvariable) 2111836592040097751)
 
-(c!:install 'sfto_gcdf!* '(sfto_gcdf!* t !*gcd sfto_gcdf) 
-531260957521927603)
+(c!:install 'ordpa '(ordpa t nil ordpv1) 1961772832555718688)
 
 (c!:install 'wulessp '(wulessp nil wuconstantp symbollessp) 
 799452387677490987)
@@ -104,11 +103,13 @@ polynomclone polynommultiplybyvariable) 2111836592040097751)
 (c!:install 'ibalp_litlp '(ibalp_litlp t nil ibalp_litp) 
 1778048243194571142)
 
+(c!:install 'vdp_poly '(vdp_poly) 1621136418650712159)
+
 (c!:install 'carx '(carx "Wrong number of arguments to" errmsg!*
 !*protfg lprie) 822190748143071627)
 
-(c!:install 'ps!:expression '(ps!:expression t !:ps!: dname nil ps!:getv
-) 2142240046654939788)
+(c!:install 'ps!:get!-term '(ps!:get!-term nil t !:ps!: dname ps!:order
+ps!:last!-term ps!:getv) 1633553072381703801)
 
 (c!:install 'c!:extmult '(c!:extmult t nil c!:ordexn c!:subs2multf negf
 c!:extadd) 2127062284895897094)
@@ -116,25 +117,12 @@ c!:extadd) 2127062284895897094)
 (c!:install 'testred '(testred codmat maxvar nil downwght1) 
 990918630093216676)
 
+(c!:install 'comm_kernels1 '(comm_kernels1 t !*ncmp noncomp1) 
+1750916345471170507)
+
 (c!:install 'bcone!? '(bcone!? !*grmod!* nil) 1939378259559686919)
 
 (c!:install 'ncmpchk '(ncmpchk t noncommuting ordop) 425689243853439855)
-
-(c!:install 'scan '(scan cursym!* !*semicol!* nxtsym!* !:dn!: t !:int!:
-nil else outl!* newnam comment !*comment !% ttype!* percent_comment !#if
-!#else !#elif !#endif !#eval " '" !*backtrace !#define !$eof!$ !'
-!*protfg "Invalid QUOTE" !*eoldelimp !$eol!$ switch!* crchar!* !*rpar!*
-!*comment!* comment!* semic!* string " " token1 filenderr read!-comment1
-rread1 errorset read!-comment lprie) 312602668990069593)
-
-(c!:install 'rnplus!: '(rnplus!: mkrn) 1381157270254881743)
-
-(c!:install 'dp!=ecart '(dp!=ecart dp_lmon mo_ecart) 1513483039109638609
-)
-
-(c!:install 'gperm '(gperm nil gperm0 pkp) 43790707227200653)
-
-(c!:install 'cdarx '(cdarx cdar carx) 907577834698043058)
 
 
 % End of generated Lisp code

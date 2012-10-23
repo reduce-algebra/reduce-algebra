@@ -1,7 +1,7 @@
 
 % u01.lsp           Machine generated Lisp
 
-(c!:install "u01" 19095 7754670 5407145)
+(c!:install "u01" 10866 4407805 9468691)
 
 (c!:install 'reval '(reval t reval1) 607148151428708743)
 
@@ -13,8 +13,8 @@
 
 (c!:install '!*d2q '(!*d2q nil !:zerop) 637035353559099761)
 
-(c!:install 'readch1 '(readch1 !*int ifl!* !$eol!$ curline!* nil
-crbuf1!* crbuf!*) 2141418192445341486)
+(c!:install 'readch1 '(readch1 peekchar!* !*int ifl!* !$eol!$ curline!*
+nil crbuf1!* crbuf!*) 1302449891674351742)
 
 (c!:install 'quotf '(quotf t !*exp quotf1) 985572180358968177)
 
@@ -31,9 +31,6 @@ nil deglex monomcomparedegrevlex monomcomparedeglex monomcomparelex)
 
 (c!:install 'mkcopy '(mkcopy nreverse) 265472229617086214)
 
-(c!:install 'remove!-free!-vars!-l '(remove!-free!-vars!-l !*sq
-remove!-free!-vars prepsq!*) 1236311590248156795)
-
 (c!:install 'mchk!* '(mchk!* !*mcd nil mchk prepf) 2103513295582221545)
 
 (c!:install 'prepf '(prepf nil prepf1a replus1) 632788825718117041)
@@ -45,7 +42,8 @@ remove!-free!-vars prepsq!*) 1236311590248156795)
 
 (c!:install 'qqe_rqopp '(qqe_rqopp (qequal qneq)) 263893607966600200)
 
-(c!:install 'kernels1 '(kernels1 t) 280414771262904288)
+(c!:install 'setkorder '(setkorder kord!* nil alglist!*) 
+1274397398323497919)
 
 (c!:install 'ibalp_clmember '(ibalp_clmember nil ibalp_cequal) 
 1086532383204668206)
@@ -107,6 +105,8 @@ intequivfn) 872083308430638116)
 
 (c!:install 'xcomment '(xcomment comment) 2209671256892413223)
 
+(c!:install 'reorder '(reorder t raddf rmultpf) 1342638692105521622)
+
 (c!:install 'monomgetvariabledegree '(monomgetvariabledegree nil) 
 296208610728129592)
 
@@ -120,8 +120,7 @@ intequivfn) 872083308430638116)
 (c!:install 'prepf1a '(prepf1a nil prepf1a_reversed) 1382280433481874231
 )
 
-(c!:install 'setkorder '(setkorder kord!* nil alglist!*) 
-1274397398323497919)
+(c!:install 'kernels1 '(kernels1 t) 280414771262904288)
 
 (c!:install 'ibalp_emptyclausep '(ibalp_emptyclausep nil) 
 1362847904587960362)
@@ -168,6 +167,8 @@ multiply!-by!-constant!-mod!-p nil t adjoin!-term) 1860229763733566770)
 (c!:install 'multdm '(multdm nil dmode!* t convert i2d times dcombine) 
 1905287449407817295)
 
+(c!:install 'hasonevector '(hasonevector nil vecp) 1034795263396241619)
+
 (c!:install 'dssoc '(dssoc nil) 719971745282957584)
 
 (c!:install 'noncomlistp '(noncomlistp nil noncomp1) 2186796159528375232
@@ -192,6 +193,9 @@ cursym!* end !; token1) 1115182728816103448)
 (c!:install 'lto_setequalq '(lto_setequalq !*rlsetequalqhash nil t
 lto_hashequalq lto_equallengthp) 1500695953435441534)
 
+(c!:install 'noncomp1 '(noncomp1 nil !*ncmp taylor!* t noncomfp1
+noncomlistp) 1902586927742074833)
+
 (c!:install 'numlis '(numlis t nil) 1376587961806801432)
 
 (c!:install 'constp '(constp nil domainlist!*) 183478987393720483)
@@ -205,14 +209,13 @@ vevmtest!? gevcompatible1) 1973352151603626490)
 
 (c!:install '!:times '(!:times t nil times dcombine) 603444015858783716)
 
-(c!:install 'pprin2 '(pprin2 !*pprinbuf!* !*posn!*) 419699407419200045)
-
 (c!:install 'isanindex '(isanindex nil physopindices!* physopvarind!*
 frlis!* frasc!* revassoc) 978810615007836746)
 
-(c!:install 'formlis '(formlis form1) 338499842440111720)
+(c!:install 'getrmacro '(getrmacro nil macro smacro getd) 
+2120815575009837968)
 
-(c!:install 'aeval!* '(aeval!* alglist!* nil reval1) 471771588789385880)
+(c!:install 'aeval!* '(aeval!* nil alglist!* reval1) 482345260368919483)
 
 (c!:install 'bc_prod '(bc_prod multf bc!=simp) 1965149522019676221)
 
@@ -237,8 +240,6 @@ current!-modulus) 1125200793222787416)
 
 (c!:install 'anform '(anform !*globals nil locls!* glb2rf globs!*
 anform1) 513186927183167842)
-
-(c!:install 'reorder '(reorder t raddf rmultpf) 1342638692105521622)
 
 (c!:install 'ofsf_smwupdknowl '(ofsf_smwupdknowl !*rlsusi
 cl_susiupdknowl ofsf_smupdknowl) 513174481805259811)

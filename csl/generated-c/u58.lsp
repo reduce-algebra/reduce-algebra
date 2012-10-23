@@ -1,103 +1,71 @@
 
 % u58.lsp           Machine generated Lisp
 
-(c!:install "u58" 12019 1494157 3073430)
+(c!:install "u58" 17017 7114670 1372028)
+
+(c!:install 'addfd '(addfd t addd nreverse ordp) 1694071374349011879)
+
+(c!:install 'i_solve!-eval '(i_solve!-eval t !*i_solve r_solve!-eval) 
+29341982009801111)
+
+(c!:install 'mkgi '(mkgi !:gi!:) 599723127963381976)
+
+(c!:install 'rl_subat '(rl_subat rl_subat!* apply) 823858473539513481)
 
 (c!:install 'install!-patches '(install!-patches patches nil patchfn
 !*usermode !*redefmsg eval) 653483402372351151)
 
-(c!:install 'rd!:quotient '(rd!:quotient "division by zero" errmsg!*
-!*protfg nil !*!*roundbf !:rd!: yy!! "zero divisor in quotient"
-!:bprec!: quotient !*backtrace t !:zerop lprie convprc2 error divide!:
-csl_normbf errorset rndbfon fl2bf read!:num safe!-fp!-quot) 
-221289813031390992)
+(c!:install 'fortexp1 '(fortexp1 !+ nil t minus !*!* literal range !:
+!:rd!: !:lower!-sci!: !:upper!-sci!: !:bprec!: !. !*double !D !E (!D 0)
+!:crn!: !:gi!: !:cr!: !*f90 cmplx!( !, kind!(1!.0!D0!) !)
+!*fortranname!* (real dble) real listp fortranname optype
+fortranprecedence fortranop insertparens lastpair isfloat !*gi2cr
+!*crn2cr round!:mt csl_normbf bfexplode0 fortliteral fl2bf fortexp) 
+1244872942248745800)
+
+(c!:install 'argset '(argset nil fctargs union) 2040869676363859390)
+
+(c!:install 'formclear1 '(formclear1 list nil share form1) 
+639130403771559653)
+
+(c!:install 'dv_skelsplit1 '(dv_skelsplit1 nil !* copy lastpair) 
+1525414552319530384)
+
+(c!:install 'get!-alpha '(get!-alpha alphalist "Alpha not found for "
+" in " assoc!-alpha errorf) 425178542861694733)
+
+(c!:install 'ofsf_qefsolset '(ofsf_qefsolset equal (failed) !*rlbrkcxk
+nil t !*rlqegen gignore neq ofsf_varlat rltools_lpvarl ofsf_findeqsol
+ofsf_valassp) 846880813633043415)
+
+(c!:install 'letexprn '(letexprn times difference quotient mcond!* t nil
+!*sqvar!* alglist!* !*match used!* df "Substitution for" "not allowed"
+opmtch asymplis!* powlis!* replace frasc!* powlis1!* let!-prepf let2
+kernlp quotf!* klistt xadd!* fkern setk1 msgpri smember xadd delasc
+term!-split) 1864031147873751191)
+
+(c!:install 'get!*elem!*in!*generators '(get!*elem!*in!*generators
+elem_in_generators id nil t !*protfg
+"error in get!*elem!*in!*generators" lprie) 1266753635258630176)
+
+(c!:install 'rl_cput '(rl_cput) 436497535707542587)
+
+(c!:install 'qqe_harmless!-formula!-test!-term '(
+qqe_harmless!-formula!-test!-term t (lhead rhead) nil qqe_op
+qqe_harmless!-formula!-test!-qterm) 1269895317863303406)
+
+(c!:install 'bc_pmon '(bc_pmon nil) 1285818292131489088)
+
+(c!:install 'smaddm2 '(smaddm2 nil copy_vect findrow simp addsq mk!*sq
+letmtr3) 2249339279527841630)
+
+(c!:install 'random_minus '(random_minus minus random) 
+353611885394307854)
 
 (c!:install 'partitindexvar '(partitindexvar nil minus metricu!*
 covariant t indxsymmetries revalind !*num2id deg!*form getlower simp
 multpfsq addpf coposp mkupf mksq indexsymmetrize negf getupper) 
 535947717710149049)
-
-(c!:install 'mult_derivs '(mult_derivs nil union) 237474234105965894)
-
-(c!:install 'simpdfp '(simpdfp frlis!* dfp list nil generic_function t (
-list) dfp_commute kord!* ordp "generic differential" typerr reval
-dfp!-normalize simp sort mksq simpdf) 2069797180365068344)
-
-(c!:install 'grk '(grk t nil simp) 430851822578077087)
-
-(c!:install 'ofsf_smmkatl!-and1 '(ofsf_smmkatl!-and1 nil (lessp greaterp
-) and lastpair ofsf_smmkat!-and2 ofsf_entry2at) 2251178583896239765)
-
-(c!:install 'mk_character '(mk_character nil get_group_in get!*elements
-get_rep_matrix_in mk!+trace) 1955802577686070231)
-
-(c!:install 'cl_sacatlp '(cl_sacatlp t) 546834097179446475)
-
-(c!:install 'bc_pmon '(bc_pmon nil) 1285818292131489088)
-
-(c!:install 'tryfactorf '(tryfactorf nil failed t atomlis quadthroughf
-quotf linethroughf) 1231530457399166361)
-
-(c!:install 'svec '(svec aeval) 1539853183896374277)
-
-(c!:install 'random_minus '(random_minus minus random) 
-353611885394307854)
-
-(c!:install 'exformp '(exformp t nil frlis!* fdegree indexvar ifdegree
-!*sq prepf (wedge d partdf hodge innerprod liedf) dname lexformp sqform)
- 528806046950061287)
-
-(c!:install 'tcar '(tcar) 1870994685418799642)
-
-(c!:install 'getlower '(getlower metricd!*) 236674417296813983)
-
-(c!:install 'mk_edge_name '(mk_edge_name n_edge) 779004546166813582)
-
-(c!:install 'select_epsi_pairs '(select_epsi_pairs nil cov_contp) 
-1837052023058870487)
-
-(c!:install 'pe_inv '(pe_inv nil upbve) 2189422856484655009)
-
-(c!:install 'nordp '(nordp ordp) 132972788845861410)
-
-(c!:install 'i_solve!-eval '(i_solve!-eval t !*i_solve r_solve!-eval) 
-29341982009801111)
-
-(c!:install 'general!-monic!-mod!-p '(general!-monic!-mod!-p nil t
-"LC NOT NUMERIC IN GENERAL-MONIC-MOD-P" general!-modular!-reciprocal
-general!-multiply!-by!-constant!-mod!-p errorf) 1717274316630168683)
-
-(c!:install 'split_non_linear_f '(split_non_linear_f t nil multf
-update_kc_list addf) 1657986989020349055)
-
-(c!:install 'rl_cput '(rl_cput) 436497535707542587)
-
-(c!:install 'ratpoly_fromsf '(ratpoly_fromsf) 437253271807816272)
-
-(c!:install 'simppsexplim '(simppsexplim ps!:exp!-lim psexplim "integer"
-nil carx reval typerr) 2177300027420972205)
-
-(c!:install 'subeval0 '(subeval0 nil equal sublist!* sub !*protfg
-"SUB requires at least 2 arguments" !*evallhseqp list equalopr
-"Syntax error:" "invalid" t reval reversip2 fkern getpower mk!*sq lprie
-getrtype msgpri !*a2kwoweight aeval subeval1) 410173650401475526)
-
-(c!:install 'edsorlist '(edsorlist eds list getrtype) 370704337872496571
-)
-
-(c!:install 'addm1 '(addm1 nil t "Matrix mismatch" errmsg!* !*protfg
-nreverse lprie) 1713016891200220096)
-
-(c!:install 'rep_edge_prop_ '(rep_edge_prop_ t) 1877483256415604022)
-
-(c!:install 'mod!* '(mod!* cali!=degrees dpmat_coldegs dp_neworder
-dpmat_list bas_make red_redpol bas_dpoly) 1926040955582660415)
-
-(c!:install 'sep_tens_from_other '(sep_tens_from_other nil translate1 t
-fullcopy setcar tensorp no_dum_varp multf) 1817790483172146138)
-
-(c!:install 'poly!-to!-vector '(poly!-to!-vector t poly!-vector !*d2n) 
-1293513015567059813)
 
 
 % End of generated Lisp code

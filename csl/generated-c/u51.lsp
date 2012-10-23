@@ -1,110 +1,131 @@
 
 % u51.lsp           Machine generated Lisp
 
-(c!:install "u51" 18454 392275 2642300)
+(c!:install "u51" 4706 6120924 949020)
 
-(c!:install 'monic!-mod!-p '(monic!-mod!-p nil t
-"LC NOT NUMERIC IN MONIC-MOD-P" multiply!-by!-constant!-mod!-p errorf) 
-2051621529702549793)
+(c!:install 'revalpart '(revalpart "part called without arguments"
+errmsg!* !*protfg !*intstr t list nil !*hold "Expression"
+"does not have part" "Invalid argument" "to part" partop getrtype reval
+msgpri pnth listeval0 lprie) 489280191542224802)
 
-(c!:install 'split_non_linear_form '(split_non_linear_form nil
-split_non_linear_f) 217814701749651358)
+(c!:install 'dp!=a2dpatom '(dp!=a2dpatom nil cali!=basering
+ring_all_names bc_fi mo_from_a dp_term bc_from_a mo_zero) 
+246099130638398132)
+
+(c!:install 'modroots1 '(modroots1 nil g plus times t subf
+reduce!-mod!-p!* modroots2 modp) 1050950286806908222)
+
+(c!:install 'r2flbf2r '(r2flbf2r r2flbf realrat) 412407150314087838)
+
+(c!:install 'setqdeletedescendants '(setqdeletedescendants
+fluidbibasissetq nil) 1067265262060072884)
+
+(c!:install 'ofsf_smmkatl!-or '(ofsf_smmkatl!-or nil or
+ofsf_smmkatl!-or1 lastpair ofsf_ir2atl) 1775478292988938837)
+
+(c!:install 'preptaycoeff '(preptaycoeff nil infinity quotient reval
+checkdifference checkexp) 1151125450771960431)
+
+(c!:install 'mk_resimp_rep '(mk_resimp_rep nil get_group_in
+get!*elements get_rep_matrix_in mk!+resimp!+mat) 2079311118525604802)
+
+(c!:install 'subst!-cn '(subst!-cn t nil setkorder reorder multf addf) 
+1912112996527767049)
+
+(c!:install 'qqe_ofsf_ordatp '(qqe_ofsf_ordatp ordp qqe_ofsf_ordrelp) 
+1015085286788638325)
+
+(c!:install 'repr_new '(repr_new !*protfg
+"repr_new : invalid coefficient list" lprie) 1539416981401029104)
+
+(c!:install 'subsetneqp '(subsetneqp nil subsetp) 1834216667324185968)
+
+(c!:install 'calc_map_2d '(calc_map_2d mk_names_map_2 mk_binding
+coeff_calc) 2072218527561229452)
+
+(c!:install 'sc_create '(sc_create nil symbolic list2vect!*) 
+1008660952504726646)
+
+(c!:install 'glsoleig '(glsoleig nil negf multf) 1405951657791942658)
+
+(c!:install 'quotfail!-mod!-p '(quotfail!-mod!-p t exact!-quotient!-flag
+"QUOTIENT NOT EXACT (MOD P)" quotient!-mod!-p errorf) 548509529394753561
+)
 
 (c!:install 'remk '(remk nil degr multf negf addf) 530152702651376348)
 
-(c!:install 'multtaylor!* '(multtaylor!* taylor!* !*taylorkeeporiginal
-nil multtaylor1 replace!-next multsq) 846950273893691823)
+(c!:install 'rule!-list '(rule!-list nil frasc!* t mcond!* avalue list
+"rule list" equal !*msg "***" "Please use => instead of = in rules"
+replaceby "rule" when algebraic typerr remove!-free!-vars
+remove!-free!-vars!* formbool rule!* lpriw) 1983491062097872713)
 
 (c!:install 'mk_rep_mat '(mk_rep_mat nil get!+row!+nr mk!+unit!+mat
 get_rep_of_generator mk!+mat!+mult!+mat) 182154181885287299)
 
-(c!:install 'nsubsq '(nsubsq plus subsq) 899466300141227411)
+(c!:install 'termlst1 '(termlst1 nil t expt e multf simp!* multsq addsq)
+ 219519910297821759)
 
-(c!:install 'ofsf_simpat '(ofsf_simpat !*rlnzden !*rlposden t
-"atomic formula" nil !*rladdcond (lessp leq greaterp geq) and greaterp
-neq simp typerr negf addsq multf) 1605122878239090247)
+(c!:install 'repr_ldeg '(repr_ldeg) 1453945991219188442)
+
+(c!:install 'ev_max!# '(ev_max!#) 1938215986788281525)
+
+(c!:install 'exdfp0 '(exdfp0 nil t subfg!* exdff0 multpfsq exdfk exformp
+) 1359672203248479282)
+
+(c!:install 'xadd '(xadd replace nil t updoldrules) 1037658286132575604)
+
+(c!:install 'rd!:simp '(rd!:simp nil dmode!* t !:gi!: !:rd!: !:rn!: (
+!:rd!: !:cr!:) !*rd2rn convchk !*d2q dmoderr) 1719343580443281599)
+
+(c!:install 'delength '(delength plus t times quotient minus equal) 
+1437440619992244120)
+
+(c!:install 'third_eq_indexp '(third_eq_indexp dindices!* nil t) 
+736320238994702479)
+
+(c!:install 'cdr_signsort '(cdr_signsort nil t copy apply) 
+16652505972153283)
+
+(c!:install 'get!-new!-prime '(get!-new!-prime !*force!-prime nil all
+random!-teeny!-prime random!-small!-prime) 608149249257143768)
+
+(c!:install 'ofsf_chsimpat1 '(ofsf_chsimpat1 (lessp leq equal neq geq
+greaterp) lastcar) 2119393351172406100)
+
+(c!:install 'addlc '(addlc t field nil) 2098200592661388170)
+
+(c!:install 'taysimpsq!* '(taysimpsq!* nil !*taylorautoexpand taysimpsq)
+ 2248755144385674747)
+
+(c!:install 'multtaylor!* '(multtaylor!* taylor!* !*taylorkeeporiginal
+nil multtaylor1 replace!-next multsq) 846950273893691823)
+
+(c!:install 'nsubsq '(nsubsq plus subsq) 899466300141227411)
 
 (c!:install 'factor!-prim!-sqfree!-f '(factor!-prim!-sqfree!-f !*msg
 !*rounded t nil !*complex !*rational rational !*limitedfactors dmode!*
 factorf sqfrfactorfn factorfn rounded unifactor exptf on resimp
 factor!-prim!-sqfree!-f!-1 univariatep1) 1771556687089966809)
 
-(c!:install 'bc_2sq '(bc_2sq) 360394705700600607)
+(c!:install 'aex_mvar '(aex_mvar "***** aex_mvar: invalid argument"
+aex_freeids) 1469957269362761532)
 
 (c!:install 'prepsort '(prepsort logsort getd simp!* prepsqxx) 
 47384138320529920)
 
-(c!:install 'leqgrt '(leqgrt nil) 607695238952874440)
-
 (c!:install 'expvec2a1 '(expvec2a1 expt nreverse) 1401478201088901231)
-
-(c!:install 'exdfp0 '(exdfp0 nil t subfg!* exdff0 multpfsq exdfk exformp
-) 1359672203248479282)
-
-(c!:install 'rd!:simp '(rd!:simp nil dmode!* t !:gi!: !:rd!: !:rn!: (
-!:rd!: !:cr!:) !*rd2rn convchk !*d2q dmoderr) 1719343580443281599)
-
-(c!:install 'replace_edge '(replace_edge copy_edge replace1_edge) 
-742316521201773396)
-
-(c!:install 'listsub '(listsub list nil subeval1) 1919986579647309406)
-
-(c!:install 'dp!=a2dpatom '(dp!=a2dpatom nil cali!=basering
-ring_all_names bc_fi mo_from_a dp_term bc_from_a mo_zero) 
-246099130638398132)
-
-(c!:install 'sc_repkern '(sc_repkern !* nil lambda_lqlbvf_10 sort
-pa_list2vect) 185900143649881668)
-
-(c!:install 'lambda_lqlbvf_10 '(lambda_lqlbvf_10) 451434150563554749)
-
-(c!:install 'pseudo!-divide '(pseudo!-divide nil t poly!-divide!*) 
-1954959286671937729)
-
-(c!:install 'rl_atnum '(rl_atnum rl_atnum!* apply) 1159077204420795426)
-
-(c!:install 'addlc '(addlc t field nil) 2098200592661388170)
-
-(c!:install 'findsquareroot '(findsquareroot t nil sqrt) 
-812298197934059410)
-
-(c!:install 'taysimpsq!* '(taysimpsq!* nil !*taylorautoexpand taysimpsq)
- 2248755144385674747)
-
-(c!:install 'mchcomb '(mchcomb nil frlis!* ncmp!* smemqlp comb mchcomb2
-mchsarg lastpair setdiff) 291186260739121549)
-
-(c!:install 'relationrd '(relationrd (quote eq) equal (quote lt) lessp (
-quote gt) greaterp (quote subset) (quote prsubset) (quote geq) geq (
-quote leq) leq t false stats_getargs prsubsetrd subsetrd) 
-20752685500375651)
-
-(c!:install 'numlistp '(numlistp t nil) 2012200505616564845)
 
 (c!:install 'prinindexs '(prinindexs nil t !*comma!* inprinla prinlatom)
  1793884698463837808)
 
-(c!:install 'redexpp '(redexpp t !*redarithexpops!* !*redlogexpops!*
-!*redreswds!*) 365146733599614018)
+(c!:install 'replace_edge '(replace_edge copy_edge replace1_edge) 
+742316521201773396)
 
-(c!:install 'let0 '(let0 nil frasc!* let00) 474438929142224896)
+(c!:install 'lf!=tovarlessp '(lf!=tovarlessp mo_compare) 
+1871935772568348472)
 
-(c!:install 'mk!-strand!-vertex '(mk!-strand!-vertex incident
-mk!-strand!-vertex2) 1642583444989583446)
-
-(c!:install 'compactf2 '(compactf2 t nreverse compactf3) 
-1185190549680854377)
-
-(c!:install 'invbase!* '(invbase!* thirdway shortway !*trinvbase maxord
-path nil gg varlist bv "---------- ORDER = " " ----------" alglist!*
-list plus gv prepf invtempbasis !*protfg
-"Maximum degree bound exceeded." t ng redall newbasis ord !*di2q sqform
-lprie max ljet class nonmult pdmult nf stat dim) 1383762366947528147)
-
-(c!:install 'radf '(radf !*gcd !*mcd t nil !*precise_complex !*precise
-abs expt !*reduced dmode!* field !*numval radd multf !:recip
-domainvalchk !*q2f multd prepf comfac quotf minusf negf lnc radf1 fkern
-getpower sqfrf check!-radf!-sign) 567136155588186029)
+(c!:install 'pst_isolate '(pst_isolate pst_isolate1 pst_reduce) 
+1924694375708750258)
 
 
 % End of generated Lisp code
