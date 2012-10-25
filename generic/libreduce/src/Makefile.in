@@ -44,11 +44,15 @@ srcdir = @srcdir@
 
 REDUCE = \"$(realpath ../../../bin/redcsl)\"
 
-all: libreduce.a RedPy.so lrtest bench_reduce bench_redlog
+all: libreduce.a libreduce.so RedPy.so lrtest bench_reduce bench_redlog
 
 libreduce.a: $(OBJ)
 	rm -f libreduce.a
 	ar rcs libreduce.a $(OBJ)
+
+libreduce.so: $(OBJ)
+	rm -f libreduce.so
+	gcc $(FAT) -shared $(OBJ) -o libreduce.so
 
 RedPy.so: $(OBJ) RedPy.o
 	gcc $(FAT) -shared $(OBJ) RedPy.o @PYTHON_LDFLAGS@ -o RedPy.so
