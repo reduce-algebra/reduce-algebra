@@ -32,12 +32,12 @@ The trivial case {\tt SUB(EXPRN1)} returns the algebraic value of
 
 {\it Examples:}
 \begin{verbatim}
-				    2              2
+                                    2              2
      sub({x=a+y,y=y+1},x^2+y^2) -> A  + 2*A*Y + 2*Y  + 2*Y + 1
 \end{verbatim}
 and with {\tt s := \{x=a+y,y=y+1\}},
 \begin{verbatim}
-				    2              2
+                                    2              2
      sub(s,x^2+y^2)             -> A  + 2*A*Y + 2*Y  + 2*Y + 1
 \end{verbatim}
 
@@ -51,7 +51,7 @@ for substitution occurs either in {\tt EXPRN} or {\tt EXPRN1}.
 The braces around the substitution list may also be omitted, as in:
 
 \begin{verbatim}
-				    2              2
+                                    2              2
      sub(x=a+y,y=y+1,x^2+y^2)   -> A  + 2*A*Y + 2*Y  + 2*Y + 1
 \end{verbatim}
 
@@ -63,12 +63,12 @@ rules are global in scope and stay in effect until replaced or {\tt CLEAR}ed.
 
 The simplest use of the {\tt LET} statement is in the form
 \begin{verbatim}
-	LET <substitution list>
+        LET <substitution list>
 \end{verbatim}
 where {\tt <substitution list>} is a list of rules separated by commas, each
 of the form:
 \begin{verbatim}
-	<variable> = <expression>
+        <variable> = <expression>
 \end{verbatim}
 or
 \begin{verbatim}
@@ -80,13 +80,13 @@ or
 \end{verbatim}
 For example,
 \begin{verbatim}
-	let {x => y^2,
-	     h(u,v) => u - v,
-	     cos(pi/3) => 1/2,
-	     a*b => c,
-	     l+m => n,
-	     w^3 => 2*z - 3,
-	     z^10 => 0}
+        let {x => y^2,
+             h(u,v) => u - v,
+             cos(pi/3) => 1/2,
+             a*b => c,
+             l+m => n,
+             w^3 => 2*z - 3,
+             z^10 => 0}
 \end{verbatim}
 The list brackets can be left out if preferred.  The above rules could
 also have been entered as seven separate {\tt LET} statements.
@@ -397,7 +397,7 @@ As mentioned elsewhere, when a substitution expression appears in a
 product, the substitution is made if that expression divides the product.
 For example, the rule
 \begin{verbatim}
-	let a^2*c = 3*z;
+        let a^2*c = 3*z;
 \end{verbatim}
 would cause {\tt a\verb|^|2*c*x} to be replaced by {\tt 3*Z*X} and
 {\tt a\verb|^|2*c\verb|^|2} by {\tt 3*Z*C}.  If the substitution is desired only
@@ -440,8 +440,8 @@ A rule list is a list of {\em rules\/} that have the syntax
 \end{verbatim}
 For example,
 \begin{verbatim}
-	{cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,
-	 cos(~n*pi)      => (-1)^n when remainder(n,2)=0}
+        {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,
+         cos(~n*pi)      => (-1)^n when remainder(n,2)=0}
 \end{verbatim}
 
 The tilde preceding a variable marks that variable as {\em free\/} for that
@@ -451,7 +451,7 @@ must be so marked on input, otherwise inconsistent results can occur.
 For example, the rule list
 \begin{verbatim}
         {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,
-	 cos(x)^2        => (1+cos(2x))/2}
+         cos(x)^2        => (1+cos(2x))/2}
 \end{verbatim}
 designed to replace products of cosines, would not be correct, since the
 second rule would only apply to the explicit argument {\tt X}.  Later
@@ -494,7 +494,7 @@ The second way to use rule lists is to invoke them locally by means of a
 {\tt WHERE}\ttindex{WHERE} clause.  For example
 \begin{verbatim}
         cos(a)*cos(b+c)
-	   where {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2};
+           where {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2};
 \end{verbatim}
 or
 \begin{verbatim}
@@ -571,7 +571,7 @@ product rule of differentiation can be written as:
 operator diff, !~f, !~g;
 
 prule := {diff(~f(~x) * ~g(~x),x) =>
-	     diff(f(x),x) * g(x) + diff(g(x),x) * f(x)};
+             diff(f(x),x) * g(x) + diff(g(x),x) * f(x)};
 
 let prule;
 
@@ -586,9 +586,9 @@ example of the Gamma function above, one can use:
 \begin{verbatim}
 gammarule :=
    {gamma(~z)//(~c*gamma(~zz))  => gamma(z)/(c*gamma(zz-1)*zz)
-		  when fixp(zz -z) and (zz -z) >0,
+                  when fixp(zz -z) and (zz -z) >0,
     gamma(~z)//gamma(~zz) => gamma(z)/(gamma(zz-1)*zz)
-		  when fixp(zz -z) and (zz -z) >0};
+                  when fixp(zz -z) and (zz -z) >0};
 
 let gammarule;
 
@@ -664,9 +664,9 @@ showrules log;
       ~X
  LOG(E  ) => ~X,
 
-		    1
+                    1
  DF(LOG(~X),~X) => ----}
-		    ~X
+                    ~X
 \end{verbatim}
 
 Such rules can then be manipulated further as with any list.  For example

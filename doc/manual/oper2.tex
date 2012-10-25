@@ -11,14 +11,14 @@ minus sign.  Any other arguments are not affected.  In addition, if say
 {\tt F} is also declared {\em non zero\/} by the declaration
 {\tt NONZERO}\ttindex{NONZERO}.  For example, the declarations
 \begin{verbatim}
-	even f1; odd f2;
+        even f1; odd f2;
 \end{verbatim}
 mean that
 \begin{verbatim}
-	f1(-a)    ->    F1(A)
-	f2(-a)    ->   -F2(A)
-	f1(-a,-b) ->    F1(A,-B)
-	f2(0)     ->    0.
+        f1(-a)    ->    F1(A)
+        f2(-a)    ->   -F2(A)
+        f1(-a,-b) ->    F1(A,-B)
+        f2(0)     ->    0.
 \end{verbatim}
 To inhibit the last transformation, say {\tt nonzero f2;}.
 

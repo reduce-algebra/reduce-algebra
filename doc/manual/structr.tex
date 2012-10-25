@@ -575,7 +575,7 @@ the preceding expression has been printed.
 Finally, since there is no direct analog of {\em list\/} in FORTRAN,
 a comment line of the form
 \begin{verbatim}
-	c ***** invalid fortran construct (list) not printed
+        c ***** invalid fortran construct (list) not printed
 \end{verbatim}
 will be printed if you try to print a list with {\tt FORT} on.
 
@@ -591,14 +591,14 @@ The breakup of the expression into subparts is such that the number of
 continuation lines produced is less than a given number. This number can
 be modified by the assignment
 \begin{verbatim}
-	card_no := <number>;
+        card_no := <number>;
 \end{verbatim}
 where {\tt <number>} is the {\em total\/} number of cards allowed in a
 statement. The default value of {\tt CARD\_NO} is 20.
 
 The width of the output expression is also adjustable by the assignment
 \begin{verbatim}
-	fort_width := <integer>;
+        fort_width := <integer>;
 \end{verbatim}
 \ttindex{FORT\_WIDTH} which sets the total width of a given line to
 {\tt <integer>}.  The initial FORTRAN output width is 70.
@@ -708,7 +708,7 @@ The {\tt PART}\ttindex{PART} operator can
 be used to retrieve the required parts of the expression.  For example, to
 get the value of {\tt ANS2} in the above, one could say:
 \begin{verbatim}
-	part(ws,3,2);
+        part(ws,3,2);
 \end{verbatim}
 If {\tt FORT} is on, then the results are printed in the reverse order; the
 algorithm in fact guaranteeing that no sub-expression will be referenced
