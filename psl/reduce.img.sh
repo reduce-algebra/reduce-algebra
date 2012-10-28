@@ -141,7 +141,8 @@ cd psl
    (prin2t (free-bps))
   (setq !*init!-stats!* nil))
 
-(savesystem "REDUCE" "../red/reduce" (quote ((read-init-file "reduce"))))
+(savesystem "REDUCE" "../red/reduce" (quote ((commandline_setq)
+                                             (read-init-file "reduce"))))
 (bye)
 
 XXX

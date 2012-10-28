@@ -1,8 +1,8 @@
 #! /bin/sh 
 #   Makes PSL in the reduce-algebra tree
 #   uses config-guess   and the position in the file tree (PROOT)
-#   the MACHINE variable ist set according to the old PSL
-#   names derived fron the config-guess.
+#   the MACHINE variable is set according to the old PSL
+#   names derived from the config-guess.
 
 export PROOT=`pwd`
 
