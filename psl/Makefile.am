@@ -17,6 +17,9 @@ endif
 all:
 # The arrangement here is somewhat odd to try to cope with the way that this
 # Makefile gets extended via created include files when it runs.
+red/bootstrap.img: psl/bpsl
+	$(srcdir)/bootstrap.sh $(BUILD)
+
 	if ! test -f red/bootstrap.img; \
 	then $(MAKE) red/bootstrap.img; \
 	     if test -f red/bootstrap.img; then $(MAKE) reduce; fi; \
