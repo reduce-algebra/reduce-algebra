@@ -92,6 +92,7 @@ fi
 
 cd "$builddir"
 bhere=`pwd`
+test -x /usr/bin/cygpath && bhere=`cygpath -m $bhere`
 cd psl
 
 ./bpsl -td $STORE <<XXX > "$here/log/reduce.blg"
@@ -163,7 +164,8 @@ cd psl
 (setq symbolfilename!* "$topdir/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$topdir/red/" "$topdir/psl/")))
 
-(savesystem "REDUCE" "$imagedir/reduce" (quote ((read-init-file "reduce"))))
+(savesystem "REDUCE" "$imagedir/reduce" (quote ((commandline_setq)
+                                                (read-init-file "reduce"))))
 (bye)
 
 XXX
