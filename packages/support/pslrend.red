@@ -496,13 +496,14 @@ symbolic procedure commandline_setq();
 
 begin scalar extraargs,extracommand;
 
+getunixargs();
 extraargs := get!-command!-args()$
 
-extraargs := member('("-d"),extraargs);
+extraargs := member('"-d",extraargs);
 if extraargs
    then
    << extracommand := cadr extraargs;
-      extracommand := split!-str(extracommand," ");
+      extracommand := split!-str(extracommand,"=");
       eval list('setq,intern car extracommand, cadr extracommand);
 >>$
 end$
