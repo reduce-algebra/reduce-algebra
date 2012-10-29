@@ -1,0 +1,32 @@
+geht so nicht:
+
+/*
+    {
+      STARTUPINFO si;
+
+      GetStartupInfo(&si);
+ 
+      si.lpReserved = NULL;
+      si.lpDesktop  = NULL;
+      si.lpTitle    = NULL;
+      si.cbReserved2= NULL;
+      si.lpReserved2= NULL;
+
+      if(!CreateProcess((LPCTSTR)NULL,
+         (LPCTSTR)the_buffer,
+         (LPSECURITY_ATTRIBUTES)NULL, 
+         (LPSECURITY_ATTRIBUTES)NULL,
+         FALSE,                          // inherit handles
+         (DWORD)CREATE_NEW_CONSOLE,              
+         NULL,                          // inherit environment
+         NULL,                          // current dir
+         &si,           // startupinfo
+         &procinfo))
+      { warning("runtime error",
+          "cannot create server process");
+        exit(0);
+      }
+       else
+         my_puts("process created\n");
+    }
+*/
