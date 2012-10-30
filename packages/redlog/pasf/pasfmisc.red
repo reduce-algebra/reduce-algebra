@@ -606,7 +606,7 @@ procedure pasf_exprng2(f);
 	       % Unknown operator
 	       rederr{"pasf_expand : unknown or illegal quantifier",rl_op f};
 	 tmp := cl_fvarl rl_b f;
-	 if cdr tmp or not eqcar(tmp, rlvar f) then
+	 if cdr tmp or not eqcar(tmp, rl_var f) then
 	    rederr {"Expanding a parametric bounded formula is impossible"};
 	 terml := pasf_b2terml(rl_b f,rl_var f);
 	 matr := pasf_exprng2 rl_mat f;
@@ -663,18 +663,18 @@ procedure pasf_exprng!-gand(gand, argl, gtrue, gfalse);
       return rl_smkn(gand, nargl)
    end;
 
-% Experimental option to expand from the outside to the inside instead of a
-% natural recursion. This might be statistically better but there is no
-% evidence.
-switch rlexprngunnatural;
-off1 'rlexprngunnatural;
+% Experimental option to expand from the inside to the outside instead of a
+% natural recursion. This is a more natural recursion but it does not work in
+% general when there are nested bounded quantifiers.
+switch rlexprngnatural;
+off1 'rlexprngnatural;
 
 procedure pasf_exprng!-gball(v, b, m, gand, gtrue, gfalse);
    begin scalar c, u, w, argl, ivl, iv;
       w := cl_fvarl b;
       if not eqcar(w, v) or cdr w then
-	 rederr {"pasf_exprng: bad bound"};
-      if not !*rlexprngunnatural then
+	 rederr {"pasf_exprng: bad bound ",b," with free variables ", w};
+      if !*rlexprngnatural then
       	 m := pasf_exprng m;
       ivl := pasf_qff2ivl b;
       c := t; while c and ivl do <<
@@ -682,7 +682,7 @@ procedure pasf_exprng!-gball(v, b, m, gand, gtrue, gfalse);
 	 u := car iv;
 	 while c and u leq cdr iv do <<
 	    w := pasf_sisub(m, v, u);
-	    if !*rlexprngunnatural then
+	    if not !*rlexprngnatural then
  	       w := pasf_exprng w;
 	    if w eq gfalse then
 	       c := nil
@@ -698,7 +698,6 @@ procedure pasf_exprng!-gball(v, b, m, gand, gtrue, gfalse);
       return rl_smkn(gand, argl)
    end;
 
-
 procedure pasf_sisub(f, v, n);
    % Simplifying substitution. [f] is a formula, [v] is a variable, [n] is an
    % integer.
@@ -707,7 +706,8 @@ procedure pasf_sisub(f, v, n);
       if rl_quap op then
 	 return rl_mkq(op, rl_var f, pasf_sisub(rl_mat f, v, n));
       if rl_bquap op then
-	 return rl_mkbq(op, rl_var f, rl_b f, pasf_sisub(rl_mat f, v, n));
+	 return rl_mkbq(
+	    op, rl_var f, pasf_sisub(rl_b f, v, n), pasf_sisub(rl_mat f, v, n));
       if op eq 'and then
 	 return pasf_sisub!-gand('and, rl_argn f, v, n, 'true, 'false);
       if op eq 'or then
