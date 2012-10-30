@@ -333,8 +333,11 @@ procedure mri_eqnrhskernels(x);
    nconc(kernels numr w,kernels denr w) where w=simp cdr x;
 
 procedure mri_expand(f);
-   begin scalar !*rlverbose;
-      return if mri_bqp f then mri_pasf2mri(pasf_expand mri_2pasf f,nil) else f
+   begin scalar !*rlverbose, w;
+      rl_set '(mri_pasf) where !*msg=nil;  % Hack! TS
+      w := if mri_bqp f then mri_pasf2mri(pasf_expand mri_2pasf f,nil) else f;
+      rl_set '(mri) where !*msg=nil;
+      return w
    end;
 
 procedure mri_bqp(f);
