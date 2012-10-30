@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 39e47105 02-Aug-2012 */
+/* Signature: 68ad6dae 22-Sep-2012 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -124,6 +124,7 @@ extern int32_t stack_segsize;  /* measured in units of one CSL page */
 extern Lisp_Object *C_stack;
 #define stack C_stack
 extern char *C_stack_base, *C_stack_limit;
+extern double max_store_size;
 
 extern CSLbool restartp;
 

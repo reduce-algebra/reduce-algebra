@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 724943a1 02-Aug-2012 */
+/* Signature: 6ecff1b4 22-Sep-2012 */
 
 #include "headers.h"
 
@@ -3403,6 +3403,12 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
                                       bps_pages_count);
         int more;
         if (ideal > MAX_PAGES) ideal = MAX_PAGES;
+        if (max_store_size != 0.0)
+        {   double page_limit = max_store_size*1024*1024/(double)CSL_PAGE_SIZE;
+/* Limit memory to (about) the amount the user indicated with --max-mem */
+            int plim = (int)page_limit;
+            if (ideal > plim) ideal = plim;
+        }
         more = ideal - pages_count;
         while (more-- > 0)
         {   void *page = (void *)my_malloc((size_t)(CSL_PAGE_SIZE + 8));

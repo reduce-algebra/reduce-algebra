@@ -962,6 +962,7 @@ else !wx
 	$(CP) -r $(srcdir)/$(fontsdir)/pfmfiles/*.pfm reduce.$(fontsdir)/pfmfiles
 	-mkdir -p reduce.$(fontsdir)/src
 	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
+	chmod +x reduce.$(fontsdir)/*.ttf
 endif !wx
 
 if exeext

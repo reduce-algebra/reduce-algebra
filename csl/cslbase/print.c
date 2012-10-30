@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5835181b 31-Jul-2012 */
+/* Signature: 51db0fe6 22-Sep-2012 */
 
 #include "headers.h"
 
@@ -949,51 +949,6 @@ static Lisp_Object Lfilep(Lisp_Object nil, Lisp_Object name)
     return onevalue(name);
 }
 
-Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
-/*
- * Returns a string that is suitable for use as the name of a temporary
- * file. Note that this is generally NOT a comfortable thing to use,
- * since after tmpnam() has generated the name but before you get around
- * to doing anything with the file somebody else may do something that
- * interferes. As a result some C compilers issue a warning when they
- * see use of tmpnam() at all...  Here the potential security issues are
- * just left for the user to think about!
- */
-{
-    char *s;
-    Lisp_Object r;
-    char tempdir[LONGEST_LEGAL_FILENAME];
-#ifdef WIN32
-    DWORD len;
-    memset(tempdir, 0, sizeof(tempdir));
-    len = GetTempPath(LONGEST_LEGAL_FILENAME, tempdir);
-    argcheck(nargs, 0, "tmpnam");
-    if (len <= 0) return onevalue(nil);
-    s = tempnam(tempdir, "CSL_t");
-#else
-    memset(tempdir, 0, sizeof(tempdir));
-    argcheck(nargs, 0, "tmpnam");
-    s = tmpnam(NULL);
-#endif
-    if (s == NULL) return onevalue(nil);  /* Sorry - can't do it */
-/*
- * Ensure that file name only has Lisp-friendly characters in it!
- * THIS COULD PROBABLY BREAK THE IDEA THAT THE FILE NAME SHOULD BE
- * UNIQUE! But on the systems I have tried it seems OK!
- */
-    strcpy(tempdir, s);
-    s = tempdir;
-    while (*s != 0) s++;
-    while (s != tempdir)
-    {   int c = *--s;
-        if (c=='/' || c=='\\') break;
-        if (!is_constituent(c)) *s = '_';
-    }
-    r = make_string(tempdir);
-    errexit();
-    return onevalue(r);
-}
-
 static int tmpSerial = 0;
 
 static char tempname[LONGEST_LEGAL_FILENAME];
@@ -1095,6 +1050,33 @@ Lisp_Object MS_CDECL Ltmpnam1(Lisp_Object nil, Lisp_Object extn)
     suffix = CSLtmpnam(suffix, suffixlen);
     if (suffix == NULL) return onevalue(nil);
     r = make_string(suffix);
+    errexit();
+    return onevalue(r);
+}
+
+Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
+/*
+ * Returns a string that is suitable for use as the name of a temporary
+ * file. Note that this is generally NOT a comfortable thing to use,
+ * since after tmpnam() has generated the name but before you get around
+ * to doing anything with the file somebody else may do something that
+ * interferes. As a result some C compilers issue a warning when they
+ * see use of tmpnam() at all...  Here the potential security issues are
+ * just left for the user to think about! Well because the messages from
+ * the GNU linker have been causing grief to some users, and because in their
+ * arrogance the developers of that linker do not provide a way to switch
+ * the messages off, and furher because I have legacy needs where the
+ * risks associated with race conditions and really not a worry, I implement
+ * my own approximation to tmpnam. My version may well be even less
+ * respectable than the standard one, but using it avoids linker messages
+ * that are clearly intended to be useful but which are in fact a nuisance.
+ */
+{
+    char *s;
+    Lisp_Object r;
+    argcheck(nargs, 0, "tmpnam");
+    s = CSLtmpnam("tmp", 3);
+    r = make_string(s);
     errexit();
     return onevalue(r);
 }

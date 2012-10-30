@@ -4129,9 +4129,10 @@ argch) 0) (geq (car argch) 3)) (c!:printf
 "    argcheck(nargs, %s, \q%s\q);\n" (car argch) (cdr argch)))) (c!:printf 
 "#ifdef DEBUG\n") (c!:printf 
 "    if (check_env(env)) return aerror(\qenv for %s\q);\n" (cdr argch)) (
-c!:printf "#endif\n") (cond (does_call (progn (c!:printf 
-"    if (stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop (quote 
-push) args) (c!:printf 
+c!:printf "#endif\n") (c!:printf "#ifdef CHECK_STACK\n") (c!:printf 
+"    if_check_stack;\n") (c!:printf "#endif\n") (cond (does_call (progn (
+c!:printf "    if (stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop
+(quote push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
 pop) (reverse args)) (c!:printf "        nil = C_nil;\n") (c!:printf 
 "        if (exception_pending()) return nil;\n") (c!:printf "    }\n")))) (

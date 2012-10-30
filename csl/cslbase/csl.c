@@ -1,4 +1,4 @@
-/*  csl.c                            Copyright (C) 1989-2011 Codemist Ltd */
+/*  csl.c                            Copyright (C) 1989-2012 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1422,6 +1422,7 @@ char **csl_argv;
 CSLbool restartp;
 
 char *C_stack_base = NULL, *C_stack_limit = NULL;
+double max_store_size = 0.0;
 
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
@@ -1433,6 +1434,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 #endif
     C_stack_base = (char *)&sp;
     C_stack_limit = NULL;
+    max_store_size = 0.0;
 #ifdef EMBEDDED
 /* This provides a fixed limit in the embedded build */
     C_stack_limit = C_stack_base - 2*1024*1024 + 0x10000;
@@ -1814,6 +1816,49 @@ term_printf(
                                     VERSION, IMPNAME, __DATE__);
 #endif
                         my_exit(0);
+                    }
+                    else if (strcmp(w, "maxmem") == 0)
+                    {   if (i != argc) w = argv[++i];
+                        else break; /* Illegal at end of command-line */
+                        {   char buffer[16];
+                            int i = 0;
+                            while ((*w != '/') &&
+                                   (*w != 'k') && (*w != 'K') &&
+                                   (*w != 'm') && (*w != 'M') &&
+                                   (*w != 'g') && (*w != 'G') &&
+                                   (*w != 0) &&
+                                   (i<sizeof(buffer)-1))
+                                buffer[i++] = *w++;
+                            buffer[i] = 0;
+                            max_store_size = atof(buffer);
+                            switch (*w)
+                            {
+                        case 'k': case 'K':
+                                break;
+                        case 'g': case 'G':
+                                max_store_size *= 1024.0*1024.0;
+                                break;
+                        default:   /* megabytes by default */
+                                max_store_size *= 1024.0;
+                                break;
+                            }
+#if PAGE_BITS==18
+                            if (max_store_size < 10000.0) max_store_size = 10000.0;
+#else
+                            if (max_store_size < 32000.0) store_size = 32000.0;
+#endif
+                            if ((!SIXTY_FOUR_BIT &&
+                                (max_store_size > 2.0*1024.0*1024.0)) ||
+                                (max_store_size > 500.0*1024.0*1024.0))
+                            {
+                                fwin_restore();
+                                term_printf(
+                                    "Memory specifier \"--maxmem %s%s\" is too large (= %.4g)\n",
+                                    buffer, w, max_store_size/1024.0);
+                                term_printf("Please specify as -KnnnK, -KnnnM or -KnnnG\n");
+                                term_printf("for Kilobytes, Megabytes or Gigabytes\n");
+                            }
+                        }
                     }
                     else
                     {

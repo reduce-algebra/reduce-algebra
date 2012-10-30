@@ -2546,6 +2546,7 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/pfmfiles/*.pfm reduce.$(fontsdir)/pfmfiles
 @wx_FALSE@	-mkdir -p reduce.$(fontsdir)/src
 @wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
+@wx_FALSE@	chmod +x reduce.$(fontsdir)/*.ttf
 
 # The next section is to conspire with automake's treatment of extensions for
 # executables (ie ".exe") so that eg "make reduce" will case "make reduce.exe" to

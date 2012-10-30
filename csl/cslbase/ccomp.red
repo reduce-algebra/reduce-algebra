@@ -2117,6 +2117,9 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     c!:printf("    if (check_env(env)) return aerror(\qenv for %s\q);\n",
               cdr argch);
     c!:printf("#endif\n");
+    c!:printf("#ifdef CHECK_STACK\n");
+    c!:printf("    if_check_stack;\n");
+    c!:printf("#endif\n");
 % I will not do a stack check if I have a leaf procedure, and I hope
 % that this policy will speed up code a bit.
     if does_call then <<
