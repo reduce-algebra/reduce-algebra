@@ -39,7 +39,7 @@
 
 
 
-/* Signature: 2d97cdf5 19-Feb-2012 */
+/* Signature: 2c0e8479 30-Oct-2012 */
 
 
 #include "headers.h"
@@ -224,7 +224,7 @@ case TAG_FIXNUM:
  * answer is zero.
  */
                 if (int_of_fixnum(a) == fix_mask &&
-                    bignum_length(b) == 8 &&
+                    bignum_length(b) == CELL+4 &&
                     bignum_digits(b)[0] == 0x08000000)
                         return fixnum_of_int(0);
                 else return a;

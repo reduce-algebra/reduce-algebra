@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 474f4112 12-May-2012 */
+/* Signature: 1fb85184 30-Oct-2012 */
 
 #include "headers.h"
 
@@ -176,7 +176,7 @@ static Lisp_Object quotib(Lisp_Object a, Lisp_Object b)
  * a fixnum divided by a bignum always gives 0, regardless of signs etc.,
  * save in the one case of (-#x8000000)/(#x8000000) which must yield -1
  */
-    if (int_of_fixnum(a) == fix_mask && bignum_length(b) == 8 &&
+    if (int_of_fixnum(a) == fix_mask && bignum_length(b) == CELL+4 &&
         bignum_digits(b)[0] == 0x08000000) return fixnum_of_int(-1);
     else return fixnum_of_int(0);
 }
