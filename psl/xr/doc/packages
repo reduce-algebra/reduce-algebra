@@ -1,0 +1,70 @@
+Algint    Integration of Square Roots::$reduce/lisp/psl/linux/red/algint.b::algint
+Applysym  Applying Infinitesimal Symmetries::$reduce/lisp/psl/linux/red/applysym.b::applysym
+Arnum     Algebraic Numbers::$reduce/lisp/psl/linux/red/arnum.b::arnum
+Assist    Various Useful Utilities::$reduce/lisp/psl/linux/red/assist.b::assist
+Avector   Vector Algebra and Calculus::$reduce/lisp/psl/linux/red/avector.b::avector
+Boolean   Boolean Algebra::$reduce/lisp/psl/linux/red/boolean.b::boolean
+Cali      Computational Commutative Algebra::$reduce/lisp/psl/linux/red/cali.b::cali
+Camal     Celestial Mechanics::$reduce/lisp/psl/linux/red/camal.b::camal
+Cgb       Comprehensive Groebner Bases::$reduce/lisp/psl/linux/red/cgb.b::cgb
+Changevr  Change of Variables in DEs::$reduce/lisp/psl/linux/red/changevr.b::changevr
+Compact   Compacting Expressions::$reduce/lisp/psl/linux/red/compact.b::compact
+Contfr    Continued Fractions::$reduce/lisp/psl/linux/red/contfr.b::contfr 
+Crack     Overdetermined systems of DEs::$reduce/lisp/psl/linux/red/crack.b::crack 
+Cvit      Dirac Gamma Matrix Traces::$reduce/lisp/psl/linux/red/cvit.b::cvit 
+Defint    Definite Integration::$reduce/lisp/psl/linux/red/defint.b::defint
+Desir     Linear Homogenous DEs::$reduce/lisp/psl/linux/red/desir.b::desir
+Dfpart    Derivatives of generic functions::$reduce/lisp/psl/linux/red/dfpart.b::dfpart
+Dummy     Expressions with Dummy Variables::$reduce/lisp/psl/linux/red/dummy.b::dummy
+Eds       Exterior differential systems::$reduce/lisp/psl/linux/red/eds.b::eds
+Excalc    Differential Geometry::$reduce/lisp/psl/linux/red/excalc.b::excalc
+Fps       Formal Power Series::$reduce/lisp/psl/linux/red/fps.b::fps
+Fide      Finte Differences in PDEs::$reduce/lisp/psl/linux/red/fide.b::fide
+Gentran   Code Generation::$reduce/lisp/psl/linux/red/gentran.b::gentran
+Geometry  Mechanized (Plane) Geometry Manipulations::$reduce/lisp/psl/linux/red/geometry.b::geometry
+Geoprover Mechanized (Plane) Geometry Theorem Proving::$reduce/lisp/psl/linux/red/geoprover.b::geoprover
+Gnuplot   Display of functions and surfaces::$reduce/lisp/psl/linux/red/gnuplot.b::gnuplot
+Groebner  Groebner Bases::$reduce/lisp/psl/linux/red/groebner.b::groebner
+Ideals    Polynomial Ideals::$reduce/lisp/psl/linux/red/ideals.b::ideals
+Ineq      Solving Inequalities::$reduce/lisp/psl/linux/red/ineq.b::ineq
+Invbase   Involutive Bases::$reduce/lisp/psl/linux/red/invbase.b::invbase
+Laplace   Laplace Transform::$reduce/lisp/psl/linux/red/laplace.b::invbase
+Lie       Classification of Lie Algebras::$reduce/lisp/psl/linux/red/lie.b::lie
+Limits    Finding Limits::$reduce/lisp/psl/linux/red/limits.b::limits
+Linalg    Linear Algebra::$reduce/lisp/psl/linux/red/linalg.b::linalg
+Modsr     Modular Solve and Roots::$reduce/lisp/psl/linux/red/modsr.b::modsr
+Mrvlimit  Package for Computing Limits of "Exp-Log" Functions::$reduce/lisp/psl/linux/red/mrvlimit.b::mrvlimit
+Ncpoly    Non-commutative polynomial ideals::$reduce/lisp/psl/linux/red/ncpoly.b::ncpoly
+Normform  Matrix Normal Forms::$reduce/lisp/psl/linux/red/normform.b::normform
+Numeric   Numerical solvers::$reduce/lisp/psl/linux/red/numeric.b::numeric
+Odesolve  Ordinary Differential Equations::$reduce/lisp/psl/linux/red/odesolve.b::odesolve
+Orthovec  Scalar and Vector Manipulation::$reduce/lisp/psl/linux/red/orthovec.b::orthovec
+Physop    Operator Calculus in Quantum Theory::$reduce/lisp/psl/linux/red/physop.b::physop
+PM        A Pattern Matcher::$reduce/lisp/psl/linux/red/pm.b::pm
+Qsum      Package for q-hypergeometric sums::$reduce/lisp/psl/linux/red/qsum.b::qsum
+Randpoly  Random Polynomial Generator::$reduce/lisp/psl/linux/red/randpoly.b::randpoly
+Rataprx   Rational Approximations Package::$reduce/lisp/psl/linux/red/rataprx.b::rataprx
+Redlog    Logic System::$reduce/lisp/psl/linux/red/redlog.b::redlog
+Reset     Reset REDUCE::$reduce/lisp/psl/linux/red/reset.b::reset
+Residue   Computing Residues::$reduce/lisp/psl/linux/red/residue.b::residue
+Rlfi      Latex interface::$reduce/lisp/psl/linux/red/rlfi.b::rlfi
+Rsolve    Rational Polynomail Solver::$reduce/lisp/psl/linux/red/rsolve.b::rsolve
+Roots     Root Finding::$reduce/lisp/psl/linux/red/roots.b::roots
+Rsolve    Rational polynomial solver::$reduce/lisp/psl/linux/red/rsolve.b::rsolve
+Scope     Source Code Optimization::$reduce/lisp/psl/linux/red/scope.b::scope
+Sets      Basic Set Theory::$reduce/lisp/psl/linux/red/sets.b::sets
+Sparse    Sparse Matrices::$reduce/lisp/psl/linux/red/sparse.b::sparce
+Spde      Symmetry Groups of PDEs::$reduce/lisp/psl/linux/red/spde.b::spde
+Specfn    Special Functions::$reduce/lisp/psl/linux/red/specfn.b::specfn
+Specfn2   Special Special Functions::$reduce/lisp/psl/linux/red/specfn2.b::specfn2
+Sum       Series Summation::$reduce/lisp/psl/linux/red/misc.b::misc
+Susy2     Super Symmetry::$reduce/lisp/psl/linux/red/susy2.b::susy2
+Symmetry  Symmetric Matrices::$reduce/lisp/psl/linux/red/symmetry.b::symmetry
+Taylor    Taylor Series::$reduce/lisp/psl/linux/red/taylor.b::taylor
+Tps       Truncated Power Series::$reduce/lisp/psl/linux/red/tps.b::tps
+Tri       Tex REDUCE Interface::$reduce/lisp/psl/linux/red/tri.b::tri
+Trigsimp  Trigoniometric Simplification::$reduce/lisp/psl/linux/red/trigsimp.b::trigsimp
+Wu        Wu Algorithm::$reduce/lisp/psl/linux/red/wu.b::wu
+Xcolor    Color Factor in non-abelian Gauge::$reduce/lisp/psl/linux/red/xcolor.b::xcolor
+Zeilberg  Zeilbergers Algorith::$reduce/lisp/psl/linux/red/zeilberg.b::zeilberg
+Ztrans    Z Transformation and Inv::$reduce/lisp/psl/linux/red/ztrans.b::ztrans

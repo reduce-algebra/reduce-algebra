@@ -1,0 +1,145 @@
+
+
+% Reduce initialisation script for XReduce session.
+%
+% Chris Cannam, 1992.
+
+
+off usermode,msg,output$
+
+
+% Redefine printprompt to cooperate with XR's expectations
+
+remflag ('(printprompt yesp),'lose)$
+
+symbolic (remd 'printprompt)$
+symbolic procedure printprompt u;
+promptstring!* := compress(append('(!"),append((explode2 int2id 1),
+      	       	     	   cdr append(append
+      	       	     	      (reverse cdr reverse explode promptstring!*,
+      	       	     	      (explode2 int2id 2)), '(!")))));
+
+flag ('(printprompt),'lose)$
+
+% same for Standard LISP, in case user falls through
+
+remd 'compute!-prompt!-string$
+
+symbolic procedure compute!-prompt!-string (count,level);
+  bldmsg("%w %w%w%w%w%c%w %c",
+          count,
+          if !*defn then "*DEFN "  else "",
+          toploopname!*,
+          if greaterp (level,0) then bldmsg(" (%w)",level) else "",
+          if !*package!* then bldmsg(" [%w:]",
+		eval '(package!-name !*package!*)) else  "",
+          int2id 1,
+          if or (greaterp (level,0),!*package!*) then " >" else ">",
+	  int2id 2)$
+
+% Also redefine the Y/N question function, just adding in
+% the relevant control codes to make XR notice it
+
+symbolic (remd 'yesp)$
+symbolic procedure yesp u;
+   begin scalar ifl,ofl,x,y;
+        if ifl!*
+          then <<ifl := ifl!* := list(car ifl!*,cadr ifl!*,curline!*);
+                 rds nil>>;
+        if ofl!* then <<ofl:= ofl!*; wrs nil>>;
+        if null !*lessspace then terpri();
+      	prin2 int2id 3;
+        if atom u then prin2 u else lpri u;
+        if null !*lessspace then terpri();
+        y := setpchar compress list('!",int2id 1,'!?,int2id 2,'!");
+        x := yesp1();
+        setpchar y;
+        if ofl then wrs cdr ofl;
+        if ifl then rds cadr ifl;
+        cursym!* := '!*semicol!*;
+        return x
+   end$
+
+
+% Functions to switch on and off fancy output
+
+symbolic procedure x!-g!-y!!$
+   << outputhandler!* := 'fancy!-output$
+      lessspace!* := t;
+      statcounter := statcounter - 1$ >> $
+
+symbolic procedure x!-g!-n!!$
+   << outputhandler!* := nil$
+      lessspace!* := nil;
+      statcounter := statcounter - 1$ >> $
+
+
+% Obtain previous results and write them to a file for later
+% processing (for printing).  Takes five arguments: starting
+% and ending prompt numbers; flag which if true indicates use
+% the LaTeX fancy output style; filename; and line length.
+
+symbolic procedure x!-pr!!(pn,epn,lx,fl,ll)$
+   << poh := outputhandler!*;
+      pol := linelength nil;
+      if (poh)
+      then << if (not lx) then outputhandler!* := nil >>
+      else << if (    lx) then outputhandler!* := 'fancy!-output >> ;
+      linelength ll;
+      out fl;
+    begin scalar ofl!*;
+      for i := pn:epn do
+      << ip := assoc(i,     crbuflis!*) ;
+      	 op := assoc(i, resultbuflis!*) ;
+      	 terpri();
+      	 if ip
+      	 then << prin2 int2id 1; prin2 car ip; prin2 ": ";
+      	       	 for each x in cdr ip do
+      	       	    if x eq !$eol!$ then terpri()
+                    else prin2 fancy!-char!-downcase x;
+      	       	 prin2 int2id 2; terpri() >> ;
+      	 if op
+      	 then << terpri();
+      	       	 assgnpri(cdr op, nil, mkquote 'only); terpri() >>
+      	 else terpri() >> ;
+     end;
+      shut fl;
+      linelength pol;
+      outputhandler!* := poh ; >> $
+      	 
+
+% The filename in the following line should be initialised by the install.sh
+% script.  It should refer to the Reduce faslout'd binary file used to cause
+% Reduce to produce TeX output suitable for XReduce.
+
+symbolic setq(loaddirectories!*,
+                cons('"$reduce/xr/bin/",
+                     loaddirectories!*));
+
+
+% These next two lines should only be here on versions of REDUCE older than
+% 3.4.2, for which the fminst module is needed.  Without these lines,
+% everything works fine but XR prints two warning messages on startup.
+% If you have REDUCE 3.4.2 or newer and find that these lines are still
+% present in this file, remove them or comment them out -- they shouldn't
+% be there.
+
+% load "fminst"$
+% remprop ('obrkp!*,'vartype)$
+
+
+% This line is needed whichever REDUCE you're running!
+
+load_package fmprint$
+
+
+% And get everything cleaned up and ready to go -- our
+% ideal is to pretend that this file never existed.
+
+on usermode,msg,output$
+symbolic (crbuf!* := nil)$
+symbolic (inputbuflis!* := nil)$
+symbolic (lessspace!* := t)$
+symbolic (statcounter := 0)$
+
+end$

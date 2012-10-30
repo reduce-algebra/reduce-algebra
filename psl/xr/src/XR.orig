@@ -1,0 +1,31 @@
+
+
+!   Standard X Resource File for XR
+!
+!  Chris Cannam, Berlin January 1993
+!
+!  Note that on many systems XR will
+!   run perfectly well without this
+!    file being available; you may
+!       wish to try it and see.
+
+
+! Paths of Reduce executables.  If your system is odd, you may need to
+! change them.  Most people should find they're set correctly in the
+! distribution.  Note that the values in the XR.orig distribution file
+! aren't meaningful filenames; they're codes solely for the Install.sh
+! script to change.
+
+XR*reducePath:		-rPa-
+XR*reduceName:		-rNa-
+XR*reduceInitFile:	-rIn-
+XR*reduceImageFile:	-rIm-
+
+! Path of the Help Info file.
+
+XR*reduceHelpFile:	-rHn-
+
+! Default command line options for REDUCE.
+
+XR*reduceOptions:	-td 12000000
+

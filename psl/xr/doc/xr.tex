@@ -1,0 +1,1283 @@
+\documentstyle[11pt,epsfig,reduce,twoside]{article}
+\makeatletter
+
+\define@nomathsize{70}
+\define@nomathsize{40}
+
+\makeatother
+
+\def\xr{{\tt XR}}
+\def\keybox#1{\raisebox{1.5pt}{\footnotesize\fbox{\vphantom{E}\smash{\sf #1}}}}
+
+\renewcommand{\encodingdefault}{T1}
+\renewcommand{\familydefault}{ptm}
+\renewcommand{\rmdefault}{ptm}
+\renewcommand{\sfdefault}{phv}
+\renewcommand{\ttdefault}{pcr}
+\renewcommand{\bfdefault}{b}
+
+\setlength{\oddsidemargin}{5mm}
+\setlength{\evensidemargin}{-5mm}
+\setlength{\textwidth}{159.2mm}
+\setlength{\textheight}{235mm}
+\addtolength{\topmargin}{-18mm}
+
+\title{{\tt XR}: A User Interface for Reduce under X}
+\date{}
+\author{Chris Cannam, ZIB Berlin; 1992 -- 93}
+\index{Cannam, Chris}      % Haha!  Today the index, tomorrow ... the index
+\sloppy
+\begin{document}
+\pagestyle{empty}
+\begin{titlepage}
+  \vspace*{\fill}
+  \nopagebreak
+  \begin{center}
+    \fontsize{70}{75pt}\selectfont
+    REDUCE \\
+    \fontsize{40}{65pt}\selectfont
+    XR: User Interface\\
+    under X\\[40mm]
+    \LARGE
+    Chris Cannam\\[45mm]
+    \mbox{\epsfig{file=ziblogo.eps,width=21mm}}\\[10mm]
+    \Large
+    Konrad-Zuse-Zentrum Berlin 1996
+  \end{center}
+\end{titlepage}
+
+\pagestyle{headings}
+
+\maketitle
+\section{Introduction}
+
+\xr\ is a program which interacts with \REDUCE\ to provide a
+keyboard-and-mouse operated graphical user interface under UNIX and
+the X windowing system.  It requires the presence of \REDUCE{}, and
+X11 Release 4 or 5 with the Athena widget set.
+
+\xr\ provides:
+\begin{itemize}
+\item high-resolution graphical display of formulae;
+\item command history recall and editing with bracket matching;
+\item file logging and management;
+\item printer support in PostScript and ASCII, and \LaTeX\ transcription;
+\item a vaguely hypertexty help facility;
+\item dynamically user-selectable fonts.
+\end{itemize}
+
+\xr\ does {\it not\/} provide:
+\begin{itemize}
+\item graph-drawing capabilities; an interface to graphics is provided
+by other packages, e.g. the gnuplot package which can of course be used
+when the \REDUCE\ session is controlled by \xr\ .
+\item anything based on the interface styles of Motif, OpenLook or any
+other proprietary system.  \xr\ will of course run happily in Motif or
+OpenLook environments, but it makes no use of any particular features
+of theirs.
+\end{itemize}
+
+\newpage
+\section{Using \xr}
+
+Provided \xr\ and its associated X defaults file have been correctly
+installed, you should be able to run it by executing the file
+{\tt\$reduce/xr/bin/xr}.
+
+This is a long command to type; if your shell supports command
+aliases, it may be provident to create one, with a command like:
+\begin{description}
+
+\item[] {\tt alias xr \$reduce/xr/bin/xr}\hskip 1pc (C shell and derivatives);
+\item[] {\tt alias xr=\$reduce/xr/bin/xr}\hskip 1pc (derivatives of
+the Bourne shell).
+\end{description}
+
+\subsection{The Main \xr\ Window Box}
+
+\unitlength=1cm
+\begin{picture}(12,12)(0,0)
+\put(1,2){\epsfbox{xr-main.ps}}
+\put(3.8,3.05){\line(-1,-1){1.45}}
+\put(4.35,2.35){\line(-1,-6){0.24}}
+\put(6.6,5.7){\line(1,-5){0.9}}
+\put(1.75,9.5){\line(-1,6){0.19}}
+\put(7.45,9.3){\line(1,6){0.185}}
+\put(8.65,8.45){\line(1,2){1.3}}
+\put(0.52,1.146){\footnotesize Input History Window}
+\put(3.42,0.426){\footnotesize Input Pane}
+\put(6.73,0.78){\footnotesize Question Box}
+\put(0.83,10.85){\footnotesize Button Box}
+\put(6.98,10.65){\footnotesize Title Bar}
+\put(9.17,11.3){\footnotesize Output Pane}
+\end{picture}
+
+The \xr\ window contains four sections. From the top: the title bar,
+with buttons; the output history window; the input history window; and
+the input window.  The input history window is read-only, and \xr\
+will beep if you try to type into it.
+
+\subsubsection{The Title Bar}
+
+The title bar has five buttons, as follows.
+\begin{description}
+
+\item[Quit] The Quit button is used to end the \xr\ session.  When
+pressed ({\it ie\/}.~a mouse button is pressed when the mouse pointer
+is over the Quit button's box), it pops up a small confirmation
+question box to check your intention, and if confirmed, \xr\ quits.
+Note that question boxes are described in detail in section
+\ref{questionboxes}.
+
+\item[Interrupt] This button sends an Interrupt signal to the \REDUCE\
+process.  The effect is the same as that of pressing
+\keybox{Ctrl}~\keybox{C} in the Input window.
+
+\item[Help] Pressing this button invokes the \xr\ built-in info-based
+Help system.  This is described in detail in section \ref{help}.
+
+\item[Options] This button calls up the Option box, which provides the
+ability to tailor certain aspects of \xr{}'s behaviour as it runs.
+This is described in section \ref{options}.
+
+\item[File] This button calls up the File box, which provides various
+possibilities for reading from and writing to files, and for printing
+output.  This is described in section \ref{file}.
+
+\end{description}
+
+\subsubsection{The Output History Window}
+
+This window contains a copy of each input line from you to \REDUCE{},
+with the associated (normally pretty-printed) output.  It is
+scrollable --- a scrollbar appears on the left when the window fills
+--- and maintains a certain number of lines of output off the top of
+the window; it should always retain at least the last two of
+\REDUCE{}'s responses, however long they may be.
+
+This window is read-only, and if you type whilst the mouse pointer is
+over it, your typing will be redirected to the input window.  You
+can't use the X paste mechanism to paste into this window, although
+you can use it to copy from the textual bits of it into the input
+window if you wish.
+
+\subsubsection{The Input History Window}
+
+This displays all the previous lines you have entered to \REDUCE{}, in
+a scrollable read-only copy-and-pasteable text window, with one extra
+feature: you can position its text cursor by clicking with the first
+mouse button within the window, and then by pressing \keybox{Return},
+subsequent lines from the History window are pasted into the Input
+window below it.
+
+\subsubsection{The Input Window}
+
+The input window is the window you actually type into.  You compose
+your commands for \REDUCE\ in it, using the normal editing keys, and
+when you press \keybox{Return}, the contents of the window are sent to
+be processed by \REDUCE{}.  There are a few useful features here:
+
+\begin{description}
+
+\item[History Editing] When you press the up or down cursor key, if it
+is not possible to move the cursor caret any further up or down in the
+current window, the window will instead be cleared and its contents
+replaced by the previous or next line in the input history window.
+The contents may be restored (before any further changes are made) by
+a press on the opposing cursor movement key.
+
+\item[Bracket Matching]\label{bracketmatching} \xr\ can check that
+closing brackets match an opening bracket somewhere for you; it can
+even prevent you from typing unmatched brackets.  These abilities are
+controlled by the {\tt matchBrackets} and {\tt forceBracketMatch} X
+Resources; the defaults are True and False, respectively.  If matching
+is enabled, every bracket you type will cause either its matching
+bracket to flash, or the terminal bell to ring if there is no match.
+Matching is carried out for round, square and curly brackets, and for
+the \REDUCE\ \verb+<<+\ldots\verb+>>+ and {\tt begin}\ldots{\tt end}
+pairs.  If force matching is enabled, \xr\ will render the
+close-bracket keys ineffectual unless there is a matching open
+bracket; this applies to all of the bracket styles except {\tt
+begin}\ldots{\tt end}.
+
+\item[Bracket Checking and Completion] Moving the cursor to the right
+of a closing bracket in the input window will cause its matching
+opening bracket to flash; pressing Ctrl-TAB when the cursor is on a
+line containing unmatched opening brackets will cause enough closing
+brackets of the correct types to be inserted to match.  This only
+matches round, square and curly brackets, not compound delimiters.
+\end{description}
+
+\subsubsection{Question Boxes}\label{questionboxes}
+
+When \xr , or \REDUCE\ via \xr , needs to know something for which a
+yes or no answer is possible (such as ``Are you sure you want to quit
+this \REDUCE\ session?'', or ``Declare {\tt ocdbwmxz} operator?''), a
+Question box is popped up to ask you about it.  These are small boxes
+containing only the question and two buttons, labelled Yes and No.
+When one appears, your mouse pointer will immediately be warped into
+it, probably landing on either Yes or No, whichever is the default for
+the particular question\footnote{This only works with a window manager
+that supports pointer warping.}.  You can take the following actions:
+
+\begin{itemize}
+\item Click on one of the Yes or No buttons;
+\item Press \keybox{y} or \keybox{n}, whilst the pointer is within the
+question box;
+\item Press \keybox{Ctrl}~\keybox{C}, which abandons the question and
+sends an Interrupt signal to Reduce;
+\item Press \keybox{Escape}, which is equivalent to clicking No;
+\item Press \keybox{Return}, which will select whichever box (Yes or No) the
+pointer is currently over, or be ignored if it is not over either.
+\end{itemize}
+
+\subsection{The Help Window}\label{help}
+
+\unitlength=1cm
+\begin{picture}(20,14)(0,0)
+\put(2.5,0.6){\epsfbox{xr-hmen.ps}}
+\end{picture}
+
+Pressing the Help button on the title bar calls up the Help selection
+window. This windows contains button for each item in the REDUCE doc
+directory. Pressing the buttons starts up the appropriate display
+utility which is the program {\tt more} for plain text files and an own
+help system which is based on the X info format. The usage of this
+xr feature is described in the rest of this chapter.
+The contents of the REDUCE doc directory and the type of available
+information is described in the file \$reduce/help/helpdir.info.
+
+\unitlength=1cm
+\begin{picture}(12,10)(0,0)
+\put(2.5,0.6){\epsfbox{xr-help.ps}}
+\end{picture}
+
+This window is divided into a button-and-label section, at the top,
+and two textual windows.  The upper textual window contains a help
+`page' normally covering a single topic, and the lower contains a
+`menu' of sub-pages (`children').  If there is no text in the current
+page, the upper is empty, and likewise if there are no children the
+lower is empty.
+
+The help system is arranged as a tree-hierarchical set of pages; a
+page may have a `parent' page, some child pages and some siblings.
+The only parentless page is known as `Top', and contains the main
+contents menu; pages with children show their children as a list in
+the menu window; and pages with siblings may have `Previous' and
+`Next' pages.
+
+There are several ways of moving around between help pages:
+
+\begin{description}
+\item[Cross References] Occasionally the text in the textual help page
+window may contain words (other than titles) displayed in {\bf bold
+type}.  These indicate cross-references, {\it ie\/}.~words which refer
+to other help pages.  These are highlighted as the mouse pointer
+passes over them, and they may be clicked upon in order to transport
+you directly to the page to which they refer.
+
+\item[The Prev, Up and Next buttons] These buttons, when pressed, flip
+the current page to the previous sibling page, parent page or next
+sibling page respectively.  If there is no page in the given direction
+to which to flip, a beep will sound instead.  Note that if you are at
+the Top node, the `Up' button reads not `Up: (none)', as you might
+expect, but `Up: (dir)'.  This is for historical reasons\footnote{The
+actual reason is because the file format is closely based on the GNU
+project's Info format, which provides for an above-Top-level directory
+of Info files.}.
+
+\item[The Menu] If there is a menu in the bottom (menu) window, each
+item in it should be listed with the name of its page in {\bf bold
+type} and a short description in normal type.  Clicking the mouse
+button on one of the {\bf bold} page names will flip to that page.
+
+\item[Searching] Provided that the Help Index file is available, which
+depends on the installation, there should be a Search button at the
+top of the window.  When clicked, this takes you to a Search page,
+designed to help you find pages relevant to subjects of interest.  On
+the Search page you may enter a simple string consisting of one or
+more words for which to search (for example, `matrix', or `taylor
+series'), and click on the `Execute Search' button; the results of the
+search will then be listed in the menu window.  This list is of all
+pages which were considered as possibilities, in an approximate order
+of likelihood.  Clicking on a name will then take you to that page.
+
+When the Search page is active, the Search button is relabelled
+`Return to Help Page', and clicking on it returns you to the page you
+were last looking at.
+
+\item[The Show Route button] This button causes a list to be displayed
+of all the pages you have looked at so far, in order, with a count of
+the number of times each has been visited.  The list is displayed as a
+menu, and can be clicked to transport you directly to an earlier page.
+When it is shown, the Show Route button is relabelled `Show Current
+Page', and when clicked to returns you to the last page you were
+looking at.
+\end{description}
+
+The other buttons and labels in the top section of the Help window are
+the Exit Help button, which removes the Help window, and an
+information label telling you which page you are looking at.
+
+In addition, there is a provisional contextual help facility.  Hitting
+the contextual help button (by default the key~\keybox{F10}, though it
+can be bound to a different key in your resource file) while the
+pointer is in an input or output window will cause the Help box to pop
+up and a search to be initiated in an attempt to find any pages
+relevant to anything you have been typing recently.
+
+The best way to get to know the Help system is to play around with it
+a bit and find out what goes where -- it's very intuitive once you
+have the general idea.
+
+\subsection{The Option Box}\label{options}
+
+\unitlength=1cm
+\begin{picture}(12,10)(0,0)
+\put(0.7,2.5){\fbox{\epsfbox{xr-optn.ps}}}
+\put(6.8,3.1){\fbox{\epsfbox{xr-file.ps}}}
+\put(2.3,1.8){\footnotesize Option Box}
+\put(8.5,2.4){\footnotesize File Box}
+\end{picture}
+
+This is called up by pressing the Options button on the title bar.  It
+may be left up throughout the \xr\ session, or dismissed at any time
+by pressing its Done button.  The Option box contains the following
+options, whose values may be changed by clicking on the little boxes
+in which they are displayed:
+
+\begin{description}
+
+\item[History Length] This controls the number of lines of input and
+output which are saved in the output history window's scrollable
+area.  The default is 100; using too large values may slow \xr\ down.
+
+\item[Page Mode] If enabled, \xr\ will pause every time a whole output
+window's worth of output has appeared since the last pause or since
+the last prompt.  Its assessment of ``a whole page'' is not
+particularly accurate, but the feature can be useful if you want to
+read something like a long demo file; it may be of more use than the
+conventional \REDUCE\ {\tt DEMO} switch.  When the output is paused,
+the cursor will show a pointing hand whenever it is over the input
+window; then clicking on the first mouse button or pressing
+\keybox{Return} will free the page mode for another page.
+
+\item[Use Greek Font] If your X server is not equipped with Greek
+fonts, you have two options: you can just choose a different font for
+Greek characters (such as an Italic font, in which case for example
+$\pi$ will display as {\it p\/}), or you can turn off Greek printing
+using this option, in which case Greek characters' real names will be
+printed instead (\`a la terminal \REDUCE{}).
+
+\item[Reverse Video] This causes graphical formulaic output to be
+displayed in reverse video\footnote{Certain pathological X servers may
+require Reverse Video to be selected in order to display correctly in
+forward video.}.
+
+\item[Graphics] This controls whether or not \xr\ displays proper
+fancy-output graphics, or merely ASCII \REDUCE{}-style
+prettyprinting.
+
+\item[Match Brackets {\rm and} Force Bracket Matching] These options
+control the bracket-matching capabilities which were described in
+section \ref{bracketmatching}.
+
+\item[Font Selection] This calls up the Font Selector, which enables
+dynamic user font selection.  This is described in detail in section
+\ref{fonts}.
+
+\end{description}
+
+\subsubsection{The Font Selector}\label{fonts}
+
+\unitlength=1cm
+\begin{picture}(12,8.5)(0,0)
+\put(2.3,0.2){\fbox{\epsfbox{xr-font.ps}}}
+\end{picture}
+
+The Font Selector window is a smallish square window which provides
+the ability for you to tailor the appearance of \xr{}, and to save the
+results to the default file for subsequent \xr\ sessions.  It is
+divided up as follows:
+
+\begin{description}
+
+\item[Purpose List] This box, in the top-left quadrant of the Font
+Selector, lists all the possible purposes for which you can choose
+fonts.  Clicking with the mouse pointer over a list item allows you
+then to choose the font for that purpose; double-clicking on it will
+cause the currently chosen font to be displayed in the font display
+window (for which see below), and also allow you to select the font
+for that purpose.
+
+\item[Family List] This, in the top-right quadrant, contains a
+scrollable list of the various families of fonts which your server
+has.  Selecting one of the list items (by clicking when the mouse
+pointer is over it) will show that family of fonts in the display
+window, allowing you to choose from~it.
+
+\item[Font Display Window] This is the larger box taking up most of
+the lower half of the selector.  It lists all the fonts in the
+selected family by name; each name is displayed in that font.  In
+order to choose one of these fonts for your currently selected
+purpose, you simply click on it with the mouse pointer, and click on
+the Apply button (see below).
+
+\item[Any Button{\rm , } Bold Button {\rm and }Italic Button] These
+select which fonts in the current family to display.  If the Any
+button is pressed, all fonts will be shown (this is the default);
+pressing the Bold and Italic buttons will restrict the display to bold
+or italic fonts.  If none of these buttons are pressed, only fonts
+which are neither bold nor italic will be displayed.
+
+\item[Scale Button] If the current family contains some scalable
+fonts, this button will be active, and if you press it, you will be
+asked for a point size, to which the scalable fonts in the family will
+then be scaled.
+
+\item[Show Button] This controls how the displayed fonts are named; it
+toggles between names of the form (for instance) ``Adobe 14pt Times
+Bold'' and the default names, which are generally of a form something
+like ``{\tt -adobe-times-bold-r-normal--14-140-75-75-p-77-iso8859-1}''.
+
+\item[Apply Button] When a purpose and a font are both highlighted, in
+the Purpose List and Font Display window respectively, a click on
+Apply will choose that font for that purpose.
+
+\item[Reset Button] This will reset the font for the current purpose
+to that originally chosen for it in the \xr\ default file.
+
+\item[Propagate Button] This is a cunning bit.  If you have chosen one
+or two fonts, and you don't want to bother choosing the rest, simply
+hit Propagate and \xr\ will try to choose the other fonts to match.  A
+window will pop up listing the chosen fonts and you can choose whether
+or not you want to use them.
+
+\item[Done Button] This closes the Font Selector.  If you have changed
+the choice of fonts, you will be given the opportunity to save the new
+selection in your (personal, not system-wide) X defaults file so that
+they will be used automatically next time you use \xr{}.
+
+\end{description}
+
+\subsection{The File Box}\label{file}
+
+This is invoked by pressing the File button on the title bar, and
+contains various options for controlling the input and output of
+\REDUCE.  Its options are activated in the same way as those of the
+Option box.  Most of them, when activated, pop up a File Selection
+box, as described in section~\ref{fileselect} to allow the choice of a
+file on which to operate.  The options are as follows:
+
+\begin{description}
+
+\item[Load System Package] This allows you to choose one of the
+supplied \REDUCE\ packages to be loaded into the \REDUCE\ session.
+
+\item[Load User Package] An option to load a pre-compiled \REDUCE\
+package of your own devising (produced by {\tt faslout}).  It's
+probable that the casual user will have no particular need for this.
+
+\item[Read File Noisily] This reads a batch file of \REDUCE\ commands
+in to the current session, with each command in the file being echoed
+when read\footnote{Sadly, any display resulting from reading in a file
+using either of the File Box options cannot be printed out using the
+normal Print option.  This is because reading in a file has
+(technically) no result, and hence its result cannot be printed.  If
+you must print output obtained from reading a file, you might consider
+cutting and pasting the file into the \xr\ input window using the
+standard X mechanisms, instead of using a Read option.}.
+
+\item[Read File Quietly] This reads a batch file in the same manner,
+except that commands are not echoed as they are read.  Their results
+are still displayed.
+
+\item[Log to File] This controls the capability of \xr\ to send a copy
+of the session to a log file as well as to the output window.  If it
+is enabled, subsequent interactions with \REDUCE\ will be sent to the
+log file as well as to the \xr\ window.  Logging stops as soon as it
+is disabled again. The log file contains {\small REDUCE} output
+in its internal encoding. There is a tool $log\_latex$
+in the module $logutil$ for translating such a dribble file into a true
+\LaTeX\ file. E.g. for translating a dribble file $reduce.log$ to
+a \LaTeX\ file $log.tex$ type
+\begin{verbatim}
+   load_package logutil;
+   log_latex("reduce.log","log.tex");
+\end{verbatim}
+
+\item[Send to Printer] This calls up the Printer Box, which allows you
+to send a copy of some of the interactions with \REDUCE{}, specified
+by begin and end prompt numbers, to a printer or file.  This is
+described in section~\ref{printer}.
+
+\end{description}
+
+\subsubsection{File Selection Boxes}\label{fileselect}
+
+\unitlength=1cm
+\begin{picture}(12,8.2)(0,0)
+\put(2.25,0.2){\fbox{\epsfbox{xr-fsel.ps}}}
+\end{picture}
+
+A File Selection Box is a box popped up by several of the File
+options, and also sometimes by the Font Selector, to allow you to
+choose a file to read from or write to.  It is divided into several
+areas: labels indicating why the file is needed, which directory of
+files is currently being inspected, and which file is selected; a list
+of file names; and several buttons.
+
+The list of files shows each file name in the current directory, with
+a terminating character (in the style of the UNIX command~{\tt ls~-F})
+to indicate the type of the file: ``{\tt /}'' for directories, which
+can be `entered' by clicking on them; ``{\tt *}'' for executable
+files; ``{\tt =}'' for named sockets.  Other files have no special
+terminating character.  Clicking on any file's name will, unless that
+file is a directory, select the file.
+
+The File Selector's buttons are as follows:
+
+\begin{description}
+
+\item[Up Button] This opens and displays the parent directory of the
+current one; for instance, if the current directory is ``{\tt
+/usr/local/bin}'', this changes the display to list instead the
+directory ``{\tt /usr/local}''.  If the current directory is at the
+root of the directory tree, this button will be disabled.
+
+\item[Rescan Button] This causes the current directory to be reread,
+so as to update it if it has for some reason changed since it was
+last opened.
+
+\item[Show Button] The Show button toggles the displaying convention
+of the file listing.  By default the listing shows only those files
+neither beginning with the character~``{\tt .}'' nor ending
+with~``\verb+~+'', ``{\tt \#}'' or ``{\tt \%}'' (thus excluding many
+forms of backup or system files).  If the Show button is then pressed,
+such files will be included in the list, and the button will be
+relabelled `Hide'; pressing it again reverses the action.
+
+\item[Apply Button] This tells \xr\ that you are happy with the
+selection of the file; the file is then (where possible) opened and
+used for whichever purpose the selector box had been called.
+
+\item[Cancel Button] This cancels the operation for which the file
+name was required.
+
+\end{description}
+
+If the file is to be written to, the label showing the currently
+selected filename will be editable, in order to allow the creation of
+a new unlisted file; if it is solely for reading, only files actually
+listed in the directory may be selected.  For some purposes, normally
+those for which it would not be advisable to use an existing file
+(because the contents of the old file would be lost), a default name,
+unique within the directory, will be chosen at random.
+
+\subsubsection{The Printer Box}\label{printer}
+
+\unitlength=1cm
+\begin{picture}(13,6.3)(0,0)
+\put(1.4,0.2){\fbox{\epsfbox{xr-prnt.ps}}}
+\end{picture}
+
+The Printer box is a window which is popped up when the Send To
+Printer option on the Option Box is selected.  It contains an
+information label, four input text labels and several option buttons,
+as follows:
+
+\begin{description}
+
+\item[Printer Name] In this box you can enter the name of a printer to
+which you wish your transcription to be sent.  The default is to use
+no name, and the actual printing is always carried out by sending to
+the standard input of the UNIX {\tt lpr} command.  If a name is
+specified, print will be sent to the printer of that name, using {\tt
+lpr}'s standard {\tt -P} option.
+
+\item[File Name] This is for the name of the file to send
+transcription to, should you choose file output instead of printer.
+The default is chosen uniquely each time the printer box is invoked;
+if an existing file is requested, it will be overwritten.  Note that
+the Printer Name and File Name boxes can only be typed into when the
+Printer and File option buttons, respectively, are selected.
+
+\item[Begin Prompt Number {\rm and} End Prompt Number] These are for
+choosing which section of the \xr\ session you want to print.  The end
+number must be at least as large as the begin number, and neither may
+exceed the current prompt number displayed on the Output window.  If
+they are equal, then exactly one input and output will be printed.
+The default is for both to contain the number of the previous prompt.
+Note that the prompts you select do {\it not\/} have to be still
+visible or available on the \xr\ output window.
+
+\item[Plain Text button{\rm , } PostScript button {\rm and} LaTeX
+button] These three buttons allow you to choose what format should be
+used for the output.  Plain Text transcribes the session as it would
+be seen on an ASCII terminal \REDUCE{}.  PostScript transcribes in the
+Adobe PostScript language, suitable for sending directly to many
+printers and which may be processed by some desktop publishing
+utilities.  LaTeX produces a complete \LaTeX\ document; you can only
+send \LaTeX{} to a file, not directly to the printer.
+
+\item[Printer button {\rm and} File button] These select where to send
+the output.
+
+\item[A4{\rm , } Letter{\rm , } Portrait {\rm and} Landscape buttons]
+These are only applicable with PostScript output; they select the size
+and orientation of the output page.
+
+\end{description}
+
+There are also OK and Cancel buttons, causing the output to be printed
+or thrown away respectively.
+
+\newpage
+\section{Resources and Options}
+
+\xr\ recognises a swathe of X resources and command-line options,
+which are documented below.  The defaults specified in the tables are
+those hardcoded into the \xr\ source; several of them are overridden
+by specifications in the distribution {\tt XR} resource file.
+
+\subsection{File Resources}
+
+\vskip 6pt
+{\footnotesize\tt
+\begin{tabular}{l p{0.8in} l p{1.7in}}
+{\it Resource} &{\it Option} &{\it Default} &{\it Description}\\
+&&&\\
+
+reducePath &-rpath &\$reduce/psl &{\rm
+Path of directory containing \REDUCE{} executable}\\
+
+reduceName &-rname &bpsl &{\rm
+Name of \REDUCE{} executable file within {\tt reducePath} directory}\\
+
+reduceImageFile &-rimage &\$reduce/reduce.img &{\rm
+Name of image file to feed to \REDUCE{} via {\tt -f} option}\\
+
+reduceInitFile &-rinitfile &\$reduce/xr/bin/xr.red &{\rm
+Name of initialisation file to feed to \REDUCE{} at \xr\ startup}\\
+
+reduceHelpFile &-rhelpfile &\$reduce/xr/doc/rhelp.info &{\rm
+Name of Help Info file used by \xr\ Help module}\\
+
+reduceOptions &{\rm (none)} &-td 12000000 &{\rm
+Command option string to pass to \REDUCE\ process}\\
+
+logToFile &-log, -nolog &False &{\rm
+Whether to send transaction to log file as well as screen}\\
+
+logFile &-logfile &/dev/null &{\rm
+File to which to send logging information}
+\end{tabular}
+}
+
+\subsection{Dimensional Resources}
+
+\vskip 6pt
+{\footnotesize\tt
+\begin{tabular}{l p{0.8in} l p{2.5in}}
+{\it Resource} &{\it Option} &{\it Default} &{\it Description}\\
+&&&\\
+
+widthInColumns &-linelength &80 &{\rm
+Number of characters per line of textual output}\\
+
+graphicalLineSpace &-graphspace &10 &{\rm
+Pixels of space between graphical formula output lines}\\
+
+reduceHistoryMax &-history &100 &{\rm
+Number of lines of past output saved in output history window}\\
+
+reduceHistoryExcess &-hexcess &50 &{\rm
+Number of slack lines allowed beyond history limit before \xr\ notices}\\
+
+historyPaneHeight &-oheight &400 &{\rm
+Preferred pixel height of output history window}\\
+
+inputPaneHeight &-iheight &50 &{\rm
+Preferred pixel height of input pane window}\\
+
+fontSelectorHeight &-fheight &400 &{\rm
+Pixel height of font selector box}\\
+
+fontSelectorWidth &-fwidth &400 &{\rm
+Pixel width of font selector box}
+\end{tabular}
+}
+
+
+\vbox{
+\subsection{Font Resources}
+
+\vskip 6pt
+{\footnotesize\tt
+\begin{tabular}{l p{1in} l p{2.5in}}
+{\it Resource} &{\it Option} &{\it Default} &{\it Description}\\
+&&&\\
+
+optionButtonFont &-buttonfn &{\rm (*)} &{\rm
+Font for use on option buttons}\\
+
+inputPaneFont &-inputpanefn &{\rm (*)} &{\rm
+Font for use in the input pane window}\\
+
+inputHistoryFont &-inputhistfn &{\rm (*)} &{\rm
+Font for use in the input history window}\\
+
+outputTextFont &-outputtextfn &{\rm (*)} &{\rm
+Font for display of textual output}\\
+
+normalAsciiFont &-asciifn &{\rm (*)} &{\rm
+Font for normal-sized ASCII chars in graphical formula output}\\
+
+normalGreekFont &-greekfn &{\rm (*)} &{\rm
+Font for normal-sized Greek chars in formulae}\\
+
+normalSymbolFont &-symbolfn &{\rm (*)} &{\rm
+Font for normal-sized mathematical symbols in formulae}\\
+
+smallAsciiFont &-smallasciifn &{\rm (*)} &{\rm
+Font for exponent-sized ASCII chars in formulae}\\
+
+smallGreekFont &-smallgreekfn &{\rm (*)} &{\rm
+Font for exponent-sized Greek chars in formulae}\\
+
+smallSymbolFont &-smallsymfn &{\rm (*)} &{\rm
+Font for exponent-sized mathematical symbols in formulae}\\
+
+verbatimFont &-verbfn &{\rm (*)} &{\rm
+Font to be used for fixed-width display in Help and output windows}\\
+
+helpTextFont &-helptextfn &{\rm (*)} &{\rm
+Font for display of normal text in Help window}\\
+
+helpXrefFont &-helpxreffn &{\rm (*)} &{\rm
+Font for display of highlighted cross-references in Help window}\\
+
+helpTitleFont &-helptitlefn &{\rm (*)} &{\rm
+Font for titles in Help window}\\
+
+psTextFont &-pstextfn &Courier &{\rm
+Font for text and commands in PostScript printer output}\\
+
+psSymbolFont &-pssymbolfn &Symbol &{\rm
+Font for Greek characters and mathematical symbols in PostScript}\\
+
+psAsciiFont &-psasciifn &Times-Roman &{\rm
+Font for ASCII characters in graphical PostScript formulae}\\
+
+ignoreTeXFonts &-texfns, -notexfns &False &{\rm
+Whether to edit out fonts with names resembling \TeX-style {\tt tfm} fonts}\\
+
+useGreekFont &-usegreek, -usenogreek &True &{\rm
+Whether to use the Greek font (or instead to write names of Greek chars)}\\
+
+useSymbolFont &-usesymbol, -usenosymbol &True &{\rm
+Whether to use the Symbol font (or draw mathematical chars by hand)}
+
+\end{tabular}
+}
+
+Resources marked in the Defaults column with `(*)' default to
+wildcarded XLFD font names, chosen to provide a reasonable look on our
+own displays.  The default names will be reported if they appear to be
+absent from your system (in which case choosing different values might
+be wise), and can be inspected using the built-in Font Selector.
+}
+
+\subsection{Timing and Buffering Resources}
+
+\vskip 6pt
+{\footnotesize\tt
+\begin{tabular}{l p{0.8in} l p{2.5in}}
+{\it Resource} &{\it Option} &{\it Default} &{\it Description}\\
+&&&\\
+
+bracketFlashTime &-bflashtime &1000 &{\rm
+Time (ms) for which to flash brackets when matching}\\
+
+multiClickTime &-mclicktime &500 &{\rm
+Time (ms) within which to accept a second mouse click as multi-clicking}\\
+
+inputBufferSize &-ibuf &10000 &{\rm
+Currently unused}\\
+
+outputBufferSize &-obuf &8000 &{\rm
+Char size of \REDUCE{} to \xr\ buffer}\\
+
+outputOnDelay &-ondelay &30 &{\rm
+Length (ms) of \xr\ buffer polls}\\
+
+outputOffDelay &-offdelay &100 &{\rm
+Delay (ms) between \xr\ buffer polls}
+\end{tabular}
+}
+
+\subsection{Miscellaneous Resources}
+
+\vskip 6pt
+{\footnotesize\tt
+\begin{tabular}{l p{1in} l p{2.5in}}
+{\it Resource} &{\it Option} &{\it Default} &{\it Description}\\
+&&&\\
+
+matchBrackets &-bmatch, -bnomatch &True &{\rm
+Whether to blink matching brackets and beep for unmatched brackets}\\
+
+forceBracketMatch &-bforcematch, -bnoforcematch &False &{\rm
+Whether to prevent the user from typing unmatched brackets}\\
+
+reverseVideo &-reverse, -forward &False &{\rm
+Display formulae in reverse video; essential on some demented servers}\\
+
+pageMode &-pagemode, -nopagemode &False &{\rm
+Whether to use Page Mode by default}\\
+
+pointerJump &-pointerjump, -nopointerjump &True &{\rm
+Whether to try to warp the pointer to default selections in Question boxes}
+\end{tabular}
+}
+
+\subsection{Options Without Corresponding Resources}
+
+\vskip 6pt
+{\footnotesize
+\begin{tabular}{p{1.2in} p{4in}}
+{\it Option}&{\it Description}\\
+&\\
+
+{\tt-quiet} &Causes \xr\ to ignore any unrecognised command-line
+options, passing them on to the \REDUCE\ process instead, suppress
+inessential notification messages and keep all error messages brief.\\
+
+{\tt-continue} &Causes \xr\ to continue processing despite complaining
+about any unrecognised command-line options, and to pass them on to
+\REDUCE.\\
+
+{\tt-despair} &Causes \xr\ to give up in hopeless disgust when
+confronted with an unknown command-line option.  This is the default
+behaviour.\\
+
+{\tt-writehelpix} &Causes \xr\ to start, process the Help Info file,
+produce a corresponding Index file (replacing the Info file's suffix
+with the suffix {\tt .hnx}), deposit it in the same place as the Info
+file and quit; still requires that the {\tt\$DISPLAY} be set and
+accessible.\\
+
+{\tt-query, -q, -?} &Causes \xr\ to print a table of known options and
+exit.
+\end{tabular}
+}
+
+\newpage
+\section{Installation}
+
+\xr\ has been tested to some extent on the following machines: Sun-3
+and Sun-4 under SunOS, Sun Solaris, DEC Alpha under OSF/1, DG Aviion
+under DG/UX, HP-700 under HP-UX, and IBM RS6000 under AIX, and IBM PC
+and compatibles under linux.
+
+\subsection{Installing \xr\ from a distribution
+executable}\label{executable}
+
+Most distributions of \xr\ are supplied with a ready-compiled
+executable.  Such versions are normally supplied in a directory tree
+called {\tt xr}.  If your \xr\ is supplied as part of a \REDUCE\
+distribution, its top-level directory should already be
+{\tt\$reduce/xr}, where {\tt\$reduce} is the top-level directory of
+the \REDUCE\ tree; otherwise the top-level \xr\ directory must be
+moved into {\tt\$reduce} before use.  The \xr\ executable is then
+found in {\tt\$reduce/xr/bin/xr}.
+
+Before using \xr, its X resource file, supplied as
+{\tt\$reduce/xr/XR}, must be copied (with the same name) to a
+directory where the X resource manager will be able to find it when
+\xr\ starts up.  \xr\ itself has no control over where to look for the
+file.  The X resource manager is supposed to look in the following
+directories for this file (listed in reverse order of precedence ---
+later take precedence over earlier):
+
+\begin{itemize}
+\item each directory in the path specified in the environment variable
+{\tt\$XFILESEARCHPATH};
+\item the directory specified by the environment variable {\tt\$HOME};
+\item the directory specified by the environment variable
+{\tt\$XAPPLRESDIR};
+\item each directory in the path specified in the environment variable
+{\tt\$XUSERFILESEARCHPATH}.
+\end{itemize}
+
+Taking precedence over all these are any resources which were read
+from the contents of the following three files.  These, however, are
+read not at \xr\ startup but at the server's startup, or whenever you
+reread them with {\tt xrdb}.  If you're really desperate, you could
+append the contents of the \xr\ resource file to one of these, and
+then run {\tt xrdb {\it filename\/}}:
+\begin{itemize}
+\item {\tt\$HOME/.Xdefaults}
+\item {\tt\$HOME/.Xdefaults-{\it hostname\/}} (noting that the
+hostname is that of the \xr\ host, not the server);
+\item {\tt\$XENVIRONMENT} (which should be a file, not a directory).
+\end{itemize}
+
+Bear in mind that if you include the resources in one of the files in
+{\tt\$HOME}, each user of \xr\ will require their own copy of or link
+to the resource file.
+
+As an aside, there are two further informational files used by \xr,
+although neither is strictly necessary and neither should need
+moving before \xr\ can be run.  These are
+{\tt\$reduce/xr/doc/packages}, which enumerates the available
+\REDUCE\ fast load packages, and {\tt\$reduce/xr/doc/defaults}, which
+lists the possible locations to which the Font Selector can write new
+font resources.  You can change both if you wish, but if their format
+isn't obvious to you, you probably shouldn't be fiddling about with
+them\footnote{The final field in each line of the defaults list file
+is redundant, but must be present.}.  User-specific copies of these
+two files may, if desired, be kept in {\tt\$HOME/.xrpackages} and
+{\tt\$HOME/.xrxdefaults} respectively; these take precedence over the
+system-wide copies.
+
+Once the {\tt XR} file has been moved to a suitable directory, it
+should be possible to fire up \xr\ by executing
+{\tt\$reduce/xr/bin/xr}.
+
+\subsection{Installing \xr\ from sources}
+
+Source installation can currently be rather more complicated than it
+need be, particularly if for some reason the heuristics in the
+provided automated installation script fail for your system's setup,
+or if you have to make extensive changes to the Makefile.
+
+At the moment there are, for most systems, these basic steps.
+
+\begin{enumerate}
+
+\item Ensure that the {\tt Makefile} is accurate for your system,
+particularly with regard to the {\tt CC}, {\tt CFLAGS} and {\tt
+LDFLAGS} variables.  For many systems this is the most tricky bit of
+the installation.  Note that all the C code in \xr\ is pure K\&R, and
+that it refers to one or two BSD functions, such as {\tt
+socketpair(2)}, and to the {\tt m} library.  Most of the MIT
+distribution X libraries, or your vendor's equivalent, are needed
+(X11, Xt, Xaw, Xmu and Xext are a likely selection), but \xr\ makes no
+use of proprietary widget code such as the OSF's Motif or Sun OLIT.
+Note that for the Solaris you will probably need to define the {\tt
+SOLARIS} flag, and whether or not you can define {\tt
+HAVE\_VIEWPORT\_SET\_FUNCTIONS} will depend on the X libraries.  Try
+it and see.
+
+\item Whilst in the directory {\tt\$reduce/xr/src}, run the
+shell-script {\tt ./Install.sh}.  This script attempts to do several
+things: produce the suitably-modified installation files {\tt XR} and
+{\tt xr.red} from their {\tt .orig} equivalents; {\tt make} the C
+code; run \REDUCE\ to compile the RLisp code; run \xr\ to create a
+Help Index file ({\tt rhelp.hnx}); and move the files to the correct
+directories.  In order to do all this, it requires several questions
+to be answered by the installer, and for best results the environment
+variable {\tt\$reduce} should be correctly set before running it.  It
+also helps if the {\tt\$DISPLAY} variable is set to an openable X
+display.
+
+\item Copy the file {\tt XR} (created by the shell-script) to a
+directory such as {\tt\$HOME} or {\tt\$XAPPLRESDIR}, as described in
+section \ref{executable} above, where it will be found by the X
+resource manager when \xr\ is run.  \end{enumerate}
+
+\section{Controlling {\tt XR's} REDUCE output}
+
+The interconnection of LISP symbols to the {\tt XR} print style 
+is realized by the properties {\tt fancy!-special!-symbol} and
+{\tt fancy!-pprifn}, which maps a symbol to a special character, e.g.
+\begin{verbatim}
+prop 'kappa;
+           ((fancy!-special!-symbol . "\kappa")) 
+\end{verbatim}
+or to a special printfunction, e.g.
+\begin{verbatim}
+prop 'meijerg;
+
+            ((fancy!-prifn . fancy!-meijerg)) 
+\end{verbatim}
+
+For controlling the output produce by  {\tt XR} there are some additional
+facilities:
+\begin{itemize}
+\item  the share variable $fancy\_print\_df$ can be set to one of
+  the values $PARTIAL$, $TOTAL$ or $INDEXED$; this influences the
+  printing of differential expressions. E.g. $df(f,x,2,y)$ will be
+  printed as
+  \begin{itemize}
+  \item{$PARTIAL$}: $\frac{\partial ^3 f}{\partial x^2 \partial y}$
+  \item{$TOTAL$}: $\frac{d ^3 f}{d x^2 d y}$
+  \item{$INDEXED$}: $f_{xxy}$
+  \end{itemize}
+\item An operator can be declared ``print\_indexed"; its arguments
+   then will be printed as indexes. E.g.
+   \begin{verbatim}
+      print_indexed a;
+   \end{verbatim}
+   then $a(i,2)$ will be printed as $a_{i 2}$
+\item When the switch $fancy\_tex$ is set $ON$ the internal form
+   is displayed instead of the typsetting form.
+\end{itemize}
+
+\newpage
+\section{Problems}
+
+\subsection{Error Messages}
+
+\subsubsection{General \xr\ Errors}
+
+The following table lists some of the error messages \xr\ may produce,
+excluding those generated by the Help module. If the {\tt -quiet}
+command-line option is used, some of these may be shortened or
+suppressed.
+
+\begin{description}
+
+\item[{\tt Unknown command line option~{\it x\/}}]\hskip 0.6pc\relax
+You have given \xr\ a command-line option it doesn't recognise.  If
+this was intentional and you only wanted the option passed on to the
+\REDUCE{} process, you should use the {\tt -continue} or {\tt -quiet}
+option as well.  You can obtain a list of recognised options by using
+the {\tt -query} option.
+
+\item[{\tt Cannot find X defaults file}]\hskip 0.6pc\relax Wherever
+the {\tt XR} X resource file was placed in the installation process,
+the X resource manager didn't find it; see section \ref{executable}
+above.  This error also arises if the resources are found, but fail to
+set the {\tt foundDefaults} resource to {\tt True}; if this was the
+case, you'd probably know.
+
+\item[{\tt Error in resource specifications:~{\it x\/}}]\hskip
+0.6pc\relax An invalid value has been given in one of \xr's resources
+or on the command line.  The {\it x\/} will probably indicate what it
+was.
+
+\item[{\tt No Reduce binary {\it (or {\tt image}) x\/}}]\hskip
+0.6pc\relax The \REDUCE\ binary (or image) file given by the {\tt
+reducePath} and {\tt reduceName} (or {\tt reduceImageFile}) resources
+is absent or unreadable.  Check the given values in the X~resource
+file; the error message should tell you where \xr{} is looking.
+
+\item[{\tt Could not open directory~{\it x}}]\hskip 0.6pc\relax The
+directory in which \xr\ looks for the \REDUCE\ or RLisp executable
+doesn't exist or can't be opened.  Check the specification of the {\tt
+reducePath} resource in the X~resource file.
+
+\item[{\tt Could not open Reduce initialisation file}]\hskip
+0.6pc\relax The file given in the {\tt reduceInitFile} resource or as
+the argument to the {\tt -rinitfile} command line option doesn't exist
+or is lacking read permission.
+
+\item[{\tt Couldn't get value of environment variable~{\it x}}]\hskip
+0.6pc\relax The specified environment variable is not set, or is not
+marked for export.  If you think the variable shouldn't be needed,
+check the \xr\ initialisation and default files for references to it.
+
+\item[{\tt Could not execve()}]\hskip 0.6pc\relax \xr\ is for some
+reason unable to execute the \REDUCE\ executable.  Check that it does
+actually work.
+
+\item[{\tt Caught a Terminate signal}]\hskip 0.6pc\relax \xr\ has been
+sent a Terminate signal; this sometimes happens at startup if your
+system has run out of processes or memory and cannot run both \xr\ and
+\REDUCE.  There's not much I can do about that case.
+
+\item[{\tt Reduce process has exited;~tidying up and leaving}]\hskip
+0.6pc\relax This is produced when the user types {\tt bye} or {\tt
+quit} into the \REDUCE{} window; it may also appear if for some reason
+the initial execution of the \REDUCE\ process fails.  (This often
+happens when the \REDUCE\ executable is a shell script which is
+lacking an opening line such as {\tt \#!/bin/csh} to tell {\tt
+execve(2)} to run it in a shell.  If you get such an error and can't
+work it out, please do ask.)
+
+\item[{\tt X Warning:~{\it x\/} on display {\it y\/}}]\hskip
+0.6pc\relax This is a report of a failed request on the X server.  If
+it is reproducible, it's probably a bug; unfortunately, sometimes
+these errors are caused by side conditions and are not directly
+traceable to \xr.
+
+\item[{\tt My relationship with the X server has been cruelly
+severed}]\hskip 0.6pc\relax This is normally caused by the use of a
+window manager's `kill' function or the {\tt xkill} utility on \xr.
+
+\item[{\tt No font~{\it x\/}, trying~{\it y}}]\hskip 0.6pc\relax A
+font has been requested that isn't available on your server --- even
+though it may be listed as available.
+
+\item[{\tt Couldn't load default font}]\hskip 0.6pc\relax The font
+(normally {\tt\verb+"+fixed\verb+"+}) that \xr\ uses as a default when
+it can't find one of the specified ones is apparently absent from the
+server.
+
+\item[{\tt Can't locate font~{\it x\/}; trying~{\it y\/}}]\hskip
+0.6pc\relax This sometimes results from a known (but persistent) bug
+in the Font Selector.
+
+\item[{\tt Can't locate default font.  This is probably my fault;
+sorry}]\hskip 0.6pc\relax This arises from the same bug, and really
+should not happen.
+
+\item[{\tt Can't locate font alias~{\it x\/}; using~{\it y\/}}]\hskip
+0.6pc\relax Probably a bug, though normally a fairly benevolent one.
+
+\item[{\tt Too many font families}]\hskip 0.6pc\relax Your font server
+is too well-equipped.
+
+\item[{\tt Normal-size Greek characters will be in non-Greek
+font}]\hskip 0.6pc\relax Errors like this indicate that the Greek
+character font specified in the resources could not be loaded.  Either
+specify a different Greek font (using the Font Selector or by changing
+the resource file), turn off the `Use Greek Fonts' option (using the
+Option Box or the resource file), or put up with the ensuing ugly
+output.
+
+\item[{\tt No symbol font:~drawing my own mathematical symbols}]\hskip
+0.6pc\relax The font specified for mathematical symbols in the
+resources could not be loaded.  Either specify a different symbol
+font, or put up with \xr's own attempts at drawing mathematical
+characters (in which case you may wish to set the {\tt useSymbolFont}
+resource to {\tt False}).  \end{description}
+
+If you see any other (apparently serious, or fatal) error message, or
+if you are driven to the brink of madness by any of the above ones,
+please report the problem.
+
+\subsubsection{Help Module Errors}
+
+There are several non-fatal errors which can be produced by the Help
+module.  Most of these will be accompanied by further explanation
+messages; some of the more likely or nasty ones are:
+
+\begin{description} \item[{\tt Cannot open help file}]\hskip
+0.6pc\relax The help file specified in the resources is absent, or has
+no read permission.  Check your X~resource file.
+
+\item[{\tt Cannot open the help index file}]\hskip 0.6pc\relax The
+help file appears not to be accompanied by a readable index ({\tt
+.hnx}) file. This is probably a problem in installation; it means that
+the Search facility will be absent from the Help module.
+
+\item[{\tt Could not read TOC location from index file}]\hskip
+0.6pc\relax The index file is apparently wrong, though not fatally.
+It will still be used for searching, though it's possible that the
+results may be inaccurate.  You could try running \xr\ with the {\tt
+-writehelpix} option to remake the index file; if this doesn't put it
+right, report the problem.
+
+\item[{\tt Unexpected EOF in help file~{\it and\/} Error reading help
+file}]\hskip 0.6pc\relax The help info file is corrupted.  Complain.
+
+\item[{\tt No such node as~{\it x\/}}]\hskip 0.6pc\relax The help info
+file is corrupted or wrong.  Complain.
+
+\item[{\tt Unknown or unexpected node tag~{\it x\/}}]\hskip
+0.6pc\relax The help info file is corrupted or wrong.  Complain.
+
+\item[{\tt Too many nodes in helpfile}]\hskip 0.6pc\relax The help
+info file is simply too big.  This should currently not appear, as the
+distributed help file is known to be within reasonable limits.
+
+\item[{\tt Maximum text per page exceeded}]\hskip 0.6pc\relax A help
+page is too long.  If you get this, please report it.
+
+\item[{\tt Can't install Help facility}]\hskip 0.6pc\relax It's about
+to give up, after some other errors were caught.  If this appears
+without any other warnings preceding it, something is being strange
+somewhere.
+
+\end{description}
+
+\subsection{Bug List}
+At the time of writing, known bugs are several and rampant, and
+include:
+
+\begin{itemize}
+
+\item On some versions\footnote{Actually those compiled on machines
+whose installation of X precludes using the preprocessor flag {\tt
+HAVE\_VIEWPORT\_SET\_FUNCTIONS} --- if you can compile with this flag,
+it's probably better to do so.}, the scrollbar on the output history
+window doesn't quite sit at the bottom, and is rather inaccurate; also
+the font name highlighting is sometimes wrong.
+
+\item The Solaris version will probably spew lots of errors, fail to
+display output and probably eventually crash unless the -DSOLARIS flag
+is set during compilation.  Note that it is safe to leave this flag
+defined when compiling on other machines, if you wish.
+
+\item Behaviour of the Font Selector is shaky.  Depending upon your
+machine and the fonts available on your display server, attempting to
+call up the Font Selector may simply fail.  It is, however, more
+reliable than it used to be.
+
+\item Whether or not Interrupt works depends entirely on how \REDUCE\
+handles Interrupt signals on your machine's version.  Here it works on
+most versions, abandons the whole \REDUCE{}/\xr\ setup on the HP (not
+the most friendly of behaviour), and is ignored on the IBM RS.
+
+\item It is sometimes possible to get \xr\ out of sync by strange use
+of Interrupt or by over-zealous use of Page; the effect is usually to
+cause commands to appear one prompt later than they should.  This is
+very annoying.
+
+\item Very long textual output lines may disappear off the right side
+of the window, and --- unlike graphical output --- cannot be viewed no
+matter how wide the window is.
+
+\item Some stupid display hardware requires that the Reverse Video
+switch be used; this is probably beyond my control.
+
+\item Page Mode very often crashes, or at least gives dozens of
+warnings.
+
+\item There may be lapses in screen updating when the size of the
+input or output font is changed.
+
+\item Because the Print option just transcribes the user input and
+actual returned result (ie. workspace value) for each prompt, it will
+not reproduce output from reading in files, or from \REDUCE\ {\tt
+write} commands.
+
+\item The PostScript output produced by the Print option is flaky.
+In particular, it doesn't check for the output's running off the right
+hand side of the page.  Page numbering might also be desirable.
+
+\item \LaTeX{} output has a few bugs; for instance, it may
+occasionally produce nonexistent macro codes.  Generally the \LaTeX{}
+is less than beautiful, and although it should get better, at the
+moment you'll almost certainly need to do some fine tuning on the
+results.  Comments on how to improve the \LaTeX{} output are welcome.
+
+\end{itemize}
+
+\subsection{Contacts}
+
+If you find any interesting new bugs in \xr , or if there is any
+general or particular aspect of the program about which you want to
+complain, please feel free to contact Herbert Melenk at one of the
+following addresses.
+\begin{description}
+
+\item[Electronic Mail] \ {\tt melenk@sc.ZIB-Berlin.DE}
+\item[Real, Genuine Tangible Mail] \
+\\Konrad-Zuse-Zentrum \\
+\\Symbolik\\
+\\Takustrasse 7\\
+\\D-14195 Berlin-Dahlem\\
+Fed. Rep. of Germany
+
+\end{description}
+
+\xr\ was written mostly by Chris Cannam and Herbert Melenk at ZIB
+Berlin.  This document was prepared by Chris Cannam, updated by Winfried Neun
+in October 1993 and October 1996.
+
+\end{document}
+

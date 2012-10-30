@@ -1,0 +1,47 @@
+
+# Simple Makefile for XR, C Cannam 1993.  Sorry no imake.
+
+# Define HAVE_VIEWPORT_SET_FUNCTIONS if your Xaw supports the
+# function XawViewportSetCoordinates.  Many versions do, and
+# it works much better than XReduce's hacked alternatives.
+# If you're unsure but patient, define it and see if it links.
+
+# Other defines:
+#
+#     + Define EXPLICIT_EDITRES for explicit inclusion of the
+#    Editres Protocol files and error handler (shouldn't be
+#    necessary, and isn't particularly recommended).
+#
+#     + Define SOLARIS for work around dodgy bit in Solaris gcc
+#    where the size of jmp_buf is apparently wrong.
+#
+#     + Define LINUX for linux; at present all this does is take
+#    out references to SIGBUS.
+#
+#     + Define WAIT_THREE for systems lacking wait4, such as the
+#    IBMRS or HP; this assumes the presence of wait3 instead.
+
+# There are a couple of BSDisms, such as socketpair(2).  The X
+# code used is only X11 (R4 or R5), Xt and Athena; there's no OL
+# or Motif or anything.  All C code is K & R.
+
+CC 		= cc
+CFLAGS		= -g -DHAVE_VIEWPORT_SET_FUNCTIONS
+LDFLAGS		= -L/usr/lib/X11
+OBJECTS		= main.o verbal.o xredtech.o input.o widgets.o output.o fancy.o message.o option.o font.o help.o manager.o printer.o file.o fchoose.o
+SOURCES		= main.c verbal.c xredtech.c input.c widgets.c output.c fancy.c message.c option.c font.c help.c manager.c printer.c file.c fchoose.c
+
+xr:		${OBJECTS}
+		rm -f xr
+		${CC} -o xr ${OBJECTS} ${LDFLAGS} -lX11 -lXt -lXaw -lXmu -lXext -lm
+
+all:		${SOURCES}
+		rm -f xr *.o
+		make xr
+
+lint:		${SOURCES}
+		${LINT} ${SOURCES}
+
+clean:		
+		rm -f *.o
+

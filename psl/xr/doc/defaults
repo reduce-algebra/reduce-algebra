@@ -1,0 +1,4 @@
+System-wide XR Resource File::$XAPPLRESDIR/XR::applresdir-xr
+Your Machine-Specific X Default File::$HOME/.Xdefaults-$HOST::home-xdefaults-host
+Your General X Default File::$HOME/.Xdefaults::home-xdefaults
+Your XR-Specific Resource File::$HOME/XR::home-xr

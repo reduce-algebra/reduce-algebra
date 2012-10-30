@@ -1,0 +1,22 @@
+
+        XR Development Version -- ZIB Berlin, 1992 - 1993
+        =================================================
+
+
+XR is a program which interacts with the normal REDUCE package to
+provide a keyboard-and-mouse operated graphical user interface under
+UNIX and the X windowing system.  It requires the presence of REDUCE,
+and X11 Release 4 or 5 with the Athena Widget Set.
+
+This distribution contains the sources and an executable image for the
+specific platform.  Please read the supplied printed documentation or
+the file ./doc/xr.tex (also in compressed PostScript form as xr.ps.Z)
+for installation and operation instructions.
+
+If you have any problems, please do not hesitate to get in touch with
+us; the electronic mail address to use is that of Herbert Melenk,
+melenk@sc.ZIB-Berlin.DE .
+
+
+                                 Chris Cannam, cannam@sc.ZIB-Berlin.DE
+

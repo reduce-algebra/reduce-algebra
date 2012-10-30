@@ -1,0 +1,379 @@
+This is TeX, C Version 3.141 (format=nfss2ltx 93.12.13)  25 OCT 1996 15:13
+**xr
+(xr.tex
+LaTeX Version 2.09 <25 March 1992> with NFSS2
+(/silo/tex/inputs/latex/sty/article.sty
+Standard Document Style `article' <14 Jan 92>.
+(/silo/tex/inputs/latex/sty/art11.sty
+NFSS Note: External font `cmex10' loaded for size <10.95> on input line 42.
+NFSS Note: External font `cmex10' loaded for size <8> on input line 42.
+NFSS Note: External font `cmex10' loaded for size <6> on input line 42.
+)
+\c@part=\count81
+\c@section=\count82
+\c@subsection=\count83
+\c@subsubsection=\count84
+\c@paragraph=\count85
+\c@subparagraph=\count86
+\c@figure=\count87
+\c@table=\count88
+)
+(/silo/tex/inputs/ps-support/epsfig.sty
+Document style option `epsfig', v1.9 <22 Dec 92> (edited by SPQR)
+\ps@dimcent=\dimen104
+(/silo/tex/inputs/ps-support/epsf.tex
+\epsffilein=\read1
+\epsfxsize=\dimen105
+\epsfysize=\dimen106
+\epsftsize=\dimen107
+\epsfrsize=\dimen108
+\epsftmp=\dimen109
+\pspoints=\dimen110
+)
+\p@intvaluex=\dimen111
+\p@intvaluey=\dimen112
+) (/silo/tex/inputs/reduce/reduce.sty
+Document style option `reduce' -- released 5 Nov 1991.
+\reduceboxwidth=\skip41
+\redboxwidth=\skip42
+\rboxwidth=\skip43
+\c@examplectr=\count89
+\@mcdheight=\dimen113
+) (xr.aux)
+NFSS Note: Check substitution defaults for OT1/cmr/m/n on input line 30.
+NFSS Note: ... okay on input line 30.
+NFSS Note: Check substitution defaults for OML/cmm/m/it on input line 30.
+NFSS Note: ... okay on input line 30.
+NFSS Note: Check substitution defaults for OMS/cmsy/m/n on input line 30.
+NFSS Note: ... okay on input line 30.
+NFSS Note: Check substitution defaults for OMX/cmex/m/n on input line 30.
+NFSS Note: ... okay on input line 30.
+NFSS Note: Check substitution defaults for U/cmr/m/n on input line 30.
+NFSS Note: ... okay on input line 30.
+NFSS Note: Check substitution defaults for T1/cmr/m/n on input line 30.
+NFSS Note: Try loading font information for T1+cmr on input line 30.
+ (/silo/tex/inputs/nfss2/T1cmr.fd
+Fontdef file produced from: `cmrfonts.fdd' v2.0e <93/08/03> (FMi and RmS)
+)
+NFSS Note: ... okay on input line 30.
+ (/silo/tex/inputs/nfss2/nft1.def)
+NFSS Note: Try loading font information for T1+ptm on input line 30.
+
+(/silo/tex/inputs/nfss2/T1ptm.fd
+Fontdef file produced from: `psfonts.dtx' 4.1 (93/07/22) (SPQR)
+
+File T1ptm.fd loading Adobe TimesRoman
+)
+NFSS Note: External font `cmex10' loaded for size <17.28> on input line 41.
+NFSS Note: External font `cmex10' loaded for size <12> on input line 41.
+
+<ziblogo.eps>
+NFSS Note: External font `cmex10' loaded for size <14.4> on input line 44.
+NFSS Note: External font `cmex10' loaded for size <7> on input line 44.
+[0
+
+]
+NFSS Note: Try loading font information for T1+pcr on input line 51.
+ (/silo/tex/inputs/nfss2/T1pcr.fd
+Fontdef file produced from: `psfonts.dtx' 4.1 (93/07/22) (SPQR)
+
+File T1pcr.fd loading Adobe Courier
+)
+NFSS Note: External font `cmex10' loaded for size <5> on input line 64.
+ [1]
+NFSS Note: External font `cmex10' loaded for size <9> on input line 107.
+
+
+NFSS Info: Font shape `T1/pcr/m/sl' in size <10.95> not available.
+NFSS       Font shape `T1/pcr/m/it' tried instead on input line 131.
+
+[2]
+NFSS Note: Try loading font information for T1+phv on input line 134.
+ (/silo/tex/inputs/nfss2/T1phv.fd
+Fontdef file produced from: `psfonts.dtx' 4.1 (93/07/22) (SPQR)
+
+File T1phv.fd loading Adobe Helvetica
+) [3]
+Overfull \hbox (116.087pt too wide) in paragraph at lines 239--240
+[] 
+
+\hbox(398.33841+0.0)x452.96786
+.\hbox(398.33841+0.0)x569.05487
+..\hbox(398.33841+0.0)x569.05487, glue set 569.05487fil
+...\glue 0.0
+...\hbox(354.32791+0.0)x0.0 []
+...\glue 0.0 plus 1.0fil minus 1.0fil
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+
+[4] [5] [6] [7] [8] [9] [10] [11] [12]
+Underfull \hbox (badness 10000) in paragraph at lines 669--669
+[]\T1/pcr/m/n/9 -log,
+
+\hbox(5.625+1.413)x57.81621
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 l
+.\T1/pcr/m/n/9 o
+.\T1/pcr/m/n/9 g
+.etc.
+
+
+Overfull \hbox (1.58372pt too wide) in paragraph at lines 685--685
+[]\T1/pcr/m/n/9 -linelength| 
+
+\hbox(7.69997+3.30003)x57.81621
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 l
+.\T1/pcr/m/n/9 i
+.\T1/pcr/m/n/9 n
+.etc.
+
+
+Overfull \hbox (1.58372pt too wide) in paragraph at lines 688--688
+[]\T1/pcr/m/n/9 -graphspace| 
+
+\hbox(7.69997+3.30003)x57.81621
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 g
+.\T1/pcr/m/n/9 r
+.\T1/pcr/m/n/9 a
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 772--772
+[]\T1/pcr/m/n/9 -texfns,
+
+\hbox(5.625+1.008)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 t
+.\T1/pcr/m/n/9 e
+.\T1/pcr/m/n/9 x
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 775--775
+[]\T1/pcr/m/n/9 -usegreek,
+
+\hbox(5.625+1.413)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 u
+.\T1/pcr/m/n/9 s
+.\T1/pcr/m/n/9 e
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 778--778
+[]\T1/pcr/m/n/9 -usesymbol,
+
+\hbox(5.625+1.413)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 u
+.\T1/pcr/m/n/9 s
+.\T1/pcr/m/n/9 e
+.etc.
+
+[13]
+Overfull \hbox (1.58372pt too wide) in paragraph at lines 799--799
+[]\T1/pcr/m/n/9 -bflashtime| 
+
+\hbox(7.69997+3.30003)x57.81621
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 b
+.\T1/pcr/m/n/9 f
+.\T1/pcr/m/n/9 l
+.etc.
+
+
+Overfull \hbox (1.58372pt too wide) in paragraph at lines 802--802
+[]\T1/pcr/m/n/9 -mclicktime| 
+
+\hbox(7.69997+3.30003)x57.81621
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 m
+.\T1/pcr/m/n/9 c
+.\T1/pcr/m/n/9 l
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 827--827
+[]\T1/pcr/m/n/9 -bmatch,
+
+\hbox(5.625+1.008)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 b
+.\T1/pcr/m/n/9 m
+.\T1/pcr/m/n/9 a
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 830--830
+[]\T1/pcr/m/n/9 -bforcematch,
+
+\hbox(5.625+1.008)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 b
+.\T1/pcr/m/n/9 f
+.\T1/pcr/m/n/9 o
+.etc.
+
+
+Overfull \hbox (3.32993pt too wide) in paragraph at lines 830--830
+\T1/pcr/m/n/9 -bnoforcematch| 
+
+\hbox(7.69997+3.30003)x72.26999
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 b
+.\T1/pcr/m/n/9 n
+.\T1/pcr/m/n/9 o
+.\T1/pcr/m/n/9 f
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 833--833
+[]\T1/pcr/m/n/9 -reverse,
+
+\hbox(3.924+1.008)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 r
+.\T1/pcr/m/n/9 e
+.\T1/pcr/m/n/9 v
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 836--836
+[]\T1/pcr/m/n/9 -pagemode,
+
+\hbox(5.625+1.413)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 p
+.\T1/pcr/m/n/9 a
+.\T1/pcr/m/n/9 g
+.etc.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 839--839
+[]\T1/pcr/m/n/9 -pointerjump,
+
+\hbox(5.967+1.413)x72.26999
+.\hbox(0.0+0.0)x0.0
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 p
+.\T1/pcr/m/n/9 o
+.\T1/pcr/m/n/9 i
+.etc.
+
+
+Overfull \hbox (3.32993pt too wide) in paragraph at lines 839--839
+\T1/pcr/m/n/9 -nopointerjump| 
+
+\hbox(7.69997+3.30003)x72.26999
+.\T1/pcr/m/n/9 -
+.\T1/pcr/m/n/9 n
+.\T1/pcr/m/n/9 o
+.\T1/pcr/m/n/9 p
+.\T1/pcr/m/n/9 o
+.etc.
+
+[14] [15] [16]
+Underfull \hbox (badness 1454) in paragraph at lines 992--995
+\T1/ptm/m/n/10.95 The in-ter-con-nec-tion of LISP sym-bols to the \T1/pcr/m/n/1
+0.95 XR \T1/ptm/m/n/10.95 print style is re-al-ized by the prop-er-ties
+
+\hbox(7.52264+2.37614)x452.96786, glue set 2.44215
+.\T1/ptm/m/n/10.95 T
+.\T1/ptm/m/n/10.95 h
+.\T1/ptm/m/n/10.95 e
+.\glue 2.73749 plus 2.18999 minus 1.095
+.\T1/ptm/m/n/10.95 i
+.etc.
+
+[17] [18]
+Underfull \hbox (badness 10000) in paragraph at lines 1072--1076
+[] [] \T1/ptm/m/n/10.95 The file
+
+\hbox(7.52264+1.54395)x425.5928, glue set 62.63248
+.\hbox(0.0+0.0)x0.0
+.\glue 0.0
+.\hbox(6.7178+1.54395)x247.46962
+..\glue -27.37506
+..\glue 0.0
+..\glue -5.475
+..\hbox(6.7178+1.54395)x274.84468
+...\glue 5.475
+...\T1/pcr/b/n/10.95 C
+...\T1/pcr/b/n/10.95 o
+...\T1/pcr/b/n/10.95 u
+...\T1/pcr/b/n/10.95 l
+...etc.
+..\glue 5.475
+.\penalty 0
+.\glue 7.20007
+.etc.
+
+[19] [20]
+Underfull \hbox (badness 3919) in paragraph at lines 1206--1206
+[][]\T1/ptm/m/n/9 Actually those com-piled on ma-chines whose in-stal-la-tion o
+f X pre-cludes us-ing the pre-pro-ces-sor flag
+
+\hbox(7.7+1.95299)x452.96786, glue set 3.40057
+.\hbox(7.68994+0.0)x16.20003, glue set 12.03342fil
+..\glue 0.0 plus 1.0fil minus 1.0fil
+..\mathon
+..\hbox(3.86665+0.0)x4.16661, shifted -3.82329
+...\OT1/cmr/m/n/6 6
+..\mathoff
+.\hbox(7.7+0.0)x0.0
+..\rule(7.7+0.0)x0.0
+.\T1/ptm/m/n/9 A
+.\T1/ptm/m/n/9 c
+.\T1/ptm/m/n/9 t
+.etc.
+
+[21]
+Underfull \hbox (badness 10000) in paragraph at lines 1269--1275
+
+
+\hbox(0.0+0.0)x425.5928
+.\penalty -10000
+.\glue(\rightskip) 0.0
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1269--1275
+
+
+\hbox(0.0+0.0)x425.5928
+.\penalty -10000
+.\glue(\rightskip) 0.0
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1269--1275
+
+
+\hbox(0.0+0.0)x425.5928
+.\penalty -10000
+.\glue(\rightskip) 0.0
+
+[22] (xr.aux) ) 
+Here is how much of TeX's memory you used:
+ 768 strings out of 11730
+ 8932 string characters out of 82724
+ 50283 words of memory out of 262141
+ 2900 multiletter control sequences out of 9500
+ 20554 words of font info for 60 fonts, out of 100000 for 255
+ 14 hyphenation exceptions out of 607
+ 23i,10n,19p,198b,239s stack positions out of 300i,40n,60p,3000b,4000s
+
+Output written on xr.dvi (23 pages, 63448 bytes).
