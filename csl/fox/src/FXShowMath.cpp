@@ -1,5 +1,5 @@
 //
-// "FXShowMath.cpp"                       Copyright A C Norman 2004-2007
+// "FXShowMath.cpp"                       Copyright A C Norman 2004-2012
 //
 //
 // Code to layout mathematical formulae for display. Formulae are
@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2004-8 by Arthur Norman, Codemist Ltd.   All Rights Reserved. *
+* Copyright (C) 2004-12 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 56964ff9 17-Mar-2010 */
+/* Signature: 42a6315a 31-Oct-2012 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -192,8 +192,28 @@ static void poolDestroyChunk()
         exit(1);
     }
     IntVoidStar *rp = (IntVoidStar *)((char *)memoryPool + memoryPoolOut);
+// It would be a MESS if a single chunk occupied the entire pool. That is
+// supposed not to happen because "chunks" are each expacted to represent
+// roughly a single line of stuff. tmprint.red is thus expected to render
+// long expressions as multiple lines that can be handled independently.
+// Here I arrange that if I fill up the pool before completing creation of
+// the current chunk I just exit abruptly. Under Windows the message
+// apparently displayed using printf may not appear since the executable
+// may have been linked in a way that means it does not have a console.
+    if (rp->v == NULL)
+    {   printf("Current incomplete chunk is over-large\n");
+        exit(1);
+    }
     reportDestroy(rp->i); // inform owner
     memoryPoolOut = (int)((char *)rp->v - (char *)memoryPool);
+// The next call to poolAllocate() after the use of poolEndChunk (which
+// is what sets the end of chunk information as used here) is to allocate
+// a new chunk start block. If there is not enough room for one at the end
+// of the pool then poolAllocate will wrap round to the start. So to ensure
+// that memoryPoolOut always points at a chunk start block I perform a
+// matching wrap here.
+    if (memoryPoolOut + sizeof(IntVoidStar) > memoryPoolSize)
+        memoryPoolOut = 0;
 }
 
 typedef struct TexState
