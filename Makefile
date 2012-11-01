@@ -26,10 +26,10 @@ csltest:
 # csl directory being up to date.
 
 csl:
-	+$(SHELL) scripts/make.sh $(MFLAGS)  $(MAKECMDGOALS)
+	+$(SHELL) scripts/make.sh $(MFLAGS) @@@ $(MAKECMDGOALS)
 
 psl:
-	+$(SHELL) scripts/make.sh $(MFLAGS)  $(MAKECMDGOALS)
+	+$(SHELL) scripts/make.sh $(MFLAGS) @@@ $(MAKECMDGOALS)
 
 install:
 	@echo No install: target yet!
