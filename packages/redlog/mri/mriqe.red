@@ -229,6 +229,8 @@ procedure mri_lemma33k(ker,u);
       if not eqcar(ker,'floor) then
 	 rederr {"invalid kernel",ker};
       cd := mri_lemma33f(numr simp cadr ker,u);
+      if cdr cd then rederr "Check!";
+      cd := car cd;  % Check!
       phi := car cd;
       s := cadr cd;
       n := caddr cd;
