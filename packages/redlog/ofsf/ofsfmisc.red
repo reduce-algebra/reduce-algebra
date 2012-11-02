@@ -596,8 +596,16 @@ procedure ofsf_smt2ReadTerm1(u);
 	 cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
       op := cdr w;
       if op eq 'minus and cddr u then
-	 cl_smt2ReadError {"error: found non-unary '-'"};
+	 op := 'difference;
       return op . for each arg in cdr u collect ofsf_smt2ReadTerm1 arg
+   end;
+
+procedure ofsf_float2dn(x);
+   begin scalar w; integer dotpos;
+      w := explode x;
+      dotpos := length memq('!., w);
+      prin2t w;
+      return '!:dn!: . compress(for each d in w join if not (d eq '!.) then {d}) . -dotpos
    end;
 
 endmodule;  % [ofsfmisc]
