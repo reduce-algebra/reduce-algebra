@@ -288,15 +288,13 @@ rl_mkbb('rl_varsel,3);
 
 rl_mkbb('rl_betterp,2);
 
-rl_mkbb('rl_qemkans,2);
+rl_mkbb('rl_qemkans,1);
 
 rl_mkbb('rl_ordatp,2);
 
 rl_mkbb('rl_subsumption,3);
 
-rl_mkbb('rl_transform,2);
-
-rl_mkbb('rl_updatr,2);
+rl_mkbb('rl_transform,7);
 
 rl_mkbb('rl_sacat,3);
 

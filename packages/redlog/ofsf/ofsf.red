@@ -66,7 +66,7 @@ exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_qesubcqme,ofsf_qesubqpe,ofsf_qesubqme,ofsf_valassp,ofsf_translat,
    ofsf_surep,ofsf_elimset,ofsf_bettergaussp,ofsf_esetunion,ofsf_bestgaussp,
    ofsf_qefsolset,ofsf_qemkans,ofsf_preprexpr,ofsf_decdeg,ofsf_decdeg1,
-   ofsf_transform,ofsf_updatr,ofsf_thsimpl,ofsf_specelim,ofsf_opt,ofsf_gsn,
+   ofsf_transform,ofsf_thsimpl,ofsf_specelim,ofsf_opt,ofsf_gsn,
    ofsf_gsc,ofsf_gsd,ofsf_gssimplify,ofsf_gssimplify0,ofsf_termprint,
    ofsf_canegrel,ofsf_anegrel,ofsf_clnegrel,ofsf_lnegrel,ofsf_fctrat,
    ofsf_negateat,ofsf_varlat,ofsf_varsubstat,ofsf_ordatp,ofsf_ordrelp,
@@ -146,7 +146,6 @@ put('ofsf,'rl_params,'(
    (rl_fctrat!* . ofsf_fctrat)
    (rl_tordp!* . ordp)
    (rl_transform!* . ofsf_transform)
-   (rl_updatr!* . ofsf_updatr)
    (rl_a2cdl!* . ofsf_a2cdl)
    (rl_t2cdl!* . ofsf_t2cdl)
    (rl_getineq!* . ofsf_getineq)

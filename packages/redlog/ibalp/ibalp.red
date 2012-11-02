@@ -793,11 +793,11 @@ procedure ibalp_varlt1(u,vl);
       return vl
    end;
 
-procedure ibalp_transform(f,v);
+procedure ibalp_transform(v, f, vl, an, theo, ans, bvl);
    % Transform formula. [f] is a quantifier-free formula; [v] is a
    % variable. Returns $([f] . nil)$. This behavior informs [cl_qe]
    % that there no transformation possible.
-   f . nil;
+   nil;
 
 procedure ibalp_trygauss(f,v,theo,ans,bvl);
    % Try Gauss. [f] is a quantifier-free formula; [v] is a variable.

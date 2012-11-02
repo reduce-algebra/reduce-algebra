@@ -218,8 +218,8 @@ procedure dvfsf_qesubqat(atf,v,u);
       return dvfsf_mk2(op,multf(numr lhs,denr rhs),multf(numr rhs,denr lhs))
    end;
 
-procedure dvfsf_transform(f,v);
-   f . nil;
+procedure dvfsf_transform(v, f, vl, an, theo, ans, bvl);
+   nil;
 
 procedure dvfsf_trygauss(f,vl,theo,ans,bvl);
    begin scalar w,v,fargl;
@@ -263,7 +263,7 @@ procedure dvfsf_gelimset(a,v);
       return 'failed
    end;
 
-procedure dvfsf_qemkans(an,atr);
+procedure dvfsf_qemkans(an);
    sort(dvfsf_qebacksub dvfsf_qemkans1 an,
       function(lambda(x,y); ordp(cadr x,cadr y)));
 

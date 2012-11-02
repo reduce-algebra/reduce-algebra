@@ -170,23 +170,31 @@ procedure ofsf_cxkdgcd1(kl,v,dgcd);
       return dgcd
    end;
 
-procedure ofsf_transform(f,v);
-   % Ordered field standard form transform formula. [f] is a
-   % quantifier-free formula; [v] is a variable. Returns a pair $(\phi .
-   % a)$. $\phi$ is a formula such that $\exists [v]([f])$ is equivalent
-   % to $\exists [v](\phi)$. $a$ is either [nil] or a pair $([v] . d)$.
-   % If $a$ is not [nil] then the degree $d'$ of [v] in [f] is reduced
-   % to $d'/d$. If $a$ is nil then $[f]=\phi$.
-   begin scalar dgcd;
+procedure ofsf_transform(v, f, vl, an, theo, ans, bvl);
+   % Ordered field standard form transform formula. [f] is a quantifier-free
+   % formula; [v] is a variable. Returns a pair $(\phi . a)$. $\phi$ is a
+   % formula such that $\exists [v]([f])$ is equivalent to $\exists [v](\phi)$.
+   % $a$ is either [nil] or a pair $([v] . d)$. If $a$ is not [nil] then the
+   % degree $d'$ of [v] in [f] is reduced to $d'/d$. If $a$ is nil then
+   % $[f]=\phi$.
+   begin scalar dgcd, v_shift, w;
       dgcd := ofsf_decdeg2(f,v);
       if dgcd = 1 then
-	 return f . nil;
+	 return nil;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 {"(",v,"^",dgcd,")"};
       f := ofsf_decdeg3(f,v,dgcd);
       if evenp dgcd then
-	 f := rl_mkn('and,{ofsf_0mk2('geq,numr simp v),f});
-      return f . (v . dgcd)
+	 f := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), f});
+      if ans then <<
+      	 repeat v_shift := intern gensym() until not flagp(v_shift, 'used!*);
+	 flag({v_shift}, 'rl_qeansvar);
+      	 f := cl_subfof({v . v_shift}, f);
+	 vl := for each vv in vl collect if vv eq v then v_shift else vv;
+      	 w := simp {'expt, v_shift, {'quotient,1,dgcd}};
+	 an := cl_updans(v,'ofsf_qesubcq,{'true,w},an,ans)
+      >>;
+      return {f, vl, an, theo, ans, bvl}
    end;
 
 procedure ofsf_ignshift(at,v);
