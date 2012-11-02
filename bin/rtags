@@ -38,9 +38,9 @@ while test -h "$c"; do
   fi
 done
 here=`echo $c | sed -e 's+/[^/]*$++;s+/[^/]*$++'`
-\rm -i TAGS
+if [ -e TAGS ]; then \rm -i TAGS; fi
 find $here/packages -name "*.red" -exec etags -a -l none \
     -r '/[ \t]*procedure[ \t]+[^ \t(]+[( ]/' \
-    -r '/[ \t]*[s]macro[ \t]+procedure[ \t]+[^ \t(]+[( ]/' \
-    -r '/[ \t]*symbolic[ \t]+[s]macro[ \t]+procedure[ \t]+[^ \t(]+[( ]/' \
+    -r '/[ \t]*s?macro[ \t]+procedure[ \t]+[^ \t(]+[( ]/' \
+    -r '/[ \t]*symbolic[ \t]+s?macro[ \t]+procedure[ \t]+[^ \t(]+[( ]/' \
     -r '/[ \t]*symbolic[ \t]+procedure[ \t]+[^ \t(]+[( ]/' {} \;
