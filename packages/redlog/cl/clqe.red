@@ -51,7 +51,7 @@ struct Quantifier checked by idp;
 % TaggedContainerElementL ::= Status . ContainerElementL
 % Status ::= "elim" | "failed" | "local" | "nonocc"
 % ContainerElementL ::= (ContainerElement, ...)
-% ContainerElement ::= (VarList . QfFormula) . (Answer)
+% ContainerElement ::= VarList . QfFormula . Answer
 % VarList ::= VariableL | "'break"
 % Answer ::= (SubstTriplet, ...) (* "nil" if not ans *)
 % SubstTriplet ::= (Variable, SubstFunction, ArgumentList)
@@ -70,7 +70,7 @@ procedure taggedContainerElementLP(x);
    pairp x and car x memq '(elim failed local nonocc) and listp cdr x;
 
 procedure containerElementP(x);
-   pairp x and pairp car x and listp cdr x;
+   pairp x and pairp cdr x and varListP car x and listp cddr x;
 
 procedure varListP(x);
    x eq 'break or listp x;
@@ -105,31 +105,31 @@ declare ce_mk: (VarList,QfFormula,Answer,AnswerTranslation) -> ContainerElement;
 
 smacro procedure ce_mk(vl,f,an);
    % Container element make.
-   (vl . f) . an;
+   vl . f . an;
 
 
 declare ce_vl: (ContainerElement) -> VarList;
 
 smacro procedure ce_vl(x);
    % Container element variable list.
-   caar x;
+   car x;
 
 
 declare ce_f: (ContainerElement) -> QfFormula;
 
 smacro procedure ce_f(x);
    % Container element formula.
-   cdar x;
+   cadr x;
 
 
 declare ce_ans: (ContainerElement) -> Answer;
 
 smacro procedure ce_ans(x);
    % Container element answer.
-   cdr x;
+   cddr x;
 
 
-declare co_mk: () -> Container;
+declare co_new: () -> Container;
 
 procedure co_new();
    % Container make.
@@ -153,31 +153,63 @@ declare co_save: (Container,ContainerElementL) -> Container;
 
 procedure co_save(co,dol);
    % Container save.
-   if !*rlqedfs then co_push(co,dol) else co_enqueue(co,dol);
+   if !*rlqedfs and !*rlqedyn then
+      co_dynpush(co,dol)
+   else if !*rlqedfs then
+      co_push(co,dol)
+   else co_enqueue(co,dol);
 
 
 declare co_push: (Container,ContainerElementL) -> Container;
 
 procedure co_push(co,dol);
    % Container push.
-   if !*rlqedyn then <<
+   <<
       for each ce in dol do
-	 co := co_dynPush(co,ce);
-      co
-   >> else <<
-      for each x in dol do co := co_insert(co,x);
+      	 co := co_insert(co,ce);
       co
    >>;
 
-procedure co_hfn(item);
-   {cl_fvarl1 cdr item,rl_atnum cdr item};
 
-procedure co_dynPush(co,ce);
-   begin scalar f,vl,hash,w;
+declare co_insert: (Container,ContainerElement) -> Container;
+
+procedure co_insert(co,ce);
+   % Insert 1 element into container.
+   co_setData(co,co_insert1(co_data co,ce));
+
+
+declare co_insert1: (Container,ContainerElement) -> Container;
+
+procedure co_insert1(co,ce);
+   % Insert 1 element into container.
+   if co_member(ce,co) then <<
+      if !*rlverbose and !*rlqevb and !*rlqevbold then
+	 ioto_prin2 "@";
+      co
+   >> else
+      ce . co;
+
+
+declare co_dynPush: (Container,ContainerElementL) -> Container;
+
+procedure co_dynPush(co,dol);
+   % Container dynamic programming push.
+   <<
+      for each ce in dol do
+      	 co := co_dynPush1(co,ce);
+      co
+   >>;
+
+
+declare co_dynPush1: (Container,ContainerElement) -> Container;
+
+procedure co_dynPush1(co,ce);
+   % Container dynamic programming push 1 element.
+   begin scalar f,vl;
       f := ce_f ce;
       vl := ce_vl ce;
       if lto_hmember(vl . f,co_dynl co,'co_hfn) then <<
-	 if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
+	 if !*rlverbose and !*rlqevb and !*rlqevbold then
 	    ioto_prin2 "@";
 	 return co
       >>;
@@ -186,21 +218,20 @@ procedure co_dynPush(co,ce);
       return co
    end;
 
-declare co_insert: (Container,ContainerElement) -> Container;
 
-procedure co_insert(co,ce);
-   co_setData(co,co_insert1(co_data co,ce));
-
-procedure co_insert1(co,ce);
-   % Insert into container. [co] is a container; [ce] is a container
-   % element. Returns a container.
-   if co_member(ce,co) then co else ce . co;
+procedure co_hfn(item);
+   % Container hash function.
+   {cl_fvarl1 cdr item,rl_atnum cdr item};
 
 
 declare co_enqueue: (Container,ContainerElementL) -> Container;
 
 procedure co_enqueue(co,dol);
+   % Container enqueue.
    co_setData(co,co_enqueue1(co_data co,dol));
+
+
+declare co_enqueue: (Container,ContainerElementL) -> Container;
 
 procedure co_enqueue1(co,dol);
    % Container enqueue.
@@ -269,8 +300,8 @@ procedure co_member(ce,l);
    % in [l], such that the formula and the variable list of $e$ are equal to the
    % formula and variable list of [ce]. This procedure does not use the access
    % functions.
-   if l then car ce = caar l or co_member(ce,cdr l);
-
+   l and (ce_vl ce = ce_vl car l and ce_f ce = ce_f car l
+      or co_member(ce,cdr l));
 
 procedure co_stat(co);
    begin scalar al,w; integer n;
@@ -315,7 +346,7 @@ declare cl_co2J: (ContainerElement) -> Junction;
 
 smacro procedure cl_co2J(x);
    % Container to junction. Returns the S-expression [ce_f(x) . ce_ans(x)]
-   cdar x . cdr x;
+   cdr x;
 
 
 declare cl_erTh: (EliminationResult) -> Theory;
@@ -683,15 +714,8 @@ procedure cl_qeblock2(f,varl,theo,ans,bvl);
       return cl_qeblock3(f,varl,theo,ans,bvl)
    end;
 
-
-declare cl_qeblock3: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
-
 procedure cl_qeblock3(f,varl,theo,ans,bvl);
-   % Quantifier elimination for one block soubroutine. Arguments are as
-   % in [cl_qeblock], where [q] has been dropped. Return value as well.
-   begin
-      scalar w,co,remvl,newj,cvl,coe,ww;
-      integer c,vlv,dpth,count,delc,oldcol,comax,comaxn;
+   begin scalar w; integer vlv, dpth;
       if !*rlverbose then <<
       	 if !*rlqedfs then <<
 	    ioto_prin2 {" [DFS"};
@@ -706,8 +730,20 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
       	 >> else
 	    ioto_prin2t {" [BFS: depth ",dpth,"]"}
       >>;
+      return cl_qeblock4(f,varl,theo,ans,bvl,dpth,vlv)
+   end;
+
+
+declare cl_qeblock4: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
+
+procedure cl_qeblock4(f,varl,theo,ans,bvl,dpth,vlv);
+   % Quantifier elimination for one block soubroutine. Arguments are as
+   % in [cl_qeblock], where [q] has been dropped. Return value as well.
+   begin scalar w,co,remvl,newj,cvl,coe,ww;
+      integer c,count,delc,oldcol,comax,comaxn;
+      if !*rlqegsd then
+ 	 f := rl_gsd(f,theo);
       cvl := varl;
-      if !*rlqegsd then f := rl_gsd(f,theo);
       co := co_new();
       if rl_op f eq 'or then
 	 for each x in rl_argn f do
@@ -715,21 +751,20 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
       else
       	 co := co_save(co,{ce_mk(cvl,f,nil)});
       while co_data co do <<
-	 if !*rlverbose and not !*rlqevbold then
-   	    if !*rlqedfs then <<
-	       ww := car co_stat co;
-	       if comax = 0 or car ww < comax or
- 		  (car ww = comax and cdr ww < comaxn)
-	       then <<
-		  comax := car ww;
-		  comaxn := cdr ww;
-		  ioto_prin2 {"[",comax,":",comaxn,"] "}
-	       >>
-	    >>;
+	 if !*rlverbose and !*rlqedfs and not !*rlqevbold then <<
+	    ww := car co_stat co;
+	    if comax = 0 or car ww < comax or
+	       (car ww = comax and cdr ww < comaxn)
+	    then <<
+	       comax := car ww;
+	       comaxn := cdr ww;
+	       ioto_prin2 {"[",comax,":",comaxn,"] "}
+	    >>
+	 >>;
 	 if !*rlqeidentify then on1 'rlidentify;
 	 coe . co := co_get co;
     	 cvl := ce_vl coe;
-	 count := count+1;
+	 count := count + 1;
          if !*rlverbose then
    	    if !*rlqedfs then
  	       (if !*rlqevbold then <<
@@ -773,8 +808,6 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
 	 >>
       >>;
       if !*rlverbose then ioto_prin2{"[DEL:",delc,"/",count,"]"};
-%      if !*rlverbose then
-%	 ioto_prin2 {for each pr in co_dynl co collect length cdr pr};
       if ans then return {remvl, newj, theo};
       % I am building the formula here rather than later because one might want
       % to do some incremental simplification at some point.
