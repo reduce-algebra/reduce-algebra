@@ -39,6 +39,7 @@ time consuming process.
             solve({a*x+y=3,y=-2},{x,y});
 \end{verbatim}
 
+\hypertarget{operator:ROOT_OF}{}
 {\tt SOLVE} returns a list of solutions.  If there is one unknown, each
 solution is an equation for the unknown.  If a complete solution was
 found, the unknown will appear by itself on the left-hand side of the
@@ -95,6 +96,8 @@ returns the result
        {X=ROOT_OF(COS(X_) + LOG(X_),X_,TAG_1)} .
 \end{verbatim}
 
+\hypertarget{operator:ONE_OF}{}
+\hypertarget{operator:EXPAND_CASES}{}
 An expression with a top-level {\tt ROOT\_OF} operator is implicitly a
 list with an unknown number of elements (since we don't always know how
 many solutions an equation has).  If a substitution is made into such an
@@ -106,7 +109,6 @@ solution.  To effect this, the operator {\tt EXPAND\_CASES}
 \ttindex{EXPAND\_CASES} can be used.
 
 The following example shows the use of these facilities:
-\extendedmanual{\newpage}
 \begin{verbatim}
 solve(-a*x^3+a*x^2+x^4-x^3-4*x^2+4,x);
               2     3
@@ -269,6 +271,7 @@ not in this list is considered totally free. E.g.\  the call
 \end{verbatim}
 produces an empty list as a result because there is no function
 $z=z(x,y)$ which fulfills both equations for arbitrary $x$ and $y$ values.
+\hypertarget{reserved:requirements}{}
 In such a case the share variable {\tt requirements}\ttindex{requirements}
 displays a set of restrictions for the parameters of the system:
 \begin{verbatim}
@@ -310,12 +313,12 @@ A system  with parameters may have a formal solution, e.g.\
         b        b
 \end{verbatim}
 which is not valid for all possible values of the parameters.
+\hypertarget{reserved:assumptions}{}
 The variable {\tt assumptions}\ttindex{assumptions} contains then a list of
 restrictions: the solutions are valid only as long
 as none of these expressions vanishes. Any zero of one of them
 represents a special case that is not covered by the
 formal solution. In the above case the value is
-\extendedmanual{\newpage}
 \begin{verbatim}
     assumptions;
 
