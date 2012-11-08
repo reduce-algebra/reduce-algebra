@@ -8,7 +8,7 @@ Homepage: http://reduce-algebra.sf.net/
 
 Package: reduce-common
 Architecture: all
-Depends: ${misc:Depends}
+Depends: gnuplot-x11, ${misc:Depends}
 Description: REDUCE Computer Algebra System -- common files
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
