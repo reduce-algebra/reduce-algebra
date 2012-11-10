@@ -27,7 +27,7 @@ PSLBUILDDIR=$(TOPDIR)/pslbuild/$(BUILDDIR)
 DOCSRCDIR=$(TOPDIR)/doc/manual
 DOCMISCDIR=$(TOPDIR)/doc/misc
 
-DOCBASENAME=manual-pdf
+DOCBASENAME=manual
 
 GENERICTOPDIR=$(TOPDIR)/generic
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JOBNAME=manual-pdf
+JOBNAME=manual
 
 CONFIG=reduce
 

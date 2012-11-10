@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JOBNAME=manual-pdf
+JOBNAME=manual
 
 MAXRUNS=10
 SUCCESS=0

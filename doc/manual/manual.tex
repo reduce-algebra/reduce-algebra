@@ -1,15 +1,140 @@
 % This is an alternative source for the REDUCE Manual.
 % Normally mkman and mkman2 are used.
 
-\input{macros}
+\documentclass[11pt,a4paper]{book}
+
+\usepackage{makeidx}
+\usepackage{times}
+%\usepackage{cmbright}
+%\usepackage{charter}
+%\renewcommand{\rmdefault}{uaq}
+%\renewcommand{\sfdefault}{ugq}
+\usepackage[]{hyperref}
+\hypersetup{
+  colorlinks=true,linkbordercolor={1 1 1},
+  linkcolor=blue,urlcolor=blue,
+  bookmarksnumbered=true,
+  pdftitle={REDUCE User's Manual, Free Version \today},
+  pdfauthor={\textcopyright Anthony C. Hearn},
+  pdfdisplaydoctitle=true,
+}
+
+\hyphenation{unique}
+\hyphenation{effect}
+\hyphenation{Stand-ard}
+\hyphenation{libr-ary}
+\hyphenation{direct-ory}
+\hyphenation{state-ment}
+\hyphenation{argu-ment}
+\hyphenation{oper-ators}
+\hyphenation{symb-olic}
+\hyphenation{needs}
+\hyphenation{GVARSLAST}
+\hyphenation{ODE-SOLVE}
+\hyphenation{hyper-geometric}
+\hyphenation{equat-ion}
+\hyphenation{equat-ions}
+\hyphenation{OFF}
+\hyphenation{Opt-ions}
+\hyphenation{execu-tion}
+\hyphenation{poly-nom-ials}
+\hyphenation{func-t-ions}
+\hyphenation{Inte-grals}
+\hyphenation{Stutt-gart}
+
+\setlength{\parindent}{0pt}
+
+\setlength{\parskip}{6pt}
+
+\setlength{\hfuzz}{5pt}  % don't complain about tiny overfull boxes
+\setlength{\vfuzz}{1pt}
+
+\renewcommand{\sloppy}{\tolerance=9999\relax%}
+                       \setlength{\emergencystretch}{0.2\hsize}}
+
+\tolerance=1000
+
+\raggedbottom
+
+\newlength{\reduceboxwidth}
+\setlength{\reduceboxwidth}{4in}
+
+\newlength{\redboxwidth}
+\setlength{\redboxwidth}{3.5in}
+
+\newlength{\rboxwidth}
+\setlength{\rboxwidth}{2.6in}
+
+\newcommand{\REDUCE}{REDUCE}
+\newcommand{\RLISP}{RLISP}
+\newcommand{\underscore}{\char`\_}
+\newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
+                          \index{#1@\texttt{#1}}}}
+\newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
+% \meta{...} is an alternative sentential form in descriptions using \it.
+\newcommand{\meta}[1]{\mbox{$\langle$\it#1\/$\rangle$}}
+
+% Will print out a heading in bold, and then indent the following text.
+\def\indented{\list{}{
+ \itemindent\listparindent
+ \rightmargin\leftmargin}\item[]}
+\let\endindented=\endlist
+\newenvironment{describe}[1]{\par{\bf #1}\begin{indented}}{\end{indented}}
+
+% Close up default vertical spacings:
+\setlength{\topsep}{0.5\baselineskip}  % above and below environments
+\setlength{\itemsep}{\topsep}
+\setlength{\abovedisplayskip}{\topsep}  % for "long" equations
+\setlength{\belowdisplayskip}{\topsep}
+
+\newcommand{\key}[1]{\fbox{\textsf{#1}}}
+\newcommand{\extendedmanual}[1]{#1}
+
+% \s{...} is a sentential form in descriptions. Enclosed \em text in <...>
+\newcommand{\s}[1] {$<\emph{#1}>$}
+
+% \meta{...} is an alternative sentential form in descriptions using \it.
+%\newcommand{\meta}[1]{\mbox{$\langle\textit{#1}\rangle$}}
+
+% \k{...} is a keyword. Just do in bold for the moment.
+\renewcommand{\k}[1] {\textbf{#1}}
+
+% Standard for computer in/output
+\DeclareTextFontCommand{\terminalfont}{\normalfont\ttfamily}
+
+% \f is a function name. Just do this as tt.
+\newcommand{\f}[1] {\terminalfont{#1}}
+
+% \sw is a switch.
+\newcommand{\sw}[1] {\terminalfont{#1}}
+
+% \msg for message text
+\newcommand{\msg}[1]{\terminalfont{#1}}
+
+% An example macro for numbering and indenting examples.
+\newcounter{examplectr}
+\newcommand{\example}{\refstepcounter{examplectr}
+\noindent{\bf Example \theexamplectr}}
+
+\setcounter{examplectr}{0}
+
+
+%%\pagenumbering{roman}
+\pagestyle{empty}
 
 \makeindex
 
 \begin{document}
 \pagestyle{empty}
+
+
 \include{title}
+
+\newpage
+
 \pagestyle{headings}
-\setcounter{page}{0}
+%\setcounter{page}{0}
+\pdfbookmark[0]{Contents}{toc}
 \tableofcontents
 
 \include{abstract}
@@ -38,7 +163,9 @@
 \include{util}
 \include{maintain}
 \include{appenda}
+\include{changes}
 
+\pdfbookmark[0]{Index}{Index}
 \printindex
 
 \end{document}

@@ -1,5 +1,5 @@
 
-DOCBASE=manual-pdf
+DOCBASE=manual
 
 all:	$(DOCBASE).pdf index.html
 
