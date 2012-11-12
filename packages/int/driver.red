@@ -400,9 +400,16 @@ symbolic procedure look_for_exponential(integrand, var, zz);
 % Look for a form a^(b/(c*x^n)) in the field descriptor and transform
 % the integral if it is found.
    if not eqcar(zz:=car zz,'expt) or depends(cadr zz,var) then nil
-    else begin scalar b,c,klis,newvar; integer n;
+    else begin scalar b,c,klis,newvar,flg; integer n;
         zz := caddr zz;
-          if eqcar(zz,'quotient) and not depends(cadr zz,var)
+% The following transformation is of a type that may be inverted later
+%  in look_for_rational - this would lead to an infinite recursion.
+% To prevent that from happening, the new integration variable is marked by
+%  putting something on its property list.
+        if eqcar(zz,'expt) and cadr zz=var and fixp caddr zz
+          then <<flg := t; b := 1; n := caddr zz>>
+         else
+        if eqcar(zz,'quotient) and not depends(cadr zz,var)
           then <<
             b := cadr zz; zz:= caddr zz;
             if zz=var % case b/x
@@ -423,7 +430,10 @@ symbolic procedure look_for_exponential(integrand, var, zz);
                      else return nil>>
                >>
          else return nil;
-        newvar := gensym();
+        newvar := int!-gensym1('intvar);
+        % Mark the new integration variable if necessary
+        %  (no need to remove the mark later as the variable is a gensym)
+	if flg then put(newvar,'look_for_exponential,n);
         % b*x^n => y, i.e. x => (y/b)^(1/n) and dx => (y/b)^(1/n)/(n*y) dy
 	return subst!-and!-int(integrand,var,newvar,
                                s,
@@ -439,7 +449,10 @@ symbolic procedure look_for_rational(integrand, var, zz);
 % Look for a form x^(n/m) in the field descriptor, and transform
 % the integral if it is found.  Note that the sqrt form may be used
 % as well as exponentials.  Return nil if no transformation
-  if (car zz = 'sqrt and cadr zz = var) then
+  % check whether var comes from a substitution in look_for_exponential
+  %  so that it must not be inverted here
+  if get(var,'look_for_exponential) then nil
+   else if (car zz = 'sqrt and cadr zz = var) then
         look_for_rational1(integrand, var, 2)
   else if (car zz = 'expt) and (cadr zz = var) and
      (listp caddr zz) and (caaddr zz = 'quotient) and
@@ -451,7 +464,7 @@ symbolic procedure look_for_rational1(integrand, var, m);
 % Actually do the transformation and integral
 begin
         scalar newvar, res, ss, mn2m!-1;
-        newvar := gensym();
+        newvar := int!-gensym1('intvar);
         mn2m!-1 := !*f2q(((newvar .** (m-1)) .* m) .+ nil);
 %%      print ("Integrand was " . integrand);
 % x => y^m, and dx => m y^(m-1)
@@ -509,7 +522,7 @@ symbolic procedure look_for_quad(integrand, var, zz);
           scalar nvar, res, ss;
           a := car zz; b := cadr zz;
           if (depends(a,var) or depends(b,var)) then return nil;
-          nvar := gensym();
+          nvar := int!-gensym1('intvar);
           if !*trint then <<
                 prin2 "Linear shift suggested ";
                 prin2 a; prin2 " "; prin2 b; terpri();
@@ -601,13 +614,13 @@ end;
 symbolic procedure look_for_asin(integrand, var, a, b, c);
 % Actually do the transformation and integral
 begin
-    scalar newvar, res, ss, sqmn, onemth, m, n;
+    scalar newvar, res, ss, sqmn, onemth, fctr, bckshft, m, n;
     m := prepsq a;
     n := prepsq c;
     b := prepsq b;
-    newvar := gensym();
+    newvar := int!-gensym1('intvar);
     sqmn := prepsq apply1(get('sqrt, 'simpfn),
-                          list list('quotient, list('minus,n), m));
+                          list {'quotient, {'minus,n}, m});
     onemth := list('cos, newvar);
     ss := list('sin, newvar);
     powlis!* := list(ss, 2, '(nil . t),
@@ -618,7 +631,7 @@ begin
         multsq(subsq(integrand,
                      list(var . list('difference,
                                      list('quotient,ss,sqmn), b))),
-               onemth := quotsq(simp onemth, simp sqmn));
+               fctr := quotsq(simp onemth, simp sqmn));
     if !*trint then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
@@ -627,15 +640,20 @@ begin
     >>;
     res := integratesq(integrand, newvar, nil, nil);
     powlis!* := cdr powlis!*;
-    ss:= list(newvar . list('asin,list('times,list('plus,var,b),sqmn)));
-    res := subsq(car res, ss) . subsq(quotsq(cdr res, onemth), ss);
+    % compute inverse substitution
+    % this is faster if sin(newvar) is substituted first,
+    % then the remaining occurences of newvar - especially for the bad part
+    bckshft := list('times,list('plus,var,b), sqmn);
+    ss := {reval {'sin,newvar} . bckshft, newvar . {'asin,bckshft}};
+    % apply backsubstitution for sin(newvar) terms to bad part only 
+    res := subsq(car res, cdr ss) . subsq(quotsq(cdr res, fctr), ss);
     if !*trint then <<
         printc "Transforming back...";
         printsq car res;
         prin2 " plus a bad part of ";
         printsq cdr res
     >>;
-    if (car res = '(nil . 1)) then return nil;
+    if null numr car res then return nil;
     return res;
  end;
 
@@ -643,11 +661,11 @@ symbolic procedure look_for_invhyp(integrand, do_acosh, var, a, b, c);
 % Actually do the transformation and integral; uses acosh/asinh form
 % depending on second argument
 begin
-    scalar newvar, res, ss, sqmn, onemth, m, n, realdom;
+    scalar newvar, res, ss, sqmn, onemth, fctr, bckshft, m, n, realdom;
     m := prepsq a;
     n := prepsq c;
     b := prepsq b;
-    newvar := gensym();
+    newvar := int!-gensym1('intvar);
     if do_acosh then <<
       sqmn := prepsq apply1(get('sqrt, 'simpfn),
                             list list('quotient, n, list('minus, m)));
@@ -669,7 +687,7 @@ begin
     integrand := subs2q
         multsq(subsq(integrand,
                list(var . list('difference,list('quotient,ss,sqmn),b))),
-               onemth := quotsq(simp onemth, simp sqmn));
+               fctr := quotsq(simp onemth, simp sqmn));
     if !*trint then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
@@ -680,28 +698,39 @@ begin
 %   print integrand; print realdom;
     res := integratesq(integrand, newvar, nil, nil);
     powlis!* := cdr powlis!*;
+    % compute inverse substitution
+    % this is faster if sinh(newvar) or cosh(newvar) are substituted first,
+    % then the remaining occurences of newvar - especially for the bad part
+    bckshft := list('times,list('plus,var,b), sqmn);
+    %% RmS: without the call to reval at least one test runs much slower
+    ss := (reval if do_acosh then {'cosh,newvar} else {'sinh,newvar}) . bckshft;
     if !*hyperbolic then <<
-      ss := list(if do_acosh then 'acosh else 'asinh,
-                 list('times,list('plus,var,b), sqmn));
+      ss := list(ss,
+                 newvar . {if do_acosh then 'acosh else 'asinh,bckshft});
+%      ss := list(if do_acosh then 'acosh else 'asinh,
+%                 list('times,list('plus,var,b), sqmn));
     >>
     else <<
-      ss := list('times,list('plus,var,b), sqmn);
-      ss := if do_acosh then
-        subst(ss,'ss,
-              '(log (plus ss (sqrt (difference (times ss ss) 1)))))
-      else
-        subst(ss,'ss,'(log (plus ss (sqrt (plus (times ss ss) 1)))))
+      ss := list(ss,
+          newvar .
+            reval if do_acosh then
+              subst(bckshft,'ss,
+                 '(log (plus ss (sqrt (difference (times ss ss) 1)))))
+             else
+              subst(bckshft,'ss,'(log (plus ss (sqrt (plus (times ss ss) 1))))))
     >>;
-    ss := list(newvar . ss);
-    res := sqrt2top subsq(car res, ss) .
-           sqrt2top subsq(quotsq(cdr res, onemth), ss);
+    % apply backsubstitution for sinh/cosh terms to bad part only 
+    res := sqrt2top subsq(car res, cdr ss) .
+           sqrt2top subsq(quotsq(cdr res, fctr), ss);
     if !*trint then <<
         printc "Transforming back...";
         printsq car res;
         prin2 " plus a bad part of ";
         printsq cdr res
     >>;
-    if (car res = '(nil . 1)) then return nil;
+    %% Return successfully only if there is no bad part
+    if null numr car res or not null numr cdr res then return nil;
+%    if (car res = '(nil . 1)) then return nil;
     if realdom and smember('(sqrt -1),res) then <<
         if !*trint then print "Wrong sheet"; return nil;  % Wrong sheet?
     >>;
@@ -714,7 +743,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
    % back substitution is prefix from bcksbst, a function of var
    % fct is the jacobian in s.q. form
    % nobad is a boolean flag indicating that the substitution is considered
-   %  a failure if there is still unintegrable badpart
+   %  a failure if there remains an unintegrable badpart
    begin scalar res,x;
      integrand := subsq(integrand, {var . sbst});
      integrand := multsq(integrand,fct);
@@ -730,20 +759,19 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
        then <<if !*trint then printc "Substituted integral FAILED";
               return nil>>
       else res := car res;
-%%% RmS: leave out call to simpint1 for now
-%%%     if not null numr cdr res then <<
-%%%        % cdr res is the badpart
-%%%       % check whether it can be integrated by, e.g. pattern matching
-%%%        x := simpint1 {cdr res,nvar};
-%%%        if x freeof 'int then res := addsq(car res,x) . (nil ./ 1)
-%%%         else if nobad or null numr car res then <<
-     if not null numr cdr res and nobad then <<
+     if not null numr cdr res then <<
+        % cdr res is the badpart
+        % check whether it can be integrated by, e.g. pattern matching
+        x := simpint1 {cdr res,nvar};
+        if x freeof 'int then res := addsq(car res,x) . (nil ./ 1)
+         else if nobad or null numr car res then <<
              if !*trint then <<
                 princ "Returning because still a bad part of ";
-                printsq cdr res;
+                printsq x;
              >>;
              return nil;
-     >>;
+         >>
+      >>;
      bcksbst := {nvar . bcksbst};
      res := subsq(car res, bcksbst) . subsq(quotsq(cdr res,fct), bcksbst);
      if !*trint then <<
@@ -752,7 +780,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
          prin2 " plus a bad part of ";
          printsq cdr res
      >>;
-     return res
+     return if null numr car res then nil else res
    end;
 
 symbolic procedure simpint1 u;
@@ -841,7 +869,7 @@ else if even_prep(car xpr, var) then even_prep(cdr xpr, var);
 symbolic procedure sqrt_substitute(nn, dd, var);
 begin
     scalar newvar, integrand, res, ss, !*keepsqrts;
-    newvar := gensym();
+    newvar := int!-gensym1('intvar);
     integrand := subst(list('sqrt,newvar), var,
                        list('quotient, prepsq (nn ./ dd), 2));
     integrand := prepsq simp integrand;
@@ -881,10 +909,6 @@ end;
 %-----------------------------------------------------------------------
 algebraic;
 
-%operator ci,si;  % ei.
-% FJW: ci,si also defined in specfn(sfint.red), so ...
-symbolic((algebraic operator ci,si) where !*msg=nil);
-
 intrules :=
   {e^(~n*acosh(~x)) => (sqrt(x^2-1)+x)^n when numberp n,
    e^(~n*asinh(~x)) => (sqrt(x^2+1)+x)^n when numberp n,
@@ -916,23 +940,17 @@ intrules :=
    int(1/~f^(~x^2/~b),x) => erf(x/sqrt(b*log(f)))*sqrt(pi)*sqrt(b*log(f))/2
               when f freeof x and b freeof x,
 
-   df(ei(~x),x) => exp(x)/x,
-   int(e^(~~b*~x)/x,x) => ei(b*x),      % FJW
-   int(e^(~x/~b)/x,x) => ei(x/b),
-   int(1/(exp(~x*~~b)*x),x) => ei(-x*b) when b freeof x, % FJW
+   int(e^(~~b*~x)/x,x) => ei(b*x) when b freeof x,
+   int(e^(~x/~b)/x,x) => ei(x/b) when b freeof x,
+   int(1/(exp(~x*~~b)*x),x) => ei(-x*b) when b freeof x,
    int(1/(exp(~x/~b)*x),x) => ei(-x/b) when b freeof x,
-%% FJW: Next 2 rules replaced by ~~ rules above
-%% int(e^~x/x,x) => ei(x),
-%% int(1/(e^~x*x),x) => ei(-x),
    int(~a^(~~b*~x)/x,x) => ei(x*b*log(a)) when a freeof x and b freeof x,
    int(1/((~a^(~~b*~x))*x),x) => ei(-x*b*log(a)) when a freeof x and b freeof x,
-   df(si(~x),x) => sin(x)/x,
    int(sin(~~b*~x)/x,x) => si(b*x) when b freeof x,     % FJW
    int(sin(~x/~b)/x,x) => si(x/b) when b freeof x,      % FJW
 %% int(sin(~x)/x,x) => si(x),           % FJW
    int(sin(~x)/x^2,x) => -sin(x)/x +ci(x),
    int(sin(~x)^2/x,x) =>(log(x)-ci(2x))/2,
-   df(ci(~x),x) => cos(x)/x,
    int(cos(~~b*~x)/x,x) => ci(b*x) when b freeof x,     % FJW
    int(cos(~x/~b)/x,x) => ci(x/b) when b freeof x,      % FJW
 %% int(cos(~x)/x,x) => ci(x),           % FJW
