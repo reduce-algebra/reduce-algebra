@@ -72,6 +72,11 @@ esac
 here=`echo $c | sed -e 's+/[^/]*$++'`
 here=`echo $here | sed -e 's+/[^/]*$++'`
 
+#
+# Remove old log files
+#
+rm csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
+
 packages=`sed -e '/^\%/d' $here/packages/package.map | \
           grep ' test ' | \
           sed -e 's/(//; s/".*//'`
