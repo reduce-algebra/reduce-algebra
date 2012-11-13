@@ -408,8 +408,7 @@ symbolic procedure look_for_exponential(integrand, var, zz);
 %  putting something on its property list.
         if eqcar(zz,'expt) and cadr zz=var and fixp caddr zz
           then <<flg := t; b := 1; n := caddr zz>>
-         else
-        if eqcar(zz,'quotient) and not depends(cadr zz,var)
+         else if eqcar(zz,'quotient) and not depends(cadr zz,var)
           then <<
             b := cadr zz; zz:= caddr zz;
             if zz=var % case b/x
@@ -945,7 +944,17 @@ intrules :=
    int(1/(exp(~x*~~b)*x),x) => ei(-x*b) when b freeof x,
    int(1/(exp(~x/~b)*x),x) => ei(-x/b) when b freeof x,
    int(~a^(~~b*~x)/x,x) => ei(x*b*log(a)) when a freeof x and b freeof x,
+   int(~a^(~x/~b)/x,x) => ei(x/b*log(a)) when a freeof x and b freeof x,
    int(1/((~a^(~~b*~x))*x),x) => ei(-x*b*log(a)) when a freeof x and b freeof x,
+   int(1/((~a^(~x/~b))*x),x) => ei(-x/b*log(a)) when a freeof x and b freeof x,
+   int(~a^(~~b*~x^~n)/~x,x) => ei(x^n*b*log(a))/n
+              when a freeof x and b freeof x and n freeof x,
+   int(~a^(~x^~n/~b)/~x,x) => ei(x^n/b*log(a))/n
+              when a freeof x and b freeof x and n freeof x,
+   int(1/((~a^(~~b*~x^~n))*x),x) => ei(-x^n*b*log(a))/n
+              when a freeof x and b freeof x and n freeof x,
+   int(1/((~a^(~x^~n/~b))*x),x) => ei(-x^n/b*log(a))/n
+              when a freeof x and b freeof x and n freeof x,
    int(sin(~~b*~x)/x,x) => si(b*x) when b freeof x,     % FJW
    int(sin(~x/~b)/x,x) => si(x/b) when b freeof x,      % FJW
 %% int(sin(~x)/x,x) => si(x),           % FJW
