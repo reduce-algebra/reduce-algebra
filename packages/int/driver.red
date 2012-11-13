@@ -400,7 +400,7 @@ symbolic procedure look_for_exponential(integrand, var, zz);
 % Look for a form a^(b/(c*x^n)) in the field descriptor and transform
 % the integral if it is found.
    if not eqcar(zz:=car zz,'expt) or depends(cadr zz,var) then nil
-    else begin scalar b,c,klis,newvar,flg; integer n;
+    else begin scalar b,c,klis,newvar,flg,res; integer n;
         zz := caddr zz;
 % The following transformation is of a type that may be inverted later
 %  in look_for_rational - this would lead to an infinite recursion.
@@ -434,7 +434,7 @@ symbolic procedure look_for_exponential(integrand, var, zz);
         %  (no need to remove the mark later as the variable is a gensym)
 	if flg then put(newvar,'look_for_exponential,n);
         % b*x^n => y, i.e. x => (y/b)^(1/n) and dx => (y/b)^(1/n)/(n*y) dy
-	return subst!-and!-int(integrand,var,newvar,
+	res := subst!-and!-int(integrand,var,newvar,
                                s,
 			       retimes {b,{'expt,var,n}},
 			       simp {'quotient,s,{'times,n,newvar}},
@@ -442,6 +442,8 @@ symbolic procedure look_for_exponential(integrand, var, zz);
                    where s := {'expt,
                                if b=1 then newvar else {'quotient,newvar,b},
                                if n=-1 then -1 else {'quotient,1,n}};
+        if flg then remprop(newvar,'look_for_exponential);
+        return res;
     end;
 
 symbolic procedure look_for_rational(integrand, var, zz);
