@@ -43,4 +43,4 @@ find $here/packages -name "*.red" -exec etags -a -l none \
     -r '/[ \t]*procedure[ \t]+[^ \t(]+[( ]/' \
     -r '/[ \t]*s?macro[ \t]+procedure[ \t]+[^ \t(]+[( ]/' \
     -r '/[ \t]*symbolic[ \t]+s?macro[ \t]+procedure[ \t]+[^ \t(]+[( ]/' \
-    -r '/[ \t]*symbolic[ \t]+procedure[ \t]+[^ \t(]+[( ]/' {} \;
+    -r '/[ \t]*\(symbolic\|algebraic\)[ \t]+procedure[ \t]+[^ \t(]+[( ]/' {} \;
