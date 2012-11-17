@@ -36,6 +36,7 @@ fluid '(!*algint
         !*keepsqrts
         !*limitedfactors
         !*mcd
+        !*nointsubst
         !*noncomp
         !*nolnr
         !*partialintdf
@@ -45,6 +46,7 @@ fluid '(!*algint
         !*structure
         !*trdint
         !*trint
+        !*trintsubst
         !*uncached
         basic!-listofnewsqrts
         basic!-listofallsqrts
@@ -71,7 +73,7 @@ imports algebraiccase,algfnpl,findzvars,getvariables,interr,printsq,
   transcendentalcase,varsinlist,kernp,simpcar,prepsq,mksq,simp,
    opmtch,formlnr;
 
-switch algint,nolnr,trdint,trint;
+switch algint,nointsubst,nolnr,trdint,trint,trintsubst;
 switch hyperbolic;
 
 % Form is   int(expr,var,x1,x2,...);
@@ -384,8 +386,9 @@ symbolic procedure pseudodiff(a,var);
     else list prepsq simpdf(list(a,var));
 
 symbolic procedure look_for_substitute(integrand, var, zz);
+if !*nointsubst then nil
 % Search for rational power transformations
-begin
+ else begin
   scalar res;
   if atom zz then return nil
   else if (res := look_for_exponential(integrand, var, zz)) then return res
@@ -472,7 +475,7 @@ begin
         integrand := multsq(subsq(integrand,
                                   list(var . list('expt,newvar,m))),
                             mn2m!-1);
-        if !*trint then <<
+        if !*trint or !*trintsubst then <<
             prin2 "Integrand is transformed by substitution to ";
             printsq integrand;
             prin2 "using substitution "; prin2 var; prin2 " -> ";
@@ -482,7 +485,7 @@ begin
                            mkquote newvar, nil, nil},
                           !*backtrace);
         if null res or errorp res
-          then <<if !*trint then printc "Substituted integral FAILED!";
+          then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED!";
                  return nil>>
          else res := car res;
         if not null numr cdr res then <<
@@ -494,7 +497,7 @@ begin
         ss := list(newvar . list('expt,var, list('quotient, 1, m)));
         res := subsq(car res, ss) .
                subsq(quotsq(cdr res, mn2m!-1), ss);
-        if !*trint then <<
+        if !*trint or !*trintsubst then <<
             printc "Transforming back...";
             printsq car res;
             prin2 " plus a bad part of ";
@@ -524,7 +527,7 @@ symbolic procedure look_for_quad(integrand, var, zz);
           a := car zz; b := cadr zz;
           if (depends(a,var) or depends(b,var)) then return nil;
           nvar := int!-gensym1('intvar);
-          if !*trint then <<
+          if !*trint or !*trintsubst then <<
                 prin2 "Linear shift suggested ";
                 prin2 a; prin2 " "; prin2 b; terpri();
           >>;
@@ -539,7 +542,7 @@ symbolic procedure look_for_quad(integrand, var, zz);
 %         integrand := subsq(integrand,
 %                             list(var . list('difference, nvar, a)));
 %         integrand := multsq(integrand, simp b);
-          if !*trint then <<
+          if !*trint or !*trintsubst then <<
                 prin2 "Integrand is transformed by substitution to ";
                 printsq integrand;
                 prin2 "using substitution "; prin2 var; prin2 " -> ";
@@ -553,7 +556,7 @@ symbolic procedure look_for_quad(integrand, var, zz);
            res := subsq(car res, ss) .
                   subsq(multsq(cdr res, simp list('quotient,b,
                                                   list('times,nvar,2))), ss);
-           if !*trint then <<
+           if !*trint or !*trintsubst then <<
               printc "Transforming back...";
 	      printsq car res;
 	      prin2 " plus a bad part of ";
@@ -633,7 +636,7 @@ begin
                      list(var . list('difference,
                                      list('quotient,ss,sqmn), b))),
                fctr := quotsq(simp onemth, simp sqmn));
-    if !*trint then <<
+    if !*trint or !*trintsubst then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
         prin2 "using substitution "; prin2 var; prin2 " -> ";
@@ -648,7 +651,7 @@ begin
     ss := {reval {'sin,newvar} . bckshft, newvar . {'asin,bckshft}};
     % apply backsubstitution for sin(newvar) terms to bad part only 
     res := subsq(car res, cdr ss) . subsq(quotsq(cdr res, fctr), ss);
-    if !*trint then <<
+    if !*trint or !*trintsubst then <<
         printc "Transforming back...";
         printsq car res;
         prin2 " plus a bad part of ";
@@ -689,7 +692,7 @@ begin
         multsq(subsq(integrand,
                list(var . list('difference,list('quotient,ss,sqmn),b))),
                fctr := quotsq(simp onemth, simp sqmn));
-    if !*trint then <<
+    if !*trint or !*trintsubst then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
         prin2 "using substitution "; prin2 var; prin2 " -> ";
@@ -723,7 +726,7 @@ begin
     % apply backsubstitution for sinh/cosh terms to bad part only 
     res := sqrt2top subsq(car res, cdr ss) .
            sqrt2top subsq(quotsq(cdr res, fctr), ss);
-    if !*trint then <<
+    if !*trint or !*trintsubst then <<
         printc "Transforming back...";
         printsq car res;
         prin2 " plus a bad part of ";
@@ -733,7 +736,7 @@ begin
     if null numr car res or not null numr cdr res then return nil;
 %    if (car res = '(nil . 1)) then return nil;
     if realdom and smember('(sqrt -1),res) then <<
-        if !*trint then print "Wrong sheet"; return nil;  % Wrong sheet?
+        if !*trint or !*trintsubst then print "Wrong sheet"; return nil;  % Wrong sheet?
     >>;
     return res
 end;
@@ -748,7 +751,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
    begin scalar res,x;
      integrand := subsq(integrand, {var . sbst});
      integrand := multsq(integrand,fct);
-     if !*trint then <<
+     if !*trint or !*trintsubst then <<
            prin2 "Integrand is transformed by substitution to ";           
            printsq integrand;                                              
            prin2 "using substitution "; prin2 var; prin2 " -> ";           
@@ -757,7 +760,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
      res := errorset!*({'integratesq,mkquote integrand,mkquote nvar,nil,nil},
                        !*backtrace);
      if null res or errorp res
-       then <<if !*trint then printc "Substituted integral FAILED";
+       then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED";
               return nil>>
       else res := car res;
      if not null numr cdr res then <<
@@ -766,7 +769,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
         x := simpint1 {cdr res,nvar};
         if x freeof 'int then res := addsq(car res,x) . (nil ./ 1)
          else if nobad or null numr car res then <<
-             if !*trint then <<
+             if !*trint or !*trintsubst then <<
                 princ "Returning because still a bad part of ";
                 printsq x;
              >>;
@@ -775,7 +778,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,nobad);
       >>;
      bcksbst := {nvar . bcksbst};
      res := subsq(car res, bcksbst) . subsq(quotsq(cdr res,fct), bcksbst);
-     if !*trint then <<
+     if !*trint or !*trintsubst then <<
          printc "Transforming back...";
          printsq car res;
          prin2 " plus a bad part of ";
@@ -875,7 +878,7 @@ begin
                        list('quotient, prepsq (nn ./ dd), 2));
     integrand := prepsq simp integrand;
     integrand := simp integrand;
-    if !*trint then <<
+    if !*trint or !*trintsubst then <<
           prin2 "Integrand is transformed by substitution to ";           
           printsq integrand;                                              
           prin2 "using substitution "; prin2 var; prin2 " -> ";           
@@ -884,7 +887,7 @@ begin
     res := errorset!*({'integratesq,mkquote integrand, mkquote newvar, nil, nil},
                       !*backtrace);
     if null res or errorp res
-       then <<if !*trint then printc "Substituted integral FAILED";
+       then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED";
               return nil>>
      else res := car res;
 %    if not null numr cdr res then <<
@@ -896,7 +899,7 @@ begin
     ss := list(newvar . list('expt, var, 2));
     res := subsq(car res, ss) . multsq((((var .^ 1) .* 2) .+ nil) ./ 1,
                                        subsq(cdr res, ss));
-    if !*trint then <<
+    if !*trint or !*trintsubst then <<
         printc "Transforming back...";
         printsq car res;
         prin2 " plus a bad part of ";
