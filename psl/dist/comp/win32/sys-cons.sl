@@ -21,8 +21,8 @@
 
 (setq system_list* 
    (cond ((getenv "OS2_SHELL") '(Intel386 i386 os2 ieee))
-         ((equal (getenv "OS") "Windows NT") '(Intel386 i386 winnt ieee)) 
-         (t '(Intel386 i386 dos ieee)))) 
+         ((equal (getenv "OS") "Windows NT") '(Intel386 i386 i686 winnt ieee)) 
+         (t '(Intel386 i386 i686 dos ieee)))) 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MACHINE DEPENDENT CONSTANTS FOR THE MC68000                           %
@@ -57,17 +57,17 @@
 % (for ASCII machines).  Defined here in case cross-compilation
 % is being done.  Defined for the kernel in php:scan-table.sl. /csp
 
-(put 'eof 'charconst (char (control z)))
+(put 'eof 'charconst (char (control d)))
 
 
 (define-constant maxtokensize          5000)
 (define-constant bndstksize            2000)
 (define-constant catchstacksize        400)
-(define-constant hash-table-size       18013)
+(define-constant hash-table-size       68023)
 (define-constant savesize              4)
 (define-constant maxargblock           15)
 (define-constant stacksize             20000)
-(define-constant maxsymbols            10000)
+(define-constant maxsymbols            60000)
 (define-constant compressedbinaryradix 16)
 
 (define-constant heapsize              320000) %only used for initial alloc
