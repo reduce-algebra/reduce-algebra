@@ -1,3 +1,8 @@
 #!/bin/bash
-ARCH=$($trunk/scripts/findhost.sh $($trunk/config.guess))
-$trunk/pslbuild/$ARCH/psl/bpsl -td 4000 -f $trunk/generic/rlsmt/rlsmt.img < $1 | grep -v -e Loading -e Quitting -e ^$
+ARCH="$($trunk/scripts/findhost.sh $($trunk/config.guess))"
+RLSMT="$trunk/pslbuild/$ARCH/psl/bpsl -td 4000 -f $trunk/generic/rlsmt/rlsmt.img"
+if [ "$1" != "" ]; then
+    $RLSMT < $1 | grep -v -e Loading -e Quitting -e ^$
+else
+    $RLSMT | grep -v -e Loading -e Quitting -e ^$
+fi

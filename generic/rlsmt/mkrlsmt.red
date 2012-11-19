@@ -1,3 +1,5 @@
+fluid '(!*smt2_debug);
+
 on comp;
 
 on lessspace;
@@ -11,13 +13,8 @@ lisp procedure setpchar(c);
    promptstring!* := "";
 
 lisp procedure smt2_repl();
-   begin scalar inp, w, phil, res;
-      while (inp := read()) neq '(check!-sat) do
-	 if eqcar(inp, 'assert) then <<
-	    w := rl_smt2Read cadr inp;
- 	    phil := w . phil;
-	 >>;
-      w := cl_ex(rl_smkn('and, phil),nil);
+   begin scalar w, phil, res;
+      w := cl_smt2Read1();
       if !*smt2_debug then prin2t w;
       res := ofsf_qe(w, nil);
       if !*smt2_debug then prin2t res;
@@ -33,6 +30,8 @@ lisp procedure cl_smt2ReadError(l);
       wrs w;
       quit
    end;
+
+on backtrace;
 
 lisp savesystem("REDSMT", "rlsmt", '((smt2_repl)));
 
