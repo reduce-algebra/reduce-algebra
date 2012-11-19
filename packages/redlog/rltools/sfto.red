@@ -811,6 +811,18 @@ procedure sfto_kernelp(u);
       return atsoc(u,w)
    end;
 
+procedure sfto_varp(f);
+   % [f] is an SF. Returns extended Boolean. Returns [k] if $[f] = 1*[k]^1+nil$,
+   % return [nil] else.
+   if not domainp f and null red f and eqn(lc f,1) and eqn(ldeg f,1) then
+      mvar f;
+
+procedure sfto_varIsNumP(f);
+   % [f] is an SF. Returns extended Boolean. Returns [k] if $[f] = d1*[k]^1+d2$
+   % for domain elements [d1], [d2], return [nil] else.
+   if not domainp f and domainp lc f and domainp red f and eqn(ldeg f,1) then
+      mvar f;
+
 endmodule;  % [sfto]
 
 end;  % of file
