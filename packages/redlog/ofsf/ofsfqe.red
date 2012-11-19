@@ -923,7 +923,7 @@ procedure ofsf_tlltag(r,m,theo);
    % theory. Returns a tag.
    if r eq 'equal or r eq 'neq then
       ofsf_mktag1 r
-   else if ofsf_surep(ofsf_0mk2('geq,m),theo) then
+   else if ofsf_surep(ofsf_0mk2('geq,m),theo) or (!*rlpos and sfto_varp m) then
       ofsf_mktag1 r
    else if ofsf_surep(ofsf_0mk2('leq,m),theo) then
       ofsf_mktag1 ofsf_anegrel r
