@@ -764,17 +764,41 @@ procedure cl_smt2PrefixPrint(op, argl);
       prin2 ")"
    >>;
 
-lisp procedure cl_smt2Read(form);
+procedure cl_smt2Read(file);
+   % [file] is a string.
+   begin scalar filech,  oldch, w;
+      filech := open(file, 'input);
+      oldch := rds filech;
+      w := cl_smt2Read1();
+      rds oldch;
+      return w
+   end;
+
+procedure cl_smt2Read1();
+   begin scalar inp, w, phil;
+      while (inp := read()) neq '(check!-sat) do
+      	 if eqcar(inp, 'assert) then <<
+	    w := cl_smt2ReadForm cadr inp;
+	    phil := w . phil;
+      	 >>;
+      return cl_ex(rl_smkn('and, phil),nil)
+   end;
+
+procedure cl_smt2ReadForm(form);
    % SMT lib 2 read. Form is the argument of an assert form in the smt2 format.
    % Returns a quantifier-free formula.
-   begin scalar op, w;
+   begin scalar op;
+      if form memq '(true false) then
+	 return form;
       op := car form;
       if op eq '!=!> then
  	 op := 'impl;
       if op memq '(not impl) then
-	 return rl_mkn(op, for each arg in cdr form collect cl_smt2Read arg);
+	 return rl_mkn(op, for each arg in cdr form collect
+ 	    cl_smt2ReadForm arg);
       if op memq '(and or) then
-	 return rl_smkn(op, for each arg in cdr form collect cl_smt2Read arg);
+	 return rl_smkn(op, for each arg in cdr form collect
+ 	    cl_smt2ReadForm arg);
       return rl_smt2ReadAt(form)
    end;
 

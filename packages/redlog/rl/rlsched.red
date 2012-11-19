@@ -254,7 +254,7 @@ rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
 rl_mkserv('smt2Print,'(rl_simp),'(reval),'(nil),'aeval,t);
 
-rl_mkserv('smt2Read,'(dummy),nil,nil,nil,nil);
+rl_mkserv('smt2Read,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
 % Black box scheduler.
 
