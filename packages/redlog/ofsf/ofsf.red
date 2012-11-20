@@ -42,7 +42,7 @@ module ofsf;
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg),
+   ofsfdecdeg ofsfexfr),
    nil);
 
 load!-package 'redlog;

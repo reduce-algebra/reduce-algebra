@@ -470,6 +470,9 @@ procedure lto_hdelete1(item,hl,keyl);
       return hl
    end;
 
+procedure lto_subsetq(s1, s2);
+   not s1 or car s1 memq s2 and lto_subset(cdr s1, s2);
+
 endmodule;  % [lto]
 
 end;  % of file
