@@ -60,6 +60,9 @@ flag('(equal neq leq geq lessp greaterp),'spaced);
 
 % QE-Switches
 
+% QE call to dnf from the procedure pasf_qeexblock
+switch rlpasfdnfqeexblock;
+off1 'rlpasfdnfqeexblock;
 % QE call to DNF on the input formula's matrix
 switch rlpasfdnffirst;
 off1 'rlpasfdnffirst;

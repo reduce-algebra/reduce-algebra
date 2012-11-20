@@ -260,6 +260,8 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
       >>;
       cvl := varl;
       co := co_new();
+      if !*rlpasfdnfqeexblock then
+      	 psi := pasf_dnf psi;
       if rl_op psi eq 'or then
 	 for each x in rl_argn psi do
 	    co := co_save(co,{ce_mk(cvl,x,answ)})
