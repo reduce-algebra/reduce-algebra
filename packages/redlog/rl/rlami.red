@@ -629,6 +629,18 @@ procedure rl_a2s!-atl(l);
       >>
    end;
 
+procedure rl_a2s!-stringl(l);
+   % Algebraic to symbolic string list.
+   begin scalar w,!*rlsimpl;
+      l := reval l;
+      if not eqcar(l,'list) then
+ 	 typerr(l,"list");
+      for each x in cdr l do
+	 if not stringp x then
+	    typerr(x,"string");
+      return cdr l
+   end;
+
 procedure rl_a2s!-fl(l);
    % Algebraic to symbolic formula list.
    begin scalar w,!*rlsimpl;

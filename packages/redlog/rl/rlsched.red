@@ -252,7 +252,7 @@ sl_alias('unsfy,'unstraightify);
 
 rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
-rl_mkserv('smt2Print,'(rl_simp),'(reval),'(nil),'aeval,t);
+rl_mkserv('smt2Print,'(rl_simp),'(reval rl_a2s!-stringl),'(nil (list)),'aeval,t);
 
 rl_mkserv('smt2Read,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
