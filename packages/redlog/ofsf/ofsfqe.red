@@ -464,6 +464,7 @@ procedure ofsf_qesubqat(atf,v,u);
    end;
 
 procedure ofsf_subf(f,v,u);
+   % [f] is an SF; [v] is a kernel; [u] is an SQ. Returns an SQ.
    begin scalar nred;
       if domainp f then
       	 return !*f2q f;
