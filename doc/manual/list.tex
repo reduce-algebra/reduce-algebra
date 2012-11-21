@@ -22,12 +22,12 @@ can create new lists using braces and commas.  Alternatively, one can use
 the operator LIST to construct a list.  An important class of operations
 on lists are MAP and SELECT operations.  For details, please refer to the
 chapters on MAP, SELECT and the FOR command.  See also the documentation
-on the ASSIST package.
+on the \hyperlink{ASSIST}{ASSIST}\extendedmanual{ (chapter~\ref{ASSIST})} package.
 
 To facilitate the use of
 lists, a number of operators are also available for manipulating
-them. {\tt PART(<list>,n)}\ttindex{PART} for example will return the
-$n^{th}$ element of a list. {\tt LENGTH}\ttindex{LENGTH} will return the
+them. \texttt{PART(\meta{list},n)}\ttindex{PART} for example will return the
+$n^{th}$ element of a list. \texttt{LENGTH}\ttindex{LENGTH} will return the
 length of a list.  Several operators are also defined uniquely for lists.
 For those familiar with them, these operators in fact mirror the
 operations defined for Lisp lists.  These operators are as follows:
@@ -52,7 +52,7 @@ occurs if the argument is not a list, or the list is empty.
 \subsection{SECOND}
 \hypertarget{operator:SECOND}{}
 
-{\tt SECOND}\ttindex{SECOND} returns the second member of a list.  An error
+\texttt{SECOND}\ttindex{SECOND} returns the second member of a list.  An error
 occurs if the argument is not a list or has no second element.
 
 \subsection{THIRD}
@@ -64,7 +64,7 @@ occurs if the argument is not a list or has no third element.
 \subsection{REST}
 \hypertarget{operator:REST}{}
 
-{\tt REST}\ttindex{REST} returns its argument with the first element
+\texttt{REST}\ttindex{REST} returns its argument with the first element
 removed.  An error occurs if the argument is not a list, or is empty.
 
 \subsection{\textbf{.} (Cons) Operator}
@@ -82,7 +82,7 @@ front of a list.  For example:
 
 This operator\ttindex{APPEND} appends its first argument to its second to
 form a new list.
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         append({a,b},{c,d})     ->     {a,b,c,d}
         append({{a,b}},{c,d})   ->     {{a,b},c,d}.
@@ -91,7 +91,7 @@ form a new list.
 \subsection{REVERSE}
 \hypertarget{operator:REVERSE}{}
 
-The operator {\tt REVERSE}\ttindex{REVERSE} returns its argument with the
+The operator \texttt{REVERSE}\ttindex{REVERSE} returns its argument with the
 elements in the reverse order.  It only applies to the top level list, not
 any lower level lists that may occur.  Examples are:\index{List operation}
 \begin{verbatim}
@@ -106,22 +106,23 @@ any lower level lists that may occur.  Examples are:\index{List operation}
 If an operator other than those specifically defined for lists is given a
 single argument that is a list, then the result of this operation will be
 a list in which that operator is applied to each element of the list.  For
-example, the result of evaluating {\tt log\{a,b,c\}} is the expression
-{\tt \{LOG(A),LOG(B),LOG(C)\}}.
+example, the result of evaluating \texttt{log\{a,b,c\}} is the expression
+\texttt{\{LOG(A),LOG(B),LOG(C)\}}.
 
 There are two ways to inhibit this operator distribution.  Firstly, the
-switch {\tt LISTARGS},\ttindex{LISTARGS} if on, will globally inhibit
+switch \sw{LISTARGS},\ttindex{LISTARGS} if on, will globally inhibit
 such distribution.  Secondly, one can inhibit this distribution for a
-specific operator by the declaration {\tt LISTARGP}.\ttindex{LISTARGP} For
-example, with the declaration {\tt listargp log}, {\tt log\{a,b,c\}} would
-evaluate to {\tt LOG(\{A,B,C\})}.
+specific operator by the declaration \texttt{LISTARGP}.\ttindex{LISTARGP} For
+example, with the declaration \texttt{listargp log}, \texttt{log\{a,b,c\}}
+ would evaluate to \texttt{LOG(\{A,B,C\})}.
 
 If an operator has more than one argument, no such distribution occurs.
 
 \subsection{Caveats and Examples}
 
-Some of the natural list operations such as {\it member} or {\it delete}
-are available only after loading the package {\it ASSIST}.
+Some of the natural list operations such as \textit{member} or
+\textit{delete} are available only after loading the package
+\textit{\hyperlink{ASSIST}{ASSIST}}\extendedmanual{ (chapter~\ref{ASSIST})}.
 
 Please note that a non-list as second argument to CONS
 (a "dotted pair" in LISP terms) is not allowed
@@ -150,7 +151,7 @@ example:
   end;                         % In Germany, try lotto (49,6);
 \end{verbatim}
 
-{\it Another example:} Find all coefficients of a multivariate
+\textit{Another example:} Find all coefficients of a multivariate
 polynomial with respect to a list of variables:
 
 \begin{verbatim}

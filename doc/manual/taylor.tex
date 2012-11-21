@@ -107,7 +107,7 @@ original expression EXP is kept for later reference.
 It can be recovered by means of the operator
 
 \hypertarget{operator:TAYLORORIGINAL}{}
-\hspace*{2em} {\tt TAYLORORIGINAL}(EXP:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{TAYLORORIGINAL}(EXP:{\em exprn}):{\em exprn}
 
 An error is signalled if EXP is not a Taylor kernel or if the original
 expression was not kept, i.e.\ if \f{TAYLORKEEPORIGINAL} was
@@ -117,7 +117,7 @@ together with expansion point and order can be extracted using
 \ttindex{TAYLORTEMPLATE}.
 
 \hypertarget{operator:TAYLORTEMPLATE}{}
-\hspace*{2em} {\tt TAYLORTEMPLATE}(EXP:{\em exprn}):{\em list}
+\hspace*{2em} \texttt{TAYLORTEMPLATE}(EXP:{\em exprn}):{\em list}
 
 This returns a list of lists with the three elements (VAR,VAR0,ORDER).
 As with \f{TAYLORORIGINAL},
@@ -125,14 +125,14 @@ an error is signalled if EXP is not a Taylor kernel.
 
 The operator
 \hypertarget{operator:TAYLORTOSTANDARD}{}\\
-\hspace*{2em} {\tt TAYLORTOSTANDARD}(EXP:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{TAYLORTOSTANDARD}(EXP:{\em exprn}):{\em exprn}
 
 converts all Taylor kernels in EXP into standard form and
 \ttindex{TAYLORTOSTANDARD} resimplifies the result.
 
 The boolean operator
 \hypertarget{operator:TAYLORSERIESP}{}\\
-\hspace*{2em} {\tt TAYLORSERIESP}(EXP:{\em exprn}):{\em boolean}
+\hspace*{2em} \texttt{TAYLORSERIESP}(EXP:{\em exprn}):{\em boolean}
 
 may be used to determine if EXP is a Taylor kernel.
 \ttindex{TAYLORSERIESP} (Note that this operator is subject to the same
@@ -142,7 +142,7 @@ boolean expressions in \f{IF} or \f{LET} statements.
 Finally there is
 
 \hypertarget{operator:TAYLORCOMBINE}{}
-\hspace*{2em} {\tt TAYLORCOMBINE}(EXP:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{TAYLORCOMBINE}(EXP:{\em exprn}):{\em exprn}
 
 which tries to combine all Taylor kernels found in EXP into one.
 \ttindex{TAYLORCOMBINE}
@@ -163,7 +163,7 @@ before doing the operation.
 \ttindex{TAYLORKEEPORIGINAL} \ttindex{TAYLORCOMBINE}
 If \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{TAYLORKEEPORIGINAL}} is set to \f{ON} and if all Taylor
 kernels in \f{exp} have their original expressions kept
-\hyperlink{switch:TAYLORCOMBINE}{\f{TAYLORCOMBINE}} will also combine these and store the result
+\hyperlink{operator:TAYLORCOMBINE}{\f{TAYLORCOMBINE}} will also combine these and store the result
 as the original expression of the resulting Taylor kernel.
 \index{TAYLORAUTOEXPAND switch}
 There is also the switch \hyperlink{switch:TAYLORAUTOEXPAND}{\f{TAYLORAUTOEXPAND}} (see below).
@@ -204,7 +204,7 @@ expansion of the inverse of $f$ from the expansion of $f$. This is
 done by the operator
 
 \hypertarget{operator:TAYLORREVERT}{}
-\hspace*{2em} {\tt TAYLORREVERT}(EXP:{\em exprn},OLDVAR:{\em kernel},
+\hspace*{2em} \texttt{TAYLORREVERT}(EXP:{\em exprn},OLDVAR:{\em kernel},
                                  NEWVAR:{\em kernel}):{\em exprn}
 
 EXP must evaluate to a Taylor kernel with OLDVAR being one of its

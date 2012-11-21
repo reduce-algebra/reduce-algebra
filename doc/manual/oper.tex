@@ -10,8 +10,8 @@ In many cases, an operator is described by a prototypical header line as
 follows. Each formal parameter is given a name and followed by its allowed
 type. The names of classes referred to in the definition are printed in
 lower case, and parameter names in upper case. If a parameter type is not
-commonly used, it may be a specific set enclosed in brackets {\tt \{} \ldots
-{\tt \}}.
+commonly used, it may be a specific set enclosed in brackets 
+\texttt{\{} \ldots{} \texttt{\}}.
 Operators that accept formal parameter lists of arbitrary length have the
 parameter and type class enclosed in square brackets indicating that zero
 or more occurrences of that argument are permitted. Optional parameters
@@ -28,7 +28,7 @@ These operators are as follows:
 
 \subsection{ABS}
 \hypertarget{operator:ABS}{}
-{\tt ABS}\ttindex{ABS} returns the absolute value
+\texttt{ABS}\ttindex{ABS} returns the absolute value
 of its single argument, if that argument has a numerical value.
 A non-numerical argument is returned as an absolute value, with an overall
 numerical coefficient taken outside the absolute value operator. For example:
@@ -56,7 +56,7 @@ operator.  For example:
 This returns the complex conjugate
 of an expression, if that argument has an numerical value.  A
 non-numerical argument is returned as an expression in the operators
-{\tt REPART}\ttindex{REPART} and {\tt IMPART}\ttindex{IMPART}. For example:
+\texttt{REPART}\ttindex{REPART} and \texttt{IMPART}\ttindex{IMPART}. For example:
 \begin{verbatim}
         conj(1+i)     -> 1-I
         conj(a+i*b)   -> REPART(A) - REPART(B)*I - IMPART(A)*I
@@ -66,9 +66,9 @@ non-numerical argument is returned as an expression in the operators
 \subsection{FACTORIAL}\ttindex{FACTORIAL}
 \hypertarget{operator:FACTORIAL}{}
 
-If the single argument of {\tt FACTORIAL} evaluates to a non-negative
+If the single argument of \texttt{FACTORIAL} evaluates to a non-negative
 integer, its factorial is returned.  Otherwise an expression involving
-{\tt FACTORIAL} is returned. For example:
+\texttt{FACTORIAL} is returned. For example:
 \begin{verbatim}
         factorial(5)  ->  120
         factorial(a)  ->  FACTORIAL(A)
@@ -102,7 +102,7 @@ operator.  For example:
 \hypertarget{operator:IMPART}{}
 This operator returns the imaginary part of an expression, if that argument
 has an numerical value.  A non-numerical argument is returned as an expression
-in the operators {\tt REPART}\ttindex{REPART} and {\tt IMPART}.  For example:
+in the operators \texttt{REPART}\ttindex{REPART} and \texttt{IMPART}.  For example:
 \begin{verbatim}
         impart(1+i)   -> 1
         impart(a+i*b) -> REPART(B) + IMPART(A)
@@ -112,7 +112,7 @@ in the operators {\tt REPART}\ttindex{REPART} and {\tt IMPART}.  For example:
 \hypertarget{operator:MAX}{}
 \hypertarget{operator:MIN}{}
 
-{\tt MAX} and {\tt MIN}\ttindex{MAX}\ttindex{MIN} can take an arbitrary
+\texttt{MAX} and \texttt{MIN}\ttindex{MAX}\ttindex{MIN} can take an arbitrary
 number of expressions as their arguments.  If all arguments evaluate to
 numerical values, the maximum or minimum of the argument list is returned.
 If any argument is non-numeric, an appropriately reduced expression is
@@ -123,12 +123,12 @@ returned.  For example:
         max(a,2,3)    ->  MAX(A,3)
         min(x)        ->  X
 \end{verbatim}
-{\tt MAX} or {\tt MIN} of an empty list returns 0.
+\texttt{MAX} or \texttt{MIN} of an empty list returns 0.
 
 \subsection{NEXTPRIME}\ttindex{NEXTPRIME}
 \hypertarget{operator:NEXTPRIME}{}
 
-{\tt NEXTPRIME} returns the next prime greater than its integer argument,
+\texttt{NEXTPRIME} returns the next prime greater than its integer argument,
 using a probabilistic algorithm.  A type error occurs if the value of the
 argument is not an integer.  For example:
 \begin{verbatim}
@@ -137,32 +137,33 @@ argument is not an integer.  For example:
         nextprime(-7)     -> -5
         nextprime 1000000 -> 1000003
 \end{verbatim}
-whereas {\tt nextprime(a)} gives a type error.
+whereas \texttt{nextprime(a)} gives a type error.
 
 \subsection{RANDOM}\ttindex{RANDOM}
 \hypertarget{operator:RANDOM}{}
 
-{\tt random(}{\em n\/}{\tt)} returns a random number $r$ in the range $0
-\leq r < n$.  A type error occurs if the value of the argument is not a
+\texttt{random(}{\em n\/}\texttt{)} returns a random number $r$ in the
+range $0\leq r < n$.  A type error occurs if the value of the argument is not a
 positive integer in algebraic mode, or positive number in symbolic mode.
 For example:
 \begin{verbatim}
         random(5)         ->    3
         random(1000)      ->  191
 \end{verbatim}
-whereas {\tt random(a)} gives a type error.
+whereas \texttt{random(a)} gives a type error.
 
 \subsection{RANDOM\_NEW\_SEED}\ttindex{RANDOM\_NEW\_SEED}
 \hypertarget{operator:RANDOM_NEW_SEED}{}
 
-{\tt random\_new\_seed(}{\em n\/}{\tt)} reseeds the random number generator
+\texttt{random\_new\_seed(}\emph{n}\texttt{)} reseeds the random number
+generator
 to a sequence determined by the integer argument $n$.  It can be used to
 ensure that a repeatable pseudo-random sequence will be delivered
-regardless of any previous use of {\tt RANDOM}, or can be called early in
+regardless of any previous use of \texttt{RANDOM}, or can be called early in
 a run with an argument derived from something variable (such as the time
 of day) to arrange that different runs of a REDUCE program will use
 different random sequences.  When a fresh copy of REDUCE is first created
-it is as if {\tt random\_new\_seed(1)} has been obeyed.
+it is as if \texttt{random\_new\_seed(1)} has been obeyed.
 
 A type error occurs if the value of the argument is not a positive integer.
 
@@ -170,7 +171,8 @@ A type error occurs if the value of the argument is not a positive integer.
 \hypertarget{operator:REPART}{}
 This returns the real part of an expression, if that argument has an
 numerical value.  A non-numerical argument is returned as an expression in
-the operators {\tt REPART} and {\tt IMPART}\ttindex{IMPART}.  For example:
+the operators \texttt{REPART} and \texttt{IMPART}\ttindex{IMPART}.  
+For example:
 \begin{verbatim}
         repart(1+i)   -> 1
         repart(a+i*b) -> REPART(A) - IMPART(B)
@@ -189,15 +191,15 @@ example:
 
 \subsection{SIGN}\ttindex{SIGN}
 \hypertarget{operator:SIGN}{}
-{\tt SIGN} tries to evaluate the sign of its argument. If this
-is possible {\tt SIGN} returns one of 1, 0 or -1.  Otherwise, the result
+\texttt{SIGN} tries to evaluate the sign of its argument. If this
+is possible \texttt{SIGN} returns one of 1, 0 or -1.  Otherwise, the result
 is the original form or a simplified variant. For example:
 \begin{verbatim}
         sign(-5)      ->  -1
         sign(-a^2*b)  ->  -SIGN(B)
 \end{verbatim}
 Note that even powers of formal expressions are assumed to be
-positive only as long as the switch {\tt COMPLEX} is off.
+positive only as long as the switch \texttt{COMPLEX} is off.
 
 \section{Mathematical Functions}
 \hypertarget{operator:ACOS}{}
@@ -255,8 +257,8 @@ take arbitrary scalar expressions as their single argument:
 \ttindex{HYPOT}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
 \ttindex{SEC}\ttindex{SECH}\ttindex{SI}\ttindex{SIN}
 \ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
-where {\tt LOG} is the natural logarithm (and equivalent to {\tt LN}),
-and {\tt LOGB} has two arguments of which the second is the logarithmic base.
+where \texttt{LOG} is the natural logarithm (and equivalent to \texttt{LN}),
+and \texttt{LOGB} has two arguments of which the second is the logarithmic base.
 
 The derivatives of all these functions are also known to the system.
 
@@ -315,17 +317,17 @@ view these, the SHOWRULES operator can be used, e.g.
 
 For further simplification, especially of expressions involving
 trigonometric functions, see the TRIGSIMP\ttindex{TRIGSIMP} package
-documentation.
+(chapter~\ref{TRIGSIMP}) documentation.
 
 Functions not listed above may be defined in the special functions
 package SPECFN\ttindex{SPECFN}.
 
 The user can add further rules for the reduction of expressions involving
-these operators by using the {\tt LET}\ttindex{LET} command.
+these operators by using the \texttt{LET}\ttindex{LET} command.
 
-% The square root function can be input using the name {\tt SQRT}, or the
+% The square root function can be input using the name \texttt{SQRT}, or the
 % power operation {\tt \verb|^|(1/2)}.  On output, unsimplified square roots
-% are normally represented by the operator {\tt SQRT} rather than a
+% are normally represented by the operator \texttt{SQRT} rather than a
 % fractional power.
 
 \hypertarget{switch:COMBINELOGS}{}
@@ -334,16 +336,16 @@ In many cases it is desirable to expand product arguments of logarithms,
 or collect a sum of logarithms into a single logarithm.  Since these are
 inverse operations, it is not possible to provide rules for doing both at
 the same time and preserve the {\REDUCE} concept of idempotent evaluation.
-As an alternative, REDUCE provides two switches {\tt EXPANDLOGS}
-\ttindex{EXPANDLOGS} and {\tt COMBINELOGS}\ttindex{COMBINELOGS} to carry
+As an alternative, REDUCE provides two switches \sw{EXPANDLOGS}
+\ttindex{EXPANDLOGS} and \sw{COMBINELOGS}\ttindex{COMBINELOGS} to carry
 out these operations.  Both are off by default, and are subject 
-to the value of the switch \texttt{PRECISE}\ttindex{PRECISE}. This switch is on
+to the value of the switch \sw{PRECISE}\ttindex{PRECISE}. This switch is on
 by default and prevents modifications that may be false in a complex domain.
-Thus to expand {\tt LOG(3*Y)} into a sum of logs, one can say
+Thus to expand \texttt{LOG(3*Y)} into a sum of logs, one can say
 \begin{verbatim}
         ON EXPANDLOGS; LOG(3*Y);
 \end{verbatim}
-whereas to expand {\tt LOG(X*Y)} into a sum of logs, one needs to say
+whereas to expand \texttt{LOG(X*Y)} into a sum of logs, one needs to say
 \begin{verbatim}
         OFF PRECISE; ON EXPANDLOGS; LOG(X*Y);
 \end{verbatim}
@@ -374,24 +376,25 @@ will print as
         SQRT(X)
 \end{verbatim}
 but will have an internal form containing the two exponentiated terms.
-If you now subtract {\tt sqrt(x)} from this expression, you will {\em not\/}
-get zero.  Instead, the confusing form
+If you now subtract \texttt{sqrt(x)} from this expression, you will
+\emph{not} get zero.  Instead, the confusing form
 \begin{verbatim}
         SQRT(X) - SQRT(X)
 \end{verbatim}
 will result.  To combine such exponentiated terms, the switch
-{\tt COMBINEEXPT}\ttindex{COMBINEEXPT} should be turned on.
+\sw{COMBINEEXPT}\ttindex{COMBINEEXPT} should be turned on.
 
-The square root function can be input using the name {\tt SQRT}, or the
-power operation {\tt \verb|^|(1/2)}.  On output, unsimplified square roots
-are normally represented by the operator {\tt SQRT} rather than a
+The square root function can be input using the name \texttt{SQRT}, or the
+power operation \texttt{\textasciicircum(1/2)}.  On output, unsimplified
+square roots
+are normally represented by the operator \texttt{SQRT} rather than a
 fractional power.  With the default system switch settings, the argument
 of a square root is first simplified, and any divisors of the expression
 that are perfect squares taken outside the square root argument.  The
 remaining expression is left under the square root.
-% However, if the switch {\tt REDUCED}\ttindex{REDUCED} is on,
+% However, if the switch \texttt{REDUCED}\ttindex{REDUCED} is on,
 % multiplicative factors in the argument of the square root are also
-% separated, becoming individual square roots. Thus with {\tt REDUCED} off,
+% separated, becoming individual square roots. Thus with \texttt{REDUCED} off,
 Thus the expression
 \begin{verbatim}
          sqrt(-8a^2*b)
@@ -400,23 +403,23 @@ becomes
 \begin{verbatim}
         2*a*sqrt(-2*b).
 \end{verbatim}
-% whereas with {\tt REDUCED} on, it would become
+% whereas with \texttt{REDUCED} on, it would become
 % \begin{verbatim}
 %         2*a*i*sqrt(2)*sqrt(b) .
 % \end{verbatim}
-% The switch {\tt REDUCED}\ttindex{REDUCED} also applies to other rational
+% The switch \texttt{REDUCED}\ttindex{REDUCED} also applies to other rational
 % powers in addition to square roots.
 
 \hypertarget{switch:PRECISE}{}
-Note that such simplifications can cause trouble if {\tt A} is eventually
+Note that such simplifications can cause trouble if \var{A} is eventually
 given a value that is a negative number.  If it is important that the
 positive property of the square root and higher even roots always be
-preserved, the switch {\tt PRECISE}\ttindex{PRECISE} should be set on
+preserved, the switch \sw{PRECISE}\ttindex{PRECISE} should be set on
 (the default value).
 This causes any non-numerical factors taken out of surds to be represented
 by their absolute value form.
-With % both {\tt REDUCED} and
-{\tt PRECISE} on then, the above example would become
+With % both \texttt{REDUCED} and
+\texttt{PRECISE} on then, the above example would become
 \begin{verbatim}
         2*abs(a)*sqrt(-2*b).
 \end{verbatim}
@@ -425,7 +428,7 @@ With % both {\tt REDUCED} and
 However, this is incorrect in the complex domain, where the
 $\sqrt{x^{2}}$ is not identical to $|x|$. To avoid the above
 simplification, the switch
-\texttt{PRECISE\_COMPLEX}\ttindex{PRECISE\_COMPLEX} should be set on
+\sw{PRECISE\_COMPLEX}\ttindex{PRECISE\_COMPLEX} should be set on
 (default is off). For example:
 \begin{verbatim}
 on precise_complex; sqrt(-8a^2*b);
@@ -437,8 +440,8 @@ yields the output
 \end{verbatim}
 
 The statement that {\REDUCE} knows very little about these functions
-applies only in the mathematically exact {\tt off rounded} mode.  If
-{\tt ROUNDED}\ttindex{ROUNDED} is on, any of the functions
+applies only in the mathematically exact \texttt{off rounded} mode.  If
+\sw{ROUNDED}\ttindex{ROUNDED} is on, any of the functions
 \begin{verbatim}
         ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
         ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH EXP HYPOT
@@ -456,18 +459,62 @@ when given a numerical argument has its value calculated to the current
 degree of floating point precision.  In addition, real (non-integer
 valued) powers of numbers will also be evaluated.
 
-If the {\tt COMPLEX} switch is turned on in addition to {\tt ROUNDED},
+If the \sw{COMPLEX} switch is turned on in addition to \sw{ROUNDED},
 these functions will also calculate a real or complex result, again to
 the current degree of floating point precision,
-if given complex arguments.  For example, with {\tt on rounded,complex;}
+if given complex arguments.  For example, with \texttt{on rounded,complex;}
 \begin{verbatim}
         2.3^(5.6i)   ->   -0.0480793490914 - 0.998843519372*I
         cos(2+3i)    ->   -4.18962569097 - 9.10922789376*I
 \end{verbatim}
 
+\section{CONTINUED\_FRACTION Operator}
+\hypertarget{operator:CONTINUED_FRACTION}{}
+\index{approximation}\index{rational number}
+
+The operator \texttt{CONTINUED\_FRACTION} \ttindex{CONTINUED\_FRACTION}
+approximates the real number 
+(rational number, rounded number)
+into a continued fraction. \texttt{CONTINUED\_FRACTION} has one or
+two arguments, the number to be converted and an optional
+precision:
+\begin{syntaxtable}
+    \texttt{continued\_fraction(}\meta{num}\texttt{)} \\
+ \multicolumn{3}{l}{\mbox{or}} \\
+    \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)}
+\end{syntaxtable}
+The result is a list of two elements: the
+first one is the rational value of the approximation, the second one
+is the list of terms of the continued fraction which represents the
+same value according to the definition \texttt{t0 +1/(t1 + 1/(t2 + ...))}.
+Precision: the second optional parameter \meta{size} is an upper bound
+for the absolute value of the result denominator. If omitted, the
+approximation is performed up to the current system precision.
+
+\textit{Examples:}
+\begin{verbatim}
+continued_fraction pi;
+
+                  ->
+
+  1146408
+{---------,{3,7,15,1,292,1,1,1,2,1}}
+  364913
+
+continued_fraction(pi,100);
+
+                  ->
+
+  22
+{----,{3,7}}
+  7
+
+\end{verbatim}
+
+
 \section{DF Operator}
 \hypertarget{operator:DF}{}
-The operator {\tt DF}\ttindex{DF} is used to represent partial
+The operator \texttt{DF}\ttindex{DF} is used to represent partial
 differentiation\index{Differentiation} with respect
 to one or more variables. It is used with the syntax:
 \begin{verbatim}
@@ -477,25 +524,25 @@ The first argument is the expression to be differentiated. The remaining
 arguments specify the differentiation variables and the number of times
 they are applied.
 
-The number {\tt NUM} may be omitted if it is 1.  For example,
+The number \texttt{NUM} may be omitted if it is 1.  For example,
 \begin{quote}
 \begin{tabbing}
-{\tt            df(y,x1,2,x2,x3,2)} \= = $\partial^{5}y/\partial x_{1}^{2} \
+\texttt{df(y,x1,2,x2,x3,2)} \= = $\partial^{5}y/\partial x_{1}^{2} \
  \partial x_{2}\partial x_{3}^{2}.$\kill
-{\tt            df(y,x)} \> = $\partial y/\partial x$ \\
-{\tt            df(y,x,2)} \> = $\partial^{2}y/\partial x^{2}$ \\
-{\tt            df(y,x1,2,x2,x3,2)} \> = $\partial^{5}y/\partial x_{1}^{2} \
+\texttt{df(y,x)} \> = $\partial y/\partial x$ \\
+\texttt{df(y,x,2)} \> = $\partial^{2}y/\partial x^{2}$ \\
+\texttt{df(y,x1,2,x2,x3,2)} \> = $\partial^{5}y/\partial x_{1}^{2} \
  \partial x_{2}\partial x_{3}^{2}.$
 \end{tabbing}
 \end{quote}
-The evaluation of {\tt df(y,x)} proceeds as follows: first, the values of
-{\tt Y} and {\tt X} are found.  Let us assume that {\tt X} has no assigned
-value, so its value is {\tt X}.  Each term or other part of the value of
-{\tt Y} that contains the variable {\tt X} is differentiated by the
-standard rules.  If {\tt Z} is another variable, not {\tt X} itself, then
-its derivative with respect to {\tt X} is taken to be 0, unless {\tt Z}
-has previously been declared to {\tt DEPEND} on {\tt X}, in which
-case the derivative is reported as the symbol {\tt df(z,x)}.
+The evaluation of \texttt{df(y,x)} proceeds as follows: first, the values of
+\var{Y} and \var{X} are found.  Let us assume that \var{X} has no assigned
+value, so its value is \var{X}.  Each term or other part of the value of
+\var{Y} that contains the variable \var{X} is differentiated by the
+standard rules.  If \var{Z} is another variable, not \var{X} itself, then
+its derivative with respect to \var{X} is taken to be 0, unless \var{Z}
+has previously been declared to \texttt{DEPEND} on \var{X}, in which
+case the derivative is reported as the symbol \texttt{df(z,x)}.
 
 
 \subsection{Switches influencing differentiation}
@@ -503,25 +550,26 @@ case the derivative is reported as the symbol {\tt df(z,x)}.
 \hypertarget{switch:NOCOMMUTEDF}{}
 \hypertarget{switch:SIMPNONCOMDF}{}
 
-Consider \texttt{df(u,x,y,z)}.  If non of \texttt{x,y,z} are equal to \texttt{u}
+Consider \texttt{df(u,x,y,z)}.  If non of \texttt{x,y,z} are equal to \var{u}
 then the order of differentiation is commuted into a canonical form, unless the
-switch \texttt{NOCOMMUTEDF}\ttindex{NOCOMMUTEDF} is turned on (default is off).
-if at least one of \texttt{x,y,z} is equal to \texttt{u} then the order of
-differentiation is \emph{not} commuted and the derivative is emph{not} simplified
-to zero, unless the switch \texttt{COMMUTEDF}\ttindex{COMMUTEDF} is turned on.
+switch \sw{NOCOMMUTEDF}\ttindex{NOCOMMUTEDF} is turned on (default is off).
+if at least one of \texttt{x,y,z} is equal to \var{u} then the order of
+differentiation is \emph{not} commuted and the derivative is \emph{not}
+simplified
+to zero, unless the switch \sw{COMMUTEDF}\ttindex{COMMUTEDF} is turned on.
 It is off by default.
 
-If \texttt{COMMUTEDF} is off and the switch \texttt{SIMPNONCOMDF}\ttindex{SIMPNONCOMDF}
+If \sw{COMMUTEDF} is off and the switch \sw{SIMPNONCOMDF}\ttindex{SIMPNONCOMDF}
 is on then simplify as follows:
 \begin{verbatim}
         DF(U,X,U)        ->  DF(U,X,2) / DF(U,X)
         DF(U,X,N,U)      ->  DF(U,X,N+1) / DF(U,X)
 \end{verbatim}
-\emph{provided} \texttt{U} depends only on the one variable \texttt{X}.
+\emph{provided} \texttt{U} depends only on the one variable \var{X}.
 This simplification removes the non-commutative aspect of the derivative.
 
 \hypertarget{switch:EXPANDDF}{}
-If the switch \texttt{EXPANDDF}\ttindex{EXPANDDF} is turned on then REDUCE uses
+If the switch \sw{EXPANDDF}\ttindex{EXPANDDF} is turned on then REDUCE uses
 the chain rule to expand symbolic derivatives of indirectly dependent variables
 provided the result is unambiguous, i.e. provided there is no direct dependence.
 It is off by default.  Thus, for example, given
@@ -539,32 +587,36 @@ and the algorithm would loop).
 
 \hypertarget{switch:ALLOWDFINT}{}
 \hypertarget{switch:DFINT}{}
-Turning on the switch \texttt{ALLOWDFINT}\ttindex{ALLOWDFINT} allows
+Turning on the switch \sw{ALLOWDFINT}\ttindex{ALLOWDFINT} allows
 "differentiation under the integral sign", i.e. 
 \begin{verbatim}
         DF(INT(Y, X), V) -> INT(DF(Y, V), X)
 \end{verbatim}
-if this results in a simplification.  If the switch \texttt{DFINT}\ttindex{DFINT}
-is also turned on then this happens regardless of whether the result simplifies.
-Both switches are off by default.
+if this results in a simplification.  If the switch \sw{DFINT}\ttindex{DFINT}
+is also turned on then this happens regardless of whether the result
+simplifies. Both switches are off by default.
 
 
 \subsection{Adding Differentiation Rules}
 \hypertarget{command:LETdf}{}
 
-The {\tt LET}\ttindex{LET} statement can be used to introduce
+The \texttt{LET}\ttindex{LET} statement can be used to introduce
 rules for differentiation of user-defined operators.  Its general form is
-\begin{verbatim}
-        FOR ALL <var1>,...,<varn>
-             LET DF(<operator><varlist>,<vari>)=<expression>
-\end{verbatim}
-where {\tt <varlist>} ::= ({\tt <var1>},\dots,{\tt <varn>}), and
-{\tt <var1>},...,{\tt <varn>} are the dummy variable arguments of
-{\tt <operator>}.
+\begin{syntaxtable}
+ \texttt{FOR ALL }\meta{var1}\texttt{,}\dots\texttt{,}\meta{varn} \\
+  \qquad \texttt{LET DF(}\meta{operator}\meta{varlist}\texttt{,}\meta{vari}\texttt{)=}\meta{expression}
+\end{syntaxtable}
+where 
+\begin{syntax}
+ \meta{varlist} \bnfprod  (\meta{var1},\dots,\meta{varn}),
+\end{syntax}
+and
+\meta{var1},\ldots,\meta{varn} are the dummy variable arguments of
+\meta{operator}.
 
 An analogous form applies to infix operators.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         for all x let df(tan x,x)= 1 + tan(x)^2;
 \end{verbatim}
@@ -575,14 +627,14 @@ source.)
                         df(f(x,y),y)=x*f(x,y);
 \end{verbatim}
 Notice that all dummy arguments of the relevant operator must be declared
-arbitrary by the {\tt FOR ALL} command, and that rules may be supplied for
+arbitrary by the \texttt{FOR ALL} command, and that rules may be supplied for
 operators with any number of arguments.  If no differentiation rule
 appears for an argument in an operator, the differentiation routines will
-return as result an expression in terms of {\tt DF}\ttindex{DF}.  For
+return as result an expression in terms of \texttt{DF}\ttindex{DF}.  For
 example, if the rule for the differentiation with respect to the second
-argument of {\tt F} is not supplied, the evaluation of {\tt df(f(x,z),z)}
-would leave this expression unchanged. (No {\tt DEPEND} declaration
-is needed here, since {\tt f(x,z)} obviously ``depends on'' {\tt Z}.)
+argument of \texttt{F} is not supplied, the evaluation of \texttt{df(f(x,z),z)}
+would leave this expression unchanged. (No \texttt{DEPEND} declaration
+is needed here, since \texttt{f(x,z)} obviously ``depends on'' \var{Z}.)
 
 Once such a rule has been defined for a given operator, any future
 differentiation\index{Differentiation} rules for that operator must be
@@ -594,7 +646,7 @@ get the error message
 
 \section{INT Operator}
 \hypertarget{operator:INT}{}
-{\tt INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite
+\texttt{INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite
 integration\index{Integration}\index{Indefinite integration} using a
 combination of the Risch-Norman algorithm and pattern matching.  It is
 used with the syntax:
@@ -606,9 +658,9 @@ polynomials, log functions, exponential functions and tan and atan. The
 arbitrary constant is not represented. If the integral cannot be done in
 closed terms, it returns a formal integral for the answer in one of two ways:
 \begin{enumerate}
-\item It returns the input, {\tt INT(\ldots,\ldots)} unchanged.
+\item It returns the input, \texttt{INT(\ldots,\ldots)} unchanged.
 
-\item It returns an expression involving {\tt INT}s of some
+\item It returns an expression involving \texttt{INT}s of some
       other functions (sometimes more complicated than
       the original one, unfortunately).
 \end{enumerate}
@@ -618,7 +670,7 @@ involving error functions, dilogarithms and other trigonometric
 expressions. In these cases it might not always succeed in finding the
 solution, even if one exists.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         int(log(x),x) ->  X*(LOG(X) - 1),
         int(e^x,x)    ->  E**X.
@@ -626,7 +678,7 @@ solution, even if one exists.
 The program checks that the second argument is a variable and gives an
 error if it is not.
 
-{\it Note:} If the {\tt int} operator is called with 4 arguments,
+\textit{Note:} If the \texttt{int} operator is called with 4 arguments,
 {\REDUCE} will implicitly call the definite integration package (DEFINT)
 and this package will interpret the third and fourth arguments as the lower
 and upper limit of integration, respectively.  For details, consult
@@ -635,20 +687,28 @@ the documentation on the DEFINT package.
 
 \subsection{Options}
 \hypertarget{switch:TRINT}{}
+\hypertarget{switch:TRINTSUBST}{}
 \hypertarget{switch:FAILHARD}{}
 \hypertarget{switch:NOLNR}{}
+\hypertarget{switch:NOINTSUBST}{}
 
-The switch {\tt TRINT} when on will trace the operation of the algorithm. It
+The switch \sw{TRINT} when on will trace the operation of the algorithm. It
 produces a great deal of output in a somewhat illegible form, and is not
 of much interest to the general user. It is normally off.
 
-If the switch {\tt FAILHARD} is on the algorithm will terminate with an
-error if the integral cannot be done in closed terms, rather than return a
-formal integration form. {\tt FAILHARD} is normally off.
+The switch \sw{TRINTSUBST} when on will trace the heuristic attempts to
+solve the integral by substitution. It is normally off.
 
-The switch {\tt NOLNR} suppresses the use of the linear properties of
+If the switch \sw{FAILHARD} is on the algorithm will terminate with an
+error if the integral cannot be done in closed terms, rather than return a
+formal integration form. \sw{FAILHARD} is normally off.
+
+The switch \sw{NOLNR} suppresses the use of the linear properties of
 integration in cases when the integral cannot be found in closed terms.
 It is normally off.
+
+The switch \sw{NOINTSUBST} disables the heuristic attempts to solve
+the integral by substitution. It is normally off.
 
 \subsection{Advanced Use}
 \hypertarget{operator:ERF}{}
@@ -692,25 +752,25 @@ package, DEFINT\extendedmanual{( chapter~\ref{DEFINT})}.
 
 %\subsection{Definite Integration} \index{Definite integration}
 %
-%If {\tt INT} is used with the syntax
+%If \texttt{INT} is used with the syntax
 %
 %\begin{verbatim}
 %   INT(EXPRN:algebraic,VAR:kernel,LOWER:algebraic,UPPER:algebraic):algebraic.
 %\end{verbatim}
 %
-%The definite integral of {\tt EXPRN} with respect to {\tt VAR} is
-%calculated between the limits {\tt LOWER} and {\tt UPPER}.  In the present
+%The definite integral of \texttt{EXPRN} with respect to \texttt{VAR} is
+%calculated between the limits \texttt{LOWER} and \texttt{UPPER}.  In the present
 %system, this is calculated either by pattern matching, or by first finding
 %the indefinite integral, and then substituting the limits into this.
 
 \section{LENGTH Operator}
 \hypertarget{operator:LENGTH}{}
-{\tt LENGTH}\ttindex{LENGTH} is a generic operator for finding the
+\texttt{LENGTH}\ttindex{LENGTH} is a generic operator for finding the
 length of various objects in the system.  The meaning depends on the type
 of the object.  In particular, the length of an algebraic expression is
 the number of additive top-level terms its expanded representation.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         length(a+b)    ->  2
         length(2)      ->  1.
@@ -722,7 +782,7 @@ of these objects.
 \section{MAP Operator}\ttindex{MAP}
 \hypertarget{operator:MAP}{}
 
-The {\tt MAP} operator applies a uniform evaluation pattern to all members
+The \texttt{MAP} operator applies a uniform evaluation pattern to all members
 of a composite structure: a matrix, a list, or the arguments of an
 operator expression.  The evaluation pattern can be a unary procedure, an
 operator, or an algebraic expression with one free variable.
@@ -731,23 +791,23 @@ It is used with the syntax:
 \begin{verbatim}
    MAP(U:function,V:object)
 \end{verbatim}
-Here {\tt object} is a list, a matrix or an operator expression.
-{\tt Function} can be one of the following:
+Here \texttt{object} is a list, a matrix or an operator expression.
+\texttt{Function} can be one of the following:
 \begin{enumerate}
 \item the name of an operator for a single argument: the operator
-is evaluated once with each element of {\tt object} as its single argument;
+is evaluated once with each element of \texttt{object} as its single argument;
 \item an algebraic expression with exactly one free variable, that is
 a variable preceded by the tilde symbol. The expression
-is evaluated for each element of {\tt object}, where the element is
+is evaluated for each element of \texttt{object}, where the element is
 substituted for the free variable;
-\item a replacement rule of the form {\tt var => rep}
-where {\tt var} is a variable (a kernel without a subscript)
-and {\tt rep} is an expression that contains {\tt var}.
-{\tt Rep} is evaluated for each element of {\tt object} where
-the element is substituted for  {\tt var}. {\tt Var} may be
+\item a replacement rule of the form \texttt{var => rep}
+where \texttt{var} is a variable (a kernel without a subscript)
+and \texttt{rep} is an expression that contains \texttt{var}.
+\texttt{Rep} is evaluated for each element of \texttt{object} where
+the element is substituted for  \texttt{var}. \texttt{Var} may be
 optionally preceded by a tilde.
 \end{enumerate}
-The rule form  for {\tt function} is needed when more than
+The rule form  for \texttt{function} is needed when more than
 one free variable occurs.
 
 Examples:
@@ -768,15 +828,15 @@ Examples:
         map(~w*6, x^2/3 = y^3/2 -1) -> 2*X^2=3*(Y^3-2)
 \end{verbatim}
 
-You can use {\tt MAP} in nested expressions. However, you cannot
-apply {\tt MAP} to a non-composed object, e.g. an identifier or a number.
+You can use \texttt{MAP} in nested expressions. However, you cannot
+apply \texttt{MAP} to a non-composed object, e.g. an identifier or a number.
 
 
 \section{MKID Operator}\ttindex{MKID}
 \hypertarget{operator:MKID}{}
 In many applications, it is useful to create a set of identifiers for
 naming objects in a consistent manner. In most cases, it is sufficient to
-create such names from two components. The operator {\tt MKID} is provided
+create such names from two components. The operator \texttt{MKID} is provided
 for this purpose. Its syntax is:
 \begin{verbatim}
 MKID(U:id,V:id|non-negative integer):id
@@ -788,25 +848,26 @@ for example
 \end{verbatim}
 while {\tt mkid(a+b,2)} gives an error.
 
-The {\tt SET}\ttindex{SET} operator can be used to give a value to the
-identifiers created by {\tt MKID}, for example
+The \texttt{SET}\ttindex{SET} operator can be used to give a value to the
+identifiers created by \texttt{MKID}, for example
 \begin{verbatim}
         set(mkid(a,3),3);
 \end{verbatim}
-will give {\tt A3} the value 2.
+will give \var{A3} the value 2.
 
 \section{PF Operator}\ttindex{PF}
 \hypertarget{operator:PF}{}
 
-{\tt PF(<exp>,<var>)} transforms the expression {\tt <exp>} into a list of
-partial fractions with respect to the main variable, {\tt <var>}.  {\tt PF}
+\texttt{PF(\meta{exp},\meta{var})} transforms the expression \meta{exp} into
+a list of partial fractions with respect to the main variable, \meta{var}.
+\texttt{PF}
 does a complete partial fraction decomposition, and as the algorithms used
 are fairly unsophisticated (factorization and the extended Euclidean
 algorithm), the code may be unacceptably slow in complicated cases.
 
-{\it Example:}
-Given {\tt 2/((x+1)\verb|^|2*(x+2))} in the workspace,
-{\tt pf(ws,x);} gives the result
+\textit{Example:}
+Given \texttt{2/((x+1)\textasciicircum2*(x+2))} in the workspace,
+\texttt{pf(ws,x);} gives the result
 \begin{verbatim}
             2      - 2         2
         {-------,-------,--------------} .
@@ -814,9 +875,9 @@ Given {\tt 2/((x+1)\verb|^|2*(x+2))} in the workspace,
                           X  + 2*X + 1
 \end{verbatim}
 
-If you want the denominators in factored form, use {\tt off exp;}.
-Thus, with {\tt 2/((x+1)\verb|^|2*(x+2))} in the workspace, the commands
-{\tt off exp; pf(ws,x);} give the result
+If you want the denominators in factored form, use \texttt{off exp;}.
+Thus, with \texttt{2/((x+1)\textasciicircum2*(x+2))} in the workspace,
+the commands \texttt{off exp; pf(ws,x);} give the result
 \begin{verbatim}
             2      - 2       2
         {-------,-------,----------} .
@@ -824,9 +885,9 @@ Thus, with {\tt 2/((x+1)\verb|^|2*(x+2))} in the workspace, the commands
                           (X + 1)
 \end{verbatim}
 
-To recombine the terms, {\tt FOR EACH \ldots SUM} can be used.  So with
-the above list in the workspace, {\tt for each j in ws sum j;} returns the
-result
+To recombine the terms, \texttt{FOR EACH} \ldots{} \texttt{SUM} can be used.  
+So with the above list in the workspace, 
+\texttt{for each j in ws sum j;} returns the result
 \begin{verbatim}
              2
      ------------------
@@ -837,41 +898,42 @@ result
 Alternatively, one can use the operations on lists to extract any desired
 term.
 
+
 \section{SELECT Operator}\ttindex{SELECT}
 \hypertarget{operator:SELECT}{}
 \ttindex{map}\ttindex{list}
 
-The {\tt SELECT} operator extracts from a list,
+The \texttt{SELECT} operator extracts from a list,
 or from the arguments of an n--ary operator, elements corresponding
 to a boolean predicate. It is used with the syntax:
 \begin{verbatim}
   SELECT(U:function,V:list)
 \end{verbatim}
 
-{\tt Function} can be one of the following forms:
+\texttt{Function} can be one of the following forms:
 \begin{enumerate}
 \item the name of an operator for a single argument: the operator
-is evaluated once with each element of {\tt object} as its single argument;
+is evaluated once with each element of \texttt{object} as its single argument;
 \item an algebraic expression with exactly one free variable, that is
 a variable preceded by the tilde symbol. The expression
 is evaluated for each element of \meta{object}, where the element is
 substituted for the free variable;
-\item a replacement rule of the form \meta{var $=>$ rep}
-where {\tt var} is a variable (a kernel without subscript)
-and {\tt rep} is an expression that contains {\tt var}.
-{\tt Rep} is evaluated for each element of {\tt object} where
-the element is substituted for  {\tt var}. {\tt var} may be
+\item a replacement rule of the form \meta{var} \texttt{=>} \meta{rep}
+where \meta{var} is a variable (a kernel without subscript)
+and \meta{rep} is an expression that contains \meta{var}.
+\meta{rep} is evaluated for each element of \texttt{object} where
+the element is substituted for  \meta{var}. \meta{var} may be
 optionally preceded by a tilde.
 \end{enumerate}
-The rule form  for {\tt function} is needed when more than
+The rule form  for \texttt{function} is needed when more than
 one free variable occurs.
 
-The result of evaluating {\tt function} is
+The result of evaluating \texttt{function} is
 interpreted as a boolean value corresponding to the conventions of
 {\REDUCE}. These values are composed with the leading operator of the
 input expression.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         select( ~w>0 , {1,-1,2,-3,3}) -> {1,2,3}
         select(evenp deg(~w,y),part((x+y)^5,0):=list)

@@ -97,7 +97,7 @@ validity of the respective arguments during runtime.
 Author: Thomas Sturm.
 
 \section{ASSIST: Useful utilities for various applications} \ttindex{ASSIST}
-\label{ASSIST}
+\label{ASSIST}\hypertarget{ASSIST}{}
 
 ASSIST contains a large number of additional general purpose functions
 that allow a user to better adapt \REDUCE\ to various calculational
@@ -326,6 +326,7 @@ NOTE: The GNUPLOT package may not be included in all versions of REDUCE.
 Author: Herbert Melenk.
 
 \section{GROEBNER: A Gr\"obner basis package} \ttindex{GROEBNER}
+\label{GROEBNER}
 
 GROEBNER \ttindex{GROEBNER} is a package for the computation of Gr\"obner
 Bases using the Buchberger algorithm and related methods
@@ -596,6 +597,22 @@ Documentation for this package is in plain text.
 
 Author: Herbert Melenk.
 
+\input{reacteqn}
+
+
+\section{REDLOG: Extend \REDUCE{} to a computer logic system}
+\ttindex{REDLOG}
+
+The name REDLOG stand for REDuce LOGic system. Redlog implements
+symbolic algorithms on first-order formulas with respect to
+user-chosen first-order languages and theories. The available domains
+include real numbers, integers, complex numbers, p-adic numbers,
+quantified propositional calculus, term algebras.
+
+Documentation for this package can be found \href{http://redlog.eu/}{online}.
+
+Authors: Andreas Dolzmann and Thomas Sturm
+
 \section{RESET: Code to reset REDUCE to its initial state} \ttindex{RESET}
 
 This package defines a command RESETREDUCE that works through the
@@ -655,8 +672,8 @@ Author: Stanley L. Kameny.
 This package provides operators that compute the exact rational zeros
 of a single univariate polynomial using fast modular methods.  The
 algorithm used is that described by R. Loos (1983): Computing rational
-zeros of integral polynomials by $p$-adic expansion, {\it SIAM J.
-Computing}, {\bf 12}, 286--293.
+zeros of integral polynomials by $p$-adic expansion, \textit{SIAM J.
+Computing}, \textbf{12}, 286--293.
 
 Author: Francis J. Wright.
 

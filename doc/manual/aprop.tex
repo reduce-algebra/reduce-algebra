@@ -9,12 +9,12 @@ how to inform {\REDUCE} of such assumptions.
 \section{REALVALUED Declaration and Check}
 
 
-The declaration {\tt REALVALUED} \ttindex{REALVALUED} may be used 
+The declaration \texttt{REALVALUED}\ttindex{REALVALUED} may be used 
 to restrict variables to the real numbers. The syntax is:
 \begin{verbatim}
         realvalued v1,...vn;
 \end{verbatim}
-For such variables the operator {\tt IMPART} \ttindex{IMPART} gives 
+For such variables the operator \texttt{IMPART}\ttindex{IMPART} gives 
 the result zero. Thus, with
 \begin{verbatim}
         realvalued x,y;
@@ -36,12 +36,12 @@ real values. Example:
 Such declarations are not needed for the standard elementary functions.
         
 To remove the propery from a variable or an operator use the declaration
-{\tt NOREALVALUED} \ttindex{NOREALVALUED} with the syntax:
+\texttt{NOREALVALUED}\ttindex{NOREALVALUED} with the syntax:
 \begin{verbatim}
         norealvalued v1,...vn;
 \end{verbatim}
 
-The boolean operator {\tt REALVALUEDP} \ttindex{REALVALUEDP}
+The boolean operator \texttt{REALVALUEDP}\ttindex{REALVALUEDP}
 allows you to check if a variable, an operator, or
 an operator expression is known as real valued.
 Thus, 
@@ -67,10 +67,10 @@ expressions test the impart for checking the value range:
 \section{Declaring Expressions Positive or Negative}
 
 Detailed knowlege about the sign of expressions allows {\REDUCE}
-to simplify expressions involving exponentials or {\tt ABS}\ttindex{ABS}.
+to simplify expressions involving exponentials or \texttt{ABS}\ttindex{ABS}.
 You can express assumptions about the 
-{\tt positivity}\ttindex{positivity} or {\tt netativity}\ttindex{negativity}
-of expressions by rules for the operator {\tt SIGN}\ttindex{SIGN}.
+\emph{positivity}\ttindex{positivity} or \emph{negativity}\ttindex{negativity}
+of expressions by rules for the operator \texttt{SIGN}\ttindex{SIGN}.
 Examples:
 \begin{verbatim}
          abs(a*b*c);
@@ -89,7 +89,7 @@ Examples:
 
             x - 1
 \end{verbatim}
-Here factors with known sign are factored out of an {\tt ABS} expression.
+Here factors with known sign are factored out of an \texttt{ABS} expression.
 \begin{verbatim}
          on precise; on factor; 
 

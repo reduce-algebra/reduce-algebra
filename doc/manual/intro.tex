@@ -97,11 +97,11 @@ variable, such as
 \begin{verbatim}
      u := (x+y+z)^2;
 \end{verbatim}
-If we now use {\tt U} in later calculations, the value of the right-hand
+If we now use \var{U} in later calculations, the value of the right-hand
 side of the above will be used.
 
 The results of a given calculation are also saved in the variable
-{\tt WS}\ttindex{WS} (for WorkSpace), so this can be used in the next
+\var{WS}\ttindex{WS} (for WorkSpace), so this can be used in the next
 calculation for further processing.
 
 For example, the expression
@@ -109,24 +109,24 @@ For example, the expression
      df(ws,x);
 \end{verbatim}
 following the previous evaluation will calculate the derivative of
-{\tt (x+y+z)\verb|^|2} with respect to {\tt X}. Alternatively,
+\texttt{(x+y+z)\textasciicircum2} with respect to \var{X}. Alternatively,
 \begin{verbatim}
      int(ws,y);
 \end{verbatim}
-would calculate the integral of the same expression with respect to y.
+would calculate the integral of the same expression with respect to \var{y}.
 
 {\REDUCE} is also capable of handling symbolic matrices. For example,
 \begin{verbatim}
      matrix m(2,2);
 \end{verbatim}
-declares m to be a two by two matrix, and
+declares \var{m} to be a two by two matrix, and
 \begin{verbatim}
      m := mat((a,b),(c,d));
 \end{verbatim}
-gives its elements values.  Expressions that include {\tt M} and make
-algebraic sense may now be evaluated, such as {\tt 1/m} to give the
-inverse, {\tt 2*m - u*m\verb|^|2} to give us another matrix and {\tt det(m)}
-to give us the determinant of {\tt M}.
+gives its elements values.  Expressions that include \var{M} and make
+algebraic sense may now be evaluated, such as \texttt{1/m} to give the
+inverse, \texttt{2*m - u*m\textasciicircum2} to give us another matrix
+and \texttt{det(m)} to give us the determinant of \var{M}.
 
 {\REDUCE} has a wide range of substitution capabilities. The system knows
 about elementary functions, but does not automatically invoke many of their
@@ -139,7 +139,7 @@ user wants this, he can say, for example:
                cos(~x)*sin(~y) = (sin(x+y)-sin(x-y))/2,
                sin(~x)*sin(~y) = (cos(x-y)-cos(x+y))/2;
 \end{verbatim}
-where the tilde in front of the variables {\tt X} and {\tt Y} indicates
+where the tilde in front of the variables \var{X} and \var{Y} indicates
 that the rules apply for all values of those variables.
 The result of this calculation is
 \begin{verbatim}

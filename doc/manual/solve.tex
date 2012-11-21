@@ -6,33 +6,36 @@ equations. It is used with the syntax:
   SOLVE(EXPRN:algebraic[,VAR:kernel|,VARLIST:list of kernels])
          :list.
 \end{verbatim}
-{\tt EXPRN} is of the form {\tt <expression>} or
-\{ {\tt <expression1>},{\tt <expression2>}, \dots \}.  Each expression is an
+\texttt{EXPRN} is of the form \meta{expression} or
+\texttt{\{} \meta{expression1},\meta{expression2}, \dots \texttt{\}}.  
+Each expression is an
 algebraic equation, or is the difference of the two sides of the equation.
 The second argument is either a kernel or a list of kernels representing
 the unknowns in the system.  This argument may be omitted if the number of
 distinct, non-constant, top-level kernels equals the number of unknowns,
 in which case these kernels are presumed to be the unknowns.
 
-For one equation, {\tt SOLVE}\ttindex{SOLVE} recursively uses
+For one equation, \texttt{SOLVE}\ttindex{SOLVE} recursively uses
 factorization and decomposition, together with the known inverses of
-{\tt LOG}, {\tt SIN}, {\tt COS}, {\tt \verb|^|}, {\tt ACOS}, {\tt ASIN}, and
+\texttt{LOG}, \texttt{SIN}, \texttt{COS}, \texttt{\textasciicircum}, 
+\texttt{ACOS}, \texttt{ASIN}, and
 linear, quadratic, cubic, quartic, or binomial factors. Solutions
 of equations built with exponentials or logarithms are often
-expressed in terms of Lambert's {\tt W} function.\index{Lambert's W}
+expressed in terms of Lambert's \texttt{W} function.\index{Lambert's W}
 This function is (partially) implemented in the special functions package.
 
 \hypertarget{switch:CRAMER}{}
 Linear equations are solved by the multi-step elimination method due to
-Bareiss, unless the switch {\tt CRAMER}\ttindex{CRAMER} is on, in which
+Bareiss, unless the switch \sw{CRAMER}\ttindex{CRAMER} is on, in which
 case Cramer's method is used.  The Bareiss method is usually more
 efficient unless the system is large and dense.
 
-Non-linear equations are solved using the Groebner basis package.
-\index{Groebner} Users should note that this can be quite a
-time consuming process.
+Non-linear equations are solved using the Groebner basis 
+package\index{Groebner}\extendedmanual{ (chapter~\ref{GROEBNER})}. 
+Users should note that this 
+can be quite a time consuming process.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
             solve(log(sin(x+3))^5 = 8,x);
             solve(a*log(sin(x+3))^5 - b, sin(x+3));
@@ -40,12 +43,12 @@ time consuming process.
 \end{verbatim}
 
 \hypertarget{operator:ROOT_OF}{}
-{\tt SOLVE} returns a list of solutions.  If there is one unknown, each
+\texttt{SOLVE} returns a list of solutions.  If there is one unknown, each
 solution is an equation for the unknown.  If a complete solution was
 found, the unknown will appear by itself on the left-hand side of the
 equation.  On the other hand, if the solve package could not find a
 solution, the ``solution'' will be an equation for the unknown in terms
-of the operator {\tt ROOT\_OF}\ttindex{ROOT\_OF}. If there
+of the operator \texttt{ROOT\_OF}\ttindex{ROOT\_OF}. If there
 are several unknowns, each solution will be a list of equations for the
 unknowns.  For example,
 \begin{verbatim}
@@ -59,10 +62,10 @@ unknowns.  For example,
 \end{verbatim}
 \hypertarget{reserved:ROOT_MULTIPLICITIES}{}
 The TAG argument is used to uniquely identify those particular solutions.
-Solution multiplicities are stored in the global variable {\tt
-ROOT\_MULTIPLICITIES} rather than the solution list.  The value of this
+Solution multiplicities are stored in the global variable 
+\var{ROOT\_MULTIPLICITIES} rather than the solution list.  The value of this
 variable is a list of the multiplicities of the solutions for the last
-call of {\tt SOLVE}. \ttindex{SOLVE} For example,
+call of \texttt{SOLVE}. \ttindex{SOLVE} For example,
 \begin{verbatim}
        solve(x^2=2x-1,x); root_multiplicities;
 \end{verbatim}
@@ -75,7 +78,7 @@ gives the results
 
 \hypertarget{switch:MULTIPLICITIES}{}
 If you want the multiplicities explicitly displayed, the switch
-{\tt MULTIPLICITIES}\ttindex{MULTIPLICITIES} can be turned on. For example
+\sw{MULTIPLICITIES}\ttindex{MULTIPLICITIES} can be turned on. For example
 \begin{verbatim}
         on multiplicities; solve(x^2=2x-1,x);
 \end{verbatim}
@@ -85,9 +88,9 @@ yields the result
 \end{verbatim}
 
 \subsection{Handling of Undetermined Solutions}
-When {\tt SOLVE} cannot find a solution to an equation, it normally
+When \texttt{SOLVE} cannot find a solution to an equation, it normally
 returns an equation for the relevant indeterminates in terms of the
-operator {\tt ROOT\_OF}.\ttindex{ROOT\_OF}  For example, the expression
+operator \texttt{ROOT\_OF}.\ttindex{ROOT\_OF}  For example, the expression
 \begin{verbatim}
         solve(cos(x) + log(x),x);
 \end{verbatim}
@@ -98,14 +101,14 @@ returns the result
 
 \hypertarget{operator:ONE_OF}{}
 \hypertarget{operator:EXPAND_CASES}{}
-An expression with a top-level {\tt ROOT\_OF} operator is implicitly a
+An expression with a top-level \texttt{ROOT\_OF} operator is implicitly a
 list with an unknown number of elements (since we don't always know how
 many solutions an equation has).  If a substitution is made into such an
 expression, closed form solutions can emerge.  If this occurs, the {\tt
-ROOT\_OF} construct is replaced by an operator {\tt ONE\_OF}.\ttindex{ONE\_OF}
+ROOT\_OF} construct is replaced by an operator \texttt{ONE\_OF}.\ttindex{ONE\_OF}
 At this point it is of course possible to transform the result of the
-original {\tt SOLVE} operator expression into a standard {\tt SOLVE}
-solution.  To effect this, the operator {\tt EXPAND\_CASES}
+original \texttt{SOLVE} operator expression into a standard \texttt{SOLVE}
+solution.  To effect this, the operator \texttt{EXPAND\_CASES}
 \ttindex{EXPAND\_CASES} can be used.
 
 The following example shows the use of these facilities:
@@ -128,13 +131,13 @@ expand_cases ws;
 \hypertarget{switch:TRIGFORM}{}
 
 Since roots of cubics and quartics can often be very messy, a switch
-{\tt FULLROOTS}\ttindex{FULLROOTS} is available, that, when off (the
+\sw{FULLROOTS}\ttindex{FULLROOTS} is available, that, when off (the
 default), will prevent the production of a result in closed form.  The
-{\tt ROOT\_OF} construct will be used in this case instead.
+\texttt{ROOT\_OF} construct will be used in this case instead.
 
 In constructing the solutions of cubics and quartics, trigonometrical
 forms are used where appropriate.  This option is under the control of a
-switch {\tt TRIGFORM},\ttindex{TRIGFORM} which is normally on.
+switch \sw{TRIGFORM},\ttindex{TRIGFORM} which is normally on.
 
 The following example illustrates the use of these facilities:
 \begin{verbatim}
@@ -225,19 +228,19 @@ xx;
 \hypertarget{operator:ARBCOMPLEX}{}
 \hypertarget{operator:ARBINT}{}
 %\hypertarget{operator:ARBREAL}{}
-If {\tt SOLVESINGULAR}\ttindex{SOLVESINGULAR} is on (the default setting),
-degenerate systems such as {\tt x+y=0}, {\tt 2x+2y=0} will be solved by
+If \sw{SOLVESINGULAR}\ttindex{SOLVESINGULAR} is on (the default setting),
+degenerate systems such as \texttt{x+y=0}, \texttt{2x+2y=0} will be solved by
 introducing appropriate arbitrary constants.
 The consistent singular equation 0=0 or equations involving functions with
 multiple inverses may introduce unique new indeterminant kernels
-{\tt ARBCOMPLEX(j)}, or {\tt ARBINT(j)}, ($j$=1,2,...),  % {\tt ARBREAL(j)},
+\texttt{ARBCOMPLEX(j)}, or \texttt{ARBINT(j)}, ($j$=1,2,...),  % \texttt{ARBREAL(j)},
 representing arbitrary complex or integer numbers respectively.  To
-automatically select the principal branches, do {\tt off allbranch;} .
-\ttindex{ALLBRANCH} To avoid the introduction of new indeterminant kernels
-do {\tt OFF ARBVARS}\ttindex{ARBVARS} -- then no equations are generated for the free
+automatically select the principal branches, do \texttt{off allbranch;} .
+\sw{ALLBRANCH} To avoid the introduction of new indeterminant kernels
+do \texttt{OFF ARBVARS}\ttindex{ARBVARS} -- then no equations are generated for the free
 variables and their original names are used to express the solution forms.
 To suppress solutions of consistent singular equations do
-{\tt OFF SOLVESINGULAR}.
+\texttt{OFF SOLVESINGULAR}.
 
 To incorporate additional inverse functions do, for example:
 \begin{verbatim}
@@ -249,20 +252,20 @@ together with any desired simplification rules such as
         for all x let sinh(asinh(x))=x, asinh(sinh(x))=x;
 \end{verbatim}
 For completeness, functions with non-unique inverses should be treated as
-{\tt \verb|^|}, {\tt SIN}, and {\tt COS} are in the {\tt SOLVE}
+\texttt{\textasciicircum}, \texttt{SIN}, and \texttt{COS} are in the \texttt{SOLVE}
 \ttindex{SOLVE} module source.
 
-Arguments of {\tt ASIN} and {\tt ACOS} are not checked to ensure that the
+Arguments of \texttt{ASIN} and \texttt{ACOS} are not checked to ensure that the
 absolute value of the real part does not exceed 1; and arguments of
-{\tt LOG} are not checked to  ensure that the absolute value of the imaginary
+\texttt{LOG} are not checked to  ensure that the absolute value of the imaginary
 part does not exceed $\pi$; but checks (perhaps involving user response
 for non-numerical arguments) could be introduced using
-{\tt LET}\ttindex{LET} statements for these operators.
+\texttt{LET}\ttindex{LET} statements for these operators.
 
 \subsection{Parameters and Variable Dependency}
 
 The proper design of a variable sequence
-supplied as a second argument to {\tt SOLVE} is important
+supplied as a second argument to \texttt{SOLVE} is important
 for the structure of the solution of an equation system.
 Any unknown in the system
 not in this list is considered totally free. E.g.\  the call
@@ -272,7 +275,7 @@ not in this list is considered totally free. E.g.\  the call
 produces an empty list as a result because there is no function
 $z=z(x,y)$ which fulfills both equations for arbitrary $x$ and $y$ values.
 \hypertarget{reserved:requirements}{}
-In such a case the share variable {\tt requirements}\ttindex{requirements}
+In such a case the share variable \var{REQUIREMENTS}\ttindex{REQUIREMENTS}
 displays a set of restrictions for the parameters of the system:
 \begin{verbatim}
     requirements;
@@ -300,7 +303,7 @@ while $solve(\{x^2=a,x^2=b,y^2=c,y^2=d\},\{x,y\}$ leads to $\{a-b\}$.
 }
 The  set shows you also the dependency among the parameters: here
 one of $x$ and $y$ is free and a formal solution of the system can be
-computed by adding it to the variable list of {\tt solve}. 
+computed by adding it to the variable list of \texttt{solve}. 
 The requirement set is not unique -- there may be other such sets.
 
 
@@ -314,7 +317,7 @@ A system  with parameters may have a formal solution, e.g.\
 \end{verbatim}
 which is not valid for all possible values of the parameters.
 \hypertarget{reserved:assumptions}{}
-The variable {\tt assumptions}\ttindex{assumptions} contains then a list of
+The variable \var{ASSUMPTIONS}\ttindex{ASSUMPTIONS} contains then a list of
 restrictions: the solutions are valid only as long
 as none of these expressions vanishes. Any zero of one of them
 represents a special case that is not covered by the
@@ -329,9 +332,9 @@ parameter value makes the system singular. The set of assumptions
 is complete for both, linear and non--linear systems.
     
 \hypertarget{switch:VAROPT}{}
-{\tt SOLVE} rearranges the variable sequence
+\texttt{SOLVE} rearranges the variable sequence
 to reduce the (expected) computing time. This behavior is controlled
-by the switch {\tt VAROPT}\ttindex{VAROPT}, which is on by default.
+by the switch \sw{VAROPT}\ttindex{VAROPT}, which is on by default.
 If it is turned off, the supplied variable sequence is used
 or the system kernel ordering is taken if the variable
 list is omitted. The effect is demonstrated by an example:
@@ -359,18 +362,17 @@ list is omitted. The effect is demonstrated by an example:
                   3
 
 \end{verbatim}
-In the first case, {\tt solve} forms the solution as a set of
+In the first case, \texttt{solve} forms the solution as a set of
 pairs $(y_i,x(y_i))$ because the degree of $x$ is higher -- 
 such a rearrangement makes the internal computation of the Gr\"obner basis
 generally faster. For the second case the explicitly given variable sequence
 is used such that the solution has now the form $(x_i,y(x_i))$.
 Controlling the variable sequence is especially important if
 the system has one or more free variables.
-As an alternative to turning off {\tt varopt}, a partial dependency among
-the variables can be declared using the {\tt depend}\ttindex{DEPEND}
-statement: {\tt solve} then rearranges the variable sequence but keeps any
+As an alternative to turning off \sw{varopt}, a partial dependency among
+the variables can be declared using the \texttt{depend}\ttindex{DEPEND}
+statement: \texttt{solve} then rearranges the variable sequence but keeps any
 variable ahead of those on which it depends.
-\extendedmanual{\newpage}
 \begin{verbatim}
    on varopt;
    s:={a^3+b,b^2+c}$
@@ -389,6 +391,6 @@ variable ahead of those on which it depends.
            3
      b= - a }}
 \end{verbatim}
-Here {\tt solve} is forced to put $c$ after $a$ and after $b$, but
+Here \texttt{solve} is forced to put $c$ after $a$ and after $b$, but
 there is no obstacle to interchanging $a$ and $b$.
 

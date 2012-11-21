@@ -5,6 +5,8 @@
 
 \usepackage{makeidx}
 \usepackage{times}
+\usepackage{amsmath}
+
 %\usepackage{cmbright}
 %\usepackage{charter}
 %\renewcommand{\rmdefault}{uaq}
@@ -72,7 +74,28 @@
                           \index{#1@\texttt{#1}}}}
 \newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
 % \meta{...} is an alternative sentential form in descriptions using \it.
-\newcommand{\meta}[1]{\mbox{$\langle$\it#1\/$\rangle$}}
+\newcommand{\meta}[1]{\mbox{$\langle$\textit{#1}$\rangle$}}
+% More commands for Backups-Naur form
+\newcommand{\bnfprod}{\models}
+\newcommand{\bnfalt}{\,\mid\,}
+\begingroup
+  \catcode`\|=\active
+  \catcode`\<=\active
+  \catcode`\[=\active
+  \global\let|=\bnfalt
+  \global\def<#1>{\meta{#1}}
+  \global\def[#1]{\left[#1\right]}
+
+\endgroup
+\newenvironment{syntax}{%
+    \quote\math\displaystyle
+    \catcode`\|=\active
+}{\endmath\endquote}
+
+\newenvironment{syntaxtable}{
+    \syntax
+    \begin{array}{lcl}%
+}{\end{array}\endsyntax}
 
 % Will print out a heading in bold, and then indent the following text.
 \def\indented{\list{}{
@@ -104,6 +127,9 @@
 
 % \f is a function name. Just do this as tt.
 \newcommand{\f}[1] {\terminalfont{#1}}
+
+% \var is a variable name.
+\newcommand{\var}[1] {\terminalfont{#1}}
 
 % \sw is a switch.
 \newcommand{\sw}[1] {\terminalfont{#1}}
@@ -146,19 +172,21 @@
 \include{statemnt}
 \include{command}
 \include{oper}
-\include{solve}
-\include{oper2}
+\input{solve}
+\input{oper2}
 \include{structr}
 \include{polyrat}
+\include{aprop}
 \include{subst}
 \include{io}
 \include{inter}
 \include{matrix}
 \include{proc}
+\input{rememb}
 \include{user}
 \include{symbolic}
-\include{rlisp88}
-\include{rlispref}
+\input{rlisp88}
+\input{rlispref}
 \include{hephys}
 \include{util}
 \include{maintain}

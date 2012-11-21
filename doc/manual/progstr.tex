@@ -12,16 +12,17 @@ which in turn are sequences of basic characters.
 \index{Character set}The basic characters which are used to build
 {\REDUCE} symbols are the following:
 \begin{enumerate}
-\item The 26 letters {\tt a} through {\tt z}
-\item The 10 decimal digits {\tt 0} through {\tt 9}
-\item The special characters \_\_ ! " \$ \% ' ( ) * + , - . / : ; $<$ $>$
-      = \{ \} $<$blank$>$
+\item The 26 letters \texttt{a} through \texttt{z}
+\item The 10 decimal digits \texttt{0} through \texttt{9}
+\item The special characters \texttt{\frenchspacing{}
+      \textunderscore{} ! " \textdollar{}
+      \% ' ( ) * + , - . / : ; < > = \{ \}} \meta{blank}
 \end{enumerate}
 With the exception of strings and characters preceded by an
 exclamation mark\index{Exclamation mark}, the case
 of characters is ignored: depending of the underlying LISP
 they will all be converted internally into lower case or
-upper case: {\tt ALPHA}, {\tt Alpha} and {\tt alpha}
+upper case: \texttt{ALPHA}, \texttt{Alpha} and \texttt{alpha}
 represent the same symbol.  Most implementations allow you to switch
 this conversion off. The operating instructions for a particular
 implementation should be consulted on this point. For portability, we
@@ -40,7 +41,7 @@ permitted as exact arithmetic is used in most implementations. (You should
 however check the specific instructions for your particular system
 implementation to make sure that this is true.) For example, if you ask
 for the value of $2^{2000}$ you get it
-displayed as a number of 603 decimal digits, taking up nine lines of
+displayed as a number of 603 decimal digits, taking up several lines of
 output on an interactive display.  It should be borne in mind of course
 that computations with such long numbers can be quite slow.
 
@@ -49,38 +50,38 @@ two integers, in lowest terms: that is, as rational numbers.
 
 In essentially all versions of {\REDUCE} it is also possible (but not always
 desirable!) to ask {\REDUCE} to work with floating point approximations to
-numbers again, to any precision. Such numbers are called {\em real}.
+numbers again, to any precision. Such numbers are called \emph{real}.
 \index{Real}  They can be input in two ways:
 \begin{enumerate}
 \item as a signed or unsigned sequence of any number of decimal digits
       with an embedded or trailing decimal point.
 \item as in 1. followed by a decimal exponent which is written as the
-      letter {\tt E} followed by a signed or unsigned integer.
+      letter \texttt{E} followed by a signed or unsigned integer.
 \end{enumerate}
-e.g. {\tt 32. +32.0 0.32E2} and {\tt 320.E-1} are all representations of
+e.g. \texttt{32. +32.0 0.32E2} and \texttt{320.E-1} are all representations of
 32.
 
-The declaration {\tt SCIENTIFIC\_NOTATION}\ttindex{SCIENTIFIC\_NOTATION}
+The declaration \texttt{SCIENTIFIC\_NOTATION}\ttindex{SCIENTIFIC\_NOTATION}
 controls the output format of floating point numbers.  At
 the default settings, any number with five or less digits before the
-decimal point is printed in a fixed-point notation, e.g., {\tt 12345.6}.
+decimal point is printed in a fixed-point notation, e.g., \texttt{12345.6}.
 Numbers with more than five digits are printed in scientific notation,
-e.g., {\tt 1.234567E+5}.  Similarly, by default, any number with eleven or
+e.g., \texttt{1.234567E+5}.  Similarly, by default, any number with eleven or
 more zeros after the decimal point is printed in scientific notation.  To
-change these defaults, {\tt SCIENTIFIC\_NOTATION} can be used in one of two
-ways. {\tt SCIENTIFIC\_NOTATION} {\em m};, where {\em m\/} is a positive
-integer, sets the printing format so that a number with more than {\em m\/}
+change these defaults, \texttt{SCIENTIFIC\_NOTATION} can be used in one of two
+ways. \texttt{SCIENTIFIC\_NOTATION} \emph{m};, where \emph{m} is a positive
+integer, sets the printing format so that a number with more than \emph{m}
 digits before the decimal point, or {\em m\/} or more zeros after the
-decimal point, is printed in scientific notation. {\tt SCIENTIFIC\_NOTATION}
-\{{\em m,n}\}, with {\em m\/} and {\em n\/} both positive integers, sets the
-format so that a number with more than {\em m\/} digits before the decimal
-point, or {\em n\/} or more zeros after the decimal point is printed in
+decimal point, is printed in scientific notation. \texttt{SCIENTIFIC\_NOTATION}
+\{\emph{m,n}\}, with \emph{m} and \emph{n} both positive integers, sets the
+format so that a number with more than \emph{m} digits before the decimal
+point, or \emph{n} or more zeros after the decimal point is printed in
 scientific notation.
 
-{\it CAUTION:}  The unsigned part of any number\index{Number} may {\em not\/}
-begin with a decimal point, as this causes confusion with the {\tt CONS} (.)
-operator, i.e., NOT ALLOWED: {\tt .5  -.23  +.12};
-use {\tt 0.5 -0.23 +0.12} instead.
+\textit{CAUTION:}  The unsigned part of any number\index{Number} may \emph{not}
+begin with a decimal point, as this causes confusion with the \texttt{CONS} (.)
+operator, i.e., \emph{NOT ALLOWED}: \texttt{.5  -.23  +.12};
+use \texttt{0.5 -0.23 +0.12} instead.
 
 \section{Identifiers}
 
@@ -89,7 +90,8 @@ alphanumeric characters (i.e. alphabetic letters or decimal
 digits) the first of which must be alphabetic.  The maximum number of
 characters allowed is implementation dependent, although twenty-four is
 permitted in most implementations.  In addition, the underscore character
-(\_) is considered a letter if it is {\it within} an identifier.  For example,
+(\texttt{\_}) is considered a letter if it is \emph{within} an identifier.
+For example,
 \begin{verbatim}
         a az p1 q23p  a_very_long_variable
 \end{verbatim}
@@ -100,21 +102,22 @@ are all identifiers, whereas
 is not.
 
 A sequence of alphanumeric characters in which the first is a digit is
-interpreted as a product.  For example, {\tt 2ab3c} is interpreted as
-{\tt 2*ab3c}.  There is one exception to this:  If the first letter after a
-digit is {\tt E}, the system will try to interpret that part of the
+interpreted as a product.  For example, \texttt{2ab3c} is interpreted as
+\texttt{2*ab3c}.  There is one exception to this:  If the first letter after a
+digit is \texttt{E}, the system will try to interpret that part of the
 sequence as a real number\index{Real}, which may fail in some cases.  For
-example, {\tt 2E12} is the real number $2.0*10^{12}$, {\tt 2e3c} is
-2000.0*C, and {\tt 2ebc} gives an error.
+example, \texttt{2E12} is the real number $2.0*10^{12}$, \texttt{2e3c} is
+2000.0*C, and \texttt{2ebc} gives an error.
 
-Special characters, such as $-$, *, and blank, may be used in identifiers
+Special characters, such as \texttt{-}, \texttt{*}, and blank, may be
+used in identifiers
 too, even as the first character, but each must be preceded by an
 exclamation mark in input.  For example:
 \begin{verbatim}
         light!-years    d!*!*n         good! morning
         !$sign          !5goldrings
 \end{verbatim}
-{\it CAUTION:} Many system identifiers have such special characters in their
+\textit{CAUTION:} Many system identifiers have such special characters in their
 names (especially * and =). If the user accidentally picks the name of one
 of them for his own purposes it may have catastrophic consequences for his
 {\REDUCE} run.  Users are therefore advised to avoid such names.
@@ -134,7 +137,7 @@ possible in some versions of {\REDUCE}).
 
 Every variable\index{Variable} is named by an identifier, and is given a
 specific type.  The type is of no concern to the ordinary user.  Most
-variables are allowed to have the default type, called {\em scalar}.
+variables are allowed to have the default type, called \emph{scalar}.
 These can receive, as values, the representation of any ordinary algebraic
 expression.  In the absence of such a value, they stand for themselves.
 
@@ -151,46 +154,47 @@ Several variables\index{Reserved variable} in {\REDUCE} have particular
 properties which should not be changed by the user.  These variables
 include:
 
-\begin{list}{}{\renewcommand{\makelabel}[1]{{\tt#1}\hspace{\fill}}%
-               \settowidth{\labelwidth}{\tt INFINITY}%
+\begin{list}{}{\renewcommand{\makelabel}[1]{\texttt{#1}\hspace{\fill}}%
+               \settowidth{\labelwidth}{\texttt{INFINITY}}%
                \setlength{\labelsep}{1em}%
-               \settowidth{\leftmargin}{\tt INFINITY\hspace*{\labelsep}}}
+               \settowidth{\leftmargin}{\texttt{INFINITY\hspace*{\labelsep}}}}
 \item[E] Intended to represent the base of
 \ttindex{E}
-the natural logarithms.  {\tt log(e)}, if it occurs in an expression, is
-automatically replaced by 1.  If {\tt ROUNDED}\ttindex{ROUNDED} is
-on, {\tt E} is replaced by the value of E to the current degree of
+the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
+automatically replaced by 1.  If \sw{ROUNDED}\ttindex{ROUNDED} is
+on, \texttt{E} is replaced by the value of E to the current degree of
 floating point precision\index{Numerical precision}.
 
 \item[I] Intended to represent the square
 \ttindex{I}
-root of $-1$. {\tt i\verb|^|2} is replaced by $-1$, and appropriately for higher
-powers of {\tt I}.  This applies only to the symbol {\tt I} used on the top
+root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
+appropriately for higher powers of \texttt{I}.  This applies only to the
+symbol \texttt{I} used on the top
 level, not as a formal parameter in a procedure, a local variable, nor in
-the context {\tt for i:= ...}
+the context \texttt{for i:= ...}
 
 \item[INFINITY] Intended to represent $\infty$
 \ttindex{INFINITY}
 in limit and power series calculations for example.  Note however that the
-current system does {\em not\/} do proper arithmetic on $\infty$.  For example,
-{\tt infinity + infinity} is {\tt 2*infinity}.
+current system does \emph{not} do proper arithmetic on $\infty$.  For example,
+\texttt{infinity + infinity} is \texttt{2*infinity}.
 
 \item[NIL] In {\REDUCE} (algebraic mode only)
-taken as a synonym for zero.  Therefore {\tt NIL} cannot be used as a
+taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a
 variable.
 
 \item[PI] Intended to represent the circular
 \ttindex{PI}
-constant.  With {\tt ROUNDED} on, it is replaced by the value of $\pi$ to
+constant.  With \sw{ROUNDED} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
 
 \item[T] Must not be used as a formal
 \ttindex{T}
 parameter or local variable in procedures, since conflict arises with the
-symbolic mode meaning of T as {\em true}.
+symbolic mode meaning of T as \emph{true}.
 \end{list}
 
-Other reserved variables, such as {\tt LOW\_POW}, described in other sections,
+Other reserved variables, such as \texttt{LOW\_POW}, described in other sections,
 are listed in Appendix A.
 
 Using these reserved variables\index{Reserved variable} inappropriately
@@ -199,7 +203,7 @@ will lead to errors.
 There are also internal variables used by {\REDUCE} that have similar
 restrictions. These usually have an asterisk in their names, so it is
 unlikely a casual user would use one. An example of such a variable is
-{\tt K!*} used in the asymptotic command package.
+\texttt{K!*} used in the asymptotic command package.
 
 Certain words are reserved in {\REDUCE}. They may only be used in the manner
 intended. A list of these is given in the section ``Reserved Identifiers''.
@@ -209,7 +213,7 @@ deleting the names he doesn't think he is likely to use by mistake.
 
 \section{Strings}
 
-Strings\index{String} are used in {\tt WRITE} statements, in other
+Strings\index{String} are used in \texttt{WRITE} statements, in other
 output statements (such as error messages), and to name files.  A string
 consists of any number of characters enclosed in double quotes.  For example:
 \begin{verbatim}
@@ -217,9 +221,10 @@ consists of any number of characters enclosed in double quotes.  For example:
 \end{verbatim}
 Lower case characters within a string are not converted to upper case.
 
-The string {\tt ""} represents the empty string.  A double quote may be
+The string \texttt{""} represents the empty string.  A double quote may be
 included in a string by preceding it by another double quote.  Thus
-{\tt "a""b"} is the string {\tt a"b}, and {\tt """"} is the string {\tt "}.
+\texttt{"a""b"} is the string \texttt{a"b}, and \texttt{""""} is the string
+consisting of the single character \texttt{"}.
 
 \hypertarget{comments}{\section{Comments}}
 
@@ -228,17 +233,17 @@ convenience of human readers, in such a way that {\REDUCE} pays no
 attention to it.  There are two ways to do this:
 
 \begin{enumerate}
-\item Everything from the word {\tt COMMENT}\ttindex{COMMENT} to the next
+\item Everything from the word \texttt{COMMENT}\ttindex{COMMENT} to the next
 statement terminator, normally ; or \$, is ignored.  Such comments
-can be placed anywhere a blank could properly appear. (Note that {\tt END}
-and $>>$ are {\em not\/} treated as {\tt COMMENT} delimiters!)
+can be placed anywhere a blank could properly appear. (Note that \texttt{END}
+and \texttt{>>} are \emph{not} treated as \texttt{COMMENT} delimiters!)
 
-\item Everything from the symbol {\tt \%}\index{Percent sign} to the end
+\item Everything from the symbol \texttt{\%}\index{Percent sign} to the end
 of the line on which it appears is ignored.  Such comments can be placed
 as the last part of any line.  Statement terminators have no special
-meaning in such comments.  Remember to put a semicolon before the {\tt \%}
+meaning in such comments.  Remember to put a semicolon before the \texttt{\%}
 if the earlier part of the line is intended to be so terminated.  Remember
-also to begin each line of a multi-line {\tt \%} comment with a {\tt \%}
+also to begin each line of a multi-line \texttt{\%} comment with a \texttt{\%}
 sign.
 \end{enumerate}
 
@@ -248,25 +253,25 @@ sign.
 Operators\index{Operator} in {\REDUCE} are specified by name and type.
 There are two types, infix\index{Infix operator} and prefix.
 \index{Prefix operator}  Operators can be purely abstract, just symbols
-with no properties; they can have values assigned (using {\tt :=} or
-simple {\tt LET} declarations) for specific arguments; they can have
+with no properties; they can have values assigned (using \texttt{:=} or
+simple \texttt{LET} declarations) for specific arguments; they can have
 properties declared for some collection of arguments (using more general
-{\tt LET} declarations); or they can be fully defined (usually by a
+\texttt{LET} declarations); or they can be fully defined (usually by a
 procedure declaration).
 
 Infix operators\index{Infix operator} have a definite precedence with
 respect to one another, and normally occur between their arguments.
 For example:
 \begin{quote}
-\begin{tabbing}
-{\tt a + b - c} \hspace{1.5in} \= (spaces optional) \\
-{\tt x<y and y=z} \> (spaces required where shown)
-\end{tabbing}
+\begin{tabular}{p{4cm}l}
+\texttt{a + b - c} & (spaces optional) \\
+\texttt{x<y and y=z} & (spaces required where shown)
+\end{tabular}
 \end{quote}
 Spaces can be freely inserted between operators and variables or operators
 and operators. They are required only where operator names are spelled out
-with letters (such as the {\tt AND} in the example) and must be unambiguously
-separated from another such or from a variable (like {\tt Y}). Wherever one
+with letters (such as the \texttt{AND} in the example) and must be unambiguously
+separated from another such or from a variable (like \texttt{Y}). Wherever one
 space can be used, so can any larger number.
 
 Prefix operators occur to the left of their arguments, which are written as
@@ -284,30 +289,30 @@ operator\index{Operator} name) if the operator is unary and the argument
 is a single symbol or begins with a prefix operator name:
 
 \begin{quote}
-\begin{tabbing}
-{\tt cos y} \hspace{1.75in} \= means cos(y) \\
-{\tt cos (-y)} \> -- parentheses necessary \\
-{\tt log cos y} \>   means log(cos(y)) \\
-{\tt log cos (a+b)} \> means log(cos(a+b))
-\end{tabbing}
+\begin{tabular}{p{4cm}l}
+\texttt{cos y} & means cos(y) \\
+\texttt{cos (-y)} & -- parentheses necessary \\
+\texttt{log cos y} &   means log(cos(y)) \\
+\texttt{log cos (a+b)} & means log(cos(a+b))
+\end{tabular}
 \end{quote}
 but
 \begin{quote}
-\begin{tabbing}
-{\tt cos a*b} \hspace{1.6in} \= means (cos a)*b \\
-{\tt cos -y}  \> is erroneous (treated as a variable \\
-\> ``cos'' minus the variable y)
-\end{tabbing}
+\begin{tabular}{p{4cm}l}
+\texttt{cos a*b} & means (cos a)*b \\
+\texttt{cos -y}  & is erroneous (treated as a variable \\
+&``\var{cos}'' minus the variable \var{y})
+\end{tabular}
 \end{quote}
 A unary prefix operator\index{Prefix operator} has a precedence
 \index{Operator precedence} higher than any infix operator, including
 unary infix operators. \index{Infix operator}
-In other words, {\REDUCE} will always interpret {\tt cos~y + 3} as
-{\tt (cos~y) + 3} rather than as {\tt cos(y + 3)}.
+In other words, {\REDUCE} will always interpret \texttt{cos~y + 3} as
+\texttt{(cos~y) + 3} rather than as \texttt{cos(y + 3)}.
 
 Infix operators may also be used in a prefix format on input, e.g.,
-{\tt +(a,b,c)}.  On output, however, such expressions will always be
-printed in infix form (i.e., {\tt a + b + c} for this example).
+\texttt{+(a,b,c)}.  On output, however, such expressions will always be
+printed in infix form (i.e., \texttt{a + b + c} for this example).
 
 A number of prefix operators are built into the system with predefined
 properties. Users may also add new operators and define their rules for
@@ -332,26 +337,34 @@ simplification. The built in operators are described in another section.
 
 The following infix operators\index{Infix operator} are built into the
 system.  They are all defined internally as procedures.
-\begin{verbatim}
-<infix operator>::= where|:=|or|and|member|memq|=|neq|eq|
-                    >=|>|<=|<|+|-|*|/|^|**|.
-\end{verbatim}
+\begin{syntaxtable}
+\meta{infix operator} &\bnfprod & \texttt{where}|\texttt{:=}|\texttt{or}|\texttt{and}|
+                                 \texttt{member}|\texttt{memq}|\\
+                        &       & \texttt{=}|\texttt{neq}|\texttt{eq}|
+                                 \texttt{>=}|\texttt{>}|\texttt{<=}|\texttt{<}|\\
+         &  &         \texttt{+}|
+                     \texttt{-}|\texttt{*}|\texttt{/}|\texttt{\textasciicircum}|
+                     \texttt{**}|\texttt{.}
+\end{syntaxtable}
 These operators may be further divided into the following subclasses:
-\begin{verbatim}
-   <assignment operator>   ::= :=
-   <logical operator>      ::= or|and|member|memq
-   <relational operator>   ::= =|neq|eq|>=|>|<=|<
-   <substitution operator> ::= where
-   <arithmetic operator>   ::= +|-|*|/|^|**
-   <construction operator> ::= .
-\end{verbatim}
-{\tt MEMQ} and {\tt EQ} are not used in the algebraic mode of
+\begin{syntaxtable}
+   \meta{assignment operator}   &\bnfprod & \texttt{:=} \\
+   \meta{logical operator}      &\bnfprod & \texttt{or}|\texttt{and}|\texttt{member}|
+                                           \texttt{memq} \\
+   \meta{relational operator}   &\bnfprod & \texttt{=}|\texttt{neq}|\texttt{eq}|
+                                           \texttt{>=}|\texttt{>}|\texttt{<=}|\texttt{<}\\
+   \meta{substitution operator} &\bnfprod & \texttt{where} \\
+   \meta{arithmetic operator}   &\bnfprod & \texttt{+}|\texttt{-}|\texttt{*}|\texttt{/}|
+                                           \texttt{\textasciicircum}|\texttt{**} \\
+   \meta{construction operator} &\bnfprod & \texttt{.}
+\end{syntaxtable}
+\texttt{MEMQ} and \texttt{EQ} are not used in the algebraic mode of
 {\REDUCE}.  They are explained in the section on symbolic mode.
-{\tt WHERE} is described in the section on substitutions.
+\texttt{WHERE} is described in the section on substitutions.
 
-In previous versions of {\REDUCE}, {\em not} was also defined as an infix
+In previous versions of {\REDUCE}, \emph{not} was also defined as an infix
 operator.  In the present version it is a regular prefix operator, and
-interchangeable with {\em null}.
+interchangeable with \emph{null}.
 
 For compatibility with the intermediate language used by {\REDUCE}, each
 special character infix operator\index{Infix operator} has an alternative
@@ -359,44 +372,46 @@ alphanumeric identifier associated with it.  These identifiers may be used
 interchangeably with the corresponding special character names on input.
 This correspondence is as follows:
 \begin{quote}
-\begin{tabbing}
-{\tt :=      setq} \hspace{0.5in} \= (the assignment operator) \\
-{\tt =       equal} \\
-{\tt >=      geq} \\
-{\tt >       greaterp} \\
-{\tt <=      leq} \\
-{\tt <       lessp} \\
-{\tt +       plus} \\
-{\tt -       difference} \> (if unary, {\tt minus}) \\
-{\tt *       times} \\
-{\tt /       quotient} \> (if unary, {\tt recip}) \\
-{\tt \verb|^| or ** expt} \> (raising to a power) \\
-{\tt .       cons}
-\end{tabbing}
+\begin{tabular}{l@{\hspace{0.4in}}l@{\hspace{0,5in}}l}
+\texttt{:=} & \texttt{setq} & (the assignment operator) \\
+\texttt{=} & \texttt{equal} \\
+\texttt{>=} & \texttt{geq} \\
+\texttt{>} & \texttt{greaterp} \\
+\texttt{<=} & \texttt{leq} \\
+\texttt{<} & \texttt{lessp} \\
+\texttt{+} & \texttt{plus} \\
+\texttt{-} & \texttt{difference}  &  (if unary, \texttt{minus}) \\
+\texttt{*} & \texttt{times} \\
+\texttt{/} & \texttt{quotient}  &  (if unary, \texttt{recip}) \\
+\texttt{\textasciicircum{} or **} & \texttt{expt}  &  (raising to a power) \\
+\texttt{.} & \texttt{cons}
+\end{tabular}
 \end{quote}
-Note: {\tt NEQ} is used to mean {\em not equal}.  There is no special
+Note: \texttt{NEQ} is used to mean \emph{not equal}.  There is no special
 symbol provided for it.
 
-The above operators\index{Operator} are binary, except {\tt NOT} which is
-unary and {\tt +} and {\tt *} which are nary (i.e., taking an arbitrary
-number of arguments).  In addition, {\tt -} and {\tt /} may be used as
+The above operators\index{Operator} are binary, except \texttt{NOT} which is
+unary and \texttt{+} and \texttt{*} which are nary (i.e., taking an arbitrary
+number of arguments).  In addition, \texttt{-} and \texttt{/} may be used as
 unary operators, e.g., /2 means the same as 1/2.  Any other operator is
-parsed as a binary operator using a left association rule.  Thus {\tt
-a/b/c} is interpreted as {\tt (a/b)/c}.  There are two exceptions to this
-rule: {\tt :=} and {\tt .} are right associative.  Example: {\tt a:=b:=c}
-is interpreted as {\tt a:=(b:=c)}.  Unlike ALGOL and PASCAL, {\tt \verb|^|} is
-left associative.  In other words, {\tt a\verb|^|b\verb|^|c} is interpreted as
-{\tt (a\verb|^|b)\verb|^|c}.
+parsed as a binary operator using a left association rule.  Thus
+\texttt{a/b/c} is interpreted as \texttt{(a/b)/c}.  There are two
+exceptions to this rule: \texttt{:=} and \texttt{.} are right associative.  
+Example: \texttt{a:=b:=c} is interpreted as \texttt{a:=(b:=c)}.  
+Unlike ALGOL and PASCAL, \texttt{\textasciicircum} is
+left associative.  In other words, 
+\texttt{a\textasciicircum b\textasciicircum c} is interpreted as
+\texttt{(a\textasciicircum b)\textasciicircum c}.
 
-The operators\index{Operator} {\tt $<$}, {\tt $<$=}, {\tt $>$}, {\tt $>$=}
+The operators\index{Operator} \texttt{<}, \texttt{<=}, \texttt{>}, \texttt{>=}
 can only be used for making comparisons between numbers.  No meaning is
 currently assigned to this kind of comparison between general expressions.
 
 Parentheses may be used to specify the order of combination.  If
 parentheses are omitted then this order is by the ordering of the
 precedence list\index{Operator precedence} defined by the right-hand side
-of the {\tt <infix operator>}\index{Infix operator} table
+of the \meta{infix operator}\index{Infix operator} table
 at the beginning of this section,
-from lowest to highest.  In other words, {\tt WHERE} has the lowest
-precedence, and {\tt .} (the dot operator) the highest.
+from lowest to highest.  In other words, \texttt{WHERE} has the lowest
+precedence, and \texttt{.} (the dot operator) the highest.
 

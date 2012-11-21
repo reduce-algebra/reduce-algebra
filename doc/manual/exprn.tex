@@ -6,19 +6,20 @@ and commas.  The most common types are as follows:
 
 \section{Scalar Expressions}
 
-\index{Scalar}Using the arithmetic operations {\tt + - * / \verb|^|}
+\index{Scalar}Using the arithmetic operations \texttt{+ - * / \textasciicircum}
 (power) and parentheses, scalar expressions are composed from numbers,
 ordinary ``scalar'' variables (identifiers), array names with subscripts,
 operator or procedure names with arguments and statement expressions.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         x
         x^3 - 2*y/(2*z^2 - df(x,z))
         (p^2 + m^2)^(1/2)*log (y/m)
         a(5) + b(i,q)
 \end{verbatim}
-The symbol ** may be used as an alternative to the caret symbol (\verb+^+)
+The symbol \texttt{**} may be used as an alternative to the caret symbol
+(\texttt{\textasciicircum})
 for forming powers, particularly in those systems that do not support a
 caret symbol.
 
@@ -50,7 +51,7 @@ method, the default method is used.  The default evaluation of an
 expression involves expansion of the expression and collection of like
 terms, ordering of the terms, evaluation of derivatives and other
 functions and substitution for any expressions which have values assigned
-or declared (see assignments and {\tt LET} statements).  In many cases,
+or declared (see assignments and \texttt{LET} statements).  In many cases,
 this is all that the user needs.
 
 The declarations by which the user can exercise some control over the way
@@ -58,7 +59,7 @@ in which the evaluation is performed are explained in other sections.  For
 example, if a real (floating point) number is encountered during
 evaluation, the system will normally convert it into a ratio of two
 integers.  If the user wants to use real arithmetic, he can effect this by
-the command {\tt on rounded;}.\ttindex{ROUNDED} Other modes for
+the command \texttt{on rounded;}.\ttindex{ROUNDED} Other modes for
 coefficient arithmetic are described elsewhere.
 
 If an illegal action occurs during evaluation (such as division by zero)
@@ -71,7 +72,7 @@ appropriate error message is generated.
 \index{Integer}These are expressions which, because of the values of the
 constants and variables in them, evaluate to whole numbers.
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         2,      37 * 999,       (x + 3)^2 - x^2 - 6*x
 \end{verbatim}
@@ -79,7 +80,7 @@ are obviously integer expressions.
 \begin{verbatim}
         j + k - 2 * j^2
 \end{verbatim}
-is an integer expression when {\tt J} and {\tt K} have values that are
+is an integer expression when \texttt{J} and \texttt{K} have values that are
 integers, or if not integers are such that ``the variables and fractions
 cancel out'', as in
 \begin{verbatim}
@@ -90,18 +91,18 @@ cancel out'', as in
 \label{sec-boolean}
 A boolean expression\index{Boolean} returns a truth value.  In the
 algebraic mode of {\REDUCE}, boolean expressions have the syntactical form:
-\begin{verbatim}
-        <expression> <relational operator> <expression>
-\end{verbatim}
+\begin{syntax}
+        \meta{expression} \meta{relational operator} \meta{expression}
+\end{syntax}
 or
-\begin{verbatim}
-        <boolean operator> (<arguments>)
-\end{verbatim}
+\begin{syntax}
+        \meta{boolean operator} \texttt{(}\meta{arguments}\texttt{)}
+\end{syntax}
 or
-\begin{verbatim}
-        <boolean expression> <logical operator>
-        <boolean expression>.
-\end{verbatim}
+\begin{syntax}
+        \meta{boolean expression} \meta{logical operator}
+        \meta{boolean expression}.
+\end{syntax}
 Parentheses can also be used to control the precedence of expressions.
 
 \hypertarget{operator:EVENP}{}
@@ -117,27 +118,27 @@ infix operators, the following boolean operators are also defined:\\
 \ttindex{ORDP}\ttindex{PRIMEP}
 {\renewcommand{\arraystretch}{2}
 \begin{tabular}{lp{\redboxwidth}}
-{\tt EVENP(U)} & determines if the number {\tt U} is even or not; \\
+\texttt{EVENP(U)} & determines if the number \texttt{U} is even or not; \\
 
-{\tt FIXP(U)} & determines if the expression {\tt U} is integer or not; \\
+\texttt{FIXP(U)} & determines if the expression \texttt{U} is integer or not; \\
 
-{\tt FREEOF(U,V)} & determines if the expression
-{\tt U} does not contain the kernel {\tt V} anywhere in its
+\texttt{FREEOF(U,V)} & determines if the expression
+\texttt{U} does not contain the kernel \texttt{V} anywhere in its
 structure; \\
 
-{\tt NUMBERP(U)} & determines if {\tt U} is a number or not; \\
+\texttt{NUMBERP(U)} & determines if \texttt{U} is a number or not; \\
 
-{\tt ORDP(U,V)} & determines if {\tt U} is ordered
-ahead of {\tt V} by some canonical ordering (based on the expression structure
+\texttt{ORDP(U,V)} & determines if \texttt{U} is ordered
+ahead of \texttt{V} by some canonical ordering (based on the expression structure
 and an internal ordering of identifiers); \\
 
-{\tt PRIMEP(U)} & true if {\tt U} is a prime object, i.e., any object
+\texttt{PRIMEP(U)} & true if \texttt{U} is a prime object, i.e., any object
 other than 0 and plus or minus 1 which is only exactly divisible
 by itself or a unit.
  \\
 \end{tabular}}
 
-{\it Examples:}
+\textit{Examples:}
 \begin{verbatim}
         j<1
         x>0  or  x=-2
@@ -145,72 +146,70 @@ by itself or a unit.
         fixp x and evenp x
         numberp x and x neq 0
 \end{verbatim}
-Boolean expressions can only appear directly within {\tt IF}, {\tt FOR},
-{\tt WHILE}, and {\tt UNTIL} statements, as described in other sections.
+Boolean expressions can only appear directly within \texttt{IF}, \texttt{FOR},
+\texttt{WHILE}, and \texttt{UNTIL} statements, as described in other sections.
 Such expressions cannot be used in place of ordinary algebraic expressions,
 or assigned to a variable.
 
 NB:  For those familiar with symbolic mode, the meaning of some of
-these operators is different in that mode.  For example, {\tt NUMBERP} is
+these operators is different in that mode.  For example, \texttt{NUMBERP} is
 true only for integers and reals in symbolic mode.
 
 \hypertarget{operator:AND}{}
-When two or more boolean expressions are combined with {\tt AND}, they are
-evaluated one by one until a {\em false\/} expression is found. The rest are
+When two or more boolean expressions are combined with \texttt{AND}, they are
+evaluated one by one until a \emph{false} expression is found. The rest are
 not evaluated. Thus
 \begin{verbatim}
         numberp x and numberp y and x>y
 \end{verbatim}
-does not attempt to make the {\tt x>y} comparison unless {\tt X} and {\tt Y}
+does not attempt to make the \texttt{x>y} comparison unless \texttt{X} and \texttt{Y}
 are both verified to be numbers.
 
 \hypertarget{operator:OR}{}
 Similarly, evaluation of a sequence of boolean expressions connected by
-{\tt OR} stops as soon as a {\em true\/} expression is found.
+\texttt{OR} stops as soon as a \emph{true} expression is found.
 
 NB:  In a boolean expression, and in a place where a boolean expression is
-expected, the algebraic value 0 is interpreted as {\em false}, while all
-other algebraic values are converted to {\em true}.  So in algebraic mode
+expected, the algebraic value 0 is interpreted as \emph{false}, while all
+other algebraic values are converted to \emph{true}.  So in algebraic mode
 a procedure can be written for direct usage in boolean expressions,
 returning say 1 or 0 as its value as in
 
 \begin{verbatim}
-        procedure polynomialp(u,x);
-           if den(u)=1 and deg(u,x)>=1 then 1 else 0;
+   procedure polynomialp(u,x);
+      if den(u)=1 and deg(u,x)>=1 then 1 else 0;
 \end{verbatim}
 
 One can then use this in a boolean construct, such as
 \begin{verbatim}
-        if polynomialp(q,z) and not polynomialp(q,y) then ...
+   if polynomialp(q,z) and not polynomialp(q,y) then ...
 \end{verbatim}
 
 In addition, any procedure that does not have a defined return value
-(for example, a block without a {\tt RETURN} statement in it)
-has the boolean value {\em false}. 
+(for example, a block without a \texttt{RETURN} statement in it)
+has the boolean value \emph{false}. 
 
 \section{Equations}
 
 Equations\index{Equation} are a particular type of expression with the syntax
-
-\begin{verbatim}
-        <expression> = <expression>.
-\end{verbatim}
-
+\begin{syntax}
+      \meta{expression} \texttt{=} \meta{expression}.
+\end{syntax}
 In addition to their role as boolean expressions, they can also be used as
-arguments to several operators (e.g., {\tt SOLVE}), and can be
+arguments to several operators (e.g., \texttt{SOLVE}), and can be
 returned as values.
 
 \hypertarget{switch:EVALLHSEQP}{}
 Under normal circumstances, the right-hand-side of the equation is
 evaluated but not the left-hand-side.  This also applies to any substitutions
-made by the {\tt SUB}\ttindex{SUB} operator.  If both sides are to be
-evaluated, the switch {\tt EVALLHSEQP}\ttindex{EVALLHSEQP} should be
+made by the \texttt{SUB}\ttindex{SUB} operator.  If both sides are to be
+evaluated, the switch \sw{EVALLHSEQP}\ttindex{EVALLHSEQP} should be
 turned on.
 
 \hypertarget{operator:LHS}{}
 \hypertarget{operator:RHS}{}
-To facilitate the handling of equations, two selectors, {\tt LHS}
-\ttindex{LHS} and {\tt RHS},\ttindex{RHS} which return the left- and
+To facilitate the handling of equations, two selectors, \texttt{LHS}
+\ttindex{LHS} and \texttt{RHS},\ttindex{RHS} which return the left- and
 right-hand sides of a equation\index{Equation} respectively, are provided.
 For example,
 \begin{verbatim}
@@ -228,12 +227,12 @@ statement itself has a value, namely the value assigned.  So
 \begin{verbatim}
         2 * (x := a+b)
 \end{verbatim}
-is equal to {\tt 2*(a+b)}, as well as having the ``side-effect''\index{Side
-effect} of assigning the value {\tt a+b} to {\tt X}.  In context,
+is equal to \texttt{2*(a+b)}, as well as having the ``side-effect''\index{Side
+effect} of assigning the value \texttt{a+b} to \texttt{X}.  In context,
 \begin{verbatim}
         y := 2 * (x := a+b);
 \end{verbatim}
-sets {\tt X} to {\tt a+b} and {\tt Y} to {\tt 2*(a+b)}.
+sets \texttt{X} to \texttt{a+b} and \texttt{Y} to \texttt{2*(a+b)}.
 
 The sections on the various proper statement\index{Proper statement} types
 indicate which of these statements are also useful as expressions.
