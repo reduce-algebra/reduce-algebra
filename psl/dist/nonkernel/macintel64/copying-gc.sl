@@ -311,11 +311,12 @@
 (de markandcopyfromid (x)
   % SymNam has to be copied before marking, since the mark destroys the tag
   % No problem since it's only a string, can't reference itself.
+ (unless (eq x 16#ffff) % deleted-slot-value
   (progn (copyitem (loc (symnam x)))
          (markid x)
          (copyitem (loc (symprp x)))
          (copyitem (loc (symget x)))
-         (copyitem (loc (symval x)))))
+         (copyitem (loc (symval x))))))
  
 (de copyfromallbases ()
  
