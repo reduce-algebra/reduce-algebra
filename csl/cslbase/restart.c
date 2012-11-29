@@ -4600,7 +4600,10 @@ static void cold_setup()
     gensym_ser = 1;
     print_precision = 6; /* I maybe prefer 15 but use 6 to agree with PSL */
     current_modulus = 1;
-    fastget_size = 32;
+/* a fastget entry of 0 means no fastget stuff present, and so in the 6-bit
+ * field I have the values 1-63 are available.
+ */
+    fastget_size = 63;
     package_bits = 0;
     modulus_is_large = 0;
     unset_var = nil;

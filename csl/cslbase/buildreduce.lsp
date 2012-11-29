@@ -587,7 +587,7 @@ in "$reduce/packages/support/remake.red"$
 
 global '(reduce_base_modules reduce_extra_modules
          reduce_test_cases reduce_regression_tests);
- 
+
 symbolic procedure get_configuration_data();
 % Read data from a configuration file that lists the modules that must
 % be processed.  NOTE that this and the next few funtions will ONLY
@@ -667,9 +667,9 @@ symbolic procedure build_reduce_modules names;
     if not getd 'original!-switch then <<
        w := getd 'switch;
        putd('original!-switch, car w, cdr w);
-       putd('switch, 'expr, 
-          '(lambda (x) 
-              (dolist (y x) (princ "+++ Declaring a switch: ") (print y)) 
+       putd('switch, 'expr,
+          '(lambda (x)
+              (dolist (y x) (princ "+++ Declaring a switch: ") (print y))
               (original!-switch x))) >>;
 !#endif
     package!-remake car names;
@@ -793,7 +793,7 @@ symbolic procedure test_a_package names;
                              cpulimit, % CPU time per test
                              conslimit,  % megaconses
                              10000,% allow ten megabytes of I/O
-                             -1);  % Do not limit Lisp-level errors at all 
+                             -1);  % Do not limit Lisp-level errors at all
        erfg!* := nil;
        terpri();
        princ "Tested on ";
@@ -859,74 +859,110 @@ symbolic procedure profile_a_package names;
     !*int := nil;
     packge := car names;
     verbos nil;
-    load!-package packge;
     get_configuration_data();
-    if get(packge,'folder) then packge := get(packge,'folder);
-    packge := concat("$reduce/packages/",
-                concat(packge,
-                  concat("/",
-                    concat(car names,".tst"))));
-    oll := linelength 80;
-    !*mode := 'algebraic;
-    window!-heading list!-to!-string append(explodec "[Profile] ",
-                                            explodec car names);
-    quitfn := getd 'quit;
-    remd 'quit;
-    putd('quit, 'expr, 'posn);
-    mapstore 4;  % reset counts;
-    !*errcont := t;
+    if not memq(packge, reduce_regression_tests) then <<
+       load!-package packge;
+       if get(packge,'folder) then packge := get(packge,'folder);
+       packge := concat("$reduce/packages/",
+                   concat(packge,
+                     concat("/",
+                       concat(car names,".tst"))));
+       oll := linelength 80;
+       !*mode := 'algebraic;
+       window!-heading list!-to!-string append(explodec "[Profile] ",
+                                               explodec car names);
+       quitfn := getd 'quit;
+       remd 'quit;
+       putd('quit, 'expr, 'posn);
+       mapstore 4;  % reset counts;
+       !*errcont := t;
 % I try hard to arrange that even if the test fails I can continue and that
 % input & output file selection is not messed up for me.
-    w := wrs nil;   w1 := rds nil;
-    wrs w;          rds w1;
-    rr := resource!-limit(list('errorset,
-                               mkquote list('in_list1, mkquote packge, t),
-                               nil, nil),
-                          cpulimit,
-                          conslimit,
-                          10000,% allow ten megabytes of I/O
-                          -1);  % Do not limit Lisp-level errors at all 
-    wrs w;          rds w1;
-    erfg!* := nil;
-    terpri();
-    putd('quit, car quitfn, cdr quitfn);
-    w := sort(mapstore 2, function profile_compare_fn);
-    w1 := nil;
-    while w do <<
-        w2 := get(caar w, '!*savedef);
+       w := wrs nil;   w1 := rds nil;
+       wrs w;          rds w1;
+       rr := resource!-limit(list('errorset,
+                                  mkquote list('in_list1, mkquote packge, t),
+                                  nil, nil),
+                             cpulimit,
+                             conslimit,
+                             10000,% allow ten megabytes of I/O
+                             -1);  % Do not limit Lisp-level errors at all
+       wrs w;          rds w1;
+       erfg!* := nil;
+       terpri();
+       putd('quit, car quitfn, cdr quitfn);
+       w := sort(mapstore 2, function profile_compare_fn);
+       begin
+          scalar oo;
+          oo := wrs open("buildlogs/flaguse.log", 'append);
+          bytecounts t;
+          close wrs oo;
+       end;
+       w1 := nil;
+       while w do <<
+           w2 := get(caar w, '!*savedef);
 %       if eqcar(w2, 'lambda) then <<
 %           princ "md60: "; print (caar w . cdr w2);
 %           princ "= "; print md60 (caar w . cdr w2) >>;
-        if eqcar(w2, 'lambda) then w1 := (caar w . md60 (caar w . cdr w2) .
-                                          cadar w . caddar w) . w1;
-        w := cdr w >>;
-    w := w1;
-    % I collect the top 350 functions as used by each test, not because all
-    % that many will be wanted but because I might as well record plenty
-    % of information here and discard unwanted parts later on.
-    for i := 1:349 do if w1 then w1 := cdr w1;
-    if w1 then rplacd(w1, nil);
-    % princ "MODULE "; prin car names; princ " suggests ";
-    % print for each z in w collect car z;
-    w1 := open("profile.dat", 'append);
-    w1 := wrs w1;
-    linelength 80;
-    if atom rr then printc "% +++++ Error: Resource limit exceeded";
-    princ "% @@@@@ Resources used: "; print !*resources!*;
-    princ "("; prin car names; terpri();
-    for each n in w do <<
-        princ "  ("; prin car n; princ " ";
-        if posn() > 30 then << terpri(); ttab 30 >>;
-        prin cadr n;
-        % I also display the counts just to help me debug & for interest.
-        princ " "; prin caddr n; princ " "; princ cdddr n;
-        printc ")" >>;
-    printc "  )";
-    terpri();
-    close wrs w1;
-    linelength oll;
+           if eqcar(w2, 'lambda) then w1 := (caar w . md60 (caar w . cdr w2) .
+                                             cadar w . caddar w) . w1;
+           w := cdr w >>;
+       w := w1;
+       % I collect the top 350 functions as used by each test, not because all
+       % that many will be wanted but because I might as well record plenty
+       % of information here and discard unwanted parts later on.
+       for i := 1:349 do if w1 then w1 := cdr w1;
+       if w1 then rplacd(w1, nil);
+       % princ "MODULE "; prin car names; princ " suggests ";
+       % print for each z in w collect car z;
+       w1 := open("profile.dat", 'append);
+       w1 := wrs w1;
+       linelength 80;
+       if atom rr then printc "% +++++ Error: Resource limit exceeded";
+       princ "% @@@@@ Resources used: "; print !*resources!*;
+       princ "("; prin car names; terpri();
+       for each n in w do <<
+           princ "  ("; prin car n; princ " ";
+           if posn() > 30 then << terpri(); ttab 30 >>;
+           prin cadr n;
+           % I also display the counts just to help me debug & for interest.
+           princ " "; prin caddr n; princ " "; princ cdddr n;
+           printc ")" >>;
+       printc "  )";
+       terpri();
+       close wrs w1;
+       linelength oll >>;
     names := cdr names;
     if null names then <<
+        w1 := open("buildlogs/flaguse.log", 'input);
+        w1 := rds w1;
+        w := nil;
+        while (w2 := read()) neq !$eof!$ do
+            w := sort(w2, 'orderp) . w;
+        close rds w1;
+        rr := '((symbol!-make!-fastget 'lose 1)
+                (symbol!-make!-fastget 'noncom 0));
+        oll := 2;
+        while w do <<
+           w1 := nil;
+           for each x in w do <<
+               if x and
+                  not flagp(cadar x, 'processed) and
+                  oll < 63 then <<
+                   rr :=
+                       list('symbol!-make!-fastget, mkquote cadar x, oll) . rr;
+                   flag(list cadar x, 'processed);
+                   oll := oll + 1 >>;
+               if cdr x then w1 := cdr x . w1 >>;
+           w := reverse w1 >>;
+        w := open("buildlogs/fastgets.lsp", 'output);
+        w := wrs w;
+        printc "% fastgets.lsp generated by profiling";
+        terpri();
+        prettyprint ('progn . reverse rr);
+        terpri();
+        printc "% end of fastgets.lsp";
+        close wrs w;
         printc "Profiling complete";
         window!-heading "Profiling complete";
         restart!-csl t >>
@@ -1182,7 +1218,7 @@ symbolic procedure file_compare(f1, f2, name);
 % But I will go further than that and give less weight to any test whose time
 % is under 1 second, so that the cut-off is gradual rather than abrupt.
           w := min(t1, t2);
-% This means that if w (the smaller time) = 200 then then 
+% This means that if w (the smaller time) = 200 then then
 % the test does not contribute to the average, while if w>=1000
 % it contributes fully.
           if w < 1000.0 then w := (w - 200.0)/800.0
@@ -1398,29 +1434,29 @@ symbolic procedure check_a_package;
 faslend;
 
 % faslout 'cslhelp;
-% 
+%
 % module cslhelp;
-% 
+%
 % global '(!*force);
-% 
+%
 % flag('(force),'switch);
 % flag('(on),'eval);
-% 
+%
 % on force;
-% 
+%
 % symbolic procedure formhelp(u,vars,mode);
 %    list('help, 'list . for each x in cdr u collect mkquote x);
-% 
+%
 % if member('help, lispsystem!*) then <<
 %    put('help, 'stat, 'rlis);
 %    flag('(help), 'go);
 %    put('help, 'formfn, 'formhelp) >>;
-% 
+%
 % off force;
 % remflag('(on),'eval);
-% 
+%
 % endmodule;
-% 
+%
 % faslend;
 
 
@@ -1474,7 +1510,7 @@ package!-remake2('remake,'support);
 for each y in oblist() do
   if flagp(y, 'switch) then <<
      princ "+++ Declaring a switch: ";
-     print y >>; 
+     print y >>;
 !#endif
 
 get_configuration_data();
@@ -1522,7 +1558,7 @@ symbolic restart!-csl nil;
 
 (load!-package 'mathpr)
 
-(cond 
+(cond
    ((modulep 'tmprint) (load!-package 'tmprint)))
 
 (load!-package 'entry)

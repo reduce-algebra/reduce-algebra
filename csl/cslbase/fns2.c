@@ -729,7 +729,10 @@ Lisp_Object Lsymbol_make_fastget1(Lisp_Object nil, Lisp_Object a)
  * as unnecessary, so I am commenting it out.
  */
 /*  term_printf("+++ Fastget size was %d, now %d\n", n1, n); */
-    fastget_size = n;
+/* Changing the fastget size on the fly seems to me to be a very bad idea
+ * now - so I will just ignore this call...
+ */
+/*  fastget_size = n; */
     return onevalue(fixnum_of_int(n1));
 }
 

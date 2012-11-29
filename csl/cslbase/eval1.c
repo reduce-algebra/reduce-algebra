@@ -2022,7 +2022,7 @@ Lisp_Object Lparallel(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 setup_type const eval1_setup[] =
 {
-    {"bytecounts",              wrong_no_na, wrong_no_nb, bytecounts},
+    {"bytecounts",              bytecounts1, wrong_no_nb, bytecounts},
 /*
  * PSL has a function idapply that is, as best I understand, just the
  * same as apply apart from the fact that it expects an identifier as

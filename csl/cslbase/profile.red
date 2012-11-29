@@ -20,6 +20,7 @@ load!-module 'remake;
 get_configuration_data();
 
 delete!-file "profile.dat";
+delete!-file "buildlogs/flaguse.log";
 
 profile_a_package reduce_test_cases;
 

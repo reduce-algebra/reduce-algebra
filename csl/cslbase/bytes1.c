@@ -49,6 +49,10 @@
  * indicators are most heavily used with PUT and GET.
  */
 
+#ifndef NO_BYTECOUNT
+#define RECORD_GET 1
+#endif
+
 void record_get(Lisp_Object tag, CSLbool found)
 {
 #ifdef RECORD_GET
@@ -281,6 +285,18 @@ static Lisp_Object remprop(Lisp_Object a, Lisp_Object b)
         if (pl == prevp) return aerror("looped up plist in remprop");
     }
     return nil;
+}
+
+Lisp_Object get_0(Lisp_Object a, int n)
+{
+    Lisp_Object w, nil = C_nil;
+    if (!symbolp(a)) return onevalue(nil);
+    {   if ((w = qfastgets(a)) == nil)
+            return onevalue(nil);
+        w = elt(w, n);
+        if (w == SPID_NOPROP) w = nil;
+        return onevalue(w);
+    }
 }
 
 #else /* in a COMMON world I have to use flat plists */
@@ -1007,17 +1023,17 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
     argcheck(nargs, 0, "bytecounts");
 #ifdef NO_BYTECOUNT
     i = 0;
-    trace_printf("bytecode statistics not available\n");
+    stdout_printf("bytecode statistics not available\n");
 #else
-    trace_printf("\nFrequencies of each bytecode (%ld total)", total);
+    stdout_printf("\nFrequencies of each bytecode (%ld total)", total);
     if (total == 0) total = 1;
     for (i=0; i<256; i++)
-    {   if ((i & 3) == 0) trace_printf("\n");
-        trace_printf("%-9.9s%7.4f  ",
+    {   if ((i & 3) == 0) stdout_printf("\n");
+        stdout_printf("%-9.9s%7.4f  ",
                  opnames[i],
                  100.0*(double)frequencies[i]/(double)total);
     }
-    trace_printf("\n");
+    stdout_printf("\n");
 #endif
 
 #ifdef RECORD_GET
@@ -1045,11 +1061,64 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(qcar(val)),
                         no  = int_of_fixnum(qcdr(val));
-        trace_printf("%7.2f %10d %10d  ", (double)(yes+2*no)/tot, yes+no, no);
+        stdout_printf("%7.2f %10d %10d  ", (double)(yes+2*no)/tot, yes+no, no);
         errexit();
-        loop_print_trace(key);
-        trace_printf("\n");
+        loop_print_stdout(key);
+        stdout_printf("\n");
     }
+
+    v = Lmkhash(nil, 3, fixnum_of_int(5), fixnum_of_int(0), nil);
+    errexit();
+    get_counts = v;
+#endif
+
+    return onevalue(nil);
+}
+
+Lisp_Object bytecounts1(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t i;
+#ifdef RECORD_GET
+    int32_t size;
+    Lisp_Object v;
+    double tot;
+#endif
+#ifdef NO_BYTECOUNT
+    i = 0;
+    stdout_printf("bytecode statistics not available\n");
+#endif
+
+#ifdef RECORD_GET
+    v = elt(get_counts, 4);
+    if (v == nil) return onevalue(nil);
+    
+    size = length_of_header(vechdr(v));
+    size = (size - CELL)/CELL;
+    tot = 0.0;
+    for (i=1; i<size; i+=2)
+    {   Lisp_Object key = elt(v, i), val = elt(v, i+1);
+        int32_t yes, no;
+        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        yes = no = 0;
+        if (consp(val)) yes = int_of_fixnum(qcar(val)),
+                        no  = int_of_fixnum(qcdr(val));
+        tot += (double)(yes+2*no);
+    }
+    tot /= 100.0;
+    stdout_printf("\n(\n");
+    for (i=1; i<size; i+=2)
+    {   Lisp_Object key = elt(v, i), val = elt(v, i+1);
+        int32_t yes, no;
+        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        yes = no = 0;
+        if (consp(val)) yes = int_of_fixnum(qcar(val)),
+                        no  = int_of_fixnum(qcdr(val));
+        stdout_printf("(%7.2f ", (double)(yes+2*no)/tot);
+        errexit();
+        loop_print_stdout(key);
+        stdout_printf(")\n");
+    }
+    stdout_printf("\n)\n");
 
     v = Lmkhash(nil, 3, fixnum_of_int(5), fixnum_of_int(0), nil);
     errexit();
