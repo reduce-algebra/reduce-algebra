@@ -205,6 +205,7 @@ class QtReduceController(QObject):
         return
 
     def renderResult(self,result):
+        traceLogger.debug("result=%s" % result)
         if result.strip("\\0123456789 ") == '':
             return result.replace('\\ ','\\\n')
         command = "qr_render(" + result.rstrip("$") + ");"
@@ -212,6 +213,7 @@ class QtReduceController(QObject):
         rendered = answer['pretext']
         if rendered:
             rendered = rendered.strip("\n")
+        traceLogger.debug("rendered=%s" % rendered)
         return rendered
 
     def rowsInsertedM(self,parent,start,end):

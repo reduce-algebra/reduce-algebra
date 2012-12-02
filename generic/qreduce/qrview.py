@@ -114,20 +114,33 @@ class QtReduceTextEdit(QTextEdit):
         self.setupFont()
         self.ensureCursorVisible()
 
-    def currentSizeChangedHandler(self,newSize):
+    def currentSizeChangedHandler(self,newSize,fullScreen):
         newSize = int(newSize)
         traceLogger.debug("newSize=%s (%s)" % (newSize,type(newSize)))
         QSettings().setValue("worksheet/fontsize",newSize)
-        self.setupFont(newSize)
+        if not fullScreen:
+            self.setupFont(newSize)
+
+    def currentSizeChangedHandlerFs(self,newSize,fullScreen):
+        newSize = int(newSize)
+        traceLogger.debug("newSize=%s (%s)" % (newSize,type(newSize)))
+        QSettings().setValue("worksheet/fontsizefs",newSize)
+        if fullScreen:
+            self.setupFont(newSize)
 
     def textChangedHandler(self):
         if self.insertingFrames:
             return
         self.modified.emit(True)
 
-    def zoomDef(self):
-        self.setupFont(int(QSettings().value("worksheet/fontsize",
-                                         QtReduceDefaults.FONTSIZE)))
+    def zoomDef(self,fullScreen):
+        if fullScreen:
+            fs = int(QSettings().value("worksheet/fontsizefs",
+                                       QtReduceDefaults.FONTSIZEFS))
+        else:
+            fs = int(QSettings().value("worksheet/fontsize",
+                                       QtReduceDefaults.FONTSIZE))
+        self.setupFont(fs)
 
     def zoomIn(self):
         currentSize = self.font().pointSize()
@@ -603,6 +616,7 @@ class QtReduceFrameView(QtReduceTextEdit):
         cursor = outputFrame.firstCursorPosition()
         cursor.setPosition(outputFrame.lastPosition(),QTextCursor.KeepAnchor)
         cursor.setBlockFormat(reduceBlockFormat.blockFormat)
+        traceLogger.warning("text=%s" % text)
         cursor.insertText(text.decode('utf-8'),reduceBlockFormat.charFormat)
 #        cursor.insertText(text,reduceBlockFormat.charFormat)
 

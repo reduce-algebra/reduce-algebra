@@ -55,6 +55,7 @@ class QtReduceDefaults(object):
     # Worksheet
     FONTFAMILY = "DejaVu Sans Mono"
     FONTSIZE = 12
+    FONTSIZEFS = 14
 
     # Reduce
     REDUCE = "../../bin/redpsl"

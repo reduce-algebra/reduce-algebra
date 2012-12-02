@@ -254,14 +254,14 @@ class QtReducePreferencesWorksheet(QWidget):
         self.fontCombo.setCurrentFont(self.parent().parent().controller.view.font())
 
         self.sizeCombo = QtReduceComboBox()
+        self.sizeComboFs = QtReduceComboBox()
         self.findSizes(self.fontCombo.currentFont())
         self.fontCombo.currentFontChanged.connect(self.findSizes)
 
-#        styleCombo = QtReduceComboBox()
-
         fontLayout = QFormLayout()
         fontLayout.addRow(self.tr("General Worksheet Font"),self.fontCombo)
-        fontLayout.addRow(self.tr("Size"),self.sizeCombo)
+        fontLayout.addRow(self.tr("Font Size"),self.sizeCombo)
+        fontLayout.addRow(self.tr("Full Screen Font Size"),self.sizeComboFs)
 
         fontGroup.setLayout(fontLayout)
 
@@ -273,23 +273,35 @@ class QtReducePreferencesWorksheet(QWidget):
     def findSizes(self,font):
         fontLogger.debug("font.key()=%s" % font.key())
         fontDatabase = QFontDatabase()
-        currentSize = unicode(QSettings().value("worksheet/fontsize",
-                                                QtReduceDefaults.FONTSIZE))
+
         self.sizeCombo.blockSignals(True)
         self.sizeCombo.clear()
+
+        self.sizeComboFs.blockSignals(True)
+        self.sizeComboFs.clear()
 
         styleStr = fontDatabase.styleString(font)
         if fontDatabase.isSmoothlyScalable(font.family(),styleStr):
             for size in QFontDatabase.standardSizes():
                 self.sizeCombo.addItem(str(size))
+                self.sizeComboFs.addItem(str(size))
         else:
             for size in fontDatabase.smoothSizes(font.family(),styleStr):
                 self.sizeCombo.addItem(str(size))
+                self.sizeComboFs.addItem(str(size))
 
         self.sizeCombo.blockSignals(False)
+        self.sizeComboFs.blockSignals(False)
 
+        currentSize = unicode(QSettings().value("worksheet/fontsize",
+                                                QtReduceDefaults.FONTSIZE))
         sizeIndex = self.sizeCombo.findText(currentSize)
         self.sizeCombo.setCurrentIndex(sizeIndex)
+
+        currentSize = unicode(QSettings().value("worksheet/fontsizefs",
+                                                QtReduceDefaults.FONTSIZEFS))
+        sizeIndex = self.sizeCombo.findText(currentSize)
+        self.sizeComboFs.setCurrentIndex(sizeIndex)
 
 
 class QtReducePreferencesComputation(QWidget):

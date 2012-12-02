@@ -124,6 +124,8 @@ class QtReduceMainWindow(QMainWindow):
     def closeEvent(self,ev):
         ok = self.__suggestSave()
         if ok:
+            if self.isFullScreen():
+                self.toggleFullScreen()
             del self.controller.model.reduce.reduce
             ev.accept()
         else:
@@ -135,7 +137,12 @@ class QtReduceMainWindow(QMainWindow):
         self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def currentSizeChangedHandler(self,size):
-        self.controller.view.currentSizeChangedHandler(size)
+        self.controller.view.currentSizeChangedHandler(size,
+                                                       self.isFullScreen())
+
+    def currentSizeChangedHandlerFs(self,size):
+        self.controller.view.currentSizeChangedHandlerFs(size,
+                                                         self.isFullScreen())
 
     def license_(self):
         lic = QTextEdit(self)
@@ -261,14 +268,30 @@ class QtReduceMainWindow(QMainWindow):
 
     def toggleFullScreen(self):
         self.setUnifiedTitleAndToolBarOnMac(False)
+        self.rawModelView.hide()
+        self.rawModelAct.setText('Show Raw Model')
         if self.isFullScreen():
             self.showNormal()
+            self.rawModelAct.setEnabled(True)
+            self.rawModelView.setWindowFlags(Qt.Drawer)
             self.addToolBar(Qt.TopToolBarArea,self.toolBar)
+            fs = QSettings().value("worksheet/fontsize",
+                                   QtReduceDefaults.FONTSIZE)
+            self.controller.view.setupFont(fs)
             self.fullScreenAct.setText("Enter Full Screen")
+            self.fullScreenAct.setShortcut(QKeySequence(Qt.ControlModifier|
+                                                        Qt.Key_F))
+            self.__setFullScreenIcons(False)
         else:
             self.showFullScreen()
+            self.rawModelAct.setEnabled(False)
             self.addToolBar(Qt.LeftToolBarArea,self.toolBar)
+            fs = QSettings().value("worksheet/fontsizefs",
+                                   QtReduceDefaults.FONTSIZEFS)
+            self.controller.view.setupFont(fs)
             self.fullScreenAct.setText("Exit Full Screen")
+            self.fullScreenAct.setShortcut(Qt.Key_Escape)
+            self.__setFullScreenIcons(True)
         self.setUnifiedTitleAndToolBarOnMac(True)
 
     def updateActionIcons(self):
@@ -293,16 +316,13 @@ class QtReduceMainWindow(QMainWindow):
             act.setIcon(QtReduceIconSets().icon(act))
 
     def zoomDef(self):
-        self.controller.view.zoomDef()
-        #self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
+        self.controller.view.zoomDef(self.isFullScreen())
 
     def zoomIn(self):
         self.controller.view.zoomIn()
-        #self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def zoomOut(self):
         self.controller.view.zoomOut()
-        #self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def __createActions(self):
         self.openAct = QAction(self.tr("Open ..."), self,
@@ -345,9 +365,9 @@ class QtReduceMainWindow(QMainWindow):
                                  triggered=self.zoomOut)
 
         self.fullScreenAct = QAction(self.tr("Enter Full Screen"), self,
-                                 triggered=self.toggleFullScreen)
-        # if os.uname()[0] == "Darwin":
-        #     self.fullScreenAct.setEnabled(False)
+                                     shortcut=QKeySequence(Qt.ControlModifier|
+                                                           Qt.Key_F),
+                                     triggered=self.toggleFullScreen)
 
         self.evalSelAct = QAction(self.tr("Evaluate Selection"), self,
                                enabled=False,
@@ -479,6 +499,9 @@ class QtReduceMainWindow(QMainWindow):
         self.preferencePane.worksheet.sizeCombo.currentIndexChanged.connect(
             self.currentSizeChangedHandler)
 
+        self.preferencePane.worksheet.sizeComboFs.currentIndexChanged.connect(
+            self.currentSizeChangedHandlerFs)
+
     def __createStatusBar(self):
         self.setStatusBar(QtReduceStatusBar(self))
         self.controller.startComputation.connect(
@@ -552,6 +575,20 @@ class QtReduceMainWindow(QMainWindow):
         if adaptHeight:
             factor = float(self.width())/float(oldWidth)
             self.resize(1,int(self.height()*factor))
+
+    def __setFullScreenIcons(self,on):
+        if on:
+            self.saveIconSize = QSettings().value("toolbar/iconsize",
+                                                  QtReduceDefaults.ICONSIZE)
+            QtReduceIconSets().iconSizeChanged("32")
+            self.updateActionIcons()
+            self.toolBar.iconSizeChanged("32")
+            self.preferencePane.toolBar.iconSizeCombo.setEnabled(False)
+        else:
+            QtReduceIconSets().iconSizeChanged(str(self.saveIconSize))
+            self.updateActionIcons()
+            self.toolBar.iconSizeChanged(str(self.saveIconSize))
+            self.preferencePane.toolBar.iconSizeCombo.setEnabled(True)
 
     def __setHeightByFont(self,n):
         height = n * QFontMetrics(self.controller.view.font()).height()

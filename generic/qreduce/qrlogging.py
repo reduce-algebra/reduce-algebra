@@ -45,4 +45,4 @@ fontLogger.setLevel(logging.WARNING)
 
 traceLogger = logging.getLogger("trc")
 traceLogger.addHandler(ch)
-traceLogger.setLevel(logging.WARNING)
+traceLogger.setLevel(logging.DEBUG)
