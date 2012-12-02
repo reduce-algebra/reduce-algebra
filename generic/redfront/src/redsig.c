@@ -88,14 +88,15 @@ void sig_killChild(void) {
 }
 
 RETSIGTYPE sig_sigInt(int arg) {
-  /* Only used for CSL */
   ssize_t ret; 
 
   deb_fprintf(stderr,"sig_sigInt(%d)\n",arg);
   kill(reduceProcessID,SIGINT);
-  sig_skipUntilString(ReduceToMe[0],CSL_SIGINT_MSG);
-  ret = write(MeToReduce[1],"a\n",2);
-  printf("\n");
+  if (dist == CSL) {
+    sig_skipUntilString(ReduceToMe[0],CSL_SIGINT_MSG);
+    ret = write(MeToReduce[1],"a\n",2);
+    printf("\n");
+  }
 }
 
 void sig_skipUntilString(int handle,const char string[]) {

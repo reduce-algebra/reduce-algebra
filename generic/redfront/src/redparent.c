@@ -94,12 +94,12 @@ void atoploop(void) {
 
   while (1) {
 
-    if (dist == PSL)
+    //    if (dist == PSL)
       signal(SIGINT,SIG_IGN);
 
     line = read_valid_line(der_prompt);
 
-    if (dist == PSL)
+    //    if (dist == PSL)
       signal(SIGINT,sig_sigInt);
 
     this_command = append_line(this_command,line);

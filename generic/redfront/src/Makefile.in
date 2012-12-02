@@ -48,6 +48,9 @@ all: redfront
 redfront: $(OBJ)
 	$(CC) $(LDFLAGS) -o redfront $(OBJ) $(LIBS)
 
+dredfront: $(OBJ)
+	$(CC) $(LDFLAGS) -o dredfront $(OBJ) $(LIBS)
+
 redfront.o: redfront.c redfront.h config.h
 redsig.o: redsig.c redfront.h config.h
 redstrings.o: redstrings.c redfront.h config.h
@@ -59,7 +62,10 @@ reddeb.o: redfront.h config.h
 clean:
 	-rm -f $(OBJ)
 
-veryclean: clean
+dclean:
+	-rm -f dredfront
+
+veryclean: clean dclean
 	-rm -f redfront
 
 distclean: veryclean

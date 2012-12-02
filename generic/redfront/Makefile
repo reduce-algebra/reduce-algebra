@@ -38,18 +38,22 @@ BUILD_LIBEDIT = $(BUILD)/libedit
 
 all: $(BUILD)/redfront/redfront
 
-$(BUILD)/redfront/redfront: $(BUILD)/libedit/include/editline/readline.h
+src/configure:
 	cd src; \
 	autoconf; \
 	autoheader
-	mkdir -p $(BUILD)/redfront
+
+$(BUILD)/redfront/redfront: $(BUILD)/libedit/include/editline/readline.h src/configure
+	mkdir -p $(BUILD)/redfront; \
 	cd $(BUILD)/redfront; \
 	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit) ; \
 	make
 
-$(BUILD)/libedit/include/editline/readline.h:
+$(LIBEDIT):
 	tar xvf ../../libedit/$(LIBEDIT_TGZ)
-	ln -sf $(LIBEDIT) libedit
+#ln -sf $(LIBEDIT) libedit
+
+$(BUILD)/libedit/include/editline/readline.h: $(LIBEDIT)
 	mkdir -p $(BUILD_LIBEDIT)
 	cd $(BUILD_LIBEDIT); \
 	../../$(LIBEDIT)/configure --prefix=$$(pwd) --disable-dependency-tracking; \
@@ -60,6 +64,24 @@ universal:  # EXPERIMENTAL - DO NOT USE!
 	cd universal/libedit; \
 	CFLAGS="-arch i386 -arch x86_64 -arch ppc" ../../libedit/configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	make install
+
+install-home-bin: install-home-bin-csl install-home-bin-psl
+
+install-home-bin-csl:
+	@if test ! -e ~/bin/rfcsl -a ! -h ~/bin/rfcsl; then \
+	   echo "Copying to ~/bin/rfcsl"; \
+	   cp $(BUILD)/redfront/redfront ~/bin/rfcsl; \
+	else \
+	   echo "File ~/bin/rfcsl already exists"; \
+	fi
+
+install-home-bin-psl:
+	@if test ! -e ~/bin/rfpsl -a ! -h ~/bin/rfpsl; then \
+	   echo "Copying to ~/bin/rfpsl"; \
+	   cp $(BUILD)/redfront/redfront ~/bin/rfpsl; \
+	else \
+	   echo "File ~/bin/rfpsl already exists"; \
+	fi
 
 install: install-csl install-psl
 

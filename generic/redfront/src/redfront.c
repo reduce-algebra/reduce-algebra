@@ -114,7 +114,8 @@ int main(int argc,char **argv,char **envp) {
 
 int det_dist(char *argv0) {
   char *fn,*bn;
-  int dist;
+  int dist = -1;
+  char d[1024] = "";
 
   fn = (char *)malloc((strlen(argv0)+1)*sizeof(char));
   strcpy(fn,argv0);
@@ -123,9 +124,17 @@ int det_dist(char *argv0) {
     dist = PSL;
   else if (strcmp(bn,"rfcsl") == 0)
     dist = CSL;
-  else
-    dist = PSL;
+  else {
+    printf("Select distribution [csl/psl] ");
+    scanf("%s",d);
+    if (strcmp(d,"csl") == 0)
+      dist = CSL;
+    else if (strcmp(d,"psl") == 0)
+      dist = PSL;
+  }
   free(fn);
+  if (dist == -1)
+    exit(-1);
   return dist;
 }
 
