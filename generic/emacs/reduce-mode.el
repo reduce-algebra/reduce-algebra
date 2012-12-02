@@ -2136,19 +2136,19 @@ passing on any prefix argument (in raw form)."
 	 ;; '(2 font-lock-function-name-face t) ; highlights within comments
 	 '(3 font-lock-function-name-face)
 	 )
-   '("\\(assert\\)\\s +\\([^:]*\\)"
+   '("\\(declare\\)\\s +\\([^:]*\\)"
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face))
-   '("assert\\s +[^(]*(\\([^)]*\\)"
+   '("declare\\s +[^(]*(\\([^)]*\\)"
      (1 font-lock-type-face))
-   (list (concat "assert\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
+   (list (concat "declare\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
 	 '(1 font-lock-type-face))
-   (list (concat "\\(typedef\\)\\s *\\("
+   (list (concat "\\(struct\\)\\s *\\("
 		 reduce-identifier-regexp
 		 "\\)")
 	 '(1 font-lock-keyword-face)
 	 '(2 font-lock-type-face))
-   (list (concat "typedef\\s *.*"
+   (list (concat "struct\\s *.*"
 		 "\\s *\\(checked\\s *by\\)\\s *\\("
 		 reduce-identifier-regexp
 		 "\\)")
@@ -2241,19 +2241,19 @@ passing on any prefix argument (in raw form)."
 		 "\\(" reduce-identifier-regexp "\\)")
 	 '(1 font-lock-keyword-face)
 	 '(2 font-lock-constant-face))	; was font-lock-reference-face
-   '("\\(assert\\)\\s +\\([^:]*\\)"
+   '("\\(declare\\)\\s +\\([^:]*\\)"
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face))
-   '("assert\\s +[^(]*(\\([^)]*\\)"
+   '("declare\\s +[^(]*(\\([^)]*\\)"
      (1 font-lock-type-face))
-   (list (concat "assert\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
+   (list (concat "declare\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
 	 '(1 font-lock-type-face))
-   (list (concat "\\(typedef\\)\\s *\\("
+   (list (concat "\\(struct\\)\\s *\\("
 		 reduce-identifier-regexp
 		 "\\)")
 	 '(1 font-lock-keyword-face)
 	 '(2 font-lock-type-face))
-   (list (concat "typedef\\s *.*"
+   (list (concat "struct\\s *.*"
 		 "\\s *\\(checked\\s *by\\)\\s *\\("
 		 reduce-identifier-regexp
 		 "\\)")
