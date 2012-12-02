@@ -379,6 +379,24 @@ procedure assert_uninstall_all();
 
 put('assert_uninstall_all,'stat,'endstat);
 
+symbolic procedure formassert(u,vars,mode);
+   if !*assert then
+      assert_assert(cadr u,vars,mode);
+
+put('assert, 'formfn, 'formassert);
+
+procedure assert_assert(u, vars, mode);
+   if mode eq 'symbolic then
+      {'cond,
+ 	 {{'not, {'eval, u}},
+ 	    {'progn,
+ 	       {'backtrace},
+	       {'cond,
+ 	       	  {'!*assertbreak,
+ 	       	     {'rederr, {'list, "failed assertion", mkquote u}}},
+	       	  {t,
+ 	       	     {'lprim, {'list, "failed assertion", mkquote u}}}}}}};
+
 endmodule;  % assert
 
 end;  % of file

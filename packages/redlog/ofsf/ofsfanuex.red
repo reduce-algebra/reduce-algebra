@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_anuex_rcsid!* ofsf_anuex_copyright!*);
@@ -56,14 +56,14 @@ procedure generic_sort(al,sortfn);
    % function that takes two arguments [a1], [a2] of type ALPHA and
    % returns 1, if [a1] is bigger than [a2], -1, if [a2] is bigger
    % than [a1] and 0 if they are equal. returns a list of type ALPHA.
-   begin scalar all;      
+   begin scalar all;
       if null al or null cdr al then return al;
       % now there are at least 2 elements in al.
       all := for each a in al collect {a};
-      repeat <<	 
-      	 all := generic_doublesort(all,sortfn) 
+      repeat <<
+      	 all := generic_doublesort(all,sortfn)
       >> until null cdr all;
-      return car all % the only element of all is the list of sorted roots 
+      return car all % the only element of all is the list of sorted roots
    end;
 
 procedure generic_doublesort(all,sortfn);
@@ -160,10 +160,10 @@ procedure iv_tothen(iv,n);
    % Interval to the n. [iv] is an interval, [n] a positive natural
    % number. Returns an INT.
    if n=0 then
-      iv_mk(rat_mk(1,1),rat_mk(1,1)) 
+      iv_mk(rat_mk(1,1),rat_mk(1,1))
    else
       iv_mult(iv,iv_tothen(iv,n-1));
-   
+
 procedure iv_containszero(iv);
    % Interval contains zero. Returns [t] or [nil].
    if rat_leq(iv_lb iv,rat_0()) and rat_leq(rat_0(),iv_rb iv) then
@@ -181,7 +181,7 @@ procedure iv_comp(iv1,iv2);
    else if rat_leq(iv_rb iv2,iv_lb iv1) then
       1
    else 0;
-   
+
 procedure iv_maxabs(iv);
    % Interval maximal absolut value. [iv] is an INT. Returns a RAT.
    rat_max(rat_abs iv_lb iv,rat_abs iv_rb iv);
@@ -305,7 +305,7 @@ procedure numpoly_factorize p;
 %DS
 % <RAT> ::= <SQ> over integers
 
-% datatype rat: rational numbers, represented as standard quotients of 
+% datatype rat: rational numbers, represented as standard quotients of
 % integers.
 
 procedure rat_mk(n,d);
@@ -326,33 +326,33 @@ procedure rat_normdenr(q);
    >>;
 
 procedure rat_print r;
-   << prin2 numr r; prin2 "/"; prin2 denr r; >>; 
+   << prin2 numr r; prin2 "/"; prin2 denr r; >>;
 
 procedure rat_fromnum(n);
    % Rational number from integer number. [n] is a NUM. Returns a RAT.
    simp n;
 
 procedure rat_neg(p);
-   % Rational number negation. [p] is a RAT. 
+   % Rational number negation. [p] is a RAT.
    negsq(p);
 
 procedure rat_add(p,q);
-   % Rational number addition. [p], [q] are RAT's. Returns a RAT. 
+   % Rational number addition. [p], [q] are RAT's. Returns a RAT.
    addsq(p,q);
 
 procedure rat_minus(p,q);
-   % Rational number minus. [p], [q] are RAT's. Returns a RAT. 
+   % Rational number minus. [p], [q] are RAT's. Returns a RAT.
    addsq(p,negsq q);
 
 procedure rat_mapadd(pl);
-   % Rational number map addition. [pl] is a list of RAT. Returns a RAT. 
+   % Rational number map addition. [pl] is a list of RAT. Returns a RAT.
    if pl=nil then %%%
       rat_0()
    else
       rat_add(car pl,rat_mapadd cdr pl);
 
 procedure rat_mult(p,q);
-   % Rational number multiplication. [p], [q] are RAT's. Returns a RAT. 
+   % Rational number multiplication. [p], [q] are RAT's. Returns a RAT.
    multsq(p,q);
 
 procedure rat_quot(p,q);
@@ -366,7 +366,7 @@ procedure rat_nullp(q);
    null numr q or numr q = 0;
 
 procedure rat_sgn(q);
-   % Rational number sign. [q] is of type RAT. Returns -1, 0 or 1 
+   % Rational number sign. [q] is of type RAT. Returns -1, 0 or 1
    if null numr q or numr q = 0 then
       0
    else if sgn numr q = sgn denr q then
@@ -428,7 +428,7 @@ procedure rat_min4(a,b,c,d);
 
 procedure rat_max4(a,b,c,d);
    % Rational number maximum of 4. [a], [b], [c], [d] are
-   % RAT's. Returns a RAT.   
+   % RAT's. Returns a RAT.
    rat_max(rat_max(a,b),rat_max(c,d));
 
 procedure rat_abs(p);
@@ -436,7 +436,7 @@ procedure rat_abs(p);
    absf numr p ./ denr p;
 
 % module ratpoly;
-   
+
 %DS
 % <RATPOLY> ::= <SQ> over integer, where the denominator is an integer
 
@@ -497,7 +497,7 @@ procedure ratpoly_sgn q;
       prin2t "***** ratpoly_sgn: not a constant polynomial"
    else
       rat_sgn q;
-      
+
 procedure ratpoly_neg(q);
    % Rational number polynomial negation. [q] is a RATPOLY. Returns a
    % RATPOLY.
@@ -522,7 +522,7 @@ procedure ratpoly_foldmult(ql);
    if null ql then
       ratpoly_1()
    else
-      ratpoly_mult(car ql,ratpoly_foldmult(cdr ql));   
+      ratpoly_mult(car ql,ratpoly_foldmult(cdr ql));
 
 procedure ratpoly_quot(q1,q2);
    % Rational number polynomial quotient. [q1], [q2] are
@@ -544,7 +544,7 @@ procedure ratpoly_univarp(q);
    sf_univarp numr q;
 
 procedure ratpoly_idl q;
-   % Identifier list. 
+   % Identifier list.
    sf_idl numr q;
 
 procedure ratpoly_mvartest(q,x);
@@ -556,7 +556,7 @@ procedure ratpoly_mvartest(q,x);
       nil
    else
       (mvar numr q eq x);
-   
+
 procedure ratpoly_lc(q);
    % Rational number polynomial leading coefficient. [q] is a RATPOLY.
    % Returns a RATPOLY, the leading coefficient of $q$.
@@ -591,13 +591,13 @@ procedure ratpoly_xtothen(x,n);
    if n = 0 then
       ratpoly_fromatom 1
    else
-      ratpoly_mult(ratpoly_fromatom x,ratpoly_xtothen(x,n-1)); 
+      ratpoly_mult(ratpoly_fromatom x,ratpoly_xtothen(x,n-1));
 
 procedure ratpoly_diff(q,x);
    % Rational number polynomial derivation. [q] is a RATPOLY, [x] is
    % an identifier. Returns a RATPOLY.
    diffsq(q,x);
-  
+
 procedure ratpoly_subrat(q,k,r);
    % Rational number polynomial substitute rational number. [q] is a
    % RATPOLY, [k] an identifier (the kernel to be replaced) and [r] is
@@ -610,7 +610,7 @@ procedure ratpoly_subrat(q,k,r);
    begin scalar cl,res;
       cl := coeffs numr q; % (c0,...,cn)
       res := !*f2q car cl;
-      for each c in cdr cl do 
+      for each c in cdr cl do
 	 res := addsq(!*f2q c,multsq(res,r));
       res := quotsq(res,!*f2q denr q);
       if !*rlanuexdebug and not ratpoly_nullp
@@ -629,7 +629,7 @@ procedure ratpoly_subrat1(q,k,r);
    begin scalar cl,res;
       cl := coeffs numr q; % (c0,...,cn)
       res := !*f2q car cl;
-      for each c in cdr cl do 
+      for each c in cdr cl do
 	 res := addsq(!*f2q c,multsq(res,r));
       if !*rlanuexdebug and not ratpoly_nullp
       	 ratpoly_minus(quotsq(res,!*f2q denr q),
@@ -656,7 +656,7 @@ procedure ratpoly_gcd(q1,q2); % plus
       tmp1 := prepsq q1;
       tmp2 := prepsq q2;
       on1 'rational;
-      % convert to sf over rationals 
+      % convert to sf over rationals
       tmp1 := numr simp tmp1;
       tmp2 := numr simp tmp2;
       res := gcdf(tmp1,tmp2);
@@ -666,7 +666,7 @@ procedure ratpoly_gcd(q1,q2); % plus
       return simp res;
    end;
 
-procedure ratpoly_resultant(q1,q2,y); 
+procedure ratpoly_resultant(q1,q2,y);
    % Rational number polynomial gretest common divisor. [q1], [q2] are
    % RATPOLY's. Returns a RATPOLY.
    begin scalar tmp1,tmp2,res;
@@ -674,7 +674,7 @@ procedure ratpoly_resultant(q1,q2,y);
       tmp1 := prepsq q1;
       tmp2 := prepsq q2;
       on1 'rational;
-      % convert to sf over rationals 
+      % convert to sf over rationals
       tmp1 := numr simp tmp1;
       tmp2 := numr simp tmp2;
       res := resultant(tmp1,tmp2,y);
@@ -712,7 +712,7 @@ procedure sf_deg(f,x);
 
 % IAL ::= LIST(PAIR(ID,ANU))
 % Type: {'ctx, ial} where ial
-% Description: 
+% Description:
 
 procedure ctx_fromial(ia);
    {'ctx,ia};
@@ -758,7 +758,7 @@ procedure ctx_free(x,c);
       ial := ctx_ial c;
       repeat <<
 	 while caar ial neq car idorderv do idorderv := cdr idorderv;
-	 ial := cdr ial; % free the highest pair	 
+	 ial := cdr ial; % free the highest pair
       >> until null idorderv or car idorderv eq x;
       return ctx_fromial ial;
    end;
@@ -782,7 +782,7 @@ procedure ctx_union(c1,c2);
    % Syntactically/semantically compatible means: for every id x: if
    % (x,a1) in c1 and (x,a2) in c2 then syntactically/semantically
    % a1=a2.
-   begin scalar idorderv,ial;      
+   begin scalar idorderv,ial;
       idorderv := setkorder nil;
       setkorder idorderv;
       c1 := ctx_ial c1; c2 := ctx_ial c2;
@@ -825,7 +825,7 @@ procedure aex_mklin(x,ba);
    % Make linear poly a*x+b. x is an id, ba is a rat.
    %aex_fromsf addf(multf(numr simp x,rat_denr ba),negf rat_numr ba);
    aex_fromrp ratpoly_mklin(x,ba);
-   
+
 procedure aex_fromsf(f);
    aex_fromrp ratpoly_fromsf f;
 
@@ -842,7 +842,7 @@ procedure aex_freeall(ae);
    aex_mk(aex_ex ae,ctx_new(),t,t);
 
 procedure aex_free(ae,x);
-   % Free x and all higher variables. 
+   % Free x and all higher variables.
    aex_mk(aex_ex ae,ctx_free(x,aex_ctx ae),nil,nil);
 
 procedure aex_bind(ae,x,a);
@@ -889,13 +889,13 @@ procedure aex_addrat(ae,r);
    % Add rational number.
    aex_mk(ratpoly_add(aex_ex ae, ratpoly_fromrat r),aex_ctx ae,
       nil,nil); %%%?
-   
+
 procedure aex_minus(ae1,ae2);
    % Minus, contexts are assumed to be compatible and will be merged.
    aex_mk(ratpoly_minus(aex_ex ae1,aex_ex ae2),
       ctx_union(aex_ctx ae1, aex_ctx ae2),
       nil,aex_reducedtag ae1 and aex_reducedtag ae2);
-  
+
 procedure aex_mult(ae1,ae2);
    % Multiplication, contexts are assumed to be compatible and will be merged.
    aex_mk(ratpoly_mult(aex_ex ae1,aex_ex ae2),
@@ -915,7 +915,7 @@ procedure aex_multrat(ae,r);
 
 procedure aex_diff(ae,x);
    % differentiate. [ae] is an algebraic polynomial in [x].
-   % Returns an AEX. 
+   % Returns an AEX.
    aex_mk(ratpoly_diff(aex_ex ae,x),aex_ctx ae,
       nil,nil);
 
@@ -934,7 +934,7 @@ procedure aex_subrat1(ae,x,r);
 
 procedure aex_tad(ae);
    % Throw away denominator.
-   aex_mk(ratpoly_tad aex_ex ae,aex_ctx ae,nil,nil); 
+   aex_mk(ratpoly_tad aex_ex ae,aex_ctx ae,nil,nil);
 
 procedure aex_xtothen(x,n);
    % x to the n.
@@ -952,7 +952,7 @@ procedure aex_simpleratpolyp(ae);
 
 procedure aex_simpleratp ae;
    ratpoly_ratp aex_ex ae;
-  
+
 procedure aex_simplenullp(ae);
    % Simple but uncomplete null-predicate. It is complete, if ae is
    % minimized.
@@ -979,8 +979,8 @@ procedure aex_nullp(ae);
    % Null predicate. [ae] is an AEX. Returns [t] or [nil].
    begin scalar tmp;
       % make the lc non-trivial
-      tmp := aex_mklcnt ae; 
-      % ae is a non-constant polynomial 
+      tmp := aex_mklcnt ae;
+      % ae is a non-constant polynomial
       if aex_freeids tmp then
 	 return nil;
       % ae is a constant
@@ -1000,7 +1000,7 @@ procedure aex_red(ae,x);
    else
       aex_0();
 
-procedure aex_lc(ae,x);   
+procedure aex_lc(ae,x);
    if aex_mvaroccurtest(ae,x) then
       aex_mk(ratpoly_lc aex_ex ae,aex_ctx ae,nil,nil)
    else
@@ -1029,7 +1029,7 @@ procedure aex_mklcnt(ae);
 	 else
 	    return ae;
       % ae is constant
-      return %%% remark: this is the second edge in the dependence graph where the argument is passed and not made smaller. (this is not a problem) 
+      return %%% remark: this is the second edge in the dependence graph where the argument is passed and not made smaller. (this is not a problem)
 	 if aex_sgn ae eq 0 then aex_0() else ae
    end;
 
@@ -1108,7 +1108,7 @@ procedure aex_reduce ae;
 
 procedure aex_reducetest(ae);
    aex_nullp aex_minus(ae,aex_reduce ae);
-	 
+
 procedure aex_psquotrem1(f,p,x);
    % pseudo quotient remainder one step. [f], [p] are algebraic
    % polynomials in [x]. Returns [(q . r)] with $a_n^2f=qp+r$.
@@ -1162,7 +1162,7 @@ procedure aex_psrem(f,p,x);
    cadr aex_psquotrem(f,p,x);
 
 procedure aex_psquotremtest(f,p,x);
-   % Algebraic expression pseudo quotient remainder test. 
+   % Algebraic expression pseudo quotient remainder test.
    % Returns a BOOL.
    begin scalar m,n,ctx,q,r,bn2,qri,ii;
       m := aex_deg(f,x); n := aex_deg(p,x);
@@ -1199,7 +1199,7 @@ procedure aex_sturmchaincheck(sc);
    begin scalar v,l;
       v := t;
       l := length sc;
-      while sc and v do 
+      while sc and v do
 	 if aex_nullp car sc then <<
 	    v := nil;
 	    ioto_prin2 {"+++ aex_sturmchaincheck: nullpoly found. length:",
@@ -1229,13 +1229,13 @@ procedure aex_remseq(ael,x);
    begin scalar rem;
       if !*rlanuexdebug and aex_simplenullp car ael then
 	 prin2 "[remseq:null]";
-      if aex_deg(car ael,x) <= 0 then 
+      if aex_deg(car ael,x) <= 0 then
       	 return ael;
       if !*rlanuexpsremseq then
 	 rem := aex_psrem(cadr ael,car ael,x)
       else
 	 rem := aex_pp aex_tad aex_rem(cadr ael,car ael,x);
-      if aex_simplenullp rem then 
+      if aex_simplenullp rem then
       	 return ael;
       return aex_remseq(aex_neg rem . ael,x)
    end;
@@ -1251,7 +1251,7 @@ procedure aex_stchsgnch(sc,x,r);
    % or minfty.
    if r eq 'infty then
       num_sgnch for each e in sc collect aex_sgnatinfty(e,x)
-   else if r eq 'minfty then 
+   else if r eq 'minfty then
       num_sgnch for each e in sc collect aex_sgnatminfty(e,x)
    else
       aex_sturmchainsgnch(sc,x,r);
@@ -1290,7 +1290,7 @@ procedure aex_sgn(ae);
    % Remark: the case: ae has free ids, but is constant due to trivial
    % coefficients is not treated, although sgn would be sensible.
    % Possible optimization: use of aex_containment.
-   begin scalar con,x,g,alpha,f,sc;      
+   begin scalar con,x,g,alpha,f,sc;
       % semanticcheck
       if !*rlanuexdebug and (not (type_of ae eq 'aex) or aex_freeids ae) then
 	 prin2t "***** aex_sgn: invalid argument";
@@ -1327,7 +1327,7 @@ procedure aex_sgn(ae);
 procedure aex_pssqfree(f,x);
    % pseudo sqare-free part. [f] is an algebraic polynomial. Returns
    % an algebraic polynomial.
-   if aex_deg(f,x) < 2 then f 
+   if aex_deg(f,x) < 2 then f
    else car aex_psquotrem(f,lastcar aex_stdsturmchain(f,x),x);
 
 %procedure aex_psgcd(f,g,x);
@@ -1352,7 +1352,7 @@ procedure sqfr_norm(f,x,y,palpha);
 	    s := s+1;
  	    g := ratpoly_sub(g,x,{'plus,x,{'minus,y}})
 	 >>
-         >> 
+         >>
 	 until degree = 0;
       return {s,g,r};
    end;
@@ -1369,22 +1369,22 @@ procedure aex_factorize(f,x); %%% rename to factors
 	 return cdr for each rp_m in l collect aex_fromrp car rp_m;
       >>;
       tmp := car ctx_ial aex_ctx f; % y . alpha
-      y := car tmp; alpha := cdr tmp; 
+      y := car tmp; alpha := cdr tmp;
       %tmp := aex_sqfr_norm(f,x,y); % maybe in future...
       tmp := sqfr_norm(aex_ex f,x,y,aex_ex anu_dp alpha);
       s := car tmp; g := cadr tmp; r := caddr tmp;
       tmp := ratpoly_factorize r; %%%%%%%
       % throw away multiplicities and domain element
-      l := cdr for each rp_m in tmp collect car rp_m; 
-      %l := for each rp_m in l collect car rp_m; 
+      l := cdr for each rp_m in tmp collect car rp_m;
+      %l := for each rp_m in l collect car rp_m;
       aeg := aex_fromrp g; aeg := aex_bind(aeg,y,alpha); % g(x,alpha)
       l := for each hi in l collect <<
 	 aehi := aex_fromrp hi; % h_i(x)
 	 aehi := aex_gcd(aehi,aeg,x); % h_i(x,alpha)=gcd(h_i(x),g(x,alpha))
-	 aeg  := aex_quot(aeg,aehi,x); 
-	 aehi := aex_subrp(aehi,x,{'plus,x,{'times,s,y}}) 	    
+	 aeg  := aex_quot(aeg,aehi,x);
+	 aehi := aex_subrp(aehi,x,{'plus,x,{'times,s,y}})
       >>;
-      if !*rlanuexdebug and not 
+      if !*rlanuexdebug and not
 	aex_simpleratp aex_quot(f,aex_foldmult l,x) then
 	 prin2t "***** aex_factorize: selftest failed (alg. case)";
       return l; %%% minimize every element first?
@@ -1435,7 +1435,7 @@ procedure aex_quotremtest(f,g,x);
 procedure aex_quot(f,g,x);
    car aex_quotrem(f,g,x);
 
-procedure aex_rem(f,g,x);   
+procedure aex_rem(f,g,x);
    %if null aex_freeids g then aex_0() else cdr aex_quotrem1(f,g,x);
    cdr aex_quotrem(f,g,x);
 
@@ -1445,7 +1445,7 @@ procedure aex_gcdext(a,b,x);
 procedure aex_gcdext1(a,b,x,gcdnormalize);
    % extended euclidean algorithm, see becker, weispfenning, kredel:
    % groebner bases, p.83.
-   begin scalar aa,bb,ss,tt,uu,vv,qr,ss1,tt1,tmp;      
+   begin scalar aa,bb,ss,tt,uu,vv,qr,ss1,tt1,tmp;
       aa := a; bb := b;
       ss := aex_1(); tt := aex_0();
       uu := aex_0(); vv := aex_1();
@@ -1460,7 +1460,7 @@ procedure aex_gcdext1(a,b,x,gcdnormalize);
       if gcdnormalize then <<
 	 tmp := aex_inv aex_lc(aa,x); aa := aex_mult(aa,tmp);
 	 ss := aex_mult(ss,tmp); tt := aex_mult(tt,tmp);
-      >>;      
+      >>;
       if !*rlanuexdebug and not
 	 aex_nullp aex_minus(aa,aex_add(aex_mult(ss,a),aex_mult(tt,b))) then
 	 prin2t "***** aex_gcdext: selftest failed";
@@ -1505,7 +1505,7 @@ procedure aex_pairwiseprime1(ae1,ae2l,x); % unused
    % makes ae1 prime to ae2l.
    %   << for each ae2 in ae2l do ae1 := aex_quot(ae1,aex_gcd(ae1,ae2,x),x);
    %      ae1
-   %   >>; 
+   %   >>;
    << while ae2l and not aex_simplenullp ae1 do << %%% simplenumberp !?
       ae1 := aex_quot(ae1,aex_gcd(ae1,car ae2l,x),x);
       ae2l := cdr ae2l;
@@ -1534,21 +1534,21 @@ procedure aex_tgpairwiseprime1(ael,x);
       	 ae1 := tag_(aex_quot(tag_object ae1,g,x),tag_taglist ae1);
 	 n2 := aex_deg(tag_object ae1,x);
 	 if n1 > n2 then
-	    ae2 := tag_(tag_object ae2,union(tag_taglist ae1,tag_taglist ae2));	 
+	    ae2 := tag_(tag_object ae2,union(tag_taglist ae1,tag_taglist ae2));
  	 ae2lnew := ae2 . ae2lnew;
       	 ae2l := cdr ae2l;
-      >>; 
+      >>;
       return ae1 . ae2lnew;
    end;
-   
-   
+
+
 procedure aex_sqfree(f,x);
    % pseudo sqare-free part. [f] is an algebraic polynomial. Returns
    % an algebraic polynomial.
    % question: what if f not reduced?
-   if aex_deg(f,x) < 2 then f 
+   if aex_deg(f,x) < 2 then f
       else car aex_quotrem(f,aex_gcd(f,aex_diff(f,x),x),x);
-      
+
 procedure aex_inv ae;
    % invert a constant, not-null polynomial.
    % ae represents an algebraic number, that is not null.
@@ -1616,7 +1616,7 @@ procedure aex_fromcoefdegl(cfdgl,x);
 
 procedure aex_coefdegltest(ae,x);
    aex_nullp aex_minus(ae,aex_fromcoefdegl(aex_coefdegl(ae,x),x));
-	 
+
 procedure aex_containment(ae);
    % Algebraic expression containment. [ae] is an AEX. Returns an
    % interval.  the algebraic number represented by ae is contained in
@@ -1652,7 +1652,7 @@ procedure aex_distinguishpositivefromzero(ae,iv);
 	 rb := rat_mult(rb,rat_mk(1,2));
       return rb
    end;
-   
+
 procedure aex_distinguishfromzero(ae,iv);
    % Algebraic expression distinguish from zero. [ae] is an AEX(c,c),
    % [iv] an intervall containing the algebraic number represented by
@@ -1673,7 +1673,7 @@ procedure aex_cauchybound(ae,x);
    % Algebraic expression cauchy bounds. [ae] is an univariate alg.
    % polynomial in [x] with non-trivial leading coefficient. Returns
    % an non-negative RAT, the minimum of the cauchy bounds of ae.
-   begin scalar cfl,am,ctam,nb,ctl,ml,m,n,minabsam,cb,aesc;      
+   begin scalar cfl,am,ctam,nb,ctl,ml,m,n,minabsam,cb,aesc;
       if !*rlanuexdebug and aex_simplenullp aex_lc(ae,x) then
 	 prin2t "***** aex_cauchybound: argument has trivial lc";
       if aex_deg(ae,x) <= 0 then return rat_1(); % avoids trivial sturmchains
@@ -1689,7 +1689,7 @@ procedure aex_cauchybound(ae,x);
 	 else
 	    iv_mk(nb,iv_rb ctam)
       >>;
-      % now ctam is a containing interval for a_m without 0. 
+      % now ctam is a containing interval for a_m without 0.
       ctl := for each cf in cdr cfl collect aex_containment cf;
       ml := for each iv in ctl collect iv_maxabs iv;
       minabsam := iv_minabs ctam;
@@ -1749,7 +1749,7 @@ procedure aex_findrootsiniv1(ae,x,iv,sc);
       if sclb - scrb = 0 then
 	 return nil;
       if sclb - scrb = 1 then
-	 return {anu_mk(ae,iv)};      
+	 return {anu_mk(ae,iv)};
       m := rat_quot(rat_add(lb,rb),rat_fromnum 2);
       ml := mr := m;
       if aex_sgn aex_subrat1(ae,x,m) eq 0 then <<
@@ -1757,7 +1757,7 @@ procedure aex_findrootsiniv1(ae,x,iv,sc);
 	 ml := rat_minus(m,r);
 	 mr := rat_add(m,r)
       >>;
-      retl := aex_findrootsiniv1(ae,x,iv_mk(mr,rb),sc); 
+      retl := aex_findrootsiniv1(ae,x,iv_mk(mr,rb),sc);
       if not rat_eq(ml,mr) then
 	 retl := anu_mk(ae,iv_mk(ml,mr)) . retl;
       retl := append(aex_findrootsiniv1(ae,x,iv_mk(lb,ml),sc),retl);% nconc!!!
@@ -1795,7 +1795,7 @@ procedure aex_nextroot(rip,x);
    % AEX (a univariate alg. polynomial) and sc is the corresponding
    % sturmchain. Returns t, if a root is found, nil otherwise. The
    % argument is changed in-place.
-   begin scalar rootfound,cb;      
+   begin scalar rootfound,cb;
       while not rootfound and rip_pscl rip do <<
 	 % pscl is not empty. if ivl is empty, mk new iv with cb.
 	 while null rip_ivl rip and rip_pscl rip do <<
@@ -1834,7 +1834,7 @@ procedure aex_nextroot1(rip,x);
       if sclb = 0 then return nil;
       scrb := aex_sturmchainsgnch(sc,x,rb);
       if sclb - scrb = 0 then return nil;
-      if sclb - scrb = 1 then << 
+      if sclb - scrb = 1 then <<
 	 rip_addroot(rip,
 	    tag_(aex_refinewrt1(anu_mk(tag_object caar rip_pscl rip,iv),
 	       cdr rip_psclnotags rip,cdar rip_pscl rip),
@@ -1929,10 +1929,10 @@ procedure rip_init(ael,x);
 %      generic_sort(for each ae in ael collect ae . aex_stdsturmchain(ae,x),
 %	 'psc_sortasc)};
 
-procedure rip_rootl rip;   
+procedure rip_rootl rip;
    car rip;
 
-procedure rip_rootlnotags rip;   
+procedure rip_rootlnotags rip;
    for each r in car rip collect tag_object r;
 
 procedure rip_ivl rip;
@@ -1963,7 +1963,7 @@ procedure rip_popivl rip;
    <<cadr rip := cdr cadr rip; carivl>> where carivl=car rip_ivl rip;
 
 %procedure aex_ivlfromrootl rootl;
-%   % interval list from root list. [rootl] is a list of ANU. 
+%   % interval list from root list. [rootl] is a list of ANU.
 %   for each a in rootl collect anu_iv a;
 
 % module anu;
@@ -2040,7 +2040,7 @@ procedure anu_refine1ip(a,s);
       anu_putiv(a,iv_mk(m,rb));
       return a
    end;
-   
+
 procedure sf_idl f;
    % if there is a main variable, then it will be the car.
    if not domainp f then
@@ -2050,7 +2050,7 @@ procedure sf_idl f;
    procedure intersection(ss1,ss2);
       lto_setminus(ss1,lto_setminus(ss1,ss2));
 !#endif
-      
+
 %procedure setunion(ss1,ss2);
 %   append(lto_setminus(ss1,ss2),ss2);
 
