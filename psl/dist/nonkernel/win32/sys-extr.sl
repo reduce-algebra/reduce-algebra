@@ -257,7 +257,7 @@
 	  (return nil))
 	% if OddP X                                                        
 	(setq x (inf x))
-	(when (wlessp x 8198)
+	(when (wlessp x 65536)    % bottom 64k is read-protected in win32
 	  (return nil))
 	(cond ((not (wlessp x (inf nextbps))) % Assures X points to real memory
 	       (return nil)))

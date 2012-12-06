@@ -28,7 +28,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(datebuffer))
-(setq datebuffer (gtwarray 1))
+(setq datebuffer (gtwarray 2))
 
 (de date ()                             % current date, as "12-Sep-1955"
   (external_time datebuffer)            % get the current time

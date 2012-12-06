@@ -67,7 +67,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(errorblock errorstack errornumber))
+(fluid '(errorstack* errornumber* errorcall* errorstring* sigaddr*))
 
 (compiletime
  (progn
@@ -92,11 +92,35 @@
         % WinNt: handler is called with description in stack
         % don't need SIGRELSE
      ,handler
-     (*move (frame 2)(fluid errornumber))   % par 1
-     (*move (frame 3)(fluid errorblock))    % par 2
-     (*move (reg st) (fluid errorstack))
-     (*move (quote ,errorstring) (reg 1))
-     (*jcall sigunwind))
+     (*move (frame 2) (fluid errornumber*))  % number of signal received
+     (push (reg ebp))                        % save a couple of registers
+     (*move (reg st) (reg ebp))
+     (push (reg ebp))
+     (push (reg 2))
+     (*link ieee_flags 0)                    % ieee_flags abused to return
+                                             % a pointer to a
+                                             % EXCEPTION_POINTERS structure
+                                             % which contains
+     (*move (memory (reg 1) 0) (reg 2))      % addr of exception info and
+     (*move (memory (reg 1) 4) (reg 3))      % addr of thread context
+     (*move (memory (reg 2) 0) (reg 4))      % exception code (type)
+     (*move (memory (reg 3) 184) (fluid sigaddr*))
+                                             % instruction pointer at fault
+     (*move (memory (reg 3) 196) (reg 1))    % stack pointer at fault
+     (*move (reg 1) (fluid errorstack*))
+     (*move ($fluid errorcall*) (reg 2))     
+     (*move (reg 2) (displacement (reg 3) 184))
+                                             % overwrite address of faulted
+					     % instruction by address of
+ 					     % function errortrap
+     (*move (quote ,errorstring) (fluid errorstring*))
+                                             % string for error message
+     (*link initializeinterrupts-1 expr 0)
+     (pop (reg 2)) 		             % restored saved registers
+     (pop (reg ebp))
+     (*move (reg ebp) (reg st))
+     (pop (reg ebp))
+     (ret))
        )
  
    % Return the entry point list. Defined as a cmacro.
@@ -157,25 +181,30 @@
      % pop this frame off the stack.  On the SUN, this adds up to 320 bytes.
      % Who know why.
  
-     % (*move (memory (reg st) 312) (reg 2)) % Addr. at which signal occurred
-     % (fclex)                               % Clear floating-point exceptions
-     % (*wplus2 (reg st) 320)                % Pop signal-handling frame
-     
-     (*link build-trap-message expr 2)     % This leaves its result in reg
-                                           % 1, so the new message is
-     (push (reg 1))
-     (*link initializeinterrupts expr 0)
-     (pop (reg 2))
-     (*move (fluid errornumber) (reg 1))
+     (*link initializeinterrupts-1 expr 0)
+
+     (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
-     (*jcall error)                     % ready to be passed
+     (pop (reg 2))
+     (pop (reg ebp))
+     (*move (reg ebp) (reg st))
+     (pop (reg ebp))
+     (ret)  %%% (*jcall error)                     % ready to be passed
      ))
+
+(de errortrap ()
+  (progn
+    (ieee_handler)   % clear fp status
+    (error (wplus2 errornumber* 10000)
+           (build-trap-message errorstring* sigaddr*))))
+
+(setq errorcall* (wgetv symfnc (id2int 'errortrap)))
  
 (de build-trap-message (trap-type trap-addr)
     (let (extra-info)
       (if (funboundp 'code-address-to-symbol)
         (setf extra-info
-          (bldmsg "at %x%n" (inf trap-addr)))
+          (bldmsg " at %x%n" (inf trap-addr)))
     % else, get the name of the offending function
     (setf extra-info (bldmsg "%w%w"
                  " in "

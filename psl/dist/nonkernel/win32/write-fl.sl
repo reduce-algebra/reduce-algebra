@@ -1,172 +1,67 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:           PXNK:WRITE-FLOAT.SL
 % Title:          Format a floating point number into a string.
-% Author:         Herbert Melenk
-% Created:        31-May-91
-% Modified:
+% Author:         Leigh Stoller
+% Created:        25-Oct-86
+% Modified:       
 % Status:         Experimental
 % Mode:           Lisp
 % Package:        Kernel
 %
+% (c) Copyright 1982, University of Utah
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
 %
+% 25-Oct-86 (Leigh Stoller)
+%  This is a new version that uses sprintf correctly. The old version was so
+%  bad it was not worth keeping around.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(compiletime (load useful fast-vector NUMERIC-OPS))
-(compiletime (flag '(ftoa)
-                   'internalfunction))
-
-(fluid '(floatprecision* floatdigits* floatround*))
-
-% external interface
+(fluid '(floatformat* floatprecision*))
 
 (de setprintprecision (digits-to-print)
-  (let ((n 31)
-        (fp floatprecision*))
   (if (not (fixp digits-to-print))
       (nonintegererror digits-to-print 'setprintprecision))
-    (setq floatprecision* digits-to-print)
-    fp))
 
-(setprintprecision 6)
+  (setq floatprecision* digits-to-print)
+  (setq floatformat* (bldmsg "%%.%pg" floatprecision*))
+  )
 
-(de getprintprecision () floatprecision*)
+(loadtime (setprintprecision 6))    % Initialize to 6 on startup.
 
-% material for float formatting
+(de getprintprecision ()
+  floatprecision*)
+    
 
-(setq floatround* [
-        0.5e+0 0.5e-1 0.5e-2 0.5e-3 0.5e-4
-	0.5e-5 0.5e-6 0.5e-7 0.5e-8 0.5e-9
-	0.5e-10 0.5e-11 0.5e-12 0.5e-13 0.5e-14
-	0.5e-15 0.5e-16])
-
-(setq floatdigits* [0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0])
-
-(compiletime 
- (progn
-   (ds *buffer++(= x)
-        (progn (setf (strbyt (strinf buffer) bufferptr)x)
-               (setq bufferptr (iadd1 bufferptr))))
-   (ds *buffer(u) (strbyt (strinf buffer) u))
-))
+(de writefloat (buffer floatptr)
+  (uxwritefloat (inf buffer) (inf floatptr)
+		(strbase (strinf floatformat*))))
 
 
-(de writefloat (buf u)
-  (prog(i)
-   (setq u (mkfltn (wdifference u 4))) % restore PSL fp number
-   (setq i (ftoa u buf 25 floatprecision*))
-   (setf (getmem buf) i)))
-
-(de ftoa(number buffer buflen maxwidth)
-  (prog(i exp digit decpos ndig one ten bufferptr int flag)
-        (setq bufferptr 0)
-	(setq int 0 one 1 ten 10)
-        (setq ndig  maxwidth)
-        (if (floatlessp number 0.0) 
-            (progn (setq number (floatdifference 0.0 number)) (*buffer++ = '!-))
-            (setq number (==newbox number))  % copy to new box
-	)
-        
-           % scale number in range <1.0,10.0>
-	(setq exp 0)
-	(when (floatgreaterp number 0.0) 
-           (while (floatlessp number 1.e-5)
-                      (setq number (==iptimes2 number 1e10))
-                      (setq exp (wdifference exp 10)))
-	       (while (floatlessp number 1.0) 
-                      (setq number (==iptimes2 number 10.0))
-                      (setq exp (isub1 exp)))
-           (while (not (floatlessp number 1e10))
-                      (setq number (==ipquotient number 1e10))
-                      (setq exp (wplus2 exp 10)))
-           (while (not (floatlessp number 10.0))
-                      (setq number (==ipquotient number 10.0))
-                      (setq exp (iadd1 exp)))
-        )
-     
-	       % flag : no exponentials needed:
-        (setq flag (and (wgreaterp exp -4)
-                        (wlessp exp maxwidth)))
-
-        (when (wgreaterp ndig 0)
-              (when (geq 
-                      (setq number (==ipplus2 number
-                                      (igetv floatround*
-                                           (if (wgreaterp ndig 15) 
-                                               15
-                                               (isub1 ndig)))))
-                      10.0)
-                    (setq number (==ipquotient number 10.0))
-                    (setq exp (iadd1 exp))
-                    (when flag (setq ndig (iadd1 ndig))) ))
-
-	(if flag 
-		(if (wlessp exp 0) 
-                    (progn
-		             (*buffer++ = '!0)
-		             (*buffer++ = '!.)
-                     (setq i exp)
-                     (while (and (wlessp (setq i (iadd1 i)) 0)
-                                 (wgreaterp maxwidth 0))
-                        (setq maxwidth (isub1 maxwidth))
-		            	(*buffer++ = '!0))
-                     (setq decpos 0))
-
-                    (setq decpos (iadd1 exp)
-                           % maxwidth (plus maxwidth (iadd1 exp))
-						   ))
-              
-                 (setq % maxwidth (iadd1 maxwidth) 
-				       decpos 1)
-        )
-
-	(while (wgeq (setq maxwidth (isub1 maxwidth)) 0)
-		(setq digit (fix number))
-		(*buffer++ = (iplus2 digit (char 0)))
-		(when (and (wgreaterp decpos 0)
-                           (eq (setq decpos (isub1 decpos)) 0))
-			(*buffer++ = '!.))
-		(setq number
-                    (==iptimes2 
-                      (==ipdifference number (igetv floatdigits* digit)) 
-                      10.0))
-	)
-
-	(when (wgreaterp decpos 0) 
-		(while (wgreaterp (setq decpos (isub1 decpos)) 0)
-		       (*buffer++ = '!0))
-		(*buffer++ = '!.)
-	)
-
-         % eliminate superfluous trailing zero
-        (while (and (eq (*buffer (isub1 bufferptr)) (char 0))
-                    (eq (*buffer (isub1 (isub1 bufferptr))) (char 0)))
-               (setq bufferptr(isub1 bufferptr)))
-
-	(when (not flag) 
-		(*buffer++ = '!e)
-		(if (wlessp exp 0) 
-                      (progn
-			(*buffer++ = '!-)
-			(setq exp (iminus exp)))
-		      (*buffer++ = '!+))
-		(when (geq exp 100) 
-		      (*buffer++ = (iplus2 (wquotient exp 100)
-                                           (char 0)))
-	              (setq exp (wremainder exp 100)) 
-		)
-		(*buffer++ = (iplus2 (iquotient exp 10) (char 0)))
-                (*buffer++ = (iplus2 (iremainder exp 10) (char 0)))
-	)
-        %  (while (wlessp bufferptr buflen) (*buffer++ = 0))
-        (return (isub1 bufferptr))
-))
 
