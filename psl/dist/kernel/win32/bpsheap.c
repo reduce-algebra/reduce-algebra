@@ -14,57 +14,32 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-
 %
-
 % (c) Copyright 1982, University of Utah
-
 %
-
 % Redistribution and use in source and binary forms, with or without
-
 % modification, are permitted provided that the following conditions are met:
 %
-
-%
-    * Redistributions of source code must retain the relevant copyright
-
+%    * Redistributions of source code must retain the relevant copyright
 %      notice, this list of conditions and the following disclaimer.
-
 %
 %    * Redistributions in binary form must reproduce the above copyright
-
 %      notice, this list of conditions and the following disclaimer in the
-
 %      documentation and/or other materials provided with the distribution.
-
 %
-
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-
 % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-
 % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % 
@@ -74,7 +49,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
    Use 2 if using copying collector ($pnk/copying-gc.sl).
@@ -82,14 +61,14 @@
 
 #define NUMBEROFHEAPS 1
 
-#define MINSIZE        5000000  /* Default total in number of bytes. */
+#define MINSIZE        8000000  /* Default total in number of bytes. */
 #define MALLOCSIZE     500000   /* Default size for OS support functions. */
 #define EXTRABPSSIZE   300000   /* Minimum amount to increase bps by. */
 #define MINIMUMHEAPADD 20000    /* Minimum amount to increase heap by */
 
 
 #ifndef BPSSIZE
-#define BPSSIZE         1600000    /* Default bps size in number of bytes */
+#define BPSSIZE         5600000    /* Default bps size in number of bytes */
 #endif
 
 char *  imagefile ;
@@ -102,7 +81,8 @@ extern int  alreadysetupbpsandheap;
 extern int  mainstartinitialize;
 extern int  HASHTABLE;
 extern char  bps[];
-extern char *  SYMNAM;
+extern char * SYMNAM;
+extern int  symms []; 
 extern int  lastbps;
 extern int  nextbps;
 extern int  bpslowerbound;
@@ -118,12 +98,24 @@ extern int  oldheapupperbound;
 extern int  oldheaplast;
 extern int  oldheaptrapbound;
 
+extern int  stacklowerbound;
+
+
 extern FILE * scriptin, * scriptout;
 extern int win_mode;
 extern int script_mode;
 
+extern int sbrk(void *);
+extern char * datetag();
+extern void my_puts(char *);
+extern unixputs(char *);
+extern external_user_homedir_string();
+
 char * envname = (char*)NULL;
 char * external_getenv(char *);
+
+void setupbps();
+void getheap(int,int);
 
 /* Write this ourselves to keep from including half the math library */
 static power(x, n)
@@ -140,7 +132,7 @@ static power(x, n)
 setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
-{ int ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub;
+{ int ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,slb;
   int memset = 0; int feder = 200000;
   FILE * imago;
   char * scriptinfile = NULL, * scriptoutfile = NULL;
@@ -149,7 +141,7 @@ setupbpsandheap(argc,argv)
   int    current_size_in_bytes, heapsize_in_bytes;
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
-  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
+  //  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
   char line [100];
 
   total        = MINSIZE;
@@ -252,6 +244,7 @@ setupbpsandheap(argc,argv)
   external_user_homedir_string(); /* This is done by read-init-file */
 
   bpssize = BPSSIZE;
+  heapsize = 119000000;
 
   for (i=0;i<bpssize;i++) bps[i]=15;    /* illegal opcode */
 
@@ -259,17 +252,17 @@ setupbpsandheap(argc,argv)
 
   /* On systems in which the image does not start at address 0, this won't
      really allocate the full maximum, but close enough. */
-  current_size_in_bytes = malloc(4);
+  current_size_in_bytes = (long) malloc(4);
   max_image_size = power(2, _infbitlength_); /* 1 more than allowable size */
 
-  if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
+/*  if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     heapsize_in_bytes = max_image_size - current_size_in_bytes;
     total = heapsize_in_bytes + bpssize;
     sprintf(line,"Size requested will result in pointer values larger than\n");
     unixputs(line);
     unixputs(" PSL items can handle. Will allocate maximum size instead.\n\n");
   }
-
+*/
   heapsize =(heapsize_in_bytes / 4) * 4;  /* insure full words */
 
   heappercent = ((float) (total - bpssize) / total) * 100.0;
@@ -305,6 +298,10 @@ setupbpsandheap(argc,argv)
 	ohl =  oldheaplast; ohtb = oldheaptrapbound;
 	hlb = heaplowerbound; hub = heapupperbound;
 	hl =  heaplast; htb = heaptrapbound;
+/*sprintf(line,"%x slb original \n",stacklowerbound);
+ * unixputs(line);*/
+        slb = stacklowerbound;
+
     /* save the new values around restore of the old ones */
 
      { 
@@ -334,13 +331,14 @@ setupbpsandheap(argc,argv)
      }  
        fread (headerword,4,8,imago);
 
-      if (strcmp(headerword,datetag()))
+       if (strcmp((char *)headerword,datetag()))
 		{ sprintf(line," Cannot start the image with this bpsl \n");
 		  unixputs(line);
 		  exit (-19); }
 
-       fread (headerword,4,7,imago);
-       i = fread (SYMNAM,1,headerword[0],imago);
+      fread (headerword,4,7,imago);
+       i = fread (SYMNAM,1,240000 /* headerword[0] */,imago);
+       i = fread (symms ,1,720000 /* headerword[0] */,imago); 
   
        /* printf (" heaplowerbound = %x (new) %x (file)\n", heaplowerbound,
 			headerword[6]); */
@@ -378,7 +376,7 @@ setupbpsandheap(argc,argv)
 	oldheaplowerbound = ohl; oldheapupperbound = ohub;
 	oldheaplast = ohl; oldheaptrapbound = ohtb;
 	heaplowerbound = hlb; heapupperbound = hub;
-	heaptrapbound = htb;}
+	heaptrapbound = htb; }
        return (4711);
      }
 return (0);
@@ -388,7 +386,7 @@ return (0);
    array defined in bps.c to an address and store it in nextbps. A check
    is made to make sure that nextbps falls on an even word boundry.
  */
-setupbps()
+void setupbps()
 {
   nextbps  =  ((int)bps + 3) & ~3;        /* Up to a multiple of 4. */
   bpslowerbound = nextbps;
@@ -408,13 +406,21 @@ allocatemorebps()
 
 /* tag( getheap )
  */
-getheap(int heapsize,int feder)
+void getheap(int heapsize,int feder)
 {
-  int s,i; char * c;
+  int s=0,i; char * c;
   
-  s = heapsize+feder;
-  heaplowerbound        = (int)malloc(s); 
+ //  s = heapsize+feder;
+ //   heaplowerbound        = (int)malloc(s); 
+ //    we need a static heap allocation under Windows Vista
   
+ heapsize = 110000000;
+ heaplowerbound = (int) &bps;
+ heaplowerbound += BPSSIZE;
+ heapupperbound        = heaplowerbound + heapsize;
+ heaplast              = heaplowerbound;
+ heaptrapbound         = heapupperbound -120;
+
    if (heaplowerbound <= 0) 
   {
     unixputs("****** Memory not available ********");
@@ -428,7 +434,7 @@ getheap(int heapsize,int feder)
   }
   
  
-  heapupperbound       += feder /2;
+//  heapupperbound       += feder /2;
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
   heaptrapbound         = heapupperbound -120;

@@ -27,8 +27,7 @@
 % modification, are permitted provided that the following conditions are met:
 %
 
-%
-    * Redistributions of source code must retain the relevant copyright
+%    * Redistributions of source code must retain the relevant copyright
 
 %      notice, this list of conditions and the following disclaimer.
 

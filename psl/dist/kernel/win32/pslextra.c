@@ -16,57 +16,32 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-
 %
-
 % (c) Copyright 1982, University of Utah
-
 %
-
 % Redistribution and use in source and binary forms, with or without
-
 % modification, are permitted provided that the following conditions are met:
 %
-
-%
-    * Redistributions of source code must retain the relevant copyright
-
+%    * Redistributions of source code must retain the relevant copyright
 %      notice, this list of conditions and the following disclaimer.
-
 %
 %    * Redistributions in binary form must reproduce the above copyright
-
 %      notice, this list of conditions and the following disclaimer in the
-
 %      documentation and/or other materials provided with the distribution.
-
 %
-
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-
 % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-
 % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % 
@@ -94,27 +69,36 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
+
+#define _CRT_SECURE_NO_WARNINGS
  
 #ifdef ALPHA
 #define LONG __int64
 #else
 #define LONG long
+// Make sure that time_t is a 32bit type
+#define _USE_32BIT_TIME_T
 #endif
 
+#include <Windows.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <time.h> 
+#include <time.h>
+#include <string.h>
+#include <stdlib.h>
 
 
 int external_alarm(sec)
 unsigned LONG sec;
 {
+  return 0;
 }
  
 int external_ualarm(usec,repeat)
 unsigned LONG usec,repeat;
 {
+  return 0;
 }
  
 char *expand_file_name();    /* from unix-io.c */
@@ -123,7 +107,7 @@ char *expand_file_name();    /* from unix-io.c */
 LONG external_time(tloc)
 LONG *tloc;
 {
-  return ((LONG)time(tloc));
+  return ((LONG)time((time_t *)tloc));
 }
  
     
@@ -138,12 +122,14 @@ struct stat *buf;
 int external_link (path1, path2)
 char *path1, *path2;
 {
+  return -1;
 }
  
 
 int external_unlink (path)
 char *path;
 {
+  return _unlink(path);
 }
  
 
@@ -167,6 +153,7 @@ int external_setenv (var, val)
  return(0); 
 }
  
+#if 0
 /*
  * sets the value of var to be arg in the Unix environment env.
  * Var should end with '=' (bindings are of the form "var=value").
@@ -180,6 +167,8 @@ setenv (var, value)
     
 }
  
+#endif
+
 block_copy (b1, b2, length)
      char *b1, *b2;
      int length;
@@ -216,13 +205,14 @@ int  count;
   int i;
   for (i=0; i<count; i++, buf++)
     fputc(*buf, fp);
+  return 0;
 }
   
 
 #ifdef ALPHA
 sleep(LONG n){ Sleep(n*1000);}
 #else 
-sleep(LONG n){ _sleep(n*1000);}
+sleep(LONG n){ Sleep(n*1000);}
 #endif
 
 fork(){}

@@ -17,57 +17,32 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-
 %
-
 % (c) Copyright 1982, University of Utah
-
 %
-
 % Redistribution and use in source and binary forms, with or without
-
 % modification, are permitted provided that the following conditions are met:
 %
-
-%
-    * Redistributions of source code must retain the relevant copyright
-
+%    * Redistributions of source code must retain the relevant copyright
 %      notice, this list of conditions and the following disclaimer.
-
 %
 %    * Redistributions in binary form must reproduce the above copyright
-
 %      notice, this list of conditions and the following disclaimer in the
-
 %      documentation and/or other materials provided with the distribution.
-
 %
-
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-
 % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-
 % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % 
@@ -78,10 +53,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <windows.h>
 #include <stdio.h>
 #include <setjmp.h>
+#include <string.h>
+#ifndef __GNUC__
 #include <direct.h>
-#include <excpt.h>
+#endif
+/*#include <excpt.h>*/
 
 #define TOGGLE 26   
 #define ACKCHAR 5 
@@ -89,18 +70,16 @@
 #ifdef ALPHA
 #define LONG __int64
 #define ADDRESSINGUNITSPERITEM 8
+typedef LONG FPTYPE;
 #else
 #define LONG long
 #define ADDRESSINGUNITSPERITEM 4
+typedef FILE * FPTYPE;
 #endif
 
 /* Initialize some PSL external variables with FileDescriptors */
 
-#ifdef ALPHA
-extern LONG  unixstdin, unixstdout, unixstderr, unixtty;
-#else
-extern FILE * unixstdin, * unixstdout, * unixstderr, * unixtty;
-#endif
+extern FPTYPE  unixstdin, unixstdout, unixstderr, unixtty;
 
 #define MAXPIPE 5
 
@@ -117,6 +96,10 @@ extern int pipe_mode;
  */
 extern LONG unixnull, unixeof;
  
+extern my_pwrite(char *buf, int len);
+extern my_pread(char *buf, int len);
+extern long pipe_write(HANDLE, LPSTR, long);
+
 unixinitio()
 {
 #ifdef ALPHA
@@ -133,6 +116,9 @@ unixinitio()
     unixnull = (int)NULL;
     unixeof = EOF;
     unixtty = stdin; /* fopen("/dev/tty", "r"); */
+
+// set two digit exponent like in unix
+   _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 }
 
@@ -149,7 +135,7 @@ wputs(char * s,LONG n)
 char * my_gets(char * s)
   {
     if(pipe_mode)
-	return(my_pread(s,255));
+	return(my_pread(s,255),s);
     else
 	return(fgets(s,255,stdin));
   }
@@ -196,12 +182,12 @@ extern char bps[];
 
 unixfread(char*buf, LONG size,LONG count, FILE*fp)
    { 
-     if((LONG)fp == unixstdin)   
+     if((FPTYPE)fp == unixstdin)   
      {
        if(scriptin) return(fread(buf,size,count,scriptin));
-	else return(my_gets(buf));
+	else return((LONG)my_gets(buf));
      }
-     { long l,i;
+     { long l;
        l = fread(buf,size,count,fp);
        if(l != count)
        {  printf("fread %lx %lx\n",size,count);
@@ -230,7 +216,7 @@ unixfputc(char ch,FILE*fp)
    {
      
      if(isapipe(fp)) pipe_write(fp,&ch,1L); else
-     if((LONG)fp == unixstdout)
+     if((FPTYPE)fp == unixstdout)
        { 
 	 if(!script_mode) wputs(&ch,1L); 
 	 if(scriptout) fputc(ch,scriptout);
@@ -240,16 +226,16 @@ unixfputc(char ch,FILE*fp)
 
 unixfgetc(FILE*fp)
    {
-     if((LONG)fp == unixstdin) unixputc(TOGGLE);  
+     if((FPTYPE)fp == unixstdin) unixputc(TOGGLE);  
      return(fgetc(fp));
    }
 
 LONG unixfgets(char*buf,LONG count,FILE*fp)
    {
-     if((LONG)fp == unixstdin) 
+     if((FPTYPE)fp == unixstdin) 
      { 
        if(scriptin) return((LONG)fgets(buf,count,scriptin));
-       return(my_gets(buf));
+       return((LONG)my_gets(buf));
      }
      return((LONG)fgets(buf,(size_t)count,fp));
    }
@@ -258,7 +244,7 @@ unixfwrite(char*buf,int len,int count,FILE*fp)
    {
      if(isapipe(fp)) pipe_write(fp,buf,(LONG)(len*count)); 
       else
-     if((LONG)fp == unixstdout)
+     if((FPTYPE)fp == unixstdout)
        { 
 	 if(!script_mode) wputs(buf,(LONG)(len*count)); 
 	 if(scriptout) fwrite(buf,len,count,scriptout);
@@ -268,14 +254,16 @@ unixfwrite(char*buf,int len,int count,FILE*fp)
 
 unixfflush(FILE*fp)
    {
-     if(isapipe(fp)) ; else
-     if((LONG)fp == unixstdout)
+     if(isapipe(fp)) return 0; else
+     if((FPTYPE)fp == unixstdout)
        {
-	 if (scriptout) fflush(scriptout);
+	 if (scriptout) return(fflush(scriptout));
+         return(fflush(fp));
        }
        else
      return(fflush(fp));
    }
+
 
 
 unixcleario()
@@ -342,13 +330,73 @@ char *fname;
   return (collect);
 }
 
+FILE * unixopen(filename, type)
+     char *filename, *type;
+{
+  FILE* fptr;
 
+  fptr = fopen(expand_file_name(filename), type);
+  return fptr;
+}
 
+#if 0
 FILE * unixopen(filename, type)
      char *filename, *type;
 {
   FILE* fptr;
   char * line[100];
+ 
+  /*  sprintf(line,"open %s %s ",filename,type); my_puts(line); /**/    
+  fptr =  fopen(expand_file_name(filename), type);
+  if(fptr==(FILE*)NULL)
+  { /* try file name in dos syntax */
+    char c,nfname[255];
+    int i,j,k,kmax,l,dotpos;
+    /*   sprintf(line,"\nopen failed %s %s\n",filename,type); my_puts(line); /**/
+/*    k=0;kmax=8;j=0;
+    for(i=0;filename[i];i++)
+    { c=filename[i]; nfname[j++]=c; k++; 
+      if((c == '\\') || ( c == '/'))    {k=0; kmax=8;}
+      else if(c == '.') {if(kmax==3) {j--;k=4;} else k=0; kmax=3;}
+      else if(k > kmax) j--;
+    };
+    nfname[j]='\0';
+*/
+  dotpos = -1;
+  l = strlen(filename);  // points at trailing 0 and thus admits ""
+  for (i = l;
+       i != 0 && filename[i-1] != '\\' && filename[i-1] != '/';
+       i--)
+    if (filename[i] == '.')
+      dotpos = i;
+  // filename[i] is the first char of the filename
+  // filename[dotpos] is the first dot in the filename (or still -1)
+       for (j = 0; j < i; j++)
+         nfname[j] = filename[j];
+       for (j = 0; j < dotpos && j < 8; j++)
+          nfname[i+j] = filename[i+j];
+       if (dotpos == -1) for (j = 0; j < l && j < 8; j++)
+          nfname[i+j] = filename[i+j];
+       if (dotpos != -1) {
+            i += j;
+            nfname[i] = '.';
+            for (j = 1; j <= 3 && dotpos + j < l; j++)
+                      nfname[i+j] = filename[dotpos+j];
+  }
+       nfname[i+j] = (char)0;
+  
+ //  printf(" reformatted  %s \n",nfname); 
+    fptr =  fopen(expand_file_name(nfname), type);
+  };
+    /*  sprintf(line," --> %x\n",fptr); my_puts(line); /**/
+  return(fptr);
+}
+
+FILE * old_unixopen(filename, type)
+     char *filename, *type;
+{
+  FILE* fptr;
+  char * line[200];
  
   /*  sprintf(line,"open %s %s ",filename,type); my_puts(line); /**/    
   fptr =  fopen(expand_file_name(filename), type);
@@ -371,6 +419,7 @@ FILE * unixopen(filename, type)
     /*  sprintf(line," --> %x\n",fptr); my_puts(line); /**/
   return(fptr);
 }
+#endif
 
 
 unixcd(filename)
@@ -380,7 +429,7 @@ unixcd(filename)
 #ifdef WINPSL
    my_cd(filename,1);
 #else
-   return(chdir(filename));
+   return(_chdir(filename));
 #endif
 }
  
@@ -443,7 +492,6 @@ LONG unixgetw(FILE * f)
    { 
      LONG pu;
      size_t r;
-     char * line[100];
 
      //    sprintf(line,"call unixgetw %lx\n",(long)f); my_puts(line); 
      r=(long)fread((char*)&pu,(size_t)ADDRESSINGUNITSPERITEM,(size_t)1,f);

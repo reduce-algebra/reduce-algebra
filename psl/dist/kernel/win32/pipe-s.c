@@ -1,5 +1,7 @@
 // pipe-s: pipe, slave mode
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <windows.h>
 #include <string.h>
 #include <stdio.h>
@@ -22,7 +24,15 @@
 HANDLE fe2lisp_read,fe2lisp_write, lisp2fe_read, lisp2fe_write; 
 static int slave_mode = 1;
 
-HANDLE my_popen_slave(int n);
+void my_popen_slave(int n);
+
+extern void my_puts(char *);
+extern int my_psend(char,char *,int);
+extern int my_preceive(char,char *,int);
+extern int myWriteToNamedPipe(char *,int);
+extern int myReadFromNamedPipe(char *,int);
+extern void local_puts(char *);
+extern int my_plocalcall(char *,int);
 
 extern LONG bruch_bruch;
 
@@ -58,7 +68,7 @@ my_rpc(char * buf, int len)
       return(my_preceive('a',buf,len));
    }
 
-HANDLE my_popen_slave(int n)
+void my_popen_slave(int n)
    {
      char lbuf[10];
        // transfer address of break control to master
@@ -78,7 +88,7 @@ my_pwrite(char * buf, int len)
    {
       int i,j; char lbuf[100];
 
-      if(strlen(buf) > len) buf[len] = '\0';
+      if((int)strlen(buf) > len) buf[len] = '\0';
       printf("%s",buf); 
       j = my_psend('w',buf,len);
       i = my_preceive('k',lbuf,100);
@@ -154,7 +164,7 @@ void my_peek()
    {
        // handle messages with may come asynchronously
 
-     int ret,t,llen,l1,l2;
+     int ret,t,llen;
      char lbuf[600]; 
 
        if   (1) // (!PeekNamedPipe(the_named_pipe,lbuf,600,&llen,&l1,&l2)

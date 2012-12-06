@@ -1,5 +1,9 @@
+
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "psllcall.h"
 #include <stdio.h>
+#include <string.h>
 
 #define MAXPIPE 5
 
@@ -16,6 +20,16 @@ extern LONG psl_callback4;
 extern LONG psl_callback5;   
 
 extern int pipe_mode;
+
+extern void psl_call(LONG,LONG,LONG,LONG);
+extern int my_rpc(char *,int);
+extern void my_puts(char *);
+extern void my_psend(char,char *,int);
+extern void my_preceive(char,char *,int);
+extern int isapipe(LONG);
+
+void notify_wpipe(LONG);
+void delete_wpipe(LONG);
 
 int my_plocalcall(char * buf, int len)
      { 
@@ -100,17 +114,17 @@ psll_call(LONG p1, LONG p2, LONG p3, LONG p4)
 
 LONG hpipe[MAXPIPE];
 
-notify_wpipe(LONG p)
+void notify_wpipe(LONG p)
    {
       int h;
       h=isapipe((LONG)NULL);
       hpipe[h-1] = p;
    }
 
-delete_wpipe(LONG p)
+void delete_wpipe(LONG p)
    {
       int h;
-      h=isapipe(p);
+      h=isapipe((LONG)p);
       hpipe[h-1] = (LONG)NULL;
    }
 

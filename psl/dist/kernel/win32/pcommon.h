@@ -90,5 +90,5 @@
 
 #define  MAXLIPUFFER        30
 #define  MAXLOPUFFER        300    
-#define  LINELENGTH         100
+//#define  LINELENGTH         100
 

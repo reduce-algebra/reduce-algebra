@@ -1,4 +1,5 @@
 #include<windows.h>
+#include <time.h>
 
 #ifdef ALPHA
 #define LONG __int64
@@ -44,7 +45,8 @@ LONG getpid()
  
 LONG external_timc(buffer)
      struct tms *buffer;
-{ FILETIME a1,a2,a3,a4 , cl;
+{
+  //FILETIME a1,a2,a3,a4 , cl;
 #ifdef WINPSL
    prio_loop();
 #endif

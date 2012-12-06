@@ -69,15 +69,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
  
- 
-/* Tag( get_file_status )
- */
-int                     /* Returns "stat" value, 0 == success. */
-get_file_status( int file_name_string, int info_block, int do_strings )
-{    return ( win_file_status(file_name_string,info_block));
-}
- 
- 
 
 /****************************************************************************
 
@@ -90,7 +81,7 @@ int win_file_status(LPCSTR name,DWORD * buf)
 
 { HANDLE hand;
 
-  hand = CreateFile (name,
+  hand = CreateFileA (name,
 	   (DWORD) GENERIC_READ,
 	   (DWORD) 0,
 	   (LPSECURITY_ATTRIBUTES) NULL,
@@ -103,3 +94,12 @@ int win_file_status(LPCSTR name,DWORD * buf)
     CloseHandle (hand);
      return (0); }
 }
+
+/* Tag( get_file_status )
+ */
+int                     /* Returns "stat" value, 0 == success. */
+get_file_status( char * file_name_string, int info_block, int do_strings )
+{    return ( win_file_status(file_name_string,(DWORD *)info_block));
+}
+ 
+ 

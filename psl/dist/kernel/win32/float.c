@@ -16,57 +16,32 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-
 %
-
 % (c) Copyright 1982, University of Utah
-
 %
-
 % Redistribution and use in source and binary forms, with or without
-
 % modification, are permitted provided that the following conditions are met:
 %
-
-%
-    * Redistributions of source code must retain the relevant copyright
-
+%    * Redistributions of source code must retain the relevant copyright
 %      notice, this list of conditions and the following disclaimer.
-
 %
 %    * Redistributions in binary form must reproduce the above copyright
-
 %      notice, this list of conditions and the following disclaimer in the
-
 %      documentation and/or other materials provided with the distribution.
-
 %
-
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-
 % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-
 % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % 
@@ -79,8 +54,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
+
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
+
 
 /* Tag( uxfloat )
  */
@@ -96,7 +74,7 @@ uxfloat(f,i)
 int uxfix(f)
      double *f;
 {
-  return *f;
+  return (int)*f;
 }
 
 /* Tag( uxassign )
@@ -172,7 +150,7 @@ uxwritefloat(buf, flt, convstr)
 {
   char *temps, *dot, *e;
   char tempbuf[100]; /* reasonable size limit */
-  double tempf;
+  //  double tempf;
 
   temps = buf + 4;       /* Skip over lisp string length to write data */
 
@@ -180,12 +158,12 @@ uxwritefloat(buf, flt, convstr)
 
   /* Make sure that there is a trailing .0
    */
-  dot = rindex(temps, '.');
+  dot = strrchr(temps, '.');
   if (dot == '\0')
     /* Check to see if the number is in scientific notation. If so, we need
      *  add the .0 into the middle of the string, just before the e.
      */
-    if ((e = rindex(temps, 'e')) || (e = rindex(temps, 'E')))
+    if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
       {
 	strcpy(tempbuf, e);       /* save save exponent part */
 	*e = '\0'; 
@@ -205,14 +183,14 @@ uxwritefloat(buf, flt, convstr)
 
 /* Tag( uxdoubletofloat )
  */
-uxdoubletofloat (dbl,flt)
+uuxdoubletofloat (dbl,flt)
      double *dbl;
      float  *flt;
 {
   *flt = (float) *dbl;
 }
 
-uxfloattodouble (flt,dbl)
+uuxfloattodouble (flt,dbl)
      float  *flt;             
      double *dbl;             
 {
@@ -220,61 +198,61 @@ uxfloattodouble (flt,dbl)
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
-uxsin (r, x)
+uuxsin (r, x)
      double *r, *x;
 {
     *r = sin( *x );
 }
 
-uxcos (r, x)
+uuxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
 }
 
-uxtan (r, x)
+uuxtan (r, x)
      double *r, *x;
 {
     *r = tan( *x );
 }
 
-uxasin (r, x)
+uuxasin (r, x)
      double *r, *x;
 {
     *r = asin( *x );
 }
 
-uxacos (r, x)
+uuxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
 }
 
-uxatan (r, x)
+uuxatan (r, x)
      double *r, *x;
 {
     *r = atan( *x );
 }
 
-uxsqrt (r, x)
+uuxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
 }
 
-uxexp (r, x)
+uuxexp (r, x)
      double *r, *x;
 {
     *r = exp( *x );
 }
 
-uxlog (r, x)
+uuxlog (r, x)
      double *r, *x;
 {
     *r = log( *x );
 }
 
-uxatan2 (r, y, x)
+uuxatan2 (r, y, x)
      double *r, *y, *x;
 {
     *r = atan2( *y, *x );

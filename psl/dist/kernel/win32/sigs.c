@@ -5,6 +5,10 @@
  
 
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <float.h>
+#include <excpt.h>
 
 extern long bruch_bruch;
 
@@ -28,7 +32,7 @@ void c_signal()
 }
 
 void sun3_sigset( sig, action )
-void (*action)(); 
+void (*action)(int); 
 int sig;
 {
     // if(sig == SIGINT) signal(SIGINT,term_interrupt); else
@@ -44,6 +48,7 @@ int sig;
  
 ieee_handler()
 {
+  _clearfp();
   return(0);
 }
 
@@ -53,7 +58,9 @@ ualarm()
   return(0);
 }
 
-ieee_flags()
+// abuse ieee_flags to return a pointer to the EXCEPTION_POINTERS structure
+void * ieee_flags()
 {
-  return(0);
+  return _pxcptinfoptrs;
 }
+

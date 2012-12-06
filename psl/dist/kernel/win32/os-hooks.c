@@ -15,57 +15,32 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-
 %
-
 % (c) Copyright 1982, University of Utah
-
 %
-
 % Redistribution and use in source and binary forms, with or without
-
 % modification, are permitted provided that the following conditions are met:
 %
-
-%
-    * Redistributions of source code must retain the relevant copyright
-
+%    * Redistributions of source code must retain the relevant copyright
 %      notice, this list of conditions and the following disclaimer.
-
 %
 %    * Redistributions in binary form must reproduce the above copyright
-
 %      notice, this list of conditions and the following disclaimer in the
-
 %      documentation and/or other materials provided with the distribution.
-
 %
-
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-
 % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-
 % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % 
@@ -74,6 +49,9 @@
 *
 ******************************************************************************
 */
+
+#define _CRT_SECURE_NO_WARNINGS
+
 //////#ifdef WINPSL
 #include <windows.h>
 //////#endif
@@ -81,6 +59,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
+#include <float.h>
 
 #define _Far16 _far16
 #define INCL_DOSEXCEPTIONS
@@ -102,7 +81,7 @@ extern int firstkernel;
 extern char bps[];
 
 #ifndef WINPSL
-int hpipe = 0;
+//int hpipe = 0;
 #endif
 
 #include <excpt.h>
@@ -111,8 +90,18 @@ int hpipe = 0;
 jmp_buf mainenv,signalenv;
 
 
+void clear_dtabsize();
+extern setupbpsandheap();
+extern my_pexit();
+extern psl_main(int, char **, int[]);
+extern HANDLE my_popen_slave(int);
+void c_signal();
+void unixinitio();
+void init_fp();
+
 /****************** main ***********************/
 
+extern int symms[];
 
 main(argc,argv)
 
@@ -121,7 +110,7 @@ char *argv[];
 {
   int val; 
   char * renv;
-  int i,p;
+  int i;
 
   for(i=1; i<argc; i++)
    { 
@@ -136,10 +125,12 @@ char *argv[];
 
   if(((char*)renv=(char*)getenv("reduce")) ==(char*) NULL)
   {  // create path to %reduce%
-       int l; char*s;
-       char path[100],env[200]="reduce=";
+       char env[200]="reduce=";
 
 #ifdef WINPSL
+       int l; char*s;
+       char path[200];
+
        GetModuleFileName((HMODULE)NULL,path,100L);
        l=strlen(path);
        while(l>0 && path[l] != '\\') l--; path[l]='\0';
@@ -157,12 +148,14 @@ char *argv[];
   unixinitio(); 
   bruch_bruch = 0;
 
+  init_fp();	// initilialize floating point exception handling
+
   c_signal();   // initizlize Ctrl C
 
   val=setjmp(mainenv);        /* set non-local return point for exit    */
 
   if (val == 0)
-/*    try{*/ psl_main(argc,argv); /* }
+/*    try{*/ psl_main(argc,argv,symms); /* }
          except(EXCEPTION_EXECUTE_HANDLER) 
           {printf("Error on PSL kernel level\n");};*/
 
@@ -213,10 +206,24 @@ extern char *end;
 /*
  *     Size of dtabsize is 0x34c bytes.
  */
-clear_dtabsize()
+void clear_dtabsize()
 {
  }
  
+void init_fp()
+{
+	unsigned int cw, cwOriginal;
+
+        _clearfp();	// always call _clearfp before setting the control word
+
+	cw = _controlfp(0, 0); //Get the default control word
+
+	cw &=~(EM_OVERFLOW|EM_ZERODIVIDE|EM_INVALID);
+
+	cwOriginal = _controlfp(cw, MCW_EM); //Set it.
+}
+
+#if 0
 char * rindex(s,c)
    /* look for the last occurrence of character c in string s;
       if found, return pointer to string part, NULL otherwise */
@@ -231,15 +238,20 @@ char * index(s,c)
    /* look for the first occurrence of character c in string s;
       if found, return pointer to string part, NULL otherwise */ 
         char * s; char c; 
-        { int i,l; char x;
+        { int i,l; 
           for (i=0; (s[i] !=c) && (s[i]!='\000') ; i++);
           if (s[i]=='\000') return(NULL); else return(& s[i]); 
         } 
+#endif
+
+#if 0
+#ifndef __GNUC__
 
 bzero (b,length) 
 char * b; int length; 
 { int i;
   for (i=0; i<length; i++) b[i]='\000' ; } 
  
-
+#endif
+#endif
 

@@ -1,5 +1,5 @@
         .386
- DGROUP   group   _DATA, _BSS
+; DGROUP   group   _DATA, _BSS
 _DATA    segment dword public 'DATA'
        include mhdr.asm 
    ALIGN 4
@@ -11,7 +11,7 @@ _BSS     ends
 
 _TEXT    segment dword public 'CODE'
          assume  CS:_TEXT
-;         assume  DS:DGROUP
+         assume  DS:_DATA
  DD 1
 ; (*entry firstkernel expr 1)
  PUBLIC firstkernel
@@ -84,21 +84,19 @@ l0003:
  mov ds:symval+1244,edi
  mov edi,symval+1248
  mov ds:symval+1252,edi
- mov eax,40000
- add eax,symval+1256
- mov ds:symval+1232,eax
- mov ebx,40000
- add ebx,eax
- mov ds:symval+1240,ebx
- mov eax,40000
- add eax,ebx
+ mov edi,symval+1256
+ mov ds:symval+1232,edi
+ mov eax,240000
+ add eax,symval+1232
+ mov ds:symval+1240,eax
+ add eax,240000
  mov ds:symval+1248,eax
  ret 
  DD 0
 ; (*entry &&init-tables2 expr 0)
  PUBLIC l0004
 l0004:
- mov  DWORD PTR -36[esp],eax
+ mov  DWORD PTR [esp-36],eax
  sub esp,8
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 4[esp],edi
@@ -147,7 +145,7 @@ l0006:
 ; (*entry &&symcopy expr 2)
  PUBLIC l0007
 l0007:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push eax
  mov ebp,ebx
  mov ebx,symval+1228
@@ -178,6 +176,8 @@ l0010:
  PUBLIC _psl_main
 _psl_main:
  push ebp
+ mov eax, DWORD PTR 16[esp]
+ mov ds:symval+1256,eax
  mov eax, DWORD PTR 8[esp]
  mov ebx, DWORD PTR 12[esp]
  mov ds:symval+1296,esp
@@ -274,7 +274,7 @@ l0017:
 ; (*entry external_strlen expr 1)
  PUBLIC external_strlen
 external_strlen:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push 0
  push eax
 l0018:
@@ -373,12 +373,12 @@ binaryclose:
 ; (*entry initialize-symbol-table expr 0)
  PUBLIC l0028
 l0028:
- mov  DWORD PTR -36[esp],eax
+ mov  DWORD PTR [esp-36],eax
  sub esp,8
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 4[esp],edi
  mov DWORD PTR [esp],edi
- mov ebx,10000
+ mov ebx,60000
  mov eax,symval+1224
  mov edx,eax
  mov ecx,ebx
@@ -387,7 +387,7 @@ l0029:
  jg l0030
  mov eax,edx
  shl eax,2
- add eax,symval+1256
+ add eax,symval+1404
  xor ebx,ebx
  inc ebx
  add ebx,edx
@@ -395,9 +395,9 @@ l0029:
  inc edx
  jmp l0029
 l0030:
- mov esi,symval+1256
- mov  DWORD PTR 40000[esi],0
- mov ebx,18013
+ mov esi,symval+1404
+ mov  DWORD PTR 240000[esi],0
+ mov ebx,68023
  xor eax,eax
  mov DWORD PTR [esp],eax
  mov  DWORD PTR 4[esp],ebx
@@ -413,7 +413,7 @@ l0031:
  inc DWORD PTR [esp]
  jmp l0031
 l0032:
- mov edi,symval+1256
+ mov edi,symval+1404
  mov eax, DWORD PTR 512[edi]
  mov edi,350
  call [symfnc+1400]
@@ -434,7 +434,7 @@ l0033:
  jg l0034
  mov eax,DWORD PTR [esp]
  shl eax,2
- add eax,symval+1256
+ add eax,symval+1404
  mov eax,DWORD PTR [eax]
  mov edi,350
  call [symfnc+1400]
@@ -447,14 +447,14 @@ l0033:
  jmp l0033
 l0034:
  mov eax,30*08000000h+OFFSET 128
- mov ds:symval+1404,eax
+ mov ds:symval+1408,eax
  add esp,8
  ret 
  DD 1
 ; (*entry faslin-intern expr 1)
  PUBLIC l0035
 l0035:
- mov  DWORD PTR -40[esp],eax
+ mov  DWORD PTR [esp-40],eax
  sub esp,12
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 8[esp],edi
@@ -462,15 +462,15 @@ l0035:
  mov DWORD PTR [esp],eax
  mov ebx,eax
  xor eax,eax
- mov edi,352
- call [symfnc+1408]
+ mov edi,353
+ call [symfnc+1412]
  mov  DWORD PTR 4[esp],eax
  cmp eax,30*08000000h+OFFSET 128
  jne l0036
  mov eax,DWORD PTR [esp]
  add esp,12
- mov edi,353
- jmp [symfnc+1412]
+ mov edi,354
+ jmp [symfnc+1416]
 l0036:
  mov eax,DWORD PTR [esp]
  and eax,134217727
@@ -509,18 +509,18 @@ l0038:
  inc ebx
  add ebx, DWORD PTR 4[esp]
  mov eax,DWORD PTR [esp]
- mov edi,354
- call [symfnc+1416]
+ mov edi,355
+ call [symfnc+1420]
 l0039:
  add esp,12
- mov edi,353
- jmp [symfnc+1412]
+ mov edi,354
+ jmp [symfnc+1416]
  DD 1
 ; (*entry intern expr 1)
  PUBLIC intern
 intern:
- mov edi,356
- jmp [symfnc+1424]
+ mov edi,357
+ jmp [symfnc+1428]
 l0040:
  DD 7
  DB 78,101,119,32,105,100,58,32,0,0
@@ -528,7 +528,7 @@ l0040:
 ; (*entry unchecked-string-intern expr 1)
  PUBLIC l0041
 l0041:
- mov  DWORD PTR -52[esp],eax
+ mov  DWORD PTR [esp-52],eax
  sub esp,24
  mov DWORD PTR [esp],eax
  mov ebp,30*08000000h+OFFSET 128
@@ -564,24 +564,36 @@ l0042:
  shl ebx,1
  mov ax,0[eax][ebx*1]
  cwde 
- shl eax,16
- sar eax,16
- cmp eax,0
- jle l0044
+ and eax,65535
+ mov ebx,eax
+ cmp eax,65535
+ jl l0044
+ mov eax,30*08000000h+OFFSET 128
+ jmp l0045
+l0044:
+ mov eax,30*08000000h+OFFSET 116
+l0045:
+ cmp eax,30*08000000h+OFFSET 128
+ je l0046
+ mov eax,30*08000000h+OFFSET 116
+ cmp ebx,0
+ jg l0046
+ add eax,12
+l0046:
+ cmp eax,30*08000000h+OFFSET 128
+ je l0047
  mov ebx, DWORD PTR 12[esp]
  mov eax,symval+1044
  shl ebx,1
  mov ax,0[eax][ebx*1]
  cwde 
- shl eax,16
- sar eax,16
+ and eax,65535
  and eax,134217727
  or eax,-268435456
  jmp l0043
-l0044:
- mov edi,30*08000000h+OFFSET 128
- cmp edi,symval+1404
- je l0045
+l0047:
+ cmp eax,symval+1408
+ je l0048
  mov eax,4*08000000h+OFFSET l0040
  mov edi,331
  call [symfnc+1324]
@@ -590,9 +602,9 @@ l0044:
  call [symfnc+1324]
  mov edi,332
  call [symfnc+1328]
-l0045:
- mov edi,357
- call [symfnc+1428]
+l0048:
+ mov edi,358
+ call [symfnc+1432]
  mov  DWORD PTR 20[esp],eax
  mov ecx,eax
  mov ebx, DWORD PTR 12[esp]
@@ -600,119 +612,116 @@ l0045:
  shl ebx,1
  mov 0[ebx][eax*1],cx
  mov eax, DWORD PTR 8[esp]
- mov edi,358
- call [symfnc+1432]
- mov  DWORD PTR 16[esp],eax
- mov ebx, DWORD PTR 4[esp]
  mov edi,359
  call [symfnc+1436]
+ mov  DWORD PTR 16[esp],eax
+ mov ebx, DWORD PTR 4[esp]
+ mov edi,360
+ call [symfnc+1440]
  mov ebx, DWORD PTR 16[esp]
  and ebx,134217727
  or ebx,536870912
  mov eax, DWORD PTR 20[esp]
  add esp,24
- mov edi,360
- jmp [symfnc+1440]
+ mov edi,361
+ jmp [symfnc+1444]
 l0043:
  add esp,24
  ret 
-l0046:
+l0049:
  DD 18
  DB 72,97,115,104,32,116,97,98,108,101,32
  DB 111,118,101,114,102,108,111,119,0
  DD 1
 ; (*entry hash-into-table expr 1)
- PUBLIC l0047
-l0047:
- mov  DWORD PTR -44[esp],eax
+ PUBLIC l0050
+l0050:
+ mov  DWORD PTR [esp-44],eax
  sub esp,16
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 12[esp],edi
  mov  DWORD PTR 8[esp],edi
  mov  DWORD PTR 4[esp],edi
  mov DWORD PTR [esp],eax
- mov edi,361
- call [symfnc+1444]
+ mov edi,362
+ call [symfnc+1448]
  mov  DWORD PTR 4[esp],eax
  mov  DWORD PTR 8[esp],eax
  mov  DWORD PTR 12[esp],-1
-l0048:
+l0051:
  mov ebx, DWORD PTR 8[esp]
  mov eax,symval+1044
  shl ebx,1
  mov ax,0[eax][ebx*1]
  cwde 
- shl eax,16
- sar eax,16
+ and eax,65535
  cmp eax,0
- jne l0049
+ jne l0052
  cmp  DWORD PTR 12[esp],-1
- je l0050
+ je l0053
  mov eax, DWORD PTR 12[esp]
- jmp l0051
-l0050:
+ jmp l0054
+l0053:
  mov eax, DWORD PTR 8[esp]
-l0051:
- jmp l0052
-l0049:
+l0054:
+ jmp l0055
+l0052:
  mov ebx, DWORD PTR 8[esp]
  mov eax,symval+1044
  shl ebx,1
  mov ax,0[eax][ebx*1]
  cwde 
  mov ebx,eax
- shl ebx,16
- sar ebx,16
- cmp ebx,-1
- jne l0053
+ and ebx,65535
+ cmp ebx,65535
+ jne l0056
  cmp  DWORD PTR 12[esp],-1
- jne l0054
+ jne l0057
  mov edi, DWORD PTR 8[esp]
  mov  DWORD PTR 12[esp],edi
- jmp l0054
-l0053:
+ jmp l0057
+l0056:
  mov ebx, DWORD PTR 8[esp]
  mov eax,symval+1044
  shl ebx,1
  mov ax,0[eax][ebx*1]
  cwde 
  mov ebx,DWORD PTR [esp]
- shl eax,16
- sar eax,16
+ and eax,65535
  shl eax,2
- add eax,symval+1256
+ add eax,symval+1404
  mov eax,DWORD PTR [eax]
- mov edi,362
- call [symfnc+1448]
+ mov edi,363
+ call [symfnc+1452]
  cmp eax,30*08000000h+OFFSET 128
- je l0054
+ je l0057
  mov eax, DWORD PTR 8[esp]
- jmp l0052
-l0054:
- cmp  DWORD PTR 8[esp],18013
- jne l0055
+ jmp l0055
+l0057:
+ cmp  DWORD PTR 8[esp],68023
+ jne l0058
  xor eax,eax
- jmp l0056
-l0055:
+ jmp l0059
+l0058:
  xor eax,eax
  inc eax
  add eax, DWORD PTR 8[esp]
-l0056:
+l0059:
  mov  DWORD PTR 8[esp],eax
  cmp eax, DWORD PTR 4[esp]
- jne l0048
- mov eax,4*08000000h+OFFSET l0046
+ jne l0051
+ mov eax,4*08000000h+OFFSET l0049
  mov edi,342
  call [symfnc+1368]
- jmp l0048
-l0052:
+ jmp l0051
+l0055:
  add esp,16
  ret 
  DD 2
 ; (*entry initialize-new-id expr 2)
- PUBLIC l0057
-l0057:
- mov  DWORD PTR -36[esp],eax
+ PUBLIC l0060
+l0060:
+ mov  DWORD PTR [esp-36],eax
  sub esp,8
  mov DWORD PTR [esp],eax
  and eax,134217727
@@ -720,7 +729,7 @@ l0057:
  mov  DWORD PTR 4[esp],eax
  mov ecx,DWORD PTR [esp]
  shl ecx,2
- add ecx,symval+1256
+ add ecx,symval+1404
  mov DWORD PTR [ecx],ebx
  mov edx,DWORD PTR [esp]
  shl edx,2
@@ -735,16 +744,16 @@ l0057:
  or ebx,-402653184
  mov DWORD PTR [eax],ebx
  mov eax,DWORD PTR [esp]
- mov edi,363
- call [symfnc+1452]
+ mov edi,364
+ call [symfnc+1456]
  mov eax, DWORD PTR 4[esp]
  add esp,8
  ret 
  DD 1
 ; (*entry hash-function expr 1)
- PUBLIC l0060
-l0060:
- mov  DWORD PTR -48[esp],eax
+ PUBLIC l0063
+l0063:
+ mov  DWORD PTR [esp-48],eax
  sub esp,20
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 12[esp],edi
@@ -758,17 +767,17 @@ l0060:
  xor eax,eax
  mov  DWORD PTR 16[esp],eax
  cmp DWORD PTR [esp],24
- jle l0061
+ jle l0064
  mov DWORD PTR [esp],24
-l0061:
+l0064:
  mov ebx,DWORD PTR [esp]
  xor eax,eax
  mov  DWORD PTR 12[esp],eax
  mov  DWORD PTR 4[esp],ebx
-l0062:
+l0065:
  mov edi, DWORD PTR 12[esp]
  cmp edi, DWORD PTR 4[esp]
- jg l0063
+ jg l0066
  mov ebx, DWORD PTR 12[esp]
  mov eax,4
  add eax, DWORD PTR 8[esp]
@@ -778,23 +787,23 @@ l0062:
  mov ebx,24
  sub ebx, DWORD PTR 12[esp]
  cmp ebx,0
- jge l0058
+ jge l0061
  neg ebx
  xchg ecx,ebx
  shr eax,cl
- jmp l0059
-l0058:
+ jmp l0062
+l0061:
  xchg ecx,ebx
  shl eax,cl
-l0059:
+l0062:
  xchg ecx,ebx
  mov edi, DWORD PTR 16[esp]
  xor eax,edi
  mov  DWORD PTR 16[esp],eax
  inc  DWORD PTR 12[esp]
- jmp l0062
-l0063:
- mov ebx,18013
+ jmp l0065
+l0066:
+ mov ebx,68023
  mov eax, DWORD PTR 16[esp]
  add esp,20
  cdq 
@@ -805,7 +814,7 @@ l0063:
 ; (*entry faslin expr 1)
  PUBLIC faslin
 faslin:
- mov  DWORD PTR -72[esp],eax
+ mov  DWORD PTR [esp-72],eax
  sub esp,44
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 32[esp],edi
@@ -828,32 +837,32 @@ faslin:
  mov ebx,65535
  and ebx,eax
  cmp ebx,399
- je l0064
+ je l0067
  mov eax, DWORD PTR 8[esp]
  mov edi,349
  call [symfnc+1396]
  mov eax,DWORD PTR [esp]
- mov edi,364
- call [symfnc+1456]
- jmp l0065
-l0064:
+ mov edi,365
+ call [symfnc+1460]
+ jmp l0068
+l0067:
  mov eax, DWORD PTR 12[esp]
  shr eax,16
  mov  DWORD PTR 12[esp],eax
  mov eax, DWORD PTR 8[esp]
- mov edi,365
- call [symfnc+1460]
+ mov edi,366
+ call [symfnc+1464]
  mov  DWORD PTR 16[esp],eax
  mov eax, DWORD PTR 8[esp]
  mov edi,345
  call [symfnc+1380]
  mov  DWORD PTR 24[esp],eax
- mov edi,366
- call [symfnc+1464]
+ mov edi,367
+ call [symfnc+1468]
  mov  DWORD PTR 28[esp],eax
  xor eax,eax
- mov edi,366
- call [symfnc+1464]
+ mov edi,367
+ call [symfnc+1468]
  mov  DWORD PTR 36[esp],eax
  mov eax, DWORD PTR 8[esp]
  mov edi,345
@@ -871,8 +880,8 @@ l0064:
  mov edi,345
  call [symfnc+1380]
  mov  DWORD PTR 4[esp],eax
- mov edi,367
- call [symfnc+1468]
+ mov edi,368
+ call [symfnc+1472]
  mov ebx,eax
  and ebx,134217727
  or ebx,939524096
@@ -890,36 +899,36 @@ l0064:
  inc eax
  and eax, DWORD PTR 12[esp]
  cmp eax,1
- jne l0066
- mov edx, DWORD PTR 16[esp]
- mov ecx, DWORD PTR 20[esp]
- mov ebx, DWORD PTR 24[esp]
- mov eax, DWORD PTR 28[esp]
- mov edi,368
- call [symfnc+1472]
- jmp l0067
-l0066:
+ jne l0069
  mov edx, DWORD PTR 16[esp]
  mov ecx, DWORD PTR 20[esp]
  mov ebx, DWORD PTR 24[esp]
  mov eax, DWORD PTR 28[esp]
  mov edi,369
  call [symfnc+1476]
-l0067:
- mov eax,symval+1488
- mov  DWORD PTR 32[esp],eax
- mov edi, DWORD PTR 28[esp]
- mov ds:symval+1488,edi
- mov eax, DWORD PTR 40[esp]
+ jmp l0070
+l0069:
+ mov edx, DWORD PTR 16[esp]
+ mov ecx, DWORD PTR 20[esp]
+ mov ebx, DWORD PTR 24[esp]
+ mov eax, DWORD PTR 28[esp]
  mov edi,370
  call [symfnc+1480]
- mov edi, DWORD PTR 32[esp]
- mov ds:symval+1488,edi
- mov ebx, DWORD PTR 36[esp]
+l0070:
+ mov eax,symval+1492
+ mov  DWORD PTR 32[esp],eax
+ mov edi, DWORD PTR 28[esp]
+ mov ds:symval+1492,edi
  mov eax, DWORD PTR 40[esp]
  mov edi,371
  call [symfnc+1484]
-l0065:
+ mov edi, DWORD PTR 32[esp]
+ mov ds:symval+1492,edi
+ mov ebx, DWORD PTR 36[esp]
+ mov eax, DWORD PTR 40[esp]
+ mov edi,372
+ call [symfnc+1488]
+l0068:
  mov eax,30*08000000h+OFFSET 128
  add esp,44
  ret 
@@ -931,9 +940,9 @@ delbps:
  ret 
  DD 4
 ; (*entry do-relocation expr 4)
- PUBLIC l0068
-l0068:
- mov  DWORD PTR -52[esp],eax
+ PUBLIC l0071
+l0071:
+ mov  DWORD PTR [esp-52],eax
  sub esp,24
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 16[esp],edi
@@ -948,13 +957,13 @@ l0068:
  xor eax,eax
  mov  DWORD PTR 20[esp],eax
  mov DWORD PTR [esp],ebx
-l0069:
+l0072:
  mov edi, DWORD PTR 20[esp]
  cmp edi,DWORD PTR [esp]
- jle l0070
+ jle l0073
  mov eax,30*08000000h+OFFSET 128
- jmp l0071
-l0070:
+ jmp l0074
+l0073:
  mov ebx, DWORD PTR 20[esp]
  mov eax, DWORD PTR 4[esp]
  and eax,134217727
@@ -974,43 +983,43 @@ l0070:
  add ebx, DWORD PTR 20[esp]
  mov  DWORD PTR 16[esp],ebx
  cmp eax,1
- je l0072
+ je l0075
  cmp eax,2
- je l0073
+ je l0076
  cmp eax,3
- je l0074
- jmp l0075
-l0072:
- mov ecx, DWORD PTR 8[esp]
- mov ebx, DWORD PTR 12[esp]
- mov eax, DWORD PTR 16[esp]
- mov edi,373
- call [symfnc+1492]
- jmp l0075
-l0074:
+ je l0077
+ jmp l0078
+l0075:
  mov ecx, DWORD PTR 8[esp]
  mov ebx, DWORD PTR 12[esp]
  mov eax, DWORD PTR 16[esp]
  mov edi,374
  call [symfnc+1496]
- jmp l0075
-l0073:
+ jmp l0078
+l0077:
  mov ecx, DWORD PTR 8[esp]
  mov ebx, DWORD PTR 12[esp]
  mov eax, DWORD PTR 16[esp]
  mov edi,375
  call [symfnc+1500]
-l0075:
+ jmp l0078
+l0076:
+ mov ecx, DWORD PTR 8[esp]
+ mov ebx, DWORD PTR 12[esp]
+ mov eax, DWORD PTR 16[esp]
+ mov edi,376
+ call [symfnc+1504]
+l0078:
  inc  DWORD PTR 20[esp]
- jmp l0069
-l0071:
+ jmp l0072
+l0074:
  add esp,24
  ret 
  DD 4
 ; (*entry do-relocation-new expr 4)
- PUBLIC l0076
-l0076:
- mov  DWORD PTR -52[esp],eax
+ PUBLIC l0079
+l0079:
+ mov  DWORD PTR [esp-52],eax
  sub esp,24
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 8[esp],edi
@@ -1026,7 +1035,7 @@ l0076:
  and ebp,134217727
  add ebp,4
  mov DWORD PTR [esp],ebp
-l0077:
+l0080:
  mov ebx, DWORD PTR 4[esp]
  mov eax,DWORD PTR [esp]
  mov al,0[eax][ebx*1]
@@ -1035,10 +1044,10 @@ l0077:
  and eax,255
  mov  DWORD PTR 8[esp],eax
  cmp eax,0
- jne l0078
+ jne l0081
  mov eax,30*08000000h+OFFSET 128
- jmp l0079
-l0078:
+ jmp l0082
+l0081:
  inc  DWORD PTR 4[esp]
  mov eax,63
  and eax, DWORD PTR 8[esp]
@@ -1049,41 +1058,41 @@ l0078:
  mov  DWORD PTR 8[esp],ebx
  mov eax,ebx
  cmp eax,1
- je l0080
+ je l0083
  cmp eax,2
- je l0081
+ je l0084
  cmp eax,3
- je l0082
- jmp l0077
-l0080:
- mov ecx, DWORD PTR 12[esp]
- mov ebx, DWORD PTR 16[esp]
- mov eax, DWORD PTR 20[esp]
- mov edi,373
- call [symfnc+1492]
- jmp l0077
-l0082:
+ je l0085
+ jmp l0080
+l0083:
  mov ecx, DWORD PTR 12[esp]
  mov ebx, DWORD PTR 16[esp]
  mov eax, DWORD PTR 20[esp]
  mov edi,374
  call [symfnc+1496]
- jmp l0077
-l0081:
+ jmp l0080
+l0085:
  mov ecx, DWORD PTR 12[esp]
  mov ebx, DWORD PTR 16[esp]
  mov eax, DWORD PTR 20[esp]
  mov edi,375
  call [symfnc+1500]
- jmp l0077
-l0079:
+ jmp l0080
+l0084:
+ mov ecx, DWORD PTR 12[esp]
+ mov ebx, DWORD PTR 16[esp]
+ mov eax, DWORD PTR 20[esp]
+ mov edi,376
+ call [symfnc+1504]
+ jmp l0080
+l0082:
  add esp,24
  ret 
  DD 3
 ; (*entry relocate-word expr 3)
- PUBLIC l0083
-l0083:
- mov  DWORD PTR -40[esp],eax
+ PUBLIC l0086
+l0086:
+ mov  DWORD PTR [esp-40],eax
  sub esp,12
  mov  DWORD PTR 8[esp],eax
  mov eax,DWORD PTR [eax]
@@ -1097,17 +1106,17 @@ l0083:
  mov ecx,ebx
  mov ebx,eax
  mov eax, DWORD PTR 4[esp]
- mov edi,376
- call [symfnc+1504]
+ mov edi,377
+ call [symfnc+1508]
  mov esi, DWORD PTR 8[esp]
  mov DWORD PTR [esi],eax
  add esp,12
  ret 
  DD 3
 ; (*entry relocate-inf expr 3)
- PUBLIC l0084
-l0084:
- mov  DWORD PTR -40[esp],eax
+ PUBLIC l0087
+l0087:
+ mov  DWORD PTR [esp-40],eax
  sub esp,12
  mov  DWORD PTR 8[esp],eax
  mov eax,DWORD PTR [eax]
@@ -1121,8 +1130,8 @@ l0084:
  mov ecx,ebx
  mov ebx,eax
  mov eax, DWORD PTR 4[esp]
- mov edi,376
- call [symfnc+1504]
+ mov edi,377
+ call [symfnc+1508]
  mov esi, DWORD PTR 8[esp]
  mov edi,DWORD PTR [esi]
  and eax,134217727
@@ -1133,89 +1142,89 @@ l0084:
  ret 
  DD 4
 ; (*entry compute-relocation expr 4)
- PUBLIC l0085
-l0085:
- mov  DWORD PTR -32[esp],eax
+ PUBLIC l0088
+l0088:
+ mov  DWORD PTR [esp-32],eax
  push ebx
  cmp eax,0
- jne l0086
+ jne l0089
  mov eax,ecx
  add eax,ebx
- jmp l0087
-l0086:
+ jmp l0090
+l0089:
  cmp eax,2
- jne l0088
+ jne l0091
  cmp ebx,8150
- jl l0089
+ jl l0092
  mov eax,-8156
  add eax,ebx
  shl eax,2
  add eax,symval+1028
- jmp l0087
-l0089:
- cmp ebx,2048
- jl l0090
- mov ebx,edx
- mov eax,DWORD PTR [esp]
- mov edi,377
- call [symfnc+1508]
- cmp eax,symval+1228
- jle l0091
- shl eax,2
- add eax,symval+1232
- jmp l0087
-l0091:
- shl eax,2
- add eax,symval+1236
- jmp l0087
-l0090:
- mov eax,ebx
- shl eax,2
- add eax,symval+1236
- jmp l0087
-l0088:
- cmp eax,3
- jne l0092
+ jmp l0090
+l0092:
  cmp ebx,2048
  jl l0093
  mov ebx,edx
  mov eax,DWORD PTR [esp]
- mov edi,377
- call [symfnc+1508]
- mov DWORD PTR [esp],eax
+ mov edi,378
+ call [symfnc+1512]
+ cmp eax,symval+1228
+ jle l0094
+ shl eax,2
+ add eax,symval+1232
+ jmp l0090
+l0094:
+ shl eax,2
+ add eax,symval+1236
+ jmp l0090
 l0093:
+ mov eax,ebx
+ shl eax,2
+ add eax,symval+1236
+ jmp l0090
+l0091:
+ cmp eax,3
+ jne l0095
+ cmp ebx,2048
+ jl l0096
+ mov ebx,edx
+ mov eax,DWORD PTR [esp]
+ mov edi,378
+ call [symfnc+1512]
+ mov DWORD PTR [esp],eax
+l0096:
  mov eax,DWORD PTR [esp]
  shl eax,2
  add eax,symval+1240
- jmp l0087
-l0092:
+ jmp l0090
+l0095:
  cmp eax,1
- jne l0094
+ jne l0097
  cmp ebx,2048
- jl l0095
+ jl l0098
  mov ebx,edx
  mov eax,DWORD PTR [esp]
  add esp,4
- mov edi,377
- jmp [symfnc+1508]
-l0095:
+ mov edi,378
+ jmp [symfnc+1512]
+l0098:
  mov eax,ebx
- jmp l0087
-l0094:
+ jmp l0090
+l0097:
  mov eax,30*08000000h+OFFSET 128
-l0087:
+l0090:
  add esp,4
  ret 
  DD 3
 ; (*entry relocate-fast-call expr 3)
- PUBLIC l0096
-l0096:
+ PUBLIC l0099
+l0099:
  mov eax,30*08000000h+OFFSET 128
  ret 
  DD 2
 ; (*entry local-to-global-id expr 2)
- PUBLIC l0097
-l0097:
+ PUBLIC l0100
+l0100:
  add eax,-2047
  shl eax,2
  mov ecx,ebx
@@ -1225,9 +1234,9 @@ l0097:
  ret 
  DD 1
 ; (*entry read-id-table expr 1)
- PUBLIC l0098
-l0098:
- mov  DWORD PTR -52[esp],eax
+ PUBLIC l0101
+l0101:
+ mov  DWORD PTR [esp-52],eax
  sub esp,24
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 20[esp],edi
@@ -1240,8 +1249,8 @@ l0098:
  call [symfnc+1380]
  mov  DWORD PTR 4[esp],eax
  inc eax
- mov edi,367
- call [symfnc+1468]
+ mov edi,368
+ call [symfnc+1472]
  and eax,134217727
  or eax,939524096
  mov  DWORD PTR 8[esp],eax
@@ -1249,10 +1258,10 @@ l0098:
  xor eax,eax
  mov  DWORD PTR 12[esp],eax
  mov  DWORD PTR 16[esp],ebx
-l0099:
+l0102:
  mov edi, DWORD PTR 12[esp]
  cmp edi, DWORD PTR 16[esp]
- jg l0100
+ jg l0103
  mov eax,DWORD PTR [esp]
  mov edi,345
  call [symfnc+1380]
@@ -1273,8 +1282,8 @@ l0099:
  add eax,symval+1032
  and eax,134217727
  or eax,536870912
- mov edi,355
- call [symfnc+1420]
+ mov edi,356
+ call [symfnc+1424]
  mov  DWORD PTR 20[esp],eax
  xor eax,eax
  inc eax
@@ -1287,8 +1296,8 @@ l0099:
  and ecx,134217727
  mov DWORD PTR [eax],ecx
  inc  DWORD PTR 12[esp]
- jmp l0099
-l0100:
+ jmp l0102
+l0103:
  mov eax, DWORD PTR 8[esp]
  add esp,24
  ret 
@@ -1296,26 +1305,26 @@ l0100:
 ; (*entry putentry expr 3)
  PUBLIC putentry
 putentry:
- add ecx,symval+1488
+ add ecx,symval+1492
  and ecx,134217727
  or ecx,-1610612736
- mov edi,379
- jmp [symfnc+1516]
-l0101:
+ mov edi,380
+ jmp [symfnc+1520]
+l0104:
  DD 22
  DB 70,105,108,101,32,105,115,32,110,111,116
  DB 32,70,65,83,76,32,102,111,114,109,97,116
  DB 0
  DD 1
 ; (*entry faslin-bad-file expr 1)
- PUBLIC l0102
-l0102:
- mov eax,4*08000000h+OFFSET l0101
+ PUBLIC l0105
+l0105:
+ mov eax,4*08000000h+OFFSET l0104
  mov edi,331
  call [symfnc+1324]
  mov edi,332
  jmp [symfnc+1328]
-l0103:
+l0106:
  DD 30
  DB 82,97,110,32,111,117,116,32,111,102,32
  DB 98,105,110,97,114,121,32,112,114,111,103
@@ -1324,81 +1333,81 @@ l0103:
 ; (*entry gtbps expr 1)
  PUBLIC gtbps
 gtbps:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  sub esp,4
-l0104:
+l0107:
  mov DWORD PTR [esp],eax
  cmp eax,30*08000000h+OFFSET 128
- jne l0105
- mov edi,381
- call [symfnc+1524]
-l0105:
+ jne l0108
+ mov edi,382
+ call [symfnc+1528]
+l0108:
  cmp DWORD PTR [esp],10
- jle l0106
+ jle l0109
  mov eax,15
  and eax,symval+1172
  cmp eax,0
- je l0106
+ je l0109
  mov ebx,symval+1172
  shr ebx,4
  shl ebx,4
  add ebx,16
  mov ds:symval+1172,ebx
-l0106:
+l0109:
  mov eax,symval+1172
  mov ebx,DWORD PTR [esp]
  shl ebx,2
  add ebx,symval+1172
  mov ds:symval+1172,ebx
  cmp ebx,symval+1144
- jle l0107
+ jle l0110
  mov ds:symval+1172,eax
- mov eax,30*08000000h+OFFSET 382
+ mov eax,30*08000000h+OFFSET 383
+ mov edi,384
+ call [symfnc+1536]
+ cmp eax,30*08000000h+OFFSET 128
+ je l0111
+ mov eax,DWORD PTR [esp]
  mov edi,383
  call [symfnc+1532]
  cmp eax,30*08000000h+OFFSET 128
- je l0108
+ je l0111
  mov eax,DWORD PTR [esp]
- mov edi,382
- call [symfnc+1528]
- cmp eax,30*08000000h+OFFSET 128
- je l0108
- mov eax,DWORD PTR [esp]
- jmp l0104
-l0108:
- mov eax,4*08000000h+OFFSET l0103
+ jmp l0107
+l0111:
+ mov eax,4*08000000h+OFFSET l0106
  add esp,4
- mov edi,384
- jmp [symfnc+1536]
-l0107:
+ mov edi,385
+ jmp [symfnc+1540]
+l0110:
  add esp,4
  ret 
-l0109:
+l0112:
  DD 21
  DB 71,84,66,80,83,32,99,97,108,108,101,100
  DB 32,119,105,116,104,32,78,73,76,46,0,0
  DD 0
 ; (*entry gtbps-nil-error expr 0)
- PUBLIC l0110
-l0110:
- mov eax,4*08000000h+OFFSET l0109
- mov edi,384
- jmp [symfnc+1536]
+ PUBLIC l0113
+l0113:
+ mov eax,4*08000000h+OFFSET l0112
+ mov edi,385
+ jmp [symfnc+1540]
  DD 1
 ; (*entry gtheap expr 1)
  PUBLIC gtheap
 gtheap:
  cmp eax,30*08000000h+OFFSET 128
- jne l0111
- mov edi,385
- jmp [symfnc+1540]
-l0111:
+ jne l0114
  mov edi,386
  jmp [symfnc+1544]
+l0114:
+ mov edi,387
+ jmp [symfnc+1548]
  DD 1
 ; (*entry real-gtheap expr 1)
- PUBLIC l0112
-l0112:
+ PUBLIC l0115
+l0115:
  mov ecx,eax
  mov eax,symval+1128
  mov ebx,ecx
@@ -1406,25 +1415,25 @@ l0112:
  add ebx,symval+1128
  mov ds:symval+1128,ebx
  cmp ebx,symval+1132
- jl l0113
+ jl l0116
  mov ebx,ecx
- mov edi,388
- jmp [symfnc+1552]
-l0113:
+ mov edi,389
+ jmp [symfnc+1556]
+l0116:
  ret 
-l0114:
+l0117:
  DD 27
  DB 71,97,114,98,97,103,101,32,99,111,108
  DB 108,101,99,116,105,111,110,32,114,101
  DB 113,117,105,114,101,100,46,0,0
  DD 1
 ; (*entry get-heap-trap expr 1)
- PUBLIC l0115
-l0115:
- mov eax,4*08000000h+OFFSET l0114
+ PUBLIC l0118
+l0118:
+ mov eax,4*08000000h+OFFSET l0117
  mov edi,342
  jmp [symfnc+1368]
-l0116:
+l0119:
  DD 18
  DB 82,97,110,32,111,117,116,32,111,102,32
  DB 73,68,32,115,112,97,99,101,0
@@ -1433,19 +1442,19 @@ l0116:
  PUBLIC gtid
 gtid:
  cmp symval+1224,0
- jne l0117
- mov edi,389
- call [symfnc+1556]
+ jne l0120
+ mov edi,390
+ call [symfnc+1560]
  cmp symval+1224,0
- jne l0117
- mov eax,4*08000000h+OFFSET l0116
+ jne l0120
+ mov eax,4*08000000h+OFFSET l0119
  mov edi,342
  call [symfnc+1368]
-l0117:
+l0120:
  mov eax,symval+1224
  mov ebx,eax
  shl ebx,2
- add ebx,symval+1256
+ add ebx,symval+1404
  mov edi,DWORD PTR [ebx]
  mov ds:symval+1224,edi
  ret 
@@ -1453,11 +1462,11 @@ l0117:
 ; (*entry gtwrds expr 1)
  PUBLIC gtwrds
 gtwrds:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push eax
  add eax,2
- mov edi,387
- call [symfnc+1548]
+ mov edi,388
+ call [symfnc+1552]
  mov ebx,DWORD PTR [esp]
  and ebx,134217727
  or ebx,-939524096
@@ -1468,7 +1477,7 @@ gtwrds:
 ; (*entry gtconststr expr 1)
  PUBLIC gtconststr
 gtconststr:
- mov  DWORD PTR -36[esp],eax
+ mov  DWORD PTR [esp-36],eax
  sub esp,8
  mov DWORD PTR [esp],eax
  add eax,5
@@ -1478,8 +1487,8 @@ gtconststr:
  sar eax,2
  mov  DWORD PTR 4[esp],eax
  inc eax
- mov edi,366
- call [symfnc+1464]
+ mov edi,367
+ call [symfnc+1468]
  mov edi,DWORD PTR [esp]
  mov DWORD PTR [eax],edi
  mov ebx, DWORD PTR 4[esp]
@@ -1488,7 +1497,7 @@ gtconststr:
  mov DWORD PTR [ebx],0
  add esp,8
  ret 
-l0118:
+l0121:
  DD 30
  DB 83,85,66,83,69,81,32,99,97,108,108,101
  DB 100,32,119,105,116,104,32,97,32,110,111
@@ -1497,7 +1506,7 @@ l0118:
 ; (*entry subseq expr 3)
  PUBLIC subseq
 subseq:
- mov  DWORD PTR -60[esp],eax
+ mov  DWORD PTR [esp-60],eax
  sub esp,32
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 28[esp],edi
@@ -1511,11 +1520,11 @@ subseq:
  mov edi,eax
  shr edi,27
  cmp edi,4
- je l0119
- mov eax,4*08000000h+OFFSET l0118
+ je l0122
+ mov eax,4*08000000h+OFFSET l0121
  mov edi,342
  call [symfnc+1368]
-l0119:
+l0122:
  xor eax,eax
  dec eax
  add eax, DWORD PTR 8[esp]
@@ -1525,17 +1534,17 @@ l0119:
  and eax,134217727
  mov  DWORD PTR 16[esp],eax
  mov eax, DWORD PTR 12[esp]
- mov edi,390
- call [symfnc+1560]
+ mov edi,391
+ call [symfnc+1564]
  mov  DWORD PTR 20[esp],eax
  mov ebx, DWORD PTR 12[esp]
  xor eax,eax
  mov  DWORD PTR 24[esp],eax
  mov  DWORD PTR 28[esp],ebx
-l0120:
+l0123:
  mov edi, DWORD PTR 24[esp]
  cmp edi, DWORD PTR 28[esp]
- jg l0121
+ jg l0124
  mov ebx, DWORD PTR 4[esp]
  add ebx, DWORD PTR 24[esp]
  mov eax,4
@@ -1554,8 +1563,8 @@ l0120:
  or ecx,edx
  mov 0[ebx][eax*1],ecx
  inc  DWORD PTR 24[esp]
- jmp l0120
-l0121:
+ jmp l0123
+l0124:
  mov eax, DWORD PTR 20[esp]
  and eax,134217727
  or eax,536870912
@@ -1563,9 +1572,9 @@ l0121:
  ret 
  DD 2
 ; (*entry search-string-for-character expr 2)
- PUBLIC l0122
-l0122:
- mov  DWORD PTR -44[esp],eax
+ PUBLIC l0125
+l0125:
+ mov  DWORD PTR [esp-44],eax
  sub esp,16
  mov DWORD PTR [esp],eax
  mov  DWORD PTR 4[esp],ebx
@@ -1576,13 +1585,13 @@ l0122:
  xor eax,eax
  mov  DWORD PTR 8[esp],eax
  mov  DWORD PTR 12[esp],ebx
-l0123:
+l0126:
  mov edi, DWORD PTR 8[esp]
  cmp edi, DWORD PTR 12[esp]
- jle l0124
+ jle l0127
  mov eax,30*08000000h+OFFSET 128
- jmp l0125
-l0124:
+ jmp l0128
+l0127:
  mov ebx, DWORD PTR 8[esp]
  mov eax, DWORD PTR 4[esp]
  and eax,134217727
@@ -1591,20 +1600,20 @@ l0124:
  cbw 
  cwde 
  cmp eax,DWORD PTR [esp]
- jne l0126
+ jne l0129
  mov eax, DWORD PTR 8[esp]
- jmp l0125
-l0126:
+ jmp l0128
+l0129:
  inc  DWORD PTR 8[esp]
- jmp l0123
-l0125:
+ jmp l0126
+l0128:
  add esp,16
  ret 
  DD 2
 ; (*entry unchecked-string-equal expr 2)
- PUBLIC l0127
-l0127:
- mov  DWORD PTR -48[esp],eax
+ PUBLIC l0130
+l0130:
+ mov  DWORD PTR [esp-48],eax
  sub esp,20
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 16[esp],edi
@@ -1621,18 +1630,18 @@ l0127:
  shl edx,5
  sar edx,5
  cmp ecx,edx
- je l0128
+ je l0131
  mov eax,30*08000000h+OFFSET 128
- jmp l0129
-l0128:
+ jmp l0132
+l0131:
  mov  DWORD PTR 12[esp],0
-l0130:
+l0133:
  mov edi, DWORD PTR 12[esp]
  cmp edi, DWORD PTR 8[esp]
- jle l0131
+ jle l0134
  mov eax,30*08000000h+OFFSET 116
- jmp l0129
-l0131:
+ jmp l0132
+l0134:
  mov ebx, DWORD PTR 12[esp]
  mov eax,4
  add eax,DWORD PTR [esp]
@@ -1647,20 +1656,20 @@ l0131:
  cbw 
  cwde 
  cmp eax, DWORD PTR 16[esp]
- je l0132
+ je l0135
  mov eax,30*08000000h+OFFSET 128
- jmp l0129
-l0132:
+ jmp l0132
+l0135:
  inc  DWORD PTR 12[esp]
- jmp l0130
-l0129:
+ jmp l0133
+l0132:
  add esp,20
  ret 
  DD 2
 ; (*entry copystringtofrom expr 2)
  PUBLIC copystringtofrom
 copystringtofrom:
- mov  DWORD PTR -44[esp],eax
+ mov  DWORD PTR [esp-44],eax
  sub esp,16
  mov  DWORD PTR 12[esp],eax
  mov ecx,eax
@@ -1677,9 +1686,9 @@ copystringtofrom:
  shl eax,5
  sar eax,5
  cmp eax,ebp
- jge l0133
+ jge l0136
  mov DWORD PTR [esp],eax
-l0133:
+l0136:
  mov eax,5
  add eax,DWORD PTR [esp]
  mov ebx,eax
@@ -1691,9 +1700,9 @@ l0133:
  xor eax,eax
  mov edx,eax
  mov ecx,ebx
-l0134:
+l0137:
  cmp edx,ecx
- jg l0135
+ jg l0138
  xor eax,eax
  inc eax
  add eax,edx
@@ -1707,8 +1716,8 @@ l0134:
  mov edi,DWORD PTR [ebx]
  mov DWORD PTR [eax],edi
  inc edx
- jmp l0134
-l0135:
+ jmp l0137
+l0138:
  mov eax, DWORD PTR 12[esp]
  add esp,16
  ret 
@@ -1716,12 +1725,12 @@ l0135:
 ; (*entry cons expr 2)
  PUBLIC cons
 cons:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push ebx
  push eax
  mov eax,2
- mov edi,387
- call [symfnc+1548]
+ mov edi,388
+ call [symfnc+1552]
  mov edi,DWORD PTR [esp]
  mov DWORD PTR [eax],edi
  mov edi, DWORD PTR 4[esp]
@@ -1751,44 +1760,44 @@ modify:
 ; (*entry put expr 3)
  PUBLIC put
 put:
- mov edi,394
- jmp [symfnc+1576]
+ mov edi,395
+ jmp [symfnc+1580]
  DD 3
 ; (*entry unchecked-put expr 3)
- PUBLIC l0136
-l0136:
- mov  DWORD PTR -44[esp],eax
+ PUBLIC l0139
+l0139:
+ mov  DWORD PTR [esp-44],eax
  sub esp,16
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 12[esp],edi
  mov DWORD PTR [esp],eax
  mov  DWORD PTR 4[esp],ebx
  mov  DWORD PTR 8[esp],ecx
- mov edi,396
- call [symfnc+1584]
+ mov edi,397
+ call [symfnc+1588]
  mov  DWORD PTR 12[esp],eax
  mov ebx,eax
  mov eax, DWORD PTR 4[esp]
- mov edi,397
- call [symfnc+1588]
- cmp eax,30*08000000h+OFFSET 128
- je l0137
- mov edi, DWORD PTR 8[esp]
- mov  DWORD PTR -1207959548[eax],edi
- jmp l0138
-l0137:
- mov ebx, DWORD PTR 8[esp]
- mov eax, DWORD PTR 4[esp]
- mov edi,391
- call [symfnc+1564]
- mov ebx, DWORD PTR 12[esp]
- mov edi,391
- call [symfnc+1564]
- mov ebx,eax
- mov eax,DWORD PTR [esp]
  mov edi,398
  call [symfnc+1592]
-l0138:
+ cmp eax,30*08000000h+OFFSET 128
+ je l0140
+ mov edi, DWORD PTR 8[esp]
+ mov  DWORD PTR [eax-1207959548],edi
+ jmp l0141
+l0140:
+ mov ebx, DWORD PTR 8[esp]
+ mov eax, DWORD PTR 4[esp]
+ mov edi,392
+ call [symfnc+1568]
+ mov ebx, DWORD PTR 12[esp]
+ mov edi,392
+ call [symfnc+1568]
+ mov ebx,eax
+ mov eax,DWORD PTR [esp]
+ mov edi,399
+ call [symfnc+1596]
+l0141:
  mov eax, DWORD PTR 8[esp]
  add esp,16
  ret 
@@ -1796,30 +1805,30 @@ l0138:
 ; (*entry atsoc expr 2)
  PUBLIC atsoc
 atsoc:
-l0139:
+l0142:
  mov edi,ebx
  shr edi,27
  cmp edi,9
- je l0140
+ je l0143
  mov eax,30*08000000h+OFFSET 128
  ret 
-l0140:
- mov edi, DWORD PTR -1207959552[ebx]
+l0143:
+ mov edi, DWORD PTR [ebx-1207959552]
  shr edi,27
  cmp edi,9
- jne l0141
- mov esi, DWORD PTR -1207959552[ebx]
- cmp eax, DWORD PTR -1207959552[esi]
- jne l0141
- mov eax, DWORD PTR -1207959552[ebx]
+ jne l0144
+ mov esi, DWORD PTR [ebx-1207959552]
+ cmp eax, DWORD PTR [esi-1207959552]
+ jne l0144
+ mov eax, DWORD PTR [ebx-1207959552]
  ret 
-l0141:
- mov ebx, DWORD PTR -1207959548[ebx]
- jmp l0139
+l0144:
+ mov ebx, DWORD PTR [ebx-1207959548]
+ jmp l0142
  DD 2
 ; (*entry unchecked-setprop expr 2)
- PUBLIC l0142
-l0142:
+ PUBLIC l0145
+l0145:
  and eax,134217727
  shl eax,2
  add eax,symval+1248
@@ -1828,8 +1837,8 @@ l0142:
  ret 
  DD 1
 ; (*entry unchecked-prop expr 1)
- PUBLIC l0143
-l0143:
+ PUBLIC l0146
+l0146:
  and eax,134217727
  shl eax,2
  add eax,symval+1248
@@ -1839,18 +1848,18 @@ l0143:
 ; (*entry putd expr 3)
  PUBLIC putd
 putd:
- mov edi,399
- jmp [symfnc+1596]
-l0144:
+ mov edi,400
+ jmp [symfnc+1600]
+l0147:
  DD 26
  DB 66,97,100,32,112,97,114,97,109,101,116
  DB 101,114,115,32,116,111,32,67,79,68,69
  DB 45,80,85,84,68,0
  DD 3
 ; (*entry code-putd expr 3)
- PUBLIC l0145
-l0145:
- mov  DWORD PTR -40[esp],eax
+ PUBLIC l0148
+l0148:
+ mov  DWORD PTR [esp-40],eax
  sub esp,12
  mov DWORD PTR [esp],eax
  mov  DWORD PTR 4[esp],ebx
@@ -1858,36 +1867,36 @@ l0145:
  mov edi,eax
  shr edi,27
  cmp edi,30
- jne l0146
+ jne l0149
  mov edi,ebx
  shr edi,27
  cmp edi,30
- jne l0146
+ jne l0149
  mov edi,ecx
  shr edi,27
  cmp edi,20
- je l0147
-l0146:
- mov eax,4*08000000h+OFFSET l0144
+ je l0150
+l0149:
+ mov eax,4*08000000h+OFFSET l0147
  mov edi,342
  call [symfnc+1368]
-l0147:
+l0150:
  mov ebx, DWORD PTR 8[esp]
  and ebx,134217727
  mov eax,DWORD PTR [esp]
  and eax,134217727
- mov edi,400
- call [symfnc+1600]
+ mov edi,401
+ call [symfnc+1604]
  mov edi, DWORD PTR 4[esp]
- cmp edi,30*08000000h+OFFSET 401
- je l0148
+ cmp edi,30*08000000h+OFFSET 402
+ je l0151
  mov ecx, DWORD PTR 4[esp]
- mov ebx,30*08000000h+OFFSET 402
+ mov ebx,30*08000000h+OFFSET 403
  mov eax,DWORD PTR [esp]
  add esp,12
- mov edi,395
- jmp [symfnc+1580]
-l0148:
+ mov edi,396
+ jmp [symfnc+1584]
+l0151:
  mov eax,30*08000000h+OFFSET 128
  add esp,12
  ret 
@@ -1895,7 +1904,7 @@ l0148:
 ; (*entry fluid expr 1)
  PUBLIC fluid
 fluid:
- mov  DWORD PTR -40[esp],eax
+ mov  DWORD PTR [esp-40],eax
  sub esp,12
  mov edi,30*08000000h+OFFSET 128
  mov  DWORD PTR 8[esp],edi
@@ -1906,50 +1915,50 @@ fluid:
  mov edi, DWORD PTR 4[esp]
  shr edi,27
  cmp edi,9
- jne l0149
+ jne l0152
  mov eax, DWORD PTR 4[esp]
- mov eax, DWORD PTR -1207959552[eax]
- jmp l0150
-l0149:
+ mov eax, DWORD PTR [eax-1207959552]
+ jmp l0153
+l0152:
  mov eax,30*08000000h+OFFSET 128
-l0150:
+l0153:
  mov  DWORD PTR 8[esp],eax
-l0151:
+l0154:
  mov edi, DWORD PTR 4[esp]
  shr edi,27
  cmp edi,9
- je l0152
+ je l0155
  mov eax,30*08000000h+OFFSET 128
- jmp l0153
-l0152:
+ jmp l0156
+l0155:
  mov eax, DWORD PTR 8[esp]
- mov edi,403
- call [symfnc+1612]
+ mov edi,404
+ call [symfnc+1616]
  mov eax, DWORD PTR 4[esp]
- mov eax, DWORD PTR -1207959548[eax]
+ mov eax, DWORD PTR [eax-1207959548]
  mov  DWORD PTR 4[esp],eax
  mov edi,eax
  shr edi,27
  cmp edi,9
- jne l0154
- mov eax, DWORD PTR -1207959552[eax]
- jmp l0155
-l0154:
+ jne l0157
+ mov eax, DWORD PTR [eax-1207959552]
+ jmp l0158
+l0157:
  mov eax,30*08000000h+OFFSET 128
-l0155:
+l0158:
  mov  DWORD PTR 8[esp],eax
- jmp l0151
-l0153:
+ jmp l0154
+l0156:
  add esp,12
  ret 
  DD 1
 ; (*entry fluid1 expr 1)
- PUBLIC l0156
-l0156:
- mov ecx,30*08000000h+OFFSET 404
- mov ebx,30*08000000h+OFFSET 405
- mov edi,395
- jmp [symfnc+1580]
+ PUBLIC l0159
+l0159:
+ mov ecx,30*08000000h+OFFSET 405
+ mov ebx,30*08000000h+OFFSET 406
+ mov edi,396
+ jmp [symfnc+1584]
  DD 1
 ; (*entry stderror expr 1)
  PUBLIC stderror
@@ -1958,27 +1967,27 @@ stderror:
  jmp [symfnc+1368]
  DD 2
 ; (*entry *define-constant expr 2)
- PUBLIC l0157
-l0157:
+ PUBLIC l0160
+l0160:
  mov ecx,eax
  and ecx,134217727
  shl ecx,2
  add ecx,symval+1232
  mov DWORD PTR [ecx],ebx
  mov ecx,30*08000000h+OFFSET 116
- mov ebx,30*08000000h+OFFSET 406
- mov edi,395
- jmp [symfnc+1580]
+ mov ebx,30*08000000h+OFFSET 407
+ mov edi,396
+ jmp [symfnc+1584]
 EXTRN _whatsup:NEAR
  DD 1
 ; (*entry whatsup expr 1)
- PUBLIC l0158
-l0158:
+ PUBLIC l0161
+l0161:
  cmp symval+1220,0
- jge l0159
- mov edi,408
- jmp [symfnc+1632]
-l0159:
+ jge l0162
+ mov edi,409
+ jmp [symfnc+1636]
+l0162:
  push eax
  call _whatsup
  add esp,4
@@ -1986,32 +1995,32 @@ l0159:
 EXTRN _getpid:NEAR
  DD 0
 ; (*entry getpid expr 0)
- PUBLIC l0160
-l0160:
+ PUBLIC l0163
+l0163:
  call _getpid
  add esp,0
  ret 
 EXTRN _echoon:NEAR
  DD 0
 ; (*entry echoon expr 0)
- PUBLIC l0161
-l0161:
+ PUBLIC l0164
+l0164:
  call _echoon
  add esp,0
  ret 
 EXTRN _echooff:NEAR
  DD 0
 ; (*entry echooff expr 0)
- PUBLIC l0162
-l0162:
+ PUBLIC l0165
+l0165:
  call _echooff
  add esp,0
  ret 
 EXTRN _external_charsininputbuffer:NEAR
  DD 1
 ; (*entry external_charsininputbuffer expr 1)
- PUBLIC l0163
-l0163:
+ PUBLIC l0166
+l0166:
  push eax
  call _external_charsininputbuffer
  add esp,4
@@ -2019,24 +2028,24 @@ l0163:
 EXTRN _flushstdoutputbuffer:NEAR
  DD 0
 ; (*entry flushstdoutputbuffer expr 0)
- PUBLIC l0164
-l0164:
+ PUBLIC l0167
+l0167:
  call _flushstdoutputbuffer
  add esp,0
  ret 
 EXTRN _external_user_homedir_string:NEAR
  DD 0
 ; (*entry external_user_homedir_string expr 0)
- PUBLIC l0165
-l0165:
+ PUBLIC l0168
+l0168:
  call _external_user_homedir_string
  add esp,0
  ret 
 EXTRN _alterheapsize:NEAR
  DD 1
 ; (*entry alterheapsize expr 1)
- PUBLIC l0166
-l0166:
+ PUBLIC l0169
+l0169:
  push eax
  call _alterheapsize
  add esp,4
@@ -2044,8 +2053,8 @@ l0166:
 EXTRN _allocatemorebps:NEAR
  DD 1
 ; (*entry allocatemorebps expr 1)
- PUBLIC l0167
-l0167:
+ PUBLIC l0170
+l0170:
  push eax
  call _allocatemorebps
  add esp,4
@@ -2053,8 +2062,8 @@ l0167:
 EXTRN _get_file_status:NEAR
  DD 3
 ; (*entry get_file_status expr 3)
- PUBLIC l0168
-l0168:
+ PUBLIC l0171
+l0171:
  push ecx
  push ebx
  push eax
@@ -2064,8 +2073,8 @@ l0168:
 EXTRN _os_startup_hook:NEAR
  DD 2
 ; (*entry os_startup_hook expr 2)
- PUBLIC l0169
-l0169:
+ PUBLIC l0172
+l0172:
  push ebx
  push eax
  call _os_startup_hook
@@ -2074,16 +2083,16 @@ l0169:
 EXTRN _os_cleanup_hook:NEAR
  DD 0
 ; (*entry os_cleanup_hook expr 0)
- PUBLIC l0170
-l0170:
+ PUBLIC l0173
+l0173:
  call _os_cleanup_hook
  add esp,0
  ret 
 EXTRN _external_alarm:NEAR
  DD 1
 ; (*entry external_alarm expr 1)
- PUBLIC l0171
-l0171:
+ PUBLIC l0174
+l0174:
  push eax
  call _external_alarm
  add esp,4
@@ -2091,8 +2100,8 @@ l0171:
 EXTRN _external_ualarm:NEAR
  DD 2
 ; (*entry external_ualarm expr 2)
- PUBLIC l0172
-l0172:
+ PUBLIC l0175
+l0175:
  push ebx
  push eax
  call _external_ualarm
@@ -2101,8 +2110,8 @@ l0172:
 EXTRN _external_time:NEAR
  DD 1
 ; (*entry external_time expr 1)
- PUBLIC l0173
-l0173:
+ PUBLIC l0176
+l0176:
  push eax
  call _external_time
  add esp,4
@@ -2110,8 +2119,8 @@ l0173:
 EXTRN _external_timc:NEAR
  DD 1
 ; (*entry external_timc expr 1)
- PUBLIC l0174
-l0174:
+ PUBLIC l0177
+l0177:
  push eax
  call _external_timc
  add esp,4
@@ -2119,8 +2128,8 @@ l0174:
 EXTRN _external_stat:NEAR
  DD 2
 ; (*entry external_stat expr 2)
- PUBLIC l0175
-l0175:
+ PUBLIC l0178
+l0178:
  push ebx
  push eax
  call _external_stat
@@ -2129,8 +2138,8 @@ l0175:
 EXTRN _external_link:NEAR
  DD 2
 ; (*entry external_link expr 2)
- PUBLIC l0176
-l0176:
+ PUBLIC l0179
+l0179:
  push ebx
  push eax
  call _external_link
@@ -2139,8 +2148,8 @@ l0176:
 EXTRN _external_unlink:NEAR
  DD 1
 ; (*entry external_unlink expr 1)
- PUBLIC l0177
-l0177:
+ PUBLIC l0180
+l0180:
  push eax
  call _external_unlink
  add esp,4
@@ -2148,8 +2157,8 @@ l0177:
 EXTRN _external_setenv:NEAR
  DD 2
 ; (*entry external_setenv expr 2)
- PUBLIC l0178
-l0178:
+ PUBLIC l0181
+l0181:
  push ebx
  push eax
  call _external_setenv
@@ -2158,8 +2167,8 @@ l0178:
 EXTRN _external_getenv:NEAR
  DD 1
 ; (*entry external_getenv expr 1)
- PUBLIC l0179
-l0179:
+ PUBLIC l0182
+l0182:
  push eax
  call _external_getenv
  add esp,4
@@ -2167,8 +2176,8 @@ l0179:
 EXTRN _uxfloat:NEAR
  DD 2
 ; (*entry uxfloat expr 2)
- PUBLIC l0180
-l0180:
+ PUBLIC l0183
+l0183:
  push ebx
  push eax
  call _uxfloat
@@ -2177,8 +2186,8 @@ l0180:
 EXTRN _uxfix:NEAR
  DD 1
 ; (*entry uxfix expr 1)
- PUBLIC l0181
-l0181:
+ PUBLIC l0184
+l0184:
  push eax
  call _uxfix
  add esp,4
@@ -2186,8 +2195,8 @@ l0181:
 EXTRN _uxassign:NEAR
  DD 2
 ; (*entry uxassign expr 2)
- PUBLIC l0182
-l0182:
+ PUBLIC l0185
+l0185:
  push ebx
  push eax
  call _uxassign
@@ -2196,8 +2205,8 @@ l0182:
 EXTRN _uxplus2:NEAR
  DD 3
 ; (*entry uxplus2 expr 3)
- PUBLIC l0183
-l0183:
+ PUBLIC l0186
+l0186:
  push ecx
  push ebx
  push eax
@@ -2207,8 +2216,8 @@ l0183:
 EXTRN _uxdifference:NEAR
  DD 3
 ; (*entry uxdifference expr 3)
- PUBLIC l0184
-l0184:
+ PUBLIC l0187
+l0187:
  push ecx
  push ebx
  push eax
@@ -2218,8 +2227,8 @@ l0184:
 EXTRN _uxtimes2:NEAR
  DD 3
 ; (*entry uxtimes2 expr 3)
- PUBLIC l0185
-l0185:
+ PUBLIC l0188
+l0188:
  push ecx
  push ebx
  push eax
@@ -2229,8 +2238,8 @@ l0185:
 EXTRN _uxquotient:NEAR
  DD 3
 ; (*entry uxquotient expr 3)
- PUBLIC l0186
-l0186:
+ PUBLIC l0189
+l0189:
  push ecx
  push ebx
  push eax
@@ -2240,8 +2249,8 @@ l0186:
 EXTRN _uxgreaterp:NEAR
  DD 4
 ; (*entry uxgreaterp expr 4)
- PUBLIC l0187
-l0187:
+ PUBLIC l0190
+l0190:
  push edx
  push ecx
  push ebx
@@ -2252,8 +2261,8 @@ l0187:
 EXTRN _uxlessp:NEAR
  DD 4
 ; (*entry uxlessp expr 4)
- PUBLIC l0188
-l0188:
+ PUBLIC l0191
+l0191:
  push edx
  push ecx
  push ebx
@@ -2264,148 +2273,148 @@ l0188:
 EXTRN _uxwritefloat:NEAR
  DD 3
 ; (*entry uxwritefloat expr 3)
- PUBLIC l0189
-l0189:
+ PUBLIC l0192
+l0192:
  push ecx
  push ebx
  push eax
  call _uxwritefloat
  add esp,12
  ret 
-EXTRN _uxdoubletofloat:NEAR
+EXTRN _uuxdoubletofloat:NEAR
  DD 2
-; (*entry uxdoubletofloat expr 2)
- PUBLIC l0190
-l0190:
- push ebx
- push eax
- call _uxdoubletofloat
- add esp,8
- ret 
-EXTRN _uxfloattodouble:NEAR
- DD 2
-; (*entry uxfloattodouble expr 2)
- PUBLIC l0191
-l0191:
- push ebx
- push eax
- call _uxfloattodouble
- add esp,8
- ret 
-EXTRN _uxsin:NEAR
- DD 2
-; (*entry uxsin expr 2)
- PUBLIC l0192
-l0192:
- push ebx
- push eax
- call _uxsin
- add esp,8
- ret 
-EXTRN _uxcos:NEAR
- DD 2
-; (*entry uxcos expr 2)
+; (*entry uuxdoubletofloat expr 2)
  PUBLIC l0193
 l0193:
  push ebx
  push eax
- call _uxcos
+ call _uuxdoubletofloat
  add esp,8
  ret 
-EXTRN _uxtan:NEAR
+EXTRN _uuxfloattodouble:NEAR
  DD 2
-; (*entry uxtan expr 2)
+; (*entry uuxfloattodouble expr 2)
  PUBLIC l0194
 l0194:
  push ebx
  push eax
- call _uxtan
+ call _uuxfloattodouble
  add esp,8
  ret 
-EXTRN _uxasin:NEAR
+EXTRN _uuxsin:NEAR
  DD 2
-; (*entry uxasin expr 2)
+; (*entry uuxsin expr 2)
  PUBLIC l0195
 l0195:
  push ebx
  push eax
- call _uxasin
+ call _uuxsin
  add esp,8
  ret 
-EXTRN _uxacos:NEAR
+EXTRN _uuxcos:NEAR
  DD 2
-; (*entry uxacos expr 2)
+; (*entry uuxcos expr 2)
  PUBLIC l0196
 l0196:
  push ebx
  push eax
- call _uxacos
+ call _uuxcos
  add esp,8
  ret 
-EXTRN _uxatan:NEAR
+EXTRN _uuxtan:NEAR
  DD 2
-; (*entry uxatan expr 2)
+; (*entry uuxtan expr 2)
  PUBLIC l0197
 l0197:
  push ebx
  push eax
- call _uxatan
+ call _uuxtan
  add esp,8
  ret 
-EXTRN _uxsqrt:NEAR
+EXTRN _uuxasin:NEAR
  DD 2
-; (*entry uxsqrt expr 2)
+; (*entry uuxasin expr 2)
  PUBLIC l0198
 l0198:
  push ebx
  push eax
- call _uxsqrt
+ call _uuxasin
  add esp,8
  ret 
-EXTRN _uxexp:NEAR
+EXTRN _uuxacos:NEAR
  DD 2
-; (*entry uxexp expr 2)
+; (*entry uuxacos expr 2)
  PUBLIC l0199
 l0199:
  push ebx
  push eax
- call _uxexp
+ call _uuxacos
  add esp,8
  ret 
-EXTRN _uxlog:NEAR
+EXTRN _uuxatan:NEAR
  DD 2
-; (*entry uxlog expr 2)
+; (*entry uuxatan expr 2)
  PUBLIC l0200
 l0200:
  push ebx
  push eax
- call _uxlog
+ call _uuxatan
  add esp,8
  ret 
-EXTRN _uxatan2:NEAR
- DD 3
-; (*entry uxatan2 expr 3)
+EXTRN _uuxsqrt:NEAR
+ DD 2
+; (*entry uuxsqrt expr 2)
  PUBLIC l0201
 l0201:
+ push ebx
+ push eax
+ call _uuxsqrt
+ add esp,8
+ ret 
+EXTRN _uuxexp:NEAR
+ DD 2
+; (*entry uuxexp expr 2)
+ PUBLIC l0202
+l0202:
+ push ebx
+ push eax
+ call _uuxexp
+ add esp,8
+ ret 
+EXTRN _uuxlog:NEAR
+ DD 2
+; (*entry uuxlog expr 2)
+ PUBLIC l0203
+l0203:
+ push ebx
+ push eax
+ call _uuxlog
+ add esp,8
+ ret 
+EXTRN _uuxatan2:NEAR
+ DD 3
+; (*entry uuxatan2 expr 3)
+ PUBLIC l0204
+l0204:
  push ecx
  push ebx
  push eax
- call _uxatan2
+ call _uuxatan2
  add esp,12
  ret 
 EXTRN _external_pwd:NEAR
  DD 0
 ; (*entry external_pwd expr 0)
- PUBLIC l0202
-l0202:
+ PUBLIC l0205
+l0205:
  call _external_pwd
  add esp,0
  ret 
 EXTRN _sun3_sigset:NEAR
  DD 2
 ; (*entry sun3_sigset expr 2)
- PUBLIC l0203
-l0203:
+ PUBLIC l0206
+l0206:
  push ebx
  push eax
  call _sun3_sigset
@@ -2414,8 +2423,8 @@ l0203:
 EXTRN _sigrelse:NEAR
  DD 2
 ; (*entry sigrelse expr 2)
- PUBLIC l0204
-l0204:
+ PUBLIC l0207
+l0207:
  push ebx
  push eax
  call _sigrelse
@@ -2424,8 +2433,8 @@ l0204:
 EXTRN _unexec:NEAR
  DD 4
 ; (*entry unexec expr 4)
- PUBLIC l0205
-l0205:
+ PUBLIC l0208
+l0208:
  push edx
  push ecx
  push ebx
@@ -2436,8 +2445,8 @@ l0205:
 EXTRN _unixputc:NEAR
  DD 1
 ; (*entry unixputc expr 1)
- PUBLIC l0206
-l0206:
+ PUBLIC l0209
+l0209:
  push eax
  call _unixputc
  add esp,4
@@ -2445,8 +2454,8 @@ l0206:
 EXTRN _unixputs:NEAR
  DD 1
 ; (*entry unixputs expr 1)
- PUBLIC l0207
-l0207:
+ PUBLIC l0210
+l0210:
  push eax
  call _unixputs
  add esp,4
@@ -2454,8 +2463,8 @@ l0207:
 EXTRN _unixputn:NEAR
  DD 1
 ; (*entry unixputn expr 1)
- PUBLIC l0208
-l0208:
+ PUBLIC l0211
+l0211:
  push eax
  call _unixputn
  add esp,4
@@ -2463,16 +2472,16 @@ l0208:
 EXTRN _unixcleario:NEAR
  DD 0
 ; (*entry unixcleario expr 0)
- PUBLIC l0209
-l0209:
+ PUBLIC l0212
+l0212:
  call _unixcleario
  add esp,0
  ret 
 EXTRN _expand_file_name:NEAR
  DD 1
 ; (*entry expand_file_name expr 1)
- PUBLIC l0210
-l0210:
+ PUBLIC l0213
+l0213:
  push eax
  call _expand_file_name
  add esp,4
@@ -2480,8 +2489,8 @@ l0210:
 EXTRN _unixopen:NEAR
  DD 2
 ; (*entry unixopen expr 2)
- PUBLIC l0211
-l0211:
+ PUBLIC l0214
+l0214:
  push ebx
  push eax
  call _unixopen
@@ -2490,8 +2499,8 @@ l0211:
 EXTRN _unixcd:NEAR
  DD 1
 ; (*entry unixcd expr 1)
- PUBLIC l0212
-l0212:
+ PUBLIC l0215
+l0215:
  push eax
  call _unixcd
  add esp,4
@@ -2499,13 +2508,13 @@ l0212:
 EXTRN _unixfread:NEAR
  DD 4
 ; (*entry unixfread expr 4)
- PUBLIC l0213
-l0213:
+ PUBLIC l0216
+l0216:
  cmp symval+1220,0
- jge l0214
- mov edi,408
- jmp [symfnc+1632]
-l0214:
+ jge l0217
+ mov edi,409
+ jmp [symfnc+1636]
+l0217:
  push edx
  push ecx
  push ebx
@@ -2516,13 +2525,13 @@ l0214:
 EXTRN _unixfputc:NEAR
  DD 2
 ; (*entry unixfputc expr 2)
- PUBLIC l0215
-l0215:
+ PUBLIC l0218
+l0218:
  cmp symval+1220,0
- jge l0216
- mov edi,408
- jmp [symfnc+1632]
-l0216:
+ jge l0219
+ mov edi,409
+ jmp [symfnc+1636]
+l0219:
  push ebx
  push eax
  call _unixfputc
@@ -2531,13 +2540,13 @@ l0216:
 EXTRN _unixfgetc:NEAR
  DD 1
 ; (*entry unixfgetc expr 1)
- PUBLIC l0217
-l0217:
+ PUBLIC l0220
+l0220:
  cmp symval+1220,0
- jge l0218
- mov edi,408
- jmp [symfnc+1632]
-l0218:
+ jge l0221
+ mov edi,409
+ jmp [symfnc+1636]
+l0221:
  push eax
  call _unixfgetc
  add esp,4
@@ -2545,13 +2554,13 @@ l0218:
 EXTRN _unixfgets:NEAR
  DD 3
 ; (*entry unixfgets expr 3)
- PUBLIC l0219
-l0219:
+ PUBLIC l0222
+l0222:
  cmp symval+1220,0
- jge l0220
- mov edi,408
- jmp [symfnc+1632]
-l0220:
+ jge l0223
+ mov edi,409
+ jmp [symfnc+1636]
+l0223:
  push ecx
  push ebx
  push eax
@@ -2561,13 +2570,13 @@ l0220:
 EXTRN _unixfwrite:NEAR
  DD 4
 ; (*entry unixfwrite expr 4)
- PUBLIC l0221
-l0221:
+ PUBLIC l0224
+l0224:
  cmp symval+1220,0
- jge l0222
- mov edi,408
- jmp [symfnc+1632]
-l0222:
+ jge l0225
+ mov edi,409
+ jmp [symfnc+1636]
+l0225:
  push edx
  push ecx
  push ebx
@@ -2578,13 +2587,13 @@ l0222:
 EXTRN _unixfflush:NEAR
  DD 1
 ; (*entry unixfflush expr 1)
- PUBLIC l0223
-l0223:
+ PUBLIC l0226
+l0226:
  cmp symval+1220,0
- jge l0224
- mov edi,408
- jmp [symfnc+1632]
-l0224:
+ jge l0227
+ mov edi,409
+ jmp [symfnc+1636]
+l0227:
  push eax
  call _unixfflush
  add esp,4
@@ -2592,8 +2601,8 @@ l0224:
 EXTRN _ctime:NEAR
  DD 1
 ; (*entry ctime expr 1)
- PUBLIC l0225
-l0225:
+ PUBLIC l0228
+l0228:
  push eax
  call _ctime
  add esp,4
@@ -2601,8 +2610,8 @@ l0225:
 EXTRN _external_system:NEAR
  DD 1
 ; (*entry external_system expr 1)
- PUBLIC l0226
-l0226:
+ PUBLIC l0229
+l0229:
  push eax
  call _external_system
  add esp,4
@@ -2610,8 +2619,8 @@ l0226:
 EXTRN _external_exit:NEAR
  DD 1
 ; (*entry external_exit expr 1)
- PUBLIC l0227
-l0227:
+ PUBLIC l0230
+l0230:
  push eax
  call _external_exit
  add esp,4
@@ -2619,8 +2628,8 @@ l0227:
 EXTRN _fopen:NEAR
  DD 2
 ; (*entry fopen expr 2)
- PUBLIC l0228
-l0228:
+ PUBLIC l0231
+l0231:
  push ebx
  push eax
  call _fopen
@@ -2629,8 +2638,8 @@ l0228:
 EXTRN _fclose:NEAR
  DD 1
 ; (*entry fclose expr 1)
- PUBLIC l0229
-l0229:
+ PUBLIC l0232
+l0232:
  push eax
  call _fclose
  add esp,4
@@ -2638,8 +2647,8 @@ l0229:
 EXTRN _fseek:NEAR
  DD 3
 ; (*entry fseek expr 3)
- PUBLIC l0230
-l0230:
+ PUBLIC l0233
+l0233:
  push ecx
  push ebx
  push eax
@@ -2649,8 +2658,8 @@ l0230:
 EXTRN _clearerr:NEAR
  DD 1
 ; (*entry clearerr expr 1)
- PUBLIC l0231
-l0231:
+ PUBLIC l0234
+l0234:
  push eax
  call _clearerr
  add esp,4
@@ -2658,8 +2667,8 @@ l0231:
 EXTRN __getw:NEAR
  DD 1
 ; (*entry getw expr 1)
- PUBLIC l0232
-l0232:
+ PUBLIC l0235
+l0235:
  push eax
  call __getw
  add esp,4
@@ -2667,8 +2676,8 @@ l0232:
 EXTRN __putw:NEAR
  DD 2
 ; (*entry putw expr 2)
- PUBLIC l0233
-l0233:
+ PUBLIC l0236
+l0236:
  push ebx
  push eax
  call __putw
@@ -2677,8 +2686,8 @@ l0233:
 EXTRN _signal:NEAR
  DD 2
 ; (*entry signal expr 2)
- PUBLIC l0234
-l0234:
+ PUBLIC l0237
+l0237:
  push ebx
  push eax
  call _signal
@@ -2687,8 +2696,8 @@ l0234:
 EXTRN _sleep:NEAR
  DD 1
 ; (*entry sleep expr 1)
- PUBLIC l0235
-l0235:
+ PUBLIC l0238
+l0238:
  push eax
  call _sleep
  add esp,4
@@ -2696,8 +2705,8 @@ l0235:
 EXTRN _ieee_handler:NEAR
  DD 3
 ; (*entry ieee_handler expr 3)
- PUBLIC l0236
-l0236:
+ PUBLIC l0239
+l0239:
  push ecx
  push ebx
  push eax
@@ -2707,8 +2716,8 @@ l0236:
 EXTRN _ieee_flags:NEAR
  DD 4
 ; (*entry ieee_flags expr 4)
- PUBLIC l0237
-l0237:
+ PUBLIC l0240
+l0240:
  push edx
  push ecx
  push ebx
@@ -2719,8 +2728,8 @@ l0237:
 EXTRN _setlinebuf:NEAR
  DD 1
 ; (*entry setlinebuf expr 1)
- PUBLIC l0238
-l0238:
+ PUBLIC l0241
+l0241:
  push eax
  call _setlinebuf
  add esp,4
@@ -2728,8 +2737,8 @@ l0238:
 EXTRN _profil:NEAR
  DD 4
 ; (*entry profil expr 4)
- PUBLIC l0239
-l0239:
+ PUBLIC l0242
+l0242:
  push edx
  push ecx
  push ebx
@@ -2740,16 +2749,16 @@ l0239:
 EXTRN _datetag:NEAR
  DD 0
 ; (*entry datetag expr 0)
- PUBLIC l0240
-l0240:
+ PUBLIC l0243
+l0243:
  call _datetag
  add esp,0
  ret 
 EXTRN _psll_call:NEAR
  DD 4
 ; (*entry psll_call expr 4)
- PUBLIC l0241
-l0241:
+ PUBLIC l0244
+l0244:
  push edx
  push ecx
  push ebx
@@ -2759,109 +2768,109 @@ l0241:
  ret 
  DD 4
 ; (*entry unix-profile expr 4)
- PUBLIC l0242
-l0242:
- mov edi,475
- jmp [symfnc+1900]
+ PUBLIC l0245
+l0245:
+ mov edi,476
+ jmp [symfnc+1904]
  DD 4
 ; (*entry fread expr 4)
  PUBLIC fread
 fread:
- mov edi,458
- jmp [symfnc+1832]
+ mov edi,459
+ jmp [symfnc+1836]
  DD 2
 ; (*entry fputc expr 2)
  PUBLIC fputc
 fputc:
- mov edi,459
- jmp [symfnc+1836]
+ mov edi,460
+ jmp [symfnc+1840]
  DD 1
 ; (*entry fgetc expr 1)
  PUBLIC fgetc
 fgetc:
- mov edi,460
- jmp [symfnc+1840]
+ mov edi,461
+ jmp [symfnc+1844]
  DD 3
 ; (*entry fgets expr 3)
  PUBLIC fgets
 fgets:
- mov edi,461
- jmp [symfnc+1844]
+ mov edi,462
+ jmp [symfnc+1848]
  DD 4
 ; (*entry fwrite expr 4)
  PUBLIC fwrite
 fwrite:
- mov edi,462
- jmp [symfnc+1848]
+ mov edi,463
+ jmp [symfnc+1852]
  DD 1
 ; (*entry fflush expr 1)
  PUBLIC fflush
 fflush:
- mov edi,463
- jmp [symfnc+1852]
+ mov edi,464
+ jmp [symfnc+1856]
  DD 1
 ; (*entry plantunbound expr 1)
  PUBLIC plantunbound
 plantunbound:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push eax
  cmp eax,symval+1228
- jle l0243
+ jle l0246
  mov ebx,symval+1240
  add esp,4
- mov edi,484
- jmp [symfnc+1936]
-l0243:
+ mov edi,485
+ jmp [symfnc+1940]
+l0246:
  mov ebx,symval+1240
- mov edi,484
- call [symfnc+1936]
+ mov edi,485
+ call [symfnc+1940]
  mov ebx,symval+1244
  mov eax,DWORD PTR [esp]
  add esp,4
- mov edi,484
- jmp [symfnc+1936]
+ mov edi,485
+ jmp [symfnc+1940]
  DD 2
 ; (*entry plantunbound-1 expr 2)
- PUBLIC l0244
-l0244:
+ PUBLIC l0247
+l0247:
  add eax,eax
  mov esi,eax
  add esi,esi
  add esi,ebx
- mov edi,OFFSET l0245
+ mov edi,OFFSET l0248
  mov edi, DWORD PTR 0[edi]
  mov  DWORD PTR 0[esi],edi
  ret 
  DD 0
-l0245:
+l0248:
  DD undefinedfunction
  DD 2
 ; (*entry plantcodepointer expr 2)
  PUBLIC plantcodepointer
 plantcodepointer:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push ebx
  push eax
  cmp eax,symval+1228
- jle l0246
+ jle l0249
  mov ecx,symval+1240
  add esp,8
- mov edi,485
- jmp [symfnc+1940]
-l0246:
+ mov edi,486
+ jmp [symfnc+1944]
+l0249:
  mov ecx,symval+1240
- mov edi,485
- call [symfnc+1940]
+ mov edi,486
+ call [symfnc+1944]
  mov ecx,symval+1244
  mov ebx, DWORD PTR 4[esp]
  mov eax,DWORD PTR [esp]
  add esp,8
- mov edi,485
- jmp [symfnc+1940]
+ mov edi,486
+ jmp [symfnc+1944]
  DD 3
 ; (*entry plantcodepointer-1 expr 3)
- PUBLIC l0247
-l0247:
+ PUBLIC l0250
+l0250:
  add eax,eax
  mov esi,eax
  add esi,esi
@@ -2872,48 +2881,48 @@ l0247:
 ; (*entry plantlambdalink expr 1)
  PUBLIC plantlambdalink
 plantlambdalink:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push eax
  cmp eax,symval+1228
- jle l0248
+ jle l0251
  mov ebx,symval+1240
  add esp,4
- mov edi,486
- jmp [symfnc+1944]
-l0248:
+ mov edi,487
+ jmp [symfnc+1948]
+l0251:
  mov ebx,symval+1240
- mov edi,486
- call [symfnc+1944]
+ mov edi,487
+ call [symfnc+1948]
  mov ebx,symval+1244
  mov eax,DWORD PTR [esp]
  add esp,4
- mov edi,486
- jmp [symfnc+1944]
+ mov edi,487
+ jmp [symfnc+1948]
  DD 2
 ; (*entry plantlambdalink-1 expr 2)
- PUBLIC l0249
-l0249:
+ PUBLIC l0252
+l0252:
  add eax,eax
  mov esi,eax
  add esi,esi
  add esi,ebx
- mov edi,OFFSET l0250
+ mov edi,OFFSET l0253
  mov edi, DWORD PTR 0[edi]
  mov  DWORD PTR 0[esi],edi
  ret 
  DD 0
-l0250:
+l0253:
  DD compiledcallinginterpreted
  DD 1
 ; (*entry addressapply0 expr 1)
- PUBLIC l0251
-l0251:
+ PUBLIC l0254
+l0254:
  jmp eax
  DD 2
 ; (*entry bittable expr 2)
  PUBLIC bittable
 bittable:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  push ebx
  shr ebx,2
  mov al,0[eax][ebx*1]
@@ -2924,15 +2933,15 @@ bittable:
  add ebx,ebx
  add ebx,-6
  cmp ebx,0
- jge l0252
+ jge l0255
  neg ebx
  xchg ecx,ebx
  shr eax,cl
- jmp l0253
-l0252:
+ jmp l0256
+l0255:
  xchg ecx,ebx
  shl eax,cl
-l0253:
+l0256:
  xchg ecx,ebx
  and eax,3
  add esp,4
@@ -2941,21 +2950,21 @@ l0253:
 ; (*entry undefinedfunction expr 1)
  PUBLIC undefinedfunction
 undefinedfunction:
- jmp [symfnc+1960]
-l0254:
+ jmp [symfnc+1964]
+l0257:
  DD 26
  DB 85,110,100,101,102,105,110,101,100,32
  DB 102,117,110,99,116,105,111,110,32,99,97
  DB 108,108,101,100,58,32,0
  DD 1
 ; (*entry undefinedfunction-aux expr 1)
- PUBLIC l0255
-l0255:
+ PUBLIC l0258
+l0258:
  push edi
- mov eax,4*08000000h+OFFSET l0254
+ mov eax,4*08000000h+OFFSET l0257
  mov edi,331
  call [symfnc+1324]
- mov esi,symval+1256
+ mov esi,symval+1404
  pop edi
  shl edi,2
  mov eax,0[esi][edi*1]
@@ -2971,20 +2980,20 @@ l0255:
 compiledcallinginterpreted:
  and edi,134217727
  or edi,-268435456
- mov ds:symval+1972,edi
- mov edi,491
- jmp [symfnc+1964]
-l0256:
+ mov ds:symval+1976,edi
+ mov edi,492
+ jmp [symfnc+1968]
+l0259:
  DD 12
  DB 70,65,84,65,76,32,69,82,82,79,82,58,32
  DB 0
  DD 1
 ; (*entry kernel-fatal-error expr 1)
- PUBLIC l0257
-l0257:
- mov  DWORD PTR -32[esp],eax
+ PUBLIC l0260
+l0260:
+ mov  DWORD PTR [esp-32],eax
  push eax
- mov eax,4*08000000h+OFFSET l0256
+ mov eax,4*08000000h+OFFSET l0259
  mov edi,331
  call [symfnc+1324]
  mov eax,DWORD PTR [esp]
@@ -3001,56 +3010,56 @@ l0257:
 ; (*entry codeaddressp expr 1)
  PUBLIC codeaddressp
 codeaddressp:
- mov  DWORD PTR -32[esp],eax
+ mov  DWORD PTR [esp-32],eax
  sub esp,4
  and eax,134217727
  mov DWORD PTR [esp],eax
  mov eax,30*08000000h+OFFSET 256
- mov edi,494
- call [symfnc+1976]
+ mov edi,495
+ call [symfnc+1980]
  and eax,134217727
  cmp eax,DWORD PTR [esp]
- jle l0258
+ jle l0261
  mov eax,30*08000000h+OFFSET 128
- jmp l0259
-l0258:
- mov eax,30*08000000h+OFFSET 116
-l0259:
- cmp eax,30*08000000h+OFFSET 128
- je l0260
- mov eax,30*08000000h+OFFSET 495
- mov edi,494
- call [symfnc+1976]
- and eax,134217727
- cmp eax,DWORD PTR [esp]
- jg l0261
- mov eax,30*08000000h+OFFSET 128
- jmp l0260
+ jmp l0262
 l0261:
  mov eax,30*08000000h+OFFSET 116
-l0260:
+l0262:
  cmp eax,30*08000000h+OFFSET 128
- jne l0262
+ je l0263
+ mov eax,30*08000000h+OFFSET 496
+ mov edi,495
+ call [symfnc+1980]
+ and eax,134217727
+ cmp eax,DWORD PTR [esp]
+ jg l0264
+ mov eax,30*08000000h+OFFSET 128
+ jmp l0263
+l0264:
+ mov eax,30*08000000h+OFFSET 116
+l0263:
+ cmp eax,30*08000000h+OFFSET 128
+ jne l0265
  mov eax,symval+1148
  and eax,134217727
  cmp eax,DWORD PTR [esp]
- jle l0263
+ jle l0266
  mov eax,30*08000000h+OFFSET 128
- jmp l0264
-l0263:
+ jmp l0267
+l0266:
  mov eax,30*08000000h+OFFSET 116
-l0264:
+l0267:
  cmp eax,30*08000000h+OFFSET 128
- je l0262
+ je l0265
  mov eax,symval+1172
  and eax,134217727
  cmp eax,DWORD PTR [esp]
- jg l0265
+ jg l0268
  mov eax,30*08000000h+OFFSET 128
- jmp l0262
-l0265:
+ jmp l0265
+l0268:
  mov eax,30*08000000h+OFFSET 116
-l0262:
+l0265:
  add esp,4
  ret 
  DD 1
@@ -3064,2636 +3073,2641 @@ lastkernel:
 initcode:
  mov eax,30*08000000h+OFFSET 128
  ret 
- PUBLIC l0266
-  align 4
-l0266:
- DD 0
- DB 0,0
- PUBLIC l0267
-  align 4
-l0267:
- DD 0
- DB 1,0
- PUBLIC l0268
-  align 4
-l0268:
- DD 0
- DB 2,0
  PUBLIC l0269
   align 4
 l0269:
  DD 0
- DB 3,0
+ DB 0,0
  PUBLIC l0270
   align 4
 l0270:
  DD 0
- DB 4,0
+ DB 1,0
  PUBLIC l0271
   align 4
 l0271:
  DD 0
- DB 5,0
+ DB 2,0
  PUBLIC l0272
   align 4
 l0272:
  DD 0
- DB 6,0
+ DB 3,0
  PUBLIC l0273
   align 4
 l0273:
  DD 0
- DB 7,0
+ DB 4,0
  PUBLIC l0274
   align 4
 l0274:
  DD 0
- DB 8,0
+ DB 5,0
  PUBLIC l0275
   align 4
 l0275:
  DD 0
- DB 9,0
+ DB 6,0
  PUBLIC l0276
   align 4
 l0276:
  DD 0
- DB 10,0
+ DB 7,0
  PUBLIC l0277
   align 4
 l0277:
  DD 0
- DB 11,0
+ DB 8,0
  PUBLIC l0278
   align 4
 l0278:
  DD 0
- DB 12,0
+ DB 9,0
  PUBLIC l0279
   align 4
 l0279:
  DD 0
- DB 13,0
+ DB 10,0
  PUBLIC l0280
   align 4
 l0280:
  DD 0
- DB 14,0
+ DB 11,0
  PUBLIC l0281
   align 4
 l0281:
  DD 0
- DB 15,0
+ DB 12,0
  PUBLIC l0282
   align 4
 l0282:
  DD 0
- DB 16,0
+ DB 13,0
  PUBLIC l0283
   align 4
 l0283:
  DD 0
- DB 17,0
+ DB 14,0
  PUBLIC l0284
   align 4
 l0284:
  DD 0
- DB 18,0
+ DB 15,0
  PUBLIC l0285
   align 4
 l0285:
  DD 0
- DB 19,0
+ DB 16,0
  PUBLIC l0286
   align 4
 l0286:
  DD 0
- DB 20,0
+ DB 17,0
  PUBLIC l0287
   align 4
 l0287:
  DD 0
- DB 21,0
+ DB 18,0
  PUBLIC l0288
   align 4
 l0288:
  DD 0
- DB 22,0
+ DB 19,0
  PUBLIC l0289
   align 4
 l0289:
  DD 0
- DB 23,0
+ DB 20,0
  PUBLIC l0290
   align 4
 l0290:
  DD 0
- DB 24,0
+ DB 21,0
  PUBLIC l0291
   align 4
 l0291:
  DD 0
- DB 25,0
+ DB 22,0
  PUBLIC l0292
   align 4
 l0292:
  DD 0
- DB 26,0
+ DB 23,0
  PUBLIC l0293
   align 4
 l0293:
  DD 0
- DB 27,0
+ DB 24,0
  PUBLIC l0294
   align 4
 l0294:
  DD 0
- DB 28,0
+ DB 25,0
  PUBLIC l0295
   align 4
 l0295:
  DD 0
- DB 29,0
+ DB 26,0
  PUBLIC l0296
   align 4
 l0296:
  DD 0
- DB 30,0
+ DB 27,0
  PUBLIC l0297
   align 4
 l0297:
  DD 0
- DB 31,0
+ DB 28,0
  PUBLIC l0298
   align 4
 l0298:
  DD 0
- DB 32,0
+ DB 29,0
  PUBLIC l0299
   align 4
 l0299:
  DD 0
- DB 33,0
+ DB 30,0
  PUBLIC l0300
   align 4
 l0300:
  DD 0
- DB 34,0
+ DB 31,0
  PUBLIC l0301
   align 4
 l0301:
  DD 0
- DB 35,0
+ DB 32,0
  PUBLIC l0302
   align 4
 l0302:
  DD 0
- DB 36,0
+ DB 33,0
  PUBLIC l0303
   align 4
 l0303:
  DD 0
- DB 37,0
+ DB 34,0
  PUBLIC l0304
   align 4
 l0304:
  DD 0
- DB 38,0
+ DB 35,0
  PUBLIC l0305
   align 4
 l0305:
  DD 0
- DB 39,0
+ DB 36,0
  PUBLIC l0306
   align 4
 l0306:
  DD 0
- DB 40,0
+ DB 37,0
  PUBLIC l0307
   align 4
 l0307:
  DD 0
- DB 41,0
+ DB 38,0
  PUBLIC l0308
   align 4
 l0308:
  DD 0
- DB 42,0
+ DB 39,0
  PUBLIC l0309
   align 4
 l0309:
  DD 0
- DB 43,0
+ DB 40,0
  PUBLIC l0310
   align 4
 l0310:
  DD 0
- DB 44,0
+ DB 41,0
  PUBLIC l0311
   align 4
 l0311:
  DD 0
- DB 45,0
+ DB 42,0
  PUBLIC l0312
   align 4
 l0312:
  DD 0
- DB 46,0
+ DB 43,0
  PUBLIC l0313
   align 4
 l0313:
  DD 0
- DB 47,0
+ DB 44,0
  PUBLIC l0314
   align 4
 l0314:
  DD 0
- DB 48,0
+ DB 45,0
  PUBLIC l0315
   align 4
 l0315:
  DD 0
- DB 49,0
+ DB 46,0
  PUBLIC l0316
   align 4
 l0316:
  DD 0
- DB 50,0
+ DB 47,0
  PUBLIC l0317
   align 4
 l0317:
  DD 0
- DB 51,0
+ DB 48,0
  PUBLIC l0318
   align 4
 l0318:
  DD 0
- DB 52,0
+ DB 49,0
  PUBLIC l0319
   align 4
 l0319:
  DD 0
- DB 53,0
+ DB 50,0
  PUBLIC l0320
   align 4
 l0320:
  DD 0
- DB 54,0
+ DB 51,0
  PUBLIC l0321
   align 4
 l0321:
  DD 0
- DB 55,0
+ DB 52,0
  PUBLIC l0322
   align 4
 l0322:
  DD 0
- DB 56,0
+ DB 53,0
  PUBLIC l0323
   align 4
 l0323:
  DD 0
- DB 57,0
+ DB 54,0
  PUBLIC l0324
   align 4
 l0324:
  DD 0
- DB 58,0
+ DB 55,0
  PUBLIC l0325
   align 4
 l0325:
  DD 0
- DB 59,0
+ DB 56,0
  PUBLIC l0326
   align 4
 l0326:
  DD 0
- DB 60,0
+ DB 57,0
  PUBLIC l0327
   align 4
 l0327:
  DD 0
- DB 61,0
+ DB 58,0
  PUBLIC l0328
   align 4
 l0328:
  DD 0
- DB 62,0
+ DB 59,0
  PUBLIC l0329
   align 4
 l0329:
  DD 0
- DB 63,0
+ DB 60,0
  PUBLIC l0330
   align 4
 l0330:
  DD 0
- DB 64,0
+ DB 61,0
  PUBLIC l0331
   align 4
 l0331:
  DD 0
- DB 65,0
+ DB 62,0
  PUBLIC l0332
   align 4
 l0332:
  DD 0
- DB 66,0
+ DB 63,0
  PUBLIC l0333
   align 4
 l0333:
  DD 0
- DB 67,0
+ DB 64,0
  PUBLIC l0334
   align 4
 l0334:
  DD 0
- DB 68,0
+ DB 65,0
  PUBLIC l0335
   align 4
 l0335:
  DD 0
- DB 69,0
+ DB 66,0
  PUBLIC l0336
   align 4
 l0336:
  DD 0
- DB 70,0
+ DB 67,0
  PUBLIC l0337
   align 4
 l0337:
  DD 0
- DB 71,0
+ DB 68,0
  PUBLIC l0338
   align 4
 l0338:
  DD 0
- DB 72,0
+ DB 69,0
  PUBLIC l0339
   align 4
 l0339:
  DD 0
- DB 73,0
+ DB 70,0
  PUBLIC l0340
   align 4
 l0340:
  DD 0
- DB 74,0
+ DB 71,0
  PUBLIC l0341
   align 4
 l0341:
  DD 0
- DB 75,0
+ DB 72,0
  PUBLIC l0342
   align 4
 l0342:
  DD 0
- DB 76,0
+ DB 73,0
  PUBLIC l0343
   align 4
 l0343:
  DD 0
- DB 77,0
+ DB 74,0
  PUBLIC l0344
   align 4
 l0344:
  DD 0
- DB 78,0
+ DB 75,0
  PUBLIC l0345
   align 4
 l0345:
  DD 0
- DB 79,0
+ DB 76,0
  PUBLIC l0346
   align 4
 l0346:
  DD 0
- DB 80,0
+ DB 77,0
  PUBLIC l0347
   align 4
 l0347:
  DD 0
- DB 81,0
+ DB 78,0
  PUBLIC l0348
   align 4
 l0348:
  DD 0
- DB 82,0
+ DB 79,0
  PUBLIC l0349
   align 4
 l0349:
  DD 0
- DB 83,0
+ DB 80,0
  PUBLIC l0350
   align 4
 l0350:
  DD 0
- DB 84,0
+ DB 81,0
  PUBLIC l0351
   align 4
 l0351:
  DD 0
- DB 85,0
+ DB 82,0
  PUBLIC l0352
   align 4
 l0352:
  DD 0
- DB 86,0
+ DB 83,0
  PUBLIC l0353
   align 4
 l0353:
  DD 0
- DB 87,0
+ DB 84,0
  PUBLIC l0354
   align 4
 l0354:
  DD 0
- DB 88,0
+ DB 85,0
  PUBLIC l0355
   align 4
 l0355:
  DD 0
- DB 89,0
+ DB 86,0
  PUBLIC l0356
   align 4
 l0356:
  DD 0
- DB 90,0
+ DB 87,0
  PUBLIC l0357
   align 4
 l0357:
  DD 0
- DB 91,0
+ DB 88,0
  PUBLIC l0358
   align 4
 l0358:
  DD 0
- DB 92,0
+ DB 89,0
  PUBLIC l0359
   align 4
 l0359:
  DD 0
- DB 93,0
+ DB 90,0
  PUBLIC l0360
   align 4
 l0360:
  DD 0
- DB 94,0
+ DB 91,0
  PUBLIC l0361
   align 4
 l0361:
  DD 0
- DB 95,0
+ DB 92,0
  PUBLIC l0362
   align 4
 l0362:
  DD 0
- DB 96,0
+ DB 93,0
  PUBLIC l0363
   align 4
 l0363:
  DD 0
- DB 97,0
+ DB 94,0
  PUBLIC l0364
   align 4
 l0364:
  DD 0
- DB 98,0
+ DB 95,0
  PUBLIC l0365
   align 4
 l0365:
  DD 0
- DB 99,0
+ DB 96,0
  PUBLIC l0366
   align 4
 l0366:
  DD 0
- DB 100,0
+ DB 97,0
  PUBLIC l0367
   align 4
 l0367:
  DD 0
- DB 101,0
+ DB 98,0
  PUBLIC l0368
   align 4
 l0368:
  DD 0
- DB 102,0
+ DB 99,0
  PUBLIC l0369
   align 4
 l0369:
  DD 0
- DB 103,0
+ DB 100,0
  PUBLIC l0370
   align 4
 l0370:
  DD 0
- DB 104,0
+ DB 101,0
  PUBLIC l0371
   align 4
 l0371:
  DD 0
- DB 105,0
+ DB 102,0
  PUBLIC l0372
   align 4
 l0372:
  DD 0
- DB 106,0
+ DB 103,0
  PUBLIC l0373
   align 4
 l0373:
  DD 0
- DB 107,0
+ DB 104,0
  PUBLIC l0374
   align 4
 l0374:
  DD 0
- DB 108,0
+ DB 105,0
  PUBLIC l0375
   align 4
 l0375:
  DD 0
- DB 109,0
+ DB 106,0
  PUBLIC l0376
   align 4
 l0376:
  DD 0
- DB 110,0
+ DB 107,0
  PUBLIC l0377
   align 4
 l0377:
  DD 0
- DB 111,0
+ DB 108,0
  PUBLIC l0378
   align 4
 l0378:
  DD 0
- DB 112,0
+ DB 109,0
  PUBLIC l0379
   align 4
 l0379:
  DD 0
- DB 113,0
+ DB 110,0
  PUBLIC l0380
   align 4
 l0380:
  DD 0
- DB 114,0
+ DB 111,0
  PUBLIC l0381
   align 4
 l0381:
  DD 0
- DB 115,0
+ DB 112,0
  PUBLIC l0382
   align 4
 l0382:
  DD 0
- DB 116,0
+ DB 113,0
  PUBLIC l0383
   align 4
 l0383:
  DD 0
- DB 117,0
+ DB 114,0
  PUBLIC l0384
   align 4
 l0384:
  DD 0
- DB 118,0
+ DB 115,0
  PUBLIC l0385
   align 4
 l0385:
  DD 0
- DB 119,0
+ DB 116,0
  PUBLIC l0386
   align 4
 l0386:
  DD 0
- DB 120,0
+ DB 117,0
  PUBLIC l0387
   align 4
 l0387:
  DD 0
- DB 121,0
+ DB 118,0
  PUBLIC l0388
   align 4
 l0388:
  DD 0
- DB 122,0
+ DB 119,0
  PUBLIC l0389
   align 4
 l0389:
  DD 0
- DB 123,0
+ DB 120,0
  PUBLIC l0390
   align 4
 l0390:
  DD 0
- DB 124,0
+ DB 121,0
  PUBLIC l0391
   align 4
 l0391:
  DD 0
- DB 125,0
+ DB 122,0
  PUBLIC l0392
   align 4
 l0392:
  DD 0
- DB 126,0
+ DB 123,0
  PUBLIC l0393
   align 4
 l0393:
  DD 0
- DB 127,0
+ DB 124,0
  PUBLIC l0394
   align 4
 l0394:
- DD 2
- DB 110,105,108,0
+ DD 0
+ DB 125,0
  PUBLIC l0395
   align 4
 l0395:
  DD 0
- DB -127,0
+ DB 126,0
  PUBLIC l0396
   align 4
 l0396:
  DD 0
- DB -126,0
+ DB 127,0
  PUBLIC l0397
   align 4
 l0397:
- DD 0
- DB -125,0
+ DD 2
+ DB 110,105,108,0
  PUBLIC l0398
   align 4
 l0398:
  DD 0
- DB -124,0
+ DB -127,0
  PUBLIC l0399
   align 4
 l0399:
  DD 0
- DB -123,0
+ DB -126,0
  PUBLIC l0400
   align 4
 l0400:
  DD 0
- DB -122,0
+ DB -125,0
  PUBLIC l0401
   align 4
 l0401:
  DD 0
- DB -121,0
+ DB -124,0
  PUBLIC l0402
   align 4
 l0402:
  DD 0
- DB -120,0
+ DB -123,0
  PUBLIC l0403
   align 4
 l0403:
  DD 0
- DB -119,0
+ DB -122,0
  PUBLIC l0404
   align 4
 l0404:
  DD 0
- DB -118,0
+ DB -121,0
  PUBLIC l0405
   align 4
 l0405:
  DD 0
- DB -117,0
+ DB -120,0
  PUBLIC l0406
   align 4
 l0406:
  DD 0
- DB -116,0
+ DB -119,0
  PUBLIC l0407
   align 4
 l0407:
  DD 0
- DB -115,0
+ DB -118,0
  PUBLIC l0408
   align 4
 l0408:
  DD 0
- DB -114,0
+ DB -117,0
  PUBLIC l0409
   align 4
 l0409:
  DD 0
- DB -113,0
+ DB -116,0
  PUBLIC l0410
   align 4
 l0410:
  DD 0
- DB -112,0
+ DB -115,0
  PUBLIC l0411
   align 4
 l0411:
  DD 0
- DB -111,0
+ DB -114,0
  PUBLIC l0412
   align 4
 l0412:
  DD 0
- DB -110,0
+ DB -113,0
  PUBLIC l0413
   align 4
 l0413:
  DD 0
- DB -109,0
+ DB -112,0
  PUBLIC l0414
   align 4
 l0414:
  DD 0
- DB -108,0
+ DB -111,0
  PUBLIC l0415
   align 4
 l0415:
  DD 0
- DB -107,0
+ DB -110,0
  PUBLIC l0416
   align 4
 l0416:
  DD 0
- DB -106,0
+ DB -109,0
  PUBLIC l0417
   align 4
 l0417:
  DD 0
- DB -105,0
+ DB -108,0
  PUBLIC l0418
   align 4
 l0418:
  DD 0
- DB -104,0
+ DB -107,0
  PUBLIC l0419
   align 4
 l0419:
  DD 0
- DB -103,0
+ DB -106,0
  PUBLIC l0420
   align 4
 l0420:
  DD 0
- DB -102,0
+ DB -105,0
  PUBLIC l0421
   align 4
 l0421:
  DD 0
- DB -101,0
+ DB -104,0
  PUBLIC l0422
   align 4
 l0422:
  DD 0
- DB -100,0
+ DB -103,0
  PUBLIC l0423
   align 4
 l0423:
  DD 0
- DB -99,0
+ DB -102,0
  PUBLIC l0424
   align 4
 l0424:
  DD 0
- DB -98,0
+ DB -101,0
  PUBLIC l0425
   align 4
 l0425:
  DD 0
- DB -97,0
+ DB -100,0
  PUBLIC l0426
   align 4
 l0426:
  DD 0
- DB -96,0
+ DB -99,0
  PUBLIC l0427
   align 4
 l0427:
  DD 0
- DB -95,0
+ DB -98,0
  PUBLIC l0428
   align 4
 l0428:
  DD 0
- DB -94,0
+ DB -97,0
  PUBLIC l0429
   align 4
 l0429:
  DD 0
- DB -93,0
+ DB -96,0
  PUBLIC l0430
   align 4
 l0430:
  DD 0
- DB -92,0
+ DB -95,0
  PUBLIC l0431
   align 4
 l0431:
  DD 0
- DB -91,0
+ DB -94,0
  PUBLIC l0432
   align 4
 l0432:
  DD 0
- DB -90,0
+ DB -93,0
  PUBLIC l0433
   align 4
 l0433:
  DD 0
- DB -89,0
+ DB -92,0
  PUBLIC l0434
   align 4
 l0434:
  DD 0
- DB -88,0
+ DB -91,0
  PUBLIC l0435
   align 4
 l0435:
  DD 0
- DB -87,0
+ DB -90,0
  PUBLIC l0436
   align 4
 l0436:
  DD 0
- DB -86,0
+ DB -89,0
  PUBLIC l0437
   align 4
 l0437:
  DD 0
- DB -85,0
+ DB -88,0
  PUBLIC l0438
   align 4
 l0438:
  DD 0
- DB -84,0
+ DB -87,0
  PUBLIC l0439
   align 4
 l0439:
  DD 0
- DB -83,0
+ DB -86,0
  PUBLIC l0440
   align 4
 l0440:
  DD 0
- DB -82,0
+ DB -85,0
  PUBLIC l0441
   align 4
 l0441:
  DD 0
- DB -81,0
+ DB -84,0
  PUBLIC l0442
   align 4
 l0442:
  DD 0
- DB -80,0
+ DB -83,0
  PUBLIC l0443
   align 4
 l0443:
  DD 0
- DB -79,0
+ DB -82,0
  PUBLIC l0444
   align 4
 l0444:
  DD 0
- DB -78,0
+ DB -81,0
  PUBLIC l0445
   align 4
 l0445:
  DD 0
- DB -77,0
+ DB -80,0
  PUBLIC l0446
   align 4
 l0446:
  DD 0
- DB -76,0
+ DB -79,0
  PUBLIC l0447
   align 4
 l0447:
  DD 0
- DB -75,0
+ DB -78,0
  PUBLIC l0448
   align 4
 l0448:
  DD 0
- DB -74,0
+ DB -77,0
  PUBLIC l0449
   align 4
 l0449:
  DD 0
- DB -73,0
+ DB -76,0
  PUBLIC l0450
   align 4
 l0450:
  DD 0
- DB -72,0
+ DB -75,0
  PUBLIC l0451
   align 4
 l0451:
  DD 0
- DB -71,0
+ DB -74,0
  PUBLIC l0452
   align 4
 l0452:
  DD 0
- DB -70,0
+ DB -73,0
  PUBLIC l0453
   align 4
 l0453:
  DD 0
- DB -69,0
+ DB -72,0
  PUBLIC l0454
   align 4
 l0454:
  DD 0
- DB -68,0
+ DB -71,0
  PUBLIC l0455
   align 4
 l0455:
  DD 0
- DB -67,0
+ DB -70,0
  PUBLIC l0456
   align 4
 l0456:
  DD 0
- DB -66,0
+ DB -69,0
  PUBLIC l0457
   align 4
 l0457:
  DD 0
- DB -65,0
+ DB -68,0
  PUBLIC l0458
   align 4
 l0458:
  DD 0
- DB -64,0
+ DB -67,0
  PUBLIC l0459
   align 4
 l0459:
  DD 0
- DB -63,0
+ DB -66,0
  PUBLIC l0460
   align 4
 l0460:
  DD 0
- DB -62,0
+ DB -65,0
  PUBLIC l0461
   align 4
 l0461:
  DD 0
- DB -61,0
+ DB -64,0
  PUBLIC l0462
   align 4
 l0462:
  DD 0
- DB -60,0
+ DB -63,0
  PUBLIC l0463
   align 4
 l0463:
  DD 0
- DB -59,0
+ DB -62,0
  PUBLIC l0464
   align 4
 l0464:
  DD 0
- DB -58,0
+ DB -61,0
  PUBLIC l0465
   align 4
 l0465:
  DD 0
- DB -57,0
+ DB -60,0
  PUBLIC l0466
   align 4
 l0466:
  DD 0
- DB -56,0
+ DB -59,0
  PUBLIC l0467
   align 4
 l0467:
  DD 0
- DB -55,0
+ DB -58,0
  PUBLIC l0468
   align 4
 l0468:
  DD 0
- DB -54,0
+ DB -57,0
  PUBLIC l0469
   align 4
 l0469:
  DD 0
- DB -53,0
+ DB -56,0
  PUBLIC l0470
   align 4
 l0470:
  DD 0
- DB -52,0
+ DB -55,0
  PUBLIC l0471
   align 4
 l0471:
  DD 0
- DB -51,0
+ DB -54,0
  PUBLIC l0472
   align 4
 l0472:
  DD 0
- DB -50,0
+ DB -53,0
  PUBLIC l0473
   align 4
 l0473:
  DD 0
- DB -49,0
+ DB -52,0
  PUBLIC l0474
   align 4
 l0474:
  DD 0
- DB -48,0
+ DB -51,0
  PUBLIC l0475
   align 4
 l0475:
  DD 0
- DB -47,0
+ DB -50,0
  PUBLIC l0476
   align 4
 l0476:
  DD 0
- DB -46,0
+ DB -49,0
  PUBLIC l0477
   align 4
 l0477:
  DD 0
- DB -45,0
+ DB -48,0
  PUBLIC l0478
   align 4
 l0478:
  DD 0
- DB -44,0
+ DB -47,0
  PUBLIC l0479
   align 4
 l0479:
  DD 0
- DB -43,0
+ DB -46,0
  PUBLIC l0480
   align 4
 l0480:
  DD 0
- DB -42,0
+ DB -45,0
  PUBLIC l0481
   align 4
 l0481:
  DD 0
- DB -41,0
+ DB -44,0
  PUBLIC l0482
   align 4
 l0482:
  DD 0
- DB -40,0
+ DB -43,0
  PUBLIC l0483
   align 4
 l0483:
  DD 0
- DB -39,0
+ DB -42,0
  PUBLIC l0484
   align 4
 l0484:
  DD 0
- DB -38,0
+ DB -41,0
  PUBLIC l0485
   align 4
 l0485:
  DD 0
- DB -37,0
+ DB -40,0
  PUBLIC l0486
   align 4
 l0486:
  DD 0
- DB -36,0
+ DB -39,0
  PUBLIC l0487
   align 4
 l0487:
  DD 0
- DB -35,0
+ DB -38,0
  PUBLIC l0488
   align 4
 l0488:
  DD 0
- DB -34,0
+ DB -37,0
  PUBLIC l0489
   align 4
 l0489:
  DD 0
- DB -33,0
+ DB -36,0
  PUBLIC l0490
   align 4
 l0490:
  DD 0
- DB -32,0
+ DB -35,0
  PUBLIC l0491
   align 4
 l0491:
  DD 0
- DB -31,0
+ DB -34,0
  PUBLIC l0492
   align 4
 l0492:
  DD 0
- DB -30,0
+ DB -33,0
  PUBLIC l0493
   align 4
 l0493:
  DD 0
- DB -29,0
+ DB -32,0
  PUBLIC l0494
   align 4
 l0494:
  DD 0
- DB -28,0
+ DB -31,0
  PUBLIC l0495
   align 4
 l0495:
  DD 0
- DB -27,0
+ DB -30,0
  PUBLIC l0496
   align 4
 l0496:
  DD 0
- DB -26,0
+ DB -29,0
  PUBLIC l0497
   align 4
 l0497:
  DD 0
- DB -25,0
+ DB -28,0
  PUBLIC l0498
   align 4
 l0498:
  DD 0
- DB -24,0
+ DB -27,0
  PUBLIC l0499
   align 4
 l0499:
  DD 0
- DB -23,0
+ DB -26,0
  PUBLIC l0500
   align 4
 l0500:
  DD 0
- DB -22,0
+ DB -25,0
  PUBLIC l0501
   align 4
 l0501:
  DD 0
- DB -21,0
+ DB -24,0
  PUBLIC l0502
   align 4
 l0502:
  DD 0
- DB -20,0
+ DB -23,0
  PUBLIC l0503
   align 4
 l0503:
  DD 0
- DB -19,0
+ DB -22,0
  PUBLIC l0504
   align 4
 l0504:
  DD 0
- DB -18,0
+ DB -21,0
  PUBLIC l0505
   align 4
 l0505:
  DD 0
- DB -17,0
+ DB -20,0
  PUBLIC l0506
   align 4
 l0506:
  DD 0
- DB -16,0
+ DB -19,0
  PUBLIC l0507
   align 4
 l0507:
  DD 0
- DB -15,0
+ DB -18,0
  PUBLIC l0508
   align 4
 l0508:
  DD 0
- DB -14,0
+ DB -17,0
  PUBLIC l0509
   align 4
 l0509:
  DD 0
- DB -13,0
+ DB -16,0
  PUBLIC l0510
   align 4
 l0510:
  DD 0
- DB -12,0
+ DB -15,0
  PUBLIC l0511
   align 4
 l0511:
  DD 0
- DB -11,0
+ DB -14,0
  PUBLIC l0512
   align 4
 l0512:
  DD 0
- DB -10,0
+ DB -13,0
  PUBLIC l0513
   align 4
 l0513:
  DD 0
- DB -9,0
+ DB -12,0
  PUBLIC l0514
   align 4
 l0514:
  DD 0
- DB -8,0
+ DB -11,0
  PUBLIC l0515
   align 4
 l0515:
  DD 0
- DB -7,0
+ DB -10,0
  PUBLIC l0516
   align 4
 l0516:
  DD 0
- DB -6,0
+ DB -9,0
  PUBLIC l0517
   align 4
 l0517:
  DD 0
- DB -5,0
+ DB -8,0
  PUBLIC l0518
   align 4
 l0518:
  DD 0
- DB -4,0
+ DB -7,0
  PUBLIC l0519
   align 4
 l0519:
  DD 0
- DB -3,0
+ DB -6,0
  PUBLIC l0520
   align 4
 l0520:
  DD 0
- DB -2,0
+ DB -5,0
  PUBLIC l0521
   align 4
 l0521:
  DD 0
- DB -1,0
+ DB -4,0
  PUBLIC l0522
   align 4
 l0522:
- DD 10
- DB 102,105,114,115,116,107,101,114,110,101
- DB 108,0
+ DD 0
+ DB -3,0
  PUBLIC l0523
   align 4
 l0523:
- DD 12
- DB 97,114,103,117,109,101,110,116,98,108
- DB 111,99,107,0
+ DD 0
+ DB -2,0
  PUBLIC l0524
   align 4
 l0524:
- DD 10
- DB 116,111,107,101,110,98,117,102,102,101
- DB 114,0
+ DD 0
+ DB -1,0
  PUBLIC l0525
   align 4
 l0525:
- DD 5
- DB 98,110,100,115,116,107,0,0
+ DD 10
+ DB 102,105,114,115,116,107,101,114,110,101
+ DB 108,0
  PUBLIC l0526
   align 4
 l0526:
- DD 9
- DB 99,97,116,99,104,115,116,97,99,107,0,0
+ DD 12
+ DB 97,114,103,117,109,101,110,116,98,108
+ DB 111,99,107,0
  PUBLIC l0527
   align 4
 l0527:
- DD 8
- DB 104,97,115,104,116,97,98,108,101,0
+ DD 10
+ DB 116,111,107,101,110,98,117,102,102,101
+ DB 114,0
  PUBLIC l0528
   align 4
 l0528:
- DD 12
- DB 111,110,101,119,111,114,100,98,117,102
- DB 102,101,114,0
+ DD 5
+ DB 98,110,100,115,116,107,0,0
  PUBLIC l0529
   align 4
 l0529:
- DD 7
- DB 115,97,118,101,97,114,103,99,0,0
+ DD 9
+ DB 99,97,116,99,104,115,116,97,99,107,0,0
  PUBLIC l0530
   align 4
 l0530:
- DD 7
- DB 115,97,118,101,97,114,103,118,0,0
+ DD 8
+ DB 104,97,115,104,116,97,98,108,101,0
  PUBLIC l0531
   align 4
 l0531:
- DD 9
- DB 100,97,116,101,98,117,102,102,101,114
- DB 0,0
+ DD 12
+ DB 111,110,101,119,111,114,100,98,117,102
+ DB 102,101,114,0
  PUBLIC l0532
   align 4
 l0532:
- DD 12
- DB 105,110,105,116,45,112,111,105,110,116
- DB 101,114,115,0
+ DD 7
+ DB 115,97,118,101,97,114,103,99,0,0
  PUBLIC l0533
   align 4
 l0533:
- DD 12
- DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,49,0
+ DD 7
+ DB 115,97,118,101,97,114,103,118,0,0
  PUBLIC l0534
   align 4
 l0534:
- DD 12
- DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,50,0
+ DD 9
+ DB 100,97,116,101,98,117,102,102,101,114
+ DB 0,0
  PUBLIC l0535
   align 4
 l0535:
  DD 12
- DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,51,0
+ DB 105,110,105,116,45,112,111,105,110,116
+ DB 101,114,115,0
  PUBLIC l0536
   align 4
 l0536:
  DD 12
  DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,52,0
+ DB 107,49,0
  PUBLIC l0537
   align 4
 l0537:
- DD 4
- DB 115,116,97,99,107,0
+ DD 12
+ DB 112,115,108,95,99,97,108,108,98,97,99
+ DB 107,50,0
  PUBLIC l0538
   align 4
 l0538:
- DD 14
- DB 115,116,97,99,107,117,112,112,101,114
- DB 98,111,117,110,100,0
+ DD 12
+ DB 112,115,108,95,99,97,108,108,98,97,99
+ DB 107,51,0
  PUBLIC l0539
   align 4
 l0539:
  DD 12
- DB 99,97,116,99,104,115,116,97,99,107,112
- DB 116,114,0
+ DB 112,115,108,95,99,97,108,108,98,97,99
+ DB 107,52,0
  PUBLIC l0540
   align 4
 l0540:
- DD 15
- DB 98,110,100,115,116,107,108,111,119,101
- DB 114,98,111,117,110,100,0,0
+ DD 4
+ DB 115,116,97,99,107,0
  PUBLIC l0541
   align 4
 l0541:
- DD 15
- DB 98,110,100,115,116,107,117,112,112,101
- DB 114,98,111,117,110,100,0,0
+ DD 14
+ DB 115,116,97,99,107,117,112,112,101,114
+ DB 98,111,117,110,100,0
  PUBLIC l0542
   align 4
 l0542:
- DD 8
- DB 98,110,100,115,116,107,112,116,114,0
+ DD 12
+ DB 99,97,116,99,104,115,116,97,99,107,112
+ DB 116,114,0
  PUBLIC l0543
   align 4
 l0543:
- DD 13
- DB 104,101,97,112,108,111,119,101,114,98
- DB 111,117,110,100,0,0
+ DD 15
+ DB 98,110,100,115,116,107,108,111,119,101
+ DB 114,98,111,117,110,100,0,0
  PUBLIC l0544
   align 4
 l0544:
- DD 3
- DB 104,101,97,112,0,0
+ DD 15
+ DB 98,110,100,115,116,107,117,112,112,101
+ DB 114,98,111,117,110,100,0,0
  PUBLIC l0545
   align 4
 l0545:
- DD 10
- DB 105,110,105,116,45,102,108,117,105,100
- DB 115,0
+ DD 8
+ DB 98,110,100,115,116,107,112,116,114,0
  PUBLIC l0546
   align 4
 l0546:
- DD 16
- DB 103,99,97,114,114,97,121,108,111,119,101
- DB 114,98,111,117,110,100,0
+ DD 13
+ DB 104,101,97,112,108,111,119,101,114,98
+ DB 111,117,110,100,0,0
  PUBLIC l0547
   align 4
 l0547:
- DD 16
- DB 103,99,97,114,114,97,121,117,112,112,101
- DB 114,98,111,117,110,100,0
+ DD 3
+ DB 104,101,97,112,0,0
  PUBLIC l0548
   align 4
 l0548:
- DD 7
- DB 104,101,97,112,108,97,115,116,0,0
+ DD 10
+ DB 105,110,105,116,45,102,108,117,105,100
+ DB 115,0
  PUBLIC l0549
   align 4
 l0549:
- DD 12
- DB 104,101,97,112,116,114,97,112,98,111,117
- DB 110,100,0
+ DD 16
+ DB 103,99,97,114,114,97,121,108,111,119,101
+ DB 114,98,111,117,110,100,0
  PUBLIC l0550
   align 4
 l0550:
- DD 13
- DB 104,101,97,112,117,112,112,101,114,98
- DB 111,117,110,100,0,0
+ DD 16
+ DB 103,99,97,114,114,97,121,117,112,112,101
+ DB 114,98,111,117,110,100,0
  PUBLIC l0551
   align 4
 l0551:
- DD 13
- DB 95,105,110,102,98,105,116,108,101,110
- DB 103,116,104,95,0,0
+ DD 7
+ DB 104,101,97,112,108,97,115,116,0,0
  PUBLIC l0552
   align 4
 l0552:
- DD 6
- DB 108,97,115,116,98,112,115,0
+ DD 12
+ DB 104,101,97,112,116,114,97,112,98,111,117
+ DB 110,100,0
  PUBLIC l0553
   align 4
 l0553:
- DD 12
- DB 98,112,115,108,111,119,101,114,98,111
- DB 117,110,100,0
+ DD 13
+ DB 104,101,97,112,117,112,112,101,114,98
+ DB 111,117,110,100,0,0
  PUBLIC l0554
   align 4
 l0554:
- DD 10
- DB 111,108,100,104,101,97,112,108,97,115
- DB 116,0
+ DD 13
+ DB 95,105,110,102,98,105,116,108,101,110
+ DB 103,116,104,95,0,0
  PUBLIC l0555
   align 4
 l0555:
- DD 16
- DB 111,108,100,104,101,97,112,108,111,119
- DB 101,114,98,111,117,110,100,0
+ DD 6
+ DB 108,97,115,116,98,112,115,0
  PUBLIC l0556
   align 4
 l0556:
- DD 15
- DB 111,108,100,104,101,97,112,116,114,97
- DB 112,98,111,117,110,100,0,0
+ DD 12
+ DB 98,112,115,108,111,119,101,114,98,111
+ DB 117,110,100,0
  PUBLIC l0557
   align 4
 l0557:
- DD 16
- DB 111,108,100,104,101,97,112,117,112,112
- DB 101,114,98,111,117,110,100,0
+ DD 10
+ DB 111,108,100,104,101,97,112,108,97,115
+ DB 116,0
  PUBLIC l0558
   align 4
 l0558:
- DD 18
- DB 109,97,105,110,115,116,97,114,116,105
- DB 110,105,116,105,97,108,105,122,101,0
+ DD 16
+ DB 111,108,100,104,101,97,112,108,111,119
+ DB 101,114,98,111,117,110,100,0
  PUBLIC l0559
   align 4
 l0559:
- DD 6
- DB 110,101,120,116,98,112,115,0
+ DD 15
+ DB 111,108,100,104,101,97,112,116,114,97
+ DB 112,98,111,117,110,100,0,0
  PUBLIC l0560
   align 4
 l0560:
- DD 8
- DB 117,110,105,120,115,116,100,105,110,0
+ DD 16
+ DB 111,108,100,104,101,97,112,117,112,112
+ DB 101,114,98,111,117,110,100,0
  PUBLIC l0561
   align 4
 l0561:
- DD 9
- DB 117,110,105,120,115,116,100,111,117,116
- DB 0,0
+ DD 18
+ DB 109,97,105,110,115,116,97,114,116,105
+ DB 110,105,116,105,97,108,105,122,101,0
  PUBLIC l0562
   align 4
 l0562:
- DD 9
- DB 117,110,105,120,115,116,100,101,114,114
- DB 0,0
+ DD 6
+ DB 110,101,120,116,98,112,115,0
  PUBLIC l0563
   align 4
 l0563:
- DD 7
- DB 117,110,105,120,110,117,108,108,0,0
+ DD 8
+ DB 117,110,105,120,115,116,100,105,110,0
  PUBLIC l0564
   align 4
 l0564:
- DD 6
- DB 117,110,105,120,101,111,102,0
+ DD 9
+ DB 117,110,105,120,115,116,100,111,117,116
+ DB 0,0
  PUBLIC l0565
   align 4
 l0565:
- DD 6
- DB 117,110,105,120,116,116,121,0
+ DD 9
+ DB 117,110,105,120,115,116,100,101,114,114
+ DB 0,0
  PUBLIC l0566
   align 4
 l0566:
- DD 16
- DB 42,42,42,109,117,115,116,45,98,101,45
- DB 110,105,108,42,42,42,0
+ DD 7
+ DB 117,110,105,120,110,117,108,108,0,0
  PUBLIC l0567
   align 4
 l0567:
- DD 20
- DB 42,42,42,109,117,115,116,45,98,101,45
- DB 110,105,108,45,116,111,111,42,42,42,0
+ DD 6
+ DB 117,110,105,120,101,111,102,0
  PUBLIC l0568
   align 4
 l0568:
- DD 7
- DB 42,102,97,115,116,99,97,114,0,0
+ DD 6
+ DB 117,110,105,120,116,116,121,0
  PUBLIC l0569
   align 4
 l0569:
- DD 8
- DB 42,42,119,105,110,100,111,119,115,0
+ DD 16
+ DB 42,42,42,109,117,115,116,45,98,101,45
+ DB 110,105,108,42,42,42,0
  PUBLIC l0570
   align 4
 l0570:
- DD 13
- DB 38,38,105,110,105,116,45,116,97,98,108
- DB 101,115,49,0,0
+ DD 20
+ DB 42,42,42,109,117,115,116,45,98,101,45
+ DB 110,105,108,45,116,111,111,42,42,42,0
  PUBLIC l0571
   align 4
 l0571:
- DD 10
- DB 98,114,117,99,104,95,98,114,117,99,104
- DB 0
+ DD 7
+ DB 42,102,97,115,116,99,97,114,0,0
  PUBLIC l0572
   align 4
 l0572:
- DD 9
- DB 110,101,120,116,115,121,109,98,111,108
- DB 0,0
+ DD 8
+ DB 42,42,119,105,110,100,111,119,115,0
  PUBLIC l0573
   align 4
 l0573:
- DD 16
- DB 107,101,114,110,101,108,45,109,97,120
- DB 115,121,109,98,111,108,115,0
+ DD 13
+ DB 38,38,105,110,105,116,45,116,97,98,108
+ DB 101,115,49,0,0
  PUBLIC l0574
   align 4
 l0574:
- DD 5
- DB 115,121,109,118,97,108,0,0
+ DD 10
+ DB 98,114,117,99,104,95,98,114,117,99,104
+ DB 0
  PUBLIC l0575
   align 4
 l0575:
  DD 9
- DB 111,108,100,95,115,121,109,118,97,108
+ DB 110,101,120,116,115,121,109,98,111,108
  DB 0,0
  PUBLIC l0576
   align 4
 l0576:
- DD 5
- DB 115,121,109,102,110,99,0,0
+ DD 16
+ DB 107,101,114,110,101,108,45,109,97,120
+ DB 115,121,109,98,111,108,115,0
  PUBLIC l0577
   align 4
 l0577:
- DD 9
- DB 111,108,100,95,115,121,109,102,110,99
- DB 0,0
+ DD 5
+ DB 115,121,109,118,97,108,0,0
  PUBLIC l0578
   align 4
 l0578:
- DD 5
- DB 115,121,109,112,114,112,0,0
+ DD 9
+ DB 111,108,100,95,115,121,109,118,97,108
+ DB 0,0
  PUBLIC l0579
   align 4
 l0579:
- DD 9
- DB 111,108,100,95,115,121,109,112,114,112
- DB 0,0
+ DD 5
+ DB 115,121,109,102,110,99,0,0
  PUBLIC l0580
   align 4
 l0580:
- DD 5
- DB 115,121,109,110,97,109,0,0
+ DD 9
+ DB 111,108,100,95,115,121,109,102,110,99
+ DB 0,0
  PUBLIC l0581
   align 4
 l0581:
- DD 8
- DB 38,38,115,121,109,99,111,112,121,0
+ DD 5
+ DB 115,121,109,112,114,112,0,0
  PUBLIC l0582
   align 4
 l0582:
- DD 11
- DB 105,110,105,116,45,103,99,97,114,114,97
- DB 121,0,0
+ DD 9
+ DB 111,108,100,95,115,121,109,112,114,112
+ DB 0,0
  PUBLIC l0583
   align 4
 l0583:
- DD 13
- DB 38,38,105,110,105,116,45,116,97,98,108
- DB 101,115,50,0,0
+ DD 8
+ DB 110,101,119,115,121,109,118,97,108,0
  PUBLIC l0584
   align 4
 l0584:
- DD 14
- DB 111,115,95,115,116,97,114,116,117,112
- DB 95,104,111,111,107,0
+ DD 8
+ DB 38,38,115,121,109,99,111,112,121,0
  PUBLIC l0585
   align 4
 l0585:
- DD 12
- DB 38,116,105,109,101,45,99,111,110,116,114
- DB 111,108,0
+ DD 11
+ DB 105,110,105,116,45,103,99,97,114,114,97
+ DB 121,0,0
  PUBLIC l0586
   align 4
 l0586:
- DD 7
- DB 112,114,101,45,109,97,105,110,0,0
+ DD 13
+ DB 38,38,105,110,105,116,45,116,97,98,108
+ DB 101,115,50,0,0
  PUBLIC l0587
   align 4
 l0587:
- DD 15
- DB 101,120,105,116,45,119,105,116,104,45
- DB 115,116,97,116,117,115,0,0
+ DD 14
+ DB 111,115,95,115,116,97,114,116,117,112
+ DB 95,104,111,111,107,0
  PUBLIC l0588
   align 4
 l0588:
  DD 12
- DB 101,120,116,101,114,110,97,108,95,101
- DB 120,105,116,0
+ DB 38,116,105,109,101,45,99,111,110,116,114
+ DB 111,108,0
  PUBLIC l0589
   align 4
 l0589:
- DD 8
- DB 95,112,115,108,95,109,97,105,110,0
+ DD 7
+ DB 112,114,101,45,109,97,105,110,0,0
  PUBLIC l0590
   align 4
 l0590:
- DD 14
- DB 115,116,97,99,107,108,111,119,101,114
- DB 98,111,117,110,100,0
+ DD 15
+ DB 101,120,105,116,45,119,105,116,104,45
+ DB 115,116,97,116,117,115,0,0
  PUBLIC l0591
   align 4
 l0591:
- DD 3
- DB 97,114,103,99,0,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,101
+ DB 120,105,116,0
  PUBLIC l0592
   align 4
 l0592:
- DD 3
- DB 97,114,103,118,0,0
+ DD 8
+ DB 95,112,115,108,95,109,97,105,110,0
  PUBLIC l0593
   align 4
 l0593:
- DD 8
- DB 112,115,108,95,99,97,108,108,49,0
+ DD 14
+ DB 115,116,97,99,107,108,111,119,101,114
+ DB 98,111,117,110,100,0
  PUBLIC l0594
   align 4
 l0594:
- DD 8
- DB 95,112,115,108,95,99,97,108,108,0
+ DD 3
+ DB 97,114,103,99,0,0
  PUBLIC l0595
   align 4
 l0595:
+ DD 3
+ DB 97,114,103,118,0,0
+ PUBLIC l0596
+  align 4
+l0596:
+ DD 8
+ DB 112,115,108,95,99,97,108,108,49,0
+ PUBLIC l0597
+  align 4
+l0597:
+ DD 8
+ DB 95,112,115,108,95,99,97,108,108,0
+ PUBLIC l0598
+  align 4
+l0598:
  DD 22
  DB 105,110,105,116,105,97,108,105,122,101
  DB 45,115,121,109,98,111,108,45,116,97,98
  DB 108,101,0
- PUBLIC l0596
+ PUBLIC l0599
   align 4
-l0596:
+l0599:
  DD 7
  DB 105,110,105,116,99,111,100,101,0,0
- PUBLIC l0597
+ PUBLIC l0600
   align 4
-l0597:
+l0600:
  DD 19
  DB 99,111,110,115,111,108,101,45,112,114
  DB 105,110,116,45,115,116,114,105,110,103
  DB 0,0
- PUBLIC l0598
-  align 4
-l0598:
- DD 14
- DB 99,111,110,115,111,108,101,45,110,101
- DB 119,108,105,110,101,0
- PUBLIC l0599
-  align 4
-l0599:
- DD 5
- DB 102,97,115,108,105,110,0,0
- PUBLIC l0600
-  align 4
-l0600:
- DD 10
- DB 108,111,97,100,101,114,45,109,97,105,110
- DB 0
  PUBLIC l0601
   align 4
 l0601:
  DD 14
- DB 101,120,116,101,114,110,97,108,95,115
- DB 116,114,108,101,110,0
+ DB 99,111,110,115,111,108,101,45,110,101
+ DB 119,108,105,110,101,0
  PUBLIC l0602
   align 4
 l0602:
  DD 5
- DB 32,121,105,101,108,100,0,0
+ DB 102,97,115,108,105,110,0,0
  PUBLIC l0603
   align 4
 l0603:
- DD 7
- DB 117,110,105,120,112,117,116,115,0,0
+ DD 10
+ DB 108,111,97,100,101,114,45,109,97,105,110
+ DB 0
  PUBLIC l0604
   align 4
 l0604:
- DD 7
- DB 117,110,105,120,112,117,116,110,0,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 116,114,108,101,110,0
  PUBLIC l0605
   align 4
 l0605:
- DD 19
- DB 99,111,110,115,111,108,101,45,112,114
- DB 105,110,116,45,110,117,109,98,101,114
- DB 0,0
+ DD 5
+ DB 32,121,105,101,108,100,0,0
  PUBLIC l0606
   align 4
 l0606:
  DD 7
- DB 117,110,105,120,112,117,116,99,0,0
+ DB 117,110,105,120,112,117,116,115,0,0
  PUBLIC l0607
   align 4
 l0607:
  DD 7
- DB 117,110,105,120,111,112,101,110,0,0
+ DB 117,110,105,120,112,117,116,110,0,0
  PUBLIC l0608
   align 4
 l0608:
- DD 17
- DB 107,101,114,110,101,108,45,102,97,116
- DB 97,108,45,101,114,114,111,114,0,0
+ DD 19
+ DB 99,111,110,115,111,108,101,45,112,114
+ DB 105,110,116,45,110,117,109,98,101,114
+ DB 0,0
  PUBLIC l0609
   align 4
 l0609:
- DD 13
- DB 98,105,110,97,114,121,111,112,101,110
- DB 114,101,97,100,0,0
+ DD 7
+ DB 117,110,105,120,112,117,116,99,0,0
  PUBLIC l0610
   align 4
 l0610:
- DD 3
- DB 103,101,116,119,0,0
+ DD 7
+ DB 117,110,105,120,111,112,101,110,0,0
  PUBLIC l0611
   align 4
 l0611:
- DD 9
- DB 98,105,110,97,114,121,114,101,97,100,0
- DB 0
+ DD 17
+ DB 107,101,114,110,101,108,45,102,97,116
+ DB 97,108,45,101,114,114,111,114,0,0
  PUBLIC l0612
   align 4
 l0612:
- DD 4
- DB 102,114,101,97,100,0
+ DD 13
+ DB 98,105,110,97,114,121,111,112,101,110
+ DB 114,101,97,100,0,0
  PUBLIC l0613
   align 4
 l0613:
- DD 14
- DB 98,105,110,97,114,121,114,101,97,100,98
- DB 108,111,99,107,0
+ DD 3
+ DB 103,101,116,119,0,0
  PUBLIC l0614
   align 4
 l0614:
- DD 5
- DB 102,99,108,111,115,101,0,0
+ DD 9
+ DB 98,105,110,97,114,121,114,101,97,100,0
+ DB 0
  PUBLIC l0615
   align 4
 l0615:
- DD 10
- DB 98,105,110,97,114,121,99,108,111,115,101
- DB 0
+ DD 4
+ DB 102,114,101,97,100,0
  PUBLIC l0616
   align 4
 l0616:
  DD 14
- DB 104,97,115,104,45,105,110,116,111,45,116
- DB 97,98,108,101,0
+ DB 98,105,110,97,114,121,114,101,97,100,98
+ DB 108,111,99,107,0
  PUBLIC l0617
   align 4
 l0617:
- DD 11
- DB 115,104,111,119,45,110,101,119,45,105
- DB 100,115,0,0
+ DD 5
+ DB 102,99,108,111,115,101,0,0
  PUBLIC l0618
   align 4
 l0618:
- DD 26
- DB 115,101,97,114,99,104,45,115,116,114,105
- DB 110,103,45,102,111,114,45,99,104,97,114
- DB 97,99,116,101,114,0
+ DD 10
+ DB 98,105,110,97,114,121,99,108,111,115,101
+ DB 0
  PUBLIC l0619
   align 4
 l0619:
- DD 5
- DB 105,110,116,101,114,110,0,0
+ DD 14
+ DB 104,97,115,104,45,105,110,116,111,45,116
+ DB 97,98,108,101,0
  PUBLIC l0620
   align 4
 l0620:
  DD 5
- DB 115,117,98,115,101,113,0,0
+ DB 115,121,109,110,97,109,0,0
  PUBLIC l0621
   align 4
 l0621:
- DD 12
- DB 102,97,115,108,105,110,45,105,110,116
- DB 101,114,110,0
+ DD 11
+ DB 115,104,111,119,45,110,101,119,45,105
+ DB 100,115,0,0
  PUBLIC l0622
   align 4
 l0622:
+ DD 26
+ DB 115,101,97,114,99,104,45,115,116,114,105
+ DB 110,103,45,102,111,114,45,99,104,97,114
+ DB 97,99,116,101,114,0
+ PUBLIC l0623
+  align 4
+l0623:
+ DD 5
+ DB 105,110,116,101,114,110,0,0
+ PUBLIC l0624
+  align 4
+l0624:
+ DD 5
+ DB 115,117,98,115,101,113,0,0
+ PUBLIC l0625
+  align 4
+l0625:
+ DD 12
+ DB 102,97,115,108,105,110,45,105,110,116
+ DB 101,114,110,0
+ PUBLIC l0626
+  align 4
+l0626:
  DD 22
  DB 117,110,99,104,101,99,107,101,100,45,115
  DB 116,114,105,110,103,45,105,110,116,101
  DB 114,110,0
- PUBLIC l0623
-  align 4
-l0623:
- DD 3
- DB 103,116,105,100,0,0
- PUBLIC l0624
-  align 4
-l0624:
- DD 9
- DB 103,116,99,111,110,115,116,115,116,114
- DB 0,0
- PUBLIC l0625
-  align 4
-l0625:
- DD 15
- DB 99,111,112,121,115,116,114,105,110,103
- DB 116,111,102,114,111,109,0,0
- PUBLIC l0626
-  align 4
-l0626:
- DD 16
- DB 105,110,105,116,105,97,108,105,122,101
- DB 45,110,101,119,45,105,100,0
  PUBLIC l0627
   align 4
 l0627:
- DD 12
- DB 104,97,115,104,45,102,117,110,99,116,105
- DB 111,110,0
+ DD 3
+ DB 103,116,105,100,0,0
  PUBLIC l0628
   align 4
 l0628:
- DD 21
- DB 117,110,99,104,101,99,107,101,100,45,115
- DB 116,114,105,110,103,45,101,113,117,97
- DB 108,0,0
+ DD 9
+ DB 103,116,99,111,110,115,116,115,116,114
+ DB 0,0
  PUBLIC l0629
   align 4
 l0629:
- DD 11
- DB 112,108,97,110,116,117,110,98,111,117
- DB 110,100,0,0
+ DD 15
+ DB 99,111,112,121,115,116,114,105,110,103
+ DB 116,111,102,114,111,109,0,0
  PUBLIC l0630
   align 4
 l0630:
- DD 14
- DB 102,97,115,108,105,110,45,98,97,100,45
- DB 102,105,108,101,0
+ DD 16
+ DB 105,110,105,116,105,97,108,105,122,101
+ DB 45,110,101,119,45,105,100,0
  PUBLIC l0631
   align 4
 l0631:
  DD 12
- DB 114,101,97,100,45,105,100,45,116,97,98
- DB 108,101,0
+ DB 104,97,115,104,45,102,117,110,99,116,105
+ DB 111,110,0
  PUBLIC l0632
   align 4
 l0632:
- DD 4
- DB 103,116,98,112,115,0
+ DD 21
+ DB 117,110,99,104,101,99,107,101,100,45,115
+ DB 116,114,105,110,103,45,101,113,117,97
+ DB 108,0,0
  PUBLIC l0633
   align 4
 l0633:
- DD 5
- DB 103,116,119,114,100,115,0,0
+ DD 11
+ DB 112,108,97,110,116,117,110,98,111,117
+ DB 110,100,0,0
  PUBLIC l0634
   align 4
 l0634:
- DD 16
- DB 100,111,45,114,101,108,111,99,97,116,105
- DB 111,110,45,110,101,119,0
+ DD 14
+ DB 102,97,115,108,105,110,45,98,97,100,45
+ DB 102,105,108,101,0
  PUBLIC l0635
   align 4
 l0635:
  DD 12
- DB 100,111,45,114,101,108,111,99,97,116,105
- DB 111,110,0
+ DB 114,101,97,100,45,105,100,45,116,97,98
+ DB 108,101,0
  PUBLIC l0636
   align 4
 l0636:
- DD 12
- DB 97,100,100,114,101,115,115,97,112,112
- DB 108,121,48,0
+ DD 4
+ DB 103,116,98,112,115,0
  PUBLIC l0637
   align 4
 l0637:
  DD 5
- DB 100,101,108,98,112,115,0,0
+ DB 103,116,119,114,100,115,0,0
  PUBLIC l0638
   align 4
 l0638:
- DD 13
- DB 99,111,100,101,45,98,97,115,101,45,104
- DB 97,99,107,0,0
+ DD 16
+ DB 100,111,45,114,101,108,111,99,97,116,105
+ DB 111,110,45,110,101,119,0
  PUBLIC l0639
   align 4
 l0639:
  DD 12
- DB 114,101,108,111,99,97,116,101,45,119,111
- DB 114,100,0
+ DB 100,111,45,114,101,108,111,99,97,116,105
+ DB 111,110,0
  PUBLIC l0640
   align 4
 l0640:
- DD 11
- DB 114,101,108,111,99,97,116,101,45,105,110
- DB 102,0,0
+ DD 12
+ DB 97,100,100,114,101,115,115,97,112,112
+ DB 108,121,48,0
  PUBLIC l0641
   align 4
 l0641:
- DD 18
- DB 114,101,108,111,99,97,116,101,45,114,105
- DB 103,104,116,45,104,97,108,102,0
+ DD 5
+ DB 100,101,108,98,112,115,0,0
  PUBLIC l0642
   align 4
 l0642:
- DD 17
- DB 99,111,109,112,117,116,101,45,114,101
- DB 108,111,99,97,116,105,111,110,0,0
+ DD 13
+ DB 99,111,100,101,45,98,97,115,101,45,104
+ DB 97,99,107,0,0
  PUBLIC l0643
   align 4
 l0643:
- DD 17
- DB 108,111,99,97,108,45,116,111,45,103,108
- DB 111,98,97,108,45,105,100,0,0
+ DD 12
+ DB 114,101,108,111,99,97,116,101,45,119,111
+ DB 114,100,0
  PUBLIC l0644
   align 4
 l0644:
- DD 17
- DB 114,101,108,111,99,97,116,101,45,102,97
- DB 115,116,45,99,97,108,108,0,0
+ DD 11
+ DB 114,101,108,111,99,97,116,101,45,105,110
+ DB 102,0,0
  PUBLIC l0645
   align 4
 l0645:
- DD 3
- DB 112,117,116,100,0,0
+ DD 18
+ DB 114,101,108,111,99,97,116,101,45,114,105
+ DB 103,104,116,45,104,97,108,102,0
  PUBLIC l0646
   align 4
 l0646:
- DD 7
- DB 112,117,116,101,110,116,114,121,0,0
+ DD 17
+ DB 99,111,109,112,117,116,101,45,114,101
+ DB 108,111,99,97,116,105,111,110,0,0
  PUBLIC l0647
   align 4
 l0647:
- DD 14
- DB 103,116,98,112,115,45,110,105,108,45,101
- DB 114,114,111,114,0
+ DD 17
+ DB 108,111,99,97,108,45,116,111,45,103,108
+ DB 111,98,97,108,45,105,100,0,0
  PUBLIC l0648
   align 4
 l0648:
- DD 19
- DB 116,114,121,45,111,116,104,101,114,45
- DB 98,112,115,45,115,112,97,99,101,115,0
- DB 0
+ DD 17
+ DB 114,101,108,111,99,97,116,101,45,102,97
+ DB 115,116,45,99,97,108,108,0,0
  PUBLIC l0649
   align 4
 l0649:
  DD 3
- DB 103,101,116,100,0,0
+ DB 112,117,116,100,0,0
  PUBLIC l0650
   align 4
 l0650:
  DD 7
- DB 115,116,100,101,114,114,111,114,0,0
+ DB 112,117,116,101,110,116,114,121,0,0
  PUBLIC l0651
   align 4
 l0651:
- DD 15
- DB 107,110,111,119,110,45,102,114,101,101
- DB 45,115,112,97,99,101,0,0
+ DD 14
+ DB 103,116,98,112,115,45,110,105,108,45,101
+ DB 114,114,111,114,0
  PUBLIC l0652
   align 4
 l0652:
- DD 10
- DB 114,101,97,108,45,103,116,104,101,97,112
+ DD 19
+ DB 116,114,121,45,111,116,104,101,114,45
+ DB 98,112,115,45,115,112,97,99,101,115,0
  DB 0
  PUBLIC l0653
   align 4
 l0653:
- DD 5
- DB 103,116,104,101,97,112,0,0
+ DD 3
+ DB 103,101,116,100,0,0
  PUBLIC l0654
   align 4
 l0654:
- DD 12
- DB 103,101,116,45,104,101,97,112,45,116,114
- DB 97,112,0
+ DD 7
+ DB 115,116,100,101,114,114,111,114,0,0
  PUBLIC l0655
   align 4
 l0655:
- DD 6
- DB 114,101,99,108,97,105,109,0
+ DD 15
+ DB 107,110,111,119,110,45,102,114,101,101
+ DB 45,115,112,97,99,101,0,0
  PUBLIC l0656
   align 4
 l0656:
- DD 4
- DB 103,116,115,116,114,0
+ DD 10
+ DB 114,101,97,108,45,103,116,104,101,97,112
+ DB 0
  PUBLIC l0657
   align 4
 l0657:
- DD 3
- DB 99,111,110,115,0,0
+ DD 5
+ DB 103,116,104,101,97,112,0,0
  PUBLIC l0658
   align 4
 l0658:
- DD 10
- DB 105,110,116,101,114,114,111,103,97,116
- DB 101,0
+ DD 12
+ DB 103,101,116,45,104,101,97,112,45,116,114
+ DB 97,112,0
  PUBLIC l0659
   align 4
 l0659:
- DD 5
- DB 109,111,100,105,102,121,0,0
+ DD 6
+ DB 114,101,99,108,97,105,109,0
  PUBLIC l0660
   align 4
 l0660:
- DD 12
- DB 117,110,99,104,101,99,107,101,100,45,112
- DB 117,116,0
+ DD 4
+ DB 103,116,115,116,114,0
  PUBLIC l0661
   align 4
 l0661:
- DD 2
- DB 112,117,116,0
+ DD 3
+ DB 99,111,110,115,0,0
  PUBLIC l0662
   align 4
 l0662:
- DD 13
- DB 117,110,99,104,101,99,107,101,100,45,112
- DB 114,111,112,0,0
+ DD 10
+ DB 105,110,116,101,114,114,111,103,97,116
+ DB 101,0
  PUBLIC l0663
   align 4
 l0663:
- DD 4
- DB 97,116,115,111,99,0
+ DD 5
+ DB 109,111,100,105,102,121,0,0
  PUBLIC l0664
   align 4
 l0664:
- DD 16
- DB 117,110,99,104,101,99,107,101,100,45,115
- DB 101,116,112,114,111,112,0
+ DD 12
+ DB 117,110,99,104,101,99,107,101,100,45,112
+ DB 117,116,0
  PUBLIC l0665
   align 4
 l0665:
- DD 8
- DB 99,111,100,101,45,112,117,116,100,0
+ DD 2
+ DB 112,117,116,0
  PUBLIC l0666
   align 4
 l0666:
- DD 15
- DB 112,108,97,110,116,99,111,100,101,112
- DB 111,105,110,116,101,114,0,0
+ DD 13
+ DB 117,110,99,104,101,99,107,101,100,45,112
+ DB 114,111,112,0,0
  PUBLIC l0667
   align 4
 l0667:
- DD 3
- DB 101,120,112,114,0,0
+ DD 4
+ DB 97,116,115,111,99,0
  PUBLIC l0668
   align 4
 l0668:
- DD 3
- DB 116,121,112,101,0,0
+ DD 16
+ DB 117,110,99,104,101,99,107,101,100,45,115
+ DB 101,116,112,114,111,112,0
  PUBLIC l0669
   align 4
 l0669:
- DD 5
- DB 102,108,117,105,100,49,0,0
+ DD 8
+ DB 99,111,100,101,45,112,117,116,100,0
  PUBLIC l0670
   align 4
 l0670:
- DD 4
- DB 102,108,117,105,100,0
+ DD 15
+ DB 112,108,97,110,116,99,111,100,101,112
+ DB 111,105,110,116,101,114,0,0
  PUBLIC l0671
   align 4
 l0671:
- DD 6
- DB 118,97,114,116,121,112,101,0
+ DD 3
+ DB 101,120,112,114,0,0
  PUBLIC l0672
   align 4
 l0672:
- DD 8
- DB 99,111,110,115,116,97,110,116,63,0
+ DD 3
+ DB 116,121,112,101,0,0
  PUBLIC l0673
   align 4
 l0673:
- DD 15
- DB 42,100,101,102,105,110,101,45,99,111,110
- DB 115,116,97,110,116,0,0
+ DD 5
+ DB 102,108,117,105,100,49,0,0
  PUBLIC l0674
   align 4
 l0674:
- DD 17
- DB 116,101,114,109,105,110,97,108,45,105
- DB 110,116,101,114,114,117,112,116,0,0
+ DD 4
+ DB 102,108,117,105,100,0
  PUBLIC l0675
   align 4
 l0675:
  DD 6
- DB 119,104,97,116,115,117,112,0
+ DB 118,97,114,116,121,112,101,0
  PUBLIC l0676
   align 4
 l0676:
- DD 5
- DB 103,101,116,112,105,100,0,0
+ DD 8
+ DB 99,111,110,115,116,97,110,116,63,0
  PUBLIC l0677
   align 4
 l0677:
- DD 5
- DB 101,99,104,111,111,110,0,0
+ DD 15
+ DB 42,100,101,102,105,110,101,45,99,111,110
+ DB 115,116,97,110,116,0,0
  PUBLIC l0678
   align 4
 l0678:
- DD 6
- DB 101,99,104,111,111,102,102,0
+ DD 17
+ DB 116,101,114,109,105,110,97,108,45,105
+ DB 110,116,101,114,114,117,112,116,0,0
  PUBLIC l0679
   align 4
 l0679:
+ DD 6
+ DB 119,104,97,116,115,117,112,0
+ PUBLIC l0680
+  align 4
+l0680:
+ DD 5
+ DB 103,101,116,112,105,100,0,0
+ PUBLIC l0681
+  align 4
+l0681:
+ DD 5
+ DB 101,99,104,111,111,110,0,0
+ PUBLIC l0682
+  align 4
+l0682:
+ DD 6
+ DB 101,99,104,111,111,102,102,0
+ PUBLIC l0683
+  align 4
+l0683:
  DD 26
  DB 101,120,116,101,114,110,97,108,95,99,104
  DB 97,114,115,105,110,105,110,112,117,116
  DB 98,117,102,102,101,114,0
- PUBLIC l0680
+ PUBLIC l0684
   align 4
-l0680:
+l0684:
  DD 19
  DB 102,108,117,115,104,115,116,100,111,117
  DB 116,112,117,116,98,117,102,102,101,114
  DB 0,0
- PUBLIC l0681
+ PUBLIC l0685
   align 4
-l0681:
+l0685:
  DD 27
  DB 101,120,116,101,114,110,97,108,95,117
  DB 115,101,114,95,104,111,109,101,100,105
  DB 114,95,115,116,114,105,110,103,0,0
- PUBLIC l0682
-  align 4
-l0682:
- DD 12
- DB 97,108,116,101,114,104,101,97,112,115
- DB 105,122,101,0
- PUBLIC l0683
-  align 4
-l0683:
- DD 14
- DB 97,108,108,111,99,97,116,101,109,111,114
- DB 101,98,112,115,0
- PUBLIC l0684
-  align 4
-l0684:
- DD 14
- DB 103,101,116,95,102,105,108,101,95,115
- DB 116,97,116,117,115,0
- PUBLIC l0685
-  align 4
-l0685:
- DD 14
- DB 111,115,95,99,108,101,97,110,117,112,95
- DB 104,111,111,107,0
  PUBLIC l0686
   align 4
 l0686:
- DD 13
- DB 101,120,116,101,114,110,97,108,95,97,108
- DB 97,114,109,0,0
+ DD 12
+ DB 97,108,116,101,114,104,101,97,112,115
+ DB 105,122,101,0
  PUBLIC l0687
   align 4
 l0687:
  DD 14
- DB 101,120,116,101,114,110,97,108,95,117
- DB 97,108,97,114,109,0
+ DB 97,108,108,111,99,97,116,101,109,111,114
+ DB 101,98,112,115,0
  PUBLIC l0688
   align 4
 l0688:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,116
- DB 105,109,101,0
+ DD 14
+ DB 103,101,116,95,102,105,108,101,95,115
+ DB 116,97,116,117,115,0
  PUBLIC l0689
   align 4
 l0689:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,116
- DB 105,109,99,0
+ DD 14
+ DB 111,115,95,99,108,101,97,110,117,112,95
+ DB 104,111,111,107,0
  PUBLIC l0690
   align 4
 l0690:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,115
- DB 116,97,116,0
+ DD 13
+ DB 101,120,116,101,114,110,97,108,95,97,108
+ DB 97,114,109,0,0
  PUBLIC l0691
   align 4
 l0691:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,108
- DB 105,110,107,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,117
+ DB 97,108,97,114,109,0
  PUBLIC l0692
   align 4
 l0692:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,117
- DB 110,108,105,110,107,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,116
+ DB 105,109,101,0
  PUBLIC l0693
   align 4
 l0693:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,115
- DB 101,116,101,110,118,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,116
+ DB 105,109,99,0
  PUBLIC l0694
   align 4
 l0694:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,103
- DB 101,116,101,110,118,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 116,97,116,0
  PUBLIC l0695
   align 4
 l0695:
- DD 6
- DB 117,120,102,108,111,97,116,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,108
+ DB 105,110,107,0
  PUBLIC l0696
   align 4
 l0696:
- DD 4
- DB 117,120,102,105,120,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,117
+ DB 110,108,105,110,107,0
  PUBLIC l0697
   align 4
 l0697:
- DD 7
- DB 117,120,97,115,115,105,103,110,0,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 101,116,101,110,118,0
  PUBLIC l0698
   align 4
 l0698:
- DD 6
- DB 117,120,112,108,117,115,50,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,103
+ DB 101,116,101,110,118,0
  PUBLIC l0699
   align 4
 l0699:
- DD 11
- DB 117,120,100,105,102,102,101,114,101,110
- DB 99,101,0,0
+ DD 6
+ DB 117,120,102,108,111,97,116,0
  PUBLIC l0700
   align 4
 l0700:
- DD 7
- DB 117,120,116,105,109,101,115,50,0,0
+ DD 4
+ DB 117,120,102,105,120,0
  PUBLIC l0701
   align 4
 l0701:
- DD 9
- DB 117,120,113,117,111,116,105,101,110,116
- DB 0,0
+ DD 7
+ DB 117,120,97,115,115,105,103,110,0,0
  PUBLIC l0702
   align 4
 l0702:
- DD 9
- DB 117,120,103,114,101,97,116,101,114,112
- DB 0,0
+ DD 6
+ DB 117,120,112,108,117,115,50,0
  PUBLIC l0703
   align 4
 l0703:
- DD 6
- DB 117,120,108,101,115,115,112,0
+ DD 11
+ DB 117,120,100,105,102,102,101,114,101,110
+ DB 99,101,0,0
  PUBLIC l0704
   align 4
 l0704:
- DD 11
- DB 117,120,119,114,105,116,101,102,108,111
- DB 97,116,0,0
+ DD 7
+ DB 117,120,116,105,109,101,115,50,0,0
  PUBLIC l0705
   align 4
 l0705:
- DD 14
- DB 117,120,100,111,117,98,108,101,116,111
- DB 102,108,111,97,116,0
+ DD 9
+ DB 117,120,113,117,111,116,105,101,110,116
+ DB 0,0
  PUBLIC l0706
   align 4
 l0706:
- DD 14
- DB 117,120,102,108,111,97,116,116,111,100
- DB 111,117,98,108,101,0
+ DD 9
+ DB 117,120,103,114,101,97,116,101,114,112
+ DB 0,0
  PUBLIC l0707
   align 4
 l0707:
- DD 4
- DB 117,120,115,105,110,0
+ DD 6
+ DB 117,120,108,101,115,115,112,0
  PUBLIC l0708
   align 4
 l0708:
- DD 4
- DB 117,120,99,111,115,0
+ DD 11
+ DB 117,120,119,114,105,116,101,102,108,111
+ DB 97,116,0,0
  PUBLIC l0709
   align 4
 l0709:
- DD 4
- DB 117,120,116,97,110,0
+ DD 15
+ DB 117,117,120,100,111,117,98,108,101,116
+ DB 111,102,108,111,97,116,0,0
  PUBLIC l0710
   align 4
 l0710:
- DD 5
- DB 117,120,97,115,105,110,0,0
+ DD 15
+ DB 117,117,120,102,108,111,97,116,116,111
+ DB 100,111,117,98,108,101,0,0
  PUBLIC l0711
   align 4
 l0711:
  DD 5
- DB 117,120,97,99,111,115,0,0
+ DB 117,117,120,115,105,110,0,0
  PUBLIC l0712
   align 4
 l0712:
  DD 5
- DB 117,120,97,116,97,110,0,0
+ DB 117,117,120,99,111,115,0,0
  PUBLIC l0713
   align 4
 l0713:
  DD 5
- DB 117,120,115,113,114,116,0,0
+ DB 117,117,120,116,97,110,0,0
  PUBLIC l0714
   align 4
 l0714:
- DD 4
- DB 117,120,101,120,112,0
+ DD 6
+ DB 117,117,120,97,115,105,110,0
  PUBLIC l0715
   align 4
 l0715:
- DD 4
- DB 117,120,108,111,103,0
+ DD 6
+ DB 117,117,120,97,99,111,115,0
  PUBLIC l0716
   align 4
 l0716:
  DD 6
- DB 117,120,97,116,97,110,50,0
+ DB 117,117,120,97,116,97,110,0
  PUBLIC l0717
   align 4
 l0717:
- DD 11
- DB 101,120,116,101,114,110,97,108,95,112
- DB 119,100,0,0
+ DD 6
+ DB 117,117,120,115,113,114,116,0
  PUBLIC l0718
   align 4
 l0718:
- DD 10
- DB 115,117,110,51,95,115,105,103,115,101
- DB 116,0
+ DD 5
+ DB 117,117,120,101,120,112,0,0
  PUBLIC l0719
   align 4
 l0719:
- DD 7
- DB 115,105,103,114,101,108,115,101,0,0
+ DD 5
+ DB 117,117,120,108,111,103,0,0
  PUBLIC l0720
   align 4
 l0720:
- DD 5
- DB 117,110,101,120,101,99,0,0
+ DD 7
+ DB 117,117,120,97,116,97,110,50,0,0
  PUBLIC l0721
   align 4
 l0721:
- DD 10
- DB 117,110,105,120,99,108,101,97,114,105
- DB 111,0
+ DD 11
+ DB 101,120,116,101,114,110,97,108,95,112
+ DB 119,100,0,0
  PUBLIC l0722
   align 4
 l0722:
- DD 15
- DB 101,120,112,97,110,100,95,102,105,108
- DB 101,95,110,97,109,101,0,0
+ DD 10
+ DB 115,117,110,51,95,115,105,103,115,101
+ DB 116,0
  PUBLIC l0723
   align 4
 l0723:
- DD 5
- DB 117,110,105,120,99,100,0,0
+ DD 7
+ DB 115,105,103,114,101,108,115,101,0,0
  PUBLIC l0724
   align 4
 l0724:
- DD 8
- DB 117,110,105,120,102,114,101,97,100,0
+ DD 5
+ DB 117,110,101,120,101,99,0,0
  PUBLIC l0725
   align 4
 l0725:
- DD 8
- DB 117,110,105,120,102,112,117,116,99,0
+ DD 10
+ DB 117,110,105,120,99,108,101,97,114,105
+ DB 111,0
  PUBLIC l0726
   align 4
 l0726:
- DD 8
- DB 117,110,105,120,102,103,101,116,99,0
+ DD 15
+ DB 101,120,112,97,110,100,95,102,105,108
+ DB 101,95,110,97,109,101,0,0
  PUBLIC l0727
   align 4
 l0727:
- DD 8
- DB 117,110,105,120,102,103,101,116,115,0
+ DD 5
+ DB 117,110,105,120,99,100,0,0
  PUBLIC l0728
   align 4
 l0728:
- DD 9
- DB 117,110,105,120,102,119,114,105,116,101
- DB 0,0
+ DD 8
+ DB 117,110,105,120,102,114,101,97,100,0
  PUBLIC l0729
   align 4
 l0729:
- DD 9
- DB 117,110,105,120,102,102,108,117,115,104
- DB 0,0
+ DD 8
+ DB 117,110,105,120,102,112,117,116,99,0
  PUBLIC l0730
   align 4
 l0730:
- DD 4
- DB 99,116,105,109,101,0
+ DD 8
+ DB 117,110,105,120,102,103,101,116,99,0
  PUBLIC l0731
   align 4
 l0731:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,115
- DB 121,115,116,101,109,0
+ DD 8
+ DB 117,110,105,120,102,103,101,116,115,0
  PUBLIC l0732
   align 4
 l0732:
- DD 4
- DB 102,111,112,101,110,0
+ DD 9
+ DB 117,110,105,120,102,119,114,105,116,101
+ DB 0,0
  PUBLIC l0733
   align 4
 l0733:
- DD 4
- DB 102,115,101,101,107,0
+ DD 9
+ DB 117,110,105,120,102,102,108,117,115,104
+ DB 0,0
  PUBLIC l0734
   align 4
 l0734:
- DD 7
- DB 99,108,101,97,114,101,114,114,0,0
+ DD 4
+ DB 99,116,105,109,101,0
  PUBLIC l0735
   align 4
 l0735:
- DD 3
- DB 112,117,116,119,0,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 121,115,116,101,109,0
  PUBLIC l0736
   align 4
 l0736:
- DD 5
- DB 115,105,103,110,97,108,0,0
+ DD 4
+ DB 102,111,112,101,110,0
  PUBLIC l0737
   align 4
 l0737:
  DD 4
- DB 115,108,101,101,112,0
+ DB 102,115,101,101,107,0
  PUBLIC l0738
   align 4
 l0738:
- DD 11
- DB 105,101,101,101,95,104,97,110,100,108
- DB 101,114,0,0
+ DD 7
+ DB 99,108,101,97,114,101,114,114,0,0
  PUBLIC l0739
   align 4
 l0739:
- DD 9
- DB 105,101,101,101,95,102,108,97,103,115
- DB 0,0
+ DD 3
+ DB 112,117,116,119,0,0
  PUBLIC l0740
   align 4
 l0740:
- DD 9
- DB 115,101,116,108,105,110,101,98,117,102
- DB 0,0
+ DD 5
+ DB 115,105,103,110,97,108,0,0
  PUBLIC l0741
   align 4
 l0741:
- DD 5
- DB 112,114,111,102,105,108,0,0
+ DD 4
+ DB 115,108,101,101,112,0
  PUBLIC l0742
   align 4
 l0742:
- DD 6
- DB 100,97,116,101,116,97,103,0
+ DD 11
+ DB 105,101,101,101,95,104,97,110,100,108
+ DB 101,114,0,0
  PUBLIC l0743
   align 4
 l0743:
- DD 8
- DB 112,115,108,108,95,99,97,108,108,0
+ DD 9
+ DB 105,101,101,101,95,102,108,97,103,115
+ DB 0,0
  PUBLIC l0744
   align 4
 l0744:
- DD 11
- DB 117,110,105,120,45,112,114,111,102,105
- DB 108,101,0,0
+ DD 9
+ DB 115,101,116,108,105,110,101,98,117,102
+ DB 0,0
  PUBLIC l0745
   align 4
 l0745:
- DD 4
- DB 102,112,117,116,99,0
+ DD 5
+ DB 112,114,111,102,105,108,0,0
  PUBLIC l0746
   align 4
 l0746:
- DD 4
- DB 102,103,101,116,99,0
+ DD 6
+ DB 100,97,116,101,116,97,103,0
  PUBLIC l0747
   align 4
 l0747:
- DD 4
- DB 102,103,101,116,115,0
+ DD 8
+ DB 112,115,108,108,95,99,97,108,108,0
  PUBLIC l0748
   align 4
 l0748:
- DD 5
- DB 102,119,114,105,116,101,0,0
+ DD 11
+ DB 117,110,105,120,45,112,114,111,102,105
+ DB 108,101,0,0
  PUBLIC l0749
   align 4
 l0749:
- DD 5
- DB 102,102,108,117,115,104,0,0
+ DD 4
+ DB 102,112,117,116,99,0
  PUBLIC l0750
   align 4
 l0750:
- DD 13
- DB 112,108,97,110,116,117,110,98,111,117
- DB 110,100,45,49,0,0
+ DD 4
+ DB 102,103,101,116,99,0
  PUBLIC l0751
   align 4
 l0751:
- DD 17
- DB 112,108,97,110,116,99,111,100,101,112
- DB 111,105,110,116,101,114,45,49,0,0
+ DD 4
+ DB 102,103,101,116,115,0
  PUBLIC l0752
   align 4
 l0752:
- DD 16
- DB 112,108,97,110,116,108,97,109,98,100,97
- DB 108,105,110,107,45,49,0
+ DD 5
+ DB 102,119,114,105,116,101,0,0
  PUBLIC l0753
   align 4
 l0753:
- DD 14
- DB 112,108,97,110,116,108,97,109,98,100,97
- DB 108,105,110,107,0
+ DD 5
+ DB 102,102,108,117,115,104,0,0
  PUBLIC l0754
   align 4
 l0754:
- DD 7
- DB 98,105,116,116,97,98,108,101,0,0
+ DD 13
+ DB 112,108,97,110,116,117,110,98,111,117
+ DB 110,100,45,49,0,0
  PUBLIC l0755
   align 4
 l0755:
- DD 16
- DB 117,110,100,101,102,105,110,101,100,102
- DB 117,110,99,116,105,111,110,0
+ DD 17
+ DB 112,108,97,110,116,99,111,100,101,112
+ DB 111,105,110,116,101,114,45,49,0,0
  PUBLIC l0756
   align 4
 l0756:
+ DD 16
+ DB 112,108,97,110,116,108,97,109,98,100,97
+ DB 108,105,110,107,45,49,0
+ PUBLIC l0757
+  align 4
+l0757:
+ DD 14
+ DB 112,108,97,110,116,108,97,109,98,100,97
+ DB 108,105,110,107,0
+ PUBLIC l0758
+  align 4
+l0758:
+ DD 7
+ DB 98,105,116,116,97,98,108,101,0,0
+ PUBLIC l0759
+  align 4
+l0759:
+ DD 16
+ DB 117,110,100,101,102,105,110,101,100,102
+ DB 117,110,99,116,105,111,110,0
+ PUBLIC l0760
+  align 4
+l0760:
  DD 20
  DB 117,110,100,101,102,105,110,101,100,102
  DB 117,110,99,116,105,111,110,45,97,117,120
  DB 0
- PUBLIC l0757
+ PUBLIC l0761
   align 4
-l0757:
+l0761:
  DD 28
  DB 99,111,109,112,105,108,101,100,99,97,108
  DB 108,105,110,103,105,110,116,101,114,112
  DB 114,101,116,101,100,97,117,120,0
- PUBLIC l0758
+ PUBLIC l0762
   align 4
-l0758:
+l0762:
  DD 25
  DB 99,111,109,112,105,108,101,100,99,97,108
  DB 108,105,110,103,105,110,116,101,114,112
  DB 114,101,116,101,100,0,0
- PUBLIC l0759
+ PUBLIC l0763
   align 4
-l0759:
+l0763:
  DD 8
  DB 99,111,100,101,102,111,114,109,42,0
- PUBLIC l0760
+ PUBLIC l0764
   align 4
-l0760:
+l0764:
  DD 14
  DB 103,101,116,102,99,111,100,101,112,111
  DB 105,110,116,101,114,0
- PUBLIC l0761
+ PUBLIC l0765
   align 4
-l0761:
+l0765:
  DD 9
  DB 108,97,115,116,107,101,114,110,101,108
  DB 0,0
- PUBLIC l0762
+ PUBLIC l0766
   align 4
-l0762:
+l0766:
  DD 11
  DB 99,111,100,101,97,100,100,114,101,115
  DB 115,112,0,0
