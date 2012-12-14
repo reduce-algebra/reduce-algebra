@@ -796,7 +796,7 @@ procedure ctx_union(c1,c2);
 	    ial := car c2 . ial;
 	    c2 := cdr c2;
 	 >>;
-      if c1 or c2 then prin2t "***** ctx_union: idorder not complete";
+      if c1 or c2 then rederr "***** ctx_union: idorder not complete";
       return ctx_fromial reversip ial;
    end;
 
@@ -1575,7 +1575,8 @@ procedure aex_inv ae;
       	 tmp := aex_bind(aex_mult(aex_inv car drs,caddr drs),x,alpha);
       if !*rlanuexdebug and
 	 not aex_nullp aex_minus(aex_1(),aex_mult(ae,tmp)) then
-	 rederr "aex_inv: selftest failed";
+	    rederr {"aex_inv: selftest failed, ae = ",  ae, ", tmp = ", tmp, ", delta = ",
+	       aex_minus(aex_1(),aex_mult(ae,tmp))};
       return tmp;
    end;
 
