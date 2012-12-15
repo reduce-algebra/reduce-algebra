@@ -388,7 +388,7 @@ put('assert, 'formfn, 'formassert);
 procedure assert_assert(u, vars, mode);
    if mode eq 'symbolic then
       {'cond,
- 	 {{'not, {'eval, u}},
+ 	 {{'not, u},
  	    {'progn,
  	       {'backtrace},
 	       {'cond,
