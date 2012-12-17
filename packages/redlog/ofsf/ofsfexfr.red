@@ -367,7 +367,7 @@ procedure ofsf_feasible2(gl);
    % [gl] is a list of pairs [f . op] where [f] is an Aex and [op] is an ofsf
    % operator different from ['equal].
    begin scalar xk, fidl, ivl, g, givl, rel;
-      assert not not gl;
+      assert gl;
       ivl := {anusp_mk('anusp_open, 'minf, 'anusp_open, 'pinf)};
       fidl := aex_freeids caar gl;
       assert(fidl and not cdr fidl);
@@ -619,7 +619,7 @@ procedure anu_compare1(anu1, anu2);
       return car w
    end;
 
-declare anu_compare2: (Anu, Anu) -> Integer;
+declare anu_compare2: (Anu, Anu, Kernel) -> Integer;
 
 procedure anu_compare2(anu1, anu2, g);
    % [anu1], [anu2] are Anu or 'minf or 'pinf. Returns an integer [z]. We have
@@ -650,7 +650,7 @@ procedure anu_varChange(anu, newvar);
       return anu_mk(aex_subrp(dp, car aex_freeids dp, newvar), anu_iv anu)
    end;
 
-declare ofsf_feasibleEvalSgn: (Aex, Kernel, Anu) -> Integer;
+declare ofsf_feasibleEvalSgn: (Aex, Kernel, GAnu) -> Integer;
 
 procedure ofsf_feasibleEvalSgn(g, x, anu);
    % Feasible evaluate sign. [g] is an Aex; [x] is the only free id in [g];
@@ -785,6 +785,8 @@ procedure anu_evalf(anu);
       return lb
    end;
 
+declare anu_approxEqualEnough : (Floating, Floating) -> Boolean;
+
 procedure anu_approxEqualEnough(lb, ub);
    eqn(fix(lb * 10^anu_precision!*) - fix(ub * 10^anu_precision!*), 0);
 
@@ -794,9 +796,9 @@ procedure ofsf_ivlapprox(ivl);
 
 procedure ofsf_ivapprox(iv);
    if anuiv_ptp iv then
-      {'point, anu_evalf cadr iv}
+      {'anuiv_fpoint, anu_evalf cadr iv}
    else
-      {'interval,
+      {'anuiv_fspan,
    	 {anusp_lt iv, ganu_evalf anusp_lb iv},
 	 {anusp_ut iv, ganu_evalf anusp_ub iv}};
 
@@ -834,7 +836,7 @@ procedure ofsf_ivprin1(iv);
    begin scalar lb, ub;
       if not iv then
 	 return;
-      if eqcar(iv, 'point) then
+      if eqcar(iv, 'anuiv_fpoint) then
       	 ioto_prin2 cadr iv
       else <<
 	 lb := cadr iv;

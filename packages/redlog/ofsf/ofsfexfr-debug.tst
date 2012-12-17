@@ -1,3 +1,6 @@
+% A minimal example to demostrate that defining polynomials have to be
+% square-free in aex_inv.
+
 lisp;
 
 load!-package 'assert;
@@ -25,39 +28,8 @@ a2 := '((anuiv_span (anusp_closed (anu (aex ((((x . 2) . -4)
 (anusp_closed (anu (aex ((((x . 2) . -4) ((x . 1) . 24) . -27) . 1)
 (ctx nil) t t) ((35 . 8) 35 . 4)))))$
 
-% tr ofsf_ivcutl;
-% tr ofsf_ivcut;
-% tr ofsf_ivcut2;
-% tr ofsf_ivbmax;
-% tr ofsf_ivbmin;
-% tr ganu_compare;
-% tr anu_compare;
-% tr aex_minus;
-
-procedure anu_compare2(anu1, anu2, g);
-   % [anu1], [anu2] are Anu or 'minf or 'pinf. Returns an integer [z]. We have
-   % [z < 0] if [anu1 < anu2], [z = 0] if [anu1 = anu2] and [z = 1] if [anu1 >
-   % anu2].
-   begin scalar hugo, aex1, aex2;
-      aex1 := aex_fromAnu anu1;
-      aex2 := aex_fromAnu anu_varChange(anu2, g);
-      hugo := aex_minus(aex1, aex2);
-      hugo := aex_sgn hugo;
-      return hugo
-   end;
-
-trst anu_compare2;
-
-% ofsf_ivcutl(a1, a2);
-
 aex := aex_fromrp simp xread t;
-4*x - 12;
-
-dp := aex_fromrp simp xread t;
-x^2 - 1;
-
-dp := aex_fromrp simp xread t;
-(x-1)^2*(x-2)^2*(x-3)^2*(x-4)*(x-5)*(x-6)^2;
+x - 3;
 
 dp := aex_fromrp simp xread t;
 (x-1)*(x-3)^2;
