@@ -1563,6 +1563,7 @@ procedure aex_inv ae;
       alpha := cdr ia;
       g := aex_free(ae,x);
       f := anu_dp alpha;
+      f := aex_sqfree(f,x);  % MK + TS 12/2012
       d := car aex_gcdext(f,g,x);
       %%% d := car aex_gcd(f,g,x); % why segmentation violation?
       f1 := car aex_quotrem(f,d,x);
