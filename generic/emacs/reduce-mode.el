@@ -2094,6 +2094,7 @@ passing on any prefix argument (in raw form)."
 	       "let"			; "where" "when" ???
 	       "assert_install" "assert_install_all"
 	       "assert_uninstall" "assert_uninstall_all"
+	       "assert"
 
 	       ;; Lisp keywords used frequently in REDUCE:
 	       "lambda"  "function"
