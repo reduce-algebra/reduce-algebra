@@ -88,8 +88,15 @@ reduce.img:	reduce
 	./reduce -z -Dminireduce -Dno_init_file $(S)/buildreduce.lsp \
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -- image.log
 
+make-image:	../make-image.c
+	$(CC) $(CFLAGS) ../make-image.c -o make-image
+
+image.c:	make-image reduce.img
+	./make-image
+	cp image.c ../minireduce-image.c
+
 clean:
-	-rm -f *.o reduce hello reduce.img image.log
+	-rm -f *.o reduce hello reduce.img image.log make-image image.c
 
 HEADERS = config.h \
 	$(S)/arith.h $(S)/bytes.h $(S)/clsyms.h $(S)/cslerror.h \

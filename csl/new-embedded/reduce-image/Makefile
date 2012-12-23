@@ -2,7 +2,7 @@
 # will always want to run on the current machine!
 
 
-COMMON=-O1 -g -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1
+COMMON=-O2 -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1
 
 # The idea here is that I want a C compiler and set of flags that will
 # generate a 32-bit executable. Rather than use a separate configuration
@@ -61,7 +61,7 @@ R=../../..
 
 VPATH=$(S)
 
-all:	reduce reduce.img
+all:	reduce
 
 reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
@@ -88,8 +88,15 @@ reduce.img:	reduce
 	./reduce -z -Dno_init_file $(S)/buildreduce.lsp \
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -- image.log
 
+make-image:	../make-image.c
+	$(CC) $(CFLAGS) ../make-image.c -o make-image
+
+image.c:	make-image reduce.img
+	./make-image
+	cp image.c ../reduce-image.c
+
 clean:
-	-rm -f *.o reduce hello reduce.img image.log
+	-rm -f *.o reduce hello reduce.img image.log make-image image.c
 
 HEADERS = config.h \
 	$(S)/arith.h $(S)/bytes.h $(S)/clsyms.h $(S)/cslerror.h \
