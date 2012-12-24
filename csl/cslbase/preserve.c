@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 512d6ada 25-Jun-2012 */
+/* Signature: 5726a6c9 24-Dec-2012 */
 
 #include "headers.h"
 
@@ -104,6 +104,18 @@
  */
 
 /* The change I was making maybe breaks things on 64-bit machines? */
+
+#ifdef BUILTIN_IMAGE
+
+/*
+ * The following included file should define
+ *    const unsigned char *reduce_image = "....";
+ *    #define REDUCE_IMAGE_SIZE nnn
+ * where the data is that which might otherwise have lived in a file.
+ */
+
+#include "image.c"
+#endif
 
 int32_t compression_worth_while = 128; /* 256*1024*1024; */
 
@@ -328,7 +340,11 @@ static char would_be_output_directory[DIRNAME_LENGTH];
 
 static int Istatus = I_INACTIVE;
 
+#ifdef BUILTIN_IMAGE
+const unsigned char *binary_read_filep;
+#else
 FILE *binary_read_file;
+#endif
 static FILE *binary_write_file;
 static uint32_t subfile_checksum;
 static long int read_bytes_remaining, write_bytes_written;
@@ -448,6 +464,18 @@ static CSLbool version_moan(int v)
     return YES;
 }
 
+#ifdef BUILTIN_IMAGE
+static int builtinread(void *b, size_t s, size_t n)
+{
+    size_t i;
+    unsigned char *w = (unsigned char *)b;
+    for (i=0; i<n*s; i++)
+        *w++ = *binary_read_filep++;
+    return n;
+}
+
+#endif
+
 directory *open_pds(char *name, int mode)
 /*
  * Given a file-name, open the associated file, make space for
@@ -457,6 +485,8 @@ directory *open_pds(char *name, int mode)
  * if it does not exist and its name it specified with a trailing "/".
  * The mode is one of PDS_INPUT, PDS_OUTPUT or PDS_PENDING where the last
  * sets up for an output directory that must be created on first use.
+ * Also if BUILTING_DIRECTORY is true then only one image file can be used
+ * and that has to be the built-in one!
  */
 {
     char expanded[LONGEST_LEGAL_FILENAME];
@@ -474,6 +504,10 @@ directory *open_pds(char *name, int mode)
     if (expanded[i] == '/' ||
         expanded[i] == '\\') expanded[i] = 0; /* Trim any final "/" */
     fileExists = fileDir = NO;
+#ifdef BUILTIN_IMAGE
+    fileExists = YES;
+    binary_read_filep = reduce_image;
+#else
     if (stat(expanded, &buf) != -1)
     {   fileExists = YES;
         if ((buf.st_mode & S_IFMT) == S_IFDIR) fileDir = YES;
@@ -519,8 +553,13 @@ directory *open_pds(char *name, int mode)
  */
     if (f == NULL) return make_empty_directory(expanded);
     fseek(f, 0, SEEK_SET);     /* Ensure I am at start of the file */
+#endif
     hdr.h.C = hdr.h.S = hdr.h.L = 0;
+#ifdef BUILTIN_IMAGE
+    if (builtinread(&hdr.h, sizeof(directory_header), 1) != 1 ||
+#else
     if (fread(&hdr.h, sizeof(directory_header), 1, f) != 1 ||
+#endif
         hdr.h.C != 'C' ||
         hdr.h.S != MIDDLE_INITIAL ||
         hdr.h.L != 'L' ||
@@ -546,6 +585,7 @@ directory *open_pds(char *name, int mode)
  * need to create a new one.
  */
         if (!write_OK) return make_empty_directory(expanded);
+/* This next bit is never used in the BUILTIN_DIRECTOT case */
         fseek(f, 0, SEEK_SET);
         n = DIRECTORY_SIZE;      /* Size for a directory */
         d = (directory *)
@@ -575,7 +615,11 @@ directory *open_pds(char *name, int mode)
         malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
     memcpy(&d->h, &hdr.h, sizeof(directory_header));
+#ifdef BUILTIN_IMAGE
+    if (builtinread(&d->d[0], sizeof(directory_entry), (size_t)n) != (size_t)n)
+#else
     if (fread(&d->d[0], sizeof(directory_entry), (size_t)n, f) != (size_t)n)
+#endif
         return make_empty_directory(expanded);
 /*
  * Here the directory seemed OK
@@ -631,7 +675,11 @@ void Iinit(void)
     current_input_directory = NULL;
     current_output_entry = NULL;
     current_output_directory = NULL;
+#ifdef BUILTIN_IMAGE
+    binary_read_filep = reduce_image;
+#else
     binary_read_file = binary_write_file = NULL;
+#endif
     read_bytes_remaining = write_bytes_written = 0;
     any_output_request = NO;
     strcpy(would_be_output_directory, "<unknown>");
@@ -663,8 +711,13 @@ void Icontext(Ihandle *where)
 case I_INACTIVE:
         break;
 case I_READING:
+#ifdef BUILTIN_IMAGE
+        where->f = (FILE *)reduce_image;
+        if (read_bytes_remaining >= 0) where->o = binary_read_filep - reduce_image;
+#else
         where->f = binary_read_file;
         if (read_bytes_remaining >= 0) where->o = ftell(binary_read_file);
+#endif
         where->n = read_bytes_remaining;
         where->chk = subfile_checksum;
         where->nativedir = nativedir;
@@ -687,9 +740,15 @@ void Irestore_context(Ihandle x)
 case I_INACTIVE:
         return;
 case I_READING:
+#ifdef BUILTIN_IMAGE
+        binary_read_filep = (const unsigned char *)x.f;;
+        read_bytes_remaining = x.n;
+        if (read_bytes_remaining >= 0) binary_read_filep += x.o;
+#else
         binary_read_file = x.f;
         read_bytes_remaining = x.n;
         if (read_bytes_remaining >= 0) fseek(binary_read_file, x.o, SEEK_SET);
+#endif
         subfile_checksum = x.chk;
         nativedir = x.nativedir;
         return;
@@ -831,11 +890,20 @@ static CSLbool open_input(directory *d, char *name, int len,
     {   char nn[LONGEST_LEGAL_FILENAME];
         memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
+#ifdef BUILTIN_IMAGE
+        binary_read_filep = reduce_image;
+        read_bytes_remaining = REDUCE_IMAGE_SIZE;
+#else
         if ((binary_read_file = fopen(nn, "rb")) == NULL) return YES;
         fseek(binary_read_file, 0L, SEEK_END);
         read_bytes_remaining = ftell(binary_read_file);
+#endif
         if (checked) read_bytes_remaining -= 4;
+#ifdef BUILTIN_IMAGE
+        binary_read_filep = reduce_image + offset;
+#else
         fseek(binary_read_file, (long)offset, SEEK_SET);
+#endif
         Istatus = I_READING;
         nativedir = YES;
         return NO;
@@ -858,10 +926,18 @@ static CSLbool open_input(directory *d, char *name, int len,
     for (i=0; i<get_dirused(d->h); i++)
     {   if (samename(name, d, i, len) &&
             &d->d[i] != current_output_entry)
-        {   binary_read_file = d->f;
+        {
+#ifdef BUILTIN_IMAGE
+            binary_read_filep = reduce_image;
+            read_bytes_remaining = bits24(&d->d[i].D_size);
+            binary_read_filep += bits32(&d->d[i].D_position)+offset;
+            i = 0;
+#else
+            binary_read_file = d->f;
             read_bytes_remaining = bits24(&d->d[i].D_size);
             i = fseek(binary_read_file,
                       bits32(&d->d[i].D_position)+offset, SEEK_SET);
+#endif
             if (i == 0)     /* If fseek succeeded  it returned zero */
             {   Istatus = I_READING;
                 return NO;
@@ -988,6 +1064,9 @@ CSLbool open_output(char *name, int len)
     directory *d;
     time_t t = time(NULL);
     Lisp_Object oo = qvalue(output_library);
+#ifdef BUILTIN_IMAGE
+    return YES;
+#endif
     nativedir = NO;
     if (!is_library(oo)) return YES;
     d = fasl_files[library_number(oo)];
@@ -1610,7 +1689,11 @@ CSLbool Iopen_from_stdin(void)
 {
     if (Istatus != I_INACTIVE) return YES;
     subfile_checksum = 0;
+#ifdef BUILTIN_IMAGE
+    binary_read_filep = NULL;
+#else
     binary_read_file = NULL;
+#endif
     read_bytes_remaining = -1;
     Istatus = I_READING;
     return NO;
@@ -1681,6 +1764,17 @@ static int validate_checksum(FILE *f, uint32_t chk1)
     int c;
     uint32_t chk2 = 0;
     nil_as_base
+#ifdef BUILTIN_IMAGE
+    if ((c = *binary_read_filep++) == EOF) goto failed;
+    chk2 = c & 0xff;
+    if ((c = *binary_read_filep++) == EOF) goto failed;
+    chk2 = (chk2 << 8) | (c & 0xff);
+    if ((c = *binary_read_filep++) == EOF) goto failed;
+    chk2 = (chk2 << 8) | (c & 0xff);
+    if ((c = *binary_read_filep++) == EOF) goto failed;
+    chk2 = (chk2 << 8) | (c & 0xff);
+    if (chk1 == chk2) return NO;    /* All went well */
+#else
     if (read_bytes_remaining < 0)
     {   if ((c = Igetc()) == EOF) goto failed;
         chk2 = c & 0xff;
@@ -1703,6 +1797,7 @@ static int validate_checksum(FILE *f, uint32_t chk1)
         chk2 = (chk2 << 8) | (c & 0xff);
         if (chk1 == chk2) return NO;    /* All went well */
     }
+#endif
 failed:
     if (error_output != 0)
         err_printf("\n+++ FASL module checksum failure (%.8x vs. %.8x)\n",
@@ -1904,12 +1999,18 @@ CSLbool IcloseInput(int check_checksum)
 {
     CSLbool r;
     Istatus = I_INACTIVE;
+#ifdef BUILTIN_IMAGE
+    if (check_checksum)
+        r = validate_checksum(NULL, subfile_checksum);
+    else r = NO;
+#else
     if (check_checksum)
         r = validate_checksum(binary_read_file, subfile_checksum);
     else r = NO;
     if (nativedir)
     {   if (fclose(binary_read_file) != 0) r = YES;
     }
+#endif
     return r;
 }
 
@@ -2090,7 +2191,12 @@ int Igetc(void)
     }
     else
     {   read_bytes_remaining = n_left - 1;
+#ifdef BUILTIN_IMAGE
+        if (binary_read_filep - reduce_image == REDUCE_IMAGE_SIZE) c = -1;
+        else c = *binary_read_filep++;
+#else
         c = getc(binary_read_file);
+#endif
     }
     if (c == EOF) return c;
     update_crc(subfile_checksum, c);

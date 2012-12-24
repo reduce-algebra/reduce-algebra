@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 68ad6dae 22-Sep-2012 */
+/* Signature: 4d22a57c 24-Dec-2012 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -777,7 +777,12 @@ extern char *files_to_read[MAX_INPUT_FILES],
 extern int csl_argc;
 extern char **csl_argv;
 extern int fasl_output_file, output_directory;
+
+#ifdef BUILTIN_IMAGE
+const unsigned char *binary_read_filep;
+#else
 extern FILE *binary_read_file;
+#endif
 
 extern int boffop;
 extern void packbyte(int c);

@@ -32,11 +32,11 @@
 
 
 
-/* Signature: 1cc87404 22-Aug-2010 */
+/* Signature: 3e351e6d 24-Dec-2012 */
 
 /*
  * This is code that starts up Reduce and exercises it using a
- * procedurtal rather than textual interface.
+ * procedural rather than textual interface.
  */
 
 #include <stdio.h>
