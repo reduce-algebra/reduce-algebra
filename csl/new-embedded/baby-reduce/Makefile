@@ -2,7 +2,7 @@
 # will always want to run on the current machine!
 
 
-COMMON=-O1 -g -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1 -DBUILTIN_IMAGE=1
+COMMON=-O2 -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1 -DBUILTIN_IMAGE=1
 
 # The idea here is that I want a C compiler and set of flags that will
 # generate a 32-bit executable. Rather than use a separate configuration
@@ -44,13 +44,16 @@ CC4:=$(shell gcc -m32 hello.c -o hello && ./hello 2>&1)
 ifeq ($(findstring [[4]], $(CC3)), [[4]])
 CC=gcc
 CFLAGS=$(COMMON) -DUNIX=1
+LIBS=-lcurses
 else
 ifeq ($(findstring [[4]], $(CC4)), [[4]])
 CC=gcc
 CFLAGS=-m32 $(COMMON) -DUNIX=1
+LIBS=-lcurses
 else
 CC=echo "Unable to build 32 bit application" && exit 1 &&
 CFLAGS=
+LIBS=-lcurses
 endif
 endif
 
@@ -75,7 +78,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 		embedcsl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o gc.o \
 		preserve.o print.o restart.o sysfwin.o termed.o \
-		stubs.o -lm -o reduce
+		stubs.o -lm $(LIBS) -o reduce
 
 image.c:	../minireduce-image.c
 	cp ../minireduce-image.c image.c
