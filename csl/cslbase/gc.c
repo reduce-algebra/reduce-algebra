@@ -2841,7 +2841,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     else if (stg_class == GC_BPS) bps_need = size;
     else if (stg_class == GC_NATIVE) native_need = size;
     already_in_gc = YES;
-#ifdef WIN32
+#if defined WIN32 && !defined __CYGWIN__
     _kbhit(); /* Fairly harmless anyway, but is here to let ^c get noticed */
 /*    printf("(*)"); fflush(stdout);  /* while I debug! */
 #endif /* WIN32 */

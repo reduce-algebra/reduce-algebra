@@ -14,36 +14,21 @@ COMMON=-O2 -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1 -DBUILTIN_IMAGE=1
 
 ifeq ($(findstring Windows, $(OS)), Windows)
 
-CC1:=$(shell i686-w64-mingw32-gcc -v 2>&1)
-CC2:=$(shell gcc-3 -v 2>&1)
-CC3:=$(shell gcc hello.c -o hello && ./hello 2>&1)
-
-ifneq ($(CC1),)
 CC=i686-w64-mingw32-gcc
 CFLAGS=$(COMMON) -DWIN32=1
-else
-ifneq ($(CC2),)
-CC=gcc-3
-CFLAGS=-mno-cygwin $(COMMON)-DWIN32=1
-else
-ifeq ($(findstring [[4]], $(CC3)), [[4]])
-CC=gcc
-CFLAGS=$(COMMON)
-else
-CC=echo "Unable to build 32 bit application" && exit 1 &&
-CFLAGS=
-endif
-endif
-endif
+CFLAGS1=$(COMMON) -DUNIX=1 -I/usr/include/ncurses
+CONFIG=config.h.mingw32
 
 else
 
 CC3:=$(shell gcc hello.c -o hello && ./hello 2>&1)
 CC4:=$(shell gcc -m32 hello.c -o hello && ./hello 2>&1)
+MC:= $(shell uname -m)
 
 ifeq ($(findstring [[4]], $(CC3)), [[4]])
 CC=gcc
 CFLAGS=$(COMMON) -DUNIX=1
+CFLAGS1=$(COMMON) -DUNIX=1
 LIBS=-lcurses
 else
 ifeq ($(findstring [[4]], $(CC4)), [[4]])
@@ -53,8 +38,14 @@ LIBS=-lcurses
 else
 CC=echo "Unable to build 32 bit application" && exit 1 &&
 CFLAGS=
-LIBS=-lcurses
+LIBS=
 endif
+endif
+
+ifeq ($(MC),armv6l)
+CONFIG=config.h.raspberrypi
+else
+CONFIG=config.h.linux64
 endif
 
 endif
@@ -65,74 +56,37 @@ VPATH=$(S)
 
 all:	reduce
 
-reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
-		arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o bytes.o char.o babyreduce.o \
-		embedcsl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
-		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o gc.o \
-		preserve.o print.o restart.o sysfwin.o termed.o \
-		stubs.o
-	$(CC) $(CFLAGS) -g arith01.o arith02.o arith03.o arith04.o arith05.o \
-		arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o bytes.o char.o babyreduce.o \
-		embedcsl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
-		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o gc.o \
-		preserve.o print.o restart.o sysfwin.o termed.o \
-		stubs.o -lm $(LIBS) -o reduce
+reduce:		$(S)/arith01.c $(S)/arith02.c $(S)/arith03.c $(S)/arith04.c $(S)/arith05.c \
+		$(S)/arith06.c $(S)/arith07.c $(S)/arith08.c $(S)/arith09.c $(S)/arith10.c \
+		$(S)/arith11.c $(S)/arith12.c $(S)/bytes.c $(S)/char.c $(S)/babyreduce.c \
+		$(S)/embedcsl.c $(S)/cslmpi.c $(S)/cslread.c $(S)/eval1.c $(S)/eval2.c $(S)/eval3.c \
+		$(S)/eval4.c $(S)/fasl.c $(S)/fns1.c $(S)/fns2.c $(S)/fns3.c $(S)/fwin.c $(S)/gc.c \
+		$(S)/preserve.c $(S)/print.c $(S)/restart.c $(S)/sysfwin.c $(S)/termed.c \
+		$(S)/stubs.c image.c
+	cp $(CONFIG) config.h
+	$(CC) $(CFLAGS) -g $(S)/arith01.c $(S)/arith02.c $(S)/arith03.c $(S)/arith04.c $(S)/arith05.c \
+		$(S)/arith06.c $(S)/arith07.c $(S)/arith08.c $(S)/arith09.c $(S)/arith10.c \
+		$(S)/arith11.c $(S)/arith12.c $(S)/bytes.c $(S)/char.c $(S)/babyreduce.c \
+		$(S)/embedcsl.c $(S)/cslmpi.c $(S)/cslread.c $(S)/eval1.c $(S)/eval2.c $(S)/eval3.c \
+		$(S)/eval4.c $(S)/fasl.c $(S)/fns1.c $(S)/fns2.c $(S)/fns3.c $(S)/fwin.c $(S)/gc.c \
+		$(S)/preserve.c $(S)/print.c $(S)/restart.c $(S)/sysfwin.c $(S)/termed.c \
+		$(S)/stubs.c -lm $(LIBS) -o reduce
+ifeq ($(findstring Windows, $(OS)), Windows)
+	cp config.h.cygwin config.h
+	gcc $(CFLAGS1) -g $(S)/arith01.c $(S)/arith02.c $(S)/arith03.c $(S)/arith04.c $(S)/arith05.c \
+		$(S)/arith06.c $(S)/arith07.c $(S)/arith08.c $(S)/arith09.c $(S)/arith10.c \
+		$(S)/arith11.c $(S)/arith12.c $(S)/bytes.c $(S)/char.c $(S)/babyreduce.c \
+		$(S)/embedcsl.c $(S)/cslmpi.c $(S)/cslread.c $(S)/eval1.c $(S)/eval2.c $(S)/eval3.c \
+		$(S)/eval4.c $(S)/fasl.c $(S)/fns1.c $(S)/fns2.c $(S)/fns3.c $(S)/fwin.c $(S)/gc.c \
+		$(S)/preserve.c $(S)/print.c $(S)/restart.c $(S)/sysfwin.c $(S)/termed.c \
+		$(S)/stubs.c -lm $(LIBS) -lcurses -o cygreduce
+endif
 
 image.c:	../minireduce-image.c
 	cp ../minireduce-image.c image.c
 
-.c.o:                                                                          <
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 clean:
-	-rm -f *.o reduce hello
+	-rm -f *.o reduce hello config.h
 
-HEADERS = config.h \
-	$(S)/arith.h $(S)/bytes.h $(S)/clsyms.h $(S)/cslerror.h \
-	$(S)/cslread.h $(S)/entries.h $(S)/externs.h $(S)/fwin.h \
-	$(S)/headers.h $(S)/machine.h $(S)/proc.h $(S)/sockhdr.h \
-	$(S)/stream.h $(S)/syscsl.h $(S)/tags.h $(S)/termed.h \
-	$(S)/version.h
-
-
-arith01.o:	$(S)/arith01.c $(HEADERS)
-arith02.o:	$(S)/arith02.c $(HEADERS)
-arith03.o:	$(S)/arith03.c $(HEADERS)
-arith04.o:	$(S)/arith04.c $(HEADERS)
-arith05.o:	$(S)/arith05.c $(HEADERS)
-arith06.o:	$(S)/arith06.c $(HEADERS)
-arith07.o:	$(S)/arith07.c $(HEADERS)
-arith08.o:	$(S)/arith08.c $(HEADERS)
-arith09.o:	$(S)/arith09.c $(HEADERS)
-arith10.o:	$(S)/arith10.c $(HEADERS)
-arith11.o:	$(S)/arith11.c $(HEADERS)
-arith12.o:	$(S)/arith12.c $(HEADERS)
-bytes.o:	$(S)/bytes.c $(HEADERS)
-bytes1.o:	$(S)/bytes1.c $(S)/opnames.c $(HEADERS)
-char.o:		$(S)/char.c $(HEADERS)
-babyreduce.o:	$(S)/babyreduce.c $(HEADERS)
-embedcsl.o:	$(S)/embedcsl.c $(S)/csl.c $(HEADERS)
-csl.o:		$(S)/csl.c $(HEADERS)
-cslmpi.o:	$(S)/cslmpi.c $(S)/mpipack.c $(HEADERS)
-cslread.o:	$(S)/cslread.c $(HEADERS)
-babyreduce.o:	$(S)/babyreduce.c $(HEADERS)
-embedcsl.o:	$(S)/embedcsl.c $(S)/csl.c $(HEADERS)
-eval1.o:	$(S)/eval1.c $(HEADERS)
-eval2.o:	$(S)/eval2.c $(HEADERS)
-eval3.o:	$(S)/eval3.c $(HEADERS)
-eval4.o:	$(S)/eval4.c $(HEADERS)
-fasl.o:		$(S)/fasl.c $(HEADERS)
-fns1.o:		$(S)/fns1.c $(HEADERS)
-fns2.o:		$(S)/fns2.c $(HEADERS)
-fns3.o:		$(S)/fns3.c $(HEADERS)
-fwin.o:		$(S)/fwin.c $(HEADERS)
-gc.o:		$(S)/gc.c $(HEADERS)
-preserve.o:	$(S)/preserve.c image.c $(HEADERS)
-print.o:	$(S)/print.c $(HEADERS)
-restart.o:	$(S)/restart.c machineid.c $(HEADERS)
-sysfwin.o:	$(S)/sysfwin.c $(HEADERS)
-termed.o:	$(S)/termed.c $(HEADERS)
 
 # end of Makefile
