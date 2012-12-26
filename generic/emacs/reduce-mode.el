@@ -2114,6 +2114,24 @@ passing on any prefix argument (in raw form)."
   "A copy of the default face for use by REDUCE Font Lock mode.")
 (copy-face 'default 'font-lock-default-face)
 
+(defconst reduce-asserted-arg-types-rule ;; TS
+     (list (concat "[(,]\\s-*"
+		 "\\("
+		 "[^: ]+";  should be reduce-identifier-regexp but this did not work
+		 "\\)"
+		 "\\s-*:\\s-*"
+		 "\\("
+		 "[^), ]+";  should be reduce-identifier-regexp but this did not work
+		 "\\)")
+	 '(2 font-lock-type-face t)))
+
+(defconst reduce-asserted-return-type-rule ;; TS
+     (list (concat ")\\s-*:\\s-*"
+		 "\\("
+		 "[^ ;$]+";  should be reduce-identifier-regexp but this did not work
+		 "\\)")
+	 '(1 font-lock-type-face t)))
+
 (defconst reduce-font-lock-keywords-0
   (list
    ;; Main keywords:
@@ -2131,12 +2149,12 @@ passing on any prefix argument (in raw form)."
    '("<<\\|>>\\|\\<\\(module\\|go\\(\\s *to\\)?\\)\\>"
      . font-lock-keyword-face)
    ;; Procedure declarations:
-   (list (concat "\\(^\\|ic\\|macro\\|expr\\)\\s *\\<\\(procedure\\)\\s +"
-		 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
-	 '(2 font-lock-keyword-face)
-	 ;; '(2 font-lock-function-name-face t) ; highlights within comments
-	 '(3 font-lock-function-name-face)
-	 )
+   (list (concat "\\(^\\|ic\\|macro\\|expr\\|asserted\\)\\s *\\<\\(procedure\\)\\s +"
+   		 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
+   	 '(2 font-lock-keyword-face)
+   	 ;; '(2 font-lock-function-name-face t) ; highlights within comments
+   	 '(3 font-lock-function-name-face)
+   	 )
    '("\\(declare\\)\\s +\\([^:]*\\)"
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face))
@@ -2159,9 +2177,9 @@ passing on any prefix argument (in raw form)."
 ;   '("[^!][^_]\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
    '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
      (1 font-lock-type-face))
-   )
-  "Default minimal REDUCE fontification rules."
-  )
+   reduce-asserted-arg-types-rule
+   reduce-asserted-return-type-rule)
+  "Default minimal REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-basic
   (list
@@ -2231,9 +2249,10 @@ passing on any prefix argument (in raw form)."
 		       )
 	       nil nil
 	       '(1 font-lock-variable-name-face))
-	 ))
-  "More algebraic-mode REDUCE fontification sub-rules."
-  )
+	 )
+   reduce-asserted-arg-types-rule
+   reduce-asserted-return-type-rule)
+  "More algebraic-mode REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-symbolic
   (list
@@ -2268,14 +2287,14 @@ passing on any prefix argument (in raw form)."
 	  ;; Ignore quoted keywords and composite identifiers:
 	  "\\(^[^!_']?\\|[^!][^!_']\\)"
 	  "\\<\\(newtok\\|precedence\\|switch\\|share\\|"
-	  "algebraic\\|symbolic\\|f?expr\\|s?macro\\)\\>"
+	  "algebraic\\|symbolic\\|f?expr\\|s?macro\\|asserted\\)\\>"
 	  ;; Ignore composite identifiers:
 	  "[^!_]"
 	  )
 	 '(2 font-lock-type-face))
-   )
-  "More symbolic-mode REDUCE fontification sub-rules."
-  )
+   reduce-asserted-arg-types-rule
+   reduce-asserted-return-type-rule)
+  "More symbolic-mode REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-full
   (list
