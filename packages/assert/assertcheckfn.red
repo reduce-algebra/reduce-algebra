@@ -66,7 +66,7 @@ struct List7 checked by list7p;
 
 % Standard Forms and Standard Quotients etc.
 struct SF checked by sfpx;
-struct SF!* checked by sfpx!*;
+struct SF!* checked by sfpx!*;  % non-zero SF
 struct NoOrdSF checked by noordsfpx;
 struct SQ checked by sqp;
 struct Domain checked by domainp;

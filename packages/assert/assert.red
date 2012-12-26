@@ -36,7 +36,7 @@ lisp <<
 
 module assert;
 
-create!-package('(assert assertcheckfn),nil);
+create!-package('(assert assertcheckfn assertproc),nil);
 
 global '(assert_functionl!* exlist !*comp);
 
@@ -103,7 +103,7 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
       scargtypel := argtypel;
       for each a in argl do <<
 	 n := n + 1;
-	 if (cfn := get(car scargtypel,'assert_checkfn))
+	 if (cfn := get(car scargtypel,'assert_dyntypechk))
  	    and not apply(cfn,{a})
 	    and not(pairp a and flagp(car a,'assert_ignore))
  	 then <<
@@ -113,7 +113,7 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
 	 scargtypel := cdr scargtypel
       >>;
       res := apply(origfn,argl);
-      if (cfn := get(restype,'assert_checkfn))
+      if (cfn := get(restype,'assert_dyntypechk))
 	 and not apply(cfn,{res})
 	 and not(pairp res and flagp(car res,'assert_ignore))
       then <<
@@ -128,28 +128,25 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
    end;
 
 procedure assert_error(fn,argtypel,restype,typeno,type,arg);
-   % Subroutine of assert_check1 called in case of an assertion
-   % violation. fn is the name of the original function; argtypel is a
-   % list of types asserted for the arguments of the function call;
-   % restype is the type asserted for the result of the function call;
-   % typeno is an integer denoting which argument has violated an
-   % assertion, where 0 stands for the result; type is the asserted type
-   % for arg; arg is the argument violating an assertion. Depending on
-   % the switch !*assertbreak, either the computation is interrupted
-   % with a rederr or computation continues and the error
-   % message is printed as a warning. In the latter case lprim is used,
-   % which is controlled by the switch !*msg.
+   % Subroutine of assert_check1 called in case of an assertion violation. fn is
+   % the name of the original function; argtypel is a list of types asserted for
+   % the arguments of the function call; restype is the type asserted for the
+   % result of the function call; typeno is an integer denoting which argument
+   % has violated an assertion, where 0 stands for the result; type is the
+   % asserted type for arg; arg is the argument violating an assertion.
+   % Depending on the switch !*assertbreak, either the computation is
+   % interrupted with a rederr or computation continues and the error message is
+   % printed as a warning. In the latter case lprim is used, which is controlled
+   % by the switch !*msg.
    begin scalar w,msg,!*lower;
       if !*assertstatistics then <<
       	 w := cdr atsoc(fn,assertstatistics!*);
 	 caddr w := caddr w + 1
       >>;
       msg := if eqn(typeno,0) then
-%	 {"result of",fn,"invalid as",type,":",arg}
 	 {"declaration",assert_format(fn,argtypel,restype),
 	    "violated by result",arg}
       else
-%	 {"argument",typeno,"of",fn,"invalid as",type,":",arg};
 	 {"declaration",assert_format(fn,argtypel,restype),
 	    "violated by",mkid('arg,typeno),arg};
       if !*assertbreak then
@@ -159,16 +156,16 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
    end;
 
 procedure assert_format(fn,argtypel,restype);
-   % fn is the original function name; argtypel is the list of types
-   % asserted for the arguments; restype is the type asserted for the
-   % result. Reconstructs the assertion as a identifier for printing in
-   % diagnostic messages.
+   % fn is the original function name; argtypel is the list of types asserted
+   % for the arguments; restype is the type asserted for the result.
+   % Reconstructs the assertion as a identifier for printing in diagnostic
+   % messages.
    begin scalar ass;
       ass := explode restype;
       ass := '!! . '!) . '!! . '! . '!! . '!- . '!! . '!> . '!! . '! . ass;
       for each a in reverse argtypel do
-	 ass := '!! . '!, . nconc(explode a,ass);
-      ass := cddr ass;
+	 ass := '!! . '!, . '!! . '!  . nconc(explode a,ass);
+      ass := cddddr ass;
       ass := '!! . '!: . '!! . '! . '!! . '!( . ass;
       ass := nconc(explode fn,ass);
       return compress ass
@@ -177,17 +174,18 @@ procedure assert_format(fn,argtypel,restype);
 procedure assert_structstat();
    % The parser for struct. Returns a form that stores the type
    % checking function on the property list of the type.
-   begin scalar type,cfn;
+   begin scalar type, cfn, typeflag, typecheckform;
       type := scan();
+      typeflag := {'flag, mkquote {type}, ''assert_dyntype};
       scan();
       if flagp(cursym!*,'delim) then <<
 	 if not !*assert then
 	    return nil;
 	 if !*msg then lprim {"struct",type,"is not checked"};
-      	 return nil
+      	 return typeflag
       >>;
-      if cursym!* neq 'checked then
-	 rederr {"expecting 'checked by' in struct but found",cursym!*};
+      if cursym!* neq 'checked and cursym!* neq 'asserted then
+	 rederr {"expecting 'asserted by' in struct but found",cursym!*};
       if scan() neq 'by then
 	 rederr {"expecting 'by' in struct but found",cursym!*};
       cfn := scan();
@@ -195,10 +193,14 @@ procedure assert_structstat();
 	 rederr {"expecting end of struct but found",cursym!*};
       if not !*assert then
 	 return nil;
-      return {'put,mkquote type,''assert_checkfn,mkquote cfn}
+      typecheckform := {'put,mkquote type, ''assert_dyntypechk, mkquote cfn};
+      return {'progn, typecheckform, typeflag}
    end;
 
 put('struct,'stat,'assert_structstat);
+
+procedure assert_dyntypep(s);
+   idp s and flagp(s, 'assert_dyntype);
 
 operator assert_analyze;
 
@@ -251,16 +253,22 @@ procedure assert_analyze();
 %%       return {'assert_check,fn,'list . argtypel,restype}
 %%    end;
 
+
 procedure assert_declarestat();
-   % The parser for assert. Returns forms that define a suitable wrapper
-   % function, store relevant information on the property list of the
-   % original function, and add the original function to the global list
-   % assert_functionl!*.
-   begin scalar l,fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w4,w5;
-      integer i;
+   % The parser for assert.
+   begin scalar l;
       l := assert_stat!-parse();
       if not !*assert then
- 	    return nil;
+	 return nil;
+      return assert_declarestat1 l
+   end;
+
+procedure assert_declarestat1(l);
+   % Returns forms that define a suitable wrapper function, store relevant
+   % information on the property list of the original function, and add the
+   % original function to the global list assert_functionl!*.
+   begin scalar fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w4,w5;
+      integer i;
       fnx := explode car l;
       assertfn := intern compress nconc(explode 'assert!:,fnx);
       noassertfn := intern compress nconc(explode 'noassert!:,fnx);
@@ -388,7 +396,7 @@ put('assert, 'formfn, 'formassert);
 procedure assert_assert(u, vars, mode);
    if mode eq 'symbolic then
       {'cond,
- 	 {{'not, u},
+ 	 {{'and, !*assert, {'not, u}},
  	    {'progn,
  	       {'backtrace},
 	       {'cond,

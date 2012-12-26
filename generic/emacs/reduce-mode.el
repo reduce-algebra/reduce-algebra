@@ -2114,6 +2114,8 @@ passing on any prefix argument (in raw form)."
   "A copy of the default face for use by REDUCE Font Lock mode.")
 (copy-face 'default 'font-lock-default-face)
 
+;;; I should tidy up the following a bit at some point. For now I have made an
+;;; effort to isolate this not to disturb others. TS
 (defconst reduce-asserted-arg-types-rule ;; TS
      (list (concat "[(,]\\s-*"
 		 "\\("
@@ -2132,53 +2134,64 @@ passing on any prefix argument (in raw form)."
 		 "\\)")
 	 '(1 font-lock-type-face t)))
 
+(defconst reduce-assert-declare-rules  ;; TS
+  (list '("\\(declare\\)\\s +\\([^:]*\\)"
+	  (1 font-lock-keyword-face)
+	  (2 font-lock-function-name-face))
+	'("declare\\s +[^(]*(\\([^)]*\\)"
+	  (1 font-lock-type-face))
+	(list (concat "declare\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
+	      '(1 font-lock-type-face))))
+
+(defconst reduce-assert-struct-rules  ;; TS
+  (list (list (concat "\\(struct\\)\\s *\\("
+		      reduce-identifier-regexp
+		      "\\)")
+	      '(1 font-lock-keyword-face)
+	      '(2 font-lock-type-face))
+	(list (concat "struct\\s *.*"
+		      "\\s *\\(checked\\s-*by\\|asserted\\s-*by\\)\\s *\\("
+		      reduce-identifier-regexp
+		      "\\)")
+	      '(1 font-lock-keyword-face t)
+	      '(2 font-lock-function-name-face))))
+
 (defconst reduce-font-lock-keywords-0
-  (list
-   ;; Main keywords:
-   (list (concat
-	  ;; Ignore quoted keywords and composite identifiers:
-	  "\\(^[^!_']?\\|[^!][^!_']\\)"
-	  "\\<\\(\\(" reduce-keyword-regexp "\\)"
-	  ;; Handle consecutive keywords:
-	  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
-	  "\\)\\>"
-	  ;; Ignore composite identifiers:
-	  "[^!_]"
-	  ) '(2 font-lock-keyword-face))
-   ;; Group delimiters and references:
-   '("<<\\|>>\\|\\<\\(module\\|go\\(\\s *to\\)?\\)\\>"
-     . font-lock-keyword-face)
-   ;; Procedure declarations:
-   (list (concat "\\(^\\|ic\\|macro\\|expr\\|asserted\\)\\s *\\<\\(procedure\\)\\s +"
-   		 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
-   	 '(2 font-lock-keyword-face)
-   	 ;; '(2 font-lock-function-name-face t) ; highlights within comments
-   	 '(3 font-lock-function-name-face)
-   	 )
-   '("\\(declare\\)\\s +\\([^:]*\\)"
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face))
-   '("declare\\s +[^(]*(\\([^)]*\\)"
-     (1 font-lock-type-face))
-   (list (concat "declare\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
-	 '(1 font-lock-type-face))
-   (list (concat "\\(struct\\)\\s *\\("
-		 reduce-identifier-regexp
-		 "\\)")
-	 '(1 font-lock-keyword-face)
-	 '(2 font-lock-type-face))
-   (list (concat "struct\\s *.*"
-		 "\\s *\\(checked\\s *by\\)\\s *\\("
-		 reduce-identifier-regexp
-		 "\\)")
-	 '(1 font-lock-keyword-face)
-	 '(2 font-lock-function-name-face))
-   ;; Type declarations:
-;   '("[^!][^_]\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
-   '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
-     (1 font-lock-type-face))
-   reduce-asserted-arg-types-rule
-   reduce-asserted-return-type-rule)
+  (append (list
+	   ;; Main keywords:
+	   (list (concat
+		  ;; Ignore quoted keywords and composite identifiers:
+		  "\\(^[^!_']?\\|[^!][^!_']\\)"
+		  "\\<\\(\\(" reduce-keyword-regexp "\\)"
+		  ;; Handle consecutive keywords:
+		  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
+		  "\\)\\>"
+		  ;; Ignore composite identifiers:
+		  "[^!_]"
+		  ) '(2 font-lock-keyword-face))
+	   ;; Group delimiters and references:
+	   '("<<\\|>>\\|\\<\\(module\\|go\\(\\s *to\\)?\\)\\>"
+	     . font-lock-keyword-face)
+	   ;; Procedure declarations:
+	   (list (concat "\\(^\\|ic\\|macro\\|expr\\|asserted\\)\\s *\\<\\(procedure\\)\\s +"
+			 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
+		 '(2 font-lock-keyword-face)
+		 ;; '(2 font-lock-function-name-face t) ; highlights within comments
+		 '(3 font-lock-function-name-face)
+		 )
+	   '("\\(declare\\)\\s +\\([^:]*\\)"
+	     (1 font-lock-keyword-face)
+	     (2 font-lock-function-name-face))
+	   '("declare\\s +[^(]*(\\([^)]*\\)"
+	     (1 font-lock-type-face))
+	   ;; Type declarations:
+	   ;; '("[^!][^_]\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
+	   '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
+	     (1 font-lock-type-face))
+	   reduce-asserted-arg-types-rule
+	   reduce-asserted-return-type-rule)
+	  reduce-assert-declare-rules
+	  reduce-assert-struct-rules)
   "Default minimal REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-basic
@@ -2255,45 +2268,29 @@ passing on any prefix argument (in raw form)."
   "More algebraic-mode REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-symbolic
-  (list
-   ;; References -- module:
-   (list (concat "\\<\\(module\\)\\s +"
-		 "\\(" reduce-identifier-regexp "\\)")
-	 '(1 font-lock-keyword-face)
-	 '(2 font-lock-constant-face))	; was font-lock-reference-face
-   '("\\(declare\\)\\s +\\([^:]*\\)"
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face))
-   '("declare\\s +[^(]*(\\([^)]*\\)"
-     (1 font-lock-type-face))
-   (list (concat "declare\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
-	 '(1 font-lock-type-face))
-   (list (concat "\\(struct\\)\\s *\\("
-		 reduce-identifier-regexp
-		 "\\)")
-	 '(1 font-lock-keyword-face)
-	 '(2 font-lock-type-face))
-   (list (concat "struct\\s *.*"
-		 "\\s *\\(checked\\s *by\\)\\s *\\("
-		 reduce-identifier-regexp
-		 "\\)")
-	 '(1 font-lock-keyword-face)
-	 '(2 font-lock-function-name-face))
-   ;; Type declarations:
-   '("\\<\\(fluid\\|global\\)\\>\\s *'(\\(.*\\))"
-     (1 font-lock-type-face)
-     (2 font-lock-variable-name-face))
-   (cons (concat
-	  ;; Ignore quoted keywords and composite identifiers:
-	  "\\(^[^!_']?\\|[^!][^!_']\\)"
-	  "\\<\\(newtok\\|precedence\\|switch\\|share\\|"
-	  "algebraic\\|symbolic\\|f?expr\\|s?macro\\|asserted\\)\\>"
-	  ;; Ignore composite identifiers:
-	  "[^!_]"
-	  )
-	 '(2 font-lock-type-face))
-   reduce-asserted-arg-types-rule
-   reduce-asserted-return-type-rule)
+  (append (list
+	   ;; References -- module:
+	   (list (concat "\\<\\(module\\)\\s +"
+			 "\\(" reduce-identifier-regexp "\\)")
+		 '(1 font-lock-keyword-face)
+		 '(2 font-lock-constant-face))	; was font-lock-reference-face
+	   ;; Type declarations:
+	   '("\\<\\(fluid\\|global\\)\\>\\s *'(\\(.*\\))"
+	     (1 font-lock-type-face)
+	     (2 font-lock-variable-name-face))
+	   (cons (concat
+		  ;; Ignore quoted keywords and composite identifiers:
+		  "\\(^[^!_']?\\|[^!][^!_']\\)"
+		  "\\<\\(newtok\\|precedence\\|switch\\|share\\|"
+		  "algebraic\\|symbolic\\|f?expr\\|s?macro\\|asserted\\)\\>"
+		  ;; Ignore composite identifiers:
+		  "[^!_]"
+		  )
+		 '(2 font-lock-type-face))
+	   reduce-asserted-arg-types-rule
+	   reduce-asserted-return-type-rule)
+	  reduce-assert-declare-rules
+	  reduce-assert-struct-rules)
   "More symbolic-mode REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-full
