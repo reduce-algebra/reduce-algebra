@@ -183,6 +183,7 @@
  (gcref         "gcref"                 test                 csl psl)
  (turtle        "plot"                                       csl psl)
  (profile       "profile"                                    csl psl)
+ (pgauss        "pgauss"                                     csl psl)
 )
 
 % End of configuration data
