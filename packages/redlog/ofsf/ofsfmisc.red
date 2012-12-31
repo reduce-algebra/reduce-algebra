@@ -638,6 +638,132 @@ procedure ofsf_float2dn(x);
       return '!:dn!: . compress(for each d in w join if not (d eq '!.) then {d}) . -dotpos
    end;
 
+procedure ofsf_dima(ql, p);
+   % [ql] is a list of SF, [p] is an SF.
+   begin scalar w, xl, yl, pt, qtl, ptt, sys, sl0, sl; integer k, n;
+      for each q in ql do
+	 xl := union(kernels q, xl);
+      xl := sort(xl, 'ordp);
+      n := length xl;
+      yl := kernels p;
+      k := length yl;
+      if k neq length ql then
+	 rederr {"size of Q does not match number of vars in P", k, length yl};
+      if (w := intersection(xl, yl)) then
+	 rederr {w, "occur in both Q and P"};
+      % Step 1:
+      {xl, ql, yl, pt} := ofsf_dima!-p1(xl, ql, yl, p);  % (T1)
+      qtl := ofsf_dima!-p2(xl, ql, k);  % (T2)
+      ptt := ofsf_dima!-subf(pt, yl, qtl);  % (T3)
+      ptt := addf(ptt, negf !*k2f 'epsilon1);
+      % Step 2:
+      sys := ofsf_dima!-mksys(xl, qtl, yl, pt);
+      % Step 3:
+      sl0 := ofsf_dima!-pgauss(sys, xl);
+      % Step 4:
+      sl := ofsf!-dima!-sol2formulas(ptt, sl0, yl);
+      return sl
+   end;
+
+procedure ofsf_dima!-subf(f, vl, fl);
+   begin scalar al, v, f1;
+      while vl and fl do <<
+	 v := pop vl;
+	 f1 := !*f2q pop fl;
+	 al := (v . f1) . al
+      >>;
+      assert(null vl and null fl);
+      return numr ofsf_siatsubf(f, al)
+   end;
+
+procedure ofsf_dima!-p1(xl, ql, yl, p);
+   begin scalar y0, x0, pt, q0, s;
+      y0 := '!_y0;  % intern gensym();
+      yl := y0 . yl;
+      pt := addf(exptf(!*k2f y0, 2), p);
+      x0 := '!_x0;  % intern gensym();
+      xl := x0 . xl;
+      s := ofsf_dima!-sigma(for each x in xl collect 1, xl);
+      q0 := addf(1, negf multf(exptf(!*k2f 'epsilon0, 2), s));
+      ql := q0 . ql;
+      return {xl, ql, yl, pt}
+   end;
+
+procedure ofsf_dima!-sigma(cl,xl);
+   begin scalar xsql, s;
+      xsql := for each x in xl collect exptf(!*k2f x, 2);
+      while cl and xsql do
+	 s := addf(s, multf(pop cl, pop xsql));
+      assert(null cl and null xsql);
+      return s
+   end;
+
+procedure ofsf_dima!-p2(xl, ql, k);
+   begin scalar qtl, cl; integer j, tn;
+      tn := length xl;
+      qtl := for j := 0:k collect <<
+	 cl := for i:=1 : tn collect i^j;
+	 addf(pop ql, multf(!*k2f 'epsilon2, ofsf_dima!-sigma(cl, xl)))
+      >>;
+      assert null ql;
+      return qtl
+   end;
+
+switch rldimaincludefirst;
+
+procedure ofsf_dima!-mksys(xl, qtl, yl, pt);
+   begin scalar nablaqtl, nablapt, sys0, sys, llambda;
+      nablapt := ofsf_dima!-gradient(pt, yl);
+      nablaqtl := for each x in xl collect
+	 ofsf_dima!-partiall(qtl, x);
+      sys0 := for each pvec in nablaqtl collect
+	 ofsf_dima!-sprod(nablapt, pvec);
+      sys := for each f in cdr sys0 collect
+	 ofsf_0mk2('equal, f);
+      if !*rldimaincludefirst then <<
+	 llambda := !*k2f intern gensym();
+      	 sys := ofsf_0mk2('equal, addf(car sys0, negf llambda)) . sys
+      >>;
+      return sys
+   end;
+
+procedure ofsf_dima!-gradient(p, vl);
+   for each v in vl collect diff(p,v);
+
+procedure ofsf_dima!-partiall(pl, v);
+   for each p in pl collect diff(p,v);
+
+procedure ofsf_dima!-sprod(l1, l2);
+   begin scalar sp;
+      for each p in lto_zip(l1, l2, function multf) do
+	 sp := addf(sp,p);
+      return sp
+   end;
+
+procedure ofsf_dima!-pgauss(eql, vl);
+   begin scalar !*pgspsimpl, !*pgnoarbcomplex;
+      !*pgspsimpl := t;
+      !*pgnoarbcomplex := t;
+      return pg_gauss!-sym(for each eq in eql collect rl_prepfof eq, vl)
+   end;
+
+
+procedure ofsf!-dima!-sol2formulas(ptt, sl0, yl);
+   begin scalar phi, xl, vl, sl, w;
+%%       xl := list2set for each s in sl0 join
+%% 	 for each pr in cdr s join
+%%  	    nconc(kernels numr cdr pr, kernels denr cdr pr);
+%%       vl := reversip append(yl, xl);
+      sl := for each s in sl0 collect <<
+	 w :=  numr ofsf_siatsubf(ptt, cdr s);
+	 phi := rl_smkn('and, reverse(ofsf_0mk2('equal,w) . car s));
+%% 	 for each v in vl do
+%% 	    phi := rl_mkq('ex, v, phi);
+	 rl_ex(phi, '(epsilon0 epsilon1 epsilon2))
+      >>;
+      return sl
+   end;
+
 endmodule;  % [ofsfmisc]
 
 end;  % of file

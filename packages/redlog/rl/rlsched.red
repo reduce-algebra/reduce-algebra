@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2013 A. Dolzmann, T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -253,8 +253,9 @@ sl_alias('unsfy,'unstraightify);
 rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
 rl_mkserv('smt2Print,'(rl_simp),'(reval rl_a2s!-stringl),'(nil (list)),'aeval,t);
-
 rl_mkserv('smt2Read,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
+
+rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
 
 % Black box scheduler.
 

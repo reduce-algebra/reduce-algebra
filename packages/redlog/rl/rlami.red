@@ -833,6 +833,9 @@ procedure rl_s2a!-ghqe(l);
    % where $theo$ is a theory and $res$ a quantifier-free formula.
    'list . {rl_mk!*fof car l, rl_mk!*fof cadr l};
 
+procedure rl_a2s!-sf(x);
+   numr simp x;
+
 procedure rl_a2s!-sflist(pl);
    for each p in cdr pl collect numr simp p;
 
@@ -842,6 +845,9 @@ procedure rl_s2a!-sflistlist(sfll);
       return 'list . for each fl in sfll collect
 	 'list . for each f in fl collect prepf f
    end;
+
+procedure rl_s2a!-formulal(fl);
+   'list . for each f in fl collect rl_prepfof f;
 
 foractions!* := 'mkand . 'mkor . foractions!*;
 deflist('((mkand rlmkand) (mkor rlmkor)),'bin);

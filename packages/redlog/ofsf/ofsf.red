@@ -54,7 +54,7 @@ loadtime load!-package 'factor;
 loadtime load!-package 'cgb;
 
 load!-package 'assert;
-on1 'assert;
+off1 'assert;
 
 exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_simpat,ofsf_op,ofsf_arg2l,ofsf_arg2r,ofsf_argn,ofsf_mk2,ofsf_0mk2,
@@ -98,6 +98,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlsifaco !*rlqeans !*rlqelog rlqelog!* !*rlqeprecise !*rlqevarseltry
    !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg !*rlbrkcxk);
 
+fluid '(!*pgnoarbcomplex !*pgspsimpl !*pgspqe);
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
 
@@ -246,6 +247,7 @@ put('ofsf,'rl_services,'(
    (rl_dfgprint!* . cl_dfgPrint)
    (rl_smt2Print!* . cl_smt2Print)
    (rl_smt2Read!* . cl_smt2Read)
+   (rl_dima!* . ofsf_dima)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin
