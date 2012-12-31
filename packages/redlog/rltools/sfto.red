@@ -823,6 +823,14 @@ procedure sfto_varIsNumP(f);
    if not domainp f and domainp lc f and domainp red f and eqn(ldeg f,1) then
       mvar f;
 
+procedure sfto_fctrf(f);
+   begin scalar w;
+      w := errorset({'fctrf, mkquote f}, t, !*backtrace);
+      if errorp w then
+	 return {1, f . 1};
+      return car w
+   end;
+
 endmodule;  % [sfto]
 
 end;  % of file

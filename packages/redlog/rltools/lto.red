@@ -473,6 +473,10 @@ procedure lto_hdelete1(item,hl,keyl);
 procedure lto_subsetq(s1, s2);
    not s1 or car s1 memq s2 and lto_subset(cdr s1, s2);
 
+procedure lto_zip(l1, l2, f);
+   if l1 and l2 then
+      apply(f, {car l1, car l2}) . lto_zip(cdr l1, cdr l2, f);
+
 endmodule;  % [lto]
 
 end;  % of file
