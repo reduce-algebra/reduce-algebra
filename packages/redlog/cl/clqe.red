@@ -31,7 +31,7 @@
 lisp <<
    fluid '(cl_qe_rcsid!* cl_qe_copyright!*);
    cl_qe_rcsid!* := "$Id$";
-   cl_qe_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
+   cl_qe_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2012 T. Sturm"
 >>;
 
 module clqe;
@@ -40,11 +40,11 @@ module clqe;
 
 struct Formula;
 struct QfFormula;
-struct QfFormulaL checked by listp;
-struct Theory checked by listp;
-struct TheoryFormulaPair checked by pairp;
-struct KernelL checked by listp;
-struct Quantifier checked by idp;
+struct QfFormulaL asserted by listp;
+struct Theory asserted by listp;
+struct TheoryFormulaPair asserted by pairp;
+struct KernelL asserted by listp;
+struct Quantifier asserted by idp;
 
 
 %DS
@@ -57,12 +57,12 @@ struct Quantifier checked by idp;
 % SubstTriplet ::= (Variable, SubstFunction, ArgumentList)
 % AnswerTranslation ::= (* context dependent, "nil" if not ans *)
 
-struct TaggedContainerElementL checked by taggedContainerElementLP;
-struct ContainerElementL checked by listp;
-struct ContainerElement checked by containerElementP;
-struct VarList checked by varListP;
-struct Answer checked by listp;
-struct SubstTriplet checked by substTripletP;
+struct TaggedContainerElementL asserted by taggedContainerElementLP;
+struct ContainerElementL asserted by listp;
+struct ContainerElement asserted by containerElementP;
+struct VarList asserted by varListP;
+struct Answer asserted by listp;
+struct SubstTriplet asserted by substTripletP;
 struct AnswerTranslation;
 
 
@@ -82,14 +82,14 @@ procedure substTripletP(x);
 %DS
 % Container ::= (ContainerElementL . QfFormulaL)
 
-struct Container checked by pairp;
+struct Container asserted by pairp;
 
 
 %DS
 % Point ::= (Coordinate, ...)
 % Coordinate ::= Equation (* Kernel = Integer *)
 
-struct Point checked by listp;
+struct Point asserted by listp;
 
 
 %DS
@@ -97,8 +97,8 @@ struct Point checked by listp;
 % ExtendedQeResult ::= (..., (QfFormula, SamplePoint), ...)
 % SamplePoint ::= EquationL (* with equations of the form kernel = ... *)
 
-struct EliminationResult checked by pairp;
-struct ExtendedQeResult checked by alistp;
+struct EliminationResult asserted by pairp;
+struct ExtendedQeResult asserted by alistp;
 
 
 declare ce_mk: (VarList,QfFormula,Answer,AnswerTranslation) -> ContainerElement;
@@ -317,8 +317,8 @@ procedure co_stat(co);
 % JunctionL ::= (Junction, ...)
 % Junction ::= QfFormula . Answer
 
-struct JunctionL checked by listp;
-struct Junction checked by pairp;
+struct JunctionL asserted by listp;
+struct Junction asserted by pairp;
 
 
 declare cl_mkJ: (QfFormula,Answer) -> Junction;
