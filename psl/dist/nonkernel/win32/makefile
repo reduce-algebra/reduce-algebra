@@ -61,7 +61,7 @@ PL      = $(PSL)/lap
 PXNKFILES= \
 	$(PNKL)/dumplisp.b  $(PNKL)/static-gc.b $(PNKL)/funct-prims.b \
 	$(PNKL)/io-data.b $(PNKL)/lap.b $(PNKL)/load-psl.b \
-	$(PNKL)/backtrace.b $(PNKL)/equal.b $(PNKL)/386-spec.b \
+	$(PNKL)/backtrace.b $(PNKL)/equal.b $(PNKL)/386-ext.b \
 	$(PNKL)/arithmetic.b $(PNKL)/putd-getd.b \
 	$(PNKL)/printf.b $(PNKL)/fixup.b $(PNKL)/eval-apply.b \
 	$(PNKL)/arithwoc.b \
@@ -75,8 +75,8 @@ PXNKFILES= \
 all: $(PXNKFILES)
 	echo "System dependent files built."
 
-$(PNKL)/386-spec.b: $(PXNK)/386-spec.sl
-	$(PDIST)/mkpnknt $(PXNK) 386-spec
+$(PNKL)/386-ext.b: $(PXNK)/386-ext.sl
+	$(PDIST)/mkpnknt $(PXNK) 386-ext
 
 $(PNKL)/dumplisp.b: $(PXNK)/dumplisp.sl
 	$(PDIST)/mkpnknt $(PXNK) dumplisp
