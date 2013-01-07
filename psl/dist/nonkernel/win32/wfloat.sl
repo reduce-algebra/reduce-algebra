@@ -28,38 +28,34 @@
 (off echo)
 
 (de *wfloat (x y)
-  (uxfloat (mkitem fixnum-tag x) y))
+  (uxfloat x y))
 
 (de *fplus2 (x y z)
-  (uxplus2 (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-	(mkitem fixnum-tag z)))
+  (uxplus2 x y z))
 
 (de *fdifference (x y z)
-  (uxdifference (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-        (mkitem fixnum-tag z)))
+  (uxdifference x y z))
 
 (de *ftimes2 (x y z)
-  (uxtimes2 (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-        (mkitem fixnum-tag z)))
+  (uxtimes2 x y z))
 
 (de *fquotient (x y z)
-  (uxquotient (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-        (mkitem fixnum-tag z)))
+  (uxquotient x y z))
 
 (de *fgreaterp (x y)
-  (uxgreaterp (mkitem fixnum-tag x) (mkitem fixnum-tag y) 't 'nil))
+  (uxgreaterp x y 't 'nil))
 
 (de *flessp (x y)
-  (uxlessp (mkitem fixnum-tag x) (mkitem fixnum-tag y) 't 'nil))
+  (uxlessp x y 't 'nil))
 
 (de *wfix (x)
-  (uxfix (mkitem fixnum-tag x)))
+  (uxfix x))
 
 (de *fassign (x y)
-  (uxassign (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
+  (uxassign x y))
 
 (de *doubletofloat (x y)
-  (uxdoubletofloat (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
+  (uxdoubletofloat x y))
 
 % These two statements must be at the end of the file because times2, and
 % thus *ftimes2, must be defined before it is used.
@@ -69,16 +65,15 @@
 	    (setq **neg-zero** (times2 **neg-one** 0.0))))
 
 (de *floattodouble (x y)
-  (uxfloattodouble (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
+  (uxfloattodouble x y))
 
-(de uxsin (r x) (uuxsin (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxcos (r x) (uuxcos (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxtan (r x)(uuxtan (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxasin (r x)(uuxasin (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxacos (r x)(uuxacos (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxatan (r x)(uuxatan (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxsqrt (r x)(uuxsqrt (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxexp (r x)(uuxexp (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxlog (r x)(uuxlog (mkitem fixnum-tag r) (mkitem fixnum-tag x)))
-(de uxatan2 (r y x)(uuxatan2 (mkitem fixnum-tag r) (mkitem fixnum-tag x)(mkitem fixnum-tag y)))
-
+(de uxsin (r x) (uuxsin r x))
+(de uxcos (r x) (uuxcos r x))
+(de uxtan (r x)(uuxtan r x))
+(de uxasin (r x)(uuxasin r x))
+(de uxacos (r x)(uuxacos r x))
+(de uxatan (r x)(uuxatan r x))
+(de uxsqrt (r x)(uuxsqrt r x))
+(de uxexp (r x)(uuxexp r x))
+(de uxlog (r x)(uuxlog r x))
+(de uxatan2 (r y x) (uuxatan2 r y x))
