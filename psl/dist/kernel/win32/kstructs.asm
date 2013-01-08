@@ -12,7 +12,7 @@ bndstk  DB  8004 DUP (0)
 catchstack  DB  6404 DUP (0)
  PUBLIC hashtable
  ALIGN 4
-hashtable  DB  36028 DUP (0)
+hashtable  DB  136048 DUP (0)
  PUBLIC onewordbuffer
  ALIGN 4
 onewordbuffer  DB  8 DUP (0)
