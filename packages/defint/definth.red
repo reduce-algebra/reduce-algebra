@@ -35,7 +35,16 @@ symbolic smacro procedure listsq(u);
 
 algebraic <<
 
-operator indefint2;
+operator indefint2, subtractx, addx, multiplyx;
+
+let { subtractx(~u, ~v) => u-v when freeof(u,unknwon) and freeof(v,unknown),
+      subtractx(~u, ~v) => unknown }; 
+
+let { addx(~u, ~v) => u+v when freeof(u,unknwon) and freeof(v,unknown),
+      addx(~u, ~v) => unknown }; 
+
+let { multiplyx(~u, ~v) => u*v when freeof(u,unknwon) and freeof(v,unknown),
+      multiplyx(~u, ~v) => unknown }; 
 
 indefint2_rules :=
 
@@ -43,9 +52,9 @@ indefint2_rules :=
               indefint2(f1/f3,x,y)+indefint2(f2/f3,x,y) when not(f2=0),
 
   indefint2(~n,~f1-~f2,~x,~y) =>
-                                   indefint2(n,f1,x,y)-indefint2(n,f2,x,y),
+                                   subtractx(indefint2(n,f1,x,y), indefint2(n,f2,x,y)),
   indefint2(~n,~f1+~f2,~x,~y) =>
-                                   indefint2(n,f1,x,y)+indefint2(n,f2,x,y),
+                                   addx(indefint2(n,f1,x,y),indefint2(n,f2,x,y)),
 
   indefint2(1/~x^(~~a),~f,~x,~y) => transf(defint_choose(f,x),-a,y,x),
   indefint2(~x^(~~b)*sqrt(~x),~f,~x,~y) =>
@@ -54,18 +63,18 @@ indefint2_rules :=
                          transf(defint_choose(f,x),1/2,y,x),
   indefint2(~x^(~~a),~f,~x,~y) => transf(defint_choose(f,x),a,y,x),
 
-  indefint2(~b*~ff,~f,~x,~y) => b*indefint2(ff,f,x,y) when freeof (b,x),
-  indefint2(~b/(~~c*~ff),~f,~x,~y) => b/c*indefint2(1/ff,f,x,y)
+  indefint2(~b*~ff,~f,~x,~y) => multiplyx(b, indefint2(ff,f,x,y)) when freeof (b,x),
+  indefint2(~b/(~~c*~ff),~f,~x,~y) => multiplyx(b/c, indefint2(1/ff,f,x,y))
                 when freeof (b,x) and freeof (c,x) and not(b=1 and c=1),
   indefint2(~ff/~b,~f,~x,~y) =>
      1/b*indefint2(ff,f,x,y) when freeof (b,x),
 
-  indefint2(~b*~ff,~f,~x,~y) => b*indefint2(ff,f,x,y) when freeof (b,x),
+  indefint2(~b*~ff,~f,~x,~y) => multiplyx(b,indefint2(ff,f,x,y)) when freeof (b,x),
   indefint2(~ff/~b,~f,~x,~y) =>
      1/b*indefint2(ff,f,x,y) when freeof (b,x),
 
-  indefint2(~~b,~f,~x,~y) => b*indefint2(f,x,y)
-                         when freeof (b,x) and not(b=1),
+  indefint2(~b,~f,~x,~y) => multiplyx(b,indefint2(f,x,y))
+                         when freeof (b,x),
   indefint2(~f,~x,~y) => transf(defint_choose(f,x),0,y,x)
 };
 
