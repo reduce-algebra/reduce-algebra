@@ -37,7 +37,7 @@ algebraic <<
 
 operator indefint2, subtractx, addx, multiplyx;
 
-let { subtractx(~u, ~v) => u-v when freeof(u,unknwon) and freeof(v,unknown),
+let { subtractx(~u, ~v) => u-v when freeof(u,unknown) and freeof(v,unknown),
       subtractx(~u, ~v) => unknown }; 
 
 let { addx(~u, ~v) => u+v when freeof(u,unknwon) and freeof(v,unknown),
