@@ -1614,13 +1614,14 @@ symbolic;
 "**** **** REDUCE FULLY REBUILD **** ****";
 
 % At this stage I have a complete workable REDUCE. If built using a
-% basic CSL (I call it "bootstrapreduce" here)  nothing has been compiled into C
-% (everything is bytecoded), and it is big because it has retained all
+% basic CSL (I call it "bootstrapreduce" here)  nothing has been compiled into
+% C (everything is bytecoded), and it is big because it has retained all
 % Lisp source code in the image file. If however I built using a version
 % of CSL ("reduce") that did have things compiled into C then these will
 % be exploited and the original Lisp source will be omitted from the
 % image, leaving a production version.
 
+lisp stop(0);
 bye;
 
 

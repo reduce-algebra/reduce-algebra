@@ -1662,23 +1662,6 @@ default:break;
     return nil;
 }
 
-Lisp_Object Lstop(Lisp_Object env, Lisp_Object code)
-{
-/*
- * I ignore "env" and set up nil for myself here to make it easier to call
- * this function from random places in my interface code...
- */
-    Lisp_Object nil = C_nil;
-    CSL_IGNORE(env);
-    if (!is_fixnum(code)) return aerror("stop");
-    exit_value = code;
-    exit_tag = fixnum_of_int(0);    /* Flag to say "stop" */
-    exit_reason = UNWIND_RESTART;
-    exit_count = 1;
-    flip_exception();
-    return nil;
-}
-
 Lisp_Object Lmake_special(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -1896,6 +1879,37 @@ Lisp_Object Lcodep(Lisp_Object nil, Lisp_Object a)
 
 #ifdef DEBUG
 static int validate_count = 0;
+
+/*
+ * For at least a while I will record info about the sizes of vectors
+ * allocated...
+ */
+
+int biggest_vector = 0;
+int vector_counts[32] = {0};
+
+void count_vector(int n)
+{
+    int k = 0;
+    if (n > biggest_vector) biggest_vector = n;
+    while (n > 1)
+    {   k++;
+        n /= 2;
+    }
+    vector_counts[k]++;
+}
+
+void show_vectors()
+{
+    int a = 0, b = 1, k;
+    for (k=0; k<32; k++)
+    {   printf("%d - %d:  %d\n", a, b, vector_counts[k]);
+        a = b;
+        b = 2*b;
+    }
+    printf("Largest vector: %d\n", biggest_vector);
+}
+
 #endif
 
 Lisp_Object getvector(int tag, int type, int32_t size)
@@ -1913,6 +1927,7 @@ Lisp_Object getvector(int tag, int type, int32_t size)
  */
     Lisp_Object nil = C_nil;
 #ifdef DEBUG
+    count_vector(size);
 /*
  * If I do a full validation every time I allocate a vector that REALLY
  * hits performance, so I will do it occasionally. The 1 in 500 indicated
@@ -2036,6 +2051,26 @@ Lisp_Object getvector_init(int32_t n, Lisp_Object k)
         *(Lisp_Object *)((char *)p - TAG_VECTOR + n) = k;
     }
     return p;
+}
+
+Lisp_Object Lstop(Lisp_Object env, Lisp_Object code)
+{
+/*
+ * I ignore "env" and set up nil for myself here to make it easier to call
+ * this function from random places in my interface code...
+ */
+    Lisp_Object nil = C_nil;
+    CSL_IGNORE(env);
+#ifdef DEBUG
+    show_vectors();
+#endif
+    if (!is_fixnum(code)) return aerror("stop");
+    exit_value = code;
+    exit_tag = fixnum_of_int(0);    /* Flag to say "stop" */
+    exit_reason = UNWIND_RESTART;
+    exit_count = 1;
+    flip_exception();
+    return nil;
 }
 
 clock_t base_time;

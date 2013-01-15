@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[])
 {
-    printf("Hello, sizeof(void *) = %d\n", sizeof(void *));
+    printf("Hello, sizeof(void *) = %d\n", (int)sizeof(void *));
     return 0;
 }
