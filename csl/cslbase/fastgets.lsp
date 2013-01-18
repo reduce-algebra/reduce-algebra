@@ -15,7 +15,7 @@
    (symbol!-make!-fastget 'switch!* 11)
    (symbol!-make!-fastget 'oldnam 12)
    (symbol!-make!-fastget 'binding 13)
-   (symbol!-make!-fastget 'noncom 14)
+%  (symbol!-make!-fastget 'noncom 14)
    (symbol!-make!-fastget 'zerop 15)
    (symbol!-make!-fastget 'indexvar 16)
    (symbol!-make!-fastget 'share 17)
