@@ -942,6 +942,7 @@ symbolic procedure profile_a_package names;
         close rds w1;
         rr := '((symbol!-make!-fastget 'lose 1)
                 (symbol!-make!-fastget 'noncom 0));
+        flag('(lose noncom), 'processed);
         oll := 2;
         while w do <<
            w1 := nil;

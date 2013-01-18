@@ -656,9 +656,13 @@ endif !wx
 csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
 	-rm -f csl$(EXEEXT)
 if windows
-	cp $(srcdir)/csl .
+if gui
+	$(CP) $(srcdir)/csl .
+else !gui
+	$(CP) $(srcdir)/csl-nogui .
+endif !gui
 	cd ../../$(with_cygbuild)/csl && make csl.exe
-	cp ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+	$(CP) ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
 endif windows
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -693,9 +697,13 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 	-rm -f reduce$(EXEEXT)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
-	cp $(srcdir)/reduce .
+if gui
+	$(CP) $(srcdir)/reduce .
+else !gui
+	$(CP) $(srcdir)/reduce-nogui .
+endif !gui
 	cd ../../$(with_cygbuild)/csl && make reduce.exe
-	cp ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+	$(CP) ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
 endif windows
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -742,9 +750,9 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 	-rm -f bootstrapreduce$(EXEEXT)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
-	cp $(srcdir)/bootstrapreduce .
+	$(CP) $(srcdir)/bootstrapreduce .
 	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
-	cp ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+	$(CP) ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
 endif windows
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 if !debug
@@ -765,9 +773,13 @@ endif !wx
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
 	-rm -f fwindemo$(EXEEXT)
 if windows
-	cp $(srcdir)/fwindemo .
+if gui
+	$(CP) $(srcdir)/fwindemo .
+else !gui
+	$(CP) $(srcdir)/fwindemo-nogui .
+endif !gui
 	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
-	cp ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+	$(CP) ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -1302,13 +1314,13 @@ if canrun
 # directory adjacent to the executable file. I conditionally copy from both
 # places here
 	if test -f reduce.app/Contents/reduce.img; \
-	then cp reduce.app/Contents/reduce.img $(gensrc); \
-	elif test -f reduce.img; then cp reduce.img $(gensrc); fi
+	then $(CP) reduce.app/Contents/reduce.img $(gensrc); \
+	elif test -f reduce.img; then $(CP) reduce.img $(gensrc); fi
 else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
 	-rm -rf reduce.img
-	cp -r $(gensrc)/reduce.img .
+	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
 
 # This is a temporary target "reduce.dir" to create the image as a directory
@@ -1331,7 +1343,7 @@ else !canrun
 	echo Can not build reduce.img on this platform
 	echo Copying from $(gensrc)
 	-rm -rf reduce.img
-	cp -r $(gensrc)/reduce.img .
+	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
 
 bootstraprecompile:	bootstrapreduce.img
@@ -1368,8 +1380,8 @@ reduce.doc/index.html:
 $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 	$(srcdir)/../../packages/redlog/qepcad/qepcad.awk
 	-mkdir -p reduce.resources
-	cp $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
-	cp $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
+	$(CP) $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
+	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
 
 if windows
 #
@@ -1413,14 +1425,14 @@ if canrun
 		-- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
-	then cp bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
+	then $(CP) bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
 	elif test -f bootstrapreduce.img; \
-	then cp bootstrapreduce.img $(gensrc); fi
+	then $(CP) bootstrapreduce.img $(gensrc); fi
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
 	echo Copying from $(gensrc)
 	-rm -rf bootstrapreduce.img
-	cp $(gensrc)/bootstrapreduce.img .
+	$(CP) $(gensrc)/bootstrapreduce.img .
 endif !canrun
 
 profile:	bootstrapreduce.img
@@ -1431,7 +1443,7 @@ if canrun
                 -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
-	-cp $(gensrc)/profile.dat $(gensrc)/profile.dat.old
+	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 else !canrun
 	echo Can not profile on this platform
@@ -1625,13 +1637,13 @@ if canrun
 		-- buildlogs/csl.img.log \
 		-j csl.dep
 	if test -f csl.app/Contents/csl.img; \
-	then cp -r csl.app/Contents/csl.img $(gensrc); \
-	elif test -f csl.img; then cp -r csl.img $(gensrc); fi
+	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \
+	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
 	-rm -rf csl.img
-	cp -r $(gensrc)/csl.img .
+	$(CP) -r $(gensrc)/csl.img .
 endif !canrun
 
 
@@ -1647,7 +1659,7 @@ else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
 	-rm -rf csl.img
-	cp -r $(gensrc)/csl.img .
+	$(CP) -r $(gensrc)/csl.img .
 endif !canrun
 
 
@@ -1724,14 +1736,14 @@ if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
+	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
 	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).zip
 else !windows
 	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
+	$(CP) -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
 endif !windows

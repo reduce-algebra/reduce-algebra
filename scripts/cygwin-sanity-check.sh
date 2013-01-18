@@ -12,7 +12,7 @@
 
 for m in subversion openssh automake make mingw64-i686-gcc-g++ \
          mingw64-x86_64-gcc-g++ libncurses-devel gcc4-g++ \
-         libXft-devel libX11-devel libXext-devel
+         libXft-devel libX11-devel libXext-devel time
 do
   if cygcheck -c -d $m | grep $m > /dev/null
   then
