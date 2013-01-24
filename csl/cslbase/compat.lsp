@@ -147,6 +147,11 @@
 %%! predef [tab] \item [{\ttfamily tab}] \index{{\ttfamily tab}} ~\newline
 %% The value of this variable is a tab character.
 
+%%! predef [carriage-return] \item [{\ttfamily carriage\!-return}] \index{{\ttfamily carriage"!-return}} ~\newline
+%% The value of this variable is a carriage-return character that could arise
+%% in DOS-format files.
+
+   (setq carriage!-return  (compress (list '!! (special!-char 6))))
    (setq esc!*   (compress (list '!! (special!-char 9))))
 %%! predef [esc*] \item [{\ttfamily esc!*}] \index{{\ttfamily esc"!*}} ~\newline
 %% The value of this variable is the character ``escape''. As a non-printing

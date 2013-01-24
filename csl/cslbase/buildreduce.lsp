@@ -730,6 +730,7 @@ symbolic procedure test_a_package names;
        oll := linelength 80;
 %      princ date(); princ " run on "; printc cdr assoc('name, lispsystem!*);
        if get(packge,'folder) then packge := get(packge,'folder);
+       testdirectory := concat("$reduce/packages/", packge);
        packge := concat("$reduce/packages/",
                    concat(packge,
                      concat("/",
@@ -863,6 +864,7 @@ symbolic procedure profile_a_package names;
     if not memq(packge, reduce_regression_tests) then <<
        load!-package packge;
        if get(packge,'folder) then packge := get(packge,'folder);
+       testdirectory := concat("$reduce/packages/", packge);
        packge := concat("$reduce/packages/",
                    concat(packge,
                      concat("/",

@@ -148,7 +148,13 @@ then
   f=`cygpath -m $f`
 fi
 
-# I will annotate the strict with the identity of the machine on which the
+dd="$here/packages/$d"
+if test -f /usr/bin/cygpath
+then
+  dd=`cygpath -m $dd`
+fi
+
+# I will annotate the script with the identity of the machine on which the
 # test was run...
 
 mc=`$here/config.guess`
@@ -184,6 +190,7 @@ symbolic(!*redeflg!* := nil);
 %off pwrds;
 on errcont;
 $loader
+lisp testdirectory:="$dd";
 lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
@@ -242,6 +249,7 @@ symbolic(!*redeflg!* := nil);
 %off pwrds;
 on errcont;
 $loader
+lisp testdirectory:="$dd";
 lisp random_new_seed 1;
 resettime1;
 write "START OF REDUCE TEST RUN on $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
