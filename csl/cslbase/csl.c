@@ -771,7 +771,10 @@ static void report_dependencies()
         {   fprintf(f, "/cygdrive/%c", tolower(p[0]));
             p+=2;
         }
-        while ((c = *p++) != 0) putc(c == '\\' ? '/' : c, f);
+        while ((c = *p++) != 0)
+        {   if (c == ' ') putc('\\', f); /* for spaces in file-name */
+            putc(c == '\\' ? '/' : c, f);
+        }
         if (i < dependency_count-1)
         {   putc(' ', f);
             putc('\\', f);
