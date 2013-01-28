@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5507d7df 19-Feb-2012 */
+/* Signature: 5dccfe96 28-Jan-2013 */
 
 #include "headers.h"
 
@@ -1885,10 +1885,10 @@ static int validate_count = 0;
  * allocated...
  */
 
-int biggest_vector = 0;
-int vector_counts[32] = {0};
+unsigned int biggest_vector = 0;
+unsigned int vector_counts[32] = {0};
 
-void count_vector(int n)
+void count_vector(unsigned int n)
 {
     int k = 0;
     if (n > biggest_vector) biggest_vector = n;
@@ -1901,9 +1901,10 @@ void count_vector(int n)
 
 void show_vectors()
 {
-    int a = 0, b = 1, k;
+    unsigned int a = 0, b = 1, k;
     for (k=0; k<32; k++)
-    {   printf("%d - %d:  %d\n", a, b, vector_counts[k]);
+    {   if (vector_counts[k] != 0)
+            printf("%u - %u:  %u\n", a, b, vector_counts[k]);
         a = b;
         b = 2*b;
     }

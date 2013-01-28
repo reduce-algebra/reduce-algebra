@@ -2803,18 +2803,28 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_FALSE@	-rm -rf reduce.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/reduce.img .
 
-bootstraprecompile:	bootstrapreduce.img
+# "make bootstraprecompile which=<module-name>" and "make recompile which="
+# recompile just one package, assuming everything else is properly up to
+# date (at least if the image file exists at all) and they end up by
+# stamping all files so that a subsequent "make test" etc will not cause
+# unwanted extra recompilation.
+
+bootstraprecompile:
+@canrun_TRUE@	if !test -f bootstrapreduce.img; then make bootstrapreduce.img; fi
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
+@canrun_TRUE@	make -t bootstrapreduce.img > /dev/null
 @canrun_FALSE@	echo Can not build images on this platfrom
 
-recompile:	reduce.img
+recompile:
+@canrun_TRUE@	if !test -f reduce.img; then make reduce.img; fi
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
+@canrun_TRUE@	make -t reduce.img > /dev/null
 @canrun_FALSE@	echo Can not build images on this platfrom
 
 # Copy HTML help files in a directory reduce.doc.

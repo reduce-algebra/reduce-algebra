@@ -692,7 +692,7 @@ symbolic procedure test_a_package names;
     if not boundp 'cpulimit or
        not fixp (cpulimit := compress explodec cpulimit) or
        cpulimit < 1 then
-       cpulimit := if memq('jlisp, lispsystem!*) then 1000 else 180;
+       cpulimit := if memq('jlisp, lispsystem!*) then 2000 else 360;
     if not boundp 'conslimit or
        not fixp (conslimit := compress explodec conslimit) or
        conslimit < 1 then

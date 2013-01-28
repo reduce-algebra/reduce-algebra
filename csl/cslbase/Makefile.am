@@ -1346,22 +1346,32 @@ else !canrun
 	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
 
-bootstraprecompile:	bootstrapreduce.img
+# "make bootstraprecompile which=<module-name>" and "make recompile which="
+# recompile just one package, assuming everything else is properly up to
+# date (at least if the image file exists at all) and they end up by
+# stamping all files so that a subsequent "make test" etc will not cause
+# unwanted extra recompilation.
+
+bootstraprecompile:
 if canrun
+	if !test -f bootstrapreduce.img; then make bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
+	make -t bootstrapreduce.img > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
 
-recompile:	reduce.img
+recompile:
 if canrun
+	if !test -f reduce.img; then make reduce.img; fi
 	mkdir -p buildlogs
 	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
+	make -t reduce.img > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
