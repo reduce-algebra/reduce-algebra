@@ -38,7 +38,7 @@ fluid '(!*asymp!* !*complex !*exp !*gcd !*ifactor !*keepsqrts !*mcd
         !*rationalize !*reduced !*resimp !*sub2 !*uncached alglist!* dmd!*
         dmode!* varstack!* !*combinelogs !*expandexpt !*msg frlis!* subfg!*
         !*norationalgi factorbound!* ncmp!* powlis1!* !*nospurp
-        !*ncmp);
+        !*ncmp !*inside!-int!*);
 
 global '(!*match
          den!*
@@ -53,6 +53,8 @@ global '(!*match
 switch expandexpt; % notseparate;
 
 !*expandexpt := t;
+
+!*inside!-int!* := nil;
 
 % The NOTSEPARATE switch inhibits an expression such as x^(4/3) to
 % become x*x^(1/3).  At the present time, no one is using this.
@@ -1106,17 +1108,17 @@ switch rounded;
 symbolic procedure not_imag_num a;
  % Tests true if a is a number that is not a pure imaginary number.
  % Rebinds sqrtfn and *keepsqrts to make integrator happy.
-   begin scalar !*keepsqrts,!*msg,!*numval,dmode,sqrtfn;
+ % Note the need to re-bind !*inside!-int!* to nil so that the simplification
+ % of square roots behaves in the generic way rather than using the
+ % specialist code present in the integrator.
+   begin scalar !*keepsqrts,!*msg,!*numval,dmode,!*inside!-int!*;
       dmode := dmode!*;
       !*numval := t;
-      sqrtfn := get('sqrt,'simpfn);
-      put('sqrt,'simpfn,'simpsqrt);
       on rounded,complex;
       a := resimp simp a;
       a := numberp denr a and domainp numr a and numr repartsq a;
       off rounded,complex;
       if dmode then onoff(get(dmode,'dname),t);
-      put('sqrt,'simpfn,sqrtfn);
       return a
    end;
 
@@ -1496,6 +1498,13 @@ symbolic procedure simpset u;
   end;
 
 put ('set, 'simpfn, 'simpset);
+
+% sqrt should now have a fixed simpfn - this one - which diverts to
+% whatever is actually needed.
+
+symbolic procedure outer!-simpsqrt u;
+  if !*inside!-int!* then proper!-simpsqrt u
+  else simpsqrt u;
 
 symbolic procedure simpsqrt u;
    if u=0 then nil ./ 1 else

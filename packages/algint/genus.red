@@ -29,6 +29,7 @@ module genus;
 fluid '(!*galois
         !*tra
         !*trmin
+        !*inside!-int!*
         gaussiani
         intvar
         listofallsqrts
@@ -46,12 +47,11 @@ symbolic procedure simpgenus u;
 begin
   scalar intvar,sqrt!-intvar,taylorvariable,taylorasslist;
   scalar listofnewsqrts,listofallsqrts,sqrt!-places!-alist;
-  scalar sqrtflag,sqrts!-in!-integrand,tt,u,simpfn;
+  scalar sqrtflag,sqrts!-in!-integrand,tt,u,!*inside!-int!*;
   tt:=readclock();
   sqrtflag:=t;
   taylorvariable:=intvar:=car u;
-  simpfn:=get('sqrt,'simpfn);
-  put('sqrt,'simpfn,'proper!-simpsqrt);
+  !*inside!-int!*:=t;
   sqrt!-intvar:=mvar !*q2f simpsqrti intvar;
   listofnewsqrts:= list mvar gaussiani; % Initialise the SQRT world.
   listofallsqrts:= list (argof mvar gaussiani . gaussiani);
@@ -59,10 +59,10 @@ begin
             collect simp!* v;
   sqrts!-in!-integrand:=sqrtsinsql(u,intvar);
   u:=!*n2sq length differentials!-1 sqrts!-in!-integrand;
-  put('sqrt,'simpfn,simpfn);
   printc list('time,'taken,readclock()-tt,'milliseconds);
   return u
   end;
+
 put('genus,'simpfn,'simpgenus);
 
 symbolic procedure !*n2sq(u1);
@@ -98,14 +98,14 @@ begin
           % U is now the value at which this SQRT has a zero.
           u:=list(list(intvar,'difference,intvar,prepsq u),
                   list(intvar,'expt,intvar,2));
-          for each w in sqrtsign(for each w in union(delete(s,asqrtl),
-                                                     delete(uu,faclist))
-         conc sqrtsinsq(simpsqrtsq
-      multsq(substitutesq(w ./ 1,u),
-      1 ./ !*p2f mksp(intvar,2)),
-                                      intvar),
-                                 intvar)
-            do places:=append(u,w).places >> >> >>;
+          for each w in sqrtsign(
+              for each w in union(delete(s,asqrtl), delete(uu,faclist))
+                  conc sqrtsinsq(
+                      simpsqrtsq multsq(substitutesq(w ./ 1,u),
+                          1 ./ !*p2f mksp(intvar,2)),
+                          intvar),
+              intvar)
+          do places:=append(u,w).places >> >> >>;
   sqrts!-in!-problem:=nconc(for each u in hard!-ones
                               collect list(intvar.intvar,
                                     (lambda u;u.u) list('sqrt,prepf u)),

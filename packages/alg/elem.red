@@ -45,7 +45,7 @@ algebraic;
 
 % Square roots.
 
-deflist('((sqrt simpsqrt)),'simpfn);
+deflist('((sqrt outer!-simpsqrt)),'simpfn);
 
 % for all x let sqrt x**2=x;
 

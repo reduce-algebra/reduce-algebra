@@ -35,10 +35,14 @@ fluid '(!*galois !*pvar !*tra !*trint basic!-listofallsqrts
 % This module should be rewritten in terms of the REDUCE function
 % SIMPSQRT.
 
-% remd 'simpsqrt;
-
 exports proper!-simpsqrt,simpsqrti,simpsqrtsq,simpsqrt2,sqrtsave,
         newplace,actualsimpsqrt,formsqrt;
+
+% The simpfn for sqrt will divert to here if the fluid variable
+% !*inside!-int!* has the value true. It would clearly be nicer to have
+% a single behaviour for the simplification of square roots that could
+% apply everywhere, however the version here is not that - for instance
+% it fails in an "on rounded,complex" context.
 
 symbolic procedure proper!-simpsqrt(exprn);
    simpsqrti carx(exprn,'proper!-simpsqrt);
@@ -192,11 +196,8 @@ symbolic procedure mknewsqrt u;
        % as in int(-2x/(sqrt(2x^2+1)-2x^2+1),x); It's not clear this is
        % the right place to check though.  More information is
        % available from the earlier int-sqrt step.
-       then begin scalar oldprop;
-               oldprop := get('sqrt,'simpfn);
-               put('sqrt,'simpfn,'simpsqrt);
+       then begin scalar !*inside!-int!*;
                v := simp prepsq v;
-               put('sqrt,'simpfn,oldprop);
                if denr v = 1 then w := numr v
             end;
      if null w then errach list("Division failure in mknewsqrt",u);

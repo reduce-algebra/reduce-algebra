@@ -48,6 +48,8 @@ fluid '(!*algint
         !*trint
         !*trintsubst
         !*uncached
+        !*inside!-int!*
+        !*hold!-int!*
         basic!-listofnewsqrts
         basic!-listofallsqrts
         gaussiani
@@ -76,6 +78,8 @@ imports algebraiccase,algfnpl,findzvars,getvariables,interr,printsq,
 switch algint,nointsubst,nolnr,trdint,trint,trintsubst;
 switch hyperbolic;
 
+!*inside!-int!* := !*hold!-int!* := nil;
+
 % Form is   int(expr,var,x1,x2,...);
 % meaning is integrate expr wrt var, given that the result may
 % contain logs of x1,x2,...
@@ -87,12 +91,14 @@ symbolic procedure simpint u;
    % Simplifies an integral.  First two components of U are the integrand
    % and integration variable respectively.  Optional succeeding
    % components are log forms for the final integral.
-   if atom u or null cdr u or cddr u and (null cdddr u or cddddr u)
+% Note that simpiden expects the operatro as well as the operands passed!
+   if !*hold!-int!* then simpiden ('int . u)
+   else if atom u or null cdr u or cddr u and (null cdddr u or cddddr u)
      then rerror(int,1,"Improper number of arguments to INT")
     else if cddr u then simpdint u
 %    then if getd 'simpdint then simpdint u
 %          else rerror(int,2,"Improper number of arguments to INT")
-    else begin scalar ans,dmod,expression,variable,loglist,oldvarstack,
+    else << begin scalar ans,dmod,expression,variable,loglist,oldvarstack,
                  !*intflag!*,!*purerisch,cflag,intvar,listofnewsqrts,
                  listofallsqrts,sqrtfn,sqrt!-intvar,sqrt!-places!-alist,
                  basic!-listofallsqrts,basic!-listofnewsqrts,coefft,
@@ -111,8 +117,8 @@ symbolic procedure simpint u;
     if w then rerror(int,3,"Too many arguments to INT");
     listofnewsqrts:= list mvar gaussiani; % Initialize for SIMPSQRT.
     listofallsqrts:= list (argof mvar gaussiani . gaussiani);
-    sqrtfn := get('sqrt,'simpfn);
-    put('sqrt,'simpfn,'proper!-simpsqrt);
+    sqrtfn := !*inside!-int!*;
+    !*inside!-int!* := t;
     % We need explicit settings of several switches during integral
     % evaluation.  In addition, the current code cannot handle domains
     % like floating point, so we suppress it while the integral is
@@ -226,7 +232,7 @@ symbolic procedure simpint u;
     end;
     ans := multsq(coefft,ans); %Put back coefficient, preserving order.
 %    if errorp ans
-%      then return <<put('sqrt,'simpfn,sqrtfn);
+%      then return <<put('sqrt,'simpfn,sqrtfn); % !*inside!-int!*:=sqrtfn;
 %                    if !*failhard then error1();
 %                    simpint1(expression . variable . w)>>
 %     else ans := car ans;
@@ -235,20 +241,18 @@ symbolic procedure simpint u;
     % We now need to check that all simplifications have been done
     % but we have to make sure INT is not resimplified, and that SIMP
     % does not complain at getting the same argument again.
-    put('int,'simpfn,'simpiden);
-    put('sqrt,'simpfn,sqrtfn);
-    << if dmod then onoff(dmod,t);
-       % added by Alan Barnes
-       if cflag then onoff('complex,t)>> where !*msg := nil;
-    oldvarstack := varstack!*;
-    varstack!* := nil;
-%   ans := errorset!*(list('resimp,mkquote ans),t);
-    ans := errorset!*(list('int!-resub,mkquote ans,mkquote
-                           varchange),t);
-    put('int,'simpfn,'simpint);
+    !*inside!-int!*:=sqrtfn;
+    << << if dmod then onoff(dmod,t);
+          % added by Alan Barnes
+          if cflag then onoff('complex,t)>> where !*msg := nil;
+       oldvarstack := varstack!*;
+       varstack!* := nil;
+       ans := errorset!*(list('int!-resub,mkquote ans,mkquote
+                               varchange),t)
+    >> where !*hold!-int!* := t;
     varstack!* := oldvarstack;
     return if errorp ans then error1() else car ans
-   end;
+   end >> where !*inside!-int!* := !*inside!-int!*;
 
 symbolic procedure int!-resub(x,v);
    % {sq,alist} -> sq
