@@ -247,7 +247,10 @@ procedure ofsf_sippatl(op,atl,newknowl);
    end;
 
 procedure ofsf_vareqnp(gequal, at);
-   ofsf_op at eq gequal and sfto_varIsNumP ofsf_arg2l at;
+   % The original idea here was to check also that [ofsf_op at] is [gequal] but
+   % this is not compatible with [on !*rlsipo] in disjunctions. One
+   % counterexample is [b >= 0 and a - 1 >= 0 and (b = 0 or a - 1 > 0)].
+   sfto_varIsNumP ofsf_arg2l at;
 
 procedure ofsf_sippsignchk(at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
    begin scalar op, sign;
