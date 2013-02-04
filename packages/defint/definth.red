@@ -91,7 +91,7 @@ if ff1 = 'UNKNOWN then return simp 'UNKNOWN;
 alpha := cadr u;
 y := caddr u;
 
-if smember('minus,y) then return simp 'UNKNOWN;
+if smember('minus,y) or fixp y and y<0 then return simp 'UNKNOWN;
                        % until a fix is available
 var := cadddr u;
 chosen_num := cadr ff1;
