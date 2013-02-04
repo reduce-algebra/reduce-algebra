@@ -199,41 +199,33 @@ v + y2 <= 0 and - d2 + v - y2 < 0)))))))))$
 rp2sol := rlqe rp2;
 
 
-rp2sol := (d1 > 0 and b > 0 and b - d1 >= 0 and a > 0 and a - d1 > 0
+rp2sol := (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0 and a > 0
 
- and a - b = 0 and a - b + d1 <= 0 and (b - d1 = 0 or a - b + d1 = 0)) or (
+ and a - d1 = 0 and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - d1 = 0
 
-d1 > 0 and b > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0) or 
+ and a > 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - b - d1 = 0) or (d1 > 0
 
-(d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0 and a > 0 and a - d1 = 0
+ and b > 0 and b - 2*d1 > 0 and b - d1 = 0 and a > 0 and a - d1 = 0
 
- and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0
+ and a - b >= 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0 and a > 0
 
- and a - 2*d1 > 0 and a - d1 >= 0 and a - b - d1 = 0) or (d1 > 0 and b > 0
+ and a - d1 = 0 and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0
 
- and b - d1 > 0 and a > 0 and a - b = 0 and a - b - d1 >= 0) or (d1 > 0
+ and b - d1 = 0 and a > 0 and a - d1 = 0 and a - b = 0) or (d1 > 0 and b > 0
 
- and b > 0 and b - d1 > 0 and a > 0 and a - d1 >= 0 and a - b = 0
+ and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - b <= 0
 
- and a - b - d1 >= 0 and (a - d1 = 0 or a - b - d1 = 0)) or (d1 > 0 and b > 0
+ and a - b - d1 <= 0 and (a - d1 = 0 or a - b - d1 = 0)
 
- and b - 2*d1 > 0 and b - d1 = 0 and a > 0 and a - d1 = 0 and a - b >= 0) or (
+ and (a - b = 0 or a - b - d1 = 0)) or (d1 > 0 and b > 0 and b - d1 > 0
 
-d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0 and a > 0 and a - d1 = 0
+ and a > 0 and a - b = 0 and a - b - d1 >= 0) or (d1 > 0 and b > 0
 
- and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0
+ and b - d1 > 0 and a > 0 and a - d1 >= 0 and a - b = 0 and a - b - d1 >= 0
 
- and a > 0 and a - d1 = 0 and a - b = 0) or (d1 > 0 and b > 0 and b - d1 = 0
+ and (a - d1 = 0 or a - b - d1 = 0)) or (d1 > 0 and b > 0 and b - d1 > 0
 
- and a > 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - b <= 0 and a - b - d1 <= 0
-
- and (a - d1 = 0 or a - b - d1 = 0) and (a - b = 0 or a - b - d1 = 0)) or (
-
-d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0
-
- and a - b - d1 = 0) or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0
-
- and a - 2*d1 > 0 and a - d1 = 0 and a + b - d1 <= 0) or (d1 > 0 and b > 0
+ and a > 0 and a - d1 > 0 and a - b = 0 and a - b - d1 = 0) or (d1 > 0 and b > 0
 
  and b - 2*d1 > 0 and b - d1 >= 0 and a > 0 and a - d1 = 0 and a - b + d1 >= 0
 
@@ -245,13 +237,25 @@ d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0
 
 d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
 
- and a - b - d1 = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0
+ and a - b - d1 = 0)
 
- and a > 0 and a - d1 = 0 and a - b >= 0 and a - b + d1 >= 0
+ or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0) 
+
+or (d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0
+
+ and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - d1 >= 0 and a > 0
+
+ and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0
+
+ and (b - d1 = 0 or a - b + d1 = 0)) or (d1 > 0 and b > 0 and b - 2*d1 > 0
+
+ and b - d1 >= 0 and a > 0 and a - d1 = 0 and a - b >= 0 and a - b + d1 >= 0
 
  and (a - b = 0 or a - b + d1 = 0) and (b - d1 = 0 or a - b + d1 = 0)) or (
 
-d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
+d1 > 0 and b > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0) or 
+
+(d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
 
  and a - b - d1 <= 0)
 
@@ -1228,37 +1232,27 @@ for each ex in testseries collect {rlatnum ex,rlatnum rlgsn ex};
 rlitab rp2sol;
 
 
-(a > 0 and ((b > 0 and ((d1 > 0 and ((a - d1 > 0 and ((a - b = 0 and (
+(a > 0 and ((b > 0 and ((d1 > 0 and ((b - d1 > 0 and ((a - b = 0 and (
 
-a - b + d1 <= 0 or (b - d1 > 0 and a - b - d1 >= 0)
+a - b - d1 >= 0 or (a - d1 > 0 and a - b + d1 = 0)
 
- or (b - d1 = 0 and a - 2*d1 > 0 and a - b - d1 = 0)
+ or (b - 2*d1 > 0 and a - d1 = 0 and a - b + d1 = 0)
 
- or (b - d1 > 0 and a - b - d1 = 0)))
+ or (a - d1 > 0 and a - b + d1 <= 0)))
 
- or (a - b <> 0 and (b - d1 = 0 and a - 2*d1 > 0 and a - b - d1 = 0)))) or (
+ or (a - b <> 0 and (b - 2*d1 > 0 and a - d1 = 0 and a - b + d1 = 0)))) or (
 
-a - d1 = 0 and ((b - d1 > 0 and ((b - 2*d1 > 0 and a - b + d1 = 0)
+b - d1 = 0 and ((a - d1 > 0 and ((a - 2*d1 > 0 and a - b - d1 = 0)
 
- or (a - b = 0 and a - b - d1 >= 0)
+ or (a - 2*d1 > 0 and a - b <= 0 and a - b - d1 = 0)
 
- or (b - 2*d1 > 0 and a - b >= 0 and a - b + d1 = 0))) or (b - d1 = 0 and ((
+ or (a - b = 0 and a - b + d1 <= 0))) or (a - d1 = 0 and (
 
-a - b > 0 and (
+(b - 2*d1 > 0 and (a - 2*d1 > 0 or a - b >= 0 or a - b + d1 >= 0))
 
-(a - 2*d1 > 0 and (b - 2*d1 > 0 or a - b - d1 <= 0 or a + b - d1 <= 0))
+ or (b - 2*d1 <= 0 and a - 2*d1 > 0)))))
 
- or (b - 2*d1 > 0 and a - 2*d1 <= 0)))
-
- or (a - b = 0 and (b - 2*d1 > 0 or a - 2*d1 > 0)) or (a - b < 0 and (
-
-(b - 2*d1 > 0 and a - b + d1 = 0) or (a - 2*d1 > 0 and a + b - d1 <= 0)
-
- or (b - 2*d1 > 0 and a - b + d1 >= 0) or (a - 2*d1 > 0 and a - b - d1 = 0)
-
- or (a - 2*d1 > 0 and a - b - d1 <= 0)))))))
-
- or (a - d1 < 0 and (b - d1 > 0 and a - b = 0 and a - b - d1 >= 0))))))))
+ or (b - d1 < 0 and (a - d1 > 0 and a - b = 0 and a - b + d1 <= 0))))))))
 
 
 % Optimizer

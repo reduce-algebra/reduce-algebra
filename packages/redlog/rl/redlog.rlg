@@ -345,8 +345,8 @@ No success, returning the original formula
 [1: 1] 
 No success, returning the original formula
 
-                                                             2
-a > 0 or (a = 0 and (c > 0 or b < 0)) or (a < 0 and 4*a*c - b  < 0)
+                                                              2
+a > 0 or (a = 0 and (c > 0 or b <> 0)) or (a < 0 and 4*a*c - b  < 0)
 
 rlatnum ws;
 
@@ -356,14 +356,19 @@ rlatnum ws;
 rlgsn sol;
 
 [DNF] 
-global: 3; impl: 0; no neq: 0; glob-prod-al: 0.
-[GP] 
-c > 0 or b <> 0 or a > 0
+global: 1; impl: 1; no neq: 2; glob-prod-al: 0.
+[GP] [1] 
+[2] [1] 
+
+a > 0 or (c > 0 and b = 0 and a = 0) or (b <> 0 and a = 0)
+
+                        2
+ or (a < 0 and 4*a*c - b  < 0)
 
 rlatnum ws;
 
 
-3
+8
 
 
 off rlverbose;
