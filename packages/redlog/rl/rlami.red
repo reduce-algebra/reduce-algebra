@@ -48,8 +48,8 @@ procedure rl_mk!*fof1(u);
    % Reduce logic make tagged form of first-order formula subroutine.
    % [u] is a first-order formula. Returns pseudo Lisp prefix of [u].
    % This is analogous to [mk!*sq] in [alg.red].
-   if u eq 'true or u eq 'false then
-      mk!*sq simp u
+   if rl_tvalp u then
+      u
    else if eqcar(u,'equal) then
       rl_prepfof1 u
    else
@@ -134,13 +134,13 @@ procedure rl_simpatom(u);
       if null u then typerr("nil","logical");
       if numberp u then typerr({"number",u},"logical");
       if stringp u then typerr({"string",u},"logical");
+      if rl_tvalp u then return u;
       if (w := rl_gettype(u)) then <<
 	 if w memq '(logical equation scalar slprog) then
 	    return rl_simp1 cadr get(u,'avalue);
 	 typerr({w,u},"logical")
       >>;
       % [u] algebraically unbound.
-      if rl_tvalp u then return u;
       if boundp u then return rl_simp1 eval u;
       typerr({"unbound id",u},"logical")
    end;

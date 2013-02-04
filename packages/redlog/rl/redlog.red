@@ -78,7 +78,7 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlhqegbred,rlhqeconnect,rlhqestrconst,rlhqegbdimmin,rlresi,rlqeasri,
    rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
    rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl,rlbrkcxk,rlqeidentify,
-   rlqedyn,rlqesubf,rlqevb,rlqevbold;
+   rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar;
 
 on1 'rlbrop;
 off1 'rlbnfsm;
@@ -199,6 +199,7 @@ on1 'rlqedyn;
 off1 'rlqesubf;
 on1 'rlqevb;
 off1 'rlqevbold;
+off1 'rlgetrtypecar;
 
 put('rlidentify,'simpfg,
    '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));
@@ -208,12 +209,18 @@ put('rlbrkcxk,'simpfg,'((t (rmsubs)) (nil (rmsubs))));
 procedure quotelog(x); 'logical;
 
 procedure rl_getrtypecar(x);
+   if !*rlgetrtypecar then rl_getrtypecar1 x else 'logical;
+
+procedure rl_getrtypecar1(x);
    if eqcar(x,'true) or eqcar(x,'false) then
       'logical
    else
       (if w eq 'equation then 'logical else w) where w=getrtypecar x;
 
 procedure rl_getrtypecadr(x);
+   if !*rlgetrtypecar then rl_getrtypecadr1 x else 'logical;
+
+procedure rl_getrtypecadr1(x);
    if cadr x eq 'true or cadr x eq 'false then
       'logical
    else
@@ -226,6 +233,9 @@ put('logical,'tag,'!*fof);
 put('logical,'evfn,'rl_reval);
 put('logical,'subfn,'rl_sub!*fof);
 put('logical,'lengthfn,'rl_lengthlogical);
+
+put('true,'rtype,'logical);
+put('false,'rtype,'logical);
 
 put('!*fof,'prifn,'rl_print!*fof);
 put('!*fof,'fancy!-prifn,'rl_print!*fof);
