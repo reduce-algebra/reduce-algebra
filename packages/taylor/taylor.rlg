@@ -890,6 +890,12 @@ taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,6);
      3        1890        11907
 
 
+taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,0);
+
+
+1 + O(x)
+
+
 
 comment If the expansion point is not constant, it has to be taken
         care of in differentation, as the following examples show;

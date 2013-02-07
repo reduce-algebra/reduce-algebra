@@ -7,7 +7,7 @@ module Taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2010 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2013 by Rainer M. Schoepf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -80,9 +80,18 @@ module Taylor;
 %
 %*****************************************************************
 %
+%
+% 06-Feb-2013    2.2d
+%   Improved trace output.
+%
+%   Increased maximum number of restarts with higher order, for new example
+%    from limit package. This uncovered a bug in taysimpasin and taysimpatan.
+%
+%   Added optimization for expansion of variable raised to rational power.
+%
 % 21-Aug-2010    2.2c
 %   Create taylor's own fkern function, instead of manipulating
-%   the klist!* directly
+%   the klist!* directly.
 %
 % 08-Jun-2001    2.2b
 %   Bind !*precise to nil in simptaylor, to avoid problems with SQRT
@@ -931,8 +940,8 @@ TaylorPrintTerms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-Taylor!:version := "2.2b";      % version number of the package
-Taylor!:date!* := "08-Jun-2001"; % release date
+Taylor!:version := "2.2d";      % version number of the package
+Taylor!:date!* := "06-Feb-2013"; % release date
 
 if !*verboseload then
   << terpri ();
@@ -940,7 +949,7 @@ if !*verboseload then
      prin2 Taylor!:version;
      prin2 ", as of ";
      prin2 Taylor!:date!*;
-     prin2t " for REDUCE 3.7 being loaded...";
+     prin2t " for REDUCE being loaded...";
      terpri () >> ;
 
 

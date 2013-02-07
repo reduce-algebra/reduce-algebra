@@ -171,7 +171,7 @@ symbolic procedure min2!-order(nextlis,ordlis,dl);
   % (List of Integers, List of Integers, TayPowerList) -> Boolean
   %
   % nextlis is the list of TayTpElNext numbers,
-  % ordlis the list if TayTpElOrder numbers,
+  % ordlis the list of TayTpElOrder numbers,
   % dl the degreelist of a coefficient.
   % Dcecrease the TayTpElNext number if the degree is greater than
   % the order, but smaller than the next.

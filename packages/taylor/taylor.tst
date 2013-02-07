@@ -236,6 +236,8 @@ taylor(dz3,z,z1,6);
 
 taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,6);
 
+taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,0);
+
 
 comment If the expansion point is not constant, it has to be taken
         care of in differentation, as the following examples show;

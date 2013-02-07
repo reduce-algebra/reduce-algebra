@@ -405,7 +405,11 @@ symbolic procedure taysimpasin u;
       else tay := tay0;
      tp := TayTemplate tay;
      l := prune!-coefflist TayCoeffList tay;
-     if null l then return !*tay2q cst!-Taylor!*(simp!* {car u,0},tp);
+     if null l then return !*tay2q make!-Taylor!* (
+                 make!-cst!-coefflis (simp!* {car u,0}, tp),
+                 tp, 
+                 if null TayOrig tay then nil else simp!* {car u,prepsq TayOrig tay},
+                 nil);
      if is!-neg!-pl TayCfPl car l then return taysimpasin!*(car u,tay);
      tay2 := multtaylor(tay,tay);
      if car u memq '(asin acos acsc asec)
@@ -511,7 +515,11 @@ symbolic procedure taysimpatan u;
      tp := TayTemplate tay;
      l0 := make!-cst!-powerlist tp;
      l := prune!-coefflist TayCoeffList tay;
-     if null l then return !*tay2q cst!-Taylor!*(simp!* {car u,0},tp);
+     if null l then return !*tay2q make!-Taylor!* (
+                 make!-cst!-coefflis (simp!* {car u,0}, tp),
+                 tp, 
+                 if null TayOrig tay then nil else simp!* {car u,prepsq TayOrig tay},
+                 nil);
      if is!-neg!-pl TayCfPl car l then return taysimpatan!*(car u,tay);
      c0 := get!-cst!-coeff tay;
      if car u memq '(atan acot)
