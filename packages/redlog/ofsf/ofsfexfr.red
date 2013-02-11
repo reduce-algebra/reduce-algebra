@@ -685,7 +685,10 @@ asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
    end;
 
 asserted procedure anu_refine(anu: Anu): Anu;
-   begin scalar w, sc, fidl, x;
+   begin scalar iv, w, sc, fidl, x;
+      iv := anu_iv anu;
+      if iv_lb iv = iv_rb iv then
+	 return anu;
       w := copy anu;
       fidl := aex_freeids anu_dp anu;
       assert eqn(length fidl, 1);
