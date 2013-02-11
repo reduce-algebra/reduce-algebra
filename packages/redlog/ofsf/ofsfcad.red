@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_cad_rcsid!* ofsf_cad_copyright!*);
@@ -132,7 +132,7 @@ procedure ofsf_cadproj(phi,mkvarlres);
 	 for each f in caddata_ffj(cd,j) collect reorder f;
       return theo . ffl
    end;
-  
+
 procedure ofsf_cadpreparation(phi,mkvarlres,aaplus);
    % Cad preparation. [phi] is a ofsf formula; [mkvarlres] is a list
    % of variables encoding an addmitted projection order. Returns a
@@ -170,13 +170,13 @@ procedure ofsf_cadpreparation(phi,mkvarlres,aaplus);
       phi := cl_apply2ats(phi,
 	 function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));
       psi := cl_matrix phi; % phi = Q_k+1 x_k+1 ... Q_r x_r psi
-      ffr := for each f in cl_terml phi collect f;      
+      ffr := for each f in cl_terml phi collect f;
       ff := mkvect(r);
       putv(ff,r,ffr);
       l := (if bvb then k + length car bvb else 0)
 	 where bvb:=cdr reverse ofsf_cadvbl1 phi; %[xk..]..[..xr]
       %ioto_prin2t {"l: ",l}; %%% should depend on rlverbose!*
-      cd := caddata_mkblank();      
+      cd := caddata_mkblank();
       caddata_putphi(cd,phi);
       caddata_putk(cd,k);
       caddata_putr(cd,r);
@@ -204,14 +204,14 @@ procedure ofsf_cadprojection(cd);
       r := caddata_r cd;
       %ff := caddata_ff cd; % list (nil,...,nil,Fr)
       %ffr := getv(ff,r);
-      if !*rlverbose then ioto_tprin2t {"+++ Projection Phase"};     
+      if !*rlverbose then ioto_tprin2t {"+++ Projection Phase"};
       ofsf_cadprojection1(cd); % here F and J is computed
       ff := caddata_ffl cd; % list (F1,...,Fr)
       if !*rlcadprojonly and ofsf_cadverbosep() then for i := 1 : r do <<
 	 ioto_tprin2t {"+ projection factors level ",r-i+1};
 	 mathprint ('list . for each f in nth(ff,r-i+1) collect prepf f);
 	 %for each f in nth(ff,r-i+1) do mathprint prepf f
-      >>;	 
+      >>;
       if !*rlverbose  then <<
 	 ioto_tprin2t {"+ (#F1,...,#Fr)=",
 	    for each ffi in ff collect length ffi}; >>;
@@ -230,7 +230,7 @@ procedure ofsf_cadextension(cd);
       if !*rlverbose then
 	 ioto_tprin2t {"+++ Partial CAD (extension and truth values)"};
       dd := ofsf_tree cd;
-      if !*rlverbose then 
+      if !*rlverbose then
 	 ioto_tprin2t {"+ (#D0,...,#Dr)=",
 	    for i := 0 : r collect length atree_levellabels(dd,i)};
       if !*rlcadtree2dot then atree_2dot dd;
@@ -255,7 +255,7 @@ procedure ofsf_cadfinish(cd);
       ophi := caddata_ophi cd;
       %%% 2=rlcadgenlevel
       if !*rlqegen1 then
-	 for j := 1 : min2(1,caddata_k cd) do 
+	 for j := 1 : min2(1,caddata_k cd) do
             caddata_puttheo(cd,append(for each f in caddata_ffj(cd,j) collect
 	       ofsf_0mk2('neq,f),caddata_theo cd));
       if oldorder neq 'undefined then setkorder oldorder;
@@ -264,7 +264,7 @@ procedure ofsf_cadfinish(cd);
       theo := for each fo in caddata_theo cd collect cl_apply2ats(fo,
 	    function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));
       if phiprime neq 'undefined then phiprime := cl_apply2ats(phiprime,
-	 function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));      
+	 function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));
       if !*rlqegen then theo := ofsf_thsimpl theo;
       return (if phiprime neq 'undefined then
 	 theo . cl_simpl(phiprime,theo,-1)
@@ -278,40 +278,40 @@ procedure ofsf_cadswitches();
       ioto_tprin2 ".:: list of switches ::.";
       ioto_tprin2 "------------------------";
       ioto_tprin2 "verbose switches:";
-      ofsf_cadswitchprint(!*rlverbose); ioto_prin2 "rlverbose"; 
-      ofsf_cadswitchprint(ofsf_cadverbosep()); ioto_prin2 "rlcadverbose"; 
-      %ofsf_cadswitchprint(!*anuexverbose); ioto_prin2 "anuexverbose"; 
+      ofsf_cadswitchprint(!*rlverbose); ioto_prin2 "rlverbose";
+      ofsf_cadswitchprint(ofsf_cadverbosep()); ioto_prin2 "rlcadverbose";
+      %ofsf_cadswitchprint(!*anuexverbose); ioto_prin2 "anuexverbose";
       ioto_tprin2 "switches for preparation phase:";
-      ofsf_cadswitchprint(!*rlcaddecdeg);      ioto_prin2 "rlcaddecdeg"; 
+      ofsf_cadswitchprint(!*rlcaddecdeg);      ioto_prin2 "rlcaddecdeg";
       %ioto_tprin2 "switches for projection phase:";
-      %ofsf_cadswitchprint(!*rlcadaproj);      ioto_prin2 "rlcadaproj"; 
+      %ofsf_cadswitchprint(!*rlcadaproj);      ioto_prin2 "rlcadaproj";
       %ofsf_cadswitchprint(!*rlcadaprojalways);ioto_prin2 "rlcadaprojalways";
       %ofsf_cadswitchprint(!*rlcadhongproj);   ioto_prin2 "rlcadhongproj";
       %ofsf_cadswitchprint(!*rlcadfac);  ioto_prin2 "rlcadfac";
       ioto_tprin2 "switches for extension phase";
-      ofsf_cadswitchprint(!*rlcadpartial); ioto_prin2 "rlcadpartial"; 
-      ofsf_cadswitchprint(!*rlcadte); ioto_prin2 "rlcadte"; 
-      ofsf_cadswitchprint(!*rlcadpbfvs); ioto_prin2 "rlcadpbfvs"; 
-      ofsf_cadswitchprint(!*rlcadisoallroots); ioto_prin2 "rlcadisoallroots"; 
+      ofsf_cadswitchprint(!*rlcadpartial); ioto_prin2 "rlcadpartial";
+      ofsf_cadswitchprint(!*rlcadte); ioto_prin2 "rlcadte";
+      ofsf_cadswitchprint(!*rlcadpbfvs); ioto_prin2 "rlcadpbfvs";
+      ofsf_cadswitchprint(!*rlcadisoallroots); ioto_prin2 "rlcadisoallroots";
       ofsf_cadswitchprint(!*rlcadtrimtree); ioto_prin2 "rlcadtrimtree";
-      ofsf_cadswitchprint(!*rlcadfasteval); ioto_prin2 "rlcadfasteval"; 
-      ofsf_cadswitchprint(!*rlcadfulldimonly); ioto_prin2 "rlcadfulldimonly"; 
-      ofsf_cadswitchprint(!*rlcadrmwc); ioto_prin2 "rlcadrmwc"; 
+      ofsf_cadswitchprint(!*rlcadfasteval); ioto_prin2 "rlcadfasteval";
+      ofsf_cadswitchprint(!*rlcadfulldimonly); ioto_prin2 "rlcadfulldimonly";
+      ofsf_cadswitchprint(!*rlcadrmwc); ioto_prin2 "rlcadrmwc";
       ioto_tprin2 "switches for solution formula construction phase";
-      ofsf_cadswitchprint(!*rlcadrawformula); ioto_prin2 "rlcadrawformula"; 
-      ofsf_cadswitchprint(!*rlcaddnfformula); ioto_prin2 "rlcaddnfformula"; 
+      ofsf_cadswitchprint(!*rlcadrawformula); ioto_prin2 "rlcadrawformula";
+      ofsf_cadswitchprint(!*rlcaddnfformula); ioto_prin2 "rlcaddnfformula";
       ioto_tprin2 "general switches:";
-      ofsf_cadswitchprint(!*rlcadpreponly); ioto_prin2 "rlcadpreponly"; 
-      ofsf_cadswitchprint(!*rlcadprojonly); ioto_prin2 "rlcadprojonly"; 
-      %ofsf_cadswitchprint(!*rlcadbaseonly); ioto_prin2 "rlcadbaseonly"; 
+      ofsf_cadswitchprint(!*rlcadpreponly); ioto_prin2 "rlcadpreponly";
+      ofsf_cadswitchprint(!*rlcadprojonly); ioto_prin2 "rlcadprojonly";
+      %ofsf_cadswitchprint(!*rlcadbaseonly); ioto_prin2 "rlcadbaseonly";
       ofsf_cadswitchprint(!*rlcadextonly);  ioto_prin2 "rlcadextonly";
       %ioto_tprin2 "switches for algebraic numbers (do not change)";
    >>;
 
-procedure ofsf_cadswitchprint(b);   
+procedure ofsf_cadswitchprint(b);
    % Switch print. [b] is a BOOL.
    if b then ioto_tprin2 " ON  -- " else ioto_tprin2 " OFF -- ";
-   
+
 % module acell;
 % Andreas' cell. Constructors and access functions for data type ACELL
 % plus the code for decomposing the cylinder over a given cell.
@@ -345,16 +345,16 @@ procedure acell_gettv(c);
 
 procedure acell_getdesc(c);
    % Cell get index. [c] is an ACELL. Returns a quantifier-free formula.
-   cadddr c;   
+   cadddr c;
 
 procedure acell_gettl(c);
    % Cell get tag list. [c] is an ACELL. Returns a tag list.
    cadddr cdr c;
 
 procedure acell_sri(c);
-   % Symbolic root information. [c] is a cell. 
+   % Symbolic root information. [c] is a cell.
    atsoc('root,tl) or atsoc('between,tl) or atsoc('below,tl) or
-   atsoc('beyond,tl) or atsoc('arbitrary,tl) where tl=acell_gettl c; 
+   atsoc('beyond,tl) or atsoc('arbitrary,tl) where tl=acell_gettl c;
 
 procedure acell_putsp(c,sp);
    % Cell put truth value. [c] is an ACELL, [sp] is a SP. Returns [c]
@@ -393,10 +393,10 @@ procedure acell_med(c);
 
 procedure acell_sortfn(c1,c2);
    rat_leq(acell_med c1,acell_med c2);
-   
+
 % module cadtree;
 
-procedure ofsf_tree(cd);   
+procedure ofsf_tree(cd);
    ofsf_treeovercell(basecell,cl_nnf caddata_psi cd,cd)
       where basecell=acell_mk(nil,nil,nil,'true,nil); % the only cell of D0
 
@@ -409,7 +409,7 @@ procedure ofsf_treeovercell(basecell,psi,cd);
    begin scalar r,k,l,j,varl,qal,hh,fffj,xj,sp,cell,treel,thetaj,neutral,
 	 nrdata,ncbuffer,res,tv,w;
       integer d,n;
-      sp := acell_getsp basecell; j := length sp + 1;      
+      sp := acell_getsp basecell; j := length sp + 1;
       if ofsf_cadverbosep() then ioto_prin2 {"(",j-1};
       %ioto_tprin2t {"tree over: ",basecell}; % verbose output, somet. needed
       r := caddata_r cd; k := caddata_k cd; l := caddata_l cd;
@@ -436,7 +436,7 @@ procedure ofsf_treeovercell(basecell,psi,cd);
 	    if ofsf_cadverbosep() then ioto_prin2 "TE)";
 	    return atree_new basecell
       	 >>;
-	 %ioto_prin2t "------noTE";	 
+	 %ioto_prin2t "------noTE";
       >>;
       % Prepare Polynomials
       xj := nth(varl,j);
@@ -452,14 +452,14 @@ procedure ofsf_treeovercell(basecell,psi,cd);
       % mildly generic CAD: add assumptions
       %if !*rlqegen1 and j<=min2(1,k) then
 %	 ofsf_cadtheo!* := append(for each f in fffj collect
-%	    ofsf_0mk2('neq,numr aex_ex f),ofsf_cadtheo!*); 
+%	    ofsf_0mk2('neq,numr aex_ex f),ofsf_cadtheo!*);
       ncbuffer := ofsf_ncinit();
       % 2. RECURSION CASE: j<=r
       % 2a. 0<=j<=k or no truth values
       if (0<=j and j<=k) or (not caddata_tv cd) then
 	 while cell := ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k) do
 	 <<
-	    if not ofsf_iswhitecell(cell,cd) then 
+	    if not ofsf_iswhitecell(cell,cd) then
 	       treel := ofsf_treeovercell(cell,psi,cd) . treel
 	 >>
       else << % 2b. k<=j<r
@@ -469,8 +469,8 @@ procedure ofsf_treeovercell(basecell,psi,cd);
       	 acell_puttv(basecell,neutral);
       	 % as long as the truth value of the basecell is unknown
       	 while (acell_gettv basecell eq neutral) and (cell :=
-	    ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k)) do <<	 
-	       treel := ofsf_treeovercell(cell,psi,cd) . treel; 
+	    ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k)) do <<
+	       treel := ofsf_treeovercell(cell,psi,cd) . treel;
 	       acell_puttv(basecell,acell_gettv atree_rootlabel car treel)
 	    >>;
 	 % add remaining cells, if wanted
@@ -494,7 +494,7 @@ procedure ofsf_treeovercell(basecell,psi,cd);
       % propagation below free variable space
       if not (caddata_tv cd and !*rlcadpbfvs) then return res;
       tv := list2set for each b in treel collect acell_gettv atree_rootlabel b;
-      if length tv eq 1 then acell_puttv(atree_rootlabel res, car tv); 
+      if length tv eq 1 then acell_puttv(atree_rootlabel res, car tv);
       return res
    end;
 
@@ -544,7 +544,7 @@ procedure ofsf_addrootinfo(treel,ffids);
       if null cdr treel then return ;
       % so we have at least 3 cells
       % rnl (root number list) is an alist id . num.
-      rnl := for each id in ffids collect id . 0;      
+      rnl := for each id in ffids collect id . 0;
       % the leftmost cell is special.
       % tag the second cell from the left
       rtg := ofsf_addrootinfo0dim(atree_rootlabel cadr treel,rnl,ffids);
@@ -567,7 +567,7 @@ procedure ofsf_addrootinfo0dim(cell,rnl,ffids);
    % the added tag. This return value is used.
    begin scalar tl,ri;
       tl := acell_gettl cell;
-      ofsf_rnlinc(rnl,tl);                     
+      ofsf_rnlinc(rnl,tl);
       ri := 'root . for each tg in intersection(ffids,tl) collect
 	 tg . cdr atsoc(tg,rnl);
       acell_addtagip(cell,ri);
@@ -581,7 +581,7 @@ procedure ofsf_rnlinc(rnl,tl);
       if memq(caar rnl,tl) then cdar rnl := cdar rnl+1
    >>;
 
-      
+
 algebraic procedure doc(pl,ql);
    % Degree of correspondence. [pl] and [ql] are LIST(NUM).
    begin scalar np,qp,caa,cbb,ccc,p_i,pj,qi,qj,sd;
@@ -686,7 +686,7 @@ lisp procedure rlcadnum1(pl,pord);
 symbolic operator rlcadpnum;
 procedure rlcadpnum(phi,pord);
    ofsf_cadpnum(rl_simp phi,cdr pord);
-   
+
 symbolic operator rlcadguess1;
 lisp procedure rlcadguess1(pl,pord);
    % . [pl] is a list (Fr,...,F1) of projection factors, [pord] is a
@@ -697,7 +697,7 @@ lisp procedure rlcadguess1(pl,pord);
  	 for each f in cdr ffj collect reorder numr simp f;
       ff := reverse w;
       varl := reverse cdr pord;
-      %on1 !*rlcadguessnoc;      
+      %on1 !*rlcadguessnoc;
       w := ofsf_cadnum1(ff,varl,t);
       %off1 !*rlcadguessnoc;
       w := reversip w; % (#Dr,...,#D1)
@@ -882,14 +882,14 @@ procedure caddata_ans(cd);	getv(cd,28);
 procedure caddata_tv(cd);	getv(cd,29);
 procedure caddata_aa(cd);	getv(cd,30);
 procedure caddata_aaplus(cd);	getv(cd,31);
- 
+
 procedure caddata_bvl(cd);
    % bound variable list
-   for i := caddata_k cd + 1:caddata_r cd collect nth(caddata_varl cd,i); 
+   for i := caddata_k cd + 1:caddata_r cd collect nth(caddata_varl cd,i);
 
 procedure caddata_fvl(cd);
    % free variable list
-   for i := 1:caddata_k cd collect nth(caddata_varl cd,i); 
+   for i := 1:caddata_k cd collect nth(caddata_varl cd,i);
 
 procedure caddata_putphi(cd,phi);           putv(cd,1,phi);
 procedure caddata_putk(cd,k);               putv(cd,2,k);
@@ -965,7 +965,7 @@ procedure ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k);
       % there is a cell left in ncbuffer (a 0-dim one)
       %   (!*rlcadfulldimonly and j>k): throw away
       %   (!*rlqegen1 and j<=k): throw away, generic cad
-      if car ncbuffer then 
+      if car ncbuffer then
 	 if not((!*rlcadfulldimonly and j>k) or
 	    (!*rlqegen1 and j<=min2(1,k))) then <<
 	       cell := car ncbuffer;
@@ -981,7 +981,7 @@ procedure ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k);
       % there is no cell left, so we need to get a root to get the next
       % two cells.
       if tgroot := aex_nextroot(nrdata,xj) then <<
-	 root := tag_object tgroot; %%% 
+	 root := tag_object tgroot; %%%
 	 % drop one cell in buffer (the 0-dim one)...
 	 car ncbuffer := acell_mk(2*(length rip_rootl nrdata)-1,
 	    root . sp,nil,nil,tag_taglist tgroot);
@@ -990,7 +990,7 @@ procedure ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k);
 	 return acell_mk(2*(length rip_rootl nrdata)-2,
 	    anu_fromrat(xj,w,iv_mk(w,w)) . sp,nil,nil,nil);
       >>;
-      % there is no cell and no root left.      
+      % there is no cell and no root left.
       car ncbuffer := 'finished;
       % if there was no root, make cell with 0 as sample point
       if null rip_rootl nrdata then
@@ -1000,7 +1000,7 @@ procedure ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k);
       w := rat_mapmax for each r in rip_rootlnotags nrdata collect
 	 iv_rb anu_iv r;
       return acell_mk(2*(length rip_rootl nrdata),
-	 anu_fromrat(xj,w,iv_mk(w,w)) . sp,nil,nil,nil);      
+	 anu_fromrat(xj,w,iv_mk(w,w)) . sp,nil,nil,nil);
    end;
 
 procedure ofsf_subsp(ae,sp,varl);
@@ -1050,7 +1050,7 @@ procedure atree_addchildip(tt,c);
 
 procedure atree_addchildlistip(tt,cl);
    << cddr tt := nconc(cl,cddr tt); tt >>;
-   
+
 procedure atree_childlist(tt);
    cddr tt;
 
@@ -1102,7 +1102,7 @@ procedure atree_print1(tt,d);
    begin scalar childl,rootlabel,w;
       childl := atree_childlist(tt);
       rootlabel := atree_rootlabel(tt);
-      if null childl then return {{acell_tvasstring rootlabel}};      
+      if null childl then return {{acell_tvasstring rootlabel}};
       w := for each s in childl join
 	 for each l in atree_print1(s,d+1) collect (" " . "   " . l);
       caar w := acell_tvasstring rootlabel;
@@ -1114,7 +1114,7 @@ procedure atree_print1raw(tt,d);
    % returns a list of strings.
    begin scalar childl,w;
       childl := atree_childlist(tt);
-      if null childl then return {{d}};      
+      if null childl then return {{d}};
       w := for each s in childl join
 	 for each l in atree_print1raw(s,d+1) collect (" " . l);
       caar w := d;
@@ -1163,7 +1163,7 @@ procedure atree_prinnode(idx);
       prin2 "C";
       for each i in idx do prin2 i;
    end;
-   
+
 procedure atree_2dotnodetail(c);
    % Print node detail. [c] is an acell. Return value is not interesting.
    if acell_gettv c eq 'true then
@@ -1172,7 +1172,133 @@ procedure atree_2dotnodetail(c);
       ioto_prin2t(" [label=F shape=circle style=filled color=red]")
    else
       ioto_prin2t(" [label=""-"" shape=circle style=filled color=grey]");
-   
+
+% Atree to TGF (Trivial Graph Format).
+
+procedure atree_2tgf(tt, filename);
+   % Atree to tgf. [tt] is an atree. [filename] is string. Outputs the atree
+   % [tt] to file [filename] in tgf (Trivial Graph Format) syntax.
+   begin
+      out(filename);
+      atree_2tgf_nodes(tt, 1);
+      ioto_prin2t("#");
+      atree_2tgf_edges(tt, 1);
+      shut(filename)
+   end;
+
+procedure atree_2tgf_nodes(tt, number);
+   begin scalar childlist;
+      prin2 number;
+      acell_prin atree_rootlabel tt;
+      childlist := atree_childlist tt;
+      for each child in childlist do
+	 number := atree_2tgf_nodes(child, number + 1);
+      return number
+   end;
+
+procedure atree_2tgf_edges(tt, number);
+   begin scalar childlist, mynumber;
+      mynumber := number;
+      childlist := atree_childlist tt;
+      for each child in childlist do <<
+	 prin2 mynumber;
+	 prin2 " ";
+	 prin2 (number + 1);
+	 terpri();
+	 number := atree_2tgf_edges(child, number + 1)
+      >>;
+      return number
+   end;
+
+procedure acell_prin(c);
+   begin scalar tv, temp;
+      prin2 " """;
+      prin2 "idx: ";
+      prin2 acell_getidx c;
+      prin2 ", tv: ";
+      tv := acell_gettv c;
+      temp := if tv eq 'true then "T" else if tv eq 'false then "F" else "?";
+      prin2 temp;
+      prin2 ", desc: ";
+      prin2 acell_getdesc c;
+      prin2 ", tl: ";
+      prin2 acell_gettl c;
+      prin2 """";
+      terpri()
+   end;
+
+% Atree to GML (Graph Modelling Language).
+
+procedure atree_2gml(tt, filename);
+   % Atree to gml. [tt] is an atree. [filename] is string. Outputs the atree
+   % [tt] to file [filename] in gml (Graph Modelling Language) syntax.
+   begin
+      out(filename);
+      ioto_prin2t("Creator ""REDLOG""");
+      ioto_prin2t("graph [");
+      ioto_prin2t("label ""Graph generated by REDLOG.""");
+      ioto_prin2t("directed 1");
+      atree_2gml_nodes(tt, 1);
+      atree_2gml_edges(tt, 1);
+      ioto_prin2t("]");
+      shut(filename)
+   end;
+
+procedure atree_2gml_nodes(tt, number);
+   begin scalar childlist;
+      atree_2gml_node(tt, number);
+      childlist := atree_childlist tt;
+      for each child in childlist do
+	 number := atree_2gml_nodes(child, number + 1);
+      return number
+   end;
+
+procedure atree_2gml_node(tt, number);
+   begin scalar c, tv, anul, n, color;
+      ioto_prin2t "node [";
+      ioto_prin2t {"id ", number};
+      c := atree_rootlabel tt;
+      ioto_prin2t "label """;
+      ioto_prin2t {"idx: ", acell_getidx c};
+      ioto_prin2 "tp: (";
+      anul := reverse acell_getsp c;
+      n := length anul;
+      for i := 1 : (n - 1) do
+      	 ioto_prin2 {anu_evalf nth(anul, i), ", "};
+      if n > 0 then ioto_prin2 anu_evalf nth(anul, n);
+      ioto_prin2t ")";
+      ioto_prin2t {"desc: ", acell_getdesc c};
+      ioto_prin2t {"tl: ", acell_gettl c};
+      ioto_prin2t """";
+      % color
+      tv := acell_gettv c;
+      color := if tv eq 'true then "#00FF00"
+      else if tv eq 'false then "#FF0000" else "#C0C0C0";
+      ioto_prin2t "graphics [";
+      ioto_prin2t {"fill """, color, """"};
+      ioto_prin2t "]";
+      ioto_prin2t "]"
+   end;
+
+procedure atree_2gml_edges(tt, number);
+   begin scalar childlist, mynumber;
+      mynumber := number;
+      childlist := atree_childlist tt;
+      for each child in childlist do <<
+	 atree_2gml_edge(mynumber, number + 1);
+	 number := atree_2gml_edges(child, number + 1)
+      >>;
+      return number
+   end;
+
+procedure atree_2gml_edge(efrom, eto);
+   begin
+      ioto_prin2t "edge [";
+      ioto_prin2t {"source ", efrom};
+      ioto_prin2t {"target ", eto};
+      ioto_prin2t "]"
+   end;
+
 %procedure lto_take(l,n);
 %   begin scalar rl; % result list
 %      while n>0 do <<
@@ -1202,13 +1328,13 @@ procedure ofsf_mkvarl(f);
       >>;
       return vl . qal
    end;
-   	    
+
 % module asolution;
 % Andreas' solution formula construction for the decision case. That
 % is, the solution formula is either [true] or [false].
 
 procedure ofsf_solutionformula_old(cd);
-   % old version which looks only at cells of level ddk 
+   % old version which looks only at cells of level ddk
    % ff is (F_1,...,Fr), dd is a cad tree
    begin scalar ff,dd,k,ddk,ffk,phiprime,cellstogo;
       if !*rlverbose then
@@ -1250,7 +1376,7 @@ procedure ofsf_solutionformula_old(cd);
 	 else
 	    caddata_putphiprime(cd,rl_dnf phiprime)
       >>;
-      return nil;	 
+      return nil;
    end;
 
 procedure ofsf_solutionformula(cd);
@@ -1275,13 +1401,13 @@ procedure ofsf_solutionformula(cd);
       % some verbose output for qe with answers...
       if ofsf_cadverbosep() and caddata_ans cd then <<
          ioto_prin2t "+++ ANSWERS: ";
-	 ioto_prin2t {"yy: ",yy}; 
+	 ioto_prin2t {"yy: ",yy};
 %      for each cell in yy do
 %	 if acell_gettv cell eq 'true then
 % 	    ioto_prin2t {"ANSWERS: ", atsoc('answers,acell_gettl cell)};
-      	 for each c in list2set (for each cell in yy join 
-             if acell_gettv cell eq 'true then 
-                {atsoc('answers,acell_gettl cell)}) do 
+      	 for each c in list2set (for each cell in yy join
+             if acell_gettv cell eq 'true then
+                {atsoc('answers,acell_gettl cell)}) do
          	   ioto_prin2t {"ANSWERS: ",c};
       >>;
       %%% ffk: "projection polynomials"
@@ -1296,7 +1422,7 @@ procedure ofsf_solutionformula(cd);
 	 if !*rlverbose then ioto_prin2t {"+ Levels to be considered: ",yyi};
 	 ffk := for each i in yyi join append(nth(ff,i),nil);
 	 phiprime := ofsf_solutionformula1(dd,ff,ffk,yy,yyi,k);
-      >>;      
+      >>;
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
 	 ioto_tprin2t "++ Simple solution formula construction failed. ";
@@ -1309,7 +1435,7 @@ procedure ofsf_solutionformula(cd);
 	 else
 	    caddata_putphiprime(cd,rl_dnf phiprime)
       >>;
-      return nil;	 
+      return nil;
    end;
 
 procedure ofsf_solutionformula1(dd,ff,ffk,yy,yyi,k);
@@ -1332,7 +1458,7 @@ procedure ofsf_solutionformula1(dd,ff,ffk,yy,yyi,k);
       >>;
       return ofsf_ssfc2(ffk,yy);
    end;
-      
+
 
 procedure ofsf_sfchong(ffk,ddk);
    % Solution formula construction by Hong90. signatures are already
@@ -1604,7 +1730,7 @@ lisp procedure type_check(ob,tp);
       if car tp eq 'mat then
 	 return type_check(ob,{'list,{'list,cadr tp}});
       if car tp eq 'sum then
-	 return type_check1l(ob,cdr tp);      
+	 return type_check1l(ob,cdr tp);
    end;
 
 lisp procedure type_s2a(ob,tp);
@@ -1627,7 +1753,7 @@ lisp procedure type_s2a(ob,tp);
 	 return 'mat . for each l in ob collect
 	    for each c in l collect type_s2a(c,cadr tp);
       if car tp eq 'sum then
-	 return type_s2a!-1l(ob,cdr tp);      
+	 return type_s2a!-1l(ob,cdr tp);
    end;
 
 % type_s2a ( 1 . 2 ,'(pair num num));
@@ -1675,7 +1801,7 @@ lisp procedure type_checkl1(obl,tp);
    null obl or (type_check(car obl,tp) and type_checkl1(cdr obl,tp));
 
 lisp procedure type_check1l(ob,tpl);
-   % Type check subroutine. [ob] is any, [tpl] is (list type). 
+   % Type check subroutine. [ob] is any, [tpl] is (list type).
    % Returns a truth value.
     not null tpl and (type_check(ob,car tpl) or type_check1l(ob,cdr tpl));
 
@@ -1704,7 +1830,7 @@ lisp procedure type_typep1(al);
 
 lisp procedure type_listp(a);
    % List predicate. [a] is anything. Returns a truth value.
-   null a or (pairp a and type_listp cdr a); 
+   null a or (pairp a and type_listp cdr a);
 
 procedure type_sfp(f);
    % Standard form with an identifier as a kernel predicate. [f] is
