@@ -31,7 +31,7 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT([Redfront],[3.2],[http://sourceforge.net/forum/forum.php?forum_id=899364])
 
-abssrcdir=`$srcdir/../../../scripts/here.sh`
+abssrcdir=`cd $srcdir/../../../scripts; ./here.sh`
 
 AC_DEFINE_UNQUOTED(REDFRONTSRCDIR,"$abssrcdir/generic/redfront/src",[Absolute path to the redfront source directory])
 
