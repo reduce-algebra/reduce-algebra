@@ -1495,6 +1495,19 @@ procedure pasf_stexk(k,al);
       return w . ((caddr k . w) . al)
    end;
 
+procedure pasf_structat(at,al);
+   % Structure of an atomic formula. [at] is an atomic formula $([op],l,0)$;
+   % [al] is an ALIST. Returns an atomic formula. [al] is of the form $(...,(f_i
+   % . v_i),...)$ where $f_i$ is an SF and $v_i$ is a variable. The left hand
+   % side of [at] occurs as a key in [al]. Returns the atomic formula
+   % $[op](v_i,0)$, provided $l=f_i$.
+   begin scalar lhs;
+      lhs := pasf_arg2l at;
+      if domainp lhs then
+	 return at;
+      return pasf_0mk2(pasf_op at, numr simp cdr assoc(lhs,al))
+   end;
+
 endmodule; % pasfmisc
 
 end; % of file

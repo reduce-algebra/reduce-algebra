@@ -148,6 +148,7 @@ put('pasf,'rl_params,'(
    (rl_b2terml!* . pasf_b2terml)
    (rl_b2atl!* . pasf_b2atl)
    (rl_bsatp!* . pasf_bsatp)
+   (rl_structat!* . pasf_structat)
    (rl_rxffn!* . pasf_rxffn)));
 
 % Services
@@ -186,7 +187,8 @@ put('pasf,'rl_services,'(
    (rl_expanda!* . pasf_expanda)
    (rl_zsimpl!* . pasf_zsimpl)
    (rl_resolve!* . cl_resolve)
-   (rl_depth!* . cl_depth)));
+   (rl_depth!* . cl_depth)
+   (rl_struct!* . cl_struct)));
 
 % Administration definitions
 put('pasf,'simpfnname,'pasf_simpfn);
