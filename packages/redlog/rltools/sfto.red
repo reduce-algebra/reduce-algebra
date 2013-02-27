@@ -54,24 +54,19 @@ operator exteuc;
 operator degree;
 operator coefficients;
 
-struct AmList checked by am_listp;
-struct AmPoly checked by am_polyp;
+struct AmList asserted by am_listp;
+struct AmPoly asserted by am_polyp;
 
 declare addf: (SF,SF) -> SF;
 declare multf: (SF,SF) -> SF;
 declare negf: (NoOrdSF) -> NoOrdSF;
 
-declare sfto_dcontentf: (SF) -> Domain;
-
-procedure sfto_dcontentf(u);
+asserted procedure sfto_dcontentf(u: SF): Domain;
    % Domain content standard form. Returns the (non-negative) content of [u]
    % considered as a multivariate polynomial over the current domain.
    sfto_dcontentf1(u,nil);
 
-
-declare sfto_dcontentf1: (SF,Domain) -> Domain;
-
-procedure sfto_dcontentf1(u,g);
+asserted procedure sfto_dcontentf1(u: SF, g: Domain): Domain;
    % Domain content standard form subroutine. Returns the gcd of the content of
    % [u] considered as a multivariate polynomial and [g].
    if g = 1 then
@@ -81,36 +76,24 @@ procedure sfto_dcontentf1(u,g);
    else
       sfto_dcontentf1(red u,sfto_dcontentf1(lc u,g));
 
-
-declare sfto_dprpartf: (SF) -> SF;
-
-procedure sfto_dprpartf(u);
+asserted procedure sfto_dprpartf(u: SF): SF;
    % Domain primitive part standard form. Returns the primitive part of [u] as a
    % multivariate polynomial over the current domain. The sign of the head
    % coefficient in this primitive part is positive.
    sfto_dprpartf1(u,sfto_dcontentf u);
 
-
-declare sfto_dprpartksf: (SF) -> SF;
-
-procedure sfto_dprpartksf(u);
+asserted procedure sfto_dprpartksf(u: SF): SF;
    % Domain primitive part standard form keep sign. Returns the primitive part
    % of [u] as a multivariate polynomial over the current domain. The sign of
    % the head coefficient in this primitive part is that of [u].
    quotf(u,sfto_dcontentf u);
 
-
-declare sfto_dprpartf1: (SF,SF) -> SF;
-
-procedure sfto_dprpartf1(u,c);
+asserted procedure sfto_dprpartf1(u: SF, c: SF): SF;
    % Domain primitive part standard form subroutine. Returns the primitive part
    % of [u] considered as a multivariate polynomial over the current domain.
    (if minusf w then negf w else w) where w = quotf(u,c);
 
-
-declare sfto_sqfpartf: (SF!*) -> SF!*;
-
-procedure sfto_sqfpartf(u);
+asserted procedure sfto_sqfpartf(u: SF!*): SF!*;
    % Square-free part. Returns the square-free part of [u] as a multivariate
    % polynomial. The (domain) content is dropped.
    begin scalar c,pp;
@@ -120,38 +103,26 @@ procedure sfto_sqfpartf(u);
       return multf(sfto_sqfpartf(c),quotf(pp,sfto_gcdf!*(pp,diff(pp,mvar u))))
    end;
 
-
-declare sfto_ucontentf: (SF) -> SF;
-
-procedure sfto_ucontentf(u);
+asserted procedure sfto_ucontentf(u: SF): SF;
    % Univariate content standard form. Returns the content of [u] considered as
    % a univariate polynomial in its [mvar] over the polynomial ring in all other
    % contained variables.
    if domainp u then u else sfto_ucontentf1(u,mvar u);
 
-
-declare sfto_ucontentf1: (SF,Kernel) -> SF;
-
-procedure sfto_ucontentf1(u,v);
+asserted procedure sfto_ucontentf1(u: SF, v: Kernel): SF;
    % Univariate content standard form subroutine. We assume [mvar u = v].
    % Returns the content of [u] as an univariate polynomial in [v] over the
    % polynomial ring in all other contained variables.
    if domainp u or mvar u neq v then u else
       sfto_gcdf!*(lc u,sfto_ucontentf1(red u,v));
 
-
-declare sfto_uprpartf: (SF) -> SF;
-
-procedure sfto_uprpartf(u);
+asserted procedure sfto_uprpartf(u: SF): SF;
    % Univariate primitive part. Returns the primitive part of [u] as a
    % univariate polynomial in its [mvar] over the polynomial ring in all other
    % contained variables.
    quotf(u,sfto_ucontentf u);
 
-
-declare sfto_tsqsumf: (SF) -> Id;
-
-procedure sfto_tsqsumf(u);
+asserted procedure sfto_tsqsumf(u: SF): Id;
    % Trivial square sum standard form. Returns one of [nil], ['stsq], or ['tsq].
    % ['stsq] means that in the sparse distributive representation of [u] all
    % exponents are even and all coefficients are positive. ['tsq] means that all
@@ -162,16 +133,10 @@ procedure sfto_tsqsumf(u);
    else
       evenp ldeg u and sfto_tsqsumf lc u and sfto_tsqsumf red u;
 
-
-declare sfto_tsqsum!$: (List) -> Id;
-
-procedure sfto_tsqsum!$(argl);
+asserted procedure sfto_tsqsum!$(argl: List): Id;
    sfto_tsqsumf(numr simp car argl);
 
-
-declare sfto_sqfdecf: (SF) -> Alist;
-
-procedure sfto_sqfdecf(u);
+asserted procedure sfto_sqfdecf(u: SF): AList;
    % Multivariate square-free decomposition standard form. Returns a (dense)
    % list $((q_1 . 1),(q_2 . 2),...,(q_n . n))$ such that $\prod q_i^i = u$ with
    % the $q_i$ square-free and pairwise relatively prime. The (integer) content
@@ -186,10 +151,7 @@ procedure sfto_sqfdecf(u);
       return sfto_sqdmerge(sfto_sqfdecf(c),sfto_usqfdecf(pp))
    end;
 
-
-declare sfto_sqfdec!$: (List) -> AmList;
-
-procedure sfto_sqfdec!$(argl);
+asserted procedure sfto_sqfdec!$(argl: List): AmList;
    % Square free decomposition. [argl] is an argument list. Returns an AM list
    % of AM lists of the form $(p_i,m_i)$, where the $p_i$ are polynomials
    % represented as a Lisp prefix form and the $m_i$ are integers.
@@ -198,10 +160,7 @@ procedure sfto_sqfdec!$(argl);
       	 if (w := prepf car x) neq 1 then {{'list,w,cdr x}}
    end;
 
-
-declare sfto_usqfdecf: (SF) -> Alist;
-
-procedure sfto_usqfdecf(u);
+asserted procedure sfto_usqfdecf(u: SF): Alist;
    if !*sfto_yun then
       sfto_yun!-usqfdecf u
    else if !*sfto_musser then
@@ -211,16 +170,13 @@ procedure sfto_usqfdecf(u);
    else
       rederr {"sfto_usqfdecf: select a decomposition method"};
 
-
-declare sfto_yun!-usqfdecf: (SF) -> Alist;
-
-procedure sfto_yun!-usqfdecf(p);
-   % Univariate square-free decomposition after Yun. [p] is a an SF that is
-   % viewed a univariate Polynomial in its [mvar] over the polynomial ring in
-   % all other variables; in this sense, [p] must be primitive. Returns the
-   % square-free decomposition of [p] as a (dense) list $((q_1 . 1),(q_2 .
-   % 2),...,(q_n . n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free
-   % and pairwise relatively prime.
+asserted procedure sfto_yun!-usqfdecf(p: SF): AList;
+   % Univariate square-free decomposition after Yun. [p] is treated as a
+   % univariate Polynomial in its [mvar] over the polynomial ring in all other
+   % variables; in this sense, [p] must be primitive. Returns the square-free
+   % decomposition of [p] as a (dense) list $((q_1 . 1),(q_2 . 2),...,(q_n .
+   % n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free and pairwise
+   % relatively prime.
    begin scalar !*gcd,x,g,c,d,w,l; integer n;
       !*gcd := T;
       x := mvar p;
@@ -236,16 +192,13 @@ procedure sfto_yun!-usqfdecf(p);
       return reversip l
    end;
 
-
-declare sfto_musser!-usqfdecf: (SF) -> Alist;
-
-procedure sfto_musser!-usqfdecf(u);
-   % Univariate square-free decomposition after Musser. [p] is a an SF that is
-   % viewed a univariate Polynomial in its [mvar] over the polynomial ring in
-   % all other variables; in this sense, [p] must be primitive. Returns the
-   % square-free decomposition of [p] as a (dense) list $((q_1 . 1),(q_2 .
-   % 2),...,(q_n . n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free
-   % and pairwise relatively prime.
+asserted procedure sfto_musser!-usqfdecf(u: SF): AList;
+   % Univariate square-free decomposition after Musser. [u] is treated as a
+   % univariate Polynomial in its [mvar] over the polynomial ring in all other
+   % variables; in this sense, [p] must be primitive. Returns the square-free
+   % decomposition of [p] as a (dense) list $((q_1 . 1),(q_2 . 2),...,(q_n .
+   % n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free and pairwise
+   % relatively prime.
    begin scalar !*gcd,v,u1,sqfp,sqfp1,l; integer n;
       !*gcd := T;
       v := mvar u;
@@ -261,14 +214,11 @@ procedure sfto_musser!-usqfdecf(u);
       return reversip l
    end;
 
-
-declare sfto_tobey!-usqfdecf: (SF) -> Alist;
-
-procedure sfto_tobey!-usqfdecf(u);
-   % Univariate square-free decomposition after Tobey and Horowitz. [p] is a an
-   % SF that is viewed a univariate Polynomial in its [mvar] over the polynomial
-   % ring in all other variables; in this sense, [p] must be primitive. Returns
-   % the square-free decomposition of [p] as a (dense) list $((q_1 . 1),(q_2 .
+asserted procedure sfto_tobey!-usqfdecf(u: SF): Alist;
+   % Univariate square-free decomposition after Tobey and Horowitz. [u] is
+   % treated as a univariate Polynomial in its [mvar] over the polynomial ring
+   % in all other variables; in this sense, [p] must be primitive. Returns the
+   % square-free decomposition of [p] as a (dense) list $((q_1 . 1),(q_2 .
    % 2),...,(q_n . n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free
    % and pairwise relatively prime.
    begin scalar !*gcd,v,h,q1,q2,l; integer n;
@@ -286,10 +236,7 @@ procedure sfto_tobey!-usqfdecf(u);
       return reversip l
    end;
 
-
-declare sfto_sqdmerge: (Alist,Alist) -> Alist;
-
-procedure sfto_sqdmerge(l1,l2);
+asserted procedure sfto_sqdmerge(l1: Alist,l2: Alist): Alist;
    % Square-free decomposition merge.
    begin scalar l;
       l := l1;
@@ -302,10 +249,7 @@ procedure sfto_sqdmerge(l1,l2);
       return l
    end;
 
-
-declare sfto_pdecf: (SF) -> DottedPair;
-
-procedure sfto_pdecf(u);
+asserted procedure sfto_pdecf(u: SF): DottedPair;
    % Multivariate parity decomposition. Returns $a . d$ such that $a$ is the
    % product of all square-free factors with an odd multiplicity in [u] and $d$
    % is that of the even multiplicity square-free factors. The (integer) content
@@ -320,10 +264,8 @@ procedure sfto_pdecf(u);
       return multf(car dpdc,car dpdpp) . multf(cdr dpdc,cdr dpdpp)
    end;
 
-
-declare sfto_updecf: (SF) -> DottedPair;
-
-procedure sfto_updecf(u);
+asserted procedure sfto_updecf(u: SF): DottedPair;
+   % Univeriate parity decomposition.
    if !*sfto_yun then
       sfto_yun!-updecf u
    else if !*sfto_musser then
@@ -331,10 +273,8 @@ procedure sfto_updecf(u);
    else
       rederr {"sfto_updecf: select a decomposition method"};
 
-
-declare sfto_yun!-updecf: (SF) -> DottedPair;
-
-procedure sfto_yun!-updecf(p);
+asserted procedure sfto_yun!-updecf(p: SF): DottedPair;
+   % Univeriate parity decomposition after Yun..
    begin scalar !*gcd,x,g,c,d,w,l,od;
       !*gcd := T;
       l := 1 . 1;
@@ -352,10 +292,8 @@ procedure sfto_yun!-updecf(p);
       return l
    end;
 
-
-declare sfto_musser!-updecf: (SF) -> DottedPair;
-
-procedure sfto_musser!-updecf(u);
+asserted procedure sfto_musser!-updecf(u: SF): DottedPair;
+   % Univariate parity decomposition after Musser.
    begin scalar !*gcd,od,v,u1,sqfp,sqfp1,l;
       !*gcd := T;
       od := T;
@@ -380,17 +318,12 @@ procedure sfto_musser!-updecf(u);
       return l
    end;
 
-
-declare sfto_pdec!$: (List) -> AmList;
-
-procedure sfto_pdec!$(argl);
+asserted procedure sfto_pdec!$(argl: List): AmList;
+   % Parity decomposition. AM interface.
    {'list,prepf car w,prepf cdr w}
       where w=sfto_pdecf numr simp car argl;
 
-
-declare sfto_decdegf: (SF,Kernel,Integer) -> SF;
-
-procedure sfto_decdegf(u,k,n);
+asserted procedure sfto_decdegf(u: SF, k: Kernel, n: Integer): SF;
    % Decrement degree standard form. Replace each occurence of $[k]^d$ by
    % $k^(d/n)$.
    begin scalar sal,hit,newkk;
@@ -407,10 +340,7 @@ procedure sfto_decdegf(u,k,n);
       return u
    end;
 
-
-declare sfto_decdegcxk: (Kernel,Kernel,Integer,Boolean) -> DottedPair;
-
-procedure sfto_decdegcxk(kk,k,n,hit);
+asserted procedure sfto_decdegcxk(kk: Kernel, k: Kernel, n: Integer, hit: Boolean): DottedPair;
    % Decrement degree complex kernel. Returns $h . l$, where $h$ is boolean and
    % $l$ is lisp prefix. $l$ is obtained by replacing in [kk] each occurrence of
    % $[k]^d$ by $k^(d/n)$; $h$ is [t] iff $h$ is not equal to [kk].
@@ -426,10 +356,7 @@ procedure sfto_decdegcxk(kk,k,n,hit);
       return hit . (car kk . reversip argl)
    end;
 
-
-declare sfto_decdegf1: (Any,Kernel,Integer) -> Any;
-
-procedure sfto_decdegf1(u,k,n);
+asserted procedure sfto_decdegf1(u, k: Kernel, n: Integer);
    % Decrement degree standard form. [u] is an SF with main variable [k]; [k] is
    % a variable; [n] is an integer. Returns an SF. Replace each occurence of
    % $[k]^d$ by $k^(d/n)$.
@@ -438,10 +365,7 @@ procedure sfto_decdegf1(u,k,n);
    else
       mvar u .** (ldeg u / n) .* lc u .+ sfto_decdegf1(red u,k,n);
 
-
-declare sfto_reorder: (SF,Kernel) -> Any;
-
-procedure sfto_reorder(u,v);
+asserted procedure sfto_reorder(u: SF, v: Kernel);
    % Reorder. Returns [u] reorderd wrt. [{v}] without modifiying the current
    % kernel order.
    begin scalar w;
@@ -451,10 +375,7 @@ procedure sfto_reorder(u,v);
       return u
    end;
 
-
-declare sfto_groebnerf: (List) -> List;
-
-procedure sfto_groebnerf(l);
+asserted procedure sfto_groebnerf(l: List): List;
    % Groebner calculation standard form. [l] is a list of SF's. Returns a list
    % of SF's. The returned list is the reduced Groebner basis of [l] wrt. the
    % current term order.
@@ -465,10 +386,7 @@ procedure sfto_groebnerf(l);
 	 numr simp x
    end;
 
-
-declare sfto_preducef: (SF,List) -> SF;
-
-procedure sfto_preducef(f,gl);
+asserted procedure sfto_preducef(f: SF, gl: List): SF;
    % Polynomial reduction standard form. [gl] is a list of SF's. Returns the
    % numerator of [f] reduced modulo [gl].
    if null gl then
@@ -478,9 +396,7 @@ procedure sfto_preducef(f,gl);
    else
       numr simp preduceeval {prepf f,'list . for each sf in gl collect prepf sf};
 
-declare sfto_greducef: (SF,List) -> SF;
-
-procedure sfto_greducef(f,gl);
+asserted procedure sfto_greducef(f: SF, gl: List): SF;
    % Polynomial reduction standard form. [gl] is a list of SF's. Returns [f]
    % reduced modulo a Groebner basis of [gl].
    if null gl then
@@ -490,24 +406,19 @@ procedure sfto_greducef(f,gl);
    else
       numr simp greduceeval {prepf f,'list . for each sf in gl collect prepf sf};
 
-declare sfto_gcdf!*: (SF,SF) -> SF;
-
-procedure sfto_gcdf!*(f,g);
+asserted procedure sfto_gcdf!*(f: SF, g: SF): SF;
    % Greatest common divisor of standard forms. Returns the GCD of [f] and [g].
    % Compute the GCD of [f] and [g] via [gcdf!*] or [ezgcdf] according to
    % Davenport's criterion: If, in one polynomial, the number of variables of a
    % degree greater than 2 is greater than 1, then use [ezgcd].
    sfto_gcdf(f,g) where !*gcd=T;
 
-
-declare sfto_gcdf: (SF,SF) -> SF;
-
-procedure sfto_gcdf(f,g);
+asserted procedure sfto_gcdf(f: SF, g: SF): SF;
    % Greatest common divisor of standard forms. Returns the GCD of [f] and [g]
    % computed via [gcdf!*] or [ezgcdf] according to Davenport's criterion: If,
    % in one polynomial, the number of variables of a degree greater than 2 is
    % greater than 1, then use [ezgcd]. For computing the real gcd of [f] ang [g]
-   % this procedures require, that [!*gcd] is set to [T].
+   % this asserted procedures require, that [!*gcd] is set to [T].
    if null !*rldavgcd then
       gcdf(f,g)
    else if sfto_davp(f,nil) or sfto_davp(g,nil) then
@@ -515,10 +426,7 @@ procedure sfto_gcdf(f,g);
    else
       ezgcdf(f,g);
 
-
-declare sfto_davp: (SF,Any) -> Boolean;
-
-procedure sfto_davp(f,badv);
+asserted procedure sfto_davp(f: SF, badv: ExtraBoolean): Boolean;
    % Davenport predicate. [v] is a kernel or [nil]. Returns [t] if [gcdf] if
    % heuristically considered more efficient than [ezgcdf].
    if domainp f then
@@ -531,10 +439,7 @@ procedure sfto_davp(f,badv);
    else
       sfto_davp(lc f,badv) and sfto_davp(red f,badv);
 
-
-declare sfto_sqrtf: (SF) -> ExtraBoolean;
-
-procedure sfto_sqrtf(f);
+asserted procedure sfto_sqrtf(f: SF): ExtraBoolean;
    % Square root standard form. Returns [nil] or an SF $g$, such that $g^2=[f]$.
    begin scalar a,c,w,sd,result;
       c := sfto_dcontentf(f);
@@ -556,56 +461,38 @@ procedure sfto_sqrtf(f);
 	 return result
    end;
 
-
-declare sfto_monfp: (SF) -> Boolean;
-
-procedure sfto_monfp(sf);
+asserted procedure sfto_monfp(sf: SF): Boolean;
    % Monomial predicate. Check if [sf] is of the form $a x_1 \dots x_n$ for a
    % domain element $a$ and kernels $x_i$.
    domainp sf or (null red sf and sfto_monfp lc sf);
 
-
-declare sfto_sqfpartz: (Integer) -> Integer;
-
-procedure sfto_sqfpartz(z);
+asserted procedure sfto_sqfpartz(z: Integer): Integer;
    % Square free part of an integer. [z] is an integer with prime decomposition
    % $p_1^{e_1}\cdots p_n^{e_n}$. Returns $\prod \{p_i\}$.
    sfto_zdgen(z,0);
 
-
-declare sfto_zdeqn: (Integer,Integer) -> Integer;
-
-procedure sfto_zdeqn(z,n);
+asserted procedure sfto_zdeqn(z: Integer, n: Integer): Integer;
    % Z decomposition equal n. [z] is an integer with prime decomposition
    % $p_1^{e_1}\cdots p_m^{e_m}$; [n] is a positive integer. Returns $\prod
    % \{p_i:e_i=n\}$.
    for each x in zfactor z product
       if cdr x = n then car x else 1;
 
-
-declare sfto_zdgtn: (Integer,Integer) -> Integer;
-
-procedure sfto_zdgtn(z,n);
+asserted procedure sfto_zdgtn(z: Integer, n: Integer): Integer;
    % Z decomposition greater than n. [z] is an integer with prime decomposition
    % $p_1^{e_1}\cdots p_n^{e_n}$; [n] is a positive integer. Returns $\prod
    % \{p_i:e_i>n\}$.
    for each x in zfactor z product
       if cdr x > n then car x else 1;
 
-
-declare sfto_zdgen: (Integer,Integer) -> Integer;
-
-procedure sfto_zdgen(z,n);
+asserted procedure sfto_zdgen(z: Integer, n: Integer): Integer;
    % Z decomposition greater than or equal to n. [z] is an integer with prime
    % decomposition $p_1^{e_1}\cdots p_n^{e_n}$; [n] is a positive integer.
    % Returns $\prod \{p_i:e_i\geq n\}$.
    for each x in zfactor z product
       if cdr x >= n then car x else 1;
 
-
-declare sfto_exteucf: (SF,SF) -> List3;
-
-procedure sfto_exteucf(a,b);
+asserted procedure sfto_exteucf(a: SF, b: SF): List3;
    % Extended Euclidean Algorithm for polynomials. [a], [b] are univariate
    % polynomials both in the same variable. Returns a list $(g,s,t)$ of SQ such
    % that $\gcd([a],[b])=g=s[a]+t[b]$. If the GCD $g$ is a domain element, then
@@ -636,10 +523,7 @@ procedure sfto_exteucf(a,b);
       return {resimp !*f2q a,resimp !*f2q s,resimp !*f2q tt}
    end;
 
-
-declare exteuc: (AmPoly,AmPoly) -> AmList;
-
-procedure exteuc(a,b);
+asserted procedure exteuc(a: AmPoly, b: AmPoly): AmList;
    begin scalar af,bf,ka,kb;
       af := numr simp a;
       bf := numr simp b;
@@ -651,10 +535,7 @@ procedure exteuc(a,b);
       return 'list . for each x in sfto_exteucf(af,bf) collect prepsq x
    end;
 
-
-declare sfto_exteucd: (Integer,Integer) -> List3;
-
-procedure sfto_exteucd(a,b);
+asserted procedure sfto_exteucd(a: Integer, b: Integer): List3;
    % Extended Euclidean Algorithm for domain elements (integers). Returns a list
    % $(g,s,t)$ of numbers such that $g>=0$ and $\gcd([a],[b])=g=s[a]+t[b]$.
    begin integer s,tt,u,v,s1,t1,q,r;
@@ -680,28 +561,19 @@ procedure sfto_exteucd(a,b);
       return {a,s,tt}
    end;
 
-
-declare sfto_linp: (SF,List) -> Boolean;
-
-procedure sfto_linp(f,vl);
+asserted procedure sfto_linp(f: SF, vl: List): ExtraBoolean;
    % Linear predicate. [vl] is a list of variables. Returns [T] iff [f] is
    % linear in [vl].
    sfto_linp1(f,vl,nil);
 
-
-declare sfto_linp1: (SF,List,List) -> Boolean;
-
-procedure sfto_linp1(f,vl,oc);
+asserted procedure sfto_linp1(f: SF, vl: List, oc: List): ExtraBoolean;
    domainp f or
       (not(mvar f memq vl) and not(mvar f memq oc) and
 	 sfto_linp1(lc f,vl,oc) and sfto_linp1(red f,vl,oc)) or
       (mvar f memq vl and not(mvar f memq oc) and ldeg f = 1 and
 	 sfto_linp1(lc f,vl,mvar f . oc) and sfto_linp1(red f,vl,oc));
 
-
-declare sfto_linwpp: (SF,List) -> Boolean;
-
-procedure sfto_linwpp(f,vl);
+asserted procedure sfto_linwpp(f: SF, vl: List): Boolean;
    % Linear and weakly parametric predicate. [vl] is a list of variables.
    % Returns [t] iff [f] is linear and weakly parametric in [vl].
    domainp f or
@@ -710,20 +582,14 @@ procedure sfto_linwpp(f,vl);
       (mvar f memq vl and ldeg f = 1 and domainp lc f and
 	 sfto_linwpp(red f,vl));
 
-
-declare sfto_varf: (SF) -> ExtraBoolean;
-
-procedure sfto_varf(f);
+asserted procedure sfto_varf(f: SF): ExtraBoolean;
    % Variable form. If [f] is a variable then return the corresponding kernel
    % else return [nil]. In contrast to sfto_idvarf, this function rerturn also
    % non-atomic kernels.
    if not domainp f and null red f and eqn(lc f,1) and eqn(ldeg f,1) then
       mvar f;
 
-
-declare sfto_idvarf: (SF) -> ExtraBoolean;
-
-procedure sfto_idvarf(f);
+asserted procedure sfto_idvarf(f: SF): ExtraBoolean;
    % Identifier variable form. If [f] is an atomic variable then return the
    % corresponding identifier else return [nil].
    if not domainp f and
@@ -731,24 +597,15 @@ procedure sfto_idvarf(f);
    then
       mvar f;
 
-
-declare sfto_lmultf: (List) -> SF;
-
-procedure sfto_lmultf(fl);
+asserted procedure sfto_lmultf(fl: List): SF;
    % Ordered field standard form list multf. [fl] is a list of SF. Returns the
    % product of the SFs in [fl].
    if null fl then 1 else multf(car fl,sfto_lmultf cdr fl);
 
-
-declare degree: (AmPoly) -> Integer;
-
-procedure degree(u);
+asserted procedure degree(u: AmPoly): Integer;
    sfto_tdegf numr simp u;
 
-
-declare sfto_tdegf: (SF) -> Integer;
-
-procedure sfto_tdegf(f);
+asserted procedure sfto_tdegf(f: SF): Integer;
    % Ordered field standard form total degree standard form. Returns the total
    % degree of [f].
    begin scalar w,x; integer td;
@@ -767,39 +624,24 @@ procedure sfto_tdegf(f);
       return td
    end;
 
-
-declare coefficients: (AmPoly,AmList) -> AmList;
-
-procedure coefficients(f,vl);
+asserted procedure coefficients(f: AmPoly, vl: AmList): AmList;
    'list . for each c in sfto_allcoeffs(numr simp f,cdr vl) collect
       prepf c;
 
-
-declare sfto_allcoeffs: (SF,List) -> List;
-
-procedure sfto_allcoeffs(f,vl);
+asserted procedure sfto_allcoeffs(f: SF, vl: List): List;
    sfto_allcoeffs1({f},vl);
 
-
-declare sfto_allcoeffs1: (List,List) -> List;
-
-procedure sfto_allcoeffs1(l,vl);
+asserted procedure sfto_allcoeffs1(l: List, vl: List): List;
    if null vl then
       l
    else
       sfto_allcoeffs1(for each f in l join
 	 sfto_coefs(sfto_reorder(f,car vl),car vl),cdr vl);
 
-
-declare sfto_coefs: (SF,Kernel) -> List;
-
-procedure sfto_coefs(f,v);
+asserted procedure sfto_coefs(f: SF, v: Kernel): List;
    if not domainp f and mvar f eq v then coeffs f else {f};
 
-
-declare sfto_kernelp: (Any) -> Boolean;
-
-procedure sfto_kernelp(u);
+asserted procedure sfto_kernelp(u: Any): ExtraBoolean;
    begin scalar w;
       if idp u then
  	 return t;
@@ -811,19 +653,18 @@ procedure sfto_kernelp(u);
       return atsoc(u,w)
    end;
 
-procedure sfto_varp(f);
-   % [f] is an SF. Returns extended Boolean. Returns [k] if $[f] = 1*[k]^1+nil$,
-   % return [nil] else.
+asserted procedure sfto_varp(f: SF): ExtraBoolean;
+   % Returns [k] if $[f] = 1*[k]^1+nil$, return [nil] else.
    if not domainp f and null red f and eqn(lc f,1) and eqn(ldeg f,1) then
       mvar f;
 
-procedure sfto_varIsNumP(f);
-   % [f] is an SF. Returns extended Boolean. Returns [k] if $[f] = d1*[k]^1+d2$
-   % for domain elements [d1], [d2], return [nil] else.
+asserted procedure sfto_varIsNumP(f: SF): ExtraBoolean;
+   % Returns [k] if $[f] = d1*[k]^1+d2$ for domain elements [d1], [d2], return
+   % [nil] else.
    if not domainp f and domainp lc f and domainp red f and eqn(ldeg f,1) then
       mvar f;
 
-procedure sfto_fctrf(f);
+asserted procedure sfto_fctrf(f: SF): List;
    begin scalar w;
       w := errorset({'fctrf, mkquote f}, t, !*backtrace);
       if errorp w then

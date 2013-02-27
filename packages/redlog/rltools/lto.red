@@ -477,6 +477,15 @@ procedure lto_zip(l1, l2, f);
    if l1 and l2 then
       apply(f, {car l1, car l2}) . lto_zip(cdr l1, cdr l2, f);
 
+procedure lto_partition(l, f);
+   begin scalar goodl, badl;
+      for each x in l do if apply(f, {x}) then
+	 goodl := x . goodl
+      else
+	 badl := x . badl;
+      return reversip goodl . reversip badl
+   end;
+
 endmodule;  % [lto]
 
 end;  % of file
