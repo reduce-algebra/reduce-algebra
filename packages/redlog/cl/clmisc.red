@@ -680,8 +680,10 @@ procedure cl_dfgPrint1(f);
    % Prefix print.
    begin scalar ql,vll,vl;
       {ql,vll,f,vl} := cl_split f;
+      ql := reverse ql;
+      vll := reverse vll;
       for each q in ql do <<
-	 vl := pop vll;
+	 vl := reverse pop vll;
 	 prin2 if q eq 'ex then "exists" else "forall";
 	 prin2 "(";
 	 cl_dfgPrintVl vl;
