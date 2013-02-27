@@ -67,7 +67,15 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlsiidem !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
    !*rlqegen !*rlbnfsac !*rltabib !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
    !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlqeapprox !*rlresi !*rlqeprecise
-   !*rlqeaprecise !*slat);
+      !*rlqeaprecise !*slat);
+
+struct Formula;
+struct QfFormula;
+struct QfFormulaL asserted by listp;
+struct Theory asserted by listp;
+struct TheoryFormulaPair asserted by pairp;
+struct KernelL asserted by listp;
+struct Quantifier asserted by idp;
 
 procedure cl_atfp(x);
    % Common logic atomic formula predicate. [x] is a formula. Returns

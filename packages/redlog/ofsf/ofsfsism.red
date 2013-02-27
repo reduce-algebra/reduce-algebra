@@ -119,7 +119,6 @@ on1 'rlsippatl;
 on1 'rlsippsubst;
 on1 'rlsippsignchk;
 
-
 procedure ofsf_smmkatl(op,oldknowl,newknowl,n);
    if !*rlsippatl then
       ofsf_sippatl(op,ofsf_smmkatl1(op,oldknowl,newknowl,n),newknowl)

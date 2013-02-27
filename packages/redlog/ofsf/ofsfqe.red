@@ -107,7 +107,8 @@ procedure ofsf_varsel!-try(f,vl,theo);
    % Ordered field standard form variable selection trial variant.
    % [vl] is a list of variables; [f] is a quantifier-free formula;
    % [theo] is the current theory. Returns a list of variables.
-   begin scalar atl,candvl,ifacl,terml;
+   begin scalar atl,candvl,ifacl,
+	 terml;
       atl := cl_atl1 f;
       candvl := for each a in vl join
 	 if ofsf_linp(atl,a,delq(a,vl)) then {a};

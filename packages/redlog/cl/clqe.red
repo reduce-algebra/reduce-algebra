@@ -38,15 +38,6 @@ module clqe;
 % Common logic quantifier elimination by elimination sets. Submodule of [cl].
 % Currently limited to quadratic formulas.
 
-struct Formula;
-struct QfFormula;
-struct QfFormulaL asserted by listp;
-struct Theory asserted by listp;
-struct TheoryFormulaPair asserted by pairp;
-struct KernelL asserted by listp;
-struct Quantifier asserted by idp;
-
-
 %DS
 % TaggedContainerElementL ::= Status . ContainerElementL
 % Status ::= "elim" | "failed" | "local" | "nonocc"

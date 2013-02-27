@@ -309,6 +309,53 @@ procedure cl_cflip(op,flag);
    % [cl_flip op] else.
    if flag then op else cl_flip op;
 
+put('vsub, 'psopfn, 'cl_vsubeval);
+
+procedure cl_vsubeval(u);
+   begin scalar al, f;
+      if null u then
+	 rederr "no arguments in vsub";
+      u := reverse u;
+      f := rl_simp pop u;
+      if null u then
+	 return rl_mk!*fof f;
+      u := reversip u;
+      if null cdr u and eqcar(car u, 'list) then
+	 u := cdr car u;
+      al := for each eqn in u collect <<
+	 if not eqcar(eqn, 'equal) then
+	    rederr {eqn, "invalid as equation in vsub"};
+	 cadr eqn . caddr eqn
+      >>;
+      rl_vsubalchk al;
+      return rl_mk!*fof cl_vsubfof(al, f)
+   end;
+
+asserted procedure cl_vsubfof(subl: Alist, f: Formula): Formula;
+   <<
+      for each pr in subl do
+      	 f := cl_vsubfof1(car pr, cdr pr, f);
+      f
+   >>;
+
+asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
+   begin scalar op;
+      op := rl_op f;
+      if rl_tvalp op then
+      	 return f;
+      if rl_quap op then
+	 return if rl_var f eq v then
+ 	    f
+ 	 else
+ 	    rl_mkq(op, rl_var f, cl_vsubfof1(v, u, rl_mat f));
+      if rl_bquap op then
+	 rederr "cl_vsubfof1: bounded quantifiers are not supported yet";
+      if rl_boolp op then
+ 	 return rl_mkn(op, for each x in rl_argn f collect cl_vsubfof1(v, u, x));
+      % [f] is atomic.
+      return rl_vsubat(v, u, f)
+   end;
+
 procedure cl_subfof(al,f);
    % Common logic substitute into first-order formula. [al] is an
    % ALIST $(..., (v_i . p_i), ...)$, where $v_i$ are variables and

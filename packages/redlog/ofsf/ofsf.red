@@ -165,6 +165,8 @@ put('ofsf,'rl_params,'(
    (rl_dfgPrintAt!* . ofsf_dfgPrintAt)
    (rl_smt2PrintAt!* . ofsf_smt2PrintAt)
    (rl_smt2ReadAt!* . ofsf_smt2ReadAt)
+   (rl_vsubalchk!* . ofsf_vsubalchk)
+   (rl_vsubat!* . ofsf_vsubat)
    (rl_rxffn!* . ofsf_rxffn)));
 
 % Services

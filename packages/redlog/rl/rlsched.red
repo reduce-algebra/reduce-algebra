@@ -389,6 +389,10 @@ rl_mkbb('rl_smt2PrintAt,1);
 
 rl_mkbb('rl_smt2ReadAt,1);
 
+rl_mkbb('rl_vsubalchk, 1);
+
+rl_mkbb('rl_vsubat, 3);
+
 endmodule;  % [rlsched]
 
 end;  % of file

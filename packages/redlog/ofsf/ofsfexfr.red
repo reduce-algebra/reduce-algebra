@@ -40,7 +40,7 @@ module ofsfexfr;
 load!-package 'assert;
 compiletime on1 'assert;
 
-on1 'rlanuexdebug;
+%on1 'rlanuexdebug;
 
 fluid '(anu_precision!*);
 anu_precision!* := 2;

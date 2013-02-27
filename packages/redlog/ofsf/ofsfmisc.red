@@ -156,6 +156,18 @@ procedure ofsf_t2cdl(term);
    % term, i.e. ${[term]<0,[term]=0,[term]>0}$.
    {ofsf_0mk2('lessp,term),ofsf_0mk2('equal,term),ofsf_0mk2('greaterp,term)};
 
+procedure ofsf_vsubat(v, u, f);
+   if u eq 'epsilon then
+      ofsf_qesubqpe(f, v, '(nil . 1))
+   else if u = '(minus epsilon) then
+      ofsf_qesubqme(f, v, '(nil . 1))
+   else if u eq 'infinity then
+      ofsf_qesubiat(f, v, 'pinf)
+   else if u = '(minus infinity) then
+      ofsf_qesubiat(f, v, 'minf)
+   else
+      rederr {"ofsf_vsubat: unexpected term", u};
+
 procedure ofsf_subat(al,f);
    ofsf_simpat {ofsf_op f,ofsf_suba(al,prepf ofsf_arg2l f),0};
 
@@ -168,10 +180,9 @@ procedure ofsf_suba(al,f);
       car f . for each arg in cdr f collect ofsf_suba(al,arg);
 
 procedure ofsf_subalchk(al);
-   % Formerly cheked for parametric denominators, but: We correctly
-   % handle them in ofsf_subat now. Also, a rederr here causes and
-   % error message "***** sub", probably due to some errorset in
-   % subeval.
+   % Formerly cheked for parametric denominators, but we correctly handle them
+   % in ofsf_subat now. Also, a rederr here causes and error message "*****
+   % sub", probably due to some errorset in subeval.
    if not !*rlnzden and not !*rlposden then
       for each pr in al do
       	 if not domainp denr simp cdr pr then
@@ -179,6 +190,14 @@ procedure ofsf_subalchk(al);
 
 procedure ofsf_eqnrhskernels(x);
    nconc(kernels numr w,kernels denr w) where w=simp cdr x;
+
+procedure ofsf_vsubalchk(al);
+   for each pr in al do
+      if not ofsf_nstdp pr then
+	 rederr {"illegal term", cdr pr, "vsub"};
+
+procedure ofsf_nstdp(u);
+   cdr u member '(epsilon (minus epsilon) infinity (minus infinity));
 
 procedure ofsf_getineq(f,bvl);
    % Generate theory get inequalities. [f] is a formula, the right
