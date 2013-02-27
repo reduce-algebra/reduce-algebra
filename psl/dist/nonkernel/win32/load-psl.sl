@@ -44,7 +44,7 @@
   '(
     "allocators.b"
     "apply-lap.b"
-    "arithwoco.b"
+    "arithmetic.b"
     "autoload.b"
     "auto-tr.b"
     "backtrace.b"
@@ -109,7 +109,7 @@
     "timc.b"
     "trap.b"
 %   "fixup.b"
-    "wfloat-woco.b"
+    "wfloat.b"
     "write-float.b"
     ))
   (suck-in-files            % error files

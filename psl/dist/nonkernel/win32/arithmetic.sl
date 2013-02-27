@@ -118,6 +118,10 @@
 
 (compiletime (load if-system))
 
+(compiletime
+  (mapc '(*wfix)
+      (function (lambda (x) (remprop x 'opencode)))))
+
 (fluid '(arithargloc staticfloatloc))
 
 (loadtime
