@@ -38,6 +38,8 @@ lisp <<
 module ofsfmisc;
 % Ordered field standard form miscellaneous. Submodule of [ofsf].
 
+loadtime load!-package 'pgauss;
+
 procedure ofsf_termprint(u);
    % Ordered field standard form term print term. [u] is a SF. The
    % return value is not specified. Prints [u] AM-like.

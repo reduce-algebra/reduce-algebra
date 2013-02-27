@@ -117,7 +117,7 @@ module gauss;
 create!-package('(pgauss pgcond pgsm), nil);
 
 bothtimes load!-package 'redlog;
-bothtimes rl_set '(ofsf);
+loadtime rl_set '(ofsf);
 
 exports pg_gauss, pg_print, pg_gauss!-sym, pg_print!-sym;
 
