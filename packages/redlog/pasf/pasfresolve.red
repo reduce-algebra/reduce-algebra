@@ -1,10 +1,27 @@
 module pasfresolve;
 
+% flag('(pasf_simpmoddivc), 'full);
 algebraic infix divc;
+% put('divc, 'number!-of!-args, 2);
+% put('divc, 'pasf_simpfn, 'pasf_simpmoddivc);
 algebraic infix modc;
+% put('modc, 'number!-of!-args, 2);
+% put('modc, 'pasf_simpfn, 'pasf_simpmoddivc);
 
 precedence divc, modc;
 precedence modc, times;
+
+% asserted procedure pasf_simpmoddivc(a: List): SF;
+%    <<
+%       if not numberp caddr a then
+% 	 rederr "TODO!";
+%       simpiden a
+%    >>;
+
+symbolic operator rlmdres;
+
+procedure rlmdres(f);
+   rl_prepfof pasf_mdres(rl_simp f);
 
 asserted procedure pasf_mdres(f: List): List;
    % PASF mod div resolve. [f] is PASF formula. Returns equivalent PASF formula
@@ -26,19 +43,20 @@ asserted procedure pasf_mdresat(atf: List): List;
    % PASF formula.
    begin scalar op, w, nlhs, nrhs, ncond, res;
       % TODO: - Handle congruences separately, possibly allowing expressions in
-      % moduli. - Append should be done in-place. - True should not be added to
-      % the conjunction. - Quantifiers should not be nested.
+      % moduli.
       op := pasf_op atf;
       w := pasf_mdressf pasf_arg2l atf;
       nlhs := car w;
       ncond := cadr w;
       w := pasf_mdressf pasf_arg2r atf;
       nrhs := car w;
-      ncond := append(ncond, cadr w);
-      res := 'true;
+      ncond := nconc(ncond, cadr w);
+      res := pasf_mk2(op, nlhs, nrhs);
       for each p in ncond do
-	 res := rl_mkq('ex, car p, rl_mk2('and, res, cadr p));
-      return pasf_mk2('and, pasf_mk2(op, nlhs, nrhs), res)
+	 res := rl_mk2('and, res, cadr p);
+      for each p in ncond do
+	 res := rl_mkq('ex, car p, res);
+      return res
    end;
 
 asserted procedure pasf_mdressf(sf: SF) : List2;
@@ -83,6 +101,9 @@ asserted procedure pasf_mdrespf(pf: Any): List2;
       >>;
       return {op . nargl, nal}
    end;
+
+% x = (mod a b) equiv cong(x, a, b) and 0 <= x and x < b
+% x = (div a b) equiv b*x <= a and a < b*(x+1)
 
 asserted procedure pasf_mdreseqn(p: List2): List2;
    % PASF mod div resolve equation. [p] is a list, first element is a kernel and
