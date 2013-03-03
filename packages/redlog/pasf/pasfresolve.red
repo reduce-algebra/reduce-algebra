@@ -53,16 +53,19 @@ asserted procedure pasf_mdresat(atf: List): List;
       ncond := nconc(ncond, cadr w);
       res := pasf_mk2(op, nlhs, nrhs);
       for each p in ncond do
-	 res := rl_mk2('and, res, cadr p);
+	 res := rl_mk2('and, res, caddr p);
       for each p in ncond do
-	 res := rl_mkq('ex, car p, res);
+	 if not null cadr p then
+	    res := rl_mkbq('bex, car p, cadr p, res)
+	 else
+	    res := rl_mkq('ex, car p, res);
       return res
    end;
 
 asserted procedure pasf_mdressf(sf: SF) : List2;
    % PASF mod div resolve standard form. Resolves [sf] removing mod div symbols
    % from it. Returns: first element of the returned list is new SF and the
-   % second is a list of pairs (kernel . first-order formula).
+   % second is a list of List3 {kernel, formula (bound), formula/nil}.
    begin scalar tmp, newsf, prfal, sfal;
       tmp := pasf_mdrespf prepf sf;
       newsf := numr simp car tmp;
@@ -90,10 +93,10 @@ asserted procedure pasf_mdrespf(pf: Any): List2;
       while not null argl do <<
 	 tmp := pasf_mdrespf car argl;
 	 nargl := car tmp . nargl;
-	 nal := append(nal, cadr tmp);
+	 nal := nconc(nal, reversip cadr tmp);
 	 argl := cdr argl
       >>;
-      nargl := reverse nargl;
+      nargl := reversip nargl;
       if op memq '(modc divc) then <<
 	 a := gensym();
 	 tmp := op . nargl;
@@ -105,25 +108,28 @@ asserted procedure pasf_mdrespf(pf: Any): List2;
 % x = (mod a b) equiv cong(x, a, b) and 0 <= x and x < b
 % x = (div a b) equiv b*x <= a and a < b*(x+1)
 
-asserted procedure pasf_mdreseqn(p: List2): List2;
+asserted procedure pasf_mdreseqn(p: List2): List3;
    % PASF mod div resolve equation. [p] is a list, first element is a kernel and
-   % second list prefix of the form (mod a b) or (div a b). Returns a List2,
-   % first elements is a kernel, second is quantifier-free PASF formula.
+   % second list prefix of the form (mod a b) or (div a b). Returns a List3,
+   % first element is a kernel, second is quantifier-free PASF formula (bound),
+   % third is quantifier-free PASF formula or nil.
    begin scalar var, op, a, b, f;
       var := numr simp car p;
       op := cadr p;
       a := numr simp caddr p;
       b := numr simp cadddr p;
       if op eq 'modc then <<
-	 f := rl_mkn('and, {pasf_mk2(pasf_mkop('cong, b), var, a),
-	    pasf_mk2('leq, 0, var),
-	    pasf_mk2('lessp, var, b)});
-	 return {car p, f}
+	 return {car p,
+	    rl_mk2('and, pasf_mk2('leq, nil, var),
+	       pasf_mk2('lessp, var, b)),
+	    pasf_mk2(pasf_mkop('cong, b), var, a)}
       >>;
       if op eq 'divc then <<
-	 f := rl_mkn('and, {pasf_mk2('leq, multf(b, var), a),
-	    pasf_mk2('lessp, a, multf(b, addf(var, 1)))});
-	 return {car p, f}
+	 return {car p,
+	    nil,
+	    rl_mk2('and,
+	       pasf_mk2('leq, multf(b, var), a),
+	       pasf_mk2('lessp, a, multf(b, addf(var, 1))))}
       >>;
       % This should NOT happen!
       return nil
