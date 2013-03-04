@@ -46,7 +46,7 @@
     "apply-lap.b"
     "arithmetic.b"
     "autoload.b"
-    "auto-tr.b"
+    "autoload-tr.b"
     "backtrace.b"
     "base-io.b"
     "binding.b"
