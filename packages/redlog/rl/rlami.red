@@ -360,6 +360,15 @@ procedure rl_fancybound(v,f);
       >>;
       w1 := cdr w1;
       w2 := cdr w2;
+      if car(w1) neq car(w2) then
+      	 if car(w1) eq 'leq then << % <= v <
+	    caddr w2 := reval {'plus, caddr w2, {'minus, 1}};
+	    car w2 := 'leq
+	 >>
+	 else << % < v <=
+	    cadr w1 := reval {'plus, cadr w1, 1};
+	    car w1 := 'leq
+	 >>;
       return nconc(w1,{caddr w2})
    end;
 
