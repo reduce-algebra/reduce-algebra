@@ -132,6 +132,7 @@
  (ratint        "ratint"                test                 csl psl)
  (mathml        "mathml"                test                 csl psl)
  (mathmlom      "mathml"                test                 csl psl)
+ (pgauss        "pgauss"                                     csl psl)
  (rltools       "redlog/rltools"                             csl psl)
  (redlog        "redlog/rl"             test                 csl psl)
  (cgb           "cgb"                   test                 csl psl)
@@ -183,7 +184,6 @@
  (gcref         "gcref"                 test                 csl psl)
  (turtle        "plot"                                       csl psl)
  (profile       "profile"                                    csl psl)
- (pgauss        "pgauss"                                     csl psl)
 )
 
 % End of configuration data
