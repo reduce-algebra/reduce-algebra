@@ -18,6 +18,9 @@ precedence modc, times;
 %       simpiden a
 %    >>;
 
+switch rlpasfdotrw;
+on1 'rlpasfdotrw;
+
 symbolic operator rlmdres;
 
 procedure rlmdres(f);
@@ -67,7 +70,10 @@ asserted procedure pasf_mdressf(sf: SF) : List2;
    % from it. Returns: first element of the returned list is new SF and the
    % second is a list of List3 {kernel, formula (bound), formula/nil}.
    begin scalar tmp, newsf, prfal, sfal;
-      tmp := pasf_mdrespf prepf sf;
+      if !*rlpasfdotrw then
+	 tmp := pasf_mdrespf reval pasf_mdrestrw prepf sf
+      else
+      	 tmp := pasf_mdrespf prepf sf;
       newsf := numr simp car tmp;
       prfal := cadr tmp;
       sfal := {};
@@ -133,6 +139,29 @@ asserted procedure pasf_mdreseqn(p: List2): List3;
       >>;
       % This should NOT happen!
       return nil
+   end;
+
+asserted procedure pasf_mdrestrw(pf: Any): Any;
+   % PASF mod div resolve term rewriting procedure. [pf] is lisp prefix. Returns
+   % lisp prefix representing term after the application of the rewrite rules.
+   begin scalar op, argl, nargl, res;
+      if atom pf then
+	 return pf;
+      op := car pf;
+      argl := cdr pf;
+      nargl := {};
+      while not null argl do <<
+	 nargl := pasf_mdrestrw(car argl) . nargl;
+	 argl := cdr argl
+      >>;
+      nargl := reverse nargl;
+      % (modc w k) = (difference w (times k (divc w k)))
+      if op eq 'modc then <<
+	 res := 'times . (cadr(nargl) . {{'divc, car nargl, cadr nargl}});
+	 res := 'difference . (car(nargl) . {res});
+	 return res
+      >>;
+      return op . nargl
    end;
 
 endmodule;
