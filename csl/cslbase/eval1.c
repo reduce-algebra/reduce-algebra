@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 519a673d 24-Dec-2012 */
+/* Signature: 0de79d51 05-Mar-2013 */
 
 #include "headers.h"
 
@@ -2020,6 +2020,19 @@ Lisp_Object Lparallel(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 #endif
 
+Lisp_Object Lsleep(Lisp_Object nil, Lisp_Object a)
+{
+    int n;
+    if (is_fixnum(a)) n = int_of_fixnum(a);
+    else n = 1;
+#ifdef WIN32
+    Sleep(1000*n);
+#else
+    sleep(n);
+#endif
+    return onevalue(nil);
+}
+
 setup_type const eval1_setup[] =
 {
     {"bytecounts",              bytecounts1, wrong_no_nb, bytecounts},
@@ -2042,6 +2055,7 @@ setup_type const eval1_setup[] =
     {"funcall",                 Lfuncall1, Lfuncall2, Lfuncalln},
     {"funcall*",                Lfuncall1, Lfuncall2, Lfuncalln},
     {"parallel",                too_few_2, Lparallel, wrong_no_2},
+    {"sleep",                   Lsleep, too_many_1, wrong_no_1},
 #ifdef COMMON
     {"values",                  Lvalues_1, Lvalues_2, Lvalues},
     {"macroexpand",             Lmacroexpand, Lmacroexpand_2, wrong_no_1},
