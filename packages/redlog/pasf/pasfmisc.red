@@ -1452,6 +1452,10 @@ procedure pasf_rxffn(op);
       'cl_rxffn!-sign
    else if op eq 'sqrt then
       'cl_rxffn!-sqrt
+   else if op eq 'divc then
+      'pasf_rxffn!-divc
+   else if op eq 'modc then
+      'pasf_rxffn!-modc
    else
       nil;
 

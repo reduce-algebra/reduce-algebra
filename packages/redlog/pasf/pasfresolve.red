@@ -1,3 +1,33 @@
+% ----------------------------------------------------------------------
+% $Id$
+% ----------------------------------------------------------------------
+% Copyright (c) 2013 M. Kosta, T. Sturm
+% ----------------------------------------------------------------------
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+%
+
 module pasfresolve;
 
 % flag('(pasf_simpmoddivc), 'full);
@@ -10,6 +40,32 @@ algebraic infix modc;
 
 precedence divc, modc;
 precedence modc, times;
+% TODO: adjust precedence. Now a modc b > 0 is parsed correctly but a divc b > 0
+% is not.
+
+procedure pasf_rxffn!-modc(op, argl, condl, qll);
+   begin scalar w, a, k;
+      w := gensym();
+      a := car argl;
+      k := cadr argl;
+      return {rc_mk(
+	 w,
+	 'and . {'cong, {'difference, w, a}, 0, k} .
+	    {'geq, w, 0} . {'lessp, {'difference, w, k}, 0}  . condl,
+	 ('ex . w) . lto_appendn qll)}
+   end;
+
+procedure pasf_rxffn!-divc(op, argl, condl, qll);
+   begin scalar w, a, k;
+      w := gensym();
+      a := car argl;
+      k := cadr argl;
+      return {rc_mk(
+	 w,
+	 'and . {'leq, {'difference, {'times, w, k}, a}, 0} .
+	    {'greaterp, {'plus, w, {'times, w, k}, {'minus, a}}, 0} . condl,
+	 ('ex . w) . lto_appendn qll)};
+   end;
 
 % asserted procedure pasf_simpmoddivc(a: List): SF;
 %    <<
@@ -51,9 +107,6 @@ asserted procedure pasf_mdresat(atf: List): List;
       w := pasf_mdressf pasf_arg2l atf;
       nlhs := car w;
       ncond := cadr w;
-      w := pasf_mdressf pasf_arg2r atf;
-      nrhs := car w;
-      ncond := nconc(ncond, cadr w);
       res := pasf_mk2(op, nlhs, nrhs);
       for each p in ncond do
 	 res := rl_mk2('and, res, caddr p);
@@ -78,7 +131,7 @@ asserted procedure pasf_mdressf(sf: SF) : List2;
       prfal := cadr tmp;
       sfal := {};
       while not null prfal do <<
-	 sfal := pasf_mdreseqn(car prfal) . sfal;
+	 sfal := pasf_mdreseqn car prfal . sfal;
 	 prfal := cdr prfal
       >>;
       return {newsf, sfal}
