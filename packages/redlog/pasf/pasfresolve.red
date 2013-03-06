@@ -63,7 +63,7 @@ procedure pasf_rxffn!-divc(op, argl, condl, qll);
       return {rc_mk(
 	 w,
 	 'and . {'leq, {'difference, {'times, w, k}, a}, 0} .
-	    {'greaterp, {'plus, w, {'times, w, k}, {'minus, a}}, 0} . condl,
+	    {'greaterp, {'plus, k, {'times, w, k}, {'minus, a}}, 0} . condl,
 	 ('ex . w) . lto_appendn qll)};
    end;
 
