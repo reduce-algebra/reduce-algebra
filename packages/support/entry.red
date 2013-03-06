@@ -423,6 +423,10 @@ defautoload_operator(binomial,specfn);
 
 defautoload_operator(lambert_w,(specfn specbess));
 
+% Pgauss entry points
+
+defautoload(pg_gauss!-sym, pgauss, expr, 2);
+
 endmodule;
 
 end;
