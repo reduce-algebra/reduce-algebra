@@ -35,10 +35,13 @@
 
 
 
-/* Signature: 0de79d51 05-Mar-2013 */
+/* Signature: 6b1b14ce 06-Mar-2013 */
 
 #include "headers.h"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 
 Lisp_Object nreverse(Lisp_Object a)
@@ -1827,7 +1830,7 @@ Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
 #include <sys/ipc.h>
 #include <errno.h>
 
-#define PARSIZE 2048
+#define PARSIZE 65536
 
 static void write_result(Lisp_Object nil, Lisp_Object r, char *shared)
 {

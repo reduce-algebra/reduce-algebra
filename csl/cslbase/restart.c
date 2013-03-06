@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 135a84cd 24-Dec-2012 */
+/* Signature: 51e0b825 05-Mar-2013 */
 
 #include "headers.h"
 
@@ -4969,6 +4969,7 @@ static void set_up_variables(CSLbool restart_flag)
  *       (executable . "string")  name of current executable (if available)
  *       (shortname . "string")   executable wuithout path or extension
  *       pipes                    do I support open-pipe?
+ *       parallel                 "parallel" function supported
  *       (version . "string")     eg "2.11"
  *       (name . "string")        eg "MSDOS/386"
  *       (opsys . id)             unix/msdos/riscos/win32/finder/riscos/...
@@ -4980,6 +4981,7 @@ static void set_up_variables(CSLbool restart_flag)
  *       (c-code . number)        u01.c through u60.c define n functions
  *       sixty-four               64-bit address version
  *       texmacs                  "--texmacs" option on command line
+ *       parallel                 the "parallel" experimental function exists
  *
  * In COMMON mode the tags on the *features* list are generally in the
  * keyword package. Otherwise they are just regular symbols. This makes it
@@ -5007,8 +5009,6 @@ static void set_up_variables(CSLbool restart_flag)
 
 /*! lispsys [~~~~~~~~] \end{description} % end of lispsystem* section [restart.c]
  */
-
-
     {
 #ifdef COMMON
         Lisp_Object n = features_symbol;
@@ -5215,7 +5215,23 @@ static void set_up_variables(CSLbool restart_flag)
                   make_undefined_symbol(BUILTFOR), w);
         if (SIXTY_FOUR_BIT) w = cons(make_keyword("SIXTY-FOUR"), w);
 #if defined HAVE_POPEN || defined HAVE_FWIN
-            w = cons(make_keyword("PIPES"), w);
+        w = cons(make_keyword("PIPES"), w);
+#endif
+#if defined HAVE_UNISTD_H && \
+    defined HAVE_SYS_TYPES_H && \
+    defined HAVE_SYS_STAT_H && \
+    defined HAVE_SYS_WAIT_H && \
+    defined HAVE_SIGNAL_H && \
+    defined HAVE_SYS_SHM_H && \
+    defined HAVE_SYS_IPC_H && \
+    defined HAVE_FORK && \
+    defined HAVE_WAIT && \
+    defined HAVE_WAITPID && \
+    defined HAVE_SHMGET && \
+    defined HAVE_SHMAT && \
+    defined HAVE_SHMDT && \
+    defined HAVE_SHMCTL
+        w = cons(make_keyword("PARALLEL", w);
 #endif
 #ifdef DEBUG
         w = cons(make_keyword("DEBUG"), w);
@@ -5252,6 +5268,22 @@ static void set_up_variables(CSLbool restart_flag)
         if (SIXTY_FOUR_BIT) w = cons(make_keyword("sixty-four"), w);
 #if defined HAVE_POPEN || defined HAVE_FWIN
         w = cons(make_keyword("pipes"), w);
+#endif
+#if defined HAVE_UNISTD_H && \
+    defined HAVE_SYS_TYPES_H && \
+    defined HAVE_SYS_STAT_H && \
+    defined HAVE_SYS_WAIT_H && \
+    defined HAVE_SIGNAL_H && \
+    defined HAVE_SYS_SHM_H && \
+    defined HAVE_SYS_IPC_H && \
+    defined HAVE_FORK && \
+    defined HAVE_WAIT && \
+    defined HAVE_WAITPID && \
+    defined HAVE_SHMGET && \
+    defined HAVE_SHMAT && \
+    defined HAVE_SHMDT && \
+    defined HAVE_SHMCTL
+        w = cons(make_keyword("parallel"), w);
 #endif
 #ifdef DEBUG
         w = cons(make_keyword("debug"), w);
