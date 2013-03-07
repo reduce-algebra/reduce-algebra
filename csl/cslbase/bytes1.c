@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 48027e39 07-Mar-2013 */
+/* Signature: 79b25d4b 07-Mar-2013 */
 
 #include "headers.h"
 
@@ -2138,6 +2138,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
 #endif
+                    A_reg = nil;
                     continue;
                 }
                 r1 = elt(r1, n-1);
@@ -4856,6 +4857,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  *     0 <= n < 64       (GET A_reg property_n)
  *    64 <= n < 128      (GET A_reg property_n B_reg)
  *   128 <= n < 192      (FLAGP A_reg property_n)
+ *   192 <= n < 256      not used at present.
  */
     case OP_FASTGET:
             w = next_byte;
