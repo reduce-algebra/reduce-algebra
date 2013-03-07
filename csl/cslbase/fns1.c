@@ -1879,38 +1879,6 @@ Lisp_Object Lcodep(Lisp_Object nil, Lisp_Object a)
 
 #ifdef DEBUG
 static int validate_count = 0;
-
-/*
- * For at least a while I will record info about the sizes of vectors
- * allocated...
- */
-
-unsigned int biggest_vector = 0;
-unsigned int vector_counts[32] = {0};
-
-void count_vector(unsigned int n)
-{
-    int k = 0;
-    if (n > biggest_vector) biggest_vector = n;
-    while (n > 1)
-    {   k++;
-        n /= 2;
-    }
-    vector_counts[k]++;
-}
-
-void show_vectors()
-{
-    unsigned int a = 0, b = 1, k;
-    for (k=0; k<32; k++)
-    {   if (vector_counts[k] != 0)
-            printf("%u - %u:  %u\n", a, b, vector_counts[k]);
-        a = b;
-        b = 2*b;
-    }
-    printf("Largest vector: %d\n", biggest_vector);
-}
-
 #endif
 
 Lisp_Object getvector(int tag, int type, int32_t size)
@@ -1928,7 +1896,6 @@ Lisp_Object getvector(int tag, int type, int32_t size)
  */
     Lisp_Object nil = C_nil;
 #ifdef DEBUG
-    count_vector(size);
 /*
  * If I do a full validation every time I allocate a vector that REALLY
  * hits performance, so I will do it occasionally. The 1 in 500 indicated
@@ -2062,9 +2029,6 @@ Lisp_Object Lstop(Lisp_Object env, Lisp_Object code)
  */
     Lisp_Object nil = C_nil;
     CSL_IGNORE(env);
-#ifdef DEBUG
-    show_vectors();
-#endif
     if (!is_fixnum(code)) return aerror("stop");
     exit_value = code;
     exit_tag = fixnum_of_int(0);    /* Flag to say "stop" */

@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 4f7f1117 24-Dec-2012 */
+/* Signature: 48027e39 07-Mar-2013 */
 
 #include "headers.h"
 
@@ -4948,6 +4948,7 @@ perform_get:
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
 #endif
+                    A_reg = nil;
                     continue;
                 }
 #ifdef RECORD_GET

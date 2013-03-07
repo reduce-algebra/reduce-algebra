@@ -43,7 +43,6 @@
 #include <windows.h>
 #endif
 
-
 Lisp_Object nreverse(Lisp_Object a)
 {
     Lisp_Object nil = C_nil;
