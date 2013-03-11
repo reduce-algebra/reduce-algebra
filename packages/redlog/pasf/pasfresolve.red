@@ -100,17 +100,17 @@ asserted procedure pasf_mdres(f: List): List;
 asserted procedure pasf_mdresat(atf: List): List;
    % PASF mod div resolve atomic formula. [atf] is PASF atomic formula. Returns
    % PASF formula.
-   begin scalar op, w, nlhs, nrhs, ncond, res;
+   begin scalar op, w, nlhs, conds, res;
       % TODO: - Handle congruences separately, possibly allowing expressions in
       % moduli.
       op := pasf_op atf;
       w := pasf_mdressf pasf_arg2l atf;
       nlhs := car w;
-      ncond := cadr w;
-      res := pasf_mk2(op, nlhs, nrhs);
-      for each p in ncond do
+      conds := cadr w;
+      res := pasf_0mk2(op, nlhs);
+      for each p in conds do
 	 res := rl_mk2('and, res, caddr p);
-      for each p in ncond do
+      for each p in conds do
 	 if not null cadr p then
 	    res := rl_mkbq('bex, car p, cadr p, res)
 	 else
@@ -118,18 +118,19 @@ asserted procedure pasf_mdresat(atf: List): List;
       return res
    end;
 
-asserted procedure pasf_mdressf(sf: SF) : List2;
+asserted procedure pasf_mdressf(sf: SF): List2;
    % PASF mod div resolve standard form. Resolves [sf] removing mod div symbols
    % from it. Returns: first element of the returned list is new SF and the
-   % second is a list of List3 {kernel, formula (bound), formula/nil}.
-   begin scalar tmp, newsf, prfal, sfal;
+   % second is a list of List3 {kernel, f1 / nil, f2}. [f1] will be put into
+   % bound of a bounded quantifier. [f2] is an formula which will be added
+   % conjunctively to the result.
+   begin scalar w, newsf, prfal, sfal;
       if !*rlpasfdotrw then
-	 tmp := pasf_mdrespf reval pasf_mdrestrw prepf sf
+	 w := pasf_mdrespf reval pasf_mdrestrw prepf sf
       else
-      	 tmp := pasf_mdrespf prepf sf;
-      newsf := numr simp car tmp;
-      prfal := cadr tmp;
-      sfal := {};
+      	 w := pasf_mdrespf prepf sf;
+      newsf := numr simp car w;
+      prfal := cadr w;
       while not null prfal do <<
 	 sfal := pasf_mdreseqn car prfal . sfal;
 	 prfal := cdr prfal
@@ -142,24 +143,22 @@ asserted procedure pasf_mdrespf(pf: Any): List2;
    % a "purified" term and 2nd is an alist containing elements of the form
    % (kernel . lisp prefix) where lisp prefix contains exactly one mod div
    % symbol at topmost position.
-   begin scalar op, argl, nargl, nal, tmp, a;
+   begin scalar op, argl, nargl, nal, w, nvar;
       if atom pf then
-	 return {pf, {}};
+	 return {pf, nil};
       op := car pf;
       argl := cdr pf;
-      nargl := {};
-      nal := {};
       while not null argl do <<
-	 tmp := pasf_mdrespf car argl;
-	 nargl := car tmp . nargl;
-	 nal := nconc(nal, reversip cadr tmp);
+	 w := pasf_mdrespf car argl;
+	 nargl := car w . nargl;
+	 nal := nconc(nal, reversip cadr w);
 	 argl := cdr argl
       >>;
       nargl := reversip nargl;
       if op memq '(modc divc) then <<
-	 a := gensym();
-	 tmp := op . nargl;
-	 return {a, (a . tmp) . nal}
+	 nvar := gensym();
+	 w := op . nargl;
+	 return {nvar, (nvar . w) . nal}
       >>;
       return {op . nargl, nal}
    end;
@@ -169,27 +168,25 @@ asserted procedure pasf_mdrespf(pf: Any): List2;
 
 asserted procedure pasf_mdreseqn(p: List2): List3;
    % PASF mod div resolve equation. [p] is a list, first element is a kernel and
-   % second list prefix of the form (mod a b) or (div a b). Returns a List3,
-   % first element is a kernel, second is quantifier-free PASF formula (bound),
-   % third is quantifier-free PASF formula or nil.
-   begin scalar var, op, a, b, f;
-      var := numr simp car p;
+   % the following elements are lisp prefix of the form (mod a b) or (div a b).
+   % Returns a List3, first element is a kernel, second is a quantifier-free
+   % PASF formula (bound) or nil, third is a quantifier-free PASF formula.
+   begin scalar varsf, op, a, b, f;
+      varsf := numr simp car p;
       op := cadr p;
       a := numr simp caddr p;
       b := numr simp cadddr p;
-      if op eq 'modc then <<
+      if op eq 'modc then
 	 return {car p,
-	    rl_mk2('and, pasf_mk2('leq, nil, var),
-	       pasf_mk2('lessp, var, b)),
-	    pasf_mk2(pasf_mkop('cong, b), var, a)}
-      >>;
-      if op eq 'divc then <<
+	    rl_mk2('and, pasf_0mk2('geq, varsf),
+	       pasf_mk2('lessp, varsf, b)),
+	    pasf_mk2(pasf_mkop('cong, b), varsf, a)};
+      if op eq 'divc then
 	 return {car p,
 	    nil,
 	    rl_mk2('and,
-	       pasf_mk2('leq, multf(b, var), a),
-	       pasf_mk2('lessp, a, multf(b, addf(var, 1))))}
-      >>;
+	       pasf_mk2('leq, multf(b, varsf), a),
+	       pasf_mk2('lessp, a, multf(b, addf(varsf, 1))))};
       % This should NOT happen!
       return nil
    end;
@@ -202,16 +199,15 @@ asserted procedure pasf_mdrestrw(pf: Any): Any;
 	 return pf;
       op := car pf;
       argl := cdr pf;
-      nargl := {};
       while not null argl do <<
 	 nargl := pasf_mdrestrw(car argl) . nargl;
 	 argl := cdr argl
       >>;
       nargl := reverse nargl;
-      % (modc w k) = (difference w (times k (divc w k)))
+      % (modc a k) -> (difference a (times k (divc a k)))
       if op eq 'modc then <<
-	 res := 'times . (cadr(nargl) . {{'divc, car nargl, cadr nargl}});
-	 res := 'difference . (car(nargl) . {res});
+	 res := 'times . cadr(nargl) . {{'divc, car nargl, cadr nargl}};
+	 res := 'difference . car(nargl) . {res};
 	 return res
       >>;
       return op . nargl
