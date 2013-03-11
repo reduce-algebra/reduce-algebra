@@ -46,42 +46,31 @@ unset inprocess
 
 if ($MACHINE == apollo) then
    set imagesize=3000000
-  else
-   if ($MACHINE == sun386) then
+  else if ($MACHINE == sun386) then
    set imagesize=3000000
-  else
-   if ($MACHINE == cray-t3d) then
+  else if ($MACHINE == cray-t3d) then
    set imagesize=20000000
-  else
-   if ($MACHINE == Alpha) then
+  else if ($MACHINE == Alpha) then
    set imagesize=12000000
-  else 
-   if ($MACHINE == Mips_dec) then
+  else if ($MACHINE == Mips_dec) then
    set imagesize=8000000
-  else
-   if ($MACHINE == Mips_iris) then
+  else if ($MACHINE == Mips_iris) then
    set imagesize=8000000
-  else
-   if ($MACHINE == Ibmrs) then
+  else if ($MACHINE == Ibmrs) then
    set imagesize=8000000
-  else
-   if ($MACHINE == brock) then
+  else if ($MACHINE == brock) then
    set imagesize=1000
-  else
-   if ($MACHINE == AMD64) then
+  else if ($MACHINE == AMD64) then
    set imagesize=1000
-  else
-   if ($MACHINE == AMD64_ext) then
+  else if ($MACHINE == AMD64_ext) then
    set imagesize=1000
-  else
-   if ($MACHINE == macintel64) then
+  else if ($MACHINE == macintel64) then
    set imagesize=1000
-  else
-   if ($MACHINE == freeBSD64) then
+  else if ($MACHINE == freeBSD64) then
    set imagesize=1000
   else
    set imagesize=10000000 
-endif  
+endif
 
 
 pushd $pnkl			# Go where the files to be loaded are.
