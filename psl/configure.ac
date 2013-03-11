@@ -69,6 +69,8 @@ then
   esac
 fi
 
+if test "x$DONT_USE_XPORT" = "x"
+then
 # Now I need to build a copy of the "xport" utility. You may view it as
 # mildly eccentric to build this tool at configure time!
 
@@ -78,11 +80,17 @@ cd xport
 make
 cd ..
 
+fi
+
 AC_MSG_NOTICE([Will build this PSL using the $pslver initial binaries])
 
 # rm -rf psl
 mkdir -p psl
+
 cp -r $srcdir/psl-$pslver/* psl
+
+if test "x$DONT_USE_XPORT" = "x"
+then
 
 # Now in my new world about the only thing that will have been copied here
 # will be a file "xport.pat". This can then be used to arrange to fetch the
@@ -100,6 +108,16 @@ fi
 # not I will force executable status here...
 chmod +x bpsl*
 cd ..
+
+else
+
+  cp ../../psl/dist/nonkernel/$pslver/lap/* psl
+  cp ../../psl/dist/lap/$pslver/* psl
+  cp ../../psl/dist/kernel/$pslver/bpsl* psl
+
+  rm -f psl/*rlisp*.b
+
+fi
 
 # The pre-built PSL file-sets contain a file called "64", probably containing
 # just the text "yes", in cases that the implementation is 64-bit.
