@@ -39,7 +39,7 @@ module rltools;
 
 create!-package('(rltools ioto lto sfto),nil);
 
-fluid '(!*rlbrkcxk);
+fluid '(!*rlbrkcxk !*rlverbose);
 
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    ioto_cterpri,ioto_cplu,ioto_realtime,ioto_flush,ioto_datestamp,
@@ -84,25 +84,51 @@ if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
 >>;
 
 !#if (memq 'psl lispsystem!*)
-   fluid '(out!*);
-
    procedure meminfo();
-      begin scalar bit,hs,hsb,cpgcp,w;
+      begin scalar bit, hs, hsb, cpgcp, w, bs, bsb, bps, bpsb;
       	 if not memq('psl,lispsystem!*) then
 	    return nil;
-      	 prin2 "               address of nil: 0x";
-      	 flushbuffer out!*;
-      	 channelflush out!*;
-      	 (bit := 4 * unixputn nil) where output=nil;
-      	 terpri();
+      	 bit := if eqn(lshift(-1, -56), 255) then 64 else 32;
       	 prin2 "                address range: ";
       	 prin2 bit;
       	 prin2t " bit";
-      	 hs := set_heap_size nil;
-      	 prin2 "           binding stack size: ";
-      	 prin2 bndstksize;
+      	 prin2 "                available bps: ";
+	 bps := (lastbps-nextbps)/addressingunitsperitem;
+      	 prin2 meminfocomma(bps,'!,);
       	 prin2t " Lisp items";
+      	 bpsb := (if eqn(bit,64) then 8 else 4) * bps;
+      	 w := meminfoscale bpsb;
+      	 prin2 "                               ";
+      	 prin2 car w;
+      	 prin2 " ";
+      	 prin2t cdr w;
+      	 w := meminfoiscale bpsb;
+      	 prin2 "                               ";
+      	 prin2 car w;
+      	 prin2 " ";
+      	 prin2t cdr w;
+      	 prin2 "           binding stack size: ";
+	 bs := (bndstkupperbound-bndstklowerbound)/(addressingunitsperitem);
+	 bs := bs + 1;  % Do not quite understand this.
+      	 prin2 meminfocomma(bs,'!,);
+      	 prin2t " Lisp items";
+	 bs := bs/2;    % stack elements to Lisp items
+      	 prin2 "                               ";
+      	 prin2 meminfocomma(bs,'!,);
+      	 prin2t " stack elements";
+      	 bsb := (if eqn(bit,64) then 8 else 4) * bs;
+      	 w := meminfoscale bsb;
+      	 prin2 "                               ";
+      	 prin2 car w;
+      	 prin2 " ";
+      	 prin2t cdr w;
+      	 w := meminfoiscale bsb;
+      	 prin2 "                               ";
+      	 prin2 car w;
+      	 prin2 " ";
+      	 prin2t cdr w;
       	 prin2 "                     heapsize: ";
+      	 hs := set_heap_size nil;
       	 prin2 meminfocomma(hs,'!,);
       	 prin2 " Lisp items";
       	 hsb := (if eqn(bit,64) then 8 else 4) * hs;

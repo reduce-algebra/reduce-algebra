@@ -427,6 +427,22 @@ defautoload_operator(lambert_w,(specfn specbess));
 
 defautoload(pg_gauss!-sym, pgauss, expr, 2);
 
+% Rltools entry points
+
+symbolic operator meminfo;
+defautoload(meminfo, rltools, expr, 0);
+
+defautoload(lto_at2str, rltools, expr, 1);
+
+defautoload(lto_sconcatn, rltools, expr, 1);
+
+% Qhull entry point
+
+symbolic operator qhull;
+defautoload(qhull, qhull, expr, 1);
+
+defautoload(qhull_qhull, qhull, expr, 1);
+
 endmodule;
 
 end;
