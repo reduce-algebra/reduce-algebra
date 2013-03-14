@@ -185,6 +185,7 @@
  (profile       "profile"                                    csl psl)
  (pident        "pident"                                     csl psl)
  (pgauss        "pgauss"                                     csl psl)
+ (qhull		"qhull"                                      csl psl)
 )
 
 % End of configuration data

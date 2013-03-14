@@ -1,0 +1,31 @@
+This is an interface to qhull (www.qhull.org), which has to be installed
+externally. There are 3 options for this package to find the qhull program:
+
+(a) Put it into the path of your shell (recommended).
+
+(b) Set and export an environment variable QHULL to the complete path, e.g., in
+the Bash:
+
+export QHULL=/usr/bin/qhull
+
+(b) Inside Reduce set the string qhull_call!* to the complete path, e.g.,
+
+symbolic(qhull_call!* := "/usr/bin/qhull");
+
+Compute the convex hull of a list integer points as a subset
+of that list as follows:
+
+1: qhull {{2,0,0}, {0,2,0}, {0,2,2}, {0,0,0}, {1,1,1}};
+
+{{2,0,0},{0,2,0},{0,2,2},{0,0,0}}
+
+2: symbolic;
+
+nil
+
+3* qhull_qhull {{2,0,0}, {0,2,0}, {0,2,2}, {0,0,0}, {1,1,1}};
+
+((2 0 0) (0 2 0) (0 2 2) (0 0 0))
+
+--
+Thomas Sturm, March 2013
