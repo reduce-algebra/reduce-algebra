@@ -263,9 +263,12 @@ procedure pasf_brng1(b,var);
       % We can simply remove all congruences, since they only strengthten the
       % solution set.
       tmp := pasf_qff2ivl rl_smkn('and,
-	 for each atf in cl_atl b collect
-	    if null (pasf_op atf memq '(cong ncong)) then
-	       atf);
+	 for each atf in cl_atl b join % Quick fix by MK.
+	    if not (pasf_congp atf) then
+	       {atf});
+	 % for each atf in cl_atl b collect
+	 %    if null (pasf_op atf memq '(cong ncong)) then
+	 %       atf);
       if null tmp then
 	 rederr{"pasf_brng1 : Something is wrong, empty bound solution set"};
       return (caar tmp . cdar reverse tmp);
