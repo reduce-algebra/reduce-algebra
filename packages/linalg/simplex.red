@@ -309,6 +309,11 @@ symbolic procedure unique_equation_list(equation_list);
   end;
 
 
+symbolic procedure simplex_get_inverse_compop u;
+   if u eq 'geq then 'leq
+    else if u eq 'leq then 'geq
+    else u;
+
 
 symbolic procedure make_equations_positive(equation_list);
   %
@@ -318,7 +323,9 @@ symbolic procedure make_equations_positive(equation_list);
   for each equation in equation_list collect
    if pairp cadr equation and caadr equation = 'minus and
       pairp caddr equation and caaddr equation = 'minus
-    then {car equation,my_minus(cadr equation),my_minus(caddr equation)}
+    then {simplex_get_inverse_compop car equation,
+          my_minus(cadr equation),
+          my_minus(caddr equation)}
      else equation;
 
 
