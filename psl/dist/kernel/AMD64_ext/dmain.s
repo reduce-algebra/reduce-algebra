@@ -2722,9 +2722,9 @@ symfnc:
  .quad putd
  .globl putentry
  .quad putentry
+ .quad undefinedfunction
  .globl l0110
  .quad l0110
- .quad undefinedfunction
  .quad undefinedfunction
  .globl stderror
  .quad stderror
