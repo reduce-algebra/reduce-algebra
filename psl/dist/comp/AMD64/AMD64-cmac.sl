@@ -1279,7 +1279,14 @@ preload  (setq initload
 	   (difference 15  NumberOfArguments))
 	  (append
 	   (list (list '!*move '(fluid ebxsave!*) '(reg 2))
+% stack has to be aligned for SSE instructions in dyn. linking in C
+                 '(!*move  (reg st) (reg 1))
+                 '(sub 64 (reg st)) '(!*wshift (reg st) -5)
+                 '(!*wshift (reg st) 5)
+                 '(!*move  (reg 1) (displacement (reg st) 40))
+                %% '(!*move  (displacement (reg rdi) 0) (reg rdi))
 		 (list 'call (list 'ForeignEntry FunctionName))
+                 '(!*move  (displacement (reg st) 40) (reg st))
 		 (list '!*move '(reg 2) '(fluid ebxsave!*)))
 	   (cond
 	((eq NumberOfArguments 0) nil)

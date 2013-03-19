@@ -195,7 +195,7 @@ setupbpsandheap(argc,argv)
 
   /* On systems in which the image does not start at address 0, this won't
      really allocate the full maximum, but close enough. */
-  current_size_in_bytes = (((int) sbrk(0))<<5)>>5;
+  current_size_in_bytes = (((long long) sbrk(0))<<5)>>5;
   max_image_size = 0x1000000000000; /* 1 more than allowable size */
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
@@ -228,10 +228,10 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
   getheap(heapsize);
 
   if (imagefile == NULL)
-  printf("bpssize = %d (%X), heapsize = %ld (%lX)\nTotal image size = %ld (%lX)\n",
+  printf("bpssize = %d (%X), heapsize = %lld (%llX)\nTotal image size = %lld (%llX)\n",
           bpssize, bpssize,
           heapsize, heapsize,
-          (int) sbrk(0), (int) sbrk(0));
+          (long long) sbrk(0), (long long) sbrk(0));
 
    if (imagefile != NULL) {
 	ohl = oldheaplowerbound; ohub = oldheapupperbound;
@@ -321,18 +321,18 @@ setupbps()
  */
 allocatemorebps()
 {
-  int current_size_in_bytes;
-  int old_nextbps = nextbps;
+  long long current_size_in_bytes;
+  long old_nextbps = nextbps;
 
   current_size_in_bytes = sbrk(0);
 
   if ((current_size_in_bytes + EXTRABPSSIZE) >= max_image_size)
     return(0);
 
-  if (((int)sbrk(0)) % 2)      /* force to even word boundary*/
-     nextbps = (int)sbrk(1);
+  if (((long long)sbrk(0)) % 2)      /* force to even word boundary*/
+     nextbps = (long long)sbrk(1);
 
-  nextbps = (int)sbrk(EXTRABPSSIZE);   /* allocate extra BPS */
+  nextbps = (long long)sbrk(EXTRABPSSIZE);   /* allocate extra BPS */
   if (nextbps == -1) {
     nextbps = old_nextbps;
     return(0);
@@ -348,7 +348,7 @@ getheap(heapsize)
 {
 
 #if (NUMBEROFHEAPS == 1)
-  heaplowerbound        = (int)sbrk(heapsize);  /* allocate first heap */;
+  heaplowerbound        = (long long)sbrk(heapsize);  /* allocate first heap */;
   oldheaplowerbound     = -1;
 #else
 
