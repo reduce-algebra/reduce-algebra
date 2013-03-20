@@ -672,6 +672,31 @@ asserted procedure sfto_fctrf(f: SF): List;
       return car w
    end;
 
+asserted procedure sfto_int2sf(n: Integer): SF;
+   if n neq 0 then n;
+
+asserted procedure sfto_sf2monl(f: SF): List;
+   begin scalar vl;
+      vl := kernels f;
+      return vl . for each x in sfto_sf2monl1(f, nil, vl, nil) collect
+	 reverse car x . cdr x
+   end;
+
+asserted procedure sfto_sf2monl1(f: SF, ev: List, vl: List, rl: List): List;
+   if null f then
+      rl
+   else if domainp f then <<
+      for each v in vl do
+	 ev := 0 . ev;
+      (ev . f) . rl
+   >> else <<
+      while not eqcar(vl, mvar f) do <<
+	 ev := 0 . ev;
+	 vl := cdr vl
+      >>;
+      sfto_sf2monl1(red f, ev, vl, sfto_sf2monl1(lc f, ldeg f . ev, cdr vl, rl))
+   >>;
+
 endmodule;  % [sfto]
 
 end;  % of file
