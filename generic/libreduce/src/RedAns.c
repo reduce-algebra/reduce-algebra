@@ -41,7 +41,7 @@
 #include "RedAns.h"
 
 #ifdef PSLFIX
-#define SYSMAXBUFFER 200
+#define SYSMAXBUFFER 65536
 #endif
 
 #define READBUFSIZE 1024

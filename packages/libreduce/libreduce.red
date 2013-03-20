@@ -198,6 +198,11 @@ procedure lr_break_prompt();
       promptstring!* := lr_color promptstring!*
    >>;
 
+procedure sysmaxbuffer(fd);
+   2^16;
+
+putv(iobuffer, 0, mkstring(sysmaxbuffer nil, '! ));
+
 !#endif
 
 if lr_pslp() then <<
