@@ -178,12 +178,12 @@ procedure ofsf_pzeroLpTryOneFloat(f, vl);
    end;
 
 asserted procedure ofsf_pzeropLp1(f: SF, negp: Boolean): List;
-   begin scalar monl, vl, posp; integer  d;
+   begin scalar monl, vl, posp, ev, w; integer  d;
       vl . monl := sfto_sf2monl f;
       d := length vl;
       if !*rlverbose then
       	 ioto_tprin2t {"+++ dimension: ", d};
-      posp := ofsf_findposdirection monl;
+      posp . ev := ofsf_findposdirection monl;
       if null posp then <<
 	 if !*rlverbose then
 	    ioto_tprin2t {"+++ the ", if negp then "negated " else "",
@@ -194,7 +194,9 @@ asserted procedure ofsf_pzeropLp1(f: SF, negp: Boolean): List;
 	 return 'failed;
       if !*rlverbose then <<
 	 ioto_tprin2 {"+++ found approximate direction of positive value: "};
-	 mathprint('list . posp)
+	 mathprint('list . posp);
+	 ioto_tprin2 {"+++ at point: "};
+	 mathprint('list . for each v in vl collect {'equal, v, pop ev});
       >>;
       if !*pzeropint then
  	 return ofsf_pzeropLp1int(f, negp, d, vl, posp);
@@ -224,7 +226,7 @@ procedure ofsf_findposdirection(monl);
 	 if posp neq 'infeasible then
 	    posl := nil
       >>;
-      return posp
+      return posp . ev
    end;
 
 switch rllpkeepfiles;
