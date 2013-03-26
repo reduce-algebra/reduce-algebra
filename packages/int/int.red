@@ -85,12 +85,12 @@ symbolic procedure int!-gensym1 u;
 
 symbolic procedure mknill n; if n=0 then nil else nil . mknill(n-1);
 
-symbolic procedure printc u; prin2t u;   % This could be an smacro.
+symbolic procedure printc u; prin2t u;   % This could be an inline.
 
 
-% Selector written as an smacro.
+% Selector written as an inline.
 
-smacro procedure argof u;
+inline procedure argof u;
    % Argument of a unary function.
    cadr u;
 

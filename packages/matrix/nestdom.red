@@ -44,9 +44,9 @@ put('!:ar!:,'!:nest!:,'ident);
 %  a domain element is a list
 %      ('!:nest!: level# dmode* . sq)
 
-smacro procedure nestlevel u; if fixp u then 0 else cadr u;
-smacro procedure nestdmode u; if fixp u then nil else caddr u;
-smacro procedure nestsq u; if fixp u then simp u else cdddr u;
+inline procedure nestlevel u; if fixp u then 0 else cadr u;
+inline procedure nestdmode u; if fixp u then nil else caddr u;
+inline procedure nestsq u; if fixp u then simp u else cdddr u;
 
 global '(domainlist!*);
 

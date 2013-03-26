@@ -81,13 +81,13 @@ symbolic procedure crn!:minusp u; caddr u=0 and minusp caadr u;
 
 symbolic procedure mkcrn(u,v); '!:crn!: . u . v;
 
-symbolic smacro procedure crntag x; '!:crn!: . x;
+symbolic inline procedure crntag x; '!:crn!: . x;
 
-symbolic smacro procedure rntag x; '!:rn!: . x;
+symbolic inline procedure rntag x; '!:rn!: . x;
 
-symbolic smacro procedure crnrl x; cadr x;
+symbolic inline procedure crnrl x; cadr x;
 
-symbolic smacro procedure crnim x; cddr x;
+symbolic inline procedure crnim x; cddr x;
 
 symbolic procedure crn!:simp u; (crntag u) ./ 1;
 

@@ -31,9 +31,9 @@ global '(!!deg2rad !!rad2deg !!floatbits);
 compiletime
   global '(!!fleps1exp !!plumaxexp !!pluminexp !!timmaxexp !!timminexp);
 
-symbolic smacro procedure degreestoradians x; times2(x,!!deg2rad);
+symbolic inline procedure degreestoradians x; times2(x,!!deg2rad);
 
-symbolic smacro procedure radianstodegrees x; times2(x,!!rad2deg);
+symbolic inline procedure radianstodegrees x; times2(x,!!rad2deg);
 
 remflag('(sin cos tan sind cosd tand cotd secd cscd asin acos atan
        asecd acscd atan2d atan2 sqrt exp log hypot cosh sinh tanh),

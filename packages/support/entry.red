@@ -40,7 +40,7 @@ symbolic procedure safe!-putd(name,type,body);
    if getd name then lprim list("Autoload stub for",name,"not defined")
     else putd(name,type,body);
 
-smacro procedure mkfunction u; list('function,u);
+inline procedure mkfunction u; list('function,u);
 
 symbolic macro procedure defautoload u;
 % (defautoload name), (defautoload name loadname),

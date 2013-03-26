@@ -148,34 +148,11 @@ remprop('indexlist,'vartype);   % WN indexlist may not be fluid
 				% it is a function in contact.red
 % Macros used throughout
 
+accessors !_ . (eds_sys . (eds_ind . (eds_cfrm . (eds_props . !_))));
 
-symbolic smacro procedure eds_sys s;
-   cadr s;
-
-symbolic smacro procedure eds_ind s;
-   caddr s;
-
-symbolic smacro procedure eds_cfrm s;
-   cadddr s;
-
-symbolic smacro procedure eds_props s;
-   car cddddr s;
-
-symbolic smacro procedure cfrm_cob m;
-   cadr m;
-
-symbolic smacro procedure cfrm_crd m;
-   caddr m;
-
-symbolic smacro procedure cfrm_drv m;
-   cadddr m;
-
-symbolic smacro procedure cfrm_rsx m;
-   nth(m,5);
-
+accessors !_ . (cfrm_cob . (cfrm_crd . (cfrm_drv . (cfrm_rsx . !_))));
 
 % Macro for edscall
-
 
 symbolic macro procedure edscall u;
    % evaluate form cadr u within edsprotect
@@ -197,15 +174,15 @@ symbolic macro procedure edscall u;
 
 
 % Macros from excalc for compilation
+% BEWARE if excalc ever though of changing any of these!
 
-
-smacro procedure !*k2pf u;
+inline procedure !*k2pf u;
    u .* (1 ./ 1) .+ nil;
 
-smacro procedure negpf u;
+inline procedure negpf u;
    multpfsq(u,(-1) ./ 1);
 
-smacro procedure lowerind u;
+inline procedure lowerind u;
    list('minus,u);
 
 endmodule;

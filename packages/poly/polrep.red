@@ -40,7 +40,7 @@ switch roundall;
 
 !*roundall := t;   % Default is on.
 
-symbolic smacro procedure subtrsq(u,v); addsq(u,negsq v);
+symbolic inline procedure subtrsq(u,v); addsq(u,negsq v);
 
 symbolic procedure addsq(u,v);
    % U and V are standard quotients.
@@ -76,7 +76,7 @@ symbolic procedure multsq(u,v);
 
 symbolic procedure negsq u; negf numr u ./ denr u;
 
-smacro procedure multpq(u,v);
+inline procedure multpq(u,v);
    multsq(!*p2q u,v);
 
 symbolic procedure cancel u;
@@ -87,7 +87,7 @@ symbolic procedure cancel u;
 
 % ***** FUNCTIONS FOR ADDING AND MULTIPLYING STANDARD FORMS *****
 
-symbolic smacro procedure peq(u,v);
+symbolic inline procedure peq(u,v);
    %tests for equality of powers U and V;
    u = v;
 
@@ -216,7 +216,7 @@ symbolic procedure multdm(u,v);
            times2(u,v)
     else dcombine(u,v,'times);
 
-smacro procedure multpf(u,v); multf(!*p2f u,v);
+inline procedure multpf(u,v); multf(!*p2f u,v);
 
 symbolic procedure negf u;
    if null u then nil

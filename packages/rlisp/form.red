@@ -92,8 +92,6 @@ symbolic procedure expdrmacro u;
    % Returns the macro form for U if expansion is permitted.
    begin scalar x;
       if null(x := getrmacro u) or flagp(u,'noexpand) then return nil
-%      else if null(null !*cref and (null !*defn or car x eq 'smacro)
-%         or flagp(u,'expand) or !*force)
        else if !*cref and null flagp(u,'expand) and null !*force
         then return nil
        else return x
@@ -105,6 +103,7 @@ symbolic procedure getrmacro u;
    begin scalar x;
       return if not idp u then nil
        else if (x := getd u) and car x eq 'macro then x
+       else if (x := get(u,'inline)) then 'inline . x
        else if (x := get(u,'smacro)) then 'smacro . x
        else nil
    end;
@@ -282,7 +281,7 @@ symbolic procedure macrochk(u,mode);
 put('symbolic,'idfn,'symbid);
 
 symbolic procedure symbid(u,vars);
-   <<if fname!* and null(ftype!* memq '(macro smacro))
+   <<if fname!* and null(ftype!* memq '(macro smacro inline))
        and not(atsoc(u,vars) or fluidp u or globalp u
         or null u or u eq t or flagp(u,'share) or !*comp or !*cref
         or get(u,'constant!?))
@@ -512,7 +511,16 @@ symbolic procedure formsetq0(u,vars,mode);
       % Make target always SYMBOLIC so that algebraic expressions
       % are evaluated before being stored.
       x := convertmode(cadr u,vars,'symbolic,mode);
-      return if not atom z
+      return if not atom z and <<
+% If I am building on CSL and am doing a bootstrap build then !*savedef will
+% be true: in that case I will display an alert every time there is an
+% assignment to something non-atomic that is defined using either an
+% smacro or an inline. This is done because if an smacro is changed into an
+% inline then assigmnet via it may change behaviour.
+          if !*savedef and (get(car z, 'inline) or
+                            get(car z, 'smacro)) then <<
+            if not zerop posn() then terpri();
+            princ "+++ Assign via inline or smacro: "; print z >>; t >>
         then if not idp car z then typerr(z,"assignment")
           else if null atom(z := macrochk(z,mode)) and arrayp car z
            then list('setel,intargfn(z,vars,mode),x)
@@ -645,6 +653,8 @@ put('cdddar,'setqfn,'(lambda (u v) (setcdr (cddar u) v)));
 put('cddddr,'setqfn,'(lambda (u v) (setcdr (cdddr u) v)));
 
 put('nth,'setqfn,'(lambda (l i x) (setcar (pnth l i) x)));
+
+symbolic procedure set_nth(l, i, x); setcar(pnth(l, i), x);
 
 put('getv,'setqfn,'(lambda (v i x) (putv v i x)));
 

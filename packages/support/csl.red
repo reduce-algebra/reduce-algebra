@@ -32,24 +32,24 @@ fluid '(!!nbfpd);
 
 remflag ('(fl2bf msd!: fix2 rndpwr timbf),'lose);
 
-symbolic smacro procedure fix2 u; fix u;
+symbolic inline procedure fix2 u; fix u;
 
-symbolic smacro procedure lshift(m,d); ash(m,d);
+symbolic inline procedure lshift(m,d); ash(m,d);
 
-symbolic smacro procedure ashift(m,d); ash1(m,d);
+symbolic inline procedure ashift(m,d); ash1(m,d);
 
-symbolic smacro procedure land(a,b); logand(a,b);
+symbolic inline procedure land(a,b); logand(a,b);
 
-symbolic smacro procedure msd!: u; msd u;
+symbolic inline procedure msd!: u; msd u;
 
-symbolic smacro procedure make!:ibf (mt, ep);
+symbolic inline procedure make!:ibf (mt, ep);
   '!:rd!: . (mt . ep);
 
 fluid '(!:bprec!:);
 
-symbolic smacro procedure rndpwr j;
+symbolic inline procedure rndpwr j;
   begin
-    scalar !#w;   % I use an odd name here to avoid clashes (smacro)
+    scalar !#w;   % I use an odd name here to avoid clashes (inline)
 %   !#w := mt!: j;
     !#w := cadr j;
     if !#w = 0 then return make!:ibf(0, 0);
@@ -59,7 +59,7 @@ symbolic smacro procedure rndpwr j;
   end;
 
 % This is introduced as a privately-named function and an associated
-% smacro to avoid unwanted interactions between 3 versions of this
+% inline to avoid unwanted interactions between 3 versions of this
 % function: the one here, the version of this code compiled into C, and
 % the original version in arith.red.  Note thus that CSL_normbf is not
 % flagged as 'lose here (but it will be when a version compiled into
@@ -71,7 +71,7 @@ symbolic procedure CSL_normbf x;
    begin
       scalar mt,s;
       integer ep;
-% Note I write out mt!: and ep!: here because the smacros for them are
+% Note I write out mt!: and ep!: here because the inlines for them are
 % not yet available.
       if (mt := cadr x)=0 then return '(!:rd!: 0 . 0);
       if mt<0 then <<mt := -mt; s := t>>;
@@ -84,7 +84,7 @@ symbolic procedure CSL_normbf x;
 
 !#if (not (memq 'vsl lispsystem!*))
 
-symbolic smacro procedure normbf x; CSL_normbf x;
+symbolic inline procedure normbf x; CSL_normbf x;
 
 symbolic procedure CSL_timbf(u, v);
   begin
@@ -97,7 +97,7 @@ symbolic procedure CSL_timbf(u, v);
      return make!:ibf(car m, cdr m + cddr u + cddr v)
   end;
 
-symbolic smacro procedure timbf(u, v); CSL_timbf(u, v);
+symbolic inline procedure timbf(u, v); CSL_timbf(u, v);
 
 !#endif
 
@@ -159,15 +159,23 @@ symbolic procedure copyd(new,old);
 
 flag('(copyd), 'lose);
 
-smacro procedure int2id x; compress list('!!, x);
-smacro procedure id2int x; car explode2n x;
+inline procedure int2id x; compress list('!!, x);
+inline procedure id2int x; car explode2n x;
 
-smacro procedure bothtimes x; eval!-when((compile load eval), x);
-smacro procedure compiletime x; eval!-when((compile eval), x);
-smacro procedure loadtime x; eval!-when((load eval), x);
+symbolic macro procedure bothtimes u;
+   list('eval!-when, '(compile load eval), cadr u);
 
-smacro procedure csl x; x;
-smacro procedure psl x; nil;
+symbolic macro procedure compiletime u;
+   list('eval!-when, '(compile eval), cadr u);
+
+symbolic macro procedure loadtime u;
+   list('eval!-when, '(load eval), cadr u);
+
+%symbolic macro procedure csl u;
+%   cadr u;
+
+%symbolic macro procedure psl u;
+%   nil;
 
 symbolic macro procedure printf u;
   list('printf1, cadr u, 'list . cddr u);

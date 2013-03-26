@@ -31,25 +31,25 @@ module hcvctors;
 % Only functions available in the algebraic mode are commented in
 % the TeX file.
 
-symbolic smacro procedure mkve n;
+symbolic inline procedure mkve n;
 mkvect(n-1);
 
-symbolic smacro procedure mkve!* n;
+symbolic inline procedure mkve!* n;
 % n is an integer
 % as mkvect but initialize to 0 instead of nil.
 % for general tables, use mkarray1(list(i1,...),'algebraic).
 mkarray1(list(n),'algebraic);
 
-symbolic smacro procedure putve(ve,i,elt);
+symbolic inline procedure putve(ve,i,elt);
 % To identify numerology to the one of lists.
 % Use: for i:=1:upbve tri  do putve(tri,i,i); ==> [1 2 3 4]
 putv(ve,i-1,elt);
 
-symbolic smacro procedure  venth(u,i);
+symbolic inline procedure  venth(u,i);
 % To identify numerology to the one of lists.
 getv(u,i-1);
 
-symbolic smacro procedure array_to_vect u;
+symbolic inline procedure array_to_vect u;
 % For the use in the algebraic mode, it may be useful to coerce to
 % ARRAYS and vice-versa
 % Use: array_to_vect algebraic <array>

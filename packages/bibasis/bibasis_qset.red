@@ -49,9 +49,9 @@ begin scalar tmpMonom, tripleListIterator;
 end;
 
 
-smacro procedure SetQReset(); FluidBibasisSetQ := (nil . nil);
-smacro procedure SetQIsEmpty(); null(car(FluidBibasisSetQ));
-smacro procedure SetQInsert(triple); SortedTripleListInsert(FluidBibasisSetQ, triple);
+inline procedure SetQReset(); FluidBibasisSetQ := (nil . nil);
+inline procedure SetQIsEmpty(); null(car(FluidBibasisSetQ));
+inline procedure SetQInsert(triple); SortedTripleListInsert(FluidBibasisSetQ, triple);
 
 
 expr procedure SetQInsertList(tripleList);

@@ -468,7 +468,7 @@ mkfratwrite cdr stmt$
 
 % A macro used to prevent things with *fortranname* or *doublename*
 % properties being evaluated in certain circumstances.  MCD 28.3.94
-symbolic smacro procedure ratexp_name(u);
+symbolic inline procedure ratexp_name(u);
    if atom u then list(u)
     else rplaca(ratexp ('dummyArrayToken . cdr u), car u)$
 

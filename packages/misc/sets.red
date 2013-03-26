@@ -73,7 +73,7 @@ put('setdiff, 'fancy!-infix!-symbol, "\backslash");
 
 create!-package('(sets),'(contrib misc));
 
-symbolic smacro procedure sort!-set l;
+symbolic inline procedure sort!-set l;
    sort(l, function set!-ordp);
 
 symbolic procedure set!-ordp(u, v);

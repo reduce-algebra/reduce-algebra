@@ -47,7 +47,7 @@ symbolic procedure set!-small!-modulus p;
   end;
 
 
-smacro procedure modular!-plus(a,b);
+inline procedure modular!-plus(a,b);
   begin scalar result;
      result:=a #+ b;
      if not(result #< current!-modulus) then
@@ -55,7 +55,7 @@ smacro procedure modular!-plus(a,b);
      return result
   end;
 
-smacro procedure modular!-difference(a,b);
+inline procedure modular!-difference(a,b);
   begin scalar result;
      result:=a #- b;
      if iminusp result then result:=result #+ current!-modulus;
@@ -70,7 +70,7 @@ symbolic procedure modular!-number a;
      return a
   end;
 
-smacro procedure modular!-times(a,b);
+inline procedure modular!-times(a,b);
     remainder(a*b,current!-modulus);
 
 symbolic procedure modular!-reciprocal a;
@@ -117,11 +117,11 @@ symbolic procedure safe!-reciprocal!-by!-gcd(a,b,x,y);
                                       y,x #- y #* w)
    end;
 
-smacro procedure modular!-quotient(a,b);
+inline procedure modular!-quotient(a,b);
     modular!-times(a,modular!-reciprocal b);
 
 
-smacro procedure modular!-minus a;
+inline procedure modular!-minus a;
     if a=0 then a else current!-modulus #- a;
 
 symbolic procedure modular!-expt(a,n);

@@ -488,7 +488,7 @@ procedure cgb_cgb!-sfl(u);
    % CGP's. Returns a list of SF's.
    for each p in u collect cgp_2f p;
 
-smacro procedure cgb_tt(s1,s2);
+inline procedure cgb_tt(s1,s2);
    % Comprehensive Groebner bases tt. [s1] and [s2] are CGP's. Returns
    % an EV, the lcm of the leading terms of [s1] and [s2].
    ev_lcm(cgp_evlmon s1,cgp_evlmon s2);

@@ -63,7 +63,7 @@ symbolic procedure rdsolvelin (u,b);
       <<x:=dm!: (1/s(i,i));
         for j:=i+1:n do
         <<y:=dm!:(s(j,i)*x);
-          for k:=i:n1 do s(j,k):=dm!:(s(j,k) - y*s(i,k));
+          for k:=i:n1 do s(j,k) := dm!:(s(j,k) - y*s(i,k));
       >>>>;
      >>;
 

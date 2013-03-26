@@ -100,36 +100,36 @@ switch onespace;
 
 !*onespace:=t;  % working inside a unique space is the default.
 
-%  Various smacros
+%  Various inlines
 
-smacro procedure id_cov u;
+inline procedure id_cov u;
    % to get the covariant identifier
    % u is the output of get_n_index
    cadr u;
 
-smacro procedure id_cont u;
+inline procedure id_cont u;
    % to get the contravariant identifier
    % u is the output of get_n_index
    u;
 
-smacro procedure careq_tilde u;
+inline procedure careq_tilde u;
    eqcar(u,'!~);
 
-smacro procedure careq_minus u;
+inline procedure careq_minus u;
    eqcar(u,'minus);
 
-smacro procedure lowerind u;
+inline procedure lowerind u;
    list('minus,u);
 
-smacro procedure raiseind u;
+inline procedure raiseind u;
    cadr u;
 
-smacro procedure id_switch_variance u;
+inline procedure id_switch_variance u;
  if eqcar(u,'minus) then cadr u
                     else list ('minus, u);
 
 
-smacro procedure get!-impfun!-args u;
+inline procedure get!-impfun!-args u;
    % Get dependencies of id u.
    cdr assoc(u,depl!*);
 

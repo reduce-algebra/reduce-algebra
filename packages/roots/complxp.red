@@ -175,7 +175,7 @@ symbolic procedure deflate1c(p,r);
            c := gftimesn(r,c); if j then c := gfplusn(c,j)>>;
       return c . q end;
 
-symbolic smacro procedure rl2gfc x;
+symbolic inline procedure rl2gfc x;
    x . if atom x then 0.0 else bfz!*;
 
 symbolic procedure accupr(p,q,r);

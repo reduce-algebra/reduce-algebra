@@ -35,7 +35,7 @@ fluid '(!*algint !*rationalize !*structure dmode!* kord!* powlis!*);
 
 put('rationalize,'simpfg,'((t (rmsubs)) (nil (rmsubs))));
 
-symbolic smacro procedure subtrf(u,v);
+symbolic inline procedure subtrf(u,v);
    % Returns u - v for standard forms u and v.
    addf(u,negf v);
 

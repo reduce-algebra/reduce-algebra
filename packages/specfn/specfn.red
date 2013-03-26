@@ -81,7 +81,7 @@ switch savesfs;
 on savesfs;
 
 
-symbolic smacro procedure mksqnew u;
+symbolic inline procedure mksqnew u;
   !*p2f(car fkern(u) .* 1) ./ 1;
 
 symbolic fluid '(bernoulli!-alist new!*bfs bf!*base sf!-alist !*savefs);
@@ -94,12 +94,12 @@ symbolic ( bf!*base := (if new!*bfs then 2 else 10) );
 symbolic ( if not globalp 'log2of10 then
                << global '(log2of10); log2of10 := 3.32193 >> );
 
-symbolic smacro procedure sq2bf!*(x);
+symbolic inline procedure sq2bf!*(x);
    (if fixp x then i2bf!: x
       else ((if car y neq '!:rd!: then retag cdr !*rn2rd y
                else retag cdr y) where y = !*a2f x));
 
-symbolic smacro procedure c!:prec!:;
+symbolic inline procedure c!:prec!:;
    (if new!*bfs then lispeval '!:bprec!: else !:prec!:);
 
 

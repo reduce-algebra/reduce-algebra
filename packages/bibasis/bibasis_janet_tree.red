@@ -42,14 +42,15 @@ module bibasis_janet_tree;
 % ph != NIL && nextvar == NIL && nextdeg == NIL  
 % ph == NIL && nextvar != NIL && (nextdeg == NIL || degree < nextdeg.degree)
 
+% The following structure is only used in this file.
 
-smacro procedure CreateJanetTreeNode(degree, triple, nextDegree, nextVariable); (degree . triple) . (nextDegree . nextVariable);
-smacro procedure JanetTreeNodeGetDegree(node); caar(node);
-smacro procedure JanetTreeNodeGetTriple(node); cdar(node);
-smacro procedure JanetTreeNodeGetNextDegree(node); cadr(node);
-smacro procedure JanetTreeNodeGetNextVariable(node); cddr(node);
+inline procedure CreateJanetTreeNode(degree, triple, nextDegree, nextVariable);
+   (degree . triple) . (nextDegree . nextVariable);
 
-smacro procedure JanetTreeReset(); FluidBibasisJanetTreeRootNode := nil;
+accessors (JanetTreeNodeGetDegree . JanetTreeNodeGetTriple) .
+          (JanetTreeNodeGetNextDegree . JanetTreeNodeGetNextVariable);
+
+inline procedure JanetTreeReset(); FluidBibasisJanetTreeRootNode := nil;
 
 
 expr procedure JanetTreeNodeBuild(degree, variable, triple);
@@ -90,7 +91,7 @@ begin
 end;
 
 
-smacro procedure JanetTreePrint(); JanetTreeNodePrint(FluidBibasisJanetTreeRootNode);
+inline procedure JanetTreePrint(); JanetTreeNodePrint(FluidBibasisJanetTreeRootNode);
 
 
 expr procedure JanetTreeInsert(triple);

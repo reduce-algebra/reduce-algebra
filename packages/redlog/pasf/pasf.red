@@ -246,47 +246,47 @@ algebraic operator rnd;
 put('rnd,'simpfn,'pasf_simprnd);
 put('rnd,'number!-of!-args,2);
 
-smacro procedure pasf_op(atf);
+inline procedure pasf_op(atf);
    % Presburger arithmetic standard form operator. [atf] is an atomic formula
    % $r(t_1,t_2)$ or $r(t_1,t_2,m)$. Returns $r$ or in case of a congruence
    % the pair $(r . m)$.
    car atf;
 
-smacro procedure pasf_opp(op);
+inline procedure pasf_opp(op);
    % Presburger arithmetic standard form operator predicate. [op] is an
    % expression. Returns t iff the name of [op] is a legal operator or
    % relation name. Hardly ever used.
    op memq '(equal neq lessp leq greaterp geq) or
       (pairp op and car op memq '(cong ncong));
 
-smacro procedure pasf_m(atf);
+inline procedure pasf_m(atf);
    % Presburger arithmetic standard form modulus operator. [atf] is an atomic
    % formula $t_1 \equiv_m t_2$. Returns $m$.
    cdar atf;
 
-smacro procedure pasf_arg2l(atf);
+inline procedure pasf_arg2l(atf);
    % Presburger arithmetic standard form left hand side argument. [atf] is an
    % atomic formula $r(t_1,t_2)$. Returns $t_1$.
    cadr atf;
 
-smacro procedure pasf_arg2r(atf);
+inline procedure pasf_arg2r(atf);
    % Presburger arithmetic standard form right hand side argument. [atf] is an
    % atomic formula $r(t_1,t_2)$. Returns $t_2$.
    caddr atf;
 
-smacro procedure pasf_mk2(op,lhs,rhs);
+inline procedure pasf_mk2(op,lhs,rhs);
    % Presburger arithmetic standard form make atomic formula. [op] is an
    % operator; [lhs] is the left handside term; [rhs] is the right handside
    % term. Returns the atomic formula $[op]([lhs],[rhs])$.
    {op,lhs,rhs};
 
-smacro procedure pasf_0mk2(op,lhs);
+inline procedure pasf_0mk2(op,lhs);
    % Presburger arithmetic standard form make zero right hand atomic
    % formula. [op] is an operator; [lhs] is a term. Returns the atomic formula
    % $[op]([lhs],0)$.
    {op,lhs,nil};
 
-smacro procedure pasf_opn(atf);
+inline procedure pasf_opn(atf);
    % Presburger arithmetic standard form operator name. [atf] is an
    % atomic formula $r(t_1,t_2)$ or $r(t_1,t_2,m)$. Returns $r$. Used
    % heavily.
@@ -297,19 +297,19 @@ smacro procedure pasf_opn(atf);
    else
       car atf;
 
-smacro procedure pasf_atfp(f);
+inline procedure pasf_atfp(f);
    % Presburger arithmetic standard form atomic formula predicate. [f] is a
    % formula. Returns t iff [f] has a legal relation name.
    (pasf_opn f) memq '(equal neq leq geq lessp greaterp
       cong ncong);
 
-smacro procedure pasf_congopp(op);
+inline procedure pasf_congopp(op);
    op memq '(cong ncong);
 
-smacro procedure pasf_equopp(op);
+inline procedure pasf_equopp(op);
    op memq '(equal neq);
 
-smacro procedure pasf_congp(atf);
+inline procedure pasf_congp(atf);
    % Presburger arithmetic standard form congruence atomic formula
    % predicate. [atf] is an atomic formula. Returns t iff the operator
    % is 'cong or 'ncong.

@@ -39,23 +39,26 @@ symbolic procedure !*d2n a; if null a then 0 else a;
 symbolic procedure adjoin!-term (p,c,r);
    if null c then r else (p .* c) .+ r;
 
-symbolic smacro procedure ttab n; spaces(n-posn());
+symbolic inline procedure ttab n; spaces(n-posn());
 
-symbolic smacro procedure polyzerop u; null u;
+symbolic inline procedure polyzerop u; null u;
 
-symbolic smacro procedure didntgo q; null q;
+symbolic inline procedure didntgo q; null q;
 
-symbolic smacro procedure depends!-on!-var(a,v);
+symbolic inline procedure depends!-on!-var(a,v);
   (lambda !#!#a; (not domainp !#!#a) and (mvar !#!#a=v)) a;
 
 symbolic procedure errorf u;
    rerror(ezgcd,1,list("Factorizer error:",u));
 
-smacro procedure printstr l; << prin2!* l; terpri!*(nil) >>;
+inline procedure printstr l; << prin2!* l; terpri!*(nil) >>;
 
-smacro procedure printvar v; printstr v;
+inline procedure printvar v; printstr v;
 
-smacro procedure prinvar v; prin2!* v;
+inline procedure prinvar v; prin2!* v;
+
+% This MUST be an SMACRO not an INLINE because "action" is not
+% always to be evaluated.
 
 symbolic smacro procedure factor!-trace action;
    begin scalar stream;
@@ -65,34 +68,25 @@ symbolic smacro procedure factor!-trace action;
       if stream then <<stream := wrs cdr stream; action; wrs stream>>
    end;
 
-symbolic smacro procedure getm2(a,i,j);
+symbolic inline procedure getm2(a,i,j);
    % Store by rows, to ease pivoting process.
    getv(getv(a,i),j);
 
-symbolic smacro procedure putm2(a,i,j,v);
+symbolic inline procedure putm2(a,i,j,v);
    putv(getv(a,i),j,v);
 
-symbolic smacro procedure !*f2mod u; u;
+symbolic inline procedure !*f2mod u; u;
 
-symbolic smacro procedure !*mod2f u; u;
+symbolic inline procedure !*mod2f u; u;
 
-% A load of access smacros for image sets follow:
+% A load of access inlines for image sets follow:
 
-symbolic smacro procedure get!-image!-set s; car s;
+accessors get!-image!-set . (get!-chosen!-prime . (get!-image!-lc .
+  (get!-image!-mod!-p . (get!-image!-content . (get!-image!-poly .
+  (get!-f!-numvec . !_))))));
 
-symbolic smacro procedure get!-chosen!-prime s; cadr s;
 
-symbolic smacro procedure get!-image!-lc s; caddr s;
-
-symbolic smacro procedure get!-image!-mod!-p s; cadr cddr s;
-
-symbolic smacro procedure get!-image!-content s; cadr cdr cddr s;
-
-symbolic smacro procedure get!-image!-poly s; cadr cddr cddr s;
-
-symbolic smacro procedure get!-f!-numvec s; cadr cddr cdddr s;
-
-symbolic smacro procedure put!-image!-poly!-and!-content
+symbolic inline procedure put!-image!-poly!-and!-content
    (s,imcont,impol);
   list(get!-image!-set s,
        get!-chosen!-prime s,

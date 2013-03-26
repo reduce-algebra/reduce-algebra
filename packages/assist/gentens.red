@@ -288,7 +288,7 @@ symbolic procedure simptensor u;
 %end;
 
 %symbolic procedure get_n_index(n,u);
- % u is the ouput of the smacro extract_index_tens.
+ % u is the ouput of the inline extract_index_tens.
  % n is an integer which corresponds to the index position.
  % gives the corresponding index.
  % it is an atom if contravariant.

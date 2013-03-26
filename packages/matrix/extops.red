@@ -74,13 +74,13 @@ symbolic procedure extadd(u,v);
       while u and v do
          if lpow v = lpow u then               % add coefficients
           <<if w := addf(lc u,lc v) then        % replace coefficient
-               <<red z := lpow u .* w .+ nil; z := red z>>;
+               <<set_red(z, lpow u .* w .+ nil); z := red z>>;
             u := red u; v := red v>>
          else if ordexp(lpow v,lpow u) then   % swap v and u
-          <<red z := lt v .+ nil; v := red v; z := red z>>
+          <<set_red(z, lt v .+ nil); v := red v; z := red z>>
          else
-          <<red z := lt u .+ nil; u := red u; z := red z>>;
-      red z := if u then u else v;
+          <<set_red(z, lt u .+ nil); u := red u; z := red z>>;
+      set_red(z, if u then u else v);
       return red s;
       end;
 

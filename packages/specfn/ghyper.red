@@ -115,7 +115,7 @@ M:
 %*                   Lowering of the order GHF                         *
 %***********************************************************************
 
- symbolic smacro procedure GHFlowering1p;
+ symbolic inline procedure GHFlowering1p;
   begin scalar sa,sb,w1,w2;
   sa:=a;   sb:=b;
  M1:  if null b then << a:=sa; b:=sb; return NIL
@@ -153,7 +153,7 @@ M:
                quotsq(multsq(z,multlist(cdr x)),
                       multsq(car y,multlist(cdr y)))))$
 
- symbolic smacro procedure GHFlowering2p;
+ symbolic inline procedure GHFlowering2p;
   begin scalar sa,sb,w1,wa,fl;
   if equal(z,'(1 . 1)) then return NIL;
   sa:=a;   sb:=b;
@@ -205,7 +205,7 @@ M:
                         cdr x),b,z),
                   quotsq(caar x,diff1sq(cadar x,caar x))))$
 
-  symbolic smacro procedure GHFlowering3p;
+  symbolic inline procedure GHFlowering3p;
   %return a = (mmm . a1).
    begin scalar sa,w,mmm;    % MM used in SPDE as a global.
    sa:=a;
@@ -475,7 +475,7 @@ GHFexit(a,b,z)$
      simpx1(prepsq z,1,2))),simpfunc('intfc,z)) >>
             else GHFexit(a,b,z)$
 
-symbolic smacro procedure fehler();
+symbolic inline procedure fehler();
         rerror('specialf,139,"Wrong arguments to hypergeometric");
 
 symbolic procedure hypergeom(U);

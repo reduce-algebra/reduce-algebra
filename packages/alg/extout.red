@@ -98,7 +98,7 @@ symbolic procedure multop(u,v);
     else if car u eq 'k!* then v
     else rmultpf(u,v);
 
-symbolic smacro procedure lcx u;
+symbolic inline procedure lcx u;
    % Returns leading coefficient of a form with zero reductum, or an
    % error otherwise.
    cdr carx(u,'lcx);

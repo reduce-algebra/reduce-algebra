@@ -49,119 +49,119 @@ define lenrow=8,lencol=4;
 % Length of the rows and the columns                                  ;
 % ------------------------------------------------------------------- ;
 
-symbolic smacro procedure row x$
+symbolic inline procedure row x$
    getv(codmat,maxvar+x)$
 
-symbolic smacro procedure free x$
+symbolic inline procedure free x$
    getv(row x,0)$
 
-symbolic smacro procedure wght x$
+symbolic inline procedure wght x$
    getv(row x,1)$
 
-symbolic smacro procedure awght x$
+symbolic inline procedure awght x$
    caar(wght x)$
 
-symbolic smacro procedure mwght x$
+symbolic inline procedure mwght x$
    cdar(wght x)$
 
-symbolic smacro procedure hwght x$
+symbolic inline procedure hwght x$
    cdr(wght x)$
 
-symbolic smacro procedure opval x$
+symbolic inline procedure opval x$
    getv(row x,2)$
 
-symbolic smacro procedure farvar x$
+symbolic inline procedure farvar x$
    getv(row x,3)$
 
-symbolic smacro procedure zstrt x$
+symbolic inline procedure zstrt x$
    getv(row x,4)$
 
-symbolic smacro procedure chrow x$
+symbolic inline procedure chrow x$
    getv(row x,5)$
 
-symbolic smacro procedure expcof x$
+symbolic inline procedure expcof x$
    getv(row x,6)$
 
-symbolic smacro procedure hir x$
+symbolic inline procedure hir x$
    getv(row x,7)$
 
-symbolic smacro procedure phir x$
+symbolic inline procedure phir x$
    car(hir x)$
 
-symbolic smacro procedure nhir x$
+symbolic inline procedure nhir x$
    cdr(hir x)$
 
 % ------------------------------------------------------------------- ;
 % Assignments in the incidence matrix                                 ;
 % ------------------------------------------------------------------- ;
 
-symbolic smacro procedure fillrow(x,v)$
+symbolic inline procedure fillrow(x,v)$
    putv(codmat,maxvar+x,v)$
 
-symbolic smacro procedure setoccup x$
+symbolic inline procedure setoccup x$
    putv(row x,0,nil)$
 
-symbolic smacro procedure setfree x$
+symbolic inline procedure setfree x$
    putv(row x,0,t)$
 
-symbolic smacro procedure setwght(x,v)$
+symbolic inline procedure setwght(x,v)$
    putv(row x,1,v)$
 
 
-symbolic smacro procedure setopval(x,v)$
+symbolic inline procedure setopval(x,v)$
    putv(row x,2,v)$
 
-symbolic smacro procedure setfarvar(x,v)$
+symbolic inline procedure setfarvar(x,v)$
    putv(row x,3,v)$
 
-symbolic smacro procedure setzstrt(x,v)$
+symbolic inline procedure setzstrt(x,v)$
    putv(row x,4,v)$
 
-symbolic smacro procedure setchrow(x,v)$
+symbolic inline procedure setchrow(x,v)$
    putv(row x,5,v)$
 
-symbolic smacro procedure setexpcof(x,v)$
+symbolic inline procedure setexpcof(x,v)$
    putv(row x,6,v)$
 
-symbolic smacro procedure sethir(x,v)$
+symbolic inline procedure sethir(x,v)$
    putv(row x,7,v)$
 
-symbolic smacro procedure setphir(x,v)$
+symbolic inline procedure setphir(x,v)$
    rplaca(hir x,v)$
 
-symbolic smacro procedure setnhir(x,v)$
+symbolic inline procedure setnhir(x,v)$
    rplacd(hir x,v)$
 
 % ------------------------------------------------------------------- ;
 % Access functions for Z elements                                     ;
 % ------------------------------------------------------------------- ;
 
-symbolic smacro procedure xind z$
+symbolic inline procedure xind z$
    car z$
 
-symbolic smacro procedure yind z$
+symbolic inline procedure yind z$
    car z$
 
-symbolic smacro procedure val z$
+symbolic inline procedure val z$
    cdr z$
 
-symbolic smacro procedure ival z$
+symbolic inline procedure ival z$
    car val z$
 
-symbolic smacro procedure bval z$
+symbolic inline procedure bval z$
    cdr val z$
 
 % ------------------------------------------------------------------- ;
 % Assignment functions for Z elements                                 ;
 % ------------------------------------------------------------------- ;
 
-symbolic smacro procedure setival(z,v)$
+symbolic inline procedure setival(z,v)$
    rplaca(val z,v)$
 
-symbolic smacro procedure setbval(z,v)$
+symbolic inline procedure setbval(z,v)$
    rplacd(val z,v)$
 
-symbolic smacro procedure mkzel(n,iv);
+symbolic inline procedure mkzel(n,iv);
    if idp(iv) or constp(iv) then n.(iv.nil) else n.iv$
     % --------------------------------------------------------------- ;
     % Distinguish between atom and non atom for IVAL and BVAL.        ;
@@ -171,10 +171,10 @@ symbolic smacro procedure mkzel(n,iv);
 % Access functions for ordening subexpressions                        ;
 % ------------------------------------------------------------------- ;
 
-symbolic smacro procedure ordr x$
+symbolic inline procedure ordr x$
    getv(row x,8)$
 
-symbolic smacro procedure setordr(x,l)$
+symbolic inline procedure setordr(x,l)$
    putv(row x,8,l)$
 
 % ------------------------------------------------------------------- ;
@@ -187,10 +187,10 @@ codhisto:=nil;
 
 define histolen=200$
 
-symbolic smacro procedure histo x$
+symbolic inline procedure histo x$
    getv(codhisto,x)$
 
-symbolic smacro procedure sethisto(x,v)$
+symbolic inline procedure sethisto(x,v)$
    putv(codhisto,x,v)$
 
 endmodule;

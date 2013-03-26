@@ -61,7 +61,7 @@ signat!* :=0; % number of time-like coordinates.
 
 fluid '(alglist!*);
 
-smacro procedure get_prop_space u;
+inline procedure get_prop_space u;
 % To get properties of a given space (subspace).
  subla(spaces!*,u);
 

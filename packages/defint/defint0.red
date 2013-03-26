@@ -32,7 +32,7 @@ fluid '(!*precise);
 
 global '(spec_cond);
 
-symbolic smacro procedure mynumberp(n);
+symbolic inline procedure mynumberp(n);
 
 begin; if numberp n then t
 

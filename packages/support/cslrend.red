@@ -612,14 +612,14 @@ symchar!* := t;  % Changed prompt when in symbolic mode.
 %- remflag('(gensym), 'lose);
 %- remprop('gensym, 's!:builtin0);
 
-%- smacro procedure gensym();
+%- inline procedure gensym();
 %-    reduce!-gensym();
 
 % However, the current CSL gensym uses an upper case G as the root,
 % which causes inconsistencies in some tests (e.g., int and qsum).
 % This definition cures that.
 
-symbolic smacro procedure gensym; gensym1 'g;
+symbolic inline procedure gensym; gensym1 'g;
 
 
 symbolic procedure initreduce;

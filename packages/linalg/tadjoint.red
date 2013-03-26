@@ -38,7 +38,7 @@ module tadjoint;
 %
 
 
-symbolic smacro procedure mksq!*mat in_mat;
+symbolic inline procedure mksq!*mat in_mat;
 %
 % Converts entries in matrix to standard quotients.
 %
@@ -52,7 +52,7 @@ begin scalar tmp_mat,out_mat;
 end;
 
 
-symbolic smacro procedure reval!*mat in_mat;
+symbolic inline procedure reval!*mat in_mat;
 %
 % Revals the entries in matrix.
 %

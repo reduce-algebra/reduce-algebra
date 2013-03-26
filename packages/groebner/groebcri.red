@@ -30,7 +30,7 @@ module groebcri;
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-smacro procedure atleast2elementsin u;
+inline procedure atleast2elementsin u;
 % Test if u has at least a cadr element .
  u and cdr u;
 

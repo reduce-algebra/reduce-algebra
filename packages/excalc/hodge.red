@@ -55,7 +55,7 @@ symbolic procedure mkhodge u;
                    else mkupf y
    end;
 
-smacro procedure mkbaseform u;
+inline procedure mkbaseform u;
    mkupf list(caar basisforml!*,u);
 
 symbolic procedure basisformp u;

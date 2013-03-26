@@ -38,19 +38,19 @@ lisp <<
 module ofsfopt;
 % Ordered field standard form optimization. Submodule of [ofsf].
 
-smacro procedure ofsf_cvl(x);
+inline procedure ofsf_cvl(x);
    car x;
 
-smacro procedure ofsf_al(x);
+inline procedure ofsf_al(x);
    cadr x;
 
-smacro procedure ofsf_pl(x);
+inline procedure ofsf_pl(x);
    caddr x;
 
-smacro procedure ofsf_an(x);
+inline procedure ofsf_an(x);
    cdddr x;
 
-smacro procedure ofsf_mkentry(cvl,al,pl,an);
+inline procedure ofsf_mkentry(cvl,al,pl,an);
    cvl . al . pl . an;
 
 procedure ofsf_sendtask(hd,p,z);

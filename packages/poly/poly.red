@@ -58,56 +58,24 @@ infix .^,.*,.+,./;
 
 % Constructors and selectors for standard forms.
 
-smacro procedure u.+v; % Standard (polynomial) addition constructor.
+inline procedure u.+v; % Standard (polynomial) addition constructor.
    u . v;
 
-smacro procedure lc u;   % Leading coefficient of standard form.
-   cdar u;
+accessors lt . red, (lpow . lc) . !_, ((mvar . ldeg) . !_) . !_;
 
-smacro procedure ldeg u; % Leading degree of standard form.
-   cdaar u;
+accessors tpow . tc, (tvar . tdeg) . !_;
 
-smacro procedure lt u;   % Leading term of standard form.
-   car u;
+accessors !_pvar!_ . pdeg;
 
-smacro procedure u.*v;  % Standard form multiplication constructor.
+accessors numr . denr;
+
+inline procedure u.*v;  % Standard form multiplication constructor.
    u . v;
-
-smacro procedure mvar u; % Main variable of standard form.
-   caaar u;
-
-smacro procedure lpow u; % Leading power of standard form.
-   caar u;
-
-smacro procedure pdeg u;
-   % Returns the degree of the power U.
-   cdr u;
-
-smacro procedure red u; % Reductum of standard form.
-   cdr u;
-
-smacro procedure tc u;   % Coefficient of standard term.
-   cdr u;
-
-smacro procedure tdeg u; % Degree of standard term.
-   cdar u;
-
-smacro procedure tpow u; % Power of standard term.
-   car u;
-
-smacro procedure tvar u; % Main variable of a standard term.
-   caar u;
-
-smacro procedure numr u; % Numerator of standard quotient.
-   car u;
-
-smacro procedure denr u; % Denominator of standard quotient.
-   cdr u;
 
 smacro procedure u ./ v; % Constructor for standard quotient.
    u . v;
 
-symbolic smacro procedure domainp u; atom u or atom car u;
+symbolic inline procedure domainp u; atom u or atom car u;
 
 
 % Procedures for converting between parts of standard quotients and
@@ -148,25 +116,25 @@ symbolic procedure !*ff2a(u,v);
    % Converts ratio of two forms U and V to a prefix form.
    (if wtl!* then prepsq x else mk!*sq x) where x = cancel( u ./ v);
 
-smacro procedure !*f2a u; prepf u;
+inline procedure !*f2a u; prepf u;
 
-smacro procedure !*f2q u;
+inline procedure !*f2q u;
    % U is a standard form, value is a standard quotient.
    u . 1;
 
-smacro procedure !*k2f u;
+inline procedure !*k2f u;
    % U is a kernel, value is a standard form.
    list((u .** 1) . 1);
 
-symbolic smacro procedure !*kk2f u;
+symbolic inline procedure !*kk2f u;
    % U is a non-unique kernel, value is a standard form.
    list(mksp(u,1) . 1);
 
-symbolic smacro procedure !*kk2q u;
+symbolic inline procedure !*kk2q u;
    % U is a non-unique kernel, value is a standard quotient.
    list(mksp(u,1) .* 1) ./ 1;
 
-smacro procedure !*k2q u;
+inline procedure !*k2q u;
    % U is a kernel, value is a standard quotient.
    list((u .** 1) . 1) . 1;
 
@@ -178,7 +146,7 @@ smacro procedure !*p2f u;
    % U is a standard power, value is a standard form.
    list(u . 1);
 
-smacro procedure !*p2q u;
+inline procedure !*p2q u;
    % U is a standard power, value is a standard quotient.
    list(u . 1) . 1;
 
@@ -198,15 +166,13 @@ symbolic procedure !*q2k u;
    % conversion not possible.
    if kernp u then mvar numr u else typerr(prepsq u,'kernel);
 
-smacro procedure !*t2f u;
+inline procedure !*t2f u;
    % U is a standard term, value is a standard form.
    list u;
 
-smacro procedure !*t2q u;
+inline procedure !*t2q u;
    % U is a standard term, value is a standard quotient.
    list u . 1;
-
-symbolic smacro procedure tvar a; caar a;
 
 endmodule;
 

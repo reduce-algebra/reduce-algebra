@@ -42,9 +42,9 @@ PUT('!:ar!:,'!:nest!:,'ident);
 %  a domain element is a list
 %      ('!:nest!: level# dmode* . sq)
 
-smacro procedure nestlevel u; cadr u;
-smacro procedure nestdmode u; caddr u;
-smacro procedure nestsq u; cdddr u;
+inline procedure nestlevel u; cadr u;
+inline procedure nestdmode u; caddr u;
+inline procedure nestsq u; cdddr u;
 
 GLOBAL '(DOMAINLIST!*);
 

@@ -82,42 +82,42 @@ global '(lftshft!*);
 
 % Smacros used by more than one EXCALC module:
 
-smacro procedure ldpf u;
+inline procedure ldpf u;
    %selector for leading standard form in patitioned sf;
    caar u;
 
-smacro procedure tpsf u;
+inline procedure tpsf u;
    %selector for leading term in partitioned sf;
    car u;
 
-smacro procedure !*k2pf u;
+inline procedure !*k2pf u;
    u .* (1 ./ 1) .+ nil;
 
-smacro procedure negpf u;
+inline procedure negpf u;
    multpfsq(u,(-1) ./ 1);
 
-smacro procedure lowerind u;
+inline procedure lowerind u;
    list('minus,u);
 
-smacro procedure lwf u;
+inline procedure lwf u;
    %selector for leading factor in wedge.
    car u;
 
-smacro procedure rwf u;
+inline procedure rwf u;
    %selector for the rest of factors in wedge.
    cdr u;
 
-smacro procedure lftshftp u;
+inline procedure lftshftp u;
    smemqlp(lftshft!*,u);
 
-smacro procedure get!-impfun!-args u;
+inline procedure get!-impfun!-args u;
    % Get dependencies of id u.
    cdr assoc(u,depl!*);
 
-smacro procedure get!*fdeg u;
+inline procedure get!*fdeg u;
    (if x then car x else nil) where x = get(u,'fdegree);
 
-smacro procedure get!*ifdeg u;
+inline procedure get!*ifdeg u;
    (if x then cdr x else nil)
     where x = assoc(length cdr u,get(car u,'ifdegree));
 

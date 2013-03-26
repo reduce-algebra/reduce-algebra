@@ -51,7 +51,7 @@ global '(ee);
 
 % ****************** Various polynomial utilities **********************
 
-symbolic smacro procedure univariatep p; univariatep1(p,mvar p);
+symbolic inline procedure univariatep p; univariatep1(p,mvar p);
 
 symbolic procedure univariatep1(p,v);
 % checks that p is univariate in v;
@@ -177,23 +177,23 @@ symbolic procedure heu!-quotf(p,q);
 
 %****************** Z-adic polynomial GCD routines ********************
 
-symbolic smacro procedure xceiling(n,d); (n+d-1)/d;
+symbolic inline procedure xceiling(n,d); (n+d-1)/d;
 
-symbolic smacro procedure force!-even x;
+symbolic inline procedure force!-even x;
    if evenp x then x else x+1;
 
-symbolic smacro procedure force!-odd x;
+symbolic inline procedure force!-odd x;
    if evenp x then x+1 else x;
 
-symbolic smacro procedure next!-even!-value x;
+symbolic inline procedure next!-even!-value x;
    if (denr x)=1 then force!-even fix(numr x * ee) ./ 1
     else 1 ./ force!-even fix(denr x * ee);
 
-symbolic smacro procedure next!-odd!-value x;
+symbolic inline procedure next!-odd!-value x;
    if (denr x)=1 then force!-odd fix(numr x * ee) ./ 1
     else 1 ./ force!-odd fix(denr x * ee);
 
-symbolic smacro procedure first!-value(inp,inq,lcp,lcq,tcp,tcq);
+symbolic inline procedure first!-value(inp,inq,lcp,lcq,tcp,tcq);
    % Initial evaluation is based on Cauchy's inequality.
    if lcp<tcp then
       if lcq<tcq then
@@ -207,7 +207,7 @@ symbolic smacro procedure first!-value(inp,inq,lcp,lcq,tcp,tcq);
       else if (inp*lcq)<(inq*lcp) then (2+2*xceiling(inp,lcp)) . 1
          else (2+2*xceiling(inq,lcq)) . 1;
 
-symbolic smacro procedure
+symbolic inline procedure
    second!-value(inp,inq,lcp,lcq,lgcd,tcp,tcq,tgcd);
    % The second evaluation point is from a modified Mignotte bound.
    (lambda (inp,inq,lcp,lcq,tcp,tcq);
@@ -359,7 +359,7 @@ symbolic procedure analyse!-polynomial1 (p,inp,tcp,xsxp,mvarp);
 % given a number in [0,modulus), return the equivalent
 % member of [-modulus/2,modulus/2)
 % LAMBDA to ensure only one evaluation of arguments;
-symbolic smacro procedure negshiftz(n,modulus);
+symbolic inline procedure negshiftz(n,modulus);
    (lambda (nn,mmodulus);
       if nn>quotient(mmodulus,2) then nn-mmodulus else nn)
     (n,modulus);

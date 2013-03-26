@@ -32,7 +32,7 @@ create!-package('(gentran utils intrfc templt pre gparser redlsp segmnt
                   lspfor lsprat lspc lsppasc goutput),
                 '(contrib gentran));
 
-symbolic smacro procedure smallfloatp u;
+symbolic inline procedure smallfloatp u;
    % Returns true if <structure> is a small rounded.
    atom u;
 

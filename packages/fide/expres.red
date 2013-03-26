@@ -124,11 +124,11 @@ if not atom u then lprie list(" Non atom tensor variable ",u)
 %  Smacro definitions for access of data structure subparts
 %======================================================================
 
-smacro procedure tensrnk u$
+inline procedure tensrnk u$
 % determines rank from cddr of datastructure
 car u$
 
-smacro procedure tensval u$
+inline procedure tensval u$
 % determines value from cddr of datastructure
 cadr u$
 

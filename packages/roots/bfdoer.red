@@ -75,7 +75,7 @@ global '(bfz!* bfone!* bfhalf!* bftwo!* prd!% log2 bfee!* !!ee);
 
 bfee!* := bfloat !!ee;
 
-symbolic smacro procedure dnp x; eqcar(x,'!:dn!:);
+symbolic inline procedure dnp x; eqcar(x,'!:dn!:);
 
 symbolic procedure bfleqp(a,b); if atom a then a<=b else not grpbf(a,b);
 
@@ -116,7 +116,7 @@ symbolic procedure rlval(p,r);
                  c := (if bf then plus!:(i,c) else c + i)>>;
          return if bf then rndpwr c else c end;
 
-symbolic smacro procedure sqr!: a; times!:(a,a);
+symbolic inline procedure sqr!: a; times!:(a,a);
 
 symbolic procedure deflate2 (p,u);
  % deflate real bf polynomial by one pair of gbf roots.
@@ -204,7 +204,7 @@ symbolic procedure gfval(p,x);
      if atom gfrl p and (infinityp gfrl p or infinityp gfim p)
         then error(0,"gfval -> infinity") else p>>;
 
-symbolic smacro procedure rndpwrxc(x,c);
+symbolic inline procedure rndpwrxc(x,c);
    if atom gfrl x then c else (rndpwr gfrl c) . rndpwr gfim c;
 
 symbolic procedure gfrval(p,x);

@@ -460,7 +460,7 @@ end$
 
 % A macro used to prevent things with *pascname*
 % properties being evaluated in certain circumstances.  MCD 28.3.94
-symbolic smacro procedure pascexp_name(u);
+symbolic inline procedure pascexp_name(u);
 if atom u then
   list(u)
 else

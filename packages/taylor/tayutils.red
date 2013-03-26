@@ -130,7 +130,7 @@ symbolic procedure lcmn(n,m);
    %
    n*(m/gcdn(n,m));
 
-symbolic smacro procedure get!-denom expo;
+symbolic inline procedure get!-denom expo;
    if atom expo then 1 else cddr expo;
 
 symbolic procedure get!-denom!-l expol;
@@ -325,7 +325,7 @@ symbolic procedure inv!.tp!. u;
     goto loop
   end;
 
-symbolic smacro procedure taycoeff!-before(cc1,cc2);
+symbolic inline procedure taycoeff!-before(cc1,cc2);
   %
   % (TayCoeff, TayCoeff) -> Boolean
   %

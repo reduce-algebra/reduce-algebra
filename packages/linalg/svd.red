@@ -39,7 +39,7 @@ module svd;
 
 
 
-symbolic smacro procedure my_minus(u);
+symbolic inline procedure my_minus(u);
   %
   % Efficiently performs reval({'minus,u}).
   %

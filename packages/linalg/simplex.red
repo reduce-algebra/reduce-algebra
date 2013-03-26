@@ -15,7 +15,7 @@ module simplex;
 % Minor changes: Herbert Melenk, Jan 1995                              %
 %                                                                      %
 %   replacing first, second etc. by car, cadr                          %
-%   converted big smacros to ordinary procedures                       %
+%   converted big inlines to ordinary procedures                       %
 %                                                                      %
 %**********************************************************************%
 
@@ -49,7 +49,7 @@ if not get('leq,'simpfn) then
    algebraic operator >=;
 >>;
 
-symbolic smacro procedure smplx_prepsq u;
+symbolic inline procedure smplx_prepsq u;
   %
   % If u in (!*sq) standard quotient form then get !:rd!: part.
   %
@@ -62,7 +62,7 @@ symbolic smacro procedure smplx_prepsq u;
 
 
 
-symbolic smacro procedure fast_row_dim(in_mat);
+symbolic inline procedure fast_row_dim(in_mat);
   %
   % Finds row dimension of a matrix with no error checking.
   %
@@ -70,7 +70,7 @@ symbolic smacro procedure fast_row_dim(in_mat);
 
 
 
-symbolic smacro procedure fast_column_dim(in_mat);
+symbolic inline procedure fast_column_dim(in_mat);
   %
   % Finds column dimension of a matrix with no error checking.
   %
@@ -78,7 +78,7 @@ symbolic smacro procedure fast_column_dim(in_mat);
 
 
 
-symbolic smacro procedure fast_stack_rows(in_mat,row_list);
+symbolic inline procedure fast_stack_rows(in_mat,row_list);
   %
   % row_list is always an integer in simplex.
   %
@@ -87,7 +87,7 @@ symbolic smacro procedure fast_stack_rows(in_mat,row_list);
 
 
 
-symbolic smacro procedure fast_getmat(matri,i,j);
+symbolic inline procedure fast_getmat(matri,i,j);
   %
   % Get matrix element (i,j).
   %
@@ -95,7 +95,7 @@ symbolic smacro procedure fast_getmat(matri,i,j);
 
 
 
-symbolic smacro procedure fast_my_letmtr(u,v,y);
+symbolic inline procedure fast_my_letmtr(u,v,y);
   rplaca(pnth(nth(cdr y,car my_revlis cdr u),cadr my_revlis cdr u),v);
 
 

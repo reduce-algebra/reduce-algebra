@@ -112,7 +112,7 @@ begin scalar n!+,n!-,n!*,n!^,n!/,n!f,tlocs,loper,operands;
  return(tlocs)
 end;
 
-symbolic smacro procedure protected(a,pn);
+symbolic inline procedure protected(a,pn);
 member((if atom a then a else car a), pn);
 
 symbolic procedure make_min_length(prefixlist, protectednames);

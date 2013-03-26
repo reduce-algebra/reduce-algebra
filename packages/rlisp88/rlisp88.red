@@ -72,7 +72,7 @@ symbolic procedure rlisp88_on;
       remprop('def,'stat);
       remprop('array,'formfn);
       remprop('add,'number!-of!-args);
-      remprop('add,'smacro)
+      remprop('add,'inline)
    end;
 
 symbolic procedure rlisp88_off;
@@ -107,7 +107,7 @@ symbolic procedure rlisp88_off;
       deflist('((array rlis) (def rlis) (index rlis)),'stat);
       put('array,'formfn,'formarray);
       put('add,'number!-of!-args,2);
-      put('add,'smacro,'(lambda (u v) (cons u v)))
+      put('add,'inline,'(lambda (u v) (cons u v)))
    end;
 
 put('rlisp88,'simpfg,'((t (rlisp88_on)) (nil (rlisp88_off))));

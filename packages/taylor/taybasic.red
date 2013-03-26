@@ -77,7 +77,7 @@ symbolic procedure multtaylorsq (tay, sq);
               TayFlags tay)$
 
 
-symbolic smacro procedure degree!-union (u, v);
+symbolic inline procedure degree!-union (u, v);
   union (u, v)$ % works for the moment;
 
 symbolic procedure addtaylor(u,v);

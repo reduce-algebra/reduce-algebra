@@ -74,11 +74,11 @@ if(null v or v < 4.1)where v=get('dipoly,'version)
   then rederr {"wrong dipoly module",
                 "(get and compile dipoly, before you compile groebner)"};
 
-smacro procedure tt(s1,s2);
+inline procedure tt(s1,s2);
   % Lcm of leading terms of s1 and s2 .
 vevlcm(vdpevlmon s1,vdpevlmon s2);
 
-smacro procedure vdpnumber f;vdpgetprop(f,'number);
+inline procedure vdpnumber f;vdpgetprop(f,'number);
 
 imports a2vdp,a2vbc,dependsl,domainp,eqexpr,f2vdp,fctrf,korder,lc,lpow,
  multroot0,

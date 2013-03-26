@@ -341,10 +341,10 @@ symbolic procedure order!: nmbr;
    %
    if mt!: nmbr = 0 then 0 else preci!: nmbr + ep!: nmbr - 1;
 
-symbolic smacro procedure decprec!:(nmbr, k);
+symbolic inline procedure decprec!:(nmbr, k);
    make!:ibf(ashift(mt!: nmbr,-k), ep!: nmbr + k);
 
-symbolic smacro procedure incprec!:(nmbr, k);
+symbolic inline procedure incprec!:(nmbr, k);
    make!:ibf(ashift(mt!: nmbr,k), ep!: nmbr - k);
 
 symbolic procedure conv!:mt(nmbr, k);
@@ -586,12 +586,12 @@ symbolic procedure ratnump!:(x);
    % X is any Lisp entity.
    eqcar(x,'!:ratnum!:);                   %JBM Change to EQCAR.
 
-symbolic smacro procedure numr!: rnmbr;
+symbolic inline procedure numr!: rnmbr;
    % This function selects the numerator of a rational number "n".
    % RNMBR is a rational number representation of "n".
    cadr rnmbr;
 
-symbolic smacro procedure denm!: rnmbr;
+symbolic inline procedure denm!: rnmbr;
    % This function selects the denominator of a rational number "n".
    % RNMBR is a rational number representation of "n".
    cddr rnmbr;

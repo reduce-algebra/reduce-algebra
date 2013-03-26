@@ -28,7 +28,10 @@ module proc;   % Procedure statement.
 %
 
 
-fluid '(!*nosmacros !*redeflg!* fname!* ftype!*);
+fluid '(!*noinlines !*loginlines !*redeflg!* fname!* ftype!*);
+
+% !*loginlines will cause a compile-time report of patterns of inline usage.
+!*loginlines := t;
 
 global '(!*argnochk !*comp !*lose !*micro!-version cursym!* erfg!*
          ftypes!*);
@@ -73,18 +76,23 @@ symbolic procedure formproc(u,vars,mode);
         y := pairxvars(varlis,x,vars,mode);
         if x then body := car body . rplaca!*(cdr body,cdr y);
         body:= form1(body,car y,mode);   % FORMC here would add REVAL.
+% !*noinlines being set causes every inline that is defined to be downgraded
+% to a regular procedure.
+        if !*noinlines and type eq 'inline then type := 'expr;
 !#if (memq 'csl lispsystem!*)
 % Note the non-Common way in which the DECLARE sits within a PROGN here.
 % Furthermore I only insert DECLARE for sort-of ordinary functions.
-% Specifically this will not include "smacro procedure"...
+% Specifically this will not include "inline procedure"...
         if fl and type memq '(expr fexpr macro) then
          body:=list('progn,
                     list('declare, 'special . fl),
                     body);
 !#endif
-        if !*nosmacros and type eq 'smacro then type := 'expr;
-        if not(type eq 'smacro) and get(name,'smacro)
-          then lprim list("SMACRO",name,"redefined");
+        if (not(type eq 'inline) and get(name,'inline)) or
+           (not(type eq 'smacro) and get(name,'smacro))
+          then lprim list("SMACRO/INLINE",name,"redefined");
+% the next line generates warnings if any arguments are not used (in symbolic
+% mode, and not counting arguments that are fluid).
         symbvarlst(varlis,body,mode);
         if type eq 'expr then body := list('de,name,varlis,body)
          else if type eq 'fexpr then body := list('df,name,varlis,body)
@@ -98,7 +106,7 @@ symbolic procedure formproc(u,vars,mode);
         if not(mode eq 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
-        if !*argnochk and type memq '(expr smacro)
+        if !*argnochk and type memq '(expr inline smacro)
           then <<
               if (n:=get(name, 'number!-of!-args)) and
                  not flagp(name, 'variadic) and
@@ -112,9 +120,9 @@ symbolic procedure formproc(u,vars,mode);
                                     mkquote 'number!-of!-args,
                                     length varlis),
                                body) >>;
-        if !*defn and type memq '(fexpr macro smacro)
+        if !*defn and type memq '(fexpr macro inline smacro)
           then lispeval body;
-        return if !*micro!-version and type memq '(fexpr macro smacro)
+        return if !*micro!-version and type memq '(fexpr macro inline smacro)
                  then nil
                 else body
    end;
@@ -199,7 +207,8 @@ symbolic procedure procstat1 mode;
 symbolic procedure procstat; procstat1 nil;
 
 deflist ('((procedure procstat) (expr procstat) (fexpr procstat)
-           (emb procstat) (macro procstat) (smacro procstat)),
+           (emb procstat) (macro procstat) (inline procstat)
+           (smacro procstat)),
         'stat);
 
 % Next line refers to bootstrapping process.

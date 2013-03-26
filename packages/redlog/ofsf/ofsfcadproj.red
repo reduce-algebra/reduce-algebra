@@ -562,8 +562,8 @@ procedure sf_fromdensecoeffs(fl,k);
       if null cdr fl then return car fl;
       if null car fl then return sf_fromdensecoeffs(cdr fl,k);
       f := sf_expt(k,length(fl)-1);
-      lc f := car fl;
-      red f := sf_fromdensecoeffs(cdr fl,k);
+      set_l(f, car fl);
+      set_red(f, sf_fromdensecoeffs(cdr fl,k));
       return f
    end;
 
@@ -1788,8 +1788,8 @@ procedure sf_fromcdl(cdl,k);
    begin scalar f;
       if null cdr cdl then return caar cdl;
       f := sf_expt(k,cdar cdl);
-      lc f := caar cdl;
-      red f := sf_fromcdl(cdr cdl,k);
+      set_lc(f, caar cdl);
+      set_red(f, sf_fromcdl(cdr cdl,k));
       return f
    end;
 

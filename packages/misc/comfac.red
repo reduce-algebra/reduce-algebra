@@ -28,9 +28,9 @@ module comfac;   % Multivariate common factor/content routines.
 %
 
 
-symbolic smacro procedure domain!-gcd(u,v); gcdn(u,v);
+symbolic inline procedure domain!-gcd(u,v); gcdn(u,v);
 
-symbolic smacro procedure domain!-onep u; onep u;
+symbolic inline procedure domain!-onep u; onep u;
 
 symbolic procedure mv!-pow!-zerop u;
    null u or zerop car u and mv!-pow!-zerop cdr u;

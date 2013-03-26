@@ -255,7 +255,7 @@ put('!:fs!:,'simpfn,'simpfs);
 
 %% We have all the usual problems of unit coefficients, and zero angles
 
-smacro procedure zeroterm x; fs!:coeff x = '(nil  . 1);
+inline procedure zeroterm x; fs!:coeff x = '(nil  . 1);
 
 symbolic procedure fs!:prin!:(x);
   << prin2!* "["; fs!:prin cdr x; prin2!* "]" >>;

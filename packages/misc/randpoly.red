@@ -31,7 +31,7 @@ module randpoly;  % A random (generalized) polynomial generator
 
 create!-package('(randpoly),'(contrib misc));
 
-symbolic smacro procedure apply_c c;
+symbolic inline procedure apply_c c;
    % Apply a coefficient generator function c that returns
    % a prefix form and convert it to standard quotient form.
    simp!* apply(c, nil);
@@ -146,7 +146,7 @@ symbolic procedure natnump n;
    % Returns t if n is a natural number.
    fixp n and n >= 0;
 
-symbolic smacro procedure kp2f(k, p);
+symbolic inline procedure kp2f(k, p);
    % k : unique kernel, p : natural number > 0
    % Returns k^p as a standard form, taking account of
    % both asymptotic let rules and weightings.

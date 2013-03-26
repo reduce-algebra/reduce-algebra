@@ -305,7 +305,7 @@ procedure gb_interface1!$(fname,a2sl2,s2a,s2s,s,smp,argl,nargl,m,p);
       return w
    end;
 
-smacro procedure gb_tt(s1,s2);
+inline procedure gb_tt(s1,s2);
    % lcm of leading terms of s1 and s2
    ev_lcm(vdp_evlmon s1,vdp_evlmon s2);
 

@@ -76,10 +76,10 @@ begin scalar y,z;
   return mkzel(y,val z)
 end;
 
-symbolic smacro procedure find!+var(var,fa,iv);
+symbolic inline procedure find!+var(var,fa,iv);
 getcind(var,'varlst!+,'plus,fa,iv);
 
-symbolic smacro procedure find!*var(var,fa,iv);
+symbolic inline procedure find!*var(var,fa,iv);
 getcind(var,'varlst!*,'times,fa,iv);
 
 % ------------------------------------------------------------------- ;

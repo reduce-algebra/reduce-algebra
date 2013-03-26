@@ -36,7 +36,7 @@ infix wedge;
 
 precedence wedge,times;
 
-smacro procedure wedgeordp(u,v); worderp(u,v);
+inline procedure wedgeordp(u,v); worderp(u,v);
 
 put('wedge,'simpfn,'simpwedge);
 
@@ -111,7 +111,7 @@ symbolic procedure wedgepf2(u,v);
     else addpf(wedget2(lt u,lt v),
                addpf(wedgepf2(lt u .+ nil,red v),wedgepf2(red u,v)));
 
-smacro procedure multwedgesq(u,v);
+inline procedure multwedgesq(u,v);
    %possible entry for lazy multiplication.
    multsq(u,v);
 

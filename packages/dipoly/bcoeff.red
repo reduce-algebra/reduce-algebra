@@ -47,7 +47,7 @@ symbolic procedure bcint2op(a1,a2,op);
 
 fluid'(!*nat);
 
-% The following two could be smacros.  However, they would then need to
+% The following two could be inlines.  However, they would then need to
 % be included in dipoly, thus destroying the modularity of the base
 % coefficient code.
 

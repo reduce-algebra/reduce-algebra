@@ -26,7 +26,7 @@ module reval4;   % Support for REDUCE 4 evaluation.
 %
 
 
-% The following selectors and constructors could be smacros.
+% The following selectors and constructors could be inlines.
 
 symbolic procedure type u; car u;
 

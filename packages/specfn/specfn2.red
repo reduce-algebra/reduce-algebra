@@ -57,40 +57,40 @@ create!-package ('(specfn2 ghyper meijerg),
 
 load_package specfn;
 
-%  Various help utilities and smacros for hypergeometric function
+%  Various help utilities and inlines for hypergeometric function
 %  simplification.
 
-symbolic smacro procedure diff1sq(u,v);
+symbolic inline procedure diff1sq(u,v);
    addsq(u,negsq(v))$
 
-symbolic smacro procedure mksqnew u;
+symbolic inline procedure mksqnew u;
   !*p2f(car fkern(u) .* 1) ./ 1;
 
-symbolic smacro procedure gamsq(u);
+symbolic inline procedure gamsq(u);
  mksqnew('GAMMA . list(prepsq u));
 
-symbolic smacro procedure multgamma u;
+symbolic inline procedure multgamma u;
    %u -- list of SQ.
    <<for each pp in u do <<p := multsq(gamsq pp,p)>>; p>>
      where p = '(1 . 1);
 
-symbolic smacro procedure besssq(v,u);
+symbolic inline procedure besssq(v,u);
  mksqnew('BesselJ . list(prepsq v,prepsq u))$
 
-symbolic smacro procedure bessmsq(v,u);
+symbolic inline procedure bessmsq(v,u);
  mksqnew('BesselI . list(prepsq v,prepsq u))$
 
-symbolic smacro procedure simppochh(v,u);
+symbolic inline procedure simppochh(v,u);
  mksqnew('Pochhammer . list(prepsq v,prepsq u))$
 
 symbolic procedure multpochh(u,k);
  << for each pp in u do <<p := multsq (simppochh (pp,k),p)>>; p>>
                  where p = '(1 . 1);
 
-symbolic smacro procedure psisq(v);
+symbolic inline procedure psisq(v);
  mksqnew('psi . list(prepsq v))$
 
-%symbolic smacro procedure dfpsisq(v,u);
+%symbolic inline procedure dfpsisq(v,u);
 % mksqnew('dfpsi . list(prepsq v,prepsq u))$
 
 symbolic procedure simpfunc(u,v);
@@ -127,7 +127,7 @@ symbolic procedure expdeg1(x,y);
 simp!*(prepsq(subsqnew(subsqnew(simp!*
       '(expt a!g9 b!!g9),x,'a!g9),y,'b!!g9)))$
 
-symbolic smacro procedure difflist(u,v);
+symbolic inline procedure difflist(u,v);
  % u -- list of SQ.
  % v -- SQ.
  % value is (u) - v.
@@ -137,22 +137,22 @@ symbolic procedure listplus(u,v);
 % value is (u) + v.
  difflist(u,negsq v)$
 
- symbolic smacro procedure addlist u;
+ symbolic inline procedure addlist u;
   % u -- list of PF.
   <<for each pp in u do <<p := addsq(simp!* pp,p)>>; p>>
     where p = '(nil . 1);
 
- symbolic smacro procedure listsq(u);
+ symbolic inline procedure listsq(u);
  % u - list of PF.
  % value is list of SQ.
  for each uu in u collect simp!* uu;
 
-symbolic smacro procedure listmin(u);
+symbolic inline procedure listmin(u);
  % u - list.
  % value is (-u).
  for each uu in u collect negsq uu;
 
-symbolic smacro procedure multlist(u);
+symbolic inline procedure multlist(u);
 << for each pp in u do <<p := multsq(pp,p)>>; p>> where p = '(1 . 1);
 
 symbolic procedure parfool u;
@@ -229,7 +229,7 @@ symbolic procedure parfool u;
   if parlistfool(car u,v) then t else
      listfooltwo(cdr u,v)$
 
- symbolic smacro procedure pdifflist(u,v);
+ symbolic inline procedure pdifflist(u,v);
   % u -- SQ.
   % v -- list of SQ.
   %value is a list: u-(v).
@@ -258,77 +258,77 @@ symbolic procedure redpar (l1,l2);
 
 algebraic operator Lommel,Heaviside;
 
-symbolic smacro procedure heavisidesq(u);
+symbolic inline procedure heavisidesq(u);
  mksqnew('Heaviside . list(prepsq u));
 
-symbolic smacro procedure StruveLsq(v,u);
+symbolic inline procedure StruveLsq(v,u);
  mksqnew('StruveL . list(prepsq v,prepsq u));
 
-symbolic smacro procedure StruveHsq(v,u);
+symbolic inline procedure StruveHsq(v,u);
  mksqnew('StruveH . list(prepsq v,prepsq u));
 
-symbolic smacro procedure neumsq(v,u);
+symbolic inline procedure neumsq(v,u);
  mksqnew('BesselY . list(prepsq v,prepsq u));
 
-symbolic smacro procedure simppochh(v,u);
+symbolic inline procedure simppochh(v,u);
  mksqnew('Pochhammer . list(prepsq v,prepsq u));
 
-symbolic smacro procedure psisq(v);
+symbolic inline procedure psisq(v);
  mksqnew('psi . list(prepsq v));
 
-symbolic smacro procedure dfpsisq(v,u);
+symbolic inline procedure dfpsisq(v,u);
  mksqnew('Polygamma . list(prepsq u,prepsq v));
 
-symbolic smacro procedure Lommel2sq (u,v,w);
+symbolic inline procedure Lommel2sq (u,v,w);
  mksqnew('Lommel2  . list(prepsq u,prepsq v,prepsq w));
 
-symbolic smacro procedure tricomisq (u,v,w);
+symbolic inline procedure tricomisq (u,v,w);
  mksqnew('KummerU . list(prepsq u,prepsq v,prepsq w));
 
-symbolic smacro procedure macdsq (v,u);
+symbolic inline procedure macdsq (v,u);
  mksqnew('BesselK . list(prepsq v,prepsq u));
 
 fluid '(v1!wq,a!g9,b!!g9);
 
-symbolic smacro procedure sumlist u;
+symbolic inline procedure sumlist u;
    % u -- list of the PF
    <<for each pp in u do <<p := addsq(simp pp,p)>>; p>>
     where p = '(nil . 1);
 
-symbolic smacro procedure difflist(u,v);
+symbolic inline procedure difflist(u,v);
  % u -- list of SQ.
  % v -- SQ.
  % value is (u) - v.
  for each uu in u collect addsq(uu,negsq v);
 
-symbolic smacro procedure addlist u;
+symbolic inline procedure addlist u;
    % u -- list of PF.
    <<for each pp in u do <<p := addsq(simp!* pp,p)>>; p>>
     where p = '(nil . 1);
 
-symbolic smacro procedure diff1sq(u,v);
+symbolic inline procedure diff1sq(u,v);
   addsq(u,negsq(v));
 
-symbolic smacro procedure listsq(u);
+symbolic inline procedure listsq(u);
  % u - list of PF.
  % value is list of SQ.
  for each uu in u collect simp!* uu;
 
-symbolic smacro procedure listmin(u);
+symbolic inline procedure listmin(u);
  % u - list.
  % value is (-u).
  for each uu in u collect negsq uu;
 
-symbolic smacro procedure multlist(u);
+symbolic inline procedure multlist(u);
 << for each pp in u do <<p := multsq(pp,p)>>; p>> where p = '(1 . 1);
 
-symbolic smacro procedure pdifflist(u,v);
+symbolic inline procedure pdifflist(u,v);
   % u -- SQ.
   % v -- list of SQ.
   %value is a list: u-(v).
  for each vv in v collect diff1sq(u,vv);
 
-symbolic smacro procedure listprepsq(u);
+symbolic inline procedure listprepsq(u);
  for each uu in u collect prepsq uu;
 
 endmodule;

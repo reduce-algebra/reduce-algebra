@@ -335,10 +335,10 @@ symbolic procedure makemat(m,v,h);
 % a vertical terminator.
 if null m then nil else nconc(makearg(car m,h), v . makemat(cdr m,v,h));
 %ff
-smacro procedure istag(v,w); car v=w;
-smacro procedure unary(uby);  car uby;
-smacro procedure binary(uby); cdr uby;
-smacro procedure lcopy(a); for each x in a collect x;
+inline procedure istag(v,w); car v=w;
+inline procedure unary(uby);  car uby;
+inline procedure binary(uby); cdr uby;
+inline procedure lcopy(a); for each x in a collect x;
 
 symbolic procedure makefunc(op,arg,prec);
 begin
@@ -410,7 +410,7 @@ if cdr arg then
   ('!_!{ . nconc(makearg(cdr arg,'!,), '!} . mktag(car arg,prec,nil)))
 else ('!_!{ . nconc(mktag(car arg,prec,nil), list '!}));
 
-smacro procedure inxextend(item,ld,rd);
+inline procedure inxextend(item,ld,rd);
   nconc(result,ld.nconc(texexplode(item),list rd));
 
 symbolic procedure makeexcinx(op,arg,prec); % EXCALC extension
@@ -510,9 +510,9 @@ symbolic procedure maketaylor(op,arg,prec);
 % The following is part of the interface to TPS.
 % Andreas Strotmann, 19 Mar 93
 
-% ps:numberp smacro required for compilation; copied over from tps.red
+% ps:numberp inline required for compilation; copied over from tps.red
 
-symbolic smacro procedure ps!:numberp u;
+symbolic inline procedure ps!:numberp u;
   numberp u or (car u neq '!:ps!: and get(car u,'dname));
 
 % fluid declaration to avoid compiler warnings
@@ -643,11 +643,11 @@ symbolic procedure make!:ps!:(op, arg, prec);  % TPS interface,
 %                      by its property 'TEXNAME
 % ----------------------------------------------------------------------
 
-smacro procedure triassert(name,item); put(name,'texname,item);
-smacro procedure assertl(l); for each v in l do triassert(car v,cadr v);
-smacro procedure retract(name); put(name,'texname,nil);
-smacro procedure retractl(l); for each v in l do retract(car v);
-smacro procedure gettexitem(a); get(a,'texname) or (get(a,'class)and a);
+inline procedure triassert(name,item); put(name,'texname,item);
+inline procedure assertl(l); for each v in l do triassert(car v,cadr v);
+inline procedure retract(name); put(name,'texname,nil);
+inline procedure retractl(l); for each v in l do retract(car v);
+inline procedure gettexitem(a); get(a,'texname) or (get(a,'class)and a);
 
 put ('texitem,'stat,'rlis); % handle argument passing for func. TeXitem
 
@@ -706,7 +706,7 @@ symbolic procedure texcollect(l);
     if null gettexitem(el) then unknownitem(el)
     else gettexitem(el).nil;
 
-smacro procedure strtexitem(e);
+inline procedure strtexitem(e);
   if e='!  then list '!\!        % space after ! is necessary
   else if e='!	 then list '!\!   % there is a tab before the "then"
   else if liter(e) then {e}
@@ -1101,14 +1101,14 @@ makeglue('(
 ( 0   1  -2  -3  -1   0  -1   0 )
 ));
 
-smacro procedure kindof(item);  get(item,'textag);
-smacro procedure classof(item); get(item,'class);
+inline procedure kindof(item);  get(item,'textag);
+inline procedure classof(item); get(item,'class);
 %ff
-smacro procedure groupbeg(kind); % beginning of a group
+inline procedure groupbeg(kind); % beginning of a group
   memq(kind,'(beg sup sub frc mat));
-smacro procedure groupend(kind); (kind='end);
-smacro procedure grouphs(kind);  (kind='tab);
-smacro procedure groupvs(kind); % vertical group seperator
+inline procedure groupend(kind); (kind='end);
+inline procedure grouphs(kind);  (kind='tab);
+inline procedure groupvs(kind); % vertical group seperator
   memq(kind,'(esp esb sep cr));
 
 symbolic procedure interglue(left,right,depth,nesting);
@@ -1212,7 +1212,7 @@ begin scalar tag;
    return car tag or 0
 end;
 
-smacro procedure sp2mm(x); (x/186468); % scaled points to millimeters
+inline procedure sp2mm(x); (x/186468); % scaled points to millimeters
 
 symbolic procedure settolerance(tol);
 << if tol<0 then tol:=0 else if tol>10000 then tol:=10000;
@@ -1228,7 +1228,7 @@ symbolic procedure setpagewidth(hsize);
 symbolic procedure setbreak(hsize,tol);
 << settolerance(tol); setpagewidth(hsize) >>;
 
-smacro procedure badness(hlen,ibadness);
+inline procedure badness(hlen,ibadness);
 % The badness is 100*(hlen/hss)**3, corrected for indentation badness
 begin
   real r;
@@ -1236,22 +1236,22 @@ begin
   return fix min(10000.0,r*r*r*100.0+ibadness)
 end;
 
-smacro procedure isglue(l);         (not atom l) and (numberp car l);
-smacro procedure isactive(x);       not numberp x;
-smacro procedure ispassive(x);      numberp x;
-smacro procedure isdelta(x);        cdddr x;
-smacro procedure addup(x);          if x then eval('plus.x) else 0;
-smacro procedure tpush(stack,item); stack:=item.stack;
+inline procedure isglue(l);         (not atom l) and (numberp car l);
+inline procedure isactive(x);       not numberp x;
+inline procedure ispassive(x);      numberp x;
+inline procedure isdelta(x);        cdddr x;
+inline procedure addup(x);          if x then eval('plus.x) else 0;
+inline procedure tpush(stack,item); stack:=item.stack;
 
-smacro procedure tpop(stack);
+inline procedure tpop(stack);
   if null stack then nil % Error
   else begin scalar z; z:=car stack; stack:=cdr stack; return(z) end;
 
-smacro procedure poke(stack,ptr,val);
+inline procedure poke(stack,ptr,val);
 if null ptr then stack:=nconc(stack,val.nil)
 else << if val>car(ptr) then rplaca(ptr,val); ptr:=cdr ptr >>;
 
-smacro procedure concatenate(l);
+inline procedure concatenate(l);
 begin scalar r;
   for each e in l do r:=nconc(r,explode e);
   return compress r
@@ -1390,24 +1390,24 @@ end;
 % Section 3.3 : Major Line Breaking Routine
 % ----------------------------------------------------------------------
 
-smacro procedure widthof(deltanode);   car deltanode;
-smacro procedure penaltyof(deltanode); cadr deltanode;
-smacro procedure totalof(deltanode);   cadr deltanode;
-smacro procedure offsetof(deltanode);  caddr deltanode;
-smacro procedure idof(deltanode);      cadddr deltanode;
-smacro procedure ptrof(deltanode);     car cddddr deltanode;
-smacro procedure indentof(deltanode);  caddr cddddr deltanode;
-smacro procedure tailof(deltanode);    cddddr deltanode;
+inline procedure widthof(deltanode);   car deltanode;
+inline procedure penaltyof(deltanode); cadr deltanode;
+inline procedure totalof(deltanode);   cadr deltanode;
+inline procedure offsetof(deltanode);  caddr deltanode;
+inline procedure idof(deltanode);      cadddr deltanode;
+inline procedure ptrof(deltanode);     car cddddr deltanode;
+inline procedure indentof(deltanode);  caddr cddddr deltanode;
+inline procedure tailof(deltanode);    cddddr deltanode;
 
 symbolic procedure offsetitem(item);
   concatenate list('!\!o!f!f!{,item,'!} );
 
-smacro procedure stepahead(ptr,val);
+inline procedure stepahead(ptr,val);
 << if ispassive car ptr then val:=val+car ptr else val:=val+caar ptr;
    ptr:=cdr ptr
 >>;
 
-smacro procedure findindent(offt,ptr);
+inline procedure findindent(offt,ptr);
 if offt=lastoff and ptr=lastptr then lastindent else
 begin % search the deltastack for previous indentation
   scalar node,p,stack; integer tot;
@@ -1593,7 +1593,7 @@ begin
   return length
 end;
 
-smacro procedure newline();
+inline procedure newline();
   if nlflag then cc:=indent
   else if (cc>indent) then << terpri(); cc:=indent; nlflag:=t >>;
 

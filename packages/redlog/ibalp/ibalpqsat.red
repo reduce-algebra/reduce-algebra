@@ -126,7 +126,7 @@ procedure ibalp_qsat!-getoption(opt);
 
 !#if t
 
-smacro procedure ibalp_var!-new(id);
+inline procedure ibalp_var!-new(id);
    % Create a new variable. [id] is the identifier of the
    % variable. Returns a list with the following components: l[0] is
    % the identifier; l[1] is the value of the variable; l[2] is the
@@ -143,196 +143,196 @@ smacro procedure ibalp_var!-new(id);
    % quantification level of the variable; l[14] is the flipped-flag.
    {id,nil,nil,nil,0,0,-1,nil,0,0,nil,0,nil,0,nil};
 
-smacro procedure ibalp_var!-setval(var,val);
+inline procedure ibalp_var!-setval(var,val);
    % Set the value of a variable. [var] is a variable; [val] is the
    % value [0], [1] or [nil];
    cadr var := val;
 
-smacro procedure ibalp_var!-setposocc(var,posocc);
+inline procedure ibalp_var!-setposocc(var,posocc);
    % Add a clause to the list of clauses where the variable has a
    % positive occurence. [var] is a variable; [negocc] the clause.
    caddr var := posocc . caddr var;
 
-smacro procedure ibalp_var!-setnegocc(var,negocc);
+inline procedure ibalp_var!-setnegocc(var,negocc);
    % Add a clause to the list of clauses where the variable has a
    % negative occurence. [var] is a variable; [negocc] the clause.
    cadddr var := negocc . cadddr var;
 
-smacro procedure ibalp_var!-setposoccabs(var,posocc);
+inline procedure ibalp_var!-setposoccabs(var,posocc);
    % Add a clause to the list of clauses where the variable has a
    % positive occurence. [var] is a variable; [negocc] the clause.
    caddr var := posocc;
 
-smacro procedure ibalp_var!-setnegoccabs(var,negocc);
+inline procedure ibalp_var!-setnegoccabs(var,negocc);
    % Add a clause to the list of clauses where the variable has a
    % negative occurence. [var] is a variable; [negocc] the clause.
    cadddr var := negocc;
 
-smacro procedure ibalp_var!-setnumpos(var,numpos);
+inline procedure ibalp_var!-setnumpos(var,numpos);
    % Get the number of currently false clauses where the variable has
    % a positive occurence and is not set. [var] is a variable;
    % [numpos] the number of occurences.
    car cddddr var := numpos;
 
-smacro procedure ibalp_var!-setnumneg(var,numneg);
+inline procedure ibalp_var!-setnumneg(var,numneg);
    % Set the number of currently false clauses where the variable has
    % a negative occurence and is not set. [var] is a variable;
    % [numneg] the number of occurences.
    cadr cddddr var := numneg;
 
-smacro procedure ibalp_var!-setlev(var,lev);
+inline procedure ibalp_var!-setlev(var,lev);
    % Set the level at which the variable was set. [var] is a variable;
    % [lev] is the number of the level;
    caddr cddddr var := lev;
 
-smacro procedure ibalp_var!-setreas(var,reas);
+inline procedure ibalp_var!-setreas(var,reas);
    % Set the reason why the variable was set. [var] is a variable;
    % [reas] is the clause which became unit and forced the set or nil
    % if it was a decision.
    cadddr cddddr var := reas;
 
-smacro procedure ibalp_var!-setposcc(var,num);
+inline procedure ibalp_var!-setposcc(var,num);
    % Set the number of positive occurences in added
    % conflict-clauses. [var] is a variable; [num] is the number of
    % occurences.
    car cddddr cddddr var := num;
 
-smacro procedure ibalp_var!-setnegcc(var,num);
+inline procedure ibalp_var!-setnegcc(var,num);
    % Set the number of negative occurences in added
    % conflict-clauses. [var] is a variable; [num] is the number of
    % occurences.
    cadr cddddr cddddr var := num;
 
-smacro procedure ibalp_var!-setwc(var,wc);
+inline procedure ibalp_var!-setwc(var,wc);
    % Set the watched-clauses of a variable . [var] is a variable; [wc]
    % is a watched clause.
    caddr cddddr cddddr var := wc . caddr cddddr cddddr var;
 
-smacro procedure ibalp_var!-setmom(var,mom);
+inline procedure ibalp_var!-setmom(var,mom);
    % Set the MOM-value for this variable. [var] is a variable; [mom]
    % is the MOM-value.
    cadddr cddddr cddddr var := mom;
 
-smacro procedure ibalp_var!-setquant(var,quant);
+inline procedure ibalp_var!-setquant(var,quant);
    % Set the quantifier for this variable. [var] is a variable;
    % [quant] is [nil] if it is an unquantified variable, [ex] for an
    % existential quantified variable and [all] for an universal
    % quantified variable.
    car cddddr cddddr cddddr var := quant;
 
-smacro procedure ibalp_var!-setqlevel(var,qlevel);
+inline procedure ibalp_var!-setqlevel(var,qlevel);
    % Set the quantifier-level for this variable. [var] is a variable;
    % [qlevel] the quantifier level.
    cadr cddddr cddddr cddddr var := qlevel;
 
-smacro procedure ibalp_var!-setflip(var,flip);
+inline procedure ibalp_var!-setflip(var,flip);
    % Set the flip-level for this variable. [var] is a variable;
    % [flip] is the flipstatus.
    caddr cddddr cddddr cddddr var := flip;
 
-smacro procedure ibalp_var!-getid(var);
+inline procedure ibalp_var!-getid(var);
    % Get the identifier of a variable. [var] is variable. Returns the
    % identifier.
    car var;
 
-smacro procedure ibalp_var!-getval(var);
+inline procedure ibalp_var!-getval(var);
    % Get the current value of a variable. [var] is a variable. Returns
    % [1] if the variable is set to true, [0] if set to false and [nil]
    % if the variable is not set.
    cadr var;
 
-smacro procedure ibalp_var!-getposocc(var);
+inline procedure ibalp_var!-getposocc(var);
    % Get the list of all clauses where the variable has a positive
    % occurence. [var] is a variable. Returns the list of clauses.
    caddr var;
 
-smacro procedure ibalp_var!-getnegocc(var);
+inline procedure ibalp_var!-getnegocc(var);
    % Get the list of all clauses where the variable has a negative
    % occurence. [var] is a variable. Returns the list of clauses.
    cadddr var;
 
-smacro procedure ibalp_var!-getnumpos(var);
+inline procedure ibalp_var!-getnumpos(var);
    % Get the number of currently false clauses where the variable has
    % a positive occurence and is not set. [var] is a variable. Returns
    % the number of clauses.
    car cddddr var;
 
-smacro procedure ibalp_var!-getnumneg(var);
+inline procedure ibalp_var!-getnumneg(var);
    % Get the number of currently false clauses where the variable has
    % a negative occurence and is not set. [var] is a variable. Returns
    % the number of clauses.
    cadr cddddr var;
 
-smacro procedure ibalp_var!-getlev(var);
+inline procedure ibalp_var!-getlev(var);
    % Get the level at which the variable was set. [var] is a
    % variable. Returns the level.
    caddr cddddr var;
 
-smacro procedure ibalp_var!-getreas(var);
+inline procedure ibalp_var!-getreas(var);
    % Get the reason why the variable was set. [var] is a variable.
    % Returns the clause which became unit and forced the set or [nil]
    % if a decision was the reason.
    cadddr cddddr var;
 
-smacro procedure ibalp_var!-getposcc(var);
+inline procedure ibalp_var!-getposcc(var);
    % Get the number of positive occurences in added
    % conflict-clauses. [var] is a variable.  Returns the number of
    % positive occurences in conflict-clauses.
    car cddddr cddddr var;
 
-smacro procedure ibalp_var!-getnegcc(var);
+inline procedure ibalp_var!-getnegcc(var);
    % Get the number of negative occurences in added
    % conflict-clauses. [var] is a variable.  Returns the number of
    % negative occurences in conflict-clauses.
    cadr cddddr cddddr var;
 
-smacro procedure ibalp_var!-getwc(var);
+inline procedure ibalp_var!-getwc(var);
    % Get the watched-clauses of a variable . [var] is a variable.
    caddr cddddr cddddr var;
 
-smacro procedure ibalp_var!-delwc(var,wc);
+inline procedure ibalp_var!-delwc(var,wc);
    % Delete a single watched-clauses of this variable . [var] is a
    % variable; [wc] is a clause.
    caddr cddddr cddddr var := delq(wc,caddr cddddr cddddr var);
 
-smacro procedure ibalp_var!-delallwc(var);
+inline procedure ibalp_var!-delallwc(var);
    % Delete all watched-clauses of this variable . [var] is a
    % variable.
    caddr cddddr cddddr var := nil;
 
-smacro procedure ibalp_var!-getmom(var);
+inline procedure ibalp_var!-getmom(var);
    % Get the MOM-value for this variable. [var] is a variable.
    cadddr cddddr cddddr var;
 
-smacro procedure ibalp_var!-getquant(var);
+inline procedure ibalp_var!-getquant(var);
    % Get the quantifier for this variable. [var] is a variable;
    % Return [nil] if it is an unquantified variable, [ex] for an
    % existential quantified variable and [all] for an universal
    % quantified variable.
    car cddddr cddddr cddddr var;
 
-smacro procedure ibalp_var!-isex(var);
+inline procedure ibalp_var!-isex(var);
    % Returns if a variable is existential quantified. [var] is a
    % variable. Returns [t] iff the var is existential quantified.
    car cddddr cddddr cddddr var eq 'ex;
 
-smacro procedure ibalp_var!-isuni(var);
+inline procedure ibalp_var!-isuni(var);
    % Returns if a variable is universal quantified. [var] is a
    % variable. Returns [t] iff the var is universal quantified.
    car cddddr cddddr cddddr var eq 'all;
 
-smacro procedure ibalp_var!-getqlevel(var);
+inline procedure ibalp_var!-getqlevel(var);
    % Get the quantifier-level for this variable. [var] is a variable;
    % Returns the quantifier level.
    cadr cddddr cddddr cddddr var;
 
-smacro procedure ibalp_var!-getflip(var);
+inline procedure ibalp_var!-getflip(var);
    % Get the flipstatus for this variable. [var] is a variable;
    % Returns [nil] if the variable is no decision variable, 0 if the
    % variable i unflipped and 1 if flipped.
    caddr cddddr cddddr cddddr var;
 
-smacro procedure ibalp_clause!-new();
+inline procedure ibalp_clause!-new();
    % Create a new clause. Returns a list with the following
    % components: l[0] is a list of the positive literals of the
    % clause; l[1] is a list of the negative literals of the clause;
@@ -343,113 +343,113 @@ smacro procedure ibalp_clause!-new();
    % clauses.
    {nil,nil,0,0,nil,nil,nil};
 
-smacro procedure ibalp_clause!-setsat(clause,sat);
+inline procedure ibalp_clause!-setsat(clause,sat);
    % Set the variable turning a clause to true. [clause] is a clause;
    % [sat] is the variable turning to true
    car cddddr clause := sat . car cddddr clause;
 
-smacro procedure ibalp_clause!-delallsat(clause);
+inline procedure ibalp_clause!-delallsat(clause);
    % Set the variable turning a clause to true. [clause] is a clause;
    % [sat] is the variable turning to true
    car cddddr clause := nil;
 
-smacro procedure ibalp_clause!-setposlit(clause,var);
+inline procedure ibalp_clause!-setposlit(clause,var);
    % Add a variable to the list of positive literals of a
    % clause. [clause] is a clause; [var] is a variable.
    car clause := var . car clause;
 
-smacro procedure ibalp_clause!-setneglit(clause,var);
+inline procedure ibalp_clause!-setneglit(clause,var);
    % Add a variable to the list of negative literals of a
    % clause. [clause] is a clause; [var] is a variable.
    cadr clause := var . cadr clause;
 
-smacro procedure ibalp_clause!-setposlitabs(clause,var);
+inline procedure ibalp_clause!-setposlitabs(clause,var);
    % Add a variable to the list of positive literals of a
    % clause. [clause] is a clause; [var] is a variable.
    car clause := var;
 
-smacro procedure ibalp_clause!-setneglitabs(clause,var);
+inline procedure ibalp_clause!-setneglitabs(clause,var);
    % Add a variable to the list of negative literals of a
    % clause. [clause] is a clause; [var] is a variable.
    cadr clause := var;
 
-smacro procedure ibalp_clause!-setactpos(clause,actpos);
+inline procedure ibalp_clause!-setactpos(clause,actpos);
    % Set the number of positive literals that are currently
    % unset. [clause] is a clause; [actpos] is the number of currently
    % unset literals.
    caddr clause := actpos;
 
-smacro procedure ibalp_clause!-setactneg(clause,actneg);
+inline procedure ibalp_clause!-setactneg(clause,actneg);
    % Set the number of negative literals that are currently
    % unset. [clause] is a clause; [actneg] is the number of currently
    % unset literals.
    cadddr clause := actneg;
 
-smacro procedure ibalp_clause!-setcount(clause,count);
+inline procedure ibalp_clause!-setcount(clause,count);
    % Set the current count for new-added clauses. [clause] is a
    % clause; [count] is the count.
    cadr cddddr clause := count;
 
-smacro procedure ibalp_clause!-setwl(clause,wl);
+inline procedure ibalp_clause!-setwl(clause,wl);
    % Add a watched literal for this clause. [clause] is a
    % clause; [wl] is a variable.
    caddr cddddr clause := wl . caddr cddddr clause;
 
-smacro procedure ibalp_clause!-delallwl(clause);
+inline procedure ibalp_clause!-delallwl(clause);
    % Delete the watched literals for this clause. [clause] is a
    % clause.
    caddr cddddr clause := nil;
 
-smacro procedure ibalp_clause!-delwl(clause,wl);
+inline procedure ibalp_clause!-delwl(clause,wl);
    % Delete a single watched literal from this clause. [clause] is a
    % clause; [wl] is a variable.
    caddr cddddr clause := delq(wl,caddr cddddr clause);
 
-smacro procedure ibalp_clause!-getposlit(clause);
+inline procedure ibalp_clause!-getposlit(clause);
    % Get a list of all positive literals of a clause. [clause] is a
    % clause. Returns the list of variables. [nil] if the clause has no
    % positive literals.
    car clause;
 
-smacro procedure ibalp_clause!-getneglit(clause);
+inline procedure ibalp_clause!-getneglit(clause);
    % Get a list of all negative literals of a clause. [clause] is a
    % clause. Returns the list of variables. [nil] if the clause has no
    % negative literals.
    cadr clause;
 
-smacro procedure ibalp_clause!-getactpos(clause);
+inline procedure ibalp_clause!-getactpos(clause);
    % Get the number of positive literals that are currently unset in a
    % clause. [clause] is a clause. Returns the number of literals
    caddr clause;
 
-smacro procedure ibalp_clause!-getactneg(clause);
+inline procedure ibalp_clause!-getactneg(clause);
    % Get the number of negative literals that are currently unset in a
    % clause. [clause] is a clause. Returns the number of literals.
    cadddr clause;
 
-smacro procedure ibalp_clause!-getsat(clause);
+inline procedure ibalp_clause!-getsat(clause);
    % Get the variable turning a clause to true. [clause] is a
    % clause. Returns the variable or [nil] if the clause is false.
    car cddddr clause;
 
-smacro procedure ibalp_clause!-delsat(clause,sat);
+inline procedure ibalp_clause!-delsat(clause,sat);
    % Delete a variable turning a clause to true. [clause] is a clause;
    % [sat] is a variable.
    car cddddr clause := delq(sat,car cddddr clause);
 
-smacro procedure ibalp_clause!-getcount(clause);
+inline procedure ibalp_clause!-getcount(clause);
    % Get the current count for new-added clauses. [clause] is a
    % clause. Return the count.
    cadr cddddr clause;
 
-smacro procedure ibalp_clause!-getwl(clause);
+inline procedure ibalp_clause!-getwl(clause);
    % Get the watched literals for this clause. [clause] is a
    % clause. Return the watched literal.
    caddr cddddr clause;
 
 !#else
 
-smacro procedure ibalp_var!-new(id);
+inline procedure ibalp_var!-new(id);
    % Create a new variable. [id] is the identifier of the
    % variable. Returns a list with the following components: l[0] is
    % the identifier; l[1] is the value of the variable; l[2] is the
@@ -477,196 +477,196 @@ smacro procedure ibalp_var!-new(id);
       return v
    end;
 
-smacro procedure ibalp_var!-setval(var,val);
+inline procedure ibalp_var!-setval(var,val);
    % Set the value of a variable. [var] is a variable; [val] is the
    % value [0], [1] or [nil];
    putv(var,1,val);
 
-smacro procedure ibalp_var!-setposocc(var,posocc);
+inline procedure ibalp_var!-setposocc(var,posocc);
    % Add a clause to the list of clauses where the variable has a
    % positive occurence. [var] is a variable; [negocc] the clause.
    putv(var,2,posocc . getv(var,2));
 
-smacro procedure ibalp_var!-setnegocc(var,negocc);
+inline procedure ibalp_var!-setnegocc(var,negocc);
    % Add a clause to the list of clauses where the variable has a
    % negative occurence. [var] is a variable; [negocc] the clause.
    putv(var,3,negocc . getv(var,3));
 
-smacro procedure ibalp_var!-setposoccabs(var,posocc);
+inline procedure ibalp_var!-setposoccabs(var,posocc);
    % Add a clause to the list of clauses where the variable has a
    % positive occurence. [var] is a variable; [negocc] the clause.
    putv(var,2,posocc);
 
-smacro procedure ibalp_var!-setnegoccabs(var,negocc);
+inline procedure ibalp_var!-setnegoccabs(var,negocc);
    % Add a clause to the list of clauses where the variable has a
    % negative occurence. [var] is a variable; [negocc] the clause.
    putv(var,3,negocc);
 
-smacro procedure ibalp_var!-setnumpos(var,numpos);
+inline procedure ibalp_var!-setnumpos(var,numpos);
    % Get the number of currently false clauses where the variable has
    % a positive occurence and is not set. [var] is a variable;
    % [numpos] the number of occurences.
    putv(var,4,numpos);
 
-smacro procedure ibalp_var!-setnumneg(var,numneg);
+inline procedure ibalp_var!-setnumneg(var,numneg);
    % Set the number of currently false clauses where the variable has
    % a negative occurence and is not set. [var] is a variable;
    % [numneg] the number of occurences.
    putv(var,5,numneg);
 
-smacro procedure ibalp_var!-setlev(var,lev);
+inline procedure ibalp_var!-setlev(var,lev);
    % Set the level at which the variable was set. [var] is a variable;
    % [lev] is the number of the level;
    putv(var,6,lev);
 
-smacro procedure ibalp_var!-setreas(var,reas);
+inline procedure ibalp_var!-setreas(var,reas);
    % Set the reason why the variable was set. [var] is a variable;
    % [reas] is the clause which became unit and forced the set or nil
    % if it was a decision.
    putv(var,7,reas);
 
-smacro procedure ibalp_var!-setposcc(var,num);
+inline procedure ibalp_var!-setposcc(var,num);
    % Set the number of positive occurences in added
    % conflict-clauses. [var] is a variable; [num] is the number of
    % occurences.
    putv(var,8,num);
 
-smacro procedure ibalp_var!-setnegcc(var,num);
+inline procedure ibalp_var!-setnegcc(var,num);
    % Set the number of negative occurences in added
    % conflict-clauses. [var] is a variable; [num] is the number of
    % occurences.
    putv(var,9,num);
 
-smacro procedure ibalp_var!-setwc(var,wc);
+inline procedure ibalp_var!-setwc(var,wc);
    % Set the watched-clauses of a variable . [var] is a variable; [wc]
    % is a watched clause.
    putv(var,10,wc . getv(var,10));
 
-smacro procedure ibalp_var!-setmom(var,mom);
+inline procedure ibalp_var!-setmom(var,mom);
    % Set the MOM-value for this variable. [var] is a variable; [mom]
    % is the MOM-value.
    putv(var,11,mom);
 
-smacro procedure ibalp_var!-setquant(var,quant);
+inline procedure ibalp_var!-setquant(var,quant);
    % Set the quantifier for this variable. [var] is a variable;
    % [quant] is [nil] if it is an unquantified variable, [ex] for an
    % existential quantified variable and [all] for an universal
    % quantified variable.
    putv(var,12,quant);
 
-smacro procedure ibalp_var!-setqlevel(var,qlevel);
+inline procedure ibalp_var!-setqlevel(var,qlevel);
    % Set the quantifier-level for this variable. [var] is a variable;
    % [qlevel] the quantifier level.
    putv(var,13,qlevel);
 
-smacro procedure ibalp_var!-setflip(var,flip);
+inline procedure ibalp_var!-setflip(var,flip);
    % Set the flip-level for this variable. [var] is a variable;
    % [flip] is the flipstatus.
    putv(var,14,flip);
 
-smacro procedure ibalp_var!-getid(var);
+inline procedure ibalp_var!-getid(var);
    % Get the identifier of a variable. [var] is variable. Returns the
    % identifier.
    getv(var,0);
 
-smacro procedure ibalp_var!-getval(var);
+inline procedure ibalp_var!-getval(var);
    % Get the current value of a variable. [var] is a variable. Returns
    % [1] if the variable is set to true, [0] if set to false and [nil]
    % if the variable is not set.
    getv(var,1);
 
-smacro procedure ibalp_var!-getposocc(var);
+inline procedure ibalp_var!-getposocc(var);
    % Get the list of all clauses where the variable has a positive
    % occurence. [var] is a variable. Returns the list of clauses.
    getv(var,2);
 
-smacro procedure ibalp_var!-getnegocc(var);
+inline procedure ibalp_var!-getnegocc(var);
    % Get the list of all clauses where the variable has a negative
    % occurence. [var] is a variable. Returns the list of clauses.
    getv(var,3);
 
-smacro procedure ibalp_var!-getnumpos(var);
+inline procedure ibalp_var!-getnumpos(var);
    % Get the number of currently false clauses where the variable has
    % a positive occurence and is not set. [var] is a variable. Returns
    % the number of clauses.
    getv(var,4);
 
-smacro procedure ibalp_var!-getnumneg(var);
+inline procedure ibalp_var!-getnumneg(var);
    % Get the number of currently false clauses where the variable has
    % a negative occurence and is not set. [var] is a variable. Returns
    % the number of clauses.
    getv(var,5);
 
-smacro procedure ibalp_var!-getlev(var);
+inline procedure ibalp_var!-getlev(var);
    % Get the level at which the variable was set. [var] is a
    % variable. Returns the level.
    getv(var,6);
 
-smacro procedure ibalp_var!-getreas(var);
+inline procedure ibalp_var!-getreas(var);
    % Get the reason why the variable was set. [var] is a variable.
    % Returns the clause which became unit and forced the set or [nil]
    % if a decision was the reason.
    getv(var,7);
 
-smacro procedure ibalp_var!-getposcc(var);
+inline procedure ibalp_var!-getposcc(var);
    % Get the number of positive occurences in added
    % conflict-clauses. [var] is a variable.  Returns the number of
    % positive occurences in conflict-clauses.
    getv(var,8);
 
-smacro procedure ibalp_var!-getnegcc(var);
+inline procedure ibalp_var!-getnegcc(var);
    % Get the number of negative occurences in added
    % conflict-clauses. [var] is a variable.  Returns the number of
    % negative occurences in conflict-clauses.
    getv(var,9);
 
-smacro procedure ibalp_var!-getwc(var);
+inline procedure ibalp_var!-getwc(var);
    % Get the watched-clauses of a variable . [var] is a variable.
    getv(var,10);
 
-smacro procedure ibalp_var!-delwc(var,wc);
+inline procedure ibalp_var!-delwc(var,wc);
    % Delete a single watched-clauses of this variable . [var] is a
    % variable; [wc] is a clause.
    putv(var,10,delq(wc,getv(var,10)));
 
-smacro procedure ibalp_var!-delallwc(var);
+inline procedure ibalp_var!-delallwc(var);
    % Delete all watched-clauses of this variable . [var] is a
    % variable.
    putv(var,10,nil);
 
-smacro procedure ibalp_var!-getmom(var);
+inline procedure ibalp_var!-getmom(var);
    % Get the MOM-value for this variable. [var] is a variable.
    getv(var,11);
 
-smacro procedure ibalp_var!-getquant(var);
+inline procedure ibalp_var!-getquant(var);
    % Get the quantifier for this variable. [var] is a variable;
    % Return [nil] if it is an unquantified variable, [ex] for an
    % existential quantified variable and [all] for an universal
    % quantified variable.
    getv(var,12);
 
-smacro procedure ibalp_var!-isex(var);
+inline procedure ibalp_var!-isex(var);
    % Returns if a variable is existential quantified. [var] is a
    % variable. Returns [t] iff the var is existential quantified.
    getv(var,12) eq 'ex;
 
-smacro procedure ibalp_var!-isuni(var);
+inline procedure ibalp_var!-isuni(var);
    % Returns if a variable is universal quantified. [var] is a
    % variable. Returns [t] iff the var is universal quantified.
    getv(var,12) eq 'all;
 
-smacro procedure ibalp_var!-getqlevel(var);
+inline procedure ibalp_var!-getqlevel(var);
    % Get the quantifier-level for this variable. [var] is a variable;
    % Returns the quantifier level.
    getv(var,13);
 
-smacro procedure ibalp_var!-getflip(var);
+inline procedure ibalp_var!-getflip(var);
    % Get the flipstatus for this variable. [var] is a variable;
    % Returns [nil] if the variable is no decision variable, 0 if the
    % variable i unflipped and 1 if flipped.
    getv(var,14);
 
-smacro procedure ibalp_clause!-new();
+inline procedure ibalp_clause!-new();
    % Create a new clause. Returns a list with the following
    % components: l[0] is a list of the positive literals of the
    % clause; l[1] is a list of the negative literals of the clause;
@@ -682,106 +682,106 @@ smacro procedure ibalp_clause!-new();
       return v
    end;
 
-smacro procedure ibalp_clause!-setsat(clause,sat);
+inline procedure ibalp_clause!-setsat(clause,sat);
    % Set the variable turning a clause to true. [clause] is a clause;
    % [sat] is the variable turning to true
    putv(clause,4,sat . getv(clause,4));
 
-smacro procedure ibalp_clause!-delallsat(clause);
+inline procedure ibalp_clause!-delallsat(clause);
    % Set the variable turning a clause to true. [clause] is a clause;
    % [sat] is the variable turning to true
    putv(clause,4,nil);
 
-smacro procedure ibalp_clause!-setposlit(clause,var);
+inline procedure ibalp_clause!-setposlit(clause,var);
    % Add a variable to the list of positive literals of a
    % clause. [clause] is a clause; [var] is a variable.
    putv(clause,0,var . getv(clause,0));
 
-smacro procedure ibalp_clause!-setneglit(clause,var);
+inline procedure ibalp_clause!-setneglit(clause,var);
    % Add a variable to the list of negative literals of a
    % clause. [clause] is a clause; [var] is a variable.
    putv(clause,1,var . getv(clause,1));
 
-smacro procedure ibalp_clause!-setposlitabs(clause,var);
+inline procedure ibalp_clause!-setposlitabs(clause,var);
    % Add a variable to the list of positive literals of a
    % clause. [clause] is a clause; [var] is a variable.
    putv(clause,0,var);
 
-smacro procedure ibalp_clause!-setneglitabs(clause,var);
+inline procedure ibalp_clause!-setneglitabs(clause,var);
    % Add a variable to the list of negative literals of a
    % clause. [clause] is a clause; [var] is a variable.
    putv(clause,1,var);
 
-smacro procedure ibalp_clause!-setactpos(clause,actpos);
+inline procedure ibalp_clause!-setactpos(clause,actpos);
    % Set the number of positive literals that are currently
    % unset. [clause] is a clause; [actpos] is the number of currently
    % unset literals.
    putv(clause,2,actpos);
 
-smacro procedure ibalp_clause!-setactneg(clause,actneg);
+inline procedure ibalp_clause!-setactneg(clause,actneg);
    % Set the number of negative literals that are currently
    % unset. [clause] is a clause; [actneg] is the number of currently
    % unset literals.
    putv(clause,3,actneg);
 
-smacro procedure ibalp_clause!-setcount(clause,count);
+inline procedure ibalp_clause!-setcount(clause,count);
    % Set the current count for new-added clauses. [clause] is a
    % clause; [count] is the count.
    putv(clause,5,count);
 
-smacro procedure ibalp_clause!-setwl(clause,wl);
+inline procedure ibalp_clause!-setwl(clause,wl);
    % Add a watched literal for this clause. [clause] is a
    % clause; [wl] is a variable.
    putv(clause,6,wl . getv(clause,6));
 
-smacro procedure ibalp_clause!-delallwl(clause);
+inline procedure ibalp_clause!-delallwl(clause);
    % Delete the watched literals for this clause. [clause] is a
    % clause.
    putv(clause,6,nil);
 
-smacro procedure ibalp_clause!-delwl(clause,wl);
+inline procedure ibalp_clause!-delwl(clause,wl);
    % Delete a single watched literal from this clause. [clause] is a
    % clause; [wl] is a variable.
    putv(clause,6,delq(wl,getv(clause,6)));
 
-smacro procedure ibalp_clause!-getposlit(clause);
+inline procedure ibalp_clause!-getposlit(clause);
    % Get a list of all positive literals of a clause. [clause] is a
    % clause. Returns the list of variables. [nil] if the clause has no
    % positive literals.
    getv(clause,0);
 
-smacro procedure ibalp_clause!-getneglit(clause);
+inline procedure ibalp_clause!-getneglit(clause);
    % Get a list of all negative literals of a clause. [clause] is a
    % clause. Returns the list of variables. [nil] if the clause has no
    % negative literals.
    getv(clause,1);
 
-smacro procedure ibalp_clause!-getactpos(clause);
+inline procedure ibalp_clause!-getactpos(clause);
    % Get the number of positive literals that are currently unset in a
    % clause. [clause] is a clause. Returns the number of literals
    getv(clause,2);
 
-smacro procedure ibalp_clause!-getactneg(clause);
+inline procedure ibalp_clause!-getactneg(clause);
    % Get the number of negative literals that are currently unset in a
    % clause. [clause] is a clause. Returns the number of literals.
    getv(clause,3);
 
-smacro procedure ibalp_clause!-getsat(clause);
+inline procedure ibalp_clause!-getsat(clause);
    % Get the variable turning a clause to true. [clause] is a
    % clause. Returns the variable or [nil] if the clause is false.
    getv(clause,4);
 
-smacro procedure ibalp_clause!-delsat(clause,sat);
+inline procedure ibalp_clause!-delsat(clause,sat);
    % Delete a variable turning a clause to true. [clause] is a clause;
    % [sat] is a variable.
    putv(clause,4,delq(sat,getv(clause,4)));
 
-smacro procedure ibalp_clause!-getcount(clause);
+inline procedure ibalp_clause!-getcount(clause);
    % Get the current count for new-added clauses. [clause] is a
    % clause. Return the count.
    getv(clause,5);
 
-smacro procedure ibalp_clause!-getwl(clause);
+inline procedure ibalp_clause!-getwl(clause);
    % Get the watched literals for this clause. [clause] is a
    % clause. Return the watched literal.
    getv(clause,6);

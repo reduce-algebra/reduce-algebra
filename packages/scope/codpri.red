@@ -146,7 +146,7 @@ global '(codmat maxvar)$
 % prod6 := 2 * A^8 * B^2                                               ;
 % -------------------------------------------------------------------- ;
 
-symbolic smacro procedure testprow(y,opv);
+symbolic inline procedure testprow(y,opv);
 % -------------------------------------------------------------------- ;
 % arg : Column index Y. Operator value Opv.                            ;
 % res : T if the column Y is part of the Opv-scheme,NIL otherwise.     ;
@@ -965,10 +965,10 @@ if atom a
            else listeq(car a, car b)
                 and listeq(cdr a, cdr b);
 
-symbolic smacro procedure protected(a,pn);
+symbolic inline procedure protected(a,pn);
 member((if atom a then a else car a), pn);
 
-symbolic smacro procedure protect(n,pn);
+symbolic inline procedure protect(n,pn);
 if member((if atom n then n else car n),pn)
    then pn
    else (if atom n then n else car n). pn;

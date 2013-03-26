@@ -97,7 +97,7 @@ symbolic procedure ps!:generating!-series(a,psord,inverted);
    return ps
  end;
 
-symbolic smacro procedure ps!:get!-rthpow(genseries,r);
+symbolic inline procedure ps!:get!-rthpow(genseries,r);
   ps!:get!-term(genseries,r);
 
 symbolic procedure ps!:set!-rthpow(genseries,r);

@@ -94,13 +94,13 @@ procedure wuconstantp f;
    % variables.
    domainp f or not memq(mvar f, wuvarlist!*);
 
-smacro procedure wuclass f;
+inline procedure wuclass f;
   if wuconstantp f then nil else mvar f;
 
-smacro procedure wudeg f;
+inline procedure wudeg f;
   if wuconstantp f then 0 else ldeg f;
 
-smacro procedure wuinitial f;
+inline procedure wuinitial f;
   if wuconstantp f then f else lc f;
 
 procedure wureducedpolysp(f, polylist);
@@ -150,7 +150,7 @@ begin scalar kord, answ;
    return if answ then answ eq 'yes else not orderp(x, y)
 end;
 
-smacro procedure classlessp(c1, c2);
+inline procedure classlessp(c1, c2);
 % an order on classes, which are symbols in this implementation
   symbollessp(c1, c2);
 
@@ -166,7 +166,7 @@ procedure wulessp!*(f, g);
   else if wulessp(g, f) then nil
   else totallessp(f, g);
 
-smacro procedure nil2zero f;
+inline procedure nil2zero f;
   f or 0;
 
 procedure totallessp(f, g);

@@ -41,7 +41,7 @@ module bibasis_triple;
 % 3 - prolong set
 
 
-smacro procedure CreateProlongSet(); (nil . nil);
+inline procedure CreateProlongSet(); (nil . nil);
 
 
 expr procedure CreateTriple(polynom);
@@ -68,11 +68,11 @@ begin scalar tmpTriple;
 end;
 
 
-smacro procedure TripleGetID(triple); getv(triple, 0);
-smacro procedure TripleGetPolynom(triple); getv(triple, 1);
-smacro procedure TripleGetAncestorID(triple); getv(triple, 2);
-smacro procedure TripleGetLm(triple); PolynomGetLm(getv(triple, 1));
-smacro procedure TripleGetProlongSet(triple); getv(triple, 3);
+inline procedure TripleGetID(triple); getv(triple, 0);
+inline procedure TripleGetPolynom(triple); getv(triple, 1);
+inline procedure TripleGetAncestorID(triple); getv(triple, 2);
+inline procedure TripleGetLm(triple); PolynomGetLm(getv(triple, 1));
+inline procedure TripleGetProlongSet(triple); getv(triple, 3);
 
 
 expr procedure TripleIsProlongedBy(triple, variable);

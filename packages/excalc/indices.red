@@ -196,7 +196,7 @@ symbolic procedure mkindxl u;
 
 rlistat('(indexrange nosum renosum));
 
-smacro procedure upindp u;
+inline procedure upindp u;
 %tests if u is a contravariant index;
    atom revalind u;
 

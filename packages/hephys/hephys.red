@@ -205,21 +205,21 @@ symbolic procedure mkepsq u;
 
 % ** FUNCTIONS FOR SIMPLIFYING VECTOR AND GAMMA MATRIX EXPRESSIONS **
 
-symbolic smacro procedure mkg(u,l);
+symbolic inline procedure mkg(u,l);
    % Value is the standard form for G(L,U).
    mksf('g . l . u);
 
-symbolic smacro procedure mka l;
+symbolic inline procedure mka l;
    % Value is the standard form for G(L,A).
    mksf list('g,l,'a);
 
-symbolic smacro procedure mkgamf(u,l);
+symbolic inline procedure mkgamf(u,l);
    mksf('g . (l . u));
 
 symbolic procedure mkg1(u,l);
    if not flagp(l,'nospur) then mkg(u,l) else mkgamf(u,l);
 
-symbolic smacro procedure mkpf(u,v);
+symbolic inline procedure mkpf(u,v);
    multpf(u,v);
 
 symbolic procedure mkf(u,v);
@@ -228,10 +228,10 @@ symbolic procedure mkf(u,v);
 symbolic procedure multd!*(u,v);
    if u=1 then v else multd(u,v);     % onep
 
-symbolic smacro procedure addfs(u,v);
+symbolic inline procedure addfs(u,v);
    addf(u,v);
 
-symbolic smacro procedure multfs(u,v);
+symbolic inline procedure multfs(u,v);
    % U and V are pseudo standard forms.
    % Value is pseudo standard form for U*V.
    multf(u,v);
@@ -296,7 +296,7 @@ symbolic procedure isimp2(u,i,v,w,x);
 symbolic procedure nb u;
    if u then 1 else -1;
 
-symbolic smacro procedure mkdot(u,v);
+symbolic inline procedure mkdot(u,v);
    % Returns a standard form for U . V.
    mksf('cons . ord2(u,v));
 

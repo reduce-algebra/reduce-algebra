@@ -48,27 +48,27 @@ if vectorp fourier!-name!* then <<
 fourier!-name!* := mkvect 7;
 
 %% For non Cambridge LISP add
-smacro procedure putv!.unsafe(x,y,z); putv(x,y,z);
-smacro procedure getv!.unsafe(x,y); getv(x,y);
+inline procedure putv!.unsafe(x,y,z); putv(x,y,z);
+inline procedure getv!.unsafe(x,y); getv(x,y);
 
 %% Data abtraction says that we should define macros for access to
 %% the parts of the Fourier structure
 
-smacro procedure fs!:set!-next(f,p); putv!.unsafe(f, 3, p);
+inline procedure fs!:set!-next(f,p); putv!.unsafe(f, 3, p);
 
-smacro procedure fs!:next(f); getv!.unsafe(f,3);
+inline procedure fs!:next(f); getv!.unsafe(f,3);
 
-smacro procedure fs!:set!-coeff(f,p); putv!.unsafe(f, 0, p);
+inline procedure fs!:set!-coeff(f,p); putv!.unsafe(f, 0, p);
 
-smacro procedure fs!:coeff(f); getv!.unsafe(f, 0);
+inline procedure fs!:coeff(f); getv!.unsafe(f, 0);
 
-smacro procedure fs!:set!-fn(f,p); putv!.unsafe(f, 1, p);
+inline procedure fs!:set!-fn(f,p); putv!.unsafe(f, 1, p);
 
-smacro procedure fs!:fn(f); getv!.unsafe(f, 1);
+inline procedure fs!:fn(f); getv!.unsafe(f, 1);
 
-smacro procedure fs!:set!-angle(f,p); putv!.unsafe(f, 2, p);
+inline procedure fs!:set!-angle(f,p); putv!.unsafe(f, 2, p);
 
-smacro procedure fs!:angle(f); getv!.unsafe(f, 2);
+inline procedure fs!:angle(f); getv!.unsafe(f, 2);
 
 %% Some support functions for angle expressions
 

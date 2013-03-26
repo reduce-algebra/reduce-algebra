@@ -462,6 +462,8 @@ symbolic procedure mapeds(fn,s);
    % Map function for eds
    begin
    s := copyeds s;
+% Note assignment syntax may only be available when within this package, and
+% that elsewhere set_eds_sys can be used.
    eds_sys s := foreach f in eds_sys s collect
                                 xpartitop apply1(fn,!*pf2a f);
    eds_ind s := foreach f in eds_ind s collect

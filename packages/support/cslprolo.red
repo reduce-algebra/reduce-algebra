@@ -62,7 +62,7 @@ top: if null l then return nil;
 % is needed AFTER rlisp.red has been loaded because the first time in
 % the bootstrap-build that RLISP is loaded no attention is given to LOSE
 % properties (this is a REAL misery) so the definition must be put in
-% place on top of the incorrect one builty by RLISP the first time
+% place on top of the incorrect one built by RLISP the first time
 % around.
 %
 

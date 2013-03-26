@@ -239,29 +239,29 @@ symbolic procedure cref61(x,y,z);
 % Analyze bodies of LISP functions for functions called, and globals
 % used, undefined.
 
-smacro procedure flag1(u,v); flag(list u,v);
+inline procedure flag1(u,v); flag(list u,v);
 
-smacro procedure remflag1(u,v); remflag(list u,v);
+inline procedure remflag1(u,v); remflag(list u,v);
 
-smacro procedure isglob u;
+inline procedure isglob u;
  flagp(u,'dclglb);
 
-smacro procedure chkseen s;
+inline procedure chkseen s;
    % Has this name been encountered already?
         if not flagp(s,'seen) then
           <<flag1(s,'seen); seen!*:=s . seen!*>>;
 
-smacro procedure globref u;
+inline procedure globref u;
   if not flagp(u,'glb2rf)
    then <<flag1(u,'glb2rf); globs!*:=u . globs!*>>;
 
-smacro procedure anatom u;
+inline procedure anatom u;
    % Global seen before local..ie detect extended from this.
    if !*globals and u and not(u eq 't)
       and idp u and not assoc(u,locls!*)
      then globref u;
 
-smacro procedure chkgseen g;
+inline procedure chkgseen g;
  if not flagp(g,'gseen) then <<gseen!*:=g . gseen!*;
                             flag1(g,'gseen)>>;
 
@@ -449,7 +449,7 @@ symbolic procedure traput(u,v,w);
    else put(u,v,list w)
  end;
 
-smacro procedure toput(u,v,w);
+inline procedure toput(u,v,w);
  if w then put(u,v,if toplv!* then union(w,get(u,v)) else w);
 
 symbolic procedure outrefend s;
@@ -591,7 +591,7 @@ symbolic procedure filemk u;
   return compress('!" . nconc(u,'(!")))
  end;
 
-flag('(smacro nmacro),'cref);
+flag('(inline smacro nmacro),'cref);
 
 symbolic anlfn procedure put u;
  if toplv!* and qcputx cadr u then anputx u
@@ -648,7 +648,7 @@ symbolic procedure qcrf u;
   else if eqcar(u,'quote) then cadr u
   else <<anform u; compress explode '!?value!?!?>>;
 
-flag('(expr fexpr macro smacro nmacro),'function);
+flag('(expr fexpr macro inline smacro nmacro),'function);
 
 endmodule;
 

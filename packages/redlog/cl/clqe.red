@@ -94,28 +94,28 @@ struct ExtendedQeResult asserted by alistp;
 
 declare ce_mk: (VarList,QfFormula,Answer,AnswerTranslation) -> ContainerElement;
 
-smacro procedure ce_mk(vl,f,an);
+inline procedure ce_mk(vl,f,an);
    % Container element make.
    vl . f . an;
 
 
 declare ce_vl: (ContainerElement) -> VarList;
 
-smacro procedure ce_vl(x);
+inline procedure ce_vl(x);
    % Container element variable list.
    car x;
 
 
 declare ce_f: (ContainerElement) -> QfFormula;
 
-smacro procedure ce_f(x);
+inline procedure ce_f(x);
    % Container element formula.
    cadr x;
 
 
 declare ce_ans: (ContainerElement) -> Answer;
 
-smacro procedure ce_ans(x);
+inline procedure ce_ans(x);
    % Container element answer.
    cddr x;
 
@@ -127,16 +127,16 @@ procedure co_new();
    nil . nil;
 
 
-smacro procedure co_data(co);
+inline procedure co_data(co);
    car co;
 
-smacro procedure co_dynl(co);
+inline procedure co_dynl(co);
    cdr co;
 
-smacro procedure co_setData(co,data);
+inline procedure co_setData(co,data);
    rplaca(co,data);
 
-smacro procedure co_setDynl(co,dynl);
+inline procedure co_setDynl(co,dynl);
    rplacd(co,dynl);
 
 
@@ -314,56 +314,56 @@ struct Junction asserted by pairp;
 
 declare cl_mkJ: (QfFormula,Answer) -> Junction;
 
-smacro procedure cl_mkJ(f,an);
+inline procedure cl_mkJ(f,an);
    % Make junction.
    f . an;
 
 
 declare cl_jF: (Junction) -> QfFormula;
 
-smacro procedure cl_jF(j);
+inline procedure cl_jF(j);
    % Junction formula.
    car j;
 
 
 declare cl_jA: (Junction) -> Answer;
 
-smacro procedure cl_jA(j);
+inline procedure cl_jA(j);
    % Junction answer.
    cdr j;
 
 
 declare cl_co2J: (ContainerElement) -> Junction;
 
-smacro procedure cl_co2J(x);
+inline procedure cl_co2J(x);
    % Container to junction. Returns the S-expression [ce_f(x) . ce_ans(x)]
    cdr x;
 
 
 declare cl_erTh: (EliminationResult) -> Theory;
 
-smacro procedure cl_erTh(er);
+inline procedure cl_erTh(er);
    % Elimination result theory.
    car er;
 
 
 declare cl_erEQR: (EliminationResult) -> ExtendedQeResult;
 
-smacro procedure cl_erEQR(er);
+inline procedure cl_erEQR(er);
    % Elimination result extended qe result.
    cdr er;
 
 
 declare cl_mkER: (Theory,ExtendedQeResult) -> EliminationResult;
 
-smacro procedure cl_mkER(theo,eqr);
+inline procedure cl_mkER(theo,eqr);
    % Make elimination Result.
    theo . eqr;
 
 
 declare cl_mk1EQR: (Formula,EquationL) -> ExtendedQeResult;
 
-smacro procedure cl_mk1EQR(f,eql);
+inline procedure cl_mk1EQR(f,eql);
    % Make singleton extended qe result.
    {{f,eql}};
 

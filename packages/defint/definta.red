@@ -41,34 +41,34 @@ fluid '(plotsynerr!*);
 %*                          MAIN PROCEDURES                            *
 %***********************************************************************
 
-symbolic smacro procedure gw u;
+symbolic inline procedure gw u;
   caar u$
 
-symbolic smacro procedure gl u;
+symbolic inline procedure gl u;
   caadar u$
 
-symbolic smacro procedure gk u;
+symbolic inline procedure gk u;
   cdadar u$
 
-symbolic smacro procedure gr u;
+symbolic inline procedure gr u;
   cadar u$
 
-symbolic smacro procedure gm u;
+symbolic inline procedure gm u;
   caadr u$
 
-symbolic smacro procedure gn u;
+symbolic inline procedure gn u;
   cadadr u$
 
-symbolic smacro procedure gp u;
+symbolic inline procedure gp u;
   caddr cadr u$
 
-symbolic smacro procedure gq u;
+symbolic inline procedure gq u;
   cadddr cadr u$
 
-symbolic smacro procedure ga u;
+symbolic inline procedure ga u;
   caddr u$
 
-symbolic smacro procedure gb u;
+symbolic inline procedure gb u;
   cadddr u$
 
 symbolic procedure rdwrap f;
@@ -1487,7 +1487,7 @@ symbolic procedure nugg(u1,u2,u3);
   diff1sq( diff1sq('(1 . 1), multsq(u3, simp(gq u1 - gp u1))),
            addsq(mugf u2,mugf u1))$
 
-symbolic smacro procedure sumlistsq(u);
+symbolic inline procedure sumlistsq(u);
 << for each pp in u do <<p := addsq(pp,p)>>; p>> where p = '(nil . 1);
 
 symbolic procedure mugf(u);

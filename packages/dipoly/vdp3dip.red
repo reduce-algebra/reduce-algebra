@@ -226,38 +226,38 @@ global '(vdpprintmax groebmonfac);
 flag('(vdpprintmax),'share);
 
 % basic internal constructor of vdp-record
-smacro procedure makevdp (vbc,vev,form); list('vdp,vev,vbc,form,nil);
+inline procedure makevdp (vbc,vev,form); list('vdp,vev,vbc,form,nil);
 
 % basic selectors (conversions)
 
-smacro procedure vdppoly u; cadr cddr u;
+inline procedure vdppoly u; cadr cddr u;
 
-smacro procedure vdplbc u; caddr u;
+inline procedure vdplbc u; caddr u;
 
-smacro procedure vdpevlmon u; cadr u;
+inline procedure vdpevlmon u; cadr u;
 
 % basic tests
 
-smacro procedure vdpzero!? u;
+inline procedure vdpzero!? u;
     null u or null vdppoly u;
 
-smacro procedure vevzero!? u;
+inline procedure vevzero!? u;
     null u or (car u = 0 and vevzero!?1 cdr u);
 
-smacro procedure vdpone!? p;
+inline procedure vdpone!? p;
      not vdpzero!? p and vevzero!? vdpevlmon p;
 
 % base coefficients
 
 %  manipulating of exponent vectors
 
-smacro procedure vevdivides!? (vev1,vev2);
+inline procedure vevdivides!? (vev1,vev2);
         vevmtest!?(vev2,vev1);
 
-smacro procedure vevzero();
+inline procedure vevzero();
         vevmaptozero1(vdpvars!*,nil);
 
-smacro procedure vdpnumber f; vdpgetprop(f,'number) ;
+inline procedure vdpnumber f; vdpgetprop(f,'number) ;
 
 % the code for checkpointing is factored out
 % This version: NO CHECKPOINT FACILITY
@@ -291,7 +291,7 @@ symbolic procedure dip2vdp u;
 
 % some simple mappings
 
-smacro procedure makedipzero(); nil;
+inline procedure makedipzero(); nil;
 
 symbolic procedure vdpredzero!? u; dipzero!? dipmred vdppoly u;
 
@@ -660,9 +660,9 @@ symbolic procedure dipcontlowerev (e1);
 
 symbolic procedure dipappendmon(dip,bc,ev); append(dip,dipfmon(bc,ev));
 
-smacro procedure dipnconcmon(dip,bc,ev); nconc(dip,dipfmon(bc,ev));
+inline procedure dipnconcmon(dip,bc,ev); nconc(dip,dipfmon(bc,ev));
 
-smacro procedure dipnconcdip(dip1,dip2); nconc(dip1,dip2);
+inline procedure dipnconcdip(dip1,dip2); nconc(dip1,dip2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

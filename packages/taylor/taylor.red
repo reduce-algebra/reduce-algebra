@@ -108,7 +108,7 @@ module Taylor;
 %    argument flg is nil.
 %
 % 16-Apr-1997    2.1f
-%   Slight improvement in tracing output (smacro Taylor!-trace).
+%   Slight improvement in tracing output (inline Taylor!-trace).
 %   Avoid infinite recursion when mcd is off (pointed out by
 %    Wolfram Koepf).
 %
@@ -252,13 +252,13 @@ module Taylor;
 %   Improved integration of Taylor kernels in combination with
 %    logarithmic terms.
 %   Rewrote rules integration rules in algebraic form.
-%   Added TpNextList smacro.
+%   Added TpNextList inline.
 %   Changed mult!.comp!.tp!. in preparation for non-integer exponents,
 %    to handle next parts.
-%   Added invert!-powerlist smacro and used in invtaylor1.
+%   Added invert!-powerlist inline and used in invtaylor1.
 %   Renamed taydegree!-lessp to taydegree!< and
 %    taydegree!-strict!-less!-or!-equal!-p to taydegree!-strict!<!=.
-%   Added smacro prune!-coefflist.
+%   Added inline prune!-coefflist.
 %   Introduced prepTayExp.
 %   Changed protocol for add!.comp!.tp!. to return a list of the new
 %    template, so that an empty template can be distiguished from
@@ -389,7 +389,7 @@ module Taylor;
 %
 % 27-May-1993    1.4j
 %   Corrected some oversights in taysimpexpt.
-%   Added smacro TayTpVars.
+%   Added inline TayTpVars.
 %   Added code to taysimpp to handle s.f. as main variable.
 %   Added function subtr!-degrees to tayutils.red.
 %   Corrected error in var!-is!-nth in tayintro.red.
@@ -418,7 +418,7 @@ module Taylor;
 %   Changed printing so that only non-vanishing terms are counted.
 %   Introduced taysimpsinh for simplifcation of expressions involving
 %   sinh, coth, sech, csch.
-%   Added subs2coefflist and resimpcoefflist smacros.
+%   Added subs2coefflist and resimpcoefflist inlines.
 %   Modified addtaylor1, multtaylor1, quottaylor1 and invtaylor1 to call
 %    subs2coefflist.
 %   Protected klist property of atom Taylor!* against being filled
@@ -456,7 +456,7 @@ module Taylor;
 %   Corrected error in taysimpexp.
 %   Added simp0fn property to Taylor!* for proper handling of
 %    substitutions.
-%   Added make!-cst!-coefficient smacro.
+%   Added make!-cst!-coefficient inline.
 %   Added partial suppression of printing of coefficients and
 %    TAYLORPRINTTERMS variable.
 %
@@ -485,7 +485,7 @@ module Taylor;
 % 19-Jul-1991    1.3a
 %   Introduced taysimpmainvar for main variables that are standard
 %    forms, as in factored expressions. Changed taysimpp accordingsly.
-%   Introduced new smacros !*tay2f and !*tay2q that make Taylor kernels
+%   Introduced new inlines !*tay2f and !*tay2q that make Taylor kernels
 %    unique.
 %
 % 03-Jun-1991    1.3
@@ -494,10 +494,10 @@ module Taylor;
 %   Replaced freeof by has!-Taylor!* in taysimpf and taysimpt, and by
 %    depends in difftaylor and taylor2e.
 %   Changed module names to conform to file names.
-%   Moved (nearly) all smacros into header (taylor) module,
-%    made cst!-Taylor!* an smacro, moved remaining functions from
+%   Moved (nearly) all inlines into header (taylor) module,
+%    made cst!-Taylor!* an inline, moved remaining functions from
 %    taymacros into tayutils, deleted taymacros module.
-%   Made makecoeffpairs (in module taybasic) from smacro to expr.
+%   Made makecoeffpairs (in module taybasic) from inline to expr.
 %   Changed taylorsamevar to use TayOrig part of Taylor kernel if
 %    present.
 %   Changed Taylor printing functions since it is now possible to
@@ -603,7 +603,7 @@ module Taylor;
 %   find!-non!-zero moved into Taylor!:macros module.
 %
 % 26-Feb-1990    1.2d
-%   Added following selector, constructor, and modification smacros:
+%   Added following selector, constructor, and modification inlines:
 %    TayCfPl, TayCfSq, TayMakeCoeff, set!-TayCfPl, set!-TayCfSq,
 %    TayTpElVars, TayTpElPoint, TayTpElOrder.
 %   Some minor changes in several procedures to improve readability.
@@ -632,7 +632,7 @@ module Taylor;
 %    replace simptaylor in taysimpt and multpowerintotaylor.
 %   Added new versions of procedures taysimplog and taysimpexp
 %    (Knuth's algorithm).
-%   Taylor!:basic module moved up (so that some smacros are
+%   Taylor!:basic module moved up (so that some inlines are
 %    defined earlier).
 %
 %
@@ -652,7 +652,7 @@ module Taylor;
 %   Introduced big-O notation, added taylorprintorder switch.
 %   taysimpasin and taysimpatan now also calculate the inverse
 %    hyperbolic functions.
-%   New smacro Taylor!-kernel!-sq!-p replaces combinations of
+%   New inline Taylor!-kernel!-sq!-p replaces combinations of
 %    kernp and Taylor!*p.
 %
 %
@@ -699,7 +699,7 @@ module Taylor;
 %    homogeneously expanded expressions.
 %   Changed subsubtaylor so that substitution of a kernel is possible
 %    (not only a variable).
-%   New constructor smacros make!-Taylor!* and TayFlagsCombine replace
+%   New constructor inlines make!-Taylor!* and TayFlagsCombine replace
 %    explicit list building.
 %   New procedures: get!-degree and truncate!-coefflist induced
 %    changes in addtaylor/multtaylor/quottaylor/invtaylor.
@@ -716,7 +716,7 @@ module Taylor;
 %   Changed subsubtaylor to avoid 0**n for n<=0 when substituting
 %    a Taylor variable (to signal an error instead);  changed
 %    taylor!-error accordingly.
-%   Added taylortemplate operator, removed smacro
+%   Added taylortemplate operator, removed inline
 %    taylor!-map!-over!-coefficients.
 %   Added code for expansion about infinity.
 %   Split quottaylor into two parts: the driver (quottaylor) and
@@ -988,18 +988,18 @@ imports
 
 %*****************************************************************
 %
-%      General utility smacros
+%      General utility inlines
 %
 %*****************************************************************
 
 
-symbolic smacro procedure nzerolist n;
+symbolic inline procedure nzerolist n;
   %
   % generates a list of n zeros
   %
   nlist (0, n);
 
-symbolic smacro procedure copy!-list l;
+symbolic inline procedure copy!-list l;
   %
   % produces a copy of list l.
   %
@@ -1009,106 +1009,106 @@ symbolic smacro procedure copy!-list l;
 
 %*****************************************************************
 %
-%      Selector and constructor smacros for Taylor kernels
+%      Selector and constructor inlines for Taylor kernels
 %
 %*****************************************************************
 
 
-symbolic smacro procedure make!-Taylor!* (cflis, tp, orig, flgs);
+symbolic inline procedure make!-Taylor!* (cflis, tp, orig, flgs);
   %
   % Builds a new Taylor kernel structure out of its parts.
   %
   {'Taylor!*, cflis, tp, orig, flgs};
 
-symbolic smacro procedure TayMakeCoeff (u, v);
+symbolic inline procedure TayMakeCoeff (u, v);
   %
   % Builds a coefficient from degreelist and s.q.
   %
   u . v;
 
 
-comment Selector smacros for the parts of a Taylor kernel;
+comment Selector inlines for the parts of a Taylor kernel;
 
-symbolic smacro procedure TayCoeffList u; cadr u;
+symbolic inline procedure TayCoeffList u; cadr u;
 
-symbolic smacro procedure TayTemplate u; caddr u;
+symbolic inline procedure TayTemplate u; caddr u;
 
-symbolic smacro procedure TayOrig u; cadddr u;
+symbolic inline procedure TayOrig u; cadddr u;
 
-symbolic smacro procedure TayFlags u; car cddddr u;
+symbolic inline procedure TayFlags u; car cddddr u;
 
-symbolic smacro procedure TayCfPl u; car u;
+symbolic inline procedure TayCfPl u; car u;
 
-symbolic smacro procedure TayCfSq u; cdr u;
+symbolic inline procedure TayCfSq u; cdr u;
 
-symbolic smacro procedure TayTpVars tp;
+symbolic inline procedure TayTpVars tp;
   for each x in tp join copy!-list car x;
 
-symbolic smacro procedure TayVars u;
+symbolic inline procedure TayVars u;
   TayTpVars TayTemplate u;
 
-symbolic smacro procedure TayGetCoeff (degrlis, coefflis);
+symbolic inline procedure TayGetCoeff (degrlis, coefflis);
   (if null cc then nil ./ 1 else TayCfSq cc)
     where cc := assoc (degrlis, coefflis);
 
-symbolic smacro procedure TayTpElVars u; car u;
+symbolic inline procedure TayTpElVars u; car u;
 
-symbolic smacro procedure TayTpElPoint u; cadr u;
+symbolic inline procedure TayTpElPoint u; cadr u;
 
-symbolic smacro procedure TayTpElOrder u; caddr u;
+symbolic inline procedure TayTpElOrder u; caddr u;
 
-symbolic smacro procedure TayTpElNext u; cadddr u;
+symbolic inline procedure TayTpElNext u; cadddr u;
 
-symbolic smacro procedure TpDegreeList tp;
+symbolic inline procedure TpDegreeList tp;
   for each x in tp collect TayTpElOrder x;
 
-symbolic smacro procedure TpNextList tp;
+symbolic inline procedure TpNextList tp;
   for each x in tp collect TayTpElNext x;
 
-%symbolic smacro procedure TayDegreeList u;
+%symbolic inline procedure TayDegreeList u;
 %  TpDegreeList TayTemplate u;
 
-symbolic smacro procedure TayDegreeSum u;
+symbolic inline procedure TayDegreeSum u;
   for each x in TayTemplate u sum TayTpElOrder x;
 
 
-comment Modification smacros;
+comment Modification inlines;
 
-symbolic smacro procedure set!-TayCoeffList (u, v);
+symbolic inline procedure set!-TayCoeffList (u, v);
   %
   % Sets TayCoeffList part of Taylor kernel u to v
   %
   rplaca (cdr u, v);
 
-symbolic smacro procedure set!-TayTemplate (u, v);
+symbolic inline procedure set!-TayTemplate (u, v);
   %
   % Sets TayTemplate part of Taylor kernel u to v
   %
   rplaca (cddr u, v);
 
-symbolic smacro procedure set!-TayOrig (u, v);
+symbolic inline procedure set!-TayOrig (u, v);
   %
   % Sets TayOrig part of Taylor kernel u to v
   %
   rplaca (cdddr u, v);
 
-symbolic smacro procedure set!-TayFlags (u, v);
+symbolic inline procedure set!-TayFlags (u, v);
   %
   % Sets TayFlags part of Taylor kernel u to v
   %
   rplaca (cddddr u, v);
 
-symbolic smacro procedure set!-TayCfPl (u, v);
+symbolic inline procedure set!-TayCfPl (u, v);
   rplaca (u, v);
 
-symbolic smacro procedure set!-TayCfSq (u, v);
+symbolic inline procedure set!-TayCfSq (u, v);
   rplacd (u, v);
 
 
 comment Smacro that implement arithmetic operations on
         exponents in powerlist;
 
-symbolic smacro procedure exponent!-check!-int rn;
+symbolic inline procedure exponent!-check!-int rn;
    if cddr rn=1 then cadr rn else rn;
 
 symbolic procedure !*TayExp2q u;
@@ -1205,27 +1205,27 @@ symbolic macro procedure Taylor!: u;
 
 comment Smacros and procedures that are commonly used ;
 
-symbolic smacro procedure TayFlagsCombine (u, v);
+symbolic inline procedure TayFlagsCombine (u, v);
   %
   % Not much for now
   %
   nil;
 
-symbolic smacro procedure get!-degree dg;
+symbolic inline procedure get!-degree dg;
   %
   % Procedure to handle degree parts of Taylor kernels.
   %
   Taylor!: for each n in dg sum n;
 
-symbolic smacro procedure get!-degreelist dgl;
+symbolic inline procedure get!-degreelist dgl;
    for each dg in dgl collect get!-degree dg;
 
-symbolic smacro procedure invert!-powerlist pl;
+symbolic inline procedure invert!-powerlist pl;
    Taylor!:
      for each nl in pl collect
        for each p in nl collect -p;
 
-symbolic smacro procedure taymultcoeffs (c1, c2);
+symbolic inline procedure taymultcoeffs (c1, c2);
   %
   % (TayCoeff, TayCoeff) -> TayCoeff
   %
@@ -1236,12 +1236,12 @@ symbolic smacro procedure taymultcoeffs (c1, c2);
   TayMakeCoeff (add!-degrees (TayCfPl c1, TayCfPl c2),
                 multsq (TayCfSq c1, TayCfSq c2));
 
-symbolic smacro procedure prune!-coefflist(cflist);
+symbolic inline procedure prune!-coefflist(cflist);
    <<while not null cflis and null numr TayCfSq car cflis
        do cflis := cdr cflis;
      cflis>> where cflis := cflist;
 
-symbolic smacro procedure multintocoefflist(coefflis,sq);
+symbolic inline procedure multintocoefflist(coefflis,sq);
   %
   % (TayCoeffList, s.q.) -> TayCoeffList
   %
@@ -1250,16 +1250,16 @@ symbolic smacro procedure multintocoefflist(coefflis,sq);
   for each p in coefflis collect
     TayMakeCoeff(TayCfPl p,resimp subs2!* multsq(TayCfSq p,sq));
 
-symbolic smacro procedure subs2coefflist clist;
+symbolic inline procedure subs2coefflist clist;
   for each pp in clist join
     ((if not null numr sq then {TayMakeCoeff(TayCfPl pp,sq)})
      where sq := subs2!* TayCfSq pp);
 
-symbolic smacro procedure resimpcoefflist clist;
+symbolic inline procedure resimpcoefflist clist;
   for each cc in clist collect
     TayMakeCoeff(TayCfPl cc,subs2 resimp TayCfSq cc);
 
-symbolic smacro procedure resimptaylor u;
+symbolic inline procedure resimptaylor u;
   %
   % (TaylorKernel) -> TaylorKernel
   %
@@ -1273,7 +1273,7 @@ symbolic smacro procedure resimptaylor u;
            then resimp TayOrig u else nil,
          TayFlags u);
 
-symbolic smacro procedure make!-cst!-powerlist tp;
+symbolic inline procedure make!-cst!-powerlist tp;
   %
   % (TayTemplate) -> TayPowerList
   %
@@ -1282,7 +1282,7 @@ symbolic smacro procedure make!-cst!-powerlist tp;
   %
   for each el in tp collect nzerolist length TayTpElVars el;
 
-symbolic smacro procedure make!-cst!-coefficient (cst, tp);
+symbolic inline procedure make!-cst!-coefficient (cst, tp);
   %
   % (s.q., TayTemplate) -> TayCoefficient
   %
@@ -1291,7 +1291,7 @@ symbolic smacro procedure make!-cst!-coefficient (cst, tp);
   %
   TayMakeCoeff (make!-cst!-powerlist tp, cst);
 
-symbolic smacro procedure make!-cst!-coefflis (cst, tp);
+symbolic inline procedure make!-cst!-coefflis (cst, tp);
   %
   % (s.q., TayTemplate) -> TayCoeffList
   %
@@ -1300,7 +1300,7 @@ symbolic smacro procedure make!-cst!-coefflis (cst, tp);
   %
   {make!-cst!-coefficient (cst, tp)};
 
-symbolic smacro procedure cst!-Taylor!* (cst, tp);
+symbolic inline procedure cst!-Taylor!* (cst, tp);
   %
   % (s.q., TayTemplate) -> TaylorKernel
   %
@@ -1312,7 +1312,7 @@ symbolic smacro procedure cst!-Taylor!* (cst, tp);
 
 comment Predicates;
 
-symbolic smacro procedure has!-Taylor!* u;
+symbolic inline procedure has!-Taylor!* u;
   %
   % (Any) -> Boolean
   %
@@ -1320,7 +1320,7 @@ symbolic smacro procedure has!-Taylor!* u;
   %
   smember ('Taylor!*, u);
 
-symbolic smacro procedure Taylor!*p u;
+symbolic inline procedure Taylor!*p u;
   %
   % (Kernel) -> Boolean
   %
@@ -1328,7 +1328,7 @@ symbolic smacro procedure Taylor!*p u;
   %
   eqcar (u, 'Taylor!*);
 
-symbolic smacro procedure Taylor!-kernel!-sf!-p u;
+symbolic inline procedure Taylor!-kernel!-sf!-p u;
   %
   % (s.f.) -> Boolean
   %
@@ -1337,14 +1337,14 @@ symbolic smacro procedure Taylor!-kernel!-sf!-p u;
   not domainp u and null red u and lc u = 1
      and ldeg u = 1 and Taylor!*p mvar u;
 
-symbolic smacro procedure Taylor!-kernel!-sq!-p u;
+symbolic inline procedure Taylor!-kernel!-sq!-p u;
   %
   % u is a standard quotient,
   % returns t if it is simply a Taylor kernel
   %
   kernp u and Taylor!*p mvar numr u;
 
-symbolic smacro procedure has!-TayVars(tay,ex);
+symbolic inline procedure has!-TayVars(tay,ex);
    %
    % Checks whether ex contains any of the Taylor variables
    %  of Taylor kernel tay.
@@ -1359,12 +1359,12 @@ symbolic procedure TayCoeffList!-zerop tcl;
      or null numr TayCfSq car tcl and TayCoeffList!-zerop cdr tcl;
 
 
-comment smacros for the generation of unique Taylor kernels;
+comment inlines for the generation of unique Taylor kernels;
 
-symbolic smacro procedure !*tay2f u;
+symbolic inline procedure !*tay2f u;
   !*p2f mksp (u, 1);
 
-symbolic smacro procedure !*tay2q u;
+symbolic inline procedure !*tay2q u;
   !*p2q mksp (u, 1);
 
 

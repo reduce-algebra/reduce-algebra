@@ -242,7 +242,7 @@ symbolic procedure !*n2a n;
 % Modular arithmetic support, based on module alg/genmod
 % ======================================================
 % Avoids a few tests that are unnecessary for this application
-% (I hope!).  Must be here because some definitions are smacros!
+% (I hope!).  Must be here because some definitions are inlines!
 
 symbolic procedure mod!# n;
    % Reduce integer n modulo current!-modulus,
@@ -250,11 +250,11 @@ symbolic procedure mod!# n;
    (if n_m < 0 then n_m + current!-modulus else n_m)
       where n_m = remainder(n, current!-modulus);
 
-symbolic smacro procedure mod!+(a,b);
+symbolic inline procedure mod!+(a,b);
    % Sum of two positive modular numbers:
    general!-modular!-plus(a,b);
 
-symbolic smacro procedure mod!*(a,b);
+symbolic inline procedure mod!*(a,b);
    % Product of two positive modular numbers:
    remainder(a*b, current!-modulus);
 
@@ -262,7 +262,7 @@ symbolic procedure mod!/(a,b);
    % Quotient of two positive modular numbers:
    mod!*(a, general!-reciprocal!-by!-gcd(current!-modulus,b,0,1));
 
-symbolic smacro procedure mod!^(a,n);
+symbolic inline procedure mod!^(a,n);
    % Natural number power of a modular number:
    general!-modular!-expt(a,n);
 

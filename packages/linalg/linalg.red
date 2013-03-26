@@ -103,7 +103,7 @@ switch fast_la;  % If ON, then the following functions will be faster:
 
 
 
-symbolic smacro procedure my_reval(n);
+symbolic inline procedure my_reval(n);
   %
   % Only revals if it needs to.
   %
@@ -2209,7 +2209,7 @@ symbolic procedure get_coeffs(poly);
 
 % Smacro used in other modules.
 
-symbolic smacro procedure my_revlis(u);
+symbolic inline procedure my_revlis(u);
   %
   % As my_reval but for lists.
   %

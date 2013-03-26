@@ -33,7 +33,7 @@ module bibasis_interface;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-smacro procedure mk_sq(a); list('!*SQ, a, t);
+inline procedure mk_sq(a); list('!*SQ, a, t);
 
 
 expr procedure bibasis(initialSet, variablesList, monomialOrder, toGroebner);

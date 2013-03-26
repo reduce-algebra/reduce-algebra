@@ -498,7 +498,7 @@ end$
 
 % A macro used to prevent things with *cname*
 % properties being evaluated in certain circumstances.  MCD 28.3.94
-symbolic smacro procedure cexp_name(u);
+symbolic inline procedure cexp_name(u);
    if atom u then list(u)
     else rplaca(cexp ('dummyArrayToken . cdr u), car u)$
 

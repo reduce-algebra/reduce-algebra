@@ -371,7 +371,7 @@ null u or numberp u or (not atom u and memq(car u,domainlist!*));
 remflag('(noncom),'flagop);
 remprop('noncom,'stat);
 
-smacro procedure noncomp2 u; % changed
+inline procedure noncomp2 u; % changed
 % u is a kernel checks for noncom flag
 % Only used here and in physop.red
   if atom u then flagp(u,'noncom)

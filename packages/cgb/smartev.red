@@ -43,25 +43,25 @@ fluid '(dip_vars!* dip_sortevcomp!* dip_sortmode!* gb_tr2count!* !*trgroebr
 
 load!-package 'dp;
 
-smacro procedure sm_lmake(e);
+inline procedure sm_lmake(e);
    {e,nil,nil};
 
-smacro procedure sm_make(e,td,bs);
+inline procedure sm_make(e,td,bs);
    {e,td,bs};
 
-smacro procedure sm_e(se);
+inline procedure sm_e(se);
    car se;
 
-smacro procedure sm_td(se);
+inline procedure sm_td(se);
    cadr se;
 
-smacro procedure sm_std(se);
+inline procedure sm_std(se);
    cadr se or (cadr se := ev_tdeg1 car se);
 
-smacro procedure sm_settd(se,td);
+inline procedure sm_settd(se,td);
    cadr se := td;
 
-smacro procedure sm_bs(se);
+inline procedure sm_bs(se);
    caddr se;
 
 procedure ev_init();

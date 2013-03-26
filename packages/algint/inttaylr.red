@@ -185,7 +185,7 @@ exports taylorform,taylorformp,taylorevaluate,return0,taylorplus,
 
  % ***store-hack-1***;
  % uncomment this procedure if more store is available;
- % there is a smacro for this at the start of the file
+ % there is a inline for this at the start of the file
  % for use if no store can be spared;
  %symbolic procedure tayshorten(save);
  %begin

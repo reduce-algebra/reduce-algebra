@@ -113,22 +113,25 @@ expr procedure i!&recordinst x;
 expr procedure i!&functionp x;
 % I!&FUNCTIONP(X) -- X is an id. Returns T if it is also the name of a
 %  function or SMACRO.
-get(x, 'smacro) or getd x;
+  get(x, 'inline) or get(x, 'smacro) or getd x;
 
 expr procedure i!&function x;
 % I!&FUNCTION(X) - X is a function or SMACRO name. Farm out the
 %  description based on its type.
-if get(x, 'smacro) then i!&function!-smacro x
+ if get(x, 'inline) or get(x, 'smacro) then i!&function!-inline x
  else (if eqcar(w, 'macro) then i!&function!-macro(x, cdr w)
        else if eqcar(w, 'expr) then i!&function!-expr(x, cdr w)
        else if eqcar(w, 'fexpr) then i!&function!-fexpr(x, cdr w)
        else i!&function!-unknown(x, w)) where w := getd x;
 
-expr procedure i!&function!-smacro x;
+expr procedure i!&function!-inline x;
 % I!&FUNCTION!-SMACRO(X) -- X is the name of an SMACRO. Display what we
 %  know about it.
 begin scalar tmp, d;
-  d := get(x, 'smacro);
+% At present I treat smacros and inline functions identically here. That may
+% not be perfect...
+  d := get(x, 'inline);
+  if null d then d := get(x, 'smacro);
   prin1 x; prin2 " is an SMACRO with ";
   if not (tmp := get(x, 'number!-of!-args)) then
    if eqcar(d, 'lambda) and cdr d then tmp := length cadr d

@@ -110,10 +110,10 @@ global '(rowmin rowmax);
 % The meaning of these globals is given in the module CODMAT.         ;
 % ------------------------------------------------------------------- ;
 
-symbolic smacro procedure find!+var(var,fa,iv);
+symbolic inline procedure find!+var(var,fa,iv);
 getcind(var,'varlst!+,'plus,fa,iv);
 
-symbolic smacro procedure find!*var(var,fa,iv);
+symbolic inline procedure find!*var(var,fa,iv);
 getcind(var,'varlst!*,'times,fa,iv);
 
 symbolic procedure getcind(var,varlst,op,fa,iv);

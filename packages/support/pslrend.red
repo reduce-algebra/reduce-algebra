@@ -310,7 +310,7 @@ largest!-small!-modulus := 2**23;
 
 % remflag('(modular!-times),'lose);
 
-% smacro procedure modular!-times(u,v);
+% inline procedure modular!-times(u,v);
 %    iremainder(itimes2(u,v),current!-modulus);
 
 % flag('(modular!-times),'lose);
@@ -319,9 +319,9 @@ largest!-small!-modulus := 2**23;
 % The following two definitions are commented out as they lead to
 % unchecked vector ranges;
 
-% symbolic smacro procedure getv(a,b); igetv(a,b);
+% symbolic inline procedure getv(a,b); igetv(a,b);
 
-% symbolic smacro procedure putv(a,b,c); iputv(a,b,c);
+% symbolic inline procedure putv(a,b,c); iputv(a,b,c);
 
 % flag('(intersection),'lose);
 

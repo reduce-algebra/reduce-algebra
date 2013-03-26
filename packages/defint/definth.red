@@ -28,7 +28,7 @@ module definth;
 
 fluid '(mellin!-transforms!* mellin!-coefficients!*);
 
-symbolic smacro procedure listsq(u);
+symbolic inline procedure listsq(u);
  % u - list of PF.
  % value is list of SQ.
  for each uu in u collect simp!* uu;

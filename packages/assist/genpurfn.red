@@ -24,7 +24,7 @@ module genpurfn;
 %
 
 
-smacro procedure be_last u;
+inline procedure be_last u;
 delete(lastcar u, u);
 
 % VARIOUS GENERAL PURPOSE FUNCTIONS

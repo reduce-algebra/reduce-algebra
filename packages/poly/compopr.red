@@ -68,7 +68,7 @@ symbolic procedure conjsq u;
   (if null numr w then u else addsq(repartsq u,negsq multsq(simp 'i,w)))
    where w=impartsq u;
 
-smacro procedure idomainp; get('i,'idvalfn);
+inline procedure idomainp; get('i,'idvalfn);
   % Tests if 'i' is transformed to a domain structure.
 
 symbolic procedure splitcomplex u;

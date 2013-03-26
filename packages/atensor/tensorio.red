@@ -40,16 +40,16 @@ module tensorio$
 %       pv_list::= (pv1 pv2 ...)
 %=====================================================
 
-smacro procedure tname th$ car th$
-smacro procedure ilist th$ cadr th$
-smacro procedure dlist th$ cddr th$
-smacro procedure mkth(tn,il,dl)$ list tn . il . id$
-smacro procedure mkth0(tn,il,dl)$  tn . il . dl$
+inline procedure tname th$ car th$
+inline procedure ilist th$ cadr th$
+inline procedure dlist th$ cddr th$
+inline procedure mkth(tn,il,dl)$ list tn . il . id$
+inline procedure mkth0(tn,il,dl)$  tn . il . dl$
 
-smacro procedure thead ten$ car ten$
-smacro procedure pvect ten$ cdr ten$
-smacro procedure mkten0(th,pv)$ th . pv$
-smacro procedure mkten(th,pv)$ '!:tensor . list(th . pv)$
+inline procedure thead ten$ car ten$
+inline procedure pvect ten$ cdr ten$
+inline procedure mkten0(th,pv)$ th . pv$
+inline procedure mkten(th,pv)$ '!:tensor . list(th . pv)$
 
 symbolic procedure bassoc(th,bl)$
   if null bl then nil

@@ -134,72 +134,73 @@ symbolic procedure roots u; nil;   % To fool loader.
 
 symbolic procedure minprec; if !*bftag then !:prec!: else !!nfpd;
 
-symbolic smacro procedure getprec(); 2+precision 0;
-symbolic smacro procedure setprec p; precision1(p-2,t);
+symbolic inline procedure getprec(); 2+precision 0;
+symbolic inline procedure setprec p; precision1(p-2,t);
 
-symbolic smacro procedure bfsiz p; preci!: bfloat p;
+symbolic inline procedure bfsiz p; preci!: bfloat p;
 
-symbolic smacro procedure bfnump p; numberp p or bfp!: p;
+symbolic inline procedure bfnump p; numberp p or bfp!: p;
 
-symbolic smacro procedure bfrlmult(r,u);
+symbolic inline procedure bfrlmult(r,u);
    if atom u then r*u else timbf(bfloat r,u);
 
-symbolic smacro procedure bfabs u; if atom u then abs u else abs!: u;
+symbolic inline procedure bfabs u; if atom u then abs u else abs!: u;
 
-symbolic smacro procedure rl2gf u;
+symbolic inline procedure rl2gf u;
    if !*bftag then (bfloat u) . bfz!* else (cflot u) . 0.0;
 
-symbolic smacro procedure im2gf u;
+symbolic inline procedure im2gf u;
    if !*bftag then bfz!* . (bfloat u) else 0.0 . (cflot u);
 
-symbolic smacro procedure xclp a; eqcar(a,'list);
+symbolic inline procedure xclp a; eqcar(a,'list);
 
-symbolic smacro procedure mkxcl a; if xclp a then a else 'list . a;
+symbolic inline procedure mkxcl a; if xclp a then a else 'list . a;
 
-symbolic smacro procedure ncpxp p; bfnump p or bfnump cdar p;
+symbolic inline procedure ncpxp p; bfnump p or bfnump cdar p;
 
-symbolic smacro procedure cpxp p; not ncpxp p;
+symbolic inline procedure cpxp p; not ncpxp p;
 
-symbolic smacro procedure pmsg a;
+symbolic inline procedure pmsg a;
    if !*rootmsg and !*trroot then <<write a; terpri()>>;
 
-symbolic smacro procedure ceillog m; ceiling log10 float m;
+symbolic inline procedure ceillog m; ceiling log10 float m;
 
-symbolic smacro procedure setflbf b; !*bftag := b;
+symbolic inline procedure setflbf b; !*bftag := b;
 
-symbolic smacro procedure trmsg1 (a, nx);
+symbolic inline procedure trmsg1 (a, nx);
   if !*trroot then trmsg1a (a, nx);
 
-symbolic smacro procedure trmsg2 (a, xn, px);
+symbolic inline procedure trmsg2 (a, xn, px);
   if !*trroot then trmsg2a (a, xn, px);
 
-symbolic smacro procedure trmsg3 (a, xn);
+symbolic inline procedure trmsg3 (a, xn);
   if !*trroot then trmsg3a (a, xn);
 
-symbolic smacro procedure trmsg4 req;
+symbolic inline procedure trmsg4 req;
   if !*trroot then trmsg4a req;
 
-symbolic smacro procedure trmsg6 (k, xn, px);
+symbolic inline procedure trmsg6 (k, xn, px);
   if !*trroot then trmsg6a (k, xn, px);
 
-symbolic smacro procedure trmsg7 xn;
+symbolic inline procedure trmsg7 xn;
   if !*trroot then trmsg7a xn;
 
-symbolic smacro procedure trmsg8;
+symbolic inline procedure trmsg8;
   if !*trroot then trmsg8a();
 
-symbolic smacro procedure trmsg10 a;
+symbolic inline procedure trmsg10 a;
   if !*trroot or !*rootmsg then trmsg10a a;
 
-symbolic smacro procedure trmsg11 (xn, n);
+symbolic inline procedure trmsg11 (xn, n);
   if !*trroot then trmsg11a (xn, n);
 
-symbolic smacro procedure trmsg12 z;
+symbolic inline procedure trmsg12 z;
   if !*trroot then trmsg12a z;
 
-symbolic smacro procedure trmsg13(n,xn,px);
+symbolic inline procedure trmsg13(n,xn,px);
    if !*trroot then trmsg13a(n,xn,px);
 
 endmodule;
 
 end;
+ 

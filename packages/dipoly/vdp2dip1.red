@@ -54,7 +54,7 @@ symbolic procedure dip2vdp u;
 
 % some simple mappings
 
-smacro procedure makedipzero(); nil;
+inline procedure makedipzero(); nil;
 
 symbolic procedure vdpredzero!? u; dipzero!? dipmred vdppoly u;
 
@@ -393,9 +393,9 @@ flag('(dipmonic),'lose);
 
 symbolic procedure dipappendmon(dip,bc,ev); append(dip,dipfmon(bc,ev));
 
-smacro procedure dipnconcmon(dip,bc,ev); nconc(dip,dipfmon(bc,ev));
+inline procedure dipnconcmon(dip,bc,ev); nconc(dip,dipfmon(bc,ev));
 
-smacro procedure dipnconcdip(dip1,dip2); nconc(dip1,dip2);
+inline procedure dipnconcdip(dip1,dip2); nconc(dip1,dip2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

@@ -62,44 +62,44 @@ module ofsfxopt;
 % <Ct> ::= (<Variable> . <Value>)
 % <Value> ::= <LispPrefix>
 
-smacro procedure ofsf_xopt!-ansl!-mk(l);
+inline procedure ofsf_xopt!-ansl!-mk(l);
    % Answer list make. [l] is a list. Returns an <Answer List>.
    l;
 
-smacro procedure ofsf_xopt!-ansl!-ansl(ansl);
+inline procedure ofsf_xopt!-ansl!-ansl(ansl);
    % Answer list extract answer list. [ansl] is an <Answer List>. Returns a list
    % of <Answer>.
    ansl;
 
-smacro procedure ofsf_xopt!-ans!-mk(gd,pt);
+inline procedure ofsf_xopt!-ans!-mk(gd,pt);
    % Answer make. [gd] is a <Guard>, [pt] is a <Point>. Returns an <Answer>.
    gd . pt;
 
-smacro procedure ofsf_xopt!-ans!-gd(ans);
+inline procedure ofsf_xopt!-ans!-gd(ans);
    % Answer extract guard. [ans] is an ANS. Returns a GD.
    car ans;
 
-smacro procedure ofsf_xopt!-ans!-pt(ans);
+inline procedure ofsf_xopt!-ans!-pt(ans);
    % Answer extract point. [ans] is an ANS. Returns a PT.
    cdr ans;
 
-smacro procedure ofsf_xopt!-pt!-ctl(pt);
+inline procedure ofsf_xopt!-pt!-ctl(pt);
    % Point extract CTL. [pt] is PT. Returns a list of CT.
    pt;
 
-smacro procedure ofsf_xopt!-pt!-mk(ctl);
+inline procedure ofsf_xopt!-pt!-mk(ctl);
    % Point make. [ctl] is a list of CT. Returns a PT.
    ctl;
 
-smacro procedure ofsf_xopt!-ct!-mk(v,vl);
+inline procedure ofsf_xopt!-ct!-mk(v,vl);
    % CT make. [v] is a variable, [vl] is Lisp prefix. Returns a CT.
    v . vl;
 
-smacro procedure ofsf_xopt!-ct!-var(ct);
+inline procedure ofsf_xopt!-ct!-var(ct);
    % CT variable. [ct] is a CT. Returns a variable.
    car ct;
 
-smacro procedure ofsf_xopt!-ct!-value(ct);
+inline procedure ofsf_xopt!-ct!-value(ct);
    % CT value. [ct] is a CT. Returns Lisp prefix.
    cdr ct;
 
@@ -110,38 +110,38 @@ smacro procedure ofsf_xopt!-ct!-value(ct);
 % <FORMULA> ::= <Redlog formula>
 % <PL> ::= (..., <Atomic formula>, ...)
 
-smacro procedure ofsf_xopt!-co!-mk(cel);
+inline procedure ofsf_xopt!-co!-mk(cel);
    % Container make. [cel] is a CE. Returns a CO.
    cel;
 
-smacro procedure ofsf_xopt!-co!-cel(co);
+inline procedure ofsf_xopt!-co!-cel(co);
    % Container extract container element list. [co] is a CO. Returns a
    % list of CE.
    co;
 
-smacro procedure ofsf_xopt!-ce!-mk(vl,f,pt,pl);
+inline procedure ofsf_xopt!-ce!-mk(vl,f,pt,pl);
    % Container element make. [vl] is a VL, [f] is a formula, [pt] is a
    % PT and [pl] is a PL. Returns a CE.
    {vl,f,pt,pl};
 
-smacro procedure ofsf_xopt!-ce!-vl(ce);
+inline procedure ofsf_xopt!-ce!-vl(ce);
    % Container element extract variable list. [ce] is a CE. Returns a
    % VL.
    car ce;
 
-smacro procedure ofsf_xopt!-ce!-f(ce);
+inline procedure ofsf_xopt!-ce!-f(ce);
    % Container element extract formula. [ce] is a CE. Returns a formula.
    cadr ce;
 
-smacro procedure ofsf_xopt!-ce!-pt(ce);
+inline procedure ofsf_xopt!-ce!-pt(ce);
    % Container element extract point. [ce] is a CE. Returns a PT.
    caddr ce;
 
-smacro procedure ofsf_xopt!-ce!-pl(ce);
+inline procedure ofsf_xopt!-ce!-pl(ce);
    % Container element extract PL. [ce] is a CE. Returns a PL.
    cadddr ce;
 
-smacro procedure ofsf_xopt!-co!-put(co,ce);
+inline procedure ofsf_xopt!-co!-put(co,ce);
    % Container put. [co] is a CO, [ce] is a CE. Returns a CO.
    ce . co;
 
@@ -150,11 +150,11 @@ procedure ofsf_xopt!-co!-putl(co,cel);
    % CO.
    for each ce in cel collect ofsf_xopt!-co!-put(co,ce);
 
-smacro procedure ofsf_xopt!-co!-get(co);
+inline procedure ofsf_xopt!-co!-get(co);
    % Container get. [co] is a CO. Returns a CO.
    co;  % car co . cdr co;
 
-smacro procedure ofsf_xopt!-co!-length(co);
+inline procedure ofsf_xopt!-co!-length(co);
    % Container length. [co] is a CO. Returns a number.
    length co;
 
@@ -165,28 +165,28 @@ smacro procedure ofsf_xopt!-co!-length(co);
 % <EQL> ::= (..., <CP>, ...)  % "equations"
 % <CP> ::= "minimal polynomial" | minf | pinf
 
-smacro procedure ofsf_xopt!-cs!-mk(ubl,lbl,eql);
+inline procedure ofsf_xopt!-cs!-mk(ubl,lbl,eql);
    % CS make. [ubl] us an UBL, [lbl] is an LBL, [eql] is an EQL. Returns
    % a CS.
    {ubl,lbl,eql};
 
-smacro procedure ofsf_xopt!-cs!-ubl(cs);
+inline procedure ofsf_xopt!-cs!-ubl(cs);
    % CS extract upper bound list. [cs] is a CS. Returns a UBL.
    car cs;
 
-smacro procedure ofsf_xopt!-cs!-lbl(cs);
+inline procedure ofsf_xopt!-cs!-lbl(cs);
    % CS extract upper lower list. [cs] is a CS. Returns an LBL.
    cadr cs;
 
-smacro procedure ofsf_xopt!-cs!-eql(cs);
+inline procedure ofsf_xopt!-cs!-eql(cs);
    % CS extract equation list. [cs] is a CS. Returns EQL.
    caddr cs;
 
-smacro procedure ofsf_xopt!-cp!-mk(p);
+inline procedure ofsf_xopt!-cp!-mk(p);
    % CP make. Returns a CP.
    p;
 
-smacro procedure ofsf_xopt!-cp!-p(cp);
+inline procedure ofsf_xopt!-cp!-p(cp);
    % CP extract p. Returns a CP.
    cp;
 
@@ -197,11 +197,11 @@ procedure ofsf_xopt!-cs!-null(cs);
 %DS
 % <ES> ::= (...,<CP>,...)
 
-smacro procedure ofsf_xopt!-es!-mk(cpl);
+inline procedure ofsf_xopt!-es!-mk(cpl);
    % Elimination set make. [cpl] is a list of CP. Returns an ES.
    cpl;
 
-smacro procedure ofsf_xopt!-es!-cpl(es);
+inline procedure ofsf_xopt!-es!-cpl(es);
    % Elimination set CP list. [es] is an elimination set. Returns a list
    % of CP.
    es;

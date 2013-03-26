@@ -1,4 +1,4 @@
-module smacro;  % Support for SMACRO expansion.
+module smacro;  % Support for SMACRO expansion
 
 % Author: Anthony C. Hearn.
 
@@ -125,20 +125,27 @@ module smacro;  % Support for SMACRO expansion.
 % then the sorts of issue discussed here bite repeatedly!
 
 % I hope these comments will help anybody writing their own smacros. I
-% MAY introduce a new keyword, say
+% have introduced a new keyword
 %   inline procedure f(x); ...;
 % with unambiguous call-by-value semantics, but meanwhile in any automatic
 % conversion from procedure to smacro the issues here need to be thought
 % about.    ACN September 2010.
 
+% The flag !*loginlines enables reports that may help identify places where
+% some of the above issues arise.  ACN March 2013.
+
+fluid '(inlineinfo);
+
 symbolic procedure applsmacro(u,vals,name);
    % U is smacro body of form (lambda <varlist> <body>), VALS is
    % argument list, NAME is name of smacro.
-   begin scalar body,remvars,varlist,w;
+   begin scalar body,remvars,varlist,w,inlineinfo;
       varlist := cadr u;
       body := caddr u;
+      inlineinfo := list(name, varlist, body);
       if length varlist neq length vals
         then rerror(rlisp,15,list("Argument mismatch for SMACRO",name));
+      if !*loginlines then log_inlines(varlist, body, vals);
       if no!-side!-effect!-listp vals or one!-entry!-listp(varlist,body)
         then return subla!-q(pair(varlist,vals),body)
        else if length varlist>1
@@ -156,9 +163,102 @@ symbolic procedure applsmacro(u,vals,name);
                          body) .
                     for each x in remvars collect cdr x;
 %             if not eqcar(cadr w,'setq)
-%               then <<prin2 "*** smacro: "; print cdr w>>;
+%               then <<prin2 "*** inline: "; print cdr w>>;
               return w>>
    end;
+
+% In my analysis here I am going to be slightly sloppy in my traversal
+% of code - I will not expand further macros and I may ignore special
+% features of some special forms. Since this is just to generate a report
+% I think that perfection is not necessary!
+
+symbolic procedure log_inlines(varlist, body, vals);
+  begin
+% (1) Are there assignments to any of the variable in varlist within body?
+%     If so conversion from a macro to a procedure would change the
+%     behaviour.
+    if log_assignment(varlist, body) then return nil;
+% (2) Does body use any variables that are free in it but not fluid or
+%     global? If so they may be local variables in the context that the
+%     inline is used, and conversion to a procedure would change semantics.
+    if log_freevars(varlist, body) then return nil;
+% (3) Are any items in varlist used more than once in circumstances where
+%     the corresponding actual argument is something other than a simple
+%     variable or constant? If so there is a risk of wasted multiple
+%     evaluation -- or if the actual parameter involves side-effects even
+%     worse.
+% (4) [I am not at all certain how well I can check this!]. I want to
+%     detect cases where it is important that the substituted argument
+%     gets evaluated just and only where shown in the inline. Current thoughts
+%     are (4.1) to detect cases where an argument is only used in a context
+%     where its value is ignored, as in "inline procedure f u; << A ; u; B>>;"
+%     and (4.2) to detect cases where an argument is used within a branch
+%     of a conditional. Note that if I have already filtered on (3) this means
+%     that the single use is conditional.
+  end;
+
+symbolic procedure log_assignment(varlist, u);
+  if atom u or eqcar(u, 'quote) or eqcar(u, 'function) then nil
+  else if eqcar(u, 'setq) then <<
+    if member(cadr u, varlist) then <<
+      if not zerop posn() then terpri();
+      princ "+++ Assignment to parameter of inline: ";
+      print u;
+      princ "+++ Macro was: ";
+      print inlineinfo;
+      t>>
+    else log_assignment(varlist, caddr u) >>
+  else if eqcar(u, 'cond) then log_assignment_list_list(varlist, cdr u)
+  else log_assignment_list(varlist, u);
+
+symbolic procedure log_assignment_list_list(varlist, u);
+  if atom u then nil
+  else if log_assignment_list(varlist, car u) then t
+  else log_assignment_list_list(varlist, cdr u); 
+
+symbolic procedure log_assignment_list(varlist, u);
+  if atom u then nil
+  else if log_assignment(varlist, car u) then t
+  else log_assignment_list(varlist, cdr u); 
+
+symbolic procedure log_freevars(varlist, u);
+  if atom u then <<
+% Note that in PSL at least NIL and T are not tagged as either fluid
+% or global - they are special cases! Well it seems that they have a
+% property 'constant!? that is true that marke them. I will still check for
+% t and nil specially as well.
+    if not idp u or member(u, varlist) or
+       globalp u or fluidp u or
+       get(u, 'constant!?) or
+       u = nil or u = t then nil
+    else <<
+      if not zerop posn() then terpri();
+      princ "+++ Use of free variable in smacro/inline body: ";
+      print u;
+      princ "+++ Macro was: ";
+      print inlineinfo;
+      t >> >>
+  else if eqcar(u, 'quote) or
+    (eqcar(u, 'function) and atom cadr u) or
+    eqcar(u, 'go) then nil
+  else if eqcar(u, 'prog) then
+    log_freevars_list(append(cadr u, varlist), cdr u, t)
+  else if eqcar(u, 'lambda) then
+    log_freevars_list(append(cadr u, varlist), cdr u, nil)
+  else if eqcar(u, 'cond) then log_freevars_list_list(varlist, cdr u)
+  else if atom car u then log_freevars_list(varlist, cdr u, nil)
+  else log_freevars_list(varlist, u, nil);
+
+symbolic procedure log_freevars_list_list(varlist, u);
+  if atom u then nil
+  else if log_freevars_list(varlist, car u, nil) then t
+  else log_freevars_list_list(varlist, cdr u); 
+
+symbolic procedure log_freevars_list(varlist, u, isprog);
+  if atom u then nil
+  else if isprog and atom car u then log_freevars_list(varlist, cdr u, t)
+  else if log_freevars(varlist, car u) then t
+  else log_freevars_list(varlist, cdr u, isprog); 
 
 symbolic procedure no!-side!-effectp u;
    if atom u then numberp u or (idp u and not(fluidp u or globalp u))
@@ -171,7 +271,7 @@ symbolic procedure no!-side!-effect!-listp u;
    null u or no!-side!-effectp car u and no!-side!-effect!-listp cdr u;
 
 % This list USED to have CONS in it, which would grant expansion of
-% smacros the right to duplicate expressions with CONS in them - and
+% inlines the right to duplicate expressions with CONS in them - and
 % firstly that would waste memory, and (worse) it causes bugs when
 % in the presence of RPLACA and RPLACD.  (ACN, Sept 2010)
 
@@ -218,7 +318,7 @@ symbolic procedure subla!-q(u,v);
 % the code, but NOT within quoted items (QUOTE literal) and NOT in
 % a manner that messes up embedded bindings. This latter is
 % an enhancement to the code as of September 2010 to resolve issues
-% that arose when trying to use many more smacros then before.
+% that arose when trying to use many more inlines then before.
    begin scalar x;
         if null u or null v then return v
          else if atom v
@@ -238,8 +338,126 @@ symbolic procedure subla!-q(u,v);
    end;
 
 
+put('inline,'macrofn,'applsmacro);
 put('smacro,'macrofn,'applsmacro);
 
+%
+% Now I would rather like to retire smacros completely because of the
+% delicacies documented above. But one use for them is to provide constructors
+% and accessors for data-structures. A special challange there is that "form"
+% process inlines that are seen on the left hand side of assignments. Thus
+% if I ever replace inlines with simple functions (even ones that an optimising
+% compiler can in-line) I need to do something more about that.
+%
+% So here I propose syntax that describes new data types. I will illustrate
+% it with how it will be used to define the shape of polynomials in the
+% file poly/poly.red
+%
+%    accessors lc . red;
+%    accessors (lpow . lc) . !_;
+%    accessors ((mvar . ldeg) . !_) . !_;
+%    accessors tpow . tc, (tvar . tdeg) . !_;
+%    accessors numr . denr;
+%
+% BEWARE. I have written "!_" here for a plain unadorned underscore even
+% though mostly in Reduce you can just write "_". However excalc makes a
+% new token "_|" for innerprod and after that an underscore not followed
+% by a vertical bar seems to cause a crash in rlisp/tok.red:scan!
+%
+% The constructors need to be written out by hand as in
+%    inline procedure u .+ v; u . v;
+% if only because althout they deliver cons cells the may do mre than that
+% (eg at one stage at least it was arranged that powers were stored uniquely).
+% The underscore is used for fields that are not to be named. Note that
+% several sets of accessors can be defined on one line.
+%
+% The effect of such a definition will be illustrated here by looking at
+% what "accessors (tvar . tdeg) . !_;" corresponds to:
+%   << inline procedure tvar u; caar u;
+%      inline procedure tdeg u; cdar u;
+%      inline procedure set_tvar(u, v); setcar(car u, v);
+%      inline procedure set_tdeg(u, v); setcdr(car u, v);
+%      put('tvar, 'setqfn, '(lambda (u b) (setcar (car u) v)));
+%      put('tdeg, 'setqfn, '(lambda (u b) (setcdr (car u) v))) >>;
+% and if !*noinlines is true then the "inline procedure" becomes "symbolic
+% procedure" instead. The provision of explicit setter functions is because
+% I then wish to consider replacing any "tvar u := v;" with "set_tvar(u, v);"
+% which avoids needing having the setqfn information loaded at parse time.
+% When (and if) that is ever completed then the 'setqfn stuff can go away.
+
+% I wish to optimise (eg) "car cdr car x" into "cadar x" and this code
+% achieves that for me.
+
+symbolic procedure makecarcdr(path, x);
+  if null path then x
+  else if null cdr path then list(car path, x)
+  else if null cddr path then list(
+    cdr assoc(car path . cadr path,
+             '(((car . car) . caar)
+               ((car . cdr) . cadr)
+               ((cdr . car) . cdar)
+               ((cdr . cdr) . cddr))), x)
+  else list(
+    cdr assoc(car path . cadr path . caddr path,
+             '(((car car . car) . caaar)
+               ((car car . cdr) . caadr)
+               ((car cdr . car) . cadar)
+               ((car cdr . cdr) . caddr)
+               ((cdr car . car) . cdaar)
+               ((cdr car . cdr) . cdadr)
+               ((cdr cdr . car) . cddar)
+               ((cdr cdr . cdr) . cdddr))),
+    makecarcdr(cdddr path, x));
+
+put('car, 'mutator, 'setcar);
+put('cdr, 'mutator, 'setcdr);
+
+symbolic procedure expand_accessor(u, path, r);
+  if u = '!_ then r
+  else if eqcar(u, 'cons) then
+    expand_accessor(cadr u, 'car . path,
+      expand_accessor(caddr u, 'cdr . path, r))
+  else if u = nil or not idp u then typerr(u, "illegal as accessor")
+  else <<
+    r := list('put, mkquote u, ''number!-of!-args, 1) . r;
+    if not !*noinlines then
+       r := list('putc, mkquote u, ''inline,
+                 mkquote list('lambda, '(u), makecarcdr(path, 'u))) . r
+    else <<
+       r := list('de, u, '(u), makecarcdr(path, 'u)) . r;
+       r := list('put, mkquote u, ''setqfn,
+          mkquote list('lambda, '(u v),
+                         list(get(car path, 'mutator),
+                              makecarcdr(cdr path, 'u),
+                              'v))) . r >>;
+    u := intern compress append('(s e t !_), explode u);
+    r := list('put, mkquote u, ''number!-of!-args, 2) . r;
+    if not !*noinlines then
+       r := list('putc, mkquote u, ''inline,
+          mkquote list('lambda, '(u v),
+                         list(get(car path, 'mutator),
+                              makecarcdr(cdr path, 'u),
+                              'v))) . r
+    else r := list('de, u, '(u v),
+                   list(get(car path, 'mutator),
+                        makecarcdr(cdr path, 'u),
+                        'v)) . r;
+    r >>;
+
+flag('(putc), 'eval);
+
+symbolic macro procedure accessors u;
+  begin
+    scalar r;
+    u := eval cadr u;
+% u will now be a list of forms representing the structure and with
+% explicit "cons" operators, as in
+%     (   (cons (cons tvar tdeg) _)    )
+    for each c in u do r := expand_accessor(c, nil, r);
+    return 'progn . append(reverse r, '(nil));
+  end;
+
+put('accessors, 'stat, 'rlis);
 
 endmodule;
 

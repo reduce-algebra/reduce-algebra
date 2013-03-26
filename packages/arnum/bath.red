@@ -1179,7 +1179,7 @@ symbolic procedure factor!-by!-xes(f,x,alg!-tower);
       else list(!*k2f x . xes)
   end;
 
-symbolic smacro procedure cyclotomicp f;
+symbolic inline procedure cyclotomicp f;
   % f a standard form;
   testx!*!*n!+1 f or testx!*!*n!-1 f;
 
@@ -1332,22 +1332,22 @@ end;
 
 % Definition of macros used in algebraic number code;
 
-symbolic smacro procedure groundp u;
+symbolic inline procedure groundp u;
   atom u;
 
-symbolic smacro procedure algebraicp u;
+symbolic inline procedure algebraicp u;
   % u a kernel;
   domainp u and eqcar(u,'alg);
 
-symbolic smacro procedure min!-poly!-of u;
+symbolic inline procedure min!-poly!-of u;
   % u a kernel;
   gts cdr u;
 
-symbolic smacro procedure degree!-of!-algebraic u;
+symbolic inline procedure degree!-of!-algebraic u;
   % u a kernel;
   ldeg min!-poly!-of u;
 
-symbolic smacro procedure algebraic!-mvarp u;
+symbolic inline procedure algebraic!-mvarp u;
   % u a sf;
   not groundp u and algebraicp mvar u;
 

@@ -143,9 +143,9 @@ symbolic procedure locate(u,v);
   else 1+locate(u,cdr v);
 
 % We may as well define some utility operators here too.
-symbolic smacro procedure first u; car u;
-symbolic smacro procedure second u; cadr u;
-symbolic smacro procedure third u; caddr u;
+symbolic inline procedure first u; car u;
+symbolic inline procedure second u; cadr u;
+symbolic inline procedure third u; caddr u;
 
 % Here we redefine getrtype1 and getrtype2 to handle vectors.
 
@@ -374,7 +374,7 @@ flag('(avec cross dot vmod grad div curl delsq),'vectorfn);
 % We must now define the procedures to carry out vector algebra and
 % calculus. They must be given a VECTORFUNCTION property
 
-symbolic smacro procedure vectorfn(oper,vfn);
+symbolic inline procedure vectorfn(oper,vfn);
   put(oper,'vectorfunction,vfn);
 
 % Scalar-vector multiplication

@@ -29,13 +29,13 @@ module vdpcom;
 flag('(vdpprintmax),'share);
 vdpprintmax:=5;
 
-% Repeat of smacros defined in vdp2dip.
+% Repeat of inlines defined in vdp2dip.
 
-smacro procedure vdppoly u;cadr cddr u;
+inline procedure vdppoly u;cadr cddr u;
 
-smacro procedure vdpzero!? u;null u or null vdppoly u;
+inline procedure vdpzero!? u;null u or null vdppoly u;
 
-smacro procedure vdpevlmon u;cadr u;
+inline procedure vdpevlmon u;cadr u;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -47,7 +47,7 @@ symbolic procedure vevnth(a,n);
 if null a then 0 else if n=1 then car a else vevnth(cdr a,n #- 1);
 
 % Unrolled code for zero test(very often called).
-smacro procedure vevzero!? u;
+inline procedure vevzero!? u;
   null u or(car u=0 and vevzero!?1 cdr u);
 
 symbolic procedure vevzero!?1 u;

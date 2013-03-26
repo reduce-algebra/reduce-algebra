@@ -192,34 +192,34 @@ asserted procedure tlit_e(tl: TrailLit): Any;
 asserted procedure tlit_atf(tl: TrailLit): OfsfAtf;
    caddr tl;
 
-smacro procedure tre_varassp(tre);
+inline procedure tre_varassp(tre);
    eqcar(tre, 'rl_varass);
 
-smacro procedure tre_declitp(tre);
+inline procedure tre_declitp(tre);
    eqcar(tre, 'rl_declit);
 
-smacro procedure tre_proplitp(tre);
+inline procedure tre_proplitp(tre);
    eqcar(tre, 'rl_proplit);
 
-smacro procedure tre_litp(tre);
+inline procedure tre_litp(tre);
    tre_proplitp tre or tre_declitp tre;
 
-smacro procedure tre_lit(tre);
+inline procedure tre_lit(tre);
    cadr tre;
 
-smacro procedure varass_mk(k, anu);
+inline procedure varass_mk(k, anu);
    {'rl_varass, k, anu};
 
-smacro procedure varass_k(va);
+inline procedure varass_k(va);
    cadr va;
 
-smacro procedure varass_value(va);
+inline procedure varass_value(va);
    caddr va;
 
-smacro procedure declit_mk(lit);
+inline procedure declit_mk(lit);
    {'rl_declit, lit};
 
-smacro procedure proplit_mk(lit);
+inline procedure proplit_mk(lit);
    {'rl_proplit, lit};
 
 asserted procedure ofsf_selectClause(s: State): State;

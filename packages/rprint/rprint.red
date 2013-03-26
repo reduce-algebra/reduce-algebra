@@ -42,12 +42,16 @@ symbolic procedure rprint u;
       curmark := 0;
       buff := buffp := list list(0,0);
       rmar := linelength nil;
+% The code does not always manage to adhere to the right margin, so I
+% will give it a bit in hand...
+      linelength(rmar+64);
       x := get('!*semicol!*,pretop);
       !*n := 0;
       mprino1(u,list(caar x,cadar x));
       prin2ox ";";
       omarko curmark;
-      prinos buff
+      prinos buff;
+      linelength rmar
    end;
 
 symbolic procedure rprin1 u;

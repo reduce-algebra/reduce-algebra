@@ -105,7 +105,7 @@ symbolic procedure prin2t u; progn(prin2 u, terpri(), u);
 symbolic procedure princ u; prin2 u;
 
 symbolic procedure putc(name,type,body);
-   % Defines a non-standard function, such as an smacro. Returns NAME.
+   % Defines a non-standard function, such as an inline. Returns NAME.
    begin
       if !*comp and flagp(type,'compile) then compd(name,type,body)
        else put(name,type,body);
@@ -154,11 +154,11 @@ symbolic procedure setdiff(u,v);
     else if null u then nil
     else setdiff(delete(car v,u),cdr v);
 
-% symbolic smacro procedure u>=v; null(u<v);
+% symbolic inline procedure u>=v; null(u<v);
 
-% symbolic smacro procedure u<=v; null(u>v);
+% symbolic inline procedure u<=v; null(u>v);
 
-% symbolic smacro procedure u neq v; null(u=v);
+% symbolic inline procedure u neq v; null(u=v);
 
 % List changing alternates (may also be defined as copying functions).
 

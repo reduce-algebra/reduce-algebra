@@ -182,7 +182,7 @@ symbolic procedure listeval0 u;
 % First, second, third and rest are designed so that only the relevant
 % elements need be fully evaluated.
 
-symbolic smacro procedure rlistp u; eqcar(u,'list);
+symbolic inline procedure rlistp u; eqcar(u,'list);
 
 symbolic procedure rfirst u;
    begin scalar x;

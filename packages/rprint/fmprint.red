@@ -85,7 +85,7 @@ module fmprint; % Fancy output package for symbolic expressions.
 %  94-Jan-26 - Output for Taylor series repaired.
 %  94-Jan-17 - printing of index for Bessel function repaired.
 %            - New functions for local encapsulation of printing
-%              independent of smacro fancy!-level.
+%              independent of inline fancy!-level.
 %            - Allow printing of upper case symbols locally
 %              controlled by *fancy-lower
 

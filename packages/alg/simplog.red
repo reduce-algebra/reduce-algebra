@@ -36,7 +36,7 @@ imports addf,addsq,comfac,quotf,prepf,mksp,simp!*,!*multsq,simptimes,
         minusf,negf,negsq,mk!*sq,carx,multsq,resimp,simpiden,simpplus,
         prepd,mksq,rerror,zfactor,sfchk;
 
-symbolic smacro procedure get!-log!-base u;
+symbolic inline procedure get!-log!-base u;
    if car u eq 'log10 then 10 else nil;
 
 symbolic procedure simplog u;
@@ -75,7 +75,7 @@ put('expandlogs,'simpfg,'((nil (rmsubs)) (t (rmsubs))));
 
 put('combinelogs,'simpfg,'((nil (rmsubs)) (t (rmsubs))));
 
-symbolic smacro procedure mk!-log!-arg(arg,base);
+symbolic inline procedure mk!-log!-arg(arg,base);
    if null base or base eq 'e then {'log,arg}
     else if base=10 then {'log10,arg}
     else {'logb,arg,base};

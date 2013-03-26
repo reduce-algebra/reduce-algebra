@@ -362,7 +362,7 @@ symbolic procedure gbfsqrt x;
          xd0 := xd; xd := gbfrsq gbfdiff(x,gbftimes(nx,nx))>>
      until xd0 and mt!: difbf(xd0,xd)<=0; return x0 end;
 
-symbolic smacro procedure rl2gfc x;
+symbolic inline procedure rl2gfc x;
    x . if atom x then 0.0 else bfz!*;
 
 symbolic procedure gfsqrt x;

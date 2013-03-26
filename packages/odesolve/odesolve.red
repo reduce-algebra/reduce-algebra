@@ -95,10 +95,10 @@ fluid '(!*odesolve!-solvable!-xy)$
 
 symbolic operator member, delete, !*eqn2a, depends, smember, gensym$
 
-symbolic smacro procedure eqnp u;
+symbolic inline procedure eqnp u;
    eqcar(u, 'equal)$
 
-symbolic smacro procedure ODESolve!-basisp soln;
+symbolic inline procedure ODESolve!-basisp soln;
    rlistp cadr soln and not eqnp cadadr soln$
 
 % The following two statements are needed in case SOLVE has not been

@@ -207,7 +207,7 @@ symbolic procedure arintequiv!: u;
     else if (cadr u eq '!:rn!:) and (cdddr u=1) then caddr u
     else nil;
 
-smacro procedure mkar u;
+inline procedure mkar u;
  '!:ar!: . u;
 
 symbolic procedure arplus!:(u,v);

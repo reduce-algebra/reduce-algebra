@@ -212,10 +212,10 @@ compiletime
 
 deflist('((iminus iminus)),'unary);
 
-symbolic smacro procedure ashift (m,d);
+symbolic inline procedure ashift (m,d);
   if negintp m then -lshift(-m,d) else lshift(m,d);
 
-symbolic smacro procedure oddintp x;
+symbolic inline procedure oddintp x;
    wand(if bigp x then wgetv(inf x,2)
          else if fixnp x then fixval inf x
          else x,1) eq 1;
@@ -231,7 +231,7 @@ symbolic macro procedure bf!-bits (x); {'quote, bbits!*};
 %        ff1 (w,wquotient(n,2))
 %    else iplus2(ff1 (wshift (w, wminus n),wquotient(n,2)),n) ;
 
-symbolic smacro procedure ff1 (ww,nn);
+symbolic inline procedure ff1 (ww,nn);
   <<while not (n eq 0) do <<
       x := wshift(w,wminus n);
       if not (x eq 0) then % left half
@@ -257,7 +257,7 @@ comment ff0 determines the number of 0 bits at the least significant
 
 compiletime put('hu_hu_hu,'opencode,'((!*move (reg 1) (reg 1))));
 
-symbolic smacro procedure ff0 (ww,nn);
+symbolic inline procedure ff0 (ww,nn);
   <<while not (n eq 0) do <<
       lo := wand(w,isub1 wshift(1,n));
       if lo eq 0 then % left half
@@ -277,19 +277,19 @@ comment we split msd!: into two parts: one for bignums, one for
         machine words. That will greatly reduce the size of preci!:
         below;
 
-symbolic smacro procedure word!-msd!: u;
+symbolic inline procedure word!-msd!: u;
    ff1(u,wshift(bitsperword,-1));
 
-symbolic smacro procedure big!-msd!: u;
+symbolic inline procedure big!-msd!: u;
    iplus2(itimes2(bf!-bits(),isub1 s),word!-msd!: igetv(u,s))
        where s := veclen vecinf u;
 
-symbolic smacro procedure msd!: u;
+symbolic inline procedure msd!: u;
    if bigp u then big!-msd!: u
     else if fixnp u then word!-msd!: fixval inf u
     else word!-msd!: u;
 
-%symbolic smacro procedure msd!: u;
+%symbolic inline procedure msd!: u;
 %  % returns the most significant (binary) digit of a positive integer u
 %  if bigp u
 %    then iplus2(itimes2(bf!-bits(),isub1 s),
@@ -298,10 +298,10 @@ symbolic smacro procedure msd!: u;
 %   else if fixnp u then ff1 (fixval inf u,wshift(bitsperword,-1))
 %   else ff1 (u,wshift(bitsperword,-1));
 
-symbolic smacro procedure mt!: u; cadr u;
-symbolic smacro procedure ep!: u; cddr u;
+symbolic inline procedure mt!: u; cadr u;
+symbolic inline procedure ep!: u; cddr u;
 
-symbolic smacro procedure preci!: nmbr;
+symbolic inline procedure preci!: nmbr;
    % This function counts the precision of a number "n". NMBR is a
    % binary bigfloat representation of "n".
    % msd!: abs mt!: nmbr
@@ -313,7 +313,7 @@ symbolic smacro procedure preci!: nmbr;
      else word!-msd!: m)
     where m = mt!: nmbr;
 
-%symbolic smacro procedure preci!: nmbr;
+%symbolic inline procedure preci!: nmbr;
 %   % This function counts the precision of a number "n". NMBR is a
 %   % binary bigfloat representation of "n".
 %   % msd!: abs mt!: nmbr
@@ -326,7 +326,7 @@ symbolic smacro procedure preci!: nmbr;
 %     else ff1(m,wshift(bitsperword,-1)))
 %    where m = mt!: nmbr;
 
-symbolic smacro procedure make!:ibf (mt, ep);
+symbolic inline procedure make!:ibf (mt, ep);
   '!:rd!: . (mt . ep);
 
 if not('ieee memq lispsystem!*) then

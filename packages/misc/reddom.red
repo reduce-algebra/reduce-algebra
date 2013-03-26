@@ -39,13 +39,13 @@ global '(!*xxx !*yyy);
 
 % Operations on domain elements.
 
-symbolic smacro procedure domain!-!+(u,v); u+v;
+symbolic inline procedure domain!-!+(u,v); u+v;
 
-symbolic smacro procedure domain!-!-(u,v); u-v;
+symbolic inline procedure domain!-!-(u,v); u-v;
 
-symbolic smacro procedure domain!-!*(u,v); u*v;
+symbolic inline procedure domain!-!*(u,v); u*v;
 
-symbolic smacro procedure domain!-divide(u,v); divide(u,v);
+symbolic inline procedure domain!-divide(u,v); divide(u,v);
 
 
 % Operations on domain element lists.

@@ -84,24 +84,24 @@ fluid '(nvars!*);
 
 % ************** MACROS ETC. **************
 
-smacro procedure term(c,v,e);{ ' times,c,{ ' expt,v,e } };
+inline procedure term(c,v,e);{ ' times,c,{ ' expt,v,e } };
 
 % -------------- safety check --------------
 
-smacro procedure varp m;
+inline procedure varp m;
  idp m and m or pairp m and get(car m,'simpfn)='simpiden;
 
-smacro procedure checkexpt m;
+inline procedure checkexpt m;
  eqcar(m,'expt)and varp cadr m and numberp caddr m;
 
-smacro procedure checksinglevar m;
+inline procedure checksinglevar m;
  if varp m then t else checkexpt m;
 
-smacro procedure checkmon m;
+inline procedure checkmon m;
  if checksinglevar m then t
  else if eqcar(m,'times)then checktimes cdr m else nil;
 
-smacro procedure checkargs(monl,var);
+inline procedure checkargs(monl,var);
  listp monl and eqcar(monl,'list)and
   varp var and checkmonl monl;
 
@@ -111,30 +111,32 @@ begin scalar v;v:=mkvect n;
 
 % -------------- monomials --------------
 
-smacro procedure allocmon n;makevector(n,0);
+inline procedure allocmon n;makevector(n,0);
 
-smacro procedure getnthexp(mon,n);getv(mon,n);
+inline procedure getnthexp(mon,n);getv(mon,n);
 
-smacro procedure setnthexp(mon,n,d);putv(mon,n,d);
+inline procedure setnthexp(mon,n,d);putv(mon,n,d);
 
-smacro procedure gettdeg mon;getv(mon,0);
+inline procedure gettdeg mon;getv(mon,0);
 
-smacro procedure settdeg(mon,d);putv(mon,0,d);
+inline procedure settdeg(mon,d);putv(mon,0,d);
 
 % -------------- ideals --------------
 
-smacro procedure theemptyideal();{nil,nil};
+inline procedure theemptyideal();{nil,nil};
+
+% This has to reemain an smacro because it updates ideal and uses x.
 
 smacro procedure getnextmon ideal;
 <<x:=caadr ideal;
   if cdadr ideal then ideal:={car ideal,cdadr ideal}
     else ideal:=theemptyideal();x>>;
 
-smacro procedure notemptyideal ideal;cadr ideal;
+inline procedure notemptyideal ideal;cadr ideal;
 
-smacro procedure firstmon ideal;caadr ideal;
+inline procedure firstmon ideal;caadr ideal;
 
-smacro procedure appendideals(ideal1,ideal2);
+inline procedure appendideals(ideal1,ideal2);
 {car ideal2,append(cadr ideal1,cadr ideal2)};
 
 symbolic procedure insertvar(var,ideal);

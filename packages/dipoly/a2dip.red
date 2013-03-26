@@ -26,12 +26,12 @@ module a2dip;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% Repeat of smacros defined in vdp2dip.
+% Repeat of inlines defined in vdp2dip.
 
-smacro procedure dipfmon(a,e);
+inline procedure dipfmon(a,e);
    e . a . nil;
 
-smacro procedure vevzero!? u;
+inline procedure vevzero!? u;
    null u or(car u=0 and vevzero!?1 cdr u);
 
 symbolic procedure a2dip u;

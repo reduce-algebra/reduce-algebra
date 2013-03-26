@@ -149,7 +149,7 @@ symbolic procedure odesolve!-eval1 args;
       ode := car args;  args := cdr args;
       system := rlistp ode;
       %% Find dependent and independent variables:
-      %% (rlistp is a smacro defined in rlisp.red)
+      %% (rlistp is a inline defined in rlisp.red)
       if args then <<  y := car args;
          if rlistp y then
             if null cdr y then          % empty list - ignore

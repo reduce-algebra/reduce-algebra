@@ -52,44 +52,44 @@ fluid '(!*noconvert !:bprec!: dmode!*);
 
 switch noconvert;
 
-symbolic smacro procedure mt!: u;
+symbolic inline procedure mt!: u;
    % This function selects the mantissa of U, a binary bigfloat
    % representation of a number.
    cadr u;
 
-symbolic smacro procedure ep!: u;
+symbolic inline procedure ep!: u;
    % This function selects the exponent of U, a binary bigfloat
    % representation of a number.
    cddr u;
 
-symbolic smacro procedure make!:ibf (mt, ep);
+symbolic inline procedure make!:ibf (mt, ep);
    '!:rd!: . (mt . ep);
 
-symbolic smacro procedure i2bf!: u; make!:ibf (u, 0);
+symbolic inline procedure i2bf!: u; make!:ibf (u, 0);
 
-symbolic smacro procedure make!:rd u;
+symbolic inline procedure make!:rd u;
    '!:rd!: . u;
 
-symbolic smacro procedure rdp x;
+symbolic inline procedure rdp x;
    % This function returns true if X is a rounded number
    % representation, else NIL.  X is any Lisp entity.
    eqcar(x,'!:rd!:);
 
-symbolic smacro procedure float!-bfp x; atom cdr x;
+symbolic inline procedure float!-bfp x; atom cdr x;
 
-symbolic smacro procedure rd2fl x; cdr x;
+symbolic inline procedure rd2fl x; cdr x;
 
-symbolic smacro procedure fl2rd x; make!:rd x;
+symbolic inline procedure fl2rd x; make!:rd x;
 
-symbolic smacro procedure bfp!:(x);
+symbolic inline procedure bfp!:(x);
    % This function returns true if X is a binary bigfloat
    % representation, else NIL.  X is any Lisp entity.
    rdp x and not float!-bfp x;
 
-symbolic smacro procedure retag u;
+symbolic inline procedure retag u;
    if atom u then u else '!:rd!: . u;
 
-symbolic smacro procedure rndpwr j; normbf round!:mt(j,!:bprec!:);
+symbolic inline procedure rndpwr j; normbf round!:mt(j,!:bprec!:);
 
 symbolic procedure msd!: m;
   % returns the position n of the most significant (binary) digit
@@ -119,65 +119,65 @@ symbolic procedure lshift(m,d);
    %  an efficient logical shift.
    ashift(m,d);
 
-symbolic smacro procedure oddintp n; not evenp n;
+symbolic inline procedure oddintp n; not evenp n;
 
-symbolic smacro procedure preci!: nmbr;
+symbolic inline procedure preci!: nmbr;
    % This function counts the precision of a number "n". NMBR is a
    % binary bigfloat representation of "n".
    msd!: abs mt!: nmbr;
 
 
-symbolic smacro procedure divbf(u,v); normbf divide!:(u,v,!:bprec!:);
+symbolic inline procedure divbf(u,v); normbf divide!:(u,v,!:bprec!:);
 
-symbolic smacro procedure timbf(u,v); rndpwr times!:(u,v);
+symbolic inline procedure timbf(u,v); rndpwr times!:(u,v);
 
-symbolic smacro procedure bfminusp u;
+symbolic inline procedure bfminusp u;
   if atom u then minusp u else minusp!: u;
 
-symbolic smacro procedure bfzp u;
+symbolic inline procedure bfzp u;
   if atom u then zerop u else mt!: u=0;
 
-symbolic smacro procedure bfnzp u; not bfzp u;
+symbolic inline procedure bfnzp u; not bfzp u;
 
-symbolic smacro procedure bfloat x;
+symbolic inline procedure bfloat x;
   if floatp x then fl2bf x
    else normbf(if not atom x then x
                 else if fixp x then i2bf!: x
                 else read!:num x);
 
-symbolic smacro procedure rdfl2rdbf x; fl2bf rd2fl x;
+symbolic inline procedure rdfl2rdbf x; fl2bf rd2fl x;
 
-symbolic smacro procedure rd!:forcebf x;
+symbolic inline procedure rd!:forcebf x;
    % forces rounded number x to binary bigfloat representation
    if float!-bfp x then rdfl2rdbf x else x;
 
-symbolic smacro procedure crrl x; cadr x;
+symbolic inline procedure crrl x; cadr x;
 
-symbolic smacro procedure crim x; cddr x;
+symbolic inline procedure crim x; cddr x;
 
-symbolic smacro procedure make!:cr (re,im);
+symbolic inline procedure make!:cr (re,im);
    '!:cr!: . (re . im);
 
-symbolic smacro procedure crp x;
+symbolic inline procedure crp x;
    % This function returns true if X is a complex rounded number
    % representation, else NIL.  X is any Lisp entity.
    eqcar(x,'!:cr!:);
 
-symbolic smacro procedure tagrl x; make!:rd crrl x;
+symbolic inline procedure tagrl x; make!:rd crrl x;
 
-symbolic smacro procedure tagim x; make!:rd crim x;
+symbolic inline procedure tagim x; make!:rd crim x;
 
-symbolic smacro procedure gfrl u; car u;
+symbolic inline procedure gfrl u; car u;
 
-symbolic smacro procedure gfim u; cdr u;
+symbolic inline procedure gfim u; cdr u;
 
-symbolic smacro procedure mkgf (rl,im); rl . im;
+symbolic inline procedure mkgf (rl,im); rl . im;
 
-symbolic smacro procedure gfzerop u;
+symbolic inline procedure gfzerop u;
   if not atom gfrl u then mt!: gfrl u = 0 and mt!: gfim u = 0
    else u = '(0.0 . 0.0);
 
-% symbolic smacro procedure sgn x;
+% symbolic inline procedure sgn x;
 %   if x>0 then 1 else if x<0 then -1 else 0;
 
 

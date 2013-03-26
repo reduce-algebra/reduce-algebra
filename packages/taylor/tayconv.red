@@ -80,7 +80,7 @@ symbolic procedure checkexp(bas,exp);
    else if exp = 1 then bas
    else {'expt,bas,prepTayExp exp};
 
-symbolic smacro procedure checkpower (var, var0, n);
+symbolic inline procedure checkpower (var, var0, n);
   if var0 eq 'infinity
     then if n = 0 then 1
           else {'quotient, 1, checkexp (var, n)}

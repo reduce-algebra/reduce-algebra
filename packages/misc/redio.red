@@ -75,7 +75,7 @@ symbolic  procedure getes u;
         return eee
    end;
 
-% symbolic smacro procedure prtwrd u;
+% symbolic inline procedure prtwrd u;
 %   if numberp u then prtnum u else prtatm u;
 
 symbolic procedure prtatm u;

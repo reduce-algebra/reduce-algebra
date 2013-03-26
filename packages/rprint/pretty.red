@@ -130,16 +130,16 @@ symbolic procedure superprinm(x,lmar);
 % Access functions for a stack entry.
 
 
-smacro procedure top; car stack;
-smacro procedure depth frm; car frm;
-smacro procedure indenting frm; cadr frm;
-smacro procedure blankcount frm; caddr frm;
-smacro procedure blanklist frm; cdddr frm;
-smacro procedure setindenting(frm,val); rplaca(cdr frm,val);
-smacro procedure setblankcount(frm,val); rplaca(cddr frm,val);
-smacro procedure setblanklist(frm,val); rplacd(cddr frm,val);
-smacro procedure newframe n; list(n,nil,0);
-smacro procedure blankp char; numberp car char;
+inline procedure top; car stack;
+inline procedure depth frm; car frm;
+inline procedure indenting frm; cadr frm;
+inline procedure blankcount frm; caddr frm;
+inline procedure blanklist frm; cdddr frm;
+inline procedure setindenting(frm,val); rplaca(cdr frm,val);
+inline procedure setblankcount(frm,val); rplaca(cddr frm,val);
+inline procedure setblanklist(frm,val); rplacd(cddr frm,val);
+inline procedure newframe n; list(n,nil,0);
+inline procedure blankp char; numberp car char;
 
 
 

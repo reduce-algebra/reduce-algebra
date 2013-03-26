@@ -48,7 +48,7 @@ symbolic procedure simpmin u;
 
 flag('(max min),'listargp);
 
-symbolic smacro procedure maxmin_difflist(u,v);
+symbolic inline procedure maxmin_difflist(u,v);
  for each uu in u collect reval list('difference,uu ,v);
 
 

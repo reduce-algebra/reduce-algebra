@@ -37,7 +37,7 @@ fluid '(current!-modulus
 % Note that the datastructure used is the same as that used in
 % REDUCE except that it is assumed that domain elements are atomic.
 
-symbolic smacro procedure comes!-before(p1,p2);
+symbolic inline procedure comes!-before(p1,p2);
    % Similar to the REDUCE function ORDPP, but does not cater for non-
    % commutative terms and assumes that exponents are small integers.
     (car p1=car p2 and igreaterp(cdr p1,cdr p2)) or

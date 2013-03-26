@@ -47,7 +47,7 @@ symbolic procedure pe_inv(pe);
   end;
 
 % returns image of elt by permutation pe
-symbolic smacro procedure pe_apply(pe, elt);
+symbolic inline procedure pe_apply(pe, elt);
   venth(pe, elt);
 
 
@@ -55,25 +55,25 @@ symbolic smacro procedure pe_apply(pe, elt);
 
 %% Access macros
 
-symbolic smacro procedure sc_orbits(sc, k);
+symbolic inline procedure sc_orbits(sc, k);
   venth(venth(cdr sc, k), 1);
 
-symbolic smacro procedure sc_transversal(sc,k);
+symbolic inline procedure sc_transversal(sc,k);
   venth(venth(cdr sc, k), 2);
 
-symbolic smacro procedure sc_generators(sc,k);
+symbolic inline procedure sc_generators(sc,k);
   venth(venth(cdr sc, k), 3);
 
-symbolic smacro procedure sc_inv_generators(sc,k);
+symbolic inline procedure sc_inv_generators(sc,k);
   venth(venth(cdr sc, k),4);
 
-symbolic smacro procedure sc_stabdesc(sc, k);
+symbolic inline procedure sc_stabdesc(sc, k);
   venth(cdr sc, k);
 
-symbolic smacro procedure sd_orbrep(sd, elt);
+symbolic inline procedure sd_orbrep(sd, elt);
   venth(venth(sd,1),elt);
 
-symbolic smacro procedure sd_orbreps(sd);
+symbolic inline procedure sd_orbreps(sd);
   venth(sd,5);
 
 %% Building routines

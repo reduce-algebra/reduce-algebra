@@ -57,17 +57,17 @@ features will disable the definitions given here by use of a 'LOSE flag;
 
 deflist('((minus!-one -1)),'newnam);   % So that it EVALs properly.
 
-symbolic smacro procedure carcheck u; nil;
+symbolic inline procedure carcheck u; nil;
 
-% symbolic smacro procedure irecip u; 1/u;
+% symbolic inline procedure irecip u; 1/u;
 
-% symbolic smacro procedure isdomain u; domainp u;
+% symbolic inline procedure isdomain u; domainp u;
 
-% symbolic smacro procedure readgctime; gctime();
+% symbolic inline procedure readgctime; gctime();
 
-% symbolic smacro procedure readtime; time()-gctime();
+% symbolic inline procedure readtime; time()-gctime();
 
-% symbolic smacro procedure ttab n; spaces(n-posn());
+% symbolic inline procedure ttab n; spaces(n-posn());
 
 
 %   ***** The remainder of this module used to be in FLUIDS.
@@ -75,35 +75,35 @@ symbolic smacro procedure carcheck u; nil;
 % Macro definitions for functions that create and access reduce-type
 % datastructures.
 
-% smacro procedure polyzerop u; null u;
+% inline procedure polyzerop u; null u;
 
-smacro procedure didntgo q; null q;
+inline procedure didntgo q; null q;
 
-% smacro procedure depends!-on!-var(a,v);
+% inline procedure depends!-on!-var(a,v);
 %   (lambda !#!#a; (not domainp !#!#a) and (mvar !#!#a=v)) a;
 
-% smacro procedure l!-numeric!-c(a,vlist); lnc a;
+% inline procedure l!-numeric!-c(a,vlist); lnc a;
 
 % Macro definitions for use in Berlekamp's algorithm.
 
 % Smacros used in linear equation package.
 
-% smacro procedure getm2(a,i,j);
+% inline procedure getm2(a,i,j);
 %    % Store by rows, to ease pivoting process.
 %    getv(getv(a,i),j);
 
-% smacro procedure putm2(a,i,j,v);
+% inline procedure putm2(a,i,j,v);
 %    putv(getv(a,i),j,v);
 
-smacro procedure !*f2mod u; u;
+inline procedure !*f2mod u; u;
 
-smacro procedure !*mod2f u; u;
+inline procedure !*mod2f u; u;
 
-%%%smacro procedure adjoin!-term (p,c,r);
+%%%inline procedure adjoin!-term (p,c,r);
 %%%  (lambda !#c!#; % Lambda binding prevents repeated evaluation of C.
 %%%    if null !#c!# then r else (p .* !#c!#) .+ r) c;
 
-symbolic smacro procedure get!-f!-numvec s; cadr cddr cdddr s;
+symbolic inline procedure get!-f!-numvec s; cadr cddr cdddr s;
 
 % !*overshoot:=nil; % Default not to show overshoot occurring.
 
@@ -114,13 +114,13 @@ symbolic procedure ttab!* n;
   if posn!* > n then terpri!*(nil);
   while not(posn!*=n) do prin2!* '!  >>;
 
-smacro procedure printstr l; << prin2!* l; terpri!*(nil) >>;
+inline procedure printstr l; << prin2!* l; terpri!*(nil) >>;
 
-smacro procedure printvar v; printstr v;
+inline procedure printvar v; printstr v;
 
-smacro procedure prinvar v; prin2!* v;
+inline procedure prinvar v; prin2!* v;
 
-% smacro procedure display!-time(str,mt);
+% inline procedure display!-time(str,mt);
 % Displays the string str followed by time mt (millisecs).
 %  << prin2 str; prin2 mt; prin2t " millisecs." >>;
 

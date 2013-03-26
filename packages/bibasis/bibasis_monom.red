@@ -33,8 +33,8 @@ module bibasis_monom;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-smacro procedure bibasis_insert(y, x); rplaca(rplacd(y, car(y) . cdr(y)), x);
-smacro procedure bibasis_remove(y); rplacd(rplaca(y, cadr(y)), cddr(y));
+inline procedure bibasis_insert(y, x); rplaca(rplacd(y, car(y) . cdr(y)), x);
+inline procedure bibasis_remove(y); rplacd(rplaca(y, cadr(y)), cddr(y));
 
 expr procedure PushBack(list, value);
 begin scalar listIterator;
@@ -65,11 +65,11 @@ begin
 end;
 
 
-smacro procedure GetVariable(variable); getv(FluidBibasisSingleVariableMonomialsS, variable);
-smacro procedure MonomGetDegree(monom); getv(monom, 0);
-smacro procedure MonomSetDegree(monom, degree); putv(monom, 0, degree);
-smacro procedure MonomGetExponent(monom); getv(monom, 1);
-smacro procedure MonomSetExponent(monom, exponent); putv(monom, 1, exponent);
+inline procedure GetVariable(variable); getv(FluidBibasisSingleVariableMonomialsS, variable);
+inline procedure MonomGetDegree(monom); getv(monom, 0);
+inline procedure MonomSetDegree(monom, degree); putv(monom, 0, degree);
+inline procedure MonomGetExponent(monom); getv(monom, 1);
+inline procedure MonomSetExponent(monom, exponent); putv(monom, 1, exponent);
 
 
 expr procedure MonomGetVariableDegree(monom, variable); 

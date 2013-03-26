@@ -155,7 +155,7 @@ module tmprint; % Output module for TeXmacs interface
 %  94-Jan-26 - Output for Taylor series repaired.
 %  94-Jan-17 - printing of index for Bessel function repaired.
 %            - New functions for local encapsulation of printing
-%              independent of smacro fancy!-level.
+%              independent of inline fancy!-level.
 %            - Allow printing of upper case symbols locally
 %              controlled by *fancy-lower
 
@@ -332,7 +332,7 @@ procedure linelength(a);
 % (The function list!-to!-string already exists...)
 
 % Convert a string into a list of character objects.
-smacro procedure string!-to!-list a;
+inline procedure string!-to!-list a;
     explode2 a;
 
 % Print a string without ANY conversion or adjustment, so if the string
@@ -340,11 +340,11 @@ smacro procedure string!-to!-list a;
 % let me express some reservations about what might happen if the string
 % contains tabs and newlines - the lower level system IO code might
 % interpret same...
-smacro procedure raw!-print!-string s;
+inline procedure raw!-print!-string s;
     prin2 s;
 
 % Print the character whose code is n.
-smacro procedure writechar n;
+inline procedure writechar n;
     tyo n;    % Like "prin2 int2id n"
 
 % Convert a symbol or string to characters but ensure that all
@@ -353,10 +353,10 @@ smacro procedure writechar n;
 
 !#else
 
-smacro procedure list!-to!-string a;
+inline procedure list!-to!-string a;
     compress ('!" . append(a, '(!")));
 
-smacro procedure string!-to!-list a;
+inline procedure string!-to!-list a;
     explode2 a;
 
 % I do not know if this has to be like this in PSL, but it reflects

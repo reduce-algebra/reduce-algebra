@@ -432,81 +432,81 @@ procedure sl_alias(new,old);
 
 !#if rldynamic!#
 
-smacro procedure rl_op(f);
+inline procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level
    % operator of [f]. In this sense truth values are operators.
    if atom f then f else cadr f;
 
-smacro procedure rl_arg1(f);
+inline procedure rl_arg1(f);
    % Reduce logic argument of unary operator. [f] is a formula $\tau
    % (\phi)$ with a unary boolean top-level operator $\tau$. Returns
    % the single argument $\phi$ of $\tau$.
    caddr f;
 
-smacro procedure rl_arg2l(f);
+inline procedure rl_arg2l(f);
    % Reduce logic left hand side argument of binary operator. [f] is a
    % formula $\tau(\phi_1,\phi_2)$ with a binary boolean top-level
    % operator $\tau$. Returns the left hand side argument $\phi_1$ of
    % $\tau$.
    caddr f;
 
-smacro procedure rl_arg2r(f);
+inline procedure rl_arg2r(f);
    % Reduce logic right hand side argument of binary operator. [f] is
    % a formula $\tau(\phi_1,\phi_2)$ with a binary boolean top-level
    % operator $\tau$. Returns the right hand side argument $\phi_2$ of
    % $\tau$.
    cadddr f;
 
-smacro procedure rl_argn(f);
+inline procedure rl_argn(f);
    % Reduce logic argument list of n-ary operator. [f] is a formula
    % $\tau(\phi_1,...)$ with unary, binary, or $n$-ary top-level
    % operator $\tau$. Returns the arguments of $\tau$ as a list
    % $(\phi_1,...)$.
    cddr f;
 
-smacro procedure rl_var(f);
+inline procedure rl_var(f);
    % Reduce logic variable. [f] is a formula $Q x (\phi)$ where $Q$ is
    % a quantifier. Returns the quantified variable $x$.
    caddr f;
 
-smacro procedure rl_mat(f);
+inline procedure rl_mat(f);
    % Reduce logic matrix. [f] is a formula $Q x (\phi)$ where $Q$ is a
    % quantifier. Returns the matrix $\phi$.
    cadddr f;
 
-smacro procedure rl_b(f);
+inline procedure rl_b(f);
    % Reduce logic bound. [f] is a formula starting with a bounded
    % quantifier. Returns the bound.
    caddddr f;
 
-smacro procedure rl_mk1(uop,arg);
+inline procedure rl_mk1(uop,arg);
    % Reduce logic make formula for unary operator. [uop] is a unary
    % operator, [arg] is a formula. Returns the formula $[uop]([arg])$
    % with top-level operator [uop] and argument [arg].
    {nil,uop,arg};
 
-smacro procedure rl_pmk1(pl,uop,arg);
+inline procedure rl_pmk1(pl,uop,arg);
    % Reduce logic plist make formula for unary operator. [pl] is an
    % alist, [uop] is a unary operator, [arg] is a formula. Returns the
    % formula $[uop]([arg])$ with top-level operator [uop] and argument
    % [arg].
    {pl,uop,arg};
 
-smacro procedure rl_mk2(bop,larg,rarg);
+inline procedure rl_mk2(bop,larg,rarg);
    % Reduce logic make formula for binary operator. [bop] is a binary
    % operator, [larg] and [rarg] are formulas. Returns the formula
    % $[bop]([larg],[rarg])$ with top-level operator [bop], left hand
    % side [larg], and right hand side [rarg].
    {nil,bop,larg,rarg};
 
-smacro procedure rl_pmk2(pl,bop,larg,rarg);
+inline procedure rl_pmk2(pl,bop,larg,rarg);
    % Reduce logic plist make formula for binary operator. [pl] is an
    % alist, [bop] is a binary operator, [larg] and [rarg] are formulas.
    % Returns the formula $[bop]([larg],[rarg])$ with top-level operator
    % [bop], left hand side [larg], and right hand side [rarg].
    {pl,bop,larg,rarg};
 
-smacro procedure rl_mkn(nop,argl);
+inline procedure rl_mkn(nop,argl);
    % Reduce logic make formula for n-ary operator. [nop] is a unary,
    % binary, or $n$-ary operator; [argl] is a list $(\phi_1,...)$ of
    % formulas; for binary or $n$-ary [nop] the length of [argl] is a
@@ -514,7 +514,7 @@ smacro procedure rl_mkn(nop,argl);
    % operator [nop], and the elements of [argl] as its arguments.
    nil . nop . argl;
 
-smacro procedure rl_pmkn(pl,nop,argl);
+inline procedure rl_pmkn(pl,nop,argl);
    % Reduce logic plist make formula for n-ary operator. [pl] is an
    % alist, [nop] is a unary, binary, or $n$-ary operator; [argl] is a
    % list $(\phi_1,...)$ of formulas; for binary or $n$-ary [nop] the
@@ -523,7 +523,7 @@ smacro procedure rl_pmkn(pl,nop,argl);
    % of [argl] as its arguments.
    pl . nop . argl;
 
-smacro procedure rl_smkn(nop,argl);
+inline procedure rl_smkn(nop,argl);
    % Reduce logic safe make formula for n-ary operator. [nop] is one
    % of ['and], ['or]; [argl] is a list $(\phi_1,...)$ of formulas.
    % Returns a formula. If [argl] is empty, ['true] is returned for
@@ -538,7 +538,7 @@ smacro procedure rl_smkn(nop,argl);
    else
       car argl;
 
-smacro procedure rl_psmkn(pl,nop,argl);
+inline procedure rl_psmkn(pl,nop,argl);
    % Reduce logic plist safe make formula for n-ary operator. [pl] is an
    % alist, [nop] is one of ['and], ['or]; [argl] is a list
    % $(\phi_1,...)$ of formulas. Returns a formula. If [argl] is empty,
@@ -554,21 +554,21 @@ smacro procedure rl_psmkn(pl,nop,argl);
    else
       car argl;
 
-smacro procedure rl_mkq(q,v,m);
+inline procedure rl_mkq(q,v,m);
    % Reduce logic make quantified formula. [q] is a quantifier, [v] is
    % a variable, [m] is a formula. Returns the formula $[q] [x] ([m])$
    % which is quantified with quantifier [q], quantified variable [v],
    % and matrix [m].
    {nil,q,v,m};
 
-smacro procedure rl_pmkq(pl,q,v,m);
+inline procedure rl_pmkq(pl,q,v,m);
    % Reduce logic plist make quantified formula. [pl] is an alist, [q]
    % is a quantifier, [v] is a variable, [m] is a formula. Returns the
    % formula $[q] [x] ([m])$ which is quantified with quantifier [q],
    % quantified variable [v], and matrix [m].
    {pl,q,v,m};
 
-smacro procedure rl_mkbq(q,v,b,m);
+inline procedure rl_mkbq(q,v,b,m);
    % Reduce logic make quantified formula. [q] is a quantifier, [v] is
    % a variable, [b] is a fof with x as only free variable, [m] is a
    % formula. Returns a formula which is quantified with quantifier
@@ -576,7 +576,7 @@ smacro procedure rl_mkbq(q,v,b,m);
    % matrix [m].
    {nil,q,v,m,b};
 
-smacro procedure rl_pmkbq(pl,q,v,b,m);
+inline procedure rl_pmkbq(pl,q,v,b,m);
    % Reduce logic plist make quantified formula. [pl] is an alist, [q]
    % is a quantifier, [v] is a variable, [b] is a fof with x as only
    % free variable, [m] is a formula. Returns a formula which is
@@ -584,96 +584,96 @@ smacro procedure rl_pmkbq(pl,q,v,b,m);
    % restricted by [b] and matrix [m].
    {pl,q,v,m,b};
 
-smacro procedure rl_put(f,k,v);
+inline procedure rl_put(f,k,v);
    <<
       (if w then cdr w := v else car f := (k . v) . car f)
       	 where w=atsoc(k,car f);
       v
    >>;
 
-smacro procedure rl_get(f,k);
+inline procedure rl_get(f,k);
    (if w then cdr w) where w=atsoc(k,car f);
 
-smacro procedure rl_plist(f);
+inline procedure rl_plist(f);
    car f;
 
 !#else
 
-smacro procedure rl_op(f);
+inline procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level
    % operator of [f]. In this sense truth values are operators.
    if atom f then f else car f;
 
-smacro procedure rl_arg1(f);
+inline procedure rl_arg1(f);
    % Reduce logic argument of unary operator. [f] is a formula $\tau
    % (\phi)$ with a unary boolean top-level operator $\tau$. Returns
    % the single argument $\phi$ of $\tau$.
    cadr f;
 
-smacro procedure rl_arg2l(f);
+inline procedure rl_arg2l(f);
    % Reduce logic left hand side argument of binary operator. [f] is a
    % formula $\tau(\phi_1,\phi_2)$ with a binary boolean top-level
    % operator $\tau$. Returns the left hand side argument $\phi_1$ of
    % $\tau$.
    cadr f;
 
-smacro procedure rl_arg2r(f);
+inline procedure rl_arg2r(f);
    % Reduce logic right hand side argument of binary operator. [f] is
    % a formula $\tau(\phi_1,\phi_2)$ with a binary boolean top-level
    % operator $\tau$. Returns the right hand side argument $\phi_2$ of
    % $\tau$.
    caddr f;
 
-smacro procedure rl_argn(f);
+inline procedure rl_argn(f);
    % Reduce logic argument list of n-ary operator. [f] is a formula
    % $\tau(\phi_1,...)$ with unary, binary, or $n$-ary top-level
    % operator $\tau$. Returns the arguments of $\tau$ as a list
    % $(\phi_1,...)$.
    cdr f;
 
-smacro procedure rl_var(f);
+inline procedure rl_var(f);
    % Reduce logic variable. [f] is a formula $Q x (\phi)$ where $Q$ is
    % a quantifier. Returns the quantified variable $x$.
    cadr f;
 
-smacro procedure rl_mat(f);
+inline procedure rl_mat(f);
    % Reduce logic matrix. [f] is a formula $Q x (\phi)$ where $Q$ is a
    % quantifier. Returns the matrix $\phi$.
    caddr f;
 
-smacro procedure rl_b(f);
+inline procedure rl_b(f);
    % Reduce logic bound. [f] is a formula starting with a bounded
    % quantifier. Returns the bound.
    cadddr f;
 
-smacro procedure rl_mk1(uop,arg);
+inline procedure rl_mk1(uop,arg);
    % Reduce logic make formula for unary operator. [uop] is a unary
    % operator, [arg] is a formula. Returns the formula $[uop]([arg])$
    % with top-level operator [uop] and argument [arg].
    {uop,arg};
 
-smacro procedure rl_pmk1(pl,uop,arg);
+inline procedure rl_pmk1(pl,uop,arg);
    % Reduce logic plist make formula for unary operator. [pl] is an
    % alist, [uop] is a unary operator, [arg] is a formula. Returns the
    % formula $[uop]([arg])$ with top-level operator [uop] and argument
    % [arg].
    {uop,arg};
 
-smacro procedure rl_mk2(bop,larg,rarg);
+inline procedure rl_mk2(bop,larg,rarg);
    % Reduce logic make formula for binary operator. [bop] is a binary
    % operator, [larg] and [rarg] are formulas. Returns the formula
    % $[bop]([larg],[rarg])$ with top-level operator [bop], left hand
    % side [larg], and right hand side [rarg].
    {bop,larg,rarg};
 
-smacro procedure rl_pmk2(pl,bop,larg,rarg);
+inline procedure rl_pmk2(pl,bop,larg,rarg);
    % Reduce logic plist make formula for binary operator. [pl] is an
    % alist, [bop] is a binary operator, [larg] and [rarg] are formulas.
    % Returns the formula $[bop]([larg],[rarg])$ with top-level operator
    % [bop], left hand side [larg], and right hand side [rarg].
    {bop,larg,rarg};
 
-smacro procedure rl_mkn(nop,argl);
+inline procedure rl_mkn(nop,argl);
    % Reduce logic make formula for n-ary operator. [nop] is a unary,
    % binary, or $n$-ary operator; [argl] is a list $(\phi_1,...)$ of
    % formulas; for binary or $n$-ary [nop] the length of [argl] is a
@@ -681,7 +681,7 @@ smacro procedure rl_mkn(nop,argl);
    % operator [nop], and the elements of [argl] as its arguments.
    nop . argl;
 
-smacro procedure rl_pmkn(pl,nop,argl);
+inline procedure rl_pmkn(pl,nop,argl);
    % Reduce logic plist make formula for n-ary operator. [pl] is an
    % alist, [nop] is a unary, binary, or $n$-ary operator; [argl] is a
    % list $(\phi_1,...)$ of formulas; for binary or $n$-ary [nop] the
@@ -690,7 +690,7 @@ smacro procedure rl_pmkn(pl,nop,argl);
    % of [argl] as its arguments.
    nop . argl;
 
-smacro procedure rl_smkn(nop,argl);
+inline procedure rl_smkn(nop,argl);
    % Reduce logic safe make formula for n-ary operator. [nop] is one
    % of ['and], ['or]; [argl] is a list $(\phi_1,...)$ of formulas.
    % Returns a formula. If [argl] is empty, ['true] is returned for
@@ -705,7 +705,7 @@ smacro procedure rl_smkn(nop,argl);
    else
       car argl;
 
-smacro procedure rl_psmkn(pl,nop,argl);
+inline procedure rl_psmkn(pl,nop,argl);
    % Reduce logic plist safe make formula for n-ary operator. [pl] is an
    % alist, [nop] is one of ['and], ['or]; [argl] is a list
    % $(\phi_1,...)$ of formulas. Returns a formula. If [argl] is empty,
@@ -721,21 +721,21 @@ smacro procedure rl_psmkn(pl,nop,argl);
    else
       car argl;
 
-smacro procedure rl_mkq(q,v,m);
+inline procedure rl_mkq(q,v,m);
    % Reduce logic make quantified formula. [q] is a quantifier, [v] is
    % a variable, [m] is a formula. Returns the formula $[q] [x] ([m])$
    % which is quantified with quantifier [q], quantified variable [v],
    % and matrix [m].
    {q,v,m};
 
-smacro procedure rl_pmkq(pl,q,v,m);
+inline procedure rl_pmkq(pl,q,v,m);
    % Reduce logic plist make quantified formula. [pl] is an alist, [q]
    % is a quantifier, [v] is a variable, [m] is a formula. Returns the
    % formula $[q] [x] ([m])$ which is quantified with quantifier [q],
    % quantified variable [v], and matrix [m].
    {q,v,m};
 
-smacro procedure rl_mkbq(q,v,b,m);
+inline procedure rl_mkbq(q,v,b,m);
    % Reduce logic make quantified formula. [q] is a quantifier, [v] is
    % a variable, [b] is a fof with x as only free variable, [m] is a
    % formula. Returns a formula which is quantified with quantifier
@@ -743,7 +743,7 @@ smacro procedure rl_mkbq(q,v,b,m);
    % matrix [m].
    {q,v,m,b};
 
-smacro procedure rl_pmkbq(pl,q,v,b,m);
+inline procedure rl_pmkbq(pl,q,v,b,m);
    % Reduce logic plist make quantified formula. [pl] is an alist, [q]
    % is a quantifier, [v] is a variable, [b] is a fof with x as only
    % free variable, [m] is a formula. Returns a formula which is
@@ -751,61 +751,61 @@ smacro procedure rl_pmkbq(pl,q,v,b,m);
    % restricted by [b] and matrix [m].
    {q,v,m,b};
 
-smacro procedure rl_put(f,k,v);
+inline procedure rl_put(f,k,v);
    v;
 
-smacro procedure rl_get(f,k);
+inline procedure rl_get(f,k);
    nil;
 
-smacro procedure rl_plist(f);
+inline procedure rl_plist(f);
    nil;
 
 !#endif
 
-smacro procedure rl_quap(x);
+inline procedure rl_quap(x);
    % Reduce logic quantifier predicate. [x] is any S-expression.
    % Returns non-[nil] iff [x] is a quantifier.
    x eq 'ex or x eq 'all;
 
-smacro procedure rl_bquap(x);
+inline procedure rl_bquap(x);
    % Reduce logic bounded quantifier predicate. [x] is any
    % S-expression. Returns non-[nil] iff [x] is a bounded quantifier.
    x eq 'bex or x eq 'ball;
 
-smacro procedure rl_junctp(x);
+inline procedure rl_junctp(x);
    % Reduce logic junctor predicate. [x] is any S-expression. Returns
    % non-[nil] iff [x] is one of ['and], ['or] which we refer to as
    % junctors.
    x eq 'or or x eq 'and;
 
-smacro procedure rl_basbp(x);
+inline procedure rl_basbp(x);
    % Reduce logic basic boolean operator predicate. [x] is any
    % S-expression. Returns non-[nil] iff [x] is a junctor or ['not].
    % We refer to these as basic boolean operators.
    rl_junctp x or x eq 'not;
 
-smacro procedure rl_extbp(x);
+inline procedure rl_extbp(x);
    % Reduce logic extended boolean operator predicate. [x] is any
    % S-expression. Returns non-[nil] iff [x] is one of ['impl],
    % ['repl], or ['equiv]. We refer to these as basic boolean
    % operators.
    x eq 'impl or x eq 'repl or x eq 'equiv;
 
-smacro procedure rl_boolp(x);
+inline procedure rl_boolp(x);
    % Reduce logic boolean operator predicate. [x] is any S-expression.
    % Returns non-[nil] iff [x] is a boolean operator, i.e. one of
    % ['and], ['or], ['not], ['impl], ['repl], or ['equiv].
    rl_basbp x or rl_extbp x;
 
-smacro procedure rl_tvalp(x);
+inline procedure rl_tvalp(x);
    % Reduce logic truth value predicate. [x] is any S-expression.
    % Returns non-[nil] iff [x] is one of ['true], ['false].
    x eq 'true or x eq 'false;
 
-smacro procedure rl_externalp(x);
+inline procedure rl_externalp(x);
    get(x,'rl_external);
 
-smacro procedure rl_cxp(x);
+inline procedure rl_cxp(x);
    % Reduce logic complex, i.e., non-atomic, operator predicate.
    rl_tvalp x or rl_boolp x or rl_quap x or rl_bquap x or rl_externalp x;
 
@@ -832,10 +832,10 @@ procedure rl_mkexternal(x,f,xf);
 
 flag('(rl_exception),'assert_ignore);
 
-smacro procedure rl_exception(s);
+inline procedure rl_exception(s);
    'rl_exception . s;
 
-smacro procedure rl_exceptionp(s);
+inline procedure rl_exceptionp(s);
    eqcar(s,'rl_exception);
 
 endmodule;  % [redlog]

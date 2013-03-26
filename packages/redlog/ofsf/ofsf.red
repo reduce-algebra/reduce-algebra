@@ -306,45 +306,45 @@ if rl_texmacsp() then
 flag('(equal neq leq geq lessp greaterp),'spaced);
 flag('(ofsf_chsimpat),'full);
 
-smacro procedure ofsf_op(atf);
+inline procedure ofsf_op(atf);
    % Ordered field operator. [atf] is an atomic formula
    % $R(t_1,t_2)$. Returns $R$.
    car atf;
 
-smacro procedure ofsf_arg2l(atf);
+inline procedure ofsf_arg2l(atf);
    % Ordered field binary operator left hand side argument. [atf] is
    % an atomic formula $R(t_1,t_2)$. Returns $t_1$.
    cadr atf;
 
-smacro procedure ofsf_arg2r(atf);
+inline procedure ofsf_arg2r(atf);
    % Ordered field binary operator right hand side argument. [atf] is
    % an atomic formula $R(t_1,t_2)$. Returns $t_2$.
    caddr atf;
 
-smacro procedure ofsf_argn(atf);
+inline procedure ofsf_argn(atf);
    % Ordered field binary operator right hand side argument. [atf] is
    % an atomic formula $R(t_1,t_2)$. Returns the list $(t_1,t_2)$.
    {cadr atf,caddr atf};
 
-smacro procedure ofsf_mk2(op,lhs,rhs);
+inline procedure ofsf_mk2(op,lhs,rhs);
    % Ordered field constructor for binary operator. [op] is a relation
    % [lhs] and [rhs] are terms. Returns the atomic formula
    % $[op]([lhs],[rhs])$.
    {op,lhs,rhs};
 
-smacro procedure ofsf_0mk2(op,lhs);
+inline procedure ofsf_0mk2(op,lhs);
    % Ordered field zero constructor for binary operator. [op] is a
    % relation [lhs] is a term. Returns the atomic formula
    % $[op]([lhs],0)$.
    {op,lhs,nil};
 
-smacro procedure ofsf_mkn(op,argl);
+inline procedure ofsf_mkn(op,argl);
    % Ordered field constructor for binary operator. [op] is a relation
    % [argl] is a list $(t_1,t_2)$ of terms. Returns the atomic formula
    % $[op](t_1,t_2)$.
    {op,car argl,cadr argl};
 
-smacro procedure ofsf_opp(op);
+inline procedure ofsf_opp(op);
    % Orderd field standard form operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a relation.
    op memq '(lessp leq equal neq geq greaterp);

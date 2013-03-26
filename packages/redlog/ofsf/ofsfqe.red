@@ -790,18 +790,18 @@ procedure ofsf_valassp(bvl,sf);
 % so21q: quadratic strong orderings 1 quotient
 % so22r: quadratic strong orderings 2 roots
 
-smacro procedure ofsf_mkalp(tag,l);
+inline procedure ofsf_mkalp(tag,l);
    % Ordered field standard form make alist pair. [tag] is a key; [l]
    % is an entry. Returns an ALP.
    {tag . l} . {tag . 1};
 
-smacro procedure ofsf_ceterm1a(m,u);
+inline procedure ofsf_ceterm1a(m,u);
    % Ordered field standard form conditional elimination term 1
    % condition atomic other parameter. [m] is a SF; [u] is an
    % elimination term.
    {ofsf_0mk2('neq,m),u};
 
-smacro procedure ofsf_ceterm2a(a,m,u);
+inline procedure ofsf_ceterm2a(a,m,u);
    % Ordered field standard form conditional elimination term 2
    % conditions atomic other parameter. [a], [m] are SF's; [u] is an
    % elimination term.
@@ -810,23 +810,23 @@ smacro procedure ofsf_ceterm2a(a,m,u);
    else
       {ofsf_0mk2('neq,m),u};
 
-smacro procedure ofsf_ceterm1l(a,l);
+inline procedure ofsf_ceterm1l(a,l);
    % Ordered field standard form conditional elimination term 1
    % condition parameter list.
    ofsf_0mk2('neq,a) . l;
 
-smacro procedure ofsf_ceterm2l(a,d,l);
+inline procedure ofsf_ceterm2l(a,d,l);
    % Ordered field standard form conditional elimination term 2
    % conditions parameter list. [a], [d] are SF's; [l] is a list of
    % elimination terms.
    rl_mkn('and,{ofsf_0mk2('neq,a),ofsf_0mk2('geq,d)}) . l;
 
-smacro procedure ofsf_mktag1(x);
+inline procedure ofsf_mktag1(x);
    % Ordered field standard form make tag linear case. [x] is an
    % identifier. Returns the interned identifier [x]1.
    intern compress(nconc(explode x,'(!1)));
 
-smacro procedure ofsf_mktag2(x,y);
+inline procedure ofsf_mktag2(x,y);
    % Ordered field standard form make tag quadratic case. [x], [y] are
    % identifiers. Returns the interned identifier [x]2[y].
    intern compress(nconc(explode x,'!2 . explode y));

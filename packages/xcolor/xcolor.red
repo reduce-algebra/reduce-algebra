@@ -110,41 +110,41 @@ create!-package('(xcolor cface),'(contrib physics));
 
 %----------------------- Selector/Constructor -------------------------
 
-symbolic smacro procedure GetCoef g0$ car g0$
-symbolic smacro procedure GetVL g0$ cdr g0$
+symbolic inline procedure GetCoef g0$ car g0$
+symbolic inline procedure GetVL g0$ cdr g0$
 
-symbolic smacro procedure PutCoef(g0,c)$ rplacA(g0,c)$
-symbolic smacro procedure PutVL(g0,vl)$ rplacD(g0,vl)$
+symbolic inline procedure PutCoef(g0,c)$ rplacA(g0,c)$
+symbolic inline procedure PutVL(g0,vl)$ rplacD(g0,vl)$
 
-symbolic smacro procedure GetTV v$ car v$
-symbolic smacro procedure GetE1 v$ cadr v$
-symbolic smacro procedure GetE2 v$ caddr v$
-symbolic smacro procedure GetE3 v$ cadddr v$
-symbolic smacro procedure GetInQ v$ GetE1 v$
-symbolic smacro procedure GetOutQ v$ GetE2 v$
+symbolic inline procedure GetTV v$ car v$
+symbolic inline procedure GetE1 v$ cadr v$
+symbolic inline procedure GetE2 v$ caddr v$
+symbolic inline procedure GetE3 v$ cadddr v$
+symbolic inline procedure GetInQ v$ GetE1 v$
+symbolic inline procedure GetOutQ v$ GetE2 v$
 
-symbolic smacro procedure PutTV(v,tv)$ rplacA(v,tv)$
-symbolic smacro procedure PutE1(v,e)$ rplacA(cdr v,e)$
-symbolic smacro procedure PutE2(v,e)$ rplacA(cddr v,e)$
-symbolic smacro procedure PutE3(v,e)$ rplacA(cdddr v,e)$
-symbolic smacro procedure PutInQ(v,e)$ PutE1(v,e)$
-symbolic smacro procedure PutOutQ(v,e)$ PutE2(v,e)$
+symbolic inline procedure PutTV(v,tv)$ rplacA(v,tv)$
+symbolic inline procedure PutE1(v,e)$ rplacA(cdr v,e)$
+symbolic inline procedure PutE2(v,e)$ rplacA(cddr v,e)$
+symbolic inline procedure PutE3(v,e)$ rplacA(cdddr v,e)$
+symbolic inline procedure PutInQ(v,e)$ PutE1(v,e)$
+symbolic inline procedure PutOutQ(v,e)$ PutE2(v,e)$
 
-symbolic smacro procedure MkG0(c,g0)$ c . g0$
+symbolic inline procedure MkG0(c,g0)$ c . g0$
 
-symbolic smacro procedure ChkTV(v,tv)$ GetTV v eq tv$
-symbolic smacro procedure QGVp v$ ChkTV(v,'QG)$
-symbolic smacro procedure G3Vp v$ ChkTV(v,'G3)$
+symbolic inline procedure ChkTV(v,tv)$ GetTV v eq tv$
+symbolic inline procedure QGVp v$ ChkTV(v,'QG)$
+symbolic inline procedure G3Vp v$ ChkTV(v,'G3)$
 
-symbolic smacro procedure ZCoefP g0$ null numr GetCoef g0$
+symbolic inline procedure ZCoefP g0$ null numr GetCoef g0$
 
-symbolic smacro procedure MkCopyG0 g0$
+symbolic inline procedure MkCopyG0 g0$
   %--------------------------------------------------------------------
   % Make a copy of structure g0 without copying coeffitient.
   %--------------------------------------------------------------------
   GetCoef g0 . MkCopy GetVL g0$
 
-symbolic smacro procedure ChkHP v$
+symbolic inline procedure ChkHP v$
   %--------------------------------------------------------------------
   % Check headpole.
   %--------------------------------------------------------------------
@@ -160,7 +160,7 @@ symbolic smacro procedure ChkHP v$
 
 %----------------------------- Debug ----------------------------------
 
-%symbolic smacro procedure DMessage x$
+%symbolic inline procedure DMessage x$
 %  << prin2 "====>"$ print x >>$
 
 %----------------------------- Others ---------------------------------
@@ -187,14 +187,14 @@ symbolic procedure RemoveV(g0,v)$
   else if cadr g0 eq v then rplacD(g0,cddr g0)
   else RemoveV(cdr g0,v)$
 
-symbolic smacro procedure ExistQGV g0$
+symbolic inline procedure ExistQGV g0$
   %--------------------------------------------------------------------
   % Find quark-gluon vertex in g0.
   % Return quark-gluon vertex or nil.
   %--------------------------------------------------------------------
   assoc('QG,GetVL g0)$
 
-symbolic smacro procedure Exist3GV g0$
+symbolic inline procedure Exist3GV g0$
   %--------------------------------------------------------------------
   % Find three-gluon vertex in g0.
   % Return three-gluon vertex or nil.
@@ -207,7 +207,7 @@ symbolic procedure MkCopy u$
   %--------------------------------------------------------------------
   if atom u then u else MkCopy car u . MkCopy cdr u$
 
-symbolic smacro procedure RevV(v,e)$
+symbolic inline procedure RevV(v,e)$
   %--------------------------------------------------------------------
   % Revolve v such that e become the first edge.
   % v is modified.

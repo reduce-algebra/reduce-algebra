@@ -94,7 +94,7 @@ symbolic procedure sep_tens_from_other u;
      if atom mvar u  then other:=multf(other,!*p2f lpow u)
       else
      << if y:=get(car mvar u, 'Translate1) then
-          << u:=fullcopy u; (mvar u:= apply1(y,mvar u)) >>;
+          << u:=fullcopy u; set_mvar(u, apply1(y,mvar u)) >>;
 %        if tensorp mvar u then tel:=mvar u . tel
 %          else  other :=multf(other,!*p2f lpow u)>>;
          if tensorp(mv:=mvar u) then

@@ -166,44 +166,33 @@ xpolylist!*     := {};   % internal list for debugging only
 
 % Macros used in other modules
 
-smacro procedure xkey pr;
-  car pr;
+accessors xkey . (pr_type . (pr_lhs . (pr_rhs . !_)));
 
-smacro procedure pr_type pr;
-  cadr pr;
-
-smacro procedure pr_lhs pr;
-  caddr pr;
-
-smacro procedure pr_rhs pr;
-  cadddr pr;
-
-smacro procedure empty_xset;
+inline procedure empty_xset;
   '!*xset!* . nil;
 
-smacro procedure empty_xsetp c;
+inline procedure empty_xsetp c;
   null cdr c;
 
-smacro procedure xset_item c;
+inline procedure xset_item c;
   car c;
 
 
 % Macros from other packages for compilation
+% I very much hope that the need to duplicate these here can go away!
 
-smacro procedure ldpf u;                   % from excalc
-   %selector for leading standard form in patitioned sf;
-   caar u;
+accessors (lpdf . !_) . !_;
 
-smacro procedure !*k2pf u;                 % from excalc
+inline procedure !*k2pf u;                 % from excalc
    u .* (1 ./ 1) .+ nil;
 
-smacro procedure negpf u;                  % from excalc
+inline procedure negpf u;                  % from excalc
    multpfsq(u,(-1) ./ 1);
 
-smacro procedure get!*fdeg u;                      % from excalc
+inline procedure get!*fdeg u;                      % from excalc
    (if x then car x else nil) where x = get(u,'fdegree);
 
-smacro procedure get!*ifdeg u;                     % from excalc
+inline procedure get!*ifdeg u;                     % from excalc
    (if x then cdr x else nil)
     where x = assoc(length cdr u,get(car u,'ifdegree));
 

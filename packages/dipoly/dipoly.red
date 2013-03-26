@@ -47,7 +47,7 @@ module dipoly;% Header module for dipoly package .
 %
 
 
-% For the time being,this contains the smacros that used to be in
+% For the time being,this contains the inlines that used to be in
 % consel,and repeats those in bcoeff .
 
 %----------------------------------------------------------------
@@ -86,15 +86,15 @@ put('dipoly,'version,4.1);
 fluid'(dipzero pi);
 % Until we understand how to define something to nil .
 
-smacro procedure dipzero!? u;null u;
+inline procedure dipzero!? u;null u;
 
-smacro procedure diplbc p;
+inline procedure diplbc p;
 % Distributive polynomial leading base coefficient.
 % p is a distributive polynomial . diplbc(p)  returns
 % the leading base coefficient of p.
  cadr p;
 
-smacro procedure dipmoncomp(a,e,p);
+inline procedure dipmoncomp(a,e,p);
 % Distributive polynomial monomial composition . a is a base
 % coefficient,e is an exponent vector and p is a
 % distributive polynomial . dipmoncomp( a,e,p)returns a dis-
@@ -103,26 +103,26 @@ smacro procedure dipmoncomp(a,e,p);
 % base coefficient.
    e.a.p;
 
-smacro procedure dipevlmon p;
+inline procedure dipevlmon p;
 % Distributive polynomial exponent vector leading monomial .
 % p is a distributive polynomial . dipevlmon(p)returns the
 % exponent vector of the leading monomial of p.
  car p;
 
-smacro procedure dipfmon(a,e);
+inline procedure dipfmon(a,e);
 % Distributive polynomial from monomial . a is a base coefficient
 % and e is an exponent vector . dipfmon(a,e)returns a
 % distributive polynomial with e as exponent vector and
 % a as base coefficient.
  e.a.dipzero;
 
-smacro procedure dipnov p;
+inline procedure dipnov p;
 % Distributive polynomial number of variables . p is a distributive
 % polynomial . dipnov(p)returns a digit,the number of variables
 % of the distributive polynomial p.
  length car p;
 
-smacro procedure dipmred p;
+inline procedure dipmred p;
 % Distributive polynomial reductum . p is a distributive polynomial
 % dipmred(p)returns the reductum of the distributive polynomial p,
 % a distributive polynomial.

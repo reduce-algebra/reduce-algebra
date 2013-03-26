@@ -37,8 +37,7 @@ module bibasis_polynom;
 % poly k_1 + ... k_n = k_1 . ... . k_n . (nil . nil)
 
 
-smacro procedure PolynomGetLm(p); car(p);
-
+accessors (PolynomGetLm . _);
 
 expr procedure PolynomClone(polynom);
 begin scalar tmpPolynom, polynomIterator;

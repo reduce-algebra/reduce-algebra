@@ -39,18 +39,7 @@ All changes to xset are made destructively as side-effects.
 
 endcomment;
 
-
-symbolic smacro procedure xset_ptrs c;
-   cdr c;
-
-
-symbolic smacro procedure left_xset c;
-   cadr c;
-
-
-symbolic smacro procedure right_xset c;
-   cddr c;
-
+accessors xset_item . xset_ptrs, !_ . (left_xset . right_xset);
 
 symbolic procedure find_item(pr,c);
    % pr:item, c:xset -> find_item:xset|nil
@@ -65,6 +54,11 @@ symbolic procedure add_item(pr,c);
    % pr:item, c:xset -> add_item:nil
    % add new item pr to structure c as side-effect
    % goes left iff xkey pr < xkey xset_item c
+% Here there is use of "xset_item c := ..." which requires that the syntax
+% extending declaration for the data structure be available when this code
+% is compiled. Well here the code is within the package (indeed within the
+% file!) where the accessor is defined, so this is safe. However outside this
+% file it would be safer to use set_xset_item.
    if empty_xsetp c then
     <<xset_item c := pr;
       xset_ptrs c := empty_xset() . empty_xset();>>

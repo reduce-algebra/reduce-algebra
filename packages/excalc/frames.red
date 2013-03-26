@@ -267,7 +267,7 @@ symbolic procedure riemannconx u;
 
 put('riemannconx,'stat,'rlis);
 
-smacro procedure mkbasformsq u;
+inline procedure mkbasformsq u;
    mksq(list(caar basisforml!*,u),1);
 
 symbolic procedure riemconnection u;

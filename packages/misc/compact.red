@@ -31,19 +31,19 @@ module compact;  % Header module for compact code.
 create!-package('(compact mv mvmatch reddom compactf comfac),
                 '(contrib compact));
 
-% These smacros are used in more than one module.
+% These inlines are used in more than one module.
 
-symbolic smacro procedure mv!-!.!+(u,v); u . v;
+symbolic inline procedure mv!-!.!+(u,v); u . v;
 
-symbolic smacro procedure mv!-!.!*(u,v); u . v;
+symbolic inline procedure mv!-!.!*(u,v); u . v;
 
-symbolic smacro procedure mv!-lc u; cdar u;
+symbolic inline procedure mv!-lc u; cdar u;
 
-symbolic smacro procedure mv!-lpow u; caar u;
+symbolic inline procedure mv!-lpow u; caar u;
 
-symbolic smacro procedure mv!-lt u; car u;
+symbolic inline procedure mv!-lt u; car u;
 
-symbolic smacro procedure mv!-red u; cdr u;
+symbolic inline procedure mv!-red u; cdr u;
 
 endmodule;
 

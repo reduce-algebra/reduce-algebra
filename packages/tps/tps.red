@@ -86,28 +86,28 @@ fluid '(ps!:exp!-lim  knownps ps!:level  ps!:max!-order);
 
 % Some structure selectors and referencers.
 
-symbolic smacro procedure rands e;
+symbolic inline procedure rands e;
   cdr e;
 
-symbolic smacro procedure rand1 e;
+symbolic inline procedure rand1 e;
    cadr e;
 
-symbolic smacro procedure rand2 e;
+symbolic inline procedure rand2 e;
    caddr e;
 
-symbolic smacro procedure rator e;
+symbolic inline procedure rator e;
   car e;
 
-symbolic smacro procedure ps!:domainp u;
+symbolic inline procedure ps!:domainp u;
    atom u or (car u neq '!:ps!:) and not listp u;
 
-symbolic smacro procedure ps!:p u;
+symbolic inline procedure ps!:p u;
   pairp u and (car u = '!:ps!:);
 
-symbolic smacro procedure ps!:atom u;
+symbolic inline procedure ps!:atom u;
    atom u or (car u neq '!:ps!: and get(car u,'dname));
 
-symbolic smacro procedure ps!:numberp u;
+symbolic inline procedure ps!:numberp u;
    numberp u or (pairp u and car u neq '!:ps!: and get(car u,'dname));
 
 symbolic procedure constantpsp u;
@@ -129,7 +129,7 @@ symbolic procedure ps!:order ps;
    if ps!:atom ps then 0
    else ps!:getv(ps,0);
 
-symbolic smacro procedure ps!:set!-order(ps,n);
+symbolic inline procedure ps!:set!-order(ps,n);
    ps!:putv(ps,0,n);
 
 symbolic procedure ps!:last!-term ps;
@@ -139,48 +139,48 @@ symbolic procedure ps!:last!-term ps;
 symbolic (ps!:max!-order:= 2147483647);
 % symbolic here seems to be essential in Cambridge Lisp systems
 
-symbolic smacro procedure ps!:set!-last!-term (ps,n);
+symbolic inline procedure ps!:set!-last!-term (ps,n);
    ps!:putv(ps,1,n);
 
 symbolic procedure ps!:depvar ps;
    if ps!:atom ps then nil
    else ps!:getv(ps,2);
 
-symbolic smacro procedure ps!:set!-depvar(ps,x);
+symbolic inline procedure ps!:set!-depvar(ps,x);
    ps!:putv(ps,2,x);
 
 symbolic procedure ps!:expansion!-point ps;
    if ps!:atom ps then nil
    else ps!:getv(ps,3);
 
-symbolic smacro procedure ps!:set!-expansion!-point(ps,x);
+symbolic inline procedure ps!:set!-expansion!-point(ps,x);
    ps!:putv(ps,3,x);
 
 symbolic procedure ps!:value ps;
    if ps!:atom ps then if ps then ps else 0
    else ps!:getv(ps,4);
 
-symbolic smacro procedure ps!:set!-value(ps,x);
+symbolic inline procedure ps!:set!-value(ps,x);
    ps!:putv(ps,4,x);
 
-symbolic smacro procedure ps!:terms ps;
+symbolic inline procedure ps!:terms ps;
    if ps!:atom ps then list (0 . ( ps . 1))
    else ps!:getv(ps,5);
 
-symbolic smacro procedure ps!:set!-terms(ps,x);
+symbolic inline procedure ps!:set!-terms(ps,x);
    ps!:putv(ps,5,x);
 
 symbolic procedure ps!:expression ps;
    if ps!:atom ps then ps
    else ps!:getv(ps,6);
 
-symbolic smacro procedure ps!:set!-expression(ps,x);
+symbolic inline procedure ps!:set!-expression(ps,x);
    ps!:putv(ps,6,x);
 
-symbolic smacro procedure ps!:operator ps;
+symbolic inline procedure ps!:operator ps;
    car ps!:getv(ps,6);
 
-symbolic smacro procedure ps!:operands ps;
+symbolic inline procedure ps!:operands ps;
    cdr ps!:getv(ps,6);
 
 symbolic procedure ps!:get!-term(ps,i);

@@ -342,7 +342,7 @@ procedure ofsf_updSignPow(sign, deg);
    else
       'unknown;
 
-smacro procedure ofsf_prEq(a1,a2,b1,b2);
+inline procedure ofsf_prEq(a1,a2,b1,b2);
    a1 eq b1 and a2 eq b2 or a1 eq b2 and a2 eq b1;
 
 procedure ofsf_updSignAdd(old,new);

@@ -76,10 +76,10 @@ symbolic procedure setprop(U, L);
       for each p in L do put(U, car p, cdr p) >>$
 !#endif
 
-% The following smacro definitions MUST be in this header file!
+% The following inline definitions MUST be in this header file!
 
 !#if (null(getd 'flag1))
-symbolic smacro procedure flag1(U, V);
+symbolic inline procedure flag1(U, V);
    %% The identifier U is flagged V.
    %% FJW: Defined and flagged lose in PSL only.
    %% FJW: This implementation based on the PSL manual.
@@ -87,7 +87,7 @@ symbolic smacro procedure flag1(U, V);
 !#endif
 
 !#if (null(getd 'remflag1))
-symbolic smacro procedure remflag1(U, V);
+symbolic inline procedure remflag1(U, V);
    %% Remove V from the property list of identifier U.
    %% FJW: Defined and flagged lose in PSL only.
    %% FJW: This implementation based on the PSL manual.

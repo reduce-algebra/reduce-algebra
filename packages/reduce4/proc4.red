@@ -90,7 +90,7 @@ symbolic procedure n_formproc(u,vars);
                               type body,"of procedure body"}
         else if mode eq 'generic then body := value body
         else body := {'check_type,value body,mkquote mode};
-        if !*nosmacros and type eq 'smacro then type := 'expr;
+        if !*noinlines and type eq 'inline then type := 'expr;
 
 % ---
 
@@ -110,7 +110,7 @@ symbolic procedure n_formproc(u,vars);
                            mkquote constraint},
                        {'put,mkquote name,''pckg_orig,mkquote pckg_orig},
                         body,mkquote mkobject(truename,'variable)}};
-        if !*defn and type memq '(fexpr macro smacro) then lispeval body;
+        if !*defn and type memq '(fexpr macro inline smacro) then lispeval body;
         return body
    end;
 

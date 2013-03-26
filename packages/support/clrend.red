@@ -152,7 +152,7 @@ flag('(floor),'lose);
 
 remflag('(mkfunction),'lose);
 
-smacro procedure mkfunction u; mkquote u;
+inline procedure mkfunction u; mkquote u;
 
 flag('(mkfunction),'lose);
 

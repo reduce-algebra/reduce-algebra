@@ -28,15 +28,15 @@ module mv; % Operations on multivariate forms.
 %
 
 
-% These smacros are local to this module.
+% These inlines are local to this module.
 
-symbolic smacro procedure mv!-term!-coeff u; cdr u;
+symbolic inline procedure mv!-term!-coeff u; cdr u;
 
-symbolic smacro procedure mv!-term!-pow u; car u;
+symbolic inline procedure mv!-term!-pow u; car u;
 
-symbolic smacro procedure mv!-tpow u; car u;
+symbolic inline procedure mv!-tpow u; car u;
 
-symbolic smacro procedure mv!-tc u; cdr u;
+symbolic inline procedure mv!-tc u; cdr u;
 
 symbolic procedure mv!-!+(u,v);
    if null u then v
@@ -51,9 +51,9 @@ symbolic procedure mv!-!+(u,v);
      then mv!-!.!+(mv!-lt u,mv!-!+(mv!-red u,v))
     else mv!-!.!+(mv!-lt v,mv!-!+(u,mv!-red v));
 
-symbolic smacro procedure domain!-!*(u,v); u*v;
+symbolic inline procedure domain!-!*(u,v); u*v;
 
-symbolic smacro procedure domain!-!/(u,v); u/v;
+symbolic inline procedure domain!-!/(u,v); u/v;
 
 symbolic procedure mv!-term!-!*(u,v);
    % U is a (non-zero) term and v a multivariate form. Result is
