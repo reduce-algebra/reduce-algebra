@@ -91,7 +91,8 @@ LANG=C ; export LANG
 
 # If no argument is provided then this runs alg.tst
 p=${1:-alg}
-# WARNING - the "-n" option to echo is not portable.
+# WARNING - the "-n" option to echo is not portable. So I use printf
+# which should be available in all Posix systems.
 if test "x$p" = "xregressions"
 then
   r=${2:-aug-29-2011}
@@ -99,7 +100,7 @@ then
   p="$r"
   d="regressions"
 else
-  printf "Package to test is $p: "
+  printf "Testing $p: "
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
   *$p*) ;;
@@ -216,15 +217,9 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
        >csl-times/$p.rlg
 diff -B -w csl-times/$p.rlg.orig csl-times/$p.rlg >csl-times/$p.rlg.diff
-if test "$psl" = "yes"
-then
-  n="-n"
-else
-  n=""
-fi
 if test -s csl-times/$p.rlg.diff
-  then echo $n "Diff is in csl-times/$p.rlg.diff "
-  else echo $n "OK! " ; rm -f csl-times/$p.rlg.diff csl-times/$p.rlg.orig
+  then printf "Diff is in csl-times/$p.rlg.diff "
+  else printf "OK " ; rm -f csl-times/$p.rlg.diff csl-times/$p.rlg.orig
 fi
 echo "Tested on $mc CSL" > csl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | \
@@ -277,7 +272,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
   then echo "diff is in psl-times/$p.rlg.diff"
-  else echo $n "OK! " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
+  else printf "OK " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
 fi
 echo "Tested on $mc PSL" > psl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
@@ -291,12 +286,6 @@ fi # PSL case
 
 if test "$csl" = "yes" && test "$psl" = "yes"
 then
-  mkdir -p csl-psl-times-comparison
-  diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff
-  if test -s csl-psl-times-comparison/$p.rlg.diff
-    then echo "CSL and PSL test logs differ!"
-    else rm -f csl-psl-times-comparison/$p.rlg.diff
-  fi
   echo "1k " > timer.tmp
   grep ^Time csl-times/$p.time | \
    sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
@@ -305,11 +294,19 @@ then
    sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
   echo " / pq" >> timer.tmp
   ratio=`dc < timer.tmp 2>/dev/null`
-  if test "x$ratio" != "x"
+  if test "x$ratio" != "x" && "x$ratio" != "x0"
   then 
-    echo "CSL vs PSL: $ratio%"
+    printf "CSL/PSL:${ratio}%%"
   fi
   rm timer.tmp
+  mkdir -p csl-psl-times-comparison
+  diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff
+  if test -s csl-psl-times-comparison/$p.rlg.diff
+    then
+      echo " "
+      printf "CSL and PSL test logs differ!"
+    else rm -f csl-psl-times-comparison/$p.rlg.diff
+  fi
 fi
 
 echo " "
