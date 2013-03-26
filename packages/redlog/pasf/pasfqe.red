@@ -208,6 +208,10 @@ procedure pasf_inplaceqe1(phi,theo,p);
       return (phi . nil)
    end;
 
+% Order of elimination in a block. off - from the outside to the inside.
+switch rlqeinfirst;
+off1 'rlqeinfirst;
+
 procedure pasf_qeblock(theta,varl,psi,theo,answ,p);
    % Presburger arithmetic standrd form eliminate a block of
    % quantifiers. [theta] if the quantifier type; [varl] is a list of
@@ -216,9 +220,14 @@ procedure pasf_qeblock(theta,varl,psi,theo,answ,p);
    % if no answers are required; [p] is the probability for PQE. Returns
    % an equivalent quantifier-free formula or a pair $(\psi . a)$ where
    % $a$ is an answer.
-   begin scalar res;integer dpth,vlv;
+   begin scalar res; integer dpth,vlv;
+      if !*rlqeinfirst then
+	 varl := reverse varl;
       if !*rlverbose then
-	 ioto_tprin2 {"---- ",theta . reverse varl};
+	 if !*rlqeinfirst then
+	    ioto_tprin2 {"---- ",theta . varl}
+	 else
+	    ioto_tprin2 {"---- ",theta . reverse varl};
       if theta eq 'ex then
       	 res := pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p)
       else <<
@@ -299,6 +308,7 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
 	       c := c - 1
 	    >>;
 	 % Variable selection
+	 cvl := pasf_varsel(cvl, psi);
 	 v := pop cvl;
 	 % Eliminating the selected variable
 	 ans := pasf_qeex(ce_f coe,v,theo,ce_ans coe,cvl,p);
@@ -321,6 +331,56 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
       >>;
       if !*rlverbose then ioto_prin2{"[DEL:",delc,"/",count,"]"};
       return if answ then newj else rl_smkn('or,newj)
+   end;
+
+procedure pasf_varsel(varl, psi);
+   begin scalar ovarl, atl, bestv; integer bestw, w;
+      if not !*rlqevarsel then
+	 return varl;
+      varl := sort(varl, 'ordp);
+      ovarl := varl;
+      atl := cl_atl psi;
+      bestv := car varl;
+      bestw := pasf_varweight(bestv, atl);
+      varl := cdr varl;
+      while varl do <<
+	 w := pasf_varweight(car varl, atl);
+	 if w < bestw then <<
+	    bestv := car varl;
+	    bestw := w
+	 >>;
+	 varl := cdr varl
+      >>;
+      return bestv . delete(bestv, ovarl)
+   end;
+
+procedure pasf_varweight(x, atl);
+   begin scalar atf, atlx; integer m, wgt;
+      m := 1;
+      while atl do <<
+	 atf := car atl;
+	 if x memq (car cl_varl atf) then <<
+	    if pasf_congp atf then
+	       m := m * pasf_m atf;
+	    atlx := atf . atlx
+	 >>;
+	 atl := cdr atl
+      >>;
+      if null atlx then
+	 return -1;
+      for each atf in atlx do
+	 if rl_op atf neq 'equal then % rl_op is not an (n)cong or equal
+	    wgt := wgt + pasf_abshc(pasf_arg2l atf, x) * m;
+      return wgt
+   end;
+
+procedure pasf_abshc(f, x);
+   begin scalar oldo, res;
+      assert(not domainp f);
+      oldo := setkorder {x};
+      res := abs lc reorder f;
+      setkorder oldo;
+      return res
    end;
 
 procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
@@ -398,11 +458,14 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
 
 % ---- Virtual substitution --------------------------------------------------
 
+switch rlqeexpand;
+off1 'rlqeexpand;
+
 procedure pasf_vs(f,x,elimpt);
    % Presburger arithmetic standard form virtual substitution. [f] is a
    % positive quantifier-free formula; [x] is a variable; [elimptl] is
    % an ELIMPT. Returns a list of ANSW structures.
-   begin scalar res,tf,bvl,sf;
+   begin scalar res,tf,bvl,sf,w;
       % Creating the formula to substitute
       sf := cl_apply2ats1(f,'pasf_vsubstatf,
 	 {x,elimpt_den elimpt,elimpt_nom elimpt,elimpt_unif elimpt});
@@ -411,8 +474,12 @@ procedure pasf_vs(f,x,elimpt);
       if elimpt_bvl elimpt then <<
 	 % There are bounded quantifiers to create
 	 bvl := elimpt_bvl elimpt;
-	 for each bv in bvl do
-	    tf := rl_mkbq('bex,cdr bv,car bv,tf)
+	 for each bv in bvl do <<
+	    tf := rl_mkbq('bex,cdr bv,car bv,tf);
+	    w := cl_fvarl car bv;
+	    if !*rlqeexpand and w and null cdr w then
+	       tf := pasf_expand tf
+	 >>
       >>;
       res := answ_new(tf,for each bv in bvl collect car bv,
      	 {pasf_mk2('equal,numr simp x,

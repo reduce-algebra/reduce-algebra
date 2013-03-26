@@ -103,6 +103,9 @@ off1 'rlpqeold;
 switch rlqepnf;  % hack for now - TS
 on1 'rlqepnf;
 
+% Variable selection heuristic is by default off in pasf.
+off1 'rlqevarsel;
+
 % Verboseswitches
 
 % General verbose switch
