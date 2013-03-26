@@ -1,100 +1,94 @@
 
 % u48.lsp           Machine generated Lisp
 
-(c!:install "u48" 20148 6280093 9900499)
+(c!:install "u48" 18518 8906151 7498095)
 
-(c!:install 'deleteq '(deleteq nreverse) 359739596230945015)
-
-(c!:install 'pasf_or '(pasf_or true t false (lessp greaterp leq geq)
-lessp nil leq greaterp geq pasf_deci simp addf negf) 820847617144401066)
-
-(c!:install 'aex_add '(aex_add nil aex_ex ratpoly_add aex_ctx ctx_union
-aex_reducedtag aex_mk) 1380208125268811678)
-
-(c!:install 'bc_dcont '(bc_dcont sfto_dcontentf) 756698739986786000)
-
-(c!:install 'compex '(compex nil constrexp) 1849987873918220578)
-
-(c!:install 'iscale '(iscale) 1567378906517906507)
-
-(c!:install 'rand!-comb '(rand!-comb nil random) 1600450133233292319)
-
-(c!:install 'requote1 '(requote1 (nil t) nil quote list) 
-1995016711071816972)
-
-(c!:install 'actual_world '(actual_world exclude_edges union_edges) 
-1086228257567828673)
-
-(c!:install 'normmat '(normmat nil lcm quotf multf) 1653959013059661494)
+(c!:install 'liendimcom '(liendimcom lie_dim difference nil lie_cc lie_p
+lie_q plus quotient times lie_help lie_s lientrans lie_kk!* lie_tt aeval
+setk aeval!* aminusp!: evalneq evalequal) 1824858229931467854)
 
 (c!:install 'basic!-kern1 '(basic!-kern1 nil algebraic!-function simp
 allbkern) 1456972291673204133)
 
-(c!:install 'monomispommaretdivisibleby '(monomispommaretdivisibleby nil
-t) 573126485061955092)
+(c!:install 'setqdeletedescendants '(setqdeletedescendants
+fluidbibasissetq nil) 1067265262060072884)
 
-(c!:install 'fctrf '(fctrf !*exp ncmp!* !*ezgcd !*gcd t !*ncmp nil
-!*limitedfactors dmode!* !*mcd "Factorization invalid with MCD off"
-errmsg!* !*protfg !:rn!: alglist!* !*trfac
-"This polynomial is homogeneous - variables scaled" orderfactors
-noncomfp1 resimp !*q2f prepf simp sf2ss homogp listsum subs0 ss2sf
-fctrf1 rconst sort quotf!* setcar lprie) 681610327116154032)
+(c!:install 'preptaylor!*2 '(preptaylor!*2 nil quotient minus prepsq!*
+preptaycoeff retimes) 1897677212579780943)
 
-(c!:install 'rat_sgn '(rat_sgn t) 1853911567820195068)
+(c!:install 'evalleq '(evalleq evalgreaterp) 1431629446096259862)
 
-(c!:install 'simp!:ps!: '(simp!:ps!: simp!:ps1) 2025566615156754466)
+(c!:install 'vp1 '(vp1 "Var not in z-list after all" vp2 nreverse interr
+) 837320831737607815)
 
-(c!:install 'formoptimize1 '(formoptimize1 (!:rd!: !:cr!: !:crn!: !:dn!:
-) !:int!: eval sq2pre aeval (lsetq rsetq lrsetq) (lsetq lrsetq) nil (
-rsetq lrsetq) setq list constp chopchop decimal2internal form1 listp) 
-818450415012562679)
+(c!:install 'makecoeffpairs1 '(makecoeffpairs1 ((nil)) nil tayexp!-minus
+makecoeffpairshom lastpair) 1976336402385581849)
 
-(c!:install 'asymmetrize!-inds '(asymmetrize!-inds nil pnth repeats
-indordln permp flatindl pair indordn) 644106903589522906)
+(c!:install 'ofsf_sacatlp '(ofsf_sacatlp nil ordp) 1642731296400115659)
 
-(c!:install 'list_of_parent '(list_of_parent old_edge_list nil
-memq_edgelist) 1779050481953425359)
+(c!:install 'crnprep1 '(crnprep1 difference plus rnzerop!: rnprep!:
+crnprimp rnminusp!: rnminus!:) 1573365326742010424)
 
-(c!:install 'subeval1 '(subeval1 nil subfn
-"No substitution defined for type" errmsg!* !*protfg t !*sub2 getrtype
-lprie simp subsq subs2 mk!*sq) 366128386720963758)
+(c!:install 'ldf!-pow!-var '(ldf!-pow!-var nil x t u kernels makeset
+prlist) 1142940346390486628)
 
-(c!:install 'dp!=replus '(dp!=replus plus) 280215869184604256)
+(c!:install 'dipdivmon '(dipdivmon evdif bcquot nreverse) 
+962496865233140562)
+
+(c!:install 'mkset '(mkset getrlist delete!-dups make!-set) 
+1551515755559882789)
+
+(c!:install 'infinityp '(infinityp !- t) 650902818912177841)
+
+(c!:install 'mk!-strand!-vertex '(mk!-strand!-vertex incident
+mk!-strand!-vertex2) 1642583444989583446)
+
+(c!:install 'dp_content '(dp_content nil dp_lc bc_inv bc_gcd bc_fi) 
+380075340668190229)
+
+(c!:install 'setmod '(setmod dmode!* (!:mod!:) field t current!-modulus
+"modulus" reval primep set!-general!-modulus typerr) 1161630347691157718
+)
+
+(c!:install 'ofsf_smmkatl!-or '(ofsf_smmkatl!-or nil or
+ofsf_smmkatl!-or1 lastpair ofsf_ir2atl) 1775478292988938837)
+
+(c!:install 'interglue '(interglue t nil !\co!  !+ !- ord clo !\cdot! ) 
+773222193953128620)
+
+(c!:install 'ps!:times!: '(ps!:times!: times ps!:operator!:) 
+1845930632532260685)
 
 (c!:install 'gi '(gi gg!* nil class) 1040844877306604009)
 
-(c!:install 'makemainvar '(makemainvar t mulcoeffsby mergeadd) 
-2230961793041417839)
+(c!:install 'solvevars '(solvevars nil allbkern constant_exprp ordad) 
+1616487129548186377)
 
-(c!:install 'reduce!-eival!-powers1 '(reduce!-eival!-powers1 t multf
-multsq addsq) 1335098435150011984)
+(c!:install 'ofsf_qesubq '(ofsf_qesubq ofsf_qesubqat cl_apply2ats1) 
+1179630422231280358)
 
-(c!:install 'ofsf_smmkatl!-or1 '(ofsf_smmkatl!-or1 nil (lessp greaterp
-equal) or lastpair ofsf_smmkat!-or2 ofsf_entry2at) 1114986662290699270)
+(c!:install 'dependsl '(dependsl nil depends) 1232439686879466242)
 
-(c!:install 'lto_cartprod '(lto_cartprod t lto_cartprod1) 
-2158918692371943930)
+(c!:install 'simpx1 '(simpx1 !*minus!* nil quotient expt i frlis!* !*mcd
+!*notseparate !*keepsqrts sqrt minus plus !*expandexpt times used!* (
+minus 1) difference (quotient 1 2) simpexpt negsq multsq simp mksq invsq
+exptsq simp!* simprad smemqlp) 800959311023423158)
 
-(c!:install 'rnfix!* '(rnfix!*) 950600838787376087)
+(c!:install 'deleteq '(deleteq nreverse) 359739596230945015)
 
-(c!:install 'check_info '(check_info nil avarlst avalue a2value rtype (
-array matrix) malst constp) 1708153306166849481)
+(c!:install 'qqe_simplqequal '(qqe_simplqequal true t qepsilon nil false
+qequal qqe_arg2r qqe_arg2l qqe_qprefix!-var
+qqe_number!-of!-adds!-in!-qterm qqe_number!-of!-tails!-in!-qterm
+qqe_simplterm qqe_mk2) 621872463473106876)
 
-(c!:install 'xpndwedge '(xpndwedge partitop mkunarywedge wedgepf2) 
-944667578033676682)
+(c!:install 'rl_b2atl '(rl_b2atl rl_b2atl!* apply) 2138926909353740864)
 
-(c!:install 'calc_world '(calc_world s_world_names actual_alst
-calc_atlas reval) 1735440944159530077)
+(c!:install 'ev_max!# '(ev_max!#) 1938215986788281525)
 
-(c!:install 'split!-wrt!-variables '(split!-wrt!-variables nil t) 
-263752640622623420)
+(c!:install 'expvec2a1 '(expvec2a1 expt nreverse) 1401478201088901231)
 
-(c!:install 'red_extract '(red_extract bas_rep dp_comp bas_nr bas_dpoly
-dp_diff bas_make1) 2210310813076995154)
-
-(c!:install 'dv_skelsplit '(dv_skelsplit !~dv !* symtree nil symmetric
-!+ antisymmetric !- skp_ordp listp dummyp max st_sorttree dv_skelsplit1
-st_consolidate) 108702754725542027)
+(c!:install 'xreduce1 '(xreduce1 weak_xreduce1 nreverse) 
+430404374178128349)
 
 
 % End of generated Lisp code
