@@ -277,7 +277,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
   then echo "diff is in psl-times/$p.rlg.diff"
-  else echo "OK! " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
+  else echo $n "OK! " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
 fi
 echo "Tested on $mc PSL" > psl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
@@ -297,7 +297,22 @@ then
     then echo "CSL and PSL test logs differ!"
     else rm -f csl-psl-times-comparison/$p.rlg.diff
   fi
+  echo "1k " > timer.tmp
+  grep ^Time csl-times/$p.time | \
+   sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
+  echo " 100 * " >> timer.tmp
+  grep ^Time psl-times/$p.time | \
+   sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
+  echo " / pq" >> timer.tmp
+  ratio=`dc < timer.tmp 2>/dev/null`
+  if test "x$ratio" != "x"
+  then 
+    echo "CSL vs PSL: $ratio%"
+  fi
+  rm timer.tmp
 fi
+
+echo " "
 
 rm -f howlong.tmp
 
