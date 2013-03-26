@@ -294,7 +294,7 @@ then
    sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
   echo " / pq" >> timer.tmp
   ratio=`dc < timer.tmp 2>/dev/null`
-  if test "x$ratio" != "x" && "x$ratio" != "x0"
+  if test "x$ratio" != "x" && test "x$ratio" != "x0"
   then 
     printf "CSL/PSL:${ratio}%%"
   fi
