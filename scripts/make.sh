@@ -25,6 +25,8 @@
 args=""
 flags=""
 doingflags="yes"
+buildcsl="no"
+buildpsl="no"
 
 for a in $*
 do
@@ -32,9 +34,20 @@ do
   then doingflags="no"
   elif test $doingflags = "yes"
   then flags="$flags $a"
+  elif test "$a" = "csl"
+  then buildcsl="yes"
+  elif test "$a" = "psl"
+  then buildpsl="yes"
   else args="$args $a"
   fi  
 done
+
+# if neither csl or psl are given, build both
+if test "$buildcsl" = "no" -a "$buildpsl" = "no"
+then
+  buildcsl=yes
+  buildpsl=yes
+fi
 
 # config.guess fails on Solaris if SHELL is /bin/bash.
 if test -x /bin/sh
@@ -79,7 +92,11 @@ echo host=${host} os=${os}
 
 rc=0
 
-for l in cslbuild/*-${os}* pslbuild/*${host}*
+list=""
+test "$buildcsl" = "yes" && list="cslbuild/*-${os}*"
+test "$buildpsl" = "yes" && list="$list pslbuild/*${host}*"
+
+for l in $list
 do
    if test -f ${l}/Makefile
    then
