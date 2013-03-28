@@ -1,7 +1,7 @@
 @off echo
 
 set proot=%psl%
-set psys=$proot\bin\win32
+set psys=%proot%\bin\win32
 rem # All PSL executables go here.
 set pl=%psl%\dist\lap\win32
 rem # Loadable files

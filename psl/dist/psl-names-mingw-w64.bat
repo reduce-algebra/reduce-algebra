@@ -1,52 +1,33 @@
-@echo off
+@off echo
 
-set machine=mingw-w64
-set proot=c:\users\winfried\Desktop\reduce-algebra-winx64\trunk\psl\
+set proot=%psl%
+set psys=%proot%\bin\mingw-w64
+rem # All PSL executables go here.
+set pl=%psl%\dist\lap\mingw-w64
+rem # Loadable files
 
-set plogs=%proot%\logs
+set pk=%psl%\dist\kernel
+rem # Machine-independent kernel sources
+set pxk=%psl%\dist\kernel\mingw-w64
+rem # Machine specific kernel sources
 
-rem Top of PSL tree.
-set psl=%proot%\dist
+set pnk=%psl%\dist\nonkernel
+rem # Machine-independent non-kernel
+set pxnk=%psl%\dist\nonkernel\mingw-w64
+rem # Machine specific non-kernel
+set pnkl=%psl%\dist\nonkernel\mingw-w64\lap
+rem # Non-Kernel binaries
 
-rem Top of PCLS tree.
-set cl=%proot%\pclsdist
+set pc=%psl%\dist\comp
+rem # Machine-independent compiler sources
+set pxc=%psl%\dist\comp\mingw-w64
+rem # Machine specific compiler sources
 
-rem All PSL executables go here.
-set psys=%proot%\bin\%machine%
+set pu=%psl%\dist\util
+rem # Machine-independent utility programs
+set pxu=%psl%\dist\util\mingw-w64
+rem # Machine specific utility program sources
 
-rem Loadable files
-set pl=%proot%\dist\lap\%machine%
-rem Non-Kernel binaries
-set pnkl=%pnk%\%machine%\lap
-rem Lap directory for local stuff.
-set pll=%proot%\llap
-rem Lap directory for local stuff.
-set pnkll=%proot%\llapnk
+set pdist=%psl%\dist\distrib
+rem # Distribution support
 
-rem Put site specific source files here.
-set plcl=%proot%\local
-
-rem Machine-independent kernel sources
-set pk=%psl%\kernel
-rem Machine specific kernel sources
-set pxk=%psl%\kernel\%machine%
-
-rem Machine-independent non-kernel
-set pnk=%psl%\nonkernel
-rem Machine specific non-kernel
-set pxnk=%psl%\nonkernel\%machine%
-
-rem Machine-independent compiler sources
-set pc=%psl%\comp
-rem Machine specific compiler sources
-set pxc=%psl%\comp\%machine%
-
-rem Machine-independent utility programs
-set pu=%psl%\util
-rem Machine specific utility program sources
-set pxu=%psl%\util\%machine%
-
-rem Distribution support
-set pdist=%psl%\distrib
-rem Distribution support, Machine specific
-set pxdist=%psl%\distrib\%machine%
