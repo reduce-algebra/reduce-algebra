@@ -260,7 +260,7 @@
   (importforeignstring (external_pwd)))
 
 (dm vecbase (u)                         % Missing, along with wrdBase.
-  (list 'wplus2 (cadr u) 4))
+  (list 'wplus2 (cadr u) 8))
 
 % Fluid to stash the arg vector.
 (fluid '(argc argv))

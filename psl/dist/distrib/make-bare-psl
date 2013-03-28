@@ -66,6 +66,8 @@ if ($MACHINE == apollo) then
    set imagesize=1000
   else if ($MACHINE == macintel64) then
    set imagesize=1000
+  else if ($MACHINE == mingw-w64) then
+   set imagesize=1000
   else if ($MACHINE == freeBSD64) then
    set imagesize=1000
   else
