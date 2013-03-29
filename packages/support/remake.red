@@ -115,41 +115,73 @@ symbolic procedure load_saved_inlines();
     if null ff then return nil;
     u := rds ff;
     v := read();
+    if atom v then v := nil; % E.g. if v = !$eof!$
     rds u;
     close ff;
     for each a in v do put(car a, 'inline, cdr a);
     return nil
   end;
 
+% There is an ISSUE here. If a version of the souce code introduced an
+% inline definition for a function (say FFF) then that definition gets lifted
+% out and saved in inline-defs.dat. If the inline definition for FFF is
+% changed then the new definition will eventually end up in inline-defs.dat.
+% However if the inline definition is removed from the source files a version
+% can persist in inline-defs.dat with no mechanical scheme to get rid of it.
+% At present my stance is that anybody who changes what functions are tagged
+% inline has a responsibility to do a "make clean" and in due course I will
+% cause that to remove the cached definitions...
+
 symbolic procedure save_inlines();
   begin
-    scalar ff, u, v, w;
+    scalar ff, u, v, w, changed;
+% If there are no new inline definition at all from this compilation or
+% if new ones match what was already present then I will not want to update
+% the file where definitions are saved. Then I can use a dependency on it
+% in a Makefile to help me ensure I recompile enough times to get to a fully
+% stable state.
     if null new_inline_definitions then return nil;
     if filep "inline-defs.dat" then <<
       ff := open("inline-defs.dat", 'input);
-      if null ff then return nil; % Failed!
+      if null ff then return nil; % Failed! Note filep had said it was there.
       u := rds ff;
       v := read();
+      if atom v then v := nil;
       rds u;
       close ff >>
-    else u := nil;
-% Ok I have now read the current set of inline definitions. I do that again
+    else v := nil; % if "inline-defs.dat" does not exist at all treat it
+                   % as if empty.
+% Ok I have now read the current set of inline definitions. I had read it once
+% at the start of rebuilding the current package, but I read it again
 % here in case anybody has updated it since I started to rebuild this package.
-%
-% Here it would probably be polite to check if inline definitions have changed,
-% and if so to alert people.
-    for each a in new_inline_definitions do
-      if not atom a then v := a . delasc(car a, v);
-    ff := open("inline-defs.dat", 'output);
-    if null ff then return nil; % Failed!
-    u := wrs ff;
-    prin2 "(";
-    terpri();
-    for each x in v do << print x; terpri() >>;
-    prin2 ")";
-    terpri();
-    wrs u;
-    close ff;
+    changed := nil;
+    for each a in new_inline_definitions do <<
+      w := assoc(car a, v);
+      if not w then <<
+        if posn() neq 0 then terpri();
+        princ "+++ new inline definition for ";
+        prin car a >>;
+      if w and not (w = a) then <<
+        if posn() neq 0 then terpri();
+        princ "+++ inline definition for ";
+        prin car a;
+        printc " has changed - please recompile everything";
+        v := delasc(car a, v);
+        w := nil >>;
+      if not w then <<
+        v := a . v;
+        changed := t >> >>;
+    if changed then <<
+      ff := open("inline-defs.dat", 'output);
+      if null ff then return nil; % Failed!
+      u := wrs ff;
+      prin2 "(";
+      terpri();
+      for each x in v do << print x; terpri() >>;
+      prin2 ")";
+      terpri();
+      wrs u;
+      close ff >>;
     return nil
   end;
 

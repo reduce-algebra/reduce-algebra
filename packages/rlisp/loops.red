@@ -48,7 +48,7 @@ symbolic procedure repeatstat;
 symbolic macro procedure repeat u;
    begin scalar body,bool,lab;
         body := cadr u; bool := caddr u;
-        lab := gensym();
+        lab := 'repeatlabel;
         return mkprog(nil,list(lab,body,
                 list('cond,list(list('not,bool),list('go,lab)))))
    end;
@@ -81,7 +81,7 @@ symbolic procedure whilstat;
 symbolic macro procedure while u;
    begin scalar body,bool,lab;
         bool := cadr u; body := caddr u;
-        lab := gensym();
+        lab := 'whilelabel;
         return mkprog(nil,list(lab,list('cond,list(list('not,bool),
                 list('return,nil))),body,list('go,lab)))
    end;

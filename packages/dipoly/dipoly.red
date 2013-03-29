@@ -114,7 +114,7 @@ inline procedure dipfmon(a,e);
 % and e is an exponent vector . dipfmon(a,e)returns a
 % distributive polynomial with e as exponent vector and
 % a as base coefficient.
- e.a.dipzero;
+ e.a.nil; %% .dipzero;
 
 inline procedure dipnov p;
 % Distributive polynomial number of variables . p is a distributive

@@ -336,7 +336,7 @@ symbolic procedure makemat(m,v,h);
 if null m then nil else nconc(makearg(car m,h), v . makemat(cdr m,v,h));
 %ff
 inline procedure istag(v,w); car v=w;
-inline procedure unary(uby);  car uby;
+inline procedure tri_unary(uby);  car uby;
 inline procedure binary(uby); cdr uby;
 inline procedure lcopy(a); for each x in a collect x;
 
@@ -354,7 +354,7 @@ begin
      else if (not atom car tag) then a:=nil
      else if istag(tag,'f) then
        % test for unary to binary operator interchange
-       if arg and (not atom car arg) and uby and (caar arg=unary(uby))
+       if arg and (not atom car arg) and uby and (caar arg=tri_unary(uby))
        then << a:=texexplode(binary(uby)); arg:=cadar arg.cdr arg >>
        else a:=texexplode(op)
      else if istag(tag,'apply)
@@ -513,7 +513,7 @@ symbolic procedure maketaylor(op,arg,prec);
 % ps:numberp inline required for compilation; copied over from tps.red
 
 symbolic inline procedure ps!:numberp u;
-  numberp u or (car u neq '!:ps!: and get(car u,'dname));
+  numberp u or (pairp u and car u neq '!:ps!: and get(car u,'dname));
 
 % fluid declaration to avoid compiler warnings
 fluid '(ps!:exp!-lim);
@@ -1593,7 +1593,7 @@ begin
   return length
 end;
 
-inline procedure newline();
+inline procedure tri_newline();
   if nlflag then cc:=indent
   else if (cc>indent) then << terpri(); cc:=indent; nlflag:=t >>;
 
@@ -1614,7 +1614,7 @@ begin
       class:=classof(item); tag:=(class='inn)and(kindof(item));
       %ispd:=(class='ORD)and itemlist and(classof(car itemlist)='OPN);
       if (tag='mat)or(tag='frc)or(class='opn) %or ispd
-      then newline();                      % start new line
+      then tri_newline();                      % start new line
       if (groupbeg(tag))or(class='opn) then
       << tpush(indentstack,indent);        % push it to the stack
          tpush(indentstack,lasttag);       % the reason for pushing
@@ -1629,7 +1629,7 @@ begin
       >>;
       if (cc+len > ccmax) or      % beyond right margin ?
          (item='!+)or(item='!-)or(class='clo) % important item?
-      then newline();
+      then tri_newline();
       if nlflag then << nlflag:=nil; spaces(cc) >>;
       if tag='cr  then lines:=lines+1;
       if not(item='! ) then prin2(item);   % print the item and
@@ -1641,9 +1641,9 @@ begin
          (((class='rel)or(class='bin))and  % binary/relational operator?
           (cc+cc+cc > ccmax+ccmax))        % within last third of page?
          or item='!,  or null class
-      then newline()
+      then tri_newline()
    >>;
-   newline();                              % start final line
+   tri_newline();                              % start final line
    if flag then
      if lines=0 then prin2('!\!c!r!})
      else prin2('!\!N!l!});                % end multi-line output

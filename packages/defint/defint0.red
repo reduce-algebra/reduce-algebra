@@ -32,16 +32,14 @@ fluid '(!*precise);
 
 global '(spec_cond);
 
-symbolic inline procedure mynumberp(n);
-
-begin; if numberp n then t
-
-else if listp n and car n = 'quotient and (numberp cadr n or
-mynumberp cadr n) and (numberp caddr n or mynumberp caddr n) then 't
-
-else if listp n and car n = 'sqrt and (numberp cadr n or cadr n = 'pi)
-         then t else nil;
-end;
+symbolic procedure mynumberp(n);
+  if numberp n then t
+  else if listp n and car n = 'quotient and
+          (numberp cadr n or mynumberp cadr n) and
+          (numberp caddr n or mynumberp caddr n) then t
+  else if listp n and car n = 'sqrt and (numberp cadr n or cadr n = 'pi)
+         then t
+  else nil;
 
 symbolic operator mynumberp;
 
