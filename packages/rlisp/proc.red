@@ -36,7 +36,9 @@ fluid '(!*noinlines !*loginlines !*redeflg!* fname!* ftype!*);
 global '(!*argnochk !*comp !*lose !*micro!-version cursym!* erfg!*
          ftypes!*);
 
-fluid '(!*defn);
+fluid '(!*defn new_inline_definitions);
+
+new_inline_definitions := nil;
 
 !*lose := t;
 
@@ -82,12 +84,18 @@ symbolic procedure formproc(u,vars,mode);
 !#if (memq 'csl lispsystem!*)
 % Note the non-Common way in which the DECLARE sits within a PROGN here.
 % Furthermore I only insert DECLARE for sort-of ordinary functions.
-% Specifically this will not include "inline procedure"...
+% Specifically this will not include "inline procedure"... but a consequence
+% of this will be that it will be a mistake to introduce an inline function
+% that attempts to bind a fluid... because the variable concerned might not be
+% declared fluid at the point where the inline definition is used.
         if fl and type memq '(expr fexpr macro) then
          body:=list('progn,
                     list('declare, 'special . fl),
                     body);
 !#endif
+        if type = 'inline then
+           new_inline_definitions := (name . list('lambda,varlis,body)) .
+                                     new_inline_definitions;
         if (not(type eq 'inline) and get(name,'inline)) or
            (not(type eq 'smacro) and get(name,'smacro))
           then lprim list("SMACRO/INLINE",name,"redefined");

@@ -95,6 +95,10 @@ symbolic procedure module2!-to!-file(u,v);
      concat("$reduce/packages/",concat(mkfil v,
             concat("/",concat(mkfil u,".red"))));
 
+% I do not do anything about a cache of inline procedure definitions here
+% because the bootstrap build using load!-package!-sources happens all in
+% one sequential process so definitions will be saved in memory anyway.
+
 symbolic procedure inmodule(u,v);
    begin
       u := open(module2!-to!-file(u,v),'input);

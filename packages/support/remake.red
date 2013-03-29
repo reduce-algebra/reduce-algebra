@@ -99,9 +99,65 @@ symbolic procedure package!-remake x;
    (if y then package!-remake2(x,y) else package!-remake2(x,x))
    where y=get(x,'folder);
 
+fluid '(new_inline_definitions);
+
+new_inline_definitions := nil;
+
+% If anybody wanted to support true parallel recompilation of Reduce
+% packages than in addition to any other adjustments it would be
+% important to make the following two procedures atomic.
+
+symbolic procedure load_saved_inlines();
+  begin
+    scalar ff, u, v;
+    if not filep "inline-defs.dat" then return nil;
+    ff := open("inline-defs.dat", 'input);
+    if null ff then return nil;
+    u := rds ff;
+    v := read();
+    rds u;
+    close ff;
+    for each a in v do put(car a, 'inline, cdr a);
+    return nil
+  end;
+
+symbolic procedure save_inlines();
+  begin
+    scalar ff, u, v, w;
+    if null new_inline_definitions then return nil;
+    if filep "inline-defs.dat" then <<
+      ff := open("inline-defs.dat", 'input);
+      if null ff then return nil; % Failed!
+      u := rds ff;
+      v := read();
+      rds u;
+      close ff >>
+    else u := nil;
+% Ok I have now read the current set of inline definitions. I do that again
+% here in case anybody has updated it since I started to rebuild this package.
+%
+% Here it would probably be polite to check if inline definitions have changed,
+% and if so to alert people.
+    for each a in new_inline_definitions do
+      if not atom a then v := a . delasc(car a, v);
+    ff := open("inline-defs.dat", 'output);
+    if null ff then return nil; % Failed!
+    u := wrs ff;
+    prin2 "(";
+    terpri();
+    for each x in v do << print x; terpri() >>;
+    prin2 ")";
+    terpri();
+    wrs u;
+    close ff;
+    return nil
+  end;
+
 symbolic procedure package!-remake2(u,v);
    begin scalar y;
 %     if !*crefchk then update!-cref2(u . v);
+      load_saved_inlines();
+      new_inline_definitions := nil;
       update!-fasl2(u . v);
       evload list u;
       loaded!-modules!* := union(loaded!-modules!*, list u);
@@ -110,7 +166,8 @@ symbolic procedure package!-remake2(u,v);
       for each j in y do
          <<update!-fasl2(j . v);
 %          if !*crefchk then update!-cref2(j . v)>>
-         >>
+         >>;
+      save_inlines();
    end;
 
 symbolic procedure update!-fasl2 x;
@@ -133,9 +190,9 @@ symbolic procedure update!-fasl2 x;
 symbolic procedure upd!-fasl1(u,v,w);
    % We rebind *fastfor here because it's the only case of "compiletime"
    % at the moment (!).
-   begin scalar !*fastfor,!*lower,!*usermode,!*quiet!_faslout,!*break,x;
+   begin scalar !*fastfor,!*lower,!*usermode,!*quiet_faslout,!*break,x;
       !*faslp := t;
-      !*quiet!_faslout := t;
+      !*quiet_faslout := t;
       if not('psl memq lispsystem!*) then !*lower := t;
       if !*loadall and w neq u then <<
          evload list w;
