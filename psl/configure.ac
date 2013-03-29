@@ -87,9 +87,9 @@ AC_MSG_NOTICE([Will build this PSL using the $pslver initial binaries])
 # rm -rf psl
 mkdir -p psl
 
-cp -r $srcdir/psl-$pslver/* psl
+test -d $srcdir/psl-$pslver && cp -r $srcdir/psl-$pslver/* psl
 
-if test "x$DONT_USE_XPORT" = "x"
+if test -f psl/xport.pat -a "x$DONT_USE_XPORT" = "x"
 then
 
 # Now in my new world about the only thing that will have been copied here
@@ -115,6 +115,7 @@ else
   cp ../../psl/dist/lap/$pslver/* psl
   cp ../../psl/dist/kernel/$pslver/bpsl* psl
 
+  cp psl/nbig32.b psl/zbig.b
   rm -f psl/*rlisp*.b
 
 fi
