@@ -12,7 +12,7 @@ guess=`../config.guess`
 case "guess:$guess" in
 
   guess:x86_64-unknown-linux-gnu )
-        MACHINE=AMD64
+        MACHINE=AMD64_ext
         ;;
 
   guess:i686-pc-linux-gnu )
@@ -27,11 +27,11 @@ case "guess:$guess" in
 	MACHINE=macintel64
 	;;
 
-  x86_64-unknown-freebsd8.* )
+  guess:x86_64-unknown-freebsd8.* )
 	MACHINE=freeBSD64
 	;;
 
-  i386-unknown-freebsd8.* )
+  guess:i386-unknown-freebsd8.* )
 	MACHINE=freeBSD
 	;;
 
