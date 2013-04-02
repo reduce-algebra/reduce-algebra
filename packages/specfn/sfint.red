@@ -39,9 +39,6 @@ module sfint;     % Assorted Integral Functions, Ei, Si, Ci, Li etc.
 
 algebraic operator Fresnel_C, Fresnel_S, erfc,erfi;
 
-% algebraic operator Ci, Si, s_i, shi, chi;
-% FJW: Ci, Si also defined in int (driver.red), so ...
-symbolic((algebraic operator Ci, Si) where !*msg=nil);
 algebraic operator s_i, shi, chi, li;
 
 algebraic let limit(Si(~tt),~tt,infinity) => Pi/2;

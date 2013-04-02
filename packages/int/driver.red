@@ -91,7 +91,7 @@ symbolic procedure simpint u;
    % Simplifies an integral.  First two components of U are the integrand
    % and integration variable respectively.  Optional succeeding
    % components are log forms for the final integral.
-% Note that simpiden expects the operatro as well as the operands passed!
+% Note that simpiden expects the operator as well as the operands passed!
    if !*hold!-int!* then simpiden ('int . u)
    else if atom u or null cdr u or cddr u and (null cdddr u or cddddr u)
      then rerror(int,1,"Improper number of arguments to INT")

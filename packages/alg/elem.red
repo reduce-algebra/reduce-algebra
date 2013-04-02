@@ -680,7 +680,9 @@ let {
   when fixp n,
  csc(~n*pi*arbint(~i) + ~~x) => csc(remainder(n,2)*pi*arbint(i) + x)
   when fixp n,
- cot(~n*pi*arbint(~i) + ~~x) => cot(x) when fixp n
+ cot(~n*pi*arbint(~i) + ~~x) => cot(x) when fixp n,
+ exp(~n*i*pi*arbint(~k) + ~~x) => exp(x) * (if evenp n then 1 else -1)
+  when fixp n
 };
 
 endmodule;
