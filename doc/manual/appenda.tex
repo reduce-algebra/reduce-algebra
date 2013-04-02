@@ -14,8 +14,10 @@ system.
                \sloppy}
 
 \raggedright
+\newcommand{\doubleinterwordspace}{\fontdimen2\font=2\fontdimen2\font}
+\newcommand{\halfinterwordspace}{\fontdimen2\font=.5\fontdimen2\font}
 
-\item[Commands]
+\item[Commands] \doubleinterwordspace
 \hyperlink{target:modes}{\texttt{ALGEBRAIC}}
 \hyperlink{reserved:SYMMETRIC}{\texttt{ANTISYMMETRIC}}
 \hyperlink{reserved:ARRAY}{\texttt{ARRAY}}
@@ -89,16 +91,18 @@ system.
 \hyperlink{command:WEIGHT}{\texttt{WEIGHT}}
 \hyperlink{command:WRITE}{\texttt{WRITE}}
 \hyperlink{command:WTLEVEL}{\texttt{WTLEVEL}}
+\halfinterwordspace
 
-\item[Boolean Operators]
+\item[Boolean Operators] \doubleinterwordspace
 \hyperlink{operator:EVENP}{\texttt{EVENP}}
 \hyperlink{operator:FIXP}{\texttt{FIXP}}
 \hyperlink{operator:FREEOF}{\texttt{FREEOF}}
 \hyperlink{operator:NUMBERP}{\texttt{NUMBERP}}
 \hyperlink{operator:ORDP}{\texttt{ORDP}}
 \hyperlink{operator:PRIMEP}{\texttt{PRIMEP}}
+\halfinterwordspace
 
-\item[Infix Operators]
+\item[Infix Operators]\doubleinterwordspace
 \hyperlink{reserved:assignop}{\texttt{:=}}\ 
 \hyperlink{reserved:equalop}{\texttt{=}}
 \hyperlink{reserved:geqop}{\texttt{>=}}
@@ -119,33 +123,24 @@ system.
 \hyperlink{operator:AND}{\texttt{AND}}
 \hyperlink{operator:MEMBER}{\texttt{MEMBER}}
 \hyperlink{operator:MEMQ}{\texttt{MEMQ}}
-%\hyperlink{operator:EQUAL}
-{\texttt{EQUAL}}
+\hyperlink{operator:EQUAL}{\texttt{EQUAL}}
 \hyperlink{operator:NEQ}{\texttt{NEQ}}
 \hyperlink{operator:EQ}{\texttt{EQ}}
-%\hyperlink{operator:GEQ}
-{\texttt{GEQ}}
-%\hyperlink{operator:GREATERP}
-{\texttt{GREATERP}}
-%\hyperlink{operator:LEQ}
-{\texttt{LEQ}}
-%\hyperlink{operator:LESSP}
-{\texttt{LESSP}}
-%\hyperlink{operator:PLUS}
-{\texttt{PLUS}}
-%\hyperlink{operator:DIFFERENCE}
-{\texttt{DIFFERENCE}}
-%\hyperlink{operator:MINUS}
-{\texttt{MINUS}}
-%\hyperlink{operator:TIMES}
-{\texttt{TIMES}}
-%\hyperlink{operator:QUOTIENT}
-{\texttt{QUOTIENT}}
-%\hyperlink{operator:EXPT}
-{\texttt{EXPT}}
+\hyperlink{operator:GEQ}{\texttt{GEQ}}
+\hyperlink{operator:GREATERP}{\texttt{GREATERP}}
+\hyperlink{operator:LEQ}{\texttt{LEQ}}
+\hyperlink{operator:LESSP}{\texttt{LESSP}}
+\hyperlink{operator:PLUS}{\texttt{PLUS}}
+\hyperlink{operator:DIFFERENCE}{\texttt{DIFFERENCE}}
+\hyperlink{operator:MINUS}{\texttt{MINUS}}
+\hyperlink{operator:TIMES}{\texttt{TIMES}}
+\hyperlink{operator:QUOTIENT}{\texttt{QUOTIENT}}
+\hyperlink{operator:RECIP}{\texttt{RECIP}}
+\hyperlink{operator:EXPT}{\texttt{EXPT}}
 \hyperlink{operator:CONS}{\texttt{CONS}}
+\halfinterwordspace
 
-\item[Numerical Operators]
+\item[Numerical Operators]\doubleinterwordspace
 \hyperlink{operator:ABS}{\texttt{ABS}}
 \hyperlink{operator:ACOS}{\texttt{ACOS}}
 \hyperlink{operator:ACOSH}{\texttt{ACOSH}}
@@ -184,8 +179,9 @@ system.
 \hyperlink{operator:SQRT}{\texttt{SQRT}}
 \hyperlink{operator:TAN}{\texttt{TAN}}
 \hyperlink{operator:TANH}{\texttt{TANH}}
+\halfinterwordspace
 
-\item[Prefix Operators]
+\item[Prefix Operators]\doubleinterwordspace
 \hyperlink{operator:APPEND}{\texttt{APPEND}}
 \hyperlink{operator:ARBCOMPLEX}{\texttt{ARBCOMPLEX}}
 \hyperlink{operator:ARBINT}{\texttt{ARBINT}}
@@ -263,8 +259,9 @@ system.
 \hyperlink{operator:TP}{\texttt{TP}}
 \hyperlink{operator:TRACE}{\texttt{TRACE}}
 \hyperlink{operator:VARNAME}{\texttt{VARNAME}}
+\halfinterwordspace
 
-\item[Reserved Variables]
+\item[Reserved Variables]\doubleinterwordspace
 \hyperlink{reserved:_LINE_}{\texttt{\_LINE\_}}
 \hyperlink{reserved:assumptions}{\texttt{ASSUMPTIONS}}
 \hyperlink{reserved:CARD_NO}{\texttt{CARD\_NO}}
@@ -281,8 +278,9 @@ system.
 \hyperlink{reserved:requirements}{\texttt{REQUIREMENTS}}
 \hyperlink{reserved:ROOT_MULTIPLICITIES}{\texttt{ROOT\_MULTIPLICITIES}}
 \hyperlink{reserved:T}{\texttt{T}}
+\halfinterwordspace
 
-\item[Switches]
+\item[Switches]\doubleinterwordspace
 \hyperlink{switch:ADJPREC}{\texttt{ADJPREC}}
 \hyperlink{switch:ALGINT}{\texttt{ALGINT}}
 \hyperlink{switch:ALLBRANCH}{\texttt{ALLBRANCH}}
@@ -357,8 +355,9 @@ system.
 \hyperlink{switch:TRIGFORM}{\texttt{TRIGFORM}}
 \hyperlink{switch:TRINT}{\texttt{TRINT}}
 \hyperlink{switch:VAROPT}{\texttt{VAROPT}}
+\halfinterwordspace
 
-\item[Other Reserved Ids]
+\item[Other Reserved Ids]\doubleinterwordspace
 \hyperlink{command:BEGIN}{\texttt{BEGIN}}
 \hyperlink{reserved:DO}{\texttt{DO}}
 \hyperlink{reserved:THEN}{\texttt{THEN}}
@@ -377,5 +376,6 @@ system.
 \hyperlink{reserved:WHEN}{\texttt{WHEN}}
 \hyperlink{command:WHILE}{\texttt{WHILE}}
 \hyperlink{reserved:WS}{\texttt{WS}}
+\halfinterwordspace
 
 \end{list}
