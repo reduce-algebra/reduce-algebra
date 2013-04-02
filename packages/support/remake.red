@@ -160,11 +160,11 @@ symbolic procedure save_inlines();
       if not w then <<
         if posn() neq 0 then terpri();
         princ "+++ new inline definition for ";
-        prin car a >>;
+        prin1 car a >>;
       if w and not (w = a) then <<
         if posn() neq 0 then terpri();
         princ "+++ inline definition for ";
-        prin car a;
+        prin1 car a;
         printc " has changed - please recompile everything";
         v := delasc(car a, v);
         w := nil >>;

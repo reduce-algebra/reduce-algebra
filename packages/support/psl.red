@@ -85,9 +85,9 @@ compiletime
 % Again is "+0.0" equal to "-0.0" and is "NaN" equal to "NaN"? Doing
 % a bit-pattern comparison could be held to be dangerous, but provided
 % the user is aware of these issues I do not mind.
-    ds(ieeeequal,u(v),
-           weq(floathiword u,floathiword v)
-       and weq(floatloword u,floatloword v));
+    ds(ieeeequal,u2(v),
+           weq(floathiword u2,floathiword v)
+       and weq(floatloword u2,floatloword v));
 % In the newer code in this file and the implemention of safe!-fp!-XX
 % the mantissa is never needed. But perhaps somewhere else it will be
 % useful.
@@ -104,7 +104,7 @@ compiletime
    <<
 % Again the issues of "-0.0" and "NaN" arise...
     ds(ieeezerop,u(), weq(0,floathiword u));
-    ds(ieeeequal,u(v), weq(floathiword u,floathiword v));
+    ds(ieeeequal,u2(v), weq(floathiword u2,floathiword v));
     ds(ieeemant,f(), wand (floathiword f,
                            4503599627370495)); % 16#FFFFFFFFFFFFF
    >>

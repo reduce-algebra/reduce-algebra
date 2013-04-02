@@ -275,7 +275,7 @@ end;
 
 initreduce();
 
-savesystem("BOOTSTRAP REDUCE", "../red/bootstrap");
+savesystem("BOOTSTRAP REDUCE", "../red/bootstrap", nil);
 
 bye;
 
