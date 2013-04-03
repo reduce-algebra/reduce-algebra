@@ -257,10 +257,8 @@
 
        (*alloc 3) % changes Stack pointer
 
-    %  (*move (fluid argc) (frame 1))
-    %   (*move (fluid argv) (frame 2))
-    %   (*move (reg 2) (frame 3)) % have to save %ebx
-
+       (*move (reg 1) (frame 1))
+       (*move (reg 2) (frame 2))
 
   %    (*move   (fluid stack) (reg st))
   %    (*move   (reg st)      (fluid stackupperbound))
