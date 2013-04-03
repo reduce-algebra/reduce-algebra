@@ -567,6 +567,9 @@ procedure ofsf_dfgPrintT1(op,argl);
       >>
    >>;
 
+procedure ofsf_smt2PrintLogic();
+   prin2t "(set-logic QF_NRA)";
+
 procedure ofsf_smt2PrintAt(f);
    begin scalar opal,op,lhs,w;
       op := rl_op f;

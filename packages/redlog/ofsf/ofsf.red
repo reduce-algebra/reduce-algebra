@@ -163,6 +163,7 @@ put('ofsf,'rl_params,'(
    (rl_mkequation!* . ofsf_mkequation)
    (rl_dfgPrintV!* . ofsf_dfgPrintV)
    (rl_dfgPrintAt!* . ofsf_dfgPrintAt)
+   (rl_smt2PrintLogic!* . ofsf_smt2PrintLogic)
    (rl_smt2PrintAt!* . ofsf_smt2PrintAt)
    (rl_smt2ReadAt!* . ofsf_smt2ReadAt)
    (rl_vsubalchk!* . ofsf_vsubalchk)

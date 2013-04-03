@@ -191,6 +191,7 @@ put('pasf,'rl_services,'(
    (rl_zsimpl!* . pasf_zsimpl)
    (rl_resolve!* . cl_resolve)
    (rl_depth!* . cl_depth)
+   (rl_smt2Print!* . pasf_smt2Print)
    (rl_struct!* . cl_struct)));
 
 % Administration definitions

@@ -309,6 +309,8 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
 	    >>;
 	 % Variable selection
 	 cvl := pasf_varsel(cvl, psi);
+	 if !*rlverbose then
+	    ioto_tprin2t {"----", cvl};
 	 v := pop cvl;
 	 % Eliminating the selected variable
 	 ans := pasf_qeex(ce_f coe,v,theo,ce_ans coe,cvl,p);
@@ -334,10 +336,14 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
    end;
 
 procedure pasf_varsel(varl, psi);
+   % Pasf variable selection heuristic. [varl] is a non-empty list of variables,
+   % [psi] is a pasf formula. Returns a list of variables (containing the same
+   % variables as [varl]) s.t. the best variable is car of this list.
    begin scalar ovarl, atl, bestv; integer bestw, w;
       if not !*rlqevarsel then
 	 return varl;
-      varl := sort(varl, 'ordp);
+      if null cdr varl then % only one variable in varl
+	 return varl;
       ovarl := varl;
       atl := cl_atl psi;
       bestv := car varl;
@@ -355,30 +361,32 @@ procedure pasf_varsel(varl, psi);
    end;
 
 procedure pasf_varweight(x, atl);
-   begin scalar atf, atlx; integer m, wgt;
+   begin scalar atf; integer m, xoccur, wgt;
       m := 1;
       while atl do <<
 	 atf := car atl;
 	 if x memq (car cl_varl atf) then <<
-	    if pasf_congp atf then
-	       m := m * pasf_m atf;
-	    atlx := atf . atlx
+	    if pasf_congp atf then <<
+	       %assert(domainp pasf_m atf);
+	       m := m * pasf_m atf
+	    >>
+	    else if rl_op atf neq 'equal then
+	       wgt := wgt + pasf_abslc(pasf_arg2l atf, x);
+	    xoccur := xoccur + 1
 	 >>;
 	 atl := cdr atl
       >>;
-      if null atlx then
-	 return -1;
-      for each atf in atlx do
-	 if rl_op atf neq 'equal then % rl_op is not an (n)cong or equal
-	    wgt := wgt + pasf_abshc(pasf_arg2l atf, x) * m;
+      % if wgt = 0 then % x occurs only in equations or (in)congruences
+      % 	 wgt := m;
+      wgt := wgt * m * xoccur;
       return wgt
    end;
 
-procedure pasf_abshc(f, x);
+procedure pasf_abslc(f, x);
    begin scalar oldo, res;
-      assert(not domainp f);
       oldo := setkorder {x};
       res := abs lc reorder f;
+      %assert(domainp res);
       setkorder oldo;
       return res
    end;

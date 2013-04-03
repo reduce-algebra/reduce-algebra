@@ -385,6 +385,8 @@ rl_mkbb('rl_dfgPrintV,1);
 
 rl_mkbb('rl_dfgPrintAt,1);
 
+rl_mkbb('rl_smt2PrintLogic,0);
+
 rl_mkbb('rl_smt2PrintAt,1);
 
 rl_mkbb('rl_smt2ReadAt,1);

@@ -755,12 +755,12 @@ procedure cl_dfgPrintJ2(op,argl);
    >>;
 
 procedure cl_smt2Print(f,fname,linel);
-   % Prefix print. [f] is an existential sentence, [fname] is a string, [linel]
-   % is a list of strings.
+   % Prefix print. [f] is an existential sentence, [fname] is a string, [linel] is a list of
+   % strings.
    <<
       if fname then
       	 out fname;
-      prin2t "(set-logic QF_NRA)";
+      rl_smt2PrintLogic();
       if linel then
       	 for each line in linel do
 	    prin2t line
@@ -781,7 +781,7 @@ procedure cl_smt2Print1(f);
       vl := cdr vl;
       f := cl_matrix cl_pnf f;
       for each v in vl do
-	 ioto_prin2t {"(declare-const ", v, " Real)"};
+      	 ioto_prin2t {"(declare-const ", v, " Real)"};
       prin2 "(assert ";
       cl_smt2PrintQff f;
       prin2t ")"
