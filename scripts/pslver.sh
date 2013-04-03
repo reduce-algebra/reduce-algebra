@@ -44,11 +44,12 @@ host=`"$here/../config.guess"`
 # The decoding here is very probably inadequate, however I hope that
 # even as it is it will cope with some of the most important
 # cases. The list of PSL binaries I know of to consider is
-#   alpha        amd64        amd64a       eeepc
+#   alpha        AMD64        AMD64_ext    eeepc
 #   hpux         linux        linux64
 #   linux_a.out  macg4        macg5        macintel
 #   macintel64   sgi          sgi64        solaris
 #   solaris64    solarisx86   sunox        win32
+#   mingw-w64
 #
 # I do not understand the difference between some of these, but I
 # hope that use of the host information as here plus inspection
@@ -61,7 +62,14 @@ case $host in
   exit 0
   ;;
 *CYGWIN* | *Cygwin* | *cygwin* | *MINGW* | *MinGW* | *Mingw* | *mingw*)
-  echo "win32"
+  case `uname` in
+  *CYGWIN*WOW64*)
+    echo "mingw-w64"
+    ;;
+  *)
+    echo "win32"
+    ;;
+  esac
   exit 0
   ;;
 *eeepc*)
@@ -71,7 +79,8 @@ case $host in
   echo "hpux"
   ;;
 *x86_64*linux*)
-  echo "amd64"
+  echo "AMD64_ext"
+#  echo "AMD64"
   ;;
 *arm*)
   echo "arm"
