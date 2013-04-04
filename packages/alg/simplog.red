@@ -166,8 +166,9 @@ symbolic procedure simplogn u;
 
 % The third argument flg tells simplogbn to not return a sum of terms.
 symbolic procedure simplogbn(u,base,flg);
+   if u=1 then nil ./ 1
    % See comments in formlog for an explanation of the code.
-   begin scalar y,z;
+    else begin scalar y,z;
       y := zfactor u;
       if base=10 then begin integer twos,fives;
          twos := assoc(2,y);
