@@ -35,7 +35,7 @@
 #
 ##############################################################################
  
-PROOT   = /newsilo/silo/cons/verkaufpsl
+#PROOT   = /newsilo/silo/cons/verkaufpsl
  
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist

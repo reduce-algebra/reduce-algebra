@@ -2004,7 +2004,13 @@ l0186:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call echoon
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2024,7 +2030,13 @@ l0187:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call echooff
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2046,7 +2058,13 @@ l0188:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_charsininputbuffer
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2067,7 +2085,13 @@ l0189:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call flushstdoutputbuffer
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2087,7 +2111,13 @@ l0190:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_user_homedir_string
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2109,7 +2139,13 @@ l0191:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_anyuser_homedir_string
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2132,7 +2168,13 @@ l0192:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call alterheapsize
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2155,7 +2197,13 @@ l0193:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call allocatemorebps
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2182,7 +2230,13 @@ l0194:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call get_file_status
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2207,7 +2261,13 @@ l0195:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call os_startup_hook
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2228,7 +2288,13 @@ l0196:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call os_cleanup_hook
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2250,7 +2316,13 @@ l0197:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_alarm
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2275,7 +2347,13 @@ l0198:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_ualarm
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2298,7 +2376,13 @@ l0199:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_time
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2321,7 +2405,13 @@ l0200:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_timc
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2346,7 +2436,13 @@ l0201:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_stat
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2371,7 +2467,13 @@ l0202:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_link
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2394,7 +2496,13 @@ l0203:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_unlink
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2417,7 +2525,13 @@ l0204:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_strlen
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2442,7 +2556,13 @@ l0205:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_setenv
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2465,7 +2585,13 @@ l0206:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_getenv
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2490,7 +2616,13 @@ l0207:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxfloat
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2513,7 +2645,13 @@ l0208:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxfix
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2538,7 +2676,13 @@ l0209:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxassign
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2565,7 +2709,13 @@ l0210:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxplus2
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2592,7 +2742,13 @@ l0211:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxdifference
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2619,7 +2775,13 @@ l0212:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxtimes2
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2646,7 +2808,13 @@ l0213:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxquotient
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2675,7 +2843,13 @@ l0214:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxgreaterp
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2704,7 +2878,13 @@ l0215:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxlessp
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2731,7 +2911,13 @@ l0216:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxwritefloat
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2760,7 +2946,13 @@ l0217:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxwritefloat8
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2785,7 +2977,13 @@ l0218:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxdoubletofloat
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2810,7 +3008,13 @@ l0219:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxfloattodouble
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2835,7 +3039,13 @@ l0220:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxsin
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2860,7 +3070,13 @@ l0221:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxcos
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2885,7 +3101,13 @@ l0222:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxtan
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2910,7 +3132,13 @@ l0223:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxasin
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2935,7 +3163,13 @@ l0224:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxacos
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2960,7 +3194,13 @@ l0225:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxatan
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -2985,7 +3225,13 @@ l0226:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxsqrt
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3010,7 +3256,13 @@ l0227:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxexp
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3035,7 +3287,13 @@ l0228:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxlog
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3062,7 +3320,13 @@ l0229:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxatan2
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3083,7 +3347,13 @@ l0230:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_pwd
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3107,7 +3377,13 @@ l0231:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call sun3_sigset
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3130,7 +3406,13 @@ l0232:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call sigrelse
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3159,7 +3441,13 @@ l0233:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unexec
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3182,7 +3470,13 @@ l0234:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputc
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3205,7 +3499,13 @@ l0235:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputs
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3228,7 +3528,13 @@ l0236:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputn
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3249,7 +3555,13 @@ l0237:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixcleario
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3271,7 +3583,13 @@ l0238:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call expand_file_name
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3296,7 +3614,13 @@ l0239:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixopen
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3319,7 +3643,13 @@ l0240:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixcd
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3342,7 +3672,13 @@ l0241:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call ctime
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3365,7 +3701,13 @@ l0242:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_system
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3388,7 +3730,13 @@ l0243:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_exit
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3413,7 +3761,13 @@ l0244:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fopen
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3436,7 +3790,13 @@ l0245:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fclose
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3465,7 +3825,13 @@ l0246:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fread
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3490,7 +3856,13 @@ l0247:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fputc
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3513,7 +3885,13 @@ l0248:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fgetc
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3540,7 +3918,13 @@ l0249:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fgets
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3569,7 +3953,13 @@ l0250:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fwrite
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3592,7 +3982,13 @@ l0251:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fflush
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3619,7 +4015,13 @@ l0252:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fseek
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3642,7 +4044,13 @@ l0253:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call clearerr
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3665,7 +4073,13 @@ l0254:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call xgetw
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3690,7 +4104,13 @@ l0255:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call putw
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3715,7 +4135,13 @@ l0256:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call signal
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3738,7 +4164,13 @@ l0257:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call sleep
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3765,7 +4197,13 @@ l0258:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call ieee_handler
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3794,7 +4232,13 @@ l0259:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call ieee_flags
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3817,7 +4261,13 @@ l0260:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call setlinebuf
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3838,7 +4288,13 @@ l0261:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call getpid
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3858,7 +4314,13 @@ l0262:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call gethostid
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3882,7 +4344,13 @@ l0263:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixsocketopen
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3909,7 +4377,13 @@ l0264:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call getsocket
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3936,7 +4410,13 @@ l0265:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call writesocket
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3959,7 +4439,13 @@ l0266:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixclosesocket
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -3980,7 +4466,13 @@ l0267:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fork
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4002,7 +4494,13 @@ l0268:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call wait
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4027,7 +4525,13 @@ l0269:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call popen
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4050,7 +4554,13 @@ l0270:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pclose
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4077,7 +4587,13 @@ l0271:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmctl
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4104,7 +4620,13 @@ l0272:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmget
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4131,7 +4653,13 @@ l0273:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmat
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4154,7 +4682,13 @@ l0274:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmdt
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4183,7 +4717,13 @@ l0275:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call semctl
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4210,7 +4750,13 @@ l0276:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call semget
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4237,7 +4783,13 @@ l0277:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call semop
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4266,7 +4818,13 @@ l0278:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call profil
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4295,7 +4853,13 @@ l0279:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_create
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4318,7 +4882,13 @@ l0280:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_exit
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4343,7 +4913,13 @@ l0281:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_join
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4366,7 +4942,13 @@ l0282:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_detach
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4387,7 +4969,13 @@ l0283:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_self
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4411,7 +4999,13 @@ l0284:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_equal
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4434,7 +5028,13 @@ l0285:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_init
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4457,7 +5057,13 @@ l0286:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_destroy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4482,7 +5088,13 @@ l0287:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setdetachstate
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4507,7 +5119,13 @@ l0288:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getguardsize
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4532,7 +5150,13 @@ l0289:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setguardsize
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4557,7 +5181,13 @@ l0290:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getschedparam
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4582,7 +5212,13 @@ l0291:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setschedparam
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4607,7 +5243,13 @@ l0292:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getschedpolicy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4632,7 +5274,13 @@ l0293:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setschedpolicy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4657,7 +5305,13 @@ l0294:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getinheritsched
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4682,7 +5336,13 @@ l0295:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setinheritsched
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4707,7 +5367,13 @@ l0296:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getscope
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4732,7 +5398,13 @@ l0297:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setscope
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4759,7 +5431,13 @@ l0298:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getstack
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4786,7 +5464,13 @@ l0299:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setstack
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4811,7 +5495,13 @@ l0300:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_getstacksize
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4836,7 +5526,13 @@ l0301:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_attr_setstacksize
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4863,7 +5559,13 @@ l0302:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_setschedparam
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4890,7 +5592,13 @@ l0303:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_getschedparam
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4915,7 +5623,13 @@ l0304:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_setschedprio
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4938,7 +5652,13 @@ l0305:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_getconcurrency
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4961,7 +5681,13 @@ l0306:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_yield
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -4988,7 +5714,13 @@ l0307:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_setaffinity_np
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5015,7 +5747,13 @@ l0308:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_getaffinity_np
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5040,7 +5778,13 @@ l0309:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_once
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5065,7 +5809,13 @@ l0310:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_setcancelstate
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5090,7 +5840,13 @@ l0311:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_setcanceltype
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5113,7 +5869,13 @@ l0312:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cancel
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5136,7 +5898,13 @@ l0313:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_testcancel
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5161,7 +5929,13 @@ l0314:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutex_init
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5184,7 +5958,13 @@ l0315:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutex_destroy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5207,7 +5987,13 @@ l0316:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutex_trylock
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5230,7 +6016,13 @@ l0317:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutex_lock
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5253,7 +6045,13 @@ l0318:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutex_unlock
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5276,7 +6074,13 @@ l0319:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutexattr_init
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5299,7 +6103,13 @@ l0320:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutexattr_destroy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5324,7 +6134,13 @@ l0321:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutexattr_getpshared
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5349,7 +6165,13 @@ l0322:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_mutexattr_setpshared
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5372,7 +6194,13 @@ l0323:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlock_unlock
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5395,7 +6223,13 @@ l0324:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlockattr_init
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5418,7 +6252,13 @@ l0325:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlockattr_destroy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5443,7 +6283,13 @@ l0326:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlockattr_getpshared
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5468,7 +6314,13 @@ l0327:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlockattr_setpshared
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5493,7 +6345,13 @@ l0328:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlockattr_getkind_np
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5518,7 +6376,13 @@ l0329:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_rwlockattr_setkind_np
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5545,7 +6409,13 @@ l0330:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cond_init
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5568,7 +6438,13 @@ l0331:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cond_destroy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5591,7 +6467,13 @@ l0332:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cond_signal
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5614,7 +6496,13 @@ l0333:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cond_broadcast
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5639,7 +6527,13 @@ l0334:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cond_wait
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5666,7 +6560,13 @@ l0335:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_cond_timedwait
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5689,7 +6589,13 @@ l0336:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_condattr_init
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5712,7 +6618,13 @@ l0337:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_condattr_destroy
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5737,7 +6649,13 @@ l0338:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_condattr_getpshared
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5762,7 +6680,13 @@ l0339:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_condattr_setpshared
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5787,7 +6711,13 @@ l0340:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_key_create
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5810,7 +6740,13 @@ l0341:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_key_delete
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5833,7 +6769,13 @@ l0342:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_getspecific
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5858,7 +6800,13 @@ l0343:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_setspecific
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12
@@ -5885,7 +6833,13 @@ l0344:
  push %r12
  push %r14
  push %r13
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pthread_atfork
+ mov 40(%rsp),%rsp
  pop %r13
  pop %r14
  pop %r12

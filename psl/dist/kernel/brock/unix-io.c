@@ -119,7 +119,7 @@ char *str;
 unixputn(n)
 long long n;
 {
-    fprintf(stdout, "%lx", n);
+    fprintf(stdout, "%llx", n);
 }
  
 /* Tag( unixcleario )
