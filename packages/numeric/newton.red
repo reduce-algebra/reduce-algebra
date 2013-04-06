@@ -40,7 +40,7 @@ module newton;  % root finding with generalized Newton methods.
 %
 
 
-fluid '(!*noequiv accuracy!* !*invjacobi);
+fluid '(!*noequiv accuracy!* !*invjacobi !*rounded);
 global '(iterations!* !*trnumeric erfg!*);
 % imports precision,matrix,setmatelem,reval,rederr,prepf,lprim,mkquote,
 %         writepri;
@@ -50,7 +50,7 @@ symbolic procedure rdnewton0(e,vars,p,n);
  (begin scalar jac,x,oldmode,!*noequiv;
     integer prec;
     if not memq(dmode!*,'(!:rd!: !:cr!:))then
-       <<oldmode:=t; setdmode('rounded,t)>>;
+       <<oldmode:=t; setdmode('rounded,!*rounded:=t)>>;
     prec:=precision 0;
     p:=for each x in p collect
          force!-to!-dm numr simp x;
@@ -67,7 +67,7 @@ symbolic procedure rdnewton0(e,vars,p,n);
        for each c in r collect reval c;
     !*noequiv:=t;
     x:=rdnewton1(e,jac,vars,p,'root);
-    if oldmode then setdmode('rounded,nil);
+    if oldmode then setdmode('rounded,!*rounded:=nil);
     precision prec;
     if null x then rederr "no solution found";
     return 'list.
