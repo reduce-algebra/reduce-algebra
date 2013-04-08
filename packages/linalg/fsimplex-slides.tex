@@ -1,0 +1,443 @@
+% ----------------------------------------------------------------------
+% $Id: slides.tex,v 1.5 2001/07/27 12:09:43 dolzmann Exp $
+% ----------------------------------------------------------------------
+% Copyright (c) 2001 Dolzmann, Gilch, Sturm, Tsirou
+% ----------------------------------------------------------------------
+%
+% $Log: slides.tex,v $
+% Revision 1.5  2001/07/27 12:09:43  dolzmann
+% Added procedure sf_norminput.
+%
+% Revision 1.4  2001/07/19 11:10:34  sturm
+% Latest results. Still computing ...
+%
+% Revision 1.3  2001/07/18 19:05:33  sturm
+% Simply wrote it.
+%
+% Revision 1.2  2001/07/16 17:47:40  sturm
+% Under construction.
+%
+% Revision 1.1  2001/07/16 17:10:34  gilch
+% Initial check-in
+%
+%
+% ----------------------------------------------------------------------
+\documentclass[slidesonly]{seminar}
+\pagestyle{empty}
+%
+\renewcommand{\printlandscape}{\special{landscape}}
+\def\slidefonts{\sf}  % Immer serifenlose Schrift!
+\usepackage{semrot}
+\rotateheaderstrue
+%
+\usepackage{enumerate}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{times}  % PS Fonts sind besser lesbar.
+\usepackage{concrete}  % Wem's gefaellt; vertraegt sich besser mit PS Fonts
+\usepackage[german]{babel}
+\setlength\slideframewidth{1pt}
+\newcommand{\scaption}[1]{\centerline{\textbf{\large #1}}\medskip}
+\newcommand{\header}[1]{\par\medskip\textbf{\large #1}\par}
+\newcommand{\subheader}[1]{\par\textbf{#1}{}}
+%
+\parindent0pt  % Typische deutsche Einstellungen
+\parskip3ex
+%
+\begin{document}
+%
+\begin{slide}
+\centerline{\Large\textbf{Optimierungen am Reduce-Simplex}}
+\bigskip
+
+\centerline{A.~Dolzmann, L.~Gilch, T.~Sturm und E.~Tsirou}
+\vspace{1cm}
+
+\begin{itemize}
+\item Projektbeschreibung
+\item Der revidierte Simplex-Algorithmus
+\item Optimierungsphasen
+\item Ergebnisse im Vergleich
+\item Ausblick und Zusammenfassung
+\end{itemize}
+\end{slide}
+%
+\begin{slide}
+\scaption{Projektbeschreibung}
+\header{Situation}
+\begin{itemize}
+\item Reduce-Simplex innerhalb weniger Tage entstanden (Matt Rebbeck,
+June 1994)
+\item Grundlage \emph{Linear Programming} von M.~J.~Best und K.~Ritter
+\end{itemize}
+\header{Idee}
+\begin{itemize}
+\item interessante Speed-Ups durch reine Code-Optimierungen
+\item zun"achst nur sehr technische Optimierungen
+\item Codierung des Algorithmus bleibt unber"uhrt
+\item interessant ist Faktor $>$1000
+\end{itemize}
+\end{slide}
+%
+\begin{slide}
+\scaption{Revised Simplex Method}
+\header{Problemformulierung}
+\begin{displaymath}
+\min\left\{ c^{T}\cdot x \ \big| \ A\cdot x = b, x \geq 0\right\} \quad 
+\end{displaymath}
+\begin{displaymath}
+\textrm{mit} \quad c,x \in \mathbf{R}^{n}, b \in \mathbf{R}^{m}, A\in \mathbf{R}^{m \times n}
+\end{displaymath}
+\end{slide}
+\begin{slide}
+\header{"Uberblick "uber den Algorithmus}
+\begin{itemize}
+\item \textbf{Phase 1:} Auffinden einer m\"oglichen zul\"assigen Ecke
+\item \textbf{Phase 2:} Berechnung der optimalen L\"osung, sofern eine existiert
+\begin{itemize}
+\item \textbf{Schritt 1:} Berechnung der Suchrichtung
+\item \textbf{Schritt 2:} Berechnung der maximalen Schrittweite
+\item \textbf{Schritt 3:} Updaten der Hilfsvariablen
+\end{itemize}
+\end{itemize}
+\end{slide}
+%
+\begin{slide}
+\subheader{Phase 2}
+\begin{itemize}
+\item
+\textbf{Initialisierung:} Sei $x$ eine zul\"assige Ecke, $I_{B}=\{\beta_{1},\dots,\beta{m}\}$ die zugeh\"orige Basisindexmenge, $B=[A_{\beta_{1}},\dots,A_{\beta_{m}}]$ die zugeh\"orige Basismatrix. Seien $c_{B}:=(c_{\beta_{1}},\dots,c_{\beta_{m}})$ und $x_{B}:=(x_{\beta_{1}},\dots,x_{\beta_{m}})$. Es gilt: $x_{B}=B^{-1}\cdot b$.
+\item
+\textbf{Schritt 1: Berechnung der Suchrichtung}
+\begin{itemize}
+\item 
+Berechne $u=-(B^{-1})^{T}\cdot c_{B}$
+\item 
+Bestimme den kleinsten Index $k$ und $\nu_{k}$ derart, dass $\nu_{k}=min\left\{c_{i}+A_{i}^{T}\cdot u \ | \ i \notin I_{B}\right\}$
+\item
+\begin{itemize}
+\item 
+Falls $\nu_{k} \geq 0$: x ist optimale L\"osung
+\item
+Falls $\nu_{k} < 0$: Setze $s_{B}:=B^{-1}\cdot A_{k}$ und gehe zu Schritt 2
+\end{itemize}
+\end{itemize}
+\end{itemize}
+\end{slide}
+\begin{slide}
+\subheader{Schritt 2: Berechnung der maximalen Schrittweite}
+\begin{itemize}
+\item Falls $s_{B} \leq 0$: Das Minimierungsproblem hat keine L\"osung, Ende.
+\item Falls $(s_{B})_{i} > 0$ f\"ur mindestens ein $i$: Berechne $\sigma_{B}$ und den kleinsten Index $l$, so dass 
+\begin{displaymath}
+\sigma_{B}=\frac{(x_{B})_{l}}{(s_{B})_{l}}=\min\left\{\frac{(x_{B})_{i}}{(s_{B})_{i}} \ \Big| \ (s_{B})_{i} >0 \right\}
+\end{displaymath}
+und gehe zu Schritt 3.
+\end{itemize}
+
+\end{slide}
+\begin{slide}
+\subheader{Schritt 3: Update der Hilfsvariablen}
+\begin{itemize}
+\item
+Setze $B^{-1}:=[\Phi((B^{-1})^{T},A_{k},l)]^{T}$, \\
+wobei f\"ur eine $r\times r$-Matrix $C$, f\"ur einen gegebenen $r$-Vektor $d$ und einen Index $k\in \{1,\dots,r\}$ gilt: \\
+$\Phi(C,d,k)_{i}:=C_{i}-\frac{d^{T}\cdot C_{i}}{d^{T}\cdot C_{k}}\cdot C_{k}$ f\"ur $i=1,\dots,r$ und $i\neq k$ bzw. \\
+$\Phi(C,d,k)_{k}:=\frac{1}{d^{T}\cdot C_{k}}\cdot C_{k}$
+\item
+Setze $x_{B}:=B^{-1}\cdot b$
+\item
+Setze $\beta_{l}:=k$
+\item 
+Berechne $c_{B}^{T}\cdot x_{B}$ und gehe zu Schritt 1
+\end{itemize} 
+\end{slide}
+%
+\begin{slide}
+\scaption{Amdahl's Law}
+\emph{Will man ein Programm um einen Faktor $F$ beschleunigen, so mu"s
+man eine Stelle optimieren, f"ur die es mindestens den Bruchteil $1/F$ seiner
+Laufzeit aufwendet.}
+\header{Konsequenz}
+\begin{itemize}
+\item gezielte Analyse der Laufzeiten f"ur s"amtliche Prozeduren
+\item Technik: \texttt{qualified-timing}
+\item Exaktere Technik: Duplikation von Prozeduren
+\end{itemize}
+\end{slide}
+%
+\begin{slide}
+\scaption{Qualified-Timing f"ur \texttt{afiro}}
+\begin{small}
+\begin{tabular}{lrrr}
+Prozedur & Anzahl Aufrufe & Zeit & \% \\
+\hline
+\texttt{simplex\_calculation} & 2 & 11590 & 98\% \\
+\texttt{compute\_objective} & 61 & 80 & 0\% \\
+\texttt{fast\_add\_rows} & 3422 & 1210 & 10\% \\ 
+\texttt{fast\_unchecked\_getmatelem} & 755915 & 1460 & 11\% \\
+\texttt{phiprm} & 59 & 3750 & 31\% \\
+\textbf{\texttt{reval}} & \textbf{20694} & \textbf{7560} & \textbf{65\%} \\
+\texttt{rstep1} & 61 & 5780 & 48\% \\
+\texttt{rstep3} & 59 & 5870 & 49\% \\
+\texttt{scalar\_product} & 59 & 10 & 0\% \\
+\texttt{two\_column\_scalar\_product} & 5004 & 350 & 2\% \\
+$\vdots$ & $\vdots$ & $\vdots$& $\vdots$
+\end{tabular}
+\end{small}
+\end{slide}
+%
+\begin{slide}
+\scaption{"`Zustand"' des Reduce-3.7-Simplex}
+\begin{itemize}
+\item Zeitverbrauch nicht in bestimmten statischen Codeteilen
+\item im wesentlichen teure Matrixoperationen
+\item realisiert durch \texttt{reval}-Aufrufe: $65\%$ der Zeil in
+\texttt{reval}
+\end{itemize}
+\header{Sorgloser Umgang mit \texttt{reval}}
+\begin{itemize}
+\item[$+$] Keine Probleme mit Kompatibilit"at von Datentypen
+\item[$-$] Zeitintensiv
+\end{itemize}
+\end{slide}
+%
+\begin{slide}
+\scaption{Drei Phasen}
+\header{Phase 1}
+\begin{itemize}
+\item Klassifiziere s"amtliche \texttt{reval}-Aufrufe nach
+tats"achlichen mathematischen Operationen
+\item Spezifiziere entsprechende Funktionen
+\item Realisiere diese Funktionen zun"achst durch \texttt{reval}
+\item Validiere
+\end{itemize}
+\subheader{Ergebnis}
+\begin{itemize}
+\item[$+$] Code ist jetzt sauber \dots
+\item[$-$] \dots{} aber nicht schneller
+\end{itemize}
+Entsprechende Software-Versionen: v1.1--v1.4
+\end{slide}
+%
+\begin{slide}
+\scaption{Laufzeiten (in s) der verschiedenen Versionen}
+\begin{center}
+\begin{small}
+\begin{tabular}{crrrrrrr}
+\hline
+V  & afiro & 6.3 & adlittle & share2b & beac & israel & e226\\
+\hline
+\textbf{1} & \textbf{11.6} \textbf{} & \textbf{45.0}
+\textbf{} &  \textbf{25.9h} \textbf{} &\textbf{$>$72h}
+& \textbf{--} & \textbf{--} & \textbf{--} \\
+2 & 11.5  & -- & -- & -- & -- & -- & -- \\
+3 & 11.7  & -- & --  & -- & -- & -- & -- \\
+4 & -- & -- & -- & -- & -- & -- & -- 	\\
+\hline
+\end{tabular}
+\end{small}
+\end{center}
+\end{slide}
+%
+\begin{slide}
+\header{Phase 2}
+\begin{itemize}
+\item
+Konsistente Wahl eines geeigneten Datentyps f"ur Matrizeneintr"age
+\item
+Standard-Quotienten "`SQ's"' sind geeignete Wahl
+\item
+Neue Realisierung der in Phase~1 eingef"uhrten Funktionen ohne
+\texttt{reval}
+\end{itemize}
+Entsprechende Software-Versionen: v1.5--v1.7
+\end{slide}
+%
+\begin{slide}
+\scaption{Laufzeiten (in s) der verschiedenen Versionen}
+\begin{center}
+\begin{small}
+\begin{tabular}{crrrrrrr}
+\hline
+V  & afiro & 6.3 & adlittle & share2b & beac & israel & e226\\
+\hline
+\textbf{1.1} & \textbf{11.6} \textbf{} & \textbf{45.0}
+\textbf{} &  \textbf{25.9h} \textbf{} &\textbf{$>$72h}
+& \textbf{--} & \textbf{--} & \textbf{--} \\
+1.2 & 11.5  & -- & -- & -- & -- & -- & -- \\
+1.3 & 11.7  & -- & --  & -- & -- & -- & -- \\
+1.5 & 6.3  & -- & -- & -- & -- & -- & -- \\
+1.6 & 6.3  & 2.1  & -- & -- & -- & -- & --  \\
+\textbf{1.7} & \textbf{5.3} \textbf{} & \textbf{1.8}
+\textbf{} & \textbf{436.5} & \textbf{928.0} & \textbf{7.3h} &
+\textbf{5.8h} & \textbf{29.7h}  \\
+\hline
+\end{tabular}
+\end{small}
+\end{center}
+\header{Speed-up-Faktoren}
+\begin{center}
+\begin{small}
+\begin{tabular}{crrrrrrr}
+\hline
+V  & afiro & 6.3 & adlittle & share2b & beac & israel & e226\\
+\hline
+\textbf{1.1} & \textbf{1.0} & \textbf{1.0}
+&  \textbf{1.0} &\textbf{1.0}
+& \textbf{--} & \textbf{--} & \textbf{--} \\
+\textbf{1.7} & \textbf{2.2} & \textbf{25.0}
+& \textbf{231.6} & \textbf{$>$279.3} & \textbf{$\infty$} &
+\textbf{$\infty$} & \textbf{$\infty$}  \\
+\hline
+\end{tabular}
+\end{small}
+\end{center}
+\end{slide}
+%
+\begin{slide}
+\header{Phase 3}
+\begin{itemize}
+\item Erneutes \texttt{qualified-timing}
+\item Neues Bottleneck: Zugriff auf Matrixelemente
+\end{itemize}
+\subheader{Matrizen}
+\begin{itemize}
+\item Realisiert als Listen von Listen
+\item Zugriff auf Element einer einer $m\times n$-Matrix dauert $m+n$
+\item Vektoren bieten $O(1)$ (Adressarithmetik)
+\end{itemize}
+\subheader{Nebenprodukt dieser Phase}
+\begin{itemize}
+\item Exaktes Rechnen
+\end{itemize}
+Entsprechende Software-Versionen: v1.8--v1.11
+\end{slide}
+%
+\begin{slide}
+\scaption{Problem}
+Vektoren in Lisp gelten (zu recht) als langsam
+\header{zwei Ans"atze}
+\begin{enumerate}[(a)]
+\item
+effizientere Listenrepr"asentationen
+\begin{itemize}
+\item Cache
+\item Mehrfachverkettungen
+\item Transponierte Darstellung
+\end{itemize}
+\item
+effizientere Vektoren (f"ur Profis) $\checkmark$
+\end{enumerate}
+\end{slide}
+%
+\begin{slide}
+\scaption{Laufzeiten (in s) der verschiedenen Versionen}
+\begin{center}
+\begin{small}
+\begin{tabular}{lrrrrrrr}
+\hline
+V  & afiro & 6.3 & adlittle & share2b & beac & israel & e226\\
+\hline
+\textbf{1.1} & \textbf{11.6} \textbf{} & \textbf{45.0}
+\textbf{} &  \textbf{25.9h} \textbf{} &\textbf{$>$72h}
+& \textbf{--} & \textbf{--} & \textbf{--} \\
+\textbf{1.7} & \textbf{5.3} \textbf{} & \textbf{1.8}
+\textbf{} & \textbf{436.5} & \textbf{928.0} & \textbf{7.3h} &
+\textbf{5.8h} & \textbf{29.7h}  \\
+1.8 & 2.0  & 0.9  & -- & -- & -- & -- & --  \\
+1.9 & 1.6  & 0.7  & 77.7  & -- & -- & -- & --  \\
+\textbf{1.10} & \textbf{1.3} \textbf{} & \textbf{0.6}
+\textbf{} & \textbf{67.1} \textbf{} & \textbf{173.9} &
+\textbf{--} & \textbf{3134.2} & \textbf{3.4h} \\
+\hline
+\end{tabular}
+\end{small}
+\end{center}
+\header{Speed-up-Faktoren}
+\begin{center}
+\begin{small}
+\begin{tabular}{lrrrrrrr}
+\hline
+V  & afiro & 6.3 & adlittle & share2b & beac & israel & e226\\
+\hline
+\textbf{1.1} & \textbf{1.0} & \textbf{1.0}
+&  \textbf{1.0} &\textbf{1.0}
+& \textbf{--} & \textbf{--} & \textbf{--} \\
+\textbf{1.7} & \textbf{2.2} & \textbf{25.0}
+& \textbf{231.6} & \textbf{$>$279.3} & \textbf{$\infty$} &
+\textbf{$\infty$} & \textbf{$\infty$}  \\
+\textbf{1.10} & \textbf{8.9} & \textbf{75.0}
+& \textbf{1389.6} & \textbf{$>$1490.5} &
+\textbf{--} & \textbf{$\infty$} & \textbf{$\infty$} \\
+\hline
+\end{tabular}
+\end{small}
+\end{center}
+\end{slide}
+%
+\begin{slide}
+\scaption{Rounded vs.~exakt und die Konkurrenz}
+\subheader{Maple}\\
+enth"alt Simplex-Implementierung, rechnet gerundet
+\subheader{Mathematica}\\
+enth"alt Simplex-Implementierung,\\ rechnet wahlweise gerundet/exakt
+\subheader{Minos}\\
+20 Jahre alter Fortran-Code auf Museumsrechner,\\ nur um realistisch zu
+bleiben
+\end{slide}
+%
+\begin{slide}
+\scaption{Laufzeiten (in s) der verschiedenen Produkte}
+\begin{small}
+\begin{tabular}{lrrrrr}
+\hline
+ & afiro  & adlittle & share2b  & israel & e226\\
+\hline
+v1.10/1.11
+ &\textit{1.7}&\textit{86.1}&\textit{223.1}&3530.4&15505.9\\
+v1.10/1.11 (r) & 1.8 & 73.8 & 140.0&2134.7&\\
+Maple (r) &1.0&15.0&107.7&822.6&(8138.5)\\
+Mathematica &0.03&19.7&55.5&1130.7&13218.1\\
+Mathematica (r) &0.02&1.3&1.3&16.1&75.1\\
+\hline
+Minos (r) &0.5&1.3&1.3&5.0&9.4\\
+\hline
+\end{tabular}
+\end{small}
+\bigskip
+
+Minos-Zeiten 1985 auf IBM 3081K.
+\end{slide}
+%
+\begin{slide}
+\scaption{Ausblick}
+\begin{itemize}
+\item Neue Bottlenecks:
+\begin{itemize}
+\item Matrixmultiplikation ($\leadsto$ Sch"onhage--Strassen)
+\item Lokale Codierungsschw"achen
+\end{itemize}
+\item $\leadsto$ Phase 4
+\item Gesch"atzter Speed-up f"ur Phase 4: Faktor 100
+\item Dann vern"unftige Basis f"ur algorithmische Optimierungen
+\end{itemize}
+\end{slide}
+%
+\begin{slide}
+\scaption{Zusammenfassung}
+\begin{itemize}
+\item Hohes Potential des Reduce-Kernels
+\item "`Utopische"' Speed-up-Vorstellung sind Realit"at geworden
+\item The Story continues
+\end{itemize}
+\end{slide}
+% \begin{slide}
+% \scaption{Cache}
+% Dies ist ein Text
+% \begin{center}
+% \input{cache.pstex_t}
+% \end{center}
+% \end{slide}
+%
+\end{document}

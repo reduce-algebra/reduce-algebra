@@ -1,0 +1,396 @@
+% ----------------------------------------------------------------------
+% $Id: protokoll.tex,v 1.4 2001/07/19 11:10:34 sturm Exp $
+% ----------------------------------------------------------------------
+% Copyright (c) 2001 Dolzmann, Gilch, Sturm, Tsirou
+% ----------------------------------------------------------------------
+% $Log: protokoll.tex,v $
+% Revision 1.4  2001/07/19 11:10:34  sturm
+% Latest results. Still computing ...
+%
+% Revision 1.3  2001/07/18 19:05:51  sturm
+% Latest data. Still computing.
+%
+% Revision 1.2  2001/07/16 17:47:40  sturm
+% Under construction.
+%
+% Revision 1.1  2001/07/16 12:32:21  gilch
+% Initial check-in.
+%
+%
+% ----------------------------------------------------------------------
+
+\documentclass[a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[german]{babel}
+\usepackage{times}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+
+\begin{document}
+\section{Versionsbeschreibungen}
+\begin{description}
+\item[Version 1.1:]
+	Ursprünglich in Reduce enthaltenes Modul Simplex. Es wird gerundet 
+	gerechnet und Matrizen werden als Listen von Listen mit mat-Tag 
+	abgespeichert, die Zahlenwerte wurden als \textit{rounded} bzw. als 
+	Integers gespeichert. \\
+	Problem: \textit{reval}-Aufrufe benötigen mindestens zwei Drittel 
+	der Gesamtlaufzeit. \textit{reval} wird vor allem bei Matrixoperationen
+	benutzt.
+\item[Version 1.2:]
+	Jeder Aufruf eines ''reval'' wurde ausgelagert in eine 
+	eigenständige Prozedur. Dabei wurden auch indirekte reval-Aufrufe 
+	wie ''my\_reval'' und ''my\_revlis'' durch eigene Prozeduren ersetzt. 
+	In den ursprünglichen im Modul ''Simplex'' enthaltenen Prozeduren 
+	existiert somit kein direkter reval-Aufruf mehr. 
+  	Fazit: Matrixmultiplikation und Skalarprodukt benötigen jeweils 
+	mindenstens 20\% der Laufzeit.
+	Problem: Uneinheitliche Darstellung der Zahlenwerte.
+\item[Version 1.3:]
+	Alle Zahlen in den Argumenten werden in ''rounded'' dargestellt.
+	Fazit: Verlangsamt die Laufzeit unwesentlich gering.
+\item[Version 1.4:]
+	Die ''rounded''-Umwandlung aus Version 1.3 wurde wieder entfernt. 
+	Zusätzlich wurden eigene Zugriffsprozeduren auf SQ-Formen eingefügt mit
+	der Form \textit{sc\_proc}. 
+\item[Version 1.5:]
+	Es wurde die interne Repräsentation der Argumente auf SQ-Form 
+	umgestellt. Diese Umstellung geschieht vor dem Betreten der Prozedur 
+	''initialise''. Dabei wurden alle relevanten Prozeduren so upgedatet, 
+	dass sie mit der neuen Struktur der Argumente umgehen können. Teilweise   	wurden eigene zusätzliche Prozeduren geschrieben, die alte ersetzen, 
+	und einige ''alte'' Prozeduren werden überflüssig: \\
+	\\
+	\begin{tabular}{ll}
+	Prozedur & wurde ersetzt durch neue Prozedur \\
+	\hline
+	fast\_getmat & sc\_getmat \\
+	fast\_setmat & sc\_setmat \\
+	fast\_matrix\_augment & sc\_matrix\_augment \\
+	two\_column\_scalar\_product & sc\_transpose, sc\_scalarproduct \\
+	scalar\_product & sc\_scalarproduct \\
+	\end{tabular} \\
+	\\
+	Folgende Prozeduren sind nun überflüssig und werden nicht mehr
+	aufgerufen: 
+	\begin{itemize}
+	\item fast\_my\_letmtr
+	\item fast\_unchecked\_getmatelem 
+	\item scalar\_product 
+	\item smplx\_prepsq 
+	\item two\_column\_scalar\_product 
+	\end{itemize}
+	Alle vorkommenden Matrizen sind nun Listen von Listen ohne 'mat-Tag.
+	Fazit: Afiro ist nun doppelt so schnell, Example 6.3. nun 22 mal so 
+	schnell. Das ganze Programm läuft nun schneller, der Zeitgewinn 
+	beschränkt sich dabei nicht auf einzelne Prozeduren. Dabei verbleibt 
+	ein großer Teil der Laufzeit in der Prozedur \textit{sc\_getmat}.
+\item[Version 1.6:]
+	Patches
+\item[Version 1.7:]
+	\textit{sc\_matrixproduct}-Aufruf wurde ersetzt durch Prozedur 
+	\textit{sc\_multm}, die auf die Prozedur \textit{multm} im Modul 
+	\textit{matsm} im Package \textit{Matrix} zurückgreift.
+	Fazit: Beschleunigung um ca. 15\%
+\item[Version 1.8:]
+	Matrizen werden nun als Vektoren von Vektoren dargestellt. Es wird nun
+	mit genauer Arithmetik gerechnet.
+	Fazit: Beschleunigung zu Version 1.7 um Faktor 15\%, im Vergleich zu 
+	Version 1.0 sogar um Faktor 500-600%. 
+\item[Version 1.9:]
+	Die Prozeduren \textit{putv} und \textit{getv} wurden ersetzt durch
+	\textit{iputv} und \textit{igetv}. Überarbeitung und Verbesserung der 
+	Matrixprozeduren. 
+\item[Version 1.10:]
+	Überarbeitung der Matrixprozeduren und Auslagerung der Aufrufe von 
+	\textit{iputv} und \textit{igetv} in Prozeduren \textit{sc\_iputv} 
+	und \textit{sc\_igetv}.
+	Fazit: Afiro läuft nun um Faktor 9,10 schneller, Example 6.3 um Faktor
+	77,6 und Adlittle um Faktor 1415,6.
+\item[Versuch:]
+	Es wurde versucht, die Matrizen als Listen von Listen ohne mat-Tag 
+	darzustellen, wobei einmal die Matrizen transponiert abgespeichert 
+	wurden, oder die Matrizen mit Cache gespeichert wurden oder 
+	transponiert mit Cache. Dabei wurden in der Cache-Darstellung der 
+	Matrizen folgendes Konstruktionsprinzip verwendet: Eine Matrix ist ein
+	Paar, wobei im \textit{cdr} die eigentliche Matrix als Liste von Listen 	ohne mat-Tag steht, und im \textit{car} ein Paar von Paaren steht, 
+	wobei das erste Paar die aktuelle Zeilennummer angibt und die aktuelle 		Zeile, und das zweite Paar die aktuelle Spalte mit der Restzeile der 
+	aktuellen Zeile von diesem Index aus.
+	Die zugehörigen Matrixprozeduren wurden in eigene Module ausgelagert,
+	so daß eigentliche Simplex-Code nicht verändert werden musste.
+	Keine dieser Versuche führte zu einem besseren Ergebnis im Vergleich 
+	zur Vektoren-Darstellung.
+\end{description}
+
+\newpage
+
+\section{Beispiel-Laufzeiten der verschiedenen Versionen}
+
+\begin{table}[h]
+\caption{CPU-Zeiten (in s) und Speedup-Faktoren f"ur Netlib
+Benchmarks. Gemessen auf 800 MHz Athlon.}
+\begin{small}
+\begin{tabular}{lrrrrrrr}
+\hline
+ & afiro & Kappert~6.3 & adlittle & share2b & beaconfd & israel & e226\\
+\hline
+\textbf{v1.1} & \textbf{11.6} \textbf{(1.0)} & \textbf{45.0}
+\textbf{(1.0)} &  \textbf{25.9h} \textbf{(1.0)} &\textbf{$>$72h ($>$1.0)}
+& \textbf{--} & \textbf{--} & \textbf{--} \\
+v1.2 & 11.5 (1.0) & -- & -- & -- & -- & -- & -- \\
+v1.3 & 11.7 (1.0) & -- & --  & -- & -- & -- & -- \\
+v1.4 & -- & -- & -- & -- & -- & -- & -- 	\\
+v1.5 & 6.3 (1.84) & -- & -- & -- & -- & -- & -- \\
+v1.6 & 6.3 (1.84) & 2.1 (21.4) & -- & -- & -- & -- & --  \\
+\textbf{v1.7} & \textbf{5.3} \textbf{(2.2)} & \textbf{1.8}
+\textbf{(25.0)} & \textbf{436.5 (213.6)} & \textbf{928.0 ($>$279.3)} & \textbf{26104.5} &
+\textbf{20973.2} & \textbf{106888.8}  \\
+v1.8 & 2.0 (5.8) & 0.9 (50.0) & -- & -- & -- & -- & --  \\
+v1.9 & 1.6 (7.25) & 0.7 (64.3) & 77.7 (1200.0) & -- & -- & -- & --  \\
+\textbf{v1.10} & \textbf{1.3} \textbf{(8.9)} & \textbf{0.6}
+\textbf{(75.0)} & \textbf{67.1} \textbf{(1389.6)} & \textbf{173.9 ($>$1490.5)} &
+\textbf{--} & \textbf{3134.2} & \textbf{12258.7} \\
+\hline
+\end{tabular}
+\end{small}
+\end{table}
+
+Das Beispiel \textit{Kappert~6.3} ist der Diplomarbeit von Michael
+Kappert entnommen. Die "ubrigen Beispiele finden sich unter diesen
+Namen in der Section \texttt{lp} der \emph{Netlib Repository at UTK and
+ORNL\footnote{\texttt{http://www.netlib.org/}}}.
+
+In Klammern sind die Faktoren, um welchen die jeweilige Version im
+Vergleich zu Version 1.0 beschleunigt.
+
+\section{Neuer Reduce Simplex vs.~Kokurrenzsysteme}
+\begin{table}[h]
+\begin{small}
+\caption{CPU-Zeiten (in s) f"ur Netlib
+Benchmarks. Gemessen auf 660 MHz Pentium; v.1.10-Zeiten nach
+\texttt{israel} skaliert. Minos-Zeiten auf IBM 3081K (1985).}
+\begin{tabular}{lrrrrrrr}
+\hline
+ & afiro & Kappert~6.3 & adlittle & share2b & beaconfd & israel & e226\\
+\hline
+v1.10/1.11
+ &\textit{1.7}&\textit{0.8}&\textit{86.1}&\textit{223.1}&--&3530.4&\textit{15724.9}\\
+v1.10/1.11 (rounded) & 1.8 & 0.8& 73.8 & 140.0&--&2134.7&unbounded\\
+Maple (rounded) &1.0&0.3&15.0&107.7&(1740.5)&822.6&(8138.5)\\
+Mathematica &0.03&0.02&19.7&55.5&&1130.7&13218.1\\
+Mathematica (rounded) &0.02&--&1.3&1.3&10.6&16.1&75.1\\
+\hline
+Minos (rounded) &0.5&--&1.3&1.3&1.9&5.0&9.4\\
+\hline
+\end{tabular}
+\end{small}
+\end{table}
+
+\section{Qualified-Timing auf alle Prozeduren, die von ''simplex\_calculation'' augerufen werden in Version 1.1}
+
+Bei AFIRO: 
+\\
+\begin{tabular}{lrrr}
+Prozedur & Anzahl Aufrufe & Zeit & \% \\
+\hline
+simplex\_calculation & 2 & 11590 & 98\% \\
+compute\_objective & 61 & 80 & 0\% \\
+fast\_add\_rows & 3422 & 1210 & 10\% \\ 
+fast\_augment\_columns & 5185 & 840 & 7\% \\
+fast\_mult\_rows & 59 & 180 & 1\% \\ 
+fast\_setmat & 10803 & 10 & 0\% \\
+fast\_unchecked\_getmatelem & 755915 & 1460 & 11\% \\
+get\_cb & 122 & 10 & 0\% \\
+phiprm & 59 & 3750 & 31\% \\
+reval & 20694 & 7560 & 65\% \\
+rstep1 & 61 & 5780 & 48\% \\
+rstep2 & 59 & 240 & 2\% \\
+rstep3 & 59 & 5870 & 49\% \\
+scalar\_product & 59 & 10 & 0\% \\
+two\_column\_scalar\_product & 5004 & 350 & 2\% \\
+\end{tabular}
+\\
+\\
+Bei Ex. 6.3:
+\\
+\textit{reval} 16702 Calls, 45200ms, 95% \\
+
+\section{Qualified-Timing auf ausgelagerte reval-Prozeduren in Version 1.2}
+
+\begin{tabular}{lrrr}
+Prozedur & Anzahl Aufrufe & Zeit & \% \\
+\hline
+maxmin\_reval & 1 & 0 & 0\% \\
+obj\_reval & 1 & 0 & 0\% \\
+eq\_reval & 1 & 10 & 0\% \\
+scalar\_product\_reval & 3483 & 2440 & 20\% \\
+minus\_reval & 0 & 0 & 0\% \\
+scalar\_reval & 0 & 0 & 0\% \\
+matrelem\_reval & 35346 & 250 & 2\% \\
+simple\_reval & 3481 & 230 & 1\% \\
+matrix\_product\_reval & 120 & 2480 & 20\% \\
+product\_reval & 3481 & 150 & 1\% \\
+list\_reval & 21606 & 10 & 0\% \\
+\end{tabular} \\
+\\
+Die Prozeduren ''minus\_reval'' und ''scalar\_reval'' werden nur aufgerufen, wenn ein Maximierungsproblem behandelt wird. Deshalb wurden sie beim AFIRO-Beispiel nicht aufgerufen.
+
+\section{Qualified-Timing auf alle Prozeduren in Version 1.6}
+
+\begin{tabular}{lrrr}
+Prozedur & Anzahl Aufrufe & Zeit & \% \\
+\hline
+add\_not\_defined\_variables & 1 & 0 & 0\% \\
+add\_slacks\_to\_equations & 1 & 0 & 0\% \\
+check\_minus\_b & 1 & 0 & 0\% \\
+compute\_objective & 61 & 0 & 0\% \\
+create\_phase1\_A1\_and\_obj\_and\_ib & 1 & 0 & 0\% \\
+eq\_reval & 1 & 0 & 0\% \\
+fast\_add\_rows & 3422 & 1780 & 28\% \\
+fast\_augment\_columns & 5185 & 890 & 14\% \\
+fast\_make\_identity & 2 & 0 & 0\% \\
+fast\_mult\_rows & 59 & 0 & 0\% \\
+get\_cb & 122 & 10 & 0\% \\
+get\_preliminary\_variable\_list & 1 & 0 & 0\% \\
+get\_X\_and\_obj\_mat & 1 & 0 & 0\% \\
+initialise & 1 & 190 & 3\% \\
+list\_reval & 0 &  &  \\
+make\_answer\_list & 1 & 0 & 0\% \\
+make\_equations\_positive & 1 & 0 & 0\% \\
+matrelem\_reval & 0 &  &  \\
+matrix\_product\_reval & 0 &  &  \\
+maxmin\_reval & 1 & 0 & 0\% \\
+minus\_reval & 0 &  &  \\
+more\_initialise & 1 & 220 & 3\% \\
+my\_round & 0 &  &  \\
+obj\_reval & 1 & 0 & 0\% \\
+phiprm & 59 & 2200 & 34\% \\
+product\_reval & 0 &  &  \\
+rstep1 & 61 & 3020 & 48\% \\
+rstep2 & 59 & 10 & 0\% \\
+rstep3 & 59 & 3180 & 50\% \\
+scalar\_product\_reval & 0 &  &  \\
+scalar\_reval & 0 &  &  \\
+sc\_addsq & 212539 & 50 & 0\% \\
+sc\_denr & 8953 & 10 & 0\% \\
+sc\_geq & 5237 & 20 & 0\% \\
+sc\_getmat & 3093342 & 3540 & 41\% \\
+sc\_getvar & 59 & 0 & 0\% \\
+sc\_getvarl & 0 &  &  \\
+sc\_matrixaugment & 1 & 0 & 0\% \\
+\end{tabular} \\
+
+\newpage
+
+\begin{tabular}{lrrr}
+Prozedur & Anzahl Aufrufe & Zeit & \% \\
+\hline
+sc\_matrixproduct & 59 & 970 & 15\% \\
+sc\_minussq & 8838 & 10 & 0\% \\
+sc\_mkmatrix & 12216 & 160 & 2\% \\
+sc\_multm & 61 & 50 & 0\% \\
+sc\_multrow & 0 &  &  \\
+sc\_multsq & 210965 & 50 & 0\% \\
+sc\_negmatrix & 61 & 40 & 0\% \\
+sc\_negsq & 3454 & 10 & 0\% \\
+sc\_null & 38400 & 30 & 0\% \\
+sc\_numr & 17965 & 0 & 0\% \\
+sc\_prepsq & 5013 & 20 & 0\% \\
+sc\_quotsq & 292 & 0 & 0\% \\
+sc\_scalprod & 0 &  &  \\
+sc\_scalarproduct & 12027 & 1580 & 25\% \\
+sc\_setmat & 10803 & 30 & 0\% \\
+sc\_simp & 4980 & 20 & 0\% \\
+sc\_subtrsq & 5237 & 20 & 0\% \\
+sc\_transpose & 12088 & 990 & 15\% \\
+simp\_get\_A & 1 & 180 & 2\% \\
+simple\_reval & 0 &  &  \\
+simplex1 & 1 & 6340 & 101\% \\
+simplex\_calculation & 2 & 6230 & 98\% \\
+unique\_equation\_list & 1 & 0 & 0\% \\
+\end{tabular} \\
+\\
+\\
+Die Prozedur \textit{sc\_multrow} wurde hier von \textit{check\_minus\_b} nicht aufgerufen.
+\newpage
+
+\section{Tests mit Version 1.6}
+
+\begin{tabular}{lrr}
+Testbeispiel & Zeit V.1.6 & V.1.0\\
+\hline
+Example 6.3 & 2110 ms & 44630 ms \\
+Example 6.4 & 50 ms & 110 ms \\
+Example 6.7 (max) & 170 ms & 180 ms \\
+Example 6.7 (min) & 150 ms & 200 ms \\
+\hline
+AFIRO mit \textit{off rounded} & 6180 ms & 6310 ms \\
+\end{tabular}\\
+\\
+Einige Laufzeiten von Prozeduren bei Example 6.3: 
+\\
+\begin{tabular}{lrrr}
+Prozedur & Calls & Zeit & \% \\
+fast\_add\_rows & 2546 & 640 & 28 \% \\
+fast\_augment\_columns & 3334 & 190 & 8 \% \\
+sc\_getmat & 1473873 & 1150 ms & 34 \% \\
+sc\_matrixproduct & 67 & 350 & 16 \% \\
+sc\_scalarproduct & 8424 & 560 ms & 26 \% \\
+sc\_transpose & 8493 & 360 & 16 \% \\
+\end{tabular}
+\\
+\\
+Die obigen Beispiele wurden der Diplomarbeit von \textit{M.Kappert} entnommen. Bei \textit{AFIRO} wurde dabei die Zeit getestet, wenn nicht \textit{rounded} eingeschaltet wird.
+
+\section{Laufzeiten von AFIRO und Ex.6.3 bei V.1.7}
+
+Afiro -- Example 6.3 \\
+
+\begin{tabular}{l|rrr|rrr}
+Prozedur & Calls & Zeit & \% & Calls & Zeit & \% \\
+copy\_vect & 3423 & 20 & 0 \% & 2547 & 20 & 1 \% \\
+fast\_add\_rows & 3422 & 30 & 1 \% & 2546 & 30 & 2 \% \\
+fast\_augment\_columns & 5185 & 130 & 5 \% & 3334 & 30 & 2 \% \\
+phiprm & 59 & 150 & 6 \% & 67 & 90 & 8 \% \\
+rstep1 & 61 & 1440 & 66 \% & 69 & 690 & 66 \% \\
+rstep2 & 59 & 10 & 0 \% & 67 & 0 & 0 \% \\
+rstep3 & 59 & 460 & 20 \% & 67 & 260 & 25 \% \\
+sc\_getmat & 4174104 & 1430 & 26 \% & 2010123 & 700 & 29 \% \\
+sc\_matrixproduct & 120 & 770 & 36 \% & 136 & 360 & 37 \% \\
+sc\_mkmatrix & 9598 & 480 & 21 \% & 14227 & 210 & 20 \% \\
+sc\_scalarproduct & 15626 & 380 & 17 \% & 11115 & 160 & 15 \% \\
+sc\_setmat & 1585218 & 600 & 12 \% & 767138 & 250 & 15 \% \\
+sc\_transpose & 19286 & 720 & 32 \% & 13875 & 440 & 41 \% \\
+simplex\_calculation & 2 & 1930 & 90 \% & 2 & 960 & 91 \% \\
+\end{tabular}
+
+\newpage
+
+\section{Vergleich der verschiedenen Matrizenmodule(Version 1.8)}
+
+Es werden die vorkommenden Matrizen unterschiedlich dargestellt:
+\begin{itemize}
+\item als Listen von Listen
+\item als Listen von Listen, wobei die vorkommenden Matrizen transponiert
+	gespeichert werden
+\item als Listen von Listen mit Cache, wobei die aktuelle Zeile gespeichert 
+ 	wird und die aktuelle Restzeile vom aktuellen Spaltenindex weg
+\item als Listen von Listen, mit Cache und transponiert abgespeichert
+\item als Vektoren von Vektoren
+\end{itemize}
+
+
+\begin{tabular}{lccc}
+Modul & AFIRO & Ex. 6.3 & Adlittle \\
+\hline
+Listen & 5130 ms & 1760 ms & 456880 ms (plus GC time: 22970 ms)  \\
+Transponierte Listen & 7700 ms & 2650 ms & 627830 ms (plus GC time: 22510 ms)\\
+gecachte Listen & 5080 ms & 1770 ms & 430430 (plus GC time: 22890 ms) \\
+gec. transp. Listen & 6560 ms & 2400 ms & 472810 (plus GC time: 22160 ms)  \\
+Vektoren & 2030 ms & 900 ms & 91970 ms (plus GC time: 2300 ms)  \\
+\end{tabular}
+\\
+\\
+
+
+
+\end{document}
