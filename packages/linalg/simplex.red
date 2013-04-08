@@ -99,8 +99,14 @@ symbolic inline procedure fast_my_letmtr(u,v,y);
   rplaca(pnth(nth(cdr y,car my_revlis cdr u),cadr my_revlis cdr u),v);
 
 
+switch fastsimplex;
+on1 'fastsimplex;
 
-put('simplex,'psopfn,'simplex1);
+put('simplex,'psopfn,'simplex0);
+
+procedure simplex0(input);
+   if !*fastsimplex then fs_simplex1 input else simplex1 input;
+
 
 symbolic procedure simplex1(input);
   %

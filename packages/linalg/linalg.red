@@ -85,7 +85,7 @@ module linalg;   % The Linear Algebra package.
 load_package matrix;
 
 create!-package('(linalg lamatrix gramschm ludecom cholesky svd
-                  simplex tadjoint), '(contrib linalg));
+                  simplex fsimplex tadjoint), '(contrib linalg));
 
 switch fast_la;  % If ON, then the following functions will be faster:
 
