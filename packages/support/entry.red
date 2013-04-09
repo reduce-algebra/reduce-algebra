@@ -414,6 +414,10 @@ defautoload_operator(hankel1,(specfn specbess));
 defautoload_operator(gamma,(specfn sfgamma));
 defautoload_operator(binomial,specfn);
 
+flag('(compute!:int!:functions),'opfn);
+
+defautoload(compute!:int!:functions,specfn,expr,2);
+
 % Debug module entry points.
 
 % if not(systemname!* eq 'ibm) then defautoload(embfn,debug,expr,3);

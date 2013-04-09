@@ -48,12 +48,12 @@ let { int(sin(~tt)/~tt,~tt,0,~z) => Si (z),
       int(cos(~a*~x)*sin(~b*~x)/x,x) => 1/2*Si(a*x+b*x)-1/2*Si(a*x-b*x),
       int(cos(~a*~x)*sin(~x)/x,x) => 1/2*Si(a*x+x)-1/2*Si(a*x-x),
       int(cos(~x)*sin(~b*~x)/x,x) => 1/2*Si(x+b*x)-1/2*Si(x-b*x),
-      int(cos(~x)*sin(~x)/x,x) => 1/2*Si(2*x),
-      Si(0) => 0,
-      Si(-~x) => (- Si(x)),
-      df(Si(~x),~x) => sin(x)/x  ,
-      Si(~x) => compute_int_functions(x,Si)
-                 when numberp x and lisp !*rounded
+     int(cos(~x)*sin(~x)/x,x) => 1/2*Si(2*x)
+%      Si(0) => 0,
+%      Si(-~x) => (- Si(x)),
+%      df(Si(~x),~x) => sin(x)/x  ,
+%      Si(~x) => compute!:int!:functions(x,Si)
+%                 when numberp x and lisp !*rounded
     };
 
 algebraic
@@ -64,10 +64,10 @@ let { int(sin(~tt)/~tt,~tt,~z,infinity) => - s_i (z),
     };
 
 algebraic
-let { int(exp(~tt)/~tt,~tt,-infinity,~z) =>  Ei (z),
-      df(Ei(~x),~x) => exp(x)/x,
-      Ei(~x) => compute_int_functions(x,Ei)
-         when numberp x and abs(x) <= 20 and lisp !*rounded
+let { int(exp(~tt)/~tt,~tt,-infinity,~z) =>  Ei (z)
+%      df(Ei(~x),~x) => exp(x)/x,
+%      Ei(~x) => compute!:int!:functions(x,Ei)
+%         when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
 algebraic
@@ -77,18 +77,19 @@ let { int(1/ln(~tt),~tt,0,~z) =>  li (z),
 
 algebraic
 let { int(cos(~tt)/~tt,~tt,~z,infinity) => - Ci (z),
-      int((cos(~tt) -1)/~tt,~tt,0,~z) => Ci (z) + psi(1) -log(z),
+      int((cos(~tt) -1)/~tt,~tt,0,~z) => Ci (z) + psi(1) -log(z)
 % psi(1) may be replaced by euler_gamma one day ...
-      Ci(-~x) => - Ci(x) -i*pi,
-      df(Ci(~x),~x) => cos(x)/x,
-      Ci(~x) => compute_int_functions(x,Ci)
-         when numberp x and abs(x) <= 20 and lisp !*rounded
+
+%      Ci(-~x) => - Ci(x) -i*pi,
+%      df(Ci(~x),~x) => cos(x)/x,
+%      Ci(~x) => compute!:int!:functions(x,Ci)
+%         when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
 algebraic
 let { int(sinh(~tt)/~tt,~tt,0,~z) => shi (z),
       df(Shi(~x),~x) => sinh(x)/x  ,
-      shi(~x) => compute_int_functions(x,shi)
+      shi(~x) => compute!:int!:functions(x,shi)
          when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
@@ -96,7 +97,7 @@ algebraic
 let { int((cosh(~tt) -1)/~tt,~tt,0,~z) => Chi (z) + psi(1) -log(z),
 % psi(1) may be replaced by euler_gamma one day ...
       df(Chi(~x),~x) => cosh(x)/x  ,
-      Chi(~x) => compute_int_functions(x,Chi)
+      Chi(~x) => compute!:int!:functions(x,Chi)
          when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
@@ -106,7 +107,7 @@ let { int(sin(Pi/2*~tt^2),~tt,0,~z) => Fresnel_S (z),
       Fresnel_S(i* ~x) => (-i*Fresnel_S (x)),
       limit(Fresnel_S(~tt),~tt,infinity) => 1/2,
       df(Fresnel_S(~x),~x) => sin(Pi/2*x^2) ,
-      Fresnel_S (~x) => compute_int_functions(x,Fresnel_S)
+      Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
               when numberp x and abs(x) <= 10 and lisp !*rounded };
 
 algebraic
@@ -115,7 +116,7 @@ let { int(cos(Pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
       Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
       limit(Fresnel_C(~tt),~tt,infinity) => 1/2,
       df(Fresnel_C(~x),~x) => cos(Pi/2*x^2) ,
-      Fresnel_C (~x) => compute_int_functions(x,Fresnel_C)
+      Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)
                when numberp x and abs(x) <= 10 and lisp !*rounded };
 
 algebraic
@@ -124,18 +125,20 @@ let { limit (erf(~x),~x,infinity) => 1,
       erfc (~x) => 1-erf(x),
       erfi(~z)  => -i * erf(i*z),
       int(1/e^(~tt^2),~tt,0,~z) => erf(z)/2*sqrt(pi) when z freeof infinity,
-      int(1/e^(~tt^2),~tt,~z,infinity) => erfc(z)/2*sqrt(pi) when z freeof infinity,
-      erf (~x) => compute_int_functions(x,erf)
-                when numberp x and abs(x)<5 and lisp !*rounded };
+      int(1/e^(~tt^2),~tt,~z,infinity) => erfc(z)/2*sqrt(pi) when z freeof infinity
+% RmS 2013-04-09: rule moved to alg/elem.red, compute!:int!:functions autoloaded
+%      erf (~x) => compute!:int!:functions(x,erf)
+%                when numberp x and abs(x)<5 and lisp !*rounded
+    };
 
-algebraic procedure compute_int_functions(x,f);
+algebraic procedure compute!:int!:functions(x,f);
    begin scalar pre,!*uncached,scale,term,n,precis,result,interm;
    pre := precision 0; precision pre;
    precis := 10^(-2 * pre);
    lisp (!*uncached := t);
    if f = Si then
            if x < 0 then result :=
-                        - compute_int_functions(-x,f) else
+                        - compute!:int!:functions(-x,f) else
             << n:=1; term := x; result := x;
                while abs(term) > precis do
                  << term := -1 * (term * x*x)/(2n * (2n+1));
@@ -143,7 +146,7 @@ algebraic procedure compute_int_functions(x,f);
                     n := n + 1>>; >>
     else if f = Ci then
            if x < 0 then result :=
-                         - compute_int_functions(-x,f) -i*pi else
+                         - compute!:int!:functions(-x,f) -i*pi else
               << n:=1; term := 1; result := euler!*constant + log(x);
                while abs(term) > precis do
                  << term := -1 * (term * x*x)/((2n-1) * 2n);
@@ -168,7 +171,7 @@ algebraic procedure compute_int_functions(x,f);
                     result := result + term/(2n);
                     n := n + 1>>; >>
     else if f = erf then
-           if x < 0 then result := - compute_int_functions(-x,f) else
+           if x < 0 then result := - compute!:int!:functions(-x,f) else
             << n:=1; term := x; result := x;
                if floor(x*7) > pre then precision  floor(x*7);
                interm := -1 *  x*x;

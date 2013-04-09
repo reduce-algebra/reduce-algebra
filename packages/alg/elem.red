@@ -553,11 +553,18 @@ for all x let df(dilog x,x)=-log x/(x-1);
 
 for all x let df(ei(x),x)=e**x/x;
 
+let Ei(~x) => compute!:int!:functions(x,Ei)
+              when numberp x and abs(x) <= 20 and lisp !*rounded;
+
+
 let erf 0=0;
 
 for all x let erf(-x)=-erf x;
 
 for all x let df(erf x,x)=2*sqrt(pi)*e**(-x**2)/pi;
+
+let erf (~x) => compute!:int!:functions(x,erf)
+                when numberp x and abs(x)<5 and lisp !*rounded;
 
 for all x let exp(x)=e**x;
 
@@ -572,8 +579,16 @@ let   e**(i*pi/2) = i,
 operator ci,si;
 
 let {
+  Si(0) => 0,
+  Si(-~x) => (- Si(x)),
+  df(si(~x),x) => sin(x)/x,
+  Si(~x) => compute!:int!:functions(x,Si)
+            when numberp x and lisp !*rounded,
+
+  Ci(-~x) => - Ci(x) -i*pi,
   df(ci(~x),x) => cos(x)/x,
-  df(si(~x),x) => sin(x)/x
+  Ci(~x) => compute!:int!:functions(x,Ci)
+            when numberp x and abs(x) <= 20 and lisp !*rounded
 };
 
 % Rule for derivative of absolute value.
