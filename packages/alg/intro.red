@@ -142,7 +142,8 @@ symbolic procedure mkid(x,y);
   % creates the ID XY from identifier X and (evaluated) object Y.
   if not idp x then typerr(x,"MKID root")
    else if atom y and (idp y or fixp y and not minusp y)
-    then intern compress nconc(explode x,explode y)
+    then intern compress nconc(explode get!-print!-name x,
+                               explode get!-print!-name y)
    else typerr(y,"MKID index");
 
 flag('(mkid),'opfn);
@@ -258,8 +259,9 @@ symbolic procedure errpri2(u,v);
 
 symbolic procedure redmsg(u,v);
     if !*wsm or null !*msg or v neq "operator" then nil
-     else if terminalp() then yesp list("Declare",u,v,"?") or error1()
-     else lprim list(u,"declared",v);
+     else if terminalp()
+      then yesp list("Declare",get!-print!-name u,v,"?") or error1()
+     else lprim list(get!-print!-name u,"declared",v);
 
 symbolic procedure typerr(u,v);
    % Note this replaces definition in rlisp/lpri. If outputhandler!* is
