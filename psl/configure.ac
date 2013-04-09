@@ -69,7 +69,7 @@ then
   esac
 fi
 
-if test "x$DONT_USE_XPORT" = "x"
+if test -d $srcdir/psl-$pslver -a -f $srcdir/psl-$pslver/xport.pat -a "x$DONT_USE_XPORT" = "x"
 then
 # Now I need to build a copy of the "xport" utility. You may view it as
 # mildly eccentric to build this tool at configure time!
