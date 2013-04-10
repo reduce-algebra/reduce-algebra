@@ -373,7 +373,8 @@ let EllipticTHETArules;
 %######################################################################
 %CALCULATING ZETA
 
-procedure ZETA_function(u,m);
+procedure JacobiZeta!:numeric(u,m);
+  % computes the JacobiZeta function for numeric u,m in rounded mode
 
    begin scalar phi_list, clist, L, j, z, cn, phi_n;
 
@@ -417,7 +418,7 @@ JacobiZETArules :=
 %                            m * Jacobisn(u - EllipticK(m),m)
 %                              * Jacobicd(u - EllipticK(m),m),
 
-        JacobiZeta(~u,~m) => Num_Elliptic(ZETA_function,u,m)
+        JacobiZeta(~u,~m) => Num_Elliptic(JacobiZeta!:numeric,u,m)
                              when lisp !*rounded and numberp u
                              and numberp m
 };
