@@ -216,6 +216,12 @@ There are a number of optional ways in which configuration may be customised:
    As "--with-m32" for CSL, this used 32-bit PSL even if you are in a
    64-bit-capable environment. I think!
 
+   For example, to build both 32-bit and 64-bit PSL on a 64-bit Windows system
+   you would run the following commands
+         ./configure --with-psl --with-m32
+         ./configure --with-psl
+         make
+
    There are other options, many of which are experimental or historical.
    See "./configure --help" for a definitive list. In the CSL world I will
    perhaps note "--with-wx" which relates to a currently incomplete move from

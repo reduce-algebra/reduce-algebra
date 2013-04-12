@@ -94,7 +94,15 @@ rc=0
 
 list=""
 test "$buildcsl" = "yes" && list="cslbuild/*-${os}*"
-test "$buildpsl" = "yes" && list="$list pslbuild/*${host}*"
+if test "$buildpsl" = "yes"
+then
+  if test "x$os" = "xwindows"
+  then
+    list="$list pslbuild//*-${os}*"
+  else
+    list="$list pslbuild/*${host}*"
+  fi
+fi
 
 for l in $list
 do

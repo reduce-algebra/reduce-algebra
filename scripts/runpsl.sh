@@ -58,17 +58,30 @@ mkdir -p $here/../bin
 
 if test "x$host" = "xi686-pc-windows"
 then
-  for hx in "i686-pc-windows" "i686-pc-windows-debug"
+  case `uname` in
+  *CYGWIN*WOW64*)
+    pathlist="x86_64-w64-windows x86_64-w64-windows-debug i686-pc-windows i686-pc-windows-debug"
+    ;;
+  *)
+    pathlist="i686-pc-windows i686-pc-windows-debug"
+    ;;
+  esac
+  for hx in $pathlist
   do
     if test -x $here/../pslbuild/$hx/psl/$ap.exe
     then
+      STORE=16000000
+      if test -f $here/../pslbuild/$hx/psl/64
+      then
+        STORE=$($here/pslmem64.sh)
+      fi
       bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
       img=`cygpath -m $here/../pslbuild/$hx/red/reduce.img`
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td 16000000 -f $img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
-      exec $bin -td 16000000 -f $img $*
+      exec $bin -td $STORE -f $img $*
       exit 0
     fi
   done
