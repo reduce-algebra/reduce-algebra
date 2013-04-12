@@ -57,7 +57,7 @@ pslver=`"$srcdir/../scripts/pslver.sh"`
 if test "$with_m32" = "yes"
 then
   case $pslver in
-  amd64)
+  amd64|AMD64|AMD64_ext)
     pslver="linux"
     ;;
   macintel64)
@@ -65,6 +65,9 @@ then
     ;;
   solaris64)
     pslver="solaris"
+    ;;
+  mingw-w64)
+    pslver="win32"
     ;;
   esac
 fi
@@ -112,7 +115,7 @@ cd ..
 else
 
   cp ../../psl/dist/nonkernel/$pslver/lap/* psl
-  cp ../../psl/dist/lap/$pslver/* psl
+  cp ../../psl/dist/lap/$pslver/*.b psl
   cp ../../psl/dist/kernel/$pslver/bpsl* psl
 
   cp psl/nbig32.b psl/zbig.b

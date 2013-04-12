@@ -1322,7 +1322,7 @@ Optional Packages:
   --with-SDK              Select MacOSX SDK (eg --with-SDK=10.8) (CSL ONLY)
   --with-lto              Experiment with extreme optimisation in gcc (CSL
                           only)
-  --with-m32              Force 32-bit model even on 64-bit gcc (CSL only)
+  --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default (CSL
                           only)
   --with-cygwin           Force use of raw cygwin (note licensing consequences
@@ -2430,11 +2430,23 @@ echo in-place build attempt = $inplace
 { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host args=$ac_configure_args" >&5
 $as_echo "$as_me: host=$host args=$ac_configure_args" >&6;}
 
-pslbuild=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
-
 if test "x$with_psl" != "xno"
 then
-  build="$pslbuild"
+  if test "x$host" = "xi686-pc-cygwin"
+  then
+# building PSL on Windows - need to decide whether to build for 32 or 64bit
+    if test "x$with_m32" = "xyes"
+    then
+      build="i686-pc-windows"
+    elif test "x$with_m64" = "xyes" -o "x$wow64" = "xyes"
+    then
+      build="x86_64-w64-windows"
+    else
+      build="i686-pc-windows"
+    fi
+  else
+    build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
+  fi
 else
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi

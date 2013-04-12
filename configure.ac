@@ -109,7 +109,7 @@ AC_ARG_WITH(lto,
 
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even on 64-bit gcc (CSL only)]),
+                  [Force 32-bit model even on 64-bit gcc]),
    [],
    [with_m32="no"])
 
@@ -411,11 +411,23 @@ echo in-place build attempt = $inplace
 
 AC_MSG_NOTICE([host=$host args=$ac_configure_args])
 
-pslbuild=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
-
 if test "x$with_psl" != "xno"
 then
-  build="$pslbuild"
+  if test "x$host" = "xi686-pc-cygwin"
+  then
+# building PSL on Windows - need to decide whether to build for 32 or 64bit
+    if test "x$with_m32" = "xyes"
+    then 
+      build="i686-pc-windows"
+    elif test "x$with_m64" = "xyes" -o "x$wow64" = "xyes"
+    then
+      build="x86_64-w64-windows"
+    else
+      build="i686-pc-windows"
+    fi
+  else
+    build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
+  fi
 else
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
