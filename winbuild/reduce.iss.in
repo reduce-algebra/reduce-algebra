@@ -13,6 +13,11 @@
 ;;----------------------------------------------------------------;;
 
 
+#define CslBuild    "@srcdir@\cslbuild\@build@"
+#define CslBuild64  "@srcdir@\cslbuild\@build64@"
+#define PslBuild    "@srcdir@\pslbuild\@build@"
+#define PslBuild64  "@srcdir@\pslbuild\@build64@"
+
 [Setup]
 AppName=REDUCE
 AppVerName=REDUCE
@@ -36,12 +41,15 @@ UninstallFilesDir={app}\uninst
 ShowLanguageDialog=yes
 ChangesAssociations=yes
 PrivilegesRequired=none
+ArchitecturesInstallIn64BitMode=x64
 
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "de"; MessagesFile: "compiler:Languages\German.isl"
-Name: "fr": MessagesFile: "compiler:Languages\French.isl"
+Name: "fr"; MessagesFile: "compiler:Languages\French.isl"
+Name: "it"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 
 [Types]
@@ -79,17 +87,28 @@ Source: "@srcdir@\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: "co
 Source: "@srcdir@\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
 
 ; csl
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl"
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: not Is64BitInstallMode
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: not Is64BitInstallMode
+Source: "@srcdir@\cslbuild\@build@\csl\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl"; Check: not Is64BitInstallMode
+
+Source: "@srcdir@\cslbuild\@build64@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: Is64BitInstallMode
+Source: "@srcdir@\cslbuild\@build64@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: Is64BitInstallMode
+Source: "@srcdir@\cslbuild\@build64@\csl\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl"; Check: Is64BitInstallMode
+
 Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
 
 
 ;psl
-Source: "@srcdir@\pslbuild\@build@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"
-Source: "@srcdir@\pslbuild\@build@\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
-Source: "@srcdir@\pslbuild\@build@\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
-Source: "@srcdir@\winbuild\reduce.img"; DestDir: "{app}\lib\psl\red\"; Components: "psl"
+Source: "@srcdir@\pslbuild\@build@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@srcdir@\pslbuild\@build@\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@srcdir@\pslbuild\@build@\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Flags: skipifsourcedoesntexist; Check: not Is64BitInstallMode
+
+Source: "@srcdir@\pslbuild\@build64@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@srcdir@\pslbuild\@build64@\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@srcdir@\pslbuild\@build64@\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode; Flags: skipifsourcedoesntexist;
+
+Source: "@srcdir@\winbuild\reduce.img"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@srcdir@\winbuild\reduce64.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: "psl"; Check: not Is64BitInstallMode
 Source: "@srcdir@\winbuild\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"
 Source: "@srcdir@\winbuild\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"
 
@@ -123,7 +142,7 @@ begin
     GnuPlotPath := RegVal;
     Delete(GnuPlotPath, Pos(' -p ', RegVal), Length(RegVal));
     Log('Gnuplot found at '+GnuPlotPath);
-  end
+  end;
   Result := True;
 end;
 
@@ -149,7 +168,6 @@ ReduceCommon=Files common to CSL and PSL
 ReduceCSL=Files for CSL
 ReducePSL=Files for PSL
 
-German=German
 
 
 ;=== German === LID=$0407 CodePage=1252
@@ -158,13 +176,11 @@ de.FullInstallation=Vollständige Installation
 de.CslOnlyInstallation=Nur CSL installieren
 de.PslOnlyInstallation=Nur PSL installieren
 de.CustomInstallation=Benutzerdefinierte Installation
-de.Uninstall=Deinstallation
 
 de.ReduceCommon=Gemeinsame Dateien
 de.ReduceCSL=CSL-Dateien
 de.ReducePSL=PSL-Dateien
 
-de.German=Deutsch
 
 ;=== French === LID=$040C CodePage=1252
 
@@ -172,10 +188,30 @@ fr.FullInstallation=Installation complète
 fr.CslOnlyInstallation=Installez CSL seulement
 fr.PslOnlyInstallation=Installez PSL seulement
 fr.CustomInstallation=Installation personnalisée
-fr.Uninstall=Désinstaller
 
 fr.ReduceCommon=Fichiers communs à CSL et PSL
 fr.ReduceCSL=Fichiers pour CSL
 fr.ReducePSL=Fichiers pour PSL
 
-fr.French=Français
+
+; === Italian ===
+
+it.FullInstallation=Installazione completa
+it.CslOnlyInstallation=Installare solo CSL
+it.PSLOnlyInstallation=Installare solo PSL
+it.CustomInstallation=Installazione personalizzata
+
+it.ReduceCommon=File comuni a CSL e PSL
+it.ReduceCSL=File per CSL
+it.ReducePSL=File per PSL
+
+
+es.FullInstallation=Instalación completa
+es.CslOnlyInstallation=Instalar sólo CSL
+es.PSLOnlyInstallation=Instalar sólo PSL
+es.CustomInstallation=Instalación personalizada
+
+es.ReduceCommon=Archivos comunes de CSL y PSL
+es.ReduceCSL=Archivos para CSL
+es.ReducePSL=Archivos para PSL
+
