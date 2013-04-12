@@ -91,6 +91,9 @@ asserted procedure pasf_mdres(f: List): List;
 	 return op;
       if rl_quap op then
 	 return {op, rl_var f, pasf_mdres rl_mat f};
+      if rl_bquap op then
+     	 rederr{"pasf_mdres: Bounded quantifiers are not allowed."};
+	 % return {op, rl_var f, pasf_mdres rl_mat f, rl_b f};
       if rl_boolp op then
 	 return op . for each x in rl_argn f collect pasf_mdres x;
       % [f] is atomic PASF formula.

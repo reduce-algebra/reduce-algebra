@@ -542,7 +542,7 @@ procedure pasf_expand(f);
       	 cl_simpl(pasf_exprng1 f,nil,-1)
       >> else <<
       	 if !*rlverbose then ioto_prin2t " (smart)";
-	 cl_simpl(pasf_exprng2 f,nil,-1)
+      	 cl_simpl(pasf_exprng2 f,nil,-1)
       >>
    end;
 
@@ -1522,9 +1522,9 @@ procedure pasf_structat(at,al);
       return pasf_0mk2(pasf_op at, numr simp cdr assoc(lhs,al))
    end;
 
-procedure pasf_smt2Print(f,fname,linel);
-   % Prefix print. [f] is the Lisp prefix form , [fname] is a string, [linel] is
-   % a list of strings.
+procedure pasf_smt2Print(f, fname, linel);
+   % Prefix print. [f] is the Lisp prefix form of a PASF formula, [fname] is a
+   % string, [linel] is a list of strings.
    <<
       if fname then
       	 out fname;
@@ -1546,12 +1546,10 @@ procedure pasf_smt2PrintLogic();
 procedure pasf_smt2Print1(f);
    % Prefix print.
    begin scalar vl;
-      vl := cl_varl1 f;
-      if car vl then
-	 rederr {"pasf_smt2Print1: found free variables ", car vl};
-      % f := cl_matrix cl_pnf f;
-      % for each v in vl do
-      % 	 ioto_prin2t {"(declare-const ", v, " Real)"};
+      % When working with divc and modc the following test does not work.
+      % vl := cl_varl1 f;
+      % if car vl then
+      % 	 rederr {"pasf_smt2Print1: found free variables ", car vl};
       prin2 "(assert ";
       pasf_smt2Print2 f;
       prin2t ")"
@@ -1593,15 +1591,16 @@ procedure pasf_smt2PrefixPrint(op, argl);
    >>;
 
 procedure pasf_smt2PrefixPrintQ(quant, var, arg);
-   <<
+   begin scalar quantal, w;
       prin2 "(";
-      prin2 quant;
+      quantal := '((all . "forall") (ex . "exists"));
+      prin2(if w := atsoc(quant, quantal) then cdr w else quant);
       prin2 " ((";
       prin2 var;
-      prin2 " Int))";
+      prin2 " Int)) ";
       pasf_smt2Print2 arg;
       prin2 ")"
-   >>;
+   end;
 
 procedure pasf_smt2PrintAt(f);
    begin scalar opal,op,lhs,w;
@@ -1612,7 +1611,6 @@ procedure pasf_smt2PrintAt(f);
       else if pasf_congp f then <<
 	 prin2 "(= ";
 	 pasf_smt2PrintT {'modc, lhs, pasf_m f};
-	 prin2 " ";
 	 prin2 " 0)"
       >>
       else <<
@@ -1628,7 +1626,7 @@ procedure pasf_smt2PrintAt(f);
 
 procedure pasf_smt2PrintT(u);
    if numberp u or idp u then
-      prin2 u
+      prin2 if null u then 0 else u
    else
       pasf_smt2PrintT1(car u,cdr u);
 
