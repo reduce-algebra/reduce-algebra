@@ -41,6 +41,7 @@ PrivilegesRequired=none
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "de"; MessagesFile: "compiler:Languages\German.isl"
+Name: "fr": MessagesFile: "compiler:Languages\French.isl"
 
 
 [Types]
@@ -159,8 +160,22 @@ de.PslOnlyInstallation=Nur PSL installieren
 de.CustomInstallation=Benutzerdefinierte Installation
 de.Uninstall=Deinstallation
 
-ReduceCommon=Gemeinsame Dateien
-ReduceCSL=CSL-Dateien
-ReducePSL=PSL-Dateien
+de.ReduceCommon=Gemeinsame Dateien
+de.ReduceCSL=CSL-Dateien
+de.ReducePSL=PSL-Dateien
 
 de.German=Deutsch
+
+;=== French === LID=$040C CodePage=1252
+
+fr.FullInstallation=Installation complète
+fr.CslOnlyInstallation=Installez CSL seulement
+fr.PslOnlyInstallation=Installez PSL seulement
+fr.CustomInstallation=Installation personnalisée
+fr.Uninstall=Désinstaller
+
+fr.ReduceCommon=Fichiers communs à CSL et PSL
+fr.ReduceCSL=Fichiers pour CSL
+fr.ReducePSL=Fichiers pour PSL
+
+fr.French=Français
