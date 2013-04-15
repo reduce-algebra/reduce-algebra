@@ -1,0 +1,46 @@
+
+load_package scope;
+
+
+
+optimize z:=a,z:=-z;
+
+
+
+z := a
+z :=  - z
+
+
+optimize z:=a,z:=z;
+
+
+
+z := a
+
+
+optimize z:=a,z:=1-1-z;
+
+
+
+z := a
+z :=  - z
+
+
+optimize z:=a,z:=z**2;
+
+
+
+z := a
+z := z*z
+
+
+optimize z:=a,z:=-z**2;
+
+
+
+z := a
+z :=  - z*z
+
+
+end;
+

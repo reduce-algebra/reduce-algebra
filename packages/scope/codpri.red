@@ -1151,7 +1151,7 @@ begin scalar lpl,protectednames,j,item,substlst,dellst,se,ose,
                     then <<sgn:=t;
                            item:=car(item).caddr(item)>>;
                  se:=nil;
-                 if listeq(car item,cdr item)
+                 if listeq(car item,cdr item) and not sgn
                     then % We created nonsense like ( a . a )
                          <<putv(lhs,j,nil);
                            putv(rhs,j,nil)>>
