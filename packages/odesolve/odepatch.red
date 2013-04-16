@@ -269,53 +269,54 @@ symbolic procedure diffp(u,v);
                  and null !*depend then return nil ./ 1
          else w := mksq(w,1);
       go to e
-   end$
+   end;
 
-symbolic procedure dfform_int(u, v, n);
-   % Simplify a SINGLE derivative of an integral.
-   % u = '(int y x) [as main variable of SQ form]
-   % v = kernel
-   % n = integer power
-   % Return SQ form of df(u**n, v) = n*u**(n-1)*df(u, v)
-   % This routine is called by diffp via the hook
-   % "if x := get(car u,'dfform) then return apply3(x,u,v,n)".
-   % It does not necessarily need to use this hook, but it needs to be
-   % called as an alternative to diffp so that the linearity of
-   % differentiation has already been applied.
-   begin scalar result, x, y, dx!/dv;
-      y := simp!* cadr u;  % SQ form integrand
-      x := caddr u;  % kernel
-      result :=
-      if v eq x then y
-         % Special case -- just differentiate the integral:
-         % df(int(y,x), x) -> y  replacing the let rule in INT.RED
-      else if not !*intflag!* and       % not in the integrator
-         % If used in the integrator it can cause infinite loops,
-         % e.g. in df(int(int(f,x),y),x) and df(int(int(f,x),y),y)
-         !*allowdfint and               % must be on for dfint to work
-         <<
-            % Compute PARTIAL df(y, v), where y must depend on x, so
-            % if x depends on v, temporarily replace x:
-            result := if numr(dx!/dv:=diffp(x.**1,v)) then
-               %% (Subst OK because all kernels.)
-               subst(x, xx, diffsq(subst(xx, x, y), v)) where
-                  xx = gensym()
-            else diffsq(y, v);
-            !*dfint or not_df_p result
-         >>
-      then
-         % Differentiate under the integral sign:
-         % df(int(y,x), v) -> df(x,v)*y + int(df(y,v), x)
-         addsq(
-            multsq(dx!/dv, y),
-            simp{'int, mk!*sq result, x})  % MUST re-simplify it!!!
-            % (Perhaps I should use prepsq -
-            % kernels are normally true prefix?)
-      else !*kk2q{'df, u, v};  % remain unchanged
-      if n neq 1 then
-         result := multsq( (((u .** (n-1)) .* n) .+ nil) ./ 1, result);
-      return result
-   end$
+%% commented out since folded into main code
+% symbolic procedure dfform_int(u, v, n);
+%    % Simplify a SINGLE derivative of an integral.
+%    % u = '(int y x) [as main variable of SQ form]
+%    % v = kernel
+%    % n = integer power
+%    % Return SQ form of df(u**n, v) = n*u**(n-1)*df(u, v)
+%    % This routine is called by diffp via the hook
+%    % "if x := get(car u,'dfform) then return apply3(x,u,v,n)".
+%    % It does not necessarily need to use this hook, but it needs to be
+%    % called as an alternative to diffp so that the linearity of
+%    % differentiation has already been applied.
+%    begin scalar result, x, y, dx!/dv;
+%       y := simp!* cadr u;  % SQ form integrand
+%       x := caddr u;  % kernel
+%       result :=
+%       if v eq x then y
+%          % Special case -- just differentiate the integral:
+%          % df(int(y,x), x) -> y  replacing the let rule in INT.RED
+%       else if not !*intflag!* and       % not in the integrator
+%          % If used in the integrator it can cause infinite loops,
+%          % e.g. in df(int(int(f,x),y),x) and df(int(int(f,x),y),y)
+%          !*allowdfint and               % must be on for dfint to work
+%          <<
+%             % Compute PARTIAL df(y, v), where y must depend on x, so
+%             % if x depends on v, temporarily replace x:
+%             result := if numr(dx!/dv:=diffp(x.**1,v)) then
+%                %% (Subst OK because all kernels.)
+%                subst(x, xx, diffsq(subst(xx, x, y), v)) where
+%                   xx = gensym()
+%             else diffsq(y, v);
+%             !*dfint or not_df_p result
+%          >>
+%       then
+%          % Differentiate under the integral sign:
+%          % df(int(y,x), v) -> df(x,v)*y + int(df(y,v), x)
+%          addsq(
+%             multsq(dx!/dv, y),
+%             simp{'int, mk!*sq result, x})  % MUST re-simplify it!!!
+%             % (Perhaps I should use prepsq -
+%             % kernels are normally true prefix?)
+%       else !*kk2q{'df, u, v};  % remain unchanged
+%       if not(n=1) then
+%          result := multsq( (((u .** (n-1)) .* n) .+ nil) ./ 1, result);
+%       return result
+%    end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -383,8 +384,9 @@ symbolic procedure solvequadratic(a2,a1,a0);
    % Modified to use root_val to compute numeric roots.  SLK.
    if !*rounded and numcoef a0 and numcoef a1 and numcoef a2
       then for each z in cdr root_val list mkpolyexp2(a2,a1,a0)
-         collect simp!* z else
-   begin scalar d;
+         collect simp!* (if eqcar(z,'equal) then caddr z
+                          else errach {"Quadratic confusion",z})
+    else begin scalar d;
       d := sqrtq subtrsq(quotsqf(exptsq(a1,2),4),multsq(a2,a0));
       a1 := quotsqf(negsq a1,2);
       return
