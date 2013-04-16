@@ -30,171 +30,89 @@
 
 module pasfresolve;
 
-% flag('(pasf_simpmoddivc), 'full);
 algebraic infix divc;
-% put('divc, 'number!-of!-args, 2);
-% put('divc, 'pasf_simpfn, 'pasf_simpmoddivc);
 algebraic infix modc;
-% put('modc, 'number!-of!-args, 2);
-% put('modc, 'pasf_simpfn, 'pasf_simpmoddivc);
 
 precedence divc, modc;
 precedence modc, times;
 % TODO: adjust precedence. Now a modc b > 0 is parsed correctly but a divc b > 0
 % is not.
 
-procedure pasf_rxffn!-modc(op, argl, condl, qll);
-   begin scalar w, a, k;
-      w := gensym();
-      a := car argl;
-      k := cadr argl;
-      return {rc_mk(
-	 w,
-	 'and . {'cong, {'difference, w, a}, 0, k} .
-	    {'geq, w, 0} . {'lessp, {'difference, w, k}, 0}  . condl,
-	 ('ex . w) . lto_appendn qll)}
+% Term rewriting before resolving.
+switch rlresolvetrw;
+off1 'rlresolvetrw;
+
+% If on, universal quantifiers will be used in equivalent output formula.
+% WARNING: in combination with other (except of modc and divc) function symbols
+% this can lead to resolved output which is not equivalent with its non-resolved
+% counterpart!
+switch rlresolveuniversal;
+off1 'rlresolveuniversal;
+
+procedure pasf_resolve(f);
+   cl_apply2ats(f, 'pasf_resolveat);
+
+procedure pasf_resolveat(atf);
+   begin scalar w;
+      w := rl_simp pasf_resolveat1 rl_prepfof atf;
+      return if !*rlresi then cl_simpl(w,nil,-1) else w
    end;
 
-procedure pasf_rxffn!-divc(op, argl, condl, qll);
-   begin scalar w, a, k;
-      w := gensym();
-      a := car argl;
-      k := cadr argl;
-      return {rc_mk(
-	 w,
-	 'and . {'leq, {'difference, {'times, w, k}, a}, 0} .
-	    {'greaterp, {'plus, k, {'times, w, k}, {'minus, a}}, 0} . condl,
-	 ('ex . w) . lto_appendn qll)};
+procedure pasf_resolveat1(lpf);
+   % lpf is an atomic formula in lisp prefix representation. returns a
+   % lisp prefix formula without extended functions.
+   begin scalar op,lhs,rrv;
+      op := car lpf;
+      lhs := cadr lpf;
+      if !*rlresolvetrw then % Rewrite mods using divs
+	 lhs := prepf numr simp pasf_mdrestrw lhs;
+      rrv := pasf_resolveterm lhs;
+      % reason for distinction between (n)cong and others is arity
+      if op memq '(ncong cong) then
+	 op := op . cadddr lpf;
+      if cdr rrv then
+      	 return 'or . for each rc in rrv collect
+	    pasf_transrc(op,rc);
+      return pasf_transrc(op,car rrv)
    end;
 
-% asserted procedure pasf_simpmoddivc(a: List): SF;
-%    <<
-%       if not numberp caddr a then
-% 	 rederr "TODO!";
-%       simpiden a
-%    >>;
-
-switch rlpasfdotrw;
-on1 'rlpasfdotrw;
-
-symbolic operator rlmdres;
-
-procedure rlmdres(f);
-   rl_prepfof pasf_mdres(rl_simp f);
-
-asserted procedure pasf_mdres(f: List): List;
-   % PASF mod div resolve. [f] is PASF formula. Returns equivalent PASF formula
-   % without mod div symbols.
-   begin scalar op;
-      op := rl_op f;
-      if rl_tvalp op then
-	 return op;
-      if rl_quap op then
-	 return {op, rl_var f, pasf_mdres rl_mat f};
-      if rl_bquap op then
-     	 rederr{"pasf_mdres: Bounded quantifiers are not allowed."};
-	 % return {op, rl_var f, pasf_mdres rl_mat f, rl_b f};
-      if rl_boolp op then
-	 return op . for each x in rl_argn f collect pasf_mdres x;
-      % [f] is atomic PASF formula.
-      return pasf_mdresat f
+procedure pasf_transrc(op,rc);
+   begin scalar w;
+      w := pasf_transrc1(op,rc);
+      for each p in reverse rc_ql rc do
+	 w := {car p,cdr p,w};
+      return w
    end;
 
-asserted procedure pasf_mdresat(atf: List): List;
-   % PASF mod div resolve atomic formula. [atf] is PASF atomic formula. Returns
-   % PASF formula.
-   begin scalar op, w, nlhs, conds, res;
-      % TODO: - Handle congruences separately, possibly allowing expressions in
-      % moduli.
-      op := pasf_op atf;
-      w := pasf_mdressf pasf_arg2l atf;
-      nlhs := car w;
-      conds := cadr w;
-      res := pasf_0mk2(op, nlhs);
-      for each p in conds do
-	 res := rl_mk2('and, res, caddr p);
-      for each p in conds do
-	 if not null cadr p then
-	    res := rl_mkbq('bex, car p, cadr p, res)
-	 else
-	    res := rl_mkq('ex, car p, res);
-      return res
+procedure pasf_transrc1(op,rc);
+   if op memq '(equal neq) then
+      {if !*rlresolveuniversal then 'impl else 'and,
+	 rc_guard rc,
+	 {op,rc_term rc,0}}
+   else
+      {if !*rlresolveuniversal then 'impl else 'and,
+	 rc_guard rc,
+	 if atom op then % if op is not (n)cong
+	    {op, rc_term rc, 0}
+	 else % op is (n)cong
+	    {car op, rc_term rc, 0, cdr op}};
+
+procedure pasf_resolveterm(lpf);
+   % lpf is a lisp prefix form of a term including extended functions.
+   % Returns a RRV.
+   begin scalar op,fn,cprodl;
+      if atom lpf then
+	 return {rc_mk(lpf, 'true, nil)};
+      op := car lpf;
+      cprodl := cl_cartprod
+	 for each arg in cdr lpf collect pasf_resolveterm arg;
+      fn := rl_rxffn op;
+      if not fn then
+	 return cl_resolve!-simple(op, cprodl);
+      return cl_resolve!-xfn(op, fn, cprodl)
    end;
 
-asserted procedure pasf_mdressf(sf: SF): List2;
-   % PASF mod div resolve standard form. Resolves [sf] removing mod div symbols
-   % from it. Returns: first element of the returned list is new SF and the
-   % second is a list of List3 {kernel, f1 / nil, f2}. [f1] will be put into
-   % bound of a bounded quantifier. [f2] is an formula which will be added
-   % conjunctively to the result.
-   begin scalar w, newsf, prfal, sfal;
-      if !*rlpasfdotrw then
-	 w := pasf_mdrespf reval pasf_mdrestrw prepf sf
-      else
-      	 w := pasf_mdrespf prepf sf;
-      newsf := numr simp car w;
-      prfal := cadr w;
-      while not null prfal do <<
-	 sfal := pasf_mdreseqn car prfal . sfal;
-	 prfal := cdr prfal
-      >>;
-      return {newsf, sfal}
-   end;
-
-asserted procedure pasf_mdrespf(pf: Any): List2;
-   % PASF mod div resolve lisp prefix. Returns a 2 element list: 1st element is
-   % a "purified" term and 2nd is an alist containing elements of the form
-   % (kernel . lisp prefix) where lisp prefix contains exactly one mod div
-   % symbol at topmost position.
-   begin scalar op, argl, nargl, nal, w, nvar;
-      if atom pf then
-	 return {pf, nil};
-      op := car pf;
-      argl := cdr pf;
-      while not null argl do <<
-	 w := pasf_mdrespf car argl;
-	 nargl := car w . nargl;
-	 nal := nconc(nal, reversip cadr w);
-	 argl := cdr argl
-      >>;
-      nargl := reversip nargl;
-      if op memq '(modc divc) then <<
-	 nvar := gensym();
-	 w := op . nargl;
-	 return {nvar, (nvar . w) . nal}
-      >>;
-      return {op . nargl, nal}
-   end;
-
-% x = (mod a b) equiv cong(x, a, b) and 0 <= x and x < b
-% x = (div a b) equiv b*x <= a and a < b*(x+1)
-
-asserted procedure pasf_mdreseqn(p: List2): List3;
-   % PASF mod div resolve equation. [p] is a list, first element is a kernel and
-   % the following elements are lisp prefix of the form (mod a b) or (div a b).
-   % Returns a List3, first element is a kernel, second is a quantifier-free
-   % PASF formula (bound) or nil, third is a quantifier-free PASF formula.
-   begin scalar varsf, op, a, b, f;
-      varsf := numr simp car p;
-      op := cadr p;
-      a := numr simp caddr p;
-      b := numr simp cadddr p;
-      if op eq 'modc then
-	 return {car p,
-	    rl_mk2('and, pasf_0mk2('geq, varsf),
-	       pasf_mk2('lessp, varsf, b)),
-	    pasf_mk2(pasf_mkop('cong, b), varsf, a)};
-      if op eq 'divc then
-	 return {car p,
-	    nil,
-	    rl_mk2('and,
-	       pasf_mk2('leq, multf(b, varsf), a),
-	       pasf_mk2('lessp, a, multf(b, addf(varsf, 1))))};
-      % This should NOT happen!
-      return nil
-   end;
-
-asserted procedure pasf_mdrestrw(pf: Any): Any;
+procedure pasf_mdrestrw(pf);
    % PASF mod div resolve term rewriting procedure. [pf] is lisp prefix. Returns
    % lisp prefix representing term after the application of the rewrite rules.
    begin scalar op, argl, nargl, res;
@@ -215,6 +133,54 @@ asserted procedure pasf_mdrestrw(pf: Any): Any;
       >>;
       return op . nargl
    end;
+
+procedure pasf_rxffn(op);
+   if op eq 'max then
+      'cl_rxffn!-max
+   else if op eq 'min then
+      'cl_rxffn!-max
+   else if op eq 'abs then
+      'cl_rxffn!-abs
+   else if op eq 'sign then
+      'cl_rxffn!-sign
+   else if op eq 'sqrt then
+      'cl_rxffn!-sqrt
+   else if op eq 'divc then
+      'pasf_rxffn!-divc
+   else if op eq 'modc then
+      'pasf_rxffn!-modc
+   else
+      nil;
+
+procedure pasf_rxffn!-modc(op, argl, condl, qll);
+   begin scalar w, a, k, quant;
+      w := gensym();
+      a := car argl;
+      k := cadr argl;
+      quant := if !*rlresolveuniversal then 'all . w else 'ex . w;
+      return {rc_mk(
+	 w,
+	 'and . {'greaterp, k, 0} .
+	    {'cong, {'difference, w, a}, 0, k} .
+	    {'geq, w, 0} . {'lessp, {'difference, w, k}, 0} . condl,
+	 quant . lto_appendn qll)}
+   end;
+
+procedure pasf_rxffn!-divc(op, argl, condl, qll);
+   begin scalar w, a, k, quant;
+      w := gensym();
+      a := car argl;
+      k := cadr argl;
+      quant := if !*rlresolveuniversal then 'all . w else 'ex . w;
+      return {rc_mk(
+	 w,
+	 'and . {'greaterp, k, 0} .
+	    {'leq, {'difference, {'times, w, k}, a}, 0} .
+	    {'greaterp, {'plus, k, {'times, w, k}, {'minus, a}}, 0} . condl,
+	 quant . lto_appendn qll)};
+   end;
+
+
 
 endmodule;
 
