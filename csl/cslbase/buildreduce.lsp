@@ -1035,6 +1035,10 @@ symbolic procedure read_file f1;
     if null w then <<
        time_info := nil;
        return reversip r >>;
+% Remove time info from lines
+    w := cdr w;
+    if (trim_prefix(explodec "Tested on ", explodec cdar w)) then w := cdr w;
+    r := w;
     while eqcar(x, '! ) do x := cdr x;
     w := n := nil;
     while digit car x do << w := car x . w; x := cdr x >>;
