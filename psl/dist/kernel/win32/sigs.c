@@ -14,7 +14,7 @@ extern long bruch_bruch;
 
 void c_terminal_interrupt(int n)
 {
-    printf("terminal Interrupt registered\n");
+    printf("Terminal Interrupt registered\n");
     bruch_bruch--;
     signal(SIGINT,c_terminal_interrupt);
     if (bruch_bruch <= -5)
@@ -35,8 +35,10 @@ void sun3_sigset( sig, action )
 void (*action)(int); 
 int sig;
 {
-    // if(sig == SIGINT) signal(SIGINT,term_interrupt); else
-         signal(sig,action);
+    if(sig == SIGINT || sig == SIGBREAK) {
+		signal(SIGINT,c_terminal_interrupt);
+	} else
+        signal(sig,action);
 }
  
 void sigrelse(sig, action)
