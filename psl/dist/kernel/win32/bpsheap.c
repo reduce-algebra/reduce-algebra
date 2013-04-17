@@ -54,6 +54,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <windows.h>
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
    Use 2 if using copying collector ($pnk/copying-gc.sl).
@@ -142,7 +143,7 @@ setupbpsandheap(argc,argv)
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
   //  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
-  char line [100];
+  char line [MAX_PATH+100];
 
   total        = MINSIZE;
   mallocsize    = MALLOCSIZE;
@@ -305,30 +306,34 @@ setupbpsandheap(argc,argv)
     /* save the new values around restore of the old ones */
 
      { 
-       char tempname[200]; 
+       char tempname[MAX_PATH]; 
        char *s1; char*s2;
        s2 = tempname;
        if (envname)
        { 
-	 s1 = (char*) getenv(envname);
-	 if(!s1) {
-		  printf("variable %s not set\n",envname);
-		  exit (-1);
+	     s1 = (char*) getenv(envname);
+	     if(!s1) {
+		   printf("variable %s not set\n",envname);
+		   exit (-1);
 		 }
-	 while(*s1) *s2++ = *s1++; 
-	 *s2++  = '\\';
-       }
+	     while(*s1) *s2++ = *s1++; 
+	       *s2++  = '\\';
+         }
 
-       s1 = imagefile;
-       while(*s1) *s2++ = *s1++;
-       *s2 = 0;
+         s1 = imagefile;
+         while(*s1) *s2++ = *s1++;
+         *s2 = 0;
      
-       sprintf(line,"Loading image file :%s \n",tempname); 
-       unixputs(line);
-       imago = fopen (tempname,"rb");
-       if (imago == NULL) { perror ("error"); 
-       exit (-1); }
-     }  
+         imago = fopen (tempname,"rb");
+         if (imago == NULL) { 
+		   perror (tempname); 
+		   exit (-1);
+         }  
+
+	     sprintf(line,"Loading image file :%s \n",tempname);
+         unixputs(line);
+	   }
+
        fread (headerword,4,8,imago);
 
        if (strcmp((char *)headerword,datetag()))
