@@ -10,7 +10,7 @@ echo Go "./configure --with-psl; make" in a cygwin shell please
 goto :done
 
 :x86
-%h%..\pslbuild\i686-pc-windows\psl\bpsl.exe -td 16000000 -f %h%..\pslbuild\i686-pc-windows\red\reduce.img %*
+start %h%..\pslbuild\i686-pc-windows\psl\bpsl.exe -td 16000000 -f %h%..\pslbuild\i686-pc-windows\red\reduce.img %*
 
 :done
 

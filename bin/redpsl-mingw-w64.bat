@@ -10,7 +10,7 @@ echo Go "./configure --with-psl; make" in a cygwin shell please
 goto :done
 
 :x86
-%h%..\pslbuild\mingw-w64\psl\bpsl.exe -td 16000000 -f %h%..\pslbuild\mingw-w64\red\reduce.img %*
+start %h%..\pslbuild\mingw-w64\psl\bpsl.exe -td 16000000 -f %h%..\pslbuild\mingw-w64\red\reduce.img %*
 
 :done
 
