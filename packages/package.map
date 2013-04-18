@@ -186,6 +186,7 @@
  (pident        "pident"                                     csl psl)
  (pgauss        "pgauss"                                     csl psl)
  (qhull		"qhull"                                      csl psl)
+ (smtsupp       "redlog/smtsupp"                             csl psl)
 )
 
 % End of configuration data

@@ -447,6 +447,10 @@ defautoload(qhull, qhull, expr, 1);
 
 defautoload(qhull_qhull, qhull, expr, 1);
 
+% Redlog entry points
+
+defautoload(rl_set, redlog, expr, 1);
+
 endmodule;
 
 end;
