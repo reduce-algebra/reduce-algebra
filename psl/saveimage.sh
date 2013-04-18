@@ -67,6 +67,7 @@ then
   reduce=`cygpath -m "$creduce"`
   here=`cygpath -m "$chere"`
   fasl=`cygpath -m "$cfasl"`
+  imagedir=`cygpath -m "$imagedir"`
 else
   psldir="$cpsldir"
   reduce="$creduce"
