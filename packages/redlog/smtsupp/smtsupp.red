@@ -32,8 +32,11 @@ module smtsupp;
 
 % trunk/psl/dist/nonkernel/token-decls.sl
 
+global '(emsg!*);
 global '(!*raise);
+
 fluid '(!*lower);
+fluid '(!*backtrace);
 fluid '(smts_assertionl!*);
 fluid '(smts_oassertionl!*);
 fluid '(smts_model!*);
@@ -44,18 +47,27 @@ switch smtslog;
 operator smts_mainloop;
 
 procedure smts_mainloop();
-   begin scalar form, raise, !*lower;
+   begin scalar raise, !*lower, form, w, pchar; integer pno;
       raise := !*raise;
-      !*raise := !*lower := nil;  % should use errorset here
+      !*raise := !*lower := nil;
       smts_processReset();
-      smts_prin2t nil;
+      pchar := smts_setPrompt pno;
+      smts_prin2t "";
       form := read();
       while form neq '(exit) do <<
-	 smts_processForm form;
+	 w := errorset({'smts_processForm, mkquote form}, nil, nil);
+      	 if errorp w then
+	    smts_error();
+	 pno := pno + 1;
+	 smts_setPrompt pno;
 	 form := read()
       >>;
+      setpchar pchar;
       !*raise := raise
    end;
+
+procedure smts_setPrompt(pno);
+   setpchar lto_sconcat {lto_at2str pno, " smt> "};
 
 procedure smts_processForm(form);
    if eqcar(form, 'assert) then
@@ -77,8 +89,8 @@ procedure smts_processAssert(constraint);
    <<
       smts_assertionl!* := cl_smt2ReadForm constraint . smts_assertionl!*;
       smts_oassertionl!* := constraint . smts_oassertionl!*;
-      smts_model!* := nil;
-      smts_prin2t nil
+      smts_model!* := 'unset;
+      smts_prin2t ""
    >>;
 
 procedure smts_processCheckSat();
@@ -95,7 +107,7 @@ procedure smts_processCheckSat();
 procedure smts_processGetModel();
    begin scalar varl, model, mal, v, val, w;
       model := smts_model!*;
-      if null model then <<
+      if model eq 'unset then <<
 	 smts_error();
 	 return
       >>;
@@ -112,7 +124,21 @@ procedure smts_processGetModel();
 	 else
 	    mal := (val . {v}) . mal;
       >>;
-      smts_prin2t for each pr in mal collect {cdr pr, car pr}
+      smts_prin2t for each pr in mal collect {cdr pr, smts_rl2smtAns car pr}
+   end;
+
+procedure smts_rl2smtAns(smtform);
+   if atom smtform then
+      smts_rl2smtSym smtform
+   else
+      smts_rl2smtSym car smtform . for each arg in cdr smtform collect
+	 smts_rl2smtSym arg;
+
+procedure smts_rl2smtSym(sym);
+   begin scalar tal, w;
+      tal := '((quotient . !/));
+      w := atsoc(sym, tal);
+      return if w then cdr w else sym
    end;
 
 procedure smts_processPrintAssertions();
@@ -148,23 +174,24 @@ procedure smts_checkAlConsistency();
 
 procedure smts_processReset();
    <<
-      smts_assertionl!* := smts_oassertionl!* := smts_model!* := nil;
-      smts_prin2t nil
+      smts_assertionl!* := smts_oassertionl!* := nil;
+      smts_model!* := 'unset;
+      smts_prin2t ""
    >>;
 
 procedure smts_processSetLogic(id);
    if id eq '!Q!F_!N!R!A then <<
       rl_set '(ofsf);
-      smts_prin2t nil
+      smts_prin2t ""
    >> else
       smts_error();
 
 procedure smts_prin2t(item);
    if !*smtsplain then
-      (if item then prin2t item)
+      (if item neq "" then prin2t if item then item else "()")
    else <<
       lr_result();
-      if item then prin2 item;
+      if item neq "" then prin2 if item then item else "()";
       lr_statcounter();
       prin2 0;
       lr_mode();
