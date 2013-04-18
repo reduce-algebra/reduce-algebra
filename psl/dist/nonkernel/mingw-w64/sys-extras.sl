@@ -176,9 +176,9 @@
 %        (when (weq (wand x 1) 1) (return nil))
         % if OddP X                                                        
         (setq x (inf x))
-        (when (wlessp x 8198)
+        (when (wlessp x 65536)    % bottom 64k is read-protected in Windows
           (return nil))
-        (cond ((not (wlessp x nextbps)) % Assures X points to real memory
+        (cond ((not (codeaddressp x)) % Assures X points to real memory
                (return nil)))
         (setq s (inf symfnc))
 %%%     (unless (weq (halfword x -3) 16#15ff) (return nil))
