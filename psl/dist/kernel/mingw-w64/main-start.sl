@@ -252,10 +252,11 @@
 
        (*move (reg rcx) (reg 1))
        (*move (reg rdx) (reg 2))
-    %   (*move (displacement (reg st) 8) (fluid argc))
-    %  (*move (displacement (reg st) 16) (fluid argv))
 
        (*alloc 3) % changes Stack pointer
+
+       (*move (reg 1) (frame 1))
+       (*move (reg 2) (frame 2))
 
     %  (*move (fluid argc) (frame 1))
     %   (*move (fluid argv) (frame 2))

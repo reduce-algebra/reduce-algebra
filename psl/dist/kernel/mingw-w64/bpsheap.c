@@ -266,9 +266,9 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
         hl =  heaplast; htb = heaptrapbound;
     /* save the new values around restore of the old ones */
 
-       printf("Loading image file: %s \n",imagefile); 
        imago = fopen (imagefile,"rb");
-       if (imago == NULL) { perror ("error"); exit (-1); }
+       if (imago == NULL) { perror (imagefile); exit (-1); }
+       printf("Loading image file: %s \n",imagefile); 
        fread (headerword,8,2,imago);
        unexec();      /* set control vector */
       if ((long long) bpscontrol[0] != headerword[0] 

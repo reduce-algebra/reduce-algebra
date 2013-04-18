@@ -1279,7 +1279,14 @@ preload  (setq initload
 	   (difference 15  NumberOfArguments))
 	  (append
 	   (list %(list '!*move '(fluid ebxsave!*) '(reg 2))
+% stack has to be aligned to 16bytes (128bit) for SSE instructions
+                 '(!*move (reg st) (reg 1))
+                 '(sub 64 (reg st))
+                 '(!*wshift (reg st) -5)
+                 '(!*wshift (reg st) 5)
+                 '(!*move (reg 1) (displacement (reg st) 40))
 		 (list 'call (list 'ForeignEntry FunctionName))
+                 '(!*move (displacement (reg st) 40) (reg st))
 		 %(list '!*move '(reg 2) '(fluid ebxsave!*))
 	   )
 	   (cond

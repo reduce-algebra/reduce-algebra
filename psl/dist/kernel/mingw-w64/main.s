@@ -2003,13 +2003,25 @@ l0205:
 / (*entry echoon expr 0)
  .globl l0207
 l0207:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call echoon
+ mov 40(%rsp),%rsp
  ret
  .quad 0
 / (*entry echooff expr 0)
  .globl l0208
 l0208:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call echooff
+ mov 40(%rsp),%rsp
  ret
  .quad 1
 / (*entry external_charsininputbuffer expr 1)
@@ -2017,20 +2029,38 @@ l0208:
 l0209:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_charsininputbuffer
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 0
 / (*entry flushstdoutputbuffer expr 0)
  .globl l0210
 l0210:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call flushstdoutputbuffer
+ mov 40(%rsp),%rsp
  ret
  .quad 0
 / (*entry external_user_homedir_string expr 0)
  .globl l0211
 l0211:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_user_homedir_string
+ mov 40(%rsp),%rsp
  ret
  .quad 1
 / (*entry external_anyuser_homedir_string expr 1)
@@ -2038,7 +2068,13 @@ l0211:
 l0212:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_anyuser_homedir_string
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2047,7 +2083,13 @@ l0212:
 l0213:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call alterheapsize
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2056,7 +2098,13 @@ l0213:
 l0214:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call allocatemorebps
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 3
@@ -2070,7 +2118,13 @@ l0215:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call get_file_status
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 2
@@ -2081,14 +2135,26 @@ l0216:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call os_startup_hook
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 0
 / (*entry os_cleanup_hook expr 0)
  .globl l0217
 l0217:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call os_cleanup_hook
+ mov 40(%rsp),%rsp
  ret
  .quad 1
 / (*entry external_alarm expr 1)
@@ -2096,7 +2162,13 @@ l0217:
 l0218:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_alarm
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2107,7 +2179,13 @@ l0219:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_ualarm
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2116,7 +2194,13 @@ l0219:
 l0220:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_time
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2125,7 +2209,13 @@ l0220:
 l0221:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_timc
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2136,7 +2226,13 @@ l0222:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_stat
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2147,7 +2243,13 @@ l0223:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_link
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2156,7 +2258,13 @@ l0223:
 l0224:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_unlink
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2165,7 +2273,13 @@ l0224:
 l0225:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_strlen
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2176,7 +2290,13 @@ l0226:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_setenv
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2185,7 +2305,13 @@ l0226:
 l0227:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_getenv
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2196,7 +2322,13 @@ l0228:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxfloat
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2205,7 +2337,13 @@ l0228:
 l0229:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxfix
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2216,7 +2354,13 @@ l0230:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxassign
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 3
@@ -2230,7 +2374,13 @@ l0231:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxplus2
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2244,7 +2394,13 @@ l0232:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxdifference
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2258,7 +2414,13 @@ l0233:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxtimes2
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2272,7 +2434,13 @@ l0234:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxquotient
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 4
@@ -2289,7 +2457,13 @@ l0235:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxgreaterp
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 4
@@ -2306,7 +2480,13 @@ l0236:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxlessp
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 3
@@ -2320,7 +2500,13 @@ l0237:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxwritefloat
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 4
@@ -2337,7 +2523,13 @@ l0238:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxwritefloat8
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 2
@@ -2348,7 +2540,13 @@ l0239:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxdoubletofloat
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2359,7 +2557,13 @@ l0240:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxfloattodouble
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2370,7 +2574,13 @@ l0241:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxsin
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2381,7 +2591,13 @@ l0242:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxcos
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2392,7 +2608,13 @@ l0243:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxtan
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2403,7 +2625,13 @@ l0244:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxasin
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2414,7 +2642,13 @@ l0245:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxacos
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2425,7 +2659,13 @@ l0246:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxatan
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2436,7 +2676,13 @@ l0247:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxsqrt
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2447,7 +2693,13 @@ l0248:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxexp
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2458,7 +2710,13 @@ l0249:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxlog
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 3
@@ -2472,14 +2730,26 @@ l0250:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call uxatan2
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 0
 / (*entry external_pwd expr 0)
  .globl l0251
 l0251:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_pwd
+ mov 40(%rsp),%rsp
  ret
  .quad 2
 / (*entry sun3_sigset expr 2)
@@ -2489,7 +2759,13 @@ l0252:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call sun3_sigset
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2498,7 +2774,13 @@ l0252:
 l0253:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call sigrelse
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 4
@@ -2515,7 +2797,13 @@ l0254:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unexec
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 1
@@ -2524,7 +2812,13 @@ l0254:
 l0255:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputc
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2533,7 +2827,13 @@ l0255:
 l0256:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputs
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2542,14 +2842,26 @@ l0256:
 l0257:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputn
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 0
 / (*entry unixcleario expr 0)
  .globl l0258
 l0258:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixcleario
+ mov 40(%rsp),%rsp
  ret
  .quad 1
 / (*entry expand_file_name expr 1)
@@ -2557,7 +2869,13 @@ l0258:
 l0259:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call expand_file_name
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2568,7 +2886,13 @@ l0260:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixopen
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2577,7 +2901,13 @@ l0260:
 l0261:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixcd
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2586,7 +2916,13 @@ l0261:
 l0262:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call ctime
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2595,7 +2931,13 @@ l0262:
 l0263:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_system
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2604,7 +2946,13 @@ l0263:
 l0264:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call external_exit
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2615,7 +2963,13 @@ l0265:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixopen
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2624,7 +2978,13 @@ l0265:
 l0266:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfclose
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 4
@@ -2641,7 +3001,13 @@ l0267:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfread
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 2
@@ -2652,7 +3018,13 @@ l0268:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfputc
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2661,7 +3033,13 @@ l0268:
 l0269:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfgetc
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 3
@@ -2675,7 +3053,13 @@ l0270:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfgets
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 4
@@ -2692,7 +3076,13 @@ l0271:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfwrite
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 1
@@ -2701,7 +3091,13 @@ l0271:
 l0272:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfflush
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 3
@@ -2715,7 +3111,13 @@ l0273:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixfseek
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 1
@@ -2724,7 +3126,13 @@ l0273:
 l0274:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixclearerr
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 1
@@ -2733,7 +3141,13 @@ l0274:
 l0275:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call xgetw
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2744,7 +3158,13 @@ l0276:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixputw
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 2
@@ -2755,7 +3175,13 @@ l0277:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call signal
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2764,7 +3190,13 @@ l0277:
 l0278:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call sleep
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 3
@@ -2778,7 +3210,13 @@ l0279:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call ieee_handler
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 4
@@ -2795,7 +3233,13 @@ l0280:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call ieee_flags
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 1
@@ -2804,20 +3248,38 @@ l0280:
 l0281:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call setlinebuf
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 0
 / (*entry getpid expr 0)
  .globl l0282
 l0282:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call getpid
+ mov 40(%rsp),%rsp
  ret
  .quad 0
 / (*entry gethostid expr 0)
  .globl l0283
 l0283:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call gethostid
+ mov 40(%rsp),%rsp
  ret
  .quad 2
 / (*entry unixsocketopen expr 2)
@@ -2827,7 +3289,13 @@ l0284:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixsocketopen
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 3
@@ -2841,7 +3309,13 @@ l0285:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call getsocket
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2855,7 +3329,13 @@ l0286:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call writesocket
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 1
@@ -2864,14 +3344,26 @@ l0286:
 l0287:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call unixclosesocket
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 0
 / (*entry fork expr 0)
  .globl l0288
 l0288:
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call fork
+ mov 40(%rsp),%rsp
  ret
  .quad 1
 / (*entry wait expr 1)
@@ -2879,7 +3371,13 @@ l0288:
 l0289:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call wait
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 2
@@ -2890,7 +3388,13 @@ l0290:
  push %rax
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call popen
+ mov 40(%rsp),%rsp
  add $16,%rsp
  ret
  .quad 1
@@ -2899,7 +3403,13 @@ l0290:
 l0291:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call pclose
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 3
@@ -2913,7 +3423,13 @@ l0292:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmctl
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2927,7 +3443,13 @@ l0293:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmget
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2941,7 +3463,13 @@ l0294:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmat
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 1
@@ -2950,7 +3478,13 @@ l0294:
 l0295:
  push %rax
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call shmdt
+ mov 40(%rsp),%rsp
  add $8,%rsp
  ret
  .quad 4
@@ -2967,7 +3501,13 @@ l0296:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call semctl
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 3
@@ -2981,7 +3521,13 @@ l0297:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call semget
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 3
@@ -2995,7 +3541,13 @@ l0298:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call semop
+ mov 40(%rsp),%rsp
  add $24,%rsp
  ret
  .quad 4
@@ -3012,7 +3564,13 @@ l0299:
  mov %rdi,%r8
  mov 8(%rsp),%rdx
  mov 0(%rsp),%rcx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
  call profil
+ mov 40(%rsp),%rsp
  add $32,%rsp
  ret
  .quad 1
