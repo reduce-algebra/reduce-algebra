@@ -95,8 +95,10 @@ procedure smts_processCheckSat();
 procedure smts_processGetModel();
    begin scalar varl, model, mal, v, val, w;
       model := smts_model!*;
-      if null model then
+      if null model then <<
 	 smts_error();
+	 return
+      >>;
       varl := cl_fvarl1 rl_smkn('and, smts_assertionl!*);
       for each e in model do
 	 varl := delqip(cadr e, varl);
