@@ -1145,7 +1145,7 @@ win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
-	objtype* cl-wrap* makeheaders* *.def machineid.c
+	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep inline-defs.dat
 
 clean-local:
 	-rm -rf $(generatedfiles)
@@ -1294,6 +1294,9 @@ restart.$(OBJEXT):	machineid.c
 
 reduce.dep:
 	touch reduce.dep
+
+inline-defs.dat:
+	touch inline-defs.dat
 
 reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(RM) -rf reduce.img

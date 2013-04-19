@@ -254,13 +254,13 @@ symbolic inline procedure mod!+(a,b);
    % Sum of two positive modular numbers:
    general!-modular!-plus(a,b);
 
-symbolic inline procedure mod!*(a,b);
+symbolic inline procedure rsolve_mod!*(a,b);
    % Product of two positive modular numbers:
    remainder(a*b, current!-modulus);
 
 symbolic procedure mod!/(a,b);
    % Quotient of two positive modular numbers:
-   mod!*(a, general!-reciprocal!-by!-gcd(current!-modulus,b,0,1));
+   rsolve_mod!*(a, general!-reciprocal!-by!-gcd(current!-modulus,b,0,1));
 
 symbolic inline procedure mod!^(a,n);
    % Natural number power of a modular number:
@@ -433,10 +433,10 @@ symbolic procedure mod_eval_uni_poly(f, a);
    begin scalar r, d;
       r := mod!# lc f;  d := ldeg f;  f := red f;
       while not atom f do <<
-         r := mod!+(mod!*(r, mod!^(a, d - ldeg f)), mod!# lc f);
+         r := mod!+(rsolve_mod!*(r, mod!^(a, d - ldeg f)), mod!# lc f);
          d := ldeg f;  f := red f
       >>;
-      r := mod!*(r, mod!^(a,d));  if f then r := mod!+(r, mod!# f);
+      r := rsolve_mod!*(r, mod!^(a,d));  if f then r := mod!+(r, mod!# f);
       return r
    end;
 
