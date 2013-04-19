@@ -41,34 +41,34 @@ fluid '(plotsynerr!*);
 %*                          MAIN PROCEDURES                            *
 %***********************************************************************
 
-symbolic inline procedure gw u;
+symbolic inline procedure defint_gw u;
   caar u$
 
-symbolic inline procedure gl u;
+symbolic inline procedure defint_gl u;
   caadar u$
 
-symbolic inline procedure gk u;
+symbolic inline procedure defint_gk u;
   cdadar u$
 
-symbolic inline procedure gr u;
+symbolic inline procedure defint_gr u;
   cadar u$
 
-symbolic inline procedure gm u;
+symbolic inline procedure defint_gm u;
   caadr u$
 
-symbolic inline procedure gn u;
+symbolic inline procedure defint_gn u;
   cadadr u$
 
-symbolic inline procedure gp u;
+symbolic inline procedure defint_gp u;
   caddr cadr u$
 
-symbolic inline procedure gq u;
+symbolic inline procedure defint_gq u;
   cadddr cadr u$
 
-symbolic inline procedure ga u;
+symbolic inline procedure defint_ga u;
   caddr u$
 
-symbolic inline procedure gb u;
+symbolic inline procedure defint_gb u;
   cadddr u$
 
 symbolic procedure rdwrap f;
@@ -311,22 +311,22 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
          listsq caddr s2,simp!*(subpref(cadr u2,1,u4)));
   s3:=addsq(simp!* u3,'(1 . 1));
 
-  if not numberp(gl s1) or not numberp(gl s2) then
+  if not numberp(defint_gl s1) or not numberp(defint_gl s2) then
         RETURN simp 'FAIL
   else
-  if gl s1<0 then s1:=cong s1 else
-  if gl s2<0 then s2:=cong s2 else
+  if defint_gl s1<0 then s1:=cong s1 else
+  if defint_gl s2<0 then s2:=cong s2 else
 
 
-  if gl s1=gk s1 then GOTO A  else      % No reduction is necessary if
+  if defint_gl s1=defint_gk s1 then GOTO A  else      % No reduction is necessary if
                                                                      % it is not a meijer G-function
                                                                      % of a power of x
-  if gl s2=gk s2 then
+  if defint_gl s2=defint_gk s2 then
                   <<v:=s1;s1:=s2;s2:=v;go to a>>;
                                                                  % No reduction necessary but
                                         % the Meijer G-functions must
                                         % be inverted
-  coef:=multsq(coef,invsq gr s1);
+  coef:=multsq(coef,invsq defint_gr s1);
                                                           %premultiply by inverse of power
   v:=modintgg(s3,s1,s2);
   s3:=car v;    s1:=cadr v;   s2:=caddr v;
@@ -379,25 +379,25 @@ end;
 
 symbolic procedure intg(u1,u2,u3);
  begin scalar v;
-   if numberp(gl(u1)) and gl(u1) < 0 then u1:=cong u1;
+   if numberp(defint_gl(u1)) and defint_gl(u1) < 0 then u1:=cong u1;
    v:=modintg(u2,u1);
    u1:=cadr v;
    v:=
      multlist(
        list(u3,
-            expdeg(gw u1,negsq u2),
+            expdeg(defint_gw u1,negsq u2),
             quotsq(
                multgamma(
                  append(
-                   listplus(car redpar1(gb u1,gm u1),u2),
+                   listplus(car redpar1(defint_gb u1,defint_gm u1),u2),
                    listplus(
-                     listmin(car redpar1(ga u1,gn u1)),
+                     listmin(car redpar1(defint_ga u1,defint_gn u1)),
                      diff1sq('(1 . 1),u2)))),
                multgamma(
                  append(
-                   listplus(cdr redpar1(ga u1,gn u1),u2),
+                   listplus(cdr redpar1(defint_ga u1,defint_gn u1),u2),
                    listplus(
-                     listmin(cdr redpar1(gb u1,gm u1)),
+                     listmin(cdr redpar1(defint_gb u1,defint_gm u1)),
                      diff1sq('(1 . 1),u2)))))));
    return multsq(if numberp(mellincoef) then simp(mellincoef)
                                      else cadr mellincoef,
@@ -1439,9 +1439,9 @@ symbolic procedure trpar(u1,u2,u3);
 
 symbolic procedure modintgg(u1,u2,u3);
  list(
-    multsq(u1,invsq gr u2),
-    change(u2,list(cons(gw u2,list '(1 . 1))),'(1)),
-    change(u3,list(cons(gw u3,list(quotsq(gr u3,gr u2)))),'(1)))$
+    multsq(u1,invsq defint_gr u2),
+    change(u2,list(cons(defint_gw u2,list '(1 . 1))),'(1)),
+    change(u3,list(cons(defint_gw u3,list(quotsq(defint_gr u3,defint_gr u2)))),'(1)))$
 
 symbolic procedure change(u1,u2,u3);
  begin scalar v;integer k;
@@ -1461,30 +1461,30 @@ end$
 
 symbolic procedure cong(u);
  list(
-   list(invsq gw u,negsq gr u),
-   list(gn u,gm u,gq u,gp u),
-   difflist(listmin gb u,'(-1 . 1)),
-   difflist(listmin ga u,'(-1 . 1)))$
+   list(invsq defint_gw u,negsq defint_gr u),
+   list(defint_gn u,defint_gm u,defint_gq u,defint_gp u),
+   difflist(listmin defint_gb u,'(-1 . 1)),
+   difflist(listmin defint_ga u,'(-1 . 1)))$
 
 symbolic procedure modintg(u1,u2);
  list(
-  multsq(u1,invsq gr u2),
+  multsq(u1,invsq defint_gr u2),
   change(u2,
     list(
-      cons(gw u2,list '(1 . 1))),'(1)))$
+      cons(defint_gw u2,list '(1 . 1))),'(1)))$
 
 symbolic procedure ccgf(u);
   quotsq(
-     simp(2 * gm u + 2 * gn u - gp u - gq u),
+     simp(2 * defint_gm u + 2 * defint_gn u - defint_gp u - defint_gq u),
      '(2 . 1))$
 
 symbolic procedure vgg(u1,u2);
   diff1sq(
-     simp(gq u2 - gp u2),
-     multsq(gr u2,simp(gq u1 - gp u1)))$
+     simp(defint_gq u2 - defint_gp u2),
+     multsq(defint_gr u2,simp(defint_gq u1 - defint_gp u1)))$
 
 symbolic procedure nugg(u1,u2,u3);
-  diff1sq( diff1sq('(1 . 1), multsq(u3, simp(gq u1 - gp u1))),
+  diff1sq( diff1sq('(1 . 1), multsq(u3, simp(defint_gq u1 - defint_gp u1))),
            addsq(mugf u2,mugf u1))$
 
 symbolic inline procedure sumlistsq(u);
@@ -1492,40 +1492,40 @@ symbolic inline procedure sumlistsq(u);
 
 symbolic procedure mugf(u);
   addsq(
-     quotsq(simp(2 + gp u - gq u),'(2 . 1)),
-     addsq(sumlistsq gb u,negsq sumlistsq ga u))$
+     quotsq(simp(2 + defint_gp u - defint_gq u),'(2 . 1)),
+     addsq(sumlistsq defint_gb u,negsq sumlistsq defint_ga u))$
 
 symbolic procedure coefintg(u1,u2,u3);
   multlist(
    list(
-     expdeg(gk u2 . 1,mugf u2),
-     expdeg(gl u2 . 1,
+     expdeg(defint_gk u2 . 1,mugf u2),
+     expdeg(defint_gl u2 . 1,
        addsq(mugf u1,
          diff1sq(
-            multsq(u3,(gq u1-gp u1) . 1),
+            multsq(u3,(defint_gq u1-defint_gp u1) . 1),
             '(1 . 1)))),
-     expdeg(gw u1,negsq u3),
+     expdeg(defint_gw u1,negsq u3),
      expdeg(simp '(times 2 pi),
-       addsq(multsq(ccgf u1,(1-gl u2) . 1),
-             multsq(ccgf u2,(1-gk u2) . 1)))))$
+       addsq(multsq(ccgf u1,(1-defint_gl u2) . 1),
+             multsq(ccgf u2,(1-defint_gk u2) . 1)))))$
 
 % The procedure name "delta" had been changed to "defint_delta" to avoid
 % clashed with the cantens package.
 
 symbolic procedure deltagg(u1,u2,u3);
   list(
-     append( defint_delta(car redpar1(ga u2,gn u2), gk u2),
+     append( defint_delta(car redpar1(defint_ga u2,defint_gn u2), defint_gk u2),
       append(
-        defint_delta( difflist( listmin gb u1, addsq(u3,'(-1 . 1))), gl u2),
-        defint_delta( cdr redpar1(ga u2,gn u2), gk u2))),
-     append( defint_delta(car redpar1(gb u2,gm u2), gk u2),
-      append(defint_delta( difflist(listmin ga u1,addsq(u3,'(-1 . 1))),gl u2),
-        defint_delta( cdr redpar1(gb u2,gm u2), gk u2))))$
+        defint_delta( difflist( listmin defint_gb u1, addsq(u3,'(-1 . 1))), defint_gl u2),
+        defint_delta( cdr redpar1(defint_ga u2,defint_gn u2), defint_gk u2))),
+     append( defint_delta(car redpar1(defint_gb u2,defint_gm u2), defint_gk u2),
+      append(defint_delta( difflist(listmin defint_ga u1,addsq(u3,'(-1 . 1))),defint_gl u2),
+        defint_delta( cdr redpar1(defint_gb u2,defint_gm u2), defint_gk u2))))$
 
 symbolic procedure redpargf(u);
  begin scalar v1,v2;
-  v1:=redpar(car redpar1(gb u,gm u), cdr redpar1(ga u,gn u));
-  v2:=redpar(cdr redpar1(gb u,gm u), car redpar1(ga u,gn u));
+  v1:=redpar(car redpar1(defint_gb u,defint_gm u), cdr redpar1(defint_ga u,defint_gn u));
+  v2:=redpar(cdr redpar1(defint_gb u,defint_gm u), car redpar1(defint_ga u,defint_gn u));
 
   return
     list(car u, (cadr v2 . cadr v1), (car v1 . car v2));
@@ -1538,19 +1538,19 @@ symbolic procedure arggf(u1,u2);
 % function
 
  multlist(list(
-     expdeg(gw u2, gk u2 . 1),
-     expdeg(gk u2 . 1, (gk u2 * gp u2 - gk u2 * gq u2) . 1),
-     invsq(expdeg(gw u1, gl u2 . 1)),
-     expdeg(gl u2 . 1,(gl u2 * gq u1 - gl u2 * gp u1) . 1)))$
+     expdeg(defint_gw u2, defint_gk u2 . 1),
+     expdeg(defint_gk u2 . 1, (defint_gk u2 * defint_gp u2 - defint_gk u2 * defint_gq u2) . 1),
+     invsq(expdeg(defint_gw u1, defint_gl u2 . 1)),
+     expdeg(defint_gl u2 . 1,(defint_gl u2 * defint_gq u1 - defint_gl u2 * defint_gp u1) . 1)))$
 
 symbolic procedure indgf(u1,u2);
 
 % Calculate the values of m,n,p,q of the combined meijerg function
 
- list(gk u2 * gm u2 + gl u2 * gn u1,
-      gk u2 * gn u2 + gl u2 * gm u1,
-      gk u2 * gp u2 + gl u2 * gq u1,
-      gk u2 * gq u2 + gl u2 * gp u1)$
+ list(defint_gk u2 * defint_gm u2 + defint_gl u2 * defint_gn u1,
+      defint_gk u2 * defint_gn u2 + defint_gl u2 * defint_gm u1,
+      defint_gk u2 * defint_gp u2 + defint_gl u2 * defint_gq u1,
+      defint_gk u2 * defint_gq u2 + defint_gl u2 * defint_gp u1)$
 
 symbolic procedure dubdeg(x,y);
 % x -- SF.
@@ -1597,6 +1597,4 @@ symbolic procedure nump(x);
 endmodule;
 
 end;
-
-
 

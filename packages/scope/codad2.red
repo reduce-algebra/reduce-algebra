@@ -36,7 +36,7 @@ symbolic$
 % The module CODAD2 contains a number of facilities, to be applied    ;
 % when the optimization process itself is finished and before  produ- ;
 % cing output. This finishing touch, obtained by applying the function;
-% PrepFinalplst (see the module CODCTL), covers the following one-row ;
+% PrepFinalplst (see the module CODCTL), covers the following one-scope_row ;
 % and/or one-column operations:                                       ;
 %                                                                     ;
 % PART 1 : Sum restructuring : s = (t1 + ... + tn) ^ exponent is re-  ;
@@ -127,7 +127,7 @@ symbolic procedure getcind(var,varlst,op,fa,iv);
 % corresponding PLUS- or TIMES setting (known by the value of Op).Once;
 % the column exists (either created or already available), its Zstrt  ;
 % is modified by inserting the Z-element (Fa,IV) in it. Finally the   ;
-% corresponding Z-element for the father-row, i.e. (Y,IV) is returned.;
+% corresponding Z-element for the father-scope_row, i.e. (Y,IV) is returned.;
 % ------------------------------------------------------------------- ;
 begin scalar y,z;
   if null(y:=get(var,varlst))
@@ -136,7 +136,7 @@ begin scalar y,z;
     put(var,varlst,y);
     setrow(y,op,var,nil,nil)
   >>;
-  setzstrt(y,inszzzn(z:=mkzel(fa,iv),zstrt y));
+  scope_setzstrt(y,inszzzn(z:=mkzel(fa,iv),scope_zstrt y));
   return mkzel(y,val z)
 end;
 
@@ -153,29 +153,29 @@ symbolic procedure powerofsums;
 begin scalar var,z,rmax;
   rmax:=rowmax;
   for x:=0:rmax do
-  if opval(x) eq 'plus and expcof(x)>1 and not(farvar(x)=-1)
+  if scope_opval(x) eq 'plus and scope_expcof(x)>1 and not(scope_farvar(x)=-1)
   then
    <<var:=fnewsym();
-     setrow(rowmax:=rowmax+1,'plus,var,list chrow x,zstrt x);
+     setrow(rowmax:=rowmax+1,'plus,var,list scope_chrow x,scope_zstrt x);
      % -------------------------------------------------------------- ;
      % A new name Var is introduced and 2 new CODMAT-rows to store the;
      % information about the new expression,in connection with the al-;
      % raedy available information. Furthermore some bookkeeping is   ;
      % required.                                                      ;
-     % The new row above contains all the information about the sum,  ;
-     % except its exponent.Below the second row is used to store Var ^;
-     % ExpCof in the form of a Z-element in a TIMES-row.              ;
-     % This row becomes the only child of the old sum-defining row.   ;
+     % The new scope_row above contains all the information about the sum,  ;
+     % except its exponent.Below the second scope_row is used to store Var ^;
+     % ExpCof in the form of a Z-element in a TIMES-scope_row.              ;
+     % This scope_row becomes the only child of the old sum-defining scope_row.   ;
      % -------------------------------------------------------------- ;
      put(var,'rowindex,rowmax);
-     foreach z in zstrt(x) do
-      setzstrt(yind z,mkzel(rowmax,val z).delyzz(x,zstrt yind z));
-     foreach ch in chrow(x) do setfarvar(ch,rowmax);
+     foreach z in scope_zstrt(x) do
+      scope_setzstrt(yind z,mkzel(rowmax,val z).delyzz(x,scope_zstrt yind z));
+     foreach ch in scope_chrow(x) do scope_setfarvar(ch,rowmax);
      setprev(x,rowmax); % Preserve ordening;
      setrow(rowmax:=rowmax+1,'times,x,list nil,
-                            list(z:=mkzel(rowmin:=rowmin-1,expcof x)));
+                            list(z:=mkzel(rowmin:=rowmin-1,scope_expcof x)));
      % -------------------------------------------------------------- ;
-     % The new row for the power of the sum is based on indirection to;
+     % The new scope_row for the power of the sum is based on indirection to;
      % guarantee a correct functioning of the function Tchscheme.     ;
      % -------------------------------------------------------------- ;
      setrow(rowmin,'times,var,nil,list mkzel(rowmax,val z));
@@ -183,10 +183,10 @@ begin scalar var,z,rmax;
      % A new column is generated, associated with the new name genera-;
      % ted for the sum.                                               ;
      % -------------------------------------------------------------- ;
-     setchrow(x,list rowmax);
+     scope_setchrow(x,list rowmax);
      put(var,'varlst!*,rowmin);
-     setzstrt(x,nil);
-     setexpcof(x,1)
+     scope_setzstrt(x,nil);
+     scope_setexpcof(x,1)
    >>;
 end;
 
@@ -227,12 +227,12 @@ begin
   % Analysis of Zstreets of the PLUS-columns, which are associated    ;
   % with variables Var.                                               ;
   % ----------------------------------------------------------------- ;
-  if (not numberp(var:=farvar y)) and (var neq '!+one) and
-                                                   (opval(y) eq 'plus)
+  if (not numberp(var:=scope_farvar y)) and (var neq '!+one) and
+                                                   (scope_opval(y) eq 'plus)
   then
   <<prodcoli:=get(var,'varlst!*);
     pcolinf:=nil;
-    foreach z in zstrt(y) do
+    foreach z in scope_zstrt(y) do
     if not(!:onep dm!-abs(ival z))
     then pcolinf:=inspcvv(xind(z).(if !:minusp(ival(z)) then -1 else 1),
                           dm!-abs(ival z),pcolinf);
@@ -249,9 +249,9 @@ begin
       tcolinf:=nil;
       if prodcoli
       then
-        foreach z in zstrt(prodcoli) do
+        foreach z in scope_zstrt(prodcoli) do
         <<rindx:=xind(z);
-          if dm!-eq(dm!-abs expcof rindx,mmult)
+          if dm!-eq(dm!-abs scope_expcof rindx,mmult)
           then tcolinf:=(rindx.z).tcolinf
         >>;
       % ------------------------------------------------------------- ;
@@ -279,11 +279,11 @@ begin
           foreach rowinf in srows do
             <<rindx:=car(rowinf);
               zz:=mkzel(rindx,cdr rowinf).zz;
-              setzstrt(rindx,mkzel(rowmin,val car zz).
-                                              delyzz(y,zstrt rindx));
+              scope_setzstrt(rindx,mkzel(rowmin,val car zz).
+                                              delyzz(y,scope_zstrt rindx));
               setprev(rindx,rowmax)
             >>;
-          setzstrt(y,mkzel(rowmax,val z).remzzzz(zz,zstrt y));
+          scope_setzstrt(y,mkzel(rowmax,val z).remzzzz(zz,scope_zstrt y));
           setrow(rowmin,'plus,nvar,nil,zz);
           put(nvar,'varlst!+,rowmin);
           if tcolinf
@@ -302,14 +302,14 @@ begin
                     then setival(z,ival(z)-1)
                     else
                      <<zz1:=car(zz).zz1;
-                       setzstrt(rindx,delyzz(prodcoli,zstrt rindx))
+                       scope_setzstrt(rindx,delyzz(prodcoli,scope_zstrt rindx))
                      >>;
-                   setzstrt(rindx,mkzel(rowmin,val car zz).
-                                                       zstrt(rindx));
+                   scope_setzstrt(rindx,mkzel(rowmin,val car zz).
+                                                       scope_zstrt(rindx));
                    setprev(rindx,rowmax);
-                   setexpcof(rindx,dm!-quotient(expcof(rindx),mmult))
+                   scope_setexpcof(rindx,dm!-quotient(scope_expcof(rindx),mmult))
                  >>;
-               setzstrt(prodcoli,remzzzz(zz1,zstrt prodcoli));
+               scope_setzstrt(prodcoli,remzzzz(zz1,scope_zstrt prodcoli));
                setrow(rowmin,'times,nvar,nil,zz);
                put(nvar,'varlst!*,rowmin)
             >>
@@ -333,7 +333,7 @@ symbolic procedure updatemonomials;
 % new names. The decision are made by applying the function REMGCMON. ;
 % ------------------------------------------------------------------- ;
 for y:=rowmin:(-1) do
-if not numberp(farvar y) and opval(y) eq 'times
+if not numberp(scope_farvar y) and scope_opval(y) eq 'times
  then foreach gcel in mkgclstmon(y) do remgcmon(gcel,y);
 
 symbolic procedure mkgclstmon(y);
@@ -343,8 +343,8 @@ symbolic procedure mkgclstmon(y);
 % value is atleast 2.                                                 ;
 % ------------------------------------------------------------------- ;
 begin scalar gclst,cof,indxsgn;
-  foreach z in zstrt(y) do
-   if not !:onep dm!-abs(cof:=expcof xind z)
+  foreach z in scope_zstrt(y) do
+   if not !:onep dm!-abs(cof:=scope_expcof xind z)
     then
      << indxsgn:=cons(xind(z), if !:minusp cof then -1 else 1);
         gclst:=insgclst(cof,indxsgn,gclst,1)
@@ -371,27 +371,27 @@ begin scalar x,nvar,gc,zel,zzy,zzgc,ivalz;
       zel:=mkzel(y,1);
       setrow(rowmax,'times,nvar,list(nil,gc),list(zel));
       put(nvar,'rowindex,rowmax);
-      zzy:=mkzel(rowmax,val(zel)).zstrt(y);
+      zzy:=mkzel(rowmax,val(zel)).scope_zstrt(y);
       zzgc:=nil;
       foreach z in cadr(gcel) do
        << x:=car(z);
-          setexpcof(x,1);
+          scope_setexpcof(x,1);
           setprev(x,rowmax);
           zel:=car(pnthxzz(x,zzy));
           if ival(zel)>1
            then
             << zzy:=inszzz(mkzel(x,ivalz:=dm!-difference(ival(zel),1)),
                                                          delyzz(x,zzy));
-               setzstrt(x,inszzzr(mkzel(y,ivalz),delyzz(y,zstrt x)))
+               scope_setzstrt(x,inszzzr(mkzel(y,ivalz),delyzz(y,scope_zstrt x)))
             >>
            else
             << zzy:=delyzz(x,zzy);
-               setzstrt(x,delyzz(y,zstrt x))
+               scope_setzstrt(x,delyzz(y,scope_zstrt x))
             >>;
           zzgc:=inszzz(zel:=mkzel(x,1),zzgc);
-          setzstrt(x,mkzel(rowmin,val zel).zstrt(x))
+          scope_setzstrt(x,mkzel(rowmin,val zel).scope_zstrt(x))
        >>;
-     setzstrt(y,zzy);
+     scope_setzstrt(y,zzy);
      setrow(rowmin,'times,nvar,nil,zzgc);
      put(nvar,'varlst!*,rowmin)
    >>;
@@ -402,8 +402,8 @@ end;
 % PART 4 : Gcd-based expression rewriting                             ;
 % ------------------------------------------------------------------- ;
 % We employ a two stage strategy. We start producing a Gclst, consis- ;
-% ting of row-information. If relevant, Gclst is used to rewrite the  ;
-% expression (part), defined by the current row of CodMat. The Gclst- ;
+% ting of scope_row-information. If relevant, Gclst is used to rewrite the  ;
+% expression (part), defined by the current scope_row of CodMat. The Gclst- ;
 % syntax is :                                                         ;
 %                                                                     ;
 % Gclst ::= (Gcdlst  Gcdlst  ... Gcdlst ) , n >= 1 .                  ;
@@ -435,7 +435,7 @@ end;
 % is the Gclst, associated with                                       ;
 % sum = 9.a - 18.b + 6.sin(x) + 5.c - 5.d,                            ;
 % when replacing the negative, relative column-indices by a,b,c and d,;
-% and the positive relative child row-index by sin(x).                ;
+% and the positive relative child scope_row-index by sin(x).                ;
 % This list is used for the remodelling. The Glocations list is NIL,  ;
 % because sum has no coefficients equal to either 3 or -3.            ;
 % ------------------------------------------------------------------- ;
@@ -445,19 +445,19 @@ begin scalar presentrowmax;
 % ------------------------------------------------------------------- ;
 % For all relevant rows of CodMat we compute the Gclst, by applying   ;
 % the function MkGclst. Then each item in this list, a Gcdlst, is used;
-% for a reconstruction of the expression( part) defined by row X.     ;
+% for a reconstruction of the expression( part) defined by scope_row X.     ;
 % ------------------------------------------------------------------- ;
 presentrowmax:=rowmax;
 for x:=0:presentrowmax do
-  if not(farvar(x)=-1)then foreach gcel in mkgclst(x) do remgc(gcel,x)
+  if not(scope_farvar(x)=-1)then foreach gcel in mkgclst(x) do remgc(gcel,x)
 end;
 
 symbolic procedure mkgclst(x);
 % ------------------------------------------------------------------- ;
-% The Gclst of row X is produced and returned.                        ;
+% The Gclst of scope_row X is produced and returned.                        ;
 % ------------------------------------------------------------------- ;
 begin scalar gclst,iv,opv;
-  foreach z in zstrt(x) do
+  foreach z in scope_zstrt(x) do
    if not !:onep(dm!-abs(iv:=ival z))
     then
      % -------------------------------------------------------------- ;
@@ -467,9 +467,9 @@ begin scalar gclst,iv,opv;
      if !:minusp(iv)
       then gclst:=insgclst(dm!-minus(iv),yind(z).(-1),gclst,1)
       else gclst:=insgclst(iv,yind(z) . 1,gclst,1);
-  opv:=opval(x);
-  foreach ch in chrow(x) do
-   if not(opval(ch)=opv) and not(!:onep dm!-abs(iv:=expcof ch))
+  opv:=scope_opval(x);
+  foreach ch in scope_chrow(x) do
+   if not(scope_opval(ch)=opv) and not(!:onep dm!-abs(iv:=scope_expcof ch))
     % --------------------------------------------------------------- ;
     % Only non *(+)-children of *(+)-parents are considered.          ;
     % --------------------------------------------------------------- ;
@@ -608,7 +608,7 @@ end;
 symbolic procedure remgc(gcel,x);
 % ------------------------------------------------------------------- ;
 % RemGc allows a recursive investigation of Gcel, a Gcdlst being an   ;
-% element of the Gclst of row X. Therefore it returns a list of loca- ;
+% element of the Gclst of scope_row X. Therefore it returns a list of loca- ;
 % tions, which can be empty as well. These locations are remodelled   ;
 % into Zstrt-elements, subject to some profitability criteria, which  ;
 % will be explained in the body of this function.                     ;
@@ -626,8 +626,8 @@ begin scalar zzch,zzchl,zzr,chr,zz,ch,nsum,nprod,ns,np,opv,gc,cof,
   % holds : Car(Gcel) = a positive integer (G or g) and Cadr(Gcel) =  ;
   % a Glocations-list, i.e. each element of Cadr(Gcel) ia a pair      ;
   % (index.coeffsign), where Car(Gcel) is the absolute value of the   ;
-  % coefficient (exponent) to be associated with row X and a column-  ;
-  % index or the row-index of a child, respectively.                  ;
+  % coefficient (exponent) to be associated with scope_row X and a column-  ;
+  % index or the scope_row-index of a child, respectively.                  ;
   % If Gcel defines the structure of a monomial the description is im-;
   % proved if atleast 2 exponents are G or if the exponents have a gcd;
   %               6 6      6 9                         2 3 3          ;
@@ -638,11 +638,11 @@ begin scalar zzch,zzchl,zzr,chr,zz,ch,nsum,nprod,ns,np,opv,gc,cof,
   % out (recursively), i.e. 6.a + 9.b remains unchanged and 6.a + 6.b ;
   % is restructured into 6.(a + b). The Gcel is (3 NIL (6 ((a.1)))    ;
   % (9 ((b.1)))) and (6 ((a.1) (b.1))), respectively.                 ;
-  % Restructuring requires a new TIMES(PLUS)-row to store the EXPCOF  ;
-  % value GC (6) and a new PLUS(TIMES)-row to store its base ab or    ;
+  % Restructuring requires a new TIMES(PLUS)-scope_row to store the EXPCOF  ;
+  % value GC (6) and a new PLUS(TIMES)-scope_row to store its base ab or    ;
   % factor a + b, respectively.                                       ;
   % ----------------------------------------------------------------- ;
-  if ((opv:=opval(x)) eq 'times and
+  if ((opv:=scope_opval(x)) eq 'times and
      (length(cadr gcel)>1 or cddr(gcel))) or
      ((opv eq 'plus) and (length(cadr gcel)>1))
   then
@@ -654,13 +654,13 @@ begin scalar zzch,zzchl,zzr,chr,zz,ch,nsum,nprod,ns,np,opv,gc,cof,
           setprev(x,nsum);
           setrow(rowmin:=rowmin-1,'times,var1,nil,
                                       list(iv:=mkzel(x,gc:=car gcel)));
-          setzstrt(x,inszzzr(mkzel(rowmin,val iv),zstrt x));
+          scope_setzstrt(x,inszzzr(mkzel(rowmin,val iv),scope_zstrt x));
           put(var1,'varlst!*,rowmin);
           setrow(nsum,'times,var1,list nil,nil)
        >>
      else
        << nprod:=rowmax+1; nsum:=rowmax:=rowmax+2;
-          setchrow(x,nprod.chrow(x));
+          scope_setchrow(x,nprod.scope_chrow(x));
           setrow(nprod,if opv eq 'plus then 'times else 'plus,x,
                                     list(list(nsum),gc:=car gcel),nil);
           setrow(nsum,opv,nprod,list nil,nil)
@@ -676,7 +676,7 @@ begin scalar zzch,zzchl,zzr,chr,zz,ch,nsum,nprod,ns,np,opv,gc,cof,
                   setrow(np,if opv eq 'plus then 'times else 'plus,
                                           nsum,list(list(ns),cof),nil);
                   setrow(ns,opv,np,list nil,nil);
-                  setchrow(nsum,np.chrow(nsum))
+                  scope_setchrow(nsum,np.scope_chrow(nsum))
                >>
               else
                << ns:=rowmax:=rowmax+1;
@@ -685,21 +685,21 @@ begin scalar zzch,zzchl,zzr,chr,zz,ch,nsum,nprod,ns,np,opv,gc,cof,
                   setprev(get(var1,'rowindex),ns);
                   setrow(rowmin:=rowmin-1,'times,var2,nil,
                                              list(iv:=mkzel(nsum,cof)));
-                  setzstrt(nsum,inszzzr(mkzel(rowmin,val iv),
-                           zstrt nsum));
+                  scope_setzstrt(nsum,inszzzr(mkzel(rowmin,val iv),
+                           scope_zstrt nsum));
                   put(var2,'varlst!*,rowmin);
                   setrow(ns,'times,var2,list nil,nil)
                >>;
             zz:=ch:=nil;
             zzchl:=updaterowinf(x,ns,1,cofloc,zz,ch);
-            setzstrt(ns,car zzchl);
-            setchrow(ns,cdr zzchl)
+            scope_setzstrt(ns,car zzchl);
+            scope_setchrow(ns,cdr zzchl)
           >>
          else
           zzch:=updaterowinf(x,nsum,cof,cofloc,car zzch,cdr zzch)
       >>;
-     foreach zel in car(zzch) do setzstrt(nsum,inszzzr(zel,zstrt nsum));
-     setchrow(nsum,if chrow(nsum) then append(chrow(nsum),cdr zzch)
+     foreach zel in car(zzch) do scope_setzstrt(nsum,inszzzr(zel,scope_zstrt nsum));
+     scope_setchrow(nsum,if scope_chrow(nsum) then append(scope_chrow(nsum),cdr zzch)
                                   else cdr zzch)
   >>
 else
@@ -710,7 +710,7 @@ end;
 symbolic procedure updaterowinf(x,nrow,cof,infolst,zz,ch);
 % ------------------------------------------------------------------- ;
 % UpdateRowInf is used in the function RemGc to construct the Zstrt   ;
-% ZZ and the list of children CH of row Nrow and using the Infol(i)st.;
+% ZZ and the list of children CH of scope_row Nrow and using the Infol(i)st.;
 % Infolst is a glst.                                                  ;
 % ------------------------------------------------------------------- ;
 begin scalar indx,iv,mz,dyz;
@@ -719,15 +719,15 @@ begin scalar indx,iv,mz,dyz;
      if indx < 0
       then
        << zz:=inszzzr(iv:=mkzel(indx,dm!-times(cof,cdr(item))),zz);
-          setzstrt(indx,inszzz(mkzel(nrow,val(iv)),
-                                               delyzz(x,zstrt indx)));
-          setzstrt(x,delyzz(indx,zstrt x))
+          scope_setzstrt(indx,inszzz(mkzel(nrow,val(iv)),
+                                               delyzz(x,scope_zstrt indx)));
+          scope_setzstrt(x,delyzz(indx,scope_zstrt x))
        >>
       else
        << ch:=indx.ch;
           chdel(x,indx);
-          setfarvar(indx,nrow);
-          setexpcof(indx,dm!-times(cof,cdr(item)))
+          scope_setfarvar(indx,nrow);
+          scope_setexpcof(indx,dm!-times(cof,cdr(item)))
        >>
   >>;
  return zz.ch
@@ -741,9 +741,9 @@ global '(kvarlst qlhs qrhs qlkvl);
 
 symbolic procedure tchscheme2;
 % ---
-% Moves every plus-row having just one z-element to the times-scheme.
+% Moves every plus-scope_row having just one z-element to the times-scheme.
 % Also copies every single child(i.e. it's the only child of its father)
-% of a plus-row to its father-row.
+% of a plus-scope_row to its father-scope_row.
 % ---
 begin
    for x:=0:rowmax do
@@ -754,41 +754,41 @@ end;
 
 symbolic procedure to!*scheme x;
 % ---
-% Moves plus-row x, which has just one z-element, to the times-scheme.
+% Moves plus-scope_row x, which has just one z-element, to the times-scheme.
 % ---
 begin scalar z,yi,exp;
-   if not(numberp farvar(x)) and opval(x) eq 'plus and
-         length(zstrt x)=1 and null(chrow x) then
-   << z:=car zstrt(x);
+   if not(numberp scope_farvar(x)) and scope_opval(x) eq 'plus and
+         length(scope_zstrt x)=1 and null(scope_chrow x) then
+   << z:=car scope_zstrt(x);
       yi:=yind z;
-      exp:=expcof x;
-      setexpcof(x,dm!-expt(ival z,exp));
-      z:=find!*var(farvar yi,x,exp.bval(z));
-      setzstrt(yi,delyzz(x,zstrt yi));
-      setzstrt(x,list z);
-      setopval(x,'times);
+      exp:=scope_expcof x;
+      scope_setexpcof(x,dm!-expt(ival z,exp));
+      z:=find!*var(scope_farvar yi,x,exp.bval(z));
+      scope_setzstrt(yi,delyzz(x,scope_zstrt yi));
+      scope_setzstrt(x,list z);
+      scope_setopval(x,'times);
    >>
 end;
 
 symbolic procedure removechild x;
 % ---
-% Copies the only child of plus-row x to row x.
+% Copies the only child of plus-scope_row x to scope_row x.
 % ---
 begin scalar ch,exp,iv;
-   if not(numberp farvar(x)) and opval(x) eq 'plus and
-         null(zstrt x) and length(chrow x)=1 then
-   << ch:=car chrow x;
-      exp:=expcof x;
-      foreach z in zstrt ch do
-      << setzstrt(yind z,delyzz(ch,zstrt yind z));
+   if not(numberp scope_farvar(x)) and scope_opval(x) eq 'plus and
+         null(scope_zstrt x) and length(scope_chrow x)=1 then
+   << ch:=car scope_chrow x;
+      exp:=scope_expcof x;
+      foreach z in scope_zstrt ch do
+      << scope_setzstrt(yind z,delyzz(ch,scope_zstrt yind z));
          iv:=dm!-times(ival(z),exp);
-         setzstrt(yind z,inszzz(mkzel(x,iv),zstrt yind z));
-         setzstrt(x,inszzzr(mkzel(yind z,iv),zstrt x))
+         scope_setzstrt(yind z,inszzz(mkzel(x,iv),scope_zstrt yind z));
+         scope_setzstrt(x,inszzzr(mkzel(yind z,iv),scope_zstrt x))
       >>;
-      foreach chld in chrow(ch) do setfarvar(chld,x);
-      setopval(x,'times);
-      setexpcof(x,dm!-times(expcof ch,exp));
-      setchrow(x,chrow ch);
+      foreach chld in scope_chrow(ch) do scope_setfarvar(chld,x);
+      scope_setopval(x,'times);
+      scope_setexpcof(x,dm!-times(scope_expcof ch,exp));
+      scope_setchrow(x,scope_chrow ch);
       clearrow ch;
    >>
 end;
@@ -933,7 +933,7 @@ symbolic procedure relvstr(item);
 begin scalar rowindx;
    return
       constp(item) or idp(item) %or
-%         ((rowindx:=get(item,'rowindex)) and opval(rowindx) eq 'times)
+%         ((rowindx:=get(item,'rowindex)) and scope_opval(rowindx) eq 'times)
 end;
 
 symbolic procedure addmatnords(nordlst);
@@ -942,10 +942,10 @@ symbolic procedure addmatnords(nordlst);
 % 1) nords in the kvarlst and
 % 2) nords in rows which are used in the kvarlst. Nordlst contains
 % relevant nords from level 1.
-% A row from level 1 is opened, i.e. replaced by relevant nords from
+% A scope_row from level 1 is opened, i.e. replaced by relevant nords from
 % level 2 (its z-elements) when:
-%     o The row occurs only once in the union of both levels.
-%     o The row is only used for this nord and is used nowhere else in
+%     o The scope_row occurs only once in the union of both levels.
+%     o The scope_row is only used for this nord and is used nowhere else in
 %       codmat or kvarlst.
 % Otherwise the nord is unchanged.
 % ---
@@ -954,11 +954,11 @@ begin scalar matnords,templst,rowindx;
    foreach nord in nordlst do
       foreach indx in cdr nord do
          if (rowindx:=get(car nord,'rowindex)) and
-            opval(rowindx) eq 'times then
-         << foreach z in zstrt rowindx do
-               matnords:=insertin(matnords,farvar yind z,indx);
-            if abs(expcof rowindx) neq 1 then
-               matnords:=insertin(matnords,expcof rowindx,indx)
+            scope_opval(rowindx) eq 'times then
+         << foreach z in scope_zstrt rowindx do
+               matnords:=insertin(matnords,scope_farvar yind z,indx);
+            if abs(scope_expcof rowindx) neq 1 then
+               matnords:=insertin(matnords,scope_expcof rowindx,indx)
          >>;
    % Second: open the appropriate 1st level rows
    foreach nord in nordlst do
@@ -970,10 +970,10 @@ begin scalar matnords,templst,rowindx;
             templst:=insertin(templst,car nord,cadr nord)
          else
             if (rowindx:=get(car nord,'rowindex)) and
-               opval(rowindx) eq 'times and nofnordocc(car nord)=1 then
-            << foreach z in zstrt rowindx do
-                  templst:=insertin(templst,farvar yind z,cadr nord);
-               templst:=insertin(templst,expcof rowindx,cadr nord)
+               scope_opval(rowindx) eq 'times and nofnordocc(car nord)=1 then
+            << foreach z in scope_zstrt rowindx do
+                  templst:=insertin(templst,scope_farvar yind z,cadr nord);
+               templst:=insertin(templst,scope_expcof rowindx,cadr nord)
             >>
    >>;
    return templst
@@ -1014,9 +1014,9 @@ symbolic procedure nofmatnords nord;
 begin scalar nofocc,colindx;
    nofocc:=0;
    if (colindx:=get(nord,'varlst!*)) then
-      nofocc:=length zstrt colindx;
+      nofocc:=length scope_zstrt colindx;
    if (colindx:=get(nord,'varlst!+)) then
-      nofocc:=nofocc+length zstrt colindx;
+      nofocc:=nofocc+length scope_zstrt colindx;
    return nofocc
 end;
 
@@ -1135,7 +1135,7 @@ begin scalar var,val,dm,nr,pnr,pdm,ninrow,dinrow,expo;
 end;
 
 symbolic procedure unprotected var;
-% States wether var is free to be removed or not.
+% States wether var is scope_free to be removed or not.
 flagp(var,'newsym) and not get(var,'alias);
 
 symbolic procedure nordexpo(x,y);
@@ -1150,7 +1150,7 @@ symbolic procedure nordexpo(x,y);
          1
       else
          begin scalar res;
-           if (res:=assoc(get(x,'varlst!*),zstrt get(y,'rowindex)))
+           if (res:=assoc(get(x,'varlst!*),scope_zstrt get(y,'rowindex)))
               then res := ival res
               else res := 0;
            return res
@@ -1159,7 +1159,7 @@ symbolic procedure nordexpo(x,y);
 symbolic procedure remnord(item,expo,dest,indx);
 % ---
 % Divides item^expo out of dest. Dest is a constant, a variable or a
-% variable determining a row in CODMAT.
+% variable determining a scope_row in CODMAT.
 % Item is a constant or a variable.
 % Assumption : dest contains item^n, n >= expo.
 % ---
@@ -1177,36 +1177,36 @@ begin scalar rowindx,colindx,z;
          else
          << rowindx:=get(dest,'rowindex);
             if constp(item) then
-            << if opval(rowindx)='times then
-                setexpcof(rowindx,dm!-quotient(expcof rowindx,
+            << if scope_opval(rowindx)='times then
+                scope_setexpcof(rowindx,dm!-quotient(scope_expcof rowindx,
                                               dm!-expt(item,expo)))
-               else <<setzstrt(rowindx,foreach z in zstrt(rowindx)
+               else <<scope_setzstrt(rowindx,foreach z in scope_zstrt(rowindx)
                         collect mkzel(xind z,
                          dm!-quotient(ival z,dm!-expt(item,expo))
                                                . bval(z)));
-                      foreach z in zstrt(rowindx) do
-                       setzstrt(yind z,inszzz(mkzel(rowindx,val z),
-                                              zstrt(yind z)))
+                      foreach z in scope_zstrt(rowindx) do
+                       scope_setzstrt(yind z,inszzz(mkzel(rowindx,val z),
+                                              scope_zstrt(yind z)))
                     >>;
                dest
             >>
             else
             << colindx:=get(item,'varlst!*);
-               z:=assoc(colindx,zstrt rowindx);
-               setzstrt(colindx,delyzz(rowindx,zstrt colindx));
-               setzstrt(rowindx,delete(z,zstrt rowindx));
+               z:=assoc(colindx,scope_zstrt rowindx);
+               scope_setzstrt(colindx,delyzz(rowindx,scope_zstrt colindx));
+               scope_setzstrt(rowindx,delete(z,scope_zstrt rowindx));
                if ival(z)=expo then
                << remprev(rowindx,item);
                   if get(item,'rowindex) then
                      remprev(rowindx,get(item,'rowindex))
                >>
                else
-               << setzstrt(colindx,
+               << scope_setzstrt(colindx,
                            inszzz(mkzel(rowindx,(ival(z)-expo).bval(z)),
-                                          zstrt colindx));
-                  setzstrt(rowindx,
+                                          scope_zstrt colindx));
+                  scope_setzstrt(rowindx,
                           inszzzr(mkzel(colindx,(ival(z)-expo).bval(z)),
-                                           zstrt rowindx))
+                                           scope_zstrt rowindx))
                >>;
                dest
             >>
@@ -1216,7 +1216,7 @@ end;
 symbolic procedure insnord(item,expo,dest,indx);
 % ---
 % Multiplies item^expo into dest. Dest is a constant, a variable or a
-% variable determining a row in CODMAT.
+% variable determining a scope_row in CODMAT.
 % Item is a constant or a variable.
 % ---
 begin scalar rowindx;
@@ -1234,14 +1234,14 @@ begin scalar rowindx;
       else
       << rowindx:=get(dest,'rowindex);
          if constp item then
-         <<setexpcof(rowindx,
-                     dm!-times(expcof rowindx,dm!-expt(item,expo)));
+         <<scope_setexpcof(rowindx,
+                     dm!-times(scope_expcof rowindx,dm!-expt(item,expo)));
            dest
          >>
          else
-         << setzstrt(rowindx,inszzzr(mkzel(car find!*var(item,
+         << scope_setzstrt(rowindx,inszzzr(mkzel(car find!*var(item,
                                                          rowindx,expo),
-                                           expo),zstrt rowindx));
+                                           expo),scope_zstrt rowindx));
             if get(item,'rowindex) then
                setprev(rowindx,get(item,'rowindex))
             else
@@ -1258,10 +1258,10 @@ symbolic procedure insquotordr(indx,ord);
 % ---
 begin scalar col;
    if (col:=get(getv(qlhs,indx),'varlst!+)) then
-      foreach z in zstrt(col) do
+      foreach z in scope_zstrt(col) do
          setprev(xind z,ord);
    if (col:=get(getv(qlhs,indx),'varlst!*)) then
-      foreach z in zstrt(col) do
+      foreach z in scope_zstrt(col) do
          setprev(xind z,ord)
 end;
 
@@ -1272,10 +1272,10 @@ symbolic procedure remquotordr(indx,ord);
 % ---
 begin scalar col;
    if (col:=get(getv(qlhs,indx),'varlst!+)) then
-      foreach z in zstrt(col) do
+      foreach z in scope_zstrt(col) do
          remprev(xind z,ord);
    if (col:=get(getv(qlhs,indx),'varlst!*)) then
-      foreach z in zstrt(col) do
+      foreach z in scope_zstrt(col) do
          remprev(xind z,ord)
 end;
 
@@ -1283,18 +1283,18 @@ symbolic procedure remprev(x,y);
 % ---
 % See setprev.
 % ---
-   if numberp(farvar x) then
-      remprev(farvar x,y)
+   if numberp(scope_farvar x) then
+      remprev(scope_farvar x,y)
    else
       setordr(x,remordr(y,ordr x));
 
 symbolic procedure checknord(nord,inrow,indx);
 begin
    if inrow then
-   << if null(zstrt inrow) and null(chrow inrow) then
-      << nord:=expcof inrow;
+   << if null(scope_zstrt inrow) and null(scope_chrow inrow) then
+      << nord:=scope_expcof inrow;
          remquotordr(indx,inrow);
-         remquotordr(indx,farvar inrow);
+         remquotordr(indx,scope_farvar inrow);
          clearrow(inrow)
       >>
       else insquotordr(indx,get(nord,'rowindex))
@@ -1303,23 +1303,23 @@ begin
       % This means update ordr-fields.  JB. 7-5-93.
 
       %else
-      % if (zz:=zstrt(inrow)) and null(cdr zz) and
-      %    null(chrow inrow) and
-      %    !:onep(expcof inrow) and !:onep(ival car zz) then ...
+      % if (zz:=scope_zstrt(inrow)) and null(cdr zz) and
+      %    null(scope_chrow inrow) and
+      %    !:onep(scope_expcof inrow) and !:onep(ival car zz) then ...
       %  handled by IMPROVELAYOUT
    >>;
    return nord
 end;
 
 symbolic procedure remquotient(pnr,indx);
-% pnr is a variable (row)
+% pnr is a variable (scope_row)
 begin scalar var,col,rowindx;
    var:=getv(qlhs,indx);
    if (col:=get(var,'varlst!+)) then
-      foreach z in zstrt col do
+      foreach z in scope_zstrt col do
          remprev(xind z,var);
    if (col:=get(var,'varlst!*)) then
-      foreach z in zstrt col do
+      foreach z in scope_zstrt col do
          remprev(xind z,var);
    tshrinkcol(getv(qlhs,indx),pnr,'varlst!+);
    tshrinkcol(getv(qlhs,indx),pnr,'varlst!*);
@@ -1328,10 +1328,10 @@ begin scalar var,col,rowindx;
    if (rowindx:=get(pnr,'rowindex)) then
       pnr:=rowindx;
    if (col:=get(pnr,'varlst!+)) then
-      foreach z in zstrt col do
+      foreach z in scope_zstrt col do
          setprev(xind z,pnr);
    if (col:=get(pnr,'varlst!*)) then
-      foreach z in zstrt col do
+      foreach z in scope_zstrt col do
          setprev(xind z,pnr)
 end;
 

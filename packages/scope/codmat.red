@@ -60,7 +60,7 @@ module codmat;  %  Support for matrix optimization.
 %                                                                      ;
 % ------ TERMINOLOGY USED ------                                       ;
 % ZZ stands for a Zstrt and Z for a single item in ZZ.  A Zstrt is a   ;
-% list of pairs (row(column)index . coeff(exponent)information).Hence a;
+% list of pairs (scope_row(column)index . coeff(exponent)information).Hence a;
 % double linked list representation is used. Both X and Y denote indi- ;
 % ces.The Cdr-part of a Z-element is in fact again a dotted pair (IVal.;
 % BVal). The BValue however is only used in CODPRI.RED for printing    ;
@@ -117,12 +117,12 @@ switch vectorc$
 
 symbolic procedure setrow(n,op,fa,s,zz);
 % -------------------------------------------------------------------- ;
-% arg : N : Row(column)index of the row(column) of which the value has ;
+% arg : N : Row(column)index of the scope_row(column) of which the value has ;
 %           to be (re)set. Physically we need MaxVar + N(see ROW in    ;
 %           COSYMP.RED).                                               ;
 %       Op: Operator value to be stored in Opval,i.e. 'PLUS,'TIMES or  ;
 %           some other operator.                                       ;
-%       Fa: For a row the name (toplevel) or index (subexpression) of  ;
+%       Fa: For a scope_row the name (toplevel) or index (subexpression) of  ;
 %           the father.For a column the template of the column variable;
 %       S : Compiled code demands atmost 5 parameters,atleast for some ;
 %           REDUCE implementations. Therefore S stands for a list of   ;
@@ -138,7 +138,7 @@ begin scalar codmat1;
   then % Double the size of CODMAT.
     <<codmat1:=mkvect(4*maxvar);
       for x:=max(rowmin,-maxvar):min(rowmax,maxvar) do
-      putv(codmat1,x+2*maxvar,row x);
+      putv(codmat1,x+2*maxvar,scope_row x);
       codmat:=codmat1;
       maxvar:=2*maxvar;
     >>;
@@ -147,21 +147,21 @@ begin scalar codmat1;
  % Chrow,CofExp,HiR and Ordr are not in use for columns because:       ;
  % - Chrow and CofExp are irrelevant for storing information about     ;
  %   variable occurrences.                                             ;
- % - Hashing(HiR) and CSE-insertion(Ordr) are based on row-information ;
+ % - Hashing(HiR) and CSE-insertion(Ordr) are based on scope_row-information ;
  %   only.                                                             ;
  % --------------------------------------------------------------------;
   if n<0
-  then fillrow(n,mkvect lencol)
+  then scope_fillrow(n,mkvect lencol)
   else
-  <<fillrow(n,mkvect lenrow);
-    setchrow(n,car s);
+  <<scope_fillrow(n,mkvect lenrow);
+    scope_setchrow(n,car s);
     if cdr s
-    then setexpcof(n,cadr s)
-    else setexpcof(n,1)>>;
-  setfree(n);
-  setopval(n,op);
-  setfarvar(n,fa);
-  setzstrt(n,zz)
+    then scope_setexpcof(n,cadr s)
+    else scope_setexpcof(n,1)>>;
+  scope_setfree(n);
+  scope_setopval(n,op);
+  scope_setfarvar(n,fa);
+  scope_setzstrt(n,zz)
 end;
 
 symbolic procedure inszzz(z,zz);
@@ -213,7 +213,7 @@ else
 
 symbolic procedure pnthxzz(x,zz);
 % -------------------------------------------------------------------- ;
-% arg : X is a row(column)index and ZZ a Z-street.                     ;
+% arg : X is a scope_row(column)index and ZZ a Z-street.                     ;
 % res : A sublist of ZZ such that Caar ZZ = X.                         ;
 % -------------------------------------------------------------------- ;
 if null(zz) or xind(car zz)=x
@@ -253,15 +253,15 @@ symbolic procedure inshisto(x);
 %                   :   :   :               :                          ;
 %                                                                      ;
 % -------------------------------------------------------------------- ;
-if free(x) and x>=0
+if scope_free(x) and x>=0
 then
 begin scalar y,hv;
-  if y:=histo(hv:=min(hwght x,histolen))
-  then setphir(y,x)
+  if y:=histo(hv:=min(scope_hwght x,histolen))
+  then scope_setphir(y,x)
   else
     if hv>headhisto
     then headhisto:=hv;
-  sethir(x,nil.y);
+  scope_sethir(x,nil.y);
   sethisto(hv,x)
 end;
 
@@ -270,27 +270,27 @@ symbolic procedure delhisto(x);
 % arg : Rowindex X.                                                    ;
 % eff : Removes X from the histogram-hierarchy.                        ;
 % -------------------------------------------------------------------- ;
-if free(x) and x>=0
+if scope_free(x) and x>=0
 then
 begin scalar y,z,hv;
-  y:=phir x;
-  z:=nhir x;
-  hv:=min(hwght(x),histolen);
-  if y then setnhir(y,z) else sethisto(hv,z);
-  if z then setphir(z,y);
+  y:=scope_phir x;
+  z:=scope_nhir x;
+  hv:=min(scope_hwght(x),histolen);
+  if y then scope_setnhir(y,z) else sethisto(hv,z);
+  if z then scope_setphir(z,y);
 end;
 
 symbolic procedure rowdel x;
 % -------------------------------------------------------------------- ;
 % arg : Row(column)index X.                                            ;
-% eff : Row X is deleted from CODMAT. SetOccup ensures that row X is   ;
+% eff : Row X is deleted from CODMAT. SetOccup ensures that scope_row X is   ;
 %       disregarded until further notice. Although the Zstrt remains,  ;
 %       the weights of the corresponding columns are reset like the    ;
 %       Histogram info.                                                ;
 % -------------------------------------------------------------------- ;
 <<delhisto(x);
-  setoccup(x);
-  foreach z in zstrt(x) do
+  scope_setoccup(x);
+  foreach z in scope_zstrt(x) do
   downwght(yind z,ival z)>>;
 
 symbolic procedure rowins x;
@@ -298,15 +298,15 @@ symbolic procedure rowins x;
 % arg : Row(column)index X.                                            ;
 % eff : Reverse of the Rowdel operations.                              ;
 % -------------------------------------------------------------------- ;
-<<setfree(x);
+<<scope_setfree(x);
   inshisto(x);
-  foreach z in zstrt(x) do
+  foreach z in scope_zstrt(x) do
   upwght(yind z,ival z)>>;
 
 symbolic procedure downwght(x,iv);
 % -------------------------------------------------------------------- ;
 % arg : Row(column)index X. Value IV.                                  ;
-% eff : The weight of row X is adapted because an element with value IV;
+% eff : The weight of scope_row X is adapted because an element with value IV;
 %       has been deleted.                                              ;
 % -------------------------------------------------------------------- ;
 <<delhisto(x);
@@ -319,13 +319,13 @@ symbolic procedure downwght1(x,iv);
 %        COSYMP.RED and further argumented in CODOPT.RED.              ;
 % -------------------------------------------------------------------- ;
 if not(!:onep dm!-abs(iv))
-then setwght(x,((awght(x)-1).(mwght(x)-1)).(hwght(x)-4))
-else setwght(x,((awght(x)-1).mwght(x)).(hwght(x)-1));
+then scope_setwght(x,((awght(x)-1).(scope_mwght(x)-1)).(scope_hwght(x)-4))
+else scope_setwght(x,((awght(x)-1).scope_mwght(x)).(scope_hwght(x)-1));
 
 symbolic procedure upwght(x,iv);
 % -------------------------------------------------------------------- ;
 % arg : Row(column)index X. value IV.                                  ;
-% eff : The weight of row X is adapted because an element with value IV;
+% eff : The weight of scope_row X is adapted because an element with value IV;
 %       is brought into the matrix.                                    ;
 % -------------------------------------------------------------------- ;
 <<delhisto(x);
@@ -337,22 +337,22 @@ symbolic procedure upwght1(x,iv);
 %  eff : Functioning similar to Downwght1.                             ;
 % -------------------------------------------------------------------- ;
 if not(!:onep dm!-abs(iv))
-then setwght(x,((awght(x)+1).(mwght(x)+1)).min(hwght(x)+4,histolen))
-else setwght(x,((awght(x)+1).mwght(x)).min(hwght(x)+1,histolen));
+then scope_setwght(x,((awght(x)+1).(scope_mwght(x)+1)).min(scope_hwght(x)+4,histolen))
+else scope_setwght(x,((awght(x)+1).scope_mwght(x)).min(scope_hwght(x)+1,histolen));
 
 symbolic procedure initwght(x);
 % -------------------------------------------------------------------- ;
 % arg : Row(column)index X.                                            ;
-% eff : The weight of row(column) X is initialized.                    ;
+% eff : The weight of scope_row(column) X is initialized.                    ;
 % -------------------------------------------------------------------- ;
 begin scalar an,mn;
   an:=mn:=0;
-  foreach z in zstrt(x) do
-  if free(xind z)
+  foreach z in scope_zstrt(x) do
+  if scope_free(xind z)
   then
   << if not(!:onep dm!-abs(ival z)) then mn:=mn+1;
      an:=an+1>>;
-  setwght(x,(an.mn).(an+3*mn));
+  scope_setwght(x,(an.mn).(an+3*mn));
 end;
 
 symbolic procedure remzzzz(zz1,zz2);
@@ -372,11 +372,11 @@ symbolic procedure chdel(fa,x);
 % arg : Father Fa of child X.                                          ;
 % eff : Child X is removed from the Chrow of Fa.                       ;
 % -------------------------------------------------------------------- ;
-setchrow(fa,delete(x,chrow fa));
+scope_setchrow(fa,delete(x,scope_chrow fa));
 
 symbolic procedure delyzz(y,zz);
 % -------------------------------------------------------------------- ;
-% arg : Column(row)index Y. Zstrt ZZ.                                  ;
+% arg : Column(scope_row)index Y. Zstrt ZZ.                                  ;
 % res : Zstrt without the element corresponding with Y.                ;
 % -------------------------------------------------------------------- ;
 if y=yind(car zz)
@@ -389,15 +389,15 @@ symbolic procedure clearrow(x);
 % eff : Row X is cleared. This can be recognized since the father is   ;
 %       set to -1.                                                     ;
 % -------------------------------------------------------------------- ;
-<<setzstrt(x,nil);
+<<scope_setzstrt(x,nil);
   if x>=0
   then
-  <<setchrow(x,nil);
-    if not numberp(farvar x)
-    then remprop(farvar x,'rowindex)
+  <<scope_setchrow(x,nil);
+    if not numberp(scope_farvar x)
+    then remprop(scope_farvar x,'rowindex)
   >>;
-  setwght(x,nil);
-  setfarvar(x,-1)
+  scope_setwght(x,nil);
+  scope_setfarvar(x,-1)
 >>;
 
 % -------------------------------------------------------------------- ;
@@ -429,7 +429,7 @@ symbolic procedure clearrow(x);
 % EXP).Primitive parts are stored in Zstrts as lists of pairs (RCindex.;
 % COFEXP). Composite parts are stored in and via Chrows.               ;
 % The RCindex denotes a Row(Column)index in CODMAT if the Zstrt defines;
-% a column(row). Rows describe primitive parts. Due to the assumption  ;
+% a column(scope_row). Rows describe primitive parts. Due to the assumption  ;
 % that the commutative law holds column information is not completely  ;
 % available as long as input processing is not finished.               ;
 % Conclusion : Zstrts cannot be completed (by SSETVARS in CALC or in   ;
@@ -448,7 +448,7 @@ symbolic procedure clearrow(x);
 %                of Varlst!+, is a list of dotted pairs (X,IV),where X ;
 %                is a rowindex and IV a coefficient,i.e.IV*atom occurs ;
 %                as term of a primitive part of some input expression  ;
-%                defined by row X.                                     ;
+%                defined by scope_row X.                                     ;
 % -- Varlst!*  : Similar to Varlst!+ when replacing the word sum by mo-;
 %                nomial and the word coefficient by exponent.          ;
 % -- 'Varlst!* : The value of this indicator,occuring on the property  ;
@@ -456,7 +456,7 @@ symbolic procedure clearrow(x);
 %                pairs of the form (X.IV),where X is a rowindex and IV ;
 %                an exponent,i.e. atom^IV occurs as factor in a mono-  ;
 %                mial,being a primitive (sub)product,defined through   ;
-%                row X.                                                ;
+%                scope_row X.                                                ;
 % Remark : Observe that it is possible that an atom possesses both     ;
 % 'Varlst!+ and 'Varlst!*,i.e. plays a role in the + - and in the * -  ;
 % part of CODMAT.                                                      ;
@@ -466,7 +466,7 @@ symbolic procedure clearrow(x);
 %                argument ... Last argument)). The arguments are either;
 %                atoms or composite,and in the latter case replaced by ;
 %                a system selected identifier. This identifier is asso-;
-%                ciated with the CODMAT-row which is used to define the;
+%                ciated with the CODMAT-scope_row which is used to define the;
 %                composite argument.                                   ;
 %                Remark : Kvarlst is also used in CODPRI.RED to guaran-;
 %                tee the F's to be printed in due time,i.e.directly    ;
@@ -487,7 +487,7 @@ symbolic procedure clearrow(x);
 %                about the structure of the input expressions. During  ;
 %                the iterative CSE-search the ORDR-info is updated when;
 %                ever necessary.                                       ;
-% -- CodBexpl!*: A list consisting of CODMAT-row indices associated    ;
+% -- CodBexpl!*: A list consisting of CODMAT-scope_row indices associated    ;
 %                with input expression toplevel(i.e. the FarVar-field  ;
 %                contains the expression name).                        ;
 %                This list is used on output to obtain a correct input ;
@@ -672,7 +672,7 @@ symbolic procedure rationalp f;
 symbolic procedure ffvar!+(f,ri);
 % -------------------------------------------------------------------- ;
 % arg : F is a list of terms,i.e. th sum SF='PLUS.F is parsed. Info    ;
-%       storage starts in row RI resulting in                          ;
+%       storage starts in scope_row RI resulting in                          ;
 % res : a list (CH) formed by all the indices of rows where the descrip;
 %       tion of children(composite terms) starts. As a by product(via  ;
 % eff : PVARLST!+) the required Zstrt info is made.                    ;
@@ -775,7 +775,7 @@ symbolic procedure pvarlst!+(var,x,iv);
 % arg : Var is one of the first 2 alternatives for a kernel,i.e. a vari;
 %       able or an operator with a simplified list of arguments (like  ;
 %       sin(x)) with a coefficient IV,belonging to a Zstrt which will  ;
-%       be stored in row X.                                            ;
+%       be stored in scope_row X.                                            ;
 % eff : If the variable happens to be a constant a special internal var;
 %       !+ONE is introduced to assist in defining the constant contribu;
 %       tions to primitive sumparts in accordance with the chosen data-;
@@ -798,7 +798,7 @@ end;
 symbolic procedure ffvar!*(f,ri);
 % -------------------------------------------------------------------- ;
 % arg : F is a list of factors,i.e. the product PF='TIMES.F is parsed. ;
-%       Info storage starts in row RI,resulting in                     ;
+%       Info storage starts in scope_row RI,resulting in                     ;
 % res : a list (CH COF),where CH is a list of all the indices of rows  ;
 %       where the description of children of PF(composite factors)     ;
 % eff : starts. As a by product(via the procedure PVARLST!*) Zstrt info;
@@ -812,7 +812,7 @@ symbolic procedure ffvar!*(f,ri);
 %                    Append(CH,latest version created via FFVAR!* and  ;
 %                    denoted by Car S).                                ;
 %       -a sum     - (or difference or negation) contributing as comp. ;
-%                    factor and demanding a subexpression row  N to    ;
+%                    factor and demanding a subexpression scope_row  N to    ;
 %                    start its description. Storage management is done ;
 %                    via FFVAR!+,implying that CH:=N.CH.               ;
 %       -a power   - of the form sum^integer : and managed like a sum. ;
@@ -893,8 +893,8 @@ begin scalar cof,ch,n,s,b,rownr,pr,nr,dm;
     % the product ....*({Cof*c1}*a+...+{Cof*cn}*z), assuming Cof, c1,..;
     % ..,cn are numerical constants.                                   ;
     % ---------------------------------------------------------------- ;
-    << foreach el in chrow(rownr) do
-           setexpcof(el,dm!-times(cof,expcof(el)));
+    << foreach el in scope_chrow(rownr) do
+           scope_setexpcof(el,dm!-times(cof,scope_expcof(el)));
        foreach var in varlst!+ do
                          if (pr:=assoc(rownr,get(var,'varlst!+)))
                           then rplacd(pr,dm!-times(cdr(pr),cof));
@@ -936,7 +936,7 @@ end;
 symbolic procedure fvarop(f,x);
 % ------------------------------------------------------------------- ;
 % arg : F is a prefixform, being <operator>.<list of arguments>. X is ;
-%       the index of the CODMAT row where the description of F has to ;
+%       the index of the CODMAT scope_row where the description of F has to ;
 %       start.                                                        ;
 % ------------------------------------------------------------------- ;
 begin scalar svp,varf,valf,n,fargl,s,b;
@@ -1349,9 +1349,9 @@ begin scalar z,zz,zzel;
     rowmin:=rowmin-1;
     foreach el in get(var,varlst) do
     <<z:=mkzel(rowmin,cdr el);
-      if null(zzel:=zstrt car el) or not(xind(car zzel)=rowmin)
+      if null(zzel:=scope_zstrt car el) or not(xind(car zzel)=rowmin)
        % To deal with X*X OR X+X;
-      then setzstrt(car el,z.zzel);
+      then scope_setzstrt(car el,z.zzel);
       zz:=inszzz(mkzel(car el,val z),zz)
     >>;
     put(var,varlst,rowmin); % Save column index for later use;
@@ -1481,14 +1481,14 @@ begin scalar g, res;
 % tion is not directly recognizable(a*b+a*c or a*(b+c),etc) the argu-  ;
 % ment is replaced by a system selected name(g002,for instance),which  ;
 % then needs incorporation in the administration. This is also done in ;
-% FVAROP: The index of the CODMAT-row used to start the description of ;
+% FVAROP: The index of the CODMAT-scope_row used to start the description of ;
 % this argument is stored on the property list of g002 as value of the ;
 % indicator Rowindex and the Prevlist is now extended with the pair    ;
 % (father indx. g002 indx).When storing nested expressions in CODMAT   ;
 % the father-child relations based on interchanges of + and * symbols  ;
 % are treated in a similar way.So the Prevlst consists of two types of ;
-% pairs: (row number.row number) and (row number.subexpression name).  ;
-% The CODMAT-row, where the description of this subexpression starts   ;
+% pairs: (scope_row number.scope_row number) and (scope_row number.subexpression name).  ;
+% The CODMAT-scope_row, where the description of this subexpression starts   ;
 % can be found on the property list of the subexpression name as value ;
 % of the indicator Rowindex. All function applications are stored uni- ;
 % quely in Kvarlst. This list is consulted in CODPRI.RED when construc-;
@@ -1499,7 +1499,7 @@ begin scalar g, res;
 % . function application) the corresponding description is removed from;
 % the Kvarlst,thus avoiding a multiple insertion. This demands for a   ;
 % tool to know when to consult the Kvarlst.This is provided by the ORDR;
-% field of the CODMAT-rows.It contains a list of row indices and func- ;
+% field of the CODMAT-rows.It contains a list of scope_row indices and func- ;
 % tion application recognizers, which is recursively built up when     ;
 % searching for subexpressions,after its initialization in SSETVARS,   ;
 % using the subexpression recognizers introduced during parsing.       ;
@@ -1508,16 +1508,16 @@ begin scalar g, res;
 symbolic procedure setprev(x,y);
 % -------------------------------------------------------------------- ;
 % arg : Both X and Y are rowindices.                                   ;
-% eff : Y is the index of a row where the description of a subexpr.    ;
-%       starts. If X is the index of the row where the description of a;
+% eff : Y is the index of a scope_row where the description of a subexpr.    ;
+%       starts. If X is the index of the scope_row where the description of a;
 %       toplevel expression starts( an input expression recognizable by;
 %       the father-field Farvar) Y is put on top of the list of indices;
 %       of subexpressions which have to be printed ahead of this top-  ;
 %       level expression.Otherwise we continue searching for this top- ;
 %       level father via a recursive call of SetPrev.                  ;
 % -------------------------------------------------------------------- ;
-if numberp(farvar x)
-then setprev(farvar x,y)
+if numberp(scope_farvar x)
+then setprev(scope_farvar x,y)
 else setordr(x,y.ordr(x));
 
 endmodule;

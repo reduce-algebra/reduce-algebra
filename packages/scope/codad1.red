@@ -63,7 +63,7 @@ symbolic procedure getcind(var,varlst,op,fa,iv);
 % corresponding PLUS- or TIMES setting (known by the value of Op).Once;
 % the column exists (either created or already available), its Zstrt  ;
 % is modified by inserting the Z-element (Fa,IV) in it. Finally the   ;
-% corresponding Z-element for the father-row, i.e. (Y,IV) is returned.;
+% corresponding Z-element for the father-scope_row, i.e. (Y,IV) is returned.;
 % ------------------------------------------------------------------- ;
 begin scalar y,z;
   if null(y:=get(var,varlst))
@@ -72,7 +72,7 @@ begin scalar y,z;
     put(var,varlst,y);
     setrow(y,op,var,nil,nil)
   >>;
-  setzstrt(y,inszzzn(z:=mkzel(fa,iv),zstrt y));
+  scope_setzstrt(y,inszzzn(z:=mkzel(fa,iv),scope_zstrt y));
   return mkzel(y,val z)
 end;
 
@@ -100,7 +100,7 @@ symbolic procedure improvelayout;
 % ------------------------------------------------------------------- ;
 begin scalar var,b;
   for x:=0:rowmax do
-  if not (numberp(var:=farvar x)
+  if not (numberp(var:=scope_farvar x)
           or
           pairp(var)
           or
@@ -126,16 +126,16 @@ symbolic procedure testononeel(var,x);
 % ------------------------------------------------------------------- ;
 % Row X,having Var as its assigned variable, and defining some expres-;
 % sion, through its Zstrt, Chrow and ExpCof, is analysed.             ;
-% If this row defines a redundant assignment statement the above indi-;
+% If this scope_row defines a redundant assignment statement the above indi-;
 % cated actions are performed.                                        ;
 % ------------------------------------------------------------------- ;
 begin
   scalar scol,srow,el,signiv,signec,zz,ordrx,negcof,trow,
                                            oldvar,b,el1,scof,bop!+,lhs;
-  if (zz:=zstrt x) and null(cdr zz) and null(chrow x) and
+  if (zz:=scope_zstrt x) and null(cdr zz) and null(scope_chrow x) and
       !:onep(dm!-abs(signiv:=ival(el:=car zz))) and
-      !:onep(signec:=expcof(x))
-  %   !:onep(dm!-abs(signec:=expcof(x)))
+      !:onep(signec:=scope_expcof(x))
+  %   !:onep(dm!-abs(signec:=scope_expcof(x)))
   %   This could mean a:=b^(-1), which is rather tricky to update
   %   when b is used in other plusrows.  JB. 7-5-93.
   then
@@ -150,7 +150,7 @@ begin
       % 1*Oldvar^1 or -1*Oldvar^1 (i.e. 1*b^1 or -1*b^1).             ;
       % ------------------------------------------------------------- ;
       scol:=yind el;
-      oldvar:=farvar(scol);
+      oldvar:=scope_farvar(scol);
       if srow:=get(oldvar,'rowindex)
        then b:=t
        else
@@ -159,7 +159,7 @@ begin
            not member(oldvar,codbexl!*)
          then b:=t;
       % ------------------------------------------------------------- ;
-      % So B=T if either Oldvar has its own defining row, whose index ;
+      % So B=T if either Oldvar has its own defining scope_row, whose index ;
       % is stored as value of the indicator Rowindex, i.e. if Oldvar  ;
       % defines a cse, or if Oldvar is the name of a kernel, stored in;
       % Kvarlst, as cdr-part of the pair having Oldvar as its car-part;
@@ -173,12 +173,12 @@ begin
             % ting occurences of Oldvar in Kvarlst have to replaced as;
             % well by Var(,the a mentioned above).                    ;
             % ------------------------------------------------------- ;
-            setzstrt(scol,delyzz(x,zstrt scol));
+            scope_setzstrt(scol,delyzz(x,scope_zstrt scol));
             tshrinkcol(oldvar,var,'varlst!+);
             tshrinkcol(oldvar,var,'varlst!*);
-            if ((opval(x) eq 'plus) and !:onep(dm!-minus signiv))
+            if ((scope_opval(x) eq 'plus) and !:onep(dm!-minus signiv))
                 or
-               ((opval(x) eq 'times) and !:onep(dm!-minus signec))
+               ((scope_opval(x) eq 'times) and !:onep(dm!-minus signec))
              then << var:=list('minus,var);
                      kvarlst:=subst(var,oldvar,kvarlst);
                      preprefixlist:=subst(var,oldvar,preprefixlist);
@@ -201,7 +201,7 @@ begin
             if srow
             then
              << % --------------------------------------------------- ;
-                % Oldvar is the name of a cse, defined through the row;
+                % Oldvar is the name of a cse, defined through the scope_row;
                 % index Srow. So this cse-definition has to be assign-;
                 % ed to Var as new value and the Srow itself has to be;
                 % made redundant. The Ordr-field of Var has to be chan;
@@ -209,30 +209,30 @@ begin
                 % put sequence.                                       ;
                 % --------------------------------------------------- ;
                 ordrx:=ordr(x);
-                bop!+:=opval(srow) eq 'plus;
-                if bop!+ then scof:=expcof srow
-                         else scof:=dm!-times(negcof,expcof(srow));
-                setrow(x,opval srow,var,list(chrow srow,scof),
-                                                           zstrt srow);
+                bop!+:=scope_opval(srow) eq 'plus;
+                if bop!+ then scof:=scope_expcof srow
+                         else scof:=dm!-times(negcof,scope_expcof(srow));
+                setrow(x,scope_opval srow,var,list(scope_chrow srow,scof),
+                                                           scope_zstrt srow);
                 setordr(x,append(ordr srow,remordr(srow,ordrx)));
                 if !:onep(dm!-minus signiv)
                  then
-                  <<foreach z in zstrt(scol) do
+                  <<foreach z in scope_zstrt(scol) do
                        setival(z,dm!-minus ival(z));
-                    foreach ch in chrow(x) do
-                       setexpcof(ch,dm!-minus expcof(ch));
+                    foreach ch in scope_chrow(x) do
+                       scope_setexpcof(ch,dm!-minus scope_expcof(ch));
                     if trow:=get(var,'varlst!*) then
-                    foreach el in zstrt(trow) do
-                       setexpcof(xind el, dm!-minus expcof(xind el));
+                    foreach el in scope_zstrt(trow) do
+                       scope_setexpcof(xind el, dm!-minus scope_expcof(xind el));
                   >>;
-                foreach ch in chrow(srow) do setfarvar(ch,x);
+                foreach ch in scope_chrow(srow) do scope_setfarvar(ch,x);
                 clearrow(srow);
                 setordr(srow,nil);
                 codbexl!*:=subst(x,srow,codbexl!*);
-                foreach z in zstrt(x) do
+                foreach z in scope_zstrt(x) do
                  <<if bop!+ then setival(z,dm!-times(signiv,ival(z)));
-                   setzstrt(yind z,inszzz(mkzel(x,val z),
-                                            delyzz(srow,zstrt yind z)))
+                   scope_setzstrt(yind z,inszzz(mkzel(x,val z),
+                                            delyzz(srow,scope_zstrt yind z)))
                  >>;
                 for sindex:=0:rowmax
                  do setordr(sindex,subst(x,srow,ordr sindex));
@@ -244,7 +244,7 @@ begin
                 % The internal administration is modified, as to pro- ;
                 % vide Var with its new role.                         ;
                 % As a side-effect the index X of the kernel defining ;
-                % row is replaced in CodBexl!* by the name Var, if oc-;
+                % scope_row is replaced in CodBexl!* by the name Var, if oc-;
                 % curring of course, i.e. if this function definition ;
                 % was given at toplevel on input.                     ;
                 % This information is used in ImproveKvarlst.         ;
@@ -265,9 +265,9 @@ end$
 
 symbolic procedure remordr(x,olst);
 % ------------------------------------------------------------------- ;
-% Olst is the value of the Ordr-field of a row of CODMAT. Olst defines;
+% Olst is the value of the Ordr-field of a scope_row of CODMAT. Olst defines;
 % in which order the cse's, occurring in the (sub)expression, whose   ;
-% description starts in this row, have to be printed ahead of this    ;
+% description starts in this scope_row, have to be printed ahead of this    ;
 % (sub)expression. It is a list of kernelnames and/or indices of rows ;
 % where cse-descriptions start.                                       ;
 % RemOrdr returns Olst after removal of X, if occcurring.             ;
@@ -281,7 +281,7 @@ else
 
 symbolic procedure updordr(olst,var,oldvar,ordrx,x);
 % ------------------------------------------------------------------- ;
-% Olst is described in RemOrdr. OrdrX is the Olst of row X after remo-;
+% Olst is described in RemOrdr. OrdrX is the Olst of scope_row X after remo-;
 % val Oldvar from it. Row X defines Var:=Oldvar. Oldvar, a kernelname,;
 % is replaced by Var in Olst. If X is occurring in Olst OrdrX have to ;
 % be inserted in Olst. The thus modified version of Olst is returned. ;
@@ -360,15 +360,15 @@ begin scalar y1,y2;
   then
   <<if y2:=get(var,varlst)
     then
-    <<foreach z in zstrt(y1) do
-      <<setzstrt(y2,inszzzn(z,zstrt y2));
-        setzstrt(xind z,inszzzr(mkzel(y2,val z),
-                 delyzz(y1,zstrt xind z)))
+    <<foreach z in scope_zstrt(y1) do
+      <<scope_setzstrt(y2,inszzzn(z,scope_zstrt y2));
+        scope_setzstrt(xind z,inszzzr(mkzel(y2,val z),
+                 delyzz(y1,scope_zstrt xind z)))
       >>;
       clearrow(y1)
     >>
     else
-    <<setfarvar(y1,var);
+    <<scope_setfarvar(y1,var);
       put(var,varlst,y1)
     >>;
     remprop(oldvar,varlst)
@@ -412,49 +412,49 @@ symbolic procedure tchscheme;
 % A product(sum) -reduced to a single element- can eventually be remo-;
 % ved from the TIMES(PLUS)-part of CODMAT. If certain conditions are  ;
 % fulfilled (defined by the function TransferRow) it is transferred to;
-% the Zstreet of its father PLUS(TIMES)-row and its index is removed  ;
+% the Zstreet of its father PLUS(TIMES)-scope_row and its index is removed  ;
 % from the ChRow of its father.                                       ;
 % T is returned if atleast one such a migration event takes place.    ;
 % NIL is returned otherwise.                                          ;
 % ------------------------------------------------------------------- ;
 begin scalar zz,b;
   for x:=0:rowmax do
-  if not(farvar(x)=-1)
-     and (zz:=zstrt x) and null(cdr zz) and transferrow(x,ival car zz)
+  if not(scope_farvar(x)=-1)
+     and (zz:=scope_zstrt x) and null(cdr zz) and transferrow(x,ival car zz)
    then <<chscheme(x,car zz); b:=t>>;
   return b;
 end;
 
 symbolic procedure chscheme(x,z);
 % ------------------------------------------------------------------- ;
-% The Z-element Z, the only element the Zstreet of row(X) has, has to ;
+% The Z-element Z, the only element the Zstreet of scope_row(X) has, has to ;
 % be transferred from the PLUS(TIMES)-part to the TIMES(PLUS)-part of ;
 % CODMAT.                                                             ;
 % ------------------------------------------------------------------- ;
 begin scalar fa,opv,cof,exp;
-    setzstrt(yind z,delyzz(x,zstrt yind z));
-    setzstrt(x,nil);
-    if opval(x) eq 'plus
+    scope_setzstrt(yind z,delyzz(x,scope_zstrt yind z));
+    scope_setzstrt(x,nil);
+    if scope_opval(x) eq 'plus
     then <<exp:=1; cof:=ival z>>
     else <<exp:=ival z; cof:=1>>;
- l1: fa:=farvar(x);
-     opv:=opval(x);
+ l1: fa:=scope_farvar(x);
+     opv:=scope_opval(x);
      if opv eq 'plus
      then
-     <<cof:=dm!-expt(cof,expcof(x));
-       exp:=dm!-times(expcof(x),exp);
+     <<cof:=dm!-expt(cof,scope_expcof(x));
+       exp:=dm!-times(scope_expcof(x),exp);
        chdel(fa,x);
        clearrow(x);
-       if null(zstrt fa) and transferrow(fa,exp)
+       if null(scope_zstrt fa) and transferrow(fa,exp)
        then <<x:=fa; goto l1>>
      >>
      else
      << if opv eq 'times
         then
-        <<cof:=dm!-times(cof,expcof(x));
+        <<cof:=dm!-times(cof,scope_expcof(x));
           chdel(fa,x);
           clearrow(x);
-          if null(zstrt fa) and transferrow(fa,cof)
+          if null(scope_zstrt fa) and transferrow(fa,cof)
           then <<x:=fa; goto l1>>
         >>
      >>;
@@ -463,36 +463,36 @@ end;
 
 symbolic procedure updfa(fa,exp,cof,z);
 % ------------------------------------------------------------------- ;
-%  FA is the index of the father-row of the Z-element Z,which has to  ;
-% be incorporated in the Zstreet of this row. Its exponent is Exp and ;
+%  FA is the index of the father-scope_row of the Z-element Z,which has to  ;
+% be incorporated in the Zstreet of this scope_row. Its exponent is Exp and ;
 % its coefficient is Cof, both computed in its calling function       ;
 % ChScheme.                                                           ;
 % ------------------------------------------------------------------- ;
-if opval(fa) eq 'plus
-then setzstrt(fa,inszzzr(find!+var(farvar yind z,fa,cof),zstrt fa))
+if scope_opval(fa) eq 'plus
+then scope_setzstrt(fa,inszzzr(find!+var(scope_farvar yind z,fa,cof),scope_zstrt fa))
 else
-<<setzstrt(fa,inszzzr(find!*var(farvar yind z,fa,exp),zstrt fa));
-  setexpcof(fa,dm!-times(cof,expcof(fa)))
+<<scope_setzstrt(fa,inszzzr(find!*var(scope_farvar yind z,fa,exp),scope_zstrt fa));
+  scope_setexpcof(fa,dm!-times(cof,scope_expcof(fa)))
 >>;
 
 symbolic procedure transferrow(x,iv);
 % ------------------------------------------------------------------- ;
-% IV is the Ivalue of the Z-element, oreming the Zstreet of row X.    ;
+% IV is the Ivalue of the Z-element, oreming the Zstreet of scope_row X.    ;
 % This element can possibly be transferred.                           ;
 % T is returned if this element can be transferred. NIL is returned   ;
 % otherwise.                                                          ;
 % ------------------------------------------------------------------- ;
-if opval(x) eq 'plus
- then transferrow1(x) and opval(farvar x) eq 'times
+if scope_opval(x) eq 'plus
+ then transferrow1(x) and scope_opval(scope_farvar x) eq 'times
  else transferrow1(x) and transferrow2(x,iv);
 
 symbolic procedure transferrow1(x);
 % ------------------------------------------------------------------- ;
-% T is returned if row(X) defines a primitive expression (no children);
-% which is part of a larger expression, i.e. row(X) defines a child-  ;
+% T is returned if scope_row(X) defines a primitive expression (no children);
+% which is part of a larger expression, i.e. scope_row(X) defines a child-  ;
 % expression.                                                         ;
 % ------------------------------------------------------------------- ;
-null(chrow x) and numberp(farvar x);
+null(scope_chrow x) and numberp(scope_farvar x);
 
 symbolic procedure transferrow2(x,iv);
 % ------------------------------------------------------------------- ;
@@ -500,18 +500,18 @@ symbolic procedure transferrow2(x,iv);
 % which is part of a sum.                                             ;
 % X is temporarily removed from the list of its fathers children when ;
 % computing B, the return-value.                                      ;
-% B=T if the father-row defines a sum and if either the exponent IV=1 ;
+% B=T if the father-scope_row defines a sum and if either the exponent IV=1 ;
 % or if the father-Zstreet is empty (no primitive terms) and the fa-  ;
 % ther itself can be transferred, i.e. if ExpCof(X)*(a variable) ^ (IV;
 % *ExpCof(Fa)) can be incorporated in the Zstreet of the grandfather- ;
-% row (,which again defines a product).                               ;
+% scope_row (,which again defines a product).                               ;
 % ------------------------------------------------------------------- ;
 begin scalar fa,b;
-  fa:=farvar(x);
+  fa:=scope_farvar(x);
   chdel(fa,x);
-  b:=opval(fa) eq 'plus and (iv=1 or (null(zstrt fa) and
-                            transferrow(fa,iv*expcof(fa))));
-  setchrow(fa,x.chrow(fa));
+  b:=scope_opval(fa) eq 'plus and (iv=1 or (null(scope_zstrt fa) and
+                            transferrow(fa,iv*scope_expcof(fa))));
+  scope_setchrow(fa,x.scope_chrow(fa));
   return b;
 end;
 
@@ -522,16 +522,16 @@ end;
 % of CODMAT : One to store the sum structure, i.e. to store the pp of ;
 % the sum, being d, in a Zstrt and 2 others to store the composite    ;
 % terms a*b and a*c as monomials. The indices of the latter rows are  ;
-% also stored in the list Chrow, associated with the sum-row.         ;
+% also stored in the list Chrow, associated with the sum-scope_row.         ;
 % In addition 4 columns are introduced. One to store the 2 occurrences;
 % of a and 3 others to store the information about b,c and d. The a,b ;
 % and c column belong to the set of TIMES-columns, i.e. a,b and c are ;
 % elements of the list Varlst!* (see the module CODMAT). Similarly the;
 % d belongs to Varlst!+. If this sum is remodelled to obtain a*(b + c);
 % + d changes have to be made in the CODMAT-structure:                ;
-% Now 2 sum-rows are needed and only 1 product-row. Hence the Chrow-  ;
-% information of the original sum-row has to be changed and the 2 pro-;
-% duct-rows have to be removed and replaced by one new row, defining  ;
+% Now 2 sum-rows are needed and only 1 product-scope_row. Hence the Chrow-  ;
+% information of the original sum-scope_row has to be changed and the 2 pro-;
+% duct-rows have to be removed and replaced by one new scope_row, defining  ;
 % the Zstrt for a and the Chrow to find the description of b + c back.;
 % In addition the column-information for all 4 columns has to be reset;
 % This is a simple example. In general more complicated situations can;
@@ -566,8 +566,8 @@ begin scalar b,lxx;
    % the local variable B is set T, possibly the value to be returned.;
    % B gets the initial value Nil, by declaration.                    ;
    % ---------------------------------------------------------------- ;
-   if not (farvar(y)=-1 or farvar(y)=-2) and
-                                opval(y) eq 'times and (lxx:=samefar y)
+   if not (scope_farvar(y)=-1 or scope_farvar(y)=-2) and
+                                scope_opval(y) eq 'times and (lxx:=samefar y)
     then
      <<b:=t;
        foreach el in lxx do commonfac(y,el)
@@ -585,8 +585,8 @@ symbolic procedure samefar(y);
 % corresponding with column Y as factor in their primitive part.      ;
 % ------------------------------------------------------------------- ;
 begin scalar flst,s,far;
-  foreach z in zstrt(y) do
-   if numberp(far:=farvar xind z) and opval(far) eq 'plus
+  foreach z in scope_zstrt(y) do
+   if numberp(far:=scope_farvar xind z) and scope_opval(far) eq 'plus
     then
      if s:=assoc(far,flst)
       then rplacd(s,inszzz(z,cdr(s)))
@@ -602,16 +602,16 @@ symbolic procedure commonfac(y,xx);
 % ------------------------------------------------------------------- ;
 % Y is the index of a TIMES-column and XX an element of LXX, made with;
 % SameFar(Y), i.e. a pair consisting of the index Far of a father-sum ;
-% row and a sub-Zstrt,consisting of Z-elements, defining factors in   ;
+% scope_row and a sub-Zstrt,consisting of Z-elements, defining factors in   ;
 % productterms of this father-sum.                                    ;
 % These factors are defined by Z-elements (Y.exponent). Atmost one of ;
 % these exponents is greater than 1.                                  ;
 % The purpose of CommonFac is to factor out this element,i.e. to remo-;
 % ve a Z-element (Y.1) from the Zstrts of the children and also its   ;
 % corresponding occurrences from ZZ3 = Zstrt(Y), to combine the remai-;
-% ning sum-information in a new PLUS-row, with index Nsum, and to cre-;
-% ate a TIMES-row, with index Nprod, defining the product of the sum, ;
-% given by the row Nsum, and the variable corresponding with column Y.;
+% ning sum-information in a new PLUS-scope_row, with index Nsum, and to cre-;
+% ate a TIMES-scope_row, with index Nprod, defining the product of the sum, ;
+% given by the scope_row Nsum, and the variable corresponding with column Y.;
 % ZZ2 and CH2 are used to (re)structure information, by allowing to   ;
 % combine the remaining portions of the child-rows.The father (with   ;
 % index Far) is defined by a Zstrt (its primitive part) and by CH1 =  ;
@@ -620,7 +620,7 @@ symbolic procedure commonfac(y,xx);
 % Chrow's,respectively.If exponent>1 in (Y.exponent) the Zstrt has to ;
 % be modified to obtain ZZ4, instead of a simple removal of (Y.1) from;
 % from Zstrt X.                                                       ;
-% Alternatives for the structure of the such a child-row are :        ;
+% Alternatives for the structure of the such a child-scope_row are :        ;
 % -1- A combination of a non-empty Zstrt and a non-empty list Chrow   ;
 %     of children.                                                    ;
 % -2- An empty Zstrt, but a non-empty Chrow.                          ;
@@ -628,7 +628,7 @@ symbolic procedure commonfac(y,xx);
 % Special attention is required when in case -3- the Zstrt consists of;
 % only 1 Z-element besides the element shared with column Y.          ;
 % In case -2- similar care have to be taken when Chrow consists of 1  ;
-% row index only.                                                     ;
+% scope_row index only.                                                     ;
 % Remark : Since the overall intention is optimization, i.e. reduction;
 % of the arithmetic complexity of a set of expressions, viewed as ru- ;
 % les to perform arithmetic operations, expression parts like a*b + a ;
@@ -638,8 +638,8 @@ symbolic procedure commonfac(y,xx);
 begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
                                          nsum,nprod,opv,y1,cof,x,ivalx;
   far:=car(xx);
-  ch1:=chrow(far);
-  zz3:=zstrt(y);
+  ch1:=scope_chrow(far);
+  zz3:=scope_zstrt(y);
   nprod:=rowmax+1;
   nsum:=rowmax:=rowmax+2;
   % ----------------------------------------------------------------- ;
@@ -649,10 +649,10 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
   foreach item in cdr(xx) do
   <<x:=xind item;
     if (ivalx:=ival item)=1
-     then zz4:=delyzz(y,zstrt x)
-     else zz4:=inszzzr(zeli:=mkzel(y,ivalx-1),delyzz(y,zstrt x));
-    ch4:=chrow(x);
-    cof:=expcof(x);
+     then zz4:=delyzz(y,scope_zstrt x)
+     else zz4:=inszzzr(zeli:=mkzel(y,ivalx-1),delyzz(y,scope_zstrt x));
+    ch4:=scope_chrow(x);
+    cof:=scope_expcof(x);
     % --------------------------------------------------------------- ;
     % (Y.1) is removed from the child's Zstrt, defining a monomial,   ;
     % without the coefficient, stored in Cof.                         ;
@@ -663,17 +663,17 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
       % This is the special case of possibility -2-. ZZ4 is empty and ;
       % CH4 contains only 1 index.                                    ;
       % ------------------------------------------------------------- ;
-      if (opv:=opval(ch4:=car ch4)) eq 'plus and expcof(ch4)=1
+      if (opv:=scope_opval(ch4:=car ch4)) eq 'plus and scope_expcof(ch4)=1
       then
       <<% ----------------------------------------------------------- ;
-        % The child with row-index CH4 has the form (..+..+..)^1 = ..+;
-        %  ..+.. . Its definition has to be moved to the row Nsum.    ;
+        % The child with scope_row-index CH4 has the form (..+..+..)^1 = ..+;
+        %  ..+.. . Its definition has to be moved to the scope_row Nsum.    ;
         % The different terms can be either primitive or composite and;
         % have all to be multiplied by Cof. Both Zstrt(CH4) - the pri-;
         % mitives - and Chrow(CH4) - the composites - have to be exa- ;
         % mined.                                                      ;
         % ----------------------------------------------------------- ;
-        foreach z in zstrt(ch4) do
+        foreach z in scope_zstrt(ch4) do
         <<% --------------------------------------------------------- ;
           % A new Zstrt ZZ2 is made with the primitive elements of the;
           % the different Zstrt(CH4)'s. InsZZZr guarantees summation  ;
@@ -685,33 +685,33 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
           % --------------------------------------------------------- ;
           zel:=mkzel(xind z,dm!-times(ival(z),cof));
           zz2:=inszzzr(zel,zz2);
-          setzstrt(yind z,inszzz(mkzel(nsum,ival zel),
-                                  delyzz(ch4,zstrt yind z)))
+          scope_setzstrt(yind z,inszzz(mkzel(nsum,ival zel),
+                                  delyzz(ch4,scope_zstrt yind z)))
         >>;
-        foreach ch in chrow(ch4) do
+        foreach ch in scope_chrow(ch4) do
         <<% --------------------------------------------------------- ;
-          % The row CH defines a child directly if Cof = 1. In all    ;
+          % The scope_row CH defines a child directly if Cof = 1. In all    ;
           % other cases a multiplication with Cof has to be performed.;
           % Either by changing the ExpCof field if the child is a pro-;
-          % duct or by introducing a new TIMES-row.                   ;
+          % duct or by introducing a new TIMES-scope_row.                   ;
           % --------------------------------------------------------- ;
           chindex:=ch;
           if not(!:onep cof)
            then
-            if opval(ch) eq 'times
+            if scope_opval(ch) eq 'times
              then
-              << setexpcof(ch,dm!-times(cof,expcof(ch)));
-                 setfarvar(ch,nsum)
+              << scope_setexpcof(ch,dm!-times(cof,scope_expcof(ch)));
+                 scope_setfarvar(ch,nsum)
               >>
              else
               << chindex:=rowmax:=rowmax+1;
                  setrow(chindex,'times,nsum,(ch).cof,nil)
               >>
-           else  setfarvar(ch,nsum);
+           else  scope_setfarvar(ch,nsum);
           ch2:=chindex.ch2
         >>;
         % ----------------------------------------------------------- ;
-        % The row CH4 is not longer needed in CODMAT, because its     ;
+        % The scope_row CH4 is not longer needed in CODMAT, because its     ;
         % content is distributed over other rows.                     ;
         % ----------------------------------------------------------- ;
         clearrow(ch4);
@@ -721,13 +721,13 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
         % This is still the special case -2-. (CH4) contains 1 child  ;
         % index. The leading operator of this child is not PLUS. So   ;
         % CH4 is simply added to the list of children indices CH2 and ;
-        % the father index of row CH4 is changed into Nsum.           ;
+        % the father index of scope_row CH4 is changed into Nsum.           ;
         % ----------------------------------------------------------- ;
-        setfarvar(ch4,nsum);
+        scope_setfarvar(ch4,nsum);
         ch2:=ch4.ch2
       >>;
       % ------------------------------------------------------------- ;
-      % The row X is not longer needed in CODMAT, because its content ;
+      % The scope_row X is not longer needed in CODMAT, because its content ;
       % is distributed over other rows.                               ;
       % ------------------------------------------------------------- ;
       clearrow(x)
@@ -741,20 +741,20 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
         % This Z-element defines just a variable if IVal(Car ZZ4) =1. ;
         % It is a power of a variable in case IVal-value > 1 holds.   ;
         % In the latter situation Nsum ought to become the new father ;
-        % index of the row with index Xind Car ZZ4.In the former case ;
-        % the single variable is added to the Zstrt ZZ2, before row X ;
+        % index of the scope_row with index Xind Car ZZ4.In the former case ;
+        % the single variable is added to the Zstrt ZZ2, before scope_row X ;
         % can be cleared.                                             ;
         % ----------------------------------------------------------- ;
         if not(!:onep ival(car(zz4)))
          then
-          << setfarvar(x,nsum);
-             setzstrt(x,zz4);
+          << scope_setfarvar(x,nsum);
+             scope_setzstrt(x,zz4);
              ch2:=x.ch2
           >>
          else
-          << zz2:=inszzzr(find!+var(farvar(y1:=yind car zz4),nsum,
+          << zz2:=inszzzr(find!+var(scope_farvar(y1:=yind car zz4),nsum,
                                                             cof),zz2);
-             setzstrt(y1,delyzz(x,zstrt y1));
+             scope_setzstrt(y1,delyzz(x,scope_zstrt y1));
              clearrow(x)
           >>
       >>
@@ -762,13 +762,13 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
       <<% ----------------------------------------------------------- ;
         % Now the general form of one of the 3 alternatives holds.    ;
         % Row index X is added to the list of children indices CH2    ;
-        % and the new father index for row X becomes Nsum. The Zstrt  ;
+        % and the new father index for scope_row X becomes Nsum. The Zstrt  ;
         % of X is also reset. It becomes ZZ4, i.e. the previous Zstrt ;
         % after removal of (Y.1).                                     ;
         % ----------------------------------------------------------- ;
         ch2:=x.ch2;
-        setfarvar(x,nsum);
-        setzstrt(x,zz4)
+        scope_setfarvar(x,nsum);
+        scope_setzstrt(x,zz4)
       >>;
     % --------------------------------------------------------------- ;
     % The previous "life" of X is skipped by removing its impact from ;
@@ -781,15 +781,15 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
   % ----------------------------------------------------------------- ;
   % Some final bookkeeping is needed :                                ;
   % -1- (Y.1) was deleted from the ZZ4's. Its new role, factor in the ;
-  %     product,defined via the row Nprod, has still to be establish- ;
+  %     product,defined via the scope_row Nprod, has still to be establish- ;
   %     ed by inserting this information in Y's Zstrt.                ;
   % ----------------------------------------------------------------- ;
-   setzstrt(y,(zel:=mkzel(nprod,1)).zz3);
+   scope_setzstrt(y,(zel:=mkzel(nprod,1)).zz3);
   % ----------------------------------------------------------------- ;
-  % -2- The list of indices of children of the row with index Far     ;
+  % -2- The list of indices of children of the scope_row with index Far     ;
   %     ought to be extended with Nprod.                              ;
   % ----------------------------------------------------------------- ;
-  setchrow(far,nprod.ch1);
+  scope_setchrow(far,nprod.ch1);
   % ----------------------------------------------------------------- ;
   % -3- Finally the new rows Nprod and Nsum have to be filled. How-   ;
   %     ever the :=: assignment-option might cause - otherwise non-   ;
@@ -803,15 +803,15 @@ begin scalar far,ch1,ch2,ch4,chindex,zel,zeli,zz2,zz3,zz4,
   % Hence a test is made to discover if a Z-element Zel exists, such  ;
   % that IVal(Zel)=0. If so, its occurrence is removed from both ZZ2  ;
   % and the Zstrt of the t-column.                                    ;
-  % If now Null(CH2) and Null(Cdr ZZ2) holds the PLUS-row Nsum is     ;
-  % superfluous. Only 2*a*x has to be stored in Nprod. The row Nsum   ;
+  % If now Null(CH2) and Null(Cdr ZZ2) holds the PLUS-scope_row Nsum is     ;
+  % superfluous. Only 2*a*x has to be stored in Nprod. The scope_row Nsum   ;
   % is removed when it is easily detectable, because this index is    ;
   % not used anymore and anywhere, when the above limitations are     ;
   % valid.                                                            ;
   % ----------------------------------------------------------------- ;
   foreach z in zz2 do if zeropp(ival(z))
      then << zz2:=delyzz(y1:=xind z,zz2);
-             setzstrt(y1,delyzz(nsum,zstrt y1))
+             scope_setzstrt(y1,delyzz(nsum,scope_zstrt y1))
           >>;
   % ----------------------------------------------------------------- ;
   % Expressions like x(a-w)+x(a+w) lead to printable, but not yet to  ;

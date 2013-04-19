@@ -57,7 +57,7 @@ symbolic$
 % (pp's for short) of input-expressions. These pp's are either linear ;
 % expressions (Opval='PLUS) or monomials (Opval='TIMES). The pp's be- ;
 % long to larger expressions if CHROW is not NIL at the same level or ;
-% if the FarVar-field of the row contains a rowindex (of a father ex- ;
+% if the FarVar-field of the scope_row contains a rowindex (of a father ex- ;
 % pression).                                                          ;
 % The Zstrt is a list of pairs Z.Such a Z consists of a (column)index,;
 % denoted by XIND(Z) or YIND(Z) and an integer value IVAL(Z), being   ;
@@ -65,7 +65,7 @@ symbolic$
 % column-index, occurring in this pair. In a similar way columns are  ;
 % used to define the occurrences of variables in the description of   ;
 % the input-expressions( see the CODMAT module).                      ;
-% Each row or column has a weight WGHT=((AWght.MWght).HWght), where   ;
+% Each scope_row or column has a weight WGHT=((AWght.MWght).HWght), where   ;
 % HWght=AWght + 3*MWght. The A(dditive)W(ei)ght is the length of the  ;
 % Zstrt. The M(ultiplicative)W(ei)ght is its number of (|IVAL|>1)-ele-;
 % ments. The factor 3 reflects the assumption that multiplication is 3;
@@ -79,7 +79,7 @@ symbolic$
 % HWghts can be associated with both rows and columns.                ;
 % This allows to produce weightfactors (see the references),  to be   ;
 % associated with rows (or columns) to refine heuristic decisions, if ;
-% required. The weightfactor of a row(column) is the sum of the HWghts;
+% required. The weightfactor of a scope_row(column) is the sum of the HWghts;
 % of those columns(rows) which share a non-zero entry with it.Although;
 % the use  of weightfactors might improve decision making, its over-  ;
 % head in computational cost can be considerable, certainly when the  ;
@@ -89,7 +89,7 @@ symbolic$
 % se - certainly initially - the number of variables is a fraction of ;
 % the number of rows, corresponding with (sub)pp's.                   ;
 % So we drop the weightfactors and we select rows instead of columns. ;
-% To speed up the row-selection all rows with an equal HWght are col- ;
+% To speed up the scope_row-selection all rows with an equal HWght are col- ;
 % lected in a double linked list, using the HiR-fields. These sets are;
 % accessible via the elements of the CODHISTO-vector (details are gi- ;
 % ven in the CODMAT module, procedure INSHISTO). We recall only that  ;
@@ -107,26 +107,26 @@ symbolic$
 % ces of rank 1 of maximal size. The size is determined, using a      ;
 % profit-criterium. A basic scan is used, which can be qualified as   ;
 % "test whether the determinant of a (2,2)-matrix of non-zero entries ;
-% is zero". Its use is based on information about the row-weights,    ;
-% which allow to locate completely dense submatrices. The row-weight  ;
+% is zero". Its use is based on information about the scope_row-weights,    ;
+% which allow to locate completely dense submatrices. The scope_row-weight  ;
 % is a reflection of the arithmetic complexity of the pp,corresponding;
-% with the row. Since we want to reduce the arithmetic complecity AC =;
+% with the scope_row. Since we want to reduce the arithmetic complecity AC =;
 % (n+,n*) of the set of input-expressions, a cse-selection ought to   ;
 % contribute to a reduction of the number of additions (n+) and/or the;
 % number of multiplications (n*). This is only possible if the cse oc-;
 % curs at least twice and if the additive weight AWght is at least 2. ;
 % The profit-criterium WSI is based on this assumption. Its actual va-;
-% lue is (|Psi|-1) * (|Jsi|-1). Here Psi is the set of Parent- row in-;
+% lue is (|Psi|-1) * (|Jsi|-1). Here Psi is the set of Parent- scope_row in-;
 % dices and Jsi is the set of indices of columns, which are associated;
 % with variables occurring in the cse under construction.             ;
 % Once a cse is found its description is removed from the rows,defined;
 % by Psi, and from the columns, with indices in Jsi. The cse itself is;
-% added to CODMAT as a new row. It has a system-selected name (given  ;
+% added to CODMAT as a new scope_row. It has a system-selected name (given  ;
 % in the FarVar-field and produced with FNEWSYM (see CODCTL module)), ;
 % which is also used as recognizer of the new column added to CODMAT, ;
 % to define the occurrences of the new cse (via the Psi-set). In addi-;
 % tion the HWghts of the Psi rows, used in the previous resettings are;
-% recomputed and reinserted via CODHISTO and the cse-row is entered in;
+% recomputed and reinserted via CODHISTO and the cse-scope_row is entered in;
 % CODHISTO, to allow it to play its own role in the optimization. We  ;
 % also insert the new cse in the output hierarchy via the ORDR-field  ;
 % of the Psi-parents, associated with the cse. We finally remark that ;
@@ -137,8 +137,8 @@ symbolic$
 %                                                                     ;
 % Essentially all searches are done in Zstrt's. A Zstrt is a list of  ;
 % pairs (index . value). The ordering in the Zstrt is based on the    ;
-% indices. A column-Zstrt contains (positive) row-indices, given in   ;
-% descending order. A row-Zstrt contains (negative) column-indices,   ;
+% indices. A column-Zstrt contains (positive) scope_row-indices, given in   ;
+% descending order. A scope_row-Zstrt contains (negative) column-indices,   ;
 % given in ascending order. The indices define relative positions. In ;
 % all operations on CODMAT information-pieces (except for MKZEL-calls);
 % these relative positions, produced via Rowmax and Rowmin value chan-;
@@ -149,7 +149,7 @@ symbolic$
 % plication PnthXZZ(A,B) delivers the Zstrt B, but after removal of   ;
 % the elements preceding the Z-element with the A-index. This Z-elem. ;
 % can thus be obtained as CAR(PnthXZZ(A,B)). Since the searches are   ;
-% based on row-selection followed by Jsi-resettings, only ordering in ;
+% based on scope_row-selection followed by Jsi-resettings, only ordering in ;
 % Jsi is relevant. When a cse is found, Psi is ordered, before making ;
 % and adding to CODMAT the corresponding Zstrt.                       ;
 %                                                                     ;
@@ -189,7 +189,7 @@ global '(psi jsi npsi njsi wsi rcoccup roccup1 roccup2 newjsi newnjsi
 %   Roccup1 : Indices of rows, which become (temporarily) irrelevant  ;
 %             during a cse search (see procedure FindOptRow).         ;
 %   Roccup2 : Indices of rows, which were (temporarily) selected as   ;
-%             candidate-parent row (see procedure FindOptRow).        ;
+%             candidate-parent scope_row (see procedure FindOptRow).        ;
 %   RCoccup : Indices of rows and columns, either used for building   ;
 %             the cse or leading to a failure, i.e. to Wsi=0.         ;
 %       Psi : Indices of the parents of the cse.                      ;
@@ -220,14 +220,14 @@ begin scalar further;
    % We start excluding those rows and columns, which are irrelevant  ;
    % for our searches : Either the FarVar-field = -1 (This setting is ;
    % performed by application of the procedure ClearRow, defined in   ;
-   % the module CODMAT, and expresses that a row or column is not in  ;
+   % the module CODMAT, and expresses that a scope_row or column is not in  ;
    % use anymore) or = -2 (Columns reservedto store temporarily mono- ;
    % mial information created in ExpandProd and removed in ShrinkProd);
    % ---------------------------------------------------------------- ;
    for x:=rowmin:rowmax do
-    if farvar(x)=-1 or farvar(x)=-2
-    then setoccup(x)
-    else setfree(x);
+    if scope_farvar(x)=-1 or scope_farvar(x)=-2
+    then scope_setoccup(x)
+    else scope_setfree(x);
    % ---------------------------------------------------------------- ;
    % After initialization the searches are performed.                 ;
    % ---------------------------------------------------------------- ;
@@ -241,9 +241,9 @@ begin scalar further;
    repeat
     <<expandprod();
       for x:=rowmin:rowmax do
-       if not(farvar(x)=-1) and opval(x) eq 'times
-        then setfree(x)
-        else setoccup(x);
+       if not(scope_farvar(x)=-1) and scope_opval(x) eq 'times
+        then scope_setfree(x)
+        else scope_setoccup(x);
       initbrsea();
       extbrsea1();
       % ------------------------------------------------------------- ;
@@ -275,15 +275,15 @@ symbolic procedure initbrsea;
 % and redundant information is temporarily removed. It is of course   ;
 % needed again for output and eventually during later stages of the   ;
 % optimization process, due to information migration. Information is  ;
-% redundant when a row or column, i.e a Zstrt, only contains one Z-   ;
+% redundant when a scope_row or column, i.e a Zstrt, only contains one Z-   ;
 % element. This demands for a recursive search through CODMAT, since  ;
-% a redundant row can lead to a redundant column if the element they  ;
+% a redundant scope_row can lead to a redundant column if the element they  ;
 % share ought to be disregarded.                                      ;
 % ------------------------------------------------------------------- ;
 begin scalar hlen;
   hlen:=histolen;
   for x:=rowmin:rowmax do
-  if free(x) then initwght(x);
+  if scope_free(x) then initwght(x);
   % ----------------------------------------------------------------- ;
   % Only the weights for relevant rows and columns are computed. Once ;
   % the weights are known, the redundancy can be removed using :      ;
@@ -312,7 +312,7 @@ for x:=rowmin:rowmax do testred(x);
 
 symbolic procedure testred(x);
 % ------------------------------------------------------------------- ;
-% If the row or column X is still relevant but has an additive weight ;
+% If the scope_row or column X is still relevant but has an additive weight ;
 % of 1 or 0 its information is irrelevant for the searches.           ;
 % Remark : It is possible to consider the LOWER BOUND of 2 as a PARA- ;
 % METER. If we are only interested in cse's of a LENGTH of AT LEAST M ;
@@ -320,15 +320,15 @@ symbolic procedure testred(x);
 % a revision of the procedure DOWNWGHT1 and similar routines, given in;
 % the CODMAT module, and a modification of the profit criterium WSI   ;
 % (see the procedure EXTBRSEA1).                                      ;
-% So when a row is redundant we declare it to be occupied and reduce  ;
+% So when a scope_row is redundant we declare it to be occupied and reduce  ;
 % the weights of the column its shares its element with, before we    ;
 % test if this column is now redundant as well. The role of rows and  ;
 % columns are thus interchangeable.                                   ;
 % ------------------------------------------------------------------- ;
-if free(x) and awght(x)<2
+if scope_free(x) and awght(x)<2
 then
- <<setoccup(x);
-   foreach z in zstrt(x) do
+ <<scope_setoccup(x);
+   foreach z in scope_zstrt(x) do
     <<downwght1(yind z,ival z);
       testred(yind z)>>
  >>;
@@ -342,7 +342,7 @@ symbolic procedure extbrsea1;
 %                                                                     ;
 % column -4 -3 -2 -1                                                  ;
 %                                                                     ;
-% row 6 | 0  0  1  1 | AWght = 2 MWght = 0 HWght = 2 CodHisto( 2) = 6 ;
+% scope_row 6 | 0  0  1  1 | AWght = 2 MWght = 0 HWght = 2 CodHisto( 2) = 6 ;
 %     5 | 0  1  2  2 |         3         2         9         ( 9)   5 ;
 %     4 | 0  2  2  3 |         3         3        12         (12)   4 ;
 %     3 | 2  3  4  5 |         4         4        16         (16)   3 ;
@@ -358,12 +358,12 @@ begin scalar hr,hc,x;
   while hr:=findhr() do
   % ----------------------------------------------------------------- ;
   % ExtBrsea1 consists of a WHILE-loop,which is executed as long as   ;
-  % a first parent-row can be found using CODHISTO, via FindHR. So    ;
+  % a first parent-scope_row can be found using CODHISTO, via FindHR. So    ;
   % initially Psi = (HR).                                             ;
   % ----------------------------------------------------------------- ;
    if hc:=findhc(hr)
    % ---------------------------------------------------------------- ;
-   % As long as a row HC can be found, which can be used in combinati-;
+   % As long as a scope_row HC can be found, which can be used in combinati-;
    % on with HR, the cse-search continues. Since redundancy is removed;
    % the AWght of HC is at least 2. Via FINDHC the column with maximal;
    % AWght, which shares a non-zero element with Row(HR) is selected. ;
@@ -383,13 +383,13 @@ begin scalar hr,hc,x;
        % + 1.                                                         ;
        % ------------------------------------------------------------ ;
        foreach x in roccup1 do
-        setfree(x);
+        scope_setfree(x);
        % ------------------------------------------------------------ ;
-       % Not usable during construction of the present cse. Given free;
+       % Not usable during construction of the present cse. Given scope_free;
        % again for a next attempt, with of course another HR.         ;
        % ------------------------------------------------------------ ;
        foreach x in roccup2 do
-        setfree(x);
+        scope_setfree(x);
        % ------------------------------------------------------------ ;
        % Used for cse-construction, but now possibly reusable.        ;
        % ------------------------------------------------------------ ;
@@ -397,11 +397,11 @@ begin scalar hr,hc,x;
        if wsi>0
         then
          <<foreach x in rcoccup do
-            setfree(x);
+            scope_setfree(x);
            rcoccup:=nil;
            % -------------------------------------------------------- ;
            % Rows and Columns used for building the cse can eventually;
-           % be usable again. Hence also given free again.            ;
+           % be usable again. Hence also given scope_free again.            ;
            % Finally all necessary resettings in CODMAT and CODHISTO  ;
            % are performed with AddCse, before the search for further ;
            % cse's is continued.                                      ;
@@ -414,20 +414,20 @@ begin scalar hr,hc,x;
                % If Wsi = 0 and NPsi = 1 the (HR,HC)-selection was un-;
                % lucky.No cse is found, i.e. HC has to be disregarded.;
                % ---------------------------------------------------- ;
-               setoccup(hc);
+               scope_setoccup(hc);
                rcoccup:=hc.rcoccup
             >>
       >>
      else
       << % ---------------------------------------------------------- ;
-         % No columns available for cse-construction using the row HR.;
+         % No columns available for cse-construction using the scope_row HR.;
          % Hence HR is an unlucky choise. The elements of RCoccup are ;
          % freed to be reused. HR is disregarded via RowDel(HR), with ;
          % as a consequence a possible, intermediate introduction of  ;
          % redundancy, which can be removed by applying TestredZZ.    ;
          % ---------------------------------------------------------- ;
          foreach x in rcoccup do
-          setfree(x);
+          scope_setfree(x);
          rcoccup:=nil;
          rowdel(hr);
          testredzz(hr)
@@ -437,10 +437,10 @@ symbolic procedure findhr;
 % ------------------------------------------------------------------- ;
 % CODHISTO is subjected to a top-down search to find the non-zero en- ;
 % try with maximal index, i.e. to find the index of the most interes- ;
-% ting row. This is row 3 in the example in the comment in ExtBrsea1. ;
+% ting scope_row. This is scope_row 3 in the example in the comment in ExtBrsea1. ;
 % This value is returned. In addition Psi, NPsi and RCoccur are initia;
 % lized (Psi = (3), NPsi = 1 and RCoccur = (3),for example). Finally  ;
-% row X (= 3), selected as most attractive row, is removed from the   ;
+% scope_row X (= 3), selected as most attractive scope_row, is removed from the   ;
 % candidate rows, by assigning NIL to the FREE-field.                 ;
 % Note that X = Nil is possible, implying that the search, defined in ;
 % ExtBrsea1,is finished during this stage of the optimization process.;
@@ -452,16 +452,16 @@ begin scalar x;
   then
   <<psi:=list x;
     npsi:=1;
-    setoccup(x);
+    scope_setoccup(x);
     rcoccup:=x.rcoccup>>;
   return x
 end;
 
 symbolic procedure findhc(hr);
 % ------------------------------------------------------------------- ;
-% HR is the index of a row, for instance selected with FindHR.        ;
+% HR is the index of a scope_row, for instance selected with FindHR.        ;
 % The Zstrt of HR is used to select the column, which can best be used;
-% in combination with the row HR to start constructing a cse, i.e. the;
+% in combination with the scope_row HR to start constructing a cse, i.e. the;
 % "leftmost" column with locally maximal AWght. When looking at the   ;
 % example in ExtBrsea1 this will be column -3.                        ;
 % In addition Jsi and NJsi are initialized. Only the columns, which   ;
@@ -474,8 +474,8 @@ symbolic procedure findhc(hr);
 begin scalar y,y1,aw,awmax;
   awmax:=njsi:=0;
   jsi:=nil;
-  foreach z in zstrt(hr) do
-  if free(y1:=yind z)
+  foreach z in scope_zstrt(hr) do
+  if scope_free(y1:=yind z)
   then
   <<jsi:=y1.jsi;
     njsi:=njsi+1;
@@ -490,7 +490,7 @@ end;
 
 symbolic procedure findoptrow(hr,hc,lmax);
 % ------------------------------------------------------------------- ;
-% The row-index HR and the column-index HC are used to  find a Row(X),;
+% The scope_row-index HR and the column-index HC are used to  find a Row(X),;
 % applying the test defined in the procedure TestPr, such that Row(HR);
 % and Row(X) have a cse of at least a length Lmax + 1.                ;
 % If HR =3 and HC = -3  FindOptRow will produce X = 1.                ;
@@ -513,9 +513,9 @@ symbolic procedure findoptrow(hr,hc,lmax);
 % TestPr produces S = (-1 -2 -3).                                     ;
 % ------------------------------------------------------------------- ;
 begin scalar l,s,x,x1,bil;
-  bil:=ival(car pnthxzz(hc,zstrt hr));
-  foreach z in zstrt(hc) do
-   if free(x1:=xind z)
+  bil:=ival(car pnthxzz(hc,scope_zstrt hr));
+  foreach z in scope_zstrt(hc) do
+   if scope_free(x1:=xind z)
     then
      <<if null(cdr(s:=testpr(x1,hr,ival z,bil)))
         then roccup1:=x1.roccup1
@@ -528,7 +528,7 @@ begin scalar l,s,x,x1,bil;
              >>;
            roccup2:=x1.roccup2
          >>;
-        setoccup(x1)
+        scope_setoccup(x1)
      >>;
   return x
 end;
@@ -536,7 +536,7 @@ end;
 symbolic procedure testpr(x,hr,bkl,bil);
 % ------------------------------------------------------------------- ;
 % TestPr is a procedure to perform zero-minor tests.                  ;
-% X and HR are row-indices. Bkl = B(X,HC) and Bil = B(HR,HC).         ;
+% X and HR are scope_row-indices. Bkl = B(X,HC) and Bil = B(HR,HC).         ;
 % The test is : Is Bil*Bkj - Bij*Bkl = 0?                             ;
 % Assumptions : Bkj = B(X,j) and Bij = B(HR,j), where j is running    ;
 % through Jsi, the set of indices of columns, which share a non-zero  ;
@@ -545,8 +545,8 @@ symbolic procedure testpr(x,hr,bkl,bil);
 % ------------------------------------------------------------------- ;
 begin scalar zz,zzhr,x1,y,p,ljsi,cljsi;
   ljsi:=jsi;
-  zz:=zstrt(x);
-  zzhr:=zstrt(hr);
+  zz:=scope_zstrt(x);
+  zzhr:=scope_zstrt(hr);
   while ljsi and zz do
   if (cljsi:=car ljsi)=(x1:=xind car zz)
   then
@@ -615,9 +615,9 @@ symbolic procedure brupdate(x);
   % rent for the cse, presently being built.                          ;
   % ----------------------------------------------------------------- ;
   foreach x in roccup2 do
-  setfree(x);
+  scope_setfree(x);
   roccup2:=nil;
-  setoccup(x);
+  scope_setoccup(x);
   rcoccup:=x.rcoccup
 >>;
 
@@ -625,7 +625,7 @@ symbolic procedure addcse;
 % ------------------------------------------------------------------- ;
 % The cse defined by the index-sets Psi and Jsi is added to CODMAT.   ;
 % So its occurrences in the rows,which have an index in Psi, are remo-;
-% ved, the description of the cse is added as a new row to CODMAT and ;
+% ved, the description of the cse is added as a new scope_row to CODMAT and ;
 % the system-selected cse-name is used to head a new column,defining  ;
 % occurrences in the parent-rows. In combination with these measures  ;
 % some weights have to be reset and thus also some information in     ;
@@ -659,8 +659,8 @@ begin scalar zz,zzr,zzc,lzzr,lzzc,opv,var,gc,flt,min;
    zz:=nil;
 
   % ----------------------------------------------------------------- ;
-  % ZZr and LZZr are assigned a row-Zstrt, in ascending order, defi-  ;
-  % ning the cse, which must be added to CODMAT, in row Rowmax.       ;
+  % ZZr and LZZr are assigned a scope_row-Zstrt, in ascending order, defi-  ;
+  % ning the cse, which must be added to CODMAT, in scope_row Rowmax.       ;
   % LZZc is the column-Zstrt of the cse in ascending, thus "wrong" or-;
   % der. But LZZc is reversed, when updating the parent-rows in the   ;
   % Psi-loop. Similarly LZZr is used in the Jsi-loop for updating co- ;
@@ -668,10 +668,10 @@ begin scalar zz,zzr,zzc,lzzr,lzzc,opv,var,gc,flt,min;
   % ----------------------------------------------------------------- ;
   var:=fnewsym();
   rowmax:=rowmax+1;
-  setrow(rowmax,opv:=opval car jsi,var,list nil,zzr);
+  setrow(rowmax,opv:=scope_opval car jsi,var,list nil,zzr);
   % ----------------------------------------------------------------- ;
   % List Nil, parameter 4, defines the empty list of children and ex- ;
-  % presses that also the EXPCOF-field of row(Rowmax) remains unused. ;
+  % presses that also the EXPCOF-field of scope_row(Rowmax) remains unused. ;
   % ----------------------------------------------------------------- ;
   rowmin:=rowmin-1;
   setrow(rowmin,opv,var,nil,nil);
@@ -686,13 +686,13 @@ begin scalar zz,zzr,zzc,lzzr,lzzc,opv,var,gc,flt,min;
   put(var,'rowindex,rowmax);
   % ----------------------------------------------------------------- ;
   % The new cse-name is stored either in the list of add.variables or ;
-  % in the list of multiplicative variables. Its row-index is stored  ;
+  % in the list of multiplicative variables. Its scope_row-index is stored  ;
   % to allow retrieval of relevant information later on.              ;
   % ----------------------------------------------------------------- ;
   foreach x in psi do
-  <<zz:=remzzzz(zzr,zstrt x);
+  <<zz:=remzzzz(zzr,scope_zstrt x);
     zzc:=car(lzzc).zzc;
-    setzstrt(x,mkzel(rowmin,val car lzzc).zz);
+    scope_setzstrt(x,mkzel(rowmin,val car lzzc).zz);
     delhisto(x);
     initwght(x);
     inshisto(x);
@@ -703,11 +703,11 @@ begin scalar zz,zzr,zzc,lzzr,lzzc,opv,var,gc,flt,min;
     % before the thus shortened Zstrt's are extended with the required;
     % information about occurence and multiplicity of the new cse,re- ;
     % presented by column(Rowmin). Since column-indices are negative  ;
-    % and row-Zstrt's are in ascending order a dotted pair constructi-;
+    % and scope_row-Zstrt's are in ascending order a dotted pair constructi-;
     % on the SetZstrt-application is used. The Psi-loop allows to step;
     % wise reverse the column-Zstrt LZZc to produce the required form ;
     % ZZc, a Zstrt in descending order.                               ;
-    % Once a row is modified it is removed from the CODHISTO-hierarchy;
+    % Once a scope_row is modified it is removed from the CODHISTO-hierarchy;
     % and its HWght is recomputed before it is reinserted via CODHISTO;
     % Finally the ORDR-fields in  the parents are reset, by adding the;
     % location of the new cse to the already stored information about ;
@@ -715,15 +715,15 @@ begin scalar zz,zzr,zzc,lzzr,lzzc,opv,var,gc,flt,min;
     % --------------------------------------------------------------- ;
   >>;
   foreach y in jsi do
-  <<setzstrt(y,mkzel(rowmax,val car lzzr).remzzzz(zzc,zstrt y));
+  <<scope_setzstrt(y,mkzel(rowmax,val car lzzr).remzzzz(zzc,scope_zstrt y));
     lzzr:=cdr lzzr;
     initwght(y)>>;
-  setzstrt(rowmin,zzc);
+  scope_setzstrt(rowmin,zzc);
   % ----------------------------------------------------------------- ;
   % The column-Zstrt ZZc is removed from all the Jsi columns it is oc-;
   % curring in and ZZc itself is stored in column(Rowmin), already re-;
   % served for this purpose. All relevant column-HWghts are recomputed;
-  % like done for row(Rowmax) :                                       ;
+  % like done for scope_row(Rowmax) :                                       ;
   % ----------------------------------------------------------------- ;
   initwght(rowmax);
   inshisto(rowmax);
@@ -740,7 +740,7 @@ end;
 symbolic procedure rzstrtcse;
 % ------------------------------------------------------------------- ;
 % The Zstrt defining the cse,associated with Psi and Jsi, is made.    ;
-% Psi is a list of row-indices, defining the parents.                 ;
+% Psi is a list of scope_row-indices, defining the parents.                 ;
 % Jsi is a list of column -indices, defining the variables, occurring ;
 % in the cse.                                                         ;
 % Jsi is in ascending order. Psi is - in fact - not ordered.          ;
@@ -756,7 +756,7 @@ symbolic procedure rzstrtcse;
 % Generally, this leads to float IVal's in CODMAT.                    ;
 % ------------------------------------------------------------------- ;
 begin scalar ljsi,zz,zzcse,gc,flt,min;
-  zz:=pnthxzz(car jsi,zstrt car psi);
+  zz:=pnthxzz(car jsi,scope_zstrt car psi);
   zzcse:=list(car zz);
   gc:=dm!-abs(ival(car zz));
   min:=gc;
@@ -826,10 +826,10 @@ symbolic procedure expshrtest;
 % -2 Farvar-value. Details : Expandprod and ShrinkProd.               ;
 % ------------------------------------------------------------------- ;
 begin scalar ljsi,further;
- if not (opval(car jsi) eq 'plus)
+ if not (scope_opval(car jsi) eq 'plus)
   then << ljsi:=jsi;
           while (ljsi and not further) do
-           << further:=(farvar(car ljsi)=-2);
+           << further:=(scope_farvar(car ljsi)=-2);
               ljsi:=cdr ljsi>>
        >>;
  return(further)
@@ -837,14 +837,14 @@ end;
 
 symbolic procedure czstrtcse(iv);
 % ------------------------------------------------------------------- ;
-% The row-Zstrt of the actual cse is made by applying RZstrtCse. The  ;
+% The scope_row-Zstrt of the actual cse is made by applying RZstrtCse. The  ;
 % parameter IV is the IVal of the head-element of this Zstrt. It will ;
 % be used to compute the multiplicity of the cse in the different pa- ;
 % rents. These multiplicities are stored as IVal's in the column-Zstrt;
 % associated with the new life of the cse as new variable.            ;
 % ------------------------------------------------------------------- ;
 begin scalar lpsi,zz,zzcse;
-  zz:=zstrt(car jsi);
+  zz:=scope_zstrt(car jsi);
   lpsi:=ordn(psi); % Standard Reduce function ;
   psi:=nil;
   % ----------------------------------------------------------------- ;
@@ -866,7 +866,7 @@ begin scalar lpsi,zz,zzcse;
      % element, which can be used to produce the cse-column. The mul- ;
      % tiplicity has to be stored as IVal of the actual Z-element, and;
      % is found by dividing the IVal of the present Car of ZZ by IV.  ;
-     % The IVal's of the row-Zstrt of the cse are relative prime, im- ;
+     % The IVal's of the scope_row-Zstrt of the cse are relative prime, im- ;
      % plying that the IVal's of the relevant elements of ZZ are all  ;
      % integral multiples of IV.                                      ;
      % ZZcse is made in ascending order.                              ;
@@ -881,7 +881,7 @@ symbolic procedure testredzz(x);
 % with this routine to remove redundancy from CODMAT. Always of course;
 % on a temporary basis.                                               ;
 % ------------------------------------------------------------------- ;
-foreach z in zstrt(x) do testredh(yind z);
+foreach z in scope_zstrt(x) do testredh(yind z);
 
 symbolic procedure testredh(x);
 % ------------------------------------------------------------------- ;
@@ -889,7 +889,7 @@ symbolic procedure testredh(x);
 % mation is deleted from CODHISTO, if the length of Zstrt(X) is redu- ;
 % ced to 1. This redundancy test has to be done recursively.          ;
 % ------------------------------------------------------------------- ;
-if free(x) and awght(x)<2
+if scope_free(x) and awght(x)<2
  then
   <<rowdel(x);
     testredzz(x)>>;
@@ -915,7 +915,7 @@ symbolic procedure expandprod;
 %                                                                     ;
 %  column|-15|                       column|-15 -23 -24 -40 |         ;
 %        +---+                             +----------------+         ;
-%  row 1 | 2 |                       row 1 | 1   1          |         ;
+%  scope_row 1 | 2 |                       scope_row 1 | 1   1          |         ;
 %      2 | 5 |                           2 | 1   1   1   2  |         ;
 %      3 | 3 |                           3 | 1   1   1      |         ;
 %      4 | 5 |                           4 | 1   1   1   2  |         ;
@@ -927,10 +927,10 @@ symbolic procedure expandprod;
 begin scalar var,pcvary,pcdvar,zzr,ivalz,n,m,npcdvar,npcdv,col!*,
                                                                relcols;
   for y:=rowmin:(-1) do
-   if opval(y) eq 'times and not numberp(farvar y) and testrel(y)
+   if scope_opval(y) eq 'times and not numberp(scope_farvar y) and testrel(y)
     then relcols:=y . relcols;
   foreach y in relcols do
-  << var := farvar y;
+  << var := scope_farvar y;
      % -------------------------------------------------------------- ;
      % TIMES-columns are only elaborated, when their Farvar-field is  ;
      % not a number, i.e. is the name of a variable or a cse, and if  ;
@@ -940,7 +940,7 @@ begin scalar var,pcvary,pcdvar,zzr,ivalz,n,m,npcdvar,npcdv,col!*,
      % the name associated with the column.                           ;
      % -------------------------------------------------------------- ;
      pcvary:=pcdvar:=zzr:=nil;
-     foreach zel in zstrt(y) do
+     foreach zel in scope_zstrt(y) do
       if not((ivalz:=ival zel)=1)
        then
         <<setival(zel,1);
@@ -1004,9 +1004,9 @@ begin scalar var,pcvary,pcdvar,zzr,ivalz,n,m,npcdvar,npcdv,col!*,
         % ----------------------------------------------------------- ;
         zzr:=mkzel(col!*,car(pc)-n).zzr;
         % ----------------------------------------------------------- ;
-        % ZZr is a Zstrt, used to produce relevant additional row in- ;
+        % ZZr is a Zstrt, used to produce relevant additional scope_row in- ;
         % formation, needed on a temporary basis, when expanding mono-;
-        % mial row descriptions. ZZr is growing during the execution  ;
+        % mial scope_row descriptions. ZZr is growing during the execution  ;
         % of the current ForEach-loop in the following way :          ;
         % ZZr := ((-23 . 1)),                                         ;
         % ZZr := ((-24 . 1) (-23 . 1)),                               ;
@@ -1022,12 +1022,12 @@ begin scalar var,pcvary,pcdvar,zzr,ivalz,n,m,npcdvar,npcdv,col!*,
          % which the Zstrt ought to be temporarily modified).         ;
          % ---------------------------------------------------------- ;
          foreach z in zzr do
-          <<setzstrt(x,inszzzr(z,zstrt x));
+          <<scope_setzstrt(x,inszzzr(z,scope_zstrt x));
             % ------------------------------------------------------- ;
             % Every element of ZZr is inserted in Zstrt(X), where X is;
-            % running through the row-index list, defined by PC.      ;
+            % running through the scope_row-index list, defined by PC.      ;
             % ------------------------------------------------------- ;
-            setzstrt(yind z,inszzz(mkzel(x,val z),zstrt yind z))
+            scope_setzstrt(yind z,inszzz(mkzel(x,val z),scope_zstrt yind z))
             % ------------------------------------------------------- ;
             % The Zstrts of the corresponding col.s are also modified.;
             % ------------------------------------------------------- ;
@@ -1036,13 +1036,13 @@ begin scalar var,pcvary,pcdvar,zzr,ivalz,n,m,npcdvar,npcdv,col!*,
         % This double FOREACH-loop is executed inside the PC-FOREACH- ;
         % loop. For the example holds :                               ;
         % PC=(1.(1)) & ZZr=((-23 . 1)) gives insertion of (-23 . 1) in;
-        % Zstrt(row(1)) and of (1 . 1) in Zstrt(col(-23)).            ;
+        % Zstrt(scope_row(1)) and of (1 . 1) in Zstrt(col(-23)).            ;
         % PC=(2.(3)) & ZZr=((-24 .1 )(-23 . 1)) gives insertion of    ;
-        % (-24 . 1) and (-23 . 1) in Zstrt(row(3)) and of (3 . 1) in  ;
+        % (-24 . 1) and (-23 . 1) in Zstrt(scope_row(3)) and of (3 . 1) in  ;
         % Zstrt(col(-23)) and Zstrt(col(-24)).                        ;
         % Finally PC=(4.(2 4 5)) & ZZr=((-40 . 2)(-24 . 1)(-23 . 1))  ;
         % gives insertion of (-40 . 2),(-24 . 1) and (-23 . 1) in     ;
-        % in Zstrt(row(2)), Zstrt(row(4)) and Zstrt(row(5)),of (2 . 2);
+        % in Zstrt(scope_row(2)), Zstrt(scope_row(4)) and Zstrt(scope_row(5)),of (2 . 2);
         % (4 . 2) and (5 . 2) in Zstrt(col(-40)), and of (2 . 1),(4 . ;
         % 1) and (5 . 1), finally, in both Zstrt(col(-23)) and Zstrt( ;
         % col(-24)).                                                  ;
@@ -1078,20 +1078,20 @@ symbolic procedure testrel colindex;
 % fore in an application of EXPANDPROD.                               ;
 % ------------------------------------------------------------------- ;
 begin scalar btst,mn,rcol,relcols,relrow,onerows,orows;
-  if(btst:=flagp(list(farvar(colindex)),'expshr))
-    then remflag(list(farvar(colindex)),'expshr)
+  if(btst:=flagp(list(scope_farvar(colindex)),'expshr))
+    then remflag(list(scope_farvar(colindex)),'expshr)
     else
       << mn:=0;
-         foreach z in zstrt(colindex) do
+         foreach z in scope_zstrt(colindex) do
           if ival(z)>1 then << mn:=mn+1;
                                if mn=1 then relrow:=xind z
                             >>
                        else onerows:=xind(z).onerows;
          if not (btst:=(mn>1)) and mn=1 and
-            onerows and length(zstrt(relrow))>1
+            onerows and length(scope_zstrt(relrow))>1
             then
              << mn:=0;
-                foreach z in zstrt(relrow) do
+                foreach z in scope_zstrt(relrow) do
                  if (yind(z) neq colindex)
                   then << mn:=mn+1; relcols:=yind(z).relcols >>;
                 if mn>0
@@ -1100,7 +1100,7 @@ begin scalar btst,mn,rcol,relcols,relrow,onerows,orows;
                    << rcol:=car relcols; relcols:=cdr relcols;
                       orows:=onerows;
                       while orows and not(btst) do
-                       << btst:=pnthxzz(car orows,zstrt rcol);
+                       << btst:=pnthxzz(car orows,scope_zstrt rcol);
                           orows:=cdr orows
                        >>
                    >>
@@ -1115,7 +1115,7 @@ symbolic procedure inspcvv(x,iv,s);
 % integers IV and the Cdrs are lists of objects X. Application of     ;
 % InsPCvv leads to inclusion of the object X in the list associated   ;
 % with IV. This Integer Value might be an exponent and the objects can;
-% be row-indices, for instance.                                       ;
+% be scope_row-indices, for instance.                                       ;
 % ------------------------------------------------------------------- ;
 if null(s)
  then list(iv.list(x))
@@ -1140,7 +1140,7 @@ symbolic procedure shrinkprod;
 %                                                                     ;
 % column|-15 -23 -24 -40|-60 -61 -62|     Row(7) and column(-60)      ;
 %       +---------------+-----------+     define cse X5=X^2*X3.       ;
-% row 1 |               |         1 |                                 ;
+% scope_row 1 |               |         1 |                                 ;
 %     2 |               | 1         |     Row(8) and column(-61)      ;
 %     3 |               |     1     |     define cse X3=X*X2.         ;
 %     4 |               | 1         |                                 ;
@@ -1157,7 +1157,7 @@ symbolic procedure shrinkprod;
 %                                                                     ;
 % column|-15 -23 -24 -40|-60 -61 -62|                                 ;
 %       +---------------+-----------+                                 ;
-% row 1 |               |         1 |    The columns -23, -24 and -40 ;
+% scope_row 1 |               |         1 |    The columns -23, -24 and -40 ;
 %     2 |               | 1         |    remain unused until the next ;
 %     3 |               |     1     |    application of ExpandProd.   ;
 %     4 |               | 1         |    The indices remain stored in ;
@@ -1172,8 +1172,8 @@ symbolic procedure shrinkprod;
 % ------------------------------------------------------------------- ;
 begin scalar var,pcdvar,zz,zstreet,el,exp,collst,indx,further;
   for y:=rowmin:(-1) do
-  if not numberp(var:=farvar y) and (pcdvar:=get(var,'pcdvar))
-                                and opval(y) eq 'times
+  if not numberp(var:=scope_farvar y) and (pcdvar:=get(var,'pcdvar))
+                                and scope_opval(y) eq 'times
   then
   << % -------------------------------------------------------------- ;
      % Only Times-columns are elaborated, which are associated with   ;
@@ -1183,7 +1183,7 @@ begin scalar var,pcdvar,zz,zstreet,el,exp,collst,indx,further;
      % For the example holds : Var = X and PCDvar = ((1.(-15 -23 -24) ;
      % (2.(-40))).                                                    ;
      % -------------------------------------------------------------- ;
-     zstreet:=zstrt(y);
+     zstreet:=scope_zstrt(y);
      % -------------------------------------------------------------- ;
      % Initially holds : Zstrt(Y) = Zstreet = ((9.1)(6.1)).           ;
      % Application of ShrinkProd leads to : Zstreet = ((9.2)(8.1)(7.2);
@@ -1206,15 +1206,15 @@ begin scalar var,pcdvar,zz,zstreet,el,exp,collst,indx,further;
         % ----------------------------------------------------------- ;
         % These Col's are all FarVar = -2 columns.                    ;
         % ----------------------------------------------------------- ;
-         <<foreach z in zstrt(col) do
+         <<foreach z in scope_zstrt(col) do
             <<% ----------------------------------------------------- ;
-              % These Z's are pairs (row-index . exponent-value).     ;
+              % These Z's are pairs (scope_row-index . exponent-value).     ;
               % ----------------------------------------------------- ;
               indx:=xind(z);
               if el:=assoc(indx,zstreet)
                then setival(el,ival(el)+exp)
                     % ----------------------------------------------- ;
-                    % If the row-index Indx is already used in the des;
+                    % If the scope_row-index Indx is already used in the des;
                     % cription of Zstreet (i.e. in the column -15 of  ;
                     % the example) only the value in the exponent-    ;
                     % field of the Z-element has to be reset. This is ;
@@ -1223,16 +1223,16 @@ begin scalar var,pcdvar,zz,zstreet,el,exp,collst,indx,further;
                     % ----------------------------------------------- ;
                else
                 <<% ------------------------------------------------- ;
-                  % If the row-index Indx is not yet used in the des- ;
+                  % If the scope_row-index Indx is not yet used in the des- ;
                   % cription of Zstreet a new element has to be added ;
-                  % to both Zstreet and the Zstrt of the row Indx.    ;
+                  % to both Zstreet and the Zstrt of the scope_row Indx.    ;
                   % ------------------------------------------------- ;
                   zstreet:=inszzz(el:=mkzel(indx,exp),zstreet);
-                  setzstrt(indx,inszzzr(mkzel(y,val el),zstrt indx))
+                  scope_setzstrt(indx,inszzzr(mkzel(y,val el),scope_zstrt indx))
                 >>;
-              setzstrt(indx,delyzz(col,zstrt indx))
+              scope_setzstrt(indx,delyzz(col,scope_zstrt indx))
               % ----------------------------------------------------- ;
-              % Now the element Z is removed from the Zstrt of row    ;
+              % Now the element Z is removed from the Zstrt of scope_row    ;
               % Indx. The complete column Col is emptied and can thus ;
               % freely be reused during a next application of Expandp.;
               % To avoid any confusion ClearRow is used, implying that;
@@ -1242,7 +1242,7 @@ begin scalar var,pcdvar,zz,zstreet,el,exp,collst,indx,further;
            clearrow(col)
          >>
        >>;
-      setzstrt(y,zstreet);
+      scope_setzstrt(y,zstreet);
       remprop(var,'pcdvar);
       % ------------------------------------------------------------- ;
       % The final Zstreet-value is stored in column Y ( in the example;

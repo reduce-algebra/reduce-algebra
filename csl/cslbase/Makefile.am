@@ -1474,6 +1474,14 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
 	@rm -f $(gensrc)/make.tmp
 	@touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
+# I want the C code to be created from a version of the boostrap code
+# that has ALL the inline definitions avaiulable. To ensure that things are
+# clean I discard any old inline definition database. To ensure that even
+# forward references to inlines are expanded I do the build twice.
+	rm -f inline-defs.dat
+	rm -f bootstrapreduce.img
+	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	rm bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \

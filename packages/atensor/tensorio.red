@@ -40,16 +40,21 @@ module tensorio$
 %       pv_list::= (pv1 pv2 ...)
 %=====================================================
 
-inline procedure tname th$ car th$
-inline procedure ilist th$ cadr th$
-inline procedure dlist th$ cddr th$
-inline procedure mkth(tn,il,dl)$ list tn . il . id$
-inline procedure mkth0(tn,il,dl)$  tn . il . dl$
+% ACN can not find any places where these inline procedures are used,
+% and the name dlist clashed with a procedure of the same name in
+% the algint package. So perhaps having the names here prefixed with "tio_"
+% will not hurt people...
 
-inline procedure thead ten$ car ten$
-inline procedure pvect ten$ cdr ten$
-inline procedure mkten0(th,pv)$ th . pv$
-inline procedure mkten(th,pv)$ '!:tensor . list(th . pv)$
+inline procedure tio_tname th$ car th$
+inline procedure tio_ilist th$ cadr th$
+inline procedure tio_dlist th$ cddr th$
+inline procedure tio_mkth(tn,il,dl)$ list tn . il . id$
+inline procedure tio_mkth0(tn,il,dl)$  tn . il . dl$
+
+inline procedure tio_thead ten$ car ten$
+inline procedure tio_pvect ten$ cdr ten$
+inline procedure tio_mkten0(th,pv)$ th . pv$
+inline procedure tio_mkten(th,pv)$ '!:tensor . list(th . pv)$
 
 symbolic procedure bassoc(th,bl)$
   if null bl then nil

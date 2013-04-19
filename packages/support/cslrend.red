@@ -38,6 +38,7 @@ fluid '(!*break
         !*lower
         !*keepsqrts
         outputhandler!*
+        !*savedef
         lispsystem!*);
 
 global '(!$eol!$
@@ -462,6 +463,8 @@ symbolic procedure begin;
      scalar w,!*redefmsg;
      !*echo := not !*int;
      !*extraecho := t;
+% Enable heavy debugging option in bootstrap version.
+     if !*savedef and getd 'enable!-errorset then enable!-errorset(3,3);
      if modulep 'tmprint then <<
         w := verbos 0;
         load!-module 'tmprint;

@@ -120,10 +120,10 @@ global '(codmat maxvar)$
 % 1 : A                                                                ;
 % 2 : B                                                                ;
 %                                                                      ;
-% If Far has a name (U,S0) as value its row defines the prim.part of   ;
+% If Far has a name (U,S0) as value its scope_row defines the prim.part of   ;
 % the expression assigned to this name.Its composite parts can be found;
 % in those rows of the other scheme,which have the index of the present;
-% row in their Far-field( i.e. their father). The EC-field shows the   ;
+% scope_row in their Far-field( i.e. their father). The EC-field shows the   ;
 % E(xponent of a sum) or the C(oefficient of a product).               ;
 % The column numbers in the schemes correspondent with the CODMAT co-  ;
 % lumn indices. These numbers are used to give a (vertical) list of    ;
@@ -136,8 +136,8 @@ global '(codmat maxvar)$
 % integers corresponding with these X's in the scheme is given directly;
 % below it in a left-to-right-and-top-down order. Hence :              ;
 %                                                                      ;
-% U     := 1234 + prod1(= product defined in row 1)                    ;
-% prod1 := 1 * sum2(= sum defined in row 2)                            ;
+% U     := 1234 + prod1(= product defined in scope_row 1)                    ;
+% prod1 := 1 * sum2(= sum defined in scope_row 2)                            ;
 % sum2  := (2*A + 4*B -677 + prod3 + prod6)^8                          ;
 % prod3 := S1 * A * B * sum4                                           ;
 % sum4  := A + 2*B                                                     ;
@@ -151,7 +151,7 @@ symbolic inline procedure testprow(y,opv);
 % arg : Column index Y. Operator value Opv.                            ;
 % res : T if the column Y is part of the Opv-scheme,NIL otherwise.     ;
 % -------------------------------------------------------------------- ;
-free(y) and opval(y) eq opv;
+scope_free(y) and scope_opval(y) eq opv;
 
 
 symbolic procedure primat;
@@ -185,13 +185,13 @@ begin scalar freevec1,rmin,rmax;
          freevec1:=mkvect(2*maxvar);
          freevec:=freevec1
        >>;
- for j:=rmin:rmax do <<putv(freevec,j+maxvar,free(j));setfree(j)>>;
+ for j:=rmin:rmax do <<putv(freevec,j+maxvar,scope_free(j));scope_setfree(j)>>;
  primat();
  for j:=rmin:rmax do
-  << if not getv(freevec,j+maxvar) then setoccup(j);
+  << if not getv(freevec,j+maxvar) then scope_setoccup(j);
      terpri();
      if j<0 then write "col(",j,")=",getv(codmat,maxvar+j)
-     else write "row(",j,")=",getv(codmat,maxvar+j)
+     else write "scope_row(",j,")=",getv(codmat,maxvar+j)
   >>;
  terpri()
 end;
@@ -228,8 +228,8 @@ begin scalar n,yl;
   then
   <<prin2(yl:=y+abs(rowmin));
     if yl < 10 then prin2 "  : " else prin2 " : ";
-    privar(farvar y);
-    if n:=assoc(farvar y,kvarlst)
+    privar(scope_farvar y);
+    if n:=assoc(scope_farvar y,kvarlst)
     then <<prin2 "="; privar(cdr n)>>;
     terpri()
   >>;
@@ -237,7 +237,7 @@ end;
 
 symbolic procedure prirow(x,opv,yl);
 % -------------------------------------------------------------------- ;
-% arg : Index X of a row of the Opv-scheme. Y1 is the list of column   ;
+% arg : Index X of a scope_row of the Opv-scheme. Y1 is the list of column   ;
 %       indices which occur in the Opv-scheme.                         ;
 % eff : Row X of the Opv-scheme is printed in the above discussed way. ;
 % -------------------------------------------------------------------- ;
@@ -245,27 +245,27 @@ symbolic procedure prirow(x,opv,yl);
      terpri();
      prinumb(x);
      prin2 "|";
-     foreach z in zstrt(x) do
+     foreach z in scope_zstrt(x) do
      if testprow(yind z,opv)
      then
      <<yl:=memqp(yind z,yl);
        prinumb(ival z)>>;
      for j:=1:length(yl) do prin2 "   ";
      prin2 "|";
-     prinumb(expcof x);
+     prinumb(scope_expcof x);
      prin2 "| ";
-     privar(farvar x);
+     privar(scope_farvar x);
    end;
 
 symbolic procedure memqp(y,yl);
 % -------------------------------------------------------------------- ;
 % arg : Y is the index of the column of which the exponent/coefficient ;
 %       of the corresponding variable has to be printed. Y1 is the list;
-%       of indices of columns which can also contribute to the row     ;
+%       of indices of columns which can also contribute to the scope_row     ;
 %       which is now in the process of being printed.                  ;
 % eff : If Y=Car(Y1) the calling routine,PRIROW,can continue its prin- ;
 %       ting activities directly with the exp./coeff. in question. If  ;
-%       not we have to print blanks to indicate that the column and row;
+%       not we have to print blanks to indicate that the column and scope_row;
 %       have nothing in common. We continue with the Cdr of the list Y1;
 % -------------------------------------------------------------------- ;
 if y=car(yl)
@@ -383,7 +383,7 @@ else
 % PREFIXLIST is iteratively constructed by the procedure MAKEPREFIXL   ;
 % (see CODCTL.RED),by successively using the items of the (global) list;
 % CodBexl!* via a ForEach-statement. Such an item is either an index of;
-% a row,where the description of the corresponding assignment statement;
+% a scope_row,where the description of the corresponding assignment statement;
 % starts(in the above example U) or of a system generated cse-name.    ;
 % These alternatives demand for either a call of PRFEXP(rowindex) or of;
 % PRFKVAR(cse-name).The routines PR(epare pre)F(ix form of an )EXP(res-;
@@ -407,7 +407,7 @@ prefixlist:=nil;
 
 symbolic procedure prfexp(x,prefixlist);
 % -------------------------------------------------------------------- ;
-% arg : X is the CODMAT-index of the row where the description of a top;
+% arg : X is the CODMAT-index of the scope_row where the description of a top;
 %       level sum or product starts.                                   ;
 % eff : The prefix definition of this expression ,a dotted pair (name. ;
 %       value) is added to PREFIXLIST,in combination with all its cse's;
@@ -415,12 +415,12 @@ symbolic procedure prfexp(x,prefixlist);
 %       Since "consing" is used for the construction of PREFIXLIST it  ;
 %       ought to be reversed before it can be used for the actual prin-;
 %       ting.The cse-ordering is defined by the value of the ORDR-field;
-%       of row X of CODMAT,a list built up during input parsing (see   ;
+%       of scope_row X of CODMAT,a list built up during input parsing (see   ;
 %       CODMAT.RED) and optimization(see CODOPT.RED) using the procedu-;
 %       re SETPREV(see CODMAT.RED,part 2).                             ;
 % -------------------------------------------------------------------- ;
 begin scalar xx,nex;
- if free(x)
+ if scope_free(x)
  then % Start with cse's.;
  <<foreach y in reverse(ordr x) do
    if constp(y)
@@ -434,21 +434,21 @@ begin scalar xx,nex;
     % Continue with expression itself if it has not yet been printed as;
     % part of an addition chain ('Bexl:=T,see PREPPOWLS).              ;
     % ---------------------------------------------------------------- ;
-   if not( get(farvar x,'bexl) = x)
-    then if nex:=get(farvar x,'nex)
+   if not( get(scope_farvar x,'bexl) = x)
+    then if nex:=get(scope_farvar x,'nex)
           then << foreach arg in cdr nex do
                    if xx := get(arg, 'rowindex)
                      then prefixlist:=prfexp(xx,prefixlist)
                      else prefixlist:=prfkvar(arg,prefixlist);
                   remprop(car nex, 'kvarlst);
-                  % remprop(farvar x,'nex); Needed in cleanupprefixl to
+                  % remprop(scope_farvar x,'nex); Needed in cleanupprefixl to
                   %                         handle arrays
                   prefixlist:=(nex.constrexp(x)).prefixlist;
-                  symtabrem(nil, farvar x)
+                  symtabrem(nil, scope_farvar x)
                >>
-          else prefixlist:=(farvar(x).constrexp(x)).prefixlist
-     else remprop(farvar x,'bexl);
-   setoccup(x)
+          else prefixlist:=(scope_farvar(x).constrexp(x)).prefixlist
+     else remprop(scope_farvar x,'bexl);
+   scope_setoccup(x)
  >>;
  return prefixlist
 end;
@@ -456,17 +456,17 @@ end;
 
 symbolic procedure constrexp(x);
 % -------------------------------------------------------------------- ;
-% arg : X is the CODMAT-index of the row where the description starts  ;
+% arg : X is the CODMAT-index of the scope_row where the description starts  ;
 %       of the expression to be added to PREFIXLIST.                   ;
 % res : Construction of the expression in prefix form. The result is   ;
 %       used in PRFEXP.                                                ;
 % -------------------------------------------------------------------- ;
 begin scalar s,ec,opv,ch,ls;
-  if (opv:=opval x) eq 'times
+  if (opv:=scope_opval x) eq 'times
   then
-  <<s:=append(prfmex(zstrt x,'times),compex chrow x);
+  <<s:=append(prfmex(scope_zstrt x,'times),compex scope_chrow x);
     if null(s) then s:=list 0;
-    ec:=expcof(x);ls:=length(s);
+    ec:=scope_expcof(x);ls:=length(s);
     if !:onep(ec)
      then if ls>1 then s:='times.s else s:=car(s)
      else
@@ -481,21 +481,21 @@ begin scalar s,ec,opv,ch,ls;
   else
     if opv eq 'plus
     then
-    <<s:=append(prfmex(zstrt x,'plus),compex chrow x);
+    <<s:=append(prfmex(scope_zstrt x,'plus),compex scope_chrow x);
       if null(s) then s:=list 0;
       if length(s)>1 then s:='plus.shiftminus(s) else s:=car(s);
-      if (ec:=expcof(x))>1 then s:=list('expt,s,ec)
+      if (ec:=scope_expcof(x))>1 then s:=list('expt,s,ec)
     >>
     else
-    <<ch:=chrow(x);
-      foreach z in zstrt(x) do
+    <<ch:=scope_chrow(x);
+      foreach z in scope_zstrt(x) do
       if null(z)
       then <<s:=constrexp(car ch).s; ch:=cdr(ch)>>
       else s:=z.s;
       s:=car(opv).reverse(s);
       foreach op in cdr(opv) do
       s:=list(op,s);
-      if (ec:=expcof x)>1
+      if (ec:=scope_expcof x)>1
       then s:=list('expt,s,ec)
     >>;
   return s
@@ -517,7 +517,7 @@ symbolic procedure prfmex(zz,op);
 % -------------------------------------------------------------------- ;
 foreach z in zz collect
 begin scalar var,nex;
-  var:=farvar(yind z);
+  var:=scope_farvar(yind z);
   if nex:=get(var,'nex) then << var:=nex; symtabrem(nil,var)>>;
   if var eq '!+one
   then % A constant.;
@@ -759,23 +759,23 @@ symbolic procedure preppowls;
 % -------------------------------------------------------------------- ;
 begin scalar var,nvar,nvarlst,rindx;
   for y:=rowmin:(-1) do
-  if not numberp(var:=farvar y) and opval(y) eq 'times
+  if not numberp(var:=scope_farvar y) and scope_opval(y) eq 'times
   then
-  <<foreach z in zstrt(y) do
+  <<foreach z in scope_zstrt(y) do
     if ival(z)=1
     then setbval(z,var)
     else
     <<rindx:=xind(z);
       setprev(rindx,var);
       if not nvarlst then nvarlst:=list(1 . var);
-      if numberp(nvar:=farvar rindx) or pairp(nvar) or
-         not (null(cdr zstrt rindx) and null(chrow rindx)
-         and expcof(rindx)=1)
+      if numberp(nvar:=scope_farvar rindx) or pairp(nvar) or
+         not (null(cdr scope_zstrt rindx) and null(scope_chrow rindx)
+         and scope_expcof(rindx)=1)
        then nvar:=fnewsym()
        else put(nvar,'bexl,rindx);
       setbval(z,nvar);
-      setzstrt(rindx,inszzzr(mkzel(y,ival(z).nvar),
-                             delyzz(y,zstrt rindx)));
+      scope_setzstrt(rindx,inszzzr(mkzel(y,ival(z).nvar),
+                             delyzz(y,scope_zstrt rindx)));
       nvarlst:=insexplst(ival(z).nvar,nvarlst);
     >>;
     if nvarlst then <<put(var,'nvarlst,nvarlst);
@@ -1068,11 +1068,11 @@ begin scalar lpl,protectednames,j,item,substlst,dellst,se,ose,
   % -------------------------------------------------------------------
   foreach indx in codbexl!* do
     if numberp(indx) then
-       <<if var:=get(farvar indx,'nex)
+       <<if var:=get(scope_farvar indx,'nex)
           then protectednames:= protect(var,protectednames)
-          else if not flagp(farvar indx,'aliasnewsym)
-               then protectednames:=protect(farvar(indx),protectednames)
-                else if (var:=get(farvar(indx),'alias))
+          else if not flagp(scope_farvar indx,'aliasnewsym)
+               then protectednames:=protect(scope_farvar(indx),protectednames)
+                else if (var:=get(scope_farvar(indx),'alias))
                       then protectednames := protect(var,protectednames)
         >>
        else if idp(indx) then

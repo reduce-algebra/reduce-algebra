@@ -49,88 +49,88 @@ define lenrow=8,lencol=4;
 % Length of the rows and the columns                                  ;
 % ------------------------------------------------------------------- ;
 
-symbolic inline procedure row x$
+symbolic inline procedure scope_row x$
    getv(codmat,maxvar+x)$
 
-symbolic inline procedure free x$
-   getv(row x,0)$
+symbolic inline procedure scope_free x$
+   getv(scope_row x,0)$
 
-symbolic inline procedure wght x$
-   getv(row x,1)$
+symbolic inline procedure scope_wght x$
+   getv(scope_row x,1)$
 
 symbolic inline procedure awght x$
-   caar(wght x)$
+   caar(scope_wght x)$
 
-symbolic inline procedure mwght x$
-   cdar(wght x)$
+symbolic inline procedure scope_mwght x$
+   cdar(scope_wght x)$
 
-symbolic inline procedure hwght x$
-   cdr(wght x)$
+symbolic inline procedure scope_hwght x$
+   cdr(scope_wght x)$
 
-symbolic inline procedure opval x$
-   getv(row x,2)$
+symbolic inline procedure scope_opval x$
+   getv(scope_row x,2)$
 
-symbolic inline procedure farvar x$
-   getv(row x,3)$
+symbolic inline procedure scope_farvar x$
+   getv(scope_row x,3)$
 
-symbolic inline procedure zstrt x$
-   getv(row x,4)$
+symbolic inline procedure scope_zstrt x$
+   getv(scope_row x,4)$
 
-symbolic inline procedure chrow x$
-   getv(row x,5)$
+symbolic inline procedure scope_chrow x$
+   getv(scope_row x,5)$
 
-symbolic inline procedure expcof x$
-   getv(row x,6)$
+symbolic inline procedure scope_expcof x$
+   getv(scope_row x,6)$
 
-symbolic inline procedure hir x$
-   getv(row x,7)$
+symbolic inline procedure scope_hir x$
+   getv(scope_row x,7)$
 
-symbolic inline procedure phir x$
-   car(hir x)$
+symbolic inline procedure scope_phir x$
+   car(scope_hir x)$
 
-symbolic inline procedure nhir x$
-   cdr(hir x)$
+symbolic inline procedure scope_nhir x$
+   cdr(scope_hir x)$
 
 % ------------------------------------------------------------------- ;
 % Assignments in the incidence matrix                                 ;
 % ------------------------------------------------------------------- ;
 
-symbolic inline procedure fillrow(x,v)$
+symbolic inline procedure scope_fillrow(x,v)$
    putv(codmat,maxvar+x,v)$
 
-symbolic inline procedure setoccup x$
-   putv(row x,0,nil)$
+symbolic inline procedure scope_setoccup x$
+   putv(scope_row x,0,nil)$
 
-symbolic inline procedure setfree x$
-   putv(row x,0,t)$
+symbolic inline procedure scope_setfree x$
+   putv(scope_row x,0,t)$
 
-symbolic inline procedure setwght(x,v)$
-   putv(row x,1,v)$
+symbolic inline procedure scope_setwght(x,v)$
+   putv(scope_row x,1,v)$
 
 
-symbolic inline procedure setopval(x,v)$
-   putv(row x,2,v)$
+symbolic inline procedure scope_setopval(x,v)$
+   putv(scope_row x,2,v)$
 
-symbolic inline procedure setfarvar(x,v)$
-   putv(row x,3,v)$
+symbolic inline procedure scope_setfarvar(x,v)$
+   putv(scope_row x,3,v)$
 
-symbolic inline procedure setzstrt(x,v)$
-   putv(row x,4,v)$
+symbolic inline procedure scope_setzstrt(x,v)$
+   putv(scope_row x,4,v)$
 
-symbolic inline procedure setchrow(x,v)$
-   putv(row x,5,v)$
+symbolic inline procedure scope_setchrow(x,v)$
+   putv(scope_row x,5,v)$
 
-symbolic inline procedure setexpcof(x,v)$
-   putv(row x,6,v)$
+symbolic inline procedure scope_setexpcof(x,v)$
+   putv(scope_row x,6,v)$
 
-symbolic inline procedure sethir(x,v)$
-   putv(row x,7,v)$
+symbolic inline procedure scope_sethir(x,v)$
+   putv(scope_row x,7,v)$
 
-symbolic inline procedure setphir(x,v)$
-   rplaca(hir x,v)$
+symbolic inline procedure scope_setphir(x,v)$
+   rplaca(scope_hir x,v)$
 
-symbolic inline procedure setnhir(x,v)$
-   rplacd(hir x,v)$
+symbolic inline procedure scope_setnhir(x,v)$
+   rplacd(scope_hir x,v)$
 
 % ------------------------------------------------------------------- ;
 % Access functions for Z elements                                     ;
@@ -172,10 +172,10 @@ symbolic inline procedure mkzel(n,iv);
 % ------------------------------------------------------------------- ;
 
 symbolic inline procedure ordr x$
-   getv(row x,8)$
+   getv(scope_row x,8)$
 
 symbolic inline procedure setordr(x,l)$
-   putv(row x,8,l)$
+   putv(scope_row x,8,l)$
 
 % ------------------------------------------------------------------- ;
 % Access functions for Histogram                                      ;

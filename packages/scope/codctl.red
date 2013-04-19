@@ -48,7 +48,7 @@ module codctl;  % Facilities for controlling the overall optimization.
 % the optimization itself is finished and only when relevant, i.e. if ;
 % !*SIDREL=T, !*AGAIN or Optlang!* is NIL.                            ;
 % During input translation the incidence matrix(CODMAT) is partly     ;
-% made, by creating its row structure via FFVAR!!, given in the module;
+% made, by creating its scope_row structure via FFVAR!!, given in the module;
 % CODMAT.  Once input is processed the optimization activities are    ;
 % activated by applying the function CALC.The kernel of the body of   ;
 % this function is the procedure OPTIMIZELOOP. However, first the     ;
@@ -93,7 +93,7 @@ rowmin:=0; rowmax:=-1;
 %                                                                     ;
 % CODMAT : is a vector used to store the +,* matrices,merged in CODMAT;
 % MAXVAR : The size of this merged matrix is 2*MAXVAR.                ;
-% ROWMAX : Largest actual row index.                                  ;
+% ROWMAX : Largest actual scope_row index.                                  ;
 % ROWMIN : Smallest actual column index.                              ;
 % ENDMAT : Value of MAXVAR when cse-search starts.                    ;
 %                                                                     ;
@@ -631,7 +631,7 @@ symbolic procedure init n;
 % ------------------------------------------------------------------- ;
 begin scalar var;
   for y:=rowmin:rowmax do
-  if row(y) and not numberp(var:=farvar y)
+  if scope_row(y) and not numberp(var:=scope_farvar y)
   then
   <<remprop(var,'npcdvar); remprop(var,'nvarlst);
     remprop(var,'varlst!+); remprop(var,'varlst!*);
@@ -694,8 +694,8 @@ begin scalar fil;
   if getd('newsym) then remd('newsym); %bnlst:=nil;
   if !*acinfo then << countnop(reverse prefixlist,'output); terpri()>>;
   if !*primat
-  then << for x:=rowmin:rowmax do if farvar(x)=-1 or farvar(x)=-2
-                                   then setoccup(x) else setfree(x);
+  then << for x:=rowmin:rowmax do if scope_farvar(x)=-1 or scope_farvar(x)=-2
+                                   then scope_setoccup(x) else scope_setfree(x);
            primat();
        >>;
   wrs(fil);
@@ -932,7 +932,7 @@ symbolic procedure makeprefixl(pp,prefixlist);
 begin scalar b,kvl,nex,xx;
   if not(!*again)
      then prepfinalplst();
-  for x:=0:rowmax do setfree(x);
+  for x:=0:rowmax do scope_setfree(x);
 
   kvl:=kvarlst;
 

@@ -123,10 +123,10 @@ symbolic procedure prepstructr(u, name, fvar);
       if flagpcar(u, 'struct)
       then << i := 0;
               u:= car u .
-                   (for each row in cdr u collect
+                   (for each scope_row in cdr u collect
                     << i := i + 1;
                        j := 0;
-                       for each column in row collect
+                       for each column in scope_row collect
                        << j := j + 1;
                           !*varlis := (nil .
                                        list(fvar,i,j) .
