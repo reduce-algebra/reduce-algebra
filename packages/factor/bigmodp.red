@@ -29,7 +29,7 @@ MODULE BIGMODP; % Modular polynomial arithmetic where the modulus may
 
 FLUID '(CURRENT!-MODULUS MODULUS!/2);
 
-symbolic inline precedure comes!-before(p1, p2);
+symbolic inline procedure comes!-before(p1, p2);
 % Similar to the REDUCE function ORDPP, but does not cater for
 % non-commutative terms and assumes that exponents are small integers.
     (CAR P1=CAR P2 AND IGREATERP(CDR P1,CDR P2)) OR

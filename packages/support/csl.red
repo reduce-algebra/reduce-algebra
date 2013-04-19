@@ -34,9 +34,13 @@ remflag ('(fl2bf msd!: fix2 rndpwr timbf),'lose);
 
 symbolic inline procedure fix2 u; fix u;
 
+remflag('(lshift ashift), 'lose);
+
 symbolic inline procedure lshift(m,d); ash(m,d);
 
 symbolic inline procedure ashift(m,d); ash1(m,d);
+
+flag('(lshift ashift), 'lose);
 
 symbolic inline procedure land(a,b); logand(a,b);
 
