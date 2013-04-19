@@ -166,8 +166,8 @@ procedure wulessp!*(f, g);
   else if wulessp(g, f) then nil
   else totallessp(f, g);
 
-inline procedure nil2zero f;
-  f or 0;
+symbolic inline procedure nil2zero u;
+  if null u then 0 else u;
 
 procedure totallessp(f, g);
 % a total order on polynomials

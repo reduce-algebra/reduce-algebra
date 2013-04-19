@@ -232,10 +232,6 @@ symbolic procedure cali_trace();
 % ---- Some useful things, probably implemented also elsewhere
 % ---- in the system.
 
-% symbolic procedure first x; car x;
-% symbolic procedure second x; cadr x;
-% symbolic procedure third x; caddr x;
-
 symbolic procedure strcat l;
 % Concatenate the items in the list l to a string.
   begin scalar u;

@@ -106,14 +106,14 @@ symbolic procedure msd!: m;
     return (i + 1);
   end;
 
-symbolic procedure ashift(m,d);
+symbolic inline procedure ashift(m,d);
    % This procedure resembles loosely an arithmetic shift.
    %  It returns m*2**d
    if d=0 then m
     else if d<0 then m/2**(-d)
     else m*2**d;
 
-symbolic procedure lshift(m,d);
+symbolic inline procedure lshift(m,d);
    % Variant of ashift that is called ONLY when m>=0.
    %  This should be redefined for Lisp systems that provide
    %  an efficient logical shift.

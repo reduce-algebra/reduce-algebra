@@ -99,7 +99,7 @@ symbolic inline procedure sq2bf!*(x);
       else ((if car y neq '!:rd!: then retag cdr !*rn2rd y
                else retag cdr y) where y = !*a2f x));
 
-symbolic inline procedure c!:prec!:;
+symbolic smacro procedure c!:prec!:;
    (if new!*bfs then lispeval '!:bprec!: else !:prec!:);
 
 

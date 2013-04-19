@@ -58,15 +58,6 @@ symbolic inline procedure rndpwr j;
     return make!:ibf(car !#w, cdr !#w + cddr j)
   end;
 
-% This is introduced as a privately-named function and an associated
-% inline to avoid unwanted interactions between 3 versions of this
-% function: the one here, the version of this code compiled into C, and
-% the original version in arith.red.  Note thus that CSL_normbf is not
-% flagged as 'lose here (but it will be when a version compiled into
-% C exists), and the standard version of normbf will still get compiled
-% in arith.red, but all references to it will get turned into calls
-% to CSL_normbf.  The SMACRO does not need a 'lose flag either.
-
 symbolic procedure CSL_normbf x;
    begin
       scalar mt,s;
@@ -84,7 +75,12 @@ symbolic procedure CSL_normbf x;
 
 !#if (not (memq 'vsl lispsystem!*))
 
-symbolic inline procedure normbf x; CSL_normbf x;
+remflag('(normbf), 'lose);
+
+symbolic procedure normbf x;
+   CSL_normbf x;
+
+flag('(normbf), 'lose);
 
 symbolic procedure CSL_timbf(u, v);
   begin

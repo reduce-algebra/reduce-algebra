@@ -28,19 +28,19 @@ module meijerg;  % Meijer's G-function.
 
 % Major modifications by: Winfried Neun, ZIB Berlin.
 
-symbolic smacro procedure fehler();
+symbolic inline procedure meijerg_fehler();
         rerror('specialf,140,"Wrong arguments to operator MeijerG");
 
 symbolic procedure simpMeijerG(U);
 
 begin scalar list1,list2,list1a,list2a;
 
-if pairp u then list1 :=car u else fehler();
-if pairp cdr u then list2 := cadr u else fehler();
-if not pairp cddr u then  fehler();
+if pairp u then list1 :=car u else meijerg_fehler();
+if pairp cdr u then list2 := cadr u else meijerg_fehler();
+if not pairp cddr u then  meijerg_fehler();
 
-if not eqcar(list1,'list) then fehler();
-if not eqcar(list2,'list) then fehler();
+if not eqcar(list1,'list) then meijerg_fehler();
+if not eqcar(list2,'list) then meijerg_fehler();
 
 list1a := for each x in cdadr list1 collect simp reval x;
 list2a := for each x in cdadr list2 collect simp reval x;
@@ -494,7 +494,7 @@ symbolic procedure f39(a,b,z);
 
 fluid '(!*infinitymultpole);
 
-symbolic smacro procedure priznak(u,v);
+symbolic inline procedure priznak(u,v);
  for each uu in u collect ( uu . v) ;
 
 symbolic procedure GFMlogcase(a,b,z);
@@ -811,8 +811,4 @@ algebraic
 endmodule;
 
 end;
-
-
-
-
 

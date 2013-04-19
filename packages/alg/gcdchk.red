@@ -43,7 +43,7 @@ SYMBOLIC PROCEDURE MONIC!-MOD!-P A;
     ELSE IF LC A = 1 THEN A
     ELSE MULTIPLY!-BY!-CONSTANT!-MOD!-P(A,MODULAR!-RECIPROCAL LC A);
 
-SMACRO PROCEDURE BEFORE!-IN!-ORDER(A,B);
+symbolic inline procedure BEFORE!-IN!-ORDER(A,B);
 %Predicate taking the value true if the polynomial
 %a has a leading term which comes strictly before that
 %of b in canonical order;

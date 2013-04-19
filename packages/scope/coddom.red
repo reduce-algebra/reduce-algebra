@@ -62,7 +62,7 @@ symbolic procedure doublep d;
 % Returns T iff d is an arbitrary precision rounded number, else NIL
    eqcar(d,'!:rd!:) and pairp(cdr d);
 
-symbolic procedure nil2zero u;
+symbolic inline procedure nil2zero u;
 % Conversion NIL -> 0 needed for domain mode operations
    if null(u) then 0 else u;
 

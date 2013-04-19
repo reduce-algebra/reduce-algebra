@@ -558,24 +558,24 @@ flag('(string!-downcase princ!-upcase princ!-downcase),'lose);
 
 % This function is used in Rlisp '88.
 
-symbolic procedure igetv(u,v); getv(u,v);
+symbolic inline procedure igetv(u,v); getv(u,v);
 
-symbolic procedure iputv(u,v,w); putv(u,v,w);
+symbolic inline procedure iputv(u,v,w); putv(u,v,w);
 
 % The following functions are NOT in Standard Lisp and should NOT be
 % used anywhere in the REDUCE sources, but the amount of trouble I have
 % had with places where they do creep in has encouraged me to define
 % them here anyway and put up with the (small) waste of space.
 
-symbolic procedure first x; car x;
+symbolic inline procedure first x; car x;
 
-symbolic procedure second x; cadr x;
+symbolic inline procedure second x; cadr x;
 
-symbolic procedure third x; caddr x;
+symbolic inline procedure third x; caddr x;
 
-symbolic procedure fourth x; cadddr x;
+symbolic inline procedure fourth x; cadddr x;
 
-symbolic procedure rest x; cdr x;
+symbolic inline procedure rest x; cdr x;
 
 
 Comment Initial setups for REDUCE;

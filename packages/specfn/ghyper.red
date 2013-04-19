@@ -475,20 +475,20 @@ GHFexit(a,b,z)$
      simpx1(prepsq z,1,2))),simpfunc('intfc,z)) >>
             else GHFexit(a,b,z)$
 
-symbolic inline procedure fehler();
+symbolic inline procedure ghyper_fehlerf();
         rerror('specialf,139,"Wrong arguments to hypergeometric");
 
 symbolic procedure hypergeom(U);
 
 begin scalar list1,list2,res,res1;
 
-if not (length(u) = 3) then fehler();
-if pairp u then list1 :=car u else fehler();
-if pairp cdr u then list2 := cadr u else fehler();
-if not pairp cddr u then  fehler();
+if not (length(u) = 3) then ghyper_fehlerf();
+if pairp u then list1 :=car u else ghyper_fehlerf();
+if pairp cdr u then list2 := cadr u else ghyper_fehlerf();
+if not pairp cddr u then  ghyper_fehlerf();
 
-if not eqcar(list1,'list) then fehler();
-if not eqcar(list2,'list) then fehler();
+if not eqcar(list1,'list) then ghyper_fehlerf();
+if not eqcar(list2,'list) then ghyper_fehlerf();
 
 list1 := for each x in cdr list1 collect simp reval x;
 list2 := for each x in cdr list2 collect simp reval x;

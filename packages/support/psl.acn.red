@@ -394,26 +394,6 @@ symbolic procedure normbf x;
       if s then mt := -mt;
 ret:    return make!:ibf(mt,ep) end;
 
-%symbolic procedure normbf x;
-%   begin scalar mt,s;integer ep,ep1;
-%      if (mt := mt!: x)=0 then go to ret;
-%      if mt<0 then <<mt := -mt; s := t>>;
-%      ep := ep!: x;
-%      while bigp mt and land(mt,bf!-bits!-mask())=0 do <<
-%        mt := lshift(mt,-bf!-bits());
-%        ep := ep+bf!-bits() >>;
-%      while land(mt,255)=0 do <<
-%        mt := lshift(mt,-8);
-%        ep := ep+8 >>;
-%      while land(mt,1)=0 do <<
-%        mt := lshift(mt,-1);
-%        ep := ep+1>>;
-%%      ep1 := remainder(ep,bf!-bits());
-%%      if ep1 < 0 then ep1 := ep1 + bf!-bits();
-%%      if ep1 neq 0 then <<ep := ep - ep1; mt := lshift(mt,ep1)>>;
-%      if s then mt := -mt;
-%ret:    return make!:ibf(mt,ep) end;
-
 symbolic procedure integerp!: x;
 % This function returns T if X is a BINARY BIG-FLOAT
 %      representing an integer, else it returns NIL.

@@ -335,10 +335,10 @@ symbolic procedure makemat(m,v,h);
 % a vertical terminator.
 if null m then nil else nconc(makearg(car m,h), v . makemat(cdr m,v,h));
 %ff
-inline procedure istag(v,w); car v=w;
+inline procedure tri_istag(v,w); car v=w;
 inline procedure tri_unary(uby);  car uby;
-inline procedure binary(uby); cdr uby;
-inline procedure lcopy(a); for each x in a collect x;
+inline procedure tri_binary(uby); cdr uby;
+inline procedure tri_lcopy(a); for each x in a collect x;
 
 symbolic procedure makefunc(op,arg,prec);
 begin
@@ -352,27 +352,27 @@ begin
   << tag:=car pattern; pattern:=cdr pattern;
      if (atom tag) then a:=tag.nil
      else if (not atom car tag) then a:=nil
-     else if istag(tag,'f) then
+     else if tri_istag(tag,'f) then
        % test for unary to binary operator interchange
        if arg and (not atom car arg) and uby and (caar arg=tri_unary(uby))
-       then << a:=texexplode(binary(uby)); arg:=cadar arg.cdr arg >>
+       then << a:=texexplode(tri_binary(uby)); arg:=cadar arg.cdr arg >>
        else a:=texexplode(op)
-     else if istag(tag,'apply)
+     else if tri_istag(tag,'apply)
           then << a:=apply3(cadr tag,op,arg,prec); arg:=nil >>
      else if null arg then a:=nil
-     else if istag(tag,'x)
+     else if tri_istag(tag,'x)
           then << a:=mktag(car arg,prec,nil); arg:=cdr arg >>
-     else if istag(tag,'y)
+     else if tri_istag(tag,'y)
           then << a:=mktag(car arg,prec,t); arg:=cdr arg >>
-     else if istag(tag,'z)
+     else if tri_istag(tag,'z)
           then << a:=mktag(car arg,0,nil); arg:=cdr arg >>
-     else if istag(tag,'r) then
+     else if tri_istag(tag,'r) then
        if cdr arg % more than one argument ?
        then << pattern:=get(op,'texpatt); a:=nil >>
        else << a:=mktag(car arg,prec,nil); arg:=cdr arg >>
-     else if istag(tag,'l)
+     else if tri_istag(tag,'l)
           then << a:=makearg(arg,cadr tag); arg:=nil >>
-     else if istag(tag,'m)
+     else if tri_istag(tag,'m)
           then << a:=makemat(arg,cadr tag,caddr tag); arg:=nil >>
      else a:=nil;
      if a then term:=nconc(term,a)
@@ -387,7 +387,7 @@ symbolic procedure make!*sq(op,arg,prec);
 symbolic procedure makedf(op,arg,prec); % DF operators are tricky
 begin
   scalar dfx,f,vvv; integer degree;
-  dfx:=lcopy(f:=texexplode op); degree:=0;
+  dfx:=tri_lcopy(f:=texexplode op); degree:=0;
   nconc(dfx,mktag(car arg,prec,nil)); dfx:=nconc(dfx,list '!}!{);
   for each item in cdr arg do
     if numberp(item) then
@@ -643,11 +643,11 @@ symbolic procedure make!:ps!:(op, arg, prec);  % TPS interface,
 %                      by its property 'TEXNAME
 % ----------------------------------------------------------------------
 
-inline procedure triassert(name,item); put(name,'texname,item);
-inline procedure assertl(l); for each v in l do triassert(car v,cadr v);
-inline procedure retract(name); put(name,'texname,nil);
-inline procedure retractl(l); for each v in l do retract(car v);
-inline procedure gettexitem(a); get(a,'texname) or (get(a,'class)and a);
+inline procedure tri_triassert(name,item); put(name,'texname,item);
+inline procedure tri_assertl(l); for each v in l do tri_triassert(car v,cadr v);
+inline procedure tri_retract(name); put(name,'texname,nil);
+inline procedure tri_retractl(l); for each v in l do tri_retract(car v);
+inline procedure tri_gettexitem(a); get(a,'texname) or (get(a,'class)and a);
 
 put ('texitem,'stat,'rlis); % handle argument passing for func. TeXitem
 
@@ -676,7 +676,7 @@ for each w in l do
   begin scalar iw;
    iw:=intern(car w);
    put(iw,'class,cadr w); put(iw,'textag,caddr w);
-   for each v in cdddr w do triassert(v,iw);
+   for each v in cdddr w do tri_triassert(v,iw);
   end;
 
 fluid '(texunknowncounter!*);
@@ -693,7 +693,7 @@ symbolic procedure unknownitem(a);
 symbolic procedure texexplode(a);
 begin scalar b;
   b:=if a and (atom a) then
-     (gettexitem(a)
+     (tri_gettexitem(a)
       or if numberp(a) then texcollect(explode(a))
          else if stringp(a) then strcollect(explode2(a))
          else texexplist(texcollect(explode2(a))));
@@ -703,14 +703,14 @@ end;
 
 symbolic procedure texcollect(l);
   for each el in l join
-    if null gettexitem(el) then unknownitem(el)
-    else gettexitem(el).nil;
+    if null tri_gettexitem(el) then unknownitem(el)
+    else tri_gettexitem(el).nil;
 
 inline procedure strtexitem(e);
   if e='!  then list '!\!        % space after ! is necessary
   else if e='!	 then list '!\!   % there is a tab before the "then"
   else if liter(e) then {e}
-  else if gettexitem(e) then {gettexitem(e)}
+  else if tri_gettexitem(e) then {tri_gettexitem(e)}
   else unknownitem(e); % or '! ;
 
 symbolic procedure strcollect(l);
@@ -973,7 +973,7 @@ symbolic procedure texassertset(arglist);
 if length arglist neq 1 then rederr "Usage: TeXassertset(setname);"
 else begin scalar sym; sym:= car arglist;
   if get('texsym,sym) then
-  << assertl(get('texsym,sym)); prin2 "% set ";
+  << tri_assertl(get('texsym,sym)); prin2 "% set ";
      prin2 sym; prin2 " asserted"; terpri()
   >> else << prin2 "% no such set"; terpri() >>
 end;
@@ -982,7 +982,7 @@ symbolic procedure texretractset(arglist);
 if length arglist neq 1 then rederr "Usage: TeXretractset(setname);"
 else begin scalar sym; sym := car arglist;
   if get('texsym,sym) then
-  << retractl(get('texsym,sym)); prin2 "% set ";
+  << tri_retractl(get('texsym,sym)); prin2 "% set ";
      prin2 sym; prin2 " retracted"; terpri()
   >> else << prin2 "% no such set"; terpri() >>
 end;
@@ -1671,7 +1671,7 @@ begin scalar class,sym,item;
   else if (class='inn) then % prevent from TeXequiv'ing inner symbols
   << prin2 "% cannot assign inner TeX symbols yet"; terpri()
   >>
-  else triassert(sym,item);
+  else tri_triassert(sym,item);
   return nil
 end;
 

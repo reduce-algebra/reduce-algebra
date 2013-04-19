@@ -121,7 +121,7 @@ symbolic procedure adddm(u,v);
           where x=plus2(u,v)
     else dcombine(u,v,'plus);
 
-symbolic procedure domainp u; atom u or atom car u;
+symbolic inline procedure domainp u; atom u or atom car u;
 
 symbolic procedure noncomp u;
    !*ncmp and noncomp1 u;

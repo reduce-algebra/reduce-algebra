@@ -52,7 +52,7 @@ remprop('Airy_biprime,'simpfn);
 create!-package ('(specbess sfbes sfkummer sfother sfairy),
                  '(contrib specfn));
 
-symbolic smacro procedure sq2bf!*(x);
+symbolic inline procedure sq2bf!*(x);
    (if fixp x then i2bf!: x
       else ((if car y neq '!:rd!: then retag cdr !*rn2rd y
                else retag cdr y) where y = !*a2f x));
@@ -93,6 +93,4 @@ algebraic procedure complex!*restore!*switch(fl);
 endmodule;
 
 end;
-
-
 

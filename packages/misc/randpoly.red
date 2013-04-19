@@ -31,7 +31,7 @@ module randpoly;  % A random (generalized) polynomial generator
 
 create!-package('(randpoly),'(contrib misc));
 
-symbolic inline procedure apply_c c;
+symbolic inline procedure rand_apply_c c;
    % Apply a coefficient generator function c that returns
    % a prefix form and convert it to standard quotient form.
    simp!* apply(c, nil);
@@ -110,11 +110,11 @@ symbolic procedure randpoly u;
       if s eq 'sparse then
          if null e then
             for each x in rand!-mons!-sparse(v,trms,d,o,univar) do
-               p := addsq(p, multsq(apply_c c, x ./ 1))
+               p := addsq(p, multsq(rand_apply_c c, x ./ 1))
          else
             if univar then
                for i := 1 : trms do
-                  p := addsq(p, multsq(apply_c c,
+                  p := addsq(p, multsq(rand_apply_c c,
                                        !*kp2q(v, apply_e e)))
             else
                for i := 1 : trms do
@@ -122,15 +122,15 @@ symbolic procedure randpoly u;
                      for each vv in v do
                         cc := multsq(cc, !*kp2q(vv, apply_e e));
                      cc >> ))
-                  where cc = apply_c c
+                  where cc = rand_apply_c c
       else   % s eq 'dense
-         if univar then <<  p := apply_c c;
+         if univar then <<  p := rand_apply_c c;
             if o > 0 then p := multsq(p, mksq(v,o));
             for i := o + 1 : d do
-               p := addsq(p, multsq(apply_c c, mksq(v,i))) >>
+               p := addsq(p, multsq(rand_apply_c c, mksq(v,i))) >>
          else
             for each x in rand!-mons!-dense(v,d,o) do
-               p := addsq(p, multsq(apply_c c, x ./ 1));
+               p := addsq(p, multsq(rand_apply_c c, x ./ 1));
       return
          % Make any necessary substitutions for temporary variables:
          if sublist then

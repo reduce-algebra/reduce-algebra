@@ -66,7 +66,7 @@ SYMBOLIC PROCEDURE DEPENDSPL(DEP!-LIST,VAR);
    DEP!-LIST
       AND (DEPENDSP(CAR DEP!-LIST,VAR) OR DEPENDSPL(CDR DEP!-LIST,VAR));
 
-SYMBOLIC SMACRO PROCEDURE TAYLORFUNCTION U; CAAR U;
+symbolic inline procedure taylorfunction u; caar u;
 
 SYMBOLIC PROCEDURE TAYLORP EXXPR;
    % Sees if a random entity is a taylor expression.
