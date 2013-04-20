@@ -716,6 +716,12 @@ void report_file(const char *s)
     char *c;
     int i;
     if (dependency_file == NULL) return;
+/*
+ * In a really odd way I will avoid recording inline-defs.dat as a
+ * dependency and insist that if it is to be one that the Makefile should
+ * list that explicitly.
+ */
+    if (strcmp(s, "inline-defs.dat") == 0) return;
     if (dependency_count >= dependency_capacity)
     {   dependency_capacity = 2*dependency_capacity + 40;
         dependency_map = (char **)realloc(dependency_map,

@@ -354,7 +354,7 @@ this purpose are as follows;
 
 flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
        idifference iquotient iremainder ilessp igreaterp ileq igeq
-       izerop ionep apply1 apply2 apply3), 'lose);
+       izerop ionep iequal apply1 apply2 apply3), 'lose);
 
 Comment There are also a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
@@ -386,12 +386,6 @@ flag('(modular!-difference modular!-minus modular!-number
 
 !#endif
 
-% See comments about gensym() below - which apply also to the
-% effects of having different random number generators in different
-% host Lisp systems.
-% From 3.5 onwards (with a new random generator built into the
-% REDUCE sources) I am happy to use the portable version.
-
 % flag('(random next!-random!-number), 'lose);
 
 set!-small!-modulus 3;
@@ -415,46 +409,14 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
 
 !#endif
 
-% remflag('(int!-gensym1),'lose);
-
-% symbolic procedure int!-gensym1 u;
-% In Codemist Lisp compress interns - hence version in int.red may
-% not work.  However, it seems to be ok for now.
-%   gensym1 u;
-
-% flag('(int!-gensym1),'lose);
-
 
 global '(loaded!-packages!* no!_init!_file personal!-dir!*);
 
 personal!-dir!* := "$HOME";
 
-% symbolic procedure load!-patches!-file;
-%    begin scalar !*redefmsg,file,x; % Avoid redefinition messages.
-%       if memq('demo, lispsystem!*) then return;
-%       if filep(file := concat(personal!-dir!*,"/patches.fsl")) then nil
-%        else if filep(file :=
-%           concat(get!-lisp!-directory(),"/patches.fsl"))
-%         then nil
-%        else return nil;
-%       x := binopen(file,'input);
-%       for i := 1:16 do readb x; % Skip checksum stuff.
-%       load!-module x;   % Load patches.
-%       close x;
-%       if patch!-date!*
-%         then startup!-banner concat(version!*,concat(", ",concat(date!*,
-%                 concat(", patched to ",concat(patch!-date!*," ...")))));
-%       for each m in loaded!-packages!* do
-%          if (x := get(m,'patchfn)) then apply(x,nil)
-%    end;
-%
-% % For compatibility with older versions.
-%
-% symbolic procedure load!-latest!-patches;
-%    load!-patches!-file();
 
-Comment We need to define a function BEGIN, which acts as the top-level
-call to REDUCE, and sets the appropriate variables;
+% We need to define a function BEGIN, which acts as the top-level
+% call to REDUCE, and sets the appropriate variables;
 
 remflag('(begin),'go);
 
@@ -463,7 +425,11 @@ symbolic procedure begin;
      scalar w,!*redefmsg;
      !*echo := not !*int;
      !*extraecho := t;
-% Enable heavy debugging option in bootstrap version.
+% Enable heavy debugging option in bootstrap version. The effect of this
+% will be that all errors display a backtrace even within a use of
+% (errorset E nil nil). Some of these backtraces are a nuisance since
+% the "error" is not in any sense a problem, but when things are going
+% wrong it can be most frustrating if the evidence is hidden.
      if !*savedef and getd 'enable!-errorset then enable!-errorset(3,3);
      if modulep 'tmprint then <<
         w := verbos 0;
@@ -559,7 +525,6 @@ flag('(string!-downcase princ!-upcase princ!-downcase),'lose);
 % This function is used in Rlisp '88.
 
 symbolic inline procedure igetv(u,v); getv(u,v);
-
 symbolic inline procedure iputv(u,v,w); putv(u,v,w);
 
 % The following functions are NOT in Standard Lisp and should NOT be
@@ -585,44 +550,11 @@ spare!* := 0;    % We need this for bootstrapping.
 symchar!* := t;  % Changed prompt when in symbolic mode.
 
 
-% PSL has gensyms with names g0001, g0002 etc., and in a few places
-% REDUCE will insert gensyms into formulae in such a way that their
-% names can influence the ordering of terms.  The next fragment of
-% commented out code make CSL use similar names (but interned).  This
-% is not sufficient to guarantee a match with PSL though, since in (for
-% instance) the code
-%      list(gensym(), gensym(), gensym())
-% there is no guarantee which gensym will have the smallest serial
-% number.  Also if !*comp is true and the user defines a procedure it is
-% probable that the compiler does a number (just how many we do not
-% wish to say) of calls to gensym, upsetting the serial number
-% sequence.  Thus other ways of ensuring consistent output from REDUCE
-% are needed.
-
-%- global '(gensym!-counter);
-
-%- gensym!-counter := 1;
-
-%- symbolic procedure reduce!-gensym();
-%-   begin
-%-     scalar w;
-%-     w := explode gensym!-counter;
-%-     gensym!-counter := gensym!-counter+1;
-%-     while length w < 4 do w := '!0 . w;
-%-     return compress ('g . w)
-%-   end;
-
-%- remflag('(gensym), 'lose);
-%- remprop('gensym, 's!:builtin0);
-
-%- inline procedure gensym();
-%-    reduce!-gensym();
-
-% However, the current CSL gensym uses an upper case G as the root,
+% The current CSL gensym uses an upper case G as the root,
 % which causes inconsistencies in some tests (e.g., int and qsum).
 % This definition cures that.
 
-symbolic inline procedure gensym; gensym1 'g;
+symbolic smacro procedure gensym; gensym1 'g;
 
 
 symbolic procedure initreduce;
@@ -631,10 +563,8 @@ symbolic procedure initreduce;
 symbolic procedure initrlisp;
   % Initial declarations for REDUCE
   <<statcounter := 0;
-%-  gensym!-counter := 1;
     crbuflis!* := nil;
     spare!* := 0;
-%   !*int := not batchp();
     !*int := t;
   >>;
 

@@ -48,7 +48,7 @@ symbolic procedure mkprogn(u,v);
    if eqcar(v,'progn) then 'progn . u . cdr v else list('progn,u,v);
 
 symbolic procedure formproc(u,vars,mode);
-   begin scalar body,fname!*,name,type,varlis,x,y,fl,n;
+   begin scalar obody,body,fname!*,name,type,varlis,x,y,fl,n;
         u := cdr u;
         name := fname!* := car u;
         if cadr u then mode := cadr u;   % overwrite previous mode
@@ -93,6 +93,7 @@ symbolic procedure formproc(u,vars,mode);
                     list('declare, 'special . fl),
                     body);
 !#endif
+        obody:=body;
         if type = 'inline then
            new_inline_definitions := (name . list('lambda,varlis,body)) .
                                      new_inline_definitions;
@@ -130,7 +131,12 @@ symbolic procedure formproc(u,vars,mode);
                                body) >>;
         if !*defn and type memq '(fexpr macro inline smacro)
           then lispeval body;
-        return if !*micro!-version and type memq '(fexpr macro inline smacro)
+% "inline" procedures define a regular procedure as well as saving the
+% definition so it can be expanded in place elsewhere.
+        if type = 'inline then <<
+           printc "NEW INLINE";
+           body := print mkprogn(list('de,name,varlis,obody), body) >>;
+        return if !*micro!-version and type memq '(fexpr macro smacro)
                  then nil
                 else body
    end;

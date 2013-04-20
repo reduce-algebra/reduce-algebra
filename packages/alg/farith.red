@@ -50,7 +50,7 @@ symbolic procedure ilessp(a,b); a<b;
 
 symbolic procedure iminusp a; a<0;
 
-symbolic inline procedure iequal(u,v); eqn(u,v);
+symbolic procedure iequal(u,v); eqn(u,v);
 
 newtok '((!#) hash);
 newtok '((!# !+) iplus2);
