@@ -93,12 +93,7 @@ remflag('(set),'eval);
 % The following PSL variables differ from the Standard LISP Report
 
 remprop('!*comp,'vartype);
-
 remprop('!*raise,'vartype);
-
-% The following are not in the Standard LISP Report, but differ from
-% usual REDUCE usage.
-
 remprop('cursym!*,'vartype);
 
 % endmodule;

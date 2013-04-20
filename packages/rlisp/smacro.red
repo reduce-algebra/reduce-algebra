@@ -202,9 +202,9 @@ symbolic procedure log_assignment(varlist, u);
   else if eqcar(u, 'setq) then <<
     if member(cadr u, varlist) then <<
       if not zerop posn() then terpri();
-      princ "+++ Assignment to parameter of inline: ";
+      prin2 "+++ Assignment to parameter of inline: ";
       print u;
-      princ "+++ Macro was: ";
+      prin2 "+++ Macro was: ";
       print inlineinfo;
       t>>
     else log_assignment(varlist, caddr u) >>
@@ -233,9 +233,9 @@ symbolic procedure log_freevars(varlist, u);
        u = nil or u = t then nil
     else <<
       if not zerop posn() then terpri();
-      princ "+++ Use of free variable in smacro/inline body: ";
+      prin2 "+++ Use of free variable in smacro/inline body: ";
       print u;
-      princ "+++ Macro was: ";
+      prin2 "+++ Macro was: ";
       print inlineinfo;
       t >> >>
   else if eqcar(u, 'quote) or

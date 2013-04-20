@@ -417,7 +417,11 @@ symbolic(bigfloatlow!* := - bigfloathi!*);
 
 remflag('(cond),'eval);
 
+% Put in some CSL compatibility here...
 
+symbolic inline procedure princ x; prin2 x;
+symbolic inline procedure prin x;  prin1 x;
+symbolic inline procedure printc x; << prin2 x; terpri(); x >>;
 
 % HP-Risc and IBM RS architectures need special handling of fltinf in
 % fastmath.red

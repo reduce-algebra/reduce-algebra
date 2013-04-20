@@ -133,9 +133,8 @@ symbolic procedure formproc(u,vars,mode);
           then lispeval body;
 % "inline" procedures define a regular procedure as well as saving the
 % definition so it can be expanded in place elsewhere.
-        if type = 'inline then <<
-           printc "NEW INLINE";
-           body := print mkprogn(list('de,name,varlis,obody), body) >>;
+        if type = 'inline then
+           body := print mkprogn(list('de,name,varlis,obody), body);
         return if !*micro!-version and type memq '(fexpr macro smacro)
                  then nil
                 else body
