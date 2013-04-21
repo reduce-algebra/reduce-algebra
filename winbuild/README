@@ -13,3 +13,9 @@ texlive-collection-latex
 texlive-collection-latexextra
 texlive-collection-latexrecommended
 
+Run "make" in the winbuild directory. When it display the final line
+
+  Please run Innosetup on winbuild/reduce.iss
+
+start InnoSetup and build the installable package with the "Compile" command
+in the "Build" menu.
