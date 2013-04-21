@@ -340,8 +340,10 @@ sbrk (SIZE_T size)
 	  do
 	    {
 	      new_address = findRegion (new_address, new_size);
-	      if (new_address == 0)
+	      if (new_address == 0) {
+                errno = ENOMEM;
 		return (void*)-1;
+              }
 	      gAddressBase = gNextAddress =
 		(unsigned long long)VirtualAlloc (new_address, new_size,
 					    MEM_RESERVE, PAGE_NOACCESS);
@@ -353,8 +355,10 @@ sbrk (SIZE_T size)
 	  ASSERT (new_address == (void*)gAddressBase);
 	  gAllocatedSize = new_size;
 
-	  if (!makeGmListElement ((void*)gAddressBase))
+	  if (!makeGmListElement ((void*)gAddressBase)) {
+            errno = ENOMEM;
 	    return (void*)-1;
+          }
 	}
       if ((size + gNextAddress) > AlignPage (gNextAddress))
 	{
@@ -363,8 +367,10 @@ sbrk (SIZE_T size)
 			      (size + gNextAddress -
 			       AlignPage (gNextAddress)),
 			      MEM_COMMIT, PAGE_READWRITE);
-	  if (res == 0)
+	  if (res == 0) {
+            errno = ENOMEM;
 	    return (void*)-1;
+          }
 	}
       tmp = (void*)gNextAddress;
       gNextAddress = (unsigned long long)tmp + size;
@@ -386,6 +392,7 @@ sbrk (SIZE_T size)
 	  VirtualFree ((void*)gAddressBase, gNextAddress - gAddressBase,
 		       MEM_DECOMMIT);
 	  gNextAddress = gAddressBase;
+          errno = ENOMEM;
 	  return (void*)-1;
 	}
     }
