@@ -102,6 +102,9 @@ unixinitio()
     unixeof[0] = EOF;
     unixeof[1] = EOF;
     unixtty = stdin;
+
+// set two digit exponent like in Unix
+    _set_output_format(_TWO_DIGIT_EXPONENT);
 }
  
 /* Tag( unixputc )
