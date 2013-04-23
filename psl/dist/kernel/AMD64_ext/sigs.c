@@ -19,13 +19,19 @@ fp_except fp_mask,fp_stick;
 int      fp_first=0;
 #endif
 
+struct sigaction act;
 
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
 {
-   if (signal(sig, SIG_IGN) != SIG_IGN) 
-    signal(sig, action);
+   struct sigaction act = {0};
+   if (signal(sig, SIG_IGN) != SIG_IGN) {
+    //#signal(sig, action);
+     act.sa_sigaction = action;
+     act.sa_flags = SA_SIGINFO;
+     sigaction(sig, &act, (void*)0);
+   }
 
 #ifndef LINUX
    if(sig == SIGFPE && fp_first == 0)

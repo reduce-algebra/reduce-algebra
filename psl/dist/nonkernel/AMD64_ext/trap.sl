@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber*))
+(fluid '(errornumber* sigaddr*))
 
 (compiletime
  (progn
@@ -68,6 +68,7 @@
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1)(fluid errornumber*))
      (*move ,handler (reg 2))
+     (*move (memory (reg rdx) 168) (fluid sigaddr*))   % instruction pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*jcall sigunwind))
@@ -127,6 +128,17 @@
      % (*link build-trap-message expr 2)     % This leaves its result in reg
                                            % 1, so the new message is
      (push (reg 1))
+     (*move 128 (reg NIL))
+     (*mkitem (reg NIL) id-tag)            % make sure (reg nil) contains nil
+     % if this is a terminal interrupt (errornumber* = 2) we check
+     % whether it occured within lisp code. If not, just return.
+     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*move (fluid sigaddr*) (reg 1))
+     (*link codeaddressp expr 1)
+     (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
+     (pop (reg 1))
+     (ret)
+    in-lisp
      (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
      (pop (reg 2))
