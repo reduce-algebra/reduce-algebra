@@ -90,7 +90,7 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
        {"rm /tmp/plotdt*","rm /tmp/plotcmds!*"};
    !*plotinterrupts := '(10002);
 
-   !#elif (intersection '(dos os2 win32 winnt alphant) lispsystem!*)
+   !#elif (intersection '(dos os2 win32 win64 winnt alphant) lispsystem!*)
 
 fluid '(!*!*windows);
 
@@ -124,7 +124,8 @@ fluid '(!*!*windows);
     >> else
 
    if !*!*windows eq 1 or member('winnt,lispsystem!*)
-                       or member('win32 ,lispsystem!*) then
+                       or member('win32,lispsystem!*)
+                       or member('win64,lispsystem!*) then
    <<
       % for windows:
       %  use plot pipe
@@ -268,7 +269,7 @@ else opsys!* := cdr opsys!*;
 % X session, but in that case maybe the diagnostic about the inability to
 % open a window can come from gnuplot rather than me!
 
-if opsys!* neq 'win32 then opsys!* := 'unix;
+if opsys!* neq 'win32 and opsys!* neq 'win64 then opsys!* := 'unix;
 
 % If a shell variable "gnuplot" is set it is expected to be the
 % directory within which gnuplot binaries can be found.
@@ -283,7 +284,7 @@ if getenv "gnuplot" then plotdir!* := getenv "gnuplot"
   then plotdir!* := get!-lisp!-directory();
 
 
-if opsys!* = 'win32 then <<
+if opsys!* memq '(win32 win64) then <<
 % For Microsoft Windows use I try to use "wgnuplot" rather than "gnuplot",
 % and the options provided are copied from the PSL case above.
     plotcommand!* := "wgnuplot";
