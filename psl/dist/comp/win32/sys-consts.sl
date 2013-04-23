@@ -21,7 +21,8 @@
 
 (setq system_list* 
    (cond ((getenv "OS2_SHELL") '(Intel386 i386 os2 ieee))
-         ((equal (getenv "OS") "Windows NT") '(Intel386 i386 i686 winnt ieee)) 
+         ((or (equal (getenv "OS") "Windows NT") (equal (getenv "OS") "Windows_NT"))
+          '(Intel386 i386 i686 winnt ieee)) 
          (t '(Intel386 i386 i686 dos ieee)))) 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
