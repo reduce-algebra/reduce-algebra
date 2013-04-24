@@ -229,27 +229,15 @@ procedure ofsf_findposdirection(monl);
       return posp . ev
    end;
 
-switch rllpkeepfiles;
-
 asserted procedure ofsf_findDirectionLp(m: DottedPair, ml: List): List;
-   begin scalar bfn, lp, sol, log, cl, nl, ev, call, res; integer d;
+   begin scalar cl, nl, ev, res; integer d;
       d := length m;
       nl := for i := 1:d collect mkid('n, i);
       cl := for each ev in ml join
 	 if ev neq m then
 	    {{'leq, ofsf_mklhs(d, ev, nl), -1}};
       cl := {'equal, ofsf_mklhs(d, m, nl), 0} . cl;
-      bfn := lto_sconcat {"/tmp/writelp-", getenv "USER", "-", lto_at2str random(2^16)};
-      lp := lto_sconcat {bfn, ".lp"};
-      sol := lto_sconcat {bfn, ".sol"};
-      log := lto_sconcat {bfn, ".log"};
-      ofsf_writeLp(lp, {'times, 0, 'c}, cl,  'c . nl);
-      call := lto_sconcat {"gurobi_cl ResultFile=", sol, " ", lp, " &> ", log};
-      system call;
-      res := ofsf_readLpSol(sol, d);
-      if not !*rllpkeepfiles then
-	 for each fn in {lp, sol, log} do
-	    system lto_sconcat {"rm -f ", fn};
+      res := ofsf_runsimplex(cl, 'c . nl, d + 1);
       return res
    end;
 
@@ -263,9 +251,44 @@ procedure ofsf_mklhs(d, ev, nl);
       return lhs
    end;
 
+switch rlgurobi;
+
+asserted procedure ofsf_runsimplex(cl: List, vl: List, d: Integer): List;
+   if !*rlgurobi then
+      ofsf_rungurobi(cl, vl, d)
+   else
+      ofsf_runlinalg(cl, vl, d);
+
+switch rllpkeepfiles;
+
+asserted procedure ofsf_rungurobi(cl: List, vl: List, d: Integer): List;
+   begin scalar bfn, lp, sol, log, cl, call, res;
+      bfn := lto_sconcat {"/tmp/writelp-", getenv "USER", "-", lto_at2str random(2^16)};
+      lp := lto_sconcat {bfn, ".lp"};
+      sol := lto_sconcat {bfn, ".sol"};
+      log := lto_sconcat {bfn, ".log"};
+      ofsf_writeLp(lp, {'times, 0, 'c}, cl, vl);
+      call := lto_sconcat {"gurobi_cl ResultFile=", sol, " ", lp, " &> ", log};
+      system call;
+      res := ofsf_readLpSol(sol, d);
+      if not !*rllpkeepfiles then
+	 for each fn in {lp, sol, log} do
+	    system lto_sconcat {"rm -f ", fn};
+      return res
+   end;
+
+asserted procedure ofsf_runlinalg(cl: List, vl: List, d: Integer): List;
+   begin scalar w, bounds;
+      bounds := for each v in vl collect v . '((minus infinity) infinity);
+      w := fs_simplex2('min, sc_simp 0, cl, bounds);
+      if w eq 'infeasible then
+	 return 'infeasible;
+      return cdr w
+   end;
+
 asserted procedure ofsf_pzeropLp1int(f: SF, negp: Boolean, d: Integer, vl: List, posp: List): List;
    begin scalar isol, fsol, sol, fval; integer  pow;
-      posp := ofsf_fpoint2intpoint posp;
+      posp := ofsf_spoint2intpoint posp;
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ lifted to integers: "};
 	 mathprint('list . posp)
@@ -314,9 +337,25 @@ asserted procedure ofsf_fsubf(f: SF, subl: AList): Floating;
    else
       cdr atsoc(mvar f, subl)^ldeg f * ofsf_fsubf(lc f, subl) + ofsf_fsubf(red f, subl);
 
+procedure ofsf_spoint2intpoint(posp);
+   if !*rlgurobi then ofsf_fpoint2intpoint posp else ofsf_rpoint2intpoint posp;
+
+procedure ofsf_rpoint2intpoint(posp);
+   begin scalar res, w; integer g;
+      res := car posp . for each e in cdr posp collect <<
+	 w := simp caddr e;
+	 g := gcdn(g, denr w);
+ 	 {'equal, cadr e, w}
+      >>;
+      g := !*f2q g;
+      for each e in cdr res do
+	 caddr e := numr multsq(caddr e, g);
+      return res
+   end;
+
 procedure ofsf_fpoint2intpoint(posp);
    begin scalar res, w; integer g;
-      res := for each e in posp collect <<
+      res := car posp . for each e in cdr posp collect <<
 	 w := fix(10^8 * caddr e + 0.5 * sgn caddr e);
 	 g := gcdn(g, w);
  	 {'equal, cadr e, w}
@@ -434,11 +473,11 @@ procedure ofsf_readLpSol(fn, d);
 	 return 'infeasible
       >>;
       repeat tok := read() until tok = 0;
-      res := for i := 1:d+1 collect
+      res := for i := 1:d collect
 	 read() . read();
       rds nil;
       close ch;
-      res := {'equal, 'c, cdr atsoc('c, res)} . for i := 1:d collect <<
+      res := {'equal, 'c, cdr atsoc('c, res)} . for i := 1:d-1 collect <<
 	 ni := mkid('n, i);
 	 {'equal, ni, cdr atsoc(ni, res)}
       >>;
@@ -469,4 +508,4 @@ algebraic procedure testpzerop(hu, sol);
 
 endmodule;
 
-end;
+end;  % of file
