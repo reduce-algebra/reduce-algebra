@@ -186,7 +186,7 @@ symbolic procedure simplex1(input);
 
     if pairp equation_list and car equation_list = 'list then
      equation_list := cdr equation_list
-     else rederr "Error in simplex(third argument}: must be a list.";
+     else rederr "Error in simplex(third argument): must be a list.";
 
     % get rid of any two (or more) equal equations! Probably makes
     % things faster in general.

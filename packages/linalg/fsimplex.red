@@ -246,7 +246,7 @@ procedure fs_a2s!-maxmin(a);
    begin scalar w;
       w := reval a;
       if (w neq 'max) and (w neq 'min) then
-	 rederr "simplex: First argument must be either max or min";
+	 rederr "Error in simplex(first argument): must be either max or min";
       return w
    end;
 
@@ -261,7 +261,7 @@ procedure fs_a2s!-cl(a);
       if pairp w and car w = 'list then
 	 w := cdr w
       else
-	 rederr "simplex: Third argument must be a list";
+	 rederr "Error in simplex(third argument): must be a list";
       return w
    end;
 
@@ -356,7 +356,7 @@ procedure fs_simplex2(max!-or!-min, objective, equation!-list, boundal);
       no!-coeffs := fast!-column!-dim A;
       {ph1optval, xb, ib, Binv} := fs_phase1(A, b);
       if not sc_null ph1optval then
-	 rederr "simplex: Problem has no feasible solution";
+	 rederr "Error in simplex: Problem has no feasible solution.";
       {optval, xb, ib} := fs_phase2(obj!-mat, A, b, ib, Binv, xb);
       ansl := fs_make!-answer!-list(xb, ib, no!-coeffs, X, no!-variables);
       if max!-or!-min = 'max then
@@ -528,7 +528,7 @@ procedure fs_phase2(obj!-mat,A,b,ib,Binv,xb);
                i := i+1
       	    >>;
       	    if sc_minussq big then
-	       rederr {"simplex: Constraint",k," is redundant."};
+	       rederr {"Error in simplex: Constraint",k," is redundant."};
       	    work := fast!-augment!-columns(A,k);
       	    Binv := fs_phiprm(Binv,work,ell);
       	    nth(ib,ell) := k
@@ -598,7 +598,7 @@ procedure fs_add!-slacks!-to!-equations(equation!-list);
        	 if (not numberp b!-in!-eq and b!-in!-eq neq nil)
 	    and (pairp b!-in!-eq and car b!-in!-eq neq '!:rd!:)
 	 then
-	    rederr "simplex: Right hand side of inequalities must be numbers."
+	    rederr "Error in simplex: Right hand side of inequalities must be numbers."
 	 else
 	    sc_setmat(rhs!-mat,row,1,caddr equation);
        	 row := row+1;
@@ -619,7 +619,7 @@ procedure fs_add!-slacks!-to!-equations(equation!-list);
 	 >> else if car equation = 'equal then
 	    equation := cadr equation
        	 else
-            rederr "simplex: Inequalities must contain either >=, <=, or =.";
+            rederr "Error in simplex: Inequalities must contain either >=, <=, or =.";
        	 slack!-list := append(slack!-list,{equation})
       >>;
       return {slack!-list,rhs!-mat,slack!-variable!-list}
@@ -730,7 +730,7 @@ procedure fs_rstep2(xb,sb);
 	>>
      >>;
      if ell = 0 then
-       	rederr "simplex: The problem is unbounded.";
+       	rederr "Error in simplex: The problem is unbounded.";
      return {sigb,ell}
   end;
 
