@@ -215,6 +215,8 @@ procedure fs_simplex1(input);
   begin scalar max!-or!-min,objective,equation!-list,boundl,w;
      {max!-or!-min, objective, equation!-list, boundl} := fs_a2s!-simplex input;
      w := fs_simplex2(max!-or!-min, objective, equation!-list, boundl);
+     if w eq 'infeasible then
+	rederr "Error in simplex: Problem has no feasible solution.";
      return fs_s2a!-simplex w
   end;
 
@@ -356,7 +358,7 @@ procedure fs_simplex2(max!-or!-min, objective, equation!-list, boundal);
       no!-coeffs := fast!-column!-dim A;
       {ph1optval, xb, ib, Binv} := fs_phase1(A, b);
       if not sc_null ph1optval then
-	 rederr "Error in simplex: Problem has no feasible solution.";
+	 return 'infeasible;
       {optval, xb, ib} := fs_phase2(obj!-mat, A, b, ib, Binv, xb);
       ansl := fs_make!-answer!-list(xb, ib, no!-coeffs, X, no!-variables);
       if max!-or!-min = 'max then
