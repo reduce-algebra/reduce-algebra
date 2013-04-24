@@ -438,7 +438,7 @@ defautoload(meminfo, rltools, expr, 0);
 
 defautoload(lto_at2str, rltools, expr, 1);
 
-defautoload(lto_sconcatn, rltools, expr, 1);
+defautoload(lto_sconcat, rltools, expr, 1);
 
 % Qhull entry point
 
