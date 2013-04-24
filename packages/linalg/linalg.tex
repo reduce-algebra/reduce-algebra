@@ -1884,17 +1884,21 @@ the pivot only to the rows specified in row\_list.
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt simplex(max/min,objective function,\{linear 
-inequalities\});}
+inequalities\},[\{bounds\}]);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-max/min             & :- & \parbox[t]{.63\linewidth}{either max or min 
-                           (signifying maximise and minimise).} \\
-objective function  & :- & the function you are maximising or 
-                           minimising. \\
-linear inequalities & :- & \parbox[t]{.63\linewidth}{the constraint 
-                           inequalities. Each one must be of the form 
-                           {\it sum of variables ($<=,=,>=$) number}.}
+  max/min             & :- & \parbox[t]{.63\linewidth}{either max or min 
+    (signifying maximise and minimise).} \\
+  objective function  & :- & the function you are maximising or 
+  minimising. \\
+  linear inequalities & :- & \parbox[t]{.63\linewidth}{the constraint 
+    inequalities. Each one must be of the form 
+    {\it sum of variables ($<=,=,>=$) number}.}\\
+  bounds & :- & \parbox[t]{.63\linewidth}{bounds on the variables as
+    specified for the LP file format. Each bound is of one of the forms $l\leq
+    v$, $v\leq u$, or $l\leq v\leq u$, where $v$ is a variable and $l$, $u$ are
+    numbers or \texttt{infinity} or \texttt{-infinity}}
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
@@ -1906,7 +1910,11 @@ under the linear inequality constraints.
 
 It returns \{optimal value,\{ values of variables at this optimal\}\}.
 
-The algorithm implies that all the variables are non-negative.
+The \texttt{\{bounds\}} argument is optional and admissible only when the switch
+\texttt{fastsimplex} is on, which is the default.
+
+Without a \texttt{\{bounds\}} argument, the algorithm implies that all the
+variables are non-negative.
 
 \end{addtolength}
 

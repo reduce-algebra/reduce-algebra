@@ -147,8 +147,7 @@ if not get('leq,'simpfn) then
    algebraic operator >=;
 >>;
 
-%% put('simplex,'psopfn,'simplex1);
-%% flag('(simplex1),'opfn);
+flag('(equal leq geq), 'spaced);
 
 procedure fs_simplex1(input);
   %
@@ -213,18 +212,33 @@ procedure fs_simplex1(input);
   % "Linear Programming"  M.J.Best and K. Ritter. To date, the code
   % contains no anti_cycling algorithm.
   %
-  begin scalar w;
-     w := fs_a2s!-simplex(input);
-     w := fs_simplex2(car w, cadr w, caddr w);
-     return fs_s2a!-simplex(w)
+  begin scalar max!-or!-min,objective,equation!-list,boundl,w;
+     {max!-or!-min, objective, equation!-list, boundl} := fs_a2s!-simplex input;
+     w := fs_simplex2(max!-or!-min, objective, equation!-list, boundl);
+     return fs_s2a!-simplex w
   end;
 
 procedure fs_a2s!-simplex(input);
-   begin scalar max!-or!-min,objective,equation!-list;
-      max!-or!-min := fs_a2s!-maxmin(car input);
-      objective := fs_a2s!-obj(cadr input);
-      equation!-list := fs_a2s!-cl(caddr input);
-      return {max!-or!-min,objective,equation!-list}
+   begin scalar max!-or!-min,objective,equation!-list,boundal;
+      if null input then
+	 rederr "simplex called with 0 arguments instead of 3-4";
+      max!-or!-min := fs_a2s!-maxmin car input;
+      input := cdr input;
+      if null input then
+	 rederr "simplex called with 1 arguments instead of 3-4";
+      objective := fs_a2s!-obj car input;
+      input := cdr input;
+      if null input then
+	 rederr "simplex called with 2 arguments instead of 3-4";
+      equation!-list := fs_a2s!-cl car input;
+      input := cdr input;
+      if null input then
+	 return {max!-or!-min,objective,equation!-list,boundal};
+      boundal := fs_a2s!-boundl car input;
+      input := cdr input;
+      if input then
+	 rederr "simplex called with more than 4 arguments";
+      return {max!-or!-min,objective,equation!-list,boundal}
    end;
 
 procedure fs_a2s!-maxmin(a);
@@ -251,37 +265,149 @@ procedure fs_a2s!-cl(a);
       return w
    end;
 
+procedure fs_a2s!-boundl(a);
+   begin scalar w;
+      w := reval a;
+      if pairp w and car w = 'list then
+	 w := cdr w
+      else
+	 rederr "simplex: Fourth argument must be a list";
+      return fs_read!-bounds w
+   end;
+
+procedure fs_read!-bounds(boundl);
+   begin scalar w, boundal, ub, lb, v;
+      for each item in boundl do <<
+	 if eqcar(item, 'and) then <<  % Redlog has resolved a chain of leq
+	    rederr "simplex: not yet compatible with Redlog";
+	 >> else if not eqcar(item, 'leq) then
+	    rederr {"simplex: bad bound", item}
+	 else <<
+	    w := cadr item;
+	    if eqcar(w, 'leq) then <<  % chain
+	       lb := cadr w;
+	       v := caddr w;
+	       ub := caddr item;
+	       if not (fs_lboundp lb and idp v and fs_uboundp ub) then
+	    	  rederr {"simplex: bad bound", item};
+	       boundal := fs_setlb(boundal, v, lb);
+	       boundal := fs_setub(boundal, v, ub)
+	    >> else <<
+	       if idp cadr item then <<
+		  v := cadr item;
+		  ub := caddr item;
+	       	  if not (idp v and fs_uboundp ub) then
+	    	     rederr {"simplex: bad bound", item};
+	       	  boundal := fs_setub(boundal, v, ub)
+	       >> else <<
+		  lb := cadr item;
+	       	  v := caddr item;
+		  if not (fs_lboundp lb and idp v) then
+		     rederr {"simplex: bad bound", item};
+	       	  boundal := fs_setlb(boundal, v, lb)
+	       >>
+	    >>
+	 >>
+      >>;
+      for each pr in boundal do
+	 if cadr pr eq 'default then cadr pr := 0;
+      return boundal
+   end;
+
+procedure fs_lboundp(x);
+   numberp x or x = '(minus infinity);
+
+procedure fs_uboundp(x);
+   numberp x or x eq 'infinity;
+
+procedure fs_setlb(boundal, v, lb);
+   begin scalar w;
+      w  := atsoc(v, boundal);
+      if null w then
+	 return (v . {lb, 'infinity}) . boundal;
+      if cadr w eq 'default or cadr w = '(minus infinity) or domainp lb and cadr w < lb then
+	 cadr w := lb;
+      return boundal
+   end;
+
+procedure fs_setub(boundal, v, ub);
+   begin scalar w;
+      w  := atsoc(v, boundal);
+      if null w then
+	 return (v . {'default, ub}) . boundal;
+      if caddr w eq 'infinity or domainp ub and ub < caddr w then
+	 caddr w := ub;
+      return boundal
+   end;
+
 procedure fs_s2a!-simplex(w);
    {'list,sc_prepsq car w,'list . cdr w};
 
-procedure fs_simplex2(max!-or!-min,objective,equation!-list);
-   begin
-      scalar w,A,b,obj!-mat,X,ib,xb,Binv,phase1!-obj!-value,
-      	 ans!-list,optimal!-value;
+procedure fs_simplex2(max!-or!-min, objective, equation!-list, boundal);
+   begin scalar A, b, obj!-mat, X, ib, xb, Binv, ph1optval, ansl, optval,
+ 	 subal, addcl, splal, gensyml;
       integer no!-coeffs,no!-variables;
-      equation!-list := fs_norminput(objective,equation!-list);
-      w := fs_init(max!-or!-min,objective,equation!-list);
-      A := car w;
-      b := cadr w;
-      obj!-mat := caddr w;
-      X := cadddr w;
-      no!-variables := car cddddr w;
+      {addcl, subal, splal, gensyml} := fs_analyze!-bounds boundal;
+      {objective, equation!-list} :=
+	 fs_preproc!-bounds(objective, equation!-list, addcl, subal, splal);
+      equation!-list := fs_norminput(objective, equation!-list);
+      {A, b, obj!-mat, X, no!-variables} :=
+	 fs_init(max!-or!-min, objective, equation!-list);
       no!-coeffs := fast!-column!-dim A;
-      w := fs_phase1(A,b);
-      phase1!-obj!-value := car w;
-      xb := cadr w;
-      ib := caddr w;
-      Binv := cadddr w;
-      if not sc_null(phase1!-obj!-value) then
+      {ph1optval, xb, ib, Binv} := fs_phase1(A, b);
+      if not sc_null ph1optval then
 	 rederr "simplex: Problem has no feasible solution";
-      w := fs_phase2(obj!-mat,A,b,ib,Binv,xb);
-      optimal!-value := car w;
-      xb := cadr w;
-      ib := caddr w;
-      ans!-list := fs_make!-answer!-list(xb,ib,no!-coeffs,X,no!-variables);
+      {optval, xb, ib} := fs_phase2(obj!-mat, A, b, ib, Binv, xb);
+      ansl := fs_make!-answer!-list(xb, ib, no!-coeffs, X, no!-variables);
       if max!-or!-min = 'max then
-       	 optimal!-value := sc_negsq optimal!-value;
-      return optimal!-value . ans!-list
+       	 optval := sc_negsq optval;
+      ansl := fs_postproc!-bounds(ansl, subal, splal, gensyml);
+      return optval . ansl
+   end;
+
+procedure fs_analyze!-bounds(boundal);
+   begin scalar v, lb, ub, subal, addcl, splal, v1, v2, gensyml;
+      for each bound in boundal do <<
+	 {v, lb, ub} := bound;
+	 if lb eq 'default or numberp lb then <<
+	    if not (lb eq 'default or eqn(lb, 0)) then
+	       subal := (v . {'difference, v, lb}) . subal;
+	    if numberp ub then
+	       addcl := {'leq, v, ub - lb} . addcl
+	 >> else <<  % lb = -infinity
+	    v1 := gensym();
+	    v2 := gensym();
+	    splal := (v . {'difference, v1, v2}) . splal;
+	    gensyml := v1 . v2 . gensyml;
+	    if numberp ub then
+	       addcl := {'leq, v, ub} . addcl
+	 >>
+      >>;
+      return {addcl, subal, splal, gensyml}
+   end;
+
+procedure fs_preproc!-bounds(objective, equation!-list, addcl, subal, splal);
+   {subsq(subsq(objective, subal), splal),
+      for each c in append(addcl, equation!-list) collect
+	 {car c, prepsq subsq(subsq(simp cadr c, subal), splal), caddr c}};
+
+procedure fs_postproc!-bounds(ansl, subal, splal, gensyml);
+   begin scalar w, ansal, ransl;
+      for each equ in ansl do <<
+	 w := atsoc(cadr equ, subal);
+	 if w then
+	    % Here I am turning differences into sums. This is not really a
+	    % clean solution. TS
+ 	    ransl := {'equal, cadr equ, reval {'plus, caddr equ, caddr cdr w}} . ransl
+	 else if cadr equ memq gensyml then
+      	    ansal := (cadr equ . caddr equ) . ansal
+	 else
+	    ransl := equ . ransl
+      >>;
+      for each pr in splal do
+	 ransl := {'equal, car pr, prepsq subsq(simp cdr pr, ansal)} . ransl;
+      ransl := sort(ransl, function(lambda (x, y); ordop(cadr x, cadr y)));
+      return ransl
    end;
 
 procedure fs_norminput(objective,eql);
@@ -322,10 +448,10 @@ procedure fs_mkpos(equation!-list);
 	 equation;
 
 procedure fs_add!-constraints(obj,eql,eqvs);
-   % [obj] is a SC; [eql] is a list of lists, [eqvs] is a list. Returns a
-   % list. If variables in the objective have not been defined in the
-   % inequalities(equation!-list) then add them. They are added as
-   % variable >= 0. %
+   % [obj] is a SC; [eql] is a list of lists, [eqvs] is a list. Returns a list.
+   % If variables in the objective have not been defined in the
+   % inequalities(equation!-list) then add them. They are added as variable >=
+   % 0.
    begin scalar ovs;
       ovs := sc_kernels obj;
       if length ovs = length eqvs then
@@ -640,7 +766,7 @@ procedure fs_phiprm(Binv,D,ell);
 procedure fs_make!-answer!-list(xb,ib,no!-coeffs,X,no!-variables);
    % Creates a list of the values of the variables at the optimal
    % solution.
-   begin scalar x!-mat,ans!-list,xb!-elem;
+   begin scalar x!-mat,ansl,xb!-elem;
       integer i;
       x!-mat := sc_mkmatrix(1,no!-coeffs);
       i := 1;
@@ -650,9 +776,9 @@ procedure fs_make!-answer!-list(xb,ib,no!-coeffs,X,no!-variables);
             sc_setmat(x!-mat,1,elt,xb!-elem);
 	 i := i+1
       >>;
-      ans!-list := for i:=1:no!-variables collect
+      ansl := for i:=1:no!-variables collect
 	 {'equal,sc_getmat(X,i,1),sc_prepsq(sc_getmat(x!-mat,1,i))};
-      return ans!-list
+      return ansl
    end;
 
 % New Procedures
