@@ -1479,31 +1479,31 @@ simplex(min,x-y,{x>=-3});
 
 *** Warning: variable y not defined in input. Has been defined as >=0.
 
-***** simplex: The problem is unbounded. 
+***** Error in simplex: The problem is unbounded. 
 
 
 % unfeasible as simplex algorithm implies all x>=0.
 simplex(min,x,{x<=-100});
 
 
-***** simplex: Problem has no feasible solution 
+***** Error in simplex: Problem has no feasible solution. 
 
 
 % three error examples.
 simplex(maxx,x,{x>=5});
 
 
-***** simplex: First argument must be either max or min 
+***** Error in simplex(first argument): must be either max or min 
 
 simplex(max,x,x>=5);
 
 
-***** simplex: Third argument must be a list 
+***** Error in simplex(third argument): must be a list 
 
 simplex(max,x,{x<=y});
 
 
-***** simplex: Right hand side of inequalities must be numbers. 
+***** Error in simplex: Right hand side of inequalities must be numbers. 
 
 
 simplex(max, 346 X11 + 346 X12 + 248 X21 + 248 X22 + 399 X31 + 399 X32 +
