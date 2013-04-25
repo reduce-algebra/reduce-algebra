@@ -1446,20 +1446,20 @@ symbolic procedure c!:pisub1(op, r1, r2, r3, depth);
 put('isub1, 'c!:opcode_printer, function c!:pisub1);
 
 symbolic procedure c!:piplus2(op, r1, r2, r3, depth);
-   c!:printf("    %v = (Lisp_Object)(int32_t)((int32_t)%v + (int32_t)%v - TAG_FIXNUM);\n",
-               r1, r2, r3);
+ << c!:printf("    %v = (Lisp_Object)(int32_t)((int32_t)%v +", r1, r2);
+    c!:printf(" (int32_t)%v - TAG_FIXNUM);\n", r3) >>;
 
 put('iplus2, 'c!:opcode_printer, function c!:piplus2);
 
 symbolic procedure c!:pidifference(op, r1, r2, r3, depth);
-   c!:printf("    %v = (Lisp_Object)(int32_t)((int32_t)%v - (int32_t)%v + TAG_FIXNUM);\n",
-               r1, r2, r3);
+ << c!:printf("    %v = (Lisp_Object)(int32_t)((int32_t)%v - (int32_t)%v", r1, r2, r3);
+    c!:printf(" + TAG_FIXNUM);\n") >>;
 
 put('idifference, 'c!:opcode_printer, function c!:pidifference);
 
 symbolic procedure c!:pitimes2(op, r1, r2, r3, depth);
-   c!:printf("    %v = fixnum_of_int((int32_t)(int_of_fixnum(%v) * int_of_fixnum(%v)));\n",
-               r1, r2, r3);
+ << c!:printf("    %v = fixnum_of_int((int32_t)(int_of_fixnum(%v) *", r1, r2);
+    c!:printf(" int_of_fixnum(%v)));\n", r3) >>;
 
 put('itimes2, 'c!:opcode_printer, function c!:pitimes2);
 

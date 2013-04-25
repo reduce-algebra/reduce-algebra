@@ -3667,22 +3667,22 @@ c!:printf "    if (!car_legal(%v)) " r3) (c!:pgoto (c!:find_error_label (list
 
 (put (quote isub1) (quote c!:opcode_printer) (function c!:pisub1))
 
-(de c!:piplus2 (op r1 r2 r3 depth) (c!:printf 
-"    %v = (Lisp_Object)(int32_t)((int32_t)%v + (int32_t)%v - TAG_FIXNUM);\n" 
-r1 r2 r3))
+(de c!:piplus2 (op r1 r2 r3 depth) (progn (c!:printf 
+"    %v = (Lisp_Object)(int32_t)((int32_t)%v +" r1 r2) (c!:printf 
+" (int32_t)%v - TAG_FIXNUM);\n" r3)))
 
 (put (quote iplus2) (quote c!:opcode_printer) (function c!:piplus2))
 
-(de c!:pidifference (op r1 r2 r3 depth) (c!:printf 
-"    %v = (Lisp_Object)(int32_t)((int32_t)%v - (int32_t)%v + TAG_FIXNUM);\n" 
-r1 r2 r3))
+(de c!:pidifference (op r1 r2 r3 depth) (progn (c!:printf 
+"    %v = (Lisp_Object)(int32_t)((int32_t)%v - (int32_t)%v" r1 r2 r3) (
+c!:printf " + TAG_FIXNUM);\n")))
 
 (put (quote idifference) (quote c!:opcode_printer) (function c!:pidifference)
 )
 
-(de c!:pitimes2 (op r1 r2 r3 depth) (c!:printf 
-"    %v = fixnum_of_int((int32_t)(int_of_fixnum(%v) * int_of_fixnum(%v)));\n"
-r1 r2 r3))
+(de c!:pitimes2 (op r1 r2 r3 depth) (progn (c!:printf 
+"    %v = fixnum_of_int((int32_t)(int_of_fixnum(%v) *" r1 r2) (c!:printf 
+" int_of_fixnum(%v)));\n" r3)))
 
 (put (quote itimes2) (quote c!:opcode_printer) (function c!:pitimes2))
 
