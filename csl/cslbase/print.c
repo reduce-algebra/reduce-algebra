@@ -1,11 +1,11 @@
-/*  print.c                           Copyright (C) 1990-2011 Codemist Ltd */
+/*  print.c                           Copyright (C) 1990-2013 Codemist Ltd */
 
 /*
  * Printing, plus some file-related operations.
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 51db0fe6 22-Sep-2012 */
+/* Signature: 26c22c4b 25-Apr-2013 */
 
 #include "headers.h"
 
@@ -1699,6 +1699,17 @@ Lisp_Object MS_CDECL Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
            filename[len] != '\\');
     if (len == 0) return onevalue(nil);
     filename[len] = 0;
+    w = make_string(filename);
+    errexit();
+    return onevalue(w);
+}
+
+Lisp_Object MS_CDECL Lfind_gnuplot(Lisp_Object nil, int nargs, ...)
+{
+    char filename[LONGEST_LEGAL_FILENAME];
+    Lisp_Object w;
+    argcheck(nargs, 0, "find-gnuplot");
+    find_gnuplot(filename);
     w = make_string(filename);
     errexit();
     return onevalue(w);
@@ -5022,6 +5033,7 @@ setup_type const print_setup[] =
     {"get-current-directory",   wrong_no_na, wrong_no_nb, Lget_current_directory},
     {"user-homedir-pathname",	wrong_no_na, wrong_no_nb, Luser_homedir_pathname},
     {"get-lisp-directory",      wrong_no_na, wrong_no_nb, Lget_lisp_directory},
+    {"find-gnuplot",            wrong_no_na, wrong_no_nb, Lfind_gnuplot},
     {"getpid",                  wrong_no_na, wrong_no_nb, Lgetpid},
     {"pagelength",              Lpagelength, too_many_1, wrong_no_1},
     {"posn",                    Lposn_1, wrong_no_nb, Lposn},

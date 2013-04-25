@@ -1,4 +1,4 @@
-/* sysfwin. c                      Copyright (C) 1989-2010 Codemist Ltd */
+/* sysfwin. c                      Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 30f37eea 03-Jun-2012 */
+/* Signature: 76ec4f63 25-Apr-2013 */
 
 #include "headers.h"
 
@@ -543,6 +543,100 @@ char *find_image_directory(int argc, char *argv[])
     w = (char *)(*malloc_hook)(n);
     strcpy(w, xname);
     return w;
+}
+
+#ifdef WIN32
+#define GPNAME  "wgnuplot.exe"
+#define DIRCHAR '\\'
+#else
+#define GPNAME  "gnuplot"
+#define DIRCHAR '/'
+#endif
+
+
+/*
+ * When Reduce wants to invoke gnuplot it needs a command-line to pass to
+ * "pipe-open". This procedure creates on (if it can), The idea is
+ * to try three possibilities in turn:
+ * (1) If an environment variable GNUPLOT is set then that should be set to
+ *     a path within which the gnuplot executable exists. So eg if the
+ *     value of GNUPLOT is "/usr/extras/gnuplotfiles" then the result
+ *     here is liable to be "/usr/extras/gnuplotfiles/gnuplot".
+ * (2) If a file called "gnuplot" (or "wgnuplot.exe in the windows case) is
+ *     present in the directory where the Reduce executable was found then
+ *     it will be used. 
+ * (3) If a file called "gnuplot" (or "wgnuplot.exe in the windows case) is
+ *     present in the directory where the Reduce image would (by default)
+ *     be found then it will be used.  In some cases this is actually the
+ *     same as (2) above, but it can differ if the executable is in
+ *     .../bin and the image in .../share/reduce or some such.
+ * (4) A search will be made in the "standard place". For Windows this will
+ *     involve scanning the registry to seek an installation of gnuplot,
+ *     while otherwise it will be expected that the ordinary PATH will
+ *     provide access.
+ * (5) Failing all else I will just hand back the name of the executable and
+ *     hope that it is on a PATH.
+ */
+
+int executable_file(char *name)
+{
+    struct stat buf;
+    if (stat(name, &buf) == -1) return 0;
+#ifndef S_ISUSR
+    return 1;
+#else
+    return (buf.st_mode & S_IXUSR)'
+#endif
+}
+
+int find_gnuplot(char *name)
+{
+    const char *w = getenv("GNUPLOT");
+    size_t len;
+    if (w != NULL && (len = strlen(w)) > 0)
+    {   if (w[len-1] == '/' ||
+            w[len-1] == '\\') len--;
+        sprintf(name, "%.*s%c%s", (int)len, w, DIRCHAR, GPNAME);
+        if (executable_file(name)) return 1;
+    }
+    strcpy(name, programDir);
+    len = strlen(name);
+    while (len-- > 0 &&
+           name[len] != '/' &&
+           name[len] != '\\');
+    if (len != 0)
+    {   strcpy(&name[len+1], GPNAME);
+        if (executable_file(name)) return 1;
+    }
+    strcpy(name, standard_directory);
+    len = strlen(name);
+    while (len-- > 0 &&
+           name[len] != '/' &&
+           name[len] != '\\');
+    if (len != 0)
+    {   strcpy(&name[len+1], GPNAME);
+        if (executable_file(name)) return 1;
+    }
+#ifdef WIN32
+    {   DWORD length = LONGEST_LEGAL_FILENAME;
+        DWORD type;
+        LONG r = RegGetValue(
+    HKEY_LOCAL_MACHINE,
+    "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wgnuplot.exe",
+    NULL,
+    RRF_RT_ANY,
+    (LPDWORD)&type,
+    (PVOID)name,
+    (LPDWORD)&length);
+        if (r == ERROR_SUCCESS) return 1;
+    }
+/*
+ * If wgnuplot.exe is not installed then I will drop through and a last
+ * resort just hand back "wgnuplot.exe" as a strig and hope it is on a PATH.
+ */
+#endif
+    strcpy(name, GPNAME);
+    return 1;
 }
 
 /*

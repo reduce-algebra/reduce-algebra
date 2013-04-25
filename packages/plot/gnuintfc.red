@@ -205,28 +205,8 @@ fluid '(!*!*windows);
 %
 % If the user has set environment variables called "tmp" or "temp" then
 % that specify (in that priority order) directories to place temporary data
-% in. If neither is set then the current directory will be used. If tmp or temp
-% is set but does not name a directory then everything probably fails.
-%
-
-%
-% In this code opsys!* comes from "assoc('opsys, lispsystem!*)" with
-% 'unknown as its default value.
-% This means that with CSL 6.0 its value is usually HOST_OS as determined by
-% the GNU autoconf utilities. However for some systems I explicitly override
-% that and eg on Windows it should be win32. In circumstances that should no
-% longer ever arise it could become dos, finder, riscos or unix. These cases
-% are no longer supported! In fact the only fuss here will be that for win32
-% special action is taken - all other cases go a generic route that was once
-% labelled as "unix".
-%
-
-%
-% If a shell variable "gnuplot" is set then thet must be the directory in
-% which the gnuplot binary will be found. On Windows at least a search will
-% be made for "wgnuplot" in the directory that REDUCE was launched from, but
-% on Unix-like systems it may be necessary either to set the gnuplot shell
-% variable or to place the gnuplot binary on your PATH.
+% in. If neither is set then the current directory will be used. If tmp or
+% temp is set but does not name a directory then everything probably fails.
 %
 
 global '(plotdir!* dirchar!* opsys!* tempdir!*);
@@ -245,49 +225,17 @@ symbolic procedure gtmpnam base;
 
 symbolic procedure init_gnuplot();
 <<
+  !*plotpause := -1;                % wait for newline from user
 
-!*plotpause := -1;                % wait for newline from user
+  tempdir!* := getenv 'tmp;
+  if null tempdir!* then tempdir!* := getenv 'temp;
 
-% plotcleanup!* is a list of commands to be obeyed after a gnuplot run.
-% it is mainly needed to get rid of the data files (used even when pipes
-% are available).
-plotcleanup!* := {};
+  !*plotusepipe := t;
+% find-gnuplot returns the full name of a version of gnuplot (if it can
+% find one).
+  plotcommand!* := find!-gnuplot();
 
-tempdir!* := getenv 'tmp;
-if null tempdir!* then tempdir!* := getenv 'temp;
-
-dirchar!* := "/";
-plotcommand!* := "gnuplot";
-opsys!* := assoc('opsys, lispsystem!*);
-if null opsys!* then opsys!* := 'unknown
-else opsys!* := cdr opsys!*;
-
-% I USED to have special case code for Acorn RISCOS, for DOS, for Win32 and
-% "unix", and moaned if none of those where detected. These days it seems
-% more sense to make win32 a special case but otherwise assume a "unix-like"
-% environment. This will cause pain if you run under Unix but without an
-% X session, but in that case maybe the diagnostic about the inability to
-% open a window can come from gnuplot rather than me!
-
-if opsys!* neq 'win32 and opsys!* neq 'win64 then opsys!* := 'unix;
-
-% If a shell variable "gnuplot" is set it is expected to be the
-% directory within which gnuplot binaries can be found.
-if getenv "gnuplot" then plotdir!* := getenv "gnuplot"
-% Otherwise, and this is what I hope and expect to happen more often, I
-% will expect to find gnuplot in the same directory that REDUCE was
-% loaded from. This will all work wonderfully under Windows, but under Unix
-% there is a much greater chance that I will need to set an environment
-% variable "gnuplot". However, I still want to leave open the possibility
-% of plotdir!* being set.
- else if null plotdir!* and not (opsys!* = 'unix)
-  then plotdir!* := get!-lisp!-directory();
-
-
-if opsys!* memq '(win32 win64) then <<
-% For Microsoft Windows use I try to use "wgnuplot" rather than "gnuplot",
-% and the options provided are copied from the PSL case above.
-    plotcommand!* := "wgnuplot";
+  if memq('win32, lispsystem!*) then <<
     plotheader!* := "";
     dirchar!* := "\";
     plotdta!* := for each n in
@@ -296,34 +244,18 @@ if opsys!* memq '(win32 win64) then <<
        collect gtmpnam n;
     plotcleanup!* := if null tempdir!* then {"erase gnutmp.tm*"}
                      else {bldmsg("erase %w\gnutmp.tm*", tempdir!*)} >>
-
-else <<  % Assume Unix with X11 in general, but if the version of GNUPLOT
-         % being used knows about the "aqua" terminal type then assume that
-         % we are on a Macintosh with that capability available and best.
+  else <<  % Assume Unix with X11 in general, but if the version of GNUPLOT
+           % being used knows about the "aqua" terminal type then assume that
+           % we are on a Macintosh with that capability available and best.
+    dirchar!* := "/";
     plotheader!* :=
 "if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
     plotdta!* := for i:=1:10 collect tmpnam();
     plotcmds!*:= tmpnam();
-    plotcleanup!* :=
-       bldmsg("rm %w", plotcmds!*) .
-          for each f in plotdta!* collect bldmsg("rm %w", f) >>;
-
-% If there are no pipes available gnuplot will need a command-line
-% argument indicating where its input file is.
-
-if 'pipes member lispsystem!* then !*plotusepipe:=t
-else plotcommand!* := bldmsg("%w %w", plotcommand!*, plotcmds!*);
-
-% If I have a directory to look for gnuplot in I either just give a
-% full path or (under Unix) I temporarily switch current directories
-% to there.
-
-if plotdir!* then
-    plotcommand!* := bldmsg("%w%w%w",
-                            plotdir!*, dirchar!*, plotcommand!*);
-
-   nil >>;
-
+    plotcleanup!* := bldmsg("rm %w", plotcmds!*) .
+      for each f in plotdta!* collect bldmsg("rm %w", f) >>;
+  nil >>;
+  
 init_gnuplot();
 
 !#endif

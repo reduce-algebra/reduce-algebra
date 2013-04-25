@@ -1,4 +1,4 @@
-/*  syscsl.h                      Copyright (C) 1992-2008 Codemist Ltd */
+/*  syscsl.h                      Copyright (C) 1992-2013 Codemist Ltd */
 
 /*
  * This file should contain a list of all the functions in CSL that have
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
  *************************************************************************/
 
 
-/* Signature: 00c63f80 19-Jul-2009 */
+/* Signature: 35fee746 25-Apr-2013 */
 
 
 #ifndef header_syscsl_h
@@ -159,6 +159,14 @@ extern int current_directory(char *name, int len);
 extern int get_current_directory(char *name, int len);
 extern int get_home_directory(char *name, int len);
 extern int get_users_home_directory(char *name, int len);
+
+/*
+ * Just for Reduce, find_gnuplot fills in the command to launch gnuplot
+ * into the character array it is given. On Windows this may end up
+ * something like "c:\Program Files (x86)\...\wgnuplot.exe" while on
+ * other systems it could be either a fully rooted path of just "gnuplot".
+ */
+extern int find_gnuplot(char *name);
 
 /* returns NULL for OK or an error string */
 extern char *change_directory(char *filename, char *old, size_t n);
