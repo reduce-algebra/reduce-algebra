@@ -1923,7 +1923,7 @@ Lisp_Object Lparallel(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
         write_result(nil, r1, shared);
 /*
  * Exiting from the sub-task would in fact detach from the shared data
- * segment, but I do it explictly to feel tidy.
+ * segment, but I do the detaching explictly to feel tidy.
  */
         shmdt(shared);
         exit(0);
@@ -1961,7 +1961,7 @@ Lisp_Object Lparallel(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
  * other one, and return the result left by the winner.
  */
             pidx = wait(&status);
-            term_printf("First signal was from task %d\n", pidx);
+/*          term_printf("First signal was from task %d\n", pidx); */
             if (!WIFEXITED(status) ||
                 WEXITSTATUS(status) != 0)
             {
