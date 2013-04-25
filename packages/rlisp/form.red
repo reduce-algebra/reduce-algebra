@@ -512,7 +512,7 @@ symbolic procedure formsetq0(u,vars,mode);
 % be true: in that case I will display an alert every time there is an
 % assignment to something non-atomic that is defined using either an
 % smacro or an inline. This is done because if an smacro is changed into an
-% inline then assigment via it may change behaviour.
+% inline then assignment via it may change behaviour.
           if !*savedef and (get(car z, 'inline) or
                             get(car z, 'smacro)) then <<
             if not zerop posn() then terpri();
