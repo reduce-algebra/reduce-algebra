@@ -129,7 +129,7 @@ fluid '(!*!*windows);
    <<
       % for windows:
       %  use plot pipe
-     load w!-pipes;
+     if not member('win64,lispsystem!*) then load w!-pipes;
      !*plotusepipe:=t;
      plotcmds!* := bldmsg("%w\plotcmds",plottmp!*);;
      plotcommand!* := bldmsg(
