@@ -270,11 +270,6 @@ symbolic procedure quit;
 
 deflist('((quit endstat)),'stat);
 
-% evload is now defined in cslprolo.red - this has to be the case
-% so it can be used (via load_package) to load rlisp and cslrend.
-% symbolic procedure evload l;
-%   for each m in l do load!-module m;
-
 symbolic procedure seprp u;
    % Returns true if U is a blank, end-of-line, tab, carriage return or
    % form feed.  This definition replaces the one in the BOOT file.

@@ -287,8 +287,7 @@ symbolic procedure bldmsg1(fmt, args);
   end;
 
 put('gc, 'simpfg, '((t (verbos t)) (nil (verbos nil))));
-
-switch gc;
+flag('(gc), 'switch);
 
 endmodule;
 

@@ -29,7 +29,6 @@ module form;  % Performs a mode analysis of parsed forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-
 fluid '(!*!*a2sfn !*cref !*defn !*mode !*reduce4 !*rlisp88
         current!-modulus fname!* ftype!*);
 
@@ -50,87 +49,6 @@ symbolic procedure formcond1(u,vars,mode);
               . formcond1(cdr u,vars,mode);
 
 put('cond,'formfn,'formcond);
-
-%
-% I want something that is broadly equivalent to
-%
-% smacro procedure push(a, b); car (b := a . b);
-% smacro procedure pop(b); prog1(car b, b := cdr b);
-% but ideally I would avoid repeated evaluation of v in those cases where
-% v is messy. Eg as in "pop(car BIGEXPRESSION)" I would want BIGEXPRESSION
-% to be evaluated just once. To achieve that I will use a macro rather
-% than an smacro... The function cheaptoevaluate will be used to judge
-% whether an expression is "big".
-
-symbolic procedure cheaptoevaluate u;
-    atom u or eqcar(u, 'quote);
-
-symbolic procedure allcheaptoevaluate l;
-  null l or
-  (cheaptoevaluate car l and allcheaptoevaluate cdr l);
-
-symbolic macro procedure push u;
-  begin
-    scalar a, b, g, g1, r, w;
-    u := cdr u;
-    if (g := length u) neq 2 then
-      rederr list("push called with", g, "arguments instead of 2");
-    a := car u;
-    b := cadr u;
-% I will expand into simple code in cases when that is safe, specifically
-% if b is not a big expression and even more so if a is too.
-    if atom b or allcheaptoevaluate cdr b then <<
-      if cheaptoevaluate a then <<
-        if a = b then
-          return list('prog1, a, list('setq, b, list('cons, a, b)))
-        else return list('progn, list('setq, b, list('cons, a, b)), a) >>;
-      g := gensym(); 
-      return list('prog, g,
-          list('setq, g, a),
-          list('setq, b, list('cons, g, b)),
-          list('return, g)) >>;
-% If b is messy I will introduce new local variable for messy arguments of
-% b.
-    for each v in cdr b do <<
-      if cheaptoevaluate v then w := v . w
-      else <<
-        g := gensym();
-        g1 := g . g1; % List of all gensyms being used
-        w := g . w;
-        r := list('setq, g, v) . r >> >>;
-    w := car b . reverse w;
-    r := reverse r;
-    return 'prog . g1 .
-      append(r, list(
-        list('return, list('car, list('setq, w, list('cons, a, w))))))     
-  end;
-
-symbolic macro procedure pop u;
-  begin
-    scalar g, g1, a, r, w;
-    u := cdr u;
-    if (g := length u) neq 1 then
-      rederr list("pop called with", g, "arguments instead of 1");
-    a := car u;
-    if atom a or allcheaptoevaluate cdr a then
-      return list('prog1, list('car, a), list('setq, a, list('cdr, a)));
-    for each v in cdr a do <<
-      if cheaptoevaluate v then w := v . w
-      else <<
-        g := gensym();
-        g1 := g . g1; % List of all gensyms being used
-        w := g . w;
-        r := list('setq, g, v) . r >> >>;
-    w := car a . reverse w;
-    r := reverse r;
-    g := gensym();
-    g1 := g . g1;
-    return 'prog . g1 .
-      append(r, list(
-       list('setq, g, list('car, w)),
-       list('setq, w, list('cdr, w)),
-       list('return, g)))
-  end;
 
 % See formprog for commentary.
 % NOTE that this can create a LAMBDA with a PROGN, as
