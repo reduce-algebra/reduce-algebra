@@ -675,27 +675,29 @@ asserted procedure sfto_fctrf(f: SF): List;
 asserted procedure sfto_int2sf(n: Integer): SF;
    if n neq 0 then n;
 
+asserted procedure sfto_sf2int(n: Integer): SF;
+   n or 0;
+
 asserted procedure sfto_sf2monl(f: SF): List;
    begin scalar vl;
-      vl := kernels f;
-      return vl . for each x in sfto_sf2monl1(f, nil, vl, nil) collect
-	 reverse car x . cdr x
+      vl := sort(kernels f, 'ordop);
+      return vl . sfto_sf2monl1(f, vl)
    end;
 
-asserted procedure sfto_sf2monl1(f: SF, ev: List, vl: List, rl: List): List;
-   if null f then
-      rl
-   else if domainp f then <<
-      for each v in vl do
-	 ev := 0 . ev;
-      (ev . f) . rl
-   >> else <<
-      while not eqcar(vl, mvar f) do <<
-	 ev := 0 . ev;
-	 vl := cdr vl
-      >>;
-      sfto_sf2monl1(red f, ev, vl, sfto_sf2monl1(lc f, ldeg f . ev, cdr vl, rl))
-   >>;
+asserted procedure sfto_sf2monl1(f: SF, vl: List): DottedPair;
+   begin scalar rl, ll;
+      if null f then
+	 return nil;
+      if domainp f then
+	 return {(for each v in vl collect 0) . f};
+      if not eqcar(vl, mvar f) then
+	 return for each pr in sfto_sf2monl1(f, cdr vl) collect
+	    (0 . car pr) . cdr pr;
+      ll := for each pr in sfto_sf2monl1(lc f, cdr vl) collect
+ 	 (ldeg f . car pr) . cdr pr;
+      rl := sfto_sf2monl1(red f, vl);
+      return append(ll, rl)
+   end;
 
 endmodule;  % [sfto]
 

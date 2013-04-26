@@ -38,23 +38,22 @@ on1 'pzeroaddzero;
 switch pzeropint;
 on1 'pzeropint;
 
+switch pzerozero;
+on1 'pzerozero;
+
 put('pzerop, 'psopfn, 'ofsf_pzerop0);
 
 asserted procedure ofsf_pzerop0(argl: List): List;
-   begin integer f, vl;
+   begin integer f, vl, w;
       f := numr simp car argl;
       vl := kernels f;
       if null vl or null cdr vl then
 	 rederr {car argl, "is not multivariate"};
-      return 'list . ofsf_pzerop f
+      w := ofsf_pzerop f;
+      if !*pzerozero and eqcar(w, 1) then
+	 w := ofsf_pzerosolve(f, w);
+      return 'list . w
    end;
-%%    begin scalar pl, vl;
-%%       vl . pl := ofsf_pzerop(numr simp car argl);
-%%       return {'list,
-%% 	 'list . vl,
-%% 	 'list .  for each mon in pl collect
-%%  	    {'list, 'list . car mon or 0, cadr mon}}
-%%    end;
 
 asserted procedure ofsf_pzerop(f: SF): List;
    if !*pzerochull then
@@ -252,6 +251,7 @@ procedure ofsf_mklhs(d, ev, nl);
    end;
 
 switch rlgurobi;
+on1 'rlgurobi;
 
 asserted procedure ofsf_runsimplex(cl: List, vl: List, d: Integer): List;
    if !*rlgurobi then
@@ -349,7 +349,7 @@ procedure ofsf_rpoint2intpoint(posp);
       >>;
       g := !*f2q g;
       for each e in cdr res do
-	 caddr e := numr multsq(caddr e, g);
+	 caddr e := sfto_sf2int numr multsq(caddr e, g);
       return res
    end;
 
@@ -487,10 +487,142 @@ procedure ofsf_readLpSol(fn, d);
 procedure ofsf_pzerop!-mon2lp(vl, pt);
    reval('times . cdr pt . for each d in car pt collect {'expt, pop vl, d});
 
+asserted procedure ofsf_pzerosolve(f: SF, l: List): List;
+   begin scalar p1, p2, subal, f0, g, rl, zero, fzero;
+      if !*rlverbose then <<
+	 terpri();
+	 terpri();
+	 ioto_tprin2t {"+++ approximating zero, float precision is ", precision 0, " ..."}
+      >>;
+      if car l neq 1 then
+	 return l;
+      p1 := cdr cadr cadr l;
+      p2 := cdr cadr caddr l;
+      g := intern gensym();
+      subal := for each e1 in p1 collect
+	 cadr e1 . {'plus, caddr e1, {'times, g, {'plus, caddr pop p2, {'minus, caddr e1}}}};
+      f0 := numr subf(f, subal);
+      rl := ofsf_realrootswrap f0;
+      zero := for each pr in subal collect
+	 car pr . prepsq subsq(simp cdr pr, rl);
+      fzero := prepsq subf(f, zero);
+      zero := for each pr in zero collect
+	 {'equal, car pr, cdr pr};
+      return append(l, {{'list, 'list . zero, fzero}})
+   end;
+
+procedure ofsf_realrootswrap(f);
+   begin scalar rl, w;
+      rl := for each e in cdr realroots {prepf f} collect
+ 	 cadr e . caddr e;
+      rl := for each pr in rl collect <<
+	 w := numr simp cdr pr;
+	 car pr . if rdp w  then prepf !*rd2rn w else w
+      >>;
+      return rl
+   end;
+
+procedure ofsf_tropsat(f);
+   begin scalar w;
+      w := ofsf_sat2pol f;
+      w := ofsf_pzerop w;
+      if eqcar(w, 1) then
+	 return 'sat;
+      if eqcar(w, 0) then
+	 return 'unknown;  % unsat for positive variables
+      if eqcar(w, -1) then
+	 return 'unknown;
+      rederr {"something wrong in ofsf_tropsat: ofsf_pzerop returned ", w}
+   end;
+
+fluid '(rlsat2polatnum!*);
+
+procedure ofsf_sat2pol(f);
+   begin scalar w; integer rlsat2polatnum!*;
+      w := cl_simpl(cl_pnf f, nil, -1);
+      rlsat2polatnum!* := cl_atnum f;
+      return car ofsf_formula2pol1(w, nil, nil, nil)
+   end;
+
+procedure ofsf_formula2pol1(f, geal, gral, neal);
+   begin scalar op, e, ee;
+      op := rl_op f;
+      if op eq 'or then <<
+      	 e := 1;
+	 for each a in rl_argn f do <<
+	    {ee, geal, gral, neal} := ofsf_formula2pol1(a, geal, gral, neal);
+	    e := sfto_sqfpartf multf(ee, e)
+      	 >>;
+	 return {e, geal, gral, neal}
+      >>;
+      if op eq 'and then <<
+	 e := nil;
+	 for each a in rl_argn f do <<
+	    {ee, geal, gral, neal} := ofsf_formula2pol1(a, geal, gral, neal);
+	    e := addf(exptf(ee, 2), e)
+      	 >>;
+	 e := sfto_sqfpartf e;
+	 return {e, geal, gral, neal}
+      >>;
+      if !*rlverbose then
+	 ioto_prin2 {"[", rlsat2polatnum!* := rlsat2polatnum!* - 1};
+      if op eq 'equal then <<
+      	 if !*rlverbose then ioto_prin2 "e] ";
+ 	 return {ofsf_arg2l f, geal, gral, neal}
+      >>;
+      if op eq 'geq then
+	 return ofsf_geq2pol(ofsf_arg2l f, geal, gral, neal);
+      if op eq 'leq then
+	 return ofsf_geq2pol(negf ofsf_arg2l f, geal, gral, neal);
+      if op eq 'greaterp then
+	 return ofsf_greaterp2pol(ofsf_arg2l f, geal, gral, neal);
+      if op eq 'lessp then
+	 return ofsf_greaterp2pol(negf ofsf_arg2l f, geal, gral, neal);
+      if op eq 'neq then
+	 return ofsf_neq2pol(ofsf_arg2l f, geal, gral, neal);
+      rederr {"something wrong in ofsf_formula2pol1: op =  ", op}
+   end;
+
+procedure ofsf_geq2pol(lhs, geal, gral, neal);
+   begin scalar w, e;
+      w := assoc(lhs, geal);
+      if w then <<
+	 if !*rlverbose then ioto_prin2 "!] ";
+	 return {cdr w, geal, gral, neal}
+      >>;
+      e := sfto_sqfpartf addf(lhs, negf exptf(!*k2f intern gensym(), 2));
+      if !*rlverbose then ioto_prin2 "] ";
+      return {e, (lhs . e) . geal, gral, neal}
+   end;
+
+procedure ofsf_greaterp2pol(lhs, geal, gral, neal);
+   begin scalar w, e;
+      w := assoc(lhs, gral);
+      if w then <<
+	 if !*rlverbose then ioto_prin2 "!] ";
+	 return {cdr w, geal, gral, neal}
+      >>;
+      e := sfto_sqfpartf addf(multf(exptf(!*k2f intern gensym(), 2), lhs), negf 1);
+      if !*rlverbose then ioto_prin2 "] ";
+      return {e, geal, (lhs . e) . gral, neal}
+   end;
+
+procedure ofsf_neq2pol(lhs, geal, gral, neal);
+   begin scalar w, e;
+      w := assoc(lhs, neal);
+      if w then <<
+	 if !*rlverbose then ioto_prin2 "!] ";
+	 return {cdr w, geal, gral, neal}
+      >>;
+      e := sfto_sqfpartf addf(multf(!*k2f intern gensym(), lhs), negf 1);
+      if !*rlverbose then ioto_prin2 "] ";
+      return {e, geal, gral, (lhs . e) . neal}
+   end;
+
 algebraic procedure testpzerop(hu, sol);
    begin scalar w, subsol, foundsol, ok;
       ok := 1;
-      for i := 2:3 do <<
+      for i := 2:length sol do <<
 	 w := part(sol, i);
 	 if w neq pd and w neq nd and w neq failed then <<
 	    subsol := sub(part(w, 1), hu);

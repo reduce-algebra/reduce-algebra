@@ -251,6 +251,8 @@ put('ofsf,'rl_services,'(
    (rl_smt2Print!* . cl_smt2Print)
    (rl_smt2Read!* . cl_smt2Read)
    (rl_dima!* . ofsf_dima)
+   (rl_sat2pol!* . ofsf_sat2pol)
+   (rl_tropsat!* . ofsf_tropsat)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin
