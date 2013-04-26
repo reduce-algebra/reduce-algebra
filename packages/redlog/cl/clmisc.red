@@ -857,7 +857,7 @@ procedure cl_smt2ReadForm(form);
    end;
 
 procedure cl_smt2ReadError(x);
-   rederr x;
+   error(99, x);
 
 endmodule;  % [clmisc]
 
