@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 26c22c4b 25-Apr-2013 */
+/* Signature: 4e5ab6ed 25-Apr-2013 */
 
 #include "headers.h"
 
@@ -1708,8 +1708,23 @@ Lisp_Object MS_CDECL Lfind_gnuplot(Lisp_Object nil, int nargs, ...)
 {
     char filename[LONGEST_LEGAL_FILENAME];
     Lisp_Object w;
+    char *s;
     argcheck(nargs, 0, "find-gnuplot");
     find_gnuplot(filename);
+    s = filename;
+/*
+ * Because the path will be used in a command I will put quote marks
+ * around it so that embedded whitespace does not cause a calamity.
+ */
+    while (*s != 0) s++;
+    *s++ = '"';
+    *s = 0;
+    while (s != filename)
+    {   *(s+1) = *s;
+        s--;
+    }
+    s[1] = s[0];
+    s[0] = '"';
     w = make_string(filename);
     errexit();
     return onevalue(w);

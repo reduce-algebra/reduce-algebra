@@ -429,7 +429,7 @@ else !gui
 WINAP=-Wl,--subsystem,console
 endif !gui
 
-GP=wgnuplot.exe
+#GP=wgnuplot.exe
 
 reduceres = fwin-reduce.$(OBJEXT)
 
@@ -1086,7 +1086,8 @@ termdemo_LIBS=
 #
 
 if windows
-image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
+image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
+# wgnuplot* gnuplot.Copyright
 else !windows
 if mac_framework
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
@@ -1109,13 +1110,16 @@ if windows
 
 if gui
 if wx
-console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM)
+# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 else !wx
-console_binaries = csl$(COM) reduce$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries = csl$(COM) reduce$(COM)
+# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 endif !wx
 noinstall_console_binaries = fwindemo$(COM)
 else !gui
-console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries =
+# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 noinstall_console_binaries =
 endif !gui
 
@@ -1397,31 +1401,31 @@ $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
 
 if windows
-#
-# I also copy a set of gnuplot binaries into this directory.
-# Note that the Gnuplot license permits this, but if I host any of this
-# on Sourceforge then their terms and conditions mean I have to put a
-# set of gnuplot sources in their file release system! Also in the version
-# if this stuff as fetched using subversion there will be directories
-# called ".svn" that should not be copied, so I can not merely use
-# a simple wild-card to copy everything!
-#
-# Again if just PART of gnuplot became lost or corrupted that might
-# not trigger this rule.
-$(GP):
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
-	-mkdir -p share/PostScript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
-# I view it as most unwelcome that I need the "chmod" here, but if I have
-# gcc/g++ on my path and available I will suppose I can have chmod too.
-	chmod +x *gnuplot*.exe
+##
+## I also copy a set of gnuplot binaries into this directory.
+## Note that the Gnuplot license permits this, but if I host any of this
+## on Sourceforge then their terms and conditions mean I have to put a
+## set of gnuplot sources in their file release system! Also in the version
+## if this stuff as fetched using subversion there will be directories
+## called ".svn" that should not be copied, so I can not merely use
+## a simple wild-card to copy everything!
+##
+## Again if just PART of gnuplot became lost or corrupted that might
+## not trigger this rule.
+#$(GP):
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
+#	-mkdir -p share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
+## I view it as most unwelcome that I need the "chmod" here, but if I have
+## gcc/g++ on my path and available I will suppose I can have chmod too.
+#	chmod +x *gnuplot*.exe
 endif windows
 
 -include bootstrapreduce.dep
@@ -1453,7 +1457,7 @@ if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
@@ -1568,7 +1572,7 @@ if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
 	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -1582,7 +1586,7 @@ if canrun
 	mkdir -p testlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not run tests on this platfrom
@@ -1595,7 +1599,7 @@ countall:	reduce.img
 	valgrind --tool=exp-bbv --instr-count-only=yes \
 		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-                -Dcpulimit=30000 -Dconslimit=$(conslimit) \
+		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 		-- testlogs/countreduce.log
 
 
@@ -1608,7 +1612,7 @@ if canrun
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/test$(which).log -Dwhich=$(which) \
-                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
+		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -1621,7 +1625,7 @@ count1:	reduce.img
 		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/count$(which).log -Dwhich=$(which) \
-                -Dcpulimit=30000 -Dconslimit=$(conslimit)
+		-Dcpulimit=30000 -Dconslimit=$(conslimit)
 
 endif valgrind
 
@@ -1757,7 +1761,7 @@ if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
+	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).zip
 else !windows

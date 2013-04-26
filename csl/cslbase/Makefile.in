@@ -620,8 +620,8 @@ wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @gui_FALSE@@windows_TRUE@WINAP = -Wl,--subsystem,console
 @gui_TRUE@@windows_TRUE@WINAP = -Wl,--subsystem,windows
 @windows_FALSE@WINAP = 
-@windows_FALSE@GP = 
-@windows_TRUE@GP = wgnuplot.exe
+
+#GP=wgnuplot.exe
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
 @windows_TRUE@AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
@@ -664,6 +664,7 @@ wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_FALSE@@wx_TRUE@wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_TRUE@@wx_TRUE@wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
+@windows_FALSE@GP = 
 
 # end of windows vs non-windows conditions
 
@@ -689,6 +690,7 @@ fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
 termdemo_LIBS = 
 @mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
+# wgnuplot* gnuplot.Copyright
 @mac_framework_TRUE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
 
 #
@@ -699,11 +701,14 @@ termdemo_LIBS =
 # code I look in xxx.app/Contents/...
 # But initially the images get built next to the executable.
 #
-@windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
-@gui_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COM) reduce$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
+@gui_FALSE@@windows_TRUE@console_binaries = 
+# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COM) reduce$(COM)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM)
+# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_FALSE@@windows_TRUE@noinstall_console_binaries = 
+# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COM)
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
@@ -2847,31 +2852,18 @@ $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 	$(CP) $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
 
-#
-# I also copy a set of gnuplot binaries into this directory.
-# Note that the Gnuplot license permits this, but if I host any of this
-# on Sourceforge then their terms and conditions mean I have to put a
-# set of gnuplot sources in their file release system! Also in the version
-# if this stuff as fetched using subversion there will be directories
-# called ".svn" that should not be copied, so I can not merely use
-# a simple wild-card to copy everything!
-#
-# Again if just PART of gnuplot became lost or corrupted that might
-# not trigger this rule.
-@windows_TRUE@$(GP):
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
-@windows_TRUE@	-mkdir -p share/PostScript
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
-@windows_TRUE@	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
-# I view it as most unwelcome that I need the "chmod" here, but if I have
-# gcc/g++ on my path and available I will suppose I can have chmod too.
-@windows_TRUE@	chmod +x *gnuplot*.exe
+#$(GP):
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
+#	-mkdir -p share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
+#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
+#	chmod +x *gnuplot*.exe
 
 -include bootstrapreduce.dep
 
@@ -2898,7 +2890,7 @@ profile:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
 @canrun_TRUE@		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-@canrun_TRUE@                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+@canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 @canrun_TRUE@		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
 @canrun_TRUE@	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
@@ -2999,7 +2991,7 @@ testall:	reduce.img
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-@canrun_TRUE@                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+@canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 @canrun_TRUE@		-- testlogs/testreduce.log
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -3010,7 +3002,7 @@ testslow1:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-@canrun_TRUE@                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+@canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 @canrun_TRUE@		-- testlogs/test$(which).log -Dwhich=$(which)
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
@@ -3019,7 +3011,7 @@ testslow1:	bootstrapreduce.img
 @valgrind_TRUE@	valgrind --tool=exp-bbv --instr-count-only=yes \
 @valgrind_TRUE@		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @valgrind_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-@valgrind_TRUE@                -Dcpulimit=30000 -Dconslimit=$(conslimit) \
+@valgrind_TRUE@		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 @valgrind_TRUE@		-- testlogs/countreduce.log
 
 test1:	reduce.img
@@ -3027,7 +3019,7 @@ test1:	reduce.img
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-- testlogs/test$(which).log -Dwhich=$(which) \
-@canrun_TRUE@                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
+@canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
 @valgrind_TRUE@count1:	reduce.img
@@ -3036,7 +3028,7 @@ test1:	reduce.img
 @valgrind_TRUE@		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @valgrind_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @valgrind_TRUE@		-- testlogs/count$(which).log -Dwhich=$(which) \
-@valgrind_TRUE@                -Dcpulimit=30000 -Dconslimit=$(conslimit)
+@valgrind_TRUE@		-Dcpulimit=30000 -Dconslimit=$(conslimit)
 
 checkall:	reduce.img
 @canrun_TRUE@	mkdir -p testlogs
@@ -3089,7 +3081,7 @@ save:	all
 @windows_TRUE@	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 @windows_TRUE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-@windows_TRUE@	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_TRUE@	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 @windows_FALSE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)

@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 76ec4f63 25-Apr-2013 */
+/* Signature: 4960085d 25-Apr-2013 */
 
 #include "headers.h"
 
@@ -185,53 +185,46 @@ FILE *my_popen(char *command, char *direction)
  * way.
  */
     int i = 0, j;
-    for (;;)
-    {   char *name = "gnuplot";
-        j = i;
-        while (*name && tolower(command[j++]) == *name) name++;
-        if (*name == 0)
-        {   HWND parent = 0;
+    if (strstr(command, "wgnuplot.exe") != NULL)
+    {   HWND parent = 0;
 /*
  * Win32 would rather I used the following long-winded version, which provides
  * a pile of generality that is irrelevant here!
  */
-            STARTUPINFO startup;
-            PROCESS_INFORMATION process;
-            clock_t t0, t1;
-            memset(&startup, 0, sizeof(STARTUPINFO));
-            startup.cb = sizeof(startup);
-            startup.lpReserved = NULL;
-            startup.lpDesktop = NULL;
-            startup.lpTitle = NULL;
-            startup.dwFlags = STARTF_USESHOWWINDOW;
-            startup.wShowWindow = SW_SHOWMINIMIZED;
-            startup.cbReserved2 = 0;
-            startup.lpReserved2 = NULL;
-            if (!CreateProcess(NULL, command, NULL, NULL, FALSE,
-                               0, NULL, NULL, &startup, &process)) return 0;
-            gnuplot_handle = 0;
-            t0 = clock();
-            for (i=0; i<25; i++)  /* Give it 5 seconds to appear */
-            {   parent = FindWindow((LPSTR)"wgnuplot_parent",
-                                    (LPSTR)"gnuplot");
-                if (parent != 0) break;
+        STARTUPINFO startup;
+        PROCESS_INFORMATION process;
+        clock_t t0, t1;
+        memset(&startup, 0, sizeof(STARTUPINFO));
+        startup.cb = sizeof(startup);
+        startup.lpReserved = NULL;
+        startup.lpDesktop = NULL;
+        startup.lpTitle = NULL;
+        startup.dwFlags = STARTF_USESHOWWINDOW;
+        startup.wShowWindow = SW_SHOWMINIMIZED;
+        startup.cbReserved2 = 0;
+        startup.lpReserved2 = NULL;
+        if (!CreateProcess(NULL, command, NULL, NULL, FALSE,
+                           0, NULL, NULL, &startup, &process)) return 0;
+        gnuplot_handle = 0;
+        t0 = clock();
+        for (i=0; i<25; i++)  /* Give it 5 seconds to appear */
+        {   parent = FindWindow((LPSTR)"wgnuplot_parent",
+                                (LPSTR)"gnuplot");
+            if (parent != 0) break;
+            t0 += CLOCKS_PER_SEC/5;
+            while ((t1 = clock()) < t0) ; // a busy-wait here
+            t0 = t1;
+        }
+        if (parent != 0)
+        {   for (i=0; i<10; i++)   /* 2 more seconds for the child */
+            {   EnumChildWindows(parent, find_text, 0);
+                if (gnuplot_handle != 0) break;
                 t0 += CLOCKS_PER_SEC/5;
-                while ((t1 = clock()) < t0) ; // a busy-wait here
+                while ((t1 = clock()) < t0) ; /* busy-wait */
                 t0 = t1;
             }
-            if (parent != 0)
-            {   for (i=0; i<10; i++)   /* 2 more seconds for the child */
-                {   EnumChildWindows(parent, find_text, 0);
-                    if (gnuplot_handle != 0) break;
-                    t0 += CLOCKS_PER_SEC/5;
-                    while ((t1 = clock()) < t0) ; /* busy-wait */
-                    t0 = t1;
-                }
-            }
-            return (FILE *)-1;  // special handle for the gnuplot pipe
         }
-        i++;
-        if (command[i] == 0) break;
+        return (FILE *)-1;  // special handle for the gnuplot pipe
     }
 /*
  * The MESS of #ifdef stuff here and a few places lower down will in due
@@ -585,7 +578,7 @@ int executable_file(char *name)
 #ifndef S_ISUSR
     return 1;
 #else
-    return (buf.st_mode & S_IXUSR)'
+    return (buf.st_mode & S_IXUSR);
 #endif
 }
 
