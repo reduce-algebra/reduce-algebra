@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 4960085d 25-Apr-2013 */
+/* Signature: 448ceb82 28-Apr-2013 */
 
 #include "headers.h"
 
@@ -162,7 +162,13 @@ int wimpget(char *buf)
 
 #ifdef WIN32
 
+HANDLE gnuplot_process = 0;
 HWND gnuplot_handle = 0;
+
+void kill_gnuplot()
+{
+    TerminateProcess(gnuplot_process, 0);
+}
 
 BOOL CALLBACK find_text(HWND h, LPARAM x)
 {
@@ -185,6 +191,12 @@ FILE *my_popen(char *command, char *direction)
  * way.
  */
     int i = 0, j;
+/*
+ * The following test would trigger if the string "wgnuplot.exe" was present
+ * within the path even if it was not the final component. I think that at
+ * present I will take the view that anybody who finds themselves hurt because
+ * of that has only themselves to blame.
+ */
     if (strstr(command, "wgnuplot.exe") != NULL)
     {   HWND parent = 0;
 /*
@@ -205,6 +217,8 @@ FILE *my_popen(char *command, char *direction)
         startup.lpReserved2 = NULL;
         if (!CreateProcess(NULL, command, NULL, NULL, FALSE,
                            0, NULL, NULL, &startup, &process)) return 0;
+        gnuplot_process = process.hProcess;
+        atexit(kill_gnuplot);
         gnuplot_handle = 0;
         t0 = clock();
         for (i=0; i<25; i++)  /* Give it 5 seconds to appear */
@@ -212,7 +226,7 @@ FILE *my_popen(char *command, char *direction)
                                 (LPSTR)"gnuplot");
             if (parent != 0) break;
             t0 += CLOCKS_PER_SEC/5;
-            while ((t1 = clock()) < t0) ; // a busy-wait here
+            while ((t1 = clock()) < t0) ; /* a busy-wait here */
             t0 = t1;
         }
         if (parent != 0)
@@ -224,35 +238,26 @@ FILE *my_popen(char *command, char *direction)
                 t0 = t1;
             }
         }
-        return (FILE *)-1;  // special handle for the gnuplot pipe
+        return (FILE *)-1;  /* special handle for the gnuplot pipe */
     }
-/*
- * The MESS of #ifdef stuff here and a few places lower down will in due
- * course (I hope) be rationalised by arranging that the autoconfigure tools
- * set flags saying what names for functions should be used. But at present
- * I want to retain support for non-autoconfigure building and I have an
- * ugly set of tests based on the identity of the compiler being used or
- * some similar predefined macro.
- *
- * The only macro I really want to see here is WIN32 to select between
- * Windows and Unix-like worlds.
- */
 #ifdef __CYGWIN__
     return popen(command, direction);
 #else
     return _popen(command, direction);
 #endif
-#else
-// The following use of "signal" is so that pipe failure does not raise
-// an exception and blow everything out of the water. I might have expected
-// that "popen(command-that-does-not-exist, "w")" would return NULL, but it
-// seems that sometimes it returns a pipe handle, and puts works on that
-// without visible pain and only when one does an fflush does a SIGPIPE get
-// raised. This hurts when gnuplot has not been installed on a Unix-like host.
-// The new arrangement leads to somewhat silent failure to plot in that
-// case, but is probably better than having an abrupt exit from the system.
-// I know that these days I am asked to use sigaction rather than signal, but
-// even on recent Linux variants that seems only just available...
+#else 
+/*
+ * The following use of "signal" is so that pipe failure does not raise
+ * an exception and blow everything out of the water. I might have expected
+ * that "popen(command-that-does-not-exist, "w")" would return NULL, but it
+ * seems that sometimes it returns a pipe handle, and puts works on that
+ * without visible pain and only when one does an fflush does a SIGPIPE get
+ * raised. This hurts when gnuplot has not been installed on a Unix-like host.
+ * The new arrangement leads to somewhat silent failure to plot in that
+ * case, but is probably better than having an abrupt exit from the system.
+ * I know that these days I am asked to use sigaction rather than signal, but
+ * even on recent Linux variants that seems only just available...
+ */
     signal(SIGPIPE, SIG_IGN);
     return popen(command, direction);
 #endif
