@@ -259,7 +259,9 @@ symbolic procedure token1;
          else if x eq '!- and !*minusliter
           then progn(y := '!! . y, go to let1)
          else if x eq '!_ then go to let1     % Allow _ as letter.
-         else if x eq '!% then go to let1     % Allow % as letter.
+%% The following change led to problems with CSL, and perhaps it is not
+%% even needed.
+%%         else if x eq '!% then go to let1     % Allow % as letter.
          else if x eq '!: then go to maybepackage;
     ordinarysym:
         y := intern compress reversip!* y;
