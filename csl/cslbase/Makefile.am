@@ -31,6 +31,7 @@ plain_wxfontdemo = wxfontdemo
 plain_wxfontdemo1 = wxfontdemo1
 plain_wxdvi = wxdvi
 plain_wxshowmathdemo = wxshowmathdemo
+plain_dyndemo = dyndemo
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_reduce = reduce.unnecessary.except.on.windows
@@ -46,6 +47,7 @@ plain_wxfontdemo = wxfontdemo.unnecessary.except.on.windows
 plain_wxfontdemo1 = wxfontdemo.unnecessary.except.on.windows
 plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
+plain_dyndemo = dyndemo.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -62,6 +64,7 @@ endif !exeext
 .PHONY: $(plain_wxdvi)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
+.PHONY: $(plain_dyndemo)
 
 .PHONY: report-dlls
 .PHONY:	bootstraprecompile
@@ -159,7 +162,7 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	$(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) \
+	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
 	$(wxdemotarget)
 endif !mac_framework
 
@@ -385,6 +388,18 @@ wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
 if windows
+DLLEXT=dll
+else !windows
+DLLEXT=so
+endif !windows
+
+dyndemo_SOURCES = dyndemo.c
+
+if !windows
+dyndemo_DEPENDENCIES = dynmodule.so
+endif !windows
+
+if windows
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
 # I will expect the user to have established a path which includes the
@@ -429,7 +444,7 @@ else !gui
 WINAP=-Wl,--subsystem,console
 endif !gui
 
-#GP=wgnuplot.exe
+dyndemo_LDADD = $(srcdir)/dyndemo.def
 
 reduceres = fwin-reduce.$(OBJEXT)
 
@@ -474,6 +489,7 @@ wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
 endif !wx
+dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
 	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
@@ -1055,6 +1071,9 @@ endif wx
 $(plain_termdemo):	termdemo.exe
 	echo "make termdemo.exe is preferred"
 
+$(plain_dyndemo):	dyndemo.exe dynmodule.dll
+	echo "make dyndemo.exe is preferred"
+
 endif exeext
 
 if cygwin
@@ -1087,7 +1106,6 @@ termdemo_LIBS=
 
 if windows
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
-# wgnuplot* gnuplot.Copyright
 else !windows
 if mac_framework
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
@@ -1111,15 +1129,12 @@ if windows
 if gui
 if wx
 console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM)
-# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 else !wx
 console_binaries = csl$(COM) reduce$(COM)
-# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 endif !wx
 noinstall_console_binaries = fwindemo$(COM)
 else !gui
 console_binaries =
-# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 noinstall_console_binaries =
 endif !gui
 
@@ -1173,7 +1188,7 @@ macr =
 endif !mac_framework
 
 generatedfiles=$(image_files) $(local_image_files) \
-	objtype makeheaders machineid.c \
+	objtype makeheaders machineid.c dynmodule* \
 	$(macr)
 
 clean-local:
@@ -1225,12 +1240,26 @@ endif !windows
 
 default:	reduce$(EXEEXT) reduce.img
 
+# This is the command needed to compile a module for use as a DLL or other
+# dynamically loaded module
+
 DLL_CFLAGS = @DLL_CFLAGS@
 
 COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
 
+if windows
+dyndef =  $(srcdir)/dynmodule1.def
+dyndep =
+else !windows
+dyndef =
+dyndep =
+endif !windows
+
 DLLIB=
+
+dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(srcdir)/dynmodule.def $(dyndep)
+	$(COMPILE_DLL) $(dyndef) $(srcdir)/dynmodule.c $(DLLIB) $(DEST)dynmodule.$(DLLEXT)
 
 if canrun
 
@@ -1399,34 +1428,6 @@ $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 	-mkdir -p reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
-
-if windows
-##
-## I also copy a set of gnuplot binaries into this directory.
-## Note that the Gnuplot license permits this, but if I host any of this
-## on Sourceforge then their terms and conditions mean I have to put a
-## set of gnuplot sources in their file release system! Also in the version
-## if this stuff as fetched using subversion there will be directories
-## called ".svn" that should not be copied, so I can not merely use
-## a simple wild-card to copy everything!
-##
-## Again if just PART of gnuplot became lost or corrupted that might
-## not trigger this rule.
-#$(GP):
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
-#	-mkdir -p share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
-## I view it as most unwelcome that I need the "chmod" here, but if I have
-## gcc/g++ on my path and available I will suppose I can have chmod too.
-#	chmod +x *gnuplot*.exe
-endif windows
 
 -include bootstrapreduce.dep
 

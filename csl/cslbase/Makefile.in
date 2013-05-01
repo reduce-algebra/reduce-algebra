@@ -48,7 +48,8 @@ host_triplet = @host@
 @wx_TRUE@@wxbuiltin_FALSE@am__append_8 = $(shell wx-config --libs)
 @mac_framework_FALSE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_FALSE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@mac_framework_FALSE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
+@mac_framework_FALSE@	$(am__EXEEXT_1) dyndemo$(EXEEXT) \
+@mac_framework_FALSE@	$(am__EXEEXT_2)
 @mac_framework_TRUE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_TRUE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 @mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
@@ -122,6 +123,8 @@ am__csl_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 am_csl_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_5) bytes.$(OBJEXT) stubs.$(OBJEXT)
 csl_OBJECTS = $(am_csl_OBJECTS)
+am_dyndemo_OBJECTS = dyndemo.$(OBJEXT)
+dyndemo_OBJECTS = $(am_dyndemo_OBJECTS)
 am_fontdemo_OBJECTS = fontdemo-fontdemo.$(OBJEXT)
 fontdemo_OBJECTS = $(am_fontdemo_OBJECTS)
 @windows_TRUE@am__DEPENDENCIES_2 = fwin-icon.$(OBJEXT)
@@ -210,17 +213,18 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) \
+SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
 	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
 	$(wxdemo_SOURCES) $(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
 	$(wxfontdemo1_SOURCES) $(wxpsl_SOURCES) \
 	$(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
-	$(am__csl_SOURCES_DIST) $(fontdemo_SOURCES) $(foxdemo_SOURCES) \
-	$(am__fwindemo_SOURCES_DIST) $(am__reduce_SOURCES_DIST) \
-	$(showmathdemo_SOURCES) $(termdemo_SOURCES) $(wxdemo_SOURCES) \
-	$(wxdvi_SOURCES) $(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) \
+	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
+	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
+	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
+	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
+	$(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) \
 	$(am__wxpsl_SOURCES_DIST) $(wxshowmathdemo_SOURCES)
 ETAGS = etags
 CTAGS = ctags
@@ -260,6 +264,9 @@ CYGPATH = @CYGPATH@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+
+# This is the command needed to compile a module for use as a DLL or other
+# dynamically loaded module
 DLL_CFLAGS = @DLL_CFLAGS@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -393,6 +400,8 @@ with_cygbuild = @with_cygbuild@
 @exeext_TRUE@plain_wxdvi = wxdvi
 @exeext_FALSE@plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 @exeext_TRUE@plain_wxshowmathdemo = wxshowmathdemo
+@exeext_FALSE@plain_dyndemo = dyndemo.unnecessary.except.on.windows
+@exeext_TRUE@plain_dyndemo = dyndemo
 CP = cp
 RM = rm
 @cygpath_FALSE@CYGSRC = $(srcdir)
@@ -600,6 +609,11 @@ wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+@windows_FALSE@DLLEXT = so
+@windows_TRUE@DLLEXT = dll
+dyndemo_SOURCES = dyndemo.c
+@windows_FALSE@dyndemo_DEPENDENCIES = dynmodule.so
+@windows_TRUE@dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 @windows_FALSE@CSLEXEDEF = 
 @windows_TRUE@CSLEXEDEF = local-cslexe.def
 @windows_FALSE@CSLCOMDEF = 
@@ -620,8 +634,7 @@ wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @gui_FALSE@@windows_TRUE@WINAP = -Wl,--subsystem,console
 @gui_TRUE@@windows_TRUE@WINAP = -Wl,--subsystem,windows
 @windows_FALSE@WINAP = 
-
-#GP=wgnuplot.exe
+@windows_TRUE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
 @windows_TRUE@AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
@@ -690,7 +703,6 @@ fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
 termdemo_LIBS = 
 @mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
-# wgnuplot* gnuplot.Copyright
 @mac_framework_TRUE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
 
 #
@@ -703,12 +715,9 @@ termdemo_LIBS =
 #
 @windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 @gui_FALSE@@windows_TRUE@console_binaries = 
-# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COM) reduce$(COM)
 @gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM)
-# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_FALSE@@windows_TRUE@noinstall_console_binaries = 
-# wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COM)
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
@@ -716,7 +725,7 @@ termdemo_LIBS =
 @windows_TRUE@	not-under-cygwin.exe cygwin-isatty.exe csl reduce fwindemo
 
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
-@windows_FALSE@	objtype makeheaders machineid.c \
+@windows_FALSE@	objtype makeheaders machineid.c dynmodule* \
 @windows_FALSE@	$(macr)
 
 @windows_TRUE@generatedfiles = $(console_binaries) $(noinstall_console_binaries) \
@@ -728,6 +737,10 @@ termdemo_LIBS =
 COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
 
+@windows_FALSE@dyndef = 
+@windows_TRUE@dyndef = $(srcdir)/dynmodule1.def
+@windows_FALSE@dyndep = 
+@windows_TRUE@dyndep = 
 DLLIB = 
 @fox_FALSE@@wx_FALSE@guisrc = 
 @fox_FALSE@@wx_TRUE@guisrc = $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) $(wxshowmathdemo_SOURCES)
@@ -845,6 +858,9 @@ clean-binPROGRAMS:
 
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES) 
+	@rm -f dyndemo$(EXEEXT)
+	$(LINK) $(dyndemo_OBJECTS) $(dyndemo_LDADD) $(LIBS)
 @fox_FALSE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) 
 @fox_FALSE@	@rm -f fontdemo$(EXEEXT)
 @fox_FALSE@	$(CXXLINK) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS)
@@ -902,6 +918,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cslread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/decoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/distorm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyndemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval3.Po@am__quote@
@@ -2232,6 +2249,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 .PHONY: $(plain_wxdvi)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
+.PHONY: $(plain_dyndemo)
 
 .PHONY: report-dlls
 .PHONY:	bootstraprecompile
@@ -2615,6 +2633,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @exeext_TRUE@$(plain_termdemo):	termdemo.exe
 @exeext_TRUE@	echo "make termdemo.exe is preferred"
 
+@exeext_TRUE@$(plain_dyndemo):	dyndemo.exe dynmodule.dll
+@exeext_TRUE@	echo "make dyndemo.exe is preferred"
+
 # on cygwin I scan to verify which DLLs are referenced by my main
 # executables so that I can verify (eg) that they do not link to
 # cygwin1.dll or any other library that is liable to impose license
@@ -2706,6 +2727,9 @@ install-data-local: $(image_files)
 #=============================================================================
 
 default:	reduce$(EXEEXT) reduce.img
+
+dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(srcdir)/dynmodule.def $(dyndep)
+	$(COMPILE_DLL) $(dyndef) $(srcdir)/dynmodule.c $(DLLIB) $(DEST)dynmodule.$(DLLEXT)
 
 # On windows I must avoid -mno-cygwin here if only because that is an option
 # that no longer exists!
@@ -2851,19 +2875,6 @@ $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 	-mkdir -p reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
-
-#$(GP):
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
-#	-mkdir -p share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
-#	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
-#	chmod +x *gnuplot*.exe
 
 -include bootstrapreduce.dep
 
