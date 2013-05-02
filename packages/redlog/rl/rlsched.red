@@ -259,7 +259,11 @@ rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
 
 rl_mkserv('sat2pol, '(rl_simp), nil, nil, function(lambda x; mk!*sq !*f2q x), t);
 
+rl_mkserv('psat2pol, '(rl_simp), nil, nil, function(lambda x; mk!*sq !*f2q x), t);
+
 rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
+
+rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 % Black box scheduler.
 
