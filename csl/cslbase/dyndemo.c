@@ -6,7 +6,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -34,9 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7d98a70b 21-Jun-2010 */
-
-#include "config.h"
+/* Signature: 7ebffd88 02-May-2013 */
 
 #include <stdio.h>
 
@@ -94,7 +92,7 @@ int main(int argc, char *argv[])
     onearg *b = NULL;
 #ifdef WIN32
     HANDLE a = LoadLibrary(".\\dynmodule.dll");
-    printf("Dynamic loading of test code\na = %p\n", (void *)a);
+    printf("Dynamic loading of test code for Windows\na = %p\n", (void *)a);
     fflush(stdout);
     if (a == 0)
     {   DWORD err = GetLastError();
@@ -109,7 +107,7 @@ int main(int argc, char *argv[])
     b = (onearg *)GetProcAddress(a, "callme");
 #else
     void *a;
-    printf("Dynamic loading test code\n");
+    printf("Dynamic loading test code for *ix, BSD, MacOSX etc\n");
     fflush(stdout);
     a = dlopen("./dynmodule.so", RTLD_NOW | RTLD_GLOBAL);
     printf("a = %p\n", a);

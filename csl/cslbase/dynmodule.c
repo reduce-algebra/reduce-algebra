@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3bdd924d 24-May-2008 */
+/* Signature: 023eb297 02-May-2013 */
 
 #include <stdio.h>
 
@@ -45,13 +45,10 @@ extern int function_in_base(int x);
 int callme(int x)
 {
 /*
- * Note that on Windows this attempt to use a VARIABLE that is defined in
- * the base application will give nonsense results. It does not fail in
- * the sense that it does not report a linker error, but the location
- * referenced as "variable_in_base" will NOT be the one that I wanted.
- * Or rather expected! Thus to actieve the desired effect it seems
- * necessary to pass a reference to the variable to an initialisation
- * function here, and then store it...
+ * On Windows it seems that with the build scheme I am using that the
+ * address of the variable from the base ends up the same when looked
+ * at from the loaded module and from the base, but the address of the
+ * function entrypoint differs.
  */
     printf("variable in base = %.8x @ %p\n",
         variable_in_base, &variable_in_base);
