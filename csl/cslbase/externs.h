@@ -1,4 +1,4 @@
-/* externs.h                            Copyright (C) Codemist 1989-2011 */
+/* externs.h                            Copyright (C) Codemist 1989-2013 */
 
 /*
  *   Main batch of extern declarations.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 4d22a57c 24-Dec-2012 */
+/* Signature: 4523253f 03-May-2013 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -889,6 +889,8 @@ extern char *compiler_command[], *import_data[],
             *config_header[], *csl_headers[];
 
 extern Lisp_Object encapsulate_pointer(void *);
+extern void *extract_pointer(Lisp_Object a);
+extern Lisp_Object Lencapsulatedp(Lisp_Object nil, Lisp_Object a);
 typedef void initfn(Lisp_Object *, Lisp_Object **, Lisp_Object * volatile *);
 extern int load_dynamic(char *objname, char *modname,
                         Lisp_Object name, Lisp_Object fns);

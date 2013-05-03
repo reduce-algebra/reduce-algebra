@@ -1,4 +1,4 @@
-/*  fns3.c                          Copyright (C) 1989-2008 Codemist Ltd */
+/*  fns3.c                          Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * Basic functions part 3.
@@ -6,7 +6,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 0c6e662c 11-Mar-2012 */
+/* Signature: 3f7bd732 03-May-2013 */
 
 #include "headers.h"
 
@@ -131,7 +131,7 @@ Lisp_Object encapsulate_pointer(void *data)
 {   Lisp_Object w = getvector(TAG_VECTOR, TYPE_SPARE, 2*CELL);
     Lisp_Object nil;
     errexit();
-    elt(w, 0) = (Lisp_Object)data;
+    *(void **)&elt(w, 0) = data;
     return w;
 }
 
@@ -140,7 +140,7 @@ void *extract_pointer(Lisp_Object a)
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_SPARE)
         return NULL;
-    else return (void *)elt(a, 0);
+    else return *(void **)&elt(a, 0);
 }
 
 Lisp_Object Lencapsulatedp(Lisp_Object nil, Lisp_Object a)

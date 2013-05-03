@@ -1,11 +1,11 @@
-/*  eval1.c                          Copyright (C) 1989-2011 Codemist Ltd */
+/*  eval1.c                          Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * Interpreter (part 1).
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 6b1b14ce 06-Mar-2013 */
+/* Signature: 7567f88a 03-May-2013 */
 
 #include "headers.h"
 

@@ -1,11 +1,11 @@
-/*  fns1.c                           Copyright (C) 1989-2011 Codemist Ltd */
+/*  fns1.c                           Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * Basic functions part 1.
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,10 +35,15 @@
 
 
 
-/* Signature: 5dccfe96 28-Jan-2013 */
+/* Signature: 34c93cff 03-May-2013 */
 
 #include "headers.h"
 
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
 /*!!! csl
 */
@@ -2038,6 +2043,23 @@ Lisp_Object Lstop(Lisp_Object env, Lisp_Object code)
     return nil;
 }
 
+Lisp_Object Lstop2(Lisp_Object env, Lisp_Object code, Lisp_Object b)
+{
+    return Lstop(env, code);
+}
+
+Lisp_Object Lstop0(Lisp_Object env, int nargs, ...)
+{
+    va_list aa;
+    Lisp_Object code = fixnum_of_int(0);
+    if (nargs != 0)
+    {   va_start(aa, nargs);
+        code = va_arg(aa, Lisp_Object);
+        va_end(aa);
+    }
+    return Lstop(env, code);
+}
+
 clock_t base_time;
 double *clock_stack, consolidated_time[10], gc_time;
 
@@ -2385,6 +2407,145 @@ Lisp_Object Lindirect(Lisp_Object nil, Lisp_Object a)
     else return onevalue(*(Lisp_Object *)(intptr_t)thirty_two_bits(a));
 }
 
+/*
+ * A primitive foreign function interface...
+ */
+
+
+/*
+ *   (setq libobject (open!-foreign!-library "libraryname"))
+ * On windows ".dll" is appended, on other systems ".so", unless there is
+ * already a suffix. Returns nil if the library can not be accessed.
+ */
+
+Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
+{
+#ifdef WIN32
+    HANDLE a;
+#else
+    void *a;
+#endif
+    Lisp_Object r;
+    char libname[LONGEST_LEGAL_FILENAME];
+    int32_t len;
+    char *w, *w1 = NULL;
+    memset(libname, 0, sizeof(libname));
+printf("open-library\n"); 
+    w = get_string_data(name, "find-foreign-library", &len);
+    errexit();
+    if (len > sizeof(libname)-5) len = sizeof(libname)-5;
+    sprintf(libname, "%.*s.dll", (int)len, w);
+    for (w=libname; *w!=0; w++)
+        if (w1==NULL && *w == '.') w1 = w;
+        else if (*w == '/' || *w == '\\') w1 = NULL;
+/*
+ * Now of w1 is not NULL it identifies a suffix ".xxx" where there is no
+ * "/" or "\\" in the string xxx. A suffix such as ".so.1.3.2" is reported as
+ * a whole despite the embedded dots.
+ * On Windows if no suffix is provided a ".dll" will be appended, while
+ * on other systems ".so" is used.
+ */
+#ifdef WIN32
+    if (w1 == NULL) strcat(libname, ".dll");
+printf("open-library %s\n", libname); 
+    a = LoadLibrary(libname);
+    printf("Dynamic loading of test code for Windows\na = %p\n", (void *)a);
+    fflush(stdout);
+    if (a == 0)
+    {   DWORD err = GetLastError();
+        char errbuf[80];
+        printf("Error code %ld = %lx\n", (long)err, (long)err);
+        err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                            FORMAT_MESSAGE_IGNORE_INSERTS,
+                            NULL, err, 0, errbuf, 80, NULL);
+        if (err != 0) printf("%s", errbuf);
+        return onevalue(nil);
+    }
+#else
+    if (w1 == NULL) strcat(libname, ".so");
+    printf("Dynamic loading test code for *ix, BSD, MacOSX etc\n");
+    fflush(stdout);
+printf("open-library %s\n", libname); 
+    a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
+    printf("a = %p %.8x\n", a, (int)a);
+    fflush(stdout);
+    if (a == NULL)
+    {   printf("Err = <%s>\n", dlerror()); fflush(stdout);
+        return onevalue(nil);
+    }
+#endif
+    r = encapsulate_pointer((void *)a);
+    errexit();
+    return onevalue(r);
+}
+
+/*
+ * (setq entrypoint (find!-foreign!-function "fname" libobject))
+ * Using a library opened by open!-foreign!-library look up an entrypoint
+ * for a function called "fname". If one can not be found return nil.
+ */
+
+Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
+                                   Lisp_Object lib)
+{
+    Lisp_Object r;
+    void *b;
+    char *w;
+    char sname[100];
+    int32_t len;
+#ifdef WIN32
+    HANDLE a;
+#else
+    void *a;
+#endif
+    if (Lencapsulatedp(nil, lib) == nil)
+        return aerror("find-foreign-function");
+#ifdef WIN32
+    a = (HANDLE)extract_pointer(lib);
+#else
+    a = extract_pointer(lib);
+#endif
+    w = get_string_data(name, "find-foreign-function", &len);
+    errexit();
+    if (len > sizeof(sname)-2) len = sizeof(sname)-2;
+    sprintf(sname, "%.*s.dll", (int)len, w);
+#ifdef WIN32
+    b = (void *)GetProcAddress(a, sname);
+#else
+    b = dlsym(a, sname);
+#endif
+    if (b == NULL) return onevalue(nil);
+    r = encapsulate_pointer(b);
+    errexit();
+    return onevalue(r);
+}
+
+/*
+ * (call!-foreign!-function fnptr)
+ * call the function as found by find!-foreign!-function not passing it
+ * any arguments and not expecting any result.
+ */
+
+Lisp_Object Lcallf1(Lisp_Object nil, Lisp_Object entry)
+{
+    void *f;
+    if (Lencapsulatedp(nil, entry) == nil)
+        return aerror("find-foreign-function");
+    f = extract_pointer(entry);
+    (*(void(*)())f)();
+    return onevalue(nil);
+}
+
+Lisp_Object Lcallf2(Lisp_Object nil, Lisp_Object entry, Lisp_Object arg)
+{
+    return onevalue(nil);
+}
+
+Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
+{
+    return onevalue(nil);
+}
+
 setup_type const funcs1_setup[] =
 {
     {"acons",                   wrong_no_na, wrong_no_nb, Lacons},
@@ -2474,7 +2635,7 @@ setup_type const funcs1_setup[] =
     {"set",                     too_few_2, Lset, wrong_no_2},
     {"makeunbound",             Lmakeunbound, too_many_1, wrong_no_1},
     {"special-form-p",          Lspecial_form_p, too_many_1, wrong_no_1},
-    {"stop",                    Lstop, too_many_1, wrong_no_1},
+    {"stop",                    Lstop, Lstop2, Lstop0},
     {"symbol-function",         Lsymbol_function, too_many_1, wrong_no_1},
     {"symbol-value",            Lsymbol_value, too_many_1, wrong_no_1},
     {"time",                    wrong_no_na, wrong_no_nb, Ltime},
@@ -2534,6 +2695,9 @@ setup_type const funcs1_setup[] =
     {"threevectorp",            Lthreevectorp, too_many_1, wrong_no_1},
     {"vectorp",                 Lsimple_vectorp, too_many_1, wrong_no_1},
 #endif
+    {"open-foreign-library",    Lopen_foreign_library, too_many_1, wrong_no_1},
+    {"find-foreign-function",   too_few_2, Lfind_foreign_function, wrong_no_2},
+    {"call-foreign-function",   Lcallf1, Lcallf2, Lcallfn},
     {NULL,                      0, 0, 0}
 };
 

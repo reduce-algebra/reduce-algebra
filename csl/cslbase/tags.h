@@ -1,4 +1,4 @@
-/* tags.h                               Copyright (C) Codemist 1990-2011 */
+/* tags.h                               Copyright (C) Codemist 1990-2013 */
 
 /*
  *   Data-structure and tag bit definitions, also common C macros
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 39ab67e9 25-Jul-2012 */
+/* Signature: 4eceb64b 03-May-2013 */
 
 
 #ifndef header_tags_h
@@ -646,6 +646,7 @@ typedef uintptr_t Header;
 #define TYPE_BPS            0x170   /* bytes of compiled code  */
 #define TYPE_SPARE          0x270   /* SPARE (holds binary information) */
 #define TYPE_MAPLEREF       TYPE_SPARE /* An EXPERIMENTAL adjustment */
+#define TYPE_FOREIGN        TYPE_SPARE /* Also experimental for now */
 #define TYPE_SP             0x370   /* Encapsulated stack ptr  */
 
 #ifdef COMMON

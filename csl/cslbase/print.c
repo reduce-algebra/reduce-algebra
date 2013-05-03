@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4e5ab6ed 25-Apr-2013 */
+/* Signature: 78628ba2 03-May-2013 */
 
 #include "headers.h"
 
@@ -2340,7 +2340,7 @@ case TAG_VECTOR:
     case TYPE_SPARE:
                 pop(u);
                 sprintf(my_buff, "#<encapsulated pointer: %p>",
-                                 (void *)elt(u, 0));
+                                 *(void **)&elt(u, 0));
                 goto print_my_buff;
 
 #ifdef COMMON

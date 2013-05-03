@@ -1,4 +1,4 @@
-/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2012 */
+/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2013 */
 
 /*
  * Garbage collection.
@@ -43,7 +43,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6ecff1b4 22-Sep-2012 */
+/* Signature: 433e8404 03-May-2013 */
 
 #include "headers.h"
 
