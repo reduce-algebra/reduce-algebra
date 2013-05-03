@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 023eb297 02-May-2013 */
+/* Signature: 7212438b 03-May-2013 */
 
 #include <stdio.h>
 
@@ -45,10 +45,14 @@ extern int function_in_base(int x);
 int callme(int x)
 {
 /*
- * On Windows it seems that with the build scheme I am using that the
- * address of the variable from the base ends up the same when looked
- * at from the loaded module and from the base, but the address of the
- * function entrypoint differs.
+ * This test code references a variable in the base code here, and on Linux
+ * and similar systems the linking makes the access behave "as expected".
+ * However on Windows the nature of DLLs seems to mean that the address
+ * used here for "variable_in_base" is in fact an address of some sort of
+ * thunk and NOT of the actual variable. So:
+ *  It is not valid to access data from the base in a DLL
+ *  It is not valid to test or rely on the address of a function.
+ *
  */
     printf("variable in base = %.8x @ %p\n",
         variable_in_base, &variable_in_base);

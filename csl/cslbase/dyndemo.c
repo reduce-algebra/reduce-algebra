@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7ebffd88 02-May-2013 */
+/* Signature: 34faddce 03-May-2013 */
 
 #include <stdio.h>
 
@@ -57,19 +57,27 @@ extern int function_in_base(int x);
  * body of "function_in_base".
  */
 
+/*
+ * By making k volatile I tell the compiler that it had better not try
+ * to be over-clever and perform all the arithmetic from p() at compile time
+ * to save space.
+ */
+volatile int k = 3, l = 1;
+
 int p(int x)
 {
-   return 3*x-1;
+   return k*x-l;
 }
 
 #define q x = p(x);
 #define r q q q q q q q q q q
 #define s r r r r r r r r r r
 #define t s s s s s s s s s s
+#define u t t t t t t t t t t
 
 int function_in_base(int x)
 {
-    t
+    u
     return 7*x-3;
 }
 
