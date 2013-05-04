@@ -381,7 +381,7 @@ asserted procedure ofsf_rungurobi(cl: List, vl: List, d: Integer): List;
       sol := lto_sconcat {bfn, ".sol"};
       log := lto_sconcat {bfn, ".log"};
       ofsf_writeLp(lp, {'times, 0, 'c}, cl, vl);
-      call := lto_sconcat {"gurobi_cl ResultFile=", sol, " ", lp, " &> ", log};
+      call := lto_sconcat {"gurobi_cl ResultFile=", sol, " ", lp, " > ", log};
       system call;
       res := ofsf_readLpSol(sol, d);
       if not !*rllpkeepfiles then
@@ -509,15 +509,17 @@ procedure ofsf_writeLp(fn, obj, cl, vl);
       oldecho := !*echo;
       oldutf8 := !*utf8;
       isfancy := !*fancy;
+      !*echo := nil;
       !*utf8 := nil;
       !*fancy := nil;
       out fn;
       w := errorset({'ofsf_writeLp1, mkquote obj, mkquote cl, mkquote vl}, nil, !*backtrace);
       shut fn;
-      put('times, 'prtch, oldprtch);
+      !*fancy := isfancy;
       !*utf8 := oldutf8;
       !*echo := oldecho;
       semic!* := scsemic;
+      put('times, 'prtch, oldprtch);
       if errorp w then
 	 rederr car w;
    end;
