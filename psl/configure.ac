@@ -121,6 +121,8 @@ else
   cp psl/nbig32.b psl/zbig.b
   rm -f psl/*rlisp*.b
 
+  chmod +x bpsl*
+
 fi
 
 # The pre-built PSL file-sets contain a file called "64", probably containing
