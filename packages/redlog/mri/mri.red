@@ -83,11 +83,13 @@ put('mri,'rl_params,'(
 put('mri,'rl_services,'(
    (rl_simpl!* . cl_simpl)
    (rl_nnf!* . cl_nnf)
+   (rl_pnf!* . cl_pnf)
    (rl_atnum!* . cl_atnum)
    (rl_varlat!* . mri_varlat)
    (rl_atl!* . cl_atl)
    (rl_subfof!* . cl_subfof)
    (rl_expand!* . mri_expand)
+   (rl_fvarl!* . cl_fvarl)
    (rl_qe!* . mri_qe)));
 
 put('mri,'simpfnname,'mri_simpfn);
