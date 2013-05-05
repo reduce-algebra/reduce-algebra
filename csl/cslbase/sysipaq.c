@@ -1,4 +1,4 @@
-/* sysipaq.c                      Copyright (C) 1989-2008 Codemist Ltd */
+/* sysipaq.c                      Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 0bd963b4 02-Dec-2010 */
+/* Signature: 652ac867 05-May-2013 */
 
 #include "headers.h"
 
@@ -695,9 +695,9 @@ int isatty(int n)
     return 0;
 }
 
-long file_length(char *filename, char *old, size_t n)
+int64_t file_length(char *filename, char *old, size_t n)
 {
-    return 0;
+    return (int64_t)0;
 }
 
 int file_readable(char *filename, char *old, size_t n)

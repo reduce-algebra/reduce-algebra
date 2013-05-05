@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2012
+ * "fwin.c"                                 Copyright A C Norman 2003-2013
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 777abf3c 03-Jun-2012 */
+/* Signature: 79ab94b0 05-May-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2139,13 +2139,13 @@ int delete_file(char *filename, char *old, size_t n)
 }
 
 
-long file_length(char *filename, char *old, size_t n)
+int64_t file_length(char *filename, char *old, size_t n)
 {
     struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     if (stat(filename,&buf) == -1) return -1;
-    return (long)(buf.st_size);
+    return (int64_t)(buf.st_size);
 }
 
 #ifdef NAG_VERSION

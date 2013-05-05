@@ -1,9 +1,9 @@
-/* arith.h                           Copyright (C) Codemist Ltd, 1990-2008 */
+/* arith.h                         Copyright (C) Codemist Ltd, 1990-2013 */
 
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 276a233e 24-May-2008 */
+/* Signature: 014c5d20 05-May-2013 */
 
 #ifndef header_arith_h
 #define header_arith_h 1
@@ -45,8 +45,20 @@
 
 #define M2_31_1   -2147483649.0     /* -(2^31 + 1) */
 
-#define _pi       3.14159265358979323846
-#define _half_pi  1.57079632679489661923
+/*
+ * I am going to need to rely on my C compiler turning these strings
+ * into well-rounded versions of the relevant numbers. To increase the
+ * changes of that I will write the constants as
+ *    ((A + B)/C)
+ * where A will be an integer and hence representable exactly, B will be
+ * be much smaller and C will be a power of two, so dividing by it should
+ * not introduce any additional error at all.
+ */
+/* #define _pi       3.14159265358979323846 */
+/* #define _half_pi  1.57079632679489661923 */
+
+#define _pi       ((12868.0 - 0.036490896206895257)/4096.0)
+#define _half_pi  ((12868.0 - 0.036490896206895257)/8192.0)
 
 #define boole_clr   0
 #define boole_and   1
@@ -146,8 +158,11 @@ extern CSLbool lesspdb(double a, Lisp_Object b);
 extern CSLbool lesspdr(double a, Lisp_Object b);
 extern Lisp_Object make_one_word_bignum(int32_t n);
 extern Lisp_Object make_two_word_bignum(int32_t a, uint32_t b);
+extern Lisp_Object make_three_word_bignum(int32_t a, uint32_t b, uint32_t c);
 extern Lisp_Object make_n_word_bignum(int32_t a1, uint32_t a2,
                                       uint32_t a3, int32_t n);
+extern Lisp_Object make_lisp_integer32(int32_t n);
+extern Lisp_Object make_lisp_integer64(int64_t n);
 extern Lisp_Object make_sfloat(double d);
 extern double float_of_integer(Lisp_Object a);
 extern Lisp_Object add1(Lisp_Object p);

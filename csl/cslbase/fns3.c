@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 3f7bd732 03-May-2013 */
+/* Signature: 62828b38 05-May-2013 */
 
 #include "headers.h"
 
@@ -2253,18 +2253,7 @@ case 2:
         return onevalue(fixnum_of_int(o & 0xffff));
 case 4:
         o = *(int32_t *)((char *)p + o);
-        p = o & fix_mask;
-        if (p==0 || p==fix_mask) return onevalue(fixnum_of_int(o & 0xff));
-        else if ((o & 0x80000000) == 0)
-        {   w = make_one_word_bignum(o);
-            errexit();
-            return onevalue(w);
-        }
-        else
-        {   w = make_two_word_bignum(1, o & 0x7fffffff);
-            errexit();
-            return onevalue(w);
-        }
+        return make_lisp_integer32(o);
     }
 }
 
@@ -2302,16 +2291,8 @@ case 2: n = ifn2(fn);
 default:n = ifnn(fn);
         break;
     }
-    n1 = n & fix_mask;
-/*
- * I could bother more about 64-bit machines here and pack up longer
- * addresses properly, but this function is really just a private debug
- * hack so I will not worry just yet.
- */
-    if (n1 == 0 || n1 == fix_mask) return onevalue(fixnum_of_int(n));
-    fn = make_one_word_bignum(n);
-    errexit();
-    return onevalue(fn);
+    if (sizeof(intptr_t) == 4) return make_lisp_integer32((int32_t)n);
+    else return make_lisp_integer64((int64_t)n);
 }
 
 /*
@@ -2539,11 +2520,8 @@ Lisp_Object Lnative_address1(Lisp_Object nil, Lisp_Object x)
         }
         else p = (intptr_t)address_of_var(n);
     }
-    n1 = p & fix_mask;
-    if (n1 == 0 || n1 == fix_mask) return onevalue(fixnum_of_int(p));
-    x = make_one_word_bignum(p);
-    errexit();
-    return onevalue(x);
+    if (sizeof(intptr_t) == 4) return make_lisp_integer32((int32_t)p);
+    else return make_lisp_integer64((int64_t)p);
 }
 
 
@@ -2662,11 +2640,7 @@ Lisp_Object Lgetv32(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("getv32 index range", n);
     n1 = ielt32(v, n1);
-    hl = n1 & fix_mask;
-    if (hl == 0 || hl == fix_mask) return fixnum_of_int(n1);
-    n = make_one_word_bignum(n1);
-    errexit();
-    return onevalue(n);
+    return make_lisp_integer32(n1);
 }
 
 Lisp_Object MS_CDECL Lfputv32(Lisp_Object nil, int nargs, ...)

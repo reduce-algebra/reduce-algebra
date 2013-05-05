@@ -1,4 +1,4 @@
-/*  arith01.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith01.c                      Copyright (C) 1990-2013 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,7 +39,7 @@
 
 
 
-/* Signature: 2e5bbc52 24-May-2008 */
+/* Signature: 36e10735 05-May-2013 */
 
 
 #include "headers.h"
@@ -52,10 +52,44 @@
  * The typedefs that explain the layout of these structures are in "tags.h"
  */
 
+Lisp_Object make_lisp_integer64(int64_t n)
+{
+    int64_t n1;
+#ifdef COMMON
+    exit_count = 1;
+#endif
+    if (n < 0x10000000 && n >= -0x10000000) return fixnum_of_int((int32_t)n);
+    n1 = n >> 4;
+    if (n1 < 0x10000000 && n1 >= -0x10000000)
+        return make_one_word_bignum((int32_t)n);
+    n1 = n1 >> 35;
+    if (n1 < 0x10000000 && n1 >= -0x10000000)
+        return make_two_word_bignum((int32_t)(n >> 31),
+            (int32_t)(n & 0x7fffffff));
+    return make_three_word_bignum(
+        (int32_t)(n >> 62),
+        (int32_t)((n >> 31) & 0x7fffffff),
+        (int32_t)(n & 0x7fffffff));
+}
+
+Lisp_Object make_lisp_integer32(int32_t n)
+{
+    int32_t n1;
+#ifdef COMMON
+    exit_count = 1;
+#endif
+    if (n < 0x10000000 && n >= -0x10000000) return fixnum_of_int(n);
+    n1 = n >> 4;
+    if (n1 < 0x10000000 && n1 >= -0x10000000)
+        return make_one_word_bignum(n);
+    return make_two_word_bignum(n >> 31, n & 0x7fffffff);
+}
+
 Lisp_Object make_one_word_bignum(int32_t n)
 /*
  * n is an integer - create a bignum representation of it.  This is
- * done when n is outside the range 0xf8000000 to 0x07ffffff.
+ * done when n is outside the range 0xf8000000 to 0x07ffffff, but
+ * inside the range 0xc0000000 to 0x3fffffff.
  */
 {   Lisp_Object w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
     Lisp_Object nil;
@@ -78,6 +112,23 @@ Lisp_Object make_two_word_bignum(int32_t a1, uint32_t a0)
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     if (!SIXTY_FOUR_BIT) bignum_digits(w)[2] = 0;
+    return w;
+}
+
+Lisp_Object make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
+/*
+ * This make a 3-word bignum from the 3-word value (a2,a1,a0), where it
+ * must have been arranged already that the values are correctly
+ * normalized.
+ */
+{
+    Lisp_Object w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
+    Lisp_Object nil;
+    errexit();
+    bignum_digits(w)[0] = a0;
+    bignum_digits(w)[1] = a1;
+    bignum_digits(w)[2] = a2;
+    if (SIXTY_FOUR_BIT) bignum_digits(w)[3] = 0;
     return w;
 }
 
@@ -1020,7 +1071,8 @@ case TAG_FIXNUM:
     case TAG_FIXNUM:
 /*
  * This is where fixnum + fixnum arithmetic happens - the case I most want to
- * make efficient.
+ * make efficient. Note that even if this becomes a bignum it can only be a
+ * one word one.
  */
             {   int32_t r = int_of_fixnum(a) + int_of_fixnum(b);
                 int32_t t = r & fix_mask;

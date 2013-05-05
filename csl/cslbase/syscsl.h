@@ -37,7 +37,7 @@
  *************************************************************************/
 
 
-/* Signature: 35fee746 25-Apr-2013 */
+/* Signature: 6a6550d2 05-May-2013 */
 
 
 #ifndef header_syscsl_h
@@ -143,7 +143,7 @@ extern int directoryp(char *filename, char *old, size_t n);
 /*
  * file_length returns the length of its argument (a file) in bytes.
  */
-extern long file_length(char *filename, char *old, size_t n);
+extern int64_t file_length(char *filename, char *old, size_t n);
 
 /*
  * current_directory() places the name of the current directory in the buffer

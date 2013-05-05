@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 78628ba2 03-May-2013 */
+/* Signature: 320c95e0 05-May-2013 */
 
 #include "headers.h"
 
@@ -1628,19 +1628,14 @@ Lisp_Object Lfile_length(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
     int32_t len = 0;
-    long size;
+    int64_t size;
     char *w = get_string_data(name, "file-length", &len);
     errexit();
     memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
-
     size = file_length(filename, w, (size_t)len);
-    if (size < 0) 
-      return nil;
-    else if (size < 268435456) 
-      return  fixnum_of_int(size);
-    else
-      return make_one_word_bignum(size);
+    if (size < 0) return nil;
+    else return make_lisp_integer64((int64_t)size);
 }
 
 Lisp_Object Ldirectoryp(Lisp_Object nil, Lisp_Object name)
@@ -1651,7 +1646,6 @@ Lisp_Object Ldirectoryp(Lisp_Object nil, Lisp_Object name)
     errexit();
     memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
-
     len = directoryp(filename, w, (size_t)len);
     return onevalue(Lispify_predicate(len));
 }

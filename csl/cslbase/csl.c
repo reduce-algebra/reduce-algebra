@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6c843d64 03-May-2013 */
+/* Signature: 36a4d3db 05-May-2013 */
 
 
 /*
@@ -3633,15 +3633,12 @@ int PROC_push_small_integer(int32_t n)
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
 #endif
-    if (n > 0x07ffffff || n < -0x08000000)
-    {   w = make_one_word_bignum(n);
-        nil = C_nil;
-        if (exception_pending())
-        {   flip_exception();
-            return 1;  /* Failed to create number */
-        }
+    w = make_lisp_integer32(n);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to create number */
     }
-    else w = fixnum_of_int((Lisp_Object)n);
     w = cons(w, procstack);
     nil = C_nil;
     if (exception_pending())

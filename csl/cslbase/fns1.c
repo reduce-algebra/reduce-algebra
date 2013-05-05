@@ -1,4 +1,4 @@
-/*  fns1.c                           Copyright (C) 1989-2013 Codemist Ltd */
+/* fns1.c                           Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * Basic functions part 1.
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 34c93cff 03-May-2013 */
+/* Signature: 087f92ad 05-May-2013 */
 
 #include "headers.h"
 
@@ -2349,51 +2349,33 @@ static Lisp_Object Lrepresentation1(Lisp_Object nil, Lisp_Object a)
  */
 {
     if (SIXTY_FOUR_BIT)
-/* /* unreconstructed - may need to build a 64-bit int here */
-    {   int32_t top = (int32_t)a & 0xf8000000U;
-        CSL_IGNORE(nil);
-        if (top == 0 || top == 0xf8000000U)
-            return onevalue(fixnum_of_int((int32_t)a));
-        a = make_one_word_bignum((int32_t)a);
+    {   a = make_lisp_integer64((int64_t)a);
         errexit();
         return onevalue(a);
     }
     else
-    {   int32_t top = (int32_t)a & 0xf8000000U;
-        CSL_IGNORE(nil);
-        if (top == 0 || top == 0xf8000000U)
-            return onevalue(fixnum_of_int((int32_t)a));
-        a = make_one_word_bignum((int32_t)a);
+    {   a = make_lisp_integer32((int32_t)a);
         errexit();
         return onevalue(a);
     }
 }
 
 static Lisp_Object Lrepresentation2(Lisp_Object nil,
-                                   Lisp_Object a, Lisp_Object b)
+                                    Lisp_Object a, Lisp_Object b)
 /*
  * Intended for debugging, and use with indirect (q.v.).  arg2, if
  * present and non-nil makes this more verbose.
  */
 {
     if (SIXTY_FOUR_BIT)
-/* /* Unreconstructed wrt return value but trace printing is 64 bit */
-    {   int32_t top = (int32_t)a & 0xf8000000U;
-        CSL_IGNORE(nil);
-        if (b != nil) trace_printf(" %.16lx ", (long)(uint64_t)a);
-        if (top == 0 || top == 0xf8000000U)
-            return onevalue(fixnum_of_int((int32_t)a));
-        a = make_one_word_bignum((int32_t)a);
+    {   if (b != nil) trace_printf(" %.16" PRIx64 " ", (uint64_t)a);
+        a = make_lisp_integer64((int64_t)a);
         errexit();
         return onevalue(a);
     }
     else
-    {   int32_t top = (int32_t)a & 0xf8000000U;
-        CSL_IGNORE(nil);
-        if (b != nil) trace_printf(" %.8lx ", (long)(uint32_t)a);
-        if (top == 0 || top == 0xf8000000U)
-            return onevalue(fixnum_of_int((int32_t)a));
-        a = make_one_word_bignum((int32_t)a);
+    {   if (b != nil) trace_printf(" %.8lx ", (long)(uint32_t)a);
+        a = make_lisp_integer32((int32_t)a);
         errexit();
         return onevalue(a);
     }
@@ -2408,7 +2390,7 @@ Lisp_Object Lindirect(Lisp_Object nil, Lisp_Object a)
 }
 
 /*
- * A primitive foreign function interface...
+ * A basic foreign function interface...
  */
 
 
@@ -2416,6 +2398,9 @@ Lisp_Object Lindirect(Lisp_Object nil, Lisp_Object a)
  *   (setq libobject (open!-foreign!-library "libraryname"))
  * On windows ".dll" is appended, on other systems ".so", unless there is
  * already a suffix. Returns nil if the library can not be accessed.
+ *
+ * I will not (for now) provide a call to close the library - it should be
+ * closed when the system exits.
  */
 
 Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
@@ -2474,6 +2459,7 @@ printf("open-library %s\n", libname);
         return onevalue(nil);
     }
 #endif
+    printf("handle is %p\n", (void *)a);
     r = encapsulate_pointer((void *)a);
     errexit();
     return onevalue(r);
@@ -2505,10 +2491,12 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
 #else
     a = extract_pointer(lib);
 #endif
+    printf("handle is %p\n", (void *)a);
     w = get_string_data(name, "find-foreign-function", &len);
     errexit();
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
-    sprintf(sname, "%.*s.dll", (int)len, w);
+    sprintf(sname, "%.*s", (int)len, w);
+    printf("name to look up = %s\n", sname);
 #ifdef WIN32
     b = (void *)GetProcAddress(a, sname);
 #else
@@ -2536,14 +2524,940 @@ Lisp_Object Lcallf1(Lisp_Object nil, Lisp_Object entry)
     return onevalue(nil);
 }
 
-Lisp_Object Lcallf2(Lisp_Object nil, Lisp_Object entry, Lisp_Object arg)
+/*
+ * For calling foreign functions I need to know something of their type
+ * signature. The view I will take here is NOT guaranteed portable but
+ * is liable to work on many practical systems. I classify arguments that
+ * are actually passed as Int32, Int64 or Double. These are expected to
+ * be sufficiant for:
+ * Int32     int when sizeof(int)==4
+ *           char *, void * when sizeof(void *)==4, and hence "abcdef"
+ *           'x'
+ * Int64     int, long or long long when sizeof(.)==8
+ *           size_t if it has size 8
+ *           char *, void *, strings etc when size 8
+ * Double    double
+ *
+ * So the code that arranges to pass arguments will need to map from one of
+ * the intended types to one of the above three options. It could be that for
+ * some system that pointers and integers (of the relevant with) are passed in
+ * different locations or with different alignment constraints, but I believe
+ * that will not be the case on any system I am at present concerned with.
+ * Result types can be any of the above together with Void.
+ * As one further mess, a function signature can end with "..." and I use
+ * the pseudo-type VarArg to denote that.
+ */
+
+#define Int32  0
+#define Int64  1
+#define Double 2
+#define VarArg 3
+/*
+ * The ones that follow are only given as return types.
+ */
+#define Void   4
+#define String 5
+
+#define A1(a1)             (a1)
+#define A2(a1, a2)         ((a2)<<2 | (a1))
+#define A3(a1, a2, a3)     ((a3)<<4 | (a2)<<2 | (a1))
+#define A4(a1, a2, a3, a4) ((a4)<<6 | (a3)<<4 | (a2)<<2 | (a1))
+
+#define MAX_ARGCOUNT 10
+#define MAX_STRINGLEN 256
+
+int32_t i32a[MAX_ARGCOUNT];
+int64_t i64a[MAX_ARGCOUNT];
+double da[MAX_ARGCOUNT];
+char sa[MAX_ARGCOUNT][MAX_STRINGLEN];
+
+int32_t i32r;
+int64_t i64r;
+double dr;
+
+/*
+ * This seems HORRID to me, and as it is it only supports passing up to three
+ * arguments. The alternatives that I can think of seem even worse!
+ */
+
+Lisp_Object returnint32(int returntype, int32_t r)
 {
+    Lisp_Object nil = C_nil;
+    if (returntype == String && sizeof(char *)==4)
+    {   char *s = (char *)(intptr_t)r;
+        return make_string(s);
+    }
     return onevalue(nil);
+}
+
+/*
+ * Given a symbol (or in fact a string) this checks if its name is the
+ * same as the value given as arg2.
+ */
+int name_matches(Lisp_Object a, char *s)
+{
+    int32_t len;
+    char *w = get_string_data(a, "call-foreign", &len);
+    if (len == strlen(s) &&
+        strncmp(w, s, (int)len) == 0) return 1;
+    else return 0;
+}
+
+Lisp_Object returnint64(int returntype, int64_t r)
+{
+    Lisp_Object nil = C_nil;
+    return onevalue(nil);
+}
+
+Lisp_Object returndouble(double r)
+{
+    Lisp_Object nil = C_nil;
+    return onevalue(nil);
+}
+
+Lisp_Object callforeign(void *f, int returntype, int nargs, int signature)
+{
+    Lisp_Object nil = C_nil;
+    int rt = (returntype == String) ?
+        (sizeof(char *)==4 ? Int32 : Int64) :
+        returntype;
+    switch (rt)
+    {
+case Void:
+        switch (nargs)
+        {
+    case 0:
+            (*(void(*)())f)();
+            return onevalue(nil);
+    case 1:
+            switch (signature)
+            {
+        case A1(Int32):
+            (*(void(*)(int32_t))f)(i32a[0]);
+            return onevalue(nil);
+        case A1(Int64):
+            (*(void(*)(int64_t))f)(i64a[0]);
+            return onevalue(nil);
+        case A1(Double):
+            (*(void(*)(double))f)(da[0]);
+            return onevalue(nil);
+        default:
+                break;
+            }
+    case 2:
+            switch (signature)
+            {
+        case A2(Int32,Int32):
+            (*(void(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
+            return onevalue(nil);
+        case A2(Int32,Int64):
+            (*(void(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
+            return onevalue(nil);
+        case A2(Int32,Double):
+            (*(void(*)(int32_t,double))f)(i32a[0],da[1]);
+            return onevalue(nil);
+        case A2(Int64,Int32):
+            (*(void(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
+            return onevalue(nil);
+        case A2(Int64,Int64):
+            (*(void(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
+            return onevalue(nil);
+        case A2(Int64,Double):
+            (*(void(*)(int64_t,double))f)(i64a[0],da[1]);
+            return onevalue(nil);
+        case A2(Double,Int32):
+            (*(void(*)(double,int32_t))f)(da[0],i32a[1]);
+            return onevalue(nil);
+        case A2(Double,Int64):
+            (*(void(*)(double,int64_t))f)(da[0],i64a[1]);
+            return onevalue(nil);
+        case A2(Double,Double):
+            (*(void(*)(double,double))f)(da[0],da[1]);
+            return onevalue(nil);
+        default:
+                break;
+            }
+    case 3:
+            switch (signature)
+            {
+        case A3(Int32,Int32,Int32):
+            (*(void(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int32,Int32,Int64):
+            (*(void(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Int32,Int32,Double):
+            (*(void(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
+            return onevalue(nil);
+        case A3(Int32,Int64,Int32):
+            (*(void(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int32,Int64,Int64):
+            (*(void(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int32,Int64,Double):
+            (*(void(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
+            return onevalue(nil);
+        case A3(Int32,Double,Int32):
+            (*(void(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int32,Double,Int64):
+            (*(void(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int32,Double,Double):
+            (*(void(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
+            return onevalue(nil);
+
+        case A3(Int64,Int32,Int32):
+            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int64,Int32,Int64):
+            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Int64,Int32,Double):
+            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
+            return onevalue(nil);
+        case A3(Int64,Int64,Int32):
+            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int64,Int64,Int64):
+            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Int64,Int64,Double):
+            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
+            return onevalue(nil);
+        case A3(Int64,Double,Int32):
+            (*(void(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Int64,Double,Int64):
+            (*(void(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Int64,Double,Double):
+            (*(void(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
+            return onevalue(nil);
+
+        case A3(Double,Int32,Int32):
+            (*(void(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Double,Int32,Int64):
+            (*(void(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Double,Int32,Double):
+            (*(void(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
+            return onevalue(nil);
+        case A3(Double,Int64,Int32):
+            (*(void(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Double,Int64,Int64):
+            (*(void(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Double,Int64,Double):
+            (*(void(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
+            return onevalue(nil);
+        case A3(Double,Double,Int32):
+            (*(void(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
+            return onevalue(nil);
+        case A3(Double,Double,Int64):
+            (*(void(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
+            return onevalue(nil);
+        case A3(Double,Double,Double):
+            (*(void(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
+            return onevalue(nil);
+        default:
+                break;
+            }
+            break;
+        }
+        break;
+case Int32:
+        switch (nargs)
+        {
+    case 0:
+            i32r = (*(int32_t(*)())f)();
+            return returnint32(returntype, i32r);
+    case 1:
+            switch (signature)
+            {
+        case A1(Int32):
+            i32r = (*(int32_t(*)(int32_t))f)(i32a[0]);
+            return returnint32(returntype, i32r);
+        case A1(Int64):
+            i32r = (*(int32_t(*)(int64_t))f)(i64a[0]);
+            return returnint32(returntype, i32r);
+        case A1(Double):
+            i32r = (*(int32_t(*)(double))f)(da[0]);
+            return returnint32(returntype, i32r);
+        default:
+                break;
+            }
+    case 2:
+            switch (signature)
+            {
+        case A2(Int32,Int32):
+            i32r = (*(int32_t(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
+            return returnint32(returntype, i32r);
+        case A2(Int32,Int64):
+            i32r = (*(int32_t(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
+            return returnint32(returntype, i32r);
+        case A2(Int32,Double):
+            i32r = (*(int32_t(*)(int32_t,double))f)(i32a[0],da[1]);
+            return returnint32(returntype, i32r);
+        case A2(Int64,Int32):
+            i32r = (*(int32_t(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
+            return returnint32(returntype, i32r);
+        case A2(Int64,Int64):
+            i32r = (*(int32_t(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
+            return returnint32(returntype, i32r);
+        case A2(Int64,Double):
+            i32r = (*(int32_t(*)(int64_t,double))f)(i64a[0],da[1]);
+            return returnint32(returntype, i32r);
+        case A2(Double,Int32):
+            i32r = (*(int32_t(*)(double,int32_t))f)(da[0],i32a[1]);
+            return returnint32(returntype, i32r);
+        case A2(Double,Int64):
+            i32r = (*(int32_t(*)(double,int64_t))f)(da[0],i64a[1]);
+            return returnint32(returntype, i32r);
+        case A2(Double,Double):
+            i32r = (*(int32_t(*)(double,double))f)(da[0],da[1]);
+            return returnint32(returntype, i32r);
+        default:
+                break;
+            }
+    case 3:
+            switch (signature)
+            {
+        case A3(Int32,Int32,Int32):
+            i32r = (*(int32_t(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Int32,Int64):
+            i32r = (*(int32_t(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Int32,Double):
+            i32r = (*(int32_t(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Int64,Int32):
+            i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Int64,Int64):
+            i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Int64,Double):
+            i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Double,Int32):
+            i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Double,Int64):
+            i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int32,Double,Double):
+            i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
+            return returnint32(returntype, i32r);
+
+        case A3(Int64,Int32,Int32):
+            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Int32,Int64):
+            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Int32,Double):
+            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Int64,Int32):
+            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Int64,Int64):
+            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Int64,Double):
+            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Double,Int32):
+            i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Double,Int64):
+            i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Int64,Double,Double):
+            i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
+            return returnint32(returntype, i32r);
+
+        case A3(Double,Int32,Int32):
+            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Int32,Int64):
+            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Int32,Double):
+            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Int64,Int32):
+            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Int64,Int64):
+            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Int64,Double):
+            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Double,Int32):
+            i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Double,Int64):
+            i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
+            return returnint32(returntype, i32r);
+        case A3(Double,Double,Double):
+            i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
+            return returnint32(returntype, i32r);
+        default:
+                break;
+            }
+            break;
+        }
+        break;
+case Int64:
+        switch (nargs)
+        {
+    case 0:
+            i64r = (*(int64_t(*)())f)();
+            return returnint64(returntype, i64r);
+    case 1:
+            switch (signature)
+            {
+        case A1(Int32):
+            i64r = (*(int64_t(*)(int32_t))f)(i32a[0]);
+            return returnint64(returntype, i64r);
+        case A1(Int64):
+            i64r = (*(int64_t(*)(int64_t))f)(i64a[0]);
+            return returnint64(returntype, i64r);
+        case A1(Double):
+            i64r = (*(int64_t(*)(double))f)(da[0]);
+            return returnint64(returntype, i64r);
+        default:
+                break;
+            }
+    case 2:
+            switch (signature)
+            {
+        case A2(Int32,Int32):
+            i64r = (*(int64_t(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
+            return returnint64(returntype, i64r);
+        case A2(Int32,Int64):
+            i64r = (*(int64_t(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
+            return returnint64(returntype, i64r);
+        case A2(Int32,Double):
+            i64r = (*(int64_t(*)(int32_t,double))f)(i32a[0],da[1]);
+            return returnint64(returntype, i64r);
+        case A2(Int64,Int32):
+            i64r = (*(int64_t(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
+            return returnint64(returntype, i64r);
+        case A2(Int64,Int64):
+            i64r = (*(int64_t(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
+            return returnint64(returntype, i64r);
+        case A2(Int64,Double):
+            i64r = (*(int64_t(*)(int64_t,double))f)(i64a[0],da[1]);
+            return returnint64(returntype, i64r);
+        case A2(Double,Int32):
+            i64r = (*(int64_t(*)(double,int32_t))f)(da[0],i32a[1]);
+            return returnint64(returntype, i64r);
+        case A2(Double,Int64):
+            i64r = (*(int64_t(*)(double,int64_t))f)(da[0],i64a[1]);
+            return returnint64(returntype, i64r);
+        case A2(Double,Double):
+            i64r = (*(int64_t(*)(double,double))f)(da[0],da[1]);
+            return returnint64(returntype, i64r);
+        default:
+                break;
+            }
+    case 3:
+            switch (signature)
+            {
+        case A3(Int32,Int32,Int32):
+            i64r = (*(int64_t(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Int32,Int64):
+            i64r = (*(int64_t(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Int32,Double):
+            i64r = (*(int64_t(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Int64,Int32):
+            i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Int64,Int64):
+            i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Int64,Double):
+            i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Double,Int32):
+            i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Double,Int64):
+            i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int32,Double,Double):
+            i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
+            return returnint64(returntype, i64r);
+
+        case A3(Int64,Int32,Int32):
+            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Int32,Int64):
+            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Int32,Double):
+            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Int64,Int32):
+            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Int64,Int64):
+            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Int64,Double):
+            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Double,Int32):
+            i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Double,Int64):
+            i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Int64,Double,Double):
+            i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
+            return returnint64(returntype, i64r);
+
+        case A3(Double,Int32,Int32):
+            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Int32,Int64):
+            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Int32,Double):
+            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Int64,Int32):
+            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Int64,Int64):
+            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Int64,Double):
+            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Double,Int32):
+            i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Double,Int64):
+            i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
+            return returnint64(returntype, i64r);
+        case A3(Double,Double,Double):
+            i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
+            return returnint64(returntype, i64r);
+        default:
+                break;
+            }
+            break;
+        }
+        break;
+case Double:
+        switch (nargs)
+        {
+    case 0:
+            dr = (*(double(*)())f)();
+            return returndouble(dr);
+    case 1:
+            switch (signature)
+            {
+        case A1(Int32):
+            dr = (*(double(*)(int32_t))f)(i32a[0]);
+            return returndouble(dr);
+        case A1(Int64):
+            dr = (*(double(*)(int64_t))f)(i64a[0]);
+            return returndouble(dr);
+        case A1(Double):
+            dr = (*(double(*)(double))f)(da[0]);
+            return returndouble(dr);
+        default:
+                break;
+            }
+    case 2:
+            switch (signature)
+            {
+        case A2(Int32,Int32):
+            dr = (*(double(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
+            return returndouble(dr);
+        case A2(Int32,Int64):
+            dr = (*(double(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
+            return returndouble(dr);
+        case A2(Int32,Double):
+            dr = (*(double(*)(int32_t,double))f)(i32a[0],da[1]);
+            return returndouble(dr);
+        case A2(Int64,Int32):
+            dr = (*(double(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
+            return returndouble(dr);
+        case A2(Int64,Int64):
+            dr = (*(double(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
+            return returndouble(dr);
+        case A2(Int64,Double):
+            dr = (*(double(*)(int64_t,double))f)(i64a[0],da[1]);
+            return returndouble(dr);
+        case A2(Double,Int32):
+            dr = (*(double(*)(double,int32_t))f)(da[0],i32a[1]);
+            return returndouble(dr);
+        case A2(Double,Int64):
+            dr = (*(double(*)(double,int64_t))f)(da[0],i64a[1]);
+            return returndouble(dr);
+        case A2(Double,Double):
+            dr = (*(double(*)(double,double))f)(da[0],da[1]);
+            return returndouble(dr);
+        default:
+                break;
+            }
+    case 3:
+            switch (signature)
+            {
+        case A3(Int32,Int32,Int32):
+            dr = (*(double(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int32,Int32,Int64):
+            dr = (*(double(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Int32,Int32,Double):
+            dr = (*(double(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
+            return returndouble(dr);
+        case A3(Int32,Int64,Int32):
+            dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int32,Int64,Int64):
+            dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int32,Int64,Double):
+            dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
+            return returndouble(dr);
+        case A3(Int32,Double,Int32):
+            dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int32,Double,Int64):
+            dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int32,Double,Double):
+            dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
+            return returndouble(dr);
+
+        case A3(Int64,Int32,Int32):
+            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int64,Int32,Int64):
+            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Int64,Int32,Double):
+            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
+            return returndouble(dr);
+        case A3(Int64,Int64,Int32):
+            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int64,Int64,Int64):
+            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Int64,Int64,Double):
+            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
+            return returndouble(dr);
+        case A3(Int64,Double,Int32):
+            dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Int64,Double,Int64):
+            dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Int64,Double,Double):
+            dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
+            return returndouble(dr);
+
+        case A3(Double,Int32,Int32):
+            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Double,Int32,Int64):
+            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Double,Int32,Double):
+            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
+            return returndouble(dr);
+        case A3(Double,Int64,Int32):
+            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Double,Int64,Int64):
+            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Double,Int64,Double):
+            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
+            return returndouble(dr);
+        case A3(Double,Double,Int32):
+            dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
+            return returndouble(dr);
+        case A3(Double,Double,Int64):
+            dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
+            return returndouble(dr);
+        case A3(Double,Double,Double):
+            dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
+            return returndouble(dr);
+        default:
+                break;
+            }
+            break;
+        }
+        break;
+default:
+        break;
+    }
+    return aerror("Too many arguments for foreign function");
+}
+
+/*
+ * For things with type-signatures involving "..." the only case I will
+ * support at present is "int f(char *s,...)" which is of course the
+ * signature of printf. I will permit three arguments beyond the "char *" one.
+ */
+
+Lisp_Object callforeignvarargs(void *f, int returntype, int nargs, int signature)
+{
+    Lisp_Object nil = C_nil;
+    void *s;
+    if (sizeof(void *)==4) s = (void *)(intptr_t)i32a[0];
+    else s = (void *)(intptr_t)i64a[0];
+    switch (nargs)
+    {
+case 0:
+        i32r = (*(int32_t(*)(char *s,...))f)(s);
+        return returnint32(returntype, i32r);
+case 1:
+        switch (signature)
+        {
+    case A1(Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1]);
+        return returnint32(returntype, i32r);
+    case A1(Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1]);
+        return returnint32(returntype, i32r);
+    case A1(Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1]);
+        return returnint32(returntype, i32r);
+    default:
+            break;
+        }
+case 2:
+        switch (signature)
+        {
+    case A2(Int32,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2]);
+        return returnint32(returntype, i32r);
+    case A2(Int32,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2]);
+        return returnint32(returntype, i32r);
+    case A2(Int32,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2]);
+        return returnint32(returntype, i32r);
+    case A2(Int64,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2]);
+        return returnint32(returntype, i32r);
+    case A2(Int64,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2]);
+        return returnint32(returntype, i32r);
+    case A2(Int64,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2]);
+        return returnint32(returntype, i32r);
+    case A2(Double,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2]);
+        return returnint32(returntype, i32r);
+    case A2(Double,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2]);
+        return returnint32(returntype, i32r);
+    case A2(Double,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2]);
+        return returnint32(returntype, i32r);
+    default:
+            break;
+        }
+case 3:
+        switch (signature)
+        {
+    case A3(Int32,Int32,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Int32,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Int32,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2],da[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Int64,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Int64,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Int64,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2],da[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Double,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Double,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int32,Double,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2],da[3]);
+        return returnint32(returntype, i32r);
+
+    case A3(Int64,Int32,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Int32,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Int32,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2],da[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Int64,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Int64,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Int64,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2],da[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Double,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Double,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Int64,Double,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2],da[3]);
+        return returnint32(returntype, i32r);
+
+    case A3(Double,Int32,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Int32,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Int32,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2],da[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Int64,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Int64,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Int64,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2],da[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Double,Int32):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2],i32a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Double,Int64):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2],i64a[3]);
+        return returnint32(returntype, i32r);
+    case A3(Double,Double,Double):
+        i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2],da[3]);
+        return returnint32(returntype, i32r);
+    default:
+            break;
+        }
+        break;
+    }
+    return aerror("Too many arguments for foreign varargs function");
+}
+
+/*
+ * The general scheme for call-foreign-function is as follows, where the
+ * key issue is that of the types of data passed and returned...
+ *
+ *    (call-foreign-function f)    call f with no args, ignoring any result
+ *    (call-foreign-function f a1)
+ *    (call-foreign-function f a1 a2)
+ *    (call-foreign-function f a1 a2 a3)
+ *    etc
+ * Each argument can be one of the following:
+ *    A symbol, where int32, int64, int, long, longlong, intptr and size
+ *    are the useful values. This specifies the way in which the next
+ *    argument (which should be an integer) will be passed. If there is no
+ *    further argument then the name can also possibly be void, string
+ *    or double and it indicates a return type.
+ *
+ *    An integer. This is passed as the next argument to the function
+ *    as a 32-bit integer unless a type was specified by the previous symbol.
+ *    A double-precision float. Passed to the function as the next argument.
+ *
+ *    A string. A C string is passed to the function. There will be a
+ *    limit on the length of string that can be passed this way.
+ *
+ *    A pair (sym . val) where sym can be one of
+ *        int int32 long int64 longlong intptr size string double
+ *    and val is something that can be mapped onto the matching type. The
+ *    purpose of this is so that whether an integer passed this way will be
+ *    32 or 64-bit can depend on the nature of the host system.
+ *
+ * The foreign function may only be provided with 0, 1, 2 or 3 arguments.
+ * At some stage I may need to find a way to be able to call functions that
+ * use va_arg style argument passing. But that is not worked out or
+ * implemented yet.
+ */
+
+int dumparg(int i, Lisp_Object type, Lisp_Object value)
+{
+    int typecode = Int32;
+    int32_t len;
+    char *w = get_string_data(type, "call-foreign-function", &len);
+    printf("Call with type %.*s for arg %d\n", (int)len, w, i+1);
+    i32a[i] = thirty_two_bits(value);
+    return typecode << (2*i);
 }
 
 Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
 {
+    int i;
+    Lisp_Object w;
+    int resulttype = Void;
+    Lisp_Object currenttype = nil;
+    int typemap = 0;
+    va_list aa;
+    for (i=0; i<MAX_ARGCOUNT; i++)
+    {   i32a[i] = 0;
+        i64a[i] = 0;
+        da[i] = 0.0;
+    }
+    i = 0;  /* Where to put next argument */
+    va_start(aa, nargs);
+    while (nargs > 0)
+    {   nargs--;
+        w = va_arg(aa, Lisp_Object);
+        if (is_cons(w))
+        {   typemap |= dumparg(i, qcar(w), qcdr(w));
+            i++;
+            currenttype = nil;
+        }
+        else if (is_symbol(w))
+        {   currenttype = w;
+        }
+        else if (is_fixnum(w) || is_numbers(w) ||
+                 is_bfloat(w) || stringp(w))
+        {   typemap |= dumparg(i, currenttype, w);
+            i++;
+            currenttype = nil;
+        }
+        else return aerror1("call-foreign-function", w);
+    }
+    va_end(aa);
     return onevalue(nil);
+}
+
+Lisp_Object Lcallf2(Lisp_Object nil, Lisp_Object entry, Lisp_Object arg)
+{
+    return Lcallfn(nil, 2, entry, arg);;
 }
 
 setup_type const funcs1_setup[] =
