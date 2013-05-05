@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 087f92ad 05-May-2013 */
+/* Signature: 766bc358 05-May-2013 */
 
 #include "headers.h"
 
@@ -2503,6 +2503,7 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
     b = dlsym(a, sname);
 #endif
     if (b == NULL) return onevalue(nil);
+    printf("Function entry is at %p\n", b);
     r = encapsulate_pointer(b);
     errexit();
     return onevalue(r);
@@ -2517,8 +2518,9 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
 Lisp_Object Lcallf1(Lisp_Object nil, Lisp_Object entry)
 {
     void *f;
+    printf("Call foreign function with no args and no result\n");
     if (Lencapsulatedp(nil, entry) == nil)
-        return aerror("find-foreign-function");
+        return aerror("call-foreign-function");
     f = extract_pointer(entry);
     (*(void(*)())f)();
     return onevalue(nil);
@@ -2598,6 +2600,7 @@ int name_matches(Lisp_Object a, char *s)
 {
     int32_t len;
     char *w = get_string_data(a, "call-foreign", &len);
+    printf("Compare [%d] %.*s with %s\n", len, len, w, s);
     if (len == strlen(s) &&
         strncmp(w, s, (int)len) == 0) return 1;
     else return 0;
@@ -3409,11 +3412,77 @@ case 3:
 
 int dumparg(int i, Lisp_Object type, Lisp_Object value)
 {
-    int typecode = Int32;
+    int typecode;
     int32_t len;
     char *w = get_string_data(type, "call-foreign-function", &len);
     printf("Call with type %.*s for arg %d\n", (int)len, w, i+1);
-    i32a[i] = thirty_two_bits(value);
+    if (len==5 && strncmp(w, "int32", 5)==0)
+    {   i32a[i] = thirty_two_bits(value);
+        typecode = Int32;
+    }
+    else if (len==3 && strncmp(w, "int", 3)==0)
+    {   i32a[i] = thirty_two_bits(value);
+        typecode = Int32;
+    }
+    else if (len==5 && strncmp(w, "int64", 5)==0)
+    {   i64a[i] = sixty_four_bits(value);
+        typecode = Int64;
+    }
+    else if (len==4 && strncmp(w, "long", 4)==0)
+    {   if (sizeof(long)==4)
+        {   i32a[i] = thirty_two_bits(value);
+            typecode = Int32;
+        }
+        else
+        {   i64a[i] = sixty_four_bits(value);
+            typecode = Int64;
+        }
+    }
+    else if (len==8 && strncmp(w, "longlong", 8)==0)
+    {   i64a[i] = sixty_four_bits(value);
+        typecode = Int64;
+    }
+    else if (len==4 && strncmp(w, "size", 4)==0)
+    {   if (sizeof(size_t)==4)
+        {   i32a[i] = thirty_two_bits(value);
+            typecode = Int32;
+        }
+        else
+        {   i64a[i] = sixty_four_bits(value);
+            typecode = Int64;
+        }
+    }
+    else if (len==6 && strncmp(w, "intptr", 6)==0)
+    {   if (sizeof(intptr_t)==4)
+        {   i32a[i] = thirty_two_bits(value);
+            typecode = Int32;
+        }
+        else
+        {   i64a[i] = sixty_four_bits(value);
+            typecode = Int64;
+        }
+    }
+    else if (len==6 && strncmp(w, "double", 6)==0)
+    {   da[i] = float_of_number(value);
+        typecode = Double;
+    }
+    else if (len==6 && strncmp(w, "string", 6)==0)
+    {   w = get_string_data(value, "call-foreign-function", &len);
+        memcpy(&sa[i][0], w, len);
+        sa[i][len] = 0;
+        if (sizeof(char *)==4)
+        {   i32a[i] = thirty_two_bits((int32_t)(intptr_t)&sa[i][0]);
+            typecode = Int32;
+        }
+        else
+        {   i64a[i] = sixty_four_bits((int64_t)(intptr_t)&sa[i][0]);
+            typecode = Int64;
+        }
+    }
+    else
+    {   i32a[i] = 0;
+        typecode = Int32;
+    }
     return typecode << (2*i);
 }
 
@@ -3421,17 +3490,24 @@ Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
 {
     int i;
     Lisp_Object w;
-    int resulttype = Void;
+    void *f;
+    int resulttype = Void, rtype, typemap = 0;
     Lisp_Object currenttype = nil;
-    int typemap = 0;
     va_list aa;
     for (i=0; i<MAX_ARGCOUNT; i++)
     {   i32a[i] = 0;
         i64a[i] = 0;
         da[i] = 0.0;
     }
+    printf("Call foreign function (%d arg specifiers)\n", nargs-1);
     i = 0;  /* Where to put next argument */
     va_start(aa, nargs);
+    w = va_arg(aa, Lisp_Object);
+    nargs--;
+    if (Lencapsulatedp(nil, w) == nil)
+        return aerror("call-foreign-function");
+    f = extract_pointer(w);
+    printf("Function entrypoint = %p\n", f);
     while (nargs > 0)
     {   nargs--;
         w = va_arg(aa, Lisp_Object);
@@ -3452,7 +3528,33 @@ Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
         else return aerror1("call-foreign-function", w);
     }
     va_end(aa);
-    return onevalue(nil);
+/*
+ * Now I need to call (*f)
+ */
+    resulttype = Void;
+    if (currenttype != nil)
+    {   if (name_matches(currenttype, "int32")) resulttype = Int32;
+        else if (name_matches(currenttype, "int64")) resulttype = Int64;
+        else if (name_matches(currenttype, "int")) resulttype = Int32;
+        else if (name_matches(currenttype, "long")) resulttype = sizeof(long)==4 ? Int32 : Int64;
+        else if (name_matches(currenttype, "longlong")) resulttype = Int64;
+        else if (name_matches(currenttype, "size")) resulttype = sizeof(size_t)==4 ? Int32 : Int64;
+        else if (name_matches(currenttype, "intptr")) resulttype = sizeof(void *)==4 ? Int32 : Int64;
+        else if (name_matches(currenttype, "double")) resulttype = Double;
+        else if (name_matches(currenttype, "string")) resulttype = String;
+        else if (name_matches(currenttype, "void")) resulttype = Void;
+        else return aerror1("call-foreign-function", currenttype);
+    }
+    rtype = (resulttype == String) ? (sizeof(void *)==4 ? Int32 : Int64) :
+            resulttype;
+    printf("call %p with %d args expecting result %d argspec %x\n", f, i, rtype, typemap);
+    w = callforeign(f, rtype, i, typemap);
+    errexit();
+    if (resulttype == String)
+    {   char *s = (char *)(intptr_t)sixty_four_bits(w);
+        w = make_string(s);
+    }
+    return onevalue(w);
 }
 
 Lisp_Object Lcallf2(Lisp_Object nil, Lisp_Object entry, Lisp_Object arg)
