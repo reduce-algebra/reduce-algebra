@@ -50,8 +50,11 @@ case x$1 in
   ;;
 *)
   echo Unknown target $1. Use cygwin, w32, w64, linux, unix, mac or bsd please
+  exit 1
   ;;
 esac
+
+CFLAGS="$CFLAGS -O2 -Wall"
 
 rm -f *.o *.so *.dll *.exe *.a
 

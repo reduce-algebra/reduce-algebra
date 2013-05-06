@@ -73,7 +73,13 @@ int p(int x)
 #define r q q q q q q q q q q
 #define s r r r r r r r r r r
 #define t s s s s s s s s s s
-#define u t t t t t t t t t t
+/*
+ * With the commented out version "gcc -O2" tries to use 16GB+ of
+ * (virtual) memory while trying to compile this code, and typically falls
+ * over somewhat messily.
+ */
+/* #define u t t t t t t t t t t */
+#define u t t
 
 int function_in_base(int x)
 {
