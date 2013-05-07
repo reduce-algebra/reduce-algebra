@@ -39,7 +39,7 @@
 
 
 
-/* Signature: 36e10735 05-May-2013 */
+/* Signature: 46c4929a 07-May-2013 */
 
 
 #include "headers.h"
@@ -308,7 +308,7 @@ case TAG_NUMBERS:
  * thus if I have a one-word bignum I just want its contents but in all
  * other cases I need just one bit from the next word up.
  */
-            if (len == 8) return bignum_digits(a)[0]; /* One word bignum */
+            if (len == CELL+4) return bignum_digits(a)[0]; /* One word bignum */
             return bignum_digits(a)[0] | (bignum_digits(a)[1] << 31);
         }
         /* else drop through */
@@ -325,7 +325,34 @@ default:
 
 int64_t sixty_four_bits(Lisp_Object a)
 {
-    return (int64_t)thirty_two_bits(a); /* Inadequate really! */
+    switch ((int)a & TAG_BITS)
+    {
+case TAG_FIXNUM:
+        return int_of_fixnum(a);
+case TAG_NUMBERS:
+        if (is_bignum(a))
+        {   int len = bignum_length(a);
+            switch (len)
+            {
+        case CELL+4:
+                return (int64_t)bignum_digits(a)[0]; /* One word bignum */
+        case CELL+8:
+                return bignum_digits(a)[0] |
+                       ((int64_t)bignum_digits(a)[1] << 31);
+        default:
+                return bignum_digits(a)[0] |
+                       ((int64_t)bignum_digits(a)[1] << 31) |
+                       ((int64_t)bignum_digits(a)[2] << 62);
+            }
+        }
+        /* else drop through */
+case TAG_BOXFLOAT:
+default:
+/*
+ * return 0 for all non-fixnums
+ */
+        return 0;
+    }
 }
 
 #endif

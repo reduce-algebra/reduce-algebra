@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 766bc358 05-May-2013 */
+/* Signature: 39506a8a 07-May-2013 */
 
 #include "headers.h"
 
@@ -2419,7 +2419,7 @@ printf("open-library\n");
     w = get_string_data(name, "find-foreign-library", &len);
     errexit();
     if (len > sizeof(libname)-5) len = sizeof(libname)-5;
-    sprintf(libname, "%.*s.dll", (int)len, w);
+    sprintf(libname, "%.*s", (int)len, w);
     for (w=libname; *w!=0; w++)
         if (w1==NULL && *w == '.') w1 = w;
         else if (*w == '/' || *w == '\\') w1 = NULL;
@@ -2582,16 +2582,6 @@ double dr;
  * arguments. The alternatives that I can think of seem even worse!
  */
 
-Lisp_Object returnint32(int returntype, int32_t r)
-{
-    Lisp_Object nil = C_nil;
-    if (returntype == String && sizeof(char *)==4)
-    {   char *s = (char *)(intptr_t)r;
-        return make_string(s);
-    }
-    return onevalue(nil);
-}
-
 /*
  * Given a symbol (or in fact a string) this checks if its name is the
  * same as the value given as arg2.
@@ -2606,17 +2596,6 @@ int name_matches(Lisp_Object a, char *s)
     else return 0;
 }
 
-Lisp_Object returnint64(int returntype, int64_t r)
-{
-    Lisp_Object nil = C_nil;
-    return onevalue(nil);
-}
-
-Lisp_Object returndouble(double r)
-{
-    Lisp_Object nil = C_nil;
-    return onevalue(nil);
-}
 
 Lisp_Object callforeign(void *f, int returntype, int nargs, int signature)
 {
@@ -2777,19 +2756,19 @@ case Int32:
         {
     case 0:
             i32r = (*(int32_t(*)())f)();
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
     case 1:
             switch (signature)
             {
         case A1(Int32):
             i32r = (*(int32_t(*)(int32_t))f)(i32a[0]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A1(Int64):
             i32r = (*(int32_t(*)(int64_t))f)(i64a[0]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A1(Double):
             i32r = (*(int32_t(*)(double))f)(da[0]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         default:
                 break;
             }
@@ -2798,31 +2777,31 @@ case Int32:
             {
         case A2(Int32,Int32):
             i32r = (*(int32_t(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Int32,Int64):
             i32r = (*(int32_t(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Int32,Double):
             i32r = (*(int32_t(*)(int32_t,double))f)(i32a[0],da[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Int64,Int32):
             i32r = (*(int32_t(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Int64,Int64):
             i32r = (*(int32_t(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Int64,Double):
             i32r = (*(int32_t(*)(int64_t,double))f)(i64a[0],da[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Double,Int32):
             i32r = (*(int32_t(*)(double,int32_t))f)(da[0],i32a[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Double,Int64):
             i32r = (*(int32_t(*)(double,int64_t))f)(da[0],i64a[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A2(Double,Double):
             i32r = (*(int32_t(*)(double,double))f)(da[0],da[1]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         default:
                 break;
             }
@@ -2831,87 +2810,87 @@ case Int32:
             {
         case A3(Int32,Int32,Int32):
             i32r = (*(int32_t(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Int32,Int64):
             i32r = (*(int32_t(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Int32,Double):
             i32r = (*(int32_t(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Int64,Int32):
             i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Int64,Int64):
             i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Int64,Double):
             i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Double,Int32):
             i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Double,Int64):
             i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int32,Double,Double):
             i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
 
         case A3(Int64,Int32,Int32):
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Int32,Int64):
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Int32,Double):
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Int64,Int32):
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Int64,Int64):
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Int64,Double):
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Double,Int32):
             i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Double,Int64):
             i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Int64,Double,Double):
             i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
 
         case A3(Double,Int32,Int32):
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Int32,Int64):
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Int32,Double):
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Int64,Int32):
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Int64,Int64):
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Int64,Double):
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Double,Int32):
             i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Double,Int64):
             i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         case A3(Double,Double,Double):
             i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
-            return returnint32(returntype, i32r);
+            return make_lisp_integer32(i32r);
         default:
                 break;
             }
@@ -2923,19 +2902,19 @@ case Int64:
         {
     case 0:
             i64r = (*(int64_t(*)())f)();
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
     case 1:
             switch (signature)
             {
         case A1(Int32):
             i64r = (*(int64_t(*)(int32_t))f)(i32a[0]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A1(Int64):
             i64r = (*(int64_t(*)(int64_t))f)(i64a[0]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A1(Double):
             i64r = (*(int64_t(*)(double))f)(da[0]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         default:
                 break;
             }
@@ -2944,31 +2923,31 @@ case Int64:
             {
         case A2(Int32,Int32):
             i64r = (*(int64_t(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Int32,Int64):
             i64r = (*(int64_t(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Int32,Double):
             i64r = (*(int64_t(*)(int32_t,double))f)(i32a[0],da[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Int64,Int32):
             i64r = (*(int64_t(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Int64,Int64):
             i64r = (*(int64_t(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Int64,Double):
             i64r = (*(int64_t(*)(int64_t,double))f)(i64a[0],da[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Double,Int32):
             i64r = (*(int64_t(*)(double,int32_t))f)(da[0],i32a[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Double,Int64):
             i64r = (*(int64_t(*)(double,int64_t))f)(da[0],i64a[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A2(Double,Double):
             i64r = (*(int64_t(*)(double,double))f)(da[0],da[1]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         default:
                 break;
             }
@@ -2977,87 +2956,87 @@ case Int64:
             {
         case A3(Int32,Int32,Int32):
             i64r = (*(int64_t(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Int32,Int64):
             i64r = (*(int64_t(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Int32,Double):
             i64r = (*(int64_t(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Int64,Int32):
             i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Int64,Int64):
             i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Int64,Double):
             i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Double,Int32):
             i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Double,Int64):
             i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int32,Double,Double):
             i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
 
         case A3(Int64,Int32,Int32):
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Int32,Int64):
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Int32,Double):
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Int64,Int32):
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Int64,Int64):
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Int64,Double):
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Double,Int32):
             i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Double,Int64):
             i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Int64,Double,Double):
             i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
 
         case A3(Double,Int32,Int32):
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Int32,Int64):
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Int32,Double):
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Int64,Int32):
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Int64,Int64):
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Int64,Double):
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Double,Int32):
             i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Double,Int64):
             i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         case A3(Double,Double,Double):
             i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
-            return returnint64(returntype, i64r);
+            return make_lisp_integer64(i64r);
         default:
                 break;
             }
@@ -3069,19 +3048,19 @@ case Double:
         {
     case 0:
             dr = (*(double(*)())f)();
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
     case 1:
             switch (signature)
             {
         case A1(Int32):
             dr = (*(double(*)(int32_t))f)(i32a[0]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A1(Int64):
             dr = (*(double(*)(int64_t))f)(i64a[0]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A1(Double):
             dr = (*(double(*)(double))f)(da[0]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         default:
                 break;
             }
@@ -3090,31 +3069,31 @@ case Double:
             {
         case A2(Int32,Int32):
             dr = (*(double(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Int32,Int64):
             dr = (*(double(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Int32,Double):
             dr = (*(double(*)(int32_t,double))f)(i32a[0],da[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Int64,Int32):
             dr = (*(double(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Int64,Int64):
             dr = (*(double(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Int64,Double):
             dr = (*(double(*)(int64_t,double))f)(i64a[0],da[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Double,Int32):
             dr = (*(double(*)(double,int32_t))f)(da[0],i32a[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Double,Int64):
             dr = (*(double(*)(double,int64_t))f)(da[0],i64a[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A2(Double,Double):
             dr = (*(double(*)(double,double))f)(da[0],da[1]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         default:
                 break;
             }
@@ -3123,87 +3102,87 @@ case Double:
             {
         case A3(Int32,Int32,Int32):
             dr = (*(double(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int32,Int64):
             dr = (*(double(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int32,Double):
             dr = (*(double(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int64,Int32):
             dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int64,Int64):
             dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int64,Double):
             dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Double,Int32):
             dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Double,Int64):
             dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Double,Double):
             dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
 
         case A3(Int64,Int32,Int32):
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int32,Int64):
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int32,Double):
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int64,Int32):
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int64,Int64):
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int64,Double):
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i64a[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Double,Int32):
             dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Double,Int64):
             dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Double,Double):
             dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
 
         case A3(Double,Int32,Int32):
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int32,Int64):
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int32,Double):
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int64,Int32):
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int64,Int64):
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i64a[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int64,Double):
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i64a[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Double,Int32):
             dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Double,Int64):
             dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],i64a[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Double,Double):
             dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],da[2]);
-            return returndouble(dr);
+            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         default:
                 break;
             }
@@ -3232,19 +3211,19 @@ Lisp_Object callforeignvarargs(void *f, int returntype, int nargs, int signature
     {
 case 0:
         i32r = (*(int32_t(*)(char *s,...))f)(s);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
 case 1:
         switch (signature)
         {
     case A1(Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A1(Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A1(Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     default:
             break;
         }
@@ -3253,31 +3232,31 @@ case 2:
         {
     case A2(Int32,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Int32,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Int32,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Int64,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Int64,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Int64,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Double,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Double,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A2(Double,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     default:
             break;
         }
@@ -3286,87 +3265,87 @@ case 3:
         {
     case A3(Int32,Int32,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Int32,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Int32,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i32a[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Int64,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Int64,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Int64,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],i64a[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Double,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Double,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int32,Double,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i32a[1],da[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
 
     case A3(Int64,Int32,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Int32,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Int32,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i32a[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Int64,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Int64,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Int64,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],i64a[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Double,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Double,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Int64,Double,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,i64a[1],da[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
 
     case A3(Double,Int32,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Int32,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Int32,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i32a[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Int64,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Int64,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Int64,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],i64a[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Double,Int32):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2],i32a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Double,Int64):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2],i64a[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     case A3(Double,Double,Double):
         i32r = (*(int32_t(*)(char *s,...))f)(s,da[1],da[2],da[3]);
-        return returnint32(returntype, i32r);
+        return make_lisp_integer32(i32r);
     default:
             break;
         }
@@ -3470,12 +3449,13 @@ int dumparg(int i, Lisp_Object type, Lisp_Object value)
     {   w = get_string_data(value, "call-foreign-function", &len);
         memcpy(&sa[i][0], w, len);
         sa[i][len] = 0;
+        printf("String arg = %s\n", &sa[i][0]);
         if (sizeof(char *)==4)
-        {   i32a[i] = thirty_two_bits((int32_t)(intptr_t)&sa[i][0]);
+        {   i32a[i] = (int32_t)(intptr_t)&sa[i][0];
             typecode = Int32;
         }
         else
-        {   i64a[i] = sixty_four_bits((int64_t)(intptr_t)&sa[i][0]);
+        {   i64a[i] = (int64_t)(intptr_t)&sa[i][0];
             typecode = Int64;
         }
     }
