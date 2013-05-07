@@ -94,8 +94,13 @@ procedure smts_processAssert(constraint);
    >>;
 
 procedure smts_processCheckSat();
-   begin scalar tval;
-      {tval, smts_model!*} := car rl_qea(rl_ex(rl_smkn('and, smts_assertionl!*), nil), nil);
+   begin scalar w, tval;
+      w := rl_qea(rl_ex(rl_smkn('and, smts_assertionl!*), nil), nil);
+      if null w then <<
+	 smts_prin2t 'unsat;
+	 return
+      >>;
+      {tval, smts_model!*} := car w;
       if tval eq 'true then
 	 smts_prin2t 'sat
       else if tval eq 'false then
