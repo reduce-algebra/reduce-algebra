@@ -42,8 +42,6 @@ case x$1 in
   ;;
 esac
 
-rm -f *.o *.so *.dll *.exe *.a
-
 $CC $DLLCFLAGS foreign.c -o foreign.$DLL
 
 echo $CC $DLLCFLAGS foreign.c -o foreign.$DLL

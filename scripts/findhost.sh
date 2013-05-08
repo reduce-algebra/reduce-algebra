@@ -182,7 +182,19 @@ do
     host=$original
     ;;
   --with-cygwin*)
-    host=i686-pc-cygwin
+# If I am building a cygwin version and the cygwin I am running under is
+# the 64-bit one I will pick an alternative name for the build directory.
+# If at some stage it becomes proper or reasonable or easy to build 32 and 64
+# bit cygwin systems on the same platform I will need to revist this again!
+    case `uname -a`
+    in
+    *x86_64*)
+      host=x86_64-pc-cygwin
+      ;;
+    *)
+      host=i686-pc-cygwin
+      ;;
+    esac
     ;;
   --with-m32=no | --without-m32)
     m32=

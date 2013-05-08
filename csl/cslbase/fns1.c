@@ -2452,7 +2452,7 @@ printf("open-library %s\n", libname);
     fflush(stdout);
 printf("open-library %s\n", libname); 
     a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
-    printf("a = %p %.8x\n", a, (int)a);
+    printf("a = %p %" PRIxPTR "\n", a, (intptr_t)a);
     fflush(stdout);
     if (a == NULL)
     {   printf("Err = <%s>\n", dlerror()); fflush(stdout);
@@ -2703,7 +2703,7 @@ case Void:
             (*(void(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
             return onevalue(nil);
         case A3(Int64,Int64,Int64):
-            (*(void(*)(int64_t,int64_t,int64_t)f)(i64a[0],i64a[1],i64a[2]);
+            (*(void(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
             return onevalue(nil);
         case A3(Int64,Int64,Double):
             (*(void(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
@@ -2712,7 +2712,7 @@ case Void:
             (*(void(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
             return onevalue(nil);
         case A3(Int64,Double,Int64):
-            (*(void(*)(int64_t,double,int64_t)f)(i64a[0],da[1],i64a[2]);
+            (*(void(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
             return onevalue(nil);
         case A3(Int64,Double,Double):
             (*(void(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
@@ -2722,7 +2722,7 @@ case Void:
             (*(void(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
             return onevalue(nil);
         case A3(Double,Int32,Int64):
-            (*(void(*)(double,int32_t,int64_t)f)(da[0],i32a[1],i64a[2]);
+            (*(void(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
             return onevalue(nil);
         case A3(Double,Int32,Double):
             (*(void(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
@@ -2731,7 +2731,7 @@ case Void:
             (*(void(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
             return onevalue(nil);
         case A3(Double,Int64,Int64):
-            (*(void(*)(double,int64_t,int64_t)f)(da[0],i64a[1],i64a[2]);
+            (*(void(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
             return onevalue(nil);
         case A3(Double,Int64,Double):
             (*(void(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
@@ -2740,7 +2740,7 @@ case Void:
             (*(void(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
             return onevalue(nil);
         case A3(Double,Double,Int64):
-            (*(void(*)(double,double,int64_t)f)(da[0],da[1],i64a[2]);
+            (*(void(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
             return onevalue(nil);
         case A3(Double,Double,Double):
             (*(void(*)(double,double,double))f)(da[0],da[1],da[2]);
@@ -2821,16 +2821,16 @@ case Int32:
             i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int32,Int64,Int64):
-            i32r = (*(int32_t(*)(int32_t,int64_t,int64_t)f)(i32a[0],i64a[1],i32a[2]);
+            i32r = (*(int32_t(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int32,Int64,Double):
             i32r = (*(int32_t(*)(int32_t,int64_t,double))f)(i32a[0],i64a[1],da[2]);
             return make_lisp_integer32(i32r);
         case A3(Int32,Double,Int32):
-            i32r = (*(int32_t(*)(int32_t,double,int32_t)f)(i32a[0],da[1],i32a[2]);
+            i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int32,Double,Int64):
-            i32r = (*(int32_t(*)(int32_t,double,int64_t)f)(i32a[0],da[1],i32a[2]);
+            i32r = (*(int32_t(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int32,Double,Double):
             i32r = (*(int32_t(*)(int32_t,double,double))f)(i32a[0],da[1],da[2]);
@@ -2840,7 +2840,7 @@ case Int32:
             i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int64,Int32,Int64):
-            i32r = (*(int32_t(*)(int64_t,int32_t,int64_t)f)(i64a[0],i32a[1],i64a[2]);
+            i32r = (*(int32_t(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int64,Int32,Double):
             i32r = (*(int32_t(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
@@ -2849,7 +2849,7 @@ case Int32:
             i32r = (*(int32_t(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int64,Int64,Int64):
-            i32r = (*(int32_t(*)(int64_t,int64_t,int64_t)f)(i64a[0],i64a[1],i64a[2]);
+            i32r = (*(int32_t(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int64,Int64,Double):
             i32r = (*(int32_t(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
@@ -2858,7 +2858,7 @@ case Int32:
             i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int64,Double,Int64):
-            i32r = (*(int32_t(*)(int64_t,double,int64_t)f)(i64a[0],da[1],i64a[2]);
+            i32r = (*(int32_t(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
             return make_lisp_integer32(i32r);
         case A3(Int64,Double,Double):
             i32r = (*(int32_t(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
@@ -2868,7 +2868,7 @@ case Int32:
             i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Double,Int32,Int64):
-            i32r = (*(int32_t(*)(double,int32_t,int64_t)f)(da[0],i32a[1],i64a[2]);
+            i32r = (*(int32_t(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
             return make_lisp_integer32(i32r);
         case A3(Double,Int32,Double):
             i32r = (*(int32_t(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
@@ -2877,7 +2877,7 @@ case Int32:
             i32r = (*(int32_t(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Double,Int64,Int64):
-            i32r = (*(int32_t(*)(double,int64_t,int64_t)f)(da[0],i64a[1],i64a[2]);
+            i32r = (*(int32_t(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
             return make_lisp_integer32(i32r);
         case A3(Double,Int64,Double):
             i32r = (*(int32_t(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
@@ -2886,7 +2886,7 @@ case Int32:
             i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
             return make_lisp_integer32(i32r);
         case A3(Double,Double,Int64):
-            i32r = (*(int32_t(*)(double,double,int64_t)f)(da[0],da[1],i64a[2]);
+            i32r = (*(int32_t(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
             return make_lisp_integer32(i32r);
         case A3(Double,Double,Double):
             i32r = (*(int32_t(*)(double,double,double))f)(da[0],da[1],da[2]);
@@ -2967,7 +2967,7 @@ case Int64:
             i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int32,Int64,Int64):
-            i64r = (*(int64_t(*)(int32_t,int64_t,int64_t)f)(i32a[0],i64a[1],i32a[2]);
+            i64r = (*(int64_t(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int32,Int64,Double):
             i64r = (*(int64_t(*)(int32_t,int64_t,double))f)(i32a[0],i64a[1],da[2]);
@@ -2976,7 +2976,7 @@ case Int64:
             i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int32,Double,Int64):
-            i64r = (*(int64_t(*)(int32_t,double,int64_t)f)(i32a[0],da[1],i32a[2]);
+            i64r = (*(int64_t(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int32,Double,Double):
             i64r = (*(int64_t(*)(int32_t,double,double))f)(i32a[0],da[1],da[2]);
@@ -2986,7 +2986,7 @@ case Int64:
             i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int64,Int32,Int64):
-            i64r = (*(int64_t(*)(int64_t,int32_t,int64_t)f)(i64a[0],i32a[1],i64a[2]);
+            i64r = (*(int64_t(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int64,Int32,Double):
             i64r = (*(int64_t(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
@@ -2995,7 +2995,7 @@ case Int64:
             i64r = (*(int64_t(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int64,Int64,Int64):
-            i64r = (*(int64_t(*)(int64_t,int64_t,int64_t)f)(i64a[0],i64a[1],i64a[2]);
+            i64r = (*(int64_t(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int64,Int64,Double):
             i64r = (*(int64_t(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
@@ -3004,7 +3004,7 @@ case Int64:
             i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int64,Double,Int64):
-            i64r = (*(int64_t(*)(int64_t,double,int64_t)f)(i64a[0],da[1],i64a[2]);
+            i64r = (*(int64_t(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
             return make_lisp_integer64(i64r);
         case A3(Int64,Double,Double):
             i64r = (*(int64_t(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
@@ -3014,7 +3014,7 @@ case Int64:
             i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Double,Int32,Int64):
-            i64r = (*(int64_t(*)(double,int32_t,int64_t)f)(da[0],i32a[1],i64a[2]);
+            i64r = (*(int64_t(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
             return make_lisp_integer64(i64r);
         case A3(Double,Int32,Double):
             i64r = (*(int64_t(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
@@ -3023,7 +3023,7 @@ case Int64:
             i64r = (*(int64_t(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Double,Int64,Int64):
-            i64r = (*(int64_t(*)(double,int64_t,int64_t)f)(da[0],i64a[1],i64a[2]);
+            i64r = (*(int64_t(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
             return make_lisp_integer64(i64r);
         case A3(Double,Int64,Double):
             i64r = (*(int64_t(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
@@ -3032,7 +3032,7 @@ case Int64:
             i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
             return make_lisp_integer64(i64r);
         case A3(Double,Double,Int64):
-            i64r = (*(int64_t(*)(double,double,int64_t)f)(da[0],da[1],i64a[2]);
+            i64r = (*(int64_t(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
             return make_lisp_integer64(i64r);
         case A3(Double,Double,Double):
             i64r = (*(int64_t(*)(double,double,double))f)(da[0],da[1],da[2]);
@@ -3113,7 +3113,7 @@ case Double:
             dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int64,Int64):
-            dr = (*(double(*)(int32_t,int64_t,int64_t)f)(i32a[0],i64a[1],i32a[2]);
+            dr = (*(double(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Int64,Double):
             dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
@@ -3122,7 +3122,7 @@ case Double:
             dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Double,Int64):
-            dr = (*(double(*)(int32_t,double,int64_t)f)(i32a[0],da[1],i32a[2]);
+            dr = (*(double(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int32,Double,Double):
             dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
@@ -3132,7 +3132,7 @@ case Double:
             dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int32,Int64):
-            dr = (*(double(*)(int64_t,int32_t,int64_t)f)(i64a[0],i32a[1],i64a[2]);
+            dr = (*(double(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int32,Double):
             dr = (*(double(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
@@ -3141,7 +3141,7 @@ case Double:
             dr = (*(double(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int64,Int64):
-            dr = (*(double(*)(int64_t,int64_t,int64_t)f)(i64a[0],i64a[1],i64a[2]);
+            dr = (*(double(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Int64,Double):
             dr = (*(double(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
@@ -3150,7 +3150,7 @@ case Double:
             dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Double,Int64):
-            dr = (*(double(*)(int64_t,double,int64_t)f)(i64a[0],da[1],i64a[2]);
+            dr = (*(double(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Int64,Double,Double):
             dr = (*(double(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
@@ -3160,7 +3160,7 @@ case Double:
             dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int32,Int64):
-            dr = (*(double(*)(double,int32_t,int64_t)f)(da[0],i32a[1],i64a[2]);
+            dr = (*(double(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int32,Double):
             dr = (*(double(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
@@ -3169,7 +3169,7 @@ case Double:
             dr = (*(double(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int64,Int64):
-            dr = (*(double(*)(double,int64_t,int64_t)f)(da[0],i64a[1],i64a[2]);
+            dr = (*(double(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Int64,Double):
             dr = (*(double(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
@@ -3178,7 +3178,7 @@ case Double:
             dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Double,Int64):
-            dr = (*(double(*)(double,double,int64_t)f)(da[0],da[1],i64a[2]);
+            dr = (*(double(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
             return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
         case A3(Double,Double,Double):
             dr = (*(double(*)(double,double,double))f)(da[0],da[1],da[2]);
