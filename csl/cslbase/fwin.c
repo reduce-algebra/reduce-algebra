@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 79ab94b0 05-May-2013 */
+/* Signature: 73071681 08-May-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -62,6 +62,8 @@
 /* Here I will suppose I am building as part of the FOX library */
 #define PART_OF_FOX 1
 #endif /* HAVE_CONFIG_H */
+
+#include <stdint.h>
 
 #include "fwin.h"
 

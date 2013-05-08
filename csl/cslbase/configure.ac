@@ -1000,8 +1000,11 @@ then
 # check if the "-pg" option is at least acceptable to the compiler... but
 # for now it is unconditional based on a belief that those who specify
 # --enable-debug will be experienced enough to sort out any mess that could
-# arise.
-    PROFILE="-pg"
+# arise.  Aha, the initial testing versions of 64-bit cygwin appear to choke
+# if you specify profiling, and so I will withdraw this for now but leave the
+# indication of how to re-enable it in place here.
+#   PROFILE="-pg"
+    PROFILE=""
     CFLAGS="${CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
