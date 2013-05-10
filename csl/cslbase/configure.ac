@@ -201,10 +201,20 @@ AC_SUBST(STRIP)
 AC_SUBST(SED)
 AC_SUBST(WINDRES)
 AC_SUBST(REZ)
+AC_SUBST(DLLTOOL)
+
+# The next two should only be required if you are building for windows
+# (cygwin or native style) and are wanting to create a DLL to be loaded
+# by my code.
 
 if test "x$WINDRES" = "x"
 then
   AC_CHECK_TOOL(WINDRES, windres, windres)
+fi
+
+if test "x$DLLTOOL" = "x"
+then
+  AC_CHECK_TOOL(DLLTOOL, dlltool, dlltool)
 fi
 
 AC_MSG_NOTICE([host=$host])

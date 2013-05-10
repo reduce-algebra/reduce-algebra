@@ -397,6 +397,9 @@ dyndemo_SOURCES = dyndemo.c
 
 if !windows
 dyndemo_DEPENDENCIES = dynmodule.so
+
+libdyndemo.a: $(srcdir)/dyndemo.def
+	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
 endif !windows
 
 if windows
@@ -490,6 +493,9 @@ else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
 endif !wx
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
+
+libdyndemo.a: $(srcdir)/dyndemo.def
+	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
 	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
@@ -686,6 +692,8 @@ if gui
 	-rm -f csl$(COM)
 	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 endif gui
+	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
+	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
 endif windows
 if !debug
 if !darwin
@@ -727,6 +735,8 @@ if gui
 	-rm -f reduce$(COM)
 	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 endif gui
+	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
+	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
 endif windows
 if !debug
 if !darwin
@@ -785,6 +795,9 @@ if mac_framework
 	$(REZ) -t APPL -o bootstrapreduce $(srcdir)/mac.r
 endif mac_framework
 endif !wx
+if windows
+	$(DLLTOOL) --def $(BOOTSTRAPREDUCEEXEDEF) --output-lib libbootstrapreduce.a
+endif windows
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
 	-rm -f fwindemo$(EXEEXT)
@@ -1071,7 +1084,7 @@ endif wx
 $(plain_termdemo):	termdemo.exe
 	echo "make termdemo.exe is preferred"
 
-$(plain_dyndemo):	dyndemo.exe dynmodule.dll
+$(plain_dyndemo):	dyndemo.exe
 	echo "make dyndemo.exe is preferred"
 
 endif exeext
@@ -1249,17 +1262,15 @@ COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
 
 if windows
-dyndef =  $(srcdir)/dynmodule1.def
-dyndep =
+dyndef =
+dyndep = libdyndemo.a
 else !windows
 dyndef =
 dyndep =
 endif !windows
 
-DLLIB=
-
-dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(srcdir)/dynmodule.def $(dyndep)
-	$(COMPILE_DLL) $(dyndef) $(srcdir)/dynmodule.c $(DLLIB) $(DEST)dynmodule.$(DLLEXT)
+dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(dyndep)
+	$(COMPILE_DLL) $(srcdir)/dynmodule.c $(dyndep) $(DEST)dynmodule.$(DLLEXT)
 
 if canrun
 
