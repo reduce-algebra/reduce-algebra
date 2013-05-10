@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 57ee0d16 08-May-2013 */
+/* Signature: 78df26e8 10-May-2013 */
 
 #include "headers.h"
 
@@ -2415,7 +2415,6 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
     int32_t len;
     char *w, *w1 = NULL;
     memset(libname, 0, sizeof(libname));
-printf("open-library\n"); 
     w = get_string_data(name, "find-foreign-library", &len);
     errexit();
     if (len > sizeof(libname)-5) len = sizeof(libname)-5;
@@ -2432,13 +2431,20 @@ printf("open-library\n");
  */
 #ifdef WIN32
     if (w1 == NULL) strcat(libname, ".dll");
-printf("open-library %s\n", libname); 
+/*
+ * For now I will leave the trace print of the library name here, since
+ * it should only appear once per run so ought not to cause over-much grief.
+ * eventually I will remove it!
+ */
+    printf("open-library Windows %s\n", libname); 
     a = LoadLibrary(libname);
-    printf("Dynamic loading of test code for Windows\na = %p\n", (void *)a);
-    fflush(stdout);
     if (a == 0)
     {   DWORD err = GetLastError();
         char errbuf[80];
+/*
+ * The printf calls here to report errors will not be useful in some
+ * windowed contexts, so I will need to rework them in due course.
+ */
         printf("Error code %ld = %lx\n", (long)err, (long)err);
         err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                             FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -2448,18 +2454,18 @@ printf("open-library %s\n", libname);
     }
 #else
     if (w1 == NULL) strcat(libname, ".so");
-    printf("Dynamic loading test code for *ix, BSD, MacOSX etc\n");
-    fflush(stdout);
-printf("open-library %s\n", libname); 
+/*
+ * For now I will leave the trace print of the library name here, since
+ * it should only appear once per run so ought not to cause over-much grief.
+ * eventually I will remove it!
+ */
+    printf("open-library Linux/Mac/BSD/Unix etc %s\n", libname); 
     a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
-    printf("a = %p %" PRIxPTR "\n", a, (intptr_t)a);
-    fflush(stdout);
     if (a == NULL)
     {   printf("Err = <%s>\n", dlerror()); fflush(stdout);
         return onevalue(nil);
     }
 #endif
-    printf("handle is %p\n", (void *)a);
     r = encapsulate_pointer((void *)a);
     errexit();
     return onevalue(r);
@@ -2491,11 +2497,13 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
 #else
     a = extract_pointer(lib);
 #endif
-    printf("handle is %p\n", (void *)a);
     w = get_string_data(name, "find-foreign-function", &len);
     errexit();
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
     sprintf(sname, "%.*s", (int)len, w);
+/*
+ * Again I will leave the print statement in on a temporary basis...
+ */
     printf("name to look up = %s\n", sname);
 #ifdef WIN32
     b = (void *)GetProcAddress(a, sname);
@@ -2503,7 +2511,6 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
     b = dlsym(a, sname);
 #endif
     if (b == NULL) return onevalue(nil);
-    printf("Function entry is at %p\n", b);
     r = encapsulate_pointer(b);
     errexit();
     return onevalue(r);
@@ -2518,7 +2525,6 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
 Lisp_Object Lcallf1(Lisp_Object nil, Lisp_Object entry)
 {
     void *f;
-    printf("Call foreign function with no args and no result\n");
     if (Lencapsulatedp(nil, entry) == nil)
         return aerror("call-foreign-function");
     f = extract_pointer(entry);
@@ -2590,7 +2596,6 @@ int name_matches(Lisp_Object a, char *s)
 {
     int32_t len;
     char *w = get_string_data(a, "call-foreign", &len);
-    printf("Compare [%d] %.*s with %s\n", len, len, w, s);
     if (len == strlen(s) &&
         strncmp(w, s, (int)len) == 0) return 1;
     else return 0;
@@ -3394,7 +3399,6 @@ int dumparg(int i, Lisp_Object type, Lisp_Object value)
     int typecode;
     int32_t len;
     char *w = get_string_data(type, "call-foreign-function", &len);
-    printf("Call with type %.*s for arg %d\n", (int)len, w, i+1);
     if (len==5 && strncmp(w, "int32", 5)==0)
     {   i32a[i] = thirty_two_bits(value);
         typecode = Int32;
@@ -3449,7 +3453,6 @@ int dumparg(int i, Lisp_Object type, Lisp_Object value)
     {   w = get_string_data(value, "call-foreign-function", &len);
         memcpy(&sa[i][0], w, len);
         sa[i][len] = 0;
-        printf("String arg = %s\n", &sa[i][0]);
         if (sizeof(char *)==4)
         {   i32a[i] = (int32_t)(intptr_t)&sa[i][0];
             typecode = Int32;
@@ -3479,7 +3482,6 @@ Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
         i64a[i] = 0;
         da[i] = 0.0;
     }
-    printf("Call foreign function (%d arg specifiers)\n", nargs-1);
     i = 0;  /* Where to put next argument */
     va_start(aa, nargs);
     w = va_arg(aa, Lisp_Object);
@@ -3487,7 +3489,6 @@ Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
     if (Lencapsulatedp(nil, w) == nil)
         return aerror("call-foreign-function");
     f = extract_pointer(w);
-    printf("Function entrypoint = %p\n", f);
     while (nargs > 0)
     {   nargs--;
         w = va_arg(aa, Lisp_Object);
@@ -3527,7 +3528,6 @@ Lisp_Object Lcallfn(Lisp_Object nil, int nargs, ...)
     }
     rtype = (resulttype == String) ? (sizeof(void *)==4 ? Int32 : Int64) :
             resulttype;
-    printf("call %p with %d args expecting result %d argspec %x\n", f, i, rtype, typemap);
     w = callforeign(f, rtype, i, typemap);
     errexit();
     if (resulttype == String)
