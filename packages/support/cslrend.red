@@ -669,6 +669,11 @@ symbolic procedure test_package m;
 
 flag('(test_package), 'opfn);
 
+% Foreign functions are EXPERIMENTAL in CSL at the time I put this in,
+% but the function to invoke one is variadic...
+
+flag('(call!-foreign!-function), 'variadic);
+
 endmodule;
 
 end;
