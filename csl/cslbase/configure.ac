@@ -270,8 +270,9 @@ x86_64-w64-*)
 # The next line gives further refinement in case there are places where
 # I have to take account of the very special case I am in. 
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
-    CFLAGS="$CFLAGS -funsigned-char -I/usr/include/ncurses"
-    CXXFLAGS="$CXXFLAGS -funsigned-char -I/usr/include/ncurses"
+    CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"

@@ -53,7 +53,6 @@
 
 #include "config.h"
 
-#include "wxfwin.h"
 
 
 
@@ -69,6 +68,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -115,6 +115,7 @@ extern char *getcwd(char *s, size_t n);
 #define MS_CDECL
 #endif /* Microsoft C */
 
+#include "wxfwin.h"
 #include "termed.h"
 
 /*

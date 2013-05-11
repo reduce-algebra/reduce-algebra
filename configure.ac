@@ -737,8 +737,7 @@ then
         AC_MSG_NOTICE([gcc will be used in mingw mode.])
       else
         AC_MSG_NOTICE([Using raw cygwin])
-        CFLAGS="$CFLAGS -I/usr/include/ncurses "
-        CXXFLAGS="$CXXFLAGS -I/usr/include/ncurses "
+        CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses "
         extras="--with-xft --with-xim"
       fi
       ;;

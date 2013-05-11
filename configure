@@ -3289,8 +3289,7 @@ $as_echo "$as_me: gcc will be used in mingw mode." >&6;}
       else
         { $as_echo "$as_me:${as_lineno-$LINENO}: Using raw cygwin" >&5
 $as_echo "$as_me: Using raw cygwin" >&6;}
-        CFLAGS="$CFLAGS -I/usr/include/ncurses "
-        CXXFLAGS="$CXXFLAGS -I/usr/include/ncurses "
+        CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses "
         extras="--with-xft --with-xim"
       fi
       ;;

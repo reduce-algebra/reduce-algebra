@@ -3749,8 +3749,9 @@ $as_echo "#define UNIX 1" >>confdefs.h
 
 $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
-    CFLAGS="$CFLAGS -funsigned-char -I/usr/include/ncurses"
-    CXXFLAGS="$CXXFLAGS -funsigned-char -I/usr/include/ncurses"
+    CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
