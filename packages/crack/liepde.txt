@@ -134,10 +134,10 @@ The input data `problem',`symtype',`flist' and `inequ' are explained below.
                               % will give 28 symmetries + one infinite
                               % family of symmetries.
 
-           {xi!_x1 =...,
+           {xi_x1 =...,
                ...
-            eta!_y3=... }     % - An ansatz must specify all xi!_.. for
-                              %   all indep. variables and all eta!_..
+            eta_y3=... }      % - An ansatz must specify all xi_.. for
+                              %   all indep. variables and all eta_..
                               %   for all dep. variables in terms of
                               %   differential expressions which may
                               %   involve unknown functions/constants.
@@ -146,15 +146,15 @@ The input data `problem',`symtype',`flist' and `inequ' are explained below.
                               %   using the DEPEND command.
                               % - If the ansatz should consist of the
                               %   characteristic functions then set
-                              %   all xi!_..=0 and assign the charac-
-                              %   teristic functions to the eta!_.. .
+                              %   all xi_..=0 and assign the charac-
+                              %   teristic functions to the eta_.. .
 
  flist:
  ======
            {- all parameters and functions in the equations which are to
               be determined, such that there exist symmetries,
             - if an ansatz has been made in symtype then flist contains
-              all unknown functions and constants in xi!_.. and eta!_..}
+              all unknown functions and constants in xi_.. and eta_..}
 
  inequ:
  =======
@@ -178,9 +178,16 @@ The input data `problem',`symtype',`flist' and `inequ' are explained below.
  individual steps in the calculation are shown.
 
  Further switches and parameters which can be changed to affect the
- output and performance of CRACK in solving the symmetry conditions
- are listed in the file CRINIT.RED.
+ output and performance of LIEPDE are described in LIEPDE.TEX and
+ for the program CRACK in solving the symmetry conditions are listed 
+ in the file CRINIT.RED.
 
-  return list('LIST,'LIST . symcon,'LIST . append(xilist,etalist),
-              'LIST . flist);
+ The procedure LIEPDE returns a list of cases. Normally this will be
+ only one case but if a parameter in the equation(s) had to be determined
+ then there may be different cases, each with different values of these
+ parameters, just like in the last example of LIEPDE.TST, see also
+ the end of the log file LIEPDE.RLG. Each case contains a list of 
+ unsolved conditions if any, a list containing the general solution for 
+ xi_.., eta_.. and a list of constants and functions appearing 
+ in the general solution or in the remaining unsolved conditions.
 

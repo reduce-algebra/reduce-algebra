@@ -2,36 +2,34 @@
 % CONLAW version 3, to calculate conservation laws of systems of PDEs
 %   by calculating characteristic functions and conserved currents
 
-%                   by Thomas Wolf, June 1999
+%                by Thomas Wolf, June 1999, Nov 2006
 
-%----------------------------------------------------------------------
+% BSDlicense: *****************************************************************
+%                                                                             *
+% Redistribution and use in source and binary forms, with or without          *
+% modification, are permitted provided that the following conditions are met: *
+%                                                                             *
+%    * Redistributions of source code must retain the relevant copyright      *
+%      notice, this list of conditions and the following disclaimer.          *
+%    * Redistributions in binary form must reproduce the above copyright      *
+%      notice, this list of conditions and the following disclaimer in the    *
+%      documentation and/or other materials provided with the distribution.   *
+%                                                                             *
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" *
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   *
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  *
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE   *
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         *
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        *
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     *
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     *
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  *
+% POSSIBILITY OF SUCH DAMAGE.                                                 *
+%******************************************************************************
 
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
-symbolic fluid '(print_ logoprint_ potint_ facint_ adjust_fnc
-                 quasilin_rhs)$
+symbolic fluid '(print_ logoprint_ potint_ facint_ adjust_fnc quasilin_rhs 
+                 flin_ done_trafo inverse_trafo_list_incomplete)$ 
 
 %-------------
 
@@ -44,7 +42,7 @@ begin
   inequ,logoold,treqlist,fl,facold,u,nodep,cpu,gc,
   cpustart,gcstart,found,cf0,rtnlist,solns,nontriv,
   extraline,cf,cfcopy,nx,nde,mindensord,mindensord0,
-  maxdensord,absmaxord,nonconstc;
+  maxdensord,absmaxord,nonconstc,new_var_fnc;
 
   backup_reduce_flags()$
   lisp <<adjustold:=adjust_fnc; adjust_fnc:=t;
@@ -56,19 +54,19 @@ begin
 % contrace:=t;
 
   %--- extracting input data
-  eqlist:= reverse maklist first problem;
-  ulist := maklist second problem;
-  xlist:= maklist third problem;
+  eqlist:= sqreverse maklist sqfirst problem;
+  ulist := maklist sqsecond problem;
+  xlist:= maklist sqthird problem;
   nx:=length xlist;
   nde:=length eqlist;
   if contrace then write"eqlist=",eqlist,
   " ulist=",ulist," xlist=",xlist;
 
-  mindensord:=part(runmode,1)$
-  maxdensord:=part(runmode,2)$
-  expl      :=part(runmode,3)$
-  flist     :=part(runmode,4)$
-  inequ0    :=part(runmode,5)$
+  mindensord:=sqpart(runmode,1)$
+  maxdensord:=sqpart(runmode,2)$
+  expl      :=sqpart(runmode,3)$
+  flist     :=sqpart(runmode,4)$
+  inequ0    :=sqpart(runmode,5)$
   problem:=runmode:=0;
 
   %--- initial printout
@@ -78,29 +76,28 @@ begin
     write "This is CONLAW3 - a program for calculating conservation",
     " laws of DEs"; terpri()
   >>                 else terpri());
-  if nde = 1
+  if nde = 1 
   then write "The DE under investigation is :"
   else write "The DEs under investigation are :";
-  for each e1 in reverse eqlist do write e1;
+  for each e1 in sqreverse eqlist do write e1;
   lisp<<terpri()$write "for the function(s): "$
         fctprint cdr reval ulist;terpri()>>$
   write"======================================================"$
-
+  
   %--- nodep is a list of derivatives the Q do not depend on
-  nodep:=first lhsli(eqlist)$
+  nodep:=sqfirst lhsli(eqlist)$
 
   %--- Here comes a test that lhs's are properly chosen
   chksub(eqlist,ulist)$
 
   %--- Checking whether an ansatz for characteristic functions
   %--- has been made, then denominator of equations is not dropped
-  for n:=1:nde do
+  for n:=1:nde do 
   if not lisp(null get(mkid('q_,n),'avalue)) then cf0:=t;
 
-  eqlist:=reverse for each e1 in eqlist collect
-          if part(e1,0)=EQUAL then if cf0 then lhs e1 - rhs e1
-                                          else num(lhs e1 - rhs e1)
-                              else if cf0 then e1 else num e1;
+  eqlist:=sqreverse for each e1 in eqlist collect 
+          if part(e1,0)=EQUAL then lhs e1 - rhs e1 
+                              else e1;
 
   if contrace then write"ulist=",ulist,"    eqlist=",eqlist;
 
@@ -110,7 +107,7 @@ begin
   %------ the list of parameters of the equation to be determined
   paralist:={};
   for each e1 in flist do
-  if not freeof(eqlist,e1) then paralist:=cons(e1,paralist);
+  if not freeof(eqlist,e1) then paralist:=sqcons(e1,paralist);
 
   %------ determination of the order of the input equations
   eqord:=0;
@@ -118,7 +115,7 @@ begin
   for each e2 in ulist do <<
 %    h1:=totordpot(e1,e2);
 %    if car h1>eqord then <<eqord:=car h1;eqlddeg:=cdr h1>> else
-%    if car h1=eqord then
+%    if car h1=eqord then 
 %    if cdr h1>eqlddeg then eqlddeg:=cdr h1
     h1:=totdeg(e1,e2);
     if h1>eqord then eqord:=h1
@@ -138,7 +135,7 @@ begin
   >>;
   for n:=1:nx do <<
     % if the index of p_ should be a number then use n instead of h4
-    h4:=lisp(reval algebraic(part(xlist,n)));
+    h4:=lisp(reval algebraic(sqpart(xlist,n)));
     h1:=mkid(p_,h4);
     if not lisp(null get(mkid('p_,h4),'avalue)) then <<
       for each e2 in ulist do <<
@@ -174,7 +171,7 @@ begin
   if cf0 then
   for n:=1:nx do <<
     % if the index of p_ should be a number then use n instead of h4
-    h4:=lisp(reval algebraic(part(xlist,n)));
+    h4:=lisp(reval algebraic(sqpart(xlist,n)));
     h1:=mkid(p_,h4);
     if not lisp(null get(mkid('p_,h4),'avalue)) then <<
       for each e1 in sb do h1:=sub(e1,h1);
@@ -186,7 +183,7 @@ begin
   %--- investigate conservation laws of increasing order
   for densord:=mindensord:maxdensord do <<
 
-    nodepnd ulist;
+    nodependlist ulist;
 
     cpu:=lisp time()$ gc:=lisp gctime()$
     if cf0 then
@@ -217,17 +214,17 @@ begin
       write"absmaxord=",absmaxord;
     >>;
 
-    if {}=fargs first ulist then
-    for each e1 in ulist do depnd(e1,{xlist});
+    if {}=fargs sqfirst ulist then
+    for each e1 in ulist do dependlist(e1,{xlist});
     sb:=subdif1(xlist,ulist,absmaxord)$
-    nodepnd ulist;
+    nodependlist ulist;
     if contrace then write"sb=",sb;
 
-    dulist:=ulist . reverse for each e1 in sb collect
-                            for each e2 in e1 collect rhs e2;
+    dulist:=ulist . sqreverse for each e1 in sb collect
+                              for each e2 in e1 collect rhs e2;
     sb:=0;
-    revdulist:=reverse dulist;      % dulist with decreasing order
-    udens:=part(dulist,densord+1);  % derivatives of order densord
+    revdulist:=sqreverse dulist;      % dulist with decreasing order
+    udens:=sqpart(dulist,densord+1);  % derivatives of order densord
     vl:=for each e1 in dulist join e1;
     if contrace then write"vl=",vl,"  udens=",udens;
 
@@ -237,37 +234,39 @@ begin
     %--- initializing characteristic functions cf, the list of functions fl,
     %--- the conserved current pl and the condition condi
     condi:=0;
-    deplist:=lisp(cons('LIST,setdiff(cdr ulist,cdr nodep))) .
-             for n:=1:densord collect listdifdif2(nodep,part(dulist,n+1));
+    deplist:=lisp(cons('LIST,setdiff(cdr ulist,cdr nodep))) . 
+             for n:=1:densord collect listdifdif2(nodep,sqpart(dulist,n+1));
     if expl then deplist:=xlist . deplist;
-    deplist:=reverse deplist;
+    deplist:=sqreverse deplist;
     cf:={};
     for n:=1:nde do <<
       h1:=mkid(q_,n);
       if lisp(null get(mkid('q_,n),'avalue)) then <<
-        nodepnd({h1});
-        depnd(h1, deplist);
-        fl:=cons(h1,fl);
+        nodependlist({h1});
+        dependlist(h1, deplist);
+        fl:=sqcons(h1,fl);
+        lisp(flin_:=reval h1 . flin_)
       >>;
-      cf:=cons(h1,cf);
-      condi:=condi+h1*part(treqlist,n);
+      cf:=sqcons(h1,cf);
+      condi:=condi+h1*sqpart(treqlist,n);
     >>;
-    cf:=reverse cf$
+    cf:=sqreverse cf$
 
-    deplist:=for h3:=0:(absmaxord-1) collect part(dulist,h3+1);
+    deplist:=for h3:=0:(absmaxord-1) collect sqpart(dulist,h3+1);
     if expl then deplist:=xlist . deplist;
-    deplist:=reverse deplist;
+    deplist:=sqreverse deplist;
     pl:={};
     for n:=1:nx do <<
       % if the index of p_ should be a number then use n instead of h4
-      h4:=lisp(reval algebraic(part(xlist,n)));
+      h4:=lisp(reval algebraic(sqpart(xlist,n)));
       h1:=mkid(p_,h4);
       if lisp(null get(mkid('p_,h4),'avalue)) then <<
-        nodepnd({h1});
-        depnd(h1, deplist);
+        nodependlist({h1});
+        dependlist(h1, deplist);
         fl:=h1 . fl;
+        lisp(flin_:=reval h1 . flin_)
       >>;
-      pl:=cons(h1,pl);
+      pl:=sqcons(h1,pl);
       condi:=condi-totdif(h1,h4,n,dulist)
     >>;
     sb:=0;
@@ -276,31 +275,31 @@ begin
     if contrace then lisp (write" depl*=",depl!*);
 
     if contrace then write"condi=",condi;
-    vl:=reverse append(xlist,vl); % now the full list
+    vl:=sqreverse sqappend(xlist,vl); % now the full list
 
     inequ:=inequ0;
 
     %--- inequ is to stop crack if order of cf is too low
-    if (densord neq 0) and
+    if (densord neq 0) and 
        ((cf0=nil) or (mindensord0 neq 0)) then <<
       % for the investigation to stop if
       % cf is independent of highest order derivatives
-      dequ:=0;
+      dequ:={};
       for each e1 in cf do <<
         h1:=udens;
         while h1 neq {} do <<
-          dequ:=dequ+df(e1,first h1)*(lisp intern gensym());
-          h1:=rest h1
+          dequ:=sqcons(df(e1,first h1),dequ);
+          h1:=sqrest h1
         >>;
       >>;
-      inequ:=cons(dequ,inequ)
+      inequ:=sqcons(dequ,inequ)
     >>;
     if contrace then write"inequ=",inequ;
     condi:={condi};
 
     if (not lisp(null get('cl_condi,'avalue))) and
-       (part(cl_condi,0)=LIST) then
-    condi:=append(condi,cl_condi)$
+       (part(cl_condi,0)=LIST) then 
+    condi:=sqappend(condi,cl_condi)$
 
     %--- freeing some space
     sb:=dulist:=revdulist:=deplist:=e1:=e2:=e3:=
@@ -310,45 +309,77 @@ begin
     if lisp(!*time) then
     write "time to formulate condition: ", lisp time() - cpu,
           " ms    GC time : ", lisp gctime() - gc," ms"$
+    inverse_trafo_list_incomplete:=nil;
+    condi:=split_simp(condi,inequ,fl,vl,nil)$
     solns:=crack(condi,inequ,fl,vl);
 
     %--- postprocessing
+
+    lisp 
+    if done_trafo and cdr done_trafo then <<
+     terpri()$
+     if cddr done_trafo                                               then 
+     write"The following transformations reverse the transformations" else
+     write"The following transformation reverses the transformation"$
+     terpri()$
+     write"performed in the computation:"$
+     algebraic write lisp done_trafo$
+     if inverse_trafo_list_incomplete then <<
+      write"***** The list 'done_trafo' of inverse transformations"$terpri()$
+      write"      is not complete as at least one transformation"$terpri()$
+      write"      could not be inverted"$terpri()$
+      write"======================================================"$
+      terpri()
+     >>$
+
+     % fnc_of_new_var() uses global variables done_trafo,depl!*
+     % and determines all functions depending on (new) lhs variables 
+     % in done_trafo
+     new_var_fnc:=fnc_of_new_var()$
+    >>$
 
     lisp terpri()$
     pllist:={};
     cllist:={};
     found:=nil;
     while solns neq {} do << % for each solution (if param. are determ.)
-      soln:=first solns;
-      solns:=rest solns;
-      condi:=first soln;
+      soln:=sqfirst solns;
+      solns:=sqrest solns;
+      condi:=sqfirst soln;
 
       % filtering out conservation laws found in the previous run
-      cfcopy:=sub(second soln,cf);
+      cfcopy:=sub(sqsecond soln,cf);
       % any non-trivial conservation law?
       h1:=0;
       for each h2 in cfcopy do if h2 neq 0 then h1:=1;
       if h1 neq 0 then <<
-        pl:=sub(second soln,pl);
+        pl:=sub(sqsecond soln,pl);
         if contrace then write"cfcopy=",cfcopy," pl=",pl;
-        h1:=third soln;
+        h1:=sqthird soln;
         if contrace then write"third soln=",h1;
         fl:={};
         h2:={};
         for each e1 in h1 do <<
-          if not freeof(condi,e1) then fl:=cons(e1,fl);
+          if not freeof(condi,e1) then fl:=sqcons(e1,fl); 
           % fl to output remaining conditions later
-          if freeof(paralist,e1) then h2:=cons(e1,h2)
+          if freeof(paralist,e1) then h2:=sqcons(e1,h2)
         >>;
-        h1:=parti_fn(h2,condi)$
+
+        h1:=parti_fn(h2,condi)$ % h1 is a list of lists of fnc/const 
+        % in h2 (i.e. unknowns that are not parameters) that depend 
+        % on each other through the list of unsolved conditions condi
+
         if contrace then write"h1(partitioned)=",h1;
 
         extraline:=nil;
         nonconstc:={};
-        while h1 neq {} do << % for each potential conservation law
-          % h1 is the list of lists of constants/functions
-          % depending on each other
-          h2:=first h1;h1:=rest h1;
+        % h1 is the list of lists of constants/functions
+        % depending on each other
+        while h1 neq {} do << 
+          % i.e. for each subset of interdependent fnc/const, 
+          % each subset will give one conservation law
+
+          h2:=sqfirst h1;h1:=sqrest h1;
 
           if contrace then write"h2=",h2;
           if contrace then write"cfcopy=",cfcopy;
@@ -358,19 +389,19 @@ begin
             e3:=for each e1 in h2 sum fdepterms(e2,e1);
             if e3 neq 0 then nontriv:=t;
             e3
-          >>;
+          >>; 
           if nontriv then <<
             for each e1 in h2 do
             if fargs e1 neq {} then lisp <<
               nonconstc:=cons('LIST,cons(reval e1,cdr nonconstc));
-              write"The function "$
+              write reval e1," = "$
               fctprint list reval e1$
-              write" is not constant!";
+              write" is not constant.";
               extraline:=t;
               terpri()
             >>;
             %--- the current
-            h4:=reverse for each e2 in pl collect
+            h4:=sqreverse for each e2 in pl collect 
                 for each e1 in h2 sum fdepterms(e2,e1);
 
             if contrace then write"h3-1=",h3,"  h4-1=",h4;
@@ -380,38 +411,38 @@ begin
               h4:=sub(sb,h4)
             >>;
             if contrace then write"h3-2=",h3,"  h4-2=",h4;
-            if (length(h2)=1) and (fargs first h2 = {}) then <<
-              e1:=first h2;
+            if (length(h2)=1) and (fargs sqfirst h2 = {}) then <<
+              e1:=sqfirst h2;
               h4:=sub(e1=1,h4);
               h3:=sub(e1=1,h3)
             >>;
 
             h5:=udens;
-            if (densord > 0) and
-               ((cf0=nil) or (mindensord0 neq 0)) then
-            while (h5 neq {}) and freeof(h3,first h5) do h5:=rest h5;
+            if (densord > 0) and 
+               ((cf0=nil) or (mindensord0 neq 0)) then 
+            while (h5 neq {}) and 
+                  freeof(h3,lisp reval algebraic sqfirst h5) do h5:=sqrest h5;
             if h5 neq {} then << % h3 is of order densord
-              cllist:=cons(h3,cllist);
-              pllist:=cons(h4,pllist)
+              cllist:=sqcons(h3,cllist);
+              pllist:=sqcons(h4,pllist)
             >>
           >>
         >>;
         if condi neq {} then <<
-          write"There are remaining conditions: ",
-                condi;
+          lisp write"There are remaining conditions: "$
+          write condi;
           lisp <<
-          write"for the functions: ";
-          fctprint cdr reval algebraic fl;terpri();
-          write"Corresponding CLs might not be shown below as they";
-          terpri()$write"could be of too low order.";terpri()>>;
+            write"for the functions: ";
+            fctprint cdr reval algebraic fl;terpri();
+          >>;
           extraline:=t;
         >>;
         if extraline then lisp <<
-          write"======================================================"$
+          write"- - - - - - - - - - - - - - - - - - - - - - - - - - - "$
           terpri()
         >>;
 
-        for each e1 in ulist do depnd(e1,{xlist});
+        for each e1 in ulist do dependlist(e1,{xlist});
 
         if contrace then write"cllist2=",cllist,"  pllist2=",pllist$
         on evallhseqp;
@@ -425,7 +456,7 @@ begin
         pllist:=sub(sb,pllist);
         if contrace then write"pllist3=",pllist$
 %        if nx=2 then
-%        pllist:=simppl(pllist,ulist,first xlist,second xlist)$
+%        pllist:=simppl(pllist,ulist,sqfirst xlist,sqsecond xlist)$
 
         if contrace then <<
           write"cllist3=",cllist;
@@ -436,31 +467,35 @@ begin
         while pllist neq {} do <<
           found:=t;
           write"Conservation law:";
-          h2:=first pllist;
-          h3:=first cllist;
-          rtnlist:=cons({h3,h2},rtnlist);
+          h2:=sqfirst pllist;
+          h3:=sqfirst cllist;
 
           %--- conditions on parameters
-          if paralist neq {} then
-          for each e2 in second soln do
-          if not freeof(paralist,lhs e2) then
-          <<write e2,",";lisp(terpri())>>$
+          if paralist neq {} then 
+          for each e2 in sqsecond soln do
+          if not freeof(paralist,lhs e2) then 
+          <<write e2,",";lisp(terpri());
+            h2:=sub(e2,h2);
+            h3:=sub(e2,h3)
+          >>$
+
+          rtnlist:=sqcons({h3,h2},rtnlist);
 
           %--- the conservation laws
           h4:=eqlist;
-          if paralist then h4:=sub(second soln,h4);
+          if paralist then h4:=sub(sqsecond soln,h4);
           print_claw(h4,h3,h2,xlist)$
 
           %--- factoring out diff operators?
           h6:={};
           for each h5 in nonconstc do
-          if not freeof(h3,h5) then h6:=cons(h5,h6);
-          if (h6 neq {}) and
+          if not freeof(h3,h5) then h6:=sqcons(h5,h6);
+          if (h6 neq {}) and 
              (h2 neq nondiv) then partintdf(h4,h3,h2,xlist,h6,vl,sb);
 
           write"======================================================"$
-          pllist:=rest pllist;
-          cllist:=rest cllist;
+          pllist:=sqrest pllist;
+          cllist:=sqrest cllist;
         >>$
       >>;
     >>;
@@ -470,8 +505,8 @@ begin
     >>
   >>; % for densord:=mindensord:maxdensord
 
-  if fargs(first ulist)={} then
-  for each e1 in ulist do depnd(e1,{xlist});
+  if fargs(sqfirst ulist)={} then
+  for each e1 in ulist do dependlist(e1,{xlist});
 
   if lisp(!*time) then
   write "time to run conlaw3: ", lisp time() - cpustart,

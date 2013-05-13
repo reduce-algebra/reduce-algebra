@@ -27,14 +27,11 @@
 %*******************************************************************%
 
 lisp(depl!*:=nil)$           % clearing of all dependencies
-%setcrackflags()$             % use standart flag-setting
-%lisp(print_:=50)$           % if one would want to print expressions 
-                             % with up to 50 factors
+setcrackflags()$             % use standart flag-setting
 lisp(print_:=nil)$           % to suppress printing the computation
 lisp(initial_proc_list_ :=   % initial_proc_list_ is saved for an 
      proc_list_)$            % application at the end
 on dfprint$                  % to print partial deriv. as indices
-%off batch_mode$
 comment 
 -------------------------------------------------------
 
@@ -62,7 +59,7 @@ where each solution is a list:
   list_of_inequalities_valid_for_this_solution }
 Empty lists are {}.
 
-=======================================================;
+============================================================;
 
 write"        Integration: Integrating exact PDEs "$comment
 
@@ -75,12 +72,15 @@ depend f,x,y$
 depend g,x$
 
 de:=2*df(f,y)*df(g,x) + 2*df(f,x,y)*g + g*df(g,x)**3 + 
-    x*df(g,x)**4 + 3*x*g*df(g,x)**2*df(g,x,2)$ 
+    x*df(g,x)**4 + 3*x*g*df(g,x)**2*df(g,x,2);
 
-lisp(proc_list_ := '(integration))$
+lisp(proc_list_ := '(to_do integration))$
+
 crack({de},{},{f,g},{});
 
-write"-------------------------------------------------------"$ 
+fdep third first ws$
+
+write"======================================================="$
 
 write"  Integration: Integration of an exact PDE + terms "$
 write"               which are not exact (are not a total "$
@@ -96,12 +96,14 @@ integration variable x, as a consequence the algorithm
 is applicable such that only one extra function has to be 
 introduced. $
 
-de:=de + g^2*(y^2 + x*sin y + x^2*exp y)$
+de:=de + g^2*(y^2 + x*sin y + x^2*exp y);
 
 crack({de},{},{f,g},{});
-nodepnd {f,g}$
 
-write"-------------------------------------------------------"$
+fdep third first ws$
+nodependlist {f,g}$
+
+write"======================================================="$
 
 write"          Integration: Integrating Factors"$ comment
 
@@ -111,13 +113,14 @@ in CRACK are not rigorous but often useful. $
 depend f,x,y$
 
 g:=df(f,x)/e**x+df(f,y)/x**2$
+de:=num(df(g,x));
+crack({de},{},{f},{});
+fdep third first ws$
 
-crack({num(df(g,x))},{},{f},{});
+clear g,de$
+nodependlist {f}$
 
-clear g$
-nodepnd {f}$
-
-write"-------------------------------------------------------"$
+write"======================================================="$
 
 write"     Integration: Recognizing a 2-dim divergence"$ comment
 
@@ -126,7 +129,7 @@ where a,b are differential expressions is of benefit
 if a,b can both be solved for a unknown function as
 in the following example. $
 
-lisp(proc_list_ := '(subst_level_4 integration))$
+lisp(proc_list_ := '(to_do subst_level_4 integration))$
 
 depend f,x,y$
 depend g,x,y$
@@ -134,12 +137,15 @@ depend h,x,y$
 
 a:=x*f+y*df(g,y)$
 b:=df(g,x,y)*sin(x)+h/y$
+de:=df(a,x)+df(b,y);
 
-crack({df(a,x)+df(b,y)},{},{f,g,h},{});
+crack({de},{},{f,g,h},{});
 
-nodepnd {f,g,h}$
+fdep third first ws$
+nodependlist {f,g,h}$
+clear a,b,de$
 
-write"-------------------------------------------------------"$
+write"======================================================="$
 
 write"      Integration: Solving ODEs for partial derivatives"$ comment
 
@@ -149,12 +155,14 @@ MacCallum/Wright. In the following example this technique
 together with a previous one are successful. $
 
 depend f,x,y$
-lisp(proc_list_ := '(subst_level_4 integration))$
+lisp(proc_list_ := '(to_do subst_level_4 integration))$
 
-crack({x**2*df(f,x,2,y)-2*x*df(f,x,y)-df(f,y)+x**3/y**2},
-      {},{f},{});
+de:=x**2*df(f,x,2,y)-2*x*df(f,x,y)-df(f,y)+x**3/y**2;
+crack({de},{},{f},{});
 
-nodepnd {f}$
+fdep third first ws$
+nodependlist {f}$
+clear de$
 
 write"======================================================="$
 
@@ -176,12 +184,12 @@ but only indirect separation (see next example). $
 depend f,x$
 depend g,y$
 depend h,z$
-de:=z*f + h*y*g$
-lisp(proc_list_ := '(subst_level_4 separation))$
+fdep {f,g,h}$
+de:=z*f + h*y*g;
+lisp(proc_list_ := '(to_do subst_level_4 separation))$
 crack({de},{},{f,g},{z});
-nodepnd {f,g,h}$
-
-write"-------------------------------------------------------"$
+nodependlist {f,g,h}$
+write"======================================================="$
 
 write"       Separation: Indirect separation of PDEs"$
 write"                   (combined with integration)"$ comment
@@ -201,11 +209,15 @@ Three solutions result,
 depend f,y$
 depend g,x$
 depend h,z$
-de:=z*f + h*y*g$
-lisp(proc_list_ := '(subst_level_3 separation
-                     gen_separation alg_solve_single))$
-crack({de},{},{f,g,h},{});
-nodepnd {f,g,h}$
+fdep {f,g,h}$
+de:=z*f + h*y*g;
+lisp(proc_list_ := '(to_do subst_level_3 separation 
+                     factorize_any gen_separation))$
+de:=crack({de},{},{f,g,h},{});
+de;
+
+fdep append(third first ws,third second ws,third third ws)$
+nodependlist {f,g,h}$
 
 write"======================================================="$
 
@@ -221,9 +233,9 @@ example is described at the end of this file.) ;
 
 depend xi ,x,y$
 depend eta,x,y$
-lisp(proc_list_ := '(separation decoupling))$ 
+lisp(proc_list_ := '(to_do separation decoupling))$ 
 
-crack({2*df(eta,x,y)*x**5*y1
+de:=2*df(eta,x,y)*x**5*y1
        + df(eta,x,2)*x**5 - df(eta,x)*x**4 
        - 2*df(eta,x)*x**2*y + df(eta,y,2)*x**5*y1**2 
        - 4*df(eta,y)*x*y**2 - 2*df(xi,x,y)*x**5*y1**2
@@ -232,12 +244,13 @@ crack({2*df(eta,x,y)*x**5*y1
        + 8*df(xi,x)*x*y**2 - df(xi,y,2)*x**5*y1**3 
        - 2*df(xi,y)*x**4*y1**2 - 4*df(xi,y)*x**2*y*y1**2 
        + 12*df(xi,y)*x*y**2*y1 - 2*eta*x**2*y1 + 8*eta*x*y 
-       + x**3*xi*y1 + 6*x*xi*y*y1 - 16*xi*y**2},
-      {},{eta,xi},{x,y,y1});
+       + x**3*xi*y1 + 6*x*xi*y*y1 - 16*xi*y**2;
+crack({de},{},{eta,xi},{x,y,y1});
 
-nodepnd {xi,eta}$
+nodependlist {xi,eta}$
+clear de$
 
-write"-------------------------------------------------------"$
+write"======================================================="$
 
 write"      Combination: Shortening linear PDE systems"$ comment
 
@@ -248,32 +261,36 @@ equations become, the more useful they are to shorten
 other equations and the more likely they are integrable.;
 
 depend f,x,y$
-a:=sin(x)*y+7*x+3*df(f,x)$
-b:=df(f,y)*y+f*x+x*y**2$
-c:=3*x*y**2+sin(x)*y-4$
-lisp(proc_list_ := '(alg_length_reduction))$
-
-crack({a,a*c+b},{},{f},{});
-clear a,b,c$
-nodepnd {f}$
-
+de1:=sin(x)*y+7*x+3*df(f,x);
+de2:=de1 * (3*x*y**2+sin(x)*y-4) + df(f,y)*y+f*x+x*y**2;
+lisp(proc_list_ := '(to_do alg_length_reduction))$
+crack({de1,de2},{},{f},{});
+clear de1,de2$
+nodependlist {f}$
 write"======================================================="$
 
 write"  Parametric solution of linear underdetermined ODEs"$ comment
 
 The following example demonstrates an algorithm for the
 parametric solution of underdetermined linear ODEs with
-arbitrary non-constant cefficients. $
+arbitrary non-constant cefficients. The rule trig1_ is
+defined in crinit.red in procedure ini_let_rules().
+It makse sin^2 --> 1-cos**2 .$
 
 depend f,x$
 depend g,x$
-lisp(proc_list_ := '(subst_level_4 undetlinode))$
-crack({cos(x)*df(f,x,2) - df(g,x,2)},{},{f,g},{});
-nodepnd {f,g}$
+de:=cos(x)*df(f,x,2) - df(g,x,2);
+lisp(proc_list_ := '(to_do subst_level_4 undetlinode))$
+let trig1_$
+crack({de},{},{f,g},{});
+fdep third first ws$
+clearrules trig1_$
+
+nodependlist {f,g}$
 
 write"======================================================="$
 
-write"Application: Investigating point symmetries of an ODE"$ comment
+write" Application: Investigating point symmetries of an ODE"$ comment
 
 Finally a  small real life example that demonstrates
 the interplay of different modules to solve completely
@@ -298,7 +315,7 @@ depend xi ,x,y$
 depend eta,x,y$
 lisp(proc_list_ := initial_proc_list_)$   % this was saved at the start
 
-crack({2*df(eta,x,y)*x**5*y1
+de:=2*df(eta,x,y)*x**5*y1
        + df(eta,x,2)*x**5 - df(eta,x)*x**4 
        - 2*df(eta,x)*x**2*y + df(eta,y,2)*x**5*y1**2 
        - 4*df(eta,y)*x*y**2 - 2*df(xi,x,y)*x**5*y1**2
@@ -307,10 +324,12 @@ crack({2*df(eta,x,y)*x**5*y1
        + 8*df(xi,x)*x*y**2 - df(xi,y,2)*x**5*y1**3 
        - 2*df(xi,y)*x**4*y1**2 - 4*df(xi,y)*x**2*y*y1**2 
        + 12*df(xi,y)*x*y**2*y1 - 2*eta*x**2*y1 + 8*eta*x*y 
-       + x**3*xi*y1 + 6*x*xi*y*y1 - 16*xi*y**2},
-      {},{xi,eta},{x,y,y1});
+       + x**3*xi*y1 + 6*x*xi*y*y1 - 16*xi*y**2;
 
-nodepnd {xi,eta}$
+crack({de},{},{xi,eta},{x,y,y1});
+
+fdep third first ws$
+nodependlist {xi,eta}$
 
 write"======================================================="$
 
@@ -321,14 +340,44 @@ bigger and bigger and normal integration is not successful and
 also no functions of fewer variables are present then trying
 the solution of a 1st order linear PDE is recommended. $
 
-lisp(proc_list_ := '(subst_level_4 full_integration 
+lisp(proc_list_ := '(to_do subst_level_4 full_integration 
                      gen_separation find_trafo))$
-depend f,x,y;
-crack({df(f,x)-x**2*y*df(f,y)+x},{},{f},{});
+depend f,x,y$
+
+de:=df(f,x)-x*y*df(f,y)+x;
+
+crack({de},{},{f},{});
+
+fdep third first ws$
 write "The list of transformations done (here only one): ",
       lisp done_trafo;
 
-nodepnd {f}$
+nodependlist {f}$
+clear de$
+
+write"======================================================="$
+
+write"  Integration: Integration enabled through a syzygy"$comment
+
+A side product of a differential Groebner basis computation
+is the computation of syzygies, i.e. identities between
+differential equations. In
+Wolf, T.: "The integration of systems of linear PDEs using conservation
+laws of syzygies", J. Symb. Comp. 35, no 5 (2003), 499-526
+and arXiv: cs.SC/0301028
+it is shown how the knowledge of syzygies of a linear PDE system
+can be used to integrate two equations at once;
+
+depend f,x,y,z$
+a:=z**2*df(f,x,y)+x*sin(y)*df(f,y)-3*f+x**2*z$
+de:={df(a,x),df(a,y)};
+
+lisp(proc_list_ := '(to_do del_redundant_de idty_integration decoupling))$  
+lisp(record_hist:=t)$
+
+crack(de,{},{f},{});
+fdep third first ws$
+nodependlist {f}$
 
 write"======================================================="$
 

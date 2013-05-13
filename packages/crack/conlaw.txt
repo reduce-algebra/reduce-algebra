@@ -92,9 +92,15 @@
  an index - the number of the equation in the input system of equations
  with which q_i is multiplied to give the RHS of (1).
 
- There is a restriction in the structure of all the
- expressions for p_i, q_j that are specified: they must be homogeneous linear
- in some unknown function or constant.
+ There is a restriction in the structure of all the expressions for
+ p_i, q_j that are specified: they must be homogeneous linear in some
+ unknown function or constant. (This is necessary because the
+ different conservation laws are identified on the basis of free
+ constants or functions and if there are terms without a free
+ constant/function as multiplier then the program will not take these
+ terms into consideration when deciding whether the conservation law
+ is of high enough differential order and thus possibly drop this
+ conservation law when listing all relevant conservation laws.)
 
  All such functions and constants must be
  listed in flist (see above). The dependencies of such functions

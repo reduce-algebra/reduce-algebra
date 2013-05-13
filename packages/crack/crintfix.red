@@ -7,9 +7,33 @@ module intfix$  % Further fixes to the integration package.
 %  $Id$
 %
 
-if lisp !*comp then apply1('load!-package, 'int)$
+% BSDlicense: *****************************************************************
+%                                                                             *
+% Redistribution and use in source and binary forms, with or without          *
+% modification, are permitted provided that the following conditions are met: *
+%                                                                             *
+%    * Redistributions of source code must retain the relevant copyright      *
+%      notice, this list of conditions and the following disclaimer.          *
+%    * Redistributions in binary form must reproduce the above copyright      *
+%      notice, this list of conditions and the following disclaimer in the    *
+%      documentation and/or other materials provided with the distribution.   *
+%                                                                             *
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" *
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   *
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  *
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE   *
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         *
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        *
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     *
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     *
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  *
+% POSSIBILITY OF SUCH DAMAGE.                                                 *
+%******************************************************************************
 
-fluid '(!*depend !*nolnr !*failhard)$
+if lisp !*comp then apply1('load!-package, 'int)$   
+
+fluid '(!*depend !*nolnr !*failhard)$ 
 
 % die folgende Aenderung verhindert das Erzeugen von int* ...
 
@@ -150,84 +174,60 @@ symbolic procedure diffp(u,v);
         if not depends(u,v)
            and (not (x:= atsoc(u,powlis!*))
                  or not depends(cadddr x,v))
-           and null !*depend
+	   and null !*depend
           then return nil ./ 1;
         w := list('df,u,v);
-        w := if x := opmtch w then simp x else mksq(w,1);
-        go to e;
+	w := if x := opmtch w then simp x else mksq(w,1);
+	go to e;
     h:  % Final check for possible kernel deriv.
-        if car u eq 'df                 % multiple derivative
-          then if depends(cadr u,v)
+	if car u eq 'df                 % multiple derivative
+	  then if depends(cadr u,v)
 % FJW - my version of above test was simply as follows.  Surely, inner
 % derivative will already have simplied to 0 unless v depends on A!
                         and not(cadr u eq v)
                         % (df (df v A) v) ==> 0
-%%            and not(cadr u eq v and not depends(v,caddr u))
-%%             % (df (df v A) v) ==> 0 unless v depends on A.
-                 then
-          <<if !*fjwflag and eqcar(cadr u, 'int) then
-              % (df (df (int F x) A) v) ==> (df (df (int F x) v) A) ?
-              % Commute the derivatives to differentiate the integral?
-              if caddr cadr u eq v then
-                 % Evaluating (df u v) where u = (df (int F v) A)
-                 % Just return (df F A) - derivative absorbed
-                 << w := 'df . cadr cadr u . cddr u;  go to j >>
-              else if !*allowdfint and
-                 % Evaluating (df u v) where u = (df (int F x) A)
+%% 	     and not(cadr u eq v and not depends(v,caddr u))
+%% 	      % (df (df v A) v) ==> 0 unless v depends on A.
+		 then
+	  <<if !*fjwflag and eqcar(cadr u, 'int) then
+	      % (df (df (int F x) A) v) ==> (df (df (int F x) v) A) ?
+	      % Commute the derivatives to differentiate the integral?
+	      if caddr cadr u eq v then
+		 % Evaluating (df u v) where u = (df (int F v) A)
+		 % Just return (df F A) - derivative absorbed
+		 << w := 'df . cadr cadr u . cddr u;  go to j >>
+	      else if !*allowdfint and
+		 % Evaluating (df u v) where u = (df (int F x) A)
                  % (If dfint is also on then this will not arise!)
-                 % Commute only if the result simplifies:
-                 not_df_p(w := diffsq(simp!* cadr cadr u, v))
-              then <<
-                 % Generally must re-evaluate the integral (carefully!)
+		 % Commute only if the result simplifies:
+		 not_df_p(w := diffsq(simp!* cadr cadr u, v))
+	      then <<
+		 % Generally must re-evaluate the integral (carefully!)
 % FJW.  Bug fix!
-                 % w := aeval{'int, mk!*sq w, caddr cadr u} . cddr u;
-                 w := 'df . reval{'int, mk!*sq w, caddr cadr u} . cddr u;
-                 go to j >>;  % derivative absorbed
-           if (x := find_sub_df(w:= cadr u . derad(v,cddr u),
-                                           get('df,'kvalue)))
-                          then <<w := simp car x;
-                                 for each el in cdr x do
-                                    for i := 1:cdr el do
-                                        w := diffsq(w,car el);
-                                 go to e>>
-                       else w := 'df . w
-                >>
-                else if null !*depend then return nil ./ 1
-                else w := {'df,u,v}
-         else w := {'df,u,v};
+		 % w := aeval{'int, mk!*sq w, caddr cadr u} . cddr u;
+		 w := 'df . reval{'int, mk!*sq w, caddr cadr u} . cddr u;
+		 go to j >>;  % derivative absorbed
+	   if (x := find_sub_df(w:= cadr u . derad(v,cddr u),
+					   get('df,'kvalue)))
+			  then <<w := simp car x;
+				 for each el in cdr x do
+				    for i := 1:cdr el do
+					w := diffsq(w,car el);
+				 go to e>>
+		       else w := 'df . w
+		>>
+		else if null !*depend then return nil ./ 1
+		else w := {'df,u,v}
+	 else w := {'df,u,v};
    j:   if (x := opmtch w) then w := simp x
-         else if not depends(u,v) and null !*depend then return nil ./ 1
-         else w := mksq(w,1);
+	 else if not depends(u,v) and null !*depend then return nil ./ 1
+	 else w := mksq(w,1);
       go to e
    end$
 
 
 % Author: Francis J. Wright <F.J.Wright@QMW.ac.uk>
 % Last revised: 27 December 1997
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
 
 symbolic procedure dfform_int(u, v, n);
    % Simplify a SINGLE derivative of an integral.
@@ -245,7 +245,7 @@ symbolic procedure dfform_int(u, v, n);
       x := caddr u;  % kernel
       result :=
       if v eq x then y
-         % df(int(y,x), x) -> y       replacing the let rule in INT.RED
+	 % df(int(y,x), x) -> y	 replacing the let rule in INT.RED
       else if not !*intflag!* and       % not in the integrator
          % If used in the integrator it can cause infinite loops,
          % e.g. in df(int(int(f,x),y),x) and df(int(int(f,x),y),y)
@@ -253,12 +253,12 @@ symbolic procedure dfform_int(u, v, n);
             << y := diffsq(y, v);  !*dfint or not_df_p y >>
                % it has simplified
       then simp{'int, mk!*sq y, x}  % MUST re-simplify it!!!
-         % i.e. differentiate under the integral sign
-         % df(int(y, x), v) -> int(df(y, v), x).
-         % (Perhaps I should use prepsq - kernels are normally true prefix?)
+	 % i.e. differentiate under the integral sign
+	 % df(int(y, x), v) -> int(df(y, v), x).
+	 % (Perhaps I should use prepsq - kernels are normally true prefix?)
       else !*kk2q{'df, u, v};  % remain unchanged
       if not(n eq 1) then
-         result := multsq( (((u .** (n-1)) .* n) .+ nil) ./ 1, result);
+	 result := multsq( (((u .** (n-1)) .* n) .+ nil) ./ 1, result);
       return result
    end$
 
@@ -299,12 +299,12 @@ symbolic procedure simpint1 u;
       u := 'int . prepsq car u . cdr u;
       if (v := formlnr u) neq u
         then if !*nolnr
-               then <<v := simp subst('int!*,'int,v);
+	       then <<v := simp subst('int!*,'int,v);
                       return remakesf numr v ./ remakesf denr v>>
-              else <<!*nolnr := nil . !*nolnr;
-                     v:=errorset!*(list('simp,mkquote v),!*backtrace);
-                     if pairp v then v := car v else v := simp u;
-                     !*nolnr := cdr !*nolnr;
+	      else <<!*nolnr := nil . !*nolnr;
+		     v:=errorset!*(list('simp,mkquote v),!*backtrace);
+		     if pairp v then v := car v else v := simp u;
+		     !*nolnr := cdr !*nolnr; 
                      return v>>;
       % FJW: At this point linearity has been applied.
       return if (v := opmtch u) then simp v

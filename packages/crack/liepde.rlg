@@ -1,95 +1,12 @@
-%*******************************************************************%
-%                                                                   %
-%                      L I E P D E . T S T                          %
-%                      -------------------                          %
-%  liepde.tst contains test examples for the program liepde.red.    %
-%                                                                   %
-%  Author of this file: Thomas Wolf                                 %
-%  Date:  21. April 1998, 6. May 2003                               %
-%                                                                   %
-%  Details about the syntax of liepde.red are given in liepde.tex.  %
-%                                                                   %
-%  To run this demo you need to load liepde and crack through       %
-%     load crack,liepde$                                            %
-%  and to read in this file as                                      %
-%     in "liepde.tst";                                              %
-%  If you got the source code of a newer version of liepde then     %
-%  either read it in through                                        %
-%     in "crack.red","liepde.red"$                                  %
-%  (with the appropriate directory name in front of liepde.red)     %
-%  or, to speed up the calculation, you compile before with         %
-%     faslout "crack"$                                              %
-%     in "crack.red"$                                               %
-%     faslend$                                                      %
-%     faslout "liepde"$                                             %
-%     in "liepde.red"$                                              %
-%     faslend$                                                      %
-%  and then load both it with                                       %
-%     load crack,liepde$                                            %
-%                                                                   %
-%*******************************************************************%
+Loading image file :/usr/local/reduce/lisp/psl/linux/red/reduce.img 
+REDUCE 3.8, 15-Apr-2004, patched to 30-May-2005 ...
 
-load crack;
+1: load "~/red/src5/crack","~/red/src5/liepde"$
+*** fluid `lispsystem!*' cannot become global
 
-
-
-lisp(depl!*:=nil)$
-
-     % clearing of all dependences
-%setcrackflags()$
-lisp(print_:=nil)$
-
-
-on dfprint$
-
-
-
-comment
--------------------------------------------------------
-The following runs demonstrate the program LIEPDE for 
-the computation of infinitesimal symmetries. Times given
-below refer to a 8 MB session under LINUX on a 133 MHz
-Pentium PC with the CRACK version of April 1998 running
-PSL Reduce.
--------------------------------------------------------;
-
-
-lisp(prelim_:=nil)$
-
-      % not necessary as this is the default value
-lisp(individual_:=nil)$
-
-  % not necessary as this is the default value
-
-comment
--------------------------------------------------------
-The first example is a single ODE with a parametric
-function f=f(x) for which point symmetries are to be
-determined.
-(Time ~ 6 sec.);
-
-write"-------------------------------------------------------";
-
+2: in "~/red/src5/liepde.tst"$
 
 -------------------------------------------------------
-
-
-lisp(freeint_:=nil)$
-
- % This enables the solution of differential equ.s in
-                     % which unevaluated integrals remain. This becomes
-                     % necessary in this example through the parametric
-                     % function f=f(x)
-depend y,x$
-
-
-depend f,x$
-
-
-liepde({df(y,x,2)=-(y+3*f)*df(y,x)+y**3-f*y**2-(2*f**2+df(f,x))*y, 
-        {y}, {x}},
-       {"point"},{},{})$
-
 
 
 The ODE under investigation is :
@@ -103,18 +20,7 @@ for the function(s) :
 y(x)
 
 
-
-The symmetries are:
-
 -------- 1. Symmetry:
-
-         int(f,x)
-xi_x= - e
-
-       int(f,x)
-eta_y=e        *f*y
-
--------- 2. Symmetry:
 
          int(f,x)          1
 xi_x= - e        *int(-----------,x)
@@ -126,57 +32,32 @@ eta_y=e        *int(-----------,x)*f*y + y
                       int(f,x)
                      e
 
+-------- 2. Symmetry:
+
+         int(f,x)
+xi_x= - e
+
+       int(f,x)
+eta_y=e        *f*y
+
+
 -------- 
 
+{{{},
 
-{{},
+            int(f,x)          1                int(f,x)
+  {xi_x= - e        *int(-----------,x)*c_5 - e        *c_6,
+                           int(f,x)
+                          e
 
-           int(f,x)          1                int(f,x)
- {xi_x= - e        *int(-----------,x)*c_5 - e        *c_6,
-                          int(f,x)
-                         e
+          int(f,x)          1                    int(f,x)
+   eta_y=e        *int(-----------,x)*c_5*f*y + e        *c_6*f*y + c_5*y},
+                         int(f,x)
+                        e
 
-         int(f,x)          1                    int(f,x)
-  eta_y=e        *int(-----------,x)*c_5*f*y + e        *c_6*f*y + c_5*y},
-                        int(f,x)
-                       e
-
- {c_6,c_5}}
-
-nodepnd {y,f}$
-
-
-lisp(freeint_:=t)$
-
-   % Because the simplification of differential
-                     % expressions which involve unevaluated integrals
-                     % may provide difficulties such solutions involving
-                     % unevaluated integrals are disabled.
-
-comment
--------------------------------------------------------
-The following example demonstrates a number of things.
-The Burgers equation is investigated concerning third
-order symmetries. The equation is used to substitute
-df(u,t) and all derivatives of df(u,t). This computation
-also shows that any equations that remain unsolved are
-returned, like in this case the heat quation.
-(Time ~ 15 sec.);
-
-write"-------------------------------------------------------";
-
+  {c_5,c_6}}}
 
 -------------------------------------------------------
-
-
-nodepnd {u}$
-
-
-depend u,t,x$
-
-
-liepde({df(u,t)=df(u,x,2)+df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
-
 
 
 The PDE under investigation is :
@@ -190,18 +71,13 @@ for the function(s) :
 u(t,x)
 
 
-
-The symmetries are:
-
 -------- 1. Symmetry:
 
 xi_t=0
 
 xi_x=0
 
-                    2
-eta_u=2*u  *t + 2*u  *t + u *x
-         2x        x       x
+eta_u=1
 
 -------- 2. Symmetry:
 
@@ -209,9 +85,8 @@ xi_t=0
 
 xi_x=0
 
-             2       2  2                     2
-eta_u=4*u  *t  + 4*u  *t  + 4*u *t*x + 2*t + x
-         2x         x          x
+eta_u=u
+       x
 
 -------- 3. Symmetry:
 
@@ -219,9 +94,8 @@ xi_t=0
 
 xi_x=0
 
-              2
-eta_u=u   + u
-       2x    x
+eta_u=2*u *t + x
+         x
 
 -------- 4. Symmetry:
 
@@ -229,11 +103,21 @@ xi_t=0
 
 xi_x=0
 
-                                         3       2
-eta_u=2*u  *t + 6*u  *u *t + u  *x + 2*u  *t + u  *x
-         3x        2x  x      2x        x       x
+                         3
+eta_u=u   + 3*u  *u  + u
+       3x      2x  x    x
 
 -------- 5. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+             2              2                   3  2       2           2
+eta_u=4*u  *t  + 12*u  *u *t  + 4*u  *t*x + 4*u  *t  + 4*u  *t*x + u *x  - x
+         3x          2x  x         2x          x          x         x
+
+-------- 6. Symmetry:
 
 xi_t=0
 
@@ -247,25 +131,15 @@ eta_u=8*u  *t  + 24*u  *u *t  + 12*u  *t *x + 8*u  *t  + 12*u  *t *x + 12*u *t
  + 6*u *t*x  + 6*t*x + x
       x
 
--------- 6. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-             2              2                   3  2       2           2
-eta_u=4*u  *t  + 12*u  *u *t  + 4*u  *t*x + 4*u  *t  + 4*u  *t*x + u *x  - x
-         3x          2x  x         2x          x          x         x
-
 -------- 7. Symmetry:
 
 xi_t=0
 
 xi_x=0
 
-                         3
-eta_u=u   + 3*u  *u  + u
-       3x      2x  x    x
+                                         3       2
+eta_u=2*u  *t + 6*u  *u *t + u  *x + 2*u  *t + u  *x
+         3x        2x  x      2x        x       x
 
 -------- 8. Symmetry:
 
@@ -273,8 +147,9 @@ xi_t=0
 
 xi_x=0
 
-eta_u=2*u *t + x
-         x
+              2
+eta_u=u   + u
+       2x    x
 
 -------- 9. Symmetry:
 
@@ -282,8 +157,9 @@ xi_t=0
 
 xi_x=0
 
-eta_u=u
-       x
+             2       2  2                     2
+eta_u=4*u  *t  + 4*u  *t  + 4*u *t*x + 2*t + x
+         2x         x          x
 
 -------- 10. Symmetry:
 
@@ -291,11 +167,11 @@ xi_t=0
 
 xi_x=0
 
-eta_u=1
+                    2
+eta_u=2*u  *t + 2*u  *t + u *x
+         2x        x       x
 
--------- 
-
-Further symmetries:
+-------- Further symmetry:
 
 xi_t=0
 
@@ -307,104 +183,86 @@ eta_u=------
         e
 
 with c_25(t,x)
-which still have to satisfy: 
+which still has to satisfy: 
 
 0=c_25  - c_25
       t       2x
 
 
-{{c_25  - c_25  },
-      t       2x
+-------- 
 
- {xi_t=0,
+{{{c_25  - c_25  },
+       t       2x
 
-  xi_x=0,
+  {xi_t=0,
 
-          u               u           2      u           3      u
-  eta_u=(e *u  *c_31 + 4*e *u  *c_32*t  + 8*e *u  *c_33*t  + 2*e *u  *c_34*t
-             3x              3x                 3x                 3x
+   xi_x=0,
 
-               u                   u              2       u              3
-          + 3*e *u  *u *c_31 + 12*e *u  *u *c_32*t  + 24*e *u  *u *c_33*t
-                  2x  x               2x  x                  2x  x
+           u               u           2      u           3      u
+   eta_u=(e *u  *c_31 + 4*e *u  *c_32*t  + 8*e *u  *c_33*t  + 2*e *u  *c_34*t
+              3x              3x                 3x                 3x
 
-               u                  u               u           2
-          + 6*e *u  *u *c_34*t + e *u  *c_28 + 4*e *u  *c_29*t
-                  2x  x              2x              2x
+                u                   u              2       u              3
+           + 3*e *u  *u *c_31 + 12*e *u  *u *c_32*t  + 24*e *u  *u *c_33*t
+                   2x  x               2x  x                  2x  x
 
-               u                 u                    u           2
-          + 2*e *u  *c_30*t + 4*e *u  *c_32*t*x + 12*e *u  *c_33*t *x
-                  2x                2x                   2x
+                u                  u               u           2
+           + 6*e *u  *u *c_34*t + e *u  *c_28 + 4*e *u  *c_29*t
+                   2x  x              2x              2x
 
-             u               u   3           u   3       2      u   3       3
-          + e *u  *c_34*x + e *u  *c_31 + 4*e *u  *c_32*t  + 8*e *u  *c_33*t
-                2x              x               x                  x
+                u                 u                    u           2
+           + 2*e *u  *c_30*t + 4*e *u  *c_32*t*x + 12*e *u  *c_33*t *x
+                   2x                2x                   2x
 
-               u   3           u   2           u   2       2      u   2
-          + 2*e *u  *c_34*t + e *u  *c_28 + 4*e *u  *c_29*t  + 2*e *u  *c_30*t
-                  x               x               x                  x
+              u               u   3           u   3       2      u   3       3
+           + e *u  *c_34*x + e *u  *c_31 + 4*e *u  *c_32*t  + 8*e *u  *c_33*t
+                 2x              x               x                  x
 
-               u   2                u   2       2      u   2
-          + 4*e *u  *c_32*t*x + 12*e *u  *c_33*t *x + e *u  *c_34*x
-                  x                    x                  x
+                u   3           u   2           u   2       2      u   2
+           + 2*e *u  *c_34*t + e *u  *c_28 + 4*e *u  *c_29*t  + 2*e *u  *c_30*t
+                   x               x               x                  x
 
-               u                u              u          2       u          2
-          + 4*e *u *c_29*t*x + e *u *c_30*x + e *u *c_32*x  + 12*e *u *c_33*t
-                  x                x              x                  x
+                u   2                u   2       2      u   2
+           + 4*e *u  *c_32*t*x + 12*e *u  *c_33*t *x + e *u  *c_34*x
+                   x                    x                  x
 
-               u            2    u              u                u
-          + 6*e *u *c_33*t*x  + e *u *c_35 + 2*e *u *c_36*t + 2*e *c_29*t
-                  x                 x              x
+                u                u              u          2       u          2
+           + 4*e *u *c_29*t*x + e *u *c_30*x + e *u *c_32*x  + 12*e *u *c_33*t
+                   x                x              x                  x
 
-             u       2    u             u             u       3    u
-          + e *c_29*x  - e *c_32*x + 6*e *c_33*t*x + e *c_33*x  + e *c_36*x
+                u            2    u              u                u
+           + 6*e *u *c_33*t*x  + e *u *c_35 + 2*e *u *c_36*t + 2*e *c_29*t
+                   x                 x              x
 
-             u               u
-          + e *c_37 + c_25)/e },
+              u       2    u             u             u       3    u
+           + e *c_29*x  - e *c_32*x + 6*e *c_33*t*x + e *c_33*x  + e *c_36*x
 
- {c_25,
+              u               u
+           + e *c_37 + c_25)/e },
 
-  c_30,
+  {c_37,
 
-  c_29,
+   c_35,
 
-  c_28,
+   c_36,
 
-  c_34,
+   c_31,
 
-  c_33,
+   c_32,
 
-  c_32,
+   c_33,
 
-  c_31,
+   c_34,
 
-  c_36,
+   c_28,
 
-  c_35,
+   c_29,
 
-  c_37}}
+   c_30,
 
-
-comment
--------------------------------------------------------
-Now the same equation is investigated, this time only
-df(u,x,2) and its derivatives are substituted. As a
-consequence less jet-variables (u-derivatives of lower
-order) are generated in the process of formulating the
-symmetry conditions. Less jet-variables in which the
-conditions have to be fulfilled identically means less
-overdetermined conditions and more solutions which to
-compute takes longer than before.
-(Time ~ 85 sec.);
-
-write"-------------------------------------------------------";
-
+   c_25}}}
 
 -------------------------------------------------------
-
-
-liepde({df(u,x,2)=df(u,t)-df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
-
 
 
 The PDE under investigation is :
@@ -418,22 +276,13 @@ for the function(s) :
 u(t,x)
 
 
-
-The symmetries are:
-
 -------- 1. Symmetry:
 
 xi_t=0
 
 xi_x=0
 
-                                                                     2
-eta_u= - 8*u   *u *t + u    - 4*u    *t - 4*u  *u *t - 2*u  *x - 4*u  *u *t
-            t,x  t      t,x      2t,x        2t  x        2t        t   x
-
-       2
- - 2*u  *x + u *u
-      t       t  x
+eta_u=1
 
 -------- 2. Symmetry:
 
@@ -441,17 +290,8 @@ xi_t=0
 
 xi_x=0
 
-                     3            2              2             3              3
-eta_u= - 32*u   *u *t  + 12*u   *t  - 12*u   *t*x  - 16*u    *t  - 16*u  *u *t
-             t,x  t          t,x          t,x            2t,x          2t  x
-
-           2          2     3        2  2               2               2
- - 24*u  *t *x - 16*u  *u *t  - 24*u  *t *x + 12*u *u *t  - 12*u *u *t*x
-       2t            t   x          t             t  x          t  x
-
-                     3         2
- + 24*u *t*x - 2*u *x  + 9*u *x  - 9*x
-       t          t         x
+eta_u=u
+       t
 
 -------- 3. Symmetry:
 
@@ -459,21 +299,9 @@ xi_t=0
 
 xi_x=0
 
-                     5             4            3  2             5
-eta_u= - 64*u   *u *t  - 160*u   *t  - 80*u   *t *x  - 32*u    *t
-             t,x  t           t,x          t,x             2t,x
-
-              5           4          2     5        2  4                4
- - 32*u  *u *t  - 80*u  *t *x - 32*u  *u *t  - 80*u  *t *x - 160*u *u *t
-       2t  x          2t            t   x          t              t  x
-
-             3  2           3            2  3           3           2  2
- - 80*u *u *t *x  - 240*u *t *x - 40*u *t *x  - 120*u *t  - 120*u *t *x
-       t  x              t            t              x           x
-
-            4       2           3    5
- - 10*u *t*x  - 60*t *x - 20*t*x  - x
-       x
+            2                     2
+eta_u=4*u *t  + 4*u *t*x + 2*t + x
+         t         x
 
 -------- 4. Symmetry:
 
@@ -481,17 +309,8 @@ xi_t=0
 
 xi_x=0
 
-                     4            3            2  2             4              4
-eta_u= - 32*u   *u *t  + 16*u   *t  - 24*u   *t *x  - 16*u    *t  - 16*u  *u *t
-             t,x  t          t,x          t,x             2t,x          2t  x
-
-           3          2     4        2  3               3             2  2
- - 32*u  *t *x - 16*u  *u *t  - 32*u  *t *x + 16*u *u *t  - 24*u *u *t *x
-       2t            t   x          t             t  x          t  x
-
-          2             3          2            2       4               3
- + 48*u *t *x - 8*u *t*x  + 84*u *t  + 36*u *t*x  - u *x  + 48*t*x + 8*x
-       t           t            x          x         x
+eta_u=4*u *t + 2*u *x - 1
+         t        x
 
 -------- 5. Symmetry:
 
@@ -499,13 +318,8 @@ xi_t=0
 
 xi_x=0
 
-                    2                    2            2             2
-eta_u= - 8*u   *u *t  + 2*u   *t - u   *x  - 4*u    *t  - 4*u  *u *t
-            t,x  t         t,x      t,x         2t,x         2t  x
-
-                   2     2       2                          2
- - 4*u  *t*x - 4*u  *u *t  - 4*u  *t*x + 2*u *u *t - u *u *x  + 2*u *x
-      2t          t   x         t           t  x      t  x         t
+eta_u=u
+       x
 
 -------- 6. Symmetry:
 
@@ -513,9 +327,8 @@ xi_t=0
 
 xi_x=0
 
-                                        2
-eta_u= - 2*u   *u  - u     - u  *u  - u  *u
-            t,x  t    2t,x    2t  x    t   x
+eta_u=2*u *t + x
+         x
 
 -------- 7. Symmetry:
 
@@ -523,11 +336,8 @@ xi_t=0
 
 xi_x=0
 
-eta_u
-
-                                                                  3       2
-= - 2*u   *u *x - 2*u  *t - u    *x - 6*u  *u *t - u  *u *x - 2*u  *t - u  *u *x
-       t,x  t        3t      2t,x        2t  t      2t  x        t       t   x
+eta_u=u    + u *u
+       t,x    t  x
 
 -------- 8. Symmetry:
 
@@ -535,17 +345,9 @@ xi_t=0
 
 xi_x=0
 
-                     2                           3           3             2
-eta_u= - 48*u   *u *t *x + 12*u   *t*x - 2*u   *x  - 16*u  *t  - 24*u    *t *x
-             t,x  t            t,x          t,x          3t          2t,x
-
-              3              2               2        3  3        2     2
- - 48*u  *u *t  - 24*u  *u *t *x - 12*u  *t*x  - 16*u  *t  - 24*u  *u *t *x
-       2t  t          2t  x            2t            t           t   x
-
-        2    2                           3         2
- - 12*u  *t*x  + 12*u *u *t*x - 2*u *u *x  + 6*u *x  - 6*u *x + 3
-       t             t  x          t  x         t         x
+              2            2                  2
+eta_u=4*u   *t  + 4*u *u *t  + 4*u *t*x + u *x  - x
+         t,x         t  x         t        x
 
 -------- 9. Symmetry:
 
@@ -553,24 +355,9 @@ xi_t=0
 
 xi_x=0
 
-                      4              3              2  3           5
-eta_u= - 160*u   *u *t *x + 80*u   *t *x - 40*u   *t *x  - 32*u  *t
-              t,x  t            t,x            t,x             3t
-
-             4                5              4             3  2        3  5
- - 80*u    *t *x - 96*u  *u *t  - 80*u  *u *t *x - 80*u  *t *x  - 32*u  *t
-       2t,x            2t  t          2t  x            2t             t
-
-        2     4          2  3  2             3               2  3           3
- - 80*u  *u *t *x - 80*u  *t *x  + 80*u *u *t *x - 40*u *u *t *x  + 360*u *t
-       t   x            t              t  x            t  x              t
-
-           2  2            4           2              3       5        2
- + 120*u *t *x  - 10*u *t*x  + 420*u *t *x + 60*u *t*x  - u *x  + 120*t
-        t             t             x            x         x
-
-          2       4
- + 120*t*x  + 10*x
+              3            3          2            2           2            3
+eta_u=8*u   *t  + 8*u *u *t  + 12*u *t *x + 12*u *t  + 6*u *t*x  + 6*t*x + x
+         t,x         t  x          t            x         x
 
 -------- 10. Symmetry:
 
@@ -578,121 +365,10 @@ xi_t=0
 
 xi_x=0
 
-                      5               4               3  3           6
-eta_u= - 384*u   *u *t *x - 960*u   *t *x - 160*u   *t *x  - 64*u  *t
-              t,x  t             t,x             t,x             3t
-
-              5                 6               5              5            4  2
- - 192*u    *t *x - 192*u  *u *t  - 192*u  *u *t *x - 480*u  *t  - 240*u  *t *x
-        2t,x             2t  t           2t  x             2t           2t
-
-        3  6         2     5           2  5         2  4  2              4
- - 64*u  *t  - 192*u  *u *t *x - 480*u  *t  - 240*u  *t *x  - 960*u *u *t *x
-       t            t   x             t            t               t  x
-
-              3  3           4           3  2          2  4           3
- - 160*u *u *t *x  - 720*u *t  - 720*u *t *x  - 60*u *t *x  - 720*u *t *x
-        t  x              t           t             t              x
-
-           2  3            5        3        2  2         4    6
- - 240*u *t *x  - 12*u *t*x  - 120*t  - 180*t *x  - 30*t*x  - x
-        x             x
+eta_u=2*u   *t + 2*u *u *t + u *x
+         t,x        t  x      t
 
 -------- 11. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                     3              2               3           4
-eta_u= - 64*u   *u *t *x + 24*u   *t *x - 8*u   *t*x  - 16*u  *t
-             t,x  t            t,x           t,x            3t
-
-             3                4              3             2  2        3  4
- - 32*u    *t *x - 48*u  *u *t  - 32*u  *u *t *x - 24*u  *t *x  - 16*u  *t
-       2t,x            2t  t          2t  x            2t             t
-
-        2     3          2  2  2             2                3            2
- - 32*u  *u *t *x - 24*u  *t *x  + 24*u *u *t *x - 8*u *u *t*x  + 24*u *t*x
-       t   x            t              t  x           t  x            t
-
-       4                     3              2
- - u *x  - 24*u *t*x + 6*u *x  - 30*t - 15*x
-    t          x          x
-
--------- 12. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                                         2                            2
-eta_u= - 8*u   *u *t*x + u   *x - 4*u  *t  - 4*u    *t*x - 12*u  *u *t
-            t,x  t        t,x        3t         2t,x           2t  t
-
-                       2       3  2       2            2  2
- - 4*u  *u *t*x - u  *x  - 4*u  *t  - 4*u  *u *t*x - u  *x  + u *u *x
-      2t  x        2t         t          t   x        t        t  x
-
--------- 13. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                            3
-eta_u= - u   - 3*u  *u  - u
-          3t      2t  t    t
-
--------- 14. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                                2
-eta_u= - u   *x - 2*u  *t - 2*u  *t - u *u *x
-          t,x        2t        t       t  x
-
--------- 15. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                  2            3       2  3             2             2
-eta_u= - 12*u   *t *x - 8*u  *t  - 8*u  *t  - 12*u *u *t *x - 6*u *t*x
-             t,x           2t         t           t  x           t
-
-                  3            2
- + 6*u *t*x - u *x  + 6*t + 3*x
-      x        x
-
--------- 16. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                  3             4        2  4             3            3
-eta_u= - 32*u   *t *x - 16*u  *t  - 16*u  *t  - 32*u *u *t *x - 48*u *t
-             t,x            2t          t           t  x            t
-
-          2  2          2             3       2         2    4
- - 24*u *t *x  - 48*u *t *x - 8*u *t*x  - 12*t  - 12*t*x  - x
-       t             x           x
-
--------- 17. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                             2       2  2                       2
-eta_u= - 8*u   *t*x - 8*u  *t  - 8*u  *t  - 8*u *u *t*x - 2*u *x  + 2*u *x - 1
-            t,x          2t         t          t  x          t         x
-
--------- 18. Symmetry:
 
 xi_t=0
 
@@ -702,14 +378,125 @@ xi_x=0
 eta_u=u   + u
        2t    t
 
+-------- 12. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                          2       2  2                       2
+eta_u=8*u   *t*x + 8*u  *t  + 8*u  *t  + 8*u *u *t*x + 2*u *x  - 2*u *x + 1
+         t,x          2t         t          t  x          t         x
+
+-------- 13. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+               3             4        2  4             3            3
+eta_u=32*u   *t *x + 16*u  *t  + 16*u  *t  + 32*u *u *t *x + 48*u *t
+          t,x            2t          t           t  x            t
+
+          2  2          2             3       2         2    4
+ + 24*u *t *x  + 48*u *t *x + 8*u *t*x  + 12*t  + 12*t*x  + x
+       t             x           x
+
+-------- 14. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+               2            3       2  3             2             2
+eta_u=12*u   *t *x + 8*u  *t  + 8*u  *t  + 12*u *u *t *x + 6*u *t*x  - 6*u *t*x
+          t,x           2t         t           t  x           t           x
+
+       3            2
+ + u *x  - 6*t - 3*x
+    x
+
+-------- 15. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                             2
+eta_u=u   *x + 2*u  *t + 2*u  *t + u *u *x
+       t,x        2t        t       t  x
+
+-------- 16. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                         3
+eta_u=u   + 3*u  *u  + u
+       3t      2t  t    t
+
+-------- 17. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                      2                            2
+eta_u=8*u   *u *t*x - u   *x + 4*u  *t  + 4*u    *t*x + 12*u  *u *t
+         t,x  t        t,x        3t         2t,x           2t  t
+
+                       2       3  2       2            2  2
+ + 4*u  *u *t*x + u  *x  + 4*u  *t  + 4*u  *u *t*x + u  *x  - u *u *x
+      2t  x        2t         t          t   x        t        t  x
+
+-------- 18. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                  3              2               3           4             3
+eta_u=64*u   *u *t *x - 24*u   *t *x + 8*u   *t*x  + 16*u  *t  + 32*u    *t *x
+          t,x  t            t,x           t,x            3t          2t,x
+
+              4              3             2  2        3  4        2     3
+ + 48*u  *u *t  + 32*u  *u *t *x + 24*u  *t *x  + 16*u  *t  + 32*u  *u *t *x
+       2t  t          2t  x            2t             t           t   x
+
+        2  2  2             2                3            2       4
+ + 24*u  *t *x  - 24*u *u *t *x + 8*u *u *t*x  - 24*u *t*x  + u *x  + 24*u *t*x
+       t              t  x           t  x            t         t          x
+
+         3              2
+ - 6*u *x  + 30*t + 15*x
+      x
+
 -------- 19. Symmetry:
 
 xi_t=0
 
 xi_x=0
 
-eta_u= - 2*u   *t - 2*u *u *t - u *x
-            t,x        t  x      t
+                   5               4               3  3           6
+eta_u=384*u   *u *t *x + 960*u   *t *x + 160*u   *t *x  + 64*u  *t
+           t,x  t             t,x             t,x             3t
+
+              5                 6               5              5            4  2
+ + 192*u    *t *x + 192*u  *u *t  + 192*u  *u *t *x + 480*u  *t  + 240*u  *t *x
+        2t,x             2t  t           2t  x             2t           2t
+
+        3  6         2     5           2  5         2  4  2              4
+ + 64*u  *t  + 192*u  *u *t *x + 480*u  *t  + 240*u  *t *x  + 960*u *u *t *x
+       t            t   x             t            t               t  x
+
+              3  3           4           3  2          2  4           3
+ + 160*u *u *t *x  + 720*u *t  + 720*u *t *x  + 60*u *t *x  + 720*u *t *x
+        t  x              t           t             t              x
+
+           2  3            5        3        2  2         4    6
+ + 240*u *t *x  + 12*u *t*x  + 120*t  + 180*t *x  + 30*t*x  + x
+        x             x
 
 -------- 20. Symmetry:
 
@@ -717,9 +504,24 @@ xi_t=0
 
 xi_x=0
 
-                 3            3          2            2           2            3
-eta_u= - 8*u   *t  - 8*u *u *t  - 12*u *t *x - 12*u *t  - 6*u *t*x  - 6*t*x - x
-            t,x         t  x          t            x         x
+                   4              3              2  3           5
+eta_u=160*u   *u *t *x - 80*u   *t *x + 40*u   *t *x  + 32*u  *t
+           t,x  t            t,x            t,x             3t
+
+             4                5              4             3  2        3  5
+ + 80*u    *t *x + 96*u  *u *t  + 80*u  *u *t *x + 80*u  *t *x  + 32*u  *t
+       2t,x            2t  t          2t  x            2t             t
+
+        2     4          2  3  2             3               2  3           3
+ + 80*u  *u *t *x + 80*u  *t *x  - 80*u *u *t *x + 40*u *u *t *x  - 360*u *t
+       t   x            t              t  x            t  x              t
+
+           2  2            4           2              3       5        2
+ - 120*u *t *x  + 10*u *t*x  - 420*u *t *x - 60*u *t*x  + u *x  - 120*t
+        t             t             x            x         x
+
+          2       4
+ - 120*t*x  - 10*x
 
 -------- 21. Symmetry:
 
@@ -727,9 +529,17 @@ xi_t=0
 
 xi_x=0
 
-                 2            2                  2
-eta_u= - 4*u   *t  - 4*u *u *t  - 4*u *t*x - u *x  + x
-            t,x         t  x         t        x
+                  2                           3           3             2
+eta_u=48*u   *u *t *x - 12*u   *t*x + 2*u   *x  + 16*u  *t  + 24*u    *t *x
+          t,x  t            t,x          t,x          3t          2t,x
+
+              3              2               2        3  3        2     2
+ + 48*u  *u *t  + 24*u  *u *t *x + 12*u  *t*x  + 16*u  *t  + 24*u  *u *t *x
+       2t  t          2t  x            2t            t           t   x
+
+        2    2                           3         2
+ + 12*u  *t*x  - 12*u *u *t*x + 2*u *u *x  - 6*u *x  + 6*u *x - 3
+       t             t  x          t  x         t         x
 
 -------- 22. Symmetry:
 
@@ -737,8 +547,11 @@ xi_t=0
 
 xi_x=0
 
-eta_u=u    + u *u
-       t,x    t  x
+eta_u
+
+                                                               3       2
+=2*u   *u *x + 2*u  *t + u    *x + 6*u  *u *t + u  *u *x + 2*u  *t + u  *u *x
+    t,x  t        3t      2t,x        2t  t      2t  x        t       t   x
 
 -------- 23. Symmetry:
 
@@ -746,8 +559,9 @@ xi_t=0
 
 xi_x=0
 
-eta_u= - 2*u *t - x
-            x
+                                     2
+eta_u=2*u   *u  + u     + u  *u  + u  *u
+         t,x  t    2t,x    2t  x    t   x
 
 -------- 24. Symmetry:
 
@@ -755,8 +569,13 @@ xi_t=0
 
 xi_x=0
 
-eta_u=u
-       x
+                 2                    2            2             2
+eta_u=8*u   *u *t  - 2*u   *t + u   *x  + 4*u    *t  + 4*u  *u *t  + 4*u  *t*x
+         t,x  t         t,x      t,x         2t,x         2t  x         2t
+
+       2     2       2                          2
+ + 4*u  *u *t  + 4*u  *t*x - 2*u *u *t + u *u *x  - 2*u *x
+      t   x         t           t  x      t  x         t
 
 -------- 25. Symmetry:
 
@@ -764,8 +583,17 @@ xi_t=0
 
 xi_x=0
 
-eta_u= - 4*u *t - 2*u *x + 1
-            t        x
+                  4            3            2  2             4              4
+eta_u=32*u   *u *t  - 16*u   *t  + 24*u   *t *x  + 16*u    *t  + 16*u  *u *t
+          t,x  t          t,x          t,x             2t,x          2t  x
+
+           3          2     4        2  3               3             2  2
+ + 32*u  *t *x + 16*u  *u *t  + 32*u  *t *x - 16*u *u *t  + 24*u *u *t *x
+       2t            t   x          t             t  x          t  x
+
+          2             3          2            2       4               3
+ - 48*u *t *x + 8*u *t*x  - 84*u *t  - 36*u *t*x  + u *x  - 48*t*x - 8*x
+       t           t            x          x         x
 
 -------- 26. Symmetry:
 
@@ -773,9 +601,20 @@ xi_t=0
 
 xi_x=0
 
-               2                     2
-eta_u= - 4*u *t  - 4*u *t*x - 2*t - x
-            t         x
+                  5             4            3  2             5              5
+eta_u=64*u   *u *t  + 160*u   *t  + 80*u   *t *x  + 32*u    *t  + 32*u  *u *t
+          t,x  t           t,x          t,x             2t,x          2t  x
+
+           4          2     5        2  4                4             3  2
+ + 80*u  *t *x + 32*u  *u *t  + 80*u  *t *x + 160*u *u *t  + 80*u *u *t *x
+       2t            t   x          t              t  x          t  x
+
+           3            2  3           3           2  2            4       2
+ + 240*u *t *x + 40*u *t *x  + 120*u *t  + 120*u *t *x  + 10*u *t*x  + 60*t *x
+        t            t              x           x             x
+
+         3    5
+ + 20*t*x  + x
 
 -------- 27. Symmetry:
 
@@ -783,8 +622,17 @@ xi_t=0
 
 xi_x=0
 
-eta_u=u
-       t
+                  3            2              2             3              3
+eta_u=32*u   *u *t  - 12*u   *t  + 12*u   *t*x  + 16*u    *t  + 16*u  *u *t
+          t,x  t          t,x          t,x            2t,x          2t  x
+
+           2          2     3        2  2               2               2
+ + 24*u  *t *x + 16*u  *u *t  + 24*u  *t *x - 12*u *u *t  + 12*u *u *t*x
+       2t            t   x          t             t  x          t  x
+
+                     3         2
+ - 24*u *t*x + 2*u *x  - 9*u *x  + 9*x
+       t          t         x
 
 -------- 28. Symmetry:
 
@@ -792,11 +640,15 @@ xi_t=0
 
 xi_x=0
 
-eta_u=1
+                                                                  2
+eta_u=8*u   *u *t - u    + 4*u    *t + 4*u  *u *t + 2*u  *x + 4*u  *u *t
+         t,x  t      t,x      2t,x        2t  x        2t        t   x
 
--------- 
+       2
+ + 2*u  *x - u *u
+      t       t  x
 
-Further symmetries:
+-------- Further symmetry:
 
 xi_t=0
 
@@ -808,489 +660,411 @@ eta_u=------
         e
 
 with c_94(t,x)
-which still have to satisfy: 
+which still has to satisfy: 
 
-0= - c_94  + c_94
-         t       2x
+0=c_94  - c_94
+      t       2x
 
 
-{{ - c_94  + c_94  },
-         t       2x
+-------- 
 
- {xi_t=0,
+{{{c_94  - c_94  },
+       t       2x
 
-  xi_x=0,
+  {xi_t=0,
 
-               u                    u                2       u                4
-  eta_u=( - 2*e *u   *u *c_100 - 8*e *u   *u *c_101*t  - 32*e *u   *u *c_102*t
-                  t,x  t               t,x  t                   t,x  t
+   xi_x=0,
 
-                u                5       u                3
-          - 64*e *u   *u *c_103*t  - 32*e *u   *u *c_104*t
-                   t,x  t                   t,x  t
+             u                    u                2       u                4
+   eta_u=(2*e *u   *u *c_100 + 8*e *u   *u *c_101*t  + 32*e *u   *u *c_102*t
+                t,x  t               t,x  t                   t,x  t
 
-               u                      u
-          - 8*e *u   *u *c_105*t - 8*e *u   *u *c_107*t*x
-                  t,x  t                 t,x  t
+                 u                5       u                3
+           + 64*e *u   *u *c_103*t  + 32*e *u   *u *c_104*t
+                    t,x  t                   t,x  t
 
-                u                3          u                5
-          - 64*e *u   *u *c_108*t *x - 384*e *u   *u *c_109*t *x
-                   t,x  t                      t,x  t
+                u                      u
+           + 8*e *u   *u *c_105*t + 8*e *u   *u *c_107*t*x
+                   t,x  t                 t,x  t
 
-                 u                4         u                2
-          - 160*e *u   *u *c_110*t *x - 48*e *u   *u *c_111*t *x
-                    t,x  t                     t,x  t
+                 u                3          u                5
+           + 64*e *u   *u *c_108*t *x + 384*e *u   *u *c_109*t *x
+                    t,x  t                      t,x  t
 
-               u                      u                 u             2
-          - 2*e *u   *u *c_112*x + 2*e *u   *c_101*t - e *u   *c_101*x
-                  t,x  t                 t,x               t,x
+                  u                4         u                2
+           + 160*e *u   *u *c_110*t *x + 48*e *u   *u *c_111*t *x
+                     t,x  t                     t,x  t
 
-                u             3       u             2  2        u             4
-          + 16*e *u   *c_102*t  - 24*e *u   *c_102*t *x  - 160*e *u   *c_103*t
-                   t,x                   t,x                       t,x
+                u                      u                 u             2
+           + 2*e *u   *u *c_112*x - 2*e *u   *c_101*t + e *u   *c_101*x
+                   t,x  t                 t,x               t,x
 
-                u             3  2       u             2       u               2
-          - 80*e *u   *c_103*t *x  + 12*e *u   *c_104*t  - 12*e *u   *c_104*t*x
-                   t,x                      t,x                   t,x
+                 u             3       u             2  2        u             4
+           - 16*e *u   *c_102*t  + 24*e *u   *c_102*t *x  + 160*e *u   *c_103*t
+                    t,x                   t,x                       t,x
 
-             u               u                    u             2
-          + e *u   *c_105 + e *u   *c_107*x + 24*e *u   *c_108*t *x
-                t,x             t,x                  t,x
-
-               u               3        u             4
-          - 8*e *u   *c_108*t*x  - 960*e *u   *c_109*t *x
-                  t,x                      t,x
-
-                 u             3  3       u             3
-          - 160*e *u   *c_109*t *x  + 80*e *u   *c_110*t *x
+                 u             3  2       u             2
+           + 80*e *u   *c_103*t *x  - 12*e *u   *c_104*t
                     t,x                      t,x
 
-                u             2  3       u                     u             3
-          - 40*e *u   *c_110*t *x  + 12*e *u   *c_111*t*x - 2*e *u   *c_111*x
-                   t,x                      t,x                   t,x
+                 u               2    u               u
+           + 12*e *u   *c_104*t*x  - e *u   *c_105 - e *u   *c_107*x
+                    t,x                  t,x             t,x
 
-               u                      u             3         u             2
-          - 8*e *u   *c_115*t*x - 32*e *u   *c_116*t *x - 12*e *u   *c_117*t *x
-                  t,x                    t,x                     t,x
+                 u             2        u               3
+           - 24*e *u   *c_108*t *x + 8*e *u   *c_108*t*x
+                    t,x                    t,x
 
-             u                 u                 u             2
-          - e *u   *c_118*x + e *u   *c_119 - 4*e *u   *c_120*t
-                t,x               t,x               t,x
+                  u             4          u             3  3
+           + 960*e *u   *c_109*t *x + 160*e *u   *c_109*t *x
+                     t,x                      t,x
 
-               u             3      u                 u
-          - 8*e *u   *c_121*t  - 2*e *u   *c_122*t - e *u  *c_106
-                  t,x                  t,x               3t
+                 u             3         u             2  3
+           - 80*e *u   *c_110*t *x + 40*e *u   *c_110*t *x
+                    t,x                     t,x
 
-               u            2       u            4       u            6
-          - 4*e *u  *c_107*t  - 16*e *u  *c_108*t  - 64*e *u  *c_109*t
-                  3t                   3t                   3t
+                 u                     u             3      u
+           - 12*e *u   *c_111*t*x + 2*e *u   *c_111*x  + 8*e *u   *c_115*t*x
+                    t,x                   t,x                  t,x
 
-                u            5       u            3      u
-          - 32*e *u  *c_110*t  - 16*e *u  *c_111*t  - 2*e *u  *c_112*t
-                   3t                   3t                  3t
+                 u             3         u             2      u
+           + 32*e *u   *c_116*t *x + 12*e *u   *c_117*t *x + e *u   *c_118*x
+                    t,x                     t,x                  t,x
 
-             u                  u              2       u              4
-          - e *u    *c_100 - 4*e *u    *c_101*t  - 16*e *u    *c_102*t
-                2t,x               2t,x                   2t,x
+              u                 u             2      u             3
+           + e *u   *c_119 + 4*e *u   *c_120*t  + 8*e *u   *c_121*t
+                 t,x               t,x                  t,x
 
-                u              5       u              3      u
-          - 32*e *u    *c_103*t  - 16*e *u    *c_104*t  - 4*e *u    *c_105*t
-                   2t,x                   2t,x                  2t,x
+                u                 u                u            2
+           + 2*e *u   *c_122*t + e *u  *c_106 + 4*e *u  *c_107*t
+                   t,x               3t               3t
 
-               u                       u              3
-          - 4*e *u    *c_107*t*x - 32*e *u    *c_108*t *x
-                  2t,x                    2t,x
+                 u            4       u            6       u            5
+           + 16*e *u  *c_108*t  + 64*e *u  *c_109*t  + 32*e *u  *c_110*t
+                    3t                   3t                   3t
 
-                 u              5         u              4
-          - 192*e *u    *c_109*t *x - 80*e *u    *c_110*t *x
-                    2t,x                     2t,x
+                 u            3      u                u
+           + 16*e *u  *c_111*t  + 2*e *u  *c_112*t + e *u    *c_100
+                    3t                  3t               2t,x
 
-                u              2      u                    u
-          - 24*e *u    *c_111*t *x - e *u    *c_112*x - 3*e *u  *u *c_106
-                   2t,x                  2t,x                 2t  t
+                u              2       u              4       u              5
+           + 4*e *u    *c_101*t  + 16*e *u    *c_102*t  + 32*e *u    *c_103*t
+                   2t,x                   2t,x                   2t,x
+
+                 u              3      u                    u
+           + 16*e *u    *c_104*t  + 4*e *u    *c_105*t + 4*e *u    *c_107*t*x
+                    2t,x                  2t,x                 2t,x
+
+                 u              3          u              5
+           + 32*e *u    *c_108*t *x + 192*e *u    *c_109*t *x
+                    2t,x                      2t,x
+
+                 u              4         u              2      u
+           + 80*e *u    *c_110*t *x + 24*e *u    *c_111*t *x + e *u    *c_112*x
+                    2t,x                     2t,x                  2t,x
+
+                u                    u               2       u               4
+           + 3*e *u  *u *c_106 + 12*e *u  *u *c_107*t  + 48*e *u  *u *c_108*t
+                   2t  t                2t  t                   2t  t
+
+                  u               6       u               5
+           + 192*e *u  *u *c_109*t  + 96*e *u  *u *c_110*t
+                     2t  t                   2t  t
+
+                 u               3      u                   u
+           + 48*e *u  *u *c_111*t  + 6*e *u  *u *c_112*t + e *u  *u *c_100
+                    2t  t                  2t  t               2t  x
 
                 u               2       u               4
-          - 12*e *u  *u *c_107*t  - 48*e *u  *u *c_108*t
-                   2t  t                   2t  t
+           + 4*e *u  *u *c_101*t  + 16*e *u  *u *c_102*t
+                   2t  x                   2t  x
 
-                 u               6       u               5
-          - 192*e *u  *u *c_109*t  - 96*e *u  *u *c_110*t
-                    2t  t                   2t  t
+                 u               5       u               3      u
+           + 32*e *u  *u *c_103*t  + 16*e *u  *u *c_104*t  + 4*e *u  *u *c_105*t
+                    2t  x                   2t  x                  2t  x
 
-                u               3      u                   u
-          - 48*e *u  *u *c_111*t  - 6*e *u  *u *c_112*t - e *u  *u *c_100
-                   2t  t                  2t  t               2t  x
+                u                        u               3
+           + 4*e *u  *u *c_107*t*x + 32*e *u  *u *c_108*t *x
+                   2t  x                    2t  x
 
-               u               2       u               4       u               5
-          - 4*e *u  *u *c_101*t  - 16*e *u  *u *c_102*t  - 32*e *u  *u *c_103*t
-                  2t  x                   2t  x                   2t  x
+                  u               5         u               4
+           + 192*e *u  *u *c_109*t *x + 80*e *u  *u *c_110*t *x
+                     2t  x                     2t  x
 
-                u               3      u                     u
-          - 16*e *u  *u *c_104*t  - 4*e *u  *u *c_105*t - 4*e *u  *u *c_107*t*x
-                   2t  x                  2t  x                 2t  x
+                 u               2      u                     u
+           + 24*e *u  *u *c_111*t *x + e *u  *u *c_112*x + 4*e *u  *c_101*t*x
+                    2t  x                  2t  x                 2t
 
-                u               3          u               5
-          - 32*e *u  *u *c_108*t *x - 192*e *u  *u *c_109*t *x
-                   2t  x                      2t  x
+                 u            3         u            4         u            2
+           + 32*e *u  *c_102*t *x + 80*e *u  *c_103*t *x + 24*e *u  *c_104*t *x
+                    2t                     2t                     2t
 
-                u               4         u               2
-          - 80*e *u  *u *c_110*t *x - 24*e *u  *u *c_111*t *x
-                   2t  x                     2t  x
+                u                u            2       u            2  2
+           + 2*e *u  *c_105*x + e *u  *c_107*x  + 24*e *u  *c_108*t *x
+                   2t               2t                   2t
 
-             u                     u                     u            3
-          - e *u  *u *c_112*x - 4*e *u  *c_101*t*x - 32*e *u  *c_102*t *x
-                2t  x                 2t                    2t
+                  u            5        u            4  2
+           + 480*e *u  *c_109*t  + 240*e *u  *c_109*t *x
+                     2t                    2t
 
-                u            4         u            2        u
-          - 80*e *u  *c_103*t *x - 24*e *u  *c_104*t *x - 2*e *u  *c_105*x
-                   2t                     2t                    2t
+                 u            3  2       u              2    u
+           + 80*e *u  *c_110*t *x  + 12*e *u  *c_111*t*x  + e *u  *c_114
+                    2t                      2t                  2t
 
-             u            2       u            2  2        u            5
-          - e *u  *c_107*x  - 24*e *u  *c_108*t *x  - 480*e *u  *c_109*t
-                2t                   2t                       2t
+                u            2       u            4      u            3
+           + 8*e *u  *c_115*t  + 16*e *u  *c_116*t  + 8*e *u  *c_117*t
+                   2t                   2t                  2t
 
-                 u            4  2       u            3  2
-          - 240*e *u  *c_109*t *x  - 80*e *u  *c_110*t *x
-                    2t                      2t
+                u                u   3            u   3        2
+           + 2*e *u  *c_118*t + e *u  *c_106 + 4*e *u  *c_107*t
+                   2t               t                t
 
-                u              2    u                u            2
-          - 12*e *u  *c_111*t*x  + e *u  *c_114 - 8*e *u  *c_115*t
-                   2t                  2t               2t
+                 u   3        4       u   3        6       u   3        5
+           + 16*e *u  *c_108*t  + 64*e *u  *c_109*t  + 32*e *u  *c_110*t
+                    t                    t                    t
 
-                u            4      u            3      u
-          - 16*e *u  *c_116*t  - 8*e *u  *c_117*t  - 2*e *u  *c_118*t
-                   2t                  2t                  2t
+                 u   3        3      u   3            u   2
+           + 16*e *u  *c_111*t  + 2*e *u  *c_112*t + e *u  *u *c_100
+                    t                   t                t   x
 
-             u   3            u   3        2       u   3        4
-          - e *u  *c_106 - 4*e *u  *c_107*t  - 16*e *u  *c_108*t
-                t                t                    t
-
-                u   3        6       u   3        5       u   3        3
-          - 64*e *u  *c_109*t  - 32*e *u  *c_110*t  - 16*e *u  *c_111*t
-                   t                    t                    t
-
-               u   3            u   2               u   2           2
-          - 2*e *u  *c_112*t - e *u  *u *c_100 - 4*e *u  *u *c_101*t
-                  t                t   x               t   x
-
-                u   2           4       u   2           5
-          - 16*e *u  *u *c_102*t  - 32*e *u  *u *c_103*t
+                u   2           2       u   2           4
+           + 4*e *u  *u *c_101*t  + 16*e *u  *u *c_102*t
                    t   x                   t   x
 
-                u   2           3      u   2                 u   2
-          - 16*e *u  *u *c_104*t  - 4*e *u  *u *c_105*t - 4*e *u  *u *c_107*t*x
-                   t   x                  t   x                 t   x
+                 u   2           5       u   2           3      u   2
+           + 32*e *u  *u *c_103*t  + 16*e *u  *u *c_104*t  + 4*e *u  *u *c_105*t
+                    t   x                   t   x                  t   x
 
-                u   2           3          u   2           5
-          - 32*e *u  *u *c_108*t *x - 192*e *u  *u *c_109*t *x
-                   t   x                      t   x
+                u   2                    u   2           3
+           + 4*e *u  *u *c_107*t*x + 32*e *u  *u *c_108*t *x
+                   t   x                    t   x
 
-                u   2           4         u   2           2
-          - 80*e *u  *u *c_110*t *x - 24*e *u  *u *c_111*t *x
-                   t   x                     t   x
+                  u   2           5         u   2           4
+           + 192*e *u  *u *c_109*t *x + 80*e *u  *u *c_110*t *x
+                     t   x                     t   x
 
-             u   2                 u   2                 u   2        3
-          - e *u  *u *c_112*x - 4*e *u  *c_101*t*x - 32*e *u  *c_102*t *x
-                t   x                 t                     t
+                 u   2           2      u   2                 u   2
+           + 24*e *u  *u *c_111*t *x + e *u  *u *c_112*x + 4*e *u  *c_101*t*x
+                    t   x                  t   x                 t
 
-                u   2        4         u   2        2        u   2
-          - 80*e *u  *c_103*t *x - 24*e *u  *c_104*t *x - 2*e *u  *c_105*x
+                 u   2        3         u   2        4         u   2        2
+           + 32*e *u  *c_102*t *x + 80*e *u  *c_103*t *x + 24*e *u  *c_104*t *x
+                    t                      t                      t
+
+                u   2            u   2        2       u   2        2  2
+           + 2*e *u  *c_105*x + e *u  *c_107*x  + 24*e *u  *c_108*t *x
+                   t                t                    t
+
+                  u   2        5        u   2        4  2
+           + 480*e *u  *c_109*t  + 240*e *u  *c_109*t *x
+                     t                     t
+
+                 u   2        3  2       u   2          2    u   2
+           + 80*e *u  *c_110*t *x  + 12*e *u  *c_111*t*x  + e *u  *c_114
+                    t                       t                   t
+
+                u   2        2       u   2        4      u   2        3
+           + 8*e *u  *c_115*t  + 16*e *u  *c_116*t  + 8*e *u  *c_117*t
+                   t                    t                   t
+
+                u   2              u                  u              2
+           + 2*e *u  *c_118*t - 2*e *u *u *c_101*t + e *u *u *c_101*x
+                   t                  t  x               t  x
+
+                 u              3       u              2  2
+           - 16*e *u *u *c_102*t  + 24*e *u *u *c_102*t *x
+                    t  x                   t  x
+
+                  u              4       u              3  2
+           + 160*e *u *u *c_103*t  + 80*e *u *u *c_103*t *x
+                     t  x                   t  x
+
+                 u              2       u                2    u
+           - 12*e *u *u *c_104*t  + 12*e *u *u *c_104*t*x  - e *u *u *c_105
+                    t  x                   t  x                  t  x
+
+              u                     u              2        u                3
+           - e *u *u *c_107*x - 24*e *u *u *c_108*t *x + 8*e *u *u *c_108*t*x
+                 t  x                  t  x                    t  x
+
+                  u              4          u              3  3
+           + 960*e *u *u *c_109*t *x + 160*e *u *u *c_109*t *x
+                     t  x                      t  x
+
+                 u              3         u              2  3
+           - 80*e *u *u *c_110*t *x + 40*e *u *u *c_110*t *x
+                    t  x                     t  x
+
+                 u                      u              3      u
+           - 12*e *u *u *c_111*t*x + 2*e *u *u *c_111*x  + 8*e *u *u *c_115*t*x
+                    t  x                   t  x                  t  x
+
+                 u              3         u              2      u
+           + 32*e *u *u *c_116*t *x + 12*e *u *u *c_117*t *x + e *u *u *c_118*x
+                    t  x                     t  x                  t  x
+
+              u                  u              2      u              3
+           + e *u *u *c_119 + 4*e *u *u *c_120*t  + 8*e *u *u *c_121*t
+                 t  x               t  x                  t  x
+
+                u                    u                  u           2
+           + 2*e *u *u *c_122*t - 2*e *u *c_101*x - 48*e *u *c_102*t *x
+                   t  x                 t                  t
+
+                u             3        u           3         u           2  3
+           + 8*e *u *c_102*t*x  + 240*e *u *c_103*t *x + 40*e *u *c_103*t *x
                    t                      t                     t
 
-             u   2        2       u   2        2  2        u   2        5
-          - e *u  *c_107*x  - 24*e *u  *c_108*t *x  - 480*e *u  *c_109*t
-                t                    t                        t
+                 u                   u           3       u             2
+           - 24*e *u *c_104*t*x + 2*e *u *c_104*x  - 24*e *u *c_108*t*x
+                    t                   t                   t
 
-                 u   2        4  2       u   2        3  2
-          - 240*e *u  *c_109*t *x  - 80*e *u  *c_110*t *x
-                    t                       t
+              u           4        u           4        u           3  2
+           + e *u *c_108*x  + 720*e *u *c_109*t  + 720*e *u *c_109*t *x
+                 t                    t                    t
 
-                u   2          2    u   2            u   2        2
-          - 12*e *u  *c_111*t*x  + e *u  *c_114 - 8*e *u  *c_115*t
-                   t                   t                t
+                 u           2  4        u           3        u           2  2
+           + 60*e *u *c_109*t *x  - 360*e *u *c_110*t  - 120*e *u *c_110*t *x
+                    t                       t                    t
 
-                u   2        4      u   2        3      u   2
-          - 16*e *u  *c_116*t  - 8*e *u  *c_117*t  - 2*e *u  *c_118*t
-                   t                   t                   t
+                 u             4      u           2      u           2
+           + 10*e *u *c_110*t*x  - 6*e *u *c_111*x  + 2*e *u *c_115*x
+                    t                    t                  t
 
-               u                  u              2       u              3
-          + 2*e *u *u *c_101*t - e *u *u *c_101*x  + 16*e *u *u *c_102*t
-                  t  x               t  x                   t  x
+                 u           3       u           2  2      u             2
+           + 48*e *u *c_116*t  + 24*e *u *c_116*t *x  + 6*e *u *c_117*t*x
+                    t                   t                     t
 
-                u              2  2        u              4
-          - 24*e *u *u *c_102*t *x  - 160*e *u *u *c_103*t
-                   t  x                       t  x
-
-                u              3  2       u              2
-          - 80*e *u *u *c_103*t *x  + 12*e *u *u *c_104*t
-                   t  x                      t  x
-
-                u                2    u                u
-          - 12*e *u *u *c_104*t*x  + e *u *u *c_105 + e *u *u *c_107*x
-                   t  x                  t  x             t  x
-
-                u              2        u                3
-          + 24*e *u *u *c_108*t *x - 8*e *u *u *c_108*t*x
-                   t  x                    t  x
-
-                 u              4          u              3  3
-          - 960*e *u *u *c_109*t *x - 160*e *u *u *c_109*t *x
-                    t  x                      t  x
-
-                u              3         u              2  3
-          + 80*e *u *u *c_110*t *x - 40*e *u *u *c_110*t *x
-                   t  x                     t  x
-
-                u                      u              3      u
-          + 12*e *u *u *c_111*t*x - 2*e *u *u *c_111*x  - 8*e *u *u *c_115*t*x
-                   t  x                   t  x                  t  x
-
-                u              3         u              2      u
-          - 32*e *u *u *c_116*t *x - 12*e *u *u *c_117*t *x - e *u *u *c_118*x
-                   t  x                     t  x                  t  x
-
-             u                  u              2      u              3
-          + e *u *u *c_119 - 4*e *u *u *c_120*t  - 8*e *u *u *c_121*t
-                t  x               t  x                  t  x
-
-               u                    u                  u           2
-          - 2*e *u *u *c_122*t + 2*e *u *c_101*x + 48*e *u *c_102*t *x
-                  t  x                 t                  t
-
-               u             3        u           3         u           2  3
-          - 8*e *u *c_102*t*x  - 240*e *u *c_103*t *x - 40*e *u *c_103*t *x
-                  t                      t                     t
-
-                u                   u           3       u             2
-          + 24*e *u *c_104*t*x - 2*e *u *c_104*x  + 24*e *u *c_108*t*x
-                   t                   t                   t
-
-             u           4        u           4        u           3  2
-          - e *u *c_108*x  - 720*e *u *c_109*t  - 720*e *u *c_109*t *x
-                t                    t                    t
-
-                u           2  4        u           3        u           2  2
-          - 60*e *u *c_109*t *x  + 360*e *u *c_110*t  + 120*e *u *c_110*t *x
-                   t                       t                    t
-
-                u             4      u           2      u           2
-          - 10*e *u *c_110*t*x  + 6*e *u *c_111*x  - 2*e *u *c_115*x
+                u                    u           2      u
+           + 4*e *u *c_120*t*x + 12*e *u *c_121*t *x + e *u *c_122*x
                    t                    t                  t
 
-                u           3       u           2  2      u             2
-          - 48*e *u *c_116*t  - 24*e *u *c_116*t *x  - 6*e *u *c_117*t*x
-                   t                   t                     t
+              u               u           2      u
+           + e *u *c_125 + 4*e *u *c_126*t  + 4*e *u *c_127*t
+                 t               t                  t
 
-               u                    u           2      u
-          - 4*e *u *c_120*t*x - 12*e *u *c_121*t *x - e *u *c_122*x
-                  t                    t                  t
+                 u           2       u             2    u           4
+           - 84*e *u *c_102*t  - 36*e *u *c_102*t*x  + e *u *c_102*x
+                    x                   x                  x
 
-             u               u           2      u                  u           2
-          + e *u *c_125 - 4*e *u *c_126*t  - 4*e *u *c_127*t + 84*e *u *c_102*t
-                t               t                  t                  x
+                  u           3        u           2  2       u             4
+           + 120*e *u *c_103*t  + 120*e *u *c_103*t *x  + 10*e *u *c_103*t*x
+                     x                    x                      x
 
-                u             2    u           4        u           3
-          + 36*e *u *c_102*t*x  - e *u *c_102*x  - 120*e *u *c_103*t
-                   x                  x                    x
+                u           2       u                   u           3
+           - 9*e *u *c_104*x  + 24*e *u *c_108*t*x - 6*e *u *c_108*x
+                   x                   x                   x
 
-                 u           2  2       u             4      u           2
-          - 120*e *u *c_103*t *x  - 10*e *u *c_103*t*x  + 9*e *u *c_104*x
-                    x                      x                    x
+                  u           3          u           2  3       u             5
+           + 720*e *u *c_109*t *x + 240*e *u *c_109*t *x  + 12*e *u *c_109*t*x
+                     x                      x                      x
 
-                u                   u           3        u           3
-          - 24*e *u *c_108*t*x + 6*e *u *c_108*x  - 720*e *u *c_109*t *x
-                   x                   x                    x
+                  u           2         u             3    u           5
+           - 420*e *u *c_110*t *x - 60*e *u *c_110*t*x  + e *u *c_110*x
+                     x                     x                  x
 
-                 u           2  3       u             5        u           2
-          - 240*e *u *c_109*t *x  - 12*e *u *c_109*t*x  + 420*e *u *c_110*t *x
-                    x                      x                      x
+                u                 u                  u           2
+           + 6*e *u *c_111*x - 2*e *u *c_115*x + 48*e *u *c_116*t *x
+                   x                 x                  x
 
-                u             3    u           5      u
-          + 60*e *u *c_110*t*x  - e *u *c_110*x  - 6*e *u *c_111*x
-                   x                  x                  x
+                u             3      u                 u           3
+           + 8*e *u *c_116*t*x  - 6*e *u *c_117*t*x + e *u *c_117*x
+                   x                    x                 x
 
-               u                  u           2        u             3
-          + 2*e *u *c_115*x - 48*e *u *c_116*t *x - 8*e *u *c_116*t*x
-                  x                  x                    x
+              u           2       u           2      u             2
+           + e *u *c_120*x  + 12*e *u *c_121*t  + 6*e *u *c_121*t*x
+                 x                   x                  x
 
-               u                 u           3    u           2
-          + 6*e *u *c_117*t*x - e *u *c_117*x  - e *u *c_120*x
-                  x                 x                x
+              u               u                 u                   u
+           + e *u *c_123 + 2*e *u *c_124*t + 4*e *u *c_126*t*x + 2*e *u *c_127*x
+                 x               x                 x                   x
 
-                u           2      u             2    u
-          - 12*e *u *c_121*t  - 6*e *u *c_121*t*x  + e *u *c_123
-                   x                  x                  x
+                 u                u        3       u        2
+           - 48*e *c_102*t*x - 8*e *c_102*x  + 60*e *c_103*t *x
 
-               u                 u                   u
-          - 2*e *u *c_124*t - 4*e *u *c_126*t*x - 2*e *u *c_127*x
-                  x                 x                   x
+                 u          3    u        5      u               u
+           + 20*e *c_103*t*x  + e *c_103*x  + 9*e *c_104*x + 30*e *c_108*t
 
-                u                u        3       u        2
-          + 48*e *c_102*t*x + 8*e *c_102*x  - 60*e *c_103*t *x
+                 u        2        u        3        u        2  2
+           + 15*e *c_108*x  + 120*e *c_109*t  + 180*e *c_109*t *x
 
-                u          3    u        5      u               u
-          - 20*e *c_103*t*x  - e *c_103*x  - 9*e *c_104*x - 30*e *c_108*t
+                 u          4    u        6        u        2
+           + 30*e *c_109*t*x  + e *c_109*x  - 120*e *c_110*t
 
-                u        2        u        3        u        2  2
-          - 15*e *c_108*x  - 120*e *c_109*t  - 180*e *c_109*t *x
+                  u          2       u        4      u          u
+           - 120*e *c_110*t*x  - 10*e *c_110*x  - 3*e *c_111 + e *c_115
 
-                u          4    u        6        u        2        u          2
-          - 30*e *c_109*t*x  - e *c_109*x  + 120*e *c_110*t  + 120*e *c_110*t*x
+                 u        2       u          2    u        4      u
+           + 12*e *c_116*t  + 12*e *c_116*t*x  + e *c_116*x  - 6*e *c_117*t
 
-                u        4      u          u             u        2
-          + 10*e *c_110*x  + 3*e *c_111 - e *c_115 - 12*e *c_116*t
+                u        2    u              u              u        3
+           - 3*e *c_117*x  - e *c_120*x + 6*e *c_121*t*x + e *c_121*x
 
-                u          2    u        4      u              u        2
-          - 12*e *c_116*t*x  - e *c_116*x  + 6*e *c_117*t + 3*e *c_117*x
+              u              u            u        2    u          u
+           + e *c_124*x + 2*e *c_126*t + e *c_126*x  - e *c_127 + e *c_128
 
-             u              u              u        3    u
-          + e *c_120*x - 6*e *c_121*t*x - e *c_121*x  - e *c_124*x
+                    u
+           + c_94)/e },
 
-               u            u        2    u          u                u
-          - 2*e *c_126*t - e *c_126*x  + e *c_127 + e *c_128 + c_94)/e },
+  {c_128,
 
- {c_94,
+   c_125,
 
-  c_105,
+   c_126,
 
-  c_104,
+   c_127,
 
-  c_103,
+   c_123,
 
-  c_102,
+   c_124,
 
-  c_101,
+   c_119,
 
-  c_100,
+   c_120,
 
-  c_112,
+   c_121,
 
-  c_111,
+   c_122,
 
-  c_110,
+   c_114,
 
-  c_109,
+   c_115,
 
-  c_108,
+   c_116,
 
-  c_107,
+   c_117,
 
-  c_106,
+   c_118,
 
-  c_118,
+   c_106,
 
-  c_117,
+   c_107,
 
-  c_116,
+   c_108,
 
-  c_115,
+   c_109,
 
-  c_114,
+   c_110,
 
-  c_122,
+   c_111,
 
-  c_121,
+   c_112,
 
-  c_120,
+   c_100,
 
-  c_119,
+   c_101,
 
-  c_124,
+   c_102,
 
-  c_123,
+   c_103,
 
-  c_127,
+   c_104,
 
-  c_126,
+   c_105,
 
-  c_125,
-
-  c_128}}
-
-nodepnd {u}$
-
-
-
-comment
--------------------------------------------------------
-The following example includes the Karpman equations
-for three unknown functions in 4 variables. 
-
-If point symmetries are to be computed for a single
-equation or a system of equations of higher than first
-order then there is the option to formulate at first
-preliminary conditions for each equation, have CRACK
-solving these conditions before the full set of conditions
-is formulated and solved. This strategy is adopted if a
-lisp flag prelim_ has the value t. The default value
-is nil. 
-
-Similarly, if a system of equations is to be investigated
-and a flag individual_ has the value t then symmetry
-conditions are formulated and investigated for each
-individual equation successively. The default value is nil.
-
-It is advantageous to split a large set of conditions
-into smaller sets to be investigated successively if
-each set is sufficiently overdetermined to be solvable
-quickly. Then any substitutions are done in the smaller
-set and the next set of conditions is shorter. For
-example, for the Karpman equations below the speedup for
-prelim_:=t and individual_:=t is a factor of 10.
-(Time ~ 1 min.);
-
-write"-------------------------------------------------------";
-
+   c_94}}}
 
 -------------------------------------------------------
-
-
-lisp(prelim_:=t)$
-
-
-lisp(individual_:=t)$
-
-
-
-depend r,x,y,z,t;
-
-
-depend f,x,y,z,t;
-
-
-depend v,x,y,z,t;
-
-
-
-on time$
-
-
-
-liepde({
-
-first 
-solve(
-        {df(r,t) + w1*df(r,z)
-         + s1*(df(r,x)*df(f,x)+df(r,y)*df(f,y)+r*df(f,x,2)/2+r*df(f,y,2)/2) 
-         + s2*(df(r,z)*df(f,z)+r*df(f,z,2)/2),
- 
-         df(f,t) + w1*df(f,z) 
-         - (s1*(df(r,x,2)/r+df(r,y,2)/r-df(f,x)**2-df(f,y)**2) +
-            s2*(df(r,z,2)/r-df(f,z)**2))/2 + a1*v,
-       
-         df(v,t,2) - w2**2*(df(v,x,2)+df(v,y,2)+df(v,z,2))
-         - 2*a2*r*(df(r,x,2)+df(r,y,2)+df(r,z,2))
-         - 2*a2*(df(r,x)**2+df(r,y)**2+df(r,z)**2)},
-         
-        {df(v,x,2), df(r,x,2), df(f,x,2)}         
- 
-     )         
-         , {r,f,v}, {x,y,z,t}},
-
-       {"point"}, 
-       
-       {},{})$
-
 
 
 The PDE-system under investigation is :
@@ -1329,30 +1103,6 @@ for the function(s) :
 r(z,y,t,x), f(z,y,t,x), v(z,y,t,x)
 
 
-
-
-=============== Initializations
-
-
-=============== Preconditions for the 1. equation
-
-
-=============== Preconditions for the 2. equation
-
-
-=============== Preconditions for the 3. equation
-
-
-=============== Full conditions for the 1. equation
-
-
-=============== Full conditions for the 2. equation
-
-
-=============== Full conditions for the 3. equation
-
-The symmetries are:
-
 -------- 1. Symmetry:
 
 xi_x=0
@@ -1361,11 +1111,13 @@ xi_y=0
 
 xi_z=0
 
-xi_t=0
+        1
+xi_t=-------
+      s1*s2
 
 eta_r=0
 
-eta_f=1
+eta_f=0
 
 eta_v=0
 
@@ -1375,24 +1127,27 @@ xi_x=0
 
 xi_y=0
 
-xi_z=0
+        1
+xi_z=-------
+      s1*s2
 
 xi_t=0
 
 eta_r=0
 
-          2
-eta_f= - t
+eta_f=0
 
-       2*t
-eta_v=-----
-       a1
+eta_v=0
 
 -------- 3. Symmetry:
 
-xi_x=0
+       - y
+xi_x=-------
+      s1*s2
 
-xi_y=0
+        x
+xi_y=-------
+      s1*s2
 
 xi_z=0
 
@@ -1400,19 +1155,17 @@ xi_t=0
 
 eta_r=0
 
-eta_f= - t
+eta_f=0
 
-       1
-eta_v=----
-       a1
+eta_v=0
 
 -------- 4. Symmetry:
 
-xi_x=0
+        1
+xi_x=-------
+      s1*s2
 
-      1
-xi_y=----
-      s2
+xi_y=0
 
 xi_z=0
 
@@ -1426,11 +1179,11 @@ eta_v=0
 
 -------- 5. Symmetry:
 
-      1
-xi_x=----
-      s2
+xi_x=0
 
-xi_y=0
+        1
+xi_y=-------
+      s1*s2
 
 xi_z=0
 
@@ -1444,13 +1197,9 @@ eta_v=0
 
 -------- 6. Symmetry:
 
-      y
-xi_x=----
-      s2
+xi_x=0
 
-       - x
-xi_y=------
-       s2
+xi_y=0
 
 xi_z=0
 
@@ -1458,9 +1207,15 @@ xi_t=0
 
 eta_r=0
 
-eta_f=0
+         - t
+eta_f=--------
+            2
+       s1*s2
 
-eta_v=0
+           1
+eta_v=-----------
+               2
+       a1*s1*s2
 
 -------- 7. Symmetry:
 
@@ -1468,17 +1223,22 @@ xi_x=0
 
 xi_y=0
 
-      1
-xi_z=----
-      s1
+xi_z=0
 
 xi_t=0
 
 eta_r=0
 
-eta_f=0
+           2
+        - t
+eta_f=--------
+            2
+       s1*s2
 
-eta_v=0
+          2*t
+eta_v=-----------
+               2
+       a1*s1*s2
 
 -------- 8. Symmetry:
 
@@ -1488,142 +1248,68 @@ xi_y=0
 
 xi_z=0
 
-xi_t=1
+xi_t=0
 
 eta_r=0
 
-eta_f=0
+         1
+eta_f=--------
+            2
+       s1*s2
 
 eta_v=0
 
+
 -------- 
 
+{{{},
 
-{{},
+         c_209 - c_210*y
+  {xi_x=-----------------,
+              s1*s2
 
-        c_211 + c_212*y
- {xi_x=-----------------,
-              s2
+         c_210*x + c_217
+   xi_y=-----------------,
+              s1*s2
 
-         - c_212*x + c_219
-  xi_y=--------------------,
-                s2
+         c_206
+   xi_z=-------,
+         s1*s2
 
-        c_208
-  xi_z=-------,
-         s1
+         c_219
+   xi_t=-------,
+         s1*s2
 
-  xi_t=c_221,
+   eta_r=0,
 
-  eta_r=0,
+                         2
+          c_220 - c_221*t  - c_222*t
+   eta_f=----------------------------,
+                         2
+                    s1*s2
 
-                       2
-  eta_f=c_222 - c_223*t  - c_224*t,
+          2*c_221*t + c_222
+   eta_v=-------------------},
+                      2
+              a1*s1*s2
 
-         2*c_223*t + c_224
-  eta_v=-------------------},
-                a1
+  {c_219,
 
- {c_222,
+   c_206,
 
-  c_223,
+   c_210,
 
-  c_224,
+   c_209,
 
-  c_219,
+   c_217,
 
-  c_211,
+   c_222,
 
-  c_212,
+   c_221,
 
-  c_208,
-
-  c_221}}
-
-
-
-off time$
-
-
-nodepnd {r,f,v}$
-
-
-
-comment
--------------------------------------------------------
-In the following example a system of two equations (by
-V.Sokolov) is investigated concerning a special ansatz for
-4th order symmetries. The ansatz for the symmetries includes
-two unknown functions f,g. Because x is the second variable
-in the list of variables {t,x}, the name u!`2 stands for
-df(u,x).
-Because higher order symmetries are investigated we have
-to set prelim_:=nil. The symmetries to be calculated are
-lengthy and therefore conditions are not very overdetermined.
-In that case CRACK can take long to solve a single 
-subset of conditions. The complete set of conditions would
-have been more overdetermined and easier to solve. Therefore
-the advantage of first formulating all conditions and then
-solving them together with one CRACK call is that having
-more equations, the chance of finding short integrable
-equations among then is higher, i.e. CRACK has more freedom
-in optimizing the computation. Therefore individual_:=nil
-is more appropriate in this example.
-
-Because 4th order conditions are to be computed the
-`binding stack size' is increased.
-(Time ~ 5 min.);
-
-write"-------------------------------------------------------";
-
+   c_220}}}
 
 -------------------------------------------------------
-
-
-lisp(prelim_:=nil)$
-
-
-lisp(individual_:=nil)$
-
-
-lisp(if getd 'set_bndstk_size then set_bndstk_size(7000))$
-
-
-
-nodepnd {u,v}$
-
-
-depend  u,x,t;
-
-
-depend  v,x,t;
-
-
-
-des:={df(u,t)=+df(u,x,2) + (u + v)*df(u,x) + u*df(v,x),
-      df(v,t)=-df(v,x,2) + (u + v)*df(v,x) + v*df(u,x)
-     }$
-
-
-
-nodepnd {f,g}$
-
-
-depend f,t,x,u,v,u!`2,v!`2,u!`2!`2,v!`2!`2,u!`2!`2!`2,v!`2!`2!`2$
-
-
-depend g,t,x,u,v,u!`2,v!`2,u!`2!`2,v!`2!`2,u!`2!`2!`2,v!`2!`2!`2$
-
-
-liepde({des,{u,v},{t,x}},
-       {xi_t=0,
-        xi_x=0,
-        eta_u=+df(u,x,4)+f,
-        eta_v=-df(v,x,4)+g
-       },
-       {f,g},{}
-      )$
-
 
 
 The PDE-system under investigation is :
@@ -1639,10 +1325,172 @@ for the function(s) :
 u(x,t), v(x,t)
 
 
-
-The symmetries are:
-
 -------- 1. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                       3       2    9
+eta_u=u   + 2*u  *u + 2*u  *v + 5*u  *u  + 3*u  *v  + ---*u  *u  + ---*u  *u*v
+       4x      3x        3x        2x  x      2x  x    2   2x       2   2x
+
+    3       2       2      9    2                 9
+ + ---*u  *v  + 3*u  *u + ---*u  *v + 2*u *v   + ---*u *v *u + 3*u *v *v
+    2   2x         x       2   x         x  2x    2   x  x        x  x
+
+    1      3    9      2      9        2    1      3                 3      3
+ + ---*u *u  + ---*u *u *v + ---*u *u*v  + ---*u *v  + u  + v  *u + ---*v *u
+    2   x       2   x         2   x         2   x       x    3x      2   x
+
+    9      2      3        2
+ + ---*v *u *v + ---*v *u*v
+    2   x         2   x
+
+                                                 9             3      2
+eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v + ---*u *u *v
+       3x        2x  x      x  2x      x  x      2   x  x      2   x
+
+    9        2    3      3                                         3       2
+ + ---*u *u*v  + ---*u *v  - v   + 2*v  *u + 2*v  *v + 5*v  *v  - ---*v  *u
+    2   x         2   x       4x      3x        3x        2x  x    2   2x
+
+    9             3       2    9    2         2      1      3    9      2
+ - ---*v  *u*v - ---*v  *v  - ---*v  *u - 3*v  *v + ---*v *u  + ---*v *u *v
+    2   2x        2   2x       2   x         x       2   x       2   x
+
+    9        2    1      3
+ + ---*v *u*v  + ---*v *v  + v
+    2   x         2   x       x
+
+-------- 2. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                       3       2    9
+eta_u=u   + 2*u  *u + 2*u  *v + 5*u  *u  + 3*u  *v  + ---*u  *u  + ---*u  *u*v
+       4x      3x        3x        2x  x      2x  x    2   2x       2   2x
+
+    3       2             2      9    2                 9
+ + ---*u  *v  + u   + 3*u  *u + ---*u  *v + 2*u *v   + ---*u *v *u + 3*u *v *v
+    2   2x       2x      x       2   x         x  2x    2   x  x        x  x
+
+    1      3    9      2      9        2           1      3
+ + ---*u *u  + ---*u *u *v + ---*u *u*v  + u *u + ---*u *v  + u *v + v  *u
+    2   x       2   x         2   x         x      2   x       x      3x
+
+    3      3    9      2      3        2
+ + ---*v *u  + ---*v *u *v + ---*v *u*v  + v *u
+    2   x       2   x         2   x         x
+
+                                                 9             3      2
+eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v + ---*u *u *v
+       3x        2x  x      x  2x      x  x      2   x  x      2   x
+
+    9        2    3      3
+ + ---*u *u*v  + ---*u *v  + u *v - v   + 2*v  *u + 2*v  *v + 5*v  *v
+    2   x         2   x       x      4x      3x        3x        2x  x
+
+    3       2    9             3       2          9    2         2      1      3
+ - ---*v  *u  - ---*v  *u*v - ---*v  *v  - v   - ---*v  *u - 3*v  *v + ---*v *u
+    2   2x       2   2x        2   2x       2x    2   x         x       2   x
+
+    9      2      9        2           1      3
+ + ---*v *u *v + ---*v *u*v  + v *u + ---*v *v  + v *v
+    2   x         2   x         x      2   x       x
+
+-------- 3. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                                 3       2
+eta_u=u   + 2*u  *u + 2*u  *v + 5*u  *u  + 3*u  *v  + 2*u  *t + ---*u  *u
+       4x      3x        3x        2x  x      2x  x      2x      2   2x
+
+    9             3       2       2      9    2                 9
+ + ---*u  *u*v + ---*u  *v  + 3*u  *u + ---*u  *v + 2*u *v   + ---*u *v *u
+    2   2x        2   2x         x       2   x         x  2x    2   x  x
+
+                                      1      3    9      2      9        2
+ + 3*u *v *v + 2*u *t*u + 2*u *t*v + ---*u *u  + ---*u *u *v + ---*u *u*v
+      x  x        x          x        2   x       2   x         2   x
+
+    1      3                              3      3    9      2      3        2
+ + ---*u *v  + u *x + v  *u + 2*v *t*u + ---*v *u  + ---*v *u *v + ---*v *u*v
+    2   x       x      3x        x        2   x       2   x         2   x
+
+ + u
+
+                                                 9
+eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v + 2*u *t*v
+       3x        2x  x      x  2x      x  x      2   x  x        x
+
+    3      2      9        2    3      3
+ + ---*u *u *v + ---*u *u*v  + ---*u *v  - v   + 2*v  *u + 2*v  *v + 5*v  *v
+    2   x         2   x         2   x       4x      3x        3x        2x  x
+
+              3       2    9             3       2    9    2         2
+ - 2*v  *t - ---*v  *u  - ---*v  *u*v - ---*v  *v  - ---*v  *u - 3*v  *v
+      2x      2   2x       2   2x        2   2x       2   x         x
+
+                          1      3    9      2      9        2    1      3
+ + 2*v *t*u + 2*v *t*v + ---*v *u  + ---*v *u *v + ---*v *u*v  + ---*v *v
+      x          x        2   x       2   x         2   x         2   x
+
+ + v *x + v
+    x
+
+-------- 4. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                               3       2
+eta_u=u   + 2*u  *u + 2*u  *v + 4*u   + 5*u  *u  + 3*u  *v  + ---*u  *u
+       4x      3x        3x        3x      2x  x      2x  x    2   2x
+
+    9                       3       2                 2      9    2         2
+ + ---*u  *u*v + 6*u  *u + ---*u  *v  + 6*u  *v + 3*u  *u + ---*u  *v + 6*u
+    2   2x          2x      2   2x         2x        x       2   x         x
+
+               9                                   1      3    9      2
+ + 2*u *v   + ---*u *v *u + 3*u *v *v + 6*u *v  + ---*u *u  + ---*u *u *v
+      x  2x    2   x  x        x  x        x  x    2   x       2   x
+
+         2    9        2                1      3         2            3      3
+ + 3*u *u  + ---*u *u*v  + 12*u *u*v + ---*u *v  + 3*u *v  + v  *u + ---*v *u
+      x       2   x            x        2   x         x       3x      2   x
+
+    9      2           2    3        2
+ + ---*v *u *v + 6*v *u  + ---*v *u*v  + 6*v *u*v
+    2   x           x       2   x           x
+
+                                                 9
+eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v - 6*u *v
+       3x        2x  x      x  2x      x  x      2   x  x        x  x
+
+    3      2      9        2               3      3         2
+ + ---*u *u *v + ---*u *u*v  + 6*u *u*v + ---*u *v  + 6*u *v  - v   + 2*v  *u
+    2   x         2   x           x        2   x         x       4x      3x
+
+                                 3       2    9                       3       2
+ + 2*v  *v + 4*v   + 5*v  *v  - ---*v  *u  - ---*v  *u*v - 6*v  *u - ---*v  *v
+      3x        3x      2x  x    2   2x       2   2x          2x      2   2x
+
+              9    2         2         2    1      3    9      2           2
+ - 6*v  *v - ---*v  *u - 3*v  *v - 6*v   + ---*v *u  + ---*v *u *v + 3*v *u
+      2x      2   x         x         x     2   x       2   x           x
+
+    9        2                1      3         2
+ + ---*v *u*v  + 12*v *u*v + ---*v *v  + 3*v *v
+    2   x            x        2   x         x
+
+-------- 5. Symmetry:
 
 xi_t=0
 
@@ -1694,296 +1542,464 @@ eta_v=u  *v + 2*u  *v  + 3*u *v   - 6*u *v *t - 3*u *v *u - ---*u *v *v
  + ---*v *u*v  + 2*v *u*x + ---*v *v  + 2*v *v*x + 3*u*v + v
     2   x           x        2   x         x
 
--------- 2. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                                                               3       2
-eta_u=u   + 2*u  *u + 2*u  *v + 4*u   + 5*u  *u  + 3*u  *v  + ---*u  *u
-       4x      3x        3x        3x      2x  x      2x  x    2   2x
-
-    9                       3       2                 2      9    2         2
- + ---*u  *u*v + 6*u  *u + ---*u  *v  + 6*u  *v + 3*u  *u + ---*u  *v + 6*u
-    2   2x          2x      2   2x         2x        x       2   x         x
-
-               9                                   1      3    9      2
- + 2*u *v   + ---*u *v *u + 3*u *v *v + 6*u *v  + ---*u *u  + ---*u *u *v
-      x  2x    2   x  x        x  x        x  x    2   x       2   x
-
-         2    9        2                1      3         2            3      3
- + 3*u *u  + ---*u *u*v  + 12*u *u*v + ---*u *v  + 3*u *v  + v  *u + ---*v *u
-      x       2   x            x        2   x         x       3x      2   x
-
-    9      2           2    3        2
- + ---*v *u *v + 6*v *u  + ---*v *u*v  + 6*v *u*v
-    2   x           x       2   x           x
-
-                                                 9
-eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v - 6*u *v
-       3x        2x  x      x  2x      x  x      2   x  x        x  x
-
-    3      2      9        2               3      3         2
- + ---*u *u *v + ---*u *u*v  + 6*u *u*v + ---*u *v  + 6*u *v  - v   + 2*v  *u
-    2   x         2   x           x        2   x         x       4x      3x
-
-                                 3       2    9                       3       2
- + 2*v  *v + 4*v   + 5*v  *v  - ---*v  *u  - ---*v  *u*v - 6*v  *u - ---*v  *v
-      3x        3x      2x  x    2   2x       2   2x          2x      2   2x
-
-              9    2         2         2    1      3    9      2           2
- - 6*v  *v - ---*v  *u - 3*v  *v - 6*v   + ---*v *u  + ---*v *u *v + 3*v *u
-      2x      2   x         x         x     2   x       2   x           x
-
-    9        2                1      3         2
- + ---*v *u*v  + 12*v *u*v + ---*v *v  + 3*v *v
-    2   x            x        2   x         x
-
--------- 3. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                                                                 3       2
-eta_u=u   + 2*u  *u + 2*u  *v + 5*u  *u  + 3*u  *v  + 2*u  *t + ---*u  *u
-       4x      3x        3x        2x  x      2x  x      2x      2   2x
-
-    9             3       2       2      9    2                 9
- + ---*u  *u*v + ---*u  *v  + 3*u  *u + ---*u  *v + 2*u *v   + ---*u *v *u
-    2   2x        2   2x         x       2   x         x  2x    2   x  x
-
-                                      1      3    9      2      9        2
- + 3*u *v *v + 2*u *t*u + 2*u *t*v + ---*u *u  + ---*u *u *v + ---*u *u*v
-      x  x        x          x        2   x       2   x         2   x
-
-    1      3                              3      3    9      2      3        2
- + ---*u *v  + u *x + v  *u + 2*v *t*u + ---*v *u  + ---*v *u *v + ---*v *u*v
-    2   x       x      3x        x        2   x       2   x         2   x
-
- + u
-
-                                                 9
-eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v + 2*u *t*v
-       3x        2x  x      x  2x      x  x      2   x  x        x
-
-    3      2      9        2    3      3
- + ---*u *u *v + ---*u *u*v  + ---*u *v  - v   + 2*v  *u + 2*v  *v + 5*v  *v
-    2   x         2   x         2   x       4x      3x        3x        2x  x
-
-              3       2    9             3       2    9    2         2
- - 2*v  *t - ---*v  *u  - ---*v  *u*v - ---*v  *v  - ---*v  *u - 3*v  *v
-      2x      2   2x       2   2x        2   2x       2   x         x
-
-                          1      3    9      2      9        2    1      3
- + 2*v *t*u + 2*v *t*v + ---*v *u  + ---*v *u *v + ---*v *u*v  + ---*v *v
-      x          x        2   x       2   x         2   x         2   x
-
- + v *x + v
-    x
-
--------- 4. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                                                       3       2    9
-eta_u=u   + 2*u  *u + 2*u  *v + 5*u  *u  + 3*u  *v  + ---*u  *u  + ---*u  *u*v
-       4x      3x        3x        2x  x      2x  x    2   2x       2   2x
-
-    3       2             2      9    2                 9
- + ---*u  *v  + u   + 3*u  *u + ---*u  *v + 2*u *v   + ---*u *v *u + 3*u *v *v
-    2   2x       2x      x       2   x         x  2x    2   x  x        x  x
-
-    1      3    9      2      9        2           1      3
- + ---*u *u  + ---*u *u *v + ---*u *u*v  + u *u + ---*u *v  + u *v + v  *u
-    2   x       2   x         2   x         x      2   x       x      3x
-
-    3      3    9      2      3        2
- + ---*v *u  + ---*v *u *v + ---*v *u*v  + v *u
-    2   x       2   x         2   x         x
-
-                                                 9             3      2
-eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v + ---*u *u *v
-       3x        2x  x      x  2x      x  x      2   x  x      2   x
-
-    9        2    3      3
- + ---*u *u*v  + ---*u *v  + u *v - v   + 2*v  *u + 2*v  *v + 5*v  *v
-    2   x         2   x       x      4x      3x        3x        2x  x
-
-    3       2    9             3       2          9    2         2      1      3
- - ---*v  *u  - ---*v  *u*v - ---*v  *v  - v   - ---*v  *u - 3*v  *v + ---*v *u
-    2   2x       2   2x        2   2x       2x    2   x         x       2   x
-
-    9      2      9        2           1      3
- + ---*v *u *v + ---*v *u*v  + v *u + ---*v *v  + v *v
-    2   x         2   x         x      2   x       x
-
--------- 5. Symmetry:
-
-xi_t=0
-
-xi_x=0
-
-                                                       3       2    9
-eta_u=u   + 2*u  *u + 2*u  *v + 5*u  *u  + 3*u  *v  + ---*u  *u  + ---*u  *u*v
-       4x      3x        3x        2x  x      2x  x    2   2x       2   2x
-
-    3       2       2      9    2                 9
- + ---*u  *v  + 3*u  *u + ---*u  *v + 2*u *v   + ---*u *v *u + 3*u *v *v
-    2   2x         x       2   x         x  2x    2   x  x        x  x
-
-    1      3    9      2      9        2    1      3                 3      3
- + ---*u *u  + ---*u *u *v + ---*u *u*v  + ---*u *v  + u  + v  *u + ---*v *u
-    2   x       2   x         2   x         2   x       x    3x      2   x
-
-    9      2      3        2
- + ---*v *u *v + ---*v *u*v
-    2   x         2   x
-
-                                                 9             3      2
-eta_v=u  *v + 2*u  *v  + 3*u *v   - 3*u *v *u - ---*u *v *v + ---*u *u *v
-       3x        2x  x      x  2x      x  x      2   x  x      2   x
-
-    9        2    3      3                                         3       2
- + ---*u *u*v  + ---*u *v  - v   + 2*v  *u + 2*v  *v + 5*v  *v  - ---*v  *u
-    2   x         2   x       4x      3x        3x        2x  x    2   2x
-
-    9             3       2    9    2         2      1      3    9      2
- - ---*v  *u*v - ---*v  *v  - ---*v  *u - 3*v  *v + ---*v *u  + ---*v *u *v
-    2   2x        2   2x       2   x         x       2   x       2   x
-
-    9        2    1      3
- + ---*v *u*v  + ---*v *v  + v
-    2   x         2   x       x
 
 -------- 
 
+{{{},
 
-{{},
+  {xi_t=0,
 
- {xi_t=0,
+   xi_x=0,
 
-  xi_x=0,
+   eta_u=(2*u   + 8*u  *c_324 + 8*u  *c_326*t + 4*u  *u + 4*u  *v + 10*u  *u
+             4x      3x            3x              3x        3x         2x  x
 
-  eta_u=(2*u   + 8*u  *c_326 + 8*u  *c_328*t + 4*u  *u + 4*u  *v + 10*u  *u
-            4x      3x            3x              3x        3x         2x  x
+           + 6*u  *v  + 12*u  *c_324*u + 12*u  *c_324*v + 12*u  *c_326*t*u
+                2x  x       2x               2x               2x
 
-          + 6*u  *v  + 12*u  *c_326*u + 12*u  *c_326*v + 12*u  *c_328*t*u
-               2x  x       2x               2x               2x
+           + 12*u  *c_326*t*v + 4*u  *c_326*x + 2*u  *c_330 + 4*u  *c_331*t
+                 2x                2x              2x            2x
 
-          + 12*u  *c_328*t*v + 4*u  *c_328*x + 2*u  *c_332 + 4*u  *c_333*t
-                2x                2x              2x            2x
+                    2                      2        2              2
+           + 3*u  *u  + 9*u  *u*v + 3*u  *v  + 12*u  *c_324 + 12*u  *c_326*t
+                2x         2x          2x          x              x
 
-                   2                      2        2              2
-          + 3*u  *u  + 9*u  *u*v + 3*u  *v  + 12*u  *c_326 + 12*u  *c_328*t
-               2x         2x          2x          x              x
+                 2         2
+           + 6*u  *u + 9*u  *v + 4*u *v   + 12*u *v *c_324 + 12*u *v *c_326*t
+                x         x         x  2x       x  x             x  x
 
-                2         2
-          + 6*u  *u + 9*u  *v + 4*u *v   + 12*u *v *c_326 + 12*u *v *c_328*t
-               x         x         x  2x       x  x             x  x
+                                                 2
+           + 9*u *v *u + 6*u *v *v + 6*u *c_324*u  + 24*u *c_324*u*v
+                x  x        x  x        x                x
+
+                         2                 2
+           + 6*u *c_324*v  + 6*u *c_326*t*u  + 24*u *c_326*t*u*v
+                x               x                  x
+
+                           2
+           + 6*u *c_326*t*v  + 4*u *c_326*u*x + 4*u *c_326*v*x + 16*u *c_326
+                x                 x                x                 x
+
+           + 2*u *c_330*u + 2*u *c_330*v + 4*u *c_331*t*u + 4*u *c_331*t*v
+                x              x              x                x
+
+                                             3         2             2       3
+           + 2*u *c_331*x + 2*u *c_332 + u *u  + 9*u *u *v + 9*u *u*v  + u *v
+                x              x          x         x           x         x
+
+                                    2                                    2
+           + 2*v  *u + 12*v *c_324*u  + 12*v *c_324*u*v + 12*v *c_326*t*u
+                3x         x                x                 x
+
+           + 12*v *c_326*t*u*v + 4*v *c_326*u*x + 2*v *c_330*u + 4*v *c_331*t*u
+                 x                  x                x              x
+
+                   3         2             2            2
+           + 3*v *u  + 9*v *u *v + 3*v *u*v  + 2*c_326*u  + 6*c_326*u*v
+                x         x           x
+
+           + 2*c_331*u)/2,
+
+   eta_v=(2*u  *v + 4*u  *v  + 6*u *v   - 12*u *v *c_324 - 12*u *v *c_326*t
+             3x        2x  x      x  2x       x  x             x  x
+
+                                                                    2
+           - 6*u *v *u - 9*u *v *v + 12*u *c_324*u*v + 12*u *c_324*v
+                x  x        x  x         x                 x
 
                                                 2
-          + 9*u *v *u + 6*u *v *v + 6*u *c_326*u  + 24*u *c_326*u*v
-               x  x        x  x        x                x
+           + 12*u *c_326*t*u*v + 12*u *c_326*t*v  + 4*u *c_326*v*x
+                 x                   x                 x
 
-                        2                 2
-          + 6*u *c_326*v  + 6*u *c_328*t*u  + 24*u *c_328*t*u*v
-               x               x                  x
+                                                   2             2         3
+           + 2*u *c_330*v + 4*u *c_331*t*v + 3*u *u *v + 9*u *u*v  + 3*u *v
+                x              x                x           x           x
 
-                          2
-          + 6*u *c_328*t*v  + 4*u *c_328*u*x + 4*u *c_328*v*x + 16*u *c_328
-               x                 x                x                 x
+           - 2*v   + 8*v  *c_324 + 8*v  *c_326*t + 4*v  *u + 4*v  *v + 10*v  *v
+                4x      3x            3x              3x        3x         2x  x
 
-          + 2*u *c_332*u + 2*u *c_332*v + 4*u *c_333*t*u + 4*u *c_333*t*v
-               x              x              x                x
+           - 12*v  *c_324*u - 12*v  *c_324*v - 12*v  *c_326*t*u
+                 2x               2x               2x
 
-                                            3         2             2       3
-          + 2*u *c_333*x + 2*u *c_334 + u *u  + 9*u *u *v + 9*u *u*v  + u *v
-               x              x          x         x           x         x
+           - 12*v  *c_326*t*v - 4*v  *c_326*x - 2*v  *c_330 - 4*v  *c_331*t
+                 2x                2x              2x            2x
 
-                                   2                                    2
-          + 2*v  *u + 12*v *c_326*u  + 12*v *c_326*u*v + 12*v *c_328*t*u
-               3x         x                x                 x
+                    2                      2        2              2
+           - 3*v  *u  - 9*v  *u*v - 3*v  *v  - 12*v  *c_324 - 12*v  *c_326*t
+                2x         2x          2x          x              x
 
-          + 12*v *c_328*t*u*v + 4*v *c_328*u*x + 2*v *c_332*u + 4*v *c_333*t*u
-                x                  x                x              x
+                 2         2                 2                                 2
+           - 9*v  *u - 6*v  *v + 6*v *c_324*u  + 24*v *c_324*u*v + 6*v *c_324*v
+                x         x         x                x                x
 
-                  3         2             2            2
-          + 3*v *u  + 9*v *u *v + 3*v *u*v  + 2*c_328*u  + 6*c_328*u*v
-               x         x           x
+                           2                                     2
+           + 6*v *c_326*t*u  + 24*v *c_326*t*u*v + 6*v *c_326*t*v
+                x                  x                  x
 
-          + 2*c_333*u)/2,
+           + 4*v *c_326*u*x + 4*v *c_326*v*x + 2*v *c_330*u + 2*v *c_330*v
+                x                x                x              x
 
-  eta_v=(2*u  *v + 4*u  *v  + 6*u *v   - 12*u *v *c_326 - 12*u *v *c_328*t
-            3x        2x  x      x  2x       x  x             x  x
+                                                                               3
+           + 4*v *c_331*t*u + 4*v *c_331*t*v + 2*v *c_331*x + 2*v *c_332 + v *u
+                x                x                x              x          x
 
-                                                                   2
-          - 6*u *v *u - 9*u *v *v + 12*u *c_326*u*v + 12*u *c_326*v
-               x  x        x  x         x                 x
+                   2             2       3                          2
+           + 9*v *u *v + 9*v *u*v  + v *v  + 6*c_326*u*v + 2*c_326*v
+                x           x         x
 
-                                               2
-          + 12*u *c_328*t*u*v + 12*u *c_328*t*v  + 4*u *c_328*v*x + 2*u *c_332*v
-                x                   x                 x                x
+           + 2*c_331*v)/2},
 
-                                   2             2         3
-          + 4*u *c_333*t*v + 3*u *u *v + 9*u *u*v  + 3*u *v  - 2*v
-               x                x           x           x         4x
+  {c_332,
 
-          + 8*v  *c_326 + 8*v  *c_328*t + 4*v  *u + 4*v  *v + 10*v  *v
-               3x            3x              3x        3x         2x  x
+   c_330,
 
-          - 12*v  *c_326*u - 12*v  *c_326*v - 12*v  *c_328*t*u
-                2x               2x               2x
+   c_331,
 
-          - 12*v  *c_328*t*v - 4*v  *c_328*x - 2*v  *c_332 - 4*v  *c_333*t
-                2x                2x              2x            2x
+   c_324,
 
-                   2                      2        2              2
-          - 3*v  *u  - 9*v  *u*v - 3*v  *v  - 12*v  *c_326 - 12*v  *c_328*t
-               2x         2x          2x          x              x
+   c_326}}}
 
-                2         2                 2                                 2
-          - 9*v  *u - 6*v  *v + 6*v *c_326*u  + 24*v *c_326*u*v + 6*v *c_326*v
-               x         x         x                x                x
-
-                          2                                     2
-          + 6*v *c_328*t*u  + 24*v *c_328*t*u*v + 6*v *c_328*t*v
-               x                  x                  x
-
-          + 4*v *c_328*u*x + 4*v *c_328*v*x + 2*v *c_332*u + 2*v *c_332*v
-               x                x                x              x
-
-                                                                              3
-          + 4*v *c_333*t*u + 4*v *c_333*t*v + 2*v *c_333*x + 2*v *c_334 + v *u
-               x                x                x              x          x
-
-                  2             2       3                          2
-          + 9*v *u *v + 9*v *u*v  + v *v  + 6*c_328*u*v + 2*c_328*v  + 2*c_333*v
-               x           x         x
-
-         )/2},
-
- {c_328,
-
-  c_326,
-
-  c_333,
-
-  c_332,
-
-  c_334}}
-
-nodepnd {f,g}$
+-------------------------------------------------------
 
 
+The ODE under investigation is :
 
-end$
+     n  2
+y  =x *y
+ 2x
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 6259 ms  plus GC time: 171 ms
-real	0m6.918s
-user	0m0.031s
-sys	0m0.106s
+for the function(s) : 
+
+y(x)
+
+
+-------- 1. Symmetry:
+
+xi_x= - x
+
+eta_y=n*y + 2*y
+
+eta_yx=y *n + 3*y
+        x        x
+
+         n    2      n  2
+eta_yxx=x *n*y  + 4*x *y
+
+
+-------- 2. Symmetry:
+
+n=-5
+
+xi_x=x
+
+eta_y=3*y
+
+eta_yx=2*y
+          x
+
+          2
+         y
+eta_yxx=----
+          5
+         x
+
+-------- 3. Symmetry:
+
+n=-5
+
+      2
+xi_x=x
+
+eta_y=x*y
+
+eta_yx= - y *x + y
+           x
+
+               2
+          - 3*y
+eta_yxx=---------
+            4
+           x
+
+
+-------- 4. Symmetry:
+
+n=0
+
+xi_x= - x
+
+eta_y=2*y
+
+eta_yx=3*y
+          x
+
+           2
+eta_yxx=4*y
+
+-------- 5. Symmetry:
+
+n=0
+
+xi_x=1
+
+eta_y=0
+
+eta_yx=0
+
+eta_yxx=0
+
+
+-------- 6. Symmetry:
+
+      5
+n= - ---
+      2
+
+xi_x=2*x
+
+eta_y=y
+
+eta_yx= - y
+           x
+
+                2
+           - 3*y
+eta_yxx=------------
+                  2
+         sqrt(x)*x
+
+
+-------- 7. Symmetry:
+
+      20
+n= - ----
+      7
+
+xi_x=7*x
+
+eta_y=6*y
+
+eta_yx= - y
+           x
+
+               1/7  2
+          - 8*x   *y
+eta_yxx=--------------
+               3
+              x
+
+-------- 8. Symmetry:
+
+      20
+n= - ----
+      7
+
+             1/7
+xi_x= - 343*x   *x
+
+              1/7
+eta_y= - 196*x   *y + 12*x
+
+                       6/7
+        196*y *x + 12*x    - 28*y
+             x
+eta_yx=---------------------------
+                   6/7
+                  x
+
+             6/7          2
+         24*x   *y + 588*y
+eta_yxx=--------------------
+               5/7  2
+              x   *x
+
+
+-------- 9. Symmetry:
+
+      15
+n= - ----
+      7
+
+xi_x=7*x
+
+eta_y=y
+
+eta_yx= - 6*y
+             x
+
+                2
+          - 13*y
+eta_yxx=----------
+          1/7  2
+         x   *x
+
+-------- 10. Symmetry:
+
+      15
+n= - ----
+      7
+
+             6/7
+xi_x= - 343*x
+
+               6/7
+        - 147*x   *y - 12*x
+eta_y=----------------------
+                x
+
+        147*y *x + 21*y
+             x
+eta_yx=-----------------
+             1/7
+            x   *x
+
+                1/7          2
+          - 24*x   *y + 441*y
+eta_yxx=-----------------------
+                 2/7  2
+                x   *x
+
+
+-------- 11. Symmetry:
+
+      8
+n= - ---
+      3
+
+xi_x=3*x
+
+eta_y=2*y
+
+eta_yx= - y
+           x
+
+               2
+          - 4*y
+eta_yxx=---------
+          2/3  2
+         x   *x
+
+
+-------- 12. Symmetry:
+
+n=-2
+
+xi_x=x
+
+eta_y=0
+
+eta_yx= - y
+           x
+
+               2
+          - 2*y
+eta_yxx=---------
+            2
+           x
+
+
+-------- 13. Symmetry:
+
+n=-1
+
+xi_x=x
+
+eta_y= - y
+
+eta_yx= - 2*y
+             x
+
+               2
+          - 3*y
+eta_yxx=---------
+            x
+
+
+-------- 14. Symmetry:
+
+n=-3
+
+xi_x=x
+
+eta_y=y
+
+eta_yx=0
+
+             2
+          - y
+eta_yxx=-------
+           3
+          x
+
+
+-------- 
+
+{{{},{n=-3,xi_x=c_353*x,eta_y=c_353*y},{c_353}},
+
+ {{},{n=-1,xi_x=c_349*x,eta_y= - c_349*y},{c_349}},
+
+ {{},{n=-2,xi_x=c_351*x,eta_y=0},{c_351}},
+
+ {{},
+
+       - 8
+  {n=------,xi_x=3*c_355*x,eta_y=2*c_355*y},
+       3
+
+  {c_355}},
+
+ {{},
+
+       - 15
+  {n=-------,
+        7
+
+                6/7
+   xi_x= - 343*x   *c_363 + 7*c_362*x,
+
+                  6/7
+           - 147*x   *c_363*y + c_362*x*y - 12*c_363*x
+   eta_y=----------------------------------------------},
+                               x
+
+  {c_362,c_363}},
+
+ {{},
+
+       - 20
+  {n=-------,
+        7
+
+                1/7
+   xi_x= - 343*x   *c_363*x + 7*c_362*x,
+
+                 1/7
+   eta_y= - 196*x   *c_363*y + 6*c_362*y + 12*c_363*x},
+
+  {c_362,c_363}},
+
+          - 5
+ {{},{n=------,xi_x=2*c_363*x,eta_y=c_363*y},{c_363}},
+          2
+
+ {{},
+
+  {n=0,xi_x= - c_362*x + c_363,eta_y=2*c_362*y},
+
+  {c_362,c_363}},
+
+ {{},
+
+                              2
+  {n=-5,xi_x=c_362*x + c_363*x ,eta_y=3*c_362*y + c_363*x*y},
+
+  {c_362,c_363}},
+
+ {{},
+
+  {xi_x= - c_362*x,eta_y=c_362*n*y + 2*c_362*y},
+
+  {c_362,n}}}
+
+3: 
+

@@ -7,29 +7,29 @@ module linalgsys$
 %  Author: Thomas Wolf
 %  December 1998 - ..
 
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
+% BSDlicense: *****************************************************************
+%                                                                             *
+% Redistribution and use in source and binary forms, with or without          *
+% modification, are permitted provided that the following conditions are met: *
+%                                                                             *
+%    * Redistributions of source code must retain the relevant copyright      *
+%      notice, this list of conditions and the following disclaimer.          *
+%    * Redistributions in binary form must reproduce the above copyright      *
+%      notice, this list of conditions and the following disclaimer in the    *
+%      documentation and/or other materials provided with the distribution.   *
+%                                                                             *
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" *
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   *
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  *
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE   *
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         *
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        *
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     *
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     *
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  *
+% POSSIBILITY OF SUCH DAMAGE.                                                 *
+%******************************************************************************
 
 symbolic fluid '(count_tries tr_subsys max_losof matrix_849)$
 lisp(tr_subsys:=nil)$
@@ -54,7 +54,7 @@ symbolic procedure del_equ_from_fl(p,fl)$
 begin scalar cp;
  cp:=fl;
  while cp do <<
-  if not freeof(cddar cp,p) then
+  if not freeof(cddar cp,p) then 
   rplaca(cp,cons(caar cp - 1,cons(cadar cp,delete(p,cddar cp))));
   cp:=cdr cp
  >>;
@@ -66,7 +66,7 @@ symbolic procedure all_equ_with_any_fl(rsoe,sf)$
 begin scalar n,newrsoe,newnsoe;
  n:=0;
  while rsoe do <<
-  if freeoflist(get(car rsoe,'allvarfcts),sf)
+  if freeoflist(get(car rsoe,'allvarfcts),sf) 
   then newrsoe:=cons(car rsoe,newrsoe)
   else <<n:=add1 n;newnsoe:=cons(car rsoe,newnsoe)>>;
   rsoe:=cdr rsoe
@@ -84,11 +84,11 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
  kord!*:=kord!*bak;
- erfg!*:=nil;
+ erfg!*:=nil; 
  max_gc_counter:=bak;
  backup_:=bakup_bak;
  return if errorp h then nil
-                    else car h
+                    else car h   
 end$
 
 symbolic procedure find_and_use_sub_systems12(arglist)$
@@ -116,7 +116,11 @@ symbolic procedure find_and_use_sub_systems25(arglist)$
 fauss2(car arglist,cadr arglist,5)$
 
 symbolic procedure determinante(matr)$
-  aeval list('det, matr)$
+begin scalar d$
+ d:=aeval list('det, matr)$
+ return if pairp d and (car d='!*SQ) then cadr d
+                                     else simp d
+end$
 
 symbolic procedure setzewert(matr,ii,jj,val)$
   setk(list(matr, ii,jj),val)$
@@ -127,7 +131,7 @@ symbolic procedure machematrix(matr,idim,jdim)$
 
 symbolic procedure fauss1(pdes,forg,ml)$
 % find subsystems that do not include any flin_ functions
-begin scalar de,odet,n$
+begin scalar de,odet,n,h$
  max_losof:=ml;
 
  odet:=spot_over_det(pdes,nil,nil,flin_)$
@@ -135,72 +139,128 @@ begin scalar de,odet,n$
  n:=0;
  write"The following is a list of not underdetermined sub-systems"$
  terpri()$
- for each de in odet do <<
+ for each de in odet do <<  % de = (osoe . osof)
   n:=add1 n;
   write"Sub-system ",n,":"$terpri()$
-  de:=car odet;odet:=cdr odet$   % de = (osoe . osof)
   plot_dep_matrix(car de,cdr de)$
  >>;
 
- % call Groebner Package
+ if null odet then h:=nil
+              else repeat <<  % call Groebner Package
+  h:=err_catch_groeb({pdes,forg,vl_,caar odet})$
+  odet:=cdr odet
+ >> until h or null odet$
+ return h
 
- return {pdes,forg} % to be modified
 end$
 
 symbolic procedure fauss2(pdes,forg,ml)$
 % find subsystems using only flin_ functions, one of them non-zero
-if flin_ then
+if flin_ and freeof(last_steps,'sub_sys) then
 begin scalar osof,nsof,odet,h,n0flin_,n0flin_cp,ncondi,de,u,v,sysli,sy,
-             r,s,some_new,fl1,fl2,f,m,no_of_pdes;
+             r,s,some_new,fl1,fl2,f,m,no_of_pdes,sb,ok;
  max_losof:=ml;
  n0flin_:=nil$
 
-% OLD:
-% % at first all flin_ members which must not vanish individually
-% for each h in flin_ do
-% if member(h,ineq_) then n0flin_:=cons(list h,n0flin_);
+ % One wants to find not underdetermined subsystems which include
+ % one flin_ function which must not vanish or a set of flin_ functions
+ % of which at least one must not vanish. The simplest would be:
+ %   for each h in flin_ do
+ %   if member(h,ineq_) then n0flin_:=cons(list h,n0flin_);
+ % to check for single flin_ functions. What follows is a more general test
+ % finding all subsets of flin_ functions (subsets of 1 to m elements) which
+ % set to zero would violate one inequality.
 
- % fl1 is the intersection of ftem_ and flin_
- fl1:=setdiff(ftem_,setdiff(ftem_,flin_));
+ % fl1 is the intersection of ftem_ and flin_ 
+ fl1:=setdiff_according_to(ftem_,setdiff_according_to(ftem_,flin_,ftem_),ftem_);
 
- for m:=1:max_losof do       % m is the number of functions for which
-                             % the coeff-determinant is to be computed
- for each h in ineq_ do <<   % look for an inequality h
-  fl2:=smemberl(fl1,h)$      % fl2 are all fl1-fcts occuring in h
-  if length fl2 = m then <<  % if there are m of them in fl2
-   n0flin_cp:=n0flin_;
-   while n0flin_cp and
-         not_included(car n0flin_cp,fl2) do n0flin_cp:=cdr n0flin_cp$
-   if null n0flin_cp then << % fl2 does not have a subset of fcts
-                             % already identified
-    for each f in fl2 do h:=subst(0,f,h);
-    if zerop reval aeval h then << % setting all fl2-fcts to zero
-                                   % violates the identity
+ % In the following it is assumed that all expressions in ineq_ and ineq_or
+ % are linear in flin_ functions, i.e. that if such an expression contains
+ % k flin_ functions then all k functions are necessary to vanish for this
+ % expression to vanish.
+
+ for m:=1:max_losof do << 
+  % m is the number of functions in a subset of fl1 of which at least one
+  % function must be non-zero
+
+  % at first find an inequality in ineq_ which would be violated
+  for each h in ineq_ do <<  
+   fl2:=smemberl(fl1,h)$ % fl2 are all fl1-fcts occuring in h
+%write"ineq_: h=",h$terpri()$
+%write"ineq_: fl2=",fl2$terpri()$
+   if length fl2 = m then <<  % if there are m of them in fl2
+    n0flin_cp:=n0flin_; 
+    while n0flin_cp and 
+	  not_included(car n0flin_cp,fl2) do n0flin_cp:=cdr n0flin_cp$
+    if null n0flin_cp then << % fl2 does not have a subset of fcts 
+			      % already identified
+     h:=subsq(h, for each f in fl2 collect (f . 0));
+     if sqzerop h then  % setting all fl2-fcts to zero 
+				    % violates the identity
      n0flin_:=cons(fl2,n0flin_)
     >>
    >>
-  >>
+  >>$
+%write"NOW INEQ_OR"$terpri()$
+
+  % then find an OR-inequality in ineq_or which would be violated
+  for each h in ineq_or do <<  % h is one OR-inequality  
+%write"ineq_or: h=",h$terpri()$
+   fl2:=smemberl(fl1,h)$ % fl2 are all fl1-fcts occuring in h
+%write"ineq_or: fl2=",fl2$terpri()$
+   if length fl2 = m then <<  % if there are m of them in fl2
+    n0flin_cp:=n0flin_; 
+    while n0flin_cp and 
+	  not_included(car n0flin_cp,fl2) do n0flin_cp:=cdr n0flin_cp$
+    if null n0flin_cp then << % fl2 does not have a subset of fcts 
+			      % already identified
+     sb:=for each f in fl2 collect (f . 0);
+     ok:=nil;
+     while h do % if u:=car h is non-zero then set ok:=t and h:=nil
+                % i.e. at least one of the expressions in h is non-zero
+     if <<
+      u:=car h;           % u is an expression (i.e. a list of factors)
+                          % in the single OR-inequality h. If at least one 
+                          % factor is zero then return nil, else t, i.e. 
+                          % keep on searching factors until one becomes zero
+%write"u=",u$terpri()$
+      while u and null sqzerop subsq(car u, sb) do u:=cdr u;
+      if u then nil       % the factor car u becomes zero 
+           else  t        % no factor becomes zero
+     >> then <<ok:=t; h:=nil>>
+        else h:=cdr h$
+
+     if null ok then n0flin_:=cons(fl2,n0flin_) % i.e. the OR-inequality
+     % car is violated as all its elements become zero, where an
+     % element is a list of factors of which at least one becomes zero
+    >>
+   >>
+  >>$
+
  >>$
+%write"n0flin_=",n0flin_$terpri()$
 
  % Now start of the search of subsystems with all functions from osof
  % and without functions from nsof
- n0flin_cp:=reverse n0flin_;
+ n0flin_cp:=reverse n0flin_; 
  while n0flin_cp do <<
   osof:=car n0flin_cp;
   odet:=spot_over_det(pdes,flin_,osof,nsof)$
   while odet do <<                % for each over-determined system de
    de:=car odet;odet:=cdr odet$   % de = (osoe . osof)
-   %plot_dep_matrix(car de,ftem_)$
-   u:=length car de;              % list of equations in overdet system
-   v:=length cdr de;              % list of functions in u
-   sysli:=out_off(v,u,car de)$    % a list of all subsets of u with
-                                  % length(v) many equations
+   %plot_dep_matrix(car de,ftem_)$ 
+   u:=length car de;              % # of equations in overdet system
+   v:=length cdr de;              % # of functions in u
+   sysli:=out_off(v,u,car de)$    % a list of all subsets of car de with
+                                  % v many equations
    for each sy in sysli do <<     % sy is one of the systems
     if tr_subsys then <<write"sy=",sy$terpri()>>$
     machematrix('matrix_849,v,v);
-    for r:=1:v do
+    for r:=1:v do 
     for s:=1:v do
-    setzewert('matrix_849,r,s,coeffn(get(nth(sy,r),'val),nth(cdr de,s),1));
+    setzewert('matrix_849,r,s,
+%             coeffn(get(nth(sy,r),'val),nth(cdr de,s),1));
+              coeffn({'!*sq,get(nth(sy,r),'sqval),t},nth(cdr de,s),1));
     ncondi:=cons(determinante('matrix_849),ncondi)$
     setk('matrix_849,nil)
    >>
@@ -211,37 +271,42 @@ begin scalar osof,nsof,odet,h,n0flin_,n0flin_cp,ncondi,de,u,v,sysli,sy,
  if tr_subsys then <<write"ncondi=",ncondi$ terpri()>>$
 
  no_of_pdes:=length pdes;
+ s:=nil;
  for each h in ncondi do <<
-  r:=mkeq(h,ftem_,vl_,allflags_,t,list(0),nil,pdes);
+  r:=mkeqSQ(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(r,pdes)$
-  if member(r,pdes) then some_new:=cons(r,some_new)
+  s:=cons(r,s)
  >>;
+ for each h in s do
+ if member(h,pdes) then some_new:=cons(h,some_new);
+
  if print_ and some_new then <<
   write"New equations due to vanishing coeff. determinants: ",car some_new$
   for each h in cdr some_new do write", ",h
  >>$
 
- return if some_new or (no_of_pdes neq length pdes) then
+ return if some_new or (no_of_pdes neq length pdes) then 
  if in_cycle(<<m:=0;for each r in some_new do m:=m+get(r,'printlength);
                r:=length some_new;
                s:=0;h:=nil;
-               while (s<3) and some_new do <<
-                s:=add1 s;
-                h:=cons(get(car some_new,'terms),h);
-                some_new:=cdr some_new
-               >>$
-               cons('sub_sys,cons(r,cons(m,h)))
-             >>) then nil
-                 else {pdes,forg}
+	       while (s<3) and some_new do <<
+		s:=add1 s; 
+		h:=cons(get(car some_new,'terms),h);
+		some_new:=cdr some_new
+	       >>$
+	       cons('sub_sys,cons(stepcounter_,cons(r,cons(m,h))))
+	     >>) then nil
+                 else {pdes,forg} 
                                                     else nil
 end$
 
+
 symbolic procedure show_sub_systems(pdes)$
-begin scalar ps,fl,osof,nsof,odet$
+begin scalar fl,osof,nsof,odet$
 
-  ps:=promptstring!*$ promptstring!*:=""$
+  change_prompt_to ""$
 
-  if flin_ and yesp
+  if flin_ and yesp 
   "Shall only functions from the list flin_ be considered?"
   then fl:=flin_$  % assuming they depend on all variables
 
@@ -258,10 +323,10 @@ begin scalar ps,fl,osof,nsof,odet$
   odet:=spot_over_det(pdes,fl,osof,nsof)$
 
   while odet do <<
-   plot_dep_matrix(caar odet,ftem_)$
+   plot_dep_matrix(caar odet,ftem_)$ 
    odet:=cdr odet
   >>$
-  promptstring!*:=ps$
+  restore_interactive_prompt()
 end$
 
 symbolic procedure out_off(m,n,l)$
@@ -269,9 +334,9 @@ symbolic procedure out_off(m,n,l)$
 % n is the number of elements of l
 % m is the number of elements in the return list, m<=n
 if m=0 then list nil else
-if m=n then list l else
-nconc(for each h in out_off(m-1,n-1,cdr l) collect cons(car l,h),
-       out_off(m,n-1,cdr l))$
+if m=n then list l else 
+nconc(out_off(m,n-1,cdr l),
+      for each h in out_off(m-1,n-1,cdr l) collect cons(car l,h))$
 
 symbolic procedure spot_over_det(pdes,allf,osof,nsof)$
 % find whether there is a subset of pdes which contains in total less
@@ -279,7 +344,7 @@ symbolic procedure spot_over_det(pdes,allf,osof,nsof)$
 % allf are all the functions to be considered, mostly flin_
 % osof are all functions that must appear, like non-zero functions
 %     (although only one non-zero function of a linear homogeneous
-%      system would be anough to require the coefficient determinant
+%      system would be anough to require the coefficient determinant 
 %      to vanish)
 % nsof (Functions which must not occur, like flin_ if one wants
 %       conclusions for the fewer `more valuable' non-flin_ functions
@@ -293,7 +358,7 @@ begin scalar p,h,osoe,losoe,nsoe,lnsoe,rsoe,lrsoe,
 
  % test whether the whole system is not underdetermined
  % if length pdes geq length allf then sysli:=cons({length pdes,pdes},sysli);
-
+ 
  lrsoe:=length pdes;
  lrsof:=length allf;
 
@@ -309,7 +374,7 @@ begin scalar p,h,osoe,losoe,nsoe,lnsoe,rsoe,lrsoe,
   rsof:=setdiff(allf,osof);
   lrsof:=lrsof-losof;
  >>        else <<losoe:=0;osoe:=nil;rsoe:=pdes;losof:=0;rsof:=allf>>$
-
+ 
  % assigning nsoe, lnsoe, lnsof, updating the others
  if nsof then <<
   h:=all_equ_with_any_fl(rsoe,nsof)$
@@ -325,12 +390,12 @@ begin scalar p,h,osoe,losoe,nsoe,lnsoe,rsoe,lrsoe,
 
  count_tries:=0;
  return
- try(losoe, osoe,
-     lnsoe, nsoe,
-     lrsoe, rsoe,
-     losof, osof,
-     lnsof, nsof,
-     lrsof, rsof,
+ try(losoe, osoe,     
+     lnsoe, nsoe,    
+     lrsoe, rsoe,    
+     losof, osof,     
+     lnsof, nsof,    
+     lrsof, rsof,    
      allf)
 end$
 
@@ -340,7 +405,7 @@ symbolic procedure addsoe(rsoe,sf,allf)$
 begin scalar n,newsoe,newrsoe$
  n:=0;
  while rsoe do <<
-  if not_included(intersection(allf,get(car rsoe,'allvarfcts)),sf)
+  if not_included(intersection(allf,get(car rsoe,'allvarfcts)),sf) 
   then   newrsoe:=cons(car rsoe,newrsoe)
   else << newsoe:=cons(car rsoe, newsoe); n:=add1 n>>;
   rsoe:=cdr rsoe
@@ -353,7 +418,7 @@ symbolic procedure addnsoe(rsoe,sf)$
 begin scalar n,newrsoe,newnsoe$
  n:=0;
  while rsoe do <<
-  if not_included(sf,get(car rsoe,'allvarfcts))
+  if not_included(sf,get(car rsoe,'allvarfcts)) 
   then   newrsoe:=cons(car rsoe,newrsoe)
   else <<newnsoe:=cons(car rsoe,newnsoe); n:=add1 n>>;
   rsoe:=cdr rsoe
@@ -397,7 +462,7 @@ if losof > max_losof then nil else % one could do this line after
 % Success:
 if osoe and (losoe geq losof) then list(osoe . osof) else
 % Failure:
-if zerop lrsoe or
+if zerop lrsoe or 
    zerop lrsof or
    (losof = max_losof) or          % because losof>max_losof necessarily later
    (losoe + lrsoe < losof) then nil else
@@ -405,13 +470,13 @@ if zerop lrsoe or
 % Undecided:     a choice between two different case distinctions A) and B):
 
 if (lrsof<lrsoe) or
-   ((max_losof-losof)<lrsoe) then begin
+   ((max_losof-losof)<lrsoe) then begin 
  %========== A) decide where the next function car(rsof) is to go
  scalar li,sf,ne;
 
  count_tries:=count_tries+2;
- if losoe + lrsoe > losof then <<      % A.1): case: car(rsof) goes into osof
-                                       % losoe + lrsoe stays const, losof incr.
+ if losoe + lrsoe > losof then <<      % A.1): case: car(rsof) goes into osof 
+                                       % losoe + lrsoe stays const, losof incr. 
                                        % ==> `>' needed
   if tr_subsys then <<write car(rsof)," goes into osof"$terpri()>>$
   sf:=cons(car rsof,osof);              % the new osof
@@ -419,7 +484,7 @@ if (lrsof<lrsoe) or
   %--- Consequence for other equations:
   % All so far undecided equations that contain only sf functions
   % go into osoe as well
-  ne:=addsoe(rsoe,sf,allf);
+  ne:=addsoe(rsoe,sf,allf); 
 
   %--- Consequence for other functions: ?
 
@@ -427,12 +492,12 @@ if (lrsof<lrsoe) or
           losof+     1,                  sf,lnsof,nsof,lrsof-     1,cdr rsof,
           allf)
  >>;                                   % A.2): case: car(rsof) goes into nsof
-                                       % not occur in osoe, rsoe may shrink
+				       % not occur in osoe, rsoe may shrink
  if tr_subsys then <<write car(rsof)," goes into nsof"$terpri()>>$
 
  %--- Consequence for other equations:
  % Add all equations from rsoe to nsoe which contain the function car(rsof)
- ne:=addnsoe(rsoe,list car rsof);
+ ne:=addnsoe(rsoe,list car rsof);     
 
  %--- Consequence for other functions: ?
 
@@ -444,7 +509,7 @@ end else begin scalar li,sf,ne,nf;
  %========== B) decide where the next equation car(rsoe) is to go
 
  count_tries:=count_tries+2;
- sf:=setdiff(intersection(allf,get(car rsoe,'allvarfcts)),osof);
+ sf:=setdiff(intersection(allf,get(car rsoe,'allvarfcts)),osof); 
  % all new functions
 %########################
  if losoe + lrsoe > losof then <<      % B.1): car(rsoe) goes into nsoe
@@ -452,8 +517,8 @@ end else begin scalar li,sf,ne,nf;
                                        % ==> `>' needed
   if tr_subsys then <<write car(rsoe)," goes into nsoe:"$terpri()>>$
   %--- Consequence for other equations:
-  % All the equations which contain all the functions of car(rsoe)
-  % which are not in osof go into nsoe as well.
+  % All the equations which contain all the functions of car(rsoe) 
+  % which are not in osof go into nsoe as well. 
   % Reason: one of the functions of car(rsoe)-sof is
   % the reason for entering nsoe, therefore all equations which have
   % all the functions of car(rsoe)-sof must also enter nsoe.
@@ -461,9 +526,9 @@ end else begin scalar li,sf,ne,nf;
 
   %--- Consequence for other functions:
   % At least one of the functions in rsoe is responsible for car(rsoe)
-  % going into nsoe and should therefore go itself into nsof.
+  % going into nsoe and should therefore go itself into nsof. 
   % If there is just one such function then this must be it, otherwise how??
-  if (length sf = 1) and freeof(nsof,car sf) then
+  if (length sf = 1) and freeof(nsof,car sf) then 
   li:=try(losoe,osoe,lnsoe+car ne,append(nsoe,cadr ne),lrsoe-car ne,caddr ne,
           losof,osof,add1 lnsof,cons(car sf,nsof),
           sub1 lrsof,setdiff(rsof,sf),allf)  else
@@ -471,7 +536,7 @@ end else begin scalar li,sf,ne,nf;
           losof,osof,lnsof,nsof,lrsof,rsof,allf)
  >>;
  if tr_subsys then <<write car(rsoe)," goes into osoe:"$terpri()>>$
-                                       % B.2): case: car(rsoe) goes into osoe
+                                       % B.2): case: car(rsoe) goes into osoe 
  %--- Consequence for other equations:
  % All equations that do not have other functions than car(rsoe)+sof enter
  % osoe as well
@@ -479,7 +544,7 @@ end else begin scalar li,sf,ne,nf;
 
  %--- Consequence for other functions:
  % All functions which are in rsof that occur in car(rsoe) enter osof
- nf:=addsof(rsof,sf);
+ nf:=addsof(rsof,sf);             
 
  return append(li,
  try(losoe+car ne,append(osoe,cadr ne),lnsoe,nsoe,lrsoe-car ne,caddr ne,

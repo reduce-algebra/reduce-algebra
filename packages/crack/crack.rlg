@@ -1,107 +1,12 @@
-%*******************************************************************%
-%                                                                   %
-%                       C R A C K . T S T                           %
-%                       -----------------                           %
-%  crack.tst contains test examples for the program crack.red.      %
-%                                                                   %
-%  Author of this file: Thomas Wolf                                 %
-%  Date:  11. Sep 1998, 6. May 2003                                 %
-%                                                                   %
-%  Details about the syntax of crack.red are given in crack.tex.    %
-%                                                                   %
-%  To run this demo you need to load crack through:                 %
-%     load crack$                                                   %
-%  and to read in this file as                                      %
-%     in "crack.tst";                                               %
-%  If you got the source code of a newer version of crack then      %
-%  either read it in through                                        %
-%     in "crack.red"$                                               %
-%  (with the appropriate directory name in front of crack.red)      %
-%  or, to speed up the calculation, you compile before with         %
-%     faslout "crack"$                                              %
-%     in "crack.red"$                                               %
-%     faslend$                                                      %
-%  and then load it with                                            %
-%     load crack$                                                   %
-%                                                                   %
-%*******************************************************************%
+1: load crack$
 
-lisp(depl!*:=nil)$
-
-           % clearing of all dependencies
-%setcrackflags()$             % use standart flag-setting
-%lisp(print_:=50)$           % if one would want to print expressions 
-                             % with up to 50 factors
-lisp(print_:=nil)$
-
-           % to suppress printing the computation
-lisp(initial_proc_list_ :=   % initial_proc_list_ is saved for an 
-     proc_list_)$
-
-            % application at the end
-on dfprint$
-
-                  % to print partial deriv. as indices
-%off batch_mode$
-comment 
--------------------------------------------------------
-
-                     Modules in CRACK 
-
-The following examples illustrate the operation of various
-modules of CRACK. These examples are not typical applications
-but are chosen to demonstrate individual CRACK modules. 
-To see typical applications of CRACK run LIEPDE.TST,
-CONLAW.TST or APPLYSYM.TST instead.
-
-The extra assignments in this run that involve proc_list_ 
-are to disable all other modules and to demonstrate better 
-the action of the individual module. 
-
--------------------------------------------------------
-
-             Format of the return of CRACK
-
-CRACK returns a list {sol_1,...} of one or more solutions
-where each solution is a list:
-{ list_of_remaining_unsolved_equations,
-  list_of_computed_values_of_functions_or_constants,
-  list_of_free_functions_or_constants,
-  list_of_inequalities_valid_for_this_solution }
-Empty lists are {}.
-
-=======================================================;
-
-
-write"        Integration: Integrating exact PDEs "$
-
+2: in "crack.tst"$
 
         Integration: Integrating exact PDEs 
-comment
 
-An important part of CRACK are integration routines 
-which  employ a number of different techniques which 
-are demonstrated next. At first an example for the
-integration of exact PDE;
-
-
-depend f,x,y$
-
-
-depend g,x$
-
-
-
-de:=2*df(f,y)*df(g,x) + 2*df(f,x,y)*g + g*df(g,x)**3 + 
-    x*df(g,x)**4 + 3*x*g*df(g,x)**2*df(g,x,2)$
-
- 
-
-lisp(proc_list_ := '(integration))$
-
-
-crack({de},{},{f,g},{});
-
+                                   2         4       3
+de := 2*f   *g + 2*f *g  + 3*g  *g  *g*x + g  *x + g  *g
+         x,y        y  x      2x  x         x       x
 
      3
 {{{g  *g*x*y + c_1 + c_2 + 2*f*g},
@@ -113,50 +18,23 @@ crack({de},{},{f,g},{});
 
   {}}}
 
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
- 
-
-write"  Integration: Integration of an exact PDE + terms "$
-
+g=g(x), f=f(y,x), c_2=c_2(y), c_1=c_1(x)
+=======================================================
 
   Integration: Integration of an exact PDE + terms 
 
-write"               which are not exact (are not a total "$
-
-
                which are not exact (are not a total 
-
-write"               derivative) but which only involve "$
-
 
                derivative) but which only involve 
 
-write"               unknown functions of fewer variables"$
-
-
                unknown functions of fewer variables
- comment
 
-The price of integrating non-exact expressions will be 
-the introduction of extra conditions but in fewer variables 
-than the integrated PDE has. A special algorithm minimizes
-the number of new functions of fewer variables to be   
-introduced. The bracket below is a polynomial in the   
-integration variable x, as a consequence the algorithm 
-is applicable such that only one extra function has to be 
-introduced. $
+                                   2         4       3      y  2  2
+de := 2*f   *g + 2*f *g  + 3*g  *g  *g*x + g  *x + g  *g + e *g *x
+         x,y        y  x      2x  x         x       x
 
-
-de:=de + g^2*(y^2 + x*sin y + x^2*exp y)$
-
-
-
-crack({de},{},{f,g},{});
-
+                 2      2  2
+       + sin(y)*g *x + g *y
 
             2
 {{{c_3   - g ,
@@ -184,36 +62,21 @@ crack({de},{},{f,g},{});
 
   {}}}
 
-nodepnd {f,g}$
-
-
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-write"          Integration: Integrating Factors"$
-
+g=g(x), f=f(y,x), c_5=c_5(y), c_4=c_4(x), c_3=c_3(x)
+=======================================================
 
           Integration: Integrating Factors
- comment
 
-Heuristics for the determination of integrating factors
-in CRACK are not rigorous but often useful. $
+          2    x
+      f *x  + e *f
+       x          y
+g := ---------------
+           x  2
+          e *x
 
-
-depend f,x,y$
-
-
-
-g:=df(f,x)/e**x+df(f,y)/x**2$
-
-
-
-crack({num(df(g,x))},{},{f},{});
-
+       x               3       3      x
+de := e *f   *x + f  *x  - f *x  - 2*e *f
+          x,y      2x       x            y
 
 
        2    x       x      2
@@ -226,55 +89,17 @@ crack({num(df(g,x))},{},{f},{});
 
   {}}}
 
-
-clear g$
-
-
-nodepnd {f}$
-
-
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-write"     Integration: Recognizing a 2-dim divergence"$
-
+f=f(y,x), c_6=c_6(y)
+=======================================================
 
      Integration: Recognizing a 2-dim divergence
- comment
 
-Being able to recognize a structure 0=df(a,x)+df(b,y)
-where a,b are differential expressions is of benefit
-if a,b can both be solved for a unknown function as
-in the following example. $
-
-
-lisp(proc_list_ := '(subst_level_4 integration))$
-
-
-
-depend f,x,y$
-
-
-depend g,x,y$
-
-
-depend h,x,y$
-
-
-
-a:=x*f+y*df(g,y)$
-
-
-b:=df(g,x,y)*sin(x)+h/y$
-
-
-
-crack({df(a,x)+df(b,y)},{},{f,g,h},{});
-
+             2                 2         3             2
+       f *x*y  + g    *sin(x)*y  + g   *y  + h *y + f*y  - h
+        x         x,2y              x,y       y
+de := -------------------------------------------------------
+                                 2
+                                y
 
 
 {{{},
@@ -291,39 +116,17 @@ crack({df(a,x)+df(b,y)},{},{f,g,h},{});
 
   {}}}
 
-
-nodepnd {f,g,h}$
-
-
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-write"      Integration: Solving ODEs for partial derivatives"$
-
+g=g(y,x), c_7=c_7(y,x)
+=======================================================
 
       Integration: Solving ODEs for partial derivatives
- comment
 
-In CRACK ODEs and PDEs which are ODEs for a single partial
-derivative are investigated by the program ODESOLVE by
-MacCallum/Wright. In the following example this technique
-together with a previous one are successful. $
-
-
-depend f,x,y$
-
-
-lisp(proc_list_ := '(subst_level_4 integration))$
-
-
-
-crack({x**2*df(f,x,2,y)-2*x*df(f,x,y)-df(f,y)+x**3/y**2},
-      {},{f},{});
-
+                    2          2  2       2    3
+        - 2*f   *x*y  + f    *x *y  - f *y  + x
+             x,y         2x,y          y
+de := -------------------------------------------
+                           2
+                          y
 
 {{{},
 
@@ -337,111 +140,23 @@ crack({x**2*df(f,x,2,y)-2*x*df(f,x,y)-df(f,y)+x**3/y**2},
 
   {}}}
 
-
-nodepnd {f}$
-
-
-
-write"======================================================="$
-
-
 =======================================================
 
-
-write"       Separation: Direct separation of PDEs"$
-
-
        Separation: Direct separation of PDEs
- comment
 
-Another important group of modules concerns separations.
-In this example z is an extra independent variable on which
-f and g do not depend (therefore z is in the 4th argument 
-to crack). There is furthermore a function h=h(z) which
-is assumed to be given and is not to be calculated as it
-is not element of the third argument to CRACK, i.e. the 
-question is to find expressions for f,g for arbitrary h. 
-In the computation below, h is treated as being linear 
-independent from z because h is declared as arbitrary. 
-If h would be added to the list {f,g} then h would have 
-to be computed and direct separation would not be possible 
-but only indirect separation (see next example). $
-
-
-depend f,x$
-
-
-depend g,y$
-
-
-depend h,z$
-
-
-de:=z*f + h*y*g$
-
-
-lisp(proc_list_ := '(subst_level_4 separation))$
-
-
-crack({de},{},{f,g},{z});
-
+de := f*z + g*h*y
 
 {{{},{g=0,f=0},{},{}}}
 
-nodepnd {f,g,h}$
-
-
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-write"       Separation: Indirect separation of PDEs"$
-
+=======================================================
 
        Separation: Indirect separation of PDEs
 
-write"                   (combined with integration)"$
-
-
                    (combined with integration)
- comment
 
-This example is the same as before, only now h is not assumed
-to be given but to be calculated. In this example there is no 
-variable turning up only explicitly to allow a direct separation. 
-But there is also no function which depends on all variables 
-and this allows the use of an indirect separation method. This 
-example also demonstrates factorization and the splitting 
-into subcases to do substitutions in non-linear problems.  
-Three solutions result, 
-1. f=h=0, g arbitrary, 
-2. f,g,h given in terms of two constants, both non-vanishing
-3. f=g=0, h arbitrary, h non-vanishing. $
+de := f*z + g*h*y
 
-
-depend f,y$
-
-
-depend g,x$
-
-
-depend h,z$
-
-
-de:=z*f + h*y*g$
-
-
-lisp(proc_list_ := '(subst_level_3 separation
-                     gen_separation alg_solve_single))$
-
-
-crack({de},{},{f,g,h},{});
-
-
-{{{},{g=0,f=0},{h},{}},
+{{{},{h=0,f=0},{g},{g}},
 
  {{},
 
@@ -453,55 +168,31 @@ crack({de},{},{f,g,h},{});
 
   {c_14,c_13}},
 
- {{},{h=0,f=0},{g},{g}}}
+ {{},{g=0,f=0},{h},{}}}
 
-nodepnd {f,g,h}$
-
-
-
-write"======================================================="$
-
-
+g=g(x), c_13, c_14
 =======================================================
 
-
-write"    Combination: Pseudo Differential Groebner Basis"$
-
-
     Combination: Pseudo Differential Groebner Basis
- comment
 
-Another group of modules tries to take advantage of 
-combining equations or their derivatives. The main tool
-in this respect computes a Pseudo Differential Groebner
-Basis. In interactive mode (off batch_mode) it is possible
-to choose between different orderings of derivatives which
-is not demonstrated here. (The origin of the following 
-example is described at the end of this file.) ;
+                5             5         4           2            5   2
+de := 2*eta   *x *y1 + eta  *x  - eta *x  - 2*eta *x *y + eta  *x *y1
+           x,y            2x         x           x           2y
 
+                   2            5   2         5           4             2
+       - 4*eta *x*y  - 2*xi   *x *y1  - xi  *x *y1 - xi *x *y1 - 2*xi *x *y*y1
+              y            x,y            2x           x             x
 
-depend xi ,x,y$
+                  2         5   3          4   2          2     2
+       + 8*xi *x*y  - xi  *x *y1  - 2*xi *x *y1  - 4*xi *x *y*y1
+             x          2y              y              y
 
+                   2             2                   3
+       + 12*xi *x*y *y1 - 2*eta*x *y1 + 8*eta*x*y + x *xi*y1 + 6*x*xi*y*y1
+              y
 
-depend eta,x,y$
-
-
-lisp(proc_list_ := '(separation decoupling))$
-
- 
-
-crack({2*df(eta,x,y)*x**5*y1
-       + df(eta,x,2)*x**5 - df(eta,x)*x**4 
-       - 2*df(eta,x)*x**2*y + df(eta,y,2)*x**5*y1**2 
-       - 4*df(eta,y)*x*y**2 - 2*df(xi,x,y)*x**5*y1**2
-       - df(xi,x,2)*x**5*y1 - df(xi,x)*x**4*y1
-       - 2*df(xi,x)*x**2*y*y1 
-       + 8*df(xi,x)*x*y**2 - df(xi,y,2)*x**5*y1**3 
-       - 2*df(xi,y)*x**4*y1**2 - 4*df(xi,y)*x**2*y*y1**2 
-       + 12*df(xi,y)*x*y**2*y1 - 2*eta*x**2*y1 + 8*eta*x*y 
-       + x**3*xi*y1 + 6*x*xi*y*y1 - 16*xi*y**2},
-      {},{eta,xi},{x,y,y1});
-
+                2
+       - 16*xi*y
 
 {{{xi ,
      y
@@ -520,48 +211,19 @@ crack({2*df(eta,x,y)*x**5*y1
 
   {}}}
 
-
-nodepnd {xi,eta}$
-
-
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-write"      Combination: Shortening linear PDE systems"$
-
+=======================================================
 
       Combination: Shortening linear PDE systems
- comment
 
-To reduce memory requirements now and for further
-computations with a system of equations it is advisable
-to find length reducing linear combinations. The shorther
-equations become, the more useful they are to shorten
-other equations and the more likely they are integrable.;
+de1 := 3*f  + sin(x)*y + 7*x
+          x
 
+                               2                        2  2               3
+de2 := 3*f *sin(x)*y + 9*f *x*y  - 12*f  + f *y + sin(x) *y  + 3*sin(x)*x*y
+          x               x            x    y
 
-depend f,x,y$
-
-
-a:=sin(x)*y+7*x+3*df(f,x)$
-
-
-b:=df(f,y)*y+f*x+x*y**2$
-
-
-c:=3*x*y**2+sin(x)*y-4$
-
-
-lisp(proc_list_ := '(alg_length_reduction))$
-
-
-
-crack({a,a*c+b},{},{f},{});
-
+                                                2  2      2
+        + 7*sin(x)*x*y - 4*sin(x)*y + f*x + 21*x *y  + x*y  - 28*x
 
 {{{3*f  + sin(x)*y + 7*x,
       x
@@ -576,41 +238,12 @@ crack({a,a*c+b},{},{f},{});
 
   {}}}
 
-clear a,b,c$
-
-
-nodepnd {f}$
-
-
-
-write"======================================================="$
-
-
 =======================================================
 
-
-write"  Parametric solution of linear underdetermined ODEs"$
-
-
   Parametric solution of linear underdetermined ODEs
- comment
 
-The following example demonstrates an algorithm for the
-parametric solution of underdetermined linear ODEs with
-arbitrary non-constant cefficients. $
-
-
-depend f,x$
-
-
-depend g,x$
-
-
-lisp(proc_list_ := '(subst_level_4 undetlinode))$
-
-
-crack({cos(x)*df(f,x,2) - df(g,x,2)},{},{f,g},{});
-
+de := cos(x)*f   - g
+              2x    2x
 
 {{{},
 
@@ -644,65 +277,29 @@ crack({cos(x)*df(f,x,2) - df(g,x,2)},{},{f,g},{});
 
   {}}}
 
-nodepnd {f,g}$
-
-
-
-write"======================================================="$
-
-
+c_17=c_17(x)
 =======================================================
 
+ Application: Investigating point symmetries of an ODE
 
-write"Application: Investigating point symmetries of an ODE"$
+                5             5         4           2            5   2
+de := 2*eta   *x *y1 + eta  *x  - eta *x  - 2*eta *x *y + eta  *x *y1
+           x,y            2x         x           x           2y
 
+                   2            5   2         5           4             2
+       - 4*eta *x*y  - 2*xi   *x *y1  - xi  *x *y1 - xi *x *y1 - 2*xi *x *y*y1
+              y            x,y            2x           x             x
 
-Application: Investigating point symmetries of an ODE
- comment
+                  2         5   3          4   2          2     2
+       + 8*xi *x*y  - xi  *x *y1  - 2*xi *x *y1  - 4*xi *x *y*y1
+             x          2y              y              y
 
-Finally a  small real life example that demonstrates
-the interplay of different modules to solve completely
-an overdetermined system which is generated when  
-investigating the point symmetries of the ODE 6.97
-in Kamke's book using the following CRACK input:  $
+                   2             2                   3
+       + 12*xi *x*y *y1 - 2*eta*x *y1 + 8*eta*x*y + x *xi*y1 + 6*x*xi*y*y1
+              y
 
-
-% depend y,x$
-% load_package crack,liepde$
-% liepde({{df(y,x,2)*x**4-df(y,x)*(2*x*y+x**3)+4*y**2},{y},{x}},
-%        {"point"},{})$ 
-
-comment 
-(and renaming xi_x --> xi, eta_y --> eta, y!`1 --> y1
-which is only done to ease reading). Instead of just 
-doing this liepde-call which would take care of 
-everything, we call crack below explicitly for 
-demonstration. Two arbitrary constants in the solution 
-stand for two symmetries. $
-
-
-depend xi ,x,y$
-
-
-depend eta,x,y$
-
-
-lisp(proc_list_ := initial_proc_list_)$
-
-   % this was saved at the start
-
-crack({2*df(eta,x,y)*x**5*y1
-       + df(eta,x,2)*x**5 - df(eta,x)*x**4 
-       - 2*df(eta,x)*x**2*y + df(eta,y,2)*x**5*y1**2 
-       - 4*df(eta,y)*x*y**2 - 2*df(xi,x,y)*x**5*y1**2
-       - df(xi,x,2)*x**5*y1 - df(xi,x)*x**4*y1
-       - 2*df(xi,x)*x**2*y*y1 
-       + 8*df(xi,x)*x*y**2 - df(xi,y,2)*x**5*y1**3 
-       - 2*df(xi,y)*x**4*y1**2 - 4*df(xi,y)*x**2*y*y1**2 
-       + 12*df(xi,y)*x*y**2*y1 - 2*eta*x**2*y1 + 8*eta*x*y 
-       + x**3*xi*y1 + 6*x*xi*y*y1 - 16*xi*y**2},
-      {},{xi,eta},{x,y,y1});
-
+                2
+       - 16*xi*y
 
 {{{},
 
@@ -715,71 +312,40 @@ crack({2*df(eta,x,y)*x**5*y1
 
   {}}}
 
-
-nodepnd {xi,eta}$
-
-
-
-write"======================================================="$
-
-
+c_23, c_22
 =======================================================
 
-
-write"  Integration: Solving a linear 1st order PDE"$
-
-
   Integration: Solving a linear 1st order PDE
- comment
 
-If the computation of a differential Groebner Basis is getting
-bigger and bigger and normal integration is not successful and
-also no functions of fewer variables are present then trying
-the solution of a 1st order linear PDE is recommended. $
-
-
-lisp(proc_list_ := '(subst_level_4 full_integration 
-                     gen_separation find_trafo))$
-
-
-depend f,x,y;
-
-
-crack({df(f,x)-x**2*y*df(f,y)+x},{},{f},{});
-
+               2
+de := f  - f *x *y + x
+       x    y
 
                        2
           - 2*c_24 - x%
 {{{},{f=-----------------},{c_24},{}}}
                 2
 
-write "The list of transformations done (here only one): ",
-      lisp done_trafo;
-
-
+c_24=c_24(y%)
                                                               3
                                                              x /3
 The list of transformations done (here only one): {{x%=x,y%=e    *y}}
 
-
-nodepnd {f}$
-
-
-
-write"======================================================="$
-
-
 =======================================================
 
+  Integration: Integration enabled through a syzygy
 
-lisp(depl!*:=nil)$
+            2                               2
+{{{ - f   *z  - f *sin(y)*x + c_25 + 3*f - x *z},
+       x,y       y
 
- % to delete all dependencies of functions on variables
+  {},
 
-end$
+  {f,c_25},
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 24 ms  plus GC time: 4 ms
-real	0m1.484s
-user	0m0.075s
-sys	0m0.045s
+  {}}}
+
+f=f(z,y,x), c_25=c_25(z)
+=======================================================
+
+3: 

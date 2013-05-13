@@ -5,29 +5,29 @@ module identities$
 %  Author: Thomas Wolf
 %  May 1999
 
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
+% BSDlicense: *****************************************************************
+%                                                                             *
+% Redistribution and use in source and binary forms, with or without          *
+% modification, are permitted provided that the following conditions are met: *
+%                                                                             *
+%    * Redistributions of source code must retain the relevant copyright      *
+%      notice, this list of conditions and the following disclaimer.          *
+%    * Redistributions in binary form must reproduce the above copyright      *
+%      notice, this list of conditions and the following disclaimer in the    *
+%      documentation and/or other materials provided with the distribution.   *
+%                                                                             *
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" *
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   *
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  *
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE   *
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         *
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        *
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     *
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     *
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  *
+% POSSIBILITY OF SUCH DAMAGE.                                                 *
+%******************************************************************************
 
 symbolic procedure drop_idty(id)$
 % recycles a name of an identity
@@ -50,9 +50,8 @@ begin scalar id$
 end$
 
 symbolic procedure replace_idty$
-begin scalar p,ps,ex$
- ps:=promptstring!*$
- promptstring!*:=""$
+begin scalar p,ex$
+ change_prompt_to ""$ 
  terpri()$
  write "If you want to replace an identity then ",
        "type its name, e.g. id_2 <ENTER>."$
@@ -69,9 +68,9 @@ begin scalar p,ps,ex$
   write "Terminate the expression with ; or $ : "$
   terpri()$
   ex:=termxread()$
-  for each a in idnties_ do ex:=subst(get(a,'val),a,ex)$
+  for each a in idnties_ do ex:=subst(get(a,'val),a,ex)$  % #?#
   if p neq 'NEW_IDTY then drop_idty(p)$
-  new_idty(reval ex,nil,nil)$
+  new_idty(reval ex,nil,nil)$                             % #?#
 
   terpri()$write car idnties_$
   if p='NEW_IDTY then write " is added"
@@ -79,26 +78,30 @@ begin scalar p,ps,ex$
  >>
  else <<terpri()$
         write "An identity ",p," does not exist! (Back to previous menu)">>$
- promptstring!*:=ps$
+ restore_interactive_prompt()
 end$
 
-
 symbolic procedure trivial_idty(pdes,idval)$
-if zerop idval or
+if zerop idval or                                 % #?#
    (pdes and
     null smemberl(pdes,search_li(idval,'DF))) % identity is purely alg.
    then t else nil$
 
-symbolic procedure new_idty(idty,pdes,simp)$
+symbolic procedure new_idty(idty,pdes,simplify)$
 % idty is the value of a new differential identity between equations
 begin scalar id,idcp$
- if simp then idty:=simplifypde(idty,pdes,t,nil)$
+ if simplify then <<
+  id:=contradiction_;
+% idty:=simplifypde(idty,pdes,t,nil)$
+  idty:=prepsq car simplifypdeSQ(simp idty,pdes,t,nil,nil)$ % ##### already SQ-updated, maybe drop prepsq
+  contradiction_:=id
+ >>$
  if not trivial_idty(pdes,idty) then <<
   idcp:=idnties_$
-  while idcp and (get(car idcp,'val) neq idty) do idcp:=cdr idcp;
+  while idcp and (get(car idcp,'val) neq idty) do idcp:=cdr idcp;   % #?#
   if null idcp then <<
    id:=new_id_name();
-   put(id,'val,idty)$
+   put(id,'val,idty)$                      % #?#
    flag1(id,'to_subst)$
    flag1(id,'to_int)$
    idnties_:=cons(id,idnties_)
@@ -110,18 +113,18 @@ symbolic procedure show_id$
 begin scalar l,n$
  terpri()$
  l:=length idnties_$
- write if l=0 then "No" else l,
- if l=1 then " identity." else " identities"$
+ write if l=0 then "No" else l, 
+ if l=1 then " identity." else " identities"$ 
  if l=0 then terpri()
         else <<
   n:=1;
   for each l in reverse idnties_ do <<
    terpri()$
-   algebraic write n,")  ",l," :  0 = ",lisp(get(l,'val));
+   algebraic write n,")  ",l," :  0 = ",lisp(get(l,'val));    % #?#
    n:=add1 n;
    if print_all then <<
-    terpri()$write "   to_int     : ",flagp(l,'to_int)$
-    terpri()$write "   to_subst   : ",flap(l,'to_subst)$
+    terpri()$write "   to_int     : ",flagp(l,'to_int)$ 
+    terpri()$write "   to_subst   : ",flagp(l,'to_subst)$
    >>
   >>
  >>
@@ -131,12 +134,12 @@ symbolic procedure del_red_id(pdes)$
 begin scalar oldli,pl,s,idty,news,succ,p,l$ % ,r,newr$
  if idnties_ then <<
   oldli:=idnties_$
-  while oldli do
-  if not flagp(car oldli,'to_subst) then oldli:=cdr oldli
+  while oldli do 
+  if not flagp(car oldli,'to_subst) then oldli:=cdr oldli 
                                     else <<
-   idty:=get(car oldli,'val)$
+   idty:=get(car oldli,'val)$                     % #?#
    pl:=smemberl(pdes,idty)$
-
+   
    for each p in pl do l:=union(get(p,'vars),l)$
    if l then l:=length l else l:=0$
 
@@ -151,14 +154,14 @@ begin scalar oldli,pl,s,idty,news,succ,p,l$ % ,r,newr$
      if (null get(car pl,'starde)                     ) and
         (get(car pl,'nvars)=l                         ) and
         (null(% flagp(s,'to_int) or
-              % flagp(s,'to_fullint)  or
+              % flagp(s,'to_fullint)  or                              
               % flagp(s,'to_sep) or
               % flagp(s,'to_gensep) or
               % flagp(s,'to_decoup) or
               flagp(s,'to_eval))                      ) and
         ((null s                                 ) or
          (get(car pl,'nvars)>get(s,'nvars)       ) or
-         ((get(car pl,'nvars)=get(s,'nvars)) and
+         ((get(car pl,'nvars)=get(s,'nvars)) and 
           (get(car pl,'terms)>get(s,'terms))     )    ) then s:=car pl;
      pl:=cdr pl
     >>;
@@ -172,16 +175,18 @@ begin scalar oldli,pl,s,idty,news,succ,p,l$ % ,r,newr$
      pl:=coeffn(idty,s,1)$
      news:=reval {'QUOTIENT,{'DIFFERENCE,{'TIMES,pl,s},idty},pl};
      %for each r in idnties_ do
-     %if not freeof(get(r,'val),s) then <<
-     % newr:=reval subst(news,s,get(r,'val));
+     %if not freeof(get(r,'val),s) then <<     % #?#
+     % newr:=reval subst(news,s,get(r,'val));  % #?#
+     % succ:=contradiction_; % for backup
      % newr:=simplifypde(newr,pdes,t,nil)$
-     % put(r,'val,newr)$
+     % contradiction_:=succ$
+     % put(r,'val,newr)$                       % #?#
      % flag1(r,'to_subst)$
      % flag1(r,'to_int)$
      %>>$
      succ:=t$
      pdes:=drop_pde(s,pdes,news)$
-     oldli:=cdr oldli
+     oldli:=cdr oldli 
     >>
    >>
   >>
@@ -189,16 +194,15 @@ begin scalar oldli,pl,s,idty,news,succ,p,l$ % ,r,newr$
  if succ then return pdes
 end$
 
-symbolic procedure del_redundant_de(argset)$
+symbolic procedure del_redundant_de(arglist)$
 begin scalar pdes;
- if pdes:=del_red_id(car argset) then return {pdes,cadr argset}$
+ if pdes:=del_red_id(car arglist) then return {pdes,cadr arglist}$
 end$
 
 symbolic procedure write_id_to_file(pdes)$
-begin scalar s,p,h,pl,ps$
+begin scalar s,p,h,pl$
  if idnties_ then <<
-  ps:=promptstring!*$
-  promptstring!*:=""$
+  change_prompt_to ""$ 
   write"Please give the name of the file in double quotes"$terpri()$
   write"without `;' : "$
   s:=termread()$
@@ -214,13 +218,13 @@ begin scalar s,p,h,pl,ps$
   write"list_of_functions:="$
   algebraic write lisp cons('LIST,pdes)$
 
-  for each h in pdes do
-  if pl:=assoc(h,depl!*) then
-  for each p in cdr pl do
+  for each h in pdes do 
+  if pl:=assoc(h,depl!*) then 
+  for each p in cdr pl do 
   algebraic write "depend ",lisp h,",",lisp p$
-
+  
   write"list_of_equations:="$
-  algebraic write
+  algebraic write 
   lisp( cons('LIST,for each h in idnties_ collect get(h,'val)));
 
   terpri()$ write"solution_:=crack(list_of_equations,{},"$
@@ -231,7 +235,7 @@ begin scalar s,p,h,pl,ps$
   write"end$"$terpri()$
   shut s;
   on nat;
-  promptstring!*:=ps$
+  restore_interactive_prompt()$
  >>
 end$
 
@@ -240,9 +244,8 @@ symbolic procedure remove_idl$
   idnties_:=nil>>$
 
 symbolic procedure start_history(pdes)$
-begin scalar l,ps$
- ps:=promptstring!*$
- promptstring!*:=""$
+begin scalar l$
+ change_prompt_to ""$ 
  write"For recording the history of equations all currently"$ terpri()$
  write"recorded histories would be deleted as well as all"$ terpri()$
  write"present decoupling information, i.e. `dec_with'"$ terpri()$
@@ -253,7 +256,7 @@ begin scalar l,ps$
   for each l in pdes do put(l,'histry_,l)$
   for each l in pdes do put(l,'dec_with,nil)$
  >>;
- promptstring!*:=ps$
+ restore_interactive_prompt()
 end$
 
 symbolic procedure stop_history(pdes)$
@@ -262,22 +265,22 @@ symbolic procedure stop_history(pdes)$
 
 %  write"Do you want to delete all dec_with information? (y/n) "$
 %  l:=termread()$
-%  if (l='y) or (l='Y) then
+%  if (l='y) or (l='Y) then 
 %  for each l in pdes do put(l,'dec_with,nil)$
 
-symbolic procedure idty_integration(argset)$
+symbolic procedure idty_integration(arglist)$
 begin scalar l,pdes,idcp;
- pdes:=car argset;
+ pdes:=car arglist;
  idcp:=idnties_;
  while idcp do
  if not flagp(car idcp,'to_int) then idcp:=cdr idcp else
- if l:=integrate_idty(car idcp,pdes,%cadr argset,
+ if l:=integrate_idty(car idcp,pdes,%cadr arglist,
                       ftem_,vl_) then <<
   pdes:=l;idcp:=nil>>                                      else <<
   remflag1(car idcp,'to_int);
   idcp:=cdr idcp;
  >>;
- if l then return {pdes,cadr argset}
+ if l then return {pdes,cadr arglist}
 end$
 
 symbolic procedure integrate_idty(org_idty,allpdes,%forg,
@@ -289,34 +292,33 @@ symbolic procedure integrate_idty(org_idty,allpdes,%forg,
 %                   non-conservation laws
 if idnties_ then
 begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
-             nx,dl,l,k,ps,idty,pdes,extrapdes,newidtylist$ %nclu
- if null org_idty then
- if null cdr idnties_ then org_idty:=car idnties_
+             nx,dl,l,k,idty,pdes,extrapdes,newidtylist$ %nclu
+ if null org_idty then 
+ if null cdr idnties_ then org_idty:=car idnties_ 
                       else <<
   show_id()$
-  ps:=promptstring!*$
-  promptstring!*:=""$
+
+  change_prompt_to ""$ 
   write"Which of the identities shall be integrated? (no) "$
   k:=length(idnties_);
-  repeat
+  repeat 
    l:=termread()
   until (fixp l) and (0<l) and (l<=k);
-  org_idty:=nth(idnties_,k+1-l)$
-  promptstring!*:=ps
+  org_idty:=nth(idnties_,k+1-l)$ 
+  restore_interactive_prompt() 
  >>$
 
- idty:=reval num reval get(org_idty,'val)$
+ idty:=reval num reval get(org_idty,'val)$            % #?#
  if trivial_idty(allpdes,idty) then return nil$
-
  pdes:=smemberl(allpdes,idty)$
- a:=all_deriv_search(idty,pdes)$
+ a:=all_deriv_search(idty,pdes)$  % there is available: all_deriv_search_SF(p,ftem)
  xlist:=smemberl(vl,a)$
  cl:=intcurrent3(idty,cons('LIST,pdes),cons('LIST,xlist))$
  % intcurrent3 is only successful if only 2 derivatives found
- if (not zerop caddr cl) and inter_divint then
+ if (not zerop caddr cl) and inter_divint then 
  cl:=intcurrent2(idty,cons('LIST,pdes),cons('LIST,xlist))$
  if zerop caddr cl then <<
-  cl:=cdadr cl;
+  cl:=cdadr cl;   
   vlcp:=xlist;
   xlist:=nil;
   while vlcp do <<
@@ -329,7 +331,6 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
   >>;
 %  ncl:=reverse ncl;
 %  xlist:=reverse xlist;
-
   cl:=ncl;
 
 %  % Now try to get a divergence in less differentiation variables.
@@ -359,7 +360,8 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
 %  xlist:=vlcp;
   nx:=length xlist;
   while pdes do <<
-   ncl:=subst(get(car pdes,'val),car pdes,ncl);
+   cp_sq2p_val car pdes$
+   ncl:=subst(get(car pdes,'pval),car pdes,ncl);
    pdes:=cdr pdes
   >>$
   ftem_bak:=ftem_;
@@ -379,7 +381,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    write"can be integrated to "$terpri()$
    deprint(cdar eql)$
   >>$
-  if nx < 3 then a:='y else
+  if nx < 3 then a:='y else 
   if (null inter_divint) or !*batch_mode then <<
    a:='n;
    if print_ then <<
@@ -390,24 +392,23 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    >>$
    terpri()
   >>                   else <<
-   ps:=promptstring!*$
-   promptstring!*:=""$
+   change_prompt_to ""$ 
    write"Shall this integration be used? (y/n) "$
    repeat a:=termread() until (a='y) or (a='n);
-   promptstring!*:=ps
+   restore_interactive_prompt()
   >>;
   if a='n then <<
-   a:=setdiff(ftem_,ftem_bak);
+   a:=setdiff_according_to(ftem_,ftem_bak,ftem_);
    for each f in a do drop_fct(f)$
    ftem_:=ftem_bak
   >>      else <<
    % the extra conditions from the generalized integration:
    extrapdes:=cdadr eql$
    eql:=cdar eql; % eql are now the integrated curl conditions
-   drop_idty(org_idty)$
+   drop_idty(org_idty)$ 
    while eql do <<
     if not zerop car eql then <<
-     a:=mkeq(car eql,ftem_,vl,allflags_,nil,list(0),nil,allpdes);
+     a:=mkeqSQ(nil,nil,car eql,ftem_,vl,allflags_,nil,list(0),nil,allpdes);
      newpdes:=cons(a,newpdes);
     >>;
     eql:=cdr eql;
@@ -421,7 +422,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
      % at first sum over df(q^{ji},j),  j<i
      l:=i-1;
      dl:=nx-2;
-     a:=for j:=1:(i-1) collect <<
+     a:=for j:=1:(i-1) collect << 
       k:=l;
       l:=l+dl;
       dl:=sub1 dl;
@@ -434,7 +435,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
      % then sum over -df(q^{ij},j), j>i
      if i=1 then l:=1
             else l:=k+nx-i+1;
-     a:=for j:=(i+1):nx collect <<
+     a:=for j:=(i+1):nx collect << 
       k:=l;
       l:=l+1;
       {'DF,nth(newpdes,k),nth(xlist,j)}
@@ -447,7 +448,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    >>;
    eql:=nil;
    for each a in extrapdes do <<
-    a:=mkeq(a,ftem_,vl,allflags_,t,list(0),nil,allpdes);
+    a:=mkeqSQ(nil,nil,a,ftem_,vl,allflags_,t,list(0),nil,allpdes);
     allpdes:=eqinsert(a,allpdes);
     to_do_list:=cons(list('subst_level_35,%allpdes,forg,vl_,
                           list a),
@@ -458,7 +459,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
     write"Integration gives: "$
     listprint(newpdes)$terpri()$
     if eql then <<
-     write"with extra conditions: "$
+     write"with extra conditions: "$ 
      listprint(eql)
     >>$
    >>;
@@ -477,12 +478,12 @@ begin scalar flp,conti,newa;
  repeat <<
   newa:=nil;
   conti:=nil;
-  while cdr a do
+  while cdr a do 
   if car a < cadr a then <<newa:=cons(car a,newa); a:=cdr a>>
                     else <<
    conti:=t;
    flp:=not flp;
-   newa:=cons(cadr a,newa);
+   newa:=cons(cadr a,newa); 
    a:=cons(car a,cddr a);
   >>$
   newa:=cons(car a,newa);
@@ -499,10 +500,10 @@ symbolic procedure curlconst(xlist,vl)$
 
 begin scalar n,qli,i,j,k,qij,a,flp,f,resu,qlicp$
  n:=length xlist$
- for i:=1:(n-1) do
+ for i:=1:(n-1) do 
  for j:=(i+1):n do << % generation of r^ijk,k
   qij:=nil;
-  for k:=1:n do
+  for k:=1:n do 
   if (k neq i) and (k neq j) then <<
    a:=sortpermuli({i,j,k});
    flp:=car a;
@@ -514,6 +515,7 @@ begin scalar n,qli,i,j,k,qij,a,flp,f,resu,qlicp$
     f:=newfct(fname_,vl,nfct_);
     nfct_:=add1 nfct_;
     ftem_:=fctinsert(f,ftem_);
+    flin_:=sort_according_to(cons(f,flin_),ftem_);
     qli:=cons(a . f,qli)
    >>;
    f:={'DF,f,nth(xlist,k)};
@@ -522,11 +524,12 @@ begin scalar n,qli,i,j,k,qij,a,flp,f,resu,qlicp$
   >>$
   if null qij then <<qij:=newfct(fname_,setdiff(vl,xlist),nfct_);
                      nfct_:=add1 nfct_;
-                     ftem_:=fctinsert(qij,ftem_)>>
+                     ftem_:=fctinsert(qij,ftem_);
+                     flin_:=sort_according_to(cons(qij,flin_),ftem_)>>
               else
   if cdr qij then qij:=reval cons('PLUS,qij)
              else qij:=car qij;
-  resu:=cons(qij,resu)
+  resu:=cons(qij,resu)  
  >>$
  return resu
 end$
@@ -566,11 +569,17 @@ begin scalar i,h4,h5,h6,h7,rmdr,y,pint,succ$
    pint:=partint(rmdr,fl,vl_,y,genint_);
    % genint is max number of new terms
    if null pint then succ:=nil
-                else for each h4 in fnew_ do ftem_:=fctinsert(h4,ftem_)
+                else <<
+     for each h4 in fnew_ do <<
+       ftem_:=fctinsert(h4,ftem_);
+       flin_:=cons(h4,flin_)
+     >>;
+     flin_:=sort_according_to(flin_,ftem_)
+   >>
   >>
  >>;
  return if null succ then nil
-                     else cons(h2,pint)
+                     else cons(h2,pint) 
  % pint=cons(generalized integral of rmdr,list of new eqn)
 end$
 
@@ -583,8 +592,8 @@ symbolic procedure int_curl(pli,fl,xlist,vl)$
 % cdr result: list of new conditions in fewer variables
 % works only if identically satisfied, not modulo some equations
 % vl is the list of all relevant variables
-% during computation is h2 =
-% (q^{kn},.., q^{k(k+1)},q^{(k-1)n},.., q^{(k-1)k},..,
+% during computation is h2 = 
+% (q^{kn},.., q^{k(k+1)},q^{(k-1)n},.., q^{(k-1)k},.., 
 %  q^{2n},.., q^{23},    q^{1n},.., q^{13},q^{12}}     )
 begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
  % conversion from algebraic mode lists to lisp lists:
@@ -601,8 +610,8 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
   % curl will be used to change the remining pli to be integrated
   h3:=intcurrent2(reval car pli,fl,cons('LIST,cdr xlist));
   pli:=cdr pli;
-  h1:=cdadr h3;
-  h3:=reval reval caddr h3;
+  h1:=cdadr h3;   
+  h3:=reval reval caddr h3;           
   % h3 now = the remainder of the integration wrt cdr xlist
 
   if not zerop h3 then <<
@@ -649,15 +658,15 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
   >>
  >>;
  if null ok then << % drop all new functions
-  h1:=setdiff(ftem_,ftem_bak);
+  h1:=setdiff_according_to(ftem_,ftem_bak,ftem_);
   for each h2 in h1 do drop_fct(h2)$
   ftem_:=ftem_bak
  >>         else <<
   h1:=curlconst(xcp,vl)$
   while h1 do <<
    resu:=cons({'PLUS,car h2,car h1},resu);
-   h1:=cdr h1;
-   h2:=cdr h2;
+   h1:=cdr h1; 
+   h2:=cdr h2; 
   >>$
   return {'LIST,reval cons('LIST,resu),cons('LIST,neweq)}
  >>

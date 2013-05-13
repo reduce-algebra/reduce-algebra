@@ -2,9 +2,9 @@
 module crackorder$
 %********************************************************************
 %
-% Name:          crorder.red
-% Description:   Multiple orderings support
-% Author:        Arrigo
+% Name:		crorder.red
+% Description:	Multiple orderings support	
+% Author:	Arrigo Triulzi
 %
 % $Id: crorder.red,v 1.21 1998/06/08 14:38:18 arrigo Exp $
 %
@@ -15,56 +15,59 @@ module crackorder$
 % apply(caddr(getv(orderings_,[ordering_number])), {eq});
 % to get the ordering function.
 
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
-
 %
 % make_orderings(fcts, vars) creates a vector containing all
 % possibile orderings of the given fcts and vars
 %
+% global variable: simple_orderings
+%
+
+% BSDlicense: *****************************************************************
+%                                                                             *
+% Redistribution and use in source and binary forms, with or without          *
+% modification, are permitted provided that the following conditions are met: *
+%                                                                             *
+%    * Redistributions of source code must retain the relevant copyright      *
+%      notice, this list of conditions and the following disclaimer.          *
+%    * Redistributions in binary form must reproduce the above copyright      *
+%      notice, this list of conditions and the following disclaimer in the    *
+%      documentation and/or other materials provided with the distribution.   *
+%                                                                             *
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" *
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   *
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  *
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE   *
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         *
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        *
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     *
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     *
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  *
+% POSSIBILITY OF SUCH DAMAGE.                                                 *
+%******************************************************************************
+
 symbolic procedure make_orderings(fcts, vars)$
 begin scalar fctsl, varsl, ordsl, fn, j$
    if print_ and tr_orderings then
       <<
-         terpri()$ write "make_orderings("$
-         write fcts, ",", vars$
-            write ")"
+	 terpri()$ write "make_orderings("$
+	 write fcts, ",", vars$
+   	 write ")"
       >>$
    if not pairp(vars) or not vars then
       <<
-         % Thomas has some situations in which there are no
-         % variables but only functions, we accordingly create
-         % a single ordering
-         ordsl := mkvect(1)$
-               putv(ordsl,0,list(list(nil),fcts,'default_ordering_function))$
-         return ordsl$
+	 % Thomas has some situations in which there are no
+	 % variables but only functions, we accordingly create
+	 % a single ordering
+	 ordsl := mkvect(1)$
+      	 putv(ordsl,0,list(list(nil),fcts,'default_ordering_function))$
+	 return ordsl$
       >>$
    if not pairp(fcts) then
       <<
-         terpri()$ write "confused! expected list of functions"$
-         % !FIXME! Same as above
-         return(nil)
+	 terpri()$ write "confused! expected list of functions"$
+	 % !FIXME! Same as above
+	 return(nil)
       >>$
    %
    % OK, so we now actually create two lists and then turn them into
@@ -75,11 +78,11 @@ begin scalar fctsl, varsl, ordsl, fn, j$
    %
    % Purpose of the various bits is:
    %
-   %       v                       ordered variables list
-   %       f                       ordered functions list
-   %       ordering_function       a function which, given a list of
-   %                               derivs will order them for the current
-   %                               ordering
+   %	v			ordered variables list
+   %	f			ordered functions list
+   %	ordering_function	a function which, given a list of
+   %				derivs will order them for the current
+   %				ordering
    %
    % !FIXME! Do we want the trailing nil?
    %
@@ -92,18 +95,18 @@ begin scalar fctsl, varsl, ordsl, fn, j$
       fctsl := permu(fcts)$
       ordsl := mkvect(length(varsl)*length(fctsl))$
       j := 0$
-      for each v in varsl do
-               for each fn in fctsl do <<
-            putv(ordsl,j,list(v, fn, 'default_ordering_function))$
-            j := add1 j$
-               >>$
+      for each v in varsl do 
+      	 for each fn in fctsl do <<
+	    putv(ordsl,j,list(v, fn, 'default_ordering_function))$
+	    j := add1 j$
+      	 >>$
    >>$
    % Done
    if tr_orderings then
       <<
-         terpri()$
-         write "END - make_orderings(): "$
-         terpri()$ write ordsl$
+	 terpri()$
+	 write "END - make_orderings(): "$
+	 terpri()$ write ordsl$
       >>$
    return ordsl$
 end$
@@ -125,28 +128,28 @@ if length(li)=1 then list(li)
 % allows us to have all the standard orderings and to support
 % user-defined ones via different ordering_functions.
 %
-% p      -       list of derivatives to be sorted in the format used by
-%               the decoupling routines, i.e. ( (f_1 . power)
-%               (f_2 . power) (f_3 . power) ),
-% i      -       ordering w.r.t. which we want to work
+% p	-	list of derivatives to be sorted in the format used by
+%		the decoupling routines, i.e. ( (f_1 . power)
+%		(f_2 . power) (f_3 . power) ),
+% i	-	ordering w.r.t. which we want to work
 %
 
 symbolic procedure default_ordering_function(p,i)$
 begin scalar ordered_p, fl_from_order, vl_from_order$
    if print_ and tr_orderings then
       <<
-         terpri()$ write "default_ordering_function("$
-         write p,",",i$
-            write ")"
+	 terpri()$ write "default_ordering_function("$
+	 write p,",",i$
+   	 write ")"
       >>$
    vl_from_order := car(getv(orderings_,i))$
    fl_from_order := cadr(getv(orderings_,i))$
    if tr_orderings then
       <<
-         terpri()$ write "variables list from ordering ",i," is :",
-            vl_from_order$
-         terpri()$ write "functions list from ordering ",i," is :",
-            fl_from_order
+	 terpri()$ write "variables list from ordering ",i," is :",
+	    vl_from_order$
+	 terpri()$ write "functions list from ordering ",i," is :",
+	    fl_from_order
       >>$
    %
    % This one-liner should do the trick
@@ -154,7 +157,7 @@ begin scalar ordered_p, fl_from_order, vl_from_order$
    ordered_p := sort_derivs(p, fl_from_order, vl_from_order);
    if tr_orderings then
       <<
-         terpri()$ write "ordered: ",ordered_p
+	 terpri()$ write "ordered: ",ordered_p
       >>$
    return ordered_p$
 end$
@@ -181,7 +184,7 @@ begin scalar i, l$
    <<
       terpri()$ write "list: ", l$
    >>$
-   return l$
+   return l$   
 end$
 
 %
@@ -256,7 +259,7 @@ end$
 % End of module
 %
 
-endmodule$
+endmodule$ 
 
 end$
 

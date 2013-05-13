@@ -140,8 +140,8 @@ values and meanings:
 \> For an illustration of this effect see the two symmetry \\
 \> determinations of the Burgers equation in the file \\
 \> {\tt LIEPDE.TST}. \\
-\verb+{xi!_+{\it x1}\verb+ =...,..., +  \>  \\ 
-\verb+ eta!_+{\it u1}\verb+=...,...}+  \> It is possible to specify an
+\verb+{xi_+{\it x1}\verb+ =...,..., +  \>  \\ 
+\verb+ eta_+{\it u1}\verb+=...,...}+  \> It is possible to specify an
 ansatz for the symmetry. Such \\
 \> an ansatz must specify all $\xi^i$ for all independent variables and \\
 \> all $\eta^{\alpha}$ for all dependent variables in terms of differential \\
@@ -158,7 +158,7 @@ ansatz for the symmetry. Such \\
 \> assuming {\it xlist} has been specified as \verb+ {t,x}+. 
    Because $t$ is the \\
 \> first variable and $x$ is the second variable in {\it xlist} and $u$ is \\
-\> differentiated oncs wrt.\ $t$ and twice wrt.\ $x$ we therefore \\
+\> differentiated once wrt.\ $t$ and twice wrt.\ $x$ we therefore \\
 \> use \verb+ u!`1!`2!`2+. The character {\tt !} is the escape character \\
 \> to allow special characters like ` to occur in an identifier. \\
 \> \hspace{4mm} For generalized symmetries one usually sets all $\xi^i=0$.\\
@@ -173,16 +173,21 @@ that includes
       specified in {\it flist} then the symmetry conditions 
       formulated in {\tt LIEPDE}
       become non-linear conditions which may be much harder for
-      {\tt CRACK} to solve with many cases and subcases to be considered.)
+      {\tt CRACK} to solve with many cases and subcases to be considered,
+      see the last example in {\tt LIEPDE.TST}),
 \item all unknown functions and constants in the ansatz 
-      \verb+xi!_..+ and \verb+eta!_..+
+      \verb+xi_..+ and \verb+eta_..+
       if that has been specified in {\it symtype}.
 \end{itemize}
 \noindent The fourth parameter {\it inequ} of {\tt LIEPDE} is a list $\{\;\}$ 
 that includes all non-vanishing expressions which represent
 inequalities for the functions in flist.
 
-The procedure {\tt LIEPDE} returns a list containing a list of 
+The procedure {\tt LIEPDE} returns a list of cases. Normally this will be
+only one case but if a parameter in the equation(s) had to be determined
+then there may be different cases, each with different values of these
+parameters, just like in the last example of {\tt LIEPDE.TST}, see also
+the end of the log file {\tt LIEPDE.RLG}. Each case contains a list of 
 unsolved conditions if any, a list containing the general solution for 
 $\xi^i, \eta^{\alpha}$ and a list of constants and functions appearing 
 in the general solution or in the remaining unsolved conditions.
@@ -213,25 +218,36 @@ then with the setting \\
 \verb+LISP(INDIVIDUAL_:=t)$+ conditions for the equations are formulated 
 and solved individually which provides a speed up if symmetry conditions are
 very overdetermined. The default value is \\ 
-\verb+  LISP(INDIVIDUAL_:=NIL)$+. \\
+\verb+  LISP(INDIVIDUAL_:=NIL)$+. 
+
+If parameters of the equation(s) are to be determined such that
+symmetries exist, i.e.\ the parameter {\it flist} is not the empty
+list \verb+{}+ then {\tt PRELIM\_} and {\tt INDIVIDUAL\_} are both
+automatically set to {\tt NIL}.
+
 By default {\tt LIEPDE} computes $\xi$ and $\eta$ for each
 symmetry. If a prolongation of the symmetry vector shall be calculated
 then the order of this prolongation can be specified by the setting 
-\verb+LISP(PROLONG_ORDER:= ...)$+. \\
+\verb+LISP(PROLONG_ORDER:= ...)$+ (see last example in {\tt LIEPDE.TST}). 
+
+With \verb+ OFF BATCH_MODE$+ the overdetermined system can be solved
+interactively and with 
+\verb+ ON BATCH_MODE$+ the program {\tt CRACK} will try to solve the
+symmetry conditions automatically.
+
 Flags that control the solution of the symmetry conditions by {\tt CRACK}
-are displayed with \verb+CRACKHELP()$+. Among them are: \\
+are shown after pressing {\tt h} in interactive mode. You can also 
+try them out online in \\ \verb+http://lie.math.brocku.ca/crack/demo+.
+Among them is: \\
 \verb+  LISP (PRINT_:= NIL/0/1/ ...)$+ \\
 \verb+PRINT_=NIL+ suppresses all CRACK output, for \verb+PRINT_=n+ 
 ($n$ a positive integer) 
-{\tt CRACK} prints only equations with at most $n$ factors in their terms, and 
-%\verb+  LISP (LOGOPRINT_:=t/nil)$+ \\
-%to print/not print a logo at the start of {\tt LIEPDE} \\
-\verb+ OFF BATCH_MODE$+ 
-enables the interactive solution of the system of conditions with {\tt CRACK}.
+{\tt CRACK} prints only equations with at most $n$ factors in their terms.
+
 
 \section{Requirements}
 
-{\tt REDUCE 3.6} and 
+{\tt REDUCE 3.6} or higher and 
 the files {\tt CRACK.RED, LIEPDE.RED} and 
 all files {\tt CR*.RED} which are read in from {\tt CRACK.RED}. \\
 \verb+    IN "crack.red","liepde.red"$+ \\
@@ -254,7 +270,7 @@ and loading afterwards with \verb+ LOAD_PACKAGE crack,liepde$.+
           determining Lie-symmetries
           of PDEs, Proceedings of ``Modern Group Analysis: advanced analytical 
           and computational methods in mathematical physics'', Acireale, Italy,
-          October 1992, Kluwer Academic Publishers, pP 377-385, 1993.
+          October 1992, Kluwer Academic Publishers, 377-385, 1993.
 \end{thebibliography}
 
 \end{document}

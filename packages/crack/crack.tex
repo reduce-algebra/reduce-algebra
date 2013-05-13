@@ -1,10 +1,44 @@
 \documentclass[12pt]{article}
+\usepackage[dvipdfm]{graphicx}
+\usepackage[dvipdfm]{color}
+\usepackage[dvipdfm]{hyperref}
+
+% After compilation with latex a pdf file can be generated with:
+% dvipdfm crack.dvi
 
 %Sets size of page and margins
-\oddsidemargin 10mm  \evensidemargin 10mm
-\topmargin 0pt   \headheight 0pt   \headsep 0pt
-\textwidth 15cm
- 
+\oddsidemargin 0mm  \evensidemargin 0mm
+\topmargin -10mm   \headheight 0pt   \headsep 0pt
+\textwidth 17cm
+\textheight 25.5cm  
+
+%
+% Some color definitions and definitions for pdf hyperlinks
+% 
+\def\begincolor#1{\special{pdf:bc #1}}%
+\def\endcolor{\special{pdf:ec}}%
+\def\colored#1#2{%
+  \begincolor{#1}#2\endcolor}
+%\def\red{[0.8 0.5 0]}%
+%\def\green{[0 1 0]}%
+%\def\blue{[0 0.4 0.8]}%
+%\def\yellow{[0.8 0.9 0.1]}%
+\def\linkcolor{[0.5 0.0 0.7]}%
+%
+\def\setlink#1{\colored{\linkcolor}{#1}}%
+%  
+\def\link#1#2{%
+  \leavevmode\special{pdf: bann 
+    << /Type /Annot /Subtype /Link /Border [ 0 0 0 ] /A << /S /GoTo /D (#2) >>
+>>}\setlink{#1}\special{pdf: eann}\relax}
+%
+\def\dest#1{\hbox{\raise14pt\hbox{\special{pdf:dest (#1) [ @thispage /FitH
+@ypos ]}}}}%
+% Usage:
+% \special{html:<a href="http://www.zib.de">}huhu \special{html:</a>}
+% \link{text}{Label}
+% \dest{Label}
+
 \title{The computer algebra package {\sc Crack}
        for solving over-determined systems of equations}
  
@@ -18,230 +52,74 @@
 \begin{document}
 \maketitle
 \tableofcontents                                  
-\section{Online help} 
 
-\subsection{Help to help} 
-\begin{tabbing}
-  {\bf hd} \ \= Help to inspect data \\
-  {\bf hp}   \> Help to proceed \\
-  {\bf hf}   \> Help to change flags \& parameters \\
-  {\bf hc}   \> Help to change data of equations \\
-  {\bf hi}   \> Help to work with identities \\
-  {\bf hb}   \> Help to trace and debug
-\end{tabbing}
+\section{Introduction}
+\subsection{Purpose}
+The package {\sc Crack} attempts the solution of an overdetermined
+system of algebraic, ordinary or partial differential equations
+(ODEs/PDEs) with at most polynomial nonlinearities.
 
-\subsection{Help to inspect data} 
-\begin{tabbing}
-  {\bf e}\ \ \ \ \= Print equations          \\
-  {\bf eo}   \> Print overview of functions in equations  \\
-  {\bf pi}   \> Print inequalities  \\ 
-  {\bf f}    \> Print functions and variables        \\
-  {\bf v}    \> Print all derivatives of all functions  \\
-  {\bf s}    \> Print statistics                  \\
-  {\bf fc}   \> Print no of free cells  \\
-  {\bf pe}   \> Print an algebraic expression \\
-  {\bf ph}   \> Print history of interactive input \\
-  {\bf pv}   \> Print value of any lisp variable \\
-  {\bf pd}   \> Plot the occurence of functions in equations \\
-  {\bf ss}   \> Find and print sub-systems \\
-  {\bf w}    \> Write equations into a file
-\end{tabbing}
+Under `normal circumstances' differential equations (DEs) which
+describe physical processes are not overdetermined, i.e.\ the number
+of DEs matches the number of unknown functions which are involved.
+Although {\sc Crack} may be successful in such cases (e.g.\ for
+characteristic ODE-systems of first order PDEs) this is not the
+typical application. It is rather the qualitative investigations of
+such differential equations, i.e.\ the investigation of their
+infinitesimal symmetries (with {\sc LiePDE,ApplySym}) and conservation
+laws (with {\sc Conlaw}) which result in over-determined systems which
+are the main application area of {\sc Crack}.
 
-\subsection{Help to proceed} 
-\begin{tabbing}
-  {\bf a}\ \ \ \ \= Do one step automatically      \\        
-  {\bf g}    \> Go on for a number of steps automatically    \\
-  {\bf t}    \> Toggle between automatic and user selection of 
-                equations ({\tt expert\_mode=nil/t}).  \\
-  {\bf p1}   \> Print a list of all modules in batch mode \\
-  {\bf p2}   \> Print a complete list of all modules \\
-  {\bf \#}   \> Execute the module with the number `\#' once  \\
-  {\bf l}    \> Execute a specific module repeatedly         \\
-  {\bf sb}   \> Save complete backup to file \\
-  {\bf rb}   \> Read backup from file \\
-  {\bf ep}   \> Enable parallelism \\
-  {\bf dp}   \> Disable parallelism \\
-  {\bf pp}   \> Start an identical parallel process \\
-  {\bf kp}   \> Kill a parallel process \\
-  {\bf x}    \> Exit interactive mode for good            \\
-  {\bf q}    \> Quit current level or crack if in level 0    \\        
-\end{tabbing}
+\subsection{Interactivity}
+The package was originally developed to run automatically and effort
+was taken for the program to decide which computational steps are to
+be done next with a choice among integrations, separations,
+substitutions and investigation of integrability conditions. It is
+known from hand computations that the right sequence of operations
+with exactly the right equations at the right time is often crucial to
+avoid an explosion of the length of expressions. This statement keeps
+its truth for the computerized solution of systems of equations as
+they become more complex. As a consequence more and more interactive
+access has been provided to inspect data, to specify how to proceed
+with the computation and how to control it. This allows the human
+intervention in critical stages of the computations (see the switch
+{\em off batch\_mode} below.
 
-\subsection{Help to change flags \& parameters} 
-\begin{tabbing}
-  {\bf pl} \ \ \ \= Maximal length of an expression to be printed  \\
-  {\bf pm}   \> Toggle to print more or less information about 
-                        pdes ({\tt print\_more})    \\
-  {\bf pa}   \> Toggle to print all or not all information 
-                        about the pdes ({\tt print\_all}) \\
-  {\bf cp}   \> Change the priorities of procedures   \\
-  {\bf og}   \> Toggle ordering between `lexicographical 
-                ordering of functions having\\
-             \> a higher priority than any ordering of
-                derivatives' and the opposite \\
-             \> ({\tt lex\_fc=t}) resp.\ ({\tt lex\_fc=nil}) \\
-  {\bf od}   \> Toggle ordering between `the total order
-                of derivatives having a higher\\
-             \> priority than lexicographical ordering' 
-                ({\tt lex\_df=nil}) or not ({\tt lex\_df=t}) \\
-  {\bf oi}   \> Interactive change of ordering on variables \\
-  {\bf or}   \> Reverse ordering on variables \\
-  {\bf om}   \> Mix randomly ordering on variables \\
-  {\bf of}   \> Interactive change of ordering on functions     \\
-  {\bf op}   \> Print current ordering  \\
-  {\bf ne}   \> Root of the name of new generated equations
-                        (default: e\_) \\
-  {\bf nf}   \> Root of the name of new functions and constants
-                        (default: c\_) \\
-  {\bf ni}   \> Root of the name of new identities
-                        (default: id\_) \\
-  {\bf na}   \> Toggle for the NAT output switch ({\tt !*nat}) \\
-  {\bf as}   \> Input of an assignment          \\
-  {\bf kp}   \> Toggle for keeping a partitioned copy of each
-                        equation ({\tt keep\_parti}) \\
-  {\bf fi}   \> Toggle for allowing or not allowing
-                        integrations of equations which \\
-             \> involve unresolved integrals ({\tt freeint\_})  \\
-  {\bf fa}   \> Toggle for allowing or not allowing solutions of ODEs
-                        involving the \\
-             \> {\tt abs} function ({\tt freeabs\_})  \\
-  {\bf cs}   \> Switch on/off the confirmation of intended substitutions
-                and of the \\
-             \> order of the investigation of subcases 
-                resulting in a factorization \\
-  {\bf fs}   \> Enforce direct separation \\
-  {\bf ll}   \> change of the line length \\
-  {\bf re}   \> Toggle for allowing to re-cycle equation names
-             ({\tt do\_recycle\_eqn})  \\
-  {\bf rf}   \> Toggle for allowing to re-cycle function names
-             ({\tt do\_recycle\_fnc}) \\
-  {\bf st}   \> Setting a CPU time limit for un-interrupted run \\
-  {\bf cm}   \> Adding a comment to the history\_ list \\
-  {\bf lr}   \> Adding a LET-rule \\
-  {\bf cr}   \> Clearing a LET-rule
-\end{tabbing}
+\subsection{General Structure} 
+A problem consists of a system of equations
+and a set of inequalities. With each equation are associated a short
+name and numerous data, like size, which functions, derivatives and
+variables occur but also which investigations have already been done
+with this equation and which not in order to avoid unnecessary
+duplication of work.  These data are constantly updated if the
+equation is modified in any way.
+  
+A set of about 30 modules is available to integrate, substitute,
+decouple, ... equations. A complete list can be inspected in
+interactive mode with the command {\em p2}, each operation is listed
+with the number it is called. All modules can be called
+interactively or automatically. Automatic computation is organized
+by a priority list of modules (each represented by a number) where
+modules are invoked in the order they appear in the priority list,
+each module trying to find equations in the system it can be applied
+to. The priority list can be inspected with the command {\em p1}. 
+If a module is not successful then the next module in the list
+is tried, if any one is successful then execution starts again at
+the beginning of the priority list. 
+\{\link{prog\_list\_, default\_proc\_list\_, full\_proc\_list\_}{lb1} \}
 
-\subsection{Help to change data of equations} 
-\begin{tabbing}
-  {\bf r}\ \ \ \ \ \= Replace or add one equation \\
-  {\bf n}    \> Replace one inequality      \\
-  {\bf d}    \> Delete one equation         \\             
-  {\bf c}    \> Change a flag or property of one pde  
-\end{tabbing}
-
-\subsection{Help to work with identities} 
-\begin{tabbing}
-  {\bf i}\ \ \ \ \ \= Print identities between equations \\
-  {\bf id}   \> Delete redundand equations \\
-  {\bf iw}   \> Write identities to a file \\
-  {\bf ir}   \> Remove list of identities \\
-  {\bf ia}   \> Add or replace an identity \\
-  {\bf ih}   \> Start recording histories and identities \\
-  {\bf ip}   \> Stop recording histories and identities \\
-  {\bf ii}   \> Integrate an identity \\
-  {\bf ic}   \> Check the consistency of identity data \\
-  {\bf iy}   \> Print the history of equations
-\end{tabbing}
-
-\subsection{Help to trace and debug}
-\begin{tabbing}
-  {\bf tm}  \ \= Toggle for tracing the main procedure ({\tt tr\_main}) \\
-  {\bf tg}    \> Toggle for tracing the generalized separation
-                        ({\tt tr\_gensep}) \\
-  {\bf ti}    \> Toggle for tracing the generalized integration  
-                        ({\tt tr\_genint})  \\
-  {\bf td}    \> Toggle for tracing the decoupling process
-                        ({\tt tr\_decouple}) \\
-  {\bf tl}    \> Toggle for tracing the decoupling length reduction
-                        process ({\tt tr\_redlength}) \\
-  {\bf ts}    \> Toggle for tracing the algebraic length reduction
-                        process ({\tt tr\_short}) \\
-  {\bf to}    \> Toggle for tracing the ordering procedures
-                        process ({\tt tr\_orderings}) \\
-  {\bf tr}    \> Trace an arbitrary procedure \\
-  {\bf ut}    \> Untrace a procedure \\
-  {\bf br}    \> Lisp break          \\                 
-  {\bf pc}    \> Do a function call  \\
-  {\bf in}    \> Reading in a REDUCE file
-\end{tabbing}
-
-\section{The purpose of  Crack}
-The package {\sc Crack} attempts the solution of an overdetermined 
-system of algebraic or ordinary or partial differential 
-equations (ODEs/PDEs) with at most polynomial nonlinearities. 
-
-Under `normal circumstances' differential 
-equations (DEs) which describe physical
-processes are not overdetermined, i.e.\ the number of DEs
-matches the number of unknown functions which are involved.
-Applying the package {\sc Crack} to such problems directly may be
-successful, especially if these are ODEs, but the main type of
-application is to investigate qualitative properties of such DEs/systems
-of DEs and to solve the overdetermined PDE-systems that result in these
-investigations.
-
-Applications of {\sc Crack} include a program {\sc Conlaw}
-for the computation of conservation laws of DEs, a program 
-{\sc LiePDE} for the computation of infinitesimal symmetries of DEs
-and a program {\sc ApplySym} for the computation of symmetry and 
-similarity variables from infinitesimal symmetries.
-
-\section{Technical details}  
-\subsection{System requirements} 
-The required system is {\sc Reduce}, version
-3.6. or 3.7. (either the PSL version of {\sc Reduce} as distributed by
-the Konrad Zuse Institut / Berlin or the CSL version of {\sc Reduce}
- as distributed by CODEMIST Ltd). The PSL version is faster whereas
-the CSL version seems to be more stable under WINDOWS. Also it
-provides a portable compiled code.
-
-Memory requirements depend crucially on the
-application. The {\tt crack.rlg} file is produced from running 
-{\tt crack.tst} in a 4MB session running {\sc Reduce}, version 3.7 under
-{\sc Linux}. On the other hand it is not difficult to formulate problems that 
-consume any amount of memory.
-
-\subsection{Installation}
-In a running {\sc Reduce} session either do \\
-\verb+    in "crack.red"$ + \\
-or, in order to speed up computation, either compile it with 
-\verb+    on comp$ + \\
-before the above command, or, generate a fast-loading compiled 
-file once with \\
-\verb+    faslout "crack"$ + \\
-\verb+    in "crack.red"$ + \\
-\verb+    faslend$ + \\
-and load that file to run {\sc Crack} with \\
-\verb+    load crack$ + 
-
-\subsection{Updates / web demos}
-%%{\sc Crack} can be run from a web demo 
-%A web demo under the address
-%\verb+http://cathode.maths.qmw.ac.uk/demo.html+
-%that was created by Francis Wright and Arrigo Triulzi
-%allows to run problems of restricted size. 
-The latest version of {\sc Crack} and related programs
-is available from \\
-\verb+http://lie.math.brocku.ca/twolf/crack/+.
-Publications related to {\sc Crack} can be found under  \\
-\verb+http://lie.math.brocku.ca/twolf/home/publications.html#1+.
-
-\subsection{The files}
-The following files are provided with {\sc Crack}
-\begin{itemize}
-\item {\tt crack.red} contains read-in statements of a number
-of files {\tt cr*.red}.
-\item {\tt crack.tst} contains test-examples.
-\item {\tt crack.rlg} contains the output of {\tt crack.tst}.
-\item {\tt crack.tex} is this manual.
-\end{itemize}
-
+Because each module has access to all the data, it is enough to call
+a module by its number. For example, the input of the number 2 in
+interactive mode will start the direct separation module (see below)
+to look for a directly separable equation and will split it.
+  
+\section{Syntax}
 \subsection{The call}
 {\sc Crack} is called by
 \begin{tabbing}
-  {\tt crack}(\=\{{\it equ}$_1$, {\it equ}$_2$, \ldots , {\it equ}$_m$\},  \\
+  {\tt crack}(\=\{{\it equ}$_1$, {\it equ}$_2$, \ldots , {\it equ}$_m$\}, \\
               \>\{{\it ineq}$_1$, {\it ineq}$_2$, \ldots , {\it ineq}$_n$\}, \\
-              \>\{{\it fun}$_1$, {\it fun}$_2$, \ldots , {\it fun}$_p$\},  \\
+              \>\{{\it fun}$_1$, {\it fun}$_2$, \ldots , {\it fun}$_p$\}, \\
               \>\{{\it var}$_1$, {\it var}$_2$, \ldots , {\it var}$_q$\});
 \end{tabbing}     
         $m,n,p,q$ are arbitrary.
@@ -327,7 +205,7 @@ The elements of the fourth
 list are the expressions who have been assumed to be unequal zero
 in the derivation of this solution.
 
-\subsection{Interactive mode, flags, parameters and the list of procedures}
+\subsection{Automatic vs.\ interactive}
 Under normal circumstances one will try to have problems solved
 automatically by {\sc Crack}. An alternative is to input
 {\tt OFF BATCH\_MODE;} before calling {\sc Crack} and to solve problems
@@ -351,7 +229,7 @@ which computational step to do and how often, like doing
  \item a specific step as often as possible or a specified number of times.
  \end{description}
 \end{itemize}
-To get interactive help one enters `h' or `?'.
+To get interactive help one enters {\tt h} or {\tt ?}.
 
 Flags and parameters are stored as symbolic fluid variables
 which means that they can be accessed by {\tt lisp( ... )},
@@ -396,123 +274,971 @@ elements. Optimizing {\tt proc\_list\_} for a given task needs
 experience which can not be formalized in a few simple rules and will
 therefore not be explained in more detail here. The following remarks
 are only guidelines.
+
+\section{Modules} 
+ The following modules are represented by numbers in
+ the priority list. Each module can appear with modifications under
+ different numbers. For example, integration is available under 
+ \link{{\em 7}}{m_7}, \link{{\em 24}}{m_24} and 
+ \link{{\em 25}}{m_25}.  Here \link{{\em 7}}{m_7} encodes an 
+ integrations of short equations
+ $0=\partial^n f/\partial x^n$. \link{{\em 7}}{m_7} 
+ has highest priority of the three
+ integrations. \link{{\em 24}}{m_24} encodes the 
+ integration of an equation that leads
+ to the substitution of a function and \link{{\em 25}}{m_25} refers 
+ to any integration and has lowest priority.
+
+\subsection{Integration and Separation}
+    An early feature in the development of the package {\sc Crack}
+    was the ability to integrate exact differential equations and
+    some generalizations of them (see \cite{Wol99e}). As a consequence
+    of integrations \link{{\em 7}}{m_7}, \link{{\em 24}}{m_24},
+    \link{{\em 25}}{m_25}
+    an increasing number of functions of fewer 
+    variables is introduced which sooner or later produces equations with some
+    independent variables occuring only explicitly and not as
+    variables in functions. Such equations are splitted by the
+    separation module \link{{\em 2}}{m_2}. Another possibility are
+    equations in which each independent variable occurs in at least
+    one function in the equation but no function depends on all variables.
+    In this case so-called indirect separations are appropriate:
+    for linear problems \link{{\em 10}}{m_10} \link{{\em 26}}{m_26} and for
+    non-linear problems \link{{\em 48}}{m_48}.
+
+\subsection{Substitutions}
+    Substitutions can have a dramatic effect on the size and
+    complexity of systems. Therefore it is possible to have them not
+    only done automatically but also controlled tightly,
+    either by specifying exactly what equation should be used to substitute 
+    which unknown and where, or by picking a substitution out of a list
+    of substitutions offered by the program {\em \{cs\} }. Substitutions to be
+    performed automatically can be controlled with a number of filters,
+    for example, by
+    \begin{itemize}
+    \item limiting the size of the equation to be used for
+    substitution, {\em \{length\_limit\} }
+    \item limiting the size of equations in which the
+    substitution is to be done, {\em \{target\_limit\_\} }
+    \item allowing only linear equations to 
+    be used for substitutions, {\em \{lin\_subst\} }
+    \item allowing equations to increase in size only up 
+    to some factor in order for a substitution to be performed 
+    in that equation, {\em \{cost\_limit\} }
+    \item allowing a substitution for a function through an expression
+    only if that expression involves exclusively functions of fewer
+    variables, {\em \{less\_vars\} }
+    \item allowing substitutions only that do not lead to a case distinction
+    coefficient = 0 or not,
+    \item specifying whether extra effort should be spent to identify the
+    substitution with the lowest bound on growth of the full system.
+    {\em \{min\_growth\} } 
+    % parameter in make\_subst,=t for example in subst\_level\_45
+    \end{itemize}
+    Substitution types are represented by different numbers
+    \link{(3-6,15-21)}{m_3} depending on the subset of the above
+    filters to be used.  If a substitution type is to be done
+    automatically then from all possible substitutions passing all
+    filters of this type that substitution is selected that leads to
+    no sub-cases (if available) and that uses the shortest equation.
+
+\subsection{Factorization}
+    It is very common that big algebraic systems contain equations that
+    can be factorized. Factorizing an equation and setting the factors
+    individually to zero simplifies the whole task because factors are
+    simpler expressions than the whole equation and setting them to zero 
+    they may lead to substitutions and thereby further simplifications. The
+    downside is that if problems with, say 100 unknowns, would need 40
+    case-distinctions in order to be able to solve automatically for the
+    remaining 60 unknowns then this would require $2^{40}$ cases to be
+    investigated which is impractical. The problem is to find the right
+    balance, between delaying case-distinctions in order not to generate
+    too many cases and on the other hand introducing case distinctions
+    as early as necessary in order to simplify the system. This
+    simplification may be necessary to solve the system but in any
+    case it will speed up its solution (although at the price of having
+    to solve a simplified system at least twice, depending on the number
+    of factors).
+    
+    For large systems with many factorizable equations the careful
+    selection of the next equation to be factorized is important to
+    gain the most from each factorization and to succeed with as few
+    as possible factorizations.  Criteria which give factors and
+    therefore equations a higher priority are
+    \begin{itemize}
+    \item the number of equations in which this factor occurs,
+    \item if the factor is a single unknown function or constant, 
+      then the number of times this
+      unknown turns up in the whole system,
+    \item the total degree of the factor,
+    \item the number of factors of an equation,
+    \item and others.
+    \end{itemize}
+    It also matters in which order the factors are set to zero. For
+    example, the equation  $0=ab$ can be used to split into the 2
+    cases: $1.\ a=0, \ 2.\ a\neq 0, b=0$ or to split into the 2 cases
+    $1.\ b=0, \ 2.\ b\neq 0, a=0$. If one of the 2 factors, say $b$, involves
+    functions which occur only linearly then this property is to be
+    preserved and these functions should be substituted as such
+    substitutions preserve their linearity. But to have many such
+    substitutions available, it is useful to know of many non-linearly
+    occuring functions to be non-zero as they occur as coefficients of
+    the linearly occuring functions. In the above situation it is
+    therefore better to do the first splitting $1.\ a=0, \ 2.\ a\neq 0, b=0$
+    because $a\neq 0$ will be more useful for substitutions of linear
+    functions than $b\neq 0$ would be. 
+
+    An exception of this plausible
+    rule occurs towards the end of all the substitutions of all the
+    linearly occuring $b_i$ when some $b_i$ are an overall factor to
+    many equations. If one would then set, say, $b_{22}=0$ as the second
+    case in a factorization, the first case would generate as subcases
+    factorizations of other equations where $b_{22}=0$ would be the second case
+    again and so on. To avoid this one should investigate $b_{22}=0$ as the
+    first case in the first factorization.
+
+    The only purpose of that little thought experiment was to show
+    that simple questions, like 'Which factored equation should 
+    be used first for case-distinctions and in which order to set factors to
+    zero?' can already be difficult to answer in general.
+
+    {\sc Crack} currently offers two factorization steps:
+    \link{(8)}{m_8} and \link{(47)}{m_47}.
+
+\subsection{Elimination (Gr\"{o}bner Basis) Steps}
+    To increase safety and avoid excessive expression swell 
+    one can apart from the normal call \link{(30)}{m_30}
+    request to do Gr\"{o}bner basis computation
+    steps only if they are simplification steps replacing an equation by
+    a shorter equation. \link{(27)}{m_27}
+
+    In a different version only steps are performed in which equations
+    are included which do not contain more than 3 unknowns. This helps
+    to focus on steps which are more likely to solve small sub-systems
+    with readily available simple results. \link{(57)}{m_57}
+
+    Often the computationally cheapest way to obtain a consistent
+    (involutive) system of equations implies to change the ordering
+    during the computation. This is the case when substitutions 
+    of functions are performed which are not ranked highest in
+    a lexicographical ordering of functions. But {\sc Crack} also
+    offers an interactive way to
+    \begin{itemize}
+    \item change the lexicographical ordering of variables, {\em \{ov\} } 
+    \item change the lexicographical ordering of functions, {\em \{of\} } 
+    \item give the differential order of derivatives a higher or lower
+      priority in the total ordering than the lexicographical ordering
+      of functions, {\em \{og\} } 
+    \item give either the total differential order of a partial derivative 
+      a higher priority than the lexicographical ordering of
+      the derivative of that function or to take the lexicographical
+      ordering of derivatives as the only criterium. {\em \{of\} } 
+    \end{itemize}
+
+\subsection{Solution of an under-determined differential equation}
+    When solving an over-determined system of linear differential
+    equations where the general solution involves free functions, then
+    in the last computational step often a single equation for more
+    than one function remains to be solved. Examples are the computation
+    of symmetries and conservation laws of non-linear differential
+    equations which are linearizable. In {\sc Crack} two procedures are
+    available, one for under-determined linear ODEs \link{(22)}{m_22}
+    and one for linear PDEs, \link{(23)}{m_23}
+    both with non-constant coefficients.
+
+\subsection{Indirect Separation}
+    Integrations introduce new functions of fewer variables.
+    As equations are used to substitute functions of all variables
+    it is only a question of time that equations are generated
+    in which no function depends on all variables. If at least one variable 
+    occurs only explicitly then the equation can be splitted which we call
+    direct separation. But sometimes all variables appear as
+    variables to unknown functions, e.g.\ $0=f(x)+g(y)$ although
+    usually much more complicated with 10 or 20 independent variables
+    and many functions that are depending on different combinations of these
+    variables. Because no variable occurs only explicitly, direct
+    separations mentioned above are not possible.
+    Two different algorithms, one for linear indirectly separable
+    equations \link{(10)}{m_10}, \link{(26)}{m_26}
+    and one for non-linear directly separable equations \link{(48)}{m_48}
+    provide systematic ways of dealing with such equations.
+    
+    Indirectly separable equations always result when an equation is
+    integrated with respect to different variables, like $0=f_{xy}$ to
+    $f=g(x)+h(y)$ and a function, here $f(x,y)$, is substituted.
+
+\subsection{Function and variable transformations}
+    In the interactive mode one can specify a transformation of the whole
+    problem with {\em pt} in which old functions and variables are expressed in a mix
+    of new functions and variables.
+
+\subsection{Solution of first order linear PDE}
+    If a system contains a single linear first order PDE for just one
+    function then in an automatic step characteristic ODE-systems are
+    generated, integrated if possible, a variable transformation 
+    for the whole system of equations is performed to have in the
+    first order PDE only one single derivative and to make this PDE
+    integrable for the integration modules. \link{(39)}{m_39}
+
+\subsection{Length Reduction of Equations}
+    An algorithm designed originally to length-reduce differential
+    equations proved to be essential in length reducing systems of
+    bi-linear algebraic equations or homogeneous equations which resulted
+    from bi-linear equations during the solution process. 
+
+    The aim of the method \link{(11)}{m_11}
+    is to find out whether one equation $0=E_1$ can
+    length reduce another one $0=E_2$ by replacing $E_2$ through an
+    appropriate linear combination $\alpha E_1 - \beta E_2,\ \ \beta \neq
+    0$. To find $\alpha, \beta$ one can divide each term of $E_2$ through
+    each term of $E_1$ and count how often each quotient occurs.  If a
+    quotient $\alpha/\beta$ occurs $m$ times then $\alpha E_1 - \beta E_2$
+    will have $\leq n_1+n_2-2m$ terms because $2m$ terms will cancel each
+    other. A length reduction is found if 
+    $n_1+n_2-2m\leq \ \mbox{max}(n_1,n_2)$. 
+    The method becomes efficient after a few algorithmic refinements discussed
+    in \cite{Wol99b}. Length reduced equations
+    \begin{itemize}
+    \item are more likely to length reduce other equations,
+    \item are much more likely to be factorizable,
+    \item are more suited for substitutions as the substitution
+      induces less growth of the whole systems and introduces fewer new
+      occurences of functions in equations,
+    \item are more likely to be integrable by being exact or being an ODE
+      if the system consists of differential equations,
+    \item involve on average fewer unknowns and make the whole system more
+      sparse. This sparseness can be used to plan better a sequence of
+      eliminations.
+    \end{itemize}
+
+  This concludes the listing of modules. Other aspects of {\sc Crack} follow.
+
+\section{Features}
+
+\subsection{Flexible Process Control}
+  Different types of over-determined systems are more or less suited
+  for an automatic solution. With the currrent version (2002)
+  it is relatively save to try solving large bi-linear algebraic problems
+  automatically. Another well suited area concerns over-determined systems
+  of linear PDEs. In contrast, non-linear systems of PDEs most likely
+  require a more tight interactive control. Different modes of
+  operation are possible. One can 
+  \begin{itemize}
+  \item perform one {\em\{a\}} or more computational steps {\em\{g\}} 
+    automatically, where each step is trying modules in the order defined by the
+    current priority list {\em \{p1\} } until one module succeeds in
+    its purpose,
+  \item 
+    perform one module a specific number of times or as long as it is
+    successful, {\em \{l\} }
+  \item
+    set a time limit until which the program should run automatically,
+    {\em \{time\_limit, limit\_time\} } 
+  \item 
+    interrupt an on-going automatic computation and continue the
+    computation interactively by copying the file
+    {\tt \_stop\_crack} into the directory where the ongoing
+    computation was started and re-naming it {\tt \_stop\_}
+    (and by deleting {\tt \_stop\_} to resume automatic computation),
+  \item  
+    arrange the priority list of modules changes
+    at a certain point in the computation when the system of equations
+    has changed its character,
+  \item 
+    induce a case distinction whether a user-given expression 
+    is zero or not. {\em \{44\} } 
+  \item 
+    have a module that changes the priority list {\em proc\_list\_}
+    dynamically, depending essentially on the size and difficulty
+    of the system but also on the success rate of previous steps. 
+    {\em \{61, 62, 63\} }
+  \end{itemize}
+  Apart from flexible control over what kind of steps to be done, the
+  steps themselves can be controlled more or less too, e.g.\ whether
+  equations are selected by the module or the user.
+
+  Highest priority in the priority list have so-called {\em to-do}
+  steps. The list of to-do steps is usually empty but can be filled by
+  any successful step if it requires another specific step to follow
+  instantly. For example, if a very simple equation $0=f_x$ is
+  integrated then the substitution of $f$ should follow straight away, even
+  if substitutions would have a low priority according to the 
+  current priority list. 
+
+\subsection{Total Data Control}
+  To make wise decisions of how to continue
+  the computation in an interactive session one needs tools to inspect large systems of
+  equations. 
+%Apart from adding, modifying and deleting equations {\em \{r,d\} } 
+%or identities {\em \{n \} } 
+%there are 
+  Helpful commands in {\sc Crack} print
+  \begin{itemize}
+  \item equations, inequalities, functions and variables, {\em \{e, pi, f\} } 
+  \item the occurence of all derivatives of selected functions in any
+    equation, {\em \{v\} } 
+  \item a statistics summary of the equations of the system, {\em \{s\} } 
+  \item a matrix display of occurences of unknowns in all equations, {\em \{pd\} } 
+  \item the value of any LISP variable, {\em \{pv\} } 
+  \item the value of algebraic expressions that can be specified using
+        equation names \\
+        (e.g.\ {\tt coeffn(e\_5,df(f,x,y),2)}), {\em \{pe\} } 
+  \item not under-determined subsystems. {\em \{ss\} } 
+  \end{itemize}
+
+  Inspecting a computation which already goes on for hours or a day and
+  that has performed many thousand steps is time consuming. The task is made
+  easier with the possibility to plot graphically as a function of
+  time: the type of steps performed, the number of unknowns, 
+  the number of remainig equations, the number of terms in these
+  equations and the memory usage. {\em \{ps\} }
+  
+  When non-linear systems are considered and many case distinctions
+  and sub-(sub-...)case distinctions are made in a long computation
+  then one easily loses track. With one command one can
+  list all cases that have been considered so far with their assumption, the number
+  of steps made until they are solved or until the next sub-case distinction
+  was made and the number of solutions contained in each completed
+  case. {\em \{ls\} }
+
+\subsection{Safety}
+  When working on large problems it may come to a stage where computational
+  steps are necessary, like substitution, which are risky in the sense
+  that they may simplify the problem but also complicate it by
+  increasing its size. To avoid this risk a few safety features have
+  been implemented. 
+  \begin{itemize}
+  \item At any time during the computation one can save a backup of
+    the complete current situation in a file and also load a backup. 
+    The command {\tt sb "file\_name"} saves all global variables and
+    data into an ASCII file and the command {\tt rb "file\_name"} reads 
+    these data from a file. The format is independent of the computer 
+    used and independent of the underlying {\sc Lisp} version. 
+    Apart from reading in a backup file during an interactive
+    computation with {\em rb} one also can start a computation with
+    a backup file. After loading {\sc Crack} one makes in {\sc Reduce}
+    the call \verb+ CRACKSHELL()$ + %$
+    followed by the file name of the backup.
+  \item All key strokes are automatically recorded in a list which is
+    available after each interactive step with {\em ph}, or when the 
+    computation has finished through {\tt lisp reverse history\_;}.
+    This list can be fed into {\sc Crack} at the beginning
+    of a new computation so that the same operations are performed
+    automatically that were performed interactively before. The
+    purpose is to be able to do an interactive exploration first and
+    to repeat it afterwards automatically without having to note with
+    pen or pencil all steps that had been done.  
+    
+    By assigning this list to the {\sc Lisp} variable {\tt old\_history} 
+    before calling {\tt Crack} with {\tt off batch\_mode} the same steps 
+    as in the previous run are performed
+    first as {\sc Crack} is first reading input from {\tt old\_history} 
+    and only if that is {\tt nil} then read from the keyboard.
+  \item During an automatic computation the program might start a
+    computational step which turns out to take far too long. It would
+    be better to stop this computation and try something else instead.
+    But in computer algebra with lots of global variables involved it
+    is not straight forward to stop a computation in the middle of it.
+    If one would use time as a criterion then it could happen that
+    time is up during a garbage collection which to stop would
+    be deadly for the session. {\sc Crack} allows to
+    set a limit of garbage collections for any one of those
+    computations that have the potential to last forever, like
+    algebraic factorizations of large expressions.
+    With such an arrangement an automatic computation
+    can not get stuck anymore due to lengthy factorizations, searches
+    for length reductions or elimination steps.
+    {\em \{max\_gc\_elimin, max\_gc\_fac, max\_gc\_red\_len, 
+    max\_gc\_short, max\_gc\_ss\} } 
+  \item Due to a recent (April 2002) initiative of Winfried Neun the
+    parallel version of the computer algebra system REDUCE has been
+    re-activated and is running on the Beowulf cluster at Brock
+    University \cite{MelNeun}. This allows conveniently (with {\em
+    \{pp\} }) to duplicate the current status of a {\sc Crack}
+    computation to another computer, to try out there different
+    operations (e.g.\ risky ones) until a viable way to continue the
+    computation is found without endangering the original session.
+  \end{itemize}
+
+\subsection{Managing Solutions}
+  Non-linear problems can have many solutions. The number of solutions
+  found by {\sc Crack} can even be higher because to make progress
+  {\sc Crack} may have factorized an equation and considered the two
+  cases $a=0$ and $a \neq 0$ whereas solutions in both cases could be
+  merged to only one solution without any restriction for $a$. This merging
+  of solutions can be accomplished with a separate program {\tt
+  merge\_sol()} after the computation.
+
+  Another form of post-processing is the production of 
+  a web page for each solution, like 
+  \special{html:<a href="http://lie.math.brocku.ca/twolf/bl/v/v1l05o35-s1.html">}
+           http://lie.math.brocku.ca/twolf/bl/v/v1l05o35-s1.html
+  \special{html:</a>}
+%  \verb+http://lie.math.brocku.ca/twolf/bl/v1l05o35-s1.html+ .
+
+  If in the solution of over-determined differential equations the
+  program performs integrations of equations before the differential
+  Gr\"{o}bner basis was computed then in the final solution there may
+  be redundant constants or functions of integration. 
+  Redundant constants or functions in a solution are not an
+  error but they make solutions appear unnecessarily complicated.
+  In a postprocessing step these functions and constants can be eliminated.
+  {\em \{adjust\_fnc, drop\_const(), dropredundant()\} } 
+
+\subsection{Parallelization}
+  The availability of a parallel version of {\sc Crack} was mentioned
+  above allowing to try out different ways to continue an ongoing
+  computation. A different possibility to make use of a cluster of
+  computers with {\sc Crack} is, to export automatically the
+  investigation of sub-cases and sub-sub-cases to different computers
+  to be solved in parallel.
+  
+  It was explained above how factorizations may be necessary to make
+  any progress but also their potential of exploding the time requirements.
+  By running the computation on a cluster and
+  being able to solve many more cases one can give factorizations a
+  higher priority and capitalize on the benefit of factorizations,
+  i.e.\ the simplification of the problem.
+
+\subsection{Relationship to Gr\"{o}bner Basis Algorithms}
+  For systems of equations in which the unknown constants or functions
+  turn up only polynomially a well known method is able to check the
+  consistency of the system. For algebraic systems this is the
+  Gr\"{o}bner Basis Method and for systems of differential equations
+  this is the differential Gr\"{o}bner Basis method. To guarantee the
+  method to terminate a total ordering of unknowns and their
+  derivatives has to be introduced. This ordering determines which
+  highest powers of unknowns are to be eliminated next or which
+  highest order derivatives have to be eliminated next using integrability
+  conditions. Often such eliminations lead to exponential growth of
+  the generated equations. In the package {\sc Crack} such
+  computations are executed with only a low priority. Operations have 
+  a higher priority which reduce the length of equations,
+  irrespective of any orderings. Violating any ordering a finite
+  number of times still guarantees a finite algorithm. The potential
+  gain is large as described next.
+
+% \item[Comparison with other Packages]
+% Wide field, each package has strengths, strength of {\sc Crack}
+% lies  in its integration module including its recent extension to use
+% conservation laws of syzygies for integration \cite{},
+\subsection{Exploiting Bi-linearity}
+  In bi-linear algebraic problems we have 2 sets of variables
+  $a_1,..,a_m$ and $b_1,..,b_n$ such that all equations have
+  the form $0=\sum_{k=1}^l \gamma_k a_{i_k}b_{j_k}, \ \gamma_k \in G$.  
+  Although the
+  problem is linear in the $a_i$ and linear in the $b_j$ it still is a
+  non-linear problem. A guideline which helps keeping the structure of
+  the system during computation relatively simple is to preserve the
+  linearity of either the $a_i$ or the $b_j$ as long as possible. In
+  classification problems of integrable systems
+  the ansatz for the symmetry/first integral
+  usually involves more terms and therefore more constants (called
+  $b_j$ in applications of {\sc Crack}) than the ansatz for the
+  integrable system (with constants $a_i$).  A good strategy therefore
+  is to keep the system linear in the $b_j$ during the computation,
+  i.e.\ to
+  \begin{itemize}
+  \item substitute only a $b_j$ in terms of $a_i, b_k$, or an $a_i$
+    in terms of an $a_k$ but not an $a_i$ in terms of any $b_k$,
+  \item do elimination steps for any $b_j$ or for an
+    $a_i$ if the involved equations do not contain any $b_k$,
+  \end{itemize}
+  The proposed measures are effective not only for algebraic problems
+  but for ODEs/PDEs too (i.e.\ to preserve linearity of a sub-set of
+  functions as long as possible).
+  {\em \{flin\_\} } 
+
+\subsection{Occurrence of sin, cos or other special functions}
+
+  If the equations to be solved involve special functions, like $\sin$
+  and $\cos$ then one is inclined to add {\tt let}-rules for simplifying
+  expressions. Before doing this the simplification rules at the end of
+  the file {\tt crinit.red} should be inspected such that new rules do
+  not lead to cycles with existing rules. One possibility is to replace
+  existing rules, for example to substitute the existing rule \\
+  \verb+  trig1\_:={sin(~x)**2 => 1-cos(x)**2}$ + by the new rule \\
+  \verb+  trig1\_:={cos(~x)**2 => 1-sin(x)**2}$ +.
+  These rules are switched off when integrations are performed in order
+  not to interfere with the {\sc Reduce} Integrator.
+
+  Apart from an initial customization of let-rules to be used during the
+  whole run one can also specify and clear let-rules during a
+  computation using the interactive commands {\tt lr,cr}.
+
+\subsection{Exchanging time for memory}
+  The optimal order of applying different methods to the equations of a system
+  is not fixed. It does depend, for example, on the distributions of
+  unknown functions in the 
+  equations and on what the individual method would produce in the next
+  step. For example, it is possible that the
+  decoupling module which applies integrability conditions through cross
+  differentiations of equations is going well up to a stage when it
+  suddenly produces huge equations. They not only occupy much memory,
+  they also are slow to handle.
+  Right {\em before} this explosion started other methods should
+  have been tried (shortening of equations, any integrations, solution of
+  underdetermined ODEs if there are any,...). These alternative methods are normally
+  comparatively slow or unfavourable as they introduce new functions but
+  under the current circumstances they may be perfect to avoid any growth
+  and to complete the calculation. How could one have known beforehand that some
+  method will lead to an explosion? One does not know. But one can
+  regularly make a backup with the interactive {\tt sb} command and
+  restart at this situation if necessary.
+
+\subsection{Customization}
+  The addition of new modules to perform new specialized computations
+  is easy.  Only the input and output of any new module are fixed.
+  The input consists of the system of equations, the list of
+  inequalities and the list of unknowns to be computed. The output
+  includes the new system of equations and new intermediate
+  results. The module name has to be added to a list of all modules
+  and a one line description has to be added to a list of
+  descriptions.  This makes it easy for users to add special
+  techniques for the solution of systems with extra structure. A dummy
+  template module {\em \{58\} } is already added and has only to be
+  filled with content.
+
+\subsection{Debugging}
+  A feature, useful mainly for debugging is that in the middle of an
+  ongoing interactive computation the program can be changed by
+  loading a different version of {\sc Crack} procedures. Thus one
+  could advance quickly close to the point in the execution where an
+  error occurs, load a version of the faulty procedure that gives
+  extensive output and watch how the fault happens before fixing it.
+  
+  The possibility to interrupt REDUCE itself temporarily and to
+  inspect the underlying LISP environment {\em \{br\} } 
+  or to execute LISP commands and to continue with the {\sc Crack}
+  session afterwards {\em \{pc\} } 
+  led to a few improvements and fixes in REDUCE itself.
+
+\section{Technical issues}
+\subsection{System requirements} 
+The required system is {\sc Reduce}, version
+3.6. or 3.7. (either the PSL version of {\sc Reduce} as distributed by
+the Konrad Zuse Institut / Berlin or the CSL version of {\sc Reduce}
+ as distributed by CODEMIST Ltd). The PSL version is faster whereas
+the CSL version seems to be more stable under WINDOWS. Also it
+provides a portable compiled code.
+
+Memory requirements depend crucially on the
+application. The {\tt crack.rlg} file is produced from running 
+{\tt crack.tst} in a 4MB session running {\sc Reduce}, version 3.7 under
+{\sc Linux}. On the other hand it is not difficult to formulate problems that 
+consume any amount of memory.
+
+\subsection{Installation}
+In a running {\sc Reduce} session either do \\
+\verb+    in "crack.red"$ + \\
+or, in order to speed up computation, either compile it with 
+\verb+    on comp$ + \\
+before the above command, or, generate a fast-loading compiled 
+file once with \\
+\verb+    faslout "crack"$ + \\
+\verb+    in "crack.red"$ + \\
+\verb+    faslend$ + \\
+and load that file to run {\sc Crack} with \\
+\verb+    load crack$ + 
+
+\subsection{Availability}
+%%{\sc Crack} can be run from a web demo 
+%A web demo under the address
+%\verb+http://cathode.maths.qmw.ac.uk/demo.html+
+%that was created by Francis Wright and Arrigo Triulzi
+%allows to run problems of restricted size. 
+The package {\sc Crack} together with {\sc LiePDE, ConLaw} and {\sc ApplySym}
+including manual can be downloaded for free from \newline
+\verb+http://lie.math.brocku.ca/twolf/crack/+. 
+
+Publications related to {\sc Crack} itself and to applications based
+on it can be found under  \\
+\verb+http://lie.math.brocku.ca/twolf/home/publications.html#1+.
+
+\subsection{The files}
+The following files are provided with {\sc Crack}
+\begin{tabbing}
+{\sc ApplySym} \= blah blah blah \kill \\
+{\tt crack.red} \> contains read-in statements of a number
+                      of files {\tt cr*.red} \\
+{\tt crack.tst} \> contains test-examples \\
+{\tt crack.rlg} \>contains the output of {\tt crack.tst} \\
+{\tt crack.tex} \> this manual.
+\end{tabbing}
+
+\section{Reference}
+%\dest{lb1}
+\subsection{Elements of proc\_list\_}
+The interactive command {\em p1} shows {\em proc\_list\_}. This list
+defines the order in which procedures are tried if a
+step is to be performed automatically. {\em p2} shows the complete
+list as it is shown below. To select any one procedure of the complete
+list interactively, one simply inputs the number shown in ().
+The numbering of procedures grew historically. 
+Each number has only little or no connection with the priority of the
+procedure it is labeling.
+
 \begin{description}    
-\item[{\tt to\_do :}] hot list of steps to be taken next, should
+\dest{m_1}
+\item[{\tt to\_do (1):}] hot list of steps to be taken next, should
 always come first,
-\item[{\tt subst\_level\_? :}] substitutions of functions by
+\dest{m_3}
+\item[{\tt subst\_level\_? (3-6,15-21):}] substitutions of functions by
 expressions, substitutions differ by their maximal allowed size and other
-properties,
-\item[{\tt separation :}] what is described as direct separation in the
+properties, to find out which function has which properties one
+currently has to inspect the procedure definitions of {\tt subst\_level\_?}
+in the file {\tt crmain.red}.
+\dest{m_2}
+\item[{\tt separation (2):}] what is described as direct separation in the
 next section,
-\item[{\tt gen\_separation :}] what is described as indirect separation in the
+\dest{m_26}
+\item[{\tt gen\_separation (26):}] what is described as indirect separation in the
 next section, only to be used for linear problems,
-\item[{\tt quick\_gen\_separation :}] generalized separation of
+\dest{m_10}
+\item[{\tt quick\_gen\_separation (10):}] generalized separation of
 equations with an upper size limit,
-\item[{\tt quick\_integration :}] integration of very specific short equations,
-\item[{\tt full\_integration :}] integration of equations which lead
+\dest{m_7}
+\item[{\tt quick\_integration (7):}] integration of very specific short equations,
+\dest{m_24}
+\item[{\tt full\_integration (24):}] integration of equations which lead
 to a substitution,
-\item[{\tt integration :}] any integration,
-\item[{\tt factorization :}] splitting the computation into the
-investigation of different subcases resulting from the algebraic
-factorization of an equation, only useful for non-linear problems,
-\item[{\tt change\_proc\_list :}] reserved name of a procedure to be
-written by the user that does nothing else but changing proc\_list\_ in
+\dest{m_25}
+\item[{\tt integration (25):}] any integration,
+\dest{m_8}
+\item[{\tt factorize\_to\_substitute (8):}] splitting the computation
+  into the investigation of different subcases resulting from the
+  algebraic factorization of an equation, only useful for non-linear
+  problems, and applied only if each one of the factors, when individually 
+  set to zero, would enable the substitution of a function.
+\dest{m_47}
+\item[{\tt factorize\_any (47):}] splitting into sub-cases based on a
+  factorization even if not all factors set to zero lead to
+  substitutions.  
+\dest{m_37}
+\item[{\tt change\_proc\_list (37):}] reserved name of a procedure to be
+written by the user that does nothing else but changing {\tt proc\_list\_} in
 a fixed manner. This is to be used if the computation splits naturally
 into different parts and if it is clear from the beginning what the
-computational methods (proc\_list\_) have to be.
-\item[{\tt stop\_batch :}] If the first steps to simplify or partially
+computational methods ({\tt proc\_list\_}) have to be.
+\dest{m_38}
+\item[{\tt stop\_batch (38):}] If the first steps to simplify or partially
 solve a system of equations are known and should be done automatically
 and afterwards {\sc Crack} should switch into interactive mode
 then {\tt stop\_batch} is added to {\tt proc\_list} with a priority
 just below the steps to be done automatically.
-\item[{\tt drop\_lin\_dep :}] module to support
+\dest{m_12}
+\item[{\tt drop\_lin\_dep (12):}] module to support
 solving big linear systems (still experimental),
-\item[{\tt find\_1\_term\_eqn :}] module to support
+\dest{m_13}
+\item[{\tt find\_1\_term\_eqn (13):}] module to support
 solving big linear systems (still experimental),
-\item[{\tt trian\_lin\_alg :}] module to support
+\dest{m_14}
+\item[{\tt trian\_lin\_alg (14):}] module to support
 solving big linear systems (still experimental),
-\item[{\tt undetlinode :}]  parametric solution of single under determined
+\dest{m_22}
+\item[{\tt undetlinode (22):}]  parametric solution of single under determined
 linear ODE (with non-constant coefficients), only applicable for
 linear problems (Too many redundant functions resulting from
 integrations may prevent further integrations. If they are involved in
 single ODEs then the parametric solution of such ODEs treated as
 single underdetermined equations is useful. Danger: new generated
 equations become very big if the minimal order of any function in the ODE is high.),
-\item[{\tt undetlinpde :}]  parametric solution of single under determined
+\dest{m_23}
+\item[{\tt undetlinpde (23):}]  parametric solution of single under determined
 linear PDE (with non-constant coefficients), only applicable for
 linear problems (still experimental),
-\item[{\tt alg\_length\_reduction :}] length reduction by algebraic
-combination, only for linear problems, one has to be careful when
-combining it with decoupling as infinite loops may occur when
-shortening and lowering order reverse each other,
-\item[{\tt diff\_length\_reduction :}] length reduction by differential
-reduction,
-\item[{\tt decoupling :}] steps towards the computation of a
-differential Gr\"{o}bner Basis,
-\item[{\tt add\_differentiated\_pdes :}] only useful for non-linear
-differential equations with leading derivative occuring non-linearly,
-\item[{\tt add\_diff\_star\_pdes :}] for the treatment of non-linear
-indirectly separable equations,
-\item[{\tt multintfac :}] to find integrating factors for a system
-of equations, should have very slow priority if used at all,
-\item[{\tt alg\_solve\_deriv :}] to be used for equations quadratic in
-the leading derivative,
-\item[{\tt alg\_solve\_system :}] to be used if a (sub-)system of
-equations shall be solved for a set of functions or their derivatives
-algebraically, 
-\item[{\tt subst\_derivative :}] substitution of a derivative of a
-function everywhere by a new function if such a derivative exists
-\item[{\tt undo\_subst\_derivative :}] undo the above substitution.
-\item[{\tt del\_redundant\_fc :}] Drop redundant functions and
-constants. An overdetermined PDE-system is
-formulated and solved to set
-redundant constants / functions of integration to zero. This may take longer
-if many functions occur.
-\item[{\tt point\_trafo :}] An interactive point transformation not to
-be used in automatic batch mode,
-\item[{\tt sub\_problem :}] Solve a subset of equations first (still
-experimental), 
-\item[{\tt del\_redundant\_de :}] Delete redundant equations,
-\item[{\tt idty\_integration :}] Integrate an identity (still experimental).
+\dest{m_11}
+\item[{\tt alg\_length\_reduction (11):}] length reduction by
+  algebraic combination, only for linear problems, one has to be
+  careful when combining it with decoupling as infinite loops may
+  occur when shortening and lowering order reverse each other,
+\dest{m_27}
+\item[{\tt diff\_length\_reduction (27):}] length reduction by differential
+  reduction,
+\dest{m_30}
+\item[{\tt decoupling (30):}] steps towards the computation of a
+  differential Gr\"{o}bner Basis,
+\dest{m_31}
+\item[{\tt add\_differentiated\_pdes (31):}] only useful for non-linear
+  differential equations with leading derivative occuring non-linearly,
+\dest{m_32}
+\item[{\tt add\_diff\_ise (32):}] for the treatment of non-linear
+  indirectly separable equations,
+\dest{m_33}
+\item[{\tt multintfac (33):}] to find integrating factors for a system
+  of equations, should have very slow priority if used at all,
+\dest{m_34}
+\item[{\tt alg\_solve\_single (34):}] to be used for equations quadratic in
+  the leading derivative,
+\dest{m_35}
+\item[{\tt alg\_solve\_system (35):}] to be used if a (sub-)system of
+  equations shall be solved for a set of functions or their
+  derivatives algebraically,
+\dest{m_9}
+\item[{\tt subst\_derivative (9):}] substitution of a derivative of a
+  function everywhere by a new function if such a derivative exists
+\dest{m_36}
+\item[{\tt undo\_subst\_derivative (36):}] undo the above substitution.
+\dest{m_40}
+\item[{\tt del\_redundant\_fc (40):}] Drop redundant functions and
+  constants. For that an overdetermined PDE - system is formulated and
+  solved to set redundant constants / functions of integration to
+  zero. This may take longer if many functions occur.
+\dest{m_39}
+\item[{\tt find\_trafo (39):}] finding a first order linear PDE, by
+  solving it the program finds a variable transformation that
+  transforms the PDE to a single derivative and makes the PDE
+  integrable for the integration modules. Because a variable
+  transformation was performed the solution contains only new
+  functions of integration which depend on single (new) variables and
+  not on expressions of them, like sums of them. Therefore the result
+  of the integration can be used for substitutions in other equations.
+  if the transformation would not have been made then the solution
+  of the PDE would involve arbitrary functions of expressions and
+  could not be used for the other equations using the current modules
+  of {\sc Crack}. A general transformation can be done interactively
+  with the command {\em cp}.
+\dest{m_41}
+\item[{\tt sub\_problem (41):}] Solve a subset of equations first (still
+  experimental), 
+\dest{m_28}
+\item[{\tt del\_redundant\_de (28):}] Delete redundant equations,
+\dest{m_29}
+\item[{\tt idty\_integration (29):}] Integrate an identity 
+\dest{m_48}
+\item[{\tt gen\_separation2 (48):}] Indirect separation of a pde, this
+  is a 2nd version for non-linear PDEs
+\dest{m_49}
+\item[{\tt find\_and\_use\_sub\_systems12 (49):}] Find sub-systems of
+  equations with at least as many equations as functions, in this case
+  find systems with at most 2 functions, none of them a function of
+  the set {\tt flin\_} (these are functions which occur initially only
+  linearly in a non-linear problem, {\tt flin\_} is assigned initially
+  by the user).
+\dest{m_50}
+\item[{\tt find\_and\_use\_sub\_systems13 (50):}] 
+  like above only with at most 3 functions, none from {\tt flin\_}
+\dest{m_51}
+\item[{\tt find\_and\_use\_sub\_systems14 (51):}] 
+  like above only with at most 4 functions, none from {\tt flin\_}
+\dest{m_52}
+\item[{\tt find\_and\_use\_sub\_systems15 (52):}] 
+  like above only with at most 5 functions, none from {\tt flin\_}
+\dest{m_53}
+\item[{\tt find\_and\_use\_sub\_systems22 (53):}] 
+  like above only with at most 2 functions, only {\tt flin\_} are
+  considered, all others ignored
+\dest{m_54}
+\item[{\tt find\_and\_use\_sub\_systems23 (54):}] 
+  like above only with at most 3 functions, only {\tt flin\_} are
+  considered, all others ignored
+\dest{m_55}
+\item[{\tt find\_and\_use\_sub\_systems24 (55):}] 
+  like above only with at most 4 functions, only {\tt flin\_} are
+  considered, all others ignored
+\dest{m_56}
+\item[{\tt find\_and\_use\_sub\_systems25 (56):}] 
+  like above only with at most 5 functions, only {\tt flin\_} are
+  considered, all others ignored
+\dest{m_57}
+\item[{\tt high\_prio\_decoupling (57):}] do a decoupling step
+  with two equations that in total involve at most 3 different
+  functions of all independent variables in these equations
+\dest{m_58}
+\item[{\tt user\_defined (58):}] This is an empty procedure which can
+  be filled by the user with a very specific computational step that
+  is needed in a special user application. Template: \begin{verbatim}
+symbolic procedure user_defined(arglist)$
+begin % arglist is a lisp list {pdes,forg,vl_} where
+      % pdes is the list of names of all equations
+      % forg is the list of original functions + their values
+      %      as far as known
+      % vl_ the list of independent variables
+ ...
+ return if successful then list(pdes,forg) 
+                           % new pdes + functions and their value
+                      else nil
+end$\end{verbatim}
+\dest{m_59}
+\item[{\tt alg\_groebner (59):}] call of the Reduce procedure
+  {\tt groebnerf} trying to solve the whole system under the
+  assumption that it is a completely algebraic polynomial system.
+  All resulting solutions are considered individually further.
+\dest{m_60}
+\item[{\tt solution\_check (60):}] This procedure tests whether a
+  solution that is defined in an external procedure sol\_define() is
+  still contained in the general solution of the system currently under
+  investigation. This procedure is useful to find the place in a long
+  computation where a special solution is either lost or added to the
+  general solution of the system to be solved. Template:\begin{verbatim}
+algebraic procedure sol_define$
+<< % This procedure contains the statements that specify a solution
+  %Example: Test whether s=h_-y**2/t**2,  u=y/t is a solution
+  %         where h_=h_(t) 
+  depend h_,t$
+  % returned is a list of expressions that vanish for the solution
+  % to be tested, in this example:
+  {s-(h_-y**2/t**2),u-y/t}
+>>$ \end{verbatim} %$
 \end{description}
 
-\subsection{Performing long computations}
-\subsubsection{The backup facility}
-If one does a long computation automatically then the computer or the
-link to it may go down and the computation may have to be started again.
-Even worse in a longer interactive session which is of an
-exploring nature, i.e.\ where every step may blow up the size of
-expressions or where a step (for example, decoupling, solving a subsystem,
-searching for a length-reduction, dropping redundant functions,...) 
-may just take too long and where
-one would want to go back to the situation before this step and try
-something else. For these situations there is an interactive command
-for saving a bakup:
-{\tt sb "file\_name"} which saves all global variables + data into an
-ASCII file and a command {\tt rb "file\_name"} which reads these data from a file.
-The format is independent of the computer used and independent
-of the underlying {\sc Lisp} version. This has been used
-by the author to set up long and complex computations on a small
-computer and to continue the same interactive session on larger computers
-later. To continue such a session one calls {\sc Crack} without data:
-\verb+ CRACK({},{},{},{})$ +\\ %$
-and loads the complete environment with {\tt rb "file\_name"}.
-\subsubsection{The history facility}
-Sometimes one does not only want to store an environment but also how one
-got there in an interactive session, to repeat the same steps or only
-some of them in a later session. 
-In the global variable {\tt history\_} all interactive
-input during one call of {\sc Crack} is recorded and can be looked at
-during a {\sc Crack} run with the {\tt pv} (print-variable) command {\tt
-pv history\_}. In order to save typing the same input in a later
-session the program {\sc Crack} always tries to read any expected input
-first from the global variable {\tt old\_history}. All that is needed
-is to do is typing\\
-{\tt lisp reverse history\_;}\\
-after a run of {\sc Crack} and to assign the result to the {\sc Lisp}
-variable {\tt old\_history}. The next run of {\sc Crack} will try to read
-any expected interactive input first from {\tt old\_history} and only
-if that is {\tt nil} then read it from the keyboard.
+\subsection{Online help} 
+The following commands and their one line descriptions appear in 
+the same order as in the online help.
+
+\subsubsection{Help to help} 
+\begin{tabbing}
+  {\bf hd} \ \= Help to inspect data \\
+  {\bf hp}   \> Help to proceed \\
+  {\bf hf}   \> Help to change flags \& parameters \\
+  {\bf hc}   \> Help to change data of equations \\
+  {\bf hi}   \> Help to work with identities \\
+  {\bf hb}   \> Help to trace and debug
+\end{tabbing}
+
+\subsubsection{Help to inspect data} 
+\begin{tabbing}
+  {\bf e}\ \ \ \ \= Print equations          \\
+  {\bf eo}   \> Print overview of functions in equations  \\
+  {\bf pi}   \> Print inequalities  \\ 
+  {\bf f}    \> Print functions and variables        \\
+  {\bf v}    \> Print all derivatives of all functions  \\
+  {\bf s}    \> Print statistics                  \\
+  {\bf fc}   \> Print no of free cells  \\
+  {\bf pe}   \> Print an algebraic expression \\
+  {\bf ph}   \> Print history of interactive input \\
+  {\bf pv}   \> Print value of any lisp variable \\
+  {\bf pf}   \> Print no of occurences of each function \\
+  {\bf pr}   \> Print active substitution rules \\
+  {\bf pd}   \> Plot the occurence of functions in equations \\
+  {\bf ps}   \> Plot a statistical history \\
+  {\bf lc}   \> List all case distinctions \\
+  {\bf ws}   \> Write statistical history in file \\
+  {\bf sn}   \> Show name of session \\
+  {\bf ss}   \> Find and print sub-systems \\
+  {\bf w}    \> Write equations into a file
+\end{tabbing}
+
+\subsubsection{Help to proceed} 
+\begin{tabbing}
+  {\bf a}\ \ \ \ \= Do one step automatically      \\        
+  {\bf g}    \> Go on for a number of steps automatically    \\
+  {\bf t}    \> Toggle between automatic and user selection of 
+                equations ({\tt expert\_mode=nil/t}).  \\
+  {\bf p1}   \> Print a list of all modules in batch mode \\
+  {\bf p2}   \> Print a complete list of all modules \\
+  {\bf \#}   \> Execute the module with the number `\#' once  \\
+  {\bf l}    \> Execute a specific module repeatedly         \\
+  {\bf sb}   \> Save complete backup to file \\
+  {\bf rb}   \> Read backup from file \\
+  {\bf ep}   \> Enable parallelism \\
+  {\bf dp}   \> Disable parallelism \\
+  {\bf pp}   \> Start an identical parallel process \\
+  {\bf kp}   \> Kill a parallel process \\
+  {\bf x}    \> Exit interactive mode for good            \\
+  {\bf q}    \> Quit current level or crack if in level 0   
+\end{tabbing}
+
+\subsubsection{Help to change flags \& parameters} 
+\begin{tabbing}
+  {\bf pl} \ \ \ \= Maximal length of an expression to be printed  \\
+  {\bf pm}   \> Toggle to print more or less information about 
+                        pdes ({\tt print\_more})    \\
+  {\bf pa}   \> Toggle to print all or not all information 
+                        about the pdes ({\tt print\_all}) \\
+  {\bf cp}   \> Change the priorities of procedures   \\
+  {\bf og}   \> Toggle ordering between `lexicographical 
+                ordering of functions having\\
+             \> a higher priority than any ordering of
+                derivatives' and the opposite \\
+             \> ({\tt lex\_fc=t}) resp.\ ({\tt lex\_fc=nil}) \\
+  {\bf od}   \> Toggle ordering between `the total order
+                of derivatives having a higher\\
+             \> priority than lexicographical ordering' 
+                ({\tt lex\_df=nil}) or not ({\tt lex\_df=t}) \\
+  {\bf oi}   \> Interactive change of ordering on variables \\
+  {\bf or}   \> Reverse ordering on variables \\
+  {\bf om}   \> Mix randomly ordering on variables \\
+  {\bf of}   \> Interactive change of ordering on functions     \\
+  {\bf op}   \> Print current ordering  \\
+  {\bf ne}   \> Root of the name of new generated equations
+                        (default: e\_) \\
+  {\bf nf}   \> Root of the name of new functions and constants
+                        (default: c\_) \\
+  {\bf ni}   \> Root of the name of new identities
+                        (default: id\_) \\
+  {\bf na}   \> Toggle for the NAT output switch ({\tt !*nat}) \\
+  {\bf as}   \> Input of an assignment          \\
+  {\bf kp}   \> Toggle for keeping a partitioned copy of each
+                        equation ({\tt keep\_parti}) \\
+  {\bf fi}   \> Toggle for allowing or not allowing
+                        integrations of equations which \\
+             \> involve unresolved integrals ({\tt freeint\_})  \\
+  {\bf fa}   \> Toggle for allowing or not allowing solutions of ODEs
+                        involving the \\
+             \> {\tt abs} function ({\tt freeabs\_})  \\
+  {\bf cs}   \> Switch on/off the confirmation of intended substitutions
+                and of the \\
+             \> order of the investigation of subcases 
+                resulting in a factorization \\
+  {\bf fs}   \> Enforce direct separation \\
+  {\bf ll}   \> change of the line length \\
+  {\bf re}   \> Toggle for allowing to re-cycle equation names
+             ({\tt do\_recycle\_eqn})  \\
+  {\bf rf}   \> Toggle for allowing to re-cycle function names
+             ({\tt do\_recycle\_fnc}) \\
+  {\bf st}   \> Setting a CPU time limit for un-interrupted run \\
+  {\bf cm}   \> Adding a comment to the history\_ list \\
+  {\bf lr}   \> Adding a LET-rule \\
+  {\bf cr}   \> Clearing a LET-rule
+\end{tabbing}
+
+\subsubsection{Help to change data of equations} 
+\begin{tabbing}
+  {\bf r}\ \ \ \ \ \= Replace or add one equation \\
+  {\bf rd}   \> Reduce an equation modulo LET rules \\
+  {\bf n}    \> Replace one inequality      \\
+  {\bf de}   \> Delete one equation         \\             
+  {\bf di}   \> Delete one inequality       \\
+  {\bf c}    \> Change a flag or property of one pde  \\
+  {\bf pt}   \> Perform a transformation of functions and variables
+\end{tabbing}
+
+\subsubsection{Help to work with identities} 
+\begin{tabbing}
+  {\bf i}\ \ \ \ \ \= Print identities between equations \\
+  {\bf id}   \> Delete redundand equations \\
+  {\bf iw}   \> Write identities to a file \\
+  {\bf ir}   \> Remove list of identities \\
+  {\bf ia}   \> Add or replace an identity \\
+  {\bf ih}   \> Start recording histories and identities \\
+  {\bf ip}   \> Stop recording histories and identities \\
+  {\bf ii}   \> Integrate an identity \\
+  {\bf ic}   \> Check the consistency of identity data \\
+  {\bf iy}   \> Print the history of equations
+\end{tabbing}
+
+\subsubsection{Help to trace and debug}
+\begin{tabbing}
+  {\bf tm}  \ \= Toggle for tracing the main procedure ({\tt tr\_main}) \\
+  {\bf tg}    \> Toggle for tracing the generalized separation
+                        ({\tt tr\_gensep}) \\
+  {\bf ti}    \> Toggle for tracing the generalized integration  
+                        ({\tt tr\_genint})  \\
+  {\bf td}    \> Toggle for tracing the decoupling process
+                        ({\tt tr\_decouple}) \\
+  {\bf tl}    \> Toggle for tracing the decoupling length reduction
+                        process ({\tt tr\_redlength}) \\
+  {\bf ts}    \> Toggle for tracing the algebraic length reduction
+                        process ({\tt tr\_short}) \\
+  {\bf to}    \> Toggle for tracing the ordering procedures
+                        process ({\tt tr\_orderings}) \\
+  {\bf tr}    \> Trace an arbitrary procedure \\
+  {\bf ut}    \> Untrace a procedure \\
+  {\bf br}    \> Lisp break          \\                 
+  {\bf pc}    \> Do a function call  \\
+  {\bf in}    \> Reading in a REDUCE file
+\end{tabbing}
 
 \subsection{Global variables}
 The following is a complete list of identifiers used as global
@@ -521,183 +1247,211 @@ within {\sc Crack}. Some are flags and parameters, others are glaboal
 variables, some of them can be accessed after the {\sc Crack}
 run. \vspace{6pt} \\
 \noindent
-{\tt !*allowdfint\_bak !*dfprint\_bak !*exp\_bak !*ezgcd\_bak !*fullroots\_bak \\
-!*gcd\_bak !*mcd\_bak !*nopowers\_bak !*ratarg\_bak !*rational\_bak \\
-!*batch\_mode abs\_ adjust\_fnc allflags\_ batchcount\_ backup\_ \\
-collect\_sol confirm\_subst cont\_ contradiction\_ cost\_limit5 \\
-current\_dir default\_proc\_list\_ do\_recycle\_eqn do\_recycle\_fnc \\
-eqname\_ expert\_mode explog\_ facint\_ flin\_ force\_sep fname\_ \\
-fnew\_ freeabs\_ freeint\_ ftem\_ full\_proc\_list\_ gcfree!* genint\_ \\
-glob\_var global\_list\_integer global\_list\_ninteger \\
-global\_list\_number high\_gensep homogen\_ history\_ idname\_ \\
-idnties\_ independence\_ ineq\_ inter\_divint keep\_parti last\_steps \\
-length\_inc level\_ lex\_df lex\_fc limit\_time lin\_problem \\
-lin\_test\_const logoprint\_ low\_gensep max\_gc\_counter \\
-max\_gc\_elimin max\_gc\_fac max\_gc\_red\_len max\_gc\_short \\
-max\_gc\_ss max\_red\_len maxalgsys\_ mem\_eff my\_gc\_counter \\
-nequ\_ new\_gensep nfct\_ nid\_ odesolve\_ old\_history \\
-orderings\_ target\_limit\_0 target\_limit\_1 target\_limit\_2 \\
-target\_limit\_3 target\_limit\_4 poly\_only potint\_ print\_ \\
-print\_all print\_more proc\_list\_ prop\_list pvm\_able \\
-quick\_decoup record\_hist recycle\_eqns recycle\_fcts recycle\_ids \\
-reducefunctions\_ repeat\_mode safeint\_ session\_ simple\_orderings \\
-size\_hist size\_watch sol\_list solvealg\_ stepcounter\_ stop\_ \\
-struc\_dim struc\_eqn subst\_0 subst\_1 subst\_2 subst\_3 subst\_4 \\
-time\_ time\_limit to\_do\_list tr\_decouple tr\_genint tr\_gensep \\
-tr\_main tr\_orderings tr\_redlength tr\_short trig1\_ trig2\_ \\
-trig3\_ trig4\_ trig5\_ trig6\_ trig7\_ trig8\_ userrules\_ vl\_}
+{\tt 
+!*allowdfint\_bak\ \ !*dfprint\_bak\ \ !*exp\_bak\ \ !*ezgcd\_bak\ \ !*fullroots\_bak\ \ \\
+!*gcd\_bak\ \ !*mcd\_bak\ \ !*nopowers\_bak\ \ !*ratarg\_bak\ \ !*rational\_bak\ \ \\
+!*batch\_mode\ \ abs\_\ \ adjust\_fnc\ \ allflags\_\ \ batchcount\_\ \ backup\_\ \ collect\_sol\\ 
+confirm\_subst\ \ cont\_\ \ contradiction\_\ \ cost\_limit5\ \ current\_dir\ \ \\
+default\_proc\_list\_\ \ do\_recycle\_eqn\ \ do\_recycle\_fnc\ \ done\_trafo\ \ \\
+eqname\_\ \ expert\_mode\ \ explog\_\ \ facint\_\ \ flin\_\ \ force\_sep\ \ fname\_\ \ fnew\_\ \ \\
+freeabs\_\ \ freeint\_\ \ ftem\_\ \ full\_proc\_list\_\ \ gcfree!*\ \ genint\_\ \ glob\_var\ \ \\
+global\_list\_integer\ \ global\_list\_ninteger\ \ global\_list\_number\ \ high\_gensep\ \ \\
+homogen\_\ \ history\_\ \ idname\_\ \ idnties\_\ \ independence\_\ \ ineq\_\ \ inter\_divint\ \ \\
+keep\_parti\ \ last\_steps\ \ length\_inc\ \ level\_\ \ lex\_df\ \ lex\_fc\ \ limit\_time\ \ \\
+lin\_problem\ \ lin\_test\_const\ \ logoprint\_\ \ low\_gensep\ \ max\_gc\_counter\ \ \\
+max\_gc\_elimin\ \ max\_gc\_fac\ \ max\_gc\_red\_len\ \ max\_gc\_short\ \ max\_gc\_ss\ \ \\
+max\_red\_len\ \ maxalgsys\_\ \ mem\_eff\ \ my\_gc\_counter\ \ nequ\_\ \ new\_gensep\ \ nfct\_\ \ \\
+nid\_\ \ odesolve\_\ \ old\_history\ \ orderings\_\ \ target\_limit\_0\ \ target\_limit\_1\ \ \\
+target\_limit\_2\ \ target\_limit\_3\ \ target\_limit\_4\ \ poly\_only\ \ potint\_\ \ print\_\ \ \\
+print\_all\ \ print\_more\ \ proc\_list\_\ \ prop\_list\ \ pvm\_able\ \ quick\_decoup\ \ \\
+record\_hist\ \ recycle\_eqns\ \ recycle\_fcts\ \ recycle\_ids\ \ reducefunctions\_\ \ \\
+repeat\_mode\ \ safeint\_\ \ session\_\ \ simple\_orderings\ \ size\_hist\ \ size\_watch\ \ \\
+sol\_list\ \ solvealg\_\ \ stepcounter\_\ \ stop\_\ \ struc\_dim\ \ struc\_eqn\ \ subst\_0\ \ \\
+subst\_1\ \ subst\_2\ \ subst\_3\ \ subst\_4\ \ time\_\ \ time\_limit\ \ to\_do\_list\ \ tr\_decouple\ \ \\
+tr\_genint\ \ tr\_gensep\ \ tr\_main\ \ tr\_orderings\ \ tr\_redlength\ \ tr\_short\ \ trig1\_\ \ \\
+trig2\_\ \ trig3\_\ \ trig4\_\ \ trig5\_\ \ trig6\_\ \ trig7\_\ \ trig8\_\ \ userrules\_\ \ vl\_}
 
 \subsection{Global flags and parameters}
 The list below gives a selection of
-flags and global parameters that are available
+flags and global parameters that are available, for example,
 to fine tune the performance according to specific needs of the system
 of equations that is studied. Usually they are not needed and very few
 are used regularly by the author. The interactive command that changes the
 flag/parameter is given in [ ], default values of the flags/parameters
-are given in (). The values of the flags and parameters can either be
+are given in (). All values can be changed interactively with the {\em as} command.
+The values of the flags and parameters can either be
 set after loading {\sc Crack} and before starting {\sc Crack} with a
 lisp assignment, for example,\\
 \verb+lisp(print_:=8)$+ \\ %$
 or after starting {\sc Crack} in interactive mode with specific commands, 
 like {\tt pl} to change specifically the print length determining parameter
-{\tt print\_}, or the command {\tt as} to do an assignment. The values of
-parameters/flags can be inspected interactively using {\tt pv}.
+{\tt print\_}, or the command {\tt as} to do an assignment. 
+The values of
+parameters/flags can be inspected interactively using {\tt pv}
+and changed with {\tt as}.
 
 \begin{description}    
 \item[{\tt !*batch\_mode [x] (t) :}] running crack in interactive mode
-({\tt !*batch\_mode=nil}) or not ({\tt !*batch\_mode=t}). It can also be 
-set in algebraic mode before starting {\sc Crack}
-by {\tt ON/OFF BATCH\_MODE}. Interactive mode can be left and automatic
-computation be started by the interactive commant {\tt x}.
-\item[{\tt expert\_mode [t] (nil) :}] For {\tt expert\_mode=t} the
-equations that are involved in the next computational step are
-selected by {\sc Crack}, for {\tt expert\_mode=nil} the user is asked
-to select one or two equations which are to be worked with in the next
-computational step. 
-%\item[{\tt repeat\_mode [] () :}] 
-\item[{\tt nfct\_ (1) :}] index of the next new function or constant
-\item[{\tt nequ\_ (1) :}] index of the next new equation
-\item[{\tt nid\_ (1) :}] index of the next new identity
-\item[{\tt fname\_ [nf] ('c\_) :}] name of new functions and constants
-                                   (integration)
-\item[{\tt eqname\_ [ne] ('e\_) :}] name of new equations
-\item[{\tt idname\_ [ni] ('id\_) :}] name of new equations
-%\item[{\tt level\_ (nil) :}] actual level of crack recursion
-\item[{\tt cont\_ (nil) :}] interactive user control for integration
- or substitution of large expressions (enabled = t)
-\item[{\tt independence\_ (nil) :}] interactive control of linear 
-                                    independence (enabled = t)
-\item[{\tt genint\_ (15) :}]  if =nil then generalized integration disabled
-                    else equal the maximal number of new functions and extra
-                    equations due to the generalized integration of
-                    one equation  
-\item[{\tt facint\_ (1000) :}] if equal nil then no search for
-                    integrating factors otherwise equal the  max
-                    product terms*kernels for searching an integrating
-                    factor
-\item[{\tt potint\_ (t) :}] allowing `potential integration'
-\item[{\tt safeint\_ (t) :}] uses only solutions of ODEs with
-                    non-vanishing denominator
-\item[{\tt freeabs\_ [fi] (t) :}] Do not use solutions of ODEs that
-                    involve the {\tt abs} function
-\item[{\tt freeint\_ [fi] (t) :}] Do only integrations if expl.\ part
-                    is integrable 
-\item[{\tt odesolve\_ (100) :}] maximal length of a de (number of terms) to be
-                    integrated as ode
-\item[{\tt max\_factor (400) :}] maximal number of terms to be factorized
-\item[{\tt low\_gensep (6) :}] max.\ size of expressions to be separated in a 
-                    generalized way by `quick\_gen\_separation'
-\item[{\tt high\_gensep (300) :}] min. size of expressions to separate in a 
-                    generalized way by `quick\_gen\_separation'
-\item[{\tt new\_gensep (nil) :}] whether or not a newer (experimental)
-                    form of gensep should be used
-\item[{\tt subst\_* :}] maximal length of an expression to be substituted,
-                    used with different values for different
-                    procedures {\tt subst\_level\_*}
-\item[{\tt cost\_limit5 (100) :}] maximal number of extra terms
-                    generated by a subst.
-\item[{\tt max\_red\_len (50000) :}] maximal product of lengths of two 
-                    equations to be combined with length-reducing decoupling
-\item[{\tt target\_limit\_* (nil) :}] maximal product
-                    length(pde)*length(substituted expression) for
-                    PDEs in which substitutions are to be made,
-                    nil ==> no length limit,
-                    used with different values for different
-                    procedures {\tt subst\_level\_*}
-\item[{\tt length\_inc (1.0) :}] factor by which the length of an 
-                    expression may grow when performing 
-                    {\tt diff\_length\_reduction}
-\item[{\tt tr\_main [tm] (nil) :}] Trace main procedure
-\item[{\tt tr\_gensep [ts] (nil) :}] Trace generalized separation
-\item[{\tt tr\_genint [ti] (nil) :}] Trace generalized integration
-\item[{\tt tr\_decouple [td] (nil) :}] Trace decoupling process
-\item[{\tt tr\_redlength [tr] (nil) :}] Trace length reduction
-\item[{\tt tr\_orderings [to] (nil) :}] Trace orderings stuff
-\item[{\tt homogen\_ (nil) :}] Test for homogeneity of each equation 
-                    (for debugging)
-\item[{\tt solvealg\_ (nil) :}] Use SOLVE for algebraic equations
-\item[{\tt print\_ [pl] (12) :}] maximal length of an expression to be printed
-\item[{\tt print\_more [pm] (t) :}] Print more informations about the pdes
-\item[{\tt print\_all [pa] (nil) :}] Print all informations about the pdes
-\item[{\tt logoprint\_ (t) :}] print logo after crack call
-\item[{\tt poly\_only (nil) :}] all equations are polynomials only 
-\item[{\tt time\_ (nil) :}] print the time needed for running crack 
-\item[{\tt dec\_hist (0) :}] length of pde history list during decoupling
-\item[{\tt maxalgsys\_ (20) :}] max. number of equations to be solved
-in specialsol 
+                   ({\tt !*batch\_mode=nil}) or automaticly 
+                   ({\tt !*batch\_mode=t}). It can also be 
+                   set in algebraic mode before starting {\sc Crack}
+                   by {\tt ON/OFF BATCH\_MODE}. Interactive mode can be left 
+                   and automatic computation be started by the interactive 
+                   commant {\tt x}.
+\item[{\tt !*iconic (nil) :}] whether new processes in parallelization
+                   should appear as icons (t) or windows (nil)
 \item[{\tt adjust\_fnc (nil) :}] if t then free constants/functions
                     are scaled and redundant ones are dropped to
                     simplify the result after the computation has been
                     completed
-%\item[{\tt orderings\_ (nil) :}] Stores the orderings list, nil initially   
-%\item[{\tt simple\_orderings (t) :}] Turn off orderings support
-%                   except for trivial case 
-\item[{\tt lex\_df [od] (nil) :}] if t then use lexicographical
-                    instead of total degree ordering of derivatives 
-\item[{\tt lex\_fc [og] (t) :}] if t then lexicographical ordering of
-                    functions has higher priority than any ordering of
-                    derivatives 
 \item[{\tt collect\_sol (t) :}] whether solutions found shall be collected and
                     returned together at the end or not (to save
                     memory), matters only for non-linear problems with
                     very many special solutions. If a computation has
                     to be performed with any solution that is found,
-                    then these commands can be put into a procedure
-                 {\tt algebraic procedure crack\_out(eqns,assigns,freef,ineq)}
+                    then these commands can be put into an 
+                    {\tt algebraic procedure crack\_out(eqns, assigns, freef, ineq)}
                     which is currently empty in file {\tt crmain.red}
                     but which is called for each solution.
-\item[{\tt struc\_eqn (nil) :}] whether the equations has the form of
-                    structural equations (an application are the
-                    Killing vector and Killing tensor computations)
-\item[{\tt quick\_decoup (nil) :}] whether decoupling should be done
-                    faster with less care for saving memory
-\item[{\tt idnties\_ (nil) :}] list of identities resulting from reductions and
-                    integrability conditions
-\item[{\tt record\_hist (nil) :}] whether the history of equations is
-                    to be recorded 
-\item[{\tt keep\_parti [kp] (nil) :}] whether for each equation a copy
-                    in partitioned form is to be stored to speed up
-                    several simplifications but which needs more memory
-\item[{\tt size\_watch (nil) :}] whether before each computational step 
-                   the size of the system shall be recorded in the
-                   global variable size\_hist
-\item[{\tt inter\_divint (nil) :}] whether the integration of divergence 
-                   identities with more than 2 differentiation variables 
-                   shall be confirmed interactively
-\item[{\tt do\_recycle (nil) :}] whether function names shall be recycled 
-                   or not (saves memory but computation is less clear to follow)
-\item[{\tt old\_history (nil) :}] 
-                   old\_history is interactive input to be read from
-                   this list
 \item[{\tt confirm\_subst [cs] (nil) :}] whether substitutions have to be 
                    confirmed interactively
-\item[{\tt mem\_eff (t) :}] whether to be memory efficient even if slower
+\item[{\tt cont\_ (nil) :}] interactive user control for integration
+                   or substitution of large expressions (enabled = t)
+\item[{\tt cost\_limit5 (100) :}] maximal number of extra terms
+                    generated by a subst.
+%\item[{\tt dec\_hist (0) :}] length of pde history list during decoupling
+\item[{\tt do\_recycle (nil) :}] whether function names shall be recycled 
+                   or not (saves memory but computation is less clear to follow)
+\item[{\tt done\_trafo (nil) :}] an (algebraic mode) list of backtransformations 
+                   that would invert done transformations, this list
+                   is useful after {\sc Crack} completed to invert
+                   transformations if needed
+\item[{\tt eqname\_ [ne] ('e\_) :}] name of new equations
+\item[{\tt expert\_mode [t] (nil) :}] For {\tt expert\_mode=t} the
+                   equations that are involved in the next computational step are
+                   selected by {\sc Crack}, for {\tt expert\_mode=nil} the user 
+                   is asked to select one or two equations which are to be worked 
+                   with in the next computational step. 
+\item[{\tt facint\_ (1000) :}] if equal nil then no search for
+                    integrating factors otherwise equal the  max
+                    product terms*kernels for searching an integrating
+                    factor
+\item[{\tt flin\_ (nil) :}] a list of functions occuring only linearly in an
+                   otherwise non-linear problem. {\tt flin\_} has to be assigned
+                   before calling {\sc Crack}. During execution it is tried to
+                   preserve the linearity of these functions as long as possible.
+\item[{\tt fname\_ [nf] ('c\_) :}] name of new functions and constants
+                                   (integration)
 \item[{\tt force\_sep (nil) :}] whether direct separation should be forced even
                    if functions occur in the supposed to be linear
                    independent explicit expressions (for non-lin. prob.)
+\item[{\tt freeabs\_ [fi] (t) :}] Do not use solutions of ODEs that
+                    involve the {\tt abs} function
+\item[{\tt freeint\_ [fi] (t) :}] Do only integrations if expl.\ part
+                    is integrable 
+\item[{\tt genint\_ (15) :}]  if =nil then generalized integration disabled
+                    else equal the maximal number of new functions and extra
+                    equations due to the generalized integration of
+                    one equation  
+\item[{\tt high\_gensep (300) :}] min. size of expressions to separate in a 
+                    generalized way by \\ `quick\_gen\_separation'
+\item[{\tt homogen\_ (nil) :}] Test for homogeneity of each equation 
+                    (for debugging)
+\item[{\tt idname\_ [ni] ('id\_) :}] name of new equations
+\item[{\tt idnties\_ (nil) :}] list of identities resulting from reductions and
+                    integrability conditions
+\item[{\tt independence\_ (nil) :}] interactive control of linear 
+                                    independence (enabled = t)
+\item[{\tt inter\_divint (nil) :}] whether the integration of divergence 
+                   identities with more than 2 differentiation variables 
+                   shall be confirmed interactively
+\item[{\tt keep\_parti [kp] (nil) :}] whether for each equation a copy
+                    in partitioned form is to be stored to speed up
+                    several simplifications but which needs more memory
+\item[{\tt last\_steps (nil) :}] a list of the last steps generated and updated 
+                   automatically in order to avoid cycles
+\item[{\tt length\_inc (1.0) :}] factor by which the length of an 
+                    expression may grow when performing 
+                    {\tt diff\_length\_reduction}
+%\item[{\tt level\_ (nil) :}] actual level of crack recursion
+\item[{\tt lex\_df [od] (nil) :}] if t then use lexicographical
+                    instead of total degree ordering of derivatives 
+\item[{\tt lex\_fc [og] (t) :}] if t then lexicographical ordering of
+                    functions has higher priority than any ordering of
+                    derivatives 
+\item[{\tt limit\_time (nil) :}] = time() + how many more seconds allowed in batch mode
+\item[{\tt logoprint\_ (t) :}] print logo after crack call
+\item[{\tt low\_gensep (6) :}] max.\ size of expressions to be separated in a 
+                    generalized way by \\ `quick\_gen\_separation'
+\item[{\tt max\_gc\_counter (100000000) :}] maximal total number of garbage collections
+\item[{\tt max\_gc\_elimin (15) :}] maximal number of garbage collections during
+                    elimination in decoupling
+\item[{\tt max\_gc\_fac (15) :}] maximal number of garbage collections during factorization
+\item[{\tt max\_gc\_red\_len (30) :}] maximal number of garbage collections during
+                    length reduction
+\item[{\tt max\_gc\_short (40) :}] maximal number of garbage collections during shortening
+\item[{\tt max\_gc\_ss (10) :}] maximal number of garbage collections during
+                    search of sub\_systems
+\item[{\tt max\_red\_len (1000000) :}] maximal product of lengths of two 
+                    equations to be combined with length-reducing decoupling
+\item[{\tt maxalgsys\_ (20) :}] max. number of equations to be solved
+                    in specialsol 
+\item[{\tt mem\_eff (t) :}] whether to be memory efficient even if slower
+\item[{\tt my\_gc\_counter (0) :}] initial value of my\_gc\_counter
+\item[{\tt nequ\_ (1) :}] index of the next new equation
+\item[{\tt new\_gensep (nil) :}] whether or not a newer (experimental)
+                    form of gensep should be used
+\item[{\tt nfct\_ (1) :}] index of the next new function or constant
+\item[{\tt nid\_ (1) :}] index of the next new identity
+\item[{\tt odesolve\_ (100) :}] maximal length of a de (number of terms) to be
+                    integrated as ode
+\item[{\tt old\_history (nil) :}] 
+                   old\_history is interactive input to be read from
+                   this list
+%\item[{\tt orderings\_ (nil) :}] Stores the orderings list, nil initially   
+\item[{\tt poly\_only (nil) :}] all equations are polynomials only 
+\item[{\tt potint\_ (t) :}] allowing `potential integration'
+\item[{\tt print\_ [pl] (12) :}] maximal length of an expression to be printed
+\item[{\tt print\_all [pa] (nil) :}] Print all informations about the pdes
+\item[{\tt print\_more [pm] (t) :}] Print more informations about the pdes
+\item[{\tt quick\_decoup (nil) :}] whether decoupling should be done
+                    faster with less care for saving memory
+\item[{\tt record\_hist (nil) :}] whether the history of equations is
+                    to be recorded 
+%\item[{\tt repeat\_mode [] () :}] 
+\item[{\tt safeint\_ (t) :}] uses only solutions of ODEs with
+                    non-vanishing denominator
+\item[{\tt session\_ (``bu''+random number+date) :}] when loading {\sc Crack} or executing
+%\item[{\tt simple\_orderings (t) :}] Turn off orderings support
+%                   except for trivial case 
+\item[{\tt size\_watch (nil) :}] whether before each computational step 
+                   the size of the system shall be recorded in the
+                   global variable size\_hist
+\item[{\tt solvealg\_ (nil) :}] Use SOLVE for algebraic equations
+\item[{\tt struc\_eqn (nil) :}] whether the equations has the form of
+                    structural equations (an application are the
+                    Killing vector and Killing tensor computations)
+\item[{\tt subst\_* :}] maximal length of an expression to be substituted,
+                    used with different values for different
+                    procedures {\tt subst\_level\_*}
+\item[{\tt target\_limit\_* (nil) :}] maximum of product
+                    {\em length(pde)*length(substituted expression)} for
+                    a PDE which is to be used for a substitution,
+                    If {\tt target\_limit\_* = nil} then no length limit,
+                    used with different values for different
+                    procedures {\tt subst\_level\_*}
+\item[{\tt time\_ (nil) :}] print the time needed for running crack 
+\item[{\tt time\_limit (nil) :}] whether a time limit is active after
+                    which batch-mode is interrupted to interactive mode
+\item[{\tt tr\_decouple [td] (nil) :}] Trace decoupling process
+\item[{\tt tr\_genint [ti] (nil) :}] Trace generalized integration
+\item[{\tt tr\_gensep [ts] (nil) :}] Trace generalized separation
+\item[{\tt tr\_main [tm] (nil) :}] Trace main procedure
+\item[{\tt tr\_orderings [to] (nil) :}] Trace orderings stuff
+\item[{\tt tr\_redlength [tr] (nil) :}] Trace length reduction
 \end{description}
 
-\section{Contents of the Crack package}
+\section{A more detailed description of some of the modules}
 The package {\sc Crack} contains a number of modules. 
 The basic ones are for computing a pseudo differential Gr\"{o}bner
 Basis (using integrability conditions in a systematic way), integrating
@@ -732,14 +1486,15 @@ or mixtures of them by giving weights to individual functions and variables.
 Above, the `$>$' indicate ``before'' in priority of criteria. The principle
 is then to
 \begin{description}
-\item take two equations at a time and differentiate them as often as 
+\item[\ \ ] take two equations at a time and differentiate them as often as 
 necessary to get equal LDs,
-\item regard these two equations as algebraic equations in
+\item[\ \ ]  regard these two equations as algebraic equations in
 the common LD and calculate the remainder w.r.t.\ the LD, i.e.\ to
 generate an equation without the LD by the Euclidean algorithm, and
-\item add this equation to the system.
+\item[\ \ ]  add this equation to the system.
 \end{description}
-Usually pairs of equations are taken first, such that only one must be
+Usually pairs of equations are taken first, such that only one 
+of both equations must be
 differentiated. If in such a generation step one of both equations is not
 differentiated then it is called a
 simplification step and this equation will be replaced by the new equation.
@@ -809,13 +1564,13 @@ successively. This procedure is always applicable because steps involve only
 differentiations and the polynomial
 integration $(\int h^n\frac{\partial h}{\partial x}dx =
 h^{n+1}/(n+1))$ where $h$ is a partial derivative of some function
-$f^i.$ For a more detailed description see \cite{WoInt}.\\
+$f^i.$ For a more detailed description see \cite{Wol99e}.\\
 \underline{Stop:} \\
 Iteration stops if no term with any $x^k$-derivative of any $f^i$ is left.
-If in the remaining un-integrated terms any $f^i(x^k)$ itself occurs,
+If any $f^i(x^k)$ occurs in the remaining un-integrated terms 
 then $I$ is not expressible with $f^i$ and its derivatives only. In
-case no $f^i(x^k)$ occurs then any remaining terms can contain $x^k$ only
-explicitly. Whether they can be integrated depends on their formal
+case no $f^i(x^k)$ occurs, then any remaining terms can contain $x^k$ only
+explicitly. Whether they can be integrated or not depends on their formal
 integrability. For their integration the {\sc Reduce} integrator is
 applied. \\
 \underline{Speed up:} \\
@@ -823,11 +1578,10 @@ The partial integration as described above preserves derivatives with
 respect to other variables. For example, the three terms $f,_x, f
 f,_{xxx}, f,_{xxy}$ can not combine somehow to the same terms in the
 integral because if one ignores $x$-derivatives then it is clear that
-$f, f^2$ and $f,_y$ are like three completely different expressions
-from the point of view of $x$-integrations.
-This allows the following drastic speed up
+$f, f^2$ and $f,_y$ are three functionally independent expressions
+with respect of $x$-integrations. This allows the following drastic speed up
 for large expressions. It is possible to partition the complete sum of
-terms into partial sum such that each of the partial sum has to be
+terms into partial sums such that each of them has to be
 integrable on its own. That is managed by generating a label for each
 term and collecting terms with equal label into partial sums. The
 label is produced by dropping all $x$-derivatives from all functions
@@ -881,14 +1635,14 @@ If after applying the above basic algorithm, terms are left which contain
 functions of $x^k$ but each of these functions depends only on a subset of
 all $x^i, 1\leq i\leq n,$ then a generalized version of the above algorithm
 can still provide a formal expression for the integral $I$
-(see \cite{WoInt}). The price consists of
-additional differential conditions, but they are equations in less variables
+(see \cite{Wol99e}). The price consists of
+additional differential conditions, but they are equations in fewer variables
 than occur in the integrated equation. Integrating for example 
 \begin{equation}
 \tilde{D} = D + g^2(y^2 + x\sin y + x^2e^y)       \label{Dnew}
 \end{equation}
 by introducing as few 
-new functions and additional conditions as possible gives as the integral 
+new functions and additional conditions as possible gives for the integral 
 $\tilde{I}$
 \begin{eqnarray*}
 \tilde{I} & = & 2fg + xygg,_{x}^{3} + c_1(x) + c_2(y) \\
@@ -908,7 +1662,7 @@ achieved by partial integration again, for example
 \underline{Characterization:} \\
 This algorithm is a decision algorithm which does not involve any
 heuristic. 
-After integration the new equation is still a polynomial
+After integration, the new equation is still a polynomial
 in $f^i$ and in the new constant or function of integration.
 Therefore the algorithms for bringing the system into standard form can still 
 be applied to the PDE-system 
@@ -916,7 +1670,7 @@ after the equation $D = 0$ is replaced by $I = 0.$
 
 The complexity of algorithms for bringing a PDE-system into a standard
 form depends nonlinearly on the order of these equations because of
-the nonlinear increase of the number of different leading derivatives
+the nonlinearly increasing number of different leading derivatives
 and by that the number of equations generated intermediately by such
 an algorithm. It therefore in general pays off to integrate equations 
 during such a standard form algorithm.  
@@ -926,7 +1680,7 @@ integration, then depending on its length
 it is in general helpful to substitute $f^i$ in other equations and
 to reduce the number of equations and functions by one. This is especially
 profitable if the replaced expression is short and 
-contains only functions of less variables than $f^i.$ \\
+contains only functions of fewer variables than $f^i.$ \\
 \underline{Test:} \\
 The corresponding test input is
 \begin{verbatim}
@@ -939,11 +1693,11 @@ crack({2*df(f,y)*df(g,x)+2*df(f,x,y)*g+g*df(g,x)**3
 \end{verbatim}
 The meaning of the {\sc Reduce} command {\tt depend} is to declare that $f$
 depends in an unknown way on $x$ and $y$. For more details on the
-algorithm see \cite{WoInt}.
+algorithm see \cite{Wol99e}.
 
 \subsection{Direct separation of PDEs}
 As a result of repeated integrations the functions in the 
-remaining equations have less and less variables. It therefore may happen
+remaining equations have fewer and fewer variables. It therefore may happen
 that after a substitution an equation results where at least one variable
 occurs only explicitly and not as an argument of an unknown function.
 Consequently all coefficients of linearly independent expressions in this
@@ -995,12 +1749,12 @@ one function but no function contains all independent variables of an
 equation needs a more elaborate treatment.
 
 The steps are these 
-\begin{description}
- \item A variable $x_a$ is chosen which occurs in as few functions as possible.
+\begin{itemize}
+\item A variable $x_a$ is chosen which occurs in as few functions as possible.
  This variable will be separated directly later which
  requires that all unknown functions $f_i$ containing $x_a$ are to be
  eliminated. Therefore, as long as $F:=\{f_i\}$ is not empty do the following:
- \begin{description}
+ \begin{itemize}
   \item Choose the function $f_i(y_p)$ in $F$ with the smallest number of
   variables $y_p$ and with $z_{ij}$ as those variables on which $f_i$ does 
   not depend.
@@ -1009,25 +1763,25 @@ The steps are these
   Determine the $z_{ij}$-dependent factors $C_{ik}$ of the coefficients 
   of $P_{ik}$ and store them in a list.
   \item For each $C_{il}$ ($i$ fixed, $l=1,\ldots)$ choose a $z_{ij}$ and :
-  \begin{description}
+  \begin{itemize}
    \item divide by $C_{il}$ the equation and all following elements 
          $C_{im}$ with $m>l$ of this list, such that these elements are
          still the actual coefficients in the equation after the division,
    \item differentiate the equation and the $C_{im}, m>l$ w.r.t.\ $z_{ij}$
-  \end{description}
- \end{description}
+  \end{itemize}
+ \end{itemize}
  \item The resulting equation no longer contains any unknown function of $x_a$
  and can be separated w.r.t.\ $x_a$ directly in case $x_a$ still occurs
  explicitly. In both cases the equation(s) is (are) free of $x_a$ afterwards 
  and inverting the sequence of integration and multiplication 
  of all those equations (in case of direct separability) will also result
  in an equation(s) free of $x_a.$ More exactly, the steps are
- \begin{description}
+ \begin{itemize}
   \item multiplication of the equation(s) and the $C_{im}$ with 
         $m<l$ by the elements
   of the $C_{ik}$-lists in exactly the inverse order,
   \item integration of these exact PDEs and the $C_{im}$ w.r.t.\ $z_{ij}$.
- \end{description}
+ \end{itemize}
  \item The equations originating that way are used to evaluate those
  functions which do not depend on $x_a$ and which survived in the above
  differentiations. Substituting these functions in the original equation,
@@ -1036,7 +1790,7 @@ The steps are these
  \item The whole procedure is repeated for another variable $x_b$ if the
  original DE could not be separated directly and still has the property that 
  it contains only functions of a subset of all variables in the equation.
-\end{description}
+\end{itemize}
 The additional bookkeeping of coefficients $C_{ik}$ and their updating by
 division, differentiation, integration and multiplication is done to use
 them as integrating factors for the backward integration.
@@ -1046,12 +1800,12 @@ The following example makes this clearer. The equation is
 \end{equation}
 The steps are (equal levels of indentation in the example correspond to
 those in the algorithm given above)
-\begin{description}
+\begin{itemize}
  \item $x_1:=x, \, F=\{f\}$
- \begin{description}
+ \begin{itemize}
   \item Identify $f_1:=f, \; \; \; \; \; y_1:=x, \; \; \; \; \; z_{11}:=y$ 
   \item and $P_1=\{f',f\}, \; \; \; \; \; C_1=\{1,g\}$
-  \begin{description}
+  \begin{itemize}
    \item Divide $C_{12}$ and 
          (\ref{isep}) by $C_{11}=1$ and differentiate w.r.t. $z_{11}=y:$
          \begin{eqnarray}
@@ -1061,8 +1815,8 @@ those in the algorithm given above)
  \item Divide (\ref{isep2}) by $C_{12}=g'$ and differentiate w.r.t. $z_{11}=y:$
 \[ 0 = - (g''/g')' - (1+x^2)(1/g')' \]
 
-  \end{description}
- \end{description}
+  \end{itemize}
+ \end{itemize}
  \item Direct separation w.r.t.\ $x$ and integration:
  \[\begin{array}{rclclcl}
   x^2: 0 & = & (1/g')' & \Rightarrow & c_1g' =  1 & \Rightarrow &
@@ -1086,7 +1840,7 @@ those in the algorithm given above)
     & \Rightarrow &  0 = c_1 - 1/c_1   \\
     & \Rightarrow & c_1 = \pm 1 \Rightarrow c_2 = 1.
  \end{eqnarray*}
-\end{description}
+\end{itemize}
 We get the two solutions $f = 1 + x^2, g = 1 + y$ and 
 $f = - 1 - x^2, g = 1 - y.$ The corresponding input to {\sc Crack} would be
 \begin{verbatim}
@@ -1116,39 +1870,6 @@ For example the PDE for $f(x,y)$
 \[ 0 = f,_{xxy} + f,_{xxyy} \]
 can be viewed as a first order ODE in $y$ for $f,_{xxy}.$
 
-\section{General hints}
-\subsection{Problems involving $\sin, \cos$ or other special functions}
-If the equations to be solved involve special functions, like $\sin$
-and $\cos$ then one is inclined to add {\tt let}-rules for simplifying
-expressions. Before doing this the simplification rules at the end of
-the file {\tt crinit.red} should be inspected such that new rules do
-not lead to cycles with existing rules. One possibility is to replace
-existing rules, for example to substitute the existing rule \\
-\verb+  trig1\_:={sin(~x)**2 => 1-cos(x)**2}$ + by the new rule \\
-\verb+  trig1\_:={cos(~x)**2 => 1-sin(x)**2}$ +.
-These rules are switched off when integrations are performed in order
-not to interfere with the {\sc Reduce} Integrator.
-
-\subsection{Exchanging time for memory}
-The optimal order of applying different methods to the equations of a system
-is not fixed. It does depend, for example, on the distributions of
-unknown functions in the 
-equations and on what the individual methods would produce in the next
-step. For example, it is possible that the
-decoupling module which applies integrability conditions through cross
-differentiations of equations is going well up to a stage when it
-suddenly produces huge equations. They not only occupy much memory,
-they also are slow to handle.
-Right {\em before} this explosion started other methods should
-have been tried (shortening of equations, any integrations, solution of
-underdetermined ODEs if there are any,...). These alternative methods are normally
-comparatively slow or unfavourable as they introduce new functions but
-under the current circumstances they may be perfect to avoid any growth
-and to complete the calculation. How could one have known beforehand that some
-method will lead to an explosion? One does not know. But one can
-regularly make a backup with the interactive {\tt sb} command and
-restart at this situation if necessary.
-
 \section*{Acknowledgement}
 Andreas Brand is the author of a number of core modules of {\sc
 Crack}. The currently used data structure and program structure of the
@@ -1167,7 +1888,11 @@ basis computations.
 Work on this package has been supported by the Konrad Zuse
 Institute / Berlin through a fellowship of T.W..  Winfried
 Neun and Herbert Melenk are thanked for many discussions and 
-constant support.
+constant support. Many of the low level control features have
+been provided by Winfried Neun. He ported Parallel Reduce to
+a Linux PC Beowulf cluster and helped in adapting {\sc Crack} 
+to it. Last not least he helped in enabling to encode PDF features of
+this document in LaTeX.
 
 Anthony Hearn provided free copies of {\sc Reduce} to us as a
 {\sc Reduce} developers group which also is thankfully acknowledged.
@@ -1211,8 +1936,6 @@ systems of Nonlinear Partial Differential Equations, J. Comp. Phys.,
 no. 3, 60 (1985) 437-446 and, Zur analytischen Untersuchung und exakten
 L\"{o}sung von Differentialgleichungen mit Computeralgebrasystemen,
 Dissertation B, Jena (1989).
-\bibitem{WoInt} T. Wolf, The Symbolic Integration of Exact PDEs,
-preprint, (1991).
 \bibitem{WM} M.A.H. MacCallum, F.J. Wright, Algebraic Computing with REDUCE,
 Clarendon Press, Oxford (1991).
 \bibitem{Mal} M.A.H. MacCallum, An Ordinary Differential Equation
@@ -1227,6 +1950,31 @@ Modern group theory methods in Acireale (Sicily) Nov. (1992)
 \bibitem{Cham} B. Champagne, W. Hereman and P. Winternitz, The computer
       calculation of Lie point symmetries of large systems of differential
       equation, Comp. Phys. Comm. 66, 319-340 (1991)
+\bibitem{MelNeun} Melenk, H., Neun, W., RR: Parallel Symbolic
+      Algorithm Support for PSL Based REDUCE, ZIP preprint (2002). \\
+{\tt www.zib.de/Optimization/Software/Reduce/moredocs/parallel\_reduce.ps}
+\bibitem{Wol99b}
+Wolf, T., Size reduction and partial decoupling of systems of equations,
+          J.\ Symb.\ Comp.\ 33, no 3 (2002) 367-383.
+\bibitem{Wol99e}
+Wolf, T., The Symbolic Integration of Exact PDEs, J.\ Symb.\ Comp.\
+          {\bf 30} (No.\ 5) (2000), 619-629.
+\bibitem{Wol02a}
+Wolf, T., The integration of systems of linear PDEs using conservation
+          laws of syzygies, J.\ of Symb.\ Comp.\ {\bf 35}, no 5 (2003) 499-526.
+\bibitem{SokWol01}
+Sokolov, V.V., Wolf, T., Classification of integrable
+          polynomial vector evolution equations, J.\ Phys.\ A: Math.\
+          Gen.\ {\bf 34} (2001) 11139-11148.
+\bibitem{EWLE02}
+Euler, N., Wolf, T., Leach, PGL and Euler, M.:
+          Linearizable Third Order ODEs and Generalised Sundman
+          Transformations: The Case X'''=0, 
+          Acta Applicandae Mathematicae, Volume 76, (2003), 
+          Issue 1, 89-115.
+\bibitem{WolEfi03a}
+Wolf, T., Efimovskaya, O.\ V., Classification of integrable
+          quadratic Hamiltonians on e(3), preprint, 11 pages (2003). 
 
 \end{thebibliography}
  
