@@ -1,0 +1,79 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Inverse Cosecants
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse cosecants
+
+
+# Integrands of the form x^m*ArcCsc[a*x] where m is an integer 
+[x*arccsc(a*x), x, 2, (sqrt(1 - 1/(a^2*x^2))*x)/(2*a) + (1/2)*x^2*arccsc(a*x)],
+[x^2*arccsc(a*x), x, 3, (sqrt(1 - 1/(a^2*x^2))*x^2)/(6*a) + (1/3)*x^3*arccsc(a*x) + arctanh(sqrt(1 - 1/(a^2*x^2)))/(6*a^3)],
+[x^3*arccsc(a*x), x, 3, (sqrt(1 - 1/(a^2*x^2))*x)/(6*a^3) + (sqrt(1 - 1/(a^2*x^2))*x^3)/(12*a) + (1/4)*x^4*arccsc(a*x)],
+[x^4*arccsc(a*x), x, 4, (3*sqrt(1 - 1/(a^2*x^2))*x^2)/(40*a^3) + (sqrt(1 - 1/(a^2*x^2))*x^4)/(20*a) + (1/5)*x^5*arccsc(a*x) + (3*arctanh(sqrt(1 - 1/(a^2*x^2))))/(40*a^5)],
+
+[arccsc(a*x)/x, x, 6, (1/2)*I*arccsc(a*x)^2 - arccsc(a*x)*log(1 - exp(2*I*arccsc(a*x))) + (1/2)*I*polylog(2, exp(2*I*arccsc(a*x)))],
+[arccsc(a*x)/x^2, x, 3, (-a)*sqrt(1 - 1/(a^2*x^2)) - arccsc(a*x)/x],
+[arccsc(a*x)/x^3, x, 4, -((a*sqrt(1 - 1/(a^2*x^2)))/(4*x)) + (1/4)*a^2*arccsc(a*x) - arccsc(a*x)/(2*x^2)],
+[arccsc(a*x)/x^4, x, 4, (-(2/9))*a^3*sqrt(1 - 1/(a^2*x^2)) - (a*sqrt(1 - 1/(a^2*x^2)))/(9*x^2) - arccsc(a*x)/(3*x^3)],
+
+
+# Integrands of the form x^m*ArcCsc[a+b*x] where m is an integer 
+[arccsc(a + b*x), x, 3, ((a + b*x)*arccsc(a + b*x))/b + arctanh(sqrt(1 - 1/(a + b*x)^2))/b],
+[x*arccsc(a + b*x), x, 7, ((a + b*x)*sqrt(1 - 1/(a + b*x)^2))/(2*b^2) - (a*(a + b*x)*arccsc(a + b*x))/b^2 + ((a + b*x)^2*arccsc(a + b*x))/(2*b^2) - (a*arctanh(sqrt(1 - 1/(a + b*x)^2)))/b^2],
+[x^2*arccsc(a + b*x), x, 10, -((a*(a + b*x)*sqrt(1 - 1/(a + b*x)^2))/b^3) + ((a + b*x)^2*sqrt(1 - 1/(a + b*x)^2))/(6*b^3) + (a^2*(a + b*x)*arccsc(a + b*x))/b^3 - (a*(a + b*x)^2*arccsc(a + b*x))/b^3 + ((a + b*x)^3*arccsc(a + b*x))/(3*b^3) + arctanh(sqrt(1 - 1/(a + b*x)^2))/(6*b^3) + (a^2*arctanh(sqrt(1 - 1/(a + b*x)^2)))/b^3],
+[arccsc(a + b*x)/x, x, 3, Int(arccsc(a + b*x)/x, x)],
+# {ArcCsc[a + b*x]/x^2, x, 0, -((1/(a*x))*(a*ArcCsc[a + b*x] + (1/Sqrt[-1 + a^2])*(b*x*(Sqrt[-1 + a^2]*ArcSin[1/(a + b*x)] + Log[x] - Log[-1 + a^2 + a*b*x + a*Sqrt[-1 + a^2]*Sqrt[(-1 + a^2 + 2*a*b*x + b^2*x^2)/(a + b*x)^2] + Sqrt[-1 + a^2]*b*x*Sqrt[(-1 + a^2 + 2*a*b*x + b^2*x^2)/(a + b*x)^2]]))))} 
+
+
+# Integrands of the form x^m*ArcCsc[Sqrt[x]] where m is an integer 
+[arccsc(sqrt(x)), x, 3, sqrt(-1 + x) + x*arccsc(sqrt(x))],
+[x*arccsc(sqrt(x)), x, 4, (1/3)*sqrt(1 - 1/x)*sqrt(x) + (1/6)*sqrt(1 - 1/x)*x^(3/2) + (1/2)*x^2*arccsc(sqrt(x))],
+[x^2*arccsc(sqrt(x)), x, 5, (8/45)*sqrt(1 - 1/x)*sqrt(x) + (4/45)*sqrt(1 - 1/x)*x^(3/2) + (1/15)*sqrt(1 - 1/x)*x^(5/2) + (1/3)*x^3*arccsc(sqrt(x))],
+[arccsc(sqrt(x))/x, x, 7, I*arccsc(sqrt(x))^2 - 2*arccsc(sqrt(x))*log(1 - exp(2*I*arccsc(sqrt(x)))) + I*polylog(2, exp(2*I*arccsc(sqrt(x))))],
+[arccsc(sqrt(x))/x^2, x, 5, -(sqrt(-1 + x)/(2*x)) + arccsc(sqrt(x))/2 - arccsc(sqrt(x))/x, -(sqrt(1 - 1/x)/(2*sqrt(x))) + arccsc(sqrt(x))/2 - arccsc(sqrt(x))/x],
+[arccsc(sqrt(x))/x^3, x, 6, -(sqrt(-1 + x)/(8*x^2)) - (3*sqrt(-1 + x))/(16*x) + (3*arccsc(sqrt(x)))/16 - arccsc(sqrt(x))/(2*x^2), -(sqrt(1 - 1/x)/(8*x^(3/2))) - (3*sqrt(1 - 1/x))/(16*sqrt(x)) + (3*arccsc(sqrt(x)))/16 - arccsc(sqrt(x))/(2*x^2)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse trig functions of exponentials
+
+
+[arccsc(c*exp(a + b*x)), x, 7, (I*arccsc(c*exp(a + b*x))^2)/(2*b) - (arccsc(c*exp(a + b*x))*log(1 - exp(2*I*arccsc(c*exp(a + b*x)))))/b + (I*polylog(2, exp(2*I*arccsc(c*exp(a + b*x)))))/(2*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving exponentials of inverse trig functions
+
+
+# Integrands of the form x^m*E^ArcCsc[x] where m is an integer 
+[E^arccsc(x), x, 2, -subst(Int(exp(x)*cot(x)*csc(x), x), x, arccsc(x))],
+[E^arccsc(x)/x, x, 2, -subst(Int(exp(x)*cot(x),x),x,arccsc(x))],
+[E^arccsc(x)/x^2, x, 3, (-(1/2))*E^arccsc(x)*sqrt(1 - 1/x^2) - E^arccsc(x)/(2*x)],
+[E^arccsc(x)/x^3, x, 5, (1/5)*E^arccsc(x)*cos(2*arccsc(x)) - (1/10)*E^arccsc(x)*sin(2*arccsc(x))],
+[E^arccsc(x)/x^4, x, 6, (-(1/8))*E^arccsc(x)*sqrt(1 - 1/x^2) - E^arccsc(x)/(8*x) + (1/40)*E^arccsc(x)*cos(3*arccsc(x)) + (3/40)*E^arccsc(x)*sin(3*arccsc(x))],
+[E^arccsc(x)/x^5, x, 6, (1/10)*E^arccsc(x)*cos(2*arccsc(x)) - (1/34)*E^arccsc(x)*cos(4*arccsc(x)) - (1/20)*E^arccsc(x)*sin(2*arccsc(x)) + (1/136)*E^arccsc(x)*sin(4*arccsc(x))],
+
+
+# ::Subsection::Closed:: 
+#Miscellaneous problems
+
+
+[arccsc(1/x), x, 1, sqrt(1 - x^2) + x*arcsin(x)],
+
+
+[arccsc(a + b*x)/((a*d)/b + d*x), x, 9, (I*arccsc(a + b*x)^2)/(2*d) - (arccsc(a + b*x)*log(1 - exp(2*I*arccsc(a + b*x))))/d + (I*polylog(2, exp(2*I*arccsc(a + b*x))))/(2*d)],
+
+
+[arccsc(a*x^n)/x, x, 7, (I*arccsc(a*x^n)^2)/(2*n) - (arccsc(a*x^n)*log(1 - exp(2*I*arccsc(a*x^n))))/n + (I*polylog(2, exp(2*I*arccsc(a*x^n))))/(2*n)],
+
+[arccsc(a*x^5)/x, x, 7, (1/10)*I*arccsc(a*x^5)^2 - (1/5)*arccsc(a*x^5)*log(1 - exp(2*I*arccsc(a*x^5))) + (1/10)*I*polylog(2, exp(2*I*arccsc(a*x^5)))],
+
+
+[x^3*arccsc(a + b*x^4), x, 4, ((a + b*x^4)*arccsc(a + b*x^4))/(4*b) + arctanh(sqrt(1 - 1/(a + b*x^4)^2))/(4*b)],
+
+[x^(n-1)*arccsc(a + b*x^n), x, 4, ((a + b*x^n)*arccsc(a + b*x^n))/(b*n) + arctanh(sqrt(1 - 1/(a + b*x^n)^2))/(b*n)]
+]:

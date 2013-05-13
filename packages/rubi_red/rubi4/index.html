@@ -1,0 +1,550 @@
+<HTML>
+<HEAD>
+<TITLE>Rule-based Mathematics</TITLE>
+<H1 align=center>Rule-based Mathematics</H1>
+<H2 align=center>Indefinite Integration Reduction Rules</H2>
+<H3 align=center>Crafted by Albert D. Rich, Applied Logician</H3>
+</HEAD>
+<BR>
+
+If systematically applied, the reduction rules provided on this website can determine the 
+antiderivative for a wide variety of integrands.  
+As proof, a rule-based integrator nicknamed <B>Rubi</B> was implemented using these rules.  
+<B>Rubi</B> dramatically out-performs <B><I>Maple</I></B> and <B><I>Mathematica</I></B> 
+(the two major commercial computer algebra systems) on a test suite of well over 18 thousand 
+integration problems. 
+The following table summarizes the result of running the test suite on these systems:
+<BR>
+<BR>
+
+<head>
+<link rel=Stylesheet href=stylesheet.css>
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.75in .5in 1.0in .5in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-page-orientation:landscape;}
+-->
+</style>
+
+</head>
+
+<body link=blue vlink=purple>
+
+<table border=0 cellpadding=0 cellspacing=0 width=918 style='border-collapse:
+ collapse;table-layout:fixed;width:686pt'>
+ <col width=170 style='mso-width-source:userset;mso-width-alt:6030;width:127pt'>
+ <col width=67 style='mso-width-source:userset;mso-width-alt:2389;width:50pt'>
+ <col width=17 style='mso-width-source:userset;mso-width-alt:597;width:13pt'>
+ <col width=55 style='mso-width-source:userset;mso-width-alt:1962;width:41pt'>
+ <col width=51 span=3 style='mso-width-source:userset;mso-width-alt:1820;
+ width:38pt'>
+ <col width=17 style='mso-width-source:userset;mso-width-alt:597;width:13pt'>
+ <col width=58 style='mso-width-source:userset;mso-width-alt:2076;width:44pt'>
+ <col width=51 span=3 style='mso-width-source:userset;mso-width-alt:1820;
+ width:38pt'>
+ <col width=17 style='mso-width-source:userset;mso-width-alt:597;width:13pt'>
+ <col width=58 style='mso-width-source:userset;mso-width-alt:2048;width:43pt'>
+ <col width=51 span=3 style='mso-width-source:userset;mso-width-alt:1820;
+ width:38pt'>
+ <tr height=36 style='mso-height-source:userset;height:27.0pt'>
+  <td height=36 width=170 style='height:27.0pt;width:127pt'></td>
+  <td width=67 style='width:50pt'></td>
+  <td class=xl84 colspan=11 width=470 style='mso-ignore:colspan;width:352pt'>Indefinite
+  Integration Test Suite Results</td>
+  <td width=58 style='width:43pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+ </tr>
+ <tr class=xl76 height=21 style='mso-height-source:userset;height:15.75pt'>
+  <td height=21 class=xl76 style='height:15.75pt'></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl86></td>
+  <td colspan=3 class=xl92>9 June 2011</td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 style='height:15.0pt'></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl76 style='height:15.0pt'></td>
+  <td class=xl76></td>
+  <td class=xl90></td>
+  <td colspan=4 class=xl93>Rubi 3</td>
+  <td class=xl90></td>
+  <td colspan=4 class=xl93>Maple 13</td>
+  <td class=xl90></td>
+  <td colspan=4 class=xl93>Mathematica 7</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl73 style='height:15.0pt'>Integrand Types</td>
+  <td class=xl72>Problems</td>
+  <td class=xl90></td>
+  <td class=xl70>Optimal</td>
+  <td class=xl71>Messy</td>
+  <td class=xl71>Unable</td>
+  <td class=xl72>Invalid</td>
+  <td class=xl90></td>
+  <td class=xl70>Optimal</td>
+  <td class=xl71>Messy</td>
+  <td class=xl71>Unable</td>
+  <td class=xl72>Invalid</td>
+  <td class=xl90></td>
+  <td class=xl70>Optimal</td>
+  <td class=xl71>Messy</td>
+  <td class=xl71>Unable</td>
+  <td class=xl72>Invalid</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl78 style='height:15.0pt'>Rational functions</td>
+  <td class=xl79 align=right>1745</td>
+  <td class=xl90></td>
+  <td class=xl78 align=right>1744</td>
+  <td class=xl80 align=right>0</td>
+  <td class=xl80 align=right>1</td>
+  <td class=xl79 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl78 align=right>1372</td>
+  <td class=xl80 align=right>350</td>
+  <td class=xl80 align=right>2</td>
+  <td class=xl79 align=right>21</td>
+  <td class=xl90></td>
+  <td class=xl78 align=right>1613</td>
+  <td class=xl80 align=right>123</td>
+  <td class=xl80 align=right>8</td>
+  <td class=xl79 align=right>1</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl81 style='height:15.0pt'>Algebraic functions</td>
+  <td class=xl82 align=right>1906</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>1890</td>
+  <td class=xl83 align=right>7</td>
+  <td class=xl83 align=right>9</td>
+  <td class=xl82 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>1187</td>
+  <td class=xl83 align=right>272</td>
+  <td class=xl83 align=right>87</td>
+  <td class=xl82 align=right>360</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>1763</td>
+  <td class=xl83 align=right>94</td>
+  <td class=xl83 align=right>39</td>
+  <td class=xl82 align=right>10</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl78 style='height:15.0pt;border-top:none'>Exponential
+  functions</td>
+  <td class=xl79 align=right style='border-top:none'>592</td>
+  <td class=xl90></td>
+  <td class=xl78 align=right style='border-top:none'>588</td>
+  <td align=right>0</td>
+  <td align=right>4</td>
+  <td align=right>0</td>
+  <td class=xl94>&nbsp;</td>
+  <td class=xl78 align=right style='border-top:none;border-left:none'>368</td>
+  <td align=right>67</td>
+  <td align=right>55</td>
+  <td align=right>102</td>
+  <td class=xl95>&nbsp;</td>
+  <td class=xl78 align=right style='border-top:none'>548</td>
+  <td align=right>15</td>
+  <td align=right>15</td>
+  <td class=xl79 align=right style='border-top:none'>14</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl81 style='height:15.0pt'>Logarithm functions</td>
+  <td class=xl82 align=right>682</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>679</td>
+  <td class=xl83 align=right>1</td>
+  <td class=xl83 align=right>2</td>
+  <td class=xl82 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>275</td>
+  <td class=xl83 align=right>134</td>
+  <td class=xl83 align=right>236</td>
+  <td class=xl82 align=right>37</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>628</td>
+  <td class=xl83 align=right>32</td>
+  <td class=xl83 align=right>22</td>
+  <td class=xl82 align=right>0</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>Trig functions</td>
+  <td class=xl66 align=right>8871</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>8862</td>
+  <td align=right>4</td>
+  <td align=right>5</td>
+  <td class=xl66 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>2670</td>
+  <td align=right>5308</td>
+  <td align=right>217</td>
+  <td class=xl66 align=right>676</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>5401</td>
+  <td align=right>2079</td>
+  <td align=right>231</td>
+  <td class=xl66 align=right>1160</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl81 style='height:15.0pt'>Inverse trig functions</td>
+  <td class=xl66 align=right>559</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>555</td>
+  <td class=xl83 align=right>1</td>
+  <td class=xl83 align=right>3</td>
+  <td class=xl82 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>291</td>
+  <td class=xl83 align=right>126</td>
+  <td class=xl83 align=right>27</td>
+  <td class=xl82 align=right>115</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>509</td>
+  <td class=xl83 align=right>31</td>
+  <td class=xl83 align=right>19</td>
+  <td class=xl82 align=right>0</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>Hyperbolic functions</td>
+  <td class=xl79 align=right>2431</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>2424</td>
+  <td align=right>4</td>
+  <td align=right>3</td>
+  <td class=xl66 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>766</td>
+  <td align=right>1120</td>
+  <td align=right>389</td>
+  <td class=xl66 align=right>156</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>2094</td>
+  <td align=right>293</td>
+  <td align=right>27</td>
+  <td class=xl66 align=right>17</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl81 style='height:15.0pt'>Inverse hyperbolic functions</td>
+  <td class=xl82 align=right>851</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>848</td>
+  <td class=xl83 align=right>0</td>
+  <td class=xl83 align=right>3</td>
+  <td class=xl82 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>213</td>
+  <td class=xl83 align=right>119</td>
+  <td class=xl83 align=right>307</td>
+  <td class=xl82 align=right>212</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>780</td>
+  <td class=xl83 align=right>56</td>
+  <td class=xl83 align=right>13</td>
+  <td class=xl82 align=right>2</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl78 style='height:15.0pt;border-top:none'>Error and
+  Fresnel functions</td>
+  <td class=xl79 align=right style='border-top:none'>240</td>
+  <td class=xl90></td>
+  <td class=xl78 align=right style='border-top:none'>240</td>
+  <td class=xl80 align=right style='border-top:none'>0</td>
+  <td class=xl80 align=right style='border-top:none'>0</td>
+  <td class=xl79 align=right style='border-top:none'>0</td>
+  <td class=xl90></td>
+  <td class=xl78 align=right style='border-top:none'>164</td>
+  <td class=xl80 align=right style='border-top:none'>0</td>
+  <td class=xl80 align=right style='border-top:none'>68</td>
+  <td class=xl79 align=right style='border-top:none'>8</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>177</td>
+  <td align=right>0</td>
+  <td align=right>63</td>
+  <td class=xl66 align=right>0</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>Integral functions</td>
+  <td class=xl66 align=right>250</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>250</td>
+  <td align=right>0</td>
+  <td align=right>0</td>
+  <td class=xl66 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>207</td>
+  <td align=right>10</td>
+  <td align=right>28</td>
+  <td class=xl66 align=right>5</td>
+  <td class=xl90></td>
+  <td class=xl65 align=right>224</td>
+  <td align=right>6</td>
+  <td align=right>20</td>
+  <td class=xl66 align=right>0</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>Special functions</td>
+  <td class=xl66 align=right>449</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>449</td>
+  <td class=xl83 align=right>0</td>
+  <td class=xl83 align=right>0</td>
+  <td class=xl82 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>188</td>
+  <td class=xl83 align=right>10</td>
+  <td class=xl83 align=right>140</td>
+  <td class=xl82 align=right>111</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>290</td>
+  <td class=xl83 align=right>0</td>
+  <td class=xl83 align=right>159</td>
+  <td class=xl82 align=right>0</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl97 style='height:15.0pt'>Contributed problems</td>
+  <td class=xl96 align=right>180</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>173</td>
+  <td class=xl83 align=right>5</td>
+  <td class=xl83 align=right>2</td>
+  <td class=xl82 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>122</td>
+  <td class=xl83 align=right>32</td>
+  <td class=xl83 align=right>15</td>
+  <td class=xl82 align=right>11</td>
+  <td class=xl90></td>
+  <td class=xl81 align=right>142</td>
+  <td class=xl83 align=right>22</td>
+  <td class=xl83 align=right>13</td>
+  <td class=xl82 align=right>3</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl74 style='height:15.0pt'>Totals</td>
+  <td class=xl87 align=right>18756</td>
+  <td class=xl90></td>
+  <td class=xl88 align=right>18702</td>
+  <td class=xl77 align=right>22</td>
+  <td class=xl77 align=right>32</td>
+  <td class=xl87 align=right>0</td>
+  <td class=xl90></td>
+  <td class=xl88 align=right>7823</td>
+  <td class=xl77 align=right>7548</td>
+  <td class=xl77 align=right>1571</td>
+  <td class=xl87 align=right>1814</td>
+  <td class=xl90></td>
+  <td class=xl88 align=right>14169</td>
+  <td class=xl77 align=right>2751</td>
+  <td class=xl77 align=right>629</td>
+  <td class=xl87 align=right>1207</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl75 style='height:15.0pt'>Percentages</td>
+  <td class=xl68>&nbsp;</td>
+  <td class=xl90></td>
+  <td class=xl69 align=right>99.7%</td>
+  <td class=xl67 align=right>0.1%</td>
+  <td class=xl67 align=right>0.2%</td>
+  <td class=xl68 align=right>0.0%</td>
+  <td class=xl90></td>
+  <td class=xl69 align=right>41.7%</td>
+  <td class=xl67 align=right>40.2%</td>
+  <td class=xl67 align=right>8.4%</td>
+  <td class=xl68 align=right>9.7%</td>
+  <td class=xl90></td>
+  <td class=xl69 align=right>75.5%</td>
+  <td class=xl67 align=right>14.7%</td>
+  <td class=xl67 align=right>3.4%</td>
+  <td class=xl68 align=right>6.4%</td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl89 style='height:15.0pt'></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl91></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl91></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl91></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+  <td class=xl90></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl77 style='height:15.0pt'>Column headings:</td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl85 colspan=7 style='height:15.0pt;mso-ignore:colspan'>Problems:
+  <font class="font11">the number of integration problems for each type of
+  integrand.</font></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl85 colspan=15 style='height:15.0pt;mso-ignore:colspan'>Optimal:
+  <font class="font11">the number of results that are optimal or no more than
+  twice the size of the optimal antiderivative, in terms of leaf counts.</font></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl85 colspan=11 style='height:15.0pt;mso-ignore:colspan'>Messy:
+  <font class="font7">the number of results that are correct but more than
+  twice the size of the optimal antiderivative.</font></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl85 colspan=11 style='height:15.0pt;mso-ignore:colspan'>Unable:
+  <font class="font7">the number of problems the system returns unintegrated or
+  cannot integrate in 60 seconds.</font></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <tr height=20 style='mso-height-source:userset;height:15.0pt'>
+  <td height=20 class=xl85 colspan=12 style='height:15.0pt;mso-ignore:colspan'>Invalid:
+  <font class="font7">the number of results that are incorrect </font><font
+  class="font12">or </font><font class="font7">the system is incapable of
+  verifying correct by differentiation.</font></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=170 style='width:127pt'></td>
+  <td width=67 style='width:50pt'></td>
+  <td width=17 style='width:13pt'></td>
+  <td width=55 style='width:41pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=17 style='width:13pt'></td>
+  <td width=58 style='width:44pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=17 style='width:13pt'></td>
+  <td width=58 style='width:43pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+  <td width=51 style='width:38pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+<BR>
+<A HREF="IntegrationTestHighlights/TestResultHighlights.html">Highlights of the Indefinite Integration Test Results</A> 
+gives numerous eye-opening comparisons of the <B>Rubi</B>, <B><I>Maple</I></B> and <B><I>Mathematica</I></B> integrators.<BR>
+<BR>
+<A HREF="A Rule-based Knowledge Repository.pdf">A Knowledge Repository for Indefinite Integration Based on 
+Transformation Rules</A> describes the principles used to build this repository.<BR>
+<BR>
+To view or download the rules <B>Rubi</B> uses to integrate expressions, click on one of the following file types:<BR>
+<UL><A HREF="IntegrationRules/PortableDocumentFiles/PortableDocumentFiles.html">Rules in portable document format (pdf) files</A><BR>
+    <A HREF="IntegrationRules/MathematicaNotebookFiles/MathematicaNotebookFiles.html">Rules in Mathematica notebook files</A><BR>
+</UL>
+To view or download the indefinite integration problems in the test suite, click on one of the following formats:<BR>
+<UL><A HREF="IntegrationProblems/MapleSyntaxFiles/MapleSyntaxFiles.html">Problems in Maple syntax text files</A><BR>
+    <A HREF="IntegrationProblems/MathematicaSyntaxFiles/MathematicaSyntaxFiles.html">Problems in Mathematica syntax package files</A><BR>
+</UL>
+To view or download the raw indefinite integration test results as generated by these systems, click on one of the following:<BR>
+<UL><A HREF="IntegrationTestResults/RubiTestResults/RubiTestResults.html">Rubi test results</A><BR>
+    <A HREF="IntegrationTestResults/MapleTestResults/MapleTestResults.html">Maple test results</A><BR>
+    <A HREF="IntegrationTestResults/MathematicaTestResults/MathematicaTestResults.html">Mathematica test results</A><BR>
+</UL>
+
+I encourage the submission of new rules and test problems, preferably in the same format as the files on this website.
+Please send your comments and suggestions to Albert_Rich@msn.com<BR>
+<BR>
+The mathematical knowledge on this website is freely available for any educational, academic or commercial use. 
+Please include the website address and appropriately acknowledge its author in any product incorporating its contents.<BR>
+<BR>
+
+<H1 align=center>
+<a href="http://s01.flagcounter.com/more/vCIQ"><img src="http://s01.flagcounter.com/count/vCIQ/bg=FFFFFF/txt=3131CC/border=B7BF43/columns=8/maxflags=72/viewers=0/labels=0/" alt="free counters" border="0"></a>
+</H1>
+
+<B><I>Maple</I></B> is a registered trademark of Maplesoft.<BR>
+<B><I>Mathematica</I></B> is a registered trademark of Wolfram Research, Inc. who generously provided a copy of 
+<B><I>Mathematica</I></B> 8.0.1 to support this research.<BR>
+<BR>
+</body>
+</HTML>

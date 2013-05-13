@@ -1,0 +1,303 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      8060,        294]
+NotebookOptionsPosition[      6653,        245]
+NotebookOutlinePosition[      7477,        276]
+CellTagsIndexPosition[      7434,        273]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[TextData[{
+ StyleBox["Rubi",
+  FontSlant->"Italic"],
+ " 3 Test Suite Results"
+}], "Title",
+ CellChangeTimes->{{3.4818719088423295`*^9, 3.4818720034583807`*^9}, {
+   3.481872358268573*^9, 3.481872359981035*^9}, {3.4897245969182005`*^9, 
+   3.489724597478201*^9}, 3.5160687138108115`*^9},
+ TextAlignment->Center],
+
+Cell["Indefinite Integration Problems Involving Logarithms", "Subtitle",
+ CellChangeTimes->{
+  3.481871993073448*^9, {3.481872066198597*^9, 3.481872068031232*^9}, {
+   3.4818724310932894`*^9, 3.481872431604024*^9}, {3.481872605904656*^9, 
+   3.481872608568486*^9}, {3.5160686931563754`*^9, 3.516068701798791*^9}},
+ TextAlignment->Center,
+ FontWeight->"Bold"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox["\<\"Unable to integrate:\"\>",
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376570043025`*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"{", 
+   RowBox[{
+    FractionBox["1", 
+     RowBox[{"x", " ", 
+      RowBox[{"Log", "[", 
+       SuperscriptBox["\[ExponentialE]", "x"], "]"}]}]], ",", "x", ",", 
+    RowBox[{"-", "1"}], ",", "0"}], "}"}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376570143023`*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  FractionBox[
+   RowBox[{
+    RowBox[{"-", 
+     RowBox[{"Log", "[", "x", "]"}]}], "+", 
+    RowBox[{"Log", "[", 
+     RowBox[{"Log", "[", 
+      SuperscriptBox["\[ExponentialE]", "x"], "]"}], "]"}]}], 
+   RowBox[{"x", "-", 
+    RowBox[{"Log", "[", 
+     SuperscriptBox["\[ExponentialE]", "x"], "]"}]}]],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376570143023`*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"Int", "[", 
+   RowBox[{
+    FractionBox["1", 
+     RowBox[{"x", " ", 
+      RowBox[{"Log", "[", 
+       SuperscriptBox["\[ExponentialE]", "x"], "]"}]}]], ",", "x"}], "]"}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376570143023`*^9}],
+
+Cell[BoxData["\<\"\"\>"], "Print",
+ CellChangeTimes->{3.5163376570243025`*^9}],
+
+Cell[BoxData[
+ StyleBox["\<\"Unable to integrate:\"\>",
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.516337657504303*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"{", 
+   RowBox[{
+    FractionBox[
+     RowBox[{"Cot", "[", "x", "]"}], 
+     RowBox[{"Log", "[", 
+      SuperscriptBox["\[ExponentialE]", 
+       RowBox[{"Sin", "[", "x", "]"}]], "]"}]], ",", "x", ",", 
+    RowBox[{"-", "1"}], ",", "1"}], "}"}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.516337657514303*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  FractionBox[
+   RowBox[{
+    RowBox[{"Log", "[", 
+     RowBox[{"Log", "[", 
+      SuperscriptBox["\[ExponentialE]", 
+       RowBox[{"Sin", "[", "x", "]"}]], "]"}], "]"}], "-", 
+    RowBox[{"Log", "[", 
+     RowBox[{"Sin", "[", "x", "]"}], "]"}]}], 
+   RowBox[{
+    RowBox[{"-", 
+     RowBox[{"Log", "[", 
+      SuperscriptBox["\[ExponentialE]", 
+       RowBox[{"Sin", "[", "x", "]"}]], "]"}]}], "+", 
+    RowBox[{"Sin", "[", "x", "]"}]}]],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.516337657514303*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"Subst", "[", 
+   RowBox[{
+    RowBox[{"Int", "[", 
+     RowBox[{
+      FractionBox["1", 
+       RowBox[{"x", " ", 
+        RowBox[{"Log", "[", 
+         SuperscriptBox["\[ExponentialE]", "x"], "]"}]}]], ",", "x"}], "]"}], 
+    ",", "x", ",", 
+    RowBox[{"Sin", "[", "x", "]"}]}], "]"}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.516337657514303*^9}],
+
+Cell[BoxData["\<\"\"\>"], "Print",
+ CellChangeTimes->{3.5163376575243034`*^9}],
+
+Cell[BoxData[
+ StyleBox["\<\"Valid but unnecessarily complicated antiderivative:\"\>",
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376669243164`*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"{", 
+   RowBox[{
+    FractionBox[
+     RowBox[{
+      RowBox[{"-", "1"}], "+", 
+      SuperscriptBox[
+       RowBox[{"Log", "[", 
+        RowBox[{"3", " ", "x"}], "]"}], "2"]}], 
+     RowBox[{"x", "+", 
+      RowBox[{"x", " ", 
+       SuperscriptBox[
+        RowBox[{"Log", "[", 
+         RowBox[{"3", " ", "x"}], "]"}], "3"]}]}]], ",", "x", ",", 
+    RowBox[{"-", "10"}], ",", "10"}], "}"}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376669243164`*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"ArcTan", "[", 
+     FractionBox[
+      RowBox[{"1", "-", 
+       RowBox[{"2", " ", 
+        RowBox[{"Log", "[", 
+         RowBox[{"3", " ", "x"}], "]"}]}]}], 
+      SqrtBox["3"]], "]"}], 
+    SqrtBox["3"]], "+", 
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    RowBox[{"Log", "[", 
+     RowBox[{"1", "-", 
+      RowBox[{"Log", "[", 
+       RowBox[{"3", " ", "x"}], "]"}], "+", 
+      SuperscriptBox[
+       RowBox[{"Log", "[", 
+        RowBox[{"3", " ", "x"}], "]"}], "2"]}], "]"}]}]}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376669343166`*^9}],
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"ArcTan", "[", 
+     FractionBox[
+      RowBox[{"1", "-", 
+       RowBox[{"2", " ", 
+        RowBox[{"Log", "[", 
+         RowBox[{"3", " ", "x"}], "]"}]}]}], 
+      SqrtBox["3"]], "]"}], 
+    SqrtBox["3"]], "-", 
+   RowBox[{
+    FractionBox["1", "3"], " ", 
+    RowBox[{"Log", "[", 
+     RowBox[{"1", "+", 
+      RowBox[{"Log", "[", 
+       RowBox[{"3", " ", "x"}], "]"}]}], "]"}]}], "+", 
+   RowBox[{
+    FractionBox["1", "6"], " ", 
+    RowBox[{"Log", "[", 
+     RowBox[{"1", "-", 
+      RowBox[{"Log", "[", 
+       RowBox[{"3", " ", "x"}], "]"}], "+", 
+      SuperscriptBox[
+       RowBox[{"Log", "[", 
+        RowBox[{"3", " ", "x"}], "]"}], "2"]}], "]"}]}], "+", 
+   RowBox[{
+    FractionBox["1", "3"], " ", 
+    RowBox[{"Log", "[", 
+     RowBox[{"1", "+", 
+      SuperscriptBox[
+       RowBox[{"Log", "[", 
+        RowBox[{"3", " ", "x"}], "]"}], "3"]}], "]"}]}]}],
+  StripOnInput->False,
+  FontSize->10]], "Print",
+ CellChangeTimes->{3.5163376669343166`*^9}],
+
+Cell[BoxData["\<\"\"\>"], "Print",
+ CellChangeTimes->{3.5163376669343166`*^9}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1912, 961},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+PageHeaders->{{
+   Cell[
+    TextData[{
+      Cell[
+       TextData[{
+         CounterBox["Page"]}], "PageNumber"], " ", 
+      Cell[
+      " ", "Header", CellFrame -> {{0.5, 0}, {0, 0}}, CellFrameMargins -> 4], 
+      Cell[
+       TextData[{
+         ValueBox["FileName"]}], "Header"]}], 
+    CellMargins -> {{0, Inherited}, {Inherited, Inherited}}], None, None}, {
+  None, None, None}},
+PrintingOptions->{"FacingPages"->False,
+"FirstPageHeader"->True,
+"PrintingMargins"->28.8},
+FrontEndVersion->"7.0 for Microsoft Windows (64-bit) (February 18, 2009)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[567, 22, 315, 8, 83, "Title"],
+Cell[885, 32, 358, 6, 51, "Subtitle"],
+Cell[CellGroupData[{
+Cell[1268, 42, 149, 4, 20, "Print"],
+Cell[1420, 48, 335, 11, 40, "Print"],
+Cell[1758, 61, 424, 14, 43, "Print"],
+Cell[2185, 77, 302, 10, 40, "Print"],
+Cell[2490, 89, 78, 1, 23, "Print"],
+Cell[2571, 92, 147, 4, 20, "Print"],
+Cell[2721, 98, 373, 12, 41, "Print"],
+Cell[3097, 112, 558, 18, 45, "Print"],
+Cell[3658, 132, 415, 14, 40, "Print"],
+Cell[4076, 148, 78, 1, 23, "Print"],
+Cell[4157, 151, 180, 4, 20, "Print"],
+Cell[4340, 157, 522, 18, 43, "Print"],
+Cell[4865, 177, 646, 23, 56, "Print"],
+Cell[5514, 202, 1030, 36, 56, "Print"],
+Cell[6547, 240, 78, 1, 23, "Print"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

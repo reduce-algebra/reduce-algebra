@@ -1,0 +1,2055 @@
+              * * *  Maple Integration Test Results - 2011-06-08  * * *
+
+
+Test file:  SpecialFunctions/ErrorFunctions.txt
+
+Unable to integrate:
+  Integrand        = erf(b*x)^2/x^7
+  Optimal integral = -1/15*b^2/exp(2*b^2*x^2)/Pi/x^4+2/9*b^4/exp(2*b^2*x^2)/x^2/Pi-2/45*b*(3-2*b^2*x^2+4*b^4*x^4)*erf(b*x)/exp(b^2*x^2)/Pi^(1/2)/x^5-1/90*(8*b^6+15/x^6)*erf(b*x)^2+28/45*b^6*Ei(-2*b^2*x^2)/Pi
+  Maple integral   = int(erf(b*x)^2/x^7,x)
+
+Unable to integrate:
+  Integrand        = erf(b*x)^2/x^5
+  Optimal integral = -1/3*b^2/exp(2*b^2*x^2)/x^2/Pi-1/3*b*(1-2*b^2*x^2)*erf(b*x)/exp(b^2*x^2)/Pi^(1/2)/x^3+1/12*(4*b^4-3/x^4)*erf(b*x)^2-4/3*b^4*Ei(-2*b^2*x^2)/Pi
+  Maple integral   = int(erf(b*x)^2/x^5,x)
+
+Unable to integrate:
+  Integrand        = erf(b*x)^2/x^3
+  Optimal integral = -2*b*erf(b*x)/exp(b^2*x^2)/Pi^(1/2)/x-1/2*(2*b^2+1/x^2)*erf(b*x)^2+2*b^2*Ei(-2*b^2*x^2)/Pi
+  Maple integral   = int(erf(b*x)^2/x^3,x)
+
+Unable to integrate:
+  Integrand        = x*erf(b*x)^2
+  Optimal integral = 1/2/exp(2*b^2*x^2)/b^2/Pi+x*erf(b*x)/exp(b^2*x^2)/b/Pi^(1/2)-1/4*(1/b^2-2*x^2)*erf(b*x)^2
+  Maple integral   = int(x*erf(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^3*erf(b*x)^2
+  Optimal integral = 1/2/exp(2*b^2*x^2)/b^4/Pi+1/4*x^2/exp(2*b^2*x^2)/b^2/Pi+1/4*x*(3+2*b^2*x^2)*erf(b*x)/exp(b^2*x^2)/b^3/Pi^(1/2)-1/16*(3/b^4-4*x^4)*erf(b*x)^2
+  Maple integral   = int(x^3*erf(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^5*erf(b*x)^2
+  Optimal integral = 11/12/exp(2*b^2*x^2)/b^6/Pi+7/12*x^2/exp(2*b^2*x^2)/b^4/Pi+1/6*x^4/exp(2*b^2*x^2)/b^2/Pi+1/12*x*(15+10*b^2*x^2+4*b^4*x^4)*erf(b*x)/exp(b^2*x^2)/b^5/Pi^(1/2)-1/48*(15/b^6-8*x^6)*erf(b*x)^2
+  Maple integral   = int(x^5*erf(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x*erf(a+b*x)^2
+  Optimal integral = 1/2/exp(2*(a+b*x)^2)/b^2/Pi-(a-b*x)*erf(a+b*x)/exp((a+b*x)^2)/b^2/Pi^(1/2)-1/4*(1+2*a^2-2*b^2*x^2)*erf(a+b*x)^2/b^2+a*2^(1/2)/Pi^(1/2)*erf(2^(1/2)*(a+b*x))/b^2
+  Maple integral   = int(x*erf(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*erf(a+b*x)^2
+  Optimal integral = -2/3*a/exp(2*(a+b*x)^2)/b^3/Pi+1/3*x/exp(2*(a+b*x)^2)/b^2/Pi+2/3*(1+a^2-a*b*x+b^2*x^2)*erf(a+b*x)/exp((a+b*x)^2)/b^3/Pi^(1/2)+1/6*(3*a+2*a^3+2*b^3*x^3)*erf(a+b*x)^2/b^3-1/12*(5+12*a^2)*erf(2^(1/2)*(a+b*x))/b^3*2^(1/2)/Pi^(1/2)
+  Maple integral   = int(x^2*erf(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erf(b*x)/x^8
+  Optimal integral = -1/21*b/exp(2*b^2*x^2)/Pi^(1/2)/x^6+8/105*b^3/exp(2*b^2*x^2)/Pi^(1/2)/x^4-4/21*b^5/exp(2*b^2*x^2)/Pi^(1/2)/x^2-1/105*(15-6*b^2*x^2+4*b^4*x^4-8*b^6*x^6)*erf(b*x)/exp(b^2*x^2)/x^7+4/105*b^7*Pi^(1/2)*erf(b*x)^2-16/35*b^7*Ei(-2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(-b^2*x^2)*erf(b*x)/x^8,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erf(b*x)/x^6
+  Optimal integral = -1/10*b/exp(2*b^2*x^2)/Pi^(1/2)/x^4+1/3*b^3/exp(2*b^2*x^2)/Pi^(1/2)/x^2-1/15*(3-2*b^2*x^2+4*b^4*x^4)*erf(b*x)/exp(b^2*x^2)/x^5-2/15*b^5*Pi^(1/2)*erf(b*x)^2+14/15*b^5*Ei(-2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(-b^2*x^2)*erf(b*x)/x^6,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erf(b*x)/x^4
+  Optimal integral = -1/3*b/exp(2*b^2*x^2)/Pi^(1/2)/x^2-1/3*(1-2*b^2*x^2)*erf(b*x)/exp(b^2*x^2)/x^3+1/3*b^3*Pi^(1/2)*erf(b*x)^2-4/3*b^3*Ei(-2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(-b^2*x^2)*erf(b*x)/x^4,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erf(b*x)/x^2
+  Optimal integral = -erf(b*x)/exp(b^2*x^2)/x-1/2*b*Pi^(1/2)*erf(b*x)^2+b*Ei(-2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(-b^2*x^2)*erf(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = erfc(b*x)^2/x^7
+  Optimal integral = 1/90*((56*b^6*Ei(-2*b^2*x^2)*x^6*exp(b^2*x^2)*Pi^(1/2)-8*(Pi^(3/2)*erfc(b*x)*(b^6*x^6+15/8)*exp(b^2*x^2)-2*b*Pi*(3/4-1/2*b^2*x^2+b^4*x^4)*x)*erfc(b*x))*exp(2*b^2*x^2)+20*b^2*(b^2*x^2-3/10)*exp(b^2*x^2)*Pi^(1/2)*x^2)/exp(2*b^2*x^2)/Pi^(3/2)/x^6/exp(b^2*x^2)
+  Maple integral   = int(erfc(b*x)^2/x^7,x)
+
+Unable to integrate:
+  Integrand        = erfc(b*x)^2/x^5
+  Optimal integral = -1/3*b^2/exp(2*b^2*x^2)/x^2/Pi+1/3*b*erfc(b*x)/exp(b^2*x^2)/Pi^(1/2)/x^3-2/3*b^3*erfc(b*x)/exp(b^2*x^2)/Pi^(1/2)/x+1/3*b^4*erfc(b*x)^2-1/4*erfc(b*x)^2/x^4-4/3*b^4*Ei(-2*b^2*x^2)/Pi
+  Maple integral   = int(erfc(b*x)^2/x^5,x)
+
+Unable to integrate:
+  Integrand        = erfc(b*x)^2/x^3
+  Optimal integral = 2*b*erfc(b*x)/exp(b^2*x^2)/Pi^(1/2)/x-b^2*erfc(b*x)^2-1/2*erfc(b*x)^2/x^2+2*b^2*Ei(-2*b^2*x^2)/Pi
+  Maple integral   = int(erfc(b*x)^2/x^3,x)
+
+Incorrect antiderivative:
+  Integrand        = erfc(b*x)^2
+  Optimal integral = -2^(1/2)/Pi^(1/2)*erf(2^(1/2)*b*x)/b-2*erfc(b*x)/exp(b^2*x^2)/b/Pi^(1/2)+x*erfc(b*x)^2
+  Maple integral   = 1/b*(erf(b*x)^2*b*x+2*erf(b*x)/Pi^(1/2)*exp(-b^2*x^2)-1/Pi^(1/2)*2^(1/2)*erf(2^(1/2)*b*x))
+
+Unable to integrate:
+  Integrand        = x*erfc(b*x)^2
+  Optimal integral = 1/2/exp(2*b^2*x^2)/b^2/Pi-x*erfc(b*x)/exp(b^2*x^2)/b/Pi^(1/2)-1/4*erfc(b*x)^2/b^2+1/2*x^2*erfc(b*x)^2
+  Maple integral   = int(x*erfc(b*x)^2,x)
+
+Incorrect antiderivative:
+  Integrand        = x^2*erfc(b*x)^2
+  Optimal integral = 1/3*x/exp(2*b^2*x^2)/b^2/Pi-5/12*erf(2^(1/2)*b*x)/b^3*2^(1/2)/Pi^(1/2)-2/3*erfc(b*x)/exp(b^2*x^2)/b^3/Pi^(1/2)-2/3*x^2*erfc(b*x)/exp(b^2*x^2)/b/Pi^(1/2)+1/3*x^3*erfc(b*x)^2
+  Maple integral   = 1/b^3*(1/3*b^3*x^3-2/3*erf(b*x)*b^3*x^3+4/3/Pi^(1/2)*(-1/2/exp(b^2*x^2)*b^2*x^2-1/2/exp(b^2*x^2))+1/3*erf(b*x)^2*b^3*x^3-4/3*erf(b*x)/Pi^(1/2)*(-1/2/exp(b^2*x^2)*b^2*x^2-1/2/exp(b^2*x^2))+8/3/Pi*(1/8/exp(b^2*x^2)^2*b*x-5/32*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*b*x)))
+
+Unable to integrate:
+  Integrand        = x^3*erfc(b*x)^2
+  Optimal integral = 1/16*(4*(Pi^(3/2)*(b^4*x^4-3/4)*erfc(b*x)*exp(b^2*x^2)+(-3*b*x-2*b^3*x^3)*Pi)*erfc(b*x)*exp(2*b^2*x^2)+4*exp(b^2*x^2)*Pi^(1/2)*(b^2*x^2+2))/exp(2*b^2*x^2)/b^4/Pi^(3/2)/exp(b^2*x^2)
+  Maple integral   = int(x^3*erfc(b*x)^2,x)
+
+Incorrect antiderivative:
+  Integrand        = x^4*erfc(b*x)^2
+  Optimal integral = 1/80*(((-43*2^(1/2)*erf(2^(1/2)*b*x)*Pi+16*x^5*erfc(b*x)^2*b^5*Pi^(3/2))*exp(b^2*x^2)-32*erfc(b*x)*Pi*(2+2*b^2*x^2+b^4*x^4))*exp(2*b^2*x^2)+16*(11/4+b^2*x^2)*b*Pi^(1/2)*exp(b^2*x^2)*x)/exp(2*b^2*x^2)/b^5/Pi^(3/2)/exp(b^2*x^2)
+  Maple integral   = 1/b^5*(1/5*x^5*b^5-2/5*erf(b*x)*b^5*x^5+4/5/Pi^(1/2)*(-1/2/exp(b^2*x^2)*b^4*x^4-1/exp(b^2*x^2)*b^2*x^2-1/exp(b^2*x^2))+1/5*erf(b*x)^2*b^5*x^5-4/5*erf(b*x)/Pi^(1/2)*(-1/2/exp(b^2*x^2)*b^4*x^4-1/exp(b^2*x^2)*b^2*x^2-1/exp(b^2*x^2))+8/5/Pi*(1/8/exp(b^2*x^2)^2*b^3*x^3+11/32/exp(b^2*x^2)^2*b*x-43/128*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*b*x)))
+
+Unable to integrate:
+  Integrand        = x^5*erfc(b*x)^2
+  Optimal integral = 1/48*(8*erfc(b*x)*(Pi^(3/2)*erfc(b*x)*(-15/8+b^6*x^6)*exp(b^2*x^2)-2*b*Pi*x*(15/4+5/2*b^2*x^2+b^4*x^4))*exp(2*b^2*x^2)+8*exp(b^2*x^2)*Pi^(1/2)*(7/2*b^2*x^2+b^4*x^4+11/2))/exp(2*b^2*x^2)/b^6/Pi^(3/2)/exp(b^2*x^2)
+  Maple integral   = int(x^5*erfc(b*x)^2,x)
+
+Incorrect antiderivative:
+  Integrand        = x^6*erfc(b*x)^2
+  Optimal integral = 1/448*(((-531*2^(1/2)*erf(2^(1/2)*b*x)*Pi+64*x^7*erfc(b*x)^2*b^7*Pi^(3/2))*exp(b^2*x^2)-128*erfc(b*x)*Pi*(6+6*b^2*x^2+3*b^4*x^4+b^6*x^6))*exp(2*b^2*x^2)+64*b*(147/16+17/4*b^2*x^2+b^4*x^4)*Pi^(1/2)*exp(b^2*x^2)*x)/exp(2*b^2*x^2)/b^7/Pi^(3/2)/exp(b^2*x^2)
+  Maple integral   = 1/b^7*(1/7*x^7*b^7-2/7*erf(b*x)*b^7*x^7+4/7/Pi^(1/2)*(-1/2/exp(b^2*x^2)*b^6*x^6-3/2/exp(b^2*x^2)*b^4*x^4-3/exp(b^2*x^2)*b^2*x^2-3/exp(b^2*x^2))+1/7*erf(b*x)^2*b^7*x^7-4/7*erf(b*x)/Pi^(1/2)*(-1/2/exp(b^2*x^2)*b^6*x^6-3/2/exp(b^2*x^2)*b^4*x^4-3/exp(b^2*x^2)*b^2*x^2-3/exp(b^2*x^2))+8/7/Pi*(1/8/exp(b^2*x^2)^2*b^5*x^5+17/32/exp(b^2*x^2)^2*b^3*x^3+147/128/exp(b^2*x^2)^2*b*x-531/512*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*b*x)))
+
+Incorrect antiderivative:
+  Integrand        = erfc(a+b*x)^2
+  Optimal integral = -2^(1/2)/Pi^(1/2)*erf(2^(1/2)*(a+b*x))/b-2*erfc(a+b*x)/exp((a+b*x)^2)/b/Pi^(1/2)+(a+b*x)*erfc(a+b*x)^2/b
+  Maple integral   = 1/b*(erf(a+b*x)^2*(a+b*x)+2*erf(a+b*x)/Pi^(1/2)*exp(-(a+b*x)^2)-1/Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(a+b*x)))
+
+Unable to integrate:
+  Integrand        = x*erfc(a+b*x)^2
+  Optimal integral = 1/2/exp(2*(a+b*x)^2)/b^2/Pi+a*2^(1/2)/Pi^(1/2)*erf(2^(1/2)*(a+b*x))/b^2+(a-b*x)*erfc(a+b*x)/exp((a+b*x)^2)/b^2/Pi^(1/2)-1/4*(1+2*a^2-2*b^2*x^2)*erfc(a+b*x)^2/b^2
+  Maple integral   = int(x*erfc(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*erfc(a+b*x)^2
+  Optimal integral = -2/3*a/exp(2*(a+b*x)^2)/b^3/Pi+1/3*x/exp(2*(a+b*x)^2)/b^2/Pi-1/12*(5+12*a^2)*erf(2^(1/2)*(a+b*x))/b^3*2^(1/2)/Pi^(1/2)-2/3*(1+a^2-a*b*x+b^2*x^2)*erfc(a+b*x)/exp((a+b*x)^2)/b^3/Pi^(1/2)+1/6*(3*a+2*a^3+2*b^3*x^3)*erfc(a+b*x)^2/b^3
+  Maple integral   = int(x^2*erfc(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erfc(b*x)/x^8
+  Optimal integral = -4/105*((-12*b^7*Ei(-2*b^2*x^2)*x^7*exp(b^2*x^2)+erfc(b*x)*(b^7*x^7*exp(b^2*x^2)*Pi*erfc(b*x)-2*Pi^(1/2)*(-1/2*b^4*x^4+b^6*x^6-15/8+3/4*b^2*x^2)))*exp(2*b^2*x^2)-5*b*exp(b^2*x^2)*x*(1/4-2/5*b^2*x^2+b^4*x^4))/Pi^(1/2)/exp(2*b^2*x^2)/x^7/exp(b^2*x^2)
+  Maple integral   = int(exp(-b^2*x^2)*erfc(b*x)/x^8,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erfc(b*x)/x^6
+  Optimal integral = 2/15*((-7*b^5*Ei(-2*b^2*x^2)*x^5*exp(b^2*x^2)+(b^5*Pi*x^5*exp(b^2*x^2)*erfc(b*x)-2*Pi^(1/2)*(-1/2*b^2*x^2+b^4*x^4+3/4))*erfc(b*x))*exp(2*b^2*x^2)-5/2*b*(-3/10+b^2*x^2)*exp(b^2*x^2)*x)/Pi^(1/2)/exp(2*b^2*x^2)/x^5/exp(b^2*x^2)
+  Maple integral   = int(exp(-b^2*x^2)*erfc(b*x)/x^6,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erfc(b*x)/x^4
+  Optimal integral = 1/3*b/exp(2*b^2*x^2)/Pi^(1/2)/x^2-1/3*erfc(b*x)/exp(b^2*x^2)/x^3+2/3*b^2*erfc(b*x)/exp(b^2*x^2)/x-1/3*b^3*Pi^(1/2)*erfc(b*x)^2+4/3*b^3*Ei(-2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(-b^2*x^2)*erfc(b*x)/x^4,x)
+
+Unable to integrate:
+  Integrand        = exp(-b^2*x^2)*erfc(b*x)/x^2
+  Optimal integral = -erfc(b*x)/exp(b^2*x^2)/x+1/2*b*Pi^(1/2)*erfc(b*x)^2-b*Ei(-2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(-b^2*x^2)*erfc(b*x)/x^2,x)
+
+Incorrect antiderivative:
+  Integrand        = x*exp(-b^2*x^2)*erfc(b*x)
+  Optimal integral = -1/4*erf(2^(1/2)*b*x)*2^(1/2)/b^2-1/2*erfc(b*x)/exp(b^2*x^2)/b^2
+  Maple integral   = (-1/2/b*exp(-b^2*x^2)+1/2*erf(b*x)/b*exp(-b^2*x^2)-1/4/b*2^(1/2)*erf(2^(1/2)*b*x))/b
+
+Incorrect antiderivative:
+  Integrand        = x^3*exp(-b^2*x^2)*erfc(b*x)
+  Optimal integral = 1/4*x/exp(2*b^2*x^2)/b^3/Pi^(1/2)-5/16*erf(2^(1/2)*b*x)*2^(1/2)/b^4-1/2*erfc(b*x)/exp(b^2*x^2)/b^4-1/2*x^2*erfc(b*x)/exp(b^2*x^2)/b^2
+  Maple integral   = (1/b^3*(-1/2/exp(b^2*x^2)*b^2*x^2-1/2/exp(b^2*x^2))-erf(b*x)/b^3*(-1/2/exp(b^2*x^2)*b^2*x^2-1/2/exp(b^2*x^2))+2/Pi^(1/2)/b^3*(1/8/exp(b^2*x^2)^2*b*x-5/32*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*b*x)))/b
+
+Incorrect antiderivative:
+  Integrand        = x^5*exp(-b^2*x^2)*erfc(b*x)
+  Optimal integral = -1/2/Pi^(1/2)*((43/32*erf(2^(1/2)*b*x)*2^(1/2)*exp(b^2*x^2)+erfc(b*x)*(2+2*b^2*x^2+b^4*x^4))*Pi^(1/2)*exp(2*b^2*x^2)-1/2*b*exp(b^2*x^2)*x*(11/4+b^2*x^2))/exp(2*b^2*x^2)/b^6/exp(b^2*x^2)
+  Maple integral   = (1/b^5*(-1/2/exp(b^2*x^2)*b^4*x^4-1/exp(b^2*x^2)*b^2*x^2-1/exp(b^2*x^2))-erf(b*x)/b^5*(-1/2/exp(b^2*x^2)*b^4*x^4-1/exp(b^2*x^2)*b^2*x^2-1/exp(b^2*x^2))+2/Pi^(1/2)/b^5*(1/8/exp(b^2*x^2)^2*b^3*x^3+11/32/exp(b^2*x^2)^2*b*x-43/128*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*b*x)))/b
+
+Unable to integrate:
+  Integrand        = erfi(b*x)^2/x^7
+  Optimal integral = -1/15*b^2*exp(2*b^2*x^2)/Pi/x^4-2/9*b^4*exp(2*b^2*x^2)/x^2/Pi-2/45*b*exp(b^2*x^2)*(3+2*b^2*x^2+4*b^4*x^4)*erfi(b*x)/Pi^(1/2)/x^5+1/90*(8*b^6-15/x^6)*erfi(b*x)^2+28/45*b^6*Ei(2*b^2*x^2)/Pi
+  Maple integral   = int(erfi(b*x)^2/x^7,x)
+
+Unable to integrate:
+  Integrand        = erfi(b*x)^2/x^5
+  Optimal integral = -1/3*b^2*exp(2*b^2*x^2)/x^2/Pi-1/3*b*exp(b^2*x^2)*(1+2*b^2*x^2)*erfi(b*x)/Pi^(1/2)/x^3+1/12*(4*b^4-3/x^4)*erfi(b*x)^2+4/3*b^4*Ei(2*b^2*x^2)/Pi
+  Maple integral   = int(erfi(b*x)^2/x^5,x)
+
+Unable to integrate:
+  Integrand        = erfi(b*x)^2/x^3
+  Optimal integral = -2*b*exp(b^2*x^2)*erfi(b*x)/Pi^(1/2)/x+1/2*(2*b^2-1/x^2)*erfi(b*x)^2+2*b^2*Ei(2*b^2*x^2)/Pi
+  Maple integral   = int(erfi(b*x)^2/x^3,x)
+
+Unable to integrate:
+  Integrand        = erfi(b*x)^2
+  Optimal integral = -2*exp(b^2*x^2)*erfi(b*x)/b/Pi^(1/2)+x*erfi(b*x)^2+2^(1/2)/Pi^(1/2)*erfi(2^(1/2)*b*x)/b
+  Maple integral   = int(erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x*erfi(b*x)^2
+  Optimal integral = 1/2*exp(2*b^2*x^2)/b^2/Pi-exp(b^2*x^2)*x*erfi(b*x)/b/Pi^(1/2)+1/4*(1/b^2+2*x^2)*erfi(b*x)^2
+  Maple integral   = int(x*erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*erfi(b*x)^2
+  Optimal integral = 1/12*(4*exp(2*b^2*x^2)*x*b*Pi^(1/2)+(8-8*b^2*x^2)*Pi*erfi(b*x)*exp(b^2*x^2)-5*2^(1/2)*erfi(2^(1/2)*b*x)*Pi+4*x^3*erfi(b*x)^2*b^3*Pi^(3/2))/b^3/Pi^(3/2)
+  Maple integral   = int(x^2*erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^3*erfi(b*x)^2
+  Optimal integral = 1/16*(4*(b^2*x^2-2)*Pi^(1/2)*exp(2*b^2*x^2)+4*((3*b*x-2*b^3*x^3)*Pi*exp(b^2*x^2)+(b^4*x^4-3/4)*erfi(b*x)*Pi^(3/2))*erfi(b*x))/b^4/Pi^(3/2)
+  Maple integral   = int(x^3*erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^4*erfi(b*x)^2
+  Optimal integral = 1/80*(16*b*(-11/4+b^2*x^2)*x*Pi^(1/2)*exp(2*b^2*x^2)-32*Pi*erfi(b*x)*(2-2*b^2*x^2+b^4*x^4)*exp(b^2*x^2)+43*2^(1/2)*erfi(2^(1/2)*b*x)*Pi+16*x^5*erfi(b*x)^2*b^5*Pi^(3/2))/b^5/Pi^(3/2)
+  Maple integral   = int(x^4*erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^5*erfi(b*x)^2
+  Optimal integral = 1/48*(8*(b^4*x^4+11/2-7/2*b^2*x^2)*Pi^(1/2)*exp(2*b^2*x^2)+8*(-2*b*Pi*(15/4-5/2*b^2*x^2+b^4*x^4)*x*exp(b^2*x^2)+erfi(b*x)*Pi^(3/2)*(15/8+b^6*x^6))*erfi(b*x))/b^6/Pi^(3/2)
+  Maple integral   = int(x^5*erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^6*erfi(b*x)^2
+  Optimal integral = 1/448*(64*b*x*(-17/4*b^2*x^2+b^4*x^4+147/16)*Pi^(1/2)*exp(2*b^2*x^2)-128*Pi*erfi(b*x)*(-6+6*b^2*x^2-3*b^4*x^4+b^6*x^6)*exp(b^2*x^2)-531*2^(1/2)*erfi(2^(1/2)*b*x)*Pi+64*x^7*erfi(b*x)^2*b^7*Pi^(3/2))/b^7/Pi^(3/2)
+  Maple integral   = int(x^6*erfi(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = erfi(a+b*x)^2
+  Optimal integral = 1/Pi^(1/2)*(2^(1/2)*erfi(2^(1/2)*(a+b*x))+erfi(a+b*x)*(-2*exp((a+b*x)^2)+(a+b*x)*erfi(a+b*x)*Pi^(1/2)))/b
+  Maple integral   = int(erfi(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x*erfi(a+b*x)^2
+  Optimal integral = 1/4*(2*exp(2*(a+b*x)^2)*Pi^(1/2)-4*a*2^(1/2)*erfi(2^(1/2)*(a+b*x))*Pi-2*erfi(a+b*x)*(-2*Pi*(a-b*x)*exp((a+b*x)^2)+(-1/2+a^2-b^2*x^2)*erfi(a+b*x)*Pi^(3/2)))/b^2/Pi^(3/2)
+  Maple integral   = int(x*erfi(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*erfi(a+b*x)^2
+  Optimal integral = 1/12*(-8*(a-1/2*b*x)*Pi^(1/2)*exp(2*(a+b*x)^2)+12*2^(1/2)*Pi*(-5/12+a^2)*erfi(2^(1/2)*(a+b*x))+4*(-2*Pi*(-1-a*b*x+a^2+b^2*x^2)*exp((a+b*x)^2)+(-3/2*a+a^3+b^3*x^3)*erfi(a+b*x)*Pi^(3/2))*erfi(a+b*x))/b^3/Pi^(3/2)
+  Maple integral   = int(x^2*erfi(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = exp(b^2*x^2)*erfi(b*x)/x^8
+  Optimal integral = 4/105*((-2*b^3*x^3-5*x^5*b^5-5/4*b*x)*exp(2*b^2*x^2)+12*b^7*Ei(2*b^2*x^2)*x^7+(-2*(15/8+3/4*b^2*x^2+1/2*b^4*x^4+b^6*x^6)*Pi^(1/2)*exp(b^2*x^2)+b^7*Pi*x^7*erfi(b*x))*erfi(b*x))/Pi^(1/2)/x^7
+  Maple integral   = int(exp(b^2*x^2)*erfi(b*x)/x^8,x)
+
+Unable to integrate:
+  Integrand        = exp(b^2*x^2)*erfi(b*x)/x^6
+  Optimal integral = 2/15/Pi^(1/2)*((-3/4*b*x-5/2*b^3*x^3)*exp(2*b^2*x^2)+7*b^5*Ei(2*b^2*x^2)*x^5+(-2*Pi^(1/2)*(3/4+1/2*b^2*x^2+b^4*x^4)*exp(b^2*x^2)+b^5*Pi*x^5*erfi(b*x))*erfi(b*x))/x^5
+  Maple integral   = int(exp(b^2*x^2)*erfi(b*x)/x^6,x)
+
+Unable to integrate:
+  Integrand        = exp(b^2*x^2)*erfi(b*x)/x^4
+  Optimal integral = 1/3/Pi^(1/2)*(-b*exp(2*b^2*x^2)*x+4*b^3*Ei(2*b^2*x^2)*x^3+erfi(b*x)*(Pi^(1/2)*(-1-2*b^2*x^2)*exp(b^2*x^2)+x^3*Pi*b^3*erfi(b*x)))/x^3
+  Maple integral   = int(exp(b^2*x^2)*erfi(b*x)/x^4,x)
+
+Unable to integrate:
+  Integrand        = exp(b^2*x^2)*erfi(b*x)/x^2
+  Optimal integral = -exp(b^2*x^2)*erfi(b*x)/x+1/2*b*Pi^(1/2)*erfi(b*x)^2+b*Ei(2*b^2*x^2)/Pi^(1/2)
+  Maple integral   = int(exp(b^2*x^2)*erfi(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = x*exp(b^2*x^2)*erfi(b*x)
+  Optimal integral = 1/4*(2*exp(b^2*x^2)*erfi(b*x)-erfi(2^(1/2)*b*x)*2^(1/2))/b^2
+  Maple integral   = int(x*exp(b^2*x^2)*erfi(b*x),x)
+
+Unable to integrate:
+  Integrand        = x^3*exp(b^2*x^2)*erfi(b*x)
+  Optimal integral = -1/4*exp(2*b^2*x^2)*x/b^3/Pi^(1/2)+1/2*exp(b^2*x^2)*(-1+b^2*x^2)*erfi(b*x)/b^4+5/16*erfi(2^(1/2)*b*x)*2^(1/2)/b^4
+  Maple integral   = int(x^3*exp(b^2*x^2)*erfi(b*x),x)
+
+Unable to integrate:
+  Integrand        = x^5*exp(b^2*x^2)*erfi(b*x)
+  Optimal integral = 1/2/Pi^(1/2)*((11/8*b*x-1/2*b^3*x^3)*exp(2*b^2*x^2)+(erfi(b*x)*(2-2*b^2*x^2+b^4*x^4)*exp(b^2*x^2)-43/32*erfi(2^(1/2)*b*x)*2^(1/2))*Pi^(1/2))/b^6
+  Maple integral   = int(x^5*exp(b^2*x^2)*erfi(b*x),x)
+
+File problem count   = 114
+Optimal results      = 62
+Overly complicated   = 0
+Unable to integrate  = 44
+Unverifiable results = 8
+Integration speed    = 2.20 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/FresnelIntegralFunctions.txt
+
+Unable to integrate:
+  Integrand        = FresnelS(b*x)^2/x^9
+  Optimal integral = 1/1680*(4*b^3*FresnelS(b*x)*x^3*Pi*(-3+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)+4*FresnelS(b*x)*b*x*(-15+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+(5*b^2*x^2-5*b^6*Pi^2*x^6)*cos(b^2*Pi*x^2)-4*b^4*Pi*sin(b^2*Pi*x^2)*x^4-6*b^8*Pi^3*Si(b^2*Pi*x^2)*x^8+(2*b^8*Pi^4*x^8-210)*FresnelS(b*x)^2-5*b^2*x^2+b^6*Pi^2*x^6)/x^8
+  Maple integral   = int(FresnelS(b*x)^2/x^9,x)
+
+Unable to integrate:
+  Integrand        = FresnelS(b*x)^2/x^5
+  Optimal integral = 1/24*(-4*b^3*FresnelS(b*x)*x^3*Pi*cos(1/2*b^2*Pi*x^2)-4*FresnelS(b*x)*sin(1/2*b^2*Pi*x^2)*b*x+b^2*cos(b^2*Pi*x^2)*x^2+2*b^4*Pi*Si(b^2*Pi*x^2)*x^4+(-2*b^4*Pi^2*x^4-6)*FresnelS(b*x)^2-b^2*x^2)/x^4
+  Maple integral   = int(FresnelS(b*x)^2/x^5,x)
+
+Unable to integrate:
+  Integrand        = x^3*FresnelS(b*x)^2
+  Optimal integral = 1/8*(4*x^3*FresnelS(b*x)*b^3*Pi^2*cos(1/2*b^2*Pi*x^2)-12*x*FresnelS(b*x)*b*Pi*sin(1/2*b^2*Pi*x^2)+x^2*cos(b^2*Pi*x^2)*b^2*Pi-4*sin(b^2*Pi*x^2)+(6*Pi+2*Pi^3*x^4*b^4)*FresnelS(b*x)^2+3*b^2*Pi*x^2)/Pi^3/b^4
+  Maple integral   = int(x^3*FresnelS(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^7*FresnelS(b*x)^2
+  Optimal integral = 1/48*(12*x^3*FresnelS(b*x)*b^3*Pi^2*(-35+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)-84*x*FresnelS(b*x)*b*Pi*(-15+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+(-165*b^2*Pi*x^2+3*x^6*b^6*Pi^3)*cos(b^2*Pi*x^2)+(480-30*b^4*Pi^2*x^4)*sin(b^2*Pi*x^2)+(-630*Pi+6*Pi^5*x^8*b^8)*FresnelS(b*x)^2-315*b^2*Pi*x^2+7*x^6*b^6*Pi^3)/b^8/Pi^5
+  Maple integral   = int(x^7*FresnelS(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = sin(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^8
+  Optimal integral = 1/420*(4*FresnelS(b*x)*b^2*Pi*x^2*(-3+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)+(-60+4*b^4*Pi^2*x^4)*FresnelS(b*x)*sin(1/2*b^2*Pi*x^2)+2*b*((-5/2*b^4*Pi^2*x^4+5/2)*cos(b^2*Pi*x^2)-5/2+1/2*b^4*Pi^2*x^4-3*x^6*Si(b^2*Pi*x^2)*b^6*Pi^3+x^6*b^6*FresnelS(b*x)^2*Pi^4-2*x^2*b^2*sin(b^2*Pi*x^2)*Pi)*x)/x^7
+  Maple integral   = int(sin(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^8,x)
+
+Unable to integrate:
+  Integrand        = sin(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^4
+  Optimal integral = -1/12*b/x^2+1/12*b*cos(b^2*Pi*x^2)/x^2-1/6*b^3*Pi^2*FresnelS(b*x)^2-1/3*FresnelS(b*x)*(b^2*Pi*x^2*cos(1/2*b^2*Pi*x^2)+sin(1/2*b^2*Pi*x^2))/x^3+1/6*b^3*Pi*Si(b^2*Pi*x^2)
+  Maple integral   = int(sin(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^4,x)
+
+Unable to integrate:
+  Integrand        = x^4*sin(1/2*b^2*Pi*x^2)*FresnelS(b*x)
+  Optimal integral = -3/4*x^2/b^3/Pi^2-1/4*x^2*cos(b^2*Pi*x^2)/b^3/Pi^2-3/2*FresnelS(b*x)^2/b^5/Pi^2-x*FresnelS(b*x)*(b^2*Pi*x^2*cos(1/2*b^2*Pi*x^2)-3*sin(1/2*b^2*Pi*x^2))/b^4/Pi^2+sin(b^2*Pi*x^2)/b^5/Pi^3
+  Maple integral   = int(x^4*sin(1/2*b^2*Pi*x^2)*FresnelS(b*x),x)
+
+Unable to integrate:
+  Integrand        = cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^10
+  Optimal integral = 1/30240*(-32*FresnelS(b*x)*(105-3*b^4*Pi^2*x^4+b^8*Pi^4*x^8)*cos(1/2*b^2*Pi*x^2)-32*FresnelS(b*x)*b^2*Pi*x^2*(-15+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+(-110*x^3*b^3*Pi+75*b^7*Pi^3*x^7)*cos(b^2*Pi*x^2)+(-210*b*x+67*x^5*b^5*Pi^2)*sin(b^2*Pi*x^2)+40*x^3*b^3*Pi-8*b^7*Pi^3*x^7-16*b^9*Pi^5*FresnelS(b*x)^2*x^9+83*b^9*Pi^4*Si(b^2*Pi*x^2)*x^9)/x^9
+  Maple integral   = int(cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^10,x)
+
+Unable to integrate:
+  Integrand        = cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^6
+  Optimal integral = 1/120*((-24+8*b^4*Pi^2*x^4)*FresnelS(b*x)*cos(1/2*b^2*Pi*x^2)+2*x^3*b^3*Pi-5*x^3*cos(b^2*Pi*x^2)*b^3*Pi+4*x^5*FresnelS(b*x)^2*b^5*Pi^3-7*b^5*Pi^2*Si(b^2*Pi*x^2)*x^5+8*FresnelS(b*x)*b^2*Pi*x^2*sin(1/2*b^2*Pi*x^2)-3*x*sin(b^2*Pi*x^2)*b)/x^5
+  Maple integral   = int(cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^6,x)
+
+Unable to integrate:
+  Integrand        = cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^2
+  Optimal integral = -cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x-1/2*b*Pi*FresnelS(b*x)^2+1/4*b*Si(b^2*Pi*x^2)
+  Maple integral   = int(cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)
+  Optimal integral = 1/4*(-b^2*Pi*x^2-2*FresnelS(b*x)^2*Pi+4*x*FresnelS(b*x)*b*Pi*sin(1/2*b^2*Pi*x^2)+sin(b^2*Pi*x^2))/b^3/Pi^2
+  Maple integral   = int(x^2*cos(1/2*b^2*Pi*x^2)*FresnelS(b*x),x)
+
+Unable to integrate:
+  Integrand        = x^6*cos(1/2*b^2*Pi*x^2)*FresnelS(b*x)
+  Optimal integral = 1/12*(12*x*FresnelS(b*x)*b*Pi*(-15+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+60*x^3*FresnelS(b*x)*b^3*Pi^2*cos(1/2*b^2*Pi*x^2)+(-66+3*b^4*Pi^2*x^4)*sin(b^2*Pi*x^2)-Pi*(-45*b^2*x^2+Pi^2*b^6*x^6-21*x^2*cos(b^2*Pi*x^2)*b^2-90*FresnelS(b*x)^2))/b^7/Pi^4
+  Maple integral   = int(x^6*cos(1/2*b^2*Pi*x^2)*FresnelS(b*x),x)
+
+Unable to integrate:
+  Integrand        = FresnelC(b*x)^2/x^9
+  Optimal integral = 1/1680*(4*FresnelC(b*x)*b*x*(-15+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)-4*b^3*FresnelC(b*x)*x^3*Pi*(-3+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+(-5*b^2*x^2+5*Pi^2*b^6*x^6)*cos(b^2*Pi*x^2)+4*b^4*Pi*sin(b^2*Pi*x^2)*x^4+6*b^8*Pi^3*Si(b^2*Pi*x^2)*x^8+(-210+2*b^8*Pi^4*x^8)*FresnelC(b*x)^2-5*b^2*x^2+Pi^2*b^6*x^6)/x^8
+  Maple integral   = int(FresnelC(b*x)^2/x^9,x)
+
+Unable to integrate:
+  Integrand        = FresnelC(b*x)^2/x^5
+  Optimal integral = 1/24*(-4*FresnelC(b*x)*cos(1/2*b^2*Pi*x^2)*b*x+4*b^3*FresnelC(b*x)*x^3*Pi*sin(1/2*b^2*Pi*x^2)-x^2*cos(b^2*Pi*x^2)*b^2-2*b^4*Pi*Si(b^2*Pi*x^2)*x^4+(-2*b^4*Pi^2*x^4-6)*FresnelC(b*x)^2-b^2*x^2)/x^4
+  Maple integral   = int(FresnelC(b*x)^2/x^5,x)
+
+Unable to integrate:
+  Integrand        = x^3*FresnelC(b*x)^2
+  Optimal integral = 1/8*(-12*x*FresnelC(b*x)*b*Pi*cos(1/2*b^2*Pi*x^2)-4*x^3*FresnelC(b*x)*b^3*Pi^2*sin(1/2*b^2*Pi*x^2)-x^2*cos(b^2*Pi*x^2)*b^2*Pi+4*sin(b^2*Pi*x^2)+(6*Pi+2*Pi^3*x^4*b^4)*FresnelC(b*x)^2+3*b^2*Pi*x^2)/b^4/Pi^3
+  Maple integral   = int(x^3*FresnelC(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^7*FresnelC(b*x)^2
+  Optimal integral = 1/48*(-84*x*FresnelC(b*x)*b*Pi*(-15+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)-12*x^3*FresnelC(b*x)*b^3*Pi^2*(-35+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+(165*b^2*Pi*x^2-3*x^6*b^6*Pi^3)*cos(b^2*Pi*x^2)+(-480+30*b^4*Pi^2*x^4)*sin(b^2*Pi*x^2)+(-630*Pi+6*Pi^5*x^8*b^8)*FresnelC(b*x)^2-315*b^2*Pi*x^2+7*x^6*b^6*Pi^3)/b^8/Pi^5
+  Maple integral   = int(x^7*FresnelC(b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^10
+  Optimal integral = 1/30240*(-32*FresnelC(b*x)*(105-3*b^4*Pi^2*x^4+b^8*Pi^4*x^8)*sin(1/2*b^2*Pi*x^2)+32*FresnelC(b*x)*b^2*Pi*x^2*(-15+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)+(-110*x^3*b^3*Pi+75*b^7*Pi^3*x^7)*cos(b^2*Pi*x^2)+(-210*b*x+67*x^5*b^5*Pi^2)*sin(b^2*Pi*x^2)-40*x^3*b^3*Pi+8*b^7*Pi^3*x^7+83*b^9*Pi^4*Si(b^2*Pi*x^2)*x^9+16*b^9*Pi^5*FresnelC(b*x)^2*x^9)/x^9
+  Maple integral   = int(sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^10,x)
+
+Unable to integrate:
+  Integrand        = sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^6
+  Optimal integral = 1/120*((-24+8*b^4*Pi^2*x^4)*FresnelC(b*x)*sin(1/2*b^2*Pi*x^2)-2*x^3*b^3*Pi-5*x^3*cos(b^2*Pi*x^2)*b^3*Pi-4*x^5*FresnelC(b*x)^2*b^5*Pi^3-8*FresnelC(b*x)*b^2*Pi*x^2*cos(1/2*b^2*Pi*x^2)-3*x*sin(b^2*Pi*x^2)*b-7*b^5*Pi^2*Si(b^2*Pi*x^2)*x^5)/x^5
+  Maple integral   = int(sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^6,x)
+
+Unable to integrate:
+  Integrand        = sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^2
+  Optimal integral = 1/2*b*Pi*FresnelC(b*x)^2-FresnelC(b*x)*sin(1/2*b^2*Pi*x^2)/x+1/4*b*Si(b^2*Pi*x^2)
+  Maple integral   = int(sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)
+  Optimal integral = 1/4*(b^2*Pi*x^2-4*x*FresnelC(b*x)*b*Pi*cos(1/2*b^2*Pi*x^2)+2*FresnelC(b*x)^2*Pi+sin(b^2*Pi*x^2))/b^3/Pi^2
+  Maple integral   = int(x^2*sin(1/2*b^2*Pi*x^2)*FresnelC(b*x),x)
+
+Unable to integrate:
+  Integrand        = x^6*sin(1/2*b^2*Pi*x^2)*FresnelC(b*x)
+  Optimal integral = 1/12*(-12*x*FresnelC(b*x)*b*Pi*(-15+b^4*Pi^2*x^4)*cos(1/2*b^2*Pi*x^2)+60*x^3*FresnelC(b*x)*b^3*Pi^2*sin(1/2*b^2*Pi*x^2)+(-66+3*b^4*Pi^2*x^4)*sin(b^2*Pi*x^2)+Pi*(-45*b^2*x^2+Pi^2*b^6*x^6+21*x^2*cos(b^2*Pi*x^2)*b^2-90*FresnelC(b*x)^2))/b^7/Pi^4
+  Maple integral   = int(x^6*sin(1/2*b^2*Pi*x^2)*FresnelC(b*x),x)
+
+Unable to integrate:
+  Integrand        = cos(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^8
+  Optimal integral = 1/420*((-60+4*b^4*Pi^2*x^4)*FresnelC(b*x)*cos(1/2*b^2*Pi*x^2)+2*b*x*(-2*x*b*FresnelC(b*x)*Pi*(-3+b^4*Pi^2*x^4)*sin(1/2*b^2*Pi*x^2)+(-5/2+5/2*b^4*Pi^2*x^4)*cos(b^2*Pi*x^2)-5/2+1/2*b^4*Pi^2*x^4+3*x^6*Si(b^2*Pi*x^2)*b^6*Pi^3+x^6*b^6*FresnelC(b*x)^2*Pi^4+2*x^2*b^2*sin(b^2*Pi*x^2)*Pi))/x^7
+  Maple integral   = int(cos(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^8,x)
+
+Unable to integrate:
+  Integrand        = cos(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^4
+  Optimal integral = 1/12*(-4*cos(1/2*b^2*Pi*x^2)*FresnelC(b*x)-2*b*x*(1/2+1/2*cos(b^2*Pi*x^2)+x^2*b^2*Pi^2*FresnelC(b*x)^2-2*x*FresnelC(b*x)*b*Pi*sin(1/2*b^2*Pi*x^2)+x^2*Si(b^2*Pi*x^2)*b^2*Pi))/x^3
+  Maple integral   = int(cos(1/2*b^2*Pi*x^2)*FresnelC(b*x)/x^4,x)
+
+Unable to integrate:
+  Integrand        = x^4*cos(1/2*b^2*Pi*x^2)*FresnelC(b*x)
+  Optimal integral = -3/4*x^2/b^3/Pi^2+1/4*x^2*cos(b^2*Pi*x^2)/b^3/Pi^2-3/2*FresnelC(b*x)^2/b^5/Pi^2+x*FresnelC(b*x)*(3*cos(1/2*b^2*Pi*x^2)+b^2*Pi*x^2*sin(1/2*b^2*Pi*x^2))/b^4/Pi^2-sin(b^2*Pi*x^2)/b^5/Pi^3
+  Maple integral   = int(x^4*cos(1/2*b^2*Pi*x^2)*FresnelC(b*x),x)
+
+File problem count   = 126
+Optimal results      = 102
+Overly complicated   = 0
+Unable to integrate  = 24
+Unverifiable results = 0
+Integration speed    = 32.11 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/ExponentialIntegralFunctions.txt
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^m*Ei(b*x)
+  Optimal integral = x^(1+m)*(Ei(b*x)+(-b*x)^(-1-m)*GAMMA(1+m,-b*x))/(1+m)
+  Maple integral   = (-b)^(-m)/b*(-(Psi(1+m)+gamma-Psi(2+m)+ln(x)+ln(-b))*x^(1+m)*(-b)^(1+m)/(1+m)+1/(2+m)*x^(2+m)*b^2*(-b)^m*hypergeom([1, 1, 2+m],[2, 2, 3+m],b*x))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = Ei(a+b*x)/x^2
+  Optimal integral = b*exp(1)^a*Ei(b*x)/a-(a+b*x)*Ei(a+b*x)/a/x
+  Maple integral   = b*(-Ei(a+b*x)/b/x+1/a*Ei(1,-a-b*x)-1/a*exp(a)*Ei(1,-b*x))
+  Leafcounts = 33 44   33 44
+
+Unable to integrate:
+  Integrand        = x^2*Ei(a+b*x)^2
+  Optimal integral = 1/6*((-5-4*a+2*b*x)*exp(2*a+2*b*x)+(8+12*a+12*a^2)*Ei(2*a+2*b*x)+2*((a^3+b^3*x^3)*Ei(a+b*x)-2*(a^2+(1-b*x)*a+2-2*b*x+b^2*x^2)*exp(a+b*x))*Ei(a+b*x))/b^3
+  Maple integral   = int(x^2*Ei(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = exp(b*x)*Ei(b*x)/x^3
+  Optimal integral = -1/4*exp(2*b*x)/x^2-b*exp(2*b*x)/x-1/2*exp(b*x)*(1+b*x)*Ei(b*x)/x^2+1/4*b^2*Ei(b*x)^2+2*b^2*Ei(2*b*x)
+  Maple integral   = int(exp(b*x)*Ei(b*x)/x^3,x)
+
+Unable to integrate:
+  Integrand        = exp(b*x)*Ei(b*x)/x^2
+  Optimal integral = -exp(2*b*x)/x-exp(b*x)*Ei(b*x)/x+1/2*b*Ei(b*x)^2+2*b*Ei(2*b*x)
+  Maple integral   = int(exp(b*x)*Ei(b*x)/x^2,x)
+
+Incorrect antiderivative:
+  Integrand        = exp(a+b*x)*Ei(c+d*x)
+  Optimal integral = (exp(a+b*x)*Ei(c+d*x)-exp(a-b*c/d)*Ei((b+d)*(c+d*x)/d))/b
+  Maple integral   = (Ei(c+d*x)*d/b*exp((a*d+b*(c+d*x)-b*c)/d)+1/b*d*exp(-(b*c-a*d)/d)*Ei(1,-(b+d)*(c+d*x)/d-(-b*c+a*d)/d-(b*c-a*d)/d))/d
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2*exp(a+b*x)*Ei(c+d*x)
+  Optimal integral = (-exp(a-b*c/d)*(b+d)^2*(b^2*c^2+2*b*c*d+2*d^2)*Ei((b+d)*(c+d*x)/d)+d*(((2-b*x)*d^2-b*(-3+b*x-c)*d+b^2*c)*b*exp(a+c+(b+d)*x)+d*Ei(c+d*x)*exp(a+b*x)*(2-2*b*x+b^2*x^2)*(b+d)^2))/b^3/(b+d)^2/d^2
+  Maple integral   = (Ei(c+d*x)/d/b*(d^2/b^2*(exp(b/d*(c+d*x)+(-b*c+a*d)/d)*(b/d*(c+d*x)+(-b*c+a*d)/d)^2-2*exp(b/d*(c+d*x)+(-b*c+a*d)/d)*(b/d*(c+d*x)+(-b*c+a*d)/d)+2*exp(b/d*(c+d*x)+(-b*c+a*d)/d))-2*d^2/b^2*a*(exp(b/d*(c+d*x)+(-b*c+a*d)/d)*(b/d*(c+d*x)+(-b*c+a*d)/d)-exp(b/d*(c+d*x)+(-b*c+a*d)/d))+exp(b/d*(c+d*x)+(-b*c+a*d)/d)*a^2*d^2/b^2)-1/b/d*(1/(b+d)^2*d^2*(exp((b+d)*(c+d*x)/d+(-b*c+a*d)/d)*((b+d)*(c+d*x)/d+(-b*c+a*d)/d)-exp((b+d)*(c+d*x)/d+(-b*c+a*d)/d)-a*exp((b+d)*(c+d*x)/d+(-b*c+a*d)/d)+exp((b+d)*(c+d*x)/d+(-b*c+a*d)/d)*b*c/d)-2*c/(1+b/d)*exp(c+d*x+a+b/d*(c+d*x)-b*c/d)-c^2*exp(-(b*c-a*d)/d)*Ei(1,-(b+d)*(c+d*x)/d-(-b*c+a*d)/d-(b*c-a*d)/d)-2/b*d/(1+b/d)*exp(c+d*x+a+b/d*(c+d*x)-b*c/d)-2*d/b*c*exp(-(b*c-a*d)/d)*Ei(1,-(b+d)*(c+d*x)/d-(-b*c+a*d)/d-(b*c-a*d)/d)-2*d^2/b^2*exp(-(b*c-a*d)/d)*Ei(1,-(b+d)*(c+d*x)/d-(-b*c+a*d)/d-(b*c-a*d)/d)))/d
+  Leafcounts = 135 693   0 0
+
+File problem count   = 42
+Optimal results      = 35
+Overly complicated   = 3
+Unable to integrate  = 3
+Unverifiable results = 1
+Integration speed    = 10.61 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/TrigIntegralFunctions.txt
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^m*Si(b*x)
+  Optimal integral = -x^(1+m)*(I*(-I*b*x)^(-1-m)*GAMMA(1+m,-I*b*x)-I*(I*b*x)^(-1-m)*GAMMA(1+m,I*b*x)-2*Si(b*x))/(2+2*m)
+  Maple integral   = 1/2*b/(1+1/2*m)*x^(2+m)*hypergeom([1/2, 1+1/2*m],[3/2, 3/2, 2+1/2*m],-1/4*b^2*x^2)
+
+Unable to integrate:
+  Integrand        = x^2*Si(a+b*x)^2
+  Optimal integral = 1/12*((-4*a+2*b*x)*cos(2*a+2*b*x)+(8-12*a^2)*Si(2*a+2*b*x)-sin(2*a+2*b*x)+12*a*Ci(2*a+2*b*x)+(4*a^3+4*b^3*x^3)*Si(a+b*x)^2+((8*b^2*x^2-8*a*b*x+8*a^2-16)*cos(a+b*x)+(-16*b*x+8*a)*sin(a+b*x))*Si(a+b*x)+8*b*x-8*cos(a+b*x)*sin(a+b*x)-12*a*ln(a+b*x))/b^3
+  Maple integral   = int(x^2*Si(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = sin(b*x)*Si(b*x)/x^3
+  Optimal integral = b^2*Ci(2*b*x)-1/2*b*cos(b*x)*sin(b*x)/x-1/4*sin(b*x)^2/x^2-1/4*b*sin(2*b*x)/x-1/2*(b*x*cos(b*x)+sin(b*x))*Si(b*x)/x^2-1/4*b^2*Si(b*x)^2
+  Maple integral   = int(sin(b*x)*Si(b*x)/x^3,x)
+
+Unable to integrate:
+  Integrand        = cos(b*x)*Si(b*x)/x^2
+  Optimal integral = b*Ci(2*b*x)-1/2*sin(2*b*x)/x-cos(b*x)*Si(b*x)/x-1/2*b*Si(b*x)^2
+  Maple integral   = int(cos(b*x)*Si(b*x)/x^2,x)
+
+Incorrect antiderivative:
+  Integrand        = sin(a+b*x)*Si(c+d*x)
+  Optimal integral = 1/2*(-Ci((b-d)*(c+d*x)/d)*sin(a-b*c/d)+Ci((b+d)*(c+d*x)/d)*sin(a-b*c/d)-2*cos(a+b*x)*Si(c+d*x)-cos(a-b*c/d)*Si((b-d)*(c+d*x)/d)+cos(a-b*c/d)*Si((b+d)*(c+d*x)/d))/b
+  Maple integral   = (-Si(c+d*x)/b*d*cos(b/d*(c+d*x)+(-b*c+a*d)/d)+1/b*d*(-1/2*d*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2*d*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)))/d
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*sin(a+b*x)*Si(c+d*x)
+  Optimal integral = 1/2*cos(a-c+(b-d)*x)/b/(b-d)-1/2*cos(a+c+(b+d)*x)/b/(b+d)-1/2*Ci((b-d)*(c+d*x)/d)*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))/b^2/d+1/2*Ci((b+d)*(c+d*x)/d)*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))/b^2/d-(b*x*cos(a+b*x)-sin(a+b*x))*Si(c+d*x)/b^2+1/2*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))*Si((b-d)*(c+d*x)/d)/b^2/d-1/2*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))*Si((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = (Si(c+d*x)/b*(a*d/b*cos(b/d*(c+d*x)+(-b*c+a*d)/d)+1/b*d*(sin(b/d*(c+d*x)+(-b*c+a*d)/d)-(b/d*(c+d*x)+(-b*c+a*d)/d)*cos(b/d*(c+d*x)+(-b*c+a*d)/d)))-1/b*(1/2/b*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/b*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/(b-d)*a*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)-1/2/(b-d)*d*cos((b-d)*(c+d*x)/d+(-b*c+a*d)/d)+1/2*(-b*c+a*d)*d/(b-d)*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/(b-d)*c*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/(b+d)*a*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/(b+d)*d*cos((b+d)*(c+d*x)/d+(-b*c+a*d)/d)-1/2*(-b*c+a*d)*d/(b+d)*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/(b+d)*c*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)))/d
+  Leafcounts = 280 1231   0 0
+
+Incorrect antiderivative:
+  Integrand        = cos(a+b*x)*Si(c+d*x)
+  Optimal integral = 1/2*(-cos(a-b*c/d)*Ci((b-d)*(c+d*x)/d)+cos(a-b*c/d)*Ci((b+d)*(c+d*x)/d)+2*sin(a+b*x)*Si(c+d*x)+sin(a-b*c/d)*Si((b-d)*(c+d*x)/d)-sin(a-b*c/d)*Si((b+d)*(c+d*x)/d))/b
+  Maple integral   = (Si(c+d*x)*sin(b/d*(c+d*x)+(-b*c+a*d)/d)/b*d-1/b*d*(1/2*d*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2*d*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)))/d
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*cos(a+b*x)*Si(c+d*x)
+  Optimal integral = 1/2*Ci((b-d)*(c+d*x)/d)*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))/b^2/d-1/2*Ci((b+d)*(c+d*x)/d)*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))/b^2/d-1/2*sin(a-c+(b-d)*x)/b/(b-d)+1/2*sin(a+c+(b+d)*x)/b/(b+d)+(cos(a+b*x)+b*x*sin(a+b*x))*Si(c+d*x)/b^2+1/2*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))*Si((b-d)*(c+d*x)/d)/b^2/d-1/2*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))*Si((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = (Si(c+d*x)/b*(-d*sin(b/d*(c+d*x)+(-b*c+a*d)/d)/b*a+1/b*d*(cos(b/d*(c+d*x)+(-b*c+a*d)/d)+(b/d*(c+d*x)+(-b*c+a*d)/d)*sin(b/d*(c+d*x)+(-b*c+a*d)/d)))-1/b*(-1/2/(b-d)*a*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/(b-d)*d*sin((b-d)*(c+d*x)/d+(-b*c+a*d)/d)+1/2*(-b*c+a*d)*d/(b-d)*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/(b-d)*c*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/(b+d)*a*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/(b+d)*d*sin((b+d)*(c+d*x)/d+(-b*c+a*d)/d)-1/2*(-b*c+a*d)*d/(b+d)*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/(b+d)*c*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/b*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/b*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)))/d
+  Leafcounts = 277 1227   0 0
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^m*Ci(b*x)
+  Optimal integral = x^(1+m)*(2*Ci(b*x)+(-I*b*x)^(-1-m)*GAMMA(1+m,-I*b*x)+(I*b*x)^(-1-m)*GAMMA(1+m,I*b*x))/(2+2*m)
+  Maple integral   = 2^(m-1)*b^(-1-m)*Pi^(1/2)*((Psi(1/2+1/2*m)+2*gamma-Psi(3/2+1/2*m)+2*ln(x)+2*ln(b))/Pi^(1/2)*x^(1+m)*2^(-1-m)*b^(1+m)/(1/2+1/2*m)-2^(-m-2)/Pi^(1/2)/(3/2+1/2*m)*x^(3+m)*b^(3+m)*hypergeom([1, 1, 3/2+1/2*m],[3/2, 2, 2, 5/2+1/2*m],-1/4*b^2*x^2))
+
+Unable to integrate:
+  Integrand        = x^2*Ci(a+b*x)^2
+  Optimal integral = 1/12*((4*a-2*b*x)*cos(2*a+2*b*x)+(-8+12*a^2)*Si(2*a+2*b*x)+sin(2*a+2*b*x)-12*a*Ci(2*a+2*b*x)+(4*a^3+4*b^3*x^3)*Ci(a+b*x)^2+((-8*a^2+16+8*a*b*x-8*b^2*x^2)*sin(a+b*x)+(-16*b*x+8*a)*cos(a+b*x))*Ci(a+b*x)+8*b*x-12*a*ln(a+b*x)+8*cos(a+b*x)*sin(a+b*x))/b^3
+  Maple integral   = int(x^2*Ci(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = sin(b*x)*Ci(b*x)/x^2
+  Optimal integral = 1/2*b*Ci(b*x)^2+b*Ci(2*b*x)-Ci(b*x)*sin(b*x)/x-1/2*sin(2*b*x)/x
+  Maple integral   = int(sin(b*x)*Ci(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = cos(b*x)*Ci(b*x)/x^3
+  Optimal integral = -1/4*cos(b*x)^2/x^2-1/4*b^2*Ci(b*x)^2-b^2*Ci(2*b*x)+1/2*b*cos(b*x)*sin(b*x)/x-1/2*Ci(b*x)*(cos(b*x)-b*x*sin(b*x))/x^2+1/4*b*sin(2*b*x)/x
+  Maple integral   = int(cos(b*x)*Ci(b*x)/x^3,x)
+
+Incorrect antiderivative:
+  Integrand        = sin(a+b*x)*Ci(c+d*x)
+  Optimal integral = 1/2*(-2*cos(a+b*x)*Ci(c+d*x)+cos(a-b*c/d)*Ci((b-d)*(c+d*x)/d)+cos(a-b*c/d)*Ci((b+d)*(c+d*x)/d)-sin(a-b*c/d)*Si((b-d)*(c+d*x)/d)-sin(a-b*c/d)*Si((b+d)*(c+d*x)/d))/b
+  Maple integral   = (-Ci(c+d*x)/b*d*cos(b/d*(c+d*x)+(-b*c+a*d)/d)+1/b*d*(1/2*d*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2*d*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)))/d
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*sin(a+b*x)*Ci(c+d*x)
+  Optimal integral = -1/2*Ci((b-d)*(c+d*x)/d)*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))/b^2/d-1/2*Ci((b+d)*(c+d*x)/d)*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))/b^2/d-Ci(c+d*x)*(b*x*cos(a+b*x)-sin(a+b*x))/b^2+1/2*sin(a-c+(b-d)*x)/b/(b-d)+1/2*sin(a+c+(b+d)*x)/b/(b+d)-1/2*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))*Si((b-d)*(c+d*x)/d)/b^2/d-1/2*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))*Si((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = (Ci(c+d*x)/b*(a*d/b*cos(b/d*(c+d*x)+(-b*c+a*d)/d)+1/b*d*(sin(b/d*(c+d*x)+(-b*c+a*d)/d)-(b/d*(c+d*x)+(-b*c+a*d)/d)*cos(b/d*(c+d*x)+(-b*c+a*d)/d)))-1/b*(1/2/(b-d)*a*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/(b-d)*d*sin((b-d)*(c+d*x)/d+(-b*c+a*d)/d)-1/2*(-b*c+a*d)*d/(b-d)*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/(b-d)*c*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/(b+d)*a*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/(b+d)*d*sin((b+d)*(c+d*x)/d+(-b*c+a*d)/d)-1/2*(-b*c+a*d)*d/(b+d)*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/(b+d)*c*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/b*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/b*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)))/d
+  Leafcounts = 280 1227   0 0
+
+Incorrect antiderivative:
+  Integrand        = cos(a+b*x)*Ci(c+d*x)
+  Optimal integral = 1/2*(-Ci((b-d)*(c+d*x)/d)*sin(a-b*c/d)-Ci((b+d)*(c+d*x)/d)*sin(a-b*c/d)+2*sin(a+b*x)*Ci(c+d*x)-cos(a-b*c/d)*Si((b-d)*(c+d*x)/d)-cos(a-b*c/d)*Si((b+d)*(c+d*x)/d))/b
+  Maple integral   = (Ci(c+d*x)*sin(b/d*(c+d*x)+(-b*c+a*d)/d)/b*d-1/b*d*(1/2*d*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2*d*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)))/d
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*cos(a+b*x)*Ci(c+d*x)
+  Optimal integral = 1/2*cos(a-c+(b-d)*x)/b/(b-d)+1/2*cos(a+c+(b+d)*x)/b/(b+d)-1/2*Ci((b-d)*(c+d*x)/d)*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))/b^2/d-1/2*Ci((b+d)*(c+d*x)/d)*(d*cos(a-b*c/d)-b*c*sin(a-b*c/d))/b^2/d+Ci(c+d*x)*(cos(a+b*x)+b*x*sin(a+b*x))/b^2+1/2*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))*Si((b-d)*(c+d*x)/d)/b^2/d+1/2*(b*c*cos(a-b*c/d)+d*sin(a-b*c/d))*Si((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = (Ci(c+d*x)/b*(-d*sin(b/d*(c+d*x)+(-b*c+a*d)/d)/b*a+1/b*d*(cos(b/d*(c+d*x)+(-b*c+a*d)/d)+(b/d*(c+d*x)+(-b*c+a*d)/d)*sin(b/d*(c+d*x)+(-b*c+a*d)/d)))-1/b*(1/2/b*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)+1/2/b*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d+Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d)-1/2/(b-d)*a*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)-1/2/(b-d)*d*cos((b-d)*(c+d*x)/d+(-b*c+a*d)/d)+1/2*(-b*c+a*d)*d/(b-d)*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)+1/2/(b-d)*c*d^2*(Si((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b-d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)-1/2/(b+d)*a*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)-1/2/(b+d)*d*cos((b+d)*(c+d*x)/d+(-b*c+a*d)/d)+1/2*(-b*c+a*d)*d/(b+d)*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)-1/2/(b+d)*c*d^2*(Si((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*cos((b*c-a*d)/d)/d-Ci((b+d)*(c+d*x)/d+(-b*c+a*d)/d+(b*c-a*d)/d)*sin((b*c-a*d)/d)/d)))/d
+  Leafcounts = 277 1231   0 0
+
+File problem count   = 103
+Optimal results      = 87
+Overly complicated   = 6
+Unable to integrate  = 6
+Unverifiable results = 4
+Integration speed    = 104.25 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/HyperbolicIntegralFunctions.txt
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^m*Shi(b*x)
+  Optimal integral = x^(1+m)*((-b*x)^(-1-m)*GAMMA(1+m,-b*x)-(b*x)^(-1-m)*GAMMA(1+m,b*x)+2*Shi(b*x))/(2+2*m)
+  Maple integral   = 1/2*b/(1+1/2*m)*x^(2+m)*hypergeom([1/2, 1+1/2*m],[3/2, 3/2, 2+1/2*m],1/4*b^2*x^2)
+
+Unable to integrate:
+  Integrand        = Shi(a+b*x)/x^3
+  Optimal integral = 1/2*((-a^2+b^2*x^2)*Shi(a+b*x)+x*(-sinh(a+b*x)*a+x*((a*cosh(a)-sinh(a))*Chi(b*x)+Shi(b*x)*(-cosh(a)+a*sinh(a)))*b)*b)/a^2/x^2
+  Maple integral   = int(Shi(a+b*x)/x^3,x)
+
+Unable to integrate:
+  Integrand        = Shi(a+b*x)/x^2
+  Optimal integral = ((-a-b*x)*Shi(a+b*x)+b*x*(sinh(a)*Chi(b*x)+Shi(b*x)*cosh(a)))/a/x
+  Maple integral   = int(Shi(a+b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*Shi(a+b*x)^2
+  Optimal integral = 1/12*((-4*a+2*b*x)*cosh(2*a+2*b*x)+(8+12*a^2)*Shi(2*a+2*b*x)-sinh(2*a+2*b*x)+12*a*Chi(2*a+2*b*x)+(4*a^3+4*b^3*x^3)*Shi(a+b*x)^2+((-8*b^2*x^2+8*a*b*x-8*a^2-16)*cosh(a+b*x)+(16*b*x-8*a)*sinh(a+b*x))*Shi(a+b*x)+8*b*x-8*cosh(a+b*x)*sinh(a+b*x)-12*a*ln(a+b*x))/b^3
+  Maple integral   = int(x^2*Shi(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = sinh(b*x)*Shi(b*x)/x^3
+  Optimal integral = b^2*Chi(2*b*x)-1/2*b*cosh(b*x)*sinh(b*x)/x-1/4*sinh(b*x)^2/x^2-1/4*b*sinh(2*b*x)/x-1/2*(b*x*cosh(b*x)+sinh(b*x))*Shi(b*x)/x^2+1/4*b^2*Shi(b*x)^2
+  Maple integral   = int(sinh(b*x)*Shi(b*x)/x^3,x)
+
+Unable to integrate:
+  Integrand        = cosh(b*x)*Shi(b*x)/x^2
+  Optimal integral = b*Chi(2*b*x)-1/2*sinh(2*b*x)/x-cosh(b*x)*Shi(b*x)/x+1/2*b*Shi(b*x)^2
+  Maple integral   = int(cosh(b*x)*Shi(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = sinh(a+b*x)*Shi(c+d*x)
+  Optimal integral = 1/2*(Chi((b-d)*(c+d*x)/d)*sinh(a-b*c/d)-Chi((b+d)*(c+d*x)/d)*sinh(a-b*c/d)+2*cosh(a+b*x)*Shi(c+d*x)+cosh(a-b*c/d)*Shi((b-d)*(c+d*x)/d)-cosh(a-b*c/d)*Shi((b+d)*(c+d*x)/d))/b
+  Maple integral   = int(sinh(a+b*x)*Shi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = x*sinh(a+b*x)*Shi(c+d*x)
+  Optimal integral = 1/2*cosh(a-c+(b-d)*x)/b/(b-d)-1/2*cosh(a+c+(b+d)*x)/b/(b+d)-1/2*Chi((b-d)*(c+d*x)/d)*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))/b^2/d+1/2*Chi((b+d)*(c+d*x)/d)*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))/b^2/d+(b*x*cosh(a+b*x)-sinh(a+b*x))*Shi(c+d*x)/b^2-1/2*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))*Shi((b-d)*(c+d*x)/d)/b^2/d+1/2*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))*Shi((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = int(x*sinh(a+b*x)*Shi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = cosh(a+b*x)*Shi(c+d*x)
+  Optimal integral = 1/2*(cosh(a-b*c/d)*Chi((b-d)*(c+d*x)/d)-cosh(a-b*c/d)*Chi((b+d)*(c+d*x)/d)+2*sinh(a+b*x)*Shi(c+d*x)+sinh(a-b*c/d)*Shi((b-d)*(c+d*x)/d)-sinh(a-b*c/d)*Shi((b+d)*(c+d*x)/d))/b
+  Maple integral   = int(cosh(a+b*x)*Shi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = x*cosh(a+b*x)*Shi(c+d*x)
+  Optimal integral = -1/2*Chi((b-d)*(c+d*x)/d)*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))/b^2/d+1/2*Chi((b+d)*(c+d*x)/d)*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))/b^2/d+1/2*sinh(a-c+(b-d)*x)/b/(b-d)-1/2*sinh(a+c+(b+d)*x)/b/(b+d)-(cosh(a+b*x)-b*x*sinh(a+b*x))*Shi(c+d*x)/b^2-1/2*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))*Shi((b-d)*(c+d*x)/d)/b^2/d+1/2*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))*Shi((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = int(x*cosh(a+b*x)*Shi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = x^m*Chi(b*x)
+  Optimal integral = x^(1+m)*(2*Chi(b*x)+(-b*x)^(-1-m)*GAMMA(1+m,-b*x)+(b*x)^(-1-m)*GAMMA(1+m,b*x))/(2+2*m)
+  Maple integral   = int(x^m*Chi(b*x),x)
+
+Unable to integrate:
+  Integrand        = Chi(a+b*x)/x^3
+  Optimal integral = 1/2*((-a^2+b^2*x^2)*Chi(a+b*x)+x*(-a*cosh(a+b*x)+x*((-cosh(a)+a*sinh(a))*Chi(b*x)+Shi(b*x)*(a*cosh(a)-sinh(a)))*b)*b)/a^2/x^2
+  Maple integral   = int(Chi(a+b*x)/x^3,x)
+
+Unable to integrate:
+  Integrand        = Chi(a+b*x)/x^2
+  Optimal integral = ((-a-b*x)*Chi(a+b*x)+b*x*(cosh(a)*Chi(b*x)+Shi(b*x)*sinh(a)))/a/x
+  Maple integral   = int(Chi(a+b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = x^2*Chi(a+b*x)^2
+  Optimal integral = 1/12*((-4*a+2*b*x)*cosh(2*a+2*b*x)+(8+12*a^2)*Shi(2*a+2*b*x)-sinh(2*a+2*b*x)+12*a*Chi(2*a+2*b*x)+(4*a^3+4*b^3*x^3)*Chi(a+b*x)^2+((-8*b^2*x^2+8*a*b*x-8*a^2-16)*sinh(a+b*x)+(16*b*x-8*a)*cosh(a+b*x))*Chi(a+b*x)-8*b*x+12*a*ln(a+b*x)-8*cosh(a+b*x)*sinh(a+b*x))/b^3
+  Maple integral   = int(x^2*Chi(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = cosh(b*x)*Chi(b*x)/x^3
+  Optimal integral = -1/4*cosh(b*x)^2/x^2+1/4*b^2*Chi(b*x)^2+b^2*Chi(2*b*x)-1/2*b*cosh(b*x)*sinh(b*x)/x-1/2*Chi(b*x)*(cosh(b*x)+b*x*sinh(b*x))/x^2-1/4*b*sinh(2*b*x)/x
+  Maple integral   = int(cosh(b*x)*Chi(b*x)/x^3,x)
+
+Unable to integrate:
+  Integrand        = sinh(b*x)*Chi(b*x)/x^2
+  Optimal integral = 1/2*b*Chi(b*x)^2+b*Chi(2*b*x)-Chi(b*x)*sinh(b*x)/x-1/2*sinh(2*b*x)/x
+  Maple integral   = int(sinh(b*x)*Chi(b*x)/x^2,x)
+
+Unable to integrate:
+  Integrand        = sinh(a+b*x)*Chi(c+d*x)
+  Optimal integral = 1/2*(2*cosh(a+b*x)*Chi(c+d*x)-cosh(a-b*c/d)*Chi((b-d)*(c+d*x)/d)-cosh(a-b*c/d)*Chi((b+d)*(c+d*x)/d)-sinh(a-b*c/d)*Shi((b-d)*(c+d*x)/d)-sinh(a-b*c/d)*Shi((b+d)*(c+d*x)/d))/b
+  Maple integral   = int(sinh(a+b*x)*Chi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = x*sinh(a+b*x)*Chi(c+d*x)
+  Optimal integral = 1/2*Chi((b-d)*(c+d*x)/d)*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))/b^2/d+1/2*Chi((b+d)*(c+d*x)/d)*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))/b^2/d+Chi(c+d*x)*(b*x*cosh(a+b*x)-sinh(a+b*x))/b^2-1/2*sinh(a-c+(b-d)*x)/b/(b-d)-1/2*sinh(a+c+(b+d)*x)/b/(b+d)+1/2*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))*Shi((b-d)*(c+d*x)/d)/b^2/d+1/2*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))*Shi((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = int(x*sinh(a+b*x)*Chi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = cosh(a+b*x)*Chi(c+d*x)
+  Optimal integral = 1/2*(-Chi((b-d)*(c+d*x)/d)*sinh(a-b*c/d)-Chi((b+d)*(c+d*x)/d)*sinh(a-b*c/d)+2*sinh(a+b*x)*Chi(c+d*x)-cosh(a-b*c/d)*Shi((b-d)*(c+d*x)/d)-cosh(a-b*c/d)*Shi((b+d)*(c+d*x)/d))/b
+  Maple integral   = int(cosh(a+b*x)*Chi(c+d*x),x)
+
+Unable to integrate:
+  Integrand        = x*cosh(a+b*x)*Chi(c+d*x)
+  Optimal integral = -1/2*cosh(a-c+(b-d)*x)/b/(b-d)-1/2*cosh(a+c+(b+d)*x)/b/(b+d)+1/2*Chi((b-d)*(c+d*x)/d)*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))/b^2/d+1/2*Chi((b+d)*(c+d*x)/d)*(d*cosh(a-b*c/d)+b*c*sinh(a-b*c/d))/b^2/d-Chi(c+d*x)*(cosh(a+b*x)-b*x*sinh(a+b*x))/b^2+1/2*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))*Shi((b-d)*(c+d*x)/d)/b^2/d+1/2*(b*c*cosh(a-b*c/d)+d*sinh(a-b*c/d))*Shi((b+d)*(c+d*x)/d)/b^2/d
+  Maple integral   = int(x*cosh(a+b*x)*Chi(c+d*x),x)
+
+File problem count   = 102
+Optimal results      = 82
+Overly complicated   = 1
+Unable to integrate  = 19
+Unverifiable results = 0
+Integration speed    = 113.84 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/LogarithmIntegralFunctions.txt
+
+File problem count   = 3
+Optimal results      = 3
+Overly complicated   = 0
+Unable to integrate  = 0
+Unverifiable results = 0
+Integration speed    = 250.00 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/GammaFunctions.txt
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^m*GAMMA(n,a*x)
+  Optimal integral = -x^(1+m)*(-GAMMA(n,a*x)+(a*x)^(-1-m)*GAMMA(n+1+m,a*x))/(1+m)
+  Maple integral   = a^(-1-m)*(Pi*x^(1+m)*a^(1+m)*csc(Pi*n)/(1+m)/GAMMA(1-n)-1/n/(n+1+m)*x^(n+1+m)*a^(n+1+m)*hypergeom([n, n+1+m],[1+n, 2+n+m],-a*x))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^m*GAMMA(n,2*x)
+  Optimal integral = (x^(1+m)*GAMMA(n,2*x)-2^(-1-m)*GAMMA(n+1+m,2*x))/(1+m)
+  Maple integral   = 2^(-1-m)*(Pi*x^(1+m)*2^(1+m)*csc(Pi*n)/(1+m)/GAMMA(1-n)-2^(n+1+m)/n/(n+1+m)*x^(n+1+m)*hypergeom([n, n+1+m],[1+n, 2+n+m],-2*x))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^1000*GAMMA(n,a*x)
+  Optimal integral = 1/1001*x^1001*GAMMA(n,a*x)-1/1001*GAMMA(1001+n,a*x)/a^1001
+  Maple integral   = 1/a^1001*(GAMMA(1001)*Pi*csc(Pi*n)/GAMMA(1-n)/GAMMA(1002)*x^1001*a^1001-1/n/(1001+n)*x^(1001+n)*a^(1001+n)*hypergeom([n, 1001+n],[1+n, 1002+n],-a*x))
+
+Unable to integrate:
+  Integrand        = GAMMA(n,a+b*x)
+  Optimal integral = (-GAMMA(1+n,a+b*x)+(a+b*x)*GAMMA(n,a+b*x))/b
+  Maple integral   = int(GAMMA(n,a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x*GAMMA(n,a+b*x)
+  Optimal integral = -1/2*(a^2/b^2-x^2)*GAMMA(n,a+b*x)+a*GAMMA(1+n,a+b*x)/b^2-1/2*GAMMA(2+n,a+b*x)/b^2
+  Maple integral   = int(x*GAMMA(n,a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x^2*GAMMA(n,a+b*x)
+  Optimal integral = 1/3*(-3*a^2*GAMMA(1+n,a+b*x)+3*a*GAMMA(2+n,a+b*x)-GAMMA(3+n,a+b*x)+(a^3+b^3*x^3)*GAMMA(n,a+b*x))/b^3
+  Maple integral   = int(x^2*GAMMA(n,a+b*x),x)
+
+Unable to integrate:
+  Integrand        = ln(GAMMA(a+b*x))
+  Optimal integral = x*ln(GAMMA(a+b*x))-x*lnGAMMA(a+b*x)+Psi(-2,a+b*x)/b
+  Maple integral   = int(ln(GAMMA(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = x*ln(GAMMA(a+b*x))
+  Optimal integral = 1/2*x^2*ln(GAMMA(a+b*x))-1/2*x^2*lnGAMMA(a+b*x)-Psi(-3,a+b*x)/b^2+x*Psi(-2,a+b*x)/b
+  Maple integral   = int(x*ln(GAMMA(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = x^2*ln(GAMMA(a+b*x))
+  Optimal integral = 1/3*x^3*ln(GAMMA(a+b*x))-1/3*x^3*lnGAMMA(a+b*x)+2*Psi(-4,a+b*x)/b^3-2*x*Psi(-3,a+b*x)/b^2+x^2*Psi(-2,a+b*x)/b
+  Maple integral   = int(x^2*ln(GAMMA(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = lnGAMMA(a+b*x)
+  Optimal integral = Psi(-2,a+b*x)/b
+  Maple integral   = int(lnGAMMA(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x*lnGAMMA(a+b*x)
+  Optimal integral = (-Psi(-3,a+b*x)+x*Psi(-2,a+b*x)*b)/b^2
+  Maple integral   = int(x*lnGAMMA(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x^2*lnGAMMA(a+b*x)
+  Optimal integral = (2*Psi(-4,a+b*x)-2*x*Psi(-3,a+b*x)*b+x^2*Psi(-2,a+b*x)*b^2)/b^3
+  Maple integral   = int(x^2*lnGAMMA(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x^2*Psi(1,a+b*x)
+  Optimal integral = (-2*x*lnGAMMA(a+b*x)*b+2*Psi(-2,a+b*x)+x^2*Psi(a+b*x)*b^2)/b^3
+  Maple integral   = int(x^2*Psi(1,a+b*x),x)
+
+Incorrect antiderivative:
+  Integrand        = x*Psi(n,a+b*x)
+  Optimal integral = (-Psi(-2+n,a+b*x)+x*Psi(-1+n,a+b*x)*b)/b^2
+  Maple integral   = Psi(-1+n,x)*x-Psi(-2+n,x)
+
+Unable to integrate:
+  Integrand        = Psi(n,a+b*x)/x^2-b*Psi(1+n,a+b*x)/x
+  Optimal integral = -Psi(n,a+b*x)/x
+  Maple integral   = int(Psi(n,a+b*x)/x^2-b*Psi(1+n,a+b*x)/x,x)
+
+File problem count   = 21
+Optimal results      = 6
+Overly complicated   = 3
+Unable to integrate  = 11
+Unverifiable results = 1
+Integration speed    = 95.45 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/ZetaFunctions.txt
+
+Unable to integrate:
+  Integrand        = x^2*Zeta(2,a+b*x)
+  Optimal integral = (-2*x*lnGAMMA(a+b*x)*b+2*Psi(-2,a+b*x)+x^2*Psi(a+b*x)*b^2)/b^3
+  Maple integral   = int(x^2*Zeta(2,a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x*Zeta(2,a+b*x)
+  Optimal integral = (-lnGAMMA(a+b*x)+x*Psi(a+b*x)*b)/b^2
+  Maple integral   = int(x*Zeta(2,a+b*x),x)
+
+Unable to integrate:
+  Integrand        = Zeta(2,a+b*x)/x^2-b*Psi(2,a+b*x)/x
+  Optimal integral = -Psi(1,a+b*x)/x
+  Maple integral   = int(Zeta(2,a+b*x)/x^2-b*Psi(2,a+b*x)/x,x)
+
+Unable to integrate:
+  Integrand        = x^2*Zeta(s,a+b*x)
+  Optimal integral = (-b^2*x^2*(-2+s)*(-3+s)*Zeta(-1+s,a+b*x)-2*b*x*(-3+s)*Zeta(-2+s,a+b*x)-2*Zeta(-3+s,a+b*x))/b^3/(-1+s)/(-2+s)/(-3+s)
+  Maple integral   = int(x^2*Zeta(s,a+b*x),x)
+
+Unable to integrate:
+  Integrand        = x*Zeta(s,a+b*x)
+  Optimal integral = (-b*x*(-2+s)*Zeta(-1+s,a+b*x)-Zeta(-2+s,a+b*x))/b^2/(-1+s)/(-2+s)
+  Maple integral   = int(x*Zeta(s,a+b*x),x)
+
+Maple gives a simpler antiderivative!:
+  Integrand        = Zeta(s,a+b*x)
+  Optimal integral = Zeta(-1+s,a+b*x)/b/(1-s)
+  Maple integral   = 1/b*Zeta(-1+s,a+b*x)
+  Leafcounts = 20 13   0 0
+
+Unable to integrate:
+  Integrand        = Zeta(s,a+b*x)/x^2+b*s*Zeta(1+s,a+b*x)/x
+  Optimal integral = -Zeta(s,a+b*x)/x
+  Maple integral   = int(Zeta(s,a+b*x)/x^2+b*s*Zeta(1+s,a+b*x)/x,x)
+
+File problem count   = 14
+Optimal results      = 8
+Overly complicated   = 0
+Unable to integrate  = 6
+Unverifiable results = 0
+Integration speed    = 205.88 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/PolylogarithmFunctions.txt
+
+Unable to integrate:
+  Integrand        = polylog(n,a*x^m)/x
+  Optimal integral = polylog(1+n,a*x^m)/m
+  Maple integral   = int(polylog(n,a*x^m)/x,x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = polylog(2,a+b*x)
+  Optimal integral = ((-1+a+b*x)*ln(1-a-b*x)+(a+b*x)*polylog(2,a+b*x)-b*x)/b
+  Maple integral   = ((-1+a+b*x)*ln(1-a-b*x)+polylog(2,a+b*x)*b*x-a-b*x+a*dilog(1-a-b*x)+1)/b
+  Leafcounts = 39 79   39 52
+
+Unable to integrate:
+  Integrand        = polylog(-3/2,x)+polylog(-1/2,x)
+  Optimal integral = x*polylog(-1/2,x)
+  Maple integral   = int(polylog(-3/2,x)+polylog(-1/2,x),x)
+
+Unable to integrate:
+  Integrand        = polylog(n,c*f^(a+b*x))
+  Optimal integral = polylog(1+n,c*f^(a+b*x))/b/ln(f)
+  Maple integral   = int(polylog(n,c*f^(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = x*polylog(n,c*f^(a+b*x))
+  Optimal integral = (x*polylog(1+n,c*f^(a+b*x))*b*ln(f)-polylog(2+n,c*f^(a+b*x)))/ln(f)^2/b^2
+  Maple integral   = int(x*polylog(n,c*f^(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = x^2*polylog(n,c*f^(a+b*x))
+  Optimal integral = (x^2*polylog(1+n,c*f^(a+b*x))*b^2*ln(f)^2-2*x*polylog(2+n,c*f^(a+b*x))*b*ln(f)+2*polylog(3+n,c*f^(a+b*x)))/b^3/ln(f)^3
+  Maple integral   = int(x^2*polylog(n,c*f^(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = ln(x)*polylog(n,a*x)/x
+  Optimal integral = ln(x)*polylog(1+n,a*x)-polylog(2+n,a*x)
+  Maple integral   = int(ln(x)*polylog(n,a*x)/x,x)
+
+Unable to integrate:
+  Integrand        = ln(x)^2*polylog(n,a*x)/x
+  Optimal integral = ln(x)^2*polylog(1+n,a*x)-2*ln(x)*polylog(2+n,a*x)+2*polylog(3+n,a*x)
+  Maple integral   = int(ln(x)^2*polylog(n,a*x)/x,x)
+
+File problem count   = 18
+Optimal results      = 10
+Overly complicated   = 1
+Unable to integrate  = 7
+Unverifiable results = 0
+Integration speed    = 160.71 int/sec
+
+		===========================================
+
+
+Test file:  SpecialFunctions/ProductLogarithmFunctions.txt
+
+Maple gives a simpler antiderivative!:
+  Integrand        = LambertW(a+b*x)^4
+  Optimal integral = 96*x-96*(a+b*x)/b/LambertW(a+b*x)-48*(a+b*x)*LambertW(a+b*x)/b+16*(a+b*x)*LambertW(a+b*x)^2/b-4*(a+b*x)*LambertW(a+b*x)^3/b+(a+b*x)*LambertW(a+b*x)^4/b
+  Maple integral   = 1/b*(-96+96*LambertW(a+b*x)-48*LambertW(a+b*x)^2+16*LambertW(a+b*x)^3-4*LambertW(a+b*x)^4+LambertW(a+b*x)^5)*(a+b*x)/LambertW(a+b*x)
+  Leafcounts = 91 65   0 0
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a+b*x)
+  Optimal integral = Ei(LambertW(a+b*x))/b+(a+b*x)/b/LambertW(a+b*x)
+  Maple integral   = 1/b*((a+b*x)/LambertW(a+b*x)-Ei(1,-LambertW(a+b*x)))
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a+b*x)^2
+  Optimal integral = 2*Ei(LambertW(a+b*x))/b-(a+b*x)/b/LambertW(a+b*x)^2
+  Maple integral   = 1/b*(-2*Ei(1,-LambertW(a+b*x))-(a+b*x)/LambertW(a+b*x)^2)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a+b*x)^3
+  Optimal integral = 1/2*(3*Ei(LambertW(a+b*x))*LambertW(a+b*x)^3-3*(a+b*x)*(LambertW(a+b*x)+1/3))/LambertW(a+b*x)^3/b
+  Maple integral   = 1/b*(-3/2*(a+b*x)/LambertW(a+b*x)^2-3/2*Ei(1,-LambertW(a+b*x))-1/2*(a+b*x)/LambertW(a+b*x)^3)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a+b*x)^4
+  Optimal integral = 1/3*(2*Ei(LambertW(a+b*x))*LambertW(a+b*x)^4-2*(1/2+LambertW(a+b*x)+LambertW(a+b*x)^2)*(a+b*x))/b/LambertW(a+b*x)^4
+  Maple integral   = 1/b*(-2/3*(a+b*x)/LambertW(a+b*x)^3-2/3*(a+b*x)/LambertW(a+b*x)^2-2/3*Ei(1,-LambertW(a+b*x))-1/3*(a+b*x)/LambertW(a+b*x)^4)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a+b*x)^5
+  Optimal integral = 1/24*(5*Ei(LambertW(a+b*x))*LambertW(a+b*x)^5-5*(6/5+2*LambertW(a+b*x)+LambertW(a+b*x)^2+LambertW(a+b*x)^3)*(a+b*x))/b/LambertW(a+b*x)^5
+  Maple integral   = 1/b*(-5/12*(a+b*x)/LambertW(a+b*x)^4-5/24*(a+b*x)/LambertW(a+b*x)^3-5/24*(a+b*x)/LambertW(a+b*x)^2-5/24*Ei(1,-LambertW(a+b*x))-1/4/LambertW(a+b*x)^5*(a+b*x))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a+b*x))^(5/2)
+  Optimal integral = (75/16*c^(5/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(1/2)+c^3*(a+b*x)*(-75/8+25/4*LambertW(a+b*x)-5/2*LambertW(a+b*x)^2+LambertW(a+b*x)^3))/(c*LambertW(a+b*x))^(1/2)/b
+  Maple integral   = 2/b/c^2*(1/2*(c*LambertW(a+b*x))^(7/2)*(a+b*x)/LambertW(a+b*x)*c-5/2*c*(1/2*c*(c*LambertW(a+b*x))^(5/2)*(a+b*x)/LambertW(a+b*x)-5/2*c*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-3/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a+b*x))^(3/2)
+  Optimal integral = 1/(c*LambertW(a+b*x))^(1/2)*(-9/8*c^(3/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(1/2)+c^2*(a+b*x)*(9/4-3/2*LambertW(a+b*x)+LambertW(a+b*x)^2))/b
+  Maple integral   = 2/b/c^2*(1/2*c*(c*LambertW(a+b*x))^(5/2)*(a+b*x)/LambertW(a+b*x)-3/2*c*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-3/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a+b*x))^(1/2)
+  Optimal integral = (1/4*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(1/2)+(-1/2+LambertW(a+b*x))*c*(a+b*x))/(c*LambertW(a+b*x))^(1/2)/b
+  Maple integral   = 2/b/c^2*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-1/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))
+
+Incorrect antiderivative:
+  Integrand        = 1/(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/2*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))/b/c^(1/2)+(a+b*x)/b/(c*LambertW(a+b*x))^(1/2)
+  Maple integral   = 2/b/c^2*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = 1/(c*LambertW(a+b*x))^(3/2)
+  Optimal integral = 3*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))/b/c^(3/2)-2*(a+b*x)/b/(c*LambertW(a+b*x))^(3/2)
+  Maple integral   = 2/b/c^2*(1/2*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))+c*(-1/(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))
+
+Incorrect antiderivative:
+  Integrand        = 1/(c*LambertW(a+b*x))^(5/2)
+  Optimal integral = 10/3/(c*LambertW(a+b*x))^(5/2)*(Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)*c-c^(7/2)*(a+b*x)*(1/5+LambertW(a+b*x)))/c^(7/2)/b
+  Maple integral   = 2/b/c^2*(-1/(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))+c*(-1/3/(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)+2/3/c*(-1/(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = 1/(c*LambertW(a+b*x))^(7/2)
+  Optimal integral = 28/15*(Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)*c^2-c^(11/2)*(3/14+1/2*LambertW(a+b*x)+LambertW(a+b*x)^2)*(a+b*x))/(c*LambertW(a+b*x))^(7/2)/b/c^(11/2)
+  Maple integral   = 2/b/c^2*(-1/3/(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)+2/3/c*(-1/(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))+c*(-1/5/(c*LambertW(a+b*x))^(5/2)*(a+b*x)/LambertW(a+b*x)+2/5/c*(-1/3/(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)+2/3/c*(-1/(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a+b*x))^n
+  Optimal integral = (c*LambertW(a+b*x))^n*(-n*GAMMA(1+n,-LambertW(a+b*x))+(-LambertW(a+b*x))^n*(a+b*x))/b/((-LambertW(a+b*x))^n)
+  Maple integral   = (-1)^(-n)*(c*LambertW(a+b*x))^n*LambertW(a+b*x)^(-n)/b*(LambertW(a+b*x)^n*(-1)^n*(1+n)*n*GAMMA(n)*(-LambertW(a+b*x))^(-n)+LambertW(a+b*x)^n*(-1)^n*(-1-n+LambertW(a+b*x))*(a+b*x)/LambertW(a+b*x)-LambertW(a+b*x)^n*(-1)^n*(1+n)*n*(-LambertW(a+b*x))^(-n)*GAMMA(n,-LambertW(a+b*x)))-(-1)^(-n)*(c*LambertW(a+b*x))^n*LambertW(a+b*x)^(-n)/b*(LambertW(a+b*x)^n*(-1)^n*n*GAMMA(n)*(-LambertW(a+b*x))^(-n)-LambertW(a+b*x)^n*(-1)^n*(a+b*x)/LambertW(a+b*x)-LambertW(a+b*x)^n*(-1)^n*n*(-LambertW(a+b*x))^(-n)*GAMMA(n,-LambertW(a+b*x)))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3*LambertW(a+b*x)^2
+  Optimal integral = -1/4*((a-b*x)*(a^2+b^2*x^2)*LambertW(a+b*x)^6+(1/2*b^3*x^3+13/6*b*x*a^2-25/6*a^3-7/6*a*x^2*b^2)*LambertW(a+b*x)^5+(715/72*a^3-271/72*b*x*a^2+121/72*a*x^2*b^2-5/8*b^3*x^3)*LambertW(a+b*x)^4+(-121/72*a*x^2*b^2+271/72*b*x*a^2-715/72*a^3+5/8*b^3*x^3)*LambertW(a+b*x)^3-2245/864*(a^2-1238/2245*a*b*x+81/449*b^2*x^2)*(a+b*x)*LambertW(a+b*x)^2-2881/5184*(a-1215/2881*b*x)*(a+b*x)^2*LambertW(a+b*x)-15/256*(a+b*x)^3)*(a+b*x)/b^4/LambertW(a+b*x)^4
+  Maple integral   = 1/b^4*(-a^3*((a+b*x)*LambertW(a+b*x)^2-3*LambertW(a+b*x)*(a+b*x)+6*a+6*b*x-6*(a+b*x)/LambertW(a+b*x))-a^3*(LambertW(a+b*x)*(a+b*x)-2*a-2*b*x+2*(a+b*x)/LambertW(a+b*x))+3*a^2*(1/2*(a+b*x)^2*LambertW(a+b*x)^2-(a+b*x)^2*LambertW(a+b*x)+3/2*(a+b*x)^2-3/2/LambertW(a+b*x)*(a+b*x)^2+3/4*(a+b*x)^2/LambertW(a+b*x)^2)+3*a^2*(1/2*(a+b*x)^2*LambertW(a+b*x)-3/4*(a+b*x)^2+3/4/LambertW(a+b*x)*(a+b*x)^2-3/8*(a+b*x)^2/LambertW(a+b*x)^2)-3*a*(1/3*(a+b*x)^3*LambertW(a+b*x)^2-5/9*(a+b*x)^3*LambertW(a+b*x)+20/27*(a+b*x)^3-20/27/LambertW(a+b*x)*(a+b*x)^3+40/81/LambertW(a+b*x)^2*(a+b*x)^3-40/243*(a+b*x)^3/LambertW(a+b*x)^3)-3*a*(1/3*(a+b*x)^3*LambertW(a+b*x)-4/9*(a+b*x)^3+4/9/LambertW(a+b*x)*(a+b*x)^3-8/27/LambertW(a+b*x)^2*(a+b*x)^3+8/81*(a+b*x)^3/LambertW(a+b*x)^3)+1/4*(a+b*x)^4*LambertW(a+b*x)^2-1/8*(a+b*x)^4*LambertW(a+b*x)+5/32*(a+b*x)^4-5/32/LambertW(a+b*x)*(a+b*x)^4+15/128/LambertW(a+b*x)^2*(a+b*x)^4-15/256/LambertW(a+b*x)^3*(a+b*x)^4+15/1024*(a+b*x)^4/LambertW(a+b*x)^4)
+  Leafcounts = 262 581   0 0
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3/(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = -1/4/(c*LambertW(a+b*x))^(7/2)/c^(1/2)*(3/8*a^2*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+1/18*a*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+15/2048*Pi^(1/2)*erfi(2*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+2*a^3*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+c^(7/2)*(a+b*x)*((a-b*x)*(a^2+b^2*x^2)*LambertW(a+b*x)^3-23/24*(a^2-10/23*a*b*x+3/23*b^2*x^2)*(a+b*x)*LambertW(a+b*x)^2-49/192*(a-15/49*b*x)*(a+b*x)^2*LambertW(a+b*x)-15/512*(a+b*x)^3))/b^4
+  Maple integral   = 2/b^4/c^5*(-a^3*c^3*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))-1/2*a^3*c^4*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))+3*a^2*c^2*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))+3*a^2*c^3*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))-3*a*c*(1/6*c*(c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))-5/6*c*(1/6*c*(c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))-1/2*c*(1/6*c*(c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))-3*a*c^2*(1/6*c*(c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))-1/2*c*(1/6*c*(c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))+1/8*c*(c*LambertW(a+b*x))^(7/2)*exp(4*LambertW(a+b*x))+1/8*c*(1/8*c*(c*LambertW(a+b*x))^(5/2)*exp(4*LambertW(a+b*x))-5/8*c*(1/8*c*(c*LambertW(a+b*x))^(3/2)*exp(4*LambertW(a+b*x))-3/8*c*(1/8*c*(c*LambertW(a+b*x))^(1/2)*exp(4*LambertW(a+b*x))-1/32*c*Pi^(1/2)/(-1/c)^(1/2)*erf(2*(-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))))
+  Leafcounts = 323 732   0 0
+
+Incorrect antiderivative:
+  Integrand        = x^2/(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/3/(c*LambertW(a+b*x))^(5/2)/c^(1/2)*(3/16*a*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)+1/72*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)+3/2*a^2*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)+c^(5/2)*((a^2-a*b*x+b^2*x^2)*LambertW(a+b*x)^2-7/12*(a+b*x)*(a-2/7*b*x)*LambertW(a+b*x)-1/12*(a+b*x)^2)*(a+b*x))/b^3
+  Maple integral   = 2/b^3/c^4*(a^2*c^2*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))+1/2*a^2*c^3*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))-2*a*c*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))-2*a*c^2*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))+1/6*c*(c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))+1/6*c*(1/6*c*(c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))-1/2*c*(1/6*c*(c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = x/(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = -1/2/c^(1/2)/(c*LambertW(a+b*x))^(3/2)*(1/16*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(3/2)+a*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(3/2)+((a-b*x)*LambertW(a+b*x)-1/4*a-1/4*b*x)*(a+b*x)*c^(3/2))/b^2
+  Maple integral   = 2/b^2/c^3*(-a*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))-1/2*a*c^2*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))+1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))+1/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))
+
+Incorrect antiderivative:
+  Integrand        = 1/(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/2*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))/b/c^(1/2)+(a+b*x)/b/(c*LambertW(a+b*x))^(1/2)
+  Maple integral   = 2/b/c^2*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3/(-c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/4/(-c*LambertW(a+b*x))^(7/2)*(3/8*a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(7/2)+1/18*a*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(7/2)+15/2048*Pi^(1/2)*erf(2*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(7/2)+2*a^3*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(7/2)+((a-b*x)*(a^2+b^2*x^2)*LambertW(a+b*x)^3-23/24*(a^2-10/23*a*b*x+3/23*b^2*x^2)*(a+b*x)*LambertW(a+b*x)^2-49/192*(a+b*x)^2*(a-15/49*b*x)*LambertW(a+b*x)-15/512*(a+b*x)^3)*(a+b*x)*c^(7/2))/c^(1/2)/b^4
+  Maple integral   = -2/b^4/c^5*(a^3*c^3*(-1/2*c*(-c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/4*c^(3/2)*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2)))-1/2*a^3*c^(9/2)*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2))+3*a^2*c^2*(-1/4*c*(-c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))+3/4*c*(-1/4*c*(-c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))+1/16*c^(3/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))))-3*a^2*c^3*(-1/4*c*(-c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))+1/16*c^(3/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2)))+3*a*c*(-1/6*c*(-c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))+5/6*c*(-1/6*c*(-c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))+1/2*c*(-1/6*c*(-c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))+1/36*c^(3/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2)))))-3*a*c^2*(-1/6*c*(-c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))+1/2*c*(-1/6*c*(-c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))+1/36*c^(3/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))))-1/8*c*(-c*LambertW(a+b*x))^(7/2)*exp(4*LambertW(a+b*x))-1/8*c*(-1/8*c*(-c*LambertW(a+b*x))^(5/2)*exp(4*LambertW(a+b*x))+5/8*c*(-1/8*c*(-c*LambertW(a+b*x))^(3/2)*exp(4*LambertW(a+b*x))+3/8*c*(-1/8*c*(-c*LambertW(a+b*x))^(1/2)*exp(4*LambertW(a+b*x))+1/32*c^(3/2)*Pi^(1/2)*erf(2*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))))))
+  Leafcounts = 332 726   0 0
+
+Incorrect antiderivative:
+  Integrand        = x^2/(-c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/3/(-c*LambertW(a+b*x))^(5/2)/c^(1/2)*(-3/16*a*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(5/2)-1/72*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(5/2)-3/2*a^2*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(5/2)+c^(5/2)*((a^2-a*b*x+b^2*x^2)*LambertW(a+b*x)^2-7/12*(a+b*x)*(a-2/7*b*x)*LambertW(a+b*x)-1/12*(a+b*x)^2)*(a+b*x))/b^3
+  Maple integral   = 2/b^3/c^4*(a^2*c^2*(-1/2*c*(-c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/4*c^(3/2)*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2)))-1/2*a^2*c^(7/2)*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2))+2*a*c*(-1/4*c*(-c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))+3/4*c*(-1/4*c*(-c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))+1/16*c^(3/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))))-2*a*c^2*(-1/4*c*(-c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))+1/16*c^(3/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2)))-1/6*c*(-c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))-1/6*c*(-1/6*c*(-c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))+1/2*c*(-1/6*c*(-c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))+1/36*c^(3/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = x/(-c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/2*(1/16*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(3/2)+a*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2))*(-c*LambertW(a+b*x))^(3/2)+((a-b*x)*LambertW(a+b*x)-1/4*a-1/4*b*x)*(a+b*x)*c^(3/2))/c^(1/2)/(-c*LambertW(a+b*x))^(3/2)/b^2
+  Maple integral   = -2/b^2/c^3*(a*c*(-1/2*c*(-c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)+1/4*c^(3/2)*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2)))-1/2*a*c^(5/2)*Pi^(1/2)*erf((-c*LambertW(a+b*x))^(1/2)/c^(1/2))-1/4*c*(-c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-1/4*c*(-1/4*c*(-c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))+1/16*c^(3/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(-c*LambertW(a+b*x))^(1/2)/c^(1/2))))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3*(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = -1/4/(c*LambertW(a+b*x))^(7/2)*(9/32*a^2*c^(1/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+5/108*a*c^(1/2)*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+105/16384*c^(1/2)*Pi^(1/2)*erfi(2*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+a^3*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(7/2)+c^4*(a+b*x)*((a-b*x)*(a^2+b^2*x^2)*LambertW(a+b*x)^4+(13/24*b*x*a^2-7/24*a*x^2*b^2-25/24*a^3+1/8*b^3*x^3)*LambertW(a+b*x)^3-391/576*(a+b*x)*(a^2-194/391*a*b*x+63/391*b^2*x^2)*LambertW(a+b*x)^2-965/4608*(a+b*x)^2*(a-63/193*b*x)*LambertW(a+b*x)-105/4096*(a+b*x)^3))/b^4
+  Maple integral   = 2/b^4/c^5*(-a^3*c^3*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-3/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))-a^3*c^4*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))+3*a^2*c^2*(1/4*c*(c*LambertW(a+b*x))^(5/2)*exp(2*LambertW(a+b*x))-5/4*c*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))+3*a^2*c^3*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))-3*a*c*(1/6*c*(c*LambertW(a+b*x))^(7/2)*exp(3*LambertW(a+b*x))-7/6*c*(1/6*c*(c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))-5/6*c*(1/6*c*(c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))-1/2*c*(1/6*c*(c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))))-3*a*c^2*(1/6*c*(c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))-5/6*c*(1/6*c*(c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))-1/2*c*(1/6*c*(c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))+1/8*c*(c*LambertW(a+b*x))^(9/2)*exp(4*LambertW(a+b*x))-1/8*c*(1/8*c*(c*LambertW(a+b*x))^(7/2)*exp(4*LambertW(a+b*x))-7/8*c*(1/8*c*(c*LambertW(a+b*x))^(5/2)*exp(4*LambertW(a+b*x))-5/8*c*(1/8*c*(c*LambertW(a+b*x))^(3/2)*exp(4*LambertW(a+b*x))-3/8*c*(1/8*c*(c*LambertW(a+b*x))^(1/2)*exp(4*LambertW(a+b*x))-1/32*c*Pi^(1/2)/(-1/c)^(1/2)*erf(2*(-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))))
+  Leafcounts = 382 962   0 0
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2*(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/4*(3/16*a*c^(1/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)+5/324*c^(1/2)*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)+a^2*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(5/2)+4/3*c^3*(a+b*x)*((a^2-a*b*x+b^2*x^2)*LambertW(a+b*x)^3+(-11/12*a^2+5/12*a*b*x-1/6*b^2*x^2)*LambertW(a+b*x)^2-61/144*(a+b*x)*(a-20/61*b*x)*LambertW(a+b*x)-5/72*(a+b*x)^2))/(c*LambertW(a+b*x))^(5/2)/b^3
+  Maple integral   = 2/b^3/c^4*(a^2*c^2*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-3/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))+a^2*c^3*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))-2*a*c*(1/4*c*(c*LambertW(a+b*x))^(5/2)*exp(2*LambertW(a+b*x))-5/4*c*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))-2*a*c^2*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))+1/6*c*(c*LambertW(a+b*x))^(7/2)*exp(3*LambertW(a+b*x))-1/6*c*(1/6*c*(c*LambertW(a+b*x))^(5/2)*exp(3*LambertW(a+b*x))-5/6*c*(1/6*c*(c*LambertW(a+b*x))^(3/2)*exp(3*LambertW(a+b*x))-1/2*c*(1/6*c*(c*LambertW(a+b*x))^(1/2)*exp(3*LambertW(a+b*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))))
+  Leafcounts = 282 613   0 0
+
+Incorrect antiderivative:
+  Integrand        = x*(c*LambertW(a+b*x))^(1/2)
+  Optimal integral = -1/4/(c*LambertW(a+b*x))^(3/2)*(3/32*c^(1/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(3/2)+a*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(3/2)+2*c^2*(a+b*x)*((a-b*x)*LambertW(a+b*x)^2+(1/4*b*x-3/4*a)*LambertW(a+b*x)-3/16*b*x-3/16*a))/b^2
+  Maple integral   = 2/b^2/c^3*(-a*c*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-3/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))-a*c^2*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))+1/4*c*(c*LambertW(a+b*x))^(5/2)*exp(2*LambertW(a+b*x))-1/4*c*(1/4*c*(c*LambertW(a+b*x))^(3/2)*exp(2*LambertW(a+b*x))-3/4*c*(1/4*c*(c*LambertW(a+b*x))^(1/2)*exp(2*LambertW(a+b*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a+b*x))^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a+b*x))^(1/2)
+  Optimal integral = 1/(c*LambertW(a+b*x))^(1/2)*(1/4*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a+b*x))^(1/2)/c^(1/2))*(c*LambertW(a+b*x))^(1/2)+c*(a+b*x)*(-1/2+LambertW(a+b*x)))/b
+  Maple integral   = 2/b/c^2*(1/2*c*(c*LambertW(a+b*x))^(3/2)*(a+b*x)/LambertW(a+b*x)-1/2*c*(1/2*c*(c*LambertW(a+b*x))^(1/2)*(a+b*x)/LambertW(a+b*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a+b*x))^(1/2))))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3/(d+d*LambertW(a+b*x))
+  Optimal integral = -1/4*((a-b*x)*(a^2+b^2*x^2)*LambertW(a+b*x)^3+13/12*(a+b*x)*(a^2-14/13*a*b*x+9/13*b^2*x^2)*LambertW(a+b*x)^2+37/72*(a+b*x)^2*(a-27/37*b*x)*LambertW(a+b*x)+3/32*(a+b*x)^3)*(a+b*x)/b^4/d/LambertW(a+b*x)^4
+  Maple integral   = 1/b^4*(-a^3*(1/d*(a+b*x)/LambertW(a+b*x)+1/d*exp(-1)*Ei(1,-LambertW(a+b*x)-1))+a^3/d*exp(-1)*Ei(1,-LambertW(a+b*x)-1)+3*a^2*(1/d*(1/2/LambertW(a+b*x)*(a+b*x)^2-1/4*(a+b*x)^2/LambertW(a+b*x)^2)-1/2/d*(a+b*x)^2/LambertW(a+b*x)^2-1/d*exp(-2)*Ei(1,-2*LambertW(a+b*x)-2))+3*a^2*(1/2/d*(a+b*x)^2/LambertW(a+b*x)^2+1/d*exp(-2)*Ei(1,-2*LambertW(a+b*x)-2))-3*a*(1/d*(1/3/LambertW(a+b*x)*(a+b*x)^3-2/9/LambertW(a+b*x)^2*(a+b*x)^3+2/27*(a+b*x)^3/LambertW(a+b*x)^3)-1/d*(1/3/LambertW(a+b*x)^2*(a+b*x)^3-1/9*(a+b*x)^3/LambertW(a+b*x)^3)+1/3/d*(a+b*x)^3/LambertW(a+b*x)^3+1/d*exp(-3)*Ei(1,-3*LambertW(a+b*x)-3))-3*a*(1/d*(1/3/LambertW(a+b*x)^2*(a+b*x)^3-1/9*(a+b*x)^3/LambertW(a+b*x)^3)-1/3/d*(a+b*x)^3/LambertW(a+b*x)^3-1/d*exp(-3)*Ei(1,-3*LambertW(a+b*x)-3))+1/d*(1/4/LambertW(a+b*x)*(a+b*x)^4-3/16/LambertW(a+b*x)^2*(a+b*x)^4+3/32/LambertW(a+b*x)^3*(a+b*x)^4-3/128*(a+b*x)^4/LambertW(a+b*x)^4))
+  Leafcounts = 124 522   0 0
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)/x^2
+  Optimal integral = a*Ei(-LambertW(a*x))-LambertW(a*x)/x
+  Maple integral   = a*(-1/a/x*LambertW(a*x)-Ei(1,LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)/x^3
+  Optimal integral = -a^2*Ei(-2*LambertW(a*x))-LambertW(a*x)/x^2
+  Maple integral   = a^2*(Ei(1,2*LambertW(a*x))-LambertW(a*x)/a^2/x^2)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)/x^4
+  Optimal integral = 1/2*(3*a^3*Ei(-3*LambertW(a*x))*x^3-LambertW(a*x)+LambertW(a*x)^2)/x^3
+  Maple integral   = a^3*(1/2*LambertW(a*x)^2/a^3/x^3-3/2*Ei(1,3*LambertW(a*x))-1/2*LambertW(a*x)/a^3/x^3)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)/x^5
+  Optimal integral = 1/6*(-16*a^4*Ei(-4*LambertW(a*x))*x^4-2*LambertW(a*x)+LambertW(a*x)^2-4*LambertW(a*x)^3)/x^4
+  Maple integral   = a^4*(1/6*LambertW(a*x)^2/a^4/x^4-2/3*LambertW(a*x)^3/a^4/x^4+8/3*Ei(1,4*LambertW(a*x))-1/3*LambertW(a*x)/a^4/x^4)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)/x^6
+  Optimal integral = 1/24*(125*a^5*Ei(-5*LambertW(a*x))*x^5-6*LambertW(a*x)+2*LambertW(a*x)^2-5*LambertW(a*x)^3+25*LambertW(a*x)^4)/x^5
+  Maple integral   = a^5*(1/12*LambertW(a*x)^2/a^5/x^5-5/24*LambertW(a*x)^3/a^5/x^5+25/24*LambertW(a*x)^4/a^5/x^5-125/24*Ei(1,5*LambertW(a*x))-1/4*LambertW(a*x)/a^5/x^5)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^2/x^3
+  Optimal integral = a^2*Ei(-2*LambertW(a*x))-1/2*LambertW(a*x)^2/x^2
+  Maple integral   = a^2*(-1/2*LambertW(a*x)^2/a^2/x^2-Ei(1,2*LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^2/x^4
+  Optimal integral = -2*a^3*Ei(-3*LambertW(a*x))-LambertW(a*x)^2/x^3
+  Maple integral   = a^3*(2*Ei(1,3*LambertW(a*x))-LambertW(a*x)^2/a^3/x^3)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^2/x^5
+  Optimal integral = 4*a^4*Ei(-4*LambertW(a*x))-1/2*LambertW(a*x)^2/x^4+LambertW(a*x)^3/x^4
+  Maple integral   = a^4*(LambertW(a*x)^3/a^4/x^4-4*Ei(1,4*LambertW(a*x))-1/2*LambertW(a*x)^2/a^4/x^4)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^2/x^6
+  Optimal integral = 1/3*(-25*a^5*Ei(-5*LambertW(a*x))*x^5-LambertW(a*x)^2+LambertW(a*x)^3-5*LambertW(a*x)^4)/x^5
+  Maple integral   = a^5*(1/3*LambertW(a*x)^3/a^5/x^5-5/3*LambertW(a*x)^4/a^5/x^5+25/3*Ei(1,5*LambertW(a*x))-1/3*LambertW(a*x)^2/a^5/x^5)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^2/x^7
+  Optimal integral = 1/12*(216*a^6*Ei(-6*LambertW(a*x))*x^6-3*LambertW(a*x)^2+2*LambertW(a*x)^3-6*LambertW(a*x)^4+36*LambertW(a*x)^5)/x^6
+  Maple integral   = a^6*(1/6*LambertW(a*x)^3/a^6/x^6-1/2*LambertW(a*x)^4/a^6/x^6+3*LambertW(a*x)^5/a^6/x^6-18*Ei(1,6*LambertW(a*x))-1/4*LambertW(a*x)^2/a^6/x^6)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^3/x^4
+  Optimal integral = a^3*Ei(-3*LambertW(a*x))-1/3*LambertW(a*x)^3/x^3
+  Maple integral   = a^3*(-1/3*LambertW(a*x)^3/a^3/x^3-Ei(1,3*LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^3/x^5
+  Optimal integral = -3*a^4*Ei(-4*LambertW(a*x))-LambertW(a*x)^3/x^4
+  Maple integral   = a^4*(3*Ei(1,4*LambertW(a*x))-LambertW(a*x)^3/a^4/x^4)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^3/x^6
+  Optimal integral = 1/2*(15*a^5*Ei(-5*LambertW(a*x))*x^5-LambertW(a*x)^3+3*LambertW(a*x)^4)/x^5
+  Maple integral   = a^5*(3/2*LambertW(a*x)^4/a^5/x^5-15/2*Ei(1,5*LambertW(a*x))-1/2*LambertW(a*x)^3/a^5/x^5)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^3/x^7
+  Optimal integral = -18*a^6*Ei(-6*LambertW(a*x))-1/3*LambertW(a*x)^3/x^6+1/2*LambertW(a*x)^4/x^6-3*LambertW(a*x)^5/x^6
+  Maple integral   = a^6*(1/2*LambertW(a*x)^4/a^6/x^6-3*LambertW(a*x)^5/a^6/x^6+18*Ei(1,6*LambertW(a*x))-1/3*LambertW(a*x)^3/a^6/x^6)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a*x)^3/x^8
+  Optimal integral = 1/8*(343*a^7*Ei(-7*LambertW(a*x))*x^7-2*LambertW(a*x)^3+2*LambertW(a*x)^4-7*LambertW(a*x)^5+49*LambertW(a*x)^6)/x^7
+  Maple integral   = a^7*(1/4*LambertW(a*x)^4/a^7/x^7-7/8*LambertW(a*x)^5/a^7/x^7+49/8*LambertW(a*x)^6/a^7/x^7-343/8*Ei(1,7*LambertW(a*x))-1/4*LambertW(a*x)^3/a^7/x^7)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x)
+  Optimal integral = Ei(LambertW(a*x))/a+x/LambertW(a*x)
+  Maple integral   = 1/a*(a*x/LambertW(a*x)-Ei(1,-LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^2/LambertW(a*x)
+  Optimal integral = -1/2/x-1/2*a*Ei(-LambertW(a*x))-1/2/x/LambertW(a*x)
+  Maple integral   = a*(-1/2/a/x+1/2*Ei(1,LambertW(a*x))-1/2/LambertW(a*x)/a/x)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^3/LambertW(a*x)
+  Optimal integral = -1/6/x^2+2/3*a^2*Ei(-2*LambertW(a*x))-1/3/x^2/LambertW(a*x)+1/3*LambertW(a*x)/x^2
+  Maple integral   = a^2*(-1/6/a^2/x^2+1/3*LambertW(a*x)/a^2/x^2-2/3*Ei(1,2*LambertW(a*x))-1/3/a^2/x^2/LambertW(a*x))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^4/LambertW(a*x)
+  Optimal integral = -1/12/x^3-9/8*a^3*Ei(-3*LambertW(a*x))-1/4/x^3/LambertW(a*x)+1/8*LambertW(a*x)/x^3-3/8*LambertW(a*x)^2/x^3
+  Maple integral   = a^3*(-1/12/x^3/a^3+1/8*LambertW(a*x)/a^3/x^3-3/8*LambertW(a*x)^2/a^3/x^3+9/8*Ei(1,3*LambertW(a*x))-1/4/a^3/x^3/LambertW(a*x))
+
+Incorrect antiderivative:
+  Integrand        = x/LambertW(a*x)^2
+  Optimal integral = Ei(2*LambertW(a*x))/a^2+1/2*x^2/LambertW(a*x)^2
+  Maple integral   = 1/a^2*(1/2*a^2*x^2/LambertW(a*x)^2-Ei(1,-2*LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x)^2
+  Optimal integral = 2*Ei(LambertW(a*x))/a-x/LambertW(a*x)^2
+  Maple integral   = 1/a*(-2*Ei(1,-LambertW(a*x))-a*x/LambertW(a*x)^2)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^2/LambertW(a*x)^2
+  Optimal integral = 1/3/x+1/3*a*Ei(-LambertW(a*x))-1/3/x/LambertW(a*x)^2-1/3/x/LambertW(a*x)
+  Maple integral   = a*(-1/3/LambertW(a*x)/a/x+1/3/a/x-1/3*Ei(1,LambertW(a*x))-1/3/LambertW(a*x)^2/a/x)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^3/LambertW(a*x)^2
+  Optimal integral = 1/6/x^2-2/3*a^2*Ei(-2*LambertW(a*x))-1/4/x^2/LambertW(a*x)^2-1/6/x^2/LambertW(a*x)-1/3*LambertW(a*x)/x^2
+  Maple integral   = a^2*(-1/6/a^2/x^2/LambertW(a*x)+1/6/a^2/x^2-1/3*LambertW(a*x)/a^2/x^2+2/3*Ei(1,2*LambertW(a*x))-1/4/a^2/x^2/LambertW(a*x)^2)
+
+Incorrect antiderivative:
+  Integrand        = x^2/LambertW(a*x)^3
+  Optimal integral = Ei(3*LambertW(a*x))/a^3+1/3*x^3/LambertW(a*x)^3
+  Maple integral   = 1/a^3*(1/3*a^3*x^3/LambertW(a*x)^3-Ei(1,-3*LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = x/LambertW(a*x)^3
+  Optimal integral = 3*Ei(2*LambertW(a*x))/a^2-x^2/LambertW(a*x)^3
+  Maple integral   = 1/a^2*(-3*Ei(1,-2*LambertW(a*x))-a^2*x^2/LambertW(a*x)^3)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x)^3
+  Optimal integral = 3/2*Ei(LambertW(a*x))/a-1/2*x/LambertW(a*x)^3-3/2*x/LambertW(a*x)^2
+  Maple integral   = 1/a*(-3/2*a*x/LambertW(a*x)^2-3/2*Ei(1,-LambertW(a*x))-1/2*a*x/LambertW(a*x)^3)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^2/LambertW(a*x)^3
+  Optimal integral = -1/8/x-1/8*a*Ei(-LambertW(a*x))-1/4/x/LambertW(a*x)^3-1/4/x/LambertW(a*x)^2+1/8/x/LambertW(a*x)
+  Maple integral   = a*(-1/4/LambertW(a*x)^2/a/x+1/8/LambertW(a*x)/a/x-1/8/a/x+1/8*Ei(1,LambertW(a*x))-1/4/LambertW(a*x)^3/a/x)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^3/LambertW(a*x)^3
+  Optimal integral = -1/10/x^2+2/5*a^2*Ei(-2*LambertW(a*x))-1/5/x^2/LambertW(a*x)^3-3/20/x^2/LambertW(a*x)^2+1/10/x^2/LambertW(a*x)+1/5*LambertW(a*x)/x^2
+  Maple integral   = a^2*(-3/20/a^2/x^2/LambertW(a*x)^2+1/10/a^2/x^2/LambertW(a*x)-1/10/a^2/x^2+1/5*LambertW(a*x)/a^2/x^2-2/5*Ei(1,2*LambertW(a*x))-1/5/a^2/x^2/LambertW(a*x)^3)
+
+Incorrect antiderivative:
+  Integrand        = x^3*(c*LambertW(a*x))^(1/2)
+  Optimal integral = -105/65536*(c^(1/2)*Pi^(1/2)*erfi(2*(c*LambertW(a*x))^(1/2)/c^(1/2))*(c*LambertW(a*x))^(7/2)-16384/105*a^4*x^4*c^4*(-1/8*LambertW(a*x)^3+105/4096-35/512*LambertW(a*x)+7/64*LambertW(a*x)^2+LambertW(a*x)^4))/(c*LambertW(a*x))^(7/2)/a^4
+  Maple integral   = 2/a^4/c^5*(1/8*c*(c*LambertW(a*x))^(9/2)*exp(4*LambertW(a*x))-1/8*c*(1/8*c*(c*LambertW(a*x))^(7/2)*exp(4*LambertW(a*x))-7/8*c*(1/8*c*(c*LambertW(a*x))^(5/2)*exp(4*LambertW(a*x))-5/8*c*(1/8*c*(c*LambertW(a*x))^(3/2)*exp(4*LambertW(a*x))-3/8*c*(1/8*c*(c*LambertW(a*x))^(1/2)*exp(4*LambertW(a*x))-1/32*c*Pi^(1/2)/(-1/c)^(1/2)*erf(2*(-1/c)^(1/2)*(c*LambertW(a*x))^(1/2)))))))
+
+Incorrect antiderivative:
+  Integrand        = x^2*(c*LambertW(a*x))^(1/2)
+  Optimal integral = 5/1296*(c^(1/2)*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*(c*LambertW(a*x))^(5/2)+432/5*(LambertW(a*x)^3-5/72+5/36*LambertW(a*x)-1/6*LambertW(a*x)^2)*a^3*x^3*c^3)/(c*LambertW(a*x))^(5/2)/a^3
+  Maple integral   = 2/a^3/c^4*(1/6*c*(c*LambertW(a*x))^(7/2)*exp(3*LambertW(a*x))-1/6*c*(1/6*c*(c*LambertW(a*x))^(5/2)*exp(3*LambertW(a*x))-5/6*c*(1/6*c*(c*LambertW(a*x))^(3/2)*exp(3*LambertW(a*x))-1/2*c*(1/6*c*(c*LambertW(a*x))^(1/2)*exp(3*LambertW(a*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a*x))^(1/2))))))
+
+Incorrect antiderivative:
+  Integrand        = x*(c*LambertW(a*x))^(1/2)
+  Optimal integral = -3/128*(c^(1/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*(c*LambertW(a*x))^(3/2)-64/3*a^2*x^2*(3/16-1/4*LambertW(a*x)+LambertW(a*x)^2)*c^2)/(c*LambertW(a*x))^(3/2)/a^2
+  Maple integral   = 2/a^2/c^3*(1/4*c*(c*LambertW(a*x))^(5/2)*exp(2*LambertW(a*x))-1/4*c*(1/4*c*(c*LambertW(a*x))^(3/2)*exp(2*LambertW(a*x))-3/4*c*(1/4*c*(c*LambertW(a*x))^(1/2)*exp(2*LambertW(a*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a*x))^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^(1/2)
+  Optimal integral = 1/4*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a*x))^(1/2)/c^(1/2))/a-1/2*c*x/(c*LambertW(a*x))^(1/2)+x*(c*LambertW(a*x))^(1/2)
+  Maple integral   = 2/a/c^2*(1/2*c*(c*LambertW(a*x))^(3/2)*a*x/LambertW(a*x)-1/2*c*(1/2*c*(c*LambertW(a*x))^(1/2)*a*x/LambertW(a*x)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a*x))^(1/2))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^(1/2)/x^2
+  Optimal integral = -a*c^(1/2)*Pi^(1/2)*erf((c*LambertW(a*x))^(1/2)/c^(1/2))-2*(c*LambertW(a*x))^(1/2)/x
+  Maple integral   = a*(Pi^(1/2)*c^(1/2)*erf((c*LambertW(a*x))^(1/2)/c^(1/2))+2*c*(-1/(c*LambertW(a*x))^(1/2)*exp(-LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*erf((c*LambertW(a*x))^(1/2)/c^(1/2))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^(1/2)/x^3
+  Optimal integral = 2/3*a^2*c^(1/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))-2/3*(c*LambertW(a*x))^(1/2)/x^2+2/3*(c*LambertW(a*x))^(3/2)/c/x^2
+  Maple integral   = 2*a^2*c*(-1/(c*LambertW(a*x))^(1/2)*exp(-2*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))+c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-2*LambertW(a*x))-4/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-2*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^(1/2)/x^4
+  Optimal integral = 1/15*(-12*a^3*c^(5/2)*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*x^3-6*c^2*(c*LambertW(a*x))^(1/2)+2*c*(c*LambertW(a*x))^(3/2)-12*(c*LambertW(a*x))^(5/2))/c^2/x^3
+  Maple integral   = 2*a^3*c^2*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-3*LambertW(a*x))-2/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-3*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2)))+c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-3*LambertW(a*x))-6/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-3*LambertW(a*x))-2/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-3*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^(1/2)/x^5
+  Optimal integral = 1/105*(256*a^4*c^(7/2)*Pi^(1/2)*erf(2*(c*LambertW(a*x))^(1/2)/c^(1/2))*x^4-30*c^3*(c*LambertW(a*x))^(1/2)+6*c^2*(c*LambertW(a*x))^(3/2)-16*c*(c*LambertW(a*x))^(5/2)+128*(c*LambertW(a*x))^(7/2))/c^3/x^4
+  Maple integral   = 2*a^4*c^3*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-4*LambertW(a*x))-8/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-4*LambertW(a*x))-8/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-4*LambertW(a*x))-2/c^(1/2)*Pi^(1/2)*erf(2*(c*LambertW(a*x))^(1/2)/c^(1/2))))+c*(-1/7/(c*LambertW(a*x))^(7/2)*exp(-4*LambertW(a*x))-8/7/c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-4*LambertW(a*x))-8/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-4*LambertW(a*x))-8/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-4*LambertW(a*x))-2/c^(1/2)*Pi^(1/2)*erf(2*(c*LambertW(a*x))^(1/2)/c^(1/2)))))))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^(1/2)/x^6
+  Optimal integral = 1/189*(-400*a^5*c^(9/2)*5^(1/2)*Pi^(1/2)*erf(5^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*x^5-42*(c*LambertW(a*x))^(1/2)*c^4+6*(c*LambertW(a*x))^(3/2)*c^3-12*(c*LambertW(a*x))^(5/2)*c^2+40*(c*LambertW(a*x))^(7/2)*c-400*(c*LambertW(a*x))^(9/2))/c^4/x^5
+  Maple integral   = 2*a^5*c^4*(-1/7/(c*LambertW(a*x))^(7/2)*exp(-5*LambertW(a*x))-10/7/c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-5*LambertW(a*x))-2/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-5*LambertW(a*x))-10/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-5*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*5^(1/2)*erf(5^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2)))))+c*(-1/9/(c*LambertW(a*x))^(9/2)*exp(-5*LambertW(a*x))-10/9/c*(-1/7/(c*LambertW(a*x))^(7/2)*exp(-5*LambertW(a*x))-10/7/c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-5*LambertW(a*x))-2/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-5*LambertW(a*x))-10/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-5*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*5^(1/2)*erf(5^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))))))))
+
+Incorrect antiderivative:
+  Integrand        = x^4/(c*LambertW(a*x))^(1/2)
+  Optimal integral = 1/5/c^(1/2)*(21/20000*5^(1/2)*Pi^(1/2)*erfi(5^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*(c*LambertW(a*x))^(9/2)+a^5*(1/10*LambertW(a*x)^3-21/2000+7/200*LambertW(a*x)-7/100*LambertW(a*x)^2+LambertW(a*x)^4)*x^5*c^(9/2))/(c*LambertW(a*x))^(9/2)/a^5
+  Maple integral   = 2/a^5/c^6*(1/10*c*(c*LambertW(a*x))^(9/2)*exp(5*LambertW(a*x))+1/10*c*(1/10*c*(c*LambertW(a*x))^(7/2)*exp(5*LambertW(a*x))-7/10*c*(1/10*c*(c*LambertW(a*x))^(5/2)*exp(5*LambertW(a*x))-1/2*c*(1/10*c*(c*LambertW(a*x))^(3/2)*exp(5*LambertW(a*x))-3/10*c*(1/10*c*(c*LambertW(a*x))^(1/2)*exp(5*LambertW(a*x))-1/20*c*Pi^(1/2)/(-5/c)^(1/2)*erf((-5/c)^(1/2)*(c*LambertW(a*x))^(1/2)))))))
+
+Incorrect antiderivative:
+  Integrand        = x^3/(c*LambertW(a*x))^(1/2)
+  Optimal integral = -15/8192/c^(1/2)/(c*LambertW(a*x))^(7/2)*(Pi^(1/2)*erfi(2*(c*LambertW(a*x))^(1/2)/c^(1/2))*(c*LambertW(a*x))^(7/2)-2048/15*a^4*x^4*c^(7/2)*(LambertW(a*x)^3+15/512-5/64*LambertW(a*x)+1/8*LambertW(a*x)^2))/a^4
+  Maple integral   = 2/a^4/c^5*(1/8*c*(c*LambertW(a*x))^(7/2)*exp(4*LambertW(a*x))+1/8*c*(1/8*c*(c*LambertW(a*x))^(5/2)*exp(4*LambertW(a*x))-5/8*c*(1/8*c*(c*LambertW(a*x))^(3/2)*exp(4*LambertW(a*x))-3/8*c*(1/8*c*(c*LambertW(a*x))^(1/2)*exp(4*LambertW(a*x))-1/32*c*Pi^(1/2)/(-1/c)^(1/2)*erf(2*(-1/c)^(1/2)*(c*LambertW(a*x))^(1/2))))))
+
+Incorrect antiderivative:
+  Integrand        = x^2/(c*LambertW(a*x))^(1/2)
+  Optimal integral = 1/3*(1/72*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*(c*LambertW(a*x))^(5/2)+a^3*x^3*c^(5/2)*(-1/12+1/6*LambertW(a*x)+LambertW(a*x)^2))/c^(1/2)/(c*LambertW(a*x))^(5/2)/a^3
+  Maple integral   = 2/a^3/c^4*(1/6*c*(c*LambertW(a*x))^(5/2)*exp(3*LambertW(a*x))+1/6*c*(1/6*c*(c*LambertW(a*x))^(3/2)*exp(3*LambertW(a*x))-1/2*c*(1/6*c*(c*LambertW(a*x))^(1/2)*exp(3*LambertW(a*x))-1/12*c*Pi^(1/2)/(-3/c)^(1/2)*erf((-3/c)^(1/2)*(c*LambertW(a*x))^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = x/(c*LambertW(a*x))^(1/2)
+  Optimal integral = -1/32*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))/a^2/c^(1/2)+1/8*c*x^2/(c*LambertW(a*x))^(3/2)+1/2*x^2/(c*LambertW(a*x))^(1/2)
+  Maple integral   = 2/a^2/c^3*(1/4*c*(c*LambertW(a*x))^(3/2)*exp(2*LambertW(a*x))+1/4*c*(1/4*c*(c*LambertW(a*x))^(1/2)*exp(2*LambertW(a*x))-1/8*c*Pi^(1/2)/(-2/c)^(1/2)*erf((-2/c)^(1/2)*(c*LambertW(a*x))^(1/2))))
+
+Incorrect antiderivative:
+  Integrand        = 1/(c*LambertW(a*x))^(1/2)
+  Optimal integral = 1/2*Pi^(1/2)*erfi((c*LambertW(a*x))^(1/2)/c^(1/2))/a/c^(1/2)+x/(c*LambertW(a*x))^(1/2)
+  Maple integral   = 2/a/c^2*(1/2*c*(c*LambertW(a*x))^(1/2)*a*x/LambertW(a*x)+1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a*x))^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^2/(c*LambertW(a*x))^(1/2)
+  Optimal integral = -2/3*a*Pi^(1/2)*erf((c*LambertW(a*x))^(1/2)/c^(1/2))/c^(1/2)-2/3/x/(c*LambertW(a*x))^(1/2)-2/3*(c*LambertW(a*x))^(1/2)/c/x
+  Maple integral   = a*(-2/(c*LambertW(a*x))^(1/2)*exp(-LambertW(a*x))-2/c^(1/2)*Pi^(1/2)*erf((c*LambertW(a*x))^(1/2)/c^(1/2))+2*c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-LambertW(a*x))-2/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*erf((c*LambertW(a*x))^(1/2)/c^(1/2)))))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^3/(c*LambertW(a*x))^(1/2)
+  Optimal integral = 8/15*(a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*x^2*(c*LambertW(a*x))^(1/2)*c^2+(LambertW(a*x)-1)*c^(5/2)*(LambertW(a*x)+3/4))/(c*LambertW(a*x))^(1/2)/c^(5/2)/x^2
+  Maple integral   = 2*a^2*c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-2*LambertW(a*x))-4/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-2*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2)))+c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-2*LambertW(a*x))-4/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-2*LambertW(a*x))-4/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-2*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*2^(1/2)*erf(2^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))))))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^4/(c*LambertW(a*x))^(1/2)
+  Optimal integral = -24/35*(a^3*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))*x^3*(c*LambertW(a*x))^(1/2)*c^3+c^(7/2)*(5/12+1/12*LambertW(a*x)-1/6*LambertW(a*x)^2+LambertW(a*x)^3))/(c*LambertW(a*x))^(1/2)/c^(7/2)/x^3
+  Maple integral   = 2*a^3*c^2*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-3*LambertW(a*x))-6/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-3*LambertW(a*x))-2/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-3*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2))))+c*(-1/7/(c*LambertW(a*x))^(7/2)*exp(-3*LambertW(a*x))-6/7/c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-3*LambertW(a*x))-6/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-3*LambertW(a*x))-2/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-3*LambertW(a*x))-1/c^(1/2)*Pi^(1/2)*3^(1/2)*erf(3^(1/2)*(c*LambertW(a*x))^(1/2)/c^(1/2)))))))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^5/(c*LambertW(a*x))^(1/2)
+  Optimal integral = 1024/945/(c*LambertW(a*x))^(1/2)*(2*a^4*Pi^(1/2)*erf(2*(c*LambertW(a*x))^(1/2)/c^(1/2))*x^4*(c*LambertW(a*x))^(1/2)*c^4+(-105/512-15/512*LambertW(a*x)+3/64*LambertW(a*x)^2-1/8*LambertW(a*x)^3+LambertW(a*x)^4)*c^(9/2))/c^(9/2)/x^4
+  Maple integral   = 2*a^4*c^3*(-1/7/(c*LambertW(a*x))^(7/2)*exp(-4*LambertW(a*x))-8/7/c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-4*LambertW(a*x))-8/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-4*LambertW(a*x))-8/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-4*LambertW(a*x))-2/c^(1/2)*Pi^(1/2)*erf(2*(c*LambertW(a*x))^(1/2)/c^(1/2)))))+c*(-1/9/(c*LambertW(a*x))^(9/2)*exp(-4*LambertW(a*x))-8/9/c*(-1/7/(c*LambertW(a*x))^(7/2)*exp(-4*LambertW(a*x))-8/7/c*(-1/5/(c*LambertW(a*x))^(5/2)*exp(-4*LambertW(a*x))-8/5/c*(-1/3/(c*LambertW(a*x))^(3/2)*exp(-4*LambertW(a*x))-8/3/c*(-1/(c*LambertW(a*x))^(1/2)*exp(-4*LambertW(a*x))-2/c^(1/2)*Pi^(1/2)*erf(2*(c*LambertW(a*x))^(1/2)/c^(1/2))))))))
+
+Incorrect antiderivative:
+  Integrand        = x^2*(c*LambertW(a*x))^p
+  Optimal integral = x^2*(3^(-3-p)*GAMMA(3+p,-3*LambertW(a*x))*(-LambertW(a*x))^(-2-p)*(c*LambertW(a*x))^p*c+3^(-4-p)*GAMMA(4+p,-3*LambertW(a*x))*(-LambertW(a*x))^(-3-p)*(c*LambertW(a*x))^(1+p))/exp(2*LambertW(a*x))/a/c
+  Maple integral   = 3^(-4-p)*(-1)^(-p)/a^3*(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*(LambertW(a*x)^p*(-1)^p*p*(6+11*p+p^3+6*p^2)*(-LambertW(a*x))^(-p)*GAMMA(p)+LambertW(a*x)^p*3^p*(-1)^p*(18*LambertW(a*x)-27*LambertW(a*x)^2+15*p*LambertW(a*x)-6-11*p-p^3-6*p^2+27*LambertW(a*x)^3-9*LambertW(a*x)^2*p+3*p^2*LambertW(a*x))*exp(3*LambertW(a*x))-(-1)^p*LambertW(a*x)^p*p*(6+11*p+p^3+6*p^2)*(-LambertW(a*x))^(-p)*GAMMA(p,-3*LambertW(a*x)))-(-1)^(-p)*3^(-3-p)/a^3*(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*(LambertW(a*x)^p*(-1)^p*p*(2+3*p+p^2)*(-LambertW(a*x))^(-p)*GAMMA(p)-LambertW(a*x)^p*3^p*(-1)^p*(2-6*LambertW(a*x)+3*p+9*LambertW(a*x)^2-3*p*LambertW(a*x)+p^2)*exp(3*LambertW(a*x))-(-1)^p*LambertW(a*x)^p*p*(2+3*p+p^2)*(-LambertW(a*x))^(-p)*GAMMA(p,-3*LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = x*(c*LambertW(a*x))^p
+  Optimal integral = x*(2^(-2-p)*GAMMA(2+p,-2*LambertW(a*x))*(-LambertW(a*x))^(-1-p)*(c*LambertW(a*x))^p*c+2^(-3-p)*GAMMA(3+p,-2*LambertW(a*x))*(-LambertW(a*x))^(-2-p)*(c*LambertW(a*x))^(1+p))/(exp(1)^LambertW(a*x))/a/c
+  Maple integral   = -(-1)^(-p)*2^(-3-p)/a^2*(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*(LambertW(a*x)^p*(-1)^p*p*(2+3*p+p^2)*(-LambertW(a*x))^(-p)*GAMMA(p)-LambertW(a*x)^p*2^p*(-1)^p*(2-4*LambertW(a*x)+3*p+4*LambertW(a*x)^2-2*p*LambertW(a*x)+p^2)*exp(2*LambertW(a*x))-(-1)^p*LambertW(a*x)^p*p*(2+3*p+p^2)*(-LambertW(a*x))^(-p)*GAMMA(p,-2*LambertW(a*x)))+2^(-2-p)*(-1)^(-p)/a^2*(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*(LambertW(a*x)^p*(-1)^p*(1+p)*p*(-LambertW(a*x))^(-p)*GAMMA(p)+LambertW(a*x)^p*2^p*(-1)^p*(-1+2*LambertW(a*x)-p)*exp(2*LambertW(a*x))-(-1)^p*LambertW(a*x)^p*(1+p)*p*(-LambertW(a*x))^(-p)*GAMMA(p,-2*LambertW(a*x)))
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x))^p/x
+  Optimal integral = (c*LambertW(a*x))^p/p+(c*LambertW(a*x))^(1+p)/c/(1+p)
+  Maple integral   = int((c*LambertW(a*x))^p/x,x)
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^p/x^2
+  Optimal integral = -exp(2*LambertW(a*x))*(GAMMA(-1+p,LambertW(a*x))*LambertW(a*x)^(2-p)*(c*LambertW(a*x))^p*c+GAMMA(p,LambertW(a*x))*LambertW(a*x)^(1-p)*(c*LambertW(a*x))^(1+p))/a/c/x^2
+  Maple integral   = (c*LambertW(a*x))^p*LambertW(a*x)^(-p)*a*(1/p*LambertW(a*x)^(1/2*p)/(1+p)*exp(-1/2*LambertW(a*x))*WhittakerM(1/2*p,1/2*p+1/2,LambertW(a*x))+1/p*LambertW(a*x)^(-1+1/2*p)*exp(-1/2*LambertW(a*x))*WhittakerM(1/2*p+1,1/2*p+1/2,LambertW(a*x)))+(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*a*(1/(-1+p)*LambertW(a*x)^(1/2*p)/(1+p)/p*exp(-1/2*LambertW(a*x))*WhittakerM(1/2*p,1/2*p+1/2,LambertW(a*x))+1/(-1+p)*LambertW(a*x)^(-2+1/2*p)*(p+LambertW(a*x))/p*exp(-1/2*LambertW(a*x))*WhittakerM(1/2*p+1,1/2*p+1/2,LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a*x))^p/x^3
+  Optimal integral = -exp(3*LambertW(a*x))*(2^(2-p)*GAMMA(-2+p,2*LambertW(a*x))*LambertW(a*x)^(3-p)*(c*LambertW(a*x))^p*c+2^(1-p)*GAMMA(-1+p,2*LambertW(a*x))*LambertW(a*x)^(2-p)*(c*LambertW(a*x))^(1+p))/a/c/x^3
+  Maple integral   = 2^(1-p)*(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*a^2*(1/(-1+p)*LambertW(a*x)^(1/2*p)*2^(1/2*p)/(1+p)/p*exp(-LambertW(a*x))*WhittakerM(1/2*p,1/2*p+1/2,2*LambertW(a*x))+2^(-2+1/2*p)/(-1+p)*LambertW(a*x)^(-2+1/2*p)*(p+2*LambertW(a*x))/p*exp(-LambertW(a*x))*WhittakerM(1/2*p+1,1/2*p+1/2,2*LambertW(a*x)))+2^(2-p)*(c*LambertW(a*x))^p*LambertW(a*x)^(-p)*a^2*(1/(-2+p)*LambertW(a*x)^(1/2*p)*2^(1/2*p)/(-1+p)/(1+p)/p*exp(-LambertW(a*x))*WhittakerM(1/2*p,1/2*p+1/2,2*LambertW(a*x))+2^(-3+1/2*p)/(-2+p)*LambertW(a*x)^(-3+1/2*p)*(4*LambertW(a*x)^2+2*p*LambertW(a*x)-p+p^2)/(-1+p)/p*exp(-LambertW(a*x))*WhittakerM(1/2*p+1,1/2*p+1/2,2*LambertW(a*x)))
+
+Unable to integrate:
+  Integrand        = x^m*LambertW(a*x)
+  Optimal integral = x^m*LambertW(a*x)*(GAMMA(3+m,-(1+m)*LambertW(a*x))*LambertW(a*x)*(-(1+m)*LambertW(a*x))^(-m-2)+GAMMA(2+m,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(-1-m))/exp(m*LambertW(a*x))/a/(1+m)
+  Maple integral   = int(x^m*LambertW(a*x),x)
+
+Unable to integrate:
+  Integrand        = x^m*LambertW(a*x)^2
+  Optimal integral = x^m*LambertW(a*x)^2*(GAMMA(4+m,-(1+m)*LambertW(a*x))*LambertW(a*x)*(-(1+m)*LambertW(a*x))^(-3-m)+GAMMA(3+m,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(-m-2))/exp(m*LambertW(a*x))/a/(1+m)
+  Maple integral   = int(x^m*LambertW(a*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^m/LambertW(a*x)
+  Optimal integral = x^m*GAMMA(m,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(1-m)/exp(m*LambertW(a*x))/a/(1+m)/LambertW(a*x)+x^m*GAMMA(1+m,-(1+m)*LambertW(a*x))/exp(m*LambertW(a*x))/((-(1+m)*LambertW(a*x))^m)/a/(1+m)
+  Maple integral   = int(x^m/LambertW(a*x),x)
+
+Unable to integrate:
+  Integrand        = x^m/LambertW(a*x)^2
+  Optimal integral = x^m*(GAMMA(m,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(1-m)*LambertW(a*x)+GAMMA(m-1,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(2-m))/exp(m*LambertW(a*x))/a/(1+m)/LambertW(a*x)^2
+  Maple integral   = int(x^m/LambertW(a*x)^2,x)
+
+Unable to integrate:
+  Integrand        = x^m*(c*LambertW(a*x))^(1/2)
+  Optimal integral = x^m*(c*LambertW(a*x))^(1/2)*(GAMMA(5/2+m,-(1+m)*LambertW(a*x))*LambertW(a*x)*(-(1+m)*LambertW(a*x))^(-3/2-m)+GAMMA(3/2+m,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(-1/2-m))/exp(m*LambertW(a*x))/a/(1+m)
+  Maple integral   = int(x^m*(c*LambertW(a*x))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^m/(c*LambertW(a*x))^(1/2)
+  Optimal integral = x^m/(c*LambertW(a*x))^(1/2)*(GAMMA(3/2+m,-(1+m)*LambertW(a*x))*LambertW(a*x)*(-(1+m)*LambertW(a*x))^(-1/2-m)+GAMMA(1/2+m,-(1+m)*LambertW(a*x))*(-(1+m)*LambertW(a*x))^(1/2-m))/exp(m*LambertW(a*x))/a/(1+m)
+  Maple integral   = int(x^m/(c*LambertW(a*x))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^m*(c*LambertW(a*x))^p
+  Optimal integral = x^m*(GAMMA(2+m+p,-(1+m)*LambertW(a*x))*(c*LambertW(a*x))^(1+p)*(-(1+m)*LambertW(a*x))^(-1-m-p)+GAMMA(1+m+p,-(1+m)*LambertW(a*x))*(c*LambertW(a*x))^p*(-(1+m)*LambertW(a*x))^(-m-p)*c)/exp(m*LambertW(a*x))/a/c/(1+m)
+  Maple integral   = int(x^m*(c*LambertW(a*x))^p,x)
+
+Unable to integrate:
+  Integrand        = x^3*LambertW(a*x^2)
+  Optimal integral = 1/16*x^4*(-2*LambertW(a*x^2)^2-1+2*LambertW(a*x^2)+4*LambertW(a*x^2)^3)/LambertW(a*x^2)^2
+  Maple integral   = int(x^3*LambertW(a*x^2),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)/x^3
+  Optimal integral = 1/2*a*Ei(-LambertW(a*x^2))-1/2*LambertW(a*x^2)/x^2
+  Maple integral   = int(LambertW(a*x^2)/x^3,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)/x^5
+  Optimal integral = -1/2*a^2*Ei(-2*LambertW(a*x^2))-1/2*LambertW(a*x^2)/x^4
+  Maple integral   = int(LambertW(a*x^2)/x^5,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)/x^7
+  Optimal integral = 1/4*(3*a^3*Ei(-3*LambertW(a*x^2))*x^6-LambertW(a*x^2)+LambertW(a*x^2)^2)/x^6
+  Maple integral   = int(LambertW(a*x^2)/x^7,x)
+
+Unable to integrate:
+  Integrand        = x^3*LambertW(a*x^2)^2
+  Optimal integral = 1/16*x^4*(6*LambertW(a*x^2)^2+3-6*LambertW(a*x^2)-4*LambertW(a*x^2)^3+4*LambertW(a*x^2)^4)/LambertW(a*x^2)^2
+  Maple integral   = int(x^3*LambertW(a*x^2)^2,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^2/x^3
+  Optimal integral = -1/2*LambertW(a*x^2)*(2+LambertW(a*x^2))/x^2
+  Maple integral   = int(LambertW(a*x^2)^2/x^3,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^2/x^5
+  Optimal integral = 1/2*a^2*Ei(-2*LambertW(a*x^2))-1/4*LambertW(a*x^2)^2/x^4
+  Maple integral   = int(LambertW(a*x^2)^2/x^5,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^2/x^7
+  Optimal integral = -a^3*Ei(-3*LambertW(a*x^2))-1/2*LambertW(a*x^2)^2/x^6
+  Maple integral   = int(LambertW(a*x^2)^2/x^7,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^2/x^9
+  Optimal integral = 2*a^4*Ei(-4*LambertW(a*x^2))-1/4*LambertW(a*x^2)^2/x^8+1/2*LambertW(a*x^2)^3/x^8
+  Maple integral   = int(LambertW(a*x^2)^2/x^9,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^3/x^3
+  Optimal integral = -1/2*LambertW(a*x^2)*(3+3*LambertW(a*x^2)+LambertW(a*x^2)^2)/x^2
+  Maple integral   = int(LambertW(a*x^2)^3/x^3,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^3/x^5
+  Optimal integral = -1/8*LambertW(a*x^2)^2*(3+2*LambertW(a*x^2))/x^4
+  Maple integral   = int(LambertW(a*x^2)^3/x^5,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^3/x^7
+  Optimal integral = 1/2*a^3*Ei(-3*LambertW(a*x^2))-1/6*LambertW(a*x^2)^3/x^6
+  Maple integral   = int(LambertW(a*x^2)^3/x^7,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^2)^3/x^9
+  Optimal integral = -3/2*a^4*Ei(-4*LambertW(a*x^2))-1/2*LambertW(a*x^2)^3/x^8
+  Maple integral   = int(LambertW(a*x^2)^3/x^9,x)
+
+Unable to integrate:
+  Integrand        = x^5/LambertW(a*x^2)
+  Optimal integral = 1/54*x^6*(-1+3*LambertW(a*x^2)+9*LambertW(a*x^2)^2)/LambertW(a*x^2)^3
+  Maple integral   = int(x^5/LambertW(a*x^2),x)
+
+Unable to integrate:
+  Integrand        = x^3/LambertW(a*x^2)
+  Optimal integral = 1/8*x^4*(1+2*LambertW(a*x^2))/LambertW(a*x^2)^2
+  Maple integral   = int(x^3/LambertW(a*x^2),x)
+
+Incorrect antiderivative:
+  Integrand        = x/LambertW(a*x^2)
+  Optimal integral = 1/2*Ei(LambertW(a*x^2))/a+1/2*x^2/LambertW(a*x^2)
+  Maple integral   = 1/2/a*(a*x^2/LambertW(a*x^2)-Ei(1,-LambertW(a*x^2)))
+
+Unable to integrate:
+  Integrand        = 1/x^3/LambertW(a*x^2)
+  Optimal integral = -1/4/x^2-1/4*a*Ei(-LambertW(a*x^2))-1/4/x^2/LambertW(a*x^2)
+  Maple integral   = int(1/x^3/LambertW(a*x^2),x)
+
+Unable to integrate:
+  Integrand        = 1/x^5/LambertW(a*x^2)
+  Optimal integral = -1/12/x^4+1/3*a^2*Ei(-2*LambertW(a*x^2))-1/6/x^4/LambertW(a*x^2)+1/6*LambertW(a*x^2)/x^4
+  Maple integral   = int(1/x^5/LambertW(a*x^2),x)
+
+Unable to integrate:
+  Integrand        = x^7/LambertW(a*x^2)^2
+  Optimal integral = 1/64*x^8*(-1+4*LambertW(a*x^2)+8*LambertW(a*x^2)^2)/LambertW(a*x^2)^4
+  Maple integral   = int(x^7/LambertW(a*x^2)^2,x)
+
+Unable to integrate:
+  Integrand        = x^5/LambertW(a*x^2)^2
+  Optimal integral = 1/18*x^6*(2+3*LambertW(a*x^2))/LambertW(a*x^2)^3
+  Maple integral   = int(x^5/LambertW(a*x^2)^2,x)
+
+Unable to integrate:
+  Integrand        = x^3/LambertW(a*x^2)^2
+  Optimal integral = 1/2*Ei(2*LambertW(a*x^2))/a^2+1/4*x^4/LambertW(a*x^2)^2
+  Maple integral   = int(x^3/LambertW(a*x^2)^2,x)
+
+Incorrect antiderivative:
+  Integrand        = x/LambertW(a*x^2)^2
+  Optimal integral = Ei(LambertW(a*x^2))/a-1/2*x^2/LambertW(a*x^2)^2
+  Maple integral   = 1/2/a*(-2*Ei(1,-LambertW(a*x^2))-a*x^2/LambertW(a*x^2)^2)
+
+Unable to integrate:
+  Integrand        = 1/x^3/LambertW(a*x^2)^2
+  Optimal integral = 1/6/x^2+1/6*a*Ei(-LambertW(a*x^2))-1/6/x^2/LambertW(a*x^2)^2-1/6/x^2/LambertW(a*x^2)
+  Maple integral   = int(1/x^3/LambertW(a*x^2)^2,x)
+
+Unable to integrate:
+  Integrand        = x^7*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = -105/131072*(c^(1/2)*Pi^(1/2)*erfi(2*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*(c*LambertW(a*x^2))^(7/2)-16384/105*a^4*x^8*c^4*(-1/8*LambertW(a*x^2)^3+105/4096-35/512*LambertW(a*x^2)+7/64*LambertW(a*x^2)^2+LambertW(a*x^2)^4))/(c*LambertW(a*x^2))^(7/2)/a^4
+  Maple integral   = int(x^7*(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^6*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/16807*x^7*c^4*(48-168*LambertW(a*x^2)+294*LambertW(a*x^2)^2-343*LambertW(a*x^2)^3+2401*LambertW(a*x^2)^4)/(c*LambertW(a*x^2))^(7/2)
+  Maple integral   = int(x^6*(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^5*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 5/2592*(c^(1/2)*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*(c*LambertW(a*x^2))^(5/2)+432/5*a^3*x^6*c^3*(LambertW(a*x^2)^3-5/72+5/36*LambertW(a*x^2)-1/6*LambertW(a*x^2)^2))/(c*LambertW(a*x^2))^(5/2)/a^3
+  Maple integral   = int(x^5*(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^4*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/625*x^5*c^3*(-8+20*LambertW(a*x^2)-25*LambertW(a*x^2)^2+125*LambertW(a*x^2)^3)/(c*LambertW(a*x^2))^(5/2)
+  Maple integral   = int(x^4*(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^3*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = -3/256/(c*LambertW(a*x^2))^(3/2)*(c^(1/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*(c*LambertW(a*x^2))^(3/2)-64/3*a^2*x^4*c^2*(3/16-1/4*LambertW(a*x^2)+LambertW(a*x^2)^2))/a^2
+  Maple integral   = int(x^3*(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^2*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/27*x^3*c^2*(2-3*LambertW(a*x^2)+9*LambertW(a*x^2)^2)/(c*LambertW(a*x^2))^(3/2)
+  Maple integral   = int(x^2*(c*LambertW(a*x^2))^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = x*(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/8*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a*x^2))^(1/2)/c^(1/2))/a-1/4*c*x^2/(c*LambertW(a*x^2))^(1/2)+1/2*x^2*(c*LambertW(a*x^2))^(1/2)
+  Maple integral   = 1/a/c^2*(1/2*c*(c*LambertW(a*x^2))^(3/2)*a*x^2/LambertW(a*x^2)-1/2*c*(1/2*c*(c*LambertW(a*x^2))^(1/2)*a*x^2/LambertW(a*x^2)-1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a*x^2))^(1/2))))
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x^2))^(1/2)
+  Optimal integral = x*c*(-1+LambertW(a*x^2))/(c*LambertW(a*x^2))^(1/2)
+  Maple integral   = int((c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x^2))^(1/2)/x^3
+  Optimal integral = -1/2*a*c^(1/2)*Pi^(1/2)*erf((c*LambertW(a*x^2))^(1/2)/c^(1/2))-(c*LambertW(a*x^2))^(1/2)/x^2
+  Maple integral   = int((c*LambertW(a*x^2))^(1/2)/x^3,x)
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x^2))^(1/2)/x^5
+  Optimal integral = 1/3*a^2*c^(1/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))-1/3*(c*LambertW(a*x^2))^(1/2)/x^4+1/3*(c*LambertW(a*x^2))^(3/2)/c/x^4
+  Maple integral   = int((c*LambertW(a*x^2))^(1/2)/x^5,x)
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x^2))^(1/2)/x^7
+  Optimal integral = 1/15*(-6*a^3*c^(5/2)*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*x^6-3*(c*LambertW(a*x^2))^(1/2)*c^2+(c*LambertW(a*x^2))^(3/2)*c-6*(c*LambertW(a*x^2))^(5/2))/c^2/x^6
+  Maple integral   = int((c*LambertW(a*x^2))^(1/2)/x^7,x)
+
+Unable to integrate:
+  Integrand        = x^7/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/8/c^(1/2)*(-15/2048*Pi^(1/2)*erfi(2*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*(c*LambertW(a*x^2))^(7/2)+a^4*(LambertW(a*x^2)^3+15/512-5/64*LambertW(a*x^2)+1/8*LambertW(a*x^2)^2)*x^8*c^(7/2))/(c*LambertW(a*x^2))^(7/2)/a^4
+  Maple integral   = int(x^7/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^6/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/2401*x^7*c^3*(8-28*LambertW(a*x^2)+49*LambertW(a*x^2)^2+343*LambertW(a*x^2)^3)/(c*LambertW(a*x^2))^(7/2)
+  Maple integral   = int(x^6/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^5/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/432*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))/a^3/c^(1/2)-1/72*c^2*x^6/(c*LambertW(a*x^2))^(5/2)+1/36*c*x^6/(c*LambertW(a*x^2))^(3/2)+1/6*x^6/(c*LambertW(a*x^2))^(1/2)
+  Maple integral   = int(x^5/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^4/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/125*x^5*c^2*(-2+5*LambertW(a*x^2)+25*LambertW(a*x^2)^2)/(c*LambertW(a*x^2))^(5/2)
+  Maple integral   = int(x^4/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^3/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = -1/64*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))/a^2/c^(1/2)+1/16*c*x^4/(c*LambertW(a*x^2))^(3/2)+1/4*x^4/(c*LambertW(a*x^2))^(1/2)
+  Maple integral   = int(x^3/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^2/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/9*x^3*c*(1+3*LambertW(a*x^2))/(c*LambertW(a*x^2))^(3/2)
+  Maple integral   = int(x^2/(c*LambertW(a*x^2))^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = x/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 1/4*Pi^(1/2)*erfi((c*LambertW(a*x^2))^(1/2)/c^(1/2))/a/c^(1/2)+1/2*x^2/(c*LambertW(a*x^2))^(1/2)
+  Maple integral   = 1/a/c^2*(1/2*c*(c*LambertW(a*x^2))^(1/2)*a*x^2/LambertW(a*x^2)+1/4*c*Pi^(1/2)/(-1/c)^(1/2)*erf((-1/c)^(1/2)*(c*LambertW(a*x^2))^(1/2)))
+
+Unable to integrate:
+  Integrand        = 1/x^3/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = -1/3*a*Pi^(1/2)*erf((c*LambertW(a*x^2))^(1/2)/c^(1/2))/c^(1/2)-1/3/x^2/(c*LambertW(a*x^2))^(1/2)-1/3*(c*LambertW(a*x^2))^(1/2)/c/x^2
+  Maple integral   = int(1/x^3/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 1/x^5/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = 4/15*(a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*x^4*(c*LambertW(a*x^2))^(1/2)*c^2+(-1+LambertW(a*x^2))*c^(5/2)*(LambertW(a*x^2)+3/4))/(c*LambertW(a*x^2))^(1/2)/c^(5/2)/x^4
+  Maple integral   = int(1/x^5/(c*LambertW(a*x^2))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 1/x^7/(c*LambertW(a*x^2))^(1/2)
+  Optimal integral = -12/35*(a^3*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*(c*LambertW(a*x^2))^(1/2)/c^(1/2))*x^6*(c*LambertW(a*x^2))^(1/2)*c^3+(5/12+1/12*LambertW(a*x^2)-1/6*LambertW(a*x^2)^2+LambertW(a*x^2)^3)*c^(7/2))/(c*LambertW(a*x^2))^(1/2)/c^(7/2)/x^6
+  Maple integral   = int(1/x^7/(c*LambertW(a*x^2))^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = x*(c*LambertW(a*x^2))^p
+  Optimal integral = 1/2*x^2*(c*LambertW(a*x^2))^p-1/2*p*GAMMA(1+p,-LambertW(a*x^2))*(c*LambertW(a*x^2))^p/((-LambertW(a*x^2))^p)/a
+  Maple integral   = 1/2/a*((-1)^(-p)*(c*LambertW(a*x^2))^p*LambertW(a*x^2)^(-p)*(LambertW(a*x^2)^p*(-1)^p*(1+p)*p*GAMMA(p)*(-LambertW(a*x^2))^(-p)+LambertW(a*x^2)^p*(-1)^p*(-1+LambertW(a*x^2)-p)*a*x^2/LambertW(a*x^2)-LambertW(a*x^2)^p*(-1)^p*(1+p)*p*(-LambertW(a*x^2))^(-p)*GAMMA(p,-LambertW(a*x^2)))-(-1)^(-p)*(c*LambertW(a*x^2))^p*LambertW(a*x^2)^(-p)*(LambertW(a*x^2)^p*(-1)^p*p*GAMMA(p)*(-LambertW(a*x^2))^(-p)-LambertW(a*x^2)^p*(-1)^p*a*x^2/LambertW(a*x^2)-LambertW(a*x^2)^p*(-1)^p*p*(-LambertW(a*x^2))^(-p)*GAMMA(p,-LambertW(a*x^2))))
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x^2))^p/x
+  Optimal integral = 1/2*(c*LambertW(a*x^2))^p/p+1/2*(c*LambertW(a*x^2))^(1+p)/c/(1+p)
+  Maple integral   = int((c*LambertW(a*x^2))^p/x,x)
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a*x^2))^p/x^3
+  Optimal integral = -1/2*exp(2*LambertW(a*x^2))*(GAMMA(-1+p,LambertW(a*x^2))*LambertW(a*x^2)^(2-p)*(c*LambertW(a*x^2))^p*c+GAMMA(p,LambertW(a*x^2))*LambertW(a*x^2)^(1-p)*(c*LambertW(a*x^2))^(1+p))/a/c/x^4
+  Maple integral   = int((c*LambertW(a*x^2))^p/x^3,x)
+
+Incorrect antiderivative:
+  Integrand        = x^4*LambertW(a/x)
+  Optimal integral = -125/24*a^5*Ei(-5*LambertW(a/x))-25/24*LambertW(a/x)*(LambertW(a/x)^3-6/25+2/25*LambertW(a/x)-1/5*LambertW(a/x)^2)*x^5
+  Maple integral   = -a^5*(1/12*LambertW(a/x)^2/a^5*x^5-5/24*LambertW(a/x)^3/a^5*x^5+25/24*LambertW(a/x)^4/a^5*x^5-125/24*Ei(1,5*LambertW(a/x))-1/4*LambertW(a/x)/a^5*x^5)
+
+Incorrect antiderivative:
+  Integrand        = x^3*LambertW(a/x)
+  Optimal integral = 8/3*a^4*Ei(-4*LambertW(a/x))+2/3*LambertW(a/x)*x^4*(1/2-1/4*LambertW(a/x)+LambertW(a/x)^2)
+  Maple integral   = -a^4*(1/6*LambertW(a/x)^2/a^4*x^4-2/3*LambertW(a/x)^3/a^4*x^4+8/3*Ei(1,4*LambertW(a/x))-1/3*LambertW(a/x)/a^4*x^4)
+
+Incorrect antiderivative:
+  Integrand        = x^2*LambertW(a/x)
+  Optimal integral = -3/2*a^3*Ei(-3*LambertW(a/x))-1/2*x^3*LambertW(a/x)*(LambertW(a/x)-1)
+  Maple integral   = -a^3*(1/2*LambertW(a/x)^2/a^3*x^3-3/2*Ei(1,3*LambertW(a/x))-1/2*LambertW(a/x)/a^3*x^3)
+
+Incorrect antiderivative:
+  Integrand        = x*LambertW(a/x)
+  Optimal integral = a^2*Ei(-2*LambertW(a/x))+x^2*LambertW(a/x)
+  Maple integral   = -a^2*(Ei(1,2*LambertW(a/x))-LambertW(a/x)/a^2*x^2)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x)
+  Optimal integral = -a*Ei(-LambertW(a/x))+x*LambertW(a/x)
+  Maple integral   = -a*(-1/a*x*LambertW(a/x)-Ei(1,LambertW(a/x)))
+
+Incorrect antiderivative:
+  Integrand        = x^4*LambertW(a/x)^2
+  Optimal integral = 25/3*a^5*Ei(-5*LambertW(a/x))+5/3*LambertW(a/x)^2*(1/5-1/5*LambertW(a/x)+LambertW(a/x)^2)*x^5
+  Maple integral   = -a^5*(1/3*LambertW(a/x)^3/a^5*x^5-5/3*LambertW(a/x)^4/a^5*x^5+25/3*Ei(1,5*LambertW(a/x))-1/3*LambertW(a/x)^2/a^5*x^5)
+
+Incorrect antiderivative:
+  Integrand        = x^3*LambertW(a/x)^2
+  Optimal integral = -4*a^4*Ei(-4*LambertW(a/x))-LambertW(a/x)^2*(-1/2+LambertW(a/x))*x^4
+  Maple integral   = -a^4*(LambertW(a/x)^3/a^4*x^4-4*Ei(1,4*LambertW(a/x))-1/2*LambertW(a/x)^2/a^4*x^4)
+
+Incorrect antiderivative:
+  Integrand        = x^2*LambertW(a/x)^2
+  Optimal integral = 2*a^3*Ei(-3*LambertW(a/x))+x^3*LambertW(a/x)^2
+  Maple integral   = -a^3*(2*Ei(1,3*LambertW(a/x))-LambertW(a/x)^2/a^3*x^3)
+
+Incorrect antiderivative:
+  Integrand        = x*LambertW(a/x)^2
+  Optimal integral = -a^2*Ei(-2*LambertW(a/x))+1/2*x^2*LambertW(a/x)^2
+  Maple integral   = -a^2*(-1/2*LambertW(a/x)^2/a^2*x^2-Ei(1,2*LambertW(a/x)))
+
+Unable to integrate:
+  Integrand        = x^3*LambertW(a/x)^(1/2)
+  Optimal integral = -256/105*a^4*Pi^(1/2)*erf(2*LambertW(a/x)^(1/2))+2/7*(-64/15*LambertW(a/x)^(7/2)+LambertW(a/x)^(1/2)-1/5*LambertW(a/x)^(3/2)+8/15*LambertW(a/x)^(5/2))*x^4
+  Maple integral   = int(x^3*LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^2*LambertW(a/x)^(1/2)
+  Optimal integral = 4/5*a^3*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*LambertW(a/x)^(1/2))+2/5*(LambertW(a/x)^(1/2)-1/3*LambertW(a/x)^(3/2)+2*LambertW(a/x)^(5/2))*x^3
+  Maple integral   = int(x^2*LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x*LambertW(a/x)^(1/2)
+  Optimal integral = -2/3*a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*LambertW(a/x)^(1/2))+2/3*x^2*(LambertW(a/x)^(1/2)-LambertW(a/x)^(3/2))
+  Maple integral   = int(x*LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a/x)^(1/2)
+  Optimal integral = a*Pi^(1/2)*erf(LambertW(a/x)^(1/2))+2*x*LambertW(a/x)^(1/2)
+  Maple integral   = int(LambertW(a/x)^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x)^(1/2)/x^2
+  Optimal integral = -1/4*Pi^(1/2)*erfi(LambertW(a/x)^(1/2))/a+1/2/x/LambertW(a/x)^(1/2)-LambertW(a/x)^(1/2)/x
+  Maple integral   = -1/a*(a/x*LambertW(a/x)^(1/2)-1/2/LambertW(a/x)^(1/2)*a/x-1/4*I*Pi^(1/2)*erf(I*LambertW(a/x)^(1/2)))
+
+Unable to integrate:
+  Integrand        = LambertW(a/x)^(1/2)/x^3
+  Optimal integral = 3/128*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*LambertW(a/x)^(1/2))/a^2-3/32/x^2/LambertW(a/x)^(3/2)+1/8/x^2/LambertW(a/x)^(1/2)-1/2*LambertW(a/x)^(1/2)/x^2
+  Maple integral   = int(LambertW(a/x)^(1/2)/x^3,x)
+
+Unable to integrate:
+  Integrand        = LambertW(a/x)^(1/2)/x^4
+  Optimal integral = -5/1296*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*LambertW(a/x)^(1/2))/a^3+5/216/x^3/LambertW(a/x)^(5/2)-5/108/x^3/LambertW(a/x)^(3/2)+1/18/x^3/LambertW(a/x)^(1/2)-1/3*LambertW(a/x)^(1/2)/x^3
+  Maple integral   = int(LambertW(a/x)^(1/2)/x^4,x)
+
+Unable to integrate:
+  Integrand        = x^3/LambertW(a/x)^(1/2)
+  Optimal integral = -2048/945/LambertW(a/x)^(1/2)*(a^4*Pi^(1/2)*erf(2*LambertW(a/x)^(1/2))*LambertW(a/x)^(1/2)+1/2*(-1/8*LambertW(a/x)^3-105/512-15/512*LambertW(a/x)+3/64*LambertW(a/x)^2+LambertW(a/x)^4)*x^4)
+  Maple integral   = int(x^3/LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^2/LambertW(a/x)^(1/2)
+  Optimal integral = 24/35*(a^3*3^(1/2)*Pi^(1/2)*erf(3^(1/2)*LambertW(a/x)^(1/2))*LambertW(a/x)^(1/2)+(LambertW(a/x)^3+5/12+1/12*LambertW(a/x)-1/6*LambertW(a/x)^2)*x^3)/LambertW(a/x)^(1/2)
+  Maple integral   = int(x^2/LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x/LambertW(a/x)^(1/2)
+  Optimal integral = -8/15/LambertW(a/x)^(1/2)*(a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*LambertW(a/x)^(1/2))*LambertW(a/x)^(1/2)+(LambertW(a/x)+3/4)*(LambertW(a/x)-1)*x^2)
+  Maple integral   = int(x/LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 1/LambertW(a/x)^(1/2)
+  Optimal integral = 2/3*a*Pi^(1/2)*erf(LambertW(a/x)^(1/2))+2/3*x/LambertW(a/x)^(1/2)+2/3*x*LambertW(a/x)^(1/2)
+  Maple integral   = int(1/LambertW(a/x)^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^2/LambertW(a/x)^(1/2)
+  Optimal integral = -1/2*Pi^(1/2)*erfi(LambertW(a/x)^(1/2))/a-1/x/LambertW(a/x)^(1/2)
+  Maple integral   = -1/a*(1/LambertW(a/x)^(1/2)*a/x-1/2*I*Pi^(1/2)*erf(I*LambertW(a/x)^(1/2)))
+
+Unable to integrate:
+  Integrand        = 1/x^3/LambertW(a/x)^(1/2)
+  Optimal integral = 1/32*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*LambertW(a/x)^(1/2))/a^2-1/8/x^2/LambertW(a/x)^(3/2)-1/2/x^2/LambertW(a/x)^(1/2)
+  Maple integral   = int(1/x^3/LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 1/x^4/LambertW(a/x)^(1/2)
+  Optimal integral = -1/216*3^(1/2)*Pi^(1/2)*erfi(3^(1/2)*LambertW(a/x)^(1/2))/a^3+1/36/x^3/LambertW(a/x)^(5/2)-1/18/x^3/LambertW(a/x)^(3/2)-1/3/x^3/LambertW(a/x)^(1/2)
+  Maple integral   = int(1/x^4/LambertW(a/x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^2*(c*LambertW(a/x))^p
+  Optimal integral = exp(4*LambertW(a/x))*x^4*(3^(3-p)*GAMMA(-3+p,3*LambertW(a/x))*LambertW(a/x)^(4-p)*(c*LambertW(a/x))^p*c+3^(2-p)*GAMMA(-2+p,3*LambertW(a/x))*LambertW(a/x)^(3-p)*(c*LambertW(a/x))^(1+p))/a/c
+  Maple integral   = int(x^2*(c*LambertW(a/x))^p,x)
+
+Unable to integrate:
+  Integrand        = x*(c*LambertW(a/x))^p
+  Optimal integral = exp(3*LambertW(a/x))*x^3*(2^(2-p)*GAMMA(-2+p,2*LambertW(a/x))*LambertW(a/x)^(3-p)*(c*LambertW(a/x))^p*c+2^(1-p)*GAMMA(-1+p,2*LambertW(a/x))*LambertW(a/x)^(2-p)*(c*LambertW(a/x))^(1+p))/a/c
+  Maple integral   = int(x*(c*LambertW(a/x))^p,x)
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a/x))^p/x
+  Optimal integral = -(c*LambertW(a/x))^p/p-(c*LambertW(a/x))^(1+p)/c/(1+p)
+  Maple integral   = int((c*LambertW(a/x))^p/x,x)
+
+Incorrect antiderivative:
+  Integrand        = (c*LambertW(a/x))^p/x^2
+  Optimal integral = -(c*LambertW(a/x))^p/x+p*GAMMA(1+p,-LambertW(a/x))*(c*LambertW(a/x))^p/((-LambertW(a/x))^p)/a
+  Maple integral   = -1/a*((-1)^(-p)*(c*LambertW(a/x))^p*LambertW(a/x)^(-p)*(LambertW(a/x)^p*(-1)^p*(1+p)*p*GAMMA(p)*(-LambertW(a/x))^(-p)+LambertW(a/x)^p*(-1)^p*(-1+LambertW(a/x)-p)*a/x/LambertW(a/x)-LambertW(a/x)^p*(-1)^p*(1+p)*p*(-LambertW(a/x))^(-p)*GAMMA(p,-LambertW(a/x)))-(-1)^(-p)*(c*LambertW(a/x))^p*LambertW(a/x)^(-p)*(LambertW(a/x)^p*(-1)^p*p*GAMMA(p)*(-LambertW(a/x))^(-p)-LambertW(a/x)^p*(-1)^p*a/x/LambertW(a/x)-LambertW(a/x)^p*(-1)^p*p*(-LambertW(a/x))^(-p)*GAMMA(p,-LambertW(a/x))))
+
+Unable to integrate:
+  Integrand        = (c*LambertW(a/x))^p/x^3
+  Optimal integral = (-2^(-2-p)*GAMMA(2+p,-2*LambertW(a/x))*(-LambertW(a/x))^(-1-p)*(c*LambertW(a/x))^p*c-2^(-3-p)*GAMMA(3+p,-2*LambertW(a/x))*(-LambertW(a/x))^(-2-p)*(c*LambertW(a/x))^(1+p))/(exp(1)^LambertW(a/x))/a/c/x
+  Maple integral   = int((c*LambertW(a/x))^p/x^3,x)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/5))^4
+  Optimal integral = 20*a^5*Ei(-5*LambertW(a/x^(1/5)))+5*x*LambertW(a/x^(1/5))^4
+  Maple integral   = -5*a^5*(4*Ei(1,5*LambertW(a/x^(1/5)))-LambertW(a/x^(1/5))^4/a^5*x)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/4))^3
+  Optimal integral = 12*a^4*Ei(-4*LambertW(a/x^(1/4)))+4*x*LambertW(a/x^(1/4))^3
+  Maple integral   = -4*a^4*(3*Ei(1,4*LambertW(a/x^(1/4)))-LambertW(a/x^(1/4))^3/a^4*x)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/3))^2
+  Optimal integral = 6*a^3*Ei(-3*LambertW(a/x^(1/3)))+3*x*LambertW(a/x^(1/3))^2
+  Maple integral   = -3*a^3*(2*Ei(1,3*LambertW(a/x^(1/3)))-LambertW(a/x^(1/3))^2/a^3*x)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/2))
+  Optimal integral = 2*a^2*Ei(-2*LambertW(a/x^(1/2)))+2*x*LambertW(a/x^(1/2))
+  Maple integral   = -2*a^2*(Ei(1,2*LambertW(a/x^(1/2)))-LambertW(a/x^(1/2))/a^2*x)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x)^2
+  Optimal integral = 2*Ei(LambertW(a*x))/a-x/LambertW(a*x)^2
+  Maple integral   = 1/a*(-2*Ei(1,-LambertW(a*x))-a*x/LambertW(a*x)^2)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x^(1/2))^3
+  Optimal integral = 6*Ei(2*LambertW(a*x^(1/2)))/a^2-2*x/LambertW(a*x^(1/2))^3
+  Maple integral   = 2/a^2*(-3*Ei(1,-2*LambertW(a*x^(1/2)))-a^2*x/LambertW(a*x^(1/2))^3)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x^(1/3))^4
+  Optimal integral = 12*Ei(3*LambertW(a*x^(1/3)))/a^3-3*x/LambertW(a*x^(1/3))^4
+  Maple integral   = 3/a^3*(-4*Ei(1,-3*LambertW(a*x^(1/3)))-1/LambertW(a*x^(1/3))^4*a^3*x)
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x^(1/4))^5
+  Optimal integral = 20*Ei(4*LambertW(a*x^(1/4)))/a^4-4*x/LambertW(a*x^(1/4))^5
+  Maple integral   = 4/a^4*(-5*Ei(1,-4*LambertW(a*x^(1/4)))-1/LambertW(a*x^(1/4))^5*a^4*x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^n)^((-1+n)/n)
+  Optimal integral = -(-1+n)*x/(LambertW(a*x^n)^(1/n))+x/(LambertW(a*x^n)^((1-n)/n))
+  Maple integral   = int(LambertW(a*x^n)^((-1+n)/n),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^(1/(1-p)))^p
+  Optimal integral = x*LambertW(a*x^(1/(1-p)))^p-p/(1-p)*x*LambertW(a*x^(1/(1-p)))^(-1+p)
+  Maple integral   = int(LambertW(a*x^(1/(1-p)))^p,x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)*(c*LambertW(a*x^n))^(9/2)
+  Optimal integral = 1/16*(135*a*c^(9/2)*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^n-270*c^3*(c*LambertW(a*x^n))^(3/2)-180*c^2*(c*LambertW(a*x^n))^(5/2)-72*c*(c*LambertW(a*x^n))^(7/2)-16*(c*LambertW(a*x^n))^(9/2))/(x^n)/n
+  Maple integral   = int(x^(-1-n)*(c*LambertW(a*x^n))^(9/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)*(c*LambertW(a*x^n))^(7/2)
+  Optimal integral = 1/8*(21*a*c^(7/2)*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^n-42*c^2*(c*LambertW(a*x^n))^(3/2)-28*c*(c*LambertW(a*x^n))^(5/2)-8*(c*LambertW(a*x^n))^(7/2))/(x^n)/n
+  Maple integral   = int(x^(-1-n)*(c*LambertW(a*x^n))^(7/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)*(c*LambertW(a*x^n))^(5/2)
+  Optimal integral = 1/4*(5*a*c^(5/2)*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^n-10*c*(c*LambertW(a*x^n))^(3/2)-4*(c*LambertW(a*x^n))^(5/2))/(x^n)/n
+  Maple integral   = int(x^(-1-n)*(c*LambertW(a*x^n))^(5/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)*(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = 3/2*a*c^(3/2)*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))/n-(c*LambertW(a*x^n))^(3/2)/(x^n)/n
+  Maple integral   = int(x^(-1-n)*(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)*(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = -a*c^(1/2)*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))/n-2*(c*LambertW(a*x^n))^(1/2)/(x^n)/n
+  Maple integral   = int(x^(-1-n)*(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)/(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = -2/3/(c*LambertW(a*x^n))^(1/2)*(a*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^n*(c*LambertW(a*x^n))^(1/2)*c+(1+LambertW(a*x^n))*c^(3/2))/c^(3/2)/n/(x^n)
+  Maple integral   = int(x^(-1-n)/(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)/(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = 4/5/(c*LambertW(a*x^n))^(3/2)*(a*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^n*(c*LambertW(a*x^n))^(3/2)*c^2+c^(7/2)*(LambertW(a*x^n)+1/2)*(LambertW(a*x^n)-1))/c^(7/2)/n/(x^n)
+  Maple integral   = int(x^(-1-n)/(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-n)/(c*LambertW(a*x^n))^(5/2)
+  Optimal integral = -8/21/(c*LambertW(a*x^n))^(5/2)*(a*Pi^(1/2)*erf((c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^n*(c*LambertW(a*x^n))^(5/2)*c^3+c^(11/2)*(3/4+3/4*LambertW(a*x^n)-1/2*LambertW(a*x^n)^2+LambertW(a*x^n)^3))/c^(11/2)/n/(x^n)
+  Maple integral   = int(x^(-1-n)/(c*LambertW(a*x^n))^(5/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)*(c*LambertW(a*x^n))^(11/2)
+  Optimal integral = 1/512*(165*a^2*c^(11/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^(2*n)-660*c^3*(c*LambertW(a*x^n))^(5/2)-880*c^2*(c*LambertW(a*x^n))^(7/2)-704*c*(c*LambertW(a*x^n))^(9/2)-256*(c*LambertW(a*x^n))^(11/2))/(x^(2*n))/n
+  Maple integral   = int(x^(-1-2*n)*(c*LambertW(a*x^n))^(11/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)*(c*LambertW(a*x^n))^(9/2)
+  Optimal integral = 1/128*(27*a^2*c^(9/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^(2*n)-108*c^2*(c*LambertW(a*x^n))^(5/2)-144*c*(c*LambertW(a*x^n))^(7/2)-64*(c*LambertW(a*x^n))^(9/2))/(x^(2*n))/n
+  Maple integral   = int(x^(-1-2*n)*(c*LambertW(a*x^n))^(9/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)*(c*LambertW(a*x^n))^(7/2)
+  Optimal integral = 1/32*(7*a^2*c^(7/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^(2*n)-28*c*(c*LambertW(a*x^n))^(5/2)-16*(c*LambertW(a*x^n))^(7/2))/(x^(2*n))/n
+  Maple integral   = int(x^(-1-2*n)*(c*LambertW(a*x^n))^(7/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)*(c*LambertW(a*x^n))^(5/2)
+  Optimal integral = 5/8*a^2*c^(5/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))/n-1/2*(c*LambertW(a*x^n))^(5/2)/(x^(2*n))/n
+  Maple integral   = int(x^(-1-2*n)*(c*LambertW(a*x^n))^(5/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)*(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = -3/2*a^2*c^(3/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))/n-2*(c*LambertW(a*x^n))^(3/2)/(x^(2*n))/n
+  Maple integral   = int(x^(-1-2*n)*(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)*(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = 1/3*(2*a^2*c^(3/2)*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^(2*n)-2*(c*LambertW(a*x^n))^(1/2)*c+2*(c*LambertW(a*x^n))^(3/2))/(x^(2*n))/c/n
+  Maple integral   = int(x^(-1-2*n)*(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)/(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = 8/15*(a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^(2*n)*(c*LambertW(a*x^n))^(1/2)*c^2+(LambertW(a*x^n)-1)*(LambertW(a*x^n)+3/4)*c^(5/2))/(c*LambertW(a*x^n))^(1/2)/c^(5/2)/n/(x^(2*n))
+  Maple integral   = int(x^(-1-2*n)/(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1-2*n)/(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = -32/35*(a^2*2^(1/2)*Pi^(1/2)*erf(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*x^(2*n)*(c*LambertW(a*x^n))^(3/2)*c^3+c^(9/2)*(5/16+3/16*LambertW(a*x^n)-1/4*LambertW(a*x^n)^2+LambertW(a*x^n)^3))/(c*LambertW(a*x^n))^(3/2)/c^(9/2)/n/(x^(2*n))
+  Maple integral   = int(x^(-1-2*n)/(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)*(c*LambertW(a*x^n))^(5/2)
+  Optimal integral = 1/(c*LambertW(a*x^n))^(1/2)*(75/16*c^(5/2)*Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(1/2)+a*x^n*(LambertW(a*x^n)^3-75/8+25/4*LambertW(a*x^n)-5/2*LambertW(a*x^n)^2)*c^3)/a/n
+  Maple integral   = int(x^(-1+n)*(c*LambertW(a*x^n))^(5/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)*(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = 1/(c*LambertW(a*x^n))^(1/2)*(-9/8*c^(3/2)*Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(1/2)+a*x^n*c^2*(9/4-3/2*LambertW(a*x^n)+LambertW(a*x^n)^2))/a/n
+  Maple integral   = int(x^(-1+n)*(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)*(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = (1/4*c^(1/2)*Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(1/2)+a*(-1/2+LambertW(a*x^n))*x^n*c)/(c*LambertW(a*x^n))^(1/2)/a/n
+  Maple integral   = int(x^(-1+n)*(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)/(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = 1/2*Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))/a/c^(1/2)/n+x^n/n/(c*LambertW(a*x^n))^(1/2)
+  Maple integral   = int(x^(-1+n)/(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)/(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = 3*Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))/a/c^(3/2)/n-2*x^n/n/(c*LambertW(a*x^n))^(3/2)
+  Maple integral   = int(x^(-1+n)/(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)/(c*LambertW(a*x^n))^(5/2)
+  Optimal integral = 10/3*Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))/a/c^(5/2)/n-2/3*x^n/n/(c*LambertW(a*x^n))^(5/2)-10/3*x^n/c/n/(c*LambertW(a*x^n))^(3/2)
+  Maple integral   = int(x^(-1+n)/(c*LambertW(a*x^n))^(5/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)/(c*LambertW(a*x^n))^(7/2)
+  Optimal integral = -28/15/(c*LambertW(a*x^n))^(7/2)*(-Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(7/2)*c^2+a*x^n*(3/14+1/2*LambertW(a*x^n)+LambertW(a*x^n)^2)*c^(11/2))/a/c^(11/2)/n
+  Maple integral   = int(x^(-1+n)/(c*LambertW(a*x^n))^(7/2),x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n)/(c*LambertW(a*x^n))^(9/2)
+  Optimal integral = -24/35/(c*LambertW(a*x^n))^(9/2)*(-Pi^(1/2)*erfi((c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(9/2)*c^3+a*x^n*(5/12+3/4*LambertW(a*x^n)+1/2*LambertW(a*x^n)^2+LambertW(a*x^n)^3)*c^(15/2))/a/c^(15/2)/n
+  Maple integral   = int(x^(-1+n)/(c*LambertW(a*x^n))^(9/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)*(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = 1/2*(45/256*c^(3/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(3/2)+a^2*(LambertW(a*x^n)-3/4)*(LambertW(a*x^n)^2+15/16)*x^(2*n)*c^3)/(c*LambertW(a*x^n))^(3/2)/a^2/n
+  Maple integral   = int(x^(2*n-1)*(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)*(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = -3/128/(c*LambertW(a*x^n))^(3/2)*(c^(1/2)*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(3/2)-64/3*a^2*(3/16-1/4*LambertW(a*x^n)+LambertW(a*x^n)^2)*x^(2*n)*c^2)/a^2/n
+  Maple integral   = int(x^(2*n-1)*(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/(c*LambertW(a*x^n))^(1/2)
+  Optimal integral = -1/32*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))/a^2/c^(1/2)/n+1/8*c*x^(2*n)/n/(c*LambertW(a*x^n))^(3/2)+1/2*x^(2*n)/n/(c*LambertW(a*x^n))^(1/2)
+  Maple integral   = int(x^(2*n-1)/(c*LambertW(a*x^n))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/(c*LambertW(a*x^n))^(3/2)
+  Optimal integral = 3/8*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))/a^2/c^(3/2)/n+1/2*x^(2*n)/n/(c*LambertW(a*x^n))^(3/2)
+  Maple integral   = int(x^(2*n-1)/(c*LambertW(a*x^n))^(3/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/(c*LambertW(a*x^n))^(5/2)
+  Optimal integral = 5/2*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))/a^2/c^(5/2)/n-2*x^(2*n)/n/(c*LambertW(a*x^n))^(5/2)
+  Maple integral   = int(x^(2*n-1)/(c*LambertW(a*x^n))^(5/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/(c*LambertW(a*x^n))^(7/2)
+  Optimal integral = 14/3*2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))/a^2/c^(7/2)/n-2/3*x^(2*n)/n/(c*LambertW(a*x^n))^(7/2)-14/3*x^(2*n)/c/n/(c*LambertW(a*x^n))^(5/2)
+  Maple integral   = int(x^(2*n-1)/(c*LambertW(a*x^n))^(7/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/(c*LambertW(a*x^n))^(9/2)
+  Optimal integral = -24/5/(c*LambertW(a*x^n))^(9/2)*(-2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(9/2)*c^2+a^2*(1/12+1/4*LambertW(a*x^n)+LambertW(a*x^n)^2)*x^(2*n)*c^(13/2))/a^2/c^(13/2)/n
+  Maple integral   = int(x^(2*n-1)/(c*LambertW(a*x^n))^(9/2),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/(c*LambertW(a*x^n))^(11/2)
+  Optimal integral = -352/105*(-2^(1/2)*Pi^(1/2)*erfi(2^(1/2)*(c*LambertW(a*x^n))^(1/2)/c^(1/2))*(c*LambertW(a*x^n))^(11/2)*c^3+a^2*x^(2*n)*(15/176+3/16*LambertW(a*x^n)+1/4*LambertW(a*x^n)^2+LambertW(a*x^n)^3)*c^(17/2))/(c*LambertW(a*x^n))^(11/2)/a^2/c^(17/2)/n
+  Maple integral   = int(x^(2*n-1)/(c*LambertW(a*x^n))^(11/2),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^n)^4/(x^(1+3*n))
+  Optimal integral = -1/9*LambertW(a*x^n)^3*(4+3*LambertW(a*x^n))/(x^(3*n))/n
+  Maple integral   = int(LambertW(a*x^n)^4/(x^(1+3*n)),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^n)^3/(x^(2*n+1))
+  Optimal integral = -1/4*LambertW(a*x^n)^2*(3+2*LambertW(a*x^n))/(x^(2*n))/n
+  Maple integral   = int(LambertW(a*x^n)^3/(x^(2*n+1)),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^n)^2/(x^(1+n))
+  Optimal integral = -LambertW(a*x^n)*(2+LambertW(a*x^n))/(x^n)/n
+  Maple integral   = int(LambertW(a*x^n)^2/(x^(1+n)),x)
+
+Unable to integrate:
+  Integrand        = x^(2*n-1)/LambertW(a*x^n)
+  Optimal integral = 1/4*x^(2*n)*(1+2*LambertW(a*x^n))/n/LambertW(a*x^n)^2
+  Maple integral   = int(x^(2*n-1)/LambertW(a*x^n),x)
+
+Unable to integrate:
+  Integrand        = x^(3*n-1)/LambertW(a*x^n)^2
+  Optimal integral = 1/9*x^(3*n)*(2+3*LambertW(a*x^n))/n/LambertW(a*x^n)^3
+  Maple integral   = int(x^(3*n-1)/LambertW(a*x^n)^2,x)
+
+Unable to integrate:
+  Integrand        = x^(4*n-1)/LambertW(a*x^n)^3
+  Optimal integral = 1/16*x^(4*n)*(3+4*LambertW(a*x^n))/n/LambertW(a*x^n)^4
+  Maple integral   = int(x^(4*n-1)/LambertW(a*x^n)^3,x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n*(1-p))*(c*LambertW(a*x^n))^p
+  Optimal integral = -x^(-n*(-1+p))*(c*p*(c*LambertW(a*x^n))^(-1+p)+(c*LambertW(a*x^n))^p*(-1+p))/n/(-1+p)^2
+  Maple integral   = int(x^(-1+n*(1-p))*(c*LambertW(a*x^n))^p,x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n*(2-p))*(c*LambertW(a*x^n))^p
+  Optimal integral = -x^(-n*(-2+p))*(p*c*(-2+p)*(c*LambertW(a*x^n))^(-1+p)+c^2*p*(c*LambertW(a*x^n))^(-2+p)+(c*LambertW(a*x^n))^p*(-2+p)^2)/n/(-2+p)^3
+  Maple integral   = int(x^(-1+n*(2-p))*(c*LambertW(a*x^n))^p,x)
+
+Unable to integrate:
+  Integrand        = x^(-1+n*(3-p))*(c*LambertW(a*x^n))^p
+  Optimal integral = -2*(1/2*p*c*(-3+p)^2*(c*LambertW(a*x^n))^(-1+p)+c^2*p*(-3+p)*(c*LambertW(a*x^n))^(-2+p)+c^3*p*(c*LambertW(a*x^n))^(-3+p)+1/2*(c*LambertW(a*x^n))^p*(-3+p)^3)*x^(-n*(-3+p))/n/(-3+p)^4
+  Maple integral   = int(x^(-1+n*(3-p))*(c*LambertW(a*x^n))^p,x)
+
+Incorrect antiderivative:
+  Integrand        = 1/x^2/(1+LambertW(a*x))
+  Optimal integral = -1/x-a*Ei(-LambertW(a*x))
+  Maple integral   = a*(-1/a/x+Ei(1,LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^3/(1+LambertW(a*x))
+  Optimal integral = -1/2/x^2+2*a^2*Ei(-2*LambertW(a*x))+LambertW(a*x)/x^2
+  Maple integral   = a^2*(-1/2/a^2/x^2+LambertW(a*x)/a^2/x^2-2*Ei(1,2*LambertW(a*x)))
+
+Incorrect antiderivative:
+  Integrand        = 1/x^4/(1+LambertW(a*x))
+  Optimal integral = 1/6*(-2-27*a^3*Ei(-3*LambertW(a*x))*x^3+3*LambertW(a*x)-9*LambertW(a*x)^2)/x^3
+  Maple integral   = a^3*(-1/3/a^3/x^3+1/2*LambertW(a*x)/a^3/x^3-3/2*LambertW(a*x)^2/a^3/x^3+9/2*Ei(1,3*LambertW(a*x)))
+
+Unable to integrate:
+  Integrand        = x^3/(1+LambertW(a*x^2))
+  Optimal integral = 1/8*x^4*(-1+2*LambertW(a*x^2))/LambertW(a*x^2)^2
+  Maple integral   = int(x^3/(1+LambertW(a*x^2)),x)
+
+Unable to integrate:
+  Integrand        = 1/x^3/(1+LambertW(a*x^2))
+  Optimal integral = -1/2/x^2-1/2*a*Ei(-LambertW(a*x^2))
+  Maple integral   = int(1/x^3/(1+LambertW(a*x^2)),x)
+
+Incorrect antiderivative:
+  Integrand        = x^3/(1+LambertW(a/x))
+  Optimal integral = -32/3*a^4*Ei(-4*LambertW(a/x))-8/3*(-3/32+1/8*LambertW(a/x)-1/4*LambertW(a/x)^2+LambertW(a/x)^3)*x^4
+  Maple integral   = -a^4*(-1/4/a^4*x^4+1/3*LambertW(a/x)/a^4*x^4-2/3*LambertW(a/x)^2/a^4*x^4+8/3*LambertW(a/x)^3/a^4*x^4-32/3*Ei(1,4*LambertW(a/x)))
+
+Incorrect antiderivative:
+  Integrand        = x^2/(1+LambertW(a/x))
+  Optimal integral = 9/2*a^3*Ei(-3*LambertW(a/x))+3/2*(2/9-1/3*LambertW(a/x)+LambertW(a/x)^2)*x^3
+  Maple integral   = -a^3*(-1/3/a^3*x^3+1/2*LambertW(a/x)/a^3*x^3-3/2*LambertW(a/x)^2/a^3*x^3+9/2*Ei(1,3*LambertW(a/x)))
+
+Incorrect antiderivative:
+  Integrand        = x/(1+LambertW(a/x))
+  Optimal integral = -2*a^2*Ei(-2*LambertW(a/x))-(-1/2+LambertW(a/x))*x^2
+  Maple integral   = -a^2*(-1/2/a^2*x^2+LambertW(a/x)/a^2*x^2-2*Ei(1,2*LambertW(a/x)))
+
+Incorrect antiderivative:
+  Integrand        = 1/(1+LambertW(a/x))
+  Optimal integral = x+a*Ei(-LambertW(a/x))
+  Maple integral   = -a*(-x/a+Ei(1,LambertW(a/x)))
+
+Unable to integrate:
+  Integrand        = x^3/(1+LambertW(a/x^2))
+  Optimal integral = -a^2*Ei(-2*LambertW(a/x^2))-1/2*(-1/2+LambertW(a/x^2))*x^4
+  Maple integral   = int(x^3/(1+LambertW(a/x^2)),x)
+
+Unable to integrate:
+  Integrand        = x/(1+LambertW(a/x^2))
+  Optimal integral = 1/2*x^2+1/2*a*Ei(-LambertW(a/x^2))
+  Maple integral   = int(x/(1+LambertW(a/x^2)),x)
+
+Unable to integrate:
+  Integrand        = x^m/(d+d*LambertW(a*x))
+  Optimal integral = x^m*GAMMA(1+m,-(1+m)*LambertW(a*x))/exp(m*LambertW(a*x))/((-(1+m)*LambertW(a*x))^m)/a/d/(1+m)
+  Maple integral   = int(x^m/(d+d*LambertW(a*x)),x)
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/4))^4/(1+LambertW(a/x^(1/4)))
+  Optimal integral = -4*a^4*Ei(-4*LambertW(a/x^(1/4)))
+  Maple integral   = 4*a^4*Ei(1,4*LambertW(a/x^(1/4)))
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/3))^3/(1+LambertW(a/x^(1/3)))
+  Optimal integral = -3*a^3*Ei(-3*LambertW(a/x^(1/3)))
+  Maple integral   = 3*a^3*Ei(1,3*LambertW(a/x^(1/3)))
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x^(1/2))^2/(1+LambertW(a/x^(1/2)))
+  Optimal integral = -2*a^2*Ei(-2*LambertW(a/x^(1/2)))
+  Maple integral   = 2*a^2*Ei(1,2*LambertW(a/x^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = LambertW(a/x)/(1+LambertW(a/x))
+  Optimal integral = -a*Ei(-LambertW(a/x))
+  Maple integral   = a*Ei(1,LambertW(a/x))
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x)/(1+LambertW(a*x))
+  Optimal integral = Ei(LambertW(a*x))/a
+  Maple integral   = -1/a*Ei(1,-LambertW(a*x))
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x^(1/2))^2/(1+LambertW(a*x^(1/2)))
+  Optimal integral = 2*Ei(2*LambertW(a*x^(1/2)))/a^2
+  Maple integral   = -2/a^2*Ei(1,-2*LambertW(a*x^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x^(1/3))^3/(1+LambertW(a*x^(1/3)))
+  Optimal integral = 3*Ei(3*LambertW(a*x^(1/3)))/a^3
+  Maple integral   = -3/a^3*Ei(1,-3*LambertW(a*x^(1/3)))
+
+Incorrect antiderivative:
+  Integrand        = 1/LambertW(a*x^(1/4))^4/(1+LambertW(a*x^(1/4)))
+  Optimal integral = 4*Ei(4*LambertW(a*x^(1/4)))/a^4
+  Maple integral   = -4/a^4*Ei(1,-4*LambertW(a*x^(1/4)))
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^n)^(1-1/n)/(1+LambertW(a*x^n))
+  Optimal integral = x/(LambertW(a*x^n)^(1/n))
+  Maple integral   = int(LambertW(a*x^n)^(1-1/n)/(1+LambertW(a*x^n)),x)
+
+Unable to integrate:
+  Integrand        = LambertW(a*x^(1/(1-p)))^p/(1+LambertW(a*x^(1/(1-p))))
+  Optimal integral = x*LambertW(a*x^(1/(1-p)))^(-1+p)
+  Maple integral   = int(LambertW(a*x^(1/(1-p)))^p/(1+LambertW(a*x^(1/(1-p)))),x)
+
+File problem count   = 396
+Optimal results      = 164
+Overly complicated   = 6
+Unable to integrate  = 116
+Unverifiable results = 110
+Integration speed    = 24.49 int/sec
+
+		===========================================
+
+
+Total problem count        = 939
+Total optimal results      = 559
+Total overly complicated   = 20
+Total unable to integrate  = 236
+Total unverifiable results = 124
+Average integration speed  = 12.01 int/sec
+

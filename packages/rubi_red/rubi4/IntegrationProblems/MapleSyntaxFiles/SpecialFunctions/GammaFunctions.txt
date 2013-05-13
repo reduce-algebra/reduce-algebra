@@ -1,0 +1,56 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Gamma Functions
+
+
+# ::Subsection::Closed:: 
+#Integrands involving Gamma
+
+
+[x^m*GAMMA(n, a*x), x, 1, (x^(1 + m)*GAMMA(n, a*x))/(1 + m) - (x^(1 + m)*(a*x)^(-1 - m)*GAMMA(1 + m + n, a*x))/(1 + m)],
+[x^m*GAMMA(n, 2*x), x, 1, (x^(1 + m)*GAMMA(n, 2*x))/(1 + m) - (2^(-1 - m)*GAMMA(1 + m + n, 2*x))/(1 + m)],
+[x^1000*GAMMA(n, a*x), x, 1, (x^1001*GAMMA(n, a*x))/1001 - GAMMA(1001 + n, a*x)/(1001*a^1001)],
+
+
+[GAMMA(n, a+b*x), x, 1, ((a + b*x)*GAMMA(n, a + b*x))/b - GAMMA(1 + n, a + b*x)/b],
+[x*GAMMA(n, a+b*x), x, 3, (-(1/2))*(a^2/b^2 - x^2)*GAMMA(n, a + b*x) + (a*GAMMA(1 + n, a + b*x))/b^2 - GAMMA(2 + n, a + b*x)/(2*b^2)],
+[x^2*GAMMA(n, a+b*x), x, 7, (1/3)*(a^3/b^3 + x^3)*GAMMA(n, a + b*x) - (a^2*GAMMA(1 + n, a + b*x))/b^3 + (a*GAMMA(2 + n, a + b*x))/b^3 - GAMMA(3 + n, a + b*x)/(3*b^3)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving LogGamma
+
+
+[log(GAMMA(a+b*x)), x, 4, x*log(GAMMA(a + b*x)) - x*lnGAMMA(a + b*x) + Psi(-2, a + b*x)/b],
+[x*log(GAMMA(a+b*x)), x, 5, (1/2)*x^2*log(GAMMA(a + b*x)) - (1/2)*x^2*lnGAMMA(a + b*x) - Psi(-3, a + b*x)/b^2 + (x*Psi(-2, a + b*x))/b],
+[x^2*log(GAMMA(a+b*x)), x, 6, (1/3)*x^3*log(GAMMA(a + b*x)) - (1/3)*x^3*lnGAMMA(a + b*x) + (2*Psi(-4, a + b*x))/b^3 - (2*x*Psi(-3, a + b*x))/b^2 + (x^2*Psi(-2, a + b*x))/b],
+
+
+[lnGAMMA(a+b*x), x, 1, Psi(-2, a+b*x)/b],
+[x*lnGAMMA(a+b*x), x, 2, -(Psi(-3, a + b*x)/b^2) + (x*Psi(-2, a + b*x))/b],
+[x^2*lnGAMMA(a+b*x), x, 3, (2*Psi(-4, a + b*x))/b^3 - (2*x*Psi(-3, a + b*x))/b^2 + (x^2*Psi(-2, a + b*x))/b],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving PolyGamma
+
+
+[x^2*Psi(1, a+b*x), x, 3, -((2*x*lnGAMMA(a + b*x))/b^2) + (2*Psi(-2, a + b*x))/b^3 + (x^2*Psi(0, a + b*x))/b],
+[x*Psi(n, a+b*x), x, 2, -(Psi(-2 + n, a + b*x)/b^2) + (x*Psi(-1 + n, a + b*x))/b],
+[Psi(n, a+b*x), x, 1, Psi(-1 + n, a+b*x)/b],
+[Psi(n, a+b*x)/x, x, 0, Int(Psi(n, a + b*x)/x, x)],
+[Psi(n, a+b*x)/x^2, x, 1, b*Int(Psi(1 + n, a + b*x)/x, x) - Psi(n, a + b*x)/x],
+[Psi(n, a+b*x)/x^3, x, 2, (1/2)*b^2*Int(Psi(2 + n, a + b*x)/x, x) - Psi(n, a + b*x)/(2*x^2) - (b*Psi(1 + n, a + b*x))/(2*x)],
+
+[Psi(n, a + b*x)/x^2 - (b*Psi(1 + n, a + b*x))/x, x, 2, -(Psi(n, a + b*x)/x)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving Gamma and PolyGamma
+
+
+[GAMMA(a + b*x)^n*Psi(0, a + b*x), x, 1, GAMMA(a + b*x)^n/(b*n)],
+[(a + b*x)!^n*Psi(0, 1 + a + b*x), x, 1, (a + b*x)!^n/(b*n)]
+]:

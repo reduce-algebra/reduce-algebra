@@ -1,0 +1,1207 @@
+              * * *  Maple Integration Test Results - 2011-06-08  * * *
+
+
+Test file:  ExponentialFunctions/ExponentialFunctions.txt
+
+Incorrect antiderivative:
+  Integrand        = x/exp(.1*x)
+  Optimal integral = (-100.-10.*x)/exp(.1*x)
+  Maple integral   = -10.*(10.+x)/exp(.1000000000*x)
+
+Unable to integrate:
+  Integrand        = x^3*exp((a+b*x)^3)
+  Optimal integral = -2/3*a*exp((a+b*x)^3)/b^4+1/3*exp((a+b*x)^3)*x/b^3+1/9*(1+3*a^3)*(a+b*x)*GAMMA(1/3,-(a+b*x)^3)/b^4/(-(a+b*x)^3)^(1/3)-a^2*(a+b*x)^2*GAMMA(2/3,-(a+b*x)^3)/b^4/(-(a+b*x)^3)^(2/3)
+  Maple integral   = int(x^3*exp((a+b*x)^3),x)
+
+Unable to integrate:
+  Integrand        = x^2*exp((a+b*x)^3)
+  Optimal integral = 1/3*exp((a+b*x)^3)/b^3-1/3*a^2*(a+b*x)*GAMMA(1/3,-(a+b*x)^3)/b^3/(-(a+b*x)^3)^(1/3)+2/3*a*(a+b*x)^2*GAMMA(2/3,-(a+b*x)^3)/b^3/(-(a+b*x)^3)^(2/3)
+  Maple integral   = int(x^2*exp((a+b*x)^3),x)
+
+Unable to integrate:
+  Integrand        = x*exp((a+b*x)^3)
+  Optimal integral = 1/3*((-a-b*x)*GAMMA(2/3,-(a+b*x)^3)+GAMMA(1/3,-(a+b*x)^3)*(-(a+b*x)^3)^(1/3)*a)/(-(a+b*x)^3)^(2/3)*(a+b*x)/b^2
+  Maple integral   = int(x*exp((a+b*x)^3),x)
+
+Unable to integrate:
+  Integrand        = exp((a+b*x)^3)
+  Optimal integral = -1/3*(a+b*x)*GAMMA(1/3,-(a+b*x)^3)/b/(-(a+b*x)^3)^(1/3)
+  Maple integral   = int(exp((a+b*x)^3),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(a+b*x)/(a+b*x)
+  Optimal integral = Ei(a+b*x)/b
+  Maple integral   = -1/b*Ei(1,-a-b*x)
+  Leafcounts = 10 15   10 15
+
+Unable to integrate:
+  Integrand        = exp((a+b*x)^3)*(a+b*x)^3
+  Optimal integral = 1/3*exp((a+b*x)^3)*(a+b*x)/b+1/9*(a+b*x)*GAMMA(1/3,-(a+b*x)^3)/b/(-(a+b*x)^3)^(1/3)
+  Maple integral   = int(exp((a+b*x)^3)*(a+b*x)^3,x)
+
+Unable to integrate:
+  Integrand        = exp((a+b*x)^3)*(a+b*x)
+  Optimal integral = -1/3*(a+b*x)^2*GAMMA(2/3,-(a+b*x)^3)/b/(-(a+b*x)^3)^(2/3)
+  Maple integral   = int(exp((a+b*x)^3)*(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = exp((a+b*x)^3)/(a+b*x)
+  Optimal integral = 1/3*Ei((a+b*x)^3)/b
+  Maple integral   = int(exp((a+b*x)^3)/(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = exp((a+b*x)^3)/(a+b*x)^2
+  Optimal integral = -exp((a+b*x)^3)/b/(a+b*x)-(a+b*x)^2*GAMMA(2/3,-(a+b*x)^3)/b/(-(a+b*x)^3)^(2/3)
+  Maple integral   = int(exp((a+b*x)^3)/(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = exp((a+b*x)^3)/(a+b*x)^3
+  Optimal integral = -1/2*exp((a+b*x)^3)/b/(a+b*x)^2-1/2*(a+b*x)*GAMMA(1/3,-(a+b*x)^3)/b/(-(a+b*x)^3)^(1/3)
+  Maple integral   = int(exp((a+b*x)^3)/(a+b*x)^3,x)
+
+Unable to integrate:
+  Integrand        = x^m*exp(x^n)
+  Optimal integral = -x^(1+m)*GAMMA((1+m)/n,-x^n)/((-x^n)^((1+m)/n))/n
+  Maple integral   = int(x^m*exp(x^n),x)
+
+Unable to integrate:
+  Integrand        = x^m*f^(x^n)
+  Optimal integral = -x^(1+m)*GAMMA((1+m)/n,-x^n*ln(f))/((-x^n*ln(f))^((1+m)/n))/n
+  Maple integral   = int(x^m*f^(x^n),x)
+
+Unable to integrate:
+  Integrand        = (a+b*x)^m*exp((a+b*x)^n)
+  Optimal integral = -(a+b*x)^(1+m)*GAMMA((1+m)/n,-(a+b*x)^n)/((-(a+b*x)^n)^((1+m)/n))/n/b
+  Maple integral   = int((a+b*x)^m*exp((a+b*x)^n),x)
+
+Unable to integrate:
+  Integrand        = (a+b*x)^m*f^((a+b*x)^n)
+  Optimal integral = -(a+b*x)^(1+m)*GAMMA((1+m)/n,-(a+b*x)^n*ln(f))/((-(a+b*x)^n*ln(f))^((1+m)/n))/n/b
+  Maple integral   = int((a+b*x)^m*f^((a+b*x)^n),x)
+
+Incorrect antiderivative:
+  Integrand        = exp(c+d*x)/(a+b*x)
+  Optimal integral = exp(c-a*d/b)*Ei(d*(a+b*x)/b)/b
+  Maple integral   = -1/b*exp(-(-b*c+a*d)/b)*Ei(1,-c-d*x-(-b*c+a*d)/b)
+
+Incorrect antiderivative:
+  Integrand        = exp(c+d*x)/(a+b*x)^2
+  Optimal integral = -exp(c+d*x)/b/(a+b*x)+d*exp(c-a*d/b)*Ei(d*(a+b*x)/b)/b^2
+  Maple integral   = d/b^2*(-exp(c+d*x)/(c+d*x+(-b*c+a*d)/b)-exp(-(-b*c+a*d)/b)*Ei(1,-c-d*x-(-b*c+a*d)/b))
+
+Incorrect antiderivative:
+  Integrand        = exp(c+d*x)/(a+b*x)^3
+  Optimal integral = 1/2*(d^2*Ei(d*(a+b*x)/b)*(a+b*x)^2*exp(c-a*d/b)-b*exp(c+d*x)*(a*d+d*b*x+b))/b^3/(a+b*x)^2
+  Maple integral   = d^2/b^3*(-1/2*exp(c+d*x)/(c+d*x+(-b*c+a*d)/b)^2-1/2*exp(c+d*x)/(c+d*x+(-b*c+a*d)/b)-1/2*exp(-(-b*c+a*d)/b)*Ei(1,-c-d*x-(-b*c+a*d)/b))
+
+Unable to integrate:
+  Integrand        = exp((c+d*x)^3)*(a+b*x)^2
+  Optimal integral = 1/3*b^2*exp((c+d*x)^3)/d^3-1/3*(b*c-a*d)^2*(c+d*x)*GAMMA(1/3,-(c+d*x)^3)/d^3/(-(c+d*x)^3)^(1/3)+2/3*b*(b*c-a*d)*(c+d*x)^2*GAMMA(2/3,-(c+d*x)^3)/d^3/(-(c+d*x)^3)^(2/3)
+  Maple integral   = int(exp((c+d*x)^3)*(a+b*x)^2,x)
+
+Unable to integrate:
+  Integrand        = exp((c+d*x)^3)*(a+b*x)
+  Optimal integral = -1/3*((-b*c+a*d)*(-(c+d*x)^3)^(1/3)*GAMMA(1/3,-(c+d*x)^3)+b*GAMMA(2/3,-(c+d*x)^3)*(c+d*x))*(c+d*x)/(-(c+d*x)^3)^(2/3)/d^2
+  Maple integral   = int(exp((c+d*x)^3)*(a+b*x),x)
+
+Incorrect antiderivative:
+  Integrand        = exp(a+b*x)/(c+d*x^2)
+  Optimal integral = 1/2*(exp(a+b*(-c)^(1/2)/d^(1/2))*Ei(b*(-(-c)^(1/2)+d^(1/2)*x)/d^(1/2))-exp(a-b*(-c)^(1/2)/d^(1/2))*Ei(b*((-c)^(1/2)+d^(1/2)*x)/d^(1/2)))/(-c)^(1/2)/d^(1/2)
+  Maple integral   = -1/2*(exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)-exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d))/(-c*d)^(1/2)
+
+Incorrect antiderivative:
+  Integrand        = x*exp(a+b*x)/(c+d*x^2)
+  Optimal integral = 1/2*(exp(a+b*(-c)^(1/2)/d^(1/2))*Ei(b*(-(-c)^(1/2)+d^(1/2)*x)/d^(1/2))+exp(a-b*(-c)^(1/2)/d^(1/2))*Ei(b*((-c)^(1/2)+d^(1/2)*x)/d^(1/2)))/d
+  Maple integral   = 1/b^2*(1/2*a*b*(exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)-exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d))/(-c*d)^(1/2)-1/2*b/d*(exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*a*d+exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*b*(-c*d)^(1/2)-exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*a*d+exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*b*(-c*d)^(1/2))/(-c*d)^(1/2))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2*exp(a+b*x)/(c+d*x^2)
+  Optimal integral = exp(a+b*x)/b/d+1/2*(-c)^(1/2)*exp(a+b*(-c)^(1/2)/d^(1/2))*Ei(-b*((-c)^(1/2)-d^(1/2)*x)/d^(1/2))/d^(3/2)-1/2*(-c)^(1/2)*exp(a-b*(-c)^(1/2)/d^(1/2))*Ei(b*((-c)^(1/2)+d^(1/2)*x)/d^(1/2))/d^(3/2)
+  Maple integral   = 1/b^3*(-1/2*a^2*b*(exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)-exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d))/(-c*d)^(1/2)+a*b/d*(exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*a*d+exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*b*(-c*d)^(1/2)-exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*a*d+exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*b*(-c*d)^(1/2))/(-c*d)^(1/2)+b^2/d*exp(a+b*x)-1/2/d*b*(-exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*b^2*c+exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*a^2*d+2*exp((a*d+b*(-c*d)^(1/2))/d)*Ei(1,(-d*(a+b*x)+a*d+b*(-c*d)^(1/2))/d)*a*b*(-c*d)^(1/2)+exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*b^2*c-exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*a^2*d+2*exp(-(-a*d+b*(-c*d)^(1/2))/d)*Ei(1,-(d*(a+b*x)-a*d+b*(-c*d)^(1/2))/d)*a*b*(-c*d)^(1/2))/(-c*d)^(1/2))
+  Leafcounts = 129 725   0 0
+
+Incorrect antiderivative:
+  Integrand        = exp(a+b*x)/(c+d*x+e*x^2)
+  Optimal integral = (exp(a-1/2*b*(d-(d^2-4*c*e)^(1/2))/e)*Ei(1/2*b*(d-(d^2-4*c*e)^(1/2)+2*e*x)/e)-exp(a-1/2*b*(d+(d^2-4*c*e)^(1/2))/e)*Ei(1/2*b*(d+(d^2-4*c*e)^(1/2)+2*e*x)/e))/(d^2-4*c*e)^(1/2)
+  Maple integral   = -b*(exp(1/2/e*(-b*d+2*a*e+(b^2*d^2-4*b^2*c*e)^(1/2)))*Ei(1,1/2*(-2*(a+b*x)*e-b*d+2*a*e+(b^2*d^2-4*b^2*c*e)^(1/2))/e)-exp(-1/2*(b*d-2*a*e+(b^2*d^2-4*b^2*c*e)^(1/2))/e)*Ei(1,-1/2*(2*(a+b*x)*e+b*d-2*a*e+(b^2*d^2-4*b^2*c*e)^(1/2))/e))/(b^2*d^2-4*b^2*c*e)^(1/2)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*exp(c-d*x))
+  Optimal integral = ln(b+a*exp(-c+d*x))/a/d
+  Maple integral   = (ln(a+b*exp(c-d*x))-ln(exp(c-d*x)))/a/d
+  Leafcounts = 20 36   20 30
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*exp(c-d*x))^2
+  Optimal integral = -1/a/d/(a+b*exp(c-d*x))+ln(b+a*exp(-c+d*x))/a^2/d
+  Maple integral   = -1/a/d/(a+b*exp(c-d*x))+1/d/a^2*ln(a+b*exp(c-d*x))-1/d/a^2*ln(exp(c-d*x))
+  Leafcounts = 42 57   42 57
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*exp(-c-d*x))
+  Optimal integral = ln(b+a*exp(c+d*x))/a/d
+  Maple integral   = (ln(a+b*exp(-c-d*x))-ln(exp(-c-d*x)))/a/d
+  Leafcounts = 18 40   18 34
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*exp(-c-d*x))^2
+  Optimal integral = -1/a/d/(a+b*exp(-c-d*x))+ln(b+a*exp(c+d*x))/a^2/d
+  Maple integral   = -1/a/d/(a+b*exp(-c-d*x))+1/d/a^2*ln(a+b*exp(-c-d*x))-1/d/a^2*ln(exp(-c-d*x))
+  Leafcounts = 42 63   42 63
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*exp(-c-d*x))^3
+  Optimal integral = -1/2/a/d/(a+b*exp(-c-d*x))^2-1/a^2/d/(a+b*exp(-c-d*x))+ln(b+a*exp(c+d*x))/a^3/d
+  Maple integral   = -1/a^2/d/(a+b*exp(-c-d*x))+1/d/a^3*ln(a+b*exp(-c-d*x))-1/d/a^3*ln(exp(-c-d*x))-1/2/a/d/(a+b*exp(-c-d*x))^2
+  Leafcounts = 67 88   67 88
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(a+b*exp(c+d*x))
+  Optimal integral = 1/2*(d^2*x^2-2*x*ln(1+b*exp(c+d*x)/a)*d-2*polylog(2,-b*exp(c+d*x)/a))/a/d^2
+  Maple integral   = 1/2*((-2*c-2*d*x)*ln(1+b*exp(c+d*x)/a)+d^2*x^2+2*x*c*d+c^2-2*c*ln(exp(c+d*x))-2*polylog(2,-b*exp(c+d*x)/a)+2*c*ln(a+b*exp(c+d*x)))/a/d^2
+  Leafcounts = 52 136   52 89
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2/(a+b*exp(c+d*x))
+  Optimal integral = 1/3*(x^3*d^3-3*x^2*ln(1+b*exp(c+d*x)/a)*d^2-6*x*polylog(2,-b*exp(c+d*x)/a)*d+6*polylog(3,-b*exp(c+d*x)/a))/a/d^3
+  Maple integral   = 1/3*(x^3*d^3-3*c^2*x*d-2*c^3-3*x^2*ln(1+b*exp(c+d*x)/a)*d^2+3*ln(1+b*exp(c+d*x)/a)*c^2-6*x*polylog(2,-b*exp(c+d*x)/a)*d+6*polylog(3,-b*exp(c+d*x)/a)-3*c^2*ln(a+b*exp(c+d*x))+3*c^2*ln(exp(c+d*x)))/a/d^3
+  Leafcounts = 74 169   74 133
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3/(a+b*exp(c+d*x))
+  Optimal integral = 1/4*(x^4*d^4-4*x^3*ln(1+b*exp(c+d*x)/a)*d^3-12*x^2*polylog(2,-b*exp(c+d*x)/a)*d^2+24*x*polylog(3,-b*exp(c+d*x)/a)*d-24*polylog(4,-b*exp(c+d*x)/a))/a/d^4
+  Maple integral   = 1/4*(4*c^3*x*d+3*c^4+x^4*d^4-4*x^3*ln(1+b*exp(c+d*x)/a)*d^3-4*ln(1+b*exp(c+d*x)/a)*c^3-12*x^2*polylog(2,-b*exp(c+d*x)/a)*d^2+24*x*polylog(3,-b*exp(c+d*x)/a)*d-24*polylog(4,-b*exp(c+d*x)/a)+4*c^3*ln(a+b*exp(c+d*x))-4*c^3*ln(exp(c+d*x)))/a/d^4
+  Leafcounts = 96 194   96 155
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(a+b*exp(c+d*x))^2
+  Optimal integral = -b*exp(c+d*x)*x/a^2/d/(a+b*exp(c+d*x))+1/2*x^2/a^2+ln(a+b*exp(c+d*x))/a^2/d^2-x*ln(1+b*exp(c+d*x)/a)/a^2/d-polylog(2,-b*exp(c+d*x)/a)/a^2/d^2
+  Maple integral   = 1/2*(-2*(c+d*x)*(a+b*exp(c+d*x))*ln((a+b*exp(c+d*x))/a)+(-2*a-2*b*exp(c+d*x))*dilog((a+b*exp(c+d*x))/a)+2*(c+1)*(a+b*exp(c+d*x))*ln(a+b*exp(c+d*x))-2*c*(a+b*exp(c+d*x))*ln(exp(c+d*x))+b*(c+d*x)*(c-2+d*x)*exp(c+d*x)+a*(2*x*c*d-2*c+c^2+d^2*x^2))/a^2/d^2/(a+b*exp(c+d*x))
+  Leafcounts = 102 234   102 170
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2/(a+b*exp(c+d*x))^2
+  Optimal integral = -b*exp(c+d*x)*x^2/a^2/d/(a+b*exp(c+d*x))+1/3*x^3/a^2+2*x*ln(1+b*exp(c+d*x)/a)/a^2/d^2-x^2*ln(1+b*exp(c+d*x)/a)/a^2/d+2*(1-d*x)*polylog(2,-b*exp(c+d*x)/a)/a^2/d^3+2*polylog(3,-b*exp(c+d*x)/a)/a^2/d^3
+  Maple integral   = 1/3*(3*(c+d*x)*(2+c-d*x)*(a+b*exp(c+d*x))*ln(1+b*exp(c+d*x)/a)-6*(-1+d*x)*(a+b*exp(c+d*x))*polylog(2,-b*exp(c+d*x)/a)+(6*a+6*b*exp(c+d*x))*polylog(3,-b*exp(c+d*x)/a)-3*c*(c+2)*(a+b*exp(c+d*x))*ln(a+b*exp(c+d*x))+3*c*(c+2)*(a+b*exp(c+d*x))*ln(exp(c+d*x))-2*(c+3/2-1/2*d*x)*(c+d*x)^2*b*exp(c+d*x)-2*(c^3+(3/2+3/2*d*x)*c^2+3*x*c*d-1/2*x^3*d^3)*a)/d^3/a^2/(a+b*exp(c+d*x))
+  Leafcounts = 139 327   139 233
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3/(a+b*exp(c+d*x))^2
+  Optimal integral = -b*exp(c+d*x)*x^3/a^2/d/(a+b*exp(c+d*x))+1/4*x^4/a^2+3*x^2*ln(1+b*exp(c+d*x)/a)/a^2/d^2-x^3*ln(1+b*exp(c+d*x)/a)/a^2/d+3*x*(2-d*x)*polylog(2,-b*exp(c+d*x)/a)/a^2/d^3-6*(1-d*x)*polylog(3,-b*exp(c+d*x)/a)/a^2/d^4-6*polylog(4,-b*exp(c+d*x)/a)/a^2/d^4
+  Maple integral   = 1/4*(-4*(c+d*x)*(c^2+(3-d*x)*c-3*d*x+d^2*x^2)*(a+b*exp(c+d*x))*ln(1+b*exp(c+d*x)/a)-12*d*x*(-2+d*x)*(a+b*exp(c+d*x))*polylog(2,-b*exp(c+d*x)/a)+24*(-1+d*x)*(a+b*exp(c+d*x))*polylog(3,-b*exp(c+d*x)/a)+(-24*b*exp(c+d*x)-24*a)*polylog(4,-b*exp(c+d*x)/a)+4*c^2*(3+c)*(a+b*exp(c+d*x))*ln(a+b*exp(c+d*x))-4*c^2*(3+c)*(a+b*exp(c+d*x))*ln(exp(c+d*x))+3*(c+d*x)^2*(8/3*c+c^2-2/3*x*c*d-4/3*d*x+1/3*d^2*x^2)*b*exp(c+d*x)+3*a*(c^4+(4/3*d*x+8/3)*c^3+4*c^2*x*d+1/3*x^4*d^4))/a^2/d^4/(a+b*exp(c+d*x))
+  Leafcounts = 170 385   170 309
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(a+b*exp(c+d*x))^3
+  Optimal integral = -1/2/a^2/d^2/(a+b*exp(c+d*x))-3/2*x/a^3/d+1/2*(3*a+2*b*exp(c+d*x))*x/a^2/d/(a+b*exp(c+d*x))^2+1/2*x^2/a^3+3/2*ln(a+b*exp(c+d*x))/a^3/d^2-x*ln(1+b*exp(c+d*x)/a)/a^3/d-polylog(2,-b*exp(c+d*x)/a)/a^3/d^2
+  Maple integral   = 1/2*(-2*(a+b*exp(c+d*x))^2*(c+d*x)*ln((a+b*exp(c+d*x))/a)-2*(a+b*exp(c+d*x))^2*dilog((a+b*exp(c+d*x))/a)+2*(3/2+c)*(a+b*exp(c+d*x))^2*ln(a+b*exp(c+d*x))-2*c*(a+b*exp(c+d*x))^2*ln(exp(c+d*x))+b^2*(c+d*x)*(-3+c+d*x)*exp(c+d*x)^2+2*a*b*(c^2+(-3+2*d*x)*c-1/2+d^2*x^2-2*d*x)*exp(c+d*x)+a^2*(-1-3*c+d^2*x^2+c^2+2*x*c*d))/a^3/d^2/(a+b*exp(c+d*x))^2
+  Leafcounts = 146 406   146 221
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2/(a+b*exp(c+d*x))^3
+  Optimal integral = b*exp(c+d*x)*x/a^3/d^2/(a+b*exp(c+d*x))-3/2*x^2/a^3/d+1/2*(3*a+2*b*exp(c+d*x))*x^2/a^2/d/(a+b*exp(c+d*x))^2+1/3*x^3/a^3-ln(a+b*exp(c+d*x))/a^3/d^3+3*x*ln(1+b*exp(c+d*x)/a)/a^3/d^2-x^2*ln(1+b*exp(c+d*x)/a)/a^3/d+(3-2*d*x)*polylog(2,-b*exp(c+d*x)/a)/a^3/d^3+2*polylog(3,-b*exp(c+d*x)/a)/a^3/d^3
+  Maple integral   = 1/6*(6*(c+3-d*x)*(c+d*x)*(a+b*exp(c+d*x))^2*ln(1+b*exp(c+d*x)/a)-12*(d*x-3/2)*(a+b*exp(c+d*x))^2*polylog(2,-b*exp(c+d*x)/a)+12*(a+b*exp(c+d*x))^2*polylog(3,-b*exp(c+d*x)/a)-6*(1+3*c+c^2)*(a+b*exp(c+d*x))^2*ln(a+b*exp(c+d*x))+6*(1+3*c+c^2)*(a+b*exp(c+d*x))^2*ln(exp(c+d*x))-4*(9/4+c-1/2*d*x)*(c+d*x)^2*b^2*exp(c+d*x)^2-8*a*(c^3+(9/4+3/2*d*x)*c^2+9/2*x*c*d-1/2*x*d*(-3*d*x-3/2+d^2*x^2))*b*exp(c+d*x)-4*a^2*(c^3+(9/4+3/2*d*x)*c^2+9/2*x*c*d-1/2*d*x*(d^2*x^2-3)))/a^3/d^3/(a+b*exp(c+d*x))^2
+  Leafcounts = 205 394   205 320
+
+Incorrect antiderivative:
+  Integrand        = x^(3/2)*f^(a+b*x)
+  Optimal integral = 3/4*f^a*Pi^(1/2)*erfi(b^(1/2)*x^(1/2)*ln(f)^(1/2))/b^(5/2)/ln(f)^(5/2)-3/2*f^(a+b*x)*x^(1/2)/b^2/ln(f)^2+f^(a+b*x)*x^(3/2)/b/ln(f)
+  Maple integral   = -1/(-b)^(3/2)/ln(f)^(5/2)*f^a/b*(1/10*x^(1/2)*(-b)^(5/2)*ln(f)^(1/2)*(10*x*b*ln(f)-15)/b^2*exp(x*b*ln(f))+3/4*(-b)^(5/2)/b^(5/2)*Pi^(1/2)*erfi(b^(1/2)*x^(1/2)*ln(f)^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = x^(1/2)*f^(a+b*x)
+  Optimal integral = -1/2*f^a*Pi^(1/2)*erfi(b^(1/2)*x^(1/2)*ln(f)^(1/2))/b^(3/2)/ln(f)^(3/2)+f^(a+b*x)*x^(1/2)/b/ln(f)
+  Maple integral   = -1/(-b)^(1/2)/ln(f)^(3/2)*f^a/b*(x^(1/2)*(-b)^(3/2)*ln(f)^(1/2)/b*exp(x*b*ln(f))-1/2*(-b)^(3/2)/b^(3/2)*Pi^(1/2)*erfi(b^(1/2)*x^(1/2)*ln(f)^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x)/x^(3/2)
+  Optimal integral = -2*f^(a+b*x)/x^(1/2)+2*b^(1/2)*f^a*Pi^(1/2)*erfi(b^(1/2)*x^(1/2)*ln(f)^(1/2))*ln(f)^(1/2)
+  Maple integral   = -f^a*(-b)^(3/2)*ln(f)^(1/2)/b*(-2/x^(1/2)/(-b)^(1/2)/ln(f)^(1/2)*exp(x*b*ln(f))+2/(-b)^(1/2)*b^(1/2)*Pi^(1/2)*erfi(b^(1/2)*x^(1/2)*ln(f)^(1/2)))
+
+Unable to integrate:
+  Integrand        = exp(a+b*x)^(1/2)/x
+  Optimal integral = exp(a+b*x)^(1/2)*Ei(1/2*b*x)/exp(1/2*b*x)
+  Maple integral   = int(exp(a+b*x)^(1/2)/x,x)
+
+Unable to integrate:
+  Integrand        = exp(a+b*x)^(1/2)/x^2
+  Optimal integral = -1/2*exp(-1/2*a-1/2*b*x)*exp(a+b*x)^(1/2)*(2*exp(1/2*a+1/2*b*x)/x-b*exp(1/2*a)*Ei(1/2*b*x))
+  Maple integral   = int(exp(a+b*x)^(1/2)/x^2,x)
+
+Unable to integrate:
+  Integrand        = exp(a+b*x)^(1/2)/x^3
+  Optimal integral = 1/8*((-4-2*b*x)*exp(1/2*a+1/2*b*x)+b^2*exp(1/2*a)*Ei(1/2*b*x)*x^2)*exp(a+b*x)^(1/2)*exp(-1/2*a-1/2*b*x)/x^2
+  Maple integral   = int(exp(a+b*x)^(1/2)/x^3,x)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*(c+d*x)^2)
+  Optimal integral = 1/2*f^a*Pi^(1/2)*erfi(b^(1/2)*(c+d*x)*ln(f)^(1/2))/b^(1/2)/d/ln(f)^(1/2)
+  Maple integral   = -1/2*Pi^(1/2)*f^a/d/(-b*ln(f))^(1/2)*erf(-d*(-b*ln(f))^(1/2)*x+b*ln(f)*c/(-b*ln(f))^(1/2))
+
+Unable to integrate:
+  Integrand        = f^(a+b*(c+d*x)^3)
+  Optimal integral = -1/3*f^a*(c+d*x)*GAMMA(1/3,-b*(c+d*x)^3*ln(f))/d/(-b*(c+d*x)^3*ln(f))^(1/3)
+  Maple integral   = int(f^(a+b*(c+d*x)^3),x)
+
+Unable to integrate:
+  Integrand        = f^(a+b*(c+d*x)^n)
+  Optimal integral = -f^a*(c+d*x)*GAMMA(1/n,-b*(c+d*x)^n*ln(f))/((-b*(c+d*x)^n*ln(f))^(1/n))/d/n
+  Maple integral   = int(f^(a+b*(c+d*x)^n),x)
+
+Unable to integrate:
+  Integrand        = f^(a+b*(c+d*x)^(1/2))
+  Optimal integral = 2*f^(a+b*(c+d*x)^(1/2))*(-1+(c+d*x)^(1/2)*b*ln(f))/b^2/d/ln(f)^2
+  Maple integral   = int(f^(a+b*(c+d*x)^(1/2)),x)
+
+Unable to integrate:
+  Integrand        = f^(a+b*(c+d*x)^(1/3))
+  Optimal integral = 3*f^(a+b*(c+d*x)^(1/3))*(2-2*(c+d*x)^(1/3)*b*ln(f)+(c+d*x)^(2/3)*b^2*ln(f)^2)/b^3/d/ln(f)^3
+  Maple integral   = int(f^(a+b*(c+d*x)^(1/3)),x)
+
+Incorrect antiderivative:
+  Integrand        = x^3*f^(a+b/x)
+  Optimal integral = 1/24*x*(6*x^3+2*x^2*b*ln(f)+x*b^2*ln(f)^2+b^3*ln(f)^3)*f^(a+b/x)-1/24*b^4*f^a*Ei(b*ln(f)/x)*ln(f)^4
+  Maple integral   = 1/4*f^((a*x+b)/x)*x^4+1/12*b*ln(f)*f^((a*x+b)/x)*x^3+1/24*b^2*ln(f)^2*f^((a*x+b)/x)*x^2+1/24*b^3*ln(f)^3*f^((a*x+b)/x)*x+1/24*b^4*ln(f)^4*f^a*Ei(1,-b*ln(f)/x)
+
+Incorrect antiderivative:
+  Integrand        = x^2*f^(a+b/x)
+  Optimal integral = 1/6*x*(2*x^2+x*b*ln(f)+b^2*ln(f)^2)*f^(a+b/x)-1/6*b^3*f^a*Ei(b*ln(f)/x)*ln(f)^3
+  Maple integral   = 1/3*f^((a*x+b)/x)*x^3+1/6*b*ln(f)*f^((a*x+b)/x)*x^2+1/6*b^2*ln(f)^2*f^((a*x+b)/x)*x+1/6*b^3*ln(f)^3*f^a*Ei(1,-b*ln(f)/x)
+
+Incorrect antiderivative:
+  Integrand        = x*f^(a+b/x)
+  Optimal integral = 1/2*x*(x+b*ln(f))*f^(a+b/x)-1/2*b^2*f^a*Ei(b*ln(f)/x)*ln(f)^2
+  Maple integral   = 1/2*x^2*f^((a*x+b)/x)+1/2*b*f^((a*x+b)/x)*x*ln(f)+1/2*b^2*ln(f)^2*f^a*Ei(1,-b*ln(f)/x)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b/x)
+  Optimal integral = x*f^(a+b/x)-b*f^a*Ei(b*ln(f)/x)*ln(f)
+  Maple integral   = f^((a*x+b)/x)*x+ln(f)*b*f^a*Ei(1,-b*ln(f)/x)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b/x)/x
+  Optimal integral = -f^a*Ei(b*ln(f)/x)
+  Maple integral   = f^a*Ei(1,-b*ln(f)/x)
+
+Incorrect antiderivative:
+  Integrand        = x^4*f^(a+b/x^2)
+  Optimal integral = -4/15*b^(5/2)*f^a*Pi^(1/2)*erfi(b^(1/2)*ln(f)^(1/2)/x)*ln(f)^(5/2)+4/15*(3/4*x^4+1/2*x^2*b*ln(f)+b^2*ln(f)^2)*x*f^(a+b/x^2)
+  Maple integral   = 1/5*f^a*x^5*f^(b/x^2)+2/15*f^a*ln(f)*b*x^3*f^(b/x^2)+4/15*f^a*ln(f)^2*b^2*x*f^(b/x^2)-4/15*f^a*ln(f)^3*b^3*Pi^(1/2)/(-b*ln(f))^(1/2)*erf((-b*ln(f))^(1/2)/x)
+
+Incorrect antiderivative:
+  Integrand        = x^3*f^(a+b/x^2)
+  Optimal integral = 1/4*(x^4+x^2*b*ln(f))*f^(a+b/x^2)-1/4*b^2*f^a*Ei(b*ln(f)/x^2)*ln(f)^2
+  Maple integral   = 1/4*f^a*x^4*f^(b/x^2)+1/4*f^a*x^2*f^(b/x^2)*b*ln(f)+1/4*f^a*ln(f)^2*b^2*Ei(1,-b*ln(f)/x^2)
+
+Incorrect antiderivative:
+  Integrand        = x^2*f^(a+b/x^2)
+  Optimal integral = -2/3*b^(3/2)*f^a*Pi^(1/2)*erfi(b^(1/2)*ln(f)^(1/2)/x)*ln(f)^(3/2)+1/3*(x^3+2*x*b*ln(f))*f^(a+b/x^2)
+  Maple integral   = 1/3*f^a*x^3*f^(b/x^2)+2/3*f^a*x*f^(b/x^2)*b*ln(f)-2/3*f^a*ln(f)^2*b^2*Pi^(1/2)/(-b*ln(f))^(1/2)*erf((-b*ln(f))^(1/2)/x)
+
+Incorrect antiderivative:
+  Integrand        = x*f^(a+b/x^2)
+  Optimal integral = 1/2*x^2*f^(a+b/x^2)-1/2*b*f^a*Ei(b*ln(f)/x^2)*ln(f)
+  Maple integral   = 1/2*f^a*x^2*f^(b/x^2)+1/2*f^a*ln(f)*b*Ei(1,-b*ln(f)/x^2)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b/x^2)
+  Optimal integral = x*f^(a+b/x^2)-b^(1/2)*f^a*Pi^(1/2)*erfi(b^(1/2)*ln(f)^(1/2)/x)*ln(f)^(1/2)
+  Maple integral   = f^a*x*f^(b/x^2)-f^a*ln(f)*b*Pi^(1/2)/(-b*ln(f))^(1/2)*erf((-b*ln(f))^(1/2)/x)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b/x^2)/x
+  Optimal integral = -1/2*f^a*Ei(b*ln(f)/x^2)
+  Maple integral   = 1/2*f^a*Ei(1,-b*ln(f)/x^2)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b/x^2)/x^2
+  Optimal integral = -1/2*f^a*Pi^(1/2)*erfi(b^(1/2)*ln(f)^(1/2)/x)/b^(1/2)/ln(f)^(1/2)
+  Maple integral   = -1/2*f^a*Pi^(1/2)/(-b*ln(f))^(1/2)*erf((-b*ln(f))^(1/2)/x)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b/x^2)/x^4
+  Optimal integral = 1/4*f^a*Pi^(1/2)*erfi(b^(1/2)*ln(f)^(1/2)/x)/b^(3/2)/ln(f)^(3/2)-1/2*f^(a+b/x^2)/b/x/ln(f)
+  Maple integral   = -1/2*f^a*f^(b/x^2)/x/ln(f)/b+1/4*f^a/ln(f)/b*Pi^(1/2)/(-b*ln(f))^(1/2)*erf((-b*ln(f))^(1/2)/x)
+
+Incorrect antiderivative:
+  Integrand        = x^3*exp(a+b*x+c*x^2)
+  Optimal integral = 1/16*(-erfi(1/2*(b+2*c*x)/c^(1/2))*b*c^3*Pi^(1/2)*(b^2-6*c)*exp(a-1/4*b^2/c)+8*exp(a+b*x+c*x^2)*(c^2*x^2+(-1-1/2*b*x)*c+1/4*b^2)*c^(7/2))/c^(13/2)
+  Maple integral   = 1/2*exp(a+b*x+c*x^2)*x^2/c-1/2*b/c*(1/2*exp(a+b*x+c*x^2)*x/c-1/2*b/c*(1/2*exp(a+b*x+c*x^2)/c+1/4*b/c*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2)))+1/4/c*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2)))-1/c*(1/2*exp(a+b*x+c*x^2)/c+1/4*b/c*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = x^2*exp(a+b*x+c*x^2)
+  Optimal integral = 1/8*(erfi(1/2*(b+2*c*x)/c^(1/2))*c^2*Pi^(1/2)*(b^2-2*c)*exp(a-1/4*b^2/c)+4*(-1/2*b+c*x)*exp(a+b*x+c*x^2)*c^(5/2))/c^(9/2)
+  Maple integral   = 1/2*exp(a+b*x+c*x^2)*x/c-1/2*b/c*(1/2*exp(a+b*x+c*x^2)/c+1/4*b/c*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2)))+1/4/c*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x*exp(a+b*x+c*x^2)
+  Optimal integral = 1/2*exp(a+b*x+c*x^2)/c-1/4*b*exp(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)/c^(1/2))/c^(3/2)
+  Maple integral   = 1/2*exp(a+b*x+c*x^2)/c+1/4*b/c*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = exp(a+b*x+c*x^2)
+  Optimal integral = 1/2*exp(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)/c^(1/2))/c^(1/2)
+  Maple integral   = -1/2*Pi^(1/2)*exp(a-1/4*b^2/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*b/(-c)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x^3*exp(a+b*x-c*x^2)
+  Optimal integral = 1/16*(-erf(1/2*(b-2*c*x)/c^(1/2))*b*c^3*Pi^(1/2)*(b^2+6*c)*exp(a+1/4*b^2/c)-8*(c^2*x^2+(1/2*b*x+1)*c+1/4*b^2)*exp(a+b*x-c*x^2)*c^(7/2))/c^(13/2)
+  Maple integral   = -1/2*exp(a+b*x-c*x^2)*x^2/c+1/2*b/c*(-1/2*exp(a+b*x-c*x^2)*x/c+1/2*b/c*(-1/2*exp(a+b*x-c*x^2)/c-1/4*b/c^(3/2)*Pi^(1/2)*exp(a+1/4*b^2/c)*erf(-x*c^(1/2)+1/2*b/c^(1/2)))-1/4/c^(3/2)*Pi^(1/2)*exp(a+1/4*b^2/c)*erf(-x*c^(1/2)+1/2*b/c^(1/2)))+1/c*(-1/2*exp(a+b*x-c*x^2)/c-1/4*b/c^(3/2)*Pi^(1/2)*exp(a+1/4*b^2/c)*erf(-x*c^(1/2)+1/2*b/c^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = x^2*exp(a+b*x-c*x^2)
+  Optimal integral = 1/8*(-erf(1/2*(b-2*c*x)/c^(1/2))*c^2*Pi^(1/2)*(b^2+2*c)*exp(a+1/4*b^2/c)-4*exp(a+b*x-c*x^2)*(1/2*b+c*x)*c^(5/2))/c^(9/2)
+  Maple integral   = -1/2*exp(a+b*x-c*x^2)*x/c+1/2*b/c*(-1/2*exp(a+b*x-c*x^2)/c-1/4*b/c^(3/2)*Pi^(1/2)*exp(a+1/4*b^2/c)*erf(-x*c^(1/2)+1/2*b/c^(1/2)))-1/4/c^(3/2)*Pi^(1/2)*exp(a+1/4*b^2/c)*erf(-x*c^(1/2)+1/2*b/c^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x*exp(a+b*x-c*x^2)
+  Optimal integral = -1/2*exp(a+b*x-c*x^2)/c-1/4*b*exp(a+1/4*b^2/c)*Pi^(1/2)*erf(1/2*(b-2*c*x)/c^(1/2))/c^(3/2)
+  Maple integral   = -1/2*exp(a+b*x-c*x^2)/c-1/4*b/c^(3/2)*Pi^(1/2)*exp(a+1/4*b^2/c)*erf(-x*c^(1/2)+1/2*b/c^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = exp(a+b*x-c*x^2)
+  Optimal integral = -1/2*exp(a+1/4*b^2/c)*Pi^(1/2)*erf(1/2*(b-2*c*x)/c^(1/2))/c^(1/2)
+  Maple integral   = -1/2*Pi^(1/2)*exp(a+1/4*b^2/c)/c^(1/2)*erf(-x*c^(1/2)+1/2*b/c^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x^3*exp((a+b*x)*(c+d*x))
+  Optimal integral = 1/16*(-d^3*(b*c+a*d)*b^3*(b^2*c^2+(-6+2*a*c)*d*b+a^2*d^2)*Pi^(1/2)*erfi(1/2/d^(1/2)*((c+2*d*x)*b+a*d)/b^(1/2))+8*((1/4*c^2-1/2*x*c*d+d^2*x^2)*b^2+1/2*d*(-a*d*x-2+a*c)*b+1/4*a^2*d^2)*b^(7/2)*exp((a+b*x)*(c+d*x))*exp(1/4*(b*c-a*d)^2/b/d)*d^(7/2))/b^(13/2)/d^(13/2)/exp(1/4*(b*c-a*d)^2/b/d)
+  Maple integral   = 1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)*x^2/b/d-1/2*(b*c+a*d)/b/d*(1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)*x/b/d-1/2*(b*c+a*d)/b/d*(1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)/b/d+1/4*(b*c+a*d)/b/d*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2)))+1/4/b/d*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2)))-1/b/d*(1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)/b/d+1/4*(b*c+a*d)/b/d*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2)))
+
+Incorrect antiderivative:
+  Integrand        = x^2*exp((a+b*x)*(c+d*x))
+  Optimal integral = -1/4*(b*c+a*d)*exp(a*c+(b*c+a*d)*x+b*d*x^2)/b^2/d^2+1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)*x/b/d+1/8*(b^2*c^2-2*b*(1-a*c)*d+a^2*d^2)*Pi^(1/2)*erfi(1/2*(b*c+a*d+2*d*b*x)/b^(1/2)/d^(1/2))/exp(1/4*(b*c-a*d)^2/b/d)/b^(5/2)/d^(5/2)
+  Maple integral   = 1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)*x/b/d-1/2*(b*c+a*d)/b/d*(1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)/b/d+1/4*(b*c+a*d)/b/d*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2)))+1/4/b/d*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x*exp((a+b*x)*(c+d*x))
+  Optimal integral = 1/4*(-Pi^(1/2)*exp(-1/4*(-b*c+a*d)^2/b/d)*b*d*(b*c+a*d)*erfi(1/2/d^(1/2)*((c+2*d*x)*b+a*d)/b^(1/2))+2*exp((a+b*x)*(c+d*x))*b^(3/2)*d^(3/2))/d^(5/2)/b^(5/2)
+  Maple integral   = 1/2*exp(a*c+(b*c+a*d)*x+b*d*x^2)/b/d+1/4*(b*c+a*d)/b/d*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = exp((a+b*x)*(c+d*x))
+  Optimal integral = 1/2*exp(-1/4*(-b*c+a*d)^2/b/d)*Pi^(1/2)*erfi(1/2/d^(1/2)*((c+2*d*x)*b+a*d)/b^(1/2))/b^(1/2)/d^(1/2)
+  Maple integral   = -1/2*Pi^(1/2)*exp(a*c-1/4*(b*c+a*d)^2/b/d)/(-b*d)^(1/2)*erf(-(-b*d)^(1/2)*x+1/2*(b*c+a*d)/(-b*d)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x^3*f^(a+b*x+c*x^2)
+  Optimal integral = 1/16*(-Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))*b*c^3*ln(f)^2*(b^2*ln(f)-6*c)*f^(a-1/4*b^2/c)+8*ln(f)^(3/2)*f^(a+b*x+c*x^2)*c^(7/2)*((1/4*b^2-1/2*b*c*x+c^2*x^2)*ln(f)-c))/c^(13/2)/ln(f)^(7/2)
+  Maple integral   = 1/2*f^(a+b*x+c*x^2)*x^2/c/ln(f)-1/4*b*f^(a+b*x+c*x^2)*x/c^2/ln(f)+1/8*b^2*f^(a+b*x+c*x^2)/c^3/ln(f)+1/16*b^3/c^3*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))-3/8*b/c^2/ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))-1/2*f^(a+b*x+c*x^2)/c^2/ln(f)^2
+
+Incorrect antiderivative:
+  Integrand        = x^2*f^(a+b*x+c*x^2)
+  Optimal integral = 1/8*(Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))*c^2*ln(f)*(b^2*ln(f)-2*c)*f^(a-1/4*b^2/c)+4*ln(f)^(3/2)*f^(a+b*x+c*x^2)*c^(5/2)*(-1/2*b+c*x))/c^(9/2)/ln(f)^(5/2)
+  Maple integral   = 1/2*f^(a+b*x+c*x^2)*x/c/ln(f)-1/4*b*f^(a+b*x+c*x^2)/c^2/ln(f)-1/8*b^2/c^2*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+1/4/c/ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x*f^(a+b*x+c*x^2)
+  Optimal integral = 1/2*f^(a+b*x+c*x^2)/c/ln(f)-1/4*b*f^(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))/c^(3/2)/ln(f)^(1/2)
+  Maple integral   = 1/2*f^(a+b*x+c*x^2)/c/ln(f)+1/4*b/c*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x+c*x^2)
+  Optimal integral = 1/2*f^(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))/c^(1/2)/ln(f)^(1/2)
+  Maple integral   = -1/2*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = (d+e*x)^3*f^(a+b*x+c*x^2)
+  Optimal integral = 1/16*(-c^3*ln(f)^2*((-2*c*d+b*e)^2*ln(f)-6*c*e^2)*(-2*c*d+b*e)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))*f^(a-1/4*b^2/c)+24*ln(f)^(3/2)*(((d^2+d*e*x+1/3*e^2*x^2)*c^2-1/2*e*(1/3*e*x+d)*b*c+1/12*b^2*e^2)*ln(f)-1/3*c*e^2)*e*c^(7/2)*f^(a+b*x+c*x^2))/c^(13/2)/ln(f)^(7/2)
+  Maple integral   = -1/2*d^3*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+3/2*d^2*e*f^(a+b*x+c*x^2)/c/ln(f)+3/4*d^2*e*b/c*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+3/2*d*e^2*f^(a+b*x+c*x^2)*x/c/ln(f)-3/4*d*e^2*b/c^2*f^(a+b*x+c*x^2)/ln(f)-3/8*d*e^2*b^2/c^2*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+3/4*d*e^2/c/ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+1/2*e^3*f^(a+b*x+c*x^2)*x^2/c/ln(f)-1/4*e^3*b*f^(a+b*x+c*x^2)*x/c^2/ln(f)+1/8*e^3*b^2*f^(a+b*x+c*x^2)/c^3/ln(f)+1/16*e^3*b^3/c^3*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))-3/8*e^3*b/c^2/ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))-1/2*e^3*f^(a+b*x+c*x^2)/c^2/ln(f)^2
+  Leafcounts = 180 650   0 0
+
+Incorrect antiderivative:
+  Integrand        = (d+e*x)^2*f^(a+b*x+c*x^2)
+  Optimal integral = 1/8*(c^2*((-2*c*d+b*e)^2*ln(f)-2*c*e^2)*ln(f)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))*f^(a-1/4*b^2/c)+8*ln(f)^(3/2)*e*c^(5/2)*f^(a+b*x+c*x^2)*((1/2*e*x+d)*c-1/4*b*e))/c^(9/2)/ln(f)^(5/2)
+  Maple integral   = -1/2*d^2*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+d*e*f^(a+b*x+c*x^2)/c/ln(f)+1/2*d*e*b/c*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+1/2*e^2*f^(a+b*x+c*x^2)*x/c/ln(f)-1/4*e^2*b/c^2*f^(a+b*x+c*x^2)/ln(f)-1/8*e^2*b^2/c^2*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+1/4*e^2/c/ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = (d+e*x)*f^(a+b*x+c*x^2)
+  Optimal integral = 1/2*e*f^(a+b*x+c*x^2)/c/ln(f)-1/4*(-2*c*d+b*e)*f^(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))/c^(3/2)/ln(f)^(1/2)
+  Maple integral   = -1/2*d*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))+1/2*e*f^(a+b*x+c*x^2)/c/ln(f)+1/4*e*b/c*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = (b+2*c*x)^2*f^(a+b*x+c*x^2)
+  Optimal integral = -c^(1/2)*f^(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))/ln(f)^(3/2)+f^(a+b*x+c*x^2)*(b+2*c*x)/ln(f)
+  Maple integral   = b*f^(a+b*x+c*x^2)/ln(f)+2*c*f^(a+b*x+c*x^2)*x/ln(f)+c/ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x+c*x^2)/(b+2*c*x)^2
+  Optimal integral = -1/2*f^(a+b*x+c*x^2)/c/(b+2*c*x)+1/4*f^(a-1/4*b^2/c)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))*ln(f)^(1/2)/c^(3/2)
+  Maple integral   = -1/2*f^(a+b*x+c*x^2)/c/(b+2*c*x)+1/4/c^2*ln(f)*Pi^(1/2)*f^(1/4*(-b^2+4*a*c)/c)/(-ln(f)/c)^(1/2)*erf(1/2*(-ln(f)/c)^(1/2)*(b+2*c*x))
+
+Incorrect antiderivative:
+  Integrand        = (b+2*c*x)^2*f^(b*x+c*x^2)
+  Optimal integral = -c^(1/2)*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))/(f^(1/4*b^2/c))/ln(f)^(3/2)+f^(b*x+c*x^2)*(b+2*c*x)/ln(f)
+  Maple integral   = b/ln(f)*f^(x*(b+c*x))+2*c/ln(f)*x*f^(x*(b+c*x))+c/ln(f)*Pi^(1/2)*f^(-1/4*b^2/c)/(-c*ln(f))^(1/2)*erf(-(-c*ln(f))^(1/2)*x+1/2*ln(f)*b/(-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = f^(b*x+c*x^2)/(b+2*c*x)^2
+  Optimal integral = -1/2*f^(b*x+c*x^2)/c/(b+2*c*x)+1/4*Pi^(1/2)*erfi(1/2*(b+2*c*x)*ln(f)^(1/2)/c^(1/2))*ln(f)^(1/2)/(f^(1/4*b^2/c))/c^(3/2)
+  Maple integral   = -1/2/c/(b+2*c*x)*f^(x*(b+c*x))+1/4/c^2*ln(f)*Pi^(1/2)*f^(-1/4*b^2/c)/(-ln(f)/c)^(1/2)*erf(1/2*(-ln(f)/c)^(1/2)*(b+2*c*x))
+
+Incorrect antiderivative:
+  Integrand        = 4^x/(a-b*2^x)
+  Optimal integral = (-b*2^x-a*ln(-a+b*2^x))/b^2/ln(2)
+  Maple integral   = -1/b/ln(2)*exp(x*ln(2))-1/b^2/ln(2)*a*ln(a-b*exp(x*ln(2)))
+
+Incorrect antiderivative:
+  Integrand        = 2^(2*x)/(a+b/(2^x))
+  Optimal integral = (2^(-1+2*x)*a^2-a*2^x*b+b^2*ln(2^x*a+b))/a^3/ln(2)
+  Maple integral   = 1/2/ln(2)/a*exp(x*ln(2))^2-1/ln(2)/a^2*b*exp(x*ln(2))+1/ln(2)/a^3*b^2*ln(a*exp(x*ln(2))+b)
+
+Incorrect antiderivative:
+  Integrand        = 2^(2*x)/(a-b/(2^x))
+  Optimal integral = (2^(-1+2*x)*a^2+a*2^x*b+b^2*ln(-2^x*a+b))/a^3/ln(2)
+  Maple integral   = 1/ln(2)/a^2*b*exp(x*ln(2))+1/2/ln(2)/a*exp(x*ln(2))^2+1/ln(2)/a^3*b^2*ln(a*exp(x*ln(2))-b)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a+b*4^x)
+  Optimal integral = arctan(2^x*b^(1/2)/a^(1/2))/a^(1/2)/b^(1/2)/ln(2)
+  Maple integral   = 1/2*(-ln(2^x-1/(-a*b)^(1/2)*a)+ln(2^x+1/(-a*b)^(1/2)*a))/(-a*b)^(1/2)/ln(2)
+  Leafcounts = 30 64   30 50
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a+b*2^(2*x))
+  Optimal integral = arctan(2^x*b^(1/2)/a^(1/2))/a^(1/2)/b^(1/2)/ln(2)
+  Maple integral   = 1/2*(-ln(2^x-1/(-a*b)^(1/2)*a)+ln(2^x+1/(-a*b)^(1/2)*a))/(-a*b)^(1/2)/ln(2)
+  Leafcounts = 30 64   30 50
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a-b*4^x)
+  Optimal integral = arctanh(2^x*b^(1/2)/a^(1/2))/a^(1/2)/b^(1/2)/ln(2)
+  Maple integral   = 1/2*(ln(2^x+1/(a*b)^(1/2)*a)-ln(2^x-1/(a*b)^(1/2)*a))/(a*b)^(1/2)/ln(2)
+  Leafcounts = 30 60   30 47
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a-b*2^(2*x))
+  Optimal integral = arctanh(2^x*b^(1/2)/a^(1/2))/a^(1/2)/b^(1/2)/ln(2)
+  Maple integral   = 1/2*(ln(2^x+1/(a*b)^(1/2)*a)-ln(2^x-1/(a*b)^(1/2)*a))/(a*b)^(1/2)/ln(2)
+  Leafcounts = 30 60   30 47
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a+b/(4^x))
+  Optimal integral = 2^x/a/ln(2)-b^(1/2)*arctan(2^x*a^(1/2)/b^(1/2))/a^(3/2)/ln(2)
+  Maple integral   = 1/2*(2*2^x*a+(-a*b)^(1/2)*ln(2^x-1/a*(-a*b)^(1/2))-(-a*b)^(1/2)*ln(2^x+1/a*(-a*b)^(1/2)))/ln(2)/a^2
+  Leafcounts = 43 85   43 72
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a+b/(2^(2*x)))
+  Optimal integral = 2^x/a/ln(2)-b^(1/2)*arctan(2^x*a^(1/2)/b^(1/2))/a^(3/2)/ln(2)
+  Maple integral   = 1/2*(2*2^x*a+(-a*b)^(1/2)*ln(2^x-1/a*(-a*b)^(1/2))-(-a*b)^(1/2)*ln(2^x+1/a*(-a*b)^(1/2)))/ln(2)/a^2
+  Leafcounts = 43 85   43 72
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a-b/(4^x))
+  Optimal integral = 2^x/a/ln(2)-b^(1/2)*arctanh(2^x*a^(1/2)/b^(1/2))/a^(3/2)/ln(2)
+  Maple integral   = 1/2*(2*2^x*a+(a*b)^(1/2)*ln(2^x-1/a*(a*b)^(1/2))-(a*b)^(1/2)*ln(2^x+1/a*(a*b)^(1/2)))/ln(2)/a^2
+  Leafcounts = 43 81   43 68
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 2^x/(a-b/(2^(2*x)))
+  Optimal integral = 2^x/a/ln(2)-b^(1/2)*arctanh(2^x*a^(1/2)/b^(1/2))/a^(3/2)/ln(2)
+  Maple integral   = 1/2*(2*2^x*a+(a*b)^(1/2)*ln(2^x-1/a*(a*b)^(1/2))-(a*b)^(1/2)*ln(2^x+1/a*(a*b)^(1/2)))/ln(2)/a^2
+  Leafcounts = 43 81   43 68
+
+Unable to integrate:
+  Integrand        = 2^x/(a+b*4^x)^(1/2)
+  Optimal integral = arctanh(2^x*b^(1/2)/(a+b*2^(2*x))^(1/2))/b^(1/2)/ln(2)
+  Maple integral   = int(2^x/(a+b*4^x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 2^x/(a+b*2^(2*x))^(1/2)
+  Optimal integral = arctanh(2^x*b^(1/2)/(a+b*2^(2*x))^(1/2))/b^(1/2)/ln(2)
+  Maple integral   = int(2^x/(a+b*2^(2*x))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 2^x/(a-b*4^x)^(1/2)
+  Optimal integral = arctan(2^x*b^(1/2)/(a-b*2^(2*x))^(1/2))/b^(1/2)/ln(2)
+  Maple integral   = int(2^x/(a-b*4^x)^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 2^x/(a-b*2^(2*x))^(1/2)
+  Optimal integral = arctan(2^x*b^(1/2)/(a-b*2^(2*x))^(1/2))/b^(1/2)/ln(2)
+  Maple integral   = int(2^x/(a-b*2^(2*x))^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = 2^x/(a+b/(4^x))^(1/2)
+  Optimal integral = 2^x*(a+b/(2^(2*x)))^(1/2)/a/ln(2)
+  Maple integral   = 1/a/ln(2)*((2^x)^2*a+b)^(1/2)
+
+Incorrect antiderivative:
+  Integrand        = 2^x/(a+b/(2^(2*x)))^(1/2)
+  Optimal integral = 2^x*(a+b/(2^(2*x)))^(1/2)/a/ln(2)
+  Maple integral   = 1/a/ln(2)*((2^x)^2*a+b)^(1/2)
+
+Incorrect antiderivative:
+  Integrand        = 2^x/(a-b/(4^x))^(1/2)
+  Optimal integral = 2^x*(a-b/(2^(2*x)))^(1/2)/a/ln(2)
+  Maple integral   = 1/a/ln(2)*((2^x)^2*a-b)^(1/2)
+
+Incorrect antiderivative:
+  Integrand        = 2^x/(a-b/(2^(2*x)))^(1/2)
+  Optimal integral = 2^x*(a-b/(2^(2*x)))^(1/2)/a/ln(2)
+  Maple integral   = 1/a/ln(2)*((2^x)^2*a-b)^(1/2)
+
+Incorrect antiderivative:
+  Integrand        = 4^x/(a+b*2^x)^(1/2)
+  Optimal integral = 1/3*(a+b*2^x)^(1/2)*(-4*a+2^(1+x)*b)/b^2/ln(2)
+  Maple integral   = -2*(2*a-b*2^x)*(a+b*2^x)^(1/2)/(2+b^2)/ln(2)
+
+Incorrect antiderivative:
+  Integrand        = 2^(2*x)/(a+b*2^x)^(1/2)
+  Optimal integral = 1/3*(a+b*2^x)^(1/2)*(-4*a+2^(1+x)*b)/b^2/ln(2)
+  Maple integral   = -2*(2*a-b*2^x)*(a+b*2^x)^(1/2)/(2+b^2)/ln(2)
+
+Incorrect antiderivative:
+  Integrand        = 4^x/(a-b*2^x)^(1/2)
+  Optimal integral = -1/3*(a-b*2^x)^(1/2)*(4*a+2^(1+x)*b)/b^2/ln(2)
+  Maple integral   = -2*(2*a+b*2^x)*(a-b*2^x)^(1/2)/(2+b^2)/ln(2)
+
+Incorrect antiderivative:
+  Integrand        = 2^(2*x)/(a-b*2^x)^(1/2)
+  Optimal integral = -1/3*(a-b*2^x)^(1/2)*(4*a+2^(1+x)*b)/b^2/ln(2)
+  Maple integral   = -2*(2*a+b*2^x)*(a-b*2^x)^(1/2)/(2+b^2)/ln(2)
+
+Unable to integrate:
+  Integrand        = 4^x/(a+b/(2^x))^(1/2)
+  Optimal integral = 1/4*(3*b^2*arctanh((a+b/(2^x))^(1/2)/a^(1/2))*a^2+4*(2^(-1+2*x)*a-3*2^(-2+x)*b)*(a+b/(2^x))^(1/2)*a^(5/2))/ln(2)/a^(9/2)
+  Maple integral   = int(4^x/(a+b/(2^x))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 2^(2*x)/(a+b/(2^x))^(1/2)
+  Optimal integral = 1/4*(3*b^2*arctanh((a+b/(2^x))^(1/2)/a^(1/2))*a^2+4*(2^(-1+2*x)*a-3*2^(-2+x)*b)*(a+b/(2^x))^(1/2)*a^(5/2))/ln(2)/a^(9/2)
+  Maple integral   = int(2^(2*x)/(a+b/(2^x))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 4^x/(a-b/(2^x))^(1/2)
+  Optimal integral = 1/4*(3*b^2*arctanh((a-b/(2^x))^(1/2)/a^(1/2))*a^2+4*(a-b/(2^x))^(1/2)*a^(5/2)*(2^(-1+2*x)*a+3*2^(-2+x)*b))/ln(2)/a^(9/2)
+  Maple integral   = int(4^x/(a-b/(2^x))^(1/2),x)
+
+Unable to integrate:
+  Integrand        = 2^(2*x)/(a-b/(2^x))^(1/2)
+  Optimal integral = 1/4*(3*b^2*arctanh((a-b/(2^x))^(1/2)/a^(1/2))*a^2+4*(a-b/(2^x))^(1/2)*a^(5/2)*(2^(-1+2*x)*a+3*2^(-2+x)*b))/ln(2)/a^(9/2)
+  Maple integral   = int(2^(2*x)/(a-b/(2^x))^(1/2),x)
+
+Incorrect antiderivative:
+  Integrand        = a^x*b^x/x
+  Optimal integral = Ei(x*(ln(a)+ln(b)))
+  Maple integral   = ln(x)+I*Pi+ln(ln(b))+ln(1+ln(a)/ln(b))-ln(-x*ln(b)*(1+ln(a)/ln(b)))-Ei(1,-x*ln(b)*(1+ln(a)/ln(b)))
+
+Incorrect antiderivative:
+  Integrand        = a^x*b^x/x^2
+  Optimal integral = -a^x*b^x/x+Ei(x*(ln(a)+ln(b)))*(ln(a)+ln(b))
+  Maple integral   = -ln(b)*(1+ln(a)/ln(b))*(1/x/ln(b)/(1+ln(a)/ln(b))+1-ln(x)-I*Pi-ln(ln(b))-ln(1+ln(a)/ln(b))-1/2/x/ln(b)/(1+ln(a)/ln(b))*(2+2*x*ln(b)*(1+ln(a)/ln(b)))+exp(x*ln(b)*(1+ln(a)/ln(b)))/x/ln(b)/(1+ln(a)/ln(b))+ln(-x*ln(b)*(1+ln(a)/ln(b)))+Ei(1,-x*ln(b)*(1+ln(a)/ln(b))))
+
+Incorrect antiderivative:
+  Integrand        = a^x*b^x/x^3
+  Optimal integral = 1/2*(x^2*(ln(a)+ln(b))^2*Ei(x*(ln(a)+ln(b)))-a^x*b^x*(1+x*ln(a)+x*ln(b)))/x^2
+  Maple integral   = ln(b)^2*(1+ln(a)/ln(b))^2*(-1/2/x^2/ln(b)^2/(1+ln(a)/ln(b))^2-1/x/ln(b)/(1+ln(a)/ln(b))-3/4+1/2*ln(x)+1/2*I*Pi+1/2*ln(ln(b))+1/2*ln(1+ln(a)/ln(b))+1/12/x^2/ln(b)^2/(1+ln(a)/ln(b))^2*(6+12*x*ln(b)*(1+ln(a)/ln(b))+9*x^2*ln(b)^2*(1+ln(a)/ln(b))^2)+1/6/x^2/ln(b)^2/(1+ln(a)/ln(b))^2*(-3-3*x*ln(b)*(1+ln(a)/ln(b)))*exp(x*ln(b)*(1+ln(a)/ln(b)))-1/2*ln(-x*ln(b)*(1+ln(a)/ln(b)))-1/2*Ei(1,-x*ln(b)*(1+ln(a)/ln(b))))
+
+Unable to integrate:
+  Integrand        = exp(a+b*x^n)*exp(c+d*x^n)
+  Optimal integral = -exp(a+c)*x*GAMMA(1/n,-(b+d)*x^n)/((-(b+d)*x^n)^(1/n))/n
+  Maple integral   = int(exp(a+b*x^n)*exp(c+d*x^n),x)
+
+Unable to integrate:
+  Integrand        = f^(a+b*x^n)*g^(c+d*x^n)
+  Optimal integral = -f^a*g^c*x*GAMMA(1/n,-x^n*(b*ln(f)+d*ln(g)))/((-x^n*(b*ln(f)+d*ln(g)))^(1/n))/n
+  Maple integral   = int(f^(a+b*x^n)*g^(c+d*x^n),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(4*x)/(a+b*exp(2*x))^3
+  Optimal integral = 1/4*exp(4*x)/a/(a+b*exp(2*x))^2
+  Maple integral   = 1/4*(-a-2*b*exp(x)^2)/(a+b*exp(x)^2)^2/b^2
+  Leafcounts = 21 36   21 28
+
+Incorrect antiderivative:
+  Integrand        = exp(4*x)/(a+b*exp(2*x))^(2/3)
+  Optimal integral = 3/8*(a+b*exp(2*x))^(1/3)*(-3*a+b*exp(2*x))/b^2
+  Maple integral   = -3/2*(3*a-b*exp(2*x))*(a+b*exp(2*x))/(3+b^2)/((a+b*exp(2*x))^2)^(1/3)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(-n*x)/(a+b*exp(n*x))
+  Optimal integral = -1/exp(n*x)/a/n+b*ln(b+a/exp(n*x))/a^2/n
+  Maple integral   = 1/n/a^2*b*ln(a+b*exp(n*x))-1/n/a^2*b*ln(exp(n*x))-1/exp(n*x)/a/n
+  Leafcounts = 34 46   34 46
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x)/(c+d*f^(e+2*b*x))
+  Optimal integral = f^(a-1/2*e)*arctan(d^(1/2)*f^(1/2*e+b*x)/c^(1/2))/b/c^(1/2)/d^(1/2)/ln(f)
+  Maple integral   = -1/2/(-c*d*f^e)^(1/2)*f^a/b/ln(f)*ln(f^(a+b*x)-1/(-c*d*f^e)^(1/2)*f^a*c)+1/2/(-c*d*f^e)^(1/2)*f^a/b/ln(f)*ln(f^(a+b*x)+1/(-c*d*f^e)^(1/2)*f^a*c)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+2*b*x)/(c+d*f^(e+2*b*x))
+  Optimal integral = 1/2*f^(a-e)*ln(c+d*f^(e+2*b*x))/b/d/ln(f)
+  Maple integral   = -1/2*f^a/b/d/(f^e)*a+1/2*f^a/ln(f)/b/d/(f^e)*ln(f^(a+2*b*x)+c*f^a/d/(f^e))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+3*b*x)/(c+d*f^(e+2*b*x))
+  Optimal integral = (f^(a-e+b*x)*d^(3/2)-c^(1/2)*f^a*(f^(-e))^(3/2)*arctan(d^(1/2)*f^(b*x)/c^(1/2)/(f^(-e))^(1/2))*d)/b/d^(5/2)/ln(f)
+  Maple integral   = 1/d/(f^(1/2*e))^2/(f^(-1/3*a))^2/ln(f)/b*f^(1/3*a+b*x)+1/2/d^2*(-c*d)^(1/2)/b/ln(f)/(f^(-1/3*a))^3/(f^(1/2*e))^3*ln(f^(1/3*a+b*x)-1/d*(-c*d)^(1/2)/(f^(-1/3*a))/(f^(1/2*e)))-1/2/d^2*(-c*d)^(1/2)/b/ln(f)/(f^(-1/3*a))^3/(f^(1/2*e))^3*ln(f^(1/3*a+b*x)+1/d*(-c*d)^(1/2)/(f^(-1/3*a))/(f^(1/2*e)))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+4*b*x)/(c+d*f^(e+2*b*x))
+  Optimal integral = 1/2*(f^(a-e+2*b*x)*d-c*f^(a-2*e)*ln(c+d*f^(e+2*b*x)))/b/d^2/ln(f)
+  Maple integral   = 1/2/b/ln(f)/d/(f^e)^2*(f^(1/2*a))^2*exp((e+2*b*x)*ln(f))-1/2/b/d^2/ln(f)/(f^e)^2*(f^(1/2*a))^2*c*ln(c+d*exp((e+2*b*x)*ln(f)))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+5*b*x)/(c+d*f^(e+2*b*x))
+  Optimal integral = 1/3*(-3*c*f^(a-2*e+b*x)*d^(5/2)+f^(a-e+3*b*x)*d^(7/2)+3*c^(3/2)*f^(a-2*e)*(f^(-e))^(1/2)*arctan(d^(1/2)*f^(b*x)/c^(1/2)/(f^(-e))^(1/2))*d^2)/b/d^(9/2)/ln(f)
+  Maple integral   = 1/3/d/(f^(1/2*e))^2/(f^(-1/5*a))^2/ln(f)/b*(f^(1/5*a+b*x))^3-c/d^2/(f^(1/2*e))^4/(f^(-1/5*a))^4/ln(f)/b*f^(1/5*a+b*x)+1/2/d^3*(-c*d)^(1/2)*c/b/ln(f)/(f^(1/2*e))^5/(f^(-1/5*a))^5*ln(f^(1/5*a+b*x)+1/d*(-c*d)^(1/2)/(f^(1/2*e))/(f^(-1/5*a)))-1/2/d^3*(-c*d)^(1/2)*c/b/ln(f)/(f^(1/2*e))^5/(f^(-1/5*a))^5*ln(f^(1/5*a+b*x)-1/d*(-c*d)^(1/2)/(f^(1/2*e))/(f^(-1/5*a)))
+
+Incorrect antiderivative:
+  Integrand        = f^(d*x)/(a+b*f^(c+d*x))
+  Optimal integral = ln(a+b*f^(c+d*x))/(f^c)/b/d/ln(f)
+  Maple integral   = 1/ln(f)/d/b/(f^c)*ln(f^(d*x)+1/b/(f^c)*a)
+
+Incorrect antiderivative:
+  Integrand        = f^(d*x)*(a+b*f^(c+d*x))^n
+  Optimal integral = (a+b*f^(c+d*x))^(1+n)/(f^c)/b/d/(1+n)/ln(f)
+  Maple integral   = 1/ln(f)/d/(1+n)*exp(d*x*ln(f))*exp(n*ln(a+b*exp(c*ln(f))*exp(d*x*ln(f))))+1/b/(f^c)/d/ln(f)/(1+n)*a*exp(n*ln(a+b*exp(c*ln(f))*exp(d*x*ln(f))))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*exp(x)/(1-exp(2*x))
+  Optimal integral = x*arctanh(exp(x))+1/2*polylog(2,-exp(x))-1/2*polylog(2,exp(x))
+  Maple integral   = 1/2*x*ln(1+exp(x))+1/2*polylog(2,-exp(x))-1/2*x*ln(1-exp(x))-1/2*polylog(2,exp(x))
+  Leafcounts = 24 41   24 41
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^2*exp(x)/(1-exp(2*x))
+  Optimal integral = x^2*arctanh(exp(x))+x*polylog(2,-exp(x))-x*polylog(2,exp(x))-polylog(3,-exp(x))+polylog(3,exp(x))
+  Maple integral   = 1/2*x^2*ln(1+exp(x))+x*polylog(2,-exp(x))-polylog(3,-exp(x))-1/2*x^2*ln(1-exp(x))-x*polylog(2,exp(x))+polylog(3,exp(x))
+  Leafcounts = 35 54   35 54
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x^3*exp(x)/(1-exp(2*x))
+  Optimal integral = x^3*arctanh(exp(x))+3/2*x^2*polylog(2,-exp(x))-3/2*x^2*polylog(2,exp(x))-3*x*polylog(3,-exp(x))+3*x*polylog(3,exp(x))+3*polylog(4,-exp(x))-3*polylog(4,exp(x))
+  Maple integral   = 1/2*x^3*ln(1+exp(x))+3/2*x^2*polylog(2,-exp(x))-3*x*polylog(3,-exp(x))+3*polylog(4,-exp(x))-1/2*x^3*ln(1-exp(x))-3/2*x^2*polylog(2,exp(x))+3*x*polylog(3,exp(x))-3*polylog(4,exp(x))
+  Leafcounts = 62 81   62 81
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = f^x/(a+b*f^(2*x))
+  Optimal integral = arctan(b^(1/2)*f^x/a^(1/2))/a^(1/2)/b^(1/2)/ln(f)
+  Maple integral   = 1/2*(-ln(f^x-1/(-a*b)^(1/2)*a)+ln(f^x+1/(-a*b)^(1/2)*a))/(-a*b)^(1/2)/ln(f)
+  Leafcounts = 30 64   30 50
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*f^x/(a+b*f^(2*x))
+  Optimal integral = 1/2*(2*x*arctan(b^(1/2)*f^x/a^(1/2))*ln(f)-I*polylog(2,-I*b^(1/2)*f^x/a^(1/2))+I*polylog(2,I*b^(1/2)*f^x/a^(1/2)))/a^(1/2)/b^(1/2)/ln(f)^2
+  Maple integral   = 1/2*(x*ln(((-a*b)^(1/2)-b*f^x)/(-a*b)^(1/2))*ln(f)-x*ln((b*f^x+(-a*b)^(1/2))/(-a*b)^(1/2))*ln(f)+dilog(((-a*b)^(1/2)-b*f^x)/(-a*b)^(1/2))-dilog((b*f^x+(-a*b)^(1/2))/(-a*b)^(1/2)))/ln(f)^2/(-a*b)^(1/2)
+  Leafcounts = 77 165   77 126
+
+Unable to integrate:
+  Integrand        = x^2*f^x/(a+b*f^(2*x))
+  Optimal integral = (x^2*arctan(b^(1/2)*f^x/a^(1/2))*ln(f)^2-I*x*polylog(2,-I*b^(1/2)*f^x/a^(1/2))*ln(f)+I*x*polylog(2,I*b^(1/2)*f^x/a^(1/2))*ln(f)+I*polylog(3,-I*b^(1/2)*f^x/a^(1/2))-I*polylog(3,I*b^(1/2)*f^x/a^(1/2)))/a^(1/2)/b^(1/2)/ln(f)^3
+  Maple integral   = int(x^2*f^x/(a+b*f^(2*x)),x)
+
+Unable to integrate:
+  Integrand        = x^3*f^x/(a+b*f^(2*x))
+  Optimal integral = -3/2/a^(1/2)/b^(1/2)*(-2/3*x^3*arctan(b^(1/2)*f^x/a^(1/2))*ln(f)^3+I*x^2*polylog(2,-I*b^(1/2)*f^x/a^(1/2))*ln(f)^2-I*x^2*polylog(2,I*b^(1/2)*f^x/a^(1/2))*ln(f)^2-2*I*x*polylog(3,-I*b^(1/2)*f^x/a^(1/2))*ln(f)+2*I*x*polylog(3,I*b^(1/2)*f^x/a^(1/2))*ln(f)+2*I*polylog(4,-I*b^(1/2)*f^x/a^(1/2))-2*I*polylog(4,I*b^(1/2)*f^x/a^(1/2)))/ln(f)^4
+  Maple integral   = int(x^3*f^x/(a+b*f^(2*x)),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = f^x/(a+b*f^(2*x))^2
+  Optimal integral = 1/2*f^x/a/(a+b*f^(2*x))/ln(f)+1/2*arctan(b^(1/2)*f^x/a^(1/2))/a^(3/2)/b^(1/2)/ln(f)
+  Maple integral   = 1/2/ln(f)/a*f^x/(a+b*(f^x)^2)-1/4/(-a*b)^(1/2)/a/ln(f)*ln(f^x-1/(-a*b)^(1/2)*a)+1/4/(-a*b)^(1/2)/a/ln(f)*ln(f^x+1/(-a*b)^(1/2)*a)
+  Leafcounts = 59 95   59 98
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*f^x/(a+b*f^(2*x))^2
+  Optimal integral = -1/4*((I*a+I*b*f^(2*x))*polylog(2,-I*b^(1/2)*f^x/a^(1/2))+(-I*a-I*b*f^(2*x))*polylog(2,I*b^(1/2)*f^x/a^(1/2))-2*(-1+x*ln(f))*(a+b*f^(2*x))*arctan(b^(1/2)*f^x/a^(1/2))-2*ln(f)*x*a^(1/2)*f^x*b^(1/2))/a^(3/2)/b^(1/2)/ln(f)^2/(a+b*f^(2*x))
+  Maple integral   = 1/2/ln(f)/a*x*f^x/(a+b*(f^x)^2)+1/4/ln(f)/a*x/(-a*b)^(1/2)*ln(((-a*b)^(1/2)-b*f^x)/(-a*b)^(1/2))-1/4/ln(f)/a*x/(-a*b)^(1/2)*ln((b*f^x+(-a*b)^(1/2))/(-a*b)^(1/2))+1/4/ln(f)^2/a/(-a*b)^(1/2)*dilog(((-a*b)^(1/2)-b*f^x)/(-a*b)^(1/2))-1/4/ln(f)^2/a/(-a*b)^(1/2)*dilog((b*f^x+(-a*b)^(1/2))/(-a*b)^(1/2))-1/2/ln(f)^2/a/(a*b)^(1/2)*arctan(b*f^x/(a*b)^(1/2))
+  Leafcounts = 140 234   140 234
+
+Unable to integrate:
+  Integrand        = x^2*f^x/(a+b*f^(2*x))^2
+  Optimal integral = -1/2/a^(3/2)*(I*(a+b*f^(2*x))*(-1+x*ln(f))*polylog(2,-I*b^(1/2)*f^x/a^(1/2))+(-I*a-I*b*f^(2*x))*polylog(3,-I*b^(1/2)*f^x/a^(1/2))-I*(a+b*f^(2*x))*(-1+x*ln(f))*polylog(2,I*b^(1/2)*f^x/a^(1/2))+(I*a+I*b*f^(2*x))*polylog(3,I*b^(1/2)*f^x/a^(1/2))-x*((-2+x*ln(f))*(a+b*f^(2*x))*arctan(b^(1/2)*f^x/a^(1/2))+ln(f)*x*a^(1/2)*f^x*b^(1/2))*ln(f))/b^(1/2)/ln(f)^3/(a+b*f^(2*x))
+  Maple integral   = 1/2/ln(f)/a*x^2*exp(x*ln(f))/(a+b*exp(x*ln(f))^2)+int(1/2*x*exp(x*ln(f))*(-2+x*ln(f))/ln(f)/a/(a+b*exp(x*ln(f))^2),x)
+
+Unable to integrate:
+  Integrand        = x^3*f^x/(a+b*f^(2*x))^2
+  Optimal integral = -3/4*(I*x*(a+b*f^(2*x))*ln(f)*(-2+x*ln(f))*polylog(2,-I*b^(1/2)*f^x/a^(1/2))-2*I*(a+b*f^(2*x))*(-1+x*ln(f))*polylog(3,-I*b^(1/2)*f^x/a^(1/2))+(2*I*a+2*I*b*f^(2*x))*polylog(4,-I*b^(1/2)*f^x/a^(1/2))-I*x*(a+b*f^(2*x))*ln(f)*(-2+x*ln(f))*polylog(2,I*b^(1/2)*f^x/a^(1/2))+2*I*(a+b*f^(2*x))*(-1+x*ln(f))*polylog(3,I*b^(1/2)*f^x/a^(1/2))+(-2*I*a-2*I*b*f^(2*x))*polylog(4,I*b^(1/2)*f^x/a^(1/2))-2/3*x^2*ln(f)^2*((x*ln(f)-3)*(a+b*f^(2*x))*arctan(b^(1/2)*f^x/a^(1/2))+ln(f)*x*a^(1/2)*f^x*b^(1/2)))/a^(3/2)/b^(1/2)/ln(f)^4/(a+b*f^(2*x))
+  Maple integral   = 1/2/ln(f)/a*x^3*exp(x*ln(f))/(a+b*exp(x*ln(f))^2)+int(1/2*x^2*exp(x*ln(f))*(x*ln(f)-3)/ln(f)/a/(a+b*exp(x*ln(f))^2),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x*f^x/(a+b*f^(2*x))^3
+  Optimal integral = -3/16/b^(1/2)*(I*a^2*(a+b*f^(2*x))^2*polylog(2,-I*b^(1/2)*f^x/a^(1/2))-I*a^2*(a+b*f^(2*x))^2*polylog(2,I*b^(1/2)*f^x/a^(1/2))-2*a^2*(a+b*f^(2*x))^2*(-4/3+x*ln(f))*arctan(b^(1/2)*f^x/a^(1/2))-2*f^x*a^(5/2)*(b^(3/2)*(-1/3+x*ln(f))*f^(2*x)+5/3*b^(1/2)*a*(-1/5+x*ln(f))))/a^(9/2)/(a+b*f^(2*x))^2/ln(f)^2
+  Maple integral   = 1/8*f^x*(5*ln(f)*x*a+3*ln(f)*x*b*(f^x)^2-a-b*(f^x)^2)/ln(f)^2/a^2/(a+b*(f^x)^2)^2-1/2/a^2/ln(f)^2/(a*b)^(1/2)*arctan(b*f^x/(a*b)^(1/2))+3/16/a^2/ln(f)*x/(-a*b)^(1/2)*ln(((-a*b)^(1/2)-b*f^x)/(-a*b)^(1/2))-3/16/a^2/ln(f)*x/(-a*b)^(1/2)*ln((b*f^x+(-a*b)^(1/2))/(-a*b)^(1/2))+3/16/a^2/ln(f)^2/(-a*b)^(1/2)*dilog(((-a*b)^(1/2)-b*f^x)/(-a*b)^(1/2))-3/16/a^2/ln(f)^2/(-a*b)^(1/2)*dilog((b*f^x+(-a*b)^(1/2))/(-a*b)^(1/2))
+  Leafcounts = 183 262   183 262
+
+Unable to integrate:
+  Integrand        = x^2*f^x/(a+b*f^(2*x))^3
+  Optimal integral = -3/8/b^(1/2)*(I*a^2*(a+b*f^(2*x))^2*(-4/3+x*ln(f))*polylog(2,-I*b^(1/2)*f^x/a^(1/2))-I*a^2*(a+b*f^(2*x))^2*polylog(3,-I*b^(1/2)*f^x/a^(1/2))-I*a^2*(a+b*f^(2*x))^2*(-4/3+x*ln(f))*polylog(2,I*b^(1/2)*f^x/a^(1/2))+I*a^2*(a+b*f^(2*x))^2*polylog(3,I*b^(1/2)*f^x/a^(1/2))-a^2*(a+b*f^(2*x))^2*(x^2*ln(f)^2-8/3*x*ln(f)+2/3)*arctan(b^(1/2)*f^x/a^(1/2))-f^x*x*ln(f)*a^(5/2)*((x*ln(f)-2/3)*b^(3/2)*f^(2*x)+5/3*b^(1/2)*a*(-2/5+x*ln(f))))/a^(9/2)/ln(f)^3/(a+b*f^(2*x))^2
+  Maple integral   = 1/8*x*exp(x*ln(f))*(5*ln(f)*x*a+3*ln(f)*x*b*exp(x*ln(f))^2-2*a-2*b*exp(x*ln(f))^2)/ln(f)^2/a^2/(a+b*exp(x*ln(f))^2)^2+int(1/8*exp(x*ln(f))*(3*x^2*ln(f)^2-8*x*ln(f)+2)/ln(f)^2/a^2/(a+b*exp(x*ln(f))^2),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a*f^x+b*f^(-x))
+  Optimal integral = arctan(a^(1/2)*f^x/b^(1/2))/a^(1/2)/b^(1/2)/ln(f)
+  Maple integral   = 1/2*(-ln(f^x-1/(-a*b)^(1/2)*b)+ln(f^x+1/(-a*b)^(1/2)*b))/(-a*b)^(1/2)/ln(f)
+  Leafcounts = 30 64   30 50
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(a*f^x+b*f^(-x))
+  Optimal integral = 1/2*(2*x*arctan(a^(1/2)*f^x/b^(1/2))*ln(f)-I*polylog(2,-I*a^(1/2)*f^x/b^(1/2))+I*polylog(2,I*a^(1/2)*f^x/b^(1/2)))/a^(1/2)/b^(1/2)/ln(f)^2
+  Maple integral   = 1/2*(x*ln(((-a*b)^(1/2)-a*f^x)/(-a*b)^(1/2))*ln(f)-x*ln(((-a*b)^(1/2)+a*f^x)/(-a*b)^(1/2))*ln(f)+dilog(((-a*b)^(1/2)-a*f^x)/(-a*b)^(1/2))-dilog(((-a*b)^(1/2)+a*f^x)/(-a*b)^(1/2)))/ln(f)^2/(-a*b)^(1/2)
+  Leafcounts = 77 165   77 126
+
+Unable to integrate:
+  Integrand        = x^2/(a*f^x+b*f^(-x))
+  Optimal integral = (x^2*arctan(a^(1/2)*f^x/b^(1/2))*ln(f)^2-I*x*polylog(2,-I*a^(1/2)*f^x/b^(1/2))*ln(f)+I*x*polylog(2,I*a^(1/2)*f^x/b^(1/2))*ln(f)+I*polylog(3,-I*a^(1/2)*f^x/b^(1/2))-I*polylog(3,I*a^(1/2)*f^x/b^(1/2)))/a^(1/2)/b^(1/2)/ln(f)^3
+  Maple integral   = int(x^2/(a*f^x+b*f^(-x)),x)
+
+Unable to integrate:
+  Integrand        = x^3/(a*f^x+b*f^(-x))
+  Optimal integral = -3/2*(-2/3*x^3*arctan(a^(1/2)*f^x/b^(1/2))*ln(f)^3+I*x^2*polylog(2,-I*a^(1/2)*f^x/b^(1/2))*ln(f)^2-I*x^2*polylog(2,I*a^(1/2)*f^x/b^(1/2))*ln(f)^2-2*I*x*polylog(3,-I*a^(1/2)*f^x/b^(1/2))*ln(f)+2*I*x*polylog(3,I*a^(1/2)*f^x/b^(1/2))*ln(f)+2*I*polylog(4,-I*a^(1/2)*f^x/b^(1/2))-2*I*polylog(4,I*a^(1/2)*f^x/b^(1/2)))/a^(1/2)/b^(1/2)/ln(f)^4
+  Maple integral   = int(x^3/(a*f^x+b*f^(-x)),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a*f^x+b*f^(-x))^3
+  Optimal integral = 1/8*(b*a*(b+a*f^(2*x))^2*arctan(a^(1/2)*f^x/b^(1/2))+f^x*b^(3/2)*(-b+a*f^(2*x))*a^(3/2))/a^(5/2)/(b+a*f^(2*x))^2/ln(f)/b^(5/2)
+  Maple integral   = 1/8*f^x*((f^x)^2*a-b)/ln(f)/b/a/((f^x)^2*a+b)^2-1/16/(-a*b)^(1/2)/b/a/ln(f)*ln(f^x-1/(-a*b)^(1/2)*b)+1/16/(-a*b)^(1/2)/b/a/ln(f)*ln(f^x+1/(-a*b)^(1/2)*b)
+  Leafcounts = 84 115   84 118
+
+Incorrect antiderivative:
+  Integrand        = x/(a*f^x+b*f^(-x))^3
+  Optimal integral = 1/16*(-I*a*b*(b+a*f^(2*x))^2*polylog(2,-I*a^(1/2)*f^x/b^(1/2))+I*a*b*(b+a*f^(2*x))^2*polylog(2,I*a^(1/2)*f^x/b^(1/2))+2*b*a*x*ln(f)*(b+a*f^(2*x))^2*arctan(a^(1/2)*f^x/b^(1/2))+2*f^x*b^(3/2)*(a*(1+x*ln(f))*f^(2*x)+b-x*b*ln(f))*a^(3/2))/a^(5/2)/b^(5/2)/(b+a*f^(2*x))^2/ln(f)^2
+  Maple integral   = 1/8*f^x*(ln(f)*x*a*(f^x)^2-x*b*ln(f)+(f^x)^2*a+b)/ln(f)^2/b/a/((f^x)^2*a+b)^2+1/16/a/ln(f)/b*x/(-a*b)^(1/2)*ln(((-a*b)^(1/2)-a*f^x)/(-a*b)^(1/2))-1/16/a/ln(f)/b*x/(-a*b)^(1/2)*ln(((-a*b)^(1/2)+a*f^x)/(-a*b)^(1/2))+1/16/a/ln(f)^2/b/(-a*b)^(1/2)*dilog(((-a*b)^(1/2)-a*f^x)/(-a*b)^(1/2))-1/16/a/ln(f)^2/b/(-a*b)^(1/2)*dilog(((-a*b)^(1/2)+a*f^x)/(-a*b)^(1/2))
+
+Unable to integrate:
+  Integrand        = x^2/(a*f^x+b*f^(-x))^3
+  Optimal integral = 1/8*(-I*a*x*ln(f)*b*(b+a*f^(2*x))^2*polylog(2,-I*a^(1/2)*f^x/b^(1/2))+I*a*b*(b+a*f^(2*x))^2*polylog(3,-I*a^(1/2)*f^x/b^(1/2))+I*a*x*ln(f)*b*(b+a*f^(2*x))^2*polylog(2,I*a^(1/2)*f^x/b^(1/2))-I*a*b*(b+a*f^(2*x))^2*polylog(3,I*a^(1/2)*f^x/b^(1/2))+b*a*(-2+x^2*ln(f)^2)*(b+a*f^(2*x))^2*arctan(a^(1/2)*f^x/b^(1/2))+f^x*(a*(2+x*ln(f))*f^(2*x)-x*b*ln(f)+2*b)*x*b^(3/2)*ln(f)*a^(3/2))/a^(5/2)/b^(5/2)/ln(f)^3/(b+a*f^(2*x))^2
+  Maple integral   = 1/8*x*exp(x*ln(f))*(ln(f)*x*a*exp(x*ln(f))^2-x*b*ln(f)+2*a*exp(x*ln(f))^2+2*b)/ln(f)^2/b/a/(a*exp(x*ln(f))^2+b)^2+int(1/8*exp(x*ln(f))*(-2+x^2*ln(f)^2)/ln(f)^2/b/a/(a*exp(x*ln(f))^2+b),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(3+3*exp(x)+exp(2*x))
+  Optimal integral = 1/6*x^2+1/6*I*(I+3^(1/2))*x*ln(1+2*exp(x)/(3-I*3^(1/2)))+1/6*I*(I-3^(1/2))*x*ln(1+1/6*(3-I*3^(1/2))*exp(x))+1/6*I*(I+3^(1/2))*polylog(2,-2*exp(x)/(3-I*3^(1/2)))+1/6*I*(I-3^(1/2))*polylog(2,-1/6*(3-I*3^(1/2))*exp(x))
+  Maple integral   = 1/6*(-1+I*3^(1/2))*dilog((-3+I*3^(1/2)-2*exp(x))/(-3+I*3^(1/2)))+1/6*(-1-I*3^(1/2))*dilog((3+I*3^(1/2)+2*exp(x))/(3+I*3^(1/2)))+1/6*((-1+I*3^(1/2))*ln((-3+I*3^(1/2)-2*exp(x))/(-3+I*3^(1/2)))+x-ln((3+I*3^(1/2)+2*exp(x))/(3+I*3^(1/2)))-I*ln((3+I*3^(1/2)+2*exp(x))/(3+I*3^(1/2)))*3^(1/2))*x
+  Leafcounts = 120 264   120 183
+
+Unable to integrate:
+  Integrand        = x^2/(-1+exp(x)+exp(2*x))
+  Optimal integral = -1/10*x^2*(5^(1/2)-5)*ln(1-1/2*exp(x)+1/2*exp(x)*5^(1/2))+1/10*(5+5^(1/2))*x^2*ln(1-1/2*(5^(1/2)+1)*exp(x))-1/5*x*(5^(1/2)-5)*polylog(2,-1/2*(5^(1/2)-1)*exp(x))+1/5*(5+5^(1/2))*x*polylog(2,1/2*(5^(1/2)+1)*exp(x))+1/30*(-30+6*5^(1/2))*polylog(3,-1/2*(5^(1/2)-1)*exp(x))+1/30*(-30-6*5^(1/2))*polylog(3,1/2*(5^(1/2)+1)*exp(x))-1/3*x^3
+  Maple integral   = int(x^2/(-1+exp(x)+exp(2*x)),x)
+
+Unable to integrate:
+  Integrand        = x^2/(3+3*exp(x)+exp(2*x))
+  Optimal integral = 1/9*x^3+1/6*I*(I+3^(1/2))*x^2*ln(1+2*exp(x)/(3-I*3^(1/2)))+1/6*I*(I-3^(1/2))*x^2*ln(1+1/6*(3-I*3^(1/2))*exp(x))+1/3*I*(I+3^(1/2))*x*polylog(2,-2*exp(x)/(3-I*3^(1/2)))+1/3*I*(I-3^(1/2))*x*polylog(2,-1/6*(3-I*3^(1/2))*exp(x))-1/3*I*(I+3^(1/2))*polylog(3,-2*exp(x)/(3-I*3^(1/2)))-1/3*I*(I-3^(1/2))*polylog(3,-1/6*(3-I*3^(1/2))*exp(x))
+  Maple integral   = int(x^2/(3+3*exp(x)+exp(2*x)),x)
+
+Unable to integrate:
+  Integrand        = x^2/(a+b*exp(x)+c*exp(2*x))
+  Optimal integral = -4*c*(1/2*x^2*(b+(b^2-4*a*c)^(1/2))*ln(1+2*c*exp(x)/(b-(b^2-4*a*c)^(1/2)))-1/2*x^2*(b-(b^2-4*a*c)^(1/2))*ln(1+2*c*exp(x)/(b+(b^2-4*a*c)^(1/2)))+x*(b+(b^2-4*a*c)^(1/2))*polylog(2,-2*c*exp(x)/(b-(b^2-4*a*c)^(1/2)))+(-b-(b^2-4*a*c)^(1/2))*polylog(3,-2*c*exp(x)/(b-(b^2-4*a*c)^(1/2)))-x*(b-(b^2-4*a*c)^(1/2))*polylog(2,-2*c*exp(x)/(b+(b^2-4*a*c)^(1/2)))+(b-(b^2-4*a*c)^(1/2))*polylog(3,-2*c*exp(x)/(b+(b^2-4*a*c)^(1/2)))-1/3*x^3*(b^2-4*a*c)^(1/2))/(b^2-4*a*c)^(1/2)/(b-(b^2-4*a*c)^(1/2))/(b+(b^2-4*a*c)^(1/2))
+  Maple integral   = int(x^2/(a+b*exp(x)+c*exp(2*x)),x)
+
+Incorrect antiderivative:
+  Integrand        = 1/(1+2*f^(c+d*x)+f^(2*c+2*d*x))
+  Optimal integral = x+1/d/(1+f^(c+d*x))/ln(f)-ln(1+f^(c+d*x))/d/ln(f)
+  Maple integral   = (x+x*exp((c+d*x)*ln(f))-1/d/ln(f)*exp((c+d*x)*ln(f)))/(1+exp((c+d*x)*ln(f)))-1/d/ln(f)*ln(1+exp((c+d*x)*ln(f)))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*f^(c+d*x)+c*f^(2*c+2*d*x))
+  Optimal integral = x/a+b*arctanh((b+2*c*f^(c+d*x))/(b^2-4*a*c)^(1/2))/a/(b^2-4*a*c)^(1/2)/d/ln(f)-1/2*ln(a+b*f^(c+d*x)+c*f^(2*c+2*d*x))/a/d/ln(f)
+  Maple integral   = -1/(-b^2*d^2*ln(f)^2*a+4*c*d^2*ln(f)^2*a^2)*ln(f)^2*b^2*d*c-1/(-b^2*d^2*ln(f)^2*a+4*c*d^2*ln(f)^2*a^2)*ln(f)^2*b^2*d^2*x+4/(-b^2*d^2*ln(f)^2*a+4*c*d^2*ln(f)^2*a^2)*ln(f)^2*c^2*d*a+4/(-b^2*d^2*ln(f)^2*a+4*c*d^2*ln(f)^2*a^2)*ln(f)^2*c*d^2*a*x+1/2/a/(-b^2+4*a*c)/d/ln(f)*ln(f^(c+d*x)-1/2*(-b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*b^2-2/(-b^2+4*a*c)/d/ln(f)*ln(f^(c+d*x)-1/2*(-b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*c+1/2/a/(-b^2+4*a*c)/d/ln(f)*ln(f^(c+d*x)-1/2*(-b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*(-4*a*b^2*c+b^4)^(1/2)+1/2/a/(-b^2+4*a*c)/d/ln(f)*ln(f^(c+d*x)+1/2*(b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*b^2-2/(-b^2+4*a*c)/d/ln(f)*ln(f^(c+d*x)+1/2*(b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*c-1/2/a/(-b^2+4*a*c)/d/ln(f)*ln(f^(c+d*x)+1/2*(b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*(-4*a*b^2*c+b^4)^(1/2)
+  Leafcounts = 94 582   0 0
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(a+b*f^(g+h*x)+c*f^(2*g+2*h*x))
+  Optimal integral = x/a+b*arctanh((b+2*c*f^(g+h*x))/(b^2-4*a*c)^(1/2))/a/(b^2-4*a*c)^(1/2)/h/ln(f)-1/2*ln(a+b*f^(g+h*x)+c*f^(2*g+2*h*x))/a/h/ln(f)
+  Maple integral   = -1/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*b^2*h*g-1/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*b^2*h^2*x+4/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*c*h*a*g+4/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*c*h^2*a*x+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*b^2-2/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*c+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*(-4*a*b^2*c+b^4)^(1/2)+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*b^2-2/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*c-1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(b^2+(-4*a*b^2*c+b^4)^(1/2))/b/c)*(-4*a*b^2*c+b^4)^(1/2)
+  Leafcounts = 94 581   0 0
+
+Incorrect antiderivative:
+  Integrand        = x/(1+2*f^(c+d*x)+f^(2*c+2*d*x))
+  Optimal integral = 1/2*x^2-x/d/ln(f)+x*(1/(1+f^(c+d*x))-ln(1+f^(c+d*x)))/d/ln(f)+ln(1+f^(c+d*x))/d^2/ln(f)^2-polylog(2,-f^(c+d*x))/d^2/ln(f)^2
+  Maple integral   = x/d/ln(f)/(1+f^(c+d*x))+1/2/d^2*c^2+1/d*c*x+1/2*x^2-1/d/ln(f)*x*ln(1+f^(c+d*x))-polylog(2,-f^(c+d*x))/d^2/ln(f)^2-1/d^2/ln(f)*c*ln(f^(c+d*x))-1/d^2/ln(f)^2*ln(f^(c+d*x))+ln(1+f^(c+d*x))/d^2/ln(f)^2
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(a+b*f^(c+d*x)+c*f^(2*c+2*d*x))
+  Optimal integral = 2/(b^2-4*a*c)^(1/2)*c*(x*d*ln(f)*(b+(b^2-4*a*c)^(1/2))*ln(1+2*c*f^(c+d*x)/(b-(b^2-4*a*c)^(1/2)))+x*d*ln(f)*(-b+(b^2-4*a*c)^(1/2))*ln(1+2*c*f^(c+d*x)/(b+(b^2-4*a*c)^(1/2)))+(b+(b^2-4*a*c)^(1/2))*polylog(2,-2*c*f^(c+d*x)/(b-(b^2-4*a*c)^(1/2)))+(-b+(b^2-4*a*c)^(1/2))*polylog(2,-2*c*f^(c+d*x)/(b+(b^2-4*a*c)^(1/2)))-x^2*d^2*ln(f)^2*(b^2-4*a*c)^(1/2))/(-b+(b^2-4*a*c)^(1/2))/(b+(b^2-4*a*c)^(1/2))/d^2/ln(f)^2
+  Maple integral   = 1/2/d^2/a*c^2+1/d/a*c*x+1/2*x^2/a-1/2/d^2/ln(f)/a/(b^2-4*a*c)^(1/2)*ln((-b+(b^2-4*a*c)^(1/2)-2*c*f^(c+d*x))/(-b+(b^2-4*a*c)^(1/2)))*b*c-1/2/d/ln(f)/a/(b^2-4*a*c)^(1/2)*ln((-b+(b^2-4*a*c)^(1/2)-2*c*f^(c+d*x))/(-b+(b^2-4*a*c)^(1/2)))*b*x-1/2/d^2/ln(f)/a*ln((-b+(b^2-4*a*c)^(1/2)-2*c*f^(c+d*x))/(-b+(b^2-4*a*c)^(1/2)))*c-1/2/d/ln(f)/a*ln((-b+(b^2-4*a*c)^(1/2)-2*c*f^(c+d*x))/(-b+(b^2-4*a*c)^(1/2)))*x+1/2/d^2/ln(f)/a/(b^2-4*a*c)^(1/2)*ln((b+(b^2-4*a*c)^(1/2)+2*c*f^(c+d*x))/(b+(b^2-4*a*c)^(1/2)))*b*c+1/2/d/ln(f)/a/(b^2-4*a*c)^(1/2)*ln((b+(b^2-4*a*c)^(1/2)+2*c*f^(c+d*x))/(b+(b^2-4*a*c)^(1/2)))*b*x-1/2/d^2/ln(f)/a*ln((b+(b^2-4*a*c)^(1/2)+2*c*f^(c+d*x))/(b+(b^2-4*a*c)^(1/2)))*c-1/2/d/ln(f)/a*ln((b+(b^2-4*a*c)^(1/2)+2*c*f^(c+d*x))/(b+(b^2-4*a*c)^(1/2)))*x-1/2/d^2/ln(f)^2/a/(b^2-4*a*c)^(1/2)*dilog((-b+(b^2-4*a*c)^(1/2)-2*c*f^(c+d*x))/(-b+(b^2-4*a*c)^(1/2)))*b-1/2/d^2/ln(f)^2/a*dilog((-b+(b^2-4*a*c)^(1/2)-2*c*f^(c+d*x))/(-b+(b^2-4*a*c)^(1/2)))+1/2/d^2/ln(f)^2/a/(b^2-4*a*c)^(1/2)*dilog((b+(b^2-4*a*c)^(1/2)+2*c*f^(c+d*x))/(b+(b^2-4*a*c)^(1/2)))*b-1/2/d^2/ln(f)^2/a*dilog((b+(b^2-4*a*c)^(1/2)+2*c*f^(c+d*x))/(b+(b^2-4*a*c)^(1/2)))-1/d^2/ln(f)*c/a*ln(f^(c+d*x))+1/2/d^2/ln(f)*c/a*ln(a+b*f^(c+d*x)+c*(f^(c+d*x))^2)+1/d^2/ln(f)*c/a*b/(-b^2+4*a*c)^(1/2)*arctan((b+2*c*f^(c+d*x))/(-b^2+4*a*c)^(1/2))
+  Leafcounts = 271 929   0 0
+
+Incorrect antiderivative:
+  Integrand        = x^2/(1+2*f^(c+d*x)+f^(2*c+2*d*x))
+  Optimal integral = 1/3*x^3-x^2/d/ln(f)+x^2*(1/(1+f^(c+d*x))-ln(1+f^(c+d*x)))/d/ln(f)+2*x*ln(1+f^(c+d*x))/d^2/ln(f)^2-2*(d*x*ln(f)-1)*polylog(2,-f^(c+d*x))/d^3/ln(f)^3+2*polylog(3,-f^(c+d*x))/d^3/ln(f)^3
+  Maple integral   = x^2/d/ln(f)/(1+f^(c+d*x))-1/d^3/ln(f)*c^2-2/d^2/ln(f)*c*x-x^2/d/ln(f)+2*x*ln(1+f^(c+d*x))/d^2/ln(f)^2+2*polylog(2,-f^(c+d*x))/d^3/ln(f)^3-2/3/d^3*c^3-1/d^2*c^2*x+1/3*x^3-1/d/ln(f)*x^2*ln(1+f^(c+d*x))-2/d^2/ln(f)^2*polylog(2,-f^(c+d*x))*x+2*polylog(3,-f^(c+d*x))/d^3/ln(f)^3+2/d^3/ln(f)^2*c*ln(f^(c+d*x))+1/d^3/ln(f)*c^2*ln(f^(c+d*x))
+
+Unable to integrate:
+  Integrand        = x^2/(a+b*f^(c+d*x)+c*f^(2*c+2*d*x))
+  Optimal integral = 2/(b^2-4*a*c)^(1/2)*c*(x^2*d^2*ln(f)^2*(b+(b^2-4*a*c)^(1/2))*ln(1+2*c*f^(c+d*x)/(b-(b^2-4*a*c)^(1/2)))+x^2*d^2*ln(f)^2*(-b+(b^2-4*a*c)^(1/2))*ln(1+2*c*f^(c+d*x)/(b+(b^2-4*a*c)^(1/2)))+2*x*d*ln(f)*(b+(b^2-4*a*c)^(1/2))*polylog(2,-2*c*f^(c+d*x)/(b-(b^2-4*a*c)^(1/2)))+(-2*b-2*(b^2-4*a*c)^(1/2))*polylog(3,-2*c*f^(c+d*x)/(b-(b^2-4*a*c)^(1/2)))+2*x*d*ln(f)*(-b+(b^2-4*a*c)^(1/2))*polylog(2,-2*c*f^(c+d*x)/(b+(b^2-4*a*c)^(1/2)))+(2*b-2*(b^2-4*a*c)^(1/2))*polylog(3,-2*c*f^(c+d*x)/(b+(b^2-4*a*c)^(1/2)))-2/3*x^3*d^3*ln(f)^3*(b^2-4*a*c)^(1/2))/(-b+(b^2-4*a*c)^(1/2))/(b+(b^2-4*a*c)^(1/2))/d^3/ln(f)^3
+  Maple integral   = int(x^2/(a+b*f^(c+d*x)+c*f^(2*c+2*d*x)),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = (d+e*f^(g+h*x))/(a+b*f^(g+h*x)+c*f^(2*g+2*h*x))
+  Optimal integral = d*x/a+(b*d-2*a*e)*arctanh((b+2*c*f^(g+h*x))/(b^2-4*a*c)^(1/2))/a/(b^2-4*a*c)^(1/2)/h/ln(f)-1/2*d*ln(a+b*f^(g+h*x)+c*f^(2*g+2*h*x))/a/h/ln(f)
+  Maple integral   = 4/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*c*d*h*a*g+4/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*c*d*h^2*a*x-1/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*b^2*h*d*g-1/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*b^2*h^2*d*x+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(2*a*b*e-b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*b^2*d-2/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(2*a*b*e-b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*c*d+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(2*a*b*e-b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2)+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-2*a*b*e+b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*b^2*d-2/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-2*a*b*e+b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*c*d-1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-2*a*b*e+b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2)
+  Leafcounts = 103 1028   0 0
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = (d+e*f^(g+h*x))/(a+b*f^(g+h*x)+c*f^(2*g+2*h*x))
+  Optimal integral = d*x/a+(b*d-2*a*e)*arctanh((b+2*c*f^(g+h*x))/(b^2-4*a*c)^(1/2))/a/(b^2-4*a*c)^(1/2)/h/ln(f)-1/2*d*ln(a+b*f^(g+h*x)+c*f^(2*g+2*h*x))/a/h/ln(f)
+  Maple integral   = 4/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*c*d*h*a*g+4/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*c*d*h^2*a*x-1/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*b^2*h*d*g-1/(-b^2*h^2*ln(f)^2*a+4*c*h^2*ln(f)^2*a^2)*ln(f)^2*b^2*h^2*d*x+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(2*a*b*e-b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*b^2*d-2/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(2*a*b*e-b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*c*d+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)+1/2*(2*a*b*e-b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2)+1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-2*a*b*e+b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*b^2*d-2/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-2*a*b*e+b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*c*d-1/2/a/(-b^2+4*a*c)/h/ln(f)*ln(f^(g+h*x)-1/2*(-2*a*b*e+b^2*d+(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2))/c/(2*a*e-b*d))*(-4*a*d^2*b^2*c-16*a^3*c*e^2-4*a*b^3*d*e+16*a^2*b*c*d*e+4*a^2*b^2*e^2+d^2*b^4)^(1/2)
+  Leafcounts = 103 1028   0 0
+
+Incorrect antiderivative:
+  Integrand        = x^2/(2+f^(-c-d*x)+f^(c+d*x))
+  Optimal integral = f^(c+d*x)*x^2/d/(1+f^(c+d*x))/ln(f)-2*x*ln(1+f^(c+d*x))/d^2/ln(f)^2-2*polylog(2,-f^(c+d*x))/d^3/ln(f)^3
+  Maple integral   = x^2/d/ln(f)/(1+f^(-c-d*x))-1/d^3/ln(f)*c^2-2/d^2/ln(f)*c*x-x^2/d/ln(f)-2/d^2/ln(f)^2*ln(1+f^(-c-d*x))*x+2/d^3/ln(f)^3*polylog(2,-f^(-c-d*x))-2/d^3/ln(f)^2*c*ln(f^(-c-d*x))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(1-exp(-x)+2*exp(x))
+  Optimal integral = -2/3*arctanh(1/3+4/3*exp(x))
+  Maple integral   = -1/3*ln(1+exp(x))+1/3*ln(2*exp(x)-1)
+  Leafcounts = 15 21   15 21
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = x/(a+b*exp(-x)+c*exp(x))
+  Optimal integral = (x*ln(1+2*c*exp(x)/(a-(a^2-4*b*c)^(1/2)))-x*ln(1+2*c*exp(x)/(a+(a^2-4*b*c)^(1/2)))+polylog(2,-2*c*exp(x)/(a-(a^2-4*b*c)^(1/2)))-polylog(2,-2*c*exp(x)/(a+(a^2-4*b*c)^(1/2))))/(a^2-4*b*c)^(1/2)
+  Maple integral   = (x*ln((-a+(a^2-4*b*c)^(1/2)-2*c*exp(x))/(-a+(a^2-4*b*c)^(1/2)))-x*ln((a+(a^2-4*b*c)^(1/2)+2*c*exp(x))/(a+(a^2-4*b*c)^(1/2)))+dilog((-a+(a^2-4*b*c)^(1/2)-2*c*exp(x))/(-a+(a^2-4*b*c)^(1/2)))-dilog((a+(a^2-4*b*c)^(1/2)+2*c*exp(x))/(a+(a^2-4*b*c)^(1/2))))/(a^2-4*b*c)^(1/2)
+  Leafcounts = 119 201   119 177
+
+Unable to integrate:
+  Integrand        = x^2/(a+b*exp(-x)+c*exp(x))
+  Optimal integral = (x^2*ln(1+2*c*exp(x)/(a-(a^2-4*b*c)^(1/2)))-x^2*ln(1+2*c*exp(x)/(a+(a^2-4*b*c)^(1/2)))+2*x*polylog(2,-2*c*exp(x)/(a-(a^2-4*b*c)^(1/2)))-2*x*polylog(2,-2*c*exp(x)/(a+(a^2-4*b*c)^(1/2)))-2*polylog(3,-2*c*exp(x)/(a-(a^2-4*b*c)^(1/2)))+2*polylog(3,-2*c*exp(x)/(a+(a^2-4*b*c)^(1/2))))/(a^2-4*b*c)^(1/2)
+  Maple integral   = int(x^2/(a+b*exp(-x)+c*exp(x)),x)
+
+Incorrect antiderivative:
+  Integrand        = 1/(a+b*f^(-c-d*x)+c*f^(c+d*x))
+  Optimal integral = -2*arctanh((a+2*c*f^(c+d*x))/(a^2-4*b*c)^(1/2))/(a^2-4*b*c)^(1/2)/d/ln(f)
+  Maple integral   = 1/(a^2-4*b*c)^(1/2)/d/ln(f)*ln(f^(-c-d*x)+1/2*(a^2+a*(a^2-4*b*c)^(1/2)-4*b*c)/b/(a^2-4*b*c)^(1/2))-1/(a^2-4*b*c)^(1/2)/d/ln(f)*ln(f^(-c-d*x)+1/2*(-a^2+a*(a^2-4*b*c)^(1/2)+4*b*c)/b/(a^2-4*b*c)^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = x/(a+b*f^(-c-d*x)+c*f^(c+d*x))
+  Optimal integral = (x*ln(1+2*c*f^(c+d*x)/(a-(a^2-4*b*c)^(1/2)))*d*ln(f)-x*ln(1+2*c*f^(c+d*x)/(a+(a^2-4*b*c)^(1/2)))*d*ln(f)+polylog(2,-2*c*f^(c+d*x)/(a-(a^2-4*b*c)^(1/2)))-polylog(2,-2*c*f^(c+d*x)/(a+(a^2-4*b*c)^(1/2))))/(a^2-4*b*c)^(1/2)/d^2/ln(f)^2
+  Maple integral   = -1/d^2/ln(f)/(a^2-4*b*c)^(1/2)*c*ln((-a+(a^2-4*b*c)^(1/2)-2*b*f^(-c-d*x))/(-a+(a^2-4*b*c)^(1/2)))+1/d^2/ln(f)/(a^2-4*b*c)^(1/2)*c*ln((a+(a^2-4*b*c)^(1/2)+2*b*f^(-c-d*x))/(a+(a^2-4*b*c)^(1/2)))-1/d/ln(f)/(a^2-4*b*c)^(1/2)*x*ln((-a+(a^2-4*b*c)^(1/2)-2*b*f^(-c-d*x))/(-a+(a^2-4*b*c)^(1/2)))+1/d/ln(f)/(a^2-4*b*c)^(1/2)*x*ln((a+(a^2-4*b*c)^(1/2)+2*b*f^(-c-d*x))/(a+(a^2-4*b*c)^(1/2)))+1/d^2/ln(f)^2/(a^2-4*b*c)^(1/2)*dilog((-a+(a^2-4*b*c)^(1/2)-2*b*f^(-c-d*x))/(-a+(a^2-4*b*c)^(1/2)))-1/d^2/ln(f)^2/(a^2-4*b*c)^(1/2)*dilog((a+(a^2-4*b*c)^(1/2)+2*b*f^(-c-d*x))/(a+(a^2-4*b*c)^(1/2)))+2/d^2/ln(f)*c/(4*b*c-a^2)^(1/2)*arctan((2*b*f^(-c-d*x)+a)/(4*b*c-a^2)^(1/2))
+
+Unable to integrate:
+  Integrand        = x^2/(a+b*f^(-c-d*x)+c*f^(c+d*x))
+  Optimal integral = (x^2*ln(1+2*c*f^(c+d*x)/(a-(a^2-4*b*c)^(1/2)))*d^2*ln(f)^2-x^2*ln(1+2*c*f^(c+d*x)/(a+(a^2-4*b*c)^(1/2)))*d^2*ln(f)^2+2*x*polylog(2,-2*c*f^(c+d*x)/(a-(a^2-4*b*c)^(1/2)))*d*ln(f)-2*x*polylog(2,-2*c*f^(c+d*x)/(a+(a^2-4*b*c)^(1/2)))*d*ln(f)-2*polylog(3,-2*c*f^(c+d*x)/(a-(a^2-4*b*c)^(1/2)))+2*polylog(3,-2*c*f^(c+d*x)/(a+(a^2-4*b*c)^(1/2))))/(a^2-4*b*c)^(1/2)/d^3/ln(f)^3
+  Maple integral   = int(x^2/(a+b*f^(-c-d*x)+c*f^(c+d*x)),x)
+
+Unable to integrate:
+  Integrand        = f^(a+b*x+c*x^2)*g^(d+e*x+f*x^2)
+  Optimal integral = 1/2*f^a*g^d*Pi^(1/2)*erfi(1/2*((b+2*c*x)*ln(f)+ln(g)*(e+2*f*x))/(c*ln(f)+f*ln(g))^(1/2))/exp((b*ln(f)+e*ln(g))^2/(4*c*ln(f)+4*f*ln(g)))/(c*ln(f)+f*ln(g))^(1/2)
+  Maple integral   = int(f^(a+b*x+c*x^2)*g^(d+e*x+f*x^2),x)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*sin(a+b*x+c*x^2)
+  Optimal integral = -1/4*(-1)^(3/4)*Pi^(1/2)*(-exp(I*a+1/4*I*(1+I*b)^2/c)*erf(1/2*(-1)^(1/4)*(1+I*b+2*I*c*x)/c^(1/2))+exp(-I*a-1/4*I*(1-I*b)^2/c)*erfi(1/2*(-1)^(1/4)*(-1+I*b+2*I*c*x)/c^(1/2)))/c^(1/2)
+  Maple integral   = -1/4*I*Pi^(1/2)*exp(1/4*I*(4*a*c+1+2*I*b-b^2)/c)/(-I*c)^(1/2)*erf((-I*c)^(1/2)*x-1/2*(1+I*b)/(-I*c)^(1/2))+1/4*I*Pi^(1/2)/(I*c)^(1/2)*erf((I*c)^(1/2)*x-1/2*(1-I*b)/(I*c)^(1/2))*exp(1/4*I*(-4*a*c-1+2*I*b+b^2)/c)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cos(a+b*x+c*x^2)
+  Optimal integral = -1/4*(-1)^(1/4)*Pi^(1/2)*(exp(I*a+1/4*I*(1+I*b)^2/c)*erf(1/2*(-1)^(1/4)*(1+I*b+2*I*c*x)/c^(1/2))+exp(-I*a-1/4*I*(1-I*b)^2/c)*erfi(1/2*(-1)^(1/4)*(-1+I*b+2*I*c*x)/c^(1/2)))/c^(1/2)
+  Maple integral   = 1/4*Pi^(1/2)*exp(1/4*I*(4*a*c+1+2*I*b-b^2)/c)/(-I*c)^(1/2)*erf((-I*c)^(1/2)*x-1/2*(1+I*b)/(-I*c)^(1/2))+1/4*Pi^(1/2)/(I*c)^(1/2)*erf((I*c)^(1/2)*x-1/2*(1-I*b)/(I*c)^(1/2))*exp(1/4*I*(-4*a*c-1+2*I*b+b^2)/c)
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x+c*x^2)*sin(c+d*x+e*x^2)
+  Optimal integral = -1/4*I*exp(-I*c+(I*d-b*ln(f))^2/(4*I*e-4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2/(-I*e+c*ln(f))^(1/2)*((-b-2*c*x)*ln(f)+I*d+2*I*x*e))/(-I*e+c*ln(f))^(1/2)-1/4*I*exp(I*c-(I*d+b*ln(f))^2/(4*I*e+4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2*((b+2*c*x)*ln(f)+I*d+2*I*x*e)/(I*e+c*ln(f))^(1/2))/(I*e+c*ln(f))^(1/2)
+  Maple integral   = 1/4*I*Pi^(1/2)*exp(1/4*(4*I*ln(f)*a*e+4*ln(f)^2*a*c-4*c*e+4*I*c^2*ln(f)+d^2-2*I*d*ln(f)*b-ln(f)^2*b^2)/(I*e+c*ln(f)))/(-c*ln(f)-I*e)^(1/2)*erf(-(-c*ln(f)-I*e)^(1/2)*x+1/2*(I*d+b*ln(f))/(-c*ln(f)-I*e)^(1/2))-1/4*I*Pi^(1/2)*exp(1/4*(-4*I*ln(f)*a*e+4*ln(f)^2*a*c-4*c*e-4*I*c^2*ln(f)-ln(f)^2*b^2+2*I*d*ln(f)*b+d^2)/(-I*e+c*ln(f)))/(I*e-c*ln(f))^(1/2)*erf(-(I*e-c*ln(f))^(1/2)*x+1/2*(b*ln(f)-I*d)/(I*e-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x+c*x^2)*cos(c+d*x+e*x^2)
+  Optimal integral = -1/4*exp(-I*c+(I*d-b*ln(f))^2/(4*I*e-4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2/(-I*e+c*ln(f))^(1/2)*((-b-2*c*x)*ln(f)+I*d+2*I*x*e))/(-I*e+c*ln(f))^(1/2)+1/4*exp(I*c-(I*d+b*ln(f))^2/(4*I*e+4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2*((b+2*c*x)*ln(f)+I*d+2*I*x*e)/(I*e+c*ln(f))^(1/2))/(I*e+c*ln(f))^(1/2)
+  Maple integral   = -1/4*Pi^(1/2)*exp(1/4*(4*I*ln(f)*a*e+4*ln(f)^2*a*c-4*c*e+4*I*c^2*ln(f)+d^2-2*I*d*ln(f)*b-ln(f)^2*b^2)/(I*e+c*ln(f)))/(-c*ln(f)-I*e)^(1/2)*erf(-(-c*ln(f)-I*e)^(1/2)*x+1/2*(I*d+b*ln(f))/(-c*ln(f)-I*e)^(1/2))-1/4*Pi^(1/2)*exp(1/4*(-4*I*ln(f)*a*e+4*ln(f)^2*a*c-4*c*e-4*I*c^2*ln(f)-ln(f)^2*b^2+2*I*d*ln(f)*b+d^2)/(-I*e+c*ln(f)))/(I*e-c*ln(f))^(1/2)*erf(-(I*e-c*ln(f))^(1/2)*x+1/2*(b*ln(f)-I*d)/(I*e-c*ln(f))^(1/2))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = (cos(x)+sin(x))/(exp(-x)+sin(x))
+  Optimal integral = ln(1+exp(x)*sin(x))
+  Maple integral   = x-ln(1+tan(1/2*x)^2)+ln(exp(-x)+exp(-x)*tan(1/2*x)^2+2*tan(1/2*x))
+  Leafcounts = 8 66   8 42
+
+Incorrect antiderivative:
+  Integrand        = exp(x^2)*sin(b*x)
+  Optimal integral = -1/4*I*exp(1/4*b^2)*Pi^(1/2)*(erfi(1/2*I*b-x)+erfi(1/2*I*b+x))
+  Maple integral   = 1/4*Pi^(1/2)*exp(1/4*b^2)*erf(-I*x+1/2*b)+1/4*Pi^(1/2)*exp(1/4*b^2)*erf(I*x+1/2*b)
+
+Incorrect antiderivative:
+  Integrand        = exp(x^2)*cos(b*x)
+  Optimal integral = -1/4*Pi^(1/2)*exp(1/4*b^2)*(erfi(1/2*I*b-x)-erfi(1/2*I*b+x))
+  Maple integral   = 1/4*I*Pi^(1/2)*exp(1/4*b^2)*erf(-I*x+1/2*b)-1/4*I*Pi^(1/2)*exp(1/4*b^2)*erf(I*x+1/2*b)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sin(a+b*x))*sin(2*a+2*b*x)
+  Optimal integral = 2*exp(n*sin(a+b*x))*(-1+n*sin(a+b*x))/b/n^2
+  Maple integral   = -exp(n*(sin(a)*cos(b*x)+cos(a)*sin(b*x)))*(-I*exp(-I*a)*exp(-I*b*x)*n+2+I*exp(I*a)*exp(I*b*x)*n)/b/n^2
+  Leafcounts = 27 97   27 52
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sin(a+b*x))*sin(2*a+2*b*x)
+  Optimal integral = 2*exp(n*sin(a+b*x))*(-1+n*sin(a+b*x))/b/n^2
+  Maple integral   = -exp(n*(sin(a)*cos(b*x)+cos(a)*sin(b*x)))*(-I*exp(-I*a)*exp(-I*b*x)*n+2+I*exp(I*a)*exp(I*b*x)*n)/b/n^2
+  Leafcounts = 27 97   27 52
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sin(1/2*a+1/2*b*x))*sin(a+b*x)
+  Optimal integral = 4*exp(n*sin(1/2*a+1/2*b*x))*(-1+n*sin(1/2*a+1/2*b*x))/b/n^2
+  Maple integral   = 2*exp(n*(sin(1/2*a)*cos(1/2*b*x)+cos(1/2*a)*sin(1/2*b*x)))*(I*exp(-1/2*I*a)*exp(-1/2*I*b*x)*n-2-I*exp(1/2*I*a)*exp(1/2*I*b*x)*n)/b/n^2
+  Leafcounts = 41 139   41 66
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sin(1/2*a+1/2*b*x))*sin(a+b*x)
+  Optimal integral = 4*exp(n*sin(1/2*a+1/2*b*x))*(-1+n*sin(1/2*a+1/2*b*x))/b/n^2
+  Maple integral   = 2*exp(n*(sin(1/2*a)*cos(1/2*b*x)+cos(1/2*a)*sin(1/2*b*x)))*(I*exp(-1/2*I*a)*exp(-1/2*I*b*x)*n-2-I*exp(1/2*I*a)*exp(1/2*I*b*x)*n)/b/n^2
+  Leafcounts = 41 139   41 66
+
+Unable to integrate:
+  Integrand        = exp(n*cos(a+b*x))*tan(a+b*x)
+  Optimal integral = -Ei(n*cos(a+b*x))/b
+  Maple integral   = int(exp(n*cos(a+b*x))*tan(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = exp(n*cos(a*c+b*c*x))*tan(c*(a+b*x))
+  Optimal integral = -Ei(n*cos(c*(a+b*x)))/b/c
+  Maple integral   = int(exp(n*cos(a*c+b*c*x))*tan(c*(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = exp(n*cos(c*(a+b*x)))*tan(a*c+b*c*x)
+  Optimal integral = -Ei(n*cos(c*(a+b*x)))/b/c
+  Maple integral   = int(exp(n*cos(c*(a+b*x)))*tan(a*c+b*c*x),x)
+
+Unable to integrate:
+  Integrand        = exp(n*sin(a+b*x))*cot(a+b*x)
+  Optimal integral = Ei(n*sin(a+b*x))/b
+  Maple integral   = int(exp(n*sin(a+b*x))*cot(a+b*x),x)
+
+Unable to integrate:
+  Integrand        = exp(n*sin(a*c+b*c*x))*cot(c*(a+b*x))
+  Optimal integral = Ei(n*sin(c*(a+b*x)))/b/c
+  Maple integral   = int(exp(n*sin(a*c+b*c*x))*cot(c*(a+b*x)),x)
+
+Unable to integrate:
+  Integrand        = exp(n*sin(c*(a+b*x)))*cot(a*c+b*c*x)
+  Optimal integral = Ei(n*sin(c*(a+b*x)))/b/c
+  Maple integral   = int(exp(n*sin(c*(a+b*x)))*cot(a*c+b*c*x),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(2*x)*cos(exp(x))
+  Optimal integral = cos(exp(x))+exp(x)*sin(exp(x))
+  Maple integral   = (2*exp(x)*tan(1/2*exp(x))+2)/(1+tan(1/2*exp(x))^2)
+  Leafcounts = 10 27   10 27
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(x)*sec(exp(x))
+  Optimal integral = arctanh(sin(exp(x)))
+  Maple integral   = ln(sec(exp(x))+tan(exp(x)))
+  Leafcounts = 4 8   4 8
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)*sinh(a+b*x)^2
+  Optimal integral = exp(x)*cosh(a+b*x)/(-4+4*b^2)+exp(x)*cosh(3*a+3*b*x)/(4-36*b^2)+b*exp(x)*sinh(a+b*x)/(4-4*b^2)-3*b*exp(x)*sinh(3*a+3*b*x)/(4-36*b^2)
+  Maple integral   = -1/8/(1+b)*cosh((1+b)*x+a)+1/8/(b-1)*cosh((b-1)*x+a)+1/8/(3*b+1)*cosh((3*b+1)*x+3*a)-1/8/(3*b-1)*cosh((3*b-1)*x+3*a)-1/8*sinh((1+b)*x+a)/(1+b)-1/8*sinh((b-1)*x+a)/(b-1)+1/8*sinh((3*b+1)*x+3*a)/(3*b+1)+1/8*sinh((3*b-1)*x+3*a)/(3*b-1)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)*sinh(a+b*x)^3
+  Optimal integral = b*exp(x)*cosh(2*a+2*b*x)/(2-8*b^2)+b*exp(x)*cosh(4*a+4*b*x)/(-2+32*b^2)+exp(x)*sinh(2*a+2*b*x)/(-4+16*b^2)+exp(x)*sinh(4*a+4*b*x)/(8-128*b^2)
+  Maple integral   = 1/16/(4*b+1)*sinh((4*b+1)*x+4*a)+1/8/(2*b-1)*sinh((2*b-1)*x+2*a)-1/16/(4*b-1)*sinh(x*(4*b-1)+4*a)-1/8/(2*b+1)*sinh((2*b+1)*x+2*a)+1/16*cosh((4*b+1)*x+4*a)/(4*b+1)-1/8*cosh((2*b-1)*x+2*a)/(2*b-1)+1/16*cosh(x*(4*b-1)+4*a)/(4*b-1)-1/8*cosh((2*b+1)*x+2*a)/(2*b+1)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)^2*sinh(a+b*x)
+  Optimal integral = b*exp(x)*cosh(a+b*x)/(-4+4*b^2)-3*b*exp(x)*cosh(3*a+3*b*x)/(4-36*b^2)+exp(x)*sinh(a+b*x)/(4-4*b^2)+exp(x)*sinh(3*a+3*b*x)/(4-36*b^2)
+  Maple integral   = 1/8*sinh((3*b+1)*x+3*a)/(3*b+1)-1/8*sinh((b-1)*x+a)/(b-1)-1/8*sinh((3*b-1)*x+3*a)/(3*b-1)+1/8*sinh((1+b)*x+a)/(1+b)+1/8/(3*b+1)*cosh((3*b+1)*x+3*a)+1/8/(b-1)*cosh((b-1)*x+a)+1/8/(3*b-1)*cosh((3*b-1)*x+3*a)+1/8/(1+b)*cosh((1+b)*x+a)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)^2*sinh(a+b*x)^3
+  Optimal integral = b*exp(x)*cosh(a+b*x)/(8-8*b^2)+3*b*exp(x)*cosh(3*a+3*b*x)/(16-144*b^2)-5*b*exp(x)*cosh(5*a+5*b*x)/(16-400*b^2)+exp(x)*sinh(a+b*x)/(-8+8*b^2)+exp(x)*sinh(3*a+3*b*x)/(-16+144*b^2)+exp(x)*sinh(5*a+5*b*x)/(16-400*b^2)
+  Maple integral   = 1/32/(5*b+1)*sinh((5*b+1)*x+5*a)+1/16*sinh((b-1)*x+a)/(b-1)-1/32/(5*b-1)*sinh((5*b-1)*x+5*a)-1/16*sinh((1+b)*x+a)/(1+b)-1/32*sinh((3*b+1)*x+3*a)/(3*b+1)+1/32*sinh((3*b-1)*x+3*a)/(3*b-1)+1/32*cosh((5*b+1)*x+5*a)/(5*b+1)-1/16/(b-1)*cosh((b-1)*x+a)+1/32*cosh((5*b-1)*x+5*a)/(5*b-1)-1/16/(1+b)*cosh((1+b)*x+a)-1/32/(3*b+1)*cosh((3*b+1)*x+3*a)-1/32/(3*b-1)*cosh((3*b-1)*x+3*a)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)^3*sinh(a+b*x)
+  Optimal integral = b*exp(x)*cosh(2*a+2*b*x)/(-2+8*b^2)+b*exp(x)*cosh(4*a+4*b*x)/(-2+32*b^2)+exp(x)*sinh(2*a+2*b*x)/(4-16*b^2)+exp(x)*sinh(4*a+4*b*x)/(8-128*b^2)
+  Maple integral   = 1/16/(4*b+1)*sinh((4*b+1)*x+4*a)-1/8/(2*b-1)*sinh((2*b-1)*x+2*a)-1/16/(4*b-1)*sinh(x*(4*b-1)+4*a)+1/8/(2*b+1)*sinh((2*b+1)*x+2*a)+1/16*cosh((4*b+1)*x+4*a)/(4*b+1)+1/8*cosh((2*b-1)*x+2*a)/(2*b-1)+1/16*cosh(x*(4*b-1)+4*a)/(4*b-1)+1/8*cosh((2*b+1)*x+2*a)/(2*b+1)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)^3*sinh(a+b*x)^2
+  Optimal integral = exp(x)*cosh(a+b*x)/(-8+8*b^2)+exp(x)*cosh(3*a+3*b*x)/(16-144*b^2)+exp(x)*cosh(5*a+5*b*x)/(16-400*b^2)+b*exp(x)*sinh(a+b*x)/(8-8*b^2)-3*b*exp(x)*sinh(3*a+3*b*x)/(16-144*b^2)-5*b*exp(x)*sinh(5*a+5*b*x)/(16-400*b^2)
+  Maple integral   = 1/32/(3*b+1)*cosh((3*b+1)*x+3*a)-1/32/(3*b-1)*cosh((3*b-1)*x+3*a)+1/32*cosh((5*b+1)*x+5*a)/(5*b+1)-1/16/(1+b)*cosh((1+b)*x+a)-1/32*cosh((5*b-1)*x+5*a)/(5*b-1)+1/16/(b-1)*cosh((b-1)*x+a)+1/32*sinh((3*b+1)*x+3*a)/(3*b+1)+1/32*sinh((3*b-1)*x+3*a)/(3*b-1)+1/32/(5*b+1)*sinh((5*b+1)*x+5*a)-1/16*sinh((1+b)*x+a)/(1+b)+1/32/(5*b-1)*sinh((5*b-1)*x+5*a)-1/16*sinh((b-1)*x+a)/(b-1)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x)^3*sinh(a+b*x)^3
+  Optimal integral = 3*b*exp(x)*cosh(2*a+2*b*x)/(16-64*b^2)-3*b*exp(x)*cosh(6*a+6*b*x)/(16-576*b^2)-3*exp(x)*sinh(2*a+2*b*x)/(32-128*b^2)+exp(x)*sinh(6*a+6*b*x)/(32-1152*b^2)
+  Maple integral   = 1/64/(6*b+1)*sinh((6*b+1)*x+6*a)-1/64/(6*b-1)*sinh((6*b-1)*x+6*a)+3/64/(2*b-1)*sinh((2*b-1)*x+2*a)-3/64/(2*b+1)*sinh((2*b+1)*x+2*a)+1/64*cosh((6*b+1)*x+6*a)/(6*b+1)+1/64*cosh((6*b-1)*x+6*a)/(6*b-1)-3/64*cosh((2*b-1)*x+2*a)/(2*b-1)-3/64*cosh((2*b+1)*x+2*a)/(2*b+1)
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*sinh(a+b*x+c*x^2)
+  Optimal integral = -1/4*Pi^(1/2)*(exp(1/4*(-4*a*c+(b-1)^2)/c)*erf(1/2*(-1+b+2*c*x)/c^(1/2))-exp(a-1/4*(1+b)^2/c)*erfi(1/2*(1+b+2*c*x)/c^(1/2)))/c^(1/2)
+  Maple integral   = -1/4*Pi^(1/2)*exp(1/4*(4*a*c-1-2*b-b^2)/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*(1+b)/(-c)^(1/2))-1/4*Pi^(1/2)*exp(-1/4*(4*a*c-b^2+2*b-1)/c)/c^(1/2)*erf(x*c^(1/2)-1/2*(1-b)/c^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = exp(x)*cosh(a+b*x+c*x^2)
+  Optimal integral = 1/4*Pi^(1/2)*(exp(1/4*(-4*a*c+(b-1)^2)/c)*erf(1/2*(-1+b+2*c*x)/c^(1/2))+exp(a-1/4*(1+b)^2/c)*erfi(1/2*(1+b+2*c*x)/c^(1/2)))/c^(1/2)
+  Maple integral   = -1/4*Pi^(1/2)*exp(1/4*(4*a*c-1-2*b-b^2)/c)/(-c)^(1/2)*erf(-(-c)^(1/2)*x+1/2*(1+b)/(-c)^(1/2))+1/4*Pi^(1/2)*exp(-1/4*(4*a*c-b^2+2*b-1)/c)/c^(1/2)*erf(x*c^(1/2)-1/2*(1-b)/c^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x+c*x^2)*sinh(c+d*x+e*x^2)
+  Optimal integral = 1/4*exp(-c+(d-b*ln(f))^2/(4*e-4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2*(d-b*ln(f)+2*x*(e-c*ln(f)))/(-e+c*ln(f))^(1/2))/(-e+c*ln(f))^(1/2)+1/4*exp(c-(d+b*ln(f))^2/(4*e+4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2*(d+b*ln(f)+2*x*(e+c*ln(f)))/(e+c*ln(f))^(1/2))/(e+c*ln(f))^(1/2)
+  Maple integral   = -1/4*Pi^(1/2)*exp(1/4*(4*ln(f)^2*a*c+4*ln(f)*a*e+4*c^2*ln(f)+4*c*e-d^2-2*d*ln(f)*b-ln(f)^2*b^2)/(e+c*ln(f)))/(-c*ln(f)-e)^(1/2)*erf(-(-c*ln(f)-e)^(1/2)*x+1/2*(d+b*ln(f))/(-c*ln(f)-e)^(1/2))+1/4*Pi^(1/2)*exp(1/4*(4*ln(f)^2*a*c-4*ln(f)*a*e-4*c^2*ln(f)+4*c*e-d^2+2*d*ln(f)*b-ln(f)^2*b^2)/(-e+c*ln(f)))/(e-c*ln(f))^(1/2)*erf(-(e-c*ln(f))^(1/2)*x+1/2*(-d+b*ln(f))/(e-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = f^(a+b*x+c*x^2)*cosh(c+d*x+e*x^2)
+  Optimal integral = -1/4*exp(-c+(d-b*ln(f))^2/(4*e-4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2*(d-b*ln(f)+2*x*(e-c*ln(f)))/(-e+c*ln(f))^(1/2))/(-e+c*ln(f))^(1/2)+1/4*exp(c-(d+b*ln(f))^2/(4*e+4*c*ln(f)))*f^a*Pi^(1/2)*erfi(1/2*(d+b*ln(f)+2*x*(e+c*ln(f)))/(e+c*ln(f))^(1/2))/(e+c*ln(f))^(1/2)
+  Maple integral   = -1/4*Pi^(1/2)*exp(1/4*(4*ln(f)^2*a*c+4*ln(f)*a*e+4*c^2*ln(f)+4*c*e-d^2-2*d*ln(f)*b-ln(f)^2*b^2)/(e+c*ln(f)))/(-c*ln(f)-e)^(1/2)*erf(-(-c*ln(f)-e)^(1/2)*x+1/2*(d+b*ln(f))/(-c*ln(f)-e)^(1/2))-1/4*Pi^(1/2)*exp(1/4*(4*ln(f)^2*a*c-4*ln(f)*a*e-4*c^2*ln(f)+4*c*e-d^2+2*d*ln(f)*b-ln(f)^2*b^2)/(-e+c*ln(f)))/(e-c*ln(f))^(1/2)*erf(-(e-c*ln(f))^(1/2)*x+1/2*(-d+b*ln(f))/(e-c*ln(f))^(1/2))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*sinh(a+b*x))*sinh(2*a+2*b*x)
+  Optimal integral = 2*exp(n*sinh(a+b*x))*(-1+n*sinh(a+b*x))/b/n^2
+  Maple integral   = (-n-2*exp(a+b*x)+n*exp(2*a+2*b*x))/n^2/b*exp(-a-b*x+1/2*n*exp(a+b*x)-1/2*n*exp(-a-b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*sinh(a+b*x))*sinh(2*a+2*b*x)
+  Optimal integral = 2*exp(n*sinh(a+b*x))*(-1+n*sinh(a+b*x))/b/n^2
+  Maple integral   = (-n-2*exp(a+b*x)+n*exp(2*a+2*b*x))/n^2/b*exp(-a-b*x+1/2*n*exp(a+b*x)-1/2*n*exp(-a-b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*sinh(1/2*a+1/2*b*x))*sinh(a+b*x)
+  Optimal integral = 4*exp(n*sinh(1/2*a+1/2*b*x))*(-1+n*sinh(1/2*a+1/2*b*x))/b/n^2
+  Maple integral   = 2*(-n-2*exp(1/2*a+1/2*b*x)+n*exp(a+b*x))/n^2/b*exp(-1/2*a-1/2*b*x+1/2*n*exp(1/2*a+1/2*b*x)-1/2*n*exp(-1/2*a-1/2*b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*sinh(1/2*a+1/2*b*x))*sinh(a+b*x)
+  Optimal integral = 4*exp(n*sinh(1/2*a+1/2*b*x))*(-1+n*sinh(1/2*a+1/2*b*x))/b/n^2
+  Maple integral   = 2*(-n-2*exp(1/2*a+1/2*b*x)+n*exp(a+b*x))/n^2/b*exp(-1/2*a-1/2*b*x+1/2*n*exp(1/2*a+1/2*b*x)-1/2*n*exp(-1/2*a-1/2*b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*cosh(a+b*x))*sinh(2*a+2*b*x)
+  Optimal integral = 2*exp(n*cosh(a+b*x))*(-1+n*cosh(a+b*x))/b/n^2
+  Maple integral   = (n-2*exp(a+b*x)+n*exp(2*a+2*b*x))/n^2/b*exp(-a-b*x+1/2*n*exp(a+b*x)+1/2*n*exp(-a-b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*cosh(a+b*x))*sinh(2*a+2*b*x)
+  Optimal integral = 2*exp(n*cosh(a+b*x))*(-1+n*cosh(a+b*x))/b/n^2
+  Maple integral   = (n-2*exp(a+b*x)+n*exp(2*a+2*b*x))/n^2/b*exp(-a-b*x+1/2*n*exp(a+b*x)+1/2*n*exp(-a-b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*cosh(1/2*a+1/2*b*x))*sinh(a+b*x)
+  Optimal integral = 4*exp(n*cosh(1/2*a+1/2*b*x))*(-1+n*cosh(1/2*a+1/2*b*x))/b/n^2
+  Maple integral   = 2*(n-2*exp(1/2*a+1/2*b*x)+n*exp(a+b*x))/n^2/b*exp(-1/2*a-1/2*b*x+1/2*n*exp(1/2*a+1/2*b*x)+1/2*n*exp(-1/2*a-1/2*b*x))
+
+Incorrect antiderivative:
+  Integrand        = exp(n*cosh(1/2*a+1/2*b*x))*sinh(a+b*x)
+  Optimal integral = 4*exp(n*cosh(1/2*a+1/2*b*x))*(-1+n*cosh(1/2*a+1/2*b*x))/b/n^2
+  Maple integral   = 2*(n-2*exp(1/2*a+1/2*b*x)+n*exp(a+b*x))/n^2/b*exp(-1/2*a-1/2*b*x+1/2*n*exp(1/2*a+1/2*b*x)+1/2*n*exp(-1/2*a-1/2*b*x))
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*cosh(a+b*x))*tanh(a+b*x)
+  Optimal integral = Ei(n*cosh(a+b*x))/b
+  Maple integral   = 1/b*(Shi(n*cosh(a+b*x))+Chi(n*cosh(a+b*x)))
+  Leafcounts = 13 23   13 23
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*cosh(a*c+b*c*x))*tanh(c*(a+b*x))
+  Optimal integral = Ei(n*cosh(c*(a+b*x)))/b/c
+  Maple integral   = 1/b/c*(Shi(n*cosh(c*(a+b*x)))+Chi(n*cosh(c*(a+b*x))))
+  Leafcounts = 18 32   18 30
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*cosh(c*(a+b*x)))*tanh(a*c+b*c*x)
+  Optimal integral = Ei(n*cosh(c*(a+b*x)))/b/c
+  Maple integral   = 1/b/c*(Shi(n*cosh(c*(a+b*x)))+Chi(n*cosh(c*(a+b*x))))
+  Leafcounts = 18 32   18 30
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sinh(a+b*x))*coth(a+b*x)
+  Optimal integral = Ei(n*sinh(a+b*x))/b
+  Maple integral   = 1/b*(Shi(n*sinh(a+b*x))+Chi(n*sinh(a+b*x)))
+  Leafcounts = 13 23   13 23
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sinh(a*c+b*c*x))*coth(c*(a+b*x))
+  Optimal integral = Ei(n*sinh(c*(a+b*x)))/b/c
+  Maple integral   = 1/b/c*(Shi(n*sinh(c*(a+b*x)))+Chi(n*sinh(c*(a+b*x))))
+  Leafcounts = 18 32   18 30
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(n*sinh(c*(a+b*x)))*coth(a*c+b*c*x)
+  Optimal integral = Ei(n*sinh(c*(a+b*x)))/b/c
+  Maple integral   = 1/b/c*(Shi(n*sinh(c*(a+b*x)))+Chi(n*sinh(c*(a+b*x))))
+  Leafcounts = 18 32   18 30
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/exp(x)/(1-exp(-2*x))^(1/2)
+  Optimal integral = -arcsin(exp(-x))
+  Maple integral   = -1/(1/exp(x)^2*(exp(x)^2-1))^(1/2)/exp(x)*(exp(x)^2-1)^(1/2)*arctan(1/(exp(x)^2-1)^(1/2))
+  Leafcounts = 7 42   7 42
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(x)/(-4+exp(2*x))
+  Optimal integral = -1/2*arctanh(1/2*exp(x))
+  Maple integral   = 1/4*ln(-2+exp(x))-1/4*ln(2+exp(x))
+  Leafcounts = 11 19   11 19
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = (exp(-2*x)+exp(2*x))/(-exp(-2*x)+exp(2*x))
+  Optimal integral = 1/2*ln(-exp(-2*x)+exp(2*x))
+  Maple integral   = 1/2*ln(-1+exp(x))-ln(exp(x))+1/2*ln(1+exp(x))+1/2*ln(1+exp(x)^2)
+  Leafcounts = 16 35   16 35
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(x)/(16-exp(2*x))
+  Optimal integral = 1/4*arctanh(1/4*exp(x))
+  Maple integral   = -1/8*ln(exp(x)-4)+1/8*ln(exp(x)+4)
+  Leafcounts = 11 19   11 19
+
+Unable to integrate:
+  Integrand        = exp(4*x)/(16+exp(8*x))^(1/2)
+  Optimal integral = 1/4*arcsinh(1/4*exp(4*x))
+  Maple integral   = int(exp(4*x)/(16+exp(8*x))^(1/2),x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/exp(x)/(1+2*exp(x))
+  Optimal integral = -exp(-x)+2*ln(2+exp(-x))
+  Maple integral   = 2*ln(1+2*exp(x))-2*ln(exp(x))-1/exp(x)
+  Leafcounts = 16 21   16 21
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(x)*sec(-1+exp(x))^3
+  Optimal integral = 1/2*arctanh(sin(-1+exp(x)))+1/2*sec(-1+exp(x))*tan(-1+exp(x))
+  Maple integral   = 1/2/cos(-1+exp(x))^2*sin(-1+exp(x))+1/2*ln(sec(-1+exp(x))+tan(-1+exp(x)))
+  Leafcounts = 25 33   25 33
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(x)/(2+3*exp(x)+exp(2*x))
+  Optimal integral = -2*arctanh(3+2*exp(x))
+  Maple integral   = ln(1+exp(x))-ln(2+exp(x))
+  Leafcounts = 9 13   9 13
+
+Incorrect antiderivative:
+  Integrand        = x^(-2-1/x)*(1-ln(x))
+  Optimal integral = -x^(-1/x)
+  Maple integral   = -x^2*x^(-(1+2*x)/x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = exp(3*x)/(-1+exp(2*x))
+  Optimal integral = exp(x)-arctanh(exp(x))
+  Maple integral   = exp(x)+1/2*ln(-1+exp(x))-1/2*ln(1+exp(x))
+  Leafcounts = 8 21   8 21
+
+Incorrect antiderivative:
+  Integrand        = (1+4^x)/(1+2^(-x))
+  Optimal integral = 1/2*(-2*2^x+4^x+4*ln(1+2^x))/ln(2)
+  Maple integral   = (1/2/ln(2)+2*x*exp(-x*ln(2))^2-1/ln(2)*exp(-x*ln(2)))/exp(-x*ln(2))^2+2/ln(2)*ln(1+exp(-x*ln(2)))
+
+Unable to integrate:
+  Integrand        = exp((x+a)^2)/x^2-2*a*exp((x+a)^2)/x
+  Optimal integral = -exp((x+a)^2)/x+Pi^(1/2)*erfi(x+a)
+  Maple integral   = int(exp((x+a)^2)/x^2-2*a*exp((x+a)^2)/x,x)
+
+Valid but unnecessarily complicated antiderivative:
+  Integrand        = 1/(-exp(x)+exp(3*x))
+  Optimal integral = exp(-x)-arctanh(exp(x))
+  Maple integral   = 1/2*ln(-1+exp(x))-1/2*ln(1+exp(x))+1/exp(x)
+  Leafcounts = 10 23   10 23
+
+Maple gives a simpler antiderivative!:
+  Integrand        = 10^(x^(1/2))/x^(1/2)
+  Optimal integral = 2^(1+x^(1/2))*5^(x^(1/2))/ln(10)
+  Maple integral   = 2/ln(10)*10^(x^(1/2))
+  Leafcounts = 21 13   0 0
+
+File problem count   = 592
+Optimal results      = 368
+Overly complicated   = 67
+Unable to integrate  = 55
+Unverifiable results = 102
+Integration speed    = 50.00 int/sec
+
+		===========================================
+

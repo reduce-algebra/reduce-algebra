@@ -1,0 +1,360 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Inverse Sines
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m ArcSin[a x]^n
+
+
+# Integrands of the form x^m*ArcSin[a*x] where m is an integer 
+[x^4*arcsin(a*x), x, 5, (8*sqrt(1 - a^2*x^2))/(75*a^5) + (4*x^2*sqrt(1 - a^2*x^2))/(75*a^3) + (x^4*sqrt(1 - a^2*x^2))/(25*a) + (1/5)*x^5*arcsin(a*x)],
+[x^3*arcsin(a*x), x, 4, (3*x*sqrt(1 - a^2*x^2))/(32*a^3) + (x^3*sqrt(1 - a^2*x^2))/(16*a) - (3*arcsin(a*x))/(32*a^4) + (1/4)*x^4*arcsin(a*x)],
+[x^2*arcsin(a*x), x, 4, (2*sqrt(1 - a^2*x^2))/(9*a^3) + (x^2*sqrt(1 - a^2*x^2))/(9*a) + (1/3)*x^3*arcsin(a*x)],
+[x*arcsin(a*x), x, 3, (x*sqrt(1 - a^2*x^2))/(4*a) - arcsin(a*x)/(4*a^2) + (1/2)*x^2*arcsin(a*x)],
+[arcsin(a*x), x, 1, sqrt(1 - a^2*x^2)/a + x*arcsin(a*x)],
+[arcsin(a*x)/x, x, 5, (-(1/2))*I*arcsin(a*x)^2 + arcsin(a*x)*log(1 - exp(2*I*arcsin(a*x))) - (1/2)*I*polylog(2, exp(2*I*arcsin(a*x)))],
+[arcsin(a*x)/x^2, x, 2, -(arcsin(a*x)/x) - a*arctanh(sqrt(1 - a^2*x^2))],
+[arcsin(a*x)/x^3, x, 2, -((a*sqrt(1 - a^2*x^2))/(2*x)) - arcsin(a*x)/(2*x^2)],
+[arcsin(a*x)/x^4, x, 3, -((a*sqrt(1 - a^2*x^2))/(6*x^2)) - arcsin(a*x)/(3*x^3) - (1/6)*a^3*arctanh(sqrt(1 - a^2*x^2))],
+[arcsin(a*x)/x^5, x, 3, -((a*sqrt(1 - a^2*x^2))/(12*x^3)) - (a^3*sqrt(1 - a^2*x^2))/(6*x) - arcsin(a*x)/(4*x^4)],
+
+
+# Integrands of the form x^m*ArcSin[a*x]^2 where m is an integer 
+[x^4*arcsin(a*x)^2, x, 5, -((16*x)/(75*a^4)) - (8*x^3)/(225*a^2) - (2*x^5)/125 + (16*sqrt(1 - a^2*x^2)*arcsin(a*x))/(75*a^5) + (8*x^2*sqrt(1 - a^2*x^2)*arcsin(a*x))/(75*a^3) + (2*x^4*sqrt(1 - a^2*x^2)*arcsin(a*x))/(25*a) + (1/5)*x^5*arcsin(a*x)^2],
+[x^3*arcsin(a*x)^2, x, 4, -((3*x^2)/(32*a^2)) - x^4/32 + (3*x*sqrt(1 - a^2*x^2)*arcsin(a*x))/(16*a^3) + (x^3*sqrt(1 - a^2*x^2)*arcsin(a*x))/(8*a) - (3*arcsin(a*x)^2)/(32*a^4) + (1/4)*x^4*arcsin(a*x)^2],
+[x^2*arcsin(a*x)^2, x, 4, -((4*x)/(9*a^2)) - (2*x^3)/27 + (4*sqrt(1 - a^2*x^2)*arcsin(a*x))/(9*a^3) + (2*x^2*sqrt(1 - a^2*x^2)*arcsin(a*x))/(9*a) + (1/3)*x^3*arcsin(a*x)^2],
+[x*arcsin(a*x)^2, x, 2, -(x^2/4) + (x*sqrt(1 - a^2*x^2)*arcsin(a*x))/(2*a) - arcsin(a*x)^2/(4*a^2) + (1/2)*x^2*arcsin(a*x)^2],
+[arcsin(a*x)^2, x, 2, -2*x + (2*sqrt(1 - a^2*x^2)*arcsin(a*x))/a + x*arcsin(a*x)^2],
+[arcsin(a*x)^2/x, x, 6, (-(1/3))*I*arcsin(a*x)^3 + arcsin(a*x)^2*log(1 - exp(2*I*arcsin(a*x))) - I*arcsin(a*x)*polylog(2, exp(2*I*arcsin(a*x))) + (1/2)*polylog(3, exp(2*I*arcsin(a*x)))],
+[arcsin(a*x)^2/x^2, x, 5, -(arcsin(a*x)^2/x) - 4*a*arcsin(a*x)*arctanh(exp(I*arcsin(a*x))) + 2*I*a*polylog(2, -exp(I*arcsin(a*x))) - 2*I*a*polylog(2, exp(I*arcsin(a*x)))],
+[arcsin(a*x)^2/x^3, x, 2, -((a*sqrt(1 - a^2*x^2)*arcsin(a*x))/x) - arcsin(a*x)^2/(2*x^2) + a^2*log(x)],
+[arcsin(a*x)^2/x^4, x, 7, -(a^2/(3*x)) - (a*sqrt(1 - a^2*x^2)*arcsin(a*x))/(3*x^2) - arcsin(a*x)^2/(3*x^3) - (2/3)*a^3*arcsin(a*x)*arctanh(exp(I*arcsin(a*x))) + (1/3)*I*a^3*polylog(2, -exp(I*arcsin(a*x))) - (1/3)*I*a^3*polylog(2, exp(I*arcsin(a*x)))],
+[arcsin(a*x)^2/x^5, x, 4, -(a^2/(12*x^2)) - (a*sqrt(1 - a^2*x^2)*arcsin(a*x))/(6*x^3) - (a^3*sqrt(1 - a^2*x^2)*arcsin(a*x))/(3*x) - arcsin(a*x)^2/(4*x^4) + (1/3)*a^4*log(x)],
+
+
+# Integrands of the form x^m*ArcSin[a*x]^3 where m is an integer 
+[x^4*arcsin(a*x)^3, x, 10, -((298*sqrt(1 - a^2*x^2))/(375*a^5)) + (76*(1 - a^2*x^2)^(3/2))/(1125*a^5) - (6*(1 - a^2*x^2)^(5/2))/(625*a^5) - (16*x*arcsin(a*x))/(25*a^4) - (8*x^3*arcsin(a*x))/(75*a^2) - (6/125)*x^5*arcsin(a*x) + (8*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(25*a^5) + (4*x^2*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(25*a^3) + (3*x^4*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(25*a) + (1/5)*x^5*arcsin(a*x)^3],
+[x^3*arcsin(a*x)^3, x, 7, -((45*x*sqrt(1 - a^2*x^2))/(256*a^3)) - (3*x^3*sqrt(1 - a^2*x^2))/(128*a) + (45*arcsin(a*x))/(256*a^4) - (9*x^2*arcsin(a*x))/(32*a^2) - (3/32)*x^4*arcsin(a*x) + (9*x*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(32*a^3) + (3*x^3*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(16*a) - (3*arcsin(a*x)^3)/(32*a^4) + (1/4)*x^4*arcsin(a*x)^3],
+[x^2*arcsin(a*x)^3, x, 7, -((14*sqrt(1 - a^2*x^2))/(9*a^3)) + (2*(1 - a^2*x^2)^(3/2))/(27*a^3) - (4*x*arcsin(a*x))/(3*a^2) - (2/9)*x^3*arcsin(a*x) + (2*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(3*a^3) + (x^2*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(3*a) + (1/3)*x^3*arcsin(a*x)^3],
+[x*arcsin(a*x)^3, x, 4, -((3*x*sqrt(1 - a^2*x^2))/(8*a)) + (3*arcsin(a*x))/(8*a^2) - (3/4)*x^2*arcsin(a*x) + (3*x*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(4*a) - arcsin(a*x)^3/(4*a^2) + (1/2)*x^2*arcsin(a*x)^3],
+[arcsin(a*x)^3, x, 2, -((6*sqrt(1 - a^2*x^2))/a) - 6*x*arcsin(a*x) + (3*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/a + x*arcsin(a*x)^3],
+[arcsin(a*x)^3/x, x, 7, (-(1/4))*I*arcsin(a*x)^4 + arcsin(a*x)^3*log(1 - exp(2*I*arcsin(a*x))) - (3/2)*I*arcsin(a*x)^2*polylog(2, exp(2*I*arcsin(a*x))) + (3/2)*arcsin(a*x)*polylog(3, exp(2*I*arcsin(a*x))) + (3/4)*I*polylog(4, exp(2*I*arcsin(a*x)))],
+[arcsin(a*x)^3/x^2, x, 7, -(arcsin(a*x)^3/x) - 6*a*arcsin(a*x)^2*arctanh(exp(I*arcsin(a*x))) + 6*I*a*arcsin(a*x)*polylog(2, -exp(I*arcsin(a*x))) - 6*I*a*arcsin(a*x)*polylog(2, exp(I*arcsin(a*x))) - 6*a*polylog(3, -exp(I*arcsin(a*x))) + 6*a*polylog(3, exp(I*arcsin(a*x)))],
+[arcsin(a*x)^3/x^3, x, 6, (-(3/2))*I*a^2*arcsin(a*x)^2 - (3*a*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(2*x) - arcsin(a*x)^3/(2*x^2) + 3*a^2*arcsin(a*x)*log(1 - exp(2*I*arcsin(a*x))) - (3/2)*I*a^2*polylog(2, exp(2*I*arcsin(a*x)))],
+[arcsin(a*x)^3/x^4, x, 10, -((a^2*arcsin(a*x))/x) - (a*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(2*x^2) - arcsin(a*x)^3/(3*x^3) - a^3*arcsin(a*x)^2*arctanh(exp(I*arcsin(a*x))) - a^3*arctanh(sqrt(1 - a^2*x^2)) + I*a^3*arcsin(a*x)*polylog(2, -exp(I*arcsin(a*x))) - I*a^3*arcsin(a*x)*polylog(2, exp(I*arcsin(a*x))) - a^3*polylog(3, -exp(I*arcsin(a*x))) + a^3*polylog(3, exp(I*arcsin(a*x)))],
+[arcsin(a*x)^3/x^5, x, 9, -((a^3*sqrt(1 - a^2*x^2))/(4*x)) - (a^2*arcsin(a*x))/(4*x^2) - (1/2)*I*a^4*arcsin(a*x)^2 - (a*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(4*x^3) - (a^3*sqrt(1 - a^2*x^2)*arcsin(a*x)^2)/(2*x) - arcsin(a*x)^3/(4*x^4) + a^4*arcsin(a*x)*log(1 - exp(2*I*arcsin(a*x))) - (1/2)*I*a^4*polylog(2, exp(2*I*arcsin(a*x)))],
+
+
+# Integrands of the form x^m*Sqrt[ArcSin[a*x]] where m is an integer 
+[x^4*sqrt(arcsin(a*x)), x, 7, (1/5)*x^5*sqrt(arcsin(a*x)) - (sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(8*a^5) + (sqrt(Pi/6)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(16*a^5) - (sqrt(Pi/10)*FresnelS(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(80*a^5)],
+[x^3*sqrt(arcsin(a*x)), x, 6, -((3*sqrt(arcsin(a*x)))/(32*a^4)) + (1/4)*x^4*sqrt(arcsin(a*x)) - (sqrt(Pi/2)*FresnelC(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/(64*a^4) + (sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(16*a^4)],
+[x^2*sqrt(arcsin(a*x)), x, 6, (1/3)*x^3*sqrt(arcsin(a*x)) - (sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(4*a^3) + (sqrt(Pi/6)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(12*a^3)],
+[x*sqrt(arcsin(a*x)), x, 2, -(sqrt(arcsin(a*x))/(4*a^2)) + (1/2)*x^2*sqrt(arcsin(a*x)) + (sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(8*a^2)],
+[sqrt(arcsin(a*x)), x, 1, x*sqrt(arcsin(a*x)) - (sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/a],
+[sqrt(arcsin(a*x))/x, x, 3, 2*subst(Int(x^2*cot(x^2), x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m*ArcSin[a*x]^(3/2) where m is an integer 
+[x^4*arcsin(a*x)^(3/2), x, 12, (3*sqrt(1 - a^2*x^2)*sqrt(arcsin(a*x)))/(16*a^5) + (1/5)*x^5*arcsin(a*x)^(3/2) - (sqrt(arcsin(a*x))*cos(3*arcsin(a*x)))/(32*a^5) + (3*sqrt(arcsin(a*x))*cos(5*arcsin(a*x)))/(800*a^5) - (3*sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(16*a^5) + (sqrt(Pi/6)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(32*a^5) - (3*sqrt(Pi/10)*FresnelC(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(800*a^5)],
+[x^3*arcsin(a*x)^(3/2), x, 11, -((3*arcsin(a*x)^(3/2))/(32*a^4)) + (1/4)*x^4*arcsin(a*x)^(3/2) + (3*sqrt(Pi/2)*FresnelS(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/(512*a^4) - (3*sqrt(Pi)*FresnelS((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(64*a^4) + (3*sqrt(arcsin(a*x))*sin(2*arcsin(a*x)))/(32*a^4) - (3*sqrt(arcsin(a*x))*sin(4*arcsin(a*x)))/(256*a^4)],
+[x^2*arcsin(a*x)^(3/2), x, 8, (sqrt(1 - a^2*x^2)*sqrt(arcsin(a*x)))/(3*a^3) + (x^2*sqrt(1 - a^2*x^2)*sqrt(arcsin(a*x)))/(6*a) + (1/3)*x^3*arcsin(a*x)^(3/2) - (3*sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(8*a^3) + (sqrt(Pi/6)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(24*a^3), (3*sqrt(1 - a^2*x^2)*sqrt(arcsin(a*x)))/(8*a^3) + (1/3)*x^3*arcsin(a*x)^(3/2) - (sqrt(arcsin(a*x))*cos(3*arcsin(a*x)))/(24*a^3) - (3*sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(8*a^3) + (sqrt(Pi/6)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(24*a^3)],
+[x*arcsin(a*x)^(3/2), x, 2, (3*x*sqrt(1 - a^2*x^2)*sqrt(arcsin(a*x)))/(8*a) - arcsin(a*x)^(3/2)/(4*a^2) + (1/2)*x^2*arcsin(a*x)^(3/2) - (3*sqrt(Pi)*FresnelS((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(32*a^2)],
+[arcsin(a*x)^(3/2), x, 2, (3*sqrt(1 - a^2*x^2)*sqrt(arcsin(a*x)))/(2*a) + x*arcsin(a*x)^(3/2) - (3*sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(2*a)],
+[arcsin(a*x)^(3/2)/x, x, 3, 2*subst(Int(x^4*cot(x^2), x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m*ArcSin[a*x]^(5/2) where m is an integer 
+[x^4*arcsin(a*x)^(5/2), x, 16, -((2*x*sqrt(arcsin(a*x)))/(5*a^4)) - (x^3*sqrt(arcsin(a*x)))/(15*a^2) - (3/100)*x^5*sqrt(arcsin(a*x)) + (4*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(15*a^5) + (2*x^2*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(15*a^3) + (x^4*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(10*a) + (1/5)*x^5*arcsin(a*x)^(5/2) + (15*sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(32*a^5) - (5*sqrt(Pi/6)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(192*a^5) + (3*sqrt(Pi/10)*FresnelS(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(1600*a^5)],
+[x^3*arcsin(a*x)^(5/2), x, 12, (225*sqrt(arcsin(a*x)))/(2048*a^4) - (45*x^2*sqrt(arcsin(a*x)))/(256*a^2) - (15/256)*x^4*sqrt(arcsin(a*x)) + (15*x*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(64*a^3) + (5*x^3*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(32*a) - (3*arcsin(a*x)^(5/2))/(32*a^4) + (1/4)*x^4*arcsin(a*x)^(5/2) + (15*sqrt(Pi/2)*FresnelC(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/(4096*a^4) - (15*sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(256*a^4)],
+[x^2*arcsin(a*x)^(5/2), x, 10, -((5*x*sqrt(arcsin(a*x)))/(6*a^2)) - (5/36)*x^3*sqrt(arcsin(a*x)) + (5*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(9*a^3) + (5*x^2*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(18*a) + (1/3)*x^3*arcsin(a*x)^(5/2) + (15*sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(16*a^3) - (5*sqrt(Pi/6)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(144*a^3)],
+[x*arcsin(a*x)^(5/2), x, 3, (15*sqrt(arcsin(a*x)))/(64*a^2) - (15/32)*x^2*sqrt(arcsin(a*x)) + (5*x*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(8*a) - arcsin(a*x)^(5/2)/(4*a^2) + (1/2)*x^2*arcsin(a*x)^(5/2) - (15*sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(128*a^2)],
+[arcsin(a*x)^(5/2), x, 2, (-(15/4))*x*sqrt(arcsin(a*x)) + (5*sqrt(1 - a^2*x^2)*arcsin(a*x)^(3/2))/(2*a) + x*arcsin(a*x)^(5/2) + (15*sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(4*a)],
+[arcsin(a*x)^(5/2)/x, x, 3, 2*subst(Int(x^6*cot(x^2), x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m/Sqrt[ArcSin[a*x]] where m is an integer 
+[x^4/sqrt(arcsin(a*x)), x, 8, (sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(4*a^5) - (sqrt((3*Pi)/2)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(8*a^5) + (sqrt(Pi/10)*FresnelC(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(8*a^5)],
+[x^3/sqrt(arcsin(a*x)), x, 7, -((sqrt(Pi/2)*FresnelS(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/(8*a^4)) + (sqrt(Pi)*FresnelS((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(4*a^4)],
+[x^2/sqrt(arcsin(a*x)), x, 7, (sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(2*a^3) - (sqrt(Pi/6)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(2*a^3)],
+[x/sqrt(arcsin(a*x)), x, 1, (sqrt(Pi)*FresnelS((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(2*a^2)],
+[1/sqrt(arcsin(a*x)), x, 1, (sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/a],
+[1/(x*sqrt(arcsin(a*x))), x, 3, 2*subst(Int(cot(x^2), x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m/ArcSin[a*x]^(3/2) where m is an integer 
+[x^4/arcsin(a*x)^(3/2), x, 14, -((2*x^4*sqrt(1 - a^2*x^2))/(a*sqrt(arcsin(a*x)))) - (sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(2*a^5) + (3*sqrt((3*Pi)/2)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(4*a^5) - (sqrt((5*Pi)/2)*FresnelS(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(4*a^5)],
+[x^3/arcsin(a*x)^(3/2), x, 9, -((2*x^3*sqrt(1 - a^2*x^2))/(a*sqrt(arcsin(a*x)))) - (sqrt(Pi/2)*FresnelC(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/a^4 + (sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/a^4],
+[x^2/arcsin(a*x)^(3/2), x, 8, -((2*x^2*sqrt(1 - a^2*x^2))/(a*sqrt(arcsin(a*x)))) - (sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/a^3 + (sqrt((3*Pi)/2)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/a^3],
+[x/arcsin(a*x)^(3/2), x, 1, -((2*x*sqrt(1 - a^2*x^2))/(a*sqrt(arcsin(a*x)))) + (2*sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/a^2],
+[1/arcsin(a*x)^(3/2), x, 2, -((2*sqrt(1 - a^2*x^2))/(a*sqrt(arcsin(a*x)))) - (2*sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/a],
+[1/(x*arcsin(a*x)^(3/2)), x, 3, 2*subst(Int(cot(x^2)/x^2, x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m/ArcSin[a*x]^(5/2) where m is an integer 
+[x^4/arcsin(a*x)^(5/2), x, 16, -((2*x^4*sqrt(1 - a^2*x^2))/(3*a*arcsin(a*x)^(3/2))) - (16*x^3)/(3*a^2*sqrt(arcsin(a*x))) + (20*x^5)/(3*sqrt(arcsin(a*x))) - (sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(3*a^5) + (3*sqrt((3*Pi)/2)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(2*a^5) - (5*sqrt((5*Pi)/2)*FresnelC(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(6*a^5)],
+[x^3/arcsin(a*x)^(5/2), x, 9, -((2*x^3*sqrt(1 - a^2*x^2))/(3*a*arcsin(a*x)^(3/2))) - (4*x^2)/(a^2*sqrt(arcsin(a*x))) + (16*x^4)/(3*sqrt(arcsin(a*x))) + (4*sqrt(2*Pi)*FresnelS(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/(3*a^4) - (4*sqrt(Pi)*FresnelS((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(3*a^4)],
+[x^2/arcsin(a*x)^(5/2), x, 9, -((2*x^2*sqrt(1 - a^2*x^2))/(3*a*arcsin(a*x)^(3/2))) - (8*x)/(3*a^2*sqrt(arcsin(a*x))) + (4*x^3)/sqrt(arcsin(a*x)) - (sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(3*a^3) + (sqrt(6*Pi)*FresnelC(sqrt(6/Pi)*sqrt(arcsin(a*x))))/a^3],
+[x/arcsin(a*x)^(5/2), x, 2, -((2*x*sqrt(1 - a^2*x^2))/(3*a*arcsin(a*x)^(3/2))) - 4/(3*a^2*sqrt(arcsin(a*x))) + (8*x^2)/(3*sqrt(arcsin(a*x))) - (8*sqrt(Pi)*FresnelS((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(3*a^2)],
+[1/arcsin(a*x)^(5/2), x, 2, -((2*sqrt(1 - a^2*x^2))/(3*a*arcsin(a*x)^(3/2))) + (4*x)/(3*sqrt(arcsin(a*x))) - (4*sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(3*a)],
+[1/(x*arcsin(a*x)^(5/2)), x, 3, 2*subst(Int(cot(x^2)/x^4, x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m/ArcSin[a*x]^(7/2) where m is an integer 
+[x^4/arcsin(a*x)^(7/2), x, 23, -((2*x^4*sqrt(1 - a^2*x^2))/(5*a*arcsin(a*x)^(5/2))) - (16*x^3)/(15*a^2*arcsin(a*x)^(3/2)) + (4*x^5)/(3*arcsin(a*x)^(3/2)) - (32*x^2*sqrt(1 - a^2*x^2))/(5*a^3*sqrt(arcsin(a*x))) + (40*x^4*sqrt(1 - a^2*x^2))/(3*a*sqrt(arcsin(a*x))) + (sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(15*a^5) - (9*sqrt((3*Pi)/2)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(5*a^5) + (5*sqrt((5*Pi)/2)*FresnelS(sqrt(10/Pi)*sqrt(arcsin(a*x))))/(3*a^5)],
+[x^3/arcsin(a*x)^(7/2), x, 11, -((2*x^3*sqrt(1 - a^2*x^2))/(5*a*arcsin(a*x)^(5/2))) - (4*x^2)/(5*a^2*arcsin(a*x)^(3/2)) + (16*x^4)/(15*arcsin(a*x)^(3/2)) - (16*x*sqrt(1 - a^2*x^2))/(5*a^3*sqrt(arcsin(a*x))) + (128*x^3*sqrt(1 - a^2*x^2))/(15*a*sqrt(arcsin(a*x))) + (32*sqrt(2*Pi)*FresnelC(2*sqrt(2/Pi)*sqrt(arcsin(a*x))))/(15*a^4) - (16*sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(15*a^4)],
+[x^2/arcsin(a*x)^(7/2), x, 11, -((2*x^2*sqrt(1 - a^2*x^2))/(5*a*arcsin(a*x)^(5/2))) - (8*x)/(15*a^2*arcsin(a*x)^(3/2)) + (4*x^3)/(5*arcsin(a*x)^(3/2)) - (16*sqrt(1 - a^2*x^2))/(15*a^3*sqrt(arcsin(a*x))) + (24*x^2*sqrt(1 - a^2*x^2))/(5*a*sqrt(arcsin(a*x))) + (2*sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(15*a^3) - (6*sqrt(6*Pi)*FresnelS(sqrt(6/Pi)*sqrt(arcsin(a*x))))/(5*a^3)],
+[x/arcsin(a*x)^(7/2), x, 2, -((2*x*sqrt(1 - a^2*x^2))/(5*a*arcsin(a*x)^(5/2))) - 4/(15*a^2*arcsin(a*x)^(3/2)) + (8*x^2)/(15*arcsin(a*x)^(3/2)) + (32*x*sqrt(1 - a^2*x^2))/(15*a*sqrt(arcsin(a*x))) - (32*sqrt(Pi)*FresnelC((2*sqrt(arcsin(a*x)))/sqrt(Pi)))/(15*a^2)],
+[1/arcsin(a*x)^(7/2), x, 3, -((2*sqrt(1 - a^2*x^2))/(5*a*arcsin(a*x)^(5/2))) + (4*x)/(15*arcsin(a*x)^(3/2)) + (8*sqrt(1 - a^2*x^2))/(15*a*sqrt(arcsin(a*x))) + (8*sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a*x))))/(15*a)],
+[1/(x*arcsin(a*x)^(7/2)), x, 3, 2*subst(Int(cot(x^2)/x^6, x), x, sqrt(arcsin(a*x)))],
+
+
+# Integrands of the form x^m/ArcSin[a*x]^n where m is an integer 
+[x^4*arcsin(a*x)^n, x, 12, (1/5)*x^5*arcsin(a*x)^n - (I*n*arcsin(a*x)^n*GAMMA(n, (-I)*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*(16*a^5)) + (I*n*arcsin(a*x)^n*GAMMA(n, I*arcsin(a*x)))/((I*arcsin(a*x))^n*(16*a^5)) + (I*n*arcsin(a*x)^n*GAMMA(n, -3*I*arcsin(a*x)))/(3^n*((-I)*arcsin(a*x))^n*(32*a^5)) - (I*n*arcsin(a*x)^n*GAMMA(n, 3*I*arcsin(a*x)))/(3^n*(I*arcsin(a*x))^n*(32*a^5)) - (I*5^(-1 - n)*n*arcsin(a*x)^n*GAMMA(n, -5*I*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*(32*a^5)) + (I*5^(-1 - n)*n*arcsin(a*x)^n*GAMMA(n, 5*I*arcsin(a*x)))/((I*arcsin(a*x))^n*(32*a^5))],
+[x^3*arcsin(a*x)^n, x, 10, -((3*arcsin(a*x)^n)/(32*a^4)) + (1/4)*x^4*arcsin(a*x)^n - (2^(-4 - n)*n*arcsin(a*x)^n*GAMMA(n, -2*I*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*a^4) - (2^(-4 - n)*n*arcsin(a*x)^n*GAMMA(n, 2*I*arcsin(a*x)))/((I*arcsin(a*x))^n*a^4) + (2^(-6 - 2*n)*n*arcsin(a*x)^n*GAMMA(n, -4*I*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*a^4) + (2^(-6 - 2*n)*n*arcsin(a*x)^n*GAMMA(n, 4*I*arcsin(a*x)))/((I*arcsin(a*x))^n*a^4)],
+[x^2*arcsin(a*x)^n, x, 9, (1/3)*x^3*arcsin(a*x)^n - (I*n*arcsin(a*x)^n*GAMMA(n, (-I)*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*(8*a^3)) + (I*n*arcsin(a*x)^n*GAMMA(n, I*arcsin(a*x)))/((I*arcsin(a*x))^n*(8*a^3)) + (I*3^(-1 - n)*n*arcsin(a*x)^n*GAMMA(n, -3*I*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*(8*a^3)) - (I*3^(-1 - n)*n*arcsin(a*x)^n*GAMMA(n, 3*I*arcsin(a*x)))/((I*arcsin(a*x))^n*(8*a^3))],
+[x*arcsin(a*x)^n, x, 7, -(arcsin(a*x)^n/(4*a^2)) + (1/2)*x^2*arcsin(a*x)^n - (2^(-3 - n)*n*arcsin(a*x)^n*GAMMA(n, -2*I*arcsin(a*x)))/(((-I)*arcsin(a*x))^n*a^2) - (2^(-3 - n)*n*arcsin(a*x)^n*GAMMA(n, 2*I*arcsin(a*x)))/((I*arcsin(a*x))^n*a^2)],
+[arcsin(a*x)^n, x, 1, -((I*arcsin(a*x)^n*(GAMMA(1 + n, (-I)*arcsin(a*x))/((-I)*arcsin(a*x))^n - GAMMA(1 + n, I*arcsin(a*x))/(I*arcsin(a*x))^n))/(2*a))],
+[arcsin(a*x)^n/x, x, 2, subst(Int(x^n*cot(x), x), x, arcsin(a*x))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m ArcSin[a+b x]^n
+
+
+# Integrands of the form x^m*ArcSin[a+b*x] where m is an integer 
+[x^3*arcsin(a + b*x), x, 13, -((5*a*(11 + 10*a^2)*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(96*b^4)) + ((9 + 26*a^2)*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(96*b^3) - (7*a*x^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^2) + (x^3*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(16*b) - ((3 + 24*a^2 + 8*a^4)*arcsin(a + b*x))/(32*b^4) + (1/4)*x^4*arcsin(a + b*x), -((55*a*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(96*b^4)) - (25*a^3*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^4) + (3*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(32*b^3) + (13*a^2*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^3) - (7*a*x^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^2) + (x^3*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(16*b) - (15*a^2*arcsin(a + b*x))/(16*b^4) - (5*a^4*arcsin(a + b*x))/(32*b^4) - (3*(1 - a^2)^2*arcsin(a + b*x))/(32*b^4) + (1/4)*x^4*arcsin(a + b*x)],
+[x^2*arcsin(a + b*x), x, 8, ((4 + 11*a^2)*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(18*b^3) - (5*a*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(18*b^2) + (x^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(9*b) + ((3*a + 2*a^3 + 2*b^3*x^3)*arcsin(a + b*x))/(6*b^3), (2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(9*b^3) + (11*a^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(18*b^3) - (5*a*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(18*b^2) + (x^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(9*b) + (a*arcsin(a + b*x))/(2*b^3) + (a^3*arcsin(a + b*x))/(3*b^3) + (1/3)*x^3*arcsin(a + b*x)],
+[x*arcsin(a + b*x), x, 5, -((3*a*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(4*b^2)) + (x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(4*b) - ((1 + 2*a^2)*arcsin(a + b*x))/(4*b^2) + (1/2)*x^2*arcsin(a + b*x), -((3*a*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(4*b^2)) + (x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(4*b) - arcsin(a + b*x)/(4*b^2) - (a^2*arcsin(a + b*x))/(2*b^2) + (1/2)*x^2*arcsin(a + b*x)],
+[arcsin(a + b*x), x, 1, sqrt(1 - (a + b*x)^2)/b + ((a + b*x)*arcsin(a + b*x))/b],
+[arcsin(a + b*x)/x, x, -3, (1/8)*I*(Pi - 2*arcsin(a + b*x))^2 + (1/2)*Pi*log(b*x) - 2*I*arctanh(((1 + a)*(-1 + a + b*x - I*sqrt(1 - (a + b*x)^2)))/(sqrt(-1 + a^2)*(1 + a + b*x - I*sqrt(1 - (a + b*x)^2))))*(log(2) - 2*log(I*sqrt(1 - a) + sqrt(1 + a))) - (arccos(a + b*x) + I*(log(2) - 2*log(I*sqrt(1 - a) + sqrt(1 + a))))*log(1 - (a + sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2))) - (arccos(a + b*x) - I*(log(2) - 2*log(I*sqrt(1 - a) + sqrt(1 + a))))*log(1 + (-a + sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2))) + I*polylog(2, (a - sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2))) + I*polylog(2, (a + sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2)))],
+[arcsin(a + b*x)/x^2, x, 2, -(arcsin(a + b*x)/x) - (b*arctanh((1 - a^2 - a*b*x)/(sqrt(1 - a^2)*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))))/sqrt(1 - a^2)],
+[arcsin(a + b*x)/x^3, x, 3, -((b*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(2*(1 - a^2)*x)) - arcsin(a + b*x)/(2*x^2) - (a*b^2*arctanh((1 - a^2 - a*b*x)/(sqrt(1 - a^2)*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))))/(2*(1 - a^2)^(3/2))],
+
+
+# Integrands of the form x^m*ArcSin[a+b*x]^2 where m is an integer 
+[x^3*arcsin(a + b*x)^2, x, 15, (4*a*(a + b*x))/(3*b^4) + (2*a^3*(a + b*x))/b^4 - (3*(a + b*x)^2)/(32*b^4) - (3*a^2*(a + b*x)^2)/(4*b^4) + (2*a*(a + b*x)^3)/(9*b^4) - (a + b*x)^4/(32*b^4) - (55*a*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(48*b^4) - (a^3*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(2*b^4) + (3*x*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(16*b^3) + (3*a^2*x*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(2*b^3) - (2*a*(a + b*x)^2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(3*b^4) + ((a + b*x)^3*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(8*b^4) - (3*arcsin(a + b*x)^2)/(32*b^4) - (3*a^2*arcsin(a + b*x)^2)/(4*b^4) - (a^4*arcsin(a + b*x)^2)/(4*b^4) + (1/4)*x^4*arcsin(a + b*x)^2],
+[x^2*arcsin(a + b*x)^2, x, 12, -((4*(a + b*x))/(9*b^3)) - (2*a^2*(a + b*x))/b^3 + (a*(a + b*x)^2)/(2*b^3) - (2*(a + b*x)^3)/(27*b^3) + (4*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(9*b^3) + (a^2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/b^3 - (a*x*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/b^2 + (2*(a + b*x)^2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(9*b^3) + (a*arcsin(a + b*x)^2)/(2*b^3) + (a^3*arcsin(a + b*x)^2)/(3*b^3) + (1/3)*x^3*arcsin(a + b*x)^2],
+[x*arcsin(a + b*x)^2, x, 9, (2*a*(a + b*x))/b^2 - (a + b*x)^2/(4*b^2) - (3*a*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(2*b^2) + (x*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/(2*b) - arcsin(a + b*x)^2/(4*b^2) - (a*(a + b*x)*arcsin(a + b*x)^2)/b^2 + ((a + b*x)^2*arcsin(a + b*x)^2)/(2*b^2)],
+[arcsin(a + b*x)^2, x, 2, -2*x + (2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/b + ((a + b*x)*arcsin(a + b*x)^2)/b],
+[arcsin(a + b*x)^2/x, x, 3, subst(Int((x^2*cos(x))/(-a + sin(x)), x), x, arcsin(a + b*x))],
+[arcsin(a + b*x)^2/x^2, x, 10, -(arcsin(a + b*x)^2/x) + (2*I*b*arcsin(a + b*x)*log(1 + (I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2))))/sqrt(-1 + a^2) - (2*I*b*arcsin(a + b*x)*log(1 + (I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2))))/sqrt(-1 + a^2) + (2*b*polylog(2, -((I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2)))))/sqrt(-1 + a^2) - (2*b*polylog(2, -((I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2)))))/sqrt(-1 + a^2)],
+[arcsin(a + b*x)^2/x^3, x, 15, -((b*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x))/((1 - a^2)*x)) - arcsin(a + b*x)^2/(2*x^2) - (I*a*b^2*arcsin(a + b*x)*log(1 + (I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2))))/(-1 + a^2)^(3/2) + (I*a*b^2*arcsin(a + b*x)*log(1 + (I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2))))/(-1 + a^2)^(3/2) + (b^2*log((-b)*x))/(1 - a^2) - (a*b^2*polylog(2, -((I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2)))))/(-1 + a^2)^(3/2) + (a*b^2*polylog(2, -((I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2)))))/(-1 + a^2)^(3/2)],
+
+
+# Integrands of the form x^m*ArcSin[a+b*x]^3 where m is an integer 
+[x^2*arcsin(a + b*x)^3, x, 17, -((14*sqrt(1 - (a + b*x)^2))/(9*b^3)) - (21*a^2*sqrt(1 - (a + b*x)^2))/(4*b^3) + (3*a*x*sqrt(1 - (a + b*x)^2))/(4*b^2) + (2*(1 - (a + b*x)^2)^(3/2))/(27*b^3) - (25*a*arcsin(a + b*x))/(12*b^3) - (4*x*arcsin(a + b*x))/(3*b^2) - (6*a^2*(a + b*x)*arcsin(a + b*x))/b^3 + (3*a*(a + b*x)^2*arcsin(a + b*x))/(2*b^3) - (2*(a + b*x)^3*arcsin(a + b*x))/(9*b^3) + (2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/(3*b^3) + (3*a^2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/(2*b^3) - (3*a*x*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/(2*b^2) + ((a + b*x)^2*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/(3*b^3) + (a*arcsin(a + b*x)^3)/(2*b^3) + (a^3*arcsin(a + b*x)^3)/(3*b^3) + (1/3)*x^3*arcsin(a + b*x)^3],
+[x*arcsin(a + b*x)^3, x, 11, (45*a*sqrt(1 - (a + b*x)^2))/(8*b^2) - (3*x*sqrt(1 - (a + b*x)^2))/(8*b) + (3*arcsin(a + b*x))/(8*b^2) + (6*a*(a + b*x)*arcsin(a + b*x))/b^2 - (3*(a + b*x)^2*arcsin(a + b*x))/(4*b^2) - (9*a*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/(4*b^2) + (3*x*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/(4*b) - arcsin(a + b*x)^3/(4*b^2) - (a*(a + b*x)*arcsin(a + b*x)^3)/b^2 + ((a + b*x)^2*arcsin(a + b*x)^3)/(2*b^2)],
+[arcsin(a + b*x)^3, x, 2, -((6*sqrt(1 - (a + b*x)^2))/b) - (6*(a + b*x)*arcsin(a + b*x))/b + (3*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^2)/b + ((a + b*x)*arcsin(a + b*x)^3)/b],
+[arcsin(a + b*x)^3/x, x, 3, subst(Int((x^3*cos(x))/(-a + sin(x)), x), x, arcsin(a + b*x))],
+[arcsin(a + b*x)^3/x^2, x, 12, -(arcsin(a + b*x)^3/x) + (3*I*b*arcsin(a + b*x)^2*log(1 + (I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2))))/sqrt(-1 + a^2) - (3*I*b*arcsin(a + b*x)^2*log(1 + (I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2))))/sqrt(-1 + a^2) + (6*b*arcsin(a + b*x)*polylog(2, -((I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2)))))/sqrt(-1 + a^2) - (6*b*arcsin(a + b*x)*polylog(2, -((I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2)))))/sqrt(-1 + a^2) + (6*I*b*polylog(3, -((I*exp(I*arcsin(a + b*x)))/(a - sqrt(-1 + a^2)))))/sqrt(-1 + a^2) - (6*I*b*polylog(3, -((I*exp(I*arcsin(a + b*x)))/(a + sqrt(-1 + a^2)))))/sqrt(-1 + a^2)],
+
+
+# Integrands of the form x^m/ArcSin[a+b*x] where m is an integer 
+[x^2/arcsin(a + b*x), x, 11, ((1 + 4*a^2)*Ci(arcsin(a + b*x)))/(4*b^3) - Ci(3*arcsin(a + b*x))/(4*b^3) - (a*Si(2*arcsin(a + b*x)))/b^3],
+[x/arcsin(a + b*x), x, 7, -((a*Ci(arcsin(a + b*x)))/b^2) + Si(2*arcsin(a + b*x))/(2*b^2)],
+[1/arcsin(a + b*x), x, 1, Ci(arcsin(a + b*x))/b],
+[1/(x*arcsin(a + b*x)), x, 3, subst(Int(cos(x)/(x*(-a + sin(x))), x), x, arcsin(a + b*x))],
+
+
+# Integrands of the form x^m/ArcSin[a+b*x]^2 where m is an integer 
+[x^2/arcsin(a + b*x)^2, x, 15, -((x^2*sqrt(1 - (a + b*x)^2))/(b*arcsin(a + b*x))) - (2*a*Ci(2*arcsin(a + b*x)))/b^3 - ((1 + 4*a^2)*Si(arcsin(a + b*x)))/(4*b^3) + (3*Si(3*arcsin(a + b*x)))/(4*b^3), -(sqrt(1 - (a + b*x)^2)/(4*b^3*arcsin(a + b*x))) - (a^2*sqrt(1 - (a + b*x)^2))/(b^3*arcsin(a + b*x)) + cos(3*arcsin(a + b*x))/(4*b^3*arcsin(a + b*x)) - (2*a*Ci(2*arcsin(a + b*x)))/b^3 + (a*sin(2*arcsin(a + b*x)))/(b^3*arcsin(a + b*x)) - ((1 + 4*a^2)*Si(arcsin(a + b*x)))/(4*b^3) + (3*Si(3*arcsin(a + b*x)))/(4*b^3)],
+[x/arcsin(a + b*x)^2, x, 9, -((x*sqrt(1 - (a + b*x)^2))/(b*arcsin(a + b*x))) + Ci(2*arcsin(a + b*x))/b^2 + (a*Si(arcsin(a + b*x)))/b^2, (a*sqrt(1 - (a + b*x)^2))/(b^2*arcsin(a + b*x)) + Ci(2*arcsin(a + b*x))/b^2 - sin(2*arcsin(a + b*x))/(2*b^2*arcsin(a + b*x)) + (a*Si(arcsin(a + b*x)))/b^2],
+[1/arcsin(a + b*x)^2, x, 1, -(sqrt(1 - (a + b*x)^2)/(b*arcsin(a + b*x))) - Si(arcsin(a + b*x))/b],
+[1/(x*arcsin(a + b*x)^2), x, 3, subst(Int(cos(x)/(x^2*(-a + sin(x))), x), x, arcsin(a + b*x))],
+
+
+# Integrands of the form x^m/ArcSin[a+b*x]^3 where m is an integer 
+[x^2/arcsin(a + b*x)^3, x, 19, -((x^2*sqrt(1 - (a + b*x)^2))/(2*b*arcsin(a + b*x)^2)) + (a^2*(a + b*x))/(2*b^3*arcsin(a + b*x)) - (2*a*(a + b*x)^2)/(b^3*arcsin(a + b*x)) + (9*a + b*x)/(8*b^3*arcsin(a + b*x)) - ((1 + 4*a^2)*Ci(arcsin(a + b*x)))/(8*b^3) + (9*Ci(3*arcsin(a + b*x)))/(8*b^3) - (3*sin(3*arcsin(a + b*x)))/(8*b^3*arcsin(a + b*x)) + (2*a*Si(2*arcsin(a + b*x)))/b^3, -(sqrt(1 - (a + b*x)^2)/(8*b^3*arcsin(a + b*x)^2)) - (a^2*sqrt(1 - (a + b*x)^2))/(2*b^3*arcsin(a + b*x)^2) + (a^2*(a + b*x))/(2*b^3*arcsin(a + b*x)) - (2*a*(a + b*x)^2)/(b^3*arcsin(a + b*x)) + (9*a + b*x)/(8*b^3*arcsin(a + b*x)) + cos(3*arcsin(a + b*x))/(8*b^3*arcsin(a + b*x)^2) - ((1 + 4*a^2)*Ci(arcsin(a + b*x)))/(8*b^3) + (9*Ci(3*arcsin(a + b*x)))/(8*b^3) + (a*sin(2*arcsin(a + b*x)))/(2*b^3*arcsin(a + b*x)^2) - (3*sin(3*arcsin(a + b*x)))/(8*b^3*arcsin(a + b*x)) + (2*a*Si(2*arcsin(a + b*x)))/b^3],
+[x/arcsin(a + b*x)^3, x, 11, -((x*sqrt(1 - (a + b*x)^2))/(2*b*arcsin(a + b*x)^2)) - (a*(a + b*x))/(2*b^2*arcsin(a + b*x)) - (1 - 2*(a + b*x)^2)/(2*b^2*arcsin(a + b*x)) + (a*Ci(arcsin(a + b*x)))/(2*b^2) - Si(2*arcsin(a + b*x))/b^2, (a*sqrt(1 - (a + b*x)^2))/(2*b^2*arcsin(a + b*x)^2) - (a*(a + b*x))/(2*b^2*arcsin(a + b*x)) - (1 - 2*(a + b*x)^2)/(2*b^2*arcsin(a + b*x)) + (a*Ci(arcsin(a + b*x)))/(2*b^2) - sin(2*arcsin(a + b*x))/(4*b^2*arcsin(a + b*x)^2) - Si(2*arcsin(a + b*x))/b^2],
+[1/arcsin(a + b*x)^3, x, 2, -(sqrt(1 - (a + b*x)^2)/(2*b*arcsin(a + b*x)^2)) + (a + b*x)/(2*b*arcsin(a + b*x)) - Ci(arcsin(a + b*x))/(2*b)],
+[1/(x*arcsin(a + b*x)^3), x, 3, subst(Int(cos(x)/(x^3*(-a + sin(x))), x), x, arcsin(a + b*x))],
+
+
+# Integrands of the form ArcSin[a+b*x]^n where n is a half-integer 
+[sqrt(arcsin(a + b*x)), x, 1, ((a + b*x)*sqrt(arcsin(a + b*x)))/b - (sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a + b*x))))/b],
+[arcsin(a + b*x)^(3/2), x, 2, (3*sqrt(1 - (a + b*x)^2)*sqrt(arcsin(a + b*x)))/(2*b) + ((a + b*x)*arcsin(a + b*x)^(3/2))/b - (3*sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a + b*x))))/(2*b)],
+[arcsin(a + b*x)^(5/2), x, 2, -((15*(a + b*x)*sqrt(arcsin(a + b*x)))/(4*b)) + (5*sqrt(1 - (a + b*x)^2)*arcsin(a + b*x)^(3/2))/(2*b) + ((a + b*x)*arcsin(a + b*x)^(5/2))/b + (15*sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a + b*x))))/(4*b)],
+[1/sqrt(arcsin(a + b*x)), x, 1, (sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a + b*x))))/b],
+[arcsin(a + b*x)^(-3/2), x, 2, -((2*sqrt(1 - (a + b*x)^2))/(b*sqrt(arcsin(a + b*x)))) - (2*sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(a + b*x))))/b],
+[arcsin(a + b*x)^(-5/2), x, 2, -((2*sqrt(1 - (a + b*x)^2))/(3*b*arcsin(a + b*x)^(3/2))) + (4*(a + b*x))/(3*b*sqrt(arcsin(a + b*x))) - (4*sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arcsin(a + b*x))))/(3*b)],
+
+
+# Integrands of the form x^m/ArcSin[a + b*x]^n where m is an integer 
+[x^2*arcsin(a + b*x)^n, x, 19, -((1/(8*b^3))*((I*(1 + 4*a^2)*arcsin(a + b*x)^n*GAMMA(1 + n, (-I)*arcsin(a + b*x)))/((-I)*arcsin(a + b*x))^n)) + (1/(8*b^3))*((I*(1 + 4*a^2)*arcsin(a + b*x)^n*GAMMA(1 + n, I*arcsin(a + b*x)))/(I*arcsin(a + b*x))^n) - (1/b^3)*(I*2^(-2 - n)*a*((-I)*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, -2*I*arcsin(a + b*x))) + (1/b^3)*(I*2^(-2 - n)*a*(I*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, 2*I*arcsin(a + b*x))) + (1/(8*b^3))*(3^(-1 - n)*((-I)*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, -3*I*arcsin(a + b*x))) + (1/(8*b^3))*(3^(-1 - n)*(I*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, 3*I*arcsin(a + b*x)))],
+[x*arcsin(a + b*x)^n, x, 11, (a*((-I)*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, (-I)*arcsin(a + b*x)))/(2*b^2) + (a*(I*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, I*arcsin(a + b*x)))/(2*b^2) + (I*2^(-3 - n)*((-I)*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, -2*I*arcsin(a + b*x)))/b^2 - (I*2^(-3 - n)*(I*arcsin(a + b*x))^(-1 - n)*arcsin(a + b*x)^(1 + n)*GAMMA(1 + n, 2*I*arcsin(a + b*x)))/b^2],
+[arcsin(a + b*x)^n, x, 1, -((I*arcsin(a + b*x)^n*(GAMMA(1 + n, (-I)*arcsin(a + b*x))/((-I)*arcsin(a + b*x))^n - GAMMA(1 + n, I*arcsin(a + b*x))/(I*arcsin(a + b*x))^n))/(2*b))],
+[arcsin(a + b*x)^n/x, x, 3, subst(Int((x^n*cos(x))/(-a + sin(x)), x), x, arcsin(a + b*x))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m (a+b ArcSin[c x])^n
+
+
+# Integrands of the form (a+b*ArcSin[c*x])^n where n is a half-integer 
+[(a + b*arcsin(c*x))^(5/2), x, 9, (-(15/4))*b^2*x*sqrt(a + b*arcsin(c*x)) + (5*b*sqrt(1 - c^2*x^2)*(a + b*arcsin(c*x))^(3/2))/(2*c) + x*(a + b*arcsin(c*x))^(5/2) + (15*b^(5/2)*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(4*c) - (15*b^(5/2)*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(4*c)],
+[(a + b*arcsin(c*x))^(3/2), x, 8, (3*b*sqrt(1 - c^2*x^2)*sqrt(a + b*arcsin(c*x)))/(2*c) + x*(a + b*arcsin(c*x))^(3/2) - (3*b^(3/2)*sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(2*c) - (3*b^(3/2)*sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(2*c)],
+[(a + b*arcsin(c*x))^(1/2), x, 7, x*sqrt(a + b*arcsin(c*x)) - (sqrt(b)*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/c + (sqrt(b)*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/c],
+[1/(a + b*arcsin(c*x))^(1/2), x, 6, (sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(sqrt(b)*c) + (sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(sqrt(b)*c)],
+[1/(a + b*arcsin(c*x))^(3/2), x, 7, -((2*sqrt(1 - c^2*x^2))/(b*c*sqrt(a + b*arcsin(c*x)))) - (2*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(3/2)*c) + (2*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(b^(3/2)*c)],
+[1/(a + b*arcsin(c*x))^(5/2), x, 8, -((2*sqrt(1 - c^2*x^2))/(3*b*c*(a + b*arcsin(c*x))^(3/2))) + (4*x)/(3*b^2*sqrt(a + b*arcsin(c*x))) - (4*sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(3*b^(5/2)*c) - (4*sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(3*b^(5/2)*c)],
+[1/(a + b*arcsin(c*x))^(7/2), x, 9, -((2*sqrt(1 - c^2*x^2))/(5*b*c*(a + b*arcsin(c*x))^(5/2))) + (4*x)/(15*b^2*(a + b*arcsin(c*x))^(3/2)) + (8*sqrt(1 - c^2*x^2))/(15*b^3*c*sqrt(a + b*arcsin(c*x))) + (8*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(15*b^(7/2)*c) - (8*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(15*b^(7/2)*c)],
+
+
+# Integrands of the form x*(a+b*ArcSin[c*x])^n where n is a half-integer 
+[x*(a + b*arcsin(c*x))^(5/2), x, 9, (15*b^2*sqrt(a + b*arcsin(c*x))*cos(2*arcsin(c*x)))/(64*c^2) - ((a + b*arcsin(c*x))^(5/2)*cos(2*arcsin(c*x)))/(4*c^2) - (15*b^(5/2)*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(128*c^2) - (15*b^(5/2)*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(128*c^2) + (5*b*(a + b*arcsin(c*x))^(3/2)*sin(2*arcsin(c*x)))/(16*c^2)],
+[x*(a + b*arcsin(c*x))^(3/2), x, 8, -(((a + b*arcsin(c*x))^(3/2)*cos(2*arcsin(c*x)))/(4*c^2)) - (3*b^(3/2)*sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(32*c^2) + (3*b^(3/2)*sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(32*c^2) + (3*b*sqrt(a + b*arcsin(c*x))*sin(2*arcsin(c*x)))/(16*c^2)],
+[x*(a + b*arcsin(c*x))^(1/2), x, 7, -((sqrt(a + b*arcsin(c*x))*cos(2*arcsin(c*x)))/(4*c^2)) + (sqrt(b)*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(8*c^2) + (sqrt(b)*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(8*c^2)],
+[x/(a + b*arcsin(c*x))^(1/2), x, 6, (sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(2*sqrt(b)*c^2) - (sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(2*sqrt(b)*c^2)],
+[x/(a + b*arcsin(c*x))^(3/2), x, 7, (2*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(b^(3/2)*c^2) + (2*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(b^(3/2)*c^2) - sin(2*arcsin(c*x))/(b*c^2*sqrt(a + b*arcsin(c*x)))],
+[x/(a + b*arcsin(c*x))^(5/2), x, 8, -((4*cos(2*arcsin(c*x)))/(3*b^2*c^2*sqrt(a + b*arcsin(c*x)))) - (8*sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(3*b^(5/2)*c^2) + (8*sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(3*b^(5/2)*c^2) - sin(2*arcsin(c*x))/(3*b*c^2*(a + b*arcsin(c*x))^(3/2))],
+[x/(a + b*arcsin(c*x))^(7/2), x, 9, -((4*cos(2*arcsin(c*x)))/(15*b^2*c^2*(a + b*arcsin(c*x))^(3/2))) - (32*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi))))/(15*b^(7/2)*c^2) - (32*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(15*b^(7/2)*c^2) - sin(2*arcsin(c*x))/(5*b*c^2*(a + b*arcsin(c*x))^(5/2)) + (16*sin(2*arcsin(c*x)))/(15*b^3*c^2*sqrt(a + b*arcsin(c*x)))],
+
+
+# Integrands of the form x^2*(a+b*ArcSin[c*x])^n where n is a half-integer 
+[x^2*(a + b*arcsin(c*x))^(5/2), x, 20, -((5*b^2*x*sqrt(a + b*arcsin(c*x)))/(6*c^2)) - (5/36)*b^2*x^3*sqrt(a + b*arcsin(c*x)) + (5*b*sqrt(1 - c^2*x^2)*(a + b*arcsin(c*x))^(3/2))/(9*c^3) + (5*b*x^2*sqrt(1 - c^2*x^2)*(a + b*arcsin(c*x))^(3/2))/(18*c) + (1/3)*x^3*(a + b*arcsin(c*x))^(5/2) + (15*b^(5/2)*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(16*c^3) - (5*b^(5/2)*sqrt(Pi/6)*cos((3*a)/b)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(144*c^3) - (15*b^(5/2)*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(16*c^3) + (5*b^(5/2)*sqrt(Pi/6)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(144*c^3)],
+[x^2*(a + b*arcsin(c*x))^(3/2), x, 15, (b*sqrt(1 - c^2*x^2)*sqrt(a + b*arcsin(c*x)))/(3*c^3) + (b*x^2*sqrt(1 - c^2*x^2)*sqrt(a + b*arcsin(c*x)))/(6*c) + (1/3)*x^3*(a + b*arcsin(c*x))^(3/2) - (3*b^(3/2)*sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(8*c^3) + (b^(3/2)*sqrt(Pi/6)*cos((3*a)/b)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(24*c^3) - (3*b^(3/2)*sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(8*c^3) + (b^(3/2)*sqrt(Pi/6)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(24*c^3), (3*b*sqrt(1 - c^2*x^2)*sqrt(a + b*arcsin(c*x)))/(8*c^3) + (1/3)*x^3*(a + b*arcsin(c*x))^(3/2) - (b*sqrt(a + b*arcsin(c*x))*cos(3*arcsin(c*x)))/(24*c^3) - (3*b^(3/2)*sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(8*c^3) + (b^(3/2)*sqrt(Pi/6)*cos((3*a)/b)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(24*c^3) - (3*b^(3/2)*sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(8*c^3) + (b^(3/2)*sqrt(Pi/6)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(24*c^3)],
+[x^2*(a + b*arcsin(c*x))^(1/2), x, 13, (1/3)*x^3*sqrt(a + b*arcsin(c*x)) - (sqrt(b)*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(4*c^3) + (sqrt(b)*sqrt(Pi/6)*cos((3*a)/b)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(12*c^3) + (sqrt(b)*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(4*c^3) - (sqrt(b)*sqrt(Pi/6)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(12*c^3)],
+[x^2/(a + b*arcsin(c*x))^(1/2), x, 12, (sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(2*sqrt(b)*c^3) - (sqrt(Pi/6)*cos((3*a)/b)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(2*sqrt(b)*c^3) + (sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(2*sqrt(b)*c^3) - (sqrt(Pi/6)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(2*sqrt(b)*c^3)],
+[x^2/(a + b*arcsin(c*x))^(3/2), x, 14, -((2*x^2*sqrt(1 - c^2*x^2))/(b*c*sqrt(a + b*arcsin(c*x)))) - (sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(3/2)*c^3) + (sqrt((3*Pi)/2)*cos((3*a)/b)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(3/2)*c^3) + (sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(b^(3/2)*c^3) - (sqrt((3*Pi)/2)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(b^(3/2)*c^3), -(sqrt(1 - c^2*x^2)/(2*b*c^3*sqrt(a + b*arcsin(c*x)))) + cos(3*arcsin(c*x))/(2*b*c^3*sqrt(a + b*arcsin(c*x))) - (sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(3/2)*c^3) + (sqrt((3*Pi)/2)*cos((3*a)/b)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(3/2)*c^3) + (sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(b^(3/2)*c^3) - (sqrt((3*Pi)/2)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(b^(3/2)*c^3)],
+[x^2/(a + b*arcsin(c*x))^(5/2), x, 16, -((2*x^2*sqrt(1 - c^2*x^2))/(3*b*c*(a + b*arcsin(c*x))^(3/2))) - (8*x)/(3*b^2*c^2*sqrt(a + b*arcsin(c*x))) + (4*x^3)/(b^2*sqrt(a + b*arcsin(c*x))) - (sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(3*b^(5/2)*c^3) + (sqrt(6*Pi)*cos((3*a)/b)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(5/2)*c^3) - (sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(3*b^(5/2)*c^3) + (sqrt(6*Pi)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(b^(5/2)*c^3), -(sqrt(1 - c^2*x^2)/(6*b*c^3*(a + b*arcsin(c*x))^(3/2))) + x/(3*b^2*c^2*sqrt(a + b*arcsin(c*x))) + cos(3*arcsin(c*x))/(6*b*c^3*(a + b*arcsin(c*x))^(3/2)) - (sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(3*b^(5/2)*c^3) + (sqrt(6*Pi)*cos((3*a)/b)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(b^(5/2)*c^3) - (sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(3*b^(5/2)*c^3) + (sqrt(6*Pi)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(b^(5/2)*c^3) - sin(3*arcsin(c*x))/(b^2*c^3*sqrt(a + b*arcsin(c*x)))],
+[x^2/(a + b*arcsin(c*x))^(7/2), x, 18, -((2*x^2*sqrt(1 - c^2*x^2))/(5*b*c*(a + b*arcsin(c*x))^(5/2))) - (8*x)/(15*b^2*c^2*(a + b*arcsin(c*x))^(3/2)) + (4*x^3)/(5*b^2*(a + b*arcsin(c*x))^(3/2)) - (16*sqrt(1 - c^2*x^2))/(15*b^3*c^3*sqrt(a + b*arcsin(c*x))) + (24*x^2*sqrt(1 - c^2*x^2))/(5*b^3*c*sqrt(a + b*arcsin(c*x))) + (2*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(15*b^(7/2)*c^3) - (6*sqrt(6*Pi)*cos((3*a)/b)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(5*b^(7/2)*c^3) - (2*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(15*b^(7/2)*c^3) + (6*sqrt(6*Pi)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(5*b^(7/2)*c^3), -(sqrt(1 - c^2*x^2)/(10*b*c^3*(a + b*arcsin(c*x))^(5/2))) + x/(15*b^2*c^2*(a + b*arcsin(c*x))^(3/2)) + (2*sqrt(1 - c^2*x^2))/(15*b^3*c^3*sqrt(a + b*arcsin(c*x))) + cos(3*arcsin(c*x))/(10*b*c^3*(a + b*arcsin(c*x))^(5/2)) - (6*cos(3*arcsin(c*x)))/(5*b^3*c^3*sqrt(a + b*arcsin(c*x))) + (2*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(15*b^(7/2)*c^3) - (6*sqrt(6*Pi)*cos((3*a)/b)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b)))/(5*b^(7/2)*c^3) - (2*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin(a/b))/(15*b^(7/2)*c^3) + (6*sqrt(6*Pi)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c*x)))/sqrt(b))*sin((3*a)/b))/(5*b^(7/2)*c^3) - sin(3*arcsin(c*x))/(5*b^2*c^3*(a + b*arcsin(c*x))^(3/2))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m (a+b ArcSin[c+d x])^n
+
+
+# Integrands of the form (a+b*ArcSin[c+d*x])^n where n is a half-integer 
+[(a + b*arcsin(c + d*x))^(5/2), x, 9, -((15*b^2*(c + d*x)*sqrt(a + b*arcsin(c + d*x)))/(4*d)) + (5*b*sqrt(1 - (c + d*x)^2)*(a + b*arcsin(c + d*x))^(3/2))/(2*d) + ((c + d*x)*(a + b*arcsin(c + d*x))^(5/2))/d + (15*b^(5/2)*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(4*d) - (15*b^(5/2)*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(4*d)],
+[(a + b*arcsin(c + d*x))^(3/2), x, 8, (3*b*sqrt(1 - (c + d*x)^2)*sqrt(a + b*arcsin(c + d*x)))/(2*d) + ((c + d*x)*(a + b*arcsin(c + d*x))^(3/2))/d - (3*b^(3/2)*sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(2*d) - (3*b^(3/2)*sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(2*d)],
+[(a + b*arcsin(c + d*x))^(1/2), x, 7, ((c + d*x)*sqrt(a + b*arcsin(c + d*x)))/d - (sqrt(b)*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/d + (sqrt(b)*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/d],
+[1/(a + b*arcsin(c + d*x))^(1/2), x, 6, (sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(sqrt(b)*d) + (sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(sqrt(b)*d)],
+[1/(a + b*arcsin(c + d*x))^(3/2), x, 7, -((2*sqrt(1 - (c + d*x)^2))/(b*d*sqrt(a + b*arcsin(c + d*x)))) - (2*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(b^(3/2)*d) + (2*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(b^(3/2)*d)],
+[1/(a + b*arcsin(c + d*x))^(5/2), x, 8, -((2*sqrt(1 - (c + d*x)^2))/(3*b*d*(a + b*arcsin(c + d*x))^(3/2))) + (4*(c + d*x))/(3*b^2*d*sqrt(a + b*arcsin(c + d*x))) - (4*sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(3*b^(5/2)*d) - (4*sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(3*b^(5/2)*d)],
+[1/(a + b*arcsin(c + d*x))^(7/2), x, 9, -((2*sqrt(1 - (c + d*x)^2))/(5*b*d*(a + b*arcsin(c + d*x))^(5/2))) + (4*(c + d*x))/(15*b^2*d*(a + b*arcsin(c + d*x))^(3/2)) + (8*sqrt(1 - (c + d*x)^2))/(15*b^3*d*sqrt(a + b*arcsin(c + d*x))) + (8*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(15*b^(7/2)*d) - (8*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(15*b^(7/2)*d)],
+[(a + b*arcsin(c + d*x))^n, x, 5, -(((a + b*arcsin(c + d*x))^(1 + n)*(-((I*(a + b*arcsin(c + d*x)))/b))^(-1 - n)*GAMMA(1 + n, -((I*(a + b*arcsin(c + d*x)))/b)))/(exp((I*a)/b)*(2*b*d))) - (exp((I*a)/b)*(a + b*arcsin(c + d*x))^(1 + n)*((I*(a + b*arcsin(c + d*x)))/b)^(-1 - n)*GAMMA(1 + n, (I*(a + b*arcsin(c + d*x)))/b))/(2*b*d)],
+
+
+# Integrands of the form x*(a+b*ArcSin[c+d*x])^n where n is a half-integer 
+[x*(a + b*arcsin(c + d*x))^(5/2), x, 18, (15*b^2*c*(c + d*x)*sqrt(a + b*arcsin(c + d*x)))/(4*d^2) - (5*b*c*sqrt(1 - (c + d*x)^2)*(a + b*arcsin(c + d*x))^(3/2))/(2*d^2) - (c*(c + d*x)*(a + b*arcsin(c + d*x))^(5/2))/d^2 + (15*b^2*sqrt(a + b*arcsin(c + d*x))*cos(2*arcsin(c + d*x)))/(64*d^2) - ((a + b*arcsin(c + d*x))^(5/2)*cos(2*arcsin(c + d*x)))/(4*d^2) - (15*b^(5/2)*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(128*d^2) - (15*b^(5/2)*c*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(4*d^2) + (15*b^(5/2)*c*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(4*d^2) - (15*b^(5/2)*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(128*d^2) + (5*b*(a + b*arcsin(c + d*x))^(3/2)*sin(2*arcsin(c + d*x)))/(16*d^2)],
+[x*(a + b*arcsin(c + d*x))^(3/2), x, 16, -((3*b*c*sqrt(1 - (c + d*x)^2)*sqrt(a + b*arcsin(c + d*x)))/(2*d^2)) - (c*(c + d*x)*(a + b*arcsin(c + d*x))^(3/2))/d^2 - ((a + b*arcsin(c + d*x))^(3/2)*cos(2*arcsin(c + d*x)))/(4*d^2) + (3*b^(3/2)*c*sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(2*d^2) - (3*b^(3/2)*sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(32*d^2) + (3*b^(3/2)*c*sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(2*d^2) + (3*b^(3/2)*sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(32*d^2) + (3*b*sqrt(a + b*arcsin(c + d*x))*sin(2*arcsin(c + d*x)))/(16*d^2)],
+[x*(a + b*arcsin(c + d*x))^(1/2), x, 14, -((c*(c + d*x)*sqrt(a + b*arcsin(c + d*x)))/d^2) - (sqrt(a + b*arcsin(c + d*x))*cos(2*arcsin(c + d*x)))/(4*d^2) + (sqrt(b)*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(8*d^2) + (sqrt(b)*c*sqrt(Pi/2)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/d^2 - (sqrt(b)*c*sqrt(Pi/2)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/d^2 + (sqrt(b)*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(8*d^2)],
+[x/(a + b*arcsin(c + d*x))^(1/2), x, 12, -((c*sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(sqrt(b)*d^2)) + (sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(2*sqrt(b)*d^2) - (c*sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(sqrt(b)*d^2) - (sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(2*sqrt(b)*d^2)],
+[x/(a + b*arcsin(c + d*x))^(3/2), x, 14, (2*c*sqrt(1 - (c + d*x)^2))/(b*d^2*sqrt(a + b*arcsin(c + d*x))) + (2*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(b^(3/2)*d^2) + (2*c*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(b^(3/2)*d^2) - (2*c*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(b^(3/2)*d^2) + (2*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(b^(3/2)*d^2) - sin(2*arcsin(c + d*x))/(b*d^2*sqrt(a + b*arcsin(c + d*x)))],
+[x/(a + b*arcsin(c + d*x))^(5/2), x, 16, (2*c*sqrt(1 - (c + d*x)^2))/(3*b*d^2*(a + b*arcsin(c + d*x))^(3/2)) - (4*c*(c + d*x))/(3*b^2*d^2*sqrt(a + b*arcsin(c + d*x))) - (4*cos(2*arcsin(c + d*x)))/(3*b^2*d^2*sqrt(a + b*arcsin(c + d*x))) + (4*c*sqrt(2*Pi)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(3*b^(5/2)*d^2) - (8*sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(3*b^(5/2)*d^2) + (4*c*sqrt(2*Pi)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(3*b^(5/2)*d^2) + (8*sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(3*b^(5/2)*d^2) - sin(2*arcsin(c + d*x))/(3*b*d^2*(a + b*arcsin(c + d*x))^(3/2))],
+[x/(a + b*arcsin(c + d*x))^(7/2), x, 18, (2*c*sqrt(1 - (c + d*x)^2))/(5*b*d^2*(a + b*arcsin(c + d*x))^(5/2)) - (4*c*(c + d*x))/(15*b^2*d^2*(a + b*arcsin(c + d*x))^(3/2)) - (8*c*sqrt(1 - (c + d*x)^2))/(15*b^3*d^2*sqrt(a + b*arcsin(c + d*x))) - (4*cos(2*arcsin(c + d*x)))/(15*b^2*d^2*(a + b*arcsin(c + d*x))^(3/2)) - (32*sqrt(Pi)*cos((2*a)/b)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(15*b^(7/2)*d^2) - (8*c*sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(15*b^(7/2)*d^2) + (8*c*sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(15*b^(7/2)*d^2) - (32*sqrt(Pi)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(15*b^(7/2)*d^2) - sin(2*arcsin(c + d*x))/(5*b*d^2*(a + b*arcsin(c + d*x))^(5/2)) + (16*sin(2*arcsin(c + d*x)))/(15*b^3*d^2*sqrt(a + b*arcsin(c + d*x)))],
+# {x*(a + b*ArcSin[c + d*x])^n, x, 0, ((1/d^2)*2^(-3 - n)*(a + b*ArcSin[c + d*x])^n*((-((I*(a + b*ArcSin[c + d*x]))/b)^n)*Cos[(2*a)/b]*Gamma[1 + n, -((2*I*(a + b*ArcSin[c + d*x]))/b)] - (-((I*(a + b*ArcSin[c + d*x]))/b))^n*Cos[(2*a)/b]*Gamma[1 + n, (2*I*(a + b*ArcSin[c + d*x]))/b] + 2^(2 + n)*c*(-((I*(a + b*ArcSin[c + d*x]))/b))^n*Gamma[1 + n, (I*(a + b*ArcSin[c + d*x]))/b]*((-I)*Cos[a/b] + Sin[a/b]) + 2^(2 + n)*c*((I*(a + b*ArcSin[c + d*x]))/b)^n*Gamma[1 + n, -((I*(a + b*ArcSin[c + d*x]))/b)]*(I*Cos[a/b] + Sin[a/b]) + I*((I*(a + b*ArcSin[c + d*x]))/b)^n*Gamma[1 + n, -((2*I*(a + b*ArcSin[c + d*x]))/b)]*Sin[(2*a)/b] - I*(-((I*(a + b*ArcSin[c + d*x]))/b))^n*Gamma[1 + n, (2*I*(a + b*ArcSin[c + d*x]))/b]*Sin[(2*a)/b]))/((a + b*ArcSin[c + d*x])^2/b^2)^n} 
+
+
+# Integrands of the form x^2*(a+b*ArcSin[c+d*x])^n where n is a half-integer 
+# {x^2*(a + b*ArcSin[c + d*x])^(3/2), x, 30, (3*b*Sqrt[1 - (c + d*x)^2]*Sqrt[a + b*ArcSin[c + d*x]])/(8*d^3) + (3*b*c^2*Sqrt[1 - (c + d*x)^2]*Sqrt[a + b*ArcSin[c + d*x]])/(2*d^3) + ((c + d*x)*(a + b*ArcSin[c + d*x])^(3/2))/(4*d^3) + (c^2*(c + d*x)*(a + b*ArcSin[c + d*x])^(3/2))/d^3 + (c*(a + b*ArcSin[c + d*x])^(3/2)*Cos[2*ArcSin[c + d*x]])/(2*d^3) - (b*Sqrt[a + b*ArcSin[c + d*x]]*Cos[3*ArcSin[c + d*x]])/(24*d^3) - (3*b^(3/2)*(1 + 4*c^2)*Sqrt[Pi/2]*Cos[a/b]*FresnelC[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(8*d^3) + (b^(3/2)*Sqrt[Pi/6]*Cos[(3*a)/b]*FresnelC[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(24*d^3) + (3*b^(3/2)*c*Sqrt[Pi]*Cos[(2*a)/b]*FresnelS[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])])/(16*d^3) - (3*b^(3/2)*(1 + 4*c^2)*Sqrt[Pi/2]*FresnelS[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[a/b])/(8*d^3) - (3*b^(3/2)*c*Sqrt[Pi]*FresnelC[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])]*Sin[(2*a)/b])/(16*d^3) + (b^(3/2)*Sqrt[Pi/6]*FresnelS[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[(3*a)/b])/(24*d^3) - (3*b*c*Sqrt[a + b*ArcSin[c + d*x]]*Sin[2*ArcSin[c + d*x]])/(8*d^3) - ((a + b*ArcSin[c + d*x])^(3/2)*Sin[3*ArcSin[c + d*x]])/(12*d^3)} 
+# {x^2*(a + b*ArcSin[c + d*x])^(1/2), x, 25, (c*Sqrt[a + b*ArcSin[c + d*x]])/(2*d^3) + (c^3*Sqrt[a + b*ArcSin[c + d*x]])/(3*d^3) + (1/3)*x^3*Sqrt[a + b*ArcSin[c + d*x]] - (Sqrt[b]*c*Sqrt[Pi]*Cos[(2*a)/b]*FresnelC[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])])/(4*d^3) - (Sqrt[b]*(1 + 4*c^2)*Sqrt[Pi/2]*Cos[a/b]*FresnelS[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(4*d^3) + (Sqrt[b]*Sqrt[Pi/6]*Cos[(3*a)/b]*FresnelS[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(12*d^3) + (Sqrt[b]*(1 + 4*c^2)*Sqrt[Pi/2]*FresnelC[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[a/b])/(4*d^3) - (Sqrt[b]*c*Sqrt[Pi]*FresnelS[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])]*Sin[(2*a)/b])/(4*d^3) - (Sqrt[b]*Sqrt[Pi/6]*FresnelC[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[(3*a)/b])/(12*d^3)} 
+[x^2/(a + b*arcsin(c + d*x))^(1/2), x, 22, ((1 + 4*c^2)*sqrt(Pi/2)*cos(a/b)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(2*sqrt(b)*d^3) - (sqrt(Pi/6)*cos((3*a)/b)*FresnelC((sqrt(6/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b)))/(2*sqrt(b)*d^3) - (c*sqrt(Pi)*cos((2*a)/b)*FresnelS((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi))))/(sqrt(b)*d^3) + ((1 + 4*c^2)*sqrt(Pi/2)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin(a/b))/(2*sqrt(b)*d^3) + (c*sqrt(Pi)*FresnelC((2*sqrt(a + b*arcsin(c + d*x)))/(sqrt(b)*sqrt(Pi)))*sin((2*a)/b))/(sqrt(b)*d^3) - (sqrt(Pi/6)*FresnelS((sqrt(6/Pi)*sqrt(a + b*arcsin(c + d*x)))/sqrt(b))*sin((3*a)/b))/(2*sqrt(b)*d^3)],
+# {x^2/(a + b*ArcSin[c + d*x])^(3/2), x, 30, -((2*x^2*Sqrt[1 - (c + d*x)^2])/(b*d*Sqrt[a + b*ArcSin[c + d*x]])) - (4*c*Sqrt[Pi]*Cos[(2*a)/b]*FresnelC[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])])/(b^(3/2)*d^3) - ((1 + 4*c^2)*Sqrt[Pi/2]*Cos[a/b]*FresnelS[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(b^(3/2)*d^3) + (Sqrt[(3*Pi)/2]*Cos[(3*a)/b]*FresnelS[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(b^(3/2)*d^3) + ((1 + 4*c^2)*Sqrt[Pi/2]*FresnelC[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[a/b])/(b^(3/2)*d^3) - (4*c*Sqrt[Pi]*FresnelS[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])]*Sin[(2*a)/b])/(b^(3/2)*d^3) - (Sqrt[(3*Pi)/2]*FresnelC[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[(3*a)/b])/(b^(3/2)*d^3)} 
+# {x^2/(a + b*ArcSin[c + d*x])^(5/2), x, 30, -(Sqrt[1 - (c + d*x)^2]/(6*b*d^3*(a + b*ArcSin[c + d*x])^(3/2))) - (2*c^2*Sqrt[1 - (c + d*x)^2])/(3*b*d^3*(a + b*ArcSin[c + d*x])^(3/2)) + (c + d*x)/(3*b^2*d^3*Sqrt[a + b*ArcSin[c + d*x]]) + (4*c^2*(c + d*x))/(3*b^2*d^3*Sqrt[a + b*ArcSin[c + d*x]]) + (8*c*Cos[2*ArcSin[c + d*x]])/(3*b^2*d^3*Sqrt[a + b*ArcSin[c + d*x]]) + Cos[3*ArcSin[c + d*x]]/(6*b*d^3*(a + b*ArcSin[c + d*x])^(3/2)) - ((1 + 4*c^2)*Sqrt[2*Pi]*Cos[a/b]*FresnelC[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(3*b^(5/2)*d^3) + (Sqrt[6*Pi]*Cos[(3*a)/b]*FresnelC[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]])/(b^(5/2)*d^3) + (16*c*Sqrt[Pi]*Cos[(2*a)/b]*FresnelS[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])])/(3*b^(5/2)*d^3) - ((1 + 4*c^2)*Sqrt[2*Pi]*FresnelS[(Sqrt[2/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[a/b])/(3*b^(5/2)*d^3) - (16*c*Sqrt[Pi]*FresnelC[(2*Sqrt[a + b*ArcSin[c + d*x]])/(Sqrt[b]*Sqrt[Pi])]*Sin[(2*a)/b])/(3*b^(5/2)*d^3) + (Sqrt[6*Pi]*FresnelS[(Sqrt[6/Pi]*Sqrt[a + b*ArcSin[c + d*x]])/Sqrt[b]]*Sin[(3*a)/b])/(b^(5/2)*d^3) + (2*c*Sin[2*ArcSin[c + d*x]])/(3*b*d^3*(a + b*ArcSin[c + d*x])^(3/2)) - Sin[3*ArcSin[c + d*x]]/(b^2*d^3*Sqrt[a + b*ArcSin[c + d*x]])} 
+# {x^2*(a + b*ArcSin[c + d*x])^n, x, 0, ((1/(24*d^3))*(a + b*ArcSin[c + d*x])^n*(12*I*c^2*((-((I*(a + b*ArcSin[c + d*x]))/b)^n)*Gamma[1 + n, -((I*(a + b*ArcSin[c + d*x]))/b)]*(Cos[a/b] - I*Sin[a/b]) + (-((I*(a + b*ArcSin[c + d*x]))/b))^n*Gamma[1 + n, (I*(a + b*ArcSin[c + d*x]))/b]*(Cos[a/b] + I*Sin[a/b])) + 3*2^(1 - n)*c*(((I*(a + b*ArcSin[c + d*x]))/b)^n*Gamma[1 + n, -((2*I*(a + b*ArcSin[c + d*x]))/b)]*(Cos[(2*a)/b] - I*Sin[(2*a)/b]) + (-((I*(a + b*ArcSin[c + d*x]))/b))^n*Gamma[1 + n, (2*I*(a + b*ArcSin[c + d*x]))/b]*(Cos[(2*a)/b] + I*Sin[(2*a)/b])) + I*(3*((-((I*(a + b*ArcSin[c + d*x]))/b)^n)*Gamma[1 + n, -((I*(a + b*ArcSin[c + d*x]))/b)]*(Cos[a/b] - I*Sin[a/b]) + (-((I*(a + b*ArcSin[c + d*x]))/b))^n*Gamma[1 + n, (I*(a + b*ArcSin[c + d*x]))/b]*(Cos[a/b] + I*Sin[a/b])) + (((I*(a + b*ArcSin[c + d*x]))/b)^n*Gamma[1 + n, -((3*I*(a + b*ArcSin[c + d*x]))/b)]*(Cos[(3*a)/b] - I*Sin[(3*a)/b]) - (-((I*(a + b*ArcSin[c + d*x]))/b))^n*Gamma[1 + n, (3*I*(a + b*ArcSin[c + d*x]))/b]*(Cos[(3*a)/b] + I*Sin[(3*a)/b]))/3^n)))/((a + b*ArcSin[c + d*x])^2/b^2)^n} 
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m ArcSin[a x^n]
+
+
+[x^3*arcsin(a*x^2), x, 5, (x^2*sqrt(1 - a^2*x^4))/(8*a) - arcsin(a*x^2)/(8*a^2) + (1/4)*x^4*arcsin(a*x^2)],
+[x^2*arcsin(a*x^2), x, 4, (2*x*sqrt(1 - a^2*x^4))/(9*a) + (1/3)*x^3*arcsin(a*x^2) - (2*EllipticF(arcsin(sqrt(a)*x), -1))/(9*a^(3/2))],
+[x*arcsin(a*x^2), x, 2, sqrt(1 - a^2*x^4)/(2*a) + (1/2)*x^2*arcsin(a*x^2)],
+[arcsin(a*x^2), x, 3, x*arcsin(a*x^2) - (2*EllipticE(arcsin(sqrt(a)*x), -1))/sqrt(a) + (2*EllipticF(arcsin(sqrt(a)*x), -1))/sqrt(a)],
+[arcsin(a*x^2)/x, x, 5, (-(1/4))*I*arcsin(a*x^2)^2 + (1/2)*arcsin(a*x^2)*log(1 - exp(2*I*arcsin(a*x^2))) - (1/4)*I*polylog(2, exp(2*I*arcsin(a*x^2)))],
+[arcsin(a*x^2)/x^2, x, 3, -(arcsin(a*x^2)/x) + 2*sqrt(a)*EllipticF(arcsin(sqrt(a)*x), -1)],
+
+
+[x^2*arcsin(a/x), x, 4, (1/6)*a*sqrt(1 - a^2/x^2)*x^2 + (1/3)*x^3*arccsc(x/a) + (1/6)*a^3*arctanh(sqrt(1 - a^2/x^2))],
+[x*arcsin(a/x), x, 3, (1/2)*a*sqrt(1 - a^2/x^2)*x + (1/2)*x^2*arccsc(x/a)],
+[arcsin(a/x), x, 4, x*arccsc(x/a) + a*arctanh(sqrt(1 - a^2/x^2))],
+[arcsin(a/x)/x, x, 5, (1/2)*I*arcsin(a/x)^2 - arcsin(a/x)*log(1 - exp(2*I*arcsin(a/x))) + (1/2)*I*polylog(2, exp(2*I*arcsin(a/x)))],
+[arcsin(a/x)/x^2, x, 4, -(sqrt(1 - a^2/x^2)/a) - arccsc(x/a)/x],
+[arcsin(a/x)/x^3, x, 5, -(sqrt(1 - a^2/x^2)/(4*a*x)) - arccsc(x/a)/(2*x^2) + arcsin(a/x)/(4*a^2)],
+[arcsin(a/x)/x^4, x, 5, -((2*sqrt(1 - a^2/x^2))/(9*a^3)) - sqrt(1 - a^2/x^2)/(9*a*x^2) - arccsc(x/a)/(3*x^3)],
+
+
+# Integrands of the form x^m*ArcSin[Sqrt[x]] where m is an integer 
+[x^2*arcsin(sqrt(x)), x, 6, (5/48)*sqrt(1 - x)*sqrt(x) + (5/72)*sqrt(1 - x)*x^(3/2) + (1/18)*sqrt(1 - x)*x^(5/2) - (5*arcsin(sqrt(x)))/48 + (1/3)*x^3*arcsin(sqrt(x))],
+[x*arcsin(sqrt(x)), x, 5, (3/16)*sqrt(1 - x)*sqrt(x) + (1/8)*sqrt(1 - x)*x^(3/2) - (3*arcsin(sqrt(x)))/16 + (1/2)*x^2*arcsin(sqrt(x))],
+[arcsin(sqrt(x)), x, 4, (1/2)*sqrt(1 - x)*sqrt(x) - arcsin(sqrt(x))/2 + x*arcsin(sqrt(x))],
+[arcsin(sqrt(x))/x, x, 5, (-I)*arcsin(sqrt(x))^2 + 2*arcsin(sqrt(x))*log(1 - exp(2*I*arcsin(sqrt(x)))) - I*polylog(2, exp(2*I*arcsin(sqrt(x))))],
+[arcsin(sqrt(x))/x^2, x, 3, -(sqrt(1 - x)/sqrt(x)) - arcsin(sqrt(x))/x],
+[arcsin(sqrt(x))/x^3, x, 4, -(sqrt(1 - x)/(6*x^(3/2))) - sqrt(1 - x)/(3*sqrt(x)) - arcsin(sqrt(x))/(2*x^2)],
+[arcsin(sqrt(x))/x^4, x, 5, -(sqrt(1 - x)/(15*x^(5/2))) - (4*sqrt(1 - x))/(45*x^(3/2)) - (8*sqrt(1 - x))/(45*sqrt(x)) - arcsin(sqrt(x))/(3*x^3)],
+[arcsin(sqrt(x))/x^5, x, 6, -(sqrt(1 - x)/(28*x^(7/2))) - (3*sqrt(1 - x))/(70*x^(5/2)) - (2*sqrt(1 - x))/(35*x^(3/2)) - (4*sqrt(1 - x))/(35*sqrt(x)) - arcsin(sqrt(x))/(4*x^4)],
+
+
+# Integrands of the form ArcTrig[a*x^n]/x 
+[arcsin(a*x^n)/x, x, 5, -((I*arcsin(a*x^n)^2)/(2*n)) + (arcsin(a*x^n)*log(1 - exp(2*I*arcsin(a*x^n))))/n - (I*polylog(2, exp(2*I*arcsin(a*x^n))))/(2*n)],
+[arcsin(a*x^5)/x, x, 5, (-(1/10))*I*arcsin(a*x^5)^2 + (1/5)*arcsin(a*x^5)*log(1 - exp(2*I*arcsin(a*x^5))) - (1/10)*I*polylog(2, exp(2*I*arcsin(a*x^5)))],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse trig functions of exponentials
+
+
+[arcsin(c*exp(a + b*x)), x, 6, -((I*arcsin(c*exp(a + b*x))^2)/(2*b)) + (arcsin(c*exp(a + b*x))*log(1 - exp(2*I*arcsin(c*exp(a + b*x)))))/b - (I*polylog(2, exp(2*I*arcsin(c*exp(a + b*x)))))/(2*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving exponentials of inverse trig functions
+
+
+# Integrands of the form x^m*E^ArcSin[x] where m is an integer 
+[x^3*E^arcsin(x), x, 5, (-(1/10))*E^arcsin(x)*cos(2*arcsin(x)) + (1/34)*E^arcsin(x)*cos(4*arcsin(x)) + (1/20)*E^arcsin(x)*sin(2*arcsin(x)) - (1/136)*E^arcsin(x)*sin(4*arcsin(x))],
+[x^2*E^arcsin(x), x, 5, (1/8)*E^arcsin(x)*x + (1/8)*E^arcsin(x)*sqrt(1 - x^2) - (1/40)*E^arcsin(x)*cos(3*arcsin(x)) - (3/40)*E^arcsin(x)*sin(3*arcsin(x))],
+[x*E^arcsin(x), x, 4, (-(1/5))*E^arcsin(x)*cos(2*arcsin(x)) + (1/10)*E^arcsin(x)*sin(2*arcsin(x))],
+[E^arcsin(x), x, 1, (1/2)*E^arcsin(x)*(x + sqrt(1 - x^2))],
+[E^arcsin(x)/x, x, 1, subst(Int(exp(x)*cot(x), x), x, arcsin(x))],
+
+
+[E^arcsin(x)/sqrt(1 - x^2), x, 2, E^arcsin(x)],
+
+
+# ::Subsection::Closed:: 
+#Problems from Calculus textbooks
+
+
+# ::Subsubsection:: 
+#Edwards and Penney Calculus
+
+
+[arcsin(x)^2/sqrt(1 - x^2), x, 2, arcsin(x)^3/3],
+[exp(x)*arcsin(exp(x)), x, 2, sqrt(1 - exp(2*x)) + exp(x)*arcsin(exp(x))],
+
+
+# ::Subsubsection:: 
+#Thomas Calculus, 8th Edition
+
+
+[2*x*arcsin(x^2), x, 3, sqrt(1 - x^4) + x^2*arcsin(x^2)],
+[arcsin(x)/sqrt(1 - x^2), x, 2, arcsin(x)^2/2],
+
+
+# ::Subsection::Closed:: 
+#Miscellaneous integrands involving inverse sines
+
+
+[arcsin(a + b*x)/((a*d)/b + d*x), x, 8, -((I*arcsin(a + b*x)^2)/(2*d)) + (arcsin(a + b*x)*log(1 - exp(2*I*arcsin(a + b*x))))/d - (I*polylog(2, exp(2*I*arcsin(a + b*x))))/(2*d)],
+
+
+[x/(sqrt(1 - x^2)*sqrt(arcsin(x))), x, 2, sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arcsin(x)))],
+[x/(sqrt(1 - x^2)*arcsin(x)), x, 2, Si(arcsin(x))],
+
+
+# Integrands of the form x^(n-1)*ArcTrig[a+b*x^n] 
+[x^3*arcsin(a + b*x^4), x, 2, sqrt(1 - (a + b*x^4)^2)/(4*b) + ((a + b*x^4)*arcsin(a + b*x^4))/(4*b)],
+[x^(n-1)*arcsin(a + b*x^n), x, 2, sqrt(1 - (a + b*x^n)^2)/(b*n) + ((a + b*x^n)*arcsin(a + b*x^n))/(b*n)],
+
+
+[sqrt(1 - x^2)*arcsin(x), x, 3, (1/4)*(1 - x^2) + (1/2)*x*sqrt(1 - x^2)*arcsin(x) + arcsin(x)^2/4],
+
+
+[arcsin(c/(a + b*x)), x, 4, ((a + b*x)*arccsc(a/c + (b*x)/c))/b + (c*arctanh(sqrt(1 - c^2/(a + b*x)^2)))/b]
+]:
