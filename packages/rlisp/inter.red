@@ -134,6 +134,60 @@ deflist ('((cont endstat) (pause endstat) (retry endstat)),'stat);
 
 flag ('(cont),'ignore);
 
+% I will have a scheme that lets me impose a limit on the size of
+% a calculation. If the limit is exceeded I will perform a "throw". I
+% use "throw" rather then "error" because errorset will often be used to
+% catch errors, so I would often find that overflowing my limit would
+% not end up causing enough of an exit!
+
+% I will count in units of 1000 so that the common case happens using
+% fixnum arithmetic.
+
+fluid '(event!-count!-countdown event!-count!-countdown1);
+
+event!-count!-countdown := nil;
+event!-count!-countdown1 := 1000;
+
+symbolic procedure event!-count!-counter n;
+  begin
+    scalar r;
+    r := event!-count!-countdown;
+    event!-count!-countdown := n;
+    event!-count!-countdown1 := 1000;
+    return r
+  end;
+
+symbolic procedure event!-count!-uncounter();
+  event!-count!-countdown := nil;
+
+symbolic procedure event!-count!-overflow();
+  <<event!-count!-countdown := nil;
+    throw('!@counter!-overflow!@, '!@counter!-overflow!@) >>;
+
+% protect something by going
+%    catch('counter!-overflow, ...);
+
+smacro procedure event!-count();
+  if izerop (event!-count!-countdown1 := isub1 event!-count!-countdown1) then <<
+    event!-count!-countdown1 := 1000;
+    if not null event!-count!-countdown and
+    zerop (event!-count!-countdown := sub1 event!-count!-countdown) then
+      event!-count!-overflow() >>;
+
+
+smacro procedure event!-count!-limit(n, u);
+<< event!-count!-counter n;
+   prog1(catch('!@counter!-overflow!@, list u),
+         event!-count!-uncounter()) >>;
+
+% A typical use of this would be:
+%
+%    event!-count!-limit(7000, % allow 7 million events before trouble
+%      perform!-some!-calculation());
+%
+% which returns an atom if the counter overflows, and otherwise a list
+% whose car is the value of the protected expression.
+
 endmodule;
 
 end;
