@@ -83,3 +83,11 @@
   (when (fluidp u)
     (remprop u 'vartype)))
 
+(de unglobal (idlist)
+  % Undeclare all in IDList as global                                    
+  (foreach u in idlist do (unglobal1 u)))
+
+(de unglobal1 (u)
+  (when (globalp u)
+    (remprop u 'vartype)))
+
