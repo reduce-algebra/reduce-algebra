@@ -694,10 +694,7 @@ symbolic procedure probably_zero(u, v);
   begin
     scalar r;
     r := event!-count!-limit(1000,
-       list('errorset,
-             mkquote list('probably_zero1, mkquote u, mkquote v),
-             t,
-             t));
+       errorset(list('probably_zero1, mkquote u, mkquote v), t, t));
     if atom r then <<
       printc "Resource limit exceeded checking equality";
       return nil >>;
@@ -833,7 +830,7 @@ symbolic procedure final_report();
     ttab 70;
     print t_invalid;
     tot := float tot;
-    set!-print!-precision 3;
+    setprintprecision 3;
     princ "@Percentages";
     ttab 40;
     prin (100.0*float t_optimal/tot);
