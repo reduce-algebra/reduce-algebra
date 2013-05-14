@@ -1581,7 +1581,7 @@ symbolic restart!-csl nil;
 
 (setq version!* "Reduce (Free CSL version)")
 
-(setq date!*  (date t))
+(setq date!* (date))
 
 (setq !*backtrace nil)
 

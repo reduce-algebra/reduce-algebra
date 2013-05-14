@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 78df26e8 10-May-2013 */
+/* Signature: 2772ab52 14-May-2013 */
 
 #include "headers.h"
 
@@ -2181,7 +2181,54 @@ Lisp_Object MS_CDECL Ldecoded_time(Lisp_Object nil, int nargs, ...)
 
 #endif
 
+/*
+ * (date)             "14-May-13"
+ * (date!-and!-time)  "Tue May 14 09:52:45 2013"
+ *
+ * Then (date t) and (date!-and!-time t) flip formats (well actually any
+ * argument will suffice).
+ */
+
 Lisp_Object MS_CDECL Ldate(Lisp_Object nil, int nargs, ...)
+{
+    Lisp_Object w;
+    time_t t = time(NULL);
+    char today[32];
+    char today1[32];
+    argcheck(nargs, 0, "date");
+    CSL_IGNORE(nil);
+    strcpy(today, ctime(&t));  /* e.g. "Sun Sep 16 01:03:52 1973\n" */
+                               /*       012345678901234567890123 */
+    today[24] = 0;             /* loses final '\n' */
+    today1[0] = today[8]==' ' ? '0' : today[8];
+    today1[1] = today[9];
+    today1[2] = '-';
+    today1[3] = today[4];
+    today1[4] = today[5];
+    today1[5] = today[6];
+    today1[6] = '-';
+    today1[7] = today[22];
+    today1[8] = today[23];
+    today1[9] = 0;             /* Now as in 03-Apr-09 */
+    w = make_string(today1);
+    errexit();
+    return onevalue(w);
+}
+
+Lisp_Object MS_CDECL Ldate1(Lisp_Object nil, Lisp_Object a1)
+{
+    Lisp_Object w;
+    time_t t = time(NULL);
+    char today[32];
+    CSL_IGNORE(nil);
+    strcpy(today, ctime(&t));  /* e.g. "Sun Sep 16 01:03:52 1973\n" */
+    today[24] = 0;             /* loses final '\n' */
+    w = make_string(today);
+    errexit();
+    return onevalue(w);
+}
+
+Lisp_Object MS_CDECL Ldate_and_time(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object w;
     time_t t = time(NULL);
@@ -2195,12 +2242,11 @@ Lisp_Object MS_CDECL Ldate(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Ldate1(Lisp_Object nil, Lisp_Object a1)
+Lisp_Object MS_CDECL Ldate_and_time1(Lisp_Object nil, Lisp_Object a1)
 {
     Lisp_Object w;
     time_t t = time(NULL);
-    char today[32];
-    char today1[32];
+    char today[32], today1[32];
     CSL_IGNORE(nil);
     strcpy(today, ctime(&t));  /* e.g. "Sun Sep 16 01:03:52 1973\n" */
                                /*       012345678901234567890123 */
@@ -3591,6 +3637,7 @@ setup_type const funcs1_setup[] =
     {"codep",                   Lcodep, too_many_1, wrong_no_1},
     {"constantp",               Lconstantp, too_many_1, wrong_no_1},
     {"date",                    Ldate1, wrong_no_nb, Ldate},
+    {"date-and-time",           Ldate_and_time1, wrong_no_nb, Ldate_and_time},
     {"datestamp",               wrong_no_na, wrong_no_nb, Ldatestamp},
     {"timeofday",               wrong_no_na, wrong_no_nb, Ltimeofday},
     {"enable-errorset",         too_few_2, Lenable_errorset, wrong_no_2},

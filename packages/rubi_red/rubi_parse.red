@@ -73,7 +73,7 @@ symbolic procedure next_mma_tok();
       else if r = !$eol!$ then printc "EOL"
       else if r = blank then printc "BLANK"
       else if r = tab then printc "TAB"
-      else if symbolp r and flagp(r, 'operator_like) then <<
+      else if idp r and flagp(r, 'operator_like) then <<
          princ "operator """;
          princ r;
          printc """" >>
@@ -81,19 +81,21 @@ symbolic procedure next_mma_tok();
     return r;
   end;
 
-unglobal '(!*raise !*lower);
-fluid '(!*raise !*lower);
-
 symbolic procedure next_mma_tok1();  % read next token
   begin
-    scalar w, buff, !*raise, !*lower;% make reading case-sensitive.
+    scalar w, buff, save!*raise, save!*lower;
     if mmachar = !$eof!$ then return mmatok := mmachar;
+    save!*raise := !*raise;
+    save!*lower := !*lower;
+    !*raise := !*lower := nil; % I want case sensitive reading
     w := 0;
     while isspace mmachar do <<
       if mmachar = !$eol!$ then w := w + 1;
       mmachar := next_mma_char() >>; % skip white-space.
-    if outer_level and ((w > 0 and mmachar = !$eof!$) or w > 1) then
-      return mmatok := !$eol!$;
+    if outer_level and ((w > 0 and mmachar = !$eof!$) or w > 1) then <<
+      !*raise := save!*raise;
+      !*lower := save!*lower;
+      return mmatok := !$eol!$ >>;
       % fully blank line treated as significant, or newline at end of file.
     if digit mmachar then <<         % Digit, so read a number.
       while digit mmachar do <<    % Keep accepting digits.
@@ -105,6 +107,8 @@ symbolic procedure next_mma_tok1();  % read next token
         while digit mmachar do <<    % Keep accepting digits.
           buff := mmachar . buff;  % push onto front of buffer.
           mmachar := next_mma_char() >> >>;
+      !*raise := save!*raise;
+      !*lower := save!*lower;
       return mmatok := compress reverse buff >> % convert to a number.
     else if liter mmachar or mmachar = '!$ then <<
       % a letter, so start of a name. Well '$' starts a name too!
@@ -115,7 +119,10 @@ symbolic procedure next_mma_tok1();  % read next token
             digit mmachar do <<    % Keep accepting letters/digits.
         buff := mmachar . buff;  % push onto front of buffer.
         mmachar := next_mma_char() >>;
-      return mmatok := compress reverse buff >> % convert to a name.
+      mmatok := intern compress reverse buff; % convert to a name.
+      !*raise := save!*raise;
+      !*lower := save!*lower;
+      return mmatok >>
     else if mmachar = '!" then <<
       buff := nil;
       mmachar := next_mma_char();
@@ -126,7 +133,10 @@ symbolic procedure next_mma_tok1();  % read next token
         mmachar := next_mma_char() >>;
       mmachar := next_mma_char();
       buff := reverse buff;
-      return mmatok := list!-to!-string buff >>    % A string
+      mmatok := list!-to!-string buff;    % A string
+      !*raise := save!*raise;
+      !*lower := save!*lower;
+      return mmatok >>
 % In mathematica tokens #, ## and either of those followed by a sequence
 % of digits are used with anonymous functions.
     else if mmachar = '!# then <<
@@ -138,7 +148,10 @@ symbolic procedure next_mma_tok1();  % read next token
       while digit mmachar do <<
         buff := mmachar . buff;
         mmachar := next_mma_char() >>;
-      return mmatok := compress reverse buff >>;
+      mmatok := intern compress reverse buff;
+      !*raise := save!*raise;
+      !*lower := save!*lower;
+      return mmatok >>;
 % Here anything that does not start with a letter or digit is treated as
 % an operator. There are a rather small number of cases of two-character
 % symbols that need to be allowed for. Specifically ":=", "/;", "(*", "*)"
@@ -147,8 +160,10 @@ symbolic procedure next_mma_tok1();  % read next token
     mmachar := next_mma_char();
     if null memq(mmachar, get(buff, 'follow_on_char)) then <<
       flag(list buff, 'operator_like);   % Ie not alphanumeric.
+      !*raise := save!*raise;
+      !*lower := save!*lower;
       return mmatok := buff >>;
-    buff := compress list('!!, buff, '!!, mmachar);
+    buff := intern compress list('!!, buff, '!!, mmachar);
     mmachar := next_mma_char();
     if (buff = '!=!= or buff = '!=!!) and mmachar = '!= then <<
 % Special cases on === and =!= as 3-character operators.
@@ -162,8 +177,12 @@ symbolic procedure next_mma_tok1();  % read next token
       while mmatok neq '!*!) do <<
         if mmatok = !$eof!$ then syntax_error "end of file within comment";
         next_mma_tok1() >>;
+      !*raise := save!*raise;
+      !*lower := save!*lower;
       return next_mma_tok1() >>;
     flag(list buff, 'operator_like);   % Ie not alphanumeric.
+    !*raise := save!*raise;
+    !*lower := save!*lower;
     return mmatok := buff;
   end;
 
@@ -430,7 +449,7 @@ symbolic procedure parseE6();
     scalar r, op;
     r := parseE7();
     while mmatok = '!* or mmatok = '!/ or
-      (symbolp mmatok and not flagp(mmatok, 'operator_like)
+      (idp mmatok and not flagp(mmatok, 'operator_like)
        and mmatok neq !$eol!$ and mmatok neq !$eof!$) or
       numberp mmatok or mmatok = '!( do <<
        if mmatok = '!* or mmatok = '!/ then <<
@@ -544,7 +563,7 @@ symbolic procedure parseE9();
            r := r . w . parseArgTail() >> where outer_level = nil;
         next_mma_tok();
         return r >>
-      else if symbolp mmatok and not flagp(mmatok, 'operator_like) then <<
+      else if idp mmatok and not flagp(mmatok, 'operator_like) then <<
         r := list('!_, cadr r, mmatok);
         next_mma_tok();
         return r >>
@@ -640,7 +659,7 @@ symbolic procedure syntax_error message;
 symbolic procedure findvars(u, l);
   if atom u or get(car u, 'dname) or eqcar(u, '!*sq) then <<
     if memq(u, '(e i pi)) then l      % e, i and pi are special!
-    else if not symbolp u then l      % not a name
+    else if not idp u then l      % not a name
     else if memq(u, l) then l         % seen already
     else u . l >>                     % a new name
   else findvarslist(cdr u, l);        % (OP a1 a2 ...) case
@@ -724,7 +743,11 @@ symbolic procedure probably_zero1(u, v);
 % I want the random trials used to vary on each run... so seed the random
 % number source based on the date and time of day.
 
-random_new_seed md60 date();
+random_new_seed begin scalar w;
+  w := 1;
+  for each c in explode date!-and!-time() do
+     w := remainder((169*w + id2int c), 100000000);
+  return w end;
 
 fluid '(testdirectory);
 fluid '(testcount optimal messy unable invalid);
@@ -816,7 +839,7 @@ symbolic procedure xsize u;
   else 1 + xsize car u + xsize cdr u;
 
 symbolic procedure convert_to_reduce u;
-  if symbolp u and get(u, 'reduceversion) then get(u, 'reduceversion)
+  if idp u and get(u, 'reduceversion) then get(u, 'reduceversion)
   else if atom u then u
   else for each v in u collect convert_to_reduce v;
 
@@ -1040,8 +1063,10 @@ symbolic procedure read_one_rubi_test(filename, version4);
   begin
     scalar integrand, r, ff, save, !*echo;
     if not boundp 'testdirectory or not stringp testdirectory then <<
-      if getenv("reduce") then testdirectory := "$reduce/packages/rubi_red"
-      else if getenv("O") then testdirectory := "$O/packages/rubi_red"
+      if (r := getenv("reduce")) then
+        testdirectory := concat(r, "/packages/rubi_red")
+      else if (r := getenv("O")) then
+        testdirectory := concat(r, "/packages/rubi_red")
       else testdirectory := "." >>;
     if version4 then
        filename := concat(testdirectory, concat("/tests4/", filename))

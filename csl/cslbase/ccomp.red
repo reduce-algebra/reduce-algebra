@@ -944,7 +944,7 @@ princ "C file = "; print name;
     c!:names_so_far := nil;
 % Here I turn a date into a form like "12-Oct-1993" as expected by the
 % file signature mechanism that I use. This seems a pretty ugly process.
-    o := reverse explode date();
+    o := reverse explode date!-and!-time();
     for i := 1:5 do << d := car o . d; o := cdr o >>;
     d := '!- . d;
     o := cdddr cdddr cddddr o;

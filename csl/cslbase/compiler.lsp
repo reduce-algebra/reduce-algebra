@@ -3361,7 +3361,7 @@ quote win32) lispsystem!*) (setq name (c!:concat dir (c!:concat "\" name))))
 (t (setq name (c!:concat dir (c!:concat "/" name)))))))) (princ "C file = ") 
 (print name) (setq C_file (open (c!:concat name ".c") (quote output))) (setq 
 L_file (c!:concat name ".lsp")) (setq L_contents nil) (setq c!:names_so_far 
-nil) (setq o (reverse (explode (date)))) (prog (i) (setq i 1) lab1252 (cond (
+nil) (setq o (reverse (explode (date!-and!-time)))) (prog (i) (setq i 1) lab1252 (cond (
 (minusp (times 1 (difference 5 i))) (return nil))) (progn (setq d (cons (car 
 o) d)) (setq o (cdr o))) (setq i (plus i 1)) (go lab1252)) (setq d (cons (
 quote !-) d)) (setq o (cdddr (cdddr (cddddr o)))) (setq w o) (setq o (cdddr o
