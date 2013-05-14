@@ -15,7 +15,10 @@ mmachar := '! ;    % starts off as a space character
 fluid '(blank tab);
 
 blank := intern int2id 32;
-tab   := intern int2is 9;
+tab   := intern int2id 9;
+
+symbolic procedure flush u;  % Flush a file...
+  nil;
 
 !#endif 
 
