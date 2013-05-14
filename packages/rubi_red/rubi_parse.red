@@ -10,9 +10,18 @@ fluid '(mmachar);  % variable to hold next character
 
 mmachar := '! ;    % starts off as a space character
 
+!#if (memq 'psl lispsystem!*)
+
+fluid '(blank tab);
+
+blank := intern int2id 32;
+tab   := intern int2is 9;
+
+!#endif 
+
 fluid '(carriage_return);
 
-carriage_return := compress '(!! 13);
+carriage_return := intern int2id 13;
 
 symbolic procedure isspace ch;
   ch = blank or ch = tab or ch = !$eol!$ or ch = carriage_return;
