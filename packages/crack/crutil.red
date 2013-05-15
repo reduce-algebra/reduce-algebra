@@ -4235,37 +4235,31 @@ if not pairp v  then nil
 
 symbolic procedure sq!*cons(x)$
 << 'list .  cons (aeval car x, cdr aeval cadr x)>>$
-
 put('sqcons,'psopfn,'sq!*cons)$
 
 %-------- 
 symbolic procedure sq!*length(x)$
 ((length aeval car x) - 1)$
-
 put('sqlength,'psopfn,'sq!*length)$
 
 %--------
 symbolic procedure sq!*rest(x)$
 << 'list . cddr aeval car x>>$
-
 put('sqrest,'psopfn,'sq!*rest)$
 
 %--------
 symbolic procedure sq!*first(x)$
 cadr aeval car x$
-
 put('sqfirst,'psopfn,'sq!*first)$
 
 %--------
 symbolic procedure sq!*second(x)$
 caddr aeval car x$
-
 put('sqsecond,'psopfn,'sq!*second)$
 
 %--------
 symbolic procedure sq!*third(x)$
 cadddr aeval car x$
-
 put('sqthird,'psopfn,'sq!*third)$
 
 %--------
@@ -4280,19 +4274,16 @@ begin scalar c1,c2$
  if (c2=0) and not pairp c1 then -1 
                             else nth(c1,add1 c2)$
 end$
-
 put('sqpart,'psopfn,'sq!*part)$
 
 %--------
 symbolic procedure sq!*reverse(x)$
 << 'list . reverse cdr aeval car x>>$
-
 put('sqreverse,'psopfn,'sq!*reverse)$
 
 %--------
 symbolic procedure sq!*append(x)$
 << 'list . append(cdr aeval car x,cdr aeval cadr x)>>$
-
 put('sqappend,'psopfn,'sq!*append)$
 
 %--------
@@ -4355,7 +4346,7 @@ collect cdr a$
 
 symbolic procedure idx_sort(l)$
 % All elements of l have a numerical first element and are sorted
-% by quicksort according to that number
+% by quicksort according to that number, lowest first
 if null l then nil else
 begin scalar l1,l2,l3,m,n$
  return
@@ -4374,7 +4365,7 @@ end$
 
 symbolic procedure rev_idx_sort(l)$
 % All elements of l have a numerical first element and are sorted
-% by quicksort according to that number
+% by quicksort according to that number, highest first
 if null l then nil else
 begin scalar l1,l2,l3,m,n$
  return

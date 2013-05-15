@@ -792,3 +792,4 @@ tr termsep
 tr termsort
 tr equality_assumption
 tr linearindeptest
+tr itercoeff

@@ -235,7 +235,7 @@ begin    scalar a,pl$
 
   if pl then <<
     pl:=append(for each a in car pl collect simp cdr a,for each a in cadr pl collect simp a); % <--- old  22.8.08
-%    pl:=append(for each a in car pl collect simp a,for each a in cadr pl collect simp a);  % <--- next
+%   pl:=append(for each a in car pl collect simp a,for each a in cadr pl collect simp a);  % <--- next
     pl:=mkeqSQlist(pl,nil,nil,fctsort union(ftem_,get(p,'fcts)),get(p,'vars), 
                    cons('to_drop,allflags_),t,get(p,'orderings),pdes)$
     drop_pde(p,nil,nil);
@@ -266,7 +266,9 @@ symbolic procedure partitn(q,old_histy,ftem,vl,a)$
 %       afterwards multiplication with denom resulted in q
 % ftem: functions in the expression
 % vl:   variables in the expression
-% a:    the variables for direct separation=car starp()
+% a:    the variables for direct separation=car starp(), i.e. the variables
+%       which occur in the fewest number of functions, these are the 
+%       variables wrt. which we want to separate directly
 %
 % RETURNS {{(c1.q1),(c2.q2),(c3.q3),..},{s1,s2,s3,..},{r1,r2,..},{f1,f2,..}}
 % where qi=0 are necessary consequences,
@@ -275,11 +277,21 @@ symbolic procedure partitn(q,old_histy,ftem,vl,a)$
 % si=0 are consistency conditions determining constants/functions
 % of integration 
 % ri=0 are other cases to be checked --> case distinctions
+% fi are new functions of integration
+%
+% Key to understanding the procedures partitn, felim and backint is the
+% list histy. It is a list of elements, say e_i, where e_i are the steps
+% taken to get rid of one function. One e_i consists of a denominator that 
+% is dropped initially then the differentiation variable and then a list 
+% where each element is a dotted pair where car is a factor that is dropped 
+% before a differentiation and cdr is the expression before the factor is
+% dropped.
+%
 begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
       ruli,extra_cond,par,cases,newf$
 
   %--- ft: the list of functions to drop from q by differentiation
-  %--- to do a direct separation wrt x:
+  %---     to do a direct separation wrt x:
   % x = any one variable in a on which a function with as 
   % many as possible variables does not depend on
   % Find such a function and variable x
@@ -291,7 +303,8 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
                 else 0;
     if nv1 > nv then <<
       h:=setdiff(a,vl1);
-      if h then <<
+      if h then <<   % i.e. the function car ft does not depend 
+                     % on at least one variable from a
         x:=car h;
         % if possible find an x occuring explicitly in q
         while h and freeof(q,car h) do h:=cdr h;
@@ -318,43 +331,67 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
 
   %--- throwing out functions ft until ft=nil
   %--- or until the expression lost the *-property
+  if tr_gensep then
+  <<terpri()$write "--- To separate w.r.t. ",x,
+                   " we need to get rid of functions ", ft>>$
 
-
-  while ft do % for each function to get rid of 
-              % (possibly each time a different diff variable)   
-  if null (l1:=felim(q,car ft,ftem,vl)) then ft:=nil  % to stop
-                                        else <<
-    for each h in cdadr l1 do               % special extra cases
-    if not freeoflist(car h,ftem) then cases:=cons(car h,cases);
-
-    if zerop car l1 then <<
-      %  q:=reval {'QUOTIENT,cdr cadadr l1,car cadadr l1}; 
-      % This division through car cadadr l1 had to be dropped because the
-      % back-multiplication will not happen --> check_sum gets wrong --> loop
-      cc:=cons(car cadr l1,cddadr l1);
-    >>              else <<
-      q:=car l1$                            % new expression
-      cc:=cadr l1;
+  while ft do << % for each function to get rid of 
+                 % (possibly each time a different diff variable)   
+    l1:=felim(q,car ft,ftem,vl);
+    % felim returns:  nil if not successful (quotient) otherwise
+    %  {the expression after all the divisions and differentiations,
+    %   {diff variable, list of (factor . expression before)}   }
+    if null l1 then ft:=nil  % to stop
+               else << % Listing of all special cases to be considered
+      for each h in cdadr l1 do 
+      if null can_not_become_zeroSQ(simp car h,ftem) then cases:=cons(car h,cases);
+      if cases then <<
+        % add case distinctions to todo list
+        to_do_list:=cons(list('split_into_cases,simp car cases),to_do_list);
+        l1:=nil$
+        ft:=nil 
+      >>
     >>$
-    if (pairp q) and (car q='QUOTIENT) then <<
-      bb:=caddr q;                          % we take off the denimonator
-      q:=cadr q
-    >>                                 else bb:=1$
-    histy:=cons(cons(bb,cc),histy)$         % extended history
-    ftem:=smemberl(ftem,q)$                 % functions still in q
-    aa:=stardep(ftem,argset(ftem))$         % still *-expression?
-    if not aa or 
-       zerop cdr aa then ft:=nil                   % to stop
-                    else ft:=smemberl(cdr ft,ftem) % remain. fcts of x
+
+    if l1 then <<
+      if zerop car l1 then <<
+        % q:=reval {'QUOTIENT,cdr cadadr l1,car cadadr l1}; 
+        % This division through car cadadr l1 had to be dropped because the
+        % back-multiplication will not happen --> check_sum gets wrong --> loop
+        q:={'QUOTIENT,reval {'QUOTIENT,cdr cadadr l1,car cadadr l1},
+                      {'QUOTIENT,1,car cadadr l1}}$
+        cc:=cadr l1$
+        % We drop the last division and differentiation.
+        cc:=cons(car cc,cddr cc)
+        % where car cc is the differentiation variable
+      >>              else <<
+        q:=car l1$                            % new expression
+        cc:=cadr l1;
+      >>$
+      if (pairp q) and (car q='QUOTIENT) then <<
+        bb:=caddr q;                          % we take off the denimonator
+        q:=cadr q                             % q is now only the numerator
+      >>                                 else bb:=1$
+      % Now bb is the denominator and q has denominator 1.
+
+      histy:=cons(cons(bb,cc),histy)$         % extended history
+      ftem:=smemberl(ftem,q)$                 % functions still in q
+      aa:=stardep(ftem,argset(ftem))$         % still *-expression?
+      if not aa or 
+         zerop cdr aa then ft:=nil                   % to stop
+                      else ft:=smemberl(cdr ft,ftem) % remain. fcts of x
+    >>
   >>$
 
   stop_let_rules(ruli)$
+
+  RETURN 
   if null l1 then if tr_gensep then <<terpri()$
                     write"felim or newgensep gave nil!!"$terpri()$
-                    write"q=",q;terpri()
-                  >>           else
-             else
-  RETURN <<
+                    write"q=",q; terpri();
+                    nil 
+                  >>           else nil
+             else <<
     if tr_gensep then <<
       terpri()$
       write"Now ready for direct separation."
@@ -366,6 +403,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
     vl1:=vl$  % It is not good enough to separate wrt. vl1 because it could
     % be that further direct separability could be possible wrt. variables
     % the still occuring functions ftem do not depend on.
+
     %--- direct separation if useful (i.e. if aa(=stardep) neq nil)
     if vl1 and not (q=0) then
     <<if tr_gensep then
@@ -403,8 +441,8 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
         par:=partitn(cdr h,   % expression
                      append(histy,      % history so far, 
                             old_histy), % needed to add new functions
-                              % of integration properly differentiated to be
-                              % able to integrate below
+                              % of integration properly differentiated
+                              % to be able to integrate below
                      ft,      % functions
                      vl1,     % variables
                      car aa   % separation charac.
@@ -417,11 +455,11 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
 	% si=0 are consistency conditions determining constants/functions
 	% of integration 
 	% ri=0 are other cases to be checked --> case distinctions
+        % fi are new functions of integration
 
         if par then <<
 	  l4:=append(l4,for each f in car par collect 
-			  ({'TIMES,car h,car f} . cdr f));  % <--- changed <-- richtig 22.8.08
-%			  (        car h        . cdr f));  % <--- new
+			  ({'TIMES,car h,car f} . cdr f));  
 	  extra_cond:=append(extra_cond,cadr par); % collecting any
 						   % appearing conditions
 	  cases:=append(cases,caddr par);
@@ -443,27 +481,44 @@ end$
 %-----------
 
 symbolic procedure felim(q,f,ftem,vl)$
+  % get rid of function f in q
   % returns:  nil if not successful (quotient) otherwise
   %  {the expression after all the divisions and differentiations,
-  %   {diff variable, sequence of (factor . expression before)}   }
-begin scalar a,b,l,l1,ft1,v,prflag$
+  %   {diff variable, (factor . expression before), 
+  %                   (factor . expression before), ... }
+  %  }
+begin scalar a,b,l,l1,ft1,v,prflag,f1$
   %--- getting rid of f through diff. wrt. v
   v:=car setdiff(vl,fctargs f)$  
 
   %--- ft1 are all v-independent functions
-  %--- In the call to separ one has to disregard v-dep. functions
+  %--- In the call to separ we want to separate wrt. v so in the call 
+  %    of separ one has to pass on only v-independent functions ft1 as
+  %    functions to be determined
   ft1:=nil$
-  for each f in ftem do if my_freeof(f,v) then ft1:=cons(f,ft1)$
+  for each f1 in ftem do if my_freeof(f1,v) then ft1:=cons(f1,ft1)$
 
   %--- To run separ, functions ft1 should not be in the denominator
   %--- ?????? What if nonl. Problems?
-  if not (pairp q and (car q='QUOTIENT) and smemberl(ft1,caddr q)) then
-  % This exceptional case should not occure anymore
+
+  if pairp q and (car q='QUOTIENT) and smemberl(ft1,caddr q) then <<
+   if tr_gensep then <<
+    terpri()$
+    write "The quotient of the expression to be separated contains one or more ",
+          v,"-independent function: ",smemberl(ft1,caddr q),
+          " which prevents further continuation. (This should not occur anymore.)"
+   >>
+  >>                                                         else
   <<prflag:=print_$print_:=nil$
     l:=separ(q,ft1,list v,nil,nil)$ % det. all lin. ind. factors with v
-    for each a in rev_idx_sort for each b in l 
-                               collect cons(delength car b,b)
-    collect cdr a$
+
+    % sorting elements of l such that those with many v-dependent terms come 
+    % first in this list and further below come last in the divisions and 
+    % differentiations
+    l:=for each a in rev_idx_sort for each b in l collect 
+                                  cons(if numberp car b then 0 
+                                                        else delength car b,b)
+       collect cdr a$
 
     if tr_gensep then
     <<terpri()$write "To get rid of ",f,
@@ -475,6 +530,8 @@ begin scalar a,b,l,l1,ft1,v,prflag$
     % product of v-independent factors
     %--- A list l1 of car(a) is generated for which cdr(a) depends
     % on f. l1 is the list of divisions to be done before differen.
+    % Here the list of divisions is reversed, so therefore the
+    % divisions with the fewest terms come first.
     l1:=nil$
     while l do
     <<a:=car l$
@@ -498,7 +555,10 @@ begin scalar a,b,l,l1,ft1,v,prflag$
       l1:=cdr l1$
       %--- ????? If for non-linear Problems b includes ftem functions
       % then the extra case 0 = b has to be considered
-      if not zerop b then <<
+      if zerop b then << 
+       write"#### Planned division through zero in gensep! ####"$
+       terpri()
+      >>         else <<                    
 !#if (equal version!* "REDUCE 3.6")
         a:=reval aeval list('QUOTIENT,q,b)$ 
 !#else 
@@ -506,7 +566,6 @@ begin scalar a,b,l,l1,ft1,v,prflag$
 !#endif
         %--- for later backward integrations: extension of the history
         l:=cons(b . q ,l)$  %--- new: q is the equ. before division & diff.
-                            %    formerly: l:=cons(b ,l)$      
         % l will be returned later by felim 
         %--- l1 has to be updated as the coefficients
         % change through division and differentiation
@@ -522,7 +581,6 @@ begin scalar a,b,l,l1,ft1,v,prflag$
 	>>
       >>
     >>$
-    %if l then part_histy:=cons(v,l)$
 
     %--- output
     if tr_gensep then
@@ -531,14 +589,16 @@ begin scalar a,b,l,l1,ft1,v,prflag$
     if tr_gensep and l then
     <<write"To invert the last steps one has to integr. wrt. ",v$ 
       terpri()$
-      write "each time before multiplying with "$
+      write "each time before multiplying with the following factors:"$
       for each aa in l do eqprint car aa
     >>$
 
     l1:=list(q,cons(v,l))
   >>$
   return l1
-end$
+end$ % of felim
+
+%-----------
 
 symbolic procedure backint(l4,old_histy,histy,ftem,vl)$
 % l4 is a list of pairs (sep_coefficient . 
@@ -1189,14 +1249,14 @@ begin scalar x,ft,f,ex,v,a,b,vlcp,allvarcaara,print_bak$
     % ft are the x-depending functions in p which one needs to get rid of
     % if one wants to separate directly wrt. x
 
-    f:=car reverse fctsort ft$       % sorting wrt. number of args
+    f:=car reverse fctsort ft$     % sorting wrt. number of args
     v:=car setdiff(vlcp,fctargs f)$  % getting rid of f by v-differen.
 
     % preparation of the separ-call, ft are now v-indep. functions
     ft:=nil$
     for each f in ftem do if my_freeof(f,v) then ft:=cons(f,ft)$
     print_bak:=print_;  print_:=nil;
- %  ex:=separ (p,ft,list v,nil)$ % det. all lin. ind. factors
+%   ex:=separ (p,ft,list v,nil)$ % det. all lin. ind. factors
     ex:=separ2(p,ft,list v)$     % det. all lin. ind. factors
     print_:=print_bak;
     a:=ex;

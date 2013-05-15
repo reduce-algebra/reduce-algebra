@@ -225,8 +225,8 @@ prop_list:='(sqval  % the value of the equation in SQ form, always assigned
              allvarfcts  % list of functions of all indep. variables
              starde      % =nil if at lest one function of 'fcts depends 
                          % on all variables 'vars, otherwise =(v . n) with 
-                         % n being the minimal number of functions that depend
-                         % on the list v of variables 
+                         % v being a list of variables on which the fewest number of
+                         % functions depend on and n is that number of functions
              dec_with    % list of equations this equation has been paired with under 30
              dec_with_rl % list of equations this equation has been paired with under 27
              rl_with     % list of equations this equation has been paired with under 11
@@ -333,6 +333,7 @@ full_proc_list_:='(to_do                      % 1
                    bottom_up_subst            % 81
                    solution_check3            % 82
                    sublinfct                  % 83
+                   case_gen_separation        % 84
                   )$ 
 
 for h:=1:length(full_proc_list_) do put(nth(full_proc_list_,h),'no,h)$

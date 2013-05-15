@@ -1539,13 +1539,15 @@ module generalized_integration$
 %  Author: Andreas Brand
 %  December 1991
 
-symbolic procedure gintorder(p,ftem,vl,x)$
+symbolic procedure gintorder(p,vl,x)$
+%symbolic procedure gintorder(p,ftem,vl,x)$
 %  reorder equation p
 begin scalar l,l1,q,m,b,c,q1,q2$
   if pairp(p) and (car p='QUOTIENT) then <<
    q:=caddr p$
    p:=cadr p$
-   l1:=gintorder1(q,ftem,x,t)$
+   l1:=gintorder1(q,x,t)$
+%   l1:=gintorder1(q,ftem,x,t)$
 %   if DepOnAllVars(car l1,x,vl) then return nil;
    q1:=car l1;
    q2:=cadr l1;
@@ -1553,7 +1555,8 @@ begin scalar l,l1,q,m,b,c,q1,q2$
   if pairp(p) and (car p='PLUS) then p:=cdr p   % list of summands
                                 else p:=list p$
   while p do
-  <<l1:=gintorder1(car p,ftem,x,nil)$
+  <<l1:=gintorder1(car p,x,nil)$
+%  <<l1:=gintorder1(car p,ftem,x,nil)$
     if DepOnAllVars(if q1=1 then car l1
                             else cons('TIMES,
                     append(if pairp q1 and car q1='TIMES then cdr q1 
@@ -1597,7 +1600,8 @@ while c and vl do
 return (null vl)$
 end$
 
-symbolic procedure gintorder1(p,ftem,x,mode2)$
+symbolic procedure gintorder1(p,x,mode2)$
+%symbolic procedure gintorder1(p,ftem,x,mode2)$
 %  reorder a term p
 begin scalar l1,l2,sig$      
 % mode2 = nil then
@@ -1650,7 +1654,8 @@ begin scalar f,neg,l1,l2,n,k,l,h$
     write "generalized integration of the unintegrated rest : "$
     eqprint p
   >>$
-  l:=gintorder(p,ftem,vl,x)$
+  l:=gintorder(p,vl,x)$
+%  l:=gintorder(p,ftem,vl,x)$
   % would too many new equations and functions be necessary?  
   if pairp(l) and (length(l)>genint) then return nil;
   l:=for each s in l collect <<
