@@ -226,7 +226,6 @@ symbolic procedure simp u;
             else if not dmode!* then return u ./ 1
             else nil
      else if u member varstack!* then recursiveerror u;
-    event!-count();
     varstack!* := u . varstack!*;
     if simpcount!*>simplimit!*
       then <<simpcount!* := 0;

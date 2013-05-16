@@ -693,7 +693,7 @@ symbolic procedure findvarslist(u, l);
 symbolic procedure probably_zero(u, v);
   begin
     scalar r;
-    r := event!-count!-limit(1000,
+    r := with!-timeout(10000, % Allow ten seconds
        errorset(list('probably_zero1, mkquote u, mkquote v), t, t));
     if atom r then <<
       printc "Resource limit exceeded checking equality";
@@ -723,7 +723,6 @@ symbolic procedure probably_zero1(u, v);
     trials := 0;
     while (u1 < 1.0e-5 or u1 > 1.0e5) and trials < 100 do <<
       trials := trials + 1;
-      event!-count();
       subs := for each v in vars collect
          (v . ((random(scale*2000000) - scale*1000000.0)/1000003.0));
       on rounded, complex, numval;
@@ -946,14 +945,13 @@ trig_normalisations := {
   } >>;
   
 
-fluid '(counter_limit!*);
-% To start with I have little idea what values make sense here!
-counter_limit!* := 300;
+fluid '(time_limit!*);
+time_limit!* := 30000; % Allow 30 seconds per integral
 
 symbolic procedure safe_evaluate a;
   begin
     scalar w;
-    w := event!-count!-limit(counter_limit!*,
+    w := with!-timeout(time_limit!*,
       errorset(a, nil, nil));
     if atom w then return 'event_counter;
     return car w

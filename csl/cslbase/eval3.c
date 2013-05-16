@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 491bd9e7 13-Feb-2012 */
+/* Signature: 3f814ea4 16-May-2013 */
 
 #include "headers.h"
 
@@ -1261,6 +1261,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
             {
         case UNWIND_RESTART:
         case UNWIND_RESOURCE:
+        case UNWIND_THROW:
                 flip_exception();
                 return nil; /* Not catchable */
         default:break;

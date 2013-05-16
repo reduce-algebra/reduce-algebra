@@ -93,7 +93,6 @@ symbolic inline procedure peq(u,v);
 
 symbolic procedure addf(u,v);
    % U and V are standard forms. Value is standard form for U+V.
-<< event!-count();
    if null u then v
     else if null v then u
     else if domainp u then addd(u,v)
@@ -102,7 +101,7 @@ symbolic procedure addf(u,v);
        then (if null x then y else lpow u .* x .+ y)
              where x=addf(lc u,lc v),y=addf(red u,red v)
     else if ordpp(lpow u,lpow v) then lt u .+ addf(red u,v)
-    else lt v .+ addf(u,red v) >>;
+    else lt v .+ addf(u,red v);
 
 symbolic procedure addd(u,v);
    % U is a domain element, V a standard form.

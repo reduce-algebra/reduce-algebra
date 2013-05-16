@@ -134,58 +134,61 @@ deflist ('((cont endstat) (pause endstat) (retry endstat)),'stat);
 
 flag ('(cont),'ignore);
 
-% I will have a scheme that lets me impose a limit on the size of
-% a calculation. If the limit is exceeded I will perform a "throw". I
-% use "throw" rather then "error" because errorset will often be used to
-% catch errors, so I would often find that overflowing my limit would
-% not end up causing enough of an exit!
+% I will have a scheme that lets me impose a limit on the time taken by
+% a calculation. This works by using a hook function that is called at the
+% end of any garbage collection, and so its granularity is not very fine.
+% It exits using "throw" rather than by raising an error because by doing
+% that the guarded code can not use errorset to escape. The time-limit
+% it provides is passed un units of milliseconds.
 
-% I will count in units of 1000 so that the common case happens using
-% fixnum arithmetic.
+fluid '(trap!-time*);
 
-fluid '(event!-count!-countdown event!-count!-countdown1);
+trap!-time!* := nil; % nil here means no trapping active.
 
-event!-count!-countdown := nil;
-event!-count!-countdown1 := 1000;
+% I put the "throw" within a procedure so that if I want to see what
+% is happening a bit more I can trace this function.
 
-symbolic procedure event!-count!-counter n;
+symbolic procedure respond!-to!-timeout();
+ << trap!-time!* := nil;
+    throw('!@timeout!@, '!@timeout!@) >>;
+    
+!#if (memq 'psl lispsystem!*)
+
+symbolic procedure aftergcsystemhook();
+  if trap!-time!* and
+    time() > trap!-time!* then respond!-to!-timeout();
+
+!#else
+
+symbolic procedure aftergcsystemhook u;
+  if trap!-time!* and
+    time() > trap!-time!* then respond!-to!-timeout();
+
+!*gc!-hook!* := 'aftergcsystemhook;
+!#endif
+
+symbolic procedure set!-trap!-time k;
+  trap!-time!* := k;
+
+% I do not permit myself to reference fluid variable in the expansion of an
+% smacro because their declaration as fluid might not be in force where the
+% macro is called. So I use a silly utility function set!-trap!-time to do
+% what I need to. 
+
+smacro procedure with!-timeout(n, u);
   begin
-    scalar r;
-    r := event!-count!-countdown;
-    event!-count!-countdown := n;
-    event!-count!-countdown1 := 1000;
-    return r
+    scalar !@r!@;  % Unusual name to reduce conflict with n and u.
+    !@r!@ := catch('!@timeout!@, list u);
+    set!-trap!-time(nil);
+    return !@r!@
   end;
-
-symbolic procedure event!-count!-uncounter();
-  event!-count!-countdown := nil;
-
-symbolic procedure event!-count!-overflow();
-  <<event!-count!-countdown := nil;
-    throw('!@counter!-overflow!@, '!@counter!-overflow!@) >>;
-
-% protect something by going
-%    catch('counter!-overflow, ...);
-
-smacro procedure event!-count();
-  if izerop (event!-count!-countdown1 := isub1 event!-count!-countdown1) then <<
-    event!-count!-countdown1 := 1000;
-    if not null event!-count!-countdown and
-    zerop (event!-count!-countdown := sub1 event!-count!-countdown) then
-      event!-count!-overflow() >>;
-
-
-smacro procedure event!-count!-limit(n, u);
-<< event!-count!-counter n;
-   prog1(catch('!@counter!-overflow!@, list u),
-         event!-count!-uncounter()) >>;
 
 % A typical use of this would be:
 %
-%    event!-count!-limit(7000, % allow 7 million events before trouble
+%    with!-timeout(7000, % allow 7 seconds...
 %      perform!-some!-calculation());
 %
-% which returns an atom if the counter overflows, and otherwise a list
+% which returns an atom if the time limit was exceeded, and otherwise a list
 % whose car is the value of the protected expression.
 
 endmodule;
