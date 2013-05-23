@@ -167,20 +167,11 @@ symbolic procedure aftergcsystemhook u;
 !*gc!-hook!* := 'aftergcsystemhook;
 !#endif
 
-symbolic procedure set!-trap!-time k;
-  trap!-time!* := k;
-
-% I do not permit myself to reference fluid variable in the expansion of an
-% smacro because their declaration as fluid might not be in force where the
-% macro is called. So I use a silly utility function set!-trap!-time to do
-% what I need to. 
-
 smacro procedure with!-timeout(n, u);
   begin
-    scalar !@r!@;  % Unusual name to reduce conflict with n and u.
-    !@r!@ := catch('!@timeout!@, list u);
-    set!-trap!-time(nil);
-    return !@r!@
+    scalar trap!-time!*;
+    trap!-time!* := time() + n;
+    return catch('!@timeout!@, list u);
   end;
 
 % A typical use of this would be:

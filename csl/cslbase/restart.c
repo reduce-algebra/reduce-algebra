@@ -1398,7 +1398,7 @@ int32_t code_up_fnn(n_args *e)
 int32_t code_up_io(void *e)
 {
     int i;
-    for (i=0; i<entry_table_sizen; i++)
+    for (i=0; i<entry_table_sizeio; i++)
     {   if (entries_tableio[i].p == e) return i;
     }
     return 0;

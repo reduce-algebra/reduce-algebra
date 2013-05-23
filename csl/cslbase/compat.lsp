@@ -434,6 +434,15 @@ top   (cond ((minusp n) (return r)))
 	 (function orderp)))
 
 
+(de mapobl (fn)
+   (prog (u)
+      (setq u (s!:oblist1 (getv !*package!* 1) nil))
+   top(cond
+         ((null u) (return nil)))
+      (funcall fn (car u))
+      (setq u (cdr u))
+      (go top)))
+
 % Now a few things not needed by Standard Lisp but maybe helpful
 % when using Lisp directly.
 

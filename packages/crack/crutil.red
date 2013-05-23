@@ -7822,12 +7822,14 @@ end$
 % to allow special characters in file name, like space
 symbolic procedure delete!-file!-exact(fi)$ 
 if memq('linux!-gnu,lispsystem!*) or
+   memq('cygwin,lispsystem!*) or
    memq('unix,lispsystem!*) then system bldmsg("rm -f %s",fi)    
 	                         else system bldmsg("del ""%s""",fi)$
 
 % to have ? or * actively matching in file name
 symbolic procedure delete!-file!-match(fi)$ 
 if memq('linux!-gnu,lispsystem!*) or
+   memy('cygwin,lispsystem!*) or
    memq('unix,lispsystem!*) then system bldmsg("rm -f %s",fi)    
 			    else system bldmsg("del %s",fi)$
 
