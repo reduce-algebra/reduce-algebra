@@ -43,6 +43,11 @@ create!-package('(rubi_red
                   rubi_rules),
                 nil);
 
+!#if (memq 'psl lispsystem!*)
+  flag('(rubi_rules),'lap);
+!#endif
+
+
 defautoload(read_rubi_rules, rubi_parse, expr, 0);
 
 endmodule;

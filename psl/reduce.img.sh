@@ -88,7 +88,9 @@ cd psl
        (load pipes)))              % Unix pipes.
 
 (load zbig)                        % PSL bignums.
-(errorset '(load compat) nil nil)  % Load PSL-based functions if there.
+(errorset '(load pslcompat) nil nil)  % Load PSL-based functions if there.
+(remprop 'forall 'pass!-1!-reform)
+
 (load module)                      % Contains definition of load-package.
 (load pslprolo)                    % PSL specific code.
 

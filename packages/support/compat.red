@@ -58,9 +58,9 @@ symbolic procedure !*s2i u; u;
 
 % These are needed until the PSL syslisp and trace modules are changed:
 
-symbolic procedure definebop u; u;
+% symbolic procedure definebop u; u;
 
-symbolic procedure definerop u; u;
+% symbolic procedure definerop u; u;
 
 endmodule;
 

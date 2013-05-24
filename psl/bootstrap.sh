@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh 
 
 # Build an initial bootstrap REDUCE core that can be used to
 # compile the rest of the system
@@ -69,6 +69,7 @@ export fasl here psldir reduce
 # in the directory where the binaries live. So on the plain versions I
 # recompile in 64 Megabytes and on "64-bit" systems I use "2000".
 
+echo `pwd`
 if test -f psl/64
 then
 STORE=600
@@ -100,6 +101,22 @@ mkdir -p buildlogs
 cd psl
 
 echo ++++++ Build initial bootstrap system ++++++
+
+./bpsl -td $STORE <<XXXY > ../buildlogs/pslcompat.blg
+
+% pslcompat.b has to be built separately, because PSL Lisp has
+% incompatible versions of if, when, backquote etc.
+
+(load pslcomp useful)
+
+(faslout "pslcompat")
+(dskin "../../../psl/pslcompat.sl")
+(faslend)
+
+(quit)
+
+XXXY
+
 
 ./bpsl -td $STORE <<XXX > ../buildlogs/bootstrap.blg
 
@@ -138,7 +155,8 @@ echo ++++++ Build initial bootstrap system ++++++
 
 (load zbig)                           % PSL bignums.
 
-(errorset '(load compat) nil nil)     % Load PSL accelerators if there.
+(load pslcompat)
+(errorset '(load pslcompat) nil nil)     % Load PSL accelerators if there.
 
 (flag '(eqcar) 'lose)                 % Already in PSL.
 
