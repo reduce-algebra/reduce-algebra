@@ -1,3 +1,4 @@
+off echo;
 %*******************************************************************%
 %                                                                   %
 %                      C O N L A W . T S T                          %
@@ -19,13 +20,13 @@
 %                                                                   %
 %*******************************************************************%
 
-load crack,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4$
+load crack ; % ,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4$
 
 lisp(depl!*:=nil)$     % clearing of all dependencies
-setcrackflags()$       % standart flags
+%setcrackflags()$       % standart flags
 lisp(print_:=nil)$     % no output of the calculation
 
-off batch_mode$
+%% off batch_mode$
 
 comment -------------------------------------------------------------
 The following example calculates all conservation laws of the KdV-
