@@ -1083,6 +1083,20 @@ symbolic procedure read_one_rubi_test(filename, version4);
       else if (r := getenv("O")) then
         testdirectory := concat(r, "/packages/rubi_red")
       else testdirectory := "." >>;
+% Now for the benefit of PSL when running under Windows I will allow for
+% circumstances that arise when I have been building for CSL under cygwin,
+% in which case the directory information I obtained might start off
+% with "/cygdrive/X/..." for some letter "X". I need to map that to
+% "X:/..." to survive under native windows. CSL actually makes this
+% conversion internally! This sort of assumes that no sensible Unix-like
+% system would have a top-level directory names "/cygdrive", which is
+% probably OK in practise but is a bit ugly!
+    r := explode2 testdirectory;
+    save := '(!/ c y g d r i v e !/);
+    while save and eqcar(r, car save) do << r := cdr r; save := cdr save >>;
+    if null save and r and eqcar(cdr r, '!/) then <<
+       r := car r . '!: . cdr r;
+       testdirectory := list!-to!-string r >>;
     if version4 then
        filename := concat(testdirectory, concat("/tests4/", filename))
     else filename := concat(testdirectory, concat("/tests/", filename));

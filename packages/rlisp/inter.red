@@ -141,7 +141,7 @@ flag ('(cont),'ignore);
 % that the guarded code can not use errorset to escape. The time-limit
 % it provides is passed in units of milliseconds. I am allowed to nest
 % uses of "with-timeout" however the inner ones have their time allocation
-% capped at the residuel of the limit set by any outer one.
+% capped at the residual of the limit set by any outer one.
 
 trap!-time!* := nil; % nil here means no trapping active.
 
