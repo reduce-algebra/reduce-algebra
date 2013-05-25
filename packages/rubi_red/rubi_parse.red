@@ -6,6 +6,10 @@
 
 module 'rubi_parse;
 
+fluid '(trap!-time!*);
+
+switch trrubi;  % Make a file "testcase.red" of all the examples tried.
+
 fluid '(mmachar);  % variable to hold next character
 
 mmachar := '! ;    % starts off as a space character
@@ -946,14 +950,15 @@ trig_normalisations := {
   
 
 fluid '(time_limit!*);
-time_limit!* := 30000; % Allow 30 seconds per integral
+time_limit!* := 20000; % Allow 20 seconds per integral ...
+                       % ... and 40 second per complete test case.
 
 symbolic procedure safe_evaluate a;
   begin
     scalar w;
     w := with!-timeout(time_limit!*,
       errorset(a, nil, nil));
-    if atom w then return 'event_counter;
+    if atom w then return 'timeout;
     return car w
   end;
 
@@ -967,7 +972,8 @@ symbolic procedure try_rubi_example(r, integrand);
       princ "+++ Malformed test case: ";
       prettyprint r;
       return nil >>;
-    if null testcases then testcases := open("testcases.red", 'output);
+    if !*trrubi and null testcases then
+      testcases := open("testcases.red", 'output);
     r := cdr r;
     princ "%%%%:::: ";
     for each x in integrand do princ x;
@@ -993,16 +999,17 @@ symbolic procedure try_rubi_example(r, integrand);
     w1 := safe_evaluate(w1);
     printc "Integration complete"; flush nil;
     if atom w1 then <<
-      ff := wrs testcases;
-      if w1 = 'event_counter then printc "% Event Counter limit"
-      else printc "% Errorset trap";
-      << prin2!* "COMMENT "; maprin convert_to_reduce cadr rr;
-         prin2!* ";"; terpri!* t >> where !*nat = nil;
-      princ "try_rubi_example '"; prin rr; printc ";";
-      terpri();
-      wrs ff;
-      flush testcases;
-      printc "Errorset trap" >>;
+      if !*trrubi then <<
+        ff := wrs testcases;
+        if w1 = 'timeout then printc "% Timeout"
+        else printc "% Errorset trap";
+        << prin2!* "COMMENT "; maprin convert_to_reduce cadr rr;
+           prin2!* ";"; terpri!* t >> where !*nat = nil;
+        princ "try_rubi_example '"; prin rr; printc ";";
+        terpri();
+        wrs ff;
+        flush testcases >>;
+      if w1 = 'timeout then printc "Timeout" else printc "Errorset trap" >>;
     if atom w1 or smemq('int, w1) then <<
       mathprint list('int, e, x);
       printc "Unable to integrate";
@@ -1041,14 +1048,15 @@ symbolic procedure try_rubi_example(r, integrand);
       mathprint list('int, e, x);
       printc "Invalid result, or checking failed";
       invalid := invalid + 1;
-      e := wrs testcases;
-      printc "% Result may be incorrect";
-      << prin2!* "COMMENT "; maprin convert_to_reduce cadr rr;
-         prin2!* ";"; terpri!* t >> where !*nat = nil;
-      princ "try_rubi_example '"; prin rr; printc ";";
-      terpri();
-      wrs e;
-      flush testcases;
+      if !*trrubi then <<
+        e := wrs testcases;
+        printc "% Result may be incorrect";
+        << prin2!* "COMMENT "; maprin convert_to_reduce cadr rr;
+           prin2!* ";"; terpri!* t >> where !*nat = nil;
+        princ "try_rubi_example '"; prin rr; printc ";";
+        terpri();
+        wrs e;
+        flush testcases >>;
 % Some - perhaps many - of these will in fact be OK!
       return nil >>;
     if xsize w1 > 2*xsize res then <<
@@ -1101,7 +1109,7 @@ symbolic procedure read_one_rubi_test(filename, version4);
 %      r := errorset('(parseE9), t, t);
 %      if atom r then syntax_error "parsing failed"
 %      else try_rubi_example car r >>;
-       try_rubi_example(r, integrand) >>;
+       with!-timeout(2*time_limit!*, try_rubi_example(r, integrand)) >>;
     rds save;
     close ff;
     return nil

@@ -4,7 +4,7 @@ on time;
 
 lisp;
 
-verbos 7;
+%verbos 7;
 on ezgcd, time;
 
 enable!-errorset(3,3);

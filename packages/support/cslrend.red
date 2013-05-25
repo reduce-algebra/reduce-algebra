@@ -674,6 +674,12 @@ flag('(test_package), 'opfn);
 
 flag('(call!-foreign!-function), 'variadic);
 
+% Arrange (for PSL compatibility) that "on gc;" and "off gc;" switch
+% garbage collector messages on or off.
+
+put('gc, 'simpfg, '((t (verbos t))
+                    (nil (verbos nil))));
+
 endmodule;
 
 end;

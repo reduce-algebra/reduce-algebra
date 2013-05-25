@@ -12,10 +12,6 @@ load_package rubi_red;
 load_package specfn;
 load_package sfgamma;
 
-!#if (memq 'csl lispsystem!*)
-lisp verbos t;
-!#endif
-
 on errcont, ezgcd;
 off precise;
 

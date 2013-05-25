@@ -508,6 +508,17 @@ symbolic procedure split!-str!-1 (string,separator,r);
       string . r ;
   end;
 
+% Support for CSL "verbos" that enables garbage collector messages.
+
+symbolic procedure verbos x;
+  begin
+    scalar old;
+    old := !*gc;
+    if null x or zerop x then !*gc := nil
+    else !*gc := t;
+    return old
+  end;
+
 endmodule;
 
 end;

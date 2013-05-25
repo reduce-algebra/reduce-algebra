@@ -28,7 +28,7 @@ module inter; % Functions for interactive support.
 %
 
 
-fluid '(!*echo !*int);
+fluid '(!*echo !*int trap!-time!*);
 
 global '(!$eof!$
          !$eol!$
@@ -139,40 +139,41 @@ flag ('(cont),'ignore);
 % end of any garbage collection, and so its granularity is not very fine.
 % It exits using "throw" rather than by raising an error because by doing
 % that the guarded code can not use errorset to escape. The time-limit
-% it provides is passed un units of milliseconds.
-
-fluid '(trap!-time*);
+% it provides is passed in units of milliseconds. I am allowed to nest
+% uses of "with-timeout" however the inner ones have their time allocation
+% capped at the residuel of the limit set by any outer one.
 
 trap!-time!* := nil; % nil here means no trapping active.
 
-% I put the "throw" within a procedure so that if I want to see what
-% is happening a bit more I can trace this function.
-
-symbolic procedure respond!-to!-timeout();
- << trap!-time!* := nil;
-    throw('!@timeout!@, '!@timeout!@) >>;
-    
 !#if (memq 'psl lispsystem!*)
 
 symbolic procedure aftergcsystemhook();
   if trap!-time!* and
-    time() > trap!-time!* then respond!-to!-timeout();
+    time() > trap!-time!* then throw('!@timeout!@, '!@timeout!@);
 
 !#else
 
+% In CSL the gc-hook function is passed an argument that indicates something
+% about the garbage collection that just happened.
+
 symbolic procedure aftergcsystemhook u;
   if trap!-time!* and
-    time() > trap!-time!* then respond!-to!-timeout();
+    time() > trap!-time!* then throw('!@timeout!@, '!@timeout!@);
 
 !*gc!-hook!* := 'aftergcsystemhook;
 !#endif
 
+symbolic procedure trap!-time!-value();
+  trap!-time!*;
+
 smacro procedure with!-timeout(n, u);
-  begin
-    scalar trap!-time!*;
-    trap!-time!* := time() + n;
-    return catch('!@timeout!@, list u);
-  end;
+  (lambda ott;
+    begin
+      scalar trap!-time!*;
+      trap!-time!* := time() + n;
+      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+      return catch('!@timeout!@, u . nil);
+    end)(trap!-time!-value());
 
 % A typical use of this would be:
 %
