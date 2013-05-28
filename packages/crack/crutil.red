@@ -7829,7 +7829,7 @@ if memq('linux!-gnu,lispsystem!*) or
 % to have ? or * actively matching in file name
 symbolic procedure delete!-file!-match(fi)$ 
 if memq('linux!-gnu,lispsystem!*) or
-   memy('cygwin,lispsystem!*) or
+   memq('cygwin,lispsystem!*) or
    memq('unix,lispsystem!*) then system bldmsg("rm -f %s",fi)    
 			    else system bldmsg("del %s",fi)$
 
