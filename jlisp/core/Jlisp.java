@@ -1989,6 +1989,8 @@ static void initfns(Object [][] builtins)
 
 }
 
+static JlispExtras extrabuiltins = null;
+
 static void initSymbols() throws ResourceException
 {
 //System.out.println("Beginning cold start: " + oblistCount);
@@ -2047,6 +2049,8 @@ static void initSymbols() throws ResourceException
     initfns(fns4.builtins);
     // initfns(fns5.builtins);
     // initfns(fns6.builtins);
+
+    if (extrabuiltins != null) extrabuiltins.inituserfns();
 
     {   Object [][] specials = specfn.specials;
         for (int i=0; i<specials.length; i++)
@@ -2204,35 +2208,6 @@ static void readEvalPrintLoop(boolean noRestart) throws ProgEvent, ResourceExcep
     return;
 }
 
-
-}
-
-class FlushOutputThread extends Thread
-{
-    public void run()
-    {
-        for (;;)
-        {   try
-            {   sleep(2500);
-            }
-            catch (InterruptedException e)
-            {}
-            if (Jlisp.finishingUp) return;
-// The only stream that I flush regularly is the main output one, since
-// others should be directed to files (not the screen).
-            if (Jlisp.lispIO != null) Jlisp.lispIO.flush();
-// Well maybe I will flush the one that is currently selected if that
-// is different...
-            LispObject a = Jlisp.lit[Lit.std_output];
-            if (a != null &&
-                a instanceof Symbol) a = a.car/*value*/;
-            if (a != null &&
-                a != Jlisp.lispIO &&
-                a instanceof LispStream)
-            {   ((LispStream)a).flush();
-            }
-        }
-    }
 }
 
 // End of Jlisp.java
