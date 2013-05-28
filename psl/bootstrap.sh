@@ -1,4 +1,4 @@
-#! /bin/sh 
+#! /bin/sh -x
 
 # Build an initial bootstrap REDUCE core that can be used to
 # compile the rest of the system
@@ -64,10 +64,15 @@ fasl=../red
 export fasl here psldir reduce
 
 # The next bit is both a bit of a kludge and is something I do not fully
-# understand. Some variants of 64-bit PSL interpret their "-td" paramater
+# understand. Some variants of 64-bit PSL interpret their "-td" parameter
 # differently. When this is to be the case a small file called "64" is placed
 # in the directory where the binaries live. So on the plain versions I
 # recompile in 64 Megabytes and on "64-bit" systems I use "2000".
+#
+# WN: this was done to keep the old 32 bit versions with their td
+# parameter compatible. On the other hand typing so many zeros is
+# annoying. The rule is: if the td parameter is < 1 M, then it is
+# multiplied by 1M, e.g. 1000 -> 1 GB, where 1M is 1024*1024.
 
 echo `pwd`
 if test -f psl/64
@@ -155,7 +160,6 @@ XXXY
 
 (load zbig)                           % PSL bignums.
 
-(load pslcompat)
 (errorset '(load pslcompat) nil nil)     % Load PSL accelerators if there.
 
 (flag '(eqcar) 'lose)                 % Already in PSL.
