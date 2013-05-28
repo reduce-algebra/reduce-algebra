@@ -420,5 +420,40 @@ int(-------------------------,x)
                 b(x)
 
 
+comment check two integration rules that were wrong;
+
+
+int(1/log(a*x+b),x);
+
+
+ ei(log(a*x + b))
+------------------
+        a
+
+df(ws,x);
+
+
+      1
+--------------
+ log(a*x + b)
+
+
+int(1/log(x/a+b),x);
+
+
+        a*b + x
+ei(log(---------))*a
+           a
+
+df(ws,x);
+
+
+       1
+----------------
+      a*b + x
+ log(---------)
+         a
+
+
 end;
 

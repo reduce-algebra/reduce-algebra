@@ -104,6 +104,14 @@ int(1/log(sqrt(x)*x+b(x)),x);
 
 int(1/log(x/b(x)+sqrt(x)),x);
 
+comment check two integration rules that were wrong;
+
+int(1/log(a*x+b),x);
+df(ws,x);
+
+int(1/log(x/a+b),x);
+df(ws,x);
+
 end;
 
 % Integrals from bug reports
