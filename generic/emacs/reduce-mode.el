@@ -2173,7 +2173,7 @@ passing on any prefix argument (in raw form)."
 	   '("<<\\|>>\\|\\<\\(module\\|go\\(\\s *to\\)?\\)\\>"
 	     . font-lock-keyword-face)
 	   ;; Procedure declarations:
-	   (list (concat "\\(^\\|ic\\|macro\\|expr\\|asserted\\)\\s *\\<\\(procedure\\)\\s +"
+	   (list (concat "\\(^\\|ic\\|macro\\|expr\\|asserted\\|inline\\)\\s *\\<\\(procedure\\)\\s +"
 			 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
 		 '(2 font-lock-keyword-face)
 		 ;; '(2 font-lock-function-name-face t) ; highlights within comments
@@ -2282,7 +2282,7 @@ passing on any prefix argument (in raw form)."
 		  ;; Ignore quoted keywords and composite identifiers:
 		  "\\(^[^!_']?\\|[^!][^!_']\\)"
 		  "\\<\\(newtok\\|precedence\\|switch\\|share\\|"
-		  "algebraic\\|symbolic\\|f?expr\\|s?macro\\|asserted\\)\\>"
+		  "algebraic\\|symbolic\\|f?expr\\|s?macro\\|asserted\\|inline\\)\\>"
 		  ;; Ignore composite identifiers:
 		  "[^!_]"
 		  )
