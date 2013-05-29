@@ -42,7 +42,7 @@ module ofsf;
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg ofsfexfr ofsftrop),
+   ofsfdecdeg ofsfexfr ofsftrop ofsflp),
    nil);
 
 load!-package 'redlog;
@@ -96,7 +96,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlhqetheory !*rlhqegbred !*rlhqeconnect !*rlhqestrconst !*rlhqegbdimmin
    !*rlhqegen !*cgbfaithful !*rlqeaprecise !*rlqefilterbounds !*rlpos
    !*rlsifaco !*rlqeans !*rlqelog rlqelog!* !*rlqeprecise !*rlqevarseltry
-   !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg !*rlbrkcxk);
+   !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg !*rlbrkcxk !*rlffi);
 
 fluid '(!*pgnoarbcomplex !*pgspsimpl !*pgspqe);
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD

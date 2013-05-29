@@ -436,6 +436,8 @@ defautoload(pg_gauss!-sym, pgauss, expr, 2);
 symbolic operator meminfo;
 defautoload(meminfo, rltools, expr, 0);
 
+defautoload(rltools_trunk, rltools, expr, 0);
+
 defautoload(lto_at2str, rltools, expr, 1);
 
 defautoload(lto_sconcat, rltools, expr, 1);
@@ -450,6 +452,10 @@ defautoload(qhull_qhull, qhull, expr, 1);
 % Redlog entry points
 
 defautoload(rl_set, redlog, expr, 1);
+
+% Gurobi entry points
+
+defautoload(gurobi_newmodel, gurobi, expr, 1);
 
 endmodule;
 
