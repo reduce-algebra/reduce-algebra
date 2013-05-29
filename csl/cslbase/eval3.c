@@ -914,7 +914,7 @@ static Lisp_Object unless_fn(Lisp_Object args, Lisp_Object env)
 static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object r = nil ,rl = nil;
+    Lisp_Object r = nil, rl = nil;
     int nargs = 0, i;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
@@ -938,6 +938,9 @@ static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
  *  (e) exit_reason    what it says.
  */
         flip_exception();
+        xt = qvalue(trap_time);
+        qvalue(trap_time) = nil; /* No timeouts in recovery code */
+        push(xt);
         xv = exit_value;
         xt = exit_tag;
         xc = exit_count;
@@ -946,14 +949,14 @@ static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
         for (i=xc; i>=2; i--)
             rl = cons_no_gc((&mv_2)[i-2], rl);
         rl = cons_gc_test(rl);
-        errexitn(2);
+        errexitn(3);   /* Running out of space in recovery code3 is sad */
         push(rl);
         while (is_cons(args = qcdr(args)) && args!=nil)
         {   Lisp_Object w = qcar(args);
             push2(args, env);
             voideval(w, env);
             pop2(env, args);
-            errexitn(3);
+            errexitn(4);
         }
         pop3(rl, xt, xv);
         for (i = 2; i<=xc; i++)
@@ -964,6 +967,8 @@ static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
         exit_tag   = xt;
         exit_count = xc;
         exit_reason = xr;
+        pop(xt);
+        qvalue(trap_time) = xt;
         flip_exception();
         return nil;
     }

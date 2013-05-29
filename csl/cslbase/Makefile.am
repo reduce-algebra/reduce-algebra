@@ -683,8 +683,10 @@ if gui
 else !gui
 	$(CP) $(srcdir)/csl-nogui .
 endif !gui
+if !cygwin
 	cd ../../$(with_cygbuild)/csl && make csl.exe
 	$(CP) ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+endif !cygwin
 endif windows
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -726,8 +728,10 @@ if gui
 else !gui
 	$(CP) $(srcdir)/reduce-nogui .
 endif !gui
+if !cygwin
 	cd ../../$(with_cygbuild)/csl && make reduce.exe
 	$(CP) ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+endif !cygwin
 endif windows
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -777,8 +781,10 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(srcdir)/bootstrapreduce .
+if !cygwin
 	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
 	$(CP) ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+endif !cygwin
 endif windows
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 if !debug
@@ -807,8 +813,10 @@ if gui
 else !gui
 	$(CP) $(srcdir)/fwindemo-nogui .
 endif !gui
+if !cygwin
 	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
 	$(CP) ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows

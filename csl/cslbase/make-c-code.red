@@ -145,7 +145,9 @@ else << how_many := compress explodec how_many;
 global '(omitted at_start at_end);
 
 % At any stage there may be some things that I must not even try to compile
-% into C because of bugs or limitations. I can list them here.
+% into C because of bugs or limitations. I can list them here. This is very
+% UGLY and delicate, and so ideally I will upgrade the compilation into C
+% to remove most of these limitations eventually.
 
 omitted := '(
     s!:prinl0               % uses unwind-protect
@@ -177,10 +179,19 @@ omitted := '(
     cr!:minus               %
 
     typerr                  % typerr and symerr are defined in makereduce.lsp
-    symerr                  % but there are slightly versions elsewhere.
+    symerr                  % but there are different versions elsewhere.
 
     fluid                   % the env cells of these get out of step during..
     global                  % a bootstrap build if they are compiled here.
+
+    knowledge_about         % unwind-protect
+    let00                   % ditto
+    evalletsub2             % ditto
+    clear                   % ditto
+    reval!-without          % ditto
+    subeval                 % ditto
+    ezgcdf                  % ditto
+    transcendentalcase      % ditto
     );
 
 % There is a bit of a mess-up if something that has been given an autoload

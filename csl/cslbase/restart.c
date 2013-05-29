@@ -292,7 +292,7 @@ Lisp_Object standard_output, standard_input, debug_io;
 Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-Lisp_Object gchook, resources, callstack, procstack, procmem;
+Lisp_Object gchook, resources, callstack, procstack, procmem, trap_time;
 Lisp_Object used_space, avail_space;
 Lisp_Object workbase[51];
 
@@ -4752,6 +4752,7 @@ static void cold_setup()
     resources           = make_undefined_symbol("*resources*");
     used_space          = make_undefined_symbol("*used-space*");
     avail_space         = make_undefined_symbol("*avail-space*");
+    trap_time           = make_undefined_symbol("trap-time*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
     qheader(hankaku_symbol) |= SYM_SPECIAL_VAR;
@@ -4764,6 +4765,8 @@ static void cold_setup()
     qvalue(loadsource_symbol)   = nil;
     qheader(gchook)       |= SYM_SPECIAL_VAR;
     qvalue(gchook)         = nil;
+    qheader(trap_time)    |= SYM_SPECIAL_VAR;
+    qvalue(trap_time)      = nil;
     qheader(resources)    |= SYM_SPECIAL_VAR;
     qvalue(resources)      = nil;
     qheader(used_space)   |= SYM_SPECIAL_VAR;

@@ -211,8 +211,8 @@ symbolic procedure reval!-without(u,v);
    begin scalar x;
       x := get(v,'opmtch);
       remprop(v,'opmtch);
-      u := errorset!*(list('reval,mkquote u),t);
-      put(v,'opmtch,x);
+      unwind!-protect(u := errorset!*(list('reval,mkquote u),t),
+        put(v,'opmtch,x));
       if errorp u then error1() else return car u
    end;
 

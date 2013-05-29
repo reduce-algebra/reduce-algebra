@@ -2478,8 +2478,8 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 	-rm -f csl$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/csl .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/csl-nogui .
-@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make csl.exe
-@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make csl.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-rm -f csl$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
@@ -2496,8 +2496,8 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 # See "gui-or-not.txt" for an explanation of what this is about...
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/reduce .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/reduce-nogui .
-@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make reduce.exe
-@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make reduce.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-rm -f reduce$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
@@ -2526,8 +2526,8 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 	-rm -f bootstrapreduce$(EXEEXT)
 # See "gui-or-not.txt" for an explanation of what this is about...
 @windows_TRUE@	$(CP) $(srcdir)/bootstrapreduce .
-@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
-@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
@@ -2538,8 +2538,8 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 	-rm -f fwindemo$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo-nogui .
-@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
-@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)

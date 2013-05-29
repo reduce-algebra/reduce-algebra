@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 4523253f 03-May-2013 */
+/* Signature: 331122ee 29-May-2013 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -446,7 +446,7 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack, procstack, procmem;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem, trap_time;
 
 #ifdef COMMON
 extern Lisp_Object keyword_package;
@@ -680,6 +680,7 @@ extern Lisp_Object * volatile stacklimit;
 #define callstack             BASE[155]
 #define procstack             BASE[156]
 #define procmem               BASE[157]
+#define trap_time             BASE[158]
 
 #ifdef COMMON
 #define keyword_package       BASE[170]

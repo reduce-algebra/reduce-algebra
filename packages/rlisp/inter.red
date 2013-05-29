@@ -147,9 +147,15 @@ trap!-time!* := nil; % nil here means no trapping active.
 
 !#if (memq 'psl lispsystem!*)
 
+% Note that when I detect a timeout I not only throw an exception, but I
+% clear trap!-time!* so that unwinding and processing the timeout will not
+% provoke a further activation of the mechanism.
+
 symbolic procedure aftergcsystemhook();
   if trap!-time!* and
-    time() > trap!-time!* then throw('!@timeout!@, '!@timeout!@);
+    time() > trap!-time!* then <<
+      trap!-time!* := nil;
+      throw('!@timeout!@, '!@timeout!@) >>;
 
 !#else
 
@@ -158,7 +164,9 @@ symbolic procedure aftergcsystemhook();
 
 symbolic procedure aftergcsystemhook u;
   if trap!-time!* and
-    time() > trap!-time!* then throw('!@timeout!@, '!@timeout!@);
+    time() > trap!-time!* then <<
+      trap!-time!* := nil;
+      throw('!@timeout!@, '!@timeout!@) >>;
 
 !*gc!-hook!* := 'aftergcsystemhook;
 !#endif
@@ -175,6 +183,16 @@ smacro procedure with!-timeout(n, u);
       return catch('!@timeout!@, u . nil);
     end)(trap!-time!-value());
 
+% Sometimes I want to have a critical section of code that must
+% not be interrupted by a timeout trap. I can arrange that using
+% without!-timeout.
+
+smacro procedure without!-timeout u;
+  begin
+    scalar trap!-time!*;
+    return u
+  end;
+
 % A typical use of this would be:
 %
 %    with!-timeout(7000, % allow 7 seconds...
@@ -182,6 +200,19 @@ smacro procedure with!-timeout(n, u);
 %
 % which returns an atom if the time limit was exceeded, and otherwise a list
 % whose car is the value of the protected expression.
+
+% Sometimes I want to have a critical section of code that must
+% not be interrupted by a timeout trap. I can arrange that using this
+% macro, which disables the timeout for the duration of the evaluation
+% of its argument. Note that this needs to be used with some case to
+% ensure that the computation that it guards is not terribly length, since
+% it is an absolute escape from any surrounding timeout!
+
+smacro procedure without!-timeout u;
+  begin
+    scalar trap!-time!*;
+    return u
+  end;
 
 endmodule;
 

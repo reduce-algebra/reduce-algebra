@@ -3806,7 +3806,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * and the exit_count. Also something to indicate that there had not been
  * an error.
  */
-            popv(3);
+            popv(1); pop(r1); popv(1);
+            catch_tags = qcdr(r1);
+            qcar(r1) = r1; qcdr(r1) = nil;
 #ifdef COMMON
             A_reg = Lmv_list(nil, A_reg);
             nil = C_nil;

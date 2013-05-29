@@ -41,8 +41,8 @@ symbolic procedure subeval u;
    % arising from the rule for root_of in solve/solve1.red.
    begin scalar sublist!*,x;
       put('sub,'psopfn,'subeval0);
-      x := errorset2{'subeval0,mkquote u};
-      put('sub,'psopfn,'subeval);
+      unwind!-protect(x := errorset2{'subeval0,mkquote u},
+        put('sub,'psopfn,'subeval));
       if errorp x
         then if errmsg!* then rederr errmsg!* else rederr 'sub;
       return car x

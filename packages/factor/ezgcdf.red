@@ -66,13 +66,15 @@ symbolic procedure ezgcdf(u,v);
    begin scalar erfgx,kordx,x;
       erfgx := erfg!*;
       kordx := kord!*;
-      x := errorset2{'ezgcdf1,mkquote u,mkquote v};
-      if null errorp x then return first x;
-      % If ezgcdf fails, erfg!* can be set to t,
-      % (e.g., in invlap(c/(p^3/8-9p^2/4+27/2*p-27)^2,p,t)), and
-      % the kernel order not properly reset.
-      erfg!* := erfgx;
-      setkorder kordx;
+      unwind!-protect(
+        x := errorset2{'ezgcdf1,mkquote u,mkquote v},
+        without!-timeout <<
+          if null errorp x then return first x;
+          % If ezgcdf fails, erfg!* can be set to t,
+          % (e.g., in invlap(c/(p^3/8-9p^2/4+27/2*p-27)^2,p,t)), and
+          % the kernel order not properly reset.
+          erfg!* := erfgx;
+          setkorder kordx >>);
       return gcdf1(u,v)
    end;
 
