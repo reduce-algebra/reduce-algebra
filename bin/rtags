@@ -41,6 +41,6 @@ here=`echo $c | sed -e 's+/[^/]*$++;s+/[^/]*$++'`
 if [ -e TAGS ]; then \rm -i TAGS; fi
 find $here/packages -type f -name "*.red" | xargs etags -a -l none \
     -r '/[ \t]*procedure[ \t]+\([^ \t(]+\)[( ;]/\1/' \
-    -r '/[ \t]*\(s?macro\|f?expr\)[ \t]+procedure[ \t]+\([^ \t(]+\)[( ;]/\2/' \
-    -r '/[ \t]*symbolic[ \t]+\(s?macro\|f?expr\)[ \t]+procedure[ \t]+\([^ \t(]+\)[( ;]/\2/' \
+    -r '/[ \t]*\(inline|s?macro\|f?expr\)[ \t]+procedure[ \t]+\([^ \t(]+\)[( ;]/\2/' \
+    -r '/[ \t]*symbolic[ \t]+\(inline|s?macro\|f?expr\)[ \t]+procedure[ \t]+\([^ \t(]+\)[( ;]/\2/' \
     -r '/[ \t]*\(symbolic\|algebraic\)[ \t]+procedure[ \t]+\([^ \t(]+\)[( ;]/\2/'
