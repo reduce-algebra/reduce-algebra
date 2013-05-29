@@ -108,3 +108,29 @@ priority, but with a few comments with each...
     opportunity to rework everything and revisit design decisions made when
     CSL was first created (some of which now feel out of date) seems good.
     
+(26) Check all of Reduce and remove every case where there are two functions
+     with the same name.
+    Where one package deliberately tries to redefine something re-code things
+    so there is one definition that tests a flag if it has to exhibit
+    alternative behaviour. Similarly work on removing uses of putd and copyd
+    at runtime. This will make static analysis and compilation of the code
+    easier.
+
+(27) Type-reconstruction style type-checking for Reduce
+    Existing Reduce is written in a typeless language (more or less) but
+    type-reconstruction should still be able to do a great deal to spot
+    errors. There is some delicacy in doing all this without needing to
+    rewrite massive amounts of existing Reduce code, but I believe that a lot
+    should be possible (especially after (26) has made the code more static!).
+
+(28) Arrange that loading a module never changes system behaviour.
+    At present there is a confusion between lading the code that implements
+    some feature into memory (typically using load_package) and making the
+    feature active. I believe that behaviour changes should be controlled by
+    "on" and "off" flags and that loading a package into memory should be
+    totally transparent. Eg this would mean one could have a version of
+    Reduce with all packages pre-loaded, or a smaller version with only a
+    minimal amount memory resident to start with but with autoload schema
+    loading stuff as needed. This ought to be a cleaner setup than at present.
+
+ 

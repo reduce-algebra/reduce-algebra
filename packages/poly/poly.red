@@ -72,7 +72,7 @@ accessors numr . denr;
 inline procedure u.*v;  % Standard form multiplication constructor.
    u . v;
 
-smacro procedure u ./ v; % Constructor for standard quotient.
+inline procedure u ./ v; % Constructor for standard quotient.
    u . v;
 
 symbolic inline procedure domainp u; atom u or atom car u;
@@ -142,7 +142,7 @@ symbolic procedure !*n2f u;
    % U is a number. Value is a standard form.
    if zerop u then nil else u;
 
-smacro procedure !*p2f u;
+inline procedure !*p2f u;
    % U is a standard power, value is a standard form.
    list(u . 1);
 

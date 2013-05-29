@@ -174,24 +174,22 @@ symbolic procedure aftergcsystemhook u;
 symbolic procedure trap!-time!-value();
   trap!-time!*;
 
+% When I first coded this I used a "begin/end" block in it, but that impacts
+% on "return" statements written within the expression "u". So now I use
+% lambda-binding instead. Use of
+%  with!-timeout(100, << ... ; return XXX>>);
+% is still delicate because the return lies within a lambda expression not
+% directly in "program context" but that will either work or at worst
+% lead to some diagnostic, while using a "begin/end" here make things appear
+% to be Ok but to behave unexpectedly.
+
 smacro procedure with!-timeout(n, u);
   (lambda ott;
-    begin
-      scalar trap!-time!*;
-      trap!-time!* := time() + n;
-      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
-      return catch('!@timeout!@, u . nil);
-    end)(trap!-time!-value());
-
-% Sometimes I want to have a critical section of code that must
-% not be interrupted by a timeout trap. I can arrange that using
-% without!-timeout.
-
-smacro procedure without!-timeout u;
-  begin
-    scalar trap!-time!*;
-    return u
-  end;
+    (lambda trap!-time!*;
+      << trap!-time!* := time() + n;
+         if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+         catch('!@timeout!@, u . nil)>>)(nil))
+    (trap!-time!-value());
 
 % A typical use of this would be:
 %
@@ -209,10 +207,7 @@ smacro procedure without!-timeout u;
 % it is an absolute escape from any surrounding timeout!
 
 smacro procedure without!-timeout u;
-  begin
-    scalar trap!-time!*;
-    return u
-  end;
+  (lambda trap!-time!*; u)(nil);
 
 endmodule;
 
