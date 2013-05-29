@@ -32,7 +32,10 @@ module ofsflp;
 
 switch lpkeepfiles;
 
+switch rlffi;
+
 fluid '(!*rlgurobi);
+fluid '(!*rlffi);
 
 fluid '(lp_model!*);
 fluid '(lp_modelcache!*);

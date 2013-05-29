@@ -42,10 +42,6 @@ switch zeropzero;
 on1 'zeropzero;
 
 switch rlgurobi;
-on1 'rlgurobi;
-
-switch rlffi;
-on1 'rlffi;
 
 % Entry points.
 
