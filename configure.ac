@@ -315,14 +315,10 @@ then
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
   cygbuild=`echo $build | sed -e \
       's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-w64-windows+i686-pc-cygwin+'`
-  AC_MSG_NOTICE([Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile])
-  if ! test -f cslbuild/$cygbuild/Makefile
-  then
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-cygwin"
-    AC_MSG_NOTICE([$doconfig])
-    eval "$doconfig"
-  fi
+  doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+           --with-cygwin"
+  AC_MSG_NOTICE([$doconfig])
+  eval "$doconfig"
 # check for the availability of compilers that might matter to me.
   AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-g++, "yes", "no")
   AC_CHECK_PROG(X32_GCC, i686-w64-mingw32-g++, "yes", "no")
@@ -523,8 +519,6 @@ then
 #    --without-gui     build non-GUI version in x-y-x-nogui
 #    --with-fox        build FOX version in x-y-z-fox
 #    --with-wx         build wxWidgets version in x-y-z-wx
-#    --with-wx=builtin force use of wxWidgets from source her even if
-#                      if a system-wide copy is available.
 #    --without-fox     if FOX is the default behave as --without -gui
 #    --without-wx      if wxWidgets is the default behave as --without-gui
 # If the user says --without-wx when FOX was to be the default GUI then in
@@ -578,11 +572,6 @@ then
       with_fox="no"
       with_wx="yes";
       ;;
-    fox/*/builtin)
-# explicit --with-wx=builtin overrides the default
-      with_fox="no"
-      with_wx="builtin";
-      ;;
     fox/*/no)
 # explicit --without-wx. If fox is the default this will not have any
 # effect and since maybe somebody thought it would disable the whole
@@ -598,11 +587,6 @@ then
 # explicit --with-wx is permitted even when not needed
       with_fox="no"
       with_wx="yes";
-      ;;
-    wx/*/builtin)
-# explicit --with-wx=builtin is permitted even when not needed
-      with_fox="no"
-      with_wx="builtin";
       ;;
     wx/yes/*)
 # explicit --with-fox that overrides default
@@ -635,40 +619,7 @@ then
 # be "no".
   if test "x$with_wx" != "xno"
   then
-# If the user says "--with-wx=builtin" then I will use the version of
-# wxWidgets included with with the Reduce archive even if there is a
-# (possibly different) version of wxWidgets available system-wide.
-    if test "x$with_wx" != "xbuiltin"
-    then
-      AC_PATH_PROGS(WX_CONFIG, wx-config, [no],
-         [$PATH:/usr/local/bin/usr/sfw/bin:/usr/csw/bin])
-      AC_MSG_NOTICE([WX_CONFIG=$WX_CONFIG])
-      if test "x$WX_CONFIG" != "xno" && test "x$cross_compiling" != "xyes"
-      then
-        wxver=`$WX_CONFIG --version`
-        case $wxver in
-      1.* | 2.0.* | 2.1.* | 2.2.* | 2.3.* | 2.4.* | 2.5.* | 2.6.* | 2.7.* | 2.8.* | 2.9.0)
-          AC_MSG_NOTICE([System version of wxWidgets too old - will use built in copy])
-          with_wx=builtin
-          ;;
-      2.9.*)
-# I will only accept a system version if it is 2.9.1 or up. When  at some time
-# in the distant future a 2.10 series is released I will need to review this
-# but the fall-back will be to use a copy that I ship along with my code. So
-# being fussy here is not terribly damaging.
-          AC_MSG_NOTICE([Found wxWidgets $wxver and will use that])
-          ;;
-      *)
-          AC_MSG_NOTICE([System version of wxWidgets $wxver not recognised - will use built in copy])
-          with_wx=builtin
-          ;;
-        esac
-      else
-        with_wx=builtin
-      fi
-    fi
-    AC_MSG_NOTICE([after checking for system wxWidgets with_wx=$with_wx])
-    if test "x$with_wx" = "xbuiltin" && ! test -d $abssrcdir/csl/wxWidgets
+    if ! test -d $abssrcdir/csl/wxWidgets
     then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
@@ -713,7 +664,7 @@ then
   eval "$doconfig"
   cd "$builddir"
 
-  if test "x$with_wx" = "xbuiltin"
+  if test "x$with_wx" != "xno"
   then
     AC_MSG_NOTICE([About to configure wxWidgets])
     mkdir -p wxWidgets
@@ -797,43 +748,40 @@ then
 
   if test "x$with_wx" != "xno"
   then
-    if test "x$with_wx" = "xbuiltin"
-    then
-      cd wxWidgets
+    cd wxWidgets
 # I need --enable-unicode on Windows at least so that I can use the
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
 # but addressing that pain is probably good in the long term. 
-      if test "x$CC$CPP$CXX$CXXCPP" != "x"
-      then
-        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-      fi
-      AC_MSG_NOTICE([passcc = $passcc])
-      doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
-              $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-              --disable-shared --enable-unicode \
-              --disable-compat26 \
-              --with-png=builtin --without-libjpeg \
-              --without-libtiff --with-libsvg=no \
-              --with-sdl=no --with-zlib=builtin \
-              --without-expat --with-regex=builtin \
-              --disable-richtext \
-              --disable-gif --disable-pcx --enable-graphics_ctx \
-              --disable-tga --disable-pnm \
-              --disable-svg --prefix=\"$builddir\""
-      if test "x$enable_debug" != "xno"
-      then
-        doconfig="$doconfig --enable-debug"
-      fi
-      if test "x$with_cygwin" != "xno"
-      then
-        doconfig="$doconfig --with-gtk --without-msw"
-      fi
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig"
-      cd "$builddir"
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
+    AC_MSG_NOTICE([passcc = $passcc])
+    doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
+            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+            --disable-shared --enable-unicode \
+            --disable-compat26 \
+            --with-png=builtin --without-libjpeg \
+            --without-libtiff --with-libsvg=no \
+            --with-sdl=no --with-zlib=builtin \
+            --without-expat --with-regex=builtin \
+            --disable-richtext \
+            --disable-gif --disable-pcx --enable-graphics_ctx \
+            --disable-tga --disable-pnm \
+            --disable-svg --prefix=\"$builddir\""
+    if test "x$enable_debug" != "xno"
+    then
+      doconfig="$doconfig --enable-debug"
+    fi
+    if test "x$with_cygwin" != "xno"
+    then
+      doconfig="$doconfig --with-gtk --without-msw"
+    fi
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    eval "$doconfig"
+    cd "$builddir"
   elif test "x$with_fox" != "xno"
   then
     cd fox
@@ -884,7 +832,6 @@ AM_CONDITIONAL(psl, test "x$with_psl" != "xno")
 AM_CONDITIONAL(cslpsl, test "x$with_csl" != "xno" && test "x$with_psl" != "xno")
 AM_CONDITIONAL(fox, test "x$with_fox" != "xno")
 AM_CONDITIONAL(wx,  test "x$with_wx" != "xno")
-AM_CONDITIONAL(wxbuiltin,  test "x$with_wx" = "xbuiltin")
 
 AC_MSG_NOTICE([final output from top level configuration])
 

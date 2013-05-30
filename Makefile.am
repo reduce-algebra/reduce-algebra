@@ -4,11 +4,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 
 if wx
-if wxbuiltin
 .PHONY:	all wx
-else
-.PHONY:	all
-endif
 else
 if fox
 .PHONY:	all fox
@@ -36,11 +32,7 @@ else
 FOXDEP=
 endif
 if wx
-if wxbuiltin
 WXDEP=bin/wx-config
-else
-WXDEP=
-endif
 else
 WXDEP=
 endif
@@ -74,12 +66,8 @@ fox $(FOXDEP):
 endif
 if wx
 wx $(WXDEP):
-if wxbuiltin
 	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
 	@cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
-else
-	echo Will be using system version of wxWidgets
-endif
 endif
 
 # If one of the major foundations of this Makefile have a date later than that

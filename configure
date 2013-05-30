@@ -589,8 +589,6 @@ PACKAGE_URL=''
 ac_unique_file="scripts/make.sh"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-wxbuiltin_FALSE
-wxbuiltin_TRUE
 wx_FALSE
 wx_TRUE
 fox_FALSE
@@ -601,7 +599,6 @@ psl_FALSE
 psl_TRUE
 csl_FALSE
 csl_TRUE
-WX_CONFIG
 am__untar
 am__tar
 AMTAR
@@ -2271,16 +2268,11 @@ then
   build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
   cygbuild=`echo $build | sed -e \
       's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-w64-windows+i686-pc-cygwin+'`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile" >&5
-$as_echo "$as_me: Check cygwin Makefile $abssrcdir/cslbuild/$cygbuild/Makefile" >&6;}
-  if ! test -f cslbuild/$cygbuild/Makefile
-  then
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-cygwin"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
+  doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+           --with-cygwin"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
-    eval "$doconfig"
-  fi
+  eval "$doconfig"
 # check for the availability of compilers that might matter to me.
   # Extract the first word of "x86_64-w64-mingw32-g++", so it can be a program name with args.
 set dummy x86_64-w64-mingw32-g++; ac_word=$2
@@ -3018,8 +3010,6 @@ $as_echo "$as_me: About to configure CSL core" >&6;}
 #    --without-gui     build non-GUI version in x-y-x-nogui
 #    --with-fox        build FOX version in x-y-z-fox
 #    --with-wx         build wxWidgets version in x-y-z-wx
-#    --with-wx=builtin force use of wxWidgets from source her even if
-#                      if a system-wide copy is available.
 #    --without-fox     if FOX is the default behave as --without -gui
 #    --without-wx      if wxWidgets is the default behave as --without-gui
 # If the user says --without-wx when FOX was to be the default GUI then in
@@ -3073,11 +3063,6 @@ $as_echo "$as_me: About to configure CSL core" >&6;}
       with_fox="no"
       with_wx="yes";
       ;;
-    fox/*/builtin)
-# explicit --with-wx=builtin overrides the default
-      with_fox="no"
-      with_wx="builtin";
-      ;;
     fox/*/no)
 # explicit --without-wx. If fox is the default this will not have any
 # effect and since maybe somebody thought it would disable the whole
@@ -3093,11 +3078,6 @@ $as_echo "$as_me: About to configure CSL core" >&6;}
 # explicit --with-wx is permitted even when not needed
       with_fox="no"
       with_wx="yes";
-      ;;
-    wx/*/builtin)
-# explicit --with-wx=builtin is permitted even when not needed
-      with_fox="no"
-      with_wx="builtin";
       ;;
     wx/yes/*)
 # explicit --with-fox that overrides default
@@ -3132,90 +3112,7 @@ $as_echo "$as_me: with_cygwin=$with_cygwin sethost=$sethost" >&6;}
 # be "no".
   if test "x$with_wx" != "xno"
   then
-# If the user says "--with-wx=builtin" then I will use the version of
-# wxWidgets included with with the Reduce archive even if there is a
-# (possibly different) version of wxWidgets available system-wide.
-    if test "x$with_wx" != "xbuiltin"
-    then
-      for ac_prog in wx-config
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_WX_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $WX_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_WX_CONFIG="$WX_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="$PATH:/usr/local/bin/usr/sfw/bin:/usr/csw/bin"
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_WX_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-WX_CONFIG=$ac_cv_path_WX_CONFIG
-if test -n "$WX_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WX_CONFIG" >&5
-$as_echo "$WX_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$WX_CONFIG" && break
-done
-test -n "$WX_CONFIG" || WX_CONFIG="no"
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WX_CONFIG=$WX_CONFIG" >&5
-$as_echo "$as_me: WX_CONFIG=$WX_CONFIG" >&6;}
-      if test "x$WX_CONFIG" != "xno" && test "x$cross_compiling" != "xyes"
-      then
-        wxver=`$WX_CONFIG --version`
-        case $wxver in
-      1.* | 2.0.* | 2.1.* | 2.2.* | 2.3.* | 2.4.* | 2.5.* | 2.6.* | 2.7.* | 2.8.* | 2.9.0)
-          { $as_echo "$as_me:${as_lineno-$LINENO}: System version of wxWidgets too old - will use built in copy" >&5
-$as_echo "$as_me: System version of wxWidgets too old - will use built in copy" >&6;}
-          with_wx=builtin
-          ;;
-      2.9.*)
-# I will only accept a system version if it is 2.9.1 or up. When  at some time
-# in the distant future a 2.10 series is released I will need to review this
-# but the fall-back will be to use a copy that I ship along with my code. So
-# being fussy here is not terribly damaging.
-          { $as_echo "$as_me:${as_lineno-$LINENO}: Found wxWidgets $wxver and will use that" >&5
-$as_echo "$as_me: Found wxWidgets $wxver and will use that" >&6;}
-          ;;
-      *)
-          { $as_echo "$as_me:${as_lineno-$LINENO}: System version of wxWidgets $wxver not recognised - will use built in copy" >&5
-$as_echo "$as_me: System version of wxWidgets $wxver not recognised - will use built in copy" >&6;}
-          with_wx=builtin
-          ;;
-        esac
-      else
-        with_wx=builtin
-      fi
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: after checking for system wxWidgets with_wx=$with_wx" >&5
-$as_echo "$as_me: after checking for system wxWidgets with_wx=$with_wx" >&6;}
-    if test "x$with_wx" = "xbuiltin" && ! test -d $abssrcdir/csl/wxWidgets
+    if ! test -d $abssrcdir/csl/wxWidgets
     then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
@@ -3261,7 +3158,7 @@ $as_echo "$as_me: $doconfig" >&6;}
   eval "$doconfig"
   cd "$builddir"
 
-  if test "x$with_wx" = "xbuiltin"
+  if test "x$with_wx" != "xno"
   then
     { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure wxWidgets" >&5
 $as_echo "$as_me: About to configure wxWidgets" >&6;}
@@ -3349,45 +3246,42 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
 
   if test "x$with_wx" != "xno"
   then
-    if test "x$with_wx" = "xbuiltin"
-    then
-      cd wxWidgets
+    cd wxWidgets
 # I need --enable-unicode on Windows at least so that I can use the
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
 # but addressing that pain is probably good in the long term.
-      if test "x$CC$CPP$CXX$CXXCPP" != "x"
-      then
-        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-      fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
-$as_echo "$as_me: passcc = $passcc" >&6;}
-      doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
-              $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-              --disable-shared --enable-unicode \
-              --disable-compat26 \
-              --with-png=builtin --without-libjpeg \
-              --without-libtiff --with-libsvg=no \
-              --with-sdl=no --with-zlib=builtin \
-              --without-expat --with-regex=builtin \
-              --disable-richtext \
-              --disable-gif --disable-pcx --enable-graphics_ctx \
-              --disable-tga --disable-pnm \
-              --disable-svg --prefix=\"$builddir\""
-      if test "x$enable_debug" != "xno"
-      then
-        doconfig="$doconfig --enable-debug"
-      fi
-      if test "x$with_cygwin" != "xno"
-      then
-        doconfig="$doconfig --with-gtk --without-msw"
-      fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
-$as_echo "$as_me: doconfig = $doconfig" >&6;}
-      eval "$doconfig"
-      cd "$builddir"
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+    doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
+            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+            --disable-shared --enable-unicode \
+            --disable-compat26 \
+            --with-png=builtin --without-libjpeg \
+            --without-libtiff --with-libsvg=no \
+            --with-sdl=no --with-zlib=builtin \
+            --without-expat --with-regex=builtin \
+            --disable-richtext \
+            --disable-gif --disable-pcx --enable-graphics_ctx \
+            --disable-tga --disable-pnm \
+            --disable-svg --prefix=\"$builddir\""
+    if test "x$enable_debug" != "xno"
+    then
+      doconfig="$doconfig --enable-debug"
+    fi
+    if test "x$with_cygwin" != "xno"
+    then
+      doconfig="$doconfig --with-gtk --without-msw"
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+    eval "$doconfig"
+    cd "$builddir"
   elif test "x$with_fox" != "xno"
   then
     cd fox
@@ -3476,14 +3370,6 @@ fi
 else
   wx_TRUE='#'
   wx_FALSE=
-fi
-
- if test "x$with_wx" = "xbuiltin"; then
-  wxbuiltin_TRUE=
-  wxbuiltin_FALSE='#'
-else
-  wxbuiltin_TRUE='#'
-  wxbuiltin_FALSE=
 fi
 
 
@@ -3653,10 +3539,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${wx_TRUE}" && test -z "${wx_FALSE}"; then
   as_fn_error $? "conditional \"wx\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${wxbuiltin_TRUE}" && test -z "${wxbuiltin_FALSE}"; then
-  as_fn_error $? "conditional \"wxbuiltin\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

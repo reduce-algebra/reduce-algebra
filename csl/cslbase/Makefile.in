@@ -56,14 +56,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@wx_TRUE@@wxbuiltin_TRUE@am__append_1 = $(shell ../bin/wx-config --cppflags 2>/dev/null)
-@wx_TRUE@@wxbuiltin_TRUE@am__append_2 = $(shell ../bin/wx-config --cflags 2>/dev/null)
-@wx_TRUE@@wxbuiltin_TRUE@am__append_3 = $(shell ../bin/wx-config --cxxflags 2>/dev/null)
-@wx_TRUE@@wxbuiltin_TRUE@am__append_4 = $(shell ../bin/wx-config --libs 2>/dev/null)
-@wx_TRUE@@wxbuiltin_FALSE@am__append_5 = $(shell wx-config --cppflags)
-@wx_TRUE@@wxbuiltin_FALSE@am__append_6 = $(shell wx-config --cflags)
-@wx_TRUE@@wxbuiltin_FALSE@am__append_7 = $(shell wx-config --cxxflags)
-@wx_TRUE@@wxbuiltin_FALSE@am__append_8 = $(shell wx-config --libs)
+@wx_TRUE@am__append_1 = $(shell ../bin/wx-config --cppflags 2>/dev/null)
+@wx_TRUE@am__append_2 = $(shell ../bin/wx-config --cflags 2>/dev/null)
+@wx_TRUE@am__append_3 = $(shell ../bin/wx-config --cxxflags 2>/dev/null)
+@wx_TRUE@am__append_4 = $(shell ../bin/wx-config --libs 2>/dev/null)
 @mac_framework_FALSE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_FALSE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 @mac_framework_FALSE@	$(am__EXEEXT_1) dyndemo$(EXEEXT) \
@@ -71,22 +67,22 @@ host_triplet = @host@
 @mac_framework_TRUE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_TRUE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 @mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
-@windows_TRUE@@wx_TRUE@am__append_9 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
-@windows_TRUE@@wx_FALSE@am__append_10 = fwindemo$(COM) reduce$(COM)
-@windows_TRUE@am__append_11 = csl$(COM)
+@windows_TRUE@@wx_TRUE@am__append_5 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
+@windows_TRUE@@wx_FALSE@am__append_6 = fwindemo$(COM) reduce$(COM)
+@windows_TRUE@am__append_7 = csl$(COM)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO compile config.guess config.sub depcomp install-sh \
-	missing mkinstalldirs
+	missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -278,16 +274,16 @@ AWK = @AWK@
 BUILTFOR = @BUILTFOR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@ $(am__append_2) $(am__append_6)
+CFLAGS = @CFLAGS@ $(am__append_2)
 CPP = @CPP@
 
 # I wish to know where this build intends to install things...
-CPPFLAGS = @CPPFLAGS@ $(am__append_1) $(am__append_5) \
-	-DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
+CPPFLAGS = @CPPFLAGS@ $(am__append_1) -DBINDIR=$(bindir) \
+	-DPKGDATADIR=$(pkgdatadir)
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@ $(am__append_3) $(am__append_7)
+CXXFLAGS = @CXXFLAGS@ $(am__append_3)
 CYGPATH = @CYGPATH@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
@@ -315,12 +311,13 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
-LIBS = @LIBS@ $(am__append_4) $(am__append_8)
+LIBS = @LIBS@ $(am__append_4)
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -444,8 +441,7 @@ RM = rm
 @cygwin_FALSE@EXE = $(EXEEXT)
 @cygwin_TRUE@EXE = 
 @wx_FALSE@WXC = 
-@wx_TRUE@@wxbuiltin_FALSE@WXC = 
-@wx_TRUE@@wxbuiltin_TRUE@WXC = ../bin/wx-config
+@wx_TRUE@WXC = ../bin/wx-config
 @gui_FALSE@@windows_TRUE@COM = .exe
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
@@ -674,7 +670,7 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 @windows_FALSE@reduce_LDADD = $(FOX_LIBS)
 @windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS)
-@cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe not-under-cygwin.exe
+@cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe cygwin-isatty64.exe not-under-cygwin.exe
 
 # The purpose of these two tiny programs is explained in the
 # file $(srcdir)/gui-or-not.txt and both are only for use on Windows.
@@ -723,10 +719,9 @@ DEST = -o
 
 #FOXDEPS=../lib/libFOX-1.6.lib
 @fox_TRUE@@win64_TRUE@FOXDEPS = ../lib/libFOX-1.6.a
-@wx_TRUE@@wxbuiltin_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
+@wx_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
 @wx_FALSE@WXDEPS = 
-@wx_TRUE@@wxbuiltin_FALSE@WXDEPS = 
-@wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
+@wx_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 @wx_TRUE@wxpsl_SOURCES = wxpsl.cpp $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
@@ -751,7 +746,8 @@ termdemo_LIBS =
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
 @windows_TRUE@win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
-@windows_TRUE@	not-under-cygwin.exe cygwin-isatty.exe csl reduce fwindemo
+@windows_TRUE@	not-under-cygwin.exe cygwin-isatty.exe cygwin-isatty64.exe csl \
+@windows_TRUE@	reduce fwindemo
 
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
 @windows_FALSE@	objtype makeheaders machineid.c dynmodule* \
@@ -795,11 +791,11 @@ srcfiles = $(mainsrc) $(csl_SOURCES)
 @fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@wx_FALSE@	reduce$(EXEEXT) $(am__append_9) $(am__append_10)
+@wx_FALSE@	reduce$(EXEEXT) $(am__append_5) $(am__append_6)
 @wx_TRUE@mainbin = $(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) \
-@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_9) \
-@wx_TRUE@	$(am__append_10)
-binfiles = $(mainbin) csl$(EXEEXT) $(am__append_11)
+@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_5) \
+@wx_TRUE@	$(am__append_6)
+binfiles = $(mainbin) csl$(EXEEXT) $(am__append_7)
 @win64_FALSE@@windows_FALSE@NAME = $(BUILD)
 @win64_FALSE@@windows_TRUE@NAME = windows32
 @win64_TRUE@NAME = windows64
@@ -2386,8 +2382,12 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 @windows_TRUE@	cat $(srcdir)/cslcom.def $(srcdir)/impex.def > local-cslcom.def
 
 @windows_TRUE@cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
+@windows_TRUE@	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
 @windows_TRUE@	strip cygwin-isatty.exe
+
+@windows_TRUE@cygwin-isatty64.exe:	$(srcdir)/cygwin-isatty.c
+@windows_TRUE@	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty64.exe
+@windows_TRUE@	strip cygwin-isatty64.exe
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 @windows_TRUE@	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -2432,17 +2432,17 @@ $(srcdir)/Makefile.am:
 # if I build under raw cygwin that is not the case, so I disable this
 # hack in that situation.
 
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	cd ../lib; \
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	for x in *$(HOST).a; \
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	do \
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-$(HOST).a}.a; \
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s -f $$x $$y; \
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	  ln -s -f $$x $$y; \
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	done
+@cygwin_FALSE@@wx_TRUE@$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
+@cygwin_FALSE@@wx_TRUE@	cd ../lib; \
+@cygwin_FALSE@@wx_TRUE@	for x in *$(HOST).a; \
+@cygwin_FALSE@@wx_TRUE@	do \
+@cygwin_FALSE@@wx_TRUE@	  y=$${x%-$(HOST).a}.a; \
+@cygwin_FALSE@@wx_TRUE@	  echo ln -s -f $$x $$y; \
+@cygwin_FALSE@@wx_TRUE@	  ln -s -f $$x $$y; \
+@cygwin_FALSE@@wx_TRUE@	done
 
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
-@cygwin_FALSE@@wx_TRUE@@wxbuiltin_TRUE@	@cd ../wxWidgets && $(MAKE) install
+@cygwin_FALSE@@wx_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
+@cygwin_FALSE@@wx_TRUE@	@cd ../wxWidgets && $(MAKE) install
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
@@ -2737,9 +2737,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 # cygwin1.dll or any other library that is liable to impose license
 # conditions that affect distribution rules.
 @cygwin_TRUE@report-dlls:	csl.exe bootstrapreduce.exe reduce.exe
-@cygwin_TRUE@	objdump -p csl.exe | grep "DLL"
-@cygwin_TRUE@	objdump -p bootstrapreduce.exe | grep "DLL"
-@cygwin_TRUE@	objdump -p reduce.exe | grep "DLL"
+@cygwin_TRUE@	$(OBJDUMP) -p csl.exe | grep "DLL"
+@cygwin_TRUE@	$(OBJDUMP) -p bootstrapreduce.exe | grep "DLL"
+@cygwin_TRUE@	$(OBJDUMP) -p reduce.exe | grep "DLL"
 install-data-local: $(image_files)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)

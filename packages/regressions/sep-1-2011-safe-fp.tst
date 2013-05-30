@@ -18,7 +18,9 @@ on rounded;
 
 lisp;
 
-on comp;
+on echo,comp;
+load compiler;
+off pwrds;
 
 errs := 0;
 
@@ -48,7 +50,8 @@ fluid '(errs);
 
 symbolic procedure badcase();
  << errs := errs + 1;
-    if errs > 20 then stop  0>>;
+    if errs > 20 then quit;
+ >>;
 
 
 symbolic procedure portable!-fp!-plus(x,y);

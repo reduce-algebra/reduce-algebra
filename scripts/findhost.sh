@@ -96,8 +96,13 @@ fi
 
 # I once tried to do special things for when running under msys
 # to use mingw - but I now withdraw that. For a build on Windows
-# please run under a cygwin bash shell.
+# please run under a cygwin bash shell. Here if the host is a cygwin variant
+# I map it to say just "windows" and will tend to end up using a mingw
+# compiler. Later on if "--with-cygwin" is set I will unwiind that.
 case $host in
+x86_65*cygwin*)
+  host="x86_64-pc-windows"
+  ;;
 *CYGWIN* | *Cygwin* | *cygwin* | i686-*-mingw*)
   host="i686-pc-windows"
   ;;
@@ -182,11 +187,9 @@ do
     host=$original
     ;;
   --with-cygwin*)
-# If I am building a cygwin version and the cygwin I am running under is
-# the 64-bit one I will pick an alternative name for the build directory.
-# If at some stage it becomes proper or reasonable or easy to build 32 and 64
-# bit cygwin systems on the same platform I will need to revist this again!
-    case `uname -a`
+# Here I will map the host identity to signify 32 or 64-bit cygwin
+# in a way that I hope will be relevant.
+    case $host
     in
     *x86_64*)
       host=x86_64-pc-cygwin

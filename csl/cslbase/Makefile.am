@@ -105,19 +105,11 @@ EXE=$(EXEEXT)
 endif !cygwin
 
 if wx
-if wxbuiltin
 WXC=../bin/wx-config
 CPPFLAGS += $(shell ../bin/wx-config --cppflags 2>/dev/null)
 CFLAGS   += $(shell ../bin/wx-config --cflags 2>/dev/null)
 CXXFLAGS += $(shell ../bin/wx-config --cxxflags 2>/dev/null)
 LIBS     += $(shell ../bin/wx-config --libs 2>/dev/null)
-else !wxbuiltin
-WXC=
-CPPFLAGS += $(shell wx-config --cppflags)
-CFLAGS   += $(shell wx-config --cflags)
-CXXFLAGS += $(shell wx-config --cxxflags)
-LIBS     += $(shell wx-config --libs)
-endif !wxbuiltin
 else !wx
 WXC=
 endif !wx
@@ -466,12 +458,16 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 if cygwin
 WINHELPERS=
 else !cygwin
-WINHELPERS=cygwin-isatty.exe not-under-cygwin.exe
+WINHELPERS=cygwin-isatty.exe cygwin-isatty64.exe not-under-cygwin.exe
 endif !cygwin
 
 cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
+	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
 	strip cygwin-isatty.exe
+
+cygwin-isatty64.exe:	$(srcdir)/cygwin-isatty.c
+	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty64.exe
+	strip cygwin-isatty64.exe
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -581,7 +577,6 @@ $(srcdir)/Makefile.am:
 
 if wx
 
-if wxbuiltin
 BASELIB=../lib/libwx_baseu-2.9.a
 WXDEPS=../bin/wx-config $(BASELIB)
 
@@ -606,10 +601,6 @@ $(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
 ../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
 	@cd ../wxWidgets && $(MAKE) install
 endif !cygwin
-
-else !wxbuiltin
-WXDEPS=
-endif !wxbuiltin
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-rm -f wxfontdemo$(EXEEXT)
@@ -1103,9 +1094,9 @@ if cygwin
 # cygwin1.dll or any other library that is liable to impose license
 # conditions that affect distribution rules.
 report-dlls:	csl.exe bootstrapreduce.exe reduce.exe
-	objdump -p csl.exe | grep "DLL"
-	objdump -p bootstrapreduce.exe | grep "DLL"
-	objdump -p reduce.exe | grep "DLL"
+	$(OBJDUMP) -p csl.exe | grep "DLL"
+	$(OBJDUMP) -p bootstrapreduce.exe | grep "DLL"
+	$(OBJDUMP) -p reduce.exe | grep "DLL"
 endif cygwin
 
 fwindemo_SOURCES=fwindemo.c $(fwin_sources)
@@ -1181,7 +1172,8 @@ uninstall-local:
 local_image_files = bootstrapreduce.img
 
 win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
-	not-under-cygwin.exe cygwin-isatty.exe csl reduce fwindemo
+	not-under-cygwin.exe cygwin-isatty.exe cygwin-isatty64.exe csl \
+	reduce fwindemo
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \

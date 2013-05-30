@@ -92,7 +92,6 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
-WX_CONFIG = @WX_CONFIG@
 X32_GCC = @X32_GCC@
 X64_GCC = @X64_GCC@
 abs_builddir = @abs_builddir@
@@ -162,8 +161,7 @@ AM_MAKEFLAGS = $(MFLAGS) $(MYFLAGS)
 @csl_FALSE@@psl_FALSE@WXDEP = 
 @csl_FALSE@@psl_TRUE@WXDEP = 
 @csl_TRUE@@wx_FALSE@WXDEP = 
-@csl_TRUE@@wx_TRUE@@wxbuiltin_FALSE@WXDEP = 
-@csl_TRUE@@wx_TRUE@@wxbuiltin_TRUE@WXDEP = bin/wx-config
+@csl_TRUE@@wx_TRUE@WXDEP = bin/wx-config
 all: all-am
 
 .SUFFIXES:
@@ -451,8 +449,7 @@ uninstall-am:
 	uninstall-am
 
 
-@wx_TRUE@@wxbuiltin_TRUE@.PHONY:	all wx
-@wx_TRUE@@wxbuiltin_FALSE@.PHONY:	all
+@wx_TRUE@.PHONY:	all wx
 @fox_TRUE@@wx_FALSE@.PHONY:	all fox
 @fox_FALSE@@wx_FALSE@.PHONY:	all
 
@@ -467,9 +464,8 @@ all:	$(FOXDEP) $(WXDEP)
 @csl_TRUE@@fox_TRUE@	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
 @csl_TRUE@@fox_TRUE@	@cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 @csl_TRUE@@wx_TRUE@wx $(WXDEP):
-@csl_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
-@csl_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	@cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
-@csl_TRUE@@wx_TRUE@@wxbuiltin_FALSE@	echo Will be using system version of wxWidgets
+@csl_TRUE@@wx_TRUE@	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
+@csl_TRUE@@wx_TRUE@	@cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the

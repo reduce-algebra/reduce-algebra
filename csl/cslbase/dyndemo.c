@@ -47,44 +47,9 @@
 extern int variable_in_base;
 extern int function_in_base(int x);
 
-/*
- * I will make the compiled version of this file big to show that
- * it does not get copied into the sub-function in any way... So the
- * next new lines just ensure that function_in_base has a very long and
- * messy definition. I want to do this so that one can then inspect the
- * size of the dyndemo executable and the dynmodule DLL and observe that
- * the DLL is small enough that it really can not possibly contain the
- * body of "function_in_base".
- */
-
-/*
- * By making k volatile I tell the compiler that it had better not try
- * to be over-clever and perform all the arithmetic from p() at compile time
- * to save space.
- */
-volatile int k = 3, l = 1;
-
-int p(int x)
-{
-   return k*x-l;
-}
-
-#define q x = p(x);
-#define r q q q q q q q q q q
-#define s r r r r r r r r r r
-#define t s s s s s s s s s s
-/*
- * With the commented out version "gcc -O2" tries to use 16GB+ of
- * (virtual) memory while trying to compile this code, and typically falls
- * over somewhat messily.
- */
-/* #define u t t t t t t t t t t */
-#define u t t
-
 int function_in_base(int x)
 {
-    u
-    return 7*x-3;
+    return 3141592653*x + 271828459;
 }
 
 int variable_in_base = 0x12345678;

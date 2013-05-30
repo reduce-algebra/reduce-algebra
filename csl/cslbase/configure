@@ -633,8 +633,6 @@ canrun_FALSE
 canrun_TRUE
 jit_FALSE
 jit_TRUE
-wxbuiltin_FALSE
-wxbuiltin_TRUE
 gui_FALSE
 gui_TRUE
 wx_FALSE
@@ -695,6 +693,7 @@ ARCHITECTURE
 VALGRIND
 CXX
 CC
+OBJDUMP
 DLLTOOL
 REZ
 WINDRES
@@ -1457,8 +1456,7 @@ Optional Packages:
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-fox=DIR          FOX installation location
-  --with-wx               enable use of wxWidgets, Set to builtin if using
-                          private copy
+  --with-wx               enable use of wxWidgets
   --with-cygwin           Force use of raw cywgin (note cygwin license)
   --with-fox-pending      do not check dir from --with-fox
   --with-xft              Can be used to disable use of XFT. Default is yes
@@ -3481,6 +3479,7 @@ fi
 
 
 
+
 # The next two should only be required if you are building for windows
 # (cygwin or native style) and are wanting to create a DLL to be loaded
 # by my code.
@@ -3677,6 +3676,102 @@ fi
 
 fi
 
+if test "x$OBJDUMP" = "x"
+then
+  if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}objdump", so it can be a program name with args.
+set dummy ${ac_tool_prefix}objdump; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OBJDUMP+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OBJDUMP"; then
+  ac_cv_prog_OBJDUMP="$OBJDUMP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OBJDUMP="${ac_tool_prefix}objdump"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OBJDUMP=$ac_cv_prog_OBJDUMP
+if test -n "$OBJDUMP"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJDUMP" >&5
+$as_echo "$OBJDUMP" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_OBJDUMP"; then
+  ac_ct_OBJDUMP=$OBJDUMP
+  # Extract the first word of "objdump", so it can be a program name with args.
+set dummy objdump; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_OBJDUMP+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_OBJDUMP"; then
+  ac_cv_prog_ac_ct_OBJDUMP="$ac_ct_OBJDUMP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_OBJDUMP="objdump"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_OBJDUMP=$ac_cv_prog_ac_ct_OBJDUMP
+if test -n "$ac_ct_OBJDUMP"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_OBJDUMP" >&5
+$as_echo "$ac_ct_OBJDUMP" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_ct_OBJDUMP" = x; then
+    OBJDUMP="objdump"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    OBJDUMP=$ac_ct_OBJDUMP
+  fi
+else
+  OBJDUMP="$ac_cv_prog_OBJDUMP"
+fi
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host" >&5
 $as_echo "$as_me: host=$host" >&6;}
 
@@ -3749,7 +3844,7 @@ $as_echo "#define UNIX 1" >>confdefs.h
 
 $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
-    CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+    CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses -I/usr/include/freetype2"
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     if test "x$with_gui" != "xno"
@@ -7931,7 +8026,7 @@ fi
 
 if test "x$with_gui" != "xno"
 then
-  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
+  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" != "xno")
   then
 # I will not even look for Xft if I am building for win32 not X.
 #
@@ -8443,9 +8538,230 @@ $as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
             { $as_echo "$as_me:${as_lineno-$LINENO}: freetype-config found, and Xft should be available" >&5
 $as_echo "$as_me: freetype-config found, and Xft should be available" >&6;}
           fi
+        else
+# Now a search without the benefit of helper tools.
+          xft_found="yes"
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FcConfigCreate in -lfontconfig" >&5
+$as_echo_n "checking for FcConfigCreate in -lfontconfig... " >&6; }
+if ${ac_cv_lib_fontconfig_FcConfigCreate+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfontconfig  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char FcConfigCreate ();
+int
+main ()
+{
+return FcConfigCreate ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fontconfig_FcConfigCreate=yes
+else
+  ac_cv_lib_fontconfig_FcConfigCreate=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fontconfig_FcConfigCreate" >&5
+$as_echo "$ac_cv_lib_fontconfig_FcConfigCreate" >&6; }
+if test "x$ac_cv_lib_fontconfig_FcConfigCreate" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBFONTCONFIG 1
+_ACEOF
+
+  LIBS="-lfontconfig $LIBS"
+
+fi
+
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XftFontOpen in -lXft" >&5
+$as_echo_n "checking for XftFontOpen in -lXft... " >&6; }
+if ${ac_cv_lib_Xft_XftFontOpen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lXft  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char XftFontOpen ();
+int
+main ()
+{
+return XftFontOpen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_Xft_XftFontOpen=yes
+else
+  ac_cv_lib_Xft_XftFontOpen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xft_XftFontOpen" >&5
+$as_echo "$ac_cv_lib_Xft_XftFontOpen" >&6; }
+if test "x$ac_cv_lib_Xft_XftFontOpen" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBXFT 1
+_ACEOF
+
+  LIBS="-lXft $LIBS"
+
+else
+  xft_found="no"
+fi
+
+          ac_fn_c_check_header_mongrel "$LINENO" "X11/Xft/Xft.h" "ac_cv_header_X11_Xft_Xft_h" "$ac_includes_default"
+if test "x$ac_cv_header_X11_Xft_Xft_h" = xyes; then :
+
+else
+  xft_found="no"
+fi
+
+
+          if test "$xft_found" = "yes"
+          then
+
+$as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
+
+          fi
         fi
       fi
     fi
+  fi
+fi
+
+if test "x$xft_found" != "xyes"
+then
+# Now a search without the benefit of helper tools.
+  xft_found="yes"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FcConfigCreate in -lfontconfig" >&5
+$as_echo_n "checking for FcConfigCreate in -lfontconfig... " >&6; }
+if ${ac_cv_lib_fontconfig_FcConfigCreate+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfontconfig  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char FcConfigCreate ();
+int
+main ()
+{
+return FcConfigCreate ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fontconfig_FcConfigCreate=yes
+else
+  ac_cv_lib_fontconfig_FcConfigCreate=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fontconfig_FcConfigCreate" >&5
+$as_echo "$ac_cv_lib_fontconfig_FcConfigCreate" >&6; }
+if test "x$ac_cv_lib_fontconfig_FcConfigCreate" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBFONTCONFIG 1
+_ACEOF
+
+  LIBS="-lfontconfig $LIBS"
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XftFontOpen in -lXft" >&5
+$as_echo_n "checking for XftFontOpen in -lXft... " >&6; }
+if ${ac_cv_lib_Xft_XftFontOpen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lXft  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char XftFontOpen ();
+int
+main ()
+{
+return XftFontOpen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_Xft_XftFontOpen=yes
+else
+  ac_cv_lib_Xft_XftFontOpen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xft_XftFontOpen" >&5
+$as_echo "$ac_cv_lib_Xft_XftFontOpen" >&6; }
+if test "x$ac_cv_lib_Xft_XftFontOpen" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBXFT 1
+_ACEOF
+
+  LIBS="-lXft $LIBS"
+
+else
+  xft_found="no"
+fi
+
+  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xft/Xft.h" "ac_cv_header_X11_Xft_Xft_h" "$ac_includes_default"
+if test "x$ac_cv_header_X11_Xft_Xft_h" = xyes; then :
+
+else
+  xft_found="no"
+fi
+
+
+  if test "$xft_found" = "yes"
+  then
+
+$as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
+
   fi
 fi
 
@@ -11154,14 +11470,6 @@ else
   gui_FALSE=
 fi
 
- if test "x$with_wx" = "xbuiltin"; then
-  wxbuiltin_TRUE=
-  wxbuiltin_FALSE='#'
-else
-  wxbuiltin_TRUE='#'
-  wxbuiltin_FALSE=
-fi
-
  if test "x$enable_jit" = "xyes"; then
   jit_TRUE=
   jit_FALSE='#'
@@ -11374,10 +11682,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${gui_TRUE}" && test -z "${gui_FALSE}"; then
   as_fn_error $? "conditional \"gui\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${wxbuiltin_TRUE}" && test -z "${wxbuiltin_FALSE}"; then
-  as_fn_error $? "conditional \"wxbuiltin\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${jit_TRUE}" && test -z "${jit_FALSE}"; then

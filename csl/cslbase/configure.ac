@@ -177,7 +177,7 @@ AC_MSG_NOTICE([--with-fox=$with_fox])
 
 AC_ARG_WITH(wx,
   AC_HELP_STRING([--with-wx],
-                 [enable use of wxWidgets, Set to builtin if using private copy]),
+                 [enable use of wxWidgets]),
   [],
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
@@ -202,6 +202,7 @@ AC_SUBST(SED)
 AC_SUBST(WINDRES)
 AC_SUBST(REZ)
 AC_SUBST(DLLTOOL)
+AC_SUBST(OBJDUMP)
 
 # The next two should only be required if you are building for windows
 # (cygwin or native style) and are wanting to create a DLL to be loaded
@@ -215,6 +216,11 @@ fi
 if test "x$DLLTOOL" = "x"
 then
   AC_CHECK_TOOL(DLLTOOL, dlltool, dlltool)
+fi
+
+if test "x$OBJDUMP" = "x"
+then
+  AC_CHECK_TOOL(OBJDUMP, objdump, objdump)
 fi
 
 AC_MSG_NOTICE([host=$host])
@@ -270,7 +276,7 @@ x86_64-w64-*)
 # The next line gives further refinement in case there are places where
 # I have to take account of the very special case I am in. 
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
-    CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+    CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses -I/usr/include/freetype2"
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     if test "x$with_gui" != "xno"
@@ -863,7 +869,7 @@ fi
 
 if test "x$with_gui" != "xno"
 then
-  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
+  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" != "xno")
   then
 # I will not even look for Xft if I am building for win32 not X.
 #
@@ -919,9 +925,32 @@ then
             AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
             AC_MSG_NOTICE([freetype-config found, and Xft should be available])
           fi
+        else
+# Now a search without the benefit of helper tools.
+          xft_found="yes"
+          AC_CHECK_LIB(fontconfig, FcConfigCreate)
+          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+          AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+          if test "$xft_found" = "yes"
+          then
+            AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+          fi
         fi
       fi
     fi
+  fi
+fi
+
+if test "x$xft_found" != "xyes"
+then
+# Now a search without the benefit of helper tools.
+  xft_found="yes"
+  AC_CHECK_LIB(fontconfig, FcConfigCreate)
+  AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+  AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+  if test "$xft_found" = "yes"
+  then
+    AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
   fi
 fi
 
@@ -1459,7 +1488,6 @@ AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
 AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
 AM_CONDITIONAL(gui,test "x$fox_present" = "xyes" || test "x$with_wx" != "xno")
-AM_CONDITIONAL(wxbuiltin,test "x$with_wx" = "xbuiltin")
 AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
