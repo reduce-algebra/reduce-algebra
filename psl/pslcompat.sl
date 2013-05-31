@@ -193,7 +193,7 @@
 
 % local fluids:
 
-(fluid '(sl-file* this-module*))
+(fluid '(sl-file* this-module* prinlevel))
 
 (put 'module 'faslpreeval 'module-fasl)
 
@@ -202,7 +202,7 @@
   (cond((and *writingfaslfile 
              (not loadtime)
              (flagp (car(setq u(eval (cadr u)))) 'lap))
-   (prog (name !*lower x w)
+   (prog (name !*lower x wi prinlevel)
       (setq this-module* u)
       (setq !*lower t)
            % Create a file name with the prefixes of the faslout name

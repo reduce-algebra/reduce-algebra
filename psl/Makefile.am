@@ -28,6 +28,7 @@ all:
 
 red/bootstrap.img:	psl/* \
 		$(srcdir)/symget.dat $(srcdir)/bootstrap.sh \
+		$(srcdir)/pslcompat.sl \
 		$(srcdir)/boot.sl $(reducec)/packages/package.map \
 		$(reducec)/packages/support/*.red \
 		$(reducec)/packages/rlisp/*.red \
