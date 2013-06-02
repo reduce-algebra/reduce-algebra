@@ -774,7 +774,7 @@ static void report_dependencies()
         if (p[0] != 0 &&
             p[1] == ':' &&
             (p[2] == '/' || p[2] == '\\'))
-        {   fprintf(f, "/cygdrive/%c", tolower(p[0]));
+        {   fprintf(f, "/cygdrive/%c", (char)tolower((unsigned char)p[0]));
             p+=2;
         }
         while ((c = *p++) != 0)
@@ -1487,7 +1487,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * getrlimit so I will treat them as failure.
  */
 #if HAVE_DECL_RLIM_SAVED_MAX
-	    if (stacklimit == RLIM_SAVED_MAX &&
+	    if (stackLimit == RLIM_SAVED_MAX &&
                 RLIM_SAVED_MAX != RLIM_INFINITY) 
             { /* do nothing */ }
             else
@@ -1555,7 +1555,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         if (opt == NULL) continue;
         else if (strcmp(argv[i], "--args")==0) break;
 #if defined WINDOW_SYSTEM && !defined EMBEDDED
-        if (opt[0] == '-' && tolower(opt[1] == 'w'))
+        if (opt[0] == '-' && (char)tolower((unsigned char)opt[1]) == 'w')
         {   use_wimp = !use_wimp;
             break;
         }
@@ -1626,7 +1626,8 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         if (opt[0] == '-' && opt[1] != 0)
         {   char *w;
             int c1 = opt[1], c2 = opt[2];
-            if (isupper(c1)) c1 = tolower(c1);
+            if (isupper((unsigned char)c1))
+                c1 = (char)tolower((unsigned char)c1);
             switch (c1)
             {
 

@@ -66,6 +66,16 @@ AC_ARG_WITH(cygbuild,
   [],
   [with_cygbuild="unknown"])
 
+AC_ARG_WITH(cygbuild64,
+  AC_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
+  [],
+  [with_cygbuild64="unknown"])
+
+AC_ARG_WITH(force,
+  AC_HELP_STRING([--with-force], [Forces refresh of windows varients]),
+  [],
+  [with_force="no"])
+
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
@@ -307,70 +317,6 @@ case `uname` in
   considermingw="no"
 esac
 
-if test "x$considermingw" != "xno"
-then
-# This should ensure that a (raw) cygwin version to match the current version
-# will be built. It assumes (perhaps slightly optimistically) that if
-# there is a Makefile present then the configure step has happened.
-  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
-  cygbuild=`echo $build | sed -e \
-      's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-w64-windows+i686-pc-cygwin+'`
-  doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-           --with-cygwin"
-  AC_MSG_NOTICE([$doconfig])
-  eval "$doconfig"
-# check for the availability of compilers that might matter to me.
-  AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-g++, "yes", "no")
-  AC_CHECK_PROG(X32_GCC, i686-w64-mingw32-g++, "yes", "no")
-  if test "x$with_mingw64" = "xyes"
-  then
-    if test "x$X64_GCC" = "xno"
-    then
-      AC_MSG_ERROR([Attempt to build Windows-64 system without correct cross ocmpiler installed])
-    fi
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --host=x86_64-w64-mingw32 --with-cygbuild=$cygbuild"
-    AC_MSG_NOTICE([$doconfig])
-    eval "$doconfig"
-    exit
-  elif test "x$with_mingw64" = "xno" || \
-       test "x$wow64" = "xno" || \
-       test "x$X64_GCC" = "xno"
-  then
-# Here I either explicitly want to build a 32-bit version, or I am on
-# a 32-bit windows and did not explicitly ask for a 64-bit version. I
-# build for 32-bits. There are several possible ways to do that and I
-# will look at them here in order of preference. I do this even if I am on
-# a 64-bit Windows if the 64-bit compilers are not available.
-#
-    if test "$X32_GCC" = "yes"
-    then
-# Use cross-compilation using i686-w64-mingw32-g++ etc.
-      doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-               --host=i686-w64-mingw32 --with-cygbuild=$cygbuild"
-      AC_MSG_NOTICE([$doconfig])
-      eval "$doconfig"
-      exit
-    else
-      AC_MSG_ERROR([Under cygwin please install i686-w64-mingw compilers.])
-      exit
-    fi
-  else
-# This final case is when I have not said anything explicit about with or
-# without mingw64 but I am running on a 64-bit windows and have the 64-bit
-# compilers installed. In this case I will try to configure both versions.
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=no --with-cygbuild=$cygbuild"
-    AC_MSG_NOTICE([$doconfig])
-    eval "$doconfig"
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=yes --with-cygbuild=$cygbuild"
-    AC_MSG_NOTICE([$doconfig])
-    eval "$doconfig"
-    exit
-  fi
-fi
-
 # Now I want to know if the current directory is the same as $srcdir. At
 # one stage I checked that by looking to see if $srcdir was ".". That was OK
 # for direct calls of the form "./configure" where the "." as in "./" was
@@ -440,11 +386,7 @@ case $inplace in
 # NO was NOT given rather than that the option yes was.
   if test "x$with_csl" != "xno"
   then
-    AC_MSG_NOTICE([+++ Will build in $abssrcdir/cslbuild/$build])
-    if ! test -d "$abssrcdir/cslbuild/$build"
-    then
-      mkdir -p "$abssrcdir/cslbuild/$build"
-    fi
+    mkdir -p "$abssrcdir/cslbuild"
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
@@ -455,20 +397,144 @@ case $inplace in
       mkdir -p "$abssrcdir/cslbuild/generated-c"
       cp -r "$abssrcdir/csl/generated-c" "$abssrcdir/cslbuild"
     fi
-    cd "$abssrcdir/cslbuild/$build"
-    if test "x$CC$CPP$CXX$CXXCPP" != "x"
-    then
-      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-    fi
-    AC_MSG_NOTICE([passcc = $passcc])
-    pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-            CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-            $passcc $pass_build"
-    AC_MSG_NOTICE([doconfig = $doconfig])
-    eval "$doconfig"
-    cd "$abssrcdir"
+# Now I am configuring for CSL and am doing so from the top directory. If
+# I am on Windows I will configure for variants:
+#   i686-pc-cygwin
+#   x86_64-pc-cygwin
+#   i686-w64-mingw
+#   x86_64-w64-mingw
+# I will run the configure script for one of those if I have the relevant
+# compiler available and if the config.status file where I would build is
+# older that my "configure" script. The tests are known to be happening under
+# cygwin so I am not going to worry overmuch about general 
+    case $build in
+    *cygwin* | *windows*)
+      if test -x /usr/bin/i686-pc-cygwin-gcc
+      then
+        have_cyg32="yes"
+      else
+        have_cyg32="no"
+      fi
+      if test -x /usr/bin/x86_64-pc-cygwin-gcc
+      then
+        have_cyg64="yes"
+      else
+        have_cyg64="no"
+      fi
+      if test -x /usr/bin/i686-w64-mingw32-gcc
+      then
+        have_mingw32="yes"
+      else
+        have_mingw32="no"
+      fi
+      if test -x /usr/bin/x86_64-w64-mingw32-gcc
+      then
+        have_mingw64="yes"
+      else
+        have_mingw64="no"
+      fi
+      AC_MSG_NOTICE([Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$have_mingw32 win64:$have_mingw64])
+      if test "$have_mingw32" = "no" && test "$have_mingw64" = "no"
+      then
+        AC_MSG_ERROR(
+          [you must have at least one of i686-w64-mingw32-gcc or x86_64-w64-mingw32-gcc])
+      fi
+      for buildmc in "i686-pc-cygwin" "x86_64-pc-cygwin"
+      do
+        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
+        if test -x /usr/bin/$buildmc-gcc
+        then
+           if test "x$with_force" != "xno" ||
+             test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
+          then
+            echo "Need to reconfigure for $build"
+            mkdir -p "$abssrcdir/cslbuild/$build"
+            cd "$abssrcdir/cslbuild/$build"
+            if test "x$CC$CPP$CXX$CXXCPP" != "x"
+            then
+              passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+            fi
+            AC_MSG_NOTICE([passcc = $passcc])
+            pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+            doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+                    CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+                    CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+                    $passcc $pass_build --host=$buildmc --with-cygwin"
+            AC_MSG_NOTICE([doconfig = $doconfig])
+            eval "$doconfig"
+            cd "$abssrcdir"
+          else
+            AC_MSG_NOTICE([Version for $build is already configured])
+          fi
+        else
+          AC_MSG_NOTICE([Compiler for $buildmc not available])
+        fi
+      done
+      cygextra=
+      if test "$have_cyg32" = "yes"
+      then
+        cygextra="--with-cygbuild=$abssrcdir/cslbuild/i686-pc-cygwin"
+      fi
+      if test "$have_cyg64" = "yes"
+      then
+        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/x86_64-pc-cygwin"
+      fi
+      AC_MSG_NOTICE([cygextra = $cygextra])
+      for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
+      do
+        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
+        if test -x /usr/bin/$buildmc-gcc && test "x$with_cygwin" = "xno"
+        then
+          if test "x$with_force" != "xno" ||
+             test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
+          then
+            echo "Need to reconfigure for $build"
+            mkdir -p "$abssrcdir/cslbuild/$build"
+            cd "$abssrcdir/cslbuild/$build"
+            if test "x$CC$CPP$CXX$CXXCPP" != "x"
+            then
+              passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+            fi
+            AC_MSG_NOTICE([passcc = $passcc])
+            pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+            doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+                    CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+                    CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+                    $passcc $cygextra $pass_build --host=$buildmc"
+            AC_MSG_NOTICE([doconfig = $doconfig])
+            eval "$doconfig"
+            cd "$abssrcdir"
+          else
+            AC_MSG_NOTICE([Version for $build is already configured])
+          fi
+        else
+          AC_MSG_NOTICE([Compiler for $buildmc not available])
+        fi
+      done 
+      ;;
+    *)
+      mkdir -p "$abssrcdir/cslbuild/$build"
+      cd "$abssrcdir/cslbuild/$build"
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
+      AC_MSG_NOTICE([passcc = $passcc])
+      pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+      doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+              CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+              $passcc $pass_build"
+      AC_MSG_NOTICE([doconfig = $doconfig])
+      eval "$doconfig"
+      cd "$abssrcdir"
+      ;;
+    esac
+
+
+
+
+
   fi
   if test "x$with_psl" != "xno"
   then

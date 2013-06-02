@@ -30,7 +30,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6d218672 03-Jun-2012 */
+/* Signature: 13d0f21d 01-Jun-2013 */
 
 #include <windows.h>
 
@@ -47,6 +47,17 @@
  * It is used from shell scripts (only under Windows) to decide which
  * version of Reduce should be
  * launched.
+ *
+ *   ./not-under-cygwin.exe ; echo $?
+ *        0 (ie success) if running directly in a genuine Windows console.
+ *        1 if running under cygwin or cygwin64 or IO redirection detected.
+ *
+ *   test ./not-under-cygwin.exe
+ *   then
+ *     echo Native Windows context with stdio direct to console.
+ *   else
+ *     echo Cygwin context or input/output via pipe or redirection to file.
+ *   fi
  */
 
 int main(int argc, char *argv[])

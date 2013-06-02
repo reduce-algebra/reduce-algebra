@@ -7,6 +7,12 @@
 #
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
+# Both --with-m32 and --with-m64 should be viewed as archaic, in that
+# building for a word-width that is not the main native one for the
+# build platform should be treated as cross compilation using "--host=xxx".
+# Various versions of gcc now seem to be withdrawing support form "-m32" and
+# "-m64"...
+#
 #   --with-lto        Try link-time optimisation with gcc. EXPERIMENTAL.
 #   --with-cygwin     Build native cygwin X11 based system, 
 #                     Please note cygwin licensing issues, which do not
@@ -110,6 +116,13 @@ AC_ARG_WITH(cygbuild,
 
 AC_SUBST(with_cygbuild)
 
+AC_ARG_WITH(cygbuild64,
+   AC_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
+   [],
+   [with_cygbuild64="unknown"])
+
+AC_SUBST(with_cygbuild64)
+
 if test "x$BUILTFOR" = "xunknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
@@ -146,7 +159,7 @@ AC_ARG_WITH(lto,
 
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even on 64-bit gcc]),
+                  [Force 32-bit model even on 64-bit gcc (deprecated)]),
    [],
    [with_m32="no"])
 
@@ -159,7 +172,7 @@ fi
 
 AC_ARG_WITH(m64,
    AC_HELP_STRING([--with-m64],
-                  [Force 64-bit model even if 32-bit is default]),
+                  [Force 64-bit model even if 32-bit is default (deprecated)]),
    [],
    [with_m64="no"])
 
@@ -184,9 +197,15 @@ AC_MSG_NOTICE([--with-wx=$with_wx])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin (note cygwin license)]),
+                 [Force use of raw cywgin (note Cygwin license)]),
   [],
   [with_cygwin="no"])
+
+AC_ARG_WITH(force,
+  AC_HELP_STRING([--with-force],
+                 [Used at a higher level]),
+  [],
+  [with_force="no"])
 
 if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
 then
@@ -230,8 +249,6 @@ x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
   AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
   CPPFLAGS="$CPPFLAGS"
-  CFLAGS="$CFLAGS -funsigned-char"
-  CXXFLAGS="$CXXFLAGS -funsigned-char"
   DLL_CFLAGS="$CFLAGS -shared"
   LDFLAGS="$LDFLAGS -static"
   windows_build="yes"
@@ -277,8 +294,6 @@ x86_64-w64-*)
 # I have to take account of the very special case I am in. 
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
     CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses -I/usr/include/freetype2"
-    CFLAGS="$CFLAGS -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -funsigned-char"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
@@ -294,8 +309,6 @@ x86_64-w64-*)
   else
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-    CFLAGS="$CFLAGS -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some

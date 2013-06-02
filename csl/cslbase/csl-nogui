@@ -41,8 +41,14 @@ here=`echo $c | sed -e 's+/[^/]*$++'`
 
 if $here/not-under-cygwin.exe $*
 then
-  $here/csl.com $*
+  $here/csl.exe $*
 else
+  $here/cygwin64-isatty.exe $*
+  case $? in
+  1)
+    $here/cygwin64-csl.exe $*
+    ;;
+  esac
   $here/cygwin-isatty.exe $*
   case $? in
   0)

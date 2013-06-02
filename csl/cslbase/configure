@@ -703,6 +703,7 @@ MAKE
 DLL_CFLAGS
 PSLBUILD
 BUILTFOR
+with_cygbuild64
 with_cygbuild
 host_os
 host_vendor
@@ -784,12 +785,14 @@ with_gui
 with_build
 with_pslbuild
 with_cygbuild
+with_cygbuild64
 with_lto
 with_m32
 with_m64
 with_fox
 with_wx
 with_cygwin
+with_force
 with_fox_pending
 enable_debug
 enable_conservative
@@ -1452,12 +1455,15 @@ Optional Packages:
   --with-build            specify host-name to use when logging
   --with-pslbuild         used if I wish to call the PSL version
   --with-cygbuild         used if I wish to call the cygwin version
+  --with-cygbuild64       used if I wish to call the 64-bit cygwin version
   --with-lto              Force extreme optimisation with gcc
-  --with-m32              Force 32-bit model even on 64-bit gcc
+  --with-m32              Force 32-bit model even on 64-bit gcc (deprecated)
   --with-m64              Force 64-bit model even if 32-bit is default
+                          (deprecated)
   --with-fox=DIR          FOX installation location
   --with-wx               enable use of wxWidgets
-  --with-cygwin           Force use of raw cywgin (note cygwin license)
+  --with-cygwin           Force use of raw cywgin (note Cygwin license)
+  --with-force            Used at a higher level
   --with-fox-pending      do not check dir from --with-fox
   --with-xft              Can be used to disable use of XFT. Default is yes
   --with-smallpage        Use smaller block of memory to suit tiny computers
@@ -3344,6 +3350,17 @@ fi
 
 
 
+
+# Check whether --with-cygbuild64 was given.
+if test "${with_cygbuild64+set}" = set; then :
+  withval=$with_cygbuild64;
+else
+  with_cygbuild64="unknown"
+fi
+
+
+
+
 if test "x$BUILTFOR" = "xunknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
@@ -3461,6 +3478,15 @@ if test "${with_cygwin+set}" = set; then :
   withval=$with_cygwin;
 else
   with_cygwin="no"
+fi
+
+
+
+# Check whether --with-force was given.
+if test "${with_force+set}" = set; then :
+  withval=$with_force;
+else
+  with_force="no"
 fi
 
 
@@ -3784,8 +3810,6 @@ $as_echo "#define WIN32 1" >>confdefs.h
 $as_echo "#define WIN64 1" >>confdefs.h
 
   CPPFLAGS="$CPPFLAGS"
-  CFLAGS="$CFLAGS -funsigned-char"
-  CXXFLAGS="$CXXFLAGS -funsigned-char"
   DLL_CFLAGS="$CFLAGS -shared"
   LDFLAGS="$LDFLAGS -static"
   windows_build="yes"
@@ -3845,8 +3869,6 @@ $as_echo "#define UNIX 1" >>confdefs.h
 $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
     CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses -I/usr/include/freetype2"
-    CFLAGS="$CFLAGS -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -funsigned-char"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
@@ -3865,8 +3887,6 @@ $as_echo "$as_me: Windows built creating native binary" >&6;}
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
-    CFLAGS="$CFLAGS -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some

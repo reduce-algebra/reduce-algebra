@@ -49,7 +49,7 @@ extern int function_in_base(int x);
 
 int function_in_base(int x)
 {
-    return 3141592653*x + 271828459;
+    return 314159265*x + 271828459;
 }
 
 int variable_in_base = 0x12345678;

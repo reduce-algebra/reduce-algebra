@@ -75,11 +75,11 @@ int first_char(Lisp_Object ch)
 }
 
 #else /* Kanji */
-#define ISalpha(a)     isalpha(a)
-#define ISdigit(a)     isdigit(a)
-#define ISspace(a)     isspace(a)
-#define TOupper(a)     toupper(a)
-#define TOlower(a)     tolower(a)
+#define ISalpha(a)     isalpha((unsigned char)(a))
+#define ISdigit(a)     isdigit((unsigned char)(a))
+#define ISspace(a)     isspace((unsigned char)(a))
+#define TOupper(a)     ((char)toupper((unsigned char)(a)))
+#define TOlower(a)     ((char)tolower((unsigned char)(a)))
 #define first_char(ch) ucelt(qpname(ch), 0)
 #endif /* Kanji */
 
@@ -208,7 +208,7 @@ Lisp_Object Lgetenv(Lisp_Object nil, Lisp_Object a)
     char *w;
     memset(parmname, 0, sizeof(parmname));
 #ifdef COMMON
-    if (complex_stringp(a))
+    if (complex_stringp(a)
     {   a = simplify_string(a);
         errexit();
     }
@@ -4209,7 +4209,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
             {   tail[i] = 0;
                 break;
             }
-            else tail[i] = (char)tolower(filestring[--len]);
+            else tail[i] = (char)tolower((unsigned char)filestring[--len]);
         }
         if (strncmp(tail, "lsf.", 4) == 0 ||
             strncmp(tail, "lasf.", 5) == 0 ||

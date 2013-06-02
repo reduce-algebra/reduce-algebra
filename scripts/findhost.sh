@@ -100,7 +100,7 @@ fi
 # I map it to say just "windows" and will tend to end up using a mingw
 # compiler. Later on if "--with-cygwin" is set I will unwiind that.
 case $host in
-x86_65*cygwin*)
+x86_64*cygwin*)
   host="x86_64-pc-windows"
   ;;
 *CYGWIN* | *Cygwin* | *cygwin* | i686-*-mingw*)

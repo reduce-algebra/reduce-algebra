@@ -5,6 +5,14 @@
 
 # CSL and REDUCE build sequences
 
+# I want to be able to see what gets built and why, so here is a GNU
+# make trace facility.
+
+TRACE = $(warning TRACE: $@ :: $?)
+
+CPPFLAGS += $(TRACE)
+LDFLAGS += $(TRACE)
+
 # If I list all the phony targets here this may help document things you
 # can do via this Makefile
 
@@ -122,13 +130,21 @@ CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 # .com version to be a console application. If I only have command-line
 # versions it is easiest to make everything .exe
 if windows
+if cygwin
+COM=.exe
+else !cygwin
 if gui
 COM=.com
 else !gui
 COM=.exe
 endif !gui
+endif !cygwin
 else !windows
+if cygwin
+COM=.exe
+else !cygwin
 COM=
+endif !cygwin
 endif !windows
 
 if fox
@@ -458,20 +474,20 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 if cygwin
 WINHELPERS=
 else !cygwin
-WINHELPERS=cygwin-isatty.exe cygwin-isatty64.exe not-under-cygwin.exe
+WINHELPERS=cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 endif !cygwin
 
 cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
 	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
-	strip cygwin-isatty.exe
+	i686-pc-cygwin-strip cygwin-isatty.exe
 
-cygwin-isatty64.exe:	$(srcdir)/cygwin-isatty.c
-	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty64.exe
-	strip cygwin-isatty64.exe
+cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
+	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe
+	x86_64-pc-cygwin-strip cygwin64-isatty.exe
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
-	strip not-under-cygwin.exe
+	i686-w64-mingw32-strip not-under-cygwin.exe
 
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 		$(FONTDEP) $(WXC)
@@ -603,7 +619,7 @@ $(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
 endif !cygwin
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxfontdemo$(EXEEXT)
+	-$(RM) -f wxfontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -615,7 +631,7 @@ if mac_framework
 endif mac_framework
 
 wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxfontdemo1$(EXEEXT)
+	-$(RM) -f wxfontdemo1$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -627,7 +643,7 @@ if mac_framework
 endif mac_framework
 
 wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxdvi$(EXEEXT)
+	-$(RM) -f wxdvi$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -639,7 +655,7 @@ if mac_framework
 endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxdemo$(EXEEXT)
+	-$(RM) -f wxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -651,7 +667,7 @@ if mac_framework
 endif mac_framework
 
 wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxshowmathdemo$(EXEEXT)
+	-$(RM) -f wxshowmathdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -667,7 +683,7 @@ WXDEPS=
 endif !wx
 
 csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
-	-rm -f csl$(EXEEXT)
+	-$(RM) -f csl$(EXEEXT)
 if windows
 if gui
 	$(CP) $(srcdir)/csl .
@@ -675,14 +691,16 @@ else !gui
 	$(CP) $(srcdir)/csl-nogui .
 endif !gui
 if !cygwin
-	cd ../../$(with_cygbuild)/csl && make csl.exe
-	$(CP) ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+	cd $(with_cygbuild)/csl && make csl.exe
+	$(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+	cd $(with_cygbuild64)/csl && make csl.exe
+	$(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f csl$(COM)
+	-$(RM) -f csl$(COM)
 	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 endif gui
 	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
@@ -711,7 +729,7 @@ endif !wx
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(WINHELPERS)
-	-rm -f reduce$(EXEEXT)
+	-$(RM) -f reduce$(EXEEXT)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 if gui
@@ -720,14 +738,16 @@ else !gui
 	$(CP) $(srcdir)/reduce-nogui .
 endif !gui
 if !cygwin
-	cd ../../$(with_cygbuild)/csl && make reduce.exe
-	$(CP) ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+	cd $(with_cygbuild)/csl && make reduce.exe
+	$(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+	cd $(with_cygbuild64)/csl && make reduce.exe
+	$(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f reduce$(COM)
+	-$(RM) -f reduce$(COM)
 	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 endif gui
 	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
@@ -768,13 +788,15 @@ endif mac_framework
 endif !wx
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
-	-rm -f bootstrapreduce$(EXEEXT)
+	-$(RM) -f bootstrapreduce$(EXEEXT)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(srcdir)/bootstrapreduce .
 if !cygwin
-	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
-	$(CP) ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
+	$(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe
+	$(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
@@ -797,7 +819,7 @@ if windows
 endif windows
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
-	-rm -f fwindemo$(EXEEXT)
+	-$(RM) -f fwindemo$(EXEEXT)
 if windows
 if gui
 	$(CP) $(srcdir)/fwindemo .
@@ -805,14 +827,16 @@ else !gui
 	$(CP) $(srcdir)/fwindemo-nogui .
 endif !gui
 if !cygwin
-	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
-	$(CP) ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+	cd $(with_cygbuild)/csl && make fwindemo.exe
+	$(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+	cd $(with_cygbuild64)/csl && make fwindemo.exe
+	$(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f fwindemo$(COM)
+	-$(RM) -f fwindemo$(COM)
 	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 endif gui
 endif windows
@@ -834,11 +858,11 @@ endif wx
 
 if wx
 wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxpsl$(EXEEXT)
+	-$(RM) -f wxpsl$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f wxpsl$(COM)
+	-$(RM) -f wxpsl$(COM)
 	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
 endif gui
 endif windows
@@ -860,7 +884,7 @@ endif wx
 if fox
 
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
-	-rm -f fontdemo$(EXEEXT)
+	-$(RM) -f fontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -869,7 +893,7 @@ endif !darwin
 endif !debug
 
 foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
-	-rm -f foxdemo$(EXEEXT)
+	-$(RM) -f foxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -878,7 +902,7 @@ endif !darwin
 endif !debug
 
 showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
-	-rm -f showmathdemo$(EXEEXT)
+	-$(RM) -f showmathdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
 if !darwin
@@ -890,35 +914,37 @@ endif fox
 
 if gui
 if windows
+if !cygwin
 
 csl$(COM):	csl.exe
 ## Recover from the removal of csl.com
 	if test -f csl.com; then touch csl.com; else \
-	  rm -f csl.exe; \
+	  $(RM) -f csl.exe; \
 	  $(MAKE) $(AM_MAKEFLAGS) csl.exe; \
 	fi
 
 reduce$(COM):	reduce.exe
 ## Recover from the removal of reduce.com
 	if test -f reduce.com; then touch reduce.com; else \
-	  rm -f reduce.exe; \
+	  $(RM) -f reduce.exe; \
 	  $(MAKE) $(AM_MAKEFLAGS) reduce.exe; \
 	fi
 
 fwindemo$(COM):	fwindemo.exe
 ## Recover from the removal of fwindemo.com
 	if test -f fwindemo.com; then touch fwindemo.com; else \
-	  rm -f fwindemo.exe; \
+	  $(RM) -f fwindemo.exe; \
 	  $(MAKE) $(AM_MAKEFLAGS) fwindemo.exe; \
 	fi
 
 wxpsl$(COM):	wxpsl.exe
 ## Recover from the removal of wxpsl.com
 	if test -f wxpsl.com; then touch wxpsl.com; else \
-	  rm -f wxpsl.exe; \
+	  $(RM) -f wxpsl.exe; \
 	  $(MAKE) $(AM_MAKEFLAGS) wxpsl.exe; \
 	fi
 
+endif !cygwin
 endif windows
 endif gui
 
@@ -932,7 +958,7 @@ if wx
 if mac_framework
 	echo reduce.wxfonts not used on the Mac with wxWidgets
 else !mac_framework
-	-rm -rf reduce.$(fontsdir)
+	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 	-mkdir -p reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
@@ -988,7 +1014,7 @@ endif windows
 
 endif !mac_framework
 else !wx
-	-rm -rf reduce.$(fontsdir)
+	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 	-mkdir reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/README.cmps-fonts reduce.$(fontsdir)
@@ -1014,6 +1040,25 @@ if exeext
 
 
 
+if cygwin
+$(plain_csl):	csl.exe
+	echo "make csl.exe is preferred"
+
+$(plain_reduce):	reduce.exe
+	echo "make reduce.exe is preferred"
+
+$(plain_bootstrapreduce):	bootstrapreduce.exe
+	echo "make bootstrapreduce.exe is preferred"
+
+$(plain_fwindemo):	fwindemo.exe
+	echo "make fwindemo.exe is preferred"
+
+if wx
+$(plain_wxpsl):	wxpsl.exe
+	echo "make wxpsl.exe is preferred"
+endif wx
+
+else !cygwin
 if gui
 $(plain_csl):	csl.exe csl$(COM)
 	echo "make csl.exe is preferred"
@@ -1046,7 +1091,7 @@ $(plain_fwindemo):	fwindemo.exe
 	echo "make fwindemo.exe is preferred"
 
 endif !gui
-
+endif !cygwin
 if fox
 
 $(plain_foxdemo):	foxdemo.exe
@@ -1172,7 +1217,7 @@ uninstall-local:
 local_image_files = bootstrapreduce.img
 
 win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
-	not-under-cygwin.exe cygwin-isatty.exe cygwin-isatty64.exe csl \
+	not-under-cygwin.exe cygwin-isatty.exe cygwin64-isatty.exe csl \
 	reduce fwindemo
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
@@ -1180,7 +1225,7 @@ generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep inline-defs.dat
 
 clean-local:
-	-rm -rf $(generatedfiles)
+	-$(RM) -rf $(generatedfiles)
 	
 else !windows
 
@@ -1205,7 +1250,7 @@ generatedfiles=$(image_files) $(local_image_files) \
 	$(macr)
 
 clean-local:
-	-rm -rf $(generatedfiles)
+	-$(RM) -rf $(generatedfiles)
 	
 endif !windows
 
@@ -1337,13 +1382,13 @@ restart.$(OBJEXT):	machineid.c
 -include reduce.dep
 
 reduce.dep:
-	touch reduce.dep
+	$(TRACE)touch reduce.dep
 
 inline-defs.dat:
-	touch inline-defs.dat
+	$(TRACE)touch inline-defs.dat
 
 reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(RM) -rf reduce.img
+	-$(TRACE)$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
@@ -1366,7 +1411,7 @@ if canrun
 else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
-	-rm -rf reduce.img
+	-$(RM) -rf reduce.img
 	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
 
@@ -1374,7 +1419,7 @@ endif !canrun
 # rather than as a single file.
 
 reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(RM) -rf reduce.img
+	-$(TRACE)$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
@@ -1389,7 +1434,7 @@ if canrun
 else !canrun
 	echo Can not build reduce.img on this platform
 	echo Copying from $(gensrc)
-	-rm -rf reduce.img
+	-$(RM) -rf reduce.img
 	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
 
@@ -1443,10 +1488,10 @@ $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 -include bootstrapreduce.dep
 
 bootstrapreduce.dep:
-	touch bootstrapreduce.dep
+	$(TRACE)touch bootstrapreduce.dep
 
 bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(RM) -f bootstrapreduce.img
+	-$(TRACE)$(RM) -f bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
@@ -1460,13 +1505,13 @@ if canrun
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
 	echo Copying from $(gensrc)
-	-rm -rf bootstrapreduce.img
+	-$(RM) -rf bootstrapreduce.img
 	$(CP) $(gensrc)/bootstrapreduce.img .
 endif !canrun
 
 profile:	bootstrapreduce.img
 if canrun
-	mkdir -p buildlogs
+	$(TRACE)mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
@@ -1483,21 +1528,21 @@ prof-inst:	profile.dat
 	-$(RM) -f profile.dat
 
 $(gensrc)/profile.dat:
-	-mkdir -p $(gensrc)
+	-$(TRACE)mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
-	@rm -f $(gensrc)/make.tmp
+	@$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	@touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 # I want the C code to be created from a version of the boostrap code
 # that has ALL the inline definitions avaiulable. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	rm -f inline-defs.dat
-	rm -f bootstrapreduce.img
+	$(RM) -f inline-defs.dat
+	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
-	rm bootstrapreduce.img
+	$(RM) bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
@@ -1535,9 +1580,9 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
-	  rm -f $(gensrc)/make.stamp; \
+	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
-	  rm -f $(generated-objects); \
+	  $(RM) -f $(generated-objects); \
 	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
 
@@ -1663,10 +1708,10 @@ cleanlog:
 -include csl.dep
 
 csl.dep:
-	touch csl.dep
+	$(TRACE)touch csl.dep
 
 csl.img:	csl$(COM) $(csldep)
-	-$(RM) -rf csl.img
+	-$(TRACE)$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
 	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
@@ -1679,13 +1724,13 @@ if canrun
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
-	-rm -rf csl.img
+	-$(RM) -rf csl.img
 	$(CP) -r $(gensrc)/csl.img .
 endif !canrun
 
 
 csl.dir:	csl$(COM) $(csldep)
-	-$(RM) -rf csl.img
+	-$(TRACE)$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
 	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
@@ -1695,7 +1740,7 @@ if canrun
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
-	-rm -rf csl.img
+	-$(RM) -rf csl.img
 	$(CP) -r $(gensrc)/csl.img .
 endif !canrun
 
@@ -1770,15 +1815,15 @@ endif !windows
 endif !win64
 	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
 if windows
-	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+	-$(RM) -f reduce-windows-$(shell date +%Y%m%d).zip
+	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).zip
 else !windows
-	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
-	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+	-$(RM) -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
+	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 	$(CP) -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)

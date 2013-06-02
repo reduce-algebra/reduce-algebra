@@ -17,8 +17,8 @@
 
 # CSL and REDUCE build sequences
 
-# If I list all the phony targets here this may help document things you
-# can do via this Makefile
+# I want to be able to see what gets built and why, so here is a GNU
+# make trace facility.
 
 VPATH = @srcdir@
 am__make_dryrun = \
@@ -75,14 +75,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO compile config.guess config.sub depcomp install-sh \
-	missing
+	missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -278,7 +278,7 @@ CFLAGS = @CFLAGS@ $(am__append_2)
 CPP = @CPP@
 
 # I wish to know where this build intends to install things...
-CPPFLAGS = @CPPFLAGS@ $(am__append_1) -DBINDIR=$(bindir) \
+CPPFLAGS = @CPPFLAGS@ $(TRACE) $(am__append_1) -DBINDIR=$(bindir) \
 	-DPKGDATADIR=$(pkgdatadir)
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -309,7 +309,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LDFLAGS = @LDFLAGS@
+LDFLAGS = @LDFLAGS@ $(TRACE)
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@ $(am__append_4)
 LN_S = @LN_S@
@@ -389,7 +389,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 with_cygbuild = @with_cygbuild@
+with_cygbuild64 = @with_cygbuild64@
+TRACE = $(warning TRACE: $@ :: $?)
 @exeext_FALSE@plain_csl = csl.unnecessary.except.on.windows
+
+# If I list all the phony targets here this may help document things you
+# can do via this Makefile
 
 # On Windows I might normally have to go "make reduce.exe" but I really
 # want to be able to say merely "make reduce". So to cope with that I make
@@ -442,14 +447,16 @@ RM = rm
 @cygwin_TRUE@EXE = 
 @wx_FALSE@WXC = 
 @wx_TRUE@WXC = ../bin/wx-config
-@gui_FALSE@@windows_TRUE@COM = .exe
+@cygwin_FALSE@@gui_FALSE@@windows_TRUE@COM = .exe
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@COM = .com
+@cygwin_FALSE@@windows_FALSE@COM = 
+@cygwin_TRUE@@windows_FALSE@COM = .exe
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
 # .com version to be a console application. If I only have command-line
 # versions it is easiest to make everything .exe
-@gui_TRUE@@windows_TRUE@COM = .com
-@windows_FALSE@COM = 
+@cygwin_TRUE@@windows_TRUE@COM = .exe
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@wxdemotarget = 
@@ -670,7 +677,7 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 @windows_FALSE@reduce_LDADD = $(FOX_LIBS)
 @windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS)
-@cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe cygwin-isatty64.exe not-under-cygwin.exe
+@cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 
 # The purpose of these two tiny programs is explained in the
 # file $(srcdir)/gui-or-not.txt and both are only for use on Windows.
@@ -746,7 +753,7 @@ termdemo_LIBS =
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
 @windows_TRUE@win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
-@windows_TRUE@	not-under-cygwin.exe cygwin-isatty.exe cygwin-isatty64.exe csl \
+@windows_TRUE@	not-under-cygwin.exe cygwin-isatty.exe cygwin64-isatty.exe csl \
 @windows_TRUE@	reduce fwindemo
 
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
@@ -2383,15 +2390,15 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 @windows_TRUE@cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
 @windows_TRUE@	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
-@windows_TRUE@	strip cygwin-isatty.exe
+@windows_TRUE@	i686-pc-cygwin-strip cygwin-isatty.exe
 
-@windows_TRUE@cygwin-isatty64.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty64.exe
-@windows_TRUE@	strip cygwin-isatty64.exe
+@windows_TRUE@cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
+@windows_TRUE@	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe
+@windows_TRUE@	x86_64-pc-cygwin-strip cygwin64-isatty.exe
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 @windows_TRUE@	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
-@windows_TRUE@	strip not-under-cygwin.exe
+@windows_TRUE@	i686-w64-mingw32-strip not-under-cygwin.exe
 
 @windows_TRUE@libdyndemo.a: $(srcdir)/dyndemo.def
 @windows_TRUE@	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
@@ -2445,43 +2452,45 @@ $(srcdir)/Makefile.am:
 @cygwin_FALSE@@wx_TRUE@	@cd ../wxWidgets && $(MAKE) install
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
-@wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
+@wx_TRUE@	-$(RM) -f wxfontdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
 
 @wx_TRUE@wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
-@wx_TRUE@	-rm -f wxfontdemo1$(EXEEXT)
+@wx_TRUE@	-$(RM) -f wxfontdemo1$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo1$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo1 $(srcdir)
 
 @wx_TRUE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
-@wx_TRUE@	-rm -f wxdvi$(EXEEXT)
+@wx_TRUE@	-$(RM) -f wxdvi$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdvi$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
 
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
-@wx_TRUE@	-rm -f wxdemo$(EXEEXT)
+@wx_TRUE@	-$(RM) -f wxdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdemo $(srcdir)
 
 @wx_TRUE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
-@wx_TRUE@	-rm -f wxshowmathdemo$(EXEEXT)
+@wx_TRUE@	-$(RM) -f wxshowmathdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmathdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
 
 csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
-	-rm -f csl$(EXEEXT)
+	-$(RM) -f csl$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/csl .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/csl-nogui .
-@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make csl.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make csl.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make csl.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f csl$(COM)
+@gui_TRUE@@windows_TRUE@	-$(RM) -f csl$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 @windows_TRUE@	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
 @windows_TRUE@	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
@@ -2492,14 +2501,16 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(WINHELPERS)
-	-rm -f reduce$(EXEEXT)
+	-$(RM) -f reduce$(EXEEXT)
 # See "gui-or-not.txt" for an explanation of what this is about...
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/reduce .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/reduce-nogui .
-@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make reduce.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make reduce.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make reduce.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f reduce$(COM)
+@gui_TRUE@@windows_TRUE@	-$(RM) -f reduce$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 @windows_TRUE@	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
 @windows_TRUE@	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
@@ -2523,11 +2534,13 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 @mac_framework_TRUE@@wx_FALSE@	$(REZ) -t APPL -o reduce $(srcdir)/mac.r
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
-	-rm -f bootstrapreduce$(EXEEXT)
+	-$(RM) -f bootstrapreduce$(EXEEXT)
 # See "gui-or-not.txt" for an explanation of what this is about...
 @windows_TRUE@	$(CP) $(srcdir)/bootstrapreduce .
-@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make bootstrapreduce.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
@@ -2535,65 +2548,67 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 @windows_TRUE@	$(DLLTOOL) --def $(BOOTSTRAPREDUCEEXEDEF) --output-lib libbootstrapreduce.a
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
-	-rm -f fwindemo$(EXEEXT)
+	-$(RM) -f fwindemo$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo-nogui .
-@cygwin_FALSE@@windows_TRUE@	cd ../../$(with_cygbuild)/csl && make fwindemo.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) ../../$(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COM)
+@gui_TRUE@@windows_TRUE@	-$(RM) -f fwindemo$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
 
 @wx_TRUE@wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
-@wx_TRUE@	-rm -f wxpsl$(EXEEXT)
+@wx_TRUE@	-$(RM) -f wxpsl$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@@wx_TRUE@	-rm -f wxpsl$(COM)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@	-$(RM) -f wxpsl$(COM)
 @gui_TRUE@@windows_TRUE@@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxpsl$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(STRIP) wxpsl$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxpsl $(srcdir)
 
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
-@fox_TRUE@	-rm -f fontdemo$(EXEEXT)
+@fox_TRUE@	-$(RM) -f fontdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) fontdemo$(EXEEXT)
 
 @fox_TRUE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
-@fox_TRUE@	-rm -f foxdemo$(EXEEXT)
+@fox_TRUE@	-$(RM) -f foxdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) foxdemo$(EXEEXT)
 
 @fox_TRUE@showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
-@fox_TRUE@	-rm -f showmathdemo$(EXEEXT)
+@fox_TRUE@	-$(RM) -f showmathdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
 
-@gui_TRUE@@windows_TRUE@csl$(COM):	csl.exe
-@gui_TRUE@@windows_TRUE@	if test -f csl.com; then touch csl.com; else \
-@gui_TRUE@@windows_TRUE@	  rm -f csl.exe; \
-@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) csl.exe; \
-@gui_TRUE@@windows_TRUE@	fi
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@csl$(COM):	csl.exe
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	if test -f csl.com; then touch csl.com; else \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(RM) -f csl.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) csl.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	fi
 
-@gui_TRUE@@windows_TRUE@reduce$(COM):	reduce.exe
-@gui_TRUE@@windows_TRUE@	if test -f reduce.com; then touch reduce.com; else \
-@gui_TRUE@@windows_TRUE@	  rm -f reduce.exe; \
-@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) reduce.exe; \
-@gui_TRUE@@windows_TRUE@	fi
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@reduce$(COM):	reduce.exe
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	if test -f reduce.com; then touch reduce.com; else \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(RM) -f reduce.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) reduce.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	fi
 
-@gui_TRUE@@windows_TRUE@fwindemo$(COM):	fwindemo.exe
-@gui_TRUE@@windows_TRUE@	if test -f fwindemo.com; then touch fwindemo.com; else \
-@gui_TRUE@@windows_TRUE@	  rm -f fwindemo.exe; \
-@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) fwindemo.exe; \
-@gui_TRUE@@windows_TRUE@	fi
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@fwindemo$(COM):	fwindemo.exe
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	if test -f fwindemo.com; then touch fwindemo.com; else \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(RM) -f fwindemo.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) fwindemo.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	fi
 
-@gui_TRUE@@windows_TRUE@wxpsl$(COM):	wxpsl.exe
-@gui_TRUE@@windows_TRUE@	if test -f wxpsl.com; then touch wxpsl.com; else \
-@gui_TRUE@@windows_TRUE@	  rm -f wxpsl.exe; \
-@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) wxpsl.exe; \
-@gui_TRUE@@windows_TRUE@	fi
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@wxpsl$(COM):	wxpsl.exe
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	if test -f wxpsl.com; then touch wxpsl.com; else \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(RM) -f wxpsl.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	  $(MAKE) $(AM_MAKEFLAGS) wxpsl.exe; \
+@cygwin_FALSE@@gui_TRUE@@windows_TRUE@	fi
 
 # Here you could take the view that I am lazy in that I take
 # just one file in the font directory as a signature that it has been
@@ -2602,7 +2617,7 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 
 reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
-@mac_framework_FALSE@@wx_TRUE@	-rm -rf reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	-mkdir -p reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
@@ -2654,7 +2669,7 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/oradano/README.txt reduce.$(fontsdir)/doc.sazanami/oradano
 @mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/shinonome/LICENSE reduce.$(fontsdir)/doc.sazanami/shinonome
 
-@wx_FALSE@	-rm -rf reduce.$(fontsdir)
+@wx_FALSE@	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 @wx_FALSE@	-mkdir reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README.cmps-fonts reduce.$(fontsdir)
@@ -2675,32 +2690,47 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 # happen. The use of parameter substitution to generate the plain targets is
 # because in that case automake will not auto-map the target adding ".exe".
 
-@exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COM)
-@exeext_TRUE@@gui_TRUE@	echo "make csl.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@$(plain_csl):	csl.exe
+@cygwin_TRUE@@exeext_TRUE@	echo "make csl.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@$(plain_reduce):	reduce.exe reduce$(COM)
-@exeext_TRUE@@gui_TRUE@	echo "make reduce.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@$(plain_reduce):	reduce.exe
+@cygwin_TRUE@@exeext_TRUE@	echo "make reduce.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@exeext_TRUE@@gui_TRUE@	echo "make bootstrapreduce.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
+@cygwin_TRUE@@exeext_TRUE@	echo "make bootstrapreduce.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
-@exeext_TRUE@@gui_TRUE@	echo "make fwindemo.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@$(plain_fwindemo):	fwindemo.exe
+@cygwin_TRUE@@exeext_TRUE@	echo "make fwindemo.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
-@exeext_TRUE@@gui_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe
+@cygwin_TRUE@@exeext_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
 
-@exeext_TRUE@@gui_FALSE@$(plain_csl):	csl.exe
-@exeext_TRUE@@gui_FALSE@	echo "make csl.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COM)
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make csl.exe is preferred"
 
-@exeext_TRUE@@gui_FALSE@$(plain_reduce):	reduce.exe
-@exeext_TRUE@@gui_FALSE@	echo "make reduce.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_reduce):	reduce.exe reduce$(COM)
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make reduce.exe is preferred"
 
-@exeext_TRUE@@gui_FALSE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@exeext_TRUE@@gui_FALSE@	echo "make bootstrapreduce.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make bootstrapreduce.exe is preferred"
 
-@exeext_TRUE@@gui_FALSE@$(plain_fwindemo):	fwindemo.exe
-@exeext_TRUE@@gui_FALSE@	echo "make fwindemo.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make fwindemo.exe is preferred"
+
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
+
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_csl):	csl.exe
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make csl.exe is preferred"
+
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_reduce):	reduce.exe
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make reduce.exe is preferred"
+
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_bootstrapreduce):	bootstrapreduce.exe
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make bootstrapreduce.exe is preferred"
+
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_fwindemo):	fwindemo.exe
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make fwindemo.exe is preferred"
 
 @exeext_TRUE@@fox_TRUE@$(plain_foxdemo):	foxdemo.exe
 @exeext_TRUE@@fox_TRUE@	echo "make foxdemo.exe is preferred"
@@ -2771,7 +2801,7 @@ install-data-local: $(image_files)
 @windows_TRUE@	done
 
 @windows_TRUE@clean-local:
-@windows_TRUE@	-rm -rf $(generatedfiles)
+@windows_TRUE@	-$(RM) -rf $(generatedfiles)
 
 @windows_FALSE@uninstall-local:
 @windows_FALSE@	@$(NORMAL_UNINSTALL)
@@ -2782,7 +2812,7 @@ install-data-local: $(image_files)
 @windows_FALSE@	done
 
 @windows_FALSE@clean-local:
-@windows_FALSE@	-rm -rf $(generatedfiles)
+@windows_FALSE@	-$(RM) -rf $(generatedfiles)
 
 ##############################################################################
 #
@@ -2881,13 +2911,13 @@ restart.$(OBJEXT):	machineid.c
 -include reduce.dep
 
 reduce.dep:
-	touch reduce.dep
+	$(TRACE)touch reduce.dep
 
 inline-defs.dat:
-	touch inline-defs.dat
+	$(TRACE)touch inline-defs.dat
 
 reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(RM) -rf reduce.img
+	-$(TRACE)$(RM) -rf reduce.img
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
@@ -2908,14 +2938,14 @@ reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_TRUE@	elif test -f reduce.img; then $(CP) reduce.img $(gensrc); fi
 @canrun_FALSE@	echo Can not build reduce.img on this platform.
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	-rm -rf reduce.img
+@canrun_FALSE@	-$(RM) -rf reduce.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/reduce.img .
 
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
 reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(RM) -rf reduce.img
+	-$(TRACE)$(RM) -rf reduce.img
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
@@ -2928,7 +2958,7 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_TRUE@		-j reduce.dep
 @canrun_FALSE@	echo Can not build reduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	-rm -rf reduce.img
+@canrun_FALSE@	-$(RM) -rf reduce.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/reduce.img .
 
 # "make bootstraprecompile which=<module-name>" and "make recompile which="
@@ -2975,10 +3005,10 @@ $(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
 -include bootstrapreduce.dep
 
 bootstrapreduce.dep:
-	touch bootstrapreduce.dep
+	$(TRACE)touch bootstrapreduce.dep
 
 bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(RM) -f bootstrapreduce.img
+	-$(TRACE)$(RM) -f bootstrapreduce.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
 @canrun_TRUE@		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -2990,11 +3020,11 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 @canrun_TRUE@	then $(CP) bootstrapreduce.img $(gensrc); fi
 @canrun_FALSE@	echo Can not build bootstrapreduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	-rm -rf bootstrapreduce.img
+@canrun_FALSE@	-$(RM) -rf bootstrapreduce.img
 @canrun_FALSE@	$(CP) $(gensrc)/bootstrapreduce.img .
 
 profile:	bootstrapreduce.img
-@canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	$(TRACE)mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
 @canrun_TRUE@		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
@@ -3009,21 +3039,21 @@ prof-inst:	profile.dat
 	-$(RM) -f profile.dat
 
 $(gensrc)/profile.dat:
-	-mkdir -p $(gensrc)
+	-$(TRACE)mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
-	@rm -f $(gensrc)/make.tmp
+	@$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	@touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 # I want the C code to be created from a version of the boostrap code
 # that has ALL the inline definitions avaiulable. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	rm -f inline-defs.dat
-	rm -f bootstrapreduce.img
+	$(RM) -f inline-defs.dat
+	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
-	rm bootstrapreduce.img
+	$(RM) bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
@@ -3060,9 +3090,9 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 
 c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
 	if test -f $@; then touch $@; else \
-	  rm -f $(gensrc)/make.stamp; \
+	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
-	  rm -f $(generated-objects); \
+	  $(RM) -f $(generated-objects); \
 	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
 
@@ -3154,10 +3184,10 @@ cleanlog:
 -include csl.dep
 
 csl.dep:
-	touch csl.dep
+	$(TRACE)touch csl.dep
 
 csl.img:	csl$(COM) $(csldep)
-	-$(RM) -rf csl.img
+	-$(TRACE)$(RM) -rf csl.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 @canrun_TRUE@		-D@cslbase="$(CYGSRC)" \
@@ -3168,11 +3198,11 @@ csl.img:	csl$(COM) $(csldep)
 @canrun_TRUE@	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	-rm -rf csl.img
+@canrun_FALSE@	-$(RM) -rf csl.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/csl.img .
 
 csl.dir:	csl$(COM) $(csldep)
-	-$(RM) -rf csl.img
+	-$(TRACE)$(RM) -rf csl.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 @canrun_TRUE@		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
@@ -3180,18 +3210,18 @@ csl.dir:	csl$(COM) $(csldep)
 @canrun_TRUE@		-j csl.dep
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	-rm -rf csl.img
+@canrun_FALSE@	-$(RM) -rf csl.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/csl.img .
 
 save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
-@windows_TRUE@	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-@windows_TRUE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_TRUE@	-$(RM) -f reduce-windows-$(shell date +%Y%m%d).zip
+@windows_TRUE@	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
-@windows_FALSE@	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
-@windows_FALSE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	-$(RM) -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
+@windows_FALSE@	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	$(CP) -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)

@@ -1958,7 +1958,7 @@ static void fp_sprint(char *buff, double x, int prec)
     buff++;
 /* At this stage I am looking at the exponent part */
     if (*buff == 0) strcpy(buff, "+e00");
-    else if (isdigit(*buff)) char_ins(buff, '+');
+    else if (isdigit((unsigned char)*buff)) char_ins(buff, '+');
 /* Exponent should now start with expicit + or - sign */
     buff++;
 /* Force exponent to have at least 2 digits */
@@ -2314,7 +2314,7 @@ case TAG_VECTOR:
                             {   if (escaped_printing & escape_fold_down)
                                     ch = tolower(ch);
                                 else if (escaped_printing & escape_fold_up)
-                                    ch = toupper(ch);
+                                    ch = (char)toupper((unsigned char)ch);
 /* Just For Now I Will Not Implement The Option To Capitalize Things */
                                 putc_stream(ch, active_stream);
                             }
@@ -2724,7 +2724,7 @@ case TAG_SYMBOL:
                 if (len > 0)
                 {   int ch = celt(stack[0], 0);
                     if (escaped_printing & escape_yes &&
-                        (isdigit(ch)
+                        (isdigit((unsigned char)ch)
 #ifdef COMMON
                          || (ch=='.')
 #else
@@ -2750,8 +2750,8 @@ case TAG_SYMBOL:
 #ifdef COMMON
                          (ch=='.' || ch=='\\' || ch=='|' || ch==':') ||
 #endif
-                         (raised < 0 && isupper(ch)) ||
-                         (raised > 0 && islower(ch)))) extralen++;
+                         (raised < 0 && isupper((unsigned char)ch)) ||
+                         (raised > 0 && islower((unsigned char)ch)))) extralen++;
                     slen++;
                 }
 #ifdef COMMON
@@ -2791,19 +2791,19 @@ case TAG_SYMBOL:
                         putc_stream(ESCAPE_CHAR, active_stream);
 #else
                     if (!is_constituent(ch) ||
-                        isdigit(ch) ||
+                        isdigit((unsigned char)ch) ||
                         (ch == '_') ||
                         (!(escaped_printing &
                             (escape_fold_down | escape_fold_up |
                              escape_capitalize)) &&
-                         ((raised < 0 && isupper(ch)) ||
-                          (raised > 0 && islower(ch)))))
+                         ((raised < 0 && isupper((unsigned char)ch)) ||
+                          (raised > 0 && islower((unsigned char)ch)))))
                         putc_stream(ESCAPE_CHAR, active_stream);
 #endif
                     if (escaped_printing & escape_fold_down)
-                        ch = tolower(ch);
+                        ch = (char)tolower((unsigned char)ch);
                     else if (escaped_printing & escape_fold_up)
-                        ch = toupper(ch);
+                        ch = (char)toupper((unsigned char)ch);
                     putc_stream(ch, active_stream);
                 }
                 for (k = 1; k < len; k++)
@@ -2816,14 +2816,14 @@ case TAG_SYMBOL:
                           (escape_fold_down | escape_fold_up |
                            escape_capitalize)) &&
                         (!is_constituent(ch) ||
-                         (raised < 0 && isupper(ch)) ||
-                         (raised > 0 && islower(ch))))
+                         (raised < 0 && isupper((unsigned char)ch)) ||
+                         (raised > 0 && islower((unsigned char)ch))))
                         putc_stream(ESCAPE_CHAR, active_stream);
 #endif
                     if (escaped_printing & escape_fold_down)
                         ch = tolower(ch);
                     else if (escaped_printing & escape_fold_up)
-                        ch = toupper(ch);
+                        ch = (char)toupper((unsigned char)ch);
                     putc_stream(ch, active_stream);
                 }
 #ifdef COMMON
@@ -4576,7 +4576,7 @@ int fetch_response(char *buffer, Lisp_Object r)
  * case insensitive, so I fold things to lower case right here.
  */
             for (i=0; buffer[i]!=0 && buffer[i]!=' '; i++)
-                buffer[i] = (char)tolower(buffer[i]);
+                buffer[i] = (char)tolower((unsigned char)buffer[i]);
             return 0;
         }
     }
@@ -4619,13 +4619,14 @@ start_again:
  * then that is a protocol name, and I will force it into lower case.
  */
     for (i=0; i<len; i++)
-        if (!isalnum(p[i])) break;
+        if (!isalnum((unsigned char)p[i])) break;
     if (p[i] == ':')
     {   proto = p;
         nproto = i;   /* Could still be zero! */
         p += i+1;
         len -= i+1;
-        for (i=0; i<nproto; i++) proto[i] = (char)tolower(proto[i]);
+        for (i=0; i<nproto; i++)
+            proto[i] = (char)tolower((unsigned char)proto[i]);
     }
 /*
  * After any protocol specification I may have a host name, introduced

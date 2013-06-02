@@ -622,8 +622,6 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
-X32_GCC
-X64_GCC
 host_os
 host_vendor
 host_cpu
@@ -678,6 +676,8 @@ with_psl
 with_build
 with_pslbuild
 with_cygbuild
+with_cygbuild64
+with_force
 with_mingw64
 with_SDK
 with_lto
@@ -1332,6 +1332,8 @@ Optional Packages:
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
   --with-cygbuild         Used internally to control build directory
+  --with-cygbuild64       Used internally to control build directory
+  --with-force            Forces refresh of windows varients
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
   --with-SDK              Select MacOSX SDK (eg --with-SDK=10.8) (CSL ONLY)
@@ -1972,6 +1974,24 @@ else
 fi
 
 
+
+# Check whether --with-cygbuild64 was given.
+if test "${with_cygbuild64+set}" = set; then :
+  withval=$with_cygbuild64;
+else
+  with_cygbuild64="unknown"
+fi
+
+
+
+# Check whether --with-force was given.
+if test "${with_force+set}" = set; then :
+  withval=$with_force;
+else
+  with_force="no"
+fi
+
+
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
@@ -2260,149 +2280,6 @@ case `uname` in
   considermingw="no"
 esac
 
-if test "x$considermingw" != "xno"
-then
-# This should ensure that a (raw) cygwin version to match the current version
-# will be built. It assumes (perhaps slightly optimistically) that if
-# there is a Makefile present then the configure step has happened.
-  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
-  cygbuild=`echo $build | sed -e \
-      's+i686-pc-windows+i686-pc-cygwin+;s+x86_64-w64-windows+i686-pc-cygwin+'`
-  doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-           --with-cygwin"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-  eval "$doconfig"
-# check for the availability of compilers that might matter to me.
-  # Extract the first word of "x86_64-w64-mingw32-g++", so it can be a program name with args.
-set dummy x86_64-w64-mingw32-g++; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_X64_GCC+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$X64_GCC"; then
-  ac_cv_prog_X64_GCC="$X64_GCC" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_X64_GCC=""yes""
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_X64_GCC" && ac_cv_prog_X64_GCC=""no""
-fi
-fi
-X64_GCC=$ac_cv_prog_X64_GCC
-if test -n "$X64_GCC"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $X64_GCC" >&5
-$as_echo "$X64_GCC" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  # Extract the first word of "i686-w64-mingw32-g++", so it can be a program name with args.
-set dummy i686-w64-mingw32-g++; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_X32_GCC+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$X32_GCC"; then
-  ac_cv_prog_X32_GCC="$X32_GCC" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_X32_GCC=""yes""
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_X32_GCC" && ac_cv_prog_X32_GCC=""no""
-fi
-fi
-X32_GCC=$ac_cv_prog_X32_GCC
-if test -n "$X32_GCC"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $X32_GCC" >&5
-$as_echo "$X32_GCC" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  if test "x$with_mingw64" = "xyes"
-  then
-    if test "x$X64_GCC" = "xno"
-    then
-      as_fn_error $? "Attempt to build Windows-64 system without correct cross ocmpiler installed" "$LINENO" 5
-    fi
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --host=x86_64-w64-mingw32 --with-cygbuild=$cygbuild"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-    eval "$doconfig"
-    exit
-  elif test "x$with_mingw64" = "xno" || \
-       test "x$wow64" = "xno" || \
-       test "x$X64_GCC" = "xno"
-  then
-# Here I either explicitly want to build a 32-bit version, or I am on
-# a 32-bit windows and did not explicitly ask for a 64-bit version. I
-# build for 32-bits. There are several possible ways to do that and I
-# will look at them here in order of preference. I do this even if I am on
-# a 64-bit Windows if the 64-bit compilers are not available.
-#
-    if test "$X32_GCC" = "yes"
-    then
-# Use cross-compilation using i686-w64-mingw32-g++ etc.
-      doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-               --host=i686-w64-mingw32 --with-cygbuild=$cygbuild"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-      eval "$doconfig"
-      exit
-    else
-      as_fn_error $? "Under cygwin please install i686-w64-mingw compilers." "$LINENO" 5
-      exit
-    fi
-  else
-# This final case is when I have not said anything explicit about with or
-# without mingw64 but I am running on a 64-bit windows and have the 64-bit
-# compilers installed. In this case I will try to configure both versions.
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=no --with-cygbuild=$cygbuild"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-    eval "$doconfig"
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-             --with-mingw64=yes --with-cygbuild=$cygbuild"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
-    eval "$doconfig"
-    exit
-  fi
-fi
-
 # Now I want to know if the current directory is the same as $srcdir. At
 # one stage I checked that by looking to see if $srcdir was ".". That was OK
 # for direct calls of the form "./configure" where the "." as in "./" was
@@ -2474,12 +2351,7 @@ case $inplace in
 # NO was NOT given rather than that the option yes was.
   if test "x$with_csl" != "xno"
   then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: +++ Will build in $abssrcdir/cslbuild/$build" >&5
-$as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
-    if ! test -d "$abssrcdir/cslbuild/$build"
-    then
-      mkdir -p "$abssrcdir/cslbuild/$build"
-    fi
+    mkdir -p "$abssrcdir/cslbuild"
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
@@ -2490,22 +2362,155 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
       mkdir -p "$abssrcdir/cslbuild/generated-c"
       cp -r "$abssrcdir/csl/generated-c" "$abssrcdir/cslbuild"
     fi
-    cd "$abssrcdir/cslbuild/$build"
-    if test "x$CC$CPP$CXX$CXXCPP" != "x"
-    then
-      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+# Now I am configuring for CSL and am doing so from the top directory. If
+# I am on Windows I will configure for variants:
+#   i686-pc-cygwin
+#   x86_64-pc-cygwin
+#   i686-w64-mingw
+#   x86_64-w64-mingw
+# I will run the configure script for one of those if I have the relevant
+# compiler available and if the config.status file where I would build is
+# older that my "configure" script. The tests are known to be happening under
+# cygwin so I am not going to worry overmuch about general
+    case $build in
+    *cygwin* | *windows*)
+      if test -x /usr/bin/i686-pc-cygwin-gcc
+      then
+        have_cyg32="yes"
+      else
+        have_cyg32="no"
+      fi
+      if test -x /usr/bin/x86_64-pc-cygwin-gcc
+      then
+        have_cyg64="yes"
+      else
+        have_cyg64="no"
+      fi
+      if test -x /usr/bin/i686-w64-mingw32-gcc
+      then
+        have_mingw32="yes"
+      else
+        have_mingw32="no"
+      fi
+      if test -x /usr/bin/x86_64-w64-mingw32-gcc
+      then
+        have_mingw64="yes"
+      else
+        have_mingw64="no"
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$have_mingw32 win64:$have_mingw64" >&5
+$as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$have_mingw32 win64:$have_mingw64" >&6;}
+      if test "$have_mingw32" = "no" && test "$have_mingw64" = "no"
+      then
+        as_fn_error $? "you must have at least one of i686-w64-mingw32-gcc or x86_64-w64-mingw32-gcc" "$LINENO" 5
+      fi
+      for buildmc in "i686-pc-cygwin" "x86_64-pc-cygwin"
+      do
+        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
+        if test -x /usr/bin/$buildmc-gcc
+        then
+           if test "x$with_force" != "xno" ||
+             test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
+          then
+            echo "Need to reconfigure for $build"
+            mkdir -p "$abssrcdir/cslbuild/$build"
+            cd "$abssrcdir/cslbuild/$build"
+            if test "x$CC$CPP$CXX$CXXCPP" != "x"
+            then
+              passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+            fi
+            { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-    pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-    doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-            CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-            $passcc $pass_build"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+            pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+            doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+                    CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+                    CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+                    $passcc $pass_build --host=$buildmc --with-cygwin"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
-    eval "$doconfig"
-    cd "$abssrcdir"
+            eval "$doconfig"
+            cd "$abssrcdir"
+          else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: Version for $build is already configured" >&5
+$as_echo "$as_me: Version for $build is already configured" >&6;}
+          fi
+        else
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Compiler for $buildmc not available" >&5
+$as_echo "$as_me: Compiler for $buildmc not available" >&6;}
+        fi
+      done
+      cygextra=
+      if test "$have_cyg32" = "yes"
+      then
+        cygextra="--with-cygbuild=$abssrcdir/cslbuild/i686-pc-cygwin"
+      fi
+      if test "$have_cyg64" = "yes"
+      then
+        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/x86_64-pc-cygwin"
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: cygextra = $cygextra" >&5
+$as_echo "$as_me: cygextra = $cygextra" >&6;}
+      for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
+      do
+        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
+        if test -x /usr/bin/$buildmc-gcc && test "x$with_cygwin" = "xno"
+        then
+          if test "x$with_force" != "xno" ||
+             test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
+          then
+            echo "Need to reconfigure for $build"
+            mkdir -p "$abssrcdir/cslbuild/$build"
+            cd "$abssrcdir/cslbuild/$build"
+            if test "x$CC$CPP$CXX$CXXCPP" != "x"
+            then
+              passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+            fi
+            { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+            pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+            doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+                    CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+                    CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+                    $passcc $cygextra $pass_build --host=$buildmc"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+            eval "$doconfig"
+            cd "$abssrcdir"
+          else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: Version for $build is already configured" >&5
+$as_echo "$as_me: Version for $build is already configured" >&6;}
+          fi
+        else
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Compiler for $buildmc not available" >&5
+$as_echo "$as_me: Compiler for $buildmc not available" >&6;}
+        fi
+      done
+      ;;
+    *)
+      mkdir -p "$abssrcdir/cslbuild/$build"
+      cd "$abssrcdir/cslbuild/$build"
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+      pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+      doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+              CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+              $passcc $pass_build"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+      eval "$doconfig"
+      cd "$abssrcdir"
+      ;;
+    esac
+
+
+
+
+
   fi
   if test "x$with_psl" != "xno"
   then
