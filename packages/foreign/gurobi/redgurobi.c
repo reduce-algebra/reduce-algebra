@@ -43,8 +43,8 @@ static int *ind = NULL;
 static double *Val  = NULL;
 static int ValIndex = 0;
 
-void gurobi_newmodel(int32_t);
-void gurobi_addvars(int32_t);
+void gurobi_newmodel(int32_t, int32_t);
+void gurobi_addvars(int32_t, int32_t);
 int32_t gurobi_numVars(void);
 void gurobi_addconstr(char*, double*, double);
 void gurobi_addconstrFast(char*, double);
@@ -67,7 +67,7 @@ int32_t *gurobi_newInd(int);
 int gurobi_cfprintf(FILE*, const char*, ...);
 #endif
 
-void gurobi_newmodel(int32_t n) {
+void gurobi_newmodel(int32_t n, int32_t m) {
   int error;
 
   error = GRBloadenv(&env, NULL);
@@ -79,31 +79,34 @@ void gurobi_newmodel(int32_t n) {
   error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
   ERRORCHECK(error);
 
-  gurobi_addvars(n);
+  gurobi_addvars(n, m);
 
 #ifdef DEBUG
   gurobi_cfprintf(stderr, "env = %p, model = %p\n", env, model);
 #endif
 }
 
-void gurobi_addvars(int32_t n) {
+void gurobi_addvars(int32_t n, int32_t m) {
   double *lb;
   int i;
   int error;
+  char *vtype;
 
-  NumVars = n;
+  NumVars = n+m;
 
-  ind = (int *)malloc(n * sizeof(int));
-  Val = (double *)malloc(n * sizeof(double));
+  ind = (int *)malloc((n+m) * sizeof(int));
+  Val = (double *)malloc((n+m) * sizeof(double));
   ValIndex = 0;
-  lb = (double *)malloc(n * sizeof(double));
+  lb = (double *)malloc((n+m) * sizeof(double));
+  vtype = (char *)malloc((n+m) * sizeof(char));
 
-  for (i=0; i<n; i++) {
+  for (i=0; i<n+m; i++) {
     ind[i] = i;
     lb[i] = - GRB_INFINITY;
+    vtype[i] = (i<n) ? GRB_CONTINUOUS : GRB_INTEGER;
   }
 
-  error = GRBaddvars(model, n, 0, NULL, NULL, NULL, NULL, lb, NULL, NULL, NULL);
+  error = GRBaddvars(model, n+m, 0, NULL, NULL, NULL, NULL, lb, NULL, vtype, NULL);
   ERRORCHECK(error);
 
   error = GRBupdatemodel(model);

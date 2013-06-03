@@ -30,6 +30,9 @@
 
 module ofsftrop;
 
+fluid '(ofsf_lpsolprec!*);
+ofsf_lpsolprec!* := 2;
+
 fluid '(rlsat2polatnum!*);
 
 switch zeropaddzero;
@@ -288,7 +291,7 @@ asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
 
 asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
    begin scalar posl, snegl, hnegl, w; integer np, ns, nh;
-      lp_newmodel(d+1);
+      lp_newmodel(1, d);
       for each pt in monl do
  	 if cdr pt > 0 then <<
 	    posl := car pt . posl;
@@ -431,7 +434,7 @@ asserted procedure ofsf_rpoint2intpoint(dirp: List): List;
 asserted procedure ofsf_fpoint2intpoint(dirp: List): List;
    begin scalar res, w; integer g;
       res := car dirp . for each e in cdr dirp collect <<
-	 w := fix(10^8 * caddr e + 0.5 * sgn caddr e);
+	 w := fix(10^ofsf_lpsolprec!* * caddr e + 0.5 * sgn caddr e);
 	 g := gcdn(g, w);
  	 {'equal, cadr e, w}
       >>;

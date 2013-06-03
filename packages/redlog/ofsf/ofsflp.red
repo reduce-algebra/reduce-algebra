@@ -45,13 +45,13 @@ fluid '(lp_dim!*);
 global '(!*lp_cslp);
 !*lp_cslp := memq('csl, lispsystem!*);
 
-procedure lp_newmodel(d);
+procedure lp_newmodel(n, m);
    if !*rlgurobi and !*rlffi and !*lp_cslp then
-      gurobi_newmodel d
+      gurobi_newmodel(n, m)
    else <<
       lp_model!* := lp_modelcache!* := nil;
-      lp_varl!* := for i := 0:d-1 collect mkid('c, i);
-      lp_dim!* := d
+      lp_varl!* := for i := 0:n+m-1 collect mkid('c, i);
+      lp_dim!* := n+m
    >>;
 
 procedure lp_addconstraint(rel, l, r);
@@ -161,7 +161,7 @@ asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List);
       semic!* := oldsemic;
       put('times, 'prtch, oldprtch);
       if errorp w then
-	 rederr car w;
+	 rederr emsg!*
    end;
 
 asserted procedure lp_writeLp1(obj: List, cl: List, vl: List);

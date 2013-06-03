@@ -50,28 +50,30 @@ fluid '(gurobi_optimize!*);
 fluid '(gurobi_getSol!*);
 fluid '(gurobi_freemodel!*);
 
-gurobi_libredgurobi!* := lto_sconcat {rltools_trunk(),"packages/foreign/gurobi/libredgurobi.so"};
+gurobi_libredgurobi!* := lto_sconcat {rltools_trunk(), "packages/foreign/gurobi/libredgurobi.so"};
 
-gurobi_redgurobi!* := open!-foreign!-library(gurobi_libredgurobi!*);
+if filep gurobi_libredgurobi!* then <<
+   gurobi_redgurobi!* := open!-foreign!-library mkquote gurobi_libredgurobi!*;
 
-gurobi_newmodel!* := find!-foreign!-function("gurobi_newmodel", gurobi_redgurobi!*);
-gurobi_addconstr!* := find!-foreign!-function("gurobi_addconstr", gurobi_redgurobi!*);
-gurobi_addconstrFast!* := find!-foreign!-function("gurobi_addconstrFast", gurobi_redgurobi!*);
-gurobi_numVars!* := find!-foreign!-function("gurobi_numVars", gurobi_redgurobi!*);
-gurobi_negconstr1!* := find!-foreign!-function("gurobi_negconstr1", gurobi_redgurobi!*);
-gurobi_delconstr1!* := find!-foreign!-function("gurobi_delconstr1", gurobi_redgurobi!*);
-gurobi_updatemodel!* := find!-foreign!-function("gurobi_updatemodel", gurobi_redgurobi!*);
-gurobi_write!* := find!-foreign!-function("gurobi_write", gurobi_redgurobi!*);
-gurobi_newDoubleArray!* := find!-foreign!-function("gurobi_newDoubleArray", gurobi_redgurobi!*);
-gurobi_setDoubleArray!* := find!-foreign!-function("gurobi_setDoubleArray", gurobi_redgurobi!*);
-gurobi_freeDoubleArray!* := find!-foreign!-function("gurobi_freeDoubleArray", gurobi_redgurobi!*);
-gurobi_pushToVal!* := find!-foreign!-function("gurobi_pushToVal", gurobi_redgurobi!*);
-gurobi_optimize!* := find!-foreign!-function("gurobi_optimize", gurobi_redgurobi!*);
-gurobi_getSol!* := find!-foreign!-function("gurobi_getSol", gurobi_redgurobi!*);
-gurobi_freemodel!* := find!-foreign!-function("gurobi_freemodel", gurobi_redgurobi!*);
+   gurobi_newmodel!* := find!-foreign!-function("gurobi_newmodel", gurobi_redgurobi!*);
+   gurobi_addconstr!* := find!-foreign!-function("gurobi_addconstr", gurobi_redgurobi!*);
+   gurobi_addconstrFast!* := find!-foreign!-function("gurobi_addconstrFast", gurobi_redgurobi!*);
+   gurobi_numVars!* := find!-foreign!-function("gurobi_numVars", gurobi_redgurobi!*);
+   gurobi_negconstr1!* := find!-foreign!-function("gurobi_negconstr1", gurobi_redgurobi!*);
+   gurobi_delconstr1!* := find!-foreign!-function("gurobi_delconstr1", gurobi_redgurobi!*);
+   gurobi_updatemodel!* := find!-foreign!-function("gurobi_updatemodel", gurobi_redgurobi!*);
+   gurobi_write!* := find!-foreign!-function("gurobi_write", gurobi_redgurobi!*);
+   gurobi_newDoubleArray!* := find!-foreign!-function("gurobi_newDoubleArray", gurobi_redgurobi!*);
+   gurobi_setDoubleArray!* := find!-foreign!-function("gurobi_setDoubleArray", gurobi_redgurobi!*);
+   gurobi_freeDoubleArray!* := find!-foreign!-function("gurobi_freeDoubleArray", gurobi_redgurobi!*);
+   gurobi_pushToVal!* := find!-foreign!-function("gurobi_pushToVal", gurobi_redgurobi!*);
+   gurobi_optimize!* := find!-foreign!-function("gurobi_optimize", gurobi_redgurobi!*);
+   gurobi_getSol!* := find!-foreign!-function("gurobi_getSol", gurobi_redgurobi!*);
+   gurobi_freemodel!* := find!-foreign!-function("gurobi_freemodel", gurobi_redgurobi!*)
+>>;
 
-procedure gurobi_newmodel(n);
-   call!-foreign!-function(gurobi_newmodel!*, 'int32, n);
+procedure gurobi_newmodel(n, m);
+   call!-foreign!-function(gurobi_newmodel!*, 'int32, n, 'int32, m);
 
 inline procedure gurobi_newDoubleArray(n);
    call!-foreign!-function(gurobi_newDoubleArray!*, 'int32, n, 'int64);
