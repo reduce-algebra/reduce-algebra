@@ -3175,6 +3175,9 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
+here=`pwd`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: +++ Configure in directory $here +++" >&5
+$as_echo "$as_me: +++ Configure in directory $here +++" >&6;}
 
 # Explain that a file "config.h" should be generated
 ac_config_headers="$ac_config_headers config.h"

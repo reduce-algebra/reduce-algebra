@@ -3038,6 +3038,10 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 # a yet newer version I will leave this here.
 
 
+here=`pwd`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: +++ Configuring FOX tests in directory $here +++" >&5
+$as_echo "$as_me: +++ Configuring FOX tests in directory $here +++" >&6;}
+
 
 ac_config_files="$ac_config_files Makefile"
 

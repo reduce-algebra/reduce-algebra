@@ -2506,11 +2506,6 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
       cd "$abssrcdir"
       ;;
     esac
-
-
-
-
-
   fi
   if test "x$with_psl" != "xno"
   then

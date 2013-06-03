@@ -530,11 +530,6 @@ case $inplace in
       cd "$abssrcdir"
       ;;
     esac
-
-
-
-
-
   fi
   if test "x$with_psl" != "xno"
   then

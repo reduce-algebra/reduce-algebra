@@ -49,6 +49,8 @@
 AC_INIT([REDUCE],[6.04])
 AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
+here=`pwd`
+AC_MSG_NOTICE([+++ Configure in directory $here +++])
 
 # Explain that a file "config.h" should be generated
 AC_CONFIG_HEADERS([config.h])

@@ -30,6 +30,9 @@ AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-override -Wno-portability foreign dist-bzip2]
 # a yet newer version I will leave this here.
 AC_PREREQ(2.57)
 
+here=`pwd`
+AC_MSG_NOTICE([+++ Configuring FOX tests in directory $here +++])
+
 AC_CONFIG_SRCDIR(scribble.cpp)
 AC_CONFIG_FILES(Makefile)
 

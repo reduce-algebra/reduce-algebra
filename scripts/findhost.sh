@@ -100,14 +100,11 @@ fi
 # I map it to say just "windows" and will tend to end up using a mingw
 # compiler. Later on if "--with-cygwin" is set I will unwiind that.
 case $host in
-x86_64*cygwin*)
+x86_64*cygwin* | x86_64*mingw*)
   host="x86_64-pc-windows"
   ;;
-*CYGWIN* | *Cygwin* | *cygwin* | i686-*-mingw*)
+*CYGWIN* | *Cygwin* | *cygwin* | *mingw*)
   host="i686-pc-windows"
-  ;;
-x86_64-*-mingw*)
-  host="x86_64-w64-windows"
   ;;
 esac
 
@@ -181,7 +178,7 @@ do
     host=$original
     ;;
   --with-mingw64*)
-    host=x86_64-w64-windows
+    host=x86_64-pc-windows
     ;;
   --with-cygwin=no | --without-cygwin)
     host=$original
