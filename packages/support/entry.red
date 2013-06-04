@@ -455,7 +455,7 @@ defautoload(rl_set, redlog, expr, 1);
 
 % Gurobi entry points
 
-defautoload(gurobi_newmodel, gurobi, expr, 1);
+defautoload(gurobi_newmodel, gurobi, expr, 2);
 
 endmodule;
 
