@@ -31,7 +31,7 @@
 module ofsftrop;
 
 fluid '(ofsf_lpsolprec!*);
-ofsf_lpsolprec!* := 2;
+ofsf_lpsolprec!* := 8;
 
 fluid '(rlsat2polatnum!*);
 
@@ -39,7 +39,8 @@ switch zeropaddzero;
 on1 'zeropaddzero;
 
 switch zeropint;
-on1 'zeropint;
+
+switch zeropintsolve;
 
 switch zeropzero;
 on1 'zeropzero;
@@ -82,7 +83,7 @@ asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
       if null vl or null cdr vl then
 	 rederr {car argl, "is not multivariate"};
       w := ofsf_zerop1(f, posp);
-      if !*zeropzero and eqcar(w, 1) then
+      if !*zeropzero and (!*zeropintsolve or !*zeropint) and  eqcar(w, 1) then
 	 w := ofsf_zerosolve(f, w);
       return 'list . w
    end;
@@ -224,7 +225,7 @@ asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List;
    end;
 
 asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List4;
-   if !*zeropint then
+   if !*zeropintsolve or !*zeropint then
       ofsf_zeropTryOneInt(f, vl)
    else
       ofsf_zeropTryOneFloat(f, vl);
@@ -276,7 +277,7 @@ asserted procedure ofsf_zerop2(f: SF, negp: Boolean, posp: Boolean): List;
 	 ioto_tprin2 {"+++ at point: "};
 	 mathprint('list . for each v in vl collect {'equal, v, pop ev});
       >>;
-      if !*zeropint then
+      if !*zeropintsolve or !*zeropint then
  	 return ofsf_zeropLp1int(f, negp, d, vl, dir, nvar);
       return ofsf_zeropLp1float(f, negp, d, vl, dir, nvar)
    end;
@@ -291,7 +292,10 @@ asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
 
 asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
    begin scalar posl, snegl, hnegl, w; integer np, ns, nh;
-      lp_newmodel(1, d);
+      if !*zeropintsolve then
+      	 lp_newmodel(1, d)
+      else
+      	 lp_newmodel(d+1, 0);
       for each pt in monl do
  	 if cdr pt > 0 then <<
 	    posl := car pt . posl;
@@ -392,7 +396,9 @@ asserted procedure ofsf_zeropLp1int(f: SF, negp: Boolean, d: Integer, vl: List, 
    end;
 
 asserted procedure ofsf_zeropLp1float(f: SF, negp: Boolean, d: Integer, vl: List, dirp: List, nvar: ExtraBoolean): List;
-   begin scalar subl, scvl, val, pow, v, p;
+   begin scalar subl, scvl, val, pow, v;
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ realizing infinity by increasing powers of 2 ..."};
       repeat <<
 	 pow := if null pow then 1.0 else pow * 2;
 	 if !*rlverbose then
@@ -401,7 +407,7 @@ asserted procedure ofsf_zeropLp1float(f: SF, negp: Boolean, d: Integer, vl: List
 	 subl := for each e in cdr dirp collect <<
 	    v := pop scvl;
 	    pow := if v eq nvar then -pow else pow;
-	    v . (p^caddr e)
+	    v . (pow^caddr e)
 	 >>;
 	 val := ofsf_fsubf(f, subl)
       >> until val > 0;
@@ -416,7 +422,25 @@ asserted procedure ofsf_fsubf(f: SF, subl: AList): Floating;
       cdr atsoc(mvar f, subl)^ldeg f * ofsf_fsubf(lc f, subl) + ofsf_fsubf(red f, subl);
 
 asserted procedure ofsf_spoint2intpoint(dirp: List): List;
-   if !*rlgurobi then ofsf_fpoint2intpoint dirp else ofsf_rpoint2intpoint dirp;
+   if !*rlgurobi then
+      ofsf_fpoint2intpoint dirp
+   else
+      ofsf_rpoint2intpoint dirp;
+
+asserted procedure ofsf_fpoint2intpoint(dirp: List): List;
+   begin scalar res, w; integer g;
+      res := car dirp . for each e in cdr dirp collect <<
+	 w := fix(if !*zeropintsolve then
+ 	    caddr e
+ 	 else
+ 	    10^ofsf_lpsolprec!* * caddr e + 0.5 * sgn caddr e);
+	 g := gcdn(g, w);
+ 	 {'equal, cadr e, w}
+      >>;
+      for each e in cdr res do
+	 caddr e := caddr e / g;
+      return res
+   end;
 
 asserted procedure ofsf_rpoint2intpoint(dirp: List): List;
    begin scalar res, w; integer g;
@@ -428,18 +452,6 @@ asserted procedure ofsf_rpoint2intpoint(dirp: List): List;
       g := !*f2q g;
       for each e in cdr res do
 	 caddr e := sfto_sf2int numr multsq(caddr e, g);
-      return res
-   end;
-
-asserted procedure ofsf_fpoint2intpoint(dirp: List): List;
-   begin scalar res, w; integer g;
-      res := car dirp . for each e in cdr dirp collect <<
-	 w := fix(10^ofsf_lpsolprec!* * caddr e + 0.5 * sgn caddr e);
-	 g := gcdn(g, w);
- 	 {'equal, cadr e, w}
-      >>;
-      for each e in cdr res do
-	 caddr e := caddr e / g;
       return res
    end;
 

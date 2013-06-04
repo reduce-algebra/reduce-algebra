@@ -41,6 +41,8 @@ fluid '(lp_model!*);
 fluid '(lp_modelcache!*);
 fluid '(lp_varl!*);
 fluid '(lp_dim!*);
+fluid '(lp_rdim!*);
+fluid '(lp_zdim!*);
 
 global '(!*lp_cslp);
 !*lp_cslp := memq('csl, lispsystem!*);
@@ -51,7 +53,9 @@ procedure lp_newmodel(n, m);
    else <<
       lp_model!* := lp_modelcache!* := nil;
       lp_varl!* := for i := 0:n+m-1 collect mkid('c, i);
-      lp_dim!* := n+m
+      lp_dim!* := n+m;
+      lp_rdim!* := n;
+      lp_zdim!* := m
    >>;
 
 procedure lp_addconstraint(rel, l, r);
@@ -120,16 +124,16 @@ procedure lp_optaction();
 procedure lp_rungurobi();
    <<
       lp_updatemodel();
-      lp_rungurobi1(lp_model!*, lp_varl!*, lp_dim!*)
+      lp_rungurobi1(lp_model!*, lp_varl!*, lp_dim!*, lp_rdim!*)
    >>;
 
-asserted procedure lp_rungurobi1(cl: List, vl: List, d: Integer): List;
+asserted procedure lp_rungurobi1(cl: List, vl: List, d: Integer, rd: Integer): List;
    begin scalar bfn, lp, sol, log, cl, call, res;
       bfn := lto_sconcat {"/tmp/reduce-lp-", lto_at2str getpid(), "-", getenv "USER", "-", lto_at2str random(2^16)};
       lp := lto_sconcat {bfn, ".lp"};
       sol := lto_sconcat {bfn, ".sol"};
       log := lto_sconcat {bfn, ".log"};
-      lp_writeLp(lp, {'times, 0, car vl}, cl, vl);
+      lp_writeLp(lp, {'times, 0, car vl}, cl, vl, rd);
       call := lto_sconcat {"gurobi_cl ResultFile=", sol, " ", lp, " > ", log};
       system call;
       res := lp_readSol(sol, vl, d);
@@ -139,7 +143,7 @@ asserted procedure lp_rungurobi1(cl: List, vl: List, d: Integer): List;
       return res
    end;
 
-asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List);
+asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List, rd: Integer);
    begin scalar oldprtch, w, oldsemic, oldecho, oldutf8, oldfancy;
       oldprtch := get('times, 'prtch);
       put('times, 'prtch, '! );
@@ -152,7 +156,7 @@ asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List);
       !*fancy := nil;
       if fn then
       	 out fn;
-      w := errorset({'lp_writeLp1, mkquote obj, mkquote cl, mkquote vl}, nil, !*backtrace);
+      w := errorset({'lp_writeLp1, mkquote obj, mkquote cl, mkquote vl, mkquote rd}, nil, !*backtrace);
       if fn then
       	 shut fn;
       !*fancy := oldfancy;
@@ -164,7 +168,7 @@ asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List);
 	 rederr emsg!*
    end;
 
-asserted procedure lp_writeLp1(obj: List, cl: List, vl: List);
+asserted procedure lp_writeLp1(obj: List, cl: List, vl: List, rd: Integer);
    <<
       prin2!* "Minimize";
       terpri!* nil;
@@ -181,6 +185,16 @@ asserted procedure lp_writeLp1(obj: List, cl: List, vl: List);
       for each v in vl do <<
 	 maprin {'geq, v, '!-Inf};
       	 terpri!* nil
+      >>;
+      for i := 1:rd do pop vl;
+      if vl then <<
+	 prin2!* "Integers";
+      	 terpri!* nil;
+	 for each rvl on vl do <<
+	    prin2!* car rvl;
+	    if cdr rvl then prin2!* " "
+	 >>;
+	 terpri!* nil
       >>;
       prin2!* "End";
       terpri!* nil
@@ -224,7 +238,7 @@ procedure lp_dumpmodel();
       if !*rlgurobi and !*rlffi and !*lp_cslp then
       	 gurobi_dumpmodel()
       else
-	 lp_writeLp(nil, nil, lp_model!*, lp_varl!*)
+	 lp_writeLp(nil, nil, lp_model!*, lp_varl!*, lp_rdim!*)
    >>;
 
 endmodule;
