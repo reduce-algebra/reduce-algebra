@@ -53,7 +53,7 @@ fluid '(gurobi_freemodel!*);
 gurobi_libredgurobi!* := lto_sconcat {rltools_trunk(), "packages/foreign/gurobi/libredgurobi.so"};
 
 if filep gurobi_libredgurobi!* then <<
-   gurobi_redgurobi!* := open!-foreign!-library mkquote gurobi_libredgurobi!*;
+   gurobi_redgurobi!* := open!-foreign!-library gurobi_libredgurobi!*;
 
    gurobi_newmodel!* := find!-foreign!-function("gurobi_newmodel", gurobi_redgurobi!*);
    gurobi_addconstr!* := find!-foreign!-function("gurobi_addconstr", gurobi_redgurobi!*);
