@@ -406,8 +406,10 @@ dyndemo_SOURCES = dyndemo.c
 if !windows
 dyndemo_DEPENDENCIES = dynmodule.so
 
+if cygwin
 libdyndemo.a: $(srcdir)/dyndemo.def
-	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
+	$(TRACE)$(DLLTOOL) --input-def $(srcdir)/dyndemo.def --dllname=dyndemo.exe --output-lib libdyndemo.a
+endif cygwin
 endif !windows
 
 if windows
@@ -479,11 +481,11 @@ endif !cygwin
 
 cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
 	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
-	i686-pc-cygwin-strip cygwin-isatty.exe
+	if test -s /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
 
 cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
 	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe
-	x86_64-pc-cygwin-strip cygwin64-isatty.exe
+	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -507,7 +509,7 @@ endif !wx
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
 libdyndemo.a: $(srcdir)/dyndemo.def
-	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
+	$(DLLTOOL) --input-def $(srcdir)/dyndemo.def --dllname dyndemo.exe --output-lib libdyndemo.a
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
 	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
@@ -551,6 +553,9 @@ else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
 
+if cygwin
+dyndemo_LDADD = $(srcdir)/dyndemo.def
+endif cygwin
 # end of windows vs non-windows conditions
 endif !windows
 
@@ -1310,8 +1315,13 @@ if windows
 dyndef =
 dyndep = libdyndemo.a
 else !windows
+if cygwin
+dyndef =
+dyndep = libdyndemo.a
+else !cygwin
 dyndef =
 dyndep =
+endif !cygwin
 endif !windows
 
 dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(dyndep)

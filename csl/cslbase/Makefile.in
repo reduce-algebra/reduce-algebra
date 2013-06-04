@@ -666,6 +666,7 @@ dyndemo_SOURCES = dyndemo.c
 @gui_FALSE@@windows_TRUE@WINAP = -Wl,--subsystem,console
 @gui_TRUE@@windows_TRUE@WINAP = -Wl,--subsystem,windows
 @windows_FALSE@WINAP = 
+@cygwin_TRUE@@windows_FALSE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
 @windows_TRUE@AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
@@ -710,7 +711,6 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@@wx_TRUE@wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
 @windows_FALSE@GP = 
-
 # end of windows vs non-windows conditions
 
 # The next line is because CXXLINK has "-o $@" as part of it and in this
@@ -769,9 +769,11 @@ termdemo_LIBS =
 COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
 
-@windows_FALSE@dyndef = 
+@cygwin_FALSE@@windows_FALSE@dyndef = 
+@cygwin_TRUE@@windows_FALSE@dyndef = 
 @windows_TRUE@dyndef = 
-@windows_FALSE@dyndep = 
+@cygwin_FALSE@@windows_FALSE@dyndep = 
+@cygwin_TRUE@@windows_FALSE@dyndep = libdyndemo.a
 @windows_TRUE@dyndep = libdyndemo.a
 @fox_FALSE@@wx_FALSE@guisrc = 
 @fox_FALSE@@wx_TRUE@guisrc = $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) $(wxshowmathdemo_SOURCES)
@@ -2360,8 +2362,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 @cygwin_TRUE@all-local:	report-dlls csl.img reduce.img
 @cygwin_FALSE@all-local:	csl.img reduce.img
 
-@windows_FALSE@libdyndemo.a: $(srcdir)/dyndemo.def
-@windows_FALSE@	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
+@cygwin_TRUE@@windows_FALSE@libdyndemo.a: $(srcdir)/dyndemo.def
+@cygwin_TRUE@@windows_FALSE@	$(TRACE)$(DLLTOOL) --input-def $(srcdir)/dyndemo.def --dllname=dyndemo.exe --output-lib libdyndemo.a
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
 # I will expect the user to have established a path which includes the
@@ -2390,18 +2392,18 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 @windows_TRUE@cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
 @windows_TRUE@	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
-@windows_TRUE@	i686-pc-cygwin-strip cygwin-isatty.exe
+@windows_TRUE@	if test -s /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
 
 @windows_TRUE@cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
 @windows_TRUE@	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe
-@windows_TRUE@	x86_64-pc-cygwin-strip cygwin64-isatty.exe
+@windows_TRUE@	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 @windows_TRUE@	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
 @windows_TRUE@	i686-w64-mingw32-strip not-under-cygwin.exe
 
 @windows_TRUE@libdyndemo.a: $(srcdir)/dyndemo.def
-@windows_TRUE@	$(DLLTOOL) --def $(srcdir)/dyndemo.def --output-lib libdyndemo.a
+@windows_TRUE@	$(DLLTOOL) --input-def $(srcdir)/dyndemo.def --dllname dyndemo.exe --output-lib libdyndemo.a
 
 @windows_TRUE@fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
 @windows_TRUE@	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
