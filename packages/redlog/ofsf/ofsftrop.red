@@ -313,6 +313,8 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
       	 ioto_tprin2 "+++ ";
 	 ioto_prin2t lp_optaction()
       >>;
+      if null posl and (posp or null snegl) then
+      	  return {'definite, nil, nil};
       for each l in {posl, snegl, hnegl} do
       	 ofsf_addconstraints l;
       lp_updatemodel();
