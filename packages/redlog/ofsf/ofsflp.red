@@ -34,6 +34,8 @@ switch lpkeepfiles;
 
 switch rlffi;
 
+fluid '(!*echo);
+
 fluid '(!*rlgurobi);
 fluid '(!*rlffi);
 

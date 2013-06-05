@@ -35,8 +35,8 @@ ofsf_lpsolprec!* := 8;
 
 fluid '(rlsat2polatnum!*);
 
-switch zeropaddzero;
-on1 'zeropaddzero;
+switch zeropdelzero;
+on1 'zeropdelzero;
 
 switch zeropint;
 
@@ -78,6 +78,7 @@ asserted procedure ofsf_pzeropeval(argl: List): List;
 
 asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
    begin integer f, vl, w;
+      ioto_tprin2t {"!*echo = ", !*echo};
       f := numr simp car argl;
       vl := sort(kernels f, 'ordop);
       if null vl or null cdr vl then
@@ -94,7 +95,7 @@ asserted procedure ofsf_zerop(f: SF): List;
 
 asserted procedure ofsf_pzerop(f: SF): List;
    % SM entry point
-   ofsf_zerop1(f, t);
+      ofsf_zerop1(f, t);
 
 asserted procedure ofsf_tropsat1(f: QfFormula, posp: Boolean): Id;
    begin scalar w;
@@ -291,19 +292,23 @@ asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
  	 ofsf_softnegp(cdr vl, cdr ev);
 
 asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
-   begin scalar posl, snegl, hnegl, w; integer np, ns, nh;
+   begin scalar posl, snegl, hnegl, w, delposp; integer np, ns, nh;
       if !*zeropintsolve then
       	 lp_newmodel(1, d)
       else
       	 lp_newmodel(d+1, 0);
       for each pt in monl do
- 	 if cdr pt > 0 then <<
+	 if !*zeropdelzero and ofsf_zerolistp car pt then <<
+	    if !*rlverbose then
+	       ioto_tprin2t "+++ deleting (0,...,0)";
+	    delposp := cdr pt > 0
+	 >> else if cdr pt > 0 then <<
 	    posl := car pt . posl;
 	    np := np + 1
 	 >> else if ofsf_softnegp(vl, car pt) then <<
 	    snegl := car pt . snegl;
 	    ns := ns + 1
-      	 >> else <<
+	 >> else <<
 	    hnegl := car pt . hnegl;
 	    nh := nh + 1
 	 >>;
@@ -313,7 +318,7 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
       	 ioto_tprin2 "+++ ";
 	 ioto_prin2t lp_optaction()
       >>;
-      if null posl and (posp or null snegl) then
+      if null posl and (posp or null snegl) and not delposp then
       	  return {'definite, nil, nil};
       for each l in {posl, snegl, hnegl} do
       	 ofsf_addconstraints l;
@@ -327,6 +332,9 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
       lp_freemodel();
       return w
    end;
+
+asserted procedure ofsf_zerolistp(l);
+   null l or eqn(car l, 0) and ofsf_zerolistp cdr l;
 
 asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer): DottedPair;
    begin scalar cnt, w, dir, ev; integer i;
