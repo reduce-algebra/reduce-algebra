@@ -81,6 +81,7 @@ endif !exeext
 .PHONY:	prof-inst
 .PHONY:	c-code
 .PHONY:	full-c-code
+.PHONY: j-code
 .PHONY:	smacros
 .PHONY:	testslow
 .PHONY:	testall
@@ -1546,7 +1547,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
 	@touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 # I want the C code to be created from a version of the boostrap code
-# that has ALL the inline definitions avaiulable. To ensure that things are
+# that has ALL the inline definitions available. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
 	$(RM) -f inline-defs.dat
@@ -1608,6 +1609,20 @@ if canrun
 		-- buildlogs/full-c-code.log
 else !canrun
 	echo Can not generate C code on this platfrom
+endif !canrun
+
+# j-code will only be triggered manually.
+
+j-code:	bootstrapreduce.img $(gensrc)/profile.dat
+if canrun
+	mkdir -p buildlogs
+	mkdir -p $(CYGSRC)/../../cslbuild/generated-java
+	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-j-code.red \
+		-D@destdir=$(CYGSRC)/../../cslbuild/generated-java \
+		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
+		-- buildlogs/j-code.log
+else !canrun
+	echo Can not generate Java code on this platfrom
 endif !canrun
 
 smacros smacros.red:	bootstrapreduce.img

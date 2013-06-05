@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 53a22d85 26-Jun-2012 */
+/* Signature: 78c4b1f8 05-Jun-2013 */
 
 /*
  * This supports modest line-editing and history for terminal-mode

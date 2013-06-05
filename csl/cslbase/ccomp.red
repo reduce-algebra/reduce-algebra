@@ -974,7 +974,7 @@ princ "C file = "; print name;
 % The stuff I put in the file here includes written-in copies of header
 % files. The main "csl_headers" should be the same for all systems built
 % based on the current sources, but the "config_header" is specific to a
-% particular build. So if I am genarating C code that is JUST for use on the
+% particular build. So if I am generating C code that is JUST for use on the
 % current platform I can write-in the config header here and now, but if
 % there is any chance that I might save the generated C and compile it
 % elsewhere I should leave "#include "config.h"" in there. 

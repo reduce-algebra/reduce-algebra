@@ -6054,6 +6054,10 @@ symbolic procedure compile l;
 
 in "$cslbase/ccomp.red"$
 
+% And also one that generated Java for use with Jlisp.
+
+in "$cslbase/jcomp.red"$
+
 
 end;
 
