@@ -30,7 +30,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 64b0a2fe 05-Jun-2013 */
+/* Signature: 592376a3 05-Jun-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,6 +83,10 @@
 
 int main(int argc, char *argv[])
 {
+/*
+ * Note that I do not investigate stderr, only stdin and stdout. Thus
+ * when invoking this code I can go "2>/dev/null" without upsetting anything.
+ */
     int n = isatty(0) && isatty(1);
     const char *display = getenv("DISPLAY");
     const char *ssh_host = getenv("SSH_HOST");

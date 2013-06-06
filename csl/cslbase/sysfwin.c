@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 448ceb82 28-Apr-2013 */
+/* Signature: 0d472e2a 06-Jun-2013 */
 
 #include "headers.h"
 
@@ -616,21 +616,32 @@ int find_gnuplot(char *name)
         if (executable_file(name)) return 1;
     }
 #ifdef WIN32
-    {   DWORD length = LONGEST_LEGAL_FILENAME;
-        DWORD type;
-        LONG r = RegGetValue(
-    HKEY_LOCAL_MACHINE,
-    "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wgnuplot.exe",
-    NULL,
-    RRF_RT_ANY,
-    (LPDWORD)&type,
-    (PVOID)name,
-    (LPDWORD)&length);
+    {   HKEY keyhandle;
+/*
+ * I need to use RegQueryValueEx here rather than RegGetValue if I am to
+ * support 32-bit Windows XP. Note that buffer overflow in the path to
+ * gnuplot could leave an unterminated string, but that should not happen
+ * here.
+ */
+        DWORD length = LONGEST_LEGAL_FILENAME, type;
+        LONG r, r1 = RegOpenKeyEx(
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wgnuplot.exe",
+            0,
+            KEY_QUERY_VALUE,
+            &keyhandle);
+        r = RegQueryValueEx(keyhandle,
+            NULL,
+            NULL,
+            (LPDWORD)&type,
+            (PVOID)name,
+            (LPDWORD)&length);
+        name[LONGEST_LEGAL_FILENAME-1] = 0;
         if (r == ERROR_SUCCESS) return 1;
     }
 /*
  * If wgnuplot.exe is not installed then I will drop through and a last
- * resort just hand back "wgnuplot.exe" as a strig and hope it is on a PATH.
+ * resort just hand back "wgnuplot.exe" as a string and hope it is on a PATH.
  */
 #endif
     strcpy(name, GPNAME);

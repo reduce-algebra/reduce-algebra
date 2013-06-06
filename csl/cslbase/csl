@@ -43,7 +43,7 @@ if $here/not-under-cygwin.exe $*
 then
   $here/csl.com $*
 else
-  $here/cygwin64-isatty.exe $*
+  $here/cygwin64-isatty.exe $* 2>/dev/null
   case $? in
   1)
     $here/cygwin64-csl.exe $*
