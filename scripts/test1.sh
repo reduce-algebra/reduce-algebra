@@ -126,6 +126,10 @@ if test "x$BASH_VERSION" != "x"
 then
   # do a search for time in $PATH
   timecmd=`type -P time`
+  if test "x$timecmd" != "x"
+  then
+    timecmd="$timecmd -p"
+  fi
 else
   testfortime=`type time 2>&1 | grep -v "not found"`
   if test -n "$testfortime"
@@ -133,7 +137,7 @@ else
     set -- $testfortime
     # remove all but last parameter
     shift `expr $# - 1`
-    timecmd=$1
+    timecmd="$1 -p"
   else
     timecmd=""
   fi
@@ -184,7 +188,7 @@ then
 
 mkdir -p csl-times
 
-$timecmd -p sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
+$timecmd sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -236,7 +240,7 @@ then
 
 mkdir -p psl-times
 
-$timecmd -p sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
+$timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -293,6 +297,7 @@ then
   grep ^Time psl-times/$p.time | \
    sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
   echo " / pq" >> timer.tmp
+# If "dc" is not available then the following line leaves ratio empty.
   ratio=`dc < timer.tmp 2>/dev/null`
   if test "x$ratio" != "x" && test "x$ratio" != "x0"
   then 
