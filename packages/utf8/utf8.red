@@ -78,7 +78,7 @@ procedure utf82droundoff();
 on1 'utf8;
 on1 'utf82d;
 on1 'utf82dround;
-off1 'utf8exp;
+on1 'utf8exp;
 on1 'utf8expall;
 on1 'utf8diffquot;
 on1 'utf8pad;
@@ -212,12 +212,15 @@ procedure exptpri(x,y);
       utf8_exptpri(x,y);
 
 procedure utf8_exptpri(x,p);
-   begin scalar q,expo,w;
+   begin scalar e, q, expo, w;
       if not !*nat then
       	 return 'failed;
-      if null !*utf8exp or not numberp caddr x then
+      e := caddr x;
+      if eqcar(e, 'minus) and cadr e and fixp cadr e then
+	 e := - cadr e;
+      if null !*utf8exp or not fixp e then
       	 return exptpri_orig(x,p);
-      expo := explode caddr x;
+      expo := explode e;
       if null !*utf8expall and utf8_supmixp expo then
 	 return exptpri_orig(x,p);
       q := pairp cadr x and (w := get(caadr x,'infix)) and
@@ -225,8 +228,9 @@ procedure utf8_exptpri(x,p);
       if q then prin2!* "(";
       maprin cadr x;
       if q then prin2!* ")";
-      x := compress append('(u t f 8 !_ e x p),expo);
-      put(x,'utf8,length expo . for each d in expo join copy utf8_supscript d);
+      x := compress append('(u t f !8 !_ e x p),expo);
+      w := for each d in expo join copy utf8_supscript d;
+      put(x,'utf8, length expo . w);
       utf8_prin2!* x
    end;
 
@@ -237,7 +241,7 @@ procedure utf8_supscript(d);
    cdr atsoc(d,'((!1 . (194 185)) (!2 . (194 178)) (!3 . (194 179))
       (!4 . (226 129 180)) (!5 . (226 129 181)) (!6 . (226 129 182))
       (!7 . (226 129 183)) (!8 . (226 129 184)) (!9 . (226 129 185))
-      (!0 . (226 129 176))));
+      (!0 . (226 129 176)) (!- . (226 129 187))));
 
 procedure utf8_priabs(u);
    if not !*nat then
