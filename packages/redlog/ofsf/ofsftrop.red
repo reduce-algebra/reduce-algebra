@@ -36,14 +36,15 @@ ofsf_lpsolprec!* := 8;
 fluid '(rlsat2polatnum!*);
 
 switch zeropdelzero;
-on1 'zeropdelzero;
+off1 'zeropdelzero;
 
 switch zeropint;
 
 switch zeropintsolve;
+off1 'zeropintsolve;
 
 switch zeropzero;
-on1 'zeropzero;
+off1 'zeropzero;
 
 switch rlgurobi;
 
@@ -80,9 +81,9 @@ asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
    begin integer f, vl, w;
       ioto_tprin2t {"!*echo = ", !*echo};
       f := numr simp car argl;
-      vl := sort(kernels f, 'ordop);
-      if null vl or null cdr vl then
-	 rederr {car argl, "is not multivariate"};
+%%      vl := sort(kernels f, 'ordop);
+%%       if null vl or null cdr vl then
+%% 	 rederr {car argl, "is not multivariate"};
       w := ofsf_zerop1(f, posp);
       if !*zeropzero and (!*zeropintsolve or !*zeropint) and  eqcar(w, 1) then
 	 w := ofsf_zerosolve(f, w);
@@ -121,6 +122,10 @@ switch troplcm;
 
 asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
    begin scalar op, e, ee;
+      if f eq 'true then
+	 return {0, geal, gral, neal};
+      if f eq 'false then
+	 return {1, geal, gral, neal};
       op := rl_op f;
       if op eq 'or then <<
       	 e := 1;
@@ -205,6 +210,13 @@ asserted procedure ofsf_neq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, 
 
 asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List;
    begin scalar one, fone, vl, w, flag, signfone, tryonesol;
+      if domainp f then
+	 return if null f then
+ 	    '(1 (list (list) 0))
+  	 else if minusf f then
+	    {0, 'nd, {'list, {'list}, f}}
+	 else
+	    {0, {'list, {'list}, f}, 'pd};
       vl := sort(kernels f, 'ordop);
       {signfone, one, fone, tryonesol} := ofsf_zeropTryOne(f, vl);
       if eqn(signfone, 0) then
@@ -247,7 +259,7 @@ asserted procedure ofsf_zeropTryOneFloat(f: SF, vl: List): List4;
    begin scalar one, fone;
       one := 'list . for each v in vl collect {'equal, v, 1.0};
       fone := ofsf_fsubf(f, for each v in vl collect v . 1.0);
-      if fone = 0 then <<
+      if fone = 0.0 then <<
 	 if !*rlverbose then
 	    ioto_tprin2t {"+++ f is zero at (1, ..., 1)"};
 	 return {0, one, fone, {1, {'list, one, 0}}}
@@ -406,7 +418,7 @@ asserted procedure ofsf_zeropLp1int(f: SF, negp: Boolean, d: Integer, vl: List, 
    end;
 
 asserted procedure ofsf_zeropLp1float(f: SF, negp: Boolean, d: Integer, vl: List, dirp: List, nvar: ExtraBoolean): List;
-   begin scalar subl, scvl, val, pow, v;
+   begin scalar subl, scvl, val, pow, this, v, expo;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ realizing infinity by increasing powers of 2 ..."};
       repeat <<
@@ -416,8 +428,10 @@ asserted procedure ofsf_zeropLp1float(f: SF, negp: Boolean, d: Integer, vl: List
 	 scvl := vl;
 	 subl := for each e in cdr dirp collect <<
 	    v := pop scvl;
-	    pow := if v eq nvar then -pow else pow;
-	    v . (pow^caddr e)
+	    expo := if eqcar(caddr e, 'minus) then - cadr caddr e else caddr e;
+	    this := pow ^ expo;
+	    if v eq nvar then this := -this;
+	    v . this
 	 >>;
 	 val := ofsf_fsubf(f, subl)
       >> until val > 0;

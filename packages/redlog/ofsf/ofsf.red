@@ -253,6 +253,7 @@ put('ofsf,'rl_services,'(
    (rl_dima!* . ofsf_dima)
    (rl_sat2pol!* . ofsf_sat2pol)
    (rl_tropsat!* . ofsf_tropsat)
+   (rl_ptropsat!* . ofsf_ptropsat)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin
