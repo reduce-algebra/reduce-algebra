@@ -199,6 +199,17 @@
        (do (when (occupied-slot? i)
 	     (apply f (list (mkid (hash-table-entry i))))))))
 
+(de oblist (f)
+  % collect the interned IDs
+  (prog (obl)
+  (for (from i 0 127 1)
+       (do (setq obl (cons (mkid i) obl))))
+  (for (from i 0 hash-table-size 1)
+       (do (when (occupied-slot? i)
+             (setq obl (cons (mkid (hash-table-entry i)) obl)))))
+  (return obl)))
+
+
 % These functions provide support for multiple oblists
 % Cf PACKAGE.RED for their use
 
