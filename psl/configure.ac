@@ -121,7 +121,7 @@ else
   cp psl/nbig32.b psl/zbig.b
   rm -f psl/*rlisp*.b
 
-  chmod +x bpsl*
+  chmod +x psl/bpsl*
 
 fi
 
