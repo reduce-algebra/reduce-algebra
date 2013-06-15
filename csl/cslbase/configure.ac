@@ -114,14 +114,14 @@ AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might
 AC_ARG_WITH(cygbuild,
    AC_HELP_STRING([--with-cygbuild], [used if I wish to call the cygwin version]),
    [],
-   [with_cygbuild="unknown"])
+   [with_cygbuild=""])
 
 AC_SUBST(with_cygbuild)
 
 AC_ARG_WITH(cygbuild64,
    AC_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
    [],
-   [with_cygbuild64="unknown"])
+   [with_cygbuild64=""])
 
 AC_SUBST(with_cygbuild64)
 
@@ -946,6 +946,7 @@ then
           AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
           if test "$xft_found" = "yes"
           then
+            CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2"
             AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
           fi
         fi

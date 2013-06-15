@@ -133,4 +133,5 @@ priority, but with a few comments with each...
     minimal amount memory resident to start with but with autoload schema
     loading stuff as needed. This ought to be a cleaner setup than at present.
 
- 
+(29) Support for "correct" implementation of tail-calls and static scope rules
+    in CSL in every case.

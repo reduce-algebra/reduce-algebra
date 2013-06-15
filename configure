@@ -1979,7 +1979,7 @@ fi
 if test "${with_cygbuild64+set}" = set; then :
   withval=$with_cygbuild64;
 else
-  with_cygbuild64="unknown"
+  with_cygbuild64=""
 fi
 
 
@@ -2373,7 +2373,7 @@ case $inplace in
 # older that my "configure" script. The tests are known to be happening under
 # cygwin so I am not going to worry overmuch about general
     case $build in
-    *cygwin* | *windows*)
+    *cygwin* | *windows* | *mingw*)
       if test -x /usr/bin/i686-pc-cygwin-gcc
       then
         have_cyg32="yes"
@@ -2407,9 +2407,29 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
       for buildmc in "i686-pc-cygwin" "x86_64-pc-cygwin"
       do
         build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
-        if test -x /usr/bin/$buildmc-gcc
+        pass_host=""
+        case `uname -m -o` in
+        *i686*Cygwin*)
+          if test "x$buildmc" != "xi686-pc-cygwin"
+          then
+            pass_host="--host=$buildmc"
+          fi
+          ;;
+        *x86_64*Cygwin*)
+          if test "x$buildmc" != "xx86_64-pc-cygwin"
+          then
+            pass_host="--host=$buildmc"
+          fi
+          ;;
+        *)
+          pass_host="--host=$buildmc"
+        esac
+        { $as_echo "$as_me:${as_lineno-$LINENO}: buildmc=$buildmc pss_host=$pass_host" >&5
+$as_echo "$as_me: buildmc=$buildmc pss_host=$pass_host" >&6;}
+        if test -x /usr/bin/$buildmc-gcc ||
+           test "x$pass_host" = "x"
         then
-           if test "x$with_force" != "xno" ||
+          if test "x$with_force" != "xno" ||
              test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
           then
             echo "Need to reconfigure for $build"
@@ -2421,11 +2441,19 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
+# If I am running in a cygwin-32 shell and building for cygwin-32, or
+# equivalently for cygwin-64, then I do not need to pass "--host" since
+# just "gcc" will be what I want to use, rather than "i686-pc-cygwin-gcc"
+# or whatever. Indeed on 64-bit cygwin at the time of writing an attempt
+# to use the sort of "cross-compile to self" pattern causes build failures,
+# so this is more than mere optimisation, it is bug avoidance.
+            { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host buildmc=$buildmc pass_host=$pass_host" >&5
+$as_echo "$as_me: host=$host buildmc=$buildmc pass_host=$pass_host" >&6;}
             pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
             doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
                     CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
                     CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-                    $passcc $pass_build --host=$buildmc --with-cygwin"
+                    $passcc $pass_build $pass_host --with-cygwin"
             { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
             eval "$doconfig"
@@ -2442,11 +2470,15 @@ $as_echo "$as_me: Compiler for $buildmc not available" >&6;}
       cygextra=
       if test "$have_cyg32" = "yes"
       then
-        cygextra="--with-cygbuild=$abssrcdir/cslbuild/i686-pc-cygwin"
+        ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
+        dd32=`echo $build | sed -e "$ed32"`
+        cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
       fi
       if test "$have_cyg64" = "yes"
       then
-        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/x86_64-pc-cygwin"
+        ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+        dd64=`echo $build | sed -e "$ed64"`
+        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: cygextra = $cygextra" >&5
 $as_echo "$as_me: cygextra = $cygextra" >&6;}
@@ -3097,22 +3129,37 @@ $as_echo "$as_me: About to configure CSL core" >&6;}
   { $as_echo "$as_me:${as_lineno-$LINENO}: with_fox=$with_fox, with_wx=$with_wx" >&5
 $as_echo "$as_me: with_fox=$with_fox, with_wx=$with_wx" >&6;}
 
-# If I am compiling for native Cygwin I will not pass down "--host".
+# If I am compiling for native Cygwin I will not pass down "--host"
+# if I am building for the natural target.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host build=$build" >&5
+$as_echo "$as_me: host=$host build=$build" >&6;}
+  pass_host=""
   if test "x$with_cygwin" != "xno"
   then
-    sethost=""
-  else
-    sethost="--host=$host"
+    case `uname -m -o` in
+    *i686*Cygwin*)
+      if test "x$host" != "xi686-pc-cygwin"
+      then
+        pass_host="--host=$host"
+      fi
+      ;;
+    *x86_64*Cygwin*)
+      if test "x$host" != "xx86_64-pc-cygwin"
+      then
+        pass_host="--host=$host"
+      fi
+      ;;
+    esac
   fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=$with_cygwin sethost=$sethost" >&5
-$as_echo "$as_me: with_cygwin=$with_cygwin sethost=$sethost" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=$with_cygwin pass_host=$pass_host" >&5
+$as_echo "$as_me: with_cygwin=$with_cygwin pass_host=$pass_host" >&6;}
 
 # Now at most one of with_wx and with_fox will be "yes". They could both
 # be "no".
   if test "x$with_wx" != "xno"
   then
-    if ! test -d $abssrcdir/csl/wxWidgets
+    if ! test -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
     then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
@@ -3143,15 +3190,15 @@ $as_echo "$as_me: with_cygwin=$with_cygwin sethost=$sethost" >&6;}
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost --with-wx=\"$with_wx\" $pass_build --without-fox"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $pass_host --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost $pass_build --without-fox --without-wx"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $pass_host $pass_build --without-fox --without-wx"
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
@@ -3186,7 +3233,7 @@ $as_echo "$as_me: gcc will be used in mingw mode." >&6;}
       else
         { $as_echo "$as_me:${as_lineno-$LINENO}: Using raw cygwin" >&5
 $as_echo "$as_me: Using raw cygwin" >&6;}
-        CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses "
+        CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2 -I/usr/include/ncurses "
         extras="--with-xft --with-xim"
       fi
       ;;
@@ -3255,10 +3302,10 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
-$as_echo "$as_me: passcc = $passcc" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc pass_host=$pass_host" >&5
+$as_echo "$as_me: passcc = $passcc pass_host=$pass_host" >&6;}
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
-            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat26 \
@@ -3294,7 +3341,7 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
     doconfig="$SHELL \"$abssrcdir/csl/fox/configure\" $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            $sethost --enable-release --with-opengl=no \
+            $pass_host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=\"$builddir\" $extras"
     { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
@@ -3316,7 +3363,7 @@ $as_echo "$as_me: About to configure FOX tests" >&6;}
       { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
       doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
-            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
       { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5

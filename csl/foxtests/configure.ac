@@ -93,6 +93,11 @@ AC_ARG_WITH(cygbuild,
   [],
   [with_cygbuild="unknown"])
 
+AC_ARG_WITH(cygbuild64,
+  AC_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
+  [],
+  [with_cygbuild64="unknown"])
+
 AC_ARG_WITH(SDK,
   AC_HELP_STRING([--with-SDKl], [Eg --with-sdk=10.7]),
   [],

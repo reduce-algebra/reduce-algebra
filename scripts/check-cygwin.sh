@@ -2,6 +2,15 @@
 
 missing=""
 
+case `uname -a` in
+*x86_64*)
+  other="cygwin32"
+  ;;
+*)
+  other="cygwin64"
+  ;;
+esac
+
 for p in \
   automake \
   bash \
@@ -10,27 +19,27 @@ for p in \
   bison \
   bzip2 \
   coreutils \
-  cygwin64 \
-  cygwin64-binutils \
-  cygwin64-bzip2 \
-  cygwin64-fontconfig \
-  cygwin64-freetype2 \
-  cygwin64-gcc-core \
-  cygwin64-gcc-g++ \
-  cygwin64-gmp \
-  cygwin64-gnutls \
-  cygwin64-isl \
-  cygwin64-libffi \
-  cygwin64-libtool \
-  cygwin64-libX11 \
-  cygwin64-libXext \
-  cygwin64-libXft \
-  cygwin64-libXrandr \
-  cygwin64-libXrender \
-  cygwin64-ncurses \
-  cygwin64-w32api-headers \
-  cygwin64-w32api-runtime \
-  cygwin64-zlib \
+  ${other} \
+  ${other}-binutils \
+  ${other}-bzip2 \
+  ${other}-fontconfig \
+  ${other}-freetype2 \
+  ${other}-gcc-core \
+  ${other}-gcc-g++ \
+  ${other}-gmp \
+  ${other}-gnutls \
+  ${other}-isl \
+  ${other}-libffi \
+  ${other}-libtool \
+  ${other}-libX11 \
+  ${other}-libXext \
+  ${other}-libXft \
+  ${other}-libXrandr \
+  ${other}-libXrender \
+  ${other}-ncurses \
+  ${other}-w32api-headers \
+  ${other}-w32api-runtime \
+  ${other}-zlib \
   ed \
   findutils \
   flex \

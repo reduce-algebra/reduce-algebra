@@ -63,7 +63,7 @@
 
 {(-a + b*Cot[c + d*x])*(a + b*Cot[c + d*x])^(5/2), x, 8, -(((I*a - b)*(a - I*b)^(5/2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a - I*b]])/d) + (I*(a - I*b)*(a + I*b)^(5/2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a + I*b]])/d + (2*b*(a^2 + b^2)*Sqrt[a + b*Cot[c + d*x]])/d - (2*b*(a + b*Cot[c + d*x])^(5/2))/(5*d)}
 {(-a + b*Cot[c + d*x])*(a + b*Cot[c + d*x])^(3/2), x, 7, -((I*Sqrt[a - I*b]*(a^2 + b^2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a - I*b]])/d) + (I*Sqrt[a + I*b]*(a^2 + b^2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a + I*b]])/d - (2*b*(a + b*Cot[c + d*x])^(3/2))/(3*d)}
-{(-a + b*Cot[c + d*x])*(a + b*Cot[c + d*x])^(1/2), x, 7, -((I*(a^2 + b^2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a - I*b]])/(Sqrt[a - I*b]*d)) + (I*(a^2 + b^2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a + I*b]])/(Sqrt[a + I*b]*d) - (2*b*Sqrt[a + b*Cot[c + d*x]])/d}\
+{(-a + b*Cot[c + d*x])*(a + b*Cot[c + d*x])^(1/2), x, 7, -((I*(a^2 + b^2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a - I*b]])/(Sqrt[a - I*b]*d)) + (I*(a^2 + b^2)*ArcTanh[Sqrt[a + b*Cot[c + d*x]]/Sqrt[a + I*b]])/(Sqrt[a + I*b]*d) - (2*b*Sqrt[a + b*Cot[c + d*x]])/d}
 
 
 

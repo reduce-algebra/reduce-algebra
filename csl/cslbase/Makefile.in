@@ -2392,12 +2392,12 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 @windows_TRUE@	cat $(srcdir)/cslcom.def $(srcdir)/impex.def > local-cslcom.def
 
 @windows_TRUE@cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
-@windows_TRUE@	if test -s /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
+@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; fi
+@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
 
 @windows_TRUE@cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe
-@windows_TRUE@	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
+@windows_TRUE@	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; fi
+@windows_TRUE@	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 @windows_TRUE@	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -2435,7 +2435,8 @@ $(srcdir)/Makefile.am:
 	touch $(srcdir)/Makefile.am
 
 # When I build wxWidgets locally I *ALWAYS* end up passing an explicit
-# "--host=..." option to the configure script. A result of that is that
+# "--host=..." option to the configure script. Well that is always except
+# when under cygwin in certain cases... A result of that is that
 # the libraries get installed with names that include the host identity.
 # The script here makes symbolic links from the host-qualified names from
 # plain undecorated ones as mentioned by "wx-config --libs". Well actually
@@ -2490,8 +2491,8 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/csl-nogui .
 @cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make csl.exe
 @cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make csl.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe
+@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
+@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f csl$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)

@@ -740,6 +740,7 @@ with_mingw64
 with_build
 with_pslbuild
 with_cygbuild
+with_cygbuild64
 with_SDK
 with_cygwin
 with_fox
@@ -1395,6 +1396,7 @@ Optional Packages:
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
   --with-cygbuild         Used internally to control build directory
+  --with-cygbuild64       Used internally to control build directory
   --with-SDKl             Eg --with-sdk=10.7
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-fox=DIR          FOX installation location
@@ -3212,6 +3214,15 @@ if test "${with_cygbuild+set}" = set; then :
   withval=$with_cygbuild;
 else
   with_cygbuild="unknown"
+fi
+
+
+
+# Check whether --with-cygbuild64 was given.
+if test "${with_cygbuild64+set}" = set; then :
+  withval=$with_cygbuild64;
+else
+  with_cygbuild64="unknown"
 fi
 
 

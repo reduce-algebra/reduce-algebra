@@ -3347,7 +3347,7 @@ _ACEOF
 if test "${with_cygbuild+set}" = set; then :
   withval=$with_cygbuild;
 else
-  with_cygbuild="unknown"
+  with_cygbuild=""
 fi
 
 
@@ -3358,7 +3358,7 @@ fi
 if test "${with_cygbuild64+set}" = set; then :
   withval=$with_cygbuild64;
 else
-  with_cygbuild64="unknown"
+  with_cygbuild64=""
 fi
 
 
@@ -8664,6 +8664,7 @@ fi
 
           if test "$xft_found" = "yes"
           then
+            CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2"
 
 $as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
 

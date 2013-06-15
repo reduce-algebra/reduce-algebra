@@ -481,12 +481,12 @@ WINHELPERS=cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 endif !cygwin
 
 cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe
-	if test -s /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
+	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; fi
+	if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
 
 cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe
-	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else $(STRIP) cygwin-isatty.exe; fi
+	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; fi
+	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -604,7 +604,8 @@ WXDEPS=../bin/wx-config $(BASELIB)
 
 if !cygwin
 # When I build wxWidgets locally I *ALWAYS* end up passing an explicit
-# "--host=..." option to the configure script. A result of that is that
+# "--host=..." option to the configure script. Well that is always except
+# when under cygwin in certain cases... A result of that is that
 # the libraries get installed with names that include the host identity.
 # The script here makes symbolic links from the host-qualified names from
 # plain undecorated ones as mentioned by "wx-config --libs". Well actually
@@ -699,8 +700,8 @@ endif !gui
 if !cygwin
 	cd $(with_cygbuild)/csl && make csl.exe
 	$(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe
-	cd $(with_cygbuild64)/csl && make csl.exe
-	$(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe
+	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
+	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)

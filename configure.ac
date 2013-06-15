@@ -69,7 +69,7 @@ AC_ARG_WITH(cygbuild,
 AC_ARG_WITH(cygbuild64,
   AC_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
   [],
-  [with_cygbuild64="unknown"])
+  [with_cygbuild64=""])
 
 AC_ARG_WITH(force,
   AC_HELP_STRING([--with-force], [Forces refresh of windows varients]),
@@ -408,7 +408,7 @@ case $inplace in
 # older that my "configure" script. The tests are known to be happening under
 # cygwin so I am not going to worry overmuch about general 
     case $build in
-    *cygwin* | *windows*)
+    *cygwin* | *windows* | *mingw*)
       if test -x /usr/bin/i686-pc-cygwin-gcc
       then
         have_cyg32="yes"
@@ -442,9 +442,28 @@ case $inplace in
       for buildmc in "i686-pc-cygwin" "x86_64-pc-cygwin"
       do
         build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
-        if test -x /usr/bin/$buildmc-gcc
+        pass_host=""
+        case `uname -m -o` in
+        *i686*Cygwin*)
+          if test "x$buildmc" != "xi686-pc-cygwin"
+          then
+            pass_host="--host=$buildmc"
+          fi
+          ;;
+        *x86_64*Cygwin*)
+          if test "x$buildmc" != "xx86_64-pc-cygwin"
+          then
+            pass_host="--host=$buildmc"
+          fi
+          ;;
+        *)
+          pass_host="--host=$buildmc"
+        esac
+        AC_MSG_NOTICE([buildmc=$buildmc pss_host=$pass_host])
+        if test -x /usr/bin/$buildmc-gcc ||
+           test "x$pass_host" = "x"
         then
-           if test "x$with_force" != "xno" ||
+          if test "x$with_force" != "xno" ||
              test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
           then
             echo "Need to reconfigure for $build"
@@ -455,11 +474,18 @@ case $inplace in
               passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
             fi
             AC_MSG_NOTICE([passcc = $passcc])
+# If I am running in a cygwin-32 shell and building for cygwin-32, or
+# equivalently for cygwin-64, then I do not need to pass "--host" since
+# just "gcc" will be what I want to use, rather than "i686-pc-cygwin-gcc"
+# or whatever. Indeed on 64-bit cygwin at the time of writing an attempt
+# to use the sort of "cross-compile to self" pattern causes build failures,
+# so this is more than mere optimisation, it is bug avoidance.
+            AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
             pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
             doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
                     CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
                     CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-                    $passcc $pass_build --host=$buildmc --with-cygwin"
+                    $passcc $pass_build $pass_host --with-cygwin"
             AC_MSG_NOTICE([doconfig = $doconfig])
             eval "$doconfig"
             cd "$abssrcdir"
@@ -473,11 +499,15 @@ case $inplace in
       cygextra=
       if test "$have_cyg32" = "yes"
       then
-        cygextra="--with-cygbuild=$abssrcdir/cslbuild/i686-pc-cygwin"
+        ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
+        dd32=`echo $build | sed -e "$ed32"`
+        cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
       fi
       if test "$have_cyg64" = "yes"
       then
-        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/x86_64-pc-cygwin"
+        ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+        dd64=`echo $build | sed -e "$ed64"`
+        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
       fi
       AC_MSG_NOTICE([cygextra = $cygextra])
       for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
@@ -666,21 +696,35 @@ then
 
   AC_MSG_NOTICE([with_fox=$with_fox, with_wx=$with_wx])  
 
-# If I am compiling for native Cygwin I will not pass down "--host".
+# If I am compiling for native Cygwin I will not pass down "--host"
+# if I am building for the natural target.
+  AC_MSG_NOTICE([host=$host build=$build])
+  pass_host=""
   if test "x$with_cygwin" != "xno"
   then
-    sethost=""
-  else
-    sethost="--host=$host"
+    case `uname -m -o` in
+    *i686*Cygwin*)
+      if test "x$host" != "xi686-pc-cygwin"
+      then
+        pass_host="--host=$host"
+      fi
+      ;;
+    *x86_64*Cygwin*)
+      if test "x$host" != "xx86_64-pc-cygwin"
+      then
+        pass_host="--host=$host"
+      fi
+      ;;
+    esac
   fi
 
-  AC_MSG_NOTICE([with_cygwin=$with_cygwin sethost=$sethost])
+  AC_MSG_NOTICE([with_cygwin=$with_cygwin pass_host=$pass_host])
 
 # Now at most one of with_wx and with_fox will be "yes". They could both
 # be "no".
   if test "x$with_wx" != "xno"
   then
-    if ! test -d $abssrcdir/csl/wxWidgets
+    if ! test -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
     then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
@@ -711,15 +755,15 @@ then
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost --with-wx=\"$with_wx\" $pass_build --without-fox"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $pass_host --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $sethost $pass_build --without-fox --without-wx"
+    doconfig="$SHELL \"$abssrcdir/csl/cslbase/configure\" $ac_configure_args $pass_host $pass_build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
   eval "$doconfig"
@@ -749,7 +793,7 @@ then
         AC_MSG_NOTICE([gcc will be used in mingw mode.])
       else
         AC_MSG_NOTICE([Using raw cygwin])
-        CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses "
+        CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2 -I/usr/include/ncurses "
         extras="--with-xft --with-xim"
       fi
       ;;
@@ -818,9 +862,9 @@ then
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
-    AC_MSG_NOTICE([passcc = $passcc])
+    AC_MSG_NOTICE([passcc = $passcc pass_host=$pass_host])
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
-            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat26 \
@@ -854,7 +898,7 @@ then
     doconfig="$SHELL \"$abssrcdir/csl/fox/configure\" $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            $sethost --enable-release --with-opengl=no \
+            $pass_host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=\"$builddir\" $extras"
     AC_MSG_NOTICE([doconfig = $doconfig])
@@ -873,7 +917,7 @@ then
       fi
       AC_MSG_NOTICE([passcc = $passcc])
       doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
-            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
       AC_MSG_NOTICE([doconfig = $doconfig])

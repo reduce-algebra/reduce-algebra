@@ -186,6 +186,9 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.8*)
           os="mac_10.8_mountainlion"
           ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.9*)
+          os="mac_10.9_mavericks"
+          ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
           os="mac_unknown_version"
           ;;
