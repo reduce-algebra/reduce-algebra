@@ -747,8 +747,8 @@ endif !gui
 if !cygwin
 	cd $(with_cygbuild)/csl && make reduce.exe
 	$(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
-	cd $(with_cygbuild64)/csl && make reduce.exe
-	$(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe
+	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
+	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
@@ -802,8 +802,8 @@ if windows
 if !cygwin
 	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
 	$(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
-	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe
-	$(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe
+	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make bootstrapreduce.exe; fi
+	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
@@ -836,8 +836,8 @@ endif !gui
 if !cygwin
 	cd $(with_cygbuild)/csl && make fwindemo.exe
 	$(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
-	cd $(with_cygbuild64)/csl && make fwindemo.exe
-	$(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe
+	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make fwindemo.exe; fi
+	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)

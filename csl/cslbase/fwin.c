@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 73071681 08-May-2013 */
+/* Signature: 25e26d8f 16-Jun-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1170,6 +1170,11 @@ int find_program_directory(char *argv0)
     if (*w == '/' || *w == '\\') w++;
     if (strncmp(w, "cygwin-", 7) == 0)
     {   char *w1 = w + 7;
+        while (*w1 != 0) *w++ = *w1++;
+        *w = 0;
+    }
+    else if (strncmp(w, "cygwin64-", 9) == 0)
+    {   char *w1 = w + 9;
         while (*w1 != 0) *w++ = *w1++;
         *w = 0;
     }
