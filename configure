@@ -1979,7 +1979,7 @@ fi
 if test "${with_cygbuild64+set}" = set; then :
   withval=$with_cygbuild64;
 else
-  with_cygbuild64=""
+  with_cygbuild64="unknown"
 fi
 
 
@@ -2371,7 +2371,16 @@ case $inplace in
 # I will run the configure script for one of those if I have the relevant
 # compiler available and if the config.status file where I would build is
 # older that my "configure" script. The tests are known to be happening under
-# cygwin so I am not going to worry overmuch about general
+# cygwin so I am not going to worry overmuch about general portability issues!
+# I also want to know if my playform if the 32 or 64-bit variant of cygwin.
+    case `uname -m -o` in
+    *i686*Cygwin*)
+      cyg32="yes"
+      ;;
+    *x86_64*Cygwin*)
+      cyg64="yes"
+      ;;
+    esac
     case $build in
     *cygwin* | *windows* | *mingw*)
       if test -x /usr/bin/i686-pc-cygwin-gcc
@@ -2404,7 +2413,21 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
       then
         as_fn_error $? "you must have at least one of i686-w64-mingw32-gcc or x86_64-w64-mingw32-gcc" "$LINENO" 5
       fi
-      for buildmc in "i686-pc-cygwin" "x86_64-pc-cygwin"
+# At some stage in the future I very much hope that it will be possible to
+# (cross) build both 32 and 64-bit cygwin code from just one of the
+# platforms - but at present neither has enough development libraries
+# available to make that the case. So here I will only configure the
+# version for the platform I am on. But if you run "configure" on each of
+# 32 and 64-bit cygwin then you should end up with both variants set up.
+      if test "x$cyg32" = "xyes"
+      then
+        cygplatforms="i686-pc-cygwin"
+      fi
+      if test "x$cyg64" = "xyes"
+      then
+        cygplatforms="x86_64-pc-cygwin"
+      fi
+      for buildmc in $cygplatforms
       do
         build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
         pass_host=""
@@ -2423,6 +2446,7 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
           ;;
         *)
           pass_host="--host=$buildmc"
+          ;;
         esac
         { $as_echo "$as_me:${as_lineno-$LINENO}: buildmc=$buildmc pss_host=$pass_host" >&5
 $as_echo "$as_me: buildmc=$buildmc pss_host=$pass_host" >&6;}
@@ -2468,20 +2492,19 @@ $as_echo "$as_me: Compiler for $buildmc not available" >&6;}
         fi
       done
       cygextra=
-      if test "$have_cyg32" = "yes"
-      then
-        ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
-        dd32=`echo $build | sed -e "$ed32"`
-        cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
-      fi
-      if test "$have_cyg64" = "yes"
-      then
-        ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
-        dd64=`echo $build | sed -e "$ed64"`
-        cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
-      fi
+      ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
+      dd32=`echo $build | sed -e "$ed32"`
+      cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
+      ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+      dd64=`echo $build | sed -e "$ed64"`
+      cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
       { $as_echo "$as_me:${as_lineno-$LINENO}: cygextra = $cygextra" >&5
 $as_echo "$as_me: cygextra = $cygextra" >&6;}
+# I will now configure both 32 and 64-bit native windows builds. When
+# somebody used "--with-force" this may configure whether you are on a
+# 32 or 64-bit version of cygwin, but normally the test to see if the
+# configuration has already been done will avoid confusion and
+# redundant work.
       for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
       do
         build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
@@ -3138,13 +3161,15 @@ $as_echo "$as_me: host=$host build=$build" >&6;}
   then
     case `uname -m -o` in
     *i686*Cygwin*)
-      if test "x$host" != "xi686-pc-cygwin"
+      if test "x$host" != "xi686-unknown-cygwin" &&
+         test "x$host" != "xi686-pc-cygwin"
       then
         pass_host="--host=$host"
       fi
       ;;
     *x86_64*Cygwin*)
-      if test "x$host" != "xx86_64-pc-cygwin"
+      if test "x$host" != "xx86_64-unknown-cygwin" &&
+         test "x$host" != "xx86_64-pc-cygwin"
       then
         pass_host="--host=$host"
       fi

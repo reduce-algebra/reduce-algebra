@@ -260,6 +260,17 @@ x86_64-w64-*)
   ;;
 *-*-cygwin* | *-*-*mingw*)
   AC_MSG_NOTICE([Building under cygwin])
+  case `uname -m` in
+  *i686*)
+    cyg32="yes"
+    ;;
+  *x86_64*)
+    cyg64="yes"
+    ;;
+  *)
+    AC_MSG_ERROR([Unknown platform in cygwin build])
+    ;;
+  esac
   AC_MSG_NOTICE([with_cygwin=<$with_cygwin>])
   x86="yes"
   exeext="yes"
@@ -1495,6 +1506,8 @@ AM_CONDITIONAL(x86,test "x$x86" = "xyes")
 AM_CONDITIONAL(windows,test "x$windows_build" = "xyes")
 AM_CONDITIONAL(win64,test "x$win64" = "xyes")
 AM_CONDITIONAL(cygwin,test "x$cygwin_build" = "xyes")
+AM_CONDITIONAL(cyg32,test "x$cyg32" = "xyes")
+AM_CONDITIONAL(cyg64,test "x$cyg64" = "xyes")
 AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")
 AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")
 AM_CONDITIONAL(debug,test "x$enable_debug" = "xyes")

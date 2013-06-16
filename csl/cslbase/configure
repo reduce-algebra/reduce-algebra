@@ -647,6 +647,10 @@ mac_framework_FALSE
 mac_framework_TRUE
 darwin_FALSE
 darwin_TRUE
+cyg64_FALSE
+cyg64_TRUE
+cyg32_FALSE
+cyg32_TRUE
 cygwin_FALSE
 cygwin_TRUE
 win64_FALSE
@@ -3823,6 +3827,17 @@ $as_echo "#define WIN64 1" >>confdefs.h
 *-*-cygwin* | *-*-*mingw*)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
+  case `uname -m` in
+  *i686*)
+    cyg32="yes"
+    ;;
+  *x86_64*)
+    cyg64="yes"
+    ;;
+  *)
+    as_fn_error $? "Unknown platform in cygwin build" "$LINENO" 5
+    ;;
+  esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin>" >&5
 $as_echo "$as_me: with_cygwin=<$with_cygwin>" >&6;}
   x86="yes"
@@ -11436,6 +11451,22 @@ else
   cygwin_FALSE=
 fi
 
+ if test "x$cyg32" = "xyes"; then
+  cyg32_TRUE=
+  cyg32_FALSE='#'
+else
+  cyg32_TRUE='#'
+  cyg32_FALSE=
+fi
+
+ if test "x$cyg64" = "xyes"; then
+  cyg64_TRUE=
+  cyg64_FALSE='#'
+else
+  cyg64_TRUE='#'
+  cyg64_FALSE=
+fi
+
  if test "x$darwin_build" = "xyes"; then
   darwin_TRUE=
   darwin_FALSE='#'
@@ -11676,6 +11707,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${cygwin_TRUE}" && test -z "${cygwin_FALSE}"; then
   as_fn_error $? "conditional \"cygwin\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${cyg32_TRUE}" && test -z "${cyg32_FALSE}"; then
+  as_fn_error $? "conditional \"cyg32\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${cyg64_TRUE}" && test -z "${cyg64_FALSE}"; then
+  as_fn_error $? "conditional \"cyg64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${darwin_TRUE}" && test -z "${darwin_FALSE}"; then

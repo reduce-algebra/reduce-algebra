@@ -2391,13 +2391,26 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 @windows_TRUE@local-cslcom.def:	$(srcdir)/cslcom.def $(srcdir)/impex.def
 @windows_TRUE@	cat $(srcdir)/cslcom.def $(srcdir)/impex.def > local-cslcom.def
 
+# A brief note about version of C compilers under cygwin. On either the
+# 32 or 64-bit cygwin just "gcc" is the main C compiler that targets the
+# native width of the platform. But on each it is also possible to have
+# one or both of i686-pc-cygwin-gcc and x86_64-pc-cygwin-gcc which explicitly
+# target one or other width. These count as cross compilers, and at the
+# time of writing they behave well enough to build the small command-line
+# utilities here but do not come with enough development libraries to make
+# it possible to use them to build all of CSL/Reduce. Because some people
+# may not have them installed I have a fallback scheme here that fetches
+# precompiled versions of the utilities. Note that they will include
+# copies of cygwin1.dll but because they are BSD-licensed open source code
+# that does not prevent me from redistributing them in an unconstrained manner.
+
 @windows_TRUE@cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; fi
-@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
+@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; \
+@windows_TRUE@	  if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 @windows_TRUE@cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; fi
-@windows_TRUE@	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
+@windows_TRUE@	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; \
+@windows_TRUE@	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 @windows_TRUE@	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -2489,10 +2502,10 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 	-$(RM) -f csl$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/csl .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/csl-nogui .
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make csl.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe
-@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
-@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make csl.exe
+@cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make csl.exe
+@cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f csl$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
@@ -2509,10 +2522,10 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 # See "gui-or-not.txt" for an explanation of what this is about...
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/reduce .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/reduce-nogui .
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make reduce.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make reduce.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make reduce.exe
+@cygwin_FALSE@@windows_TRUE@	if -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
+@cygwin_FALSE@@windows_TRUE@	if -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f reduce$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
@@ -2541,10 +2554,10 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 	-$(RM) -f bootstrapreduce$(EXEEXT)
 # See "gui-or-not.txt" for an explanation of what this is about...
 @windows_TRUE@	$(CP) $(srcdir)/bootstrapreduce .
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
+@cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe;
+@cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
@@ -2555,10 +2568,10 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 	-$(RM) -f fwindemo$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo-nogui .
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make fwindemo.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
-@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make fwindemo.exe
-@cygwin_FALSE@@windows_TRUE@	$(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make fwindemo.exe
+@cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make fwindemo.exe;
+@cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f fwindemo$(COM)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)

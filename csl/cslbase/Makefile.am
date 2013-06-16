@@ -480,13 +480,26 @@ else !cygwin
 WINHELPERS=cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 endif !cygwin
 
+# A brief note about version of C compilers under cygwin. On either the
+# 32 or 64-bit cygwin just "gcc" is the main C compiler that targets the
+# native width of the platform. But on each it is also possible to have
+# one or both of i686-pc-cygwin-gcc and x86_64-pc-cygwin-gcc which explicitly
+# target one or other width. These count as cross compilers, and at the
+# time of writing they behave well enough to build the small command-line
+# utilities here but do not come with enough development libraries to make
+# it possible to use them to build all of CSL/Reduce. Because some people
+# may not have them installed I have a fallback scheme here that fetches
+# precompiled versions of the utilities. Note that they will include
+# copies of cygwin1.dll but because they are BSD-licensed open source code
+# that does not prevent me from redistributing them in an unconstrained manner.
+
 cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; fi
-	if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
+	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; \
+	  if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; fi
-	if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi
+	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; \
+	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
 	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
@@ -698,10 +711,14 @@ else !gui
 	$(CP) $(srcdir)/csl-nogui .
 endif !gui
 if !cygwin
+if cyg32
 	cd $(with_cygbuild)/csl && make csl.exe
-	$(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe
-	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
-	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
+endif cyg32
+	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
+if cyg64
+	cd $(with_cygbuild64)/csl && make csl.exe
+endif cyg64
+	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
@@ -745,10 +762,14 @@ else !gui
 	$(CP) $(srcdir)/reduce-nogui .
 endif !gui
 if !cygwin
+if cyg32
 	cd $(with_cygbuild)/csl && make reduce.exe
-	$(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe
+endif cyg32
+	if -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
+if cyg64
 	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
-	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
+endif cyg64
+	if -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
@@ -800,10 +821,14 @@ if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(srcdir)/bootstrapreduce .
 if !cygwin
+if cyg32
 	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
-	$(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe
-	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make bootstrapreduce.exe; fi
-	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
+endif cyg32
+	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
+if cyg64
+	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe;
+endif cyg64
+	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
@@ -834,10 +859,14 @@ else !gui
 	$(CP) $(srcdir)/fwindemo-nogui .
 endif !gui
 if !cygwin
+if cyg32
 	cd $(with_cygbuild)/csl && make fwindemo.exe
-	$(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe
-	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make fwindemo.exe; fi
-	if test "x$(with_cygbuild64)" != "x"; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
+endif cyg32
+	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
+if cyg64
+	cd $(with_cygbuild64)/csl && make fwindemo.exe;
+endif cyg64
+	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
 endif windows
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
