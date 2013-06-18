@@ -10,24 +10,34 @@ shift
 case "x$OS" in
 xWindows_NT)
 
+  case `uname -m` in
+  *x86_64*)
+    c64="64";
+    ;;
+  *)
+    c64=""
+    ;;
+  esac
   pre=""
   suffix=".com"
   xtra=""
   if ! $here/../bin/not-under-cygwin.exe $*
   then
-    $here/../bin/cygwin-isatty.exe $*
+    $here/../bin/cygwin${c64}-isatty.exe $*
     case $? in
     0)
       xtra="--gui"
       ;;
     1)
-      pre="cygwin-"
+      pre="cygwin${c64}-"
       suffix=".exe"
       ;;
     *)
       ;;
     esac
   fi
+
+echo xtra=$xtra  suffix=$suffix  pre=$pre  c64=$c64
 
   for hx in "x86_64-w64-windows" "x86_64-w64-windows-debug" \
             "i686-pc-windows" "i686-pc-windows-debug" \
@@ -37,6 +47,7 @@ xWindows_NT)
 #   echo Try: -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     if test -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     then
+      echo Using $hx/csl/$pre$ap$suffix $xtra
       exec $here/../cslbuild/$hx/csl/$pre$ap$suffix $xtra $*
       exit 0
     fi

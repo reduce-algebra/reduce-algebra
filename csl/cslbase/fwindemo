@@ -43,22 +43,33 @@ if $here/not-under-cygwin.exe $*
 then
   $here/fwindemo.com $*
 else
-  $here/cygwin64-isatty.exe $* 2>/dev/null
-  case $? in
-  1)
-    $here/cygwin64-fwindemo.exe $*
+  case `uname -m` in
+  *x86_64*)
+    $here/cygwin64-isatty.exe $*
+    case $? in
+    0)
+      $here/fwindemo.com --gui $*
+      ;;
+    1)
+      $here/cygwin64-fwindemo.exe $*
+      ;;
+    *)
+      $here/fwindemo.com $*
+      ;;
+    esac
     ;;
-  esac
-  $here/cygwin-isatty.exe $*
-  case $? in
-  0)
-    $here/fwindemo.com --gui $*
-    ;;
-  1)
-    $here/cygwin-fwindemo.exe $*
-    ;;
-  2)
-    $here/fwindemo.com $*
-    ;;
+  *i686*)
+    $here/cygwin-isatty.exe $*
+    case $? in
+    0)
+      $here/fwindemo.com --gui $*
+      ;;
+    1)
+      $here/cygwin-fwindemo.exe $*
+      ;;
+    *)
+      $here/fwindemo.com $*
+      ;;
+    esac
   esac
 fi

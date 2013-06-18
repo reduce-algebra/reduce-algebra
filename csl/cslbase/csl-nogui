@@ -43,22 +43,33 @@ if $here/not-under-cygwin.exe $*
 then
   $here/csl.exe $*
 else
-  $here/cygwin64-isatty.exe $*
-  case $? in
-  1)
-    $here/cygwin64-csl.exe $*
+  case `uname -m` in
+  *x86_64*)
+    $here/cygwin64-isatty.exe $*
+    case $? in
+    0)
+      $here/csl.exe --gui $*
+      ;;
+    1)
+      $here/cygwin64-csl.exe $*
+      ;;
+    *)
+      $here/csl.exe $*
+      ;;
+    esac
     ;;
-  esac
-  $here/cygwin-isatty.exe $*
-  case $? in
-  0)
-    $here/csl.exe --gui $*
-    ;;
-  1)
-    $here/cygwin-csl.exe $*
-    ;;
-  2)
-    $here/csl.exe $*
-    ;;
+  *i686*)
+    $here/cygwin-isatty.exe $*
+    case $? in
+    0)
+      $here/csl.exe --gui $*
+      ;;
+    1)
+      $here/cygwin-csl.exe $*
+      ;;
+    *)
+      $here/csl.exe $*
+      ;;
+    esac
   esac
 fi

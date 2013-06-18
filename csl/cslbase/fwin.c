@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 25e26d8f 16-Jun-2013 */
+/* Signature: 4c937378 18-Jun-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1157,12 +1157,12 @@ int find_program_directory(char *argv0)
     if (strlen(w) > 4)
     {   w += strlen(w) - 4;
         if (w[0] == '.' &&
-            ((tolower(w[1]) == 'e' &&
-              tolower(w[2]) == 'x' &&
-              tolower(w[3]) == 'e') ||
-             (tolower(w[1]) == 'c' &&
-              tolower(w[2]) == 'o' &&
-              tolower(w[3]) == 'm'))) w[0] = 0;
+            ((tolower((unsigned char)w[1]) == 'e' &&
+              tolower((unsigned char)w[2]) == 'x' &&
+              tolower((unsigned char)w[3]) == 'e') ||
+             (tolower((unsigned char)w[1]) == 'c' &&
+              tolower((unsigned char)w[2]) == 'o' &&
+              tolower((unsigned char)w[3]) == 'm'))) w[0] = 0;
     }
     w = fullProgramName;
     while (*w != 0) w++;
@@ -2472,9 +2472,10 @@ int get_users_home_directory(char *b, int len)
 
 int get_home_directory(char *b, int len)
 {
-    int i;
-    strcpy(b, getenv("HOME"));  /* Probably works with most shells */
-    i = strlen(b);
+    size_t i;
+    const char *s = getenv("HOME"); /* Probably works with most shells */
+    if ((i = strlen(s)) > len) s = "~";
+    strcpy(b, s);
     if ( b[i-1] != '/')
     {   b[i++] = '/';
         b[i] = 0;
@@ -2484,6 +2485,7 @@ int get_home_directory(char *b, int len)
 
 int get_users_home_directory(char *b, int len)
 {
+    len = len;
     strcpy(b, ".");    /* use current directory if getpwnam() no available */
     return 1;
 }

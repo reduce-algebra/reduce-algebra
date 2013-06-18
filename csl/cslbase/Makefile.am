@@ -477,7 +477,7 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 if cygwin
 WINHELPERS=
 else !cygwin
-WINHELPERS=cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
+WINHELPERS= cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 endif !cygwin
 
 # A brief note about version of C compilers under cygwin. On either the
@@ -494,11 +494,11 @@ endif !cygwin
 # that does not prevent me from redistributing them in an unconstrained manner.
 
 cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; \
+	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/premade-cygwin-isatty.exe .; \
 	  if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; \
+	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/premade-cygwin64-isatty.exe .; \
 	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c

@@ -60,6 +60,15 @@ host=`./config.guess`
 host=`scripts/findhost.sh $host`
 os=`scripts/findos.sh`
 
+case `uname -m -o` in
+*i686*Cygwin*)
+  cyg32="yes"
+  ;;
+*x86_64*Cygwin*)
+  cyg64="yes"
+  ;;
+esac
+
 echo Current machine tag is $host
 
 # I REALLY want to use GNU make, so here is some stuff to try to
@@ -93,12 +102,35 @@ echo host=${host} os=${os}
 rc=0
 
 list=""
-test "$buildcsl" = "yes" && list="cslbuild/*-${os}*"
+if test "$buildcsl" = "yes"
+then
+# If I am running in a 64-bit cygwin shell then I will only even try to
+# build 64-bit cygwin versions. At some later stage when the 64-bit
+# cygwin environment is fully stable I should be able to build any of the
+# windows variants there, but at the time of writing things are not yet
+# ready for that.
+  if test "x$cyg64" = "xyes"
+  then
+    list="cslbuild/x86_64-pc-cygwin*"
+  elif test "x$cyg32" = "xyes"
+  then
+# If I am in a 32-bit cygwin shell I can make not just the 32-bit cygwin
+# version but also both 32 and 64-bit (native, mingw) Windows variants.
+    list="cslbuild/i686-pc-cygwin* cslbuild/*-windows*"
+  else
+# If I am not running on windows my default behaviour will be to build
+# just versions that use the operating system I am running on. Anybody
+# who does cross compilation will needs to use "make" directly in the
+# subdirectory of cslbuild relevent to them.
+    list="cslbuild/*-${os}*"
+  fi
+fi
+
 if test "$buildpsl" = "yes"
 then
   if test "x$os" = "xwindows"
   then
-    list="$list pslbuild//*-${os}*"
+    list="$list pslbuild/*-${os}*"
   else
     list="$list pslbuild/*${host}*"
   fi

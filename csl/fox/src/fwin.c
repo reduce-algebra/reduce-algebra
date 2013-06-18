@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2012
+ * "fwin.c"                                 Copyright A C Norman 2003-2013
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 777abf3c 03-Jun-2012 */
+/* Signature: 4c937378 18-Jun-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -62,6 +62,8 @@
 /* Here I will suppose I am building as part of the FOX library */
 #define PART_OF_FOX 1
 #endif /* HAVE_CONFIG_H */
+
+#include <stdint.h>
 
 #include "fwin.h"
 
@@ -1155,12 +1157,12 @@ int find_program_directory(char *argv0)
     if (strlen(w) > 4)
     {   w += strlen(w) - 4;
         if (w[0] == '.' &&
-            ((tolower(w[1]) == 'e' &&
-              tolower(w[2]) == 'x' &&
-              tolower(w[3]) == 'e') ||
-             (tolower(w[1]) == 'c' &&
-              tolower(w[2]) == 'o' &&
-              tolower(w[3]) == 'm'))) w[0] = 0;
+            ((tolower((unsigned char)w[1]) == 'e' &&
+              tolower((unsigned char)w[2]) == 'x' &&
+              tolower((unsigned char)w[3]) == 'e') ||
+             (tolower((unsigned char)w[1]) == 'c' &&
+              tolower((unsigned char)w[2]) == 'o' &&
+              tolower((unsigned char)w[3]) == 'm'))) w[0] = 0;
     }
     w = fullProgramName;
     while (*w != 0) w++;
@@ -1168,6 +1170,11 @@ int find_program_directory(char *argv0)
     if (*w == '/' || *w == '\\') w++;
     if (strncmp(w, "cygwin-", 7) == 0)
     {   char *w1 = w + 7;
+        while (*w1 != 0) *w++ = *w1++;
+        *w = 0;
+    }
+    else if (strncmp(w, "cygwin64-", 9) == 0)
+    {   char *w1 = w + 9;
         while (*w1 != 0) *w++ = *w1++;
         *w = 0;
     }
@@ -2139,13 +2146,13 @@ int delete_file(char *filename, char *old, size_t n)
 }
 
 
-long file_length(char *filename, char *old, size_t n)
+int64_t file_length(char *filename, char *old, size_t n)
 {
     struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     if (stat(filename,&buf) == -1) return -1;
-    return (long)(buf.st_size);
+    return (int64_t)(buf.st_size);
 }
 
 #ifdef NAG_VERSION
@@ -2465,9 +2472,10 @@ int get_users_home_directory(char *b, int len)
 
 int get_home_directory(char *b, int len)
 {
-    int i;
-    strcpy(b, getenv("HOME"));  /* Probably works with most shells */
-    i = strlen(b);
+    size_t i;
+    const char *s = getenv("HOME"); /* Probably works with most shells */
+    if ((i = strlen(s)) > len) s = "~";
+    strcpy(b, s);
     if ( b[i-1] != '/')
     {   b[i++] = '/';
         b[i] = 0;
@@ -2477,6 +2485,7 @@ int get_home_directory(char *b, int len)
 
 int get_users_home_directory(char *b, int len)
 {
+    len = len;
     strcpy(b, ".");    /* use current directory if getpwnam() no available */
     return 1;
 }

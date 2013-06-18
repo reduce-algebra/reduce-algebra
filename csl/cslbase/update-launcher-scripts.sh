@@ -20,5 +20,8 @@ sed -e s/.com/.exe/g < fwindemo > fwindemo-nogui
 
 sed -e s/.com/.exe/g < reduce > reduce-nogui
 
+chmod +x csl reduce fwindemo bootstrapreduce
+chmod +x csl-nogui reduce-nogui fwindemo-nogui
+
 exit 0
 

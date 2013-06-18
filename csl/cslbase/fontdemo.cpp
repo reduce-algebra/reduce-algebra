@@ -322,10 +322,13 @@ int main(int argc,char *argv[])
 // to avoid confusion with any copies already installed I use customised
 // names.
     if (argc <= 1 ||
+#if 0
         (strcmp(fontname, "csl-reduce-cmr10") != 0 &&
          strcmp(fontname, "csl-reduce-cmmi10") != 0 &&
          strcmp(fontname, "csl-reduce-cmsy10") != 0 &&
-         strcmp(fontname, "csl-reduce-cmex10") != 0))
+         strcmp(fontname, "csl-reduce-cmex10") != 0) &&
+#endif
+         0)
     {   printf("Usage: fontdemo [fontname]\n");
         printf("The fontname should be csl-reduce-cmr10, csl-reduce-cmmi10, csl-reduce-cmsy10 or csl-reduce-cmex10\n");
         return 1;

@@ -483,7 +483,7 @@ case $inplace in
           pass_host="--host=$buildmc"
           ;;
         esac
-        AC_MSG_NOTICE([buildmc=$buildmc pss_host=$pass_host])
+        AC_MSG_NOTICE([buildmc=$buildmc pass_host=$pass_host])
         if test -x /usr/bin/$buildmc-gcc ||
            test "x$pass_host" = "x"
         then
@@ -532,38 +532,45 @@ case $inplace in
 # somebody used "--with-force" this may configure whether you are on a
 # 32 or 64-bit version of cygwin, but normally the test to see if the
 # configuration has already been done will avoid confusion and
-# redundant work.
-      for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
-      do
-        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
-        if test -x /usr/bin/$buildmc-gcc && test "x$with_cygwin" = "xno"
-        then
-          if test "x$with_force" != "xno" ||
-             test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
+# redundant work. Well actually I will not configure the mingw variants
+# if I am on 64-bit cygwin just yet... at some later stage I may re-enable
+# that but at present 64-bit cygwin and 32-bit cygwin do not interact
+# quite well enoug and e.g. little utilities like reswrap, objtype and
+# makeheaders will fail if first built on one and then used on the other.
+      if test "x$cyg32" = "xyes"
+      then
+        for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
+        do
+          build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
+          if test -x /usr/bin/$buildmc-gcc && test "x$with_cygwin" = "xno"
           then
-            echo "Need to reconfigure for $build"
-            mkdir -p "$abssrcdir/cslbuild/$build"
-            cd "$abssrcdir/cslbuild/$build"
-            if test "x$CC$CPP$CXX$CXXCPP" != "x"
+            if test "x$with_force" != "xno" ||
+               test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
             then
-              passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+              echo "Need to reconfigure for $build"
+              mkdir -p "$abssrcdir/cslbuild/$build"
+              cd "$abssrcdir/cslbuild/$build"
+              if test "x$CC$CPP$CXX$CXXCPP" != "x"
+              then
+                passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+              fi
+              AC_MSG_NOTICE([passcc = $passcc])
+              pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
+              doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
+                      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+                      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
+                      $passcc $cygextra $pass_build --host=$buildmc"
+              AC_MSG_NOTICE([doconfig = $doconfig])
+              eval "$doconfig"
+              cd "$abssrcdir"
+            else
+              AC_MSG_NOTICE([Version for $build is already configured])
             fi
-            AC_MSG_NOTICE([passcc = $passcc])
-            pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-            doconfig="$SHELL \"$abssrcdir/configure\" $ac_configure_args \
-                    CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-                    CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-                    $passcc $cygextra $pass_build --host=$buildmc"
-            AC_MSG_NOTICE([doconfig = $doconfig])
-            eval "$doconfig"
-            cd "$abssrcdir"
           else
-            AC_MSG_NOTICE([Version for $build is already configured])
+            AC_MSG_NOTICE([Compiler for $buildmc not available])
           fi
-        else
-          AC_MSG_NOTICE([Compiler for $buildmc not available])
-        fi
-      done 
+        done
+      fi
       ;;
     *)
       mkdir -p "$abssrcdir/cslbuild/$build"

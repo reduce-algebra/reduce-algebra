@@ -2405,11 +2405,11 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 # that does not prevent me from redistributing them in an unconstrained manner.
 
 @windows_TRUE@cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/cygwin.isatty.exe .; \
+@windows_TRUE@	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/premade-cygwin-isatty.exe .; \
 @windows_TRUE@	  if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 @windows_TRUE@cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-@windows_TRUE@	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/cygwin64-isatty.exe .; \
+@windows_TRUE@	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/premade-cygwin64-isatty.exe .; \
 @windows_TRUE@	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
