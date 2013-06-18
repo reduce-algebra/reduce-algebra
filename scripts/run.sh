@@ -37,8 +37,6 @@ xWindows_NT)
     esac
   fi
 
-echo xtra=$xtra  suffix=$suffix  pre=$pre  c64=$c64
-
   for hx in "x86_64-w64-windows" "x86_64-w64-windows-debug" \
             "i686-pc-windows" "i686-pc-windows-debug" \
             "x86_64-w64-windows-nogui" "x86_64-w64-windows-nogui-debug" \
@@ -47,7 +45,6 @@ echo xtra=$xtra  suffix=$suffix  pre=$pre  c64=$c64
 #   echo Try: -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     if test -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     then
-      echo Using $hx/csl/$pre$ap$suffix $xtra
       exec $here/../cslbuild/$hx/csl/$pre$ap$suffix $xtra $*
       exit 0
     fi
