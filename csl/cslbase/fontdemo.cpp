@@ -45,7 +45,7 @@
  *************************************************************************/
 
 
-/* Signature: 78378502 26-Sep-2010 */
+/* Signature: 10d4d9cb 21-Jun-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -119,7 +119,9 @@ static XftFont *ftFont = NULL;
 
 extern int main(int argc,char *argv[]);
 
+#ifdef WIN32
 static FXFont *ff = NULL;
+#endif
 
 static const char *fontname = NULL;
 
@@ -198,11 +200,11 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
     if (ff != NULL) dc.setFont(ff);
 #endif
     for (i=0; i<256; i+=32)
-    {   char bb[4];
-        for (j=0; j<32; j++)
+    {   for (j=0; j<32; j++)
         {   int c = i + j;
 #ifdef WIN32
             int n = 1;
+            char bb[4];
             bb[0] = c;
             if (c >= 0x80)
             {   bb[0] = 0xc0 + (c >> 6);
@@ -212,10 +214,8 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
             if (ff->hasChar(i+j))
                 dc.drawText(32*j+5, 3*i+40, &bb[0], n);
 #else
-/*          if (i+j >= 0x80) continue; */
-            bb[0] = i+j;
             FT_UInt bbb[1];
-            bbb[0] = i+j+1;
+            bbb[0] = c+1;
             XftDrawGlyphs(ftDraw, &ftBlack, ftFont,
                            32*j+5, 3*i+40, (FT_UInt *)&bbb, 1);
 #endif
@@ -344,8 +344,9 @@ int main(int argc,char *argv[])
 
     FontWindow *w = new FontWindow(&application);
 
-#ifdef HAVE_LIBXFT
-#endif
+// Note that it appears to be necessary to create the application before
+// using Xft to establish fonts in the X11 world.
+    application.create();
 
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
@@ -400,6 +401,20 @@ int main(int argc,char *argv[])
     printf("Listing complete\n");
     fflush(stdout);
     DeleteDC(hDC);
+
+    FXFontDesc fd;
+    memset(&fd, 0, sizeof(fd));
+    strcpy(fd.face, fontname);
+    printf("Will try to view %s\n", fontname);
+    fd.size = 240;               // NB size is in DECIPOINTS here
+    fd.weight = 0;
+    fd.slant = 0;
+    fd.setwidth = 0;
+    fd.encoding = FONTENCODING_DEFAULT;
+    fd.flags = 0;
+    ff = new FXFont(appl, fd);
+    if (ff == NULL) printf("Font could not be created\n");
+    else ff->create();
 
 #else // WIN32
 
@@ -456,15 +471,8 @@ int main(int argc,char *argv[])
     for (int k=0; k<fs->nfont; k++)
     {   ftPattern = fs->fonts[k];
 // NameUnparse converts the name to something printable
-// But BOO HISS the version of Xft shipped with openSuSE 10.2 and with some
-// other versions of Linux missed it out, so just for now I will comment that
-// bit out. Oh dear! A web search finds patches to gentoo to fix this for
-// builds involving qt3 so it really is not just me! But I BELIEVE it will be
-// a transient bug so I will not put it in the autoconf stuff just at present.
-#if 0
         XftNameUnparse(ftPattern, buffer, sizeof(buffer));
         printf("%s\n", buffer); fflush(stdout);
-#endif
 // FcPatternPrint displays info over several lines - valuable for debugging!
         FcPatternPrint(ftPattern); printf("\n"); fflush(stdout);
     }
@@ -484,21 +492,6 @@ int main(int argc,char *argv[])
 
 #endif // WIN32
 
-    FXFontDesc fd;
-    memset(&fd, 0, sizeof(fd));
-    strcpy(fd.face, fontname);
-    printf("Will try to view %s\n", fontname);
-    fd.size = 240;               // NB size is in DECIPOINTS here
-    fd.weight = 0;
-    fd.slant = 0;
-    fd.setwidth = 0;
-    fd.encoding = FONTENCODING_DEFAULT;
-    fd.flags = 0;
-    ff = new FXFont(appl, fd);
-    if (ff == NULL) printf("Font could not be created\n");
-    else ff->create();
-
-    application.create();
     return application.run();
 }
 
