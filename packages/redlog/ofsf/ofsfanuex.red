@@ -1723,7 +1723,7 @@ procedure aex_findroots(ae,x);
    % enlarged.
    begin scalar cb,rootlist;
       if aex_deg(ae,x) < 1 then return nil;
-      cb := rat_add(aex_cauchybound(ae,'x),rat_1()); % necessary to add 1.
+      cb := rat_add(aex_cauchybound(ae,x),rat_1()); % necessary to add 1.
       %cb := 256 . 1; %%% later cauchybound!!!
       rootlist := aex_findrootsiniv1(ae,x,iv_mk(rat_neg cb,cb),
 	 aex_stdsturmchain(ae,x));
