@@ -550,7 +550,7 @@ symbolic procedure letdf(u,v,w,x,b);
          else y := append(reverse y,(cdadr x . v) . cdr w);
         return put(caadr x,dfn,y);
    b:   %check for dependency;
-        if caddr x memq frlis!* then return nil
+        if smemqlp(frlis!*,caddr x) then return nil
          else if idp cadr x and not(cadr x memq frlis!*)
            then depend1(cadr x,caddr x,t)
          else if not atom cadr x and idp caadr x and frlp cdadr x
