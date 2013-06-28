@@ -250,15 +250,18 @@ symbolic procedure subs_symbolic_multiples(term, opt_args);
          arg_list := cdr arg_list;
 
          if x_lcm neq 1 then <<
-            x := !*q2a quotsq(x, x_nu); % primitive part
-            depl!* := append(depl!*,
-                sublis(list (reval x .
-                        list('auxiliary_symbolic_var!*,j)),depl!*));
+            x := quotsq(x, x_nu); % primitive part
+	    if not domainp numr x then <<
+               x := !*q2a x;
+               depl!* := append(depl!*,
+                   sublis(list (reval x .
+                           list('auxiliary_symbolic_var!*,j)),depl!*));
 % in case of a df(x,...) in the term. This would be nullified. WN
-            term := algebraic
-               sub(x = auxiliary_symbolic_var!*(j)*x_lcm, term);
-            unsubs := algebraic(auxiliary_symbolic_var!*(j) = x/x_lcm)
-               . unsubs;
+               term := algebraic
+                  (term where x =>  auxiliary_symbolic_var!*(j)*x_lcm);
+               unsubs := algebraic(auxiliary_symbolic_var!*(j) = x/x_lcm)
+                  . unsubs
+            >>;
          >>
       end;
       return {term, 'list . unsubs}

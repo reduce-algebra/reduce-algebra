@@ -265,7 +265,7 @@ symbolic procedure redmsg(u,v);
 
 symbolic procedure typerr(u,v);
    % Note this replaces definition in rlisp/lpri. If outputhandler!* is
-   % non-nil I go back to the simple ould version, which may be less
+   % non-nil I go back to the simple old version, which may be less
    % pretty but that does not end up with messages getting lost so often!
    if outputhandler!*
      then rerror('rlisp,6, 
@@ -284,6 +284,7 @@ symbolic procedure typerr(u,v);
                else maprin u;
               prin2!* " invalid as "; prin2!* v;
               terpri!* nil>>;
+     errmsg!* := list(u,"invalid as",v);
      erfg!* := t; error1()>>;
 
 
