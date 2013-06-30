@@ -282,8 +282,8 @@ anticommute((gamma dot p),(gamma dot q));
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 24 ms
-real	0m0.424s
-user	0m0.045s
-sys	0m0.060s
+Tested on i686-pc-windows CSL
+Time (counter 1): 10 ms
+1: real 0.25
+user 0.06
+sys 0.06

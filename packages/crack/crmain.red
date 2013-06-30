@@ -886,8 +886,12 @@ again:
         change_prompt_to "Please terminate this input with ';'  : "$ 
         l:=termxread()$
         if s='collect_sol and l=nil and collect_sol then save_sol_list() else
+% The next two lines are NOT PORTABLE first because the test on lispsystem!*
+% is inadequate (eg on cygwin CSL the symbol 'unix is not present) and then
+% because there is no fall-back to cope with other operating systems (eg
+% typically Windows).
         if (s='session_) and memq('unix,lispsystem!*) then
-        system bldmsg("cp %wsol_list %ssol_list",session_,l)$
+          system bldmsg("cp %wsol_list %ssol_list",session_,l)$
         % i.e. create a sol_list file
         set(s,reval l)$
       >> 

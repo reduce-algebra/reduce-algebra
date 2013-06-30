@@ -1710,13 +1710,13 @@ num_fit(x**2,1 . for i:=1:5 join {sin(i*x)},
                x=for i:=0:10 collect i/10);
 
 
-{ - 1.30957811515*sin(5*x) + 7.16375583558*sin(4*x) - 18.5490187013*sin(3*x)
+{ - 1.30957814517*sin(5*x) + 7.16375601472*sin(4*x) - 18.5490191868*sin(3*x)
 
-  + 26.560171601*sin(2*x) - 19.4492191035*sin(x) - 0.00197199700344,
+  + 26.5601723417*sin(2*x) - 19.4492196957*sin(x) - 0.00197199696157,
 
- { - 0.00197199700344, - 19.4492191035,26.560171601, - 18.5490187013,
+ { - 0.00197199696157, - 19.4492196957,26.5601723417, - 18.5490191868,
 
-  7.16375583558, - 1.30957811515}}
+  7.16375601472, - 1.30957814517}}
 
  
   % approximate a set of points by a polynomial
@@ -2235,6 +2235,8 @@ off rounded;
 
 end;
 
-Tested on i686-pc-windows-nogui CSL
-Time (counter 1): 421 ms  plus GC time: 49 ms
-real	0m0.473s
+Tested on i686-pc-windows CSL
+Time (counter 1): 501 ms  plus GC time: 90 ms
+1: real 0.90
+user 0.07
+sys 0.04

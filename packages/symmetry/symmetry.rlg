@@ -932,8 +932,8 @@ off complex;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 35 ms
-real	0m0.448s
-user	0m0.060s
-sys	0m0.030s
+Tested on i686-pc-windows CSL
+Time (counter 1): 20 ms
+1: real 0.27
+user 0.03
+sys 0.09

@@ -317,9 +317,10 @@ symbolic procedure prem(r,v,var);
       else
       <<
         rule_list := {'expt,var,dr}=>0;
-        let rule_list;
-        r := reval r;
-        clearrules rule_list;
+        unwind!-protect(<<
+              let rule_list;
+              r := reval r) >>,
+           without!-timeout clearrules rule_list);
       >>;
       r := reval{'plus,{'times,l,r},{'minus,tt}};
       dr := deg(r,var);
@@ -335,7 +336,7 @@ symbolic procedure prem(r,v,var);
 
 procedure pseudorem(x,y,var); lisp ('list . prem(x,y,var));
 %e.g.
- %pseudorem(3x^5+4,x^2+1,x);
+%pseudorem(3x^5+4,x^2+1,x);
 %exp1:=441*x^7+780*x^6-2861*x^5+4085*x^4+7695*x^3+3713*x^2-43253*x+24500;
 %exp2:=9*x^6+6*x^5-65*x^4+20*x^3+135*x^2-154*x+49;
 %pseudorem(exp1,exp2,x);

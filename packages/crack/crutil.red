@@ -158,6 +158,23 @@ begin scalar l;
   return l
 end$
 
+!#if (memq 'csl lispsystem!*)
+
+global '(saved_prompt!*);
+
+% [ACN] I am not sure that I understand the subtleties of what the PSL
+% code here is doing, but regardless of that the messing with a function
+% called update_prompt and a variable called promptstring!* will not be
+% useful in CSL.
+
+symbolic procedure change_prompt_to u;
+   saved_prompt!* := setpchar u;
+
+symbolic procedure restore_interactive_prompt$
+   setpchar saved_prompt!*;
+
+!#else
+
 symbolic procedure change_prompt$
 begin scalar !*usermode$
   if null promptstring!* then promptstring!* := "";
@@ -180,6 +197,8 @@ symbolic procedure restore_interactive_prompt$
    begin scalar !*redefmsg,!*usermode$
      copyd('update_prompt,'restore_update_prompt)
    end$
+
+!#endif
 
 symbolic procedure restore_input_file$
 % it assumes equations_file to be closed whether eqn_input=nil or not
@@ -1381,8 +1400,12 @@ end$
 symbolic procedure plot_dep_matrix(pdes,allf)$
 begin scalar f,ml,lf,fl,h,lh,lco,n,m,h,ll,gcbak;
 
+!#if (memq 'csl lispsystem!*)
+  gcbak := verbos 0;
+!#else
   gcbak:=!*gc$
   if gcbak then algebraic(off gc)$
+!#endif
 
   ml:=0;                % the maximal length of all variable names
   lf:=length allf$
@@ -1430,7 +1453,11 @@ begin scalar f,ml,lf,fl,h,lh,lco,n,m,h,ll,gcbak;
 %   if m=23 then if not yesp "Continue ?" then m:=-1
 %                                         else m:=0
   >>$
+!#if (memq 'csl lispsystem!*)
+  verbos gcbak;
+!#else
   if gcbak then algebraic(on gc)$
+!#endif
   linelength ll
 end$
 
@@ -4811,7 +4838,7 @@ begin scalar s,p,echo_bak,semic_bak,flist,n,h,fi,oldsession,old_sol_li$
   backup_:=nil;
   % orderings_:=car orderings_;
   if oldsession and (oldsession neq session_) then 
-  system bldmsg("rm %w",old_sol_li)$
+  delete!-file!-exact old_sol_li$
 
   return s
 end$
@@ -7174,7 +7201,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
     >>$
 
     % delete the redundant solution
-    sol_list:=delete(s1,sol_list); % system bldmsg ("rm %s",s1);
+    sol_list:=delete(s1,sol_list); % delete!-file!-exact s1;
 
     % save the generalized solution (ineqor of sol2 untouched)
     save_solution(cdr new_eqn,cdr h,b,ineqnew,cadr cddddr sol2,s2)$
@@ -7324,7 +7351,7 @@ symbolic procedure delete_empty_sol_list_file()$
 if null sol_list and 
    not filep process_counter and
    null reduce_call
-then system bldmsg ("rm %w%w",session_,"sol_list")$
+then delete!-file!-exact bldmsg ("%w%w",session_,"sol_list")$
 
 symbolic procedure add_to_sol_list$  % Sergey's version
 if sol_list then 
@@ -7388,7 +7415,7 @@ begin scalar fl,fpid,file,pipein,st,cnt; %,fd
 % fd := nil;
 % while not fd do <<
 %  sleep 1;
-%  fl := system bldmsg ("rm %s",fpid);
+%  fl := delete!-file!-exact fpid;
 %  fd := if fl = 0 then t else nil
 % >>;
 
@@ -7778,8 +7805,7 @@ symbolic procedure clear_files$
 begin scalar s$
  s:=explode session_;
  s:=compress cons(car s,cdddr s)$
- setq(s,bldmsg("%w%w%w","rm ??",s,"*"))$
- system s$
+ delete!-file!-match bldmsg("%w%w%w","??",s,"*")$
 end$
 
 symbolic procedure list_sol_on_disk$
@@ -7816,24 +7842,59 @@ begin scalar h4,h5,h6$
  return h5
 end$
 
-% some PSL specific hacks
 
-% !#if (memq 'psl lispsystem!*)
 % to allow special characters in file name, like space
-symbolic procedure delete!-file!-exact(fi)$ 
-if memq('linux!-gnu,lispsystem!*) or
-   memq('cygwin,lispsystem!*) or
-   memq('unix,lispsystem!*) then system bldmsg("rm -f %s",fi)    
-	                         else system bldmsg("del ""%s""",fi)$
 
-% to have ? or * actively matching in file name
-symbolic procedure delete!-file!-match(fi)$ 
-if memq('linux!-gnu,lispsystem!*) or
-   memq('cygwin,lispsystem!*) or
-   memq('unix,lispsystem!*) then system bldmsg("rm -f %s",fi)    
-			    else system bldmsg("del %s",fi)$
+!#if (memq 'csl lispsystem!*)
 
-% !#endif
+% CSL can do the simpler case directly.
+symbolic procedure delete!-file!-exact fi;
+  delete!-file fi;
+
+!#else
+
+symbolic procedure delete!-file!-exact fi; 
+  if (memq('linux!-gnu, lispsystem!*) or
+      memq('cygwin, lispsystem!*) or
+      memq('unix, lispsystem!*)) and
+     not memq('win32, lispsystem!*) and
+     not memq('win64, lispsystem!*) then system bldmsg("rm -f %s", fi)
+% On Windows I only delete the file if it exists, so that I avoid messages
+% that otherwise intrude.
+  else if filep fi then system bldmsg("del ""%s""", fi)$
+
+!#endif
+
+% To have ? or * actively matching in file name
+
+symbolic procedure delete!-file!-match fi;
+% Note that a Macintosh is "unix" for the purposes of the test here.
+  if (memq('linux!-gnu, lispsystem!*) or
+      memq('cygwin, lispsystem!*) or
+      memq('unix, lispsystem!*)) and
+     not memq('win32, lispsystem!*) and
+     not memq('win64, lispsystem!*) then system bldmsg("rm -f %s", fi)
+% On Windows if there are no files matching the pattern you specify you will
+% get an ugly message saying "Could Not Find FILE". I hope that the quote
+% marks I put in protect any whitespace within the pathname used, but
+% neverthless allow wildcards to be interpreted.
+  else begin
+% On Windows if you go "del" with a pattern that does not match any files
+% then an unwanted message is displayed. To avoid that I will create a file
+% that matches the pattern so that there is always something worth deleting.
+    scalar u;
+% I will turn every "?" or "*" into an "x" to get a name suitable for a
+% single file.
+    for each c in explode fi do
+      if c = '!? or c = '!* then u := 'x . u
+      else u := c . u;
+    u := compress reverse u;
+% Opening the file for output and then closing the stream should leave
+% an empty file for me to delete.
+    u := open(u, 'output);
+    if u then close u;
+    return system bldmsg("del ""%s""", fi)
+  end$
 
 endmodule$
 
@@ -8497,7 +8558,7 @@ begin scalar ctf,fpid,fl,ct,ctc,ctcc,soln,condi,echo_bak,semic_bak,
   >>$
   if null ctcc then <<      % all subcases have been solved
 
-   system bldmsg("rm %w",level_string(session_));
+   delete!-file!-exact level_string(session_);
    if ctc=ct then goto fino % the whole problem is solved
              else <<        % this case is solved
     rplaca(cdddr ctc,soln+2)$% mark this case as solved

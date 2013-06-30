@@ -140,8 +140,8 @@ trying all possible substitutions
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 397 ms  plus GC time: 21 ms
-real	0m1.034s
-user	0m0.015s
-sys	0m0.122s
+Tested on i686-pc-windows CSL
+Time (counter 1): 330 ms  plus GC time: 9 ms
+1: real 0.62
+user 0.04
+sys 0.07

@@ -321,8 +321,8 @@ Pseudo-division OK
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 32 ms
-real	0m0.627s
-user	0m0.062s
-sys	0m0.138s
+Tested on i686-pc-windows CSL
+Time (counter 1): 10 ms
+1: real 0.28
+user 0.12
+sys 0.04

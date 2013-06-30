@@ -314,8 +314,8 @@ $
 
 END$
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1414 ms  plus GC time: 14 ms
-real	0m2.713s
-user	0m0.015s
-sys	0m0.215s
+Tested on i686-pc-windows CSL
+Time (counter 1): 1590 ms  plus GC time: 60 ms
+1: real 1.90
+user 0.04
+sys 0.06

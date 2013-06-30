@@ -515,6 +515,8 @@ S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 
 end;
 
-Tested on i686-pc-windows-nogui CSL
+Tested on i686-pc-windows CSL
 Time (counter 1): 10 ms
-real	0m0.010s
+1: real 0.25
+user 0.01
+sys 0.09

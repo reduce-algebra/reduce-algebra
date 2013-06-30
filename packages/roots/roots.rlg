@@ -4376,8 +4376,8 @@ roots bb;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1017 ms  plus GC time: 29 ms
-real	0m1.685s
-user	0m0.076s
-sys	0m0.107s
+Tested on i686-pc-windows CSL
+Time (counter 1): 1000 ms  plus GC time: 100 ms
+1: real 1.35
+user 0.01
+sys 0.09

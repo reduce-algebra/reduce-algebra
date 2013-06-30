@@ -13,3 +13,8 @@ vandermonde({0,2});
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 0 ms  plus GC time: 10 ms
+1: real 0.24
+user 0.04
+sys 0.07

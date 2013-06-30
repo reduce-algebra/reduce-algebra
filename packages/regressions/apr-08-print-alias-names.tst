@@ -7,7 +7,7 @@ mkid(map,1);
 
 off int;
 
-% Simirlarily, PSL printed "~spaces2" in the warning message
+% Similarly, PSL printed "~spaces2" in the warning message
 spaces2(x);
 
 end;

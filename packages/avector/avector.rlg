@@ -1229,8 +1229,8 @@ deflineint(a,curve,phi,0,2*pi);
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 54 ms  plus GC time: 27 ms
-real	0m0.746s
-user	0m0.061s
-sys	0m0.137s
+Tested on i686-pc-windows CSL
+Time (counter 1): 20 ms  plus GC time: 19 ms
+1: real 0.28
+user 0.00
+sys 0.13

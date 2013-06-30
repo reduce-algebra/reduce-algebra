@@ -914,7 +914,7 @@ symbolic procedure j!:concat(a, b);
    compress('!" . append(explode2 a, append(explode2 b, '(!"))));
 !#endif
 
-symbolic procedure j!:ccompilestart(name, setupname, dir, hdrnow);
+symbolic procedure j!:ccompilestart(name, setupname, dir);
   begin
     scalar o, d, w;
     reset!-gensym 0;   % Makes output more consistent
@@ -922,7 +922,6 @@ symbolic procedure j!:ccompilestart(name, setupname, dir, hdrnow);
     my_gensym_counter := 0;
 !#endif
     j!:registers := j!:available := j!:used := nil;
-% File_name will be the undecorated name as a string when hdrnow is false,
     File_name := list!-to!-string explodec name;
     Setup_name := explodec setupname;
 % I REALLY want the user to give me a module name that is a valid Java
@@ -961,15 +960,8 @@ princ "C file = "; print name;
 !#endif
     O_file := wrs J_file;
     j!:defnames := nil;
-    if hdrnow then
-        j!:printf("\n/* Module: %s %tMachine generated C code %<*/\n\n", setupname, 25)
-    else j!:printf("\n/* %s.java %tMachine generated Java code %<*/\n\n", name, 25);
-    j!:printf("/* Signature: 00000000 %s %<*/\n\n", d);
-    if hdrnow then print!-config!-header()
-    else j!:printf "#include \qconfig.h\q\n\n";
-    print!-csl!-headers();
-% Now a useful prefix for when compiling as a DLL
-    if hdrnow then j!:print!-init();
+    j!:printf("\n/* %s.java %tMachine generated Java code %<*/\n\n", name, 25);
+    print!-init();
     wrs O_file;
     return nil
   end;
@@ -977,20 +969,83 @@ princ "C file = "; print name;
 symbolic procedure j!:print!-init();
   <<
    j!:printf "\n";
-   j!:printf "Lisp_Object *C_nilp;\n";
-   j!:printf "Lisp_Object **C_stackp;\n";
-   j!:printf "Lisp_Object * volatile * stacklimitp;\n";
+   j!:printf "package uk.co.codemist.jlisp.core;\n";
    j!:printf "\n";
-   j!:printf "void init(Lisp_Object *a, Lisp_Object **b, Lisp_Object * volatile *c)\n";
+   j!:printf "//\n";
+   j!:printf "// This file is part of the Jlisp implementation of Standard Lisp\n";
+   j!:printf "// Copyright \u00a9 (C) Codemist Ltd, 1998-2013.\n";
+   j!:printf "//\n";
+   j!:printf "\n";
+   j!:printf "/**************************************************************************\n";
+   j!:printf " * Copyright (C) 1998-2013, Codemist Ltd.                      A C Norman *\n";
+   j!:printf " *                            also contributions from Vijay Chauhan, 2002 *\n";
+   j!:printf " * Derived from the main Reduce source files, so also rights from there.  *\n";
+   j!:printf " *                                                                        *\n";
+   j!:printf " * Redistribution and use in source and binary forms, with or without     *\n";
+   j!:printf " * modification, are permitted provided that the following conditions are *\n";
+   j!:printf " * met:                                                                   *\n";
+   j!:printf " *                                                                        *\n";
+   j!:printf " *     * Redistributions of source code must retain the relevant          *\n";
+   j!:printf " *       copyright notice, this list of conditions and the following      *\n";
+   j!:printf " *       disclaimer.                                                      *\n";
+   j!:printf " *     * Redistributions in binary form must reproduce the above          *\n";
+   j!:printf " *       copyright notice, this list of conditions and the following      *\n";
+   j!:printf " *       disclaimer in the documentation and/or other materials provided  *\n";
+   j!:printf " *       with the distribution.                                           *\n";
+   j!:printf " *                                                                        *\n";
+   j!:printf " * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *\n";
+   j!:printf " * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *\n";
+   j!:printf " * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *\n";
+   j!:printf " * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *\n";
+   j!:printf " * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *\n";
+   j!:printf " * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *\n";
+   j!:printf " * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *\n";
+   j!:printf " * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *\n";
+   j!:printf " * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *\n";
+   j!:printf " * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *\n";
+   j!:printf " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *\n";
+   j!:printf " * DAMAGE.                                                                *\n";
+   j!:printf " *************************************************************************/\n";
+   j!:printf "\n";
+   j!:printf "// U01.java\n";
+   j!:printf "\n";
+   j!:printf "// Each built-in function is created wrapped in a class\n";
+   j!:printf "// that is derived from BuiltinFunction.\n";
+   j!:printf "\n";
+   j!:printf "import java.io.*;\n";
+   j!:printf "import java.util.*;\n";
+   j!:printf "import java.text.*;\n";
+   j!:printf "import java.math.BigInteger;\n";
+   j!:printf "\n";
+   j!:printf "class U01\n";
    j!:printf "{\n";
-   j!:printf "    C_nilp = a;\n";
-   j!:printf "    C_stackp = b;\n";
-   j!:printf "    stacklimitp = c;\n";
-   j!:printf "}\n";
+   j!:printf "    Object [][] builtins = \n";
+   j!:printf "    {\n";
+   j!:printf "        {\qu01_sample\q,                  new U01_sampleFn()},\n";
+   j!:printf "    };\n";
    j!:printf "\n";
-   j!:printf "#define C_nil (*C_nilp)\n";
-   j!:printf "#define C_stack  (*C_stackp)\n";
-   j!:printf "#define stacklimit (*stacklimitp)\n";
+   j!:printf "\n";
+   j!:printf "class U01_sampleFn extends BuiltinFunction\n";
+   j!:printf "{\n";
+   j!:printf "    public LispObject op0()\n";
+   j!:printf "    {\n";
+   j!:printf "        return Jlisp.nil;\n";
+   j!:printf "    }\n";
+   j!:printf "    public LispObject op1(LispObject arg1)\n";
+   j!:printf "    {\n";
+   j!:printf "        return arg1;\n";
+   j!:printf "    }\n";
+   j!:printf "    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException\n";
+   j!:printf "    {\n";
+   j!:printf "        return arg1;\n";
+   j!:printf "    }\n";
+   j!:printf "    public LispObject opn(LispObject [] args) throws ResourceException\n";
+   j!:printf "    {\n";
+   j!:printf "        int n = args.length;\n";
+   j!:printf "        if (n == 0) return Jlisp.nil;\n";
+   j!:printf "        else return args[0];\n";
+   j!:printf "    }\n";
+   j!:printf "}\n";
    j!:printf "\n"
   >>;
 

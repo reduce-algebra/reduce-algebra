@@ -27,7 +27,7 @@
 %*******************************************************************%
 
 lisp(depl!*:=nil)$           % clearing of all dependencies
-setcrackflags()$             % use standart flag-setting
+setcrackflags()$             % use standard flag-setting
 lisp(print_:=nil)$           % to suppress printing the computation
 lisp(initial_proc_list_ :=   % initial_proc_list_ is saved for an 
      proc_list_)$            % application at the end

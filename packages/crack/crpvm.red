@@ -87,6 +87,8 @@ begin scalar fl,fpid,!*echo,semic!*;
                  else <<
   fl:=1;
   repeat <<
+% Note that every use of "system" that relies on a "mv" or "cp" command
+% is non-portable.
    fl := system bldmsg ("mv %s %s",file,fpid)$
    if fl neq 0 then system"sleep 1"
   >> until fl=0;
@@ -322,7 +324,7 @@ begin scalar fl,fpid,!*echo,semic!*;
 
  semic!*:='!$;in fpid$
 
- system bldmsg ("rm %s",fpid);
+ delete!-file!-exact fpid;
  if not fixp backup_ then backup_:=1000000$
  return backup_
 end$
@@ -385,8 +387,7 @@ begin scalar s,ss,h,current_dir,startup,p,id$   % ,crpath$
  crack_load_cmd()$ % assigning crack_load_command if not already done
  if crack_load_command="not found" then return <<
   shut startup$ 
-  s:=bldmsg("rm %w",startup)$
-  system s$
+  delete!-file!-exact startup$
   write"##### This parallelization could not be started as the call of crack"$
   terpri()$
   write"##### could not be found. Please have at the start of your computation"$
@@ -469,6 +470,10 @@ begin scalar s,ss,h,current_dir,startup,p,id$   % ,crpath$
 
   write"if 'y=termread() then <<"$ terpri()$
   %----- remove the data file showing that the computation is completed
+% Will somebody judge whether this should really be
+%   write "delete!-file!-exact """, h, """$"$  terpri()$
+% rather than something using "system and assuming that a command called
+% "rm" exists... ?
   write"  system ""rm ",h,"""$"$                            terpri()$
   write"  system ""rm ",startup,"""$"$                      terpri()$
   write">> else <<"$terpri()$
@@ -547,6 +552,11 @@ begin scalar s,ss,h,current_dir$
  % =t --> only an icon opens, =nil --> a window opens
 
  %----- start new process
+% remote_process, remote_call!* etc are PSL-specific features that
+% support distributed computing - until there is a nice explanation of
+% them somewhere it is hard to know whether they could be incorporated
+% into CSL - so at present this whole part of the crack package is to
+% be seen as only supported by PSL.
  s:=remote_process("");
  processes:=cons(s,processes);
 
@@ -576,6 +586,7 @@ begin scalar s,ss,h,current_dir$
   terpri()$
   write"##### necessary  load ""./crack""$ when loaded from active directory."$
   terpri()$
+% Note that "exitlisp" is not partable between Lisp systems...
   remote_call!*(s,'exitlisp,{'list},0)$
   nil
  >>$
@@ -611,12 +622,13 @@ begin scalar s,ss,h,current_dir$
  proczaehler(process_counter,'minus)$
 
 %lisp<<if not pairp
-
+% Note possible use of delete!-file!-exact here?
  remote_call!*(s,'system,{bldmsg("%w%w","rm ",h)},0)$
 
 % for debugging:
 %if null !*iconic then remote_call!*(s,'system,{"sleep 1000"},0);
 
+% Note exitlisp not portable here.
  remote_call!*(s,'exitlisp,{'list},0)$ % or remote_call!*(s,'exitlisp,{},0)$ (?)
 
  return processes

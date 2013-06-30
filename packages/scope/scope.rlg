@@ -1042,8 +1042,8 @@ makeopts$
 
 end;
 
-Tested on x86_64-unknown-ubuntu11.04 CSL
-Time (counter 1): 20 ms
-real	0m0.160s
-user	0m0.090s
-sys	0m0.010s
+Tested on i686-pc-windows CSL
+Time (counter 1): 40 ms
+1: real 0.36
+user 0.01
+sys 0.13

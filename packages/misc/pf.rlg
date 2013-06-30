@@ -135,3 +135,8 @@ pf(x/(x^2-1),mainvar(x/(x^2-1)));
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 19 ms
+1: real 0.26
+user 0.00
+sys 0.12

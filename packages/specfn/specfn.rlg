@@ -6851,3 +6851,8 @@ Bessel test complete.
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 1794 ms  plus GC time: 177 ms
+1: real 2.54
+user 0.01
+sys 0.15

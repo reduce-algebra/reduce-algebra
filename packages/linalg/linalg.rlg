@@ -2219,3 +2219,8 @@ if not rounded_was_on then off rounded;
 
 END;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 70 ms
+1: real 0.36
+user 0.04
+sys 0.09

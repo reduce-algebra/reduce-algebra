@@ -2287,8 +2287,8 @@ showtime;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 404 ms  plus GC time: 16 ms
-real	0m0.995s
-user	0m0.030s
-sys	0m0.170s
+Tested on i686-pc-windows CSL
+Time (counter 1): 410 ms  plus GC time: 30 ms
+1: real 0.71
+user 0.04
+sys 0.09

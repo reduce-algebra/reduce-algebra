@@ -24,7 +24,17 @@ lisp;
 nil
 
 
-on comp;
+on echo,comp;
+
+
+nil
+
+load compiler;
+
+
+nil
+
+off pwrds;
 
 
 nil
@@ -113,10 +123,8 @@ nil
 
 
 symbolic procedure badcase();
- << errs := errs + 1;
-    if errs > 20 then stop  0>>;
+  errs := errs + 1;
 
-+++ badcase compiled, 13 + 20 bytes
 
 badcase
 
@@ -133,7 +141,6 @@ symbolic procedure portable!-fp!-plus(x,y);
     else (if u=0.0 then u else if abs u<!!fleps1*abs x then 0.0 else u)
          where u = plus2(x,y);
 
-+++ portable!-fp!-plus compiled, 104 + 24 bytes
 
 portable!-fp!-plus
 
@@ -150,7 +157,6 @@ symbolic procedure portable!-fp!-times(x,y);
       if u<!!timmin and v<1.0 then return nil;
  ret: return times2(x,y) end;
 
-+++ portable!-fp!-times compiled, 88 + 24 bytes
 
 portable!-fp!-times
 
@@ -167,7 +173,6 @@ symbolic procedure portable!-fp!-quot(x,y);
       if u<!!timmin and v>1.0 then return nil;
  ret: return quotient(x,y) end;
 
-+++ portable!-fp!-quot compiled, 88 + 36 bytes
 
 portable!-fp!-quot
 
@@ -175,46 +180,186 @@ portable!-fp!-quot
 symbolic procedure tab_to n;
   while posn() < n do prin2 " ";
 
-+++ tab_to compiled, 11 + 16 bytes
 
 tab_to
 
 
 for each x in ll do
   for each y in ll do <<
-     a1 := safe!-fp!-plus(x, y);
-     a2 := portable!-fp!-plus(x, y);
-     if not eqn(a1, a2) then <<
-         terpri();
-         prin2t "safe-fp-plus incorrect";
-         prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
-         prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
-         prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-         prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
-         terpri();
-         badcase() >>;
-     a1 := safe!-fp!-times(x, y);
-     a2 := portable!-fp!-times(x, y);
-     if not eqn(a1, a2) then <<
-         terpri();
-         prin2t "safe-fp-times incorrect";
-         prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
-         prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
-         prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-         prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
-         terpri();
-         badcase() >>;
-     a1 := safe!-fp!-quot(x, y);
-     a2 := portable!-fp!-quot(x, y);
-     if not eqn(a1, a2) then <<
-         terpri();
-         prin2t "safe-fp-quot incorrect";
-         prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
-         prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
-         prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-         prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
-         terpri();
-         badcase() >> >>;
+     if errs < 20 then <<
+        a1 := safe!-fp!-plus(x, y);
+        a2 := portable!-fp!-plus(x, y);
+        if not eqn(a1, a2) then <<
+            terpri();
+            prin2t "safe-fp-plus incorrect";
+            prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
+            prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
+            prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            terpri();
+            badcase() >>;
+        a1 := safe!-fp!-times(x, y);
+        a2 := portable!-fp!-times(x, y);
+        if not eqn(a1, a2) then <<
+            terpri();
+            prin2t "safe-fp-times incorrect";
+            prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
+            prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
+            prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            terpri();
+            badcase() >>;
+        a1 := safe!-fp!-quot(x, y);
+        a2 := portable!-fp!-quot(x, y);
+        if not eqn(a1, a2) then <<
+            terpri();
+            prin2t "safe-fp-quot incorrect";
+            prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
+            prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
+            prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            terpri();
+            badcase() >> >> >>;
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 4.45015e-296                         1d_1a94_a200_0000_B-981
+new: 2.24712e+295                       11_9799_812d_ea11_B982
+ref: nil                                1d_1a94_a200_0000_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -4.45015e-296                        -1d_1a94_a200_0000_B-981
+new: -2.24712e+295                      -11_9799_812d_ea11_B982
+ref: nil                                -1d_1a94_a200_0000_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 4.45015e-296                         1d_1a94_a200_0000_B-981
+new: 2.24712e+295                       11_9799_812d_ea11_B982
+ref: nil                                1d_1a94_a200_0000_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -4.45015e-296                        -1d_1a94_a200_0000_B-981
+new: -2.24712e+295                      -11_9799_812d_ea11_B982
+ref: nil                                -1d_1a94_a200_0000_B-981
+
+
+safe-fp-plus incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 2.24712e+307                         10_0000_0000_0000_B1022
+new: 2.24712e+307                       10_0000_0000_0000_B1022
+ref: nil                                10_0000_0000_0000_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 2.24712e+307                         10_0000_0000_0000_B1022
+new: nil                                nil
+ref: 4.45015e-308                       10_0000_0000_0000_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -2.24712e+307                        -10_0000_0000_0000_B1022
+new: nil                                nil
+ref: -4.45015e-308                      -10_0000_0000_0000_B1022
+
+
+safe-fp-plus incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 2.24712e+307                         10_0000_0000_0000_B1022
+new: 2.24712e+307                       10_0000_0000_0000_B1022
+ref: nil                                10_0000_0000_0000_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 2.24712e+307                         10_0000_0000_0000_B1022
+new: nil                                nil
+ref: 4.45015e-308                       10_0000_0000_0000_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -2.24712e+307                        -10_0000_0000_0000_B1022
+new: nil                                nil
+ref: -4.45015e-308                      -10_0000_0000_0000_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 3.96114e-296                         19_e7e0_24a4_ee94_B-981
+new: 2.52452e+295                       13_c391_aa12_e0e2_B982
+ref: nil                                19_e7e0_24a4_ee94_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -3.96114e-296                        -19_e7e0_24a4_ee94_B-981
+new: -2.52452e+295                      -13_c391_aa12_e0e2_B982
+ref: nil                                -19_e7e0_24a4_ee94_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 4.99952e-296                         10_592d_6928_0000_B-980
+new: 2.00019e+295                       1f_5172_1293_117a_B981
+ref: nil                                10_592d_6928_0000_B-980
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -4.99952e-296                        -10_592d_6928_0000_B-980
+new: -2.00019e+295                      -1f_5172_1293_117a_B981
+ref: nil                                -10_592d_6928_0000_B-980
+
+
+safe-fp-plus incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 2.52452e+307                         11_f9a6_b50b_0f28_B1022
+new: 2.52452e+307                       11_f9a6_b50b_0f28_B1022
+ref: nil                                11_f9a6_b50b_0f28_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 2.52452e+307                         11_f9a6_b50b_0f28_B1022
+new: nil                                nil
+ref: 3.96114e-308                       11_f9a6_b50b_0f28_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -2.52452e+307                        -11_f9a6_b50b_0f28_B1022
+new: nil                                nil
+ref: -3.96114e-308                      -11_f9a6_b50b_0f28_B1022
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 3.52588e-296                         17_0f22_3a63_c0dd_B-981
+new: 2.83618e+295                       16_342c_3c44_2242_B982
+ref: nil                                17_0f22_3a63_c0dd_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: -3.52588e-296                        -17_0f22_3a63_c0dd_B-981
+new: -2.83618e+295                      -16_342c_3c44_2242_B982
+ref: nil                                -17_0f22_3a63_c0dd_B-981
+
+
+safe-fp-quot incorrect
+x: 1.0                                  10_0000_0000_0000_B1
+y: 5.61671e-296                         12_5dd6_68a2_4001_B-980
+new: 1.7804e+295                        1b_e073_6466_9b36_B981
+ref: nil                                12_5dd6_68a2_4001_B-980
 
 
 nil
@@ -224,3 +369,8 @@ nil
 end;
 
 nil
+Tested on i686-pc-windows CSL
+Time (counter 1): 40 ms  plus GC time: 10 ms
+1: real 0.30
+user 0.04
+sys 0.09

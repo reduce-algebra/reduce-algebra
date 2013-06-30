@@ -3070,3 +3070,8 @@ showtime;
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 1511 ms  plus GC time: 180 ms
+1: real 2.09
+user 0.01
+sys 0.16

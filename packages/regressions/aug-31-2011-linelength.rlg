@@ -1083,248 +1083,257 @@ test_wrap '!	!	;
 
 Test at offset 1
 <!	!	>
-("positions" 1 5)
+("positions" 1 16)
 
 Test at offset 2
 .<!	!	>
-("positions" 2 6)
+("positions" 2 16)
 
 Test at offset 3
 ..<!	!	>
-("positions" 3 7)
+("positions" 3 16)
 
 Test at offset 4
 ...<!	!	>
-("positions" 4 8)
+("positions" 4 16)
 
 Test at offset 5
 ....<!	!	>
-("positions" 5 9)
+("positions" 5 16)
 
 Test at offset 6
 .....<!	!	>
-("positions" 6 10)
+("positions" 6 16)
 
 Test at offset 7
 ......<!	!	>
-("positions" 7 11)
+("positions" 7 24)
 
 Test at offset 8
 .......<!	!	>
-("positions" 8 12)
+("positions" 8 24)
 
 Test at offset 9
 ........<!	!	>
-("positions" 9 13)
+("positions" 9 24)
 
 Test at offset 10
 .........<!	!	>
-("positions" 10 14)
+("positions" 10 24)
 
 Test at offset 11
 ..........<!	!	>
-("positions" 11 15)
+("positions" 11 24)
 
 Test at offset 12
 ...........<!	!	>
-("positions" 12 16)
+("positions" 12 24)
 
 Test at offset 13
 ............<!	!	>
-("positions" 13 17)
+("positions" 13 24)
 
 Test at offset 14
 .............<!	!	>
-("positions" 14 18)
+("positions" 14 24)
 
 Test at offset 15
 ..............<!	!	>
-("positions" 15 19)
+("positions" 15 32)
 
 Test at offset 16
 ...............<!	!	>
-("positions" 16 20)
+("positions" 16 32)
 
 Test at offset 17
 ................<!	!	>
-("positions" 17 21)
+("positions" 17 32)
 
 Test at offset 18
 .................<!	!	>
-("positions" 18 22)
+("positions" 18 32)
 
 Test at offset 19
 ..................<!	!	>
-("positions" 19 23)
+("positions" 19 32)
 
 Test at offset 20
 ...................<!	!	>
-("positions" 20 24)
+("positions" 20 32)
 
 Test at offset 21
 ....................<!	!	>
-("positions" 21 25)
+("positions" 21 32)
 
 Test at offset 22
 .....................<!	!	>
-("positions" 22 26)
+("positions" 22 32)
 
 Test at offset 23
 ......................<!	!	>
-("positions" 23 27)
+("positions" 23 40)
 
 Test at offset 24
 .......................<!	!	>
-("positions" 24 28)
+("positions" 24 40)
 
 Test at offset 25
 ........................<!	!	>
-("positions" 25 29)
+("positions" 25 40)
 
 Test at offset 26
 .........................<!	!	>
-("positions" 26 30)
+("positions" 26 40)
 
 Test at offset 27
 ..........................<!	!	>
-("positions" 27 31)
+("positions" 27 40)
 
 Test at offset 28
 ...........................<!	!	>
-("positions" 28 32)
+("positions" 28 40)
 
 Test at offset 29
 ............................<!	!	>
-("positions" 29 33)
+("positions" 29 40)
 
 Test at offset 30
 .............................<!	!	>
-("positions" 30 34)
+("positions" 30 40)
 
 Test at offset 31
 ..............................<!	!	>
-("positions" 31 35)
+("positions" 31 48)
 
 Test at offset 32
 ...............................<!	!	>
-("positions" 32 36)
+("positions" 32 48)
 
 Test at offset 33
 ................................<!	!	>
-("positions" 33 37)
+("positions" 33 48)
 
 Test at offset 34
 .................................<!	!	>
-("positions" 34 38)
+("positions" 34 48)
 
 Test at offset 35
 ..................................<!	!	>
-("positions" 35 39)
+("positions" 35 48)
 
 Test at offset 36
 ...................................<!	!	>
-("positions" 36 40)
+("positions" 36 48)
 
 Test at offset 37
 ....................................<!	!	>
-("positions" 37 41)
+("positions" 37 48)
 
 Test at offset 38
 .....................................<!	!	>
-("positions" 38 42)
+("positions" 38 48)
 
 Test at offset 39
 ......................................<!	!	>
-("positions" 39 43)
+("positions" 39 56)
 
 Test at offset 40
 .......................................<!	!	>
-("positions" 40 44)
+("positions" 40 56)
 
 Test at offset 41
 ........................................<!	!	>
-("positions" 41 45)
+("positions" 41 56)
 
 Test at offset 42
 .........................................<!	!	>
-("positions" 42 46)
+("positions" 42 56)
 
 Test at offset 43
 ..........................................<!	!	>
-("positions" 43 47)
+("positions" 43 56)
 
 Test at offset 44
 ...........................................<!	!	>
-("positions" 44 48)
+("positions" 44 56)
 
 Test at offset 45
 ............................................<!	!	>
-("positions" 45 49)
+("positions" 45 56)
 
 Test at offset 46
 .............................................<!	!	>
-("positions" 46 50)
+("positions" 46 56)
 
 Test at offset 47
-..............................................<!	!	>
-("positions" 47 51)
+..............................................<!	!	
+>
+(overflowed 47 64)
 
 Test at offset 48
-...............................................<!	!	>
-("positions" 48 52)
+...............................................<!	!	
+>
+(overflowed 48 64)
 
 Test at offset 49
-................................................<!	!	>
-("positions" 49 53)
+................................................<!	!	
+>
+(overflowed 49 64)
 
 Test at offset 50
-.................................................<!	!	>
-("positions" 50 54)
+.................................................<!	!	
+>
+(overflowed 50 64)
 
 Test at offset 51
-..................................................<!	!	>
-("positions" 51 55)
+..................................................<!	!	
+>
+(overflowed 51 64)
 
 Test at offset 52
-...................................................<!	!	>
-("positions" 52 56)
+...................................................<!	!	
+>
+(overflowed 52 64)
 
 Test at offset 53
-....................................................<!	!	>
-("positions" 53 57)
+....................................................<!	!	
+>
+(overflowed 53 64)
 
 Test at offset 54
-.....................................................<!	!	>
-("positions" 54 58)
+.....................................................<!	!	
+>
+(overflowed 54 64)
 
 Test at offset 55
-......................................................<!	!	>
-("positions" 55 59)
+......................................................<!	!	
+>
+(overflowed 55 72)
 
 Test at offset 56
 .......................................................<!	!	
 >
-("positions" 56 60)
+(overflowed 56 72)
 
 Test at offset 57
 ........................................................<
 !	!	>
-("positions" 57 4)
+("positions" 57 16)
 
 Test at offset 58
 .........................................................<
 !	!	>
-("positions" 58 4)
+("positions" 58 16)
 
 Test at offset 59
 ..........................................................<
 !	!	>
-("positions" 59 4)
+("positions" 59 16)
 
 Test at offset 60
 ...........................................................<
 !	!	>
-("positions" 60 4)
+("positions" 60 16)
 "done"
 
 nil
@@ -5834,3 +5843,8 @@ nil
 end;
 
 nil
+Tested on i686-pc-windows CSL
+Time (counter 1): 20 ms
+1: real 0.33
+user 0.04
+sys 0.12

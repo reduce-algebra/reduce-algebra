@@ -3798,8 +3798,8 @@ clear a,b,bt,pol;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 274 ms  plus GC time: 6 ms
-real	0m0.923s
-user	0m0.061s
-sys	0m0.091s
+Tested on i686-pc-windows CSL
+Time (counter 1): 250 ms
+1: real 0.55
+user 0.04
+sys 0.12

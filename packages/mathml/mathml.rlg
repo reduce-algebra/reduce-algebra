@@ -116,8 +116,8 @@ x>y
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 5 ms
-real	0m0.552s
-user	0m0.030s
-sys	0m0.077s
+Tested on i686-pc-windows CSL
+Time (counter 1): 0 ms
+1: real 0.25
+user 0.07
+sys 0.04

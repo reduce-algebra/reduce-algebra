@@ -177,7 +177,7 @@ create!-package('(
  crtrafo       % point transformations module
  crident       % working with identities
  crhomalg      % working with bilinear algebraic systems
- crpvm         % working arallel on PVM
+ crpvm         % working parallel on PVM
  crgb          % an interface to GB (J.P.Faugere) & Singular
  crineq        % procedures dealing with inequalities
  crdiffelim    % interface to DiffElim (Allan Wittkopf)

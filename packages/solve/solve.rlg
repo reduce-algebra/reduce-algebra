@@ -2840,8 +2840,8 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1522 ms  plus GC time: 78 ms
-real	0m2.205s
-user	0m0.030s
-sys	0m0.184s
+Tested on i686-pc-windows CSL
+Time (counter 1): 1620 ms  plus GC time: 171 ms
+1: real 2.09
+user 0.00
+sys 0.13

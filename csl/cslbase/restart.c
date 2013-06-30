@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 64f77278 05-Jun-2013 */
+/* Signature: 530a6121 29-Jun-2013 */
 
 #include "headers.h"
 
@@ -5031,6 +5031,16 @@ static void set_up_variables(CSLbool restart_flag)
 #endif
 #if defined WIN64 || defined __WIN64__
         w = cons(make_keyword("WIN64"), w);
+#endif
+#if defined MACINTOSH
+        w = cons(make_keyword("MAC"), w);
+        w = cons(make_keyword("UNIX"), w);
+#else
+#if defined UNIX
+        if (strcmp(opsys, "UNIX") != 0 &&
+            strcmp(opsys, "unix") != 0) 
+            w = cons(make_keyword("UNIX"), w);
+#endif
 #endif
 /*! lispsys [win32] \item[{\ttfamily win32}, {\ttfamily win64}] \index{{\ttfamily win32}, {\ttfamily win64}}
  * Any windows system puts {\ttfamily win32} in {\ttfamily lispsystem!*}.

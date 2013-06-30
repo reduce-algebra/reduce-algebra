@@ -856,3 +856,8 @@ b = 0 or m <> 0
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 540 ms  plus GC time: 50 ms
+1: real 0.86
+user 0.01
+sys 0.07

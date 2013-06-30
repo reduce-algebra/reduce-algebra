@@ -49,9 +49,7 @@ length ll;
 fluid '(errs);
 
 symbolic procedure badcase();
- << errs := errs + 1;
-    if errs > 20 then quit;
- >>;
+  errs := errs + 1;
 
 
 symbolic procedure portable!-fp!-plus(x,y);
@@ -94,39 +92,40 @@ symbolic procedure tab_to n;
 
 for each x in ll do
   for each y in ll do <<
-     a1 := safe!-fp!-plus(x, y);
-     a2 := portable!-fp!-plus(x, y);
-     if not eqn(a1, a2) then <<
-         terpri();
-         prin2t "safe-fp-plus incorrect";
-         prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
-         prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
-         prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-         prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
-         terpri();
-         badcase() >>;
-     a1 := safe!-fp!-times(x, y);
-     a2 := portable!-fp!-times(x, y);
-     if not eqn(a1, a2) then <<
-         terpri();
-         prin2t "safe-fp-times incorrect";
-         prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
-         prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
-         prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-         prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
-         terpri();
-         badcase() >>;
-     a1 := safe!-fp!-quot(x, y);
-     a2 := portable!-fp!-quot(x, y);
-     if not eqn(a1, a2) then <<
-         terpri();
-         prin2t "safe-fp-quot incorrect";
-         prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
-         prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
-         prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-         prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
-         terpri();
-         badcase() >> >>;
+     if errs < 20 then <<
+        a1 := safe!-fp!-plus(x, y);
+        a2 := portable!-fp!-plus(x, y);
+        if not eqn(a1, a2) then <<
+            terpri();
+            prin2t "safe-fp-plus incorrect";
+            prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
+            prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
+            prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            terpri();
+            badcase() >>;
+        a1 := safe!-fp!-times(x, y);
+        a2 := portable!-fp!-times(x, y);
+        if not eqn(a1, a2) then <<
+            terpri();
+            prin2t "safe-fp-times incorrect";
+            prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
+            prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
+            prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            terpri();
+            badcase() >>;
+        a1 := safe!-fp!-quot(x, y);
+        a2 := portable!-fp!-quot(x, y);
+        if not eqn(a1, a2) then <<
+            terpri();
+            prin2t "safe-fp-quot incorrect";
+            prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
+            prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
+            prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            terpri();
+            badcase() >> >> >>;
 
 
 end;

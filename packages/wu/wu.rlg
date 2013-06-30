@@ -456,8 +456,8 @@ wu({z*z,y*z-1,x*z-1}, {x,y,z});
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 45 ms
-real	0m0.541s
-user	0m0.031s
-sys	0m0.091s
+Tested on i686-pc-windows CSL
+Time (counter 1): 19 ms
+1: real 0.28
+user 0.01
+sys 0.10

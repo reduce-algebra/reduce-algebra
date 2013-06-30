@@ -1098,8 +1098,8 @@ taylor(ws-sin(sqrt(x)),x,0,10);
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 308 ms  plus GC time: 19 ms
-real	0m0.878s
-user	0m0.030s
-sys	0m0.216s
+Tested on i686-pc-windows CSL
+Time (counter 1): 400 ms  plus GC time: 30 ms
+1: real 0.67
+user 0.03
+sys 0.10

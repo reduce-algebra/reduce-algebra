@@ -1567,3 +1567,8 @@ true
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 62061 ms  plus GC time: 9620 ms
+1: real 73.10
+user 0.03
+sys 0.10

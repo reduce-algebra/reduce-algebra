@@ -13,3 +13,8 @@ int(x^n,n);
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 10 ms
+1: real 0.25
+user 0.04
+sys 0.07

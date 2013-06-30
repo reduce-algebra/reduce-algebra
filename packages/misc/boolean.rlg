@@ -145,8 +145,8 @@ clear v,x;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 15 ms
-real	0m0.557s
-user	0m0.046s
-sys	0m0.122s
+Tested on i686-pc-windows CSL
+Time (counter 1): 10 ms
+1: real 0.24
+user 0.01
+sys 0.10

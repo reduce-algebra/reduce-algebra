@@ -13,7 +13,7 @@ off int;
 
 
 
-% Simirlarily, PSL printed "~spaces2" in the warning message
+% Similarly, PSL printed "~spaces2" in the warning message
 spaces2(x);
 
 
@@ -24,3 +24,8 @@ spaces2(x)
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 0 ms
+1: real 0.25
+user 0.04
+sys 0.09

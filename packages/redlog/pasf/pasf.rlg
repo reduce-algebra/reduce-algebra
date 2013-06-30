@@ -272,3 +272,8 @@ z - 3 > 0
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 2899 ms  plus GC time: 281 ms
+1: real 3.52
+user 0.04
+sys 0.06

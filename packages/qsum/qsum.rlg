@@ -290,8 +290,8 @@ qsimpcomb(result-sub(k=k-1,result)-term);
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 285 ms  plus GC time: 29 ms
-real	0m1.656s
-user	0m0.045s
-sys	0m0.123s
+Tested on i686-pc-windows CSL
+Time (counter 1): 200 ms  plus GC time: 19 ms
+1: real 0.49
+user 0.03
+sys 0.10

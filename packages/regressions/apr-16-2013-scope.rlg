@@ -44,3 +44,8 @@ z :=  - z*z
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 0 ms  plus GC time: 9 ms
+1: real 0.25
+user 0.00
+sys 0.12

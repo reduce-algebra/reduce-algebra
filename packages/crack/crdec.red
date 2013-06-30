@@ -1049,8 +1049,7 @@ begin
    rds oldinpu; 
    if print_ then <<write"  FORM computed ",sze," term(s)."$terpri()>>$
    if not form_pipe then <<
-    setq(ss,bldmsg("rm %w",formszefile)); 
-    system ss    % delete the FORM size file
+    delete!-file!-exact formszefile; 
    >>;
    form_eqn_on_disk:=cons((sze . formgetfile),form_eqn_on_disk)$
 
@@ -1084,7 +1083,7 @@ begin
    if form_comp then << % be available then the file would not be deleted here.
     t4:=time()$
     %if print_ then <<write"  time for CRACK computation:  ",t4-t3," msec"$terpri()>>$
-    setq(ss,bldmsg("rm %w",formgetfile));  system ss$ % delete the FORM output file
+    delete!-file!-exact formgetfile; % delete the FORM output file
     form_eqn_on_disk:=cdr form_eqn_on_disk
    >>
   >>$

@@ -338,3 +338,8 @@ false
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 1290 ms  plus GC time: 90 ms
+1: real 1.72
+user 0.04
+sys 0.09

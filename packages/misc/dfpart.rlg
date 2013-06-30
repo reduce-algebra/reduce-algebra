@@ -560,8 +560,8 @@ sys := {6*(w(3) + w(2) + w(1) - 1),
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 44 ms  plus GC time: 4 ms
-real	0m1.410s
-user	0m0.015s
-sys	0m0.076s
+Tested on i686-pc-windows CSL
+Time (counter 1): 70 ms  plus GC time: 10 ms
+1: real 0.46
+user 0.00
+sys 0.16

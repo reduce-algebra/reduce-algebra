@@ -801,7 +801,7 @@ again:
  forg:=cadr arglist$
 
  h1:=level_string(session_)$
- h1:=bldmsg("%s%s.",h1,"qlp")$
+ h1:=bldmsg("%s%s",h1,"qlp")$
  backup_to_file(pdes,forg,h1)$ % moved before again:, should be ok
  if trtr then <<write"999"$terpri()>>$
 %sol:=reval algebraic(quasilinpde(lisp(get(pde,'val)),f,
@@ -810,7 +810,7 @@ again:
  % This provides the substitutions to be done in Do_Trafo which have
  % to be given in prefix form in the subsq statements --> sol:=reval ...
  restore_backup_from_file(pdes,forg,h1)$
- system bldmsg ("rm '%s'",h1);
+ delete!-file!-exact h1;
  if trtr then <<write"000"$terpri()>>$ 
  if trtr then <<write"sol0="$mathprint sol$terpri()>>$   
 

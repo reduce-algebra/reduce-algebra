@@ -332,8 +332,8 @@ on allfac;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 28 ms
-real	0m0.626s
-user	0m0.045s
-sys	0m0.183s
+Tested on i686-pc-windows CSL
+Time (counter 1): 14 ms
+1: real 0.52
+user 0.03
+sys 0.16

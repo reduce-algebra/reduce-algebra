@@ -246,3 +246,8 @@ int(exp(-a^2*x^2),x,-infinity, infinity);
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 149 ms  plus GC time: 80 ms
+1: real 0.53
+user 0.01
+sys 0.10

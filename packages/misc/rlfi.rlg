@@ -119,8 +119,8 @@ off latex,verbatim;
 \end{verbatim}
 \end{document}
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 109 ms  plus GC time: 30 ms
-real	0m1.464s
-user	0m0.093s
-sys	0m0.169s
+Tested on i686-pc-windows CSL
+Time (counter 1): 0 ms  plus GC time: 9 ms
+1: real 0.24
+user 0.04
+sys 0.06

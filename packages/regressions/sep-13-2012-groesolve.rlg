@@ -68,3 +68,8 @@ ap16=(c11*c6)/(cp11*cp6)}}$
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 411 ms  plus GC time: 40 ms
+1: real 0.72
+user 0.04
+sys 0.07
