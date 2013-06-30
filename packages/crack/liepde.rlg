@@ -91,7 +91,43 @@ liepde({df(y,x,2)=-(y+3*f)*df(y,x)+y**3-f*y**2-(2*f**2+df(f,x))*y,
        {"point"},{},{})$
 
 
-+++ Error undefined function: backup_reduce_flags
+
+The ODE under investigation is :
+
+                                 2        2    3
+y  = - f *y - 3*y *f - y *y - 2*f *y - f*y  + y
+ 2x     x        x      x
+
+for the function(s) : 
+
+y(x)
+
+
+odesolve_ needs to be an integer: nil is invalid
+subst_0 needs to be an integer: nil is invalid
+subst_1 needs to be an integer: nil is invalid
+subst_2 needs to be an integer: nil is invalid
+subst_3 needs to be an integer: nil is invalid
+target_limit_0 needs to be an integer: nil is invalid
+target_limit_1 needs to be an integer: nil is invalid
+target_limit_2 needs to be an integer: nil is invalid
+cost_limit5 needs to be an integer: nil is invalid
+max_gc_fac needs to be an integer: nil is invalid
+max_gc_gb needs to be an integer: nil is invalid
+max_gc_ode needs to be an integer: nil is invalid
+max_gc_red_len needs to be an integer: nil is invalid
+max_gc_short needs to be an integer: nil is invalid
+max_gc_ss needs to be an integer: nil is invalid
+maxalgsys_ needs to be an integer: nil is invalid
+max_eqn_to_conti needs to be an integer: nil is invalid
+nfct_ needs to be an integer: nil is invalid
+nequ_ needs to be an integer: nil is invalid
+low_gensep needs to be an integer: nil is invalid
+high_gensep needs to be an integer: nil is invalid
+length_inc_alg needs to be a number: nil is invalid
+length_inc_dec needs to be a number: nil is invalidThe global variable 
+length_inc_dec has an incorrect value, please check!
+*****   
 
 nodepnd {y,f}$
 
@@ -130,7 +166,44 @@ depend u,t,x$
 liepde({df(u,t)=df(u,x,2)+df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 
 
-+++ Error undefined function: backup_reduce_flags
+
+The PDE under investigation is :
+
+           2
+u =u   + u
+ t  2x    x
+
+for the function(s) : 
+
+u(x,t)
+
+
+
+odesolve_ needs to be an integer: nil is invalid
+subst_0 needs to be an integer: nil is invalid
+subst_1 needs to be an integer: nil is invalid
+subst_2 needs to be an integer: nil is invalid
+subst_3 needs to be an integer: nil is invalid
+target_limit_0 needs to be an integer: nil is invalid
+target_limit_1 needs to be an integer: nil is invalid
+target_limit_2 needs to be an integer: nil is invalid
+cost_limit5 needs to be an integer: nil is invalid
+max_gc_fac needs to be an integer: nil is invalid
+max_gc_gb needs to be an integer: nil is invalid
+max_gc_ode needs to be an integer: nil is invalid
+max_gc_red_len needs to be an integer: nil is invalid
+max_gc_short needs to be an integer: nil is invalid
+max_gc_ss needs to be an integer: nil is invalid
+maxalgsys_ needs to be an integer: nil is invalid
+max_eqn_to_conti needs to be an integer: nil is invalid
+nfct_ needs to be an integer: nil is invalid
+nequ_ needs to be an integer: nil is invalid
+low_gensep needs to be an integer: nil is invalid
+high_gensep needs to be an integer: nil is invalid
+length_inc_alg needs to be a number: nil is invalid
+length_inc_dec needs to be a number: nil is invalidThe global variable 
+length_inc_dec has an incorrect value, please check!
+*****   
 
 
 comment
@@ -154,7 +227,7 @@ write"-------------------------------------------------------"$
 liepde({df(u,x,2)=df(u,t)-df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 
 
-+++ Error undefined function: backup_reduce_flags
+***** Not all functions do depend on all variables. 
 
 nodepnd {u}$
 
@@ -237,7 +310,44 @@ solve(
        {},{})$
 
 
-+++ Error undefined function: backup_reduce_flags
+
+The PDE-system under investigation is :
+
+                 2       2     2          2     2          2     2
+v  =( - 4*f *a2*r  - 2*f  *a2*r *s1 - 2*f  *a2*r *s1 - 2*f  *a2*r *s2
+ 2x        t            x                y                z
+
+                 2          2             2
+      - 4*f *a2*r *w1 - 2*r  *a2*s1 - 2*r  *a2*s1 - 2*r  *a2*r*s1
+           z               x             y             2z
+
+                            2                           2            2
+      + 2*r  *a2*r*s2 - 2*r  *a2*s1 + v  *s1 - v  *s1*w2  - v  *s1*w2
+           2z              z           2t       2y           2z
+
+                 2          2
+      - 4*a1*a2*r *v)/(s1*w2 )
+
+                2          2          2
+r  =(2*f *r + f  *r*s1 + f  *r*s1 + f  *r*s2 + 2*f *r*w1 - r  *s1 - r  *s2
+ 2x     t      x          y          z            z         2y       2z
+
+      + 2*a1*r*v)/s1
+
+f  =
+ 2x
+
+  - 2*f *r *s1 - f  *r*s1 - 2*f *r *s1 - f  *r*s2 - 2*f *r *s2 - 2*r  - 2*r *w1
+       x  x       2y           y  y       2z           z  z         t      z
+--------------------------------------------------------------------------------
+                                      r*s1
+
+for the function(s) : 
+
+r(t,z,y,x), f(t,z,y,x), v(t,z,y,x)
+
+
+***** One substitution can be made in the lhs of another substitution! 
 
 
 nodepnd {r,f,v}$
@@ -320,7 +430,21 @@ liepde({des,{u,v},{t,x}},
       )$
 
 
-+++ Error undefined function: backup_reduce_flags
+
+The PDE-system under investigation is :
+
+u =u   + u *u + u *v + v *u
+ t  2x    x      x      x
+
+v =u *v - v   + v *u + v *v
+ t  x      2x    x      x
+
+for the function(s) : 
+
+u(t,x), v(t,x)
+
+
+***** One substitution can be made in the lhs of another substitution! 
 
 nodepnd {f,g}$
 
@@ -354,7 +478,43 @@ depend y,x$
 liepde({df(y,x,2) = x**n*y**2,y,x},{"point"},{n},{})$
 
 
-+++ Error undefined function: backup_reduce_flags
+
+The ODE under investigation is :
+
+     n  2
+y  =x *y
+ 2x
+
+for the function(s) : 
+
+y(x)
+
+
+odesolve_ needs to be an integer: nil is invalid
+subst_0 needs to be an integer: nil is invalid
+subst_1 needs to be an integer: nil is invalid
+subst_2 needs to be an integer: nil is invalid
+subst_3 needs to be an integer: nil is invalid
+target_limit_0 needs to be an integer: nil is invalid
+target_limit_1 needs to be an integer: nil is invalid
+target_limit_2 needs to be an integer: nil is invalid
+cost_limit5 needs to be an integer: nil is invalid
+max_gc_fac needs to be an integer: nil is invalid
+max_gc_gb needs to be an integer: nil is invalid
+max_gc_ode needs to be an integer: nil is invalid
+max_gc_red_len needs to be an integer: nil is invalid
+max_gc_short needs to be an integer: nil is invalid
+max_gc_ss needs to be an integer: nil is invalid
+maxalgsys_ needs to be an integer: nil is invalid
+max_eqn_to_conti needs to be an integer: nil is invalid
+nfct_ needs to be an integer: nil is invalid
+nequ_ needs to be an integer: nil is invalid
+low_gensep needs to be an integer: nil is invalid
+high_gensep needs to be an integer: nil is invalid
+length_inc_alg needs to be a number: nil is invalid
+length_inc_dec needs to be a number: nil is invalidThe global variable 
+length_inc_dec has an incorrect value, please check!
+*****   
 
 nodepnd {y}$
 
@@ -366,7 +526,7 @@ lisp(prolong_order:=0)$
 end$
 
 Tested on i686-pc-windows CSL
-Time (counter 1): 0 ms  plus GC time: 10 ms
-1: real 0.32
-user 0.03
-sys 0.15
+Time (counter 1): 16 ms  plus GC time: 63 ms
+1: real 0.34
+user 0.04
+sys 0.10
