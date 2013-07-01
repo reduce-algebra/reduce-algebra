@@ -5446,13 +5446,16 @@ algebraic procedure dependlist(y,xlist)$
 for each xx in xlist do
 for each x  in xx    do depend y,x$
 
+fluid '(errorset_control);
+errorset_control := nil;
+
 symbolic procedure err_catch_groeb(arglist)$
 % The purpose of this procedure is only to allow manual interrupts
 % without crashing the whole computation.
 if cadddr arglist and
    (length cadddr arglist > 1) then
 begin scalar h$
- h:=errorset({'comp_groebner_basis,mkquote arglist},nil,nil) 
+ h:=errorset({'comp_groebner_basis,mkquote arglist},errorset_control,errorset_control) 
  where !*protfg=t;
  erfg!*:=nil; 
  return if null h or errorp h then nil
@@ -5467,7 +5470,7 @@ begin scalar h,mode_bak,echo_bak,semic_bak$
  echo_bak:=!*echo; semic_bak:=semic!*;
  semic!*:='!$;
  !*mode := if in_mode='algebraic then 'algebraic else 'symbolic;
- h:= errorset({'in,mkquote {fname}},nil,nil)
+ h:= errorset({'in,mkquote {fname}},errorset_control,errorset_control)
      where !*protfg=t;
  !*echo:=echo_bak; semic!*:=semic_bak$
  erfg!*:=nil; !*mode:=mode_bak$
@@ -5477,7 +5480,7 @@ end$
 symbolic procedure err_catch_solve(eqs,fl)$
 % fl='(LIST x y z);    eqs='(LIST expr1 expr2 .. )
 begin scalar h$
- h:=errorset({'solveeval,mkquote{eqs, fl}},nil,nil)
+ h:=errorset({'solveeval,mkquote{eqs, fl}},errorset_control,errorset_control)
  where !*protfg=t;
  erfg!*:=nil; 
  return if errorp h then nil
@@ -5490,7 +5493,7 @@ begin scalar h,k,bak,bakup_bak$
  max_gc_counter:=my_gc_counter+max_gc_ode;
  bakup_bak:=backup_;backup_:='max_gc_ode$
  k:=setkorder nil$
- h:=errorset({'odesolve,mkquote reval eqs,mkquote reval y,mkquote reval x},nil,nil)
+ h:=errorset({'odesolve,mkquote reval eqs,mkquote reval y,mkquote reval x},errorset_control,errorset_control)
  where !*protfg=t;
  erfg!*:=nil; 
  setkorder k$
@@ -5506,7 +5509,7 @@ begin scalar h,bak,bakup_bak$
  max_gc_counter:=my_gc_counter+max_gc_minsub;
  bakup_bak:=backup_;backup_:='max_gc_minsub$
  h:=errorset({'search_subs,mkquote pdes,mkquote l1,
-                           mkquote cost_limit,mkquote no_cases},nil,nil)
+                           mkquote cost_limit,mkquote no_cases},errorset_control,errorset_control)
     where !*protfg=t;
  erfg!*:=nil; 
  max_gc_counter:=bak;
@@ -5524,7 +5527,7 @@ begin scalar h,p,bak,bakup_bak$
      {'groebnerfeval,
       mkquote{cons('LIST,for each p in pdes  collect {'!*SQ,get(p,'sqval),t}),
               cons('LIST,ftem_),
-              cons('LIST,for each p in ineq_ collect {'!*SQ,p,t}) }},nil,nil)
+              cons('LIST,for each p in ineq_ collect {'!*SQ,p,t}) }},errorset_control,errorset_control)
  where !*protfg=t;
  erfg!*:=nil; 
  max_gc_counter:=bak;
@@ -5540,7 +5543,7 @@ symbolic procedure err_catch_sub(h2,h6,h3)$
 begin scalar h4,h5;
  h4 := list('EQUAL,h2,h6);
  h5:=errorset({'subeval,mkquote{reval h4, 
-                                reval h3 }},nil,nil)
+                                reval h3 }},errorset_control,errorset_control)
      where !*protfg=t;
  erfg!*:=nil; 
  return if errorp h5 then nil
@@ -5565,7 +5568,7 @@ begin scalar h2,h3,h5,h6;
  h2:=     reval   car inp$
  h6:=     aeval  cadr inp$  % including {'!*SQ,..
  h3:=cadr aeval caddr inp$  % excluding {'!*SQ,..
- h5:=errorset({'subsq,mkquote h3,mkquote {(h2 . h6)}},nil,nil)
+ h5:=errorset({'subsq,mkquote h3,mkquote {(h2 . h6)}},errorset_control,errorset_control)
      where !*protfg=t;
  erfg!*:=nil; 
  return if errorp h5 then nil
@@ -5580,7 +5583,7 @@ begin scalar h5,bak,bakup_bak;
  max_gc_counter:=my_gc_counter+max_gc_int;
  bakup_bak:=backup_;backup_:='max_gc_int;
  h5:=errorset({'simpint,mkquote{reval h2, 
-                                reval h3 }},nil,nil)
+                                reval h3 }},errorset_control,errorset_control)
      where !*protfg=t;
  erfg!*:=nil; 
  max_gc_counter:=bak;
@@ -5604,7 +5607,7 @@ begin scalar h2,bak,bakup_bak;
  bak:=max_gc_counter;
  max_gc_counter:=my_gc_counter+max_gc_int;
  bakup_bak:=backup_;backup_:='max_gc_int;
- h2:=errorset({'reval,mkquote h},nil,nil)
+ h2:=errorset({'reval,mkquote h},errorset_control,errorset_control)
      where !*protfg=t;
  erfg!*:=nil; 
  max_gc_counter:=bak;
@@ -5703,7 +5706,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  % ` Non-numerical ... in arithmetic (or so)
  % 12.7.08: The same error occurs when on complex and an expression 
  % contains '!:gi!: and then on rational is done and factorize.
- h:=errorset({'reval,list('FACTORIZE,mkquote a)},nil,nil)  % reval --> aeval for speedup
+ h:=errorset({'reval,list('FACTORIZE,mkquote a)},errorset_control,errorset_control)  % reval --> aeval for speedup
     where !*protfg=t;
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
  if no_powers_changed then algebraic(off nopowers)$
@@ -5740,7 +5743,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  % ` Non-numerical ... in arithmetic (or so)
  % 12.7.08: The same error occurs when on complex and an expression 
  % contains '!:gi!: and then on rational is done and factorize.
- h:=errorset(list('FACTORIZE,mkquote a),nil,nil) where !*protfg=t;
+ h:=errorset(list('FACTORIZE,mkquote a),errorset_control,errorset_control) where !*protfg=t;
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
  if no_powers_changed then algebraic(on nopowers)$
  kernlist!*:=kernlist!*bak$
@@ -5777,7 +5780,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  % ` Non-numerical ... in arithmetic (or so)
  % 12.7.08: The same error occurs when on complex and an expression
  % contains '!:gi!: and then on rational is done and factorize.
- h:=errorset(list('fctrf ,mkquote a),nil,nil) where !*protfg=t;
+ h:=errorset(list('fctrf ,mkquote a),errorset_control,errorset_control) where !*protfg=t;
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
  if no_powers_changed then algebraic(on nopowers)$
  kernlist!*:=kernlist!*bak$
@@ -5799,7 +5802,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  kernlist!*bak:=kernlist!*$
  kord!*bak:=kord!*$
  bakup_bak:=backup_;backup_:='max_gc_fac$
- h:=errorset({'aeval,list('list,''GCD,mkquote a,mkquote b)},nil,nil)
+ h:=errorset({'aeval,list('list,''GCD,mkquote a,mkquote b)},errorset_control,errorset_control)
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
  kord!*:=kord!*bak;
@@ -5815,7 +5818,7 @@ end$
 symbolic procedure err_catch_preduce(a,b)$
 begin scalar h,k$
  k:=setkorder nil$
- h:= errorset({'aeval , mkquote {'preduce,mkquote a,mkquote b}},nil,nil)
+ h:= errorset({'aeval , mkquote {'preduce,mkquote a,mkquote b}},errorset_control,errorset_control)
  where !*protfg=t;
  erfg!*:=nil;
  setkorder k$
@@ -7702,7 +7705,7 @@ begin scalar h,maxf,best,h3,h4;
   % without case distinction
   if not pairp caddar h then h4:=t 
                         else <<
-   h3:=mkeqSQ(caddar h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,nil)$
+   h3:=mkeqSQ(caddar h,nil,nil,ftem_,vl_,allflags_,t,list(0),errorset_control,errorset_control)$
    % the last argument is nil to avoid having a lasting effect on pdes
    fcteval(h3)$
    h4:=get(h3,'fcteval_lin) or get(h3,'fcteval_nca)$

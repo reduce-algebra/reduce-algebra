@@ -86,6 +86,25 @@ symbolic inline procedure remflag1(U, V)$
    remflag({U}, V)$
 !#endif
 
+!#if (memq 'psl lispsystem!*)
+
+% In this code it is essential that subst arranges to share some of
+% its output with its input. The same may be the case for sublist too?
+% The standard implementation of subst in PSL does not do this.
+
+symbolic procedure subst(a, b, c);
+  if c = b then a
+  else if atom c then c
+  else begin
+    scalar sa, sd;
+    sa := subst(a, b, car c);
+    sd := subst(a, b, cdr c);
+    if sa eq car c and sd eq cdr c then return c
+    else return sa . sd
+  end;
+
+!#endif
+
 if lisp(null(getd 'redfront_color) ) then
 symbolic procedure redfront_color(a)$ a$
 
