@@ -2018,6 +2018,7 @@ symbolic procedure b!:cquot(u,v)$
 
 symbolic procedure b!:try_previous_factors(u,v)$
    begin scalar x;
+     if null v then return u;
      b: x := b!:ctrialdiv(u,caar v);
         if null x then go to a;
         write "successful trial div. "; terpri();
