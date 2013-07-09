@@ -54,7 +54,6 @@ styles.css \
 timers.html \
 widgets.html \
 top.html \
-widgets.html \
 win32.html \
 window.html \
 xml.html
