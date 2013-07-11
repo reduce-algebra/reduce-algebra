@@ -442,6 +442,13 @@ defautoload(lto_at2str, rltools, expr, 1);
 
 defautoload(lto_sconcat, rltools, expr, 1);
 
+symbolic operator fastresultant;
+defautoload(fastresultant, rltools, expr, 3);
+
+defautoload(sfto_res, rltools, expr, 3);
+
+defautoload(sfto_res2, rltools, expr, 3);
+
 % Qhull entry point
 
 symbolic operator qhull;
