@@ -51,31 +51,33 @@ asserted procedure fastresultant(f: Any, g: Any, x: Kernel): Any;
    begin scalar w, res;
       if not idp x then
 	 rederr "third argument must be a variable";
-      w := sfto_res(numr simp f, numr simp g, x);
+      w := sfto_resf(numr simp f, numr simp g, x);
       if not !*fastresexpand then
       	 return 'list . for each pr in w collect
 	    {'list, mk!*sq !*f2q car pr, cadr pr};
-      res := 1;
-      for each pr in w do
-	 res := multf(res, exptf(car pr, cadr pr));
-      return mk!*sq !*f2q res
+      return mk!*sq !*f2q w
    end;
 
-asserted procedure sfto_res(f: SF, g: SF, x: Kernel): List;
-   begin scalar oo, w;
+asserted procedure sfto_resf(f: SF, g: SF, x: Kernel): List;
+   begin scalar oo, w, res;
       oo := setkorder(x . kord!*);
       f := reorder f;
       g := reorder g;
-      w := errorset({'sfto_res2, mkquote f, mkquote g, mkquote x},
+      w := errorset({'sfto_resf2, mkquote f, mkquote g, mkquote x},
 	 nil, !*backtrace);
       setkorder oo;
       if errorp w then
 	 rederr emsg!*;
-      return for each pr in car w collect
-	 {reorder car pr, cadr pr}
+      if not !*fastresexpand then
+      	 return for each pr in car w collect
+	    {reorder car pr, cadr pr};
+      res := 1;
+      for each pr in car w do
+	 res := multf(res, exptf(reorder car pr, cadr pr));
+      return res
    end;
 
-asserted procedure sfto_res2(f: SF, g: SF, x: Kernel): List;
+asserted procedure sfto_resf2(f: SF, g: SF, x: Kernel): List;
    % We assume that: 1) [f] and [g] are ordered correctly, i.e. if [x] occurs in
    % [f] or [g] then it is mvar. Returns a list of polynomial factors of res(f,
    % g, x) with multiplicities.
@@ -95,10 +97,10 @@ asserted procedure sfto_res2(f: SF, g: SF, x: Kernel): List;
       w := sfto_gcdf(f, g);
       if not domainp w then
 	 return {{0, 1}};
-      return sfto_res3(quotfx(f, w), quotfx(g, w), x)
+      return sfto_resf3(quotfx(f, w), quotfx(g, w), x)
    end;
 
-asserted procedure sfto_res3(f: SF, g: SF, x: Kernel): List;
+asserted procedure sfto_resf3(f: SF, g: SF, x: Kernel): List;
    % We assume that: 1) [f] and [g] are ordered correctly and of positive degree
    % in [x]. 2) [f] and [g] are coprime, i.e. the resultant is not identically
    % zero. Returns a list of polynomial factors of res(f, g, x) with
@@ -109,24 +111,24 @@ asserted procedure sfto_res3(f: SF, g: SF, x: Kernel): List;
       % g := quotfx(g, sfto_dcontentf g);
       cnt := sfto_ucontentf f;
       if cnt neq 1 then
-	 return {cnt, ldeg g} . sfto_res2(quotfx(f, cnt), g, x);
+	 return {cnt, ldeg g} . sfto_resf2(quotfx(f, cnt), g, x);
       cnt := sfto_ucontentf g;
       if cnt neq 1 then
-	 return {cnt, ldeg f} . sfto_res2(f, quotfx(g, cnt), x);
+	 return {cnt, ldeg f} . sfto_resf2(f, quotfx(g, cnt), x);
 
       l := sfto_mindeg1(f, x); % Later use sfto_mindeg
       if l > 0 then
 	 return {sfto_tc(g, x), l} .
-	    sfto_res2(quotfx(f, exptf(!*k2f x, l)), g, x);
+	    sfto_resf2(quotfx(f, exptf(!*k2f x, l)), g, x);
       l := sfto_mindeg1(g, x); % Later use sfto_mindeg
       if l > 0 then
 	 return {sfto_tc(f, x), l} .
-	    sfto_res2(f, quotfx(g, exptf(!*k2f x, l)), x);
+	    sfto_resf2(f, quotfx(g, exptf(!*k2f x, l)), x);
 
       degal := sfto_deggcd(f, g, {x});
       if not null degal then
 	 return sfto_raisel(
-	    sfto_res2(sfto_subfwd(f, degal), sfto_subfwd(g, degal), x),
+	    sfto_resf2(sfto_subfwd(f, degal), sfto_subfwd(g, degal), x),
 	    cdr atsoc(x, degal));
 
       varl := setdiff(union(kernels f, kernels g), {x});
