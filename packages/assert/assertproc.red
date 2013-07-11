@@ -43,9 +43,9 @@ procedure assert_procstat();
 	 assert_rederr {"expecting keyword procedure but found", cursym!*};
       scan();
       fname := cursym!*;
-      scan();
       if not idp cursym!* then
 	 assert_rederr {"expecting procedure name but found", cursym!*};
+      scan();
       if cursym!* neq '!*lpar!* then
 	 assert_rederr {"expecting '(' but found", cursym!*};
       scan();
