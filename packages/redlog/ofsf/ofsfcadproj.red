@@ -524,13 +524,13 @@ procedure rldis(f,x);
 
 procedure sf_discriminant(f,x);
    % discriminant. caveat: deg(f,x)>0 required.
-   quotf(resultant(f,numr difff(f,x),x),lc f);
+   quotf(sfto_resf(f,numr difff(f,x),x),lc f);
 
 symbolic operator rlres;
 procedure rlres(f,g,x);
    begin scalar oldorder,w;
       oldorder := setkorder {x};
-      w := prepf resultant(numr simp f,numr simp g,x);
+      w := prepf sfto_resf(numr simp f,numr simp g,x);
       setkorder oldorder;
       return w
    end;
@@ -1067,7 +1067,7 @@ procedure sf_tgdiscriminant(tf,x);
 procedure tgresultant(tf1,tf2,x);
    % Tagged standard form resultant. [tf1], [tf2] are TAG(SF), [x] is a
    % kernel. Returns a TAG(SF).
-   tag_(resultant(tag_object tf1,tag_object tf2,x),
+   tag_(sfto_resf(tag_object tf1,tag_object tf2,x),
       union(tag_taglist tf1,tag_taglist tf2));
 
 procedure tgunion(st1,st2);
@@ -1464,7 +1464,7 @@ procedure ofsf_projco2v(aa,x);
       ll := ofsf_projcoll(aa,x);
       dd := for each a in aa join if sf_deg(a,x)>=2 then {sf_discriminant(a,x)};
       rr := for each a1 on aa join for each a2 in cdr aa collect
-	 resultant(car a1,a2,x);
+	 sfto_resf(car a1,a2,x);
       jj1 := list2set lto_remove('domainp,union(union(ll,dd),rr));
       if ofsf_cadverbosep() then ioto_prin2 {length jj1,"]"};
       return jj1
@@ -1481,7 +1481,7 @@ procedure ofsf_projmc(aa,x);
       ll := ofsf_projcoll(ofsf_projcobbv2(aa,x),x);
       dd := for each a in aa collect sf_discriminant(a,x);
       rr := for each a1 on aa join for each a2 in cdr aa collect
-	 resultant(car a1,a2,x);
+	 sfto_resf(car a1,a2,x);
       return list2set lto_remove('domainp,union(union(ll,dd),rr))
    end;
 
@@ -1494,7 +1494,7 @@ procedure ofsf_projmcgen(aa,x,theo);
       ll := ofsf_projcoll(car bb_theo,x);
       dd := for each a in aa collect sf_discriminant(a,x);
       rr := for each a1 on aa join for each a2 in cdr aa collect
-	 resultant(car a1,a2,x);
+	 sfto_resf(car a1,a2,x);
       return list2set lto_remove('domainp,union(union(ll,dd),rr)) . cdr bb_theo
    end;
 
@@ -1515,7 +1515,7 @@ procedure ofsf_tgprojmc(tgaa,x);
       tgdd := for each a in aa collect tag_(sf_discriminant(a,x),{'dis});
       % tag the resultants
       tgrr := for each a1 on aa join for each a2 in cdr aa collect
-	 tag_(resultant(car a1,a2,x),{'res});
+	 tag_(sfto_resf(car a1,a2,x),{'res});
       return lto_remove('tgdomainp,
 	 tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
    end;
@@ -1531,7 +1531,7 @@ procedure ofsf_projmcbr(aa,x);
       ll := for each f in bb collect sf_lc(f,x);
       dd := for each a in bb collect sf_discriminant(a,x);
       rr := for each a1 on bb join for each a2 in cdr bb collect
-	 resultant(car a1,a2,x);
+	 sfto_resf(car a1,a2,x);
       return list2set lto_remove('domainp,union(union(ll,dd),rr))
    end;
 
@@ -1553,7 +1553,7 @@ procedure ofsf_tgprojmcbr(tgaa,x);
       tgdd := for each a in bb collect tag_(sf_discriminant(a,x),{'dis});
       % tag the resultants
       tgrr := for each a1 on bb join for each a2 in cdr bb collect
-	 tag_(resultant(car a1,a2,x),{'res});
+	 tag_(sfto_resf(car a1,a2,x),{'res});
       return lto_remove('tgdomainp,
 	 tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
    end;
