@@ -37,9 +37,9 @@ lisp <<
 module rltools;
 % Redlog tools.
 
-create!-package('(rltools ioto lto sfto),nil);
+create!-package('(rltools ioto lto sfto sftoresultant),nil);
 
-fluid '(!*rlbrkcxk !*rlverbose);
+fluid '(!*rlbrkcxk !*rlverbose kord!*);
 
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    ioto_cterpri,ioto_cplu,ioto_realtime,ioto_flush,ioto_datestamp,
