@@ -79,27 +79,6 @@ rlqe p9;
 hong := all(x,ex(y,x**2+x*y+b>0 and x+a*y**2+b<=0))$
 rlqe hong;
 
-% Highly non-linear, varseltry, massive factorization, precise qe:
-gatermann := ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and
-(((k21*vv1**2*vv2 - k34*vv1 + k43*vv3 + k46 - k64*vv1 = 0 and -
-k21*vv1**2*vv2 + k56 - k65*vv2 = 0) and k34*vv1 - k43*vv3 = 0) and -
-k21*k43*k64*vv1**2 + 2*k21*k43*k65*vv1*vv2 - k43*k64*k65 < 0 and
-k21**2*k34*vv1**4 - 2*k21**2*k34*vv1**3*vv2 + k21**2*k43*vv1**4 -
-4*k21**2*k43*vv1**3*vv2 + 4*k21**2*k43*vv1**2*vv2**2 + k21**2*k64*vv1**4
-- 2*k21**2*k64*vv1**3*vv2 - 2*k21**2*k65*vv1**3*vv2 +
-4*k21**2*k65*vv1**2*vv2**2 + k21*k34**2*vv1**2 + 2*k21*k34*k43*vv1**2 -
-2*k21*k34*k43*vv1*vv2 + 2*k21*k34*k64*vv1**2 + 2*k21*k34*k65*vv1**2 -
-4*k21*k34*k65*vv1*vv2 + k21*k43**2*vv1**2 - 2*k21*k43**2*vv1*vv2 +
-2*k21*k43*k64*vv1**2 - 4*k21*k43*k64*vv1*vv2 + 2*k21*k43*k65*vv1**2 -
-4*k21*k43*k65*vv1*vv2 + k21*k64**2*vv1**2 + 2*k21*k64*k65*vv1**2 -
-4*k21*k64*k65*vv1*vv2 - 2*k21*k65**2*vv1*vv2 + k34**2*k65 + k34*k43*k64
-+ 2*k34*k43*k65 + 2*k34*k64*k65 + k34*k65**2 + k43**2*k64 + k43**2*k65 +
-k43*k64**2 + 2*k43*k64*k65 + k43*k65**2 + k64**2*k65 + k64*k65**2 = 0)
-and ((((( - k21 < 0 and - k46 < 0) and - k64 < 0) and - k34 < 0) and -
-k43 < 0) and - k56 < 0) and - k65 < 0)))$
-
-rlqe rlex gatermann;
-
 % Positive qe:
 % Examples from
 % Boulier et al. 2007
@@ -720,5 +699,64 @@ rlqe ex(y,(y=x or y=-x) and y>=0);
 % Substitution
 sub(first second sol,for each atf in dong mkand atf);
 rlsimpl ws;
+
+% Polynomial exponential problems
+
+% A.1 Complete Example
+a1 := ex({x, y}, e**x-y**2=0 and x-y=0);
+rldpep a1;
+
+% A.2 Properties of the Exponential Function
+a21 := ex(x, e**x<=0);
+rldpep a21;
+
+a22 := all(x, e**x>=1+x);
+rldpep a22;
+
+a23 := all(x, (1-x)*e**x<=1 or x>=1);
+rldpep a23;
+
+% A.3 Exponential Systems
+a32 := ex({x, y, z}, 2x-y+z+e**(2x)=0 and 3y-z=0 and 2x+y+3z+e**x=0);
+rldpep a32;
+
+a33 := ex(x, e**(2x)-x*e**x-1=0 and e**(2x)+e**x-2x>0);
+rldpep a33;
+
+% A.4 Examples with Hyperbolic Functions
+% tanh(x):
+a43 := all(x, x>0 impl x*e**(2x)-x>(x-1)*e**(2x)+x-1);
+rldpep a43;
+
+% A.5 Examples with the Gauss Curve
+a51 := ex({z, x}, 4*x**2*e**z=1+x**2 and z+x**2=0);
+rldpep a51;
+
+a52 := ex({z, x}, 10*e**z=-8*x**2+10 and x neq 0 and z+x**2=0);
+rldpep a52;
+
+% Additional Examples with the Gauss Curve
+add53 := all({z, x}, x**2+z=0 impl e**z>0);
+rldpep add53;
+
+% Some simple tropical decision using only Reduce simplex
+rlptropsat(x=0 or x+1 = 0);
+
+rltropsat(x=0 or x+1 = 0);
+
+on zeropintsolve, zeropzero;
+
+pzerop(x**2+x);
+
+zerop(x**2+x);
+
+oldprec := precision 24;
+
+pzerop(x**2+x-1);
+evalf ws;
+
+precision oldprec;
+
+off zeropintsolve, zeropzero;
 
 end;
