@@ -1538,8 +1538,6 @@ procedure ofsf_mkgtagq(eset,theo);
    begin scalar a;
       if null cdr eset and caar eset eq 'ofsf_qesubcq then
  	 return 'quaq;
-      if atsoc('ofsf_qesubcq,eset) then
-	 return 'lin;
       a := atsoc('ofsf_qesubcr2,eset) or atsoc('ofsf_qesubcr1,eset);
       % We know [a neq nil].
       if null cadr cadr cadr a then  % $b$ of the first root expression.
