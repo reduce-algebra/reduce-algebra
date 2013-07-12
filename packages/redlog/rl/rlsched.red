@@ -265,6 +265,8 @@ rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
+rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), function(lambda x; rl_mk!*fof cdr x),T);
+
 % Black box scheduler.
 
 rl_mkbb('rl_simplat1,2);

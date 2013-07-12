@@ -42,7 +42,7 @@ module ofsf;
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg ofsfexfr ofsftrop ofsflp),
+   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep),
    nil);
 
 load!-package 'redlog;
@@ -254,6 +254,7 @@ put('ofsf,'rl_services,'(
    (rl_sat2pol!* . ofsf_sat2pol)
    (rl_tropsat!* . ofsf_tropsat)
    (rl_ptropsat!* . ofsf_ptropsat)
+   (rl_dpep!* . ofsf_dpep)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin
