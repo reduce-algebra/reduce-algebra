@@ -97,7 +97,7 @@ asserted procedure sfto_resf2(f: SF, g: SF, x: Kernel): List;
       w := sfto_gcdf(f, g);
       if not domainp w then
 	 return {{0, 1}};
-      return sfto_resf3(quotfx(f, w), quotfx(g, w), x)
+      return {w, ldeg f + ldeg g} . sfto_resf3(quotfx(f, w), quotfx(g, w), x)
    end;
 
 asserted procedure sfto_resf3(f: SF, g: SF, x: Kernel): List;
@@ -253,9 +253,10 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
    % Method is Bezout's determinant using exterior multiplication for its
    % calculation.
    begin integer n,nm; scalar ap,ep,uh,ut,vh,vt,x,cx,cxf,cep,cuh,cvh;
-      if !*fastresvb then
+      if !*fastresvb then <<
       	 write "entering bezout.";
-      terpri();
+      	 terpri()
+      >>;
       !*exp := t;
       if domainp u or null(mvar u eq w) then
       	 return if not domainp v and mvar v eq w then
