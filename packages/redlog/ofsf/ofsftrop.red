@@ -79,7 +79,7 @@ asserted procedure ofsf_pzeropeval(argl: List): List;
 
 asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
    begin integer f, vl, w;
-      ioto_tprin2t {"!*echo = ", !*echo};
+%%      ioto_tprin2t {"!*echo = ", !*echo};
       f := numr simp car argl;
 %%      vl := sort(kernels f, 'ordop);
 %%       if null vl or null cdr vl then
