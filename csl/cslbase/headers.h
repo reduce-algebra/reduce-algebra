@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 561d069d 13-Jul-2013 */
+/* Signature: 73dc1e65 13-Jul-2013 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -145,7 +145,7 @@
 #undef cos
 #undef tan
 #undef sinh
-#under cosh
+#undef cosh
 #undef asin
 #undef acos
 #undef atan
