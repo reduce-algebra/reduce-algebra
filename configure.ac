@@ -76,6 +76,13 @@ AC_ARG_WITH(force,
   [],
   [with_force="no"])
 
+AC_ARG_WITH(crlibm,
+  AC_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm library]),
+  [],
+  [with_crlibm="yes"])
+
+AC_MSG_NOTICE([with_crlibm = $with_crlibm])
+
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
@@ -847,8 +854,8 @@ then
       else
         AC_MSG_ERROR([SDK $with_SDK not found])
       fi
-      CFLAGS="$CFLAGS -msse2"
-      CXXFLAGS="$CXXFLAGS -msse2"
+      CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
+      CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
 # For wxWidgets I will ONLY support x86_64, and you should only at all
 # expect 10.6, 10.7 and 10.8 versions of the SDK to be useful.
       MACARCH="--enable-macos_arch=x86_64" 
@@ -961,6 +968,34 @@ then
 
 fi
 
+if test "x$with_crlibm" == "xno"
+then
+  AC_MSG_NOTICE([crlibm will not be used here])
+else
+  AC_MSG_NOTICE([About to configure crlibm])
+  mkdir -p crlibm
+  cd crlibm
+
+  if test "x$CC$CPP$CXX$CXXCPP" != "x"
+  then
+    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  fi
+  case $host in
+  i386* | i486* | i586* | i686*)
+    passcc="$passcc --enable-sse2"
+    ;;
+  esac
+  AC_MSG_NOTICE([passcc = $passcc])
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $ac_configure_args \
+        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+        --prefix=\"$builddir\""
+  AC_MSG_NOTICE([doconfig = $doconfig])
+  eval "$doconfig"
+
+  cd "$builddir"
+fi
+
 ###############################################################################
 
 
@@ -969,6 +1004,7 @@ AM_CONDITIONAL(psl, test "x$with_psl" != "xno")
 AM_CONDITIONAL(cslpsl, test "x$with_csl" != "xno" && test "x$with_psl" != "xno")
 AM_CONDITIONAL(fox, test "x$with_fox" != "xno")
 AM_CONDITIONAL(wx,  test "x$with_wx" != "xno")
+AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 
 AC_MSG_NOTICE([final output from top level configuration])
 

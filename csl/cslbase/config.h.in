@@ -476,6 +476,9 @@
 /* True for a (potentially) Windowed system */
 #undef WINDOW_SYSTEM
 
+/* Correct Rounding maths library should be used */
+#undef WITH_CRLIBM
+
 /* True if Intel or AMD (32 or 64-bit) */
 #undef X86
 

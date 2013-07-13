@@ -751,6 +751,8 @@ with_build
 with_pslbuild
 with_cygbuild
 with_cygbuild64
+with_force
+with_crlibm
 enable_test
 with_SDK
 with_cygwin
@@ -1434,6 +1436,8 @@ Optional Packages:
   --with-pslbuild         Used internally to control build directory
   --with-cygbuild         Used internally to control build directory
   --with-cygbuild64       Used internally to control build directory
+  --with-force            Used internally
+  --with-crlibm           Used internally
   --with-SDKl             Specify which MacOSX SDK to use, eg --with-sdk=10.8
   --with-cygwin           When building cywin/X11 version
   --with-x                use the X Window System
@@ -2859,6 +2863,20 @@ if test "${with_cygbuild64+set}" = set; then :
   withval=$with_cygbuild64;
 else
   with_cygbuild64="unknown"
+fi
+
+
+
+# Check whether --with-force was given.
+if test "${with_force+set}" = set; then :
+  withval=$with_force;
+fi
+
+
+
+# Check whether --with-crlibm was given.
+if test "${with_crlibm+set}" = set; then :
+  withval=$with_crlibm;
 fi
 
 

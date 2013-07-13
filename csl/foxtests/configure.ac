@@ -98,6 +98,16 @@ AC_ARG_WITH(cygbuild64,
   [],
   [with_cygbuild64="unknown"])
 
+AC_ARG_WITH(force,
+  AC_HELP_STRING([--with-force], [Used internally]),
+  [],
+  [])
+
+AC_ARG_WITH(crlibm,
+  AC_HELP_STRING([--with-crlibm], [Used internally]),
+  [],
+  [])
+
 AC_ARG_WITH(SDK,
   AC_HELP_STRING([--with-SDKl], [Eg --with-sdk=10.7]),
   [],

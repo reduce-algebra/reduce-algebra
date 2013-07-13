@@ -599,6 +599,24 @@ endif !fox
 $(FOXDEPS):
 	@cd ../fox && $(MAKE) install
 
+
+if crlibm
+
+CRLIBMDEPS=../lib/libcrlibm.a
+
+csl_LDADD += -L../lib -lcrlibm
+bootstrapreduce_LDADD += -L../lib -lcrlibm
+reduce_LDADD += -L../lib -lcrlibm
+
+csl_DEPENDENCIES += $(CRLIBMDEPS)
+bootstrapreduce_DEPENDENCIES += $(CRLIBMDEPS)
+reduce_DEPENDENCIES += $(CRLIBMDEPS)
+
+$(CRLIBMDEPS):
+	@cd ../crlibm && $(MAKE) install
+
+endif crlibm
+
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
 # process it can do a LOT of work that I do not want done. I can at least

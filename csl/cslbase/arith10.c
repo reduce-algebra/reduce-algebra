@@ -1,11 +1,11 @@
-/*  arith10.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith10.c                         Copyright (C) 1990-2013 Codemist Ltd */
 
 /*
  * Arithmetic functions.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 14662dad 30-Aug-2011 */
+/* Signature: 28f9e5fa 13-Jul-2013 */
 
 
 #include "headers.h"
@@ -51,6 +51,8 @@
  * Much of the code here is extracted from the portable Fortran library
  * used by Codemist with its Fortran compiler.
  */
+
+#ifndef HAVE_CRLIBM
 
 #ifdef WIN32
 
@@ -122,13 +124,13 @@ case 3: return sin(x);
     }
 }
 
-#else
+#else   // WIN32
 
 #define my_sin sin
 #define my_cos cos
 
-#endif
-
+#endif  // WIN32
+#endif // HAVE_CRLIBM
 
 #define CSL_log_2 0.6931471805599453094
 

@@ -589,6 +589,8 @@ PACKAGE_URL=''
 ac_unique_file="scripts/make.sh"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+crlibm_FALSE
+crlibm_TRUE
 wx_FALSE
 wx_TRUE
 fox_FALSE
@@ -678,6 +680,7 @@ with_pslbuild
 with_cygbuild
 with_cygbuild64
 with_force
+with_crlibm
 with_mingw64
 with_SDK
 with_lto
@@ -1334,6 +1337,7 @@ Optional Packages:
   --with-cygbuild         Used internally to control build directory
   --with-cygbuild64       Used internally to control build directory
   --with-force            Forces refresh of windows varients
+  --with-crlibm           Can be used to disable use of crlibm library
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
   --with-SDK              Select MacOSX SDK (eg --with-SDK=10.8) (CSL ONLY)
@@ -1991,6 +1995,18 @@ else
   with_force="no"
 fi
 
+
+
+# Check whether --with-crlibm was given.
+if test "${with_crlibm+set}" = set; then :
+  withval=$with_crlibm;
+else
+  with_crlibm="yes"
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: with_crlibm = $with_crlibm" >&5
+$as_echo "$as_me: with_crlibm = $with_crlibm" >&6;}
 
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
@@ -3287,8 +3303,8 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       else
         as_fn_error $? "SDK $with_SDK not found" "$LINENO" 5
       fi
-      CFLAGS="$CFLAGS -msse2"
-      CXXFLAGS="$CXXFLAGS -msse2"
+      CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
+      CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
 # For wxWidgets I will ONLY support x86_64, and you should only at all
 # expect 10.6, 10.7 and 10.8 versions of the SDK to be useful.
       MACARCH="--enable-macos_arch=x86_64"
@@ -3408,6 +3424,38 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
 
 fi
 
+if test "x$with_crlibm" == "xno"
+then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: crlibm will not be used here" >&5
+$as_echo "$as_me: crlibm will not be used here" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure crlibm" >&5
+$as_echo "$as_me: About to configure crlibm" >&6;}
+  mkdir -p crlibm
+  cd crlibm
+
+  if test "x$CC$CPP$CXX$CXXCPP" != "x"
+  then
+    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  fi
+  case $host in
+  i386* | i486* | i586* | i686*)
+    passcc="$passcc --enable-sse2"
+    ;;
+  esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $ac_configure_args \
+        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+        --prefix=\"$builddir\""
+  { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+  eval "$doconfig"
+
+  cd "$builddir"
+fi
+
 ###############################################################################
 
 
@@ -3449,6 +3497,14 @@ fi
 else
   wx_TRUE='#'
   wx_FALSE=
+fi
+
+ if test "x$with_crlibm" != "xno"; then
+  crlibm_TRUE=
+  crlibm_FALSE='#'
+else
+  crlibm_TRUE='#'
+  crlibm_FALSE=
 fi
 
 
@@ -3618,6 +3674,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${wx_TRUE}" && test -z "${wx_FALSE}"; then
   as_fn_error $? "conditional \"wx\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${crlibm_TRUE}" && test -z "${crlibm_FALSE}"; then
+  as_fn_error $? "conditional \"crlibm\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 66f2b1c6 03-Jun-2012 */
+/* Signature: 561d069d 13-Jul-2013 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -134,6 +134,45 @@
 #include "fwin.h"
 #endif
 #endif
+
+#ifdef HAVE_CRLIBM
+/*
+ * crlibm aims to produce correctly rounded results in all cases.
+ * The functions from it selected here are the ones that round to
+ * nearest.
+ */
+#undef sin
+#undef cos
+#undef tan
+#undef sinh
+#under cosh
+#undef asin
+#undef acos
+#undef atan
+#undef exp
+#undef exp2
+#undef log
+#undef log2
+#undef log10
+#undef pow
+
+#define sin        sin_rn
+#define cos        cos_rn
+#define tan        tan_rn
+#define sinh       sinh_rn
+#define cosh       cosh_rn
+#define asin       asin_rn
+#define acos       acos_rn
+#define atan       atan_rn
+#define exp        exp_rn
+#define exp2       exp2_rn
+#define log        log_rn
+#define log2       log2_rn
+#define log10      log10_rn
+#define pow        pow_rn
+
+#endif /* HAVE_CRLIBM */
+
 
 #endif /* this header included already */
 

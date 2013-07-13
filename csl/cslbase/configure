@@ -625,6 +625,8 @@ ac_header_list=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+crlibm_FALSE
+crlibm_TRUE
 valgrind_FALSE
 valgrind_TRUE
 cygpath_FALSE
@@ -790,6 +792,7 @@ with_build
 with_pslbuild
 with_cygbuild
 with_cygbuild64
+with_crlibm
 with_lto
 with_m32
 with_m64
@@ -1460,6 +1463,7 @@ Optional Packages:
   --with-pslbuild         used if I wish to call the PSL version
   --with-cygbuild         used if I wish to call the cygwin version
   --with-cygbuild64       used if I wish to call the 64-bit cygwin version
+  --with-crlibm           Can be used to disable use of crlibm
   --with-lto              Force extreme optimisation with gcc
   --with-m32              Force 32-bit model even on 64-bit gcc (deprecated)
   --with-m64              Force 64-bit model even if 32-bit is default
@@ -3367,6 +3371,22 @@ fi
 
 
 
+
+
+# Check whether --with-crlibm was given.
+if test "${with_crlibm+set}" = set; then :
+  withval=$with_crlibm;
+else
+  with_crlibm="yes"
+fi
+
+
+if test "x$with_crlibm" != "xno"
+then
+
+$as_echo "#define HAVE_CRLIBM 1" >>confdefs.h
+
+fi
 
 if test "x$BUILTFOR" = "xunknown"
 then
@@ -7860,6 +7880,50 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$as_me: rdynamic=$rdynamic_available" >&6;}
 fi
 
+case $host in
+i386* | i486* | i586* | i686*)
+# On 32-bit Intel-style machines I will try to build using gcc options
+# that force use of sse2 rather than 387 floating point arithmetic. This
+# should be faster and it avoids intermediate floating point values
+# remaining at 80-bit working precision (which messes up some attempts to
+# be clever). But the binary that is created will only run on a machine
+# from a Pentium 4 onwards (or AMD Operton/Athlon which were introduced in
+# 2003). I believe that for now I am not too upset if forcing these flags in
+# means that the binaries that are created will fail on CPUs that are a
+# full decade behind the cutting edge, but this comment is so that anybody
+# is still trying to use a Pentium 3 knows that I at least thought about them.
+# Processors that could cause worry here are:
+#  AMD prior to Athlon 64 (ie all Socket A CPUs)
+#  Intel prior to Pentium 4
+#  VIA C3 (distribution ceased in 2006. The C7 should be OK)
+#  Transmeta Crusoe (a fine museum item!)
+#
+  OLDCPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+printf("\n");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  sse2math_available="yes"
+else
+  CPPFLAGS="$OLDLDFLAGS"
+    sse2math_available="no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: SSE math status = $sse2math_available" >&5
+$as_echo "$as_me: SSE math status = $sse2math_available" >&6;}
+  ;;
+esac
+
 if test "x$darwin_build" = "xyes"
 then
 # I COULD be trying to build on raw Darwin without MacOS present, and in that
@@ -11555,6 +11619,14 @@ else
   valgrind_FALSE=
 fi
 
+ if test "x$crlibm" != "xno"; then
+  crlibm_TRUE=
+  crlibm_FALSE='#'
+else
+  crlibm_TRUE='#'
+  crlibm_FALSE=
+fi
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -11759,6 +11831,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${valgrind_TRUE}" && test -z "${valgrind_FALSE}"; then
   as_fn_error $? "conditional \"valgrind\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${crlibm_TRUE}" && test -z "${crlibm_FALSE}"; then
+  as_fn_error $? "conditional \"crlibm\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

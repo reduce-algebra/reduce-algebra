@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 102058c8 05-Jun-2013 */
+/* Signature: 18b8a7e1 13-Jul-2013 */
 
 
 /*
@@ -865,6 +865,15 @@ stack_t signal_stack;
 
 #endif
 
+#ifdef HAVE_CRLIBM
+static unsigned long long crlibstatus = 0;
+
+static void tidy_up_crlibm()
+{
+    crlibm_exit(crlibstatus);
+}
+#endif
+
 static void lisp_main(void)
 {
     Lisp_Object nil;
@@ -892,6 +901,10 @@ static void lisp_main(void)
 #else
     jmp_buf this_level, *save_level = errorset_buffer;
 #endif
+#endif
+#ifdef HAVE_CRLIBM
+    crlibstatus = crlibm_init(void);
+    atexit(tidy_up_crlibm);
 #endif
     tty_count = 0;
     while (YES)

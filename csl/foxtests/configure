@@ -741,6 +741,8 @@ with_build
 with_pslbuild
 with_cygbuild
 with_cygbuild64
+with_force
+with_crlibm
 with_SDK
 with_cygwin
 with_fox
@@ -1397,6 +1399,8 @@ Optional Packages:
   --with-pslbuild         Used internally to control build directory
   --with-cygbuild         Used internally to control build directory
   --with-cygbuild64       Used internally to control build directory
+  --with-force            Used internally
+  --with-crlibm           Used internally
   --with-SDKl             Eg --with-sdk=10.7
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-fox=DIR          FOX installation location
@@ -3223,6 +3227,20 @@ if test "${with_cygbuild64+set}" = set; then :
   withval=$with_cygbuild64;
 else
   with_cygbuild64="unknown"
+fi
+
+
+
+# Check whether --with-force was given.
+if test "${with_force+set}" = set; then :
+  withval=$with_force;
+fi
+
+
+
+# Check whether --with-crlibm was given.
+if test "${with_crlibm+set}" = set; then :
+  withval=$with_crlibm;
 fi
 
 

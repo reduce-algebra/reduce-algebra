@@ -125,6 +125,16 @@ AC_ARG_WITH(cygbuild64,
 
 AC_SUBST(with_cygbuild64)
 
+AC_ARG_WITH(crlibm,
+   AC_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm]),
+   [],
+   [with_crlibm="yes"])
+
+if test "x$with_crlibm" != "xno"
+then
+  AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
+fi
+
 if test "x$BUILTFOR" = "xunknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
@@ -772,6 +782,35 @@ then
   fi
   AC_MSG_NOTICE([rdynamic=$rdynamic_available])
 fi
+
+case $host in
+i386* | i486* | i586* | i686*)
+# On 32-bit Intel-style machines I will try to build using gcc options
+# that force use of sse2 rather than 387 floating point arithmetic. This
+# should be faster and it avoids intermediate floating point values
+# remaining at 80-bit working precision (which messes up some attempts to
+# be clever). But the binary that is created will only run on a machine
+# from a Pentium 4 onwards (or AMD Operton/Athlon which were introduced in
+# 2003). I believe that for now I am not too upset if forcing these flags in
+# means that the binaries that are created will fail on CPUs that are a
+# full decade behind the cutting edge, but this comment is so that anybody
+# is still trying to use a Pentium 3 knows that I at least thought about them.
+# Processors that could cause worry here are:
+#  AMD prior to Athlon 64 (ie all Socket A CPUs)
+#  Intel prior to Pentium 4
+#  VIA C3 (distribution ceased in 2006. The C7 should be OK)
+#  Transmeta Crusoe (a fine museum item!)
+#
+  OLDCPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                  [[printf("\n");]])],
+    [sse2math_available="yes"],
+    [CPPFLAGS="$OLDLDFLAGS"
+    sse2math_available="no"])
+  AC_MSG_NOTICE([SSE math status = $sse2math_available])
+  ;;
+esac
 
 if test "x$darwin_build" = "xyes"
 then
@@ -1519,6 +1558,7 @@ AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
+AM_CONDITIONAL(crlibm, test "x$crlibm" != "xno")
 
 AC_OUTPUT
 
