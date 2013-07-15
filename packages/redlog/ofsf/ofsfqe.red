@@ -1536,13 +1536,16 @@ procedure ofsf_mkgtagq(eset,theo);
    % Ordered field standard form make Gauss tag quadratic case. [eset]
    % is an elimination set; [theo] is the current theory.
    begin scalar a;
-      if null cdr eset and caar eset eq 'ofsf_qesubcq then
- 	 return 'quaq;
       a := atsoc('ofsf_qesubcr2,eset) or atsoc('ofsf_qesubcr1,eset);
-      % We know [a neq nil].
-      if null cadr cadr cadr a then  % $b$ of the first root expression.
-   	 return 'qua2q;
-      return 'quar
+      if a then <<
+      	 if not null cadr cadr cadr a then  % $b$ of the first root expression.
+      	    return 'quar;
+   	 return 'qua2q
+      >>;
+      % No root expressions
+      if null cdr eset then
+ 	 return 'quaq;
+      return  'qua2q
    end;
 
 procedure ofsf_gelimset(alp);
