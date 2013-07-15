@@ -112,7 +112,7 @@ procedure rl_simp1(u);
       if null rl_cid!* then rederr {"select a context"};
       if atom u then
  	 return rl_simpatom u;
-      argnochk u;
+      argnochk u where !*strict_argcount = t;
       if (w := get(car u,'rl_simpfn)) then
  	 return if flagp(w,'full) then apply(w,{u}) else apply(w,{cdr u});
       if (w := get(car u,get(car rl_cid!*,'simpfnname))) then

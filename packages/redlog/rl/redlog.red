@@ -61,6 +61,8 @@ fluid '(rl_cid!* rl_argl!* rl_usedcname!* rl_deflang!* rl_ocswitches!*
 
 fluid '(fancy!-line!* fancy!-pos!*);
 
+fluid '(!*strict_argcount);
+
 switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlsisocx,rlsipw,rlsipo,rltabib,rlverbose,rlrealtime,rlidentify,rlgssub,
    rlgsrad,rlgsred,rlgsprod,rlqepnf,rlqedfs,rlparallel,rlopt1s,rlbrop,
