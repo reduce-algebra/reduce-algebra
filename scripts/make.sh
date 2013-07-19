@@ -60,12 +60,16 @@ host=`./config.guess`
 host=`scripts/findhost.sh $host`
 os=`scripts/findos.sh`
 
-case `uname -m -o` in
-*i686*Cygwin*)
-  cyg32="yes"
-  ;;
-*x86_64*Cygwin*)
-  cyg64="yes"
+case `uname -s` in
+*CYGWIN*)
+  case `uname -m -o` in
+  *i686*Cygwin*)
+    cyg32="yes"
+    ;;
+  *x86_64*Cygwin*)
+    cyg64="yes"
+    ;;
+  esac
   ;;
 esac
 
