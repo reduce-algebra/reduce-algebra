@@ -458,6 +458,9 @@ defautoload(qhull_qhull, qhull, expr, 1);
 
 % Redlog entry points
 
+put('rlset, 'psopfn, 'rl_set!$);
+defautoload(rl_set!$, redlog, expr, 1);
+
 defautoload(rl_set, redlog, expr, 1);
 
 % Gurobi entry points
