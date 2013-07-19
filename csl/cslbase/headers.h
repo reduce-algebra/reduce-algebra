@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 73dc1e65 13-Jul-2013 */
+/* Signature: 120ed9df 18-Jul-2013 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -141,6 +141,9 @@
  * The functions from it selected here are the ones that round to
  * nearest.
  */
+
+#include "crlibm.h"
+
 #undef sin
 #undef cos
 #undef tan

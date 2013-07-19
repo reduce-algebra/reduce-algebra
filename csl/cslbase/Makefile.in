@@ -67,28 +67,29 @@ host_triplet = @host@
 @mac_framework_TRUE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_TRUE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 @mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
-@crlibm_TRUE@am__append_5 = -L../lib -lcrlibm
+@crlibm_TRUE@am__append_5 = -I../include
 @crlibm_TRUE@am__append_6 = -L../lib -lcrlibm
 @crlibm_TRUE@am__append_7 = -L../lib -lcrlibm
-@crlibm_TRUE@am__append_8 = $(CRLIBMDEPS)
+@crlibm_TRUE@am__append_8 = -L../lib -lcrlibm
 @crlibm_TRUE@am__append_9 = $(CRLIBMDEPS)
 @crlibm_TRUE@am__append_10 = $(CRLIBMDEPS)
-@windows_TRUE@@wx_TRUE@am__append_11 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
-@windows_TRUE@@wx_FALSE@am__append_12 = fwindemo$(COM) reduce$(COM)
-@windows_TRUE@am__append_13 = csl$(COM)
+@crlibm_TRUE@am__append_11 = $(CRLIBMDEPS)
+@windows_TRUE@@wx_TRUE@am__append_12 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
+@windows_TRUE@@wx_FALSE@am__append_13 = fwindemo$(COM) reduce$(COM)
+@windows_TRUE@am__append_14 = csl$(COM)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO compile config.guess config.sub depcomp install-sh \
-	missing mkinstalldirs
+	missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -285,7 +286,8 @@ CPP = @CPP@
 
 # I wish to know where this build intends to install things...
 CPPFLAGS = @CPPFLAGS@ $(TRACE) $(am__append_1) -DBINDIR=$(bindir) \
-	-DPKGDATADIR=$(pkgdatadir)
+	-DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) \
+	$(am__append_5)
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
@@ -619,7 +621,6 @@ reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 # On the Mac local fonts get put into the Application Bundle not into
 # a directory here
 @mac_framework_TRUE@@wx_TRUE@FONTDEP = 
-AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
@@ -678,14 +679,14 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
 @windows_TRUE@fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-@windows_FALSE@csl_LDADD = $(FOX_LIBS) $(am__append_5)
+@windows_FALSE@csl_LDADD = $(FOX_LIBS) $(am__append_6)
 @windows_TRUE@csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
-@windows_TRUE@	$(am__append_5)
-@windows_FALSE@bootstrapreduce_LDADD = $(FOX_LIBS) $(am__append_6)
-@windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
 @windows_TRUE@	$(am__append_6)
-@windows_FALSE@reduce_LDADD = $(FOX_LIBS) $(am__append_7)
-@windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS) $(am__append_7)
+@windows_FALSE@bootstrapreduce_LDADD = $(FOX_LIBS) $(am__append_7)
+@windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
+@windows_TRUE@	$(am__append_7)
+@windows_FALSE@reduce_LDADD = $(FOX_LIBS) $(am__append_8)
+@windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS) $(am__append_8)
 @cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 
 # The purpose of these two tiny programs is explained in the
@@ -693,23 +694,23 @@ dyndemo_SOURCES = dyndemo.c
 # They are not compiled with the general configure-detected compilation
 # options.
 @cygwin_TRUE@@windows_TRUE@WINHELPERS = 
-@windows_FALSE@csl_DEPENDENCIES = $(FONTDEP) $(WXC) $(am__append_8)
+@windows_FALSE@csl_DEPENDENCIES = $(FONTDEP) $(WXC) $(am__append_9)
 @windows_TRUE@csl_DEPENDENCIES = local-cslexe.def local-cslcom.def \
 @windows_TRUE@	fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC) \
-@windows_TRUE@	$(am__append_8)
+@windows_TRUE@	$(am__append_9)
 @windows_FALSE@bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 @windows_FALSE@	reduce.doc/index.html $(AWKFILES) $(GP) $(WXC) \
-@windows_FALSE@	$(am__append_9)
+@windows_FALSE@	$(am__append_10)
 @windows_TRUE@bootstrapreduce_DEPENDENCIES =  \
 @windows_TRUE@	local-bootstrapreduceexe.def fwin-csl.$(OBJEXT) \
 @windows_TRUE@	$(FONTDEP) reduce.doc/index.html $(AWKFILES) \
-@windows_TRUE@	$(GP) $(WXC) $(am__append_9)
+@windows_TRUE@	$(GP) $(WXC) $(am__append_10)
 @windows_FALSE@reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
-@windows_FALSE@	$(AWKFILES) $(GP) $(WXC) $(am__append_10)
+@windows_FALSE@	$(AWKFILES) $(GP) $(WXC) $(am__append_11)
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def \
 @windows_TRUE@	local-reducecom.def $(reduceres) $(FONTDEP) \
 @windows_TRUE@	reduce.doc/index.html $(GP) $(WXC) $(AWKFILES) \
-@windows_TRUE@	$(am__append_10)
+@windows_TRUE@	$(am__append_11)
 @windows_FALSE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_FALSE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_TRUE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
@@ -733,7 +734,7 @@ DEST = -o
 
 #FOXDEPS=../lib/libFOX-1.6.lib
 @fox_TRUE@@win64_TRUE@FOXDEPS = ../lib/libFOX-1.6.a
-@crlibm_TRUE@CRLIBMDEPS = ../lib/libcrlibm.a
+@crlibm_TRUE@CRLIBMDEPS = ../lib/libcrlibm.a ../include/crlibm.h
 @wx_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
 @wx_FALSE@WXDEPS = 
 @wx_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
@@ -808,11 +809,11 @@ srcfiles = $(mainsrc) $(csl_SOURCES)
 @fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@wx_FALSE@	reduce$(EXEEXT) $(am__append_11) $(am__append_12)
+@wx_FALSE@	reduce$(EXEEXT) $(am__append_12) $(am__append_13)
 @wx_TRUE@mainbin = $(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) \
-@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_11) \
-@wx_TRUE@	$(am__append_12)
-binfiles = $(mainbin) csl$(EXEEXT) $(am__append_13)
+@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_12) \
+@wx_TRUE@	$(am__append_13)
+binfiles = $(mainbin) csl$(EXEEXT) $(am__append_14)
 @win64_FALSE@@windows_FALSE@NAME = $(BUILD)
 @win64_FALSE@@windows_TRUE@NAME = windows32
 @win64_TRUE@NAME = windows64

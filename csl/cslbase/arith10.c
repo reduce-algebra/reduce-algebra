@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 28f9e5fa 13-Jul-2013 */
+/* Signature: 71e70550 18-Jul-2013 */
 
 
 #include "headers.h"
@@ -130,6 +130,11 @@ case 3: return sin(x);
 #define my_cos cos
 
 #endif  // WIN32
+#else
+
+#define my_sin sin
+#define my_cos cos
+
 #endif // HAVE_CRLIBM
 
 #define CSL_log_2 0.6931471805599453094

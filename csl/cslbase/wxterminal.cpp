@@ -137,8 +137,8 @@ static int returncode = 0;
 
 // See cmtt_coverage lower down in this code
 
-extern int32_t cmtt_coverage[];
-extern int32_t deja_coverage[];
+extern uint32_t cmtt_coverage[];
+extern uint32_t deja_coverage[];
 
 #define CMTT_AVAIL(ch)    \
     ((ch) <= 0xffff &&    \
@@ -1025,7 +1025,7 @@ static localFonts fontNames[] =
 // using a jiffy Java program, and at present related to the 0.6.3a version
 // of the font concerned.
 
-int32_t cmtt_coverage[2048] = {
+uint32_t cmtt_coverage[2048] = {
     0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
     0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xcdfcfc66, 0x79bffcff, 0xfcffcfff,
@@ -1571,7 +1571,7 @@ int32_t cmtt_coverage[2048] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 
-int32_t deja_coverage[384] =
+uint32_t deja_coverage[384] =
 {
     0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
     0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,

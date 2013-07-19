@@ -359,7 +359,7 @@ else !mac_framework
 FONTDEP=reduce.$(fontsdir)/$(samplefont)
 endif !mac_framework
 
-AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
+CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
@@ -602,7 +602,9 @@ $(FOXDEPS):
 
 if crlibm
 
-CRLIBMDEPS=../lib/libcrlibm.a
+CRLIBMDEPS=../lib/libcrlibm.a ../include/crlibm.h
+
+CPPFLAGS += -I../include
 
 csl_LDADD += -L../lib -lcrlibm
 bootstrapreduce_LDADD += -L../lib -lcrlibm

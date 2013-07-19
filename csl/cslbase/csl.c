@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 18b8a7e1 13-Jul-2013 */
+/* Signature: 55fae897 18-Jul-2013 */
 
 
 /*
@@ -903,7 +903,7 @@ static void lisp_main(void)
 #endif
 #endif
 #ifdef HAVE_CRLIBM
-    crlibstatus = crlibm_init(void);
+    crlibstatus = crlibm_init();
     atexit(tidy_up_crlibm);
 #endif
     tty_count = 0;

@@ -1,10 +1,17 @@
 %
-% This is possibly not quite a regression test in that answers are not
-% yet "correct" to start with. But it is something that can be run
-% using CSL and PSL on native Windows, Cygwin, Linux, MacOSX and other
-% platforms to collect information about how Lisp-level floating point
-% arithmetic and elementary function libraries behave. In an IDEAL world
-% I think that the same results would be generated regardless of platform.
+% CSL is moving to use an underlying maths library called "crlibm",
+% for "Correctly Rounded libm". This is supposed to deliver correctly
+% rounded double-precision results for the basic elementary functions
+% sin, cos, exp and log (and a few others) on any machine that uses IEEE
+% floating point. And these days I expect that to be universal. Since the
+% results are "correct" they should be identical on all platforms - and that
+% is something that has not been the case hithertoo.
+%
+% If these results are "perfect" then they are ones that the PSL system
+% could also aspire too.
+
+% 
+% In this test I will just exercise sin(x) for x in the first quadrant.
 %
 
 lisp;

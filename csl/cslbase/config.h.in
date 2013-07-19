@@ -27,6 +27,9 @@
 /* Define to 1 if the system has the type `cpu_set_t'. */
 #undef HAVE_CPU_SET_T
 
+/* Correct Rounding maths library should be used */
+#undef HAVE_CRLIBM
+
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
 
@@ -475,9 +478,6 @@
 
 /* True for a (potentially) Windowed system */
 #undef WINDOW_SYSTEM
-
-/* Correct Rounding maths library should be used */
-#undef WITH_CRLIBM
 
 /* True if Intel or AMD (32 or 64-bit) */
 #undef X86

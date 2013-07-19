@@ -1,6 +1,10 @@
                        REDUCE - Open Source release
 
 
+                                July 2013
+
+Tiny updates to this file just to try to keep the credits to other
+projects that are used up to date.
 
                              December 2010
 
@@ -131,6 +135,10 @@ The files in the "psl" directory come from ZIB and are some of the ones
 that they used with the Reduce Development System. As shown there these are
 also under a BSD license - see the HP_disclaimer.txt that confirms a release
 from one of the earlier major copyright holders.
+
+crlibm is a "correctly rounded maths library" subject to LGPL 2.1. It was
+fetched from http://lipforge.ens-lyon.fr/www/crlibm/ but needed (minor)
+aljustment to let it build here.
 
 
 

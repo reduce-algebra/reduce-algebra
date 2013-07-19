@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 530a6121 29-Jun-2013 */
+/* Signature: 12267764 18-Jul-2013 */
 
 #include "headers.h"
 
@@ -5281,6 +5281,9 @@ static void set_up_variables(CSLbool restart_flag)
         if (SIXTY_FOUR_BIT) w = cons(make_keyword("sixty-four"), w);
 #if defined HAVE_POPEN || defined HAVE_FWIN
         w = cons(make_keyword("pipes"), w);
+#endif
+#if defined HAVE_CRLIBM
+        w = cons(make_keyword("crlibm"), w);
 #endif
 #if defined HAVE_UNISTD_H && \
     defined HAVE_SYS_TYPES_H && \
