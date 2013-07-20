@@ -606,6 +606,55 @@ CRLIBMDEPS=../lib/libcrlibm.a ../include/crlibm.h
 
 CPPFLAGS += -I../include
 
+# The following ugly dependencies are here so that one can go, for
+# instance, "make csl.o" in a clean tree and crlibm building will get
+# triggered.
+
+# Note that all the compilation of these files must be performed using
+# a Make "default" action so that the dependencies shown here are not
+# taken as speciying conflicting actions.
+
+arith01.$(OBJEXT):	../include/crlibm.h
+arith02.$(OBJEXT):	../include/crlibm.h
+arith03.$(OBJEXT):	../include/crlibm.h
+arith04.$(OBJEXT):	../include/crlibm.h
+arith05.$(OBJEXT):	../include/crlibm.h
+arith06.$(OBJEXT):	../include/crlibm.h
+arith07.$(OBJEXT):	../include/crlibm.h
+arith08.$(OBJEXT):	../include/crlibm.h
+arith09.$(OBJEXT):	../include/crlibm.h
+arith10.$(OBJEXT):	../include/crlibm.h
+arith11.$(OBJEXT):	../include/crlibm.h
+arith12.$(OBJEXT):	../include/crlibm.h
+bytes1.$(OBJEXT):	../include/crlibm.h
+char.$(OBJEXT):	../include/crlibm.h
+csl.$(OBJEXT):	../include/crlibm.h
+cslmpi.$(OBJEXT):	../include/crlibm.h
+cslread.$(OBJEXT):	../include/crlibm.h
+eval1.$(OBJEXT):	../include/crlibm.h
+eval2.$(OBJEXT):	../include/crlibm.h
+eval3.$(OBJEXT):	../include/crlibm.h
+eval4.$(OBJEXT):	../include/crlibm.h
+fasl.$(OBJEXT):	../include/crlibm.h
+fns1.$(OBJEXT):	../include/crlibm.h
+fns2.$(OBJEXT):	../include/crlibm.h
+fns3.$(OBJEXT):	../include/crlibm.h
+gc.$(OBJEXT):	../include/crlibm.h
+imulvc.$(OBJEXT):	../include/crlibm.h
+jit1.$(OBJEXT):	../include/crlibm.h
+jit2.$(OBJEXT):	../include/crlibm.h
+jit3.$(OBJEXT):	../include/crlibm.h
+jitx86.$(OBJEXT):	../include/crlibm.h
+ompsetup.$(OBJEXT):	../include/crlibm.h
+openmath.$(OBJEXT):	../include/crlibm.h
+preserve.$(OBJEXT):	../include/crlibm.h
+print.$(OBJEXT):	../include/crlibm.h
+pro.$(OBJEXT):	../include/crlibm.h
+restart.$(OBJEXT):	../include/crlibm.h machineid.c
+stubs.$(OBJEXT):	../include/crlibm.h
+sysfwin.$(OBJEXT):	../include/crlibm.h
+sysipaq.$(OBJEXT):	../include/crlibm.h
+
 csl_LDADD += -L../lib -lcrlibm
 bootstrapreduce_LDADD += -L../lib -lcrlibm
 reduce_LDADD += -L../lib -lcrlibm
@@ -617,7 +666,13 @@ reduce_DEPENDENCIES += $(CRLIBMDEPS)
 $(CRLIBMDEPS):
 	@cd ../crlibm && $(MAKE) install
 
-endif crlibm
+else !crlibm
+# It is important for the next line that restart.$(OBJEXT) is created from
+# restart.c using a generic default rule - otherwise the lack of
+# explicit actions here would hurt.
+restart.$(OBJEXT):	machineid.c
+
+endif !crlibm
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1434,11 +1489,6 @@ machineid.c:	cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 		$(srcdir)/cslerror.h $(srcdir)/externs.h \
 		$(srcdir)/arith.h $(srcdir)/entries.h > machineid-2.c
 	cat machineid-1.c machineid-2.c > machineid.c
-
-# It is important for the next line that restart.$(OBJEXT) is created from
-# restart.c using a generic default rule - otherwise the lack of
-# explicit actions here would hurt.
-restart.$(OBJEXT):	machineid.c
 
 -include reduce.dep
 

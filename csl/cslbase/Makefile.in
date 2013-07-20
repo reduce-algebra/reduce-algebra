@@ -82,14 +82,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO compile config.guess config.sub depcomp install-sh \
-	missing
+	missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -2445,8 +2445,62 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 $(FOXDEPS):
 	@cd ../fox && $(MAKE) install
 
+# The following ugly dependencies are here so that one can go, for
+# instance, "make csl.o" in a clean tree and crlibm building will get
+# triggered.
+
+# Note that all the compilation of these files must be performed using
+# a Make "default" action so that the dependencies shown here are not
+# taken as speciying conflicting actions.
+
+@crlibm_TRUE@arith01.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith02.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith03.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith04.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith05.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith06.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith07.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith08.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith09.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith10.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith11.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith12.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@bytes1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@char.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@cslmpi.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@cslread.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@eval1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@eval2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@eval3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@eval4.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@fasl.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@fns1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@fns2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@fns3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@gc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@imulvc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@jit1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@jit2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@jit3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@jitx86.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@ompsetup.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@openmath.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@preserve.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@print.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@pro.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@restart.$(OBJEXT):	../include/crlibm.h machineid.c
+@crlibm_TRUE@stubs.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@sysfwin.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@sysipaq.$(OBJEXT):	../include/crlibm.h
+
 @crlibm_TRUE@$(CRLIBMDEPS):
 @crlibm_TRUE@	@cd ../crlibm && $(MAKE) install
+
+# It is important for the next line that restart.$(OBJEXT) is created from
+# restart.c using a generic default rule - otherwise the lack of
+# explicit actions here would hurt.
+@crlibm_FALSE@restart.$(OBJEXT):	machineid.c
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -2931,11 +2985,6 @@ machineid.c:	cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 		$(srcdir)/cslerror.h $(srcdir)/externs.h \
 		$(srcdir)/arith.h $(srcdir)/entries.h > machineid-2.c
 	cat machineid-1.c machineid-2.c > machineid.c
-
-# It is important for the next line that restart.$(OBJEXT) is created from
-# restart.c using a generic default rule - otherwise the lack of
-# explicit actions here would hurt.
-restart.$(OBJEXT):	machineid.c
 
 -include reduce.dep
 
