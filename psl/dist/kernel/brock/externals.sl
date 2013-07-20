@@ -108,9 +108,11 @@
 (external-function external_timc       (buffer))
 (external-function external_stat       (path buf))
 (external-function external_link       (path1 path2))
-(external-function external_unlink     (path))
 (external-function external_strlen     (strptr))
+(external-function external_unlink     (path))
 (external-function external_setenv     (varstring valstring))
+(external-function external_rmdir      (path))
+(external-function external_mkdir      (path mode))
 (external-function external_getenv     (envstring))
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
@@ -140,7 +142,7 @@
 % Defined in pwd-fn.c
 %
 (external-function external_pwd         ())
- 
+
  
 % Defined in sigs.c
 %
@@ -224,6 +226,14 @@
 (external-function semctl (semid semnum cmd arg))
 (external-function semget (key nsems semflg))
 (external-function semop  (semid sembuf nsops))
+
+% dynamic linking
+
+
+(external-function dlopen (filenam flag))
+(external-function dlerror (void))
+(external-function dlsym (handle))
+(external-function dlclose (handle))
 
  
 (on r2i)
