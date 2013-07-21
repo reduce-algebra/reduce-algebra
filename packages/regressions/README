@@ -1,11 +1,13 @@
 The idea of this directory is that it is a place to put test scripts and
 corresponding output as a record when a bug is corrected. The protocol
 will be that files here come in pairs
-     testcase.tst         free-standing tesst script
+     testcase.tst         free-standing test script
      testcase.rlg         corresponding CORRECT output
 I suggest that file-names include a date and that test scripts start
-with a comment that explains what big was fixed. I will put a sample
-initial one in.
+with a comment that explains what big was fixed. If the dates are written
+as YYYY-mm-dd with the month (mm) and day (dd) as two-digit values (eg
+2013-03-14 for 14th February 2013) then the test cases will tend to end up
+sorted into a sequence order that reflects when they were added.
 
 It is IMPORTANT that the file-name selected should not be the same as
 the name of any other package or test file, because if that did happen it
@@ -15,4 +17,5 @@ Because there is a reference log the test script does not HAVE to
 check and validate its own output, however when convenient that could
 be seen as good form.
 
-Arthur Norman. August 2011
+Arthur Norman. August 2011.    updated July 2013.
+
