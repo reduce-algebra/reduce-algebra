@@ -2553,7 +2553,7 @@ procedure tm_setpchar!-psl(c);
 
 switch redfront_mode;
 
-% I do not think there is any merit in even definning this if I am not
+% I do not think there is any merit in even defining this if I am not
 % using CSL.
 
 procedure tm_setpchar!-csl(c);
@@ -2564,7 +2564,7 @@ procedure tm_setpchar!-csl(c);
 % what I do. I expect to run with this module loaded almost all of the time
 % which is why I want a control via switch rather than through just
 % "load tmprint". I note that if CSL is loaded from a script that attaches it
-% to redfront of som eother interface that the invocation can use
+% to redfront of some other interface that the invocation can use
 %      -D*redfront_mode
 % to preset the switch, which ought to be a small enough burden to be
 % tolerable!

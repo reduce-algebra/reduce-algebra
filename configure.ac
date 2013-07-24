@@ -469,28 +469,33 @@ case $inplace in
       then
         cygplatforms="x86_64-pc-cygwin"
       fi
+      AC_MSG_NOTICE([cygplatfroms = $cygplatforms])
       for buildmc in $cygplatforms
       do
         build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
+        AC_MSG_NOTICE([buildmc=$buildmc => build=$build])
         pass_host=""
         case `uname -m -o` in
         *i686*Cygwin*)
+          AC_MSG_NOTICE([i686-Cygwin host building for $buildmc])
           if test "x$buildmc" != "xi686-pc-cygwin"
           then
             pass_host="--host=$buildmc"
           fi
           ;;
         *x86_64*Cygwin*)
+          AC_MSG_NOTICE([x86_64-Cygwin host building for $buildmc])
           if test "x$buildmc" != "xx86_64-pc-cygwin"
           then
             pass_host="--host=$buildmc"
           fi
           ;;
         *)
+          AC_MSG_NOTICE([non-cygwin host building for $buildmc])
           pass_host="--host=$buildmc"
           ;;
         esac
-        AC_MSG_NOTICE([buildmc=$buildmc pass_host=$pass_host])
+        AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
         if test -x /usr/bin/$buildmc-gcc ||
            test "x$pass_host" = "x"
         then
@@ -736,9 +741,10 @@ then
 # If I am compiling for native Cygwin I will not pass down "--host"
 # if I am building for the natural target.
   AC_MSG_NOTICE([host=$host build=$build])
-  pass_host=""
+  pass_host="--host=$host"
   if test "x$with_cygwin" != "xno"
   then
+    pass_host=""
     case `uname -m -o` in
     *i686*Cygwin*)
       if test "x$host" != "xi686-unknown-cygwin" &&
@@ -904,7 +910,8 @@ then
     AC_MSG_NOTICE([passcc = $passcc pass_host=$pass_host])
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
             $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+            CXXFLAGS=\"$CXXFLAGS\" \
+            LDFLAGS=\"$LDFLAGS -Wl,--allow-multiple-definition\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat26 \
             --with-png=builtin --without-libjpeg \

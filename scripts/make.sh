@@ -148,7 +148,16 @@ do
      cd ${l}
      echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
      $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-     test $? -gt $rc && rc=$?
+     r=$?
+# This version exits if any of the attempts to build fails
+     if test $r != 0
+     then
+       echo Building failed with return code $r for version ${l}
+       exit $r
+     fi
+# What I had before kept going if one build failed but recorded the
+# highest return code from all versions.
+     test $r -gt $rc && rc=$?
      cd ../..
    fi
 done

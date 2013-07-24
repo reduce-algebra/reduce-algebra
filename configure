@@ -2443,29 +2443,39 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
       then
         cygplatforms="x86_64-pc-cygwin"
       fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: cygplatfroms = $cygplatforms" >&5
+$as_echo "$as_me: cygplatfroms = $cygplatforms" >&6;}
       for buildmc in $cygplatforms
       do
         build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
+        { $as_echo "$as_me:${as_lineno-$LINENO}: buildmc=$buildmc => build=$build" >&5
+$as_echo "$as_me: buildmc=$buildmc => build=$build" >&6;}
         pass_host=""
         case `uname -m -o` in
         *i686*Cygwin*)
+          { $as_echo "$as_me:${as_lineno-$LINENO}: i686-Cygwin host building for $buildmc" >&5
+$as_echo "$as_me: i686-Cygwin host building for $buildmc" >&6;}
           if test "x$buildmc" != "xi686-pc-cygwin"
           then
             pass_host="--host=$buildmc"
           fi
           ;;
         *x86_64*Cygwin*)
+          { $as_echo "$as_me:${as_lineno-$LINENO}: x86_64-Cygwin host building for $buildmc" >&5
+$as_echo "$as_me: x86_64-Cygwin host building for $buildmc" >&6;}
           if test "x$buildmc" != "xx86_64-pc-cygwin"
           then
             pass_host="--host=$buildmc"
           fi
           ;;
         *)
+          { $as_echo "$as_me:${as_lineno-$LINENO}: non-cygwin host building for $buildmc" >&5
+$as_echo "$as_me: non-cygwin host building for $buildmc" >&6;}
           pass_host="--host=$buildmc"
           ;;
         esac
-        { $as_echo "$as_me:${as_lineno-$LINENO}: buildmc=$buildmc pass_host=$pass_host" >&5
-$as_echo "$as_me: buildmc=$buildmc pass_host=$pass_host" >&6;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host buildmc=$buildmc pass_host=$pass_host" >&5
+$as_echo "$as_me: host=$host buildmc=$buildmc pass_host=$pass_host" >&6;}
         if test -x /usr/bin/$buildmc-gcc ||
            test "x$pass_host" = "x"
         then
@@ -3179,9 +3189,10 @@ $as_echo "$as_me: with_fox=$with_fox, with_wx=$with_wx" >&6;}
 # if I am building for the natural target.
   { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host build=$build" >&5
 $as_echo "$as_me: host=$host build=$build" >&6;}
-  pass_host=""
+  pass_host="--host=$host"
   if test "x$with_cygwin" != "xno"
   then
+    pass_host=""
     case `uname -m -o` in
     *i686*Cygwin*)
       if test "x$host" != "xi686-unknown-cygwin" &&
@@ -3354,7 +3365,8 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
 $as_echo "$as_me: passcc = $passcc pass_host=$pass_host" >&6;}
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
             $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+            CXXFLAGS=\"$CXXFLAGS\" \
+            LDFLAGS=\"$LDFLAGS -Wl,--allow-multiple-definition\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat26 \
             --with-png=builtin --without-libjpeg \
