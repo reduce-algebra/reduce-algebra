@@ -472,7 +472,7 @@ procedure sf_tdeg1(f,xl);
    else if null xl then
       0
    else
-      max(sf_tdeg1(sf_lc(f,car xl),cdr xl)+sf_deg(f,car xl),
+      max(sf_tdeg1(sf_lc(f,car xl),cdr xl)+sfto_vardeg(f,car xl),
 	 sf_tdeg1(sf_red(f,car xl),xl));
 
 % - leading coefficient - %
@@ -548,9 +548,9 @@ procedure sf_foldgcd(fl);
 procedure sf_densecoeffs(f,x);
    % Dense coefficient list.
    begin scalar clred;
-      if sf_deg(f,x)<=0 then return {f};
+      if sfto_vardeg(f,x)<=0 then return {f};
       clred := sf_densecoeffs(red f,x);
-      for i :=  max(0,sf_deg(red f,x))+1 : (ldeg f)-1  do clred := nil . clred;
+      for i :=  max(0,sfto_vardeg(red f,x))+1 : (ldeg f)-1  do clred := nil . clred;
       clred := lc f . clred;
       return clred
    end;
@@ -936,8 +936,8 @@ procedure mtx_sylvester(f,g,x);
    % (m+n lines and colums if m is degree of f in x and n is degree of
    % g in x).
    begin scalar m,n,syl,cf,cg;
-      m := sf_deg(f,x);
-      n := sf_deg(g,x);
+      m := sfto_vardeg(f,x);
+      n := sfto_vardeg(g,x);
       if m+n eq 0 then return mtx_0(0,0) else syl:= mtx_0(m+n,m+n);
       cf := sf_coeffs(f,x);
       cg := sf_coeffs(g,x);
@@ -955,7 +955,7 @@ procedure mtx_det(mtx); ofsf_det mtx;
 procedure mtx_resultant(f,g,x);
    if null f or null g then
       0
-   else if sf_deg(f,x)+sf_deg(g,x) eq 0 then
+   else if sfto_vardeg(f,x)+sfto_vardeg(g,x) eq 0 then
       1
    else
       mtx_det mtx_sylvester(f,g,x);
@@ -963,8 +963,8 @@ procedure mtx_resultant(f,g,x);
 procedure mtx_mmji(f,g,x,j,i);
    % Modified Sylvester matrix Mji.
    begin scalar m,n,ltd1,ltd2,ctd1,ctd2; % ltd: lines to delete, ctd: columns to del.
-      m := sf_deg(f,x);
-      n := sf_deg(g,x);
+      m := sfto_vardeg(f,x);
+      n := sfto_vardeg(g,x);
       ltd1 := for k := (m+n)-j+1 : m+n collect k;
       ltd2 := for k := n-j+1 : n collect k;
       ctd1 := for k := (m+n-i-j)+1 : m+n collect k;
@@ -1047,7 +1047,7 @@ procedure tgdomainp(tf);
 procedure sf_tgdeg(tf,x);
    % Tagged standard form degree. [tf] is a TAG(SF), [x]
    % is a kernel. Returns an INT.
-   sf_deg(tag_object tf,x);
+   sfto_vardeg(tag_object tf,x);
 
 procedure sf_tglc(tf,x);
    % Tagged standard form leading coefficient. [tf] is a TAG(SF), [x]
@@ -1237,7 +1237,7 @@ procedure ofsf_genprojset(transfn,projopfn,aa,varl,theo);
 
 procedure ofsf_polyoflevel(pp,varl,j);
    % Polynomials of level j. . Returns a list of SF.
-   lto_select1(function(lambda p,varl,j;sf_deg(p,nth(varl,j))>0),pp,{varl,j});
+   lto_select1(function(lambda p,varl,j;sfto_vardeg(p,nth(varl,j))>0),pp,{varl,j});
 
 procedure ofsf_tgpolyoflevel(pp,varl,j);
    % Tagged polynomials of level j. . Returns a list of TAG(SF).
@@ -1462,7 +1462,7 @@ procedure ofsf_projco2v(aa,x);
    begin scalar ll,dd,rr,jj1;
       if ofsf_cadverbosep() then ioto_prin2 "[projco2v ";
       ll := ofsf_projcoll(aa,x);
-      dd := for each a in aa join if sf_deg(a,x)>=2 then {sf_discriminant(a,x)};
+      dd := for each a in aa join if sfto_vardeg(a,x)>=2 then {sf_discriminant(a,x)};
       rr := for each a1 on aa join for each a2 in cdr aa collect
 	 sfto_resf(car a1,a2,x);
       jj1 := list2set lto_remove('domainp,union(union(ll,dd),rr));
@@ -1591,7 +1591,7 @@ procedure ofsf_projcobb1(f,x);
    % degree, the list is ordered such that the degrees are descending.
    begin scalar redl;
       redl := nil;
-      %while sf_deg(f,x)>=1 do << redl := f . redl; f := red(f) >>;
+      %while sfto_vardeg(f,x)>=1 do << redl := f . redl; f := red(f) >>;
       while not domainp f do << redl := f . redl; f := sf_red(f,x) >>;
       return reversip redl
    end;
@@ -1697,7 +1697,7 @@ procedure sfto_zerodimp2(x,htl);
 	 if domainp ht then
 	    expl := 0 . expl
 	 else if (mvar ht eq x and domainp sf_lc(ht,x)) then
-	    expl := sf_deg(ht,x) .expl;
+	    expl := sfto_vardeg(ht,x) .expl;
       if null expl then return nil else
 	 return foldr1(function(lambda a,b;if a<b then a else b),expl);
    end;
@@ -1705,7 +1705,7 @@ procedure sfto_zerodimp2(x,htl);
 procedure sfto_hterm(f);
    % Highest term. f is a SF. Returns a SF.
    if domainp f then f
-   else multf(sf_lc(f,mvar f),sf_expt(mvar f,sf_deg(f,mvar f)));
+   else multf(sf_lc(f,mvar f),sf_expt(mvar f,sfto_vardeg(f,mvar f)));
 
 procedure ofsf_projcobbv2gen(aa,x,theo);
    % . . Returns as dotted pair a LIST(SF) and a theory.
@@ -1758,7 +1758,7 @@ procedure ofsf_projcoll(bb,x);
    % list of SF, [x] is an identifier. Returns a list of SF.
    begin scalar ll;
       if ofsf_cadverbosep() then ioto_prin2 "(coL: ";
-      %ll := for each f in bb join if sf_deg(f,x)>=1 then {lc(f)};
+      %ll := for each f in bb join if sfto_vardeg(f,x)>=1 then {lc(f)};
       ll := for each f in bb collect sf_lc(f,x);
       if ofsf_cadverbosep() then ioto_prin2 {length ll,") "};
       return ll;
@@ -1777,7 +1777,7 @@ procedure ofsf_projmcll(aa,x);
 procedure sf_cdl(f,x);
    % Coefficient and degree list. [f] is a SF, [x] is an ID. Retuns a
    % LIST(PAIR(SF,INT)).
-   if sf_deg(f,x)>=1 then
+   if sfto_vardeg(f,x)>=1 then
       (lc f . ldeg f) . sf_cdl(red f,x)
    else
       {(f . 0)};
@@ -1795,7 +1795,7 @@ procedure sf_fromcdl(cdl,k);
 
 procedure sf_pscs(a,b,x);
    % All pscs. . Returns a list of SF.
-   for k := 0 : min(sf_deg(a,x),sf_deg(b,x))-1 collect sf_psc(a,b,x,k);
+   for k := 0 : min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1 collect sf_psc(a,b,x,k);
 
 procedure sf_pscsgen(a,b,x,theo);
    % All pscs, generic version. . Returns as a dotted pair a list of
@@ -1803,10 +1803,10 @@ procedure sf_pscsgen(a,b,x,theo);
    begin scalar k,pscl,finished;
       if not !*rlpscsgen then return sf_pscs(a,b,x) . theo;
       k := 0;
-      if k>min(sf_deg(a,x),sf_deg(b,x))-1 then return nil . theo;
+      if k>min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1 then return nil . theo;
       repeat <<
 	 pscl := sf_psc(a,b,x,k) . pscl; k := k+1;
-	 if k>min(sf_deg(a,x),sf_deg(b,x))-1 then <<
+	 if k>min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1 then <<
 	    if ofsf_cadverbosep() then ioto_prin2 "(end)"
 	 >> else if ofsf_surep(ofsf_0mk2('neq,car pscl),theo) then <<
 	    if ofsf_cadverbosep() then if domainp car pscl then
@@ -1817,8 +1817,8 @@ procedure sf_pscsgen(a,b,x,theo);
 	    theo := ofsf_0mk2('neq,car pscl) . theo;
 	    finished := t
 	 >>;
-      >> until finished or k>min(sf_deg(a,x),sf_deg(b,x))-1;
-%      if ofsf_cadverbosep() then ioto_prin2 {" (- ",min(sf_deg(a,x),sf_deg(b,x))-k,") "};
+      >> until finished or k>min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1;
+%      if ofsf_cadverbosep() then ioto_prin2 {" (- ",min(sfto_vardeg(a,x),sfto_vardeg(b,x))-k,") "};
       return pscl . theo;
    end;
 
@@ -1915,8 +1915,8 @@ procedure ofsf_splitredlordp(l1,l2);
       if le1 < le2 then return nil;
       x := mvar car l1;
       while l1 and not hit do <<
-	 d1 := sf_deg(car l1,x);
-	 d2 := sf_deg(car l2,x);
+	 d1 := sfto_vardeg(car l1,x);
+	 d2 := sfto_vardeg(car l2,x);
 	 l1 := cdr l1;
 	 l2 := cdr l2;
       	 if d1 > d2 then

@@ -240,6 +240,21 @@ procedure lto_min(l);
    % the maximum of [l].
    if null cdr l then car l else min(car l,lto_min cdr l);
 
+procedure lto_sgnchg(l);
+   % List tools number of sign changes of a list. [l] is a list of integers.
+   % Returns the number of sign changes when all zeroes are left out.
+   lto_sgnchg1(for each n in l join if sgn n = 0 then nil else {n});
+
+procedure lto_sgnchg1(l);
+   % List tools number of sign changes of a list 1. [l] is a list of non-zero
+   % integers. Returns the number of sign changes.
+   if null l or null cdr l then
+      0
+   else if sgn car l eq sgn cadr l then
+      lto_sgnchg1 cdr l
+   else
+      lto_sgnchg1 cdr l + 1;
+
 procedure setminus(l1,l2);
    'list . lto_setminus(cdr l1,cdr l2);
 

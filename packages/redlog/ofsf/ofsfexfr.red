@@ -45,19 +45,6 @@ compiletime on1 'assert;
 fluid '(anu_precision!*);
 anu_precision!* := 2;
 
-struct Anu asserted by AnuP;
-struct AnuList asserted by AnuListP;
-struct Aex asserted by AexP;
-
-asserted procedure AnuP(s: Any): Boolean;
-   eqcar(s, 'anu);
-
-asserted procedure AnuListP(s: Any): Boolean;
-   not s or pairp s and AnuP car s and AnuListP cdr s;
-
-asserted procedure AexP(s: Any): Boolean;
-   eqcar(s, 'aex);
-
 struct OfsfAtf asserted by List3;
 
 %DS
