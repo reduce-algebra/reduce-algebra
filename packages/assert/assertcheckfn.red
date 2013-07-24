@@ -46,7 +46,7 @@ struct Ftype checked by ftypep;
 struct Number checked by numberp;
 struct Constant checked by constantp;
 struct Any;
-struct Atom checked by atomp;
+struct Atom checked by atom;
 
 % Structures (2.3 of SL Report)
 struct List checked by listp;
