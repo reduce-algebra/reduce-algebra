@@ -56,13 +56,13 @@ struct Anu asserted by AnuP;
 struct AnuList asserted by AnuListP;
 
 asserted procedure IntegerListP(s: Any): Boolean;
-   not s or pairp s and fixp car s and IntegerListP cdr s;
+   null s or pairp s and fixp car s and IntegerListP cdr s;
 
 asserted procedure RationalP(s: Any): Boolean;
-   sqp s and (not numr s or fixp numr s) and fixp denr s;
+   sqp s and (null numr s or fixp numr s) and fixp denr s;
 
 asserted procedure RationalListP(s: Any): Boolean;
-   not s or pairp s and RationalP car s and RationalListP cdr s;
+   null s or pairp s and RationalP car s and RationalListP cdr s;
 
 asserted procedure GRationalP(s: Any): Boolean;
    RationalP s or s eq 'minfty or s eq 'infty;
@@ -71,13 +71,13 @@ asserted procedure RatIntervalP(s: Any): Boolean;
    RationalP car s and RationalP cdr s;
 
 asserted procedure RatIntervalListP(s: Any): Boolean;
-   not s or pairp s and RatIntervalP car s and RatIntervalListP cdr s;
+   null s or pairp s and RatIntervalP car s and RatIntervalListP cdr s;
 
 asserted procedure RatPolyP(s: Any): Boolean;
    sqp s and fixp denr s;
 
 asserted procedure RatPolyListP(s: Any): Boolean;
-   not s or pairp s and RatPolyP car s and RatPolyP cdr s;
+   null s or pairp s and RatPolyP car s and RatPolyP cdr s;
 
 asserted procedure AexCtxP(s: Any): Boolean;
    eqcar(s, 'ctx);
@@ -86,7 +86,7 @@ asserted procedure AexP(s: Any): Boolean;
    eqcar(s, 'aex);
 
 asserted procedure AexListP(s: Any): Boolean;
-   not s or pairp s and AexP car s and AexListP cdr s;
+   null s or pairp s and AexP car s and AexListP cdr s;
 
 asserted procedure AnuP(s: Any): Boolean;
    eqcar(s, 'anu);
@@ -98,10 +98,7 @@ asserted procedure AnuListP(s: Any): Boolean;
 
 asserted procedure rat_mk(n: Integer, d: Integer): Rational;
    % Rational number make.
-   <<
-      assert(not zerop d);
-      quotsq(simp n, simp d)
-   >>;
+   quotsq(simp n, simp d);
 
 asserted procedure rat_numr(q: Rational): Integer;
    % Rational number numerator.
@@ -148,10 +145,7 @@ asserted procedure rat_mult(p: Rational, q: Rational): Rational;
 
 asserted procedure rat_quot(p: Rational, q: Rational): Rational;
    % Rational number quotient.
-   <<
-      assert(not rat_nullp q);
-      quotsq(p, q)
-   >>;
+   quotsq(p, q);
 
 asserted procedure rat_nullp(q: Rational): Boolean;
    % Rational number null predicate.
@@ -184,7 +178,7 @@ asserted procedure rat_greater(p: Rational, q: Rational): Boolean;
 
 asserted procedure rat_eq(p: Rational, q: Rational): Boolean;
    % Rational number equal. Returns [t] iff [p] = [q].
-   rat_sgn(rat_minus(p,q)) eq 0;
+   eqn(rat_sgn(rat_minus(p,q)), 0);
 
 asserted procedure rat_leq(p: Rational, q: Rational): Boolean;
    % Rational number less equal. Returns [t] iff [p] <= [q].
@@ -425,53 +419,49 @@ asserted procedure ratpoly_univarp(q: RatPoly): Boolean;
    sfto_univarp numr q;
 
 asserted procedure ratpoly_idl(q: RatPoly): List;
-   % Identifier list.
-   sfto_idl numr q;
+   % Identifier list. We assume: If numr q contains a variable then mvar numr q
+   % = car kernels numr q, i.e. the main variable is always at the beginning.
+   kernels numr q;
 
 asserted procedure ratpoly_mvartest(q: RatPoly, x: Kernel): Boolean;
    % Rational number polynomial main variable test.
-   if null numr q then
-      nil
-   else if numberp numr q then
-      nil
-   else
-      (mvar numr q eq x);
+   sfto_mvartest(numr q, x);
 
 asserted procedure ratpoly_lc(q: RatPoly): RatPoly;
    % Rational number polynomial leading coefficient.
-   sfto_extlc numr q ./ denr q;
+   sfto_lcx numr q ./ denr q;
 
 asserted procedure ratpoly_red(q: RatPoly): RatPoly;
    % Rational number polynomial reductum.
-   sfto_extred numr q ./ denr q;
+   sfto_redx numr q ./ denr q;
 
 asserted procedure ratpoly_ldeg(q: RatPoly): Integer;
    % Rational number polynomial leading degree. Returns -1 or a natural number.
-   sfto_ldeg numr q;
+   sfto_ldegx numr q;
 
 asserted procedure ratpoly_deg(q: RatPoly, x: Kernel): Integer;
    % Degree of [x] in [q].
-   if ratpoly_mvartest(q,x) then
-      ratpoly_ldeg(q)
+   if ratpoly_mvartest(q, x) then
+      ratpoly_ldeg q
    else
       if ratpoly_nullp q then -1 else 0;
 
 asserted procedure ratpoly_exp(rp: RatPoly, n: Integer): RatPoly;
-   if n eq 0 then
+   if eqn(n, 0) then
       ratpoly_1()
    else
       ratpoly_mult(rp,ratpoly_exp(rp,n-1));
 
 asserted procedure ratpoly_xtothen(x: Kernel, n: Integer): RatPoly;
    % Rational number polynomial x to the n.
-   if n = 0 then
+   if eqn(n, 0) then
       ratpoly_fromatom 1
    else
       ratpoly_mult(ratpoly_fromatom x,ratpoly_xtothen(x,n-1));
 
 asserted procedure ratpoly_diff(q: RatPoly, x: Kernel): RatPoly;
    % Rational number polynomial derivation.
-   diffsq(q,x);
+   diffsq(q, x);
 
 asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
    % Rational number polynomial substitute rational number.
@@ -480,15 +470,15 @@ asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
       %      !*f2q(cdr qremf(multf(numr q,exptf(denr r,ldeg numr q)),
       %	 addf(multf(!*k2f k,denr r),negf numr r)));
       begin scalar cl,res;
-      	 cl := coeffs numr q; % (c0,...,cn)
+      	 cl := coeffs numr q;  % (c0,...,cn)
       	 res := !*f2q car cl;
       	 for each c in cdr cl do
-	    res := addsq(!*f2q c,multsq(res,r));
+	    res := addsq(!*f2q c, multsq(res,r));
       	 res := quotsq(res,!*f2q denr q);
       	 if !*rlanuexdebug and not ratpoly_nullp
       	    ratpoly_minus(res,subsq(q,{k . prepsq r})) then
       	       prin2 "***** ratpoly_subrat: faulty calculation";
-      	 return res;
+      	 return res
       end;
 
 asserted procedure ratpoly_subrat1(q: RatPoly, k: Kernel, r: Rational): RatPoly;
@@ -505,7 +495,7 @@ asserted procedure ratpoly_subrat1(q: RatPoly, k: Kernel, r: Rational): RatPoly;
       	 ratpoly_minus(quotsq(res,!*f2q denr q),
 	    subsq(q,{k . prepsq r})) then
       	       prin2 "***** ratpoly_subrat: faulty calculation";
-      return res;
+      return res
    end;
 
 asserted procedure ratpoly_sub(q: RatPoly, k: Kernel, af: Any): RatPoly;
@@ -517,21 +507,13 @@ asserted procedure ratpoly_tad(q: RatPoly): RatPoly;
    % Throw away denominator.
    numr q ./ 1;
 
-asserted procedure ratpoly_gcd(q1: RatPoly, q2: RatPoly): RatPoly; % plus
-   % Rational number polynomial gretest common divisor.
-   begin scalar tmp1,tmp2,res;
-      % convert to algebraic expression
-      tmp1 := prepsq q1;
-      tmp2 := prepsq q2;
-      on1 'rational;
-      % convert to sf over rationals
-      tmp1 := numr simp tmp1;
-      tmp2 := numr simp tmp2;
-      res := gcdf(tmp1,tmp2);
-      % convert to algebraic expression
-      res := prepf res;
-      off1 'rational;
-      return simp res;
+asserted procedure ratpoly_gcd(q1: RatPoly, q2: RatPoly): RatPoly;
+   % Rational number polynomial greatest common divisor.
+   begin integer d1, d2, d;
+      d1 := denr q1;
+      d2 := denr q2;
+      d := (d1 / gcdn(d1, d2)) * d2;  % = lcm(d1, d2)
+      return !*f2q sfto_gcdf(multf(q1, d / d1), multf(q2, d / d2))
    end;
 
 procedure ratpoly_resultant(q1,q2,y);
@@ -556,21 +538,22 @@ asserted procedure ratpoly_factorize(q: RatPoly): List;
    % Type: ratpoly -> list(pair(ratpoly,num))
    begin scalar tmp;
       tmp := fctrf numr q; % gives a
-      % const factor has multiplicity 1
+      % Constant factor has multiplicity 1.
       car tmp := ratpoly_fromrat rat_mk(car tmp,denr q) . 1;
       tmp := car tmp .
-	 for each sfn in cdr tmp collect (ratpoly_fromsf car sfn) . cdr sfn;
+	 for each sfn in cdr tmp collect
+	    (ratpoly_fromsf car sfn) . cdr sfn;
       if !*rlanuexdebug and not
       	 ratpoly_nullp(ratpoly_minus(q,ratpoly_foldmult(
 	    for each sfn in tmp collect ratpoly_exp(car sfn,cdr sfn)))) then
-	 prin2t "***** ratpoly_factorize: selftest failed";
-      return tmp;
+	       prin2t "***** ratpoly_factorize: selftest failed";
+      return tmp
    end;
 
 % AexCtx functions.
 
-asserted procedure ctx_fromial(ia: AList): AexCtx;
-   {'ctx, ia};
+asserted procedure ctx_fromial(ial: AList): AexCtx;
+   {'ctx, ial};
 
 asserted procedure ctx_new(): AexCtx;
    ctx_fromial nil;
@@ -593,6 +576,20 @@ asserted procedure ctx_print(c: AexCtx): Any;
       prin2 "] "
    >>;
 
+asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
+   % Get variable assignment. Returns the algebraic number to which [x] is
+   % bound by context [c]. If [x] is not bound by [c], nil is returned.
+   begin scalar res;
+      if !*rlanuexdebug and not idp x then
+	 rederr "ctx_get: arguments invalid";
+      res := atsoc(x, ctx_ial c);
+      if !*rlanuexdebug and null res then
+	 prin2 "***** ctx_get: variable unbound";
+      if null res then
+	 return nil;
+      return cdr res
+   end;
+
 asserted procedure ctx_add(ia: DottedPair, c: AexCtx): AexCtx;
    % Add to context without check. [ia] is a dotted pair (x . a) where [x] is a
    % Kernel and [a] is an Anu.
@@ -606,70 +603,58 @@ asserted procedure ctx_rm(x: Kernel, c: AexCtx): AexCtx;
 
 asserted procedure ctx_free(x: Kernel, c: AexCtx): AexCtx;
    % Free [x] and all higher variables. [x] has to be bound by [c].
-   begin scalar idorderv, ial;
+   <<
       if !*rlanuexdebug and null ctx_get(x,c) then
 	 prin2t "***** ctx_free: variable unbound";
-      idorderv := setkorder nil;
-      setkorder idorderv;
-      ial := ctx_ial c;
-      repeat <<
-	 while caar ial neq car idorderv do idorderv := cdr idorderv;
-	 ial := cdr ial; % free the highest pair
-      >> until null idorderv or car idorderv eq x;
-      return ctx_fromial ial
-   end;
-
-asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
-   % Get variable assignment. Returns the algebraic number to which [x] is
-   % bound by context [c]. If [x] is not bound by [c], nil is returned.
-   begin scalar ial,res;
-      if !*rlanuexdebug and not idp x then rederr "ctx_get: arguments invalid";
-      ial := ctx_ial c;
-      while ial and null res do <<
-	 if caar ial eq x then res := cdar ial; ial := cdr ial
-      >>;
-      if !*rlanuexdebug and null res then
-	 prin2 "***** ctx_get: variable unbound";
-      return res
-   end;
+      ctx_fromial for each e in ctx_ial c join
+	 if ordop(car e, x) then nil else {e}
+   >>;
 
 asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    % Union of syntactically compatible contexts. Syntactically/semantically
    % compatible means: For every Kernel [x]: If (x . a1) in [c1] and (x . a2) in
-   % [c2] then syntactically/semantically [a1] = [a2].
-   begin scalar idorderv,ial;
-      idorderv := setkorder nil;
-      setkorder idorderv;
-      c1 := ctx_ial c1; c2 := ctx_ial c2;
-      for each id in idorderv do %%% while loop might be faster
-	 if not null c1 and caar c1 eq id then <<
-	    ial := car c1 . ial;
-	    c1 := cdr c1;
-	    if c2 then if caar c2 eq id then c2 := cdr c2;
-	 >>
-	 else if not null c2 and caar c2 eq id then <<
-	    ial := car c2 . ial;
-	    c2 := cdr c2;
-	 >>;
-      if c1 or c2 then rederr "***** ctx_union: idorder not complete";
-      return ctx_fromial reversip ial
+   % [c2] then syntactically/semantically [a1] = [a2]. We assume that [c1] and
+   % [c2] are sorted w.r.t. the current kernel order.
+   begin scalar ial1, ial2, w1, w2, res;
+      ial1 := ctx_ial c1;
+      ial2 := ctx_ial c2;
+      while ial1 and ial2 do <<
+	 w1 := pop ial1;
+	 w2 := pop ial2;
+	 if car w1 eq car w2 then
+	    res := w1 . res
+	 else
+	    if ordop(car w1, car w2) then
+	       res := w2 . w1 . res
+	    else
+	       res := w1 . w2 .res
+      >>;
+      if null ial1 then
+	 return ctx_fromial append(reversip res, ial2);
+      if null ial2 then
+	 return ctx_fromial append(reversip res, ial1);
+      return ctx_fromial reversip res
    end;
 
 % Aex functions.
 
 %%% --- constructors and access functions --- %%%
 
-asserted procedure aex_mk(rp: RatPoly, c: AexCtx, lcnttag: Id, reducedtag: Id): Aex;
+asserted procedure aex_mk(rp: RatPoly, c: AexCtx, lcnttag: Boolean, reducedtag: Boolean): Aex;
+   % [lcnttag] = t iff the leading coefficient is non-trivial, i.e. not zero
+   % according to the context. The idea is that this property is preserved under
+   % multiplication. [reducedtag]: This is another property which is preserved
+   % under addition.
    {'aex, rp, c, lcnttag, reducedtag};
 
 asserted procedure aex_fromrat(r: Rational): Aex;
    {'aex, ratpoly_fromrat r, ctx_new(), t, t};
 
-asserted procedure aex_fromsf(f: SF): Aex;
-   aex_fromrp ratpoly_fromsf f;
-
 asserted procedure aex_fromrp(rp: RatPoly): Aex;
    {'aex, rp, ctx_new(), t, t};
+
+asserted procedure aex_fromsf(f: SF): Aex;
+   aex_fromrp ratpoly_fromsf f;
 
 asserted procedure aex_0(): Aex;
    aex_fromrp ratpoly_0();
@@ -680,7 +665,7 @@ asserted procedure aex_1(): Aex;
 asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
    % Make linear polynomial a*x + b.
    %aex_fromsf addf(multf(numr simp x,rat_denr ba),negf rat_numr ba);
-   aex_fromrp ratpoly_mklin(x,ba);
+   aex_fromrp ratpoly_mklin(x, ba);
 
 asserted procedure aex_ex(ae: Aex): RatPoly;
    cadr ae;
@@ -688,10 +673,10 @@ asserted procedure aex_ex(ae: Aex): RatPoly;
 asserted procedure aex_ctx(ae: Aex): AexCtx;
    caddr ae;
 
-asserted procedure aex_lcnttag(ae: Aex): Id;
+asserted procedure aex_lcnttag(ae: Aex): Boolean;
    cadddr ae;
 
-asserted procedure aex_reducedtag(ae: Aex): Id;
+asserted procedure aex_reducedtag(ae: Aex): Boolean;
    cadr cdddr ae;
 
 asserted procedure aex_freeall(ae: Aex): Aex;
@@ -699,13 +684,13 @@ asserted procedure aex_freeall(ae: Aex): Aex;
 
 asserted procedure aex_free(ae: Aex, x: Kernel): Aex;
    % Free x and all higher variables.
-   aex_mk(aex_ex ae,ctx_free(x,aex_ctx ae),nil,nil);
+   aex_mk(aex_ex ae, ctx_free(x, aex_ctx ae), nil, nil);
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    %%% todo: ensure [a] is defined with x
    % test if [a] is rational (then use aex_subrat)
-   if null aex_boundids anu_dp a and aex_deg(anu_dp a,x) eq 1 then
-      aex_subrp(ae,x,ratpoly_toaf aex_ex aex_linsolv(anu_dp a,x))
+   if null aex_boundids anu_dp a and aex_deg(anu_dp a, x) eq 1 then
+      aex_subrp(ae, x, ratpoly_toaf aex_ex aex_linsolv(anu_dp a, x))
    else aex_mk(aex_ex ae,ctx_add(x . a,aex_ctx ae),nil,nil);
 
 asserted procedure aex_print(ae: Aex): Any;
@@ -720,31 +705,34 @@ asserted procedure aex_print(ae: Aex): Any;
 %%% --- arithmetic with pseudodivision, sign, nullp, psgcd pssqfree --- %%%
 
 asserted procedure aex_neg(ae: Aex): Aex;
-   aex_mk(ratpoly_neg aex_ex ae,aex_ctx ae,aex_lcnttag ae,aex_reducedtag ae);
+   % Negate.
+   aex_mk(ratpoly_neg aex_ex ae, aex_ctx ae, aex_lcnttag ae, aex_reducedtag ae);
 
 asserted procedure aex_addrat(ae: Aex, r: Rational): Aex;
    % Add rational number.
-   aex_mk(ratpoly_add(aex_ex ae, ratpoly_fromrat r),aex_ctx ae,
-      nil,nil); %%%?
+   aex_mk(ratpoly_add(aex_ex ae, ratpoly_fromrat r), aex_ctx ae, nil, nil); %%%?
 
 asserted procedure aex_add(ae1: Aex, ae2: Aex): Aex;
    % Add, contexts are assumed to be compatible and will be merged.
    % Caveat: minimization will be needed.
-   aex_mk(ratpoly_add(aex_ex ae1,aex_ex ae2),
+   aex_mk(ratpoly_add(aex_ex ae1, aex_ex ae2),
       ctx_union(aex_ctx ae1, aex_ctx ae2),
-      nil,aex_reducedtag ae1 and aex_reducedtag ae2);
+      nil,
+      aex_reducedtag ae1 and aex_reducedtag ae2);
 
 asserted procedure aex_minus(ae1: Aex, ae2: Aex): Aex;
    % Minus, contexts are assumed to be compatible and will be merged.
-   aex_mk(ratpoly_minus(aex_ex ae1,aex_ex ae2),
+   aex_mk(ratpoly_minus(aex_ex ae1, aex_ex ae2),
       ctx_union(aex_ctx ae1, aex_ctx ae2),
-      nil,aex_reducedtag ae1 and aex_reducedtag ae2);
+      nil,
+      aex_reducedtag ae1 and aex_reducedtag ae2);
 
 asserted procedure aex_mult(ae1: Aex, ae2: Aex): Aex;
    % Multiplication, contexts are assumed to be compatible and will be merged.
-   aex_mk(ratpoly_mult(aex_ex ae1,aex_ex ae2),
+   aex_mk(ratpoly_mult(aex_ex ae1, aex_ex ae2),
       ctx_union(aex_ctx ae1, aex_ctx ae2),
-      aex_lcnttag ae1 and aex_lcnttag ae2,nil);
+      aex_lcnttag ae1 and aex_lcnttag ae2,
+      nil);
 
 asserted procedure aex_foldmult(ael: AexList): Aex;
    if null ael then
@@ -752,34 +740,66 @@ asserted procedure aex_foldmult(ael: AexList): Aex;
    else
       aex_mult(car ael, aex_foldmult cdr ael);
 
+asserted procedure aex_power(ae: Aex, n: Integer): Aex;
+   % [ae] to the power of [n].
+   begin scalar res;
+      assert(n >= 0);  % Only non-negative powers make sense.
+      res := aex_1();
+      while n > 0 do <<
+	 res := aex_mult(res, ae);
+	 n := n - 1
+      >>;
+      return res
+   end;
+
 asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
    % Multiply with rational number.
-   aex_mk(ratpoly_mult(aex_ex ae, ratpoly_fromrat r),aex_ctx ae,
-      nil,nil);
+   aex_mk(ratpoly_mult(aex_ex ae, ratpoly_fromrat r),
+      aex_ctx ae,
+      nil,
+      nil);
 
 asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
    % Differentiate.
-   aex_mk(ratpoly_diff(aex_ex ae, x), aex_ctx ae, nil, nil);
+   aex_mk(ratpoly_diff(aex_ex ae, x),
+      aex_ctx ae,
+      nil,
+      nil);
 
 asserted procedure aex_subrp(ae: Aex, x: Kernel, af: Any): Aex;
    % Substitute algebraic form in algebraic expression. [af] is a Lisp prefix.
-   aex_mk(ratpoly_sub(aex_ex ae, x, af), aex_ctx ae, nil, nil); %%% minimize ex and ctx
+   aex_mk(ratpoly_sub(aex_ex ae, x, af),
+      aex_ctx ae,
+      nil,
+      nil); %%% minimize ex and ctx
 
 asserted procedure aex_subrat(ae: Aex, x: Kernel, r: Rational): Aex;
    % Substitute rational number. Exact version.
-   aex_mk(ratpoly_subrat(aex_ex ae,x,r),aex_ctx ae,nil,nil);
+   aex_mk(ratpoly_subrat(aex_ex ae, x, r),
+      aex_ctx ae,
+      nil,
+      nil);
 
 asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
    % Substitute rational number. Exact up to sign version.
-   aex_mk(ratpoly_subrat1(aex_ex ae,x,r),aex_ctx ae,nil,nil);
+   aex_mk(ratpoly_subrat1(aex_ex ae, x, r),
+      aex_ctx ae,
+      nil,
+      nil);
 
 asserted procedure aex_tad(ae: Aex): Aex;
    % Throw away denominator.
-   aex_mk(ratpoly_tad aex_ex ae,aex_ctx ae,nil,nil);
+   aex_mk(ratpoly_tad aex_ex ae,
+      aex_ctx ae,
+      nil,
+      nil);
 
 asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
-   aex_mk(ratpoly_xtothen(x, n), ctx_new(), t, t);
+   aex_mk(ratpoly_xtothen(x, n),
+      ctx_new(),
+      t,
+      t);
 
 asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
    % Degree of [x] in [ae].
@@ -798,7 +818,7 @@ asserted procedure aex_simplenullp(ae: Aex): Boolean;
    ratpoly_nullp(aex_ex ae);
 
 asserted procedure aex_simplenumberp(ae: Aex): Boolean;
-   not aex_freeids ae;
+   null aex_freeids ae;
 
 asserted procedure aex_ids(ae: Aex): List;
    ratpoly_idl aex_ex ae;
@@ -823,7 +843,7 @@ asserted procedure aex_nullp(ae: Aex): Boolean;
       if aex_freeids tmp then
 	 return nil;
       % ae is a constant
-      if aex_sgn tmp eq 0 then
+      if eqn(aex_sgn tmp, 0) then
 	 return t
       else
 	 return nil
@@ -869,7 +889,7 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
 	    return ae;
       % ae is constant
       return %%% remark: this is the second edge in the dependence graph where the argument is passed and not made smaller. (this is not a problem)
-	 if aex_sgn ae eq 0 then aex_0() else ae
+	 if eqn(aex_sgn ae, 0) then aex_0() else ae
    end;
 
 %procedure aex_minimize(ae);
@@ -917,7 +937,7 @@ asserted procedure aex_reduce(ae: Aex): Aex;
    % the same variable.
    begin scalar ids,x,alpha,rlc,rred,tmp;
       % there are no bound variables: we have a (const.) rat. poly
-      if not aex_boundids ae then
+      if null aex_boundids ae then
 	 tmp := ae;
       % from now on there are bound variables
       if null tmp then << ids := aex_ids ae; x := car ids >>;
@@ -989,7 +1009,7 @@ asserted procedure aex_psquotrem(f: Aex, p: Aex, x: Kernel): DottedPair;
       	 if not aex_nullp(aex_minus(f,aex_add(aex_mult(q,p),r))) then
 	    prin2t "***** aex_psquotrem: selftest failed";
       >>;
-      return (q . r . i)
+      return (q . r . i);
    end;
 
 asserted procedure aex_psquot(f: Aex, p: Aex, x: Kernel): Aex;
@@ -1091,7 +1111,7 @@ asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
    begin scalar freeids;
       if aex_simplenullp ae then return 0;
       freeids := aex_freeids ae;
-      if not freeids  then return aex_sgn ae;
+      if null freeids  then return aex_sgn ae;
       % from now on we have one free variable.
       if !*rlanuexdebug and car freeids neq x then
 	 prin2 "***** aex_sgnatinfty: wrong main variable";
@@ -1105,7 +1125,7 @@ asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
    begin scalar freeids;
       if aex_simplenullp ae then return 0;
       freeids := aex_freeids ae;
-      if not freeids  then return aex_sgn ae;
+      if null freeids  then return aex_sgn ae;
       % from now on we have one free variable
       if !*rlanuexdebug and car freeids neq x then
 	 prin2 "***** aex_sgnatminfty: wrong main variable";
@@ -1144,9 +1164,9 @@ asserted procedure aex_sgn(ae: Aex): Integer;
 	 prin2 "[aex_sgn:num!]";
       f := anu_dp alpha;
       f := aex_subrp(f,aex_mvar f,x); %unnecessary, aex_bind makes it already
-      if !*rlanuexdebug and aex_sgn aex_lc(f,x) eq 0 then
+      if !*rlanuexdebug and eqn(aex_sgn aex_lc(f,x), 0) then
 	 prin2t "***** aex_sgn: f has trivial lc";
-      if !*rlanuexdebug and aex_sgn aex_lc(g,x) eq 0 then
+      if !*rlanuexdebug and eqn(aex_sgn aex_lc(g,x), 0) then
 	  prin2t "***** aex_sgn: g has trivial lc";
       % sc is the  sturmchain for f(x), f'g(x)
       %%% optimization: aex_reduce after aex_diff
@@ -1180,7 +1200,7 @@ procedure sqfr_norm(f,x,y,palpha);
 	 r := ratpoly_resultant(palpha,g,y);
 	 % ratpoly_deg works just if x is the leading kernel
 	 degree := ratpoly_deg(ratpoly_gcd(r,ratpoly_diff(r,x)),x);
-         if degree neq 0 then <<
+         if not eqn(degree, 0) then <<
 	    s := s+1;
  	    g := ratpoly_sub(g,x,{'plus,x,{'minus,y}})
 	 >>
@@ -1239,9 +1259,9 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       % optimization: g is constant.
       if null aex_freeids g then
 	 return aex_mult(aex_inv g,f) . aex_0();
-      if !*rlanuexdebug and aex_sgn aex_lc(f,x) eq 0 then
+      if !*rlanuexdebug and eqn(aex_sgn aex_lc(f,x), 0) then
 	 prin2t "***** aex_quotrem: first argument invalid";
-      if !*rlanuexdebug and aex_sgn aex_lc(g,x) eq 0 then
+      if !*rlanuexdebug and eqn(aex_sgn aex_lc(g,x), 0) then
 	  prin2t "***** aex_quotrem: second argument invalid";
       rr := f; gg := g; qq := aex_0();
       n := aex_deg(rr,x); m := aex_deg(gg,x);
@@ -1580,7 +1600,7 @@ asserted procedure aex_findrootsiniv1(ae: Aex, x: Kernel, iv: RatInterval, sc: A
 	 return {anu_mk(ae,iv)};
       m := rat_quot(rat_add(lb,rb),rat_fromnum 2);
       ml := mr := m;
-      if aex_sgn aex_subrat1(ae,x,m) eq 0 then <<
+      if eqn(aex_sgn aex_subrat1(ae,x,m), 0) then <<
 	 r := aex_isoroot(ae,x,m,rat_mult(rat_minus(rb,lb),rat_mk(1,4)),sc);
 	 ml := rat_minus(m,r);
 	 mr := rat_add(m,r)
@@ -1607,7 +1627,7 @@ asserted procedure aex_isoroot(ae: Aex, x: Kernel, m: Rational, r: Rational, sc:
 
 asserted procedure aex_atrat0p(ae: Aex, x: Kernel, r: Rational): Boolean;
    % Zero at rational point predicate.
-   aex_sgn aex_subrat1(ae,x,r) neq 0; %%% eq 0?
+   not eqn(aex_sgn aex_subrat1(ae,x,r), 0); %%% eq 0?
 
 %%% --- global root isolation --- %%%
 
@@ -1672,7 +1692,7 @@ procedure aex_nextroot1(rip,x);
       % there are at least two roots.
       m := rat_quot(rat_add(lb,rb),rat_fromnum 2);
       ml := mr := m;
-      if aex_sgn aex_subrat1(tag_object caar rip_pscl rip,x,m) eq 0 then <<
+      if eqn(aex_sgn aex_subrat1(tag_object caar rip_pscl rip,x,m), 0) then <<
 	 r := aex_isoratroot(m,rat_mult(rat_minus(rb,lb),rat_mk(1,4)),
 	    rip_psclnotags rip,x); % cdr rip_pscl rip would be wrong
 	 ml := rat_minus(m,r); mr := rat_add(m,r);
@@ -1721,15 +1741,16 @@ procedure aex_refinewrt1(alpha,pscl,scalpha);
 
 procedure aex_deltastchsgnch(sc,x,iv);
    % delta sturm chain sign changes in an interval
-   begin scalar sclb,scrb;
+   begin integer sclb, scrb;
       sclb := aex_sturmchainsgnch(sc,x,iv_lb iv);
-      if sclb eq 0 then return 0;
+      if eqn(sclb, 0) then
+	 return 0;
       scrb := aex_sturmchainsgnch(sc,x,iv_rb iv);
       return sclb - scrb
    end;
 
 procedure aex_atratnullp(ae,x,r);
-   aex_sgn aex_subrat1(ae,x,r) eq 0;
+   eqn(aex_sgn aex_subrat1(ae,x,r), 0);
 
 % - little helpers for global root isolation - %
 % rip stands for root list, interval list, p.sc list
@@ -1805,10 +1826,12 @@ asserted procedure anu_dp(a: Anu): Aex;
 asserted procedure anu_iv(a: Anu): RatInterval;
    caddr a;
 
+asserted procedure anu_fromrat(x: Kernel, r: Rational, iv: RatInterval): Anu;
+   anu_mk(aex_fromrp ratpoly_mklin(x, r), iv);
+
 asserted procedure anu_putiv(a: Anu, iv: RatInterval): Any;
-   % Algebraic number get interval. [a] is an ANU. [iv] is an INT. Changes the
-   % isolating interval in a nonconstructive way. The returned value is not of
-   % interest.
+   % Algebraic number put interval. Changes the isolating interval in a
+   % nonconstructive way. The returned value is not of interest.
    caddr a := iv;
 
 asserted procedure anu_print(a: Anu): Any;
@@ -1844,9 +1867,6 @@ asserted procedure anu_check(a: Anu): Boolean;
       >>;
       return valid
    end;
-
-asserted procedure anu_fromrat(x: Kernel, r: Rational, iv: RatInterval): Anu;
-   anu_mk(aex_fromrp ratpoly_mklin(x, r), iv);
 
 asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
    % Algebraic number refine in place. [s] is a sturmchain. Returns an [a] with

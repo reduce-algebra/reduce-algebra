@@ -699,26 +699,21 @@ asserted procedure sfto_sf2monl1(f: SF, vl: List): DottedPair;
       return append(ll, rl)
    end;
 
-asserted procedure sfto_extlc(f: SF): SF;
-   % Extended leading coefficient. Returns the leading coefficient of [f]. If
-   % [f] is a domain element (integer) [f] is returned.
-   if null f or domainp f then
-      f
-   else
-      lc f;
+asserted procedure sfto_lcx(f: SF): SF;
+   % Leading coefficient, extended version. Returns the leading coefficient of
+   % [f]. If [f] is a domain element (integer) [f] is returned.
+   if domainp f then f else lc f;
 
-asserted procedure sfto_extred(f: SF): SF;
-   % Extended reductum. Returns the reductum of [f]. If [f] is a domain element
-   % (integer) [f] is returned.
-   if null f or domainp f then
-      nil
-   else
-      red f;
+asserted procedure sfto_redx(f: SF): SF;
+   % Reductum, extended version. Returns the reductum of [f]. If [f] is a domain
+   % element (integer) [f] is returned.
+   if domainp f then nil else red f;
 
-asserted procedure sfto_ldeg(f: SF): Integer;
-   % Leading degree. Returns the leading of [f]. If [f] represents zero then -1
-   % is returned. If [f] represents a domain element (integer) 0 is returned.
-   if null f or f eq 0 then
+asserted procedure sfto_ldegx(f: SF): Integer;
+   % Leading degree, extended version. Returns the leading of [f]. If [f]
+   % represents zero then -1 is returned. If [f] represents a domain element
+   % (integer) 0 is returned.
+   if null f then
       -1
    else if domainp f then
       0
@@ -727,18 +722,12 @@ asserted procedure sfto_ldeg(f: SF): Integer;
 
 asserted procedure sfto_mvartest(f: SF, x: Kernel): Boolean;
    % Main variable test. Returns [t] iff [x] is the main variable of [f].
-   if null f or domainp f then
-      nil
-   else
-      mvar f eq x;
+   not domainp f and mvar f eq x;
 
 asserted procedure sfto_vardeg(f: SF, x: Kernel): Integer;
-   % Degree of a variable. Returns the degree of [x] in [f] when [x] is the main
-   % variable of [f].
-   if domainp f then
-      if null f or f eq 0 then -1 else 0
-   else
-      if mvar f eq x then ldeg f else 0;
+   % Degree of a variable. Returns the degree of [x] in [f] provided that [x] is
+   % the main variable of [f].
+   if sfto_mvartest(f, x) then ldeg f else if null f then -1 else 0;
 
 asserted procedure sfto_univarp(f: SF): Boolean;
    % Univariate predicate. Returns [t] iff [f] contains at most one variable.
@@ -746,18 +735,6 @@ asserted procedure sfto_univarp(f: SF): Boolean;
 
 asserted procedure sfto_univarp1(f: SF, x: Kernel): Boolean;
    domainp f or (domainp lc f and mvar f eq x and sfto_univarp1(red f, x));
-
-asserted procedure sfto_idl(f: SF): List;
-   % List of variables. Returns a list of kernels present in [f]. If there is a
-   % main variable, then it will be the first element of the result.
-   begin scalar mv, varl;
-      if domainp f then
-      	 return nil;
-      mv := mvar f;
-      varl := kernels f;
-      return mv . for each v in varl join
-	 if v neq mv then {v} else nil
-   end;
 
 endmodule;  % [sfto]
 
