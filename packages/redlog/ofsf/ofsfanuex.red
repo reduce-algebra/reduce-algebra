@@ -464,11 +464,13 @@ asserted procedure ratpoly_diff(q: RatPoly, x: Kernel): RatPoly;
    diffsq(q, x);
 
 asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
-   % Rational number polynomial substitute rational number.
+   % Rational number polynomial substitute rational number. The result is exact
+   % up to multiplication by a positive rational number. Horner's scheme is
+   % used.
    if domainp numr q or mvar numr q neq k then q else
-      % this might be faster here. test, if needed.
-      %      !*f2q(cdr qremf(multf(numr q,exptf(denr r,ldeg numr q)),
-      %	 addf(multf(!*k2f k,denr r),negf numr r)));
+      % This might be faster here. test, if needed.
+      % !*f2q(cdr qremf(multf(numr q,exptf(denr r,ldeg numr q)),
+      %   addf(multf(!*k2f k,denr r),negf numr r)));
       begin scalar cl,res;
       	 cl := coeffs numr q;  % (c0,...,cn)
       	 res := !*f2q car cl;
@@ -482,20 +484,21 @@ asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
       end;
 
 asserted procedure ratpoly_subrat1(q: RatPoly, k: Kernel, r: Rational): RatPoly;
-   % Rational number polynomial substitute rational number. Remark: if opt is
-   % nil then the the result is exact, otherwise, if opt is t, at least the sign
-   % is correct. %subsq(q,{k . prepsq r});
-   if domainp numr q or mvar numr q neq k then q else
-   begin scalar cl,res;
-      cl := coeffs numr q; % (c0,...,cn)
-      res := !*f2q car cl;
-      for each c in cdr cl do
-	 res := addsq(!*f2q c,multsq(res,r));
-      if !*rlanuexdebug and not ratpoly_nullp
-      	 ratpoly_minus(quotsq(res,!*f2q denr q),
-	    subsq(q,{k . prepsq r})) then
-      	       prin2 "***** ratpoly_subrat: faulty calculation";
-      return res
+   % Rational number polynomial substitute rational number. The result is exact
+   % up to multiplication by a positive rational number.
+   begin scalar cl, res; integer n, d, dd;
+      if domainp numr q or mvar numr q neq k then
+   	 return q;
+      n := numr r;
+      d := denr r;
+      dd := d;
+      cl := coeffs numr q;
+      res := car cl;
+      for each c in cdr cl do <<
+	 res := addf(multf(res, n), multf(c, dd));
+	 dd := dd * d
+      >>;
+      return res ./ 1
    end;
 
 asserted procedure ratpoly_sub(q: RatPoly, k: Kernel, af: Any): RatPoly;
