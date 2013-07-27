@@ -42,6 +42,9 @@ global '(assert_functionl!* exlist !*comp);
 
 fluid '(lispsystem!* !*msg assertstatistics!*);
 
+fluid '(fname!*);
+fluid '(backtrace!*);
+
 switch assert,assertbreak,assertstatistics;
 
 % The switch assert is a hook to make all stats introduced here return nil thus
@@ -398,12 +401,14 @@ procedure assert_assert(u, vars, mode);
       {'cond,
  	 {{'and, !*assert, {'not, formc(u, vars, mode)}},
  	    {'progn,
- 	       {'backtrace},
+ 	       {'cond,
+    		  {'!*backtrace,
+	       	     {'backtrace}}},
 	       {'cond,
  	       	  {'!*assertbreak,
- 	       	     {'rederr, {'list, "failed assertion", mkquote u}}},
+ 	       	     {'rederr, {'list, "assertion", mkquote u, "violated in procedure", mkquote fname!*}}},
 	       	  {t,
- 	       	     {'lprim, {'list, "failed assertion", mkquote u}}}}}}};
+ 	       	     {'lprim, {'list, "assertion", mkquote u, "violated in procedure", mkquote fname!*}}}}}}};
 
 endmodule;  % assert
 
