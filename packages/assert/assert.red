@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2010 Thomas Sturm
+% Copyright (c) 2010-2013 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 lisp <<
    fluid '(assert_rcsid!* assert_copyright!*);
    assert_rcsid!* := "$Id$";
-   assert_copyright!* := "(c) 2010 T. Sturm"
+   assert_copyright!* := "(c) 2010-2013 T. Sturm"
 >>;
 
 module assert;
@@ -40,12 +40,19 @@ create!-package('(assert assertcheckfn assertproc),nil);
 
 global '(assert_functionl!* exlist !*comp);
 
-fluid '(lispsystem!* !*msg assertstatistics!*);
+global '(outl!*);
+global '(curline!*);
+global '(ifl!*);
 
+fluid '(!*backtrace);
+fluid '(!*msg);
+fluid '(lispsystem!*);
+
+
+fluid '(assertstatistics!*);
 fluid '(fname!*);
-fluid '(backtrace!*);
 
-switch assert,assertbreak,assertstatistics;
+switch assert, assertbreak, assertstatistics;
 
 % The switch assert is a hook to make all stats introduced here return nil thus
 % turning them into comments. Note that even when it is on, structs and
@@ -397,18 +404,57 @@ symbolic procedure formassert(u,vars,mode);
 put('assert, 'formfn, 'formassert);
 
 procedure assert_assert(u, vars, mode);
-   if mode eq 'symbolic then
-      {'cond,
- 	 {{'and, !*assert, {'not, formc(u, vars, mode)}},
- 	    {'progn,
- 	       {'cond,
-    		  {'!*backtrace,
-	       	     {'backtrace}}},
-	       {'cond,
- 	       	  {'!*assertbreak,
- 	       	     {'rederr, {'list, "assertion", mkquote u, "violated in procedure", mkquote fname!*}}},
-	       	  {t,
- 	       	     {'lprim, {'list, "assertion", mkquote u, "violated in procedure", mkquote fname!*}}}}}}};
+   begin scalar l, a, m;
+      if mode neq 'symbolic then
+	 return;
+      l := if ifl!* then
+	 assert_sconcat {car ifl!*, ":", assert_at2str curline!*, ":"};
+      a := assert_outl2string outl!*;
+      m := 'list . l . {mkquote a, "violated in procedure", mkquote fname!*};
+      return {'cond, {{'and, '!*assert, {'not, formc(u, vars, mode)}},
+	 {'progn,
+	    {'cond, {'!*backtrace, {'backtrace}}},
+	    {'cond, {'!*assertbreak, {'rederr, m}}, {t, {'lprim, m}}}}}}
+   end;
+
+procedure assert_outl2string(outl);
+   id2string compress for each x in reverse cdr outl join
+      if stringp x then assert_string2idl x else explode x;
+
+procedure assert_string2idl(s);
+   % This is an artificial case distinction because the tokenizer inserts " "
+   % into outl!* to reperesent mandatory whitespace. If this string " " ever
+   % occurs literally within an assertion, then it will not show up in the
+   % output.
+   if s = " " then
+      {'!!, '! }
+   else
+      for each c in explode s join
+       	 if eq(c, '!") or eq(c, '! ) then {'!!, c} else {c};
+
+% The following are copies of rltools/lto.red, because I do not want to depend
+% on other modules here:
+
+procedure assert_sconcat2(s1,s2);
+   % List tools string concatenation 2. [s1] and [s2] are strings.
+   % Returns a string. The returned string is the concatenation
+   % [s1][s2].
+   compress append(reversip cdr reversip explode s1,cdr explode s2);
+
+procedure assert_sconcat(l);
+   % List tools string concatenation. [l] is a list of strings.
+   % Returns a string. The returned string is the concatenation of all
+   % strings in [l].
+   if l then
+      if cdr l then
+ 	 lto_sconcat2(car l,lto_sconcat cdr l)
+      else
+	 car l;
+
+procedure assert_at2str(s);
+   % List tools atom to string. [s] is an atom. Returns the print name
+   % of the atom [s] as a string.
+   compress('!" . reversip('!" . reversip explode s));
 
 endmodule;  % assert
 
