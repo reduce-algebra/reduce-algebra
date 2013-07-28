@@ -73,7 +73,7 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlcadextonly,rlcadverbose,rlcadfasteval,rlcaddebug,rlcadpartial,
    rlcadfulldimonly,rlcadtrimtree,rlcadrawformula,rlcadisoallroots,rlcadaproj,
    rlcadaprojalways,rlcadhongproj,rlanuexverbose,rlanuexdifferentroots,
-   rlanuexdebug,rlanuexpsremseq,rlanuexgcdnormalize,rlanuexsgnopt,rlcaddecdeg,
+   rlanuexpsremseq,rlanuexgcdnormalize,rlanuexsgnopt,rlcaddecdeg,
    rlcadte,rlcadpbfvs,rlqefb,rlxopt,rlxoptsb,rlxoptpl,rlxoptri,rlxoptric,
    rlxoptses,rlxoptrir,rlourdet,rlvmatvb,rlhqetfcsplit,rlhqetfcfullsplit,
    rlhqetfcfast,rlhqevb,rlhqevarsel,rlhqevarselx,rlhqedim0,rlhqetheory,
@@ -150,7 +150,6 @@ off1 'rlcadaprojalways;
 on1 'rlcadhongproj;
 off1 'rlanuexverbose;
 on1 'rlanuexdifferentroots;
-off1 'rlanuexdebug;
 off1 'rlanuexpsremseq;
 on1 'rlanuexgcdnormalize;
 off1 'rlanuexsgnopt;

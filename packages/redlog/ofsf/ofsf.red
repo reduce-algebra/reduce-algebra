@@ -85,8 +85,8 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlcadextonly !*rlcadprojonly !*rlcadverbose !*rlcaddebug !*rlcadpartial
    !*rlcadfulldimonly !*rlcadtrimtree !*rlcadrawformula !*rlcadisoallroots
    !*rlcadaproj !*rlcadaprojalways !*rlcadhongproj !*exp !*rlanuexverbose
-   !*rlanuexdifferentroots !*rlanuexdebug !*rlanuexpsremseq
-   !*rlanuexgcdnormalize !*rlanuexsgnopt !*rlcaddecdeg !*rlcadte !*rlcadpbfvs
+   !*rlanuexdifferentroots !*rlanuexpsremseq !*rlanuexgcdnormalize
+   !*rlanuexsgnopt !*rlcaddecdeg !*rlcadte !*rlcadpbfvs
    !*rlvmatvb ofsf_cadtheo!* cl_pal!* cl_lps!* cl_theo!* !*rlcadfasteval
    ofsf_xopt!-nodes!* ofsf_xopt!-delnodes!* ofsf_xopt!-plnodes!*
    ofsf_xopt!-fnodes!* ofsf_xopt!-thcof!* !*rlxoptqe !*rlxopt !*rlxoptsb

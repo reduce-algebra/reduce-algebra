@@ -40,8 +40,6 @@ module ofsfanuex;
 % numbers and expressions in algebraic numbers (algebraic polynomials). The
 % features include incremental real root isolation and factorisation.
 
-compiletime on1 'assert;
-
 struct Rational checked by RationalP;
 struct RationalList checked by RationalListP;
 struct GRational checked by GRationalP;
@@ -344,8 +342,7 @@ asserted procedure ratpoly_fromrat(r: Rational): RatPoly;
 asserted procedure ratpoly_torat(r: RatPoly): Rational;
    % Rational polynomial to rational number.
    <<
-      if !*rlanuexdebug and ratpoly_idl r then
-      	 prin2t "***** ratpoly_torat: argument is not a rational";
+      assert(null ratpoly_idl r);  % [r] does not contain variables.
       r
    >>;
 
@@ -380,11 +377,10 @@ asserted procedure ratpoly_nullp(q: RatPoly): Boolean;
    null numr q or numr q = 0;
 
 asserted procedure ratpoly_sgn(q: RatPoly): Integer;
-   %%% ratpolydebug
-   if !*rlanuexdebug and not ratpoly_ratp q then
-      prin2t "***** ratpoly_sgn: not a constant polynomial"
-   else
-      rat_sgn q;
+   <<
+      assert(ratpoly_ratp q);  % [q] is a constant polynomial.
+      rat_sgn q
+   >>;
 
 asserted procedure ratpoly_neg(q: RatPoly): RatPoly;
    % Rational number polynomial negation.
@@ -477,9 +473,8 @@ asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
       	 for each c in cdr cl do
 	    res := addsq(!*f2q c, multsq(res,r));
       	 res := quotsq(res,!*f2q denr q);
-      	 if !*rlanuexdebug and not ratpoly_nullp
-      	    ratpoly_minus(res,subsq(q,{k . prepsq r})) then
-      	       prin2 "***** ratpoly_subrat: faulty calculation";
+	 % Calculation self-test:
+      	 assert(ratpoly_nullp ratpoly_minus(res,subsq(q, {k . prepsq r})));
       	 return res
       end;
 
@@ -546,10 +541,9 @@ asserted procedure ratpoly_factorize(q: RatPoly): List;
       tmp := car tmp .
 	 for each sfn in cdr tmp collect
 	    (ratpoly_fromsf car sfn) . cdr sfn;
-      if !*rlanuexdebug and not
-      	 ratpoly_nullp(ratpoly_minus(q,ratpoly_foldmult(
-	    for each sfn in tmp collect ratpoly_exp(car sfn,cdr sfn)))) then
-	       prin2t "***** ratpoly_factorize: selftest failed";
+      % Calculation self-test:
+      assert(ratpoly_nullp(ratpoly_minus(q,ratpoly_foldmult(
+	    for each sfn in tmp collect ratpoly_exp(car sfn,cdr sfn)))));
       return tmp
    end;
 
@@ -583,11 +577,8 @@ asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
    % Get variable assignment. Returns the algebraic number to which [x] is
    % bound by context [c]. If [x] is not bound by [c], nil is returned.
    begin scalar res;
-      if !*rlanuexdebug and not idp x then
-	 rederr "ctx_get: arguments invalid";
       res := atsoc(x, ctx_ial c);
-      if !*rlanuexdebug and null res then
-	 prin2 "***** ctx_get: variable unbound";
+      assert(not null res);  % Variable [x] should be bound by [c].
       if null res then
 	 return nil;
       return cdr res
@@ -607,8 +598,7 @@ asserted procedure ctx_rm(x: Kernel, c: AexCtx): AexCtx;
 asserted procedure ctx_free(x: Kernel, c: AexCtx): AexCtx;
    % Free [x] and all higher variables. [x] has to be bound by [c].
    <<
-      if !*rlanuexdebug and null ctx_get(x,c) then
-	 prin2t "***** ctx_free: variable unbound";
+      assert(not null ctx_get(x, c));  % Variable [x] should be bound by [c].
       ctx_fromial for each e in ctx_ial c join
 	 if ordop(car e, x) then nil else {e}
    >>;
@@ -923,8 +913,7 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
 %	 return aex_add(aex_mult(rlc,aex_xtothen(x,aex_deg(ae,x))),rred)
 %      >>;
 %      % there are no free variables
-%      if !*rlanuexdebug and not (x eq caar ctx_ial aex_ctx ae) then
-%	 prin2t "aex_reduce: variable mismatch";
+%      assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variable match.
  %     %%%alpha := cdar ctx_ial aex_ctx ae; % context = {(x . alpha),...}
 %      alpha := ctx_get(x,aex_ctx ae);
 %      tmp := aex_free(ae,x);
@@ -952,8 +941,7 @@ asserted procedure aex_reduce(ae: Aex): Aex;
       >>
       % there are no free variables
       else if null tmp then <<
-      	 %if !*rlanuexdebug and not (x eq caar ctx_ial aex_ctx ae) then
-	 %   prin2t "aex_reduce: variable mismatch";
+      	 % assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variables match.
       	 %alpha := cdar ctx_ial aex_ctx ae; % context = {(x . alpha),...}
 	 alpha := ctx_get(x,aex_ctx ae);
       	 tmp := aex_free(ae,x);
@@ -963,8 +951,7 @@ asserted procedure aex_reduce(ae: Aex): Aex;
       	 else
 	    tmp := aex_bind(tmp,x,alpha)
       >>;
-%      if !*rlanuexdebug and not aex_nullp aex_minus(ae,tmp) then
-%	 prin2t "aex_reduce: selftest failed";
+%      assert(aex_nullp aex_minus(ae,tmp));  % Computation self-test.
       return tmp
    end;
 
@@ -988,8 +975,8 @@ asserted procedure aex_psquotrem1(f: Aex, p: Aex, x: Kernel): DottedPair;
    end;
 
 asserted procedure aex_psquotrem(f: Aex, p: Aex, x: Kernel): DottedPair;
-   % Pseudo quotient remainder. Returns [(q . r . i)] with $b_n^{2*i}f=qp+r$.
-   begin scalar m,n,q,r,bn2,qr1; integer i,ii;
+   % Pseudo quotient remainder. Returns [(q . r . j)] with $b_n^{2*j}f=qp+r$.
+   begin scalar m,n,q,r,bn2,qr1; integer j;
       m := aex_deg(f,x);
       n := aex_deg(p,x);
       q := aex_0();
@@ -1002,17 +989,13 @@ asserted procedure aex_psquotrem(f: Aex, p: Aex, x: Kernel): DottedPair;
       while (aex_deg(r,x) >= n) do <<
 	 qr1 := aex_psquotrem1(r,p,x);
 	 q := aex_add(aex_mult(q,bn2),car qr1);
-	 i := i+1;
+	 j := j+1;
 	 r := cdr qr1;
       >>;
-      if !*rlanuexdebug then <<
-      	 ii := i;
-	 while (ii:=ii-1) >= 0 do  % ii times multply bn^2
-	    f := aex_mult(f,bn2);
-      	 if not aex_nullp(aex_minus(f,aex_add(aex_mult(q,p),r))) then
-	    prin2t "***** aex_psquotrem: selftest failed";
-      >>;
-      return (q . r . i);
+      % Computation self-test:
+      assert(aex_nullp(
+	 aex_minus(aex_mult(f,aex_power(bn2,j)),aex_add(aex_mult(q,p),r))));
+      return (q . r . j);
    end;
 
 asserted procedure aex_psquot(f: Aex, p: Aex, x: Kernel): Aex;
@@ -1046,7 +1029,7 @@ asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
    begin scalar sc;
       sc := reversip(aex_remseq({ aex_tad g,aex_tad f},x));
       %%% sc := reversip(aex_remseq({aex_pp aex_tad g,aex_pp aex_tad f},x));
-      %if !*rlanuexdebug then aex_sturmchaincheck sc;
+      %assert(aex_sturmchaincheck sc);
       return sc
    end;
 
@@ -1069,9 +1052,9 @@ asserted procedure aex_pp(ae: Aex): Aex;
    % Primitive part. Works only for univariate polynomials with rational
    % coefficients.
    % ae;
-   << if !*rlanuexdebug and aex_simpleratpolyp ae and
-      length aex_ids ae > 1 then
-      	 prin2 "***** aex_pp: argument not univariate";
+   <<
+      % [ae] should be a univariate polynomial:
+      assert(aex_simpleratpolyp ae and eqn(length aex_ids ae, 1));
       if ratpoly_univarp aex_ex ae then
       	 aex_mk(ratpoly_pp aex_ex ae,aex_ctx ae,nil,nil)
       else
@@ -1082,8 +1065,8 @@ asserted procedure aex_remseq(ael: AexList, x: Kernel): AexList;
    % Remainder sequence. [ael] is a list of algebraic polynomials in [x], of
    % length at least 2. Caveat: the returned list is built in reverse order.
    begin scalar rem;
-      if !*rlanuexdebug and aex_simplenullp car ael then
-	 prin2 "[remseq:null]";
+      % First element of [ael] should not be zero:
+      assert(not aex_simplenullp car ael);
       if aex_deg(car ael,x) <= 0 then
       	 return ael;
       if !*rlanuexpsremseq then
@@ -1112,31 +1095,35 @@ asserted procedure aex_stchsgnch(sc: AexList, x: Kernel, r: GRational): Integer;
 asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
    % Sign at infinity. [ae] has non-trivial lc or is simply null.
    begin scalar freeids;
-      if aex_simplenullp ae then return 0;
+      if aex_simplenullp ae then
+	 return 0;
       freeids := aex_freeids ae;
-      if null freeids  then return aex_sgn ae;
-      % from now on we have one free variable.
-      if !*rlanuexdebug and car freeids neq x then
-	 prin2 "***** aex_sgnatinfty: wrong main variable";
-      if !*rlanuexdebug and length freeids > 1 then
-	 prin2 "***** aex_sgnatinfty: not univariate";
+      if null freeids then
+	 return aex_sgn ae;
+      % From now on we have exactly one free variable.
+      % Check if [x] is the main variable:
+      assert(sfto_mvartest(car freeids, x));
+      % Check if [x] is the only free variable:
+      assert(eqn(length freeids, 1));
       return aex_sgn aex_lc(ae,x)
    end;
 
 asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
    % Sign at minus infinity. [ae] has non-trivial lc or is simply null.
    begin scalar freeids;
-      if aex_simplenullp ae then return 0;
+      if aex_simplenullp ae then
+	 return 0;
       freeids := aex_freeids ae;
-      if null freeids  then return aex_sgn ae;
-      % from now on we have one free variable
-      if !*rlanuexdebug and car freeids neq x then
-	 prin2 "***** aex_sgnatminfty: wrong main variable";
-      if !*rlanuexdebug and length freeids > 1 then
-	 prin2 "***** aex_sgnatminfty: not univariate";
-      if evenp aex_deg(ae,x) then
+      if null freeids then
+	 return aex_sgn ae;
+      % From now on we have exactly one free variable.
+      % Check if [x] is the main variable:
+      assert(sfto_mvartest(car freeids, x));
+      % Check if [x] is the only free variable:
+      assert(eqn(length freeids, 1));
+      if evenp aex_deg(ae, x) then
 	 return aex_sgn aex_lc(ae,x);
-      return (-1)*aex_sgn aex_lc(ae,x);
+      return (-1)*aex_sgn aex_lc(ae,x)
    end;
 
 asserted procedure aex_sgn(ae: Aex): Integer;
@@ -1145,16 +1132,18 @@ asserted procedure aex_sgn(ae: Aex): Integer;
    % optimization: use of aex_containment.
    begin scalar con,x,g,alpha,f,sc;
       % semanticcheck
-      if !*rlanuexdebug and (not AexP ae or aex_freeids ae) then
-	 prin2t "***** aex_sgn: invalid argument";
+      % Make sure that [ae] is a constant:
+      assert(null aex_freeids ae);
       % ae is obviously rational %%% faster with _ratp
       if ratpoly_ratp aex_ex ae then
 	 return ratpoly_sgn aex_ex ae;
       % possible optimization:
       if !*rlanuexsgnopt then <<
       	 con := aex_containment ae;
-      	 if rat_less(rat_0(),iv_lb con) then return 1;
-      	 if rat_less(iv_rb con,rat_0()) then return (-1);
+      	 if rat_less(rat_0(),iv_lb con) then
+	    return 1;
+      	 if rat_less(iv_rb con,rat_0()) then
+	    return (-1)
       >>;
       % ae is algebraic and ae=(g(x),(x=f(y),etc))
       %x := caar ial; % flawed, if ctx is not minimal
@@ -1162,15 +1151,16 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       % alpha := cdar ial; % flawed, if ctx is not minimal
       alpha := ctx_get(x,aex_ctx ae);
       g := aex_mklcnt aex_reduce aex_free(ae,x); %%% reduce somewhere else, eg bind
-      if aex_simpleratp g then return ratpoly_sgn aex_ex g;
+      if aex_simpleratp g then
+	 return ratpoly_sgn aex_ex g;
       if !*rlverbose and !*rlanuexverbose and aex_deg(g,x) <= 0 then
 	 prin2 "[aex_sgn:num!]";
       f := anu_dp alpha;
       f := aex_subrp(f,aex_mvar f,x); %unnecessary, aex_bind makes it already
-      if !*rlanuexdebug and eqn(aex_sgn aex_lc(f,x), 0) then
-	 prin2t "***** aex_sgn: f has trivial lc";
-      if !*rlanuexdebug and eqn(aex_sgn aex_lc(g,x), 0) then
-	  prin2t "***** aex_sgn: g has trivial lc";
+      % Make sure that the leading coefficient of f is not zero:
+      assert(not eqn(aex_sgn aex_lc(f, x), 0));
+      % Make sure that the leading coefficient of g is not zero:
+      assert(not eqn(aex_sgn aex_lc(g, x), 0));
       % sc is the  sturmchain for f(x), f'g(x)
       %%% optimization: aex_reduce after aex_diff
       sc := aex_sturmchain(f,aex_mult(aex_diff(f,x),g),x);
@@ -1239,10 +1229,9 @@ asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to fact
 	 aeg  := aex_quot(aeg,aehi,x);
 	 aehi := aex_subrp(aehi,x,{'plus,x,{'times,s,y}})
       >>;
-      if !*rlanuexdebug and not
-	aex_simpleratp aex_quot(f,aex_foldmult l,x) then
-	 prin2t "***** aex_factorize: selftest failed (alg. case)";
-      return l; %%% minimize every element first?
+      % Self-test:
+      assert(aex_simpleratp aex_quot(f,aex_foldmult l,x));
+      return l %%% minimize every element first?
    end;
 
 %%% --- exact arithmetic - with inv --- %%%
@@ -1262,10 +1251,10 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       % optimization: g is constant.
       if null aex_freeids g then
 	 return aex_mult(aex_inv g,f) . aex_0();
-      if !*rlanuexdebug and eqn(aex_sgn aex_lc(f,x), 0) then
-	 prin2t "***** aex_quotrem: first argument invalid";
-      if !*rlanuexdebug and eqn(aex_sgn aex_lc(g,x), 0) then
-	  prin2t "***** aex_quotrem: second argument invalid";
+      % Make sure that the leading coefficient of [f] is non-zero:
+      assert(not eqn(aex_sgn aex_lc(f, x), 0));
+      % Make sure that the leading coefficient of [g] is non-zero:
+      assert(not eqn(aex_sgn aex_lc(g, x), 0));
       rr := f; gg := g; qq := aex_0();
       n := aex_deg(rr,x); m := aex_deg(gg,x);
       while not aex_simplenullp rr and n >= m do <<
@@ -1277,8 +1266,10 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
 	 qq := aex_add(qq,qqi);
 	 n := aex_deg(rr,x); m := aex_deg(gg,x);
       >>;
-      if !*rlanuexdebug and not aex_nullp aex_minus(f,aex_add(aex_mult(qq,g),rr))
- 	    then prin2t "aex_quotrem: selftest failed";
+      % Computation self-test:
+      % assert(aex_nullp aex_minus(f, aex_add(aex_mult(qq, g), rr)));
+      % TODO: With the previous assertion the code does not compile for PSL with
+      % the following error: "wrong address for label g0006: difference = 477".
       return qq . rr
    end;
 
@@ -1316,9 +1307,8 @@ asserted procedure aex_gcdext1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean)
 	 tmp := aex_inv aex_lc(aa,x); aa := aex_mult(aa,tmp);
 	 ss := aex_mult(ss,tmp); tt := aex_mult(tt,tmp);
       >>;
-      if !*rlanuexdebug and not
-	 aex_nullp aex_minus(aa,aex_add(aex_mult(ss,a),aex_mult(tt,b))) then
-	 prin2t "***** aex_gcdext: selftest failed";
+      % Computation self-test:
+      assert(aex_nullp aex_minus(aa,aex_add(aex_mult(ss,a),aex_mult(tt,b))));
       return {aa,ss,tt}
    end;
 
@@ -1327,9 +1317,9 @@ asserted procedure aex_gcd(a: Aex, b: Aex, x: Kernel): Aex;
       d := car aex_gcdext1(a,b,x,nil);
       % optimizatfion: if the gcd is not a poly, then it's 1
       if aex_deg(d,x)<1 then d := aex_1();
-      if !*rlanuexdebug and aex_nullp aex_lc(d,x) then
-	 prin2 "*** aex_gcd: lc non-trivial";
-      return d;
+      % Make sure that the leading coeffcient of d is non-trivial.
+      assert(not aex_nullp aex_lc(d,x));
+      return d
    end;
 
 asserted procedure aex_gcd1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean): Aex;
@@ -1428,11 +1418,9 @@ asserted procedure aex_inv(ae: Aex): Aex;
 	 tmp := aex_bind(aex_mult(car drs,caddr drs),x,alpha) %%% here alphanew with f1
       else
       	 tmp := aex_bind(aex_mult(aex_inv car drs,caddr drs),x,alpha);
-      if !*rlanuexdebug and
-	 not aex_nullp aex_minus(aex_1(),aex_mult(ae,tmp)) then
-	    rederr {"aex_inv: selftest failed, ae = ",  ae, ", tmp = ", tmp, ", delta = ",
-	       aex_minus(aex_1(),aex_mult(ae,tmp))};
-      return tmp;
+      % Computation self-test:
+      assert(aex_nullp aex_minus(aex_1(),aex_mult(ae,tmp)));
+      return tmp
    end;
 
 asserted procedure aex_invtest(ae: Aex): Aex;
@@ -1442,8 +1430,7 @@ asserted procedure aex_invtest(ae: Aex): Aex;
 asserted procedure aex_linsolv(ae: Aex, x: Kernel): Aex;
    % [x] is the only free variable in ae.
    <<
-      if !*rlanuexdebug and not (aex_freeids ae equal {x}) then
-         prin2t "aex_linsolv: invalid argument";
+      assert(aex_freeids ae equal {x});
       aex_mult(aex_inv aex_lc(ae,x),aex_neg aex_red(ae,x))
    >>;
 
@@ -1479,8 +1466,8 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
    % interval is regarded as closed.
    begin scalar ia,cfdgl,ctac,ivl,r;
       % coefficient and degree list, containment of a_c, interval list
-      if !*rlanuexdebug and aex_freeids ae then
- 	 prin2t "***** aex_containment: invalid argument";
+      % [ae] should be a constant.
+      assert(null aex_freeids ae);
       if null aex_boundids ae then <<
 	 r := ratpoly_torat aex_ex ae;
 	 return iv_mk(r,r);
@@ -1490,8 +1477,8 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       ctac := anu_iv cdr ia;
       %ae := aex_free(ae,car ia);
       cfdgl := aex_coefdegl(aex_free(ae,car ia),car ia);
-      if !*rlanuexdebug and not aex_coefdegltest(ae,car ia) then
-	 prin2t "***** aex_containment: aex_coefdegltest failed";
+      % Coefficient degree list test:
+      assert(aex_coefdegltest(ae, car ia));
       ivl := for each cfdg in cfdgl collect
 	 iv_mult(aex_containment car cfdg,iv_tothen(ctac,cdr cfdg));
       return iv_mapadd ivl
@@ -1529,9 +1516,10 @@ asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
    % non-trivial leading coefficient. Returns an non-negative Rational, the
    % minimum of the cauchy bounds of ae.
    begin scalar cfl,am,ctam,nb,ctl,ml,m,n,minabsam,cb,aesc;
-      if !*rlanuexdebug and aex_simplenullp aex_lc(ae,x) then
-	 prin2t "***** aex_cauchybound: argument has trivial lc";
-      if aex_deg(ae,x) <= 0 then return rat_1(); % avoids trivial sturmchains
+      % [ae] should not have non-trivial degree:
+      assert(not aex_simplenullp aex_lc(ae, x));
+      if aex_deg(ae,x) <= 0 then
+	 return rat_1(); % avoids trivial sturmchains
       cfl := aex_coefl(ae,x); % has at least length 1
       am := car cfl;
       ctam := aex_containment am;
@@ -1556,13 +1544,11 @@ asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
 	    rat_mapmax for each a in ml collect rat_quot(a,minabsam));
       cb := rat_min(m,n);
       aesc := aex_stdsturmchain(ae,x);
-      if !*rlanuexdebug and not (aex_sturmchainsgnch(aesc,x,cb) eq
-	 aex_stchsgnch(aesc,x,'infty)) then
-	 prin2 "aex_cauchybound: problem at right border";
-      if !*rlanuexdebug and not (aex_stchsgnch(aesc,x,'minfty) eq
-	 aex_sturmchainsgnch(aesc,x,rat_minus(rat_neg cb,rat_1()))) then
-	 prin2 "aex_cauchybound: problem at left border";
-      return cb;
+      % Check if the bound was computed correctly:
+      assert(aex_sturmchainsgnch(aesc,x,cb) eq aex_stchsgnch(aesc,x,'infty));
+      assert(aex_stchsgnch(aesc,x,'minfty) eq
+	 aex_sturmchainsgnch(aesc,x,rat_minus(rat_neg cb,rat_1())));
+      return cb
    end;
 
 asserted procedure aex_findrootsoflist(ael: AexList, x: Kernel): AnuList;
@@ -1659,15 +1645,19 @@ procedure aex_nextroot(rip,x);
 	 >>;
 	 % care for the case that there was no poly left with a root
 	 if rip_pscl rip then << % there is at least one interval and one poly
-	    if !*rlanuexdebug and (null rip_ivl rip or null rip_pscl rip) then
-	       prin2t "***** aex_nextroot: no interval or no polynomial";
-	    if aex_nextroot1(rip,x) then rootfound := t;
-	    if null rip_ivl rip then rip_poppscl rip
+	    % Check that there is an interval and a polynomial:
+	    assert(rip_ivl rip and rip_pscl rip);
+	    if aex_nextroot1(rip,x) then
+	       rootfound := t;
+	    if null rip_ivl rip then
+	       rip_poppscl rip
 	 >>
       >>;
-      if !*rlanuexdebug and rootfound then
-	 anu_check tag_object car rip_rootl rip;
-      if rootfound then return car rip_rootl rip else return nil
+      if rootfound then <<
+	 assert(anu_check tag_object car rip_rootl rip);
+	 return car rip_rootl rip
+      >>;
+      return nil
    end;
 
 procedure aex_nextroot1(rip,x);
