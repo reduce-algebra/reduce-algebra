@@ -460,40 +460,80 @@ asserted procedure ratpoly_diff(q: RatPoly, x: Kernel): RatPoly;
    diffsq(q, x);
 
 asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
-   % Rational number polynomial substitute rational number. The result is exact
-   % up to multiplication by a positive rational number. Horner's scheme is
-   % used.
-   if domainp numr q or mvar numr q neq k then q else
+   % Rational number polynomial substitute rational number. The result is exact.
+   % Horner's scheme is used. Correctness is guaranteed iff k eq mvar numr q.
+   begin scalar cl, res;
+      if not sfto_mvartest(numr q, k) then
+	 return q;
       % This might be faster here. test, if needed.
       % !*f2q(cdr qremf(multf(numr q,exptf(denr r,ldeg numr q)),
       %   addf(multf(!*k2f k,denr r),negf numr r)));
-      begin scalar cl,res;
-      	 cl := coeffs numr q;  % (c0,...,cn)
-      	 res := !*f2q car cl;
-      	 for each c in cdr cl do
-	    res := addsq(!*f2q c, multsq(res,r));
-      	 res := quotsq(res,!*f2q denr q);
-	 % Calculation self-test:
-      	 assert(ratpoly_nullp ratpoly_minus(res,subsq(q, {k . prepsq r})));
-      	 return res
-      end;
+      cl := coeffs numr q;
+      res := !*f2q car cl;
+      for each c in cdr cl do
+	 res := addsq(!*f2q c, multsq(res, r));
+      res := quotsq(res, !*f2q denr q);
+      % Calculation self-test:
+      assert(ratpoly_nullp ratpoly_minus(res, subsq(q, {k . prepsq r})));
+      return res
+   end;
 
 asserted procedure ratpoly_subrat1(q: RatPoly, k: Kernel, r: Rational): RatPoly;
    % Rational number polynomial substitute rational number. The result is exact
-   % up to multiplication by a positive rational number.
+   % up to multiplication by a positive rational number. Horner's scheme is
+   % used. Correctness is guaranteed iff k eq mvar numr q.
    begin scalar cl, res; integer n, d, dd;
-      if domainp numr q or mvar numr q neq k then
+      if not sfto_mvartest(numr q, k) then
    	 return q;
       n := numr r;
       d := denr r;
-      dd := d;
+      dd := 1;
       cl := coeffs numr q;
       res := car cl;
       for each c in cdr cl do <<
-	 res := addf(multf(res, n), multf(c, dd));
-	 dd := dd * d
+	 dd := dd * d;
+	 res := addf(multf(res, n), multf(c, dd))
       >>;
       return res ./ 1
+   end;
+
+% TODO + WARNING: It occured that RatPoly was something like (0 . 1). This
+% should NOT be allowed because functions working with standard forms have
+% problems with this!!! This should be represented by (nil . 1)!
+
+asserted procedure ratpoly_subrp(q: RatPoly, k: Kernel, r: RatPoly): RatPoly;
+   % Rational number polynomial substitute rational number polynomial. The
+   % result is exact. Horner's scheme is used.
+   begin scalar qn, rordr, oo, n, cl, res, tmpres; integer d, dd;
+      qn := numr q;
+      if domainp qn or not(k memq kernels qn) then
+	 return q;
+      n := numr r;
+      if zerop n then  % Temporary solution, see the TODO above this procedure!
+	 n := nil;
+      d := denr r;
+      if mvar qn neq k then <<
+	 rordr := t;
+	 oo := setkorder {k};
+	 qn := reorder qn;
+	 n := reorder n
+      >>;
+      dd := 1;
+      cl := coeffs qn;
+      res := car cl;
+      for each c in cdr cl do <<
+	 dd := dd * d;
+	 res := addf(multf(res, n), multf(c, dd))
+      >>;
+      if rordr then <<
+	 setkorder oo;
+	 res := reorder res
+      >>;
+      if null res then
+	 return nil ./ 1;
+      dd := dd * denr q;
+      d := gcdn(dd, sfto_dcontentf res);
+      return quotfx(res, d) ./ (dd / d)
    end;
 
 asserted procedure ratpoly_sub(q: RatPoly, k: Kernel, af: Any): RatPoly;
@@ -683,7 +723,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    %%% todo: ensure [a] is defined with x
    % test if [a] is rational (then use aex_subrat)
    if null aex_boundids anu_dp a and aex_deg(anu_dp a, x) eq 1 then
-      aex_subrp(ae, x, ratpoly_toaf aex_ex aex_linsolv(anu_dp a, x))
+      aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
    else aex_mk(aex_ex ae,ctx_add(x . a,aex_ctx ae),nil,nil);
 
 asserted procedure aex_print(ae: Aex): Any;
@@ -759,9 +799,9 @@ asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
       nil,
       nil);
 
-asserted procedure aex_subrp(ae: Aex, x: Kernel, af: Any): Aex;
+asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
    % Substitute algebraic form in algebraic expression. [af] is a Lisp prefix.
-   aex_mk(ratpoly_sub(aex_ex ae, x, af),
+   aex_mk(ratpoly_subrp(aex_ex ae, x, rp),
       aex_ctx ae,
       nil,
       nil); %%% minimize ex and ctx
@@ -1156,7 +1196,7 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       if !*rlverbose and !*rlanuexverbose and aex_deg(g,x) <= 0 then
 	 prin2 "[aex_sgn:num!]";
       f := anu_dp alpha;
-      f := aex_subrp(f,aex_mvar f,x); %unnecessary, aex_bind makes it already
+      f := aex_subrp(f, aex_mvar f, ratpoly_fromsf !*k2f x); %unnecessary, aex_bind makes it already
       % Make sure that the leading coefficient of f is not zero:
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       % Make sure that the leading coefficient of g is not zero:
@@ -1227,7 +1267,8 @@ asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to fact
 	 aehi := aex_fromrp hi; % h_i(x)
 	 aehi := aex_gcd(aehi,aeg,x); % h_i(x,alpha)=gcd(h_i(x),g(x,alpha))
 	 aeg  := aex_quot(aeg,aehi,x);
-	 aehi := aex_subrp(aehi,x,{'plus,x,{'times,s,y}})
+	 aehi := aex_subrp(
+	    aehi, x, ratpoly_fromsf addf(!*k2f x, multf(s, !*k2f y)))
       >>;
       % Self-test:
       assert(aex_simpleratp aex_quot(f,aex_foldmult l,x));
