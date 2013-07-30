@@ -30,6 +30,8 @@
 
 module assertcheckfn;
 
+compiletime on1 'assert;
+
 % Primitive data types (2.1 of the SL Report)
 struct Integer checked by fixp;
 struct Floating checked by floatp;
@@ -71,6 +73,8 @@ struct NoOrdSF checked by noordsfpx;
 struct SQ checked by sqp;
 struct Domain checked by domainp;
 struct Kernel checked by assert_kernelp;
+
+compiletime off1 'assert;
 
 procedure booleanp(x);
    x eq t or x eq nil;
@@ -153,7 +157,7 @@ procedure sfpx1(u,vl,v,d,chkord);
 	 vl := v . vl;
       % vv must be smaller than all variables in vl wrt. the current
       % kernel order. By recursion, vl is sorted so that it is
-      % suffiecient to compare with car vl. I construct linear powers in
+      % sufficient to compare with car vl. I construct linear powers in
       % order to use ordpp; I could not find a suitable function for
       % directly comparing (possibly composite) kernels. The relevant
       % code is mostly in alg/order.red and hardly documented.

@@ -53,7 +53,6 @@ loadtime load!-package 'matrix;
 loadtime load!-package 'factor;
 loadtime load!-package 'cgb;
 
-load!-package 'assert;
 off1 'assert;
 
 exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,

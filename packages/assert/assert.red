@@ -52,45 +52,28 @@ fluid '(lispsystem!*);
 fluid '(assertstatistics!*);
 fluid '(fname!*);
 
-switch assert, assertbreak, assertstatistics;
+% The switch assert is a hook to make all stats introduced here return nil.
+% formassert, in contrast, return '(cond (nil nil)) instead, because nil causes
+% problems within progs. Note that even when assen is on, structs and asserted
+% procedures only modify property lists but do not change the behaviour of the
+% system unless assert_install or assert_install_all is used. Similarly, the
+% code generated for assert() is once more protected by the switch evalassert.
 
-% The switch assert is a hook to make all stats introduced here return nil thus
-% turning them into comments. Note that even when it is on, structs and
-% assertions only modify property lists but do not change the behaviour of the
-% system unless assert_install or assert_install_all is used. I thus switch it
-% on by default for now.
-on1 'assert;
+switch assert;
 
+put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
+
+procedure assert_onoff();
+   % This is for autoloading;
+   ;
+
+off1 'assert;
+
+switch evalassert, assertbreak, assertstatistics;
+
+on1 'evalassert;
 off1 'assertbreak;
 on1 'assertstatistics;
-
-%% macro procedure assert_check(l);
-%%    begin scalar f,origfn,progn,argl,w,w1,w2,w3,w4,w5,de,msg,code; integer n;
-%%       f := cadr l;
-%%       n := length cdr caddr l;
-%%       if (w := get(f,'number!-of!-args)) and not eqn(w,n) then
-%% 	 rederr {"bad number of args in ",l};
-%%       origfn := get(f,'assert_origfn);
-%%       if not origfn then  <<
-%% 	 origfn := intern gensym();
-%% 	 progn := {'copyd,mkquote origfn,mkquote f} . progn;
-%%       	 progn := {'put,mkquote f,''assert_origfn,mkquote origfn} . progn
-%%       >>;
-%%       argl := for i := 1:n collect mkid('a,i);
-%%       w1 := mkquote f;
-%%       w2 := mkquote origfn;
-%%       w3 := 'list . argl;
-%%       w4 := 'list . for each fn in cdr caddr l collect mkquote fn;
-%%       w5 := mkquote cadddr l;
-%%       de := {'de,f,argl,{'assert_check1,w1,w2,w3,w4,w5}};
-%%       progn := {{'lambda,'(!*comp),de},t} . progn;
-%%       progn := 'progn . reversip progn;
-%%       msg := {'list,mkquote f,"is not an expr procedure - ignoring assert"};
-%%       code := {'cond,
-%% 	 {{'not,{'eqcar,{'getd,mkquote f},''expr}},{'lprim,msg}},
-%% 	 {t,progn}};
-%%       return code
-%%    end;
 
 procedure assert_check1(fn,origfn,argl,argtypel,restype);
    % This is the wrapper code executed when an insertion is installed.
@@ -189,8 +172,8 @@ procedure assert_structstat();
       typeflag := {'flag, mkquote {type}, ''assert_dyntype};
       scan();
       if flagp(cursym!*,'delim) then <<
-	 if not !*assert then
-	    return nil;
+%% 	 if not !*assert then
+%% 	    return nil;
 	 if !*msg then lprim {"struct",type,"is not checked"};
       	 return typeflag
       >>;
@@ -201,8 +184,8 @@ procedure assert_structstat();
       cfn := scan();
       if not flagp(scan(),'delim) then
 	 rederr {"expecting end of struct but found",cursym!*};
-      if not !*assert then
-	 return nil;
+%%       if not !*assert then
+%% 	 return nil;
       typecheckform := {'put,mkquote type, ''assert_dyntypechk, mkquote cfn};
       return {'progn, typecheckform, typeflag}
    end;
@@ -246,23 +229,6 @@ procedure assert_analyze();
       >>;
       assertstatistics!* := nil
    end;
-
-%% procedure assert_stat();
-%%    begin scalar fn,argtypel,restype;
-%%       fn := scan();
-%%       if scan() neq '!*colon!* then
-%% 	 rederr {"expecting ':' in assert but found",cursym!*};
-%%       argtypel := assert_stat1();
-%%       if scan() neq 'difference or scan() neq 'greaterp then
-%% 	 rederr {"expecting '->' in assert but found",cursym!*};
-%%       restype := scan();
-%%       if not flagp(scan(),'delim) then
-%% 	 rederr {"expecting end of assert but found",cursym!*};
-%%       if not !*assertcheck then
-%% 	 return nil;
-%%       return {'assert_check,fn,'list . argtypel,restype}
-%%    end;
-
 
 procedure assert_declarestat();
    % The parser for assert.
@@ -339,8 +305,7 @@ procedure assert_install(fnl);
    % fnl of arbirary length of arguments w/o parentesis. fnl is list of
    % identifiers that are functions for which an existing assertion is
    % installed.
-   if !*assert then
-      for each fn in fnl do assert_install1 fn;
+   for each fn in fnl do assert_install1 fn;
 
 put('assert_install,'stat,'rlis);
 
@@ -362,8 +327,7 @@ procedure assert_uninstall(fnl);
    % fnl of arbirary length of arguments w/o parentesis. fnl is list of
    % identifiers that are functions for which an installed assertion is
    % uninstalled.
-   if !*assert then
-      for each fn in fnl do assert_uninstall1 fn;
+   for each fn in fnl do assert_uninstall1 fn;
 
 put('assert_uninstall,'stat,'rlis);
 
@@ -382,8 +346,7 @@ procedure assert_install_all();
    % also no empty pair of parenthesis. Installs assertions for the
    % functions in the global list assert_functionl!* of all functions
    % for which there are assertions defined.
-   if !*assert then
-      assert_install assert_functionl!*;
+   assert_install assert_functionl!*;
 
 put('assert_install_all,'stat,'endstat);
 
@@ -392,26 +355,27 @@ procedure assert_uninstall_all();
    % also no empty pair of parenthesis. Uninstalls assertions for the
    % functions in the global list assert_functionl!* of all functions
    % for which ther are assertions defined.
-   if !*assert then
-      assert_uninstall assert_functionl!*;
+   assert_uninstall assert_functionl!*;
 
 put('assert_uninstall_all,'stat,'endstat);
 
-symbolic procedure formassert(u,vars,mode);
-   if !*assert then
-      assert_assert(cadr u,vars,mode);
+procedure formassert(u,vars,mode);
+   if mode eq 'symbolic and !*assert then
+      assert_assert(u,vars,mode)
+   else
+      '(cond (nil nil));
 
 put('assert, 'formfn, 'formassert);
 
 procedure assert_assert(u, vars, mode);
-   begin scalar l, a, m;
-      if mode neq 'symbolic then
-	 return;
-      l := if ifl!* then
-	 assert_sconcat {car ifl!*, ":", assert_at2str curline!*, ":"};
-      a := assert_outl2string outl!*;
-      m := 'list . l . {mkquote a, "violated in procedure", mkquote fname!*};
-      return {'cond, {{'and, '!*assert, {'not, formc(u, vars, mode)}},
+   begin scalar a, m;
+%%      a := assert_outl2string outl!*;
+      a := u;
+      m := {"assertion", mkquote cadr a, "violated in procedure", mkquote fname!*};
+      if ifl!* then
+	 m := assert_sconcat {car ifl!*, ":", assert_at2str curline!*, ":"} . m;
+      m := 'list . m;
+      return {'cond, {{'and, '!*evalassert, {'not, formc(cadr u, vars, mode)}},
 	 {'progn,
 	    {'cond, {'!*backtrace, {'backtrace}}},
 	    {'cond, {'!*assertbreak, {'rederr, m}}, {t, {'lprim, m}}}}}}
@@ -455,6 +419,11 @@ procedure assert_at2str(s);
    % List tools atom to string. [s] is an atom. Returns the print name
    % of the atom [s] as a string.
    compress('!" . reversip('!" . reversip explode s));
+
+!#if (not (memq 'psl lispsystem!*))
+procedure id2string(id);
+   compress('!" . reversip('!" . reversip explode id));
+!#endif
 
 endmodule;  % assert
 
