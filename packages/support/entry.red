@@ -474,6 +474,16 @@ defautoload(setcrackflags, crack, expr, 0);
 defautoload(liepde, liepde, expr, 4);
 defautoload(einfachst, applysym, expr, 2);
 
+% Assert
+
+fluid '(!*assert);
+
+switch assert;
+
+put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
+
+defautoload(assert_onoff, assert, expr, 0);
+
 endmodule;
 
 end;
