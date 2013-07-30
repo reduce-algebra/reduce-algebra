@@ -232,7 +232,7 @@ first-order formulas. The current version is 3.06.
 @end ifnottex
 @end ifnothtml
 
-@heading Quickstart
+@heading Quick Start
 In case you hate long manuals and want to see something within a
 minute type @t{reduce} in the command line. @sc{reduce} should start up.
 Type the four commands @t{load redlog; rlset ofsf; phi :=
