@@ -86,7 +86,7 @@ export here
 #
 # Remove old log files
 #
-rm csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
+rm -f csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
 
 packages=`sed -e '/^\%/d' $here/packages/package.map | \
           grep ' test ' | \
