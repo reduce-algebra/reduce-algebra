@@ -7,9 +7,9 @@ log=$base/log
 timings=$base/timings
 trunk=$base/trunk
 bin=$trunk/generic/redlogtest
-mkdir $base $log $timings
+mkdir -p $base $log $timings
 cd $base
-svn checkout svn://svn.code.sf.net/p/reduce-algebra/code/trunk trunk &> svn-co.log
+svn checkout svn://svn.code.sf.net/p/reduce-algebra/code/trunk trunk &> $log/svn-co.log
 echo $(date): svn co finished
 cd $trunk
 ./configure --with-csl --without-gui &> $log/configure-csl.log
@@ -21,5 +21,5 @@ echo $(date): make finished
 cd $timings
 $bin/rltestall.sh 4  &> $log/rltestall.log
 echo $(date): rltestall finished
-mail -s "Redlog Test $date" sturm@mpi-inf.mpg.de < $log/rltestall.log
-echo $(date): mail sent - rltest.sh finished
+cat $log/rltestall.log
+echo $(date): rltest.sh finished
