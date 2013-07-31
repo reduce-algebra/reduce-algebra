@@ -1,5 +1,7 @@
 symbolic;
 
+on1 'assert;
+
 struct Tag;
 struct PosNumber asserted by PosNumberP;
 

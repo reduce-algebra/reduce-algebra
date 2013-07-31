@@ -4,6 +4,12 @@ symbolic;
 nil
 
 
+on1 'assert;
+
+
+nil
+
+
 struct Tag;
 *** struct tag is not checked 
 
@@ -124,8 +130,3 @@ assert_uninstall_all;
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 0 ms
-1: real 0.24
-user 0.04
-sys 0.09
