@@ -7,8 +7,7 @@
 #
 # For getting information on the memory at runtime, go:
 #
-# load_package redlog;
-# lisp meminfo();
+# meminfo();
 #
 
 echo 1000
