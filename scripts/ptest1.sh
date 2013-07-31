@@ -188,7 +188,7 @@ then
 
 mkdir -p csl-times
 
-howlong=$p.howlong
+howlong=$p.howlong.tmp
 
 $timecmd sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>$howlong
 off int;
@@ -292,20 +292,20 @@ fi # PSL case
 
 if test "$csl" = "yes" && test "$psl" = "yes"
 then
-  echo "1k " > timer.tmp
+  echo "1k " > $p.timer.tmp
   grep ^Time csl-times/$p.time | \
-   sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
-  echo " 100 * " >> timer.tmp
+   sed -e 's/.*(counter 1): //; s/ms.*//' >> $p.timer.tmp
+  echo " 100 * " >> $p.timer.tmp
   grep ^Time psl-times/$p.time | \
-   sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
-  echo " / pq" >> timer.tmp
+   sed -e 's/.*(counter 1): //; s/ms.*//' >> $p.timer.tmp
+  echo " / pq" >> $p.timer.tmp
 # If "dc" is not available then the following line leaves ratio empty.
-  ratio=`dc < timer.tmp 2>/dev/null`
+  ratio=`dc < $p.timer.tmp 2>/dev/null`
   if test "x$ratio" != "x" && test "x$ratio" != "x0"
   then 
     printf "CSL/PSL:${ratio}%%"
   fi
-  rm timer.tmp
+  rm $p.timer.tmp
   mkdir -p csl-psl-times-comparison
   diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff
   if test -s csl-psl-times-comparison/$p.rlg.diff
