@@ -1915,18 +1915,18 @@ procedure ofsf_cj2atl(f);
    else
       {f};
 
-procedure ofsf_fbqe(f);
+procedure ofsf_fbqe(f, theo);
    % Fallback quantifier elimination. [f] is a formula. Returns a
    % quantifier-free formula. If the switch [rlqefb] is on, then this is
    % called when [cl_qe] fails.
    if !*rlqefbqepcad then
-      ofsf_fbexternal(f,function qepcad_qepcad,"QEPCAD B")
+      theo . ofsf_fbexternal(f,function qepcad_qepcad,"QEPCAD B")
    else if !*rlqefbmma then
-      ofsf_fbexternal(f,function mma_mma,"MATHEMATICA")
+      theo . ofsf_fbexternal(f,function mma_mma,"MATHEMATICA")
    else <<
       if !*rlverbose then
 	 ioto_prin2t "ofsf_cad with optimization of projection order";
-      cdr ofsf_cad(f,ofsf_cadporder f,nil)
+      ofsf_cad(f, ofsf_cadporder f, theo)
    >>;
 
 procedure ofsf_fbexternal(f,call,name);

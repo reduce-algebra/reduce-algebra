@@ -551,7 +551,7 @@ procedure cl_qe1(f,theo,xbvl);
 	    >> else <<
 	       if !*rlverbose then
 		  ioto_tprin2 {"++++ Entering fallback QE: "};
-	       result := rl_fbqe f
+	       theo . result := rl_fbqe(f, theo)
 	    >>
 	 >> else
 	    result := f;

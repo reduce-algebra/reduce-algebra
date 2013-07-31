@@ -353,7 +353,7 @@ rl_mkbb('rl_susitf,2);
 
 rl_mkbb('rl_susibin,2);
 
-rl_mkbb('rl_fbqe,1);
+rl_mkbb('rl_fbqe,2);
 
 rl_mkbb('rl_qscsaat,1);
 

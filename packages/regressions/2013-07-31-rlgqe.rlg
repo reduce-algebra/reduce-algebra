@@ -1,0 +1,30 @@
+% When using fallback QE with rlgqe the generic variant of ofsf_cad is is used.
+% However, the code did not care about theories for fallback QE at all, which
+% became apparent with this example.
+
+rlset r;
+
+
+{}
+
+
+phi := all(x, ex(y, x^2 + x*y + b > 0 and x + a*y^2 + b <= 0));
+
+
+                        2                  2
+phi := all x ex y (b + x  + x*y > 0 and a*y  + b + x <= 0)
+
+
+rlgqe phi;
+
+
+{{a <> 0},b > 0 and a <= 0}
+
+
+end;
+
+Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 CSL
+Time (counter 1): 150 ms  plus GC time: 49 ms
+1: real         0.43
+user         0.35
+sys          0.07
