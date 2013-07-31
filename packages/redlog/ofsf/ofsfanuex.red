@@ -53,44 +53,46 @@ struct AexList checked by AexListP;
 struct Anu asserted by AnuP;
 struct AnuList asserted by AnuListP;
 
-asserted procedure IntegerListP(s: Any): Boolean;
+procedure IntegerListP(s);
    null s or pairp s and fixp car s and IntegerListP cdr s;
 
-asserted procedure RationalP(s: Any): Boolean;
-   sqp s and (null numr s or fixp numr s) and fixp denr s;
+procedure RationalP(s);
+   sqp s and (null numr s or (fixp numr s and not eqn(numr s, 0))) and
+      fixp denr s and denr s > 0;
 
-asserted procedure RationalListP(s: Any): Boolean;
+procedure RationalListP(s);
    null s or pairp s and RationalP car s and RationalListP cdr s;
 
-asserted procedure GRationalP(s: Any): Boolean;
-   RationalP s or s eq 'minfty or s eq 'infty;
+procedure GRationalP(s);
+   RationalP s or s eq 'minfty or s eq 'infty;  % TODO: Change to 'minf, 'pinf.
 
-asserted procedure RatIntervalP(s: Any): Boolean;
-   RationalP car s and RationalP cdr s;
+procedure RatIntervalP(s);
+   pairp s and RationalP car s and RationalP cdr s;
 
-asserted procedure RatIntervalListP(s: Any): Boolean;
+procedure RatIntervalListP(s);
    null s or pairp s and RatIntervalP car s and RatIntervalListP cdr s;
 
-asserted procedure RatPolyP(s: Any): Boolean;
-   sqp s and fixp denr s;
+procedure RatPolyP(s);
+   sqp s and sfpx numr s and not zerop numr s and
+      fixp denr s and denr s > 0;
 
-asserted procedure RatPolyListP(s: Any): Boolean;
-   null s or pairp s and RatPolyP car s and RatPolyP cdr s;
+procedure RatPolyListP(s);
+   null s or pairp s and RatPolyP car s and RatPolyListP cdr s;
 
-asserted procedure AexCtxP(s: Any): Boolean;
-   eqcar(s, 'ctx);
+procedure AexCtxP(s);
+   pairp s and eqcar(s, 'ctx);
 
-asserted procedure AexP(s: Any): Boolean;
-   eqcar(s, 'aex);
+procedure AexP(s);
+   pairp s and eqcar(s, 'aex);
 
-asserted procedure AexListP(s: Any): Boolean;
+procedure AexListP(s);
    null s or pairp s and AexP car s and AexListP cdr s;
 
-asserted procedure AnuP(s: Any): Boolean;
-   eqcar(s, 'anu);
+procedure AnuP(s);
+   pairp s and eqcar(s, 'anu);
 
-asserted procedure AnuListP(s: Any): Boolean;
-   not s or pairp s and AnuP car s and AnuListP cdr s;
+procedure AnuListP(s);
+   null s or pairp s and AnuP car s and AnuListP cdr s;
 
 % Rational functions.
 
@@ -98,8 +100,12 @@ asserted procedure rat_mk(n: Integer, d: Integer): Rational;
    % Rational number make.
    quotsq(simp n, simp d);
 
-asserted procedure rat_numr(q: Rational): Integer;
+asserted procedure rat_numr(q: Rational): SF;
    % Rational number numerator.
+   numr q;
+
+asserted procedure rat_numrn(q: Rational): Integer;
+   % Rational number numerator, numeric version.
    if null numr q then 0 else numr q;
 
 asserted procedure rat_denr(q: Rational): Integer;
@@ -109,7 +115,7 @@ asserted procedure rat_denr(q: Rational): Integer;
 asserted procedure rat_print(q: Rational): Any;
    % Rational number print.
    <<
-      prin2 rat_numr q;
+      prin2 rat_numrn q;
       prin2 "/";
       prin2 rat_denr q
    >>;
@@ -147,40 +153,35 @@ asserted procedure rat_quot(p: Rational, q: Rational): Rational;
 
 asserted procedure rat_nullp(q: Rational): Boolean;
    % Rational number null predicate.
-   null numr q or numr q = 0;
+   null numr q;
 
 asserted procedure rat_sgn(q: Rational): Integer;
    % Rational number sign. [q] is of type RAT.
-   if rat_nullp q then
-      0
-   else if sgn numr q = sgn denr q then
-      1
-   else
-      -1;
+   sgn rat_numrn q;
 
 asserted procedure rat_0(): Rational;
    % Rational number 0.
-   simp 0;
+   nil ./ 1;
 
 asserted procedure rat_1(): Rational;
    % Rational number 1.
-   simp 1;
+   1 ./ 1;
 
 asserted procedure rat_less(p: Rational, q: Rational): Boolean;
    % Rational number less. Returns [t] iff [p] < [q].
-   rat_sgn(addsq(p,negsq q)) = -1;
+   eqn(rat_sgn(addsq(p, negsq q)), -1);
 
 asserted procedure rat_greater(p: Rational, q: Rational): Boolean;
    % Rational number greater. Returns [t] iff [p] > [q].
-   rat_sgn(addsq(p,negsq q)) = 1;
+   eqn(rat_sgn(addsq(p, negsq q)), 1);
 
 asserted procedure rat_eq(p: Rational, q: Rational): Boolean;
    % Rational number equal. Returns [t] iff [p] = [q].
-   eqn(rat_sgn(rat_minus(p,q)), 0);
+   eqn(rat_sgn(rat_minus(p, q)), 0);
 
 asserted procedure rat_leq(p: Rational, q: Rational): Boolean;
    % Rational number less equal. Returns [t] iff [p] <= [q].
-   rat_sgn(addsq(p,negsq q)) < 1;
+   rat_sgn(addsq(p, negsq q)) < 1;
 
 asserted procedure rat_min(p: Rational, q: Rational): Rational;
    % Rational number minimum.
@@ -191,7 +192,7 @@ asserted procedure rat_min(p: Rational, q: Rational): Rational;
 
 asserted procedure rat_max(p: Rational, q: Rational): Rational;
    % Rational number maximum.
-   if rat_leq(p,q) then
+   if rat_leq(p, q) then
       q
    else
       p;
@@ -205,11 +206,11 @@ asserted procedure rat_mapmax(pl: RationalList): Rational;
 
 asserted procedure rat_min4(a: Rational, b: Rational, c: Rational, d: Rational): Rational;
    % Rational number minimum of 4.
-   rat_min(rat_min(a,b),rat_min(c,d));
+   rat_min(rat_min(a, b), rat_min(c, d));
 
 asserted procedure rat_max4(a: Rational, b: Rational, c: Rational, d: Rational): Rational;
    % Rational number maximum of 4.
-   rat_max(rat_max(a,b),rat_max(c,d));
+   rat_max(rat_max(a, b), rat_max(c, d));
 
 asserted procedure rat_abs(p: Rational): Rational;
    % Rational number absolute value.
@@ -358,7 +359,7 @@ asserted procedure ratpoly_1(): RatPoly;
 
 asserted procedure ratpoly_mklin(x: Kernel, ba: Rational): RatPoly;
    % Makes linear polynomial a*x-b, which has the root ba.
-   ratpoly_fromsf addf(multf(numr simp x,rat_denr ba),negf rat_numr ba);
+   ratpoly_fromsf addf(multf(numr simp x, rat_denr ba), negf rat_numr ba);
 
 asserted procedure ratpoly_print(q: RatPoly): Any;
    mathprint prepsq q;
@@ -366,7 +367,6 @@ asserted procedure ratpoly_print(q: RatPoly): Any;
 asserted procedure ratpoly_ratp(q: RatPoly): Boolean;
    % Tests, if a RatPoly is a Rational.
    numberp numr q or null numr q;
-   %RationalP q;
 
 asserted procedure ratpoly_null(): RatPoly;
    % Rational number polynomial null.
@@ -408,8 +408,8 @@ asserted procedure ratpoly_quot(q1: RatPoly, q2: RatPoly): RatPoly;
    % Rational number polynomial quotient. [q2] is not null.
    quotsq(q1, q2);
 
-asserted procedure ratpoly_pp(q: RatPoly): RatPoly;
-   (sfto_dprpartksf numr q) ./ denr q;
+ asserted procedure ratpoly_pp(q: RatPoly): RatPoly;
+    sfto_dprpartksf numr q ./ denr q;
 
 asserted procedure ratpoly_univarp(q: RatPoly): Boolean;
    sfto_univarp numr q;
@@ -497,20 +497,14 @@ asserted procedure ratpoly_subrat1(q: RatPoly, k: Kernel, r: Rational): RatPoly;
       return res ./ 1
    end;
 
-% TODO + WARNING: It occured that RatPoly was something like (0 . 1). This
-% should NOT be allowed because functions working with standard forms have
-% problems with this!!! This should be represented by (nil . 1)!
-
 asserted procedure ratpoly_subrp(q: RatPoly, k: Kernel, r: RatPoly): RatPoly;
    % Rational number polynomial substitute rational number polynomial. The
    % result is exact. Horner's scheme is used.
    begin scalar qn, rordr, oo, n, cl, res, tmpres; integer d, dd;
       qn := numr q;
-      if domainp qn or not(k memq kernels qn) then
+      if domainp qn or not (k memq kernels qn) then
 	 return q;
       n := numr r;
-      if zerop n then  % Temporary solution, see the TODO above this procedure!
-	 n := nil;
       d := denr r;
       if mvar qn neq k then <<
 	 rordr := t;
@@ -697,7 +691,7 @@ asserted procedure aex_1(): Aex;
 
 asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
    % Make linear polynomial a*x + b.
-   %aex_fromsf addf(multf(numr simp x,rat_denr ba),negf rat_numr ba);
+   % aex_fromsf addf(multf(numr simp x, rat_denr ba), negf rat_numr ba);
    aex_fromrp ratpoly_mklin(x, ba);
 
 asserted procedure aex_ex(ae: Aex): RatPoly;
@@ -1067,7 +1061,7 @@ asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
 asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
    % Pseudo sturm chain.
    begin scalar sc;
-      sc := reversip(aex_remseq({ aex_tad g,aex_tad f},x));
+      sc := reversip(aex_remseq({aex_tad g, aex_tad f}, x));
       %%% sc := reversip(aex_remseq({aex_pp aex_tad g,aex_pp aex_tad f},x));
       %assert(aex_sturmchaincheck sc);
       return sc
@@ -1089,17 +1083,13 @@ asserted procedure aex_sturmchaincheck(sc: AexList): Boolean;
    end;
 
 asserted procedure aex_pp(ae: Aex): Aex;
-   % Primitive part. Works only for univariate polynomials with rational
-   % coefficients.
-   % ae;
-   <<
-      % [ae] should be a univariate polynomial:
-      assert(aex_simpleratpolyp ae and eqn(length aex_ids ae, 1));
-      if ratpoly_univarp aex_ex ae then
-      	 aex_mk(ratpoly_pp aex_ex ae,aex_ctx ae,nil,nil)
-      else
-      	 ae
-   >>;
+   % Primitive part. Works only for polynomials with rational coefficients
+   % containing at most one variable. TODO: Why!? This should work for
+   % multivariate polynomials as well...
+   if ratpoly_univarp aex_ex ae then
+      aex_mk(ratpoly_pp aex_ex ae, aex_ctx ae, nil, nil)
+   else
+      ae;
 
 asserted procedure aex_remseq(ael: AexList, x: Kernel): AexList;
    % Remainder sequence. [ael] is a list of algebraic polynomials in [x], of
@@ -1133,34 +1123,36 @@ asserted procedure aex_stchsgnch(sc: AexList, x: Kernel, r: GRational): Integer;
       aex_sturmchainsgnch(sc,x,r);
 
 asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
-   % Sign at infinity. [ae] has non-trivial lc or is simply null.
+   % Sign at infinity. We assume: 1) [ae] contains at most one free variable. 2)
+   % [ae] has non-trivial lc or is simply null.
    begin scalar freeids;
       if aex_simplenullp ae then
 	 return 0;
       freeids := aex_freeids ae;
       if null freeids then
 	 return aex_sgn ae;
-      % From now on we have exactly one free variable.
       % Check if [x] is the main variable:
-      assert(sfto_mvartest(car freeids, x));
+      assert(car freeids eq x);
       % Check if [x] is the only free variable:
-      assert(eqn(length freeids, 1));
-      return aex_sgn aex_lc(ae,x)
+      assert(null cdr freeids);
+      % From now on we have exactly one free variable.
+      return aex_sgn aex_lc(ae, x)
    end;
 
 asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
-   % Sign at minus infinity. [ae] has non-trivial lc or is simply null.
+   % Sign at minus infinity. We assume: 1) [ae] contains at most one free
+   % variable. 2) [ae] has non-trivial lc or is simply null.
    begin scalar freeids;
       if aex_simplenullp ae then
 	 return 0;
       freeids := aex_freeids ae;
       if null freeids then
 	 return aex_sgn ae;
-      % From now on we have exactly one free variable.
       % Check if [x] is the main variable:
-      assert(sfto_mvartest(car freeids, x));
+      assert(car freeids eq x);
       % Check if [x] is the only free variable:
-      assert(eqn(length freeids, 1));
+      assert(null cdr freeids);
+      % From now on we have exactly one free variable.
       if evenp aex_deg(ae, x) then
 	 return aex_sgn aex_lc(ae,x);
       return (-1)*aex_sgn aex_lc(ae,x)
@@ -1308,9 +1300,7 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
 	 n := aex_deg(rr,x); m := aex_deg(gg,x);
       >>;
       % Computation self-test:
-      % assert(aex_nullp aex_minus(f, aex_add(aex_mult(qq, g), rr)));
-      % TODO: With the previous assertion the code does not compile for PSL with
-      % the following error: "wrong address for label g0006: difference = 477".
+      assert(aex_nullp aex_minus(f, aex_add(aex_mult(qq, g), rr)));
       return qq . rr
    end;
 
@@ -1372,7 +1362,7 @@ asserted procedure aex_gcdexttest(a: Aex, b: Aex, x: Kernel);
       aex_add(aex_mult(cadr ddsstt,a),aex_mult(caddr ddsstt,b)))
       	 where ddsstt = aex_gcdext(a,b,x);
 
-asserted procedure aex_pairwiseprime(ael: AexList, x: Kernel): AexList; % needs testing
+procedure aex_pairwiseprime(ael, x); % needs testing
    % Pairwise prime. [ael] is a list of Aex with non-trivial lc. Returns a list
    % of Aex with non-trivial lc.
    for each te in
@@ -1397,7 +1387,7 @@ asserted procedure aex_pairwiseprime1(ae1: AexList, ae2l: AexList, x: Kernel): A
       ae2l := cdr ae2l;
    >>; ae1 >>;
 
-asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
+procedure aex_tgpairwiseprime(ael, x);
    % Pairwise prime. [ael] is a list of Aex with non-trivial lc. Returns a list
    % of Aex with non-trivial lc.
    begin scalar pprestlist,tmp;
@@ -1409,7 +1399,7 @@ asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
 	 tmp else cdr tmp
    end;
 
-asserted procedure aex_tgpairwiseprime1(ael: AexList, x: Kernel): AexList;
+procedure aex_tgpairwiseprime1(ael, x);
    % makes ae1 prime to ae2l.
    begin scalar ae1,ae2,ae2l,ae2lnew,g,n1,n2;
       ae1 := car ael; ae2l := cdr ael; ae2lnew := nil;
