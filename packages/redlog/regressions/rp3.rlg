@@ -446,7 +446,7 @@ d1 - 1 <= 0 and 2*d1 - 1 > 0 and a > 0 and a - 1 < 0 and a - 2*d1 > 0
 end;
 
 Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 CSL
-Time (counter 1): 51029 ms  plus GC time: 12580 ms
-1: real      2650.67
-user        64.95
-sys          0.35
+Time (counter 1): 51279 ms  plus GC time: 12790 ms
+1: real        65.63
+user        65.28
+sys          0.34
