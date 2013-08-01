@@ -1,0 +1,5 @@
+Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 CSL
+Time (counter 1): 13609 ms  plus GC time: 5950 ms
+1: real        20.67
+user        20.44
+sys          0.21

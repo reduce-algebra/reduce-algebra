@@ -1,0 +1,6 @@
+Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 PSL
+Time (counter 1): 11410 ms  plus GC time: 510 ms
+Quitting
+real        12.66
+user        11.96
+sys          0.68
