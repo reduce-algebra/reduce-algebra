@@ -1,6 +1,6 @@
-Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 PSL
-Time (counter 1): 90 ms
+Tested on x86_64-unknown-debian6.0.7 PSL
+Time (counter 1): 200 ms
 Quitting
-real         0.22
-user         0.13
-sys          0.07
+real 1.44
+user 0.30
+sys 0.12

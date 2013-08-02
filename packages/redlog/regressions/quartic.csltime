@@ -1,5 +1,5 @@
-Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 CSL
-Time (counter 1): 1340 ms  plus GC time: 80 ms
-1: real         1.65
-user         1.56
-sys          0.08
+Tested on x86_64-unknown-debian6.0.7 CSL
+Time (counter 1): 1280 ms  plus GC time: 120 ms
+1: real 1.82
+user 1.66
+sys 0.10

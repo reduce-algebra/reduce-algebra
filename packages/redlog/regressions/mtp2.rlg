@@ -47,8 +47,8 @@ rlqe mtp2;
 
 end;
 
-Tested on x86_64-mac_10.8_mountainlion-darwin12.4.0 CSL
-Time (counter 1): 0 ms  plus GC time: 49 ms
-1: real         0.24
-user         0.18
-sys          0.05
+Tested on x86_64-unknown-debian6.0.7 CSL
+Time (counter 1): 10 ms  plus GC time: 70 ms
+1: real 0.40
+user 0.25
+sys 0.08
