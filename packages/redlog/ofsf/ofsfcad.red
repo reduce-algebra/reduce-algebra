@@ -1569,7 +1569,7 @@ procedure ofsf_trialevalsgnf(f,sp);
    % The sample point needs not to provide a number for each variable.
    <<
       f := ofsf_subsp!*(aex_fromsf f,sp);
-      if aex_constp f then
+      if aex_simplenumberp f then
 	 numr simp aex_sgn f
       else
 	 ratpoly_tosf aex_ex f
@@ -1578,7 +1578,7 @@ procedure ofsf_trialevalsgnf(f,sp);
 procedure ofsf_sgnf4(f,sp);
   <<
       f := ofsf_subsp!*(aex_fromsf f,sp);
-      if aex_constp f then
+      if aex_simplenumberp f then
 	 aex_sgn f
       else
 	 "?"

@@ -447,10 +447,10 @@ asserted procedure ratpoly_exp(rp: RatPoly, n: Integer): RatPoly;
 
 asserted procedure ratpoly_xtothen(x: Kernel, n: Integer): RatPoly;
    % Rational number polynomial x to the n.
-   if eqn(n, 0) then
-      ratpoly_fromatom 1
-   else
-      ratpoly_mult(ratpoly_fromatom x,ratpoly_xtothen(x,n-1));
+   <<
+      assert(x >= 0);
+      if eqn(n, 0) then 1 ./ 1 else (((x .^ n) .* 1) .+ nil) ./ 1
+   >>;
 
 asserted procedure ratpoly_diff(q: RatPoly, x: Kernel): RatPoly;
    % Rational number polynomial derivation.
@@ -576,6 +576,26 @@ asserted procedure ratpoly_factorize(q: RatPoly): List;
       assert(ratpoly_nullp(ratpoly_minus(q,ratpoly_foldmult(
 	    for each sfn in tmp collect ratpoly_exp(car sfn,cdr sfn)))));
       return tmp
+   end;
+
+asserted procedure ratpoly_psrem(f: RatPoly, g: Ratpoly, x: Kernel): RatPoly;
+   % Pseudo remainder. WARNING: ratpoly_red, ratpoly_lc and mvar checking, is it
+   % correct what we do here?
+   begin scalar an, bm, tmp; integer n, m;
+      f := ratpoly_tad f;
+      g := ratpoly_tad g;
+      n := ratpoly_deg(f, x);
+      m := ratpoly_deg(g, x);
+      bm := ratpoly_lc g;
+      while not ratpoly_nullp f and n >= m do <<
+	 an := ratpoly_lc f;
+	 tmp := ratpoly_mult(an, ratpoly_xtothen(x, n - m));
+	 f := ratpoly_minus(
+	    ratpoly_mult(ratpoly_red f, bm),
+	    ratpoly_mult(ratpoly_red g, tmp));
+	 n := ratpoly_deg(f, x)
+      >>;
+      return f
    end;
 
 % AexCtx functions.
@@ -713,7 +733,7 @@ asserted procedure aex_free(ae: Aex, x: Kernel): Aex;
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    % TODO: ensure [a] is defined with x.
    % Test if [a] is rational (then use aex_subrat)
-   if null aex_boundids anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
+   if null aex_boundidl anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
       aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
    else
       aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae), nil, nil);
@@ -843,54 +863,50 @@ asserted procedure aex_simplenullp(ae: Aex): Boolean;
    ratpoly_nullp(aex_ex ae);
 
 asserted procedure aex_simplenumberp(ae: Aex): Boolean;
-   null aex_freeids ae;
+   null aex_freeidl ae;
 
-asserted procedure aex_ids(ae: Aex): List;
+asserted procedure aex_idl(ae: Aex): List;
    ratpoly_idl aex_ex ae;
 
-asserted procedure aex_freeids(ae: Aex): List;
+asserted procedure aex_freeidl(ae: Aex): List;
    % Free identifiers, the id with highest kernel order first.
    lto_setminus(ratpoly_idl aex_ex ae,ctx_idl aex_ctx ae);
 
-asserted procedure aex_boundids(ae: Aex): List;
-   intersection(aex_ids ae,ctx_idl aex_ctx ae);
-
-asserted procedure aex_constp(ae: Aex): Boolean;
-   % Constant predicate. %%% faster!
-   null aex_freeids ae;
+asserted procedure aex_boundidl(ae: Aex): List;
+   lto_setminus(aex_idl ae, lto_setminus(aex_idl ae, ctx_idl aex_ctx ae));
 
 asserted procedure aex_nullp(ae: Aex): Boolean;
    % Null predicate.
    begin scalar tmp;
       % Make the leading coefficient non-trivial, i.e. non-zero.
       tmp := aex_mklcnt ae;
-      if aex_freeids tmp then  % [ae] is a non-constant polynomial.
+      if aex_freeidl tmp then  % [ae] is a non-constant polynomial.
 	 return nil;
       if eqn(aex_sgn tmp, 0) then
 	 return t;
       return nil
    end;
 
-asserted procedure aex_mvaroccurtest(ae: Aex, x: Kernel): Boolean;
+asserted procedure aex_mvartest(ae: Aex, x: Kernel): Boolean;
    ratpoly_mvartest(aex_ex ae,x);
 
 asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
    % Reductum of [ae] wrt [x]. Needs not to be minimized.
-   if aex_mvaroccurtest(ae,x) then
+   if aex_mvartest(ae,x) then
       aex_mk(ratpoly_red aex_ex ae,aex_ctx ae,nil,nil) %%% mklcnt
    else
       aex_0();
 
 asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
-   if aex_mvaroccurtest(ae,x) then
+   if aex_mvartest(ae,x) then
       aex_mk(ratpoly_lc aex_ex ae,aex_ctx ae,nil,nil)
    else
       ae; % ctx needs not to be made smaller, as there are no singles
 
 asserted procedure aex_mvar(ae: Aex): Kernel;
    <<
-      assert(null aex_freeids ae or
-	 eqcar(aex_freeids ae, ratpoly_mvar aex_ex ae));
+      assert(null aex_freeidl ae or
+	 eqcar(aex_freeidl ae, ratpoly_mvar aex_ex ae));
       ratpoly_mvar aex_ex ae
    >>;
 
@@ -901,7 +917,7 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
       % Quick win: obvious cases: [ae] is a Rational or no variables are bound:
       if aex_simpleratp ae or null ctx_idl aex_ctx ae then
       	 return ae;
-      idl := aex_freeids ae;
+      idl := aex_freeidl ae;
       if idl then <<  % [ae] is a non-constant algebraic polynomial.
       	 if aex_nullp aex_lc(ae, car idl) then
       	    return aex_mklcnt aex_red(ae, car idl);
@@ -915,78 +931,30 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
       return ae
    end;
 
-%procedure aex_minimize(ae);
-%   % Algebraic expression minimize. [ae] is an AEX(c,d) with
-%   % $c<d$. Returns an AEX(c,d), where the $r$-component is null or
-%   % where the leading coefficient is non-trivial.
-%   if aex_getr ae = ratpoly_null() then
-%      aex_mkfromr(ae,ratpoly_null())
-%   else if aex_nullp aex_lc ae then
-%      aex_minimize aex_red ae
-%   else
-%      ae;
-
-%procedure aex_reduce(ae);
-%   % convention: the bound variable has to be defined by an anu using
-%   % the same variable.
-%   begin scalar ids,x,alpha,rlc,rred,tmp;
-%      %%% care for special case aex_simpleratp !!!
-%      % there are no bound variables: we have a (const.) rat. poly
-%      if not aex_boundids ae then
-%	 return ae;
-%      % from now on there are bound variables
-%      ids := aex_ids ae; x := car ids;
-%      % there are free variables
-%      if aex_freeids ae then <<
-%	 rlc := aex_reduce(aex_lc(ae,x));
-%	 rred := aex_reduce(aex_red(ae,x));
-%	 return aex_add(aex_mult(rlc,aex_xtothen(x,aex_deg(ae,x))),rred)
-%      >>;
-%      % there are no free variables
-%      assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variable match.
- %     %%%alpha := cdar ctx_ial aex_ctx ae; % context = {(x . alpha),...}
-%      alpha := ctx_get(x,aex_ctx ae);
-%      tmp := aex_free(ae,x);
-%      tmp := aex_reduce tmp;
-%      if aex_deg(tmp,x) >= aex_deg(anu_dp alpha,x) then
-%	 return aex_bind(aex_rem(tmp,anu_dp alpha,x),x,alpha)
-%      else
-%	 return aex_bind(tmp,x,alpha)
-%   end;
-
 asserted procedure aex_reduce(ae: Aex): Aex;
-   % convention: the bound variable has to be defined by an anu using
-   % the same variable.
-   begin scalar ids,x,alpha,rlc,rred,tmp;
-      % there are no bound variables: we have a (const.) rat. poly
-      if null aex_boundids ae then
-	 tmp := ae;
-      % from now on there are bound variables
-      if null tmp then << ids := aex_ids ae; x := car ids >>;
-      % there are free variables
-      if null tmp and aex_freeids ae then <<
-	 rlc := aex_reduce(aex_lc(ae,x));
-	 rred := aex_reduce(aex_red(ae,x));
-	 tmp := aex_add(aex_mult(rlc,aex_xtothen(x,aex_deg(ae,x))),rred)
-      >>
-      % there are no free variables
-      else if null tmp then <<
-      	 % assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variables match.
-      	 %alpha := cdar ctx_ial aex_ctx ae; % context = {(x . alpha),...}
-	 alpha := ctx_get(x,aex_ctx ae);
-      	 tmp := aex_free(ae,x);
-      	 tmp := aex_reduce tmp;
-      	 if aex_deg(tmp,x) >= aex_deg(anu_dp alpha,x) then
-	    tmp := aex_bind(aex_rem(tmp,anu_dp alpha,x),x,alpha)
-      	 else
-	    tmp := aex_bind(tmp,x,alpha)
+   % Convention: the bound variable has to be defined by an anu using the same
+   % variable.
+   begin scalar x, rlc, rred, alpha, tmp;
+      if null aex_boundidl ae then  % There are no bound variables.
+	 return ae;
+      % There are bound variables.
+      x := aex_mvar ae;  % We assume that aex_mvar ae is a bound variable.
+      if aex_freeidl ae then <<  % There are free variables.
+	 rlc := aex_reduce aex_lc(ae, x);
+	 rred := aex_reduce aex_red(ae, x);
+	 return aex_add(aex_mult(rlc, aex_xtothen(x, aex_deg(ae, x))), rred)
       >>;
-%      assert(aex_nullp aex_minus(ae,tmp));  % Computation self-test.
+      % There are no free variables.
+      assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variables match.
+      alpha := ctx_get(x, aex_ctx ae);
+      tmp := aex_reduce aex_free(ae, x);
+      if aex_deg(tmp, x) >= aex_deg(anu_dp alpha, x) then
+	 tmp := aex_rem(tmp, anu_dp alpha, x);
+      tmp := aex_bind(tmp, x, alpha);
+      % Computation self-test:
+      assert(aex_nullp aex_minus(ae, tmp));
       return tmp
    end;
-
-asserted procedure aex_reducetest(ae: Aex): Boolean;
-   aex_nullp aex_minus(ae,aex_reduce ae);
 
 asserted procedure aex_psquotrem1(f: Aex, p: Aex, x: Kernel): DottedPair;
    % Pseudo quotient remainder one step. Returns [(q . r)] with $a_n^2f=qp+r$.
@@ -1031,8 +999,20 @@ asserted procedure aex_psquotrem(f: Aex, p: Aex, x: Kernel): DottedPair;
 asserted procedure aex_psquot(f: Aex, p: Aex, x: Kernel): Aex;
    car aex_psquotrem(f, p, x);
 
-asserted procedure aex_psrem(f: Aex, p: Aex, x: Kernel): Aex;
-   cadr aex_psquotrem(f, p, x);
+asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
+   % cdr aex_psquotrem(f, g, x);
+   % Aex pseudo remainder. This algorithm is independent from aex_psquotrem and
+   % aex_psquotrem1.
+   begin scalar w;
+      assert(not aex_simplenullp g);
+      if null aex_freeidl g then
+   	 return aex_0();
+      assert(not eqn(aex_sgn aex_lc(g, x), 0));
+      return aex_mklcnt aex_mk(ratpoly_psrem(aex_ex f, aex_ex g, x),
+	 ctx_union(aex_ctx f, aex_ctx g),
+	 nil,
+	 nil)
+   end;
 
 asserted procedure aex_psquotremtest(f: Aex, p: Aex, x: Kernel): Boolean;
    % Algebraic expression pseudo quotient remainder test.
@@ -1124,7 +1104,7 @@ asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
    begin scalar freeids;
       if aex_simplenullp ae then
 	 return 0;
-      freeids := aex_freeids ae;
+      freeids := aex_freeidl ae;
       if null freeids then
 	 return aex_sgn ae;
       % Check if [x] is the main variable:
@@ -1141,7 +1121,7 @@ asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
    begin scalar freeids;
       if aex_simplenullp ae then
 	 return 0;
-      freeids := aex_freeids ae;
+      freeids := aex_freeidl ae;
       if null freeids then
 	 return aex_sgn ae;
       % Check if [x] is the main variable:
@@ -1160,7 +1140,7 @@ asserted procedure aex_sgn(ae: Aex): Integer;
    % Possible optimization: use of aex_containment.
    begin scalar con,x,g,alpha,f,sc;
       % Make sure that [ae] is a constant:
-      assert(null aex_freeids ae);
+      assert(null aex_freeidl ae);
       if aex_simpleratp ae then  % [ae] is obviously rational.
 	 return rat_sgn aex_ex ae;
       % Possible optimization:
@@ -1265,7 +1245,7 @@ asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to fact
 
 %procedure aex_quotrem(f,g,x);
 %   % optimization: g is constant.
-%   if null aex_freeids g then aex_mult(aex_inv g,f) . aex_0()
+%   if null aex_freeidl g then aex_mult(aex_inv g,f) . aex_0()
 %   else aex_quotrem1(f,g,x);
 
 asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
@@ -1277,7 +1257,7 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       % Make sure that we will not divide by zero:
       assert(not aex_simplenullp g);
       % Optimization when g is a constant:
-      if null aex_freeids g then
+      if null aex_freeidl g then
 	 return aex_mult(aex_inv g, f) . aex_0();
       % Make sure that the leading coefficient of [f] is non-zero:
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
@@ -1313,7 +1293,7 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
    % quotient.
    begin scalar an, bm, inv, tmp; integer m, n;
       assert(not aex_simplenullp g);
-      if null aex_freeids g then
+      if null aex_freeidl g then
    	 return aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
@@ -1324,11 +1304,13 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
       while not aex_simplenullp f and n >= m do <<
    	 an := aex_lc(f, x);
    	 tmp := aex_mult(an, aex_xtothen(x, n - m));
-   	 f := aex_mklcnt aex_minus(aex_red(f, x),
+   	 %f := aex_mklcnt aex_minus(aex_red(f, x),
+   	 %   aex_mult(aex_mult(aex_red(g, x), tmp), inv));
+   	 f := aex_minus(aex_red(f, x),
    	    aex_mult(aex_mult(aex_red(g, x), tmp), inv));
    	 n := aex_deg(f, x)
       >>;
-      return f
+      return aex_mklcnt f
    end;
 
 asserted procedure aex_gcdext(a: Aex, b: Aex, x: Kernel): AexList;
@@ -1469,21 +1451,21 @@ asserted procedure aex_inv(ae: Aex): Aex;
 asserted procedure aex_linsolv(ae: Aex, x: Kernel): Aex;
    % [x] is the only free variable in ae.
    <<
-      assert(aex_freeids ae equal {x});
+      assert(aex_freeidl ae equal {x});
       aex_mult(aex_inv aex_lc(ae, x), aex_neg aex_red(ae, x))
    >>;
 
 %%% --- root isolation --- %%%
 
 asserted procedure aex_coefl(ae: Aex, x: Kernel): AexList;
-   if aex_mvaroccurtest(ae,x) then
+   if aex_mvartest(ae,x) then
       aex_lc(ae,x) . aex_coefl(aex_red(ae,x),x)
    else
       {ae};
 
 asserted procedure aex_coefdegl(ae: Aex, x: Kernel): List;
    % Coefficients and degree list. [ae] is Aex in x.
-   if aex_mvaroccurtest(ae,x) then
+   if aex_mvartest(ae,x) then
       (aex_lc(ae,x) . aex_deg(ae,x)) . aex_coefdegl(aex_red(ae,x),x)
    else
       {aex_lc(ae,x) . 0};
@@ -1506,8 +1488,8 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
    begin scalar ia,cfdgl,ctac,ivl,r;
       % coefficient and degree list, containment of a_c, interval list
       % [ae] should be a constant.
-      assert(null aex_freeids ae);
-      if null aex_boundids ae then <<
+      assert(null aex_freeidl ae);
+      if null aex_boundidl ae then <<
 	 r := ratpoly_torat aex_ex ae;
 	 return iv_mk(r, r)
       >>;
@@ -1875,7 +1857,7 @@ asserted procedure anu_check(a: Anu): Boolean;
    begin scalar dp,x,l,r,s,valid;
       valid := t;
       dp := anu_dp a;
-      x := aex_freeids dp; % tmp
+      x := aex_freeidl dp; % tmp
       if length x neq 1 then
 	 prin2t "***** anu_check: def. poly corrupt";
       x := car x; l := iv_lb anu_iv a; r := iv_rb anu_iv a;
@@ -1916,21 +1898,6 @@ asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
       >>;
       anu_putiv(a,iv_mk(m,rb));
       return a
-   end;
-
-!#if (and (not (memq 'psl lispsystem!*)) (not (memq 'csl lispsystem!*)))
-   procedure intersection(ss1,ss2);
-      lto_setminus(ss1,lto_setminus(ss1,ss2));
-!#endif
-
-%procedure setunion(ss1,ss2);
-%   append(lto_setminus(ss1,ss2),ss2);
-
-procedure idorder();
-   begin scalar idorderv;
-      idorderv := setkorder nil;
-      setkorder idorderv;
-      return idorderv
    end;
 
 endmodule;  % ofsfanuex
