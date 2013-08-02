@@ -190,10 +190,13 @@ deflist(
 % interactive use) and input is direct from whatever is standard when
 % reduce starts then !_line!_ will always expand to 1. Go "off int;" or
 % put your material in a file that you read using "in" if this matters
-% to you.
+% to you. Similarly, the special marker !_file!_ will be replaced by the
+% name of the file currently read in, or the string "Terminal" if not
+% reading from a file.
 
-fluid '(!*line!-marker);
+fluid '(!*line!-marker !*file!-marker);
 !*line!-marker := intern compress '(!! !_ l i n e !! !_);
+!*file!-marker := intern compress '(!! !_ f i l e !! !_);
 
 symbolic procedure token1;
 %
@@ -268,6 +271,8 @@ symbolic procedure token1;
 % If I implement a package system I might want to check if the name
 % y here should map onto ppp:y for some package ppp.
         if y = !*line!-marker then nxtsym!* := curline!*
+        else if y = !*file!-marker
+          then nxtsym!* := if null ifl!* then "Terminal" else car ifl!*
         else nxtsym!* := y;
         crchar!* := x;
     c:  return nxtsym!*;
