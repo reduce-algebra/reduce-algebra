@@ -402,8 +402,8 @@ asserted procedure ratpoly_quot(q1: RatPoly, q2: RatPoly): RatPoly;
    % Rational number polynomial quotient. [q2] is not null.
    quotsq(q1, q2);
 
- asserted procedure ratpoly_pp(q: RatPoly): RatPoly;
-    sfto_dprpartksf numr q ./ denr q;
+asserted procedure ratpoly_pp(q: RatPoly): RatPoly;
+   sfto_dprpartksf numr q ./ denr q;
 
 asserted procedure ratpoly_univarp(q: RatPoly): Boolean;
    sfto_univarp numr q;
@@ -579,24 +579,27 @@ asserted procedure ratpoly_factorize(q: RatPoly): List;
    end;
 
 asserted procedure ratpoly_psrem(f: RatPoly, g: Ratpoly, x: Kernel): RatPoly;
-   % Pseudo remainder. WARNING: ratpoly_red, ratpoly_lc and mvar checking, is it
-   % correct what we do here?
+   % Pseudo remainder.
    begin scalar an, bm, tmp; integer n, m;
+      assert(mvar numr f eq x);
+      assert(mvar numr g eq x);
       f := ratpoly_tad f;
       g := ratpoly_tad g;
       n := ratpoly_deg(f, x);
       m := ratpoly_deg(g, x);
       bm := ratpoly_lc g;
-      while not ratpoly_nullp f and n >= m do <<
-	 an := ratpoly_lc f;
-	 tmp := ratpoly_mult(an, ratpoly_xtothen(x, n - m));
-	 f := ratpoly_minus(
-	    ratpoly_mult(ratpoly_red f, bm),
-	    ratpoly_mult(ratpoly_red g, tmp));
-	 n := ratpoly_deg(f, x)
+      while n >= m do <<
+   	 an := ratpoly_lc f;
+   	 tmp := ratpoly_mult(an, ratpoly_xtothen(x, n - m));
+   	 f := ratpoly_minus(
+   	    ratpoly_mult(ratpoly_red f, bm),
+   	    ratpoly_mult(ratpoly_red g, tmp));
+	 f := ratpoly_mult(bm, f);
+   	 n := ratpoly_deg(f, x)
       >>;
       return f
    end;
+   %cdr pseudo!-qremf(numr f, numr g, x) ./ 1;
 
 % AexCtx functions.
 
@@ -1000,63 +1003,28 @@ asserted procedure aex_psquot(f: Aex, p: Aex, x: Kernel): Aex;
    car aex_psquotrem(f, p, x);
 
 asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
-   % cdr aex_psquotrem(f, g, x);
    % Aex pseudo remainder. This algorithm is independent from aex_psquotrem and
    % aex_psquotrem1.
    begin scalar w;
       assert(not aex_simplenullp g);
       if null aex_freeidl g then
    	 return aex_0();
+      assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
-      return aex_mklcnt aex_mk(ratpoly_psrem(aex_ex f, aex_ex g, x),
+      return aex_mklcnt aex_mk(
+	 ratpoly_psrem(aex_ex f, aex_ex g, x),
 	 ctx_union(aex_ctx f, aex_ctx g),
 	 nil,
 	 nil)
    end;
 
-asserted procedure aex_psquotremtest(f: Aex, p: Aex, x: Kernel): Boolean;
-   % Algebraic expression pseudo quotient remainder test.
-   begin scalar m,n,ctx,q,r,bn2,qri,ii;
-      m := aex_deg(f,x); n := aex_deg(p,x);
-      ctx := aex_ctx f;
-      qri := aex_psquotrem(f,p,x);
-      q := car qri;
-      r := cadr qri;
-      ii := cddr qri;
-      bn2 := aex_mult(bn,bn) where bn=aex_lc(p,x);
-      while (ii:=ii-1) >= 0 do  % ii times multply bn^2
-	 f := aex_mult(f,bn2);
-      if not aex_nullp(aex_minus(f,aex_add(aex_mult(q,p),r))) then
-	 prin2 "***** aex_psquotremtest: failed";
-   end;
-
 asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
    % Standard sturm chain.
-   aex_sturmchain(f,aex_diff(f,x),x);
+   aex_sturmchain(f, aex_diff(f, x), x);
 
 asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
-   % Pseudo sturm chain.
-   begin scalar sc;
-      sc := reversip(aex_remseq({aex_tad g, aex_tad f}, x));
-      %%% sc := reversip(aex_remseq({aex_pp aex_tad g,aex_pp aex_tad f},x));
-      %assert(aex_sturmchaincheck sc);
-      return sc
-   end;
-
-asserted procedure aex_sturmchaincheck(sc: AexList): Boolean;
-   % Algebraic expression sturm chain check. [sc] is a sturm chain.
-   begin scalar v,l;
-      v := t;
-      l := length sc;
-      while sc and v do
-	 if aex_nullp car sc then <<
-	    v := nil;
-	    ioto_prin2 {"+++ aex_sturmchaincheck: nullpoly found. length:",
-	       l," position:",l-length sc+1," +++"}
-	 >> else
-	    sc := cdr sc;
-      return v
-   end;
+   % Sturm chain. Pseudo remainder is used to construct the chain.
+   aex_psremseq(aex_tad f, aex_tad g, x);
 
 asserted procedure aex_pp(ae: Aex): Aex;
    % Primitive part. Works only for polynomials with rational coefficients
@@ -1064,24 +1032,38 @@ asserted procedure aex_pp(ae: Aex): Aex;
    % multivariate polynomials as well...
    if ratpoly_univarp aex_ex ae then
       aex_mk(ratpoly_pp aex_ex ae, aex_ctx ae, nil, nil)
-   else
+  else
       ae;
 
-asserted procedure aex_remseq(ael: AexList, x: Kernel): AexList;
-   % Remainder sequence. [ael] is a list of algebraic polynomials in [x], of
-   % length at least 2. Caveat: the returned list is built in reverse order.
-   begin scalar rem;
-      % First element of [ael] should not be zero:
-      assert(not aex_simplenullp car ael);
-      if aex_deg(car ael,x) <= 0 then
-      	 return ael;
-      if !*rlanuexpsremseq then
-	 rem := aex_psrem(cadr ael,car ael,x)
-      else
-	 rem := aex_pp aex_tad aex_rem(cadr ael,car ael,x);
-      if aex_simplenullp rem then
-      	 return ael;
-      return aex_remseq(aex_neg rem . ael,x)
+asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
+   % Pseudo remainder sequence for polynomials f and g. Returns a pseudo
+   % remainder sequence for polynomials f and g.
+   begin scalar rem, res;
+      assert(not aex_simplenullp g);
+      res := {g, f};
+      while aex_deg(g, x) > 0 do <<
+	 rem := aex_pp aex_tad aex_psrem(f, g, x);
+	 f := g;
+	 g := aex_neg rem;
+	 if not aex_simplenullp g then
+	    res := g . res;
+      >>;
+      return reversip res
+   end;
+
+asserted procedure aex_remseq(f: Aex, g: Aex, x: Kernel): AexList;
+   % Remainder sequence. Returns a remainder sequence for polynomials f and g.
+   begin scalar rem, res;
+      assert(not aex_simplenullp g);
+      res := {g, f};
+      while aex_deg(g, x) > 0 do <<
+	 rem := aex_pp aex_tad aex_rem(f, g, x);
+	 f := g;
+	 g := aex_neg rem;
+	 if not aex_simplenullp g then
+	    res := g . res;
+      >>;
+      return reversip res
    end;
 
 asserted procedure aex_sturmchainsgnch(sc: AexList, x: Kernel, r: Rational): Integer;
@@ -1181,13 +1163,6 @@ asserted procedure aex_pssqfree(f: Aex, x: Kernel): Aex;
    else
       car aex_psquotrem(f,lastcar aex_stdsturmchain(f,x),x);
 
-%procedure aex_psgcd(f,g,x);
-%   % pseudo greatest common divisor. [f], [g] are algebraic
-%   % polynomials with positive degree in [x]. Returns an algebraic
-%   % polynomial.
-%   %lastcar aex_sturmchain(f,g);
-%   car aex_remseq({g,f},x);
-
 %%% --- should be after exact arithmetic --- %%%
 
 procedure sqfr_norm(f,x,y,palpha);
@@ -1243,11 +1218,6 @@ asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to fact
 
 %%% --- exact arithmetic - with inv --- %%%
 
-%procedure aex_quotrem(f,g,x);
-%   % optimization: g is constant.
-%   if null aex_freeidl g then aex_mult(aex_inv g,f) . aex_0()
-%   else aex_quotrem1(f,g,x);
-
 asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
    % Quotient and remainder. [f] and [g] have to have non-trivial leading
    % coefficient. Returns a pair (quotient . remainder). It holds that remainder
@@ -1270,7 +1240,7 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       m := aex_deg(gg, x);
       bm := aex_lc(gg, x);
       inv := aex_inv bm;
-      while not aex_simplenullp ff and n >= m do <<
+      while n >= m do <<
 	 an := aex_lc(ff, x);
 	 qqi := aex_reduce aex_mult(aex_mult(an, inv),
 	    aex_xtothen(x, n - m));  % Reduce added as optimization.
@@ -1301,7 +1271,7 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
       m := aex_deg(g, x);
       bm := aex_lc(g, x);
       inv := aex_inv bm;
-      while not aex_simplenullp f and n >= m do <<
+      while n >= m do <<
    	 an := aex_lc(f, x);
    	 tmp := aex_mult(an, aex_xtothen(x, n - m));
    	 %f := aex_mklcnt aex_minus(aex_red(f, x),
