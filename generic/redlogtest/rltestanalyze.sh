@@ -1,6 +1,9 @@
 #!/bin/bash
 
-deltaalarm=100
+alarmone=250
+alarmtwo=1000
+alarmthree=4000
+alarmfour=16000
 
 if test $# = 3; then
     root="$1"
@@ -25,7 +28,7 @@ if [ ! -f $timefile ]; then
 fi
 
 echo "=============================================================================================================================="
-echo "Detailed Timings (All Times in ms)"
+echo "Detailed Timings (All Times in ms).  Delta Markers: * $alarmone ms, ** $alarmtwo ms, *** $alarmthree ms, **** $alarmfour ms"
 echo "=============================================================================================================================="
 
 for lisp in csl psl; do
@@ -35,7 +38,7 @@ for lisp in csl psl; do
 	Lisp=PSL
     fi
 echo "------------------------------------------------------------------------------------------------------------------------------"
-    printf "%-30s %12s %12s %12s %8s %12s %12s %12s %8s %2s\n" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
+    printf "%-30s %12s %12s %12s %8s %12s %12s %12s %8s  %-4s\n" "$Lisp Test" RefCPU CPU "" DeltaCPU RefGC GC "" DeltaGC ""
 echo "------------------------------------------------------------------------------------------------------------------------------"
 
     cd $regressions
@@ -78,13 +81,19 @@ echo "--------------------------------------------------------------------------
 	    deltagc=+$deltagc
 	fi
 
-	if [ $delta -gt $deltaalarm ]; then
-	    significant="!"
+	if [ $delta -gt $alarmfour ]; then
+	    significant="****"
+	elif [ $delta -gt $alarmthree ]; then
+	    significant="***"
+	elif [ $delta -gt $alarmtwo ]; then
+	    significant="**"
+	elif [ $delta -gt $alarmone ]; then
+	    significant="*"
 	else
 	    significant=""
 	fi
 
-	printf "%-30s %12d %12s %12s %8s %12s %12d %12s %8s %2s\n" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
+	printf "%-30s %12d %12s %12s %8s %12s %12d %12s %8s  %-4s\n" $p $refcpu $cpu $deltacpu $pcpu $refgc $gc $deltagc $pgc "$significant"
 
 	echo "$date;$lisp;$p;$refcpu;$cpu;$deltacpu;$refgc;$gc;$deltagc" >> $log/regression-times.csv
     done
