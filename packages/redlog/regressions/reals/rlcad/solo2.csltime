@@ -1,5 +1,5 @@
-Tested on lennier.mpi-inf.mpg.de running Darwin 12.4.0 x86_64 CSL
-Time (counter 1): 780 ms  plus GC time: 80 ms
-1: real         1.10
-user         1.01
-sys          0.08
+Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
+Time (counter 1): 760 ms  plus GC time: 70 ms
+1: real 1.17
+user 1.06
+sys 0.03
