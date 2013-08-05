@@ -1,0 +1,63 @@
+% Testing rlcad
+% Condition on quartic polynomial being positive semidefinite.
+
+rlset reals;
+
+
+{}
+
+
+quartic := all(x,x**4+p*x**2+q*x+r>=0)$
+
+
+
+rlqe quartic;
+
+
+                      2                  3              2
+(r > 0 and p > 0 and p  - 4*r < 0 and 2*p  - 8*p*r + 9*q  > 0
+
+         4        3  2        2  2          2         4        3
+ and 16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  = 0) or (r > 0
+
+                2
+ and p > 0 and p  - 4*r < 0
+
+         4        3  2        2  2          2         4        3
+ and 16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  > 0) or (r > 0
+
+                2                   3              2
+ and p > 0 and p  - 4*r >= 0 and 2*p  - 8*p*r + 9*q  > 0
+
+         4        3  2        2  2          2         4        3
+ and 16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  >= 0) or (r > 0
+
+                 2                  3              2
+ and p <> 0 and p  - 4*r = 0 and 2*p  - 8*p*r + 9*q  = 0
+
+         4        3  2        2  2          2         4        3
+ and 16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  = 0)
+
+                            3      2                      3       2
+ or (r = 0 and p > 0 and 2*p  + 9*q  > 0 and (q = 0 or 4*p  + 27*q  = 0))
+
+                              4        3
+ or (r > 0 and q <> 0 and 27*q  - 256*r  <= 0 and p = 0)
+
+                                                          2
+ or (r >= 0 and q = 0 and p = 0) or (r > 0 and p < 0 and p  - 4*r < 0
+
+        3              2
+ and 2*p  - 8*p*r + 9*q  > 0
+
+         4        3  2        2  2          2         4        3
+ and 16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  >= 0)
+
+
+end;
+
+Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
+Time (counter 1): 300 ms  plus GC time: 40 ms
+1: real 0.71
+user 0.56
+sys 0.07
