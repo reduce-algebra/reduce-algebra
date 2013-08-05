@@ -1,0 +1,5 @@
+Tested on lennier.mpi-inf.mpg.de running Darwin 12.4.0 x86_64 CSL
+Time (counter 1): 780 ms  plus GC time: 80 ms
+1: real         1.10
+user         1.01
+sys          0.08

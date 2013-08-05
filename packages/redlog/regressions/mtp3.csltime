@@ -1,5 +1,0 @@
-Tested on x86_64-unknown-debian6.0.7 CSL
-Time (counter 1): 13989 ms  plus GC time: 5729 ms
-1: real 21.04
-user 20.77
-sys 0.15

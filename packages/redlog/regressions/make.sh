@@ -40,14 +40,14 @@ here=`echo $here | sed -e 's+/[^/]*$++'`
 
 newrlg=""
 
-for p in *.tst; do
-    base=$(basename $p .tst)
+for p in */*/*.tst; do
+    base=$(dirname $p)/$(basename $p .tst)
     rlg=$base.rlg
     csltime=$base.csltime
     psltime=$base.psltime
     if [ "$rlg" -ot "$p" ] || [ "$csltime" -ot "$p" ] || [ "$psltime" -ot "$p" ]; then
 	echo -n "$base: installing ... "
-	$here/generic/redlogtest/rltest-install.sh $base &> /dev/null
+	$here/generic/redlogtest/rltest-install.sh  $base &> /dev/null
 	echo "done"
 	newrlg="$newrlg $rlg"
     else
