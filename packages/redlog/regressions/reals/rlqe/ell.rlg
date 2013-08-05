@@ -1,0 +1,98 @@
+% x-axis ellipse problem
+
+rlset reals;
+
+
+{}
+
+
+ell := all({x,y},b**2*(x-c)**2+a**2*y**2-a**2*b**2=0 impl x**2+y**2-1 <=0);
+
+
+                        2  2    2  2    2  2      2        2  2
+ell := all x all y ( - a *b  + a *y  + b *c  - 2*b *c*x + b *x  = 0
+
+       2    2
+ impl x  + y  - 1 <= 0)
+
+
+rlqe ell;
+
+
+                       2            2               2            2
+b <> 0 and a <> 0 and a  - 2*a*c + c  - 1 <= 0 and a  + 2*a*c + c  - 1 <= 0 and 
+
+             2    2          2  2    2    2  2
+(c = 0 or ((a  - b  <= 0 or a *b  - a  - b *c  = 0) and (
+
+                                2  2    2    2  2
+(a - b <> 0 and a + b <> 0 and a *b  - a  - b *c  <> 0) or (
+
+ 4  2      4      2  4      2  2  3    2  2      4  3
+a *b *c - a *c - a *b *c - a *b *c  + a *b *c - b *c  <= 0
+
+       2    2          4  2    4    2  4    2  2  2    2  2    4  2
+ and (a  - b  <= 0 or a *b  - a  - a *b  - a *b *c  + a *b  - b *c  <> 0)))) or 
+
+  4  4      4  2    4      2  4  2      2  2  2    4  4
+(a *b  - 2*a *b  + a  - 2*a *b *c  - 2*a *b *c  + b *c  >= 0 and (
+
+ 2  2      2      2  3
+a *b *c - a *c + b *c  >= 0 or (a*b - a - b*c <> 0 and a*b - a + b*c <> 0
+
+ and a*b + a - b*c <> 0 and a*b + a + b*c <> 0))) or (a - b <> 0 and a + b <> 0)
+
+                                  2  2    2    4    2  2    2
+) and (a - b = 0 or a + b = 0 or a *b  - a  - b  - b *c  + b  > 0 or ((
+
+  2    2           2  2    2    4    2  2    2
+(a  - b  <= 0 and a *b  - a  - b  - b *c  + b  = 0) or (((
+
+ 4      2  2      2    4      2
+a  - 2*a *c  - 2*a  + c  - 2*c  + 1 >= 0
+
+      4    2  2    2  2    2    2  2    2
+ and a  - a *b  - a *c  - a  - b *c  + b  <= 0)
+
+                 4      2  2      2    4      2
+ or (c >= 0 and a  - 2*a *c  - 2*a  + c  - 2*c  + 1 <= 0)) and (
+
+ 4      2  2      2  3    2      2  3    2
+a *c - a *b *c - a *c  - a *c - b *c  + b *c < 0
+
+      2      2             2  2    2  2    2    4    2  2    2
+ or (a *c - b *c >= 0 and a *b  + a *c  - a  - b  - b *c  + b  >= 0)
+
+      2    2           2  2    2  2    2    4    2  2    2
+ or (a  - b  >= 0 and a *b  + a *c  - a  - b  - b *c  + b  <= 0)
+
+ or (a - c - 1 <> 0 and a - c + 1 <> 0 and a + c - 1 <> 0 and a + c + 1 <> 0))))
+
+       2    2          2  2    2    4    2  2    2
+ and (a  - b  <= 0 or a *b  - a  - b  - b *c  + b  < 0 or (((
+
+ 4      2  2      2    4      2
+a  - 2*a *c  - 2*a  + c  - 2*c  + 1 >= 0
+
+      4    2  2    2  2    2    2  2    2
+ and a  - a *b  - a *c  - a  - b *c  + b  <= 0)
+
+                 4      2  2      2    4      2
+ or (c <= 0 and a  - 2*a *c  - 2*a  + c  - 2*c  + 1 <= 0)) and (
+
+ 4      2  2      2  3    2      2  3    2
+a *c - a *b *c - a *c  - a *c - b *c  + b *c > 0
+
+ or (a - c - 1 <> 0 and a - c + 1 <> 0 and a + c - 1 <> 0 and a + c + 1 <> 0)
+
+      2      2             2  2    2  2    2    4    2  2    2
+ or (a *c - b *c >= 0 and a *b  + a *c  - a  - b  - b *c  + b  >= 0))))))
+
+
+end;
+
+Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
+Time (counter 1): 30 ms  plus GC time: 30 ms
+1: real 0.42
+user 0.30
+sys 0.05

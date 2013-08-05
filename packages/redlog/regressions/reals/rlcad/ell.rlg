@@ -1,0 +1,2128 @@
+% x-axis ellipse problem
+
+rlset reals;
+
+
+{}
+
+
+ell := all({x,y},b**2*(x-c)**2+a**2*y**2-a**2*b**2=0 impl x**2+y**2-1 <=0);
+
+
+                        2  2    2  2    2  2      2        2  2
+ell := all x all y ( - a *b  + a *y  + b *c  - 2*b *c*x + b *x  = 0
+
+       2    2
+ impl x  + y  - 1 <= 0)
+
+
+rlcad ell;
+
+
+(c < 0 and b - 1 > 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0
+
+                         2          2        2    2
+ and a - b <> 0 and a - b  < 0 and a  - 2*a*b  + b  < 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b - 1 > 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0 and a - b > 0
+
+          2          2        2    2           2  2    2    2  2
+ and a - b  > 0 and a  - 2*a*b  + b  <> 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0)
+
+ or (c < 0 and b - 1 = 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0) or (
+
+c < 0 and b > 0 and b - 1 < 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0
+
+                        2          2        2    2
+ and a - b > 0 and a - b  > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0
+
+                        2          2        2    2
+ and a + b > 0 and a - b  > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0)
+
+ or (c < 0 and b + 1 = 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0) or (
+
+c < 0 and b + 1 < 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0
+
+                        2          2        2    2
+ and a + b > 0 and a - b  > 0 and a  - 2*a*b  + b  <> 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b + 1 < 0 and a - 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0 and a + b <> 0
+
+          2          2        2    2          2  2    2    2  2
+ and a - b  < 0 and a  - 2*a*b  + b  < 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0)
+
+                                  2
+ or (c + 2 = 0 and b - 1 > 0 and b  - 1 > 0 and a - 1 = 0)
+
+ or (c = 0 and b - 1 = 0 and a - 1 = 0) or (c = 0 and b + 1 = 0 and a - 1 = 0)
+
+                                  2
+ or (c + 2 = 0 and b + 1 < 0 and b  - 1 > 0 and a - 1 = 0) or (c < 0
+
+ and b - 1 > 0 and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and a - b < 0
+
+          2                          2        2    2
+ and a - b  < 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0)
+
+ or (c = 0 and b - 1 = 0 and a - 1 < 0 and 2*a - 1 > 0) or (c < 0 and b - 1 = 0
+
+ and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and 2*a - 1 > 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c - 1 < 0 and a - b < 0 and a - b  < 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2
+ and b  - 1 < 0 and a - 1 < 0 and a - b < 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b > 0
+
+ and b - 1 < 0 and a - 1 < 0 and a - c - 1 < 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a - b < 0 and a - b  <> 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c < 0 and b > 0 and b - 1 < 0
+
+                                                                          2
+ and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and a - b < 0 and a - b  < 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 = 0
+
+                        2                          2        2    2
+ and a - b < 0 and a - b  = 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b > 0 and b - 1 < 0 and a - 1 < 0 and a - c - 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a - b < 0 and a - b  = 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 = 0
+
+                        2                          2        2    2
+ and a - b < 0 and a - b  > 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c - 1 < 0 and a - b < 0 and a - b  > 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0) or (c < 0 and b > 0
+
+ and b - 1 < 0 and a - 1 < 0 and a - c - 1 <= 0 and a + c - 1 < 0
+
+                            2                          2        2    2
+ and a + c + 1 > 0 and a - b  > 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b > 0 and b - 1 < 0 and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0
+
+                         2                          2        2    2
+ and a - b <> 0 and a - b  > 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                            2
+ and a + c - 1 <= 0 and a - b >= 0 and a - b  > 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2                                              2
+ and b  - 1 < 0 and a - 1 < 0 and a - b = 0 and a - b  > 0 and 2*a - 1 > 0
+
+      2        2    2                                             2
+ and a  - 2*a*b  + b  > 0) or (c = 0 and b > 0 and b - 1 < 0 and b  - 1 < 0
+
+                                      2
+ and a - 1 < 0 and a - b > 0 and a - b  > 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                             2                          2        2    2
+ and a + c - 1 <= 0 and a - b  > 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a - 1 < 0 and a + b > 0
+
+          2                          2        2    2
+ and a - b  > 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    4    2
+ and a *b  - a  - b  + b  < 0) or (c < 0 and b < 0 and b + 1 > 0 and a - 1 < 0
+
+                                                                 2
+ and a - c - 1 <= 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b  > 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b < 0 and b + 1 > 0
+
+                                                                          2
+ and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and a + b > 0 and a - b  > 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c = 0 and b < 0 and b + 1 > 0
+
+      2                                              2
+ and b  - 1 < 0 and a - 1 < 0 and a + b = 0 and a - b  > 0 and 2*a - 1 > 0
+
+      2        2    2
+ and a  - 2*a*b  + b  > 0) or (c > 0 and b < 0 and b + 1 > 0 and a - 1 < 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + b < 0
+
+          2                           2        2    2
+ and a - b  <> 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c = 0
+
+                              2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a - 1 < 0 and a + b < 0
+
+                      2        2    2          2  2    2    4    2
+ and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (
+
+c < 0 and b < 0 and b + 1 > 0 and a - 1 < 0 and a - c - 1 < 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b < 0 and a - b  <> 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c < 0 and b < 0 and b + 1 > 0
+
+                                                                          2
+ and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and a + b < 0 and a - b  <> 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 = 0
+
+                        2                          2        2    2
+ and a + b < 0 and a - b  = 0 and 2*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a - 1 < 0 and a - c - 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b < 0 and a - b  = 0 and 2*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0)
+
+ or (c = 0 and b + 1 = 0 and a - 1 < 0 and 2*a - 1 > 0) or (c < 0 and b + 1 = 0
+
+ and a - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and 2*a - 1 > 0)
+
+ or (c = 0 and b - 1 = 0 and 2*a - 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 > 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 <= 0 and 2*a - 1 = 0) or (c = 0 and b - 1 < 0
+
+                      2                2                4      2
+ and 2*b - 1 > 0 and b  - 1 < 0 and 2*b  - 1 > 0 and 4*b  - 5*b  + 1 < 0
+
+ and 2*a - 1 = 0) or (c < 0 and 2*c + 1 > 0 and b - 1 < 0 and 2*b - 1 > 0
+
+        2                2  2    2                4      2  2      2
+ and 2*b  - 1 > 0 and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 <= 0
+
+ and 2*a - 1 = 0) or (2*c + 3 = 0 and b - 1 < 0 and 2*b - 1 > 0
+
+        2
+ and 2*b  - 1 <> 0 and 2*a - 1 = 0) or (2*c - 1 = 0 and b - 1 < 0
+
+                        2
+ and 2*b - 1 > 0 and 2*b  - 1 <= 0 and 2*a - 1 = 0) or (c = 0 and b - 1 < 0
+
+                        2                 4      2
+ and 2*b - 1 > 0 and 2*b  - 1 <= 0 and 4*b  - 5*b  + 1 < 0 and 2*a - 1 = 0) or (
+
+                                                 2
+2*c + 1 = 0 and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 <= 0 and 2*a - 1 = 0) or 
+
+                                                            2
+(c > 0 and 2*c - 1 < 0 and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 < 0
+
+        2  2    2
+ and 4*b *c  - b  + 1 > 0 and 2*a - 1 = 0) or (c < 0 and 2*c + 1 > 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0
+
+ and 2*a - 1 = 0) or (2*c - 1 = 0 and 2*b - 1 = 0 and 2*a - 1 = 0)
+
+ or (c > 0 and 2*c - 1 < 0 and 2*b - 1 = 0 and 2*a - 1 = 0)
+
+ or (c = 0 and 2*b - 1 = 0 and 2*a - 1 = 0)
+
+ or (c < 0 and 2*c + 1 > 0 and 2*b - 1 = 0 and 2*a - 1 = 0)
+
+ or (2*c + 1 = 0 and 2*b - 1 = 0 and 2*a - 1 = 0)
+
+                                                  2
+ or (2*c - 1 = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 2*a - 1 = 0) or 
+
+                                                        2
+(c > 0 and 2*c - 1 < 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0
+
+        2  2    2                4      2  2      2
+ and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0 and 2*a - 1 = 0) or 
+
+                                        2                4      2
+(c = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 4*b  - 5*b  + 1 > 0
+
+ and 2*a - 1 = 0) or (c < 0 and 2*c + 1 > 0 and b > 0 and 2*b - 1 < 0
+
+        2                2  2    2                4      2  2      2
+ and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0
+
+ and 2*a - 1 = 0)
+
+                                                  2
+ or (2*c + 1 = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 2*a - 1 = 0)
+
+                                                  2
+ or (2*c + 3 = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 2*a - 1 = 0)
+
+                                                  2
+ or (2*c - 1 = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 2*a - 1 = 0) or 
+
+                                                        2
+(c > 0 and 2*c - 1 < 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0
+
+        2  2    2                4      2  2      2
+ and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0 and 2*a - 1 = 0) or 
+
+                                        2                4      2
+(c = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 4*b  - 5*b  + 1 > 0
+
+ and 2*a - 1 = 0) or (c < 0 and 2*c + 1 > 0 and b < 0 and 2*b + 1 > 0
+
+        2                2  2    2                4      2  2      2
+ and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0
+
+ and 2*a - 1 = 0)
+
+                                                  2
+ or (2*c + 1 = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 2*a - 1 = 0)
+
+                                                  2
+ or (2*c + 3 = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 2*a - 1 = 0)
+
+ or (2*c - 1 = 0 and 2*b + 1 = 0 and 2*a - 1 = 0)
+
+ or (c > 0 and 2*c - 1 < 0 and 2*b + 1 = 0 and 2*a - 1 = 0)
+
+ or (c = 0 and 2*b + 1 = 0 and 2*a - 1 = 0)
+
+ or (c < 0 and 2*c + 1 > 0 and 2*b + 1 = 0 and 2*a - 1 = 0)
+
+ or (2*c + 1 = 0 and 2*b + 1 = 0 and 2*a - 1 = 0) or (2*c - 1 = 0 and b + 1 > 0
+
+                        2
+ and 2*b + 1 < 0 and 2*b  - 1 <= 0 and 2*a - 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 > 0 and 2*a - 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                 2  2    2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 <> 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 <= 0 and 2*a - 1 = 0) or (c = 0 and b + 1 > 0
+
+                        2                 4      2
+ and 2*b + 1 < 0 and 2*b  - 1 <= 0 and 4*b  - 5*b  + 1 < 0 and 2*a - 1 = 0) or (
+
+                                                           2
+c < 0 and 2*c + 1 > 0 and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 < 0
+
+        2  2    2
+ and 4*b *c  - b  + 1 > 0 and 2*a - 1 = 0) or (2*c + 1 = 0 and b + 1 > 0
+
+                        2
+ and 2*b + 1 < 0 and 2*b  - 1 <= 0 and 2*a - 1 = 0) or (2*c + 3 = 0
+
+                                      2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 <> 0 and 2*a - 1 = 0) or (c = 0
+
+                                    2                2
+ and b + 1 > 0 and 2*b + 1 < 0 and b  - 1 < 0 and 2*b  - 1 > 0
+
+        4      2
+ and 4*b  - 5*b  + 1 < 0 and 2*a - 1 = 0) or (c < 0 and 2*c + 1 > 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 > 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 <= 0 and 2*a - 1 = 0)
+
+ or (c = 0 and b + 1 = 0 and 2*a - 1 = 0)
+
+ or (c = 0 and b - 1 = 0 and 2*a - 1 < 0 and 3*a - 1 > 0) or (c > 0 and b > 0
+
+ and b - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                        2
+ and a - b < 0 and a - b  < 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2
+ and b  - 1 < 0 and a - b < 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b > 0
+
+ and b - 1 < 0 and a - c - 1 < 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a - b < 0 and a - b  <> 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 = 0 and a - b < 0
+
+          2                                          2        2    2
+ and a - b  = 0 and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b > 0 and b - 1 < 0 and a - c - 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a - b < 0 and a - b  = 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 = 0 and a - b < 0
+
+          2                                          2        2    2
+ and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                        2
+ and a - b < 0 and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0) or (c < 0 and b > 0
+
+ and b - 1 < 0 and a - c - 1 <= 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+          2                                          2        2    2
+ and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+                                                                      2
+ and b > 0 and b - 1 < 0 and a - c - 1 > 0 and a + c + 1 = 0 and a - b  > 0
+
+                                      2        2    2
+ and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 <= 0
+
+                         2
+ and a - b >= 0 and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2                                2
+ and b  - 1 < 0 and a - b = 0 and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2                                             2
+ and a  - 2*a*b  + b  > 0) or (c = 0 and b > 0 and b - 1 < 0 and b  - 1 < 0
+
+                        2
+ and a - b > 0 and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 <= 0
+
+          2                                          2        2    2
+ and a - b  > 0 and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a + b > 0 and a - b  > 0
+
+                                      2        2    2
+ and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    4    2
+ and a *b  - a  - b  + b  < 0) or (c < 0 and b < 0 and b + 1 > 0
+
+                                                                 2
+ and a - c - 1 <= 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b  > 0
+
+                                      2        2    2
+ and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+                                                                      2
+ and b < 0 and b + 1 > 0 and a - c - 1 > 0 and a + c + 1 = 0 and a - b  > 0
+
+                                      2        2    2
+ and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a + b = 0 and a - b  > 0
+
+                                      2        2    2
+ and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                        2
+ and a + b < 0 and a - b  <> 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c = 0 and b < 0 and b + 1 > 0
+
+      2
+ and b  - 1 < 0 and a + b < 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b < 0
+
+ and b + 1 > 0 and a - c - 1 < 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a + b < 0 and a - b  <> 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 = 0 and a + b < 0
+
+          2                                          2        2    2
+ and a - b  = 0 and 2*a - 1 < 0 and 3*a - 1 > 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a - c - 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a + b < 0 and a - b  = 0 and 2*a - 1 < 0 and 3*a - 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0)
+
+ or (c = 0 and b + 1 = 0 and 2*a - 1 < 0 and 3*a - 1 > 0)
+
+ or (c = 0 and b - 1 = 0 and 3*a - 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 > 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 <= 0 and 3*a - 1 = 0) or (c = 0 and b - 1 < 0
+
+                      2                2                4       2
+ and 3*b - 1 > 0 and b  - 1 < 0 and 3*b  - 1 > 0 and 9*b  - 10*b  + 1 < 0
+
+ and 3*a - 1 = 0) or (c < 0 and 3*c + 2 > 0 and b - 1 < 0 and 3*b - 1 > 0
+
+        2                2  2    2                4      2  2       2
+ and 3*b  - 1 > 0 and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 <= 0
+
+ and 3*a - 1 = 0) or (3*c - 2 = 0 and b - 1 < 0 and 3*b - 1 > 0
+
+        2
+ and 3*b  - 1 <= 0 and 3*a - 1 = 0) or (c = 0 and b - 1 < 0 and 3*b - 1 > 0
+
+        2                 4       2
+ and 3*b  - 1 <= 0 and 9*b  - 10*b  + 1 < 0 and 3*a - 1 = 0) or (3*c + 2 = 0
+
+                                      2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 <= 0 and 3*a - 1 = 0) or (c > 0
+
+                                                      2
+ and 3*c - 2 < 0 and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0
+
+        2  2    2
+ and 9*b *c  - b  + 1 > 0 and 3*a - 1 = 0) or (c < 0 and 3*c + 2 > 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0
+
+ and 3*a - 1 = 0)
+
+                                                      2
+ or (3*c + 4 = 0 and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0 and 3*a - 1 = 0)
+
+ or (3*c - 2 = 0 and 3*b - 1 = 0 and 3*a - 1 = 0)
+
+ or (c > 0 and 3*c - 2 < 0 and 3*b - 1 = 0 and 3*a - 1 = 0)
+
+ or (c = 0 and 3*b - 1 = 0 and 3*a - 1 = 0)
+
+ or (c < 0 and 3*c + 2 > 0 and 3*b - 1 = 0 and 3*a - 1 = 0)
+
+ or (3*c + 2 = 0 and 3*b - 1 = 0 and 3*a - 1 = 0)
+
+ or (3*c + 4 = 0 and 3*b - 1 = 0 and 3*a - 1 = 0)
+
+                                                  2
+ or (3*c - 2 = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 3*a - 1 = 0) or 
+
+                                                        2
+(c > 0 and 3*c - 2 < 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0
+
+        2  2    2                4      2  2       2
+ and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0 and 3*a - 1 = 0) or
+
+                                         2                4       2
+ (c = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 9*b  - 10*b  + 1 > 0
+
+ and 3*a - 1 = 0) or (c < 0 and 3*c + 2 > 0 and b > 0 and 3*b - 1 < 0
+
+        2                2  2    2                4      2  2       2
+ and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0
+
+ and 3*a - 1 = 0)
+
+                                                  2
+ or (3*c + 2 = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 3*a - 1 = 0)
+
+                                                  2
+ or (3*c + 4 = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 3*a - 1 = 0)
+
+                                                  2
+ or (3*c - 2 = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 3*a - 1 = 0) or 
+
+                                                        2
+(c > 0 and 3*c - 2 < 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0
+
+        2  2    2                4      2  2       2
+ and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0 and 3*a - 1 = 0) or
+
+                                         2                4       2
+ (c = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 9*b  - 10*b  + 1 > 0
+
+ and 3*a - 1 = 0) or (c < 0 and 3*c + 2 > 0 and b < 0 and 3*b + 1 > 0
+
+        2                2  2    2                4      2  2       2
+ and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0
+
+ and 3*a - 1 = 0)
+
+                                                  2
+ or (3*c + 2 = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 3*a - 1 = 0)
+
+                                                  2
+ or (3*c + 4 = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 3*a - 1 = 0)
+
+ or (3*c - 2 = 0 and 3*b + 1 = 0 and 3*a - 1 = 0)
+
+ or (c > 0 and 3*c - 2 < 0 and 3*b + 1 = 0 and 3*a - 1 = 0)
+
+ or (c = 0 and 3*b + 1 = 0 and 3*a - 1 = 0)
+
+ or (c < 0 and 3*c + 2 > 0 and 3*b + 1 = 0 and 3*a - 1 = 0)
+
+ or (3*c + 2 = 0 and 3*b + 1 = 0 and 3*a - 1 = 0)
+
+ or (3*c + 4 = 0 and 3*b + 1 = 0 and 3*a - 1 = 0) or (3*c - 2 = 0 and b + 1 > 0
+
+                        2
+ and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 3*a - 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 > 0 and 3*a - 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                 2  2    2
+ and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 <> 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 <= 0 and 3*a - 1 = 0) or (c = 0 and b + 1 > 0
+
+                        2                 4       2
+ and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 9*b  - 10*b  + 1 < 0 and 3*a - 1 = 0) or 
+
+                                                            2
+(c < 0 and 3*c + 2 > 0 and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 < 0
+
+        2  2    2
+ and 9*b *c  - b  + 1 > 0 and 3*a - 1 = 0) or (3*c + 2 = 0 and b + 1 > 0
+
+                        2
+ and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 3*a - 1 = 0)
+
+                                                      2
+ or (3*c + 4 = 0 and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 < 0 and 3*a - 1 = 0)
+
+                                              2                2
+ or (c = 0 and b + 1 > 0 and 3*b + 1 < 0 and b  - 1 < 0 and 3*b  - 1 > 0
+
+        4       2
+ and 9*b  - 10*b  + 1 < 0 and 3*a - 1 = 0) or (c < 0 and 3*c + 2 > 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 > 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 <= 0 and 3*a - 1 = 0)
+
+ or (c = 0 and b - 1 = 0 and a > 0 and 3*a - 1 < 0) or (c > 0 and b > 0
+
+ and b - 1 < 0 and a > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                        2                          2        2    2
+ and a - b < 0 and a - b  < 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c = 0
+
+                              2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a > 0 and a - b < 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b > 0
+
+ and b - 1 < 0 and a > 0 and a - c - 1 < 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                           2        2    2
+ and a - b < 0 and a - b  <> 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a > 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c - 1 = 0 and a - b < 0 and a - b  = 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c < 0 and b > 0 and b - 1 < 0
+
+ and a > 0 and a - c - 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b < 0
+
+          2                          2        2    2
+ and a - b  = 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a > 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c - 1 = 0 and a - b < 0 and a - b  > 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a - b < 0
+
+          2                          2        2    2
+ and a - b  > 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2
+ and a *b  - a  - b *c  < 0) or (c < 0 and b > 0 and b - 1 < 0 and a > 0
+
+                                                                 2
+ and a - c - 1 <= 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b  > 0
+
+                      2        2    2          2  2    2    2  2
+ and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b > 0 and b - 1 < 0
+
+                                                        2
+ and a > 0 and a - c - 1 > 0 and a + c + 1 = 0 and a - b  > 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 <= 0 and a - b >= 0
+
+          2                          2        2    2
+ and a - b  > 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                          2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a > 0 and a - b = 0 and a - b  > 0
+
+                      2        2    2
+ and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2                                          2
+ and b  - 1 < 0 and a > 0 and a - b > 0 and a - b  > 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 <= 0
+
+          2                          2        2    2
+ and a - b  > 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                          2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a > 0 and a + b > 0 and a - b  > 0
+
+                      2        2    2          2  2    2    4    2
+ and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (
+
+c < 0 and b < 0 and b + 1 > 0 and a > 0 and a - c - 1 <= 0 and a + c - 1 < 0
+
+                            2                          2        2    2
+ and a + c + 1 > 0 and a - b  > 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a > 0 and a - c - 1 > 0 and a + c + 1 = 0
+
+                         2                          2        2    2
+ and a + b >= 0 and a - b  > 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                          2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a > 0 and a + b = 0 and a - b  > 0
+
+                      2        2    2
+ and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + b < 0
+
+          2                           2        2    2
+ and a - b  <> 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c = 0
+
+                              2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a > 0 and a + b < 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b < 0
+
+ and b + 1 > 0 and a > 0 and a - c - 1 < 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                           2        2    2
+ and a + b < 0 and a - b  <> 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0
+
+ and b < 0 and b + 1 > 0 and a > 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c - 1 = 0 and a + b < 0 and a - b  = 0 and 3*a - 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  - 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c < 0 and b < 0 and b + 1 > 0
+
+ and a > 0 and a - c - 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0 and a + b < 0
+
+          2                          2        2    2
+ and a - b  = 0 and 3*a - 1 < 0 and a  - 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0)
+
+ or (c = 0 and b + 1 = 0 and a > 0 and 3*a - 1 < 0)
+
+ or (c = 0 and b - 1 = 0 and a < 0 and 3*a + 1 > 0) or (c > 0 and b > 0
+
+ and b - 1 < 0 and a < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                          2        2    2
+ and a + b > 0 and a + b  > 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a < 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b > 0 and a + b  >= 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  > 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2                                          2
+ and b  - 1 < 0 and a < 0 and a + b > 0 and a + b  <> 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b > 0
+
+ and b - 1 < 0 and a < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 > 0
+
+                        2                           2        2    2
+ and a + b > 0 and a + b  <> 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a < 0 and a - c + 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b > 0 and a + b  = 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c < 0 and b > 0 and b - 1 < 0
+
+ and a < 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 = 0 and a + b > 0
+
+          2                          2        2    2
+ and a + b  = 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a < 0 and a - c + 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b > 0 and a + b  < 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0 and a + b > 0
+
+          2                          2        2    2
+ and a + b  < 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2
+ and a *b  - a  - b *c  < 0) or (c < 0 and b > 0 and b - 1 < 0 and a < 0
+
+                                                                 2
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 >= 0 and a + b  < 0
+
+                      2        2    2          2  2    2    2  2
+ and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a < 0 and a - c + 1 >= 0 and a + c - 1 < 0 and a + c + 1 > 0 and a + b <= 0
+
+          2                          2        2    2
+ and a + b  < 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                          2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a < 0 and a + b = 0 and a + b  < 0
+
+                      2        2    2
+ and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0) or (c < 0 and b > 0 and b - 1 < 0
+
+                                                                       2
+ and a < 0 and a - c - 1 = 0 and a + c + 1 < 0 and a + b <= 0 and a + b  < 0
+
+                      2        2    2          2  2    2    2  2
+ and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c = 0 and b > 0 and b - 1 < 0
+
+      2                                          2
+ and b  - 1 < 0 and a < 0 and a + b < 0 and a + b  < 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    4    2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a < 0 and a - c + 1 >= 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                         2                          2        2    2
+ and a - b <= 0 and a + b  < 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                          2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a < 0 and a - b < 0 and a + b  < 0
+
+                      2        2    2          2  2    2    4    2
+ and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (
+
+c < 0 and b < 0 and b + 1 > 0 and a < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                             2                          2        2    2
+ and a + c + 1 >= 0 and a + b  < 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a < 0 and a - c - 1 = 0 and a + c + 1 < 0
+
+          2                          2        2    2
+ and a + b  < 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                          2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a < 0 and a - b = 0 and a + b  < 0
+
+                      2        2    2
+ and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a < 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b > 0
+
+          2                          2        2    2
+ and a + b  < 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b < 0 and b + 1 > 0 and a < 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a - b > 0 and a + b  < 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  <= 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b > 0
+
+          2                           2        2    2
+ and a + b  <= 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  > 0) or (c = 0
+
+                              2                                          2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a < 0 and a - b > 0 and a + b  <> 0
+
+                      2        2    2          2  2    2    4    2
+ and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (
+
+c < 0 and b < 0 and b + 1 > 0 and a < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c + 1 > 0 and a - b > 0 and a + b  <> 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a < 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b > 0
+
+          2                          2        2    2
+ and a + b  = 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a < 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c + 1 = 0 and a - b > 0 and a + b  = 0 and 3*a + 1 > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b > 0
+
+          2                          2        2    2
+ and a + b  > 0 and 3*a + 1 > 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0)
+
+ or (c = 0 and b + 1 = 0 and a < 0 and 3*a + 1 > 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 > 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 = 0 and 3*a + 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                 2  2    2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 >= 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 < 0 and 3*a + 1 = 0) or (c = 0 and b - 1 < 0
+
+                      2                2                4       2
+ and 3*b - 1 > 0 and b  - 1 < 0 and 3*b  - 1 > 0 and 9*b  - 10*b  + 1 < 0
+
+ and 3*a + 1 = 0) or (c < 0 and 3*c + 2 > 0 and b - 1 < 0 and 3*b - 1 > 0
+
+        2                2  2    2                4      2  2       2
+ and 3*b  - 1 > 0 and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 <= 0
+
+ and 3*a + 1 = 0) or (3*c - 2 = 0 and b - 1 < 0 and 3*b - 1 > 0
+
+        2
+ and 3*b  - 1 <= 0 and 3*a + 1 = 0) or (3*c + 2 = 0 and b - 1 < 0
+
+                        2
+ and 3*b - 1 > 0 and 3*b  - 1 <= 0 and 3*a + 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0
+
+                                                                 2
+ and 3*a + 1 = 0) or (c = 0 and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0
+
+        4       2
+ and 9*b  - 10*b  + 1 < 0 and 3*a + 1 = 0) or (c < 0 and 3*c + 2 > 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0
+
+ and 3*a + 1 = 0)
+
+                                                      2
+ or (3*c + 4 = 0 and b - 1 < 0 and 3*b - 1 > 0 and 3*b  - 1 < 0 and 3*a + 1 = 0)
+
+ or (3*c - 2 = 0 and 3*b - 1 = 0 and 3*a + 1 = 0)
+
+ or (c > 0 and 3*c - 2 < 0 and 3*b - 1 = 0 and 3*a + 1 = 0)
+
+ or (c = 0 and 3*b - 1 = 0 and 3*a + 1 = 0)
+
+ or (c < 0 and 3*c + 2 > 0 and 3*b - 1 = 0 and 3*a + 1 = 0)
+
+ or (3*c + 2 = 0 and 3*b - 1 = 0 and 3*a + 1 = 0)
+
+ or (3*c + 4 = 0 and 3*b - 1 = 0 and 3*a + 1 = 0)
+
+                                                  2
+ or (3*c - 2 = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 3*a + 1 = 0) or 
+
+                                                        2
+(c > 0 and 3*c - 2 < 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0
+
+        2  2    2                4      2  2       2
+ and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0 and 3*a + 1 = 0) or
+
+                                         2                4       2
+ (c = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 9*b  - 10*b  + 1 > 0
+
+ and 3*a + 1 = 0) or (c < 0 and 3*c + 2 > 0 and b > 0 and 3*b - 1 < 0
+
+        2                2  2    2                4      2  2       2
+ and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0
+
+ and 3*a + 1 = 0)
+
+                                                  2
+ or (3*c + 2 = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 3*a + 1 = 0)
+
+                                                  2
+ or (3*c + 4 = 0 and b > 0 and 3*b - 1 < 0 and 3*b  - 1 < 0 and 3*a + 1 = 0)
+
+                                                  2
+ or (3*c - 2 = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 3*a + 1 = 0) or 
+
+                                                        2
+(c > 0 and 3*c - 2 < 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0
+
+        2  2    2                4      2  2       2
+ and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0 and 3*a + 1 = 0) or
+
+                                         2                4       2
+ (c = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 9*b  - 10*b  + 1 > 0
+
+ and 3*a + 1 = 0) or (c < 0 and 3*c + 2 > 0 and b < 0 and 3*b + 1 > 0
+
+        2                2  2    2                4      2  2       2
+ and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 > 0
+
+ and 3*a + 1 = 0)
+
+                                                  2
+ or (3*c + 2 = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 3*a + 1 = 0)
+
+                                                  2
+ or (3*c + 4 = 0 and b < 0 and 3*b + 1 > 0 and 3*b  - 1 < 0 and 3*a + 1 = 0)
+
+ or (3*c - 2 = 0 and 3*b + 1 = 0 and 3*a + 1 = 0)
+
+ or (c > 0 and 3*c - 2 < 0 and 3*b + 1 = 0 and 3*a + 1 = 0)
+
+ or (c = 0 and 3*b + 1 = 0 and 3*a + 1 = 0)
+
+ or (c < 0 and 3*c + 2 > 0 and 3*b + 1 = 0 and 3*a + 1 = 0)
+
+ or (3*c + 2 = 0 and 3*b + 1 = 0 and 3*a + 1 = 0)
+
+ or (3*c + 4 = 0 and 3*b + 1 = 0 and 3*a + 1 = 0) or (3*c - 2 = 0 and b + 1 > 0
+
+                        2
+ and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 3*a + 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 < 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 >= 0 and 3*a + 1 = 0) or (c > 0 and 3*c - 2 < 0
+
+                                      2                 2  2    2
+ and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 < 0 and 3*a + 1 = 0) or (c = 0 and b + 1 > 0
+
+                        2                4       2
+ and 3*b + 1 < 0 and 3*b  - 1 < 0 and 9*b  - 10*b  + 1 < 0 and 3*a + 1 = 0) or (
+
+                                                           2
+c < 0 and 3*c + 2 > 0 and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 < 0
+
+        2  2    2
+ and 9*b *c  - b  + 1 > 0 and 3*a + 1 = 0) or (3*c + 2 = 0 and b + 1 > 0
+
+                        2
+ and 3*b + 1 < 0 and 3*b  - 1 <= 0 and 3*a + 1 = 0)
+
+                                                      2
+ or (3*c + 4 = 0 and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 < 0 and 3*a + 1 = 0)
+
+                                                                2
+ or (c > 0 and 3*c - 2 < 0 and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 > 0
+
+        2  2    2                4      2  2       2
+ and 9*b *c  - b  + 1 > 0 and 9*b  + 9*b *c  - 10*b  + 1 <= 0 and 3*a + 1 = 0) 
+
+                                             2                2
+or (c = 0 and b + 1 > 0 and 3*b + 1 < 0 and b  - 1 < 0 and 3*b  - 1 > 0
+
+        4       2
+ and 9*b  - 10*b  + 1 < 0 and 3*a + 1 = 0) or (c < 0 and 3*c + 2 > 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 3*b + 1 < 0 and 3*b  - 1 > 0 and 9*b *c  - b  + 1 > 0
+
+        4      2  2       2
+ and 9*b  + 9*b *c  - 10*b  + 1 <= 0 and 3*a + 1 = 0)
+
+ or (c = 0 and b + 1 = 0 and 3*a + 1 = 0)
+
+ or (c = 0 and b - 1 = 0 and 2*a + 1 > 0 and 3*a + 1 < 0) or (c > 0 and b > 0
+
+ and b - 1 < 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a + b > 0 and a + b  > 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0 and a + b > 0
+
+          2                                           2        2    2
+ and a + b  >= 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  > 0) or (c = 0
+
+                              2                                2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a + b > 0 and a + b  <> 0
+
+                                      2        2    2
+ and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    4    2
+ and a *b  - a  - b  + b  > 0) or (c < 0 and b > 0 and b - 1 < 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 > 0 and a + b > 0
+
+          2                                           2        2    2
+ and a + b  <> 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a + b > 0 and a + b  = 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c < 0 and b > 0 and b - 1 < 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 = 0 and a + b > 0
+
+          2                                          2        2    2
+ and a + b  = 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b > 0 and b - 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0 and a + b > 0
+
+          2                                          2        2    2
+ and a + b  = 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a + b > 0 and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0 and a + b > 0
+
+          2                                          2        2    2
+ and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2
+ and a *b  - a  - b *c  < 0) or (c < 0 and b > 0 and b - 1 < 0 and a - c - 1 < 0
+
+                                               2
+ and a - c + 1 > 0 and a + c + 1 >= 0 and a + b  < 0 and 2*a + 1 > 0
+
+                      2        2    2          2  2    2    2  2
+ and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b > 0 and b - 1 < 0
+
+                                              2
+ and a - c - 1 = 0 and a + c + 1 < 0 and a + b  < 0 and 2*a + 1 > 0
+
+                      2        2    2          2  2    2    2  2
+ and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a - c + 1 >= 0 and a + c - 1 < 0 and a + c + 1 > 0 and a + b <= 0
+
+          2                                          2        2    2
+ and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a + b = 0 and a + b  < 0
+
+                                      2        2    2
+ and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0) or (c = 0 and b > 0
+
+                    2                                2
+ and b - 1 < 0 and b  - 1 < 0 and a + b < 0 and a + b  < 0 and 2*a + 1 > 0
+
+                      2        2    2          2  2    2    4    2
+ and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (
+
+c > 0 and b < 0 and b + 1 > 0 and a - c + 1 >= 0 and a + c - 1 < 0
+
+                                           2
+ and a + c + 1 > 0 and a - b <= 0 and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c = 0 and b < 0 and b + 1 > 0
+
+      2                                2
+ and b  - 1 < 0 and a - b < 0 and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (c < 0 and b < 0
+
+ and b + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 >= 0
+
+          2                                          2        2    2
+ and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0 and a - b <= 0
+
+          2                                          2        2    2
+ and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2                                2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a - b = 0 and a + b  < 0
+
+                                      2        2    2
+ and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a - b > 0 and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0 and a - b > 0
+
+          2                                          2        2    2
+ and a + b  < 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  <= 0) or (c > 0
+
+ and b < 0 and b + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a - b > 0 and a + b  <= 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  > 0) or (c = 0 and b < 0 and b + 1 > 0
+
+      2                                2
+ and b  - 1 < 0 and a - b > 0 and a + b  <> 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b < 0
+
+ and b + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 > 0
+
+                        2
+ and a - b > 0 and a + b  <> 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c < 0 and b < 0 and b + 1 > 0
+
+                                                            2
+ and a - c - 1 = 0 and a + c + 1 < 0 and a - b > 0 and a + b  <= 0
+
+                                      2        2    2
+ and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b < 0 and b + 1 > 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a - b > 0 and a + b  = 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c < 0 and b < 0 and b + 1 > 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 = 0 and a - b > 0
+
+          2                                          2        2    2
+ and a + b  = 0 and 2*a + 1 > 0 and 3*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c > 0
+
+ and b < 0 and b + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2
+ and a - b > 0 and a + b  > 0 and 2*a + 1 > 0 and 3*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0)
+
+ or (c = 0 and b + 1 = 0 and 2*a + 1 > 0 and 3*a + 1 < 0)
+
+ or (c = 0 and b - 1 = 0 and 2*a + 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                2  2    2
+ and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 > 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 = 0 and 2*a + 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                 2  2    2
+ and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 >= 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 < 0 and 2*a + 1 = 0) or (c = 0 and b - 1 < 0
+
+                      2                2                4      2
+ and 2*b - 1 > 0 and b  - 1 < 0 and 2*b  - 1 > 0 and 4*b  - 5*b  + 1 < 0
+
+ and 2*a + 1 = 0) or (c < 0 and 2*c + 1 > 0 and b - 1 < 0 and 2*b - 1 > 0
+
+        2                2  2    2                4      2  2      2
+ and 2*b  - 1 > 0 and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 <= 0
+
+ and 2*a + 1 = 0) or (2*c + 3 = 0 and b - 1 < 0 and 2*b - 1 > 0 and 2*a + 1 = 0)
+
+                                                      2
+ or (2*c - 1 = 0 and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 <= 0 and 2*a + 1 = 0
+
+                                                       2
+) or (2*c + 1 = 0 and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 <= 0
+
+ and 2*a + 1 = 0) or (c > 0 and 2*c - 1 < 0 and b - 1 < 0 and 2*b - 1 > 0
+
+        2                2  2    2
+ and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0 and 2*a + 1 = 0) or (c = 0
+
+                                      2                4      2
+ and b - 1 < 0 and 2*b - 1 > 0 and 2*b  - 1 < 0 and 4*b  - 5*b  + 1 < 0
+
+ and 2*a + 1 = 0) or (c < 0 and 2*c + 1 > 0 and b - 1 < 0 and 2*b - 1 > 0
+
+        2                2  2    2
+ and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0 and 2*a + 1 = 0)
+
+ or (2*c - 1 = 0 and 2*b - 1 = 0 and 2*a + 1 = 0)
+
+ or (c > 0 and 2*c - 1 < 0 and 2*b - 1 = 0 and 2*a + 1 = 0)
+
+ or (c = 0 and 2*b - 1 = 0 and 2*a + 1 = 0)
+
+ or (c < 0 and 2*c + 1 > 0 and 2*b - 1 = 0 and 2*a + 1 = 0)
+
+ or (2*c + 1 = 0 and 2*b - 1 = 0 and 2*a + 1 = 0)
+
+                                                  2
+ or (2*c - 1 = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 2*a + 1 = 0) or 
+
+                                                        2
+(c > 0 and 2*c - 1 < 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0
+
+        2  2    2                4      2  2      2
+ and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0 and 2*a + 1 = 0) or 
+
+                                        2                4      2
+(c = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 4*b  - 5*b  + 1 > 0
+
+ and 2*a + 1 = 0) or (c < 0 and 2*c + 1 > 0 and b > 0 and 2*b - 1 < 0
+
+        2                2  2    2                4      2  2      2
+ and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0
+
+ and 2*a + 1 = 0)
+
+                                                  2
+ or (2*c + 1 = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 2*a + 1 = 0)
+
+                                                  2
+ or (2*c + 3 = 0 and b > 0 and 2*b - 1 < 0 and 2*b  - 1 < 0 and 2*a + 1 = 0)
+
+                                                  2
+ or (2*c - 1 = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 2*a + 1 = 0) or 
+
+                                                        2
+(c > 0 and 2*c - 1 < 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0
+
+        2  2    2                4      2  2      2
+ and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0 and 2*a + 1 = 0) or 
+
+                                        2                4      2
+(c = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 4*b  - 5*b  + 1 > 0
+
+ and 2*a + 1 = 0) or (c < 0 and 2*c + 1 > 0 and b < 0 and 2*b + 1 > 0
+
+        2                2  2    2                4      2  2      2
+ and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 > 0
+
+ and 2*a + 1 = 0)
+
+                                                  2
+ or (2*c + 1 = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 2*a + 1 = 0)
+
+                                                  2
+ or (2*c + 3 = 0 and b < 0 and 2*b + 1 > 0 and 2*b  - 1 < 0 and 2*a + 1 = 0)
+
+ or (2*c - 1 = 0 and 2*b + 1 = 0 and 2*a + 1 = 0)
+
+ or (c > 0 and 2*c - 1 < 0 and 2*b + 1 = 0 and 2*a + 1 = 0)
+
+ or (c = 0 and 2*b + 1 = 0 and 2*a + 1 = 0)
+
+ or (c < 0 and 2*c + 1 > 0 and 2*b + 1 = 0 and 2*a + 1 = 0)
+
+ or (2*c + 1 = 0 and 2*b + 1 = 0 and 2*a + 1 = 0) or (2*c - 1 = 0 and b + 1 > 0
+
+                        2
+ and 2*b + 1 < 0 and 2*b  - 1 <= 0 and 2*a + 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 < 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 >= 0 and 2*a + 1 = 0) or (c > 0 and 2*c - 1 < 0
+
+                                      2                 2  2    2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 <= 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 < 0 and 2*a + 1 = 0) or (c = 0 and b + 1 > 0
+
+                        2                4      2
+ and 2*b + 1 < 0 and 2*b  - 1 < 0 and 4*b  - 5*b  + 1 < 0 and 2*a + 1 = 0) or (
+
+                                                           2
+c < 0 and 2*c + 1 > 0 and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 < 0
+
+        2  2    2
+ and 4*b *c  - b  + 1 > 0 and 2*a + 1 = 0) or (2*c + 1 = 0 and b + 1 > 0
+
+                        2
+ and 2*b + 1 < 0 and 2*b  - 1 <= 0 and 2*a + 1 = 0)
+
+ or (2*c + 3 = 0 and b + 1 > 0 and 2*b + 1 < 0 and 2*a + 1 = 0) or (c > 0
+
+                                                      2
+ and 2*c - 1 < 0 and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 > 0
+
+        2  2    2                4      2  2      2
+ and 4*b *c  - b  + 1 > 0 and 4*b  + 4*b *c  - 5*b  + 1 <= 0 and 2*a + 1 = 0) or
+
+                                           2                2
+ (c = 0 and b + 1 > 0 and 2*b + 1 < 0 and b  - 1 < 0 and 2*b  - 1 > 0
+
+        4      2
+ and 4*b  - 5*b  + 1 < 0 and 2*a + 1 = 0) or (c < 0 and 2*c + 1 > 0
+
+                                      2                2  2    2
+ and b + 1 > 0 and 2*b + 1 < 0 and 2*b  - 1 > 0 and 4*b *c  - b  + 1 > 0
+
+        4      2  2      2
+ and 4*b  + 4*b *c  - 5*b  + 1 <= 0 and 2*a + 1 = 0)
+
+ or (c = 0 and b + 1 = 0 and 2*a + 1 = 0) or (c < 0 and b - 1 > 0 and a + 1 > 0
+
+                                                            2
+ and a - c - 1 = 0 and a + c + 1 < 0 and a + b > 0 and a + b  > 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0)
+
+ or (c = 0 and b - 1 = 0 and a + 1 > 0 and 2*a + 1 < 0) or (c < 0 and b - 1 = 0
+
+ and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0 and 2*a + 1 < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b > 0 and a + b  > 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                           2        2    2
+ and a + b > 0 and a + b  >= 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  > 0) or (c = 0
+
+                              2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a + 1 > 0 and a + b > 0
+
+          2                           2        2    2
+ and a + b  <> 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    4    2
+ and a *b  - a  - b  + b  > 0) or (c < 0 and b > 0 and b - 1 < 0 and a + 1 > 0
+
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 > 0 and a + b > 0
+
+          2                           2        2    2
+ and a + b  <> 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0) or (c < 0
+
+ and b > 0 and b - 1 < 0 and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0
+
+                        2                           2        2    2
+ and a + b > 0 and a + b  >= 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a + 1 > 0 and a - c + 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b > 0 and a + b  = 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c < 0 and b > 0 and b - 1 < 0
+
+ and a + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 = 0
+
+                        2                          2        2    2
+ and a + b > 0 and a + b  = 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c > 0
+
+ and b > 0 and b - 1 < 0 and a + 1 > 0 and a - c + 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a + b > 0 and a + b  < 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                          2        2    2
+ and a + b > 0 and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2
+ and a *b  - a  - b *c  < 0) or (c < 0 and b > 0 and b - 1 < 0 and a + 1 > 0
+
+                                                                 2
+ and a - c - 1 < 0 and a - c + 1 > 0 and a + c + 1 >= 0 and a + b  < 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b > 0 and b - 1 < 0
+
+                                                                           2
+ and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0 and a + b <> 0 and a + b  < 0
+
+                      2        2    2          2  2    2    2  2
+ and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b > 0 and b - 1 < 0
+
+ and a + 1 > 0 and a - c + 1 >= 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                         2                          2        2    2
+ and a + b <= 0 and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2
+ and b > 0 and b - 1 < 0 and b  - 1 < 0 and a + 1 > 0 and a + b = 0
+
+          2                          2        2    2
+ and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0) or (c = 0 and b > 0
+
+                    2                                              2
+ and b - 1 < 0 and b  - 1 < 0 and a + 1 > 0 and a + b < 0 and a + b  < 0
+
+                      2        2    2          2  2    2    4    2
+ and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (
+
+c > 0 and b < 0 and b + 1 > 0 and a + 1 > 0 and a - c + 1 >= 0 and a + c - 1 < 0
+
+                                           2
+ and a + c + 1 > 0 and a - b <= 0 and a + b  < 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c = 0 and b < 0 and b + 1 > 0
+
+      2                                              2
+ and b  - 1 < 0 and a + 1 > 0 and a - b < 0 and a + b  < 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  < 0) or (c < 0 and b < 0
+
+ and b + 1 > 0 and a + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                             2                          2        2    2
+ and a + c + 1 >= 0 and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0
+
+                        2                          2        2    2
+ and a - b < 0 and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c = 0
+
+                              2
+ and b < 0 and b + 1 > 0 and b  - 1 < 0 and a + 1 > 0 and a - b = 0
+
+          2                          2        2    2
+ and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0) or (c > 0 and b < 0
+
+ and b + 1 > 0 and a + 1 > 0 and a - c + 1 = 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a - b > 0 and a + b  < 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                          2        2    2
+ and a - b > 0 and a + b  < 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  <= 0) or (c > 0
+
+ and b < 0 and b + 1 > 0 and a + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0
+
+                                          2
+ and a + c + 1 > 0 and a - b > 0 and a + b  <= 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  > 0) or (c = 0 and b < 0 and b + 1 > 0
+
+      2                                              2
+ and b  - 1 < 0 and a + 1 > 0 and a - b > 0 and a + b  <> 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    4    2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b  + b  > 0) or (c < 0 and b < 0
+
+ and b + 1 > 0 and a + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c + 1 > 0 and a - b > 0 and a + b  <> 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  >= 0) or (c < 0 and b < 0 and b + 1 > 0
+
+ and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0 and a - b > 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a + 1 > 0 and a - c + 1 = 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                          2        2    2
+ and a - b > 0 and a + b  = 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  = 0) or (c < 0
+
+ and b < 0 and b + 1 > 0 and a + 1 > 0 and a - c - 1 < 0 and a - c + 1 > 0
+
+                                          2
+ and a + c + 1 = 0 and a - b > 0 and a + b  = 0 and 2*a + 1 < 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  > 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  = 0) or (c > 0 and b < 0 and b + 1 > 0
+
+ and a + 1 > 0 and a - c + 1 > 0 and a + c - 1 < 0 and a + c + 1 > 0
+
+                        2                          2        2    2
+ and a - b > 0 and a + b  > 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  >= 0)
+
+ or (c = 0 and b + 1 = 0 and a + 1 > 0 and 2*a + 1 < 0) or (c < 0 and b + 1 = 0
+
+ and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0 and 2*a + 1 < 0) or (c < 0
+
+ and b + 1 < 0 and a + 1 > 0 and a - c - 1 = 0 and a + c + 1 < 0 and a - b > 0
+
+          2                          2        2    2
+ and a + b  > 0 and 2*a + 1 < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0)
+
+                                  2
+ or (c + 2 = 0 and b - 1 > 0 and b  - 1 > 0 and a + 1 = 0)
+
+ or (c = 0 and b - 1 = 0 and a + 1 = 0) or (c = 0 and b + 1 = 0 and a + 1 = 0)
+
+                                  2
+ or (c + 2 = 0 and b + 1 < 0 and b  - 1 > 0 and a + 1 = 0) or (c < 0
+
+ and b - 1 > 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0 and a + b > 0
+
+          2          2        2    2          2  2    2    2  2
+ and a + b  > 0 and a  + 2*a*b  + b  < 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b - 1 > 0 and a + 1 < 0
+
+                                                            2
+ and a - c - 1 = 0 and a + c + 1 < 0 and a + b < 0 and a + b  >= 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  < 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b - 1 > 0 and a + 1 < 0
+
+                                                            2
+ and a - c - 1 = 0 and a + c + 1 < 0 and a + b < 0 and a + b  < 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0)
+
+ or (c < 0 and b - 1 = 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0) or (
+
+c < 0 and b > 0 and b - 1 < 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0
+
+                        2          2        2    2
+ and a + b < 0 and a + b  < 0 and a  + 2*a*b  + b  > 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0)
+
+ or (c < 0 and b + 1 = 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0) or (
+
+c < 0 and b + 1 < 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0
+
+                        2          2        2    2
+ and a - b < 0 and a + b  < 0 and a  + 2*a*b  + b  >= 0
+
+      2  2    2    2  2          2  2    2    4    2  2    2
+ and a *b  - a  - b *c  < 0 and a *b  - a  - b  - b *c  + b  < 0) or (c < 0
+
+ and b + 1 < 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0 and a - b < 0
+
+          2           2        2    2          2  2    2    2  2
+ and a + b  <= 0 and a  + 2*a*b  + b  < 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0) or (c < 0 and b + 1 < 0 and a + 1 < 0
+
+                                                             2
+ and a - c - 1 = 0 and a + c + 1 < 0 and a - b <> 0 and a + b  > 0
+
+      2        2    2          2  2    2    2  2
+ and a  + 2*a*b  + b  < 0 and a *b  - a  - b *c  < 0
+
+      2  2    2    4    2  2    2
+ and a *b  - a  - b  - b *c  + b  < 0)
+
+
+end;
+
+Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
+Time (counter 1): 13619 ms  plus GC time: 610 ms
+1: real 15.20
+user 14.94
+sys 0.11
