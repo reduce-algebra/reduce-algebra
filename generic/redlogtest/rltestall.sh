@@ -1,27 +1,28 @@
-#! /bin/bash
-
-# Test all package
-
-# Usage:
-#    scripts/testall.sh         test everything
-#    scripts/testall.sh --csl   test just the CSL version
-#    scripts/testall.sh --psl   test just the PSL version
+#!/bin/bash
 
 # The flags are mostly handled by being passed down to the test1.sh script
 
-if test $# = 1; then
-    cores="$1"
-    csl="yes"
-    psl="yes"
+if test $# = 3; then
+    root=$1
+    date=$2
+    cores=$3
 else
-    echo "scripts/ptestall.sh number_of_cores"
+    echo "rltestall.sh [--csl or --psl] root date number_of_cores"
     exit 1
 fi
 
+export root
+export date
+export regressions
+
+timings=$root/$date/timings
+trunk=$root/$date/trunk
+regressions=$trunk/packages/redlog/regressions
+
 # if test $# = 0
 # then
-#   csl="yes"
-#   psl="yes"
+csl="yes"
+psl="yes"
 # else
 #   if test $# = 1
 #   then
@@ -35,71 +36,35 @@ fi
 #       psl="yes"
 #       ;;
 #     *)
-#       echo "scripts/testall.sh [--csl or --psl]"
+#       echo "rltestall.sh [--csl or --psl] root date number_of_cores"
 #       exit 1
 #       ;;
 #     esac
 #   else
-#     echo "scripts/testall.sh [--csl or --psl]"
+#     echo "rltestall.sh [--csl or --psl] root date number_of_cores"
 #     exit 1
 #   fi
 # fi
 
-# I want this script to be one I can launch from anywhere, so
-# to access files etc I need to know where it lives.
-
-a=$0
-c=unknown
-case $a in
-/* )
-  c=$a  
-  ;;
-*/* )
-  case $a in
-  ./* )
-    a=`echo $a | sed -e s+./++`
-    ;;
-  esac
-  c=`pwd`/$a
-  ;;
-* ) 
-  for d in $PATH
-  do
-    if test -x $d/$a
-    then
-      c=$d/$a
-    fi
-  done
-  if test $c = "unknown" ;then
-    echo "Unable to find full path for script. Please re-try"
-    echo "launching it using a fully rooted path."
-    exit 1
-  fi
-  ;;
-esac
-
-here=`echo $c | sed -e 's+/[^/]*$++'`
-here=`echo $here | sed -e 's+/[^/]*$++'`
-here=`echo $here | sed -e 's+/[^/]*$++'`
-
-export here
-
 #
 # Remove old log files
 #
-rm -f csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
+rm -rf $timings/csl-times $timings/psl-times $timings/csl-psl-times-comparison
 
 function runregression() {
-    p1=$1
-    p=${p1%.tst}
-    p=${p##*/}
-    echo "Test regression case $p"
-    $here/generic/redlogtest/rltest1.sh $p
+    p=$1
+#    echo "Test regression case $p"
+    rltest1.sh $root $date $p
 }
 
 export -f runregression
 
-parallel -j$cores runregression {} ::: $here/packages/redlog/regressions/*.tst
+cd $regressions
+
+parallel -j$cores -u runregression {} ::: */*/*.tst
+
+printf "\ntotal test time:\n"
+exit
 
 if test "$csl" = "yes"
 then
@@ -142,7 +107,3 @@ fi
 echo
 
 # end of script
-
-
-
-

@@ -1,9 +1,10 @@
 #!/bin/bash
 
 if test $# = 1; then
+    d=$(dirname $1)
     p=$(basename "$1" .tst)
 else
-    echo "rltest-install.sh package"
+    echo "rltest-install.sh regressions test"
     exit 1
 fi
 
@@ -44,17 +45,19 @@ here=`echo $c | sed -e 's+/[^/]*$++'`
 here=`echo $here | sed -e 's+/[^/]*$++'`
 here=`echo $here | sed -e 's+/[^/]*$++'`
 
-regdir=$here/packages/redlog/regressions
+regressions=$here/packages/redlog/regressions
 
 tmpdir="/tmp/rltest-install-$RANDOM"
+timings=$tmpdir/timings
 
 mkdir $tmpdir
 cd $tmpdir
+ln -s $here .
 
-$here/generic/redlogtest/rltest1.sh $p
+$here/generic/redlogtest/rltest1.sh $tmpdir "" $d/$p
 
-cat csl-times/$p.rlg csl-times/$p.time > $regdir/$p.rlg
-cp csl-times/$p.time $regdir/$p.csltime
-cp psl-times/$p.time $regdir/$p.psltime
+cat $timings/csl-times/$d/$p.rlg $timings/csl-times/$d/$p.time > $regressions/$d/$p.rlg
+cp $timings/csl-times/$d/$p.time $regressions/$d/$p.csltime
+cp $timings/psl-times/$d/$p.time $regressions/$d/$p.psltime
 
 rm -rf "$tmpdir"

@@ -1,10 +1,11 @@
 #!/bin/bash
 
-if test $# = 2; then
+if test $# = 3; then
     root="$1"
     cores="$2"
+    globallog="$3"
 else
-    echo "rltest.sh root number_of_cores"
+    echo "rltest.sh root number_of_cores global_log_dir"
     exit 1
 fi
 
@@ -20,7 +21,8 @@ base=$root/$date
 log=$base/log
 timings=$base/timings
 trunk=$base/trunk
-bin=$trunk/generic/redlogtest
+regressions=$trunk/packages/redlog/regressions
+bin=$HOME/bin
 
 log "base    = $base"
 log "log     = $log"
@@ -55,11 +57,19 @@ log "make finished"
 cd $timings
 
 log "rltestall.sh starting"
-$bin/rltestall.sh $cores &> $log/rltestall.log
+\time -p $bin/rltestall.sh $root $date $cores &> $log/rltestall.log
 log "rltestall.sh finished"
+
+log "rltestanalyze.sh starting"
+$bin/rltestanalyze.sh $root $date $globallog &>$log/rltestanalyze.log
+log "rltestanalyze.sh finished"
 
 echo
 
 cat $log/rltestall.log
+
+echo
+
+cat $log/rltestanalyze.log
 
 log "rltest.sh finished"
