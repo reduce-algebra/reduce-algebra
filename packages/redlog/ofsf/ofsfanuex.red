@@ -328,10 +328,6 @@ asserted procedure iv_listminuslist(ivl1: RatIntervalList, ivl2: RatIntervalList
 
 % RatPoly functions.
 
-asserted procedure ratpoly_fromatom(a: Atom): RatPoly;
-   % Atom to rational number polynomial.
-   simp a;
-
 asserted procedure ratpoly_fromsf(f: SF): RatPoly;
    % Standard form to rational number polynomial.
    !*f2q f;
@@ -340,22 +336,11 @@ asserted procedure ratpoly_fromrat(r: Rational): RatPoly;
    % Rational number polynomial from rational number.
    r;
 
-asserted procedure ratpoly_torat(r: RatPoly): Rational;
-   % Rational polynomial to rational number.
-   <<
-      assert(null ratpoly_idl r);  % [r] does not contain variables.
-      r
-   >>;
-
-asserted procedure ratpoly_toaf(r: RatPoly): List;
-   % Rational polynomial to algebraic form.
-   prepsq r;
-
 asserted procedure ratpoly_0(): RatPoly;
-   simp 0;
+   nil ./ 1;
 
 asserted procedure ratpoly_1(): RatPoly;
-   simp 1; % ratpoly_fromatom(1);
+   1 ./ 1;
 
 asserted procedure ratpoly_mklin(x: Kernel, ba: Rational): RatPoly;
    % Makes linear polynomial a*x-b, which has the root ba.
@@ -366,15 +351,11 @@ asserted procedure ratpoly_print(q: RatPoly): Any;
 
 asserted procedure ratpoly_ratp(q: RatPoly): Boolean;
    % Tests, if a RatPoly is a Rational.
-   numberp numr q or null numr q;
-
-asserted procedure ratpoly_null(): RatPoly;
-   % Rational number polynomial null.
-   simp 0;
+   (numberp numr q and not eqn(numr q, 0)) or null numr q;
 
 asserted procedure ratpoly_nullp(q: RatPoly): Boolean;
    % Rational number polynomial null predicate.
-   null numr q or numr q = 0;
+   null numr q;
 
 asserted procedure ratpoly_neg(q: RatPoly): RatPoly;
    % Rational number polynomial negation.
@@ -815,7 +796,7 @@ asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
       nil);
 
 asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
-   % Substitute algebraic form in algebraic expression. [af] is a Lisp prefix.
+   % Substitute algebraic form in algebraic expression.
    aex_mk(ratpoly_subrp(aex_ex ae, x, rp),
       aex_ctx ae,
       nil,
@@ -862,8 +843,10 @@ asserted procedure aex_simpleratp(ae: Aex): Boolean;
    ratpoly_ratp aex_ex ae;
 
 asserted procedure aex_simplenullp(ae: Aex): Boolean;
-   % Simple but incomplete null-predicate. It is complete, if [ae] is minimized.
-   ratpoly_nullp(aex_ex ae);
+   % Simple but incomplete null-predicate. It is complete, if [ae] is reduced,
+   % i.e. leading coefficient of aex_ex is non-zero or aex_ex is zero
+   % polynomial.
+   ratpoly_nullp aex_ex ae;
 
 asserted procedure aex_simplenumberp(ae: Aex): Boolean;
    null aex_freeidl ae;
@@ -1460,7 +1443,8 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       % [ae] should be a constant.
       assert(null aex_freeidl ae);
       if null aex_boundidl ae then <<
-	 r := ratpoly_torat aex_ex ae;
+	 assert(null ratpoly_idl aex_ex ae);
+	 r := aex_ex ae;
 	 return iv_mk(r, r)
       >>;
       % Now there is a bound variable.
