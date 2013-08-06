@@ -54,6 +54,12 @@ log "make starting"
 make &> $log/make.log
 log "make finished"
 
+log "patch pslmem64.sh starting"
+hide=$RANDOM
+mv -f ./scripts/pslmem64.sh ./scripts/pslmem64.sh-$hide
+cp ./generic/redlogtest/pslmem64.sh ./scripts
+log "patch pslmem64.sh finished"
+
 cd $timings
 
 log "rltestall.sh starting"

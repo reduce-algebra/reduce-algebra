@@ -104,7 +104,7 @@ then
 
 mkdir -p $timings/csl-times/$d
 
-howlong=$timings/$p.howlong.tmp
+howlong=$timings/csl-times/$d/$p.howlong.tmp
 
 $timecmd sh -c "$trunk/bin/redcsl -w > $timings/csl-times/$d/$p.rlg.tmp" <<XXX 2>$howlong
 off int;
@@ -156,12 +156,16 @@ then
   rm -f $timings/csl-times/$d/$p.rlg.tmp
 fi
 
+rm -f $howlong
+
 fi # CSL case
 
 if test "$psl" = "yes"
 then
 
 mkdir -p $timings/psl-times/$d
+
+howlong=$timings/psl-times/$d/$p.howlong.tmp
 
 $timecmd sh -c "$trunk/bin/redpsl > $timings/psl-times/$d/$p.rlg.tmp" <<XXX 2>$howlong
 off int;
@@ -214,6 +218,8 @@ then
   rm -f $timings/psl-times/$d/$p.rlg.tmp
 fi
 
+rm -f $howlong
+
 fi # PSL case
 
 if test "$csl" = "yes" && test "$psl" = "yes"
@@ -242,8 +248,6 @@ then
   else resultlispdiff=""; rm -f $timings/csl-psl-times-comparison/$d/$p.rlg.diff
   fi
 fi
-
-rm -f $howlong
 
 if [ $cslresult = failed ] || [ $pslresult = failed ]; then
     printf "test %-35s CSL %s, PSL %s\n" "$d/$p:" "$cslresult" "$pslresult"
