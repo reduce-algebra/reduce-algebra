@@ -47,7 +47,11 @@ for p in */*/*.tst; do
     psltime=$base.psltime
     if [ "$rlg" -ot "$p" ] || [ "$csltime" -ot "$p" ] || [ "$psltime" -ot "$p" ]; then
 	echo -n "$base: installing ... "
+	hide=$RANDOM
+	mv -f $here/scripts/pslmem64.sh $here/scripts/pslmem64.sh-$hide
+	cp $here/generic/redlogtest/pslmem64.sh $here/scripts
 	$here/generic/redlogtest/rltest-install.sh  $base &> /dev/null
+	mv -f $here/scripts/pslmem64.sh-$hide $here/scripts/pslmem64.sh
 	echo "done"
 	newrlg="$newrlg $rlg"
     else
