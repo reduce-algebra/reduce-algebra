@@ -53,6 +53,9 @@ then
   *Scientific*)
     vendor="scientificlinux"
     ;;
+  *Gentoo*)
+    vendor="gentoo"
+    ;;
 # Add more distributions here please!
   *)
     vendor="unknown"
