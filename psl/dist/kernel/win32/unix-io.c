@@ -512,4 +512,14 @@ unixputw(LONG w,FILE * f)
    }
 
 
+FILE *popen(const char *command, const char *type)
+{
+  return _popen(command,type);
+}
+
+int pclose(FILE *stream)
+{
+  return _pclose(stream);
+}
+
 

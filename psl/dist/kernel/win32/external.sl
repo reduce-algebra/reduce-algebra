@@ -202,18 +202,18 @@
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
-(external-function uxdoubletofloat     (x y))
-(external-function uxfloattodouble     (y y))
-(external-function uxsin           (r x))
-(external-function uxcos           (r x))
-(external-function uxtan           (r x))
-(external-function uxasin           (r x))
-(external-function uxacos           (r x))
-(external-function uxatan           (r x))
-(external-function uxsqrt           (r x))
-(external-function uxexp           (r x))
-(external-function uxlog           (r x))
-(external-function uxatan2           (r y x))
+(external-function uuxdoubletofloat     (x y))
+(external-function uuxfloattodouble     (y y))
+(external-function uuxsin           (r x))
+(external-function uuxcos           (r x))
+(external-function uuxtan           (r x))
+(external-function uuxasin           (r x))
+(external-function uuxacos           (r x))
+(external-function uuxatan           (r x))
+(external-function uuxsqrt           (r x))
+(external-function uuxexp           (r x))
+(external-function uuxlog           (r x))
+(external-function uuxatan2           (r y x))
  
  
 % Defined in pwd-fn.c
@@ -274,6 +274,13 @@
 %% setlinebuf is a system call, while under SYS V, it must be written using
 %% setbuf and setvbuf. See the Bobcat version of setlinebuf.c in $pb.
 (external-function setlinebuf           (iobuff))
+
+%% popen, pclose
+
+(external-function popen                (cmd mode))
+(external-function pclose               (stream))
+
+
 (external-function profil               (a b c d)) 
  
 (external-function datetag() )
