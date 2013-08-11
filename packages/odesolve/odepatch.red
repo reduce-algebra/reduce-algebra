@@ -100,7 +100,16 @@ symbolic procedure Odesolve!-Int(y, x);
 
 symbolic procedure NoInt2Int u;
    %% Convert all NoInt's back to Int's, without algebraic evaluation.
-   subst('Int, 'NoInt, u)$
+   if eqcar(u,'NoInt) then 'Int . NoInt2Int cdr u
+    else if atom u then u
+    else begin
+      scalar sa, sd;
+      sa := NoInt2Int car u;
+      sd := NoInt2Int cdr u;
+      if sa eq car u and sd eq cdr u then return u
+      else return sa . sd
+    end;
+
 
 switch NoIntInt$  !*NoIntInt := t$
 put('NoIntInt, 'simpfg,
