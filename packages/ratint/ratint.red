@@ -319,7 +319,7 @@ symbolic procedure prem(r,v,var);
         rule_list := {'expt,var,dr}=>0;
         unwind!-protect(<<
               let rule_list;
-              r := reval r) >>,
+              r := reval r >>,
            without!-timeout clearrules rule_list);
       >>;
       r := reval{'plus,{'times,l,r},{'minus,tt}};
