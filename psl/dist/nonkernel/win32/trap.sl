@@ -154,7 +154,7 @@
 
 
        (*sigsetup 21    IOVHandler  IOVHandlerInstruction  
-                         "Terminal Interrup")
+                         "Terminal Interrupt")
 
        (*sigsetup 22     ALGHandler  ALGHandlerInstruction  
                          "Abort")
@@ -216,7 +216,7 @@
 
 (de terminal-interrupt()
     (setq bruch_bruch 0)
-    (error 10002 "terminal interrupt"))
+    (error 10002 "Terminal Interrupt"))
 
 % End of file.
  
