@@ -100,7 +100,12 @@ then
   p="$r"
   d="regressions"
 else
-  printf "Testing $p: "
+  if test "x$2" = "x"
+  then
+    printf "Testing $p: "
+  else
+    printf "Testing $p/$2: "
+  fi
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
   *$p*) ;;
@@ -188,7 +193,7 @@ then
 
 mkdir -p csl-times
 
-$timecmd sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
+$timecmd sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -202,7 +207,7 @@ write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"
 showtime1$
 quit$
 XXX
-cat howlong.tmp >> csl-times/$p.rlg.tmp
+cat $p.howlong.tmp >> csl-times/$p.rlg.tmp
 printf CSL...
 sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg |
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
@@ -240,7 +245,7 @@ then
 
 mkdir -p psl-times
 
-$timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>howlong.tmp
+$timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -255,7 +260,7 @@ write "START OF REDUCE TEST RUN on $mc"$ in "$f"; write "END OF REDUCE TEST RUN"
 showtime1$
 quit$
 XXX
-cat howlong.tmp >> psl-times/$p.rlg.tmp
+cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
 printf "PSL..."
 sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | \
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
@@ -290,20 +295,20 @@ fi # PSL case
 
 if test "$csl" = "yes" && test "$psl" = "yes"
 then
-  echo "1k " > timer.tmp
+  echo "1k " > $p.timer.tmp
   grep ^Time csl-times/$p.time | \
-   sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
-  echo " 100 * " >> timer.tmp
+   sed -e 's/.*(counter 1): //; s/ms.*//' >> $p.timer.tmp
+  echo " 100 * " >> $p.timer.tmp
   grep ^Time psl-times/$p.time | \
-   sed -e 's/.*(counter 1): //; s/ms.*//' >> timer.tmp
-  echo " / pq" >> timer.tmp
+   sed -e 's/.*(counter 1): //; s/ms.*//' >> $p.timer.tmp
+  echo " / pq" >> $p.timer.tmp
 # If "dc" is not available then the following line leaves ratio empty.
-  ratio=`dc < timer.tmp 2>/dev/null`
+  ratio=`dc < $p.timer.tmp 2>/dev/null`
   if test "x$ratio" != "x" && test "x$ratio" != "x0"
   then 
     printf "CSL/PSL:${ratio}%%"
   fi
-  rm timer.tmp
+  rm -f $p.timer.tmp
   mkdir -p csl-psl-times-comparison
   diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff
   if test -s csl-psl-times-comparison/$p.rlg.diff
@@ -316,6 +321,6 @@ fi
 
 echo " "
 
-rm -f howlong.tmp
+rm -f $p.howlong.tmp
 
 # end of test
