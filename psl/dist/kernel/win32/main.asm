@@ -1,5 +1,4 @@
         .386
-; DGROUP   group   _DATA, _BSS
 _DATA    segment dword public 'DATA'
        include mhdr.asm 
    ALIGN 4
@@ -176,8 +175,8 @@ l0010:
  PUBLIC _psl_main
 _psl_main:
  push ebp
- mov eax, DWORD PTR 16[esp]
- mov ds:symval+1256,eax
+ mov edi, DWORD PTR 16[esp]
+ mov ds:symval+1256,edi
  mov eax, DWORD PTR 8[esp]
  mov ebx, DWORD PTR 12[esp]
  mov ds:symval+1296,esp
@@ -2734,11 +2733,30 @@ l0241:
  call _setlinebuf
  add esp,4
  ret 
+EXTRN _popen:NEAR
+ DD 2
+; (*entry popen expr 2)
+ PUBLIC l0242
+l0242:
+ push ebx
+ push eax
+ call _popen
+ add esp,8
+ ret 
+EXTRN _pclose:NEAR
+ DD 1
+; (*entry pclose expr 1)
+ PUBLIC l0243
+l0243:
+ push eax
+ call _pclose
+ add esp,4
+ ret 
 EXTRN _profil:NEAR
  DD 4
 ; (*entry profil expr 4)
- PUBLIC l0242
-l0242:
+ PUBLIC l0244
+l0244:
  push edx
  push ecx
  push ebx
@@ -2749,16 +2767,16 @@ l0242:
 EXTRN _datetag:NEAR
  DD 0
 ; (*entry datetag expr 0)
- PUBLIC l0243
-l0243:
+ PUBLIC l0245
+l0245:
  call _datetag
  add esp,0
  ret 
 EXTRN _psll_call:NEAR
  DD 4
 ; (*entry psll_call expr 4)
- PUBLIC l0244
-l0244:
+ PUBLIC l0246
+l0246:
  push edx
  push ecx
  push ebx
@@ -2768,10 +2786,10 @@ l0244:
  ret 
  DD 4
 ; (*entry unix-profile expr 4)
- PUBLIC l0245
-l0245:
- mov edi,476
- jmp [symfnc+1904]
+ PUBLIC l0247
+l0247:
+ mov edi,478
+ jmp [symfnc+1912]
  DD 4
 ; (*entry fread expr 4)
  PUBLIC fread
@@ -2815,34 +2833,34 @@ plantunbound:
  mov  DWORD PTR [esp-32],eax
  push eax
  cmp eax,symval+1228
- jle l0246
+ jle l0248
  mov ebx,symval+1240
  add esp,4
- mov edi,485
- jmp [symfnc+1940]
-l0246:
+ mov edi,487
+ jmp [symfnc+1948]
+l0248:
  mov ebx,symval+1240
- mov edi,485
- call [symfnc+1940]
+ mov edi,487
+ call [symfnc+1948]
  mov ebx,symval+1244
  mov eax,DWORD PTR [esp]
  add esp,4
- mov edi,485
- jmp [symfnc+1940]
+ mov edi,487
+ jmp [symfnc+1948]
  DD 2
 ; (*entry plantunbound-1 expr 2)
- PUBLIC l0247
-l0247:
+ PUBLIC l0249
+l0249:
  add eax,eax
  mov esi,eax
  add esi,esi
  add esi,ebx
- mov edi,OFFSET l0248
+ mov edi,OFFSET l0250
  mov edi, DWORD PTR 0[edi]
  mov  DWORD PTR 0[esi],edi
  ret 
  DD 0
-l0248:
+l0250:
  DD undefinedfunction
  DD 2
 ; (*entry plantcodepointer expr 2)
@@ -2852,25 +2870,25 @@ plantcodepointer:
  push ebx
  push eax
  cmp eax,symval+1228
- jle l0249
+ jle l0251
  mov ecx,symval+1240
  add esp,8
- mov edi,486
- jmp [symfnc+1944]
-l0249:
+ mov edi,488
+ jmp [symfnc+1952]
+l0251:
  mov ecx,symval+1240
- mov edi,486
- call [symfnc+1944]
+ mov edi,488
+ call [symfnc+1952]
  mov ecx,symval+1244
  mov ebx, DWORD PTR 4[esp]
  mov eax,DWORD PTR [esp]
  add esp,8
- mov edi,486
- jmp [symfnc+1944]
+ mov edi,488
+ jmp [symfnc+1952]
  DD 3
 ; (*entry plantcodepointer-1 expr 3)
- PUBLIC l0250
-l0250:
+ PUBLIC l0252
+l0252:
  add eax,eax
  mov esi,eax
  add esi,esi
@@ -2884,39 +2902,39 @@ plantlambdalink:
  mov  DWORD PTR [esp-32],eax
  push eax
  cmp eax,symval+1228
- jle l0251
+ jle l0253
  mov ebx,symval+1240
  add esp,4
- mov edi,487
- jmp [symfnc+1948]
-l0251:
+ mov edi,489
+ jmp [symfnc+1956]
+l0253:
  mov ebx,symval+1240
- mov edi,487
- call [symfnc+1948]
+ mov edi,489
+ call [symfnc+1956]
  mov ebx,symval+1244
  mov eax,DWORD PTR [esp]
  add esp,4
- mov edi,487
- jmp [symfnc+1948]
+ mov edi,489
+ jmp [symfnc+1956]
  DD 2
 ; (*entry plantlambdalink-1 expr 2)
- PUBLIC l0252
-l0252:
+ PUBLIC l0254
+l0254:
  add eax,eax
  mov esi,eax
  add esi,esi
  add esi,ebx
- mov edi,OFFSET l0253
+ mov edi,OFFSET l0255
  mov edi, DWORD PTR 0[edi]
  mov  DWORD PTR 0[esi],edi
  ret 
  DD 0
-l0253:
+l0255:
  DD compiledcallinginterpreted
  DD 1
 ; (*entry addressapply0 expr 1)
- PUBLIC l0254
-l0254:
+ PUBLIC l0256
+l0256:
  jmp eax
  DD 2
 ; (*entry bittable expr 2)
@@ -2933,15 +2951,15 @@ bittable:
  add ebx,ebx
  add ebx,-6
  cmp ebx,0
- jge l0255
+ jge l0257
  neg ebx
  xchg ecx,ebx
  shr eax,cl
- jmp l0256
-l0255:
+ jmp l0258
+l0257:
  xchg ecx,ebx
  shl eax,cl
-l0256:
+l0258:
  xchg ecx,ebx
  and eax,3
  add esp,4
@@ -2950,18 +2968,18 @@ l0256:
 ; (*entry undefinedfunction expr 1)
  PUBLIC undefinedfunction
 undefinedfunction:
- jmp [symfnc+1964]
-l0257:
+ jmp [symfnc+1972]
+l0259:
  DD 26
  DB 85,110,100,101,102,105,110,101,100,32
  DB 102,117,110,99,116,105,111,110,32,99,97
  DB 108,108,101,100,58,32,0
  DD 1
 ; (*entry undefinedfunction-aux expr 1)
- PUBLIC l0258
-l0258:
+ PUBLIC l0260
+l0260:
  push edi
- mov eax,4*08000000h+OFFSET l0257
+ mov eax,4*08000000h+OFFSET l0259
  mov edi,331
  call [symfnc+1324]
  mov esi,symval+1404
@@ -2980,20 +2998,20 @@ l0258:
 compiledcallinginterpreted:
  and edi,134217727
  or edi,-268435456
- mov ds:symval+1976,edi
- mov edi,492
- jmp [symfnc+1968]
-l0259:
+ mov ds:symval+1984,edi
+ mov edi,494
+ jmp [symfnc+1976]
+l0261:
  DD 12
  DB 70,65,84,65,76,32,69,82,82,79,82,58,32
  DB 0
  DD 1
 ; (*entry kernel-fatal-error expr 1)
- PUBLIC l0260
-l0260:
+ PUBLIC l0262
+l0262:
  mov  DWORD PTR [esp-32],eax
  push eax
- mov eax,4*08000000h+OFFSET l0259
+ mov eax,4*08000000h+OFFSET l0261
  mov edi,331
  call [symfnc+1324]
  mov eax,DWORD PTR [esp]
@@ -3015,51 +3033,51 @@ codeaddressp:
  and eax,134217727
  mov DWORD PTR [esp],eax
  mov eax,30*08000000h+OFFSET 256
- mov edi,495
- call [symfnc+1980]
+ mov edi,497
+ call [symfnc+1988]
  and eax,134217727
  cmp eax,DWORD PTR [esp]
- jle l0261
+ jle l0263
  mov eax,30*08000000h+OFFSET 128
- jmp l0262
-l0261:
- mov eax,30*08000000h+OFFSET 116
-l0262:
- cmp eax,30*08000000h+OFFSET 128
- je l0263
- mov eax,30*08000000h+OFFSET 496
- mov edi,495
- call [symfnc+1980]
- and eax,134217727
- cmp eax,DWORD PTR [esp]
- jg l0264
- mov eax,30*08000000h+OFFSET 128
- jmp l0263
-l0264:
- mov eax,30*08000000h+OFFSET 116
+ jmp l0264
 l0263:
+ mov eax,30*08000000h+OFFSET 116
+l0264:
  cmp eax,30*08000000h+OFFSET 128
- jne l0265
+ je l0265
+ mov eax,30*08000000h+OFFSET 498
+ mov edi,497
+ call [symfnc+1988]
+ and eax,134217727
+ cmp eax,DWORD PTR [esp]
+ jg l0266
+ mov eax,30*08000000h+OFFSET 128
+ jmp l0265
+l0266:
+ mov eax,30*08000000h+OFFSET 116
+l0265:
+ cmp eax,30*08000000h+OFFSET 128
+ jne l0267
  mov eax,symval+1148
  and eax,134217727
  cmp eax,DWORD PTR [esp]
- jle l0266
+ jle l0268
  mov eax,30*08000000h+OFFSET 128
- jmp l0267
-l0266:
+ jmp l0269
+l0268:
  mov eax,30*08000000h+OFFSET 116
-l0267:
+l0269:
  cmp eax,30*08000000h+OFFSET 128
- je l0265
+ je l0267
  mov eax,symval+1172
  and eax,134217727
  cmp eax,DWORD PTR [esp]
- jg l0268
+ jg l0270
  mov eax,30*08000000h+OFFSET 128
- jmp l0265
-l0268:
+ jmp l0267
+l0270:
  mov eax,30*08000000h+OFFSET 116
-l0265:
+l0267:
  add esp,4
  ret 
  DD 1
@@ -3073,2641 +3091,2651 @@ lastkernel:
 initcode:
  mov eax,30*08000000h+OFFSET 128
  ret 
- PUBLIC l0269
-  align 4
-l0269:
- DD 0
- DB 0,0
- PUBLIC l0270
-  align 4
-l0270:
- DD 0
- DB 1,0
  PUBLIC l0271
   align 4
 l0271:
  DD 0
- DB 2,0
+ DB 0,0
  PUBLIC l0272
   align 4
 l0272:
  DD 0
- DB 3,0
+ DB 1,0
  PUBLIC l0273
   align 4
 l0273:
  DD 0
- DB 4,0
+ DB 2,0
  PUBLIC l0274
   align 4
 l0274:
  DD 0
- DB 5,0
+ DB 3,0
  PUBLIC l0275
   align 4
 l0275:
  DD 0
- DB 6,0
+ DB 4,0
  PUBLIC l0276
   align 4
 l0276:
  DD 0
- DB 7,0
+ DB 5,0
  PUBLIC l0277
   align 4
 l0277:
  DD 0
- DB 8,0
+ DB 6,0
  PUBLIC l0278
   align 4
 l0278:
  DD 0
- DB 9,0
+ DB 7,0
  PUBLIC l0279
   align 4
 l0279:
  DD 0
- DB 10,0
+ DB 8,0
  PUBLIC l0280
   align 4
 l0280:
  DD 0
- DB 11,0
+ DB 9,0
  PUBLIC l0281
   align 4
 l0281:
  DD 0
- DB 12,0
+ DB 10,0
  PUBLIC l0282
   align 4
 l0282:
  DD 0
- DB 13,0
+ DB 11,0
  PUBLIC l0283
   align 4
 l0283:
  DD 0
- DB 14,0
+ DB 12,0
  PUBLIC l0284
   align 4
 l0284:
  DD 0
- DB 15,0
+ DB 13,0
  PUBLIC l0285
   align 4
 l0285:
  DD 0
- DB 16,0
+ DB 14,0
  PUBLIC l0286
   align 4
 l0286:
  DD 0
- DB 17,0
+ DB 15,0
  PUBLIC l0287
   align 4
 l0287:
  DD 0
- DB 18,0
+ DB 16,0
  PUBLIC l0288
   align 4
 l0288:
  DD 0
- DB 19,0
+ DB 17,0
  PUBLIC l0289
   align 4
 l0289:
  DD 0
- DB 20,0
+ DB 18,0
  PUBLIC l0290
   align 4
 l0290:
  DD 0
- DB 21,0
+ DB 19,0
  PUBLIC l0291
   align 4
 l0291:
  DD 0
- DB 22,0
+ DB 20,0
  PUBLIC l0292
   align 4
 l0292:
  DD 0
- DB 23,0
+ DB 21,0
  PUBLIC l0293
   align 4
 l0293:
  DD 0
- DB 24,0
+ DB 22,0
  PUBLIC l0294
   align 4
 l0294:
  DD 0
- DB 25,0
+ DB 23,0
  PUBLIC l0295
   align 4
 l0295:
  DD 0
- DB 26,0
+ DB 24,0
  PUBLIC l0296
   align 4
 l0296:
  DD 0
- DB 27,0
+ DB 25,0
  PUBLIC l0297
   align 4
 l0297:
  DD 0
- DB 28,0
+ DB 26,0
  PUBLIC l0298
   align 4
 l0298:
  DD 0
- DB 29,0
+ DB 27,0
  PUBLIC l0299
   align 4
 l0299:
  DD 0
- DB 30,0
+ DB 28,0
  PUBLIC l0300
   align 4
 l0300:
  DD 0
- DB 31,0
+ DB 29,0
  PUBLIC l0301
   align 4
 l0301:
  DD 0
- DB 32,0
+ DB 30,0
  PUBLIC l0302
   align 4
 l0302:
  DD 0
- DB 33,0
+ DB 31,0
  PUBLIC l0303
   align 4
 l0303:
  DD 0
- DB 34,0
+ DB 32,0
  PUBLIC l0304
   align 4
 l0304:
  DD 0
- DB 35,0
+ DB 33,0
  PUBLIC l0305
   align 4
 l0305:
  DD 0
- DB 36,0
+ DB 34,0
  PUBLIC l0306
   align 4
 l0306:
  DD 0
- DB 37,0
+ DB 35,0
  PUBLIC l0307
   align 4
 l0307:
  DD 0
- DB 38,0
+ DB 36,0
  PUBLIC l0308
   align 4
 l0308:
  DD 0
- DB 39,0
+ DB 37,0
  PUBLIC l0309
   align 4
 l0309:
  DD 0
- DB 40,0
+ DB 38,0
  PUBLIC l0310
   align 4
 l0310:
  DD 0
- DB 41,0
+ DB 39,0
  PUBLIC l0311
   align 4
 l0311:
  DD 0
- DB 42,0
+ DB 40,0
  PUBLIC l0312
   align 4
 l0312:
  DD 0
- DB 43,0
+ DB 41,0
  PUBLIC l0313
   align 4
 l0313:
  DD 0
- DB 44,0
+ DB 42,0
  PUBLIC l0314
   align 4
 l0314:
  DD 0
- DB 45,0
+ DB 43,0
  PUBLIC l0315
   align 4
 l0315:
  DD 0
- DB 46,0
+ DB 44,0
  PUBLIC l0316
   align 4
 l0316:
  DD 0
- DB 47,0
+ DB 45,0
  PUBLIC l0317
   align 4
 l0317:
  DD 0
- DB 48,0
+ DB 46,0
  PUBLIC l0318
   align 4
 l0318:
  DD 0
- DB 49,0
+ DB 47,0
  PUBLIC l0319
   align 4
 l0319:
  DD 0
- DB 50,0
+ DB 48,0
  PUBLIC l0320
   align 4
 l0320:
  DD 0
- DB 51,0
+ DB 49,0
  PUBLIC l0321
   align 4
 l0321:
  DD 0
- DB 52,0
+ DB 50,0
  PUBLIC l0322
   align 4
 l0322:
  DD 0
- DB 53,0
+ DB 51,0
  PUBLIC l0323
   align 4
 l0323:
  DD 0
- DB 54,0
+ DB 52,0
  PUBLIC l0324
   align 4
 l0324:
  DD 0
- DB 55,0
+ DB 53,0
  PUBLIC l0325
   align 4
 l0325:
  DD 0
- DB 56,0
+ DB 54,0
  PUBLIC l0326
   align 4
 l0326:
  DD 0
- DB 57,0
+ DB 55,0
  PUBLIC l0327
   align 4
 l0327:
  DD 0
- DB 58,0
+ DB 56,0
  PUBLIC l0328
   align 4
 l0328:
  DD 0
- DB 59,0
+ DB 57,0
  PUBLIC l0329
   align 4
 l0329:
  DD 0
- DB 60,0
+ DB 58,0
  PUBLIC l0330
   align 4
 l0330:
  DD 0
- DB 61,0
+ DB 59,0
  PUBLIC l0331
   align 4
 l0331:
  DD 0
- DB 62,0
+ DB 60,0
  PUBLIC l0332
   align 4
 l0332:
  DD 0
- DB 63,0
+ DB 61,0
  PUBLIC l0333
   align 4
 l0333:
  DD 0
- DB 64,0
+ DB 62,0
  PUBLIC l0334
   align 4
 l0334:
  DD 0
- DB 65,0
+ DB 63,0
  PUBLIC l0335
   align 4
 l0335:
  DD 0
- DB 66,0
+ DB 64,0
  PUBLIC l0336
   align 4
 l0336:
  DD 0
- DB 67,0
+ DB 65,0
  PUBLIC l0337
   align 4
 l0337:
  DD 0
- DB 68,0
+ DB 66,0
  PUBLIC l0338
   align 4
 l0338:
  DD 0
- DB 69,0
+ DB 67,0
  PUBLIC l0339
   align 4
 l0339:
  DD 0
- DB 70,0
+ DB 68,0
  PUBLIC l0340
   align 4
 l0340:
  DD 0
- DB 71,0
+ DB 69,0
  PUBLIC l0341
   align 4
 l0341:
  DD 0
- DB 72,0
+ DB 70,0
  PUBLIC l0342
   align 4
 l0342:
  DD 0
- DB 73,0
+ DB 71,0
  PUBLIC l0343
   align 4
 l0343:
  DD 0
- DB 74,0
+ DB 72,0
  PUBLIC l0344
   align 4
 l0344:
  DD 0
- DB 75,0
+ DB 73,0
  PUBLIC l0345
   align 4
 l0345:
  DD 0
- DB 76,0
+ DB 74,0
  PUBLIC l0346
   align 4
 l0346:
  DD 0
- DB 77,0
+ DB 75,0
  PUBLIC l0347
   align 4
 l0347:
  DD 0
- DB 78,0
+ DB 76,0
  PUBLIC l0348
   align 4
 l0348:
  DD 0
- DB 79,0
+ DB 77,0
  PUBLIC l0349
   align 4
 l0349:
  DD 0
- DB 80,0
+ DB 78,0
  PUBLIC l0350
   align 4
 l0350:
  DD 0
- DB 81,0
+ DB 79,0
  PUBLIC l0351
   align 4
 l0351:
  DD 0
- DB 82,0
+ DB 80,0
  PUBLIC l0352
   align 4
 l0352:
  DD 0
- DB 83,0
+ DB 81,0
  PUBLIC l0353
   align 4
 l0353:
  DD 0
- DB 84,0
+ DB 82,0
  PUBLIC l0354
   align 4
 l0354:
  DD 0
- DB 85,0
+ DB 83,0
  PUBLIC l0355
   align 4
 l0355:
  DD 0
- DB 86,0
+ DB 84,0
  PUBLIC l0356
   align 4
 l0356:
  DD 0
- DB 87,0
+ DB 85,0
  PUBLIC l0357
   align 4
 l0357:
  DD 0
- DB 88,0
+ DB 86,0
  PUBLIC l0358
   align 4
 l0358:
  DD 0
- DB 89,0
+ DB 87,0
  PUBLIC l0359
   align 4
 l0359:
  DD 0
- DB 90,0
+ DB 88,0
  PUBLIC l0360
   align 4
 l0360:
  DD 0
- DB 91,0
+ DB 89,0
  PUBLIC l0361
   align 4
 l0361:
  DD 0
- DB 92,0
+ DB 90,0
  PUBLIC l0362
   align 4
 l0362:
  DD 0
- DB 93,0
+ DB 91,0
  PUBLIC l0363
   align 4
 l0363:
  DD 0
- DB 94,0
+ DB 92,0
  PUBLIC l0364
   align 4
 l0364:
  DD 0
- DB 95,0
+ DB 93,0
  PUBLIC l0365
   align 4
 l0365:
  DD 0
- DB 96,0
+ DB 94,0
  PUBLIC l0366
   align 4
 l0366:
  DD 0
- DB 97,0
+ DB 95,0
  PUBLIC l0367
   align 4
 l0367:
  DD 0
- DB 98,0
+ DB 96,0
  PUBLIC l0368
   align 4
 l0368:
  DD 0
- DB 99,0
+ DB 97,0
  PUBLIC l0369
   align 4
 l0369:
  DD 0
- DB 100,0
+ DB 98,0
  PUBLIC l0370
   align 4
 l0370:
  DD 0
- DB 101,0
+ DB 99,0
  PUBLIC l0371
   align 4
 l0371:
  DD 0
- DB 102,0
+ DB 100,0
  PUBLIC l0372
   align 4
 l0372:
  DD 0
- DB 103,0
+ DB 101,0
  PUBLIC l0373
   align 4
 l0373:
  DD 0
- DB 104,0
+ DB 102,0
  PUBLIC l0374
   align 4
 l0374:
  DD 0
- DB 105,0
+ DB 103,0
  PUBLIC l0375
   align 4
 l0375:
  DD 0
- DB 106,0
+ DB 104,0
  PUBLIC l0376
   align 4
 l0376:
  DD 0
- DB 107,0
+ DB 105,0
  PUBLIC l0377
   align 4
 l0377:
  DD 0
- DB 108,0
+ DB 106,0
  PUBLIC l0378
   align 4
 l0378:
  DD 0
- DB 109,0
+ DB 107,0
  PUBLIC l0379
   align 4
 l0379:
  DD 0
- DB 110,0
+ DB 108,0
  PUBLIC l0380
   align 4
 l0380:
  DD 0
- DB 111,0
+ DB 109,0
  PUBLIC l0381
   align 4
 l0381:
  DD 0
- DB 112,0
+ DB 110,0
  PUBLIC l0382
   align 4
 l0382:
  DD 0
- DB 113,0
+ DB 111,0
  PUBLIC l0383
   align 4
 l0383:
  DD 0
- DB 114,0
+ DB 112,0
  PUBLIC l0384
   align 4
 l0384:
  DD 0
- DB 115,0
+ DB 113,0
  PUBLIC l0385
   align 4
 l0385:
  DD 0
- DB 116,0
+ DB 114,0
  PUBLIC l0386
   align 4
 l0386:
  DD 0
- DB 117,0
+ DB 115,0
  PUBLIC l0387
   align 4
 l0387:
  DD 0
- DB 118,0
+ DB 116,0
  PUBLIC l0388
   align 4
 l0388:
  DD 0
- DB 119,0
+ DB 117,0
  PUBLIC l0389
   align 4
 l0389:
  DD 0
- DB 120,0
+ DB 118,0
  PUBLIC l0390
   align 4
 l0390:
  DD 0
- DB 121,0
+ DB 119,0
  PUBLIC l0391
   align 4
 l0391:
  DD 0
- DB 122,0
+ DB 120,0
  PUBLIC l0392
   align 4
 l0392:
  DD 0
- DB 123,0
+ DB 121,0
  PUBLIC l0393
   align 4
 l0393:
  DD 0
- DB 124,0
+ DB 122,0
  PUBLIC l0394
   align 4
 l0394:
  DD 0
- DB 125,0
+ DB 123,0
  PUBLIC l0395
   align 4
 l0395:
  DD 0
- DB 126,0
+ DB 124,0
  PUBLIC l0396
   align 4
 l0396:
  DD 0
- DB 127,0
+ DB 125,0
  PUBLIC l0397
   align 4
 l0397:
- DD 2
- DB 110,105,108,0
+ DD 0
+ DB 126,0
  PUBLIC l0398
   align 4
 l0398:
  DD 0
- DB -127,0
+ DB 127,0
  PUBLIC l0399
   align 4
 l0399:
- DD 0
- DB -126,0
+ DD 2
+ DB 110,105,108,0
  PUBLIC l0400
   align 4
 l0400:
  DD 0
- DB -125,0
+ DB -127,0
  PUBLIC l0401
   align 4
 l0401:
  DD 0
- DB -124,0
+ DB -126,0
  PUBLIC l0402
   align 4
 l0402:
  DD 0
- DB -123,0
+ DB -125,0
  PUBLIC l0403
   align 4
 l0403:
  DD 0
- DB -122,0
+ DB -124,0
  PUBLIC l0404
   align 4
 l0404:
  DD 0
- DB -121,0
+ DB -123,0
  PUBLIC l0405
   align 4
 l0405:
  DD 0
- DB -120,0
+ DB -122,0
  PUBLIC l0406
   align 4
 l0406:
  DD 0
- DB -119,0
+ DB -121,0
  PUBLIC l0407
   align 4
 l0407:
  DD 0
- DB -118,0
+ DB -120,0
  PUBLIC l0408
   align 4
 l0408:
  DD 0
- DB -117,0
+ DB -119,0
  PUBLIC l0409
   align 4
 l0409:
  DD 0
- DB -116,0
+ DB -118,0
  PUBLIC l0410
   align 4
 l0410:
  DD 0
- DB -115,0
+ DB -117,0
  PUBLIC l0411
   align 4
 l0411:
  DD 0
- DB -114,0
+ DB -116,0
  PUBLIC l0412
   align 4
 l0412:
  DD 0
- DB -113,0
+ DB -115,0
  PUBLIC l0413
   align 4
 l0413:
  DD 0
- DB -112,0
+ DB -114,0
  PUBLIC l0414
   align 4
 l0414:
  DD 0
- DB -111,0
+ DB -113,0
  PUBLIC l0415
   align 4
 l0415:
  DD 0
- DB -110,0
+ DB -112,0
  PUBLIC l0416
   align 4
 l0416:
  DD 0
- DB -109,0
+ DB -111,0
  PUBLIC l0417
   align 4
 l0417:
  DD 0
- DB -108,0
+ DB -110,0
  PUBLIC l0418
   align 4
 l0418:
  DD 0
- DB -107,0
+ DB -109,0
  PUBLIC l0419
   align 4
 l0419:
  DD 0
- DB -106,0
+ DB -108,0
  PUBLIC l0420
   align 4
 l0420:
  DD 0
- DB -105,0
+ DB -107,0
  PUBLIC l0421
   align 4
 l0421:
  DD 0
- DB -104,0
+ DB -106,0
  PUBLIC l0422
   align 4
 l0422:
  DD 0
- DB -103,0
+ DB -105,0
  PUBLIC l0423
   align 4
 l0423:
  DD 0
- DB -102,0
+ DB -104,0
  PUBLIC l0424
   align 4
 l0424:
  DD 0
- DB -101,0
+ DB -103,0
  PUBLIC l0425
   align 4
 l0425:
  DD 0
- DB -100,0
+ DB -102,0
  PUBLIC l0426
   align 4
 l0426:
  DD 0
- DB -99,0
+ DB -101,0
  PUBLIC l0427
   align 4
 l0427:
  DD 0
- DB -98,0
+ DB -100,0
  PUBLIC l0428
   align 4
 l0428:
  DD 0
- DB -97,0
+ DB -99,0
  PUBLIC l0429
   align 4
 l0429:
  DD 0
- DB -96,0
+ DB -98,0
  PUBLIC l0430
   align 4
 l0430:
  DD 0
- DB -95,0
+ DB -97,0
  PUBLIC l0431
   align 4
 l0431:
  DD 0
- DB -94,0
+ DB -96,0
  PUBLIC l0432
   align 4
 l0432:
  DD 0
- DB -93,0
+ DB -95,0
  PUBLIC l0433
   align 4
 l0433:
  DD 0
- DB -92,0
+ DB -94,0
  PUBLIC l0434
   align 4
 l0434:
  DD 0
- DB -91,0
+ DB -93,0
  PUBLIC l0435
   align 4
 l0435:
  DD 0
- DB -90,0
+ DB -92,0
  PUBLIC l0436
   align 4
 l0436:
  DD 0
- DB -89,0
+ DB -91,0
  PUBLIC l0437
   align 4
 l0437:
  DD 0
- DB -88,0
+ DB -90,0
  PUBLIC l0438
   align 4
 l0438:
  DD 0
- DB -87,0
+ DB -89,0
  PUBLIC l0439
   align 4
 l0439:
  DD 0
- DB -86,0
+ DB -88,0
  PUBLIC l0440
   align 4
 l0440:
  DD 0
- DB -85,0
+ DB -87,0
  PUBLIC l0441
   align 4
 l0441:
  DD 0
- DB -84,0
+ DB -86,0
  PUBLIC l0442
   align 4
 l0442:
  DD 0
- DB -83,0
+ DB -85,0
  PUBLIC l0443
   align 4
 l0443:
  DD 0
- DB -82,0
+ DB -84,0
  PUBLIC l0444
   align 4
 l0444:
  DD 0
- DB -81,0
+ DB -83,0
  PUBLIC l0445
   align 4
 l0445:
  DD 0
- DB -80,0
+ DB -82,0
  PUBLIC l0446
   align 4
 l0446:
  DD 0
- DB -79,0
+ DB -81,0
  PUBLIC l0447
   align 4
 l0447:
  DD 0
- DB -78,0
+ DB -80,0
  PUBLIC l0448
   align 4
 l0448:
  DD 0
- DB -77,0
+ DB -79,0
  PUBLIC l0449
   align 4
 l0449:
  DD 0
- DB -76,0
+ DB -78,0
  PUBLIC l0450
   align 4
 l0450:
  DD 0
- DB -75,0
+ DB -77,0
  PUBLIC l0451
   align 4
 l0451:
  DD 0
- DB -74,0
+ DB -76,0
  PUBLIC l0452
   align 4
 l0452:
  DD 0
- DB -73,0
+ DB -75,0
  PUBLIC l0453
   align 4
 l0453:
  DD 0
- DB -72,0
+ DB -74,0
  PUBLIC l0454
   align 4
 l0454:
  DD 0
- DB -71,0
+ DB -73,0
  PUBLIC l0455
   align 4
 l0455:
  DD 0
- DB -70,0
+ DB -72,0
  PUBLIC l0456
   align 4
 l0456:
  DD 0
- DB -69,0
+ DB -71,0
  PUBLIC l0457
   align 4
 l0457:
  DD 0
- DB -68,0
+ DB -70,0
  PUBLIC l0458
   align 4
 l0458:
  DD 0
- DB -67,0
+ DB -69,0
  PUBLIC l0459
   align 4
 l0459:
  DD 0
- DB -66,0
+ DB -68,0
  PUBLIC l0460
   align 4
 l0460:
  DD 0
- DB -65,0
+ DB -67,0
  PUBLIC l0461
   align 4
 l0461:
  DD 0
- DB -64,0
+ DB -66,0
  PUBLIC l0462
   align 4
 l0462:
  DD 0
- DB -63,0
+ DB -65,0
  PUBLIC l0463
   align 4
 l0463:
  DD 0
- DB -62,0
+ DB -64,0
  PUBLIC l0464
   align 4
 l0464:
  DD 0
- DB -61,0
+ DB -63,0
  PUBLIC l0465
   align 4
 l0465:
  DD 0
- DB -60,0
+ DB -62,0
  PUBLIC l0466
   align 4
 l0466:
  DD 0
- DB -59,0
+ DB -61,0
  PUBLIC l0467
   align 4
 l0467:
  DD 0
- DB -58,0
+ DB -60,0
  PUBLIC l0468
   align 4
 l0468:
  DD 0
- DB -57,0
+ DB -59,0
  PUBLIC l0469
   align 4
 l0469:
  DD 0
- DB -56,0
+ DB -58,0
  PUBLIC l0470
   align 4
 l0470:
  DD 0
- DB -55,0
+ DB -57,0
  PUBLIC l0471
   align 4
 l0471:
  DD 0
- DB -54,0
+ DB -56,0
  PUBLIC l0472
   align 4
 l0472:
  DD 0
- DB -53,0
+ DB -55,0
  PUBLIC l0473
   align 4
 l0473:
  DD 0
- DB -52,0
+ DB -54,0
  PUBLIC l0474
   align 4
 l0474:
  DD 0
- DB -51,0
+ DB -53,0
  PUBLIC l0475
   align 4
 l0475:
  DD 0
- DB -50,0
+ DB -52,0
  PUBLIC l0476
   align 4
 l0476:
  DD 0
- DB -49,0
+ DB -51,0
  PUBLIC l0477
   align 4
 l0477:
  DD 0
- DB -48,0
+ DB -50,0
  PUBLIC l0478
   align 4
 l0478:
  DD 0
- DB -47,0
+ DB -49,0
  PUBLIC l0479
   align 4
 l0479:
  DD 0
- DB -46,0
+ DB -48,0
  PUBLIC l0480
   align 4
 l0480:
  DD 0
- DB -45,0
+ DB -47,0
  PUBLIC l0481
   align 4
 l0481:
  DD 0
- DB -44,0
+ DB -46,0
  PUBLIC l0482
   align 4
 l0482:
  DD 0
- DB -43,0
+ DB -45,0
  PUBLIC l0483
   align 4
 l0483:
  DD 0
- DB -42,0
+ DB -44,0
  PUBLIC l0484
   align 4
 l0484:
  DD 0
- DB -41,0
+ DB -43,0
  PUBLIC l0485
   align 4
 l0485:
  DD 0
- DB -40,0
+ DB -42,0
  PUBLIC l0486
   align 4
 l0486:
  DD 0
- DB -39,0
+ DB -41,0
  PUBLIC l0487
   align 4
 l0487:
  DD 0
- DB -38,0
+ DB -40,0
  PUBLIC l0488
   align 4
 l0488:
  DD 0
- DB -37,0
+ DB -39,0
  PUBLIC l0489
   align 4
 l0489:
  DD 0
- DB -36,0
+ DB -38,0
  PUBLIC l0490
   align 4
 l0490:
  DD 0
- DB -35,0
+ DB -37,0
  PUBLIC l0491
   align 4
 l0491:
  DD 0
- DB -34,0
+ DB -36,0
  PUBLIC l0492
   align 4
 l0492:
  DD 0
- DB -33,0
+ DB -35,0
  PUBLIC l0493
   align 4
 l0493:
  DD 0
- DB -32,0
+ DB -34,0
  PUBLIC l0494
   align 4
 l0494:
  DD 0
- DB -31,0
+ DB -33,0
  PUBLIC l0495
   align 4
 l0495:
  DD 0
- DB -30,0
+ DB -32,0
  PUBLIC l0496
   align 4
 l0496:
  DD 0
- DB -29,0
+ DB -31,0
  PUBLIC l0497
   align 4
 l0497:
  DD 0
- DB -28,0
+ DB -30,0
  PUBLIC l0498
   align 4
 l0498:
  DD 0
- DB -27,0
+ DB -29,0
  PUBLIC l0499
   align 4
 l0499:
  DD 0
- DB -26,0
+ DB -28,0
  PUBLIC l0500
   align 4
 l0500:
  DD 0
- DB -25,0
+ DB -27,0
  PUBLIC l0501
   align 4
 l0501:
  DD 0
- DB -24,0
+ DB -26,0
  PUBLIC l0502
   align 4
 l0502:
  DD 0
- DB -23,0
+ DB -25,0
  PUBLIC l0503
   align 4
 l0503:
  DD 0
- DB -22,0
+ DB -24,0
  PUBLIC l0504
   align 4
 l0504:
  DD 0
- DB -21,0
+ DB -23,0
  PUBLIC l0505
   align 4
 l0505:
  DD 0
- DB -20,0
+ DB -22,0
  PUBLIC l0506
   align 4
 l0506:
  DD 0
- DB -19,0
+ DB -21,0
  PUBLIC l0507
   align 4
 l0507:
  DD 0
- DB -18,0
+ DB -20,0
  PUBLIC l0508
   align 4
 l0508:
  DD 0
- DB -17,0
+ DB -19,0
  PUBLIC l0509
   align 4
 l0509:
  DD 0
- DB -16,0
+ DB -18,0
  PUBLIC l0510
   align 4
 l0510:
  DD 0
- DB -15,0
+ DB -17,0
  PUBLIC l0511
   align 4
 l0511:
  DD 0
- DB -14,0
+ DB -16,0
  PUBLIC l0512
   align 4
 l0512:
  DD 0
- DB -13,0
+ DB -15,0
  PUBLIC l0513
   align 4
 l0513:
  DD 0
- DB -12,0
+ DB -14,0
  PUBLIC l0514
   align 4
 l0514:
  DD 0
- DB -11,0
+ DB -13,0
  PUBLIC l0515
   align 4
 l0515:
  DD 0
- DB -10,0
+ DB -12,0
  PUBLIC l0516
   align 4
 l0516:
  DD 0
- DB -9,0
+ DB -11,0
  PUBLIC l0517
   align 4
 l0517:
  DD 0
- DB -8,0
+ DB -10,0
  PUBLIC l0518
   align 4
 l0518:
  DD 0
- DB -7,0
+ DB -9,0
  PUBLIC l0519
   align 4
 l0519:
  DD 0
- DB -6,0
+ DB -8,0
  PUBLIC l0520
   align 4
 l0520:
  DD 0
- DB -5,0
+ DB -7,0
  PUBLIC l0521
   align 4
 l0521:
  DD 0
- DB -4,0
+ DB -6,0
  PUBLIC l0522
   align 4
 l0522:
  DD 0
- DB -3,0
+ DB -5,0
  PUBLIC l0523
   align 4
 l0523:
  DD 0
- DB -2,0
+ DB -4,0
  PUBLIC l0524
   align 4
 l0524:
  DD 0
- DB -1,0
+ DB -3,0
  PUBLIC l0525
   align 4
 l0525:
- DD 10
- DB 102,105,114,115,116,107,101,114,110,101
- DB 108,0
+ DD 0
+ DB -2,0
  PUBLIC l0526
   align 4
 l0526:
- DD 12
- DB 97,114,103,117,109,101,110,116,98,108
- DB 111,99,107,0
+ DD 0
+ DB -1,0
  PUBLIC l0527
   align 4
 l0527:
  DD 10
- DB 116,111,107,101,110,98,117,102,102,101
- DB 114,0
+ DB 102,105,114,115,116,107,101,114,110,101
+ DB 108,0
  PUBLIC l0528
   align 4
 l0528:
- DD 5
- DB 98,110,100,115,116,107,0,0
+ DD 12
+ DB 97,114,103,117,109,101,110,116,98,108
+ DB 111,99,107,0
  PUBLIC l0529
   align 4
 l0529:
- DD 9
- DB 99,97,116,99,104,115,116,97,99,107,0,0
+ DD 10
+ DB 116,111,107,101,110,98,117,102,102,101
+ DB 114,0
  PUBLIC l0530
   align 4
 l0530:
- DD 8
- DB 104,97,115,104,116,97,98,108,101,0
+ DD 5
+ DB 98,110,100,115,116,107,0,0
  PUBLIC l0531
   align 4
 l0531:
- DD 12
- DB 111,110,101,119,111,114,100,98,117,102
- DB 102,101,114,0
+ DD 9
+ DB 99,97,116,99,104,115,116,97,99,107,0,0
  PUBLIC l0532
   align 4
 l0532:
- DD 7
- DB 115,97,118,101,97,114,103,99,0,0
+ DD 8
+ DB 104,97,115,104,116,97,98,108,101,0
  PUBLIC l0533
   align 4
 l0533:
- DD 7
- DB 115,97,118,101,97,114,103,118,0,0
+ DD 12
+ DB 111,110,101,119,111,114,100,98,117,102
+ DB 102,101,114,0
  PUBLIC l0534
   align 4
 l0534:
- DD 9
- DB 100,97,116,101,98,117,102,102,101,114
- DB 0,0
+ DD 7
+ DB 115,97,118,101,97,114,103,99,0,0
  PUBLIC l0535
   align 4
 l0535:
- DD 12
- DB 105,110,105,116,45,112,111,105,110,116
- DB 101,114,115,0
+ DD 7
+ DB 115,97,118,101,97,114,103,118,0,0
  PUBLIC l0536
   align 4
 l0536:
- DD 12
- DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,49,0
+ DD 9
+ DB 100,97,116,101,98,117,102,102,101,114
+ DB 0,0
  PUBLIC l0537
   align 4
 l0537:
  DD 12
- DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,50,0
+ DB 105,110,105,116,45,112,111,105,110,116
+ DB 101,114,115,0
  PUBLIC l0538
   align 4
 l0538:
  DD 12
  DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,51,0
+ DB 107,49,0
  PUBLIC l0539
   align 4
 l0539:
  DD 12
  DB 112,115,108,95,99,97,108,108,98,97,99
- DB 107,52,0
+ DB 107,50,0
  PUBLIC l0540
   align 4
 l0540:
- DD 4
- DB 115,116,97,99,107,0
+ DD 12
+ DB 112,115,108,95,99,97,108,108,98,97,99
+ DB 107,51,0
  PUBLIC l0541
   align 4
 l0541:
- DD 14
- DB 115,116,97,99,107,117,112,112,101,114
- DB 98,111,117,110,100,0
+ DD 12
+ DB 112,115,108,95,99,97,108,108,98,97,99
+ DB 107,52,0
  PUBLIC l0542
   align 4
 l0542:
- DD 12
- DB 99,97,116,99,104,115,116,97,99,107,112
- DB 116,114,0
+ DD 4
+ DB 115,116,97,99,107,0
  PUBLIC l0543
   align 4
 l0543:
- DD 15
- DB 98,110,100,115,116,107,108,111,119,101
- DB 114,98,111,117,110,100,0,0
+ DD 14
+ DB 115,116,97,99,107,117,112,112,101,114
+ DB 98,111,117,110,100,0
  PUBLIC l0544
   align 4
 l0544:
- DD 15
- DB 98,110,100,115,116,107,117,112,112,101
- DB 114,98,111,117,110,100,0,0
+ DD 12
+ DB 99,97,116,99,104,115,116,97,99,107,112
+ DB 116,114,0
  PUBLIC l0545
   align 4
 l0545:
- DD 8
- DB 98,110,100,115,116,107,112,116,114,0
+ DD 15
+ DB 98,110,100,115,116,107,108,111,119,101
+ DB 114,98,111,117,110,100,0,0
  PUBLIC l0546
   align 4
 l0546:
- DD 13
- DB 104,101,97,112,108,111,119,101,114,98
- DB 111,117,110,100,0,0
+ DD 15
+ DB 98,110,100,115,116,107,117,112,112,101
+ DB 114,98,111,117,110,100,0,0
  PUBLIC l0547
   align 4
 l0547:
- DD 3
- DB 104,101,97,112,0,0
+ DD 8
+ DB 98,110,100,115,116,107,112,116,114,0
  PUBLIC l0548
   align 4
 l0548:
- DD 10
- DB 105,110,105,116,45,102,108,117,105,100
- DB 115,0
+ DD 13
+ DB 104,101,97,112,108,111,119,101,114,98
+ DB 111,117,110,100,0,0
  PUBLIC l0549
   align 4
 l0549:
- DD 16
- DB 103,99,97,114,114,97,121,108,111,119,101
- DB 114,98,111,117,110,100,0
+ DD 3
+ DB 104,101,97,112,0,0
  PUBLIC l0550
   align 4
 l0550:
- DD 16
- DB 103,99,97,114,114,97,121,117,112,112,101
- DB 114,98,111,117,110,100,0
+ DD 10
+ DB 105,110,105,116,45,102,108,117,105,100
+ DB 115,0
  PUBLIC l0551
   align 4
 l0551:
- DD 7
- DB 104,101,97,112,108,97,115,116,0,0
+ DD 16
+ DB 103,99,97,114,114,97,121,108,111,119,101
+ DB 114,98,111,117,110,100,0
  PUBLIC l0552
   align 4
 l0552:
- DD 12
- DB 104,101,97,112,116,114,97,112,98,111,117
- DB 110,100,0
+ DD 16
+ DB 103,99,97,114,114,97,121,117,112,112,101
+ DB 114,98,111,117,110,100,0
  PUBLIC l0553
   align 4
 l0553:
- DD 13
- DB 104,101,97,112,117,112,112,101,114,98
- DB 111,117,110,100,0,0
+ DD 7
+ DB 104,101,97,112,108,97,115,116,0,0
  PUBLIC l0554
   align 4
 l0554:
- DD 13
- DB 95,105,110,102,98,105,116,108,101,110
- DB 103,116,104,95,0,0
+ DD 12
+ DB 104,101,97,112,116,114,97,112,98,111,117
+ DB 110,100,0
  PUBLIC l0555
   align 4
 l0555:
- DD 6
- DB 108,97,115,116,98,112,115,0
+ DD 13
+ DB 104,101,97,112,117,112,112,101,114,98
+ DB 111,117,110,100,0,0
  PUBLIC l0556
   align 4
 l0556:
- DD 12
- DB 98,112,115,108,111,119,101,114,98,111
- DB 117,110,100,0
+ DD 13
+ DB 95,105,110,102,98,105,116,108,101,110
+ DB 103,116,104,95,0,0
  PUBLIC l0557
   align 4
 l0557:
- DD 10
- DB 111,108,100,104,101,97,112,108,97,115
- DB 116,0
+ DD 6
+ DB 108,97,115,116,98,112,115,0
  PUBLIC l0558
   align 4
 l0558:
- DD 16
- DB 111,108,100,104,101,97,112,108,111,119
- DB 101,114,98,111,117,110,100,0
+ DD 12
+ DB 98,112,115,108,111,119,101,114,98,111
+ DB 117,110,100,0
  PUBLIC l0559
   align 4
 l0559:
- DD 15
- DB 111,108,100,104,101,97,112,116,114,97
- DB 112,98,111,117,110,100,0,0
+ DD 10
+ DB 111,108,100,104,101,97,112,108,97,115
+ DB 116,0
  PUBLIC l0560
   align 4
 l0560:
  DD 16
- DB 111,108,100,104,101,97,112,117,112,112
+ DB 111,108,100,104,101,97,112,108,111,119
  DB 101,114,98,111,117,110,100,0
  PUBLIC l0561
   align 4
 l0561:
- DD 18
- DB 109,97,105,110,115,116,97,114,116,105
- DB 110,105,116,105,97,108,105,122,101,0
+ DD 15
+ DB 111,108,100,104,101,97,112,116,114,97
+ DB 112,98,111,117,110,100,0,0
  PUBLIC l0562
   align 4
 l0562:
- DD 6
- DB 110,101,120,116,98,112,115,0
+ DD 16
+ DB 111,108,100,104,101,97,112,117,112,112
+ DB 101,114,98,111,117,110,100,0
  PUBLIC l0563
   align 4
 l0563:
- DD 8
- DB 117,110,105,120,115,116,100,105,110,0
+ DD 18
+ DB 109,97,105,110,115,116,97,114,116,105
+ DB 110,105,116,105,97,108,105,122,101,0
  PUBLIC l0564
   align 4
 l0564:
- DD 9
- DB 117,110,105,120,115,116,100,111,117,116
- DB 0,0
+ DD 6
+ DB 110,101,120,116,98,112,115,0
  PUBLIC l0565
   align 4
 l0565:
- DD 9
- DB 117,110,105,120,115,116,100,101,114,114
- DB 0,0
+ DD 8
+ DB 117,110,105,120,115,116,100,105,110,0
  PUBLIC l0566
   align 4
 l0566:
- DD 7
- DB 117,110,105,120,110,117,108,108,0,0
+ DD 9
+ DB 117,110,105,120,115,116,100,111,117,116
+ DB 0,0
  PUBLIC l0567
   align 4
 l0567:
- DD 6
- DB 117,110,105,120,101,111,102,0
+ DD 9
+ DB 117,110,105,120,115,116,100,101,114,114
+ DB 0,0
  PUBLIC l0568
   align 4
 l0568:
- DD 6
- DB 117,110,105,120,116,116,121,0
+ DD 7
+ DB 117,110,105,120,110,117,108,108,0,0
  PUBLIC l0569
   align 4
 l0569:
- DD 16
- DB 42,42,42,109,117,115,116,45,98,101,45
- DB 110,105,108,42,42,42,0
+ DD 6
+ DB 117,110,105,120,101,111,102,0
  PUBLIC l0570
   align 4
 l0570:
- DD 20
- DB 42,42,42,109,117,115,116,45,98,101,45
- DB 110,105,108,45,116,111,111,42,42,42,0
+ DD 6
+ DB 117,110,105,120,116,116,121,0
  PUBLIC l0571
   align 4
 l0571:
- DD 7
- DB 42,102,97,115,116,99,97,114,0,0
+ DD 16
+ DB 42,42,42,109,117,115,116,45,98,101,45
+ DB 110,105,108,42,42,42,0
  PUBLIC l0572
   align 4
 l0572:
- DD 8
- DB 42,42,119,105,110,100,111,119,115,0
+ DD 20
+ DB 42,42,42,109,117,115,116,45,98,101,45
+ DB 110,105,108,45,116,111,111,42,42,42,0
  PUBLIC l0573
   align 4
 l0573:
- DD 13
- DB 38,38,105,110,105,116,45,116,97,98,108
- DB 101,115,49,0,0
+ DD 7
+ DB 42,102,97,115,116,99,97,114,0,0
  PUBLIC l0574
   align 4
 l0574:
- DD 10
- DB 98,114,117,99,104,95,98,114,117,99,104
- DB 0
+ DD 8
+ DB 42,42,119,105,110,100,111,119,115,0
  PUBLIC l0575
   align 4
 l0575:
- DD 9
- DB 110,101,120,116,115,121,109,98,111,108
- DB 0,0
+ DD 13
+ DB 38,38,105,110,105,116,45,116,97,98,108
+ DB 101,115,49,0,0
  PUBLIC l0576
   align 4
 l0576:
- DD 16
- DB 107,101,114,110,101,108,45,109,97,120
- DB 115,121,109,98,111,108,115,0
+ DD 10
+ DB 98,114,117,99,104,95,98,114,117,99,104
+ DB 0
  PUBLIC l0577
   align 4
 l0577:
- DD 5
- DB 115,121,109,118,97,108,0,0
+ DD 9
+ DB 110,101,120,116,115,121,109,98,111,108
+ DB 0,0
  PUBLIC l0578
   align 4
 l0578:
- DD 9
- DB 111,108,100,95,115,121,109,118,97,108
- DB 0,0
+ DD 16
+ DB 107,101,114,110,101,108,45,109,97,120
+ DB 115,121,109,98,111,108,115,0
  PUBLIC l0579
   align 4
 l0579:
  DD 5
- DB 115,121,109,102,110,99,0,0
+ DB 115,121,109,118,97,108,0,0
  PUBLIC l0580
   align 4
 l0580:
  DD 9
- DB 111,108,100,95,115,121,109,102,110,99
+ DB 111,108,100,95,115,121,109,118,97,108
  DB 0,0
  PUBLIC l0581
   align 4
 l0581:
  DD 5
- DB 115,121,109,112,114,112,0,0
+ DB 115,121,109,102,110,99,0,0
  PUBLIC l0582
   align 4
 l0582:
  DD 9
- DB 111,108,100,95,115,121,109,112,114,112
+ DB 111,108,100,95,115,121,109,102,110,99
  DB 0,0
  PUBLIC l0583
   align 4
 l0583:
- DD 8
- DB 110,101,119,115,121,109,118,97,108,0
+ DD 5
+ DB 115,121,109,112,114,112,0,0
  PUBLIC l0584
   align 4
 l0584:
- DD 8
- DB 38,38,115,121,109,99,111,112,121,0
+ DD 9
+ DB 111,108,100,95,115,121,109,112,114,112
+ DB 0,0
  PUBLIC l0585
   align 4
 l0585:
- DD 11
- DB 105,110,105,116,45,103,99,97,114,114,97
- DB 121,0,0
+ DD 4
+ DB 115,121,109,109,115,0
  PUBLIC l0586
   align 4
 l0586:
- DD 13
- DB 38,38,105,110,105,116,45,116,97,98,108
- DB 101,115,50,0,0
+ DD 8
+ DB 38,38,115,121,109,99,111,112,121,0
  PUBLIC l0587
   align 4
 l0587:
- DD 14
- DB 111,115,95,115,116,97,114,116,117,112
- DB 95,104,111,111,107,0
+ DD 11
+ DB 105,110,105,116,45,103,99,97,114,114,97
+ DB 121,0,0
  PUBLIC l0588
   align 4
 l0588:
- DD 12
- DB 38,116,105,109,101,45,99,111,110,116,114
- DB 111,108,0
+ DD 13
+ DB 38,38,105,110,105,116,45,116,97,98,108
+ DB 101,115,50,0,0
  PUBLIC l0589
   align 4
 l0589:
- DD 7
- DB 112,114,101,45,109,97,105,110,0,0
+ DD 14
+ DB 111,115,95,115,116,97,114,116,117,112
+ DB 95,104,111,111,107,0
  PUBLIC l0590
   align 4
 l0590:
- DD 15
- DB 101,120,105,116,45,119,105,116,104,45
- DB 115,116,97,116,117,115,0,0
+ DD 12
+ DB 38,116,105,109,101,45,99,111,110,116,114
+ DB 111,108,0
  PUBLIC l0591
   align 4
 l0591:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,101
- DB 120,105,116,0
+ DD 7
+ DB 112,114,101,45,109,97,105,110,0,0
  PUBLIC l0592
   align 4
 l0592:
- DD 8
- DB 95,112,115,108,95,109,97,105,110,0
+ DD 15
+ DB 101,120,105,116,45,119,105,116,104,45
+ DB 115,116,97,116,117,115,0,0
  PUBLIC l0593
   align 4
 l0593:
- DD 14
- DB 115,116,97,99,107,108,111,119,101,114
- DB 98,111,117,110,100,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,101
+ DB 120,105,116,0
  PUBLIC l0594
   align 4
 l0594:
- DD 3
- DB 97,114,103,99,0,0
+ DD 8
+ DB 95,112,115,108,95,109,97,105,110,0
  PUBLIC l0595
   align 4
 l0595:
- DD 3
- DB 97,114,103,118,0,0
+ DD 14
+ DB 115,116,97,99,107,108,111,119,101,114
+ DB 98,111,117,110,100,0
  PUBLIC l0596
   align 4
 l0596:
- DD 8
- DB 112,115,108,95,99,97,108,108,49,0
+ DD 3
+ DB 97,114,103,99,0,0
  PUBLIC l0597
   align 4
 l0597:
- DD 8
- DB 95,112,115,108,95,99,97,108,108,0
+ DD 3
+ DB 97,114,103,118,0,0
  PUBLIC l0598
   align 4
 l0598:
+ DD 8
+ DB 112,115,108,95,99,97,108,108,49,0
+ PUBLIC l0599
+  align 4
+l0599:
+ DD 8
+ DB 95,112,115,108,95,99,97,108,108,0
+ PUBLIC l0600
+  align 4
+l0600:
  DD 22
  DB 105,110,105,116,105,97,108,105,122,101
  DB 45,115,121,109,98,111,108,45,116,97,98
  DB 108,101,0
- PUBLIC l0599
+ PUBLIC l0601
   align 4
-l0599:
+l0601:
  DD 7
  DB 105,110,105,116,99,111,100,101,0,0
- PUBLIC l0600
+ PUBLIC l0602
   align 4
-l0600:
+l0602:
  DD 19
  DB 99,111,110,115,111,108,101,45,112,114
  DB 105,110,116,45,115,116,114,105,110,103
  DB 0,0
- PUBLIC l0601
-  align 4
-l0601:
- DD 14
- DB 99,111,110,115,111,108,101,45,110,101
- DB 119,108,105,110,101,0
- PUBLIC l0602
-  align 4
-l0602:
- DD 5
- DB 102,97,115,108,105,110,0,0
  PUBLIC l0603
   align 4
 l0603:
- DD 10
- DB 108,111,97,100,101,114,45,109,97,105,110
- DB 0
+ DD 14
+ DB 99,111,110,115,111,108,101,45,110,101
+ DB 119,108,105,110,101,0
  PUBLIC l0604
   align 4
 l0604:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,115
- DB 116,114,108,101,110,0
+ DD 5
+ DB 102,97,115,108,105,110,0,0
  PUBLIC l0605
   align 4
 l0605:
- DD 5
- DB 32,121,105,101,108,100,0,0
+ DD 10
+ DB 108,111,97,100,101,114,45,109,97,105,110
+ DB 0
  PUBLIC l0606
   align 4
 l0606:
- DD 7
- DB 117,110,105,120,112,117,116,115,0,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 116,114,108,101,110,0
  PUBLIC l0607
   align 4
 l0607:
- DD 7
- DB 117,110,105,120,112,117,116,110,0,0
+ DD 5
+ DB 32,121,105,101,108,100,0,0
  PUBLIC l0608
   align 4
 l0608:
- DD 19
- DB 99,111,110,115,111,108,101,45,112,114
- DB 105,110,116,45,110,117,109,98,101,114
- DB 0,0
+ DD 7
+ DB 117,110,105,120,112,117,116,115,0,0
  PUBLIC l0609
   align 4
 l0609:
  DD 7
- DB 117,110,105,120,112,117,116,99,0,0
+ DB 117,110,105,120,112,117,116,110,0,0
  PUBLIC l0610
   align 4
 l0610:
- DD 7
- DB 117,110,105,120,111,112,101,110,0,0
+ DD 19
+ DB 99,111,110,115,111,108,101,45,112,114
+ DB 105,110,116,45,110,117,109,98,101,114
+ DB 0,0
  PUBLIC l0611
   align 4
 l0611:
- DD 17
- DB 107,101,114,110,101,108,45,102,97,116
- DB 97,108,45,101,114,114,111,114,0,0
+ DD 7
+ DB 117,110,105,120,112,117,116,99,0,0
  PUBLIC l0612
   align 4
 l0612:
- DD 13
- DB 98,105,110,97,114,121,111,112,101,110
- DB 114,101,97,100,0,0
+ DD 7
+ DB 117,110,105,120,111,112,101,110,0,0
  PUBLIC l0613
   align 4
 l0613:
- DD 3
- DB 103,101,116,119,0,0
+ DD 17
+ DB 107,101,114,110,101,108,45,102,97,116
+ DB 97,108,45,101,114,114,111,114,0,0
  PUBLIC l0614
   align 4
 l0614:
- DD 9
- DB 98,105,110,97,114,121,114,101,97,100,0
- DB 0
+ DD 13
+ DB 98,105,110,97,114,121,111,112,101,110
+ DB 114,101,97,100,0,0
  PUBLIC l0615
   align 4
 l0615:
- DD 4
- DB 102,114,101,97,100,0
+ DD 3
+ DB 103,101,116,119,0,0
  PUBLIC l0616
   align 4
 l0616:
- DD 14
- DB 98,105,110,97,114,121,114,101,97,100,98
- DB 108,111,99,107,0
+ DD 9
+ DB 98,105,110,97,114,121,114,101,97,100,0
+ DB 0
  PUBLIC l0617
   align 4
 l0617:
- DD 5
- DB 102,99,108,111,115,101,0,0
+ DD 4
+ DB 102,114,101,97,100,0
  PUBLIC l0618
   align 4
 l0618:
- DD 10
- DB 98,105,110,97,114,121,99,108,111,115,101
- DB 0
+ DD 14
+ DB 98,105,110,97,114,121,114,101,97,100,98
+ DB 108,111,99,107,0
  PUBLIC l0619
   align 4
 l0619:
- DD 14
- DB 104,97,115,104,45,105,110,116,111,45,116
- DB 97,98,108,101,0
+ DD 5
+ DB 102,99,108,111,115,101,0,0
  PUBLIC l0620
   align 4
 l0620:
- DD 5
- DB 115,121,109,110,97,109,0,0
+ DD 10
+ DB 98,105,110,97,114,121,99,108,111,115,101
+ DB 0
  PUBLIC l0621
   align 4
 l0621:
- DD 11
- DB 115,104,111,119,45,110,101,119,45,105
- DB 100,115,0,0
+ DD 14
+ DB 104,97,115,104,45,105,110,116,111,45,116
+ DB 97,98,108,101,0
  PUBLIC l0622
   align 4
 l0622:
+ DD 5
+ DB 115,121,109,110,97,109,0,0
+ PUBLIC l0623
+  align 4
+l0623:
+ DD 11
+ DB 115,104,111,119,45,110,101,119,45,105
+ DB 100,115,0,0
+ PUBLIC l0624
+  align 4
+l0624:
  DD 26
  DB 115,101,97,114,99,104,45,115,116,114,105
  DB 110,103,45,102,111,114,45,99,104,97,114
  DB 97,99,116,101,114,0
- PUBLIC l0623
-  align 4
-l0623:
- DD 5
- DB 105,110,116,101,114,110,0,0
- PUBLIC l0624
-  align 4
-l0624:
- DD 5
- DB 115,117,98,115,101,113,0,0
  PUBLIC l0625
   align 4
 l0625:
- DD 12
- DB 102,97,115,108,105,110,45,105,110,116
- DB 101,114,110,0
+ DD 5
+ DB 105,110,116,101,114,110,0,0
  PUBLIC l0626
   align 4
 l0626:
+ DD 5
+ DB 115,117,98,115,101,113,0,0
+ PUBLIC l0627
+  align 4
+l0627:
+ DD 12
+ DB 102,97,115,108,105,110,45,105,110,116
+ DB 101,114,110,0
+ PUBLIC l0628
+  align 4
+l0628:
  DD 22
  DB 117,110,99,104,101,99,107,101,100,45,115
  DB 116,114,105,110,103,45,105,110,116,101
  DB 114,110,0
- PUBLIC l0627
-  align 4
-l0627:
- DD 3
- DB 103,116,105,100,0,0
- PUBLIC l0628
-  align 4
-l0628:
- DD 9
- DB 103,116,99,111,110,115,116,115,116,114
- DB 0,0
  PUBLIC l0629
   align 4
 l0629:
- DD 15
- DB 99,111,112,121,115,116,114,105,110,103
- DB 116,111,102,114,111,109,0,0
+ DD 3
+ DB 103,116,105,100,0,0
  PUBLIC l0630
   align 4
 l0630:
- DD 16
- DB 105,110,105,116,105,97,108,105,122,101
- DB 45,110,101,119,45,105,100,0
+ DD 9
+ DB 103,116,99,111,110,115,116,115,116,114
+ DB 0,0
  PUBLIC l0631
   align 4
 l0631:
- DD 12
- DB 104,97,115,104,45,102,117,110,99,116,105
- DB 111,110,0
+ DD 15
+ DB 99,111,112,121,115,116,114,105,110,103
+ DB 116,111,102,114,111,109,0,0
  PUBLIC l0632
   align 4
 l0632:
+ DD 16
+ DB 105,110,105,116,105,97,108,105,122,101
+ DB 45,110,101,119,45,105,100,0
+ PUBLIC l0633
+  align 4
+l0633:
+ DD 12
+ DB 104,97,115,104,45,102,117,110,99,116,105
+ DB 111,110,0
+ PUBLIC l0634
+  align 4
+l0634:
  DD 21
  DB 117,110,99,104,101,99,107,101,100,45,115
  DB 116,114,105,110,103,45,101,113,117,97
  DB 108,0,0
- PUBLIC l0633
-  align 4
-l0633:
- DD 11
- DB 112,108,97,110,116,117,110,98,111,117
- DB 110,100,0,0
- PUBLIC l0634
-  align 4
-l0634:
- DD 14
- DB 102,97,115,108,105,110,45,98,97,100,45
- DB 102,105,108,101,0
  PUBLIC l0635
   align 4
 l0635:
- DD 12
- DB 114,101,97,100,45,105,100,45,116,97,98
- DB 108,101,0
+ DD 11
+ DB 112,108,97,110,116,117,110,98,111,117
+ DB 110,100,0,0
  PUBLIC l0636
   align 4
 l0636:
- DD 4
- DB 103,116,98,112,115,0
+ DD 14
+ DB 102,97,115,108,105,110,45,98,97,100,45
+ DB 102,105,108,101,0
  PUBLIC l0637
   align 4
 l0637:
- DD 5
- DB 103,116,119,114,100,115,0,0
+ DD 12
+ DB 114,101,97,100,45,105,100,45,116,97,98
+ DB 108,101,0
  PUBLIC l0638
   align 4
 l0638:
- DD 16
- DB 100,111,45,114,101,108,111,99,97,116,105
- DB 111,110,45,110,101,119,0
+ DD 4
+ DB 103,116,98,112,115,0
  PUBLIC l0639
   align 4
 l0639:
- DD 12
- DB 100,111,45,114,101,108,111,99,97,116,105
- DB 111,110,0
+ DD 5
+ DB 103,116,119,114,100,115,0,0
  PUBLIC l0640
   align 4
 l0640:
- DD 12
- DB 97,100,100,114,101,115,115,97,112,112
- DB 108,121,48,0
+ DD 16
+ DB 100,111,45,114,101,108,111,99,97,116,105
+ DB 111,110,45,110,101,119,0
  PUBLIC l0641
   align 4
 l0641:
- DD 5
- DB 100,101,108,98,112,115,0,0
+ DD 12
+ DB 100,111,45,114,101,108,111,99,97,116,105
+ DB 111,110,0
  PUBLIC l0642
   align 4
 l0642:
- DD 13
- DB 99,111,100,101,45,98,97,115,101,45,104
- DB 97,99,107,0,0
+ DD 12
+ DB 97,100,100,114,101,115,115,97,112,112
+ DB 108,121,48,0
  PUBLIC l0643
   align 4
 l0643:
- DD 12
- DB 114,101,108,111,99,97,116,101,45,119,111
- DB 114,100,0
+ DD 5
+ DB 100,101,108,98,112,115,0,0
  PUBLIC l0644
   align 4
 l0644:
- DD 11
- DB 114,101,108,111,99,97,116,101,45,105,110
- DB 102,0,0
+ DD 13
+ DB 99,111,100,101,45,98,97,115,101,45,104
+ DB 97,99,107,0,0
  PUBLIC l0645
   align 4
 l0645:
- DD 18
- DB 114,101,108,111,99,97,116,101,45,114,105
- DB 103,104,116,45,104,97,108,102,0
+ DD 12
+ DB 114,101,108,111,99,97,116,101,45,119,111
+ DB 114,100,0
  PUBLIC l0646
   align 4
 l0646:
- DD 17
- DB 99,111,109,112,117,116,101,45,114,101
- DB 108,111,99,97,116,105,111,110,0,0
+ DD 11
+ DB 114,101,108,111,99,97,116,101,45,105,110
+ DB 102,0,0
  PUBLIC l0647
   align 4
 l0647:
- DD 17
- DB 108,111,99,97,108,45,116,111,45,103,108
- DB 111,98,97,108,45,105,100,0,0
+ DD 18
+ DB 114,101,108,111,99,97,116,101,45,114,105
+ DB 103,104,116,45,104,97,108,102,0
  PUBLIC l0648
   align 4
 l0648:
  DD 17
- DB 114,101,108,111,99,97,116,101,45,102,97
- DB 115,116,45,99,97,108,108,0,0
+ DB 99,111,109,112,117,116,101,45,114,101
+ DB 108,111,99,97,116,105,111,110,0,0
  PUBLIC l0649
   align 4
 l0649:
- DD 3
- DB 112,117,116,100,0,0
+ DD 17
+ DB 108,111,99,97,108,45,116,111,45,103,108
+ DB 111,98,97,108,45,105,100,0,0
  PUBLIC l0650
   align 4
 l0650:
- DD 7
- DB 112,117,116,101,110,116,114,121,0,0
+ DD 17
+ DB 114,101,108,111,99,97,116,101,45,102,97
+ DB 115,116,45,99,97,108,108,0,0
  PUBLIC l0651
   align 4
 l0651:
- DD 14
- DB 103,116,98,112,115,45,110,105,108,45,101
- DB 114,114,111,114,0
+ DD 3
+ DB 112,117,116,100,0,0
  PUBLIC l0652
   align 4
 l0652:
+ DD 7
+ DB 112,117,116,101,110,116,114,121,0,0
+ PUBLIC l0653
+  align 4
+l0653:
+ DD 14
+ DB 103,116,98,112,115,45,110,105,108,45,101
+ DB 114,114,111,114,0
+ PUBLIC l0654
+  align 4
+l0654:
  DD 19
  DB 116,114,121,45,111,116,104,101,114,45
  DB 98,112,115,45,115,112,97,99,101,115,0
  DB 0
- PUBLIC l0653
-  align 4
-l0653:
- DD 3
- DB 103,101,116,100,0,0
- PUBLIC l0654
-  align 4
-l0654:
- DD 7
- DB 115,116,100,101,114,114,111,114,0,0
  PUBLIC l0655
   align 4
 l0655:
- DD 15
- DB 107,110,111,119,110,45,102,114,101,101
- DB 45,115,112,97,99,101,0,0
+ DD 3
+ DB 103,101,116,100,0,0
  PUBLIC l0656
   align 4
 l0656:
- DD 10
- DB 114,101,97,108,45,103,116,104,101,97,112
- DB 0
+ DD 7
+ DB 115,116,100,101,114,114,111,114,0,0
  PUBLIC l0657
   align 4
 l0657:
- DD 5
- DB 103,116,104,101,97,112,0,0
+ DD 15
+ DB 107,110,111,119,110,45,102,114,101,101
+ DB 45,115,112,97,99,101,0,0
  PUBLIC l0658
   align 4
 l0658:
- DD 12
- DB 103,101,116,45,104,101,97,112,45,116,114
- DB 97,112,0
+ DD 10
+ DB 114,101,97,108,45,103,116,104,101,97,112
+ DB 0
  PUBLIC l0659
   align 4
 l0659:
- DD 6
- DB 114,101,99,108,97,105,109,0
+ DD 5
+ DB 103,116,104,101,97,112,0,0
  PUBLIC l0660
   align 4
 l0660:
- DD 4
- DB 103,116,115,116,114,0
+ DD 12
+ DB 103,101,116,45,104,101,97,112,45,116,114
+ DB 97,112,0
  PUBLIC l0661
   align 4
 l0661:
- DD 3
- DB 99,111,110,115,0,0
+ DD 6
+ DB 114,101,99,108,97,105,109,0
  PUBLIC l0662
   align 4
 l0662:
- DD 10
- DB 105,110,116,101,114,114,111,103,97,116
- DB 101,0
+ DD 4
+ DB 103,116,115,116,114,0
  PUBLIC l0663
   align 4
 l0663:
- DD 5
- DB 109,111,100,105,102,121,0,0
+ DD 3
+ DB 99,111,110,115,0,0
  PUBLIC l0664
   align 4
 l0664:
- DD 12
- DB 117,110,99,104,101,99,107,101,100,45,112
- DB 117,116,0
+ DD 10
+ DB 105,110,116,101,114,114,111,103,97,116
+ DB 101,0
  PUBLIC l0665
   align 4
 l0665:
- DD 2
- DB 112,117,116,0
+ DD 5
+ DB 109,111,100,105,102,121,0,0
  PUBLIC l0666
   align 4
 l0666:
- DD 13
+ DD 12
  DB 117,110,99,104,101,99,107,101,100,45,112
- DB 114,111,112,0,0
+ DB 117,116,0
  PUBLIC l0667
   align 4
 l0667:
- DD 4
- DB 97,116,115,111,99,0
+ DD 2
+ DB 112,117,116,0
  PUBLIC l0668
   align 4
 l0668:
- DD 16
- DB 117,110,99,104,101,99,107,101,100,45,115
- DB 101,116,112,114,111,112,0
+ DD 13
+ DB 117,110,99,104,101,99,107,101,100,45,112
+ DB 114,111,112,0,0
  PUBLIC l0669
   align 4
 l0669:
- DD 8
- DB 99,111,100,101,45,112,117,116,100,0
+ DD 4
+ DB 97,116,115,111,99,0
  PUBLIC l0670
   align 4
 l0670:
- DD 15
- DB 112,108,97,110,116,99,111,100,101,112
- DB 111,105,110,116,101,114,0,0
+ DD 16
+ DB 117,110,99,104,101,99,107,101,100,45,115
+ DB 101,116,112,114,111,112,0
  PUBLIC l0671
   align 4
 l0671:
- DD 3
- DB 101,120,112,114,0,0
+ DD 8
+ DB 99,111,100,101,45,112,117,116,100,0
  PUBLIC l0672
   align 4
 l0672:
- DD 3
- DB 116,121,112,101,0,0
+ DD 15
+ DB 112,108,97,110,116,99,111,100,101,112
+ DB 111,105,110,116,101,114,0,0
  PUBLIC l0673
   align 4
 l0673:
- DD 5
- DB 102,108,117,105,100,49,0,0
+ DD 3
+ DB 101,120,112,114,0,0
  PUBLIC l0674
   align 4
 l0674:
- DD 4
- DB 102,108,117,105,100,0
+ DD 3
+ DB 116,121,112,101,0,0
  PUBLIC l0675
   align 4
 l0675:
- DD 6
- DB 118,97,114,116,121,112,101,0
+ DD 5
+ DB 102,108,117,105,100,49,0,0
  PUBLIC l0676
   align 4
 l0676:
- DD 8
- DB 99,111,110,115,116,97,110,116,63,0
+ DD 4
+ DB 102,108,117,105,100,0
  PUBLIC l0677
   align 4
 l0677:
- DD 15
- DB 42,100,101,102,105,110,101,45,99,111,110
- DB 115,116,97,110,116,0,0
+ DD 6
+ DB 118,97,114,116,121,112,101,0
  PUBLIC l0678
   align 4
 l0678:
- DD 17
- DB 116,101,114,109,105,110,97,108,45,105
- DB 110,116,101,114,114,117,112,116,0,0
+ DD 8
+ DB 99,111,110,115,116,97,110,116,63,0
  PUBLIC l0679
   align 4
 l0679:
- DD 6
- DB 119,104,97,116,115,117,112,0
+ DD 15
+ DB 42,100,101,102,105,110,101,45,99,111,110
+ DB 115,116,97,110,116,0,0
  PUBLIC l0680
   align 4
 l0680:
- DD 5
- DB 103,101,116,112,105,100,0,0
+ DD 17
+ DB 116,101,114,109,105,110,97,108,45,105
+ DB 110,116,101,114,114,117,112,116,0,0
  PUBLIC l0681
   align 4
 l0681:
- DD 5
- DB 101,99,104,111,111,110,0,0
+ DD 6
+ DB 119,104,97,116,115,117,112,0
  PUBLIC l0682
   align 4
 l0682:
- DD 6
- DB 101,99,104,111,111,102,102,0
+ DD 5
+ DB 103,101,116,112,105,100,0,0
  PUBLIC l0683
   align 4
 l0683:
+ DD 5
+ DB 101,99,104,111,111,110,0,0
+ PUBLIC l0684
+  align 4
+l0684:
+ DD 6
+ DB 101,99,104,111,111,102,102,0
+ PUBLIC l0685
+  align 4
+l0685:
  DD 26
  DB 101,120,116,101,114,110,97,108,95,99,104
  DB 97,114,115,105,110,105,110,112,117,116
  DB 98,117,102,102,101,114,0
- PUBLIC l0684
+ PUBLIC l0686
   align 4
-l0684:
+l0686:
  DD 19
  DB 102,108,117,115,104,115,116,100,111,117
  DB 116,112,117,116,98,117,102,102,101,114
  DB 0,0
- PUBLIC l0685
+ PUBLIC l0687
   align 4
-l0685:
+l0687:
  DD 27
  DB 101,120,116,101,114,110,97,108,95,117
  DB 115,101,114,95,104,111,109,101,100,105
  DB 114,95,115,116,114,105,110,103,0,0
- PUBLIC l0686
-  align 4
-l0686:
- DD 12
- DB 97,108,116,101,114,104,101,97,112,115
- DB 105,122,101,0
- PUBLIC l0687
-  align 4
-l0687:
- DD 14
- DB 97,108,108,111,99,97,116,101,109,111,114
- DB 101,98,112,115,0
  PUBLIC l0688
   align 4
 l0688:
- DD 14
- DB 103,101,116,95,102,105,108,101,95,115
- DB 116,97,116,117,115,0
+ DD 12
+ DB 97,108,116,101,114,104,101,97,112,115
+ DB 105,122,101,0
  PUBLIC l0689
   align 4
 l0689:
  DD 14
- DB 111,115,95,99,108,101,97,110,117,112,95
- DB 104,111,111,107,0
+ DB 97,108,108,111,99,97,116,101,109,111,114
+ DB 101,98,112,115,0
  PUBLIC l0690
   align 4
 l0690:
- DD 13
- DB 101,120,116,101,114,110,97,108,95,97,108
- DB 97,114,109,0,0
+ DD 14
+ DB 103,101,116,95,102,105,108,101,95,115
+ DB 116,97,116,117,115,0
  PUBLIC l0691
   align 4
 l0691:
  DD 14
- DB 101,120,116,101,114,110,97,108,95,117
- DB 97,108,97,114,109,0
+ DB 111,115,95,99,108,101,97,110,117,112,95
+ DB 104,111,111,107,0
  PUBLIC l0692
   align 4
 l0692:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,116
- DB 105,109,101,0
+ DD 13
+ DB 101,120,116,101,114,110,97,108,95,97,108
+ DB 97,114,109,0,0
  PUBLIC l0693
   align 4
 l0693:
- DD 12
- DB 101,120,116,101,114,110,97,108,95,116
- DB 105,109,99,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,117
+ DB 97,108,97,114,109,0
  PUBLIC l0694
   align 4
 l0694:
  DD 12
- DB 101,120,116,101,114,110,97,108,95,115
- DB 116,97,116,0
+ DB 101,120,116,101,114,110,97,108,95,116
+ DB 105,109,101,0
  PUBLIC l0695
   align 4
 l0695:
  DD 12
- DB 101,120,116,101,114,110,97,108,95,108
- DB 105,110,107,0
+ DB 101,120,116,101,114,110,97,108,95,116
+ DB 105,109,99,0
  PUBLIC l0696
   align 4
 l0696:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,117
- DB 110,108,105,110,107,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 116,97,116,0
  PUBLIC l0697
   align 4
 l0697:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,115
- DB 101,116,101,110,118,0
+ DD 12
+ DB 101,120,116,101,114,110,97,108,95,108
+ DB 105,110,107,0
  PUBLIC l0698
   align 4
 l0698:
  DD 14
- DB 101,120,116,101,114,110,97,108,95,103
- DB 101,116,101,110,118,0
+ DB 101,120,116,101,114,110,97,108,95,117
+ DB 110,108,105,110,107,0
  PUBLIC l0699
   align 4
 l0699:
- DD 6
- DB 117,120,102,108,111,97,116,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 101,116,101,110,118,0
  PUBLIC l0700
   align 4
 l0700:
- DD 4
- DB 117,120,102,105,120,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,103
+ DB 101,116,101,110,118,0
  PUBLIC l0701
   align 4
 l0701:
- DD 7
- DB 117,120,97,115,115,105,103,110,0,0
+ DD 6
+ DB 117,120,102,108,111,97,116,0
  PUBLIC l0702
   align 4
 l0702:
- DD 6
- DB 117,120,112,108,117,115,50,0
+ DD 4
+ DB 117,120,102,105,120,0
  PUBLIC l0703
   align 4
 l0703:
- DD 11
- DB 117,120,100,105,102,102,101,114,101,110
- DB 99,101,0,0
+ DD 7
+ DB 117,120,97,115,115,105,103,110,0,0
  PUBLIC l0704
   align 4
 l0704:
- DD 7
- DB 117,120,116,105,109,101,115,50,0,0
+ DD 6
+ DB 117,120,112,108,117,115,50,0
  PUBLIC l0705
   align 4
 l0705:
- DD 9
- DB 117,120,113,117,111,116,105,101,110,116
- DB 0,0
+ DD 11
+ DB 117,120,100,105,102,102,101,114,101,110
+ DB 99,101,0,0
  PUBLIC l0706
   align 4
 l0706:
- DD 9
- DB 117,120,103,114,101,97,116,101,114,112
- DB 0,0
+ DD 7
+ DB 117,120,116,105,109,101,115,50,0,0
  PUBLIC l0707
   align 4
 l0707:
- DD 6
- DB 117,120,108,101,115,115,112,0
+ DD 9
+ DB 117,120,113,117,111,116,105,101,110,116
+ DB 0,0
  PUBLIC l0708
   align 4
 l0708:
- DD 11
- DB 117,120,119,114,105,116,101,102,108,111
- DB 97,116,0,0
+ DD 9
+ DB 117,120,103,114,101,97,116,101,114,112
+ DB 0,0
  PUBLIC l0709
   align 4
 l0709:
- DD 15
- DB 117,117,120,100,111,117,98,108,101,116
- DB 111,102,108,111,97,116,0,0
+ DD 6
+ DB 117,120,108,101,115,115,112,0
  PUBLIC l0710
   align 4
 l0710:
- DD 15
- DB 117,117,120,102,108,111,97,116,116,111
- DB 100,111,117,98,108,101,0,0
+ DD 11
+ DB 117,120,119,114,105,116,101,102,108,111
+ DB 97,116,0,0
  PUBLIC l0711
   align 4
 l0711:
- DD 5
- DB 117,117,120,115,105,110,0,0
+ DD 15
+ DB 117,117,120,100,111,117,98,108,101,116
+ DB 111,102,108,111,97,116,0,0
  PUBLIC l0712
   align 4
 l0712:
- DD 5
- DB 117,117,120,99,111,115,0,0
+ DD 15
+ DB 117,117,120,102,108,111,97,116,116,111
+ DB 100,111,117,98,108,101,0,0
  PUBLIC l0713
   align 4
 l0713:
  DD 5
- DB 117,117,120,116,97,110,0,0
+ DB 117,117,120,115,105,110,0,0
  PUBLIC l0714
   align 4
 l0714:
- DD 6
- DB 117,117,120,97,115,105,110,0
+ DD 5
+ DB 117,117,120,99,111,115,0,0
  PUBLIC l0715
   align 4
 l0715:
- DD 6
- DB 117,117,120,97,99,111,115,0
+ DD 5
+ DB 117,117,120,116,97,110,0,0
  PUBLIC l0716
   align 4
 l0716:
  DD 6
- DB 117,117,120,97,116,97,110,0
+ DB 117,117,120,97,115,105,110,0
  PUBLIC l0717
   align 4
 l0717:
  DD 6
- DB 117,117,120,115,113,114,116,0
+ DB 117,117,120,97,99,111,115,0
  PUBLIC l0718
   align 4
 l0718:
- DD 5
- DB 117,117,120,101,120,112,0,0
+ DD 6
+ DB 117,117,120,97,116,97,110,0
  PUBLIC l0719
   align 4
 l0719:
- DD 5
- DB 117,117,120,108,111,103,0,0
+ DD 6
+ DB 117,117,120,115,113,114,116,0
  PUBLIC l0720
   align 4
 l0720:
- DD 7
- DB 117,117,120,97,116,97,110,50,0,0
+ DD 5
+ DB 117,117,120,101,120,112,0,0
  PUBLIC l0721
   align 4
 l0721:
- DD 11
- DB 101,120,116,101,114,110,97,108,95,112
- DB 119,100,0,0
+ DD 5
+ DB 117,117,120,108,111,103,0,0
  PUBLIC l0722
   align 4
 l0722:
- DD 10
- DB 115,117,110,51,95,115,105,103,115,101
- DB 116,0
+ DD 7
+ DB 117,117,120,97,116,97,110,50,0,0
  PUBLIC l0723
   align 4
 l0723:
- DD 7
- DB 115,105,103,114,101,108,115,101,0,0
+ DD 11
+ DB 101,120,116,101,114,110,97,108,95,112
+ DB 119,100,0,0
  PUBLIC l0724
   align 4
 l0724:
- DD 5
- DB 117,110,101,120,101,99,0,0
+ DD 10
+ DB 115,117,110,51,95,115,105,103,115,101
+ DB 116,0
  PUBLIC l0725
   align 4
 l0725:
- DD 10
- DB 117,110,105,120,99,108,101,97,114,105
- DB 111,0
+ DD 7
+ DB 115,105,103,114,101,108,115,101,0,0
  PUBLIC l0726
   align 4
 l0726:
- DD 15
- DB 101,120,112,97,110,100,95,102,105,108
- DB 101,95,110,97,109,101,0,0
+ DD 5
+ DB 117,110,101,120,101,99,0,0
  PUBLIC l0727
   align 4
 l0727:
- DD 5
- DB 117,110,105,120,99,100,0,0
+ DD 10
+ DB 117,110,105,120,99,108,101,97,114,105
+ DB 111,0
  PUBLIC l0728
   align 4
 l0728:
- DD 8
- DB 117,110,105,120,102,114,101,97,100,0
+ DD 15
+ DB 101,120,112,97,110,100,95,102,105,108
+ DB 101,95,110,97,109,101,0,0
  PUBLIC l0729
   align 4
 l0729:
- DD 8
- DB 117,110,105,120,102,112,117,116,99,0
+ DD 5
+ DB 117,110,105,120,99,100,0,0
  PUBLIC l0730
   align 4
 l0730:
  DD 8
- DB 117,110,105,120,102,103,101,116,99,0
+ DB 117,110,105,120,102,114,101,97,100,0
  PUBLIC l0731
   align 4
 l0731:
  DD 8
- DB 117,110,105,120,102,103,101,116,115,0
+ DB 117,110,105,120,102,112,117,116,99,0
  PUBLIC l0732
   align 4
 l0732:
- DD 9
- DB 117,110,105,120,102,119,114,105,116,101
- DB 0,0
+ DD 8
+ DB 117,110,105,120,102,103,101,116,99,0
  PUBLIC l0733
   align 4
 l0733:
- DD 9
- DB 117,110,105,120,102,102,108,117,115,104
- DB 0,0
+ DD 8
+ DB 117,110,105,120,102,103,101,116,115,0
  PUBLIC l0734
   align 4
 l0734:
- DD 4
- DB 99,116,105,109,101,0
+ DD 9
+ DB 117,110,105,120,102,119,114,105,116,101
+ DB 0,0
  PUBLIC l0735
   align 4
 l0735:
- DD 14
- DB 101,120,116,101,114,110,97,108,95,115
- DB 121,115,116,101,109,0
+ DD 9
+ DB 117,110,105,120,102,102,108,117,115,104
+ DB 0,0
  PUBLIC l0736
   align 4
 l0736:
  DD 4
- DB 102,111,112,101,110,0
+ DB 99,116,105,109,101,0
  PUBLIC l0737
   align 4
 l0737:
- DD 4
- DB 102,115,101,101,107,0
+ DD 14
+ DB 101,120,116,101,114,110,97,108,95,115
+ DB 121,115,116,101,109,0
  PUBLIC l0738
   align 4
 l0738:
- DD 7
- DB 99,108,101,97,114,101,114,114,0,0
+ DD 4
+ DB 102,111,112,101,110,0
  PUBLIC l0739
   align 4
 l0739:
- DD 3
- DB 112,117,116,119,0,0
+ DD 4
+ DB 102,115,101,101,107,0
  PUBLIC l0740
   align 4
 l0740:
- DD 5
- DB 115,105,103,110,97,108,0,0
+ DD 7
+ DB 99,108,101,97,114,101,114,114,0,0
  PUBLIC l0741
   align 4
 l0741:
- DD 4
- DB 115,108,101,101,112,0
+ DD 3
+ DB 112,117,116,119,0,0
  PUBLIC l0742
   align 4
 l0742:
- DD 11
- DB 105,101,101,101,95,104,97,110,100,108
- DB 101,114,0,0
+ DD 5
+ DB 115,105,103,110,97,108,0,0
  PUBLIC l0743
   align 4
 l0743:
- DD 9
- DB 105,101,101,101,95,102,108,97,103,115
- DB 0,0
+ DD 4
+ DB 115,108,101,101,112,0
  PUBLIC l0744
   align 4
 l0744:
- DD 9
- DB 115,101,116,108,105,110,101,98,117,102
- DB 0,0
+ DD 11
+ DB 105,101,101,101,95,104,97,110,100,108
+ DB 101,114,0,0
  PUBLIC l0745
   align 4
 l0745:
- DD 5
- DB 112,114,111,102,105,108,0,0
+ DD 9
+ DB 105,101,101,101,95,102,108,97,103,115
+ DB 0,0
  PUBLIC l0746
   align 4
 l0746:
- DD 6
- DB 100,97,116,101,116,97,103,0
+ DD 9
+ DB 115,101,116,108,105,110,101,98,117,102
+ DB 0,0
  PUBLIC l0747
   align 4
 l0747:
- DD 8
- DB 112,115,108,108,95,99,97,108,108,0
+ DD 4
+ DB 112,111,112,101,110,0
  PUBLIC l0748
   align 4
 l0748:
- DD 11
- DB 117,110,105,120,45,112,114,111,102,105
- DB 108,101,0,0
+ DD 5
+ DB 112,99,108,111,115,101,0,0
  PUBLIC l0749
   align 4
 l0749:
- DD 4
- DB 102,112,117,116,99,0
+ DD 5
+ DB 112,114,111,102,105,108,0,0
  PUBLIC l0750
   align 4
 l0750:
- DD 4
- DB 102,103,101,116,99,0
+ DD 6
+ DB 100,97,116,101,116,97,103,0
  PUBLIC l0751
   align 4
 l0751:
- DD 4
- DB 102,103,101,116,115,0
+ DD 8
+ DB 112,115,108,108,95,99,97,108,108,0
  PUBLIC l0752
   align 4
 l0752:
- DD 5
- DB 102,119,114,105,116,101,0,0
+ DD 11
+ DB 117,110,105,120,45,112,114,111,102,105
+ DB 108,101,0,0
  PUBLIC l0753
   align 4
 l0753:
- DD 5
- DB 102,102,108,117,115,104,0,0
+ DD 4
+ DB 102,112,117,116,99,0
  PUBLIC l0754
   align 4
 l0754:
- DD 13
- DB 112,108,97,110,116,117,110,98,111,117
- DB 110,100,45,49,0,0
+ DD 4
+ DB 102,103,101,116,99,0
  PUBLIC l0755
   align 4
 l0755:
- DD 17
- DB 112,108,97,110,116,99,111,100,101,112
- DB 111,105,110,116,101,114,45,49,0,0
+ DD 4
+ DB 102,103,101,116,115,0
  PUBLIC l0756
   align 4
 l0756:
- DD 16
- DB 112,108,97,110,116,108,97,109,98,100,97
- DB 108,105,110,107,45,49,0
+ DD 5
+ DB 102,119,114,105,116,101,0,0
  PUBLIC l0757
   align 4
 l0757:
- DD 14
- DB 112,108,97,110,116,108,97,109,98,100,97
- DB 108,105,110,107,0
+ DD 5
+ DB 102,102,108,117,115,104,0,0
  PUBLIC l0758
   align 4
 l0758:
- DD 7
- DB 98,105,116,116,97,98,108,101,0,0
+ DD 13
+ DB 112,108,97,110,116,117,110,98,111,117
+ DB 110,100,45,49,0,0
  PUBLIC l0759
   align 4
 l0759:
- DD 16
- DB 117,110,100,101,102,105,110,101,100,102
- DB 117,110,99,116,105,111,110,0
+ DD 17
+ DB 112,108,97,110,116,99,111,100,101,112
+ DB 111,105,110,116,101,114,45,49,0,0
  PUBLIC l0760
   align 4
 l0760:
+ DD 16
+ DB 112,108,97,110,116,108,97,109,98,100,97
+ DB 108,105,110,107,45,49,0
+ PUBLIC l0761
+  align 4
+l0761:
+ DD 14
+ DB 112,108,97,110,116,108,97,109,98,100,97
+ DB 108,105,110,107,0
+ PUBLIC l0762
+  align 4
+l0762:
+ DD 7
+ DB 98,105,116,116,97,98,108,101,0,0
+ PUBLIC l0763
+  align 4
+l0763:
+ DD 16
+ DB 117,110,100,101,102,105,110,101,100,102
+ DB 117,110,99,116,105,111,110,0
+ PUBLIC l0764
+  align 4
+l0764:
  DD 20
  DB 117,110,100,101,102,105,110,101,100,102
  DB 117,110,99,116,105,111,110,45,97,117,120
  DB 0
- PUBLIC l0761
+ PUBLIC l0765
   align 4
-l0761:
+l0765:
  DD 28
  DB 99,111,109,112,105,108,101,100,99,97,108
  DB 108,105,110,103,105,110,116,101,114,112
  DB 114,101,116,101,100,97,117,120,0
- PUBLIC l0762
+ PUBLIC l0766
   align 4
-l0762:
+l0766:
  DD 25
  DB 99,111,109,112,105,108,101,100,99,97,108
  DB 108,105,110,103,105,110,116,101,114,112
  DB 114,101,116,101,100,0,0
- PUBLIC l0763
+ PUBLIC l0767
   align 4
-l0763:
+l0767:
  DD 8
  DB 99,111,100,101,102,111,114,109,42,0
- PUBLIC l0764
+ PUBLIC l0768
   align 4
-l0764:
+l0768:
  DD 14
  DB 103,101,116,102,99,111,100,101,112,111
  DB 105,110,116,101,114,0
- PUBLIC l0765
+ PUBLIC l0769
   align 4
-l0765:
+l0769:
  DD 9
  DB 108,97,115,116,107,101,114,110,101,108
  DB 0,0
- PUBLIC l0766
+ PUBLIC l0770
   align 4
-l0766:
+l0770:
  DD 11
  DB 99,111,100,101,97,100,100,114,101,115
  DB 115,112,0,0

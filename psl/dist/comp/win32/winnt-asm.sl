@@ -145,7 +145,7 @@
 
 (de CodeFileHeader nil                  % Pure Code Segment
   (CodePrintF "        .386%n")
-  (CodePrintF "DGROUP   group   _DATA, _BSS%n")
+%  (CodePrintF "DGROUP   group   _DATA, _BSS%n")
   (CodePrintF "_DATA    segment dword public 'DATA'%n")
   (CodePrintF "       include mhdr.asm %n")
   (CodePrintF "   ALIGN 4%n")
@@ -155,7 +155,8 @@
   (CodePrintF "_BSS     ends%n%n")
   (CodePrintF "_TEXT    segment dword public 'CODE'%n")
   (CodePrintF "         assume  CS:_TEXT%n")
-  (CodePrintF "         assume  DS:DGROUP%n")
+%  (CodePrintF "         assume  DS:DGROUP%n")
+  (CodePrintF "         assume  DS:_DATA%n")
   (setq DataProcState* 'data) 
   (setq ForeignExternList* nil))
 		

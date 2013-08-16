@@ -11,7 +11,7 @@
 
 (on fast-integers)
 
-(compiletime (load "c:/psl/nonkern/dos386/lap/io-decls"))
+(compiletime (load "$pnkl/io-decls"))
 
 (de pipe-open(cmd type)
 
@@ -71,15 +71,18 @@
 
 (fluid '(**windows))
 
-(compiletime (load include))
-(compiletime (include "C:/psl/kernel/dos386/windows/psllcall.h"))
+%(compiletime (load include))
+%(compiletime (include "C:/psl/kernel/dos386/windows/psllcall.h"))
+
+(compiletime (progn
+
+  (define-constant PIPE_OPEN   33)
+  (define-constant PIPE_CLOSE  34)
+))
 
 (de syspipeopen(name type)
  (let (p) 
   (cond ((not (stringp name))(nonstringerror name 'pipe-open))
-	((and (not (weq **windows 1))
-	      (not (equal (getenv "OS") "Windows NT")))
-	 (stderror "pipes only under windows"))
 	(t 
 	  (setq p (psll-call (strbase (strinf name))
 		      0 0
