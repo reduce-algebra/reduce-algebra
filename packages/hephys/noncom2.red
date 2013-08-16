@@ -461,6 +461,7 @@ symbolic procedure ordp(u,v); % modified
    % ordering of numbers is left as default
    if null u then t
    else if null v then nil
+   else if vectorp u then if vectorp v then ordpv(u,v) else atom v
    else if atom u then
            if atom v then
               if numberp u then
@@ -470,7 +471,10 @@ symbolic procedure ordp(u,v); % modified
                    else orderp(u,v)
            else t
     else if atom v then nil
-    else if car u=car v then ordp(cdr u,cdr v)
+    else if car u=car v then ordpl(cdr u,cdr v)
+    else if flagp(car u,'noncom)
+     then if flagp(car v,'noncom) then ordp(car u, car v) else t
+    else if flagp(car v,'noncom) then nil
     else ordp(car u,car v);
 
 symbolic procedure reordop(u,v);  %changed
