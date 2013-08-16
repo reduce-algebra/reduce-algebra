@@ -58,6 +58,16 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <float.h>
+
+
+#define PROTECT_FP_CALL(stmt)  {		\
+  unsigned int cw; \
+  _clearfp();  \
+   cw = _controlfp(~0, MCW_EM); /* Restore default error handling */ 	\
+  stmt; \
+  _controlfp(cw, MCW_EM);  /* Restore previous state */ 	\
+}
 
 
 /* Tag( uxfloat )
@@ -201,59 +211,59 @@ uuxfloattodouble (flt,dbl)
 uuxsin (r, x)
      double *r, *x;
 {
-    *r = sin( *x );
+  PROTECT_FP_CALL(*r = sin( *x ) )
 }
 
 uuxcos (r, x)
      double *r, *x;
 {
-    *r = cos( *x );
+  PROTECT_FP_CALL(*r = cos( *x ))
 }
 
 uuxtan (r, x)
      double *r, *x;
 {
-    *r = tan( *x );
+  PROTECT_FP_CALL(*r = tan( *x ))
 }
 
 uuxasin (r, x)
      double *r, *x;
 {
-    *r = asin( *x );
+  PROTECT_FP_CALL(*r = asin( *x ))
 }
 
 uuxacos (r, x)
      double *r, *x;
 {
-    *r = acos( *x );
+  PROTECT_FP_CALL(*r = acos( *x ))
 }
 
 uuxatan (r, x)
      double *r, *x;
 {
-    *r = atan( *x );
+  PROTECT_FP_CALL(*r = atan( *x ))
 }
 
 uuxsqrt (r, x)
      double *r, *x;
 {
-    *r = sqrt( *x );
+  PROTECT_FP_CALL(*r = sqrt( *x ))
 }
 
 uuxexp (r, x)
      double *r, *x;
 {
-    *r = exp( *x );
+  PROTECT_FP_CALL(*r = exp( *x ))
 }
 
 uuxlog (r, x)
      double *r, *x;
 {
-    *r = log( *x );
+  PROTECT_FP_CALL(*r = log( *x ))
 }
 
 uuxatan2 (r, y, x)
      double *r, *y, *x;
 {
-    *r = atan2( *y, *x );
+  PROTECT_FP_CALL(*r = atan2( *y, *x ))
 }

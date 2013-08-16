@@ -216,11 +216,19 @@ void init_fp()
 
         _clearfp();	// always call _clearfp before setting the control word
 
-	cw = _controlfp(0, 0); //Get the default control word
+	//cw = _controlfp(0, 0); //Get the default control word
 
-	cw &=~(EM_OVERFLOW|EM_ZERODIVIDE|EM_INVALID);
+	//	printf("Control word: %08x\n",cw);
+	
+	cw = ~(EM_OVERFLOW|EM_ZERODIVIDE|EM_INVALID);
+
+	//	printf("New mask: %08x\n",cw);
 
 	cwOriginal = _controlfp(cw, MCW_EM); //Set it.
+
+	// cw = _controlfp(0, 0); //Get the default control word
+
+        // printf("Control word: %08x\n",cw);
 }
 
 #if 0
