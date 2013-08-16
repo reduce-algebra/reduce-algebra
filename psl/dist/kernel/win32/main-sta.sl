@@ -254,7 +254,7 @@
   (setq bruch_bruch 0)
   (setq kernel-maxsymbols nextsymbol)
   (setq old_symval symval old_symfnc symfnc old_symprp symprp)
-  (setq symval (wplus2 symnam (times2 maxsymbols addressingunitsperitem)))
+  (setq symval symms)
   (setq symfnc (wplus2 symval (times2 maxsymbols addressingunitsperitem)))
   (setq symprp (wplus2 symfnc (times2 maxsymbols addressingunitsperitem)))
 )
@@ -285,6 +285,8 @@
          % frame 2: (ret addr)
          % frame 3: argc
          % frame 4: argv
+	 % frame 5: ptr to SYMNAM on heap
+       (*move (frame 5) (fluid symms))
        (*move (frame 3) (reg 1))
        (*move (frame 4) (reg 2))
 
@@ -377,4 +379,3 @@ panic-exit                      % need to do UNIX cleanup after
 
 (off fast-integers)
 
-)))))
