@@ -56,10 +56,10 @@ host=`$here/findhost.sh $host`
 
 mkdir -p $here/../bin
 
-if test "x$host" = "xi686-pc-windows"
+if test "x$host" = "xi686-pc-windows" || test "x$host" = "x86_64-pc-windows"
 then
   case `uname` in
-  *CYGWIN*WOW64*)
+  *CYGWIN*WOW64* | *CYGWIN*x86_64*)
     pathlist="x86_64-w64-windows x86_64-w64-windows-debug i686-pc-windows i686-pc-windows-debug"
     ;;
   *)
@@ -99,7 +99,7 @@ else
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
-      exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
+      exec $bin -td $STORE -f `cygpath -m $here/../pslbuild/$host$hx/red/reduce.img` $*
       exit 0
     fi
   done

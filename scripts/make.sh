@@ -1,11 +1,7 @@
-#! /bin/sh 
+#! /bin/sh
 
 # This is what "make" invokes. It gets passed as arguments
-#      make-flags
-#      @@@
 #      make-targets
-# and I HOPE that "@@@" as a literal will never clash with a make FLAG.
-# Well it should not since the flags should all start with "-"?
 
 # The purpose of this script is to re-invoke "make" in any and all
 # sub-directories suitable for the architecture of the current machine.
@@ -22,19 +18,33 @@
 # configured. No doubt the bit of script relating to PSL will need
 # adjusting sometime.
 
+printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
+       "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"
+
 args=""
 flags=""
-doingflags="yes"
 buildcsl="no"
 buildpsl="no"
+parallel="no"
+PSLMFLAGS=""
+
+for a in $MFLAGS
+do
+  case $a in
+  -j | --jobserver-fds=*)
+    parallel="yes"
+    ;;
+  *)
+    PSLMFLAGS="$PSLMFLAGS '$a'"
+    ;;
+  esac
+done
+
+printf "par=%s PSLMFLAGS=<%s>\n" "$parallel" "$PSLMFLAGS"
 
 for a in $*
 do
-  if test "x$a" = "x@@@"
-  then doingflags="no"
-  elif test $doingflags = "yes"
-  then flags="$flags $a"
-  elif test "$a" = "csl"
+  if test "$a" = "csl"
   then buildcsl="yes"
   elif test "$a" = "psl"
   then buildpsl="yes"
@@ -73,7 +83,7 @@ case `uname -s` in
   ;;
 esac
 
-echo Current machine tag is $host
+printf "Current machine tag is %s\n" "$host"
 
 # I REALLY want to use GNU make, so here is some stuff to try to
 # find a version. The "/usr/sfw" location is used on Solaris, while
@@ -100,8 +110,6 @@ fi
 # cslbuild or pslbuild directories to be named as host triples. But
 # even then I will only try to build in them if there is a "Makefile"
 # present.
-
-echo host=${host} os=${os}
 
 rc=0
 
@@ -130,6 +138,18 @@ then
   fi
 fi
 
+firstcsl=""
+if test "x$list" != "x"
+then
+  for x in $list
+  do
+    if test "x$firstcsl" = "x" && test -f "$x/csl/Makefile"
+    then
+      firstcsl="$x"
+    fi
+  done
+fi
+
 if test "$buildpsl" = "yes"
 then
   if test "x$os" = "xwindows"
@@ -140,26 +160,99 @@ then
   fi
 fi
 
-for l in $list
-do
-   if test -f ${l}/Makefile
-   then
-     echo About to build in ${l}
-     cd ${l}
-     echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-     $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-     r=$?
-# This version exits if any of the attempts to build fails
-     if test $r != 0
+# Now I will do things in different ways depending on whether a parallel
+# build has been requested. The main reason for this is so that in the
+# simple non-parallel case I just use the reasonably simple code that I
+# have had for some time - the more delicate and messy version will
+# only be called for if the user had specified "-j" to the top level
+# invocation of "make". I hope this will help keep simple cases comprehensible
+# and reliable...
+
+if test "x$parallel" = "xno"
+then
+
+  for l in $list
+  do
+     if test -f ${l}/Makefile
      then
-       echo Building failed with return code $r for version ${l}
-       exit $r
-     fi
+       echo About to build in ${l}
+       cd ${l}
+       echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+       $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+       r=$?
+# This version exits if any of the attempts to build fails
+       if test $r != 0
+       then
+         echo Building failed with return code $r for version ${l}
+         exit $r
+       fi
 # What I had before kept going if one build failed but recorded the
 # highest return code from all versions.
-     test $r -gt $rc && rc=$?
-     cd ../..
-   fi
-done
+       test $r -gt $rc && rc=$?
+       cd ../..
+     fi
+  done
+
+  exit $rc
+
+
+else
+# Now I have the parallel version. This works by dynamically creating a new
+# Makefile (called Makefile.tmp) and using a recursive call to make to
+# process the targets that have been set up within it.
+
+  printf "# Temporary Makefile...\n\n" > Makefile.tmp
+
+  printf ".PHONY:\t" >> Makefile.tmp
+  for l in $list
+  do
+    if test -f ${l}/Makefile
+    then
+      printf "%s " x_${l} >> Makefile.tmp
+    fi
+  done
+  printf "\n\n" >> Makefile.tmp
+
+  printf "everything:\t" >> Makefile.tmp
+  for l in $list
+  do
+    if test -f ${l}/Makefile
+    then
+      printf "%s " x_${l} >> Makefile.tmp
+    fi
+  done
+  printf "\n\n" >> Makefile.tmp
+
+  for l in $list
+  do
+    if test -f ${l}/Makefile
+    then
+      case ${l} in
+      pslbuild*)
+        extras="MFLAGS=\"$PSLMFLAGS\""
+        ;;
+      *)
+        extras=""
+        ;;
+      esac
+      printf "%s:\n" x_${l} >> Makefile.tmp
+      printf "\tcd %s; %s %s %s %s MYFLAGS=\"%s\" --no-print-directory\n\n" \
+        "${l}" "$MAKE" "$extras" "$flags" "$args" "$flags" >> Makefile.tmp
+    fi
+  done
+  printf "\n" >> Makefile.tmp
+
+  printf "\n\n# End of temporary Makefile\n" >> Makefile.tmp
+
+  if test "x$firstcsl" != "x"
+  then
+    cd $firstcsl/csl
+    $MAKE c-code
+    cd ../../..
+  fi
+
+  $MAKE -f Makefile.tmp $args
+
+fi
 
 exit $rc

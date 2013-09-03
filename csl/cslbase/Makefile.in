@@ -82,14 +82,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO compile config.guess config.sub depcomp install-sh \
-	missing mkinstalldirs
+	missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -410,7 +410,7 @@ TRACE = $(warning TRACE: $@ :: $?)
 # I had better not do that on Unix where the ".exe" extension is not
 # used so that just "reduce" is the true name of the executable. I find
 # that automake gets unhappy about .PHONY targets in a conditonal section
-# so I intruduce a load that have silly name sin the case I do not
+# so I introduce a load that have silly names in the case I do not
 # really need them.
 @exeext_TRUE@plain_csl = csl
 @exeext_FALSE@plain_reduce = reduce.unnecessary.except.on.windows
@@ -2356,6 +2356,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 .PHONY:	profile
 .PHONY:	prof-inst
 .PHONY:	c-code
+.PHONY:	standard-c-code
 .PHONY:	full-c-code
 .PHONY: j-code
 .PHONY:	smacros
@@ -3120,6 +3121,8 @@ $(gensrc)/profile.dat:
 	-$(TRACE)mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
+c-code:	$(gensrc)/make.stamp
+
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
 	@$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	@touch $(gensrc)/make.tmp
@@ -3166,7 +3169,7 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
+standard-c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \

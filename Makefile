@@ -3,12 +3,15 @@
 
 .PHONY: dist all csl psl
 
-all:
-	+$(SHELL) scripts/make.sh $(MFLAGS)  $(MAKECMDGOALS)
+VERBOSE =
+# When debugging it may be useful to invole scripts/make.sh in a noisy way...
+#VERBOSE = -v
 
+all:
+	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
 dist:
-	$(SHELL) scripts/dist.sh
+	$(SHELL) $(VERBOSE) scripts/dist.sh
 
 # This script tries a fairly basic sanity check to see if the
 # support-tools, include files and libraries needed to build the
@@ -18,7 +21,7 @@ dist:
 # run this test step by step manually.
 
 csltest:
-	$(SHELL) scripts/csl-sanity-check.sh
+	$(SHELL) $(VERBOSE) scripts/csl-sanity-check.sh
 
 # I have csl and psl as special targets here because those names are
 # also names of top-level directories, but eg "make csl" wants to
@@ -26,15 +29,15 @@ csltest:
 # csl directory being up to date.
 
 csl:
-	+$(SHELL) scripts/make.sh $(MFLAGS) @@@ $(MAKECMDGOALS)
+	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
 psl:
-	+$(SHELL) scripts/make.sh $(MFLAGS) @@@ $(MAKECMDGOALS)
+	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
 install:
 	@echo No install: target yet!
 
 %::
-	+$(SHELL) scripts/make.sh $(MFLAGS) @@@ $(MAKECMDGOALS)
+	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
 # end of Makefile

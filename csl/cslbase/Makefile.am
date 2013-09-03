@@ -23,7 +23,7 @@ if exeext
 # I had better not do that on Unix where the ".exe" extension is not
 # used so that just "reduce" is the true name of the executable. I find
 # that automake gets unhappy about .PHONY targets in a conditonal section
-# so I intruduce a load that have silly name sin the case I do not
+# so I introduce a load that have silly names in the case I do not
 # really need them.
 plain_csl = csl
 plain_reduce = reduce
@@ -80,6 +80,7 @@ endif !exeext
 .PHONY:	profile
 .PHONY:	prof-inst
 .PHONY:	c-code
+.PHONY:	standard-c-code
 .PHONY:	full-c-code
 .PHONY: j-code
 .PHONY:	smacros
@@ -1642,6 +1643,8 @@ $(gensrc)/profile.dat:
 	-$(TRACE)mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
+c-code:	$(gensrc)/make.stamp
+
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
 	@$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	@touch $(gensrc)/make.tmp
@@ -1688,7 +1691,7 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
+standard-c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
