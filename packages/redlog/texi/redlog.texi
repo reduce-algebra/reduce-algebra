@@ -1201,8 +1201,9 @@ sense for algebraically closed fields.
 @cindex input facilities
 The above operators may also be written as @code{=}, @code{<>},
 @code{<=}, @code{>=}, @code{<}, and @code{>}, respectively.
+@end deffn
 
-@deffnx {Ternary Prefix operator} cong
+@deffn {Ternary Prefix operator} cong
 @deffnx {Ternary Prefix operator} ncong
 The operators cong and ncong represent congruences with nonparametric
 modulus given by the third argument. The example below 
@@ -1213,6 +1214,7 @@ f := cong(x,0,2);
   @result{} x ~2~ 0
 @end group
 @end smallexample
+@end deffn
 
 As for
 @sc{ofsf},
