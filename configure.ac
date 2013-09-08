@@ -911,7 +911,7 @@ then
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
             $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" \
-            LDFLAGS=\"$LDFLAGS -Wl,--allow-multiple-definition\" $passcc \
+            LDFLAGS=\"$LDFLAGS\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat26 \
             --with-png=builtin --without-libjpeg \
