@@ -52,9 +52,10 @@ symbolic procedure simp!-sum u;
    %        CADDR U: lower bound.
    %       CADDDR U: upper bound.
    %value          : expression of sq form.
-   begin scalar y;
+  if smemqlp(frlis!*,u) then mksq('sum . u,1)
+   else begin scalar y;
       y := cdr u;
-      u := car u;
+      u := aeval car u;
       if not atom y and not freeof!-df(u, car y) then
         if atom y
                then return !*p2f(car fkern(list('sum,u)) .* 1) ./ 1
