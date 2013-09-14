@@ -583,17 +583,32 @@ symbolic procedure resettime3;
 symbolic procedure sinitl u;
    set(u,eval get(u,'initl));
 
+% Beware - at least under PSL at this stage if you use "_" within a name
+% you need to escape it.
+
+symbolic procedure getenv!_if!_not!_empty name;
+  begin
+    name := getenv name;
+    if name = "" then name := nil;
+    return name
+  end;
+
 symbolic procedure read!-init!-file name;
   % Read a resource file in REDUCE syntax. Quiet input.
   % Algebraic mode is used unless rlisp88 is on.
   % Look for file in home directory. If no home directory
   % is defined, use the current directory.
   begin scalar !*errcont,!*int,base,fname,oldmode,x,y;
-   base := getenv "home" or getenv "HOME" or
-           ((x := getenv "HOMEDRIVE") and (y := getenv "HOMEPATH")
-              and concat2(x,y)) or ".";
-   if not(car reversip explode2 base eq '!/)
-     then base := concat2(base,"/"); % FJW
+   base := getenv!_if!_not!_empty "HOME" or
+%          getenv!_if!_not!_empty "home" or
+           ((x := getenv "HOMEDRIVE") and
+             (y := getenv "HOMEPATH") and
+             concat2(x,y)) or
+           ".";
+% PSL does not have LAST defined at this stage, so I use "car reversip"
+% on the list that was newly created by explode2...
+   if base neq "" and car reversip explode2 base = '!/ then
+     base := concat2(base,"/");
    fname := if filep(x := concat2(base,concat2(".", % FJW
                                                 concat2(name,"rc"))))
                then x
