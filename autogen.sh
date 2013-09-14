@@ -53,7 +53,7 @@ echo "Updating autoconf scripts in $here"
 
 find . -name compile -o -name config.guess -o -name config.sub -o \
        -name depcomp -o -name install-sh -o -name missing -o \
-       -name mkinstalldirs -print | xargs rm -f
+       -print | xargs rm -f
 
 if autoreconf -i -f -v
 then :
