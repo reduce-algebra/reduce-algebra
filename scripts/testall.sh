@@ -134,6 +134,35 @@ else
 fi
 echo
 
+if test "`which dc`" != "x"
+then
+
+  if test "$csl" = "yes"
+  then
+    csltotal="0"
+    for x in csl-times/*.time
+    do
+      val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
+      csltotal=`printf "1k %s %s + pq" $csltotal $val | dc`
+    done
+    csltotal=`printf "2k %s 1000 / pq" $csltotal | dc`
+    printf "CSL total = %s (seconds)\n" $csltotal
+  fi
+
+  if test "$psl" = "yes"
+  then
+    psltotal="0"
+    for x in psl-times/*.time
+    do
+      val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
+      psltotal=`printf "1k %s %s + pq" $psltotal $val | dc`
+    done
+    psltotal=`printf "2k %s 1000 / pq" $psltotal | dc`
+    printf "PSL total = %s (seconds)\n" $psltotal
+  fi
+
+fi
+
 # end of script
 
 
