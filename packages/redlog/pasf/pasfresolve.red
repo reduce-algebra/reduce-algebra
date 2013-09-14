@@ -33,10 +33,8 @@ module pasfresolve;
 algebraic infix divc;
 algebraic infix modc;
 
-precedence divc, modc;
 precedence modc, times;
-% TODO: adjust precedence. Now a modc b > 0 is parsed correctly but a divc b > 0
-% is not.
+precedence divc, modc;
 
 % Term rewriting before resolving.
 switch rlresolvetrw;
@@ -179,8 +177,6 @@ procedure pasf_rxffn!-divc(op, argl, condl, qll);
 	    {'greaterp, {'plus, k, {'times, w, k}, {'minus, a}}, 0} . condl,
 	 quant . lto_appendn qll)};
    end;
-
-
 
 endmodule;
 
