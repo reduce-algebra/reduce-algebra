@@ -143,7 +143,8 @@ then
     for x in csl-times/*.time
     do
       val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
-      csltotal=`printf "1k %s %s + pq" $csltotal $val | dc`
+# The apparently spurious "0" here is in case $val ends up as empty.
+      csltotal=`printf "1k 0 %s %s + pq" $val $csltotal | dc`
     done
     csltotal=`printf "2k %s 1000 / pq" $csltotal | dc`
     printf "CSL total = %s (seconds)\n" $csltotal
@@ -155,7 +156,7 @@ then
     for x in psl-times/*.time
     do
       val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
-      psltotal=`printf "1k %s %s + pq" $psltotal $val | dc`
+      psltotal=`printf "1k 0 %s %s + pq" $val $psltotal | dc`
     done
     psltotal=`printf "2k %s 1000 / pq" $psltotal | dc`
     printf "PSL total = %s (seconds)\n" $psltotal

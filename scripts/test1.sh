@@ -177,9 +177,12 @@ mc=`$here/scripts/findhost.sh $mc`
 # In unusual cases it may mis-report but unless you are going to install
 # all the log files built here that is not very important!
 
-if test "x$mc" = "xi686-pc-windows" && test -d cslbuild/x86_64-w64-windows
+if test "x$mc" = "xi686-pc-windows"
 then
-  mc="x86_64-w64-windows"
+  if test -d cslbuild/x86_64-pc-windows
+  then
+    mc="x86_64-pc-windows"
+  fi
 fi
 
 # Each individual test should only take a few seconds. On my computer the
@@ -193,7 +196,7 @@ then
 
 mkdir -p csl-times
 
-$timecmd sh -c "$here/bin/redcsl -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timecmd sh -c "$here/bin/redcsl -v -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
