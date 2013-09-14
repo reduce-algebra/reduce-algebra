@@ -134,7 +134,7 @@ else
 fi
 echo
 
-if test "`which dc`" != "x"
+if test "x`which dc`" != "x"
 then
 
   if test "$csl" = "yes"
