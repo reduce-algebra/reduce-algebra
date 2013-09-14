@@ -47,8 +47,15 @@ off1 'rlresolvetrw;
 switch rlresolveuniversal;
 off1 'rlresolveuniversal;
 
+% Resolve congruences and incongruences.
+switch rlresolvecong;
+off1 'rlresolvecong;
+
 procedure pasf_resolve(f);
-   cl_apply2ats(f, 'pasf_resolveat);
+   if !*rlresolvecong then
+      cl_apply2ats(cl_apply2ats(f, 'pasf_resolveat), 'pasf_resolvecong)
+   else
+      cl_apply2ats(f, 'pasf_resolveat);
 
 procedure pasf_resolveat(atf);
    begin scalar w;
@@ -176,6 +183,18 @@ procedure pasf_rxffn!-divc(op, argl, condl, qll);
 	    {'leq, {'difference, {'times, w, k}, a}, 0} .
 	    {'greaterp, {'plus, k, {'times, w, k}, {'minus, a}}, 0} . condl,
 	 quant . lto_appendn qll)};
+   end;
+
+procedure pasf_resolvecong(atf);
+   begin scalar w, nlhs, m, res;
+      if not pasf_congp atf then
+	 return atf;
+      w := gensym();
+      m := pasf_m atf;
+      nlhs := addf(pasf_arg2l atf, negf multf(m, !*k2f w));
+      if pasf_opn atf eq 'cong then
+      	 return rl_mkq('ex, w, pasf_0mk2('equal, nlhs));
+      return rl_mkq('all, w, pasf_0mk2('neq, nlhs))
    end;
 
 endmodule;
