@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5a5e6188 24-Dec-2012 */
+/* Signature: 6b0979f7 17-Sep-2013 */
 
 #include "headers.h"
 
@@ -48,7 +48,7 @@
 #include "sockhdr.h"
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
 static int validate_count = 0;
 #endif
 
@@ -61,7 +61,7 @@ Lisp_Object getcodevector(int type, int32_t size)
  * This obtains space in the BPS area
  */
     Lisp_Object nil = C_nil;
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
 /*
  * See comment in fns1 to the effect that doing a full validation every
  * time leads to a VERY BAD performance hit.
@@ -2278,6 +2278,12 @@ CSLbool eql_fn(Lisp_Object a, Lisp_Object b)
     }
 }
 
+#ifdef COMMON
+#define eqcheck(a, b) eql(a, b)
+#else
+#define eqcheck(a, b) ((a) == (b))
+#endif
+
 static CSLbool cl_vec_equal(Lisp_Object a, Lisp_Object b)
 /*
  * here a and b are known to be vectors or arrays.  This should compare
@@ -3066,11 +3072,7 @@ Lisp_Object Leqcar(Lisp_Object nil,
 {
     if (!consp(a)) return onevalue(nil);
     a = qcar(a);
-#ifdef COMMON
-    return onevalue(Lispify_predicate(eql(a, b)));
-#else
-    return onevalue(Lispify_predicate(a == b));
-#endif
+    return onevalue(Lispify_predicate(eqcheck(a, b)));
 }
 
 Lisp_Object Lequalcar(Lisp_Object nil,
@@ -3282,6 +3284,9 @@ Lisp_Object Lassoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 Lisp_Object Latsoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
 #ifdef COMMON
+/*
+ * See comments under atsoc...
+ */
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   Lisp_Object c = qcar(b);
@@ -3294,14 +3299,23 @@ Lisp_Object Latsoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     while (consp(b))
     {   Lisp_Object c = qcar(b);
 /*
+ * As for memq I unroll the loop a little...
  * eql() can neither fail nor call the garbage collector, so I do
  * not need to stack things here.
  */
-#ifdef COMMON
-        if (consp(c) && eql(a, qcar(c))) return onevalue(c);
-#else
-        if (consp(c) && a == qcar(c)) return onevalue(c);
-#endif
+        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
+        b = qcdr(b);
+        if (!consp(b)) return onevalue(nil);
+        c = qcar(b);
+        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
+        b = qcdr(b);
+        if (!consp(b)) return onevalue(nil);
+        c = qcar(b);
+        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
+        b = qcdr(b);
+        if (!consp(b)) return onevalue(nil);
+        c = qcar(b);
+        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
         b = qcdr(b);
     }
     return onevalue(nil);
@@ -3312,6 +3326,15 @@ Lisp_Object Lmember(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   if (a == qcar(b)) return onevalue(b);
+            b = qcdr(b);
+            if (!consp(b)) return onevalue(nil);
+            if (a == qcar(b)) return onevalue(b);
+            b = qcdr(b);
+            if (!consp(b)) return onevalue(nil);
+            if (a == qcar(b)) return onevalue(b);
+            b = qcdr(b);
+            if (!consp(b)) return onevalue(nil);
+            if (a == qcar(b)) return onevalue(b);
             b = qcdr(b);
         }
         return onevalue(nil);
@@ -3331,6 +3354,12 @@ Lisp_Object Lmember(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 Lisp_Object Lmemq(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
 #ifdef COMMON
+/*
+ * I think it is possible that the test I need here is more along the
+ * lines of "is it a number that is not a fixnum" since EQL only
+ * diverges from EQ in that case... However I will not adjust this right
+ * now since I am not at present too concerned about Common Lisp mode...
+ */
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   if (a == qcar(b)) return onevalue(b);
@@ -3340,16 +3369,21 @@ Lisp_Object Lmemq(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     }
 #endif
     while (consp(b))
-/*
- * Note that eql() can never fail, and so checking for errors
- * and stacking a and b across the call to it is not necessary.
- */
     {
-#ifdef COMMON
-        if (eql(a, qcar(b))) return onevalue(b);
-#else
-        if (a == qcar(b)) return onevalue(b);
-#endif
+/*
+ * I have unrolled this loop a bit because I found that in one of the
+ * Reduce tests it was a serious hot-spot.
+ */
+        if (eqcheck(a, qcar(b))) return onevalue(b);
+        b = qcdr(b);
+        if (!consp(b)) return onevalue(nil);
+        if (eqcheck(a, qcar(b))) return onevalue(b);
+        b = qcdr(b);
+        if (!consp(b)) return onevalue(nil);
+        if (eqcheck(a, qcar(b))) return onevalue(b);
+        b = qcdr(b);
+        if (!consp(b)) return onevalue(nil);
+        if (eqcheck(a, qcar(b))) return onevalue(b);
         b = qcdr(b);
     }
     return onevalue(nil);

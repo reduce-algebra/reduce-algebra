@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 27b8982b 05-Jun-2013 */
+/* Signature: 039f1fe9 17-Sep-2013 */
 
 #include "headers.h"
 
@@ -50,7 +50,15 @@
  */
 
 #ifndef NO_BYTECOUNT
-#define RECORD_GET 1
+/*
+ * RECORD_GET can be set to track all used of PUT, GE, FLAG and FLAGP. This
+ * may be useful when deciding which tags should be treated specially as
+ * "fastget" ones, but that decision is not going to be reviwed at all often
+ * and so I will leave things so that when somebody wants that information
+ * they need to manually edit this file or use "-DRECORD_GET" in CPPFLAGS
+ * rather than the expense of recording uses of GET being standard.
+ */
+/* #define RECORD_GET 1 */
 #endif
 
 void record_get(Lisp_Object tag, CSLbool found)

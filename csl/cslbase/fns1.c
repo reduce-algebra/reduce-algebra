@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 2772ab52 14-May-2013 */
+/* Signature: 35a55a74 17-Sep-2013 */
 
 #include "headers.h"
 
@@ -1882,7 +1882,7 @@ Lisp_Object Lcodep(Lisp_Object nil, Lisp_Object a)
     else return onevalue(nil);
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
 static int validate_count = 0;
 #endif
 
@@ -1900,7 +1900,7 @@ Lisp_Object getvector(int tag, int type, int32_t size)
  * that now!]
  */
     Lisp_Object nil = C_nil;
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
 /*
  * If I do a full validation every time I allocate a vector that REALLY
  * hits performance, so I will do it occasionally. The 1 in 500 indicated

@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 12267764 18-Jul-2013 */
+/* Signature: 4487a874 17-Sep-2013 */
 
 #include "headers.h"
 
@@ -6382,7 +6382,7 @@ void setup(int restart_flag, double store_size)
         if (n > 1)
             term_printf("There are %d processors available\n", n);
     }
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
     copy_into_nilseg(NO);
     validate_all("restarting", __LINE__, __FILE__);
 #endif

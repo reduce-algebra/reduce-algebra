@@ -71,11 +71,11 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 433e8404 03-May-2013 */
+/* Signature: 75c50fab 17-Sep-2013 */
 
 #include "headers.h"
 
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
 
 /*
  * The purpose of this code is to traverse the active data in the heap
@@ -405,7 +405,7 @@ int check_env(Lisp_Object env)
     return 0;
 }
 
-#endif /* DEBUG: the validate code */
+#endif /* DEBUG_VALIDATE: the validate code */
 
 #ifdef SOCKETS
 #include "sockhdr.h"
@@ -2823,7 +2823,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #ifdef DEBUG_GC
     term_printf("Start of a garbage collection %d\n", gc_number);
 #endif /* DEBUG_GC */
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
     validate_all("start of gc", __LINE__, __FILE__);
 #endif
 #ifdef CONSERVATIVE
@@ -2908,7 +2908,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
                 return resource_exceeded();
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
             validate_all("end of gc", __LINE__, __FILE__);
 #endif
             return onevalue(p);
@@ -2922,7 +2922,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             miscflags |= BACKTRACE_MSG_BITS;
         else miscflags &= ~BACKTRACE_MSG_BITS;
         async_type = QUERY_INTERRUPT;     /* accepted! */
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
         validate_all("end of gc", __LINE__, __FILE__);
 #endif
         return interrupted(p);
@@ -2940,7 +2940,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 	    tidy_fringes();
 	    interrupt_pending = NO;
 	    pop_clock();
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
             validate_all("end of gc", __LINE__, __FILE__);
 #endif
             time_now = (int)consolidated_time[0];
@@ -2956,7 +2956,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             reset_limit_registers(vheap_need, bps_need, native_need, YES))
         {   already_in_gc = NO;
             pop_clock();
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
             validate_all("end of gc", __LINE__, __FILE__);
 #endif
             if (space_limit >= 0 && space_now > space_limit)
@@ -2996,7 +2996,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     push(p);
 
     gc_number++;
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
     validate_all("continuation of gc", __LINE__, __FILE__);
 #endif
 
@@ -3083,7 +3083,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #endif /* CONSERVATIVE */
 
     copy_into_nilseg(NO);
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
     validate_all("gc start", __LINE__, __FILE__);
 #endif
 
@@ -3340,7 +3340,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     gc_time += pop_clock();
     t3 = base_time;
 
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
     validate_all("gc end", __LINE__, __FILE__);
 #endif
     copy_out_of_nilseg(NO);
@@ -3445,7 +3445,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         }
     }
     report_at_end(nil);
-#ifdef DEBUG
+#ifdef DEBUG_VALIDATE
     validate_all("end of gc", __LINE__, __FILE__);
 #endif
 /*

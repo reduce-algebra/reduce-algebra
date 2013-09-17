@@ -2113,7 +2113,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:printf("#endif\n") >>;
     if car argch = 0 or car argch >= 3 then
        c!:printf("    argcheck(nargs, %s, \q%s\q);\n", car argch, cdr argch);
-    c!:printf("#ifdef DEBUG\n");
+    c!:printf("#ifdef DEBUG_VALIDATE\n");
     c!:printf("    if (check_env(env)) return aerror(\qenv for %s\q);\n",
               cdr argch);
     c!:printf("#endif\n");

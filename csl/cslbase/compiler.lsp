@@ -4127,7 +4127,7 @@ progn (c!:printf "#ifndef NILSEG_EXTERNS\n") (c!:printf
 "    CSL_IGNORE(nil);\n") (c!:printf "#endif\n")))))) (cond ((or (equal (car 
 argch) 0) (geq (car argch) 3)) (c!:printf 
 "    argcheck(nargs, %s, \q%s\q);\n" (car argch) (cdr argch)))) (c!:printf 
-"#ifdef DEBUG\n") (c!:printf 
+"#ifdef DEBUG_VALIDATE\n") (c!:printf 
 "    if (check_env(env)) return aerror(\qenv for %s\q);\n" (cdr argch)) (
 c!:printf "#endif\n") (c!:printf "#ifdef CHECK_STACK\n") (c!:printf 
 "    if_check_stack;\n") (c!:printf "#endif\n") (cond (does_call (progn (
