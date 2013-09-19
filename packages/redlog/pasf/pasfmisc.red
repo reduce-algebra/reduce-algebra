@@ -316,8 +316,13 @@ procedure pasf_varlat(atf);
    % Presburger arithmetic standard form atomic formula list of variables.
    % [atf] is an atomic formula. Returns the variables contained in $atf$ as a
    % list.
-   append(kernels pasf_arg2l atf,
-      if pasf_congp atf then kernels pasf_m atf else nil);
+   begin scalar vl;
+      vl := append(kernels pasf_arg2l atf, if pasf_congp atf then kernels pasf_m atf else nil);
+      if !*rlbrkcxk then
+	 vl := for each v in vl join
+	    rltools_lpvarl v;
+      return vl
+   end;
 
 procedure pasf_varsubstat(atf,new,old);
    % Presburger arithmetic standard form substitute variable for variable in

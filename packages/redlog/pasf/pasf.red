@@ -44,7 +44,7 @@ module pasf;
 create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
    pasfqe pasfsism pasfopt pasfresolve),nil);
 
-fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*utf8);
+fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*rlbrkcxk !*utf8);
 
 load!-package 'redlog;
 loadtime load!-package 'cl;
