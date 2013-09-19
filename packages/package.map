@@ -188,6 +188,7 @@
  (qhull         "qhull"                                      csl psl)
  (smtsupp       "redlog/smtsupp"                             csl psl)
  (gurobi        "foreign/gurobi"                             csl)
+ (z3            "foreign/z3"                                 csl)
  (rubi_red      "rubi_red"                                   csl psl)
 )
 
