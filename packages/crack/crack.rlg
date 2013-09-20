@@ -1040,19 +1040,7 @@ end$
 
 Tested on i686-pc-windows CSL
 Time (counter 1): 70 ms  plus GC time: 41 ms
-1: Could Not Find D:\projects\reduce-algebra\trunk\cd774718-1*
-Could Not Find D:\projects\reduce-algebra\trunk\ie774718-1*
-Could Not Find D:\projects\reduce-algebra\trunk\cd774718-*
-Could Not Find D:\projects\reduce-algebra\trunk\ie774718-*
-Could Not Find D:\projects\reduce-algebra\trunk\cd774718-21*
-Could Not Find D:\projects\reduce-algebra\trunk\ie774718-21*
-Could Not Find D:\projects\reduce-algebra\trunk\cd774718-22*
-Could Not Find D:\projects\reduce-algebra\trunk\ie774718-22*
-Could Not Find D:\projects\reduce-algebra\trunk\cd774718-2*
-Could Not Find D:\projects\reduce-algebra\trunk\ie774718-2*
-Could Not Find D:\projects\reduce-algebra\trunk\cd774718-2*
-Could Not Find D:\projects\reduce-algebra\trunk\ie774718-2*
-rm: cannot remove `bu664353-qlp.': No such file or directory
+1:
 real 1.84
 user 0.03
 sys 0.10
