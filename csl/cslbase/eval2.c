@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 21d72509 25-Oct-2011 */
+/* Signature: 17a0ec69 19-Sep-2013 */
 
 #include "headers.h"
 
@@ -558,7 +558,7 @@ static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
 
 static Lisp_Object catch_fn(Lisp_Object args, Lisp_Object env)
 {
-    Lisp_Object tag, nil = C_nil;
+    Lisp_Object tag, nil = C_nil, v;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push2(args, env);
@@ -569,27 +569,25 @@ static Lisp_Object catch_fn(Lisp_Object args, Lisp_Object env)
     pop2(env, args);
     errexit();
     push(tag);
-    {
-        Lisp_Object v = progn_fn(qcdr(args), env);
-        pop(tag);
-        nil = C_nil;
-        if (exception_pending())
-        {   flip_exception();
-            catch_tags = qcdr(tag);
-            qcar(tag) = tag;
-            qcdr(tag) = nil;        /* Invalidate the catch frame */
-            if (exit_reason == UNWIND_THROW && exit_tag == tag)
-            {   exit_reason = UNWIND_NULL;
-                return nvalues(exit_value, exit_count);
-            }
-            flip_exception();
-            return nil;
-        }
+    v = progn_fn(qcdr(args), env);
+    pop(tag);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
         catch_tags = qcdr(tag);
         qcar(tag) = tag;
         qcdr(tag) = nil;        /* Invalidate the catch frame */
-        return v;
+        if (exit_reason == UNWIND_THROW && exit_tag == tag)
+        {   exit_reason = UNWIND_NULL;
+            return nvalues(exit_value, exit_count);
+        }
+        flip_exception();
+        return nil;
     }
+    catch_tags = qcdr(tag);
+    qcar(tag) = tag;
+    qcdr(tag) = nil;        /* Invalidate the catch frame */
+    return v;
 }
 
 #define BODY_LET            0

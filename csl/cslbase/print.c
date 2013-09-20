@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 22714ab9 05-Jun-2013 */
+/* Signature: 054a9d54 20-Sep-2013 */
 
 #include "headers.h"
 
@@ -1614,12 +1614,21 @@ Lisp_Object Ldelete_file(Lisp_Object nil, Lisp_Object name)
     w = get_string_data(name, "delete-file", &len);
     errexit();
     if (len >= sizeof(filename)) len = sizeof(filename);
-#if 0
-#ifdef SOCKETS
-    if (socket_server != 0) return aerror("delete-file");
-#endif
-#endif
     len = delete_file(filename, w, (size_t)len);
+    return onevalue(Lispify_predicate(len == 0));
+}
+
+Lisp_Object Ldelete_wildcard(Lisp_Object nil, Lisp_Object name)
+{
+    char filename[LONGEST_LEGAL_FILENAME];
+    int32_t len = 0;
+    char *w;
+    memset(filename, 0, sizeof(filename));
+    if (name == unset_var) return onevalue(nil);
+    w = get_string_data(name, "delete-wildcard", &len);
+    errexit();
+    if (len >= sizeof(filename)) len = sizeof(filename);
+    len = delete_wildcard(filename, w, (size_t)len);
     return onevalue(Lispify_predicate(len == 0));
 }
 
@@ -5031,6 +5040,7 @@ setup_type const print_setup[] =
     {"library-name",            Llibrary_name, too_many_1, wrong_no_1},
     {"create-directory",        Lcreate_directory, too_many_1, wrong_no_1},
     {"delete-file",             Ldelete_file, too_many_1, wrong_no_1},
+    {"delete-wildcard",         Ldelete_wildcard, too_many_1, wrong_no_1},
     {"rename-file",             too_few_2, Lrename_file, wrong_no_2},
     {"file-readablep",          Lfile_readable, too_many_1, wrong_no_1},
     {"file-writeablep",         Lfile_writeable, too_many_1, wrong_no_1},

@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 63ec8f91 24-Dec-2012 */
+/* Signature: 236bd591 19-Sep-2013 */
 
 #ifndef header_entries_h
 #define header_entries_h 1
@@ -273,6 +273,7 @@ extern Lisp_Object Lsymbol_specialp(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsymbol_value(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsystem(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lthreevectorp(Lisp_Object env, Lisp_Object a);
+extern Lisp_Object Lthrow_nil(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Ltrace(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Ltruncate(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lttab(Lisp_Object env, Lisp_Object a);
@@ -427,6 +428,7 @@ extern Lisp_Object Lsublis(Lisp_Object env, Lisp_Object a, Lisp_Object b);
 extern Lisp_Object Lsymbol_protect(Lisp_Object env, Lisp_Object a, Lisp_Object b);
 extern Lisp_Object Lsymbol_set_definition(Lisp_Object env, Lisp_Object a, Lisp_Object b);
 extern Lisp_Object Lsymbol_set_env(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern Lisp_Object Lthrow_one_value(Lisp_Object env, Lisp_Object a, Lisp_Object b);
 extern Lisp_Object Ltimes2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
 extern Lisp_Object Lunion(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
 extern Lisp_Object Lwrite_help_module(Lisp_Object nil, Lisp_Object a, Lisp_Object b);

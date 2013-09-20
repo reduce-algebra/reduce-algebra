@@ -1639,9 +1639,9 @@ prof-inst:	profile.dat
 	$(CP) profile.dat $(gensrc)
 	-$(RM) -f profile.dat
 
-$(gensrc)/profile.dat:
+$(gensrc)/profile.dat:	$(srcdir)/../generated-c/profile.dat
 	-$(TRACE)mkdir -p $(gensrc)
-	$(CP) $(srcdir)/../profile.dat $(gensrc)
+	$(CP) $(srcdir)/../generated-c/profile.dat $(gensrc)
 
 c-code:	$(gensrc)/make.stamp
 

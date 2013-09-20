@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 35a55a74 17-Sep-2013 */
+/* Signature: 4f0630db 19-Sep-2013 */
 
 #include "headers.h"
 
@@ -3736,6 +3736,7 @@ setup_type const funcs1_setup[] =
     {"remflag",                 too_few_2, Lremflag, wrong_no_2},
     {"stringp",                 Lstringp, too_many_1, wrong_no_1},
     {"threevectorp",            Lthreevectorp, too_many_1, wrong_no_1},
+    {"throw",                   Lthrow_nil, Lthrow_one_value, wrong_no_2},
     {"vectorp",                 Lsimple_vectorp, too_many_1, wrong_no_1},
 #endif
     {"open-foreign-library",    Lopen_foreign_library, too_many_1, wrong_no_1},

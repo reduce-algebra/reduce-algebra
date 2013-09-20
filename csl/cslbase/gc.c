@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 75c50fab 17-Sep-2013 */
+/* Signature: 73b178be 19-Sep-2013 */
 
 #include "headers.h"
 
@@ -2811,6 +2811,9 @@ Lisp_Object use_gchook(Lisp_Object p, Lisp_Object arg)
     return onevalue(p);
 }
 
+static double prev_consolidated = 0.0;
+static int prev_consolidated_set = 1;
+
 int garbage_collection_permitted = 0;
 
 Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
@@ -2845,22 +2848,6 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     _kbhit(); /* Fairly harmless anyway, but is here to let ^c get noticed */
 /*    printf("(*)"); fflush(stdout);  /* while I debug! */
 #endif /* WIN32 */
-#if 0
-#ifdef SOCKETS
-    if (socket_server != 0)
-    {   time_t tt0 = time(NULL);
-        t0 = clock();
-        tt0 = time(NULL);
-        if (t0 > cpu_timeout ||
-            tt0 > elapsed_timeout)
-        {   cpu_timeout = t0 + 20;
-            elapsed_timeout = tt0 + 20;
-            term_printf("\nSorry: timeout on this session. Closing down\n");
-            return Lstop(nil, fixnum_of_int(1));
-        }
-    }
-#endif /* SOCKETS */
-#endif
     push_clock(); t0 = base_time;
 
 #ifdef HAVE_FWIN
@@ -2961,7 +2948,24 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #endif
             if (space_limit >= 0 && space_now > space_limit)
                 return resource_exceeded();
-            return use_gchook(p, nil); /* Soft GC */
+#ifndef OLD_GCHOOK_CODE
+/*
+ * I have "soft" garbage3 collections - perhaps fairly frequently. I will
+ * only call the GC hook function around twice a second to avoid undue
+ * overhead in it.
+ */
+            if (!prev_consolidated_set)
+            {   prev_consolidated = consolidated_time[0];
+                prev_consolidated_set = 1;
+            }
+            if (consolidated_time[0] > prev_consolidated + 0.5)
+            {   prev_consolidated = consolidated_time[0];
+                return use_gchook(p, nil); /* Soft GC */
+            }
+            return onevalue(p);
+#else
+            return use_gchook(p, nil);
+#endif
         }
     }
 

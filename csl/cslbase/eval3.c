@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 7934fda0 05-Jun-2013 */
+/* Signature: 386cb681 19-Sep-2013 */
 
 #include "headers.h"
 
@@ -897,6 +897,34 @@ tag_found:
     return nil;
 }
 
+/*
+ * In Common Lisp mode THROW has to be a special form because of the
+ * case where the information being thrown involves multiple values. For
+ * Standard Lisp I can perfectly well provide a simple function.
+ */
+
+Lisp_Object Lthrow_one_value(Lisp_Object nil, Lisp_Object tag, Lisp_Object val)
+{
+    Lisp_Object p;
+    for (p = catch_tags; p!=nil; p=qcdr(p))
+        if (tag == qcar(p)) goto tag_found;
+    return aerror("throw: tag not found");
+tag_found:
+    exit_value = val;
+#ifndef COMMON
+    exit_count = 1;
+#endif
+    exit_tag = p;
+    exit_reason = UNWIND_THROW;
+    flip_exception();
+    return nil;
+}
+
+Lisp_Object Lthrow_nil(Lisp_Object nil, Lisp_Object tag)
+{
+    return Lthrow_one_value(nil, tag, nil);
+}
+
 static Lisp_Object unless_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object w, nil = C_nil;
@@ -1728,7 +1756,6 @@ setup_type const eval3_setup[] =
     {"setq",                    setq_fn, bad_special2, bad_specialn},
     {"noisy-setq",              noisy_setq_fn, bad_special2, bad_specialn},
     {"tagbody",                 tagbody_fn, bad_special2, bad_specialn},
-    {"throw",                   throw_fn, bad_special2, bad_specialn},
     {"unless",                  unless_fn, bad_special2, bad_specialn},
     {"unwind-protect",          unwind_protect_fn, bad_special2, bad_specialn},
     {"when",                    when_fn, bad_special2, bad_specialn},
@@ -1739,6 +1766,7 @@ setup_type const eval3_setup[] =
     {"progv",                   progv_fn, bad_special2, bad_specialn},
     {"return-from",             return_from_fn, bad_special2, bad_specialn},
     {"the",                     the_fn, bad_special2, bad_specialn},
+    {"throw",                   throw_fn, bad_special2, bad_specialn},
 #else
     {"list",                    list_fn, bad_special2, bad_specialn},
     {"list*",                   liststar_fn, bad_special2, bad_specialn},

@@ -37,7 +37,7 @@
  *************************************************************************/
 
 
-/* Signature: 6a6550d2 05-May-2013 */
+/* Signature: 6bb18d14 20-Sep-2013 */
 
 
 #ifndef header_syscsl_h
@@ -114,11 +114,15 @@ extern CSLbool file_exists(char *filename, char *old, size_t n, char *tt);
  * to that for open_file. They do what their names suggest! They return
  * zero on success, and non-zero on failure. Each does file-name
  * conversion so that Unix-style names can be used even with Windows.
+ * delete_wildcard "globs" its argument and deletes all files that
+ * match...
  */
 
 extern int create_directory(char *filename, char *old, size_t n);
 
 extern int delete_file(char *filename, char *old, size_t n);
+
+extern int delete_wildcard(char *filename, char *old, size_t n);
 
 extern int rename_file(char *from_name, char *from_old, size_t from_size,
                        char *to_name,   char *to_old,   size_t to_size);
