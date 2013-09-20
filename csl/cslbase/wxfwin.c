@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 0a938a2e 16-May-2013 */
+/* Signature: 6faf8299 20-Sep-2013 */
 
 #include "config.h"
 
@@ -86,6 +86,10 @@ extern char *getcwd(char *s, size_t n);
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+
+#ifndef WIN32
+#include <glob.h>
+#endif
 
 #ifndef EMBEDDED
 #ifdef HAVE_DIRENT_H
@@ -2155,6 +2159,32 @@ int delete_file(char *filename, char *old, size_t n)
     return 0;
 }
 
+int delete_wildcard(char *filename, char *old, size_t n)
+{
+    process_file_name(filename, old, n);
+    if (*filename == 0) return 0;
+    {
+#ifdef WIN32
+        HANDLE h;
+        WIN32_FIND_DATA gg;
+        h = FindFirstFile(filename, &gg);
+        if (h != INVALID_HANDLE_VALUE)
+        {   for (;;)
+            {   scan_directory(gg.cFileName, remove_files);
+                if (!FindNextFile(h, &gg)) break;
+            }
+            FindClose(h);
+        }
+#else
+        glob_t gg;
+        int i, rc = glob(filename, GLOB_NOSORT, NULL, &gg);
+        for (i=0; i<gg.gl_pathc; i++)
+            scan_directory(gg.gl_pathv[i], remove_files);
+        globfree(&gg);
+#endif
+    }
+    return 0;
+}
 
 int64_t file_length(char *filename, char *old, size_t n)
 {
