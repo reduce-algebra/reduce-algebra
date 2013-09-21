@@ -196,7 +196,9 @@ symbolic procedure c!:valid_specform x;
    put('setq,                   'c!:code, function c!:cspecform);
    put('tagbody,                'c!:code, function c!:cspecform);
    put('the,                    'c!:code, function c!:cspecform);
+!#if common!-lisp!-mode
    put('throw,                  'c!:code, function c!:cspecform);
+!#endif
    put('unless,                 'c!:code, function c!:cspecform);
    put('unwind!-protect,        'c!:code, function c!:cspecform);
    put('when,                   'c!:code, function c!:cspecform) ;
@@ -254,7 +256,6 @@ symbolic procedure c!:valid_specform x;
 %  put('setq,                   'c!:valid, function c!:valid_specform);
 %  put('tagbody,                'c!:valid, function c!:valid_specform);
    put('the,                    'c!:valid, function c!:valid_specform);
-   put('throw,                  'c!:valid, function c!:valid_specform);
 %  put('unless,                 'c!:valid, function c!:valid_specform);
    put('unwind!-protect,        'c!:valid, function c!:valid_specform);
 %  put('when,                   'c!:valid, function c!:valid_specform) 
@@ -2821,10 +2822,18 @@ symbolic procedure c!:cthe(u, env);
 
 put('the, 'c!:code, function c!:cthe);
 
+!#if common!-lisp!-mode
+
+% For Common Lisp "throw" has to be able to throw multiple values...
+% Actually the in-line compilation will be fairly simple, but I am not
+% bothering to deal with it yet!
+
 symbolic procedure c!:cthrow(u, env);
    error(0, "throw");
 
 put('throw, 'c!:code, function c!:cthrow);
+
+!#endif
 
 symbolic procedure c!:cunless(u, env);
   begin

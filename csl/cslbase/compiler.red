@@ -6055,8 +6055,11 @@ symbolic procedure compile l;
 in "$cslbase/ccomp.red"$
 
 % And also one that generated Java for use with Jlisp.
-
-in "$cslbase/jcomp.red"$
+% Well I am not doing that yet since there is potential conflict
+% between it and ccomp.red... I will install it when I am confident
+% that I have made jcomp.red properly independent.
+%
+%   in "$cslbase/jcomp.red"$
 
 
 end;
