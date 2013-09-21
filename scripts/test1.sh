@@ -196,11 +196,10 @@ then
 
 mkdir -p csl-times
 
-$timecmd sh -c "$here/bin/redcsl -v -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timecmd sh -c "$here/bin/redcsl -k160m -v -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
-%off pwrds;
 on errcont;
 $loader
 lisp (testdirectory:="$dd");

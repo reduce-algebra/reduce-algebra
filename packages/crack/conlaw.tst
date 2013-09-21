@@ -136,4 +136,8 @@ conlaw1({{df(x,t) = - s*x + s*y,
 clear p_t$
 nodepnd {u,v,r,p_t,x,y,z,a1,a2,a3,b,s,r}$
 
+lisp <<
+  delete!-file!-match "bu*sol_list";
+  delete!-file!-match "ct*-" >>$
+
 end$

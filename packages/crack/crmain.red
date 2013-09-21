@@ -29,6 +29,33 @@ module crackstar$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
+% In earlier versions of crack the operation of copying a file was
+% performed as (system bldmsg("cp %w %w", n1, n2)) which is concise,
+% however I believe that the overhead in calling "system" can be extreme
+% and the issues of Windows vs Unix/Linux/MacOSX comaptibility can be
+% bad, so this might be safer and could even end up faster.
+
+% This returns T on success or NIL on failure...
+
+symbolic procedure copy!-file(n1, n2);
+  begin
+    scalar f1, f2, c, saveraise;
+    saveraise := !*raise . !*lower;
+    !*raise := !*lower := nil;
+    if null (f1 := open(f1, 'input)) then return nil;
+    if null (f2 := open(f2, 'output)) then <<
+      close f1;
+      return nil >>;
+    f1 := rds f1;
+    f2 := wrs f2;
+    while (c := readch()) neq !$eof!$ do prin2 c;
+    close rds f1;
+    close wrs f2;
+    !*raise := car saveraise;
+    !*lower := cdr saveraise;
+    return t;
+  end;
+
 symbolic operator crackshell$
 symbolic procedure crackshell$
 begin scalar s$ 
@@ -886,12 +913,9 @@ again:
         change_prompt_to "Please terminate this input with ';'  : "$ 
         l:=termxread()$
         if s='collect_sol and l=nil and collect_sol then save_sol_list() else
-% The next two lines are NOT PORTABLE first because the test on lispsystem!*
-% is inadequate (eg on cygwin CSL the symbol 'unix is not present) and then
-% because there is no fall-back to cope with other operating systems (eg
-% typically Windows).
-        if (s='session_) and memq('unix,lispsystem!*) then
-          system bldmsg("cp %wsol_list %ssol_list",session_,l)$
+        if s='session_ then
+           copy!-file(bldmsg("%wsol_list", session_),
+                      bldmsg("%wsol_list", l));
         % i.e. create a sol_list file
         set(s,reval l)$
       >> 
@@ -1400,6 +1424,7 @@ again:
        terpri()$
        write"in the file ",process_counter," is set to zero."$
        terpri()$
+% The next line needs review - it is certainly not portable (eg to Windows).
        system bldmsg("touch %w",process_counter)$ % creating file if necessary
        proczaehler(process_counter,'init)$        % setting counter to zero
       >>

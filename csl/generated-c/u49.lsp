@@ -1,107 +1,123 @@
 
 % u49.lsp           Machine generated Lisp
 
-(c!:install "u49" 5118 9158949 6911124)
+(c!:install "u49" 12084 3090504 2502712)
 
-(c!:install 'mod!-dump1 '(mod!-dump1 l!-subst nreverse) 
-897790647000602503)
+(c!:install 'i2fourier '(i2fourier dmode!* !:fs!: !*d2fourier) 
+1066969958216887551)
 
-(c!:install 'com43 '(com43 liemat bb ff algebraic l_z nil cc minus det
-quotient plus times comcom0 comcom1 comcom3 matrix aeval arrayfn setk
-evalneq evalequal clear aeval!*) 1199864247135900346)
+(c!:install 'all_index_lst '(all_index_lst list nil listp) 
+1348312532109847265)
 
-(c!:install 'subeval1 '(subeval1 nil subfn alg
-"No substitution defined for type" t !*sub2 getrtype rerror simp subsq
-subs2 mk!*sq) 55557855280807263)
+(c!:install 'merge_list1 '(merge_list1) 1671125622661630910)
 
-(c!:install 'dp!=a2dpatom '(dp!=a2dpatom nil cali!=basering
-ring_all_names bc_fi mo_from_a dp_term bc_from_a mo_zero) 
-246099130638398132)
+(c!:install 'quotfail!-mod!-p '(quotfail!-mod!-p t exact!-quotient!-flag
+"QUOTIENT NOT EXACT (MOD P)" quotient!-mod!-p errorf) 548509529394753561
+)
 
-(c!:install 'pa_part2list '(pa_part2list nil upbve copy lastpair) 
-200091459676989209)
+(c!:install 'multtaylorsq '(multtaylorsq t nil taylor!*
+!*taylorkeeporiginal multsq subs2!* resimp) 696105750655826361)
 
-(c!:install 'monic!-mod!-p '(monic!-mod!-p nil t
-"LC NOT NUMERIC IN MONIC-MOD-P" multiply!-by!-constant!-mod!-p errorf) 
-2051621529702549793)
+(c!:install 'make!-var!-coefflist '(make!-var!-coefflist
+make!-var!-powerlist) 797596824200333161)
 
-(c!:install 'lto_hmember '(lto_hmember apply lto_hmember1) 
-1905637738227880727)
+(c!:install 'evalletsub '(evalletsub alg "Invalid simplification"
+evalletsub2 errorp rerror) 336294914740379549)
+
+(c!:install 'rl_atl '(rl_atl rl_atl!* apply) 1335195128544220436)
+
+(c!:install 'rand!-mons!-dense '(rand!-mons!-dense nil mksq max multf
+lastpair) 3519816536075209)
+
+(c!:install 'st_ad_numsorttree1 '(st_ad_numsorttree1 !* nil !+
+numlist_ordp !- cdr_signsort lastpair ad_numsort cdr_sort) 
+1124270650941605903)
+
+(c!:install 'eval_uni_poly '(eval_uni_poly nil) 394713053309841912)
+
+(c!:install 'clearrules '(clearrules nil !*sqrtrulep rule!-list) 
+52718252063084690)
+
+(c!:install 'qqe_length!-graph!-remove!-mark '(
+qqe_length!-graph!-remove!-mark nil) 377600596588172727)
+
+(c!:install 'pasf_subfof1 '(pasf_subfof1 (cong ncong) true t false subf)
+ 1770997656350643546)
+
+(c!:install 'aex_sgn '(aex_sgn nil !*rlanuexsgnopt !*rlverbose
+!*rlanuexverbose "[aex_sgn:num!]" aex_simpleratp aex_ex rat_sgn
+aex_containment rat_0 iv_lb rat_less iv_rb aex_mvar aex_ctx ctx_get
+aex_free aex_reduce aex_mklcnt aex_deg anu_dp aex_diff aex_mult
+aex_sturmchain anu_iv aex_sturmchainsgnch) 1307084117865535342)
+
+(c!:install 'bc_dcont '(bc_dcont sfto_dcontentf) 756698739986786000)
+
+(c!:install 'findsquareroot '(findsquareroot t nil sqrt) 
+812298197934059410)
+
+(c!:install 'nestprep!: '(nestprep!: co simp prepsq) 38487174479373014)
+
+(c!:install 'groeblistadd '(groeblistadd hcount!* vdplsortinreplacing
+vdplsortin) 179511513491596949)
+
+(c!:install 'p_eq_vertex '(p_eq_vertex nil) 1056043531981304392)
+
+(c!:install 'compactf0 '(compactf0 !~ nil kernels compactfmatch
+compactf1 eval subf) 87608794629484743)
+
+(c!:install 'permp!: '(permp!: t) 1310205780846314399)
+
+(c!:install 'pa_vect2list '(pa_vect2list nil upbve ordn) 
+1315450921329836366)
+
+(c!:install 'glsoleig '(glsoleig nil negf multf) 1405951657791942658)
+
+(c!:install 'gcd!-mod!-p '(gcd!-mod!-p reduction!-count t
+ordered!-gcd!-mod!-p monic!-mod!-p) 1680838738234738273)
 
 (c!:install 'get_nr_irred_reps '(get_nr_irred_reps !*complex
 get!*nr!*complex!*irred!*reps get!*nr!*real!*irred!*reps) 
 130552199331658638)
 
-(c!:install 'cl_susimkatl '(cl_susimkatl nil true t false and inctheo or
-lastpair rl_susipost cl_cflip rl_negateat rl_susitf) 1062448888738517780
+(c!:install 'qqe_update!-headmin '(qqe_update!-headmin qqe_arg2l
+qqe_length!-graph!-bterm qqe_arg2r) 1894185038328018531)
+
+(c!:install 'pasf_termp '(pasf_termp nil "Illegal UPrA formula :"
+"Quantified variables" "and" "multiplied" t setkorder kernels reorder
+rederr) 1144928480082554183)
+
+(c!:install 'dvfsf_v '(dvfsf_v dvfsf_p!* qremf) 1651809935425776398)
+
+(c!:install 'ps!:find!-order1 '(ps!:find!-order1 ps ps!:order!-fn
+ps!:max!-order nil ps!:order!-limit tps "Expression "
+" has zero expansion to order " ps!:order ps!:last!-term ps!:getv apply
+ps!:putv ps!:value ps!:evaluate!-next rerror) 940013012999076635)
+
+(c!:install 'vbcabs '(vbcabs vbcminus!? bcneg) 892910169512197810)
+
+(c!:install 'setequal '(setequal nil subsetp) 1000524733990914143)
+
+(c!:install 'texaeval '(texaeval !*lasimp tex aeval) 1522841011677328920
 )
 
-(c!:install 'aex_constp '(aex_constp aex_freeids) 2056273594896698077)
+(c!:install 'calc_map_tar '(calc_map_tar ev!-poles constimes ev!-tades
+strand!-alg!-top) 2074601762213313877)
 
-(c!:install 'spinnerprod '(spinnerprod nil t plus times) 
-144423914503628268)
+(c!:install 'nrootnn '(nrootnn t !*primelist!* nil mcfactor!* iroot) 
+2177319519182389866)
 
-(c!:install 'tstpolyarg '(tstpolyarg !*ratarg "polynomial" nil prepsq
-typerr) 1589095219413035965)
+(c!:install 'mchkminus '(mchkminus (times quotient) nil t times ((minus
+1) (minus 1)) minus quotient (minus 1) mchkopt mchkopt1 mcharg) 
+1086122555745605418)
 
-(c!:install 'groebfasttest '(groebfasttest nil) 2225559225235425092)
+(c!:install 'find!-non!-zero '(find!-non!-zero confusion) 
+1843618901966006074)
 
-(c!:install 'dsimptimes '(dsimptimes nil dsimp mappend lastpair errach) 
-201780619971859969)
+(c!:install 'mk_resimp_rep '(mk_resimp_rep nil get_group_in
+get!*elements get_rep_matrix_in mk!+resimp!+mat) 2079311118525604802)
 
-(c!:install 'forttab '(forttab fortlinelen!* minfortlinelen!*
-!*fortcurrind!* !*posn!* min0 max nspaces pprin2) 1761395082654190862)
-
-(c!:install 'find_triangle_coeff '(find_triangle_coeff find_triangles1) 
-1043344782088460044)
-
-(c!:install '!*sq2fourier '(!*sq2fourier nil cos fourier tag
-fs!:make!-nullangle) 1279989235566875546)
-
-(c!:install 'makemainvar '(makemainvar t mulcoeffsby mergeadd) 
-2230961793041417839)
-
-(c!:install 'constant_exprp '(constant_exprp constant t i nil realvalued
-alwaysrealvalued (plus minus difference times quotient) !:rd!: !*complex
-!:cr!: constant_expr_listp) 1968306754571372480)
-
-(c!:install 'horner!-rule!-in!-order!-mod!-p '(
-horner!-rule!-in!-order!-mod!-p t !*d2n evaluate!-in!-order!-mod!-p) 
-421784425375436902)
-
-(c!:install 'lto_hinsert '(lto_hinsert apply lto_hinsert1) 
-2129320686914834953)
-
-(c!:install 'get_first_kernel '(get_first_kernel nil gfk) 
-1813278792908950793)
-
-(c!:install 'collectpolyvarsaux '(collectpolyvarsaux t nil union) 
-863310343947439430)
-
-(c!:install 'pasf_smeqtable '(pasf_smeqtable ((equal (equal 1) (neq
-false) (geq 1) (leq 1) (greaterp false) (lessp false) (cong 1) (ncong
-false)) (neq (equal false) (neq 1) (geq 3 . greaterp) (leq 3 . lessp) (
-greaterp 2) (lessp 2) (cong nil) (ncong 2)) (geq (equal 2) (neq 3 . 
-greaterp) (geq 1) (leq 3 . equal) (greaterp 2) (lessp false) (cong nil)
-(ncong 5 . greaterp)) (leq (equal 2) (neq 3 . lessp) (geq 3 . equal) (
-leq 1) (greaterp false) (lessp 2) (cong nil) (ncong 5 . lessp)) (
-greaterp (equal false) (neq 1) (geq 1) (leq false) (greaterp 1) (lessp
-false) (cong nil) (ncong nil)) (lessp (equal false) (neq 1) (geq false)
-(leq 1) (greaterp false) (lessp 1) (cong nil) (ncong nil)) (cong (equal
-2) (neq nil) (geq nil) (leq nil) (greaterp nil) (lessp nil) (cong 1) (
-ncong false)) (ncong (equal false) (neq 1) (geq 4 . greaterp) (leq 4 . 
-lessp) (greaterp nil) (lessp nil) (cong false) (ncong 1)))) 
-1522998085211193438)
-
-(c!:install 'nestminusp!: '(nestminusp!: nil simp minusf) 
-522441789077365634)
-
-(c!:install 'gf2bf '(gf2bf !:rd!: nil nreverse fl2bf csl_normbf
-read!:num) 1544609287247496246)
-
-(c!:install 'ofsf_exploitknowl '(ofsf_exploitknowl nil equal
-!*rlsippsubst greaterp geq lessp leq neq sfto_varp negsq lto_insertq) 
-1795606398903847931)
+(c!:install 'ofsf_smupdknowl '(ofsf_smupdknowl nil and false
+ofsf_negateat ofsf_at2ir ofsf_sminsert setcdr) 1112389266621275768)
 
 
 % End of generated Lisp code

@@ -2950,15 +2950,15 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
                 return resource_exceeded();
 #ifndef OLD_GCHOOK_CODE
 /*
- * I have "soft" garbage3 collections - perhaps fairly frequently. I will
- * only call the GC hook function around twice a second to avoid undue
+ * I have "soft" garbage collections - perhaps fairly frequently. I will
+ * only call the GC hook function around once every 30 seconds to avoid undue
  * overhead in it.
  */
             if (!prev_consolidated_set)
             {   prev_consolidated = consolidated_time[0];
                 prev_consolidated_set = 1;
             }
-            if (consolidated_time[0] > prev_consolidated + 0.5)
+            if (consolidated_time[0] > prev_consolidated + 30.0)
             {   prev_consolidated = consolidated_time[0];
                 return use_gchook(p, nil); /* Soft GC */
             }
@@ -3492,6 +3492,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))
         return resource_exceeded();
+#ifndef OLD_GCHOOK_CODE
+    prev_consolidated = consolidated_time[0];
+#endif
     return use_gchook(p, lisp_true);
 }
 
