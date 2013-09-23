@@ -32,54 +32,73 @@ module z3;
 
 !#if (memq 'csl lispsystem!*)
 
+compiletime load!-package 'rltools;
+
+macro procedure z3_interface(u);
+   begin scalar myname, foreign, argtypel, rettype, lib, myargl, myname!-star, argn, a, foreign!-argl, p;
+      u := cdr u;
+      myname := eval pop u;
+      foreign := eval pop u;
+      argtypel := eval pop u;
+      rettype := eval pop u;
+      lib := eval pop u;
+      myname!-star := lto_idconcat {myname, '!*};
+      argn := length argtypel;
+      for i := 1 : argn do <<
+	 a := mkid('a, i);
+	 myargl := a . myargl;
+	 foreign!-argl := a . mkquote pop argtypel . foreign!-argl
+      >>;
+      if rettype then
+	 foreign!-argl := mkquote rettype . foreign!-argl;
+      myargl := reversip myargl;
+      foreign!-argl := reversip foreign!-argl;
+      p := {'fluid, mkquote {myname!-star}} . p;
+      p := {'setq, myname!-star, {'z3_find!-foreign!-function, foreign, lib}} . p;
+      p := {'put, mkquote myname, ''number!-of!-args, argn} . p;
+      p := {'de, myname, myargl, 'call!-foreign!-function . myname!-star . foreign!-argl} . p;
+      return 'progn . reversip p
+   end;
+
+procedure z3_find!-foreign!-function(name, lib);
+   if lib then
+      find!-foreign!-function(name, lib);
+
+global '(int64_min!*);
+global '(int64_max!*);
+
+int64_min!* := -0x7fffffffffffffff - 1;
+int64_max!* := 0x7fffffffffffffff;
+
 fluid '(z3_libredz3!*);
 fluid '(z3_redz3!*);
-fluid '(z3_mk_config!*);
-fluid '(z3_mk_context!*);
-fluid '(z3_mk_simple_solver!*);
-fluid '(z3_parse_smtlib2_string!*);
-fluid '(z3_solver_assert!*);
-fluid '(z3_solver_check!*);
-fluid '(z3_solver_reset!*);
-fluid '(z3_context_to_string!*);
-fluid '(z3_del_config!*);
-fluid '(z3_del_context!*);
 
 z3_libredz3!* := lto_sconcat {rltools_trunk(), "packages/foreign/z3/libredz3.so"};
 
-if filep z3_libredz3!* then <<
-   z3_redz3!* := open!-foreign!-library z3_libredz3!*;
+errorset('(setq z3_redz3!* (open!-foreign!-library z3_libredz3!*)), nil, nil);
 
-   z3_mk_config!* := find!-foreign!-function("Z3_mk_config", z3_redz3!*);
-   z3_mk_context!* := find!-foreign!-function("Z3_mk_context", z3_redz3!*);
-   z3_mk_simple_solver!* := find!-foreign!-function("Z3_mk_simple_solver", z3_redz3!*);
-   z3_parse_smtlib2_string!* := find!-foreign!-function("redz3_parse_smtlib2_string", z3_redz3!*);
-   z3_solver_assert!* := find!-foreign!-function("Z3_solver_assert", z3_redz3!*);
-   z3_solver_check!* := find!-foreign!-function("Z3_solver_check", z3_redz3!*);
-   z3_solver_reset!* := find!-foreign!-function("Z3_solver_reset", z3_redz3!*);
-   z3_context_to_string!* := find!-foreign!-function("Z3_context_to_string", z3_redz3!*);
-   z3_del_config!* := find!-foreign!-function("Z3_del_config", z3_redz3!*);
-   z3_del_context!* := find!-foreign!-function("Z3_del_context", z3_redz3!*)
->>;
+z3_interface('z3_cleanup_args, "redz3_cleanupArgs", nil, nil, 'z3_redz3!*);
+z3_interface('z3_context_to_string, "Z3_context_to_string", '(int64), 'string, 'z3_redz3!*);
+z3_interface('z3_del_config, "Z3_del_config", '(int64), nil, 'z3_redz3!*);
+z3_interface('z3_del_context, "Z3_del_context", '(int64), nil, 'z3_redz3!*);
+z3_interface('z3_init_args, "redz3_initArgs", '(int32), nil, 'z3_redz3!*);
+z3_interface('z3_mk_app, "redz3_mkAppWithArgs", '(int64 string), 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_config, "Z3_mk_config", nil, 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_const, "Z3_mk_const", nil, 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_context, "Z3_mk_context", '(int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_int, "redz3_mkInt", '(int64 int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_int_var, "redz3_mkIntVar", '(int64 string), 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_simple_solver, "Z3_mk_simple_solver", '(int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_parse_smtlib2_string, "redz3_parse_smtlib2_string", '(int64 string), 'int64, 'z3_redz3!*);
+z3_interface('z3_prin2_ast, "redz3_prin2Ast", '(int64 int64), nil, 'z3_redz3!*);
+z3_interface('z3_push_to_args, "redz3_pushToArgs", '(int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_solver_assert, "Z3_solver_assert", '(int64 int64 int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_solver_check, "Z3_solver_check", '(int64 int64), 'int32, 'z3_redz3!*);
+z3_interface('z3_solver_reset, "Z3_solver_reset", '(int64 int64), nil, 'z3_redz3!*);
 
-inline procedure z3_mk_config();
-   call!-foreign!-function(z3_mk_config!*, 'int64);
-
-inline procedure z3_mk_context(cfg);
-   call!-foreign!-function(z3_mk_context!*, 'int64, cfg, 'int64);
-
-inline procedure z3_mk_simple_solver(ctx);
-   call!-foreign!-function(z3_mk_simple_solver!*, 'int64, ctx, 'int64);
-
-inline procedure z3_parse_smtlib2_string(ctx, str);
-   call!-foreign!-function(z3_parse_smtlib2_string!*, 'int64, ctx, 'string, str, 'int64);
-
-inline procedure z3_solver_assert(ctx, slv, ast);
-   call!-foreign!-function(z3_solver_assert!*, 'int64, ctx, 'int64, slv, 'int64, ast, 'int64);
-
-procedure z3_solver_check(ctx, slv);
+procedure z3_check!-sat(ctx, slv);
    begin scalar res;
-      res := call!-foreign!-function(z3_solver_check!*, 'int64, ctx, 'int64, slv, 'int32);
+      res := z3_solver_check(ctx, slv);
       if res = 1 then
 	 return 'sat;
       if res = -1 then
@@ -87,17 +106,40 @@ procedure z3_solver_check(ctx, slv);
       return 'unknown
    end;
 
-inline procedure z3_solver_reset(ctx, slv);
-   call!-foreign!-function(z3_solver_reset!*, 'int64, ctx, 'int64, slv);
+procedure z3_form2ast(ctx, form);
+   begin scalar op, argl, args, w;
+      if fixp form then <<
+	 if form < int64_min!* or form > int64_max!* then
+	    rederr {"integer", form, "out of range"};
+      	 return z3_mk_int(ctx, form)
+      >>;
+      if idp form then
+	 return z3_mk_int_var(ctx, z3_id2str form);
+      if stringp form then
+	 return z3_mk_int_var(ctx, form);
+      if listp form then <<
+	 argl := for each arg in cdr form collect
+ 	    z3_form2ast(ctx, arg);
+	 args := z3_init_args length argl;
+	 for each arg in argl do
+	    args := z3_push_to_args arg;
+      	 op := car form;
+      	 if op member '(plus !+ "plus" "+") then <<
+	    w := z3_mk_app(ctx, "plus");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(times !* "times" "*") then <<
+	    w := z3_mk_app(ctx, "times");
+	    z3_cleanup_args();
+	    return w
+	 >>
+      >>;
+      rederr {"syntax error in form", form}
+   end;
 
-inline procedure z3_context_to_string(ctx);
-   call!-foreign!-function(z3_context_to_string!*, 'int64, ctx, 'string);
-
-inline procedure z3_del_config(cfg);
-   call!-foreign!-function(z3_del_config!*, 'int64, cfg);
-
-inline procedure z3_del_context(ctx);
-   call!-foreign!-function(z3_del_context!*, 'int64, ctx);
+procedure z3_id2str(s);
+   compress('!" . reversip('!" . reversip explode s));
 
 !#endif
 

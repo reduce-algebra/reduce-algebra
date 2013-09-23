@@ -29,9 +29,60 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <z3.h>
 #include <inttypes.h>
 
-Z3_ast redz3_parse_smtlib2_string(Z3_context ctx, const Z3_string str) {
-  Z3_parse_smtlib2_string(ctx, str, 0, 0, 0, 0, 0, 0);
+static Z3_ast *Args = NULL;
+static unsigned int Argn = 0; 
+static unsigned int ArgsIdx = 0;
+
+int64_t redz3_parse_smtlib2_string(int64_t ctx, const char *str) {
+  return (int64_t)Z3_parse_smtlib2_string((Z3_context)ctx, (Z3_string)str, 0, 0, 0, 0, 0, 0);
+}
+
+void redz3_prin2Ast(int64_t ctx, int64_t ast) {
+  printf("%s", Z3_ast_to_string((Z3_context)ctx, (Z3_ast)ast));
+}
+
+int64_t redz3_mkInt(int64_t ctx, int64_t v) {
+  Z3_sort ty = Z3_mk_int_sort((Z3_context)ctx);
+  return (int64_t)Z3_mk_int((Z3_context)ctx, (int)v, ty);
+}
+
+int64_t redz3_mkIntVar(int64_t ctx, const char * name) {
+  Z3_sort ty = Z3_mk_int_sort((Z3_context)ctx);
+  Z3_symbol s = Z3_mk_string_symbol((Z3_context)ctx, name);
+  return (int64_t)Z3_mk_const((Z3_context)ctx, s, ty);
+}
+
+void redz3_initArgs(int32_t argn) {
+  Args = (Z3_ast *)malloc(argn * sizeof(Z3_ast));
+  Argn = (unsigned int)argn;
+  ArgsIdx = 0;
+}
+
+void redz3_cleanupArgs(void) {
+  if (Args == NULL) {
+    fprintf(stderr, "WARNING: redz3_cleanupArgs called with uninitialized Args - ignoring\n");
+    return;
+  }
+  free(Args);
+  Args = NULL;
+  Argn = 0;
+  ArgsIdx = 0;
+}
+
+int64_t redz3_pushToArgs(int64_t arg) {
+  Args[ArgsIdx++] = (Z3_ast)arg;
+  return (int64_t)Args;
+}
+
+int64_t redz3_mkAppWithArgs(int64_t ctx, const char *op) {
+  if (strcmp(op, "plus")  == 0)
+    return (int64_t)Z3_mk_add((Z3_context)ctx, Argn, Args);
+  if (strcmp(op, "times")  == 0)
+    return (int64_t)Z3_mk_mul((Z3_context)ctx, Argn, Args);
+  fprintf(stderr, "error in redz3_mkAppWithArgs: unknown operator %s\n", op);
+  exit(1);
 }
