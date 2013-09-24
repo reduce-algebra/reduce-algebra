@@ -114,7 +114,7 @@ procedure z3_form2ast(ctx, form);
       	 return z3_mk_int(ctx, form)
       >>;
       if idp form then
-	 return z3_mk_int_var(ctx, z3_id2str form);
+	 return z3_mk_int_var(ctx, symbol!-name form);
       if stringp form then
 	 return z3_mk_int_var(ctx, form);
       if listp form then <<
@@ -137,9 +137,6 @@ procedure z3_form2ast(ctx, form);
       >>;
       rederr {"syntax error in form", form}
    end;
-
-procedure z3_id2str(s);
-   compress('!" . reversip('!" . reversip explode s));
 
 !#endif
 

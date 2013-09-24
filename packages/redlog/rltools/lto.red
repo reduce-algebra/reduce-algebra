@@ -225,11 +225,6 @@ procedure lto_sconcat(l);
       else
 	 car l;
 
-procedure lto_at2str(s);
-   % List tools atom to string. [s] is an atom. Returns the print name
-   % of the atom [s] as a string.
-   compress('!" . reversip('!" . reversip explode s));
-
 procedure lto_max(l);
    % List tools maximum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
@@ -306,84 +301,6 @@ procedure lto_equallengthp(s1,s2);
       null s1 and null s2
    >>;
 
-!#if (memq 'csl lispsystem!*)
-   procedure lto_hashid(id);
-      sxhash id;
-!#endif
-
-!#if (memq 'psl lispsystem!*)
-   procedure lto_hashid(id);
-      id2int id;
-!#endif
-
-!#if (not (memq 'psl lispsystem!*))
-   procedure delq(x,l);
-      % Delete with memq. [x] is ANY; [l] is a list. Returns a list.
-      % The first occurence of an element identical to [x] in [l] is
-      % deleted.
-      if l then if car l eq x then cdr l else car l . delq(x,cdr l);
-!#endif
-
-!#if (not (memq 'psl lispsystem!*))
-   procedure delqip(u,v);
-      % Delete with memq in place. [u] is ANY; [v] is a list. Returns
-      % a list. The first occurence of an element identical to [u] in
-      % [v] is deleted [v] is possibly modified.
-      if not pairp v then
-	 v
-      else if u eq car v then
-	 cdr v
-      else <<
-	 delqip1(u,v);
-	 v
-      >>;
-!#endif
-
-!#if (not (memq 'psl lispsystem!*))
-   procedure delqip1(u,v);
-      % Delete with memq in place subroutine. [u] is ANY; [v] is a
-      % list, such that [not(car v eq u)]. Returns a list. The first
-      % occurence of an element identical to [u] in [v] is deleted [v]
-      % is possibly modified.
-      if not pairp cdr v then
-	 nil
-      else if u eq cadr v then
-	 rplacd(v,cddr v)
-      else
-	 delqip1(u,cdr v);
-!#endif
-
-!#if (not (memq 'psl lispsystem!*))
-   procedure adjoin(x,l);
-      % Adjoin. [x] is any S-expression, [l] is a list. Conses [x] to
-      % [l] if [x] is not already member of [l].
-      if x member l then l else x . l;
-!#endif
-
-!#if (not (memq 'psl lispsystem!*))
-   procedure list2set(l);
-      % Remove redundant elements from L.
-     if not pairp l then
- 	 nil
-      else if car l member cdr l then
- 	 list2set cdr l
-      else
- 	 car l . list2set cdr l;
-!#endif
-
-!#if (not (memq 'psl lispsystem!*))
-   procedure list2vector(l);
-      % Create a vector and store the list l into it.
-      begin integer i; scalar v;
-      	 v := mkvect sub1 length l;
-      	 i := 0;
-      	 for each vl in l do <<
-	    putv(v,i,vl);
- 	    i := i+1
-	 >>;
-      	 return v
-      end;
-!#endif
 
 procedure lto_lengthgeq(l,n);
    % Length greater than or equal. [l] is a list; [n] is a non-negative
@@ -471,6 +388,99 @@ procedure lto_partition(l, f);
 	 badl := x . badl;
       return reversip goodl . reversip badl
    end;
+
+!#if (memq 'csl lispsystem!*)
+   procedure lto_hashid(id);
+      sxhash id;
+!#endif
+
+!#if (memq 'psl lispsystem!*)
+   procedure lto_hashid(id);
+      id2int id;
+!#endif
+
+!#if (not (memq 'psl lispsystem!*))
+   procedure delq(x,l);
+      % Delete with memq. [x] is ANY; [l] is a list. Returns a list.
+      % The first occurence of an element identical to [x] in [l] is
+      % deleted.
+      if l then if car l eq x then cdr l else car l . delq(x,cdr l);
+!#endif
+
+!#if (not (memq 'psl lispsystem!*))
+   procedure delqip(u,v);
+      % Delete with memq in place. [u] is ANY; [v] is a list. Returns
+      % a list. The first occurence of an element identical to [u] in
+      % [v] is deleted [v] is possibly modified.
+      if not pairp v then
+	 v
+      else if u eq car v then
+	 cdr v
+      else <<
+	 delqip1(u,v);
+	 v
+      >>;
+!#endif
+
+!#if (not (memq 'psl lispsystem!*))
+   procedure delqip1(u,v);
+      % Delete with memq in place subroutine. [u] is ANY; [v] is a
+      % list, such that [not(car v eq u)]. Returns a list. The first
+      % occurence of an element identical to [u] in [v] is deleted [v]
+      % is possibly modified.
+      if not pairp cdr v then
+	 nil
+      else if u eq cadr v then
+	 rplacd(v,cddr v)
+      else
+	 delqip1(u,cdr v);
+!#endif
+
+!#if (not (memq 'psl lispsystem!*))
+   procedure adjoin(x,l);
+      % Adjoin. [x] is any S-expression, [l] is a list. Conses [x] to
+      % [l] if [x] is not already member of [l].
+      if x member l then l else x . l;
+!#endif
+
+!#if (not (memq 'psl lispsystem!*))
+   procedure list2set(l);
+      % Remove redundant elements from L.
+     if not pairp l then
+ 	 nil
+      else if car l member cdr l then
+ 	 list2set cdr l
+      else
+ 	 car l . list2set cdr l;
+!#endif
+
+!#if (not (memq 'psl lispsystem!*))
+   procedure list2vector(l);
+      % Create a vector and store the list l into it.
+      begin integer i; scalar v;
+      	 v := mkvect sub1 length l;
+      	 i := 0;
+      	 for each vl in l do <<
+	    putv(v,i,vl);
+ 	    i := i+1
+	 >>;
+      	 return v
+      end;
+!#endif
+
+!#if (not (memq 'csl lispsystem!*))
+   procedure symbol!-name(s);
+      % List tools atom to string. [s] is an atom. Returns the print name
+      % of the atom [s] as a string. This is not quite correct: e.g. lto_at2str
+      % '!" would fail.
+      compress('!" . reversip('!" . reversip explode s));
+!#fi
+
+procedure lto_at2str(s);
+   if idp s then
+      symbol!-name s
+   else
+      compress('!" . reversip('!" . reversip explode s));
 
 endmodule;  % [lto]
 
