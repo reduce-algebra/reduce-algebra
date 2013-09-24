@@ -73,16 +73,128 @@ void redz3_cleanupArgs(void) {
   ArgsIdx = 0;
 }
 
-int64_t redz3_pushToArgs(int64_t arg) {
+void redz3_pushToArgs(int64_t arg) {
   Args[ArgsIdx++] = (Z3_ast)arg;
-  return (int64_t)Args;
 }
 
 int64_t redz3_mkAppWithArgs(int64_t ctx, const char *op) {
-  if (strcmp(op, "plus")  == 0)
+  // Arithmetic operators:
+  if (strcmp(op, "plus") == 0)
     return (int64_t)Z3_mk_add((Z3_context)ctx, Argn, Args);
-  if (strcmp(op, "times")  == 0)
+  if (strcmp(op, "minus") == 0) {
+    if (Argn == 1) {
+      return (int64_t)Z3_mk_unary_minus((Z3_context)ctx, Args[0]);
+    }
+    return (int64_t)Z3_mk_sub((Z3_context)ctx, Argn, Args);
+  }
+  if (strcmp(op, "times") == 0)
     return (int64_t)Z3_mk_mul((Z3_context)ctx, Argn, Args);
+  if (strcmp(op, "mod") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: mod has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_mod((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "div") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: div has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_div((Z3_context)ctx, Args[0], Args[1]);
+  }
+  // Relations:
+  if (strcmp(op, "neq") == 0)  // (distinct x y) is equivalent to (not (= x y))
+    return (int64_t)Z3_mk_distinct((Z3_context)ctx, Argn, Args);
+  if (strcmp(op, "equal") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: equal has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_eq((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "geq") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: geq has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_ge((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "leq") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: leq has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_le((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "greaterp") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: greaterp has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_gt((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "lessp") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: lessp has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_lt((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "cong") == 0) {
+    if (Argn != 3) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: cong has to have exactly 3 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_eq((Z3_context)ctx, Args[1], Z3_mk_mod((Z3_context)ctx, Args[0], Args[2]));
+  }
+  if (strcmp(op, "ncong") == 0) {
+    if (Argn != 3) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: ncong has to have exactly 3 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_not((Z3_context)ctx, Z3_mk_eq((Z3_context)ctx, Args[1], Z3_mk_mod((Z3_context)ctx, Args[0], Args[2])));
+  }
+  // Logical connectives:
+  if (strcmp(op, "true") == 0) {
+    if (Argn != 0) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: true has to have no arguments\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_true((Z3_context)ctx);
+  }
+  if (strcmp(op, "false") == 0) {
+    if (Argn != 0) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: false has to have no arguments\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_false((Z3_context)ctx);
+  }
+  if (strcmp(op, "not") == 0) {
+    if (Argn != 1) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: equiv has to have exactly 1 arg\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_not((Z3_context)ctx, Args[0]);
+  }
+  if (strcmp(op, "and") == 0)
+    return (int64_t)Z3_mk_and((Z3_context)ctx, Argn, Args);
+  if (strcmp(op, "or") == 0)
+    return (int64_t)Z3_mk_or((Z3_context)ctx, Argn, Args);
+  if (strcmp(op, "impl") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: impl has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_implies((Z3_context)ctx, Args[0], Args[1]);
+  }
+  if (strcmp(op, "equiv") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: equiv has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_iff((Z3_context)ctx, Args[0], Args[1]);
+  }
   fprintf(stderr, "error in redz3_mkAppWithArgs: unknown operator %s\n", op);
   exit(1);
 }

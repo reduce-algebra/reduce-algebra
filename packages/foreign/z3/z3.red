@@ -77,6 +77,8 @@ z3_libredz3!* := lto_sconcat {rltools_trunk(), "packages/foreign/z3/libredz3.so"
 
 errorset('(setq z3_redz3!* (open!-foreign!-library z3_libredz3!*)), nil, nil);
 
+% Format: (reduce function name as identifier, C function name as string,
+% argument type list, return value type, library path)
 z3_interface('z3_cleanup_args, "redz3_cleanupArgs", nil, nil, 'z3_redz3!*);
 z3_interface('z3_context_to_string, "Z3_context_to_string", '(int64), 'string, 'z3_redz3!*);
 z3_interface('z3_del_config, "Z3_del_config", '(int64), nil, 'z3_redz3!*);
@@ -91,7 +93,7 @@ z3_interface('z3_mk_int_var, "redz3_mkIntVar", '(int64 string), 'int64, 'z3_redz
 z3_interface('z3_mk_simple_solver, "Z3_mk_simple_solver", '(int64), 'int64, 'z3_redz3!*);
 z3_interface('z3_parse_smtlib2_string, "redz3_parse_smtlib2_string", '(int64 string), 'int64, 'z3_redz3!*);
 z3_interface('z3_prin2_ast, "redz3_prin2Ast", '(int64 int64), nil, 'z3_redz3!*);
-z3_interface('z3_push_to_args, "redz3_pushToArgs", '(int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_push_to_args, "redz3_pushToArgs", '(int64), nil, 'z3_redz3!*);
 z3_interface('z3_solver_assert, "Z3_solver_assert", '(int64 int64 int64), 'int64, 'z3_redz3!*);
 z3_interface('z3_solver_check, "Z3_solver_check", '(int64 int64), 'int32, 'z3_redz3!*);
 z3_interface('z3_solver_reset, "Z3_solver_reset", '(int64 int64), nil, 'z3_redz3!*);
@@ -107,30 +109,121 @@ procedure z3_check!-sat(ctx, slv);
    end;
 
 procedure z3_form2ast(ctx, form);
-   begin scalar op, argl, args, w;
+   % Only for integers now. We need a clear concept for various logics.
+   begin scalar op, argl, w;
       if fixp form then <<
 	 if form < int64_min!* or form > int64_max!* then
 	    rederr {"integer", form, "out of range"};
       	 return z3_mk_int(ctx, form)
       >>;
+      if form member '(true "true") then
+	 return z3_mk_app(ctx, "true");
+      if form member '(false "false") then
+	 return z3_mk_app(ctx, "false");
       if idp form then
+	 % TODO: Check if symbol!-name returns a string of length at most 256.
 	 return z3_mk_int_var(ctx, symbol!-name form);
       if stringp form then
+	 % TODO: Check if form is of length at most 256.
 	 return z3_mk_int_var(ctx, form);
       if listp form then <<
 	 argl := for each arg in cdr form collect
  	    z3_form2ast(ctx, arg);
-	 args := z3_init_args length argl;
+	 % TODO: Test whether length argl is int32 or int64.
+	 z3_init_args length argl;
 	 for each arg in argl do
-	    args := z3_push_to_args arg;
+	    z3_push_to_args arg;
       	 op := car form;
+	 % Arithmetic operators:
       	 if op member '(plus !+ "plus" "+") then <<
 	    w := z3_mk_app(ctx, "plus");
 	    z3_cleanup_args();
 	    return w
 	 >>;
+	 if op member '(minus difference !- "minus" "difference") then <<
+	    w := z3_mk_app(ctx, "minus");
+	    z3_cleanup_args();
+	    return w
+	 >>;
 	 if op member '(times !* "times" "*") then <<
 	    w := z3_mk_app(ctx, "times");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(modc "modc") then <<
+	    w := z3_mk_app(ctx, "mod");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(divc "divc") then <<
+	    w := z3_mk_app(ctx, "div");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 % Relations:
+	 if op member '(neq "neq" "<>") then <<
+	    w := z3_mk_app(ctx, "neq");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(equal != "equal" "=") then <<
+	    w := z3_mk_app(ctx, "equal");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(geq "geq" ">=") then <<
+	    w := z3_mk_app(ctx, "geq");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(leq "leq" "<=") then <<
+	    w := z3_mk_app(ctx, "leq");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(greaterp "greaterp" ">") then <<
+	    w := z3_mk_app(ctx, "greaterp");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(lessp "lessp" "<") then <<
+	    w := z3_mk_app(ctx, "lessp");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(cong "cong") then <<
+	    w := z3_mk_app(ctx, "cong");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(ncong "ncong") then <<
+	    w := z3_mk_app(ctx, "ncong");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 % Logical connectives:
+	 if op member '(not "not") then <<
+	    w := z3_mk_app(ctx, "not");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(and "and") then <<
+	    w := z3_mk_app(ctx, "and");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(or "or") then <<
+	    w := z3_mk_app(ctx, "or");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(impl "impl") then <<
+	    w := z3_mk_app(ctx, "impl");
+	    z3_cleanup_args();
+	    return w
+	 >>;
+	 if op member '(equiv "equiv") then <<
+	    w := z3_mk_app(ctx, "equiv");
 	    z3_cleanup_args();
 	    return w
 	 >>
