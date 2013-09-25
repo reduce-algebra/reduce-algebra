@@ -474,7 +474,7 @@ procedure lto_partition(l, f);
       % of the atom [s] as a string. This is not quite correct: e.g. lto_at2str
       % '!" would fail.
       compress('!" . reversip('!" . reversip explode s));
-!#fi
+!#endif
 
 procedure lto_at2str(s);
    if idp s then
