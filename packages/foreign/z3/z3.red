@@ -91,6 +91,7 @@ z3_interface('z3_mk_context, "Z3_mk_context", '(int64), 'int64, 'z3_redz3!*);
 z3_interface('z3_mk_int, "redz3_mkInt", '(int64 int64), 'int64, 'z3_redz3!*);
 z3_interface('z3_mk_int_var, "redz3_mkIntVar", '(int64 string), 'int64, 'z3_redz3!*);
 z3_interface('z3_mk_simple_solver, "Z3_mk_simple_solver", '(int64), 'int64, 'z3_redz3!*);
+z3_interface('z3_mk_solver, "Z3_mk_solver", '(int64), 'int64, 'z3_redz3!*);
 z3_interface('z3_parse_smtlib2_string, "redz3_parse_smtlib2_string", '(int64 string), 'int64, 'z3_redz3!*);
 z3_interface('z3_prin2_ast, "redz3_prin2Ast", '(int64 int64), nil, 'z3_redz3!*);
 z3_interface('z3_push_to_args, "redz3_pushToArgs", '(int64), nil, 'z3_redz3!*);
