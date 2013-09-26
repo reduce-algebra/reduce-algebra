@@ -238,6 +238,21 @@ procedure pasf_elimcongat1(atf);
       return rl_mkq('all, w, pasf_0mk2('neq, nlhs))
    end;
 
+procedure pasf_elimcongat2(lpf);
+   % [f] is an atomic Presburger formula in lisp prefix. Returns a Presburger
+   % formula which does not contain cong and ncong predicates.
+   begin scalar op, m, var, nlhs;
+      op := car lpf;
+      if not (op memq '(cong ncong)) then
+	 return lpf;
+      m := cadddr lpf;
+      var := gensym();
+      nlhs := {'difference, cadr lpf, caddr lpf};
+      if op eq 'cong then
+	 return {'ex, var, {'equal, nlhs, {'times, var, m}}};
+      return {'all, var, {'neq, nlhs, {'times, var, m}}}
+   end;
+
 endmodule;
 
 end; % of file
