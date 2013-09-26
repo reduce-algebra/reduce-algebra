@@ -73,6 +73,7 @@ if filep gurobi_libredgurobi!* then <<
 >>;
 
 procedure gurobi_newmodel(n, m);
+   % [n] real variables plus [m] integer variables, all unbounded from below.
    call!-foreign!-function(gurobi_newmodel!*, 'int32, n, 'int32, m);
 
 inline procedure gurobi_newDoubleArray(n);
