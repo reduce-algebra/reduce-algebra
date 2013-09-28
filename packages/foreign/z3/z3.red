@@ -161,6 +161,11 @@ procedure z3_form2ast(ctx, form);
 	    z3_cleanup_args();
 	    return w
 	 >>;
+	 if op member '(expt "expt" "^") then <<
+	    w := z3_mk_app(ctx, "power");
+	    z3_cleanup_args();
+	    return w
+	 >>;
 	 % Relations:
 	 if op member '(neq "neq" "<>") then <<
 	    w := z3_mk_app(ctx, "neq");

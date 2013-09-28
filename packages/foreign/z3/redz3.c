@@ -103,9 +103,17 @@ int64_t redz3_mkAppWithArgs(int64_t ctx, const char *op) {
     }
     return (int64_t)Z3_mk_div((Z3_context)ctx, Args[0], Args[1]);
   }
+  if (strcmp(op, "power") == 0) {
+    if (Argn != 2) {
+      fprintf(stderr, "error in redz3_mkAppWithArgs: power has to have exactly 2 args\n", op);
+      exit(1);
+    }
+    return (int64_t)Z3_mk_power((Z3_context)ctx, Args[0], Args[1]);
+  }
   // Relations:
   if (strcmp(op, "neq") == 0)  // (distinct x y) is equivalent to (not (= x y))
     return (int64_t)Z3_mk_distinct((Z3_context)ctx, Argn, Args);
+    //return (int64_t)Z3_mk_not((Z3_context)ctx, Z3_mk_eq((Z3_context)ctx, Args[0], Args[1]));
   if (strcmp(op, "equal") == 0) {
     if (Argn != 2) {
       fprintf(stderr, "error in redz3_mkAppWithArgs: equal has to have exactly 2 args\n", op);
