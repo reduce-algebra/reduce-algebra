@@ -423,6 +423,58 @@ symbolic inline procedure princ x; prin2 x;
 symbolic inline procedure prin x;  prin1 x;
 symbolic inline procedure printc x; << prin2 x; terpri(); x >>;
 
+% A function to expand a filename glob (pattern) via a pipe
+%  A couple of tricky issues here:
+%    a) set *raise to nil so that upper case characters in strings are not changed to lower case
+%    b) unwind-protect so that (global) raise is always restored to its former value
+%    c) Unix Bourne shell returns the pattern string if no match, so check for this
+
+symbolic procedure glob!-filenames pat;
+  if not stringp pat then rederr " glob!-filenames needs a string parameter"
+   else begin scalar cmd,chan,oldchan,filelist,strbuf,chr,raise;
+!#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
+     cmd := "cmd /C FOR %%H IN (%w) DO @ECHO %%H";
+!#else
+     cmd := "sh -c 'for h in %w ; do echo $h ;done'";
+!#endif
+     raise := !*raise; !*raise := nil;
+     unwind!-protect(
+       <<cmd := bldmsg(cmd,pat);
+         chan := pipe!-open(cmd,'input);
+         if chan=0 then return rederr "error opening pipe";
+         oldchan := rds chan;
+         strbuf := list '!";
+         while (chr := readch()) neq !$eof!$ do <<
+           if chr neq !$eol!$
+             then strbuf := chr . strbuf    % collect character for filename
+            else <<                       % eol - finish filename
+             strbuf := '!" . strbuf;
+	     filelist := (compress reversip strbuf) . filelist;
+             strbuf := list '!">>;
+         >>;
+         close rds oldchan>>,
+       !*raise := raise);
+!#if (not (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*)))
+     if null cdr filelist and car filelist = pat then return nil;
+!#endif
+     return reversip filelist
+   end;
+
+symbolic procedure delete!-file!-wildcard pat;
+  if not stringp pat then nonstringerror(pat,'delete!-file!-wildcard)
+   else for each fi in glob!-filenames pat do delete!-file fi;
+
+% emulate delete!-file via an external command if not defined in PSL
+
+symbolic procedure delete!-file!-slow fi;
+!#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
+  filep fi and system bldmsg("del ""%s""",fi);
+!#else
+  system bldmsg("rm -f %s", fi);
+#!endif
+
+loadtime if not getd 'delete!-file then copyd('delete!-file,'delete!-file!-slow);
+
 % HP-Risc and IBM RS architectures need special handling of fltinf in
 % fastmath.red
 
