@@ -468,7 +468,7 @@
 % Handling priority messages from Windows
 %
 
-(compiletime (load fast-vectors))
+(compiletime (load fast-vector))
 
 (fluid '(win-messages))
 
