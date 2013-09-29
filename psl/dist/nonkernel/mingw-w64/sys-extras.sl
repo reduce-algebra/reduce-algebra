@@ -134,7 +134,7 @@
 
 (de delete-file (unixstring)
   (if (stringp unixstring)
-    (weq 0 (external_unlink (strbase (strinf unixstring))))
+    (not (weq 0 (external_unlink (strbase (strinf unixstring)))))
     (nonstringerror unixstring 'delete-file)))
 
 
