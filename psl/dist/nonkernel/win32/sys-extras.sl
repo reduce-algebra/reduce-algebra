@@ -193,6 +193,11 @@
     (external_system (strbase (strinf unixstring)))
     (nonstringerror unixstring 'system)))
 
+(de delete-file (unixstring)
+  (if (stringp unixstring)
+    (weq 0 (external_unlink (strbase (strinf unixstring))))
+    (nonstringerror unixstring 'delete-file)))
+
 
 (declare-warray filestatus-work size 13)
 

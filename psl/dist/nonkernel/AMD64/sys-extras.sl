@@ -132,6 +132,11 @@
            32 ) -32) % sign extended
     (nonstringerror unixstring 'system)))
 
+(de delete-file (unixstring)
+  (if (stringp unixstring)
+    (weq 0 (external_unlink (strbase (strinf unixstring))))
+    (nonstringerror unixstring 'delete-file)))
+
 
 (declare-warray filestatus-work size 13)
 
@@ -324,11 +329,11 @@
 (de fcntl (a1 a2 a3)
    (ieee_flags 2 a1 a2 a3))
 
-(de Linux_open(a1 a2 a3); % uses open in Linux sense, returns an int fd
+(de Linux_open(a1 a2 a3)  % uses open in Linux sense, returns an int fd
  (ashift (wshift (ieee_flags 3 (strbase (strinf a1)) a2 a3)
            32 ) -32)) % sign extended
 
-(de Linux_close(a1);    % exptects an int fd
+(de Linux_close(a1)     % expects an int fd
     (ieee_flags 4 a1))
 
 (define-constant O_ACCMODE         8#003 )
