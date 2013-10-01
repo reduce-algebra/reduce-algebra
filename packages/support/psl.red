@@ -471,7 +471,7 @@ symbolic procedure delete!-file!-slow fi;
   filep fi and system bldmsg("del ""%s""",fi);
 !#else
   system bldmsg("rm -f %s", fi);
-#!endif
+!#endif
 
 loadtime if not getd 'delete!-file then copyd('delete!-file,'delete!-file!-slow);
 
