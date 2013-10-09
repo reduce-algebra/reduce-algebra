@@ -607,7 +607,7 @@ symbolic procedure read!-init!-file name;
            ".";
 % PSL does not have LAST defined at this stage, so I use "car reversip"
 % on the list that was newly created by explode2...
-   if base neq "" and car reversip explode2 base = '!/ then
+   if base neq "" and car reversip explode2 base neq '!/ then
      base := concat2(base,"/");
    fname := if filep(x := concat2(base,concat2(".", % FJW
                                                 concat2(name,"rc"))))
@@ -615,7 +615,7 @@ symbolic procedure read!-init!-file name;
              else if filep(x := concat2(base,concat2(name,".rc"))) % FJW
               then x
              else if filep
-                     (x := concat2(getenv "HOME",concat2(name,".INI")))
+                     (x := concat2(base,concat2(name,".INI")))
                then x; % for (Open) VMS
    if null fname then return nil
     else if !*mode neq 'algebraic and null !*rlisp88
