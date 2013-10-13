@@ -42,6 +42,21 @@ symbolic procedure safe!-putd(name,type,body);
 
 inline procedure mkfunction u; list('function,u);
 
+symbolic procedure do!-autoload(name, u, loadname);
+  begin
+    scalar w;
+    for each j in loadname do load!-package j;
+    w := getd name;
+    if not atom w and
+       not atom (w := cdr w) and
+       eqcar(w, 'lambda) and
+       not atom (w := cddr w) and
+       eqcar(car w, 'do!-autoload) then <<
+       lprim list("Autoloading for", name, "did not defined it"); 
+       error(99, list("Presumed build failure:", name, loadname)) >>;
+    return lispapply(name, u)
+  end;
+
 symbolic macro procedure defautoload u;
 % (defautoload name), (defautoload name loadname),
 % (defautoload name loadname fntype), or
@@ -72,11 +87,10 @@ symbolic macro procedure defautoload u;
                  mkquote fntype,
                  mkfunction
                     list('lambda, u,
-                         'progn .
-                             aconc(for each j in loadname
-                                      collect
-                                         list('load!-package,mkquote j),
-                                   list('lispapply,name,'list . u)))))
+                       list('do!-autoload,
+                            name,
+                            'list . u,
+                            mkquote loadname))))
   end;
 
 % Autoload support for algebraic operators and values.
