@@ -102,7 +102,7 @@ symbolic procedure in_list1a(fl,echop,prefixchars);
       w := explode2 fl;
       if eqcar(w, '!$) and
          (eqcar(cdr w, '!/) or eqcar(cdr w, '!\)) then <<
-        if null ifl!* then fl := compress('!" . !. . append(cdr w, '(!")))
+        if null ifl!* then fl := compress('!" . '!. . append(cdr w, '(!")))
         else <<
           w1 := reverse explode2 car ifl!*;
           while w1 and not (eqcar(w1, '!/) or eqcar(w1, '!\)) do w1 := cdr w1;

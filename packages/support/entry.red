@@ -498,6 +498,10 @@ put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
 
 defautoload(assert_onoff, assert, expr, 0);
 
+put('declare, 'stat, 'assert_declarestat);
+defautoload(assert_declarestat, assert, expr, 1);
+
+
 endmodule;
 
 end;

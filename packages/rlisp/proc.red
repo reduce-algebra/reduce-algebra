@@ -28,7 +28,8 @@ module proc;   % Procedure statement.
 %
 
 
-fluid '(!*noinlines !*loginlines !*redeflg!* fname!* ftype!*);
+fluid '(!*noinlines !*loginlines !*redeflg!* fname!* ftype!*
+        !*strict_argcount);
 
 % !*loginlines will cause a compile-time report of patterns of inline usage.
 !*loginlines := t;

@@ -228,7 +228,7 @@ symbolic procedure upd!-fasl1(u,v,w);
       if not('psl memq lispsystem!*) then !*lower := t;
       if !*loadall and w neq u then <<
          evload list w;
-         loaded!-modules := union(loaded!-modules!*, list w) >>;
+         loaded!-modules!* := union(loaded!-modules!*, list w) >>;
       if x := get(u,'compiletime)
         then <<prin2 "*** Compile time: "; prin2t x; lispeval x>>;
       u := mkfil u;

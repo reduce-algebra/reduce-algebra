@@ -115,7 +115,8 @@ M:
 %*                   Lowering of the order GHF                         *
 %***********************************************************************
 
- symbolic inline procedure GHFlowering1p;
+% This assigns to a and b!
+ symbolic smacro procedure GHFlowering1p;
   begin scalar sa,sb,w1,w2;
   sa:=a;   sb:=b;
  M1:  if null b then << a:=sa; b:=sb; return NIL
@@ -153,7 +154,8 @@ M:
                quotsq(multsq(z,multlist(cdr x)),
                       multsq(car y,multlist(cdr y)))))$
 
- symbolic inline procedure GHFlowering2p;
+% This assigns to a and b
+ symbolic smacro procedure GHFlowering2p;
   begin scalar sa,sb,w1,wa,fl;
   if equal(z,'(1 . 1)) then return NIL;
   sa:=a;   sb:=b;
@@ -205,7 +207,8 @@ M:
                         cdr x),b,z),
                   quotsq(caar x,diff1sq(cadar x,caar x))))$
 
-  symbolic inline procedure GHFlowering3p;
+% This assigns to a and b
+  symbolic procedure GHFlowering3p;
   %return a = (mmm . a1).
    begin scalar sa,w,mmm;    % MM used in SPDE as a global.
    sa:=a;

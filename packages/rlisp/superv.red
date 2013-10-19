@@ -45,6 +45,7 @@ fluid '(!*debug
         !*time
         !*rlisp88
         dfprint!*
+        peekchar!*
         errmsg!*
         lispsystem!*
         loopdelimslist!*

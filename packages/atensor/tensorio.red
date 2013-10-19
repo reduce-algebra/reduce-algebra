@@ -48,8 +48,11 @@ module tensorio$
 inline procedure tio_tname th$ car th$
 inline procedure tio_ilist th$ cadr th$
 inline procedure tio_dlist th$ cddr th$
-inline procedure tio_mkth(tn,il,dl)$ list tn . il . id$
-inline procedure tio_mkth0(tn,il,dl)$  tn . il . dl$
+% The next two do not seem to be used anywhere at all, and the
+% first one references a free variable "id", so for now they are
+% commented out.
+%inline procedure tio_mkth(tn,il,dl)$ list tn . il . id$
+%inline procedure tio_mkth0(tn,il,dl)$  tn . il . dl$
 
 inline procedure tio_thead ten$ car ten$
 inline procedure tio_pvect ten$ cdr ten$

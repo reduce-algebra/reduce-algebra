@@ -30,7 +30,7 @@ module form;  % Performs a mode analysis of parsed forms.
 %
 
 fluid '(!*!*a2sfn !*cref !*defn !*mode !*reduce4 !*rlisp88
-        current!-modulus fname!* ftype!*);
+        current!-modulus fname!* ftype!* !*strict_argcount);
 
 global '(!*argnochk !*comp !*composites !*force !*micro!-version
          !*vars!* cursym!*);

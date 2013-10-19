@@ -55,6 +55,8 @@ symbolic procedure onoff(u,bool);
        set(x,bool)
    end;
 
+fluid '(swcksave);
+
 symbolic procedure onoff!-reset u;
    % set switch to its default value
    % set !*switchcheck to t so that simpfg code is executed only 
