@@ -192,6 +192,16 @@ omitted := '(
     subeval                 % ditto
     ezgcdf                  % ditto
     transcendentalcase      % ditto
+
+% The Reduce autoload schemeonly sets up autoload stufs when the
+% function concerned is not already defined. Maybe if I compiled it into C
+% that could make it appear defined too early, so all the other functions in
+% the opackage concerned would then not be loaded when it was first called.
+    assert_onoff            % autoloading conflict
+    assert_declarestat      % autoloading conflict
+    assert_procstat         % autoloading conflict
+    assert_formproc         % autoloading conflict
+    
     );
 
 % There is a bit of a mess-up if something that has been given an autoload
