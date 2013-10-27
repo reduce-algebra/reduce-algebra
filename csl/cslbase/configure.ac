@@ -392,12 +392,12 @@ x86_64-w64-*)
   AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
 # Here if the person who invoked configure had arranged to specify
 # CC or CXX (to something other than gcc and g++) then it becomes
-# THEIR responsibility to arrange all other relavant flags (eg CFLAGS,
-# LDFLAGS, LIBS) to as to access a relevant SDK etc etc. ANY problems
+# THEIR responsibility to arrange all other relevant flags (eg CFLAGS,
+# LDFLAGS, LIBS) so as to access a relevant SDK etc etc. ANY problems
 # that arise because they hand down options that lead to failures in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
-  XLIBS="-lXext -lX11"
+  XLIBS="-lXext -lX11 -lXft -lfontconfig"
   macintosh_build="yes"
   darwin_build="yes"
   if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
@@ -421,7 +421,7 @@ x86_64-w64-*)
     CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The
@@ -799,14 +799,20 @@ i386* | i486* | i586* | i686*)
 # not recognised and you get messages about that, but the code still passes
 # the test here which checks if things can still be compiled even if they
 # are specified.
-  OLDCPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("\n");]])],
-    [sse2math_available="yes"],
-    [CPPFLAGS="$OLDLDFLAGS"
-    sse2math_available="no"])
-  AC_MSG_NOTICE([SSE math status = $sse2math_available])
+  case $host in
+  *Darwin*)
+   ;;
+  *)
+   OLDCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                   [[printf("\n");]])],
+     [sse2math_available="yes"],
+     [CPPFLAGS="$OLDLDFLAGS"
+     sse2math_available="no"])
+   AC_MSG_NOTICE([SSE math status = $sse2math_available])
+   ;;
+  esac
   ;;
 esac
 
@@ -951,7 +957,7 @@ then
 # libraries are nevertheless available. I will look for freetype-config
 # which may also help me...
         AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
-          [/usr/local/bin:/usr/sfw/bin:$PATH])
+          [/usr/local/bin:/usr/sfw/bin:/opt/local/bin:$PATH])
         if test "$FREETYPE_CONFIG" != "no"
         then
 # I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I

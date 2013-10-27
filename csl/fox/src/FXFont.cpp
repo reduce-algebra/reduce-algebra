@@ -594,7 +594,8 @@ static FXint fcSlant2Slant(FXint fcSlant){
 // Try find matching font
 void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint wantsize,FXuint wantweight,FXuint wantslant,FXuint wantsetwidth,FXuint wantencoding,FXuint wanthints,FXint res){
   int        pp,sw,wt,sl;
-  double     a,s,c,sz;
+  volatile double     a;
+  double s,c,sz;
   FcPattern *pattern,*p;
   FcChar8   *fam,*fdy;
   FcCharSet *charset;
@@ -921,7 +922,7 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
   FXchar  *field[13];
   FXchar **fontnames;
   FXint    nfontnames,b,f;
-  FXdouble c,s,a;
+  volatile FXdouble c,s,a;
   XFontStruct *font;
 
   FXTRACE((150,"wantfamily=%s wantforge=%s wantsize=%d wantweight=%d wantslant=%d wantsetwidth=%d wantencoding=%d wanthints=%d res=%d\n",wantfamily.text(),wantforge.text(),wantsize,wantweight,wantslant,wantsetwidth,wantencoding,wanthints,res));
@@ -2018,7 +2019,7 @@ static FXint utf2db(XChar2b *dst,const FXchar *src,FXint n){
 void FXFont::drawText(FXDC* dc,FXint x,FXint y,const FXchar* string,FXuint length) const {
   register const XFontStruct *fs=(XFontStruct*)font;
   register FXint count,escapement,defwidth,ww,size,i;
-  register FXdouble ang,ux,uy;
+  volatile FXdouble ang,ux,uy;
   register FXuchar r,c;
   XChar2b sbuffer[4096];
   count=utf2db(sbuffer,string,FXMIN(length,4096));

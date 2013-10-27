@@ -214,7 +214,7 @@ x86_64-w64-*)
   AC_MSG_NOTICE([Building for Macintosh/Darwin with X11])
   macintosh_build="yes"
   darwin_build="yes"
-  XLIBS="-lXext -lX11"
+  XLIBS="-lXext -lX11 -lXft -lfontconfig"
   AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
   if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
   then 
@@ -236,7 +236,7 @@ x86_64-w64-*)
     CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
     archflags=""
     AC_LANG_CONFTEST(

@@ -738,6 +738,13 @@ then
 
   AC_MSG_NOTICE([with_fox=$with_fox, with_wx=$with_wx])  
 
+  case $host in
+  *darwin* | *Darwin*)
+    CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+    LDFLAGS="$LDFLAGS -L/opt/local/lib"
+    ;;
+  esac
+
 # If I am compiling for native Cygwin I will not pass down "--host"
 # if I am building for the natural target.
   AC_MSG_NOTICE([host=$host build=$build])
@@ -860,15 +867,16 @@ then
       else
         AC_MSG_ERROR([SDK $with_SDK not found])
       fi
-      CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
-      CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
+# clang on MacOSX does not provide -mfpmath
+#     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
+#     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
 # For wxWidgets I will ONLY support x86_64, and you should only at all
 # expect 10.6, 10.7 and 10.8 versions of the SDK to be useful.
       MACARCH="--enable-macos_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
           --with-macosx-sdk=$SDK \
-          --with-macosx-version-min=10.6 \
+          --with-macosx-version-min=10.7 \
           $MACARCH "
       ;;
     *)
