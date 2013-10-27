@@ -1404,7 +1404,7 @@ Optional Packages:
   --with-cygbuild64       Used internally to control build directory
   --with-force            Used internally
   --with-crlibm           Used internally
-  --with-SDKl             Eg --with-sdk=10.7
+  --with-SDK              Eg --with-sdk=10.7
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-fox=DIR          FOX installation location
   --with-fox-pending        do not check dir from --with-fox
@@ -3786,20 +3786,13 @@ $as_echo "#define MACINTOSH 1" >>confdefs.h
 # At least maybe MacOS 10.2 may not put X11 headers on the standard include
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
-    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
+    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
 
 $as_echo "#define UNIX 1" >>confdefs.h
 
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-# I need to make a provisional judgement about whether I will be supporting
-# fat binaries here so that if I am I can disable dependency tracking. The
-# mode of dependency tracking gets decided during the elaboration of
-# AC_PROG_CC, and the "proper" test for fat binary support can only happen
-# after I have found myself a C compiler. Since I KNOW I am on MacOSX here
-# I will make the test command-line simple and explicit, not using $CFLAGS
-# or any such.
     archflags=""
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -3823,15 +3816,9 @@ _ACEOF
     else
       as_fn_error $? "SDK $with_SDK not found" "$LINENO" 5
     fi
-    if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch x86_64 -arch ppc"
-    elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
       archflags="-arch x86_64"
-    elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch ppc"
     else
       as_fn_error $? "Failed to compile test code-fragment using SDK $with_SDK" "$LINENO" 5
     fi
@@ -7062,20 +7049,6 @@ $as_echo "#define MAC_FRAMEWORK 1" >>confdefs.h
 
   fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for ability to build dual arch binaries" >&5
-$as_echo "$as_me: Checking for ability to build dual arch binaries" >&6;}
-# If it seems to be supported at all I will go "-arch ppc -arch i386" to
-# build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# mechanisms that automake usually tries to use will FAIL. I work around that
-# by providing a customised version of "depcomp".
-# Well actually now (as of July 2011) I am only going to build for x86_64
-# because all varieties of Mac that predate that are now very obsolete.
-#
-# Also in the Macintosh/Darwin I have had special hand-crafted code to
-# detect the case and switch off dependency checking as if the user had
-# run this script with "-disable_dependency_tracking" as a command-line
-# option.
   if test "x$GCC" = "xyes"
   then
     if test "x$macintosh_build" = "xyes"
@@ -7112,8 +7085,6 @@ rm -f core conftest.err conftest.$ac_objext \
       then
         as_fn_error $? "Need MacOSX SDK" "$LINENO" 5
       fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: fat_support=$fat_support_available" >&5
-$as_echo "$as_me: fat_support=$fat_support_available" >&6;}
     fi
   fi
 fi
@@ -10126,7 +10097,7 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi

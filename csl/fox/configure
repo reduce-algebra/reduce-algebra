@@ -3078,7 +3078,6 @@ fi
 
 
 
-
 case $host in
   *darwin*)
 # See comments elsewhere. If any user specifically forces CC or CXX to
@@ -3109,15 +3108,9 @@ _ACEOF
       else
         as_fn_error $? "SDK $with_SDK not found" "$LINENO" 5
       fi
-      if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
-      then
-        archflags="-arch x86_64 -arch ppc"
-      elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+      if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
       then
         archflags="-arch x86_64"
-      elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
-      then
-        archflags="-arch ppc"
       else
         as_fn_error $? "Failed to compile test code-fragment using SDK $with_SDK" "$LINENO" 5
       fi
@@ -4756,17 +4749,8 @@ fi
 
 case $host_os in
    *darwin*)
-# I MUST do this after AC_PROG_CC. I should perhaps provide a flag to
-# allow people to ask for a single-architecture binary.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for ability to build multi-arch binaries" >&5
-$as_echo "$as_me: Checking for ability to build multi-arch binaries" >&6;}
-# If it seems to be supported at all I will go "-arch ppc -arch i386" to
-# build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# mechanisms that automake usually tries to use will FAIL. If I am running on
-# 10.5 or 10.6 I will also include x86_64.
-#
-# First I check if I can use the 10.8, 10.7, 10.6, 10.5 or 10.4u SDK.
+  CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
+  CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
   if test "x$GCC" = "xyes"
   then
     OLDCFLAGS="$CFLAGS"
@@ -9581,5 +9565,4 @@ echo "Configure finished!"
 echo "              Do:  'make' to compile FOX."
 echo "            Then:  'make install' to install it."
 echo ""
-
 

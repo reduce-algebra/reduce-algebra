@@ -109,7 +109,7 @@ AC_ARG_WITH(crlibm,
   [])
 
 AC_ARG_WITH(SDK,
-  AC_HELP_STRING([--with-SDKl], [Eg --with-sdk=10.7]),
+  AC_HELP_STRING([--with-SDK], [Eg --with-sdk=10.7]),
   [],
   [with_SDK="10.8"])
 
@@ -233,18 +233,11 @@ x86_64-w64-*)
 # At least maybe MacOS 10.2 may not put X11 headers on the standard include
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
-    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
+    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-# I need to make a provisional judgement about whether I will be supporting
-# fat binaries here so that if I am I can disable dependency tracking. The
-# mode of dependency tracking gets decided during the elaboration of
-# AC_PROG_CC, and the "proper" test for fat binary support can only happen
-# after I have found myself a C compiler. Since I KNOW I am on MacOSX here
-# I will make the test command-line simple and explicit, not using $CFLAGS
-# or any such.
     archflags=""
     AC_LANG_CONFTEST(
       [AC_LANG_PROGRAM([], [])])
@@ -259,15 +252,9 @@ x86_64-w64-*)
     else
       AC_MSG_ERROR([SDK $with_SDK not found])
     fi
-    if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch x86_64 -arch ppc"
-    elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
       archflags="-arch x86_64"
-    elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch ppc"
     else
       AC_MSG_ERROR([Failed to compile test code-fragment using SDK $with_SDK])
     fi
@@ -508,19 +495,6 @@ then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
   fi
 
-  AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
-# If it seems to be supported at all I will go "-arch ppc -arch i386" to
-# build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# mechanisms that automake usually tries to use will FAIL. I work around that
-# by providing a customised version of "depcomp".
-# Well actually now (as of July 2011) I am only going to build for x86_64
-# because all varieties of Mac that predate that are now very obsolete.
-#
-# Also in the Macintosh/Darwin I have had special hand-crafted code to
-# detect the case and switch off dependency checking as if the user had
-# run this script with "-disable_dependency_tracking" as a command-line
-# option.
   if test "x$GCC" = "xyes"
   then
     if test "x$macintosh_build" = "xyes"
@@ -540,7 +514,6 @@ then
       then
         AC_MSG_ERROR([Need MacOSX SDK])
       fi
-      AC_MSG_NOTICE([fat_support=$fat_support_available])
     fi
   fi
 fi
@@ -928,7 +901,7 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.7
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi

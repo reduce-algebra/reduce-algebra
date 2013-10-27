@@ -184,16 +184,8 @@ fi
 
 AM_CONDITIONAL(cygwinshell, test "x$MINGW32" = "xyes")
 
-dnl There is an ugliness here. Under MacOSX I will want to enable
-dnl "fat" binaries, ie compile for several architectures at once. If I do
-dnl that then the dependency tracking mechanism that automake uses will
-dnl fail. But to disable it I need to do the disabling before I go
-dnl AC_PROG_CC. So here I have a rather grungy set of tests that
-dnl detect when that is liable to be the case
-
-dnl Eventually perhaps I should be 4-way fat - powerpc and intel and also
-dnl both 32-and 64-bit. But of these I omit ppc64 since it really never
-dnl got off the ground.
+dnl confirm that a Mac compiler can build for x86_64 which is now the
+dnl only supported case.
 
 case $host in
   *darwin*)
@@ -216,15 +208,9 @@ case $host in
       else
         AC_MSG_ERROR([SDK $with_SDK not found])
       fi
-      if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
-      then
-        archflags="-arch x86_64 -arch ppc"
-      elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+      if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
       then
         archflags="-arch x86_64"
-      elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
-      then
-        archflags="-arch ppc"
       else
         AC_MSG_ERROR([Failed to compile test code-fragment using SDK $with_SDK])
       fi
@@ -244,16 +230,8 @@ AC_PROG_RANLIB
 
 case $host_os in
    *darwin*)
-# I MUST do this after AC_PROG_CC. I should perhaps provide a flag to
-# allow people to ask for a single-architecture binary.
-  AC_MSG_NOTICE([Checking for ability to build multi-arch binaries])
-# If it seems to be supported at all I will go "-arch ppc -arch i386" to
-# build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# mechanisms that automake usually tries to use will FAIL. If I am running on
-# 10.5 or 10.6 I will also include x86_64.
-#
-# First I check if I can use the 10.8, 10.7, 10.6, 10.5 or 10.4u SDK.
+  CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
+  CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
   if test "x$GCC" = "xyes"
   then
     OLDCFLAGS="$CFLAGS"
@@ -796,5 +774,4 @@ echo "Configure finished!"
 echo "              Do:  'make' to compile FOX."
 echo "            Then:  'make install' to install it."
 echo ""
-
 

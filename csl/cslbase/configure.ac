@@ -418,10 +418,10 @@ x86_64-w64-*)
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
 # Note that 10.2 now counts as seriously archaic.
-    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
+    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -flat_namespace"
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
 # I need to make a provisional judgement about whether I will be supporting
 # fat binaries here so that if I am I can disable dependency tracking. The
@@ -444,15 +444,9 @@ x86_64-w64-*)
     else
       AC_MSG_ERROR([SDK $with_SDK not found])
     fi
-    if gcc -isysroot $SDK -arch x86_64 -arch ppc conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch x86_64 -arch ppc"
-    elif gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
       archflags="-arch x86_64"
-    elif gcc -isysroot $SDK -arch ppc conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch ppc"
     else
       AC_MSG_ERROR([Failed to compile test code-fragment using SDK $with_SDK])
     fi
@@ -801,6 +795,10 @@ i386* | i486* | i586* | i686*)
 #  VIA C3 (distribution ceased in 2006. The C7 should be OK)
 #  Transmeta Crusoe (a fine museum item!)
 #
+# On a Mac where the compiler is in fact clang not gcc these options are
+# not recognised and you get messages about that, but the code still passes
+# the test here which checks if things can still be compiled even if they
+# are specified.
   OLDCPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
@@ -835,20 +833,6 @@ then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
   fi
 
-  AC_MSG_NOTICE([Checking for ability to build multi-arch binaries])
-# If it seems to be supported at all I will go "-arch ppc -arch x86_64" to
-# build a fat binary that will run on both powerpc and intel-based
-# macs. If that is not supported by the SDK I am using I will drop back
-# to just using x86_64 if that is available, or just ppc otherwise.
-# *NOTE* that when doing a multi-arch build dependency tracking using the
-# mcchanisms that automake usually tries to use will FAIL. I work around that
-# by providing a customised version of "depcomp".
-#
-# Also in the Macintosh/Darwin I have had special hand-crafted code to
-# detect the case and switch off dependency checking as if the user had
-# run this script with "-disable_dependency_tracking" as a command-line
-# option.
-#
   if test "x$GCC" = "xyes"
   then
     if test "x$macintosh_build" = "xyes"
@@ -1509,15 +1493,16 @@ then
 #                      be (easily) able to test anything on Snow Leopard]
 # 10.7  Lion
 # 10.8  Mountain Lion
+# 10.9  Mavericks
 
-# Well now that 10.8 has been released I will always target
-# 10.6 and support for earlier versions is no longer guaranteed. I may
-# well feel obliged to dump 10.6 soon.
+# Well now that 10.9 has been released I will always target
+# 10.7 and support for earlier versions is no longer guaranteed. I may
+# well feel obliged to dump 10.7 soon.
   if test "x$with_wx" != "xno"
   then
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.7
   else
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.7
   fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
