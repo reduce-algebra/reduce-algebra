@@ -193,15 +193,6 @@ omitted := '(
     ezgcdf                  % ditto
     transcendentalcase      % ditto
 
-% The Reduce autoload schemeonly sets up autoload stufs when the
-% function concerned is not already defined. Maybe if I compiled it into C
-% that could make it appear defined too early, so all the other functions in
-% the opackage concerned would then not be loaded when it was first called.
-    assert_onoff            % autoloading conflict
-    assert_declarestat      % autoloading conflict
-    assert_procstat         % autoloading conflict
-    assert_formproc         % autoloading conflict
-    
     );
 
 % There is a bit of a mess-up if something that has been given an autoload
@@ -212,7 +203,7 @@ for each x in oblist() do
  if eqcar(d := getd(x), 'expr) and
     consp cdr d and consp cddr d and consp cdddr d then <<
    d := cadddr d;
-   if eqcar(d, 'progn) and cdr d and eqcar(cadr d, 'load!-package) then <<
+   if eqcar(d, 'do!-autoload) then <<
       princ "+++ "; prin x; printc " looks like an autoload stub. Omit here";
       omitted := x . omitted >> >>;
    
