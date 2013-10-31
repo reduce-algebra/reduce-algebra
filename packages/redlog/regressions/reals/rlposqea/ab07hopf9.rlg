@@ -1,0 +1,152 @@
+% Positive qe:
+% Examples from
+% Boulier et al. 2007
+% http://dx.doi.org/10.1007/978-3-540-73433-8_6
+% for n=9 they prove that a Hopf bifurcation exists
+
+rlset r;
+
+
+{}
+
+
+ab2007_hopf_n_9 := ex(vv2,ex(vv1,ex(vv3,(( - vv1 < 0 and - vv3 < 0) and
+- vv2 < 0) and (((((( gamma0*theta - theta*vv1*vv3**9 - theta*vv1 = 0
+and gamma0*mu + lambda1*vv1 - vv2 = 0) and 9*alpha*gamma0 -
+9*alpha*vv1*vv3**9 - 9*alpha*vv1 + delta*vv2 - delta*vv3 = 0) and -
+9*delta*lambda1*theta*vv1*vv3**8 - delta*theta*vv3**9 - delta*theta < 0
+and 6561*alpha**2*vv1**2*vv3**16 + 81*alpha*delta*theta*vv1*vv3 **17 +
+81*alpha*delta*theta*vv1*vv3**8 + 162*alpha*delta*vv1*vv3**8 +
+162*alpha* theta*vv1*vv3**17 + 162*alpha*theta*vv1*vv3**8 +
+81*alpha*vv1*vv3**8 + delta**2* theta*vv3**9 + delta**2*theta + delta**2
+- 9*delta*lambda1*theta*vv1*vv3**8 + delta*theta**2*vv3**18 +
+2*delta*theta**2*vv3**9 + delta*theta**2 + 2*delta* theta*vv3**9 +
+2*delta*theta + delta + theta**2*vv3**18 + 2*theta**2*vv3**9 + theta**2
++ theta*vv3**9 + theta = 0) and - theta < 0) and - gamma0 < 0) and - mu
+< 0) and - delta < 0 and - alpha < 0)))$
+
+
+
+rlposqea rlex ab2007_hopf_n_9;
+
+
+{{true,
+
+  {alpha = infinity1,
+
+   delta = 1,
+
+                        1/9          2
+   gamma0 = (8*infinity2   *infinity2 *infinity3
+
+                            1/9                                  1/9
+              + 16*infinity2   *infinity2*infinity3 + 8*infinity2   *infinity3)/
+
+                 2          3                 2          2
+   (729*infinity1 *infinity2  + 1458*infinity1 *infinity2
+
+                    2                                    2
+     + 729*infinity1 *infinity2 - 486*infinity1*infinity2 *infinity3
+
+                                                                2
+     - 486*infinity1*infinity2*infinity3 + 9*infinity2*infinity3 ),
+
+   lambda1 = infinity3,
+
+                      2          3                 2          2
+   mu = (729*infinity1 *infinity2  + 1458*infinity1 *infinity2
+
+                         2                                    2
+          + 729*infinity1 *infinity2 - 486*infinity1*infinity2 *infinity3
+
+                                                                   2
+          - 486*infinity1*infinity2*infinity3 + infinity2*infinity3
+
+                       2              2
+          - 8*infinity3 )/(8*infinity2 *infinity3 + 16*infinity2*infinity3
+
+       + 8*infinity3),
+
+                             4          4                  4          3
+   theta = ( - 6561*infinity1 *infinity2  - 26244*infinity1 *infinity2
+
+                              4          2                  4
+             - 39366*infinity1 *infinity2  - 26244*infinity1 *infinity2
+
+                             4                 3          3
+             - 6561*infinity1  + 4374*infinity1 *infinity2 *infinity3
+
+                              3          2
+             + 13122*infinity1 *infinity2 *infinity3
+
+                              3                                     3
+             + 13122*infinity1 *infinity2*infinity3 + 4374*infinity1 *infinity3
+
+                                               3                         3
+             - 54*infinity1*infinity2*infinity3  - 54*infinity1*infinity3
+
+                        4                 4          5
+             + infinity3 )/(6561*infinity1 *infinity2
+
+                        4          4                  4          3
+       + 32805*infinity1 *infinity2  + 65610*infinity1 *infinity2
+
+                        4          2                  4
+       + 65610*infinity1 *infinity2  + 32805*infinity1 *infinity2
+
+                       4                 3          4
+       + 6561*infinity1  - 8748*infinity1 *infinity2 *infinity3
+
+                        3          3
+       - 34992*infinity1 *infinity2 *infinity3
+
+                        3          2
+       - 52488*infinity1 *infinity2 *infinity3
+
+                        3                                     3
+       - 34992*infinity1 *infinity2*infinity3 - 8748*infinity1 *infinity3
+
+                       2          3          2
+       + 3078*infinity1 *infinity2 *infinity3
+
+                       2          2          2
+       + 9234*infinity1 *infinity2 *infinity3
+
+                       2                    2                 2          2
+       + 9234*infinity1 *infinity2*infinity3  + 3078*infinity1 *infinity3
+
+                                2          3
+       - 108*infinity1*infinity2 *infinity3
+
+                                          3                          3
+       - 216*infinity1*infinity2*infinity3  - 108*infinity1*infinity3
+
+                            4            4
+       + infinity2*infinity3  + infinity3 ),
+
+                     1/9                                  1/9
+   vv1 = (8*infinity2   *infinity2*infinity3 + 8*infinity2   *infinity3)/(
+
+                   2          3                 2          2
+      729*infinity1 *infinity2  + 1458*infinity1 *infinity2
+
+                      2                                    2
+       + 729*infinity1 *infinity2 - 486*infinity1*infinity2 *infinity3
+
+                                                                  2
+       - 486*infinity1*infinity2*infinity3 + 9*infinity2*infinity3 ),
+
+                  1/9
+   vv2 = infinity2   ,
+
+                  1/9
+   vv3 = infinity2   }}}
+
+
+end;
+
+Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
+Time (counter 1): 390 ms  plus GC time: 40 ms
+1: real 0.80
+user 0.66
+sys 0.07
