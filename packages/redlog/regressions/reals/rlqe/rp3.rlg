@@ -446,7 +446,7 @@ d1 - 1 <= 0 and 2*d1 - 1 > 0 and a > 0 and a - 1 < 0 and a - 2*d1 > 0
 end;
 
 Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
-Time (counter 1): 50689 ms  plus GC time: 11800 ms
-1: real 65.44
-user 65.01
-sys 0.20
+Time (counter 1): 78630 ms  plus GC time: 12080 ms
+1: real 93.53
+user 92.94
+sys 0.25

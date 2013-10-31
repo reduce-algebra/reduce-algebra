@@ -1,6 +1,6 @@
 Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 PSL
-Time (counter 1): 17410 ms  plus GC time: 10 ms
+Time (counter 1): 17220 ms  plus GC time: 10 ms
 Quitting
-real 18.60
-user 17.53
-sys 0.94
+real 18.41
+user 17.32
+sys 0.98
