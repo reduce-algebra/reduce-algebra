@@ -184,6 +184,9 @@ omitted := '(
     fluid                   % the env cells of these get out of step during..
     global                  % a bootstrap build if they are compiled here.
 
+    aftergcsystemhook       % On slow machines the C code may not end up
+                            % fully usable quite early enough?
+
     knowledge_about         % unwind-protect
     let00                   % ditto
     evalletsub2             % ditto
