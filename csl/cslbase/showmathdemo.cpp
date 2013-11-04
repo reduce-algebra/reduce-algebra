@@ -1,11 +1,11 @@
 /*
- * showmathdemo.cpp                         Copyright (C) Codemist Ltd 2010
+ * showmathdemo.cpp                         Copyright (C) Codemist Ltd 2013
  *
  * Demonstrate display of mathematical formulae...
  */
 
 /**************************************************************************
- * Copyright (C) 200, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -34,7 +34,7 @@
  *************************************************************************/
 
 
-/* Signature: 01ccfb29 26-Sep-2010 */
+/* Signature: 5db21b22 04-Nov-2013 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -203,7 +203,7 @@ long MathWindow::onPaint(FXObject *, FXSelector, void *ptr)
 
 static const char *testData[] =
 {
-"\\begin{center}$\\displaystyle x$\\end{center}",
+"\\begin{center}$\\displaystyle x \\not \\equiv y $\\end{center}",
 
 "\\begin{center}$\\displaystyle x_2$\\end{center}",
 
@@ -243,6 +243,8 @@ static const char *testData[] =
 
 "\\begin{center}$\\displaystyle b!$\\end{center}",
 
+"\\begin{center}$\\displaystyle a \\not\\equiv b$\\end{center}",
+
 NULL
 };
 
@@ -268,7 +270,7 @@ int main(int argc,char *argv[])
         {
     case 0:
             if (n >= 0 && n < sizeof(testData)/sizeof(testData[0]))
-            example = n;
+                example = n;
             break;
     case 1:
             if (n < 0) n = -n;

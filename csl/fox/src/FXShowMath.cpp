@@ -2155,30 +2155,19 @@ typedef Box *twoArgsHandlerFunction(Box *b1, Box *b2);
 typedef Box *keywordHandlerFunction(int w);
 
 // single character glyph
-#define TeXSymbol    0x00
-// single character glyph, but subscripts and superscripts form tower
-#define TeXVSymbol   0x01
-// single character glyph, but allow extra space on either ide
-#define TeXWSymbol   0x02
-// word to be set in Roman font (eg function name like "sin")
-#define TeXRoman     0x03
-// keyword not taking an argument, eg \longleftarrow, \not
-#define TeX0Arg      0x04
-// keyword taking one arg, eg \sqrt
-#define TeX1Arg      0x05
-// keyword taking 2 args, eg \frac
-#define TeX2Arg      0x06
-// the \rule keyword
-#define TeXRule      0x07
-// the \begin keyword
-#define TeXBeginWord 0x08
-// keyword that forms a sort of "open bracket"
-#define TeXBegin     0x09
-// "close bracket" to match TeXBegin
-#define TeXEnd       0x0a
-// "^" or "_".
+#define TeXSymbol    0x00  // single character glyph, but subscripts and superscripts form tower
+#define TeXVSymbol   0x01  // single character glyph, but allow extra space on either ide
+#define TeXWSymbol   0x02  // word to be set in Roman font (eg function name like "sin")
+#define TeXRoman     0x03  // keyword not taking an argument, eg \longleftarrow, \not
+#define TeX0Arg      0x04  // keyword taking one arg, eg \sqrt
+#define TeX1Arg      0x05  // keyword taking 2 args, eg \frac
+#define TeX2Arg      0x06  // the \rule keyword
+#define TeXRule      0x07  // the \begin keyword
+#define TeXBeginWord 0x08  // keyword that forms a sort of "open bracket"
+#define TeXBegin     0x09  // "close bracket" to match TeXBegin
+#define TeXEnd       0x0a  // "^" or "_".
 #define TeXScript    0x0b
-
+#define TeXNot       0x0c  // a special case for "\not"
 #define TeXFlag      0x80
 
 #define matchCenter    1
@@ -2271,11 +2260,14 @@ static Box *doNeq(int w)
 }
 
 static Box *readP();
+static void nextSymbol();
 
 static Box *doNot(int w)
 {
 // Overstrike anthing (much) with a "/". Hence "\not \equiv" etc.
-    Box *b1 = readP();
+    Box *b1;
+    nextSymbol();
+    b1 = readP();
     if (b1 == NULL) return NULL;
     Box *b2 = makeTextBox("\x3d", 1, FntItalic + currentSize);
     return makeNestBox(BoxOverstrike, b1, b2);
@@ -2768,7 +2760,7 @@ static Keyword texWords[1<<texWordBits] =
 // it in the Computer Modern set and so will end up synthesizing it as
 // an overstrike of "=" and "/".
     {"neq",          TeX0Arg, 0,         0,    (void *)doNeq},
-    {"not",          TeX0Arg, 0,         0,    (void *)doNot},
+    {"not",          TeXNot,  0,         0,    (void *)doNot},
 
 // The next two are needed for matrix layout. Maybe and with luck they
 // will not occur freestanding.
@@ -3088,8 +3080,6 @@ static Keyword *lexKey;
 //    items \int, \sum (etc). This last one is NASTY since it is not clear
 //    that there is any way to tell when the guarded expression ends!
 
-static void nextSymbol();
-
 static Box *readE(int stopAt);
 #define stopComma 0x01
 #define stopTab   0x02
@@ -3341,6 +3331,14 @@ case lexSpecial:   // in this case lexKey tells me which keyword it is.
                 return b;
             }
             printf("TeX keyword 0 found but not handled (%s)\n", lexKey->name);
+            nextSymbol();
+            return NULL;
+    case TeXNot:
+            if (lexKey->ptr != NULL)
+            {   Box *b = ((keywordHandlerFunction *)(lexKey->ptr))(lexKey->charCode);
+                return b;
+            }
+            printf("TeX \\not found but not handled (%s)\n", lexKey->name);
             nextSymbol();
             return NULL;
     case TeX1Arg:
