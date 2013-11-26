@@ -1,7 +1,7 @@
 
 /* $destdir/u10.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3046,15 +3046,21 @@ v0024:
 
 /* Code for dcombine */
 
-static Lisp_Object MS_CDECL CC_dcombine(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0027, ...)
+static Lisp_Object MS_CDECL CC_dcombine(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0159, v0160, v0161;
     Lisp_Object fn;
+    Lisp_Object v0027, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "dcombine");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0027 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for dcombine");
 #endif
@@ -4150,15 +4156,22 @@ v0205:
 
 /* Code for exchk1 */
 
-static Lisp_Object MS_CDECL CC_exchk1(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0027, Lisp_Object v0028, ...)
+static Lisp_Object MS_CDECL CC_exchk1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0234, v0235, v0236, v0237;
     Lisp_Object fn;
+    Lisp_Object v0028, v0027, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "exchk1");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0027 = va_arg(aa, Lisp_Object);
+    v0028 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for exchk1");
 #endif
@@ -4834,15 +4847,21 @@ v0049:
 
 /* Code for subs3f1 */
 
-static Lisp_Object MS_CDECL CC_subs3f1(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0027, ...)
+static Lisp_Object MS_CDECL CC_subs3f1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0146, v0253, v0254;
     Lisp_Object fn;
+    Lisp_Object v0027, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "subs3f1");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0027 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for subs3f1");
 #endif
@@ -5824,15 +5843,22 @@ v0200:
 
 /* Code for cl_varl2 */
 
-static Lisp_Object MS_CDECL CC_cl_varl2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0027, Lisp_Object v0028, ...)
+static Lisp_Object MS_CDECL CC_cl_varl2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0175, v0292, v0293, v0294;
     Lisp_Object fn;
+    Lisp_Object v0028, v0027, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "cl_varl2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0027 = va_arg(aa, Lisp_Object);
+    v0028 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for cl_varl2");
 #endif
@@ -7018,15 +7044,22 @@ v0009:
 
 /* Code for pasf_smwupdknowl */
 
-static Lisp_Object MS_CDECL CC_pasf_smwupdknowl(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0027, Lisp_Object v0028, ...)
+static Lisp_Object MS_CDECL CC_pasf_smwupdknowl(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0023, v0192, v0012, v0008, v0056;
     Lisp_Object fn;
+    Lisp_Object v0028, v0027, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "pasf_smwupdknowl");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0027 = va_arg(aa, Lisp_Object);
+    v0028 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for pasf_smwupdknowl");
 #endif

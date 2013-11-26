@@ -1,52 +1,7 @@
 
 % u53.lsp           Machine generated Lisp
 
-(c!:install "u53" 15522 6152958 8902770)
-
-(c!:install 'cd_surep '(cd_surep !*rlgsvb !*cgbgs t !*rlspgs !*rlsithok
-rl_surep) 8305617494507145)
-
-(c!:install 'simppsexplim '(simppsexplim ps!:exp!-lim psexplim nil carx
-ieval) 76995428546463393)
-
-(c!:install 'simp!:ps!: '(simp!:ps!: simp!:ps1) 2025566615156754466)
-
-(c!:install 'tchscheme '(tchscheme rowmax nil codmat maxvar t chscheme
-transferrow) 1933429846154179)
-
-(c!:install 'fast!-stack!-rows '(fast!-stack!-rows) 1858118498792371307)
-
-(c!:install 'groerevlist '(groerevlist nil reval getrlist) 
-1037191964888192230)
-
-(c!:install 'xnp '(xnp nil) 1364558411567724926)
-
-(c!:install 'fortexp1 '(fortexp1 !+ nil t minus !*!* literal range !:
-!:rd!: !:lower!-sci!: !:upper!-sci!: !. !*double !D !E (!D 0) !:crn!:
-!:gi!: !:cr!: !*f90 cmplx!( !, kind!(1!.0!D0!) !) !*fortranname!* (real
-dble) real listp fortranname optype fortranprecedence fortranop
-insertparens lastpair isfloat !*gi2cr !*crn2cr rd!:explode fortliteral
-fortexp) 627273730332312513)
-
-(c!:install 'algint!-subsublis '(algint!-subsublis !*sq subfunc nil
-algint!-subsq) 2210589709704843313)
-
-(c!:install 'general!-quotient!-mod!-p '(general!-quotient!-mod!-p
-"B=0 IN GENERAL-QUOTIENT-MOD-P" t nil exact!-quotient!-flag
-general!-modular!-reciprocal general!-multiply!-by!-constant!-mod!-p
-ordop adjoin!-term general!-xquotient!-mod!-p errorf) 
-1731427575502545076)
-
-(c!:install 'get!-alpha '(get!-alpha alphalist "Alpha not found for "
-" in " assoc!-alpha errorf) 425178542861694733)
-
-(c!:install 'pasf_exprng!-gball '(pasf_exprng!-gball t
-"pasf_exprng: bad bound " " with free variables " !*rlexprngnatural nil
-and true false cl_fvarl rederr pasf_exprng pasf_qff2ivl pasf_sisub) 
-86946155298281280)
-
-(c!:install 'cpr_buchcrit4t '(cpr_buchcrit4t ev_disjointp) 
-1875249702315620495)
+(c!:install "u53" 4452 9023327 1273574)
 
 (c!:install 'subsubf '(subsubf nil equal sub subsublis reversip!* aeval
 aconc!* subeval mksp mk!*sq) 121500722672076007)
@@ -66,11 +21,11 @@ setdiff t) 1298929219697503250)
 
 (c!:install 'store_edges '(store_edges nil) 1508654666156025741)
 
-(c!:install 'pst_partition '(pst_partition nil lambda_mth9ct_12 pst_d
+(c!:install 'pst_partition '(pst_partition nil lambda_mwvup5_12 pst_d
 sort) 1076655640577242005)
 
-(c!:install 'lambda_mth9ct_12 '(lambda_mth9ct_12 numlist_ordp) 
-1484619948402417694)
+(c!:install 'lambda_mwvup5_12 '(lambda_mwvup5_12 numlist_ordp) 
+162103954490805596)
 
 (c!:install '!?a2bf '(!?a2bf !:rd!: nil !:dn!:) 271174221934987019)
 
@@ -144,6 +99,64 @@ equal difference invsysvars!* gg!* plus gv!* reval gvarlis readsys
 invbase!* !*di2q prepsq rederr) 734148310603515314)
 
 (c!:install 'nbglp '(nbglp t nil bglp!:!: baglistp) 2029067606823227088)
+
+(c!:install 'multivariatep '(multivariatep t nil) 1843520705890193709)
+
+(c!:install 'iscale '(iscale) 1567378906517906507)
+
+(c!:install 'xgcd!-mod!-p '(xgcd!-mod!-p nil t
+multiply!-by!-constant!-mod!-p quotient!-mod!-p times!-mod!-p
+difference!-mod!-p) 1827699535290984324)
+
+(c!:install 'numrdeg '(numrdeg t !*a2k updkorder reorder setkorder prepf
+) 1032807070519341369)
+
+(c!:install 'sort_derivs '(sort_derivs nil total_less_dfrel) 
+230225231187430045)
+
+(c!:install 'adddm!* '(adddm!* adddm) 1403621602198266437)
+
+(c!:install 'evalwhereexp '(evalwhereexp aeval where nil carx evalletsub
+) 1637168594519833416)
+
+(c!:install 'qqe_update!-minlength '(qqe_update!-minlength minlength t) 
+941030464228576449)
+
+(c!:install 'pasf_se '(pasf_se true t false (neq equal) neq nil equal
+pasf_deci sfto_dcontentf) 396440616341128090)
+
+(c!:install 'cl_surep '(cl_surep !*rlspgs true t rl_gsd rl_multsurep
+rl_simpl) 1647654920142071665)
+
+(c!:install 'dip2a1 '(dip2a1 minus expvec2a bcminus!? bcneg bc2a
+dipretimes nreverse) 900252617398071539)
+
+(c!:install 'rep_edge_prop_ '(rep_edge_prop_ t) 1877483256415604022)
+
+(c!:install 'ezgcd!-comfac '(ezgcd!-comfac t nil poly!-abs gcdlist) 
+440190666376026718)
+
+(c!:install 'compactf '(compactf !*trcompact
+"*** Arguments on entering compactf:" nil " *** Compactf looped "
+" times" prin2t mk!*sq mathprint compactf0) 1351644872193580193)
+
+(c!:install 'mapply '(mapply int "Empty list to mapply" rerror) 
+1373072534105908047)
+
+(c!:install 'abs_dfrel '(abs_dfrel lex_df dfrel2 absodeg) 
+307852189237764747)
+
+(c!:install 'qqe_simpl!-clause!-term '(qqe_simpl!-clause!-term maxlength
+qepsilon qqe_qprefix!-var qqe_number!-of!-tails!-in!-qterm
+qqe_number!-of!-adds!-in!-qterm) 1363976176168693961)
+
+(c!:install 'arbitrary_c '(arbitrary_c nil found_int found_mat_int
+found_compl found_mat_compl mat t flagg "<apply><forall/>" indent
+"<condition>" "<apply><and/>" consts_compl consts_int "</apply>"
+"</condition>" consts_mat_compl consts_mat_int isarb_compl isarb_int
+printout print_arb_compl print_arb_int in_complexml in_integerml
+printarb_mat_compl printarb_mat_int isarb_mat_compl isarb_mat_int) 
+87787866699516320)
 
 
 % End of generated Lisp code

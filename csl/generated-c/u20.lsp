@@ -1,28 +1,7 @@
 
 % u20.lsp           Machine generated Lisp
 
-(c!:install "u20" 19042 6625229 2759804)
-
-(c!:install 'random '(random t "positive number" unidev_fac!*
-randommodulus!* nil typerr next!-random!-number) 1392034173217310297)
-
-(c!:install 'getphystypetimes '(getphystypetimes nil
-"PHYSOP type mismatch in" collectphystype deleteall rederr2) 
-157359915266999155)
-
-(c!:install 'nfactorial '(nfactorial nil fac!-part) 1136885059357765423)
-
-(c!:install 'formsetq '(formsetq symbolic list cons formsetq0 formsetq1
-formsetq2) 468839374382462326)
-
-(c!:install 'mo_lcm '(mo_lcm nil mo!=shorten mo!=deglist) 
-1412699243743002314)
-
-(c!:install 'gcdout '(gcdout !*modular nil ljet ord gcdf!* pcdiv) 
-1956867807499114445)
-
-(c!:install 'extract_dummy_ids '(extract_dummy_ids dummy_id!* nreverse) 
-1750923938922874130)
+(c!:install "u20" 14701 8459652 4385223)
 
 (c!:install 'cons_ordp '(cons_ordp t nil) 975461228913855627)
 
@@ -175,6 +154,24 @@ noncomp) 716622872494244348)
 
 (c!:install 'no_dum_varp '(no_dum_varp t list nil splitlist!:) 
 790731282011564070)
+
+(c!:install 'pa_coinc_split '(pa_coinc_split nil lambda_mwvup3_5 upbve
+sort) 1101798385830790966)
+
+(c!:install 'lambda_mwvup3_5 '(lambda_mwvup3_5 t nil) 
+1510054943087796948)
+
+(c!:install 'evaluate!-in!-order!-mod!-p '(evaluate!-in!-order!-mod!-p t
+!*d2n horner!-rule!-in!-order!-mod!-p) 1971267847906715886)
+
+(c!:install 'negind '(negind nil) 369439999097960237)
+
+(c!:install 'qqe_simplterm!-tail '(qqe_simplterm!-tail qepsilon (ladd
+radd) ltail radd nil rtail ladd qqe_arg2l qqe_op qqe_arg2r qqe_simplterm
+) 16303325214535506)
+
+(c!:install 'pasf_pdp '(pasf_pdp t indef ndef pdef psdef nil nsdef) 
+1554990075183254945)
 
 
 % End of generated Lisp code

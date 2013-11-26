@@ -1,60 +1,7 @@
 
 % u27.lsp           Machine generated Lisp
 
-(c!:install "u27" 15872 9418116 4036200)
-
-(c!:install 'evaluate '(evaluate !*evaluateerror !*protfg nil t !*msg
-evaluate0 "error during function evaluation (e.g. singularity)" pair
-errorset errorp rederr) 1631719442578554777)
-
-(c!:install 'min0 '(min0 min max) 864010346443940374)
-
-(c!:install 'find_triangl_coeff '(find_triangl_coeff nil
-find_triangle_coeff) 2068270401851140466)
-
-(c!:install 'formbool '(formbool symbolic t boolvalue!* boolfn boolean
-boolargs "Too many formbools" where bool!-eval intexprlisp formclis
-formboollis formc!* rederr formc) 209408490213970326)
-
-(c!:install 'use!-berlekamp '(use!-berlekamp dpoly nil poly!-vector
-current!-modulus remainder!-in!-vector find!-null!-space
-times!-in!-vector) 1197715551137212609)
-
-(c!:install 'my!+nullsq!+p '(my!+nullsq!+p t) 1702583932240846766)
-
-(c!:install 'mri_congp '(mri_congp (cong ncong) mri_opn) 
-1789663015645006059)
-
-(c!:install 'pasf_fact '(pasf_fact true t false (equal neq) equal or and
-nil (leq lessp geq greaterp) fctrf minusf pasf_anegrel pasf_fact1) 
-2149182530877841431)
-
-(c!:install 'vdp_getprop '(vdp_getprop nil vdp_plist) 
-1067002742013599513)
-
-(c!:install 'upperlimitrd '(upperlimitrd char (!/ u p l i m i t)
-"</uplimit>" mathml lex errorml) 1898269721182116234)
-
-(c!:install 'o!-nextarg '(o!-nextarg !*udebug nil i upb (null!-fn)
-acontract op mcontract null!-fn expand identity uprint first0 last0 mval
-) 1450087023117742761)
-
-(c!:install 'dipprodin '(dipprodin t dipzero dipsum dipprodin1) 
-1256463770200100544)
-
-(c!:install 'mkexdf '(mkexdf d opmtch partitop mkupf) 
-2083037654706373854)
-
-(c!:install 'simp!*sq '(simp!*sq !*resimp resimp1) 1205945128704894914)
-
-(c!:install 'prepsq!*0 '(prepsq!*0 nil gcdf quotf prepsq!*1) 
-171509817884540763)
-
-(c!:install 'domainvalchk '(domainvalchk dmode!* nil mk!*sq valuechk) 
-902646238426271914)
-
-(c!:install 'vectorrd '(vectorrd nil mat matrixrowrd aeval) 
-651127689773572577)
+(c!:install "u27" 7588 3022539 3243570)
 
 (c!:install 'msolve!-poly1 '(msolve!-poly1 t nil erfg!* current!-modulus
 expt safe!-modrecip negf multf moduntag prepf general!-modular!-number
@@ -150,6 +97,56 @@ gentranlang!* fortran !*posn!* fprin2) 1147431734925183082)
 (c!:install 'lpos '(lpos) 762677751471920374)
 
 (c!:install 'sgn1 '(sgn1 sgn) 2161117141783592555)
+
+(c!:install 'noncomfree '(noncomfree t nil) 1017094101632879336)
+
+(c!:install 'give!*position '(give!*position nil t
+"error in give position" nth rederr) 297056641354726252)
+
+(c!:install 'iv_cutcongs2 '(iv_cutcongs2 cong) 454068408993213202)
+
+(c!:install 'bc_mkat '(bc_mkat nil) 79139344791204664)
+
+(c!:install 'intervalom '(intervalom lowupperlimit integer_interval nil
+valid_om!* interval!* "<OMA>" t "<OMS cd=""" """ name=""" """/>"
+"</OMA>" printout indent!* multiom) 1781505378642234783)
+
+(c!:install 'ldf!-simp '(ldf!-simp nil t prepf simp comfac quotf absf to
+) 1752971389368301339)
+
+(c!:install 'on!-double1 '(on!-double1 !*double nil doublep) 
+1657322483002638185)
+
+(c!:install 'plubf '(plubf !:rd!: !:bprec!: msd inorm) 
+1270994363554067922)
+
+(c!:install 'r2oaddspecies '(r2oaddspecies "new species: " prin2t) 
+2133108755580671465)
+
+(c!:install 'toolongexpp '(toolongexpp maxexpprintlen!* numprintlen) 
+1304998923951448279)
+
+(c!:install 'indexsymmetrize '(indexsymmetrize indxsymmetrize nil) 
+284797792401482192)
+
+(c!:install 'cvitimes2 '(cvitimes2 t times) 1452841355575771990)
+
+(c!:install 'arglength '(arglength !*intstr t reval) 1153614851099336615
+)
+
+(c!:install 'ratfunpri1 '(ratfunpri1 spare!* nil posn!* t orig!*
+ycoord!* pline!* ymin!* ymax!* bar quotient p!*!* "(" ")"
+layout!-formula max terpri!* update!-pline min symbol prin2!* maprint
+oprin negnumberchk) 506325706408974610)
+
+(c!:install 'bas_make '(bas_make nil dp_ecart) 439793863735431980)
+
+(c!:install 'pst_subpst '(pst_subpst) 468417355526156341)
+
+(c!:install '!*a2f '(!*a2f simp!* !*q2f) 1157670281669662903)
+
+(c!:install 'tayexp!-max2 '(tayexp!-max2 tayexp!-lessp) 
+1717560860045974573)
 
 
 % End of generated Lisp code

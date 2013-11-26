@@ -1,100 +1,7 @@
 
 % u57.lsp           Machine generated Lisp
 
-(c!:install "u57" 8342 4145710 45235)
-
-(c!:install 'trailing!.coefft '(trailing!.coefft t) 435465880931301690)
-
-(c!:install 'qqe_length!-graph!-unmark '(qqe_length!-graph!-unmark
-blockmark) 386195966357073478)
-
-(c!:install 'pasf_puregconp '(pasf_puregconp true t false (equal neq leq
-geq lessp greaterp cong ncong) nil) 2099295994873347710)
-
-(c!:install 'dip_f2dip '(dip_f2dip ev_zero bc_fd dip_f2dip1) 
-422070065895882742)
-
-(c!:install 'forstat '(forstat !*blockp all cursym!* each scan forloop
-foreachstat forallstat) 2084989424899184145)
-
-(c!:install 'gbfmult '(gbfmult !:rd!: fl2bf csl_timbf normbf read!:num) 
-1622562915504334825)
-
-(c!:install 'areallphysops '(areallphysops nil !*physopp!*) 
-1239332376851114041)
-
-(c!:install 'rep_parents '(rep_parents) 1381159550512181235)
-
-(c!:install 'sqrtsintree '(sqrtsintree !*sq sqrt dependsp sqrtsinsq
-union) 139395218305070615)
-
-(c!:install 'insertglue '(insertglue nil inn textag (beg sup sub frc mat
-) frc end opn clo interglue) 2152117532027901338)
-
-(c!:install 'get_dim_irred_reps '(get_dim_irred_reps !*complex
-get!*complex!*irreducible!*rep get_dimension_in
-get!*real!*irreducible!*rep) 1413208718065814116)
-
-(c!:install 'termlst '(termlst nil t multsq setkorder reorder) 
-1773088442250134392)
-
-(c!:install 'qqe_graph!-rem!-dfsnum '(qqe_graph!-rem!-dfsnum dfsnum) 
-1880220731783253921)
-
-(c!:install 'cl_rename!-vars '(cl_rename!-vars cl_replace!-varl
-cl_rename!-vars1) 2010537113099233533)
-
-(c!:install 'sfto_univarp '(sfto_univarp t nil sfto_univarp1) 
-1519693698645744179)
-
-(c!:install 'division!-test '(division!-test t nil quotf) 
-540353541649425476)
-
-(c!:install 'conjterm '(conjterm zlist involvesp negsq) 
-1223650655319705946)
-
-(c!:install 'rederr '(rederr !*protfg lprie) 1622775746713653828)
-
-(c!:install 'vdpinit2 '(vdpinit2 kord!* dipoly
-"vdpinit: vdpvars not set" dipvars!* vdpvars!* vdpsortmode!* vdpcleanup
-rerror torder2) 138567767140030192)
-
-(c!:install 'mk_simple_map_ '(mk_simple_map_ nil mk_simple_map_1) 
-317260080980145983)
-
-(c!:install 'fillin1 '(fillin1 nreverse) 721776940379112198)
-
-(c!:install 'bf2rn1 '(bf2rn1 t !:rd!: !:bprec!: minus!: normbf difbf
-divide!: abs!: bfzerop!: greaterp!: invbf) 1259736812214270201)
-
-(c!:install 'var!-is!-nth '(var!-is!-nth nil t confusion) 
-409986178959766375)
-
-(c!:install 'lto_alunion '(lto_alunion union lto_almerge) 
-980192573495283260)
-
-(c!:install 'vdp_fdip '(vdp_fdip dip_lbc dip_evlmon vdp_make vdp_zero) 
-68482194143858396)
-
-(c!:install 'cgp_comp '(cgp_comp cgp_rp dip_comp) 436578774009283139)
-
-(c!:install 'rnfix!* '(rnfix!*) 950600838787376087)
-
-(c!:install 'int!-simp '(int!-simp simp!* resimp subs2) 
-551723913407689870)
-
-(c!:install 'implicitdec '(implicitdec nil !*decs!* symtabget isimplicit
-firstmatch implicittype) 697185384784918057)
-
-(c!:install 'gffplus '(gffplus) 2257218827213873310)
-
-(c!:install 'coeff_sortl1 '(coeff_sortl1 nil atlas_sort coeff_sort_f) 
-710663832595690815)
-
-(c!:install 'canonical '(canonical !*distribute nil distribute t !*sq
-simp!* on distri_pol addf dv_canon_monomial) 2013682166067908884)
-
-(c!:install 'orderfactors '(orderfactors ordp) 2006613250702893137)
+(c!:install "u57" 14107 1971529 1772816)
 
 (c!:install 'i_solve!-eval '(i_solve!-eval t !*i_solve r_solve!-eval) 
 29341982009801111)
@@ -178,6 +85,66 @@ red!=hide dp_neworder bas_make1) 529827288013441176)
 156441395819698514)
 
 (c!:install 'tildepri '(tildepri "~" prin2!*) 639967837358961021)
+
+(c!:install 'matpri1 '(matpri1 !*fort "MAT" nil only t !*nat spare!*
+orig!* mat!-top!-l mat!-top!-r mat!-low!-l mat!-low!-r mat!-mid!-l
+mat!-mid!-r setq posn!* ycoord!* pline!* ymax!* ymin!* assgnpri terpri!*
+layout!-formula max update!-pline min symbol maprin oprin matpri2) 
+518798090402533838)
+
+(c!:install 'qqe_graph!-put!-dfsnum '(qqe_graph!-put!-dfsnum dfsnum) 
+1333807596213239090)
+
+(c!:install 'cl_atnum '(cl_atnum or t and not impl repl equiv ex all bex
+ball true false rl_external apply) 2151547380184807226)
+
+(c!:install 'mkdep '(mkdep nil t depend1) 2077599978790671051)
+
+(c!:install 'npair '(npair nreverse) 664933991182741262)
+
+(c!:install 'groebsecondaryreplace '(groebsecondaryreplace) 
+1254619334676644451)
+
+(c!:install 'texpt!: '(texpt!: bfone!* invbf exptbf bflerrmsg) 
+1003798618131131707)
+
+(c!:install 'insertindices '(insertindices
+"invalid indices to insertindex" isanindex rederr2 idlistp areallindices
+vecopp tensopp) 780054324421249599)
+
+(c!:install 'is_neighbour '(is_neighbour nil) 1459712190505322888)
+
+(c!:install 'ggvars3 '(ggvars3 ggvars2) 522684439995123279)
+
+(c!:install 'tstpolyarg2 '(tstpolyarg2 nil "polynomial" kernels depends
+prepsq typerr) 1451086299654119374)
+
+(c!:install 'substinulist '(substinulist nil evaluateuconst !*invsq
+!*multsq plusdf) 26299369337838575)
+
+(c!:install 'taylor!-add!-to!-cache '(taylor!-add!-to!-cache
+!*taylornocache !*taylor!-assoc!-list!* nil setcar) 940974874721456773)
+
+(c!:install 'qqe_greatereq!-length '(qqe_greatereq!-length
+qqe_less!-length) 2023580944311243293)
+
+(c!:install 'ofsf_sippsignchkf '(ofsf_sippsignchkf t unknown
+ofsf_updsigndom ofsf_updsignvar ofsf_updsignpow ofsf_updsignmult
+ofsf_updsignadd) 299899187185403365)
+
+(c!:install 'ev_dif '(ev_dif nil) 1694475901249152232)
+
+(c!:install 'dvfsf_vsimpf '(dvfsf_vsimpf t expt p lambda_mwvup5_13 times
+nil failed dvfsf_ppolyp dvfsf_ppolydec simp zfactor sort dvfsf_vsimpf1) 
+1837050975163865088)
+
+(c!:install 'lambda_mwvup5_13 '(lambda_mwvup5_13) 574380597137044095)
+
+(c!:install 'involvesp '(involvesp "Var not found in involvesp" interr) 
+1399591853751262418)
+
+(c!:install 'vdponepol '(vdponepol vdpvars!* nil vdpone!* a2vbc
+vevmaptozero1 vdpfmon) 2090349783169956908)
 
 
 % End of generated Lisp code

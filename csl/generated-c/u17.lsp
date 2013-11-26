@@ -1,20 +1,7 @@
 
 % u17.lsp           Machine generated Lisp
 
-(c!:install "u17" 18100 297703 4577237)
-
-(c!:install 'begin1a '(begin1a otime!* gctime ogctime!* otime3!*
-otime2!* otime1!* ogctime3!* ogctime2!* ogctime1!* peekchar!*
-!*semicol!* cursym!* !*nosave!* statcounter nil !*strind !*time (
-showtime) !*output ofl!* !*defn !*lessspace tslin!* !*slin lreadfn!*
-initl!* forkeywords!* delim repeatkeywords!* whilekeywords!* !*int
-erfg!* end key!* ed promptexp!* (command) t symbolic xmodule err2 err3
-crbuf1!* "Closing object improperly removed. Redo edit." eof!*
-"End-of-file read" (bye) crbuf!* "BEGIN invalid" !*errcont !*echo cmsg!*
-"Continuing with parsing only ..." getd terminalp add2buflis
-update_prompt lispeval sinitl printprompt errorset!* condterpri errorp
-eofcheck resetparser lprie pause1 lprim eval xmodloop begin11 comm1) 
-173307344241165145)
+(c!:install "u17" 8329 3620629 7684691)
 
 (c!:install 'lienjactest '(lienjactest lie_jtest difference nil plus
 times lie_cc aeval setk aeval!* aminusp!: evalneq) 1026397306699852550)
@@ -128,6 +115,24 @@ deletemult!* physopordchk!*) 201005715645974337)
 assert_assertfn t lprim getd copyd) 2203729073417291003)
 
 (c!:install 'prepd1 '(prepd1 prepfn) 1215632159661402709)
+
+(c!:install 'merge '(merge) 88905691906332164)
+
+(c!:install 'resimpf '(resimpf nil varstack!* subf1) 2301003585008741541
+)
+
+(c!:install 'dmconv0 '(dmconv0 !:rn!: !:gi!: !:crn!: dmd!*) 
+1800770221870508758)
+
+(c!:install 'mkprod '(mkprod !*exp !*sub2 t !*mcd !*sqfree !*factor
+!*gcd nil !*group kernlp subs2 ckrn quotf expnd multf mksp!* tmsf fctrf)
+ 785037534605739561)
+
+(c!:install 'sfto_sqfpartf '(sfto_sqfpartf t sfto_ucontentf quotf diff
+sfto_gcdf!* multf) 1526155285455852663)
+
+(c!:install 'rl_ordatp '(rl_ordatp rl_ordatp!* apply) 323878800305080664
+)
 
 
 % End of generated Lisp code

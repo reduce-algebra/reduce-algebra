@@ -1,7 +1,7 @@
 
 /* $destdir/u04.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3313,15 +3313,21 @@ v0027:
 
 /* Code for formlis */
 
-static Lisp_Object MS_CDECL CC_formlis(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0021,
-                         Lisp_Object v0006, ...)
+static Lisp_Object MS_CDECL CC_formlis(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0055, v0048, v0069;
     Lisp_Object fn;
+    Lisp_Object v0006, v0021, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "formlis");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0021 = va_arg(aa, Lisp_Object);
+    v0006 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for formlis");
 #endif
@@ -4150,15 +4156,21 @@ v0035:
 
 /* Code for mcharg */
 
-static Lisp_Object MS_CDECL CC_mcharg(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0021,
-                         Lisp_Object v0006, ...)
+static Lisp_Object MS_CDECL CC_mcharg(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0127, v0128, v0129;
     Lisp_Object fn;
+    Lisp_Object v0006, v0021, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "mcharg");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0021 = va_arg(aa, Lisp_Object);
+    v0006 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mcharg");
 #endif
@@ -4325,14 +4337,20 @@ static Lisp_Object CC_getLcolLnr(Lisp_Object env,
 
 /* Code for qqe_mk2 */
 
-static Lisp_Object MS_CDECL CC_qqe_mk2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0021,
-                         Lisp_Object v0006, ...)
+static Lisp_Object MS_CDECL CC_qqe_mk2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0063, v0023, v0020;
+    Lisp_Object v0006, v0021, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "qqe_mk2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0021 = va_arg(aa, Lisp_Object);
+    v0006 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for qqe_mk2");
 #endif
@@ -4396,14 +4414,21 @@ v0005:
 
 /* Code for aex_mk */
 
-static Lisp_Object MS_CDECL CC_aex_mk(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0021,
-                         Lisp_Object v0006, Lisp_Object v0002, ...)
+static Lisp_Object MS_CDECL CC_aex_mk(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0018, v0016, v0019, v0025;
+    Lisp_Object v0002, v0006, v0021, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "aex_mk");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0021 = va_arg(aa, Lisp_Object);
+    v0006 = va_arg(aa, Lisp_Object);
+    v0002 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for aex_mk");
 #endif
@@ -5670,15 +5695,21 @@ v0033:
 
 /* Code for prepf1a_reversed */
 
-static Lisp_Object MS_CDECL CC_prepf1a_reversed(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0021,
-                         Lisp_Object v0006, ...)
+static Lisp_Object MS_CDECL CC_prepf1a_reversed(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0076, v0117, v0116;
     Lisp_Object fn;
+    Lisp_Object v0006, v0021, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "prepf1a_reversed");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0021 = va_arg(aa, Lisp_Object);
+    v0006 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for prepf1a_reversed");
 #endif

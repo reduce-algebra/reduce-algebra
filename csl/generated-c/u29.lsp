@@ -1,55 +1,7 @@
 
 % u29.lsp           Machine generated Lisp
 
-(c!:install "u29" 14449 7383316 3173601)
-
-(c!:install '!*f2di '(!*f2di varlist!* nil t addgt pdmult psum pcmult) 
-1320821091833759185)
-
-(c!:install 'rule '(rule t !*sq!* nil mcond!*
-"Unmatched free variable(s)" hold erfg!* getel prepsq!* smemql setdiff
-lispeval let3 lprie errpri1) 1787009148438574436)
-
-(c!:install 'testord '(testord t nil) 295419463470875117)
-
-(c!:install 'ratpoly_xtothen '(ratpoly_xtothen nil to) 
-1032276716312681124)
-
-(c!:install 'sfto_reorder '(sfto_reorder setkorder reorder) 
-776219512282437951)
-
-(c!:install 'diffrd '(diffrd char (b v a r) nil lex mathml2 alg_df
-bvarrd) 596869856670901006)
-
-(c!:install 'simpimpart '(simpimpart nil !*factor simp!* impartsq) 
-1318661892495599752)
-
-(c!:install 'copy_mat '(copy_mat nreverse) 242186463658415657)
-
-(c!:install 'exdfprn '(exdfprn "d" prin2!* rembras) 985087563643106429)
-
-(c!:install 'getupper '(getupper metricu!*) 1351457943606920707)
-
-(c!:install 'ordpl '(ordpl t ordp) 935355194877485601)
-
-(c!:install 'subs2p '(subs2p t simp exptsq to multsq) 927406212796343002
-)
-
-(c!:install 'fs!:make!-nullangle '(fs!:make!-nullangle nil) 
-1460344656790123685)
-
-(c!:install 'red!=subst1 '(red!=subst1 !*bcsimp "---> " "." " uses "
-bas_dpoly dp_lc bas_rep bc_inv bc_prod bc_fi dp_lmon mo_diff dp_times_bc
-dp_times_bcmo dp_diff cali_trace dp_print bas_nr bas_make1 bc_gcd
-bc_divmod) 361221532838411975)
-
-(c!:install 'simpquot '(simpquot alg "0/0 formed" "Zero divisor" dmode!*
-(!:rd!: !:cr!:) t nil !*modular simpcar simp !:onep divd simprecip
-multsq rerror) 987905241144837140)
-
-(c!:install 'gigcdsq '(gigcdsq nil giintgcd quotf) 395636328432651245)
-
-(c!:install 'mri_opn '(mri_opn mri_op) 2036384330803727972)
+(c!:install "u29" 19192 9459601 1739309)
 
 (c!:install 'pasf_cein '(pasf_cein true t false (leq greaterp geq lessp)
 (leq greaterp) (geq lessp) nil pasf_deci sfto_dcontentf simp quotfx
@@ -102,7 +54,7 @@ multopop!*) 895769768042622179)
 (c!:install 'in_list1a '(in_list1a !*echo !*reduce4 string !$ !/ t !\
 nil ifl!* !" !. (!") (!/ !.) input linelist!* curline!* ipl!* contl!*
 "FILE STACK CONFUSION" type typerr mkfil!* open begin1a rederr value) 
-165576182074120558)
+2214363226004591655)
 
 (c!:install 'reduce!-ratios '(reduce!-ratios red!-ratios1
 mv!-domainlist!-!* mv!-domainlist!-!- reddom_zeros) 151315475463449374)
@@ -148,6 +100,64 @@ expand!-imrepartpow multsq) 2035110936183868284)
 
 (c!:install 'exdf0 '(exdf0 exdff0 negf multpfsq addpf) 
 681598048892277932)
+
+(c!:install 'procstat1 '(procstat1 erfg!* fname!* t cursym!* procedure
+expr !*reduce4 (xread (quote proc)) nil (procedure operator) "procedure"
+"invalid as parameter list" "procedure name" read_param_list !*colon!*
+fnc eof!* !*semicol!* (xread t) (symerr (quote procedure) t) errorset!*
+errorp scan typerr read_type getd rsverr gettype idlistp lprie) 
+1674997777527103535)
+
+(c!:install 'reduce '(reduce !*yyy !*xxx reduce!-ratios set!-weights
+reduce!-columns reduce!-weights) 2232730691713852125)
+
+(c!:install 'groeb!=testb '(groeb!=testb nil mo_comp nth mo_divides!?
+bas_dpoly dp_lmon mo_lcm mo_equal!?) 163974214321032176)
+
+(c!:install 'split_cov_cont_ids '(split_cov_cont_ids nil minus) 
+210396523032333593)
+
+(c!:install 'cl_simpl '(cl_simpl !*rlsism nil inctheo and false
+cl_sitheo rl_smupdknowl cl_simpl1) 223841921215303609)
+
+(c!:install 'matrixrd '(matrixrd nil char (m a t r i x r o w) (!/ m a t
+r i x r o w) "</matrixrow>" mat aeval lex matrixrowrd errorml) 
+1577317693841182189)
+
+(c!:install 'simpu '(simpu u ordn mksp) 1513751597248243952)
+
+(c!:install 'specrd!:times '(specrd!:times minus t add_minus mkround
+rd!:times) 1296037239458367103)
+
+(c!:install 'groebspolynom3 '(groebspolynom3 groebspolynom4
+groebsavelterm) 1261549700825633896)
+
+(c!:install 'gbfplus '(gbfplus plubf) 1296101988056440052)
+
+(c!:install 'lispreadp '(lispreadp read) 881448017920639953)
+
+(c!:install 'calc_coeffmap_ '(calc_coeffmap_ times calc_map_ calc_coeff)
+ 1350162953997605550)
+
+(c!:install 'fs!:prin '(fs!:prin " 0 " nil " + " prin2!* fs!:prin1) 
+2296593435576012783)
+
+(c!:install 'basic!-kern '(basic!-kern nil basic!-kern1 union) 
+1526663395384162395)
+
+(c!:install 'valuechk '(valuechk variadic nil !:rd!: !:rn!:
+!*strict_argcount alg "Wrong number of arguments to" list opfchk!!
+znumrnil rerror lprim) 741742601020148811)
+
+(c!:install 'expf '(expf nil t frlis!* expt !:expt mksp!* fkern to sfp
+exptf multf mkrn) 2152314610787751396)
+
+(c!:install 'evalnumberp '(evalnumberp !*sq t nil numbertag aeval) 
+839837682283356160)
+
+(c!:install 'qqe_simplbtat '(qqe_simplbtat neq false true nil equal
+rl_prepat qqe_op qqe_arg2l qqe_eta!-in!-term qqe_arg2r rl_simpat) 
+1597516727760877248)
 
 
 % End of generated Lisp code

@@ -1,68 +1,15 @@
 
 % u35.lsp           Machine generated Lisp
 
-(c!:install "u35" 1911 8246590 5173988)
-
-(c!:install 'rewrite '(rewrite nil letmtr3 findrow) 387748043709988876)
-
-(c!:install 'dipretimes '(dipretimes times) 253811250525107887)
-
-(c!:install 'weak_xreduce1 '(weak_xreduce1 nil !*trxmod "   " first
-wedge " +" last xval xdiv mknwedge wedgepf quotsq negsq multpfsq addpf
-subs2pf writepri preppf) 843883409213556310)
-
-(c!:install 'is_buble '(is_buble nil diff_vertex) 126862233619348953)
-
-(c!:install 'quotexf!* '(quotexf!* quotfexf!*1 nreverse) 
-784945289340364209)
-
-(c!:install 'actual_arguments '(actual_arguments list generic_function) 
-799389259804872999)
-
-(c!:install 'fs!:prin!: '(fs!:prin!: "[" "]" prin2!* fs!:prin) 
-1091276550873600974)
-
-(c!:install 'split!-further '(split!-further nil number!-needed
-work!-vector1 dwork1 work!-vector2 dwork2 t copy!-vector gcd!-in!-vector
-quotfail!-in!-vector) 588263009917982076)
-
-(c!:install 'subtractinds '(subtractinds nil) 1781800755294678369)
-
-(c!:install 'change!+int!+to!+sq '(change!+int!+to!+sq) 
-981414809217460821)
-
-(c!:install 'mri_ofsf2mri '(mri_ofsf2mri mri_ofsf2mriat cl_apply2ats1) 
-2302577116468709019)
-
-(c!:install 'qqe_simplqneq '(qqe_simplqneq qequal nil true false qneq
-qqe_mk2 qqe_simplqequal qqe_arg2l qqe_arg2r) 618633530376510163)
-
-(c!:install 'pasf_leqp '(pasf_leqp minf t pinf nil) 19307778309156341)
-
-(c!:install 'diford '(diford lengthn) 137269086515083911)
-
-(c!:install 'greatertype '(greatertype optlang!* fortran conversion t
-nil eval typerror) 448655416598905173)
-
-(c!:install 'newvar '(newvar "free variable" != typerr) 
-2156650156526544768)
-
-(c!:install 'divide!-by!-power!-of!-ten '(divide!-by!-power!-of!-ten
-bften!* nil !:bprec!: bflerrmsg divide!: normbf times!: cut!:mt) 
-132956354787115271)
-
-(c!:install 'mk_parents_prim '(mk_parents_prim s_noparents
-mk_edge_parents) 162538637311508163)
-
-(c!:install 'mo_zero!? '(mo_zero!? mo!=zero) 1043937610632098126)
+(c!:install "u35" 12051 3258208 4626909)
 
 (c!:install 'simp!-prop!-dist '(simp!-prop!-dist plus nil times
-lambda_mth9cs_8 lambda_mth9cs_9 simp!-prop!-order sort) 
+lambda_mwvup4_8 lambda_mwvup4_9 simp!-prop!-order sort) 
 1095684814096341442)
 
-(c!:install 'lambda_mth9cs_9 '(lambda_mth9cs_9 ordp) 827404617187611703)
+(c!:install 'lambda_mwvup4_9 '(lambda_mwvup4_9 ordp) 557978081041894155)
 
-(c!:install 'lambda_mth9cs_8 '(lambda_mth9cs_8 ordp) 326295696914922330)
+(c!:install 'lambda_mwvup4_8 '(lambda_mwvup4_8 ordp) 305360695383960261)
 
 (c!:install 'tidysqrtf '(tidysqrtf t i (sqrt -1) sqrt nil mksp simp
 exptsq multsq tidysqrt addsq) 1516821077509979569)
@@ -139,6 +86,54 @@ bften!* nil !:bprec!: bflerrmsg times!: normbf cut!:mt)
 
 (c!:install 'addnew '(addnew gv!* bv!* t ljet insert) 
 2212495835606865964)
+
+(c!:install 'mchsarg '(mchsarg times t nil mtp noncomperm pair
+reversip!* mcharg2 lastpair noncomfree) 1286813935381781847)
+
+(c!:install 'mri_simplat1 '(mri_simplat1 !*rlsimplfloor int real mri_op
+mri_arg2l mri_simplfloor mri_type mri_0mk2 mri_dettype mri_congp
+mri_2ofsfat ofsf_simplat1 mri_ofsf2mri mri_2pasfat pasf_simplat1
+mri_pasf2mri) 29878545671636782)
+
+(c!:install 'rl_sacatlp '(rl_sacatlp rl_sacatlp!* apply) 
+1265259771237399829)
+
+(c!:install 'pasf_sacat '(pasf_sacat nil) 1301698717900133326)
+
+(c!:install 'aex_pp '(aex_pp nil aex_ex ratpoly_univarp ratpoly_pp
+aex_ctx aex_mk) 154915302743678126)
+
+(c!:install 'look_for_rational '(look_for_rational look_for_exponential
+nil sqrt expt quotient look_for_rational1 listp) 144965969560420770)
+
+(c!:install 'decimal2internal '(decimal2internal !:rd!:
+divide!-by!-power!-of!-ten) 504597874649419579)
+
+(c!:install 'chksymmetries!&sub1 '(chksymmetries!&sub1 t nil indxsymp) 
+1129409530185816092)
+
+(c!:install 'free '(free nil freeind) 1361021780282992428)
+
+(c!:install 'prepcadr '(prepcadr prepsq) 1324511785366247399)
+
+(c!:install 'njets '(njets combin) 1430456143211559356)
+
+(c!:install 'st_flatten '(st_flatten nil copy lastpair) 
+707630831385835474)
+
+(c!:install 'prim!-part '(prim!-part comfac comfac!-to!-poly quotf1) 
+1260543398647750397)
+
+(c!:install 'gcdlist '(gcdlist nil t "Term content division failed"
+gcdld mapcarcar powers1 numeric!-content vintersection gcddd mksp multf
+quotfail1 gcdlist1 poly!-abs) 308618966018162665)
+
+(c!:install 'vdp_putprop '(vdp_putprop) 268153680213254213)
+
+(c!:install 'ofsf_at2ir '(ofsf_at2ir t nil negf addf sfto_dcontentf
+quotf quotsq) 988490390901186708)
+
+(c!:install 'idsort '(idsort idcompare sort) 30453074938581177)
 
 
 % End of generated Lisp code

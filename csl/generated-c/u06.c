@@ -1,7 +1,7 @@
 
 /* $destdir/u06.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -5098,15 +5098,21 @@ v0072:
 
 /* Code for formc */
 
-static Lisp_Object MS_CDECL CC_formc(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, ...)
+static Lisp_Object MS_CDECL CC_formc(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0061, v0062, v0114, v0222;
     Lisp_Object fn;
+    Lisp_Object v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "formc");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for formc");
 #endif
@@ -6289,15 +6295,21 @@ v0121:
 
 /* Code for layout!-formula */
 
-static Lisp_Object MS_CDECL CC_layoutKformula(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, ...)
+static Lisp_Object MS_CDECL CC_layoutKformula(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0089, v0133;
     Lisp_Object fn;
+    Lisp_Object v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "layout-formula");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for layout-formula");
 #endif
@@ -6440,15 +6452,22 @@ v0249:
 
 /* Code for red!-ratios2 */
 
-static Lisp_Object MS_CDECL CC_redKratios2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, Lisp_Object v0049, ...)
+static Lisp_Object MS_CDECL CC_redKratios2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0113, v0056, v0054, v0194;
     Lisp_Object fn;
+    Lisp_Object v0049, v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "red-ratios2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    v0049 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for red-ratios2");
 #endif
@@ -6630,15 +6649,21 @@ v0126:
 
 /* Code for divide!: */
 
-static Lisp_Object MS_CDECL CC_divideT(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, ...)
+static Lisp_Object MS_CDECL CC_divideT(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0024, v0025;
     Lisp_Object fn;
+    Lisp_Object v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "divide:");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for divide:");
 #endif
@@ -7040,7 +7065,7 @@ static Lisp_Object CC_xxsort(Lisp_Object env,
     v0081 = v0000;
 /* end of prologue */
     v0010 = v0081;
-    v0081 = elt(env, 1); /* lambda_mth9cq_1 */
+    v0081 = elt(env, 1); /* lambda_mwvup2_1 */
     {
         fn = elt(env, 2); /* sort */
         return (*qfn2(fn))(qenv(fn), v0010, v0081);
@@ -7049,9 +7074,9 @@ static Lisp_Object CC_xxsort(Lisp_Object env,
 
 
 
-/* Code for lambda_mth9cq_1 */
+/* Code for lambda_mwvup2_1 */
 
-static Lisp_Object CC_lambda_mth9cq_1(Lisp_Object env,
+static Lisp_Object CC_lambda_mwvup2_1(Lisp_Object env,
                          Lisp_Object v0000, Lisp_Object v0009)
 {
     Lisp_Object nil = C_nil;
@@ -7059,7 +7084,7 @@ static Lisp_Object CC_lambda_mth9cq_1(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
-    if (check_env(env)) return aerror("env for lambda_mth9cq_1");
+    if (check_env(env)) return aerror("env for lambda_mwvup2_1");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
@@ -7766,15 +7791,21 @@ v0011:
 
 /* Code for sroad */
 
-static Lisp_Object MS_CDECL CC_sroad(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, ...)
+static Lisp_Object MS_CDECL CC_sroad(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0033, v0034, v0035;
     Lisp_Object fn;
+    Lisp_Object v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "sroad");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for sroad");
 #endif
@@ -8415,15 +8446,22 @@ v0090:
 
 /* Code for rl_smupdknowl */
 
-static Lisp_Object MS_CDECL CC_rl_smupdknowl(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, Lisp_Object v0049, ...)
+static Lisp_Object MS_CDECL CC_rl_smupdknowl(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0038, v0016, v0017, v0003;
     Lisp_Object fn;
+    Lisp_Object v0049, v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "rl_smupdknowl");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    v0049 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rl_smupdknowl");
 #endif
@@ -8538,15 +8576,22 @@ v0005:
 
 /* Code for letmtr3 */
 
-static Lisp_Object MS_CDECL CC_letmtr3(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0009,
-                         Lisp_Object v0106, Lisp_Object v0049, ...)
+static Lisp_Object MS_CDECL CC_letmtr3(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0295, v0296, v0212, v0297;
     Lisp_Object fn;
+    Lisp_Object v0049, v0106, v0009, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "letmtr3");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0009 = va_arg(aa, Lisp_Object);
+    v0106 = va_arg(aa, Lisp_Object);
+    v0049 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for letmtr3");
 #endif
@@ -9172,7 +9217,7 @@ setup_type const u06_setup[] =
     {"retimes1",                CC_retimes1,    too_many_1,    wrong_no_1},
     {"rl_prepat",               CC_rl_prepat,   too_many_1,    wrong_no_1},
     {"xxsort",                  CC_xxsort,      too_many_1,    wrong_no_1},
-    {"lambda_mth9cq_1",         too_few_2,      CC_lambda_mth9cq_1,wrong_no_2},
+    {"lambda_mwvup2_1",         too_few_2,      CC_lambda_mwvup2_1,wrong_no_2},
     {"gcdf",                    too_few_2,      CC_gcdf,       wrong_no_2},
     {"mintype",                 CC_mintype,     too_many_1,    wrong_no_1},
     {"addpf",                   too_few_2,      CC_addpf,      wrong_no_2},
@@ -9197,7 +9242,7 @@ setup_type const u06_setup[] =
     {"rread",                   wrong_no_na,    wrong_no_nb,   (n_args *)CC_rread},
     {"simpdiff",                CC_simpdiff,    too_many_1,    wrong_no_1},
     {"mv-pow-mv-term-+",        too_few_2,      CC_mvKpowKmvKtermKL,wrong_no_2},
-    {NULL, (one_args *)"u06", (two_args *)"7284 907515 3675894", 0}
+    {NULL, (one_args *)"u06", (two_args *)"15849 3832349 7502034", 0}
 };
 
 /* end of generated code */

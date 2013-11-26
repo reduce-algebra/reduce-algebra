@@ -1,32 +1,7 @@
 
 % u16.lsp           Machine generated Lisp
 
-(c!:install "u16" 3604 6899146 8736913)
-
-(c!:install 'rread1 '(rread1 ttype!* !*quotenewnam quotenewnam !:dn!:
-nil symbolic !( !+ t !- " " nxtsym!* "Syntax error: improper number"
-minus ptoken dnform symerr rrdls) 1970893658339179510)
-
-(c!:install 'rnprep!: '(rnprep!: quotient prepf) 40202236902470502)
-
-(c!:install 'prepsq!* '(prepsq!* !*combinelogs ordl!* factors!* nil
-prepsq!*fn ordop kord!* t wtl!* !*rat !*div upl!* dnl!* prepsq!*2
-setkorder lastpair sort formop sqform prepsq!*1 replus) 
-927756539515416153)
-
-(c!:install 'sfto_ucontentf '(sfto_ucontentf t sfto_ucontentf1) 
-1520555230224091218)
-
-(c!:install 'cl_fvarl '(cl_fvarl ordp cl_fvarl1 sort) 
-1888974912364596647)
-
-(c!:install 'ibalp_tvb '(ibalp_tvb nil ibalp_var!-unset) 
-1790339988164330966)
-
-(c!:install 'ratpoly_tad '(ratpoly_tad) 813858032433329402)
-
-(c!:install 'ofsf_clnegrel '(ofsf_clnegrel ofsf_lnegrel) 
-1495032427540284046)
+(c!:install "u16" 5903 5244429 3448722)
 
 (c!:install 'applyrd '(applyrd atts (type definitionurl encoding)
 mmlatts char functions!* nil lex retattributes compress!* apply errorml)
@@ -199,6 +174,19 @@ nil mkempspmat rederr reval nth letmtr3) 426162161047784775)
 
 (c!:install 'xdegreecheck '(xdegreecheck xtruncate!* nil xdegree) 
 2299810776567007493)
+
+(c!:install 'begin1a '(begin1a otime!* gctime ogctime!* otime3!*
+otime2!* otime1!* ogctime3!* ogctime2!* ogctime1!* peekchar!*
+!*semicol!* cursym!* !*nosave!* statcounter nil !*strind !*time (
+showtime) !*output ofl!* !*defn !*lessspace tslin!* !*slin lreadfn!*
+initl!* forkeywords!* delim repeatkeywords!* whilekeywords!* !*int
+erfg!* end key!* ed promptexp!* (command) t symbolic xmodule err2 err3
+crbuf1!* "Closing object improperly removed. Redo edit." eof!*
+"End-of-file read" (bye) crbuf!* "BEGIN invalid" !*errcont !*echo cmsg!*
+"Continuing with parsing only ..." getd terminalp add2buflis
+update_prompt lispeval sinitl printprompt errorset!* condterpri errorp
+eofcheck resetparser lprie pause1 lprim eval xmodloop begin11 comm1) 
+173307344241165145)
 
 
 % End of generated Lisp code

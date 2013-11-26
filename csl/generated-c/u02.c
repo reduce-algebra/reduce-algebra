@@ -1,7 +1,7 @@
 
 /* $destdir/u02.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6638,15 +6638,21 @@ v0005:
 
 /* Code for evmatrixcomp1 */
 
-static Lisp_Object MS_CDECL CC_evmatrixcomp1(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0054, ...)
+static Lisp_Object MS_CDECL CC_evmatrixcomp1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0129, v0043, v0156;
     Lisp_Object fn;
+    Lisp_Object v0054, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "evmatrixcomp1");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0054 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for evmatrixcomp1");
 #endif
@@ -8487,16 +8493,23 @@ v0029:
 
 /* Code for mtchp */
 
-static Lisp_Object MS_CDECL CC_mtchp(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0001,
-                         Lisp_Object v0054, Lisp_Object v0021,
-                         Lisp_Object v0005, ...)
+static Lisp_Object MS_CDECL CC_mtchp(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0178, v0104, v0197, v0136;
     Lisp_Object fn;
+    Lisp_Object v0005, v0021, v0054, v0001, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 5, "mtchp");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    v0054 = va_arg(aa, Lisp_Object);
+    v0021 = va_arg(aa, Lisp_Object);
+    v0005 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mtchp");
 #endif

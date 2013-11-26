@@ -1,18 +1,7 @@
 
 % u15.lsp           Machine generated Lisp
 
-(c!:install "u15" 5236 4492150 3573451)
-
-(c!:install 'dipilcomb1 '(dipilcomb1 !*gcd t nil vbcsize evzero!? evsum
-evcomp bcprod bcsum bczero!? dipprod) 217199092425223551)
-
-(c!:install 'freeoffl '(freeoffl t nil freeoff) 1243183941153914920)
-
-(c!:install '!*wedgepf2pf '(!*wedgepf2pf mkuwedge nreverse) 
-759972719618937260)
-
-(c!:install 'cut!:mt '(cut!:mt !:rd!: nil msd bflerrmsg) 
-259755366163725880)
+(c!:install "u15" 17169 2986846 3684444)
 
 (c!:install 'cstimes '(cstimes times) 1523708715645620074)
 
@@ -174,6 +163,31 @@ read!:num safe!-fp!-plus) 578096104856520128)
 
 (c!:install 'total!-degree!-in!-powers '(total!-degree!-in!-powers t nil
 ) 1332782792841291032)
+
+(c!:install 'rread1 '(rread1 ttype!* !*quotenewnam quotenewnam !:dn!:
+nil symbolic !( !+ t !- " " nxtsym!* "Syntax error: improper number"
+minus ptoken dnform symerr rrdls) 1970893658339179510)
+
+(c!:install 'rnprep!: '(rnprep!: quotient prepf) 40202236902470502)
+
+(c!:install 'prepsq!* '(prepsq!* !*combinelogs ordl!* factors!* nil
+prepsq!*fn ordop kord!* t wtl!* !*rat !*div upl!* dnl!* prepsq!*2
+setkorder lastpair sort formop sqform prepsq!*1 replus) 
+927756539515416153)
+
+(c!:install 'sfto_ucontentf '(sfto_ucontentf t sfto_ucontentf1) 
+1520555230224091218)
+
+(c!:install 'cl_fvarl '(cl_fvarl ordp cl_fvarl1 sort) 
+1888974912364596647)
+
+(c!:install 'ibalp_tvb '(ibalp_tvb nil ibalp_var!-unset) 
+1790339988164330966)
+
+(c!:install 'ratpoly_tad '(ratpoly_tad) 813858032433329402)
+
+(c!:install 'ofsf_clnegrel '(ofsf_clnegrel ofsf_lnegrel) 
+1495032427540284046)
 
 
 % End of generated Lisp code

@@ -1,67 +1,7 @@
 
 % u40.lsp           Machine generated Lisp
 
-(c!:install "u40" 12025 6554801 6319523)
-
-(c!:install 'quotfdx '(quotfdx dmode!* t divd quotdd quotkx) 
-2190569667429103273)
-
-(c!:install 'search4facf '(search4facf nil tryfactorf) 
-105188235140882629)
-
-(c!:install 'gfminus '(gfminus bfminus) 84276246858987167)
-
-(c!:install 'vdpappendmon '(vdpappendmon t vdp nil vdpfmon vbczero!?
-dipsum) 850631614849658820)
-
-(c!:install 'xvarp '(xvarp xvars!* t (wedge d partdf hodge innerprod
-liedf) xdegree) 1191103729123202371)
-
-(c!:install 'find_bubles1_coeff '(find_bubles1_coeff find_bubles1) 
-881233567543193387)
-
-(c!:install 'gcdlist1 '(gcdlist1 reduction!-count nil lesspcdr vunion
-vintersection vdelete sort mapcarcar setkorder reorder
-split!-wrt!-variables total!-degree!-in!-powers gcdlist2 gcdlist3) 
-1280951897611960268)
-
-(c!:install 'checkcoeffts '(checkcoeffts t nil evaluatecoeffts) 
-403209693946240737)
-
-(c!:install 'pasf_exprng '(pasf_exprng !*rlsism and true false or ball
-bex t not impl repl equiv nil cl_simpl pasf_exprng!-gball
-pasf_exprng!-gand) 1965195447091390399)
-
-(c!:install 'aex_fromsf '(aex_fromsf ratpoly_fromsf aex_fromrp) 
-799202933016057746)
-
-(c!:install 'expttermp '(expttermp expt expttermp1) 2051147640346025912)
-
-(c!:install 'mapcarcar '(mapcarcar nil) 1961800589062147231)
-
-(c!:install 'sub01 '(sub01 nreverse) 418208278952463605)
-
-(c!:install 'r2flbf '(r2flbf !*bftag r2bf r2fl) 2263286083679047814)
-
-(c!:install 'random!-teeny!-prime '(random!-teeny!-prime all t nil
-teeny!-primes next!-random!-number) 855903281099960909)
-
-(c!:install 'absodeg '(absodeg plus nil eval) 1376167573693543840)
-
-(c!:install 'subdf '(subdf nil subf subs2q !*multf plusdf) 
-437265242019459876)
-
-(c!:install 'nonpolyp '(nonpolyp t nil depend!-p) 1026438703894681304)
-
-(c!:install 'rl_subat '(rl_subat rl_subat!* apply) 823858473539513481)
-
-(c!:install 'sfto_dprpartksf '(sfto_dprpartksf sfto_dcontentf quotf) 
-944517047698581519)
-
-(c!:install 'matsm!* '(matsm!* matsm matsm!*1) 1055140333777488604)
-
-(c!:install 'mkuniquewedge1 '(mkuniquewedge1 wedgemtch!* wedge wedgemtch
-partitop mkupf) 882086248870702565)
+(c!:install "u40" 6671 4918302 9758442)
 
 (c!:install 'evalsubset '(evalsubset subset evalsetbool evalsymsubset) 
 2086967204047313238)
@@ -109,6 +49,70 @@ errpri2 getrtype reval let2 redmsg mkop let3 to letexprn simp0 errpri1
 letdf delasc rmsubs) 2048586945887841260)
 
 (c!:install 'replace!-nth '(replace!-nth nreverse) 1774680084121391940)
+
+(c!:install 'cl_simpl1 '(cl_simpl1 true t false or and not ex all
+!*rlsism bex ball impl repl equiv cl_simpl
+"cl_simpl1(): unknown operator" cl_smsimpl!-junct rl_smrmknowl cl_fvarl
+cl_simplbq rl_external apply cl_simplat rl_smcpknowl rl_smupdknowl
+rl_smmkatl rederr cl_smsimpl!-equiv cl_smsimpl!-imprep cl_flip cl_atfp
+rl_negateat cl_negate!-invol) 982522763894996567)
+
+(c!:install 'cl_nnf '(cl_nnf t cl_nnf1) 1911866601499030426)
+
+(c!:install 'dm!-quotient '(dm!-quotient !*noequiv nil dm!-mkfloat
+!:quotient) 2074390458330597526)
+
+(c!:install 'dipbcprod '(dipbcprod dipzero bczero!? bcone!? dipbcprodin)
+ 831712502173176207)
+
+(c!:install 'sc_scalarproduct '(sc_scalarproduct nil sc_simp
+fast!-row!-dim sc_getmat sc_multsq sc_addsq) 999499710213614076)
+
+(c!:install '!:dmexpt '(!:dmexpt !*complex !:dm2fix !:expt force!-to!-dm
+crexpt!* rdexpt!*) 55387169460792112)
+
+(c!:install 'out_of_range '(out_of_range signat!* nil t flattens1
+extract_numid) 1739623593261342604)
+
+(c!:install 'prepsqyy '(prepsqyy !*sq prepsqxx) 997402464023639603)
+
+(c!:install 'available!*p '(available!*p "this is no group identifier"
+available rederr) 1082911592291158226)
+
+(c!:install 'rl_nnf '(rl_nnf rl_nnf!* apply) 446074326825499106)
+
+(c!:install 'operator '(operator nil mkop) 1409021900333175665)
+
+(c!:install 'getvariables '(getvariables nil varsinsf) 
+197185471501381051)
+
+(c!:install 'dm!-lt '(dm!-lt dm!-difference !:minusp) 
+1899177250035845073)
+
+(c!:install 'remove_root_item '(remove_root_item nil setcar setcdr) 
+1379502499677210436)
+
+(c!:install 'matcheq '(matcheq t nil !*exp (plus difference) diff eval
+matchlinear) 183697433477401843)
+
+(c!:install 'mk_world1 '(mk_world1 map_2_from_map_1) 335578186962766490)
+
+(c!:install 'simp!-prop!-form '(simp!-prop!-form (nil) !'true nil
+not_prop!* not !'and !'or) 1199753847969374186)
+
+(c!:install 'dv_skel2factor '(dv_skel2factor nil st_ad_numsorttree
+st_flatten dv_ind2var dv_skel2factor1) 999692465356004088)
+
+(c!:install 'precision1 '(precision1 !!rdprec !*roundbf minprec!#
+!:prec!: !:print!-prec!: nil !:bprec!: !:rd!: epsqrt!* rd!-tolerance!*
+cr!-tolerance!* !!flprec !*!*roundbf rmsubs decprec2internal max) 
+840722981966883829)
+
+(c!:install 'coeffs!-to!-form '(coeffs!-to!-form nil coeffs!-to!-form1) 
+2154444125061801480)
+
+(c!:install 'pasf_premf1 '(pasf_premf1 t minusf addf to exptf multf) 
+361074428789362183)
 
 
 % End of generated Lisp code

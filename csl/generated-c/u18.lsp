@@ -1,25 +1,7 @@
 
 % u18.lsp           Machine generated Lisp
 
-(c!:install "u18" 18520 5863112 8990181)
-
-(c!:install 'merge '(merge) 88905691906332164)
-
-(c!:install 'resimpf '(resimpf nil varstack!* subf1) 2301003585008741541
-)
-
-(c!:install 'dmconv0 '(dmconv0 !:rn!: !:gi!: !:crn!: dmd!*) 
-1800770221870508758)
-
-(c!:install 'mkprod '(mkprod !*exp !*sub2 t !*mcd !*sqfree !*factor
-!*gcd nil !*group kernlp subs2 ckrn quotf expnd multf mksp!* tmsf fctrf)
- 785037534605739561)
-
-(c!:install 'sfto_sqfpartf '(sfto_sqfpartf t sfto_ucontentf quotf diff
-sfto_gcdf!* multf) 1526155285455852663)
-
-(c!:install 'rl_ordatp '(rl_ordatp rl_ordatp!* apply) 323878800305080664
-)
+(c!:install "u18" 5207 2040952 9432751)
 
 (c!:install 'rationalizesq '(rationalizesq !*structure !*sub2 dmode!*
 rationalizefn (i 2 (nil . t) -1 nil) powlis!* t !*algint !*rationalize
@@ -96,10 +78,10 @@ assertstatistics!* "declaration" "violated by result" "violated by" arg
 (c!:install 'red_tailred '(red_tailred !*noetherian red_topred
 red_topredbe red_tailreddriver) 823666990266976705)
 
-(c!:install 'numlist_ordp '(numlist_ordp lambda_mth9cr_3 cons_ordp) 
+(c!:install 'numlist_ordp '(numlist_ordp lambda_mwvup3_3 cons_ordp) 
 829179638730125395)
 
-(c!:install 'lambda_mth9cr_3 '(lambda_mth9cr_3) 1075391424217541143)
+(c!:install 'lambda_mwvup3_3 '(lambda_mwvup3_3) 2114405801548907691)
 
 (c!:install 'simpexpt11 '(simpexpt11 !*precise_complex t nil simpexpt2
 simpexpt1 multsq qremf) 1875634384883904962)
@@ -189,6 +171,29 @@ hornerf hornersq) 2158324459255236648)
 
 (c!:install 'st_consolidate '(st_consolidate nil t !*) 
 704199119824727847)
+
+(c!:install 'subsublis '(subsublis sqrt expt (quotient 1 2) nil subfunc
+!*sq prepsq) 1792434304937421214)
+
+(c!:install 'rndifference!: '(rndifference!: mkrn) 2148311571176245217)
+
+(c!:install 'pasf_mkpos '(pasf_mkpos true t false nil (cong ncong)
+pasf_anegateat minusf negf) 1103566318065785167)
+
+(c!:install 'matrixrowom '(matrixrowom "<OMA>" t
+"<OMS cd=""linalg1"" name=""matrixrow""/>" nil "</OMA>" printout
+indent!* multiom) 1732016591589103317)
+
+(c!:install 'evalvars '(evalvars t intfn setelemfn revlis_without_mode
+revlis nreverse) 2122889097865007208)
+
+(c!:install 'partitexdf '(partitexdf partitop exdfpf) 206226089417428553
+)
+
+(c!:install 'treesizep '(treesizep treesizep1) 1230324459935767946)
+
+(c!:install 'formc!* '(formc!* !*!*a2sfn revalx formc) 
+604688231950087934)
 
 
 % End of generated Lisp code

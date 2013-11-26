@@ -1,7 +1,7 @@
 
 % u12.lsp           Machine generated Lisp
 
-(c!:install "u12" 10337 6459341 2504381)
+(c!:install "u12" 19585 8997463 4214010)
 
 (c!:install 'vbcgcd '(vbcgcd t (1 . 1) nil vbcsize gcdf!*) 
 1329866056273669476)
@@ -117,9 +117,6 @@ general!-primep small!-primep typerr) 1407526069060308827)
 (c!:install 'xord_deglex '(xord_deglex nil t xdegreemon xord_lex) 
 1950366750020465416)
 
-(c!:install 'assert_declarestat '(assert_declarestat !*assert nil
-assert_stat!-parse assert_declarestat1) 773757132919525954)
-
 (c!:install 'mo_neg '(mo_neg nil) 1431510671993349233)
 
 (c!:install 'class '(class ordering lex ord leftzeros) 
@@ -129,6 +126,11 @@ assert_stat!-parse assert_declarestat1) 773757132919525954)
 t nil exact!-quotient!-flag safe!-modular!-reciprocal
 multiply!-by!-constant!-mod!-p ordop adjoin!-term xquotient!-mod!-p
 errorf) 783270726452021012)
+
+(c!:install 'extmult '(extmult t nil ordexn c!:subs2multf negf extadd) 
+688717124643291776)
+
+(c!:install 'vdp_zero!? '(vdp_zero!? vdp_poly) 1147201342247937271)
 
 
 % End of generated Lisp code

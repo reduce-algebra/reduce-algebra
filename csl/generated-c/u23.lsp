@@ -1,44 +1,7 @@
 
 % u23.lsp           Machine generated Lisp
 
-(c!:install "u23" 17029 9877450 9543152)
-
-(c!:install 'max!-degree '(max!-degree t) 714165779836490033)
-
-(c!:install 'multiminus '(multiminus expression) 1537382582458151397)
-
-(c!:install 'embed!-null!-fn '(embed!-null!-fn nil null!-fn lastpair) 
-881444636642416006)
-
-(c!:install 'groebcplistsortin1 '(groebcplistsortin1 groebcpcompless!?) 
-29696670910405078)
-
-(c!:install 'log_freevars_list '(log_freevars_list nil t log_freevars) 
-677819293243262814)
-
-(c!:install 'mo_2a '(mo_2a cali!=basering ring_all_names mo!=expvec2a1) 
-327049944895163747)
-
-(c!:install 'general!-horner!-rule!-mod!-p '(
-general!-horner!-rule!-mod!-p t general!-expt!-mod!-p
-general!-times!-mod!-p general!-plus!-mod!-p) 1402848173375291788)
-
-(c!:install 'bc_fd '(bc_fd) 1711717985925238407)
-
-(c!:install 'bvarrd '(bvarrd char (d e g r e e) "<bvar>" (!/ d e g r e e
-) "</degree>" (!/ b v a r) "</bvar>" lex errorml mathml2 mathml error) 
-917639816185301358)
-
-(c!:install 'cr!:zerop '(cr!:zerop !:rd!: nil) 1940694148643131764)
-
-(c!:install 'matrixp '(matrixp mat nil t) 192209128832148545)
-
-(c!:install 'wedgef '(wedgef nil hodge dimex!* d noxpnd t lftshft!*
-dim!<deg deg!*form deg!*farg mkwedge mkuniquewedge1 hodgepf mkunarywedge
-wedgepf2 negf addf multf mksgnsq multpfsq dwedge negsq addpf exdfk
-smemqlp) 40165116848069563)
-
-(c!:install 'incident '(incident nil incident1) 232370014167487459)
+(c!:install "u23" 1392 8690298 9021228)
 
 (c!:install 'assert_declarestat1 '(assert_declarestat1 assert!:
 noassert!: nil a list de assert_check1 put (quote assert_assertfn) (
@@ -174,6 +137,47 @@ contr!-strand) 246920256133357504)
 !*uncached nil prepsq simp prepsq!* comblog simp!*) 1563041330748930892)
 
 (c!:install 'subcare '(subcare t subfunc nreverse) 105408287404704196)
+
+(c!:install 'red!=hide '(red!=hide nil mo_neg mo_times_ei) 
+1353001482227838864)
+
+(c!:install 'st_ad_numsorttree '(st_ad_numsorttree st_ad_numsorttree1) 
+992495705411274581)
+
+(c!:install 'derivative!-mod!-p!-1 '(derivative!-mod!-p!-1 t nil mksp
+multiply!-by!-constant!-mod!-p adjoin!-term) 232981562854356360)
+
+(c!:install 'proper!-simpsqrt '(proper!-simpsqrt carx simpsqrti) 
+1197185799221421633)
+
+(c!:install 'aex_boundidl '(aex_boundidl aex_idl aex_ctx ctx_idl
+lto_setminus) 1109079088111190269)
+
+(c!:install 'getargsrd '(getargsrd char (b v a r) bvarrd lex) 
+1688570090693716659)
+
+(c!:install 'insoccs '(insoccs nil subscriptedvarp constp insertocc) 
+2144727946593282948)
+
+(c!:install 'unify '(unify op r p nil
+"UNIFY:pattern over-run for function " symm comb identity mcontract
+acontract expand i upb resume pm!:free genp initarg suspend bind chk
+mval unbind meq nextarg ident mgenp) 474079795550695535)
+
+(c!:install 'bcminus!? '(bcminus!? !*grmod!* nil minusf) 
+1254242217668572624)
+
+(c!:install 'evload '(evload nil) 885680099367003359)
+
+(c!:install '!*pf2sq '(!*pf2sq nil to multsq addsq) 2056904067928353595)
+
+(c!:install 'innprodpex '(innprodpex nil innprodp2 negf) 
+1676869073879482307)
+
+(c!:install 'mv!-domainlist!-!+ '(mv!-domainlist!-!+ nreverse) 
+520411231042396743)
+
+(c!:install '!*di2q '(!*di2q varlist!* nil !*di2q0) 87666758406744850)
 
 
 % End of generated Lisp code

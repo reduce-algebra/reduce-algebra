@@ -1,59 +1,7 @@
 
 % u31.lsp           Machine generated Lisp
 
-(c!:install "u31" 21912 7759445 8730531)
-
-(c!:install 'matsm1 '(matsm1 !*div mat matmapfn nil matrix
-"Matrix mismatch" "Non square matrix" subfg!* inversefn lnrsolvefn t
-!*sub2 "Zero divisor" "Matrix" "not set" matsm rerror subs2 multm
-generateident revpr multsm getrtype matrixmap lispapply lchk xsimp) 
-974414071898021819)
-
-(c!:install 'groebcplistmerge '(groebcplistmerge groebcpcompless!?) 
-526369062255166422)
-
-(c!:install 'find_bubles1 '(find_bubles1 nil select_bubles) 
-1403605462594621842)
-
-(c!:install 'groeb!=testc1 '(groeb!=testc1 nth bas_dpoly dp_lmon mo_sum
-mo_equal!?) 884247688961296750)
-
-(c!:install 'vecsimp!* '(vecsimp!* vecp vecsm!*) 1701962748279168191)
-
-(c!:install 'mksqrt '(mksqrt !*keepsqrts expt quotient !*!*sqrt t (x) (
-let00 (quote ((equal (expt (sqrt x) 2) x)))) sqrt forall aeval) 
-43665239182978578)
-
-(c!:install 'giplus!: '(giplus!: mkgi) 268871245644568605)
-
-(c!:install 'rule!* '(rule!* frasc!* t mcond!* old newrule!* rtype
-props!* nil avalue expt asymplis!* updoldrules rule) 2082266342390209512
-)
-
-(c!:install 'mksfpf '(mksfpf t asymplis!* subfg!* nil mkprod !:expt mksp
-exptf2) 636980284834055583)
-
-(c!:install 'quotf!* '(quotf!* nil "DIVISION FAILED" quotf rationalizesq
-errach) 1028126079316068925)
-
-(c!:install 'conditionml '(conditionml "<condition>" t nil
-"</condition>" printout indent!* expression) 522464084907712354)
-
-(c!:install 'reduceroots '(reduceroots nil sqrt tryreduction) 
-1045061223479243611)
-
-(c!:install 'fnreval '(fnreval t nil reval1 nreverse) 445584278014929871
-)
-
-(c!:install 'size_of_matrix '(size_of_matrix) 2182410183307985568)
-
-(c!:install 'evalgreaterp '(evalgreaterp difference t "number" nil
-simp!* minusf negsq mk!*sq typerr !:minusp) 1140352170817049090)
-
-(c!:install 'mk_dummy_ids '(mk_dummy_ids dummy reserved dummy_id!*
-intersection clean_numid union) 847533562057394808)
-
-(c!:install 'comb '(comb nil) 510834381991112783)
+(c!:install "u31" 20821 8958756 2067860)
 
 (c!:install 'simpexpt2 '(simpexpt2 expt !*precise_complex nil !*precise
 abs sqrt !*keepsqrts times !*modular quotient t !*mcd minus dmode!*
@@ -119,6 +67,75 @@ mksp) 811458494549925686)
 
 (c!:install 'simppartdf '(simppartdf partitpartdf !*pf2sq) 
 2085109370886854838)
+
+(c!:install 'defined_all_edge '(defined_all_edge nil t def_edge
+p_def_edge rep_edge_prop_) 548807897588405305)
+
+(c!:install 'greaterpcdr '(greaterpcdr) 2051055259719928140)
+
+(c!:install 'fs!:prepfn!: '(fs!:prepfn!:) 928305121989740116)
+
+(c!:install 'arminusp!: '(arminusp!: minusf) 671650686712543613)
+
+(c!:install 'makeqn!-maybe '(makeqn!-maybe equal) 1556924750241945412)
+
+(c!:install 'cl_atmlc '(cl_atmlc) 1365061913854416366)
+
+(c!:install 'aex_minus '(aex_minus nil aex_ex ratpoly_minus aex_ctx
+ctx_union aex_reducedtag aex_mk) 464224318607960509)
+
+(c!:install 'ofsf_smwmkatl '(ofsf_smwmkatl !*rlsusi cl_susimkatl
+ofsf_smmkatl) 414981824598030419)
+
+(c!:install 'integralir '(integralir atts name (bvar x 1) nil defint
+lambda find lex omobj lambdavar lambdafun) 230027566720131369)
+
+(c!:install 'findnthroot '(findnthroot nil) 2258808513418775196)
+
+(c!:install 'assgnpri '(assgnpri nil overflowed!* testing!-width!*
+!*nero !*tex vecp mat csl lispsystem!* math!-display outputhandler!*
+fancy!-output t sprifn tag setq (first only) !*fort first !*nat "$"
+texpri getd vecpri fmp!-switch getrtype maprin terpri!* evalvars fvarpri
+aconc prin2!* would!-be!-huge) 1148619460677363211)
+
+(c!:install 'newsym1 '(newsym1 cindex!* cname!*) 502142044287879804)
+
+(c!:install 'evequal '(evequal nil t (0)) 162531075110848313)
+
+(c!:install 'prepsq!*1 '(prepsq!*1 t factors!* nil expt kord!* dnl!*
+!*allfac upl!* !*div minus quotient to quotfm prepsq!*0 nconc!* mksp
+kernlp mkkl ckrn ckrn!* quotof canonsq prepf addfactors rmplus exchk
+prepsq aconc!* retimes) 1705733711631279646)
+
+(c!:install 'dip_moncomp '(dip_moncomp) 1856663348448561505)
+
+(c!:install 'ev_sum '(ev_sum nil) 817061562606223269)
+
+(c!:install 'ciom '(ciom "<OMATTR>" t "<OMATP>"
+"<OMS cd=""typmml"" name=""type"">" "<OMS cd=""typmml"" name="""
+mmltypes!* """>" nil "</OMATP>" "</OMATTR>" printout indent!* objectom) 
+414213925339740331)
+
+(c!:install 'f4 '(f4 pi "<pi/>" euler_gamma "<eulergamma/>" true
+"<true/>" false "<false/>" !Na!N "<notanumber/>" infinity !*web
+"<cn type=""constant"">" "<cn type=&quot;constant&quot;>" "&infin;"
+"</cn>" e "&ExponentialE;" i "&ImaginaryI;" "<cn" " type=""real"">"
+" type=&quot;real&quot;>" " type=""integer"">"
+" type=&quot;integer&quot;>" ">" "<ci" " type=""list"">"
+" type=&quot;list&quot;>" " type=""vector"">"
+" type=&quot;vector&quot;>" "</ci>" nil printout listp) 
+1856869730658203263)
+
+(c!:install 'sparpri '(sparpri nil quote setq first (quote !$) last
+writepri) 553168696648172079)
+
+(c!:install 'evinsert '(evinsert t nreverse) 249966616137666730)
+
+(c!:install 'endmodule '(endmodule mode!-list!*
+"ENDMODULE called outside module" nil exportslist!* importslist!*
+alglist!* !*mode rederr) 1973309168316426920)
+
+(c!:install 'new_prove '(new_prove nil new_provev) 124058601082197365)
 
 
 % End of generated Lisp code

@@ -1,7 +1,7 @@
 
 % u09.lsp           Machine generated Lisp
 
-(c!:install "u09" 22227 5599229 7368493)
+(c!:install "u09" 10123 8072143 9122801)
 
 (c!:install 'variables '(variables nil dipvars!* t setcar) 
 1120007630353667818)
@@ -128,10 +128,10 @@ backtrace vdptdeg gsetsugar vdpgetprop) 2186512079201512911)
 1041895869051816841)
 
 (c!:install 'assert_analyze '(assert_analyze assertstatistics!*
-lambda_mth9cr_2 nil (function !#calls !#bad! calls
+lambda_mwvup2_2 nil (function !#calls !#bad! calls
 !#assertion! violations) sum " " "-" sort prin2t) 1928762177499829959)
 
-(c!:install 'lambda_mth9cr_2 '(lambda_mth9cr_2 ordp) 2072755610087417226
+(c!:install 'lambda_mwvup2_2 '(lambda_mwvup2_2 ordp) 1424771672539302986
 )
 
 (c!:install 'mv!-pow!-!+ '(mv!-pow!-!+ nreverse) 2107489508744132906)

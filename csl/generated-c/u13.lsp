@@ -1,12 +1,7 @@
 
 % u13.lsp           Machine generated Lisp
 
-(c!:install "u13" 3199 9562735 3994403)
-
-(c!:install 'extmult '(extmult t nil ordexn c!:subs2multf negf extadd) 
-688717124643291776)
-
-(c!:install 'vdp_zero!? '(vdp_zero!? vdp_poly) 1147201342247937271)
+(c!:install "u13" 917 4216725 1258316)
 
 (c!:install 'initwght '(initwght codmat maxvar nil dm!-abs !:onep) 
 707569640089083076)
@@ -156,6 +151,9 @@ mo_vdivides!?) 714855455564249474)
 (c!:install 'pappend '(pappend nil unpkp pkp) 812013933322510594)
 
 (c!:install 'ilcm '(ilcm t) 1521209118004001418)
+
+(c!:install 'ibalp_unvar!-unsatlist '(ibalp_unvar!-unsatlist nil delq
+setcar ibalp_calcmom ibalp_getnewwl) 1607034383365906899)
 
 
 % End of generated Lisp code

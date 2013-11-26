@@ -1,65 +1,7 @@
 
 % u54.lsp           Machine generated Lisp
 
-(c!:install "u54" 10731 1379544 8517859)
-
-(c!:install 'multivariatep '(multivariatep t nil) 1843520705890193709)
-
-(c!:install 'iscale '(iscale) 1567378906517906507)
-
-(c!:install 'xgcd!-mod!-p '(xgcd!-mod!-p nil t
-multiply!-by!-constant!-mod!-p quotient!-mod!-p times!-mod!-p
-difference!-mod!-p) 1827699535290984324)
-
-(c!:install 'numrdeg '(numrdeg t !*a2k updkorder reorder setkorder prepf
-) 1032807070519341369)
-
-(c!:install 'sort_derivs '(sort_derivs nil total_less_dfrel) 
-230225231187430045)
-
-(c!:install 'adddm!* '(adddm!* adddm) 1403621602198266437)
-
-(c!:install 'evalwhereexp '(evalwhereexp aeval where nil carx evalletsub
-) 1637168594519833416)
-
-(c!:install 'qqe_update!-minlength '(qqe_update!-minlength minlength t) 
-941030464228576449)
-
-(c!:install 'pasf_se '(pasf_se true t false (neq equal) neq nil equal
-pasf_deci sfto_dcontentf) 396440616341128090)
-
-(c!:install 'cl_surep '(cl_surep !*rlspgs true t rl_gsd rl_multsurep
-rl_simpl) 1647654920142071665)
-
-(c!:install 'dip2a1 '(dip2a1 minus expvec2a bcminus!? bcneg bc2a
-dipretimes nreverse) 900252617398071539)
-
-(c!:install 'rep_edge_prop_ '(rep_edge_prop_ t) 1877483256415604022)
-
-(c!:install 'ezgcd!-comfac '(ezgcd!-comfac t nil poly!-abs gcdlist) 
-440190666376026718)
-
-(c!:install 'compactf '(compactf !*trcompact
-"*** Arguments on entering compactf:" nil " *** Compactf looped "
-" times" prin2t mk!*sq mathprint compactf0) 1351644872193580193)
-
-(c!:install 'mapply '(mapply int "Empty list to mapply" rerror) 
-1373072534105908047)
-
-(c!:install 'abs_dfrel '(abs_dfrel lex_df dfrel2 absodeg) 
-307852189237764747)
-
-(c!:install 'qqe_simpl!-clause!-term '(qqe_simpl!-clause!-term maxlength
-qepsilon qqe_qprefix!-var qqe_number!-of!-tails!-in!-qterm
-qqe_number!-of!-adds!-in!-qterm) 1363976176168693961)
-
-(c!:install 'arbitrary_c '(arbitrary_c nil found_int found_mat_int
-found_compl found_mat_compl mat t flagg "<apply><forall/>" indent
-"<condition>" "<apply><and/>" consts_compl consts_int "</apply>"
-"</condition>" consts_mat_compl consts_mat_int isarb_compl isarb_int
-printout print_arb_compl print_arb_int in_complexml in_integerml
-printarb_mat_compl printarb_mat_int isarb_mat_compl isarb_mat_int) 
-87787866699516320)
+(c!:install "u54" 13967 7868756 788219)
 
 (c!:install 'groebenumerate '(groebenumerate t number pcount!*
 !*groebprot poly candidate groebprot vdpcondense vdpgetprop vdpputprop
@@ -144,6 +86,47 @@ minusf oprin !:minus maprin xprinp xprinf prin2!*) 696853955733936716)
 (c!:install 'general!-monic!-mod!-p '(general!-monic!-mod!-p nil t
 "LC NOT NUMERIC IN GENERAL-MONIC-MOD-P" general!-modular!-reciprocal
 general!-multiply!-by!-constant!-mod!-p errorf) 1717274316630168683)
+
+(c!:install 'makefunc '(makefunc nil texpatt ((apply makeexcinx)) ((f)
+!\!( (l !,) !\!)) texuby f apply x y t z r l m makemat makearg mktag
+texexplode) 978368209160897784)
+
+(c!:install 'tp!-greaterp '(tp!-greaterp nil tayexp!-greaterp) 
+633566132721058160)
+
+(c!:install 'mk!+hermitean!+matrix '(mk!+hermitean!+matrix !*complex
+mk!+transpose!+matrix mk!+conjugate!+matrix) 1043916039402897728)
+
+(c!:install 'pasf_susibinord '(pasf_susibinord nil lessp greaterp t
+false geq (delete . t) (delete) add equal leq pasf_susibinordcong
+pasf_susibinordcongeq simp addf pasf_smordtable reutrn) 
+2236552547881205581)
+
+(c!:install 'acell_med '(acell_med acell_getsp anu_iv iv_med) 
+385237581045987684)
+
+(c!:install 'to!*scheme '(to!*scheme codmat maxvar plus nil varlst!*
+times dm!-expt getcind delyzz) 894560562106469122)
+
+(c!:install 'evalsetbool '(evalsetbool nil list t setvalued "set"
+"Cannot evaluate" "as Boolean-valued set expression" setboolfn reval
+typerr msgpri apply) 2007507697728643496)
+
+(c!:install 'bftimes '(bftimes csl_timbf) 2236189677318499801)
+
+(c!:install 'positive!-rounded!-float '(positive!-rounded!-float
+rounded!-float) 1726518244522924251)
+
+(c!:install 'map_1_to_strand1 '(map_1_to_strand1 map__edges
+names_edgepair pre!-calc!-map_) 2160281553433954209)
+
+(c!:install 'remk '(remk nil degr multf negf to addf) 
+1723941094955150317)
+
+(c!:install 'anticom_assoc '(anticom_assoc nil) 833322419424000891)
+
+(c!:install 'eval_uni_poly_q '(eval_uni_poly_q nil exptsq multsq addsq) 
+459754896663726266)
 
 
 % End of generated Lisp code

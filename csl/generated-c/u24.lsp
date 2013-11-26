@@ -1,48 +1,7 @@
 
 % u24.lsp           Machine generated Lisp
 
-(c!:install "u24" 16025 5097887 8237798)
-
-(c!:install 'red!=hide '(red!=hide nil mo_neg mo_times_ei) 
-1353001482227838864)
-
-(c!:install 'st_ad_numsorttree '(st_ad_numsorttree st_ad_numsorttree1) 
-992495705411274581)
-
-(c!:install 'derivative!-mod!-p!-1 '(derivative!-mod!-p!-1 t nil mksp
-multiply!-by!-constant!-mod!-p adjoin!-term) 232981562854356360)
-
-(c!:install 'proper!-simpsqrt '(proper!-simpsqrt carx simpsqrti) 
-1197185799221421633)
-
-(c!:install 'aex_boundidl '(aex_boundidl aex_idl aex_ctx ctx_idl
-lto_setminus) 1109079088111190269)
-
-(c!:install 'getargsrd '(getargsrd char (b v a r) bvarrd lex) 
-1688570090693716659)
-
-(c!:install 'insoccs '(insoccs nil subscriptedvarp constp insertocc) 
-2144727946593282948)
-
-(c!:install 'unify '(unify op r p nil
-"UNIFY:pattern over-run for function " symm comb identity mcontract
-acontract expand i upb resume pm!:free genp initarg suspend bind chk
-mval unbind meq nextarg ident mgenp) 474079795550695535)
-
-(c!:install 'bcminus!? '(bcminus!? !*grmod!* nil minusf) 
-1254242217668572624)
-
-(c!:install 'evload '(evload nil) 885680099367003359)
-
-(c!:install '!*pf2sq '(!*pf2sq nil to multsq addsq) 2056904067928353595)
-
-(c!:install 'innprodpex '(innprodpex nil innprodp2 negf) 
-1676869073879482307)
-
-(c!:install 'mv!-domainlist!-!+ '(mv!-domainlist!-!+ nreverse) 
-520411231042396743)
-
-(c!:install '!*di2q '(!*di2q varlist!* nil !*di2q0) 87666758406744850)
+(c!:install "u24" 13289 4009663 4379582)
 
 (c!:install '!*multf '(!*multf t nil !*noncomp (expt sqrt) sqrt expt
 squashsqrt multd multf ordop addf makeupsf !*multfsqrt
@@ -99,11 +58,6 @@ nsdef greaterp geq leq neq pasf_pdp) 192374219022117916)
 (c!:install 'find_bubles_coeff '(find_bubles_coeff nil
 find_bubles1_coeff) 445794211761736786)
 
-(c!:install 'assert_formproc '(assert_formproc symbolic
-"asserted procedures are available in symbolic mode only" nil procedure
-expr !*assert progn rederr formproc assert_declarestat1) 
-1115944372962971337)
-
 (c!:install 'red_tailreddriver '(red_tailreddriver t nil bas_dpoly
 red!=hidelt red!=recover) 1916939176919779701)
 
@@ -148,6 +102,55 @@ put (quote assert_dyntypechk) progn scan lprim rederr)
 1630838725619788242)
 
 (c!:install 'innprodp2 '(innprodp2 nil innprodkp) 863072337319648109)
+
+(c!:install 'msolve!-polyn '(msolve!-polyn current!-modulus nil subf
+lastpair msolve!-poly1) 54455115178429379)
+
+(c!:install 'solvealgdepends '(solvealgdepends t nil root_of) 
+1830196976569058051)
+
+(c!:install 'iv_cutcongs1 '(iv_cutcongs1 nil t iv_cutcongs2) 
+614623751731925357)
+
+(c!:install 'matrixom '(matrixom "<OMA>" t
+"<OMS cd=""linalg1"" name=""matrix""/>" nil "</OMA>" printout indent!*
+matrixrowom) 891085598272727681)
+
+(c!:install 'quoteequation '(quoteequation equation) 34302510993870705)
+
+(c!:install 'evalb '(evalb nil algebraic true false formbool eval) 
+1249517517657287279)
+
+(c!:install 'inprinla '(inprinla nil t alt maprintla oprinla
+negnumberchk) 543709068126650725)
+
+(c!:install 'collectphysops_reversed '(collectphysops_reversed nil
+physopp collectindices removeindices) 2037320846155998297)
+
+(c!:install 'z!-roads '(z!-roads nil) 404412993819179294)
+
+(c!:install 'open '(open input output append "bad direction ~A in open"
+error internal!-open) 492329841611198672)
+
+(c!:install 'sqprint '(sqprint !*prin!# t orig!* !*nat posn!* !*pri
+wtl!* nil " / " xprinf prin2!* xprinf2 sqhorner!* prepsq!* prepreform
+maprin) 181925929491622368)
+
+(c!:install 'pcdiv '(pcdiv nil cdiv) 1140795760081996099)
+
+(c!:install 'extadd '(extadd nil ordexp setcdr addf) 1336103341634382315
+)
+
+(c!:install 'dvfsf_smcpknowl '(dvfsf_smcpknowl !*rlsusi cl_susicpknowl
+cl_smcpknowl) 1389738360695934741)
+
+(c!:install 'sfto_b!:ordexn '(sfto_b!:ordexn nil) 1120832828005264572)
+
+(c!:install 'applyfnrd '(applyfnrd nil fnrd stats_getargs aeval) 
+2055627505118860216)
+
+(c!:install 'multdfconst '(multdfconst t nreverse multsq subs2q) 
+2098672999481205651)
 
 
 % End of generated Lisp code

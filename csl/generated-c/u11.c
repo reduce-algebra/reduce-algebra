@@ -1,7 +1,7 @@
 
 /* $destdir/u11.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2661,15 +2661,21 @@ v0058:
 
 /* Code for quotfail1 */
 
-static Lisp_Object MS_CDECL CC_quotfail1(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_quotfail1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0062, v0063, v0064;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "quotfail1");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for quotfail1");
 #endif
@@ -3683,15 +3689,21 @@ v0100:
 
 /* Code for make!-term */
 
-static Lisp_Object MS_CDECL CC_makeKterm(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_makeKterm(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0134, v0135, v0136;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "make-term");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for make-term");
 #endif
@@ -4401,15 +4413,21 @@ v0149:
 
 /* Code for getmat */
 
-static Lisp_Object MS_CDECL CC_getmat(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_getmat(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0047, v0146, v0095;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "getmat");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for getmat");
 #endif
@@ -4662,15 +4680,21 @@ v0158:
 
 /* Code for prinfit */
 
-static Lisp_Object MS_CDECL CC_prinfit(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_prinfit(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0084, v0129, v0043;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "prinfit");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for prinfit");
 #endif
@@ -5037,14 +5061,20 @@ v0051:
 
 /* Code for listtest */
 
-static Lisp_Object MS_CDECL CC_listtest(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_listtest(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0071, v0049, v0073;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "listtest");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for listtest");
 #endif
@@ -6276,15 +6306,21 @@ v0083:
 
 /* Code for updtemplate */
 
-static Lisp_Object MS_CDECL CC_updtemplate(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_updtemplate(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0059, v0149, v0152;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "updtemplate");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for updtemplate");
 #endif
@@ -6940,15 +6976,21 @@ v0066:
 
 /* Code for formprogn */
 
-static Lisp_Object MS_CDECL CC_formprogn(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_formprogn(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0031, v0032, v0033;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "formprogn");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for formprogn");
 #endif
@@ -7047,15 +7089,21 @@ v0081:
 
 /* Code for dp_times_bcmo */
 
-static Lisp_Object MS_CDECL CC_dp_times_bcmo(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0029,
-                         Lisp_Object v0001, ...)
+static Lisp_Object MS_CDECL CC_dp_times_bcmo(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0128, v0127;
     Lisp_Object fn;
+    Lisp_Object v0001, v0029, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "dp_times_bcmo");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0029 = va_arg(aa, Lisp_Object);
+    v0001 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for dp_times_bcmo");
 #endif

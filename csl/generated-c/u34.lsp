@@ -1,56 +1,7 @@
 
 % u34.lsp           Machine generated Lisp
 
-(c!:install "u34" 3231 8294399 5738640)
-
-(c!:install 'rdzchk '(rdzchk 0.0 t nil !!fleps1 rd!-tolerance!* bfz!*
-abs!: times!: lessp!:) 1075211769949984069)
-
-(c!:install 'adjp '(adjp unit adjoint comm anticomm) 507533349238098650)
-
-(c!:install 's_noparents '(s_noparents has_parents nreverse) 
-1736511321414976285)
-
-(c!:install 'simpiden '(simpiden !:rn!: !:rd!: list nil !*sq t odd
-nonzero ncmp!* subfg!* linear antisymmetric even aeval mksq prepsqxx
-formlnr simp opmtch ordn minusf negsq repeats permp valuechk) 
-399842306884221145)
-
-(c!:install 'mo_deletecomp '(mo_deletecomp nil mo!=deglist) 
-488984179924039477)
-
-(c!:install 'balance_mod '(balance_mod) 688586339938142847)
-
-(c!:install 'remainder!-mod!-p '(remainder!-mod!-p
-"B=0 IN REMAINDER-MOD-P" t nil xremainder!-mod!-p errorf) 
-1617505365660957407)
-
-(c!:install '!*q2f '(!*q2f polynomial prepsq typerr) 1992770000421239697
-)
-
-(c!:install 'mktag '(mktag nil texprec !\!( !\!) makefunc texexplode) 
-2171572979981061329)
-
-(c!:install 'pasf_dnf '(pasf_dnf and dnf pasf_puregconp pasf_pnf
-pasf_pbnf) 1373428122110867313)
-
-(c!:install 'ps!:times!-erule '(ps!:times!-erule nil ps ps!:order
-ps!:evaluate multsq addsq) 408827580316550273)
-
-(c!:install 'crprep1 '(crprep1 nil minus plus rd!:zerop rd!:minusp
-rd!:minus crprimp) 1717234639998606711)
-
-(c!:install 'solvealgtrig01 '(solvealgtrig01 (sin cos tan cot sinh cosh
-tanh coth) constant_exprp union) 1996054250338805224)
-
-(c!:install 'sc_rowscalarproduct '(sc_rowscalarproduct nil sc_simp
-fast!-column!-dim sc_getmat sc_multsq sc_addsq) 980670286350788801)
-
-(c!:install 'simpwedge '(simpwedge partitwedge !*pf2sq) 
-1857253920508819625)
-
-(c!:install 'mkforttab '(mkforttab forttab fortcurrind!*) 
-194199250556763354)
+(c!:install "u34" 11721 1858893 5038728)
 
 (c!:install 'physoppri '(physoppri nil "x= " " y= " "nat= " !*nat
 " contract= " !*contract !" "(" obrkp!* !*comma!* t ")" !- !1 !+ " z= "
@@ -119,6 +70,59 @@ simpdf simpexpt multsq to addsq difff dfn_prop simp diffsq opmtch
 int!-equiv!-chk rationalizesq depends get!-all!-kernels ldepends msgpri
 mksq df!-chain!-rule smember dependsl simp!* not_df_p mk!*sq reval
 merge!-ind!-vars find_sub_df quotsq pair) 437081024858832932)
+
+(c!:install 'rewrite '(rewrite nil letmtr3 findrow) 387748043709988876)
+
+(c!:install 'dipretimes '(dipretimes times) 253811250525107887)
+
+(c!:install 'weak_xreduce1 '(weak_xreduce1 nil !*trxmod "   " first
+wedge " +" last xval xdiv mknwedge wedgepf quotsq negsq multpfsq addpf
+subs2pf writepri preppf) 843883409213556310)
+
+(c!:install 'is_buble '(is_buble nil diff_vertex) 126862233619348953)
+
+(c!:install 'quotexf!* '(quotexf!* quotfexf!*1 nreverse) 
+784945289340364209)
+
+(c!:install 'actual_arguments '(actual_arguments list generic_function) 
+799389259804872999)
+
+(c!:install 'fs!:prin!: '(fs!:prin!: "[" "]" prin2!* fs!:prin) 
+1091276550873600974)
+
+(c!:install 'split!-further '(split!-further nil number!-needed
+work!-vector1 dwork1 work!-vector2 dwork2 t copy!-vector gcd!-in!-vector
+quotfail!-in!-vector) 588263009917982076)
+
+(c!:install 'subtractinds '(subtractinds nil) 1781800755294678369)
+
+(c!:install 'change!+int!+to!+sq '(change!+int!+to!+sq) 
+981414809217460821)
+
+(c!:install 'mri_ofsf2mri '(mri_ofsf2mri mri_ofsf2mriat cl_apply2ats1) 
+2302577116468709019)
+
+(c!:install 'qqe_simplqneq '(qqe_simplqneq qequal nil true false qneq
+qqe_mk2 qqe_simplqequal qqe_arg2l qqe_arg2r) 618633530376510163)
+
+(c!:install 'pasf_leqp '(pasf_leqp minf t pinf nil) 19307778309156341)
+
+(c!:install 'diford '(diford lengthn) 137269086515083911)
+
+(c!:install 'greatertype '(greatertype optlang!* fortran conversion t
+nil eval typerror) 448655416598905173)
+
+(c!:install 'newvar '(newvar "free variable" != typerr) 
+2156650156526544768)
+
+(c!:install 'divide!-by!-power!-of!-ten '(divide!-by!-power!-of!-ten
+bften!* nil !:bprec!: bflerrmsg divide!: normbf times!: cut!:mt) 
+132956354787115271)
+
+(c!:install 'mk_parents_prim '(mk_parents_prim s_noparents
+mk_edge_parents) 162538637311508163)
+
+(c!:install 'mo_zero!? '(mo_zero!? mo!=zero) 1043937610632098126)
 
 
 % End of generated Lisp code

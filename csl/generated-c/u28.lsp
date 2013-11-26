@@ -1,57 +1,7 @@
 
 % u28.lsp           Machine generated Lisp
 
-(c!:install "u28" 22445 571145 677173)
-
-(c!:install 'noncomfree '(noncomfree t nil) 1017094101632879336)
-
-(c!:install 'give!*position '(give!*position nil t
-"error in give position" nth rederr) 297056641354726252)
-
-(c!:install 'iv_cutcongs2 '(iv_cutcongs2 cong) 454068408993213202)
-
-(c!:install 'bc_mkat '(bc_mkat nil) 79139344791204664)
-
-(c!:install 'intervalom '(intervalom lowupperlimit integer_interval nil
-valid_om!* interval!* "<OMA>" t "<OMS cd=""" """ name=""" """/>"
-"</OMA>" printout indent!* multiom) 1781505378642234783)
-
-(c!:install 'ldf!-simp '(ldf!-simp nil t prepf simp comfac quotf absf to
-) 1752971389368301339)
-
-(c!:install 'on!-double1 '(on!-double1 !*double nil doublep) 
-1657322483002638185)
-
-(c!:install 'plubf '(plubf !:rd!: !:bprec!: msd inorm) 
-1270994363554067922)
-
-(c!:install 'r2oaddspecies '(r2oaddspecies "new species: " prin2t) 
-2133108755580671465)
-
-(c!:install 'toolongexpp '(toolongexpp maxexpprintlen!* numprintlen) 
-1304998923951448279)
-
-(c!:install 'indexsymmetrize '(indexsymmetrize indxsymmetrize nil) 
-284797792401482192)
-
-(c!:install 'cvitimes2 '(cvitimes2 t times) 1452841355575771990)
-
-(c!:install 'arglength '(arglength !*intstr t reval) 1153614851099336615
-)
-
-(c!:install 'ratfunpri1 '(ratfunpri1 spare!* nil posn!* t orig!*
-ycoord!* pline!* ymin!* ymax!* bar quotient p!*!* "(" ")"
-layout!-formula max terpri!* update!-pline min symbol prin2!* maprint
-oprin negnumberchk) 506325706408974610)
-
-(c!:install 'bas_make '(bas_make nil dp_ecart) 439793863735431980)
-
-(c!:install 'pst_subpst '(pst_subpst) 468417355526156341)
-
-(c!:install '!*a2f '(!*a2f simp!* !*q2f) 1157670281669662903)
-
-(c!:install 'tayexp!-max2 '(tayexp!-max2 tayexp!-lessp) 
-1717560860045974573)
+(c!:install "u28" 22162 9343574 6587005)
 
 (c!:install 'cl_smsimpl!-junct '(cl_smsimpl!-junct !*rlsism nil false
 and rl_smcpknowl cl_cflip cl_atfp cl_simplat rl_smupdknowl
@@ -152,6 +102,54 @@ vector vecfn part list setpart!* setqfn !*rlisp88 structfetch rsetf setk
 algebraic reserved setv convertmode typerr macrochk arrayp intargfn
 putvect formlis aconc applsmacro form1 rsverr symbid mksetshare mksetq) 
 793474640088835963)
+
+(c!:install '!*f2di '(!*f2di varlist!* nil t addgt pdmult psum pcmult) 
+1320821091833759185)
+
+(c!:install 'rule '(rule t !*sq!* nil mcond!*
+"Unmatched free variable(s)" hold erfg!* getel prepsq!* smemql setdiff
+lispeval let3 lprie errpri1) 1787009148438574436)
+
+(c!:install 'testord '(testord t nil) 295419463470875117)
+
+(c!:install 'ratpoly_xtothen '(ratpoly_xtothen nil to) 
+1032276716312681124)
+
+(c!:install 'sfto_reorder '(sfto_reorder setkorder reorder) 
+776219512282437951)
+
+(c!:install 'diffrd '(diffrd char (b v a r) nil lex mathml2 alg_df
+bvarrd) 596869856670901006)
+
+(c!:install 'simpimpart '(simpimpart nil !*factor simp!* impartsq) 
+1318661892495599752)
+
+(c!:install 'copy_mat '(copy_mat nreverse) 242186463658415657)
+
+(c!:install 'exdfprn '(exdfprn "d" prin2!* rembras) 985087563643106429)
+
+(c!:install 'getupper '(getupper metricu!*) 1351457943606920707)
+
+(c!:install 'ordpl '(ordpl t ordp) 935355194877485601)
+
+(c!:install 'subs2p '(subs2p t simp exptsq to multsq) 927406212796343002
+)
+
+(c!:install 'fs!:make!-nullangle '(fs!:make!-nullangle nil) 
+1460344656790123685)
+
+(c!:install 'red!=subst1 '(red!=subst1 !*bcsimp "---> " "." " uses "
+bas_dpoly dp_lc bas_rep bc_inv bc_prod bc_fi dp_lmon mo_diff dp_times_bc
+dp_times_bcmo dp_diff cali_trace dp_print bas_nr bas_make1 bc_gcd
+bc_divmod) 361221532838411975)
+
+(c!:install 'simpquot '(simpquot alg "0/0 formed" "Zero divisor" dmode!*
+(!:rd!: !:cr!:) t nil !*modular simpcar simp !:onep divd simprecip
+multsq rerror) 987905241144837140)
+
+(c!:install 'gigcdsq '(gigcdsq nil giintgcd quotf) 395636328432651245)
+
+(c!:install 'mri_opn '(mri_opn mri_op) 2036384330803727972)
 
 
 % End of generated Lisp code

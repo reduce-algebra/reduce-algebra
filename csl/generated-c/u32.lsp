@@ -1,76 +1,7 @@
 
 % u32.lsp           Machine generated Lisp
 
-(c!:install "u32" 4227 3488251 3488136)
-
-(c!:install 'defined_all_edge '(defined_all_edge nil t def_edge
-p_def_edge rep_edge_prop_) 548807897588405305)
-
-(c!:install 'greaterpcdr '(greaterpcdr) 2051055259719928140)
-
-(c!:install 'fs!:prepfn!: '(fs!:prepfn!:) 928305121989740116)
-
-(c!:install 'arminusp!: '(arminusp!: minusf) 671650686712543613)
-
-(c!:install 'makeqn!-maybe '(makeqn!-maybe equal) 1556924750241945412)
-
-(c!:install 'cl_atmlc '(cl_atmlc) 1365061913854416366)
-
-(c!:install 'aex_minus '(aex_minus nil aex_ex ratpoly_minus aex_ctx
-ctx_union aex_reducedtag aex_mk) 464224318607960509)
-
-(c!:install 'ofsf_smwmkatl '(ofsf_smwmkatl !*rlsusi cl_susimkatl
-ofsf_smmkatl) 414981824598030419)
-
-(c!:install 'integralir '(integralir atts name (bvar x 1) nil defint
-lambda find lex omobj lambdavar lambdafun) 230027566720131369)
-
-(c!:install 'findnthroot '(findnthroot nil) 2258808513418775196)
-
-(c!:install 'assgnpri '(assgnpri nil overflowed!* testing!-width!*
-!*nero !*tex vecp mat csl lispsystem!* math!-display outputhandler!*
-fancy!-output t sprifn tag setq (first only) !*fort first !*nat "$"
-texpri getd vecpri fmp!-switch getrtype maprin terpri!* evalvars fvarpri
-aconc prin2!* would!-be!-huge) 1148619460677363211)
-
-(c!:install 'newsym1 '(newsym1 cindex!* cname!*) 502142044287879804)
-
-(c!:install 'evequal '(evequal nil t (0)) 162531075110848313)
-
-(c!:install 'prepsq!*1 '(prepsq!*1 t factors!* nil expt kord!* dnl!*
-!*allfac upl!* !*div minus quotient to quotfm prepsq!*0 nconc!* mksp
-kernlp mkkl ckrn ckrn!* quotof canonsq prepf addfactors rmplus exchk
-prepsq aconc!* retimes) 1705733711631279646)
-
-(c!:install 'dip_moncomp '(dip_moncomp) 1856663348448561505)
-
-(c!:install 'ev_sum '(ev_sum nil) 817061562606223269)
-
-(c!:install 'ciom '(ciom "<OMATTR>" t "<OMATP>"
-"<OMS cd=""typmml"" name=""type"">" "<OMS cd=""typmml"" name="""
-mmltypes!* """>" nil "</OMATP>" "</OMATTR>" printout indent!* objectom) 
-414213925339740331)
-
-(c!:install 'f4 '(f4 pi "<pi/>" euler_gamma "<eulergamma/>" true
-"<true/>" false "<false/>" !Na!N "<notanumber/>" infinity !*web
-"<cn type=""constant"">" "<cn type=&quot;constant&quot;>" "&infin;"
-"</cn>" e "&ExponentialE;" i "&ImaginaryI;" "<cn" " type=""real"">"
-" type=&quot;real&quot;>" " type=""integer"">"
-" type=&quot;integer&quot;>" ">" "<ci" " type=""list"">"
-" type=&quot;list&quot;>" " type=""vector"">"
-" type=&quot;vector&quot;>" "</ci>" nil printout listp) 
-1856869730658203263)
-
-(c!:install 'sparpri '(sparpri nil quote setq first (quote !$) last
-writepri) 553168696648172079)
-
-(c!:install 'evinsert '(evinsert t nreverse) 249966616137666730)
-
-(c!:install 'endmodule '(endmodule mode!-list!*
-"ENDMODULE called outside module" nil exportslist!* importslist!*
-alglist!* !*mode rederr) 1973309168316426920)
-
-(c!:install 'new_prove '(new_prove nil new_provev) 124058601082197365)
+(c!:install "u32" 11280 2316791 2780798)
 
 (c!:install 'redall '(redall gg!* nil shortway!* thirdway!* t gv!* path
 " ==> " " --> " conds!* bv!* ljet nf ord dd insert) 1802086597911291948)
@@ -176,6 +107,86 @@ subindk simp) 2014853119785988240)
 1704580020154585377)
 
 (c!:install 'dp!=retimes '(dp!=retimes times) 976964524675109269)
+
+(c!:install 'makecoeffpairs '(makecoeffpairs makecoeffpairs1) 
+757218381450057705)
+
+(c!:install 'mri_2ofsfat '(mri_2ofsfat nil mri_op mri_arg2l) 
+443267418868656274)
+
+(c!:install 'quotfx1 '(quotfx1 t quotfdx quotfxerr ordop quotkx lt!* to
+cutf multf negf addf aconc!* rnconc) 716959166681671727)
+
+(c!:install 'numir '(numir atts name complex_cartesian plus nil times
+!&imaginaryi!; complex_polar exp rational divide find lex omobj) 
+204094701760676937)
+
+(c!:install 'mulpower '(mulpower sqrtlist zlist addexptsdf reduceroots
+multdf) 583927729980129668)
+
+(c!:install 'sfpf '(sfpf t nil sfp) 1422125539772022377)
+
+(c!:install 'gbfdiff '(gbfdiff difbf) 72262434935608846)
+
+(c!:install 'listquotient '(listquotient quotient) 690478911433164218)
+
+(c!:install 'boolvalue!* '(boolvalue!* nil) 1733137918392125566)
+
+(c!:install 'fs!:minusp!: '(fs!:minusp!: fs!:minusp) 1062225321579773362
+)
+
+(c!:install 'groeb!=crita '(groeb!=crita groeb!=testa listminimize) 
+1508966091227079540)
+
+(c!:install 'flattens1 '(flattens1) 803978760733085732)
+
+(c!:install 'quotfail!-in!-vector '(quotfail!-in!-vector
+"Attempt to divide by zero" "Bad degrees in QUOTFAIL-IN-VECTOR" nil
+"Quotient not exact in QUOTFAIL!-IN!-VECTOR" errorf) 1689381275248902728
+)
+
+(c!:install 'algmodep '(algmodep (aeval aeval!*) nil) 
+1260695256141638807)
+
+(c!:install 'sfchk '(sfchk sfp prepf) 1977299701300096434)
+
+(c!:install 'maxfrom1 '(maxfrom1 nth max) 2038400951185798313)
+
+(c!:install 'replace!-next '(replace!-next nreverse) 256580031885882389)
+
+(c!:install 'mk!+equation '(mk!+equation equal) 1350134440473885358)
+
+(c!:install 'iv_new '(iv_new) 1120989220244112093)
+
+(c!:install 'csymbolrd '(csymbolrd nil fnrd stats_getargs) 
+2269378548414956256)
+
+(c!:install 'ps!:mkpow '(ps!:mkpow expt quotient) 1492163102441571598)
+
+(c!:install 'findhr '(findhr headhisto codhisto nil psi npsi codmat
+maxvar rcoccup) 375032588390635833)
+
+(c!:install 'dipnumcontent '(dipnumcontent bcone!? vbcgcd) 
+594792649216446811)
+
+(c!:install 'xexptpf '(xexptpf wedgepf) 2002618631577602484)
+
+(c!:install 'xreadlist '(xreadlist !*rcbkt!* list group cursym!*
+!*semicol!* "Syntax error: semicolon in list" nil !*comma!*
+"Syntax error: invalid comma in list" scan xread1 nconc2 symerr aconc) 
+940956793750546162)
+
+(c!:install 'gfquotient '(gfquotient gbfquot gffquot) 
+1941942262791050492)
+
+(c!:install 'intrdsortin '(intrdsortin !:difference !:minusp nreverse) 
+1417026782805208781)
+
+(c!:install 'toolongassignp '(toolongassignp toolongexpp) 
+1812853995159470443)
+
+(c!:install 'color!-strand '(color!-strand color!-roads nreverse) 
+1519305087284542905)
 
 
 % End of generated Lisp code

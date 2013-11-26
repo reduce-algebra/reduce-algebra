@@ -1,56 +1,7 @@
 
 % u25.lsp           Machine generated Lisp
 
-(c!:install "u25" 13781 4311147 7630735)
-
-(c!:install 'msolve!-polyn '(msolve!-polyn current!-modulus nil subf
-lastpair msolve!-poly1) 54455115178429379)
-
-(c!:install 'solvealgdepends '(solvealgdepends t nil root_of) 
-1830196976569058051)
-
-(c!:install 'iv_cutcongs1 '(iv_cutcongs1 nil t iv_cutcongs2) 
-614623751731925357)
-
-(c!:install 'matrixom '(matrixom "<OMA>" t
-"<OMS cd=""linalg1"" name=""matrix""/>" nil "</OMA>" printout indent!*
-matrixrowom) 891085598272727681)
-
-(c!:install 'quoteequation '(quoteequation equation) 34302510993870705)
-
-(c!:install 'evalb '(evalb nil algebraic true false formbool eval) 
-1249517517657287279)
-
-(c!:install 'inprinla '(inprinla nil t alt maprintla oprinla
-negnumberchk) 543709068126650725)
-
-(c!:install 'collectphysops_reversed '(collectphysops_reversed nil
-physopp collectindices removeindices) 2037320846155998297)
-
-(c!:install 'z!-roads '(z!-roads nil) 404412993819179294)
-
-(c!:install 'open '(open input output append "bad direction ~A in open"
-error internal!-open) 492329841611198672)
-
-(c!:install 'sqprint '(sqprint !*prin!# t orig!* !*nat posn!* !*pri
-wtl!* nil " / " xprinf prin2!* xprinf2 sqhorner!* prepsq!* prepreform
-maprin) 181925929491622368)
-
-(c!:install 'pcdiv '(pcdiv nil cdiv) 1140795760081996099)
-
-(c!:install 'extadd '(extadd nil ordexp setcdr addf) 1336103341634382315
-)
-
-(c!:install 'dvfsf_smcpknowl '(dvfsf_smcpknowl !*rlsusi cl_susicpknowl
-cl_smcpknowl) 1389738360695934741)
-
-(c!:install 'sfto_b!:ordexn '(sfto_b!:ordexn nil) 1120832828005264572)
-
-(c!:install 'applyfnrd '(applyfnrd nil fnrd stats_getargs aeval) 
-2055627505118860216)
-
-(c!:install 'multdfconst '(multdfconst t nreverse multsq subs2q) 
-2098672999481205651)
+(c!:install "u25" 16166 9113795 8631026)
 
 (c!:install 'mkempspmat '(mkempspmat sparsemat) 1963144696235856231)
 
@@ -161,6 +112,61 @@ cl_susiinter) 265796479780913596)
 (c!:install 'rd!:difference '(rd!:difference nil !*!*roundbf !:rd!: yy!!
 difference convprc2 difbf minus!: rdzchk mkround errorset!* errorp
 rndbfon fl2bf normbf read!:num safe!-fp!-plus) 1361925757642799467)
+
+(c!:install 'formproc '(formproc fname!* ftype!* !*lose !*defn nil
+"not defined (LOSE flag)" (quote nil) !*redeflg!* "redefined" t rblock
+!*noinlines inline expr (expr fexpr macro) progn declare special lambda
+new_inline_definitions smacro "SMACRO/INLINE" de fexpr df macro dm
+procfn putc symbolic flag opfn !*argnochk (expr inline smacro) variadic
+!*strict_argcount "Definition of"
+"different count from args previously called with" "defined with"
+"but previously called with" "arguments" put number!-of!-args (fexpr
+macro inline smacro) !*micro!-version (fexpr macro smacro) lprim getd
+rsverr pairxvars rplaca!* form1 symbvarlst mkprogn lprie lispeval) 
+277991025093696852)
+
+(c!:install 'simp!-prop2 '(simp!-prop2 propvars!* nil prop!* not_prop!*
+union simp!-prop!-condense) 2186162920466906735)
+
+(c!:install 'orddf '(orddf "Orddf = case" "Orddf v longer than u"
+"Orddf u longer than v" t nil exptcompare interr) 952177831840430535)
+
+(c!:install 'make!-modular!-symmetric '(make!-modular!-symmetric nil t
+modulus!/2 current!-modulus !*n2f adjoin!-term) 1140693503263895310)
+
+(c!:install 'setfuncsnaryrd '(setfuncsnaryrd multiset mmlatts nil mathml
+) 231077833790916720)
+
+(c!:install 'crn!:minusp '(crn!:minusp nil) 994688315502626129)
+
+(c!:install 'genexp '(genexp genp) 1229118296708802513)
+
+(c!:install 'remchkf1 '(remchkf1 t !*trcompact "*** Remainder smaller"
+termsf xremf prin2t) 54899298257305006)
+
+(c!:install 'simp!-prop!-condense '(simp!-prop!-condense lambda_mwvup3_6
+nil sort subsetp ordn) 697041781786370439)
+
+(c!:install 'lambda_mwvup3_6 '(lambda_mwvup3_6) 709411940811390766)
+
+(c!:install 'skp_ordp '(skp_ordp atom_compare cons_ordp) 
+1955200832874693131)
+
+(c!:install 'lessppair '(lessppair) 2231640877476236480)
+
+(c!:install 'ratdif '(ratdif nil ratminus ratplusm) 1605943186866839187)
+
+(c!:install 'reduce!-mod!-eigf '(reduce!-mod!-eigf !*sub2 cancel negsq
+reduce!-eival!-powers subs2) 2236746010604573450)
+
+(c!:install 'cancel '(cancel !*mcd mk!*sq simpexpt multsq) 
+309303107998986780)
+
+(c!:install 'mk!+squared!+norm '(mk!+squared!+norm mk!+inner!+product) 
+1338290014215463570)
+
+(c!:install 'multerm '(multerm !*multsq mulpower multdfconst) 
+575476038510622069)
 
 
 % End of generated Lisp code

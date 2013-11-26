@@ -1,7 +1,7 @@
 
 % u06.lsp           Machine generated Lisp
 
-(c!:install "u06" 7284 907515 3675894)
+(c!:install "u06" 15849 3832349 7502034)
 
 (c!:install 'isarb_compl '(isarb_compl arbcomplex found_compl nil
 multi_isarb_compl) 1177739313881177277)
@@ -148,10 +148,10 @@ posn!* pline!* testing!-width!* overflowed!* nil orig!* t inbrackets "("
 (c!:install 'rl_prepat '(rl_prepat rl_prepat!* apply) 760617080130617588
 )
 
-(c!:install 'xxsort '(xxsort lambda_mth9cq_1 sort) 883018107949334606)
+(c!:install 'xxsort '(xxsort lambda_mwvup2_1 sort) 883018107949334606)
 
-(c!:install 'lambda_mth9cq_1 '(lambda_mth9cq_1 termorder) 
-1427702863234283007)
+(c!:install 'lambda_mwvup2_1 '(lambda_mwvup2_1 termorder) 
+2095061489664587676)
 
 (c!:install 'gcdf '(gcdf !*exp !*rounded !*mcd t !*ezgcd dmode!*
 !*combineexpt gcdf1 minusf negf ezgcdf free!-powerp) 940727046805833939)

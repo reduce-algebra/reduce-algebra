@@ -1,7 +1,7 @@
 
 /* $destdir/u03.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3445,14 +3445,20 @@ v0016:
 
 /* Code for bcint2op */
 
-static Lisp_Object MS_CDECL CC_bcint2op(Lisp_Object env, int nargs,
-                         Lisp_Object v0024, Lisp_Object v0002,
-                         Lisp_Object v0059, ...)
+static Lisp_Object MS_CDECL CC_bcint2op(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0094, v0095, v0096, v0097, v0098;
+    Lisp_Object v0059, v0002, v0024;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "bcint2op");
+    va_start(aa, nargs);
+    v0024 = va_arg(aa, Lisp_Object);
+    v0002 = va_arg(aa, Lisp_Object);
+    v0059 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for bcint2op");
 #endif
@@ -3859,15 +3865,22 @@ v0032:
 
 /* Code for remainder!-in!-vector */
 
-static Lisp_Object MS_CDECL CC_remainderKinKvector(Lisp_Object env, int nargs,
-                         Lisp_Object v0024, Lisp_Object v0002,
-                         Lisp_Object v0059, Lisp_Object v0031, ...)
+static Lisp_Object MS_CDECL CC_remainderKinKvector(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0130, v0131, v0132, v0133, v0134, v0135, v0136, v0137, v0138, v0139;
     Lisp_Object fn;
+    Lisp_Object v0031, v0059, v0002, v0024;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "remainder-in-vector");
+    va_start(aa, nargs);
+    v0024 = va_arg(aa, Lisp_Object);
+    v0002 = va_arg(aa, Lisp_Object);
+    v0059 = va_arg(aa, Lisp_Object);
+    v0031 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for remainder-in-vector");
 #endif
@@ -5592,14 +5605,20 @@ v0009:
 
 /* Code for update!-pline */
 
-static Lisp_Object MS_CDECL CC_updateKpline(Lisp_Object env, int nargs,
-                         Lisp_Object v0024, Lisp_Object v0002,
-                         Lisp_Object v0059, ...)
+static Lisp_Object MS_CDECL CC_updateKpline(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0163, v0195, v0142;
+    Lisp_Object v0059, v0002, v0024;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "update-pline");
+    va_start(aa, nargs);
+    v0024 = va_arg(aa, Lisp_Object);
+    v0002 = va_arg(aa, Lisp_Object);
+    v0059 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for update-pline");
 #endif
@@ -7059,15 +7078,21 @@ v0040:
 
 /* Code for mcharg1 */
 
-static Lisp_Object MS_CDECL CC_mcharg1(Lisp_Object env, int nargs,
-                         Lisp_Object v0024, Lisp_Object v0002,
-                         Lisp_Object v0059, ...)
+static Lisp_Object MS_CDECL CC_mcharg1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0165, v0162, v0193;
     Lisp_Object fn;
+    Lisp_Object v0059, v0002, v0024;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "mcharg1");
+    va_start(aa, nargs);
+    v0024 = va_arg(aa, Lisp_Object);
+    v0002 = va_arg(aa, Lisp_Object);
+    v0059 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mcharg1");
 #endif
@@ -8065,15 +8090,22 @@ static Lisp_Object CC_constimes(Lisp_Object env,
 
 /* Code for convertmode */
 
-static Lisp_Object MS_CDECL CC_convertmode(Lisp_Object env, int nargs,
-                         Lisp_Object v0024, Lisp_Object v0002,
-                         Lisp_Object v0059, Lisp_Object v0031, ...)
+static Lisp_Object MS_CDECL CC_convertmode(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0011, v0012, v0019, v0066;
     Lisp_Object fn;
+    Lisp_Object v0031, v0059, v0002, v0024;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "convertmode");
+    va_start(aa, nargs);
+    v0024 = va_arg(aa, Lisp_Object);
+    v0002 = va_arg(aa, Lisp_Object);
+    v0059 = va_arg(aa, Lisp_Object);
+    v0031 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for convertmode");
 #endif

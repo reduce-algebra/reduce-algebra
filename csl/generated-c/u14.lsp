@@ -1,10 +1,7 @@
 
 % u14.lsp           Machine generated Lisp
 
-(c!:install "u14" 20386 9677916 3888514)
-
-(c!:install 'ibalp_unvar!-unsatlist '(ibalp_unvar!-unsatlist nil delq
-setcar ibalp_calcmom ibalp_getnewwl) 1607034383365906899)
+(c!:install "u14" 10813 1249046 4556531)
 
 (c!:install 'sfto_redx '(sfto_redx t nil) 562032915313617046)
 
@@ -170,6 +167,17 @@ opmtch!* getphystype simp) 533008750649673992)
 (c!:install 'omsir '(omsir nil atts name cd (v e c t o r) (vectorml
 linalg1) mmleq!* special_cases!* special_cases2!* valid_om!* t find
 encodeir apply) 1635123881268886875)
+
+(c!:install 'dipilcomb1 '(dipilcomb1 !*gcd t nil vbcsize evzero!? evsum
+evcomp bcprod bcsum bczero!? dipprod) 217199092425223551)
+
+(c!:install 'freeoffl '(freeoffl t nil freeoff) 1243183941153914920)
+
+(c!:install '!*wedgepf2pf '(!*wedgepf2pf mkuwedge nreverse) 
+759972719618937260)
+
+(c!:install 'cut!:mt '(cut!:mt !:rd!: nil msd bflerrmsg) 
+259755366163725880)
 
 
 % End of generated Lisp code

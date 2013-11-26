@@ -1,62 +1,7 @@
 
 % u38.lsp           Machine generated Lisp
 
-(c!:install "u38" 2062 3289627 1922483)
-
-(c!:install 'get!-min!-degreelist '(get!-min!-degreelist nil
-taymindegreel tayexp!-plus2 confusion) 1827370259021826586)
-
-(c!:install 'rl_sacat '(rl_sacat rl_sacat!* apply) 944955371135587480)
-
-(c!:install 'bc_2sq '(bc_2sq) 360394705700600607)
-
-(c!:install 'xpdiff '(xpdiff nil "B too long in xpdiff"
-"A too long in xpdiff" failed interr) 1652087081665327731)
-
-(c!:install 'dipcontevmin '(dipcontevmin nil) 1280031171671620958)
-
-(c!:install 'ev!-tades '(ev!-tades ndim!* binc nreverse) 
-859080957225118841)
-
-(c!:install 'algebnp '(algebnp nil !:ar!: t) 1007795163310331030)
-
-(c!:install 'znumrnil '(znumrnil nil znumr) 1100283817027952700)
-
-(c!:install 'texexplode '(texexplode texname nil !  strcollect
-texcollect texexplist) 32878331386523690)
-
-(c!:install 'mk!+inner!+product '(mk!+inner!+product
-"Error in Gram_schmidt: each list in input must be the same length." nil
-!*complex t !*sub2 get!+vec!+dim rederr mk!+conjugate!+vec subs2
-get!+vec!+entry multsq addsq) 1251414485297740594)
-
-(c!:install 'cl_gand!-col '(cl_gand!-col true and nil !*rlsichk cl_cflip
-cl_flip cl_simpl1) 1549027014760571756)
-
-(c!:install 'rat_abs '(rat_abs absf) 1504838843898292378)
-
-(c!:install 'cgp_greenp '(cgp_greenp cgp_rp) 660355733405320712)
-
-(c!:install 'search_att '(search_att nil (stop) !  != !" t !$ find
-errorml) 1499001463146015585)
-
-(c!:install 'sprow_dim '(sprow_dim !*fast_la nil
-"Error in sprow_dim: input should be a matrix." rederr spmatlength
-matrixp) 309078139454047360)
-
-(c!:install 'dipreplus '(dipreplus plus) 2231842920475923467)
-
-(c!:install 'xpartitsq '(xpartitsq nil t sfp xexptpf cancel wedgepf
-addpf xvarp xpartitk multpfsq) 1464648259197719264)
-
-(c!:install 'delasc '(delasc nil t) 1435038776993638387)
-
-(c!:install 'unshift '(unshift !*xo nil (0.0 . 0.0) gfplus gfadjust) 
-1467274265607953694)
-
-(c!:install 'delete_edge '(delete_edge nreverse) 1457055915638932043)
-
-(c!:install 'bc_from_a '(bc_from_a simp!* bc!=simp) 824472216916119813)
+(c!:install "u38" 20895 7940427 6991757)
 
 (c!:install 'simp!-prop '(simp!-prop propvars!* nil and or !'and !'or
 !'true !'false t times not full boolean reval simp!-prop1 prepf
@@ -157,6 +102,104 @@ indordp) 237212066154293626)
 difference times quotient) domain!*p listp) 1311043954502904165)
 
 (c!:install 'subs2chkex '(subs2chkex nil subs2chk) 2211717899948846592)
+
+(c!:install 'ordered!-gcd!-mod!-p '(ordered!-gcd!-mod!-p t
+reduction!-count reduce!-degree!-mod!-p monic!-mod!-p) 133846997472525)
+
+(c!:install 'dfdeg '(dfdeg t) 1481596377173909653)
+
+(c!:install 'min2!-order '(min2!-order tayexp!-plus2 tayexp!-greaterp
+tayexp!-min2 nreverse) 91626529657358042)
+
+(c!:install 'depend!-l '(depend!-l nil t simp depend!-sq) 
+176488832778283881)
+
+(c!:install 'mkratnum '(mkratnum !:gi!: !:crn!: !:rn!: !*i2rn) 
+327310554741875047)
+
+(c!:install 'xriterion_2 '(xriterion_2 nil wedge_pair t !*trxideal
+"criterion 2 hit" last xdiv make_wedge_pair find_item writepri) 
+1011732389820470887)
+
+(c!:install '!:quotient '(!:quotient t nil poly "Zero divisor" dmode!*
+times quotient rerror !:recip dcombine) 52530475685901513)
+
+(c!:install 's_world_names '(s_world_names nil) 1168661674861478598)
+
+(c!:install 'mri_simplfloor1 '(mri_simplfloor1 t mri_simplfloor
+mri_irsplit addf exptf multf) 669187460518805120)
+
+(c!:install 'pasf_subfof '(pasf_subfof pasf_subfof1 cl_apply2ats1) 
+910716725275690030)
+
+(c!:install 'ev_max!# '(ev_max!#) 1938215986788281525)
+
+(c!:install 'row_dim '(row_dim !*fast_la nil
+"Error in row_dim: input should be a matrix." rederr size_of_matrix
+matrixp) 723371441808594052)
+
+(c!:install 'physop!*sq '(physop!*sq nil physop !*q2a !*collectphysops) 
+851782618777726459)
+
+(c!:install 'all_defined_map_ '(all_defined_map_ nil al1_defined_map_) 
+318566049767820906)
+
+(c!:install 'quotfexf!*1 '(quotfexf!*1 nil t !*rationalize matrix
+"Catastrophic division failure" quotf rationalizesq rerror) 
+2026527606341443677)
+
+(c!:install 'bagp '(bagp bag nil) 931840254298206391)
+
+(c!:install 'general!-minus!-mod!-p '(general!-minus!-mod!-p t
+general!-modular!-minus nreverse) 684814198127245782)
+
+(c!:install 'pasf_qff2ivl '(pasf_qff2ivl
+"pasf_qff2ivl : uniform Presburger arithmetic formula in input"
+pasf_uprap rederr pasf_dnf pasf_qff2ivl1) 1883740105589236743)
+
+(c!:install 'aex_simplenumberp '(aex_simplenumberp aex_freeidl) 
+1845167293417633611)
+
+(c!:install 'ps!:find!-order '(ps!:find!-order ps nil !:ps!: tps
+"Unexpected form in ps!:find!-order" ps!:expression ps!:find!-order1
+ps!:order ps!:unknown!-order rerror) 1678637726556154181)
+
+(c!:install 'matrix_input_test '(matrix_input_test mat "ERROR: `"
+"' is non matrix input." rederr) 1702012329098984594)
+
+(c!:install 'dip!-nc!-ev!-prod '(dip!-nc!-ev!-prod nil bcprod
+dip!-nc!-ev!-prod1) 2224665023924069173)
+
+(c!:install 'column_dim '(column_dim !*fast_la nil
+"Error in column_dim: input should be a matrix." rederr size_of_matrix
+matrixp) 420723012607600441)
+
+(c!:install 'evzero '(evzero dipvars!* nil) 1751852866338471677)
+
+(c!:install 'weak_xreduce '(weak_xreduce nil !*trxmod " =" last "   "
+first preppf writepri weak_xreduce1) 825331736159439463)
+
+(c!:install 'e!* '(e!* !:bprec!: !:e) 1309429908073641312)
+
+(c!:install 'new_provev '(new_provev nil) 1691052431044818605)
+
+(c!:install 'prsum '(prsum to nreverse) 1862835164297793995)
+
+(c!:install 'fs!:subang '(fs!:subang nil make!-term fs!:plus) 
+1492927922054381838)
+
+(c!:install 'general!-difference!-mod!-p '(general!-difference!-mod!-p
+general!-minus!-mod!-p general!-plus!-mod!-p) 393337838023001517)
+
+(c!:install 'conjsq '(conjsq i impartsq repartsq simp multsq negsq addsq
+) 752563201446633033)
+
+(c!:install 'parseml '(parseml nil !! space count ch temp2 char (m a t h
+) "<math>" (!/ m a t h) "</math>" lex errorml aeval mathml) 
+2012712866150960139)
+
+(c!:install 'ps!:term!-rthpow '(ps!:term!-rthpow nil ps!:get!-term
+ps!:last!-term ps!:set!-rthpow ps!:evaluate) 1240446208172047398)
 
 
 % End of generated Lisp code

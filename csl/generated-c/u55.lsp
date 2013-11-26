@@ -1,48 +1,7 @@
 
 % u55.lsp           Machine generated Lisp
 
-(c!:install "u55" 9238 3602111 8758245)
-
-(c!:install 'makefunc '(makefunc nil texpatt ((apply makeexcinx)) ((f)
-!\!( (l !,) !\!)) texuby f apply x y t z r l m makemat makearg mktag
-texexplode) 978368209160897784)
-
-(c!:install 'tp!-greaterp '(tp!-greaterp nil tayexp!-greaterp) 
-633566132721058160)
-
-(c!:install 'mk!+hermitean!+matrix '(mk!+hermitean!+matrix !*complex
-mk!+transpose!+matrix mk!+conjugate!+matrix) 1043916039402897728)
-
-(c!:install 'pasf_susibinord '(pasf_susibinord nil lessp greaterp t
-false geq (delete . t) (delete) add equal leq pasf_susibinordcong
-pasf_susibinordcongeq simp addf pasf_smordtable reutrn) 
-2236552547881205581)
-
-(c!:install 'acell_med '(acell_med acell_getsp anu_iv iv_med) 
-385237581045987684)
-
-(c!:install 'to!*scheme '(to!*scheme codmat maxvar plus nil varlst!*
-times dm!-expt getcind delyzz) 894560562106469122)
-
-(c!:install 'evalsetbool '(evalsetbool nil list t setvalued "set"
-"Cannot evaluate" "as Boolean-valued set expression" setboolfn reval
-typerr msgpri apply) 2007507697728643496)
-
-(c!:install 'bftimes '(bftimes csl_timbf) 2236189677318499801)
-
-(c!:install 'positive!-rounded!-float '(positive!-rounded!-float
-rounded!-float) 1726518244522924251)
-
-(c!:install 'map_1_to_strand1 '(map_1_to_strand1 map__edges
-names_edgepair pre!-calc!-map_) 2160281553433954209)
-
-(c!:install 'remk '(remk nil degr multf negf to addf) 
-1723941094955150317)
-
-(c!:install 'anticom_assoc '(anticom_assoc nil) 833322419424000891)
-
-(c!:install 'eval_uni_poly_q '(eval_uni_poly_q nil exptsq multsq addsq) 
-459754896663726266)
+(c!:install "u55" 4397 3024724 986467)
 
 (c!:install 'general!-gcd!-mod!-p '(general!-gcd!-mod!-p
 reduction!-count t general!-ordered!-gcd!-mod!-p monic!-mod!-p) 
@@ -122,6 +81,55 @@ get!-denom!-ll mkrn confusion) 1613353579836834931)
 
 (c!:install 'ofsf_subf '(ofsf_subf t ofsf_pow2q multsq addsq exptsq) 
 287860392544279037)
+
+(c!:install 'subeval0 '(subeval0 nil equal sublist!* sub
+"SUB requires at least 2 arguments" !*evallhseqp list t reval reversip2
+mksp mk!*sq rederr getrtype eqexpr errpri2 !*a2kwoweight aeval subeval1)
+ 283904493554143805)
+
+(c!:install 'redmsg '(redmsg !*wsm !*msg t "operator" nil "Declare" "?"
+"declared" terminalp get!-print!-name yesp lprim) 438991400806831429)
+
+(c!:install 'logrtn '(logrtn 2.0 log2 msd log) 350007936810546106)
+
+(c!:install 'del!-tades '(del!-tades) 3457943687040738)
+
+(c!:install 'ad_signsort '(ad_signsort nil t copy apply) 
+1170661727058527472)
+
+(c!:install 'general!-xquotient!-mod!-p '(general!-xquotient!-mod!-p nil
+t exact!-quotient!-flag mksp general!-quotient!-mod!-p
+general!-negate!-term general!-times!-term!-mod!-p general!-plus!-mod!-p
+general!-times!-mod!-p general!-difference!-mod!-p) 1331346365049593409)
+
+(c!:install 'mk!+inner!+mat '(mk!+inner!+mat nil
+"incorrect input in mkinnermat" simp matrix!+p rederr) 1274881661816665)
+
+(c!:install 'ioto_cterpri '(ioto_cterpri) 1771997131253564208)
+
+(c!:install 'repr_setpos '(repr_setpos) 1968914133323079584)
+
+(c!:install 'bc_zero '(bc_zero nil) 2127568161164430519)
+
+(c!:install 'rerror '(rerror errmsg!* rederr) 1159221717434022410)
+
+(c!:install 'partialdiff '(partialdiff t nil mksp multd) 
+1428037949291152388)
+
+(c!:install 'returntype '(returntype nil mintype maxtype greatertype
+typerror) 392065717362533074)
+
+(c!:install 'gtraversopairsdiscard1 '(gtraversopairsdiscard1 nil vevlcm
+vevstrictlydivides!?) 574476796863534223)
+
+(c!:install 'evalsubset_eq '(evalsubset_eq subset_eq equal evalsetbool
+apply evalsymsubset) 810258472405717879)
+
+(c!:install 'getlower '(getlower metricd!*) 236674417296813983)
+
+(c!:install 'invlex '(invlex list "Argument to invlex not a list" nil
+equal difference invsysvars!* lex ordering gg!* plus gv!* reval gvarlis
+readsys invlex!* !*di2q prepsq rederr) 708122158086270524)
 
 
 % End of generated Lisp code

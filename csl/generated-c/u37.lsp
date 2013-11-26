@@ -1,63 +1,7 @@
 
 % u37.lsp           Machine generated Lisp
 
-(c!:install "u37" 11855 9593154 5712249)
-
-(c!:install 'factorf '(factorf current!-modulus m!-image!-variable t nil
-!*kernreverse "Improper factors in factorf" kernord setkorder reorder
-minusf negf comfac quotf1 errach fctrf1 to
-factorize!-primitive!-polynomial distribute!.multiplicity fac!-merge) 
-1119465273713149972)
-
-(c!:install 'gcd!-with!-number '(gcd!-with!-number t dmode!* gcddd) 
-2104892163634078727)
-
-(c!:install 'splitcomplex '(splitcomplex kord!* t !*exp i
-expand!-imrepart take!-realpart take!-impart setkorder reorder subs2) 
-799653874402346431)
-
-(c!:install 'extbrsea '(extbrsea rowmin rowmax nil codmat maxvar t times
-initbrsea extbrsea1 expandprod shrinkprod) 1934368770775941517)
-
-(c!:install 'sroot1 '(sroot1 freevars substitution rpt inf nil t !*trpm
-"Trying rule  " "against      " "producing    " "failed" findnewvars
-union newenv rprint amatch embed!-null!-fn restorenv) 
-1759312512298631650)
-
-(c!:install 'f2dip '(f2dip evzero bcfd f2dip1) 363996180120375757)
-
-(c!:install 'redassignp '(redassignp setq nil redassign1p) 
-2084252535241941860)
-
-(c!:install 'denlist '(denlist ev!-denom3 ev!-denom2 nreverse) 
-1646173507292959327)
-
-(c!:install 'rationalizef '(rationalizef expt quotient nil i t (quotient
-1 2) sqrt (quotient 1 3) (quotient 1 4) kernels lowertowerp mkmain
-conjquadratic conjcubic conjquartic) 234051754229448975)
-
-(c!:install 'dp_prod '(dp_prod dp!=prod) 1131889884801490894)
-
-(c!:install 'pasf_or '(pasf_or true t false (lessp greaterp leq geq)
-lessp nil leq greaterp geq pasf_deci simp addf negf) 820847617144401066)
-
-(c!:install 'ratpoly_pp '(ratpoly_pp sfto_dprpartksf) 969441403382824869
-)
-
-(c!:install 'evweightedcomp1 '(evweightedcomp1 evweightedcomp2) 
-1864450719058990833)
-
-(c!:install 'make_wedge_pair '(make_wedge_pair !*twosided xtruncate!*
-nil wedge_pair xval xlcm overall_factor mknwedge xdegreecheck) 
-2162037655764430130)
-
-(c!:install 'gfstorval '(gfstorval !*xnlist) 735094570403008647)
-
-(c!:install 'defined_vertex '(defined_vertex t nil memq_edgelist) 
-786273083146040478)
-
-(c!:install 'mkindxlist '(mkindxlist nil minus !*num2id) 
-1856295516987800448)
+(c!:install "u37" 3163 6488515 3570900)
 
 (c!:install 'zfactor1 '(zfactor1 !*primelist!* nil nreverse add!-factor
 mcfactor!*) 1953169697456208289)
@@ -121,6 +65,61 @@ compl ldf!-spf!-var) 244071086637132373)
 
 (c!:install '!*multsq '(!*multsq t nil !*multf gcdf quotf minusf negf) 
 1704676033662157132)
+
+(c!:install 'get!-min!-degreelist '(get!-min!-degreelist nil
+taymindegreel tayexp!-plus2 confusion) 1827370259021826586)
+
+(c!:install 'rl_sacat '(rl_sacat rl_sacat!* apply) 944955371135587480)
+
+(c!:install 'bc_2sq '(bc_2sq) 360394705700600607)
+
+(c!:install 'xpdiff '(xpdiff nil "B too long in xpdiff"
+"A too long in xpdiff" failed interr) 1652087081665327731)
+
+(c!:install 'dipcontevmin '(dipcontevmin nil) 1280031171671620958)
+
+(c!:install 'ev!-tades '(ev!-tades ndim!* binc nreverse) 
+859080957225118841)
+
+(c!:install 'algebnp '(algebnp nil !:ar!: t) 1007795163310331030)
+
+(c!:install 'znumrnil '(znumrnil nil znumr) 1100283817027952700)
+
+(c!:install 'texexplode '(texexplode texname nil !  strcollect
+texcollect texexplist) 32878331386523690)
+
+(c!:install 'mk!+inner!+product '(mk!+inner!+product
+"Error in Gram_schmidt: each list in input must be the same length." nil
+!*complex t !*sub2 get!+vec!+dim rederr mk!+conjugate!+vec subs2
+get!+vec!+entry multsq addsq) 1251414485297740594)
+
+(c!:install 'cl_gand!-col '(cl_gand!-col true and nil !*rlsichk cl_cflip
+cl_flip cl_simpl1) 1549027014760571756)
+
+(c!:install 'rat_abs '(rat_abs absf) 1504838843898292378)
+
+(c!:install 'cgp_greenp '(cgp_greenp cgp_rp) 660355733405320712)
+
+(c!:install 'search_att '(search_att nil (stop) !  != !" t !$ find
+errorml) 1499001463146015585)
+
+(c!:install 'sprow_dim '(sprow_dim !*fast_la nil
+"Error in sprow_dim: input should be a matrix." rederr spmatlength
+matrixp) 309078139454047360)
+
+(c!:install 'dipreplus '(dipreplus plus) 2231842920475923467)
+
+(c!:install 'xpartitsq '(xpartitsq nil t sfp xexptpf cancel wedgepf
+addpf xvarp xpartitk multpfsq) 1464648259197719264)
+
+(c!:install 'delasc '(delasc nil t) 1435038776993638387)
+
+(c!:install 'unshift '(unshift !*xo nil (0.0 . 0.0) gfplus gfadjust) 
+1467274265607953694)
+
+(c!:install 'delete_edge '(delete_edge nreverse) 1457055915638932043)
+
+(c!:install 'bc_from_a '(bc_from_a simp!* bc!=simp) 824472216916119813)
 
 
 % End of generated Lisp code

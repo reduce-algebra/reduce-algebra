@@ -1,30 +1,7 @@
 
 % u19.lsp           Machine generated Lisp
 
-(c!:install "u19" 13469 319746 753648)
-
-(c!:install 'subsublis '(subsublis sqrt expt (quotient 1 2) nil subfunc
-!*sq prepsq) 1792434304937421214)
-
-(c!:install 'rndifference!: '(rndifference!: mkrn) 2148311571176245217)
-
-(c!:install 'pasf_mkpos '(pasf_mkpos true t false nil (cong ncong)
-pasf_anegateat minusf negf) 1103566318065785167)
-
-(c!:install 'matrixrowom '(matrixrowom "<OMA>" t
-"<OMS cd=""linalg1"" name=""matrixrow""/>" nil "</OMA>" printout
-indent!* multiom) 1732016591589103317)
-
-(c!:install 'evalvars '(evalvars t intfn setelemfn revlis_without_mode
-revlis nreverse) 2122889097865007208)
-
-(c!:install 'partitexdf '(partitexdf partitop exdfpf) 206226089417428553
-)
-
-(c!:install 'treesizep '(treesizep treesizep1) 1230324459935767946)
-
-(c!:install 'formc!* '(formc!* !*!*a2sfn revalx formc) 
-604688231950087934)
+(c!:install "u19" 15766 5478822 9759438)
 
 (c!:install 'equalreval '(equalreval !*evallhseqp immediate nil equal
 reval) 41285753939560881)
@@ -63,10 +40,10 @@ revop1) 1364756646881363423)
 (c!:install 'no!-side!-effect!-listp '(no!-side!-effect!-listp t nil
 no!-side!-effectp) 850758379198238797)
 
-(c!:install 'ad_numsort '(ad_numsort lambda_mth9cr_4 sort) 
+(c!:install 'ad_numsort '(ad_numsort lambda_mwvup3_4 sort) 
 402327177911246617)
 
-(c!:install 'lambda_mth9cr_4 '(lambda_mth9cr_4) 616844021766448060)
+(c!:install 'lambda_mwvup3_4 '(lambda_mwvup3_4) 2208036316854237430)
 
 (c!:install 'tayexp!-minus '(tayexp!-minus rnminus!:) 154754222943155369
 )
@@ -138,6 +115,27 @@ getpower multsq simpcar exptsq) 1248551402524035246)
 114474220896194071)
 
 (c!:install 'vdpsave '(vdpsave) 2086740313502825177)
+
+(c!:install 'random '(random t "positive number" unidev_fac!*
+randommodulus!* nil typerr next!-random!-number) 1392034173217310297)
+
+(c!:install 'getphystypetimes '(getphystypetimes nil
+"PHYSOP type mismatch in" collectphystype deleteall rederr2) 
+157359915266999155)
+
+(c!:install 'nfactorial '(nfactorial nil fac!-part) 1136885059357765423)
+
+(c!:install 'formsetq '(formsetq symbolic list cons formsetq0 formsetq1
+formsetq2) 468839374382462326)
+
+(c!:install 'mo_lcm '(mo_lcm nil mo!=shorten mo!=deglist) 
+1412699243743002314)
+
+(c!:install 'gcdout '(gcdout !*modular nil ljet ord gcdf!* pcdiv) 
+1956867807499114445)
+
+(c!:install 'extract_dummy_ids '(extract_dummy_ids dummy_id!* nreverse) 
+1750923938922874130)
 
 
 % End of generated Lisp code

@@ -1,61 +1,7 @@
 
 % u52.lsp           Machine generated Lisp
 
-(c!:install "u52" 2010 4957008 7110377)
-
-(c!:install 'msolve!-poly '(msolve!-poly current!-modulus !*trnonlnr
-"Current modulus larger than" failed nil lprim kernels msolve!-polya
-msolve!-polyn) 91685823521947210)
-
-(c!:install 'liqsimp1!-check '(liqsimp1!-check min liqsimp1!-check1
-negsq) 493487002555783600)
-
-(c!:install 'rl_csimpl '(rl_csimpl !*rlsimpl rl_simpl nil getd) 
-520934790743523296)
-
-(c!:install 'formgen '(formgen !? !?!? mgen t !! gen nil progn put form1
-) 2252849306404541860)
-
-(c!:install 'xreduce '(xreduce nil !*trxmod " =" last "   " first preppf
-writepri xreduce1) 1545859655403278691)
-
-(c!:install 'addns '(addns ordp nreverse addsq) 564154211775859928)
-
-(c!:install 'letexprn '(letexprn times difference quotient mcond!* t nil
-!*match used!* df opmtch asymplis!* powlis!* replace frasc!* powlis1!*
-let!-prepf let2 kernlp quotf!* klistt rmsubs xadd!* fkern setk1 errpri1
-smember xadd delasc term!-split) 1735439546700611687)
-
-(c!:install 'addto!-all!-taytpelorders '(addto!-all!-taytpelorders
-tayexp!-plus2 nreverse) 1393223323678029145)
-
-(c!:install 'same!+dim!+squared!+p '(same!+dim!+squared!+p t
-squared!+matrix!+p get!+row!+nr) 1577767648815429546)
-
-(c!:install 'lto_almerge '(lto_almerge nil apply setcdr) 
-733741587543979265)
-
-(c!:install 'prepsort '(prepsort logsort getd simp!* prepsqxx) 
-47384138320529920)
-
-(c!:install 'vbcminus!? '(vbcminus!? nil) 2266777331550936950)
-
-(c!:install 'simpexdf '(simpexdf partitexdf !*pf2sq) 1633806555002658313
-)
-
-(c!:install 'prinindexs '(prinindexs nil t !*comma!* inprinla prinlatom)
- 1793884698463837808)
-
-(c!:install 'deflate1 '(deflate1 nil ncoeffs times!: plus!:) 
-2203928117898340331)
-
-(c!:install 'redassign1p '(redassign1p t setq (read for) nil) 
-131242635122447328)
-
-(c!:install 'compconj '(compconj t minus i rvalue) 2244748301091698173)
-
-(c!:install 'calc_map_ '(calc_map_ nil quotient actual_alst calc_den_tar
-calc_map_tar reval) 2284455873659044462)
+(c!:install "u52" 20654 9000083 9900603)
 
 (c!:install 'mod!* '(mod!* cali!=degrees dpmat_coldegs dp_neworder
 dpmat_list bas_make red_redpol bas_dpoly) 1926040955582660415)
@@ -147,6 +93,51 @@ cl_smrmknowl) 47500139863204398)
 (c!:install 'cr2rderr '(cr2rderr
 "complex to real type conversion requires zero imaginary part" error) 
 1936012077293626543)
+
+(c!:install 'cd_surep '(cd_surep !*rlgsvb !*cgbgs t !*rlspgs !*rlsithok
+rl_surep) 8305617494507145)
+
+(c!:install 'simppsexplim '(simppsexplim ps!:exp!-lim psexplim nil carx
+ieval) 76995428546463393)
+
+(c!:install 'simp!:ps!: '(simp!:ps!: simp!:ps1) 2025566615156754466)
+
+(c!:install 'tchscheme '(tchscheme rowmax nil codmat maxvar t chscheme
+transferrow) 1933429846154179)
+
+(c!:install 'fast!-stack!-rows '(fast!-stack!-rows) 1858118498792371307)
+
+(c!:install 'groerevlist '(groerevlist nil reval getrlist) 
+1037191964888192230)
+
+(c!:install 'xnp '(xnp nil) 1364558411567724926)
+
+(c!:install 'fortexp1 '(fortexp1 !+ nil t minus !*!* literal range !:
+!:rd!: !:lower!-sci!: !:upper!-sci!: !. !*double !D !E (!D 0) !:crn!:
+!:gi!: !:cr!: !*f90 cmplx!( !, kind!(1!.0!D0!) !) !*fortranname!* (real
+dble) real listp fortranname optype fortranprecedence fortranop
+insertparens lastpair isfloat !*gi2cr !*crn2cr rd!:explode fortliteral
+fortexp) 627273730332312513)
+
+(c!:install 'algint!-subsublis '(algint!-subsublis !*sq subfunc nil
+algint!-subsq) 2210589709704843313)
+
+(c!:install 'general!-quotient!-mod!-p '(general!-quotient!-mod!-p
+"B=0 IN GENERAL-QUOTIENT-MOD-P" t nil exact!-quotient!-flag
+general!-modular!-reciprocal general!-multiply!-by!-constant!-mod!-p
+ordop adjoin!-term general!-xquotient!-mod!-p errorf) 
+1731427575502545076)
+
+(c!:install 'get!-alpha '(get!-alpha alphalist "Alpha not found for "
+" in " assoc!-alpha errorf) 425178542861694733)
+
+(c!:install 'pasf_exprng!-gball '(pasf_exprng!-gball t
+"pasf_exprng: bad bound " " with free variables " !*rlexprngnatural nil
+and true false cl_fvarl rederr pasf_exprng pasf_qff2ivl pasf_sisub) 
+86946155298281280)
+
+(c!:install 'cpr_buchcrit4t '(cpr_buchcrit4t ev_disjointp) 
+1875249702315620495)
 
 
 % End of generated Lisp code

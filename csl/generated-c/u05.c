@@ -1,7 +1,7 @@
 
 /* $destdir/u05.c        Machine generated C code */
 
-/* Signature: 00000000 21-Sep-2013 */
+/* Signature: 00000000 26-Nov-2013 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3870,15 +3870,21 @@ v0146:
 
 /* Code for insert_pv1 */
 
-static Lisp_Object MS_CDECL CC_insert_pv1(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, ...)
+static Lisp_Object MS_CDECL CC_insert_pv1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0197, v0121;
     Lisp_Object fn;
+    Lisp_Object v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "insert_pv1");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for insert_pv1");
 #endif
@@ -4256,15 +4262,21 @@ v0146:
 
 /* Code for powers2 */
 
-static Lisp_Object MS_CDECL CC_powers2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, ...)
+static Lisp_Object MS_CDECL CC_powers2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0164, v0175, v0174;
     Lisp_Object fn;
+    Lisp_Object v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "powers2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for powers2");
 #endif
@@ -5894,14 +5906,20 @@ static Lisp_Object CC_getphystypeHsq(Lisp_Object env,
 
 /* Code for contrsp2 */
 
-static Lisp_Object MS_CDECL CC_contrsp2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, ...)
+static Lisp_Object MS_CDECL CC_contrsp2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0112, v0191;
+    Lisp_Object v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "contrsp2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for contrsp2");
 #endif
@@ -6178,15 +6196,22 @@ v0162:
 
 /* Code for gperm1 */
 
-static Lisp_Object MS_CDECL CC_gperm1(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, Lisp_Object v0245, ...)
+static Lisp_Object MS_CDECL CC_gperm1(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0212, v0202, v0189;
     Lisp_Object fn;
+    Lisp_Object v0245, v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "gperm1");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    v0245 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for gperm1");
 #endif
@@ -6873,14 +6898,20 @@ v0007:
 
 /* Code for sortcolelem */
 
-static Lisp_Object MS_CDECL CC_sortcolelem(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, ...)
+static Lisp_Object MS_CDECL CC_sortcolelem(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0121, v0205;
+    Lisp_Object v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "sortcolelem");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for sortcolelem");
 #endif
@@ -7233,15 +7264,21 @@ v0108:
 
 /* Code for tsym4 */
 
-static Lisp_Object MS_CDECL CC_tsym4(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, ...)
+static Lisp_Object MS_CDECL CC_tsym4(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0195, v0165;
     Lisp_Object fn;
+    Lisp_Object v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "tsym4");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for tsym4");
 #endif
@@ -7382,14 +7419,20 @@ v0113:
 
 /* Code for mri_0mk2 */
 
-static Lisp_Object MS_CDECL CC_mri_0mk2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, ...)
+static Lisp_Object MS_CDECL CC_mri_0mk2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0151, v0108, v0186, v0013;
+    Lisp_Object v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 3, "mri_0mk2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mri_0mk2");
 #endif
@@ -8408,15 +8451,22 @@ v0184:
 
 /* Code for mcharg2 */
 
-static Lisp_Object MS_CDECL CC_mcharg2(Lisp_Object env, int nargs,
-                         Lisp_Object v0000, Lisp_Object v0147,
-                         Lisp_Object v0188, Lisp_Object v0245, ...)
+static Lisp_Object MS_CDECL CC_mcharg2(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v0074, v0120, v0272;
     Lisp_Object fn;
+    Lisp_Object v0245, v0188, v0147, v0000;
+    va_list aa;
+    va_start(aa, nargs);
     CSL_IGNORE(nil);
     argcheck(nargs, 4, "mcharg2");
+    va_start(aa, nargs);
+    v0000 = va_arg(aa, Lisp_Object);
+    v0147 = va_arg(aa, Lisp_Object);
+    v0188 = va_arg(aa, Lisp_Object);
+    v0245 = va_arg(aa, Lisp_Object);
+    va_end(aa);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mcharg2");
 #endif

@@ -1,42 +1,7 @@
 
 % u22.lsp           Machine generated Lisp
 
-(c!:install "u22" 1638 8572664 6271807)
-
-(c!:install '!:dmtimeslst '(!:dmtimeslst !:times) 504835945302623412)
-
-(c!:install 'formde '(formde procedure symbolic expr progn formproc) 
-2144067205636586070)
-
-(c!:install 'mv!-domainlist '(mv!-domainlist nreverse) 
-296190814143791910)
-
-(c!:install 'dv_ind2var '(dv_ind2var g_dvnames g_dvbase upbve mkid) 
-1388431312388812982)
-
-(c!:install '!:expt '(!:expt poly "0/0 formed" nil expt fieldp !:recip
-mkratnum rerror) 1362287763718832453)
-
-(c!:install 'bndtst '(bndtst tentothetenth!*!* abs!: greaterp!:) 
-1037517693029299605)
-
-(c!:install 'n_nary '(n_nary e power nil exp "<apply>" "<" "/>" indent
-"</apply>" unary printout multi_elem) 1777868824045236226)
-
-(c!:install 'recaliasbacksubst '(recaliasbacksubst t nil constp) 
-108835030500610349)
-
-(c!:install 'make!-unique!-freevars '(make!-unique!-freevars gen
-freevarlist!* t nil pm!:gensym) 312684904920408628)
-
-(c!:install 'noncomexpf '(noncomexpf t nil noncomp) 963735796703962000)
-
-(c!:install 'my_letmtr '(my_letmtr mat matrix "Matrix" "not set" nil t
-hold reval numlis errpri2 nth pnth rerror) 92286054868337641)
-
-(c!:install 'nconc2 '(nconc2 nil) 1102063028882411603)
-
-(c!:install 'fortexp '(fortexp fortexp1) 2129437788835831713)
+(c!:install "u22" 7487 8846899 8542587)
 
 (c!:install 'physopsimp '(physopsimp nil !*sq tensdimen antisymmetric t
 minus isanindex isavarindex physopsm!* prepsqxx opmtch!* scalopp tensopp
@@ -146,6 +111,43 @@ not impl repl equiv nil subf pasf_simplat1 pasf_sisub!-gand)
 
 (c!:install 'lto_setminus '(lto_setminus nil lastpair) 
 1918854752350015954)
+
+(c!:install 'max!-degree '(max!-degree t) 714165779836490033)
+
+(c!:install 'multiminus '(multiminus expression) 1537382582458151397)
+
+(c!:install 'embed!-null!-fn '(embed!-null!-fn nil null!-fn lastpair) 
+881444636642416006)
+
+(c!:install 'groebcplistsortin1 '(groebcplistsortin1 groebcpcompless!?) 
+29696670910405078)
+
+(c!:install 'log_freevars_list '(log_freevars_list nil t log_freevars) 
+677819293243262814)
+
+(c!:install 'mo_2a '(mo_2a cali!=basering ring_all_names mo!=expvec2a1) 
+327049944895163747)
+
+(c!:install 'general!-horner!-rule!-mod!-p '(
+general!-horner!-rule!-mod!-p t general!-expt!-mod!-p
+general!-times!-mod!-p general!-plus!-mod!-p) 1402848173375291788)
+
+(c!:install 'bc_fd '(bc_fd) 1711717985925238407)
+
+(c!:install 'bvarrd '(bvarrd char (d e g r e e) "<bvar>" (!/ d e g r e e
+) "</degree>" (!/ b v a r) "</bvar>" lex errorml mathml2 mathml error) 
+917639816185301358)
+
+(c!:install 'cr!:zerop '(cr!:zerop !:rd!: nil) 1940694148643131764)
+
+(c!:install 'matrixp '(matrixp mat nil t) 192209128832148545)
+
+(c!:install 'wedgef '(wedgef nil hodge dimex!* d noxpnd t lftshft!*
+dim!<deg deg!*form deg!*farg mkwedge mkuniquewedge1 hodgepf mkunarywedge
+wedgepf2 negf addf multf mksgnsq multpfsq dwedge negsq addpf exdfk
+smemqlp) 40165116848069563)
+
+(c!:install 'incident '(incident nil incident1) 232370014167487459)
 
 
 % End of generated Lisp code

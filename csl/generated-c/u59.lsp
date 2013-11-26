@@ -1,93 +1,7 @@
 
 % u59.lsp           Machine generated Lisp
 
-(c!:install "u59" 13865 3034437 3582709)
-
-(c!:install 'look_for_exponential '(look_for_exponential expt t nil
-quotient times intvar depends int!-gensym1 retimes simp subst!-and!-int)
- 681552028393473727)
-
-(c!:install 'smaddm2 '(smaddm2 nil copy_vect findrow simp addsq mk!*sq
-letmtr3) 2249339279527841630)
-
-(c!:install 'rdintequiv '(rdintequiv bfintequiv ftintequiv) 
-1046980699902822069)
-
-(c!:install 'mkffortassign '(mkffortassign dummyarraytoken != mkforttab
-fortexp mkfortterpri) 2169939753076168299)
-
-(c!:install 'coeffeval '(coeffeval alg
-"COEFF called with wrong number of arguments" nil coeff1 rerror) 
-612348764664463794)
-
-(c!:install 'mv!-!+ '(mv!-!+ mv!-pow!-!> nreverse) 540459552042133705)
-
-(c!:install 'mo!=pair '(mo!=pair t nreverse) 247848940693978943)
-
-(c!:install 'exprsize '(exprsize) 2123679479650713212)
-
-(c!:install 'form!-sum!-and!-product!-mod!-p '(
-form!-sum!-and!-product!-mod!-p polyzero nil times!-mod!-p plus!-mod!-p)
- 237696316358758438)
-
-(c!:install 'freeofdepl '(freeofdepl t nil smember) 67683358119913617)
-
-(c!:install 'int!-gensym1 '(int!-gensym1 gensymcount !!) 
-1074094647443936586)
-
-(c!:install 'makecoeffshom0 '(makecoeffshom0 (nil) nil
-tayexp!-difference tayexp!-times2 tayexp!-minusp lastpair tayexp!-plus2)
- 2255247835641484818)
-
-(c!:install 'relation_check_p '(relation_check_p mk_relation_mat
-equal!+matrices!+p) 1788805158111177317)
-
-(c!:install 'elimpt_bvl '(elimpt_bvl) 737418042040173944)
-
-(c!:install 'ofsf_updsignvar '(ofsf_updsignvar equal greaterp lessp geq
-leq neq unknown) 2011811276285016978)
-
-(c!:install 'logsort '(logsort !*div !*combinelogs !*expandlogs
-!*noneglogs t !*uncached nil simp prepsq!* comblog) 468425349379459173)
-
-(c!:install 'bcpow '(bcpow !*grmod!* exptsq) 1434759379595140330)
-
-(c!:install 'map_2_from_map_1 '(map_2_from_map_1 nil map_1_to_strand1
-mark_edges) 1492835217906477752)
-
-(c!:install 'compactsq '(compactsq "Relation denominator" "discarded"
-nil prepf msgpri compactf multsq) 1752245909032906887)
-
-(c!:install 'mo_linear '(mo_linear nil mo_2list) 557021684026591945)
-
-(c!:install 'dv_compare '(dv_compare nil t g_skip_to_level
-last_part_kern sc_kern pa_coinc_split sc_rep can_rep_cell numlist_ordp
-dv_fill_comp_info dv_new_aut_hook upbve) 2152709617643334605)
-
-(c!:install 'ratplusm '(ratplusm) 1924127416921279095)
-
-(c!:install 'general!-make!-modular!-symmetric '(
-general!-make!-modular!-symmetric nil t modulus!/2 current!-modulus
-!*n2f adjoin!-term) 1728522745150909350)
-
-(c!:install 'coefdf '(coefdf nil) 1335123835356435607)
-
-(c!:install 'fqa '(fqa !:gi!:) 1426790403819400597)
-
-(c!:install 'pasf_atf2iv '(pasf_atf2iv nil equal leq minf lessp geq pinf
-greaterp neq (cong ncong) "pasf_atf2iv: illegal operator " cl_fvarl
-repr_atfnew repr_a repr_n pasf_floor pasf_ceil repr_op gcdf sfto_exteucd
-multf iv_newcong rederr negf addf iv_new iv_merge) 831374504204218631)
-
-(c!:install 'bc_abs '(bc_abs absf) 1682548362890278957)
-
-(c!:install 'ps!:sqrt!-erule '(ps!:sqrt!-erule nil ps (quotient 1 2)
-ps!:order ps!:evaluate multsq quotsq addsq prepsqxx simpexpt) 
-201488568735950228)
-
-(c!:install 'cr!:times '(cr!:times !*!*roundbf yy!! gftimes nil crprcd2
-gf2cr!: safe!-crfp!-times errorset!* errorp rndbfon gf2bf) 
-287786423612335642)
+(c!:install "u59" 10877 409818 2633541)
 
 (c!:install 'formclear1 '(formclear1 list nil form1) 639130403771559653)
 
@@ -121,6 +35,69 @@ end clo !+ !- cr !  (esp esb sep cr) rel bin !, !\cr!} !\!Nl!} texstrlen
 
 (c!:install 'groebinvokecritb '(groebinvokecritb nil bcount!*
 buchvevdivides!? vevlcm) 766198175719359926)
+
+(c!:install 'mkexpvec '(mkexpvec dipvars!* "dipoly variable" nil typerr)
+ 1312027724317386792)
+
+(c!:install 'restore_props '(restore_props props!* nil) 
+1540936324550220930)
+
+(c!:install 'lispforp '(lispforp !*for!*) 196897852006246825)
+
+(c!:install 'formlet '(formlet let formlet1) 77820428439856184)
+
+(c!:install 'simptensor '(simptensor list t nil bloc_diagonal
+partic_tens generic simpdelt antisymmetric symtree splitlist!:
+extract_vars setdiff reval revalind mkindxlist split_cov_cont_ids
+num_ids_range mk_dummy_ids verify_tens_ids ordn cont_before_cov mksq
+affinep repeats permp!: negsq symtree_zerop) 1501616392237619286)
+
+(c!:install 'xprinp '(xprinp t !*sq "(" ")" plus nil !*nat !*eraise
+ycoord!* ymax!* expt ymin!* prin2!* xprinf2 sqprint maprin maprint) 
+103392326755468268)
+
+(c!:install 'nsubsf '(nsubsf t nil setkorder reorder to addf degr multf)
+ 1884828501915414990)
+
+(c!:install 'iv_newcong '(iv_newcong) 2022686848838959968)
+
+(c!:install 'rl_prepfof '(rl_prepfof rl_csimpl rl_prepfof1) 
+1481676797447032033)
+
+(c!:install 'multoutdenr '(multoutdenr nil kord!* findsquareroot
+conjugatewrt !*multf findnthroot conjugateexpt) 1073083750432619766)
+
+(c!:install 'ps!:difference!-erule '(ps!:difference!-erule ps!:evaluate
+negsq addsq) 2300716142574187209)
+
+(c!:install 'myspmatpri2 '(myspmatpri2 spm nil "Empty Matrix" empty
+sparpri) 821368276499764126)
+
+(c!:install 'fcoftrm '(fcoftrm nil (expt times plus difference minus)
+constp) 2217232267672607961)
+
+(c!:install 'simpco '(simpco nil "nested coefficient" !:nest!: dmode!*
+typerr simp) 358004154828393510)
+
+(c!:install 'critical_pairs '(critical_pairs nil zerodivs!* !*twosided
+xvarlist!* make_spoly_pair add_item make_wedge_pair make_xcomm_pair) 
+1641583882711952231)
+
+(c!:install 'lisprepeatp '(lisprepeatp repeat) 576911267801146954)
+
+(c!:install 'dfp!-sub '(dfp!-sub generic_function nil list dfp listsub
+reval pair dfp!-sub1) 1699170875246960740)
+
+(c!:install 'hdiffterm '(hdiffterm nil cos sin multsq make!-term negsq) 
+2206205436784525717)
+
+(c!:install 'st_signchange1 '(st_signchange1 nil !- pnth permp) 
+1410760578329173855)
+
+(c!:install 'depth!: '(depth!: list t bag nil) 1530113174020211076)
+
+(c!:install 'checku1 '(checku1 rhs!* nil t negind evaluatecoeffts) 
+1448674712509819901)
 
 
 % End of generated Lisp code

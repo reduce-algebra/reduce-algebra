@@ -1,69 +1,7 @@
 
 % u42.lsp           Machine generated Lisp
 
-(c!:install "u42" 13879 8079623 726288)
-
-(c!:install 'ofsf_simpat '(ofsf_simpat !*rlnzden !*rlposden t
-"atomic formula" nil !*rladdcond (lessp leq greaterp geq) and greaterp
-neq simp typerr negsq addsq multf) 2282181452827438056)
-
-(c!:install 'cl_sitheo '(cl_sitheo !*rlsiexpla !*rlsithok nil false
-inctheo true cl_simplat) 1409875018982774999)
-
-(c!:install 'ldf!-spf!-var '(ldf!-spf!-var nil x u kernels makeset
-prlist sacar appends) 2160313964912260152)
-
-(c!:install 'findhc '(findhc njsi nil jsi codmat maxvar) 
-844450326142870279)
-
-(c!:install 'xnormalise '(xnormalise nil invsq multpfsq) 
-1861699741257379840)
-
-(c!:install 'gbftimes '(gbftimes csl_timbf difbf plubf) 
-2150382351362420588)
-
-(c!:install 'r2speclist '(r2speclist plus nil r2speclist1) 
-1267547105880182141)
-
-(c!:install 'exp!* '(exp!* !:bprec!: exp!:) 1899228351420786989)
-
-(c!:install 'list_of_parent '(list_of_parent old_edge_list nil
-memq_edgelist) 1779050481953425359)
-
-(c!:install 'giprim '(giprim i times) 1872700866146990870)
-
-(c!:install 'addinds '(addinds "Powrhs too long" "Powu too long" interr
-nreverse) 76299981623055762)
-
-(c!:install 'canprod '(canprod t nil cancel sfpf cprod1 reprod minusf
-negf canonsq sfp) 438549642123809567)
-
-(c!:install 'groebcplistsort '(groebcplistsort nil groebcplistsortin) 
-2165775916336334955)
-
-(c!:install 'noncom1 '(noncom1 t !*ncmp noncom) 2196088799197960408)
-
-(c!:install 'calc_world '(calc_world s_world_names actual_alst
-calc_atlas reval) 1735440944159530077)
-
-(c!:install 'clogsq '(clogsq clogf) 928797117751596843)
-
-(c!:install 'mv2sf '(mv2sf nil mv2sf1 addf) 1593951586347486978)
-
-(c!:install 'pst_d '(pst_d nil listp ordn pst_d1) 1144422115538095946)
-
-(c!:install 'build!-null!-vector '(build!-null!-vector nil) 
-523980231858508723)
-
-(c!:install 'movebds '(movebds !*intp sgn1) 139604066828928241)
-
-(c!:install 'bfprin0x '(bfprin0x bfexplode0x bfprin!:lst) 
-2108036311765132998)
-
-(c!:install 'uterm '(uterm rhs!* nil addinds evaluatecoeffts plusdf) 
-692945223725883459)
-
-(c!:install 'get!*order '(get!*order get!*elements) 1961358405182470548)
+(c!:install "u42" 17843 291657 4959712)
 
 (c!:install 'qqe_qadd!-inside '(qqe_qadd!-inside t nil a
 qqe_qadd!-location!* d qqe_op qqe_qopaddp) 311115905959534393)
@@ -140,6 +78,59 @@ dip_f2dip2 dip_sum) 2181897843869070183)
 
 (c!:install 'gf2bf '(gf2bf !:rd!: nil nreverse fl2bf normbf read!:num) 
 1611775984733522660)
+
+(c!:install 'asymmetrize!-inds '(asymmetrize!-inds nil nth repeats
+indordln permp flatindl pair indordn) 1798583542440782114)
+
+(c!:install 'physopsubs '(physopsubs alglist!* nil physoplist!* rtype
+simpfn simpiden (dot) physopfn dot physop physop2sq subs2 !*q2a) 
+513208560725727658)
+
+(c!:install 'rappend '(rappend append list "list" argnochk reval
+getrtype typerr) 1509445515969905011)
+
+(c!:install 'get!*real!*irreducible!*rep '(get!*real!*irreducible!*rep
+realrep mkid mk_resimp_rep) 1549930091000948135)
+
+(c!:install 'cl_apply2ats1 '(cl_apply2ats1 true t false ex all bex ball
+or and not impl repl equiv nil apply) 1318739775687357999)
+
+(c!:install 'cl_sacatlp '(cl_sacatlp t) 546834097179446475)
+
+(c!:install 'sfto_dprpartf1 '(sfto_dprpartf1 quotf minusf negf) 
+909632852912523831)
+
+(c!:install 'mkarg '(mkarg t (quote !:dn!: !:int!:) list reversip!*) 
+1146828180433546403)
+
+(c!:install 'i2ps '(i2ps) 1228974304425396579)
+
+(c!:install 'get_num_part '(get_num_part !:rd!: !:dn!: minus expt bf2flr
+nreverse rdwrap2 rdwrap!-expt) 1851619515349251964)
+
+(c!:install 'remove_critical_pairs '(remove_critical_pairs remove_items)
+ 897443843271384551)
+
+(c!:install 'r2oreaction '(r2oreaction nil times expt difference plus
+aeval reval) 2080895214560535967)
+
+(c!:install 'coeff1_calc '(coeff1_calc calc_coeffmap_ nreverse) 
+1897238753576047443)
+
+(c!:install '!*ex2sf '(!*ex2sf to subs2chk nreverse) 38586166780256238)
+
+(c!:install 'fs!:onep '(fs!:onep nil cos fs!:null!-angle) 
+1928359914901635424)
+
+(c!:install 'dependsp '(dependsp t nil !*sq taylorvariable depends
+taylorp involvesq) 1102186475683222)
+
+(c!:install 'lowestdeg '(lowestdeg t) 1099483672231151835)
+
+(c!:install 'simpx1 '(simpx1 !*minus!* nil quotient expt i frlis!* !*mcd
+!*notseparate !*keepsqrts sqrt minus plus !*expandexpt times used!* (
+minus 1) difference (quotient 1 2) simpexpt negsq multsq simp mksq invsq
+exptsq simp!* simprad smemqlp) 800959311023423158)
 
 
 % End of generated Lisp code
