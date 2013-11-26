@@ -611,37 +611,6 @@ symbolic procedure c!:local_fluidp(v, decs);
   decs and (c!:local_fluidp1(v, car decs) or
             c!:local_fluidp(v, cdr decs));
 
-%
-% The "proper" recipe here arranges that functions that expect over 2 args use
-% the "va_arg" mechanism to pick up ALL their args.  This would be pretty
-% heavy-handed, and at least on a lot of machines it does not seem to
-% be necessary.  I will duck it for a while more at least. BUT NOTE THAT THE
-% CODE I GENERATE HERE IS AT LEAST OFFICIALLY INCORRECT. If at some stage I
-% find a computer where the implementation of va_args is truly incompatible
-% with that for known numbers of arguments I will need to adjust things
-% here. Yuk.
-%
-% Just so I know, the code at presently generated tends to go
-%
-%  Lisp_Object f(Lisp_Object env, int nargs, Lisp_Object a1, Lisp_Object a2,
-%                Lisp_Object a3, ...)
-%  { // use a1, a2 and a3 as arguments
-% and note that it does put the "..." there!
-%
-% What it maybe ought to be is
-%
-%  Lisp_Object f(Lisp_Object env, int nargs, ...)
-%  {   Lisp_Object a1, a2, a3;
-%      va_list aa;
-%      va_start(aa, nargs);
-%      argcheck(nargs, 3, "f");
-%      a1 = va_arg(aa, Lisp_Object);
-%      a2 = va_arg(aa, Lisp_Object);
-%      a3 = va_arg(aa, Lisp_Object);
-%     va_end(aa);
-%
-% Hmm that is not actually that hard to arrange! Remind me to do it some time!
-
 fluid '(proglabs blockstack localdecs);
 
 symbolic procedure c!:cfndef(c!:current_procedure,
@@ -650,7 +619,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     scalar env, n, w, c!:current_args, c!:current_block, restart_label,
            c!:current_contents, c!:all_blocks, entrypoint, exitpoint, args1,
            c!:registers, c!:stacklocs, literal_vector, reloadenv, does_call,
-           blockstack, proglabs, args, body, localdecs;
+           blockstack, proglabs, args, body, localdecs, varargs;
     args := car argsbody;
     body := cdr argsbody;
 % If there is a (DECLARE (SPECIAL ...)) extract it here, aned leave a body
@@ -686,6 +655,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
 % so that the fluids get bound by PROG.
 %
     c!:current_args := args;
+    varargs := null args or length args >= 3;
     for each v in args do
        if v = '!&optional or v = '!&rest then
           error(0, "&optional and &rest not supported by this compiler (yet)")
@@ -710,36 +680,36 @@ symbolic procedure c!:cfndef(c!:current_procedure,
          body := list('setq, car v, cdr v) . body;
        body := 'prog . (for each v in reverse n collect car v) . body >>;
     c!:printf "static Lisp_Object ";
-    if null args or length args >= 3 then c!:printf("MS_CDECL ");
+    if varargs then c!:printf("MS_CDECL ");
     c!:printf("%s(Lisp_Object env", c!:current_c_name);
-    if null args or length args >= 3 then c!:printf(", int nargs");
-    n := t;
     env := nil;
-
-% Hah - here is where I will change things to use va_args for >= 3 args.
-    for each x in args do begin
-       scalar aa;
-       c!:printf ",";
-       if n then << c!:printf "\n                        "; n := nil >>
-       else n := t;
-       aa := c!:my_gensym();
-       env := (x . aa) . env;
-       c!:registers := aa . c!:registers;
-       args1 := aa . args1;
-       c!:printf(" Lisp_Object %s", aa) end;
-    if null args or length args >= 3 then c!:printf(", ...");
+    if varargs then c!:printf(", int nargs, ...")
+    else <<
+      n := t;
+      for each x in args do begin
+         scalar aa;
+         c!:printf ",";
+         if n then << c!:printf "\n                        "; n := nil >>
+         else n := t;
+         aa := c!:my_gensym();
+         env := (x . aa) . env;
+         c!:registers := aa . c!:registers;
+         args1 := aa . args1;
+         c!:printf(" Lisp_Object %s", aa) end >>;
     c!:printf(")\n{\n");
-
-% Now I would need to do va_arg calls to declare the args and init them...
-% Except that I must do that within optimise_flowgraph after all possible
-% declarations have been generated.
-
+    if varargs and args then
+      for each x in args do begin
+        scalar aa;
+        aa := c!:my_gensym();
+        env := (x . aa) . env;
+        c!:registers := aa . c!:registers;
+        args1 := aa . args1 end;
     c!:startblock (entrypoint := c!:my_gensym());
     exitpoint := c!:current_block;
     c!:endblock('goto, list list c!:cval(body, env . nil));
 
     c!:optimise_flowgraph(entrypoint, c!:all_blocks, env,
-                        length args . c!:current_procedure, args1);
+                        length args . c!:current_procedure, args1, varargs);
 
     c!:printf("}\n\n");
     wrs O_file;
@@ -2076,7 +2046,7 @@ symbolic procedure c!:pushpop(op, v);
   end;
 
 symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
-                                          env, argch, args);
+                                          env, argch, args, varargs);
   begin
     scalar w, n, locs, stacks, c!:error_labels, fn_used, nil_used, nilbase_used;
 !#if common!-lisp!-mode
@@ -2106,6 +2076,14 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
       for each v in cdr locs do c!:printf(", %s", v);
       c!:printf ";\n" >>;
     if fn_used then c!:printf "    Lisp_Object fn;\n";
+    if varargs and args then <<
+      w := " ";
+      c!:printf("    Lisp_Object");
+      for each v in args do <<
+         c!:printf("%s%s", w, v);
+         w := ", " >>;
+      c!:printf(";\n    va_list aa;\n");
+      c!:printf("    va_start(aa, nargs);\n") >>;
     if nil_used then
        c!:printf("    CSL_IGNORE(nil);\n")
     else if nilbase_used then <<
@@ -2114,6 +2092,11 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:printf("#endif\n") >>;
     if car argch = 0 or car argch >= 3 then
        c!:printf("    argcheck(nargs, %s, \q%s\q);\n", car argch, cdr argch);
+    if varargs and args then <<
+       c!:printf("    va_start(aa, nargs);\n");
+       for each v in reverse args do
+          c!:printf("    %s = va_arg(aa, Lisp_Object);\n", v);
+       c!:printf("    va_end(aa);\n") >>;
     c!:printf("#ifdef DEBUG_VALIDATE\n");
     c!:printf("    if (check_env(env)) return aerror(\qenv for %s\q);\n",
               cdr argch);
