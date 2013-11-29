@@ -1,0 +1,1042 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[centertags,reqno]{amsmath}
+\usepackage{verbatim}
+
+\newcommand{\OCCAL}{{\sf\bf OCCAL}}
+\newcommand{\REDUCE}{{\sf\bf REDUCE}}
+\newcommand{\R}{\mbox{{\sf\bf R}}}
+\newcommand{\FORTRAN}{{\sf FORTRAN}}
+\newcommand{\RATFOR}{{\sf RATFOR}}
+\newcommand{\Pascal}{{\sc Pascal}}
+\newcommand{\C}{{\sf C}}
+\newcommand{\GENTRAN}{{\sf GENTRAN}}
+\newcommand{\MULCON}{{\sf MULCON}}
+\newcommand{\SCOPE}{{\sf SCOPE}}
+\newcommand{\perl}{{\sf perl}}
+
+\renewcommand{\and}{\quad}
+
+\newlength{\dummy}
+\settowidth{\dummy}{Appendix~\mbox{}}
+\addtolength{\dummy}{3mm}
+
+\title{OCCAL\\
+       A mixed symbolic-numeric\\
+       Optimal Control CALculator}
+
+\date{ }
+
+\author{Rainer Sch\"opf
+        \and
+        Peter Deuflhard
+        \\
+        Konrad-Zuse-Zentrum\\
+        f\"ur Informationstechnik Berlin\\
+        Heilbronner Str. 10\\
+        W-1000 Berlin 31\\
+        Federal Republic of Germany}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+  The numerical solution of optimal control problems by indirect
+  methods (such as multiple shooting or collocation) requires a
+  considerable amount of analytic calculation to establish a
+  numerically tractable system.  These analytic calculations, though
+  being rather tedious in realistic examples, are nowadays mostly
+  still done by hand---and thus prone to calculation errors.  The
+  paper aims at automating this analytic processing to a reasonable
+  extent by means of a modern symbolic manipulation language (here:
+  \REDUCE).  In its present stage of development the package \OCCAL{}
+  (mnemotechnically for \underline{O}ptimal \underline{C}ontrol
+  \underline{CAL}culator) permits an interactive use, covering tasks
+  like automatic determination of control and, in case of a singular
+  control, of its order.
+%
+  In simpler problems, the present version of \OCCAL{} automatically
+  produces the full subroutine input for a MULtiple shooting code
+  (\MULCON) with adaptive numerical CONtinuation.\\
+%
+  In more complicated problems where singular sub-arcs may occur or
+  where the sequence of sub-arcs of the optimal trajectory is unclear
+  \OCCAL{} is a significant help in reducing analytic pre-processing.
+  Examples illustrate the performance of \OCCAL/\MULCON.
+
+%  We describe \OCCAL, a integrated symbolic-numeric calculus system
+%  for the treatment of optimal control problems. The system is not
+%  only able to do a lot of simple but tedious analytic calculations,
+%  but uses also advanced techniques to calculate as much as possible
+%  automatically. Optimized code for the numeric boundary value problem
+%  solver is generated as well.
+\end{abstract}
+\vspace*{0.5cm}
+Preprint SC 91-13
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+Optimal Control problems appear in a wide variety of important
+scientific and technical applications.  In spite of the rather high
+standards of {\em numerical\/} algorithms for such problems
+\cite{Bock1,Bock2,Bock3,bulirsch,DFK2} tackling such a problem is
+still a complicated task.  The reason for that is that certain steps in
+the analytical preparation of the calculation, which are simple in
+principle, may be very elaborate and can lead to rather complex
+expressions.  Implementation of these into numerical code by hand is
+tiresome and error-prone.
+
+The purpose of our system \OCCAL{} to be presented here is to overcome
+this tedious preparation phase. We intend to solve as many of the
+arising problems as possible.
+
+%To this end we employ a combined symbolic-numeric system, where the
+%first step is to symbolically analyze the given problem, using the
+To this end we employ a combined symbolic system that
+symbolically analyzes the given problem, using the
+Computer Algebra System \REDUCE.  In passing, this approach
+additionally permits to generate {\em optimized\/} numerical
+subprograms for use with existing numerical solvers for boundary value
+problems. These are employed in the second step to obtain numerical
+solutions.
+
+Symbolic computation (as most computations) is often applied to tasks
+that are simple in principle, but tedious to carry out by hand.
+Consequently, often only some well defined steps in a calculation are
+done with the help of a Computer Algebra System. The results are then
+treated more or less by hand.
+
+%\OCCAL{}, however is an integrated system in which the symbolic and
+%numeric processors interact with each other, thereby allowing
+%interchange of information between each other and with the user. The
+%advantage of this approach is obvious: at each point in a calculation,
+%the optimal method to solve the task at hand can be used. Examples of
+%this are differentiation of functions, which can be ill-behaved if
+%done numerically, or matrix computations, which can usually be done
+%much faster by a numerical processor. Additionally, the automatic
+%exchange of information reduces the number of errors the user may
+%introduce into the calculation.
+
+It should be stressed at this point that the symbolic processor in
+\OCCAL{} is not only used for the tasks mentioned as ``tedious, but
+simple in principle''.  Nowadays, advanced symbolic techniques are
+available, e.g., for the solution of systems of nonlinear equations or
+for computations with inequalities. This can be used, for example, to
+determine the sign of a function of several variables over a given
+range.
+
+The need for these advanced methods within \OCCAL{} has not only led
+to their improvement and adaptation to the problems at hand, but also
+to their inclusion into the recently released new version of the
+Computer Algebra System \REDUCE. Therefore these techniques are now
+available to a much greater community than before, and hopefully also
+for a much wider area of applications.
+
+In Section \ref{sec:intro} below the typical structure of optimal
+control problems is presented\allowbreak---mainly to fix notations and to
+elucidate the kind of analytical work involved in the pre-numerical
+stage. On this basis those tasks that can be automated are listed in
+detail in Section \ref{sec:operation}---together with the
+corresponding details of symbolic devices. Finally in Section
+\ref{sec:examples} the performance of \OCCAL{} in a few well-known
+examples is documented.
+
+Of course, the full use of such a software system can only be
+estimated by actually trying it!
+
+
+\section{A Short Introduction \protect\\ to Optimal Control Problems}
+
+\label{sec:intro}
+
+Consider a system that is described by a number of time-dependent
+state variables $y$. Let $y\in K \subset C^{1}$, where $K$ is a
+suitable class of continously differentiable functions, and $y\colon
+[a,b]\rightarrow \R^{n}$.  This system is controlled by certain {\em
+control variables\/} $u\in C^{0}$ piecewise, $u\colon [a,b]\rightarrow
+\R^{k}$, and governed by the following system of differential
+equations
+\begin{equation}
+  y' = f(t,y,u), \label{dyn-sys}
+\end{equation}
+the with separated boundary conditions $y(a)=y_{a}$ and
+\begin{equation}
+  r(b,y(b)) =0, \quad r\colon \R^{n+1}\rightarrow \R^{p},
+   \quad  p\leq n.
+\end{equation}
+The task is to minimize the integral
+\begin{equation}
+  I[u] := \int\limits_{a}^{b} f_{0}(y,u,t) dt
+\end{equation}
+over $K$.
+%We couple the differential equations and the boundary conditions
+%to the functional using Lagrange multipliers $\lambda$:
+%\begin{equation}
+%  \hat I[u,y,y',\lambda] := \Phi(b,y(b)) + \nu^{T} r
+%      + \int_{a}^{b} \left(\sum_{i=1}^{n} \lambda_{i} (y'_{i} -
+%      f_{i}(t,y,u)) \right) dt
+%      \label{full-func}
+%\end{equation}
+Similar to the calculus of variations there is the so-called {\em
+Hamiltonian\/}
+\begin{equation}
+  H(t,y,\lambda,u) := \sum_{i=1}^{n} \lambda_{i} f_{i}(t,y,u)
+     +\lambda_{0} f_{0}(t,y,u) \label{Hamiltonian},
+\end{equation}
+where $\lambda(t) = (\lambda_{1}(t),\ldots,\lambda_{n}(t))$
+denotes the {\em adjoint variables}.
+
+The minimum principle of Pontrjagin states then that a necessary condition for
+$(y_{0}, u_{0})$ being a solution of the optimal control problem is
+\begin{equation}
+  H(t,y_{0},\lambda,u_{0}) = \min_{v} H(t,y_{0},\lambda,v) \label{pontrjagin}
+\end{equation}
+with $v$ fulfilling the conditions.  Calculating the first variation
+leads to the so-called {\em canonical equations\/}
+\begin{eqnarray}
+  y'_{i} &=& H_{\lambda_{i}} = f_{i}(t,y,u), \quad i = 1,\ldots,n, \nonumber\\
+  \lambda'_{i} &=& - H_{y_{i}} = - \frac{\partial f_{0}}{\partial y_{i}}(t,y,u)
+        - \sum_{j=1}^{n} \lambda_{i}
+          \frac{\partial f_{j}}{\partial y_{i}}(t,y,u), \quad i =
+          1,\ldots,n.           \label{can-eqs}
+\end{eqnarray}
+We number the control variables $u_{i}$ in such a way that the first
+$m$ components (denoted by $u^{(n)}$) appear nonlinearly in $f$, while
+the others (denoted by $u^{(l)}$) appear only linearly, so that $f$
+splits in the form
+\begin{eqnarray}
+  f(t,y,u) &=:& g(t,y,u^{(n)}) + h(t,y,u^{(n)}) u^{(l)}\:, \nonumber \\
+    && u^{(n)} \in \R^{m}, u^{(l)} \in \R^{q}, \quad m+q=k \label{u-dist}\:.
+\end{eqnarray}
+This splitting carries over to the Hamiltonian $H$ as well.  Since
+$u^{(l)}$ appears only linearly in $f$ and $H$ (cf.\ (\ref{u-dist}))
+minimization of $H$ can be done in two steps:
+\begin{enumerate}
+  \item Determination of $u^{(n)}$ from
+  \begin{eqnarray}
+    && H_{u^{(n)}} = 0 \nonumber \\
+    && H_{u^{(n)}u^{(n)}} \mbox{ positive (semi-)definite} \label{sys-nonlin}
+  \end{eqnarray}
+  (Here $H_{u^{(n)}}$ denotes the Fr\'echet derivatives.)  One obtains
+  an analytic expression $u^{(n)} = u^{(n)}(t,y,\lambda)$ which can be
+  substituted into the original expressions (\ref{can-eqs}). Thus
+  $u^{(n)}$ essentially drops out of the set of variables.
+  \item Determination of $u^{(l)}$:\\
+        After substitution of $u^{(n)}$ the Hamiltonian can be written as
+        \begin{equation}
+          H(t,y,\lambda,u^{(n)}(t,y,\lambda),u^{(l)})
+            =: H_{0}(t,y,\lambda)
+            +  \sum_{i=1}^{q} S_{i}(t,y,\lambda) u_{m+i}\:.
+        \end{equation}
+        Obviously we have
+        \begin{equation}
+          S_{i}(t,y,\lambda) = H_{u_{m+i}}(t,y,\lambda,u^{(n)}(t,y,\lambda),u^{(l)})
+        \end{equation}
+        with $i=1,\ldots,q$. 
+        The condition (\ref{pontrjagin}) is then equivalent to
+        \begin{equation}
+          S_{i}(t,y_{0},\lambda) \cdot u_{0}(t) = \min_{v} S_{i}(t,y_{0},\lambda) \cdot v(t),
+        \end{equation}
+      which is a linear optimization problem. 
+      It is therefore necessary that the control variables $u^{(l)}$ are subject to
+      control constraints usually of the form
+        \begin{eqnarray}
+          && \alpha_{i} \leq u_{i} \leq \beta_{i}, \quad i=m+1,\dots,k
+          \nonumber \\
+          && \alpha_{i}, \beta_{i} \in \R.
+        \end{eqnarray}
+      The further procedure
+      depends on which one of the following two cases holds:
+        \begin{enumerate}
+          \item $S_{i} \not\equiv 0$, i.e.\ $S_{i}$ has only isolated zeros.
+               This is the case of a {\em bang-bang control}.
+               From the minimum principle we deduce
+                 \begin{equation}
+                   u_{m+i} = \left\{\begin{array}{l@{\quad}l}
+                                  \alpha_{m+i} & \mbox{for $S_{i} > 0$} \\
+                                  \beta_{m+i} & \mbox{for $S_{i} < 0$}
+                                \end{array}\right.
+                 \end{equation}
+               The $S_{i}$ are called {\em switching functions}. 
+               A change of sign can only occur in the {\em switching points\/}
+               $\tau^{i}$:
+                 \begin{equation}
+                   S_{i}(\tau^{i},y(\tau^{i}),\lambda(\tau^{i})) = 0.
+                 \end{equation}
+          \item $S_{i} \equiv 0$ within a non-empty interval. This is the so-called {\em singular\/} case.
+                Let us assume, for simplicity, that $q=1$, i.e.\ there
+                is only one linear control $u$, and that there is only
+                one such interval.  Define the following functions
+                recursively by
+                 \begin{eqnarray}
+                   S^{(0)}(t,y,\lambda) &:=& S(t,y,\lambda) \\
+                   S^{(k+1)}(t,y,\lambda) &:=& \frac{d
+                   S^{(k)}(t,y,\lambda)}{dt} \nonumber \\
+                        &=& S^{(k)}_{y} \cdot \dot{y} +
+                        S^{(k)}_{\lambda} \cdot \dot{\lambda} + S^{(k)}_{t}\\
+                        &=&  S^{(k)}_{y} \cdot H_{\lambda} -
+                             S^{(k)}_{\lambda} \cdot H_{y}  +  S^{(k)}_{t} \nonumber
+                 \end{eqnarray}
+                Define $m$ to be the smallest index such that
+                $\partial S^{(m)}/\partial u \not\equiv 0$. Then
+                theory \cite{th1,th2,th3} shows that $m = 2r$ is an even
+                number. $r$ is called {\em order\/} of the singular
+                control.
+                
+                Since $u^{(l)}$ appears only linearly in $H_{y}$ and $H_{\lambda}$ it follows
+                that $S^{(m)}$ is of the form
+                 \begin{equation}
+                   S^{(m)}(t,y,\lambda) = A(t,y,\lambda) + B(t,y,\lambda)\cdot u(t).
+                 \end{equation}
+                For $B(t,y,\lambda)\not=0$ the singular control can be
+                determined to be
+                 \begin{equation}
+                   u_{0}(t,y,\lambda) = - \frac{A(t,y,\lambda)}{B(t,y,\lambda)} \label{singular-control}
+                 \end{equation}
+                In certain cases $u_{0}$ does not depend on the adjoint
+                variables $\lambda$; this is called a {\em feedback
+                control}.  For an optimal trajectory $y(t)$ and an
+                optimal control $u_{0}(t)$ of order $k = 2r$ holds the
+                {\em generalized Legendre-Clebsch condition\/} \cite{th3}
+                  \begin{equation}
+                    0 \leq (-1)^{r} \cdot \frac{\partial}{\partial u}
+                     \left(\frac{d^{2r}}{dt^{2r}}H_{u}(t)\right)
+                     =  (-1)^{r} \cdot  B(t,y(t),\lambda(t)),
+                  \end{equation}
+                In the case of a feedback control a strict inequality holds.
+        \end{enumerate}
+\end{enumerate}
+Finally we can determine the boundary condition for the $\lambda_{i}$ as
+\begin{equation}
+  \left. \lambda_{i} \right |_{b} = \Phi_{y_{i}(b)} + \nu^{T} r_{y_{i}(b)},
+\end{equation}
+where the $\nu$ are Lagrange multipliers.
+
+\vspace*{3mm}
+\noindent {\bf Numerical solution by means of Multiple Shooting.}\\
+After $u^{(n)}$ has been substituted back into the canonical equations
+(\ref{can-eqs}) we can proceed to a {\em numerical\/} solution of the
+resulting boundary value problem.  If there is a linear control
+$u^{(l)}$ we have to take the structure of the optimal control problem
+into account, especially the number $m_{s}$ and position of the switching
+points $\tau_{j}$ defined by the equations
+\begin{equation}
+  S_{i}(\tau_{j},y(\tau_{j}),\lambda(\tau_{j})) = 0,\quad
+   j = 1,\ldots,m_{s}.
+\end{equation}
+Since the position of these points is in general not known beforehand,
+we introduce them as additional parameters
+\begin{displaymath}
+  \tau_{1} < \tau_{2} < \ldots < \tau_{m_{s}}
+\end{displaymath}
+and transform every sub-interval into an interval of the same length,
+i.e.,
+\begin{eqnarray}
+         [a,\tau_{1}] \rightarrow [0,1] \colon
+                 \bar t &:=& \frac{t - a}{\tau_{1} - a} \nonumber\\ \relax
+  [\tau_{1},\tau_{2}] \rightarrow [1,2] \colon
+                 \bar t &:=& \frac{t - \tau_{1}}{\tau_{2} - \tau_{1}} + 1 \nonumber\\ \relax
+    \vdots \\ \relax
+  [\tau_{m_{s}}, b] \rightarrow [m_{s},m_{s}+1] \colon
+                 \bar t &:=& \frac{t - \tau_{m_{s}}}{b - \tau_{m_{s}}} + m_{s} \nonumber\\
+  y(t) \rightarrow \bar y(\bar t),&& \lambda(t) \rightarrow \bar\lambda(\bar t) \nonumber
+\end{eqnarray}
+This leads to extra factors in the right hand side of the differential
+equations which then additionally depend on one parameter (for the
+border intervals) or on two parameters (for the intermediate
+intervals). The parameters $\tau_{1},\ldots,\tau_{m_{s}}$ are
+determined by the {\em inner point conditions}
+\begin{equation}
+  S_{i}(\tau_{j},\bar y(\tau_{j}),\bar \lambda(\tau_{j})) = 0,\quad
+   j = 1,\ldots,m_{s}.
+\end{equation}
+It may happen that the switching structure changes during the
+numerical iteration. In that case the whole procedure has to be
+restarted with the new structure taken into account.
+
+Thus the problem has been reduced to a parameter dependent boundary
+value problem of the general form:
+\begin{eqnarray}
+  y' &=& f(y;p) \\
+  r(y(a),\ldots{},y(b);p) &=& 0.
+\end{eqnarray}
+
+The associated multiple shooting Jacobian then has the general block
+structure
+\begin{equation}
+  \left[
+    \begin{array}{cccccc}
+      G_{1} & - I & \cdot & \cdot & P_{1} \\
+      \cdot & \cdot & \cdot & \cdot & \cdot \\
+      \cdot & \cdot & \cdot & \cdot & \cdot \\
+      \cdot & \cdot & G_{m-1} & -I & P_{m-1} \\
+      R_{1} & \cdot & R_{m-1} & R_{m} & P_{m}
+    \end{array}
+  \right] \label{Jacobian}
+\end{equation}
+in terms f the sub-matrices
+\begin{eqnarray}
+  G_{j} &:=& \left. W(t_{j+1},t_{j}) \right|_{y(t|x_{j},p)} \nonumber \\
+  R_{j} &:=& \left. \frac{\partial r}{\partial y(t_{j})} \right|_{y(t|x_{j},p)} \nonumber \\
+  P_{j} &:=& \left. P(t_{j+1},t_{j}) \right|_{y(t|x_{j},p)} \\
+  P_{m} &:=& \left. \frac{\partial r}{\partial p} \right|_{y(t|x_{j},p)} \nonumber.
+\end{eqnarray}
+Here the matrices $W(t_{j+1},t_{j})$ are the {\em Wronskian matrices}
+\begin{equation}
+  W(t,t_{j}) = \frac{\partial y(t)}{\partial y(t_{j})}
+\end{equation}
+which are the solutions of the {\em variational equation}
+\begin{equation}
+  \frac{dW(t,t_{j})}{dt} = f_{y}(y(t|x_{j},p);p) W(t,t_{j}),\quad W(t_{j},t_{j}) = I,
+\end{equation}
+and the {\em sensitivity matrices\/} $P_{j} = P(t_{j+1},t_{j})$ are
+the solutions of the generalized variational equation
+\begin{equation}
+  \frac{dP(t,t_{j})}{dt} = f_{y}(y(t|x_{j},p);p) P(t,t_{j}) + f_{p}(y(t|x_{j},p);p)
+\end{equation}
+with initial value
+\begin{equation}
+  P(t_{j},t_{j}) = 0.
+\end{equation}
+
+
+\section{Application of symbolic computation\protect\\
+         to optimal control problems}
+
+\label{sec:operation}
+
+Summarizing the calculation steps outlined in the previous section we
+have the following sub-tasks
+\begin{itemize}
+  \item Calculation of Hamiltonian.
+  \item Identification of nonlinear versus linear control.
+  \item Determination of nonlinear control by solving the system (\ref{sys-nonlin}).
+  \item Substitution into differential equations (\ref{can-eqs}).
+  \item Determination of linear control.
+  \item In the case of bang-bang control: determination of the switching points.
+  \item In the case of singular control: determination of the order of the control
+        and test of the generalized Legendre-Clebsch condition.
+  \item Generation of boundary conditions for the adjoint variables.
+  \item Determination of the variational equations.
+  \item Code generation (with optional optimization) for the differential equations,
+        the boundary conditions, and the variational equations.
+\end{itemize}
+Some of these steps can easily be executed by {\em any\/} Computer
+Algebra System (). Examples of this type of tasks are the computation of
+the Hamiltonian (\ref{Hamiltonian}), of the canonical equations
+(\ref{can-eqs}), of the derivatives $H_{u^{(n)}}$ and $H_{u^{(n)}u^{(n)}}$,
+or the substitution of the solution $u^{(n)}$ into the Hamiltonian.
+
+The \OCCAL{} system, however, does much more than that. We head at
+accomplishing all the aforementioned tasks automatically, and have
+already succeeded to a great extent.  Let us first give a short
+overview of the operation of our system.
+
+The first thing for the user to do is to formulate his problem in a
+form that is suitable for processing with \OCCAL.
+Since the symbolic program is written in \REDUCE, input must be given
+in \REDUCE's Algol-like syntax. Even though this syntax is not too
+difficult to learn and understand, it is an unnecessary burden to the
+user who is not necessarily familiar with this type of program.
+
+Therefore we decided to allow the input to be in a very natural,
+user-friendly form, with automatic translation into \REDUCE{} syntax.
+To this end we developed a pre-processor, using the utility \perl{}
+\cite{perl}. We chose \perl{} due to its wide-spread availability and
+excellent string manipulation facilities that allowed us to implement
+the program in about one day's time.
+
+The basic idea is to provide an easy-to-understand input file format,
+with keywords to identify the different sections, and some freedom for
+the user to choose a formulation that is most suitable to his or her
+own way of thinking. Furthermore, we want to keep in mind the
+possibility of a future system where this input file is only an
+intermediate step in a much more sophisticated system with, e.g., a
+graphical user interface. A description of the input file format is
+given in appendix~\ref{app:perl-file}.
+
+This pre-processing step does already some simple consistency checks:
+constants, parameters and variables may be defined only once,
+differential equations may only be given for already defined dynamic
+variables, and so on. If there was no error, it outputs a complete
+definition of the problem in \REDUCE{} syntax to a file, taking care
+of arranging the statements in the correct order.  This file is
+then read by the \REDUCE{} program and processed symbolically.
+
+It should be stressed that this output is well-readable: the
+experienced user may want to intervene at that point instead of
+changing the input file.
+
+In the second step, the symbolic program tackles the tasks outlined
+above.  First the Hamiltonian (\ref{Hamiltonian}) is calculated. This
+object is analyzed and the nonlinear and linear controls $u^{(n)}$ and
+$u^{(l)}$ identified. 
+
+The determination of the nonlinear control is done in three steps, of
+which only the first one is straightforward in general:
+\begin{itemize}
+  \item Calculation of $H_{u^{(n)}}$.
+        This involves only a series of symbolic differentiations, a
+        standard problem for any Computer Algebra System.
+  \item Solution of the system of equations.
+        Here advanced symbolic techniques are used: algebraic
+        equations are solved using the methods of Groebner bases,
+        transcendental equations may be reduced to algebraic ones by a
+        suitable change of variables. For example, the transcendental
+        equation
+        \begin{equation}
+          A \sin u + B \cos u = C \label{sin-cos}
+        \end{equation}
+        may be converted to a system of algebraic equations by substituting
+        \begin{eqnarray*}
+          x = \sin u \\
+          y = \cos u
+        \end{eqnarray*}
+      and adding the relation $x^{2}+y^{2}-1=0$.
+      \typeout{******************************}
+      \typeout{Einfuegen: test der direkten steuerung delta.}
+      \typeout{******************************}
+  \item Determination of the sign of $H_{u^{(n)}u^{(n)}}$.
+        This is done using new symbolic techniques developed at ZIB.
+        Two different methods are available: the simpler one of these
+        tries to deduce the sign of the expression at hand by breaking
+        it down into its parts and determining the sign of those.
+        Though this seems to be a rather simple algorithm, it is
+        nevertheless very powerful and can be applied to a wide range
+        of expressions.  If this is not sufficient, the user will be
+        queried for the missing information.
+%
+%        If this is not sufficient, a more complicated method can be
+%        used: given a function of several variables, and the domains of
+%        these variables, it determines the range of the function.
+\end{itemize}
+Finally, the solution is substituted into the Hamiltonian and the
+differential equations. This uses again very much the standard
+facilities of the \REDUCE{} system for differentiation, substitution
+and extraction of parts of expressions.
+
+If there is no linear control $u^{(l)}$, all that remains to do is to
+solve the system of differential equations. To this end, \OCCAL{}
+generates code for use with a numerical code for solving boundary
+value problems. The code generation step uses the \GENTRAN{}
+translator for its work; this package has interfaces for \FORTRAN,
+\RATFOR, \Pascal, and \C{} programming languages.  
+
+In our examples we use exclusively \C; our numerical BVP solver is
+\MULCON{} \cite{mulcon} which was translated to \C{}
+semi-automatically, first using a FORTRAN-to-C translator and then
+beautifying the automatically produced code by hand to make it better
+readable.
+
+Several functions are generated in the target language:
+\begin{itemize}
+  \item Calculation of boundary values $r$.
+  \item Calculation of differential equations $f$.
+  \item Calculation of $f_{y}$ to solve the variational equation
+        (for Wronskian approximations $G_{j}$, $P_{j}$).
+  \item Calculation of the matrices of boundary condition derivatives
+        $R_{1} = r_{y(a)}$ and $R_{m} = r_{y(b)}$.
+\end{itemize}
+These are exactly the functions that are needed to compute the
+Jacobian (\ref{Jacobian}).
+
+\begin{figure}[bt]
+  \setlength{\unitlength}{0.5mm}
+  \newcommand{\smiley}{%
+    \fbox{\setlength{\unitlength}{0.5pt}%
+          \begin{picture}(30,40)
+            \put(8,30){\circle*{2}}
+            \put(22,30){\circle*{2}}
+            \put(15,10){\line(0,1){20}}
+            \put(1,5){\line(1,0){20}}
+          \end{picture}}}
+
+  \begin{center}
+  \begin{picture}(120,170)(0,0)
+    \put(10,140){\framebox(40,25){User input}}
+    \put(30,110){\oval(45,15)}
+    \put(10,110){\makebox(40,0){\small Pre-processor}}
+    \put(30,070){\oval(45,15)}
+    \put(10,070){\makebox(40,0){\small Symbolic}}
+    \put(10,010){\framebox(40,25){\small Numeric}}
+    \put(80,100){\dashbox(40,25){\Large User\ \smiley}}
+   \thicklines
+    \put(97,127){\vector(-3,2){44}}
+    \put(97,097){\vector(-3,-2){44}}
+    \put(53,070){\vector(+3,+2){44}}
+    \put(29,138){\vector(0,-1){19}}
+    \put(31,138){\vector(0,-1){19}}
+    \put(29,100){\vector(0,-1){20}}
+    \put(31,100){\vector(0,-1){20}}
+    \put(29,060){\vector(0,-1){24}}
+    \put(31,060){\vector(0,-1){24}}
+  \end{picture}
+  \end{center}
+  \caption{An overview of the \OCCAL\ system}
+  \label{fig:overview}
+\end{figure}
+
+The symbolic calculation of the matrix entries is of some importance
+for the whole computation, since this avoids the (external) numerical
+differentiation of $f$ and $r$, which might well lead to problems in
+the numerical calculation.  Furthermore, one may reorder the variables
+to take advantage of the possible block structure of $R_{1}$ and
+$R_{m}$.
+
+Without further manipulation, the resulting code is generated directly
+from the expressions obtained in the previous phase, i.e.\ in a fully
+expanded form. This is, of course, non-optimal, except for really
+simple cases.  Therefore several different optimization strategies can
+be applied.
+
+We developed a very simple one that separates the calculation of
+algebraic and transcendental functions like $\sqrt {x}$ or ${\mathrm
+e}^{x}$, (so that their values are computed only once) and uses
+Horner's scheme to evaluate polynomials.  In the case of sparse
+polynomials in many variables, however, using Horner's scheme is not
+straightforward, since it is not a priori clear how the variables
+should be ordered. 
+
+A more elaborate optimization scheme was developed and implemented by
+{\sc van Hulzen et al.}\ \cite{scope}. It attempts to minimize the
+number of arithmetic operations. The optimizer performs heuristic
+searches on arithmetic expressions, detecting and extracting common
+subexpressions, and replacing them by temporary variable names.
+
+The choice of optimization strategy depends mainly on the problem at
+hand. Complete optimization takes a considerable amount of computing
+time, but this may be payed off by the generation of more efficient
+and better readable numerical code. For every new problem, it is
+therefore necessary to exploit all possibilities to arrive at an
+optimal solution.
+
+If, on the other hand, we have a problem with linear control $u^{(l)}$,
+the next step is to try to solve the remaining linear optimization
+problem. The present \OCCAL{} system is not yet capable to distinguish
+between the singular and the bang-bang case. This is being worked on.
+
+Figure~\ref{fig:overview} depicts the overall structure of the system.
+
+
+\section{Examples}
+
+\label{sec:examples}
+
+In this section we present a few simple and well-known examples to
+illustrate the performance of our system,
+
+\vspace*{3mm}\noindent
+{\bf Example 1: Turbo Generator \cite{Wulkow}}.
+
+This example is simple enough to do all necessary calculations by
+hand, and therefore well-suited to check the performance of \OCCAL{}.
+
+We will not discuss the technical background of the turbo generator as
+a machine. Rather we concentrate on the mathematical model derived
+from these technical considerations.
+
+The dynamic model of the turbo generator consists of the following system of
+ordinary differential equations:
+\begin{eqnarray}
+  \dot x_{1} &=& x_{2} x_{4} \nonumber \\
+  \dot x_{2} &=& \frac{1}{M} (u_{1} - s_{4} x_{1} x_{4} - s_{5} x_{1}
+                  x_{3} - \kappa_{d} x_{2}) \nonumber \\
+  \dot x_{3} &=& u_{2} - A x_{3} + c x_{4} \nonumber \\
+  \dot x_{4} &=& - x_{1} x_{2}
+\end{eqnarray}
+Here $x_{i}$ are the dynamic variables, $u_{i}$ the control variables,
+$s_{4}$, $s_{5}$, $\kappa_{d}$, $A$, $M$, and $c$ are constants.  The
+stationary state of the machine is characterized by $x_{i} =
+x_{i}^{s}$ and $u_{i}=u_{i}^{s}$, with certain constants $x_{i}^{s}$,
+$u_{i}^{s}$.
+
+The functional to be minimized describes the deviation from a
+stationary state
+\begin{equation}
+  \begin{split}
+  J_{1}(x,u) = \int\limits_{0}^{T} 
+                (& \alpha ((x_{1} - x_{1}^{s})^{2} +
+                          (x_{4} - x_{4}^{s})^{2}) +
+                  \alpha_{2} x_{2}^{2} +
+                  \alpha_{3} (x_{3} - x_{3}^{s})^{2} + \\
+              &    \beta_{1} (u_{1} - u_{1}^{s})^{2} +
+                  \beta_{2} (u_{2} - u_{2}^{s})^{2}) dt
+  \end{split}
+\end{equation}
+with certain weight factors $\alpha$, $\alpha_{2}$, $\alpha_{3}$,
+$\beta_{1}$, and $\beta_{2}$.  Boundary conditions are 
+\begin{eqnarray}
+  x(0) &=& (x_{1}^{s}, x_{2}^{s}, x_{3}^{s}, x_{4}^{s}) =: x_{0}^{t} \\
+  x(T) && \mbox{free}
+\end{eqnarray}
+The control variables $u^{(n)} = (u_{1},u_{2})$ appear quadratically in
+the Hamiltonian, which leads to a system of two linear equations with
+a unique solution. After substituting the solution into the
+differential equations we end up with a boundary value problem with
+four dynamical variables. Due to its simplicity, no optimization of
+the code is necessary.
+
+A corresponding \OCCAL{} sample session, the input file for \OCCAL{}
+itself, the \REDUCE{} input file generated from this by the
+pre-processor, and the \C{} source file are shown in \ref{app-turbo}.
+It can be seen that the intermediate \REDUCE{} input file is
+well-readable, so that the experienced user may want to edit this file
+directly. This example takes about $25$ seconds of real time on a
+typical (Sun 4) workstation.
+
+The file of generated \C{} code shows several interesting points:
+\begin{itemize}
+  \item The constants defined in the CONSTANTS section of the input
+        file are rendered as \C{} pre-processor macros.
+
+  \item There are three \C{} functions defined: for the boundary
+        values (\verb|R1|), for the functions $f_{i}$ (\verb|FCN1|),
+        and for the functions $f_{y}$ that are needed in the solution
+        of the variational equation (\verb|DFCN1|).
+
+        The functions for the calculation of the matrices $R_{1}$ and
+        $R_{m}$ have been skipped in this example.
+  \item The code optimization process introduces several intermediate
+        variables to reduce the number of operations in the program.
+        These are easily identified by their name which consists
+        always of the letter \verb|G| (short for generated) followed
+        by a number. It is possible to choose other names as well.
+\end{itemize}
+
+With a rather simple main program to drive the calculation it is easy
+to reproduce the numerical results of \cite{Wulkow}.
+
+\vspace*{3mm}
+
+\noindent
+{\bf Example 2: Re-entry problem \cite{SB}.}
+
+
+This is a well-known test problem of somewhat higher degree of complexity.
+Here, the expressions arising from the calculation turn out
+to be rather lengthy.
+
+The re-entry of an Apollo vehicle into the Earth's atmosphere is
+governed by the following system of differential equations:
+\begin{eqnarray}
+  \dot v &=& V(v,\gamma,\xi,u) = - \frac{S \rho v^{2}}{2m} C_{W}(u) -
+             \frac{g \sin \gamma}{(1+\xi)^{2}}\\
+  \dot \gamma &=& \Gamma(v,\gamma,\xi,u) = \frac{S \rho v}{2m}
+             C_{A}(u) + \frac {v \cos \gamma}{R(1+\xi)}
+             - \frac{g \cos \gamma}{v(1+\xi)^{2}}\\
+  \dot \xi &=& \Xi(v,\gamma,\xi,u) = \frac{v\sin\gamma}{R} \\
+  \dot \zeta &=& Z(v,\gamma,\xi,u) = \frac{v \cos \gamma}{1+xi}
+\end{eqnarray}
+where $u$ is the control variable; and state variables are: $v$
+(tangential velocity), $\gamma$ (flight path angle), $\xi = h/R$
+(relative height over ground), $\zeta$ (velocity over ground).
+Moreover, the expressions $\rho = \rho_{0} \exp(-\beta R \xi)$ (),
+$C_{W}(u)$ (aerodynamical resistance), $C_{A}(u)$ (drag or lift
+coefficient), $S$ (front area), and $m$ (mass of the vehicle) appear
+in the above equations..
+
+The boundary values at the begin of the reentry into the atmosphere
+and at the time of landing are
+\begin{alignat}{3}
+ v(0) &= 0.36,& \quad
+ \gamma(0) &= -8.1^{\circ} \frac{\pi}{180^{\circ}},& \quad
+ \xi(0) &= \frac{4}{R}\\
+ v(T) &= 0.27,& \quad
+ \gamma(T) &= 0,& \quad
+ \xi(T) &= \frac{2.5}{R}
+\end{alignat}
+The final time $T$ is free; $\zeta$ is not considered for the
+optimization. The functional to be minimized is the heating of the
+capsule, approximated by
+\begin{equation}
+  J = \int_{0}^{T} 10\, v^{3} \sqrt{\rho} dt \:.
+\end{equation}
+The problem has only one control variable, but equation
+(\ref{sys-nonlin}) turns out to be transcendental, of the type
+(\ref{sin-cos}) discussed earlier. It is possible, by a
+change of variables, to turn it into a system of algebraic equations
+which can be solved by computing the Groebner base of the polynomials.
+This is done automatically by the \REDUCE{} equation solver. As a
+result, we get two solutions, only one of which leads to a positive
+definite determinant. This can be determined automatically if the
+additional information of the variable $v > 0$ is given to the system.
+Otherwise the user is prompted for the sign of $v$.
+
+The further calculation then proceeds, in principle, just as in the
+previous example. However, the expressions to be turned into numerical
+code are quite large, so that we apply optimization techniques during
+the code generation process. Of the two levels described above, the
+\SCOPE{} package by van Hulzen \cite{scope} is able to reduce the size
+of the \C{} source code from $35$ kBytes ($808$ lines) to $12$ kBytes
+($378$ short lines). The simpler package which only extracts simple
+common subexpression reduces the size to $27$ kBytes ($570$ lines).
+Using the latter, the calculation takes about $50$ seconds of real time
+on a Sun 4 workstation.
+
+% Two examples including singular control
+% 
+% \cite{chemo,zellen} are two examples of optimal control problems with
+% non-regular control. The first of these is completely solvable
+% analytically in the absence of state constraints \cite{chemo}.
+% \OCCAL{} is not yet capable to do this completely since this solution
+% relies on heuristic methods which are very difficult to make into an
+% algorithm. Nevertheless, \OCCAL{} goes very far and is able to
+% correctly determine the singular control.
+% 
+% The second example shows other difficulties: due to the presence of a
+% lot of inequalities the calculation of the singular control can be
+% simplified significantly. However, dealing with inequalities is a weak
+% point in most Computer Algebra Systems (see also next section).
+
+
+
+\section{Conclusion}
+
+As documented above, \OCCAL{} has reached a first stage of
+development where it can be successfully used to help in the solution
+of optimal control problems. The tasks already accomplished are:
+\begin{itemize}
+  \item Calculation of Hamiltonian.
+  \item Determination of nonlinear and linear control.
+  \item Code generation with optional optimization.
+\end{itemize}
+Next steps of development will include the following features that we
+are planning to incorporate in the future:
+\begin{itemize}
+  \item Symbolic-numeric determination of nonlinear control: It is rather obvious
+        that not for all systems of equations an analytic solution can
+        be found. In these cases the algebraic equations have to be
+        coupled to the dynamical system (\ref{dyn-sys}) and the whole
+        must be solved numerically.
+
+        The numeric treatment of algebro-differential equations is
+        being worked on.
+
+  \item Determination of inequalities: The determination of the sign
+        of the determinant (\ref{sys-nonlin}) is only a first simple
+        step in the treatment of inequalities. There are a number of
+        other places where inequalities arise, e.g., when inequalities
+        involving the state variables appear. This is especially
+        important in order to find the intervals where the switching
+        funtions vanish identically. 
+
+  \item Inclusion of state constraints: these may be very important as
+        they may determine the structure of the linear control (i.e.,
+        singular vs.\ bang-bang). As far as inequalities are
+        concerned, this is related to the previous point, and has
+        probably to be treated in a common framework.
+
+  \item Treatment of singular sub-arcs.
+\end{itemize}
+
+
+
+\noindent
+{\bf Acknowledgments.} The authors wish to thank M.~Wulkow for several
+helpful discussions.
+
+
+
+\begin{thebibliography}{99}
+
+  \bibitem{Bock1} H.~G.~Bock:
+  \newblock Randwertproblemmethoden zur Parameteridentifizierung
+            in Systemen nichtlinearer Differentialgleichungen,
+  \newblock Universit\"at Bonn, Dissertation (1985).
+
+  \bibitem{Bock2} H.~G.~Bock:
+  \newblock Numerical Solution of Nonlineaer Multipoint Boundary Value
+            Problems with Applications to Optimal Control,
+  \newblock GAMM, Copenhagen 1977.
+
+  \bibitem{Bock3} H.~G.~Bock:
+  \newblock Numerische Berechnung zustandsbeschr\"ankter optimaler
+            Steuerungen mit der Mehrzielmethode,
+  \newblock Carl-Cranz-Gesellschaft 1978.
+
+  \bibitem{bulirsch} R.~Bulirsch:
+  \newblock Variationsrechnung und optimale Steuerung.
+  \newblock Lectures given at the Universit\"at zu K\"oln (1971).
+  \newblock Unpublished.
+
+  \bibitem{th1} R.~Bulirsch et al.~(eds.):
+  \newblock Optimization and Optimal Control,
+  \newblock LN Math.~477 (1975).
+
+  \bibitem{th2} A.~E.~Bryson and Y.~C.~Ho:
+  \newblock Applied optimal control,
+  \newblock Ginn and Company,
+  \newblock Waltham, Massachusetts (1969).
+
+  \bibitem{mulcon} P.~Deuflhard, B.~Engquist (Ed.):
+  \newblock Large Scale Scientific Computing,
+  \newblock Birkhauser/Boston, Series ``Progress In Scientific Computing'',
+  \newblock Vol.~7 (1987).
+
+  \bibitem{DFK2} P.~Deuflhard, B.~Fiedler, P.~Kunkel:
+  \newblock Efficient Numerical Pathfollowing Beyond Critical Points
+            in ODE models,
+  \newblock in: \cite{mulcon}, pp.~97--113 (1987).
+
+  \bibitem{scope} J.~A.~van~Hulzen:
+  \newblock Code optimization of multivariate polynomial schemes:
+            A pragmatic approach,
+  \newblock Proceedings EUROCAL '83,
+  \newblock Springer LNCS 162, pp.~286--300.
+
+  \bibitem{th3} H.~Maurer, U.~Heidemann:
+  \newblock Optimale Steuerprozesse mit Zustandsbeschr\"ankungen,
+  \newblock in: \cite{th1}.
+
+  \bibitem{SB} J.~Stoer, R.~Bulirsch: 
+  \newblock Einf\"uhrung in die Numerische Mathematik II,
+  \newblock Springer-Verlag,
+  \newblock Berlin 1978,
+  \newblock ISBN 3--540--08840--7.
+
+  \bibitem{perl} L.~Wall, R.~L.~Schwartz:
+  \newblock Programming \perl,
+  \newblock O'Reilly \& Associates, Inc.,
+  \newblock 1990.
+
+  \bibitem{Wulkow} M.~Wulkow:
+  \newblock Vergleich numerischer Verfahren zur Berechnung der
+  optimalen Steuerung eines Turbogenerators,
+  \newblock Diploma Thesis, Univ.\ M\"unster, 1987.
+
+%  \bibitem{f2c} 
+
+\end{thebibliography}
+
+\newpage
+
+\appendix
+
+\renewcommand{\thesection}{Appendix~\Alph{section}}
+\renewcommand{\thesubsection}{\Alph{section}.\arabic{subsection}}
+
+\section[\protect\hspace*{\dummy}An \OCCAL{} sample session\protect\hspace*{-\dummy}]%
+        {An \OCCAL{} sample session}
+
+\label{app-turbo}
+As an example we treat the example of the turbo generator. We assume
+that the following input file has been prepared.\\
+\rule{\textwidth}{0.6mm}
+\begin{small}
+  \verbatiminput{turbo.dsc}
+\end{small}
+\rule{\textwidth}{0.6mm}\\[3mm]
+It is further assumed that the name of this file ends in
+\verb|.dsc|, e.g., \verb|turbo.dsc|.
+Type in:
+\begin{verbatim}
+occal turbo
+\end{verbatim}
+\OCCAL{} displays
+\begin{verbatim}
+Parsing input file...done.
+Starting symbolic processor...
+REDUCE 3.4, 15-Jul-91 ...
+
+1:
+
+\end{verbatim}
+and then a protocol of the following \REDUCE{} statements that were
+generated by the pre-processor.\\
+\rule{\textwidth}{0.6mm}
+\begin{small}
+  \verbatiminput{turbo.red}
+\end{small}
+\rule{\textwidth}{0.6mm}\\[3mm]
+After a while it displays
+\begin{verbatim}
+============================================================
+ That's all, folks!
+============================================================
+\end{verbatim}
+and then
+\begin{verbatim}
+Quitting
+OCCAL finished.
+\end{verbatim}
+There is now a file with name \verb|turbo1.c|. We show its contents for illustration.\\
+\rule{\textwidth}{0.6mm}
+\begin{small}
+  \verbatiminput{turbo1.c}
+\end{small}
+\rule{\textwidth}{0.6mm}
+
+\newpage
+
+\section[\protect\hspace*{\dummy}Files for the reentry problem]%
+        {Files for the reentry problem}
+
+\label{app-SB}
+
+\small
+
+\subsection{Problem description}
+\verbatiminput{SB.dsc}
+
+
+\subsection{\REDUCE{} input file}
+\verbatiminput{SB.red}
+
+\newpage
+
+\section[\protect\hspace*{\dummy}Input file format for the pre-processor]%
+        {Input file format\\ for the pre-processor}
+
+\label{app:perl-file}
+
+The input file consists of a number of sections, each identified by a
+keyword on a line of its own, and ended by an empty line. Possible
+keywords are:
+\begin{description}
+  \item [COMMENT] Used only to explain what is going on. Everything up
+        to the next empty line is ignored.
+  \item [NAME] A short name to identify the problem, used for file
+        names, etc.
+  \item [TITLE] Description of the problem, can consist of several
+        lines of text.
+  \item [CONSTANTS] Constants of the problem, i.e., identifiers whose
+        values do not change. Can only be set at compile time. A value
+        is mandatory.
+  \item [PARAMETERS] Parameters whose values may be set at run time.
+        A value is optional.
+  \item [DYNAMIC\_VARIABLES] The dynamic variables, called $y_{i}$ in a
+        previous section, each on a line of its own.
+  \item [CONTROL\_VARIABLES] The control variables, called $u_{i}$ in
+        a previous section, each on a line of its own.
+  \item [TIME\_VARIABLE] The name of the independent variable.
+  \item [BOUNDARIES] Two expressions in \REDUCE{} syntax that denote
+        the boundaries of the interval. Must be delimited by a
+        semicolon.
+  \item [FUNCTIONAL] The functional to be minimized.
+  \item [DIFFERENTIAL\_EQUATIONS] The dynamical system.
+  \item [END\_POINT\_IS\_FREE] Specifies that the right boundary is free
+        and to be calculated.
+  \item [BOUNDARY\_CONDITIONS] The boundary conditions at the points
+        specified in the BOUNDARIES section.
+  \item [ABBREVIATIONS] Arbitrary \REDUCE{} expressions, each
+        delimited by a semicolon. 
+  \item [RESTRICTIONS] Additional conditions, such as a variable being
+        bounded from below.
+  \item [TARGET\_LANGUAGE] The programming language in which the numerical
+        programs are generated. Possible are: \C, \FORTRAN, \RATFOR, and \Pascal.
+  \item [TEMPVAR\_PREFIX] The prefix used for constructing variable names during
+        code generation. Default is \verb|ANS|.
+\end{description}
+The order of these sections is largely arbitrary, except for one
+restriction: the dynamic variables need to be defined before the
+corresponding differential equations.
+
+
+\end{document}
