@@ -5,12 +5,12 @@
 % Author:            H. Melenk ,W. Neun       ZIB Berlin
 % Created:           10-Mar-89 , derived from Cray version
 % Mode:              Lisp
-% Package:           Utilities (Cray-UNICOS)
+% Package:           Utilities 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+% version for 64 bits, 1.12.2013 , WN
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SPYing LISP via UNICOS SPY calls          %
+% SPYing LISP via Linux profil calls          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (compiletime (remprop 'car 'openfn))
@@ -43,12 +43,12 @@
   (prog (vbl diff )
    (setq diff (wquotient (wplus2 (wdifference lwa fwa) bucketsize)
                             bucketsize))
-   (setq &spying& (gtwarray (wshift (wplus2 3 diff) -1 )))
-   (clear-memory &spying& (wshift (wplus2 3 diff) -1)) % set to zero
+   (setq &spying& (gtwarray (wshift (wplus2 7 diff) -3 )))
+   (clear-memory &spying& (wshift (wplus2 7 diff) -3)) % set to zero
    (putmem &spying& (wshift (wplus2 2 diff) -1))
    (setq &spying& (mkvec &spying&))
-   (setq vbl (gtvect 6))
-   (unix-profile (wplus2 (inf &spying&) 4) % buffer
+   (setq vbl (gtvect 3))
+   (unix-profile (wplus2 (inf &spying&) 8) % buffer
                  (wshift diff  1) % buffersize in bytes
                  fwa              % fwa
                  (wshift 16#10000 (wminus power))) % magic, see:  man profil
@@ -68,7 +68,7 @@
     (setq power (cadr (assoc bucket '((2 0) (4 1) (8 2) (16 3) (32 4)
                                      (64 5) (128 6) (256 7)))))
     (setq &spyhigh& lastbps)
-    (setq &spylow&  16#2000)
+    (setq &spylow&  bpslowerbound)
     (setq &spybucket&  bucket)
     (spyon &spylow& &spyhigh& &spymintime& bucket power)
 ))
@@ -115,11 +115,13 @@
  
 (compiletime
    (ds spyvecitm (x y)
-      (prog2
-        (setq v (vecitm x (wshift y -1)))
-        (if (eq (wand y 1) 1) (wand v 16#ffff)
-                              (wshift v -16))))
-)
+      (prog2   % little endian
+        (setq v (vecitm x (wshift y -2)))
+        (cond  ((eq (wand y 3) 3)(wand v 16#ffff))
+               ((eq (wand y 3) 2) (wand (wshift v -16) 16#ffff))
+               ((eq (wand y 3) 1) (wand (wshift v -32) 16#ffff))
+               (t              (wshift v -48))))
+))
         
 (de spyjoin (addrtable vector)
      (prog (base counter currentfunction currenthigh currentcount
@@ -208,6 +210,5 @@
 (de clear-memory (ptr amount)
 %   (fast-clear ptr amount))
      (for (from i 0 amount)
-      (do (putmem (wplus2 (inf ptr) (wshift i 2)) 0))))
+      (do (putmem (wplus2 (inf ptr) (wshift i 3)) 0))))
 
-
