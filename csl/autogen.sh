@@ -93,6 +93,8 @@ then
   exit 0
 fi
 
+rm -f compile config.guess config.sub depcomp install-sh missing
+
 echo "About to run aclocal --force"
 if aclocal --force
 then :

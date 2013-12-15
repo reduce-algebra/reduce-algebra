@@ -3123,7 +3123,8 @@ $(gensrc)/profile.dat:	$(srcdir)/../generated-c/profile.dat
 
 c-code:	$(gensrc)/make.stamp
 
-$(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
+$(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
+		$(srcdir)/make-c-code.red
 	@$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	@touch $(gensrc)/make.tmp
 	mkdir -p buildlogs

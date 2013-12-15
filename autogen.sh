@@ -46,26 +46,46 @@ here=`echo $c | sed -e 's+/[^/]*$++'`
 save=`pwd`
 cd $here
 
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "Updating autoconf scripts in $here"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo
 
-# Get rid of automake scripts so that fully up to date versions can
-# be put back by autoreconf.
+#
+# I need a short essay to explain what is going on here. I really want to
+# be doubleplus certain that when I run this script it installs versions of
+# all autoconf and automake-related files everywhere. So to be extra careful
+# I will remove old copies first, even if I might hope that "autoreconf -f -i"
+# might overwrite existing copies with new ones.
+# The when the tools search for files such as config.guess they can look
+# in the current directory or its parent or grandparent. To ensure I get
+# unambiguously simple-to-find versions everywhere I run autoreconf on the
+# deepest nested directories first, so that it will install all files.
+# This is perhaps redundant but it reduces (in my opinion) confusion when
+# looking at the trees, even though it leads to the need for complexity and
+# mess here.
+#
 
-find . -name compile -o -name config.guess -o -name config.sub -o \
-       -name depcomp -o -name install-sh -o -name missing -o \
-       -print | xargs rm -f
-
-if autoreconf -i -f -v
-then :
-else
-  echo "autoreconf failed in $here"
-  cd $save
-  exit 1
-fi
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd scripts
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd ../csl
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd cslbase
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd crlibm
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd ../../fox
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd ../../psl
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd support-packages/xport-2.05
+rm -f compile config.guess config.sub depcomp install-sh missing
+cd ../../..
 
 cd scripts
 echo " "
-echo "updating in scripts"
+echo "updating in `pwd`"
 if aclocal
 then :
 else
@@ -81,20 +101,20 @@ else
   exit 1
 fi
 
-cd ../csl
+cd ../csl/cslbase/crlibm
 echo " "
-echo "updating in csl"
-if ./autogen.sh
+echo "updating in `pwd`"
+if autoreconf -i -f -v && autoheader --force
 then :
 else
-  echo "reconfiguring failed in $here/csl"
+  echo "autoreconf failed in $here/csl/cslbase/crlibm"
   cd $save
   exit 1
 fi
 
-cd cslbase
+cd ..
 echo " "
-echo "updating in csl/cslbase"
+echo "updating in `pwd`"
 if autoreconf -i -f -v && autoheader --force
 then :
 else
@@ -105,7 +125,7 @@ fi
 
 cd ../fox
 echo " "
-echo "updating in csl/fox"
+echo "updating in `pwd`"
 if autoreconf -i -f -v
 then :
 else
@@ -118,7 +138,8 @@ if test -d ../foxtests
 then
   cd ../foxtests
   echo " "
-  echo "updating in csl/foxtests"
+  echo "updating in `pwd`"
+  rm -f compile config.guess config.sub depcomp install-sh missing
   if autoreconf -i -f -v
   then :
   else
@@ -128,20 +149,20 @@ then
   fi
 fi
 
-cd ../../psl
+cd ..
 echo " "
-echo "updating in psl"
-if autoreconf -i -f -v
+echo "updating in `pwd`"
+if ./autogen.sh
 then :
 else
-  echo "autoreconf failed in $here/psl"
+  echo "reconfiguring failed in $here/csl"
   cd $save
   exit 1
 fi
 
-cd support-packages/xport-2.05
+cd ../psl/support-packages/xport-2.05
 echo " "
-echo "updating in psl/support-packages/xport-2.05"
+echo "updating in `pwd`"
 if autoreconf -i -f -v
 then :
 else
@@ -150,7 +171,28 @@ else
   exit 1
 fi
 
-cd ../../..
+cd ../..
+echo " "
+echo "updating in `pwd`"
+if autoreconf -i -f -v
+then :
+else
+  echo "autoreconf failed in $here/psl"
+  cd $save
+  exit 1
+fi
+
+cd ..
+
+echo " "
+echo "opdating in `pwd`"
+if autoreconf -i -f -v
+then :
+else
+  echo "autoreconf failed in $here"
+  cd $save
+  exit 1
+fi
 
 scripts/resetall.sh
 
