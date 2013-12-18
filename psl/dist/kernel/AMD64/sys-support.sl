@@ -73,6 +73,10 @@
 (lap '((*entry addressapply0 expr 1)
        (*jumphugo (reg 1))))
   
+(lap '((*entry addressapplyx expr 1)
+       (*callhugo (reg 1))
+       (*exit 0)))
+  
 (de bittable (baseaddress bitoffset)
   (field (ilsh (byte baseaddress (ilsh bitoffset -2))
                (idifference (itimes2 (field bitoffset 30 2) 2) 6))

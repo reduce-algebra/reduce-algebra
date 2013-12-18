@@ -155,6 +155,7 @@ SLFILES= \
 	$(PXK)/sys-support.sl \
 	$(PXK)/externals.sl \
 	$(PXK)/pthread.sl \
+	$(PXK)/dl-support.sl \
 	$(USERSLFILES)
  
 BFILES= \
