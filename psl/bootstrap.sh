@@ -1,4 +1,4 @@
-#! /bin/sh -x
+#! /bin/sh
 
 # Build an initial bootstrap REDUCE core that can be used to
 # compile the rest of the system
