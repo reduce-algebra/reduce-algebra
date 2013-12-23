@@ -1,0 +1,115 @@
+The numbers here were collected in December 2013 and do not represent
+very serious benchmarks, but I collected them to get a feeling for the
+performance spread between phone/tablet and laptop/desktop systems. This
+incidentally also covers 32 and now 64-bit ARM as against several
+varieties of Intel x86/x86_64 CPU. In each case only uniprocessor
+performance is assessed, so having multiple cores does not gain a system
+extra points here! I am also disregarding garbage collection time since
+that mey be influenced by just how much memory is installed - but in all
+cases it is a rather small fraction of the total cost.
+
+Tiny tests like this feel terribly old-fashioned!
+
+Test 1 is
+    on time; for i := 1:100000000 do nil$
+
+Test 2 is
+    on time; for i := 1:1000 do int(1/(x^8+1), x)$
+
+Test 3 is
+    on time; for i := 1:2000 do 12345^12345$
+
+Test 4 is
+    C code not Reduce
+      volatile int r = 0;
+       for (i=0; i<10000; i++)
+           for (j=0; j<1000000; j++) r += j;
+
+
+                        1               2              3           4
+Raspberry Pi          507.4          272.1           93.3        88.9
+iPad Mini             407.8          198.0          240.1  
+                     (203.7)         (99.0)        (120.0)
+iPhone 5s             150.0          151.2           70.3
+                      (75.0)         (75.6)         (35.1)
+PC: i7-4770K 3.5GHz    11.3            4.7            6.6        20.4
+Macbook: core 2 2.26   32.3           15.6           12.0        26.9
+Mac Pro Xeon E5462 2.8 52.0           29.5           42.7
+
+Test 1 exercises the Lisp interpreter but probably overall it does not
+use very much of Reduce. It might be described as entirely consisting
+of overhead!
+
+Test 2 turns over a lot more memory - it will provoke a reasonable number
+of garbage collections and the integration is messy enough that it
+exercises a range of general algebraic operations.
+
+Test 3 uses not too much memory and essentially all the time is spent
+in C code that accesses contiguous blocks of memory doing simple integer
+arithmetic, and hence look at peak arithmetic performance rather than
+real-world results.
+
+Test 4 is intended to check what might happen when everything can fit in
+the cache.
+
+The Raspberry Pi is a 512Kbyte model mildly overclocked.
+
+Figures for the iPad and iPhone were provided by Antonio at AL Software
+and the Mac Pro report is not for the machine running in native mode
+but when it is acting as a simulator for 64-bit iOS - it would clearly
+run faster when optimised. The iPad mini has an Arm Cortex A9 at 1GHz, while
+the iPhone 5s is a (64-bit) ARM at 1.3 GHz. The iOS code has been built with
+a lower compiler optimisation level (-O0) than the other cases, leading to a
+roughly 2-times slowdown. To allow for that I have optimistically put scaled
+times in parentheses below the ones actually recorded. The disabling of
+optimisation was because of bugs that are either somewhere in CSL or somewhere
+in the relevant Apple compilers or somewhere in how the two interact, and
+will no doubt be resolved in due course!
+
+Well none of this is large scale and systematic enough to justify totally
+definite statements, but here are some initial thoughts - specifically things
+that people may wish to try to test further and understand better.
+
+The humble Raspberry Pi is between 45 and 60 times slower than my fast pc
+on tests 1 and 2. However on the big-integer multiplication test the speed
+ratio is only 14:1 and for the tiny loop of C code it is only 4.4 - so
+depending in what test I do the speed ratio between 32-bit ARM and 64-bit
+Intel CPU runs from under 5 to over 50. My current hypothesis is that a
+major factor in this is the size of the cache memory in each CPU. But even
+with those words to provide a little comfort the spread is so huge that
+it makes it hard to present any general statement about the relative speeds
+of the machines. It also leaves open a challenge as to whether the code in
+Reduce could possible be rearranged to be more cache friendly (supposing that
+that really is the big issue here!) since it seems possible that even modest
+improvements in locality might yield useful savings in time.
+
+The 64-bit ARM beats the 32-bit one by a factor of roughly 3 on tests 1 and
+3. But on test 2 the speed ratio only matches raw clock speed ratios. I have
+to wonder if this may also be cache related. The iPad mini's CPU has 1MB of
+L2 cache, while the iPhone 5s adds an extra level with a 4MB level 3 cache.
+So my current guess is that the test 3 fits tolerably in the cache of the
+smallest processor (the Raspberry pi), test 1 fits in 4MB but not so
+well on 1MB, while the much more general use of the Reduce algeba engine in
+test 2 overwhelms the 4MB cache in the iPhone 5s.
+
+The i7-4770 has an 8MB L3 cache, a raw clock speed that is around 3 times that
+of the other systems and will be much more agressive as to multiple issue
+out-of-order execution. This leads to it outpacing the iPhone 5s by a ratio
+between 10 and 30. It is probably fairer to quote this as 5-15 to make
+allowance for the figures for it having been collected with code compiled
+at a low optimisation level. But still it is test 2 where it performs worst,
+and that feels as if it could be the one most representative of larger
+scale Reduce applications.
+
+Some reports suggest that the forthcoming ARM A57 chip family could let
+up to 16 cores share 8 to 16MB of L3 cache - at least the APM X-Gene will
+have L3 cache (but at the time I write this the size has not been divulged)
+and some 64-bit ARM implementations may clock at up to 3GHz - at that stage
+they may give current desktop systems a real run for their money, but it
+seems that today there is an order of magnitude performance gap when running
+at least the CSL version of Reduce.
+
+
+
+
+                                                Arthur Norman, December 2013
