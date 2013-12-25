@@ -1,4 +1,4 @@
-/*  restart.c                       Copyright (C) 1989-2012 Codemist Ltd */
+/*  restart.c                       Copyright (C) 1989-2013 Codemist Ltd */
 
 /*
  * Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 4487a874 17-Sep-2013 */
+/* Signature: 6618d085 25-Dec-2013 */
 
 #include "headers.h"
 
@@ -3172,8 +3172,6 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
     }
 }
 
-static void warm_setup();
-
 static void warm_setup()
 {
 /*
@@ -4498,8 +4496,6 @@ Lisp_Object Linstate_c_code(Lisp_Object nil, Lisp_Object name, Lisp_Object fns)
     return onevalue(c ? lisp_true : nil);
 #endif
 }
-
-static void cold_setup();
 
 static void cold_setup()
 {
@@ -6009,9 +6005,19 @@ void get_user_files_checksum(unsigned char *b)
 
 void setup(int restart_flag, double store_size)
 {
+/*
+ * restart_flag is a set of options passed as a bitmap:
+ *    1       Do a warm start, ie re-load a heap image.
+ *            The alternative is a cold start that should only
+ *            be called for as part of a system bootstrap process.
+ *    2       Grab memory for CSL to use.
+ *            The alternative is to assume that memory has already been
+ *            allocated, and to re-use what there is.
+ *    4, 8, ...   not used yet!
+ */
     int i;
     Lisp_Object nil;
-    if (restart_flag & 2) init_heap_segments(store_size);
+    if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = 0;
     nil = C_nil;
 #ifdef TIDY_UP_MEMORY_AT_START
@@ -6030,7 +6036,7 @@ void setup(int restart_flag, double store_size)
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
 
-    if (restart_flag & 1)
+    if ((restart_flag & 1) != 0)
     {   char junkbuf[120];
         char filename[LONGEST_LEGAL_FILENAME];
         memset(junkbuf, 0, sizeof(junkbuf));
@@ -6322,8 +6328,8 @@ void setup(int restart_flag, double store_size)
                ((int32_t)current_fp_rep) |
                (((int32_t)PAGE_BITS) << 8);
     native_pages_changed = 0;
-    if ((restart_flag & 1) != 0) warm_setup((restart_flag & 4) != 0);
-    else cold_setup((restart_flag & 4) != 0);
+    if ((restart_flag & 1) != 0) warm_setup();
+    else cold_setup();
 
     if (init_flags & INIT_QUIET) Lverbos(nil, fixnum_of_int(1));
     if (init_flags & INIT_VERBOSE) Lverbos(nil, fixnum_of_int(3));
@@ -6393,6 +6399,7 @@ void setup(int restart_flag, double store_size)
 void copy_into_nilseg(int fg)
 {
     Lisp_Object nil = C_nil;
+    multiplication_buffer = nil;
 
 #ifdef NILSEG_EXTERNS
     int i;

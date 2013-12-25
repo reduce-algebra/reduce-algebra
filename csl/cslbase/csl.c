@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 55fae897 18-Jul-2013 */
+/* Signature: 0e2bfdf0 25-Dec-2013 */
 
 
 /*
@@ -1064,7 +1064,7 @@ static void lisp_main(void)
                     CSL_MD5_Init();
                     CSL_MD5_Update((unsigned char *)"Initial State", 13);
                     IreInit();
-                    setup(1, 0.0);
+                    setup(1, 0.0); /* warm start mode */
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
                     stream_pushed_char(lisp_terminal_io) = fd;
@@ -1446,6 +1446,14 @@ CSLbool restartp;
 char *C_stack_base = NULL, *C_stack_limit = NULL;
 double max_store_size = 0.0;
 
+#ifdef WIN32
+HANDLE kara_thread1, kara_thread2;
+#else
+#ifdef HAVE_LIBPTHREAD
+pthread_t kara_thread1, kara_thread2;
+#endif
+#endif
+
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
@@ -1457,6 +1465,24 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     C_stack_base = (char *)&sp;
     C_stack_limit = NULL;
     max_store_size = 0.0;
+#if defined HAVE_LIBPTHREAD || defined WIN32
+    if (number_of_processors() >= 3)
+    {   sem_init(&kara_sem1a, 0, 0);
+        sem_init(&kara_sem1b, 0, 0);
+        sem_init(&kara_sem2a, 0, 0);
+        sem_init(&kara_sem2b, 0, 0);
+#ifdef WIN32
+        kara_thread1 = CreateThread(NULL, 0, kara_worker1, NULL, 0, NULL);
+        kara_thread2 = CreateThread(NULL, 0, kara_worker2, NULL, 0, NULL);
+#else
+        pthread_create(&kara_thread1, NULL, kara_worker1, NULL);
+        pthread_create(&kara_thread2, NULL, kara_worker2, NULL);
+#endif
+        karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+    }
+    else karatsuba_parallel = 0x7fffffff; 
+#endif /* thread support */
+
 #ifdef EMBEDDED
 /* This provides a fixed limit in the embedded build */
     C_stack_limit = C_stack_base - 2*1024*1024 + 0x10000;
@@ -2985,6 +3011,8 @@ term_printf(
 /*
  * Up until the time I call setup() I may only use term_printf for
  * output, because the other relevant streams will not have been set up.
+ *    1 bit:    0 for cold, 1 for warm.
+ *    2 bit:    1 to request initial allocation of memory.
  */
         setup(restartp ? 3 : 2, store_size);
         {   nil_as_base
