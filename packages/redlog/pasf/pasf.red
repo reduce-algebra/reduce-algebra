@@ -438,10 +438,8 @@ procedure pasf_fancy!-pricong!-fm(l);
       maprin cadr l;
       if car l eq 'cong then
       	 fancy!-special!-symbol(186,2)
-      else <<
-	 fancy!-prin2 "/";
-	 fancy!-special!-symbol(186,2)
-      >>;
+      else
+	 fancy!-special!-symbol(187,2);
       maprin caddr l;
       fancy!-prin2 " (";
       maprin cadddr l;
