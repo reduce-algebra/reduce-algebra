@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 331122ee 29-May-2013 */
+/* Signature: 356057c2 23-Dec-2013 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -133,6 +133,8 @@ extern char *big_chunk_start, *big_chunk_end;
 #ifdef CONSERVATIVE
 extern Lisp_Object *C_stackbase, *C_stacktop;
 #endif
+
+extern Lisp_Object multiplication_buffer;
 
 #ifdef MEMORY_TRACE
 

@@ -6396,6 +6396,8 @@ void setup(int restart_flag, double store_size)
     return;
 }
 
+Lisp_Object multiplication_buffer;
+
 void copy_into_nilseg(int fg)
 {
     Lisp_Object nil = C_nil;

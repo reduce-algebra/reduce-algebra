@@ -1,4 +1,4 @@
-/*  arith02.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith02.c                         Copyright (C) 1990-2013 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,7 +39,7 @@
 
 
 
-/* Signature: 791ef456 24-May-2008 */
+/* Signature: 2eeb3674 19-Dec-2013 */
 
 #include "headers.h"
 
@@ -418,20 +418,6 @@ static Lisp_Object timessf(Lisp_Object a, Lisp_Object b)
  * by a desire to make it go fast for very big numbers.
  */
 
-#ifndef KARATSUBA_CUTOFF
-/*
- * I have conducted some experiments on one machine to find out what the
- * best cut-off value here is.  The exact value chosen is not very
- * critical, and the fancy techniques do not pay off until numbers get
- * a lot bigger than this length (which is expressed in units of 31-bit
- * words, i.e. about 10 decimals).  Anyone who wants may recompile with
- * alternative values to try to get the system fine-tuned for their
- * own computer - but I do not expect it to be possible to achieve much
- * by so doing.
- */
-#define KARATSUBA_CUTOFF 12
-#endif
-
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
                        uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc);
@@ -579,6 +565,361 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
  */
 }
 
+#if defined HAVE_LIBPTHREAD || defined WIN32
+
+/*
+ * If I have big enough numbers I will decompose in Karatsuba style and
+ * perform the three top-level multiplications in parallel using some threads
+ * that I dedicate just to that purpose. Because of the overheads associated
+ * with inter-thread communication this will not be useful until numbers are
+ * rather large, and it will certainly not make sense on any single-core
+ * processor. To that effect the variable karatsuba_parallel is set either to
+ * the cut-off or to a value so huge that this code will never be activated.
+ *
+ * The two threads kara_worker1 and kara_worker2 just sit and wait for
+ * requests. When they get one they call long_times. Memory allocation etc
+ * has all been done elsewhere. These threads never terminate, and so will
+ * end up being killed when the whole program exits.
+ */
+
+/*
+ *   Karatsuba memory:
+ *   Compute (c3,c2,c1,c0) = (a1,a0)*(b1,b0) using (d1,d0) as workspace.
+ *          a1 a0 *
+ *          b1 b0
+ *    -----------
+ *    c3 c2 c1 c0
+ *    workspace: d1 d0
+ *
+ *   First the sequential version
+ *       d0 = a0+a1; record carry out 1.
+ *       d1 = b1+b0; record carry out 2.
+ *   Note a mess here that the two sums are each 1 bit too long.
+ *       (c2,c1) = d0*d1 using c0 as workspace;
+ *       c3 = carry out 1 & carry out 2;
+ *       if carry out 1 then c2 += d1; record carry out 1.
+ *       if carry out 2 then c2 += d0; record carry out 2.
+ *       c3 += carry out 1 + carry out 2;
+ *       rest of c3 = 0;
+ *       (d1, d0) = a1*b1 using c0 as workspace;
+ *       (c3, c2) += (d1, d0);
+ *       (c3, c2, c1) -= (d1, d0);
+ *       (d1, d0) = a0*b0 using c0 as workspace;
+ *       c0 = d0;
+ *       (c3, c2, c1) += d1;
+ *       (c3, c2, c1) -= (d1, d0);
+ *   DONE!
+ *
+ *
+ *   Here is an alternate sequential version dealing with the issue of
+ *   combining a0 with a1 in a different way. This avoids one or two
+ *   extra additions by using a section of code that either adds or
+ *   subtacts. It has a negation steps too. I think it looks to me as
+ *   if the negation steps that can be needed here will ende up making
+ *   it cost more than the previous scheme.
+ *       sign = 1;
+ *       d0 = a0-a1;
+ *       if d0 < 0 then d0 = -d0; sign = !sign;
+ *       d1 = b0-b1;
+ *       if d1 < 0 then d1 = -d1; sign = !sign; 
+ *   Now d0 and d1 are both in range.
+ *       (c2,c1) = d0*d1 using c0 as workspace;
+ *       c3 = 0;
+ *       if sign then (c3, c2, c1) = -(c3,c2,c1);
+ *       (d1, d0) = a1*b1 using c0 as workspace;
+ *       (c3, c2) += (d1, d0);
+ *       if sign then (c3, c2, c1) += (d1, d0);
+ *       else (c2, c2, c1) -= (d1, d0);
+ *       (d1, d0) = a0*b0 using c0 as workspace;
+ *       c0 = d0;
+ *       (c3, c2, c1) += d1;
+ *       if sign then (c3, c2, c1) += (d1, d0);
+ *       else (c3, c2, c1) -= (d1, d0);
+ *   DONE!
+ *
+ * Now a parallel version will require more workspace: (d6 .. d0). This
+ * much is definitly required because each of the three calls to (sequential)
+ * half-length multiplications need their inputs, outputs and workspace
+ * to be dedicated. Thus I need two units to store a0+a1 and b0+b1, a total
+ * of six units for the products (but c3-c0 can provide four of those) and
+ * finally three unit sized workspace blocks.
+ *       d3 = a0+a1; record carry out 1.
+ *       d4 = b1+b0; record carry out 2.
+ *       (d6,d5) = d0*d1 using d2 as workspace;   )
+ *       (c3,c2) = a1*b1 using d1 as workspace;   ) In parallel
+ *       (c1,c0) = a0*b0 using d0 as workspace;   )
+ * Now I just need to combine the various bits together!
+ *       d0 = c1;                  preserve (c1, c0)
+ *       carry out 3 = carry out 1 & carry out 2;
+ *       if carry out 1 then c2 += d4; record carry out 1.
+ *       if carry out 2 then c2 += d3; record carry out 2.
+ *       carry out 3 += carry out 1 + carry out 2;
+ *       (c3, c2, c1) -= (-carry out 3, c3, c2);
+ *       (c3, c2, c1) -= (0, d0, c0);
+ *   DONE!
+ */
+
+sem_t kara_sem1a, kara_sem1b, kara_sem2a, kara_sem2b;
+
+static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
+static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
+
+KARARESULT WINAPI kara_worker1(KARAARG p)
+{
+    for (;;)
+    {   sem_wait(&kara_sem1a);  // wait until asked to do something.
+        sem_post(&kara_sem1b);  // acknowledge the request.
+        long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
+                   kara_1_lena, kara_1_lenb, kara_1_lenc);
+        sem_post(&kara_sem1a);  // announce that result is ready.
+        sem_wait(&kara_sem1b);  // wait until result has been picked up.
+    }
+/* The code here never exits! */
+    return (KARARESULT)0;
+}
+
+static uint32_t *kara_2_c, *kara_2_a, *kara_2_b, *kara_2_d;
+static uint32_t kara_2_lena, kara_2_lenb, kara_2_lenc;
+
+KARARESULT WINAPI kara_worker2(KARAARG p)
+{
+    for (;;)
+    {   sem_wait(&kara_sem2a);  // wait until asked to do something.
+        sem_post(&kara_sem2b);  // acknowledge the request.
+        long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
+                   kara_2_lena, kara_2_lenb, kara_2_lenc);
+        sem_post(&kara_sem2a);  // announce that result is ready.
+        sem_wait(&kara_sem2b);  // wait until result has been picked up.
+    }
+/* The code here never exits! */
+    return (KARARESULT)0;
+}
+
+static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
+                         uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
+/*
+ * Here both a and b are big, with lena <= lenb.  Split each into two chunks
+ * of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
+ *          a1*b1
+ *          a2*b2
+ *          (a1+a2)*(b1+b2)
+ * where in the last case a1+a2 and b1+b2 can be computed keeping their
+ * carry bits as k1 and k2 (so that a1+a2 and b1+b2 are restricted to
+ * size lenb). The chunks can then be combined with a few additions and
+ * subtractions to form the product that is really wanted.  If in fact a
+ * was shorter than lenc/4 (so that after a is split up the top half is
+ * all zero) I do things in a more straightforward way.  I require that on
+ * entry to this code lenc<4 < lenb <= lenc/2.
+ */
+{
+    int32_t h = lenc/4;   /* lenc must have been made even enough... */
+    int32_t lena1 = lena - h;
+    int32_t lenb1 = lenb - h;
+    uint32_t carrya, carryb;
+    int32_t i;
+/*
+ * if the top half of a would be all zero I go through a separate path,
+ * doing just two subsidiary multiplications. Note that if I do that I
+ * only have a single sub-task to delegate work to and so the potential
+ * speedup from parallel working is reduced.
+ */
+    if (lena1 <= 0)
+    {   kara_1_c = c+h;         /* set up input data for worker 1 */
+        kara_1_a = a;
+        kara_1_b = b+h;
+        kara_1_d = d + 2*h;     /* 2*h down into d should be available space */
+        kara_1_lena = lena;
+        kara_1_lenb = lenb - h;
+        kara_1_lenc = 2*h;
+        sem_post(&kara_sem1a);  /* allow worker 1 to start. */
+        /* Now do my own work in parallel with worker 1 */
+        for (i=0; i<h; i++) c[3*h+i] = 0;
+        long_times(d, a, b, c, lena, h, 2*h);
+        sem_wait(&kara_sem1b); /* check that worker 1 has actually started */
+        sem_wait(&kara_sem1a); /* wait until worker 1 has finished */
+        for (i=0; i<h; i++) c[i] = d[i];
+        carrya = 0;
+        for (;i<2*h; i++)
+        {   uint32_t w = c[i] + d[i] + carrya;
+            c[i] = clear_top_bit(w);
+            carrya = w >> 31;
+        }
+        for (;carrya!=0;i++)
+        {   uint32_t w = c[i] + 1;
+            c[i] = clear_top_bit(w);
+            carrya = w >> 31;
+        }
+        sem_post(&kara_sem1b); /* complete the handshake */
+        return;
+    }
+/*
+ * Now I have the more general case ... and to be able to run things in
+ * parallel I will need to start off the three initial multiplications
+ * as soon as I can...
+ * First:
+ *       (c1,c0) = a0*b0 using d0 as workspace;
+ */
+        kara_1_c = c;           /* set up input data for worker 1 */
+        kara_1_a = a;
+        kara_1_b = b;
+        kara_1_d = d;           /* workspace */
+        kara_1_lena = h;
+        kara_1_lenb = h;
+        kara_1_lenc = 2*h;
+        sem_post(&kara_sem1a);  /* allow worker 1 to start. */
+/*
+ * Second:
+ *       (c3,c2) = a1*b1 using d1 as workspace;
+ */
+        kara_2_c = c+2*h;       /* set up input data for worker 2 */
+        kara_2_a = a+h;
+        kara_2_b = b+h;
+        kara_2_d = d+h;         /* workspace */
+/*
+ * Note that the top halves of the two inputs might not use up the
+ * full width of the number that is available, but the product generated
+ * here must be widened to fill all its space.
+ */
+        kara_2_lena = lena1;
+        kara_2_lenb = lenb1;
+        kara_2_lenc = 2*h;
+        sem_post(&kara_sem2a);  /* allow worker 2 to start. */
+/*
+ * The rest can be done using the main thread.
+ *
+ *       (d6,d5) = d0*d1 using d2 as workspace;
+ * Now I just need to combine the various bits together!
+ *       d0 = c1;                  preserve (c1, c0)
+ *       carry out 3 = carry out 1 & carry out 2;
+ *       if carry out 1 then c2 += d4; record carry out 1.
+ *       if carry out 2 then c2 += d3; record carry out 2.
+ *       carry out 3 += carry out 1 + carry out 2;
+ *       (c3, c2, c1) -= (-carry out 3, c3, c2);
+ *       (c3, c2, c1) -= (0, d0, c0);
+ *       d3 = a0+a1; record carry out 1.
+ *       d4 = b1+b0; record carry out 2.
+ * form (a1+a2) and (b1+b2).
+ */
+    carrya = 0;
+    for (i=0; i<h; i++)
+    {   uint32_t w = a[i] + carrya;
+        if (i < lena1) w += a[h+i];
+        d[3*h+i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+    carryb = 0;
+    for (i=0; i<h; i++)
+    {   uint32_t w = b[i] + carryb;
+        if (i < lenb1) w += b[h+i];
+        d[4*h+i] = clear_top_bit(w);
+        carryb = w >> 31;
+    }
+/*       (d6,d5) = d0*d1 using d2 as workspace;*/
+/*  long_times(c+h, d, d+h, c, h, h, 2*h); */
+
+/*
+ * Now I just need to combine the various bits together!
+ *       d0 = c1;                  preserve (c1, c0)
+ *       carry out 3 = carry out 1 & carry out 2;
+ *       if carry out 1 then c2 += d4; record carry out 1.
+ *       if carry out 2 then c2 += d3; record carry out 2.
+ *       carry out 3 += carry out 1 + carry out 2;
+ *       (c3, c2, c1) -= (-carry out 3, c3, c2);
+ *       (c3, c2, c1) -= (0, d0, c0);
+        kara_1_c = c+h;         /* set up input data for worker 1 */
+        kara_1_a = d;
+        kara_1_b = d+h;
+        kara_1_d = c;
+        kara_1_lena = h;
+        kara_1_lenb = h;
+        kara_1_lenc = 2*h;
+        sem_post(&kara_sem1a);  /* allow worker 1 to start. */
+
+
+
+/*
+ * Adjust to allow for the cases of a1+a2 or b1+b2 overflowing
+ * by a single bit.
+ */
+    c[3*h] = carrya & carryb;
+    if (carrya != 0)
+    {   carrya = 0;
+        for (i=0; i<h; i++)
+        {   uint32_t w = c[2*h+i] + d[h+i] + carrya;
+            c[2*h+i] = clear_top_bit(w);
+            carrya = w >> 31;
+        }
+    }
+    if (carryb != 0)
+    {   carryb = 0;
+        for (i=0; i<h; i++)
+        {   uint32_t w = c[2*h+i] + d[i] + carryb;
+            c[2*h+i] = clear_top_bit(w);
+            carryb = w >> 31;
+        }
+    }
+    c[3*h] += carrya + carryb;
+    for (i=1; i<h; i++) c[3*h+i] = 0;
+/*
+ * Now (a1+a2)*(b1+b2) should have been computed totally properly
+ */
+    for (i=0; i<h; i++) d[h+i] = 0;
+/*
+ * multiply out a1*b1, where note that a1 and b1 may be less long
+ * than h, but not by much.
+ */
+    long_times(d, a+h, b+h, c, lena-h, lenb-h, 2*h);
+    carrya = 0;
+    for (i=0; i<2*h; i++)
+    {   uint32_t w = c[2*h+i] + d[i] + carrya;
+        c[2*h+i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+    carrya = 0;
+    for (i=0; i<2*h; i++)
+    {   uint32_t w = c[h+i] - d[i] - carrya;
+        c[h+i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+    for (; carrya!=0 && i<3*h; i++)
+    {   uint32_t w = c[h+i] - 1;
+        c[h+i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+/*
+ * multiply out a2*b2
+ */
+    long_times(d, a, b, c, h, h, 2*h);
+    for (i=0; i<h; i++) c[i] = d[i];
+    carrya = 0;
+    for (; i<2*h; i++)
+    {   uint32_t w = c[i] + d[i] + carrya;
+        c[i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+    for (; carrya!=0 && i<4*h; i++)
+    {   uint32_t w = c[i] + 1;
+        c[i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+    carrya = 0;
+    for (i=0; i<2*h; i++)
+    {   uint32_t w = c[h+i] - d[i] - carrya;
+        c[h+i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+    for (; carrya!=0 && i<3*h; i++)
+    {   uint32_t w = c[h+i] - 1;
+        c[h+i] = clear_top_bit(w);
+        carrya = w >> 31;
+    }
+/*
+ * The product is now complete
+ */
+}
+
+#endif /* Thread support */
+
 static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
                         int32_t lena, int32_t lenb, int32_t lenc)
 /*
@@ -607,6 +948,8 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
         }
     }
 }
+
+int karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
                        uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
@@ -639,6 +982,19 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         newlenc = 4*newlenc;
         while (lenc > newlenc) c[--lenc] = 0;
     }
+#if defined HAVE_LIBPTHREAD || defined WIN32
+    if (0 && lena > karatsuba_parallel) /* Disabled a for now */
+    {   int save = karatsuba_parallel;
+/*
+ * I will only allow a single level of the recursion to use threads, and I
+ * achieve that by temporarily resetting the cut-off here...
+ */
+        karatsuba_parallel = 0x7fffffff;
+        long_times1p(c, a, b, d, lena, lenb, lenc);
+        karatsuba_parallel = save;
+    }
+    else
+#endif /* Thread support */
     if (lena > KARATSUBA_CUTOFF) long_times1(c, a, b, d, lena, lenb, lenc);
     else long_times2(c, a, b, lena, lenb, lenc);
 }
@@ -734,7 +1090,7 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
  * being related to the size of the numbers being handled.
  */
     if (lena > KARATSUBA_CUTOFF)
-    {
+    {   int32_t lend;
         int k = 0;
 /*
  * I pad lenc up to have a suitably large power of 2 as a factor so
@@ -752,6 +1108,14 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
         lenc = 2*lenc;
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
         errexitn(2);
+        lend = lenc;
+#if defined HAVE_LIBPTHREAD || defined WIN32
+/*
+ * If I run using threads then each of the three threads can need some
+ * workspace, so I will allocate (rather a lot) more.
+ */
+        lend *= 3;
+#endif
 /*
  * The next line seems pretty shameless, but it may reduce the amount of
  * garbage collection I do.  When the workspace vector needed is short enough
@@ -761,12 +1125,17 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
  * in use for its normal purpose.  I forge tag bits to make boffo look like
  * a number here, but can never trigger garbage collection in a way that
  * might inspect same, so that too is safe at present.
+ *
+ * A better scheme will be to have a buffer for use here that is
+ * persistent from multiplication to multiplication but that is discarded
+ * when there is a garbage collection occurs. That ought to reduce allocation
+ * usefully.
  */
-        if ((4*lenc+CELL) <= (intptr_t)length_of_header(vechdr(boffo)))
+        if ((4*lend+CELL) <= (intptr_t)length_of_header(vechdr(boffo)))
             d = (Lisp_Object)((char *)boffo + TAG_NUMBERS - TAG_VECTOR);
         else
         {   push(c);
-            d = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
+            d = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
             pop(c);
         }
         lenc = 2*lenc;

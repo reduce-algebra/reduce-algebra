@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 014c5d20 05-May-2013 */
+/* Signature: 24554c12 23-Dec-2013 */
 
 #ifndef header_arith_h
 #define header_arith_h 1
@@ -197,6 +197,61 @@ extern Complex MS_CDECL Ccos(Complex a);
 extern Complex MS_CDECL Cexp(Complex a);
 extern Complex MS_CDECL Cpow(Complex a, Complex b);
 extern double MS_CDECL Cabs(Complex a);
+
+#endif
+
+#if defined HAVE_LIBPTHREAD || defined WIN32
+
+/*
+ * For the parallel variant on Karatsuba I need thread support and
+ * semaphores.
+ */
+
+#include <semaphore.h>
+
+#ifdef WIN32
+#include <windows.h>
+
+extern HANDLE kara_thread1, kara_thread2;
+#define KARARESULT DWORD
+#define KARAARG    LPVOID
+extern KARARESULT WINAPI kara_worker1(KARAARG p);
+extern KARARESULT WINAPI kara_worker2(KARAARG p);
+
+#else
+#include <pthread.h>
+
+extern pthread_t kara_thread1, kara_thread2;
+#define KARARESULT void *
+#define KARAARG    void *
+#define WINAPI
+extern KARARESULT kara_worker1(KARAARG p);
+extern KARARESULT kara_worker2(KARAARG p);
+
+#endif
+
+extern sem_t kara_sem1a, kara_sem1b, kara_sem2a, kara_sem2b;
+
+extern int karatsuba_parallel;
+
+#ifndef KARATSUBA_PARALLEL_CUTOFF
+#  define KARATSUBA_PARALLEL_CUTOFF 20
+#endif
+
+#endif /* Thread support */
+
+#ifndef KARATSUBA_CUTOFF
+/*
+ * I have conducted some experiments on one machine to find out what the
+ * best cut-off value here is.  The exact value chosen is not very
+ * critical, and the fancy techniques do not pay off until numbers get
+ * a lot bigger than this length (which is expressed in units of 31-bit
+ * words, i.e. about 10 decimals).  Anyone who wants may recompile with
+ * alternative values to try to get the system fine-tuned for their
+ * own computer - but I do not expect it to be possible to achieve much
+ * by so doing.
+ */
+#define KARATSUBA_CUTOFF 12
 
 #endif
 
