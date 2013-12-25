@@ -165,6 +165,8 @@ rl_mkserv('fvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,T);
 
 rl_mkserv('bvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,T);
 
+rl_mkserv('qvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,T);
+
 rl_mkserv('decdeg1,'(rl_simp),'(rl_a2s!-decdeg1),'(fvarl),'rl_s2a!-decdeg1,T);
 
 rl_mkserv('decdeg,'(rl_simp),nil,nil,'rl_mk!*fof,T);

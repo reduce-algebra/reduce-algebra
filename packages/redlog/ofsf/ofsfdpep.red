@@ -87,7 +87,7 @@ procedure ofsf_dpep(ophi,k);
         phi := rl_mat ophiexp; % phi = Q_2 x_2 ... Q_n x_n psi
 
 	% QE of phi (by CAD) if phi is not quantifier-free.
-        if cl_bvarl phi
+        if cl_qvarl1 phi
         then <<
            if ofsf_dpepverbosep() or ofsf_dpepiverbosep()
            then <<
@@ -114,7 +114,7 @@ procedure ofsf_dpep(ophi,k);
 
         % If QE by CAD fails, i.e. if phiprime is not
         % an univariate poly.-expon. decision problem.
-        if null (length cl_bvarl1 phiprime eq 1 or
+        if null (length cl_qvarl1 phiprime eq 1 or
            rl_mat phiprime eq 'false or
            rl_mat phiprime eq 'true)
         then

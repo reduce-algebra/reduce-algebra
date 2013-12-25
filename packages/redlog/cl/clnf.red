@@ -270,7 +270,7 @@ procedure cl_bvarl1(f);
    % Returns the list of variables occurring boundly in [f].
    cdr cl_varl1 f;
 
-procedure cl_varl(f);
+asserted procedure cl_varl(f: Formula): DottedPair;
    % Common logic variable lists. [f] is a formula. Returns a pair
    % $(V_f . V_b)$ of variable lists. $V_f$ contains the variables
    % occurring freely in [f], and $V_b$ contains the variables
@@ -278,38 +278,54 @@ procedure cl_varl(f);
    % kernel order [ordp].
    (sort(car w,'ordp) . sort(cdr w,'ordp)) where w = cl_varl1 f;
 
-procedure cl_varl1(f);
+asserted procedure cl_varl1(f: Formula): DottedPair;
    % Common logic variable lists. [f] is a formula. Returns a pair
    % $(V_f . V_b)$ of variable lists. $V_f$ contains the variables
    % occurring freely in [f], and $V_b$ contains the variables
    % occurring boundly in [f].
    cl_varl2(f,nil,nil,nil);
 
-procedure cl_varl2(f,freevl,cboundvl,boundvl);
-   begin scalar op,bfvar;
+asserted procedure cl_varl2(f: Formula, fvl: KernelL, cbvl: KernelL, bvl: KernelL): DottedPair;
+   begin scalar op;
       op := rl_op f;
       if rl_tvalp op then
- 	 return freevl . boundvl;
+ 	 return fvl . bvl;
       if rl_boolp op then <<
-    	 for each s in rl_argn f do <<
-      	    freevl := car vl;
-      	    boundvl := cdr vl
-    	 >> where vl=cl_varl2(s,freevl,cboundvl,boundvl);
-      	 return freevl . boundvl
+    	 for each s in rl_argn f do
+      	    fvl . bvl := cl_varl2(s, fvl, cbvl, bvl);
+      	 return fvl . bvl
       >>;
       if rl_quap op then
-      	 return cl_varl2(rl_mat f,freevl,
-	    lto_insertq(rl_var f,cboundvl),rl_var f . boundvl);
+      	 return cl_varl2(rl_mat f, fvl, lto_insertq(rl_var f, cbvl), bvl);
       if rl_bquap op then <<
-	 bfvar := delq(rl_var f,car cl_varl2(rl_b f,freevl,nil,nil));
-      	 bfvar := cl_varl2(rl_mat f,bfvar,
-	    lto_insertq(rl_var f,cboundvl),rl_var f . boundvl);
-	 return (delq(rl_var f, car bfvar) . cdr bfvar);
+	 cbvl := lto_insertq(rl_var f, cbvl);
+	 fvl . bvl := cl_varl2(rl_b f, fvl, cbvl, bvl);
+      	 return cl_varl2(rl_mat f, fvl, lto_insertq(rl_var f, cbvl), bvl)
       >>;
       % [f] is an atomic formula.
       for each v in rl_varlat f do
-	 if not (v memq cboundvl) then freevl := lto_insertq(v,freevl);
-      return freevl . boundvl
+	 if v memq cbvl then
+	    bvl := lto_insertq(v, bvl)
+	 else
+	    fvl := lto_insertq(v, fvl);
+      return fvl . bvl
+   end;
+
+asserted procedure cl_qvarl(f: Formula): KernelL;
+   sort(cl_qvarl1 f, function ordp);
+
+asserted procedure cl_qvarl1(f: Formula): KernelL;
+   begin scalar op, qvl;
+      op := rl_op f;
+      if rl_quap op or rl_bquap op then
+	 return lto_insertq(rl_var f, cl_qvarl1 rl_mat f);
+      if rl_boolp op then <<
+    	 for each s in rl_argn f do
+	    qvl := union(qvl, cl_qvarl1 s);
+      	 return qvl
+      >>;
+      % tval or atomic formula
+      return nil
    end;
 
 procedure cl_rename!-vars1(f,vl);

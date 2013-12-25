@@ -217,6 +217,7 @@ put('ofsf,'rl_services,'(
    (rl_varl!* . cl_varl)
    (rl_fvarl!* . cl_fvarl)
    (rl_bvarl!* . cl_bvarl)
+   (rl_qvarl!* . cl_qvarl)
    (rl_gentheo!* . cl_gentheo)
    (rl_decdeg!* . ofsf_decdeg)
    (rl_decdeg1!* . ofsf_decdeg1)
