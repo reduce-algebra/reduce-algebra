@@ -7059,20 +7059,6 @@ l0352:
  ret
 l0349:
  .quad [[4<<56]+l0350]
- .quad 2
-/ (*entry hu expr 2)
- .globl hu
-hu:
- push %rax
- mov %rbx,%rax
- call *symfnc+4496
- mov %rax,%rbx
- shl $8,%rbx
- shr $8,%rbx
- add $8,%rbx
- mov (%rsp),%rax
- add $8,%rsp
- jmp *symfnc+3912
 l0354:
  .quad 6
  .byte 100,108,101,114,114,111,114,0
@@ -7081,7 +7067,7 @@ l0354:
  .globl l0355
 l0355:
  mov $1,%rax
- call *symfnc+4512
+ call *symfnc+4488
  mov l0353,%rdi
  mov %rdi,(%rax)
  ret
@@ -7091,43 +7077,31 @@ l0353:
 / (*entry psl-dlsym expr 2)
  .globl l0356
 l0356:
- sub $24,%rsp
- mov %rax,(%rsp)
- mov %rbx,8(%rsp)
- mov %r15,16(%rsp)
+ push %r15
+ push %rax
  mov %rbx,%rdi
  shr $56,%rdi
  cmp $254,%rdi
  jne l0357
  mov %rbx,%rax
- call *symfnc+4496
+ call *symfnc+4504
  mov %rax,%rbx
  shl $8,%rbx
  shr $8,%rbx
  add $8,%rbx
  mov (%rsp),%rax
  call *symfnc+3912
- mov %rax,16(%rsp)
+ mov %rax,8(%rsp)
  jmp l0358
 l0357:
  shl $8,%rbx
  shr $8,%rbx
  add $8,%rbx
  call *symfnc+3912
- mov %rax,16(%rsp)
+ mov %rax,8(%rsp)
 l0358:
  mov 8(%rsp),%rax
- call *symfnc+4496
- shl $8,%rax
- shr $8,%rax
- add $8,%rax
- call *symfnc+2560
- call *symfnc+2520
- mov 16(%rsp),%rax
- call *symfnc+2560
- call *symfnc+2520
- mov 16(%rsp),%rax
- add $24,%rsp
+ add $16,%rsp
  ret
  .quad 1
 / (*entry dynloadhelper expr 1)
@@ -7215,7 +7189,7 @@ codeaddressp:
  shr $8,%rax
  mov %rax,(%rsp)
  mov l0360,%rax
- call *symfnc+4560
+ call *symfnc+4544
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
@@ -7228,7 +7202,7 @@ l0364:
  cmp %r15,%rax
  je l0365
  mov l0362,%rax
- call *symfnc+4560
+ call *symfnc+4544
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
@@ -7265,7 +7239,7 @@ l0367:
  add $8,%rsp
  ret
 l0362:
- .quad [[254<<56]+571]
+ .quad [[254<<56]+569]
 l0361:
  .quad [[254<<56]+116]
 l0360:
@@ -9792,59 +9766,50 @@ l0930:
  .globl l0931
 l0931:
  .quad 10
- .byte 111,117,116,112,117,116,98,97,115,101
- .byte 42,0
+ .byte 112,115,108,45,100,108,101,114,114
+ .byte 111,114,0
  .globl l0932
 l0932:
- .quad 1
- .byte 104,117,0,0
+ .quad 7
+ .byte 103,116,119,97,114,114,97,121,0,0
  .globl l0933
 l0933:
  .quad 8
- .byte 105,100,50,115,116,114,105,110,103
+ .byte 112,115,108,45,100,108,115,121,109
  .byte 0
  .globl l0934
 l0934:
- .quad 10
- .byte 112,115,108,45,100,108,101,114,114
- .byte 111,114,0
+ .quad 8
+ .byte 105,100,50,115,116,114,105,110,103
+ .byte 0
  .globl l0935
 l0935:
- .quad 7
- .byte 103,116,119,97,114,114,97,121,0,0
- .globl l0936
-l0936:
- .quad 8
- .byte 112,115,108,45,100,108,115,121,109
- .byte 0
- .globl l0937
-l0937:
  .quad 12
  .byte 100,121,110,108,111,97,100,104,101
  .byte 108,112,101,114,0
- .globl l0938
-l0938:
+ .globl l0936
+l0936:
  .quad 24
  .byte 100,121,110,108,111,97,100,104,101
  .byte 108,112,101,114,95,102,108,111,97,116
  .byte 95,102,108,111,97,116,0
- .globl l0939
-l0939:
+ .globl l0937
+l0937:
  .quad 10
  .byte 112,115,108,45,100,108,99,108,111,115
  .byte 101,0
- .globl l0940
-l0940:
+ .globl l0938
+l0938:
  .quad 11
  .byte 99,111,100,101,97,100,100,114,101,115
  .byte 115,112,0,0
- .globl l0941
-l0941:
+ .globl l0939
+l0939:
  .quad 14
  .byte 103,101,116,102,99,111,100,101,112
  .byte 111,105,110,116,101,114,0
- .globl l0942
-l0942:
+ .globl l0940
+l0940:
  .quad 9
  .byte 108,97,115,116,107,101,114,110,101
  .byte 108,0,0

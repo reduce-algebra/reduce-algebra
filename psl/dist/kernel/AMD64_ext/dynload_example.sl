@@ -1,3 +1,5 @@
+% Implements the example from man dlopen in PSL, 
+% computes cos(2.0)
 
 (cd "psl/dist/lap/AMD64_ext")
 (load useful helferlein)

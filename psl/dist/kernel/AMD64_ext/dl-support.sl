@@ -23,19 +23,10 @@
 (de psl-dlopen (filename flag)
    (prog (libbb)
    (setq libbb (dlopen (strbase (strinf filename)) 1))
-%(unixputn libbb) (console-newline)
    (when (eq 0 libbb)
           (return (bldmsg "**** Error opening dyn lib " filename)))        
-%(unixputn (getmem libbb)) (console-newline)
    (return libbb)
 ))
-
-(cd "~/reduce-algebra/code/psl/dist/lap/AMD64_ext")
-(load useful)
-(on comp)
-(setq outputbase* 16)
-(psl-dlopen "libm.so" 1)
-(de hu (x y)  (dlsym x (strbase (strinf (id2string y)))))
 
 (de psl-dlerror ()
    (prog (mess)
@@ -48,16 +39,11 @@
 
 (de psl-dlsym (handle symb)
   (prog (libb libbb)
-%   (setq libb (gtwarray 1))
+
    (if (idp symb)
    (setq libbb (dlsym handle (strbase (strinf (id2string symb)) )))
    (setq libbb (dlsym handle (strbase (strinf symb)) )))
-(unixputn (strbase (strinf (id2string symb))))
-(console-newline)
 
-%(unixputn libbb) (console-newline)
-%   (wputv libb 0 libbb)
-(unixputn libbb) (console-newline)
    (return libbb)
 ))
 
@@ -107,7 +93,6 @@
 (*push (reg 4))
 (*push (reg 3))
 (*push (reg 2))
-(sub 48 (reg st))
 (*move (displacement (reg st) 24) (reg rcx))
 (*move (displacement (reg st) 16) (reg rdx))
 (*move (displacement (reg st) 8) (reg rsi)) 
