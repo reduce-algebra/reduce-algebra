@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 6266f51d 26-Dec-2013 */
+/* Signature: 32453f7b 26-Dec-2013 */
 
 #include "headers.h"
 
@@ -2482,7 +2482,9 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
  * it should only appear once per run so ought not to cause over-much grief.
  * eventually I will remove it!
  */
-    printf("open-library Windows %s\n", libname); 
+#ifdef DEBUG
+    printf("open-library Windows %s\n", libname);
+#endif
     a = LoadLibrary(libname);
     if (a == 0)
     {
@@ -2503,12 +2505,14 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
     }
 #else
     if (w1 == NULL) strcat(libname, ".so");
+#ifdef DEBUG
 /*
  * For now I will leave the trace print of the library name here, since
  * it should only appear once per run so ought not to cause over-much grief.
  * eventually I will remove it!
  */
     printf("open-library Linux/Mac/BSD/Unix etc %s\n", libname); 
+#endif
     a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
     if (a == NULL)
     {
