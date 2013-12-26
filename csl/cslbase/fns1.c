@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4f0630db 19-Sep-2013 */
+/* Signature: 6266f51d 26-Dec-2013 */
 
 #include "headers.h"
 
@@ -2485,7 +2485,9 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
     printf("open-library Windows %s\n", libname); 
     a = LoadLibrary(libname);
     if (a == 0)
-    {   DWORD err = GetLastError();
+    {
+#ifdef DEBUG
+        DWORD err = GetLastError();
         char errbuf[80];
 /*
  * The printf calls here to report errors will not be useful in some
@@ -2496,6 +2498,7 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
                             FORMAT_MESSAGE_IGNORE_INSERTS,
                             NULL, err, 0, errbuf, 80, NULL);
         if (err != 0) printf("%s", errbuf);
+#endif
         return onevalue(nil);
     }
 #else
@@ -2508,7 +2511,10 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
     printf("open-library Linux/Mac/BSD/Unix etc %s\n", libname); 
     a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
     if (a == NULL)
-    {   printf("Err = <%s>\n", dlerror()); fflush(stdout);
+    {
+#ifdef DEBUG
+        printf("Err = <%s>\n", dlerror()); fflush(stdout);
+#endif
         return onevalue(nil);
     }
 #endif
@@ -2632,6 +2638,12 @@ double dr;
 /*
  * This seems HORRID to me, and as it is it only supports passing up to three
  * arguments. The alternatives that I can think of seem even worse!
+ * Well ACTUALLY I should change all of this to use "libffi" (which is subject
+ * to a generously liberal license and so will not cause problems in the
+ * BSD context I am working in). But it would be nice if somebody else did
+ * that conversion for me... since it should be a useful and self-contained
+ * task that would generalise and clean up the code but doing it would take
+ * me away from other things that I also want to do.
  */
 
 /*
