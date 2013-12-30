@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0e2bfdf0 25-Dec-2013 */
+/* Signature: 4afa84bb 30-Dec-2013 */
 
 
 /*
@@ -1454,6 +1454,8 @@ pthread_t kara_thread1, kara_thread2;
 #endif
 #endif
 
+static int kparallel = -1;
+
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
@@ -1469,8 +1471,10 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     if (number_of_processors() >= 3)
     {   sem_init(&kara_sem1a, 0, 0);
         sem_init(&kara_sem1b, 0, 0);
+        sem_init(&kara_sem1c, 0, 0);
         sem_init(&kara_sem2a, 0, 0);
         sem_init(&kara_sem2b, 0, 0);
+        sem_init(&kara_sem2c, 0, 0);
 #ifdef WIN32
         kara_thread1 = CreateThread(NULL, 0, kara_worker1, NULL, 0, NULL);
         kara_thread2 = CreateThread(NULL, 0, kara_worker2, NULL, 0, NULL);
@@ -1478,9 +1482,8 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         pthread_create(&kara_thread1, NULL, kara_worker1, NULL);
         pthread_create(&kara_thread2, NULL, kara_worker2, NULL);
 #endif
-        karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
     }
-    else karatsuba_parallel = 0x7fffffff; 
+    karatsuba_parallel = 0x7fffffff; 
 #endif /* thread support */
 
 #ifdef EMBEDDED
@@ -1908,6 +1911,22 @@ term_printf(
                                 term_printf("for Kilobytes, Megabytes or Gigabytes\n");
                             }
                         }
+                    }
+/*
+ * I do not really want this options heavily documented, since it is intended
+ * for use by those maintaining CSL not for the general public. By default
+ * log multiplicatiob can use a threaded implementation (to exploit multi-core
+ * machines). This happens when numbers get bigger than about
+ * 2^(31*KARATSUBA_PARALLEL_CUTOFF). This option allows one to override the
+ * default threshold so that performance effects can be measured and the
+ * cut-off adjusted to suit the machine involved.
+ */
+                    else if (strcmp(w, "kara") == 0)
+                    {   if (i != argc) w = argv[++i];
+                        else break; /* Illegal at end of command-line */
+                        kparallel = atoi(w);
+                        if (kparallel < KARATSUBA_CUTOFF)
+                            kparallel = KARATSUBA_CUTOFF;
                     }
                     else
                     {
@@ -2933,7 +2952,7 @@ term_printf(
 /*
  * If I do NOT have a window system I will print a newline here so that I
  * can be very certain that my banner appears at the start of a line.
- * With a window system I should have a brand-new frash window for output
+ * With a window system I should have a brand-new fresh window for output
  * and the newline would intrude as an initial blank line.
  */
             term_printf("\n");
@@ -2955,6 +2974,13 @@ term_printf(
 #ifdef WINDOW_SYSTEM
         ensure_screen();
 /* If the user hits the close button here I may be in trouble */
+#endif
+
+#if defined HAVE_LIBPTHREAD || defined WIN32
+    if (number_of_processors() >= 3)
+    {   karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+        if (kparallel > 0) karatsuba_parallel = kparallel;
+    }
 #endif
 
 /*

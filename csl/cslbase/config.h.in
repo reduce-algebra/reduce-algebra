@@ -24,6 +24,9 @@
 /* Define to 1 if you have the `cfmakeraw' function. */
 #undef HAVE_CFMAKERAW
 
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
 /* Define to 1 if the system has the type `cpu_set_t'. */
 #undef HAVE_CPU_SET_T
 
@@ -32,6 +35,10 @@
 
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
+
+/* Define to 1 if you have the declaration of `CLOCK_THREAD_CPUTIME_ID', and
+   to 0 if you don't. */
+#undef HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
 
 /* Define to 1 if you have the declaration of `RLIM_SAVED_CUR', and to 0 if
    you don't. */
@@ -315,6 +322,9 @@
 
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
 
 /* Define to 1 if you have the `tputs' function. */
 #undef HAVE_TPUTS

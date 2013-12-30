@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 0d472e2a 06-Jun-2013 */
+/* Signature: 601785e0 30-Dec-2013 */
 
 #include "headers.h"
 
@@ -379,7 +379,23 @@ char *look_in_lisp_variable(char *o, int prefix)
 }
 
 
-#if defined HAVE_SYS_TIME_H && defined HAVE_TIMES && !defined WIN32 && !defined EMBEDDED
+#if defined HAVE_CLOCK_GETTIME && defined HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
+
+/*
+ * Where possible I read the time used by the current thread...
+ */
+
+clock_t read_clock(void)
+{
+    struct timespec tt;
+    double w1;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
+    w1 = (double)tt.tv_sec + (double)tt.tv_nsec/1000000000.0; 
+    return (clock_t)(w1 * (double)CLOCKS_PER_SEC);
+}
+
+
+#elif defined HAVE_SYS_TIME_H && defined HAVE_TIMES && !defined WIN32 && !defined EMBEDDED
 
 /*
  * This is a BSD-style clock facility, possibly giving a resolution of

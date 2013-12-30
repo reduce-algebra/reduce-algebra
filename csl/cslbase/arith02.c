@@ -39,10 +39,9 @@
 
 
 
-/* Signature: 06e7d8bc 26-Dec-2013 */
+/* Signature: 364b4e0f 30-Dec-2013 */
 
 #include "headers.h"
-
 
 /*
  * Now for multiplication
@@ -638,14 +637,14 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
  *   DONE!
  *
  * Now a parallel version will require more workspace: (d6 .. d0). This
- * much is definitly required because each of the three calls to (sequential)
+ * much is definitely required because each of the three calls to (sequential)
  * half-length multiplications need their inputs, outputs and workspace
  * to be dedicated. Thus I need two units to store a0+a1 and b0+b1, a total
  * of six units for the products (but c3-c0 can provide four of those) and
  * finally three unit sized workspace blocks.
  *       d3 = a0+a1; record carry out 1.
- *       d4 = b1+b0; record carry out 2.
- *       (d6,d5) = d0*d1 using d2 as workspace;   )
+ *       d4 = b0+b1; record carry out 2.
+ *       (d6,d5) = d3*d4 using d2 as workspace;   )
  *       (c3,c2) = a1*b1 using d1 as workspace;   ) In parallel
  *       (c1,c0) = a0*b0 using d0 as workspace;   )
  * Now I just need to combine the various bits together!
@@ -654,25 +653,101 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
  *       if carry out 1 then c2 += d4; record carry out 1.
  *       if carry out 2 then c2 += d3; record carry out 2.
  *       carry out 3 += carry out 1 + carry out 2;
- *       (c3, c2, c1) -= (-carry out 3, c3, c2);
+ *       (c3, c2, c1) -= (0, c3, c2);
  *       (c3, c2, c1) -= (0, d0, c0);
+ *       (c3, c2, c1) += (carry out 3, d5, d6);
  *   DONE!
  */
 
-sem_t kara_sem1a, kara_sem1b, kara_sem2a, kara_sem2b;
+#ifdef DEBUG_PARALLEL_KARATSUBA
+
+static void shownum(FILE *log, uint32_t *p, int n, const char *s)
+{
+    int i, k, d, some = 0;
+    fprintf(log, "%s:", s);
+    k = 31*n;  /* Number of bits */
+    d = 0;
+    for (i=n-1; i>=0; i--)
+    {   int word = p[i];
+        int b;
+        for (b=0; b<31; b++)
+        {   d = d << 1;
+            k--;
+            if ((word & 0x40000000) != 0) d |= 1;
+            if ((k & 3) == 0)
+            {   if (d!=0 || some || (i==0 && b!=30))
+                {   fprintf(log, "%.1x", d);
+                    some = 1;
+                }
+                d = 0;
+            }
+            word = word << 1;
+        }
+    }
+    fprintf(log, "\n");
+    fflush(log);
+}
+
+#else
+#define shownum(log, p, n, s) /* Nothing */
+#endif
+
+sem_t kara_sem1a, kara_sem1b, kara_sem1c,
+      kara_sem2a, kara_sem2b, kara_sem2c;
 
 static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
 static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
 
+
 KARARESULT WINAPI kara_worker1(KARAARG p)
 {
+#ifdef DEBUG_PARALLEL_KARATSUBA
+    FILE *log = fopen("worker1.log", "w");
+    fprintf(log, "Start of worker1.log\n");
+    fflush(log);
+#endif
     for (;;)
-    {   sem_wait(&kara_sem1a);  // wait until asked to do something.
-        sem_post(&kara_sem1b);  // acknowledge the request.
-        long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
-                   kara_1_lena, kara_1_lenb, kara_1_lenc);
+    {
+/*
+ * The handshake here uses three semaphores. Well the counting behaviour
+ * of semaphore is not used, they are each either owned or free (rather like
+ * a simple mutex). They have to be semaphores rather than mutexes because
+ * at least on some platforms the system provided mutex has an "owner" thread
+ * and can not be released by any thread other than the one that claimed it.
+ * Each transaction with this worker involves just two post/wait pairs - one
+ * to tell the worker that there is something for it to do and the second
+ * to report that a result is available. The use of three semaphores in a
+ * cyclic pattern as here is to avoid race conditions. Note that a call
+ * to sem_wait could be interrupted by an signal. If that happens I will
+ * fall out of step and that would be bad. So I loop on the sem_wait until
+ * it returns zero.
+ */
+        while (sem_wait(&kara_sem1a) != 0);  // wait until asked to do something.
+        shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
+        shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
+        if (kara_1_lenc != 0)
+            long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
+                       kara_1_lena, kara_1_lenb, kara_1_lenc);
+        shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
+        sem_post(&kara_sem1b);  // announce that result is ready.
+
+        while (sem_wait(&kara_sem1c) != 0);  // wait until asked to do something.
+        shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
+        shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
+        if (kara_1_lenc != 0)
+            long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
+                       kara_1_lena, kara_1_lenb, kara_1_lenc);
+        shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
         sem_post(&kara_sem1a);  // announce that result is ready.
-        sem_wait(&kara_sem1b);  // wait until result has been picked up.
+
+        while (sem_wait(&kara_sem1b) != 0);  // wait until asked to do something.
+        shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
+        shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
+        if (kara_1_lenc != 0)
+            long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
+                       kara_1_lena, kara_1_lenb, kara_1_lenc);
+        shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
+        sem_post(&kara_sem1c);  // announce that result is ready.
     }
 /* The code here never exits! */
     return (KARARESULT)0;
@@ -683,17 +758,45 @@ static uint32_t kara_2_lena, kara_2_lenb, kara_2_lenc;
 
 KARARESULT WINAPI kara_worker2(KARAARG p)
 {
+#ifdef DEBUG_PARALLEL_KARATSUBA
+    FILE *log = fopen("worker2.log", "w");
+    fprintf(log, "Start of worker2.log\n");
+    fflush(log);
+#endif
     for (;;)
-    {   sem_wait(&kara_sem2a);  // wait until asked to do something.
-        sem_post(&kara_sem2b);  // acknowledge the request.
-        long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
-                   kara_2_lena, kara_2_lenb, kara_2_lenc);
+    {
+        while (sem_wait(&kara_sem2a) != 0);  // wait until asked to do something.
+        shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
+        shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
+        if (kara_2_lenc != 0)
+            long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
+                       kara_2_lena, kara_2_lenb, kara_2_lenc);
+        shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
+        sem_post(&kara_sem2b);  // announce that result is ready.
+
+        while (sem_wait(&kara_sem2c) != 0);  // wait until asked to do something.
+        shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
+        shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
+        if (kara_2_lenc != 0)
+            long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
+                       kara_2_lena, kara_2_lenb, kara_2_lenc);
+        shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
         sem_post(&kara_sem2a);  // announce that result is ready.
-        sem_wait(&kara_sem2b);  // wait until result has been picked up.
+
+        while (sem_wait(&kara_sem2b) != 0);  // wait until asked to do something.
+        shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
+        shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
+        if (kara_2_lenc != 0)
+            long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
+                       kara_2_lena, kara_2_lenb, kara_2_lenc);
+        shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
+        sem_post(&kara_sem2c);  // announce that result is ready.
     }
 /* The code here never exits! */
     return (KARARESULT)0;
 }
+
+static int semaphore_usage = 0;
 
 static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
                          uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
@@ -715,8 +818,10 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     int32_t h = lenc/4;   /* lenc must have been made even enough... */
     int32_t lena1 = lena - h;
     int32_t lenb1 = lenb - h;
-    uint32_t carrya, carryb;
+    uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
     int32_t i;
+    shownum(stdout, a, lena, "a");
+    shownum(stdout, b, lenb, "b");
 /*
  * if the top half of a would be all zero I go through a separate path,
  * doing just two subsidiary multiplications. Note that if I do that I
@@ -731,25 +836,53 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         kara_1_lena = lena;
         kara_1_lenb = lenb - h;
         kara_1_lenc = 2*h;
-        sem_post(&kara_sem1a);  /* allow worker 1 to start. */
+/* To keep the worker threads in step I will post dummy work to thread 2. */
+        kara_2_lena = kara_2_lenb = kara_2_lenc = 0; 
+        switch (semaphore_usage)
+        {
+    case 0: sem_post(&kara_sem1a);  /* allow worker 1 to start. */
+            sem_post(&kara_sem2a);  /* allow worker 2 to start. */
+            break;
+    case 1: sem_post(&kara_sem1c);  /* allow worker 1 to start. */
+            sem_post(&kara_sem2c);  /* allow worker 2 to start. */
+            break;
+    case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
+            sem_post(&kara_sem2b);  /* allow worker 2 to start. */
+            break;
+        }
         /* Now do my own work in parallel with worker 1 */
         for (i=0; i<h; i++) c[3*h+i] = 0;
         long_times(d, a, b, c, lena, h, 2*h);
-        sem_wait(&kara_sem1b); /* check that worker 1 has actually started */
-        sem_wait(&kara_sem1a); /* wait until worker 1 has finished */
-        for (i=0; i<h; i++) c[i] = d[i];
-        carrya = 0;
-        for (;i<2*h; i++)
-        {   uint32_t w = c[i] + d[i] + carrya;
-            c[i] = clear_top_bit(w);
-            carrya = w >> 31;
+        switch (semaphore_usage)
+        {
+    case 0: while (sem_wait(&kara_sem1b) != 0);  /* wait for worker 1 to finish. */
+            while (sem_wait(&kara_sem2b) != 0);  /* wait for worker 2 to finish. */
+            semaphore_usage = 1;
+            break;
+    case 1: while (sem_wait(&kara_sem1a) != 0);  /* wait for worker 1 to finish. */
+            while (sem_wait(&kara_sem2a) != 0);  /* wait for worker 2 to finish. */
+            semaphore_usage = 2;
+            break;
+    case 2: while (sem_wait(&kara_sem1c) != 0);  /* wait for worker 1 to finish. */
+            while (sem_wait(&kara_sem2c) != 0);  /* wait for worker 2 to finish. */
+            semaphore_usage = 0;
+            break;
         }
-        for (;carrya!=0;i++)
+        shownum(stdout, &c[h], 2*h, "top part");
+        shownum(stdout, d, 2*h, "bottom part");
+        for (i=0; i<h; i++) c[i] = d[i];
+        carry = 0;
+        for (;i<2*h; i++)
+        {   uint32_t w = c[i] + d[i] + carry;
+            c[i] = clear_top_bit(w);
+            carry = w >> 31;
+        }
+        for (;carry!=0 && i<lenc;i++)
         {   uint32_t w = c[i] + 1;
             c[i] = clear_top_bit(w);
-            carrya = w >> 31;
+            carry = w >> 31;
         }
-        sem_post(&kara_sem1b); /* complete the handshake */
+        shownum(stdout, c, lenc, "result");
         return;
     }
 /*
@@ -759,160 +892,175 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
  * First:
  *       (c1,c0) = a0*b0 using d0 as workspace;
  */
-        kara_1_c = c;           /* set up input data for worker 1 */
-        kara_1_a = a;
-        kara_1_b = b;
-        kara_1_d = d;           /* workspace */
-        kara_1_lena = h;
-        kara_1_lenb = h;
-        kara_1_lenc = 2*h;
-        sem_post(&kara_sem1a);  /* allow worker 1 to start. */
+    kara_1_c = c;           /* set up input data for worker 1 */
+    kara_1_a = a;
+    kara_1_b = b;
+    kara_1_d = d;           /* workspace */
+    kara_1_lena = h;
+    kara_1_lenb = h;
+    kara_1_lenc = 2*h;
 /*
  * Second:
  *       (c3,c2) = a1*b1 using d1 as workspace;
  */
-        kara_2_c = c+2*h;       /* set up input data for worker 2 */
-        kara_2_a = a+h;
-        kara_2_b = b+h;
-        kara_2_d = d+h;         /* workspace */
+    kara_2_c = c+2*h;       /* set up input data for worker 2 */
+    kara_2_a = a+h;
+    kara_2_b = b+h;
+    kara_2_d = d+h;         /* workspace */
 /*
  * Note that the top halves of the two inputs might not use up the
  * full width of the number that is available, but the product generated
- * here must be widened to fill all its space.
+ * here will be widened to fill all its space.
  */
-        kara_2_lena = lena1;
-        kara_2_lenb = lenb1;
-        kara_2_lenc = 2*h;
-        sem_post(&kara_sem2a);  /* allow worker 2 to start. */
+    kara_2_lena = lena1;
+    kara_2_lenb = lenb1;
+    kara_2_lenc = 2*h;
+    switch (semaphore_usage)
+    {
+case 0: sem_post(&kara_sem2a);  /* allow worker 1 to start. */
+        sem_post(&kara_sem1a);  /* allow worker 2 to start. */
+        break;
+case 1: sem_post(&kara_sem1c);  /* allow worker 1 to start. */
+        sem_post(&kara_sem2c);  /* allow worker 2 to start. */
+        break;
+case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
+        sem_post(&kara_sem2b);  /* allow worker 2 to start. */
+        break;
+    }
 /*
  * The rest can be done using the main thread.
+ *       d3 = a0+a1;   (leave asumcarry)
+ *       d4 = b0+b1;   (leave bsumcarry)
+ *       (d6,d5) = d3*d4 using d2 as workspace;
  *
- *       (d6,d5) = d0*d1 using d2 as workspace;
- * Now I just need to combine the various bits together!
- *       d0 = c1;                  preserve (c1, c0)
- *       carry out 3 = carry out 1 & carry out 2;
- *       if carry out 1 then c2 += d4; record carry out 1.
- *       if carry out 2 then c2 += d3; record carry out 2.
- *       carry out 3 += carry out 1 + carry out 2;
- *       (c3, c2, c1) -= (-carry out 3, c3, c2);
- *       (c3, c2, c1) -= (0, d0, c0);
- *       d3 = a0+a1; record carry out 1.
- *       d4 = b1+b0; record carry out 2.
- * form (a1+a2) and (b1+b2).
+ * Well I compute this as (d3<low> * d4<low>) where d3<high> and d4<hight>
+ * are each just one bit and get stored in asumcarry and bsumcarry.
  */
-    carrya = 0;
+    asumcarry = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = a[i] + carrya;
+    {   uint32_t w = a[i] + asumcarry;
         if (i < lena1) w += a[h+i];
         d[3*h+i] = clear_top_bit(w);
-        carrya = w >> 31;
+        asumcarry = w >> 31;
     }
-    carryb = 0;
+    shownum(stdout, &d[3*h], h, "a0+a1");
+    bsumcarry = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = b[i] + carryb;
+    {   uint32_t w = b[i] + bsumcarry;
         if (i < lenb1) w += b[h+i];
         d[4*h+i] = clear_top_bit(w);
-        carryb = w >> 31;
+        bsumcarry = w >> 31;
     }
-/*       (d6,d5) = d0*d1 using d2 as workspace;*/
-/*  long_times(c+h, d, d+h, c, h, h, 2*h); */
-
+    shownum(stdout, &d[4*h], h, "b0+b1");
+/*       (d6,d5) = d3*d4 using d2 as workspace;*/
+    long_times(&d[5*h], &d[3*h], &d[4*h], &d[2*h], h, h, 2*h);
+    shownum(stdout, &d[5*h], 2*h, "(a0+a1)*(b0+b1)");
+/*
+ * Now I wish to re-sync with the two sub-tasks...
+ */
+    fflush(stdout);
+    switch (semaphore_usage)
+    {
+case 0: while (sem_wait(&kara_sem1b) != 0);  /* wait for worker 1 to finish. */
+        while (sem_wait(&kara_sem2b) != 0);  /* wait for worker 2 to finish. */
+        semaphore_usage = 1;
+        break;
+case 1: while (sem_wait(&kara_sem1a) != 0);  /* wait for worker 1 to finish. */
+        while (sem_wait(&kara_sem2a) != 0);  /* wait for worker 2 to finish. */
+        semaphore_usage = 2;
+        break;
+case 2: while (sem_wait(&kara_sem1c) != 0);  /* wait for worker 1 to finish. */
+        while (sem_wait(&kara_sem2c) != 0);  /* wait for worker 2 to finish. */
+        semaphore_usage = 0;
+        break;
+    }
+    shownum(stdout, kara_1_a, kara_1_lena, "kara 1 a");
+    shownum(stdout, kara_1_b, kara_1_lenb, "kara 1 b");
+    shownum(stdout, kara_1_c, kara_1_lenc, "kara 1 c");
+    shownum(stdout, kara_2_a, kara_2_lena, "kara 2 a");
+    shownum(stdout, kara_2_b, kara_2_lenb, "kara 2 b");
+    shownum(stdout, kara_2_c, kara_2_lenc, "kara 2 c");
+    shownum(stdout, c+2*h, 2*h, "top half product");
 /*
  * Now I just need to combine the various bits together!
  *       d0 = c1;                  preserve (c1, c0)
- *       carry out 3 = carry out 1 & carry out 2;
- *       if carry out 1 then c2 += d4; record carry out 1.
- *       if carry out 2 then c2 += d3; record carry out 2.
- *       carry out 3 += carry out 1 + carry out 2;
- *       (c3, c2, c1) -= (-carry out 3, c3, c2);
+ */
+    shownum(stdout, c, lenc, "packed a1*b1|a0*b0");
+    for (i=0; i<h; i++) d[i] = c[h+i];
+/*
+ *       (c3, c2, c1) -= (0, c3, c2);
+ */
+    carryc1 = 0;
+    for (i=0; i<2*h; i++)
+    {   uint32_t w = c[h+i] - c[2*h+i] - carryc1;
+        c[h+i] = clear_top_bit(w);
+        carryc1 = w >> 31;
+    }
+    shownum(stdout, c, lenc, "after (c3,c2,c1) -= (0, c3, c2)");
+/*
  *       (c3, c2, c1) -= (0, d0, c0);
-        kara_1_c = c+h;         /* set up input data for worker 1 */
-        kara_1_a = d;
-        kara_1_b = d+h;
-        kara_1_d = c;
-        kara_1_lena = h;
-        kara_1_lenb = h;
-        kara_1_lenc = 2*h;
-        sem_post(&kara_sem1a);  /* allow worker 1 to start. */
-
-
-
+ */
+    carryc2 = 0;
+    for (i=0; i<h; i++)
+    {   uint32_t w = c[h+i] - c[i] - carryc2;
+        c[h+i] = clear_top_bit(w);
+        carryc2 = w >> 31;
+    }
+    for (;i<2*h; i++)
+    {   uint32_t w = c[h+i] - d[i-h] - carryc2;
+        c[h+i] = clear_top_bit(w);
+        carryc2 = w >> 31;
+    }
+    shownum(stdout, c, lenc, "after (c3,c2,c1) -= (0, d0, c0)");
+/*
+ * I held on to the "borrow" bits that combine with c3
+ */
+    carryc = (asumcarry & bsumcarry) - carryc1 - carryc2;
 /*
  * Adjust to allow for the cases of a1+a2 or b1+b2 overflowing
  * by a single bit.
+ *       carry out 3 = carry out 1 & carry out 2;
+ *       if carry out 1 then c2 += d4; record carry out 1.
+ *       if carry out 2 then c2 += d3; record carry out 2.
  */
-    c[3*h] = carrya & carryb;
-    if (carrya != 0)
-    {   carrya = 0;
+    if (asumcarry != 0)
+    {   carry = 0;
         for (i=0; i<h; i++)
-        {   uint32_t w = c[2*h+i] + d[h+i] + carrya;
+        {   uint32_t w = c[2*h+i] + d[4*h+i] + carry;
             c[2*h+i] = clear_top_bit(w);
-            carrya = w >> 31;
+            carry = w >> 31;
         }
+        carryc += carry;
     }
-    if (carryb != 0)
-    {   carryb = 0;
+    if (bsumcarry != 0)
+    {   carry = 0;
         for (i=0; i<h; i++)
-        {   uint32_t w = c[2*h+i] + d[i] + carryb;
+        {   uint32_t w = c[2*h+i] + d[3*h+i] + carry;
             c[2*h+i] = clear_top_bit(w);
-            carryb = w >> 31;
+            carry = w >> 31;
         }
+        carryc += carry;
     }
-    c[3*h] += carrya + carryb;
-    for (i=1; i<h; i++) c[3*h+i] = 0;
-/*
- * Now (a1+a2)*(b1+b2) should have been computed totally properly
+    shownum(stdout, c, lenc, "Just needs (d5, d6) adding in");
+/* Now just needs (d5, d6) adding in... as in
+ *       (c3, c2, c1) += (<deferred carry>, d5, d6);
  */
-    for (i=0; i<h; i++) d[h+i] = 0;
-/*
- * multiply out a1*b1, where note that a1 and b1 may be less long
- * than h, but not by much.
- */
-    long_times(d, a+h, b+h, c, lena-h, lenb-h, 2*h);
-    carrya = 0;
+    carry = 0;
     for (i=0; i<2*h; i++)
-    {   uint32_t w = c[2*h+i] + d[i] + carrya;
-        c[2*h+i] = clear_top_bit(w);
-        carrya = w >> 31;
-    }
-    carrya = 0;
-    for (i=0; i<2*h; i++)
-    {   uint32_t w = c[h+i] - d[i] - carrya;
+    {   uint32_t w = c[h+i] + d[5*h+i] + carry;
         c[h+i] = clear_top_bit(w);
-        carrya = w >> 31;
-    }
-    for (; carrya!=0 && i<3*h; i++)
-    {   uint32_t w = c[h+i] - 1;
-        c[h+i] = clear_top_bit(w);
-        carrya = w >> 31;
+        carry = w >> 31;
     }
 /*
- * multiply out a2*b2
+ * Here is where I finally merge in carries into c3.
  */
-    long_times(d, a, b, c, h, h, 2*h);
-    for (i=0; i<h; i++) c[i] = d[i];
-    carrya = 0;
-    for (; i<2*h; i++)
-    {   uint32_t w = c[i] + d[i] + carrya;
-        c[i] = clear_top_bit(w);
-        carrya = w >> 31;
-    }
-    for (; carrya!=0 && i<4*h; i++)
-    {   uint32_t w = c[i] + 1;
-        c[i] = clear_top_bit(w);
-        carrya = w >> 31;
-    }
-    carrya = 0;
-    for (i=0; i<2*h; i++)
-    {   uint32_t w = c[h+i] - d[i] - carrya;
+    carry += carryc;
+    for (;i<3*h && carry!=0; i++)
+    {   uint32_t w = c[h+i] + carry;
         c[h+i] = clear_top_bit(w);
-        carrya = w >> 31;
+        carry = w >> 31;
     }
-    for (; carrya!=0 && i<3*h; i++)
-    {   uint32_t w = c[h+i] - 1;
-        c[h+i] = clear_top_bit(w);
-        carrya = w >> 31;
-    }
+    shownum(stdout, c, lenc, "final result");
 /*
  * The product is now complete
  */
@@ -983,7 +1131,7 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         while (lenc > newlenc) c[--lenc] = 0;
     }
 #if defined HAVE_LIBPTHREAD || defined WIN32
-    if (0 && lena > karatsuba_parallel) /* Disabled a for now */
+    if (lena > karatsuba_parallel)
     {   int save = karatsuba_parallel;
 /*
  * I will only allow a single level of the recursion to use threads, and I
@@ -1048,6 +1196,9 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
 /*
  * I take the absolute values of the two input values a and b,
  * recording what the eventual sign for the product will need to be.
+ * This is a bit of a waste and a cop-out in that with more care I
+ * could do the whole long multiplication on the twos complement values,
+ * however this makes life simpler there for me!
  */
     if (((int32_t)bignum_digits(a)[lena-1]) < 0)
     {   sign = -sign;
@@ -1108,35 +1259,30 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
         lenc = 2*lenc;
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
         errexitn(2);
-        lend = lenc;
 #if defined HAVE_LIBPTHREAD || defined WIN32
 /*
  * If I run using threads then each of the three threads can need some
  * workspace, so I will allocate (rather a lot) more.
  */
-        lend *= 3;
+        lend = (7*lenc)/2;
+#else
+        lend = lenc;
 #endif
+
 /*
- * The next line seems pretty shameless, but it may reduce the amount of
- * garbage collection I do.  When the workspace vector needed is short enough
- * (at present up to 256 bytes) I use the character assembly buffer (boffo)
- * as my workspace, relying on an expectation that bignumber multiplication
- * can never be triggered from places within the reader where that buffer is
- * in use for its normal purpose.  I forge tag bits to make boffo look like
- * a number here, but can never trigger garbage collection in a way that
- * might inspect same, so that too is safe at present.
- *
- * A better scheme will be to have a buffer for use here that is
- * persistent from multiplication to multiplication but that is discarded
- * when there is a garbage collection occurs. That ought to reduce allocation
- * usefully.
+ * The next line should save a serious amount of memory turn-over when
+ * doing a lot of arithmetic. It maintains a multiplication buffer, but
+ * one that is discarded at the start of any garbage collection. Thus
+ * between garbage collections it will get allocated just big enough
+ * but it should not cause clutter when not used.
  */
-        if ((4*lend+CELL) <= (intptr_t)length_of_header(vechdr(boffo)))
-            d = (Lisp_Object)((char *)boffo + TAG_NUMBERS - TAG_VECTOR);
-        else
+        if (multiplication_buffer == nil ||
+            (4*lend+CELL) > (intptr_t)length_of_header(numhdr(multiplication_buffer)))
         {   push(c);
-            d = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
+            multiplication_buffer =
+                getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
             pop(c);
+            errexitn(2);
         }
         lenc = 2*lenc;
     }
@@ -1148,14 +1294,22 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
  */
         lenc = lena + lenb;
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
-        d = c;     /* set d to avoid dataflow anomaly */
+        errexitn(2);
+        if (multiplication_buffer == nil)
+        {   push(c);
+            multiplication_buffer =
+                getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
+            pop(c);
+            errexitn(2);
+        }
     }
     pop2(b, a);
     errexit();
+    d = multiplication_buffer;
     {   uint32_t *da = &bignum_digits(a)[0],
-                   *db = &bignum_digits(b)[0],
-                   *dc = &bignum_digits(c)[0],
-                   *dd = &bignum_digits(d)[0];
+                 *db = &bignum_digits(b)[0],
+                 *dc = &bignum_digits(c)[0],
+                 *dd = &bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
 /*

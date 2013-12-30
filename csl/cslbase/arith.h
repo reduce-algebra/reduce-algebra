@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 24554c12 23-Dec-2013 */
+/* Signature: 42e21ef9 30-Dec-2013 */
 
 #ifndef header_arith_h
 #define header_arith_h 1
@@ -230,12 +230,20 @@ extern KARARESULT kara_worker2(KARAARG p);
 
 #endif
 
-extern sem_t kara_sem1a, kara_sem1b, kara_sem2a, kara_sem2b;
+extern sem_t kara_sem1a, kara_sem1b, kara_sem1c,
+             kara_sem2a, kara_sem2b, kara_sem2c;
 
 extern int karatsuba_parallel;
 
+/*
+ * Tests on my Intel i7 4770K system running Windows 7 (64-bit) I find that
+ * on numbers over 10^1000 (or so) the use of a multi-threaded Karatsuba
+ * starts to pay off. By 2000 decimal digits it is quite useful.
+ * The threshold set here of 120 31-bit words represents about the
+ * break-even point.
+ */
 #ifndef KARATSUBA_PARALLEL_CUTOFF
-#  define KARATSUBA_PARALLEL_CUTOFF 20
+#  define KARATSUBA_PARALLEL_CUTOFF 120
 #endif
 
 #endif /* Thread support */
