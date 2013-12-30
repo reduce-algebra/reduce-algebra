@@ -1,0 +1,80 @@
+Integer Multiplication in CSL
+
+
+In general big-integers are stored with 31-bit digits (so that the 32nd bit
+in the word can be used as a guard bit or to make C code to separate off
+carries easier). The most significant word is treated as signed, while all
+lower digits are unsigned.
+
+For multiplication of values that use up to 12 words simple classical
+"paper and pencil" long multiplication is performed.
+
+Beyond that Karatsuba multiplication is used. This is based on the
+formula
+
+  (a1,a0)*(b1,b0) =>
+  a1*b1
+     (a1+a0)*(b1+b0)-a1*b1-a0*b0
+         a0*b0
+and used just 3 half-width multiplications. This leads to a growth rate
+of around n^1.585 (rather than the n^2 for classical multiplication). The
+switch at 12 words is made based on empirical measurements that suggest that
+that is around the point where Karatsuba's better assymptotic behaviour
+outweighs its extra overhead.
+
+If the computer used supports threads and is detected as having at least 4
+processor cores then at around 120 words a further variation is introduced:
+the three half-width multiplications noted above run in three separate
+threads. One is the main thread, the other two are ones established at the
+start of a Lisp run and are dedicated to this purpose. Semaphores are used
+to allow these worker threads to start their job and again when the main
+thread needs to verify that the workers have finished before it proceeds.
+Only one level of parallel decomposition is used.
+
+The measurements I have for this are as follows (on a Windows 7 machine).
+The calculation is merely squaring a number with the given number of
+decimal digits, so the forst line related to squaring 10^100. This is below
+the threshold for any Karatsuba scheme to apply which is why the times
+with and without parallelism enabled are the same. The times quoted are
+in milliseconds and are for repeating the multiplication a number of
+times judged to make all the sequential cases take roughly the same
+amount of time.
+Observe that with the code in the form as measured that when the inputs are
+up to 800 decimal digits long the overheads associated with the concurrent
+method make it not worth while, but from say 1200 digits onwards it gives
+useful benefit. But about 2500 digits it gives a speed doubling. The best
+speed up observed is a factor of 2.6, where a factor of 3 is the absolute
+limit.
+
+  digits    sequential    parallel
+    100       13290        13477
+    150       17548        327802
+    200       15958        207919
+    300       19689        107734
+    400       17686        72451
+    500       19531        51814
+    600       20950        40940
+    700       19731        31934
+    800       19065        26804
+    900       23367        25258
+    1000      21308        21391
+    1250      20825        17268
+    1500      21214        15120
+    1750      19421        12824
+    2000      21807        12182
+    2500      21246        10903
+    3000      21855        10235
+    4000      22464        9686
+    5000      21575        9032
+    7500      24526        9841
+    10000     21949        8486
+    20000     22027        8658
+    50000     21699        8348
+
+The code that implements this is in csl/cslbase/arith02.c, and anybody
+who wants to tinker with it to see if they can speed it up in general, or
+reduce the overheads so that the break-even points for the "fast" methods
+get smaller is very welcome to have a go, and I will be interested to
+know what is achieved.
+
+                                               Arthur Norman. December 2013
