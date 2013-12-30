@@ -10,8 +10,8 @@
 
 TRACE = $(warning TRACE: $@ :: $?)
 
-CPPFLAGS += $(TRACE)
-LDFLAGS += $(TRACE)
+AM_CPPFLAGS = $(TRACE)
+AM_LDFLAGS  = $(TRACE)
 
 # If I list all the phony targets here this may help document things you
 # can do via this Makefile
@@ -116,16 +116,22 @@ endif !cygwin
 
 if wx
 WXC=../bin/wx-config
-CPPFLAGS += $(shell ../bin/wx-config --cppflags 2>/dev/null)
-CFLAGS   += $(shell ../bin/wx-config --cflags 2>/dev/null)
-CXXFLAGS += $(shell ../bin/wx-config --cxxflags 2>/dev/null)
-LIBS     += $(shell ../bin/wx-config --libs 2>/dev/null)
+MY_CPPFLAGS := $(shell ../bin/wx-config --cppflags 2>/dev/null)
+MY_CFLAGS   := $(shell ../bin/wx-config --cflags 2>/dev/null)
+MY_CXXFLAGS := $(shell ../bin/wx-config --cxxflags 2>/dev/null)
+MY_LIBS     := $(shell ../bin/wx-config --libs 2>/dev/null)
+
+AM_CPPFLAGS += $(MY_CPPFLAGS)
+AM_CFLAGS    = $(MY_CFLAGS)
+AM_CXXFLAGS  = $(MY_CXXFLAGS)
+AM_LIBS      = $(MY_LIBS)
+
 else !wx
 WXC=
 endif !wx
 
 # I wish to know where this build intends to install things...
-CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
+AM_CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
@@ -229,37 +235,37 @@ endif !jit
 
 gensrc=$(srcdir)/../../cslbuild/generated-c
 
-generated_sources =             $(gensrc)/u01.c \
-		$(gensrc)/u02.c $(gensrc)/u03.c \
-		$(gensrc)/u04.c $(gensrc)/u05.c \
-		$(gensrc)/u06.c $(gensrc)/u07.c \
-		$(gensrc)/u08.c $(gensrc)/u09.c \
-		$(gensrc)/u10.c $(gensrc)/u11.c \
-		$(gensrc)/u12.c $(gensrc)/u13.c \
-		$(gensrc)/u14.c $(gensrc)/u15.c \
-		$(gensrc)/u16.c $(gensrc)/u17.c \
-		$(gensrc)/u18.c $(gensrc)/u19.c \
-		$(gensrc)/u20.c $(gensrc)/u21.c \
-		$(gensrc)/u22.c $(gensrc)/u23.c \
-		$(gensrc)/u24.c $(gensrc)/u25.c \
-		$(gensrc)/u26.c $(gensrc)/u27.c \
-		$(gensrc)/u28.c $(gensrc)/u29.c \
-		$(gensrc)/u30.c $(gensrc)/u31.c \
-		$(gensrc)/u32.c $(gensrc)/u33.c \
-		$(gensrc)/u34.c $(gensrc)/u35.c \
-		$(gensrc)/u36.c $(gensrc)/u37.c \
-		$(gensrc)/u38.c $(gensrc)/u39.c \
-		$(gensrc)/u40.c $(gensrc)/u41.c \
-		$(gensrc)/u42.c $(gensrc)/u43.c \
-		$(gensrc)/u44.c $(gensrc)/u45.c \
-		$(gensrc)/u46.c $(gensrc)/u47.c \
-		$(gensrc)/u48.c $(gensrc)/u49.c \
-		$(gensrc)/u50.c $(gensrc)/u51.c \
-		$(gensrc)/u52.c $(gensrc)/u53.c \
-		$(gensrc)/u54.c $(gensrc)/u55.c \
-		$(gensrc)/u56.c $(gensrc)/u57.c \
-		$(gensrc)/u58.c $(gensrc)/u59.c \
-		$(gensrc)/u60.c
+generated_sources =             u01.c \
+		u02.c u03.c \
+		u04.c u05.c \
+		u06.c u07.c \
+		u08.c u09.c \
+		u10.c u11.c \
+		u12.c u13.c \
+		u14.c u15.c \
+		u16.c u17.c \
+		u18.c u19.c \
+		u20.c u21.c \
+		u22.c u23.c \
+		u24.c u25.c \
+		u26.c u27.c \
+		u28.c u29.c \
+		u30.c u31.c \
+		u32.c u33.c \
+		u34.c u35.c \
+		u36.c u37.c \
+		u38.c u39.c \
+		u40.c u41.c \
+		u42.c u43.c \
+		u44.c u45.c \
+		u46.c u47.c \
+		u48.c u49.c \
+		u50.c u51.c \
+		u52.c u53.c \
+		u54.c u55.c \
+		u56.c u57.c \
+		u58.c u59.c \
+		u60.c
 generated_objects =           u01.$(OBJEXT) \
 		u02.$(OBJEXT) u03.$(OBJEXT) \
 		u04.$(OBJEXT) u05.$(OBJEXT) \
@@ -360,20 +366,20 @@ else !mac_framework
 FONTDEP=reduce.$(fontsdir)/$(samplefont)
 endif !mac_framework
 
-CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
+AM_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
-foxdemo_CPPFLAGS = $(FOX_INCLUDES)
+foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 foxdemo_DEPENDENCIES = $(fwin_icon) 
 
 fontdemo_SOURCES = fontdemo.cpp
-fontdemo_CPPFLAGS = $(FOX_INCLUDES)
+fontdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 fontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
 showmathdemo_SOURCES = showmathdemo.cpp
-showmathdemo_CPPFLAGS = $(FOX_INCLUDES)
+showmathdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 showmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
@@ -605,7 +611,8 @@ if crlibm
 
 CRLIBMDEPS=../lib/libcrlibm.a ../include/crlibm.h
 
-CPPFLAGS += -I../include
+CRINC = -I../include
+AM_CPPFLAGS += $(CRINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -668,6 +675,8 @@ $(CRLIBMDEPS):
 	@cd ../crlibm && $(MAKE) install
 
 else !crlibm
+CRINC =
+
 # It is important for the next line that restart.$(OBJEXT) is created from
 # restart.c using a generic default rule - otherwise the lack of
 # explicit actions here would hurt.
