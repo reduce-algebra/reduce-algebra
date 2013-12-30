@@ -266,6 +266,37 @@ generated_sources =             u01.c \
 		u56.c u57.c \
 		u58.c u59.c \
 		u60.c
+generated_sources_deps =             $(gensrc)/01.c \
+		$(gensrc)/02.c $(gensrc)/03.c \
+		$(gensrc)/04.c $(gensrc)/05.c \
+		$(gensrc)/06.c $(gensrc)/07.c \
+		$(gensrc)/08.c $(gensrc)/09.c \
+		$(gensrc)/10.c $(gensrc)/11.c \
+		$(gensrc)/12.c $(gensrc)/13.c \
+		$(gensrc)/14.c $(gensrc)/15.c \
+		$(gensrc)/16.c $(gensrc)/17.c \
+		$(gensrc)/18.c $(gensrc)/19.c \
+		$(gensrc)/20.c $(gensrc)/21.c \
+		$(gensrc)/22.c $(gensrc)/23.c \
+		$(gensrc)/24.c $(gensrc)/25.c \
+		$(gensrc)/26.c $(gensrc)/27.c \
+		$(gensrc)/28.c $(gensrc)/29.c \
+		$(gensrc)/30.c $(gensrc)/31.c \
+		$(gensrc)/32.c $(gensrc)/33.c \
+		$(gensrc)/34.c $(gensrc)/35.c \
+		$(gensrc)/36.c $(gensrc)/37.c \
+		$(gensrc)/38.c $(gensrc)/39.c \
+		$(gensrc)/40.c $(gensrc)/41.c \
+		$(gensrc)/42.c $(gensrc)/43.c \
+		$(gensrc)/44.c $(gensrc)/45.c \
+		$(gensrc)/46.c $(gensrc)/47.c \
+		$(gensrc)/48.c $(gensrc)/49.c \
+		$(gensrc)/50.c $(gensrc)/51.c \
+		$(gensrc)/52.c $(gensrc)/53.c \
+		$(gensrc)/54.c $(gensrc)/55.c \
+		$(gensrc)/56.c $(gensrc)/57.c \
+		$(gensrc)/58.c $(gensrc)/59.c \
+		$(gensrc)/60.c
 generated_objects =           u01.$(OBJEXT) \
 		u02.$(OBJEXT) u03.$(OBJEXT) \
 		u04.$(OBJEXT) u05.$(OBJEXT) \
@@ -1701,7 +1732,7 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-standard-c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
+standard-c-code $(generated_sources_deps) $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
