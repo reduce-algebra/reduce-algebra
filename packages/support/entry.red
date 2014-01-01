@@ -509,6 +509,10 @@ defautoload(assert_procstat, assert, expr, 0);
 put('assert_procedure, 'formfn, 'assert_formproc);
 defautoload(assert_formproc, assert, expr, 3);
 
+% LALR
+
+defautoload(lalr_construct_parser);
+defautoload(yyparse, lalr, expr, 0);
 
 endmodule;
 

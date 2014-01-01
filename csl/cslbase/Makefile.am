@@ -728,7 +728,17 @@ $(srcdir)/Makefile.am:
 
 if wx
 
-BASELIB=../lib/libwx_baseu-2.9.a
+#
+# the wxWidgets snapshot that I have just uploaded builds as version
+# 3.1 while earlier ones I had been using were 2.9. This is a mild nuisance
+# but because hardly anybody will be working with the wxWidgets version at
+# this stage I will just go with the flow. If in doubt please go
+#   rm -rd cslbuild/*wx csl/wxWidgets; ./configure --with-csl --with-wx
+# to get the latest snapshot unpacked and built.
+#
+WXV=3.1
+
+BASELIB=../lib/libwx_baseu-$(WXV).a
 WXDEPS=../bin/wx-config $(BASELIB)
 
 if !cygwin
@@ -741,7 +751,7 @@ if !cygwin
 # if I build under raw cygwin that is not the case, so I disable this
 # hack in that situation.
 
-$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
+$(BASELIB):	../lib/libwx_baseu-$(WXV)-$(HOST).a
 	cd ../lib; \
 	for x in *$(HOST).a; \
 	do \
@@ -750,13 +760,13 @@ $(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
 	  ln -s -f $$x $$y; \
 	done
 
-../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
+../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:
 	@cd ../wxWidgets && $(MAKE) install
 endif !cygwin
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxfontdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) wxfontdemo$(EXEEXT)
@@ -768,7 +778,7 @@ endif mac_framework
 
 wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxfontdemo1$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) wxfontdemo1$(EXEEXT)
@@ -780,7 +790,7 @@ endif mac_framework
 
 wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxdvi$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) wxdvi$(EXEEXT)
@@ -792,7 +802,7 @@ endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) wxdemo$(EXEEXT)
@@ -804,7 +814,7 @@ endif mac_framework
 
 wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxshowmathdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) wxshowmathdemo$(EXEEXT)
@@ -837,11 +847,11 @@ endif cyg64
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f csl$(COM)
-	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
 	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
 	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
@@ -888,11 +898,11 @@ endif cyg64
 	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f reduce$(COM)
-	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
 	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
 	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
@@ -947,7 +957,7 @@ endif cyg64
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) bootstrapreduce$(EXEEXT)
@@ -985,11 +995,11 @@ endif cyg64
 	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f fwindemo$(COM)
-	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
 endif windows
 if !debug
@@ -1011,11 +1021,11 @@ endif wx
 if wx
 wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxpsl$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f wxpsl$(COM)
-	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
 endif windows
 if !debug
@@ -1037,7 +1047,7 @@ if fox
 
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 	-$(RM) -f fontdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) fontdemo$(EXEEXT)
@@ -1046,7 +1056,7 @@ endif !debug
 
 foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
 	-$(RM) -f foxdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) foxdemo$(EXEEXT)
@@ -1055,7 +1065,7 @@ endif !debug
 
 showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
 	-$(RM) -f showmathdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) showmathdemo$(EXEEXT)

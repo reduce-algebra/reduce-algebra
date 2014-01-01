@@ -78,3 +78,68 @@ get smaller is very welcome to have a go, and I will be interested to
 know what is achieved.
 
                                                Arthur Norman. December 2013
+
+==================================================
+#! /bin/bash
+
+# This is the somewhat scruffy shell script used to collect timings
+# for integer multiplication. The private option "--kara" for csl sets the
+# change-over threshold where threaded multiplication stars, expressed in
+# units of 31 bits. Thus "--kara 1000000" effectively disables use of threads
+# while "--kara 10" will use them whenever ordinary Karatsube would be used.
+
+case $OS in
+*Windows*)
+COM=".com"
+;;
+*)
+COM=""
+;;
+esac
+
+
+for A in 100 150 200 300 400 500 600 700 800 900 1000 1250 1500 1750 2000 2500 3000 4000 5000 7500 10000 20000 50000
+do
+printf "Digits=$A\n"
+
+printf "sequential: "
+./csl$COM <<XXX -Dn=$A --kara 1000000 | grep "time taken"
+(setq !*echo t)
+(setq n (compress (explodec n)))
+(verbos nil)
+(setq !*comp t)
+(de timer ()
+  (prog (a t0 c)
+    (setq a (expt 10 n))
+    (setq c (quotient 100000000000 (fix (expt n 1.585))))
+    (setq t0 (time))
+    (dotimes (i c) (times a a))
+    (setq t0 (difference (time) t0))
+    (terpri)
+    (printc (list 'time 'taken t0))))
+
+(timer)
+XXX
+
+printf "parallel:   "
+./csl$COM <<XXX -Dn=$A --kara 10 | grep "time taken"
+(setq !*echo t)
+(setq n (compress (explodec n)))
+(verbos nil)
+(setq !*comp t)
+(de timer ()
+  (prog (a t0 c)
+    (setq a (expt 10 n))
+    (setq c (quotient 100000000000 (fix (expt n 1.585))))
+    (setq t0 (time))
+    (dotimes (i c) (times a a))
+    (setq t0 (difference (time) t0))
+    (terpri)
+    (printc (list 'time 'taken t0))))
+
+(timer)
+XXX
+
+done
+
+exit 0

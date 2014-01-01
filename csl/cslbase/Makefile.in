@@ -526,6 +526,38 @@ generated_sources = u01.c \
 		u58.c u59.c \
 		u60.c
 
+generated_sources_deps = $(gensrc)/01.c \
+		$(gensrc)/02.c $(gensrc)/03.c \
+		$(gensrc)/04.c $(gensrc)/05.c \
+		$(gensrc)/06.c $(gensrc)/07.c \
+		$(gensrc)/08.c $(gensrc)/09.c \
+		$(gensrc)/10.c $(gensrc)/11.c \
+		$(gensrc)/12.c $(gensrc)/13.c \
+		$(gensrc)/14.c $(gensrc)/15.c \
+		$(gensrc)/16.c $(gensrc)/17.c \
+		$(gensrc)/18.c $(gensrc)/19.c \
+		$(gensrc)/20.c $(gensrc)/21.c \
+		$(gensrc)/22.c $(gensrc)/23.c \
+		$(gensrc)/24.c $(gensrc)/25.c \
+		$(gensrc)/26.c $(gensrc)/27.c \
+		$(gensrc)/28.c $(gensrc)/29.c \
+		$(gensrc)/30.c $(gensrc)/31.c \
+		$(gensrc)/32.c $(gensrc)/33.c \
+		$(gensrc)/34.c $(gensrc)/35.c \
+		$(gensrc)/36.c $(gensrc)/37.c \
+		$(gensrc)/38.c $(gensrc)/39.c \
+		$(gensrc)/40.c $(gensrc)/41.c \
+		$(gensrc)/42.c $(gensrc)/43.c \
+		$(gensrc)/44.c $(gensrc)/45.c \
+		$(gensrc)/46.c $(gensrc)/47.c \
+		$(gensrc)/48.c $(gensrc)/49.c \
+		$(gensrc)/50.c $(gensrc)/51.c \
+		$(gensrc)/52.c $(gensrc)/53.c \
+		$(gensrc)/54.c $(gensrc)/55.c \
+		$(gensrc)/56.c $(gensrc)/57.c \
+		$(gensrc)/58.c $(gensrc)/59.c \
+		$(gensrc)/60.c
+
 generated_objects = u01.$(OBJEXT) \
 		u02.$(OBJEXT) u03.$(OBJEXT) \
 		u04.$(OBJEXT) u05.$(OBJEXT) \
@@ -729,7 +761,17 @@ DEST = -o
 @crlibm_TRUE@CRLIBMDEPS = ../lib/libcrlibm.a ../include/crlibm.h
 @crlibm_FALSE@CRINC = 
 @crlibm_TRUE@CRINC = -I../include
-@wx_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
+
+#
+# the wxWidgets snapshot that I have just uploaded builds as version
+# 3.1 while earlier ones I had been using were 2.9. This is a mild nuisance
+# but because hardly anybody will be working with the wxWidgets version at
+# this stage I will just go with the flow. If in doubt please go
+#   rm -rd cslbuild/*wx csl/wxWidgets; ./configure --with-csl --with-wx
+# to get the latest snapshot unpacked and built.
+#
+@wx_TRUE@WXV = 3.1
+@wx_TRUE@BASELIB = ../lib/libwx_baseu-$(WXV).a
 @wx_FALSE@WXDEPS = 
 @wx_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
@@ -1677,7 +1719,7 @@ $(srcdir)/Makefile.am:
 # if I build under raw cygwin that is not the case, so I disable this
 # hack in that situation.
 
-@cygwin_FALSE@@wx_TRUE@$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
+@cygwin_FALSE@@wx_TRUE@$(BASELIB):	../lib/libwx_baseu-$(WXV)-$(HOST).a
 @cygwin_FALSE@@wx_TRUE@	cd ../lib; \
 @cygwin_FALSE@@wx_TRUE@	for x in *$(HOST).a; \
 @cygwin_FALSE@@wx_TRUE@	do \
@@ -1686,36 +1728,36 @@ $(srcdir)/Makefile.am:
 @cygwin_FALSE@@wx_TRUE@	  ln -s -f $$x $$y; \
 @cygwin_FALSE@@wx_TRUE@	done
 
-@cygwin_FALSE@@wx_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
+@cygwin_FALSE@@wx_TRUE@../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:
 @cygwin_FALSE@@wx_TRUE@	@cd ../wxWidgets && $(MAKE) install
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxfontdemo$(EXEEXT)
-@wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
 
 @wx_TRUE@wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxfontdemo1$(EXEEXT)
-@wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(LIBS) $(CONAP)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo1$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo1 $(srcdir)
 
 @wx_TRUE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxdvi$(EXEEXT)
-@wx_TRUE@	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdvi$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
 
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxdemo$(EXEEXT)
-@wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdemo $(srcdir)
 
 @wx_TRUE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxshowmathdemo$(EXEEXT)
-@wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmathdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
 
@@ -1727,9 +1769,9 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
 @cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make csl.exe
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
-	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f csl$(COM)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @windows_TRUE@	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
 @windows_TRUE@	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
 @darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
@@ -1747,9 +1789,9 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 @cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
-	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f reduce$(COM)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @windows_TRUE@	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
 @windows_TRUE@	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
 @darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
@@ -1779,7 +1821,7 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
 @cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe;
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
-	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
 @mac_framework_TRUE@@wx_FALSE@	$(REZ) -t APPL -o bootstrapreduce $(srcdir)/mac.r
@@ -1793,35 +1835,35 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
 @cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make fwindemo.exe;
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
-	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f fwindemo$(COM)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
 
 @wx_TRUE@wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxpsl$(EXEEXT)
-@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@@wx_TRUE@	-$(RM) -f wxpsl$(COM)
-@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxpsl$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(STRIP) wxpsl$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxpsl $(srcdir)
 
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-$(RM) -f fontdemo$(EXEEXT)
-@fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
+@fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) fontdemo$(EXEEXT)
 
 @fox_TRUE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-$(RM) -f foxdemo$(EXEEXT)
-@fox_TRUE@	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
+@fox_TRUE@	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) foxdemo$(EXEEXT)
 
 @fox_TRUE@showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-$(RM) -f showmathdemo$(EXEEXT)
-@fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
+@fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
 
 @cygwin_FALSE@@gui_TRUE@@windows_TRUE@csl$(COM):	csl.exe
@@ -2324,7 +2366,7 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-standard-c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
+standard-c-code $(generated_sources_deps) $(generated_lisp):	$(gensrc)/make.stamp
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
