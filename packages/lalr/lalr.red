@@ -55,8 +55,8 @@ fluid '(renamings);
 
 !#if (memq 'psl lispsystem!*)
 
-% CSL has special vectors that hold just 16-bit integers (it also has ones
-% for 8-bit integers) and use of those will roughly halve the amount of
+% CSL has special vectors that hold just 8-bit integers (it also has ones
+% for 16-bit integers) and use of those will decrease the amount of
 % memory consumed by the parser tables. However if PSL does not have these
 % it does not matter much since I can just use ordinary Lisp vectors...
 
@@ -67,6 +67,23 @@ inline procedure getv8(v, n); getv(v, n);
 inline procedure mkvect16 n; mkvect n;
 inline procedure putv16(v, n, x); putv(v, n, x);
 inline procedure getv16(v, n); getv(v, n);
+
+
+% Other CSL-isms that need simulation in PSL.
+
+global '(uc!-charassoc!*);
+
+uc!-charassoc!* :=
+         '((!a   !A) (!b . !B) (!c . !C) (!d . !D) (!e . !E) (!f . !F)
+           (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L)
+           (!m . !M) (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R)
+           (!s . !S) (!t . !T) (!u . !U) (!v . !V) (!w . !W) (!x . !X)
+           (!y . !Y) (!z . !Z));
+
+symbolic procedure explode2uc u;
+  for each c in explode2 u collect
+    ((if x then cdr x else c) where x = atsoc(c, uc!-charassoc!*));
+
 
 !#endif
 

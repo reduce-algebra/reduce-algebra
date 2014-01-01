@@ -186,7 +186,11 @@ symbolic procedure lalr_set_grammar g;
     for each v in non_terminals do
         put(v, 'non_terminal_code, tnum := tnum+1);
 % symbols is a list of all symbols, with terminals represented as integers
-% that are index values.
+% that are index values. I pre-allocate codes 0-255 for individual
+% characters, and a few more for dipthongs that are recognised and
+% handled specially by the lexer. Eg symbols and numbers as well as
+% things like ">=" and "<=" will use roughlly the code values from
+% 256 - 266.
     symbols := append(non_terminals, for each x in terminals collect cdr x);
 % It could well be that I ought to use hash tables more extensively in
 % this code...
@@ -251,17 +255,32 @@ symbolic procedure lalr_print_firsts g;
   end;
 
 symbolic procedure lalr_calculate_first g;
+% The "first" set associated with a non-terminal is a collection of all
+% the terminals that could possibly be the first symbol of a string
+% derived from it. Thus if there is any chain
+%    S :   P Q R
+%    P :   X Y Z
+%    X :   a ...
+% then a is in the first set of S.
+%
+% As an added complication if it is necessary to allow for cases such as
+%    S :   P Q R  note that because P may be empty the first symbol of
+%                 S may come from Q not P.
+%    P :   X Y    note that there is a derivation from P to empty.
+%    X :          note empty right hand size here.
+%    Y :
+%    Q :   a ...
   begin
-    scalar w, y, z, done;
-    princ "lalr_calculate_first "; print g;
+    scalar w, y, z, more_added;
+%   princ "lalr_calculate_first "; print g;
     for each x in g do
         if assoc(nil, lalr_productions x) then put(x, 'lalr_first, '(nil));
     repeat <<
-        done := nil;
+        more_added := nil;
         for each x in g do <<
             z := get(x, 'lalr_first);
-            princ "Scan "; prin x; princ " : "; prin z;
-            princ " / "; print lalr_productions x;
+%           princ "Scan "; prin x; princ " : "; prin z;
+%           princ " / "; print lalr_productions x;
             for each y1 in lalr_productions x do <<
                 y := car y1;
                 while y and
@@ -272,9 +291,9 @@ symbolic procedure lalr_calculate_first g;
                 if null y then nil
                 else if numberp car y then z := union(list car y, z)
                 else z := union(get(car y, 'lalr_first), z) >>;
-            if not (z = get(x, 'lalr_first)) then done := t;
+            if not (z = get(x, 'lalr_first)) then more_added := t;
             put(x, 'lalr_first, z) >>
-    >> until not done;
+    >> until not more_added;
     if !*lalr_verbose then lalr_print_firsts g;
     return nil
   end;
@@ -356,6 +375,11 @@ symbolic procedure lalr_items g;
     return c
   end;
 
+% The closure of an item is obtained by taking a set of productions that
+% each have a dot and adding new ones using the rule that if the
+% sequence ... DOT v ... is present and the grammar contains a rule
+% v : x y z then "v : DOT x y z" will be added to the set. 
+
 symbolic procedure lalr_closure i;
   begin
     scalar pending, a, rule, tail, done, ff, w;
@@ -377,6 +401,18 @@ symbolic procedure lalr_closure i;
     return i
   end;
 
+
+% A key operation in the construction of the parsing tables is that
+% of moving an index along a list of symbols. The index is conventionally
+% indicted by a dot.
+%    lalr_move_dot(z, x)
+% takes a list which should have a dot somewhere in it, and if it finds
+%      ... DOT x ...
+% it will return an updated list with the dot moved, i.e.
+%      ... x DOT ...
+% while if the symbol after the dot is not an x it will return nil as
+% an indication that moving the dot is not to be done here.
+
 symbolic procedure lalr_move_dot(z, x);
   begin
     scalar r;
@@ -391,6 +427,11 @@ symbolic procedure lalr_move_dot(z, x);
         r := cdr r >>;
     return z
   end;
+
+% lalr_goto(i, x) takes a list of states (which contain lists each with a
+% dot in) and a symbol x. It uses lalr_move_dot to try to move the dot
+% forward across an x. It collects all the resulting new configurations.
+% At the end it forms the closure of what it has found.
 
 symbolic procedure lalr_goto(i, x);
   begin

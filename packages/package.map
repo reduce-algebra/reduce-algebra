@@ -190,7 +190,7 @@
  (gurobi        "foreign/gurobi"                             csl)
  (z3            "foreign/z3"                                 csl)
  (rubi_red      "rubi_red"                                   csl psl)
- (lalr          "lalr"                  test                 csl)
+ (lalr          "lalr"                  test                 csl psl)
 )
 
 % End of configuration data
