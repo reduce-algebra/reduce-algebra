@@ -110,8 +110,20 @@ new_inline_definitions := nil;
 symbolic procedure load_saved_inlines();
   begin
     scalar ff, u, v;
-    if not filep "inline-defs.dat" then return nil;
-    ff := open("inline-defs.dat", 'input);
+%
+% There is another bit of fun here. I would like to be able to call
+% module!-rebuild at any time, and that means that the current directory
+% is uncertain when that happens. So with CSL I arrange that I always keep
+% my "inline-defs.dat" file in the directory where reduce.img is being
+% built. For PSL I put things where fasl files go.
+%
+!#if (memq 'csl lispsystem!*)
+    ff := concat2(get!-lisp!-directory(), "/inline-defs.dat");
+!#else
+    ff := "$fasl/inline-defs.dat";
+!#endif
+    if not filep ff then return nil;
+    ff := open(ff, 'input);
     if null ff then return nil;
     u := rds ff;
     v := read();
@@ -134,15 +146,20 @@ symbolic procedure load_saved_inlines();
 
 symbolic procedure save_inlines();
   begin
-    scalar ff, u, v, w, changed;
+    scalar fname, ff, u, v, w, changed;
 % If there are no new inline definition at all from this compilation or
 % if new ones match what was already present then I will not want to update
 % the file where definitions are saved. Then I can use a dependency on it
 % in a Makefile to help me ensure I recompile enough times to get to a fully
 % stable state.
     if null new_inline_definitions then return nil;
-    if filep "inline-defs.dat" then <<
-      ff := open("inline-defs.dat", 'input);
+!#if (memq 'csl lispsystem!*)
+    fname := concat2(get!-lisp!-directory(), "/inline-defs.dat");
+!#else
+    fname := "$fasl/inline-defs.dat";
+!#endif
+    if filep fname then <<
+      ff := open(fname, 'input);
       if null ff then return nil; % Failed! Note filep had said it was there.
       u := rds ff;
       v := read();
@@ -172,7 +189,7 @@ symbolic procedure save_inlines();
         v := a . v;
         changed := t >> >>;
     if changed then <<
-      ff := open("inline-defs.dat", 'output);
+      ff := open(fname, 'output);
       if null ff then return nil; % Failed!
       u := wrs ff;
       prin2 "(";

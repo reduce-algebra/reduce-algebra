@@ -172,6 +172,9 @@ defautoload(editdef,cedit);
 
 put('editdef,'stat,'rlis);
 
+% Functions for rebuilding parts of Reduce
+
+defautoload(package!-remake, remake);
 
 % Factorizer module entry points.
 
