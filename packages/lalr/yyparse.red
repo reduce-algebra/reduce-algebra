@@ -25,6 +25,8 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
+
 module 'yyparse;
 
 
@@ -358,18 +360,33 @@ symbolic procedure lex_basic_token();
 % letters, digits, underscores and escapes.
     if liter lex_char or
        (lex_char = '!! and begin
-          scalar !*raise, !*lower;  % Rebind !*raise & !*lower to avoid..
-          r := lex_char . r;        % case folding when the next ..
+% If both !*raise and !*lower were FLUID rather than GLOBAL I could
+% just rebind them here, and that would have the extra benefit that if
+% some exception led to an error exit from within yyreadch they would
+% end up restored. However the Standard Lisp Report says that !*raise must
+% be global, and PSL follows that.
+          scalar raise, lower;      % Save !*raise & !*lower to avoid ..
+          raise := !*raise;
+          lower := !*lower;
+          !*raise := !*lower := nil;
+          r := lex_char . r;        % .. case folding when the next ..
           yyreadch();               % character is read.
+          !*raise := raise;
+          !*lower := lower;
           return (w := t) end) then <<
       r := lex_char. r;
       while liter(yyreadch()) or
             digit lex_char or
             lex_char = '!_ or
             (lex_char = '!! and begin
-               scalar !*raise, !*lower;
+               scalar raise, lower;      % Save !*raise & !*lower.
+               raise := !*raise;
+               lower := !*lower;
+               !*raise := !*lower := nil;
                r := lex_char . r;
                yyreadch();
+               !*raise := raise;
+               !*lower := lower;
                return (w := t) end) do
         r := lex_char . r;
 % If there was a '!' in the word I will never treat it as a keyword.
@@ -411,12 +428,17 @@ symbolic procedure lex_basic_token();
 % string.
     else if lex_char = '!" then <<
       begin
-        scalar !*raise, !*lower;
+        scalar raise, lower;      % Save !*raise & !*lower.
+        raise := !*raise;
+        lower := !*lower;
+        !*raise := !*lower := nil;
         repeat <<
           r := lex_char . r;
           while not ((yyreadch()) = '!") do r := lex_char . r;
           r := lex_char . r;
           yyreadch() >> until not (lex_char = '!");
+        !*raise := raise;
+        !*lower := lower;
       end;
       yylval := compress reversip r;
       return '!:string >>
@@ -562,8 +584,6 @@ symbolic procedure read_s_expression();
 % somewhat similar to the regular mkvect, putv and getv, but may be used
 % if the vector contents will always be 16-bit fixnums.
 
-!*verbose := t;      % How much will the parser-generator print?
-
 % For each terminal I have a pointer (stored in goto_index) into
 % a pair of vectors, goto_old_state and goto_new_state. The first of these
 % holds states that I might be in, and the second holds the ones I must
@@ -600,7 +620,7 @@ symbolic procedure get_action(state, terminal);
 
 symbolic procedure yyparse();
   begin
-    scalar sym_stack, state_stack, next_input, w, w1, w2;
+    scalar sym_stack, state_stack, next_input, w;
 % state_stack is a stack of parser-machine states and sym_stack runs
 % in step with it and holds the corresponding symbols. Well for
 % terminals sym_stack just holds the symbol, but for non-terminals it

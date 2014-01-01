@@ -25,10 +25,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
+
 module 'genparser;
 
-unglobal '(!*raise);
-fluid '(!*raise);
 
 %=============================================================================
 %
@@ -38,13 +38,10 @@ fluid '(!*raise);
 %
 %=============================================================================
 
-
-fluid '(!*raise !*lower !*echo);
-global '(lex_char yylval last64 last64p which_line if_depth);
-
-global '(action_first_error action_error_messages);
-
-global '(action_fn action_A action_n);
+%
+% The entry-point of thie code will be lalr_construct_parser, defined
+% towards the end of the file.
+%
 
 %
 % A grammar is represented as a list of rules. A rule
@@ -60,13 +57,28 @@ global '(action_fn action_A action_n);
 % supported by the lexer.
 %
 
-global '(terminals non_terminals symbols goto_cache action_map);
+% Here is an example of a rather trivial grammar where I have not put in
+% an actions at all:
+
+%    ((E    ((S))          The first symbol defined is the top-level
+%           ((E "+" S))    target for the grammar.
+%           ((E "-" S)))
+%     (S    ((P))
+%           ((S "*" P))
+%           ((S "/" P)))
+%     (P    ((symbol))     This assumes that "symbol" and "number" are
+%           ((number))))   items known to the lexer.
 
 inline procedure lalr_productions x;
     get(x, 'produces);
 
 inline procedure lalr_set_productions(x, y);
     put(x, 'produces, y);
+
+%
+% Especially while I develop and debug this it matters to me that I have
+% code that can display the LR-states and other bits of information that
+% are worked with here - ideally in as neat a way as reasonable.
 
 symbolic procedure lalr_prin_symbol x;
   begin
@@ -77,6 +89,8 @@ symbolic procedure lalr_prin_symbol x;
     else if numberp x and (w := rassoc(x, terminals)) then
        prin car w
     else if stringp x then prin x
+% Do I need to do something about "explode2uc" for the sake of PSL?
+% well enevtually I will look to that.
     else for each c in explode2uc x do princ c
   end;
 
@@ -118,15 +132,22 @@ symbolic procedure lalr_print_action_map();
 %
 % lalr_set_grammar G expects that G will be a list of productions
 % in the format described earlier. The symbol mentioned on the left of the
-% first production will be taken as the starting symbol.
+% first production will be taken as the starting symbol. This just
+% stores the grammar in places where I can work on it and collects
+% simple basic information about it.
 %
 
 symbolic procedure lalr_set_grammar g;
   begin
     scalar name, vals, tnum, w;
     terminals := non_terminals := symbols := nil;
-% I will start by augmenting the grammar with an initial production...
+% I will start by augmenting the grammar with an initial production of the
+% form "S' ::= S". For this to be valid the user had better not have used
+% S' as the name of an existing non-terminal. The purpose of having an
+% augmented grammar like this is so that when S' is ready to reduce the
+% parser will "accept".
     g := list('s!', list list caar g) . g;
+% Before doing a lot more I collect lists of symbols present in the grammar.
     for each x in g do <<
         name := car x; vals := cdr x;
 % I build an alist of the names that appear on the left of productions, and
@@ -170,7 +191,7 @@ symbolic procedure lalr_set_grammar g;
 % It could well be that I ought to use hash tables more extensively in
 % this code...
     goto_cache := mkhash(length non_terminals, 1, 1.5);
-    if !*verbose then lalr_display_symbols();
+    if !*lalr_verbose then lalr_display_symbols();
 % Map all terminals onto numeric codes.
     for each x in non_terminals do
        lalr_set_productions(x, 
@@ -192,10 +213,12 @@ symbolic procedure lalr_set_grammar g;
     action_n := mkvect8 tnum;
     action_A := mkvect16 tnum;
     action_first_error := tnum;
-    if !*verbose then lalr_print_action_map();
+    if !*lalr_verbose then lalr_print_action_map();
 % Now whenever I start to set up a new grammar I need the FIRST information
 % so I may as well compute it here.
     lalr_calculate_first non_terminals;
+% OK that is enough for now. I have accepted the grammar and set up basic
+% information about it...
   end;
 
 % The intent is that lalr_clean_up() should tidy up ALL global state used
@@ -252,7 +275,7 @@ symbolic procedure lalr_calculate_first g;
             if not (z = get(x, 'lalr_first)) then done := t;
             put(x, 'lalr_first, z) >>
     >> until not done;
-    if !*verbose then lalr_print_firsts g;
+    if !*lalr_verbose then lalr_print_firsts g;
     return nil
   end;
 
@@ -305,11 +328,23 @@ symbolic procedure lalr_items g;
         for each i in c do
             for each x in symbols do
                 if w := lalr_goto(car i, x) then <<
+% The lalr_goto computed here is a new set of states. If it is EXACTLY
+% one that has already been seen then all I need to do is update the
+% goto cache.
                      w1 := assoc(w, c);
                      if w1 then <<
                          w2 := gethash(x, goto_cache);
                          if not assoc(cdr i, w2) then
                              puthash(x, goto_cache, (cdr i . cdr w1) . w2) >>
+% Here I should check if the core of the bew item is the same as the core
+% of any existing one, and if so I can merge. This operation is the one
+% that will make this a characteristically LALR parser and performing the
+% merge here will be the key to efficient generation of parsing tables.
+% @@@@@@@@@@@@ work to do here @@@@@@@@@@@@@
+%
+%
+% If the set has not been seen at all before then it should be allocated
+% a number and added to my collection.
                      else <<
                          c := (w . (n := n + 1)) . c;
                          puthash(x, goto_cache,
@@ -317,7 +352,7 @@ symbolic procedure lalr_items g;
                          done := t >> >>
     >> until not done;
     c := reversip c;   % So that item numbers come out in nicer order.
-    if !*verbose then lalr_print_items("LR(1) Items:", c);
+    if !*lalr_verbose then lalr_print_items("LR(1) Items:", c);
     return c
   end;
 
@@ -395,8 +430,6 @@ symbolic procedure lalr_same_core(i1, i2);
 % goto records either out of or into i to refer now to the thing merged
 % with.
 
-fluid '(renamings);
-
 symbolic procedure lalr_insert_core(i, cc);
    if null cc then list i
    else if lalr_same_core(i, car cc) then <<
@@ -455,7 +488,7 @@ symbolic procedure lalr_make_actions c;
         action_table := (cdr i . lalr_remove_duplicates aa) . action_table >>;
     action_index := mkvect16 (caar action_table + 1);
     action_table := reversip action_table;
-    if !*verbose then lalr_print_actions action_table;
+    if !*lalr_verbose then lalr_print_actions action_table;
     printc "ACTION_TABLE = ";
     for each x in action_table do print x;
     j := 0; w := nil;
@@ -514,7 +547,7 @@ symbolic procedure lalr_make_gotos();
     p := 0;
     for each x in hashcontents goto_cache do
         if not numberp car x then <<
-            if !*verbose then
+            if !*lalr_verbose then
                 for each xx in cdr x do <<
                     prin car xx; ttab 10; lalr_prin_symbol car x;
                     princ " GOTO state "; prin cdr xx; terpri() >>;
@@ -547,11 +580,18 @@ symbolic procedure lalr_construct_parser g;
   begin
     scalar c, cc, renamings;
     lalr_set_grammar g;
+%
+% The procedure used here at present is a naive one that first creates
+% a full set of LR(1) items and onlt then detects commonalities. For
+% medium to large grammars this will be infeasibly inefficient, so it
+% will be important to do the merging on-the-fly as the various sets
+% are collected.
+%
     c := lalr_items non_terminals;
     renamings := nil;
     for each i in c do cc := lalr_insert_core(i, cc);
     lalr_rename_gotos();
-    if !*verbose then lalr_print_items("Merged Items:", cc);
+    if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
     lalr_make_actions cc;
     princ "action_index "; print action_index;
     princ "action_terminal "; print action_terminal;

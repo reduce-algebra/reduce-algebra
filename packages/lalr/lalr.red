@@ -1,4 +1,6 @@
-module lalr; % Parser generator using LALR techniques as used by yacc etc
+% Parser generator using LALR techniques as used by yacc etc
+
+module lalr;
 
 % Author: Arthur Norman
 
@@ -25,6 +27,8 @@ module lalr; % Parser generator using LALR techniques as used by yacc etc
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% $Id: $
+
 % The module genparser contains code that can create LALR parsing
 % tables, while yyparse has a hand-written lexer suitable for use with
 % Rlisp syntax together with the skeleton of an LR parser which can use
@@ -32,24 +36,40 @@ module lalr; % Parser generator using LALR techniques as used by yacc etc
 
 create!-package('(lalr genparser yyparse), nil);
 
-unglobal '(!*raise);
-fluid '(!*raise !*lower !*echo);
-
 global '(lex_char yylval last64 last64p which_line if_depth);
-
 global '(next_lex_code);
-
 global '(dot_char rpar_char rsquare_char);
 
-global '(!*verbose);
+global '(!*lalr_verbose);
 
 global '(goto_index goto_old_state goto_new_state);
-
 global '(action_index, action_terminal action_result);
-
 global '(action_first_error action_error_messages);
-
 global '(action_fn action_A action_n);
+
+global '(terminals non_terminals symbols goto_cache action_map);
+fluid '(renamings);
+
+!*lalr_verbose := t;      % How much will the parser-generator print?
+                          % While I am debugging I want it noisy!
+
+!#if (memq 'psl lispsystem!*)
+
+% CSL has special vectors that hold just 16-bit integers (it also has ones
+% for 8-bit integers) and use of those will roughly halve the amount of
+% memory consumed by the parser tables. However if PSL does not have these
+% it does not matter much since I can just use ordinary Lisp vectors...
+
+inline procedure mkvect8 n; mkvect n;
+inline procedure putv8(v, n, x); putv(v, n, x);
+inline procedure getv8(v, n); getv(v, n);
+
+inline procedure mkvect16 n; mkvect n;
+inline procedure putv16(v, n, x); putv(v, n, x);
+inline procedure getv16(v, n); getv(v, n);
+
+!#endif
+
 
 endmodule;
 
