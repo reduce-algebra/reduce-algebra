@@ -36,7 +36,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1fbd841c 09-Aug-2011 */
+/* $Id$ */
 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1

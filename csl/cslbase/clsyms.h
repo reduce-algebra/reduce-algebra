@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 66d3b906 24-May-2008 */
+/* $Id$ */
 
 #ifndef header_clsyms_h
 #define header_clsyms_h 1

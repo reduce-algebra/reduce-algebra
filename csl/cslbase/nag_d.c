@@ -2,8 +2,6 @@
  * This code was contributed to CSL by NAG Ltd.
  */
 
-/* Signature: 5830b865 24-May-2008 */
-
 
 /**************************************************************************
  * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
@@ -33,6 +31,9 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  **************************************************************************
+
+/* $Id$ */
+
 
 Lisp_Object MS_CDECL Ld01ajf(Lisp_Object nil, int nargs, ...)
 {

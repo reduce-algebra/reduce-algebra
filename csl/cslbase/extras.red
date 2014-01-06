@@ -37,6 +37,8 @@
 %
 %
 
+% $ Id: $
+
 % CSL does not support user-defined special forms! So
 %    (df name (u) body)
 % will get mapped to a macro as roughly

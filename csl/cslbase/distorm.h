@@ -9,6 +9,8 @@ This library is licensed under the BSD license. See the file COPYING.
 This file is used in win32proj and linuxproj.
 */
 
+/* $Id$ */
+
 // Comment out this macro if you wish to use 32 bits offsets only!
 #define SUPPORT_64BIT_OFFSET 1
 

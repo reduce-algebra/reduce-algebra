@@ -1,4 +1,4 @@
-/*  arith02.c                         Copyright (C) 1990-2013 Codemist Ltd */
+1;5q/*  arith02.c                         Copyright (C) 1990-2014 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,7 +39,6 @@
 
 
 /* $Id$ */
-/* Signature: 0d0ceaee 06-Jan-2014 */
 
 #include "headers.h"
 #ifdef WITH_CILK

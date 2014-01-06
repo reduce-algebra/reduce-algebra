@@ -53,7 +53,7 @@
  * Cocoa) support on a Macintosh.
  */
 
-/* Signature: 57cc3025 25-Jun-2012 */
+/* $Id$ */
 
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1

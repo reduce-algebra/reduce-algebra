@@ -11,8 +11,7 @@
  * and www.tug.org/teTeX.
  */
 
-
-/* Signature: 630442ba 24-May-2008 */
+/* $Id$ */
 
 
 typedef struct font_info {

@@ -26,6 +26,8 @@
 
 % Author: Anthony C. Hearn, Stanley L. Kameny and Arthur Norman
 
+% $ Id: $
+
 (verbos 3)
 
 (window!-heading "basic CSL")

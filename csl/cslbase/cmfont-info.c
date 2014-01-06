@@ -9,7 +9,7 @@
  */
 
 
-/* Signature: 698860bb 24-May-2008 */
+/* $Id$ */
 
 
 typedef struct cm_font_info {

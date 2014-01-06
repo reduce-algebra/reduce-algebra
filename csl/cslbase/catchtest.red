@@ -1,6 +1,7 @@
 %
 % catch/throw are expected to throuw even through an errorset...
 %
+% $Id$
 
 lisp;
 on comp,echo;

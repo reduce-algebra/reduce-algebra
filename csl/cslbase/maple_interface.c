@@ -37,14 +37,14 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/* $Id$ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <stdio.h>
 #include <stdarg.h>
-
-/* Signature: 3a88f449 24-May-2008 */
 
 
 /*

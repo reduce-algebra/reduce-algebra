@@ -31,8 +31,7 @@
  *************************************************************************/
 
 
-/* Signature: 4ebf052a 24-May-2008 */
-
+/* $Id$ */
 
 /*
  * Decodes the type of an object file and generates a small source

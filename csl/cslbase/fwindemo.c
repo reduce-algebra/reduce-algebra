@@ -1,4 +1,4 @@
-/* fwindemo.c                       Copyright (C) 2004-2011 Codemist Ltd */
+/* fwindemo.c                       Copyright (C) 2004-2014 Codemist Ltd */
 
 
 /*
@@ -40,7 +40,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -68,9 +68,8 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/* $Id$ */
 
-
-/* Signature: 3d6ba21b 03-Jan-2011 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed

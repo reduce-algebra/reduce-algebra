@@ -9,6 +9,8 @@ This library is licensed under the BSD license. See the file COPYING.
 #ifndef ___DISCONFIG_H__
 #define ___DISCONFIG_H__
 
+/* $Id$ */
+
 // diStorm64 supports 64 bit offsets:
 
 // Comment out this macro if you wish to use 32 bits offsets only!

@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 2946cbe0 20-Sep-2013 */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

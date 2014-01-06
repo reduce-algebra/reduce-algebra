@@ -37,8 +37,7 @@
  *************************************************************************/
 
 
-
-/* Signature: 356057c2 23-Dec-2013 */
+/* $Id$ */
 
 #ifndef header_externs_h
 #define header_externs_h 1

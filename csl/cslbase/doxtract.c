@@ -30,7 +30,8 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
-/* Signature: 7963e1b8 19-Nov-2011 */
+
+/* $Id$ */
 
 
 //

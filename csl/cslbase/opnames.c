@@ -29,8 +29,8 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/* $Id$ */
 
-/* Signature: 23b62659 24-May-2008 */
 
 /*
  * table giving printable names for all 256 byte opcodes.

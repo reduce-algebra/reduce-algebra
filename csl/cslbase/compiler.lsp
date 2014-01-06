@@ -31,6 +31,7 @@
 %% DAMAGE.                                                                *
 %%
 
+% $ Id: $
 
 (global (quote (s!:opcodelist)))
 

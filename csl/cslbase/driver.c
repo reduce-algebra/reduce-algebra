@@ -31,8 +31,7 @@
  *************************************************************************/
 
 
-
-/* Signature: 3e351e6d 24-Dec-2012 */
+/* $Id$ */
 
 /*
  * This is code that starts up Reduce and exercises it using a

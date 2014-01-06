@@ -38,8 +38,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 36295912 12-May-2012 */
-
+/* $Id$ */
 
 //
 // See the file "fwindemo.c" for a smaller example of how to use fwin. This

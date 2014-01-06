@@ -1,4 +1,4 @@
-/*  csl.c                            Copyright (C) 1989-2013 Codemist Ltd */
+/*  csl.c                            Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,6 @@
  *************************************************************************/
 
 /* $Id$ */
-/* Signature: 7f038cf4 06-Jan-2014 */
 
 
 /*

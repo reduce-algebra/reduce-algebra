@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 18746b91 23-Dec-2010 */
+/* $Id$ */
 
 
 // The events declared here are used to send data from the worker thread

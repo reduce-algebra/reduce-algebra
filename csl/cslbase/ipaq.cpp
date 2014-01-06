@@ -4,6 +4,10 @@
 // system). I am not going to guarantee or even worry too much (to start
 // with at least) about support of other platform variants.
 //
+// This code has not been looked at for many years ans so should be
+// assumed to be out of date and broken. It is left here in case it
+// forms a useful starting-point for soem future project.
+//
 //                                 A C Norman, Codemist Ltd, March 2005
 //
 
@@ -36,7 +40,7 @@
  * DAMAGE.                                                                *
  **************************************************************************
 
-/* Signature: 63b0fb9a 24-May-2008 */
+/* $Id$ */
 
 #include <windows.h>
 #include "res.h"

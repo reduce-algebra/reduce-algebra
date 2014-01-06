@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 236bd591 19-Sep-2013 */
+/* $Id$ */
 
 #ifndef header_entries_h
 #define header_entries_h 1

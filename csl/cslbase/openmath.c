@@ -1,6 +1,6 @@
 /* openmath.c                                  Copyright (C) 1998 NAG Ltd. */
 
-/* This file wascontributed to CSL by NAG Ltd */
+/* This file was contributed to CSL by NAG Ltd */
 
 /**************************************************************************
  * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
@@ -31,6 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/* $Id$ */
 
 
 #ifdef OPENMATH
@@ -53,9 +54,7 @@
  */
 
 
-/* Signature: 3ba819d1 24-May-2008 */
-
-#inclkude "headers.h"
+#include "headers.h"
 
 
 #include <OM.h>

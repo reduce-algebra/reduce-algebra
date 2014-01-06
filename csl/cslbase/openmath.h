@@ -35,8 +35,7 @@
  *************************************************************************/
 
 
-/* Signature: 016ea5bd 24-May-2008 */
-
+/* $Id$ */
 
 /*
  * OpenMath primitives map to Lisp objects in the following way:

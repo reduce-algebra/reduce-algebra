@@ -4,7 +4,7 @@
 % with the conventions used with CSL/CCL
 %
 %                                                        A C Norman
-%
+
 
 %%
 %% Copyright (C) 2010, following the master REDUCE source files.          *
@@ -35,6 +35,7 @@
 %% DAMAGE.                                                                *
 %%
 
+% $ Id: $
 
 symbolic;
 
@@ -932,7 +933,9 @@ princ "C file = "; print name;
     if hdrnow then
         c!:printf("\n/* Module: %s %tMachine generated C code %<*/\n\n", setupname, 25)
     else c!:printf("\n/* %s.c %tMachine generated C code %<*/\n\n", name, 25);
-    c!:printf("/* Signature: 00000000 %s %<*/\n\n", d);
+    c!:printf("/* $I");
+    c!:printf("d: $ */\n\n");
+%   c!:printf("/* Signature: 00000000 %s %<*/\n\n", d);
     c!:printf "#include <stdio.h>\n";
     c!:printf "#include <stdlib.h>\n";
     c!:printf "#include <string.h>\n";

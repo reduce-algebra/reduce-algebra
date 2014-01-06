@@ -30,7 +30,7 @@
 %*************************************************************************/
 
 
-
+% $ Id: $
 
 % Run this file using bootstrapreduce to create a file smacros.red that
 % can perhaps be copied to packages/support.

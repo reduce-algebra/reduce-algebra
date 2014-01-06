@@ -29,9 +29,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-
-
-/* Signature: 35639bed 24-May-2008 */
+/* $Id$ */
 
 /*
  * This code implements Imultiply and Idivide in 80386 (and up) assembly

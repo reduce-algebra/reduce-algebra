@@ -31,8 +31,8 @@
  *************************************************************************/
 
 
+/* $Id$ */
 
-/* Signature: 75a1f941 09-Feb-2011 */
 
 /*
  * This is just the same as csl.c with some startup code removed so that

@@ -31,8 +31,7 @@
  *************************************************************************/
 
 
-
-/* Signature: 1ecda295 24-May-2008 */
+/* $Id$ */
 
 /*
  * There are some places where the autoconf/automake system wants to create

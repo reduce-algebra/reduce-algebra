@@ -33,12 +33,9 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-
-
-/* Signature: 17a0ec69 19-Sep-2013 */
+/* $Id$ */
 
 #include "headers.h"
-
 
 
 static Lisp_Object apply_lots(int nargs, n_args *f, Lisp_Object def)

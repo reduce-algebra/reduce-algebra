@@ -7,7 +7,7 @@
  */
 
 
-/* Signature: 5c8e450c 14-Nov-2010 */
+/* $Id$ */
 
 
 #include <stdint.h>

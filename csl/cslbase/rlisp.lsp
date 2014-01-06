@@ -2,6 +2,7 @@
 ; Create RLISP.  Use this via mkrlisp0.lsp or mkrlisp1.lsp
 ;
 
+% $ Id: $
 
 ; Standard LISP equivalent of BOOT.RED.
 

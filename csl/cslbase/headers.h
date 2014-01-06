@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 120ed9df 18-Jul-2013 */
+/* $Id$ */
 
 /*
  * #include the majority of the header files needed by CSL code.

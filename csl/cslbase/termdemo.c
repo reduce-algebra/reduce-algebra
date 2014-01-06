@@ -38,9 +38,7 @@
  *************************************************************************/
 
 
-
-
-/* Signature: 632ee63f 11-Jan-2011 */
+/* $Id$ */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed

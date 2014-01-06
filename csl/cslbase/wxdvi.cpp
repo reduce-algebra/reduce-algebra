@@ -40,8 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 499d6d49 02-Aug-2012 */
-
+/* $Id$ */
 
 
 // The first few lines are essentially taken from the wxWidgets documentation

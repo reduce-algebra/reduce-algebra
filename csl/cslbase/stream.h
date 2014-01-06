@@ -37,8 +37,7 @@
  *************************************************************************/
 
 
-
-/* Signature: 3ae746b6 21-Mar-2011 */
+/* $Id$ */
 
 #ifndef header_stream_h
 #define header_stream_h 1

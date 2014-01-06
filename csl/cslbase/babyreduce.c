@@ -31,8 +31,7 @@
  *************************************************************************/
 
 
-
-/* Signature: 337c764d 24-Dec-2012 */
+/* $Id$ */
 
 /*
  * This is for use via the "new-embedded" structure and it provides a

@@ -40,6 +40,8 @@
 %                                                        M A Dmitriev
 %                                                        A C Norman
 
+% $ Id: $
+
 global '(i_machine);
 
 i_machine := cdr assoc('native, lispsystem!*);

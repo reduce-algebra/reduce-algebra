@@ -31,7 +31,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 42e21ef9 30-Dec-2013 */
+/* $Id$ */
 
 #ifndef header_arith_h
 #define header_arith_h 1

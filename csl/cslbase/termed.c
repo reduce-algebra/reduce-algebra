@@ -35,8 +35,7 @@
  * complete work are subject to the LGPL.
  */
 
-
-/* Signature: 78c4b1f8 05-Jun-2013 */
+/* $Id$ */
 
 /*
  * This supports modest line-editing and history for terminal-mode

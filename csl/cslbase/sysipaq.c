@@ -17,6 +17,11 @@
  *    ./configure ; make
  * sequence. This (obviously) involves a Unix-like build environment
  * but mingw/msys provides that for Windows.
+ *
+ * Well MANY years ago this was used to help me install Reduce on an HP
+ * ipaq PDA. That target can hardly be relevant today, but I will leave
+ * this file in case it forms a basis for anybody else intent on
+ * support for am unusual platform...
  */
 
 /**************************************************************************
@@ -49,7 +54,7 @@
  *************************************************************************/
 
 
-/* Signature: 652ac867 05-May-2013 */
+/* $Id$ */
 
 #include "headers.h"
 
