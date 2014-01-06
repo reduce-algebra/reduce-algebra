@@ -1,4 +1,4 @@
-1;5q/*  arith02.c                         Copyright (C) 1990-2014 Codemist Ltd */
+/*  arith02.c                         Copyright (C) 1990-2014 Codemist Ltd */
 
 /*
  * Arithmetic functions.
