@@ -35,7 +35,8 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4afa84bb 30-Dec-2013 */
+/* $Id$ */
+/* Signature: 7f038cf4 06-Jan-2014 */
 
 
 /*
@@ -1446,10 +1447,10 @@ CSLbool restartp;
 char *C_stack_base = NULL, *C_stack_limit = NULL;
 double max_store_size = 0.0;
 
+#ifndef HAVE_CILK
 #ifdef WIN32
 HANDLE kara_thread1, kara_thread2;
-#else
-#ifdef HAVE_LIBPTHREAD
+#elif defined HAVE_LIBPTHREAD
 pthread_t kara_thread1, kara_thread2;
 #endif
 #endif
@@ -1467,7 +1468,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     C_stack_base = (char *)&sp;
     C_stack_limit = NULL;
     max_store_size = 0.0;
-#if defined HAVE_LIBPTHREAD || defined WIN32
+#if (defined HAVE_LIBPTHREAD || defined WIN32) && !HAVE_CILK
     if (number_of_processors() >= 3)
     {   sem_init(&kara_sem1a, 0, 0);
         sem_init(&kara_sem1b, 0, 0);
@@ -1483,6 +1484,8 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         pthread_create(&kara_thread2, NULL, kara_worker2, NULL);
 #endif
     }
+    karatsuba_parallel = 0x7fffffff; 
+#elif defined HAVE_CILK
     karatsuba_parallel = 0x7fffffff; 
 #endif /* thread support */
 
@@ -2976,7 +2979,7 @@ term_printf(
 /* If the user hits the close button here I may be in trouble */
 #endif
 
-#if defined HAVE_LIBPTHREAD || defined WIN32
+#if defined HAVE_LIBPTHREAD || defined WIN32 || defined HAVE_CILK
     if (number_of_processors() >= 3)
     {   karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
         if (kparallel > 0) karatsuba_parallel = kparallel;

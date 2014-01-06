@@ -38,10 +38,31 @@
 
 
 
-
-/* Signature: 364b4e0f 30-Dec-2013 */
+/* $Id$ */
+/* Signature: 0d0ceaee 06-Jan-2014 */
 
 #include "headers.h"
+#ifdef WITH_CILK
+/*
+ * If CILK is available (see www.cilkplus.com) then it can handle the
+ * synchronisation aspects of concurrency and the people who maintain that
+ * will surely put effort to ensure that their version is well tuned and that
+ * it keeps up to date with future developments. the CILK runtime is subject
+ * to the BSD license so there is no concern there. CILK is (at the time of
+ * adding this comment) supported by branches of gcc 4.8 and 4.9 and a
+ * version for clang/llvm is available but "is not feature complete".
+ * Eberhard Schruefer investigated and contributed the code here that
+ * uses CILK and as can be seen it makes the use of threads very neat. He
+ * reports that it delivers perhaps slightly better performance than my
+ * own synchronisation code, but the broad pattern of results is just about
+ * the same and in particular the break-even point where use of threads
+ * becomes worthwhile remains in the high hundreds with serious savings
+ * only arising as one goes beyong 10^1000.
+ * For now please manually force WITH_CILK into compiler options to get that
+ * version built.
+ */
+#include "cilk/cilk.h"
+#endif /* WITH_CILK */
 
 /*
  * Now for multiplication
@@ -692,12 +713,15 @@ static void shownum(FILE *log, uint32_t *p, int n, const char *s)
 #define shownum(log, p, n, s) /* Nothing */
 #endif
 
+#ifndef WITH_CILK
 sem_t kara_sem1a, kara_sem1b, kara_sem1c,
       kara_sem2a, kara_sem2b, kara_sem2c;
+#endif /* ! WITH_CILK */
 
 static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
 static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
 
+#ifndef WITH_CILK
 
 KARARESULT WINAPI kara_worker1(KARAARG p)
 {
@@ -753,9 +777,11 @@ KARARESULT WINAPI kara_worker1(KARAARG p)
     return (KARARESULT)0;
 }
 
+#endif /* ! WITH_CILK */
 static uint32_t *kara_2_c, *kara_2_a, *kara_2_b, *kara_2_d;
 static uint32_t kara_2_lena, kara_2_lenb, kara_2_lenc;
 
+#ifndef WITH_CILK
 KARARESULT WINAPI kara_worker2(KARAARG p)
 {
 #ifdef DEBUG_PARALLEL_KARATSUBA
@@ -798,6 +824,7 @@ KARARESULT WINAPI kara_worker2(KARAARG p)
 
 static int semaphore_usage = 0;
 
+#endif /* ! WITH_CILK */
 static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
                          uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
 /*
@@ -838,6 +865,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         kara_1_lenc = 2*h;
 /* To keep the worker threads in step I will post dummy work to thread 2. */
         kara_2_lena = kara_2_lenb = kara_2_lenc = 0; 
+#ifndef WITH_CILK
         switch (semaphore_usage)
         {
     case 0: sem_post(&kara_sem1a);  /* allow worker 1 to start. */
@@ -850,9 +878,16 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
             sem_post(&kara_sem2b);  /* allow worker 2 to start. */
             break;
         }
+#else /* WITH_CILK */
+        cilk_spawn long_times(kara_1_d,kara_1_a,kara_1_b,kara_1_c,
+                              kara_1_lena,kara_1_lenb,kara_1_lenc);
+        cilk_spawn long_times(kara_2_d,kara_2_a,kara_2_b,kara_2_c,
+                              kara_2_lena,kara_2_lenb,kara_2_lenc);
+#endif /* WITH_CILK */
         /* Now do my own work in parallel with worker 1 */
         for (i=0; i<h; i++) c[3*h+i] = 0;
         long_times(d, a, b, c, lena, h, 2*h);
+#ifndef WITH_CILK
         switch (semaphore_usage)
         {
     case 0: while (sem_wait(&kara_sem1b) != 0);  /* wait for worker 1 to finish. */
@@ -868,6 +903,9 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
             semaphore_usage = 0;
             break;
         }
+#else /* WITH_CILK */
+        cilk_sync;
+#endif /* WITH_CILK */
         shownum(stdout, &c[h], 2*h, "top part");
         shownum(stdout, d, 2*h, "bottom part");
         for (i=0; i<h; i++) c[i] = d[i];
@@ -915,6 +953,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     kara_2_lena = lena1;
     kara_2_lenb = lenb1;
     kara_2_lenc = 2*h;
+#ifndef WITH_CILK
     switch (semaphore_usage)
     {
 case 0: sem_post(&kara_sem2a);  /* allow worker 1 to start. */
@@ -927,6 +966,12 @@ case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
         sem_post(&kara_sem2b);  /* allow worker 2 to start. */
         break;
     }
+#else /* WITH_CILK */
+    cilk_spawn long_times(kara_1_d,kara_1_a,kara_1_b,kara_1_c,
+                          kara_1_lena,kara_1_lenb,kara_1_lenc);
+    cilk_spawn long_times(kara_2_d,kara_2_a,kara_2_b,kara_2_c,
+                          kara_2_lena,kara_2_lenb,kara_2_lenc);
+#endif /* WITH_CILK */
 /*
  * The rest can be done using the main thread.
  *       d3 = a0+a1;   (leave asumcarry)
@@ -959,6 +1004,7 @@ case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
  * Now I wish to re-sync with the two sub-tasks...
  */
     fflush(stdout);
+#ifndef WITH_CILK
     switch (semaphore_usage)
     {
 case 0: while (sem_wait(&kara_sem1b) != 0);  /* wait for worker 1 to finish. */
@@ -974,6 +1020,9 @@ case 2: while (sem_wait(&kara_sem1c) != 0);  /* wait for worker 1 to finish. */
         semaphore_usage = 0;
         break;
     }
+#else /* WITH_CILK */
+    cilk_sync;
+#endif /* WITH_CILK */
     shownum(stdout, kara_1_a, kara_1_lena, "kara 1 a");
     shownum(stdout, kara_1_b, kara_1_lenb, "kara 1 b");
     shownum(stdout, kara_1_c, kara_1_lenc, "kara 1 c");
