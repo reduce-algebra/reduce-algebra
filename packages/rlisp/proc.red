@@ -102,7 +102,7 @@ symbolic procedure formproc(u,vars,mode);
               if not zerop posn() then terpri();
               prin2 "+++ Record new inline definition:";
               terpri();
-              prettyprint list('de,name,varlis,body);
+              print list('de,name,varlis,body);
               new_inline_definitions := (name . dd) . new_inline_definitions >>
            end;
         if (not(type eq 'inline) and get(name,'inline)) or
