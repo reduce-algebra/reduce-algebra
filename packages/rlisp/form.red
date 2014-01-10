@@ -110,6 +110,26 @@ put('macro,'macrofn,'applmacro);
 
 flag('(ed go quote),'noform);
 
+symbolic procedure all!-vars!-in(x, l);
+  if atom x then
+     if atsoc(x, l) then l
+     else (x . t) . l
+  else all!-vars!-in(cdr x, all!-vars!-in(car x, l));
+
+% The next bit arranges that
+%     quotecode <any rlisp expression>
+% turns into (quote <the lisp version of that code>)
+% but that (a) any "form" actions needed have bene performed on the
+% code and (b) there will never be moans about use of undeclared name
+% in the code. The latter is achieved using all!-vars!-in that makes
+% an association list naming all atoms present in the code so that it
+% appears that all are in scope.
+
+symbolic procedure formquotecode(u, vars, mode);
+  mkquote form1(cadr u, all!-vars!-in(cadr u, nil), mode);
+
+put('quotecode, 'formfn, 'formquotecode);
+
 symbolic procedure set!-global!-mode u;
    begin
       !*mode := u;

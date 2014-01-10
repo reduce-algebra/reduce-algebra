@@ -152,7 +152,9 @@ symbolic procedure save_inlines();
 % the file where definitions are saved. Then I can use a dependency on it
 % in a Makefile to help me ensure I recompile enough times to get to a fully
 % stable state.
-    if null new_inline_definitions then return nil;
+    if null new_inline_definitions then <<
+      lprim "No new inline definitions here";
+      return nil>>;
 !#if (memq 'csl lispsystem!*)
     fname := concat2(get!-lisp!-directory(), "/inline-defs.dat");
 !#else
@@ -182,13 +184,14 @@ symbolic procedure save_inlines();
         if posn() neq 0 then terpri();
         princ "+++ inline definition for ";
         prin1 car a;
-        printc " has changed - please recompile everything";
+        printc " differs from previous version - please recompile everything";
         v := delasc(car a, v);
-        w := nil >>;
-      if not w then <<
+        w := nil >>; % Setting w to nil here discards the previous version
+      if not w then << % If there was no previous version then I need to record
         v := a . v;
         changed := t >> >>;
     if changed then <<
+      lprim "Need to rewrite inline-defs.dat file";
       ff := open(fname, 'output);
       if null ff then return nil; % Failed!
       u := wrs ff;

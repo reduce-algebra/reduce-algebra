@@ -95,9 +95,16 @@ symbolic procedure formproc(u,vars,mode);
                     body);
 !#endif
         obody:=body;
-        if type = 'inline then
-           new_inline_definitions := (name . list('lambda,varlis,body)) .
-                                     new_inline_definitions;
+        if type = 'inline then begin
+           scalar dd;
+           dd := list('lambda,varlis,body);
+           if not (dd = get(name, 'inline)) then <<
+              if not zerop posn() then terpri();
+              prin2 "+++ Record new inline definition:";
+              terpri();
+              prettyprint list('de,name,varlis,body);
+              new_inline_definitions := (name . dd) . new_inline_definitions >>
+           end;
         if (not(type eq 'inline) and get(name,'inline)) or
            (not(type eq 'smacro) and get(name,'smacro))
           then lprim list("SMACRO/INLINE",name,"redefined");
