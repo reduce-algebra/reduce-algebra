@@ -2329,6 +2329,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
 	$(RM) -f inline-defs.dat
+	touch inline-defs.dat
 	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	$(RM) bootstrapreduce.img
