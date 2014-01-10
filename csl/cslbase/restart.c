@@ -6075,6 +6075,8 @@ void setup(int restart_flag, double store_size)
                         "    has been optimised into C and incorporated)\n");
                     term_printf(
                         "    Unable to use this image file, so stopping\n");
+                    term_printf(
+                        "    File is: %s\n", filename);
                     my_exit(EXIT_FAILURE);
                 }
             }
