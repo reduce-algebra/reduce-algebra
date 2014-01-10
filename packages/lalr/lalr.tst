@@ -6,8 +6,8 @@ symbolic;
 
 % Here I set up a sample grammar
 %    S' -> S
-%    S  -> CC      { A1 }
-%    C  -> cC      { A2 }
+%    S  -> C C     { A1 }
+%    C  -> c C     { A2 }
 %        | d       { A3 }
 % Example 4.42 from Aho, Sethi and Ullman's Red Dragon book, with
 % some dummy semantic actions added. Note that I do not need to insert

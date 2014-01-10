@@ -25,7 +25,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: $
+% $Id$
 
 module 'genparser;
 
@@ -89,13 +89,24 @@ symbolic procedure lalr_prin_symbol x;
     else if numberp x and (w := rassoc(x, terminals)) then
        prin car w
     else if stringp x then prin x
-% Do I need to do something about "explode2uc" for the sake of PSL?
-% well enevtually I will look to that.
     else for each c in explode2uc x do princ c
+  end;
+
+symbolic procedure lalr_decode_symbol x;
+  begin
+    scalar w;
+    if x = 0 then return '!$eof!$
+    else if x = nil then return nil
+    else if x = '!. then return "."
+    else if numberp x and (w := rassoc(x, terminals)) then
+       return car w
+    else if stringp x then return x
+    else return compress (for each c in explode2uc x collect c)
   end;
 
 symbolic procedure lalr_display_symbols();
   begin
+    if not zerop posn() then terpri();
     princ "Terminal symbols are:"; terpri();
     for each x in terminals do <<
         princ " "; prin car x;
@@ -165,6 +176,10 @@ symbolic procedure lalr_set_grammar g;
             if stringp v then <<
                if null cdr (tnum := explodecn v) then <<
                   v := compress ('!! . '!: . tnum);
+                  princ "One-character string found <";
+                  princ v;
+                  princ "> with code ";
+                  printc car tnum;
                   put(v, 'lex_code, car tnum) >>
                else v := intern v >>;
             if not (v member symbols) then symbols := v . symbols >>;
@@ -174,9 +189,9 @@ symbolic procedure lalr_set_grammar g;
     for each name in non_terminals do symbols := delete(name, symbols);
     for each v in symbols do <<
        if not get(v, 'lex_code) then <<
-          terminals := (v . next_lex_code) . terminals;
           put(v, 'lex_code, next_lex_code);
-          next_lex_code := next_lex_code + 1 >> >>;
+          next_lex_code := next_lex_code + 1 >>;
+       terminals := (v . get(v, 'lex_code)) . terminals >>;
 % I reverse the list of non-terminals here so that the starting symbol
 % will be the first item.
     non_terminals := reversip non_terminals;
@@ -235,7 +250,8 @@ symbolic procedure lalr_clean_up();
         remprop(x, 'produces);
         remprop(x, 'lalr_first);
         remprop(x, 'non_terminal_code) >>;
-    terminals := non_terminals := symbols := nil;
+%   terminals := nil;
+    non_terminals := symbols := nil;
     goto_cache := action_map := nil
   end;
 
@@ -321,7 +337,7 @@ symbolic procedure lalr_print_items(heading, cc);
     terpri();
     for each y in cc do <<
         princ "Item number "; prin cdr y; terpri();
-        for each x in sort(car y, function orderp) do <<
+        for each x in sort(car y, function gorderp) do <<
             lalr_prin_symbol caar x; princ " ->";
             for each y in cdar x do << princ " "; lalr_prin_symbol y >>;
             princ "  :  ";
@@ -355,7 +371,7 @@ symbolic procedure lalr_items g;
                          w2 := gethash(x, goto_cache);
                          if not assoc(cdr i, w2) then
                              puthash(x, goto_cache, (cdr i . cdr w1) . w2) >>
-% Here I should check if the core of the bew item is the same as the core
+% Here I should check if the core of the new item is the same as the core
 % of any existing one, and if so I can merge. This operation is the one
 % that will make this a characteristically LALR parser and performing the
 % merge here will be the key to efficient generation of parsing tables.
@@ -451,7 +467,7 @@ symbolic procedure lalr_remove_duplicates x;
   begin
     scalar r;
     if null x then return nil;
-    x := sort(x, function orderp);
+    x := sort(x, function gorderp);
     r := list car x;
     x := cdr x;
     while x do <<
@@ -474,14 +490,14 @@ symbolic procedure lalr_same_core(i1, i2);
 symbolic procedure lalr_insert_core(i, cc);
    if null cc then list i
    else if lalr_same_core(i, car cc) then <<
-       renamings := (i . cdar cc) . renamings;
+       renamings := (cdr i . cdar cc) . renamings;
        (union(car i, caar cc) . cdar cc) . cdr cc >>
    else car cc . lalr_insert_core(i, cdr cc);
 
 symbolic procedure lalr_rename_gotos();
   begin
     scalar w;
-    for each x in non_terminals do <<
+    for each x in symbols do <<
         w := sublis(renamings, gethash(x, goto_cache));
         puthash(x, goto_cache, lalr_remove_duplicates w) >>
   end;
