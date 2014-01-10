@@ -3825,11 +3825,13 @@ fi
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: host=$host" >&5
-$as_echo "$as_me: host=$host" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Building with host: $host" >&5
+$as_echo "$as_me: Building with host: $host" >&6;}
 
+cyg32="no"
+cyg64="no"
 case $host in
-x86_64-w64-*)
+x86_64-w64-* | x86_64-pc-*)
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
@@ -3843,10 +3845,6 @@ $as_echo "#define WIN64 1" >>confdefs.h
   exeext="yes"
   X_BASE_LIBS=""
   win64="yes"
-  ;;
-*-*-cygwin* | *-*-*mingw*)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
-$as_echo "$as_me: Building under cygwin" >&6;}
   case `uname -m` in
   *i686*)
     cyg32="yes"
@@ -3858,8 +3856,12 @@ $as_echo "$as_me: Building under cygwin" >&6;}
     as_fn_error $? "Unknown platform in cygwin build" "$LINENO" 5
     ;;
   esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin>" >&5
-$as_echo "$as_me: with_cygwin=<$with_cygwin>" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&5
+$as_echo "$as_me: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&6;}
+  ;;
+*-*-cygwin* | *-*-*mingw*)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
+$as_echo "$as_me: Building under cygwin" >&6;}
   x86="yes"
   exeext="yes"
   if test "x$with_cygwin" != "xno"
@@ -3932,6 +3934,19 @@ $as_echo "#define WIN32 1" >>confdefs.h
     exeext="yes"
   fi
   X_BASE_LIBS=""
+  case `uname -m` in
+  *i686*)
+    cyg32="yes"
+    ;;
+  *x86_64*)
+    cyg64="yes"
+    ;;
+  *)
+    as_fn_error $? "Unknown platform in cygwin build" "$LINENO" 5
+    ;;
+  esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&5
+$as_echo "$as_me: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&6;}
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)
   as_fn_error $? "For Windows you are expected to use cygwin as your build environment" "$LINENO" 5

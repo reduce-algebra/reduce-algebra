@@ -254,10 +254,12 @@ then
   AC_CHECK_TOOL(OBJDUMP, objdump, objdump)
 fi
 
-AC_MSG_NOTICE([host=$host])
+AC_MSG_NOTICE([Building with host: $host])
 
+cyg32="no"
+cyg64="no"
 case $host in
-x86_64-w64-*)
+x86_64-w64-* | x86_64-pc-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
   AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
   CPPFLAGS="$CPPFLAGS"
@@ -267,9 +269,6 @@ x86_64-w64-*)
   exeext="yes"
   X_BASE_LIBS=""
   win64="yes"
-  ;;
-*-*-cygwin* | *-*-*mingw*)
-  AC_MSG_NOTICE([Building under cygwin])
   case `uname -m` in
   *i686*)
     cyg32="yes"
@@ -281,7 +280,10 @@ x86_64-w64-*)
     AC_MSG_ERROR([Unknown platform in cygwin build])
     ;;
   esac
-  AC_MSG_NOTICE([with_cygwin=<$with_cygwin>])
+  AC_MSG_NOTICE([with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64])
+  ;;
+*-*-cygwin* | *-*-*mingw*)
+  AC_MSG_NOTICE([Building under cygwin])
   x86="yes"
   exeext="yes"
   if test "x$with_cygwin" != "xno"
@@ -339,6 +341,18 @@ x86_64-w64-*)
     exeext="yes"
   fi
   X_BASE_LIBS=""
+  case `uname -m` in
+  *i686*)
+    cyg32="yes"
+    ;;
+  *x86_64*)
+    cyg64="yes"
+    ;;
+  *)
+    AC_MSG_ERROR([Unknown platform in cygwin build])
+    ;;
+  esac
+  AC_MSG_NOTICE([with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64])
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)
   AC_MSG_ERROR([For Windows you are expected to use cygwin as your build environment])
