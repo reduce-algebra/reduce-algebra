@@ -142,7 +142,9 @@ symbolic procedure locate(u,v);
   else if u=car v then 0
   else 1+locate(u,cdr v);
 
-% We may as well define some utility operators here too.
+% We may as well define some utility operators here too. Hah I have these
+% in cslrend as well, and the versions there must match exactly, including
+% using "u" as the name of the formal argument.
 symbolic inline procedure first u; car u;
 symbolic inline procedure second u; cadr u;
 symbolic inline procedure third u; caddr u;

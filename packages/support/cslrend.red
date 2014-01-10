@@ -527,15 +527,21 @@ symbolic inline procedure iputv(u,v,w); putv(u,v,w);
 % had with places where they do creep in has encouraged me to define
 % them here anyway and put up with the (small) waste of space.
 
-symbolic inline procedure first x; car x;
+% Well I note that avector/avector.red also defined these, and to keep
+% the way I process inline definitions happy I must use the same name for
+% the formal parameter here and there so that the definitions are exactly
+% the same rather than merely equivalent in function. So it is important to
+% use "u" here!
 
-symbolic inline procedure second x; cadr x;
+symbolic inline procedure first u; car u;
 
-symbolic inline procedure third x; caddr x;
+symbolic inline procedure second u; cadr u;
 
-symbolic inline procedure fourth x; cadddr x;
+symbolic inline procedure third u; caddr u;
 
-symbolic inline procedure rest x; cdr x;
+symbolic inline procedure fourth u; cadddr u;
+
+symbolic inline procedure rest u; cdr u;
 
 
 Comment Initial setups for REDUCE;
