@@ -197,8 +197,8 @@ td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
 
 end;
 
-Tested on alfred running Linux 3.2.42.1.amd64-smp x86_64 CSL
-Time (counter 1): 1130 ms  plus GC time: 60 ms
-1: real 1.61
-user 1.46
-sys 0.08
+Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
+Time (counter 1): 1260 ms  plus GC time: 69 ms
+1: real 1.59
+user 1.50
+sys 0.02
