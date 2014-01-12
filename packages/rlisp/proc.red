@@ -102,7 +102,10 @@ symbolic procedure formproc(u,vars,mode);
               if not zerop posn() then terpri();
               prin2 "+++ Record new inline definition:";
               terpri();
-              print list('de,name,varlis,body);
+% During initial bootstrapping prettyprint might not be available, hence the
+% caution here.
+              if getd 'prettyprint then prettyprint list('de,name,varlis,body)
+              else print list('de,name,varlis,body);
               new_inline_definitions := (name . dd) . new_inline_definitions >>
            end;
         if (not(type eq 'inline) and get(name,'inline)) or

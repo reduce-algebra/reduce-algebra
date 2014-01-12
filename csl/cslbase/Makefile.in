@@ -2219,9 +2219,6 @@ machineid.c:	cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
-inline-defs.dat:
-	$(TRACE)touch inline-defs.dat
-
 reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(TRACE)$(RM) -rf reduce.img
 # I will make the REDUCE image file a directory rather than a single
@@ -2359,16 +2356,31 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # that has ALL the inline definitions available. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	$(RM) -f inline-defs.dat
+	mv inline-defs.dat old-inline-defs.dat
 	touch inline-defs.dat
 	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
-	$(RM) bootstrapreduce.img
-	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	if diff inline-defs.dat old-inline-defs.dat > /dev/null; \
+	then \
+	  echo "Inline definitions have not changed"; \
+        else \
+	  $(RM) bootstrapreduce.img; \
+	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	fi
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
+# If the inline-defs file has not changed I will restore the old one. Its
+# contents will be just what I would have seen in the new one but its
+# datestamp will be older and that can help avoid unnecessary rebuilding.
+	if diff inline-defs.dat old-inline-defs.dat > /dev/null; \
+	then \
+	  echo "Inline definitions have not changed"; \
+	  mv old-inline-defs.dat inline-defs.dat; \
+	else \
+	  $(RM) old-inline-defs.dat; \
+	fi
 	@mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
 # The following rule can lead to race conditions with parallel make if
