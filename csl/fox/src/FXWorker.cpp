@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 62c7d19e 23-May-2012 */
+/* $ Id: $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

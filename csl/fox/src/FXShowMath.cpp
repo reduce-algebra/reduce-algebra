@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 42a6315a 31-Oct-2012 */
+/* $ Id: $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -108,7 +108,7 @@ static int DEBUGFONT = 0;
 // cache around say 80 full lines of maths display. Beyond that the
 // system would need to re-parse for redisplay.
 
-#define memoryPoolSize (0x4000*sizeof(void *))
+#define memoryPoolSize (0x8000*sizeof(void *))
 
 static void *memoryPool = NULL;
 static unsigned int memoryPoolIn, memoryPoolOut;
@@ -1660,6 +1660,7 @@ case BoxText:
         ss = t->text;
         while (l > 0)
         {   int c = *ss++ & 0xff;
+            if (c == 0xc6) c = 'x'; // measure " " as if "x"
             l--;
             if (c < 0x80) utfchars[utflength++] = c;
             else
@@ -1669,7 +1670,8 @@ case BoxText:
         }
         w = ((FXFont *)ff)->getTextWidth(utfchars, utflength);
 #else
-        w = xfWidth(ff, t->text, t->n);
+        if (t->n == 1 && (t->text[0] & 0xff)== 0xc6) w = xfWidth(ff, "x", 1);
+        else w = xfWidth(ff, t->text, t->n);
 #endif
 // Here I have a bit of shameless fudge. The "cmex" glyph for \int seems to
 // record as its width a value that makes it finish just about at a point on
@@ -2463,7 +2465,8 @@ static Keyword texWords[1<<texWordBits] =
     {"`",          TeXSymbol, FntRoman,  0x12, NULL},
 //  {"NOTSIGN",    TeXSymbol, FntSymbol, 0x3a, NULL},
     {"#",          TeXSymbol, FntRoman,  0x23, NULL},
-    {"~",          TeXSymbol, FntRoman,  0x7f, NULL},
+// I will reserve code 0xc6 for a space.
+    {"~",          TeXSymbol, FntRoman,  0xc6, NULL},
     {"(",          TeXSymbol, FntRoman,  0x28, NULL},
     {")",          TeXSymbol, FntRoman,  0x29, NULL},
     {"<",          TeXSymbol, FntItalic, 0x3c, NULL},
@@ -4356,7 +4359,8 @@ case BoxText:
         symbolOrItalic = ((t->flags & FontMask) == FntItalic ||
                           (t->flags & FontMask) == FntSymbol);
         setFont1(dc, ff);
-        drawText1(dc, x, y, t->text, t->n);
+        if (t->n != 1 || (t->text[0] & 0xff) != 0xc6)
+            drawText1(dc, x, y, t->text, t->n);
         if (DEBUGFONT & 1)
         {   dc->drawRectangle(x, y, t->width, t->depth);
             dc->drawRectangle(x, y - t->height, t->width, t->height);

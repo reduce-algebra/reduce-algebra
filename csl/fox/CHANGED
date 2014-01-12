@@ -54,3 +54,13 @@ src/FXTerminal.cpp             a terminal for interactive sessions to run in
 src/FXWorker.cpp               thread-related parts assocated with FXTermninal
 
 ============================================================
+
+
+Changes to the ACN parts of the code:
+  FXShowMath.cpp: alter treatment of TeX "~" to use character code 0xb6
+     to stand for it. It measures as if it was "x" but is not printed at
+     all, so it acts like a blank character. This improves the behaviour
+     Reduce has on
+         write "this is a message with blanks in";
+     January 2014
+

@@ -105,7 +105,21 @@ new_inline_definitions := nil;
 
 % If anybody wanted to support true parallel recompilation of Reduce
 % packages than in addition to any other adjustments it would be
-% important to make the following two procedures atomic.
+% important to make the following procedures atomic.
+
+% Here I indicate where the file listing inline-definitions will live...
+% Note that it is in different places for different flavours of Lisp. For
+% CSL it is in the generated-c directory because several different variant
+% builds may wish to share it.
+
+symbolic procedure inline_defs_file();
+!#if (memq 'vsl lispsystem!*)
+   "inline-defs.dat";
+!#elif (memq 'csl lispsystem!*)
+   "$reduce/cslbuild/generated-c/inline-defs.dat";
+!#else
+   "$fasl/inline-defs.dat";
+!#endif
 
 symbolic procedure load_saved_inlines();
   begin
@@ -114,14 +128,10 @@ symbolic procedure load_saved_inlines();
 % There is another bit of fun here. I would like to be able to call
 % module!-rebuild at any time, and that means that the current directory
 % is uncertain when that happens. So with CSL I arrange that I always keep
-% my "inline-defs.dat" file in the directory where reduce.img is being
-% built. For PSL I put things where fasl files go.
+% my "inline-defs.dat" file in the directory where generated C lives.
+% For PSL I put things where fasl files go.
 %
-!#if (memq 'csl lispsystem!*)
-    ff := concat2(get!-lisp!-directory(), "/inline-defs.dat");
-!#else
-    ff := "$fasl/inline-defs.dat";
-!#endif
+    ff := inline_defs_file();
     if not filep ff then return nil;
     ff := open(ff, 'input);
     if null ff then return nil;
@@ -155,11 +165,7 @@ symbolic procedure save_inlines();
     if null new_inline_definitions then <<
       lprim "No new inline definitions here";
       return nil>>;
-!#if (memq 'csl lispsystem!*)
-    fname := concat2(get!-lisp!-directory(), "/inline-defs.dat");
-!#else
-    fname := "$fasl/inline-defs.dat";
-!#endif
+    fname := inline_defs_file();
     if filep fname then <<
       ff := open(fname, 'input);
       if null ff then return nil; % Failed! Note filep had said it was there.

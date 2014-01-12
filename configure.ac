@@ -397,8 +397,8 @@ case $inplace in
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
-    if ! test -d "$abssrcdir/cslbuild/generated-c" ||
-       ! test -f "$abssrcdir/cslbuild/generated-c/profile.dat"
+    if test ! -d "$abssrcdir/cslbuild/generated-c" ||
+       test ! -f "$abssrcdir/cslbuild/generated-c/profile.dat"
     then
       rm -rf "$abssrcdir/cslbuild/generated-c"
       mkdir -p "$abssrcdir/cslbuild/generated-c"
@@ -606,7 +606,7 @@ case $inplace in
   if test "x$with_psl" != "xno"
   then
     AC_MSG_NOTICE([+++ Will build in $abssrcdir/pslbuild/$build])
-    if ! test -d "$abssrcdir/pslbuild/$build"
+    if test ! -d "$abssrcdir/pslbuild/$build"
     then
       mkdir -p "$abssrcdir/pslbuild/$build"
     fi
@@ -787,7 +787,7 @@ then
 # so I will do yet further work to work around that and make things appear
 # almost neat. These extra tricks require a file "wxWidgets_revision"
 # to be stored in various places...
-#   if ! test -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
+#   if test ! -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
 #   then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
