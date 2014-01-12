@@ -116,6 +116,7 @@ endif !cygwin
 
 if wx
 WXC=../bin/wx-config
+BUILT_SOURCES = $(WXC)
 MY_CPPFLAGS := $(shell ../bin/wx-config --cppflags 2>/dev/null)
 MY_CFLAGS   := $(shell ../bin/wx-config --cflags 2>/dev/null)
 MY_CXXFLAGS := $(shell ../bin/wx-config --cxxflags 2>/dev/null)
@@ -619,7 +620,7 @@ endif !windows
 CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 
 # BEWARE BEWARE BEWARE the next line must have trailing blanks
-DEST=-o   
+DEST=-o # Note that the variable needs to include a trailing blank
 
 if fox
 if win64
@@ -632,10 +633,15 @@ else !fox
 FOXDEPS=
 endif !fox
 
-# The next rule will only trigger if fxver.h is not present at all.
+# I make the whole of the FOX library depend on just one
+# file, viz CHANGED. That is the file where I record updates that I make
+# to it. A consequence of this should be that FOX will be (re-)compiled
+# either the first time Reduce is built or if that CHANGED file gets updated,
+# but that I avoid the cost of checking and recompiling for any alteration
+# that does not cause me to record it in the CHANGED file.
 
-$(FOXDEPS):
-	@cd ../fox && $(MAKE) install
+$(FOXDEPS):	$(srcdir)/../fox/CHANGED
+	$(TRACE)@cd ../fox && $(MAKE) install
 
 
 if crlibm
@@ -703,7 +709,7 @@ bootstrapreduce_DEPENDENCIES += $(CRLIBMDEPS)
 reduce_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
-	@cd ../crlibm && $(MAKE) install
+	$(TRACE)@cd ../crlibm && $(MAKE) install
 
 else !crlibm
 CRINC =
@@ -738,10 +744,32 @@ if wx
 #
 WXV=3.1
 
+# The master version of wxWidgets is kept in the source tree as a .tar
+# archive, and the file support-packages/wxWidgets_version is updated
+# whenever a new copy needs unpacking. This script probably depends on
+# use of "bash" as your shell... I ought to review that issue at some stage.
+
+$(srcdir)/../wxWidgets/wxWidgets_revision:	\
+		$(srcdir)/../support-packages/wxWidgets_revision
+	$(TRACE) ( cd $(srcdir)/../support-packages ; \
+	a=`echo wxWidgets-v*.tar.bz2` ; \
+	a=$${a##* } ; \
+	b=$${a%.tar.bz2} ; \
+	cd .. ; \
+	rm -rf wxWidgets ; \
+	tar xfj support-packages/$$a ; \
+	chmod -R +rw wxWidgets-* ; \
+	mv wxWidgets-* wxWidgets ; \
+	cp $(srcdir)/../support-packages/wxWidgets_revision wxWidgets ; \
+	echo wxWidgets unpacked from archive $$a )
+
 BASELIB=../lib/libwx_baseu-$(WXV).a
 WXDEPS=../bin/wx-config $(BASELIB)
 
-if !cygwin
+if cygwin
+$(BASELIB) ../bin/wx-config:	$(srcdir)/../wxWidgets/wxWidgets_revision
+	$(TRACE)@cd ../wxWidgets && $(MAKE) install
+else !cygwin
 # When I build wxWidgets locally I *ALWAYS* end up passing an explicit
 # "--host=..." option to the configure script. Well that is always except
 # when under cygwin in certain cases... A result of that is that
@@ -752,7 +780,7 @@ if !cygwin
 # hack in that situation.
 
 $(BASELIB):	../lib/libwx_baseu-$(WXV)-$(HOST).a
-	cd ../lib; \
+	$(TRACE)cd ../lib; \
 	for x in *$(HOST).a; \
 	do \
 	  y=$${x%-$(HOST).a}.a; \
@@ -760,8 +788,9 @@ $(BASELIB):	../lib/libwx_baseu-$(WXV)-$(HOST).a
 	  ln -s -f $$x $$y; \
 	done
 
-../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:
-	@cd ../wxWidgets && $(MAKE) install
+../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:	\
+		$(srcdir)/../wxWidgets/wxWidgets_revision
+	$(TRACE)@cd ../wxWidgets && $(MAKE) install
 endif !cygwin
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)

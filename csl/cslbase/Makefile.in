@@ -440,6 +440,7 @@ RM = rm
 @cygwin_TRUE@EXE = 
 @wx_FALSE@WXC = 
 @wx_TRUE@WXC = ../bin/wx-config
+@wx_TRUE@BUILT_SOURCES = $(WXC)
 @wx_TRUE@MY_CPPFLAGS := $(shell ../bin/wx-config --cppflags 2>/dev/null)
 @wx_TRUE@MY_CFLAGS := $(shell ../bin/wx-config --cflags 2>/dev/null)
 @wx_TRUE@MY_CXXFLAGS := $(shell ../bin/wx-config --cxxflags 2>/dev/null)
@@ -752,7 +753,7 @@ dyndemo_SOURCES = dyndemo.c
 CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 
 # BEWARE BEWARE BEWARE the next line must have trailing blanks
-DEST = -o   
+DEST = -o # Note that the variable needs to include a trailing blank
 @fox_FALSE@FOXDEPS = 
 @fox_TRUE@@win64_FALSE@FOXDEPS = ../lib/libFOX-1.6.a
 
@@ -855,7 +856,7 @@ binfiles = $(mainbin) csl$(EXEEXT) $(am__append_11)
 @win64_TRUE@NAME = windows64
 @windows_FALSE@ARCHIVE = reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
 @windows_TRUE@ARCHIVE = reduce-$(NAME)-$(shell date +%Y%m%d).zip
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
@@ -1399,13 +1400,15 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(PROGRAMS) config.h all-local
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -1435,6 +1438,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 @windows_FALSE@install-exec-local:
 clean: clean-am
 
@@ -1509,7 +1513,7 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-local
 
-.MAKE: all install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am all-local am--refresh check check-am \
 	clean clean-binPROGRAMS clean-generic clean-local \
@@ -1637,10 +1641,15 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 @windows_TRUE@	$(WINDRES) $(srcdir)/fwin-reduce.rc --include-dir=$(srcdir) \
 @windows_TRUE@		-o fwin-reduce.$(OBJEXT)
 
-# The next rule will only trigger if fxver.h is not present at all.
+# I make the whole of the FOX library depend on just one
+# file, viz CHANGED. That is the file where I record updates that I make
+# to it. A consequence of this should be that FOX will be (re-)compiled
+# either the first time Reduce is built or if that CHANGED file gets updated,
+# but that I avoid the cost of checking and recompiling for any alteration
+# that does not cause me to record it in the CHANGED file.
 
-$(FOXDEPS):
-	@cd ../fox && $(MAKE) install
+$(FOXDEPS):	$(srcdir)/../fox/CHANGED
+	$(TRACE)@cd ../fox && $(MAKE) install
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -1692,7 +1701,7 @@ $(FOXDEPS):
 @crlibm_TRUE@sysipaq.$(OBJEXT):	../include/crlibm.h
 
 @crlibm_TRUE@$(CRLIBMDEPS):
-@crlibm_TRUE@	@cd ../crlibm && $(MAKE) install
+@crlibm_TRUE@	$(TRACE)@cd ../crlibm && $(MAKE) install
 
 # It is important for the next line that restart.$(OBJEXT) is created from
 # restart.c using a generic default rule - otherwise the lack of
@@ -1710,6 +1719,27 @@ $(srcdir)/configure.ac:
 $(srcdir)/Makefile.am:
 	touch $(srcdir)/Makefile.am
 
+# The master version of wxWidgets is kept in the source tree as a .tar
+# archive, and the file support-packages/wxWidgets_version is updated
+# whenever a new copy needs unpacking. This script probably depends on
+# use of "bash" as your shell... I ought to review that issue at some stage.
+
+@wx_TRUE@$(srcdir)/../wxWidgets/wxWidgets_revision:	\
+@wx_TRUE@		$(srcdir)/../support-packages/wxWidgets_revision
+@wx_TRUE@	$(TRACE) ( cd $(srcdir)/../support-packages ; \
+@wx_TRUE@	a=`echo wxWidgets-v*.tar.bz2` ; \
+@wx_TRUE@	a=$${a##* } ; \
+@wx_TRUE@	b=$${a%.tar.bz2} ; \
+@wx_TRUE@	cd .. ; \
+@wx_TRUE@	rm -rf wxWidgets ; \
+@wx_TRUE@	tar xfj support-packages/$$a ; \
+@wx_TRUE@	chmod -R +rw wxWidgets-* ; \
+@wx_TRUE@	mv wxWidgets-* wxWidgets ; \
+@wx_TRUE@	cp $(srcdir)/../support-packages/wxWidgets_revision wxWidgets ; \
+@wx_TRUE@	echo wxWidgets unpacked from archive $$a )
+
+@cygwin_TRUE@@wx_TRUE@$(BASELIB) ../bin/wx-config:	$(srcdir)/../wxWidgets/wxWidgets_revision
+@cygwin_TRUE@@wx_TRUE@	$(TRACE)@cd ../wxWidgets && $(MAKE) install
 # When I build wxWidgets locally I *ALWAYS* end up passing an explicit
 # "--host=..." option to the configure script. Well that is always except
 # when under cygwin in certain cases... A result of that is that
@@ -1720,7 +1750,7 @@ $(srcdir)/Makefile.am:
 # hack in that situation.
 
 @cygwin_FALSE@@wx_TRUE@$(BASELIB):	../lib/libwx_baseu-$(WXV)-$(HOST).a
-@cygwin_FALSE@@wx_TRUE@	cd ../lib; \
+@cygwin_FALSE@@wx_TRUE@	$(TRACE)cd ../lib; \
 @cygwin_FALSE@@wx_TRUE@	for x in *$(HOST).a; \
 @cygwin_FALSE@@wx_TRUE@	do \
 @cygwin_FALSE@@wx_TRUE@	  y=$${x%-$(HOST).a}.a; \
@@ -1728,8 +1758,9 @@ $(srcdir)/Makefile.am:
 @cygwin_FALSE@@wx_TRUE@	  ln -s -f $$x $$y; \
 @cygwin_FALSE@@wx_TRUE@	done
 
-@cygwin_FALSE@@wx_TRUE@../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:
-@cygwin_FALSE@@wx_TRUE@	@cd ../wxWidgets && $(MAKE) install
+@cygwin_FALSE@@wx_TRUE@../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:	\
+@cygwin_FALSE@@wx_TRUE@		$(srcdir)/../wxWidgets/wxWidgets_revision
+@cygwin_FALSE@@wx_TRUE@	$(TRACE)@cd ../wxWidgets && $(MAKE) install
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxfontdemo$(EXEEXT)

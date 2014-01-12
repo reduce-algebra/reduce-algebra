@@ -776,8 +776,19 @@ then
 # be "no".
   if test "x$with_wx" != "xno"
   then
-    if ! test -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
-    then
+# At one stage I only unpacked a fresh wxWidgets if either one was not
+# already unpacked or if the "--with-force" option was set. That may have
+# saved some time but it meant that it was necessary to take special
+# action when a new revision of wxWidgets got installed upstream. So now
+# I will always unpack here. This is still not perfect in that the
+# unpacking only happens when somebody does a top level
+#   ./configure --with-csl --with-wx
+# and generally lower level reconfigurations are not triggered automatically,
+# so I will do yet further work to work around that and make things appear
+# almost neat. These extra tricks require a file "wxWidgets_revision"
+# to be stored in various places...
+#   if ! test -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
+#   then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
       a=`echo wxWidgets-v*.tar.bz2`
@@ -788,9 +799,11 @@ then
       tar xfj support-packages/$a
       chmod -R +rw wxWidgets-*
       mv wxWidgets-* wxWidgets
+      cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets
       echo wxWidgets unpacked from archive $a
       cd $d
-    fi
+#   fi
+#
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
 # cross-compilation using the x86_64-win32-mingw32 toolchain. To try to
