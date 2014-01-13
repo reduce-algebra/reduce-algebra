@@ -1,5 +1,5 @@
 //
-// "FXShowMath.cpp"                       Copyright A C Norman 2004-2012
+// "FXShowMath.cpp"                       Copyright A C Norman 2004-2014
 //
 //
 // Code to layout mathematical formulae for display. Formulae are
@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2004-12 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
+* Copyright (C) 2004-14 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* $ Id: $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2337,7 +2337,7 @@ static void printKeyword(Keyword *k)
 
 // The table that follows is initially set up in an order designed to
 // have some degree of coherence of presentation, but as soon as the code
-// starts to run it gers rearranged as a hash table.
+// starts to run it gets rearranged as a hash table.
 
 #define texWordBits 9
 
@@ -3722,8 +3722,7 @@ case '\\':
         }
 // I assemble EITHER "\word" or "\delim"
         if (lexLength == 0)
-        {   lexerBuffer[lexLength++] = '\\';   // put the "\" explicitly there
-            lexerBuffer[lexLength++] = curChar;
+        {   lexerBuffer[lexLength++] = curChar;
             curChar = (*nextChar)();
         }
         lexerBuffer[lexLength] = 0;

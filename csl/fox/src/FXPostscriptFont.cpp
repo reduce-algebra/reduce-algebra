@@ -23,7 +23,7 @@
 * that permits static linking, but its terms make that infeasible so this is    *
 * JUST under LGPL                                                               *
 *********************************************************************************
-* $Id: FXPostscriptFont.cpp,v 1.65 2003/10/27 23:59:21 fox Exp $                *
+* $Id$                *
 ********************************************************************************/
 
 
@@ -51,7 +51,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 0a4910ee 04-Jun-2008 */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

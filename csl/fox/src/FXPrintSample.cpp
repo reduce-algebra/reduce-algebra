@@ -22,7 +22,7 @@
  
 
 
-/* Signature: 3cb080b2 01-May-2008 */
+/* $Id$ /*
 
 
 #include <stdarg.h>

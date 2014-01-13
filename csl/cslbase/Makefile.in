@@ -464,7 +464,6 @@ RM = rm
 @wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @wx_FALSE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 @wx_TRUE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
-INLINE_DEFS = $(CYGSRC)/../../cslbuild/generated-c/inline-defs.dat
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
 		arith12.c char.c cslmpi.c eval1.c eval2.c \
@@ -809,7 +808,7 @@ termdemo_LIBS =
 
 @windows_TRUE@generatedfiles = $(console_binaries) $(noinstall_console_binaries) \
 @windows_TRUE@	$(image_files) $(local_image_files) $(win_specials) \
-@windows_TRUE@	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep $(INLINE_DEFS)
+@windows_TRUE@	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep inline-defs.dat
 
 @mac_framework_FALSE@@windows_FALSE@macr = 
 @mac_framework_TRUE@@windows_FALSE@macr = mac.r *.app
@@ -2272,7 +2271,7 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 # unwanted extra recompilation.
 
 bootstraprecompile:
-@canrun_TRUE@	if test ! -f bootstrapreduce.img; then make bootstrapreduce.img; fi
+@canrun_TRUE@	if !test -f bootstrapreduce.img; then make bootstrapreduce.img; fi
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -2281,7 +2280,7 @@ bootstraprecompile:
 @canrun_FALSE@	echo Can not build images on this platfrom
 
 recompile:
-@canrun_TRUE@	if test ! -f reduce.img; then make reduce.img; fi
+@canrun_TRUE@	if !test -f reduce.img; then make reduce.img; fi
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -2357,12 +2356,11 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # that has ALL the inline definitions available. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	if test ! -f $(INLINE_DEFS); then touch $(INLINE_DEFS); fi
-	mv $(INLINE_DEFS) old-inline-defs.dat
-	touch $(INLINE_DEFS)
+	mv inline-defs.dat old-inline-defs.dat
+	touch inline-defs.dat
 	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
-	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
+	if diff inline-defs.dat old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
         else \
@@ -2376,10 +2374,10 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # If the inline-defs file has not changed I will restore the old one. Its
 # contents will be just what I would have seen in the new one but its
 # datestamp will be older and that can help avoid unnecessary rebuilding.
-	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
+	if diff inline-defs.dat old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
-	  mv old-inline-defs.dat $(INLINE_DEFS); \
+	  mv old-inline-defs.dat inline-defs.dat; \
 	else \
 	  $(RM) old-inline-defs.dat; \
 	fi

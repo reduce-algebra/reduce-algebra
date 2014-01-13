@@ -3245,6 +3245,10 @@ static void set_shell(void)
 #endif
 }
 
+#ifdef DEBUG
+static FILE *logfile = NULL;
+#endif
+
 static char *term_fancy_getline(void)
 {
     int ch, any_keys = 0;
@@ -3275,6 +3279,11 @@ static char *term_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
+#ifdef DEBUG
+        if (logfile == NULL) logfile = fopen("termed.log", "w");
+        fprintf(logfile, "Char was %x\n", ch);
+        fflush(logfile);
+#endif
         if (ch == EOF || (ch == CTRL('D') && !any_keys))
         {   set_normal();
             return NULL;

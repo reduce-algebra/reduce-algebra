@@ -35,8 +35,7 @@
  * complete work are subject to the LGPL.
  */
 
-
-/* Signature: 53a22d85 26-Jun-2012 */
+/* $Id$ */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -1164,7 +1163,7 @@ static int term_getchar(void)
 /*
  * After "ESC [" I absorb digits and semicolons.
  */
-            if (isdigit(ch))
+            if (isdigit((unsigned char)ch))
             {   numval1 = 10*numval1 + ch - '0';
                 continue;
             }
@@ -1752,8 +1751,8 @@ static int term_find_next_word_forwards(void)
     do
     {   n++;
     } while (input_line[n] != 0 &&
-             (isalnum(input_line[n]) || input_line[n] == '_'));
-    while (input_line[n] != 0 && isspace(input_line[n])) n++;
+             (isalnum((unsigned char)input_line[n]) || input_line[n] == '_'));
+    while (input_line[n] != 0 && isspace((unsigned char)input_line[n])) n++;
     return n;
 }
 
@@ -1764,8 +1763,8 @@ static int term_find_next_word_backwards(void)
     do
     {   n--;
     } while (n != prompt_length &&
-             (isalnum(input_line[n]) || input_line[n] == '_'));
-    while (n != prompt_length && isspace(input_line[n])) n--;
+             (isalnum((unsigned char)input_line[n]) || input_line[n] == '_'));
+    while (n != prompt_length && isspace((unsigned char)input_line[n])) n--;
     if (n == prompt_length || n == insert_point-1) return n;
     else return n+1; 
 }
@@ -2186,7 +2185,7 @@ static int term_find_word_start(void)
  */
     int n = insert_point;
     while (n>=prompt_length &&
-           (isalnum(input_line[n]) || input_line[n]=='_')) n--;
+           (isalnum((unsigned char)input_line[n]) || input_line[n]=='_')) n--;
     return n+1;
 }
 
@@ -2199,7 +2198,7 @@ static int term_find_word_end(void)
  */
     int n = insert_point;
     while (input_line[n]!=0 &&
-           (isalnum(input_line[n]) || input_line[n]=='_')) n++;
+           (isalnum((unsigned char)input_line[n]) || input_line[n]=='_')) n++;
     return n;
 }
 
@@ -2208,8 +2207,8 @@ static void term_capitalize_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    if (a < b) input_line[a] = toupper(input_line[a]);
-    for (i=a+1; i<b; i++) input_line[i] = tolower(input_line[i]);
+    if (a < b) input_line[a] = (char)toupper((unsigned char)input_line[a]);
+    for (i=a+1; i<b; i++) input_line[i] = (char)tolower((unsigned char)input_line[i]);
     refresh_display();
 }
 
@@ -2219,7 +2218,7 @@ static void term_lowercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = tolower(input_line[i]);
+    for (i=a; i<b; i++) input_line[i] = (char)tolower((unsigned char)input_line[i]);
     refresh_display();
 }
 
@@ -2229,7 +2228,7 @@ static void term_uppercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = toupper(input_line[i]);
+    for (i=a; i<b; i++) input_line[i] = (char)toupper((unsigned char)input_line[i]);
     refresh_display();
 }
 
@@ -2353,8 +2352,8 @@ static void term_discard_output(void)
 
 static int hexval(int c)
 {
-    if (isdigit(c)) return c - '0';
-    else if (isupper(c)) return c + (10 - 'A');
+    if (isdigit((unsigned char)c)) return c - '0';
+    else if (isupper((unsigned char)c)) return c + (10 - 'A');
     else return c + (10 - 'a');
 }
 
@@ -2885,7 +2884,7 @@ void term_unicode_convert(void)
  */
     if (insert_point - prompt_length >= 6)
     {   p = &input_line[insert_point-6];
-        if ((p[0] == '0' && isxdigit(p[1]) && p[1] != '0') ||
+        if ((p[0] == '0' && isxdigit((unsigned char)p[1]) && p[1] != '0') ||
             (p[0] == '1' && p[1] == '0'))
         {   c = (hexval(p[0]) << 4) | hexval(p[1]);
             for (i=2; i<6 && c > 0; i++)
@@ -3020,10 +3019,10 @@ void term_unicode_convert(void)
  * point.
  */
     if (insert_point - prompt_length >= 4 &&
-        isxdigit(input_line[insert_point-4]) &&
-        isxdigit(input_line[insert_point-3]) &&
-        isxdigit(input_line[insert_point-3]) &&
-        isxdigit(input_line[insert_point-1]))
+        isxdigit((unsigned char)input_line[insert_point-4]) &&
+        isxdigit((unsigned char)input_line[insert_point-3]) &&
+        isxdigit((unsigned char)input_line[insert_point-3]) &&
+        isxdigit((unsigned char)input_line[insert_point-1]))
     {   c = hexval(input_line[insert_point-4]);
         c = (c << 4) | hexval(input_line[insert_point-3]);
         c = (c << 4) | hexval(input_line[insert_point-2]);

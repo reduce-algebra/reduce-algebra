@@ -12,7 +12,7 @@
  */
 
 
-/* Signature: 630442ba 01-May-2008 */
+/* $ Id: $ */
 
 
 typedef struct font_info {

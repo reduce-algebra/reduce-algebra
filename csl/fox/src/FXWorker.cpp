@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* $ Id: $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

@@ -14,7 +14,7 @@
 
 
 // Here is a message that he sent in October 2002, and point (c) explains
-// that it can be used for any purpose... whihc includes use within a
+// that it can be used for any purpose... which includes use within a
 // larger body of code that is subject to LGPL.
 
 /*
@@ -56,7 +56,7 @@
 // have clarified that only they may do that, hence this code has to fall
 // under just LGPL, and any changes I have made I release under LGPL 2.1.
 
-/* Signature: 5bd5cfcf 22-May-2008 */
+/* $Id$ */
 
 
 #ifdef HAVE_CONFIG_H

@@ -39,7 +39,7 @@
  */
 
 
-/* Signature: 74520ec2 04-Jun-2012 */
+/* $Id$ */
 
 /*
  * This supports modest line-editing and history for terminal-mode

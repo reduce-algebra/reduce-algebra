@@ -36,6 +36,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/* $Id$ */
 
 
 /*
@@ -52,7 +53,6 @@
  * and not under any more restrictice license.
  */
 
-/* Signature: 523374d5 12-May-2012 */
 
 #ifndef header_fwin_h
 #define header_fwin_h 1
