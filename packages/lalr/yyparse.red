@@ -98,6 +98,7 @@ symbolic procedure yyparse();
        not ((w := get_action(car state_stack, next_input)) = 0) do <<
         princ "w = "; print w;
         if w > 0 then <<                             % SHIFT
+            if next_input = 0 then error(0, "End of file detected");
             sym_stack := (lalr_decode_symbol next_input) . sym_stack;
             state_stack := w . state_stack;
             next_input := yylex() >>

@@ -34,7 +34,7 @@ module 'yylex;
 % This is a lexical anaylser for use with RLISP. Its interface is
 % styles after the one needed by yacc, in that it exports a function
 % called yylex() that returns as a value a numeric category code, but
-% sets a variable yylval to hold further information about the token
+% sets a variable yylval
 % just parsed. Single character objects are coded as their (ASCII?) code
 % [leaving this code non-portable to machines with other encodings?].
 % Other things must have been given 'lex_code properties indicate the
@@ -52,11 +52,12 @@ module 'yylex;
 % parsing process.
 
 inline procedure yyreadch();
- << last64p := last64p + 1;
-    if last64p = 64 then last64p := 0;
-    lex_char := readch();
+ << lex_char := readch();
     if lex_char = !$eol!$ then which_line := which_line + 1;
-    putv(last64, last64p, lex_char);
+    if lex_char neq !$eof!$ then << 
+       last64p := last64p + 1;
+       if last64p = 64 then last64p := 0;
+       putv(last64, last64p, lex_char) >>;
     lex_char >>;
 
 symbolic procedure yyerror msg;
@@ -71,9 +72,9 @@ symbolic procedure yyerror msg;
        last64p := last64p + 1;
        if last64p = 64 then last64p := 0;
        c := getv(last64, last64p);
-       if c = !$eof!$ then princ "<EOF>"
-       else if not (c = nil) then princ c >>;
-    if not (c = !$eol!$) then terpri()
+       if not (c = nil) then princ c >>;
+    if not (c = !$eol!$) then terpri();
+    if lex_char = !$eof!$ then printc "<EOF>"
   end;
 
 % Before a succession of calls to yylex() it is necessary to
@@ -378,7 +379,8 @@ symbolic procedure lex_basic_token();
                return (w := t) end) do
         r := lex_char . r;
 % If there was a '!' in the word I will never treat it as a keyword.
-      yylval := compress reversip r;
+% The intern here is for the benefit of PSL.
+      yylval := intern compress reversip r;
       if not w and yylval = 'eof then return 0; % Special fudge for now
       return if w then '!:symbol else '!:symbol_or_keyword >>
 % Numbers are either integers or floats. A floating point number is

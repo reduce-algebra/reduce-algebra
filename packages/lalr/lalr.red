@@ -121,31 +121,6 @@ load gsort; % Not loaded by default and not autoloaded on demand.
 symbolic procedure sort(ll, ff);
   gsort(ll, ff);
 
-
-% In PSL the "orderp" function seems only to be willing to
-% accept symbols...
-
-symbolic procedure gorderp(a, b);
-  if idp a and idp b then orderp(a, b)
-  else if idp a then t
-  else if idp b then nil
-  else if stringp a and stringp b then gorderp(explode a, explode b)
-  else if stringp a then t
-  else if stringp b then nil
-  else if numberp a and numberp b then gorderp(explode a, explode b)
-  else if numberp a then t
-  else if numberp b then nil
-  else if atom a and atom b then gorderp(explode a, explode b)
-  else if atom a then t
-  else if atom b then nil
-  else if car a = car b then gorderp(cdr a, cdr b)
-  else gorderp(car a, car b);
-
-!#else
-
-symbolic procedure gorderp(a, b);
-  orderp(a, b);
-
 !#endif
 
 

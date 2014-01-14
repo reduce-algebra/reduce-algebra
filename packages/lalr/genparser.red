@@ -101,7 +101,7 @@ symbolic procedure lalr_decode_symbol x;
     else if numberp x and (w := rassoc(x, terminals)) then
        return car w
     else if stringp x then return x
-    else return compress (for each c in explode2uc x collect c)
+    else return intern compress (for each c in explode2uc x collect c)
   end;
 
 symbolic procedure lalr_display_symbols();
@@ -175,7 +175,7 @@ symbolic procedure lalr_set_grammar g;
           for each v in car vv do <<
             if stringp v then <<
                if null cdr (tnum := explodecn v) then <<
-                  v := compress ('!! . '!: . tnum);
+                  v := intern compress ('!! . '!: . tnum);
                   princ "One-character string found <";
                   princ v;
                   princ "> with code ";
@@ -337,7 +337,7 @@ symbolic procedure lalr_print_items(heading, cc);
     terpri();
     for each y in cc do <<
         princ "Item number "; prin cdr y; terpri();
-        for each x in sort(car y, function gorderp) do <<
+        for each x in sort(car y, function ordp) do <<
             lalr_prin_symbol caar x; princ " ->";
             for each y in cdar x do << princ " "; lalr_prin_symbol y >>;
             princ "  :  ";
@@ -467,7 +467,7 @@ symbolic procedure lalr_remove_duplicates x;
   begin
     scalar r;
     if null x then return nil;
-    x := sort(x, function gorderp);
+    x := sort(x, function ordp);
     r := list car x;
     x := cdr x;
     while x do <<
@@ -639,10 +639,11 @@ symbolic procedure lalr_construct_parser g;
     lalr_set_grammar g;
 %
 % The procedure used here at present is a naive one that first creates
-% a full set of LR(1) items and onlt then detects commonalities. For
+% a full set of LR(1) items and only then detects commonalities. For
 % medium to large grammars this will be infeasibly inefficient, so it
 % will be important to do the merging on-the-fly as the various sets
-% are collected.
+% are collected. However this one is simple (or at least simpler) to
+% understand and code and maybe works well enough for small grammars.
 %
     c := lalr_items non_terminals;
     renamings := nil;

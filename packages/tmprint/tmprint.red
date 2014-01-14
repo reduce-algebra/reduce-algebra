@@ -16,7 +16,7 @@ module tmprint; % Output module for TeXmacs interface
 
 
 % ----------------------------------------------------------------------
-% $Id: tmprint.red,v 1.15 2006/06/29 20:04:29 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
 % Copyright (c) 1993-1994, 1999, 2003-2005 A. Dolzmann, T. Hearn, A.
 % Grozin, H. Melenk, W. Neun, A. Norman, A. Seidl, and T. Sturm
@@ -43,7 +43,7 @@ module tmprint; % Output module for TeXmacs interface
 % ----------------------------------------------------------------------
 
 
-% $Log: tmprint.red,v $
+% $......Log: tmprint.red,v $
 %
 % The set of explanations about revisons here are now rather out of date.
 % Recent history can be found by browsing the subversion repository at
@@ -419,9 +419,13 @@ symbolic procedure set!-fancymode bool;
 fluid '(!*standard!-output!* !*math!-output!* !*spool!-output!*);
 !#endif
 
+fluid '(most_recent_fancy !*display!-for!-copy);
+
+!*display!-for!-copy := nil;
+
 symbolic procedure fancy!-output(mode,l);
 % Interface routine.
-
+%
 % ACN does not understand the "posn!*>2" filter here. To avoid some
 % bad consequences it was having for my new screen/log-file stuff it now only
 % applies in maprin mode not terpri mode, but it would be nice if somebody
@@ -484,6 +488,7 @@ symbolic procedure fancy!-output(mode,l);
             math!-display 0 and
             math!-display 1 then <<
             maprin l where outputhandler!* = nil >>;
+         most_recent_fancy := l . most_recent_fancy;
 !#endif
          fancy!-maprin0 l >>
       else <<
@@ -491,8 +496,8 @@ symbolic procedure fancy!-output(mode,l);
          if getd 'math!-display and
             math!-display 0 and
             math!-display 1 then <<
-            terpri!* l where outputhandler!* = nil
-                       where !*standard!-output!* = !*spool!-output!* >>;
+            terpri!* l where outputhandler!* = nil,
+                             !*standard!-output!* = !*spool!-output!* >>;
 !#endif
          fancy!-flush() >> >>;
 
@@ -516,6 +521,20 @@ symbolic procedure fancy!-flush();
     fancy!-terpri!* t;
     if getd 'math!-display and math!-display 0 then <<
       math!-display 2; % clear out any previous junk
+% I will send a flat (if "off nat") version of the output to my GUI handler
+% with a view that that can be used if the user selects the displayed
+% output and goes COPY.
+% I will only activate this when 'showmath1 is in lispsystem!* since I will
+% use that at the CSL end to indicate that I am ready to accept and process it.
+      if memq('showmath1, lispsystem!*) then <<
+% This puts a simple flat version of the output into the GUI's buffers
+         most_recent_fancy := reverse most_recent_fancy;
+         while most_recent_fancy do <<
+            (maprin car most_recent_fancy) where outputhandler!* = nil,
+                                                 !*nat = nil;
+            most_recent_fancy := cdr most_recent_fancy >>;
+         terpri!* t where outputhandler!* = nil;
+         tyo 4 >>;
       for each line in reverse fancy!-page!* do
         if line and not eqcar(car line,'tab) then <<
           if 'wx memq lispsystem!* then fancy!-out!-item "\[";
@@ -526,6 +545,20 @@ symbolic procedure fancy!-flush();
     else for each line in reverse fancy!-page!* do
       if line and not eqcar(car line,'tab) then <<
          fancy!-out!-header();
+% If somehow "on fancy" is true but I am not talking to the GUI then the
+% expectation will be that I am talking to TeXmacs. In that case I do
+% not want tro confuse things with the "flat" output, but for debuggability
+% I will arrange that if a user goes "lisp (!*display!-for!-copy := t);
+% the the extra stuff will be shown.
+         if !*display!-for!-copy and most_recent_fancy then <<
+            most_recent_fancy := reverse most_recent_fancy;
+            while most_recent_fancy do <<
+               (maprin car most_recent_fancy) where outputhandler!* = nil,
+                                                    !*nat = nil;
+               most_recent_fancy := cdr most_recent_fancy >>;
+            terpri!* t where outputhandler!* = nil;
+            tyo 4 >>;
+         most_recent_fancy := nil;
          for each it in reverse line do fancy!-out!-item it;
          fancy!-out!-trailer() >>;
     set!-fancymode nil

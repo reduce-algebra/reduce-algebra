@@ -62,5 +62,8 @@ Changes to the ACN parts of the code:
      all, so it acts like a blank character. This improves the behaviour
      Reduce has on
          write "this is a message with blanks in";
+     Also a fix so that
+         write "#";
+     works properly. It used to generate a messy failure message.
      January 2014
 

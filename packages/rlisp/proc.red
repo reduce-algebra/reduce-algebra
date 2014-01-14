@@ -102,10 +102,12 @@ symbolic procedure formproc(u,vars,mode);
               if not zerop posn() then terpri();
               prin2 "+++ Record new inline definition:";
               terpri();
-% During initial bootstrapping prettyprint might not be available, hence the
-% caution here.
-              if getd 'prettyprint then prettyprint list('de,name,varlis,body)
-              else print list('de,name,varlis,body);
+% I had been minded to use prettyprint here, however with PSL the file that
+% contains the code for prettyprint sets up some inline definitions and it
+% appears that an attempt to use prettyprint will fail there. What is worse
+% is that I tried "if getd 'prettyprint then prettyprint else print" but that
+% also crashed when PSL tried to build the prettyprint module.
+              print list('de,name,varlis,body);
               new_inline_definitions := (name . dd) . new_inline_definitions >>
            end;
         if (not(type eq 'inline) and get(name,'inline)) or

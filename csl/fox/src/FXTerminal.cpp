@@ -3564,7 +3564,7 @@ void FXTerminal::insertMathsLines()
 //       maths that needs n rows...
 // 0x24  is a scale marker. I use 0x20 to 0x24 for the 5 different scales at
 //       which I can render mathematics.
-//       In fact I will use the buttom 3 bits for a scale, and the
+//       In fact I will use the bottom 3 bits for a scale, and the
 //       remaining 5 bits to help me position multi-line formulae neatly.
 //       0x28 to 0xf8 can give an indent hint value in that case.
 // 0,0,0 is a 3-byte gap that will be used to hold a handle to the box-
