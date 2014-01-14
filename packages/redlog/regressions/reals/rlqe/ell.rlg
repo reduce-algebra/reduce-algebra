@@ -92,7 +92,7 @@ a *c - a *b *c - a *c  - a *c - b *c  + b *c > 0
 end;
 
 Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 30 ms  plus GC time: 30 ms
-1: real 0.28
-user 0.20
+Time (counter 1): 26 ms  plus GC time: 46 ms
+1: real 0.27
+user 0.18
 sys 0.02

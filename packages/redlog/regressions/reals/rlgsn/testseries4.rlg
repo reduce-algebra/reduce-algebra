@@ -229,7 +229,7 @@ rlgsn testseries4;
 end;
 
 Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 99 ms  plus GC time: 29 ms
-1: real 0.36
-user 0.25
+Time (counter 1): 82 ms  plus GC time: 48 ms
+1: real 0.34
+user 0.23
 sys 0.04

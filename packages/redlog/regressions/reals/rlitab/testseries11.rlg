@@ -100,7 +100,7 @@ q >= 0 and q - 40 <= 0 and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1377 <= 0
 end;
 
 Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 250 ms  plus GC time: 29 ms
-1: real 0.53
-user 0.42
+Time (counter 1): 192 ms  plus GC time: 47 ms
+1: real 0.46
+user 0.35
 sys 0.04

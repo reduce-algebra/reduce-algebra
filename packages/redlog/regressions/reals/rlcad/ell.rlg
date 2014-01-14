@@ -2122,7 +2122,7 @@ c < 0 and b + 1 < 0 and a + 1 < 0 and a - c - 1 = 0 and a + c + 1 < 0
 end;
 
 Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 11849 ms  plus GC time: 560 ms
-1: real 13.22
-user 13.07
-sys 0.06
+Time (counter 1): 9521 ms  plus GC time: 590 ms
+1: real 10.86
+user 10.73
+sys 0.04

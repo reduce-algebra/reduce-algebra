@@ -408,7 +408,7 @@ and 8937500*n + 638281250*p1 + 5106250*q - 950000*td - 190000000*z - 7640077821
 end;
 
 Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 6199 ms  plus GC time: 190 ms
-1: real 6.78
-user 6.65
-sys 0.04
+Time (counter 1): 4598 ms  plus GC time: 199 ms
+1: real 5.16
+user 5.01
+sys 0.06
