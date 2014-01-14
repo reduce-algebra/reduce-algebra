@@ -40,8 +40,6 @@ module ofsfexfr;
 fluid '(anu_precision!*);
 anu_precision!* := 2;
 
-struct OfsfAtf asserted by List3;
-
 %DS
 % GAnu ::= 'minf | 'pinf | Anu
 % AnuInterval ::= AnuSpan | AnuPoint | nil

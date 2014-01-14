@@ -42,7 +42,7 @@ module ofsf;
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep),
+   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl),
    nil);
 
 load!-package 'redlog;
@@ -310,6 +310,9 @@ if rl_texmacsp() then
 
 flag('(equal neq leq geq lessp greaterp),'spaced);
 flag('(ofsf_chsimpat),'full);
+
+struct OfsfAtf asserted by List3;
+struct OfsfAtfL asserted by listp;
 
 inline procedure ofsf_op(atf);
    % Ordered field operator. [atf] is an atomic formula
