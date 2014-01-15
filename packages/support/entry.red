@@ -487,6 +487,7 @@ defautoload(gurobi_newmodel, gurobi, expr, 2);
 % Crack, Applysym & Liepde
 
 defautoload(backup_reduce_flags, crack, expr, 0);
+symbolic operator setcrackflags;
 defautoload(setcrackflags, crack, expr, 0);
 defautoload(liepde, liepde, expr, 4);
 defautoload(einfachst, applysym, expr, 2);

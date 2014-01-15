@@ -236,6 +236,11 @@ endif !jit
 
 gensrc=$(srcdir)/../../cslbuild/generated-c
 
+INLINE_DEFS = $(gensrc)/inline-defs.dat
+
+$(INLINE_DEFS):
+	touch $(INLINE_DEFS)
+
 generated_sources =             u01.c \
 		u02.c u03.c \
 		u04.c u05.c \
@@ -1413,7 +1418,7 @@ win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
-	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep inline-defs.dat
+	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep $(INLINE_DEFS)
 
 clean-local:
 	-$(RM) -rf $(generatedfiles)
@@ -1730,14 +1735,14 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # that has ALL the inline definitions available. To ensure that things are
 # clean I discard any old inline definition database. To ensure that even
 # forward references to inlines are expanded I do the build twice.
-	if test -f inline-defs.dat; \
-	then mv inline-defs.dat old-inline-defs.dat; \
+	if test -f $(INLINE_DEFS); \
+	then mv $(INLINE_DEFS) old-inline-defs.dat; \
 	else touch old-inline-defs.dat; \
 	fi
-	touch inline-defs.dat
+	touch $(INLINE_DEFS)
 	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
-	if diff inline-defs.dat old-inline-defs.dat > /dev/null; \
+	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
         else \
@@ -1751,10 +1756,10 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # If the inline-defs file has not changed I will restore the old one. Its
 # contents will be just what I would have seen in the new one but its
 # datestamp will be older and that can help avoid unnecessary rebuilding.
-	if diff inline-defs.dat old-inline-defs.dat > /dev/null; \
+	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
-	  mv old-inline-defs.dat inline-defs.dat; \
+	  mv old-inline-defs.dat $(INLINE_DEFS); \
 	else \
 	  $(RM) old-inline-defs.dat; \
 	fi
