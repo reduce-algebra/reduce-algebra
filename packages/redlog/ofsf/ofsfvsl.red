@@ -31,10 +31,12 @@
 module vsl;
 % Virtual substitution with learning, linear case.
 
-% VslState ::= ('vslstate, list of input constraints, substitution list, list of positive lemmas, list of negative lemmas,
-%   property list)
+% VslState ::= ('vslstate, list of input constraints, VslSubL, list of positive
+%   lemmas, list of negative lemmas, property list)
+% VslSub ::= (Kernel, SQ | bottom, OfsfAtf | nil)
 
 struct VslState asserted by VslStateP;
+struct VslSub asserted by List3;
 struct VslNegLemma asserted by VslNegLemmaP;
 struct VslNegLemmaL asserted by listp;
 
@@ -59,7 +61,7 @@ asserted procedure vslstate_nl(s: VslState): List;
 asserted procedure vslstate_prop(s: VslState): List;
    nth(s, 6);
 
-asserted procedure vslstate_mk(il: OfsfAtfl, sal: List, pl: OfsfAtfl, nl: VslNegLemmaL): VslState;
+asserted procedure vslstate_mk(il: OfsfAtfL, sal: List, pl: OfsfAtfL, nl: VslNegLemmaL): VslState;
    {'vslstate, il, sal, pl, nl, nil};
 
 asserted procedure vslstate_put(s: VslState, key: Id, value: Any): Any;
@@ -76,15 +78,29 @@ asserted procedure vslstate_put(s: VslState, key: Id, value: Any): Any;
 asserted procedure vslstate_get(s: VslState, key: Id): Any;
    atsoc(key, nth(s, 6));
 
-asserted procedure vsl_eterm(s: VslState, x: Kernel): DottedPair;
-   % Eterm function.
-   begin scalar ifl, nl, res, f, w;
+asserted procedure vsl_eterm(s: VslState, x: Kernel): VslSub;
+   begin scalar w, ww, eset, res;
+      w := vslstate_get(s, 'esets);
+      ww := atsoc(x, w);
+      if null ww then  % Elimination set was not computed.
+	 ;  % Compute elimination set and attach it to the right place.
+      eset := cdr ww;
+      if null eset then
+	 return {x, 'bottom, nil};
+      res := pop eset;
+      cdr ww := eset;
+      vslstate_put(s, 'esets, w);
+      return res
+   end;
+
+asserted procedure vsl_eterm(s: VslState, x: Kernel): VslSub;
+   begin scalar ifl, nl, res;
       ifl := vslstate_inputl s;
       nl := vslstate_nl s;
       repeat
 	 res := vsl_eterm1(pop ifl, vslstate_stackl s, nl, x)
       until res or null ifl;
-      return res or x . 'bottom
+      return res or {x, 'bottom, nil}
    end;
 
 asserted procedure vsl_eterm1(atf: OfsfAtf, sl: List, nl: List, x: Kernel): ExtraBoolean;
@@ -95,7 +111,7 @@ asserted procedure vsl_eterm1(atf: OfsfAtf, sl: List, nl: List, x: Kernel): Extr
       etermq := quotsq(!*f2q negf red rlhs, !*f2q lc rlhs);
       if not vsl_admissible(x, etermq, sl, nl) then
 	 return nil;
-      return x . etermq
+      return {x, etermq, atf}
    end;
 
 asserted procedure vsl_admissible(x: Kernel, etermq: SQ, sl: List, nl: List): Boolean;
