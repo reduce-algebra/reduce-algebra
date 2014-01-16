@@ -78,44 +78,81 @@ asserted procedure vslstate_put(s: VslState, key: Id, value: Any): Any;
 asserted procedure vslstate_get(s: VslState, key: Id): Any;
    atsoc(key, nth(s, 6));
 
+asserted procedure vsl_vsl(inputl: List): QfFormula;
+   begin scalar state;
+      state := vslstate_mk(inputl, nil, nil, nil);
+      return 'false
+   end;
+
 asserted procedure vsl_eterm(s: VslState, x: Kernel): VslSub;
-   begin scalar w, ww, eset, res;
+   begin scalar eterm;
+      repeat
+	 eterm := vsl_eterm1(s, x)
+      until vsl_eoesetp eterm or vsl_admissiblep(s, eterm, x);
+      return eterm
+   end;
+
+asserted procedure vsl_eoesetp(eterm: List): ExtraBoolean;
+   % End of eset predicate.
+   cadr eterm eq 'bottom;
+
+asserted procedure vsl_eterm1(s: VslState, x: Kernel): VslSub;
+   begin scalar w, esetal, eset, res;
       w := vslstate_get(s, 'esets);
-      ww := atsoc(x, w);
-      if null ww then  % Elimination set was not computed.
-	 ;  % Compute elimination set and attach it to the right place.
-      eset := cdr ww;
+      esetal := if w then cdr w;
+      w := atsoc(x, esetal);
+      if null w then <<  % Elimination set was not computed.
+	 eset := vsl_eset(s, x);
+	 w := x . eset;
+	 push(w, esetal)
+      >> else
+      	 eset := cdr w;
       if null eset then
 	 return {x, 'bottom, nil};
       res := pop eset;
-      cdr ww := eset;
-      vslstate_put(s, 'esets, w);
-      return res
+      cdr w := eset;
+      vslstate_put(s, 'esets, esetal);
+      return {x, car res, cdr res}
    end;
 
-asserted procedure vsl_eterm(s: VslState, x: Kernel): VslSub;
-   begin scalar ifl, nl, res;
-      ifl := vslstate_inputl s;
-      nl := vslstate_nl s;
-      repeat
-	 res := vsl_eterm1(pop ifl, vslstate_stackl s, nl, x)
-      until res or null ifl;
-      return res or {x, 'bottom, nil}
-   end;
-
-asserted procedure vsl_eterm1(atf: OfsfAtf, sl: List, nl: List, x: Kernel): ExtraBoolean;
-   begin scalar rlhs, etermq;
-      if not memq(x, ofsf_varlat atf) then
+asserted procedure vsl_eset(s: VslState, x: Kernel): List;
+   begin scalar sl, fs, lhs, ubl, lbl;
+      sl := vslstate_stackl s;
+      for each ineq in vslstate_inputl s do <<
+	 fs := vsl_substackat(ineq, sl);
+	 lhs := sfto_reorder(ofsf_arg2l fs, x);
+	 if not domainp lhs and mvar lhs eq x then
+	    if lc lhs > 0 then
+	       push(lhs . ineq, lbl)
+	    else
+	       push(lhs . ineq, ubl)
+      >>;
+      if null lbl and null ubl then
 	 return nil;
-      rlhs := sfto_reorder(rl_arg2l atf, x);
-      etermq := quotsq(!*f2q negf red rlhs, !*f2q lc rlhs);
-      if not vsl_admissible(x, etermq, sl, nl) then
-	 return nil;
-      return {x, etermq, atf}
+      return vsl_eset1(lbl, ubl, x)
    end;
 
-asserted procedure vsl_admissible(x: Kernel, etermq: SQ, sl: List, nl: List): Boolean;
-   begin scalar c;
+asserted procedure vsl_eset1(lbl: List, ubl: List, x: Kernel): List;
+   % We have to think about 'inf and 'minf. Maybe there are strategies for the
+   % case that length lbl = length ubl.
+   if null lbl or length lbl > length ubl then
+      vsl_eset2(ubl, x)
+   else
+      vsl_eset2(lbl, x);
+
+asserted procedure vsl_eset2(bl: List, x: Kernel): List;
+   for each b in bl collect
+      quotsq(!*f2q negf red car b, !*f2q lc car b) . cdr b;
+
+switch vsllearn;
+
+asserted procedure vsl_admissiblep(s: VslState, eterm: DottedPair, x: Kernel): Boolean;
+   begin scalar c, etermq, nl, sl;
+      if not !*vsllearn then
+	 return t;
+      etermq := car eterm;
+      sl := vsl_stackl s;
+      nl := vsl_nl s;
       c := t; while c and nl do
 	 if cl_simpl(vsl_substack(pop nl, (x . etermq) . sl), nil, -1) eq 'false then
 	    c := nil;
@@ -134,7 +171,7 @@ asserted procedure vsl_substackf(f: SF, sl: List): SF;
    if null sl then
       f
    else
-      numr ofsf_subf(vsl_substackf(f, cdr sl), car car sl, cdr car sl);
+      numr ofsf_subf(vsl_substackf(f, cdr sl), car car sl, cadr car sl);
 
 asserted procedure vsl_analyze(s: VslState): List;
    ;

@@ -255,6 +255,7 @@ put('ofsf,'rl_services,'(
    (rl_tropsat!* . ofsf_tropsat)
    (rl_ptropsat!* . ofsf_ptropsat)
    (rl_dpep!* . ofsf_dpep)
+   (rl_vsl!* . vsl_vsl)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin

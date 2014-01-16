@@ -19,7 +19,7 @@ term := numr simp xread t;
 42*x1 - 4711*x2 + x3 + 654;
 
 formula := ofsf_0mk2('geq, term);
-st := {('x2 . t2), ('x1 . t1)};
+st := {{'x2, t2, 'dummy}, {'x1, t1, 'dummy}};
 
 f := vsl_substack(formula, st);
 
@@ -52,21 +52,19 @@ x1 + 3*x2 + x3 - 2*x4 - 3$
 infl := {f01, f02, f03, f04, f05, f06, f07, f08, f09, f10}$
 vinput := for each f in infl collect
    ofsf_0mk2('geq, f)$
-state := vslstate_mk(vinput, nil, nil, nil)$
+stl := {{'x2, simp 7, 'dummy}};
+state := vslstate_mk(vinput, stl, nil, nil)$
 
-vslstate_put(state, 'key, 'value);
-vslstate_get(state, 'key);
-trm01 := vsl_eterm(state, 'x1);
-mathprint prepf !*k2f nth(trm01, 1);
-mathprint prepsq nth(trm01, 2);
-mathprint rl_prepfof nth(trm01, 3);
+procedure test_eterm(state, x);
+   begin scalar eterm, resl;
+      repeat <<
+   	 eterm := vsl_eterm(state, x);
+	 push(eterm, resl)
+      >> until vsl_eoesetp eterm;
+      pop resl;
+      return {length resl, resl}
+   end;
 
-state := vslstate_mk(vinput, nil, nil, {ofsf_0mk2('neq, f01)});
-trm02 := vsl_eterm(state, 'x1);
-mathprint prepf !*k2f nth(trm02, 1);
-mathprint prepsq nth(trm02, 2);
-mathprint rl_prepfof nth(trm02, 3);
-
-vsl_eterm(state, 'x24);
+test_eterm(state, 'x1);
 
 end;  % of file
