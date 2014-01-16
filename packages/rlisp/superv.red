@@ -306,6 +306,9 @@ symbolic procedure begin1a prefixchars;
 % Newrule!* is initialized in the following function, since it is not
 % always reinitialized by the rule code.
 
+fluid '(ulimit!* trap!-time!*);
+ulimit!* := nil;
+
 symbolic procedure begin11 x;
    begin scalar errmsg!*,mode,result,newrule!*;
       if cursym!* eq 'end
@@ -338,7 +341,18 @@ symbolic procedure begin11 x;
                           if null flagp(key!*,'eval) then return nil);
       if !*output and ifl!* and !*echo and null !*lessspace
         then terpri();
-      result := errorset!*(x,t);
+% If the (Lisp) variable ulimit!* is set to an integer value than that
+% represents a resource limit measured in milliseconds of CPU time to
+% be allowed for any step of a calculation. This time is not measured
+% precisely - what happens is that a timeout is checked for each time
+% there is a garbage collection. However because of bootstrapping I do not
+% yet have the macro "with-timeout" and so I need to use a forward
+% reference to an ordinary function.
+      if fixp ulimit!* then progn(
+%       result := with!-timeout(ulimit!*, errorset!*(x, t)),
+        result := errorset!_with!_timeout(ulimit!*, x),
+        if not atom result then result := car result)
+      else result := errorset!*(x,t);
       if errorp result or erfg!*
         then progn(programl!* := list(mode,x),return 'err2)
        else if !*defn then return nil;
