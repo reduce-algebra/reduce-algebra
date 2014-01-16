@@ -184,7 +184,8 @@ symbolic procedure simplogbn(u,base,flg);
                      y := append(y, list(2 . (cdr twos - cdr fives)))>>>>
       end;
       if flg then return (if null y then z else !*kk2f mk!-log!-arg(u,base)) ./ 1;
-      if eqcar(y,'(-1 . 1)) and null(y := mergeminus cdr y)
+%     if eqcar(y,'(-1 . 1)) and null(y := mergeminus cdr y)
+      if not atom y and car y = '(-1 . 1) and null (y := mergeminus cdr y)
        then return !*kk2q mk!-log!-arg(u,base);
       for each x in y do
           z := addf(((mksp(mk!-log!-arg(car x,base),1) .* cdr x) .+ nil),z);
