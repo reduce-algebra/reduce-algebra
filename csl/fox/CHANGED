@@ -62,8 +62,12 @@ Changes to the ACN parts of the code:
      all, so it acts like a blank character. This improves the behaviour
      Reduce has on
          write "this is a message with blanks in";
+     Well actually I make the width 2/3 that of an "x" which looks nicer.
      Also a fix so that
          write "#";
      works properly. It used to generate a messy failure message.
+     Use a downwards displaced n-rule to show "\_" so that names
+     with embedded underscores are handled a bit better.
+
      January 2014
 

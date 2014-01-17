@@ -1660,7 +1660,10 @@ case BoxText:
         ss = t->text;
         while (l > 0)
         {   int c = *ss++ & 0xff;
-            if (c == 0xc6) c = 'x'; // measure " " as if "x"
+// I initially measure code 0xc6, which is what arises from input "~",
+// as if it was an "x", but after measuring its width a scale that by a
+// factor of 2/3.
+            if (c == 0xc6) c = 'x';
             l--;
             if (c < 0x80) utfchars[utflength++] = c;
             else
@@ -1669,8 +1672,11 @@ case BoxText:
             }
         }
         w = ((FXFont *)ff)->getTextWidth(utfchars, utflength);
+        if (utflength == 1 && (utfchars[0] & 0xff) == 0xc6)
+            w = (2*w)/3;
 #else
-        if (t->n == 1 && (t->text[0] & 0xff)== 0xc6) w = xfWidth(ff, "x", 1);
+        if (t->n == 1 && (t->text[0] & 0xff)== 0xc6)
+            w = (2*xfWidth(ff, "x", 1))/3;
         else w = xfWidth(ff, t->text, t->n);
 #endif
 // Here I have a bit of shameless fudge. The "cmex" glyph for \int seems to
@@ -2168,7 +2174,7 @@ typedef Box *keywordHandlerFunction(int w);
 #define TeXBeginWord 0x08  // keyword that forms a sort of "open bracket"
 #define TeXBegin     0x09  // "close bracket" to match TeXBegin
 #define TeXEnd       0x0a  // "^" or "_".
-#define TeXScript    0x0b
+//#define TeXScript    0x0b
 #define TeXNot       0x0c  // a special case for "\not"
 #define TeXFlag      0x80
 
@@ -2443,9 +2449,10 @@ static Keyword texWords[1<<texWordBits] =
     {"\\&",        TeXWSymbol,FntRoman,  0x26, NULL},
     {"\\%",        TeXSymbol, FntRoman,  0x25, NULL},
 
-// subscripts and superscripts involve some parsing magic
-    {"^",          TeXScript, 0,         0,    NULL},
-    {"_",          TeXScript, 1,         0,    NULL},
+// These entries in fact seem to be for "\^" and "\_" and I will have
+// used \textasciicircumflex to get the "^" glyph...
+//  {"^",          TeXScript, 0,         0,    NULL},
+    {"_",          TeXSymbol, FntRoman,  0x7b, NULL},
 
 // Simple symbols that need some care because the normal code used
 // here may not match TeX font encodings.
@@ -3101,7 +3108,7 @@ static Box *readS();
 // sometimes the character does not appear. I reserve code 0xc5 for such
 // and extra remapping, but the tables here do not touch it at present!
 
-static char remapTable[33] =
+static unsigned char remapTable[33] =
 {
     0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8,
     0xa9, 0xaa, 0xad, 0xae, 0xaf, 0xb0, 0xb1, 0xb2,
@@ -3323,10 +3330,10 @@ case lexSpecial:   // in this case lexKey tells me which keyword it is.
                 nextSymbol();
                 return b;
             }
-    case TeXScript:
-            printf("TeX script-marker found but not handled (%s)\n", lexKey->name);
-            nextSymbol();
-            return NULL;
+//  case TeXScript:
+//          printf("TeX script-marker found but not handled (%s)\n", lexKey->name);
+//          nextSymbol();
+//          return NULL;
     case TeX0Arg:
             if (lexKey->ptr != NULL)
             {   Box *b = ((keywordHandlerFunction *)(lexKey->ptr))(lexKey->charCode);
@@ -4358,6 +4365,11 @@ case BoxText:
         symbolOrItalic = ((t->flags & FontMask) == FntItalic ||
                           (t->flags & FontMask) == FntSymbol);
         setFont1(dc, ff);
+// An underscore is created as an n-rule moved down half the height
+// of a row. 
+        if (t->n == 1 &&
+            (t->flags & FontMask) == FntRoman &&
+            t->text[0] == 0x7b) y += t->height/2;
         if (t->n != 1 || (t->text[0] & 0xff) != 0xc6)
             drawText1(dc, x, y, t->text, t->n);
         if (DEBUGFONT & 1)
