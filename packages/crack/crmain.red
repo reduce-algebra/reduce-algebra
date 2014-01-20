@@ -82,6 +82,11 @@ begin scalar s$
  return algebraic(crack({},{},{},{})); 
 end$
 
+symbolic operator nodepnd$
+symbolic procedure nodepnd(fl)$
+for each f in cdr fl do
+depl!*:=delete(assoc(reval f,depl!*),depl!*)$
+
 put('crack,'psopfn,'sq!*crack)$
 
 symbolic procedure sq!*crack(inp)$

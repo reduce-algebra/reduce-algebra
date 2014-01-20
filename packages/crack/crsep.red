@@ -665,7 +665,7 @@ begin
   setkorder k$
   le:=length h$
   % Print original number of equations and time for splitting
-  if print_ then write le," equations result"$terpri()$
+  if print_ then <<write le," equations result"$terpri()>>$
  >>$
 
  if to_simplify then <<
