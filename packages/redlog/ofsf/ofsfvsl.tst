@@ -52,11 +52,11 @@ x1 + 3*x2 + x3 - 2*x4 - 3$
 infl := {f01, f02, f03, f04, f05, f06, f07, f08, f09, f10}$
 vinput := for each f in infl collect
    ofsf_0mk2('geq, f)$
-stl := {{'x2, simp 7, 'dummy}};
-state := vsls_mk(vinput, stl, nil, nil)$
+state := vsls_mk(vinput, nil, nil, nil)$
 
 procedure test_eterm(state, x);
    begin scalar eterm, resl;
+      vsls_esetput(state, x, vsl_eset(state, x));
       repeat <<
    	 eterm := vsl_eterm(state, x);
 	 push(eterm, resl)
@@ -69,11 +69,6 @@ test_eterm(state, 'x1);
 
 % TEST 3
 % Test access functions.
-
-state := vsls_mk(vinput, nil, nil, nil)$
-propl := vsls_prop state;
-vsls_setprop(state, {'varl . {'a, 'b, 'c}})$
-propl := vsls_prop state;
 
 vsls_il state;
 vsls_setil(state, cdr vsls_il state)$
@@ -183,6 +178,8 @@ vCOL00046 >= 0,vCOL00047 >= 0,vCOL00048 >= 0,
 -0.8*vCOL00045+(0.1*vCOL00046)+(0.15*vCOL00047) <= 0,
 0.1*vCOL00045+(-0.8*vCOL00046)+(0.15*vCOL00047) <= 0,
 -1*vCOL00047+(1*vCOL00048) <= 0}$
+
+on rlverbose;
 
 rlvsl sc50a_c;
 
