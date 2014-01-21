@@ -186,7 +186,7 @@ restart:
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
-                        if ((exit_reason & UNWIND_FNAME) != 0)
+                        if (SHOW_FNAME)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(u);
                             nil = C_nil;
@@ -235,7 +235,7 @@ restart:
                 nil = C_nil;
                 if (exception_pending())
                 {   flip_exception();
-                    if ((exit_reason & UNWIND_FNAME) != 0)
+                    if (SHOW_FNAME)
                     {   err_printf("\nMacroexpanding: ");
                         loop_print_error(u);
                         nil = C_nil;
@@ -273,7 +273,7 @@ ordinary_function:
                 if (exception_pending())
                 {   flip_exception();
                     stack = save_stack;
-                    if ((exit_reason & UNWIND_ARGS) != 0)
+                    if (SHOW_ARGS)
                     {   err_printf("\nEvaluating: ");
                         loop_print_error(qcar(args));
                         nil = C_nil;
@@ -1493,7 +1493,7 @@ static Lisp_Object macroexpand_1(Lisp_Object form, Lisp_Object env)
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
-                        if ((exit_reason & UNWIND_FNAME) != 0)
+                        if (SHOW_FNAME)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(form);
                             nil = C_nil;

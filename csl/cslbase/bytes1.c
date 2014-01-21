@@ -5568,7 +5568,7 @@ create_closure:
  * I suspect that the next few lines are UNHELPFUL now, so maybe I should
  * get rid of them...
  */
-            if ((exit_reason & UNWIND_FNAME) != 0)
+            if (SHOW_FNAME)
             {   err_printf("apply: ");
                 loop_print_error(r1);
                 err_printf("\n");
@@ -5585,7 +5585,7 @@ create_closure:
  * I suspect that the next few lines are UNHELPFUL now, so maybe I should
  * get rid of them...
  */
-        if ((exit_reason & UNWIND_FNAME) != 0)
+        if (SHOW_FNAME)
         {   err_printf("apply: ");
             loop_print_error(A_reg);
             err_printf("\n");
@@ -5610,7 +5610,7 @@ create_closure:
 /*
  * What follows is my current guess for a good diagnostic...
  */
-        if ((exit_reason & UNWIND_FNAME) != 0)
+        if (SHOW_FNAME)
         {   err_printf("Inside: ");
             loop_print_error(elt(litvec, 0));
             err_printf("\n");

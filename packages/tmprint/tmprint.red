@@ -797,7 +797,7 @@ for each x in '(
     !\Lambda!     !\mathit!{M!}  !\mathit!{N!}  !\mathit!{O!}
     !\Pi!         !\Theta!       !\mathit!{R!}  !\Sigma!   %
     !\Tau!        !\Upsilon!     !\Omega!       !\Xi!      %
-    !\Psi!        !\mathit!{Z!}  !\varphi! )
+    !\Psi!        !\mathit!{Z!}  !\varphi!      !\pound\    )
   do put(x, 'texcharwidth, 1);
 
 put('!\not, 'texcharwidth, 0);
@@ -1131,6 +1131,17 @@ symbolic procedure fancy!-maprint!-atom(l,p);
      return (if testing!-width!* and overflowed!* then 'failed else nil);
   end;
 
+fluid '(pound1!* pound2!* bad_chars!*);
+
+% Pounds signs are HORRID! Well all sorts of characters that are not
+% in the original 96-char ASCII set are horrid, but pounds signs are
+% present on an UK keyboard and that make things hurt for me!
+pound1 := int2id 0x9c; % In code page 850 (ie DOS style)
+pound2 := int2id 0xa3; % Unicode
+
+bad_chars!* := blank . tab . !$eol!$ . pound1 . pound2 .
+               '(!# !$ !% !& !{ !} !~ !^ !\);
+
 symbolic procedure contains!-tex!-special x;
 % Checks if an identifier contains any character that could "upset" TeX
 % in its name. Note that as a special case I do NOT count underscore as
@@ -1140,8 +1151,7 @@ symbolic procedure contains!-tex!-special x;
     u:= (if !*fancy!-lower then explode2lc x
          else explode2 x);
 top:if null u then return nil
-    else if memq(car u, '(!# !$ !% !& !{ !} !~ !^ !\)) or
-            car u eq blank or car u eq tab or car u eq !$eol!$ then return t;
+    else if memq(car u, bad_chars!*) then return t;
     u := cdr u;
     go to top
   end;
@@ -1165,6 +1175,8 @@ symbolic procedure fancy!-tex!-character c;
   else if c = blank   then fancy!-line!* := '!~ . fancy!-line!*
   else if c = tab     then fancy!-line!* := '!~ . '!~ . fancy!-line!*
   else if c = !$eol!$ then fancy!-line!* := '!\!$eol!\!$ . fancy!-line!*
+  else if c = pound1 or c = pound2 then
+      fancy!-line!* := '!{!\pound!} . fancy!-line!*
   else fancy!-line!* := c . fancy!-line!*;
 
 put('print_indexed,'psopfn,'(lambda(u)(flag u 'print!-indexed)));
@@ -1411,7 +1423,7 @@ deflist('(
      (!Pi "\Pi ") (!Theta "\Theta ") (!Rho "\mathit{R}")
      (!Sigma "\Sigma ") (!Tau "\Tau ") (!Upsilon "\Upsilon ")
      (!Omega "\Omega ") (!Xi "\Xi ") (!Psi "\Psi ")
-     (!Zeta "\mathit{Z}") (!varphi "\varphi ")
+     (!Zeta "\mathit{Z}") (!varphi "\varphi ") (pound "\pound ")
         ),'fancy!-special!-symbol);
 
 !#else

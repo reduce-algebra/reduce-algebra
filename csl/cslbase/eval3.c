@@ -357,7 +357,7 @@ static Lisp_Object prog_fn(Lisp_Object args, Lisp_Object env)
             popv(3);
             return exit_value;  /* exit_count already OK here */
         }
-        if ((exit_reason & UNWIND_FNAME) != 0)
+        if (SHOW_FNAME)
         {   err_printf("\nEvaluating: ");
             loop_print_error(args);
         }
@@ -388,7 +388,7 @@ Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env)
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
-            if ((exit_reason & UNWIND_FNAME) != 0)
+            if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(f);
             }
@@ -786,7 +786,7 @@ Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env)
                 {   qcar(qcar(env)) = fixnum_of_int(2);
                     env = qcdr(env);
                 }
-                if ((exit_reason & UNWIND_FNAME) != 0)
+                if (SHOW_FNAME)
                 {   err_printf("\nEvaluating: ");
                     loop_print_error(f);
                     ignore_exception();
@@ -806,7 +806,7 @@ Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env)
                         {   qcar(qcar(env)) = fixnum_of_int(2);
                             env = qcdr(env);
                         }
-                        if ((exit_reason & UNWIND_FNAME) != 0)
+                        if (SHOW_FNAME)
                         {   err_printf("\nEvaluating: ");
                             loop_print_error(f);
                             ignore_exception();

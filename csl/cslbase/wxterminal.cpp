@@ -1,7 +1,7 @@
 #define DEBUG 1 /* regardless of overall build mode! */
 
 //
-// "wxterminal.cpp"                              Copyright A C Norman 2012
+// "wxterminal.cpp"                           Copyright A C Norman 2012-14
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -11,7 +11,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -420,7 +420,7 @@ public:
     int inputBufferSize;
     int inputBufferLen;
     int inputBufferP;
-    char *inputBuffer;
+    unsigned char *inputBuffer;
     int awaiting;
     uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
     int unicodePromptLength;
@@ -555,7 +555,7 @@ private:
     void paste();
     void killSelection();
     void deleteCurrentLine();
-    int setInputText(const char *s);
+    int setInputText(const unsigned char *s);
     void transpose();
     void capitalize();
     void lowerCase();
@@ -568,7 +568,7 @@ private:
     void historyPrev();
     void searchHistoryNext();
     void searchHistoryPrev();
-    char *input_history[INPUT_HISTORY_SIZE];
+    unsigned char *input_history[INPUT_HISTORY_SIZE];
     int historyNextEntry,
         historyCurrent,
         longestHistoryLine;
@@ -577,8 +577,8 @@ private:
 
     void historyInit();
     void historyEnd();
-    void historyAdd(char *s, int n);
-    char *historyGet(int n);
+    void historyAdd(unsigned char *s, int n);
+    unsigned char *historyGet(int n);
     int matchString(const char *pat, int n, const char *text);
     int isEditable();
     int isEditableForBackspace();
@@ -1969,7 +1969,7 @@ fwinText::fwinText(fwinFrame *parent)
     use_buffer1 = 1;
 
     inputBufferSize = INITIAL_INPUT_BUFFER_SIZE;
-    inputBuffer = (char *)malloc(inputBufferSize);
+    inputBuffer = (unsigned char *)malloc(inputBufferSize);
     inputBufferP = inputBufferLen = 0;
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
@@ -2163,7 +2163,7 @@ void fwinText::displayBacktrace()
     {   onCmdBacktrace(this, 0, NULL);
     }
     killSelection();
-    setInputText("");
+    setInputText((const unsigned char *)"");
     historyNumber = historyLast + 1;
     keyFlags &= ~ANY_KEYS;
 #endif
@@ -2216,7 +2216,7 @@ case 0:                 // input is not active
 void fwinText::deleteCurrentLine()
 {
     killSelection();
-    setInputText("");
+    setInputText((const unsigned char *)"");
 }
 
 // ^L    clear screen (handled as menu shortcut)
@@ -2259,7 +2259,7 @@ void fwinText::lowerCase()
 // To replace the input line I can can use this... It returns the
 // index of the first character of the inserted line.
 
-int fwinText::setInputText(const char *text)
+int fwinText::setInputText(const unsigned char *text)
 {
     caretPos = promptEnd;
     deleteChars(textEnd - promptEnd);
@@ -2273,7 +2273,7 @@ int fwinText::setInputText(const char *text)
 void fwinText::historyNext()
 {
 #ifdef RECONSTRUCTED
-    const char *history_string;
+    const unsigned char *history_string;
     if (historyLast == -1) // no history lines at all to retrieve!
     {   beep();
         return;
@@ -2342,7 +2342,7 @@ int fwinText::trySearch()
 {
     int r = -1;
 #ifdef RECONSTRUCTED
-    const char *history_string = historyGet(historyNumber);
+    const unsigned char *history_string = historyGet(historyNumber);
     if (history_string == NULL) return -1;
     while ((r = matchString(searchString, SEARCH_LENGTH, history_string)) < 0)
     {   if (searchFlags & SEARCH_FORWARD)
@@ -2381,7 +2381,7 @@ int fwinText::matchString(const char *pat, int n, const char *text)
 void fwinText::historyPrev()
 {
 #ifdef RECONSTRUCTED
-    const char *history_string;
+    const unsigned char *history_string;
     if (historyLast == -1) // no previous lines to retrieve
     {   beep();
         return;
@@ -2572,7 +2572,7 @@ void fwinText::insertNewline()
         FWIN_LOG(("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n));
         if (n > inputBufferSize - 5)
         {   inputBufferSize = (4*inputBufferSize)/3;
-            inputBuffer = (char *)realloc(inputBuffer, inputBufferSize);
+            inputBuffer = (unsigned char *)realloc(inputBuffer, inputBufferSize);
         }
         n += utf_encode(&inputBuffer[n], c);
     }
@@ -2843,7 +2843,7 @@ void fwinText::unicodeInput()
 // the implementation and a rather fuller commentary. It also comtains the
 // table of character names that are recognised - it is set of entity
 // names from HTML.
-    char buffer[64];
+    wchar_t buffer[64];
     uint32_t replacement[16];
     if (caretPos == 0)
     {   beep();
@@ -2852,8 +2852,8 @@ void fwinText::unicodeInput()
     int j, k = 0;
     int n = caretPos - 1;
 // I want to re-use the code in termed.c, but it works on the basis of
-// a buffer holding utf8. So I translate into that format, call the code
-// and translate back.
+// a buffer holding wchar_t stuff. So I translate into that format,
+// call the code and translate back.
 // So first find the position that is on the same line and as the caret
 // but is up to 10 chars before it.
     while (n >= 0 &&
@@ -2862,10 +2862,14 @@ void fwinText::unicodeInput()
            (textBuffer[n] & 0x03000000) == 0x01000000) k++, n--;
     n++;
     insert_point = 0;
-// Translate the stuff so identified into utf-8.
+// Translate the stuff so identified into wchar_t form. For now I am just
+// going to ignore the Windows mess of surrogates and pretend that I am
+// only interested in the basic code page. I may need to review that
+// later on.
     k = n;
     while (k < caretPos)
-        insert_point += utf_encode(&buffer[insert_point], textBuffer[k++]);
+        buffer[insert_point++]= textBuffer[k++] & 0xffff;
+    buffer[insert_point] = 0;
     input_line = &buffer[0];
     prompt_length = 0;
 // Do the hard work.
@@ -2874,9 +2878,9 @@ void fwinText::unicodeInput()
 // 0x01000000 bit that indicates colour.
     j = k = 0;
     while (buffer[k] != 0)
-    {   int c = utf_decode(&buffer[k]);
+    {   int c = buffer[k];
         replacement[j++] = 0x01000000 | (c & 0x001fffff);
-        k += (c <= 0x7f ? 1 : c <= 0x7ff ? 2 : c <= 0xffff ? 3 : 4);
+        k++;
     }
 // Here I do a delete and then an insert - that is perhaps clumsier than
 // if I could do a since combined "replace" operation.
@@ -3500,7 +3504,7 @@ void fwinText::OnChar(wxKeyEvent &event)
 bool fwinText::processChar(int c, int r, int m)
 {
 //-    FWIN_LOG(("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m));
-    char *history_string = NULL;
+    unsigned char *history_string = NULL;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
 // menu things as well as here. Note that this conversion copes with
@@ -3687,7 +3691,7 @@ bool fwinText::processChar(int c, int r, int m)
             if (SEARCH_LENGTH == 0)
             {   searchFlags = 0;   // delete the one char in the search string
                 killSelection();
-                setInputText("");
+                setInputText((const unsigned char *)"");
                 return false;
             }
             historyNumber = searchStack[SEARCH_LENGTH];
@@ -4313,11 +4317,11 @@ void fwinText::historyEnd()
     }
 }
 
-void fwinText::historyAdd(char *s, int n)
+void fwinText::historyAdd(unsigned char *s, int n)
 {
 /* Make a copy of the input string... */
     size_t size = sizeof(char)*(n + 1);
-    char *scopy = (char *)malloc(size);
+    unsigned char *scopy = (unsigned char *)malloc(size);
     int p = historyNextEntry % INPUT_HISTORY_SIZE;
 /* If malloc returns NULL I just store an empty history entry. */
     if (scopy != NULL) memcpy(scopy, s, size);
@@ -4334,10 +4338,10 @@ void fwinText::historyAdd(char *s, int n)
     }
 }
 
-char *fwinText::historyGet(int n)
+unsigned char *fwinText::historyGet(int n)
 {
-    static char nullString[] = {0};
-    char *s;
+    static unsigned char nullString[] = {0};
+    unsigned char *s;
 /*
  * Filter our values that are out of range and in those cases return NULL
  * as a flag to report the error.
@@ -5289,7 +5293,7 @@ int fwin_getchar()
 // a dodgy state. Eg the user is sending an EOF or interrupt.
     int n = panel->inputBufferLen;
     if (n == 0) return EOF;
-    const char *p = &panel->inputBuffer[panel->inputBufferP];
+    const unsigned char *p = &panel->inputBuffer[panel->inputBufferP];
 // The next line is pretty shameless and is there to help REDUCE while not
 // getting too much in the way of anybody else. If an input line is
 // entered starting with the text "load_package" (possibly with some
@@ -5299,7 +5303,7 @@ int fwin_getchar()
     {   n--;
         p++;
     }
-    if (n>12 && strncmp(p, "load_package", 12) == 0)
+    if (n>12 && strncmp((const char *)p, (const char *)"load_package", 12) == 0)
         update_next_time = 1;
     int ch = panel->inputBuffer[panel->inputBufferP++];
 // Note that a Ctrl-D as the VERY FIRST character in the buffer is treated

@@ -1,7 +1,7 @@
 #define DEBUG 1   /* regardless of build mode for now! */
 
 /*
- * "wxfwin.c"                                    Copyright A C Norman 2013
+ * "wxfwin.c"                                    Copyright A C Norman 2014
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -849,7 +849,7 @@ int fwin_plain_getchar()
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
-            input_history_add(current_line);
+/*          input_history_add(current_line); */
         }
     }
     else if (chars_left == 0)
@@ -1178,12 +1178,12 @@ int find_program_directory(char *argv0)
     if (strlen(w) > 4)
     {   w += strlen(w) - 4;
         if (w[0] == '.' &&
-            ((tolower(w[1]) == 'e' &&
-              tolower(w[2]) == 'x' &&
-              tolower(w[3]) == 'e') ||
-             (tolower(w[1]) == 'c' &&
-              tolower(w[2]) == 'o' &&
-              tolower(w[3]) == 'm'))) w[0] = 0;
+            ((tolower((unsigned char)w[1]) == 'e' &&
+              tolower((unsigned char)w[2]) == 'x' &&
+              tolower((unsigned char)w[3]) == 'e') ||
+             (tolower((unsigned char)w[1]) == 'c' &&
+              tolower((unsigned char)w[2]) == 'o' &&
+              tolower((unsigned char)w[3]) == 'm'))) w[0] = 0;
     }
 #endif
 /* OK now I have the full name, which is of the form

@@ -3,7 +3,7 @@
 *   D i s p l a y   o f   M a t h s   i n   a   w i n d o w .                 *
 *                                                                             *
 *******************************************************************************
-* Copyright (C) 2003-8 by Arthur Norman, Codemist Ltd.  All Rights Reserved.  *
+* Copyright (C) 2003-14 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -45,7 +45,7 @@
 #ifndef FXSHOWMATH_H
 #define FXSHOWMATH_H
 
-/* Signature: 3283c351 04-Jun-2008 */
+/* $Id$ */
 
 namespace FX {
 
@@ -168,7 +168,7 @@ extern void *masterFont[36];
 // The 12 maths fonts currently in play are kept in this array which
 // it may sometimes be necessary to inspect. The width of an "M" in the
 // normal size one of these is in mathWidth again for marginal cases
-// that feel they nee dit.
+// that feel they need it.
  
 extern void *mathFont[12];
 extern int mathWidth;

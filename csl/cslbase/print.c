@@ -786,7 +786,19 @@ int char_to_file(int c, Lisp_Object stream)
     else if (c == '\t')
         stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
     else stream_char_pos(stream)++;
+#if defined RAW_CYGWIN || !defined WIN32
+/* For chars with code of 0x80 and up I will generate a 2-octet UTF8
+ * sequence. This is not quite clearly a good thing to do all the
+ * time, but hey such characters should not arise often.
+ */
+    if (c >= 0x80)
+    {   putc(0xc0 | ((c >> 8) & 0x3), stream_file(stream));
+        putc(0x80 | (c & 0x3f), stream_file(stream));
+    } 
+    else putc(c, stream_file(stream));
+#else
     putc(c, stream_file(stream));
+#endif /* UTF8 adjustment */
     return 0;   /* indicate success */
 }
 

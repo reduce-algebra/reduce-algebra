@@ -1664,6 +1664,7 @@ case BoxText:
 // as if it was an "x", but after measuring its width a scale that by a
 // factor of 2/3.
             if (c == 0xc6) c = 'x';
+            else if (c == 0xc7) c = '\x3d';
             l--;
             if (c < 0x80) utfchars[utflength++] = c;
             else
@@ -1677,6 +1678,8 @@ case BoxText:
 #else
         if (t->n == 1 && (t->text[0] & 0xff)== 0xc6)
             w = (2*xfWidth(ff, "x", 1))/3;
+        else if (t->n == 1 && (t->text[0] & 0xff)== 0xc7)
+            w = xfWidth(ff, "\x3d", 1);
         else w = xfWidth(ff, t->text, t->n);
 #endif
 // Here I have a bit of shameless fudge. The "cmex" glyph for \int seems to
@@ -2174,8 +2177,8 @@ typedef Box *keywordHandlerFunction(int w);
 #define TeXBeginWord 0x08  // keyword that forms a sort of "open bracket"
 #define TeXBegin     0x09  // "close bracket" to match TeXBegin
 #define TeXEnd       0x0a  // "^" or "_".
-//#define TeXScript    0x0b
-#define TeXNot       0x0c  // a special case for "\not"
+#define TeXNot       0x0b  // a special case for "\not"
+
 #define TeXFlag      0x80
 
 #define matchCenter    1
@@ -2262,8 +2265,23 @@ static Box *doLeftRight(int l, int r, Box *b)
 
 static Box *doNeq(int w)
 {
-    Box *b1 = makeTextBox("\x3d", 1, FntRoman + currentSize);
-    Box *b2 = makeTextBox("\x3d", 1, FntItalic + currentSize);
+    Box *b1 = makeTextBox("\x3d", 1, FntRoman + currentSize);  // =
+    Box *b2 = makeTextBox("\x3d", 1, FntItalic + currentSize); // /
+    return makeNestBox(BoxOverstrike, b1, b2);
+}
+
+static Box *doPound(int w)
+{
+    Box *b1, *b2;
+// I want the "=" that I use to overstrike the "L" to be smaller - but of
+// course I can not do that if the L is already as small as it can be. In
+// that situation the display will end up ugly, but pound signs in a
+// sub-subscript may not be terribly common! I also use code c7 as a fake
+// for "=" so that when I render it I can move it around a bit.
+    if (currentSize != FntScrScr)
+        b1 = makeTextBox("\xc7", 1, FntRoman + currentSize + FntScript);
+    else b1 = makeTextBox("\xc7", 1, FntRoman + currentSize);  // =
+    b2 = makeTextBox("\x4c", 1, FntSymbol + currentSize); // L
     return makeNestBox(BoxOverstrike, b1, b2);
 }
 
@@ -2449,9 +2467,6 @@ static Keyword texWords[1<<texWordBits] =
     {"\\&",        TeXWSymbol,FntRoman,  0x26, NULL},
     {"\\%",        TeXSymbol, FntRoman,  0x25, NULL},
 
-// These entries in fact seem to be for "\^" and "\_" and I will have
-// used \textasciicircumflex to get the "^" glyph...
-//  {"^",          TeXScript, 0,         0,    NULL},
     {"_",          TeXSymbol, FntRoman,  0x7b, NULL},
 
 // Simple symbols that need some care because the normal code used
@@ -2771,6 +2786,8 @@ static Keyword texWords[1<<texWordBits] =
 // an overstrike of "=" and "/".
     {"neq",          TeX0Arg, 0,         0,    (void *)doNeq},
     {"not",          TeXNot,  0,         0,    (void *)doNot},
+// For pound-sterling I will overstrike a curly capital L with an equal sign
+    {"pound",        TeX0Arg, 0,         0,    (void *)doPound},
 
 // The next two are needed for matrix layout. Maybe and with luck they
 // will not occur freestanding.
@@ -3330,10 +3347,6 @@ case lexSpecial:   // in this case lexKey tells me which keyword it is.
                 nextSymbol();
                 return b;
             }
-//  case TeXScript:
-//          printf("TeX script-marker found but not handled (%s)\n", lexKey->name);
-//          nextSymbol();
-//          return NULL;
     case TeX0Arg:
             if (lexKey->ptr != NULL)
             {   Box *b = ((keywordHandlerFunction *)(lexKey->ptr))(lexKey->charCode);
@@ -3900,8 +3913,6 @@ void updateOwner(Box *b, int p)
 
 ///////////////////////////////////////////////////////////////////////////
 
-int symbolOrItalic = 0;
-
 #ifdef WIN32
 
 #define setFont1(dc, ff) dc->setFont((FXFont *)ff)
@@ -4055,7 +4066,6 @@ static void paintBracket(FXDC *dc, int type, int flags,
         char cc[1];
         cc[0] = remap(ch);
         setFont1(dc, mathFont[fnt + size]);
-        symbolOrItalic = (fnt == FntItalic || fnt == FntSymbol);
         drawText1(dc, x, y, cc, 1);
         return;
     }
@@ -4257,7 +4267,6 @@ default:
 
     char ss[1];
     setFont1(dc, ff);
-    symbolOrItalic = 0; // Because cmex10
 // Draw the top glyph
     ss[0] = remap(top);
     drawText1(dc, x, y, ss, 1);
@@ -4362,15 +4371,28 @@ case BoxText:
             y -= (bigH + hd)/2;;
         }
         ff = mathFont[t->flags & FontMask];
-        symbolOrItalic = ((t->flags & FontMask) == FntItalic ||
-                          (t->flags & FontMask) == FntSymbol);
         setFont1(dc, ff);
+// Things are HORRID here because the TeX fonts that I am using do not
+// support all the characters that I might want, so I allocate some codes
+// in the range 0x80 to 0xff and take special action here in some cases
+// (and also when I am measuring things) to cope. This tells me that in
+// doe course I probably need to move to using something like a much fuller
+// Unicode font with something other than the original TeX font encoding.
+// But for now I will make do and patch the cases I find most important.
+//
 // An underscore is created as an n-rule moved down half the height
 // of a row. 
         if (t->n == 1 &&
             (t->flags & FontMask) == FntRoman &&
             t->text[0] == 0x7b) y += t->height/2;
-        if (t->n != 1 || (t->text[0] & 0xff) != 0xc6)
+// c7 is used to give an equals sign that has been shifted up a tad.
+// I use if when building up a pounds sign.
+        if (t->n == 1 && (t->text[0] & 0xff) == 0xc7 &&
+            (t->flags & FontSizeMask) == FntScrScr)
+            drawText1(dc, x, y - t->height/8, "\x3d", t->n);
+        else if (t->n == 1 && (t->text[0] & 0xff) == 0xc7)
+            drawText1(dc, x, y - t->height/4, "\x3d", t->n);
+        else if (t->n != 1 || (t->text[0] & 0xff) != 0xc6)
             drawText1(dc, x, y, t->text, t->n);
         if (DEBUGFONT & 1)
         {   dc->drawRectangle(x, y, t->width, t->depth);

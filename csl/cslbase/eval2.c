@@ -535,7 +535,7 @@ static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
                 popv(3);
                 return nvalues(exit_value, exit_count);
             }
-            if ((exit_reason & UNWIND_FNAME) != 0)
+            if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(qcar(args));
                 ignore_exception();

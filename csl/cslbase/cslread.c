@@ -3492,6 +3492,8 @@ int char_from_echo(Lisp_Object stream)
     return c;
 }
 
+static int raw_input = 0;
+
 int char_from_file(Lisp_Object stream)
 {
     Lisp_Object nil = C_nil;
@@ -3517,6 +3519,29 @@ int char_from_file(Lisp_Object stream)
             putc_stream(ch, stream1);
             if (exception_pending()) flip_exception();
         }
+#if defined RAW_CYGWIN || !defined WIN32
+/*
+ * There is a half-based mess here because throughout CSL I work with just
+ * 8-bit characters but sometimes UTF8 will intrude. To try to be a helpful
+ * person I will decode 2-byte UTF combinations here but just return the low
+ * 8 bits. This action is taken promoted by misery over the british pounds
+ * sign, which sometimes appears in files as 0xc2 0xa3.
+ */
+        if ((ch & 0xe0) == 0xc0) /* leader for 2-byte utf-8 combination */
+        {   int ch1 = getc(stream_file(stream));
+            if (ch1 == EOF) return EOF;
+            if (qvalue(echo_symbol) != nil)
+            {   Lisp_Object stream1 = qvalue(standard_output);
+                if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
+                if (!is_stream(stream1)) stream1 = lisp_terminal_io;
+                putc_stream(ch1, stream1);
+                if (exception_pending()) flip_exception();
+            }
+            ch = ((ch & 0x1f) << 6) + (ch1 & 0x3f);
+/* This is where I truncate to 8 bits */
+            ch &= 0xff;
+        }
+#endif /* Treatment of bits of UTF8 */
     }
     else stream_pushed_char(stream) = NOT_CHAR;
     return ch;
@@ -4733,7 +4758,9 @@ Lisp_Object Lreadbyte(Lisp_Object nil, Lisp_Object stream)
     Lisp_Object save = qvalue(echo_symbol);
     if (!is_stream(stream)) aerror0("readb requires an appropriate stream");
     qvalue(echo_symbol) = nil;
+    raw_input = 1;
     ch = getc_stream(stream);
+    raw_input = 0;
     qvalue(echo_symbol) = save;
     errexit();
 /*
