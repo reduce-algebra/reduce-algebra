@@ -159,6 +159,7 @@ begin scalar os;
  repeat os:=termread() until (os='y) or (os='n);
  verify_end_of_parallel_run:=if os='y then t else nil;
  restore_interactive_prompt();
+if null session_ then name_session()$
  return (paracrack_initialized:=t)
 end;
 

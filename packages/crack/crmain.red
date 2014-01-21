@@ -255,6 +255,7 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  % size_hist:=if size_watch then {cons(0,get_statistic(pdes,ftem_))}
  %                          else nil$
 
+if (null collect_sol) and (null paracrack_initialized) then
  name_session()$
 
  % the computation:
@@ -917,7 +918,10 @@ again:
         write "What is the value to be assigned to that variable?"$terpri()$
         change_prompt_to "Please terminate this input with ';'  : "$ 
         l:=termxread()$
-        if s='collect_sol and l=nil and collect_sol then save_sol_list() else
+
+        if s='collect_sol and l=nil and collect_sol then
+        if null session_ then name_session()
+                         else save_sol_list()       else
         if s='session_ then
            copy!-file(bldmsg("%wsol_list", session_),
                       bldmsg("%wsol_list", l));
