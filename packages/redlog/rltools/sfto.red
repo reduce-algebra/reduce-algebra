@@ -375,6 +375,16 @@ asserted procedure sfto_reorder(u: SF, v: Kernel);
       return u
    end;
 
+asserted procedure sfto_lreorder(u: SF, vl: Lisp);
+   % List reorder. Returns [u] reorderd wrt. [vl] without modifiying the current
+   % kernel order.
+   begin scalar w;
+      w := setkorder vl;
+      u := reorder u;
+      setkorder w;
+      return u
+   end;
+
 asserted procedure sfto_groebnerf(l: List): List;
    % Groebner calculation standard form. [l] is a list of SF's. Returns a list
    % of SF's. The returned list is the reduced Groebner basis of [l] wrt. the
