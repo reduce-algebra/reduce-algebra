@@ -375,7 +375,7 @@ asserted procedure sfto_reorder(u: SF, v: Kernel);
       return u
    end;
 
-asserted procedure sfto_lreorder(u: SF, vl: Lisp);
+asserted procedure sfto_lreorder(u: SF, vl: List);
    % List reorder. Returns [u] reorderd wrt. [vl] without modifiying the current
    % kernel order.
    begin scalar w;
