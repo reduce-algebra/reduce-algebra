@@ -2487,6 +2487,7 @@ static Keyword texWords[1<<texWordBits] =
     {"`",          TeXSymbol, FntRoman,  0x12, NULL},
 //  {"NOTSIGN",    TeXSymbol, FntSymbol, 0x3a, NULL},
     {"#",          TeXSymbol, FntRoman,  0x23, NULL},
+    {"\\#",        TeXSymbol, FntRoman,  0x23, NULL},
 // I will reserve code 0xc6 for a space.
     {"~",          TeXSymbol, FntRoman,  0xc6, NULL},
     {"(",          TeXSymbol, FntRoman,  0x28, NULL},
@@ -3742,7 +3743,8 @@ case '\\':
         }
 // I assemble EITHER "\word" or "\delim"
         if (lexLength == 0)
-        {   lexerBuffer[lexLength++] = curChar;
+        {   lexerBuffer[lexLength++] = '\\';  // put the "\" explicitly there
+            lexerBuffer[lexLength++] = curChar;
             curChar = (*nextChar)();
         }
         lexerBuffer[lexLength] = 0;

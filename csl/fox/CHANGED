@@ -67,7 +67,8 @@ Changes to the ACN parts of the code:
          write "#";
      works properly. It used to generate a messy failure message.
      Use a downwards displaced n-rule to show "\_" so that names
-     with embedded underscores are handled a bit better.
+     with embedded underscores are handled a bit better. Then re-correct
+     so that matrices can again be displayed OK.
 
      January 2014
 

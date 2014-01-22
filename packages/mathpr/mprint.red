@@ -355,7 +355,7 @@ symbolic procedure would!-be!-huge u;
           w := length x;
           if w > m then m := w >>;
        if n > 20 or m > 20 or m*n=100 then return t
-       else return 0 >>;
+       else return nil >>;
     return nil;
   end;
 
