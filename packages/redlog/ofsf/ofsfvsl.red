@@ -452,14 +452,14 @@ asserted procedure vsl_ibacktrack(s: VslState): Void;
 
 asserted procedure vsl_fail(s: VslState): Void;
    <<
-      if !*rlverbose then
+      if !*rlverbose and !*rlvsllog then
       	 ioto_tprin2t "<fail>";
       vsls_setil(s, {'false})
    >>;
 
 asserted procedure vsl_succeed(s: VslState): Void;
    begin scalar ils;
-      if !*rlverbose then <<
+      if !*rlverbose and !*rlvsllog then <<
       	 ioto_tprin2t "<succeed>";
 	 ils := vsl_ils s;
 	 ioto_tprin2 {"   F/S: |", ioto_form2str rl_prepfof pop ils};
