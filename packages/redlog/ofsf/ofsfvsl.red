@@ -119,9 +119,10 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
    begin scalar state, freevarl, sl, kgeq0; integer substc;
       state := vsls_mk(vsl_normalize inputl, nil, nil, nil);
       % vsl_normalize does not change the contained variables.
-      if !*rlverbose and !*rlvsllog then
+      if !*rlverbose and !*rlvsllog then <<
 	 ioto_tprin2t "<normalize>";
-	 vsls_print state;
+	 vsls_print state
+      >>;
       while not rl_tvalp car vsls_il state do <<
 	 freevarl := vsl_freevarl state;
 	 if freevarl then
@@ -210,16 +211,20 @@ asserted procedure vsls_esetput(s: VslState, x: Kernel, eset: List): List;
    end;
 
 asserted procedure vsl_eset(s: VslState, x: Kernel): List;
-   begin scalar il, borig, lhs, lbl, ubl;
+   begin scalar il, borig, lhs, b, lbl, ubl;
       il := vsls_il s;
       for each b in vsl_ils s do <<
 	 borig := pop il;
-	 lhs := sfto_reorder(ofsf_arg2l b, x);
-	 if not domainp lhs and mvar lhs eq x then
+	 lhs := sfto_reorder(sfto_dprpartf ofsf_arg2l b, x);
+	 if not domainp lhs and mvar lhs eq x then <<
+	    b := ofsf_0mk2('geq, lhs);
 	    if lc lhs > 0 then
-	       push(ofsf_0mk2('geq, lhs) . borig, lbl)
+	       (if not assoc(b, lbl) then
+	       	  push(b . borig, lbl))
 	    else
-	       push(ofsf_0mk2('geq, lhs) . borig, ubl)
+	       if not assoc(b, ubl) then
+		  push(b . borig, ubl)
+	 >>
       >>;
       if null lbl and null ubl then
 	 return nil;
@@ -248,7 +253,7 @@ asserted procedure vsl_admissiblep(s: VslState, x: Kernel, q: SQ): Boolean;
       c := t; while c and nl do
       	 if cl_simpl(vsl_substack(pop nl, {x, q, nil, nil} . sl), nil, -1) eq 'false then
       	    c := nil;
-      if !*rlverbose and not c then
+      if !*rlverbose and !*rlvsllog and not c then
 	 ioto_tprin2t {"   dropped test term by learning: ", x, "=", ioto_form2str prepsq q};
       return c
    end;
@@ -327,7 +332,7 @@ asserted procedure vsl_lbacktrack(s: VslState, kgeq0: OfsfAtf): Void;
       if !*vsllearn then <<
       	 l := vsl_analyze(kgeq0 . for each sub in sl collect nth(sub, 3));
       	 vsls_setnl(s, l . vsls_nl s);
-      	 if !*rlverbose then
+      	 if !*rlverbose and !*rlvsllog then
 	    ioto_prin2t {"   learned: ", ioto_form2str rl_prepfof l}
       >>;
       vsub := pop sl;
