@@ -98,19 +98,29 @@ asserted procedure vsls_mk(il: OfsfAtfL, sal: List, pl: OfsfAtfL, nl: VslNegLemm
 asserted procedure vsls_print(s: VslState): Void;
    begin scalar sl;
       ioto_tprin2 "   stack: ";
-      sl := reverse vsls_sl s;
+      sl := vsls_sl s;
+      ioto_prin2t if null sl then
+	  "<>"
+      else
+	 vsl_printstkelem pop sl;
       for each sub in sl do <<
-	 ioto_prin2 {"|", car sub, "=", if idp cadr sub then cadr sub else prepsq cadr sub}
+      	 ioto_tprin2 "          ";
+	 vsl_printstkelem sub;
 	 % if caddr sub then
 	 %    ioto_prin2 {" ", rl_prepfof caddr sub}
       >>
    end;
+
+procedure vsl_printstkelem(sub);
+   ioto_prin2t {"|", car sub, "=",
+      ioto_form2str if idp cadr sub then cadr sub else prepsq cadr sub};
 
 asserted procedure vsl_vsl(inputl: List): QfFormula;
    begin scalar state, freevarl, sl, kgeq0; integer substc;
       state := vsls_mk(vsl_normalize inputl, nil, nil, nil);
       % vsl_normalize does not change the contained variables.
       if !*rlverbose and !*rlvsllog then
+	 ioto_tprin2t "<normalize>";
 	 vsls_print state;
       while not rl_tvalp car vsls_il state do <<
 	 freevarl := vsl_freevarl state;
@@ -239,7 +249,7 @@ asserted procedure vsl_admissiblep(s: VslState, x: Kernel, q: SQ): Boolean;
       	 if cl_simpl(vsl_substack(pop nl, {x, q, nil, nil} . sl), nil, -1) eq 'false then
       	    c := nil;
       if !*rlverbose and not c then
-	 ioto_tprin2t {"*dropped test term ", x, "=", q, " by learning*"};
+	 ioto_tprin2t {"   dropped test term by learning: ", x, "=", ioto_form2str prepsq q};
       return c
    end;
 
@@ -311,15 +321,14 @@ asserted procedure vsl_substitute(s: VslState): Void;
 asserted procedure vsl_lbacktrack(s: VslState, kgeq0: OfsfAtf): Void;
    begin scalar sl, vsub, l;
       if !*rlverbose and !*rlvsllog then
-	 ioto_tprin2 "<lbacktrack>";
+	 ioto_tprin2t "<lbacktrack>";
       sl := vsls_sl s;
       assert(sl);
       if !*vsllearn then <<
-      	 l := vsl_analyze(kgeq0 . (for each sub in sl collect
-	    nth(sub, 3)));
+      	 l := vsl_analyze(kgeq0 . for each sub in sl collect nth(sub, 3));
       	 vsls_setnl(s, l . vsls_nl s);
       	 if !*rlverbose then
-	    ioto_prin2t {" *learned* ", l}
+	    ioto_prin2t {"   learned: ", ioto_form2str rl_prepfof l}
       >>;
       vsub := pop sl;
       vsls_setsl(s, {car vsub, nil, nil, nil} . sl);
@@ -415,14 +424,16 @@ asserted procedure vsl_fail(s: VslState): Void;
    >>;
 
 asserted procedure vsl_succeed(s: VslState): Void;
-   <<
+   begin scalar ils;
       if !*rlverbose then <<
       	 ioto_tprin2t "<succeed>";
-	 mathprint('list . for each atf in vsl_ils s collect
-	    rl_prepfof atf)
+	 ils := vsl_ils s;
+	 ioto_tprin2 {"   F/S: |", ioto_form2str rl_prepfof pop ils};
+	 for each atf in ils do
+            ioto_tprin2t {"        |", ioto_form2str rl_prepfof atf}
       >>;
       vsls_setil(s, {'true})
-   >>;
+   end;
 
 endmodule;  % vsl
 
