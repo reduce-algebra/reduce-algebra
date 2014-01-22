@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ioto_rcsid!* ioto_copyright!*);
@@ -138,6 +138,68 @@ procedure ioto_datestamp();
 !#else
    datestamp();
 !#endif
+
+procedure ioto_form2str(u);
+   begin scalar buf;
+      buf := ioto_prtb(buf, '!");
+      buf := ioto_form2str1(buf, u, 0);
+      buf := ioto_prtb(buf, '!");
+      return compress reversip buf
+   end;
+
+procedure ioto_prtb(buf, u);
+   <<
+      for each x in explode2 u do
+	 push(x, buf);
+      buf
+   >>;
+
+procedure ioto_form2str1(b, u, p);
+   begin scalar op, infx;
+      if atom u then <<
+	 b := ioto_prtb(b, u);
+	 return b
+      >>;
+      op := pop u;
+      infx := get(op, 'infix);
+      if op eq 'minus then <<  % strange one!
+	 b := ioto_prtbpar(b, '!(, p, infx);
+      	 b := ioto_prtbop(b, op);
+	 b := ioto_form2str1(b, pop u, infx);
+	 b := ioto_prtbpar(b, '!), p, infx);
+	 return b
+      >>;
+      if infx then <<
+	 b := ioto_prtbpar(b, '!(, p, infx);
+	 b := ioto_form2str1(b, car u, infx);
+	 for each arg in cdr u do <<
+	    b := ioto_prtbop(b, op);
+	    b := ioto_form2str1(b, arg, infx)
+	 >>;
+	 b := ioto_prtbpar(b, '!), p, infx);
+	 return b
+      >>;
+      b := ioto_prtbop(b, op);
+      b := ioto_prtb(b, '!();
+      for each rargl on u do <<
+	 b := ioto_form2str1(b, car rargl, 0);
+      	 b := ioto_prtb(b, if cdr rargl then '!, else '!))
+      >>;
+      return b
+   end;
+
+procedure ioto_prtbpar(b, u, p, infx);
+   if infx leq p then ioto_prtb(b, u) else b;
+
+procedure ioto_prtbop(b, op);
+   <<
+      if flagp(op, 'spaced) then
+	 b := ioto_prtb(b, '! );
+      b := ioto_prtb(b, get(op, 'prtch) or op);
+      if flagp(op, 'spaced) then
+	 b := ioto_prtb(b, '! );
+      b
+   >>;
 
 endmodule;  % [ioto]
 
