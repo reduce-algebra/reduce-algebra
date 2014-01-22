@@ -74,10 +74,22 @@ vsls_il state;
 vsls_setil(state, cdr vsls_il state)$
 vsls_il state;
 
-algebraic;
-
 % TEST 4
-% Test vsl_vsl.
+% Test vsl_analyze function.
+
+c1 := numr simp xread t;
+(x1-x2+7);
+c2 := numr simp xread t;
+(x1+x2-20);
+c3 := numr simp xread t;
+(x2-5);
+
+vsl_analyze {ofsf_0mk2('geq, c1), ofsf_0mk2('geq, c2), ofsf_0mk2('geq, c3)};
+
+% TEST 5
+% Algebraic mode test.
+
+algebraic;
 
 rlvsl {x1 - 2*x2 >= 0, -x1 + 3*x2 = 0, 5*x1 - x2 <= 0};
 
@@ -86,9 +98,6 @@ on errcont;
 rlvsl {x1 <> 0};
 
 off errcont;
-
-% TEST 5
-% Algebraic mode test.
 
 f01 :=
 - 2*x1 - 3*x2 + x3 - 3*x4 + 2*x5 + 3 >= 0;
@@ -114,6 +123,22 @@ x1 + 3*x2 + x3 - 2*x4 - 3 >= 0;
 rlvsl {f01, f02, f03, f04, f05, f06, f07, f08, f09, f10};
 
 % TEST 6
+% Test learning.
+
+on rlverbose;
+
+il := {
+   -5*x1 + x2 - 5 >= 0,
+   -x1 - 2*x2 >= 0,
+   x1 + 3*x2 >= 0,
+   5*x1 + x2 >= 0};
+
+on rlvsllearn;
+rlvsl il;
+off rlvsllearn;
+rlvsl il;
+
+% TEST 7
 % Parameter-Free Linear Optimization -
 % Example sc50a taken from the ZIB netlib-lp
 % ftp://ftp.zib.de/pub/mp-testdata/lp/netlib-lp/
@@ -178,8 +203,6 @@ vCOL00046 >= 0,vCOL00047 >= 0,vCOL00048 >= 0,
 -0.8*vCOL00045+(0.1*vCOL00046)+(0.15*vCOL00047) <= 0,
 0.1*vCOL00045+(-0.8*vCOL00046)+(0.15*vCOL00047) <= 0,
 -1*vCOL00047+(1*vCOL00048) <= 0}$
-
-on rlverbose;
 
 rlvsl sc50a_c;
 
