@@ -173,7 +173,8 @@ procedure ioto_form2str1(b, u, p);
 	 b := ioto_prtbpar(b, '!(, p, infx);
 	 b := ioto_form2str1(b, car u, infx);
 	 for each arg in cdr u do <<
-	    b := ioto_prtbop(b, op);
+	    if op neq 'plus or not eqcar(arg, 'minus) then  % hack
+	       b := ioto_prtbop(b, op);
 	    b := ioto_form2str1(b, arg, infx)
 	 >>;
 	 b := ioto_prtbpar(b, '!), p, infx);
