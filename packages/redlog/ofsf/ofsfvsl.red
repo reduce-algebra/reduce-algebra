@@ -31,8 +31,6 @@
 module vsl;
 % Virtual substitution with learning, linear case.
 
-switch rlvsllog;
-
 % VslState ::= ('vslstate, list of input constraints, VslSubL, list of positive
 %   lemmas, list of negative lemmas, property list)
 % VslSub ::= (Kernel, SQ | bottom, OfsfAtf | nil, OfsfAtfL)
@@ -116,7 +114,9 @@ procedure vsl_printstkelem(sub);
       ioto_form2str if idp cadr sub then cadr sub else prepsq cadr sub};
 
 asserted procedure vsl_vsl(inputl: List): QfFormula;
-   begin scalar state, freevarl, sl, kgeq0; integer substc;
+   begin %scalar !*rlsiatadv,!*rldavgcd;
+      scalar state, freevarl, sl, kgeq0;
+      integer substc;
       state := vsls_mk(vsl_normalize inputl, nil, nil, nil);
       % vsl_normalize does not change the contained variables.
       if !*rlverbose and !*rlvsllog then <<
@@ -136,9 +136,11 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
 	       vsl_ibacktrack state
 	    else
 	       vsl_fail state
-	 else if (kgeq0 := vsl_tinconsistentp state) then
-	    vsl_lbacktrack(state, kgeq0)
-	 else if null vsl_freevarl state then
+	 else if (kgeq0 := vsl_tinconsistentp state) then <<
+	    if !*rlvsllearn then
+	       vsl_aconflict(state, kgeq0);
+	    vsl_lbacktrack state
+	 >> else if null vsl_freevarl state then
 	    vsl_succeed state
       >>;
       if !*rlverbose then
@@ -178,11 +180,12 @@ asserted procedure vsl_eterm(s: VslState, x: Kernel): VslSub;
 	 lhs := ofsf_arg2l b;
 	 % lhs is already reordered w.r.t. x.
 	 q := quotsq(!*f2q negf red lhs, !*f2q lc lhs);
-	 if vsl_admissiblep(s, x, q) then <<
+	 if vsl_admissiblep(vsls_pl s, vsls_nl s, vsls_sl s, x, q) then <<
 	    nils := for each f in vsl_ils s collect
 	       ofsf_0mk2(ofsf_op f, numr ofsf_subf(ofsf_arg2l f, x, q));
       	    sb := {x, q, borig, nils}
-	 >>
+	 >> else if !*rlverbose and !*rlvsllog then
+	    ioto_tprin2t {"   dropped test term by learning: ", x, "=", ioto_form2str prepsq q}
       >>;
       vsls_esetput(s, x, eset);
       return sb
@@ -242,19 +245,20 @@ asserted procedure vsl_eset1(lbl: List, ubl: List): List;
 asserted procedure vsl_ils(s: VslState): List;
    (if sl then nth(car sl, 4) else vsls_il s) where sl = vsls_sl s;
 
-switch vsllearn;
+switch rlvslposlem;
 
-asserted procedure vsl_admissiblep(s: VslState, x: Kernel, q: SQ): Boolean;
-   begin scalar sl, nl, c;
-      if not !*vsllearn then
+asserted procedure vsl_admissiblep(pl: List, nl: List, sl: List, x: Kernel, q: SQ): Boolean;
+   begin scalar c;
+      if not !*rlvsllearn then
 	 return t;
-      sl := vsls_sl s;
-      nl := vsls_nl s;
       c := t; while c and nl do
       	 if cl_simpl(vsl_substack(pop nl, {x, q, nil, nil} . sl), nil, -1) eq 'false then
       	    c := nil;
-      if !*rlverbose and !*rlvsllog and not c then
-	 ioto_tprin2t {"   dropped test term by learning: ", x, "=", ioto_form2str prepsq q};
+      if null c or not !*rlvslposlem then
+	 return c;
+      c := t; while c and pl do
+      	 if cl_simpl(vsl_substack(pop pl, {x, q, nil, nil} . sl), nil, -1) eq 'false then
+      	    c := nil;
       return c
    end;
 
@@ -323,20 +327,43 @@ asserted procedure vsl_substitute(s: VslState): Void;
 	 vsls_print s
    end;
 
-asserted procedure vsl_lbacktrack(s: VslState, kgeq0: OfsfAtf): Void;
-   begin scalar sl, vsub, l;
+switch rlvslsimpl;
+
+asserted procedure vsl_aconflict(s: VslState, kgeq0: OfsfAtf): Void;
+   begin scalar sl, p, l;
       if !*rlverbose and !*rlvsllog then
-	 ioto_tprin2t "<lbacktrack>";
+	 ioto_tprin2t "<aconflict>";
       sl := vsls_sl s;
       assert(sl);
-      if !*vsllearn then <<
-      	 l := vsl_analyze(kgeq0 . for each sub in sl collect nth(sub, 3));
-      	 vsls_setnl(s, l . vsls_nl s);
-      	 if !*rlverbose and !*rlvsllog then
-	    ioto_prin2t {"   learned: ", ioto_form2str rl_prepfof l}
+      p . l := vsl_analyze(kgeq0 . for each sub in sl collect nth(sub, 3));
+      if !*rlvslsimpl then <<
+	 if !*rlvslposlem then
+      	    p := cl_simpl(p, nil, -1);
+      	 l := cl_simpl(l, nil, -1)
       >>;
-      vsub := pop sl;
-      vsls_setsl(s, {car vsub, nil, nil, nil} . sl);
+      if !*rlvslposlem then
+      	 vsls_setpl(s, p . vsls_pl s);
+      vsls_setnl(s, l . vsls_nl s);
+      if !*rlverbose and !*rlvsllog then <<
+	 if !*rlvslposlem then
+	    ioto_prin2t {"   plearned: ", ioto_form2str rl_prepfof p};
+	 ioto_prin2t {"   nlearned: ", ioto_form2str rl_prepfof l}
+      >>
+   end;
+
+asserted procedure vsl_lbacktrack(s: VslState): Void;
+   begin scalar pl, nl, sl, xi;
+      if !*rlverbose and !*rlvsllog then
+      	 ioto_tprin2 "<lbacktrack> ";
+      pl := vsls_pl s;
+      nl := vsls_nl s;
+      sl := vsls_sl s;
+      repeat <<
+      	 if !*rlverbose and !*rlvsllog then
+	    ioto_prin2 ".";
+      	 xi := car pop sl
+      >> until null sl or vsl_admissiblep(pl, nl, cdr sl, car car sl, cadr car sl);
+      vsls_setsl(s, {xi, nil, nil, nil} . sl);
       if !*rlverbose and !*rlvsllog then
 	 vsls_print s
    end;
@@ -357,8 +384,8 @@ asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
       return if not c then w
    end;
 
-asserted procedure vsl_analyze(l: List): QfFormula;
-   begin scalar xl, y, yl, hugo, rhugo, sysl, solal, w, learnl;
+asserted procedure vsl_analyze(l: List): DottedPair;
+   begin scalar xl, y, yl, hugo, rhugo, sysl, solal, w, plearn, nlearnl;
       xl := cl_fvarl rl_smkn('and, l);
       for each c in l do <<
 	 y := gensym();
@@ -377,13 +404,15 @@ asserted procedure vsl_analyze(l: List): QfFormula;
 	 w := atsoc(mvar hugo, solal);
 	 assert(w);
 	 if minusf numr cdr w then
-	    push(ofsf_0mk2('neq, lc hugo), learnl);
+	    push(ofsf_0mk2('neq, lc hugo), nlearnl)
+	 else if !*rlvslposlem then
+	    plearn := addf(plearn, multf(numr cdr w, lc hugo));
 	 hugo := red hugo
       >>;
-      return rl_smkn('or, learnl)
+      return ofsf_0mk2('geq, plearn) . rl_smkn('or, nlearnl)
    end;
 
-asserted procedure vsl_solve(sysl: List, yl: List): List;
+asserted procedure vsl_solve(sysl: List, yl: List): AList;
    begin scalar tsl, vl, sl, plugal, subal, resal, s;
       yl := sort(yl, 'ordop);
       tsl := solvebareiss(sysl, yl);

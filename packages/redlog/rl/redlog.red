@@ -80,7 +80,7 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlhqegbred,rlhqeconnect,rlhqestrconst,rlhqegbdimmin,rlresi,rlqeasri,
    rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
    rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl,rlbrkcxk,rlqeidentify,
-   rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar;
+   rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar,rlvsllog,rlvsllearn;
 
 on1 'rlbrop;
 off1 'rlbnfsm;
@@ -201,6 +201,8 @@ off1 'rlqesubf;
 on1 'rlqevb;
 off1 'rlqevbold;
 off1 'rlgetrtypecar;
+off1 'rlvsllog;         % Extra verbose output for ofsf vs with learning.
+on1 'rlvsllearn;        % Learning for ofsf vs with learning.
 
 put('rlidentify,'simpfg,
    '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));
