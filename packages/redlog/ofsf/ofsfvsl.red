@@ -31,8 +31,7 @@
 module vsl;
 % Virtual substitution with learning, linear case.
 
-% VslState ::= ('vslstate, list of input constraints, VslStackElemL, list of positive
-%   lemmas, list of negative lemmas, property list)
+% VslState ::= ('vslstate, list of input constraints, VslStackElemL, list of negative lemmas, property list)
 % VslStackElem ::= ('vslstackelem, Kernel, SQ | 'pinf | 'minf | 'bottom | nil, OfsfAtf | nil, OfsfAtfL, OfsfQfFormulaL)
 
 struct Void;
@@ -62,24 +61,18 @@ asserted procedure vsls_sl(s: VslState): List;
 asserted procedure vsls_setsl(s: VslState, sl: List): Void;
    nth(s, 3) := sl;
 
-asserted procedure vsls_pl(s: VslState): List;
+asserted procedure vsls_nl(s: VslState): List;
    nth(s, 4);
 
-asserted procedure vsls_setpl(s: VslState, pl: List): Void;
-   nth(s, 4) := pl;
-
-asserted procedure vsls_nl(s: VslState): List;
-   nth(s, 5);
-
 asserted procedure vsls_setnl(s: VslState, nl: List): Void;
-   nth(s, 5) := nl;
+   nth(s, 4) := nl;
 
 asserted procedure vsls_prop(s: VslState): AList;
-   nth(s, 6);
+   nth(s, 5);
 
 asserted procedure vsls_put(s: VslState, key: Id, value: Any): Any;
-   begin scalar w, h;
-      h := cddddr cdr s;
+   begin scalar h, w;
+      h := cdddr cdr s;
       w := atsoc(key, car h);
       if w then
 	 cdr w := value
@@ -91,10 +84,10 @@ asserted procedure vsls_put(s: VslState, key: Id, value: Any): Any;
 asserted procedure vsls_kvget(s: VslState, key: Id): Any;
    % Note that in contrast to the Lisp get we obtain not only the value, but the
    % key value pair.
-   atsoc(key, nth(s, 6));
+   atsoc(key, vsls_prop s);
 
-asserted procedure vsls_mk(il: OfsfAtfL, sal: List, pl: OfsfAtfL, nl: VslNegLemmaL): VslState;
-   {'vslstate, il, sal, pl, nl, nil};
+asserted procedure vsls_mk(il: OfsfAtfL, sal: List, nl: VslNegLemmaL): VslState;
+   {'vslstate, il, sal, nl, nil};
 
 asserted procedure vsls_print(s: VslState): Void;
    begin scalar sl;
@@ -136,7 +129,7 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
    begin %scalar !*rlsiatadv,!*rldavgcd;
       scalar state, freevarl, sl, kgeq0;
       integer substc;
-      state := vsls_mk(vsl_normalize inputl, nil, nil, nil);
+      state := vsls_mk(vsl_normalize inputl, nil, nil);
       % vsl_normalize does not change the contained variables.
       if !*rlverbose and !*rlvsllog then <<
 	 ioto_tprin2t "<normalize>";
@@ -204,7 +197,7 @@ asserted procedure vsl_eterm(s: VslState, x: Kernel): VslStackElem;
 	    lhs := ofsf_arg2l b;
 	    % lhs is already reordered w.r.t. x.
 	    q := quotsq(!*f2q negf red lhs, !*f2q lc lhs);
-	    if vsl_admissiblep(vsls_pl s, vsls_nl s, vsls_sl s, x, q) then <<
+	    if vsl_admissiblep(vsls_nl s, vsls_sl s, x, q) then <<
 	       nils := for each atf in vsl_ils s collect
 	       	  vsl_subatsq(atf, x, q);
       	       sb := vslse_mk(x, q, borig, nils, nil)
@@ -278,12 +271,12 @@ asserted procedure vsl_eset1(lbl: List, ubl: List): List;
 asserted procedure vsl_ils(s: VslState): List;
    (if sl then vslse_ils car sl else vsls_il s) where sl = vsls_sl s;
 
-asserted procedure vsl_admissiblep(pl: List, nl: List, sl: List, x: Kernel, q: SQ): Boolean;
+asserted procedure vsl_admissiblep(nl: List, sl: List, x: Kernel, q: SQ): Boolean;
    begin scalar c, argl, cc, arg, w;
       if not !*rlvsllearn then
 	 return t;
       c := t; while c and nl do <<  % scanning conjunction
-	 argl := rl_argn pop nl;
+	 argl := pop nl;
 	 cc := t; while cc and argl do <<  % scanning disjunction of neqs
 	    arg := pop argl;
 	    w := ofsf_arg2l vsl_substackat(arg, sl);
@@ -385,33 +378,32 @@ asserted procedure vsl_substitute(s: VslState): Void;
    end;
 
 asserted procedure vsl_aconflict(s: VslState, kgeq0: OfsfAtf): Void;
-   begin scalar sl, p, l, w;
+   begin scalar sl, nlem, w;
       if !*rlverbose and !*rlvsllog then
 	 ioto_tprin2t "<aconflict>";
       sl := vsls_sl s;
       assert(sl);
       % The original constraint is nil with infinity substitutions. Infinity
       % substitutions are not analyzed.
-      p . l := vsl_analyze(kgeq0 .
+      nlem := vsl_analyze(kgeq0 .
 	 for each se in sl collect if (w := vslse_orig se) then w);
-      vsls_setnl(s, l . vsls_nl s);
+      vsls_setnl(s, nlem . vsls_nl s);
       % TODO: Add substituted lemmas into stack.
       if !*rlverbose and !*rlvsllog then
-	 ioto_prin2t {"   nlearned: ", ioto_form2str rl_prepfof l}
+	 ioto_prin2t {"   nlearned: ", ioto_form2str rl_prepfof rl_smkn('or, nlem)}
    end;
 
 asserted procedure vsl_lbacktrack(s: VslState): Void;
-   begin scalar pl, nl, sl, xi;
+   begin scalar nl, sl, xi;
       if !*rlverbose and !*rlvsllog then
       	 ioto_tprin2 "<lbacktrack> ";
-      pl := vsls_pl s;
       nl := vsls_nl s;
       sl := vsls_sl s;
       repeat <<
       	 if !*rlverbose and !*rlvsllog then
 	    ioto_prin2 ".";
       	 xi := vslse_v pop sl
-      >> until null sl or vsl_admissiblep(pl, nl, cdr sl, vslse_v car sl, vslse_eterm car sl);
+      >> until null sl or vsl_admissiblep(nl, cdr sl, vslse_v car sl, vslse_eterm car sl);
       vsls_setsl(s, vslse_mk(xi, nil, nil, nil, nil) . sl);
       if !*rlverbose and !*rlvsllog then
 	 vsls_print s
@@ -430,7 +422,7 @@ asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
       return if not c then w
    end;
 
-asserted procedure vsl_analyze(l: List): DottedPair;
+asserted procedure vsl_analyze(l: List): List;
    begin scalar xl, y, yl, hugo, rhugo, sysl, solal, w, nlearnl;
       xl := cl_fvarl rl_smkn('and, l);
       for each c in l do <<
@@ -453,7 +445,7 @@ asserted procedure vsl_analyze(l: List): DottedPair;
 	    push(ofsf_0mk2('neq, lc hugo), nlearnl);
 	 hugo := red hugo
       >>;
-      return nil . rl_mkn('or, nlearnl)
+      return nlearnl
    end;
 
 asserted procedure vsl_solve(sysl: List, yl: List): AList;
