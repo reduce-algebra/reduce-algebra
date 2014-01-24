@@ -746,6 +746,9 @@ asserted procedure sfto_univarp(f: SF): Boolean;
 asserted procedure sfto_univarp1(f: SF, x: Kernel): Boolean;
    domainp f or (domainp lc f and mvar f eq x and sfto_univarp1(red f, x));
 
+asserted procedure sfto_kmemberf(x: Kernel, f: SF): ExtraBoolean;
+   not domainp f and (mvar f eq x or sfto_kmemberf(x, lc f) or sfto_kmemberf(x, red f));
+
 endmodule;  % [sfto]
 
 end;  % of file
