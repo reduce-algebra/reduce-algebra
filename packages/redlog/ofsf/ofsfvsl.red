@@ -89,17 +89,55 @@ asserted procedure vsls_kvget(s: VslState, key: Id): Any;
 asserted procedure vsls_mk(il: OfsfAtfL, sal: List, nl: VslNegLemmaL): VslState;
    {'vslstate, il, sal, nl, nil};
 
+switch vslsprintil;
+switch vslsprintsl;
+switch vslsprintnl;
+
+off1 'vslsprintil;
+on1 'vslsprintsl;
+on1 'vslsprintnl;
+
 asserted procedure vsls_print(s: VslState): Void;
-   begin scalar sl;
-      ioto_tprin2 "   stack: ";
-      sl := vsls_sl s;
-      ioto_prin2t if null sl then
-	  "<>"
-      else
-	 vslse_print pop sl;
-      for each sub in sl do <<
-      	 ioto_tprin2 "          ";
-	 vslse_print sub
+   begin scalar sl, il, nl;
+      if !*vslsprintil then <<
+	 ioto_prin2 "   input: ";
+	 il := vsls_il s;
+	 if null il then
+	    ioto_prin2t "nil"
+	 else <<
+	    ioto_prin2t {"|", ioto_form2str rl_prepfof car il};
+	    for each atf in cdr il do <<
+      	       ioto_tprin2 "          |";
+	       ioto_prin2t ioto_form2str rl_prepfof atf
+	    >>
+	 >>
+      >>;
+      if !*vslsprintsl then <<
+      	 ioto_prin2 "   stack: ";
+      	 sl := vsls_sl s;
+      	 if null sl then <<
+	    ioto_prin2t "nil";
+	    return
+      	 >> else <<
+      	    vslse_print car sl;
+      	    for each se in cdr sl do <<
+      	       ioto_tprin2 "          ";
+	       vslse_print se
+      	    >>
+	 >>
+      >>;
+      if !*vslsprintnl then <<
+	 ioto_prin2 "  lemmas: ";
+	 nl := vsls_nl s;
+	 if null nl then
+	    ioto_prin2t "nil"
+	 else <<
+	    ioto_prin2t {"|", ioto_form2str rl_prepfof rl_smkn('or, car nl)};
+	    for each l in cdr nl do <<
+      	       ioto_tprin2 "          |";
+	       ioto_prin2t ioto_form2str rl_prepfof rl_smkn('or, l)
+	    >>
+	 >>
       >>
    end;
 
@@ -115,15 +153,35 @@ asserted procedure vslse_orig(se: VslStackElem): Any;
 asserted procedure vslse_ils(se: VslStackElem): List;
    nth(se, 5);
 
-asserted procedure vslse_lneqs(se: VslStackElem): List;
+asserted procedure vslse_nls(se: VslStackElem): List;
    nth(se, 6);
 
 asserted procedure vslse_mk(v: Kernel, e: Any, o: Any, i: List, l: List): VslStackElem;
    {'vslstackelem, v, e, o, i, l};
 
+switch vslseprintnls;
+
+on1 'vslseprintnls;
+
 asserted procedure vslse_print(se: VslStackElem): Any;
-   ioto_prin2t {"|", vslse_v se, "=",
-      ioto_form2str if idp vslse_eterm se then vslse_eterm se else prepsq vslse_eterm se};
+   begin scalar nls;
+      if !*vslseprintnls then <<
+	 ioto_prin2 "|  nls = ";
+	 nls := vslse_nls se;
+	 if null nls then
+	    ioto_prin2t "nil"
+	 else <<
+	    ioto_prin2t {"|", ioto_form2str rl_prepfof rl_smkn('or, car nls)};
+	    for each atf in cdr nls do <<
+	       ioto_prin2 "        ";
+	       ioto_prin2t {"|", ioto_form2str rl_prepfof rl_smkn('or, atf)}
+	    >>
+	 >>;
+	 ioto_tprin2 "          "
+      >>;
+      ioto_prin2t {"|", vslse_v se, "=",
+      	 ioto_form2str if idp vslse_eterm se then vslse_eterm se else prepsq vslse_eterm se};
+   end;
 
 asserted procedure vsl_vsl(inputl: List): QfFormula;
    begin %scalar !*rlsiatadv,!*rldavgcd;
@@ -140,9 +198,9 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
 	 if freevarl then
 	    vsl_decide(state, freevarl);
 	 vsl_substitute state;
-      	 if !*rlverbose and vslse_eterm car vsls_sl state neq 'bottom then
-	    substc := substc + 1;
 	 sl := vsls_sl state;
+      	 if !*rlverbose and not vslse_eoesetp car sl then
+	    substc := substc + 1;
 	 if vslse_eoesetp car sl then
 	    if cdr sl then
 	       vsl_ibacktrack state
@@ -184,23 +242,31 @@ asserted procedure vslse_eoesetp(se: VslStackElem): ExtraBoolean;
    vslse_eterm se eq 'bottom;
 
 asserted procedure vsl_eterm(s: VslState, x: Kernel): VslStackElem;
-   begin scalar eset, sb, b, borig, lhs, q, nils;
+   begin scalar eset, sb, b, borig, lhs, q, nils, nnl, nnlem, ap;
       eset := vsls_esetget(s, x);
       sb := vslse_mk(x, 'bottom, nil, nil, nil);
       while eset and vslse_eterm sb eq 'bottom do <<
       	 b . borig := pop eset;
 	 if vsl_infp b then <<
+	    % We know that b is admissible.
 	    nils := for each atf in vsl_ils s collect
 	       vsl_subati(atf, x, b);
-      	    sb := vslse_mk(x, b, nil, nils, nil)
+	    nnl := for each nlem in vsl_nls s join <<
+	       nnlem := vsl_subnlemi(nlem, x, b);
+	       assert(not null nnlem);
+	       if ofsf_arg2l car nnlem neq 1 then
+		  {nnlem}
+	    >>;
+      	    sb := vslse_mk(x, b, nil, nils, nnl)
 	 >> else <<
 	    lhs := ofsf_arg2l b;
 	    % lhs is already reordered w.r.t. x.
 	    q := quotsq(!*f2q negf red lhs, !*f2q lc lhs);
-	    if vsl_admissiblep(vsls_nl s, vsls_sl s, x, q) then <<
+	    ap := vsl_admissiblep(vsl_nls s, x, q);
+	    if ap then <<
 	       nils := for each atf in vsl_ils s collect
 	       	  vsl_subatsq(atf, x, q);
-      	       sb := vslse_mk(x, q, borig, nils, nil)
+      	       sb := vslse_mk(x, q, borig, nils, car ap)
 	    >> else if !*rlverbose and !*rlvsllog then
 	       ioto_tprin2t {"   dropped test term by learning: ", x, "=",
 	       	  ioto_form2str prepsq q}
@@ -271,22 +337,25 @@ asserted procedure vsl_eset1(lbl: List, ubl: List): List;
 asserted procedure vsl_ils(s: VslState): List;
    (if sl then vslse_ils car sl else vsls_il s) where sl = vsls_sl s;
 
-asserted procedure vsl_admissiblep(nl: List, sl: List, x: Kernel, q: SQ): Boolean;
-   begin scalar c, argl, cc, arg, w;
+asserted procedure vsl_nls(s: VslState): List;
+   (if sl then vslse_nls car sl else vsls_nl s) where sl = vsls_sl s;
+
+asserted procedure vsl_admissiblep(nls: List, x: Kernel, q: SQ): ExtraBoolean;
+   % Returns nil or nls/(x=q) as a singleton
+   begin scalar c, nlem, nnls;
       if not !*rlvsllearn then
-	 return t;
-      c := t; while c and nl do <<  % scanning conjunction
-	 argl := pop nl;
-	 cc := t; while cc and argl do <<  % scanning disjunction of neqs
-	    arg := pop argl;
-	    w := ofsf_arg2l vsl_substackat(arg, sl);
-	    if not null w then  % not certainly false
-	       cc := nil
-	 >>;
-	 if cc then
-	    c := nil
+	 return {nil};
+      c := t; while c and nls do <<  % scanning conjunction
+	 nlem := vsl_subnlemsq(pop nls, x, q);
+	 if null nlem or ofsf_arg2l car nlem neq 1 then
+	    % [nlem] is certainly false or contains variables.
+	    if null nlem then  % [nlem] is certainly false.
+	       c := nil
+	    else  % [nlem] contains variables.
+	       push(nlem, nnls)
+	 % else [nlem] is certainly true, do nothing.
       >>;
-      return c
+      return if c then {reversip nnls}
    end;
 
 asserted procedure vsl_substack(f: QfFormula, sl: List): QfFormula;
@@ -300,14 +369,51 @@ asserted procedure vsl_substackat(atf: OfsfAtf, sl: List): OfsfAtf;
    else
       vsl_subat(vsl_substackat(atf, cdr sl), vslse_v car sl, vslse_eterm car sl);
 
-asserted procedure vsl_subat(atf: OfsfAtf, x: Kernel, eterm: Any): OfsfAtf;
+asserted procedure vsl_subnlem(nlem: List, x: Kernel, eterm: Any): OfsfAtf;
    if eterm eq 'minf or eterm eq 'pinf then
-      vsl_subati(atf, x, eterm)
+      vsl_subnlemi(nlem, x, eterm)
    else
-      vsl_subatsq(atf, x, eterm);
+      vsl_subnlemsq(nlem, x, eterm);
+
+asserted procedure vsl_subnlemi(nlem: List, x: Kernel, inf: Id): List;
+   begin scalar c, atf, nnlem;
+      c := t; while c and nlem do <<
+	 atf := pop nlem;
+	 if not sfto_kmemberf(x, ofsf_arg2l atf) then
+	    push(atf, nnlem)
+	 else
+	    c := nil
+      >>;
+      return if c then reversip nnlem else {ofsf_0mk2('neq, 1)}
+   end;
+
+asserted procedure vsl_subnlemsq(nlem: List, x: Kernel, q: SQ): List;
+   begin scalar c, atf, nnlem, lhs;
+      c := t; while c and nlem do <<  % scanning disjunction of neqs
+      	 atf := vsl_subatsq(pop nlem, x, q);
+      	 lhs := ofsf_arg2l atf;
+      	 if not null lhs then  % This disjunction is certainly true or contains variables.
+	    if domainp lhs then <<  % This disjunction is certainly true.
+	       nnlem := {ofsf_0mk2('neq, 1)};
+	       c := nil
+	    >> else
+	       push(atf, nnlem)
+      >>;
+      return reversip nnlem
+   end;
+
+asserted procedure vsl_subat(atf: OfsfAtf, x: Kernel, eterm: Any): OfsfAtf;
+   <<
+      assert(eqcar(atf, 'geq));
+      if eterm eq 'minf or eterm eq 'pinf then
+	 vsl_subati(atf, x, eterm)
+      else
+	 vsl_subatsq(atf, x, eterm)
+   >>;
 
 asserted procedure vsl_subati(atf: OfsfAtf, x: Kernel, inf: Id): OfsfAtf;
    begin scalar res, lhs;
+      assert(eqcar(atf, 'geq));
       lhs := ofsf_arg2l atf;
       while not res and not domainp lhs do <<
 	 if mvar lhs eq x then <<
@@ -350,8 +456,10 @@ asserted procedure vsl_decide(s: VslState, freevarl: List): Void;
       	 vsls_esetput(s, v, vsl_eset(s, v))
       >>;
       vsls_setsl(s, vslse_mk(v, nil, nil, nil, nil) . vsls_sl s);
-      if !*rlverbose and !*rlvsllog then
+      if !*rlverbose and !*rlvsllog then <<
+	 terpri();
 	 vsls_print s
+      >>
    end;
 
 asserted procedure vsl_undecidedp(s: VslState): ExtraBoolean;
@@ -373,8 +481,10 @@ asserted procedure vsl_substitute(s: VslState): Void;
       vsls_setsl(s, sl);
       push(vsl_eterm(s, v), sl);
       vsls_setsl(s, sl);
-      if !*rlverbose and !*rlvsllog then
+      if !*rlverbose and !*rlvsllog then <<
+	 terpri();
 	 vsls_print s
+      >>
    end;
 
 asserted procedure vsl_aconflict(s: VslState, kgeq0: OfsfAtf): Void;
@@ -394,19 +504,36 @@ asserted procedure vsl_aconflict(s: VslState, kgeq0: OfsfAtf): Void;
    end;
 
 asserted procedure vsl_lbacktrack(s: VslState): Void;
-   begin scalar nl, sl, xi;
+   begin scalar nsl, nnlem, rsl, c, se;
       if !*rlverbose and !*rlvsllog then
       	 ioto_tprin2 "<lbacktrack> ";
-      nl := vsls_nl s;
-      sl := vsls_sl s;
-      repeat <<
-      	 if !*rlverbose and !*rlvsllog then
-	    ioto_prin2 ".";
-      	 xi := vslse_v pop sl
-      >> until null sl or vsl_admissiblep(nl, cdr sl, vslse_v car sl, vslse_eterm car sl);
-      vsls_setsl(s, vslse_mk(xi, nil, nil, nil, nil) . sl);
-      if !*rlverbose and !*rlvsllog then
+      if not !*rlvsllearn then <<
+	 nsl := vsls_sl s;
+	 se := pop nsl;
+	 nsl := vslse_mk(vslse_v se, nil, nil, nil, nil) . nsl;
+	 vsls_setsl(s, nsl);
+	 return
+      >>;
+      % We now rely on that we really have learned something and that car nl is
+      % the newly learned item.
+      nnlem := car vsls_nl s;
+      rsl := reverse vsls_sl s;
+      c := t; while c and rsl do <<
+	 se := pop rsl;
+	 nnlem := vsl_subnlem(nnlem, vslse_v se, vslse_eterm se);
+	 if nnlem then
+	    push(vslse_mk(vslse_v se, vslse_eterm se, vslse_orig se, vslse_ils se,
+	       nnlem . vslse_nls se), nsl)
+	 else  % certainly "false"
+	    c := nil
+      >>;
+      assert(null c);  % At least the top stack entry must be inconsistent.
+      push(vslse_mk(vslse_v se, nil, nil, nil, nil), nsl);
+      vsls_setsl(s, nsl);
+      if !*rlverbose and !*rlvsllog then <<
+	 ioto_prin2 {"(", length rsl + 1, ")"};
 	 vsls_print s
+      >>
    end;
 
 asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
@@ -504,6 +631,28 @@ asserted procedure vsl_succeed(s: VslState): Void;
       >>;
       vsls_setil(s, {'true})
    end;
+
+if modulep 'debug then load!-package 'debug;
+
+global '(trprinter!*);
+
+trprinter!* := 'vsl_trprinter;
+
+procedure vsl_trprinter(s);
+   if eqcar(s, 'vslstate) then
+      vsls_print s
+   else if eqcar(s, 'vslstackelem) then
+      vslse_print s
+   else if sqp s then
+      printx ioto_form2str prepsq s
+   else
+      printx s;
+
+algebraic procedure isub(eql, form);
+   if eql = {} then
+      form
+   else
+      isub(rest eql, sub(first eql, form));
 
 endmodule;  % vsl
 
