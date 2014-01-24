@@ -452,7 +452,7 @@ asserted procedure vsl_decide(s: VslState, freevarl: List): Void;
 	 v := mvar lhs;
 	 vsls_esetput(s, v, w)
       >> else <<
-      	 v . varl := vsl_varsel freevarl;
+      	 v . varl := vsl_varsel(freevarl, vsl_ils s);
       	 vsls_esetput(s, v, vsl_eset(s, v))
       >>;
       vsls_setsl(s, vslse_mk(v, nil, nil, nil, nil) . vsls_sl s);
@@ -468,8 +468,45 @@ asserted procedure vsl_undecidedp(s: VslState): ExtraBoolean;
       return null sl or not null vslse_eterm car sl
    end;
 
-asserted procedure vsl_varsel(varl: List): DottedPair;
-   varl;  % car varl . cdr varl
+asserted procedure vsl_varsel(varl: List, ils: List): DottedPair;
+   begin scalar bt, bestv; integer ubn, lbn, bestn, thisn;
+      assert(not null varl);
+      assert(not null ils);
+      if not !*rlqevarsel then
+	 return varl;  % car varl . cdr varl
+      bestn := -1;
+      for each x in varl do <<
+      	 for each atf in ils do <<
+	    bt := vsl_boundtype(atf, x);
+	    if bt eq 'ub then
+	       ubn := ubn + 1
+	    else if bt eq 'lb then
+	       lbn := lbn + 1
+      	 >>;
+	 thisn := min(ubn, lbn);
+	 if eqn(bestn, -1) or thisn < bestn then <<
+	    bestn := thisn;
+	    bestv := x
+	 >>;
+	 ubn := 0;
+	 lbn := 0
+      >>;
+      return bestv . delq(bestv, varl)
+   end;
+
+asserted procedure vsl_boundtype(atf: OfsfAtf, x: Kernel): Id;
+   vsl_boundtype1(ofsf_arg2l atf, x);
+
+asserted procedure vsl_boundtype1(f: SF, x: Kernel): Id;
+   if domainp f then
+      nil
+   else if mvar f eq x then
+      if minusf lc f then
+	 'ub
+      else
+	 'lb
+   else
+      vsl_boundtype1(red f, x);
 
 asserted procedure vsl_substitute(s: VslState): Void;
    begin scalar sl, v;
