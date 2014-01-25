@@ -1,7 +1,7 @@
 
 % u01.lsp           Machine generated Lisp
 
-(c!:install "u01" 12794 7082674 8018200)
+(c!:install "u01" 289 5787752 2097418)
 
 (c!:install 'noncomp '(noncomp !*ncmp nil noncomp1) 363494365036146324)
 
@@ -13,9 +13,28 @@
 
 (c!:install 'num!-exponents '(num!-exponents t nil) 1628250233169489671)
 
-(c!:install 'mchkopt '(mchkopt mchkopt1) 1729578183858772405)
+(c!:install 'setkorder '(setkorder kord!* nil alglist!*) 
+1274397398323497919)
+
+(c!:install 'monomcompare '(monomcompare fluidbibasismonomialorder lex
+nil deglex monomcomparedegrevlex monomcomparedeglex monomcomparelex) 
+139587836984027554)
+
+(c!:install 'smember '(smember t nil) 1662287129480311788)
+
+(c!:install 'quotf '(quotf t !*exp quotf1) 985572180358968177)
 
 (c!:install 'exchk '(exchk nil exchk1) 77689147136581394)
+
+(c!:install 'noncomfp '(noncomfp !*ncmp nil noncomfp1) 
+428267692350002325)
+
+(c!:install 'wuconstantp '(wuconstantp t wuvarlist!*) 
+1412441707852227694)
+
+(c!:install 'mkcopy '(mkcopy nreverse) 265472229617086214)
+
+(c!:install 'mchkopt '(mchkopt mchkopt1) 1729578183858772405)
 
 (c!:install 'nth '(nth pnth) 1574764749196478615)
 
@@ -25,9 +44,6 @@
 1086532383204668206)
 
 (c!:install '!*n2f '(!*n2f nil) 1065773969155496637)
-
-(c!:install 'noncomfp '(noncomfp !*ncmp nil noncomfp1) 
-428267692350002325)
 
 (c!:install 'delall '(delall nil) 1756895226056909811)
 
@@ -44,8 +60,6 @@
 
 (c!:install 'xval '(xval wedgefax) 371011907875609721)
 
-(c!:install 'smember '(smember t nil) 1662287129480311788)
-
 (c!:install 'convprec '(convprec round!* convchk) 2100605042271949395)
 
 (c!:install 'physopp '(physopp nil physop) 363168474577559883)
@@ -60,12 +74,24 @@
 
 (c!:install 'listp '(listp t nil) 774075962164745811)
 
+(c!:install 'readch1 '(readch1 peekchar!* !$eol!$ curline!* nil crbuf1!*
+crbuf!* terminalp) 776320476309420477)
+
+(c!:install 'prin2x '(prin2x outl!*) 1790173073123987471)
+
+(c!:install 'minusf '(minusf nil t) 458362134412293575)
+
+(c!:install 'monomgetvariabledegree '(monomgetvariabledegree nil) 
+1105733307008275143)
+
+(c!:install 'degr '(degr t) 2268903496504914803)
+
+(c!:install 'freeof '(freeof depl!* smember) 1332116323806541010)
+
 (c!:install 'mchk!* '(mchk!* !*mcd nil mchk sfp prepf) 
 1167078043197429844)
 
 (c!:install 'subs3f '(subs3f !*match t subs3f1) 1096866427540079355)
-
-(c!:install 'quotf '(quotf t !*exp quotf1) 985572180358968177)
 
 (c!:install 'get!+mat!+entry '(get!+mat!+entry nth) 1483237753271531941)
 
@@ -105,12 +131,7 @@ rerror) 802041177642857321)
 
 (c!:install 'union_edge '(union_edge memq_edgelist) 2261262673859883622)
 
-(c!:install 'prin2x '(prin2x outl!*) 1790173073123987471)
-
 (c!:install 'termsf '(termsf t nil) 1847685933110534065)
-
-(c!:install 'readch1 '(readch1 peekchar!* !$eol!$ curline!* nil crbuf1!*
-crbuf!* terminalp) 776320476309420477)
 
 (c!:install 'mkspm '(mkspm subfg!* asymplis!* nil sub2chk to) 
 1395503691303782035)
@@ -124,6 +145,15 @@ crbuf!* terminalp) 776320476309420477)
 3895665724782835)
 
 (c!:install 'modzerop!: '(modzerop!:) 1366312979062888268)
+
+(c!:install 'addcomment '(addcomment cursym!*) 1372804578070059914)
+
+(c!:install 'aeval '(aeval nil reval1) 932102353927124216)
+
+(c!:install 'rl_smupdknowl '(rl_smupdknowl rl_smupdknowl!* apply) 
+1514965686459320827)
+
+(c!:install 'quotelist '(quotelist list) 1574403703834970305)
 
 (c!:install 'revpr '(revpr) 1342403318789559466)
 
@@ -159,13 +189,9 @@ vevmtest!? gevcompatible1) 1973352151603626490)
 
 (c!:install 'sublistp '(sublistp t nil) 863520763849214863)
 
-(c!:install 'quotelist '(quotelist list) 1574403703834970305)
-
 (c!:install 'negnumberchk '(negnumberchk minus nil) 1310370833934802641)
 
 (c!:install 'mkround '(mkround !:rd!:) 235522008638545793)
-
-(c!:install 'addcomment '(addcomment cursym!*) 1372804578070059914)
 
 (c!:install 'argsofopr '(argsofopr) 650039726240780499)
 
@@ -190,20 +216,19 @@ current!-modulus) 1125200793222787416)
 
 (c!:install 'mksp '(mksp fkern getpower) 538911718446939340)
 
+(c!:install 'lalr_move_dot '(lalr_move_dot !. nil) 95282971902682384)
+
+(c!:install 'cl_cflip '(cl_cflip cl_flip) 2024120084740411748)
+
+(c!:install 'finde '(finde nil) 1180465988988699958)
+
 (c!:install 'getrtypeor '(getrtypeor nil getrtype) 62732981189452306)
 
 (c!:install 'mtchp1 '(mtchp1 nil frlis!* t !*mcd mchk!* powmtch mapcons)
  1369750783821265649)
 
-(c!:install 'degr '(degr t) 2268903496504914803)
-
-(c!:install 'minusf '(minusf nil t) 458362134412293575)
-
 (c!:install 'qqe_qoptailp '(qqe_qoptailp (rtail ltail) t) 
 1293618007992839826)
-
-(c!:install 'setkorder '(setkorder kord!* nil alglist!*) 
-1274397398323497919)
 
 (c!:install 'lto_hashequalq '(lto_hashequalq nil lto_hashid iequal) 
 515576213786310167)
@@ -253,18 +278,13 @@ frlis!* frasc!* revassoc) 978810615007836746)
 multiply!-by!-constant!-mod!-p nil t !*n2f adjoin!-term) 
 487611354158106736)
 
-(c!:install 'mchk '(mchk nil !*sq frlis!* minus difference plus prepsqxx
-mcharg mchkopt mchkminus) 148810512295251760)
+(c!:install 'sort '(sort nil stable!-sortip) 1327344895621480261)
 
-(c!:install 'exptchksq '(exptchksq !*combineexpt exptchk invsq multsq) 
-76706164874250578)
+(c!:install 'mkvar '(mkvar) 295496274692497666)
 
-(c!:install 'multd '(multd t multdm nreverse) 141228196692542912)
+(c!:install 'powers0 '(powers0 t repasc) 1925447247055327002)
 
-(c!:install 'qqe_qopaddp '(qqe_qopaddp (ladd radd) t) 
-2234959905804940602)
-
-(c!:install 'reorder '(reorder t raddf rmultpf) 1342638692105521622)
+(c!:install 'arrayp '(arrayp array) 1278990460487278380)
 
 
 % End of generated Lisp code
