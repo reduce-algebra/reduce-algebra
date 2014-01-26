@@ -183,9 +183,14 @@ asserted procedure vslse_print(se: VslStackElem): Any;
       	 ioto_form2str if idp vslse_eterm se then vslse_eterm se else prepsq vslse_eterm se};
    end;
 
+fluid '(rlsolves!*);
+fluid '(rlnnalpha!*);
+
 asserted procedure vsl_vsl(inputl: List): QfFormula;
    begin %scalar !*rlsiatadv,!*rldavgcd;
       scalar state, freevarl, sl, kgeq0;
+      integer rlnnalpha!*;
+      integer rlsolves!*;
       integer substc;
       state := vsls_mk(vsl_normalize inputl, nil, nil);
       % vsl_normalize does not change the contained variables.
@@ -213,8 +218,11 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
 	 >> else if null vsl_freevarl state then
 	    vsl_succeed state
       >>;
-      if !*rlverbose then
+      if !*rlverbose then <<
 	 ioto_tprin2t {"Number of computed nodes: ", substc};
+	 ioto_tprin2t {"Number of solves: ", rlsolves!*};
+	 ioto_tprin2t {"Number of solves without negative alpha: ", rlnnalpha!*}
+      >>;
       return car vsls_il state
    end;
 
@@ -241,6 +249,8 @@ asserted procedure vslse_eoesetp(se: VslStackElem): ExtraBoolean;
    % End of eset predicate.
    vslse_eterm se eq 'bottom;
 
+switch vslfast;
+
 asserted procedure vsl_eterm(s: VslState, x: Kernel): VslStackElem;
    begin scalar eset, sb, b, borig, lhs, q, nils, nnl, nnlem, ap;
       eset := vsls_esetget(s, x);
@@ -264,8 +274,11 @@ asserted procedure vsl_eterm(s: VslState, x: Kernel): VslStackElem;
 	    q := quotsq(!*f2q negf red lhs, !*f2q lc lhs);
 	    ap := vsl_admissiblep(vsl_nls s, x, q);
 	    if ap then <<
-	       nils := for each atf in vsl_ils s collect
-	       	  vsl_subatsq(atf, x, q);
+	       if !*vslfast then
+		  nils := vsl_subilssq(s, vsl_ils s, x, q)
+	       else
+	       	  nils := for each atf in vsl_ils s collect
+	       	     vsl_subatsq(atf, x, q);
       	       sb := vslse_mk(x, q, borig, nils, car ap)
 	    >> else if !*rlverbose and !*rlvsllog then
 	       ioto_tprin2t {"   dropped test term by learning: ", x, "=",
@@ -429,6 +442,24 @@ asserted procedure vsl_subati(atf: OfsfAtf, x: Kernel, inf: Id): OfsfAtf;
 asserted procedure vsl_subimatch(f: SF, b: Id): ExtraBoolean;
    minusf f and b eq 'minf or not minusf f and b eq 'pinf;
 
+asserted procedure vsl_subilssq(s: VslState, ils: List, x: Kernel, q: SQ);
+   begin scalar c, il, orig, atf, natf, nlhs, nils;
+      il := vsls_il s;
+      c := t; while c and ils do <<
+	 atf := pop ils;
+	 orig := pop il;
+	 natf := vsl_subatsq(atf, x, q);
+	 nlhs := ofsf_arg2l natf;
+	 if not domainp nlhs or not minusf nlhs then
+	    push(natf, nils)
+	 else <<
+	    c := nil
+	 >>
+      >>;
+      vsls_put(s, 'inconsistent, if null c then orig);
+      return reversip nils
+   end;
+
 asserted procedure vsl_subatsq(atf: OfsfAtf, x: Kernel, q: SQ): OfsfAtf;
    ofsf_0mk2(ofsf_op atf, numr ofsf_subf(ofsf_arg2l atf, x, q));
 
@@ -575,6 +606,8 @@ asserted procedure vsl_lbacktrack(s: VslState): Void;
 
 asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
    begin scalar il, ils, c, w, slhs;
+      if !*vslfast then
+	 return cdr vsls_kvget(s, 'inconsistent);
       il := vsls_il s;
       ils := vsl_ils s;
       c := t; while c and ils do <<
@@ -609,13 +642,18 @@ asserted procedure vsl_analyze(l: List): List;
 	    push(ofsf_0mk2('neq, lc hugo), nlearnl);
 	 hugo := red hugo
       >>;
+      if !*rlverbose then <<
+	 rlsolves!* := rlsolves!* + 1;
+ 	 if null nlearnl then
+	    rlnnalpha!* := rlnnalpha!* + 1
+      >>;
       return nlearnl
    end;
 
 asserted procedure vsl_solve(sysl: List, yl: List): AList;
    begin scalar tsl, vl, sl, plugal, subal, resal, s;
       yl := sort(yl, 'ordop);
-      tsl := solvebareiss(sysl, yl);
+      tsl := if !*cramer then solvecramer(sysl, yl) else solvebareiss(sysl, yl);
       assert(car tsl);
       tsl := cdr tsl;
       assert(null cdr tsl);
