@@ -226,19 +226,27 @@ procedure lto_sconcat(l);
 	 car l;
 
 procedure lto_max(l);
+   if null l then '(minus infinity) else lto_max1 l;
+
+procedure lto_max1(l);
    % List tools maximum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
-   if null cdr l then car l else max(car l,lto_max cdr l);
+   if null cdr l then car l else max(car l,lto_max1 cdr l);
 
 procedure lto_min(l);
+   if null l then 'infinity else lto_min1 l;
+
+procedure lto_min1(l);
    % List tools minimum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
-   if null cdr l then car l else min(car l,lto_min cdr l);
+   if null cdr l then car l else min(car l,lto_min1 cdr l);
 
 procedure lto_ravg(l);
    % Rounded arithmetic mean of a list. [l] is a list of integers. Returns a
    % float.
    begin integer s, n;
+      if null l then
+	 rederr "lto_ravg: empty list";
       s := for each x in l sum <<
 	 n := n + 1;
 	 x
@@ -249,6 +257,8 @@ procedure lto_ravg(l);
 procedure lto_rmedian(l);
    % Rounded median of a list. [l] is a list of integers. Returns a float.
    begin integer n, n2;
+      if null l then
+	 rederr "lto_rmedian: empty list";
       l := sort(l, 'leq);
       n := length l;
       n2 := n/2;
