@@ -183,14 +183,14 @@ asserted procedure vslse_print(se: VslStackElem): Any;
       	 ioto_form2str if idp vslse_eterm se then vslse_eterm se else prepsq vslse_eterm se};
    end;
 
-fluid '(rlsolves!*);
-fluid '(rlnnalpha!*);
+fluid '(rlalphastat!*);
+fluid '(rludsc!*);
 
 asserted procedure vsl_vsl(inputl: List): QfFormula;
    begin %scalar !*rlsiatadv,!*rldavgcd;
       scalar state, freevarl, sl, kgeq0;
-      integer rlnnalpha!*;
-      integer rlsolves!*;
+      scalar rlalphastat!*;
+      integer rludsc!*;
       integer substc;
       state := vsls_mk(vsl_normalize inputl, nil, nil);
       % vsl_normalize does not change the contained variables.
@@ -218,12 +218,31 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
 	 >> else if null vsl_freevarl state then
 	    vsl_succeed state
       >>;
-      if !*rlverbose then <<
-	 ioto_tprin2t {"Number of computed nodes: ", substc};
-	 ioto_tprin2t {"Number of solves: ", rlsolves!*};
-	 ioto_tprin2t {"Number of solves without negative alpha: ", rlnnalpha!*}
-      >>;
+      if !*rlverbose then
+	 vsl_stat substc;
       return car vsls_il state
+   end;
+
+procedure vsl_stat(substc);
+   begin
+      scalar alphl, nalphl;
+      ioto_tprin2t {"computed nodes: ", substc};
+      ioto_tprin2t {"solves: ", length rlalphastat!*};
+      ioto_tprin2t {"underdetermined solves: ", rludsc!*};
+      for each pr in rlalphastat!* do <<
+	 push(car pr, nalphl);
+	 push(cdr pr, alphl)
+      >>;
+      ioto_tprin2t {"alphas: ",
+ 	 "min = ", lto_min alphl, ", ",
+	 "max = ", lto_max alphl, ", ",
+	 "avg = ", lto_ravg alphl, ", ",
+	 "median = ", lto_rmedian alphl};
+      ioto_tprin2t {"negative alphas: ",
+ 	 "min = ", lto_min nalphl, ", ",
+	 "max = ", lto_max nalphl, ", ",
+	 "avg = ", lto_ravg nalphl, ", ",
+	 "median = ", lto_rmedian nalphl}
    end;
 
 asserted procedure vsl_normalize(inputl: List): List;
@@ -620,7 +639,9 @@ asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
    end;
 
 asserted procedure vsl_analyze(l: List): List;
-   begin scalar xl, y, yl, hugo, rhugo, sysl, solal, w, nlearnl;
+   begin
+      scalar xl, y, yl, hugo, rhugo, sysl, solal, w, nlearnl;
+      integer alphac, nalphac;
       xl := cl_fvarl rl_smkn('and, l);
       for each c in l do <<
 	 y := gensym();
@@ -638,15 +659,17 @@ asserted procedure vsl_analyze(l: List): List;
       while not domainp hugo do <<
 	 w := atsoc(mvar hugo, solal);
 	 assert(w);
-	 if minusf numr cdr w then
-	    push(ofsf_0mk2('neq, lc hugo), nlearnl);
+	 if !*rlverbose then
+	    alphac := alphac + 1;
+	 if minusf numr cdr w then <<
+	    if !*rlverbose then
+	       nalphac := nalphac + 1;
+	    push(ofsf_0mk2('neq, lc hugo), nlearnl)
+	 >>;
 	 hugo := red hugo
       >>;
-      if !*rlverbose then <<
-	 rlsolves!* := rlsolves!* + 1;
- 	 if null nlearnl then
-	    rlnnalpha!* := rlnnalpha!* + 1
-      >>;
+      if !*rlverbose then
+	 rlalphastat!* := (nalphac . alphac) . rlalphastat!*;
       return nlearnl
    end;
 
@@ -672,8 +695,12 @@ asserted procedure vsl_solve(sysl: List, yl: List): AList;
    end;
 
 asserted procedure vsl_plugin(yl: Kernel): AList;
-   for each y in yl collect
-      y . (nil ./ 1);
+   <<
+      if !*rlverbose and yl then
+      	 rludsc!* := rludsc!* + 1;
+      for each y in yl collect
+      	 y . (nil ./ 1)
+   >>;
 
 asserted procedure vsl_ibacktrack(s: VslState): Void;
    begin scalar sl, se;
@@ -706,12 +733,6 @@ asserted procedure vsl_succeed(s: VslState): Void;
       >>;
       vsls_setil(s, {'true})
    end;
-
-if modulep 'debug then load!-package 'debug;
-
-global '(trprinter!*);
-
-trprinter!* := 'vsl_trprinter;
 
 procedure vsl_trprinter(s);
    if eqcar(s, 'vslstate) then
