@@ -582,8 +582,8 @@ asserted procedure vsl_aconflict(s: VslState, kgeq0: OfsfAtf): Void;
       assert(sl);
       % The original constraint is nil with infinity substitutions. Infinity
       % substitutions are not analyzed.
-      nlem := vsl_analyze(kgeq0 .
-	 for each se in sl collect if (w := vslse_orig se) then w);
+      nlem := vsl_analyze(
+	 for each se in sl join if (w := vslse_orig se) then {w}, kgeq0);
       vsls_setnl(s, nlem . vsls_nl s);
       % TODO: Add substituted lemmas into stack.
       if !*rlverbose and !*rlvsllog then
@@ -638,27 +638,25 @@ asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
       return if not c then w
    end;
 
-asserted procedure vsl_analyze(l: List): List;
+asserted procedure vsl_analyze(l: List, kgeq0: OfsfAtf): List;
    begin
       scalar xl, y, yl, hugo, rhugo, sysl, solal, w, nlearnl;
       integer alphac, nalphac;
-      xl := cl_fvarl rl_smkn('and, l);
+      xl := cl_fvarl rl_smkn('and, kgeq0 . l);
       for each c in l do <<
 	 y := gensym();
 	 push(y, yl);
       	 hugo := addf(hugo, multf(!*k2f y, ofsf_arg2l c))
       >>;
+      hugo := addf(hugo, ofsf_arg2l kgeq0);
       rhugo := sfto_lreorder(hugo, xl);
       while not domainp rhugo and mvar rhugo memq xl do <<
 	 push(lc rhugo, sysl);
 	 rhugo := red rhugo
       >>;
-      push(addf(rhugo, 1), sysl);
       solal := vsl_solve(sysl, yl);
       hugo := sfto_lreorder(hugo, yl);
-      while not domainp hugo do <<
-	 w := atsoc(mvar hugo, solal);
-	 assert(w);
+      while not domainp hugo and (w := atsoc(mvar hugo, solal)) do <<
 	 if !*rlverbose then
 	    alphac := alphac + 1;
 	 if minusf numr cdr w then <<
@@ -677,9 +675,9 @@ asserted procedure vsl_solve(sysl: List, yl: List): AList;
    begin scalar tsl, vl, sl, plugal, subal, resal, s;
       yl := sort(yl, 'ordop);
       tsl := if !*cramer then solvecramer(sysl, yl) else solvebareiss(sysl, yl);
-      assert(car tsl);
+      assert(car tsl);  % feasible
       tsl := cdr tsl;
-      assert(null cdr tsl);
+      assert(null cdr tsl);  % only one solution entry
       tsl := car tsl;
       vl := cadr tsl;
       sl := car tsl;
