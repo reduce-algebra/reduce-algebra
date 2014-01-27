@@ -226,23 +226,30 @@ asserted procedure vsl_vsl(inputl: List): QfFormula;
 procedure vsl_stat(substc);
    begin
       scalar alphl, nalphl;
+      integer len, sna;
+      len := length rlalphastat!*;
       ioto_tprin2t {"computed nodes: ", substc};
-      ioto_tprin2t {"solves: ", length rlalphastat!*};
+      ioto_tprin2t {"solves: ", len};
       ioto_tprin2t {"underdetermined solves: ", rludsc!*};
       for each pr in rlalphastat!* do <<
 	 push(car pr, nalphl);
-	 push(cdr pr, alphl)
+	 push(cdr pr, alphl);
+	 if eqn(car pr, 0) then
+	    sna := sna + 1
       >>;
-      ioto_tprin2t {"alphas: ",
- 	 "min = ", lto_min alphl, ", ",
-	 "max = ", lto_max alphl, ", ",
-	 "avg = ", lto_ravg alphl, ", ",
-	 "median = ", lto_rmedian alphl};
-      ioto_tprin2t {"negative alphas: ",
- 	 "min = ", lto_min nalphl, ", ",
-	 "max = ", lto_max nalphl, ", ",
-	 "avg = ", lto_ravg nalphl, ", ",
-	 "median = ", lto_rmedian nalphl}
+      ioto_tprin2t {"solves without negative alpha (<=1): ", sna};
+      if len > 0 then <<
+      	 ioto_tprin2t {"alphas: ",
+ 	    "min = ", lto_min alphl, ", ",
+	    "max = ", lto_max alphl, ", ",
+	    "avg = ", lto_ravg alphl, ", ",
+	    "median = ", lto_rmedian alphl};
+      	 ioto_tprin2t {"negative alphas: ",
+ 	    "min = ", lto_min nalphl, ", ",
+	    "max = ", lto_max nalphl, ", ",
+	    "avg = ", lto_ravg nalphl, ", ",
+	    "median = ", lto_rmedian nalphl}
+      >>
    end;
 
 asserted procedure vsl_normalize(inputl: List): List;
