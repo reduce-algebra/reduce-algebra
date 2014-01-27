@@ -235,6 +235,28 @@ procedure lto_min(l);
    % the maximum of [l].
    if null cdr l then car l else min(car l,lto_min cdr l);
 
+procedure lto_ravg(l);
+   % Rounded arithmetic mean of a list. [l] is a list of integers. Returns a
+   % float.
+   begin integer s, n;
+      s := for each x in l sum <<
+	 n := n + 1;
+	 x
+      >>;
+      return float s / float n
+   end;
+
+procedure lto_rmedian(l);
+   % Rounded median of a list. [l] is a list of integers. Returns a float.
+   begin integer n, n2;
+      l := sort(l, 'leq);
+      n := length l;
+      n2 := n/2;
+      if evenp n then
+      	 return (float nth(l, n2) + float nth(l, n2+1)) / 2.0;
+      return float nth(l, n2+1)
+   end;
+
 procedure lto_sgnchg(l);
    % List tools number of sign changes of a list. [l] is a list of integers.
    % Returns the number of sign changes when all zeroes are left out.
