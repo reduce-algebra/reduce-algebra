@@ -278,40 +278,49 @@ asserted procedure vslse_eoesetp(se: VslStackElem): ExtraBoolean;
 switch vslfast;
 
 asserted procedure vsl_eterm(s: VslState, x: Kernel): VslStackElem;
-   begin scalar eset, sb, b, borig, lhs, q, nils, nnl, nnlem, ap;
+   begin scalar eset, sb, b, borig;
       eset := vsls_esetget(s, x);
-      sb := vslse_mk(x, 'bottom, nil, nil, nil);
-      while eset and vslse_eterm sb eq 'bottom do <<
+      while eset and not sb do <<
       	 b . borig := pop eset;
-	 if vsl_infp b then <<
-	    % We know that b is admissible.
-	    nils := for each atf in vsl_ils s collect
-	       vsl_subati(atf, x, b);
-	    nnl := for each nlem in vsl_nls s join <<
-	       nnlem := vsl_subnlemi(nlem, x, b);
-	       assert(not null nnlem);
-	       if ofsf_arg2l car nnlem neq 1 then
-		  {nnlem}
-	    >>;
-      	    sb := vslse_mk(x, b, nil, nils, nnl)
-	 >> else <<
-	    lhs := ofsf_arg2l b;
-	    % lhs is already reordered w.r.t. x.
-	    q := quotsq(!*f2q negf red lhs, !*f2q lc lhs);
-	    ap := vsl_admissiblep(vsl_nls s, x, q);
-	    if ap then <<
-	       if !*vslfast then
-		  nils := vsl_subilssq(s, vsl_ils s, x, q)
-	       else
-	       	  nils := for each atf in vsl_ils s collect
-	       	     vsl_subatsq(atf, x, q);
-      	       sb := vslse_mk(x, q, borig, nils, car ap)
-	    >> else if !*rlverbose and !*rlvsllog then
-	       ioto_tprin2t {"   dropped test term by learning: ", x, "=",
-	       	  ioto_form2str prepsq q}
-	 >>
+	 if vsl_infp b then
+	    sb := vsl_etermi(s, x, b)
+	 else
+	    sb := vsl_etermsq(s, x, b, borig)
       >>;
       vsls_esetput(s, x, eset);
+      return sb or vslse_mk(x, 'bottom, nil, nil, nil)
+   end;
+
+asserted procedure vsl_etermi(s: VslState, x: Kernel, inf: Id): VslStackElem;
+   begin scalar ap, nils, sb;
+      ap := vsl_admissiblep(vsl_nls s, x, inf);
+      if ap then <<
+	 % The [ils] cannot become inconsistent when substituting [inf], because
+	 % all bounds in [ils] are opposite to [inf].
+	 nils := for each atf in vsl_ils s collect
+	    vsl_subati(atf, x, inf);
+      	 sb := vslse_mk(x, inf, nil, nils, car ap)
+      >> else if !*rlverbose and !*rlvsllog then
+	 ioto_tprin2t {"   dropped test term by learning: ", x, "=", inf};
+      return sb
+   end;
+
+asserted procedure vsl_etermsq(s: VslState, x: Kernel, b: SQ, borig: OfsfAtf): VslStackElem;
+   begin scalar lhs, q, ap, nils, sb;
+      lhs := ofsf_arg2l b;
+      % lhs is already reordered w.r.t. x.
+      q := quotsq(!*f2q negf red lhs, !*f2q lc lhs);
+      ap := vsl_admissiblep(vsl_nls s, x, q);
+      if ap then <<
+	 if !*vslfast then
+	    nils := vsl_subilssq(s, vsl_ils s, x, q)
+	 else
+	    nils := for each atf in vsl_ils s collect
+	       vsl_subatsq(atf, x, q);
+	 sb := vslse_mk(x, q, borig, nils, car ap)
+      >> else if !*rlverbose and !*rlvsllog then
+	 ioto_tprin2t {"   dropped test term by learning: ", x, "=",
+	    ioto_form2str prepsq q};
       return sb
    end;
 
@@ -379,15 +388,16 @@ asserted procedure vsl_ils(s: VslState): List;
 asserted procedure vsl_nls(s: VslState): List;
    (if sl then vslse_nls car sl else vsls_nl s) where sl = vsls_sl s;
 
-asserted procedure vsl_admissiblep(nls: List, x: Kernel, q: SQ): ExtraBoolean;
-   % Returns nil or nls/(x=q) as a singleton
+asserted procedure vsl_admissiblep(nls: List, x: Kernel, eterm: Any): ExtraBoolean;
+   % Returns nil or nls/(x=eterm) as a singleton
    begin scalar c, nlem, nnls;
       if not !*rlvsllearn then
 	 return {nil};
       c := t; while c and nls do <<  % scanning conjunction
-	 nlem := vsl_subnlemsq(pop nls, x, q);
+	 nlem := vsl_subnlem(pop nls, x, eterm);
 	 if null nlem or ofsf_arg2l car nlem neq 1 then
-	    % [nlem] is certainly false or contains variables.
+	    % [nlem] is the empty disjunction or [nlem] <> (1>0), i.e., [nlem]
+	    % is certainly false or contains variables.
 	    if null nlem then  % [nlem] is certainly false.
 	       c := nil
 	    else  % [nlem] contains variables.
@@ -409,31 +419,48 @@ asserted procedure vsl_substackat(atf: OfsfAtf, sl: List): OfsfAtf;
       vsl_subat(vsl_substackat(atf, cdr sl), vslse_v car sl, vslse_eterm car sl);
 
 asserted procedure vsl_subnlem(nlem: List, x: Kernel, eterm: Any): OfsfAtf;
-   if eterm eq 'minf or eterm eq 'pinf then
-      vsl_subnlemi(nlem, x, eterm)
-   else
-      vsl_subnlemsq(nlem, x, eterm);
+   % We make the very strong assumption that all operators are [greaterp].
+   <<
+      assert(vsl_nlemp nlem);
+      if eterm eq 'minf or eterm eq 'pinf then
+      	 vsl_subnlemi(nlem, x, eterm)
+      else
+      	 vsl_subnlemsq(nlem, x, eterm)
+   >>;
+
+asserted procedure vsl_nlemp(nlem: List): ExtraBoolean;
+   null nlem or ofsf_op car nlem eq 'greaterp and vsl_nlemp cdr nlem;
 
 asserted procedure vsl_subnlemi(nlem: List, x: Kernel, inf: Id): List;
-   begin scalar c, atf, nnlem;
+   % We make the very strong assumption that all operators are [greaterp].
+   begin scalar c, atf, lhs, nnlem;
       c := t; while c and nlem do <<
 	 atf := pop nlem;
-	 if not sfto_kmemberf(x, ofsf_arg2l atf) then
+	 lhs := ofsf_arg2l atf;
+	 if not sfto_kmemberf(x, lhs) then
 	    push(atf, nnlem)
-	 else
+	 else if inf eq 'pinf and vsl_fastcoeff(lhs, x) > 0 or
+	    inf eq 'minf and vsl_fastcoeff(lhs, x) < 0
+	 then
 	    c := nil
       >>;
-      return if c then reversip nnlem else {ofsf_0mk2('neq, 1)}
+      return if c then reversip nnlem else {ofsf_0mk2('greaterp, 1)}
    end;
 
+asserted procedure vsl_fastcoeff(f: SF, x: Kernel): Integer;
+   % We assume that [f] is linear and [x] occurs in [f].
+   if mvar f eq x then lc f else fvsl_fastcoeff(red f, x);
+
 asserted procedure vsl_subnlemsq(nlem: List, x: Kernel, q: SQ): List;
+   % We make the very strong assumption that all operators are [greaterp].
    begin scalar c, atf, nnlem, lhs;
       c := t; while c and nlem do <<  % scanning disjunction of neqs
       	 atf := vsl_subatsq(pop nlem, x, q);
       	 lhs := ofsf_arg2l atf;
-      	 if not null lhs then  % This disjunction is certainly true or contains variables.
+	 if not domainp lhs or not null lhs and lhs > 0 then
+	    % This disjunction contains variables or is is certainly true.
 	    if domainp lhs then <<  % This disjunction is certainly true.
-	       nnlem := {ofsf_0mk2('neq, 1)};
+	       nnlem := {ofsf_0mk2('greaterp, 1)};
 	       c := nil
 	    >> else
 	       push(atf, nnlem)
@@ -669,7 +696,7 @@ asserted procedure vsl_analyze(l: List, kgeq0: OfsfAtf): List;
 	 if minusf numr cdr w then <<
 	    if !*rlverbose then
 	       nalphac := nalphac + 1;
-	    push(ofsf_0mk2('neq, lc hugo), nlearnl)
+	    push(ofsf_0mk2('greaterp, lc hugo), nlearnl)
 	 >>;
 	 hugo := red hugo
       >>;
