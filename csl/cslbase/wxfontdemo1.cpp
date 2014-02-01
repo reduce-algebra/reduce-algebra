@@ -671,7 +671,83 @@ static const char *fontNames[] =
     "csl-eusm6",        "csl-eusm7",        "csl-eusm8",        "csl-eusm9",    
     "csl-msam10",       "csl-msam5",        "csl-msam6",        "csl-msam7",    
     "csl-msam8",        "csl-msam9",        "csl-msbm10",       "csl-msbm5",    
-    "csl-msbm6",        "csl-msbm7",        "csl-msbm8",        "csl-msbm9"     
+    "csl-msbm6",        "csl-msbm7",        "csl-msbm8",        "csl-msbm9",     
+
+
+"latinmodern-math",
+"lmmono10-italic",
+"lmmono10-regular",
+"lmmono12-regular",
+"lmmono8-regular",
+"lmmono9-regular",
+"lmmonocaps10-oblique",
+"lmmonocaps10-regular",
+"lmmonolt10-bold",
+"lmmonolt10-boldoblique",
+"lmmonolt10-oblique",
+"lmmonolt10-regular",
+"lmmonoltcond10-oblique",
+"lmmonoltcond10-regular",
+"lmmonoprop10-oblique",
+"lmmonoprop10-regular",
+"lmmonoproplt10-bold",
+"lmmonoproplt10-boldoblique",
+"lmmonoproplt10-oblique",
+"lmmonoproplt10-regular",
+"lmmonoslant10-regular",
+"lmroman10-bold",
+"lmroman10-bolditalic",
+"lmroman10-italic",
+"lmroman10-regular",
+"lmroman12-bold",
+"lmroman12-italic",
+"lmroman12-regular",
+"lmroman17-regular",
+"lmroman5-bold",
+"lmroman5-regular",
+"lmroman6-bold",
+"lmroman6-regular",
+"lmroman7-bold",
+"lmroman7-italic",
+"lmroman7-regular",
+"lmroman8-bold",
+"lmroman8-italic",
+"lmroman8-regular",
+"lmroman9-bold",
+"lmroman9-italic",
+"lmroman9-regular",
+"lmromancaps10-oblique",
+"lmromancaps10-regular",
+"lmromandemi10-oblique",
+"lmromandemi10-regular",
+"lmromandunh10-oblique",
+"lmromandunh10-regular",
+"lmromanslant10-bold",
+"lmromanslant10-regular",
+"lmromanslant12-regular",
+"lmromanslant17-regular",
+"lmromanslant8-regular",
+"lmromanslant9-regular",
+"lmromanunsl10-regular",
+"lmsans10-bold",
+"lmsans10-boldoblique",
+"lmsans10-oblique",
+"lmsans10-regular",
+"lmsans12-oblique",
+"lmsans12-regular",
+"lmsans17-oblique",
+"lmsans17-regular",
+"lmsans8-oblique",
+"lmsans8-regular",
+"lmsans9-oblique",
+"lmsans9-regular",
+"lmsansdemicond10-oblique",
+"lmsansdemicond10-regular",
+"lmsansquot8-bold",
+"lmsansquot8-boldoblique",
+"lmsansquot8-oblique",
+"lmsansquot8-regular"
+
 };
 
 #endif
@@ -700,6 +776,7 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s/%s/%s.ttf",
                     programDir, toString(fontsdir), fontNames[i]);
+        printf("Adding %s\n", nn); fflush(stdout);
         wxString widename(nn);
         wxFont::AddPrivateFont(widename);
     }
@@ -736,6 +813,7 @@ bool fontApp::OnInit()
         if (size <= 2 || size > 200) size = 48;
     }
     printf("Try for font \"%s\" at size=%d\n", font, size);
+    fflush(stdout);
 
     fontFrame *frame = new fontFrame(font, size);
     frame->Show(true);

@@ -1,0 +1,22 @@
+
+			BaKoMa Fonts Collection News
+			----------------------------
+
+ BaKoMa Fonts Collection available in `CTAN:fonts/cm/ps-type1/bakoma/' 
+ is 10 years old. In this reason, some users want to know 
+ where to find most recent version of BaKoMa Fonts Collection.
+ In fact, most recent version of BaKoMa Fonts Collection is available 
+ together with BaKoMa TeX available in `CTAN:nonfree/systems/win32/bakoma/'.
+
+ Fonts collection coming with BaKoMa TeX has been produced with 
+ improved font conversion technology, which includes more accurate
+ flex handling and using hint replacement feature.
+ In advance, font collection is extended up to 1500 fonts.
+ It includes such fonts as EC/TC, LH, Malvern, Concrete, etc.
+ For details see `CTAN:nonfree/systems/win32/bakoma/fonts/fonts.html'.
+
+ In advance, we provide fonts in OpenType (with Type 1 outlines) font format.
+
+Basil K. Malyshev
+15-Jun-2005
+E-Mail: bakoma@mail.ru, bakoma@mail15.com, malyshev@mail.ihep.ru

@@ -1161,6 +1161,18 @@ else !mac_framework
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
+if wx
+# The Latin Modern (and Latin Modern Maths) fonts might well replace the
+# BaKoMa ones for my purposes... At present their inclusion here is an
+# experiment. Note that although I may distribute them as part of Reduce
+# I must ensure that users know that they do not have the right to separate
+# out the fonts for separate use. Also I should observe that the original
+# distribution that I used is in the csl/support-packages directory of a full
+# reduce file-set.
+	$(CP) $(srcdir)/$(fontsdir)/Latin-Modern.mainfest reduce.$(fontsdir)/Latin-Modern.manifest
+	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
+	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
+endif wx
 	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
 # At present the only CM Unicode font I will copy across is CMTT.
 # I will still need and use the BaKoMa fonts for CMSY, CMEX and MSAM etc
