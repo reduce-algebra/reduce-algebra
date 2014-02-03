@@ -34,6 +34,8 @@ module vsl;
 % VslState ::= ('vslstate, list of input constraints, VslStackElemL, list of negative lemmas, property list)
 % VslStackElem ::= ('vslstackelem, Kernel, SQ | 'pinf | 'minf | 'bottom | nil, OfsfAtf | nil, OfsfAtfL, OfsfQfFormulaL)
 
+switch vslgreaterplem;
+
 struct Void;
 struct VslState asserted by VslStateP;
 struct VslStackElem asserted by VslStackElemP; %List4;
@@ -430,22 +432,38 @@ asserted procedure vsl_subnlem(nlem: List, x: Kernel, eterm: Any): OfsfAtf;
    >>;
 
 asserted procedure vsl_nlemp(nlem: List): ExtraBoolean;
-   null nlem or ofsf_op car nlem eq 'greaterp and vsl_nlemp cdr nlem;
+   if !*vslgreaterplem then
+      null nlem or ofsf_op car nlem eq 'greaterp and vsl_nlemp cdr nlem
+   else
+      null nlem or ofsf_op car nlem eq 'neq and vsl_nlemp cdr nlem;
 
 asserted procedure vsl_subnlemi(nlem: List, x: Kernel, inf: Id): List;
-   % We make the very strong assumption that all operators are [greaterp].
    begin scalar c, atf, lhs, nnlem;
-      c := t; while c and nlem do <<
-	 atf := pop nlem;
-	 lhs := ofsf_arg2l atf;
-	 if not sfto_kmemberf(x, lhs) then
-	    push(atf, nnlem)
-	 else if inf eq 'pinf and vsl_fastcoeff(lhs, x) > 0 or
-	    inf eq 'minf and vsl_fastcoeff(lhs, x) < 0
-	 then
-	    c := nil
-      >>;
-      return if c then reversip nnlem else {ofsf_0mk2('greaterp, 1)}
+      if !*vslgreaterplem then <<
+   	 % We make the very strong assumption that all operators are [greaterp].
+      	 c := t; while c and nlem do <<
+	    atf := pop nlem;
+	    lhs := ofsf_arg2l atf;
+	    if not sfto_kmemberf(x, lhs) then
+	       push(atf, nnlem)
+	    else if inf eq 'pinf and vsl_fastcoeff(lhs, x) > 0 or
+	       inf eq 'minf and vsl_fastcoeff(lhs, x) < 0
+	    then
+	       c := nil
+      	 >>;
+      	 return if c then reversip nnlem else {ofsf_0mk2('greaterp, 1)}
+      >> else <<
+   	 % We make the very strong assumption that all operators are [neq].
+      	 c := t; while c and nlem do <<
+	    atf := pop nlem;
+	    lhs := ofsf_arg2l atf;
+	    if not sfto_kmemberf(x, lhs) then
+	       push(atf, nnlem)
+	    else
+	       c := nil
+      	 >>;
+      	 return if c then reversip nnlem else {ofsf_0mk2('neq, 1)}
+      >>
    end;
 
 asserted procedure vsl_fastcoeff(f: SF, x: Kernel): Integer;
@@ -453,20 +471,36 @@ asserted procedure vsl_fastcoeff(f: SF, x: Kernel): Integer;
    if mvar f eq x then lc f else fvsl_fastcoeff(red f, x);
 
 asserted procedure vsl_subnlemsq(nlem: List, x: Kernel, q: SQ): List;
-   % We make the very strong assumption that all operators are [greaterp].
    begin scalar c, atf, nnlem, lhs;
-      c := t; while c and nlem do <<  % scanning disjunction of neqs
-      	 atf := vsl_subatsq(pop nlem, x, q);
-      	 lhs := ofsf_arg2l atf;
-	 if not domainp lhs or not null lhs and lhs > 0 then
-	    % This disjunction contains variables or is is certainly true.
-	    if domainp lhs then <<  % This disjunction is certainly true.
-	       nnlem := {ofsf_0mk2('greaterp, 1)};
-	       c := nil
-	    >> else
-	       push(atf, nnlem)
-      >>;
-      return reversip nnlem
+      if !*vslgreaterplem then <<
+   	 % We make the very strong assumption that all operators are [greaterp].
+      	 c := t; while c and nlem do <<  % scanning disjunction of neqs
+      	    atf := vsl_subatsq(pop nlem, x, q);
+      	    lhs := ofsf_arg2l atf;
+	    if not domainp lhs or not null lhs and lhs > 0 then
+	       % This disjunction contains variables or it is certainly true.
+	       if domainp lhs then <<  % This disjunction is certainly true.
+	       	  nnlem := {ofsf_0mk2('greaterp, 1)};
+	       	  c := nil
+	       >> else
+	       	  push(atf, nnlem)
+      	 >>;
+      	 return reversip nnlem
+      >> else <<
+   	 % We make the very strong assumption that all operators are [neq].
+      	 c := t; while c and nlem do <<  % scanning disjunction of neqs
+      	    atf := vsl_subatsq(pop nlem, x, q);
+      	    lhs := ofsf_arg2l atf;
+	    if not domainp lhs or not null lhs then
+	       % This disjunction contains variables or it is certainly true.
+	       if domainp lhs then <<  % This disjunction is certainly true.
+	       	  nnlem := {ofsf_0mk2('greaterp, 1)};
+	       	  c := nil
+	       >> else
+	       	  push(atf, nnlem)
+      	 >>;
+      	 return reversip nnlem
+      >>
    end;
 
 asserted procedure vsl_subat(atf: OfsfAtf, x: Kernel, eterm: Any): OfsfAtf;
@@ -697,7 +731,10 @@ asserted procedure vsl_analyze(l: List, kgeq0: OfsfAtf): List;
 	 if minusf numr cdr w then <<
 	    if !*rlverbose then
 	       nalphac := nalphac + 1;
-	    push(ofsf_0mk2('greaterp, lc hugo), nlearnl)
+	    if !*vslgreaterplem then
+	       push(ofsf_0mk2('greaterp, lc hugo), nlearnl)
+	    else
+	       push(ofsf_0mk2('neq, lc hugo), nlearnl)
 	 >>;
 	 hugo := red hugo
       >>;
