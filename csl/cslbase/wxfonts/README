@@ -28,3 +28,68 @@ The permissions associated with the fonts, as indicated in the files in
 this directory, permit me to make these changes.
 
                 Arthur Norman    November 2010
+
+
+    Adjusted versions of the Latin Modern and Latin Modern Math Fonts
+
+
+The Latin Modern Fonts are subject to the GUST Font license which is an
+instance of the LaTeX Project Public License (version 1.3c or higher). So
+let me first deal with the request that they make... that asks that any
+any derived work renames both fonts and files. What I have here does
+count as "derived" within the meaning of the LaTeX license, however it
+should not change the shapes of glyphs in the fonts or any of their metrics
+ans so ought not to lead to confusion, so I have (at least for now) not
+altered names. A MANIFEST-Latin-Moderm.txt file lists files that these
+terms apply to.
+
+Now as to the LaTeX Project Public License. That starts with a view that
+even just rearranging the packing of files consitutes the creation of
+a (modified) derived work, so what I have here falls squarely in that state.
+Thus redistribution relies on Clauses 6 and 7 of the license:
+ (6a) What I have here is not set up to be a direct replacement for
+      any part of a LaTeX installation, and so no special requirements
+      apply.
+ (6b) This files will contain a log of the changes made, thus satisfying
+      obligations. I believe that having the explanations in a file named
+      README should count as prominent.
+ (6c) There is no obligation on anybody to provide support for the fonts
+      unless that person has explicitly stated that they will support
+      this particular version.
+ (6d) The original fonts were obtained from www.gust.org.pl and are
+      also present at TeX archives. In the Reduce source files there are
+      unmodified versions in trunk/csl/support-packages and those
+      versions can be fetched from reduce-algebra.sourceforge.net by
+      browsing the Reduce subversion repository.
+ (7)  I believe says I can rely in the terms in (6) when distributing
+      binary font files as distinct from the metafont (or other) source.
+
+These rules are transitive, in that anybody receiving Reduce must apply
+them, and that is more restrictive than the terms of the BSD license that
+apply to the bulk of Reduce itself. But it is flexible in that about the
+only practical limitation is that any redistribution of fonts needs to
+include this file or suitable equivalent information. So simple copying
+of a full working version of Reduce (either in source or binary form)
+should be covered.
+
+The changes made are:
+ (1) I have extracted fonts from the original .zip archive and placed them
+     at the locations within the Reduce Tree where fonts wish to live.
+ (2) While at the time of writing I have not yet pruned things, I will
+     only need a subset of the full set of Latin Modern fonts, and so I
+     will omit some of them... for instance to save space.
+ (3) When I tried to render the supplied .oft fonts on a Windows platform
+     the Windows 7 font viewer allowed me to preview them but the
+     code I had using wxWidgets appeared not to be able to find any glyphs
+     in the fonts (even though it could open them and report success). So
+     to back up the .oft versions I used fontforge to do a direct conversion
+     to the older .ttf format. On non-windows platforms I can use the
+     original .oft fonts, but on Windows I use the .ttf variants. If at some
+     stage I can understand what the issue there was I will be able to
+     discard the .ttf versions!
+ (4) Reduce and associated tools will use these as private application-
+     specific fonts, not installing them in ways intended for use by other
+     programs. That ought to minimise any possibility of confusion or
+     degradation.
+
+                Arthur Norman.  February 2014

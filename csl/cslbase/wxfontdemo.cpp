@@ -17,7 +17,7 @@
 // wxWidgets.
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -184,7 +184,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int raw, page;
+int raw, page, bold, italic;
 
 int get_current_directory(char *s, int n)
 {
@@ -627,6 +627,8 @@ static localFonts fontNames[] =
     {"fireflysung",     NULL},
     {"sazanami-gothic", NULL},
     {"sazanami-mincho", NULL},
+    {"lmroman10-regular", NULL},
+    {"latinmodern.math",NULL},
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
@@ -941,31 +943,35 @@ bool fontApp::OnInit()
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
+
     raw = 1;
     page = 0;
+    italic = bold = 0;
+    const char *font = "default";  // A default font name to ask for.
+    int size = 48;           // a default size.
+
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
         if (strcmp(myargv[i], "--raw") == 0) raw = !raw;
-        else if (myargv[i][0]!= '-' ||
-                 sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
+        if (strcmp(myargv[i], "--italic") == 0) italic = 1;
+        if (strcmp(myargv[i], "--bold") == 0) bold = 1;
+        else if (myargv[i][0] == '-')
+        {   if (sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
+        }
+        else font = myargv[i];
     }
 // I will find the special fonts that most interest me in a location related
 // to the directory that this application was launched from. So the first
 // think to do is to identify that location. I then print the information I
 // recover so I can debug things. I have already set up programName etc
     printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
-
+    printf("Seek font %s", font);
+    if (bold) printf(" (bold)");
+    if (italic) printf(" (italic)");
+    printf(" starting with page %d\n", page);
+    fflush(stdout);
     add_custom_fonts();
-
-    const char *font = "default";  // A default font name to ask for.
-    int size = 48;           // a default size.
-    if (argc > 1) font = myargv[1];
-    if (argc > 2)
-    {   size = atoi(myargv[2]);
-        if (size <= 2 || size > 200) size = 48;
-    }
-    printf("Try for font \"%s\" at size=%d\n", font, size);
 
     fontFrame *frame = new fontFrame(font, size);
     frame->Show(true);
@@ -1015,7 +1021,7 @@ void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
     wxMessageBox(
        wxString::Format(
-           "wxfontdemo (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
+           "wxfontdemo (A C Norman 2014)\nwxWidgets version: %s\nOperating system: %s",
            wxVERSION_STRING,
            wxGetOsDescription()),
        "About wxfontdemo",
@@ -1090,7 +1096,7 @@ void fontPanel::OnPaint(wxPaintEvent &event)
         dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
         printf("Adjusted w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
         wxString f = ff->GetNativeFontInfoDesc();
-        wxPrintf("Font = %s\n", f);
+        wxPrintf("NativeFontInfoDesc = %s\n", f);
         fontScaled = true; // Do this only once!
     }
 // To make my display match the one I had from my previous FOX-based

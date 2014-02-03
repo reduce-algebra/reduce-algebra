@@ -16,7 +16,7 @@
 // wxWidgets.
 
 /**************************************************************************
- * Copyright (C) 2102, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -68,6 +68,7 @@
 #include "wx/dc.h"
 #include "wx/graphics.h"
 #include "wx/filename.h"
+#include "wx/fontenum.h"
 
 #include "config.h"
 
@@ -197,7 +198,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int raw, page;
+int raw, page, bold, italic;
 
 int get_current_directory(char *s, int n)
 {
@@ -263,7 +264,7 @@ static char this_executable[LONGEST_LEGAL_FILENAME];
 int find_program_directory(const char *argv0)
 {
     char *w;
-    int len, ndir, npgm, j;
+    int len, ndir, npgm;
 /* In older code I believed that I could rely on Windows giving me
  * the full path of my executable in argv[0]. With bits of mingw/cygwin
  * anywhere near me that may not be so, so I grab the information directly
@@ -287,7 +288,6 @@ int find_program_directory(const char *argv0)
  * If the current program is called c:\aaa\xxx.exe, then the directory
  * is just c:\aaa and the simplified program name is just xxx
  */
-    j = len-1;
     if (len > 4 &&
         argv0[len-4] == '.' &&
         ((tolower(argv0[len-3]) == 'e' &&
@@ -635,119 +635,68 @@ static const char *fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    "cmuntt",           "DejaVuSansMono",  
-    "fireflysung",      "sazanami-gothic",  "sazanami-mincho", 
-    "csl-cmb10",        "csl-cmbsy10",      "csl-cmbsy6",       "csl-cmbsy7",   
-    "csl-cmbsy8",       "csl-cmbsy9",       "csl-cmbx10",       "csl-cmbx12",   
-    "csl-cmbx5",        "csl-cmbx6",        "csl-cmbx7",        "csl-cmbx8",    
-    "csl-cmbx9",        "csl-cmbxsl10",     "csl-cmbxti10",     "csl-cmcsc10",  
-    "csl-cmcsc8",       "csl-cmcsc9",       "csl-cmdunh10",     "csl-cmex10",   
-    "csl-cmex7",        "csl-cmex8",        "csl-cmex9",        "csl-cmff10",   
-    "csl-cmfi10",       "csl-cmfib8",       "csl-cminch",       "csl-cmitt10",  
-    "csl-cmmi10",       "csl-cmmi12",       "csl-cmmi5",        "csl-cmmi6",    
-    "csl-cmmi7",        "csl-cmmi8",        "csl-cmmi9",        "csl-cmmib10",  
-    "csl-cmmib6",       "csl-cmmib7",       "csl-cmmib8",       "csl-cmmib9",   
-    "csl-cmr10",        "csl-cmr12",        "csl-cmr17",        "csl-cmr5",     
-    "csl-cmr6",         "csl-cmr7",         "csl-cmr8",         "csl-cmr9",     
-    "csl-cmsl10",       "csl-cmsl12",       "csl-cmsl8",        "csl-cmsl9",    
-    "csl-cmsltt10",     "csl-cmss10",       "csl-cmss12",       "csl-cmss17",   
-    "csl-cmss8",        "csl-cmss9",        "csl-cmssbx10",     "csl-cmssdc10", 
-    "csl-cmssi10",      "csl-cmssi12",      "csl-cmssi17",      "csl-cmssi8",   
-    "csl-cmssi9",       "csl-cmssq8",       "csl-cmssqi8",      "csl-cmsy10",   
-    "csl-cmsy5",        "csl-cmsy6",        "csl-cmsy7",        "csl-cmsy8",    
-    "csl-cmsy9",        "csl-cmtcsc10",     "csl-cmtex10",      "csl-cmtex8",   
-    "csl-cmtex9",       "csl-cmti10",       "csl-cmti12",       "csl-cmti7",    
-    "csl-cmti8",        "csl-cmti9",        "csl-cmtt10",       "csl-cmtt12",   
-    "csl-cmtt8",        "csl-cmtt9",        "csl-cmu10",        "csl-cmvtt10",  
-    "csl-euex10",       "csl-euex7",        "csl-euex8",        "csl-euex9",    
-    "csl-eufb10",       "csl-eufb5",        "csl-eufb6",        "csl-eufb7",    
-    "csl-eufb8",        "csl-eufb9",        "csl-eufm10",       "csl-eufm5",    
-    "csl-eufm6",        "csl-eufm7",        "csl-eufm8",        "csl-eufm9",    
-    "csl-eurb10",       "csl-eurb5",        "csl-eurb6",        "csl-eurb7",    
-    "csl-eurb8",        "csl-eurb9",        "csl-eurm10",       "csl-eurm5",    
-    "csl-eurm6",        "csl-eurm7",        "csl-eurm8",        "csl-eurm9",    
-    "csl-eusb10",       "csl-eusb5",        "csl-eusb6",        "csl-eusb7",    
-    "csl-eusb8",        "csl-eusb9",        "csl-eusm10",       "csl-eusm5",    
-    "csl-eusm6",        "csl-eusm7",        "csl-eusm8",        "csl-eusm9",    
-    "csl-msam10",       "csl-msam5",        "csl-msam6",        "csl-msam7",    
-    "csl-msam8",        "csl-msam9",        "csl-msbm10",       "csl-msbm5",    
-    "csl-msbm6",        "csl-msbm7",        "csl-msbm8",        "csl-msbm9",     
-
-
-"latinmodern-math",
-"lmmono10-italic",
-"lmmono10-regular",
-"lmmono12-regular",
-"lmmono8-regular",
-"lmmono9-regular",
-"lmmonocaps10-oblique",
-"lmmonocaps10-regular",
-"lmmonolt10-bold",
-"lmmonolt10-boldoblique",
-"lmmonolt10-oblique",
-"lmmonolt10-regular",
-"lmmonoltcond10-oblique",
-"lmmonoltcond10-regular",
-"lmmonoprop10-oblique",
-"lmmonoprop10-regular",
-"lmmonoproplt10-bold",
-"lmmonoproplt10-boldoblique",
-"lmmonoproplt10-oblique",
-"lmmonoproplt10-regular",
-"lmmonoslant10-regular",
-"lmroman10-bold",
-"lmroman10-bolditalic",
-"lmroman10-italic",
-"lmroman10-regular",
-"lmroman12-bold",
-"lmroman12-italic",
-"lmroman12-regular",
-"lmroman17-regular",
-"lmroman5-bold",
-"lmroman5-regular",
-"lmroman6-bold",
-"lmroman6-regular",
-"lmroman7-bold",
-"lmroman7-italic",
-"lmroman7-regular",
-"lmroman8-bold",
-"lmroman8-italic",
-"lmroman8-regular",
-"lmroman9-bold",
-"lmroman9-italic",
-"lmroman9-regular",
-"lmromancaps10-oblique",
-"lmromancaps10-regular",
-"lmromandemi10-oblique",
-"lmromandemi10-regular",
-"lmromandunh10-oblique",
-"lmromandunh10-regular",
-"lmromanslant10-bold",
-"lmromanslant10-regular",
-"lmromanslant12-regular",
-"lmromanslant17-regular",
-"lmromanslant8-regular",
-"lmromanslant9-regular",
-"lmromanunsl10-regular",
-"lmsans10-bold",
-"lmsans10-boldoblique",
-"lmsans10-oblique",
-"lmsans10-regular",
-"lmsans12-oblique",
-"lmsans12-regular",
-"lmsans17-oblique",
-"lmsans17-regular",
-"lmsans8-oblique",
-"lmsans8-regular",
-"lmsans9-oblique",
-"lmsans9-regular",
-"lmsansdemicond10-oblique",
-"lmsansdemicond10-regular",
-"lmsansquot8-bold",
-"lmsansquot8-boldoblique",
-"lmsansquot8-oblique",
-"lmsansquot8-regular"
-
+    "cmuntt.ttf",           "DejaVuSansMono.otf",  
+    "fireflysung.ttf",      "sazanami-gothic.ttf",  "sazanami-mincho.ttf", 
+    "csl-cmb10.ttf",        "csl-cmbsy10.ttf",      "csl-cmbsy6.ttf",       "csl-cmbsy7.ttf",   
+    "csl-cmbsy8.ttf",       "csl-cmbsy9.ttf",       "csl-cmbx10.ttf",       "csl-cmbx12.ttf",   
+    "csl-cmbx5.ttf",        "csl-cmbx6.ttf",        "csl-cmbx7.ttf",        "csl-cmbx8.ttf",    
+    "csl-cmbx9.ttf",        "csl-cmbxsl10.ttf",     "csl-cmbxti10.ttf",     "csl-cmcsc10.ttf",  
+    "csl-cmcsc8.ttf",       "csl-cmcsc9.ttf",       "csl-cmdunh10.ttf",     "csl-cmex10.ttf",   
+    "csl-cmex7.ttf",        "csl-cmex8.ttf",        "csl-cmex9.ttf",        "csl-cmff10.ttf",   
+    "csl-cmfi10.ttf",       "csl-cmfib8.ttf",       "csl-cminch.ttf",       "csl-cmitt10.ttf",  
+    "csl-cmmi10.ttf",       "csl-cmmi12.ttf",       "csl-cmmi5.ttf",        "csl-cmmi6.ttf",    
+    "csl-cmmi7.ttf",        "csl-cmmi8.ttf",        "csl-cmmi9.ttf",        "csl-cmmib10.ttf",  
+    "csl-cmmib6.ttf",       "csl-cmmib7.ttf",       "csl-cmmib8.ttf",       "csl-cmmib9.ttf",   
+    "csl-cmr10.ttf",        "csl-cmr12.ttf",        "csl-cmr17.ttf",        "csl-cmr5.ttf",     
+    "csl-cmr6.ttf",         "csl-cmr7.ttf",         "csl-cmr8.ttf",         "csl-cmr9.ttf",     
+    "csl-cmsl10.ttf",       "csl-cmsl12.ttf",       "csl-cmsl8.ttf",        "csl-cmsl9.ttf",    
+    "csl-cmsltt10.ttf",     "csl-cmss10.ttf",       "csl-cmss12.ttf",       "csl-cmss17.ttf",   
+    "csl-cmss8.ttf",        "csl-cmss9.ttf",        "csl-cmssbx10.ttf",     "csl-cmssdc10.ttf", 
+    "csl-cmssi10.ttf",      "csl-cmssi12.ttf",      "csl-cmssi17.ttf",      "csl-cmssi8.ttf",   
+    "csl-cmssi9.ttf",       "csl-cmssq8.ttf",       "csl-cmssqi8.ttf",      "csl-cmsy10.ttf",   
+    "csl-cmsy5.ttf",        "csl-cmsy6.ttf",        "csl-cmsy7.ttf",        "csl-cmsy8.ttf",    
+    "csl-cmsy9.ttf",        "csl-cmtcsc10.ttf",     "csl-cmtex10.ttf",      "csl-cmtex8.ttf",   
+    "csl-cmtex9.ttf",       "csl-cmti10.ttf",       "csl-cmti12.ttf",       "csl-cmti7.ttf",    
+    "csl-cmti8.ttf",        "csl-cmti9.ttf",        "csl-cmtt10.ttf",       "csl-cmtt12.ttf",   
+    "csl-cmtt8.ttf",        "csl-cmtt9.ttf",        "csl-cmu10.ttf",        "csl-cmvtt10.ttf",  
+    "csl-euex10.ttf",       "csl-euex7.ttf",        "csl-euex8.ttf",        "csl-euex9.ttf",    
+    "csl-eufb10.ttf",       "csl-eufb5.ttf",        "csl-eufb6.ttf",        "csl-eufb7.ttf",    
+    "csl-eufb8.ttf",        "csl-eufb9.ttf",        "csl-eufm10.ttf",       "csl-eufm5.ttf",    
+    "csl-eufm6.ttf",        "csl-eufm7.ttf",        "csl-eufm8.ttf",        "csl-eufm9.ttf",    
+    "csl-eurb10.ttf",       "csl-eurb5.ttf",        "csl-eurb6.ttf",        "csl-eurb7.ttf",    
+    "csl-eurb8.ttf",        "csl-eurb9.ttf",        "csl-eurm10.ttf",       "csl-eurm5.ttf",    
+    "csl-eurm6.ttf",        "csl-eurm7.ttf",        "csl-eurm8.ttf",        "csl-eurm9.ttf",    
+    "csl-eusb10.ttf",       "csl-eusb5.ttf",        "csl-eusb6.ttf",        "csl-eusb7.ttf",    
+    "csl-eusb8.ttf",        "csl-eusb9.ttf",        "csl-eusm10.ttf",       "csl-eusm5.ttf",    
+    "csl-eusm6.ttf",        "csl-eusm7.ttf",        "csl-eusm8.ttf",        "csl-eusm9.ttf",    
+    "csl-msam10.ttf",       "csl-msam5.ttf",        "csl-msam6.ttf",        "csl-msam7.ttf",    
+    "csl-msam8.ttf",        "csl-msam9.ttf",        "csl-msbm10.ttf",       "csl-msbm5.ttf",    
+    "csl-msbm6.ttf",        "csl-msbm7.ttf",        "csl-msbm8.ttf",        "csl-msbm9.ttf",
+    "latinmodern-math.ttf",       "lmmono10-italic.ttf",         "lmmono10-regular.ttf",
+    "lmmono12-regular.ttf",       "lmmono8-regular.ttf",         "lmmono9-regular.ttf",
+    "lmmonocaps10-oblique.ttf",   "lmmonocaps10-regular.ttf",    "lmmonolt10-bold.ttf",
+    "lmmonolt10-boldoblique.ttf", "lmmonolt10-oblique.ttf",      "lmmonolt10-regular.ttf",
+    "lmmonoltcond10-oblique.ttf", "lmmonoltcond10-regular.ttf",  "lmmonoprop10-oblique.ttf",
+    "lmmonoprop10-regular.ttf",   "lmmonoproplt10-bold.ttf",     "lmmonoproplt10-boldoblique.ttf",
+    "lmmonoproplt10-oblique.ttf", "lmmonoproplt10-regular.ttf",  "lmmonoslant10-regular.ttf",
+    "lmroman10-bold.ttf",         "lmroman10-bolditalic.ttf",    "lmroman10-italic.ttf",
+    "lmroman10-regular.ttf",      "lmroman12-bold.ttf",          "lmroman12-italic.ttf",
+    "lmroman12-regular.ttf",      "lmroman17-regular.ttf",       "lmroman5-bold.ttf",
+    "lmroman5-regular.ttf",       "lmroman6-bold.ttf",           "lmroman6-regular.ttf",
+    "lmroman7-bold.ttf",          "lmroman7-italic.ttf",         "lmroman7-regular.ttf",
+    "lmroman8-bold.ttf",          "lmroman8-italic.ttf",         "lmroman8-regular.ttf",
+    "lmroman9-bold.ttf",          "lmroman9-italic.ttf",         "lmroman9-regular.ttf",
+    "lmromancaps10-oblique.ttf",  "lmromancaps10-regular.ttf",   "lmromandemi10-oblique.ttf",
+    "lmromandemi10-regular.ttf",  "lmromandunh10-oblique.ttf",   "lmromandunh10-regular.ttf",
+    "lmromanslant10-bold.ttf",    "lmromanslant10-regular.ttf",  "lmromanslant12-regular.ttf",
+    "lmromanslant17-regular.ttf", "lmromanslant8-regular.ttf",   "lmromanslant9-regular.ttf",
+    "lmromanunsl10-regular.ttf",  "lmsans10-bold.ttf",           "lmsans10-boldoblique.ttf",
+    "lmsans10-oblique.ttf",       "lmsans10-regular.ttf",        "lmsans12-oblique.ttf",
+    "lmsans12-regular.ttf",       "lmsans17-oblique.ttf",        "lmsans17-regular.ttf",
+    "lmsans8-oblique.ttf",        "lmsans8-regular.ttf",         "lmsans9-oblique.ttf",
+    "lmsans9-regular.ttf",        "lmsansdemicond10-oblique.ttf","lmsansdemicond10-regular.ttf",
+    "lmsansquot8-bold.ttf",       "lmsansquot8-boldoblique.ttf", "lmsansquot8-oblique.ttf",
+    "lmsansquot8-regular.ttf"
 };
 
 #endif
@@ -774,14 +723,32 @@ void add_custom_fonts()
 // Note that on a Mac I put the required fonts in the Application Bundle.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        sprintf(nn, "%s/%s/%s.ttf",
+        sprintf(nn, "%s/%s/%s",
                     programDir, toString(fontsdir), fontNames[i]);
         printf("Adding %s\n", nn); fflush(stdout);
         wxString widename(nn);
-        wxFont::AddPrivateFont(widename);
+        if (!wxFont::AddPrivateFont(widename))
+            printf("Adding %s failed\n", nn);
     }
+    printf("About to activate\n"); fflush(stdout);
     wxFont::ActivatePrivateFonts();
+    printf("Activated\n"); fflush(stdout);
 #endif // MACINTOSH
+    printf("About to look for encodings\n");
+    fflush(stdout);
+    wxArrayString flist(wxFontEnumerator::GetFacenames());
+    printf("There are %d fonts\n", (int)flist.GetCount());
+    fflush(stdout);
+    for (unsigned int i=0; i<flist.GetCount(); i++)
+        wxPrintf("%d) <%s>\n", i, flist[i]);
+    fflush(stdout);
+//    wxArrayString enclist(wxFontEnumerator::GetEncodings());
+//    printf("There are %d encodings\n", (int)enclist.GetCount());
+//    fflush(stdout);
+//    for (unsigned int i=0; i<enclist.GetCount(); i++)
+//        wxPrintf(L"Encoding (%d) <%s>\n", i, enclist[i]);
+    printf("End of debug output\n");
+    fflush(stdout);
 }
 
 
@@ -792,12 +759,19 @@ bool fontApp::OnInit()
     char **myargv = (char **)argv;
     raw = 1;
     page = 0;
+    bold = italic = 0;
+    const char *font = "default";  // A default font name to ask for.
+    int size = 48;           // a default size.
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
         if (strcmp(myargv[i], "--raw") == 0) raw = !raw;
-        else if (myargv[i][0]!= '-' ||
-                 sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
+        if (strcmp(myargv[i], "--bold") == 0) bold = 1;
+        if (strcmp(myargv[i], "--italic") == 0) italic = 1;
+        else if (myargv[i][0] == '-')
+        {   if (sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
+        }
+        else font = myargv[i];
     }
 // I will find the special fonts that most interest me in a location related
 // to the directory that this application was launched from. So the first
@@ -805,13 +779,6 @@ bool fontApp::OnInit()
 // recover so I can debug things. I have already set up programName etc
     printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
 
-    const char *font = "default";  // A default font name to ask for.
-    int size = 48;           // a default size.
-    if (argc > 1) font = myargv[1];
-    if (argc > 2)
-    {   size = atoi(myargv[2]);
-        if (size <= 2 || size > 200) size = 48;
-    }
     printf("Try for font \"%s\" at size=%d\n", font, size);
     fflush(stdout);
 
@@ -820,12 +787,15 @@ bool fontApp::OnInit()
     return true;
 }
 
+#define CELLWIDTH  11
+#define CELLHEIGHT 20
+
 fontFrame::fontFrame(const char *fname, int fsize)
        : wxFrame(NULL, wxID_ANY, "wxfontdemo")
 {
     SetIcon(wxICON(fwin));
     panel = new fontPanel(this, fname, fsize);
-    wxSize clientsize(32*32, 9*64);
+    wxSize clientsize(3*33*CELLWIDTH, 3*10*CELLHEIGHT);
     wxSize winsize(ClientToWindowSize(clientsize));
     SetSize(winsize);
     SetMinSize(winsize);
@@ -904,21 +874,26 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 
 void fontPanel::OnKeyUp(wxKeyEvent &event)
 {
-    printf("Key Up event\n"); fflush(stdout);
-    event.Skip();
-    page++;
-    if (page == 0x1b0) page = 0x1c0; // skip surrogates
-    Refresh();
 }
 
 void fontPanel::OnMouse(wxMouseEvent &event)
 {
-    page++;
-    if (page == 0x1b0) page = 0x1c0; // skip surrogates
+    wxWindowDC dc(this);
+    wxPoint where(event.GetLogicalPosition(dc));
+    if (where.y > 200)
+    {   page++;
+        if (page == 0x1b0) page = 0x1c0; // skip surrogates
+    }
+    else
+    {   page--;
+        if (page == 0x1b0) page = 0x1a0; // skip surrogates
+    }
     printf("Mouse event. Page now %d\n", page); fflush(stdout);
     event.Skip();
     Refresh();
 }
+
+static int once = 0;
 
 void fontPanel::OnPaint(wxPaintEvent &event)
 {
@@ -926,37 +901,99 @@ void fontPanel::OnPaint(wxPaintEvent &event)
     wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
     if (gc)
     {   gc->Scale(3.0, 3.0);
-        printf("fontname = %s\n", fontname);
-        wxGraphicsFont gff = gc->CreateFont(10.0, fontname,
-                                            wxFONTFLAG_DEFAULT, *wxRED);
-        gc->SetFont(gff);
-
         wxColour c1(230, 200, 255);
         wxColour c2(100, 220, 120);
         wxBrush b1(c1); wxBrush b2(c2);
         wxPen p1(c1);   wxPen p2(c2);
-        for (int y=0; y<256+32; y+=32)
-        {   for (int x=0; x<32; x++)
+        for (int y=0; y<256+2*32; y+=32)
+        {   for (int x=0; x<33; x++)
             {   int k = ((y>>5) + x) & 1;
                 gc->SetBrush(k ? b2 : b1);
                 gc->SetPen(k ? p2 : p1);
-                gc->DrawRectangle(10*x, 15*(y/32), 10, 15);
+                gc->DrawRectangle(CELLWIDTH*x, CELLHEIGHT*(y/32), CELLWIDTH, CELLHEIGHT);
             }
         }
-        wxDouble w1, h1, d1, xl1;
+        printf("fontname = %s\n", fontname);
+        if (wxFontEnumerator::IsValidFacename(fontname))
+            printf("Face name is valid\n");
+        else
+        {   printf("Invalid face name - font not found\n");
+// Some sort of fall-back font may be used...
+        }
+        wxFontInfo ffi(10);
+        ffi.FaceName(fontname);
+        if (bold) ffi.Bold();
+        if (italic) ffi.Italic();
+        wxFont ff(ffi);
+        if (ff.IsOk()) wxPrintf("Font seems OK\n");
+        else wxPrintf("Font is *NOT* OK\n");
+        wxPrintf("Face name = %s\n", ff.GetFaceName());
+        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
+        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
+        fflush(stdout);
+//        char fullfriendly[200];
+//        sprintf(fullfriendly, "'%s'", fontname);
+//        ff.SetNativeFontInfoUserDesc(fullfriendly);
+//        if (ff.IsOk()) wxPrintf("Font seems OK after new name\n");
+//        else wxPrintf("Font is *NOT* OK\n");
+//        wxPrintf("Face name = %s\n", ff.GetFaceName());
+//        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
+//        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
+//      wxPrintf("Encoding = %x\n", ff.GetDefaultEncoding());
+//        fflush(stdout);
+        wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
+        wxFont labels(wxFontInfo(3));
+        wxGraphicsFont glabels = gc->CreateFont(labels, *wxBLACK);
+        gc->SetFont(glabels);
+        for (int i=0; i<32; i++)
+        {   char word[12];
+            sprintf(word, "%02x", i);
+            gc->DrawText(word, (((double)CELLWIDTH)*(i+1)) + CELLWIDTH/2.2,
+                (double)CELLHEIGHT/10.0);
+        }
+        for (int i=0; i<8; i++)
+        {   char word[12];
+            sprintf(word, "%04x", 32*i + 0x80*page);
+            gc->DrawText(word, CELLWIDTH/10.0,
+                (double)CELLHEIGHT*(i+1) + CELLHEIGHT/2.5);
+        }
+
+        gc->SetFont(gff);
+
+        if (once++ == 0)
+        {   int howmany = 0; 
+            for (int i=0; howmany<30 && i<0xffff; i++)
+            {   wxString s((wchar_t)i);
+                double ww, hh, dd, el;
+                gc->GetTextExtent(s, &ww, &hh, &dd, &el);
+                if (ww != 0.0 && hh != 0.0)
+                {   printf("%#x %.1f*%.1f; ", i, ww, hh);
+                    howmany++;
+                }
+            }
+            if (howmany == 0) printf("No glyphs found");
+            printf("\n");
+            fflush(stdout);
+        }
+
+// If I initialise all these to 999.0 then if GetTextExtent fails maybe I will
+// still see something sensible?
+        wxDouble w1=999.0, h1=999.0, d1=999.0, xl1=999.0;
         gc->GetTextExtent("X", &w1, &h1, &d1, &xl1);
         printf("letter X w:%.3g h:%.3g d:%.3g xl:%.3g\n", w1, h1, d1, xl1);
 // To make my display match the one I had from my previous FOX-based
 // version I will adjust to make it as if DrawText uses the base-line of
-// the character for its reference point. I draw a little red circle to
+// the character for its reference point. I draw a little blue circle to
 // show where the reference point is...
         for (int i=0; i<256; i+=32)
         {   for (int j=0; j<32; j++)
             {   wxGraphicsMatrix save = gc->GetTransform();
                 gc->Scale(0.25, 0.25);
-                gc->SetPen(*wxRED_PEN);
+                gc->SetPen(*wxBLUE_PEN);
                 gc->SetBrush(*wxTRANSPARENT_BRUSH);
-                gc->DrawEllipse(4.0*(10.0*j-2.0), 4.0*(15.0*(i/32)+15.0-2.0),
+                gc->DrawEllipse(4.0*(((double)CELLWIDTH)*(j+1)-2.0),
+                                4.0*(((double)CELLHEIGHT)*(i/32+1)+
+                                     ((double)CELLHEIGHT)-2.0),
                                 4.0*4.0, 4.0*4.0);
                 gc->SetTransform(save);
                 int k = i + j;
@@ -968,6 +1005,8 @@ void fontPanel::OnPaint(wxPaintEvent &event)
 // not I must insist on using my private version of the fonts where it is
 // at 0xb7.
                     else if (k == 0x14) k = 0x2219;
+#else
+#error Old version
 #endif
                     else if (k < 0x20) k = 0xa3 + k;
                     else if (k == 0x20) k = 0xc3;
@@ -976,12 +1015,17 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                 }
                 else k += 0x80*page;
                 wxString c = (wchar_t)k;
-                gc->DrawText(c, 10.0*j, 15.0*(i/32)+15.0-h1+d1);
+                gc->DrawText(c,
+                    ((double)CELLWIDTH)*(j+1),
+                    ((double)CELLHEIGHT)*(i/32+1)+
+                     ((double)CELLHEIGHT)-h1+d1);
             }
         }
+#if 0
         printf("compmode = %x\n", gc->GetCompositionMode());
         printf("antialias = %x\n", gc->GetAntialiasMode());
         printf("interpqual = %x\n", gc->GetInterpolationQuality());
+#endif
         delete gc;
     }
     else printf("gc=NULL\n");

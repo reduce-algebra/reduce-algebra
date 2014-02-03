@@ -1,104 +1,155 @@
-The following is a list of files derived from the Latin Modern
-Fonts and covered by the GUST license. These have been channged
-in ways that make this a derived word in the following manner:
- (1) The files here are not packed into the .zip files that
-     formed the original distribution.
- (2) For my convenience I have renamed files from *.otf to *.ttf.
- (3) I have both the main and the maths fonts here in a single
-     directory.
- (4) I will (in due course) have trimmed the fonts included here so
-     that I only provide the ones that are relevant to me. Thus if
-     you want a COMPLETE set of files collect the official archive.
-     For instance for a start I am only providing .otf versions here
-     not the type1 versions.
-
-The contents of each font file is utterly unchanged from the versions
-originally distributed amd hence I do not believe that there could be
-any possible incompatibility or issue arising if these copies were to
-be used, but anyway in my use these will be established as application-
-local fonts and so should not interact with any other software.
-
-Everybody should be aware (by reading the enclosed license documents)
-that they are not entitled to redistribute any of these font files
-without following the license instructions, which I will leave in the
-official statement of them rather than attempt to paraphrase here.
-
 GUST-FONT-LICENSE.txt
-latin-modern-math.ttf
+latex-project-public-license.txt
+latinmodern-math.oft
+latinmodern-math.ttf
+lmmono10-italic.oft
 lmmono10-italic.ttf
+lmmono10-regular.oft
 lmmono10-regular.ttf
+lmmono12-regular.oft
 lmmono12-regular.ttf
+lmmono8-regular.oft
 lmmono8-regular.ttf
+lmmono9-regular.oft
 lmmono9-regular.ttf
+lmmonocaps10-oblique.oft
 lmmonocaps10-oblique.ttf
+lmmonocaps10-regular.oft
 lmmonocaps10-regular.ttf
-lmmonolt10-boldoblique.ttf
+lmmonolt10-bold.oft
 lmmonolt10-bold.ttf
+lmmonolt10-boldoblique.oft
+lmmonolt10-boldoblique.ttf
+lmmonolt10-oblique.oft
 lmmonolt10-oblique.ttf
+lmmonolt10-regular.oft
 lmmonolt10-regular.ttf
+lmmonoltcond10-oblique.oft
 lmmonoltcond10-oblique.ttf
+lmmonoltcond10-regular.oft
 lmmonoltcond10-regular.ttf
+lmmonoprop10-oblique.oft
 lmmonoprop10-oblique.ttf
+lmmonoprop10-regular.oft
 lmmonoprop10-regular.ttf
-lmmonoproplt10-boldoblique.ttf
+lmmonoproplt10-bold.oft
 lmmonoproplt10-bold.ttf
+lmmonoproplt10-boldoblique.oft
+lmmonoproplt10-boldoblique.ttf
+lmmonoproplt10-oblique.oft
 lmmonoproplt10-oblique.ttf
+lmmonoproplt10-regular.oft
 lmmonoproplt10-regular.ttf
+lmmonoslant10-regular.oft
 lmmonoslant10-regular.ttf
-lmroman10-bolditalic.ttf
+lmroman10-bold.oft
 lmroman10-bold.ttf
+lmroman10-bolditalic.oft
+lmroman10-bolditalic.ttf
+lmroman10-italic.oft
 lmroman10-italic.ttf
+lmroman10-regular.oft
 lmroman10-regular.ttf
+lmroman12-bold.oft
 lmroman12-bold.ttf
+lmroman12-italic.oft
 lmroman12-italic.ttf
+lmroman12-regular.oft
 lmroman12-regular.ttf
+lmroman17-regular.oft
 lmroman17-regular.ttf
+lmroman5-bold.oft
 lmroman5-bold.ttf
+lmroman5-regular.oft
 lmroman5-regular.ttf
+lmroman6-bold.oft
 lmroman6-bold.ttf
+lmroman6-regular.oft
 lmroman6-regular.ttf
+lmroman7-bold.oft
 lmroman7-bold.ttf
+lmroman7-italic.oft
 lmroman7-italic.ttf
+lmroman7-regular.oft
 lmroman7-regular.ttf
+lmroman8-bold.oft
 lmroman8-bold.ttf
+lmroman8-italic.oft
 lmroman8-italic.ttf
+lmroman8-regular.oft
 lmroman8-regular.ttf
+lmroman9-bold.oft
 lmroman9-bold.ttf
+lmroman9-italic.oft
 lmroman9-italic.ttf
+lmroman9-regular.oft
 lmroman9-regular.ttf
+lmromancaps10-oblique.oft
 lmromancaps10-oblique.ttf
+lmromancaps10-regular.oft
 lmromancaps10-regular.ttf
+lmromandemi10-oblique.oft
 lmromandemi10-oblique.ttf
+lmromandemi10-regular.oft
 lmromandemi10-regular.ttf
+lmromandunh10-oblique.oft
 lmromandunh10-oblique.ttf
+lmromandunh10-regular.oft
 lmromandunh10-regular.ttf
+lmromanslant10-bold.oft
 lmromanslant10-bold.ttf
+lmromanslant10-regular.oft
 lmromanslant10-regular.ttf
+lmromanslant12-regular.oft
 lmromanslant12-regular.ttf
+lmromanslant17-regular.oft
 lmromanslant17-regular.ttf
+lmromanslant8-regular.oft
 lmromanslant8-regular.ttf
+lmromanslant9-regular.oft
 lmromanslant9-regular.ttf
+lmromanunsl10-regular.oft
 lmromanunsl10-regular.ttf
-lmsans10-boldoblique.ttf
+lmsans10-bold.oft
 lmsans10-bold.ttf
+lmsans10-boldoblique.oft
+lmsans10-boldoblique.ttf
+lmsans10-oblique.oft
 lmsans10-oblique.ttf
+lmsans10-regular.oft
 lmsans10-regular.ttf
+lmsans12-oblique.oft
 lmsans12-oblique.ttf
+lmsans12-regular.oft
 lmsans12-regular.ttf
+lmsans17-oblique.oft
 lmsans17-oblique.ttf
+lmsans17-regular.oft
 lmsans17-regular.ttf
+lmsans8-oblique.oft
 lmsans8-oblique.ttf
+lmsans8-regular.oft
 lmsans8-regular.ttf
+lmsans9-oblique.oft
 lmsans9-oblique.ttf
+lmsans9-regular.oft
 lmsans9-regular.ttf
+lmsansdemicond10-oblique.oft
 lmsansdemicond10-oblique.ttf
+lmsansdemicond10-regular.oft
 lmsansdemicond10-regular.ttf
-lmsansquot8-boldoblique.ttf
+lmsansquot8-bold.oft
 lmsansquot8-bold.ttf
+lmsansquot8-boldoblique.oft
+lmsansquot8-boldoblique.ttf
+lmsansquot8-oblique.oft
 lmsansquot8-oblique.ttf
+lmsansquot8-regular.oft
 lmsansquot8-regular.ttf
-README-Latin-Modern.TXT
+README-Latin-Modern.txt
+README-Latin-Modern-Math.txt
 tfm
+tottf.sh
 
 ./tfm:
 cs-lmb10.tfm
@@ -697,5 +748,3 @@ ts1-lmvtl10.tfm
 ts1-lmvtlo10.tfm
 ts1-lmvtt10.tfm
 ts1-lmvtto10.tfm
-
-=============================
