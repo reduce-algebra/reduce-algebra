@@ -297,6 +297,7 @@ asserted procedure vsl_etermi(s: VslState, x: Kernel, inf: Id): VslStackElem;
       if ap then <<
 	 % The [ils] cannot become inconsistent when substituting [inf], because
 	 % all bounds in [ils] are opposite to [inf].
+	 vsls_put(s, 'inconsistent, nil);
 	 nils := for each atf in vsl_ils s collect
 	    vsl_subati(atf, x, inf);
       	 sb := vslse_mk(x, inf, nil, nils, car ap)
