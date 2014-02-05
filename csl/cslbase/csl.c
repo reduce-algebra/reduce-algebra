@@ -35,6 +35,18 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+
+/*
+ * When built using wxWidgets this code will use the Latin Modern
+ * fonts, which are subject to the LaTeX Project Public License. This
+ * comment is places somewhere I view as pretty prominent - ie at the head
+ * of the source of the main part of the code. I have further comments
+ * and explanation lower in this file such that invoking CSL or
+ * Reduce with an option "--help" will generate the required credits and
+ * notices, so if this matters to you search this file for the string
+ * "LaTeX" for more information.
+ */
+
 /* $Id$ */
 
 
@@ -1853,6 +1865,35 @@ term_printf(
   "--version display some version information then exit.\n");
 term_printf(
   "--help this output!\n");
+#ifdef WX
+/*
+ * NOTE that the LaTeX Project Public License requires that every
+ * component of a derived work contain priminent notices logging
+ * changes of LPPL material and that it also provides information
+ * sufficient to obtain complete, unmodified versions of the original.
+ * Having text that can be displated via the "--help" command-line option
+ * will (I hope) satisfy these requirements for binary versions of this
+ * code. Those who read the source can find this comment as well, which
+ * notes that csl/support-packages contains original archives of
+ * font-related files that I have used, and that csl/cslbase/wxfonts
+ * contains both fonts and documentation explaining what might have
+ * changed. And in case anybody receives this file separate from
+ * other parts of the code, I will note that all these files can be
+ * downloaded from reduce-algebra.sf.net.
+ */
+term_printf(
+  "This software contains code that is subject to the LaTeX Project\n");
+term_printf(
+  "Public License. In accordance with Clause 6 of that (which governs\n");
+term_printf(
+  "distribution, there are README in a directory called wxfonts or\n");
+term_printf(
+  "reduce.wxfonts present as part of this distribution that explain\n");
+term_printf(
+  "both changes that have been made and where to obtain copies of\n");
+term_printf(
+  "relevant complete, unmodified original font-related material.\n");
+#endif
                         my_exit(0);
                     }
 /*! options [--version] \item [{\ttfamily --version}] \index{{\ttfamily --version}}

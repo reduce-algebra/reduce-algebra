@@ -1169,7 +1169,7 @@ if wx
 # out the fonts for separate use. Also I should observe that the original
 # distribution that I used is in the csl/support-packages directory of a full
 # reduce file-set.
-	$(CP) $(srcdir)/$(fontsdir)/Latin-Modern.manifest reduce.$(fontsdir)/Latin-Modern.manifest
+	$(CP) $(srcdir)/$(fontsdir)/MANIFEST-Latin-Modern.txt reduce.$(fontsdir)/MANIFEST-Latin-Modern.txt
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
 endif wx

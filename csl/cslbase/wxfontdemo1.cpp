@@ -91,14 +91,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
 
-static Display *dpy;
-static Visual *ftVisual = NULL;
-static Colormap ftColorMap;
-static XRenderColor ftRenderBlack = {0,0,0,0xffff};
-static XRenderColor ftRenderWhite = {0xffff,0xffff,0xffff,0xffff};
-static XftColor ftBlack, ftWhite;
-static XftFont *ftFont = NULL;
-
 #else   // HAVE_LIBXFT
 
 #error Other than on Windows you must have Xft installed.
@@ -140,7 +132,10 @@ extern char *getcwd(char *s, size_t n);
 #endif
 #endif /* HAVE_DIRENT_H */
 
-
+/*
+ * Maps showing character coverage of the private fonts I may use...
+ */
+#include "coverage.c"
 
 #if !defined __WXMSW__ && !defined __WXPM__
 #include "fwin.xpm" // Icon to use in non-Windows cases
@@ -554,7 +549,6 @@ int find_program_directory(const char *argv0)
 
 extern void add_custom_fonts();
 
-
 int main(int argc, char *argv[])
 {
     int i;
@@ -563,6 +557,19 @@ int main(int argc, char *argv[])
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
     {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+        else if (strcmp(argv[1], "--help")
+        {
+printf("This program contains bitmaps that show font coverage of some of\n");
+printf("the Latin Modern Fonts. The license terms of those fonts mean that\n");
+printf("any derived information falls under the LaTeX Project Public\n");
+printf("License which requires prominent notice of how to find the orininal\n");
+printf("fonts and full information about transformations made. This information\n");
+printf("should be in the wxfonts or reduce.wxfonts directory associated with\n");
+printf("this program and if necessary copies of everything relevant are in the\n");
+printf("trunk/csl/cslbase/wxfonts and trunk/csl/cslbase/glyphinfo.c locations\n");
+printf("in the subversion repositary at reduce-algebra.sf.net.\n");
+            exit(0);   
+        }
     }
 #if !defined WIN32 && !defined MACINTOSH
 // Under X11 I will demote to being a console mode application if DISPLAY
@@ -608,10 +615,8 @@ int main(int argc, char *argv[])
             }
         }
 #endif
-// I am going to add in my custom fonts before any part of wxWidgets starts.
-        add_custom_fonts();
 
-        wxDISABLE_DEBUG_SUPPORT();
+        add_custom_fonts();
         return wxEntry(argc, argv);
     }
     printf("This program has been launched asking for use in a console\n");
@@ -632,9 +637,9 @@ IMPLEMENT_APP_NO_MAIN(fontApp)
 
 static const char *fontNames[] =
 {
-// Right now I will add in ALL the fonts from the BaKoMa collection.
+// Right now I will add in ALL the fonts I have collected!
 // This can make sense in a font demo program but in a more serious
-// application I should be a little more selective!
+// application I should be a little more selective.
     "cmuntt.ttf",           "DejaVuSansMono.otf",  
     "fireflysung.ttf",      "sazanami-gothic.ttf",  "sazanami-mincho.ttf", 
     "csl-cmb10.ttf",        "csl-cmbsy10.ttf",      "csl-cmbsy6.ttf",       "csl-cmbsy7.ttf",   
@@ -672,6 +677,7 @@ static const char *fontNames[] =
     "csl-msam10.ttf",       "csl-msam5.ttf",        "csl-msam6.ttf",        "csl-msam7.ttf",    
     "csl-msam8.ttf",        "csl-msam9.ttf",        "csl-msbm10.ttf",       "csl-msbm5.ttf",    
     "csl-msbm6.ttf",        "csl-msbm7.ttf",        "csl-msbm8.ttf",        "csl-msbm9.ttf",
+#ifdef WIN32
     "latinmodern-math.ttf",       "lmmono10-italic.ttf",         "lmmono10-regular.ttf",
     "lmmono12-regular.ttf",       "lmmono8-regular.ttf",         "lmmono9-regular.ttf",
     "lmmonocaps10-oblique.ttf",   "lmmonocaps10-regular.ttf",    "lmmonolt10-bold.ttf",
@@ -697,6 +703,33 @@ static const char *fontNames[] =
     "lmsans9-regular.ttf",        "lmsansdemicond10-oblique.ttf","lmsansdemicond10-regular.ttf",
     "lmsansquot8-bold.ttf",       "lmsansquot8-boldoblique.ttf", "lmsansquot8-oblique.ttf",
     "lmsansquot8-regular.ttf"
+#else
+    "latinmodern-math.oft",       "lmmono10-italic.oft",         "lmmono10-regular.oft",
+    "lmmono12-regular.oft",       "lmmono8-regular.oft",         "lmmono9-regular.oft",
+    "lmmonocaps10-oblique.oft",   "lmmonocaps10-regular.oft",    "lmmonolt10-bold.oft",
+    "lmmonolt10-boldoblique.oft", "lmmonolt10-oblique.oft",      "lmmonolt10-regular.oft",
+    "lmmonoltcond10-oblique.oft", "lmmonoltcond10-regular.oft",  "lmmonoprop10-oblique.oft",
+    "lmmonoprop10-regular.oft",   "lmmonoproplt10-bold.oft",     "lmmonoproplt10-boldoblique.oft",
+    "lmmonoproplt10-oblique.oft", "lmmonoproplt10-regular.oft",  "lmmonoslant10-regular.oft",
+    "lmroman10-bold.oft",         "lmroman10-bolditalic.oft",    "lmroman10-italic.oft",
+    "lmroman10-regular.oft",      "lmroman12-bold.oft",          "lmroman12-italic.oft",
+    "lmroman12-regular.oft",      "lmroman17-regular.oft",       "lmroman5-bold.oft",
+    "lmroman5-regular.oft",       "lmroman6-bold.oft",           "lmroman6-regular.oft",
+    "lmroman7-bold.oft",          "lmroman7-italic.oft",         "lmroman7-regular.oft",
+    "lmroman8-bold.oft",          "lmroman8-italic.oft",         "lmroman8-regular.oft",
+    "lmroman9-bold.oft",          "lmroman9-italic.oft",         "lmroman9-regular.oft",
+    "lmromancaps10-oblique.oft",  "lmromancaps10-regular.oft",   "lmromandemi10-oblique.oft",
+    "lmromandemi10-regular.oft",  "lmromandunh10-oblique.oft",   "lmromandunh10-regular.oft",
+    "lmromanslant10-bold.oft",    "lmromanslant10-regular.oft",  "lmromanslant12-regular.oft",
+    "lmromanslant17-regular.oft", "lmromanslant8-regular.oft",   "lmromanslant9-regular.oft",
+    "lmromanunsl10-regular.oft",  "lmsans10-bold.oft",           "lmsans10-boldoblique.oft",
+    "lmsans10-oblique.oft",       "lmsans10-regular.oft",        "lmsans12-oblique.oft",
+    "lmsans12-regular.oft",       "lmsans17-oblique.oft",        "lmsans17-regular.oft",
+    "lmsans8-oblique.oft",        "lmsans8-regular.oft",         "lmsans9-oblique.oft",
+    "lmsans9-regular.oft",        "lmsansdemicond10-oblique.oft","lmsansdemicond10-regular.oft",
+    "lmsansquot8-bold.oft",       "lmsansquot8-boldoblique.oft", "lmsansquot8-oblique.oft",
+    "lmsansquot8-regular.oft"
+#endif
 };
 
 #endif
@@ -731,16 +764,23 @@ void add_custom_fonts()
             printf("Adding %s failed\n", nn);
     }
     printf("About to activate\n"); fflush(stdout);
-    wxFont::ActivatePrivateFonts();
+//    wxFont::ActivatePrivateFonts();
     printf("Activated\n"); fflush(stdout);
 #endif // MACINTOSH
-    printf("About to look for encodings\n");
+// I find that the following commented out enumerations crash for me
+// at least on some platforms.
     fflush(stdout);
-    wxArrayString flist(wxFontEnumerator::GetFacenames());
-    printf("There are %d fonts\n", (int)flist.GetCount());
+}
+
+
+void display_font_information()
+{
+    wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
+    int nfonts;
+    printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
     fflush(stdout);
-    for (unsigned int i=0; i<flist.GetCount(); i++)
-        wxPrintf("%d) <%s>\n", i, flist[i]);
+    for (int i=0; i<nfonts; i++)
+        printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
     fflush(stdout);
 //    wxArrayString enclist(wxFontEnumerator::GetEncodings());
 //    printf("There are %d encodings\n", (int)enclist.GetCount());
@@ -751,11 +791,12 @@ void add_custom_fonts()
     fflush(stdout);
 }
 
-
 bool fontApp::OnInit()
 {
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
+//
+    display_font_information();
     char **myargv = (char **)argv;
     raw = 1;
     page = 0;
@@ -939,7 +980,7 @@ void fontPanel::OnPaint(wxPaintEvent &event)
 //        wxPrintf("Face name = %s\n", ff.GetFaceName());
 //        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
 //        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
-//      wxPrintf("Encoding = %x\n", ff.GetDefaultEncoding());
+//        wxPrintf("Encoding = %x\n", ff.GetDefaultEncoding());
 //        fflush(stdout);
         wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
         wxFont labels(wxFontInfo(3));
@@ -1014,7 +1055,12 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                     else if (k >= 0x80) k += 0x80*page;
                 }
                 else k += 0x80*page;
+// here I will use the coverage table to decide if I need to draw anything.
+// I have not added that logic yet!
                 wxString c = (wchar_t)k;
+                double ww, hh, dd, el;
+                gc->GetTextExtent(c, &ww, &hh, &dd, &el);
+                if (ww == 0.0 || hh == 0.0) continue;
                 gc->DrawText(c,
                     ((double)CELLWIDTH)*(j+1),
                     ((double)CELLHEIGHT)*(i/32+1)+

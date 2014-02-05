@@ -2042,7 +2042,7 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 # out the fonts for separate use. Also I should observe that the original
 # distribution that I used is in the csl/support-packages directory of a full
 # reduce file-set.
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/Latin-Modern.manifest reduce.$(fontsdir)/Latin-Modern.manifest
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/MANIFEST-Latin-Modern.txt reduce.$(fontsdir)/MANIFEST-Latin-Modern.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)

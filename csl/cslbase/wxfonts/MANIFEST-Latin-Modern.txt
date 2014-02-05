@@ -748,3 +748,8 @@ ts1-lmvtl10.tfm
 ts1-lmvtlo10.tfm
 ts1-lmvtt10.tfm
 ts1-lmvtto10.tfm
+latinmodern-math.glyphs
+lmmono.glyphs
+lmmonoprop.glyphs
+lmroman.glyphs
+lmsans.glyphs
