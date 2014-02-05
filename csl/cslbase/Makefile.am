@@ -36,7 +36,6 @@ plain_fontdemo = fontdemo
 plain_showmathdemo = showmathdemo
 plain_wxdemo  = wxdemo
 plain_wxfontdemo = wxfontdemo
-plain_wxfontdemo1 = wxfontdemo1
 plain_wxdvi = wxdvi
 plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
@@ -52,7 +51,6 @@ plain_fontdemo = fontdemo.unnecessary.except.on.windows
 plain_showmathdemo = showmathdemo.unnecessary.except.on.windows
 plain_wxdemo  = wxdemo.unnecessary.except.on.windows
 plain_wxfontdemo = wxfontdemo.unnecessary.except.on.windows
-plain_wxfontdemo1 = wxfontdemo.unnecessary.except.on.windows
 plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
@@ -68,7 +66,6 @@ endif !exeext
 .PHONY: $(plain_showmathdemo)
 .PHONY: $(plain_wxdemo)
 .PHONY: $(plain_wxfontdemo)
-.PHONY: $(plain_wxfontdemo1)
 .PHONY: $(plain_wxdvi)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
@@ -163,7 +160,7 @@ foxdemotarget =
 endif !fox
 
 if wx
-wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
+wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
 else !wx
 wxdemotarget =
 endif !wx
@@ -427,10 +424,6 @@ wxdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
-
-wxfontdemo1_SOURCES = wxfontdemo1.cpp
-wxfontdemo1_LDADD = $(fwin_icon)
-wxfontdemo1_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
@@ -808,18 +801,6 @@ endif !darwin
 endif !debug
 if mac_framework
 	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
-endif mac_framework
-
-wxfontdemo1$(EXEEXT): $(wxfontdemo1_OBJECTS) $(wxfontdemo1_DEPENDENCIES) $(WXDEPS)
-	-$(RM) -f wxfontdemo1$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxfontdemo1$(EXEEXT) $(wxfontdemo1_OBJECTS) $(wxfontdemo1_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) wxfontdemo1$(EXEEXT)
-endif !darwin
-endif !debug
-if mac_framework
-	$(srcdir)/create_bundle.sh wxfontdemo1 $(srcdir)
 endif mac_framework
 
 wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
@@ -1321,9 +1302,6 @@ $(plain_wxdemo):	wxdemo.exe
 
 $(plain_wxfontdemo):	wxfontdemo.exe
 	echo "make wxfontdemo.exe is preferred"
-
-$(plain_wxfontdemo1):	wxfontdemo1.exe
-	echo "make wxfontdemo1.exe is preferred"
 
 $(plain_wxdvi):	wxdvi.exe
 	echo "make wxdvi.exe is preferred"
@@ -2006,7 +1984,7 @@ if fox
 guisrc=$(foxdemo_SOURCES) $(fontdemo_SOURCES) $(showmathdemo_SOURCES)
 else !fox
 if wx
-guisrc=$(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxfontdemo1_SOURCES) $(wxshowmathdemo_SOURCES)
+guisrc=$(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
 else !wx
 guisrc=
 endif !wx
@@ -2022,7 +2000,7 @@ if fox
 guibin=foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 else !fox
 if wx
-guibin=wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxfontdemo1$(EXEEXT) wxshowmathdemo$(EXEEXT)
+guibin=wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
 else !wx
 guibin=
 endif !wx

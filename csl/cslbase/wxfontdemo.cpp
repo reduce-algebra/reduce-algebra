@@ -1,4 +1,3 @@
-#define LISTFONTS 1 /* while I debug */
 // wxfontdemo.cpp
 
 // A sample wxWidgets application to display fonts.
@@ -57,6 +56,20 @@
 #include "wx/wx.h"
 #endif
 
+#if wxUSE_GRAPHICS_CONTEXT
+// I will use wxGraphicsContext so I have better capabilities to
+// scale text. On Windows this means I must have gdiplus development
+// stuff installed when building wxWidgets. Specifically the header
+// file gdiplus.h is required at that stage that wxWidgets is configured.
+#else
+#error I now need wxGraphicsContext
+#endif
+
+#include "wx/dc.h"
+#include "wx/graphics.h"
+#include "wx/filename.h"
+#include "wx/fontenum.h"
+
 #include "config.h"
 
 #ifdef WIN32
@@ -66,6 +79,7 @@
 #include <windows.h>
 #include <wingdi.h>
 #include <io.h>
+
 #else
 #ifdef MACINTOSH
 
@@ -76,14 +90,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
-
-static Display *dpy;
-static Visual *ftVisual = NULL;
-static Colormap ftColorMap;
-static XRenderColor ftRenderBlack = {0,0,0,0xffff};
-static XRenderColor ftRenderWhite = {0xffff,0xffff,0xffff,0xffff};
-static XftColor ftBlack, ftWhite;
-static XftFont *ftFont = NULL;
 
 #else   // HAVE_LIBXFT
 
@@ -126,8 +132,6 @@ extern char *getcwd(char *s, size_t n);
 #endif
 #endif /* HAVE_DIRENT_H */
 
-
-
 #if !defined __WXMSW__ && !defined __WXPM__
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
@@ -153,8 +157,6 @@ private:
     class fontFrame *frame;
     const char *fontname;
     int fontsize;
-    wxFont *ff;
-    bool fontScaled;
     DECLARE_EVENT_TABLE()
 };
 
@@ -171,6 +173,7 @@ class fontFrame : public wxFrame
 public:
     fontFrame(const char *font, int size);
 
+    void OnClose(wxCloseEvent &event);
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
 
@@ -180,6 +183,7 @@ private:
 };
 
 BEGIN_EVENT_TABLE(fontFrame, wxFrame)
+    EVT_CLOSE(           fontFrame::OnClose)
     EVT_MENU(wxID_EXIT,  fontFrame::OnExit)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
@@ -250,7 +254,7 @@ static char this_executable[LONGEST_LEGAL_FILENAME];
 int find_program_directory(const char *argv0)
 {
     char *w;
-    int len, ndir, npgm, j;
+    int len, ndir, npgm;
 /* In older code I believed that I could rely on Windows giving me
  * the full path of my executable in argv[0]. With bits of mingw/cygwin
  * anywhere near me that may not be so, so I grab the information directly
@@ -274,7 +278,6 @@ int find_program_directory(const char *argv0)
  * If the current program is called c:\aaa\xxx.exe, then the directory
  * is just c:\aaa and the simplified program name is just xxx
  */
-    j = len-1;
     if (len > 4 &&
         argv0[len-4] == '.' &&
         ((tolower(argv0[len-3]) == 'e' &&
@@ -539,6 +542,8 @@ int find_program_directory(const char *argv0)
 
 #endif /* WIN32 */
 
+extern void add_custom_fonts();
+
 int main(int argc, char *argv[])
 {
     int i;
@@ -547,6 +552,19 @@ int main(int argc, char *argv[])
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
     {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+        else if (strcmp(argv[1], "--help") == 0)
+        {
+printf("This program contains bitmaps that show font coverage of some of\n");
+printf("the Latin Modern Fonts. The license terms of those fonts mean that\n");
+printf("any derived information falls under the LaTeX Project Public\n");
+printf("License which requires prominent notice of how to find the orininal\n");
+printf("fonts and full information about transformations made. This information\n");
+printf("should be in the wxfonts or reduce.wxfonts directory associated with\n");
+printf("this program and if necessary copies of everything relevant are in the\n");
+printf("trunk/csl/cslbase/wxfonts and trunk/csl/cslbase/glyphinfo.c locations\n");
+printf("in the subversion repositary at reduce-algebra.sf.net.\n");
+            exit(0);   
+        }
     }
 #if !defined WIN32 && !defined MACINTOSH
 // Under X11 I will demote to being a console mode application if DISPLAY
@@ -592,6 +610,8 @@ int main(int argc, char *argv[])
             }
         }
 #endif
+
+        add_custom_fonts();
         wxDISABLE_DEBUG_SUPPORT();
         return wxEntry(argc, argv);
     }
@@ -611,117 +631,105 @@ IMPLEMENT_APP_NO_MAIN(fontApp)
 
 #ifndef MACINTOSH
 
-typedef struct localFonts
+static const char *fontNames[] =
 {
-    const char *name;
-    char *path;
-} localFonts;
-
-static localFonts fontNames[] =
-{
-// Right now I will add in ALL the fonts from the BaKoMa collection.
+// Right now I will add in ALL the fonts I have collected!
 // This can make sense in a font demo program but in a more serious
-// application I should be a little more selective!
-    {"cmuntt",          NULL},
-    {"DejaVuSansMono",  NULL},
-    {"fireflysung",     NULL},
-    {"sazanami-gothic", NULL},
-    {"sazanami-mincho", NULL},
-    {"lmroman10-regular", NULL},
-    {"latinmodern.math",NULL},
-    {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
-    {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
-    {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
-    {"csl-cmbx10",   NULL},        {"csl-cmbx12",   NULL},
-    {"csl-cmbx5",    NULL},        {"csl-cmbx6",    NULL},
-    {"csl-cmbx7",    NULL},        {"csl-cmbx8",    NULL},
-    {"csl-cmbx9",    NULL},        {"csl-cmbxsl10", NULL},
-    {"csl-cmbxti10", NULL},        {"csl-cmcsc10",  NULL},
-    {"csl-cmcsc8",   NULL},        {"csl-cmcsc9",   NULL},
-    {"csl-cmdunh10", NULL},        {"csl-cmex10",   NULL},
-    {"csl-cmex7",    NULL},        {"csl-cmex8",    NULL},
-    {"csl-cmex9",    NULL},        {"csl-cmff10",   NULL},
-    {"csl-cmfi10",   NULL},        {"csl-cmfib8",   NULL},
-    {"csl-cminch",   NULL},        {"csl-cmitt10",  NULL},
-    {"csl-cmmi10",   NULL},        {"csl-cmmi12",   NULL},
-    {"csl-cmmi5",    NULL},        {"csl-cmmi6",    NULL},
-    {"csl-cmmi7",    NULL},        {"csl-cmmi8",    NULL},
-    {"csl-cmmi9",    NULL},        {"csl-cmmib10",  NULL},
-    {"csl-cmmib6",   NULL},        {"csl-cmmib7",   NULL},
-    {"csl-cmmib8",   NULL},        {"csl-cmmib9",   NULL},
-    {"csl-cmr10",    NULL},        {"csl-cmr12",    NULL},
-    {"csl-cmr17",    NULL},        {"csl-cmr5",     NULL},
-    {"csl-cmr6",     NULL},        {"csl-cmr7",     NULL},
-    {"csl-cmr8",     NULL},        {"csl-cmr9",     NULL},
-    {"csl-cmsl10",   NULL},        {"csl-cmsl12",   NULL},
-    {"csl-cmsl8",    NULL},        {"csl-cmsl9",    NULL},
-    {"csl-cmsltt10", NULL},        {"csl-cmss10",   NULL},
-    {"csl-cmss12",   NULL},        {"csl-cmss17",   NULL},
-    {"csl-cmss8",    NULL},        {"csl-cmss9",    NULL},
-    {"csl-cmssbx10", NULL},        {"csl-cmssdc10", NULL},
-    {"csl-cmssi10",  NULL},        {"csl-cmssi12",  NULL},
-    {"csl-cmssi17",  NULL},        {"csl-cmssi8",   NULL},
-    {"csl-cmssi9",   NULL},        {"csl-cmssq8",   NULL},
-    {"csl-cmssqi8",  NULL},        {"csl-cmsy10",   NULL},
-    {"csl-cmsy5",    NULL},        {"csl-cmsy6",    NULL},
-    {"csl-cmsy7",    NULL},        {"csl-cmsy8",    NULL},
-    {"csl-cmsy9",    NULL},        {"csl-cmtcsc10", NULL},
-    {"csl-cmtex10",  NULL},        {"csl-cmtex8",   NULL},
-    {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
-    {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
-    {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
-    {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
-    {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
-    {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
-    {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
-    {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
-    {"csl-eufb10",   NULL},        {"csl-eufb5",    NULL},
-    {"csl-eufb6",    NULL},        {"csl-eufb7",    NULL},
-    {"csl-eufb8",    NULL},        {"csl-eufb9",    NULL},
-    {"csl-eufm10",   NULL},        {"csl-eufm5",    NULL},
-    {"csl-eufm6",    NULL},        {"csl-eufm7",    NULL},
-    {"csl-eufm8",    NULL},        {"csl-eufm9",    NULL},
-    {"csl-eurb10",   NULL},        {"csl-eurb5",    NULL},
-    {"csl-eurb6",    NULL},        {"csl-eurb7",    NULL},
-    {"csl-eurb8",    NULL},        {"csl-eurb9",    NULL},
-    {"csl-eurm10",   NULL},        {"csl-eurm5",    NULL},
-    {"csl-eurm6",    NULL},        {"csl-eurm7",    NULL},
-    {"csl-eurm8",    NULL},        {"csl-eurm9",    NULL},
-    {"csl-eusb10",   NULL},        {"csl-eusb5",    NULL},
-    {"csl-eusb6",    NULL},        {"csl-eusb7",    NULL},
-    {"csl-eusb8",    NULL},        {"csl-eusb9",    NULL},
-    {"csl-eusm10",   NULL},        {"csl-eusm5",    NULL},
-    {"csl-eusm6",    NULL},        {"csl-eusm7",    NULL},
-    {"csl-eusm8",    NULL},        {"csl-eusm9",    NULL},
-    {"csl-msam10",   NULL},        {"csl-msam5",    NULL},
-    {"csl-msam6",    NULL},        {"csl-msam7",    NULL},
-    {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
-    {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
-    {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
-    {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
+// application I should be a little more selective.
+    "cmuntt.ttf",           "DejaVuSansMono.otf",  
+    "fireflysung.ttf",      "sazanami-gothic.ttf",  "sazanami-mincho.ttf", 
+    "csl-cmb10.ttf",        "csl-cmbsy10.ttf",      "csl-cmbsy6.ttf",       "csl-cmbsy7.ttf",   
+    "csl-cmbsy8.ttf",       "csl-cmbsy9.ttf",       "csl-cmbx10.ttf",       "csl-cmbx12.ttf",   
+    "csl-cmbx5.ttf",        "csl-cmbx6.ttf",        "csl-cmbx7.ttf",        "csl-cmbx8.ttf",    
+    "csl-cmbx9.ttf",        "csl-cmbxsl10.ttf",     "csl-cmbxti10.ttf",     "csl-cmcsc10.ttf",  
+    "csl-cmcsc8.ttf",       "csl-cmcsc9.ttf",       "csl-cmdunh10.ttf",     "csl-cmex10.ttf",   
+    "csl-cmex7.ttf",        "csl-cmex8.ttf",        "csl-cmex9.ttf",        "csl-cmff10.ttf",   
+    "csl-cmfi10.ttf",       "csl-cmfib8.ttf",       "csl-cminch.ttf",       "csl-cmitt10.ttf",  
+    "csl-cmmi10.ttf",       "csl-cmmi12.ttf",       "csl-cmmi5.ttf",        "csl-cmmi6.ttf",    
+    "csl-cmmi7.ttf",        "csl-cmmi8.ttf",        "csl-cmmi9.ttf",        "csl-cmmib10.ttf",  
+    "csl-cmmib6.ttf",       "csl-cmmib7.ttf",       "csl-cmmib8.ttf",       "csl-cmmib9.ttf",   
+    "csl-cmr10.ttf",        "csl-cmr12.ttf",        "csl-cmr17.ttf",        "csl-cmr5.ttf",     
+    "csl-cmr6.ttf",         "csl-cmr7.ttf",         "csl-cmr8.ttf",         "csl-cmr9.ttf",     
+    "csl-cmsl10.ttf",       "csl-cmsl12.ttf",       "csl-cmsl8.ttf",        "csl-cmsl9.ttf",    
+    "csl-cmsltt10.ttf",     "csl-cmss10.ttf",       "csl-cmss12.ttf",       "csl-cmss17.ttf",   
+    "csl-cmss8.ttf",        "csl-cmss9.ttf",        "csl-cmssbx10.ttf",     "csl-cmssdc10.ttf", 
+    "csl-cmssi10.ttf",      "csl-cmssi12.ttf",      "csl-cmssi17.ttf",      "csl-cmssi8.ttf",   
+    "csl-cmssi9.ttf",       "csl-cmssq8.ttf",       "csl-cmssqi8.ttf",      "csl-cmsy10.ttf",   
+    "csl-cmsy5.ttf",        "csl-cmsy6.ttf",        "csl-cmsy7.ttf",        "csl-cmsy8.ttf",    
+    "csl-cmsy9.ttf",        "csl-cmtcsc10.ttf",     "csl-cmtex10.ttf",      "csl-cmtex8.ttf",   
+    "csl-cmtex9.ttf",       "csl-cmti10.ttf",       "csl-cmti12.ttf",       "csl-cmti7.ttf",    
+    "csl-cmti8.ttf",        "csl-cmti9.ttf",        "csl-cmtt10.ttf",       "csl-cmtt12.ttf",   
+    "csl-cmtt8.ttf",        "csl-cmtt9.ttf",        "csl-cmu10.ttf",        "csl-cmvtt10.ttf",  
+    "csl-euex10.ttf",       "csl-euex7.ttf",        "csl-euex8.ttf",        "csl-euex9.ttf",    
+    "csl-eufb10.ttf",       "csl-eufb5.ttf",        "csl-eufb6.ttf",        "csl-eufb7.ttf",    
+    "csl-eufb8.ttf",        "csl-eufb9.ttf",        "csl-eufm10.ttf",       "csl-eufm5.ttf",    
+    "csl-eufm6.ttf",        "csl-eufm7.ttf",        "csl-eufm8.ttf",        "csl-eufm9.ttf",    
+    "csl-eurb10.ttf",       "csl-eurb5.ttf",        "csl-eurb6.ttf",        "csl-eurb7.ttf",    
+    "csl-eurb8.ttf",        "csl-eurb9.ttf",        "csl-eurm10.ttf",       "csl-eurm5.ttf",    
+    "csl-eurm6.ttf",        "csl-eurm7.ttf",        "csl-eurm8.ttf",        "csl-eurm9.ttf",    
+    "csl-eusb10.ttf",       "csl-eusb5.ttf",        "csl-eusb6.ttf",        "csl-eusb7.ttf",    
+    "csl-eusb8.ttf",        "csl-eusb9.ttf",        "csl-eusm10.ttf",       "csl-eusm5.ttf",    
+    "csl-eusm6.ttf",        "csl-eusm7.ttf",        "csl-eusm8.ttf",        "csl-eusm9.ttf",    
+    "csl-msam10.ttf",       "csl-msam5.ttf",        "csl-msam6.ttf",        "csl-msam7.ttf",    
+    "csl-msam8.ttf",        "csl-msam9.ttf",        "csl-msbm10.ttf",       "csl-msbm5.ttf",    
+    "csl-msbm6.ttf",        "csl-msbm7.ttf",        "csl-msbm8.ttf",        "csl-msbm9.ttf",
+#ifdef WIN32
+    "latinmodern-math.ttf",       "lmmono10-italic.ttf",         "lmmono10-regular.ttf",
+    "lmmono12-regular.ttf",       "lmmono8-regular.ttf",         "lmmono9-regular.ttf",
+    "lmmonocaps10-oblique.ttf",   "lmmonocaps10-regular.ttf",    "lmmonolt10-bold.ttf",
+    "lmmonolt10-boldoblique.ttf", "lmmonolt10-oblique.ttf",      "lmmonolt10-regular.ttf",
+    "lmmonoltcond10-oblique.ttf", "lmmonoltcond10-regular.ttf",  "lmmonoprop10-oblique.ttf",
+    "lmmonoprop10-regular.ttf",   "lmmonoproplt10-bold.ttf",     "lmmonoproplt10-boldoblique.ttf",
+    "lmmonoproplt10-oblique.ttf", "lmmonoproplt10-regular.ttf",  "lmmonoslant10-regular.ttf",
+    "lmroman10-bold.ttf",         "lmroman10-bolditalic.ttf",    "lmroman10-italic.ttf",
+    "lmroman10-regular.ttf",      "lmroman12-bold.ttf",          "lmroman12-italic.ttf",
+    "lmroman12-regular.ttf",      "lmroman17-regular.ttf",       "lmroman5-bold.ttf",
+    "lmroman5-regular.ttf",       "lmroman6-bold.ttf",           "lmroman6-regular.ttf",
+    "lmroman7-bold.ttf",          "lmroman7-italic.ttf",         "lmroman7-regular.ttf",
+    "lmroman8-bold.ttf",          "lmroman8-italic.ttf",         "lmroman8-regular.ttf",
+    "lmroman9-bold.ttf",          "lmroman9-italic.ttf",         "lmroman9-regular.ttf",
+    "lmromancaps10-oblique.ttf",  "lmromancaps10-regular.ttf",   "lmromandemi10-oblique.ttf",
+    "lmromandemi10-regular.ttf",  "lmromandunh10-oblique.ttf",   "lmromandunh10-regular.ttf",
+    "lmromanslant10-bold.ttf",    "lmromanslant10-regular.ttf",  "lmromanslant12-regular.ttf",
+    "lmromanslant17-regular.ttf", "lmromanslant8-regular.ttf",   "lmromanslant9-regular.ttf",
+    "lmromanunsl10-regular.ttf",  "lmsans10-bold.ttf",           "lmsans10-boldoblique.ttf",
+    "lmsans10-oblique.ttf",       "lmsans10-regular.ttf",        "lmsans12-oblique.ttf",
+    "lmsans12-regular.ttf",       "lmsans17-oblique.ttf",        "lmsans17-regular.ttf",
+    "lmsans8-oblique.ttf",        "lmsans8-regular.ttf",         "lmsans9-oblique.ttf",
+    "lmsans9-regular.ttf",        "lmsansdemicond10-oblique.ttf","lmsansdemicond10-regular.ttf",
+    "lmsansquot8-bold.ttf",       "lmsansquot8-boldoblique.ttf", "lmsansquot8-oblique.ttf",
+    "lmsansquot8-regular.ttf"
+#else
+    "latinmodern-math.oft",       "lmmono10-italic.oft",         "lmmono10-regular.oft",
+    "lmmono12-regular.oft",       "lmmono8-regular.oft",         "lmmono9-regular.oft",
+    "lmmonocaps10-oblique.oft",   "lmmonocaps10-regular.oft",    "lmmonolt10-bold.oft",
+    "lmmonolt10-boldoblique.oft", "lmmonolt10-oblique.oft",      "lmmonolt10-regular.oft",
+    "lmmonoltcond10-oblique.oft", "lmmonoltcond10-regular.oft",  "lmmonoprop10-oblique.oft",
+    "lmmonoprop10-regular.oft",   "lmmonoproplt10-bold.oft",     "lmmonoproplt10-boldoblique.oft",
+    "lmmonoproplt10-oblique.oft", "lmmonoproplt10-regular.oft",  "lmmonoslant10-regular.oft",
+    "lmroman10-bold.oft",         "lmroman10-bolditalic.oft",    "lmroman10-italic.oft",
+    "lmroman10-regular.oft",      "lmroman12-bold.oft",          "lmroman12-italic.oft",
+    "lmroman12-regular.oft",      "lmroman17-regular.oft",       "lmroman5-bold.oft",
+    "lmroman5-regular.oft",       "lmroman6-bold.oft",           "lmroman6-regular.oft",
+    "lmroman7-bold.oft",          "lmroman7-italic.oft",         "lmroman7-regular.oft",
+    "lmroman8-bold.oft",          "lmroman8-italic.oft",         "lmroman8-regular.oft",
+    "lmroman9-bold.oft",          "lmroman9-italic.oft",         "lmroman9-regular.oft",
+    "lmromancaps10-oblique.oft",  "lmromancaps10-regular.oft",   "lmromandemi10-oblique.oft",
+    "lmromandemi10-regular.oft",  "lmromandunh10-oblique.oft",   "lmromandunh10-regular.oft",
+    "lmromanslant10-bold.oft",    "lmromanslant10-regular.oft",  "lmromanslant12-regular.oft",
+    "lmromanslant17-regular.oft", "lmromanslant8-regular.oft",   "lmromanslant9-regular.oft",
+    "lmromanunsl10-regular.oft",  "lmsans10-bold.oft",           "lmsans10-boldoblique.oft",
+    "lmsans10-oblique.oft",       "lmsans10-regular.oft",        "lmsans12-oblique.oft",
+    "lmsans12-regular.oft",       "lmsans17-oblique.oft",        "lmsans17-regular.oft",
+    "lmsans8-oblique.oft",        "lmsans8-regular.oft",         "lmsans9-oblique.oft",
+    "lmsans9-regular.oft",        "lmsansdemicond10-oblique.oft","lmsansdemicond10-regular.oft",
+    "lmsansquot8-bold.oft",       "lmsansquot8-boldoblique.oft", "lmsansquot8-oblique.oft",
+    "lmsansquot8-regular.oft"
+#endif
 };
 
 #endif
 
-#ifdef WIN32
-
-// The next two flags instruct AddFontResourceEx that a font should be
-// available only to this application and that other application should
-// not even be able to see that it exists. I provide definitions here
-// in case MinGW32 does not have them in its header files.
-
-#ifndef FR_PRIVATE
-#define FR_PRIVATE   0x10
-#endif
-
-#ifndef FR_NOT_ENUM
-#define FR_NOT_ENUM  0x20
-#endif
-
-/* #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM) */
-#define PRIVATE_FONT FR_PRIVATE
-
-static int fontNeeded = 0;
 
 // A brief comment here. The DEFAULT build of wxWidgets on Windows supports
 // Unicode by using wide characters and strings. That causes me some pain
@@ -729,41 +737,6 @@ static int fontNeeded = 0;
 // encoding gets mapped to character code 0x2219 in the Bakoma fonts, and it
 // is not at all clear that I have any way to access that glyph if I do
 // not build in Unicode mode.
-
-// You will see a load of places I explicitly call the non-Unicode versions
-// of Windows functions (eg with an "A" at the end of their name) when I wish
-// to pass legacy pre-unicode strings to them.
-
-static int CALLBACK fontEnumProc(
-    const LOGFONTA *lpelfe,     // logical-font data
-    const TEXTMETRICA *lpntme,  // physical-font data
-    DWORD FontType,             // type of font
-    LPARAM lParam)              // application-defined data
-{
-    fontNeeded = 0;
-    return 0;
-}
-
-
-#ifdef LISTFONTS
-static char faceName[LONGEST_LEGAL_FILENAME] = "";
-
-static int CALLBACK fontEnumProc1(
-    const LOGFONTA *lpelfe,     // logical-font data
-    const TEXTMETRICA *lpntme,  // physical-font data
-    DWORD FontType,             // type of font
-    LPARAM lParam)              // application-defined data
-{
-// avoid duplicated reports
-    if (strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
-    strcpy(faceName, lpelfe->lfFaceName);
-    printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
-    fflush(stdout);
-    return 1;
-}
-#endif
-
-#endif
 
 
 #ifndef fontsdir
@@ -773,189 +746,68 @@ static int CALLBACK fontEnumProc1(
 #define toString(x) toString1(x)
 #define toString1(x) #x
 
-int add_custom_fonts() // return 0 on success.
+void add_custom_fonts()
 {
-#ifdef WIN32
-    HDC hDC = CreateCompatibleDC(NULL);
-    LOGFONTA lf;
+#ifndef MACINTOSH
+// Note that on a Mac I put the required fonts in the Application Bundle.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   memset((void *)&lf, 0, sizeof(lf));
-        strcpy(lf.lfFaceName, fontNames[i].name);
-        lf.lfCharSet = DEFAULT_CHARSET;
-        lf.lfPitchAndFamily = 0;
-        fontNeeded = 1;
-        fontNames[i].path = NULL;
-// I check each of the fonts that this application wants to see if they
-// are already installed. If they are then there is no merit in installing
-// them for myself. Well that is maybe silly since these are private fonts
-// that I really do not expect anybody to have installed before! But I will
-// leave this in here at least for now.
-        EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
-        if (!fontNeeded) continue;
-        char nn[LONGEST_LEGAL_FILENAME];
-        strcpy(nn, programDir);
-        strcat(nn, "\\" toString(fontsdir) "\\");
-        strcat(nn, fontNames[i].name);
-// The first font used here is .oft the rest are .ttf
-        if (i == 0) strcat(nn, ".otf");
-        else strcat(nn, ".ttf");
-        char *nn1 = (char *)malloc(strlen(nn) + 1);
-        strcpy(nn1, nn);
-        fontNames[i].path = nn1;
+    {   char nn[LONGEST_LEGAL_FILENAME];
+        sprintf(nn, "%s/%s/%s",
+                    programDir, toString(fontsdir), fontNames[i]);
+        printf("Adding %s: ", nn); fflush(stdout);
+        wxString widename(nn);
+        if (wxFont::AddPrivateFont(widename))
+            printf(" OK\n");
+        else printf("Failed\n");
     }
-// Now, for each font that was NOT already available I need to go
-//       AddFontResource[Ex]("filename")
-//       SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    int newFontAdded = 0;
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   if (fontNames[i].path == NULL) continue;
-        if (AddFontResourceExA(fontNames[i].path, PRIVATE_FONT, 0) == 0)
-        {   printf("Failed to add font %s\n", fontNames[i].path);
-            fflush(stdout);
-        }
-        newFontAdded = 1;
-//      printf("AddFontResource %s\n", fontNames[i].path);
-//      fflush(stdout);
-    }
-
-    if (newFontAdded)
-    {   // This call to SendMessage may sometimes cause a long delay.
-        SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    }
-
-// Now list all the fonts that are available...
-    memset((void *)&lf, 0, sizeof(lf));
-    lf.lfFaceName[0] = '\0';
-    lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfPitchAndFamily = 0;
-#ifdef LISTFONTS
-    printf("About to list all fonts that are now available\n");
+    printf("About to activate\n"); fflush(stdout);
+    if (wxFont::ActivatePrivateFonts())
+        printf("Activated OK\n");
+    else printf("Activation failed\n");
     fflush(stdout);
-    EnumFontFamiliesExA(hDC, &lf, fontEnumProc1, 0, 0);
-    printf("Listing complete\n");
-    fflush(stdout);
-#endif
-    DeleteDC(hDC);
-    return 0;
-#else // WIN32
-#ifdef MACINTOSH
-
-// Custom fonts are supported by including them in the Application Bundle
-// and mentioning them in a Plist there, so I do not need and code here to
-// deal with anything!
-    return 1;
-
-#else // Assume all that is left is X11, and that Xft/fontconfig are available
-    int screen = 0;
-    XftFontSet *fs = NULL;
-    FcConfig *config = FcConfigCreate();
-    dpy = XOpenDisplay(NULL);
-    if (dpy == NULL)
-    {   printf("Unable to access the display\n");
-        exit(1);
-    }
-    screen = DefaultScreen(dpy);
-
-    char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   int w;
-        sprintf(fff,
-            (i < 3 ? "%s/" toString(fontsdir) "/%s.otf" :
-                     "%s/" toString(fontsdir) "/%s.ttf"),
-            programDir, fontNames[i].name);
-        w = FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
-#ifdef LISTFONTS
-        printf("Adding the font from %s = %d\n", fff, w);
-#endif
-    }
-    FcConfigSetCurrent(config);
-    XftInit("");
-    fs = XftListFonts(dpy, screen,
-//                    XFT_FAMILY, XftTypeString, fontname,
-                      NULL,
-// I will ask XftListFonts to return all available information about the
-// fonts that are found.
-                      XFT_FAMILY, XFT_STYLE, XFT_SLANT, XFT_WEIGHT,
-                      XFT_SIZE, XFT_PIXEL_SIZE, XFT_ENCODING,
-                      XFT_SPACING, XFT_FOUNDRY, XFT_CORE, XFT_ANTIALIAS,
-                      XFT_XLFD, XFT_FILE, XFT_INDEX, XFT_RASTERIZER,
-                      XFT_OUTLINE, XFT_SCALABLE, XFT_RGBA,
-                      XFT_SCALE, XFT_RENDER, XFT_MINSPACE,
-                      NULL);
-    printf("fontset has %d distinct fonts out of %d total\n",
-           fs->nfont, fs->sfont);
-// Having obtained all the fonts I will print out all the information about
-// them that Xft is prepared to give me. Note that this seems not to include
-// either the "true" or the "Postscript" name that I might previously have
-// thought was important to me. I think that this is because all the
-// information here comes directly from the font-files rather than from any
-// mapping tables. The key items here are thus probably
-//    family
-//    style
-//    slant
-//    weight
-    if (fs->nfont == 0)
-    {   XftFontSetDestroy(fs);
-        printf("Desired font not found\n");
-        return 1;
-    }
-// Note that an XftPattern is just an Fcpattern, so either set of functions
-// can be used to create or manipulate one.
-    XftPattern *ftPattern = NULL;
-    for (int k=0; k<fs->nfont; k++)
-    {   ftPattern = fs->fonts[k];
-// NameUnparse converts the name to something printable
-// But BOO HISS the version of Xft shipped with openSuSE 10.2 and with some
-// other versions of Linux missed it out, so just for now I will comment that
-// bit out. Oh dear! A web search finds patches to gentoo to fix this for
-// builds involving qt3 so it really is not just me! But I BELIEVE it will be
-// a transient bug so I will not put it in the autoconf stuff just at present.
-#if 0
-        char buffer[1000];
-        XftNameUnparse(ftPattern, buffer, sizeof(buffer));
-        printf("%s\n", buffer); fflush(stdout);
-#endif
-// FcPatternPrint displays info over several lines - valuable for debugging!
-        FcPatternPrint(ftPattern); printf("\n"); fflush(stdout);
-    }
-
-    ftVisual = DefaultVisual(dpy, screen);
-    ftColorMap =  DefaultColormap(dpy, screen);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack, &ftBlack);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
-#if 0
-// I had identified the font that I wanted earlier so now I can open it
-// by just using the information collected then.
-    ftFont = XftFontOpen(dpy, screen,
-                         XFT_FAMILY, XftTypeString, fontname,
-                         XFT_SIZE, XftTypeDouble, 24.0,
-                         NULL);
-#endif
-    XftFontSetDestroy(fs); // Now I am done with the list of fonts.
-    return 0;
 #endif // MACINTOSH
-#endif // WIN32
+// I find that the following commented out enumerations crash for me
+// at least on some platforms.
+    fflush(stdout);
 }
 
 
+void display_font_information()
+{
+    wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
+    int nfonts;
+    printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
+    fflush(stdout);
+    for (int i=0; i<nfonts; i++)
+        printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
+    fflush(stdout);
+//    wxArrayString enclist(wxFontEnumerator::GetEncodings());
+//    printf("There are %d encodings\n", (int)enclist.GetCount());
+//    fflush(stdout);
+//    for (unsigned int i=0; i<enclist.GetCount(); i++)
+//        wxPrintf(L"Encoding (%d) <%s>\n", i, enclist[i]);
+    printf("End of debug output\n");
+    fflush(stdout);
+}
+
 bool fontApp::OnInit()
 {
+    display_font_information();
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
+//
     char **myargv = (char **)argv;
-
     raw = 1;
     page = 0;
-    italic = bold = 0;
+    bold = italic = 0;
     const char *font = "default";  // A default font name to ask for.
     int size = 48;           // a default size.
-
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
         if (strcmp(myargv[i], "--raw") == 0) raw = !raw;
-        if (strcmp(myargv[i], "--italic") == 0) italic = 1;
         if (strcmp(myargv[i], "--bold") == 0) bold = 1;
+        if (strcmp(myargv[i], "--italic") == 0) italic = 1;
         else if (myargv[i][0] == '-')
         {   if (sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
         }
@@ -966,24 +818,24 @@ bool fontApp::OnInit()
 // think to do is to identify that location. I then print the information I
 // recover so I can debug things. I have already set up programName etc
     printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
-    printf("Seek font %s", font);
-    if (bold) printf(" (bold)");
-    if (italic) printf(" (italic)");
-    printf(" starting with page %d\n", page);
+
+    printf("Try for font \"%s\" at size=%d\n", font, size);
     fflush(stdout);
-    add_custom_fonts();
 
     fontFrame *frame = new fontFrame(font, size);
     frame->Show(true);
     return true;
 }
 
+#define CELLWIDTH  11
+#define CELLHEIGHT 20
+
 fontFrame::fontFrame(const char *fname, int fsize)
        : wxFrame(NULL, wxID_ANY, "wxfontdemo")
 {
     SetIcon(wxICON(fwin));
     panel = new fontPanel(this, fname, fsize);
-    wxSize clientsize(32*32, 9*64);
+    wxSize clientsize(3*33*CELLWIDTH, 3*10*CELLHEIGHT);
     wxSize winsize(ClientToWindowSize(clientsize));
     SetSize(winsize);
     SetMinSize(winsize);
@@ -995,33 +847,51 @@ fontFrame::fontFrame(const char *fname, int fsize)
 fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
        : wxPanel(parent)
 {
-// I *think* I want to make the font have a size specified in pixels
-// not points here... however that appears to be delicate. So I will
-// create one at a plausible point size then adjust it later. I will
-// use "fontScaled" to ensure I only adjust it once.
     frame = parent;
     fontname = fname;
     fontsize = fsize;
-    ff = new wxFont();
-    ff->SetFaceName(fontname);
-    ff->SetPointSize(36);
-    frame->SetTitle(ff->GetNativeFontInfoUserDesc());
-    fontScaled = false;
-
+    frame->SetTitle(fontname);
 }
 
+
+void fontFrame::OnClose(wxCloseEvent &WXUNUSED(event))
+{
+    Destroy();
+#ifdef WIN32
+// On Windows XP I seem to have a horrid effect whereby when I try to
+// close the application by closing its window there is a failure that pops
+// up a rather unspecific message box, and then the application is
+// re-launched. To get around that I kill the process here with extreme
+// prejudice! On Windows 7 I do not observe the bad behaviour, but doing a
+// heavy duty kill operation here is probably fairly harmless. What it will
+// mean is that any "atexit" operations are not completed, and I might
+// worry about incompletely written-out files.
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
+    exit(0);    // I want the whole application to terminate here!
+#endif
+}
 
 void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 {
     Destroy();
+#ifdef WIN32
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
     exit(0);    // I want the whole application to terminate here!
+#endif
 }
 
 void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
     wxMessageBox(
        wxString::Format(
-           "wxfontdemo (A C Norman 2014)\nwxWidgets version: %s\nOperating system: %s",
+           "wxfontdemo (A C Norman 2014)\n"
+           "wxWidgets version: %s\n"
+           "Operating system: %s\n"
+           "full Latin Modern Font details available via\n"
+           "reduce-algebra.sourcefoge.net in csl/support-packages\n"
+           "subdirectory of source archive",
            wxVERSION_STRING,
            wxGetOsDescription()),
        "About wxfontdemo",
@@ -1049,85 +919,181 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 
 void fontPanel::OnKeyUp(wxKeyEvent &event)
 {
-    printf("Key Up event\n"); fflush(stdout);
-    event.Skip();
-    page++;
-    if (page == 0x1b0) page = 0x1c0; // skip surrogates
-    Refresh();
 }
 
 void fontPanel::OnMouse(wxMouseEvent &event)
 {
-    page++;
-    if (page == 0x1b0) page = 0x1c0; // skip surrogates
+    wxWindowDC dc(this);
+    wxPoint where(event.GetLogicalPosition(dc));
+    if (where.y > 200)
+    {   page++;
+        if (page == 0x1b0) page = 0x1c0; // skip surrogates
+    }
+    else
+    {   page--;
+        if (page == 0x1b0) page = 0x1a0; // skip surrogates
+    }
     printf("Mouse event. Page now %d\n", page); fflush(stdout);
     event.Skip();
     Refresh();
 }
 
+//
+// Maps showing character coverage of the private fonts I may use...
+//
+
+#include "fontmap.c"
+
+static int once = 0;
+
 void fontPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC dc(this);
-    wxColour c1(230, 200, 255);
-    wxColour c2(100, 220, 120);
-    wxBrush b1(c1); wxBrush b2(c2);
-    wxPen p1(c1);   wxPen p2(c2);
-
-    for (int i=0; i<256+32; i+=32)
-    {   for (int j=0; j<32; j++)
-        {   int k = ((i>>5) + j) & 1;
-            dc.SetBrush(k ? b2 : b1);
-            dc.SetPen(k ? p2 : p1);
-            dc.DrawRectangle(32*j, 2*i, 32, 64);
+    wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
+    if (gc)
+    {   gc->Scale(3.0, 3.0);
+        wxColour c1(230, 200, 255);
+        wxColour c2(100, 220, 120);
+        wxBrush b1(c1); wxBrush b2(c2);
+        wxPen p1(c1);   wxPen p2(c2);
+        for (int y=0; y<256+2*32; y+=32)
+        {   for (int x=0; x<33; x++)
+            {   int k = ((y>>5) + x) & 1;
+                gc->SetBrush(k ? b2 : b1);
+                gc->SetPen(k ? p2 : p1);
+                gc->DrawRectangle(CELLWIDTH*x, CELLHEIGHT*(y/32), CELLWIDTH, CELLHEIGHT);
+            }
         }
-    }
+        printf("fontname = %s\n", fontname);
+        if (wxFontEnumerator::IsValidFacename(fontname))
+            printf("Face name is valid\n");
+        else
+        {   printf("Invalid face name - font not found\n");
+// Some sort of fall-back font may be used...
+        }
+        wxFontInfo ffi(10);
+        ffi.FaceName(fontname);
+        if (bold) ffi.Bold();
+        if (italic) ffi.Italic();
+        wxFont ff(ffi);
+        if (ff.IsOk()) wxPrintf("Font seems OK\n");
+        else wxPrintf("Font is *NOT* OK\n");
+        wxPrintf("Face name = %s\n", ff.GetFaceName());
+        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
+        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
+        fflush(stdout);
+//        char fullfriendly[200];
+//        sprintf(fullfriendly, "'%s'", fontname);
+//        ff.SetNativeFontInfoUserDesc(fullfriendly);
+//        if (ff.IsOk()) wxPrintf("Font seems OK after new name\n");
+//        else wxPrintf("Font is *NOT* OK\n");
+//        wxPrintf("Face name = %s\n", ff.GetFaceName());
+//        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
+//        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
+//        wxPrintf("Encoding = %x\n", ff.GetDefaultEncoding());
+//        fflush(stdout);
+        wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
+        uint32_t *map = find_glyphmap(fontname);
+        wxFont labels(wxFontInfo(3));
+        wxGraphicsFont glabels = gc->CreateFont(labels, *wxBLACK);
+        gc->SetFont(glabels);
+        for (int i=0; i<32; i++)
+        {   char word[12];
+            sprintf(word, "%02x", i);
+            gc->DrawText(word, (((double)CELLWIDTH)*(i+1)) + CELLWIDTH/2.2,
+                (double)CELLHEIGHT/10.0);
+        }
+        for (int i=0; i<8; i++)
+        {   char word[12];
+            sprintf(word, "%04x", 32*i + 0x80*page);
+            gc->DrawText(word, CELLWIDTH/10.0,
+                (double)CELLHEIGHT*(i+1) + CELLHEIGHT/2.5);
+        }
 
-    dc.SetFont(*ff);
-    wxCoord w1, h1, d1, xl1;
-    dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
+        gc->SetFont(gff);
 
-// If I have not adjusted my font size to get the PIXEL size I want.
-// I will scale the height returned for "X" to be the number of pixels I
-// want.
-    if (!fontScaled)
-    {   printf("Original w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
-        ff->Scale((float)fontsize/(float)h1);
-        dc.SetFont(*ff);
-        dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
-        printf("Adjusted w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
-        wxString f = ff->GetNativeFontInfoDesc();
-        wxPrintf("NativeFontInfoDesc = %s\n", f);
-        fontScaled = true; // Do this only once!
-    }
+        if (once++ == 0)
+        {   int howmany = 0; 
+            for (int i=0; howmany<30 && i<0xffff; i++)
+            {   wxString s((wchar_t)i);
+                double ww, hh, dd, el;
+                gc->GetTextExtent(s, &ww, &hh, &dd, &el);
+                if (ww != 0.0 && hh != 0.0)
+                {   printf("%#x %.1f*%.1f; ", i, ww, hh);
+                    howmany++;
+                }
+            }
+            if (howmany == 0) printf("No glyphs found");
+            printf("\n");
+            fflush(stdout);
+        }
+
+// If I initialise all these to 999.0 then if GetTextExtent fails maybe I will
+// still see something sensible?
+        wxDouble w1=999.0, h1=999.0, d1=999.0, xl1=999.0;
+        gc->GetTextExtent("X", &w1, &h1, &d1, &xl1);
+        printf("letter X w:%.3g h:%.3g d:%.3g xl:%.3g\n", w1, h1, d1, xl1);
 // To make my display match the one I had from my previous FOX-based
 // version I will adjust to make it as if DrawText uses the base-line of
-// the character for its reference point. I draw a little red circle to
+// the character for its reference point. I draw a little blue circle to
 // show where the reference point is...
-    for (int i=0; i<256; i+=32)
-    {   for (int j=0; j<32; j++)
-        {   dc.SetPen(*wxRED_PEN);
-            dc.SetBrush(*wxTRANSPARENT_BRUSH);
-            dc.DrawCircle(32*j, 2*i+64, 8);
-            int k = i + j;
-            if (!raw)
-            {   if (k < 0xa) k = 0xa1 + k;
-                else if (k == 0xa) k = 0xc5;
+        for (int i=0; i<256; i+=32)
+        {   for (int j=0; j<32; j++)
+            {   wxGraphicsMatrix save = gc->GetTransform();
+                gc->Scale(0.25, 0.25);
+                gc->SetPen(*wxBLUE_PEN);
+                gc->SetBrush(*wxTRANSPARENT_BRUSH);
+                gc->DrawEllipse(4.0*(((double)CELLWIDTH)*(j+1)-2.0),
+                                4.0*(((double)CELLHEIGHT)*(i/32+1)+
+                                     ((double)CELLHEIGHT)-2.0),
+                                4.0*4.0, 4.0*4.0);
+                gc->SetTransform(save);
+                int k = i + j;
+                if (!raw)
+                {   if (k < 0xa) k = 0xa1 + k;
+                    else if (k == 0xa) k = 0xc5;
 #ifdef UNICODE
 // In Unicode mode I have access to the character at code point 0x2219. If
 // not I must insist on using my private version of the fonts where it is
 // at 0xb7.
-                else if (k == 0x14) k = 0x2219;
+                    else if (k == 0x14) k = 0x2219;
+#else
+#error Old version
 #endif
-                else if (k < 0x20) k = 0xa3 + k;
-                else if (k == 0x20) k = 0xc3;
-                else if (k == 0x7f) k = 0xc4;
-                else if (k >= 0x80) k += 0x80*page;
+                    else if (k < 0x20) k = 0xa3 + k;
+                    else if (k == 0x20) k = 0xc3;
+                    else if (k == 0x7f) k = 0xc4;
+                    else if (k >= 0x80) k += 0x80*page;
+                }
+                else k += 0x80*page;
+// here I will use the coverage table to decide if I need to draw anything.
+// I have not added that logic yet!
+                wxString c = (wchar_t)k;
+                double ww, hh, dd, el;
+                gc->GetTextExtent(c, &ww, &hh, &dd, &el);
+                if (ww == 0.0 || hh == 0.0) continue;
+                if (map != NULL &&
+                    char_present(k, map) == 0)
+                {   gc->DrawRectangle(
+                       (double)CELLWIDTH*(j+1)+CELLWIDTH/3.0,
+                       (double)CELLHEIGHT*(i/32+1)+CELLHEIGHT/3.0,
+                       CELLWIDTH/3.0, CELLHEIGHT/3.0);
+                }
+                else gc->DrawText(c,
+                    ((double)CELLWIDTH)*(j+1),
+                    ((double)CELLHEIGHT)*(i/32+1)+
+                     ((double)CELLHEIGHT)-h1+d1);
             }
-            else k += 0x80*page;
-            wxString c = (wchar_t)k;
-            dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
         }
+#if 0
+        printf("compmode = %x\n", gc->GetCompositionMode());
+        printf("antialias = %x\n", gc->GetAntialiasMode());
+        printf("interpqual = %x\n", gc->GetInterpolationQuality());
+#endif
+        delete gc;
     }
+    else printf("gc=NULL\n");
+    return;
 }
 
 
