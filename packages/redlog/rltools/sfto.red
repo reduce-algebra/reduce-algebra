@@ -749,6 +749,35 @@ asserted procedure sfto_univarp1(f: SF, x: Kernel): Boolean;
 asserted procedure sfto_kmemberf(x: Kernel, f: SF): ExtraBoolean;
    not domainp f and (mvar f eq x or sfto_kmemberf(x, lc f) or sfto_kmemberf(x, red f));
 
+asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
+   % The Cauchy bound of [f] with respect to [v]. We assume that [f] is
+   % univariate in [v] and [mvar f eq v], in particular [f] is not a domain
+   % element.
+   begin scalar maxsq, d, n, q;
+      maxsq := 1 ./ 1;
+      d := !*f2q absf lc f;
+      while not domainp f do <<
+	 f := red f;
+	 n := !*f2q absf if domainp f then f else lc f;
+	 q := quotsq(n, d);
+	 if sfto_greaterq(q, maxsq) then
+	    maxsq := q
+      >>;
+      return maxsq
+   end;
+
+asserted procedure sfto_greaterq(q1: SQ, q2: SQ): ExtraBoolean;
+   minusf numr subtrsq(q2, q1);
+
+asserted procedure sfto_lessq(q1: SQ, q2: SQ): ExtraBoolean;
+   minusf numr subtrsq(q1, q2);
+
+asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
+   (null w or minusf w) where w=subtrsq(q2, q1);
+
+asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
+   (null w or minusf w) where w=subtrsq(q1, q2);
+
 endmodule;  % [sfto]
 
 end;  % of file
