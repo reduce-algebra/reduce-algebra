@@ -303,7 +303,7 @@ rl_mkbb('rl_varsel,3);
 
 rl_mkbb('rl_betterp,2);
 
-rl_mkbb('rl_qemkans,1);
+rl_mkbb('rl_qemkans,2);
 
 rl_mkbb('rl_ordatp,2);
 

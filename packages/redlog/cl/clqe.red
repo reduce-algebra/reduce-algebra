@@ -510,7 +510,7 @@ declare cl_qe1: (Formula,Theory,KernelL) -> EliminationResult;
 procedure cl_qe1(f,theo,xbvl);
    % Quantifier elimination. [f] must be prenex if the switch [rlqepnf] is off;
    % [theo] serves as background theory.
-   begin scalar q,ql,varl,varll,bvl,result,w,rvl,jl; integer n;
+   begin scalar q,ql,varl,varll,bvl,svf,result,w,rvl,jl; integer n;
       if !*rlqepnf then
 	 f := rl_pnf f;
       f := rl_simpl(f,theo,-1);
@@ -523,7 +523,7 @@ procedure cl_qe1(f,theo,xbvl);
       theo := for each atf in theo join
 	 if null intersection(rl_varlat atf,bvl) then {atf};
       bvl := union(bvl,xbvl);
-      {ql,varll,q,rvl,jl,theo} := cl_qe1!-iterate(ql,varll,f,theo,bvl);
+      {ql,varll,q,rvl,jl,theo,svf} := cl_qe1!-iterate(ql,varll,f,theo,bvl);
       jl := cl_qe1!-requantify(ql,varll,q,rvl,jl);
       if !*rlqeans and null ql then <<
 	 if !*rlverbose then <<
@@ -532,7 +532,7 @@ procedure cl_qe1(f,theo,xbvl);
 	 >>;
  	 result := for each j in jl join <<
 	    if !*rlverbose then ioto_prin2 {" [",n:=n-1};
- 	    w := cl_mk1EQR(cl_jF j,rl_qemkans cl_jA j);
+ 	    w := cl_mk1EQR(cl_jF j,rl_qemkans(cl_jA j,svf));
 	    if !*rlverbose then ioto_prin2 {"]"};
 	    w
 	 >>;
@@ -602,13 +602,15 @@ declare cl_qe1!-iterate: (List,List,Formula,Theory,KernelL) -> List6;
 
 procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
    % Iteratively apply [cl_qeblock] to the quantifier blocks.
-   begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,q,varl,rvl,jl;
+   begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,q,varl,svf,rvl,jl;
       svrlidentify := !*rlidentify;
       jl := {cl_mkJ(f,nil)};
       while null rvl and ql do <<
       	 f := cl_jF car jl;
       	 q := pop ql;
       	 varl := pop varll;
+	 if !*rlqeans and null ql then
+	    svf := f;
       	 if !*rlverbose then
       	    ioto_tprin2 {"---- ",(q . reverse varl)};
 	 svrlqeprecise := !*rlqeprecise;
@@ -624,7 +626,7 @@ procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
 	 >>;
       >>;
       onoff('rlidentify,svrlidentify);
-      return {ql,varll,q,rvl,jl,theo}
+      return {ql,varll,q,rvl,jl,theo,svf}
    end;
 
 

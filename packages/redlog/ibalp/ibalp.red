@@ -922,7 +922,7 @@ procedure ibalp_qesubt(u,v,bconst);
    else
       car u . for each arg in cdr u collect ibalp_qesubt(arg,v,bconst);
 
-procedure ibalp_qemkans(an,atr);
+procedure ibalp_qemkans(an,svf);
    sort(for each x in an collect {'equal,car x,car caddr x},
       function(lambda(x,y); ordp(!*k2f cadr x,!*k2f cadr y)));
 

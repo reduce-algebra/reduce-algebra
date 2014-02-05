@@ -1632,9 +1632,135 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
       return 'gen . ofsf_0mk2('neq,u)
    end;
 
-procedure ofsf_qemkans(an);
-   sort(ofsf_qebacksub ofsf_qemkans1 an,
-      function(lambda(x,y); ordp(cadr x,cadr y)));
+switch rlqestdans;
+
+procedure ofsf_qemkans(an,svf);
+   if !*rlqestdans and not !*rlqegen then
+      sort(ofsf_qebacksub ofsf_qemkstdans(an,svf),
+      	 function(lambda(x,y); ordp(cadr x,cadr y)))
+   else
+      sort(ofsf_qebacksub ofsf_qemkans1 an,
+      	 function(lambda(x,y); ordp(cadr x,cadr y)));
+
+procedure ofsf_qemkstdans(an,svf);
+   begin scalar nan, csvf, csvfl, v, sub, xargl, w;
+      csvf := svf;
+      csvfl := {svf};
+      for each trip in reverse cdr an do <<
+	 csvf := cdr apply(cadr trip, nil . nil . csvf . car trip . caddr trip);
+	 csvf := cl_simpl(csvf, nil, -1);
+	 push(csvf, csvfl)
+      >>;
+      for each y in an do <<
+	 {v, sub, xargl} := y;
+	 csvf := pop csvfl;
+	 if sub eq 'ofsf_qesubi then <<
+      	    w := if car xargl = 'pinf then
+	       ofsf_qemkstdanspinf(csvf, v, xargl)
+      	    else if car xargl = 'minf then
+	       ofsf_qemkstdansminf(csvf, v, xargl);
+	    csvfl := for each f in csvfl collect
+	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, 'true, w), nil, -1);
+	    push(v . w, nan)
+	 >> else if sub eq 'ofsf_qesubcq then <<
+	    csvfl := for each f in csvfl collect
+	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, car xargl, cadr xargl), nil, -1);
+	    push(v . cadr xargl, nan)
+	 >> else if sub eq 'ofsf_qesubcr1 then <<
+	    csvfl := for each f in csvfl collect
+	       cl_simpl(cdr ofsf_qesubcr1(nil, nil, f, v, car xargl, cadr xargl), nil, -1);
+	    push(v . ofsf_preprexpr cadr xargl, nan)
+	 >> else if sub eq 'ofsf_qesubcqme then
+	    rederr {"ofsf_qemkstdans: TODO"}
+	 else if sub eq 'ofsf_qesubcqpe then
+	    rederr {"ofsf_qemkstdans: TODO"}
+	 else if sub eq 'ofsf_qesubcrme1 then
+	    rederr {"ofsf_qemkstdans: TODO"}
+	 else if sub eq 'ofsf_qesubcrpe1 then
+	    rederr {"ofsf_qemkstdans: TODO"}
+	 else
+	    rederr "BUG IN ofsf_qemkstdans"
+      >>;
+      return reversip nan
+   end;
+
+procedure ofsf_qemkstdanspinf(csvf, v, xargl);
+   begin scalar neql, op, needsq, maxsq, scneql, ne;
+      for each atf in cl_atl csvf do <<
+	 op := rl_op atf;
+	 if op eq 'neq then
+	    push(atf, neql)
+	 else if op memq '(geq greaterp) then <<
+	    needsq := ofsf_guesspinf(atf, v);
+	    if not maxsq or sfto_greaterq(needsq, maxsq) then
+	       maxsq := needsq
+	 >>
+      >>;
+      scneql := neql;
+      while scneql do <<
+	 ne := pop neql;
+	 if null numr ofsf_subf(ofsf_arg2l ne, v, maxsq) then <<
+	    maxsq := addsq(maxsq, 1 ./ 1);
+	    scneql := neql
+	 >>
+      >>;
+      return maxsq
+   end;
+
+procedure ofsf_guesspinf(atf, v);
+   begin scalar op, lhs, w;
+      op := rl_op atf;
+      lhs := ofsf_arg2l atf;
+      assert(not domainp lhs and mvar lhs eq v);
+      w := if eqn(ldeg lhs, 1) then
+	 quotsq(!*f2q negf red lhs, !*f2q lc lhs)
+      else
+	 sfto_cauchyf(lhs, v);
+      if op eq 'geq then
+	 return w;
+      if op eq 'greaterp then
+	 return addsq(w, 1 ./ 1);
+      rederr {"ofsf_guesspinf:", op}
+   end;
+
+procedure ofsf_qemkstdansminf(csvf, v, xargl);
+   begin scalar neql, op, needsq, minsq, scneql, ne;
+      for each atf in cl_atl csvf do <<
+	 op := rl_op atf;
+	 if op eq 'neq then
+	    push(atf, neql)
+	 else if op memq '(leq lessp) then <<
+	    needsq := ofsf_guessminf(atf, v);
+	    if not minsq or sfto_lessq(needsq, minsq) then
+	       minsq := needsq
+	 >>
+      >>;
+      scneql := neql;
+      while scneql do <<
+	 ne := pop neql;
+	 if null numr ofsf_subf(ofsf_arg2l ne, v, minsq) then <<
+	    minsq := subtrsq(minsq, 1 ./ 1);
+	    scneql := neql
+	 >>
+      >>;
+      return minsq
+   end;
+
+procedure ofsf_guessminf(atf, v);
+   begin scalar op, lhs, w;
+      op := rl_op atf;
+      lhs := ofsf_arg2l atf;
+      assert(not domainp lhs and mvar lhs eq v);
+      w := if eqn(ldeg lhs, 1) then
+	 quotsq(!*f2q negf red lhs, !*f2q lc lhs)
+      else
+	 negsq sfto_cauchyf(lhs, v);
+      if op eq 'leq then
+	 return w;
+      if op eq 'lessp then
+	 return subtrsq(w, 1 ./ 1);
+      rederr {"ofsf_guessminf:", op}
+   end;
 
 procedure ofsf_qemkans1(an);
    % Ordered field standard form quantifier elimination make answer
@@ -1680,6 +1806,7 @@ procedure ofsf_newepsilon(ec);
    end;
 
 switch rlqefullans;
+switch rlqebacksub;
 
 procedure ofsf_qebacksub(eql);
    % Quantifier elimination back substitution. [eql] is a list $(((v .
@@ -1687,9 +1814,23 @@ procedure ofsf_qebacksub(eql);
    % an answer translation. Returns a list $((e,a),...)$, where $e$ is
    % an equation and $a$ is an answer translation.
    begin scalar subl,rhs,e;
+      if not !*rlqebacksub then
+	 return ofsf_noqebacksub eql;
       return for each w in eql join <<
 	    e := {'equal,car w,prepsq subsq(cdr w,subl)};
 	    subl := (car w . caddr e) . subl;
+	    if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
+      >>
+   end;
+
+procedure ofsf_noqebacksub(eql);
+   % Quantifier elimination back substitution. [eql] is a list $(((v .
+   % w) . a), ...)$, where $v$ is a variable, $w$ is an SQ, and $a$ is
+   % an answer translation. Returns a list $((e,a),...)$, where $e$ is
+   % an equation and $a$ is an answer translation.
+   begin scalar subl,rhs,e;
+      return for each w in eql join <<
+	    e := {'equal,car w,prepsq cdr w};
 	    if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
       >>
    end;
