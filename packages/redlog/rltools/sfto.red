@@ -778,6 +778,16 @@ asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
 asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
    (null w or minusf w) where w=subtrsq(q1, q2);
 
+asserted procedure sfto_renamef(f: SF, vold: Kernel, vnew: Kernel): SF;
+   begin scalar mv;
+      if domainp f then
+	 return f;
+      mv := mvar f;
+      if mv eq vold then
+	 mv := vnew;
+      return addf(multf(exptf(!*k2f mv, ldeg f), sfto_renamef(lc f, vold, vnew)), sfto_renamef(red f, vold, vnew))
+   end;
+
 endmodule;  % [sfto]
 
 end;  % of file
