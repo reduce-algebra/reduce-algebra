@@ -194,7 +194,7 @@ procedure ofsf_transform(v, f, vl, an, theo, ans, bvl);
       	 f := cl_subfof({v . v_shift}, f);
 	 vl := for each vv in vl collect if vv eq v then v_shift else vv;
       	 w := simp {'expt, v_shift, {'quotient,1,dgcd}};
-	 an := cl_updans(v,'ofsf_qesubcq,{'true,w},an,ans)
+	 an := cl_updans(v,'ofsf_shift!-indicator,{'dummy,w,dgcd},an,ans)
       >>;
       return {f, vl, an, theo, ans, bvl}
    end;
@@ -224,6 +224,15 @@ procedure ofsf_decdegat(atf,v,n,posp);
       atf
    else
       ofsf_0mk2(ofsf_op atf,sfto_decdegf(ofsf_arg2l atf,v,n));
+
+procedure ofsf_retransform(f, v, dgcd);
+   begin scalar posp;
+      posp := ofsf_posvarp(f,v);
+      f := ofsf_decdeg3(f,v,dgcd,posp);
+      if evenp dgcd then
+	 f := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), f});
+      return f
+   end;
 
 endmodule;
 

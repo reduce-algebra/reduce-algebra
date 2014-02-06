@@ -1643,25 +1643,45 @@ procedure ofsf_qemkans(an,svf);
       	 function(lambda(x,y); ordp(cadr x,cadr y)));
 
 procedure ofsf_qemkstdans(an,svf);
-   begin scalar nan, csvf, csvfl, v, sub, xargl, w;
+   begin scalar nan, csvf, csvfl, v, sub, xargl, w, sol;
+      svf := cl_simpl(svf, nil, -1);
       if !*rlverbose then
 	 ioto_tprin2t {"++++ determining standard real numbers for the answers ",
-	    for each y in an collect car y, "..."};
+	    for each y in an collect car y, " ..."};
       csvf := svf;
       csvfl := {svf};
-      for each trip in reverse cdr an do <<
-	 csvf := cdr apply(cadr trip, nil . nil . csvf . car trip . caddr trip);
+      if !*rlverbose then
+      	 ioto_tprin2t {"length = ", length cdr an};
+      for each y in reverse cdr an do <<
+	 {v, sub, xargl} := y;
+	 sol := if sub eq 'ofsf_qesubcr1 or sub eq 'ofsf_qesubcrme1 or sub eq 'ofsf_qesubcrpe1 then
+	    ioto_form2str prepsq ofsf_preprexpr cadr xargl
+	 else if sub eq 'ofsf_qesubi then
+	    car xargl
+	 else
+	    ioto_form2str prepsq cadr xargl;
+	 if !*rlverbose then
+      	    ioto_prin2t {v, ", ", sub, ", ", sol, ", ", rl_atnum csvf};
+	 csvf := if sub eq 'ofsf_shift!-indicator then
+	    ofsf_ansshift(csvf, v, ofsf_extractid cadr xargl, caddr xargl)
+	 else
+	    cdr apply(sub, nil . nil . csvf . v . xargl);
 	 csvf := cl_simpl(csvf, nil, -1);
+      	 %ioto_tprin2t ioto_form2str rl_prepfof csvf;
+	 if rl_op csvf eq 'or then
+	    rederr {"top-level or"};
 	 push(csvf, csvfl)
       >>;
       for each y in an do <<
 	 {v, sub, xargl} := y;
 	 csvf := pop csvfl;
-	 if !*rlverbose then <<
-	    ioto_prin2t {"csvf = ", csvf};
-	    ioto_prin2 {"++++ ", v, " = "}
-	 >>;
-	 if sub eq 'ofsf_qesubi then <<
+	 if sub eq 'ofsf_shift!-indicator then <<
+	    csvfl := for each f in csvfl collect
+	       cl_simpl(ofsf_ansshift(f, v, ofsf_extractid cadr xargl, caddr xargl), nil, -1);
+	    push(v . cadr xargl, nan)
+	 >> else if sub eq 'ofsf_qesubi then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = "};
       	    w := if car xargl = 'pinf then <<
 	       if !*rlverbose then ioto_prin2 {"pinf = "};
 	       ofsf_qemkstdanspinf(csvf, v, xargl)
@@ -1672,13 +1692,16 @@ procedure ofsf_qemkstdans(an,svf);
 	    if !*rlverbose then ioto_prin2 {ioto_form2str prepsq w};
 	    csvfl := for each f in csvfl collect
 	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, 'true, w), nil, -1);
-	    ioto_tprin2t "AHA";
 	    push(v . w, nan)
 	 >> else if sub eq 'ofsf_qesubcq then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " quotient"};
 	    csvfl := for each f in csvfl collect
 	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, car xargl, cadr xargl), nil, -1);
 	    push(v . cadr xargl, nan)
 	 >> else if sub eq 'ofsf_qesubcr1 then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " root"};
 	    csvfl := for each f in csvfl collect
 	       cl_simpl(cdr ofsf_qesubcr1(nil, nil, f, v, car xargl, cadr xargl), nil, -1);
 	    push(v . ofsf_preprexpr cadr xargl, nan)
@@ -1696,6 +1719,18 @@ procedure ofsf_qemkstdans(an,svf);
       return reversip nan
    end;
 
+procedure ofsf_extractid(q);
+   cadr mvar numr q;
+
+procedure ofsf_ansshift(f, v, ansvar, dgcd);
+   ofsf_rename(ofsf_retransform(f, v, dgcd), v, ansvar);
+
+procedure ofsf_rename(f, v, ansvar);
+   cl_apply2ats1(f, 'ofsf_renameat, {v, ansvar});
+
+procedure ofsf_renameat(f, vold, vnew);
+   ofsf_0mk2(rl_op f, sfto_renamef(ofsf_arg2l f, vold, vnew));
+
 procedure ofsf_qemkstdanspinf(csvf, v, xargl);
    begin scalar neql, op, needsq, maxsq, scneql, ne;
       for each atf in cl_atl csvf do <<
@@ -1708,6 +1743,8 @@ procedure ofsf_qemkstdanspinf(csvf, v, xargl);
 	       maxsq := needsq
 	 >>
       >>;
+      if not maxsq then
+	 maxsq := nil ./ 1;
       scneql := neql;
       while scneql do <<
 	 ne := pop neql;
@@ -1747,6 +1784,8 @@ procedure ofsf_qemkstdansminf(csvf, v, xargl);
 	       minsq := needsq
 	 >>
       >>;
+      if not minsq then
+	 minsq := nil ./ 1;
       scneql := neql;
       while scneql do <<
 	 ne := pop neql;
@@ -1788,7 +1827,7 @@ procedure ofsf_qemkans1(an);
  	       simp ofsf_newinfinity(ic := ic+1)
       	    else if car xargl = 'minf then
 	       negsq simp ofsf_newinfinity(ic := ic+1))
-	 >> else if sub eq 'ofsf_qesubcq then
+	 >> else if sub eq 'ofsf_qesubcq or sub eq 'ofsf_shift!-indicator then
 	    cadr xargl
 	 else if sub eq 'ofsf_qesubcr1 then
 	    ofsf_preprexpr cadr xargl
@@ -1827,7 +1866,7 @@ procedure ofsf_qebacksub(eql);
    % an equation and $a$ is an answer translation.
    begin scalar subl,rhs,e;
       if not !*rlqebacksub then
-	 return ofsf_noqebacksub eql;
+	 return ofsf_qenobacksub eql;
       return for each w in eql join <<
 	    e := {'equal,car w,prepsq subsq(cdr w,subl)};
 	    subl := (car w . caddr e) . subl;
@@ -1835,7 +1874,7 @@ procedure ofsf_qebacksub(eql);
       >>
    end;
 
-procedure ofsf_noqebacksub(eql);
+procedure ofsf_qenobacksub(eql);
    % Quantifier elimination back substitution. [eql] is a list $(((v .
    % w) . a), ...)$, where $v$ is a variable, $w$ is an SQ, and $a$ is
    % an answer translation. Returns a list $((e,a),...)$, where $e$ is
