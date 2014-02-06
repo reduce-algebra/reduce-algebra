@@ -1644,6 +1644,9 @@ procedure ofsf_qemkans(an,svf);
 
 procedure ofsf_qemkstdans(an,svf);
    begin scalar nan, csvf, csvfl, v, sub, xargl, w;
+      if !*rlverbose then
+	 ioto_tprin2t {"++++ determining standard real numbers for the answers ",
+	    for each y in an collect car y, "..."};
       csvf := svf;
       csvfl := {svf};
       for each trip in reverse cdr an do <<
@@ -1654,13 +1657,22 @@ procedure ofsf_qemkstdans(an,svf);
       for each y in an do <<
 	 {v, sub, xargl} := y;
 	 csvf := pop csvfl;
+	 if !*rlverbose then <<
+	    ioto_prin2t {"csvf = ", csvf};
+	    ioto_prin2 {"++++ ", v, " = "}
+	 >>;
 	 if sub eq 'ofsf_qesubi then <<
-      	    w := if car xargl = 'pinf then
+      	    w := if car xargl = 'pinf then <<
+	       if !*rlverbose then ioto_prin2 {"pinf = "};
 	       ofsf_qemkstdanspinf(csvf, v, xargl)
-      	    else if car xargl = 'minf then
-	       ofsf_qemkstdansminf(csvf, v, xargl);
+      	    >> else if car xargl = 'minf then <<
+	       if !*rlverbose then ioto_prin2 {"minf = "};
+	       ofsf_qemkstdansminf(csvf, v, xargl)
+	    >>;
+	    if !*rlverbose then ioto_prin2 {ioto_form2str prepsq w};
 	    csvfl := for each f in csvfl collect
 	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, 'true, w), nil, -1);
+	    ioto_tprin2t "AHA";
 	    push(v . w, nan)
 	 >> else if sub eq 'ofsf_qesubcq then <<
 	    csvfl := for each f in csvfl collect
