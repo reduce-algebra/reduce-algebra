@@ -1,4 +1,4 @@
-// wxfontdemo.cpp
+// wxfontdemo.cpp                                Copyright A C Norman 2014
 
 // A sample wxWidgets application to display fonts.
 //
@@ -44,11 +44,47 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
-// The first few lines are essentially taken from the wxWidgets documentation
-// and will be the same for almost all wxWidgets code.
+// Driving instructions:
+//
+//   ./wxfontdemo "fontname" [--italic] [--bold] [--tex]
+//
+// The fontname is either the name of a font installed on the system
+// or is one of the private fonts provided here (and those are the cases
+// I view as more interesting). Sometimes the names you need to give the
+// private fonts differ as between Macintosh and other platforms, and
+// fontmap.c contains a list of the names I expect to behave. Eg
+//  "CMU Typewriter Text" or "CMU Typewriter Text Regular", and
+//  "Latin Modern Math", "LM Roman 7" etc.
+//
+// The flag --tex adjusts for a private adjustment to the TeX character
+// encoding and is only for use with the fonts csl-cmr10 and so on...
+//
+// When displaying a font you can type 0-9 or a-f to move to a display
+// that starts at unicode code point (eg) U+3000 (that would obviously be
+// by typeing a "3"). You can then type "x" to flip the U+10000 bit and
+// get better access to the second plane. "+" and "-" move you forward and
+// back by several blocks while "<" and ">" give finer movement. Other
+// characters just move you on a section. Mouse click near the top and
+// bottom on the screen also change which block of characters are displayed.
+//
+// The code is intended to allow me to check that I can in fact access the
+// private fonts, and where necessary to confirm which codepoint corresponds
+// to a particular character. For instance in "Latin Modern Math" a block
+// of characters starting at U+1d400 support a range of symbols and
+// alphabets that would otherwise have been in the "Math Italic" TeX
+// fonts.
+
+// This demonstrates attaching to private fonts, use of some bitmaps that
+// show what characters are available in them, and the display of
+// codes over U+FFFF (where special treatment is needed in Windows). It also
+// reminds me that it SEEMS that I need to have .ttf re-coded versions of
+// some .oft fonts to survive on Windows.
+// It is otherwise not especially clever.
+
+
 
 #include "wx/wxprec.h"
 
@@ -116,7 +152,7 @@
 #ifndef _MSC_VER
 extern char *getcwd(char *s, size_t n);
 #endif
-#endif /* HAVE_UNISTD_H */
+#endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -130,7 +166,7 @@ extern char *getcwd(char *s, size_t n);
 #else
 #include <direct.h>
 #endif
-#endif /* HAVE_DIRENT_H */
+#endif // HAVE_DIRENT_H
 
 #if !defined __WXMSW__ && !defined __WXPM__
 #include "fwin.xpm" // Icon to use in non-Windows cases
@@ -188,14 +224,14 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int raw, page, bold, italic;
+int tex, page, bold, italic;
 
 int get_current_directory(char *s, int n)
 {
     if (getcwd(s, n) == 0)
     {   switch(errno)
         {
-    case ERANGE: return -2; /* negative return value flags an error. */
+    case ERANGE: return -2; // negative return value flags an error.
     case EACCES: return -3;
     default:     return -4;
         }
@@ -203,18 +239,18 @@ int get_current_directory(char *s, int n)
     else return strlen(s);
 }
 
-/*
- * The next procedure is responsible for establishing information about
- * both the "short-form" name of the program launched and the directory
- * it was found in. This latter directory may be a good place to keep
- * associated resources. Well many conventions would NOT view it as a
- * good place, but it is how I organise things!
- *
- * The way of finding the information concerned differs between Windows and
- * Unix/Linux, as one might expect.
- *
- * return non-zero value if failure.
- */
+//
+// The next procedure is responsible for establishing information about
+// both the "short-form" name of the program launched and the directory
+// it was found in. This latter directory may be a good place to keep
+// associated resources. Well many conventions would NOT view it as a
+// good place, but it is how I organise things!
+//
+// The way of finding the information concerned differs between Windows and
+// Unix/Linux, as one might expect.
+//
+// return non-zero value if failure.
+//
 
 #ifndef LONGEST_LEGAL_FILENAME
 #define LONGEST_LEGAL_FILENAME 1024
@@ -224,12 +260,12 @@ const char *fullProgramName = "./wxfontdemo.exe";
 const char *programName     = "wxfontdemo.exe";
 const char *programDir      = ".";
 
-/*
- * getenv() is a mild pain: Windows seems
- * to have a strong preference for upper case names.  To allow for
- * all this I do not call getenv() directly but go via the following
- * code that can patch things up.
- */
+//
+// getenv() is a mild pain: Windows seems
+// to have a strong preference for upper case names.  To allow for
+// all this I do not call getenv() directly but go via the following
+// code that can patch things up.
+//
 
 const char *my_getenv(const char *s)
 {
@@ -255,29 +291,26 @@ int find_program_directory(const char *argv0)
 {
     char *w;
     int len, ndir, npgm;
-/* In older code I believed that I could rely on Windows giving me
- * the full path of my executable in argv[0]. With bits of mingw/cygwin
- * anywhere near me that may not be so, so I grab the information directly
- * from the Windows APIs.
- */
+// In older code I believed that I could rely on Windows giving me
+// the full path of my executable in argv[0]. With bits of mingw/cygwin
+// anywhere near me that may not be so, so I grab the information directly
+// from the Windows APIs.
     char execname[LONGEST_LEGAL_FILENAME];
     GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
     strcpy(this_executable, execname);
     argv0 = this_executable;
     program_name_dot_com = 0;
-    if (argv0[0] == 0)      /* should never happen - name is empty string! */
+    if (argv0[0] == 0)      // should never happen - name is empty string!
     {   programDir = ".";
-        programName = "wxfontdemo";  /* nothing really known! */
+        programName = "wxfontdemo";  // nothing really known!
         fullProgramName = ".\\wxfontdemo.exe";
         return 0;
     }
 
     fullProgramName = argv0;
     len = strlen(argv0);
-/*
- * If the current program is called c:\aaa\xxx.exe, then the directory
- * is just c:\aaa and the simplified program name is just xxx
- */
+// If the current program is called c:\aaa\xxx.exe, then the directory
+// is just c:\aaa and the simplified program name is just xxx
     if (len > 4 &&
         argv0[len-4] == '.' &&
         ((tolower(argv0[len-3]) == 'e' &&
@@ -294,7 +327,7 @@ int find_program_directory(const char *argv0)
         if (c == '\\') break;
     }
     ndir = len - npgm - 1;
-    if (ndir < 0) programDir = ".";  /* none really visible */
+    if (ndir < 0) programDir = ".";  // none really visible
     else
     {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
         strncpy(w, argv0, ndir);
@@ -308,14 +341,13 @@ int find_program_directory(const char *argv0)
     return 0;
 }
 
-#else /* WIN32 */
+#else // WIN32
 // Now for Unix, Linux, BSD (and hence Macintosh) worlds.
 
 
-/* Different systems put or do not put underscores in front of these
- * names. My adaptation here should give me a chance to work whichever
- * way round it goes.
- */
+// Different systems put or do not put underscores in front of these
+// names. My adaptation here should give me a chance to work whichever
+// way round it goes.
 
 #ifndef S_IFMT
 # ifdef __S_IFMT
@@ -344,13 +376,13 @@ int find_program_directory(const char *argv0)
 #endif
 
 
-/*
- * the length set here is at least the longest length that I
- * am prepared to worry about. If anybody installs the program in a
- * very deep directory such that its fully rooted name is over-long
- * things may not behave well. But I am not going to fuss with dynamic
- * allocation of or expansion of the arrays I use here.
- */
+//
+// the length set here is at least the longest length that I
+// am prepared to worry about. If anybody installs the program in a
+// very deep directory such that its fully rooted name is over-long
+// things may not behave well. But I am not going to fuss with dynamic
+// allocation of or expansion of the arrays I use here.
+//
 
 int find_program_directory(const char *argv0)
 {
@@ -358,47 +390,47 @@ int find_program_directory(const char *argv0)
     char *w;
     const char *cw;
     int n, n1;
-/*
- * If the main reduce executable is has a full path-name /xxx/yyy/zzz then
- * I will use /xxx/yyy as its directory To find this I need to find the full
- * path for the executable. I ATTEMPT to follow the behaviour of "sh",
- * "bash" and "csh".  But NOTE WELL that if anybody launches this code in
- * an unusual manner (eg using an "exec" style function) that could confuse
- * me substantially. What comes in via argv[0] is typically just the final
- * component of the program name - what I am doing here is scanning to
- * see what path it might have corresponded to.
- *
- *
- * If the name of the executable starts with a "/" it is already an
- * absolute path name. I believe that if the user types (to the shell)
- * something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
- * environment variables and user-name get expanded out by the shell before
- * the command is actually launched.
- */
-    if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
-    {   programDir = (const char *)"."; /* some sort of default. */
+//
+// If the main reduce executable is has a full path-name /xxx/yyy/zzz then
+// I will use /xxx/yyy as its directory To find this I need to find the full
+// path for the executable. I ATTEMPT to follow the behaviour of "sh",
+// "bash" and "csh".  But NOTE WELL that if anybody launches this code in
+// an unusual manner (eg using an "exec" style function) that could confuse
+// me substantially. What comes in via argv[0] is typically just the final
+// component of the program name - what I am doing here is scanning to
+// see what path it might have corresponded to.
+//
+//
+// If the name of the executable starts with a "/" it is already an
+// absolute path name. I believe that if the user types (to the shell)
+// something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
+// environment variables and user-name get expanded out by the shell before
+// the command is actually launched.
+//
+    if (argv0 == NULL || argv0[0] == 0) // Information not there - return
+    {   programDir = (const char *)"."; // some sort of default.
         programName = (const char *)"wxfontdemo";
         fullProgramName = (const char *)"./wxfontdemo";
         return 0;
     }
-/*
- * I will treat 3 cases here
- * (a)   /abc/def/ghi      fully rooted: already an absolute name;
- * (b)   abc/def/ghi       treat as ./abc/def/ghi;
- * (c)   ghi               scan $PATH to see where it may have come from.
- */
+//
+// I will treat 3 cases here
+// (a)   /abc/def/ghi      fully rooted: already an absolute name;
+// (b)   abc/def/ghi       treat as ./abc/def/ghi;
+// (c)   ghi               scan $PATH to see where it may have come from.
+//
     else if (argv0[0] == '/') fullProgramName = argv0;
     else
-    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   /* seek a "/" */
-        if (*cw == '/')      /* treat as if relative to current dir */
-        {   /* If the thing is actually written as "./abc/..." then */
-            /* strip of the initial "./" here just to be tidy. */
+    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   // seek a "/"
+        if (*cw == '/')      // treat as if relative to current dir
+        {   // If the thing is actually written as "./abc/..." then
+            // strip of the initial "./" here just to be tidy.
             if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
             n = get_current_directory(pgmname, sizeof(pgmname));
-            if (n < 0) return 1;    /* fail! 1=current directory failure */
+            if (n < 0) return 1;    // fail! 1=current directory failure
             if (n + strlen(argv0) + 2 >= sizeof(pgmname) ||
                 pgmname[0] == 0)
-                return 2; /* Current dir unavailable or full name too long */
+                return 2; // Current dir unavailable or full name too long
             else
             {   pgmname[n] = '/';
                 strcpy(&pgmname[n+1], argv0);
@@ -407,67 +439,67 @@ int find_program_directory(const char *argv0)
         }
         else
         {   const char *path = my_getenv("PATH");
-/*
- * I omit checks for names of shell built-in functions, since my code is
- * actually being executed by here. So I get my search path and look
- * for an executable file somewhere on it. I note that the shells back this
- * up with hash tables, and so in cases where "rehash" might be needed this
- * code may become confused.
- */
+//
+// I omit checks for names of shell built-in functions, since my code is
+// actually being executed by here. So I get my search path and look
+// for an executable file somewhere on it. I note that the shells back this
+// up with hash tables, and so in cases where "rehash" might be needed this
+// code may become confused.
+//
             struct stat buf;
             uid_t myuid = geteuid(), hisuid;
             gid_t mygid = getegid(), hisgid;
             int protection;
             int ok = 0;
-/* I expect $PATH to be a sequence of directories with ":" characters to
- * separate them. I suppose it COULD be that somebody used directory names
- * that had embedded colons, and quote marks or escapes in $PATH to allow
- * for that. In such case this code will just fail to cope.
- */
+// I expect $PATH to be a sequence of directories with ":" characters to
+// separate them. I suppose it COULD be that somebody used directory names
+// that had embedded colons, and quote marks or escapes in $PATH to allow
+// for that. In such case this code will just fail to cope.
+//
             if (path != NULL)
             {   while (*path != 0)
-                {   while (*path == ':') path++; /* skip over ":" */
+                {   while (*path == ':') path++; // skip over ":"
                     n = 0;
                     while (*path != 0 && *path != ':')
                     {   pgmname[n++] = *path++;
                         if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
-                            return 3; /* fail! 3=$PATH element overlong */
+                            return 3; // fail! 3=$PATH element overlong
                     }
-/* Here I have separated off the next segment of my $PATH and put it at
- * the start of pgmname. Observe that to avoid buffer overflow I
- * exit abruptly if the entry on $PATH is itself too big for my buffer.
- */
+// Here I have separated off the next segment of my $PATH and put it at
+// the start of pgmname. Observe that to avoid buffer overflow I
+// exit abruptly if the entry on $PATH is itself too big for my buffer.
+//
                     pgmname[n++] = '/';
                     strcpy(&pgmname[n], argv0);
-/* see if the file whose name I have just built up exists at all. */
+// see if the file whose name I have just built up exists at all.
                     if (stat(pgmname, &buf) == -1) continue;
                     hisuid = buf.st_uid;
                     hisgid = buf.st_gid;
-                    protection = buf.st_mode; /* info about the file found */
-/*
- * I now want to check if there is a file of the right name that is
- * executable by the current (effective) user.
- */
+                    protection = buf.st_mode; // info about the file found
+//
+// I now want to check if there is a file of the right name that is
+// executable by the current (effective) user.
+//
                     if (protection & S_IXOTH ||
                         (mygid == hisgid && protection & S_IXGRP) ||
                         (myuid == hisuid && protection & S_IXUSR))
-                    {   ok = 1;   /* Haha - I have found the one we ... */
-                        break;    /* are presumably executing! */
+                    {   ok = 1;   // Haha - I have found the one we ...
+                        break;    // are presumably executing!
                     }
                 }
             }
-            if (!ok) return 4;    /* executable not found via $PATH */
-/* Life is not yet quite easy! $PATH may contain some items that do not
- * start with "/", ie that are still local paths relative to the
- * current directory. I want to be able to return an absolute fully
- * rooted path name! So unless the item we have at present starts with "/"
- * I will stick the current directory's location in front.
- */
+            if (!ok) return 4;    // executable not found via $PATH
+// Life is not yet quite easy! $PATH may contain some items that do not
+// start with "/", ie that are still local paths relative to the
+// current directory. I want to be able to return an absolute fully
+// rooted path name! So unless the item we have at present starts with "/"
+// I will stick the current directory's location in front.
+//
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
                 strcpy(temp, pgmname);
                 n = get_current_directory(pgmname, sizeof(pgmname));
-                if (n < 0) return 1;    /* fail! 1=current directory failure */
+                if (n < 0) return 1;    // fail! 1=current directory failure
                 if ((n + strlen(temp) + 1) >= sizeof(pgmname)) return 9;
                 pgmname[n++] = '/';
                 strcpy(&pgmname[n], temp);
@@ -475,10 +507,10 @@ int find_program_directory(const char *argv0)
             fullProgramName = pgmname;
         }
     }
-/*
- * Now if I have a program name I will try to see if it is a symbolic link
- * and if so I will follow it.
- */
+//
+// Now if I have a program name I will try to see if it is a symbolic link
+// and if so I will follow it.
+//
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
         if (lstat(fullProgramName, &buf) != -1 &&
@@ -490,20 +522,20 @@ int find_program_directory(const char *argv0)
             fullProgramName = pgmname;
         }
     }
-/* Now fullProgramName is set up, but may refer to an array that
- * is stack allocated. I need to make it proper!
- */
+// Now fullProgramName is set up, but may refer to an array that
+// is stack allocated. I need to make it proper!
+//
     w = (char *)malloc(1+strlen(fullProgramName));
-    if (w == NULL) return 5;           /* 5 = malloc fails */
+    if (w == NULL) return 5;           // 5 = malloc fails
     strcpy(w, fullProgramName);
     fullProgramName = w;
 #ifdef RAW_CYGWIN
-/*
- * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
- * suffix, so I will purge that! This code exists here because the raw
- * cygwin build has a somewhat schitzo view as to whether it is a Windows
- * or a Unix-like system.
- */
+//
+// Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
+// suffix, so I will purge that! This code exists here because the raw
+// cygwin build has a somewhat schitzo view as to whether it is a Windows
+// or a Unix-like system.
+//
     if (strlen(w) > 4)
     {   w += strlen(w) - 4;
         if (w[0] == '.' &&
@@ -515,32 +547,32 @@ int find_program_directory(const char *argv0)
               tolower(w[3]) == 'm'))) w[0] = 0;
     }
 #endif
-/* OK now I have the full name, which is of the form
- *   abc/def/fgi/xyz
- * and I need to split it at the final "/" (and by now I very fully expect
- * there to be at least one "/".
- */
+// OK now I have the full name, which is of the form
+//   abc/def/fgi/xyz
+// and I need to split it at the final "/" (and by now I very fully expect
+// there to be at least one "/".
+//
     for (n=strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
-    if (n < 0) return 6;               /* 6 = no "/" in full file path */
+    if (n < 0) return 6;               // 6 = no "/" in full file path
     w = (char *)malloc(1+n);
-    if (w == NULL) return 7;           /* 7 = malloc fails */
+    if (w == NULL) return 7;           // 7 = malloc fails
     strncpy(w, fullProgramName, n);
     w[n] = 0;
-/* Note that if the executable was "/foo" then programDir will end up as ""
- * so that programDir + "/" + programName works out properly.
- */
+// Note that if the executable was "/foo" then programDir will end up as ""
+// so that programDir + "/" + programName works out properly.
+//
     programDir = w;
     n1 = strlen(fullProgramName) - n;
     w = (char *)malloc(n1);
-    if (w == NULL) return 8;           /* 8 = malloc fails */
+    if (w == NULL) return 8;           // 8 = malloc fails
     strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
-    return 0;                          /* whew! */
+    return 0;                          // whew!
 }
 
-#endif /* WIN32 */
+#endif // WIN32
 
 extern void add_custom_fonts();
 
@@ -554,6 +586,10 @@ int main(int argc, char *argv[])
     {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
         else if (strcmp(argv[1], "--help") == 0)
         {
+//
+// I hope that a "--help" message counts as "prominent notice" and that the
+// wording here will satisfy those responsible for the Latin Modern fonts.
+//
 printf("This program contains bitmaps that show font coverage of some of\n");
 printf("the Latin Modern Fonts. The license terms of those fonts mean that\n");
 printf("any derived information falls under the LaTeX Project Public\n");
@@ -797,7 +833,7 @@ bool fontApp::OnInit()
 // the cast indicated here to turn it into what I expect.
 //
     char **myargv = (char **)argv;
-    raw = 1;
+    tex = 0;
     page = 0;
     bold = italic = 0;
     const char *font = "default";  // A default font name to ask for.
@@ -805,7 +841,7 @@ bool fontApp::OnInit()
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
-        if (strcmp(myargv[i], "--raw") == 0) raw = !raw;
+        if (strcmp(myargv[i], "--tex") == 0) tex = 1;
         if (strcmp(myargv[i], "--bold") == 0) bold = 1;
         if (strcmp(myargv[i], "--italic") == 0) italic = 1;
         else if (myargv[i][0] == '-')
@@ -901,19 +937,44 @@ void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 
 void fontPanel::OnChar(wxKeyEvent &event)
 {
-    printf("Char event\n"); fflush(stdout);
-    event.Skip();
-    page++;
-    if (page == 0x1b0) page = 0x1c0; // skip surrogates
-    Refresh();
 }
 
 void fontPanel::OnKeyDown(wxKeyEvent &event)
 {
-    printf("Key Down event\n"); fflush(stdout);
-    page++;
-    if (page == 0x1b0) page = 0x1c0; // skip surrogates
+    wxChar c = event.GetUnicodeKey();
+    int n = -1;
+    printf("Char event %#x (%c)\n", c, c); fflush(stdout);
     event.Skip();
+    if ('0' <= c && c <= '9') n = c - '0';
+    else if ('a' <= c && c <= 'f') n = c - 'a' + 10;
+    else if ('A' <= c && c <= 'F') n = c - 'A' + 10;
+    if (n >= 0) page = n*0x1000/0x80;
+    else switch (c)
+    {
+    case 'x':
+    case 'X':
+        page ^= 0x10000/0x80; // Second pane
+        break;
+    case '+':
+    case '=':
+        page = page + 8;
+        break;
+    case '-':
+    case '_':
+        page = page - 8;
+        break;
+    case '>':
+    case '.':
+        page = page + 1;
+        break;
+    case '<':
+    case ',':
+        page = page - 1;
+        break;
+    default:
+        page++;
+        break;
+    }
     Refresh();
 }
 
@@ -925,14 +986,8 @@ void fontPanel::OnMouse(wxMouseEvent &event)
 {
     wxWindowDC dc(this);
     wxPoint where(event.GetLogicalPosition(dc));
-    if (where.y > 200)
-    {   page++;
-        if (page == 0x1b0) page = 0x1c0; // skip surrogates
-    }
-    else
-    {   page--;
-        if (page == 0x1b0) page = 0x1a0; // skip surrogates
-    }
+    if (where.y > 200) page++;
+    else page--;
     printf("Mouse event. Page now %d\n", page); fflush(stdout);
     event.Skip();
     Refresh();
@@ -956,6 +1011,7 @@ void fontPanel::OnPaint(wxPaintEvent &event)
         wxColour c2(100, 220, 120);
         wxBrush b1(c1); wxBrush b2(c2);
         wxPen p1(c1);   wxPen p2(c2);
+// Draw a checkerboard background
         for (int y=0; y<256+2*32; y+=32)
         {   for (int x=0; x<33; x++)
             {   int k = ((y>>5) + x) & 1;
@@ -982,18 +1038,11 @@ void fontPanel::OnPaint(wxPaintEvent &event)
         wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
         wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
         fflush(stdout);
-//        char fullfriendly[200];
-//        sprintf(fullfriendly, "'%s'", fontname);
-//        ff.SetNativeFontInfoUserDesc(fullfriendly);
-//        if (ff.IsOk()) wxPrintf("Font seems OK after new name\n");
-//        else wxPrintf("Font is *NOT* OK\n");
-//        wxPrintf("Face name = %s\n", ff.GetFaceName());
-//        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
-//        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
-//        wxPrintf("Encoding = %x\n", ff.GetDefaultEncoding());
-//        fflush(stdout);
         wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
         uint32_t *map = find_glyphmap(fontname);
+        if (map != NULL) printf("Map of available codepoints found\n");
+        else printf("No map of valid codepoints\n");
+// Draw row and column labels
         wxFont labels(wxFontInfo(3));
         wxGraphicsFont glabels = gc->CreateFont(labels, *wxBLACK);
         gc->SetFont(glabels);
@@ -1005,13 +1054,15 @@ void fontPanel::OnPaint(wxPaintEvent &event)
         }
         for (int i=0; i<8; i++)
         {   char word[12];
-            sprintf(word, "%04x", 32*i + 0x80*page);
+            sprintf(word, "%5x", 32*i + 0x80*page);
             gc->DrawText(word, CELLWIDTH/10.0,
                 (double)CELLHEIGHT*(i+1) + CELLHEIGHT/2.5);
         }
 
         gc->SetFont(gff);
 
+// Check if the font appears to contain any characters at all. In some
+// cases where an unrecognised name is passed it might not!
         if (once++ == 0)
         {   int howmany = 0; 
             for (int i=0; howmany<30 && i<0xffff; i++)
@@ -1027,12 +1078,10 @@ void fontPanel::OnPaint(wxPaintEvent &event)
             printf("\n");
             fflush(stdout);
         }
-
-// If I initialise all these to 999.0 then if GetTextExtent fails maybe I will
-// still see something sensible?
-        wxDouble w1=999.0, h1=999.0, d1=999.0, xl1=999.0;
+// I will need font size information in order to position characters
+// neatly.
+        wxDouble w1=0.0, h1=0.0, d1=0.0, xl1=0.0;
         gc->GetTextExtent("X", &w1, &h1, &d1, &xl1);
-        printf("letter X w:%.3g h:%.3g d:%.3g xl:%.3g\n", w1, h1, d1, xl1);
 // To make my display match the one I had from my previous FOX-based
 // version I will adjust to make it as if DrawText uses the base-line of
 // the character for its reference point. I draw a little blue circle to
@@ -1049,47 +1098,52 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                                 4.0*4.0, 4.0*4.0);
                 gc->SetTransform(save);
                 int k = i + j;
-                if (!raw)
+// The "tex" mode is intended for use with the TeX fonts csl-cmr10 and
+// friends, where the original TeX encoding is (almost) used. But that
+// encoding leads to real pain when the Unicode points used correspond to
+// control characters - and so in the fonts used a range of characters are
+// mapped to various odd codes - and this fragment of program allows for
+// that so that the display is as if the original TeX encoding had been
+// supported.
+                if (tex)
                 {   if (k < 0xa) k = 0xa1 + k;
                     else if (k == 0xa) k = 0xc5;
-#ifdef UNICODE
-// In Unicode mode I have access to the character at code point 0x2219. If
-// not I must insist on using my private version of the fonts where it is
-// at 0xb7.
                     else if (k == 0x14) k = 0x2219;
-#else
-#error Old version
-#endif
                     else if (k < 0x20) k = 0xa3 + k;
                     else if (k == 0x20) k = 0xc3;
                     else if (k == 0x7f) k = 0xc4;
                     else if (k >= 0x80) k += 0x80*page;
                 }
                 else k += 0x80*page;
-// here I will use the coverage table to decide if I need to draw anything.
-// I have not added that logic yet!
-                wxString c = (wchar_t)k;
-                double ww, hh, dd, el;
-                gc->GetTextExtent(c, &ww, &hh, &dd, &el);
-                if (ww == 0.0 || hh == 0.0) continue;
                 if (map != NULL &&
                     char_present(k, map) == 0)
                 {   gc->DrawRectangle(
                        (double)CELLWIDTH*(j+1)+CELLWIDTH/3.0,
                        (double)CELLHEIGHT*(i/32+1)+CELLHEIGHT/3.0,
                        CELLWIDTH/3.0, CELLHEIGHT/3.0);
+                    continue;
                 }
-                else gc->DrawText(c,
+                wchar_t ccc[4];
+// For the benefit of Windows I need to represent code points in other
+// then the basic multilingual pane as surrogate pairs.
+                if (sizeof(wchar_t) == 4 ||
+                    k <= 0xffff)
+                {   ccc[0] = k;
+                    ccc[1] = 0;
+                }
+                else
+                {   k = (k - 0x10000) & 0xfffff;
+                    ccc[0] = 0xd800 + (k >> 10);
+                    ccc[1] = 0xdc00 + (k & 0x3ff);
+                    ccc[2] = 0;
+                }
+                wxString c(ccc);
+                gc->DrawText(c,
                     ((double)CELLWIDTH)*(j+1),
                     ((double)CELLHEIGHT)*(i/32+1)+
                      ((double)CELLHEIGHT)-h1+d1);
             }
         }
-#if 0
-        printf("compmode = %x\n", gc->GetCompositionMode());
-        printf("antialias = %x\n", gc->GetAntialiasMode());
-        printf("interpqual = %x\n", gc->GetInterpolationQuality());
-#endif
         delete gc;
     }
     else printf("gc=NULL\n");

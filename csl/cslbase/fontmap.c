@@ -47,8 +47,8 @@
 const char *fontfilename[][2] =
 {
 #ifdef MAC
-    {"CMU Teletype Text Regular",     "cmuntt"},
-    {"Deja Vu Sans Mono",             "DejaVuSansMono"},
+    {"CMU Typewriter Text Regular",   "cmuntt"},
+    {"DejaVu Sans Mono",              "DejaVuSansMono"},
     {"AR PL New Sung",                "fireflysung"},
     {"Latin Modern Math",             "latinmodern-math"},
     {"LM Mono 8",                     "lmmono"},
@@ -77,10 +77,10 @@ const char *fontfilename[][2] =
     {"LM Sans Demi Cond 10",          "lmsans"},
     {"LM Sans Quot 8",                "lmsans"},
     {"Sazanami Gothic Regular",       "sazanami-gothic"},
-    {"Sazanamu Mincho Regular",       "sazanami-mincho"}
+    {"Sazanami Mincho Regular",       "sazanami-mincho"}
 #else /* MAC */
-    {"CMU Teletype Text",             "cmuntt"},
-    {"Deja Vu Sans Mono",             "DejaVuSansMono"},
+    {"CMU Typewriter Text",           "cmuntt"},
+    {"DejaVu Sans Mono",              "DejaVuSansMono"},
     {"AR PL New Sung",                "fireflysung"},
     {"Latin Modern Math",             "latinmodern-math"},
     {"LM Mono 8",                     "lmmono"},
@@ -109,7 +109,7 @@ const char *fontfilename[][2] =
     {"LM Sans Demi Cond 10",          "lmsans"},
     {"LM Sans Quot 8",                "lmsans"},
     {"Sazanami Gothic",               "sazanami-gothic"},
-    {"Sazanamu Mincho",               "sazanami-mincho"}
+    {"Sazanami Mincho",               "sazanami-mincho"}
 #endif /* MAC */
 };
 
