@@ -1632,8 +1632,6 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
       return 'gen . ofsf_0mk2('neq,u)
    end;
 
-switch rlqestdans;
-
 procedure ofsf_qemkans(an,svf);
    if !*rlqestdans and not !*rlqegen then
       sort(ofsf_qebacksub ofsf_qemkstdans(an,svf),
@@ -1695,8 +1693,6 @@ procedure ofsf_qemkstdans(an,svf);
       assert(null fl);
       return ofsf_qemkans1 reversip nan
    end;
-
-switch rlqestdansvb;
 
 procedure ofsf_qemkansfl(svf, an);
    begin scalar f, fl, v, sub, xargl, val;
@@ -1886,9 +1882,6 @@ procedure ofsf_newepsilon(ec);
       put(eps,'!:rd!:,'rdzero!*);
       return eps
    end;
-
-switch rlqefullans;
-switch rlqebacksub;
 
 procedure ofsf_qebacksub(eql);
    % Quantifier elimination back substitution. [eql] is a list $(((v .
