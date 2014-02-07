@@ -1643,80 +1643,102 @@ procedure ofsf_qemkans(an,svf);
       	 function(lambda(x,y); ordp(cadr x,cadr y)));
 
 procedure ofsf_qemkstdans(an,svf);
-   begin scalar nan, csvf, csvfl, v, sub, xargl, w, sol;
-      svf := cl_simpl(svf, nil, -1);
+   begin scalar fl, y, f, v, sub, xargl, nan, w;
       if !*rlverbose then
 	 ioto_tprin2t {"++++ determining standard real numbers for the answers ",
 	    for each y in an collect car y, " ..."};
-      csvf := svf;
-      csvfl := {svf};
+      fl := ofsf_qemkansfl(svf, an);
+      % for each ff in fl do <<
+      % 	 ioto_tprin2t {cl_fvarl ff}
+      % >>;
+      % ioto_prin2t "entering while...";
+      while an do <<
+	 f := pop fl;
+	 % ioto_tprin2t {cl_fvarl f};
+	 y := pop an;
+	 {v, sub, xargl} := y;
+	 if sub eq 'ofsf_shift!-indicator then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " shift"};
+	    push(y, nan)
+	 >> else if sub eq 'ofsf_qesubcq then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " quotient"};
+	    push(y, nan)
+	 >> else if sub eq 'ofsf_qesubcr1 then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " root"};
+	    % TODO: Find rational, if possible.
+	    push(y, nan)
+	 >> else if sub eq 'ofsf_qesubi then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = ", car xargl, " = "};
+	    f := ofsf_qeapplynan(nan, f);
+	    {v, sub, xargl} := y := ofsf_qemkstdansinf(f, v, sub, xargl);
+	    if !*rlverbose then ioto_prin2 {ioto_form2str prepsq cadr xargl};
+	    push(y, nan)
+	 >> else if sub eq 'ofsf_qesubcqme then <<
+	    lprim {"ofsf_qemkstdans: TODO q - eps"};
+	    push(y, nan)
+	 >> else if sub eq 'ofsf_qesubcqpe then <<
+	    lprim {"ofsf_qemkstdans: TODO q + eps"};
+	    push(y, nan)
+	 >> else if sub eq 'ofsf_qesubcrme1 then <<
+	    lprim {"ofsf_qemkstdans: TODO r - eps"};
+	    push(y, nan)
+      	 >> else if sub eq 'ofsf_qesubcrpe1 then <<
+	    lprim {"ofsf_qemkstdans: TODO r + eps"};
+	    push(y, nan)
+	 >> else
+	    rederr "BUG IN ofsf_qemkstdans"
+      >>;
+      assert(null fl);
+      return ofsf_qemkans1 reversip nan
+   end;
+
+switch rlqestdansvb;
+
+procedure ofsf_qemkansfl(svf, an);
+   begin scalar f, fl, v, sub, xargl, val;
+      f := svf;
+      fl := {f};
       if !*rlverbose then
       	 ioto_tprin2t {"length = ", length cdr an};
       for each y in reverse cdr an do <<
 	 {v, sub, xargl} := y;
-	 sol := if sub eq 'ofsf_qesubcr1 or sub eq 'ofsf_qesubcrme1 or sub eq 'ofsf_qesubcrpe1 then
-	    ioto_form2str prepsq ofsf_preprexpr cadr xargl
-	 else if sub eq 'ofsf_qesubi then
-	    car xargl
-	 else
-	    ioto_form2str prepsq cadr xargl;
-	 if !*rlverbose then
-      	    ioto_prin2t {v, ", ", sub, ", ", sol, ", ", rl_atnum csvf};
-	 csvf := if sub eq 'ofsf_shift!-indicator then
-	    ofsf_ansshift(csvf, v, ofsf_extractid cadr xargl, caddr xargl)
-	 else
-	    cdr apply(sub, nil . nil . csvf . v . xargl);
-	 csvf := cl_simpl(csvf, nil, -1);
-      	 %ioto_tprin2t ioto_form2str rl_prepfof csvf;
-	 if rl_op csvf eq 'or then
-	    rederr {"top-level or"};
-	 push(csvf, csvfl)
+	 if !*rlverbose and !*rlqestdansvb then <<
+	    val := if sub memq '(ofsf_qesubcr1 ofsf_qesubcrme1 ofsf_qesubcrpe1) then
+	       ioto_form2str prepsq ofsf_preprexpr cadr xargl
+	    else if sub eq 'ofsf_qesubi then
+	       car xargl
+	    else
+	       ioto_form2str prepsq cadr xargl;
+      	    ioto_prin2t {v, ", ", sub, ", ", val, ", ", rl_atnum f}
+	 >>;
+	 f := ofsf_qeapplysub(sub, f, v, xargl);
+	 if rl_op f eq 'or then
+	    lprim {"ofsf_qemkansfl: top-level or for variable", v};
+	 push(f, fl)
       >>;
-      for each y in an do <<
-	 {v, sub, xargl} := y;
-	 csvf := pop csvfl;
-	 if sub eq 'ofsf_shift!-indicator then <<
-	    csvfl := for each f in csvfl collect
-	       cl_simpl(ofsf_ansshift(f, v, ofsf_extractid cadr xargl, caddr xargl), nil, -1);
-	    push(v . cadr xargl, nan)
-	 >> else if sub eq 'ofsf_qesubi then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = "};
-      	    w := if car xargl = 'pinf then <<
-	       if !*rlverbose then ioto_prin2 {"pinf = "};
-	       ofsf_qemkstdanspinf(csvf, v, xargl)
-      	    >> else if car xargl = 'minf then <<
-	       if !*rlverbose then ioto_prin2 {"minf = "};
-	       ofsf_qemkstdansminf(csvf, v, xargl)
-	    >>;
-	    if !*rlverbose then ioto_prin2 {ioto_form2str prepsq w};
-	    csvfl := for each f in csvfl collect
-	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, 'true, w), nil, -1);
-	    push(v . w, nan)
-	 >> else if sub eq 'ofsf_qesubcq then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " quotient"};
-	    csvfl := for each f in csvfl collect
-	       cl_simpl(cdr ofsf_qesubcq(nil, nil, f, v, car xargl, cadr xargl), nil, -1);
-	    push(v . cadr xargl, nan)
-	 >> else if sub eq 'ofsf_qesubcr1 then <<
-	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " root"};
-	    csvfl := for each f in csvfl collect
-	       cl_simpl(cdr ofsf_qesubcr1(nil, nil, f, v, car xargl, cadr xargl), nil, -1);
-	    push(v . ofsf_preprexpr cadr xargl, nan)
-	 >> else if sub eq 'ofsf_qesubcqme then
-	    rederr {"ofsf_qemkstdans: TODO"}
-	 else if sub eq 'ofsf_qesubcqpe then
-	    rederr {"ofsf_qemkstdans: TODO"}
-	 else if sub eq 'ofsf_qesubcrme1 then
-	    rederr {"ofsf_qemkstdans: TODO"}
-	 else if sub eq 'ofsf_qesubcrpe1 then
-	    rederr {"ofsf_qemkstdans: TODO"}
-	 else
-	    rederr "BUG IN ofsf_qemkstdans"
+      return fl
+   end;
+
+procedure ofsf_qeapplynan(nan, f);
+   begin scalar v, sub, xargl;
+      for each y in nan do <<
+      	 {v, sub, xargl} := y;
+	 f := ofsf_qeapplysub(sub, f, v, xargl)
       >>;
-      return reversip nan
+      return f
+   end;
+
+procedure ofsf_qeapplysub(sub, f, v, xargl);
+   begin scalar res;
+      res := if sub eq 'ofsf_shift!-indicator then
+      	 ofsf_ansshift(f, v, ofsf_extractid cadr xargl, caddr xargl)
+      else
+	 cdr apply(sub, nil . nil . f . v . xargl);
+      return cl_simpl(res, nil, -1)
    end;
 
 procedure ofsf_extractid(q);
@@ -1730,6 +1752,15 @@ procedure ofsf_rename(f, v, ansvar);
 
 procedure ofsf_renameat(f, vold, vnew);
    ofsf_0mk2(rl_op f, sfto_renamef(ofsf_arg2l f, vold, vnew));
+
+procedure ofsf_qemkstdansinf(f, v, sub, xargl);
+   begin scalar w;
+      if car xargl = 'pinf then
+	 w := ofsf_qemkstdanspinf(f, v, xargl)
+      else if car xargl = 'minf then
+	 w := ofsf_qemkstdansminf(f, v, xargl);
+      return {v, 'ofsf_qesubcq, {'true, w}}
+   end;
 
 procedure ofsf_qemkstdanspinf(csvf, v, xargl);
    begin scalar neql, op, needsq, maxsq, scneql, ne;
