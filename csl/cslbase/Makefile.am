@@ -1155,6 +1155,7 @@ if wx
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
 endif wx
 	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/*.oft reduce.$(fontsdir)
 # At present the only CM Unicode font I will copy across is CMTT.
 # I will still need and use the BaKoMa fonts for CMSY, CMEX and MSAM etc
 # special characters when typesetting high quality mathematics..

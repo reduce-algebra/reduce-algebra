@@ -81,9 +81,20 @@
 // show what characters are available in them, and the display of
 // codes over U+FFFF (where special treatment is needed in Windows). It also
 // reminds me that it SEEMS that I need to have .ttf re-coded versions of
-// some .oft fonts to survive on Windows.
+// some .otf fonts to survive on Windows.
 // It is otherwise not especially clever.
 
+// Well I need to add more comments here as I look into the Mathematical
+// Fonts in Unicode. In the block that starts at U+1d400 there are neat
+// alphabets but there are very odd looking gaps. Eg in Mathematical Italic
+// there is a gap where one would have expected "h" to be at U+1d455. This
+// seems to be a case where you are expected to use a character from a
+// quite different code block (U+2100 and on) so the "h" is U+210e. There
+// are a couple of dozen oddball substututions like that. When I first
+// observed the display from wxfontdemo I was worried that I had obtained
+// damaged fonts, but the Unicode specification lists the gaps as
+// invalid code-points. This really is deliberate! So if you spot something
+// that looks truly weird be aware it may be a feature not a bug. 
 
 
 #include "wx/wxprec.h"
@@ -672,44 +683,16 @@ static const char *fontNames[] =
 // Right now I will add in ALL the fonts I have collected!
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective.
-    "cmuntt.ttf",           "DejaVuSansMono.otf",  
-    "fireflysung.ttf",      "sazanami-gothic.ttf",  "sazanami-mincho.ttf", 
-    "csl-cmb10.ttf",        "csl-cmbsy10.ttf",      "csl-cmbsy6.ttf",       "csl-cmbsy7.ttf",   
-    "csl-cmbsy8.ttf",       "csl-cmbsy9.ttf",       "csl-cmbx10.ttf",       "csl-cmbx12.ttf",   
-    "csl-cmbx5.ttf",        "csl-cmbx6.ttf",        "csl-cmbx7.ttf",        "csl-cmbx8.ttf",    
-    "csl-cmbx9.ttf",        "csl-cmbxsl10.ttf",     "csl-cmbxti10.ttf",     "csl-cmcsc10.ttf",  
-    "csl-cmcsc8.ttf",       "csl-cmcsc9.ttf",       "csl-cmdunh10.ttf",     "csl-cmex10.ttf",   
-    "csl-cmex7.ttf",        "csl-cmex8.ttf",        "csl-cmex9.ttf",        "csl-cmff10.ttf",   
-    "csl-cmfi10.ttf",       "csl-cmfib8.ttf",       "csl-cminch.ttf",       "csl-cmitt10.ttf",  
-    "csl-cmmi10.ttf",       "csl-cmmi12.ttf",       "csl-cmmi5.ttf",        "csl-cmmi6.ttf",    
-    "csl-cmmi7.ttf",        "csl-cmmi8.ttf",        "csl-cmmi9.ttf",        "csl-cmmib10.ttf",  
-    "csl-cmmib6.ttf",       "csl-cmmib7.ttf",       "csl-cmmib8.ttf",       "csl-cmmib9.ttf",   
-    "csl-cmr10.ttf",        "csl-cmr12.ttf",        "csl-cmr17.ttf",        "csl-cmr5.ttf",     
-    "csl-cmr6.ttf",         "csl-cmr7.ttf",         "csl-cmr8.ttf",         "csl-cmr9.ttf",     
-    "csl-cmsl10.ttf",       "csl-cmsl12.ttf",       "csl-cmsl8.ttf",        "csl-cmsl9.ttf",    
-    "csl-cmsltt10.ttf",     "csl-cmss10.ttf",       "csl-cmss12.ttf",       "csl-cmss17.ttf",   
-    "csl-cmss8.ttf",        "csl-cmss9.ttf",        "csl-cmssbx10.ttf",     "csl-cmssdc10.ttf", 
-    "csl-cmssi10.ttf",      "csl-cmssi12.ttf",      "csl-cmssi17.ttf",      "csl-cmssi8.ttf",   
-    "csl-cmssi9.ttf",       "csl-cmssq8.ttf",       "csl-cmssqi8.ttf",      "csl-cmsy10.ttf",   
-    "csl-cmsy5.ttf",        "csl-cmsy6.ttf",        "csl-cmsy7.ttf",        "csl-cmsy8.ttf",    
-    "csl-cmsy9.ttf",        "csl-cmtcsc10.ttf",     "csl-cmtex10.ttf",      "csl-cmtex8.ttf",   
-    "csl-cmtex9.ttf",       "csl-cmti10.ttf",       "csl-cmti12.ttf",       "csl-cmti7.ttf",    
-    "csl-cmti8.ttf",        "csl-cmti9.ttf",        "csl-cmtt10.ttf",       "csl-cmtt12.ttf",   
-    "csl-cmtt8.ttf",        "csl-cmtt9.ttf",        "csl-cmu10.ttf",        "csl-cmvtt10.ttf",  
-    "csl-euex10.ttf",       "csl-euex7.ttf",        "csl-euex8.ttf",        "csl-euex9.ttf",    
-    "csl-eufb10.ttf",       "csl-eufb5.ttf",        "csl-eufb6.ttf",        "csl-eufb7.ttf",    
-    "csl-eufb8.ttf",        "csl-eufb9.ttf",        "csl-eufm10.ttf",       "csl-eufm5.ttf",    
-    "csl-eufm6.ttf",        "csl-eufm7.ttf",        "csl-eufm8.ttf",        "csl-eufm9.ttf",    
-    "csl-eurb10.ttf",       "csl-eurb5.ttf",        "csl-eurb6.ttf",        "csl-eurb7.ttf",    
-    "csl-eurb8.ttf",        "csl-eurb9.ttf",        "csl-eurm10.ttf",       "csl-eurm5.ttf",    
-    "csl-eurm6.ttf",        "csl-eurm7.ttf",        "csl-eurm8.ttf",        "csl-eurm9.ttf",    
-    "csl-eusb10.ttf",       "csl-eusb5.ttf",        "csl-eusb6.ttf",        "csl-eusb7.ttf",    
-    "csl-eusb8.ttf",        "csl-eusb9.ttf",        "csl-eusm10.ttf",       "csl-eusm5.ttf",    
-    "csl-eusm6.ttf",        "csl-eusm7.ttf",        "csl-eusm8.ttf",        "csl-eusm9.ttf",    
-    "csl-msam10.ttf",       "csl-msam5.ttf",        "csl-msam6.ttf",        "csl-msam7.ttf",    
-    "csl-msam8.ttf",        "csl-msam9.ttf",        "csl-msbm10.ttf",       "csl-msbm5.ttf",    
-    "csl-msbm6.ttf",        "csl-msbm7.ttf",        "csl-msbm8.ttf",        "csl-msbm9.ttf",
+    "cmuntt.ttf",          // CMU Typewriter Text
+    "DejaVuSansMono.otf",  // DejaVu Sans Mono
+    "fireflysung.ttf",     // AR PL New Sung
+    "sazanami-gothic.ttf", // Sazanami Gothic
+    "sazanami-mincho.ttf", // Sazanami Mincho
 #ifdef WIN32
+// For Windows I am rendering everything under gdiplus (which lets me scale
+// things nicely) and it appears that some .otf fonts (including ones that
+// contain embedded bitmaps) do not display that way. So I will use fonts
+// downgraded to mere .ttf format.
     "latinmodern-math.ttf",       "lmmono10-italic.ttf",         "lmmono10-regular.ttf",
     "lmmono12-regular.ttf",       "lmmono8-regular.ttf",         "lmmono9-regular.ttf",
     "lmmonocaps10-oblique.ttf",   "lmmonocaps10-regular.ttf",    "lmmonolt10-bold.ttf",
@@ -736,31 +719,33 @@ static const char *fontNames[] =
     "lmsansquot8-bold.ttf",       "lmsansquot8-boldoblique.ttf", "lmsansquot8-oblique.ttf",
     "lmsansquot8-regular.ttf"
 #else
-    "latinmodern-math.oft",       "lmmono10-italic.oft",         "lmmono10-regular.oft",
-    "lmmono12-regular.oft",       "lmmono8-regular.oft",         "lmmono9-regular.oft",
-    "lmmonocaps10-oblique.oft",   "lmmonocaps10-regular.oft",    "lmmonolt10-bold.oft",
-    "lmmonolt10-boldoblique.oft", "lmmonolt10-oblique.oft",      "lmmonolt10-regular.oft",
-    "lmmonoltcond10-oblique.oft", "lmmonoltcond10-regular.oft",  "lmmonoprop10-oblique.oft",
-    "lmmonoprop10-regular.oft",   "lmmonoproplt10-bold.oft",     "lmmonoproplt10-boldoblique.oft",
-    "lmmonoproplt10-oblique.oft", "lmmonoproplt10-regular.oft",  "lmmonoslant10-regular.oft",
-    "lmroman10-bold.oft",         "lmroman10-bolditalic.oft",    "lmroman10-italic.oft",
-    "lmroman10-regular.oft",      "lmroman12-bold.oft",          "lmroman12-italic.oft",
-    "lmroman12-regular.oft",      "lmroman17-regular.oft",       "lmroman5-bold.oft",
-    "lmroman5-regular.oft",       "lmroman6-bold.oft",           "lmroman6-regular.oft",
-    "lmroman7-bold.oft",          "lmroman7-italic.oft",         "lmroman7-regular.oft",
-    "lmroman8-bold.oft",          "lmroman8-italic.oft",         "lmroman8-regular.oft",
-    "lmroman9-bold.oft",          "lmroman9-italic.oft",         "lmroman9-regular.oft",
-    "lmromancaps10-oblique.oft",  "lmromancaps10-regular.oft",   "lmromandemi10-oblique.oft",
-    "lmromandemi10-regular.oft",  "lmromandunh10-oblique.oft",   "lmromandunh10-regular.oft",
-    "lmromanslant10-bold.oft",    "lmromanslant10-regular.oft",  "lmromanslant12-regular.oft",
-    "lmromanslant17-regular.oft", "lmromanslant8-regular.oft",   "lmromanslant9-regular.oft",
-    "lmromanunsl10-regular.oft",  "lmsans10-bold.oft",           "lmsans10-boldoblique.oft",
-    "lmsans10-oblique.oft",       "lmsans10-regular.oft",        "lmsans12-oblique.oft",
-    "lmsans12-regular.oft",       "lmsans17-oblique.oft",        "lmsans17-regular.oft",
-    "lmsans8-oblique.oft",        "lmsans8-regular.oft",         "lmsans9-oblique.oft",
-    "lmsans9-regular.oft",        "lmsansdemicond10-oblique.oft","lmsansdemicond10-regular.oft",
-    "lmsansquot8-bold.oft",       "lmsansquot8-boldoblique.oft", "lmsansquot8-oblique.oft",
-    "lmsansquot8-regular.oft"
+// On Linux and Macintosh (and other Unix-like platforms) I will try using
+// the original .otf versions of the fonts...
+    "latinmodern-math.otf",       "lmmono10-italic.otf",         "lmmono10-regular.otf",
+    "lmmono12-regular.otf",       "lmmono8-regular.otf",         "lmmono9-regular.otf",
+    "lmmonocaps10-oblique.otf",   "lmmonocaps10-regular.otf",    "lmmonolt10-bold.otf",
+    "lmmonolt10-boldoblique.otf", "lmmonolt10-oblique.otf",      "lmmonolt10-regular.otf",
+    "lmmonoltcond10-oblique.otf", "lmmonoltcond10-regular.otf",  "lmmonoprop10-oblique.otf",
+    "lmmonoprop10-regular.otf",   "lmmonoproplt10-bold.otf",     "lmmonoproplt10-boldoblique.otf",
+    "lmmonoproplt10-oblique.otf", "lmmonoproplt10-regular.otf",  "lmmonoslant10-regular.otf",
+    "lmroman10-bold.otf",         "lmroman10-bolditalic.otf",    "lmroman10-italic.otf",
+    "lmroman10-regular.otf",      "lmroman12-bold.otf",          "lmroman12-italic.otf",
+    "lmroman12-regular.otf",      "lmroman17-regular.otf",       "lmroman5-bold.otf",
+    "lmroman5-regular.otf",       "lmroman6-bold.otf",           "lmroman6-regular.otf",
+    "lmroman7-bold.otf",          "lmroman7-italic.otf",         "lmroman7-regular.otf",
+    "lmroman8-bold.otf",          "lmroman8-italic.otf",         "lmroman8-regular.otf",
+    "lmroman9-bold.otf",          "lmroman9-italic.otf",         "lmroman9-regular.otf",
+    "lmromancaps10-oblique.otf",  "lmromancaps10-regular.otf",   "lmromandemi10-oblique.otf",
+    "lmromandemi10-regular.otf",  "lmromandunh10-oblique.otf",   "lmromandunh10-regular.otf",
+    "lmromanslant10-bold.otf",    "lmromanslant10-regular.otf",  "lmromanslant12-regular.otf",
+    "lmromanslant17-regular.otf", "lmromanslant8-regular.otf",   "lmromanslant9-regular.otf",
+    "lmromanunsl10-regular.otf",  "lmsans10-bold.otf",           "lmsans10-boldoblique.otf",
+    "lmsans10-oblique.otf",       "lmsans10-regular.otf",        "lmsans12-oblique.otf",
+    "lmsans12-regular.otf",       "lmsans17-oblique.otf",        "lmsans17-regular.otf",
+    "lmsans8-oblique.otf",        "lmsans8-regular.otf",         "lmsans9-oblique.otf",
+    "lmsans9-regular.otf",        "lmsansdemicond10-oblique.otf","lmsansdemicond10-regular.otf",
+    "lmsansquot8-bold.otf",       "lmsansquot8-boldoblique.otf", "lmsansquot8-oblique.otf",
+    "lmsansquot8-regular.otf"
 #endif
 };
 
@@ -817,11 +802,6 @@ void display_font_information()
     for (int i=0; i<nfonts; i++)
         printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
     fflush(stdout);
-//    wxArrayString enclist(wxFontEnumerator::GetEncodings());
-//    printf("There are %d encodings\n", (int)enclist.GetCount());
-//    fflush(stdout);
-//    for (unsigned int i=0; i<enclist.GetCount(); i++)
-//        wxPrintf(L"Encoding (%d) <%s>\n", i, enclist[i]);
     printf("End of debug output\n");
     fflush(stdout);
 }
@@ -831,7 +811,6 @@ bool fontApp::OnInit()
     display_font_information();
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
-//
     char **myargv = (char **)argv;
     tex = 0;
     page = 0;
@@ -925,7 +904,10 @@ void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
            "wxfontdemo (A C Norman 2014)\n"
            "wxWidgets version: %s\n"
            "Operating system: %s\n"
-           "full Latin Modern Font details available via\n"
+// The next brief section tries to satisfy the LaTeX Project Public
+// License as it applies to the font coverage bitmaps that get compiled
+// in to this code.
+           "Full Latin Modern Font details available via\n"
            "reduce-algebra.sourcefoge.net in csl/support-packages\n"
            "subdirectory of source archive",
            wxVERSION_STRING,
@@ -956,7 +938,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
         page ^= 0x10000/0x80; // Second pane
         break;
     case '+':
-    case '=':
+    case '=':              // "+" key but without shift pressed...
         page = page + 8;
         break;
     case '-':
@@ -1104,7 +1086,9 @@ void fontPanel::OnPaint(wxPaintEvent &event)
 // control characters - and so in the fonts used a range of characters are
 // mapped to various odd codes - and this fragment of program allows for
 // that so that the display is as if the original TeX encoding had been
-// supported.
+// supported. This scheme is now being retired since I will be using
+// Unicode fonts for everything and so the TeX encoding mess gets left
+// behind. Whew!
                 if (tex)
                 {   if (k < 0xa) k = 0xa1 + k;
                     else if (k == 0xa) k = 0xc5;

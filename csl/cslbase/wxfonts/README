@@ -1,35 +1,3 @@
-            Adjusted versions of the (free) BaKoMa TeX fonts  
-
-The *.ttf files here are the BaKoMa ones *except* that they have been editited
-to make two additions of the charecter encoding tables:
-(a) The character that would seem naturally to belong at position
-    0xb7 had been places at 0x2219 in the font. I have made a copy of it
-    back at 0xb7 in place of the ".notdef" otherwise present in that
-    location.
-(b) The character at position 0xad is hard to access on X11 and MacOSX
-    because that Unicode point is used for SHY, the "Soft Hyphen", and
-    default rendering code does not display anything there regardless of
-    any data in the font. So I have made a copy of that data at code point
-    0xc5 just beyond other relocated glyphs.
-(c) The file-names and the font-names have been adjusted from (eg)
-    cmr10/cmr10.ttf to csl-cmr10/csl-cmr10.ttf to avoid any possible
-    confustion between these and the regular versions on any TeX fonts. 
-
-It is probable that I could have worked around the encoding difficulties by
-implementing special custom support for encoding in my applications, and
-indeed for 0x2219 that worked happily provided I build everythng in Unicode
-mode. But the adjustmenst made here seem to me to be the simplest way around
-the problems of 0xad/SHY.
-
-It thus becomes VITAL that these adjusted versions of the TeX fonts are used
-and not any unadjusted but otherwise similar ones.
-
-The permissions associated with the fonts, as indicated in the files in
-this directory, permit me to make these changes.
-
-                Arthur Norman    November 2010
-
-
     Adjusted versions of the Latin Modern and Latin Modern Math Fonts
 
 
@@ -78,18 +46,24 @@ The changes made are:
  (2) While at the time of writing I have not yet pruned things, I will
      only need a subset of the full set of Latin Modern fonts, and so I
      will omit some of them... for instance to save space.
- (3) When I tried to render the supplied .oft fonts on a Windows platform
+ (3) When I tried to render the supplied .otf fonts on a Windows platform
      the Windows 7 font viewer allowed me to preview them but the
      code I had using wxWidgets appeared not to be able to find any glyphs
      in the fonts (even though it could open them and report success). So
-     to back up the .oft versions I used fontforge to do a direct conversion
+     to back up the .otf versions I used fontforge to do a direct conversion
      to the older .ttf format. On non-windows platforms I can use the
-     original .oft fonts, but on Windows I use the .ttf variants. If at some
+     original .otf fonts, but on Windows I use the .ttf variants. If at some
      stage I can understand what the issue there was I will be able to
-     discard the .ttf versions!
+     discard the .ttf versions! Well one issue I had had in the past was that
+     .otf files that contained embedded bitmaps could not be rendered by
+     gdiplus under Windows, and so for the CMU Typewriter Text fond I needed
+     a pure .ttf version for use under Windows (when using gdiplus at least).
  (4) Reduce and associated tools will use these as private application-
      specific fonts, not installing them in ways intended for use by other
      programs. That ought to minimise any possibility of confusion or
      degradation.
+ (5) Note also bitmaps giving font coverage (ie information about which
+     code-points are covered) exist in the directory above where this one
+     lives in the Reduce source files.
 
                 Arthur Norman.  February 2014

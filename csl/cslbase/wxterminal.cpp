@@ -906,99 +906,151 @@ const char *my_getenv(const char *s)
 
 #ifndef MACINTOSH
 
-typedef struct localFonts
+static const char*fontNames[] =
 {
-    const char *name;
-    char *path;
-} localFonts;
-
-static localFonts fontNames[] =
-{
-// Some Unicode fonts
-    {"cmuntt",       NULL},     // "CMU Typewriter Text (Regular)"
-    {"DejaVuSansMono",NULL},    // "DejaVu Sans Mono"
-    {"fireflysung",  NULL},     // "AR PL New Sung"
-    {"sazanami-gothic", NULL},  // "Sazanami Gothic (Regular)"
-    {"sazanami-mincho", NULL},  // "Sazanami Mincho (Regular)"
+    "DejaVuSansMono",    // "DejaVu Sans Mono"                .otf
+    "cmuntt",            // "CMU Typewriter Text (Regular)"   .ttf
+    "fireflysung",       // "AR PL New Sung"                  .ttf
+    "sazanami-gothic",   // "Sazanami Gothic (Regular)"       .ttf
+    "sazanami-mincho",   // "Sazanami Mincho (Regular)"       .ttf
 
 
-// Right now I will add in ALL the fonts from the BaKoMa collection.
-// This can make sense in a font demo program but in a more serious
-// application I should be a little more selective!
-#if 0
-    {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
-    {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
-    {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
-    {"csl-cmbx10",   NULL},        {"csl-cmbx12",   NULL},
-    {"csl-cmbx5",    NULL},        {"csl-cmbx6",    NULL},
-    {"csl-cmbx7",    NULL},        {"csl-cmbx8",    NULL},
-    {"csl-cmbx9",    NULL},        {"csl-cmbxsl10", NULL},
-    {"csl-cmbxti10", NULL},        {"csl-cmcsc10",  NULL},
-    {"csl-cmcsc8",   NULL},        {"csl-cmcsc9",   NULL},
-    {"csl-cmdunh10", NULL},        {"csl-cmex10",   NULL},
-    {"csl-cmex7",    NULL},        {"csl-cmex8",    NULL},
-    {"csl-cmex9",    NULL},        {"csl-cmff10",   NULL},
-    {"csl-cmfi10",   NULL},        {"csl-cmfib8",   NULL},
-    {"csl-cminch",   NULL},        {"csl-cmitt10",  NULL},
-    {"csl-cmmi10",   NULL},        {"csl-cmmi12",   NULL},
-    {"csl-cmmi5",    NULL},        {"csl-cmmi6",    NULL},
-    {"csl-cmmi7",    NULL},        {"csl-cmmi8",    NULL},
-    {"csl-cmmi9",    NULL},        {"csl-cmmib10",  NULL},
-    {"csl-cmmib6",   NULL},        {"csl-cmmib7",   NULL},
-    {"csl-cmmib8",   NULL},        {"csl-cmmib9",   NULL},
-    {"csl-cmr10",    NULL},        {"csl-cmr12",    NULL},
-    {"csl-cmr17",    NULL},        {"csl-cmr5",     NULL},
-    {"csl-cmr6",     NULL},        {"csl-cmr7",     NULL},
-    {"csl-cmr8",     NULL},        {"csl-cmr9",     NULL},
-    {"csl-cmsl10",   NULL},        {"csl-cmsl12",   NULL},
-    {"csl-cmsl8",    NULL},        {"csl-cmsl9",    NULL},
-    {"csl-cmsltt10", NULL},        {"csl-cmss10",   NULL},
-    {"csl-cmss12",   NULL},        {"csl-cmss17",   NULL},
-    {"csl-cmss8",    NULL},        {"csl-cmss9",    NULL},
-    {"csl-cmssbx10", NULL},        {"csl-cmssdc10", NULL},
-    {"csl-cmssi10",  NULL},        {"csl-cmssi12",  NULL},
-    {"csl-cmssi17",  NULL},        {"csl-cmssi8",   NULL},
-    {"csl-cmssi9",   NULL},        {"csl-cmssq8",   NULL},
-    {"csl-cmssqi8",  NULL},        {"csl-cmsy10",   NULL},
-    {"csl-cmsy5",    NULL},        {"csl-cmsy6",    NULL},
-    {"csl-cmsy7",    NULL},        {"csl-cmsy8",    NULL},
-    {"csl-cmsy9",    NULL},        {"csl-cmtcsc10", NULL},
-    {"csl-cmtex10",  NULL},        {"csl-cmtex8",   NULL},
-    {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
-    {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
-    {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
-#endif
-    {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
-    {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
-#if 0
-    {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
-    {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
-    {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
-    {"csl-eufb10",   NULL},        {"csl-eufb5",    NULL},
-    {"csl-eufb6",    NULL},        {"csl-eufb7",    NULL},
-    {"csl-eufb8",    NULL},        {"csl-eufb9",    NULL},
-    {"csl-eufm10",   NULL},        {"csl-eufm5",    NULL},
-    {"csl-eufm6",    NULL},        {"csl-eufm7",    NULL},
-    {"csl-eufm8",    NULL},        {"csl-eufm9",    NULL},
-    {"csl-eurb10",   NULL},        {"csl-eurb5",    NULL},
-    {"csl-eurb6",    NULL},        {"csl-eurb7",    NULL},
-    {"csl-eurb8",    NULL},        {"csl-eurb9",    NULL},
-    {"csl-eurm10",   NULL},        {"csl-eurm5",    NULL},
-    {"csl-eurm6",    NULL},        {"csl-eurm7",    NULL},
-    {"csl-eurm8",    NULL},        {"csl-eurm9",    NULL},
-    {"csl-eusb10",   NULL},        {"csl-eusb5",    NULL},
-    {"csl-eusb6",    NULL},        {"csl-eusb7",    NULL},
-    {"csl-eusb8",    NULL},        {"csl-eusb9",    NULL},
-    {"csl-eusm10",   NULL},        {"csl-eusm5",    NULL},
-    {"csl-eusm6",    NULL},        {"csl-eusm7",    NULL},
-    {"csl-eusm8",    NULL},        {"csl-eusm9",    NULL},
-    {"csl-msam10",   NULL},        {"csl-msam5",    NULL},
-    {"csl-msam6",    NULL},        {"csl-msam7",    NULL},
-    {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
-    {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
-    {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
-#endif
-    {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
+
+// For Windows I am rendering everything under gdiplus (which lets me scale
+// things nicely) and it appears that some .otf fonts (including ones that
+// contain embedded bitmaps) do not display that way. So I will use fonts
+// downgraded to mere .ttf format.
+// On Linux and Macintosh (and other Unix-like platforms) I will try using
+// the original .otf versions of the fonts...
+
+// Font containing characters from cmsy10, cmmi10, cmex10 etc etc.
+    "latinmodern-math",            // Latin Modern Math
+
+// ROMAN FACES
+
+// Like cmr10 (etc) but with a wider range of characters.
+    "lmroman5-regular",            // LM Roman Regular 5
+    "lmroman6-regular",            // LM Roman Regular 6
+    "lmroman7-regular",            // LM Roman Regular 7
+    "lmroman8-regular",            // LM Roman Regular 8
+    "lmroman9-regular",            // LM Roman Regular 9
+    "lmroman10-regular",           // LM Roman Regular 10
+    "lmroman12-regular",           // LM Roman Regular 12
+    "lmroman17-regular",           // LM Roman Regular 17
+
+// Bold variant on the above.
+    "lmroman5-bold",             
+    "lmroman6-bold",             
+    "lmroman7-bold",             
+    "lmroman8-bold",             
+    "lmroman9-bold",             
+    "lmroman10-bold",            
+    "lmroman12-bold",            
+
+// Italic
+    "lmroman7-italic",           
+    "lmroman8-italic",           
+    "lmroman9-italic",           
+    "lmroman10-italic",          
+    "lmroman12-italic",          
+
+// Bold Italic - but which stage only one size is provided.
+    "lmroman10-bolditalic",      
+
+// Roman Slanted (n.b. not Italic!)
+    "lmromanslant8-regular",     
+    "lmromanslant9-regular",     
+    "lmromanslant10-regular",    
+    "lmromanslant12-regular",    
+    "lmromanslant17-regular",    
+
+// Slanted Bold
+    "lmromanslant10-bold",       
+
+// Roman with small caps in place of lower case
+    "lmromancaps10-regular",     
+    "lmromancaps10-oblique",     
+
+// Roman demi-condensed
+    "lmromandemi10-regular",     
+    "lmromandemi10-oblique",     
+
+// Roman Dunhill (risers seem very tall)
+    "lmromandunh10-regular",     
+    "lmromandunh10-oblique",     
+
+// Roman Unslanted (has very twisty serifs)
+    "lmromanunsl10-regular",     
+
+// SANS SERIF FACES
+
+// Basic Sans Serif in various design-sizes
+    "lmsans8-regular",           
+    "lmsans9-regular",           
+    "lmsans10-regular",          
+    "lmsans12-regular",          
+    "lmsans17-regular",          
+
+// Bold variant
+    "lmsans10-bold",             
+
+// Oblique versions
+    "lmsans8-oblique",           
+    "lmsans9-oblique",           
+    "lmsans10-oblique",          
+    "lmsans12-oblique",          
+    "lmsans17-oblique",          
+
+// Bold Oblique
+    "lmsans10-boldoblique",      
+
+// Semi-condensed
+    "lmsansdemicond10-regular",  
+    "lmsansdemicond10-oblique",  
+
+// Sans Quot (for use in quotations)
+    "lmsansquot8-regular",
+    "lmsansquot8-bold",          
+    "lmsansquot8-oblique",       
+    "lmsansquot8-boldoblique",   
+
+// MONOSPACED FONTS
+
+// Basic monospaced font in various design sizes
+    "lmmono8-regular",           
+    "lmmono9-regular",           
+    "lmmono10-regular",          
+    "lmmono12-regular",          
+
+// Italic
+    "lmmono10-italic",           
+
+// With small caps instead of lower case
+    "lmmonocaps10-regular",      
+    "lmmonocaps10-oblique",      
+
+// "Light"
+    "lmmonolt10-regular",        
+    "lmmonolt10-bold",           
+    "lmmonolt10-oblique",        
+    "lmmonolt10-boldoblique",    
+
+// "Light Condensed"
+    "lmmonoltcond10-regular",    
+    "lmmonoltcond10-oblique",    
+
+// Proportional
+    "lmmonoprop10-regular",      
+    "lmmonoprop10-oblique",      
+
+// Proportional Light
+    "lmmonoproplt10-regular",    
+    "lmmonoproplt10-bold",       
+    "lmmonoproplt10-oblique",    
+    "lmmonoproplt10-boldoblique",
+
+// Slanted
+    "lmmonoslant10-regular"      
 };
 
 #endif // MACINTOSH
@@ -1698,80 +1750,54 @@ uint32_t deja_coverage[384] =
 #define toString(x) toString1(x)
 #define toString1(x) #x
 
-// I will want to change this so that it adds the fonts only on need.
-
 int add_custom_fonts() // return 0 on success.
 {
-#ifdef WIN32
-    int newFontAdded = 0;
+#ifndef MACINTOSH
+    int trouble = 0;
+// Note that on a Mac I put the required fonts in the Application Bundle.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        memset(nn, 0, sizeof(nn));
-        strcpy(nn, programDir);
-        strcat(nn, "\\" toString(fontsdir) "\\");
-        strcat(nn, fontNames[i].name);
-        if (i == 0) strcat(nn, ".otf");
-        else strcat(nn, ".ttf");
-        if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
-            FWIN_LOG(("Failed to add font %s\n", nn));
-        else newFontAdded = 1;
+// The font files I have come with a mix of .ttf and .otf suffixes. On
+// windows because I use wxGraphicsContext I use GDI+ and that seems to be
+// unable to cope with many .otf fonts, so in that case I use .ttf versions.
+// On other platforms I will use the original versions...
+        const char *suffix = i==0 ? "otf" : "ttf";
+#ifndef WIN32
+        if (i > 4) suffix = "otf";
+#endif
+        sprintf(nn, "%s/%s/%s.%s",
+                    programDir, toString(fontsdir), fontNames[i], suffix);
+        printf("Adding %s: ", nn); fflush(stdout);
+        wxString widename(nn);
+        if (wxFont::AddPrivateFont(widename))
+            printf(" OK\n");
+        else
+        {   printf("Failed\n");
+            trouble = 1;
+        }
     }
-    if (newFontAdded)
-    {   // This call to SendMessage may sometimes cause a long delay.
-        SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    printf("About to activate\n"); fflush(stdout);
+    if (wxFont::ActivatePrivateFonts())
+        printf("Activated OK\n");
+    else
+    {   printf("Activation failed\n");
+        trouble = 1;
     }
-    return 0;
-#else // WIN32
-#ifdef MACINTOSH
-
-// Custom fonts are supported by including them in the Application Bundle
-// and mentioning them in a Plist there, so I do not need and code here to
-// deal with anything!
-    return 1;
-
-#else // Assume all that is left is X11, and that Xft/fontconfig are available
-    int screen = 0;
-    FcConfig *config = FcConfigCreate();
-    dpy = XOpenDisplay(NULL);
-    if (dpy == NULL)
-    {   printf("Unable to access the display\n");
-        exit(1);
-    }
-    screen = DefaultScreen(dpy);
-
-// It might make sense to add just the fonts that I will be using rather than
-// use extra resources adding all that are available. But for now I prefer
-// simplicity.
-    char fff[LONGEST_LEGAL_FILENAME];
-    memset(fff, 0, sizeof(fff));
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   if (i == 0) sprintf(fff, "%s/" toString(fontsdir) "/%s.otf",
-                            programDir, fontNames[i].name);
-        else sprintf(fff, "%s/" toString(fontsdir) "/%s.ttf",
-                     programDir, fontNames[i].name);
-        FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
-    }
-    FcConfigSetCurrent(config);
+    fflush(stdout);
+    return trouble;
+#else  // MACINTOSH
     return 0;
 #endif // MACINTOSH
-#endif // WIN32
 }
-
-
-
 
 int fwinText::MapChar(int c)
 {
 // This function maps between a TeX character encoding and the one that is
-// used by the fonts and rendering engine that I use.
+// used by the fonts and rendering engine that I use. This is about
+// to be utterly redundant since it related to TeX-emcoded fonts.
     if (c < 0xa) return 0xa1 + c;
     else if (c == 0xa) return 0xc5;
-#ifdef UNICODE
-// In Unicode mode I have access to the character at code point 0x2219. If
-// not I must insist on using my private version of the fonts where it is
-// at 0xb7.
     else if (c == 0x14) return 0x2219;
-#endif
     else if (c < 0x20) return 0xa3 + c;
     else if (c == 0x20) return 0xc3;
     else if (c == 0x7f) return 0xc4;
@@ -5206,12 +5232,12 @@ void fwin_showmath(const char *s)
 #endif
 //  delfile(tempd);     // Preserve the TeX file...
     sprintf(&tempd[dirlen], "/reduce-%d.aux", (int)procid);
-    delfile(tempd); 
+    delfile(tempd);
     sprintf(&tempd[dirlen], "/reduce-%d.log", (int)procid);
-    delfile(tempd); 
+    delfile(tempd);
     sprintf(&tempd[dirlen], "/reduce-%d.dvi", (int)procid);
 // Just for now I will leave the .dvi file around...
-//  delfile(tempd); 
+//  delfile(tempd);
 }
 
 
@@ -5433,6 +5459,5 @@ void fwin_set_help_file(const char *key, const char *path)
     fflush(stdout);
 #endif
 }
-
 
 // End of wxterminal.cpp
