@@ -57,6 +57,8 @@ src/FXWorker.cpp               thread-related parts assocated with FXTermninal
 
 
 Changes to the ACN parts of the code:
+
+January 2014:
   FXShowMath.cpp: alter treatment of TeX "~" to use character code 0xb6
      to stand for it. It measures as if it was "x" but is not printed at
      all, so it acts like a blank character. This improves the behaviour
@@ -70,5 +72,23 @@ Changes to the ACN parts of the code:
      with embedded underscores are handled a bit better. Then re-correct
      so that matrices can again be displayed OK.
 
-     January 2014
+February 2014: Move towards some Unicode interface to terminal handling so
+     that non-ASCII characters may eventually be handled better.
+
+     (Feb 9) The code builds with FXMathText.cpp brought much more up to
+     date, and characters with codes beyond the range 32-127 are now
+     semi coped-with by the GUI even if application code that uses it may
+     not cope. However as part of the changes to deal with this COPY
+     operations in FXTerminal.cpp have been disabled until they can be
+     revistited and recast so as to be able to use UTF-8. Also it seems that
+     input such as "A B <pound> C" leads to a screen display with a small
+     amount of junk visible to the right of the "C", so there is somewhere
+     that allowance for multi-octet sequences has not been got quite right.
+     I might HOPE to fix both of these soon. I believe that the second
+     only arises if you type in an extended characters (eg an accented
+     letter on a non-UK/non-US keyboard or a pounds sign on a UK keyboard)
+     and that had previously been even more broken... so I will not view
+     that as too high priority.
+
+
 

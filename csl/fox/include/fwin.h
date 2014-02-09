@@ -1,5 +1,5 @@
 /*
- * "fwin.h"                                       2003-2008, A C Norman
+ * "fwin.h"                                       2003-1014, A C Norman
  *
  * This defines the public interface supported by the "fwin" window
  * interface.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 1014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -444,16 +444,17 @@ extern void fwin_move_to_column(int column);
 
 #define INPUT_HISTORY_SIZE 100
 
-extern char *input_history[INPUT_HISTORY_SIZE];
+extern wchar_t *input_history[INPUT_HISTORY_SIZE];
 extern int input_history_next, input_history_current;
 
 extern void input_history_init();
 
 extern void input_history_end();
 
-extern void input_history_add(const char *s);
+extern void input_history_add(const wchar_t *s);
+extern void input_history_add_utf8(const char *s);
 
-extern const char *input_history_get(int n);
+extern const wchar_t *input_history_get(int n);
 
 /*
  * This is for version-specific control

@@ -1,10 +1,12 @@
                        REDUCE - Open Source release
 
 
-                                July 2013
+                      July 2013, then February 2014
 
 Tiny updates to this file just to try to keep the credits to other
-projects that are used up to date.
+projects that are used up to date. As of Feb 2014 the revision number
+at Sourceforge is 2337, and this seems to correspond to an average
+activity rate of a bit over 3 checkins per day.
 
                              December 2010
 
@@ -139,6 +141,42 @@ from one of the earlier major copyright holders.
 crlibm is a "correctly rounded maths library" subject to LGPL 2.1. It was
 fetched from http://lipforge.ens-lyon.fr/www/crlibm/ but needed (minor)
 aljustment to let it build here.
+
+The Latin Modern Fonts and Latin Moder Math Fonts are from
+http://www.gust.org.pl/projects/e-foundry and copies of the original
+archives containing them are in csl/support-packages along with unpacked
+a copy of the GUST-FONT-LICENSE.txt file and relevant README files.
+There are two uses of derived works, and the GUST License (which is
+an instance of the Latex Project Public License) requires that an
+explanation of what is covered and what changes are made is placed in
+a prominent place (eg here!).
+In csl/cslbase/wxfonts there are re-packed font files. Merely placing the
+files in a tree that is distinct from the .zip file that formed the
+original distribution makes this a derived (and changed) work. But I
+have also needed to (use fontforge to) convert each .oft file so I also
+have a .ttf version since my Windows code appeared not to render glyphs
+from the .otf versions. This should not alter character shapes or metrics
+but may degrade rendering. I have also extracted from these fonts a
+series of bitmaps that record which characters are present in the fonts.
+This is done because I was not instantly able to do this at the point of
+rendering, and because it then helps me use font substitution for any
+missing characters. In use these fonts will be set up as application-
+specific private fonts rather than as globally and permenantly installed
+ones, so the chances of causing confusion for other software ought to
+be low. The font directories that are to be distributed as part of
+a binary release of the software contain READE files etc alongside the
+actual fonts, and executable software will respond to a "--help" option
+by displaying a message that contains a brief citation of the fonts and
+how to recover original official versions.
+I believe that since I have not changed font shapes, metrics or coverage
+and since the distribution is not set up to make the fonts available
+generally - just to have them used as application-private resources - that
+renamking the fonts (to avoid confusion) is not necessary here.
+But it is important to record that the fonts and derived information are
+NOT subject to the full permissions of the BSD License and that any
+use that envisages moving them away from the code here or altering the
+messages about them that "--help" displays needs to be done only after
+careful review of the actual licenses.
 
 
 

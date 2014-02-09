@@ -235,7 +235,7 @@ public:
   int keyFlags, searchFlags, startMatch, pauseFlags,
       historyFirst, historyLast, historyNumber, promptEnd;
   unsigned short int searchStack[256];
-  char searchString[256];
+  wchar_t searchString[256];
   Mutex pauseMutex;
 #define ANY_KEYS       1
 #define ESC_PENDING    2
@@ -247,7 +247,7 @@ public:
 #define PAUSE_DISCARD  4
   int getHistoryEvent();
   int trySearch();
-  int matchString(const char *p, int n, const char *t);
+  int matchString(const wchar_t *p, int n, const wchar_t *t);
 
   int editBacktrace();
   int editRedisplay();
@@ -287,6 +287,7 @@ public:
   int editCopyPreviousWord();
 
   int setInputText(const FXchar *text, int n);
+  int setInputText(const wchar_t *text, int n);
 
   int charForShowMath();
   void insertMathsLines();

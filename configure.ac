@@ -795,6 +795,7 @@ then
       a=${a##* }
       b=${a%.tar.bz2}
       cd ..
+      echo "will unpack a fresh copy of wxWidgets"
       rm -rf wxWidgets
       tar xfj support-packages/$a
       chmod -R +rw wxWidgets-*
@@ -934,7 +935,7 @@ then
             CXXFLAGS=\"$CXXFLAGS\" \
             LDFLAGS=\"$LDFLAGS\" $passcc \
             --disable-shared --enable-unicode \
-            --disable-compat26 \
+            --disable-compat28 --enable-compat30 \
             --with-png=builtin --without-libjpeg \
             --without-libtiff --with-libsvg=no \
             --with-sdl=no --with-zlib=builtin \

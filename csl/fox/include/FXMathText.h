@@ -25,7 +25,7 @@
 
 
 
-// A C Norman, 2010
+// A C Norman, 2010-2014
 
 /* Signature: 5809d5fd 07-Jul-2010 */
 
@@ -35,7 +35,7 @@
 *                    M u l t i - L i ne   T e x t   W i d g e t                 *
 *                                                                               *
 *********************************************************************************
-* Copyright (C) 1998,2004 by Jeroen van der Zijp.   All Rights Reserved.        *
+* Copyright (C) 1998,2006 by Jeroen van der Zijp.   All Rights Reserved.        *
 *********************************************************************************
 * This library is free software; you can redistribute it and/or                 *
 * modify it under the terms of the GNU Lesser General Public                    *
@@ -51,9 +51,15 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXMathText.h,v 1.144 2004/05/05 16:03:37 fox Exp $                           *
+* $Id: FXMathText.h,v 1.166 2006/02/06 03:03:40 fox Exp $                           *
 ********************************************************************************/
 
+// MODIFIED BY A C NORMAN, 2008, merely to add TEXT_COLUMNWRAP. This
+// comment is only here because LGPL obliges me to mark any file that is
+// altered with a prominent notice. Somehow the GPL/LGPL people could be
+// amazingly uptight at the stage that the original BSD license has an
+// "obnoxious advertising clause" while not minding that they oblige me
+// to incorporate something rather similar here!
 
 
 #ifndef FXMATHTEXT_H
@@ -75,14 +81,15 @@ namespace FX {
 
 /// Text widget options
 enum {
-  TEXT_READONLY      = 0x00100000,              /// Text is NOT editable
-  TEXT_WORDWRAP      = 0x00200000,              /// Wrap at word breaks
-  TEXT_OVERSTRIKE    = 0x00400000,              /// Overstrike mode
-  TEXT_FIXEDWRAP     = 0x00800000,              /// Fixed wrap columns
-  TEXT_NO_TABS       = 0x01000000,              /// Insert spaces for tabs
-  TEXT_AUTOINDENT    = 0x02000000,              /// Autoindent
-  TEXT_SHOWACTIVE    = 0x04000000,              /// Show active line
-  TEXT_COLUMNWRAP    = 0x08000000               /// Wrap at given col always
+  TEXT_READONLY      = 0x00100000,      /// Text is NOT editable
+  TEXT_WORDWRAP      = 0x00200000,      /// Wrap at word breaks
+  TEXT_OVERSTRIKE    = 0x00400000,      /// Overstrike mode
+  TEXT_FIXEDWRAP     = 0x00800000,      /// Fixed wrap columns
+  TEXT_NO_TABS       = 0x01000000,      /// Insert spaces for tabs
+  TEXT_AUTOINDENT    = 0x02000000,      /// Autoindent
+  TEXT_SHOWACTIVE    = 0x04000000,      /// Show active line
+  TEXT_AUTOSCROLL    = 0x08000000,      /// Logging mode, keeping last line visible
+  TEXT_COLUMNWRAP    = 0x10000000       /// Wrap at given column always
   };
 
 
@@ -123,7 +130,16 @@ struct FXTextChange {
 
 #endif // end of commented out code
 
-/// Multiline text widget
+/**
+* The text widget supports editing of multiple lines of text.
+* An optional style table can provide text coloring based on
+* the contents of an optional parallel style buffer, which is
+* maintained as text is edited.  In a typical scenario, the
+* contents of the style buffer is either directly written when
+* the text is added to the widget, or is continually modified
+* by editing the text via syntax-based highlighting engine which
+* colors the text based on syntactical patterns.
+*/
 class FXAPI FXMathText : public FXScrollArea {
   FXDECLARE(FXMathText)
 protected:
@@ -175,8 +191,7 @@ protected:
   FXString       searchstring;        // String of last search
   FXuint         searchflags;         // Flags of last search
   const FXchar  *delimiters;          // Delimiters
-  FXchar        *clipbuffer;          // Clipped text
-  FXint          cliplength;          // Length of clipped text
+  FXString       clipped;             // Clipped text
   FXint          vrows;               // Default visible rows
   FXint          vcols;               // Default visible columns
   FXString       help;                // Status line help
@@ -204,11 +219,8 @@ protected:
   void movegap(FXint pos);
   void sizegap(FXint sz);
   void squeezegap();
-  FXint charWidth(FXchar ch,FXint indent) const;
+  FXint charWidth(FXwchar ch,FXint indent) const;
   FXint wrap(FXint start) const;
-  FXint countRows(FXint start,FXint end) const;
-  FXint countCols(FXint start,FXint end) const;
-  FXint countLines(FXint start,FXint end) const;
   FXint measureText(FXint start,FXint end,FXint& wmax,FXint& hmax) const;
   FXint lineWidth(FXint pos,FXint n) const;
   FXint getYOfPos(FXint pos) const;
@@ -220,9 +232,9 @@ protected:
   void mutation(FXint pos,FXint ncins,FXint ncdel,FXint nrins,FXint nrdel);
   virtual void replace(FXint pos,FXint m,const FXchar *text,FXint n,FXint style);
   void recompute();
-  FXint matchForward(FXint pos,FXint end,FXchar l,FXchar r,FXint level) const;
-  FXint matchBackward(FXint pos,FXint beg,FXchar l,FXchar r,FXint level) const;
-  FXint findMatching(FXint pos,FXint beg,FXint end,FXchar ch,FXint level) const;
+  FXint matchForward(FXint pos,FXint end,FXwchar l,FXwchar r,FXint level) const;
+  FXint matchBackward(FXint pos,FXint beg,FXwchar l,FXwchar r,FXint level) const;
+  FXint findMatching(FXint pos,FXint beg,FXint end,FXwchar ch,FXint level) const;
   void flashMatching();
   void moveContents(FXint x,FXint y);
 protected:
@@ -254,7 +266,6 @@ private:
   FXMathText& operator=(const FXMathText&);
 public:
   long onPaint(FXObject*,FXSelector,void*);
-  long onUpdate(FXObject*,FXSelector,void*);
   long onFocusIn(FXObject*,FXSelector,void*);
   long onFocusOut(FXObject*,FXSelector,void*);
   long onLeftBtnPress(FXObject*,FXSelector,void*);
@@ -346,7 +357,6 @@ public:
   // Manipulation Selection
   long onCmdCutSel(FXObject*,FXSelector,void*);
   long onCmdCopySel(FXObject*,FXSelector,void*);
-  long onCmdCopySelText(FXObject*,FXSelector,void*);
   long onCmdPasteSel(FXObject*,FXSelector,void*);
   long onCmdDeleteSel(FXObject*,FXSelector,void*);
   long onCmdChangeCase(FXObject*,FXSelector,void*);
@@ -407,7 +417,6 @@ public:
     ID_INSERT_TAB,
     ID_CUT_SEL,
     ID_COPY_SEL,
-    ID_COPY_SEL_TEXT,
     ID_DELETE_SEL,
     ID_PASTE_SEL,
     ID_PASTE_MIDDLE,
@@ -465,8 +474,7 @@ public:
 public:
 
   /// Construct multi-line text widget
-  FXMathText(FXComposite *p,FXObject* tgt=NULL,FXSelector sel=0,FXuint opts=0,FXint x=0,FXint y=0,FXint w=0,FXint h=0,
-             FXint pl=3,FXint pr=3,FXint pt=2,FXint pb=2);
+  FXMathText(FXComposite *p,FXObject* tgt=NULL,FXSelector sel=0,FXuint opts=0,FXint x=0,FXint y=0,FXint w=0,FXint h=0,FXint pl=3,FXint pr=3,FXint pt=2,FXint pb=2);
 
   /// Create server-side resources
   virtual void create();
@@ -492,12 +500,6 @@ public:
   /// Need to recalculate size
   virtual void recalc();
 
-  /// Resize this window to the specified width and height
-  virtual void resize(FXint w,FXint h);
-
-  /// Move and resize this window in the parent's coordinates
-  virtual void position(FXint x,FXint y,FXint w,FXint h);
-
   /// Get default width
   virtual FXint getContentWidth();
 
@@ -505,11 +507,7 @@ public:
   virtual FXint getContentHeight();
 
   /// Returns true because a text widget can receive focus
-#if (FOX_MINOR<=4)
-  virtual FXbool canFocus() const;
-#else
   virtual bool canFocus() const;
-#endif
 
   /// Move the focus to this window
   virtual void setFocus();
@@ -565,11 +563,17 @@ public:
   /// Set modified flag
   void setModified(FXbool mod=TRUE){ modified=mod; }
 
+  /// Set editable mode
+  void setEditable(FXbool edit=TRUE);
+
   /// Return TRUE if text is editable
   FXbool isEditable() const;
 
-  /// Set editable flag
-  void setEditable(FXbool edit=TRUE);
+  /// Set overstrike mode
+  void setOverstrike(FXbool over=TRUE);
+
+  /// Return TRUE if overstrike mode in effect
+  FXbool isOverstrike() const;
 
   /// Set styled text mode
   void setStyled(FXbool styled=TRUE);
@@ -656,58 +660,70 @@ public:
   FXString getTipText() const { return tip; }
 
   /// Get character at position in text buffer
-  FXint getChar(FXint pos) const;
+  FXint getByte(FXint pos) const;
 
-  /// Get style at position in style buffer
+  /// Get wide character at position pos
+  FXwchar getChar(FXint pos) const;
+
+  /// Get length of wide character at position pos
+  FXint getCharLen(FXint pos) const;
+
+  /// Get style at position pos
   FXint getStyle(FXint pos) const;
 
-  /// Extract n characters of text from position pos
+  /// Extract n bytes of text from position pos
   void extractText(FXchar *text,FXint pos,FXint n) const;
+  void extractText(FXString& text,FXint pos,FXint n) const;
 
-  /// Extract n characters of style info from position pos
+  /// Extract n bytes of style info from position pos
+  void extractStyle(FXString& text,FXint pos,FXint n) const;
   void extractStyle(FXchar *style,FXint pos,FXint n) const;
 
-  /// Replace m characters at pos by n characters
-  void replaceText(FXint pos,FXint m,const FXchar *text,FXint n,FXbool notify=FALSE);
+  /// Replace m bytes at pos by n characters
+  virtual void replaceText(FXint pos,FXint m,const FXchar *text,FXint n,FXbool notify=FALSE);
+  virtual void replaceText(FXint pos,FXint m,const FXString& text,FXbool notify=FALSE);
 
-  /// Replace m characters at pos by n characters
-  void replaceStyledText(FXint pos,FXint m,const FXchar *text,FXint n,FXint style=0,FXbool notify=FALSE);
+  /// Replace m bytes at pos by n characters
+  virtual void replaceStyledText(FXint pos,FXint m,const FXchar *text,FXint n,FXint style=0,FXbool notify=FALSE);
+  virtual void replaceStyledText(FXint pos,FXint m,const FXString& text,FXint style=0,FXbool notify=FALSE);
 
-  /// Append n characters of text at the end of the buffer
-  void appendText(const FXchar *text,FXint n,FXbool notify=FALSE);
+  /// Append n bytes of text at the end of the buffer
+  virtual void appendText(const FXchar *text,FXint n,FXbool notify=FALSE);
+  virtual void appendText(const FXString& text,FXbool notify=FALSE);
 
-  /// Append n characters of text at the end of the buffer
-  void appendStyledText(const FXchar *text,FXint n,FXint style=0,FXbool notify=FALSE);
+  /// Append n bytes of text at the end of the buffer
+  virtual void appendStyledText(const FXchar *text,FXint n,FXint style=0,FXbool notify=FALSE);
+  virtual void appendStyledText(const FXString& text,FXint style=0,FXbool notify=FALSE);
 
-  /// Insert n characters of text at position pos into the buffer
-  void insertText(FXint pos,const FXchar *text,FXint n,FXbool notify=FALSE);
+  /// Insert n bytes of text at position pos into the buffer
+  virtual void insertText(FXint pos,const FXchar *text,FXint n,FXbool notify=FALSE);
+  virtual void insertText(FXint pos,const FXString& text,FXbool notify=FALSE);
 
-  /// Insert n characters of text at position pos into the buffer
-  void insertStyledText(FXint pos,const FXchar *text,FXint n,FXint style=0,FXbool notify=FALSE);
+  /// Insert n bytes of text at position pos into the buffer
+  virtual void insertStyledText(FXint pos,const FXchar *text,FXint n,FXint style=0,FXbool notify=FALSE);
+  virtual void insertStyledText(FXint pos,const FXString& text,FXint style=0,FXbool notify=FALSE);
 
-  /// Remove n characters of text at position pos from the buffer
-  void removeText(FXint pos,FXint n,FXbool notify=FALSE);
+  /// Remove n bytes of text at position pos from the buffer
+  virtual void removeText(FXint pos,FXint n,FXbool notify=FALSE);
 
   /// Change style of text range
-  void changeStyle(FXint pos,FXint n,FXint style);
+  virtual void changeStyle(FXint pos,FXint n,FXint style);
 
   /// Change style of text range from style-array
-  void changeStyle(FXint pos,FXint n,const FXchar* style);
+  virtual void changeStyle(FXint pos,const FXchar* style,FXint n);
+  virtual void changeStyle(FXint pos,const FXString& style);
 
   /// Change the text in the buffer to new text
-  void setText(const FXchar* text,FXint n,FXbool notify=FALSE);
+  virtual void setText(const FXchar* text,FXint n,FXbool notify=FALSE);
+  virtual void setText(const FXString& text,FXbool notify=FALSE);
 
   /// Change the text in the buffer to new text
-  void setStyledText(const FXchar* text,FXint n,FXint style=0,FXbool notify=FALSE);
+  virtual void setStyledText(const FXchar* text,FXint n,FXint style=0,FXbool notify=FALSE);
+  virtual void setStyledText(const FXString& text,FXint style=0,FXbool notify=FALSE);
 
   /// Retrieve text into buffer
   void getText(FXchar* text,FXint n) const;
-
-  /// Change the text
-  void setText(const FXString& text,FXbool notify=FALSE);
-
-  /// Change the text
-  void setStyledText(const FXString& text,FXint style=0,FXbool notify=FALSE);
+  void getText(FXString& text) const;
 
   /// Return text in the widget
   FXString getText() const;
@@ -715,6 +731,9 @@ public:
   /// Return length of buffer
   FXint getLength() const { return length; }
 
+  /// Return number of rows in buffer
+  FXint getNumRows() const { return nrows; }
+  
   /// Shift block of lines from position start up to end by given amount
   FXint shiftText(FXint start,FXint end,FXint amount,FXbool notify=FALSE);
 
@@ -742,6 +761,15 @@ public:
 
   /// Return text position at given visible x,y coordinate
   FXint getPosAt(FXint x,FXint y) const;
+
+  /// Count number of rows; start should be on a row start
+  FXint countRows(FXint start,FXint end) const;
+
+  /// Count number of columns; start should be on a row start
+  FXint countCols(FXint start,FXint end) const;
+
+  /// Count number of newlines
+  FXint countLines(FXint start,FXint end) const;
 
   /// Return position of begin of line containing position pos
   FXint lineStart(FXint pos) const;
@@ -779,8 +807,14 @@ public:
   /// Return end of word
   FXint wordEnd(FXint pos) const;
 
-  /// Return validated position
+  /// Return validated utf8 character start position
   FXint validPos(FXint pos) const;
+
+  /// Retreat to the previous valid utf8 character start
+  FXint dec(FXint pos) const;
+
+  /// Advance to the next valid utf8 character start
+  FXint inc(FXint pos) const;
 
   /// Make line containing pos the top line
   void setTopLine(FXint pos);
@@ -892,6 +926,7 @@ public:
   /// Destructor
   virtual ~FXMathText();
   };
+
 
 }
 

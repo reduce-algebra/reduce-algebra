@@ -2009,11 +2009,6 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
 @mac_framework_FALSE@@wx_TRUE@	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	-mkdir -p reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
 # The Latin Modern (and Latin Modern Maths) fonts might well replace the
 # BaKoMa ones for my purposes... At present their inclusion here is an
 # experiment. Note that although I may distribute them as part of Reduce
@@ -2024,17 +2019,13 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/MANIFEST-Latin-Modern.txt reduce.$(fontsdir)/MANIFEST-Latin-Modern.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.oft reduce.$(fontsdir)
-# At present the only CM Unicode font I will copy across is CMTT.
-# I will still need and use the BaKoMa fonts for CMSY, CMEX and MSAM etc
-# special characters when typesetting high quality mathematics..
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
 # With Windows I will want a .ttf version for any time I am using gdiplus.
-# But when I am not the original .otf version might be better.
 @mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
+@mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/l*.ttf reduce.$(fontsdir)
+@mac_framework_FALSE@@windows_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+@mac_framework_FALSE@@windows_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/l*.otf reduce.$(fontsdir)
 # The DejaVu Sans Mono font covers a range of characters that CMTT does not..
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32

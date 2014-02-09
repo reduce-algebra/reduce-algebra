@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2013
+ * "fwin.c"                                 Copyright A C Norman 2003-2014
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* $ Id: $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -445,7 +445,6 @@ int main(int argc, char *argv[])
  * The decision on Windows is in fact a lot messier.
  *
  * I have tried various messy Windows API calls here to get this right.
-/* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line
@@ -720,7 +719,6 @@ int fwin_plain_getchar()
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
-            input_history_add(current_line);
         }
     }
     else if (chars_left == 0)
@@ -2600,3 +2598,4 @@ int readlink(const char *name, char *b, size_t n)
 #endif
 
 /* end of fwin.c */
+

@@ -935,7 +935,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
     {
     case 'x':
     case 'X':
-        page ^= 0x10000/0x80; // Second pane
+        page ^= 0x10000/0x80; // Second plane
         break;
     case '+':
     case '=':              // "+" key but without shift pressed...

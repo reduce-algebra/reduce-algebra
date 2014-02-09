@@ -1137,12 +1137,6 @@ if mac_framework
 else !mac_framework
 	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 	-mkdir -p reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
-	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
-	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
-if wx
 # The Latin Modern (and Latin Modern Maths) fonts might well replace the
 # BaKoMa ones for my purposes... At present their inclusion here is an
 # experiment. Note that although I may distribute them as part of Reduce
@@ -1153,20 +1147,16 @@ if wx
 	$(CP) $(srcdir)/$(fontsdir)/MANIFEST-Latin-Modern.txt reduce.$(fontsdir)/MANIFEST-Latin-Modern.txt
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
-endif wx
-	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/*.oft reduce.$(fontsdir)
-# At present the only CM Unicode font I will copy across is CMTT.
-# I will still need and use the BaKoMa fonts for CMSY, CMEX and MSAM etc
-# special characters when typesetting high quality mathematics..
 	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
 	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
-	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
 if windows
 # With Windows I will want a .ttf version for any time I am using gdiplus.
-# But when I am not the original .otf version might be better.
 	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
-endif windows
+	$(CP) $(srcdir)/$(fontsdir)/l*.ttf reduce.$(fontsdir)
+else !windows
+	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/l*.otf reduce.$(fontsdir)
+endif !windows
 # The DejaVu Sans Mono font covers a range of characters that CMTT does not..
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32
