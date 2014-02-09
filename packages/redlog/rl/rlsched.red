@@ -271,6 +271,8 @@ rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), function(lambda x; rl_mk!*fo
 
 rl_mkserv('vsl,'(rl_a2s!-atl),nil,nil,'rl_mk!*fof,T);
 
+rl_mkserv('sign,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+
 % Black box scheduler.
 
 rl_mkbb('rl_simplat1,2);
@@ -408,6 +410,8 @@ rl_mkbb('rl_smt2ReadAt,1);
 rl_mkbb('rl_vsubalchk, 1);
 
 rl_mkbb('rl_vsubat, 3);
+
+rl_mkbb('rl_signat, 1);
 
 endmodule;  % [rlsched]
 

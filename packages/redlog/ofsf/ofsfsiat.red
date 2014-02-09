@@ -364,6 +364,9 @@ procedure ofsf_posdefp!-pos1(u);
    else
       ofsf_posdefp!-pos1 lc u and ofsf_posdefp!-pos1 red u;
 
+procedure ofsf_signat(at);
+   ofsf_0mk2(ofsf_op at, numr simp reval {'sign, mk!*sq !*f2q ofsf_arg2l at});
+
 endmodule;  % [ofsfsiat]
 
 end;  % of file

@@ -833,6 +833,9 @@ procedure cl_qesil(fl,theo);
       return res
    end;
 
+procedure cl_sign(f);
+   cl_apply2ats(f, 'rl_signat);
+
 endmodule;  % [clsimpl]
 
 end;  % of file
