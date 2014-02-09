@@ -878,9 +878,9 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
             break;
         }
 #else /* WITH_CILK */
-        cilk_spawn long_times(kara_1_d,kara_1_a,kara_1_b,kara_1_c,
+        cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
                               kara_1_lena,kara_1_lenb,kara_1_lenc);
-        cilk_spawn long_times(kara_2_d,kara_2_a,kara_2_b,kara_2_c,
+        cilk_spawn long_times(kara_2_c,kara_2_a,kara_2_b,kara_2_d,
                               kara_2_lena,kara_2_lenb,kara_2_lenc);
 #endif /* WITH_CILK */
         /* Now do my own work in parallel with worker 1 */
@@ -966,9 +966,11 @@ case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
         break;
     }
 #else /* WITH_CILK */
-    cilk_spawn long_times(kara_1_d,kara_1_a,kara_1_b,kara_1_c,
+    if (kara_1_lenc != 0) 
+    cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
                           kara_1_lena,kara_1_lenb,kara_1_lenc);
-    cilk_spawn long_times(kara_2_d,kara_2_a,kara_2_b,kara_2_c,
+    if (kara_2_lenc != 0)
+    cilk_spawn long_times(kara_2_c,kara_2_a,kara_2_b,kara_2_d,
                           kara_2_lena,kara_2_lenb,kara_2_lenc);
 #endif /* WITH_CILK */
 /*
