@@ -168,6 +168,7 @@ put('ofsf,'rl_params,'(
    (rl_smt2ReadAt!* . ofsf_smt2ReadAt)
    (rl_vsubalchk!* . ofsf_vsubalchk)
    (rl_vsubat!* . ofsf_vsubat)
+   (rl_signat!* . ofsf_signat)
    (rl_rxffn!* . ofsf_rxffn)));
 
 % Services
@@ -257,6 +258,7 @@ put('ofsf,'rl_services,'(
    (rl_ptropsat!* . ofsf_ptropsat)
    (rl_dpep!* . ofsf_dpep)
    (rl_vsl!* . vsl_vsl)
+   (rl_sign!* . cl_sign)
    (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin

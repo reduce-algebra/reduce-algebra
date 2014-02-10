@@ -1633,15 +1633,21 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
    end;
 
 procedure ofsf_qemkans(an,svf);
-   if !*rlqestdans and not !*rlqegen then
-      sort(ofsf_qebacksub ofsf_qemkstdans(an,svf),
-      	 function(lambda(x,y); ordp(cadr x,cadr y)))
-   else
-      sort(ofsf_qebacksub ofsf_qemkans1 an,
-      	 function(lambda(x,y); ordp(cadr x,cadr y)));
+   begin scalar res;
+      if !*rlqestdans and not !*rlqegen then
+	 an := ofsf_qemkstdans(an,svf);
+      res := ofsf_qemkans1 an;
+      res := if !*rlqebacksub then
+	 ofsf_qebacksub res
+      else
+	 ofsf_qenobacksub res;
+      if !*rlqebacksub then
+	 res := sort(res, function(lambda(x,y); ordp(cadr x,cadr y)));
+      return res
+   end;
 
 procedure ofsf_qemkstdans(an,svf);
-   begin scalar fl, y, f, v, sub, xargl, nan, w;
+   begin scalar fl, y, f, v, sub, xargl, nan;
       if !*rlverbose then
 	 ioto_tprin2t {"++++ determining standard real numbers for the answers ",
 	    for each y in an collect car y, " ..."};
@@ -1691,7 +1697,7 @@ procedure ofsf_qemkstdans(an,svf);
 	    rederr "BUG IN ofsf_qemkstdans"
       >>;
       assert(null fl);
-      return ofsf_qemkans1 reversip nan
+      return reversip nan
    end;
 
 procedure ofsf_qemkansfl(svf, an);
@@ -1844,7 +1850,9 @@ procedure ofsf_qemkans1(an);
    % Ordered field standard form quantifier elimination make answer
    % subroutine. [an] is an answer. Returns a list $((e,a),...)$,
    % where $e$ is an equation and $a$ is an answer translation.
-   begin scalar v,sub,xargl,w,ioe; integer ic,ec;
+   begin
+      scalar v,sub,xargl,w;
+      integer ic,ec;
       return for each y in an collect <<
 	 v := car y;
 	 sub := cadr y;
@@ -1888,13 +1896,11 @@ procedure ofsf_qebacksub(eql);
    % w) . a), ...)$, where $v$ is a variable, $w$ is an SQ, and $a$ is
    % an answer translation. Returns a list $((e,a),...)$, where $e$ is
    % an equation and $a$ is an answer translation.
-   begin scalar subl,rhs,e;
-      if not !*rlqebacksub then
-	 return ofsf_qenobacksub eql;
+   begin scalar subl,e;
       return for each w in eql join <<
-	    e := {'equal,car w,prepsq subsq(cdr w,subl)};
-	    subl := (car w . caddr e) . subl;
-	    if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
+	 e := {'equal,car w,prepsq subsq(cdr w,subl)};
+	 subl := (car w . caddr e) . subl;
+	 if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
       >>
    end;
 
@@ -1903,12 +1909,9 @@ procedure ofsf_qenobacksub(eql);
    % w) . a), ...)$, where $v$ is a variable, $w$ is an SQ, and $a$ is
    % an answer translation. Returns a list $((e,a),...)$, where $e$ is
    % an equation and $a$ is an answer translation.
-   begin scalar subl,rhs,e;
-      return for each w in eql join <<
-	    e := {'equal,car w,prepsq cdr w};
-	    if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
-      >>
-   end;
+   for each w in eql join
+      if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then
+	 {{'equal,car w,prepsq cdr w}};
 
 procedure ofsf_croot(u,n);
    if eqn(n,1) then u else reval {'expt,u,{'quotient,1,n}};
