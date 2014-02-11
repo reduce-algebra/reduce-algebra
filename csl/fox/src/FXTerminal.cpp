@@ -1,5 +1,5 @@
 //
-// "FXTerminal.cpp"                         Copyright A C Norman 2003-2104
+// "FXTerminal.cpp"                         Copyright A C Norman 2003-2010
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2003-14 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
+* Copyright (C) 2003-10 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -27,9 +27,6 @@
 * I had intended to release this under the FOX addendum to its license that   *
 * permits static linking, but the non-transitive nature of the terms there    *
 * makes that infeasible hence this is just under LGPL.                        *
-* But all parts of it that are MY code and that do not count as derived works *
-* of the FOX toolkit are also licensed under the revised BSD license, as      *
-* used for the Reduce algebra system.                                         *
 ******************************************************************************/
 
 // However as a special exception to LGPL 2.1 I grant permission for my code
@@ -64,8 +61,6 @@
 #else
 #include <pthread.h>
 #endif
-
-#include <cwchar>
 
 #if FOX_MAJOR==1 && FOX_MINOR==0
 #  define FXSEL(a,b) MKUINT(a,b)
@@ -177,6 +172,7 @@ FXDEFMAP(FXTerminal) FXTerminalMap[] =
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_COPY_SEL_X, FXTerminal::onCmdCopySel),
     FXMAPFUNC(SEL_COMMAND,      FXMathText::ID_COPY_SEL, FXTerminal::onCmdCopySel),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_COPY_SEL_TEXT_X, FXTerminal::onCmdCopySelText),
+    FXMAPFUNC(SEL_COMMAND,      FXMathText::ID_COPY_SEL_TEXT, FXTerminal::onCmdCopySelText),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_REINPUT, FXTerminal::onCmdReinput),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_CLEAR, FXTerminal::onCmdClear),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_REDRAW, FXTerminal::onCmdRedraw),
@@ -787,11 +783,11 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
                              int p, int y, int left, int right)
 {
     int firstThis = p < length ? getChar(p) : 'x';
-//  int lineend;
+    int lineend;
     int line = 0;
     if (firstThis == 0x02)
-    {   //lineend=lineEnd(p);  // I want the true end of the LINE not the end
-        //                     // of the ROW here...
+    {   lineend=lineEnd(p);  // I want the true end of the LINE not the end
+                             // of the ROW here...
         int realbeg=lineStart(p);
 // Now a bit of a messy issue. I may be drawing something that was passed as
 // the second or third row of a single formula, but I want to display the
@@ -1127,23 +1123,21 @@ long FXTerminal::onCmdPrintSelection(FXObject *c, FXSelector s, void *ptr)
 long FXTerminal::onCmdCutSel(FXObject *, FXSelector, void *)
 {
 // I will not permit a CUT from anywhere other than part of the current
-// input line. I delegate the messy bit to COPY.
+// input line. I delegate the messy but to COPY.
     if (selstartpos < selendpos &&
         promptEnd <= selstartpos &&
         (options & TEXT_READONLY) == 0)
     {   onCmdCopySel(this, 0, NULL);
 // I will only delete the stuff if I managed to copy it to the clipboard,
 // which I can tell here by virtue of clipbuffer being reasonable.
-// Well with changes elsewhere I may need ro review this!
-//@@@        if (clipbuffer)
-//@@@        {
-            removeText(selstartpos, selendpos-selstartpos, TRUE);
+        if (clipbuffer)
+        {   removeText(selstartpos, selendpos-selstartpos, TRUE);
             killSelection(TRUE);
             setCursorPos(cursorpos, TRUE);
             makePositionVisible(cursorpos);
             flags |= FLAG_CHANGED;
             modified = TRUE;
-//@@@        }
+        }
     }
     else getApp()->beep();
     return 1;
@@ -1153,8 +1147,6 @@ long FXTerminal::onCmdCutSel(FXObject *, FXSelector, void *)
 // Copy
 long FXTerminal::onCmdCopySel(FXObject *, FXSelector, void *)
 {
-#if 0
-// On a temporary basis I am disabling COPY operations totally!
     FXDragType types[2];
     if (selstartpos < selendpos)
     {   types[0]=stringType;
@@ -1251,7 +1243,6 @@ long FXTerminal::onCmdCopySel(FXObject *, FXSelector, void *)
             }
         }
     }
-#endif // Disabled code
     return 1;
 }
 
@@ -1259,14 +1250,14 @@ long FXTerminal::onCmdCopySel(FXObject *, FXSelector, void *)
 // Copy as Text
 long FXTerminal::onCmdCopySelText(FXObject *, FXSelector, void *)
 {
-#if 0
 // I will do minimal changes to the HTML-style COPY to get a plain version
     FXDragType types[2];
     if (selstartpos < selendpos)
     {   types[0]=stringType;
         types[1]=textType;
         if (acquireClipboard(types, 2))
-        {   int i;
+        {
+            int style = 0, i;
             cliplength = selendpos - selstartpos;
             FXFREE(&clipbuffer);
             FXCALLOC(&clipbuffer, FXchar, cliplength+1);
@@ -1287,7 +1278,6 @@ long FXTerminal::onCmdCopySelText(FXObject *, FXSelector, void *)
             }
         }
     }
-#endif // end of disabled section
     return 1;
 }
 
@@ -2360,11 +2350,11 @@ long FXTerminal::onKeyPress(FXObject *c, FXSelector s, void *ptr)
 {
     int ch;
     FXEvent *event = (FXEvent *)ptr;
-    const wchar_t *history_string = L"";
+    const char *history_string = "";
     if (!isEnabled()) return 0;
     switch (event->code)
     {
-// Here are some keys that I just want to ignore..
+// Here are some keys that  just want to ignore..
 case KEY_Shift_L:
 case KEY_Shift_R:
 case KEY_Control_L:
@@ -2430,7 +2420,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             startMatch = trySearch();
             history_string = input_history_get(historyNumber);
 // ought not to return NULL here!
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, strlen(history_string));
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2458,7 +2448,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             }
             startMatch = r;
             history_string = input_history_get(historyNumber);
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, strlen(history_string));
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2486,7 +2476,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             }
             startMatch = r;
             history_string = input_history_get(historyNumber);
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, strlen(history_string));
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2547,7 +2537,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             }
             startMatch = r;
             history_string = input_history_get(historyNumber);
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, strlen(history_string));
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2777,18 +2767,12 @@ case KEY_underscore:
 
 default:
 defaultlabel:
-// Any codes over 0xfd00 get sent to FXMathText here... FOX used key codes
-// in this range for IBM3270 emulation, virtual terminal control, some dead
-// keys, keypad and function keys and cursor control. In other words things
-// that do not display as simple characters. So I just pass these down to
-// FXMathText.
-        if ((event->code & 0xff00) >= 0xfd00)
+        if ((event->code & ~0xff) != 0 ||
+            event->text[1] != 0)
             return FXMathText::onKeyPress(c, s, ptr);
-// here I should have a single simple character, even though in UTF-8 it
-// may be represented as a multi-byte sequence.
+// here I should have a single simple character
         ch = event->text[0];
-// and I will filter out control characters... since these also are not
-// printable as such.
+// and I will filter out control characters...
         if ((ch & 0xff) < 0x20) return FXMathText::onKeyPress(c, s, ptr);
         break;
     }
@@ -2810,11 +2794,6 @@ defaultlabel:
 // I will interpret backspace as deleting the most recent character
 // (if there is one, and not if we get back to a newline). Otherwise
 // I just fill a (circular) buffer.
-// @@@@ At present the type-ahead buffer is of type "char" not "wchar_t" and
-// I only put 8 bits in for each character. The effect is that if non-ASCII
-// characters are typed-ahead they will get masked with 0xff and so corrupted.
-// For now I will hope that type-ahead is rare enough anyway that I will
-// not worry!
     flags&=~FLAG_TIP;
     if (ch == '\b')  // delete previous character in buffer if there is one
     {   int n = type_in;
@@ -3114,27 +3093,11 @@ int FXTerminal::setInputText(const FXchar *text, int n)
 }
 
 
-// Oh JOY - I need a version for wide characters as well...
-
-int FXTerminal::setInputText(const wchar_t *text, int n)
-{
-    FXString foxtext(text);
-    int n2 = length;
-    int n1 = lineStart(n2);
-    while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
-    replaceStyledText(n1, n2-n1, foxtext.text(), n, STYLE_INPUT);
-//    changeStyle(n1, length-n1, STYLE_INPUT);  // paint it the right colour
-    setCursorPos(length);
-    makePositionVisible(length);
-    return n1;
-}
-
-
 // The history routines here are never invoked unless we are awaiting input
 
 int FXTerminal::editHistoryNext()
 {
-    const wchar_t *history_string;
+    const char *history_string;
     if (historyLast == -1) // no history lines at all to retrieve!
     {   getApp()->beep();
         return 1;
@@ -3144,7 +3107,7 @@ int FXTerminal::editHistoryNext()
     {   getApp()->beep();
         return 1;
     }
-    setInputText(history_string, std::wcslen(history_string));
+    setInputText(history_string, strlen(history_string));
     return 1;
 }
 
@@ -3200,7 +3163,7 @@ int FXTerminal::editSearchHistoryNext()
 int FXTerminal::trySearch()
 {
     int r = -1;
-    const wchar_t *history_string = input_history_get(historyNumber);
+    const char *history_string = input_history_get(historyNumber);
     if (history_string == NULL) return -1;
     while ((r = matchString(searchString, SEARCH_LENGTH, history_string)) < 0)
     {   if (searchFlags & SEARCH_FORWARD)
@@ -3217,7 +3180,7 @@ int FXTerminal::trySearch()
     return r;
 }
 
-int FXTerminal::matchString(const wchar_t *pat, int n, const wchar_t *text)
+int FXTerminal::matchString(const char *pat, int n, const char *text)
 {
 // This is a crude and not especially efficient pattern match. I think
 // it should be good enough for use here! I make it return the offset where
@@ -3225,7 +3188,7 @@ int FXTerminal::matchString(const wchar_t *pat, int n, const wchar_t *text)
 // later. I could put the cursor there, perhaps?
     int offset;
     for (offset=0;*(text+offset)!=0;offset++)
-    {   const wchar_t *p = pat, *q = text+offset;
+    {   const char *p = pat, *q = text+offset;
         int i;
         for (i=0; i<n; i++)
         {   if (p[i] != q[i]) break;
@@ -3244,7 +3207,7 @@ int FXTerminal::matchString(const wchar_t *pat, int n, const wchar_t *text)
 
 int FXTerminal::editHistoryPrev()
 {
-    const wchar_t *history_string;
+    const char *history_string;
     if (historyLast == -1) // no previous lines to retrieve
     {   getApp()->beep();
         return 1;
@@ -3257,7 +3220,7 @@ int FXTerminal::editHistoryPrev()
     {   getApp()->beep();
         return 1;
     }
-    setInputText(history_string, std::wcslen(history_string));
+    setInputText(history_string, strlen(history_string));
     return 1;
 }
 
@@ -3370,7 +3333,7 @@ int FXTerminal::editExtendedCommand()
 
 int FXTerminal::editObeyCommand()
 {
-// @@@@@   Use this to do Unicode conversion ...
+// @@@@@
     return 1;
 }
 
@@ -3494,7 +3457,7 @@ long FXTerminal::onCmdInsertNewline(FXObject *c, FXSelector s, void *ptr)
 // I enter the line that has just been collected into the history
 // record.
     inputBuffer[n] = 0;
-    input_history_add_utf8(inputBuffer);
+    input_history_add(inputBuffer);
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
     historyLast = input_history_next - 1;
@@ -3887,6 +3850,7 @@ long FXTerminal::requestSetMenus()
     char **modules = modules_list,
          **switches =  switches_list;
     FXMenuPane *loadMenu, *switchMenu, *tempMenu;
+    int some = 0;
     if (modules != NULL && *modules!=NULL)
     {   loadMenu = new FXMenuPane(main_window);
 // There is an amazing bit of messing about here! I accept a raw list of
@@ -3929,6 +3893,7 @@ long FXTerminal::requestSetMenus()
         FXMenuTitle *tt =
             new FXMenuTitle(main_menu_bar, "Load P&ackage", NULL, loadMenu);
         tt->create();
+        some = 1;
     }
 // Now do roughly the same with switches
     if (switches != NULL && *switches != NULL)
@@ -3997,6 +3962,7 @@ long FXTerminal::requestSetMenus()
         FXMenuTitle *tt =
             new FXMenuTitle(main_menu_bar, "&Switch", NULL, switchMenu);
         tt->create();
+        some = 1;
     }
     main_menu_bar->recalc();
     main_menu_bar->update();
@@ -4299,7 +4265,7 @@ void FXTerminal::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) c
   register FXuint curstyle,newstyle;
   linebeg=visrows[line];
   lineend=truelineend=visrows[line+1];
-  if(linebeg<lineend && Ascii::isSpace(getChar(lineend-1))) lineend--;         // Back off last space
+  if(linebeg<lineend && isspace(getChar(lineend-1))) lineend--;         // Back off last space
   int firstThis = linebeg < length ? getChar(linebeg) : 'x';
   if (firstThis == 0x02)
   { lineend=lineEnd(linebeg);  // I want the true end of the LINE not the end
@@ -4395,7 +4361,7 @@ void FXTerminal::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) c
   row=toprow+line;
 
   // Scan ahead till until we hit the end or the left edge
-  for(sp=linebeg; sp<lineend; sp+=getCharLen(ep)){
+  for(sp=linebeg; sp<lineend; sp++){
     cw=charWidth(getChar(sp),x);
     if(x+edge+cw>=left) break;
     x+=cw;
@@ -4405,7 +4371,7 @@ void FXTerminal::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) c
   curstyle=style(row,linebeg,lineend,sp);
 
   // Draw until we hit the end or the right edge
-  for(ep=sp; ep<lineend; ep+=getCharLen(ep)){
+  for(ep=sp; ep<lineend; ep++){
     newstyle=style(row,linebeg,truelineend,ep);
     if(newstyle!=curstyle){
       fillBufferRect(dc,edge+x,y,w,h,curstyle);

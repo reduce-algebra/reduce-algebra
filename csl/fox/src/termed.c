@@ -1,7 +1,7 @@
-/* termed.c                          Copyright (C) 2004-2014 Codemist Ltd */
+/* termed.c                          Copyright (C) 2004-2012 Codemist Ltd */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -50,69 +50,6 @@
  * that start and I do not want that. Also my cursor activity is really pretty
  * simple and clever optimisation for it seems unnecessary.
  */
-
-
-/*
- * I need to think properly about characters outside the simple ASCII
- * character set. There are (at least) four places where there is
- * a chance for representations to apply:
- * (1) When communicating with lower level code to read characters.
- *     The Windows API that I use can return either an ASCII or a
- *     Unicode representation of whatever character it reads, and
- *     whatever else it hands back each keystroke that denotes a
- *     characters as a single entity. Linux (and cygwin) seems to pass
- *     back characters in Unicode encoded using UTF8, so that simple
- *     ASCII characters with codes in the range 0x00 to 0x7f come back as
- *     just one octet, but other characters are handed to me as a
- *     sequence of octets.
- * (2) When buffering material here (eg in the history record) I will
- *     want to have some representation that will support recording and
- *     searching. The partially complete input-line will need to
- *     be stored so that I can perform local editing, and that will mean
- *     I need to be able to check if characters in it are letters etc,
- *     and I will need to be able to move backwards and forwards in the
- *     buffer. Having one storage unit per character will probably make the
- *     input line buffer easier to cope with.
- * (3) Communication with the application that uses this interface (ie
- *     CSL and Reduce!). This will be via the call "term_getline" which
- *     returns a buffer full of characters. Existing code in CSL expects this
- *     to be a buffer filled with 8-bit bytes of ASCII, so in the short
- *     term at least that must be maintained. I think that there are two
- *     plausible ways to go in the short term. One is to pack that buffer
- *     using UTF8 and then all possible input characters can be handled, but
- *     CSL will have trouble with ones whos ecode is 0x80 or higher. The
- *     other is to return a truncated 8-bit Unicode value (and possibly to
- *     map all Unicode chars from 0x100 upwards onto say "?"). I will
- *     also want to provide a "term_wgetline" to get a line of wide characters
- *     for a future when or if the application code can cope with that.
- * (4) Displaying characters on the terminal, both as genuine output from
- *     (console-mode) CSL/Reduce and during line-editing. It seems that
- *     under Windows I may need to use WriteConsoleW to write Unicode stuff
- *     to the console. With Linux etc I will need to use UTF8.
- *
- * Throughout this there is an extra layer of murk that Windows uses UTF16
- * and codes in the range d800 to dbff and dc00 to dfff are used when a code
- * over ffff, with the high 10 bits in the d8xx surrogate coming first and
- * then the low 10 in the dcxx unit. Code values that are in the surrogate
- * range are not valid on their own. An effect of that is that on Windows
- * the type wchar_t can not store all possible characters, so I need to
- * decide if that worries me and if so what I can do. For now my plan is
- * to use wchar_t here to hold characters and in the Windows case to treat
- * all surrogates (and hence all codepoints over ffff that they might denote)
- * as invalid.
- *
- */
-
-/*
- * The next few #define statements are a clear indication of just how
- * unpleasantly system-dependent this code has become. Eg _DARWIN_C_SOURCE
- * must be defined ona Mac so that cfmakeraw gets properly defined by
- * termios.h and _XOPEN_SOURCE and _BSD_SOURCE are similarly needed on Linux
- * and/or Cygwin to allow access to low level terminal handling functions.
- */
-#define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _DARWIN_C_SOURCE
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -167,9 +104,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <wchar.h>
 #include <ctype.h>
-#include <wctype.h>
 #include <string.h>
 #ifndef UNDER_CE
 #include <signal.h>
@@ -229,7 +164,7 @@ static int outputColour = -1;  /* whatever user had been using */
 
 #ifndef DEBUG
 
-#define LOG(...)
+#define LOG(a)
 
 #else
 
@@ -240,15 +175,13 @@ static FILE *termed_logfile = NULL;
 static void write_log(char *s, ...)
 {
     va_list x;
-    if (termed_logfile == NULL) termed_logfile = fopen("termed.log", "w");
-    
+    if (termed_logfile == NULL) termed_logfile = fopen("log.log", "w");
     va_start(x, s);
     vfprintf(termed_logfile, s, x);
     va_end(x);
 }
 
-#define LOG(...) \
-    do { write_log("%d: ", __LINE__); write_log(__VA_ARGS__); } while (0)
+#define LOG(a) write_log a
 
 #endif
 
@@ -258,7 +191,7 @@ static void write_log(char *s, ...)
  * I have a fixed size history buffer and just dump strings into it.
  */
 
-wchar_t *input_history[INPUT_HISTORY_SIZE];
+char *input_history[INPUT_HISTORY_SIZE];
 int input_history_next = 0,
     input_history_current = 0,
     longest_history_line = 0;
@@ -280,14 +213,13 @@ void input_history_end(void)
     }
 }
 
-void input_history_add(const wchar_t *s)
+void input_history_add(const char *s)
 {
 /* Make a copy of the input string... */
-    wchar_t *scopy = (wchar_t *)malloc((wcslen(s) + 1)*sizeof(wchar_t));
+    char *scopy = (char *)malloc(strlen(s) + 1);
     int p = input_history_next % INPUT_HISTORY_SIZE;
 /* If malloc returns NULL I just store an empty history entry. */
-    if (scopy != NULL) wcscpy(scopy, s);
-    LOG("History entry has %d characters in it\n", wcslen(s));
+    if (scopy != NULL) strcpy(scopy, s);
 /*
  * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
  * entries.
@@ -296,77 +228,25 @@ void input_history_add(const wchar_t *s)
     input_history[p] = scopy;
     input_history_next++;
     if (scopy != NULL)
-    {   p = wcslen(scopy);
+    {   p = strlen(scopy);
         if (p > longest_history_line) longest_history_line = p;
     }
 }
 
-void input_history_add_utf8(const char *s)
+const char *input_history_get(int n)
 {
-    int len = 0;
-    const char *s1;
-    wchar_t *scopy;
-    for (s1=s; *s1!=0; s1++)
-    {   if ((*s1 & 0xc0) != 0x80) len++;
-    }
-    int p = input_history_next % INPUT_HISTORY_SIZE;
-    scopy = (wchar_t *)malloc((len+1)*sizeof(wchar_t));
-/* If malloc returns NULL I just store an empty history entry. */
-    if (scopy != NULL)
-    {   int c;
-        wchar_t *q = scopy;
-        for (s1=s; *s1!=0; s1++)
-        {   c = *s1 & 0xff;
-            switch (c & 0xf0)
-            {
-        case 0xf0: // treat as 4-byte sequence
-                c = (c & 0x07)<<6 | (*++s1 & 0x3f);
-                c = c << 6 | (*++s1 & 0x3f);
-                c = c << 6 | (*++s1 & 0x3f);
-                break;
-        case 0xe0: // 3-byte sequence
-                c = (c & 0x0f)<<6 | (*++s1 & 0x3f);
-                c = c << 6 | (*++s1 & 0x3f);
-                break;
-        case 0xc0: case 0xd0: // 2-byte sequence
-                c = (c & 0x1f)<<6 | (*++s1 & 0x3f);
-                break;
-        case 0x80: case 0x90: case 0xa0: case 0xb0:
-                 continue; // Invalid continuation byte
-        default: break; // 1-byte case
-            }
-            *q++ = c;
-        }
-        *q = 0;
-    }
-    LOG("History entry has %d UTF8 characters in it\n", strlen(s));
-/*
- * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
- * entries.
- */
-    if (input_history[p] != NULL) free(input_history[p]);
-    input_history[p] = scopy;
-    input_history_next++;
-    if (scopy != NULL)
-    {   p = wcslen(scopy);
-        if (p > longest_history_line) longest_history_line = p;
-    }
-}
-
-const wchar_t *input_history_get(int n)
-{
-    const wchar_t *s;
+    const char *s;
 /*
  * Filter our values that are out of range and in those cases return NULL
  * as a flag to report the error.
  */
-    if (n == input_history_next) return L"";
+    if (n == input_history_next) return "";
     if (n < 0 ||
         n >= input_history_next ||
         n < input_history_next-INPUT_HISTORY_SIZE) return NULL;
     s = input_history[n % INPUT_HISTORY_SIZE];
 /* The NULL here would be if malloc had failed earlier. */
-    if (s == NULL) return L"";
+    if (s == NULL) return "";
     else return s;
 }
 
@@ -374,7 +254,7 @@ const wchar_t *input_history_get(int n)
  * Sort of beware! I have fields in the class FXTerminal with the same
  * names as these (static) variables and serving the same purpose (but for
  * windowed applications). Do not get confused please. The two sets of
- * values should never be active at the same time. If I were cleverer I
+ * values should never be active at the same time. Itf I were cleverer I
  * would have found a good way to share more of the code and avoid
  * this potential muddle.
  */
@@ -382,55 +262,39 @@ static int historyFirst, historyNumber, historyLast;
 static int searchFlags; 
 
 
-#ifndef MAX_PROMPT_LENGTH
-#  define MAX_PROMPT_LENGTH 80
-#endif
-
-static wchar_t prompt_string[MAX_PROMPT_LENGTH+1] = L">";
-
-wchar_t *input_line;
-static wchar_t *display_line;
-int prompt_length = 1, prompt_width = 1;
+static const char *prompt_string = ">";
+char *input_line;
+static char *display_line;
+int prompt_length = 1;
 static int input_line_size;
 
 /*
- * term_wide_plain_getline() can be called when cursor addressing is not
+ * term_plain_getline() can be called when cursor addressing is not
  * available. It just reads characters into a line-buffer (which it
  * extends as necessary). The data returned includes the newline
  * that terminated the line. If an error is detected (and in particular
- * at end of file) the value NULL is returned rather than a pointer to
+ * at end of file) the value NULL is raturned rather than a pointer to
  * an array of characters.
  *
  * Nothing at all is done here to fuss about special characters, so
  * things like ^C, backspace, ^Q etc etc etc are handled, if at all, by
  * the system that underpins "getchar".
- *
- * Note that even though I work internally with wide chars this will
- * return something where all the characters are limited to 8 bits. These
- * will be the 8 low bits of the Unicode representation of what was read,
- * with invalid inputs mapped onto "?". Well at least that will be what
- * happens when I can achieve it, and it will assume that input can
- * be read using getwchar().
  */
 
-static void term_putchar(int c);
-
-static wchar_t *term_wide_plain_getline(void)
+static char *term_plain_getline(void)
 {
-    wint_t n, ch;
-    int i;
+    int n, ch;
 #ifdef TEST
     fprintf(stderr, "plain_getline:");
     fflush(stderr);
 #endif
-    for (i=0; i<prompt_length; i++) term_putchar(prompt_string[i]);
+    printf("%.*s", prompt_length, prompt_string);
     fflush(stdout);
     if (input_line_size == 0) return NULL;
     input_line[0] = 0;
-    for (n=0, ch=getwchar(); ch!=WEOF && ch!=L'\n'; n++, ch=getwchar())
+    for (n=0, ch=getchar(); ch!=EOF && ch!='\n'; n++, ch=getchar())
     {   if (n >= input_line_size-20)
-        {  input_line =
-             (wchar_t *)realloc(input_line, 2*input_line_size*sizeof(wchar_t));
+        {  input_line = (char *)realloc(input_line, 2*input_line_size);
            if (input_line == NULL)
            {   input_line_size = 0;
                return NULL;
@@ -440,7 +304,7 @@ static wchar_t *term_wide_plain_getline(void)
         input_line[n] = ch;
         input_line[n+1] = 0;
     }
-    if (n==0 && ch==WEOF) return NULL;
+    if (n==0 && ch==EOF) return NULL;
     input_line[n++] = ch;
     input_line[n] = 0;
     return input_line;
@@ -448,59 +312,25 @@ static wchar_t *term_wide_plain_getline(void)
 
 /*
  * Before calling term_getline() or its variants use this to set the
- * prompt string that will be displayed.
+ * prompt string that will be displayed. You should leave the string that
+ * is passed unchanged until after input that uses it has been grabbed.
  * A prompt string longer than the width of the terminal is liable to lead
- * to bad confusion, and anyway prompts as passed are truncated. The
- * character set used with this is 8-bit Unicode... but the stored prompt
- * is in a wide string.
+ * to bad confusion.
  */
+
+#ifndef MAX_PROMPT_LENGTH
+#  define MAX_PROMPT_LENGTH 80
+#endif
 
 void term_setprompt(const char *s)
 {
-    int i;
-    prompt_length = prompt_width = strlen(s);
-    LOG("prompt = %s len %d\n", s, prompt_length);
+    prompt_string = s;
+    prompt_length = strlen(s);
 /*
  * I truncate prompts if they are really ridiculous in length since otherwise
  * it may look silly.
  */
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
-/*
- * Here I winden the characters in the prompt by merely using the passsed
- * characters as the low 8-bits of each desired character. That is fine
- * for 7-bit ASCII characters but not if the 8-bit values depend on some
- * particular code page...
- */
-    for (i=0; i<prompt_length; i++)
-    {   wint_t c = *s++ & 0xff;
-        prompt_string[i] = c;
-    }
-    prompt_string[i] = 0;
-}
-
-/*
- * Now a version that takes a wide string so that it is possible to
- * set prompts that include characters with codes over 0xff, and at least
- * up to 0xffff. On Windows there is a special nuisance if the truncation
- * at MAX_PROMPT_LENGTH tries to truncate half way through a surrogate
- * pair. In that case I will truncate one code earlier.
- */
-
-void term_wide_setprompt(const wchar_t *s)
-{
-    prompt_length = wcslen(s);
-    if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
-    if ((s[prompt_length] & 0x1ffc00) == 0xdc00) prompt_length--;
-    wcsncpy(prompt_string, s, prompt_length);
-    prompt_string[prompt_length] = 0;
-/*
- * Now in the face of possible surrogate pairs the width in columns of the
- * prompt may not be the same as the number of wchar_t items that make it
- * up, so I will note here the calculation needed to sort that out...
- */
-    prompt_width = 0;
-    for (s=prompt_string; *s!=0; s++)
-        if ((*s & 0x1ffc00) != 0xdc00) prompt_width++;
 }
 
 #ifdef DISABLE
@@ -523,7 +353,7 @@ int term_setup(int flag, const char *colour)
     fprintf(stderr,
         "term_setup in the DISABLE (no cursor addressability) case\n");
 #endif
-    input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
+    input_line = (char *)malloc(200);
     if (input_line == NULL) input_line_size = 0;
     else input_line_size = 200;
     return 1;
@@ -543,11 +373,9 @@ void term_close(void)
     }
 }
 
-static const int term_enabled = 0;
-
-static wchar_t *term_wide_fancy_getline(void)
+char *term_getline(void)
 {
-    return NULL; /* Should never be called */
+    return term_plain_getline();
 }
 
 #else /* DISABLE */
@@ -624,16 +452,12 @@ static int setupterm(char *s, int h, int *errval)
 
 static void putpc(int c)
 {
-/*
- * Here I will rely on being able to output a single octet without that
- * messing up any UTF8ness etc.
- */
     putchar(c);
 }
 
 static void putp(char *s)
 {
-    tputs(s, 1, putpc);
+   tputs(s, 1, putpc);
 }
 
 
@@ -692,7 +516,7 @@ static void my_reset_prog_mode(void)
  * it is not enabled it can do simple getchar/putchar IO.
  */
 
-static int term_enabled = 0;
+static int term_enabled;
 
 static int cursorx, cursory, final_cursorx, final_cursory, max_cursory;
 int insert_point;
@@ -719,41 +543,53 @@ static DWORD stdin_attributes, stdout_attributes;
 
 #endif
 
-extern int utf_encode(unsigned char *b, int c);
-
 static void term_putchar(int c)
 {
 /*
- * The character passed here will actually be an wchar_t and probably if I
- * was being truly proper the argument type would need to be wint_t not int.
- * However I am going to be sloppy and assume that int is good enough.
+ * This can either be given a single 8 bit character r a word with its
+ * top 8 bits non-zero. In the later case it stands for 2, 3 or 4 characters,
+ * which in the Windows case must be printed all at once.
  */
 #ifdef WIN32
-    DWORD nwritten = 1;
-    wchar_t buffer[4];
-    buffer[0] = c;
-    WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
-#else
-/*
- * Other than on Windows I will encode things using UTF-8
- */
-    unsigned char buffer[8];
-    int i, n = utf_encode(buffer, c);
-#if 0
-/* Extra debugging */
-    switch (n)
-    {
-case 0: LOG("Encode %#x as no octets at all\n", c);
-        break;
-case 1: LOG("Encode %#x as 1 octet %#x\n", c, buffer[0]);
-        break;
-case 2: LOG("Encode %#x as 2 octets %#x\n", c, buffer[0], buffer[1]);
-        break;
-default:
-        LOG("Encode %#x as %d octets\n", c, n);
+    DWORD nbytes = 1;
+    char buffer[4];
+    if ((c & 0xffffff00) == 0) buffer[0] = c;
+    else if ((c & 0xffff0000) == 0xffff0000)
+    {   buffer[0] = c >> 8;
+        buffer[1] = c;
+        nbytes = 2;
     }
-#endif
-    for (i=0; i<n; i++) putchar(buffer[i]);
+    else if ((c & 0xff000000) == 0xff000000)
+    {   buffer[0] = c >> 16;
+        buffer[1] = c >> 8;
+        buffer[2] = c;
+        nbytes = 3;
+    }
+    else
+    {   buffer[0] = c >> 24;
+        buffer[1] = c >> 16;
+        buffer[2] = c >> 8;
+        buffer[3] = c;
+        nbytes = 3;
+    }
+    WriteFile(stdout_handle, buffer, nbytes, &nbytes, NULL);
+#else
+    if ((c & 0xffffff00) == 0) putchar(c);
+    else if ((c & 0xffff0000) == 0xffff0000)
+    {   putchar(c >> 8);
+        putchar(c);
+    }
+    else if ((c & 0xff000000) == 0xff000000)
+    {   putchar(c >> 16);
+        putchar(c >> 8);
+        putchar(c);
+    }
+    else
+    {   putchar(c >> 24);
+        putchar(c >> 16);
+        putchar(c >> 8);
+        putchar(c);
+    }
 #endif
 }
 
@@ -794,9 +630,72 @@ static void measure_screen(void)
 #endif /* HAVE_SYS_IOCTL_H */
 #endif /* WIN32 */
 /*
- *  LOG("[screen:%dx%d]\n", columns, lines);
+ *  LOG(("[screen:%dx%d]", columns, lines));
  */
 }
+
+#ifdef WIN32
+static const char *expanded_char_sequence = NULL;
+#else
+#ifdef RECORD_KEYS
+/*
+ * This abomination is here to permit me to collect the key-sequences
+ * that a whole bunch of things generate for me. I do not guarantee that
+ * it will always work, but when it does it may be useful!
+ */
+static void record_keys(void)
+{
+    static char *keys[] =
+    {   "left arrow",
+        "right arrow",
+        "up arrow",
+        "down arrow",
+        "delete",
+        "backspace-style delete key",
+        "home",
+        "end",
+        "insert",
+        "enter",
+        "ALT-left arrow",
+        "ALT-right arrow",
+        "ALT-up arrow",
+        "ALT-down arrow",
+        "ALT-delete",
+        "ALT-backspace-style delete key",
+        "ALT-home",
+        "ALT-end",
+        "ALT-insert",
+        "ALT-enter",
+        "Ctrl-left arrow",
+        "Ctrl-right arrow",
+        "Ctrl-up arrow",
+        "Ctrl-down arrow",
+        "Ctrl-delete",
+        "Ctrl-backspace-style delete key",
+        "Ctrl-home",
+        "Ctrl-end",
+        "Ctrl-insert",
+        "Ctrl-enter",
+        NULL
+    };
+    char **p = keys;
+    printf("\r\nFor each key listed here press the key and then an \"x\"\r\n");
+    while (*p != NULL)
+    {   int ch;
+        printf("%s: ", *p++);
+        fflush(stdout);
+        while ((ch = getchar()) != 'x')
+        {   if (ch < 0x20) printf("^%c ", ch | 0x40);
+            else if (0x20 < ch && ch < 0x7f) printf("%c ", ch);
+            else printf("[%x] ", ch);
+        }
+        printf("\r\n");
+    }
+    printf("Thank you\r\n");
+}
+
+#endif
+#endif /* WIN32 */
 
 #ifdef WIN32
 static INPUT_RECORD keyboard_buffer[1];
@@ -826,8 +725,9 @@ int term_setup(int flag, const char *colour)
     term_enabled = 0;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
-    input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
-    display_line = (wchar_t *)malloc(200*sizeof(wchar_t));
+    expanded_char_sequence = NULL;
+    input_line = (char *)malloc(200);
+    display_line = (char *)malloc(200);
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
 #ifdef TEST
@@ -933,10 +833,6 @@ int term_setup(int flag, const char *colour)
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
     SetConsoleMode(stdout_handle, stdout_attributes);
     term_can_invert = 1;
-/*
- * If I am using the Unicode functions to write to the console then
- * the issue of a code page for it becomes somewhat irrelevant!
- */
     originalCodePage = GetConsoleOutputCP();
     atexit(resetCP);
     SetConsoleOutputCP(CP_UTF8);
@@ -970,8 +866,8 @@ int term_setup(int flag, const char *colour)
         }
     }
     if (!flag) return 1;
-    input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
-    display_line = (wchar_t *)malloc(200*sizeof(wchar_t));
+    input_line = (char *)malloc(200);
+    display_line = (char *)malloc(200);
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
         return 1;
@@ -1042,6 +938,9 @@ int term_setup(int flag, const char *colour)
 #endif
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
     my_def_prog_mode();
+#ifdef RECORD_KEYS
+    record_keys();
+#endif
     my_reset_shell_mode();
 #endif /* WIN32 */
     term_enabled = 1;
@@ -1084,13 +983,13 @@ void term_close(void)
 /*
  * term_getchar() will block until the user has typed something. I will use
  * this place as where I unravel various funny escape sequences that
- * stand for uses of control keys. For all cases I will hand back a
- * "basic character", but I will then OR in bits if ALT was pressed with it
- * and others if it is not a simple key but a value returned to indicate a
+ * stand for uses of control keys. For all cases I will hand back an 8-bit
+ * "basic character", but I will then OR in 0x100 if ALT was pressed with it
+ * and 0x200 if it is not a simple key but a value returned to indicate a
  * function key, arrow key etc etc. Regardless of the meaning of bits
  * ORd in I will hand back EOF in some boundary cases. When using a Unix-
  * style terminal (rather than Windows) I will just ignore invalid or
- * unrecognized escape systems sent by the lower level terminal drivers.
+ * unrecognized escape systems sent by the lowever level terminal drivers.
  */
 
 #define TERM_UP     'A'
@@ -1102,14 +1001,11 @@ void term_close(void)
 #define TERM_END    '2'
 #define TERM_INSERT 'y'
 
-#define ALT_BIT    0x20000000
-#define ARROW_BIT  0x40000000
-
 static int term_getchar(void)
 {
 #ifdef WIN32
     DWORD n;
-    int down, key, ascii, unicode, ctrl;
+    int down, key, ascii, ctrl;
     for (;;)
     {
 /*
@@ -1139,30 +1035,29 @@ static int term_getchar(void)
             if (!down) continue; /* discard KEY-UP events */
     	    key = keyboard_buffer[0].Event.KeyEvent.wVirtualKeyCode;
     	    ascii = keyboard_buffer[0].Event.KeyEvent.uChar.AsciiChar;
-            unicode = keyboard_buffer[0].Event.KeyEvent.uChar.UnicodeChar;
     	    ctrl = keyboard_buffer[0].Event.KeyEvent.dwControlKeyState;
 /*
  * If Windows thinks that the key that has been hit corresponded to an
  * ordinary character than I will just return it. No hassle here! Well
  * not quite so easy after all. If ALT is held down at the same time as
- * the character I will or in the ALT_BIT bit.
+ * the character I will or in the 0x100 bit.
  *
- * Ha Ha! "unicode==0" would apply in the case of "^@". By experiment the
+ * Ha Ha! "ascii==0" would apply in the case of "^@". By experiment the
  * notionally system independent key-code for "@" is 0xc0 (well I can worry
  * in case that is really for "'") do I test for that. Anyway at least
  * with my keyboard this lets "^@" get through!
  */
-            if (key != 0x11) LOG("\nunicode=%x VK=%x ctrl=%x\n", unicode, key, ctrl);
-            if (unicode != 0 || key == 0xc0)
+            if (key != 0x11) LOG(("\nascii=%x VK=%x ctrl=%x\n", ascii, key, ctrl));
+            if (ascii != 0 || key == 0xc0)
             {   if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
-                    unicode |= ALT_BIT;
-                return unicode;
+                    ascii |= 0x100;
+                return ascii;
             }
 /*
- * Now use the variable "unicode" to record the state of the ALT key.
+ * Now use the variable "ascii" to record the state of the ALT key.
  */
-            if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED)) unicode = ALT_BIT;
-            else unicode = 0;
+            if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED)) ascii = 0x100;
+            else ascii = 0;
 /*
  * I map the Microsoft Key-Codes onto codes of my own. Observe that I do not
  * support anything like all of the possible keys here, and that I do not
@@ -1175,19 +1070,19 @@ static int term_getchar(void)
             {
     default:    continue;     /* Ignore unknown keys */
     case VK_LEFT:
-                return unicode | TERM_LEFT | ARROW_BIT;
+                return ascii | TERM_LEFT | 0x200;
     case VK_RIGHT:
-                return unicode | TERM_RIGHT | ARROW_BIT;
+                return ascii | TERM_RIGHT | 0x200;
     case VK_UP:
-                return unicode | TERM_UP | ARROW_BIT;
+                return ascii | TERM_UP | 0x200;
     case VK_DOWN:
-                return unicode | TERM_DOWN | ARROW_BIT;
+                return ascii | TERM_DOWN | 0x200;
     case VK_HOME:
-                return unicode | TERM_HOME | ARROW_BIT;
+                return ascii | TERM_HOME | 0x200;
     case VK_END:
-                return unicode | TERM_END | ARROW_BIT;
+                return ascii | TERM_END | 0x200;
     case VK_DELETE:
-                return unicode | TERM_DELETE | ARROW_BIT;
+                return ascii | TERM_DELETE | 0x200;
             }
         }
     }
@@ -1232,94 +1127,9 @@ static int term_getchar(void)
 
     int state = BASE_STATE, esc_esc = 0, ch, numval1=0, numval2=0;
     for (;;)
-    {   int c1, c2, c3;
-        ch = getchar();
+    {   ch = getchar();
+        LOG(("RAW ch=%.2x : <%c>\n", ch, ch | 0x40));
         if (ch == EOF) return EOF;
-        ch &= 0xff;
-/*
- * Here I will swallow extra octets if the leading one seems to introduce
- * an UTF multi-octet sequence 
- */
-        switch (ch & 0xf0)
-        {
-/*
- *  case 0x00:
- *  case 0x10:
- *  case 0x20:
- *  case 0x30:
- *  case 0x40:
- *  case 0x50:
- *  case 0x60:
- *  case 0x70:
- */
-    default:
-            break;
-    case 0x80:
-    case 0x90:
-    case 0xa0:
-    case 0xb0:
-/* I map invalid UTF8 sequences onto question marks */
-            ch = L'?';
-            break;  /* out of place continuation marker */
-    case 0xc0:
-    case 0xd0:
-            c1 = getchar();
-            if (c1 == EOF) return EOF;
-            c1 &= 0xff;
-            if ((c1 & 0xc0) != 0x80)
-            {   ch = L'?';
-                break; /* not continuation */
-            }
-            ch = ((ch & 0x1f) << 6) | (c1 & 0x3f);
-            break;
-    case 0xe0:
-            c1 = getchar();
-            if (c1 == EOF) return EOF;
-            c1 &= 0xff;
-            if ((c1 & 0xc0) != 0x80)
-            {   ch = L'?'; /* not continuation */
-                break;
-            }
-            c2 = getchar();
-            if (c2 == EOF) return EOF;
-            c1 &= 0xff;
-            if ((c2 & 0xc0) != 0x80)
-            {   ch = L'?'; /* not continuation */
-                break;
-            }
-            ch = ((ch & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
-            break;
-    case 0xf0:
-            if ((ch & 0x08) != 0)
-            {   ch = L'?';
-                break;
-            }
-            c1 = getchar();
-            if (c1 == EOF) return EOF;
-            c1 &= 0xff;
-            if ((c1 & 0xc0) != 0x80)
-            {   ch = L'?';
-                break;
-            } /* not continuation */
-            c2 = getchar();
-            if (c2 == EOF) return EOF;
-            c2 &= 0xff;
-            if ((c2 & 0xc0) != 0x80)
-            {   ch = L'?';
-                break;
-            } /* not continuation */
-            c3 = getchar();
-            if (c3 == EOF) return EOF;
-            c3 &= 0xff;
-            if ((c3 & 0xc0) != 0x80)
-            {   ch = L'?';
-                break;
-            } /* not continuation */
-            ch = ((ch & 0x07) << 18) | ((c1 & 0x3f) << 12) |
-                  ((c2 & 0x3f) << 6) | (c3 & 0x3f);
-            break;
-        }
-        LOG("RAW ch=%.2x : <%c>\n", ch, ch | 0x40);
         switch (state)
         {
     default:
@@ -1338,17 +1148,17 @@ static int term_getchar(void)
  * After ESC if the next character is another ESC I just count it, if
  * the next character is [ (so I have had "ESC [" or "ESC ESC [") I
  * progress, otherwise I treat the character as "escaped" and or in the
- * "meta" bit ALT_BIT.
+ * "meta" bit 0x100.
  */
             if (ch == 0x1b)
-            {   esc_esc ^= ALT_BIT;
+            {   esc_esc ^= 0x100;
                 continue;
             }
             else if (ch == '[')
             {   state = ESC_BR_STATE;
                 continue;
             }
-            else return ch | ALT_BIT;
+            else return ch | 0x100;
     case ESC_BR_STATE:
 /*
  * After "ESC [" I absorb digits and semicolons.
@@ -1363,15 +1173,13 @@ static int term_getchar(void)
                 continue;
             }
 /*
- * Now the whole code can be put together as one item... I will
- * only look at the low 8 bits of any character that is just after an
- * ESC.
+ * Now the whole code can be put together as one item...
  */
-            ch = (ch & 0xff) | (numval2 << 16) | (numval1 << 8);
+            ch = ch | (numval2 << 16) | (numval1 << 8);
 /*
  * The table here represents the codes that I have come across thus far:
  */
-            esc_esc |= ARROW_BIT;
+            esc_esc |= 0x200;
             switch (ch)
             {
         case 0x010500+'A':
@@ -1392,15 +1200,15 @@ static int term_getchar(void)
         case 0x000000+'F': return esc_esc | TERM_END;
         case 0x020500+'~':
         case 0x000200+'~': return esc_esc | TERM_INSERT;
-        case 0x010300+'A': return (ALT_BIT|ARROW_BIT) | TERM_UP;
-        case 0x010300+'B': return (ALT_BIT|ARROW_BIT) | TERM_DOWN;
-        case 0x010300+'C': return (ALT_BIT|ARROW_BIT) | TERM_RIGHT;
-        case 0x010300+'D': return (ALT_BIT|ARROW_BIT) | TERM_LEFT;
-        case 0x030300+'~': return (ALT_BIT|ARROW_BIT) | TERM_DELETE;
-        case 0x010300+'H': return (ALT_BIT|ARROW_BIT) | TERM_HOME;
-        case 0x010300+'F': return (ALT_BIT|ARROW_BIT) | TERM_END;
-        case 0x020300+'~': return (ALT_BIT|ARROW_BIT) | TERM_INSERT;
-        default:           return ALT_BIT | ch;
+        case 0x010300+'A': return 0x300 | TERM_UP;
+        case 0x010300+'B': return 0x300 | TERM_DOWN;
+        case 0x010300+'C': return 0x300 | TERM_RIGHT;
+        case 0x010300+'D': return 0x300 | TERM_LEFT;
+        case 0x030300+'~': return 0x300 | TERM_DELETE;
+        case 0x010300+'H': return 0x300 | TERM_HOME;
+        case 0x010300+'F': return 0x300 | TERM_END;
+        case 0x020300+'~': return 0x300 | TERM_INSERT;
+        default:           return 0x100 | ch;
             }
         }
     }
@@ -1453,7 +1261,7 @@ static void term_move_down(int del)
 
 static void term_move_right(int del)
 {
-#ifdef WIN32
+#ifdef WIN32 /* OK */
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb)) return;
     csb.dwCursorPosition.X += del;
@@ -1481,8 +1289,8 @@ static void term_move_right(int del)
     }
     cursorx += del;
 /*
- * ... otherwise I position the cursor by doing dull sequences that move the
- * cursor one position at a time.
+ * ... otherwise I position the cursor by doing dull sequences trhat move the
+ * cursor one positiomn at a time.
  */
     while (del > 0)
     {   putp(cursor_right);
@@ -1545,7 +1353,7 @@ static void term_bell(void)
  *
  * [I have annotated items that are updated here with (!)]
  *
- * The main complications that arise are
+ * The main complications thar arise are
  * (a) input_line may contain characters that should be rendered across
  *     several columns. The key case that forces this is TAB, but once
  *     that has been conceded it may make sense to render control characters
@@ -1589,14 +1397,46 @@ static void term_bell(void)
 
 /*
  * line_wrap() is a part of refresh_display(), and it prints a character
- * taking care of line-wrapping. The character passed will be of flavour
- * wchar_t. I am not (at least for now) going to worry about Windows and
- * surrogate characters.
+ * taking care of line-wrapping. It also needs to cope a bit with
+ * multi-byte characters.
  */
+
+static int pending = 0;
 
 static int line_wrap(int ch, int tab_offset)
 {
-/*  LOG("wrap_line ch=%#x tab_offset=%d cursorx=%d\n", ch, tab_offset, cursorx);*/
+    ch &= 0xff; /* Just to be on the safe side, in case char type is signed */
+    switch (ch & 0xf0)
+    {
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        /* A continuation character */
+        pending = (pending << 8) | ch;
+        if ((pending & 0xff000000) != 0)
+        {   ch = pending;
+            pending = 0;
+            break;
+        }
+        return tab_offset;
+case 0xc0:
+case 0xd0:
+        /* Start of 2-byte sequence */
+        pending = 0x00ffff00 | ch;
+        return tab_offset;
+case 0xe0:
+        /* Start of 3-byte sequence */
+        pending = 0x0000ff00 | ch;
+        return tab_offset;
+case 0xf0:
+        /* Start of 4 byte sequence */
+        pending = ch & 0xf7; /* clean it up just in case */
+        return tab_offset;
+default:
+        pending = 0;
+        break;
+    }
     cursorx++;
     if (cursorx >= columns)
     {   tab_offset += cursorx;
@@ -1617,14 +1457,13 @@ static int line_wrap(int ch, int tab_offset)
  */
         if (cursory == max_cursory)
         {   term_move_first_column();
-            LOG("need to scroll page\n");
             fflush(stdout);
 #ifdef WIN32
             SetConsoleMode(stdout_handle, stdout_attributes);
 #else
             my_reset_shell_mode();
 #endif
-            term_putchar(L'\n');
+            term_putchar('\n');
             fflush(stdout);
 #ifdef WIN32
             SetConsoleMode(stdout_handle, 0);
@@ -1666,10 +1505,6 @@ static void refresh_display(void)
         curx=columns, cury=lines,
         finx, finy, window_size_changed;
 /*
- *  LOG("refresh_display cx=%d cy=%d\n", cursorx, cursory);
- *  LOG("il:<%ls>\ndl:<%ls>\n", input_line, display_line);
- */
-/*
  * Rather than believing in any SIGWINCH signal (or some such!) to alert
  * me to screen size changes, I will (on systems that give me a way to)
  * check the screen size every time I am about to do a screen update. This
@@ -1697,7 +1532,6 @@ static void refresh_display(void)
  * as the almost-rightmost column of the bottom line that I have ever put
  * anything on.
  */
-        LOG("Window size has changed\n");
         display_line[0] = input_line[0] + 1;
         display_line[1] = 0;
         final_cursory = max_cursory;
@@ -1713,7 +1547,7 @@ static void refresh_display(void)
         {   curx = finx;
             cury = finy;
         }
-        if (ch == L'\t')
+        if (ch == '\t')
         {   do
             {   finx++;
                 if (finx >= columns)
@@ -1723,17 +1557,13 @@ static void refresh_display(void)
                 }
             } while ((tab_offset + finx)%8 != 0);
         }
-        else if (ch == L'\n')
+        else if (ch == '\n')
         {   tab_offset = 0;
             finx = 0;
             finy++;
         }
-/*
- * I am going to display characters whose code is in the range 0x00 to
- * 0x1f with a "^", as in "^C" will denote character 3.
- */
         else if (ch < 0x20) finx += 2;
-        else finx += 1;
+        else if ((ch & 0xc0) != 0x80) finx += 1; /* continuation byte */
         if (finx >= columns)
         {   tab_offset += finx;
             finx -= columns;
@@ -1786,33 +1616,38 @@ static void refresh_display(void)
  * lines of the display of the wrapped line will need to allow for this.
  * The variable "tab_offset" is allowing for the characters on previous as
  * well as this line.
- * I am also ignoring all possibility that Unicode code points other
- * than TAB and NEWLINE have other than regular width, so for instance
- * zero-width spaces will not be handled well.
  */
-        if (ch == L'\t')
+        if (ch == '\t')
         {   do
-            {   tab_offset = line_wrap(L' ', tab_offset);
+            {   tab_offset = line_wrap(' ', tab_offset);
             } while ((tab_offset + cursorx)%8 != 0);
         }
-        else if (ch == L'\n')
+        else if (ch == '\n')
         {
 /*
  * Here I want a line-break in the "single line" I am displaying. I achieve
  * the effect I want by writing blanks until cursorx gets back to zero by
  * virtue of line-wrapping!
  */
-            while (cursorx !=  0) line_wrap(L' ', 0);
+            while (cursorx !=  0) line_wrap(' ', 0);
 /*
  * Tabs should now be relative to the new line-start.
  */
             tab_offset = 0;
         }
         else if (ch < 0x20)
-        {   tab_offset = line_wrap(L'^', tab_offset);
+        {   tab_offset = line_wrap('^', tab_offset);
             /* Turn into @, A, B etc */
             tab_offset = line_wrap(ch | 0x40, tab_offset);
         }
+/*
+ * Well bytes in the range 0x80 to 0xff should be viewed here as part of
+ * multi-byte characters. That gives two severe issues for line_wrap etc -
+ * the first is that several bytes will end up counting as only one column.
+ * The second is that at least on Windows it seems to be vital to print
+ * all bytes of a multi-byte characters at once for there to be even a chance
+ * of it being recognised.
+ */
         else tab_offset = line_wrap(ch, tab_offset);
     }
 /*
@@ -1849,14 +1684,14 @@ static void refresh_display(void)
     if (cursory <= final_cursory)
     {   while (cursory < final_cursory)
         {   while (cursorx < columns)
-            {   term_putchar(L' ');
+            {   term_putchar(' ');
                 cursorx++;
             }
             term_move_first_column();
             term_move_down(1);
         }
         while (cursorx < final_cursorx)
-        {   term_putchar(L' ');
+        {   term_putchar(' ');
             cursorx++;
         }
     }
@@ -1868,13 +1703,13 @@ static void refresh_display(void)
 /*
  * Move the cursor to where it needs to appear.
  */
-    if (cury != cursory) term_move_down(cury-cursory);
-    if (curx != cursorx) term_move_right(curx-cursorx);
+    term_move_down(cury-cursory);
+    term_move_right(curx-cursorx);
     fflush(stdout);
 /*
  * Now the display should be up to date, so record that situation.
  */
-    wcscpy(display_line, input_line);
+    strcpy(display_line, input_line);
 }
 
 static void term_set_mark(void)
@@ -1916,8 +1751,8 @@ static int term_find_next_word_forwards(void)
     do
     {   n++;
     } while (input_line[n] != 0 &&
-             (iswalnum(input_line[n]) || input_line[n] == L'_'));
-    while (input_line[n] != 0 && iswspace(input_line[n])) n++;
+             (isalnum((unsigned char)input_line[n]) || input_line[n] == '_'));
+    while (input_line[n] != 0 && isspace((unsigned char)input_line[n])) n++;
     return n;
 }
 
@@ -1928,8 +1763,8 @@ static int term_find_next_word_backwards(void)
     do
     {   n--;
     } while (n != prompt_length &&
-             (iswalnum(input_line[n]) || input_line[n] == '_'));
-    while (n != prompt_length && iswspace(input_line[n])) n--;
+             (isalnum((unsigned char)input_line[n]) || input_line[n] == '_'));
+    while (n != prompt_length && isspace((unsigned char)input_line[n])) n--;
     if (n == prompt_length || n == insert_point-1) return n;
     else return n+1; 
 }
@@ -2041,7 +1876,7 @@ static void term_kill_line(void)
 
 static void term_history_next(void)
 {
-    const wchar_t *history_string;
+    const char *history_string;
     if (historyLast == -1)
     {   term_bell();
         return;
@@ -2051,8 +1886,8 @@ static void term_history_next(void)
     {   term_bell();
         return;
     }
-    insert_point = wcslen(history_string);
-    wcsncpy(input_line+prompt_length, history_string, insert_point);
+    insert_point = strlen(history_string);
+    strncpy(input_line+prompt_length, history_string, insert_point);
     insert_point += prompt_length;
     input_line[insert_point] = 0;
     refresh_display();
@@ -2061,7 +1896,7 @@ static void term_history_next(void)
 
 static void term_previous_history(void)
 {
-    const wchar_t *history_string;
+    const char *history_string;
     if (historyLast == -1) /* no previous lines to retrieve */
     {   term_bell();
         return;
@@ -2076,8 +1911,8 @@ static void term_previous_history(void)
     {   term_bell();
         return;
     }
-    insert_point = wcslen(history_string);
-    wcsncpy(input_line+prompt_length, history_string, insert_point);
+    insert_point = strlen(history_string);
+    strncpy(input_line+prompt_length, history_string, insert_point);
     insert_point += prompt_length;
     input_line[insert_point] = 0;
     refresh_display();
@@ -2087,7 +1922,7 @@ static void term_previous_history(void)
 static int regular_line_end = 0;
 static int search_saved_point = 0;
 static int search_found = 0;
-static wchar_t searchBuff[100];
+static char searchBuff[100];
 static int searchStack[100];
 static int searchLen;
 
@@ -2098,8 +1933,8 @@ static void term_search_next(void)
  * append a message that indicates to the user that a search is in progress.
  */
     search_found = search_saved_point = insert_point;
-    regular_line_end = wcslen(input_line);
-    wcscpy(&input_line[regular_line_end], L"\nN-search: ");
+    regular_line_end = strlen(input_line);
+    strcpy(&input_line[regular_line_end], "\nN-search: ");
     insert_point = regular_line_end + 11;
     searchLen = 0;
     searchBuff[0] = 0;
@@ -2111,8 +1946,8 @@ static void term_search_next(void)
 static void term_search_previous(void)
 {
     search_found = search_saved_point = insert_point;
-    regular_line_end = wcslen(input_line);
-    wcscpy(&input_line[regular_line_end], L"\nP-search: ");
+    regular_line_end = strlen(input_line);
+    strcpy(&input_line[regular_line_end], "\nP-search: ");
     insert_point = regular_line_end + 11;
     searchLen = 0;
     searchBuff[0] = 0;
@@ -2120,7 +1955,7 @@ static void term_search_previous(void)
     refresh_display();
 }
 
-static int matchString(const wchar_t *pat, int n, const wchar_t *text)
+static int matchString(const char *pat, int n, const char *text)
 {
 /*
  * This is a crude and not especially efficient pattern match. I think
@@ -2130,7 +1965,7 @@ static int matchString(const wchar_t *pat, int n, const wchar_t *text)
  */
     int offset;
     for (offset=0;*(text+offset)!=0;offset++)
-    {   const wchar_t *p = pat, *q = text+offset;
+    {   const char *p = pat, *q = text+offset;
         int i;
         for (i=0; i<n; i++)
         {   if (p[i] != q[i]) break;
@@ -2144,7 +1979,7 @@ static int matchString(const wchar_t *pat, int n, const wchar_t *text)
 static int trySearch(void)
 {
     int r = -1;
-    const wchar_t *history_string = input_history_get(historyNumber);
+    const char *history_string = input_history_get(historyNumber);
     if (history_string == NULL) return -1;
     while ((r = matchString(searchBuff, searchLen, history_string)) < 0)
     {   if (searchFlags > 0)
@@ -2173,16 +2008,16 @@ static int trySearch(void)
  * of the longest line I have stuck into the history and I measure against
  * that when accepting search characters. So do not worry after all!!
  */
-static void set_input(const wchar_t *s)
+static void set_input(const char *s)
 {
-    wcscpy(&input_line[prompt_length], s);
-    insert_point = prompt_length + wcslen(s);
+    strcpy(&input_line[prompt_length], s);
+    insert_point = prompt_length + strlen(s);
     regular_line_end = insert_point;
-    input_line[insert_point++] = L'\n';
-    input_line[insert_point++] = searchFlags > 0 ? L'N' : L'P';
-    wcscpy(&input_line[insert_point], L"-search: ");
+    input_line[insert_point++] = '\n';
+    input_line[insert_point++] = searchFlags > 0 ? 'N' : 'P';
+    strcpy(&input_line[insert_point], "-search: ");
     insert_point += 9;
-    wcscpy(&input_line[insert_point], searchBuff);
+    strcpy(&input_line[insert_point], searchBuff);
     insert_point += searchLen;
 }
 
@@ -2207,8 +2042,8 @@ static int term_search_char(int ch)
  * ALT-N and ALT-Down continue the search using the current search string
  * but searching through the Next history item
  */
-case CTRL(L'N') + ALT_BIT: case L'N' + ALT_BIT: case L'n' + ALT_BIT:
-case ARROW_BIT + TERM_DOWN + ALT_BIT:
+case CTRL('N') + 0x100: case 'N' + 0x100: case 'n' + 0x100:
+case 0x200 + TERM_DOWN + 0x100:
         searchFlags = 1;    /* search downwards */
         if (historyNumber >= historyLast) term_bell();
         else
@@ -2219,7 +2054,7 @@ case ARROW_BIT + TERM_DOWN + ALT_BIT:
             if (r == -1)
             {   historyNumber = save;
                 term_bell();
-                return -1;
+                return 1;
             }
             search_found = r;
             set_input(input_history_get(historyNumber));
@@ -2232,8 +2067,8 @@ case ARROW_BIT + TERM_DOWN + ALT_BIT:
  * ALT-P and ALT-Up continue the search using the current search string
  * but searching through the Previous history item
  */
-case CTRL(L'P') + ALT_BIT: case L'P' + ALT_BIT: case L'p' + ALT_BIT:
-case ARROW_BIT + TERM_UP + ALT_BIT:
+case CTRL('P') + 0x100: case 'P' + 0x100: case 'p' + 0x100:
+case 0x200 + TERM_UP + 0x100:
         searchFlags = -1;    /* search upwards */
         if (historyNumber <= historyFirst) term_bell();
         else
@@ -2259,8 +2094,9 @@ case ARROW_BIT + TERM_UP + ALT_BIT:
  * it deletes a char from the search string and pops back to wherever the
  * shorter string had matched.
  */
-case CTRL(L'H'):                   /* Backspace */
-case 0x7f:                         /* Delete */
+case CTRL('H'):
+case 0x7f:
+case 0xff:
         if (searchLen != 0)
         {   input_line[--insert_point] = 0;
             searchBuff[--searchLen] = 0;
@@ -2281,8 +2117,9 @@ case 0x7f:                         /* Delete */
  * from search mode.
  */
 default:
-        if ((ch & (ALT_BIT|ARROW_BIT)) != 0 ||
-            (ch != L'\t' && ch<0x20))
+        if ((ch & 0x300) != 0 ||
+            (ch != '\t' && ch<0x20) ||
+            ch > 0x7f)
         {
 /*
  * Exit search mode
@@ -2301,9 +2138,9 @@ default:
 /*
  * "^U" will exit search mode, and when it does that it does not do anything
  * else. Even if there were ever a time that I had implemented an UNDO
- * facility, which I think I am not about to.
+ * facility, which I think I am not abou to.
  */
-            return (ch & (~(ALT_BIT|ARROW_BIT))) == CTRL(L'U');
+            return (ch & 0x7f) == CTRL('U');
         }
 
     }
@@ -2348,7 +2185,7 @@ static int term_find_word_start(void)
  */
     int n = insert_point;
     while (n>=prompt_length &&
-           (iswalnum(input_line[n]) || input_line[n]==L'_')) n--;
+           (isalnum((unsigned char)input_line[n]) || input_line[n]=='_')) n--;
     return n+1;
 }
 
@@ -2361,7 +2198,7 @@ static int term_find_word_end(void)
  */
     int n = insert_point;
     while (input_line[n]!=0 &&
-           (iswalnum(input_line[n]) || input_line[n]==L'_')) n++;
+           (isalnum((unsigned char)input_line[n]) || input_line[n]=='_')) n++;
     return n;
 }
 
@@ -2370,8 +2207,8 @@ static void term_capitalize_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    if (a < b) input_line[a] = (char)toupper(input_line[a]);
-    for (i=a+1; i<b; i++) input_line[i] = (char)tolower(input_line[i]);
+    if (a < b) input_line[a] = (char)toupper((unsigned char)input_line[a]);
+    for (i=a+1; i<b; i++) input_line[i] = (char)tolower((unsigned char)input_line[i]);
     refresh_display();
 }
 
@@ -2381,7 +2218,7 @@ static void term_lowercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = (char)tolower(input_line[i]);
+    for (i=a; i<b; i++) input_line[i] = (char)tolower((unsigned char)input_line[i]);
     refresh_display();
 }
 
@@ -2391,7 +2228,7 @@ static void term_uppercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = towupper(input_line[i]);
+    for (i=a; i<b; i++) input_line[i] = (char)toupper((unsigned char)input_line[i]);
     refresh_display();
 }
 
@@ -2412,7 +2249,7 @@ static void term_transpose_chars(void)
 static void term_undo(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^U>");
+    insert_point += sprintf(&input_line[insert_point], "<^U>");
     term_bell();
 }
 
@@ -2420,7 +2257,7 @@ static void term_undo(void)
 static void term_quoted_insert(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^V>");
+    insert_point += sprintf(&input_line[insert_point], "<^V>");
     term_bell();
 }
 
@@ -2428,7 +2265,7 @@ static void term_quoted_insert(void)
 static void term_copy_previous_word(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^W>");
+    insert_point += sprintf(&input_line[insert_point], "<^W>");
     term_bell();
 }
 
@@ -2436,7 +2273,7 @@ static void term_copy_previous_word(void)
 static void term_copy_region(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&W>");
+    insert_point += sprintf(&input_line[insert_point], "<&W>");
     term_bell();
 }
 
@@ -2444,7 +2281,7 @@ static void term_copy_region(void)
 static void term_yank(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^Y>");
+    insert_point += sprintf(&input_line[insert_point], "<^Y>");
     term_bell();
 }
 
@@ -2452,7 +2289,7 @@ static void term_yank(void)
 static void term_reinput(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^R>");
+    insert_point += sprintf(&input_line[insert_point], "<^R>");
     term_bell();
 }
 
@@ -2515,12 +2352,6 @@ static void term_discard_output(void)
 
 static int hexval(int c)
 {
-/*
- * Regardless of the fact that in general I am working in Unicode, here
- * I am only interested in the digits 0-9 and the letters a-f and A-F and
- * if I only accept ones in the most basic form I can use 7-bit codes.
- */
-    if (c < 0 || c >= 0x7f) return -1;
     if (isdigit((unsigned char)c)) return c - '0';
     else if (isupper((unsigned char)c)) return c + (10 - 'A');
     else return c + (10 - 'a');
@@ -2537,11 +2368,6 @@ static int hexval(int c)
 
 uniname unicode_names[] =
 {
-/*
- * It is really part of the purpose of this table that the names are all in
- * the most basic character set, and so I keep the table using "char *" and
- * regular narrow strings.
- */
     {"AElig",   198},    /* latin capital letter AE = latin capital ligature AE */
     {"Aacute",  193},    /* latin capital letter A with acute */
     {"Acirc",   194},    /* latin capital letter A with circumflex */
@@ -2819,19 +2645,6 @@ static int lookup_name(const char *s)
     else return p->code;
 }
 
-static int lookup_wide_name(const wchar_t *s)
-{
-    char narrow[20];
-    int i;
-    for (i=0; i<sizeof(narrow)-1; i++)
-    {   if (s[i] == 0) break;
-        if (s[i] >= 0x7f) return -1; /* not a basic ASCII character */
-        narrow[i] = s[i];
-    }
-    narrow[i] = 0;
-    return lookup_name(narrow);
-}
-
 const char *lookup_code(int c)
 {
     int i;
@@ -2846,26 +2659,13 @@ const char *lookup_code(int c)
     return NULL;
 }
 
-static wchar_t wide_char_name[20];
-
-const wchar_t *wide_lookup_code(int c)
-{
-    const char *s = lookup_code(c);
-    wchar_t *p;
-    if (s == NULL) return NULL;
-    p = wide_char_name;
-    while (*s != 0) *p++ = (*s++ & 0xff);
-    *p = 0;
-    return wide_char_name;
-}
-
-static void term_replace_chars_backwards(int n, const wchar_t *s)
+static void term_replace_chars_backwards(int n, const char *s)
 {
 /*
  * Replace n characters that are before the caret with bytes from the
  * string s.
  */
-    int m = wcslen(s);
+    int m = strlen(s);
     if (n > m)        /* Overall this deletes characters */
     {   int i = insert_point - n;
         for (;;)
@@ -2888,8 +2688,8 @@ static void term_replace_chars_backwards(int n, const wchar_t *s)
     while (*s != 0) input_line[m++] = *s++;
 }
 
-static wchar_t input_word[16];
-static wchar_t output_word[16];
+static char input_word[16];
+static char output_word[16];
 
 static void term_ctrl_z_command(void)
 {
@@ -2897,7 +2697,7 @@ static void term_ctrl_z_command(void)
  * It is not yet clear that I have anything much to allocate this to. In
  * emacs it would be "obey extended command".
  */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^X>");
+    insert_point += sprintf(&input_line[insert_point], "<^X>");
     term_bell();
     term_redisplay();
 }
@@ -2909,9 +2709,9 @@ static void term_ctrl_z_command(void)
  * the terminating '\0').
  */
 
-int utf_encode(unsigned char *b, int c)
+int utf_encode(char *b, int c)
 {
-    unsigned char *p = b;
+    char *p = b;
     c &= 0x1fffff;   /* limit myself to 21-bit values here */
     if (c <= 0x7f) *p++ = c;
     else if (c <= 0x7ff)
@@ -2937,9 +2737,9 @@ int utf_encode(unsigned char *b, int c)
  * Decode utf-8 or return -1 if invalid.
  */
 
-int utf_decode(unsigned char *b)
+int utf_decode(char *b)
 {
-    int c = *b++, c1, c2, c3;
+    int c = *b++ & 0xff, c1, c2, c3;
     switch (c & 0xf0)
     {
 /*
@@ -2961,22 +2761,22 @@ case 0xb0:
         return -1;  /* out of place continuation marker */
 case 0xc0:
 case 0xd0:
-        c1 = *b;
+        c1 = *b & 0xff;
         if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
         return ((c & 0x1f) << 6) | (c1 & 0x3f);
 case 0xe0:
-        c1 = *b++;
+        c1 = *b++ & 0xff;
         if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        c2 = *b;
+        c2 = *b & 0xff;
         if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
         return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
 case 0xf0:
         if ((c & 0x08) != 0) return -1;
-        c1 = *b++;
+        c1 = *b++ & 0xff;
         if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        c2 = *b++;
+        c2 = *b++ & 0xff;
         if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
-        c3 = *b;
+        c3 = *b & 0xff;
         if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
         return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
                ((c2 & 0x3f) << 6) | (c3 & 0x3f);
@@ -3057,7 +2857,7 @@ void term_unicode_convert(void)
  * 4 hex of unnamed character    -> character       1234       -> (u+1234)
  */
     int i, n, c;
-    const wchar_t *p;
+    const char *p;
     if (insert_point == prompt_length)
     {   term_bell();
         return;
@@ -3070,11 +2870,9 @@ void term_unicode_convert(void)
         for (i=0; i<n; i++)
             input_word[i] = input_line[insert_point-n+i];
         input_word[n] = 0;           /* extract the (potential) word */
-        c = lookup_wide_name(input_word);
+        c = lookup_name(input_word);
         if (c == -1) continue;    /* not a recognised name */
-/*      utf_encode(output_word, c); */
-        output_word[0] = c;   /* replace word by a single character */
-        output_word[1] = 0;
+        utf_encode(output_word, c);
         term_replace_chars_backwards(n, output_word);
         return;
     }
@@ -3086,22 +2884,16 @@ void term_unicode_convert(void)
  */
     if (insert_point - prompt_length >= 6)
     {   p = &input_line[insert_point-6];
-        if ((p[0] == '0' && iswxdigit(p[1]) && p[1] != '0') ||
+        if ((p[0] == '0' && isxdigit((unsigned char)p[1]) && p[1] != '0') ||
             (p[0] == '1' && p[1] == '0'))
         {   c = (hexval(p[0]) << 4) | hexval(p[1]);
-/*
- * By virtue of packing up digits here using OR it will be the case that
- * if ANY of the calls to hexval return a negative value I can be certain
- * that the overall result will be negative.
- */
             for (i=2; i<6 && c > 0; i++)
             {   n = hexval(p[i]);
-                c = (c << 4) | n;
+                if (n < 0) c = -1;
+                else c = (c << 4) | n;
             }
             if (c > 0)
-            {   /* utf_encode(output_word, c);*/
-                output_word[0] = c;
-                output_word[1] = 0;
+            {   utf_encode(output_word, c);
                 term_replace_chars_backwards(6, output_word);
                 return;
             }
@@ -3110,16 +2902,42 @@ void term_unicode_convert(void)
 /*
  * In the next two cases the character before the caret has a name
  * associated with it. Well first I will just extract a Unicode character
- * from before the caret.
+ * from before the caret, being careful to verify that it is properly
+ * formatted. It OUGHT to be, but it is "just a bit of code" to be careful.
  */
-    if (insert_point - prompt_length >= 1)
+    if (insert_point - prompt_length >= 1 &&
+        (input_line[insert_point-1] & 0x80) == 0)
         n = 1,
         c = input_line[insert_point-1];
+    else if (insert_point - prompt_length >= 2 &&
+        (input_line[insert_point-1] & 0x80) == 0x80 &&
+        (input_line[insert_point-2] & 0xe0) == 0xc0)
+        n = 2,
+        c = ((input_line[insert_point-2] & 0x1f)<<6) |
+            (input_line[insert_point-1] & 0x3f);
+    else if (insert_point - prompt_length >= 3 &&
+        (input_line[insert_point-1] & 0x80) == 0x80 &&
+        (input_line[insert_point-2] & 0x80) == 0x80 &&
+        (input_line[insert_point-3] & 0xf0) == 0xe0)
+        n = 3,
+        c = ((input_line[insert_point-3] & 0x0f)<<12) |
+            ((input_line[insert_point-2] & 0x3f)<<6) |
+            (input_line[insert_point-1] & 0x3f);
+    else if (insert_point - prompt_length >= 4 &&
+        (input_line[insert_point-1] & 0x80) == 0x80 &&
+        (input_line[insert_point-2] & 0x80) == 0x80 &&
+        (input_line[insert_point-3] & 0x80) == 0x80 &&
+        (input_line[insert_point-4] & 0xf8) == 0xf0)
+        n = 4,
+        c = ((input_line[insert_point-4] & 0x07)<<18) |
+            ((input_line[insert_point-3] & 0x3f)<<12) |
+            ((input_line[insert_point-2] & 0x3f)<<6) |
+            (input_line[insert_point-1] & 0x3f);
     else n = 0, c = -1;
 /*
  * See if the character has a name.
  */
-    p = wide_lookup_code(c);
+    p = lookup_code(c);
 /*
  * Now I have two messy cases to detect. The first is if the name
  * I have just found has a shorter name as a terminal sub-string. The second
@@ -3131,9 +2949,9 @@ void term_unicode_convert(void)
  */
     if (p != NULL)
     {   int w = -1;
-        const wchar_t *p1 = p+1;
+        const char *p1 = p+1;
         while (*p1 != 0)
-        {   w = lookup_wide_name(p1);
+        {   w = lookup_name(p1);
             if (w != -1) break;    /* Found a suffix */
             p1++;
         }
@@ -3141,12 +2959,11 @@ void term_unicode_convert(void)
  * The code here will convert (u+203e) to oli(u+2260) via expanding to
  * the name "oline" and then re-coding the last two letters "ne". And
  * a whole pile of other similar cases such Eaccute, rang, Theta, lfloor,
- * ntilde, otimes and Yuml. I count 57 cases in the HTML 4 entity table.
+ * ntilde, otimes and Yuml. I count 57 cases in the HTNL 4 entity table.
  */
         if (w != -1)
-        {   wcscpy(output_word, p);
-            output_word[p1-p] = w;
-            output_word[p1-p+1] = 0;
+        {   strcpy(output_word, p);
+            utf_encode(&output_word[p1-p], w);
             term_replace_chars_backwards(n, output_word);
             return;
         }
@@ -3157,19 +2974,19 @@ void term_unicode_convert(void)
  * convert that to (u+203e) - I would never get to see thing in hex form.
  * So in this case I merely expand the character to 4 hex digits.
  */
-        for (i=1; i+wcslen(p)<9; i++)
+        for (i=1; i+strlen(p)<9; i++)
         {   /* i is the number of prefix characters to test for */
             if (insert_point - prompt_length >= i+n)
-            {   memcpy(input_word, &input_line[insert_point-i-n], i*sizeof(wchar_t));
-                wcscpy(&input_word[i], p);
+            {   memcpy(input_word, &input_line[insert_point-i-n], i);
+                strcpy(&input_word[i], p);
 /*
  * I have now concatenated some stuff from the input buffer with the
  * expanded character name and look it up. If I find a match I will
  * convert the character to hex. Because the character itself was one
  * with a name it will fit within 4 digits.
  */
-                if (lookup_wide_name(input_word) != -1)
-                {   swprintf(output_word, 16, L"%.4x", c);
+                if (lookup_name(input_word) != -1)
+                {   sprintf(output_word, "%.4x", c);
                     term_replace_chars_backwards(n, output_word);
                     return;
                 }
@@ -3182,8 +2999,8 @@ void term_unicode_convert(void)
  * character. In which case turn the low 16 bits into that name, leaving
  * two digits of hex code ahead of that.
  */
-    if (c > 0xffff && (p = wide_lookup_code(c & 0xffff)) != NULL)
-    {   swprintf(output_word, 16, L"%.2x%ls", (c >> 16) & 0x3f, p);
+    if (c > 0xffff && (p = lookup_code(c & 0xffff)) != NULL)
+    {   sprintf(output_word, "%.2x%s", (c >> 16) & 0x3f, p);
         term_replace_chars_backwards(n, output_word);
         return;
     }
@@ -3193,7 +3010,7 @@ void term_unicode_convert(void)
  * with their use in hex numeric representation.
  */
     if (c > 0x7f && c <= 0xffff)
-    {   swprintf(output_word, 16, L"%.4x", c);
+    {   sprintf(output_word, "%.4x", c);
         term_replace_chars_backwards(n, output_word);
         return;
     }
@@ -3202,10 +3019,10 @@ void term_unicode_convert(void)
  * point.
  */
     if (insert_point - prompt_length >= 4 &&
-        iswxdigit(input_line[insert_point-4]) &&
-        iswxdigit(input_line[insert_point-3]) &&
-        iswxdigit(input_line[insert_point-3]) &&
-        iswxdigit(input_line[insert_point-1]))
+        isxdigit((unsigned char)input_line[insert_point-4]) &&
+        isxdigit((unsigned char)input_line[insert_point-3]) &&
+        isxdigit((unsigned char)input_line[insert_point-3]) &&
+        isxdigit((unsigned char)input_line[insert_point-1]))
     {   c = hexval(input_line[insert_point-4]);
         c = (c << 4) | hexval(input_line[insert_point-3]);
         c = (c << 4) | hexval(input_line[insert_point-2]);
@@ -3215,8 +3032,8 @@ void term_unicode_convert(void)
  * range 0xd800 to 0xdfff it would be a surrogate - in that case I will
  * reject it. I need to see if the code has an associated name.
  */
-        if (c < 0 || c < 0xd800 || c > 0xdfff)
-        {   if ((p = wide_lookup_code(c)) != NULL)  /* yes it does! */
+        if (c < 0xd800 || c > 0xdfff)
+        {   if ((p = lookup_code(c)) != NULL)  /* yes it does! */
             {
 /*
  * Now if the buffer contains characters that would form a prefix to the
@@ -3224,14 +3041,14 @@ void term_unicode_convert(void)
  * character corresponding to the longer name.
  * This prefix processing is rather similar to a case considered earlier.
  */
-                for (i=1; i+wcslen(p)<9; i++)
+                for (i=1; i+strlen(p)<9; i++)
                 {   /* i is the number of prefix characters to test for */
                     int c1;
                     if (insert_point - prompt_length >= i+4)
-                    {   memcpy(input_word, &input_line[insert_point-i-4], i*sizeof(wchar_t));
-                        wcscpy(&input_word[i], p);
-                        if ((c1 = lookup_wide_name(input_word)) != -1)
-                        {   swprintf(output_word, 16, L"%.4x", c1);
+                    {   memcpy(input_word, &input_line[insert_point-i-4], i);
+                        strcpy(&input_word[i], p);
+                        if ((c1 = lookup_name(input_word)) != -1)
+                        {   sprintf(output_word, "%.4x", c1);
                             term_replace_chars_backwards(i+4, output_word);
                             return;
                         }
@@ -3240,9 +3057,7 @@ void term_unicode_convert(void)
                 term_replace_chars_backwards(4, p);
                 return;
             }
-/*          utf_encode(output_word, c); */
-            output_word[0] = c;
-            output_word[1] = 0;
+            utf_encode(output_word, c);
             term_replace_chars_backwards(4, output_word);
             return;
         }
@@ -3258,7 +3073,7 @@ void term_unicode_convert(void)
 static void term_interrupt(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^C>");
+    insert_point += sprintf(&input_line[insert_point], "<^C>");
     term_redisplay();
 }
 
@@ -3266,7 +3081,7 @@ static void term_interrupt(void)
 static void term_noisy_interrupt(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^G>");
+    insert_point += sprintf(&input_line[insert_point], "<^G>");
     term_redisplay();
 }
 
@@ -3274,7 +3089,7 @@ static void term_noisy_interrupt(void)
 static void term_pause_execution(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^Z>");
+    insert_point += sprintf(&input_line[insert_point], "<^Z>");
     term_redisplay();
 }
 
@@ -3288,7 +3103,7 @@ static void term_exit_program(void)
 static void term_edit_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&E>");
+    insert_point += sprintf(&input_line[insert_point], "<&E>");
     term_redisplay();
 }
 
@@ -3296,7 +3111,7 @@ static void term_edit_menu(void)
 static void term_file_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&I>");
+    insert_point += sprintf(&input_line[insert_point], "<&I>");
     term_redisplay();
 }
 
@@ -3304,7 +3119,7 @@ static void term_file_menu(void)
 static void term_module_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&M>");
+    insert_point += sprintf(&input_line[insert_point], "<&M>");
     term_redisplay();
 }
 
@@ -3312,7 +3127,7 @@ static void term_module_menu(void)
 static void term_font_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&O>");
+    insert_point += sprintf(&input_line[insert_point], "<&O>");
     term_redisplay();
 }
 
@@ -3320,7 +3135,7 @@ static void term_font_menu(void)
 static void term_break_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&B>");
+    insert_point += sprintf(&input_line[insert_point], "<&B>");
     term_redisplay();
 }
 
@@ -3328,7 +3143,7 @@ static void term_break_menu(void)
 static void term_switch_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&S>");
+    insert_point += sprintf(&input_line[insert_point], "<&S>");
     term_redisplay();
 }
 
@@ -3430,13 +3245,9 @@ static void set_shell(void)
 #endif
 }
 
-/*
- * This will need a wide-character variant...
- */
-
-static wchar_t *term_wide_fancy_getline(void)
+static char *term_fancy_getline(void)
 {
-    int ch, any_keys = 0, i;
+    int ch, any_keys = 0;
 #ifdef WIN32
     SetConsoleMode(stdout_handle, 0);
 #else
@@ -3448,15 +3259,15 @@ static wchar_t *term_wide_fancy_getline(void)
  */
     term_move_first_column();
     set_fg(promptColour);
-    for (i=0; i<prompt_length; i++) term_putchar(prompt_string[i]);
+    printf("%.*s", prompt_length, prompt_string);
     fflush(stdout);
     if (input_line_size == 0)
     {   set_normal();
         return NULL;
     }
     set_fg(inputColour);
-    wcsncpy(input_line, prompt_string, prompt_length);
-    wcsncpy(display_line, prompt_string, prompt_length);
+    strncpy(input_line, prompt_string, prompt_length);
+    strncpy(display_line, prompt_string, prompt_length);
     input_line[prompt_length] = 0;
     display_line[prompt_length] = 0;
     insert_point = final_cursorx = cursorx = prompt_length;
@@ -3475,10 +3286,10 @@ static wchar_t *term_wide_fancy_getline(void)
  * might not be one that was going to add a character. But it is harmless
  * to be safe! If I need to extend the buffer and I fail then I just
  * give up and return an error marker. Note that the insert_point may not
- * be at the end of the line, so I use wcslen() to find out how long the
+ * be at the end of the line, so I use strlen() to find out how long the
  * line actually is.
  */
-        n = wcslen(input_line);
+        n = strlen(input_line);
 /*
  * The curious activity here is to ensure that the buffer would not overflow
  * even if the "regular" part of it was replaced by the longest line
@@ -3488,8 +3299,8 @@ static wchar_t *term_wide_fancy_getline(void)
         if (searchFlags != 0)
             n = n - regular_line_end + longest_history_line;
         if (n >= input_line_size-20)
-        {   input_line = (wchar_t *)realloc(input_line, 2*input_line_size*sizeof(wchar_t));
-            display_line = (wchar_t *)realloc(display_line, 2*input_line_size*sizeof(wchar_t));
+        {   input_line = (char *)realloc(input_line, 2*input_line_size);
+            display_line = (char *)realloc(display_line, 2*input_line_size);
             if (input_line == NULL || display_line == NULL)
             {   input_line_size = 0;
                 set_normal();
@@ -3524,28 +3335,28 @@ static wchar_t *term_wide_fancy_getline(void)
             term_set_mark();
             continue;
     case CTRL('A'):
-    case ARROW_BIT + TERM_HOME:
-    case ARROW_BIT + TERM_HOME + ALT_BIT:
+    case 0x200 + TERM_HOME:
+    case 0x200 + TERM_HOME + 0x100:
             term_to_start();
             continue;
     case CTRL('B'):
-    case ARROW_BIT+TERM_LEFT:
+    case 0x200+TERM_LEFT:
             term_back_char();
             continue;
     case CTRL('C'):
           term_interrupt();
             continue;
     case CTRL('D'):
-    case ARROW_BIT+TERM_DELETE:
+    case 0x200+TERM_DELETE:
             term_delete_forwards();
             continue;
     case CTRL('E'):
-    case ARROW_BIT + TERM_END:
-    case ARROW_BIT + TERM_END + ALT_BIT:
+    case 0x200 + TERM_END:
+    case 0x200 + TERM_END + 0x100:
             term_to_end();
             continue;
     case CTRL('F'):
-    case ARROW_BIT+TERM_RIGHT:
+    case 0x200+TERM_RIGHT:
             term_forwards_char();
             continue;
     case CTRL('G'):
@@ -3553,6 +3364,7 @@ static wchar_t *term_wide_fancy_getline(void)
             continue;
     case CTRL('H'):
     case 0x7f:     /* The "delete backwards" key, I hope */
+    case 0xff:
             term_delete_backwards();
             continue;
 /*
@@ -3574,14 +3386,14 @@ static wchar_t *term_wide_fancy_getline(void)
     case CTRL('M'):                     /* carriage return, ENTER */
             break;
     case CTRL('N'):
-    case ARROW_BIT+TERM_DOWN:
+    case 0x200+TERM_DOWN:
             term_history_next();
             continue;
     case CTRL('O'):
             term_discard_output();
             continue;
     case CTRL('P'):
-    case ARROW_BIT+TERM_UP:
+    case 0x200+TERM_UP:
             term_previous_history();
             continue;
     case CTRL('Q'):
@@ -3629,7 +3441,7 @@ static wchar_t *term_wide_fancy_getline(void)
     case CTRL('^'):
             term_reinput();
             continue;
-    case CTRL('@') + ALT_BIT:
+    case CTRL('@') + 0x100:
             term_set_mark();
             continue;
 /*
@@ -3638,123 +3450,123 @@ static wchar_t *term_wide_fancy_getline(void)
  * or whether CTRL is pressed too. In a rather few cases I will let CTRL
  * take precedence over ALT...
  */
-    case CTRL('A') + ALT_BIT: case 'A' + ALT_BIT: case 'a' + ALT_BIT:
+    case CTRL('A') + 0x100: case 'A' + 0x100: case 'a' + 0x100:
             term_to_start();
             continue;
-    case CTRL('B') + ALT_BIT: case 'B' + ALT_BIT: case 'b' + ALT_BIT:
-    case ARROW_BIT + TERM_LEFT + ALT_BIT:
+    case CTRL('B') + 0x100: case 'B' + 0x100: case 'b' + 0x100:
+    case 0x200 + TERM_LEFT + 0x100:
             term_back_word();
             continue;
-    case CTRL('C') + ALT_BIT: case 'C' + ALT_BIT: case 'c' + ALT_BIT:
+    case CTRL('C') + 0x100: case 'C' + 0x100: case 'c' + 0x100:
             term_capitalize_word();
             continue;
-    case CTRL('D') + ALT_BIT: case 'D' + ALT_BIT: case 'd' + ALT_BIT:
-    case ARROW_BIT + TERM_DELETE + ALT_BIT:
+    case CTRL('D') + 0x100: case 'D' + 0x100: case 'd' + 0x100:
+    case 0x200 + TERM_DELETE + 0x100:
             term_delete_word_forwards();
             continue;
-    case CTRL('E') + ALT_BIT: case 'E' + ALT_BIT: case 'e' + ALT_BIT:
+    case CTRL('E') + 0x100: case 'E' + 0x100: case 'e' + 0x100:
             term_edit_menu();
             continue;
-    case CTRL('F') + ALT_BIT: case 'F' + ALT_BIT: case 'f' + ALT_BIT:
-    case ARROW_BIT + TERM_RIGHT + ALT_BIT:
+    case CTRL('F') + 0x100: case 'F' + 0x100: case 'f' + 0x100:
+    case 0x200 + TERM_RIGHT + 0x100:
             term_forwards_word();
             continue;
-    case CTRL('G') + ALT_BIT: case 'G' + ALT_BIT: case 'g' + ALT_BIT:
+    case CTRL('G') + 0x100: case 'G' + 0x100: case 'g' + 0x100:
             term_noisy_interrupt();
             continue;
-    case CTRL('H') + ALT_BIT: case 'H' + ALT_BIT: case 'h' + ALT_BIT:
-    case 0x7f+ALT_BIT:   /* Under X maybe the key above ENTER that I use to .. */
-    case 0xff+ALT_BIT:   /* delete things will return 0x7f. */
+    case CTRL('H') + 0x100: case 'H' + 0x100: case 'h' + 0x100:
+    case 0x7f+0x100:   /* Under X maybe the key above ENTER that I use to .. */
+    case 0xff+0x100:   /* delete things will return 0x7f. */
             term_delete_word_backwards();
             continue;
-    case CTRL('I') + ALT_BIT: case 'I' + ALT_BIT: case 'i' + ALT_BIT:
+    case CTRL('I') + 0x100: case 'I' + 0x100: case 'i' + 0x100:
             term_file_menu();
             continue;
-    case CTRL('J') + ALT_BIT: case 'J' + ALT_BIT: case 'j' + ALT_BIT:  /* line-feed */
+    case CTRL('J') + 0x100: case 'J' + 0x100: case 'j' + 0x100:  /* line-feed */
             break;
-    case CTRL('K') + ALT_BIT: case 'K' + ALT_BIT: case 'k' + ALT_BIT:
+    case CTRL('K') + 0x100: case 'K' + 0x100: case 'k' + 0x100:
             term_kill_line();
             continue;
-    case CTRL('L') + ALT_BIT: case 'L' + ALT_BIT: case 'l' + ALT_BIT:
+    case CTRL('L') + 0x100: case 'L' + 0x100: case 'l' + 0x100:
             term_lowercase_word();
             continue;
-    case CTRL('M') + ALT_BIT:              /* carriage return, ENTER */
+    case CTRL('M') + 0x100:              /* carriage return, ENTER */
             break;
-    case 'M' + ALT_BIT: case 'm' + ALT_BIT:  /* ALT-^M differs from ALT-M, ALT-m */
+    case 'M' + 0x100: case 'm' + 0x100:  /* ALT-^M differs from ALT-M, ALT-m */
             term_module_menu();
             continue;
-    case CTRL('N') + ALT_BIT: case 'N' + ALT_BIT: case 'n' + ALT_BIT:
-    case ARROW_BIT + TERM_DOWN + ALT_BIT:
+    case CTRL('N') + 0x100: case 'N' + 0x100: case 'n' + 0x100:
+    case 0x200 + TERM_DOWN + 0x100:
             term_search_next();
             continue;
-    case CTRL('O') + ALT_BIT: case 'O' + ALT_BIT: case 'o' + ALT_BIT:
+    case CTRL('O') + 0x100: case 'O' + 0x100: case 'o' + 0x100:
             term_font_menu();
             continue;
-    case CTRL('P') + ALT_BIT: case 'P' + ALT_BIT: case 'p' + ALT_BIT:
-    case ARROW_BIT + TERM_UP + ALT_BIT:
+    case CTRL('P') + 0x100: case 'P' + 0x100: case 'p' + 0x100:
+    case 0x200 + TERM_UP + 0x100:
             term_search_previous();
             continue;
-    case CTRL('Q') + ALT_BIT: case 'Q' + ALT_BIT: case 'q' + ALT_BIT:
+    case CTRL('Q') + 0x100: case 'Q' + 0x100: case 'q' + 0x100:
             continue;   /* Ignored */
-    case CTRL('R') + ALT_BIT: case 'R' + ALT_BIT: case 'r' + ALT_BIT:
+    case CTRL('R') + 0x100: case 'R' + 0x100: case 'r' + 0x100:
             term_break_menu();
             continue;
-    case CTRL('S') + ALT_BIT: case 'S' + ALT_BIT: case 's' + ALT_BIT:
+    case CTRL('S') + 0x100: case 'S' + 0x100: case 's' + 0x100:
             term_switch_menu();
             continue;
-    case CTRL('T') + ALT_BIT: case 'T' + ALT_BIT: case 't' + ALT_BIT:
+    case CTRL('T') + 0x100: case 'T' + 0x100: case 't' + 0x100:
             term_transpose_chars();
             continue;
-    case CTRL('U') + ALT_BIT: case 'U' + ALT_BIT: case 'u' + ALT_BIT:
+    case CTRL('U') + 0x100: case 'U' + 0x100: case 'u' + 0x100:
             term_uppercase_word();
             continue;
-    case CTRL('V') + ALT_BIT: case 'V' + ALT_BIT: case 'v' + ALT_BIT:
+    case CTRL('V') + 0x100: case 'V' + 0x100: case 'v' + 0x100:
             term_quoted_insert();
             continue;
-    case CTRL('W') + ALT_BIT: case 'W' + ALT_BIT: case 'w' + ALT_BIT:
+    case CTRL('W') + 0x100: case 'W' + 0x100: case 'w' + 0x100:
             term_copy_region();
             continue;
-    case CTRL('X') + ALT_BIT: case 'X' + ALT_BIT: case 'x' + ALT_BIT:
+    case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
             term_unicode_convert();
             refresh_display();
             continue;
-    case CTRL('Y') + ALT_BIT: case 'Y' + ALT_BIT: case 'y' + ALT_BIT:
+    case CTRL('Y') + 0x100: case 'Y' + 0x100: case 'y' + 0x100:
             term_yank();
             continue;
-    case CTRL('Z') + ALT_BIT: case 'Z' + ALT_BIT: case 'z' + ALT_BIT:
+    case CTRL('Z') + 0x100: case 'Z' + 0x100: case 'z' + 0x100:
             term_pause_execution();
             continue;
 /*
  * (already dealt with)
- *  case CTRL('[') + ALT_BIT:               ESC
+ *  case CTRL('[') + 0x100:               ESC
  */
-    case CTRL('\\') + ALT_BIT:
+    case CTRL('\\') + 0x100:
             continue;
-    case CTRL(']') + ALT_BIT:
+    case CTRL(']') + 0x100:
             continue;
-    case CTRL('_') + ALT_BIT:
+    case CTRL('_') + 0x100:
             term_copy_previous_word();
             continue;
-    case '@' + ALT_BIT:
+    case '@' + 0x100:
             term_set_mark();
             continue;
-    case '[' + ALT_BIT:   /* ESC-[ */
+    case '[' + 0x100:   /* ESC-[ */
             /* Should never be delivered here */
             continue;
-    case '\\' + ALT_BIT:
+    case '\\' + 0x100:
             term_exit_program();
             /* no return */
-    case ']' + ALT_BIT:
+    case ']' + 0x100:
             continue;
-    case '_' + ALT_BIT:
+    case '_' + 0x100:
             term_copy_previous_word();
             continue;
-    case '{' + ALT_BIT:
+    case '{' + 0x100:
             continue;  /* Ignored */
-    case '^' + ALT_BIT:
+    case '^' + 0x100:
             term_reinput();
             continue;
-    case '}' + ALT_BIT:
+    case '}' + 0x100:
             continue;  /* Ignored */
     default:
 /*
@@ -3768,7 +3580,7 @@ static wchar_t *term_wide_fancy_getline(void)
                     n--;
                 }
             }
-            input_line[insert_point] = ch & (~(ALT_BIT|ARROW_BIT));
+            input_line[insert_point] = ch;
             insert_point++;
             refresh_display();
             continue;
@@ -3782,9 +3594,9 @@ static wchar_t *term_wide_fancy_getline(void)
     term_move_first_column();
     term_move_down(final_cursory-cursory);
     set_normal();
-    term_putchar(L'\n');
+    term_putchar('\n');
     fflush(stdout);
-    insert_point = wcslen(input_line);
+    insert_point = strlen(input_line);
     if (insert_point==prompt_length && ch==EOF) return NULL;
 /*
  * Stick the line into my history record: WITHOUT any newline at its end.
@@ -3803,108 +3615,18 @@ static wchar_t *term_wide_fancy_getline(void)
  * Whether the user terminated the line with CR or LF I will always
  * return "\n" to the program.
  */
-    input_line[insert_point++] = L'\n';
+    input_line[insert_point++] = '\n';
     input_line[insert_point] = 0;
     return input_line + prompt_length;
 }
 
-#endif /* DISABLE */
-
-wchar_t *term_wide_getline(void)
-{
-    if (!term_enabled) return term_wide_plain_getline();
-    else return term_wide_fancy_getline();
-}
-
 char *term_getline(void)
 {
-    wchar_t *r = term_wide_getline();
-    if (r == NULL) return NULL;
-/*
- * To get a "narrow char" line I read a wide char line and then preserve
- * all characters whose codepoints are in the range 0x00 to 0xff and
- * replace all others with a question mark. This leaves me the first 256
- * codepoints of Unicode and that covers ordinary ASCII plus a bunch of
- * diacriticals.
- */
-    char *p = (char *)r;
-    wchar_t *q = r;
-    int c;
-    while ((c = *q++) != 0)
-    {   if (c > 0xff) c = '?';
-        *p++ = c;
-    }
-    return (char *)r;
+    if (!term_enabled) return term_plain_getline();
+    else return term_fancy_getline();
 }
 
-#ifdef RECORD_KEYS
-/*
- * This abomination is here to permit me to collect the key-sequences
- * that a whole bunch of things generate for me. I do not guarantee that
- * it will always work, but when it does it may be useful!
- */
+#endif /* DISABLE */
 
-static void record_keys(void)
-{
-    static char *keys[] =
-    {   "left arrow",
-        "right arrow",
-        "up arrow",
-        "down arrow",
-        "delete",
-        "backspace-style delete key",
-        "home",
-        "end",
-        "insert",
-        "enter",
-        "ALT-left arrow",
-        "ALT-right arrow",
-        "ALT-up arrow",
-        "ALT-down arrow",
-        "ALT-delete",
-        "ALT-backspace-style delete key",
-        "ALT-home",
-        "ALT-end",
-        "ALT-insert",
-        "ALT-enter",
-        "Ctrl-left arrow",
-        "Ctrl-right arrow",
-        "Ctrl-up arrow",
-        "Ctrl-down arrow",
-        "Ctrl-delete",
-        "Ctrl-backspace-style delete key",
-        "Ctrl-home",
-        "Ctrl-end",
-        "Ctrl-insert",
-        "Ctrl-enter",
-        NULL
-    };
-    char **p = keys;
-    printf("\r\nFor each key listed here press the key and then an \"x\"\r\n");
-    while (*p != NULL)
-    {   int ch;
-        printf("%s: ", *p++);
-        fflush(stdout);
-        while ((ch = getchar()) != 'x')
-        {   if (ch < 0x20) printf("^%c ", ch | 0x40);
-            else if (0x20 < ch && ch < 0x7f) printf("%c ", ch);
-            else printf("[%x] ", ch);
-        }
-        printf("\r\n");
-    }
-    printf("Thank you\r\n");
-}
-
-int main(int argc, char *argv[])
-{
-    term_setup(1, NULL);
-//    def_prog_mode();
-    record_keys();
-//    reset_shell_mode();
-    term_close();
-    return 0;
-}
-
-#endif
 
 /* end of file termed.c */

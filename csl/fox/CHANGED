@@ -89,6 +89,8 @@ February 2014: Move towards some Unicode interface to terminal handling so
      letter on a non-UK/non-US keyboard or a pounds sign on a UK keyboard)
      and that had previously been even more broken... so I will not view
      that as too high priority.
+     (Feb 11) Above changes broken and so now undone - will check them in
+     again when better tested!
 
 
 
