@@ -753,17 +753,18 @@ asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
    % The Cauchy bound of [f] with respect to [v]. We assume that [f] is
    % univariate in [v] and [mvar f eq v], in particular [f] is not a domain
    % element.
-   begin scalar maxsq, d, n, q;
-      maxsq := 1 ./ 1;
-      d := !*f2q absf lc f;
+   begin scalar sumq, an, d, one;
+      sumq := nil ./ 1;
+      an := !*f2q absf lc f;
       while not domainp f do <<
 	 f := red f;
-	 n := !*f2q absf if domainp f then f else lc f;
-	 q := quotsq(n, d);
-	 if sfto_greaterq(q, maxsq) then
-	    maxsq := q
+	 d := !*f2q absf if domainp f then f else lc f;
+	 sumq := addsq(sumq, quotsq(d, an))
       >>;
-      return maxsq
+      one := 1 ./ 1;
+      if sfto_greaterq(one, sumq) then
+	 return one;
+      return sumq
    end;
 
 asserted procedure sfto_greaterq(q1: SQ, q2: SQ): ExtraBoolean;
@@ -778,14 +779,40 @@ asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
 asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
    (null w or minusf w) where w=subtrsq(q1, q2);
 
+asserted procedure sfto_maxq(q1: SQ, q2: SQ): ExtraBoolean;
+   if sfto_greaterq(q1, q2) then q1 else q2;
+
+asserted procedure sfto_minq(q1: SQ, q2: SQ): ExtraBoolean;
+   if sfto_lessq(q1, q2) then q1 else q2;
+
 asserted procedure sfto_renamef(f: SF, vold: Kernel, vnew: Kernel): SF;
-   begin scalar mv;
+   begin scalar mv, recurse;
       if domainp f then
 	 return f;
       mv := mvar f;
-      if mv eq vold then
+      if mv eq vold then <<
 	 mv := vnew;
-      return addf(multf(exptf(!*k2f mv, ldeg f), sfto_renamef(lc f, vold, vnew)), sfto_renamef(red f, vold, vnew))
+	 recurse := nil
+      >> else
+      	 recurse := t;
+      return addf(multf(exptf(!*k2f mv, ldeg f),
+	 if recurse then sfto_renamef(lc f, vold, vnew) else lc f),
+	 sfto_renamef(red f, vold, vnew))
+   end;
+
+asserted procedure sfto_renamealf(f: SF, al: AList): SF;
+   % TODO: More efficient with sorted [al].
+   begin scalar mv, w, al1;
+      if domainp f then
+	 return f;
+      mv := mvar f;
+      if (w := atsoc(mv, al)) then <<
+	 mv := cdr w;
+	 al1 := delq(w, al)
+      >> else
+	 al1 := al;
+      return addf(multf(exptf(!*k2f mv, ldeg f), sfto_renamealf(lc f, al1)),
+	 sfto_renamealf(red f, al))
    end;
 
 endmodule;  % [sfto]
