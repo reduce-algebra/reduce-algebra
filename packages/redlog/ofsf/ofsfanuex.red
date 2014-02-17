@@ -349,6 +349,9 @@ asserted procedure ratpoly_mklin(x: Kernel, ba: Rational): RatPoly;
 asserted procedure ratpoly_print(q: RatPoly): Any;
    mathprint prepsq q;
 
+asserted procedure ratpoly_2str(q: RatPoly): Any;
+   ioto_form2str prepsq q;
+
 asserted procedure ratpoly_ratp(q: RatPoly): Boolean;
    % Tests, if a RatPoly is a Rational.
    (numberp numr q and not eqn(numr q, 0)) or null numr q;
@@ -429,7 +432,7 @@ asserted procedure ratpoly_exp(rp: RatPoly, n: Integer): RatPoly;
 asserted procedure ratpoly_xtothen(x: Kernel, n: Integer): RatPoly;
    % Rational number polynomial x to the n.
    <<
-      assert(x >= 0);
+      assert(n >= 0);
       if eqn(n, 0) then 1 ./ 1 else (((x .^ n) .* 1) .+ nil) ./ 1
    >>;
 
@@ -638,6 +641,14 @@ asserted procedure ctx_free(x: Kernel, c: AexCtx): AexCtx;
 	 if ordop(car e, x) then nil else {e}
    >>;
 
+asserted procedure ctx_free1(x: Kernel, c: AexCtx): AexCtx;
+   % Free [x]. [x] has to be bound by [c].
+   <<
+      assert(not null ctx_get(x, c));  % Variable [x] should be bound by [c].
+      ctx_fromial for each e in ctx_ial c join
+	 if not eqcar(e, x) then {e}
+   >>;
+
 asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    % Union of syntactically compatible contexts. Syntactically/semantically
    % compatible means: For every Kernel [x]: If (x . a1) in [c1] and (x . a2) in
@@ -713,6 +724,10 @@ asserted procedure aex_freeall(ae: Aex): Aex;
 asserted procedure aex_free(ae: Aex, x: Kernel): Aex;
    % Free x and all higher variables.
    aex_mk(aex_ex ae, ctx_free(x, aex_ctx ae), nil, nil);
+
+asserted procedure aex_free1(ae: Aex, x: Kernel): Aex;
+   % Free x.
+   aex_mk(aex_ex ae, ctx_free1(x, aex_ctx ae), nil, nil);
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    % TODO: ensure [a] is defined with x.
@@ -1431,9 +1446,6 @@ asserted procedure aex_fromcoefdegl(cfdgl: List, x: Kernel): Aex;
       return ae
    end;
 
-asserted procedure aex_coefdegltest(ae: Aex, x: Kernel): Boolean;
-   aex_nullp aex_minus(ae,aex_fromcoefdegl(aex_coefdegl(ae,x),x));
-
 asserted procedure aex_containment(ae: Aex): RatInterval;
    % Algebraic expression containment. [ae] is a constant Aex. Returns an
    % interval. The algebraic number represented by [ae] is contained in the
@@ -1452,8 +1464,8 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       ctac := anu_iv cdr ia;
       %ae := aex_free(ae,car ia);
       cfdgl := aex_coefdegl(aex_free(ae,car ia),car ia);
-      % Coefficient degree list test:
-      assert(aex_coefdegltest(ae, car ia));
+      % Reconstruct Aex from [cfdgl] for test purposes.
+      assert(aex_nullp aex_minus(ae,aex_fromcoefdegl(cfdgl, car ia)));
       ivl := for each cfdg in cfdgl collect
 	 iv_mult(aex_containment car cfdg,iv_tothen(ctac,cdr cfdg));
       return iv_mapadd ivl
