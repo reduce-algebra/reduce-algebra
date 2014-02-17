@@ -1646,8 +1646,12 @@ procedure ofsf_qemkans(an,svf);
       return res
    end;
 
+fluid '(ofsf_anuc!*);
+
 procedure ofsf_qemkstdans(an,svf);
-   begin scalar fl, y, f, v, sub, xargl, nan;
+   begin scalar fl, y, f, v, sub, xargl, nan, anunan, a, b, c, d;
+      integer ofsf_anuc!*;
+      ofsf_anuc!* := 10000;
       if !*rlverbose then
 	 ioto_tprin2t {"++++ determining standard real numbers for the answers ",
 	    for each y in an collect car y, " ..."};
@@ -1664,41 +1668,144 @@ procedure ofsf_qemkstdans(an,svf);
 	 if sub eq 'ofsf_shift!-indicator then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " shift"};
-	    push(y, nan)
+	    push(y, nan);
+	    push(ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcq then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " quotient"};
-	    push(y, nan)
+	    push(y, nan);
+	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcr1 then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " root"};
 	    % TODO: Find rational, if possible.
-	    push(y, nan)
+	    push(y, nan);
+	    push(v . ofsf_r2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubi then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " = ", car xargl, " = "};
-	    f := ofsf_qeapplynan(nan, f);
-	    {v, sub, xargl} := y := ofsf_qemkstdansinf(f, v, sub, xargl);
+	    {v, sub, xargl} := y := ofsf_qemkstdansinf(f, nan, v, sub, xargl);
 	    if !*rlverbose then ioto_prin2 {ioto_form2str prepsq cadr xargl};
-	    push(y, nan)
-	 >> else if sub eq 'ofsf_qesubcqme then <<
-	    lprim {"ofsf_qemkstdans: TODO q - eps"};
-	    push(y, nan)
+	    push(y, nan);
+	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcqpe then <<
-	    lprim {"ofsf_qemkstdans: TODO q + eps"};
-	    push(y, nan)
-	 >> else if sub eq 'ofsf_qesubcrme1 then <<
-	    lprim {"ofsf_qemkstdans: TODO r - eps"};
-	    push(y, nan)
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " quotient + epsilon"};
+	    {v, sub, xargl} := y := ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+	    push(y, nan);
+	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+	 >> else if sub eq 'ofsf_qesubcqme then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " quotient - epsilon"};
+	    f := cl_apply2ats(f,
+	       function(lambda atf; ofsf_0mk2(ofsf_anegrel ofsf_op atf, ofsf_arg2l atf)));
+	    xargl := car xargl . negsq cadr xargl . cddr xargl;
+	    {v, sub, xargl} := ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+	    xargl := car xargl . negsq cadr xargl . cddr xargl;
+	    push({v, sub, xargl}, nan);
+	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
       	 >> else if sub eq 'ofsf_qesubcrpe1 then <<
-	    lprim {"ofsf_qemkstdans: TODO r + eps"};
-	    push(y, nan)
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " root + epsilon"};
+	    {v, sub, xargl} := y := ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+	    push(y, nan);
+	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+	 >> else if sub eq 'ofsf_qesubcrme1 then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " root - epsilon"};
+	    f := cl_apply2ats(f,
+	       function(lambda atf; ofsf_0mk2(ofsf_anegrel ofsf_op atf, ofsf_arg2l atf)));
+	    {a, b, c, d} := cadr xargl;
+	    xargl := car xargl . {negsq a, negsq b, c, d} . cddr xargl;
+	    {v, sub, xargl} := ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+	    xargl := car xargl . negsq cadr xargl . cddr xargl;
+	    push({v, sub, xargl}, nan);
+	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else
 	    rederr "BUG IN ofsf_qemkstdans"
       >>;
       assert(null fl);
       return reversip nan
    end;
+
+procedure ofsf_shift2anu(v, base, dgcd, anunan);
+   begin scalar w, basevar, avar, aex, ub;
+      w := atsoc(base, anunan);
+      assert(w);
+      base := cdr w;
+      basevar := aex_mvar anu_dp base;
+      avar := ofsf_genavar();
+      aex := aex_fromsf addf(exptf(!*k2f avar, dgcd), negf !*k2f basevar);
+      aex := aex_bind(aex, basevar, base);
+      ub := iv_rb anu_iv base;
+      return v . anu_mk(aex, sfto_maxq(2 ./ 1, ub))
+   end;
+
+procedure ofsf_q2anu(q, anunan);
+   begin scalar n, d, vl, w, anuv, subal, ctx, avar, aex, cb;
+      n := numr q;
+      d := denr q;
+      vl := union(kernels n, kernels d);
+      for each v in vl do <<
+	 w := atsoc(v, anunan);
+	 assert(w);
+	 anuv := aex_mvar anu_dp cdr w;
+	 push(v . anuv, subal);
+	 push(anuv . cdr w, ctx)
+      >>;
+      ctx := reversip ctx;
+      n := sfto_renamealf(n, subal);
+      d := sfto_renamealf(d, subal);
+      avar := ofsf_genavar();
+      %aex := aex_fromsf addf(multf(d, !*k2f avar), negf n);
+      aex := aex_mk(ratpoly_fromsf addf(multf(d, !*k2f avar), negf n), ctx_fromial ctx, nil, nil);
+      cb := aex_cauchybound(aex, aex_mvar aex);
+      cb := addsq(cb, 1 ./ 1);
+      return anu_mk(aex, iv_mk(negsq cb, cb))
+   end;
+
+procedure ofsf_r2anu(r, anunan);
+   begin scalar a, b, c, d, vl, w, anuv, subal, ctx, sgn, avar, avarf, p, aex, roots;
+      {a, b, c, d} := r;
+      vl := lto_unionn {kernels a, kernels b, kernels c, kernels d};
+      for each v in vl do <<
+	 w := atsoc(v, anunan);
+	 assert(w);
+	 anuv := aex_mvar anu_dp cdr w;
+	 push(v . anuv, subal);
+	 push(anuv . cdr w, ctx)
+      >>;
+      ctx := reversip ctx;
+      c := sfto_renamealf(c, subal);
+      sgn := aex_sgn aex_mk(ratpoly_fromsf c, ctx_fromial ctx, nil, nil);
+      if eqn(sgn, 0) then
+	 return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
+      assert(sgn > 0);
+      b := sfto_renamealf(b, subal);
+      sgn := aex_sgn aex_mk(ratpoly_fromsf b, ctx_fromial ctx, nil, nil);
+      if eqn(sgn, 0) then
+	 return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
+      a := sfto_renamealf(a, subal);
+      d := sfto_renamealf(d, subal);
+      avar := ofsf_genavar();
+      avarf := !*k2f avar;
+      % p = d^2*x^2 - 2*a*d*x + a^2 - b^2*c
+      p := addf(multf(exptf(d, 2), exptf(avarf, 2)),
+	 addf(negf multf(2, multf(a, multf(d, avarf))),
+	    addf(exptf(a, 2), negf multf(exptf(b, 2), c))));
+      aex := aex_mk(ratpoly_fromsf p, ctx_fromial ctx, nil, nil);
+      roots := aex_findroots(aex, avar);
+      assert(eqn(length roots, 2));
+      if sgn < 0 then
+      	 return car roots;
+      return cadr roots
+   end;
+
+procedure ofsf_genavar();
+   <<
+      ofsf_anuc!* := ofsf_anuc!* - 1;
+      mkid('!_anuvar, ofsf_anuc!*)
+   >>;
 
 procedure ofsf_qemkansfl(svf, an);
    begin scalar f, fl, v, sub, xargl, val;
@@ -1755,8 +1862,9 @@ procedure ofsf_rename(f, v, ansvar);
 procedure ofsf_renameat(f, vold, vnew);
    ofsf_0mk2(rl_op f, sfto_renamef(ofsf_arg2l f, vold, vnew));
 
-procedure ofsf_qemkstdansinf(f, v, sub, xargl);
+procedure ofsf_qemkstdansinf(f, nan, v, sub, xargl);
    begin scalar w;
+      f := ofsf_qeapplynan(nan, f);
       if car xargl = 'pinf then
 	 w := ofsf_qemkstdanspinf(f, v, xargl)
       else if car xargl = 'minf then
@@ -1844,6 +1952,31 @@ procedure ofsf_guessminf(atf, v);
       if op eq 'lessp then
 	 return subtrsq(w, 1 ./ 1);
       rederr {"ofsf_guessminf:", op}
+   end;
+
+procedure ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+   begin scalar q, anu, mv, aex;
+      f := ofsf_qeapplynan(nan, f);
+      q := cadr xargl;
+      anu := ofsf_q2anu(q, anunan);
+      mv := aex_mvar anu_dp anu;
+      aex := aex_mk(ratpoly_fromsf !*k2f mv, ctx_fromial {mv . anu}, t, t);
+      return ofsf_qemkstdansaexpe(f, v, aex, anunan)
+   end;
+
+procedure ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+   begin scalar r, anu, mv, aex;
+      f := ofsf_qeapplynan(nan, f);
+      r := cadr xargl;
+      anu := ofsf_r2anu(r, anunan);
+      mv := aex_mvar anu_dp anu;
+      aex := aex_mk(ratpoly_fromsf !*k2f mv, ctx_fromial {mv . anu}, t, t);
+      return ofsf_qemkstdansaexpe(f, v, aex, anunan)
+   end;
+
+procedure ofsf_qemkstdansaexpe(f, v, aex, anunan);
+   begin
+      return {v, 'ofsf_qesubcq, {'true, 4711 ./ 1}}
    end;
 
 procedure ofsf_qemkans1(an);
