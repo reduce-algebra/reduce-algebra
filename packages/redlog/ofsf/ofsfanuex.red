@@ -619,7 +619,6 @@ asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
    % bound by context [c]. If [x] is not bound by [c], nil is returned.
    begin scalar res;
       res := atsoc(x, ctx_ial c);
-      assert(not null res);  % Variable [x] should be bound by [c].
       if null res then
 	 return nil;
       return cdr res
@@ -955,13 +954,14 @@ asserted procedure aex_reduce(ae: Aex): Aex;
       if null aex_boundidl ae then  % There are no bound variables.
 	 return ae;
       % There are bound variables.
-      x := aex_mvar ae;  % We assume that aex_mvar ae is a bound variable.
       if aex_freeidl ae then <<  % There are free variables.
+      	 x := aex_mvar ae;
 	 rlc := aex_reduce aex_lc(ae, x);
 	 rred := aex_reduce aex_red(ae, x);
 	 return aex_add(aex_mult(rlc, aex_xtothen(x, aex_deg(ae, x))), rred)
       >>;
       % There are no free variables.
+      x := aex_mvar ae;  % We assume that aex_mvar ae is a bound variable.
       assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variables match.
       alpha := ctx_get(x, aex_ctx ae);
       tmp := aex_reduce aex_free(ae, x);
@@ -1469,6 +1469,7 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
    begin scalar ia,cfdgl,ctac,ivl,r;
       % coefficient and degree list, containment of a_c, interval list
       % [ae] should be a constant.
+      assert(not aex_badp(ae, 0));
       assert(null aex_freeidl ae);
       if null aex_boundidl ae then <<
 	 assert(null ratpoly_idl aex_ex ae);
@@ -1517,6 +1518,7 @@ asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
    % minimum of the cauchy bounds of ae.
    begin scalar cfl,am,ctam,nb,ctl,ml,m,n,minabsam,cb,aesc;
       % [ae] should not have non-trivial degree:
+      assert(not aex_badp(ae, 1));
       assert(not aex_simplenullp aex_lc(ae, x));
       if aex_deg(ae,x) <= 0 then
 	 return rat_1(); % avoids trivial sturmchains
