@@ -657,26 +657,39 @@ asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    % compatible means: For every Kernel [x]: If (x . a1) in [c1] and (x . a2) in
    % [c2] then syntactically/semantically [a1] = [a2]. We assume that [c1] and
    % [c2] are sorted w.r.t. the current kernel order.
-   begin scalar ial1, ial2, w1, w2, res;
-      ial1 := ctx_ial c1;
-      ial2 := ctx_ial c2;
-      while ial1 and ial2 do <<
-	 w1 := pop ial1;
-	 w2 := pop ial2;
-	 if car w1 eq car w2 then
-	    res := w1 . res
-	 else
-	    if ordop(car w1, car w2) then
-	       res := w2 . w1 . res
-	    else
-	       res := w1 . w2 .res
-      >>;
-      if null ial1 then
-	 return ctx_fromial append(reversip res, ial2);
-      if null ial2 then
-	 return ctx_fromial append(reversip res, ial1);
-      return ctx_fromial reversip res
+   begin scalar ial1, ial2, w;
+      ial1 := for each pr in ctx_ial c1 collect car pr . cdr pr;
+      ial2 := for each pr in ctx_ial c2 collect car pr . cdr pr;
+      w := lto_almerge({ial1, ial2}, function(lambda(x, y); x));
+      w := sort(w, function(lambda(x, y); ordop(car x, car y)));
+      return ctx_fromial w
    end;
+
+% asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
+%    % Union of syntactically compatible contexts. Syntactically/semantically
+%    % compatible means: For every Kernel [x]: If (x . a1) in [c1] and (x . a2) in
+%    % [c2] then syntactically/semantically [a1] = [a2]. We assume that [c1] and
+%    % [c2] are sorted w.r.t. the current kernel order.
+%    begin scalar ial1, ial2, w1, w2, res;
+%       ial1 := ctx_ial c1;
+%       ial2 := ctx_ial c2;
+%       while ial1 and ial2 do <<
+% 	 w1 := pop ial1;
+% 	 w2 := pop ial2;
+% 	 if car w1 eq car w2 then
+% 	    res := w1 . res
+% 	 else
+% 	    if ordop(car w1, car w2) then
+% 	       res := w2 . w1 . res
+% 	    else
+% 	       res := w1 . w2 . res
+%       >>;
+%       if null ial1 then
+% 	 return ctx_fromial append(reversip res, ial2);
+%       if null ial2 then
+% 	 return ctx_fromial append(reversip res, ial1);
+%       return ctx_fromial reversip res
+%    end;
 
 % Aex functions.
 
