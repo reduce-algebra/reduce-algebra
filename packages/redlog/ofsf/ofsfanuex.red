@@ -1885,6 +1885,63 @@ asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
       return a
    end;
 
+asserted procedure aex_badp(aex: Aex, fvn: Integer): ExtraBoolean;
+   % [fvn] is the number of expected variables or -1.
+   begin scalar varl, ctx, ial, brk, v, anu, bvarl, fvarl, fv, bv, scbvarl;
+      if not eqcar(aex, 'aex) then
+	 return 1;
+      varl := kernels numr cadr aex;
+      ctx := caddr aex;
+      if not eqcar(ctx, 'ctx) then
+	 return 2;
+      ial := cadr ctx;
+      brk := nil; while not brk and ial do <<
+	 v . anu := pop ial;
+	 % if not (v memq varl) then
+	 %    brk := 3;
+	 if not brk and ial and (not ordop(v, caar ial) or v eq caar ial) then
+	    brk := 4;
+	 if not brk and v neq aex_mvar anu_dp anu then
+	    brk := 5;
+	 brk := brk or anu_badp anu
+      >>;
+      if brk then
+	 return brk;
+      bvarl := for each pr in cadr ctx collect car pr;
+      fvarl := lto_setminus(varl, bvarl);
+      if not eqn(fvn, -1) and not eqn(length fvarl, fvn) then
+	 return 6;
+      brk := nil; while not brk and fvarl do <<
+	 fv := pop fvarl;
+	 scbvarl := bvarl;
+	 while not brk and scbvarl do <<
+	    bv := pop scbvarl;
+	    if not ordop(fv, bv) and fv neq bv then
+	       brk := 7
+	 >>
+      >>;
+      return brk
+   end;
+
+asserted procedure anu_badp(anu: Anu): ExtraBoolean;
+   begin scalar aex, iv, w;
+      if not eqcar(anu, 'anu) then
+	 return 11;
+      aex := cadr anu;
+      iv := caddr anu;
+      if not pairp iv then
+	 return 12;
+      if not pairp car iv or not RationalP car iv then
+	 return 13;
+      if not pairp cdr iv or not RationalP cdr iv then
+	 return 14;
+      if not sfto_lessq(car iv, cdr iv) then
+	 return 15;
+      w := aex_badp(aex, 1);
+      if w then
+	 return w + 1000
+   end;
+
 endmodule;  % ofsfanuex
 
 end;  % of file
