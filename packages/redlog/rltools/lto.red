@@ -289,7 +289,7 @@ procedure lto_setminus(l1,l2);
    for each x in l1 join if not member(x,l2) then {x};
 
 procedure lto_unionn(l);
-   if null l or null cdr l then l else union(car l, lto_unionn cdr l);
+   if null l then nil else union(car l, lto_unionn cdr l);
 
 switch rlsetequalqhash;  % keep it local because it is temporary --TS
 on1 'rlsetequalqhash;

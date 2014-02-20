@@ -774,10 +774,10 @@ asserted procedure sfto_lessq(q1: SQ, q2: SQ): ExtraBoolean;
    minusf numr subtrsq(q1, q2);
 
 asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
-   (null w or minusf w) where w=subtrsq(q2, q1);
+   (null w or minusf numr w) where w=subtrsq(q2, q1);
 
 asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
-   (null w or minusf w) where w=subtrsq(q1, q2);
+   (null w or minusf numr w) where w=subtrsq(q1, q2);
 
 asserted procedure sfto_maxq(q1: SQ, q2: SQ): ExtraBoolean;
    if sfto_greaterq(q1, q2) then q1 else q2;
