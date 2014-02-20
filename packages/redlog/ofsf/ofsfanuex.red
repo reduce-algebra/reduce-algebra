@@ -117,7 +117,8 @@ asserted procedure rat_print(q: Rational): Any;
    <<
       prin2 rat_numrn q;
       prin2 "/";
-      prin2 rat_denr q
+      prin2 rat_denr q;
+      nil
    >>;
 
 asserted procedure rat_fromnum(n: Integer): Rational;
@@ -239,7 +240,8 @@ asserted procedure iv_print(iv: RatInterval): Any;
       rat_print iv_lb iv;
       prin2 ",";
       rat_print iv_rb iv;
-      prin2 "["
+      prin2t "[";
+      nil
    >>;
 
 asserted procedure iv_neg(iv: RatInterval): RatInterval;
@@ -347,7 +349,7 @@ asserted procedure ratpoly_mklin(x: Kernel, ba: Rational): RatPoly;
    ratpoly_fromsf addf(multf(numr simp x, rat_denr ba), negf rat_numr ba);
 
 asserted procedure ratpoly_print(q: RatPoly): Any;
-   mathprint prepsq q;
+   ioto_prin2t ioto_form2str prepsq q;
 
 asserted procedure ratpoly_2str(q: RatPoly): Any;
    ioto_form2str prepsq q;
@@ -602,13 +604,14 @@ asserted procedure ctx_idl(c: AexCtx): List;
 
 asserted procedure ctx_print(c: AexCtx): Any;
    <<
-      prin2 "[(ctx) ";
+      prin2t "[";
       for each ia in ctx_ial c do <<
 	 prin2 car ia;
-	 prin2 "->";
+	 prin2t "->";
 	 anu_print cdr ia
       >>;
-      prin2 "] "
+      prin2t "]";
+      nil
    >>;
 
 asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
@@ -741,7 +744,7 @@ asserted procedure aex_print(ae: Aex): Any;
    <<
       ratpoly_print aex_ex ae;
       if ctx_ial aex_ctx ae then <<
-	 prin2 ", where ";
+	 prin2t ", where";
 	 ctx_print aex_ctx ae
       >>
    >>;
@@ -1811,11 +1814,12 @@ asserted procedure anu_putiv(a: Anu, iv: RatInterval): Any;
 
 asserted procedure anu_print(a: Anu): Any;
    <<
-      prin2 "(";
+      prin2t "(";
       aex_print anu_dp a;
-      prin2 ", ";
+      prin2t "root in interval:";
       iv_print anu_iv a;
-      prin2 ")"
+      prin2t ")";
+      nil
    >>;
 
 asserted procedure anu_check(a: Anu): Boolean;
