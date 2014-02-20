@@ -291,7 +291,7 @@ asserted procedure ofsf_feasible1(fl: List, gl: List): AnuIntervalList;
    % from ['equal].
    begin scalar xk, f, l, fidl;
       f := car pop fl;
-      fidl := aex_freeids f;
+      fidl := aex_freeidl f;
       assert(fidl and not cdr fidl);
       xk := car fidl;
       l := for each anu in aex_findroots(f, xk) join
@@ -321,7 +321,7 @@ asserted procedure ofsf_feasible2(gl: List): AnuIntervalList;
    begin scalar xk, fidl, ivl, g, givl, rel;
       assert gl;
       ivl := {anusp_mk('anusp_open, 'minf, 'anusp_open, 'pinf)};
-      fidl := aex_freeids caar gl;
+      fidl := aex_freeidl caar gl;
       assert(fidl and not cdr fidl);
       xk := car fidl;
       while gl do <<
@@ -336,7 +336,7 @@ asserted procedure ofsf_feasible2(gl: List): AnuIntervalList;
 
 asserted procedure ofsf_lit2ivl(rel: Id, g: Aex, xk: Kernel): AnuIntervalList;
    begin scalar sgvl, rootl;
-      assert(aex_freeids g = {xk});
+      assert(aex_freeidl g = {xk});
       rootl := aex_findroots(g, xk);
       sgvl := ofsf_lit2ivl1(rel, g, xk, rootl);
       return sgvl
@@ -553,7 +553,7 @@ asserted procedure anu_compare2(anu1: Anu, anu2: Anu, g: Kernel): Integer;
 
 asserted procedure aex_fromAnu(anu: Anu): Aex;
    begin scalar vl, v, aex;
-      vl := aex_freeids anu_dp anu;
+      vl := aex_freeidl anu_dp anu;
       assert(length vl = 1);
       v := car vl;
       aex := aex_bind(aex_fromrp simp v, v, anu);
@@ -563,7 +563,7 @@ asserted procedure aex_fromAnu(anu: Anu): Aex;
 asserted procedure anu_varChange(anu: Anu, newvar: Kernel): Anu;
    begin scalar dp;
       dp := anu_dp anu;
-      return anu_mk(aex_subrp(dp, car aex_freeids dp, newvar), anu_iv anu)
+      return anu_mk(aex_subrp(dp, car aex_freeidl dp, newvar), anu_iv anu)
    end;
 
 asserted procedure ofsf_feasibleEvalSgn(g: Aex, x: Kernel, anu: GAnu): Integer;
@@ -670,7 +670,7 @@ asserted procedure anu_refine(anu: Anu): Anu;
       if iv_lb iv = iv_rb iv then
 	 return anu;
       w := copy anu;
-      fidl := aex_freeids anu_dp anu;
+      fidl := aex_freeidl anu_dp anu;
       assert eqn(length fidl, 1);
       x := car fidl;
       sc := aex_stdsturmchain(anu_dp anu, x);
