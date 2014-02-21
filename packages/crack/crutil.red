@@ -4854,7 +4854,7 @@ begin scalar m;
              else if fixp m then if m<10 then bldmsg("%d",m)
                                          else bldmsg(".%d.",m)
                             else bldmsg("%w.",m));
- return s
+ return (s or "nil")
 end;
 
 symbolic procedure backup_to_file(pdes,forg,nme);
@@ -7873,10 +7873,10 @@ symbolic procedure delete!-file!-exact fi;
       memq('cygwin, lispsystem!*) or
       memq('unix, lispsystem!*)) and
      not memq('win32, lispsystem!*) and
-     not memq('win64, lispsystem!*) then system bldmsg("rm -f %s", fi)
+     not memq('win64, lispsystem!*) then system bldmsg("rm -f %w", fi)
 % On Windows I only delete the file if it exists, so that I avoid messages
 % that otherwise intrude.
-  else if filep fi then system bldmsg("del ""%s""", fi);
+  else if filep fi then system bldmsg("del ""%w""", fi);
 
 !#endif
 
