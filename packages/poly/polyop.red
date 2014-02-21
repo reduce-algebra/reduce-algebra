@@ -41,6 +41,44 @@ symbolic procedure deg(u,kern);
    <<u := simp!* u; tstpolyarg2(u,kern); numrdeg(numr u,kern)>>
      where dmode!* = gdmode!*;
 
+% totaldeg(u, kernlist) find the total degree of the polynomial u in
+% the variables in kernlist. If kernlist is not a list it is treated
+% as a simple single variable.
+% The denominator of u is ignored, and "degree" here does not may attention
+% to fractional powers. Mentions of a kernel within the argument to any
+% operator or function (eg sin, cos, log, sqrt) are ignored. Really u is
+% expected to be just a polynomial.
+%
+% Eg:
+%   totaldeg(a*x^2+b*x+c, x)  => 2
+%   totaldeg(a*x^2+b*x+c, {a,b,c})  => 1
+%   totaldeg(a*x^2+b*x+c, {x, a})  => 3
+%   totaldeg(a*x^2+b*x+c, {x,b})  => 2
+%   totaldeg(a*x^2+b*x+c, {p,q,r})  => 0
+
+symbolic procedure totaldeg(u,kernlist);
+  begin
+    scalar n;
+    u := numr simp!* u;
+    kernlist := prepsq simp!* kernlist;
+    if eqcar(kernlist, 'list) then kernlist := cdr kernlist
+    else kernlist := list kernlist;
+    n := totaldeg1(u, kernlist, 0);
+    return n;
+  end;
+
+symbolic procedure totaldeg1(u, kernlist, above);
+  begin
+    scalar r;
+    r := above;
+    while not domainp u do <<
+      if member(mvar u, kernlist) then
+        r := max2(r, totaldeg1(lc u, kernlist, above+ldeg u))
+      else r := max2(r, totaldeg1(lc u, kernlist, above));
+      u := red u >>;
+    return r
+  end;
+
 symbolic procedure tstpolyarg2(u,kern);
  <<for each j in kernels numr u do
       if j neq kern and depends(j,kern)
@@ -167,9 +205,9 @@ symbolic procedure reduct(u,kern);
 symbolic procedure tstpolyarg(y,u);
    null !*ratarg and y neq 1 and typerr(prepsq u,"polynomial");
 
-% symbolic operator deg,lpower,lterm,mainvar,reduct;
+% symbolic operator deg,totaldeg,lpower,lterm,mainvar,reduct;
 
-flag('(deg lpower lterm mainvar reduct),'opfn); % This way for booting.
+flag('(deg totaldeg lpower lterm mainvar reduct),'opfn); % This way for booting.
 
 endmodule;
 
