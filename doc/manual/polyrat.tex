@@ -608,6 +608,25 @@ EXPRN} does not depend on the variable \texttt{VAR}, 0 is returned.
 \texttt{EXPRN} if it did not depend on \texttt{VAR}.  In the present version, {\tt
 EXPRN} is always equal to \texttt{LTERM(EXPRN,VAR) + REDUCT(EXPRN,VAR)}.
 
+\subsection{TOTALDEG Operator}\ttindex{TOTALDEG}
+\hypertarget{operator:TOTALDEG}{}
+
+Syntax:
+\begin{verbatim}
+     totaldeg(a*x^2+b*x+c, x)  => 2
+     totaldeg(a*x^2+b*x+c, {a,b,c})  => 1
+     totaldeg(a*x^2+b*x+c, {x, a})  => 3
+     totaldeg(a*x^2+b*x+c, {x,b})  => 2
+     totaldeg(a*x^2+b*x+c, {p,q,r})  => 0
+\end{verbatim}
+\texttt{totaldeg(u, kernlist)} finds the total degree of the polynomial \texttt{u} in
+the variables in \texttt{kernlist}. If \texttt{kernlist} is not a list it is treated
+as a simple single variable.
+The denominator of \texttt{u} is ignored, and "degree" here does not pay attention
+to fractional powers. Mentions of a kernel within the argument to any
+operator or function (eg sin, cos, log, sqrt) are ignored. Really \texttt{u} is
+expected to be just a polynomial.
+
 \section{Polynomial Coefficient Arithmetic}\index{Coefficient}
 {\REDUCE} allows for a variety of numerical domains for the numerical
 coefficients of polynomials used in calculations.  The default mode is
