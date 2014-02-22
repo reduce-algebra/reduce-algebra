@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2013 T. Sturm
+% (c) 2013-2014 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -35,18 +35,25 @@ ofsf_lpsolprec!* := 8;
 
 fluid '(rlsat2polatnum!*);
 
-switch zeropdelzero;
-off1 'zeropdelzero;
+switch rlgurobi;  % use the Gurobi optimizer
+off1 'rlgurobi;
 
-switch zeropint;
+switch rltropdel0;  % delete the (0,...,0) monomial
+on1 'rltropdel0;
 
-switch zeropintsolve;
-off1 'zeropintsolve;
+switch rltropilp;  % use ILP solving instead of LP solving
+on1 'rltropilp;
 
-switch zeropzero;
+switch rltropint;  % use integers, not floats, even with off rltropilp
+
+switch zeropzero;  % approximate the zero in the end
 off1 'zeropzero;
 
-switch rlgurobi;
+switch rltropsos;  % use sum of squares instead of sum for conjunctions
+off1 'rltropsos;
+
+switch rltroplcm;  % use lcm instead of product for disjunctions
+on1 'rltroplcm;
 
 % Entry points.
 
@@ -85,7 +92,9 @@ asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
 %%       if null vl or null cdr vl then
 %% 	 rederr {car argl, "is not multivariate"};
       w := ofsf_zerop1(f, posp);
-      if !*zeropzero and (!*zeropintsolve or !*zeropint) and  eqcar(w, 1) then
+      if !*zeropzero and (!*rltropilp or !*rltropint) and  eqcar(w, 1)
+ 	 and not eqn(caddr cadr w,0 )
+      then
 	 w := ofsf_zerosolve(f, w);
       return 'list . w
    end;
@@ -118,8 +127,6 @@ asserted procedure ofsf_sat2pol1(f: QfFormula, posp: Boolean): SF;
       return car ofsf_formula2pol1(w, nil, nil, nil, posp)
    end;
 
-switch troplcm;
-
 asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
    begin scalar op, e, ee;
       if f eq 'true then
@@ -131,7 +138,7 @@ asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, nea
       	 e := 1;
 	 for each a in rl_argn f do <<
 	    {ee, geal, gral, neal} := ofsf_formula2pol1(a, geal, gral, neal, posp);
-	    e := sfto_sqfpartf if !*troplcm then lcm!*(ee, e) else multf(ee, e)
+	    e := sfto_sqfpartf if !*rltroplcm then lcm!*(ee, e) else multf(ee, e)
       	 >>;
 	 return {e, geal, gral, neal}
       >>;
@@ -139,9 +146,11 @@ asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, nea
 	 e := nil;
 	 for each a in rl_argn f do <<
 	    {ee, geal, gral, neal} := ofsf_formula2pol1(a, geal, gral, neal, posp);
-	    e := addf(exptf(ee, 2), e)
+	    if !*rltropsos then
+	       ee := exptf(ee, 2);
+	    e := sfto_sqfpartf addf(ee, e)
       	 >>;
-	 e := sfto_sqfpartf e;
+%	 e := sfto_sqfpartf e;
 	 return {e, geal, gral, neal}
       >>;
       if !*rlverbose then
@@ -238,7 +247,7 @@ asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List;
    end;
 
 asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List4;
-   if !*zeropintsolve or !*zeropint then
+   if !*rltropilp or !*rltropint then
       ofsf_zeropTryOneInt(f, vl)
    else
       ofsf_zeropTryOneFloat(f, vl);
@@ -268,12 +277,14 @@ asserted procedure ofsf_zeropTryOneFloat(f: SF, vl: List): List4;
    end;
 
 asserted procedure ofsf_zerop2(f: SF, negp: Boolean, posp: Boolean): List;
-   begin scalar monl, vl, status, dir, ev, nvar; integer  d;
+   begin
+      scalar monl, vl, status, dir, ev, nvar;
+      integer  d;
       vl . monl := sfto_sf2monl f;
       d := length vl;
       if !*rlverbose then
       	 ioto_tprin2t {"+++ dimension: ", d};
-      {status, dir, ev} := ofsf_posdirp(d, vl, monl, posp);
+      {status, dir, ev, nvar} := ofsf_posdirp(d, vl, monl, posp);
       if status eq 'infeasible then
 	 return 'failed;
       if status eq 'definite then <<
@@ -282,15 +293,13 @@ asserted procedure ofsf_zerop2(f: SF, negp: Boolean, posp: Boolean): List;
  	       "polynomial is negative definite"};
 	 return if negp then 'pd else 'nd
       >>;
-      if not posp then
-      	 nvar := ofsf_softnegp(vl, ev);
       if !*rlverbose then <<
 	 ioto_tprin2 {"+++ found approximate direction of positive value: "};
 	 mathprint('list . dir);
 	 ioto_tprin2 {"+++ at point: "};
 	 mathprint('list . for each v in vl collect {'equal, v, pop ev});
       >>;
-      if !*zeropintsolve or !*zeropint then
+      if !*rltropilp or !*rltropint then
  	 return ofsf_zeropLp1int(f, negp, d, vl, dir, nvar);
       return ofsf_zeropLp1float(f, negp, d, vl, dir, nvar)
    end;
@@ -303,14 +312,14 @@ asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
       else
  	 ofsf_softnegp(cdr vl, cdr ev);
 
-asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
+asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): List4;
    begin scalar posl, snegl, hnegl, w, delposp; integer np, ns, nh;
-      if !*zeropintsolve then
+      if !*rltropilp then
       	 lp_newmodel(1, d)
       else
       	 lp_newmodel(d+1, 0);
       for each pt in monl do
-	 if !*zeropdelzero and ofsf_zerolistp car pt then <<
+	 if !*rltropdel0 and ofsf_zerolistp car pt then <<
 	    if !*rlverbose then
 	       ioto_tprin2t "+++ deleting (0,...,0)";
 	    delposp := cdr pt > 0
@@ -331,15 +340,15 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
 	 ioto_prin2t lp_optaction()
       >>;
       if null posl and (posp or null snegl) and not delposp then
-      	  return {'definite, nil, nil};
+      	  return {'definite, nil, nil, nil};
       for each l in {posl, snegl, hnegl} do
       	 ofsf_addconstraints l;
       lp_updatemodel();
-      w := ofsf_posdirp1(posl, np, d);
+      w := ofsf_posdirp1(posl, np, d, vl, nil);
       if not posp and eqcar(w, 'infeasible) then <<
 	 if !*rlverbose then
 	    ioto_cterpri();
-      	 w := ofsf_posdirp1(snegl, ns, d)
+      	 w := ofsf_posdirp1(snegl, ns, d, vl, t)
       >>;
       lp_freemodel();
       return w
@@ -348,16 +357,18 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp): List;
 asserted procedure ofsf_zerolistp(l);
    null l or eqn(car l, 0) and ofsf_zerolistp cdr l;
 
-asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer): DottedPair;
+asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List4;
    begin scalar cnt, w, dir, ev; integer i;
       if null l then
-	 return {'infeasible, nil, nil};
+	 return {'infeasible, nil, nil, nil};
       cnt := t; while cnt and l do <<
 	 if !*rlverbose then <<
 	    ioto_prin2 {"[", c, "] "};
 	    c := c - 1
 	 >>;
 	 ev := pop l;
+%% ev1 := copy ev;
+%% mathprint reval ('times . for each v in vl join << ee := pop ev1; if ee neq 0 then {{'expt, v, ee}} >>);
 	 lp_negconstr1();
 	 w := lp_optimize();
 	 if w neq 'infeasible then
@@ -368,9 +379,9 @@ asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer): DottedPair;
 	 >>
       >>;
       if w eq 'infeasible then
-      	 return {'infeasible, nil, nil};
+      	 return {'infeasible, nil, nil, nil};
       dir := {'equal, 'c, pop w} . for i := 1:d collect {'equal, mkid('n, i), pop w};
-      return {'feasible, dir, ev}
+      return {'feasible, dir, ev, if snegp then ofsf_softnegp(vl, ev)}
    end;
 
 asserted procedure ofsf_addconstraints(l: List);
@@ -454,7 +465,7 @@ asserted procedure ofsf_spoint2intpoint(dirp: List): List;
 asserted procedure ofsf_fpoint2intpoint(dirp: List): List;
    begin scalar res, w; integer g;
       res := car dirp . for each e in cdr dirp collect <<
-	 w := fix(if !*zeropintsolve then
+	 w := fix(if !*rltropilp then
  	    caddr e
  	 else
  	    10^ofsf_lpsolprec!* * caddr e + 0.5 * sgn caddr e);
@@ -516,7 +527,7 @@ asserted procedure ofsf_zerosolve(f: SF, l: List): List;
       return append(l, {{'list, 'list . zero, fzero}})
    end;
 
-procedure ofsf_realrootswrap(f);
+asserted procedure ofsf_realrootswrap(f: SF): List;
    begin scalar rl, w;
       rl := for each e in cdr realroots {prepf f} collect
  	 cadr e . caddr e;
