@@ -1245,7 +1245,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     h:=append(for each el in  xilist_s collect car el,
               for each el in etalist_s collect car el );
     if symcon_s then for each el in symcon_s do h:=cons(el,h);
-    h:=cons('LIST,h); 
+    h:=reval cons('LIST,h); 
 
     %------- droping redundant constants or functions
     flist_slin:=nil;  % flist_slin are the new lin. constants and functions
