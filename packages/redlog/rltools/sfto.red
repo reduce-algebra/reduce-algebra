@@ -815,6 +815,14 @@ asserted procedure sfto_renamealf(f: SF, al: AList): SF;
 	 sfto_renamealf(red f, al))
    end;
 
+asserted procedure sfto_ceilq(q: SQ): SQ;
+   if eqn(denr q, 1) then
+      q
+   else if minusf numr q then
+      !*f2q sfto_int2sf(numr q / denr q)
+   else
+      !*f2q sfto_int2sf(numr q / denr q + 1);
+
 endmodule;  % [sfto]
 
 end;  % of file
