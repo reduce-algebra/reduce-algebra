@@ -178,25 +178,25 @@ procedure ofsf_transform(v, f, vl, an, theo, ans, bvl);
    % $a$ is either [nil] or a pair $([v] . d)$. If $a$ is not [nil] then the
    % degree $d'$ of [v] in [f] is reduced to $d'/d$. If $a$ is nil then
    % $[f]=\phi$.
-   begin scalar posp, dgcd, v_shift, w;
+   begin scalar posp, dgcd, nf, v_shift, w;
       posp := ofsf_posvarp(f,v);
       dgcd := ofsf_decdeg2(f,v,posp);
       if dgcd = 1 then
 	 return nil;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 {"(",v,"^",dgcd,")"};
-      f := ofsf_decdeg3(f,v,dgcd,posp);
+      nf := ofsf_decdeg3(f,v,dgcd,posp);
       if evenp dgcd then
-	 f := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), f});
+	 nf := rl_mkn('and, {ofsf_0mk2('geq, numr simp v), nf});
       if ans then <<
       	 repeat v_shift := intern gensym() until not flagp(v_shift, 'used!*);
 	 flag({v_shift}, 'rl_qeansvar);
-      	 f := cl_subfof({v . v_shift}, f);
+      	 nf := cl_subfof({v . v_shift}, nf);
 	 vl := for each vv in vl collect if vv eq v then v_shift else vv;
       	 w := simp {'expt, v_shift, {'quotient,1,dgcd}};
-	 an := cl_updans(v,'ofsf_shift!-indicator,{'dummy,w,dgcd},an,ans)
+	 an := cl_updans(v,'ofsf_shift!-indicator,{'dummy,w,dgcd},f,an,ans)
       >>;
-      return {f, vl, an, theo, ans, bvl}
+      return {nf, vl, an, theo, ans, bvl}
    end;
 
 procedure ofsf_ignshift(at,v,posp);

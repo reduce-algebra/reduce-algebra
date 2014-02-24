@@ -42,11 +42,10 @@ module clqe;
 % TaggedContainerElementL ::= Status . ContainerElementL
 % Status ::= "elim" | "failed" | "local" | "nonocc"
 % ContainerElementL ::= (ContainerElement, ...)
-% ContainerElement ::= VarList . QfFormula . Answer
+% ContainerElement ::= ('ce, VarList, QfFormula, Kernel, SubstTriplet, Answer)
 % VarList ::= VariableL | "'break"
 % Answer ::= (SubstTriplet, ...) (* "nil" if not ans *)
 % SubstTriplet ::= (Variable, SubstFunction, ArgumentList)
-% AnswerTranslation ::= (* context dependent, "nil" if not ans *)
 
 struct TaggedContainerElementL asserted by taggedContainerElementLP;
 struct ContainerElementL asserted by listp;
@@ -54,14 +53,12 @@ struct ContainerElement asserted by containerElementP;
 struct VarList asserted by varListP;
 struct Answer asserted by listp;
 struct SubstTriplet asserted by substTripletP;
-struct AnswerTranslation;
-
 
 procedure taggedContainerElementLP(x);
    pairp x and car x memq '(elim failed local nonocc) and listp cdr x;
 
 procedure containerElementP(x);
-   pairp x and pairp cdr x and varListP car x and listp cddr x;
+   eqcar(x, 'ce);
 
 procedure varListP(x);
    x eq 'break or listp x;
@@ -91,41 +88,39 @@ struct Point asserted by listp;
 struct EliminationResult asserted by pairp;
 struct ExtendedQeResult asserted by alistp;
 
-
-declare ce_mk: (VarList,QfFormula,Answer,AnswerTranslation) -> ContainerElement;
-
-inline procedure ce_mk(vl,f,an);
+declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
+inline procedure ce_mk(vl, f, v, eterm, an);
    % Container element make.
-   vl . f . an;
-
+   {'ce, vl, f, v, eterm, an};
 
 declare ce_vl: (ContainerElement) -> VarList;
-
 inline procedure ce_vl(x);
    % Container element variable list.
-   car x;
-
+   car cdr x;
 
 declare ce_f: (ContainerElement) -> QfFormula;
-
 inline procedure ce_f(x);
    % Container element formula.
-   cadr x;
+   cadr cdr x;
 
+declare ce_v: (ContainerElement) -> Kernel;
+inline procedure ce_v(x);
+   % Container element variable.
+   caddr cdr x;
+
+declare ce_eterm: (ContainerElement) -> List;
+inline procedure ce_eterm(x);
+   % Container element substitution triplet.
+   cadddr cdr x;
 
 declare ce_ans: (ContainerElement) -> Answer;
-
 inline procedure ce_ans(x);
    % Container element answer.
-   cddr x;
+   nth(cdr x, 5);
 
-
-declare co_new: () -> Container;
-
-procedure co_new();
+asserted procedure co_new(): Container;
    % Container make.
    nil . nil;
-
 
 inline procedure co_data(co);
    car co;
@@ -139,51 +134,16 @@ inline procedure co_setData(co,data);
 inline procedure co_setDynl(co,dynl);
    rplacd(co,dynl);
 
-
-declare co_save: (Container,ContainerElementL) -> Container;
-
-procedure co_save(co,dol);
+asserted procedure co_save(co: Container, dol: ContainerElementL): Container;
    % Container save.
    if !*rlqedfs and !*rlqedyn then
       co_dynpush(co,dol)
    else if !*rlqedfs then
       co_push(co,dol)
-   else co_enqueue(co,dol);
+   else
+      co_enqueue(co,dol);
 
-
-declare co_push: (Container,ContainerElementL) -> Container;
-
-procedure co_push(co,dol);
-   % Container push.
-   <<
-      for each ce in dol do
-      	 co := co_insert(co,ce);
-      co
-   >>;
-
-
-declare co_insert: (Container,ContainerElement) -> Container;
-
-procedure co_insert(co,ce);
-   % Insert 1 element into container.
-   co_setData(co,co_insert1(co_data co,ce));
-
-
-declare co_insert1: (Container,ContainerElement) -> Container;
-
-procedure co_insert1(co,ce);
-   % Insert 1 element into container.
-   if co_member(ce,co) then <<
-      if !*rlverbose and !*rlqevb and !*rlqevbold then
-	 ioto_prin2 "@";
-      co
-   >> else
-      ce . co;
-
-
-declare co_dynPush: (Container,ContainerElementL) -> Container;
-
-procedure co_dynPush(co,dol);
+asserted procedure co_dynPush(co: Container, dol: ContainerElementL): Container;
    % Container dynamic programming push.
    <<
       for each ce in dol do
@@ -191,10 +151,7 @@ procedure co_dynPush(co,dol);
       co
    >>;
 
-
-declare co_dynPush1: (Container,ContainerElement) -> Container;
-
-procedure co_dynPush1(co,ce);
+asserted procedure co_dynPush1(co: Container, ce: ContainerElement): Container;
    % Container dynamic programming push 1 element.
    begin scalar f,vl;
       f := ce_f ce;
@@ -209,22 +166,36 @@ procedure co_dynPush1(co,ce);
       return co
    end;
 
-
-procedure co_hfn(item);
+asserted procedure co_hfn(item: ContainerElement): List2;
    % Container hash function.
    {cl_fvarl1 cdr item,rl_atnum cdr item};
 
+asserted procedure co_push(co: ContainerElementL, dol: ContainerElementL): Container;
+   % Container push.
+   <<
+      for each ce in dol do
+      	 co := co_push1(co,ce);
+      co
+   >>;
 
-declare co_enqueue: (Container,ContainerElementL) -> Container;
+asserted procedure co_push1(co: Container, ce: ContainerElement): Container;
+   % Insert 1 element into container.
+   co_setData(co,co_push2(co_data co,ce));
 
-procedure co_enqueue(co,dol);
+asserted procedure co_push2(co: Container, ce: ContainerElement): Container;
+   % Insert 1 element into container.
+   if co_member(ce,co) then <<
+      if !*rlverbose and !*rlqevb and !*rlqevbold then
+	 ioto_prin2 "@";
+      co
+   >> else
+      ce . co;
+
+asserted procedure co_enqueue(co: Container, dol: ContainerElementL): Container;
    % Container enqueue.
    co_setData(co,co_enqueue1(co_data co,dol));
 
-
-declare co_enqueue: (Container,ContainerElementL) -> Container;
-
-procedure co_enqueue1(co,dol);
+asserted procedure co_enqueue1(co: Container, dol: ContainerElementL): Container;
    % Container enqueue.
    <<
       if null co and dol then <<
@@ -238,18 +209,12 @@ procedure co_enqueue1(co,dol);
       co
    >>;
 
-
-declare co_get: (Container) -> DottedPair;
-
-procedure co_get(co);
+asserted procedure co_get(co: Container): DottedPair;
    % Container get. Returns $(e . c)$ where $e$ is a container element and $c$
    % is the container [co] without the entry $e$.
    if !*rlqedfs then co_pop co else co_dequeue co;
 
-
-declare co_pop: (Container) -> DottedPair;
-
-procedure co_pop(co);
+asserted procedure co_pop(co: Container): DottedPair;
    % Container pop. Returns $(e . c)$ where $e$ is a container element and $c$
    % is the container [co] without the entry $e$.
    begin scalar a;
@@ -258,35 +223,26 @@ procedure co_pop(co);
       return a . co
    end;
 
-
-declare co_dequeue: (Container) -> DottedPair;
-
-procedure co_dequeue(co);
+asserted procedure co_dequeue(co: Container): DottedPair;
    begin scalar a,d;
       a . d := co_dequeue1 co_data co;
       co_setData(co,d);
       return a . co
    end;
 
-procedure co_dequeue1(co);
+asserted procedure co_dequeue1(co: Container): DottedPair;
    % Container dequeue. Returns $(e . c)$ where $e$ is a container element and
    % $c$ is the container [co] without the entry $e$.
    if co then cadr co . if cddr co then (car co . cddr co);
 
-
-declare co_length: (Container) -> Integer;
-
-procedure co_length(co);
+asserted procedure co_length(co: Container): Integer;
    % Container length. Returns the number of elements in [co].
    if !*rlqedfs or null co_data co then
       length co_data co
    else
       length co_data co - 1;
 
-
-declare co_member: (ContainerElement,ContainerElementL) -> ExtraBoolean;
-
-procedure co_member(ce,l);
+asserted procedure co_member(ce: ContainerElement, l: ContainerElementL): ExtraBoolean;
    % Container member. Returns non-[nil], if there is an container element $e$
    % in [l], such that the formula and the variable list of $e$ are equal to the
    % formula and variable list of [ce]. This procedure does not use the access
@@ -294,7 +250,7 @@ procedure co_member(ce,l);
    l and (ce_vl ce = ce_vl car l and ce_f ce = ce_f car l
       or co_member(ce,cdr l));
 
-procedure co_stat(co);
+asserted procedure co_stat(co: Container): AList;
    begin scalar al,w; integer n;
       for each ce in co_data co do <<
 	 n := length ce_vl ce;
@@ -313,64 +269,53 @@ struct Junction asserted by pairp;
 
 
 declare cl_mkJ: (QfFormula,Answer) -> Junction;
-
 inline procedure cl_mkJ(f,an);
    % Make junction.
    f . an;
 
 
 declare cl_jF: (Junction) -> QfFormula;
-
 inline procedure cl_jF(j);
    % Junction formula.
    car j;
 
 
 declare cl_jA: (Junction) -> Answer;
-
 inline procedure cl_jA(j);
    % Junction answer.
    cdr j;
 
 
 declare cl_co2J: (ContainerElement) -> Junction;
-
 inline procedure cl_co2J(x);
    % Container to junction. Returns the S-expression [ce_f(x) . ce_ans(x)]
-   cdr x;
+   ce_f x . ce_ans x;
 
 
 declare cl_erTh: (EliminationResult) -> Theory;
-
 inline procedure cl_erTh(er);
    % Elimination result theory.
    car er;
 
 
 declare cl_erEQR: (EliminationResult) -> ExtendedQeResult;
-
 inline procedure cl_erEQR(er);
    % Elimination result extended qe result.
    cdr er;
 
 
 declare cl_mkER: (Theory,ExtendedQeResult) -> EliminationResult;
-
 inline procedure cl_mkER(theo,eqr);
    % Make elimination Result.
    theo . eqr;
 
 
 declare cl_mk1EQR: (Formula,EquationL) -> ExtendedQeResult;
-
 inline procedure cl_mk1EQR(f,eql);
    % Make singleton extended qe result.
    {{f,eql}};
 
-
-declare cl_gqe: (Formula,Theory,KernelL) -> TheoryFormulaPair;
-
-procedure cl_gqe(f,theo,xbvl);
+asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormulaPair;
    % Generic quantifier elimination. Returns a pair $\Theta . \phi$. $\Theta$ is
    % a THEORY extending [theo] by assumptions on free variables of [f] that are
    % not in [xbvl]; $\phi$ is a formula. We have $\Theta \models [f]
@@ -386,10 +331,7 @@ procedure cl_gqe(f,theo,xbvl);
       return theo . rl_simpl(caar cl_erEQR er,theo,-1)
    end;
 
-
-declare cl_gqea: (Formula,Theory,ListofKernel) -> EliminationResult;
-
-procedure cl_gqea(f,theo,xbvl);
+asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): EliminationResult;
    % Generic quantifier elimination with answer. Returns a pair $\Theta . \Phi$.
    % $\Theta$ extends [theo] by assumptions on free variables of [f] that are
    % not in [xbvl]; $\Phi$ is a list $(..., (c_i, A_i), ...)$, where the $c_i$
@@ -406,10 +348,7 @@ procedure cl_gqea(f,theo,xbvl);
       return cl_mkER(rl_thsimpl cl_erTh er,cl_erEQR er)
    end;
 
-
-declare cl_lqe: (Formula,Theory,Point) -> TheoryFormulaPair;
-
-procedure cl_lqe(f,theo,pt);
+asserted procedure cl_lqe(f: Formula, theo: Theory, pt: Point): TheoryFormulaPair;
    % Local quantifier elimination. [pt] is the suggested value for the local
    % parameter $v$. Returns a pair $\Theta . \phi$. $\Theta$ extends [theo];
    % $\phi$ is a formula. We have $\Theta \models [f] \longleftrightarrow \phi$.
@@ -437,10 +376,7 @@ procedure cl_lqe(f,theo,pt);
       return rl_lthsimpl(theo) . rl_simpl(caar cl_erEQR er,theo,-1)
    end;
 
-
-declare cl_aqe: (Formula,Theory,Point) -> TheoryFormulaPair;
-
-procedure cl_aqe(f,theo,pt);
+asserted procedure cl_aqe(f: Formula, theo: Theory, pt: Point): TheoryFormulaPair;
    % Approximate quantifier elimination. [f] is a formula; [theo] is a
    % THEORY; [pt] is a list of equations $v=z$, where $v$ is a variable
    % and $z$ is an SQ encoding a rational number, namely the suggested
@@ -469,10 +405,7 @@ procedure cl_aqe(f,theo,pt);
       return rl_lthsimpl(theo) . rl_simpl(w,theo,-1)
    end;
 
-
-declare cl_qe: (Formula,Theory) -> Formula;
-
-procedure cl_qe(f,theo);
+asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
    % Quantifier elimination. Returns a formula $\phi$ such that $[theo] \models
    % [f] \longleftrightarrow \phi$. $\phi$ is obtained from [f] by eliminating
    % as many quantifiers as possible. Accesses the switch [rlqepnf]; if
@@ -485,10 +418,7 @@ procedure cl_qe(f,theo);
       return caar cl_erEQR er
    end;
 
-
-declare cl_qea: (Formula,Theory) -> ExtendedQeResult;
-
-procedure cl_qea(f,theo);
+asserted procedure cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    % Quantifier elimination with answer. Returns a list of pairs $(..., (c_i,
    % A_i), ...)$. The $c_i$ are quantifier-free formulas, and the $A_i$ are
    % lists of equations. We have $[theo] \models \bigvee_i c_i
@@ -504,10 +434,7 @@ procedure cl_qea(f,theo);
       return cl_erEQR er
    end;
 
-
-declare cl_qe1: (Formula,Theory,KernelL) -> EliminationResult;
-
-procedure cl_qe1(f,theo,xbvl);
+asserted procedure cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): EliminationResult;
    % Quantifier elimination. [f] must be prenex if the switch [rlqepnf] is off;
    % [theo] serves as background theory.
    begin scalar q,ql,varl,varll,bvl,svf,result,w,rvl,jl; integer n;
@@ -560,10 +487,7 @@ procedure cl_qe1(f,theo,xbvl);
       return cl_mkER(theo,result)
    end;
 
-
-declare cl_split: (Formula) -> List4;
-
-procedure cl_split(f);
+asserted procedure cl_split(f: Formula): List4;
    % Split. [f] is a prenex formula. Returns a list of length 4 splitting [f]
    % into a quantifier list, a list of lists of quantified variables, the
    % matrix, and a flat list of all quantified variables.
@@ -587,7 +511,7 @@ procedure cl_split(f);
       return {ql,varll,f,bvl}
    end;
 
-procedure cl_unsplit(ql,varll,f);
+asserted procedure cl_unsplit(ql: List, varll: List, f: Formula): Formula;
    begin scalar res,varl;
       res := f;
       for each q in ql do <<
@@ -598,9 +522,7 @@ procedure cl_unsplit(ql,varll,f);
       return res
    end;
 
-declare cl_qe1!-iterate: (List,List,Formula,Theory,KernelL) -> List6;
-
-procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
+asserted procedure cl_qe1!-iterate(ql: List, varll: List, f: Theory, theo: Theory, bvl: KernelL): List6;
    % Iteratively apply [cl_qeblock] to the quantifier blocks.
    begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,q,varl,svf,rvl,jl;
       svrlidentify := !*rlidentify;
@@ -629,10 +551,7 @@ procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
       return {ql,varll,q,rvl,jl,theo,svf}
    end;
 
-
-declare cl_qe1!-requantify: (List,List,Quantifier,KernelL,JunctionL) -> JunctionL;
-
-procedure cl_qe1!-requantify(ql,varll,q,rvl,jl);
+asserted procedure cl_qe1!-requantify(ql: List, varll: List, q: Quantifier, rvl: KernelL, jl: JunctionL): JunctionL;
    % Requantify with the variables that could not be eliminated.
    begin scalar xx,xxv,scvarll,varl;
       if not rvl then
@@ -660,10 +579,7 @@ procedure cl_qe1!-requantify(ql,varll,q,rvl,jl);
       return jl
    end;
 
-
-declare cl_qeblock: (QfFormula,Quantifier,KernelL,Theory,Boolean,KernelL) -> List3;
-
-procedure cl_qeblock(f,q,varl,theo,ans,bvl);
+asserted procedure cl_qeblock(f: QfFormula, q: Quantifier, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % Quantifier elimination for one block. The result contains the list of
    % variables for which elimination failed, the (possibly partial) elimination
    % result as a JunctionL, and the new theory.
@@ -675,10 +591,7 @@ procedure cl_qeblock(f,q,varl,theo,ans,bvl);
       return {rvl, for each x in jl collect rl_nnfnot car x . cdr x, theo}
    end;
 
-
-declare cl_qeblock1: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
-
-procedure cl_qeblock1(f,varl,theo,ans,bvl);
+asserted procedure cl_qeblock1(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % Quantifier elimination for one block subroutine. The result contains the
    % list of variables for which elimination failed, the (possibly partial)
    % possibly negated elimination result as a JunctionL, and the new theory.
@@ -687,10 +600,7 @@ procedure cl_qeblock1(f,varl,theo,ans,bvl);
    else
       cl_qeblock3(f,varl,theo,ans,bvl);
 
-
-declare cl_qeblock2: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
-
-procedure cl_qeblock2(f,varl,theo,ans,bvl);
+asserted procedure cl_qeblock2(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % Quantifier elimination for one block subroutine. The result contains the
    % list of variables for which elimination failed, the (possibly partial)
    % possibly negated elimination result as a JunctionL, and the new theory.
@@ -707,7 +617,7 @@ procedure cl_qeblock2(f,varl,theo,ans,bvl);
       return cl_qeblock3(f,varl,theo,ans,bvl)
    end;
 
-procedure cl_qeblock3(f,varl,theo,ans,bvl);
+asserted procedure cl_qeblock3(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    begin scalar w; integer vlv, dpth;
       if !*rlverbose then <<
       	 if !*rlqedfs then <<
@@ -726,12 +636,9 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
       return cl_qeblock4(f,varl,theo,ans,bvl,dpth,vlv)
    end;
 
-
-declare cl_qeblock4: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
-
-procedure cl_qeblock4(f,varl,theo,ans,bvl,dpth,vlv);
-   % Quantifier elimination for one block soubroutine. Arguments are as
-   % in [cl_qeblock], where [q] has been dropped. Return value as well.
+asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
+   % Quantifier elimination for one block soubroutine. Arguments are as in
+   % [cl_qeblock], where [q] has been dropped. Return value as well.
    begin scalar w,co,remvl,newj,cvl,coe,ww;
       integer c,count,delc,oldcol,comax,comaxn;
       if !*rlqegsd then
@@ -740,9 +647,9 @@ procedure cl_qeblock4(f,varl,theo,ans,bvl,dpth,vlv);
       co := co_new();
       if rl_op f eq 'or then
 	 for each x in rl_argn f do
-	    co := co_save(co,{ce_mk(cvl,x,nil)})
+	    co := co_save(co,{ce_mk(cvl,x,nil,nil,nil)})
       else
-      	 co := co_save(co,{ce_mk(cvl,f,nil)});
+      	 co := co_save(co,{ce_mk(cvl,f,nil,nil,nil)});
       while co_data co do <<
 	 if !*rlverbose and !*rlqedfs and not !*rlqevbold then <<
 	    ww := car co_stat co;
@@ -808,10 +715,7 @@ procedure cl_qeblock4(f,varl,theo,ans,bvl,dpth,vlv);
 	 {cl_mkJ(rl_smkn('or,for each x in newj collect car x),nil)}, theo}
    end;
 
-
-declare cl_qevar: (QfFormula,KernelL,Answer,AnswerTranslation,Theory,Boolean,KernelL) -> DottedPair;
-
-procedure cl_qevar(f,vl,an,theo,ans,bvl);
+asserted procedure cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
    % Quantifier eliminate one variable. [f] is a quantifier-free formula; [vl]
    % is a non-empty list of variables; [an] is an answer; [theo] is a list of
    % atomic formulas; [ans] is Boolean. Returns a pair $a . p$. Either $a=[T]$
@@ -847,7 +751,7 @@ procedure cl_qevar(f,vl,an,theo,ans,bvl);
       rederr {"cl_qevar: bad status",status}
    end;
 
-procedure cl_transform(f, vl, an, theo, ans, bvl);
+asserted procedure cl_transform(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): List6;
    begin scalar w;
       for each v in vl do <<
 	 w := rl_transform(v, f, vl, an, theo, ans, bvl);
@@ -857,7 +761,7 @@ procedure cl_transform(f, vl, an, theo, ans, bvl);
       return {f, vl, an, theo, ans, bvl}
    end;
 
-procedure cl_gauss(f,vl,an,theo,ans,bvl);
+asserted procedure cl_gauss(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
    begin scalar w,ww;
       w := rl_trygauss(f,vl,theo,ans,bvl);
       if w neq 'failed then <<
@@ -873,7 +777,7 @@ procedure cl_gauss(f,vl,an,theo,ans,bvl);
       >>
    end;
 
-procedure cl_varsel(f,vl,theo);
+asserted procedure cl_varsel(f: QfFormula, vl: KernelL, theo: Theory): KernelL;
    begin scalar candvl; integer len;
       if null cdr vl then
       	 candvl := vl
@@ -884,10 +788,7 @@ procedure cl_varsel(f,vl,theo);
       return candvl
    end;
 
-
-declare cl_process!-candvl: (QfFormula,KernelL,Answer,AnswerTranslation,Theory,Boolean,KernelL,KernelL) -> TaggedContainerElementL;
-
-procedure cl_process!-candvl(f,vl,an,theo,ans,bvl,candvl);
+asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL, candvl: KernelL): TaggedContainerElementL;
    begin scalar w,ww,v,alp,hit,ww,status;
       while candvl do <<
 	 v := pop candvl;
@@ -895,7 +796,7 @@ procedure cl_process!-candvl(f,vl,an,theo,ans,bvl,candvl);
       	 if alp = '(nil . nil) then <<  % [v] does not occur in [f].
       	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
  	       ioto_prin2 "*";
-      	    w := {ce_mk(delq(v,vl),f,ans and an)};
+      	    w := {ce_mk(delq(v,vl),f,nil,nil,ans and an)};
 	    status := 'nonocc;
 	    candvl := nil
       	 >> else if car alp = 'failed then
@@ -921,7 +822,7 @@ procedure cl_process!-candvl(f,vl,an,theo,ans,bvl,candvl);
       return status . w
    end;
 
-procedure cl_esetsubst(f,v,eset,vl,an,theo,ans,bvl);
+asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL, an: List, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
    % Elimination set substitution. [f] is a quantifier-free formula; [v] is a
    % kernel; [eset] is an elimination set; [an] is an answer; [theo] is the
    % current theory; [ans] is Boolean. Returns a pair $l . \Theta$, where
@@ -939,21 +840,21 @@ procedure cl_esetsubst(f,v,eset,vl,an,theo,ans,bvl);
 	    if !*rlqegsd then
 	       elimres := rl_gsd(elimres,theo);
 	    if elimres eq 'true then <<
-	       junct := {ce_mk('break,elimres,cl_updans(v,a,u,an,ans))};
+	       junct := {ce_mk('break,elimres,nil,nil,cl_updans(v,a,u,an,f,ans))};
 	       eset := d := nil
 	    >> else if elimres neq 'false then
 	       if rl_op elimres eq 'or then
 		  for each subf in rl_argn elimres do
-		     junct := ce_mk(vl,subf,cl_updans(v,a,u,an,ans)) . junct
+		     junct := ce_mk(vl,subf,nil,nil,cl_updans(v,a,u,an,f,ans)) . junct
 	       else
-		  junct := ce_mk(vl,elimres,cl_updans(v,a,u,an,ans)) . junct;
+		  junct := ce_mk(vl,elimres,nil,nil,cl_updans(v,a,u,an,f,ans)) . junct;
       	 >>
       >>;
       return junct . theo
    end;
 
-procedure cl_updans(v,a,u,an,ans);
-   if ans then {v,a,u} . an;
+procedure cl_updans(v,a,u,an,f,ans);
+   if ans then {v, a, u, if !*rlqestdans then f} . an;
 
 procedure cl_qeatal(f,v,theo,ans);
    % Quantifier elimination atomic formula list. [f] is a formula; [v]

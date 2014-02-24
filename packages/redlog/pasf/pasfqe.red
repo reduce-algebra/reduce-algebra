@@ -273,9 +273,9 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
       	 psi := pasf_dnf psi;
       if rl_op psi eq 'or then
 	 for each x in rl_argn psi do
-	    co := co_save(co,{ce_mk(cvl,x,answ)})
+	    co := co_save(co,{ce_mk(cvl,x,nil,nil,answ)})
       else
-      	 co := co_save(co,{ce_mk(cvl,psi,answ)});
+      	 co := co_save(co,{ce_mk(cvl,psi,nil,nil,answ)});
       while co_data co do <<
 	 if !*rlverbose and not !*rlqevbold then
    	    if !*rlqedfs then <<
@@ -406,7 +406,7 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
       	 % The formula does not contain the quantified variable
 	 if !*rlverbose  and (not !*rlqedfs or !*rlqevbold) then
  	    ioto_prin2 "*";
-	 return {ce_mk(cvlm,psi,answ_new(psi,nil,
+	 return {ce_mk(cvlm,psi,nil,nil,answ_new(psi,nil,
 	    if answ then
 	       pasf_mk2('equal,numr simp x,simp 0) . answ_tl answ else nil))}
       >>;
@@ -461,7 +461,7 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
 	    cl_simpl(answ_f rs,theo,-1) else answ_f rs,answ_bl rs,answ_tl rs);
       % Answers represent directly the output disjunction
       return for each an in res collect
-	 ce_mk(cvlm,answ_f an,answ_backsubst(an,answ))
+	 ce_mk(cvlm,answ_f an,nil,nil,answ_backsubst(an,answ))
    end;
 
 % ---- Virtual substitution --------------------------------------------------
