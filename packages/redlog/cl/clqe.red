@@ -840,20 +840,20 @@ asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL
 	    if !*rlqegsd then
 	       elimres := rl_gsd(elimres,theo);
 	    if elimres eq 'true then <<
-	       junct := {ce_mk('break,elimres,nil,nil,cl_updans(v,a,u,an,f,ans))};
+	       junct := {ce_mk('break,elimres,nil,nil,cl_updans(v,a,u,f,an,ans))};
 	       eset := d := nil
 	    >> else if elimres neq 'false then
 	       if rl_op elimres eq 'or then
 		  for each subf in rl_argn elimres do
-		     junct := ce_mk(vl,subf,nil,nil,cl_updans(v,a,u,an,f,ans)) . junct
+		     junct := ce_mk(vl,subf,nil,nil,cl_updans(v,a,u,f,an,ans)) . junct
 	       else
-		  junct := ce_mk(vl,elimres,nil,nil,cl_updans(v,a,u,an,f,ans)) . junct;
+		  junct := ce_mk(vl,elimres,nil,nil,cl_updans(v,a,u,f,an,ans)) . junct;
       	 >>
       >>;
       return junct . theo
    end;
 
-procedure cl_updans(v,a,u,an,f,ans);
+procedure cl_updans(v,a,u,f,an,ans);
    if ans then {v, a, u, if !*rlqestdans then f} . an;
 
 procedure cl_qeatal(f,v,theo,ans);
