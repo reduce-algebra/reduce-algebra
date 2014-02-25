@@ -23,19 +23,6 @@
 *********************************************************************************
 * $Id: FXApp.cpp,v 1.617.2.8 2008/05/08 12:54:16 fox Exp $                          *
 ********************************************************************************/
-
-// MODIFIED BY A C NORMAN, 2008, merely to use WPARAM in some types. This
-// comment is here because LGPL obliges me to mark any file that is
-// altered with a prominent notice.
-
-// A few places have extra trace printing ebnabled by #ifdef TEST to help me
-// debug some bad bahaviour on a Macintosh.
-
-// September 2009 - back-port fix re NET_WM_PING from original information
-// and FOX 1.6.36, then general merge with FOX 1.3.36. Inclusion of a
-// patch found on a nabble listing from roland65 re xim and composed
-// characters.
-
 #ifdef WIN32
 #if _WIN32_WINNT < 0x0400
 #define _WIN32_WINNT 0x0400
@@ -1405,7 +1392,7 @@ FXuint FXApp::remainingTimeout(FXObject *tgt,FXSelector sel){
       register FXlong now=FXThread::time();
       remaining=0;
       if(now<t->due){
-        remaining=(FXuint)(t->due-now);
+        remaining=(FXuint)((t->due-now)/1000000L);
         }
       break;
       }
@@ -2034,9 +2021,7 @@ bool FXApp::getNextEvent(FXRawEvent& ev,bool blocking){
   XNextEvent((Display*)display,&ev);
 
   // Filter event through input method context, if any
-// [ACN] a patch suggested by roland65 re input of composed characters.
-  FXWindow *focuswin = getFocusWindow();
-  if(xim && focuswin && XFilterEvent(&ev,(Window)focuswin->id())) return false;
+  if(xim && XFilterEvent(&ev,None)) return false;
 
   // Save expose events for later...
   if(ev.xany.type==Expose || ev.xany.type==GraphicsExpose){
@@ -2148,9 +2133,6 @@ FXString translateKeyEvent(FXRawEvent& event){
   char buffer[40]; KeySym sym; FXwchar w;
   XLookupString(&event.xkey,buffer,sizeof(buffer),&sym,NULL);
   w=fxkeysym2ucs(sym);
-#ifdef TEST
-  printf("sym %#x -> chars %#x\n", sym, w);
-#endif
   return FXString(&w,1);
   }
 
@@ -2238,10 +2220,6 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
 
         // Translate to keysym; must interpret modifiers!
         event.code=keysym(ev);
-#ifdef TEST
-        printf("Keyboard event code found as %d = %#x by keysym\n",
-               event.code, event.code);
-#endif
 //      XModifierKeymap *XGetModifierMapping((Display*)display);
 
         // Translate to string on KeyPress
@@ -2251,10 +2229,6 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
             event.text=getFocusWindow()->getComposeContext()->translateEvent(ev);
           else
             event.text=translateKeyEvent(ev);
-#ifdef TEST
-          printf("translateKeyEvent generates text \"%s\" state %x\n",
-                  event.text.text(), event.state);
-#endif
           }
 
         // Clear string on KeyRelease
@@ -2679,19 +2653,10 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
             se.xclient.window=XDefaultRootWindow((Display*)display);
             se.xclient.data.l[0]=ev.xclient.data.l[0];
             se.xclient.data.l[1]=ev.xclient.data.l[1];
-// There is a comment at standards.freedesktop.org to the effect
-// "Note that some older clients may not preserve data.l[2] through data.l[4]."
-// and I take that to mean that newer clients ought to preserve everything.
-// After having found that I also found
-//    http://article.gmane.org/gmane.comp.lib.fox-toolkit.user/10190
-// which prompted me to look at the call to XSendEvent as well as preserving
-// the additional words of data. If I look in a current FOX 1.6 set of sources
-// this is also there (except that that still puts zeros in words 3 and 4.
             se.xclient.data.l[2]=ev.xclient.data.l[2];
-            se.xclient.data.l[3]=ev.xclient.data.l[3];
-            se.xclient.data.l[4]=ev.xclient.data.l[4];
-            XSendEvent((Display*)display,se.xclient.window,False,
-                       SubstructureRedirectMask|SubstructureNotifyMask,&se);
+            se.xclient.data.l[3]=0;
+            se.xclient.data.l[4]=0;
+            XSendEvent((Display*)display,se.xclient.window,False,SubstructureRedirectMask|SubstructureNotifyMask,&se);
             }
           }
 
@@ -3751,7 +3716,7 @@ long FXApp::onCmdHover(FXObject*,FXSelector,void*){
 
 // This window procedure is a static member function of class FXApp.
 // Its sole purpose is to forward the message info on to FXApp::dispatchEvent().
-long CALLBACK FXApp::wndproc(FXID hwnd,unsigned int iMsg,FX_WPARAM wParam,FX_LPARAM lParam){
+FXival CALLBACK FXApp::wndproc(FXID hwnd,FXuint iMsg,FXuval wParam,FXival lParam){
   return app->dispatchEvent(hwnd,iMsg,wParam,lParam);
   }
 
@@ -3762,7 +3727,7 @@ long CALLBACK FXApp::wndproc(FXID hwnd,unsigned int iMsg,FX_WPARAM wParam,FX_LPA
 
 
 // Translate to string on KeyPress
-FXString translateKeyEvent(unsigned int,unsigned int wParam,long lParam){
+FXString translateKeyEvent(FXuint,FXuval wParam,FXival lParam){
   FXnchar buffer[20]; BYTE keystate[256]; int n;
   GetKeyboardState(keystate);
   n=ToUnicodeEx(wParam,HIWORD(lParam)&(KF_EXTENDED|KF_UP|0xFF),keystate,buffer,20,0,GetKeyboardLayout(0));
@@ -3773,7 +3738,7 @@ FXString translateKeyEvent(unsigned int,unsigned int wParam,long lParam){
 
 
 // Message dispatching
-long FXApp::dispatchEvent(FXID hwnd,unsigned int iMsg,FX_WPARAM wParam,FX_LPARAM lParam){
+FXival FXApp::dispatchEvent(FXID hwnd,FXuint iMsg,FXuval wParam,FXival lParam){
   FXWindow *window,*ancestor,*win;
   static HWND lastmovehwnd=0;
   static LPARAM lastmovelParam=0;
@@ -4581,10 +4546,10 @@ void FXApp::dumpWidgets() const {
     t=w->getTarget();
     s=w->shown()?'+':'-';
     if(t){
-      fxmessage("%*c%s (%p): wk=%d id=%lu target=%s (%p) sel=%d x=%d y=%d w=%d h=%d\n",lev*2,s,w->getClassName(),w,w->getKey(),w->id(),t->getClassName(),t,w->getSelector(),w->getX(),w->getY(),w->getWidth(),w->getHeight());
+      fxmessage("%*c%s (%p): wk=%d id=%p target=%s (%p) sel=%d x=%d y=%d w=%d h=%d\n",lev*2,s,w->getClassName(),w,w->getKey(),w->id(),t->getClassName(),t,w->getSelector(),w->getX(),w->getY(),w->getWidth(),w->getHeight());
       }
     else{
-      fxmessage("%*c%s (%p): wk=%d id=%lu x=%d y=%d w=%d h=%d\n",lev*2,s,w->getClassName(),w,w->getKey(),w->id(),w->getX(),w->getY(),w->getWidth(),w->getHeight());
+      fxmessage("%*c%s (%p): wk=%d id=%p x=%d y=%d w=%d h=%d\n",lev*2,s,w->getClassName(),w,w->getKey(),w->id(),w->getX(),w->getY(),w->getWidth(),w->getHeight());
       }
     if(w->getFirst()){
       w=w->getFirst();

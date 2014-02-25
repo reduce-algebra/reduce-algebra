@@ -200,7 +200,7 @@ void FXTabBook::layout(){
       }
     }
 
-  // This will change only if current now invisible
+  // Changes current only if old current no longer visible
   current=newcurrent;
 
   // Left or right tabs

@@ -21,13 +21,6 @@
 *********************************************************************************
 * $Id: FXDCWindow.cpp,v 1.163.2.3 2007/02/23 21:22:31 fox Exp $                     *
 ********************************************************************************/
-
-// MODIFIED BY A C NORMAN, 2008, to make stipple win64 type-compatible. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice.
-
-
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -61,15 +54,6 @@
 #include "FXDC.h"
 #include "FXDCWindow.h"
 
-/*
- * The type needed here appears to differ between WIN32 and WIN64, so the
- * following extra abstraction lets me deal with the mess in just once place.
- */
-#ifdef _WIN64
-typedef ULONG_PTR FX_HATCH_T;
-#else
-typedef long FX_HATCH_T;
-#endif
 
 /*
   Notes:
@@ -2172,7 +2156,7 @@ void FXDCWindow::drawFocusRectangle(FXint x,FXint y,FXint w,FXint h){
   }
 
 
-static FX_HATCH_T FXStipplePattern2Hatch(FXStipplePattern pat){
+static DWORD FXStipplePattern2Hatch(FXStipplePattern pat){
   switch(pat){
     case STIPPLE_HORZ: return HS_HORIZONTAL;
     case STIPPLE_VERT: return HS_VERTICAL;
@@ -2206,12 +2190,12 @@ void FXDCWindow::updatePen(){
       if(stipple){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)stipple->id();    // This should be a HBITMAP
+        lb.lbHatch=(FXuval)stipple->id();    // This should be a HBITMAP
         }
       else if(pattern>=STIPPLE_0 && pattern<=STIPPLE_16){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)getApp()->stipples[pattern];
+        lb.lbHatch=(FXuval)getApp()->stipples[pattern];
         }
       else{
         lb.lbStyle=BS_HATCHED;
@@ -2223,12 +2207,12 @@ void FXDCWindow::updatePen(){
       if(stipple){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)stipple->id();    // This should be a HBITMAP
+        lb.lbHatch=(FXuval)stipple->id();    // This should be a HBITMAP
         }
       else if(pattern>=STIPPLE_0 && pattern<=STIPPLE_16){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)getApp()->stipples[pattern];
+        lb.lbHatch=(FXuval)getApp()->stipples[pattern];
         }
       else{
         lb.lbStyle=BS_HATCHED;
@@ -2326,12 +2310,12 @@ void FXDCWindow::updateBrush(){
       if(stipple){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)stipple->id();     // This should be a HBITMAP
+        lb.lbHatch=(FXuval)stipple->id();     // This should be a HBITMAP
         }
       else if(pattern>=STIPPLE_0 && pattern<=STIPPLE_16){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)getApp()->stipples[pattern];
+        lb.lbHatch=(FXuval)getApp()->stipples[pattern];
         }
       else{
         lb.lbStyle=BS_HATCHED;
@@ -2344,12 +2328,12 @@ void FXDCWindow::updateBrush(){
       if(stipple){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)stipple->id();
+        lb.lbHatch=(FXuval)stipple->id();     // This should be a HBITMAP
         }
       else if(pattern>=STIPPLE_0 && pattern<=STIPPLE_16){
         lb.lbStyle=BS_PATTERN;
         lb.lbColor=devfg;
-        lb.lbHatch=(FX_HATCH_T)getApp()->stipples[pattern];
+        lb.lbHatch=(FXuval)getApp()->stipples[pattern];
         }
       else{
         lb.lbStyle=BS_HATCHED;

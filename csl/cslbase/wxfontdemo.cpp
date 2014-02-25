@@ -1,4 +1,4 @@
-// wxfontdemo.cpp                                Copyright A C Norman 2014
+// wxfontdemo.cpp                                Copyright A C Norman 2014.
 
 // A sample wxWidgets application to display fonts.
 //
@@ -235,7 +235,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int tex, page, bold, italic;
+int tex, page, bold, italic, math;
 
 int get_current_directory(char *s, int n)
 {
@@ -814,7 +814,7 @@ bool fontApp::OnInit()
     char **myargv = (char **)argv;
     tex = 0;
     page = 0;
-    bold = italic = 0;
+    bold = italic = math = 0;
     const char *font = "default";  // A default font name to ask for.
     int size = 48;           // a default size.
     for (int i=0; i<argc; i++)
@@ -834,6 +834,7 @@ bool fontApp::OnInit()
 // recover so I can debug things. I have already set up programName etc
     printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
 
+    if (strcmp(font, "Latin Modern Math") == 0) math = 1;
     printf("Try for font \"%s\" at size=%d\n", font, size);
     fflush(stdout);
 
@@ -1002,24 +1003,25 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                 gc->DrawRectangle(CELLWIDTH*x, CELLHEIGHT*(y/32), CELLWIDTH, CELLHEIGHT);
             }
         }
-        printf("fontname = %s\n", fontname);
-        if (wxFontEnumerator::IsValidFacename(fontname))
-            printf("Face name is valid\n");
-        else
-        {   printf("Invalid face name - font not found\n");
-// Some sort of fall-back font may be used...
+        if (once == 0)
+        {   printf("fontname = %s\n", fontname);
+            if (wxFontEnumerator::IsValidFacename(fontname))
+                printf("Face name is valid\n");
+            else printf("Invalid face name - font not found\n");
         }
         wxFontInfo ffi(10);
         ffi.FaceName(fontname);
         if (bold) ffi.Bold();
         if (italic) ffi.Italic();
         wxFont ff(ffi);
-        if (ff.IsOk()) wxPrintf("Font seems OK\n");
-        else wxPrintf("Font is *NOT* OK\n");
-        wxPrintf("Face name = %s\n", ff.GetFaceName());
-        wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
-        wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
-        fflush(stdout);
+        if (once == 0)
+        {   if (ff.IsOk()) wxPrintf("Font seems OK\n");
+            else wxPrintf("Font is *NOT* OK\n");
+            wxPrintf("Face name = %s\n", ff.GetFaceName());
+            wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
+            wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
+            fflush(stdout);
+        }
         wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
         uint32_t *map = find_glyphmap(fontname);
         if (map != NULL) printf("Map of available codepoints found\n");
@@ -1122,10 +1124,14 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                     ccc[2] = 0;
                 }
                 wxString c(ccc);
+                double offset = d1-h1;
+#ifdef WIN32
+                if (math) offset = -47.0;
+#endif
                 gc->DrawText(c,
                     ((double)CELLWIDTH)*(j+1),
                     ((double)CELLHEIGHT)*(i/32+1)+
-                     ((double)CELLHEIGHT)-h1+d1);
+                     ((double)CELLHEIGHT)+offset);
             }
         }
         delete gc;

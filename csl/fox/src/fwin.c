@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2013
+ * "fwin.c"                                 Copyright A C Norman 2003-2014
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -440,12 +440,8 @@ int main(int argc, char *argv[])
 /*
  * Before I try to decide what to do I will (sometimes) collect information
  * on what cygwin would make of the state of stdin and stdout.
- */
-/*
- * The decision on Windows is in fact a lot messier.
  *
  * I have tried various messy Windows API calls here to get this right.
-/* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line

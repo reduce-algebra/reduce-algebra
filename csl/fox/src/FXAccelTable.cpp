@@ -434,7 +434,7 @@ FXHotKey parseAccel(const FXString& string){
   // Test for function keys
   else if(Ascii::toLower(string[pos])=='f' && Ascii::isDigit(string[pos+1])){
     if(Ascii::isDigit(string[pos+2])){
-      code=KEY_F1+10*(string[1]-'0')+(string[2]-'0')-1;
+      code=KEY_F1+10*(string[pos+1]-'0')+(string[pos+2]-'0')-1;
       }
     else{
       code=KEY_F1+string[pos+1]-'1';

@@ -39,6 +39,7 @@
 #include "FXFont.h"
 #include "FXIcon.h"
 #include "FXTabBar.h"
+#include "FXTabBook.h"
 
 
 /*
@@ -46,7 +47,6 @@
   - Should focus go to tab items?
   - Tab items should observe various border styles.
   - TAB/TABTAB should go into content, arrow keys navigate between tabs.
-  - Fix setCurrent() to be like FXSwitcher.
 */
 
 
@@ -369,7 +369,8 @@ void FXTabBar::layout(){
 
 // Set current subwindow
 void FXTabBar::setCurrent(FXint panel,FXbool notify){
-  if(0<=panel && panel!=current){
+  register FXint nc=isMemberOf(&FXTabBook::metaClass)?numChildren()>>1:numChildren();
+  if(panel!=current && 0<=panel && panel<nc){
     current=panel;
     recalc();
     if(notify && target){ target->tryHandle(this,FXSEL(SEL_COMMAND,message),(void*)(FXival)current); }

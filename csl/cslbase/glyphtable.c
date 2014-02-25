@@ -3,7 +3,7 @@
 /* Build bitmap tables relating to characters present in fonts */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -31,8 +31,17 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $ID: $ */
+/* $Id$ */
 
+
+/*
+ * Usage:
+ *    gcc glyphtable.c -o glyphtable
+ *    ./glyphtable wxfonts/*.glyphs
+ *    [admire the file coverage.c]
+ *
+ * This is achieved my going "make coverage.c" here...
+ */
 
 /*
  * To sort out coverage maps for the fonts that I may use I use a
@@ -46,7 +55,7 @@
  * table that is generated tagged with its name.
  * Several special issues arise:
  * (1) directly coded old-style TeX fonts do not need coverage maps because
- *     they use just the codes in the range 0-255 (well at least logically...)
+ *     they use just the codes in the range 0-127 (well at least logically...)
  *     so going to this trouble for cmr10, cmmi10 etc is not necessary.
  * (2) I choose to ignore any codes that are not in the Basic Multilingual
  *     Plane. It appears that latinmodern-math defined a bunch of glyphs
@@ -54,7 +63,10 @@
  *     math italic) starts at U+1d400 (to U+1d7ff) and will be needed. But
  *     I will take special action on them!
  * (3) Codes in the range U+d800 to U+f8ff are either surrogates or private
- *     and so I omit them from my map so save a (little) space.
+ *     and so at one stage I planned to omit them from the maps to save
+ *     a little space. I now view that is a micro-optimisation that means that
+ *     when symbols I really want exist in the private range I am in trouble,
+ *     so I have backed off and just map the whole range.
  * (4) By comparing the glyph-lists I observe (with some relief) that all
  *     the different variations on Latin Modern Roman provide the same
  *     set of glyphs so I only need a single map to describe multiple fonts.
@@ -149,7 +161,7 @@ fprintf(out, "{\n");
         strcpy(outname, fontname);
         p = strchr(outname, '.');
         *p = 0;
-        fprintf(out, "  {\"%s\", {", outname);
+        fprintf(out, "  {\"%s\", {", strchr(outname, '/')+1);
         in = fopen(fontname, "r");
         for (;;)
         {   int c;
@@ -159,21 +171,10 @@ fprintf(out, "{\n");
                 inputline[n] = c;
             }
             inputline[n] = 0;
-/*          printf("Line read as <%s>\n", inputline); */
             if (n != 0 && sscanf(inputline, "%d", &n) == 1)
             {   if (n > 0xffff)
                 {   if (warnings++ < 10)
                         printf("code over 0xffff present and ignored\n");
-                    continue;
-                }
-/*
- * code-points in the range d800 to f900 should not be present, so to
- * save a (little) space I will compact them out
- */
-                if (n >= 0xf900) n -= (0xf900-0xd800);
-                else if (n >= 0xd800)
-                {   if (warnings++ < 10)
-                        printf("Private code %#x ignored\n", n);
                     continue;
                 }
                 map[n/32] |= 1U<<(n%32);
@@ -182,7 +183,7 @@ fprintf(out, "{\n");
             if (c == EOF) break;
         }
         printf("Font %s had %d characters\n", outname, charcount);
-#define WORDS ((0x10000-(0xf900-0xd800))/32)
+#define WORDS (0x10000/32)
         for (i=0; i<WORDS; i++)
         {   if ((i % 6) == 0)
             fprintf(out, "\n   ");

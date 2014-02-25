@@ -1,5 +1,4 @@
- /* fontmap.h                           Copyright (C) 2014 Codemist Ltd */
-
+ /* fontmap.c                           Copyright (C) 2014 Codemist Ltd */
 
 
 /**************************************************************************
@@ -140,13 +139,12 @@ int char_present(int c, uint32_t *map)
 /*
  * The treatment here must match that in glyphtable.c I take the view that
  * if anybody asks for a glyph with code over 0xffff then I will let the
- * system try for it. But the range 0xd800 to 0xf8ff is either private or
- * for surrogates so I do not allow it, and I save space in the bitmap by
- * squashing it out.
+ * system try for it. Each of the fonts I am using define some characters
+ * with code points fairly close to 0xffff and so merely truncating the
+ * tables to try to save space does not help, and what I have here is both
+ * simple and fast. 
  */
     if (c >= 0x10000) return 1;
-    if (c >= 0xf900) return (map[(c - (0xf900-0xd800))/32] >> (c%32)) & 1;
-    if (c >= 0xd800) return 0;
     return (map[c/32] >> (c%32)) & 1;
 }
 

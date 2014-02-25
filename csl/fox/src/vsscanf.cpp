@@ -21,31 +21,10 @@
 *********************************************************************************
 * $Id: vsscanf.cpp,v 1.20.2.2 2007/01/29 20:22:29 fox Exp $                         *
 ********************************************************************************/
-
-/*
- * The inserted preprocessor statements here were put in by A C Norman
- * in January 2011 to work around problems with the i686-w64-mingw32 and
- * x86_64 compilers regarding autoconf detection of vscanf and friends,
- * and painful problems regarding incompatibility between declarations
- * in the standard header files and the ones used here.
- */
-
-#ifdef __MINGW32__
-#define vscanf  system_vscanf
-#define vfscanf system_vfscanf
-#define vsscanf system_vsscanf
-#endif
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
 #include "fxascii.h"
-
-#ifdef __MINGW32__
-#undef vscanf
-#undef vfscanf
-#undef vsscanf
-#endif
 
 
 /*

@@ -21,15 +21,6 @@
 *********************************************************************************
 * $Id: FXApp.h,v 1.230 2006/01/22 17:57:58 fox Exp $                            *
 ********************************************************************************/
-
-
-// MODIFIED BY A C NORMAN, 2008, merely to use WPARAM in some types. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice. Somehow the GPL/LGPL people could be
-// amazingly uptight at the stage that the original BSD license has an
-// "obnoxious advertising clause" while not minding that they oblige me
-// to incorporate something rather similar here!
-
 #ifndef FXAPP_H
 #define FXAPP_H
 
@@ -375,9 +366,9 @@ private:
   static void imcreatecallback(void*,FXApp*,void*);
   static void imdestroycallback(void*,FXApp*,void*);
 #else
-  static long CALLBACK wndproc(FXID hwnd,unsigned int iMsg,FX_WPARAM wParam,FX_LPARAM lParam);
+  static FXival CALLBACK wndproc(FXID hwnd,FXuint iMsg,FXuval wParam,FXival lParam); 
 protected:
-  virtual long dispatchEvent(FXID hwnd,unsigned int iMsg,FX_WPARAM wParam,FX_LPARAM lParam);
+  virtual FXival dispatchEvent(FXID hwnd,FXuint iMsg,FXuval wParam,FXival lParam);
 #endif
 
 protected:

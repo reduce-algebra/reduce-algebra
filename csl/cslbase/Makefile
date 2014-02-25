@@ -10,6 +10,12 @@ lispfile:
 	./lispfile.sh
 
 
+
+.PHONY: coverage.c
+coverage.c:
+	gcc glyphtable.c -o glyphtable
+	./glyphtable wxfonts/*.glyphs
+
 doxtract:	doxtract.c
 	gcc doxtract.c -o doxtract
 

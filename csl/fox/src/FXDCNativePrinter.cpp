@@ -73,115 +73,7 @@
 #include "FXPostscriptFont.h"
 
 //////////////////////////////////////////////////////////////////////////////
-// The following implements two minorish patches to the FXDCPrint class
-// that make it handle Postscript better for me. I mark the changes
-// with "@@@"
-//
 
-// define a version of FOX where these patches become unnecessary needed
-#define PRINT_MAJOR 1
-#define PRINT_MINOR 1
-#define PRINT_LEVEL 21
-
-namespace FX {
-
-#if (FOX_MAJOR<PRINT_MAJOR || (FOX_MAJOR==PRINT_MAJOR && \
-    (FOX_MINOR<PRINT_MINOR || (FOX_MINOR==PRINT_MINOR && \
-    (FOX_LEVEL<PRINT_LEVEL)))))
-
-class FXAPI FXDCPatchedPrint : public FXDCPrint {
-public:
-  FXDCPatchedPrint(FXApp* a);
-  ~FXDCPatchedPrint();
-  FXbool beginPage(FXuint page);   // NB not virtual in FXDCPrint
-  virtual void drawText(FXint x,FXint y,const FXchar* string,FXuint len);
-  };
-
-
-// Construct
-FXDCPatchedPrint::FXDCPatchedPrint(FXApp* a) : FXDCPrint(a){
-  }
-
-
-// Destruct
-FXDCPatchedPrint::~FXDCPatchedPrint(){
-  }
-
-
-// Generate begin of page
-FXbool FXDCPatchedPrint::beginPage(FXuint page){
-
-  // Output page number
-  outf("%%%%Page: %d %d\n",page,page);   // @@@ 2 values after "%%Page:"
-
-  // Reset page bounding box
-  if(flags&PRINT_NOBOUNDS){
-    pagebb.xmin= 1000000;
-    pagebb.xmax=-1000000;
-    pagebb.ymin= 1000000;
-    pagebb.ymax=-1000000;
-    outf("%%%%PageBoundingBox: (atend)\n");
-    }
-
-  // Use the doc bounding box
-  else{
-    pagebb.xmin=docbb.xmin;
-    pagebb.xmax=docbb.xmax;
-    pagebb.ymin=docbb.ymin;
-    pagebb.ymax=docbb.ymax;
-    outf("%%%%PageBoundingBox: %d %d %d %d\n",(int)pagebb.xmin,(int)pagebb.ymin,(int)pagebb.xmax,(int)pagebb.ymax);
-    }
-
-  // Page setup
-  outf("%%%%BeginPageSetup\n");
-  outf("%%%%EndPageSetup\n");
-  outf("gsave\n");
-
-  // Maybe in landscape?
-  if(flags&PRINT_LANDSCAPE){
-    outf("%g %g translate\n",mediawidth,0.0);
-    outf("90 rotate\n");
-    }
-
-  return TRUE;
-  }
-
-
-// Draw string (only foreground bits)
-// Contributed by S. Ancelot <sancelot@online.fr>
-virtual void FXDCPatchedPrint::drawText(FXint x,FXint y,const FXchar* string,FXuint len){
-  FXfloat xx,yy;
-  tfm(xx,yy,(FXfloat)x,(FXfloat)y);
-  bbox(xx,yy);
-  FXFontDesc fontdesc;
-  font->getFontDesc(fontdesc);
-  outf("gsave /%s findfont\n",font->getName().text());
-// @@@ Support fractions of a point in font sizes by using float not int here
-  outf("%g scalefont\n",(double)font->getSize()/10.0);
-  outf("setfont\n");
-  outf("newpath\n%g %g moveto\n(",xx,yy);
-  for(FXuint i=0; i<len; i++){
-    if(string[i]=='(') outf("\\050");
-    else if(string[i]==')') outf("\\051");
-    else outf("%c",string[i]);
-    }
-  outf(") show\n");
-  outf("grestore\n");
-  }
-
-// The macro here subverts all FXPrintDC instances that follow into
-// being the patched variety.
-
-#define FXDCPrint FXDCPatchedPrint
-
-// end of patches to FXDCPrint.
-
-#endif // version check in PRINT_MAJOR, PRINT_MINOR and PRINT_LEVEL
-
-//////////////////////////////////////////////////////////////////////////////
-
-
-}
 
 #include "FXDCNativePrinter.h"
 #include "FXPostscriptFont.h"
@@ -194,7 +86,7 @@ namespace FX {
 // that can be run on a typical Linux system to extract the (minimal) metric
 // information that I need here and build a file "font-info.c". By including
 // that file here I collect info about all the standard Postscript Fonts.
-// I will not permit a user to use any other fonts than these!
+// I will not support use any other fonts than these!
 //
 
 
@@ -912,11 +804,7 @@ void FXDCNativePrinter::clearClipMask()
 void FXDCNativePrinter::setFont(FXFont *fnt)
 {
     font=fnt;
-#if FOX_MAJOR==1 && FOX_MINOR==0
-    pdc->setTextFont(fnt);
-#else
     pdc->setFont(fnt);
-#endif
     fontoffset=0;
 #ifdef FONT_NOT_VIRTUAL
     if (dctype==TYPE_PS) postscriptFont = (FX::FXPostscriptFont *)font;
@@ -935,43 +823,43 @@ void FXDCNativePrinter::clipChildren(FXbool yes)
 // Now the helper code that scales vectors of stuff for me.
 //
 
-void FXDCNativePrinter::scalePoints(FXPoint *dst, FXPoint *src, FXuint npoints)
+void FXDCNativePrinter::scalePoints(FXPoint *dst1, FXPoint *src, FXuint npoints)
 {
-    for (;npoints>0;npoints--,dst++,src++)
-    {   dst->x = ScaleX(src->x);
-        dst->y = ScaleY(src->y);
+    for (;npoints>0;npoints--,dst1++,src++)
+    {   dst1->x = ScaleX(src->x);
+        dst1->y = ScaleY(src->y);
     }
 }
 
-void FXDCNativePrinter::scaleRectangles(FXRectangle *dst, FXRectangle *src, FXuint nrectangles)
+void FXDCNativePrinter::scaleRectangles(FXRectangle *dst1, FXRectangle *src, FXuint nrectangles)
 {
-    for (;nrectangles>0;nrectangles--,dst++,src++)
-    {   dst->x = ScaleX(src->x);
-        dst->y = ScaleY(src->y);
-        dst->w = ScaleX(src->w);
-        dst->h = ScaleY(src->h);
+    for (;nrectangles>0;nrectangles--,dst1++,src++)
+    {   dst1->x = ScaleX(src->x);
+        dst1->y = ScaleY(src->y);
+        dst1->w = ScaleX(src->w);
+        dst1->h = ScaleY(src->h);
     }
 }
 
-void FXDCNativePrinter::scaleSegments(FXSegment *dst, FXSegment *src, FXuint nsegments)
+void FXDCNativePrinter::scaleSegments(FXSegment *dst1, FXSegment *src, FXuint nsegments)
 {
-    for (;nsegments>0;nsegments--,dst++,src++)
-    {   dst->x1 = ScaleX(src->x1);
-        dst->y1 = ScaleY(src->y1);
-        dst->x2 = ScaleX(src->x2);
-        dst->y2 = ScaleY(src->y2);
+    for (;nsegments>0;nsegments--,dst1++,src++)
+    {   dst1->x1 = ScaleX(src->x1);
+        dst1->y1 = ScaleY(src->y1);
+        dst1->x2 = ScaleX(src->x2);
+        dst1->y2 = ScaleY(src->y2);
     }
 }
 
-void FXDCNativePrinter::scaleArcs(FXArc *dst, FXArc *src, FXuint narcs)
+void FXDCNativePrinter::scaleArcs(FXArc *dst1, FXArc *src, FXuint narcs)
 {
-    for (;narcs>0;narcs--,dst++,src++)
-    {   dst->x = ScaleX(src->x);
-        dst->y = ScaleY(src->y);
-        dst->w = ScaleX(src->w);
-        dst->h = ScaleY(src->h);
-        dst->a = src->a;
-        dst->b = src->b;
+    for (;narcs>0;narcs--,dst1++,src++)
+    {   dst1->x = ScaleX(src->x);
+        dst1->y = ScaleY(src->y);
+        dst1->w = ScaleX(src->w);
+        dst1->h = ScaleY(src->h);
+        dst1->a = src->a;
+        dst1->b = src->b;
     }
 }
 

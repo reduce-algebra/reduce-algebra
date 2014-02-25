@@ -503,7 +503,7 @@ char *find_image_directory(int argc, char *argv[])
  * such bundle I will put the image file in the location I would have used
  * with Windows of X11.
  */
-        sprintf(xname, "%s/%s.app/Contents", programDir, programName);
+        sprintf(xname, "%s/%s.app/Contents", programDir, pn);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {   sprintf(xname, "%s/%s.app/Contents/%s.img",
@@ -525,6 +525,16 @@ char *find_image_directory(int argc, char *argv[])
  */
         int i, j;
         struct stat buf;
+        const char *pn = programName;
+#if defined WIN32 || defined __CYGWIN__
+/*
+ * On Windows I can have reduce.exe, cygwin-reduce.exe and cygwin64-reduce.exe
+ * all present, and for immediate purposes I want them all to be treated as
+ * if merely called "reduce".
+ */
+        if (strncmp(pn, "cygwin-", 7) == 0) pn += 7; 
+        else if (strncmp(pn, "cygwin64-", 9) == 0) pn += 9;
+#endif /* WIN32 */
         for (;;)
         {   i = j = 0;
             if (*bin == '/') while (bin[++i] != 0 && bin[i] != '/');
@@ -538,7 +548,7 @@ char *find_image_directory(int argc, char *argv[])
         i = strlen(bin);
         j = strlen(programDir);
         if (strcmp(programDir+j-i, bin) == 0)
-        {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, programName);
+        {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, pn);
         }
 
 /*
@@ -550,7 +560,7 @@ char *find_image_directory(int argc, char *argv[])
  * writable are of disc.
  */
         if (stat(xname, &buf) != 0)
-            sprintf(xname, "%s/%s.img", programDir, programName);
+            sprintf(xname, "%s/%s.img", programDir, pn);
     }
 #endif
     n = strlen(xname)+1;

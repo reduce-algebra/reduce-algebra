@@ -21,11 +21,6 @@
 *********************************************************************************
 * $Id: FXFont.cpp,v 1.184.2.5 2009/02/07 05:42:01 fox Exp $                         *
 ********************************************************************************/
-
-// Modified June 2008 by A C Norman so that it will build when FC_WIDTH and
-// some of the FC_WEIGHT options are not available.
-
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -474,63 +469,36 @@ static int CALLBACK EnumFontFamExProc(const LOGFONTA *lf,const TEXTMETRICA *lptm
 // From FOX weight to fontconfig weight
 static FXint weight2FcWeight(FXint weight){
   switch(weight){
-    case FXFont::Thin:
-#ifdef FC_WEIGHT_THIN
-                            return FC_WEIGHT_THIN;
-#endif
-    case FXFont::ExtraLight:
-#ifdef FC_WEIGHT_EXTRALIGHT
-                            return FC_WEIGHT_EXTRALIGHT;
-#endif
-    case FXFont::Light:     return FC_WEIGHT_LIGHT;            // OK
-    case FXFont::Normal:
-#ifdef FC_WEIGHT_NORMAL
-                            return FC_WEIGHT_NORMAL;
-#endif
-    case FXFont::Medium:    return FC_WEIGHT_MEDIUM;           // OK
-    case FXFont::DemiBold:  return FC_WEIGHT_DEMIBOLD;         // OK
-    case FXFont::Bold:      return FC_WEIGHT_BOLD;             // OK
-    case FXFont::ExtraBold:
-#ifdef FC_WEIGHT_EXTRABOLD
-                            return FC_WEIGHT_EXTRABOLD;
-#endif
-    case FXFont::Black:     return FC_WEIGHT_BLACK;            // OK
+    case FXFont::Thin:      return FC_WEIGHT_THIN;
+    case FXFont::ExtraLight:return FC_WEIGHT_EXTRALIGHT;
+    case FXFont::Light:     return FC_WEIGHT_LIGHT;
+    case FXFont::Normal:    return FC_WEIGHT_NORMAL;
+    case FXFont::Medium:    return FC_WEIGHT_MEDIUM;
+    case FXFont::DemiBold:  return FC_WEIGHT_DEMIBOLD;
+    case FXFont::Bold:      return FC_WEIGHT_BOLD;
+    case FXFont::ExtraBold: return FC_WEIGHT_EXTRABOLD;
+    case FXFont::Black:     return FC_WEIGHT_BLACK;
     }
-#ifdef FC_WEIGHT_NORMAL
   return FC_WEIGHT_NORMAL;
-#else
-  return FC_WEIGHT_MEDIUM;
-#endif
   }
 
 
 // From fontconfig weight to FOX weight
 static FXint fcWeight2Weight(FXint fcWeight){
   switch(fcWeight){
-#ifdef FC_WEIGHT_THIN
     case FC_WEIGHT_THIN:      return FXFont::Thin;
-#endif
-#ifdef FC_WEIGHT_EXTRALIGHT
     case FC_WEIGHT_EXTRALIGHT:return FXFont::ExtraLight;
-#endif
     case FC_WEIGHT_LIGHT:     return FXFont::Light;
-#ifdef FC_WEIGHT_NORMAL
     case FC_WEIGHT_NORMAL:    return FXFont::Normal;
-#endif
     case FC_WEIGHT_MEDIUM:    return FXFont::Medium;
     case FC_WEIGHT_DEMIBOLD:  return FXFont::DemiBold;
     case FC_WEIGHT_BOLD:      return FXFont::Bold;
-#ifdef FC_WEIGHT_EXTRABOLD
     case FC_WEIGHT_EXTRABOLD: return FXFont::ExtraBold;
-#endif
     case FC_WEIGHT_BLACK:     return FXFont::Black;
     }
   return FXFont::Normal;
   }
 
-
-#ifdef FC_WIDTH
-// Note that older versions of FontConfig do not provide FC_WIDTH
 
 // From FOX setwidth to fontconfig setwidth
 static FXint setWidth2FcSetWidth(FXint setwidth){
@@ -564,7 +532,6 @@ static FXint fcSetWidth2SetWidth(FXint fcSetWidth){
     }
   return FXFont::NonExpanded;
   }
-#endif
 
 
 // From FOX slant to fontconfig slant
@@ -594,8 +561,7 @@ static FXint fcSlant2Slant(FXint fcSlant){
 // Try find matching font
 void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint wantsize,FXuint wantweight,FXuint wantslant,FXuint wantsetwidth,FXuint wantencoding,FXuint wanthints,FXint res){
   int        pp,sw,wt,sl;
-  volatile double     a;
-  double s,c,sz;
+  double     a,s,c,sz;
   FcPattern *pattern,*p;
   FcChar8   *fam,*fdy;
   FcCharSet *charset;
@@ -634,12 +600,10 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
     FcPatternAddInteger(pattern,FC_SLANT,slant2FcSlant(wantslant));
     }
 
-#ifdef FC_WIDTH
   // Set setwidth
   if(wantsetwidth!=0){
     FcPatternAddInteger(pattern,FC_WIDTH,setWidth2FcSetWidth(wantsetwidth));
     }
-#endif
 
   // Set encoding
   if(wantencoding!=FONTENCODING_DEFAULT){                                       // FIXME
@@ -690,12 +654,10 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
       }
     }
 
-#ifdef FC_WIDTH
   // Get setwidth
   if(FcPatternGetInteger(p,FC_WIDTH,0,&sw)==FcResultMatch){
     actualSetwidth=fcSetWidth2SetWidth(sw);
     }
-#endif
 
   // Get weight
   if(FcPatternGetInteger(p,FC_WEIGHT,0,&wt)==FcResultMatch){
@@ -922,7 +884,7 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
   FXchar  *field[13];
   FXchar **fontnames;
   FXint    nfontnames,b,f;
-  volatile FXdouble c,s,a;
+  FXdouble c,s,a;
   XFontStruct *font;
 
   FXTRACE((150,"wantfamily=%s wantforge=%s wantsize=%d wantweight=%d wantslant=%d wantsetwidth=%d wantencoding=%d wanthints=%d res=%d\n",wantfamily.text(),wantforge.text(),wantsize,wantweight,wantslant,wantsetwidth,wantencoding,wanthints,res));
@@ -1432,6 +1394,18 @@ void FXFont::create(){
           if(!font){
             font=match(FXString::null,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
             }
+          }
+        }
+
+      // If we still don't have a font yet, use fixed font
+      if(!font){
+
+        // Resolve font name
+        actualName="fixed";
+
+        // Try load the font
+        font=XLoadQueryFont(DISPLAY(getApp()),actualName.text());
+        }
 
       // Remember font id
       if(font){ xid=((XFontStruct*)font)->fid; }
@@ -2019,7 +1993,7 @@ static FXint utf2db(XChar2b *dst,const FXchar *src,FXint n){
 void FXFont::drawText(FXDC* dc,FXint x,FXint y,const FXchar* string,FXuint length) const {
   register const XFontStruct *fs=(XFontStruct*)font;
   register FXint count,escapement,defwidth,ww,size,i;
-  volatile FXdouble ang,ux,uy;
+  register FXdouble ang,ux,uy;
   register FXuchar r,c;
   XChar2b sbuffer[4096];
   count=utf2db(sbuffer,string,FXMIN(length,4096));
@@ -2220,11 +2194,7 @@ FXbool FXFont::listFonts(FXFontDesc*& fonts,FXuint& numfonts,const FXString& fac
   res=FXApp::instance()->reg().readUnsignedEntry("SETTINGS","screenres",100);
 
   // Build object set
-#ifdef FC_WIDTH
-  objset=FcObjectSetBuild(FC_FAMILY,FC_FOUNDRY,FC_SPACING,FC_SCALABLE,FC_WIDTH,FC_SIZE,FC_WEIGHT,FC_SLANT,NULL);
-#else
-  objset=FcObjectSetBuild(FC_FAMILY,FC_FOUNDRY,FC_SPACING,FC_SCALABLE,FC_SIZE,FC_WEIGHT,FC_SLANT,NULL);
-#endif
+  objset=FcObjectSetBuild(FC_FAMILY,FC_FOUNDRY,FC_SPACING,FC_SCALABLE,FC_WIDTH,FC_WEIGHT,FC_SLANT,FC_PIXEL_SIZE,NULL);
   if(objset){
 
     // Create pattern object
@@ -2271,11 +2241,9 @@ FXbool FXFont::listFonts(FXFontDesc*& fonts,FXuint& numfonts,const FXString& fac
 
             // Get setwidth
             setwidth=0;
-#ifdef FC_WIDTH
             if(FcPatternGetInteger(p,FC_WIDTH,0,&setwidth)==FcResultMatch){
               setwidth=fcSetWidth2SetWidth(setwidth);
               }
-#endif
 
             // Get weight
             weight=0;

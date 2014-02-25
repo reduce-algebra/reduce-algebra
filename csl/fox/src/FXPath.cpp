@@ -685,70 +685,97 @@ bool FXPath::isShare(const FXString& file){
 #ifndef WIN32                 // UNIX
 
 // Enquote filename to make safe for shell
-FXString FXPath::enquote(const FXString& file,bool forcequotes){
-  FXString result;
-  register FXint i,c;
-  for(i=0; (c=file[i])!='\0'; i++){
-    switch(c){
-      case '\'':              // Quote needs to be escaped
-        result+="\\\'";
-        break;
-      case '\\':              // Backspace needs to be escaped, of course
-        result+="\\\\";
-        break;
-      case '#':
-      case '~':
-        if(i) goto noquote;   // Only quote if at begin of filename
-      case '!':               // Special in csh
-      case '"':
-      case '$':               // Variable substitution
-      case '&':
-      case '(':
-      case ')':
-      case ';':
-      case '<':               // Redirections, pipe
-      case '>':
-      case '|':
-      case '`':               // Command substitution
-      case '^':               // Special in sh
-      case '*':               // Wildcard characters
-      case '?':
-      case '[':
-      case ']':
-      case '\t':              // White space
-      case '\n':
-      case ' ':
-        forcequotes=true;
-      default:                // Normal characters just added
-noquote:result+=c;
-        break;
+FXString FXPath::enquote(const FXString& file,bool force){
+  FXString result(file);
+  if(0<file.length()){
+    register FXint p,q,e,c;
+    p=q=e=0;
+    while(p<file.length()){
+      switch(file[p++]){
+        case '\'':              // Quote needs to be escaped to ...'\''....
+          q+=2;                 // Two if quote is not inside quotation
+          e+=2;                 // Two more if it is
+          continue;
+        case '\\':              // Back slash
+        case '!':               // Special in csh
+        case '"':
+        case '$':               // Variable substitution
+        case '&':
+        case '(':
+        case ')':
+        case ';':
+        case '<':               // Redirections, pipe
+        case '>':
+        case '|':
+        case '`':               // Command substitution
+        case '^':               // Special in sh
+        case '*':               // Wildcard characters
+        case '+':
+        case '?':
+        case '[':
+        case ']':
+        case '\t':              // White space
+        case '\n':
+        case '\v':
+        case ' ':
+          force=true;           // Force quotes
+          q++;
+          continue;
+        case '#':               // Comments
+        case '~':               // Username substitution
+          if(p==1) force=true;  // Force quotes if at beginning
+        default:                // Normal character
+          q++;
+          continue;
+        }
       }
+    if(force) q+=e+2;           // Each escape adds two, quoting adds two more
+    if(result.length()<q){
+      result.length(q);         // Make longer if quoted
+      p=q=0;
+      if(force) result[q++]='\'';
+      while(p<file.length()){
+        if((c=file[p++])=='\''){        // Quote needs to be escaped
+          if(force) result[q++]='\'';   // End quotation run first
+          result[q++]='\\';
+          result[q++]=c;
+          if(force) result[q++]='\'';   // Start next quotation run
+          continue;
+          }
+        result[q++]=c;
+        }
+      if(force) result[q++]='\'';
+      }
+    FXASSERT(result.length()==q);
     }
-  if(forcequotes) return "'"+result+"'";
   return result;
   }
 
 
 // Decode filename to get original again
 FXString FXPath::dequote(const FXString& file){
-  FXString result;
-  register FXint i,c;
-  i=0;
-  while((c=file[i])!='\0' && Ascii::isSpace(c)) i++;
-  if(file[i]=='\''){
-    i++;
-    while((c=file[i])!='\0' && c!='\''){
-      if(c=='\\' && file[i+1]!='\0') c=file[++i];
-      result+=c;
-      i++;
+  FXString result(file);
+  if(0<result.length()){
+    register FXint e=result.length();
+    register FXint b=0;
+    register FXint r=0;
+    register FXint q=0;
+
+    // Trim tail
+    while(0<e && Ascii::isSpace(result[e-1])) --e;
+
+    // Trim head
+    while(b<e && Ascii::isSpace(result[b])) ++b;
+
+    // Dequote the rest
+    while(b<e){
+      if(result[b]=='\''){ q=!q; b++; continue; }
+      if(result[b]=='\\' && result[b+1]=='\'' && !q){ b++; }
+      result[r++]=result[b++];
       }
-    }
-  else{
-    while((c=file[i])!='\0' && !Ascii::isSpace(c)){
-      if(c=='\\' && file[i+1]!='\0') c=file[++i];
-      result+=c;
-      i++;
-      }
+
+    // Trunc to size
+    result.trunc(r);
     }
   return result;
   }
@@ -758,48 +785,96 @@ FXString FXPath::dequote(const FXString& file){
 #else                         // WINDOWS
 
 // Enquote filename to make safe for shell
-FXString FXPath::enquote(const FXString& file,bool forcequotes){
-  FXString result;
-  register FXint i,c;
-  for(i=0; (c=file[i])!='\0'; i++){
-    switch(c){
-      case '<':               // Redirections
-      case '>':
-      case '|':
-      case '$':
-      case ':':
-      case '*':               // Wildcards
-      case '?':
-      case ' ':               // White space
-        forcequotes=true;
-      default:                // Normal characters just added
-        result+=c;
-        break;
+FXString FXPath::enquote(const FXString& file,bool force){
+  FXString result(file);
+  if(0<file.length()){
+    register FXint p,q,c;
+    p=q=0;
+    while(p<file.length()){
+      switch(file[p++]){
+        case '^':               // Escape character
+        case '"':               // Quote characters
+        case '<':               // Redirection
+        case '>':               // Redirection
+        case '|':               // Command separators
+        case '&':               // Command separators
+        case ':':               // Drive letter separator
+        case '*':               // Wildcard
+        case '?':               // Wildcard
+        case '\\':              // Path separator
+        case '/':               // Alternate path separator
+          q+=2;                 // Room for escape code
+          continue;
+        case ' ':               // White space
+        case '\t':
+        case '\v':
+          force=true;
+        default:                // Normal characters
+          q++;
+          continue;
+        }
       }
+    if(force) q+=2;             // Surround by quotes as well
+    if(result.length()<q){
+      result.length(q);         // Make longer if quoted
+      p=q=0;
+      if(force) result[q++]='\"';
+      while(p<file.length()){
+        switch(c=file[p++]){
+          case '^':             // Escape character
+          case '"':             // Quote characters
+          case '<':             // Redirection
+          case '>':             // Redirection
+          case '|':             // Command separators
+          case '&':             // Command separators
+          case ':':             // Drive letter separator
+          case '*':             // Wildcard
+          case '?':             // Wildcard
+          case '\\':            // Path separator
+          case '/':             // Alternate path separator
+            result[q++]='^';
+            result[q++]=c;
+            continue;
+          case ' ':             // White space
+          case '\t':
+          case '\v':
+          default:              // Normal characters
+            result[q++]=c;
+            continue;
+          }
+        }
+      if(force) result[q++]='\"';
+      }
+    FXASSERT(result.length()==q);
     }
-  if(forcequotes) return "\""+result+"\"";
   return result;
   }
 
 
 // Decode filename to get original again
 FXString FXPath::dequote(const FXString& file){
-  register FXint i,c;
-  FXString result;
-  i=0;
-  while((c=file[i])!='\0' && Ascii::isSpace(c)) i++;
-  if(file[i]=='"'){
-    i++;
-    while((c=file[i])!='\0' && c!='"'){
-      result+=c;
-      i++;
+  FXString result(file);
+  if(0<result.length()){
+    register FXint e=result.length();
+    register FXint b=0;
+    register FXint r=0;
+    register FXint q=0;
+
+    // Trim tail
+    while(0<e && Ascii::isSpace(result[e-1])) --e;
+
+    // Trim head
+    while(b<e && Ascii::isSpace(result[b])) ++b;
+
+    // Dequote the rest
+    while(b<e){
+      if(result[b]=='\"'){ q=!q; b++; continue; }
+      if(result[b]=='^' && b+1<e){ b++; }
+      result[r++]=result[b++];
       }
-    }
-  else{
-    while((c=file[i])!='\0' && !Ascii::isSpace(c)){
-      result+=c;
-      i++;
-      }
+
+    // Trunc to size
+    result.trunc(r);
     }
   return result;
   }

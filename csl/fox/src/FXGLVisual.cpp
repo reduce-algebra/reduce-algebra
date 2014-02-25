@@ -536,7 +536,7 @@ void FXGLVisual::create(){
       int gdblbuf,glstereo,gldepth,glaccel;
       int glred,glgreen,glblue,glalpha,glstencil;
       int glaccred,glaccgreen,glaccblue,glaccalpha;
-      int glindex,glswapcopy;
+      int glindex,glswapcopy,glcomposition;
       int bestvis,dmatch,bestmatch;
       int dred,dgreen,dblue,ddepth,dalpha,dstencil;
       int daccred,daccgreen,daccblue,daccalpha;
@@ -590,6 +590,12 @@ void FXGLVisual::create(){
 
         // copy swap buffer
         glswapcopy=(pfd.dwFlags&PFD_SWAP_COPY)!=0;
+
+#ifndef PFD_SUPPORT_COMPOSITION
+#define PFD_SUPPORT_COMPOSITION 0x00008000
+#endif
+        // Windows Vista and Windows 7 composition support
+        glcomposition=(pfd.dwFlags&PFD_SUPPORT_COMPOSITION)!=0;
 
         // Get planes
         glred=pfd.cRedBits;
@@ -684,6 +690,9 @@ void FXGLVisual::create(){
         if(flags&VISUAL_SWAP_COPY){
           if(!glswapcopy) dmatch+=10000000;
           }
+
+        // Composition Support would be nice to have
+        if(!glcomposition) dmatch+=100;
 
         // Trace
         FXTRACE((150,"Pixel Format (%d) match value = %d\n",i,dmatch));

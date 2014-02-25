@@ -221,12 +221,18 @@ int fwin_main(int argc, char **argv)
     fwin_printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
     for (;;)
-    {   int i = 0, c;
+    {   int i = 0, c, j;
         while ((c = fwin_getchar()) != EOF && c != '\n')
         {   if (i < sizeof(line)-10) line[i++] = c;
         }
         line[i] = 0;
-        fwin_printf("Line was <%s>\n", line);
+        fwin_printf("Line was <");
+        for (j=0; j<i; j++)
+        {   c = line[j];
+            if (c < 0x20 || c >= 0x7f) fwin_printf("[%x]", c & 0xff);
+            else fwin_printf("%c", c);
+        }
+        fwin_printf(">\n");
         if (c == EOF || strcmp(line, "quit") == 0) break;
     }
     fwin_printf("Done\n");
@@ -241,6 +247,7 @@ int fwin_main(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
+    fflush(stdout);
     return fwin_startup(argc, argv, fwin_main);
 }
 

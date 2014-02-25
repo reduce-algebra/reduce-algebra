@@ -111,8 +111,8 @@
  * and/or Cygwin to allow access to low level terminal handling functions.
  */
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _DARWIN_C_SOURCE
+#define _BSD_SOURCE 1
+#define _DARWIN_C_SOURCE 1
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -241,7 +241,6 @@ static void write_log(char *s, ...)
 {
     va_list x;
     if (termed_logfile == NULL) termed_logfile = fopen("termed.log", "w");
-    
     va_start(x, s);
     vfprintf(termed_logfile, s, x);
     va_end(x);
@@ -687,20 +686,6 @@ static void term_putchar(int c)
  */
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
-#if 0
-/* Extra debugging */
-    switch (n)
-    {
-case 0: LOG("Encode %#x as no octets at all\n", c);
-        break;
-case 1: LOG("Encode %#x as 1 octet %#x\n", c, buffer[0]);
-        break;
-case 2: LOG("Encode %#x as 2 octets %#x\n", c, buffer[0], buffer[1]);
-        break;
-default:
-        LOG("Encode %#x as %d octets\n", c, n);
-    }
-#endif
     for (i=0; i<n; i++) putchar(buffer[i]);
 #endif
 }
@@ -2318,8 +2303,8 @@ static void term_capitalize_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    if (a < b) input_line[a] = (char)toupper(input_line[a]);
-    for (i=a+1; i<b; i++) input_line[i] = (char)tolower(input_line[i]);
+    if (a < b) input_line[a] = towupper(input_line[a]);
+    for (i=a+1; i<b; i++) input_line[i] = towlower(input_line[i]);
     refresh_display();
 }
 
@@ -2329,7 +2314,7 @@ static void term_lowercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = (char)tolower(input_line[i]);
+    for (i=a; i<b; i++) input_line[i] = (char)towlower(input_line[i]);
     refresh_display();
 }
 
@@ -2360,7 +2345,8 @@ static void term_transpose_chars(void)
 static void term_undo(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^U>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^U>");
     term_bell();
 }
 
@@ -2368,7 +2354,8 @@ static void term_undo(void)
 static void term_quoted_insert(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^V>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^V>");
     term_bell();
 }
 
@@ -2376,7 +2363,8 @@ static void term_quoted_insert(void)
 static void term_copy_previous_word(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^W>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^W>");
     term_bell();
 }
 
@@ -2384,7 +2372,8 @@ static void term_copy_previous_word(void)
 static void term_copy_region(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&W>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&W>");
     term_bell();
 }
 
@@ -2392,7 +2381,8 @@ static void term_copy_region(void)
 static void term_yank(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^Y>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^Y>");
     term_bell();
 }
 
@@ -2400,7 +2390,8 @@ static void term_yank(void)
 static void term_reinput(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^R>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^R>");
     term_bell();
 }
 
@@ -3020,7 +3011,6 @@ void term_unicode_convert(void)
         input_word[n] = 0;           /* extract the (potential) word */
         c = lookup_wide_name(input_word);
         if (c == -1) continue;    /* not a recognised name */
-/*      utf_encode(output_word, c); */
         output_word[0] = c;   /* replace word by a single character */
         output_word[1] = 0;
         term_replace_chars_backwards(n, output_word);
@@ -3047,8 +3037,7 @@ void term_unicode_convert(void)
                 c = (c << 4) | n;
             }
             if (c > 0)
-            {   /* utf_encode(output_word, c);*/
-                output_word[0] = c;
+            {   output_word[0] = c;
                 output_word[1] = 0;
                 term_replace_chars_backwards(6, output_word);
                 return;
@@ -3188,7 +3177,6 @@ void term_unicode_convert(void)
                 term_replace_chars_backwards(4, p);
                 return;
             }
-/*          utf_encode(output_word, c); */
             output_word[0] = c;
             output_word[1] = 0;
             term_replace_chars_backwards(4, output_word);
@@ -3206,7 +3194,8 @@ void term_unicode_convert(void)
 static void term_interrupt(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^C>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^C>");
     term_redisplay();
 }
 
@@ -3214,7 +3203,8 @@ static void term_interrupt(void)
 static void term_noisy_interrupt(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^G>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^G>");
     term_redisplay();
 }
 
@@ -3222,7 +3212,8 @@ static void term_noisy_interrupt(void)
 static void term_pause_execution(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^Z>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<^Z>");
     term_redisplay();
 }
 
@@ -3236,7 +3227,8 @@ static void term_exit_program(void)
 static void term_edit_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&E>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&E>");
     term_redisplay();
 }
 
@@ -3244,7 +3236,8 @@ static void term_edit_menu(void)
 static void term_file_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&I>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&I>");
     term_redisplay();
 }
 
@@ -3252,7 +3245,8 @@ static void term_file_menu(void)
 static void term_module_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&M>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&M>");
     term_redisplay();
 }
 
@@ -3260,7 +3254,8 @@ static void term_module_menu(void)
 static void term_font_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&O>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&O>");
     term_redisplay();
 }
 
@@ -3268,7 +3263,8 @@ static void term_font_menu(void)
 static void term_break_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&B>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&B>");
     term_redisplay();
 }
 
@@ -3276,7 +3272,8 @@ static void term_break_menu(void)
 static void term_switch_menu(void)
 {
 /* @@@@@ */
-    insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<&S>");
+    insert_point += swprintf(&input_line[insert_point],
+        input_line_size-insert_point, L"<&S>");
     term_redisplay();
 }
 
@@ -3773,7 +3770,8 @@ char *term_getline(void)
  * all characters whose codepoints are in the range 0x00 to 0xff and
  * replace all others with a question mark. This leaves me the first 256
  * codepoints of Unicode and that covers ordinary ASCII plus a bunch of
- * diacriticals.
+ * diacriticals. Consider how the code here fits in with struct aliasing
+ * rules. It may sail a little close to the edge but I think it may be legal!
  */
     char *p = (char *)r;
     wchar_t *q = r;
@@ -3782,6 +3780,7 @@ char *term_getline(void)
     {   if (c > 0xff) c = '?';
         *p++ = c;
     }
+    *p = 0;
     return (char *)r;
 }
 

@@ -271,11 +271,7 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
     else XSetErrorHandler(IgnoreXError);
 #endif
 
-#if INT_VERSION(FOX_MAJOR,FOX_MINOR,0)==INT_VERSION(1,0,0)
-    FXRootWindow *r = application_object->getRoot();
-#else
     FXRootWindow *r = application_object->getRootWindow();
-#endif
     rootWidth = r->getDefaultWidth(),
     rootHeight = r->getDefaultHeight();
 
@@ -461,28 +457,21 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
 
     if (screenw == 0) text->onCmdResetWindow(NULL, 0, NULL);
 
-    text->onCmdHome(NULL, 0, NULL); // actually just to grab the focus!
 //
 // I will iconify the window AFTER I have adjusted its size since I do not
 // want to end up with a size that is silly and based on just an icon!
 // Also somewhere (and I now do not remember where) I picked up the idea
 // that minimizing twice over was a good idea...
 //
-#if INT_VERSION(FOX_MAJOR,FOX_MINOR,0)==INT_VERSION(1,0,0)
-    if (windowed < 0) 
-    {   main_window->iconify();
-        main_window->iconify();
-    }
-#else
     if (windowed < 0)
     {   main_window->minimize();
         main_window->minimize();
     }
-#endif
 
     text->setupShowMath();
 
     main_window->show();
+    text->onCmdHome(NULL, 0, NULL); // actually just to grab the focus!
 #ifdef WIN32
     DWORD threadId;
     thread1 = CreateThread(NULL,  // security attributes
@@ -506,18 +495,8 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
 
 // Once a second I will try to flush any output buffers. But do not start
 // that until everything else is more or less going!
-#if FOX_MAJOR==1 && FOX_MINOR==0
-    timer = application_object->addTimeout(1000,
-               (FXObject *)text, FXTerminal::ID_TIMEOUT);
-#else
-#if FOX_MAJOR==1 && (FOX_MINOR==1 || FOX_MINOR==2)
-    timer = application_object->addTimeout((FXObject *)text,
-                FXTerminal::ID_TIMEOUT, 1000, NULL);
-#else
     application_object->addTimeout((FXObject *)text,
                 FXTerminal::ID_TIMEOUT, 1000, NULL);
-#endif
-#endif
 
     return application_object->run();
 }

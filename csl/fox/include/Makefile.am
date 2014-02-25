@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
+# Altered by ACN to list the extra header files he introduced.
 
 foxincludedir=$(includedir)/fox-1.6
 
@@ -48,15 +49,18 @@ FXUTF8Codec.h \
 FXUTF16Codec.h \
 FXUTF32Codec.h
 
-foxinclude_HEADERS =   \
-$(CODECS) \
+# The new files included here...
+ACN_EXTRAS = \
 FXDCNativePrinter.h \
-FXMathText.h \
 FXPostscriptFont.h \
 FXShowMath.h \
 FXTerminal.h \
 fwin.h \
-termed.h \
+termed.h
+
+foxinclude_HEADERS =   \
+$(CODECS) \
+$(ACN_EXTRAS) \
 FX4Splitter.h \
 FX7Segment.h \
 FXAccelTable.h \

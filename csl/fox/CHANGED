@@ -1,4 +1,4 @@
-The file in this directory are a derived work of FOX 1.6.21, and are
+The file in this directory are a derived work of FOX 1.6.49, and are
 subject to the LGPL, a copy of which is present here. One requirement
 of that is that changes are prominently noted and a date is attached. This
 file is to collect that information in a way intended to be as clear and
@@ -53,6 +53,13 @@ src/FXShowMath.cpp             display mathematical expressions
 src/FXTerminal.cpp             a terminal for interactive sessions to run in
 src/FXWorker.cpp               thread-related parts assocated with FXTermninal
 
+src/cmfont-info.c              extract metrics from font info in a way I want
+src/font-index.c               more maths font support
+src/fwin.c                     my termainl-like interface
+src/FinderLaunch.c             Macintosh support code
+src/fox-icons.c                icons for fwin, csl and reduce
+src/termed.c                   local editing for console apps
+
 ============================================================
 
 
@@ -90,7 +97,8 @@ February 2014: Move towards some Unicode interface to terminal handling so
      and that had previously been even more broken... so I will not view
      that as too high priority.
      (Feb 11) Above changes broken and so now undone - will check them in
-     again when better tested!
+     again when better tested! Start migration to a copy of the stuff
+     here based on fox 1.6.49
 
 
 

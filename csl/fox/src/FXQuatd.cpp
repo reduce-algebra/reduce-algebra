@@ -532,10 +532,27 @@ FXQuatd& FXQuatd::arc(const FXVec3d& f,const FXVec3d& t){
     w= 1.0;
     }
   else if(dot<-0.999999){       // 180 quaternion
-    x= 0.0;
-    y= 0.0;
-    z=-1.0;
-    w= 0.0;
+    if(fabs(f.z)<fabs(f.x) && fabs(f.z)<fabs(f.y)){     // x, y largest magnitude
+      x= f.x*f.z-f.z*f.y;
+      y= f.z*f.x+f.y*f.z;
+      z=-f.y*f.y-f.x*f.x;
+      }
+    else if(fabs(f.y)<fabs(f.x)){                       // y, z largest magnitude
+      x= f.y*f.z-f.x*f.y;
+      y= f.x*f.x+f.z*f.z;
+      z=-f.z*f.y-f.y*f.x;
+      }
+    else{                                               // x, z largest magnitude
+      x=-f.z*f.z-f.y*f.y;
+      y= f.y*f.x-f.x*f.z;
+      z= f.x*f.y+f.z*f.x;
+      }
+    dot=x*x+y*y+z*z;
+    div=sqrt(dot);
+    x/=div;
+    y/=div;
+    z/=div;
+    w=0.0;
     }
   else{
     div=sqrt((dot+1.0)*2.0);

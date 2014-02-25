@@ -21,16 +21,17 @@
 *********************************************************************************
 * $Id: FXText.h,v 1.166 2006/02/06 03:03:40 fox Exp $                           *
 ********************************************************************************/
-
-// MODIFIED BY A C NORMAN, 2008, merely to add TEXT_COLUMNWRAP. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice. Somehow the GPL/LGPL people could be
-// amazingly uptight at the stage that the original BSD license has an
-// "obnoxious advertising clause" while not minding that they oblige me
-// to incorporate something rather similar here!
+#ifndef ORIGINAL_VERSION
 
 
+// Changed by ACN to add TEXT_COLUMNWRAP (which wraps at a specified column
+// regardless of whitespace).
+//
+//         A C Norman, 2014
 
+
+
+#endif /* ! ORIGINAL_VERSION */
 #ifndef FXTEXT_H
 #define FXTEXT_H
 
@@ -50,8 +51,12 @@ enum {
   TEXT_NO_TABS       = 0x01000000,      /// Insert spaces for tabs
   TEXT_AUTOINDENT    = 0x02000000,      /// Autoindent
   TEXT_SHOWACTIVE    = 0x04000000,      /// Show active line
+#ifndef ORIGINAL_VERSION
   TEXT_AUTOSCROLL    = 0x08000000,      /// Logging mode, keeping last line visible
   TEXT_COLUMNWRAP    = 0x10000000       /// Wrap at given column always
+#else /* ORIGINAL_VERSION */
+  TEXT_AUTOSCROLL    = 0x08000000       /// Logging mode, keeping last line visible
+#endif /* ORIGINAL_VERSION */
   };
 
 
@@ -378,6 +383,9 @@ public:
     ID_INSERT_TAB,
     ID_CUT_SEL,
     ID_COPY_SEL,
+#ifndef ORIGINAL_VERSION
+    ID_COPY_SEL_TEXT,   // ACN addition for use with Reduce
+#endif /* ! ORIGINAL_VERSION */
     ID_DELETE_SEL,
     ID_PASTE_SEL,
     ID_PASTE_MIDDLE,

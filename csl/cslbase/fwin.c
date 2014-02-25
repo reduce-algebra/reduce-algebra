@@ -327,6 +327,7 @@ int main(int argc, char *argv[])
 /* I want to know the path to the directory from which this 
  * code was launched.
  */
+printf("fwin_startup %d\n", __LINE__); fflush(stdout); // @@@
     if (argc == 0)
     {   fprintf(stderr,
             "argc == 0. You tried to launch the code in a funny way?\n");

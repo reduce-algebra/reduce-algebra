@@ -3,7 +3,7 @@
 *   T e x t   w i n d o w   t h a t   a l l o w s   s i m p l e   I / O       *
 *                                                                             *
 *******************************************************************************
-* Copyright (C) 2003-10 by Arthur Norman, Codemist Ltd. All Rights Reserved.  *
+* Copyright (C) 2003-14 by Arthur Norman, Codemist Ltd. All Rights Reserved.  *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -47,7 +47,7 @@
 
 /* Signature: 0c4a475b 07-Jul-2010 */
 
-#include "FXMathText.h"
+#include "FXText.h"
 
 #include "FXDCNativePrinter.h"
 
@@ -106,9 +106,6 @@ extern int pipedes[2];
 #define PIPE_READ_PORT 0
 #define PIPE_WRITE_PORT 1
 
-#if INT_VERSION(FOX_MAJOR,FOX_MINOR,0) == INT_VERSION(1,0,0)
-#define FXMenuBar FXMenubar
-#endif
 extern FXMenuBar *main_menu_bar;
 
 extern char **modules_list, **switches_list;
@@ -166,7 +163,7 @@ extern int rootWidth, rootHeight;
 /// Multiline text widget supporting use as a terminal-window style
 /// interface to other worker code. 
 
-class FXAPI FXTerminal : FXMathText {
+class FXAPI FXTerminal : FXText {
   FXDECLARE(FXTerminal)
 
 public:
@@ -235,7 +232,7 @@ public:
   int keyFlags, searchFlags, startMatch, pauseFlags,
       historyFirst, historyLast, historyNumber, promptEnd;
   unsigned short int searchStack[256];
-  char searchString[256];
+  wchar_t searchString[256];
   Mutex pauseMutex;
 #define ANY_KEYS       1
 #define ESC_PENDING    2
@@ -247,7 +244,7 @@ public:
 #define PAUSE_DISCARD  4
   int getHistoryEvent();
   int trySearch();
-  int matchString(const char *p, int n, const char *t);
+  int matchString(const wchar_t *p, int n, const wchar_t *t);
 
   int editBacktrace();
   int editRedisplay();
@@ -286,7 +283,8 @@ public:
   int editUndo();
   int editCopyPreviousWord();
 
-  int setInputText(const FXchar *text, int n);
+  int setInputText(const char *text, int n);
+  int setInputText(const wchar_t *text, int n);
 
   int charForShowMath();
   void insertMathsLines();
@@ -309,7 +307,7 @@ public:
 
 
   enum {
-    ID_IPC=FXMathText::ID_LAST,
+    ID_IPC=FXText::ID_LAST,
     ID_TIMEOUT,
 
     ID_READ,
@@ -318,12 +316,12 @@ public:
     ID_TO_FILE,
     ID_PRINT,
     ID_PRINT_SELECTION,
-    ID_CUT_SEL_X,     // NB exists in FXMathText but here I will want to...
+    ID_CUT_SEL_X,     // NB exists in FXText but here I will want to...
     ID_PASTE_SEL_X,   // adjust the cursor position as I go.
     ID_COPY_SEL_X,
     ID_COPY_SEL_TEXT_X,
     ID_REINPUT,
-//  ID_SELECT_ALL,    // done by the underlying FXMathText
+//  ID_SELECT_ALL,    // done by the underlying FXText
     ID_CLEAR,
     ID_REDRAW,
     ID_HOME,
@@ -445,6 +443,7 @@ public:
   int inputBufferLen;
   int inputBufferP;
   char inputBuffer[INPUT_BUFFER_LENGTH];
+  wchar_t inputWBuffer[INPUT_BUFFER_LENGTH];
 
   int recently_flushed;
 

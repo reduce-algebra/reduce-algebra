@@ -72,10 +72,6 @@
 #include "fwin.h"
 #include <fx.h>
 
-#if FOX_MAJOR==1 && FOX_MINOR==0
-#  define FXSEL(a,b) MKUINT(a,b)
-#endif
-
 #include <fxkeys.h>          // not included by <fx.h>
 
 #include "FXTerminal.h"
@@ -820,7 +816,6 @@ static char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 // I check each of the fonts that this application wants to see if they
 // are already installed. If they are then there is no merit in installing
 // them for myself.
-    int newFontAdded = 0;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   strcpy(lf.lfFaceName, fontNames[i].name);
         lf.lfCharSet = DEFAULT_CHARSET;
@@ -843,16 +838,12 @@ static char *loadPrivateFonts(FXApp *appl, FXWindow *w)
             if (AddFontResourceExA(ff, PRIVATE_FONT, 0) == 0)
             {   continue;
             }
-            newFontAdded = 1;
         }
     }
     DeleteDC(hDC);
 // Broadcasting the presense of new fonts cam sometimes cause a delay
 // that is longer than I really like. If I am the only person who is
 // going to use the new fonts do I need it? Possibly not!
-#if 0
-    if (newFontAdded) SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-#endif
     return NULL;
 #else // WIN32
     ftDraw = NULL;
@@ -1074,8 +1065,8 @@ int changeMathFontSize(FXApp *appl, int mainSize)
                 }
 // Since opening fonts here failed I will restore the existing fonts, so that
 // at least I have SOMETHING available to draw with.
-                for (int i=0; i<36; i++)
-                    masterFont[i] = previousFont[i];
+                for (int ii=0; ii<36; ii++)
+                    masterFont[ii] = previousFont[ii];
                 return 0;      // FAIL
             }
             masterFontFontInfo[p] = findFont(targetName);
@@ -1597,7 +1588,7 @@ void measureBox1(Box *b)
     MatrixBox *m;
     BracketBox *bb;
     TopBox *tt;
-    char utflength;
+    int utflength;
     int l;
     char *ss;
     if (DEBUGFONT & 4)
@@ -1930,8 +1921,8 @@ case BoxNest:
             n->dy1 = 0;
             n->dx2 = n->sub1->text.width;
             dy = mathFontHeight[n->flags & FontSizeMask]/2;
-            {   int tt = n->sub1->text.depth - n->sub2->text.depth;
-                if (tt > dy) dy = tt;
+            {   int tth = n->sub1->text.depth - n->sub2->text.depth;
+                if (tth > dy) dy = tth;
             }
             n->dy2 = dy;
             n->height = intmax(n->sub1->text.height, n->sub2->text.height - dy);
@@ -1977,18 +1968,18 @@ case BoxNest:
 // but can imagine that further tuning could be applied!
 //
             if (n->sub1->text.type==BoxText)
-            {   const char *s = n->sub1->text.text;
+            {   const char *ss1 = n->sub1->text.text;
                 int len =  n->sub1->text.n;
-                int w = italicAdjust(s[len-1], n->sub1->text.flags & FontMask);
-                n->width += w;
-                n->dx2 += w;
+                int ww = italicAdjust(ss1[len-1], n->sub1->text.flags & FontMask);
+                n->width += ww;
+                n->dx2 += ww;
             }
 // Superscripts are raised by at least half the height of the main font,
 // but if the things that is being scripted is tall enough they line up with
 // its top.
             dy = mathFontHeight[n->flags & FontSizeMask]/2;
-            {   int tt = n->sub1->text.height - n->sub2->text.height;
-                if (tt > dy) dy = tt;
+            {   int tth = n->sub1->text.height - n->sub2->text.height;
+                if (tth > dy) dy = tth;
             }
             n->dy2 = -dy;
             n->height = intmax(n->sub1->text.height, n->sub2->text.height + dy);
@@ -2083,23 +2074,23 @@ case BoxNest3:
             n3->dy1 = 0;
             n3->dx2 = n3->sub1->text.width;
             dy = mathFontHeight[n3->flags & FontSizeMask]/2;
-            {   int tt = n3->sub1->text.depth - n3->sub2->text.depth;
-                if (tt > dy) dy = tt;
+            {   int tth = n3->sub1->text.depth - n3->sub2->text.depth;
+                if (tth > dy) dy = tth;
             }
             n3->dy2 = dy;
             n3->dx3 = n3->sub1->text.width;
 // Now an "italic correction" for "f^n". See the BoxSuperscript case for
 // more explanation.
             if (n3->sub1->text.type==BoxText)
-            {   const char *s = n3->sub1->text.text;
+            {   const char *ss1 = n3->sub1->text.text;
                 int len =  n3->sub1->text.n;
-                int w = italicAdjust(s[len-1], n3->sub1->text.flags & FontMask);
-                n3->width += w;
-                n3->dx2 += w;
+                int ww = italicAdjust(ss1[len-1], n3->sub1->text.flags & FontMask);
+                n3->width += ww;
+                n3->dx2 += ww;
             }
             dy = mathFontHeight[n3->flags & FontSizeMask]/2;
-            {   int tt = n3->sub1->text.height - n3->sub3->text.height;
-                if (tt > dy) dy = tt;
+            {   int tth = n3->sub1->text.height - n3->sub3->text.height;
+                if (tth > dy) dy = tth;
             }
             n3->dy3 = -dy;
             n3->height =
@@ -3204,7 +3195,7 @@ static Box *readRows()
     while (lexType == lexSpecial &&
             strcmp(lexKey->name, "\\\\") == 0)
     {   nextSymbol();
-        Box *n = readRow();
+        n = readRow();
         if (n != NULL) result = makeNestBox(BoxTower, result, n);
     }
     return result;

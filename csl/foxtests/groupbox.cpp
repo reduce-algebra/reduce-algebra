@@ -5,7 +5,7 @@
 *********************************************************************************
 * Copyright (C) 1997,2006 by Jeroen van der Zijp.   All Rights Reserved.        *
 *********************************************************************************
-* $Id: groupbox.cpp,v 1.115 2006/01/22 17:59:01 fox Exp $                       *
+* $Id: groupbox.cpp,v 1.115.2.1 2008/04/29 17:18:23 fox Exp $                       *
 ********************************************************************************/
 #include "fx.h"
 #include <stdio.h>
@@ -566,23 +566,9 @@ long GroupWindow::onCmdRadio(FXObject*,FXSelector sel,void*){
 
 // Test of iconify
 long GroupWindow::onCmdIconify(FXObject*,FXSelector,void*){
-//  minimize();
-//  getApp()->addTimeout(this,ID_DEICONIFY,2000);
-//  FXTRACE((1,"iconify\n"));
-  static int full=FALSE;
-  full=!full;
-  if(full){
-    //hide();
-    setDecorations(DECOR_NONE);
-    show(PLACEMENT_MAXIMIZED);
-    //maximize();
-    }
-  else{
-    hide();
-    setDecorations(DECOR_ALL);
-    show();
-    restore();
-    }
+  minimize();
+  getApp()->addTimeout(this,ID_DEICONIFY,2000);
+  FXTRACE((1,"iconify\n"));
   return 1;
   }
 

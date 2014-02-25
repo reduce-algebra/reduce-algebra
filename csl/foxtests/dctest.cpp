@@ -1058,7 +1058,7 @@ long DCTestWindow::onUpdJoinStyle(FXObject* sender,FXSelector sel,void*){
 
 // Erase Color
 long DCTestWindow::onCmdEraseColor(FXObject*,FXSelector,void* ptr){
-  erasecolor=(FXColor)(FX_LPARAM)ptr;
+  erasecolor=(FXColor)(FXuval)ptr;
   linesCanvas->update();
   shapesCanvas->update();
   imagesCanvas->update();
@@ -1067,14 +1067,14 @@ long DCTestWindow::onCmdEraseColor(FXObject*,FXSelector,void* ptr){
 
 // Update Erase Color
 long DCTestWindow::onUpdEraseColor(FXObject* sender,FXSelector,void*){
-  sender->handle(this,FXSEL(SEL_COMMAND,ID_SETVALUE),(void*)(FX_LPARAM)erasecolor);
+  sender->handle(this,FXSEL(SEL_COMMAND,ID_SETVALUE),(void*)(FXuint)erasecolor);
   return 1;
   }
 
 
 // Foreground Color
 long DCTestWindow::onCmdForeColor(FXObject*,FXSelector,void* ptr){
-  forecolor=(FXColor)(FX_LPARAM)ptr;
+  forecolor=(FXColor)(FXuval)ptr;
   linesCanvas->update();
   shapesCanvas->update();
   imagesCanvas->update();
@@ -1084,13 +1084,13 @@ long DCTestWindow::onCmdForeColor(FXObject*,FXSelector,void* ptr){
 
 // Update Foreground Color
 long DCTestWindow::onUpdForeColor(FXObject* sender,FXSelector,void*){
-  sender->handle(this,FXSEL(SEL_COMMAND,ID_SETVALUE),(void*)(FX_LPARAM)forecolor);
+  sender->handle(this,FXSEL(SEL_COMMAND,ID_SETVALUE),(void*)(FXuint)forecolor);
   return 1;
   }
 
 // Back Color
 long DCTestWindow::onCmdBackColor(FXObject*,FXSelector,void* ptr){
-  backcolor=(FXColor)(FX_LPARAM)ptr;
+  backcolor=(FXColor)(FXuval)ptr;
   linesCanvas->update();
   shapesCanvas->update();
   imagesCanvas->update();
@@ -1100,7 +1100,7 @@ long DCTestWindow::onCmdBackColor(FXObject*,FXSelector,void* ptr){
 
 // Update Back Color
 long DCTestWindow::onUpdBackColor(FXObject* sender,FXSelector,void*){
-  sender->handle(this,FXSEL(SEL_COMMAND,ID_SETVALUE),(void*)(FX_LPARAM)backcolor);
+  sender->handle(this,FXSEL(SEL_COMMAND,ID_SETVALUE),(void*)(FXuint)backcolor);
   return 1;
   }
 

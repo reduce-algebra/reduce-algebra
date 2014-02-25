@@ -21,15 +21,6 @@
 *********************************************************************************
 * $Id: FXFontSelector.cpp,v 1.55 2006/01/22 17:58:27 fox Exp $                  *
 ********************************************************************************/
-
-/*
- * Modified by A C Norman, May 2008, to adjust the setting of the font size
- * selector when one has a scaled font - previously if the requested font
- * size was not in the standard list it defaulted to proposing a 6 point
- * font. This prominent message is in accord with the requirements of the
- * LGPL 2(b).
- */
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -376,7 +367,7 @@ void FXFontSelector::listFontSizes(){
   const FXuint sizeint[]={60,80,90,100,110,120,140,160,200,240,300,360,420,480,640};
   FXFontDesc *fonts;
   FXuint numfonts,f,s,lasts;
-  FXint selindex=-1,selindex1=-1;
+  FXint selindex=-1;
   sizelist->clearItems();
   size->setText("");
   FXString string;
@@ -389,16 +380,8 @@ void FXFontSelector::listFontSizes(){
         string.format("%.1f",0.1*s);
         sizelist->appendItem(string,NULL,(void*)(FXuval)s);
         if(selected.size == s) selindex=sizelist->getNumItems()-1;
-// selindex1 is an index for use if there is not an exact match of size,
-// and will normally be the size from this list just above the actual size
-// as requested.
-        if(selected.size > lasts &&
-           selected.size <= s) selindex1=sizelist->getNumItems()-1;
         lasts=s;
         }
-// If the requested size was greater than 64.0 I will use 64.0 as the
-// default item in the list.
-        if(selindex1<0) selindex1=sizelist->getNumItems()-1;
       }
     else{
       for(f=0; f<numfonts; f++){
@@ -411,22 +394,12 @@ void FXFontSelector::listFontSizes(){
           }
         }
       }
-    if(selindex==-1){
-// for scalable fonts select the best match if there is not a perfect one
-      if(selindex1!=-1) selindex=selindex1;
-      else selindex=0;
-      }
+    if(selindex==-1) selindex=0;
     if(0<sizelist->getNumItems()){
       sizelist->setCurrentItem(selindex);
       sizelist->makeItemVisible(selindex);
-      if(fonts[0].flags&FXFont::Scalable){
-        string.format("%.1f",0.1*selected.size);
-        size->setText(string);
-        }
-      else {
-        size->setText(sizelist->getItemText(selindex));
-        selected.size=(FXuint)(FXuval)sizelist->getItemData(selindex);
-        }
+      size->setText(sizelist->getItemText(selindex));
+      selected.size=(FXuint)(FXuval)sizelist->getItemData(selindex);
       }
     FXFREE(&fonts);
     }

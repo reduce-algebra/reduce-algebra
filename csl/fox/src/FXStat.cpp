@@ -214,11 +214,10 @@ bool FXStat::statFile(const FXString& file,FXStat& info){
     SHFILEINFO sfi;
     utf2ncs(buffer,file.text(),file.length()+1);
     if(::GetFileAttributesExW(buffer,GetFileExInfoStandard,&data)){
-      info.modeFlags=0777;
+      info.modeFlags=FXIO::OwnerFull|FXIO::GroupFull|FXIO::OtherFull;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) info.modeFlags|=FXIO::Hidden;
-      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory;
-      else info.modeFlags|=FXIO::File;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_READONLY) info.modeFlags&=~(FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite);
+      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory|FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite; else info.modeFlags|=FXIO::File;
       if(::SHGetFileInfoW(buffer,0,&sfi,sizeof(SHFILEINFO),SHGFI_EXETYPE)==0) info.modeFlags&=~(FXIO::OwnerExec|FXIO::GroupExec|FXIO::OtherExec);
       info.userNumber=0;
       info.groupNumber=0;
@@ -232,11 +231,10 @@ bool FXStat::statFile(const FXString& file,FXStat& info){
     WIN32_FILE_ATTRIBUTE_DATA data;
     SHFILEINFO sfi;
     if(::GetFileAttributesExA(file.text(),GetFileExInfoStandard,&data)){
-      info.modeFlags=0777;
+      info.modeFlags=FXIO::OwnerFull|FXIO::GroupFull|FXIO::OtherFull;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) info.modeFlags|=FXIO::Hidden;
-      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory;
-      else info.modeFlags|=FXIO::File;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_READONLY) info.modeFlags&=~(FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite);
+      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory|FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite; else info.modeFlags|=FXIO::File;
       if(::SHGetFileInfoA(file.text(),0,&sfi,sizeof(SHFILEINFO),SHGFI_EXETYPE)==0) info.modeFlags&=~(FXIO::OwnerExec|FXIO::GroupExec|FXIO::OtherExec);
       info.userNumber=0;
       info.groupNumber=0;
@@ -292,11 +290,10 @@ bool FXStat::statLink(const FXString& file,FXStat& info){
     SHFILEINFO sfi;
     utf2ncs(buffer,file.text(),file.length()+1);
     if(::GetFileAttributesExW(buffer,GetFileExInfoStandard,&data)){
-      info.modeFlags=0777;
+      info.modeFlags=FXIO::OwnerFull|FXIO::GroupFull|FXIO::OtherFull;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) info.modeFlags|=FXIO::Hidden;
-      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory;
-      else info.modeFlags|=FXIO::File;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_READONLY) info.modeFlags&=~(FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite);
+      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory|FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite; else info.modeFlags|=FXIO::File;
       if(::SHGetFileInfoW(buffer,0,&sfi,sizeof(SHFILEINFO),SHGFI_EXETYPE)==0) info.modeFlags&=~(FXIO::OwnerExec|FXIO::GroupExec|FXIO::OtherExec);
       info.userNumber=0;
       info.groupNumber=0;
@@ -310,11 +307,10 @@ bool FXStat::statLink(const FXString& file,FXStat& info){
     WIN32_FILE_ATTRIBUTE_DATA data;
     SHFILEINFO sfi;
     if(::GetFileAttributesExA(file.text(),GetFileExInfoStandard,&data)){
-      info.modeFlags=0777;
+      info.modeFlags=FXIO::OwnerFull|FXIO::GroupFull|FXIO::OtherFull;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) info.modeFlags|=FXIO::Hidden;
-      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory;
-      else info.modeFlags|=FXIO::File;
       if(data.dwFileAttributes&FILE_ATTRIBUTE_READONLY) info.modeFlags&=~(FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite);
+      if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory|FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite; else info.modeFlags|=FXIO::File;
       if(::SHGetFileInfoA(file.text(),0,&sfi,sizeof(SHFILEINFO),SHGFI_EXETYPE)==0) info.modeFlags&=~(FXIO::OwnerExec|FXIO::GroupExec|FXIO::OtherExec);
       info.userNumber=0;
       info.groupNumber=0;
@@ -365,11 +361,10 @@ bool FXStat::stat(const FXFile& file,FXStat& info){
 #ifdef WIN32
   BY_HANDLE_FILE_INFORMATION data;
   if(::GetFileInformationByHandle(file.handle(),&data)){
-    info.modeFlags=0777;
+    info.modeFlags=FXIO::OwnerFull|FXIO::GroupFull|FXIO::OtherFull;
     if(data.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) info.modeFlags|=FXIO::Hidden;
-    if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory;
-    else info.modeFlags|=FXIO::File;
     if(data.dwFileAttributes&FILE_ATTRIBUTE_READONLY) info.modeFlags&=~(FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite);
+    if(data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) info.modeFlags|=FXIO::Directory|FXIO::OwnerWrite|FXIO::GroupWrite|FXIO::OtherWrite; else info.modeFlags|=FXIO::File;
     info.userNumber=0;
     info.groupNumber=0;
     info.accessTime=fxfiletime(data.ftLastAccessTime);
@@ -415,15 +410,18 @@ FXuint FXStat::mode(const FXString& file){
 
 // Change the mode flags for this file
 bool FXStat::mode(const FXString& file,FXuint perm){
+  if(!file.empty()){
 #ifndef WIN32
-  FXuint bits=perm&0777;
-  if(perm&FXIO::SetUser) bits|=S_ISUID;
-  if(perm&FXIO::SetGroup) bits|=S_ISGID;
-  if(perm&FXIO::Sticky) bits|=S_ISVTX;
-  return !file.empty() && ::chmod(file.text(),bits)==0;
+    FXuint bits=perm&0777;
+    if(perm&FXIO::SetUser) bits|=S_ISUID;
+    if(perm&FXIO::SetGroup) bits|=S_ISGID;
+    if(perm&FXIO::Sticky) bits|=S_ISVTX;
+    return ::chmod(file.text(),bits)==0;
 #else
-  return false; // FIXME Unimplemented yet
+    return false; // FIXME Unimplemented yet
 #endif
+    }
+  return false;
   }
 
 

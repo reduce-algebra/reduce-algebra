@@ -52,7 +52,7 @@
     This simplifies the shape/etch mask procedure.
 */
 
-#define DARKCOLOR(r,g,b) (((r)+(g)+(b))<382)
+#define DARKCOLOR(r,g,b) (((r)+(g)+(b))<thresh)
 
 
 #define DISPLAY(app) ((Display*)((app)->display))
@@ -93,6 +93,27 @@ FXColor FXIcon::guesstransp(){
     if((t=((color[2]==color[3])+(color[2]==color[0])+(color[2]==color[1])))>best){ guess=color[2]; best=t; }
     if((t=((color[3]==color[0])+(color[3]==color[1])+(color[3]==color[2])))>best){ guess=color[3]; }
     }
+  return guess;
+  }
+
+
+// Determine threshold for etch mask
+static FXshort guessthresh(const FXColor *data,FXint width,FXint height){
+  register FXint med=(width*height)>>1;
+  register FXint cum,i,j;
+  register FXshort guess;
+  FXint frequency[766];
+  memset(frequency,0,sizeof(frequency));
+  for(i=0; i<width*height; ++i){
+    frequency[((const FXuchar*)(data+i))[0]+((const FXuchar*)(data+i))[1]+((const FXuchar*)(data+i))[2]]++;
+    }
+  for(i=0,cum=0; i<766; ++i){
+    if((cum+=frequency[i])>=med) break;
+    }
+  for(j=765,cum=0; j>0; --j){
+    if((cum+=frequency[j])>=med) break;
+    }
+  guess=((i+j+1)>>1)+1;               // Fanglin Zhu: raise threshold by one in case of single-color image
   return guess;
   }
 
@@ -202,6 +223,7 @@ void FXIcon::render(){
     register bool shmi=false;
     register FXColor *img;
     register FXint x,y;
+    register FXshort thresh;    // Local variable in 1.6
     XGCValues values;
     GC gc;
 #ifdef HAVE_XSHM_H
@@ -215,6 +237,9 @@ void FXIcon::render(){
 
     // Fill with pixels if there is data
     if(data && 0<width && 0<height){
+
+      // Guess threshold
+      thresh=guessthresh(data,width,height);
 
       // Get Visual
       vis=(Visual*)visual->visual;
@@ -388,6 +413,7 @@ void FXIcon::render(){
     register FXColor *img;
     FXuchar *maskdata;
     FXuchar *etchdata;
+    register FXshort thresh;    // Local variable in 1.6
     BITMAPINFO2 bmi;
     HDC hdcmsk;
 
@@ -398,6 +424,9 @@ void FXIcon::render(){
 
     // Fill with pixels if there is data
     if(data && 0<width && 0<height){
+
+      // Guess threshold
+      thresh=guessthresh(data,width,height);
 
       // Set up the bitmap info
       bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);

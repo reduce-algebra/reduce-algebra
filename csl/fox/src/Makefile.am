@@ -1,30 +1,22 @@
 ## Process this file with automake to produce Makefile.in
 
-## MODIFIED BY A C NORMAN, 2008, 2009
-## The changes add some new sources and support an experimental
-## build for windows-64 using the Microsoft command-line tools. This
-## comment is only here because LGPL obliges me to mark any file that is
-## altered with a prominent notice. Somehow the GPL/LGPL people could be
-## amazingly uptight at the stage that the original BSD license has an
-## "obnoxious advertising clause" while not minding that they oblige me
-## to incorporate something rather similar here!
+## MODIFIED BY A C NORMAN, 2008, 2009, 2014
+## The changes add some new source files and to avoid use of
+## libtool. This comment is here because LGPL obliges me to mark any
+## file that is altered with a prominent notice.
 
 ## I have had LOTS of pain with libtool when I try to build on Windows,
 ## various versions of Linux (with various generations of libtool installed),
 ## BSD and Solaris etc. So I am changing the build here so that it only
 ## creates simple libraries and thus is able to avoid all use of libtool.
 
-
-AM_CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
+CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
 INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include
 RESWRAP  = $(top_builddir)/utils/reswrap$(EXEEXT)
 SUFFIXES = .gif .bmp
 
 noinst_DATA =
 lib_LIBRARIES = libFOX-1.6.a
-# The next line may have been useful when this was an LTLIBRARY but hurts
-# when it is a regular library!
-# libFOX_1_6_a_LIBADD = $(X_LIBS) $(X_BASE_LIBS) $(X_EXTRA_LIBS) $(GL_LIBS)
 
 CURSORS = \
 crosshair.xbm \
@@ -187,17 +179,18 @@ FXUTF8Codec.cpp \
 FXUTF16Codec.cpp \
 FXUTF32Codec.cpp
 
-
-libFOX_1_6_a_SOURCES = \
-$(CODECS) \
+ACN_FILES = \
 FXDCNativePrinter.cpp \
 FXPostscriptFont.cpp \
 FXTerminal.cpp \
 fwin.c \
 termed.c \
 FXWorker.cpp \
-FXShowMath.cpp \
-FXMathText.cpp \
+FXShowMath.cpp
+
+libFOX_1_6_a_SOURCES = \
+$(CODECS) \
+$(ACN_FILES) \
 FX4Splitter.cpp \
 FX7Segment.cpp \
 FXAccelTable.cpp \
@@ -290,7 +283,6 @@ FXICOIcon.cpp \
 FXICOImage.cpp \
 FXIFFIcon.cpp \
 FXIFFImage.cpp \
-FXIO.cpp \
 FXIcon.cpp \
 FXIconDict.cpp \
 FXIconList.cpp \
@@ -300,6 +292,7 @@ FXImage.cpp \
 FXImageFrame.cpp \
 FXImageView.cpp \
 FXInputDialog.cpp \
+FXIO.cpp \
 FXJPGIcon.cpp \
 FXJPGImage.cpp \
 FXKnob.cpp \
@@ -464,10 +457,11 @@ icons.h \
 jitter.h \
 version.rc \
 version.rc.in \
-fxpriv.h 
+fxpriv.h \
+$(CURSORS) \
+$(ICONS)
 
-
-FXApp.$(OBJEXT):	icons.h
+FXApp.cpp: icons.h
 
 icons.h: $(ICONS)
 	$(RESWRAP) -i -n FX -o icons.h $(ICONS)

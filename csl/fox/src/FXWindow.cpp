@@ -21,10 +21,6 @@
 *********************************************************************************
 * $Id: FXWindow.cpp,v 1.341.2.3 2009/01/14 10:41:48 fox Exp $                       *
 ********************************************************************************/
-
-// Small fix to make code compile under the 64-bit version of mingw32.
-// A C Norman. June 2010.
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -1358,12 +1354,6 @@ void FXWindow::create(){
       // when dragging, we need to search no further than the toplevel window.
       if(flags&FLAG_SHELL){
         HANDLE propdata=(HANDLE)XDND_PROTOCOL_VERSION;
-// On 64-bit windows this code expresses worry about turning the 32-bit
-// result from MAKELONG into a LPCSTR pointer. And the fact that the data
-// is really only 16 bits make it look even worse. However xdndAware is
-// an ATOM and all is in fact well... so if the worst that the C compiler
-// does is to issue a warning I will not worry much. With a modern C compiler
-// I might put in a cast via intptr_t.
         SetProp((HWND)xid,(LPCTSTR)MAKELONG(getApp()->xdndAware,0),propdata);
         }
 
@@ -2914,7 +2904,7 @@ bool FXWindow::beginDrag(const FXDragType *types,FXuint numtypes){
     getApp()->xdndRect.w=0;
     getApp()->xdndRect.h=0;
 #else
-    getApp()->xdndTypes=CreateFileMappingA((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE,0,(numtypes+1)*sizeof(FXDragType),"XdndTypeList");
+    getApp()->xdndTypes=CreateFileMappingA(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,(numtypes+1)*sizeof(FXDragType),"XdndTypeList");
     if(getApp()->xdndTypes){
       FXDragType *dragtypes=(FXDragType*)MapViewOfFile(getApp()->xdndTypes,FILE_MAP_WRITE,0,0,0);
       if(dragtypes){
@@ -3070,7 +3060,7 @@ bool FXWindow::handleDrag(FXint x,FXint y,FXDragAction action){
 
 #else
 
-    FXuint version=0;
+    FXuval version=0;
     FXbool forcepos=FALSE;
     POINT point;
     HWND window;
@@ -3080,13 +3070,7 @@ bool FXWindow::handleDrag(FXint x,FXint y,FXDragAction action){
     point.y=y;
     window=WindowFromPoint(point);      // FIXME wrong for disabled windows
     while(window){
-      version=(FXuint)
-#ifdef _WIN64
-        (long long)
-// GetProf returns a pointer, and the direct cast to an integer causes pain
-// hence I go via long long.
-#endif
-          GetProp(window,(LPCTSTR)MAKELONG(getApp()->xdndAware,0));
+      version=(FXuval)GetProp(window,(LPCTSTR)MAKELONG(getApp()->xdndAware,0));
       if(version) break;
       window=GetParent(window);
       }

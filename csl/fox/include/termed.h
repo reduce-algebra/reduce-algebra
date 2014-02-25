@@ -1,8 +1,8 @@
-/* termed.h                       Copyright (C) 2004-2012 Codemist Ltd */
+/* termed.h                       Copyright (C) 2004-2014 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -51,8 +51,6 @@
 extern "C" {
 #endif
 
-
-
 /*
  * Start up input through this package. Returns 0 if local editing
  * actually gets enabled, or a non-zero value if there is some problem.
@@ -75,12 +73,14 @@ extern int term_setup(int flag, const char *colours);
  * Set the prompt string.
  */
 extern void term_setprompt(const char *s);
+extern void term_wide_setprompt(const wchar_t *s);
 
 /*
  * Read a line from the terminal, applying history and local editing
  * operations as it goes
  */
 extern char *term_getline(void);
+extern wchar_t *term_wide_getline(void);
 
 /*
  * Before returning from your code it would be a really good idea to
@@ -98,28 +98,42 @@ extern void term_close(void);
 
 #define INPUT_HISTORY_SIZE 100
 
-extern char *input_history[INPUT_HISTORY_SIZE];
+extern wchar_t *input_history[INPUT_HISTORY_SIZE];
 extern int input_history_next, input_history_current;
 
 extern void input_history_init(void);
 
 extern void input_history_end(void);
 
-extern void input_history_add(const char *s);
+extern void input_history_add(const wchar_t *s);
 
-extern const char *input_history_get(int n);
+extern const wchar_t *input_history_get(int n);
 
 /*
  * The next few are so I can access the Unicode conversion code here
  * by pretending to be in console mode even if I am not.
  */
 
-extern char *input_line;
+extern wchar_t *input_line;
 extern int prompt_length, insert_point;
-extern int utf_encode(char *b, int c);
-extern int utf_decode(char *b);
+
+/*
+ * Encode character c in UTF-8 and place result at b. Return the number
+ * of bytes written.
+ */
+extern int utf_encode(unsigned char *b, int c);
+
+/*
+ * Decode UTF-8 from location b and return a code, or -1 in case of an
+ * invalid sequence. Set utf_bytes to the number of bytes consumed, which
+ * will be 1 in the case of errors.
+ */
+extern int utf_bytes;
+extern int utf_decode(unsigned char *b);
+
 extern void term_unicode_convert();
-typedef struct uniname
+
+typedef struct _uniname
 {
     const char *name;
     int code;

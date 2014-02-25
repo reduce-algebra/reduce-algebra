@@ -713,8 +713,9 @@ reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 @windows_TRUE@fwin_icon = fwin-icon.$(OBJEXT)
 @wx_FALSE@fontsdir = fonts
 @wx_TRUE@fontsdir = wxfonts
+@windows_FALSE@@wx_TRUE@samplefont = cmuntt.otf
+@windows_TRUE@@wx_TRUE@samplefont = cmuntt.ttf
 @wx_FALSE@samplefont = cmr10.pfb
-@wx_TRUE@samplefont = cmuntt.otf
 # For X11 and Windows I need a fonts directory
 @mac_framework_FALSE@FONTDEP = reduce.$(fontsdir)/$(samplefont)
 # On the Mac with FOX I need a fonts directory in the old way

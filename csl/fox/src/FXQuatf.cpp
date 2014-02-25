@@ -533,10 +533,27 @@ FXQuatf& FXQuatf::arc(const FXVec3f& f,const FXVec3f& t){
     w= 1.0f;
     }
   else if(dot<-0.999999f){      // 180 quaternion
-    x= 0.0f;
-    y= 0.0f;
-    z=-1.0f;
-    w= 0.0f;
+    if(fabsf(f.z)<fabsf(f.x) && fabsf(f.z)<fabs(f.y)){  // x, y largest magnitude
+      x= f.x*f.z-f.z*f.y;
+      y= f.z*f.x+f.y*f.z;
+      z=-f.y*f.y-f.x*f.x;
+      }
+    else if(fabsf(f.y)<fabsf(f.x)){                     // y, z largest magnitude
+      x= f.y*f.z-f.x*f.y;
+      y= f.x*f.x+f.z*f.z;
+      z=-f.z*f.y-f.y*f.x;
+      }
+    else{                                               // x, z largest magnitude
+      x=-f.z*f.z-f.y*f.y;
+      y= f.y*f.x-f.x*f.z;
+      z= f.x*f.y+f.z*f.x;
+      }
+    dot=x*x+y*y+z*z;
+    div=sqrtf(dot);
+    x/=div;
+    y/=div;
+    z/=div;
+    w=0.0f;
     }
   else{
     div=sqrtf((dot+1.0f)*2.0f);

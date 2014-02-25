@@ -5,7 +5,7 @@
 ##############################################################################
 # Contributed by: Andre Fornacon <afo@zlug.org>                              #
 ##############################################################################
-# $Id: Makefile.dmc,v 1.50.2.2 2006/08/09 01:55:08 fox Exp $		     #
+# $Id: Makefile.dmc,v 1.50.2.3 2008/03/31 19:34:08 fox Exp $		     #
 ##############################################################################
 # This library is free software; you can redistribute it and/or 	     #
 # modify it under the terms of the GNU Library General Public		     #
@@ -139,6 +139,7 @@ FXColorBar.cpp \
 FXColorDialog.cpp \
 FXColorList.cpp \
 FXColorNames.cpp \
+FXColorRing.cpp \
 FXColorSelector.cpp \
 FXColorWell.cpp \
 FXColorWheel.cpp \
@@ -324,10 +325,10 @@ FXSize.cpp \
 FXSlider.cpp \
 FXSocket.cpp \
 FXSpinner.cpp \
-FXSplitter.cpp \
 FXSpheref.cpp \
 FXSphered.cpp \
 FXSplashWindow.cpp \
+FXSplitter.cpp \
 FXSpring.cpp \
 FXStat.cpp \
 FXStatusBar.cpp \

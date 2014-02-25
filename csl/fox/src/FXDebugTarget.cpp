@@ -21,13 +21,6 @@
 *********************************************************************************
 * $Id: FXDebugTarget.cpp,v 1.33 2006/01/22 17:58:22 fox Exp $                   *
 ********************************************************************************/
-
-// MODIFIED BY A C NORMAN, 2008, merely to fix a 64-address printf. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice.
-
-
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -160,14 +153,7 @@ long FXDebugTarget::onMessage(FXObject* sender,FXSelector sel,void* ptr){
   FXuint msid=FXSELID(sel);
   FXASSERT(ARRAYNUMBER(messageTypeName)==SEL_LAST);
   if(sender!=lastsender || sel!=lastsel){
-/*
- * The next line used to print the pointer using format 0x%08lx having
- * cast the pointer to an unsigned long. Well on a 64-bit machine that
- * is a mess, and what is worse some versions of gcc will view the
- * cast as worth an error not just a warning. So I will just print the
- * pointer using %p
- */
-    fxmessage("\nTYPE:%-23s ID:%-5d SENDER: %-15s PTR: %p #%-4d",type<SEL_LAST?messageTypeName[type]:"ILLEGAL",msid,sender?sender->getClassName():"NULL",ptr,1);
+    fxmessage("\nTYPE:%-23s ID:%-5d SENDER: %-15s PTR: 0x%08p #%-4d",type<SEL_LAST?messageTypeName[type]:"ILLEGAL",msid,sender?sender->getClassName():"NULL",ptr,1);
     lastsender=sender;
     lastsel=sel;
     count=1;

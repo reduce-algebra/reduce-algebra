@@ -3645,8 +3645,18 @@ void FXTable::removeRows(FXint row,FXint nr,FXbool notify){
   if(input.to.row>=row+nr) input.to.row-=nr; else if(input.to.row>=n) input.to.row=n-1;
 
   // Fix up selection
-  if(selection.fm.row>=row+nr) selection.fm.row-=nr; else if(selection.fm.row>=n) selection.fm.row=n-1;
-  if(selection.to.row>=row+nr) selection.to.row-=nr; else if(selection.to.row>=n) selection.to.row=n-1;
+  if(row+nr<=selection.to.row){
+    selection.to.row-=nr;
+    if(row+nr<=selection.fm.row) selection.fm.row-=nr;
+    else if(row<=selection.fm.row) selection.fm.row=row;
+    }
+  else if(selection.fm.row<row){
+    if(row<=selection.to.row) selection.to.row=row-1;
+    }
+  else{
+    selection.fm.row=-1;
+    selection.to.row=-1;
+    }
 
   nrows=n;
 
@@ -3746,8 +3756,18 @@ void FXTable::removeColumns(FXint col,FXint nc,FXbool notify){
   if(input.to.col>=col+nc) input.to.col-=nc; else if(input.to.col>=n) input.to.col=n-1;
 
   // Fix up selection
-  if(selection.fm.col>=col+nc) selection.fm.col-=nc; else if(selection.fm.col>=n) selection.fm.col=n-1;
-  if(selection.to.col>=col+nc) selection.to.col-=nc; else if(selection.to.col>=n) selection.to.col=n-1;
+  if(col+nc<=selection.to.col){
+    selection.to.col-=nc;
+    if(col+nc<=selection.fm.col) selection.fm.col-=nc;
+    else if(col<=selection.fm.col) selection.fm.col=col;
+    }
+  else if(selection.fm.col<col){
+    if(col<=selection.to.col) selection.to.col=col-1;
+    }
+  else{
+    selection.fm.col=-1;
+    selection.to.col=-1;
+    }
 
   ncols=n;
 

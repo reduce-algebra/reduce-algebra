@@ -292,7 +292,9 @@ long FXColorWell::onDNDMotion(FXObject* sender,FXSelector sel,void* ptr){
 
 // Handle drag-and-drop drop
 long FXColorWell::onDNDDrop(FXObject* sender,FXSelector sel,void* ptr){
-  FXushort *clr; FXchar *str; FXuint len; FXColor color;
+  FXuchar *pointer;
+  FXuint   length;
+  FXColor  color;
 
   // Enable updating
   flags|=FLAG_UPDATE;
@@ -301,18 +303,18 @@ long FXColorWell::onDNDDrop(FXObject* sender,FXSelector sel,void* ptr){
   if(FXFrame::onDNDDrop(sender,sel,ptr)) return 1;
 
   // Try and obtain the color first
-  if(getDNDData(FROM_DRAGNDROP,colorType,(FXuchar*&)clr,len)){
-    color=FXRGBA((clr[0]+128)/257,(clr[1]+128)/257,(clr[2]+128)/257,(clr[3]+128)/257);
-    FXFREE(&clr);
+  if(getDNDData(FROM_DRAGNDROP,colorType,pointer,length)){
+    color=FXRGBA((((FXushort*)pointer)[0]+128)/257,(((FXushort*)pointer)[1]+128)/257,(((FXushort*)pointer)[2]+128)/257,(((FXushort*)pointer)[3]+128)/257);
+    FXFREE(&pointer);
     setRGBA(color,TRUE);
     return 1;
     }
 
   // Maybe its the name of a color
-  if(getDNDData(FROM_DRAGNDROP,textType,(FXuchar*&)str,len)){
-    FXRESIZE(&str,FXchar,len+1); str[len]='\0';
-    color=fxcolorfromname((FXchar*)str);
-    FXFREE(&str);
+  if(getDNDData(FROM_DRAGNDROP,textType,pointer,length)){
+    FXRESIZE(&pointer,FXuchar,length+1); pointer[length]='\0';
+    color=fxcolorfromname((const FXchar*)pointer);
+    FXFREE(&pointer);
 
     // Accept the drop only if it was a valid color name
     if(color!=FXRGBA(0,0,0,0)){
@@ -510,20 +512,22 @@ long FXColorWell::onMiddleBtnPress(FXObject*,FXSelector,void* ptr){
 
 // Released middle button causes paste of selection
 long FXColorWell::onMiddleBtnRelease(FXObject*,FXSelector,void* ptr){
-  FXushort *clr; FXchar *str; FXuint len; FXColor color;
+  FXuchar *pointer;
+  FXuint   length;
+  FXColor  color;
   if(isEnabled()){
     ungrab();
     if(target && target->tryHandle(this,FXSEL(SEL_MIDDLEBUTTONRELEASE,message),ptr)) return 1;
-    if(getDNDData(FROM_SELECTION,colorType,(FXuchar*&)clr,len)){
-      color=FXRGBA((clr[0]+128)/257,(clr[1]+128)/257,(clr[2]+128)/257,(clr[3]+128)/257);
-      FXFREE(&clr);
+    if(getDNDData(FROM_SELECTION,colorType,pointer,length)){
+      color=FXRGBA((((FXushort*)pointer)[0]+128)/257,(((FXushort*)pointer)[1]+128)/257,(((FXushort*)pointer)[2]+128)/257,(((FXushort*)pointer)[3]+128)/257);
+      FXFREE(&color);
       setRGBA(color,TRUE);
       return 1;
       }
-    if(getDNDData(FROM_SELECTION,stringType,(FXuchar*&)str,len)){
-      FXRESIZE(&str,FXchar,len+1); str[len]='\0';
-      color=fxcolorfromname(str);
-      FXFREE(&str);
+    if(getDNDData(FROM_SELECTION,stringType,pointer,length)){
+      FXRESIZE(&pointer,FXuchar,length+1); pointer[length]='\0';
+      color=fxcolorfromname((const FXchar*)pointer);
+      FXFREE(&pointer);
       setRGBA(color,TRUE);
       return 1;
       }

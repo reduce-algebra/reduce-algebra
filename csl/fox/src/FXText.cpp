@@ -1,3 +1,23 @@
+#ifndef ORIGINAL_VERSION
+// This version started off as just a copy of FXText.cpp patched and changed
+// to support variable-height lines. 
+//
+// The new material included is sufficient in bulk and sufficiently
+// specialised that it seems improbable that it would ever be accepted back
+// as an update to FXText.cpp, so this becomes a few file forked from
+// that. As a modification of the version of FOX as distributed by
+// Jeroen van der Zijp I may not license it with his addendum to the
+// LGPL that allows static linking, thus this falls back to just LGPL.
+// My modifications are released under LGPL 2.1 and no FOX-style addendum.
+//
+// However as a special exception to LGPL 2.1 I grant permission for my code
+// to be merged or linked with other code that is subject to LGPL version 3
+// or GPL version 3, but not for licensing of my contributions to have
+// LGPL 2.1 compatibility removed or restricted.
+//
+//                                           Arthur Norman, 2004-2014
+
+#endif // ! ORIGINAL_VERSION
 /********************************************************************************
 *                                                                               *
 *                    M u l t i - L i ne   T e x t   O b j e c t                 *
@@ -7,8 +27,13 @@
 *********************************************************************************
 * This library is free software; you can redistribute it and/or                 *
 * modify it under the terms of the GNU Lesser General Public                    *
+#ifndef ORIGINAL_VERSION
+* License as published by the Free Software Foundation;                         *
+* version 2.1 of the License.                                                   *
+#else // ORIGINAL_VERSION
 * License as published by the Free Software Foundation; either                  *
 * version 2.1 of the License, or (at your option) any later version.            *
+#endif // ORIGINAL_VERSION
 *                                                                               *
 * This library is distributed in the hope that it will be useful,               *
 * but WITHOUT ANY WARRANTY; without even the implied warranty of                *
@@ -19,15 +44,19 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
+#ifndef ORIGINAL_VERSION
+* $Id: FXText.cpp 2290 2014-01-13 11:59:16Z arthurcnorman $                         *
+#else // ORIGINAL_VERSION
 * $Id: FXText.cpp,v 1.348.2.3 2007/06/29 13:47:37 fox Exp $                         *
+#endif // ORIGINAL_VERSION
 ********************************************************************************/
+#ifndef ORIGINAL_VERSION
 
-// MODIFIED BY A C NORMAN, 2008, to add COLUMNWRAP and a hook for maths. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice.
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-
-
+#endif // ! ORIGINAL_VERSION
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -58,8 +87,31 @@
 #include "FXCP1252Codec.h"
 #include "FXUTF16Codec.h"
 #include "FXComposeContext.h"
+#ifndef ORIGINAL_VERSION
+#include "FXFile.h"
+#endif // ! ORIGINAL_VERSION
 #include "icons.h"
 
+#ifndef ORIGINAL_VERSION
+/*
+  ACN Notes re introduction of support for maths display:
+  - Space for maths is made by (ab)using the existing scheme where
+    a line of text can end up wrapped to form several rows.
+  - mouse identification within maths is not yet addressed AT ALL.
+  - a Maths line that (say) needs the space of 4 rows will be
+    represented as
+        0x02 0x02 0x02 0x02 <data> 0x05 '\n'
+    and each 0x02 is treated as starting a "row". Any draw operation
+    steps up and draws all the rows involved. The <data> will not have
+    and 0x02, 0x03 or '\n' bytes in it. Where I pack flags or addresses
+    in there I will keep it UTF8-safe by restricting myself to use of
+    7-bit characters.
+  - I will probably also want to mark the maths material with a style
+    tag, but partly because I want to work with an existing interface
+    that generates 0x02 and 0x05 to surround displayed maths I will
+    start off using them rather than styles.
+ */
+#endif // ! ORIGINAL_VERSION
 
 
 /*
@@ -72,6 +124,12 @@
   - Breaking:
     Soft-hyphen     173  \xAD
     No break space  240  \xF0
+#ifndef ORIGINAL_VERSION
+    [ACN note: U+00AD is "soft hyphen"
+               U+00A0 is "no-break-space"
+               U+00F0 is "latin small letter eth"
+     so why use \xF0 for "No break space"?]
+#endif // ! ORIGINAL_VERSION
   - Buffer layout:
 
     Content  :  A  B  C  .  .  .  .  .  .  .  .  D  E  F  G
@@ -152,9 +210,20 @@
 
 
 #define MINSIZE   80                  // Minimum gap size
+#ifndef ORIGINAL_VERSION
+#define NVISROWS  24                  // Initial visible rows
+// [ACN increased the initial visible rows as a cosmetic choice]
+#else // ORIGINAL_VERSION
 #define NVISROWS  20                  // Initial visible rows
+#endif // ORIGINAL_VERSION
 
-#define TEXT_MASK   (TEXT_FIXEDWRAP|TEXT_WORDWRAP|TEXT_COLUMNWRAP|TEXT_OVERSTRIKE|TEXT_READONLY|TEXT_NO_TABS|TEXT_AUTOINDENT|TEXT_SHOWACTIVE|TEXT_AUTOSCROLL)
+#ifndef ORIGINAL_VERSION
+#define TEXT_MASK   (TEXT_FIXEDWRAP|TEXT_WORDWRAP|TEXT_COLUMNWRAP| \
+                     TEXT_OVERSTRIKE|TEXT_READONLY|TEXT_NO_TABS| \
+                     TEXT_AUTOINDENT|TEXT_SHOWACTIVE|TEXT_AUTOSCROLL)
+#else // ORIGINAL_VERSION
+#define TEXT_MASK   (TEXT_FIXEDWRAP|TEXT_WORDWRAP|TEXT_OVERSTRIKE|TEXT_READONLY|TEXT_NO_TABS|TEXT_AUTOINDENT|TEXT_SHOWACTIVE|TEXT_AUTOSCROLL)
+#endif // ORIGINAL_VERSION
 
 using namespace FX;
 
@@ -413,6 +482,10 @@ void FXText::create(){
   if(!textType){ textType=getApp()->registerDragType(textTypeName); }
   if(!utf8Type){ utf8Type=getApp()->registerDragType(utf8TypeName); }
   if(!utf16Type){ utf16Type=getApp()->registerDragType(utf16TypeName); }
+#ifndef ORIGINAL_VERSION
+// Mainstream FOX comments out the next line while my old copy of FXText as
+// in my earlier FXMathsText.cpp left it present...
+#endif // ! ORIGINAL_VERSION
 //  if(options&TEXT_FIXEDWRAP){ wrapwidth=wrapcolumns*font->getTextWidth("x",1); }
   tabwidth=tabcolumns*font->getTextWidth(" ",1);
   barwidth=barcolumns*font->getTextWidth("8",1);
@@ -506,7 +579,15 @@ FXint FXText::validPos(FXint pos) const {
   register const FXchar *ptr=pos<gapstart ? buffer : buffer-gapstart+gapend;
   if(pos<=0) return 0;
   if(pos>=length) return length;
+#ifndef ORIGINAL_VERSION
+  return (FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) || --pos), pos;
+#else // ORIGINAL_VERSION
   return (FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos), pos;
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -514,7 +595,15 @@ FXint FXText::validPos(FXint pos) const {
 // or below below the gap, we read from the segment below the gap
 FXint FXText::dec(FXint pos) const {
   register const FXchar *ptr=pos<=gapstart ? buffer : buffer-gapstart+gapend;
+#ifndef ORIGINAL_VERSION
+  return (--pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) ||
+          --pos<=0 || FXISUTF(ptr[pos]) || --pos), pos;
+#else // ORIGINAL_VERSION
   return (--pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos<=0 || FXISUTF(ptr[pos]) || --pos), pos;
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -522,7 +611,15 @@ FXint FXText::dec(FXint pos) const {
 // start under the gap the last character accessed is below the gap
 FXint FXText::inc(FXint pos) const {
   register const FXchar *ptr=pos<gapstart ? buffer : buffer-gapstart+gapend;
+#ifndef ORIGINAL_VERSION
+  return (++pos>=length || FXISUTF(ptr[pos]) ||
+          ++pos>=length || FXISUTF(ptr[pos]) ||
+          ++pos>=length || FXISUTF(ptr[pos]) ||
+          ++pos>=length || FXISUTF(ptr[pos]) ||
+          ++pos>=length || FXISUTF(ptr[pos]) || ++pos), pos;
+#else // ORIGINAL_VERSION
   return (++pos>=length || FXISUTF(ptr[pos]) || ++pos>=length || FXISUTF(ptr[pos]) || ++pos>=length || FXISUTF(ptr[pos]) || ++pos>=length || FXISUTF(ptr[pos]) || ++pos>=length || FXISUTF(ptr[pos]) || ++pos), pos;
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -633,36 +730,54 @@ FXint FXText::charWidth(FXwchar ch,FXint indent) const {
   return font->getCharWidth(ch);
   }
 
-
 // Start of next wrapped line
 FXint FXText::wrap(FXint start) const {
   register FXint lw,cw,p,s,c;
   FXASSERT(0<=start && start<=length);
   lw=0;
   p=s=start;
-  int math = (p<length && getChar(p)==0x02);
+#ifndef ORIGINAL_VERSION
+// I should really only recognize maths if the style says so too!
+  int math0 = (p<length && getByte(p)==0x02);
+  int math1 = (p+1<length && getByte(p+1)==0x02);
+// A maths line breaks after any of the initial 0x02 bytes except the
+// last of them - after that it only breaks at newline.
+  if (math0)
+  {
+// If the first character after an 0x02 is ANOTHER 0x02 then I view the
+// next row as starting with that second character.
+    if (math1) return p+1;
+// Otherwise the line just goes on until a terminating newline (or the end
+// of the buffer)
+    while (p<length)        // Find '\n' or end of buffer.
+    { c = getByte(p);
+      if (c=='\n') return p+1;
+      p++;
+    }
+    return length;
+  }
+#endif // ! ORIGINAL_VERSION
   while(p<length){
     c=getChar(p);
-    if(c==0x05 && math) 
-    { math=0;
-      lw+=charWidth(c,lw);
-      p++;
-      continue;
-    }
-    if(c=='\n' && !math) return p+1;  // Newline always breaks
+    if(c=='\n') return p+1;     // Newline always breaks
     cw=charWidth(c,lw);
-    if(lw+cw>wrapwidth && !math){     // Technically, a tab-before-wrap should be as wide as space!
+    if(lw+cw>wrapwidth){        // Technically, a tab-before-wrap should be as wide as space!
       if(s>start) return s;     // We remembered the last space we encountered; break there!
       if(p==start) p++;         // Always at least one character on each line!
       return p;
       }
     lw+=cw;
-    p++;
-    if(Unicode::isSpace(c)&&!(options&TEXT_COLUMNWRAP))
+    p+=getCharLen(p);
+#ifndef ORIGINAL_VERSION
+    if(Unicode::isSpace(c)&&((options&TEXT_COLUMNWRAP)==0))
       s=p;                      // Remember potential break point!
+#else // ORIGINAL_VERSION
+    if(Unicode::isSpace(c)) s=p;// Remember potential break point!
+#endif // ORIGINAL_VERSION
     }
   return length;
   }
+
 
 // Count number of newlines
 FXint FXText::countLines(FXint start,FXint end) const {
@@ -678,6 +793,23 @@ FXint FXText::countLines(FXint start,FXint end) const {
   }
 
 
+#ifndef ORIGINAL_VERSION
+// Count number of rows; start and end should be on a row start
+
+// I believe that the logic in this should mirror that in wrap(), and
+// so the newer shorter version I have here keeps that logic in just
+// one place.
+
+FXint FXText::countRows(FXint start,FXint end) const {
+  int nr=0;
+  FXASSERT(0<=start && end<=length+1);
+  while (start < end && start < length)
+  { start = wrap(start);
+    nr++;
+  }
+  return nr;
+}
+#else // ORIGINAL_VERSION
 // Count number of rows; start should be on a row start
 FXint FXText::countRows(FXint start,FXint end) const {
   register FXint p,q,s,w=0,c,cw,nr=0;
@@ -707,7 +839,7 @@ FXint FXText::countRows(FXint start,FXint end) const {
         }
       w+=cw;
       p+=getCharLen(p);
-      if(Unicode::isSpace(c)&&!(options&TEXT_COLUMNWRAP)) s=p;
+      if(Unicode::isSpace(c)) s=p;
       }
     }
   else{
@@ -721,9 +853,16 @@ FXint FXText::countRows(FXint start,FXint end) const {
     }
   return nr;
   }
+#endif // ! ORIGINAL_VERSION
 
 
 // Count number of columns; start should be on a row start
+#ifndef ORIGINAL_VERSION
+// NB when applied to a region within which there is some displayed
+// mathematics this will record a value that reflects the number of bytes
+// in the internal representation of the mathematical formula. Often that will
+// be quote long, and also often it will not be very meaningful to the user!
+#endif // ! ORIGINAL_VERSION
 FXint FXText::countCols(FXint start,FXint end) const {
   register FXint nc=0,in=0,ch;
   FXASSERT(0<=start && end<=length);
@@ -751,6 +890,14 @@ FXint FXText::measureText(FXint start,FXint end,FXint& wmax,FXint& hmax) const {
   register FXint nr=0,w=0,c,cw,p,q,s;
   FXASSERT(0<=start && end<=length+1);
   if(options&TEXT_WORDWRAP){
+#ifndef ORIGINAL_VERSION
+// When WORDWRAP is enabled I always return wrapwidth as the measured width,
+// even if all rows are actually rather short. So the height to worry about
+// is just a count of the number of rows used.
+    wmax=wrapwidth;
+    nr = countRows(start, end);
+    }
+#else // ! ORIGINAL_VERSION
     wmax=wrapwidth;
     p=q=s=start;
     while(q<end){
@@ -779,9 +926,10 @@ FXint FXText::measureText(FXint start,FXint end,FXint& wmax,FXint& hmax) const {
         }
       w+=cw;
       p+=getCharLen(p);
-      if(Unicode::isSpace(c)&&!(options&TEXT_COLUMNWRAP)) s=p;
+      if(Unicode::isSpace(c)) s=p;
       }
     }
+#endif // ! ORIGINAL_VERSION
   else{
     wmax=0;
     p=start;
@@ -1050,9 +1198,23 @@ FXint FXText::changeEnd(FXint pos) const {
 
 
 // Calculate line width
+#ifndef ORIGINAL_VERSION
+
+// The width of a "maths" line is a matter of delicacy here. At present
+// I return the answer 0, but wrapWidth would also be a possibility. This
+// procedure is called from a number of places:
+//    getXOfPos  (makePositionVisible and hence mouse clicks, cursor
+//                movement, text inserts and deletes)
+//    various things that call update() to ensure that bits of the screen
+//                get re-painted.
+
+#endif // ! ORIGINAL_VERSION
 FXint FXText::lineWidth(FXint pos,FXint n) const {
   register FXint end=pos+n,w=0;
   FXASSERT(0<=pos && end<=length);
+#ifndef ORIGINAL_VERSION
+  if (pos<end && getByte(pos) == 0x02) return 0; // Maths mode line
+#endif // ! ORIGINAL_VERSION
   while(pos<end){ w+=charWidth(getChar(pos),w); pos+=getCharLen(pos); }
   return w;
   }
@@ -1087,6 +1249,9 @@ FXint FXText::posFromIndent(FXint start,FXint indent) const {
   register FXint in=0;
   register FXwchar c;
   FXASSERT(0<=start && start<=length);
+#ifndef ORIGINAL_VERSION
+  if (pos<length && getByte(pos)==0x02) return pos; // maths mode
+#endif // ! ORIGINAL_VERSION
   while(in<indent && pos<length){
     c=getChar(pos);
     if(c=='\n'){
@@ -1248,6 +1413,14 @@ FXint FXText::posToLine(FXint pos,FXint ln) const {
 
 
 // Localize position at x,y
+#ifndef ORIGINAL_VERSION
+// For a maths-mode line I just indicate the start of the row
+// involved, and at present I do not attempt to localise information
+// within the expression itself. Sometime LATER ON I may try to cope with
+// selection etc within formulae. Actually hooking onto the box structure
+// that I use will probably make identifying a location within a formula
+// fairly easy!
+#endif // ! ORIGINAL_VERSION
 FXint FXText::getPosAt(FXint x,FXint y) const {
   register FXint row,ls,le,cx,cw,ch;
   y=y-pos_y-margintop;
@@ -1273,6 +1446,9 @@ FXint FXText::getPosAt(FXint x,FXint y) const {
   FXASSERT(le<=length);
   if(ls<le && (((ch=getByte(le-1))=='\n') || (le<length && Ascii::isSpace(ch)))) le--;
   cx=0;
+#ifndef ORIGINAL_VERSION
+  if (ls<le && getByte(ls)==0x02) return ls; // maths mode selects its start
+#endif // ! ORIGINAL_VERSION
   while(ls<le){
     ch=getChar(ls);
     cw=charWidth(ch,cx);
@@ -1522,6 +1698,15 @@ void FXText::calcVisRows(FXint startline,FXint endline){
 // This will affect mutation() and perhaps replace() functions below...
 
 // There has been a mutation in the buffer
+#ifndef ORIGINAL_VERSION
+
+// "math display" lines measure rather as if they had been empty lines, and so
+// any changes in them will not be reflected by a change in their length.
+// However I am going to be treating math display as read-only once it is
+// in the buffer and hence mutations will only happen within non-maths
+// sections (apart I suppose from when maths is initially inserted) and I
+// hope that no problems will arise here.
+#endif // ! ORIGINAL_VERSION
 void FXText::mutation(FXint pos,FXint ncins,FXint ncdel,FXint nrins,FXint nrdel){
   register FXint ncdelta=ncins-ncdel;
   register FXint nrdelta=nrins-nrdel;
@@ -1660,9 +1845,18 @@ void FXText::mutation(FXint pos,FXint ncins,FXint ncdel,FXint nrins,FXint nrdel)
   }
 
 
+#ifndef ORIGINAL_VERSION
+// In a bunch of things that follow I have changed the name of a parameter
+// from "style" to "style1" so as to avoid a gcc warning to the effect that
+// a member of the current object was being shadowed.
+#endif // ! ORIGINAL_VERSION
 
 // Replace m characters at pos by n characters
+#ifndef ORIGINAL_VERSION
+void FXText::replace(FXint pos,FXint m,const FXchar *text,FXint n,FXint style1){
+#else // ORIGINAL_VERSION
 void FXText::replace(FXint pos,FXint m,const FXchar *text,FXint n,FXint style){
+#endif // ORIGINAL_VERSION
   register FXint nrdel,nrins,ncdel,ncins,wbeg,wend,del;
   FXint wdel,hdel,wins,hins;
   drawCursor(0);    // FIXME can we do without this?
@@ -1686,7 +1880,11 @@ void FXText::replace(FXint pos,FXint m,const FXchar *text,FXint n,FXint style){
   sizegap(del);
   movegap(pos);
   memcpy(&buffer[pos],text,n);
+#ifndef ORIGINAL_VERSION
+  if(sbuffer){memset(&sbuffer[pos],style1,n);}
+#else // ORIGINAL_VERSION
   if(sbuffer){memset(&sbuffer[pos],style,n);}
+#endif // ORIGINAL_VERSION
   gapstart+=n;
   gapend+=m;
   length+=del;
@@ -1762,7 +1960,11 @@ void FXText::replace(FXint pos,FXint m,const FXchar *text,FXint n,FXint style){
 
 
 // Replace m characters at pos by n characters
+#ifndef ORIGINAL_VERSION
+void FXText::replaceStyledText(FXint pos,FXint m,const FXchar *text,FXint n,FXint style1,FXbool notify){
+#else // ORIGINAL_VERSION
 void FXText::replaceStyledText(FXint pos,FXint m,const FXchar *text,FXint n,FXint style,FXbool notify){
+#endif // ORIGINAL_VERSION
   FXTextChange textchange;
   if(n<0 || m<0 || pos<0 || length<pos+m){ fxerror("%s::replaceStyledText: bad argument.\n",getClassName()); }
   FXTRACE((130,"replaceStyledText(%d,%d,text,%d)\n",pos,m,n));
@@ -1772,7 +1974,11 @@ void FXText::replaceStyledText(FXint pos,FXint m,const FXchar *text,FXint n,FXin
   textchange.ins=(FXchar*)text;
   FXMALLOC(&textchange.del,FXchar,m);
   extractText(textchange.del,pos,m);
+#ifndef ORIGINAL_VERSION
+  replace(pos,m,text,n,style1);
+#else // ORIGINAL_VERSION
   replace(pos,m,text,n,style);
+#endif // ORIGINAL_VERSION
   if(notify && target){
     target->tryHandle(this,FXSEL(SEL_REPLACED,message),(void*)&textchange);
     target->tryHandle(this,FXSEL(SEL_CHANGED,message),(void*)(FXival)cursorpos);
@@ -1782,8 +1988,13 @@ void FXText::replaceStyledText(FXint pos,FXint m,const FXchar *text,FXint n,FXin
 
 
 // Replace m characters at pos by n characters
+#ifndef ORIGINAL_VERSION
+void FXText::replaceStyledText(FXint pos,FXint m,const FXString& text,FXint style1,FXbool notify){
+  replaceStyledText(pos,m,text.text(),text.length(),style1,notify);
+#else // ORIGINAL_VERSION
 void FXText::replaceStyledText(FXint pos,FXint m,const FXString& text,FXint style,FXbool notify){
   replaceStyledText(pos,m,text.text(),text.length(),style,notify);
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -1800,7 +2011,11 @@ void FXText::replaceText(FXint pos,FXint m,const FXString& text,FXbool notify){
 
 
 // Add text at the end
+#ifndef ORIGINAL_VERSION
+void FXText::appendStyledText(const FXchar *text,FXint n,FXint style1,FXbool notify){
+#else // ORIGINAL_VERSION
 void FXText::appendStyledText(const FXchar *text,FXint n,FXint style,FXbool notify){
+#endif // ORIGINAL_VERSION
   FXTextChange textchange;
   if(n<0){ fxerror("%s::appendStyledText: bad argument.\n",getClassName()); }
   FXTRACE((130,"appendStyledText(text,%d)\n",n));
@@ -1809,7 +2024,11 @@ void FXText::appendStyledText(const FXchar *text,FXint n,FXint style,FXbool noti
   textchange.nins=n;
   textchange.ins=(FXchar*)text;
   textchange.del=(FXchar*)"";
+#ifndef ORIGINAL_VERSION
+  replace(length,0,text,n,style1);
+#else // ORIGINAL_VERSION
   replace(length,0,text,n,style);
+#endif // ORIGINAL_VERSION
   if(notify && target){
     target->tryHandle(this,FXSEL(SEL_INSERTED,message),(void*)&textchange);
     target->tryHandle(this,FXSEL(SEL_CHANGED,message),(void*)(FXival)cursorpos);
@@ -1818,8 +2037,13 @@ void FXText::appendStyledText(const FXchar *text,FXint n,FXint style,FXbool noti
 
 
 // Add text at the end
+#ifndef ORIGINAL_VERSION
+void FXText::appendStyledText(const FXString& text,FXint style1,FXbool notify){
+  appendStyledText(text.text(),text.length(),style1,notify);
+#else // ORIGINAL_VERSION
 void FXText::appendStyledText(const FXString& text,FXint style,FXbool notify){
   appendStyledText(text.text(),text.length(),style,notify);
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -1836,7 +2060,11 @@ void FXText::appendText(const FXString& text,FXbool notify){
 
 
 // Insert some text at pos
+#ifndef ORIGINAL_VERSION
+void FXText::insertStyledText(FXint pos,const FXchar *text,FXint n,FXint style1,FXbool notify){
+#else // ORIGINAL_VERSION
 void FXText::insertStyledText(FXint pos,const FXchar *text,FXint n,FXint style,FXbool notify){
+#endif // ORIGINAL_VERSION
   FXTextChange textchange;
   if(n<0 || pos<0 || length<pos){ fxerror("%s::insertStyledText: bad argument.\n",getClassName()); }
   FXTRACE((130,"insertStyledText(%d,text,%d)\n",pos,n));
@@ -1845,7 +2073,11 @@ void FXText::insertStyledText(FXint pos,const FXchar *text,FXint n,FXint style,F
   textchange.nins=n;
   textchange.ins=(FXchar*)text;
   textchange.del=(FXchar*)"";
+#ifndef ORIGINAL_VERSION
+  replace(pos,0,text,n,style1);
+#else // ORIGINAL_VERSION
   replace(pos,0,text,n,style);
+#endif // ORIGINAL_VERSION
   if(notify && target){
     target->tryHandle(this,FXSEL(SEL_INSERTED,message),(void*)&textchange);
     target->tryHandle(this,FXSEL(SEL_CHANGED,message),(void*)(FXival)cursorpos);
@@ -1854,8 +2086,13 @@ void FXText::insertStyledText(FXint pos,const FXchar *text,FXint n,FXint style,F
 
 
 // Insert some text at pos
+#ifndef ORIGINAL_VERSION
+void FXText::insertStyledText(FXint pos,const FXString& text,FXint style1,FXbool notify){
+  insertStyledText(pos,text.text(),text.length(),style1,notify);
+#else // ORIGINAL_VERSION
 void FXText::insertStyledText(FXint pos,const FXString& text,FXint style,FXbool notify){
   insertStyledText(pos,text.text(),text.length(),style,notify);
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -1927,57 +2164,112 @@ void FXText::extractText(FXString& text,FXint pos,FXint n) const {
 
 
 // Grab range of style
+#ifndef ORIGINAL_VERSION
+void FXText::extractStyle(FXchar *style1,FXint pos,FXint n) const {
+#else // ORIGINAL_VERSION
 void FXText::extractStyle(FXchar *style,FXint pos,FXint n) const {
+#endif // ORIGINAL_VERSION
   if(n<0 || pos<0 || length<pos+n){ fxerror("%s::extractStyle: bad argument.\n",getClassName()); }
   FXASSERT(0<=n && 0<=pos && pos+n<=length);
   if(sbuffer){
     if(pos+n<=gapstart){
+#ifndef ORIGINAL_VERSION
+      memcpy(style1,&sbuffer[pos],n);
+#else // ORIGINAL_VERSION
       memcpy(style,&sbuffer[pos],n);
+#endif // ORIGINAL_VERSION
       }
     else if(pos>=gapstart){
+#ifndef ORIGINAL_VERSION
+      memcpy(style1,&sbuffer[pos-gapstart+gapend],n);
+#else // ORIGINAL_VERSION
       memcpy(style,&sbuffer[pos-gapstart+gapend],n);
+#endif // ORIGINAL_VERSION
       }
     else{
+#ifndef ORIGINAL_VERSION
+      memcpy(style1,&sbuffer[pos],gapstart-pos);
+      memcpy(&style1[gapstart-pos],&sbuffer[gapend],pos+n-gapstart);
+#else // ORIGINAL_VERSION
       memcpy(style,&sbuffer[pos],gapstart-pos);
       memcpy(&style[gapstart-pos],&sbuffer[gapend],pos+n-gapstart);
+#endif // ORIGINAL_VERSION
       }
     }
   }
 
 
 // Grab range of style
+#ifndef ORIGINAL_VERSION
+void FXText::extractStyle(FXString& style1,FXint pos,FXint n) const {
+#else // ORIGINAL_VERSION
 void FXText::extractStyle(FXString& style,FXint pos,FXint n) const {
+#endif // ORIGINAL_VERSION
   if(n<0 || pos<0 || length<pos+n){ fxerror("%s::extractStyle: bad argument.\n",getClassName()); }
   FXASSERT(0<=n && 0<=pos && pos+n<=length);
+#ifndef ORIGINAL_VERSION
+  style1.assign('\0',n);
+#else // ORIGINAL_VERSION
   style.assign('\0',n);
+#endif // ORIGINAL_VERSION
   if(sbuffer){
     if(pos+n<=gapstart){
+#ifndef ORIGINAL_VERSION
+      style1.replace(0,n,&sbuffer[pos],n);
+#else // ORIGINAL_VERSION
       style.replace(0,n,&sbuffer[pos],n);
+#endif // ORIGINAL_VERSION
       }
     else if(pos>=gapstart){
+#ifndef ORIGINAL_VERSION
+      style1.replace(0,n,&sbuffer[pos-gapstart+gapend],n);
+#else // ORIGINAL_VERSION
       style.replace(0,n,&sbuffer[pos-gapstart+gapend],n);
+#endif // ORIGINAL_VERSION
       }
     else{
+#ifndef ORIGINAL_VERSION
+      style1.replace(0,gapstart-pos,&sbuffer[pos],gapstart-pos);
+      style1.replace(gapstart-pos,pos+n-gapstart,&sbuffer[gapend],pos+n-gapstart);
+#else // ORIGINAL_VERSION
       style.replace(0,gapstart-pos,&sbuffer[pos],gapstart-pos);
       style.replace(gapstart-pos,pos+n-gapstart,&sbuffer[gapend],pos+n-gapstart);
+#endif // ORIGINAL_VERSION
       }
     }
   }
 
 
 // Change style of text range
+#ifndef ORIGINAL_VERSION
+void FXText::changeStyle(FXint pos,FXint n,FXint style1){
+#else // ORIGINAL_VERSION
 void FXText::changeStyle(FXint pos,FXint n,FXint style){
+#endif // ORIGINAL_VERSION
   if(n<0 || pos<0 || length<pos+n){ fxerror("%s::changeStyle: bad argument.\n",getClassName()); }
   if(sbuffer){
     if(pos+n<=gapstart){
+#ifndef ORIGINAL_VERSION
+      memset(&sbuffer[pos],style1,n);
+#else // ORIGINAL_VERSION
       memset(&sbuffer[pos],style,n);
+#endif // ORIGINAL_VERSION
       }
     else if(pos>=gapstart){
+#ifndef ORIGINAL_VERSION
+      memset(&sbuffer[pos-gapstart+gapend],style1,n);
+#else // ORIGINAL_VERSION
       memset(&sbuffer[pos-gapstart+gapend],style,n);
+#endif // ORIGINAL_VERSION
       }
     else{
+#ifndef ORIGINAL_VERSION
+      memset(&sbuffer[pos],style1,gapstart-pos);
+      memset(&sbuffer[gapend],style1,pos+n-gapstart);
+#else // ORIGINAL_VERSION
       memset(&sbuffer[pos],style,gapstart-pos);
       memset(&sbuffer[gapend],style,pos+n-gapstart);
+#endif // ORIGINAL_VERSION
       }
     updateRange(pos,pos+n);
     }
@@ -1985,18 +2277,39 @@ void FXText::changeStyle(FXint pos,FXint n,FXint style){
 
 
 // Change style of text range from style-array
+#ifndef ORIGINAL_VERSION
+void FXText::changeStyle(FXint pos,const FXchar* style1,FXint n){
+#else // ORIGINAL_VERSION
 void FXText::changeStyle(FXint pos,const FXchar* style,FXint n){
+#endif // ORIGINAL_VERSION
   if(n<0 || pos<0 || length<pos+n){ fxerror("%s::changeStyle: bad argument.\n",getClassName()); }
+#ifndef ORIGINAL_VERSION
+  if(sbuffer && style1){
+#else // ORIGINAL_VERSION
   if(sbuffer && style){
+#endif // ORIGINAL_VERSION
     if(pos+n<=gapstart){
+#ifndef ORIGINAL_VERSION
+      memcpy(&sbuffer[pos],style1,n);
+#else // ORIGINAL_VERSION
       memcpy(&sbuffer[pos],style,n);
+#endif // ORIGINAL_VERSION
       }
     else if(pos>=gapstart){
+#ifndef ORIGINAL_VERSION
+      memcpy(&sbuffer[pos-gapstart+gapend],style1,n);
+#else // ORIGINAL_VERSION
       memcpy(&sbuffer[pos-gapstart+gapend],style,n);
+#endif // ORIGINAL_VERSION
       }
     else{
+#ifndef ORIGINAL_VERSION
+      memcpy(&sbuffer[pos],style1,gapstart-pos);
+      memcpy(&sbuffer[gapend],&style1[gapstart-pos],pos+n-gapstart);
+#else // ORIGINAL_VERSION
       memcpy(&sbuffer[pos],style,gapstart-pos);
       memcpy(&sbuffer[gapend],&style[gapstart-pos],pos+n-gapstart);
+#endif // ORIGINAL_VERSION
       }
     updateRange(pos,pos+n);
     }
@@ -2004,13 +2317,22 @@ void FXText::changeStyle(FXint pos,const FXchar* style,FXint n){
 
 
 // Change style of text range from style-array
+#ifndef ORIGINAL_VERSION
+void FXText::changeStyle(FXint pos,const FXString& style1){
+  changeStyle(pos,style1.text(),style1.length());
+#else // ORIGINAL_VERSION
 void FXText::changeStyle(FXint pos,const FXString& style){
   changeStyle(pos,style.text(),style.length());
+#endif // ORIGINAL_VERSION
   }
 
 
 // Change the text in the buffer to new text
+#ifndef ORIGINAL_VERSION
+void FXText::setStyledText(const FXchar* text,FXint n,FXint style1,FXbool notify){
+#else // ORIGINAL_VERSION
 void FXText::setStyledText(const FXchar* text,FXint n,FXint style,FXbool notify){
+#endif // ORIGINAL_VERSION
   FXTextChange textchange;
   if(n<0){ fxerror("%s::setStyledText: bad argument.\n",getClassName()); }
   if(!FXRESIZE(&buffer,FXchar,n+MINSIZE)){
@@ -2021,7 +2343,11 @@ void FXText::setStyledText(const FXchar* text,FXint n,FXint style,FXbool notify)
     if(!FXRESIZE(&sbuffer,FXchar,n+MINSIZE)){
       fxerror("%s::setStyledText: out of memory.\n",getClassName());
       }
+#ifndef ORIGINAL_VERSION
+    memset(sbuffer,style1,n);
+#else // ORIGINAL_VERSION
     memset(sbuffer,style,n);
+#endif // ORIGINAL_VERSION
     }
   gapstart=n;
   gapend=gapstart+MINSIZE;
@@ -2058,8 +2384,13 @@ void FXText::setStyledText(const FXchar* text,FXint n,FXint style,FXbool notify)
 
 
 // Change all of the text
+#ifndef ORIGINAL_VERSION
+void FXText::setStyledText(const FXString& text,FXint style1,FXbool notify){
+  setStyledText(text.text(),text.length(),style1,notify);
+#else // ORIGINAL_VERSION
 void FXText::setStyledText(const FXString& text,FXint style,FXbool notify){
   setStyledText(text.text(),text.length(),style,notify);
+#endif // ORIGINAL_VERSION
   }
 
 
@@ -3162,6 +3493,10 @@ long FXText::onCmdCursorEnd(FXObject*,FXSelector,void*){
 // Move cursor right
 long FXText::onCmdCursorRight(FXObject*,FXSelector,void*){
   if(cursorpos>=length) return 1;
+#ifndef ORIGINAL_VERSION
+// skip over body of a maths line...
+  if (getByte(cursorpos)==0x02) cursorpos=lineEnd(cursorpos);
+#endif // ! ORIGINAL_VERSION
   setCursorPos(inc(cursorpos),TRUE);
   makePositionVisible(cursorpos);
   flashMatching();
@@ -4190,23 +4525,41 @@ long FXText::onCmdReplace(FXObject*,FXSelector,void*){
   FXGIFIcon icon(getApp(),searchicon);
   FXReplaceDialog replacedialog(this,tr("Replace"),&icon);
   FXint beg[10],end[10],fm,to,len,pos;
+#ifndef ORIGINAL_VERSION
+  FXuint searchflags1,code;
+  FXString searchstring1;
+#else // ORIGINAL_VERSION
   FXuint searchflags,code;
   FXString searchstring;
+#endif // ORIGINAL_VERSION
   FXString replacestring;
   FXString replacevalue;
   do{
     code=replacedialog.execute();
     if(code==FXReplaceDialog::DONE) return 1;
+#ifndef ORIGINAL_VERSION
+    searchflags1=replacedialog.getSearchMode();
+    searchstring1=replacedialog.getSearchText();
+#else // ORIGINAL_VERSION
     searchflags=replacedialog.getSearchMode();
     searchstring=replacedialog.getSearchText();
+#endif // ORIGINAL_VERSION
     replacestring=replacedialog.getReplaceText();
     replacevalue=FXString::null;
     fm=-1;
     to=-1;
     if(code==FXReplaceDialog::REPLACE_ALL){
+#ifndef ORIGINAL_VERSION
+      searchflags1&=~SEARCH_BACKWARD;
+#else // ORIGINAL_VERSION
       searchflags&=~SEARCH_BACKWARD;
+#endif // ORIGINAL_VERSION
       pos=0;
+#ifndef ORIGINAL_VERSION
+      while(findText(searchstring1,beg,end,pos,searchflags1,10)){
+#else // ORIGINAL_VERSION
       while(findText(searchstring,beg,end,pos,searchflags,10)){
+#endif // ORIGINAL_VERSION
         if(0<=fm) replacevalue.append(&buffer[pos],beg[0]-pos);
         replacevalue.append(FXRex::substitute(buffer,length,beg,end,replacestring,10));
         if(fm<0) fm=beg[0];
@@ -4216,8 +4569,13 @@ long FXText::onCmdReplace(FXObject*,FXSelector,void*){
         }
       }
     else{
+#ifndef ORIGINAL_VERSION
+      pos=isPosSelected(cursorpos) ? (searchflags1&SEARCH_BACKWARD) ? selstartpos-1 : selendpos : cursorpos;
+      if(findText(searchstring1,beg,end,pos,searchflags1|SEARCH_WRAP,10)){
+#else // ORIGINAL_VERSION
       pos=isPosSelected(cursorpos) ? (searchflags&SEARCH_BACKWARD) ? selstartpos-1 : selendpos : cursorpos;
       if(findText(searchstring,beg,end,pos,searchflags|SEARCH_WRAP,10)){
+#endif // ORIGINAL_VERSION
         replacevalue=FXRex::substitute(buffer,length,beg,end,replacestring,10);
         fm=beg[0];
         to=end[0];
@@ -4365,25 +4723,48 @@ long FXText::onUpdSelectAll(FXObject* sender,FXSelector,void*){
 // Deal with non-rectangular selections.
 
 // Draw fragment of text in given style
+#ifndef ORIGINAL_VERSION
+
+// This gets overridden, so worry in the override about changes made here!
+
+void FXText::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint pos,FXint n,FXuint style1) const {
+  register FXuint index=(style1&STYLE_MASK);
+  register FXuint usedstyle=style1;                                              // Style flags from style buffer
+#else // ORIGINAL_VERSION
 void FXText::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint pos,FXint n,FXuint style) const {
   register FXuint index=(style&STYLE_MASK);
   register FXuint usedstyle=style;                                              // Style flags from style buffer
+#endif // ORIGINAL_VERSION
   register FXColor color;
   FXchar str[2];
   color=0;
   if(hilitestyles && index){                                                    // Get colors from style table
     usedstyle=hilitestyles[index-1].style;                                      // Style flags now from style table
+#ifndef ORIGINAL_VERSION
+    if(style1&STYLE_SELECTED) color=hilitestyles[index-1].selectForeColor;
+    else if(style1&STYLE_HILITE) color=hilitestyles[index-1].hiliteForeColor;
+#else // ORIGINAL_VERSION
     if(style&STYLE_SELECTED) color=hilitestyles[index-1].selectForeColor;
     else if(style&STYLE_HILITE) color=hilitestyles[index-1].hiliteForeColor;
+#endif // ORIGINAL_VERSION
     if(color==0) color=hilitestyles[index-1].normalForeColor;                   // Fall back on normal foreground color
     }
   if(color==0){                                                                 // Fall back to default style
+#ifndef ORIGINAL_VERSION
+    if(style1&STYLE_SELECTED) color=seltextColor;
+    else if(style1&STYLE_HILITE) color=hilitetextColor;
+#else // ORIGINAL_VERSION
     if(style&STYLE_SELECTED) color=seltextColor;
     else if(style&STYLE_HILITE) color=hilitetextColor;
+#endif // ORIGINAL_VERSION
     if(color==0) color=textColor;                                               // Fall back to normal text color
     }
   dc.setForeground(color);
+#ifndef ORIGINAL_VERSION
+  if(style1&STYLE_CONTROL){
+#else // ORIGINAL_VERSION
   if(style&STYLE_CONTROL){
+#endif // ORIGINAL_VERSION
     y+=font->getFontAscent();
     str[0]='^';
     while(pos<gapstart && 0<n){
@@ -4425,22 +4806,40 @@ void FXText::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint pos
 
 
 // Fill fragment of background in given style
+#ifndef ORIGINAL_VERSION
+void FXText::fillBufferRect(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h,FXuint style1) const {
+  register FXuint index=(style1&STYLE_MASK);
+  register FXuint usedstyle=style1;                                              // Style flags from style buffer
+#else // ORIGINAL_VERSION
 void FXText::fillBufferRect(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h,FXuint style) const {
   register FXuint index=(style&STYLE_MASK);
   register FXuint usedstyle=style;                                              // Style flags from style buffer
+#endif // ORIGINAL_VERSION
   register FXColor bgcolor,fgcolor;
   bgcolor=fgcolor=0;
   if(hilitestyles && index){                                                    // Get colors from style table
     usedstyle=hilitestyles[index-1].style;                                      // Style flags now from style table
+#ifndef ORIGINAL_VERSION
+    if(style1&STYLE_SELECTED){
+#else // ORIGINAL_VERSION
     if(style&STYLE_SELECTED){
+#endif // ORIGINAL_VERSION
       bgcolor=hilitestyles[index-1].selectBackColor;
       fgcolor=hilitestyles[index-1].selectForeColor;
       }
+#ifndef ORIGINAL_VERSION
+    else if(style1&STYLE_HILITE){
+#else // ORIGINAL_VERSION
     else if(style&STYLE_HILITE){
+#endif // ORIGINAL_VERSION
       bgcolor=hilitestyles[index-1].hiliteBackColor;
       fgcolor=hilitestyles[index-1].hiliteForeColor;
       }
+#ifndef ORIGINAL_VERSION
+    else if(style1&STYLE_ACTIVE){
+#else // ORIGINAL_VERSION
     else if(style&STYLE_ACTIVE){
+#endif // ORIGINAL_VERSION
       bgcolor=hilitestyles[index-1].activeBackColor;
       }
     else{
@@ -4451,14 +4850,25 @@ void FXText::fillBufferRect(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h,FXuin
       }
     }
   if(bgcolor==0){                                                               // Fall back to default background colors
+#ifndef ORIGINAL_VERSION
+    if(style1&STYLE_SELECTED) bgcolor=selbackColor;
+    else if(style1&STYLE_HILITE) bgcolor=hilitebackColor;
+    else if(style1&STYLE_ACTIVE) bgcolor=activebackColor;
+#else // ORIGINAL_VERSION
     if(style&STYLE_SELECTED) bgcolor=selbackColor;
     else if(style&STYLE_HILITE) bgcolor=hilitebackColor;
     else if(style&STYLE_ACTIVE) bgcolor=activebackColor;
+#endif // ORIGINAL_VERSION
     else bgcolor=backColor;
     }
   if(fgcolor==0){                                                               // Fall back to default foreground colors
+#ifndef ORIGINAL_VERSION
+    if(style1&STYLE_SELECTED) fgcolor=seltextColor;
+    else if(style1&STYLE_HILITE) fgcolor=hilitetextColor;
+#else // ORIGINAL_VERSION
     if(style&STYLE_SELECTED) fgcolor=seltextColor;
     else if(style&STYLE_HILITE) fgcolor=hilitetextColor;
+#endif // ORIGINAL_VERSION
     if(fgcolor==0) fgcolor=textColor;                                           // Fall back to text color
     }
   dc.setForeground(bgcolor);
@@ -4515,6 +4925,13 @@ FXuint FXText::style(FXint row,FXint,FXint end,FXint pos) const {
 
 
 // Draw partial text line with correct style
+#ifndef ORIGINAL_VERSION
+
+// @@@@@ N.B. that I override this in FXTerminal.cpp so the version here
+// is something of a dead duck.
+// this uses drawBufferText on each differently-styled section of a row.
+
+#endif // ! ORIGINAL_VERSION
 void FXText::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) const {
   register FXint x,y,w,h,linebeg,lineend,truelineend,cw,sp,ep,row,edge;
   register FXuint curstyle,newstyle;
@@ -4656,6 +5073,16 @@ void FXText::eraseCursorOverhang(){
 
 
 // Repaint lines of text
+#ifndef ORIGINAL_VERSION
+
+// Apart from drawCursor, where for now I hope that I do not put the
+// cursor on a row of maths, this is the only place where drawTextRow is
+// called. It draws text from top to bottom. Thus the several rows that make
+// up one bit of maths can be spotted and handled here. But note that
+// FXTerminal defines its own version of drawContent which should be
+// the one that actually gets used.
+
+#endif // ! ORIGINAL_VERSION
 void FXText::drawContents(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h) const {
   register FXint hh=font->getFontHeight();
   register FXint yy=pos_y+margintop+toprow*hh;
@@ -5067,7 +5494,12 @@ void FXText::setFont(FXFont* fnt){
     recalc();
     tabwidth=tabcolumns*font->getTextWidth(" ",1);
     barwidth=barcolumns*font->getTextWidth("8",1);
+#ifndef ORIGINAL_VERSION
+//@@@ Why is this commented out and should it be?
+//  if(options&TEXT_FIXEDWRAP){ wrapwidth=wrapcolumns*font->getTextWidth("x",1); }
+#else // ORIGINAL_VERSION
 //    if(options&TEXT_FIXEDWRAP){ wrapwidth=wrapcolumns*font->getTextWidth("x",1); }
+#endif // ORIGINAL_VERSION
     recalc();
     update();
     }
@@ -5079,7 +5511,12 @@ void FXText::setWrapColumns(FXint cols){
   if(cols<=0) cols=1;
   if(cols!=wrapcolumns){
     wrapcolumns=cols;
+#ifndef ORIGINAL_VERSION
+// @@@@ commented out?
+//  if(options&TEXT_FIXEDWRAP){ wrapwidth=wrapcolumns*font->getTextWidth("x",1); }
+#else // ORIGINAL_VERSION
 //    if(options&TEXT_FIXEDWRAP){ wrapwidth=wrapcolumns*font->getTextWidth("x",1); }
+#endif // ORIGINAL_VERSION
     recalc();
     update();
     }
@@ -5189,10 +5626,18 @@ void FXText::setCursorColor(FXColor clr){
 
 
 // Change text style
+#ifndef ORIGINAL_VERSION
+void FXText::setTextStyle(FXuint style1){
+  FXuint opts=(options&~TEXT_MASK) | (style1&TEXT_MASK);
+#else // ORIGINAL_VERSION
 void FXText::setTextStyle(FXuint style){
   FXuint opts=(options&~TEXT_MASK) | (style&TEXT_MASK);
+#endif // ORIGINAL_VERSION
   if(options!=opts){
     options=opts;
+#ifndef ORIGINAL_VERSION
+// @@@@ commented out in main newer versions...
+#endif // ! ORIGINAL_VERSION
 //    if(options&TEXT_FIXEDWRAP){ wrapwidth=wrapcolumns*font->getTextWidth("x",1); }
     recalc();
     update();
@@ -5362,3 +5807,7 @@ FXText::~FXText(){
   }
 
 }
+#ifndef ORIGINAL_VERSION
+
+// end of FXText.cpp
+#endif // ! ORIGINAL_VERSION

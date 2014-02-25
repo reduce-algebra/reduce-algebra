@@ -24,16 +24,16 @@
 
 struct ColorTheme {
   const FXchar* name;
-  FXColor base;
-  FXColor border;
-  FXColor back;
-  FXColor fore;
-  FXColor selback;
-  FXColor selfore;
-  FXColor tipback;
-  FXColor tipfore;
-  FXColor menuback;
-  FXColor menufore;
+  FXColor       base;
+  FXColor       border;
+  FXColor       back;
+  FXColor       fore;
+  FXColor       selback;
+  FXColor       selfore;
+  FXColor       tipback;
+  FXColor       tipfore;
+  FXColor       menuback;
+  FXColor       menufore;
   };
 
 const ColorTheme ColorThemes[]={
@@ -147,7 +147,6 @@ private:
   FXSeparator       *sep3;
 private:
   ColorTheme        theme_current;  // Current Settings
-  ColorTheme        theme_xdefault; // X-Server Default
   ColorTheme        theme_user;     // Theme User may have set, which is different from the other themes
   FXColor           hilite;
   FXColor           shadow;
@@ -1228,23 +1227,6 @@ void FXDesktopSetup::initColors(){
   for(i=0; i<numThemes; i++){
     list->appendItem(ColorThemes[i].name,NULL,(void*)&ColorThemes[i]);
     }
-#ifndef WIN32
-  theme_xdefault.base     = FXRGB(212,208,200);
-  theme_xdefault.border   = FXRGB(  0,  0,  0);
-  theme_xdefault.back     = FXRGB(255,255,255);
-  theme_xdefault.fore     = FXRGB(  0,  0,  0);
-  theme_xdefault.selback  = FXRGB( 10, 36,106);
-  theme_xdefault.selfore  = FXRGB(255,255,255);
-  theme_xdefault.tipback  = FXRGB(255,255,255);
-  theme_xdefault.tipfore  = FXRGB(  0,  0,  0);
-  theme_xdefault.menuback = FXRGB( 10, 36,106);
-  theme_xdefault.menufore = FXRGB(255,255,255);
-
-  theme_xdefault.base   = fxcolorfromname(XGetDefault((Display*)getApp()->getDisplay(),"fox","background"));
-  theme_xdefault.fore   = fxcolorfromname(XGetDefault((Display*)getApp()->getDisplay(),"fox","foreground"));
-  theme_xdefault.border = fxcolorfromname(XGetDefault((Display*)getApp()->getDisplay(),"fox","borderColor"));
-  list->appendItem("X11 Default",NULL,&theme_xdefault);
-#endif
   list->appendItem("User Defined");
   list->setCurrentItem(scheme);
   }

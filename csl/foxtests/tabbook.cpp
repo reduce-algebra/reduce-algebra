@@ -1,15 +1,3 @@
-/* This is a prominent notice, as required by the GPL, to the effect that
- * I, A C Norman, changed this code to change a cast from (long) to
- * (long long) so that it survives on 64-bit architectures. I did this
- * in September 2010. If you object to the presence of this comment
- * and view it as overkill for documenting a minor portability fix then
- * please address your observations of the FSF for their use of the
- * term PROMINENT. My changes are licensed under GPL 2, but as a special
- * exception I give permission for them to be linked agianst or merged with
- * LGPL3 or GPL3 code. Doing so will not change them to (L)GPL3 - the
- * GPL2 compatibility will and must be preserved.
- */
-
 /********************************************************************************
 *                                                                               *
 *                                 Test Tab Book                                 *
@@ -248,7 +236,7 @@ long TabBookWindow::onCmdHideShow(FXObject*,FXSelector,void*){
 
 // Active panel switched
 long TabBookWindow::onCmdPanel(FXObject*,FXSelector,void* ptr){
-  FXTRACE((1,"Panel = %d\n",(FXint)(long long)ptr));
+  FXTRACE((1,"Panel = %d\n",(FXint)(FXival)ptr));
   return 1;
   }
 

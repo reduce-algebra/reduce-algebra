@@ -380,7 +380,11 @@ endif !windows
 
 if wx
 fontsdir = wxfonts
+if windows
+samplefont=cmuntt.ttf
+else !windows
 samplefont=cmuntt.otf
+endif !windows
 else !wx
 fontsdir = fonts
 samplefont=cmr10.pfb

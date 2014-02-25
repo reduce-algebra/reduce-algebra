@@ -382,9 +382,11 @@ FXString FXSystem::getUserDirectory(const FXString& user){
 // Return temporary directory.
 FXString FXSystem::getTempDirectory(){
 #ifndef WIN32
-  // Conform Linux File Hierarchy standard; this should be
-  // good for SUN, SGI, HP-UX, AIX, and OSF1 also.
-  return FXString("/tmp",4);
+  const FXchar* dir;
+  if((dir=getenv("TMPDIR"))!=NULL){
+    return FXString(dir);
+    }
+  return FXString("/tmp");
 #else
   TCHAR buffer[MAXPATHLEN];
   DWORD len=GetTempPath(MAXPATHLEN,buffer);

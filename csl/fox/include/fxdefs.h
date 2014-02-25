@@ -21,15 +21,6 @@
 *********************************************************************************
 * $Id: fxdefs.h,v 1.178.2.2 2006/11/09 23:21:43 fox Exp $                           *
 ********************************************************************************/
-
-// MODIFIED BY A C NORMAN, 2008, merely for some Win64 support. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice. Somehow the GPL/LGPL people could be
-// amazingly uptight at the stage that the original BSD license has an
-// "obnoxious advertising clause" while not minding that they oblige me
-// to incorporate something rather similar here!
-
-
 #ifndef FXDEFS_H
 #define FXDEFS_H
 
@@ -50,23 +41,6 @@
 #define NULL 0
 #endif
 
-// Parameters to Windows procedures, where the exact type differs
-// between WIN32 and WIN64 and in case the user does not include
-// <windows.h>
-
-#ifdef _WIN64
-#if defined(__GNUC__) || defined(__GNUG__)
-typedef unsigned long long int FX_WPARAM;
-typedef long long int          FX_LPARAM;
-#else
-typedef unsigned __int64 FX_WPARAM;
-typedef __int64          FX_LPARAM;
-#endif
-#else
-typedef unsigned int     FX_WPARAM;
-typedef long             FX_LPARAM;
-#endif
-
 /// Pi
 #ifndef PI
 #define PI      3.1415926535897932384626433833
@@ -83,7 +57,7 @@ typedef long             FX_LPARAM;
 
 
 // Path separator
-#if (defined WIN32 || defined _WIN64)
+#ifdef WIN32
 #define PATHSEP '\\'
 #define PATHSEPSTRING "\\"
 #define PATHLISTSEP ';'
@@ -98,7 +72,7 @@ typedef long             FX_LPARAM;
 #endif
 
 // End Of Line
-#if (defined WIN32 || defined _WIN64)
+#ifdef WIN32
 #define ENDLINE "\r\n"
 #else
 #define ENDLINE "\n"
@@ -119,7 +93,7 @@ typedef long             FX_LPARAM;
 
 
 // Shared library support
-#if (defined WIN32 || defined _WIN64)
+#ifdef WIN32
 #define FXLOCAL
 #define FXEXPORT __declspec(dllexport)
 #define FXIMPORT __declspec(dllimport)
@@ -150,7 +124,7 @@ typedef long             FX_LPARAM;
 #endif
 
 // Callback
-#if (defined WIN32 || defined _WIN64)
+#ifdef WIN32
 #ifndef CALLBACK
 #define CALLBACK __stdcall
 #endif
@@ -174,7 +148,7 @@ typedef long             FX_LPARAM;
 #endif
 
 // Raw event type
-#if !(defined WIN32 || defined _WIN64)
+#ifndef WIN32
 union _XEvent;
 #else
 struct tagMSG;
@@ -384,7 +358,7 @@ typedef int                    FXint;
 typedef float                  FXfloat;
 typedef double                 FXdouble;
 typedef FXObject              *FXObjectPtr;
-#if (defined WIN32 || defined _WIN64)
+#ifdef WIN32
 typedef unsigned int           FXwchar;
 #if defined(_MSC_VER) && !defined(_NATIVE_WCHAR_T_DEFINED)
 typedef unsigned short         FXnchar;
@@ -414,9 +388,9 @@ typedef long long              FXlong;
 #if defined(_MSC_VER) && defined(_WIN64)
 typedef __int64                FXival;
 typedef unsigned __int64       FXuval;
-#elif defined(_WIN64) && (defined(__GNUG__) || defined(__GNUC__))
-typedef long long int          FXival;
-typedef unsigned long long int FXuval;
+#elif defined(__GNUC__) && defined(_WIN64)
+typedef long long              FXival;
+typedef unsigned long long     FXuval;
 #else
 typedef long                   FXival;
 typedef unsigned long          FXuval;
@@ -424,7 +398,7 @@ typedef unsigned long          FXuval;
 
 
 // Handle to something in server
-#if !(defined WIN32 || defined _WIN64)
+#ifndef WIN32
 typedef unsigned long          FXID;
 #else
 typedef void*                  FXID;
@@ -443,21 +417,21 @@ typedef FXuint                 FXColor;
 typedef FXuint                 FXHotKey;
 
 // Drag type
-#if !(defined WIN32 || defined _WIN64)
+#ifndef WIN32
 typedef FXID                   FXDragType;
 #else
 typedef FXushort               FXDragType;
 #endif
 
 // Input source handle type
-#if !(defined WIN32 || defined _WIN64)
+#ifndef WIN32
 typedef FXint                  FXInputHandle;
 #else
 typedef void*                  FXInputHandle;
 #endif
 
 // Raw event type
-#if !(defined WIN32 || defined _WIN64)
+#ifndef WIN32
 typedef _XEvent                FXRawEvent;
 #else
 typedef tagMSG                 FXRawEvent;
