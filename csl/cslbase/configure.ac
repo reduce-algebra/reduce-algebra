@@ -411,6 +411,7 @@ x86_64-w64-* | x86_64-pc-*)
 # that arise because they hand down options that lead to failures in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
+  CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
   XLIBS="-lXext -lX11 -lXft -lfontconfig"
   macintosh_build="yes"
   darwin_build="yes"
@@ -679,6 +680,11 @@ AC_MSG_NOTICE([Looking for C++ compiler])
 AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
+
+if test "x$XLIBS" != "x"
+then
+  AC_PATH_X
+fi
 
 # Some newer versions of gcc support a new gnu (rather then sysv) format
 # of part of object files. The effect of this new format it to speed up

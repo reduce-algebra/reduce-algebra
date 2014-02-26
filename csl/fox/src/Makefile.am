@@ -11,7 +11,7 @@
 ## creates simple libraries and thus is able to avoid all use of libtool.
 
 CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
-INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 RESWRAP  = $(top_builddir)/utils/reswrap$(EXEEXT)
 SUFFIXES = .gif .bmp
 

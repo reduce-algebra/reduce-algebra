@@ -305,8 +305,9 @@ AC_CANONICAL_HOST
 
 case $host_os in
   *darwin*)
-    CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
-    CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
+# Ugh! With macports the autoconf recipe that establishes X11 paths
+# fails to include this one but it is needed!
+    CXXFLAGS="$CXXFLAGS -I/opt/local/include/freetype2"
   ;;
   *mingw32*)
     AC_MSG_NOTICE([host_os=$host_os so building for native Windows])
@@ -371,6 +372,13 @@ fi
 
 AC_CHECK_HEADERS([unistd.h])
 
+case $host_os in
+  *darwin*)
+    CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
+    CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
+  ;;
+esac
+
 AM_CONDITIONAL(xp64, test "x$mingw64" = "xyes")
 AM_CONDITIONAL(cygwinshell, test "x$win32" = "xyes")
 AM_CONDITIONAL(canrun, test "x$cross_compiling" != "xyes")
@@ -382,10 +390,6 @@ include/Makefile
 include/fxver.h
 src/Makefile
 src/version.rc
-doc/Makefile
-doc/art/Makefile
-doc/screenshots/Makefile
-windows/Makefile
 fox.spec
 fox-config
 fox.pc)

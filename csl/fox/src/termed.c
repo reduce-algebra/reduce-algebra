@@ -131,6 +131,9 @@
 #include <curses.h>
 #else
 #define DISABLE 1
+#if defined __GNUC__ || defined __clang__
+#warning termed capabilites unavailable because neither ncurses.h nor curses.h were found.
+#endif
 #endif
 #endif
 
@@ -145,6 +148,9 @@
 #else
 #ifndef DISABLE
 #define DISABLE 1
+#endif
+#if defined __GNUC__ || defined __clang__
+#warning termed capabilites unavailable because term.h (etc) was not found.
 #endif
 #endif
 #endif
@@ -494,6 +500,28 @@ static const int term_enabled = 0;
 static wchar_t *term_wide_fancy_getline(void)
 {
     return NULL; /* Should never be called */
+}
+
+static void term_putchar(int c)
+{
+/*
+ * The character passed here will actually be an wchar_t and probably if I
+ * was being truly proper the argument type would need to be wint_t not int.
+ * However I am going to be sloppy and assume that int is good enough.
+ */
+#ifdef WIN32
+    DWORD nwritten = 1;
+    wchar_t buffer[4];
+    buffer[0] = c;
+    WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+#else
+/*
+ * Other than on Windows I will encode things using UTF-8
+ */
+    unsigned char buffer[8];
+    int i, n = utf_encode(buffer, c);
+    for (i=0; i<n; i++) putchar(buffer[i]);
+#endif
 }
 
 #else /* DISABLE */

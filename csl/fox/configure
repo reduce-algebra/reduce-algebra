@@ -8067,6 +8067,9 @@ case $host_os in
   *darwin*)
     CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
     CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
+# Ugh! With macports the autoconf recipe that establishes X11 paths
+# fails to include this one but it is needed!
+    CXXFLAGS="$CXXFLAGS -I/opt/local/include/freetype2"
   ;;
   *mingw32*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: host_os=$host_os so building for native Windows" >&5
@@ -8326,7 +8329,7 @@ fi
 
 
 # Done.
-ac_config_files="$ac_config_files Makefile utils/Makefile include/Makefile include/fxver.h src/Makefile src/version.rc doc/Makefile doc/art/Makefile doc/screenshots/Makefile windows/Makefile fox.spec fox-config fox.pc"
+ac_config_files="$ac_config_files Makefile utils/Makefile include/Makefile include/fxver.h src/Makefile src/version.rc fox.spec fox-config fox.pc"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -9089,10 +9092,6 @@ do
     "include/fxver.h") CONFIG_FILES="$CONFIG_FILES include/fxver.h" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/version.rc") CONFIG_FILES="$CONFIG_FILES src/version.rc" ;;
-    "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
-    "doc/art/Makefile") CONFIG_FILES="$CONFIG_FILES doc/art/Makefile" ;;
-    "doc/screenshots/Makefile") CONFIG_FILES="$CONFIG_FILES doc/screenshots/Makefile" ;;
-    "windows/Makefile") CONFIG_FILES="$CONFIG_FILES windows/Makefile" ;;
     "fox.spec") CONFIG_FILES="$CONFIG_FILES fox.spec" ;;
     "fox-config") CONFIG_FILES="$CONFIG_FILES fox-config" ;;
     "fox.pc") CONFIG_FILES="$CONFIG_FILES fox.pc" ;;

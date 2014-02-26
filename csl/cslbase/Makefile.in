@@ -402,6 +402,7 @@ VALGRIND = @VALGRIND@
 VERSION = @VERSION@
 WINDRES = @WINDRES@
 XFT_CONFIG = @XFT_CONFIG@
+XMKMF = @XMKMF@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
