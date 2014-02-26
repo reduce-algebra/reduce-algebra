@@ -81,7 +81,7 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
    rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl,rlbrkcxk,rlqeidentify,
    rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar,rlvsllog,rlvsllearn,
-   rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub;
+   rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub,rlqestdansq,rlqestdansint;
 
 on1 'rlbrop;
 off1 'rlbnfsm;
@@ -208,6 +208,8 @@ off1 'rlqestdans;       % Remove pinf, minf, epsilon.
 off1 'rlqestdansvb;
 off1 'rlqefullans;      % Do not eliminate shift variables from answer.
 on1 'rlqebacksub;       % Back substitution in answer.
+on1 'rlqestdansq;       % Try to replace answers by quotients.
+on1 'rlqestdansint;     % Try to find integer solutions.
 
 put('rlidentify,'simpfg,
    '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));

@@ -96,7 +96,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlhqegen !*cgbfaithful !*rlqeaprecise !*rlqefilterbounds !*rlpos
    !*rlsifaco !*rlqeans !*rlqelog rlqelog!* !*rlqeprecise !*rlqevarseltry
    !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg !*rlbrkcxk !*rlffi !*rlvsllog
-   !*rlvsllearn !*rlqestdans);
+   !*rlvsllearn !*rlqestdans ofsf_anuc!* !*rlqestdansq !*rlqestdansint);
 
 fluid '(!*pgnoarbcomplex !*pgspsimpl !*pgspqe);
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD

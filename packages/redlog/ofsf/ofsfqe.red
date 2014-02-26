@@ -475,6 +475,10 @@ procedure ofsf_subf(f,v,u);
       return addsq(multsq(ofsf_subf(lc f,v,u),ofsf_pow2q(mvar f,ldeg f)),nred);
    end;
 
+procedure ofsf_subq(q,v,u);
+   % [q] is an SQ; [v] is a kernel; [u] is an SQ. Returns an SQ.
+   quotsq(ofsf_subf(numr q, v, u), ofsf_subf(denr q, v, u));
+
 procedure ofsf_pow2q(v,d);
    !*f2q(v .** d .* 1 .+ nil);
 
@@ -1646,70 +1650,87 @@ procedure ofsf_qemkans(an,svf);
       return res
    end;
 
-fluid '(ofsf_anuc!*);
-
 procedure ofsf_qemkstdans(an,svf);
-   begin scalar fl, y, f, v, sub, xargl, nan, anunan, a, b, c, d;
+   % [svf] is a relic from a former approach to reconstruct the intermediate
+   % results from the quantifier-free starting formula for the outermost
+   % quantifier block. These were computed using ofsf_qemkansfl.
+   begin scalar fl, y, yy, f, v, sub, xargl, nan, anunan, a, b, c, d;
       integer ofsf_anuc!*;
       ofsf_anuc!* := 10000;
       if !*rlverbose then
-	 ioto_tprin2t {"++++ determining standard real numbers for the answers ",
-	    for each y in an collect car y, " ..."};
-      fl := ofsf_qemkansfl(svf, an);
-      % for each ff in fl do <<
-      % 	 ioto_tprin2t {cl_fvarl ff}
-      % >>;
-      % ioto_prin2t "entering while...";
+	 ioto_tprin2t {"++++ Determining standard real numbers for the answers ",
+	    for each y in an collect car y, "..."};
       while an do <<
-	 f := pop fl;
-	 % ioto_tprin2t {cl_fvarl f};
 	 y := pop an;
-	 {v, sub, xargl} := y;
+	 {v, sub, xargl, f} := y;
 	 if sub eq 'ofsf_shift!-indicator then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " shift"};
+	       ioto_tprin2 {"++++ ", v, " = shift"};
 	    push(y, nan);
 	    push(ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcq then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " quotient"};
+	       ioto_tprin2 {"++++ ", v, " = quotient"};
+	    yy := ofsf_qemkstdansqfq(f, nan, v, xargl, anunan);
+	    if yy then <<
+	       {v, sub, xargl} := y := yy;
+	       if !*rlverbose then
+	       	  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl}
+	    >>;
 	    push(y, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcr1 then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " root"};
-	    % TODO: Find rational, if possible.
-	    push(y, nan);
-	    push(v . ofsf_r2anu(cadr xargl, anunan), anunan)
+	       ioto_tprin2 {"++++ ", v, " = root"};
+	    yy := ofsf_qemkstdansqfr(f, nan, v, xargl, anunan);
+	    if yy then <<
+	       {v, sub, xargl} := yy;
+	       if !*rlverbose then
+	       	  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
+	       push(yy, nan);
+	       push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
+	    >> else <<
+	       push(y, nan);
+	       push(v . ofsf_r2anu(cadr xargl, anunan), anunan)
+	    >>
 	 >> else if sub eq 'ofsf_qesubi then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " = ", car xargl, " = "};
+	       ioto_tprin2 {"++++ ", v, " = ", car xargl};
 	    {v, sub, xargl} := y := ofsf_qemkstdansinf(f, nan, v, sub, xargl);
-	    if !*rlverbose then ioto_prin2 {ioto_form2str prepsq cadr xargl};
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
 	    push(y, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcqpe then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " quotient + epsilon"};
+	       ioto_tprin2 {"++++ ", v, " = quotient + epsilon"};
 	    {v, sub, xargl} := y := ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
 	    push(y, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcqme then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " quotient - epsilon"};
+	       ioto_tprin2 {"++++ ", v, " = quotient - epsilon"};
 	    {v, sub, xargl} := ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
 	    push({v, sub, xargl}, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
       	 >> else if sub eq 'ofsf_qesubcrpe1 then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " root + epsilon"};
+	       ioto_tprin2 {"++++ ", v, " = root + epsilon"};
 	    {v, sub, xargl} := y := ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
 	    push(y, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcrme1 then <<
 	    if !*rlverbose then
-	       ioto_tprin2 {"++++ ", v, " root - epsilon"};
-	    {v, sub, xargl} := ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+	       ioto_tprin2 {"++++ ", v, " = root - epsilon"};
+	    {v, sub, xargl} := ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl};
 	    push({v, sub, xargl}, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else
@@ -1719,8 +1740,64 @@ procedure ofsf_qemkstdans(an,svf);
       return reversip nan
    end;
 
+procedure ofsf_qemkstdansqfq(f, nan, v, xargl, anunan);
+   begin scalar w, q;
+      if not !*rlqestdansq then
+	 return nil;
+      if flagp(v, 'rl_qeansvar) then
+	 return nil;
+      q := ofsf_qeapplynanq(cadr xargl, nan);
+      if domainp numr q and domainp numr q then
+	 return nil;
+      w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcqpe, f, v, xargl));
+      assert(rl_tvalp w);
+      if w eq 'true then
+	 return ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
+      w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcqme, f, v, xargl));
+      assert(rl_tvalp w);
+      if w eq 'true then
+	 return ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
+      return nil
+   end;
+
+procedure ofsf_qemkstdansqfr(f, nan, v, xargl, anunan);
+   begin scalar w, q;
+      if not !*rlqestdansq then
+	 return nil;
+      if flagp(v, 'rl_qeansvar) then
+	 return nil;
+      q := ofsf_qeapplynanq(ofsf_preprexpr cadr xargl, nan);
+      if domainp numr q and domainp numr q then
+	 return nil;
+      w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcrpe1, f, v, xargl));
+      assert(rl_tvalp w);
+      if w eq 'true then
+	 return ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+      w := ofsf_qeapplynan(nan, ofsf_qeapplysub('ofsf_qesubcrme1, f, v, xargl));
+      assert(rl_tvalp w);
+      if w eq 'true then
+	 return ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
+      return nil
+   end;
+
+procedure ofsf_qeapplynanq(q, nan);
+   begin scalar w, nv, nsub, nxargl;
+      for each y in nan do <<
+	 {nv, nsub, nxargl} := y;
+	 assert(nsub memq '(ofsf_qesubcr1 ofsf_qesubcq ofsf_shift!-indicator));
+	 w := if nsub eq 'ofsf_qesubcr1 then
+	    prepsq ofsf_preprexpr cadr nxargl
+	 else  % nsub memq '(ofsf_qesubcq ofsf_shift!-indicator)
+	    prepsq cadr nxargl;
+	 q := subsq(q, {nv . w})
+      >>;
+      return q
+   end;
+
 procedure ofsf_mirror(f, v);
-   cl_simpl(cl_apply2ats1(f, 'ofsf_mirrorat, {v}), nil, -1);
+   begin scalar !*rlpos;
+      return cl_simpl(cl_apply2ats1(f, 'ofsf_mirrorat, {v}), nil, -1)
+   end;
 
 procedure ofsf_mirrorat(atf, v);
    ofsf_0mk2(ofsf_op atf, numr ofsf_subf(ofsf_arg2l atf, v, negsq !*k2q v));
@@ -1767,7 +1844,7 @@ procedure ofsf_q2anu(q, anunan);
    end;
 
 procedure ofsf_r2anu(r, anunan);
-   begin scalar a, b, c, d, vl, w, anuv, subal, ial, sgn, avar, avarf, p, aex, roots;
+   begin scalar a, b, c, d, vl, w, anuv, subal, ial, sgn, avar, avarf, p, aex, roots, sgnd;
       {a, b, c, d} := r;
       vl := lto_unionn {kernels a, kernels b, kernels c, kernels d};
       for each v in vl do <<
@@ -1797,7 +1874,8 @@ procedure ofsf_r2anu(r, anunan);
       aex := aex_prpart aex_fromsfial(p, ial);
       roots := aex_findroots(aex, avar);
       assert(eqn(length roots, 2));
-      if sgn < 0 then
+      sgnd := aex_sgn aex_fromsfial(d, ial);
+      if sgn*sgnd < 0 then
       	 return car roots;
       return cadr roots
    end;
@@ -1848,6 +1926,7 @@ procedure ofsf_genavar();
    >>;
 
 procedure ofsf_qemkansfl(svf, an);
+   % See the comment in ofsf_qemkstdans.
    begin scalar f, fl, v, sub, xargl, val;
       f := svf;
       fl := {f};
@@ -1906,14 +1985,14 @@ procedure ofsf_qemkstdansinf(f, nan, v, sub, xargl);
    begin scalar w;
       f := ofsf_qeapplynan(nan, f);
       if car xargl = 'pinf then
-	 w := ofsf_qemkstdanspinf(f, v, xargl)
+	 w := ofsf_qemkstdanspinf(f, v)
       else if car xargl = 'minf then
-	 w := ofsf_qemkstdansminf(f, v, xargl);
+	 w := negsq ofsf_qemkstdanspinf(ofsf_mirror(f, v), v);
       return {v, 'ofsf_qesubcq, {'true, w}}
    end;
 
-procedure ofsf_qemkstdanspinf(csvf, v, xargl);
-   begin scalar neql, op, needsq, maxsq, scneql, ne;
+procedure ofsf_qemkstdanspinf(csvf, v);
+   begin scalar neql, op, needsq, maxsq, oneql, ne;
       for each atf in cl_atl csvf do <<
 	 op := rl_op atf;
 	 if op eq 'neq then
@@ -1926,12 +2005,14 @@ procedure ofsf_qemkstdanspinf(csvf, v, xargl);
       >>;
       if not maxsq then
 	 maxsq := nil ./ 1;
-      scneql := neql;
-      while scneql do <<
+      if !*rlqestdansint then
+      	 maxsq := sfto_ceilq maxsq;
+      oneql := neql;
+      while neql do <<
 	 ne := pop neql;
 	 if null numr ofsf_subf(ofsf_arg2l ne, v, maxsq) then <<
 	    maxsq := addsq(maxsq, 1 ./ 1);
-	    scneql := neql
+	    neql := oneql
 	 >>
       >>;
       return maxsq
@@ -1953,47 +2034,6 @@ procedure ofsf_guesspinf(atf, v);
       rederr {"ofsf_guesspinf:", op}
    end;
 
-procedure ofsf_qemkstdansminf(csvf, v, xargl);
-   begin scalar neql, op, needsq, minsq, scneql, ne;
-      for each atf in cl_atl csvf do <<
-	 op := rl_op atf;
-	 if op eq 'neq then
-	    push(atf, neql)
-	 else if op memq '(leq lessp) then <<
-	    needsq := ofsf_guessminf(atf, v);
-	    if not minsq or sfto_lessq(needsq, minsq) then
-	       minsq := needsq
-	 >>
-      >>;
-      if not minsq then
-	 minsq := nil ./ 1;
-      scneql := neql;
-      while scneql do <<
-	 ne := pop neql;
-	 if null numr ofsf_subf(ofsf_arg2l ne, v, minsq) then <<
-	    minsq := subtrsq(minsq, 1 ./ 1);
-	    scneql := neql
-	 >>
-      >>;
-      return minsq
-   end;
-
-procedure ofsf_guessminf(atf, v);
-   begin scalar op, lhs, w;
-      op := rl_op atf;
-      lhs := ofsf_arg2l atf;
-      assert(not domainp lhs and mvar lhs eq v);
-      w := if eqn(ldeg lhs, 1) then
-	 quotsq(!*f2q negf red lhs, !*f2q lc lhs)
-      else
-	 negsq sfto_cauchyf(lhs, v);
-      if op eq 'leq then
-	 return w;
-      if op eq 'lessp then
-	 return subtrsq(w, 1 ./ 1);
-      rederr {"ofsf_guessminf:", op}
-   end;
-
 procedure ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
    begin scalar q, anu;
       f := ofsf_qeapplynan(nan, f);
@@ -2003,27 +2043,31 @@ procedure ofsf_qemkstdansqpe(f, nan, v, xargl, anunan);
    end;
 
 procedure ofsf_qemkstdansqme(f, nan, v, xargl, anunan);
-   begin scalar q, anu, nv, nsub, nxargl;
+   begin scalar fm, q, anu, nv, nsub, nxargl;
       f := ofsf_qeapplynan(nan, f);
-      f := ofsf_mirror(f, v);
+      fm := ofsf_mirror(f, v);
       q := cadr xargl;
       anu := ofsf_q2anu(negsq q, anunan);
-      {nv, nsub, nxargl} := ofsf_qemkstdansaexpe(f, v, anu);
+      {nv, nsub, nxargl} := ofsf_qemkstdansaexpe(fm, v, anu);
       nxargl := car nxargl . negsq cadr nxargl . cddr nxargl;
       return {nv, nsub, nxargl}
    end;
 
 procedure ofsf_qemkstdansrpe(f, nan, v, xargl, anunan);
+   ofsf_qemkstdansrpe1(ofsf_qeapplynan(nan, f), v, xargl, anunan);
+
+procedure ofsf_qemkstdansrpe1(f, v, xargl, anunan);
    begin scalar r, anu;
-      f := ofsf_qeapplynan(nan, f);
       r := cadr xargl;
       anu := ofsf_r2anu(r, anunan);
       return ofsf_qemkstdansaexpe(f, v, anu)
    end;
 
 procedure ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
+   ofsf_qemkstdansrme1(ofsf_qeapplynan(nan, f), v, xargl, anunan);
+
+procedure ofsf_qemkstdansrme1(f, v, xargl, anunan);
    begin scalar a, b, c, d, anu, nv, nsub, nxargl;
-      f := ofsf_qeapplynan(nan, f);
       f := ofsf_mirror(f, v);
       {a, b, c, d} := cadr xargl;
       anu := ofsf_r2anu({negf a, negf b, c, d}, anunan);
@@ -2032,7 +2076,7 @@ procedure ofsf_qemkstdansrme(f, nan, v, xargl, anunan);
       return {nv, nsub, nxargl}
    end;
 
-procedure ofsf_qemkstdansaexpe(f, v, anu);
+procedure ofsf_qemkstdansaexpe_old(f, v, anu);
    begin scalar anuv, canuv, manuv, qca, qmc, q, aex, manu, op, lhs, canu, c, rootl, flag;
       assert(cl_fvarl1 f = {v});
       anuv := aex_mvar anu_dp anu;
@@ -2069,6 +2113,53 @@ procedure ofsf_qemkstdansaexpe(f, v, anu);
       >>;
       return {v, 'ofsf_qesubcq, {'true, ofsf_findrat(anu, manu)}}
    end;
+
+procedure ofsf_qemkstdansaexpe(f, v, anu);
+   begin scalar aex, sc, q, z, aexz;
+      assert(cl_fvarl1 f = {v});
+      aex := anu_dp anu;
+      sc := aex_stdsturmchain(aex, aex_mvar aex);
+      if !*rlqestdansint then <<
+      	 while sfto_greaterq(subtrsq(iv_rb anu_iv anu, iv_lb anu_iv anu), 1 ./ 2) do
+	    anu_refine1ip(anu, sc);
+	 z := sfto_ceilq iv_lb anu_iv anu;
+	 if z neq sfto_ceilq iv_rb anu_iv anu then
+	    if not eqn(aex_sgn aex_subrat(aex, aex_mvar aex, z), 0) then
+	       while sfto_ceilq iv_lb anu_iv anu neq sfto_ceilq iv_rb anu_iv anu do
+	    	  anu_refine1ip(anu, sc);
+      	 q := sfto_ceilq iv_rb anu_iv anu
+      >> else
+	 q := iv_rb anu_iv anu;
+      while ofsf_subconstq(f, v, q) eq 'false do <<
+	 anu_refine1ip(anu, sc);
+	 q := iv_rb anu_iv anu
+      >>;
+      return {v, 'ofsf_qesubcq, {'true, q}}
+   end;
+
+procedure ofsf_subconstq(f, v, q);
+   % [f] is a univariate positive formula.
+   begin scalar op, argl;
+      op := rl_op f;
+      if rl_tvalp op then
+	 return op;
+      if op eq 'and then
+	 return ofsf_subconstq!-gand('and, rl_argn f, v, q, 'true);
+      if op eq 'or then
+	 return ofsf_subconstq!-gand('or, rl_argn f, v, q, 'false);
+      return ofsf_subconstat(f, v, q)
+   end;
+
+procedure ofsf_subconstq!-gand(gand, argl, v, q, gtrue);
+   begin scalar res, arg;
+      res := gtrue;
+      while res eq gtrue and argl do
+	 res := ofsf_subconstq(pop argl, v, q);
+      return res
+   end;
+
+procedure ofsf_subconstat(at, v, q);
+   if ofsf_evalatp(ofsf_op at, numr ofsf_subf(ofsf_arg2l at, v, q)) then 'true else 'false;
 
 procedure ofsf_findrat(anu1, anu2);
    % We assume anu1 < anu2. Returns a rational number [q], s.t. anu1 < q < anu2.
@@ -2171,10 +2262,8 @@ procedure ofsf_newepsilon(ec);
    end;
 
 procedure ofsf_qebacksub(eql);
-   % Quantifier elimination back substitution. [eql] is a list $(((v .
-   % w) . a), ...)$, where $v$ is a variable, $w$ is an SQ, and $a$ is
-   % an answer translation. Returns a list $((e,a),...)$, where $e$ is
-   % an equation and $a$ is an answer translation.
+   % Quantifier elimination back substitution. [eql] is a list $((v . w), ...)$,
+   % where $v$ is a variable and $w$ is an SQ. Returns a list of equations.
    begin scalar subl,e;
       return for each w in eql join <<
 	 e := {'equal,car w,prepsq subsq(cdr w,subl)};
