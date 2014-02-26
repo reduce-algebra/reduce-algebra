@@ -1,4 +1,4 @@
-/* sysfwin. c                      Copyright (C) 1989-2013 Codemist Ltd */
+/* sysfwin. c                      Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -503,7 +503,7 @@ char *find_image_directory(int argc, char *argv[])
  * such bundle I will put the image file in the location I would have used
  * with Windows of X11.
  */
-        sprintf(xname, "%s/%s.app/Contents", programDir, pn);
+        sprintf(xname, "%s/%s.app/Contents", programDir, programName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {   sprintf(xname, "%s/%s.app/Contents/%s.img",
