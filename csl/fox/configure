@@ -8065,8 +8065,6 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 case $host_os in
   *darwin*)
-    CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
-    CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
 # Ugh! With macports the autoconf recipe that establishes X11 paths
 # fails to include this one but it is needed!
     CXXFLAGS="$CXXFLAGS -I/opt/local/include/freetype2"
@@ -8302,6 +8300,13 @@ fi
 
 done
 
+
+case $host_os in
+  *darwin*)
+    CC="MACOSX_DEPLOYMENT_TARGET=10.7 $CC"
+    CXX="MACOSX_DEPLOYMENT_TARGET=10.7 $CXX"
+  ;;
+esac
 
  if test "x$mingw64" = "xyes"; then
   xp64_TRUE=
