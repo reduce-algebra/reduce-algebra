@@ -461,7 +461,7 @@ fxpriv.h \
 $(CURSORS) \
 $(ICONS)
 
-FXApp.cpp: icons.h
+$(srcdir)/FXApp.cpp: icons.h
 
 icons.h: $(ICONS)
 	$(RESWRAP) -i -n FX -o icons.h $(ICONS)
