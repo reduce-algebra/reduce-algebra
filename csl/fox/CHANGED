@@ -9,43 +9,30 @@ are derived from is. I will also use this as a place to provide a very very
 brief annotation as to why some of these files had to be altered.
 
 
+
 (a) Changed files
 
 autogen.sh                     remake "configure" script etc
-configure.in                   support for mingw, windows64, fat-MAC etc
-include/FXApp.h                "unsigned"->"FX_WPARAM" to survive windows-64
+configure.ac                   all sorts of changes to support my world.
+
 include/FXText.h               add TEXT_COLUMNWRAP manifest
-include/fxdefs.h               windows-64 support
-src/FXApp.cpp                  as FXApp.h
-src/FXDCWindow.cpp             Windows-64 and type of stipple.
-src/FXDebugTarget.cpp          64-bit item in a printf on windows-64
-src/FXFont.cpp                 old versions of fontconfig do not have FX_WIDTH
-                               and some FC_WEIGHT options. Fix so it compiles
-                               on my Tiger Mac.
-src/FXFontSelector.cpp         set up size in selector dialog to match
-                               requested size if you have a scalable font.
-src/FXText.cpp                 option to wrap at a fixed column
-src/FXWindow.cpp               HANDLE vs FXuint to be win64-safe
+src/FXText.cpp                 option to wrap at a fixed column plus
+                               a load of stuff to support maths display
 src/Makefile.am                support 64-bit windows build using
-                               command-line tools, add in my new files,
+                               x86_64-w64-mingw32-g++, add in my new files,
                                remove use of libtool.
-src/vsscanf.cpp                fixed to cope with i686-w64-mingw32-g++
 utils/Makefile.am              if cross-building use gcc to compile utils.
 
-fox.pc.in                      insert quote marks so that paths with whitespace
-                               are better tolerated.
 
 (b) New files
 
 include/FXDCNativePrinter.h    header files for my new stuff
-include/FXMathText.h
 include/FXPostscriptFont.h
 include/FXShowMath.h
 include/FXTerminal.h
 
 src/FXDCNativePrinter.cpp      can use windows native printing as well as
                                printing to postscript
-src/FXMathText.cpp             like FXText.cpp but scope for in-line maths
 src/FXPostscriptFont.cpp       Postscript font metrics for printing
 src/FXPrintSample.cpp          accompanied the basis that FXDCNativePrinter
                                built on
@@ -54,7 +41,7 @@ src/FXTerminal.cpp             a terminal for interactive sessions to run in
 src/FXWorker.cpp               thread-related parts assocated with FXTermninal
 
 src/cmfont-info.c              extract metrics from font info in a way I want
-src/font-index.c               more maths font support
+src/font-info.c                more maths font support
 src/fwin.c                     my termainl-like interface
 src/FinderLaunch.c             Macintosh support code
 src/fox-icons.c                icons for fwin, csl and reduce
@@ -100,5 +87,8 @@ February 2014: Move towards some Unicode interface to terminal handling so
      again when better tested! Start migration to a copy of the stuff
      here based on fox 1.6.49
 
+     (Feb 26) Most of migration to fox 1.6.49 complete.
+     (Feb 27) Further tidying up. COPY & PASTE still need to be put back.
 
 
+<end of CHANGED>

@@ -80,11 +80,13 @@
  *     term at least that must be maintained. I think that there are two
  *     plausible ways to go in the short term. One is to pack that buffer
  *     using UTF8 and then all possible input characters can be handled, but
- *     CSL will have trouble with ones whos ecode is 0x80 or higher. The
+ *     CSL will have trouble with ones whose code is 0x80 or higher. The
  *     other is to return a truncated 8-bit Unicode value (and possibly to
- *     map all Unicode chars from 0x100 upwards onto say "?"). I will
+ *     map all Unicode chars from 0x100 upwards onto say "?"). I may
  *     also want to provide a "term_wgetline" to get a line of wide characters
  *     for a future when or if the application code can cope with that.
+ *     Returning input in UTF8 seems best if only because input from
+ *     files will often use that too.
  * (4) Displaying characters on the terminal, both as genuine output from
  *     (console-mode) CSL/Reduce and during line-editing. It seems that
  *     under Windows I may need to use WriteConsoleW to write Unicode stuff
@@ -369,7 +371,8 @@ static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
 {
-    wint_t n, ch;
+    int n, ch, k;
+    unsigned char buffer[8];
     int i;
 #ifdef TEST
     fprintf(stderr, "plain_getline:");
@@ -389,12 +392,17 @@ static wchar_t *term_wide_plain_getline(void)
            }
            else input_line_size = 2*input_line_size;
         }
-        input_line[n] = ch;
-        input_line[n+1] = 0;
+        k = utf_encode(buffer, ch);
+        for (i=0; i<k; i++) input_line[n++] = buffer[i];
+        input_line[n] = 0;
     }
-    if (n==0 && ch==WEOF) return NULL;
-    input_line[n++] = ch;
-    input_line[n] = 0;
+    if (ch==WEOF)
+    {   if (n == 0) return NULL;
+    }
+    else
+    {   input_line[n++] = '\n';
+        input_line[n] = 0;
+    }
     return input_line;
 }
 
@@ -3808,9 +3816,10 @@ char *term_getline(void)
     char *p = (char *)r;
     wchar_t *q = r;
     int c;
+    unsigned char buffer[8];
     while ((c = *q++) != 0)
-    {   if (c > 0xff) c = '?';
-        *p++ = c;
+    {   int n = utf_encode(buffer, c), i;
+        for (i=0; i<n; i++) *p++ = buffer[i];
     }
     *p = 0;
     return (char *)r;

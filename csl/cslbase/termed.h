@@ -116,9 +116,23 @@ extern const wchar_t *input_history_get(int n);
 
 extern wchar_t *input_line;
 extern int prompt_length, insert_point;
+
+/*
+ * Encode character c in UTF-8 and place result at b. Return the number
+ * of bytes written.
+ */
 extern int utf_encode(unsigned char *b, int c);
+
+/*
+ * Decode UTF-8 from location b and return a code, or -1 in case of an
+ * invalid sequence. Set utf_bytes to the number of bytes consumed, which
+ * will be 1 in the case of errors.
+ */
+extern int utf_bytes;
 extern int utf_decode(unsigned char *b);
+
 extern void term_unicode_convert();
+
 typedef struct _uniname
 {
     const char *name;

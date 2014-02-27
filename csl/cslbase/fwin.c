@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* $Id$ */
+/* $ Id: $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -327,7 +327,6 @@ int main(int argc, char *argv[])
 /* I want to know the path to the directory from which this 
  * code was launched.
  */
-printf("fwin_startup %d\n", __LINE__); fflush(stdout); // @@@
     if (argc == 0)
     {   fprintf(stderr,
             "argc == 0. You tried to launch the code in a funny way?\n");
@@ -441,9 +440,6 @@ printf("fwin_startup %d\n", __LINE__); fflush(stdout); // @@@
 /*
  * Before I try to decide what to do I will (sometimes) collect information
  * on what cygwin would make of the state of stdin and stdout.
- */
-/*
- * The decision on Windows is in fact a lot messier.
  *
  * I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
@@ -2599,4 +2595,3 @@ int readlink(const char *name, char *b, size_t n)
 #endif
 
 /* end of fwin.c */
-

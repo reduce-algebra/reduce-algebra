@@ -716,7 +716,6 @@ int fwin_plain_getchar()
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
-            input_history_add(current_line);
         }
     }
     else if (chars_left == 0)

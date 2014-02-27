@@ -80,11 +80,13 @@
  *     term at least that must be maintained. I think that there are two
  *     plausible ways to go in the short term. One is to pack that buffer
  *     using UTF8 and then all possible input characters can be handled, but
- *     CSL will have trouble with ones whos ecode is 0x80 or higher. The
+ *     CSL will have trouble with ones whose code is 0x80 or higher. The
  *     other is to return a truncated 8-bit Unicode value (and possibly to
- *     map all Unicode chars from 0x100 upwards onto say "?"). I will
+ *     map all Unicode chars from 0x100 upwards onto say "?"). I may
  *     also want to provide a "term_wgetline" to get a line of wide characters
  *     for a future when or if the application code can cope with that.
+ *     Returning input in UTF8 seems best if only because input from
+ *     files will often use that too.
  * (4) Displaying characters on the terminal, both as genuine output from
  *     (console-mode) CSL/Reduce and during line-editing. It seems that
  *     under Windows I may need to use WriteConsoleW to write Unicode stuff
@@ -131,6 +133,9 @@
 #include <curses.h>
 #else
 #define DISABLE 1
+#if defined __GNUC__ || defined __clang__
+#warning termed capabilites unavailable because neither ncurses.h nor curses.h were found.
+#endif
 #endif
 #endif
 
@@ -146,6 +151,9 @@
 #ifndef DISABLE
 #define DISABLE 1
 #endif
+#if defined __GNUC__ || defined __clang__
+#warning termed capabilites unavailable because term.h (etc) was not found.
+#endif
 #endif
 #endif
 #endif
@@ -153,7 +161,6 @@
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
-
 
 #endif /* WIN32 */
 
@@ -364,7 +371,8 @@ static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
 {
-    wint_t n, ch;
+    int n, ch, k;
+    unsigned char buffer[8];
     int i;
 #ifdef TEST
     fprintf(stderr, "plain_getline:");
@@ -384,12 +392,17 @@ static wchar_t *term_wide_plain_getline(void)
            }
            else input_line_size = 2*input_line_size;
         }
-        input_line[n] = ch;
-        input_line[n+1] = 0;
+        k = utf_encode(buffer, ch);
+        for (i=0; i<k; i++) input_line[n++] = buffer[i];
+        input_line[n] = 0;
     }
-    if (n==0 && ch==WEOF) return NULL;
-    input_line[n++] = ch;
-    input_line[n] = 0;
+    if (ch==WEOF)
+    {   if (n == 0) return NULL;
+    }
+    else
+    {   input_line[n++] = '\n';
+        input_line[n] = 0;
+    }
     return input_line;
 }
 
@@ -495,6 +508,28 @@ static const int term_enabled = 0;
 static wchar_t *term_wide_fancy_getline(void)
 {
     return NULL; /* Should never be called */
+}
+
+static void term_putchar(int c)
+{
+/*
+ * The character passed here will actually be an wchar_t and probably if I
+ * was being truly proper the argument type would need to be wint_t not int.
+ * However I am going to be sloppy and assume that int is good enough.
+ */
+#ifdef WIN32
+    DWORD nwritten = 1;
+    wchar_t buffer[4];
+    buffer[0] = c;
+    WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+#else
+/*
+ * Other than on Windows I will encode things using UTF-8
+ */
+    unsigned char buffer[8];
+    int i, n = utf_encode(buffer, c);
+    for (i=0; i<n; i++) putchar(buffer[i]);
+#endif
 }
 
 #else /* DISABLE */
@@ -2876,9 +2911,12 @@ int utf_encode(unsigned char *b, int c)
  * Decode utf-8 or return -1 if invalid.
  */
 
+int utf_bytes = 0;
+
 int utf_decode(unsigned char *b)
 {
     int c = *b++, c1, c2, c3;
+    utf_bytes = 1;
     switch (c & 0xf0)
     {
 /*
@@ -2902,12 +2940,14 @@ case 0xc0:
 case 0xd0:
         c1 = *b;
         if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 1;
         return ((c & 0x1f) << 6) | (c1 & 0x3f);
 case 0xe0:
         c1 = *b++;
         if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
         c2 = *b;
         if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 2;
         return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
 case 0xf0:
         if ((c & 0x08) != 0) return -1;
@@ -2917,6 +2957,7 @@ case 0xf0:
         if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
         c3 = *b;
         if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 3;
         return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
                ((c2 & 0x3f) << 6) | (c3 & 0x3f);
     }
@@ -3770,15 +3811,15 @@ char *term_getline(void)
  * all characters whose codepoints are in the range 0x00 to 0xff and
  * replace all others with a question mark. This leaves me the first 256
  * codepoints of Unicode and that covers ordinary ASCII plus a bunch of
- * diacriticals. Consider how the code here fits in with struct aliasing
- * rules. It may sail a little close to the edge but I think it may be legal!
+ * diacriticals.
  */
     char *p = (char *)r;
     wchar_t *q = r;
     int c;
+    unsigned char buffer[8];
     while ((c = *q++) != 0)
-    {   if (c > 0xff) c = '?';
-        *p++ = c;
+    {   int n = utf_encode(buffer, c), i;
+        for (i=0; i<n; i++) *p++ = buffer[i];
     }
     *p = 0;
     return (char *)r;

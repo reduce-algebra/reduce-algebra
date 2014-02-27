@@ -217,7 +217,11 @@ int main(int argc, char *argv[])
 /* In this echo I display multi-byte chars as the sequence of chars */
                 else printf("[%.2x]", ch);
             }
+#ifdef __CYGWIN__
+            printf(">\r\n");
+#else
             printf(">\n");
+#endif
         }
     }
 
