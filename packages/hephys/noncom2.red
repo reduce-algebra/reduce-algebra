@@ -364,7 +364,7 @@ symbolic procedure domain!*p u;
 null u or numberp u or (not atom u and memq(car u,domainlist!*));
 
 %------------------------------------------------%
-% new defintions of noncom and testing functions %
+% new definitions of noncom and testing functions %
 %------------------------------------------------%
 
 % clear previous definitions of noncom
