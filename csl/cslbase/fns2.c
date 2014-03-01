@@ -1725,7 +1725,7 @@ Lisp_Object Luntrace(Lisp_Object nil, Lisp_Object a)
             two_args *f2 = qfn2(s);
             n_args *fn = qfnn(s);
             if (f1 == traceinterpreted1)
-            {   set_fns(a, interpreted1, interpreted2, interpretedn);
+            {   set_fns(s, interpreted1, interpreted2, interpretedn);
                 qenv(s) = qcdr(qenv(s));
             }
             else if (f1 == tracefunarged1)
