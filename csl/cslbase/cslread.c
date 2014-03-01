@@ -3519,13 +3519,14 @@ int char_from_file(Lisp_Object stream)
             putc_stream(ch, stream1);
             if (exception_pending()) flip_exception();
         }
-#if defined RAW_CYGWIN || !defined WIN32
+#if defined __CYGWIN__ || !defined WIN32
 /*
  * There is a half-based mess here because throughout CSL I work with just
  * 8-bit characters but sometimes UTF8 will intrude. To try to be a helpful
  * person I will decode 2-byte UTF combinations here but just return the low
- * 8 bits. This action is taken promoted by misery over the british pounds
- * sign, which sometimes appears in files as 0xc2 0xa3.
+ * 8 bits. This action is taken prompted by misery over the british pounds
+ * sign, which sometimes appears in files as 0xc2 0xa3. Some time soon I
+ * hope to beef this up so that I provide genuine support for UTF-8 input.
  */
         if ((ch & 0xe0) == 0xc0) /* leader for 2-byte utf-8 combination */
         {   int ch1 = getc(stream_file(stream));

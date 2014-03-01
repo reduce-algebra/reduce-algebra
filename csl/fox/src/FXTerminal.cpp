@@ -787,9 +787,10 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
 // Parse again to re-create a box that had gone away. This time it happens
 // that my variables are set up so (p1+1) is the location for the reference to
 // the box, ie the "owner" info.
+            findTeXstart();
             b = parseTeX(staticCharForShowMath, p1+1);
-            if (b == NULL) b = makeTextBox("malformed expression", 20, 0);
-            else text->recordBoxAddress(p1+1, b);
+            if (b == NULL) b = makeTopBox(makeTextBox("malformed-TeX-input", 19, 0));
+            text->recordBoxAddress(p1+1, b);
         }
         measureBox(b);
 // I paint the background for math output in a different (a sort of pale
@@ -819,9 +820,14 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         b->top.measuredSize = -1; // force re-measure when printing finished.
 // Whew! Done.
         p = charPointer;
+        int c;
+        bool shifted=false;
         for (;;)
         {   if (p == length) return p;           // end of buffer
-            if (getChar(p) == '\n') return p+1;  // end of line
+            c=getByte(p);
+            if (c==0x0e) shifted=true;
+            else if (c==0x0f) shifted=false;
+            else if (!shifted && c=='\n') return p+1;  // end of line
             p++;
         }
     }
@@ -1237,7 +1243,7 @@ long FXTerminal::onCmdCopySelText(FXObject *, FXSelector, void *)
                 int ignore = 0;
                 for (i=selstartpos; i<selendpos; i++)
                 {   char ch = getChar(i);
-                    if (ch == 0x05) continue;
+                    if (ch == 0x03) continue;
                     if (ch == 0x02) { ignore = 6; continue; }
                     if (ignore > 0) { ignore--; continue; }
                     *p++ = ch;
@@ -3551,13 +3557,36 @@ int FXTerminal::charForShowMath()
     return c;
 }
 
+// At the start of maths display material I have a sequence that goes
+// SO some text SI (where SO=0x0e and SI=0x0f) and this contains
+// a plain text version of the Reduce output suitable for use with COPY.
+// Specifically it will be what arises if "off nat" is used to print stuff.
+// I had originally hoped that this would not contain any control characters
+// but in some cases it can contain newlines. Here I skip until the
+// TeX material that follows it.
+
+void FXTerminal::findTeXstart() const
+{
+    int ch = 0, cp = charPointer;
+    if (getByte(cp)!=0x0e) return;
+    while (cp < length &&
+           (ch = getByte(cp)) != 0x0f) cp++;
+    if (ch == 0x0f) charPointer = cp+1;
+}
+
 void FXTerminal::insertMathsLines()
 {
     const char *p = fwin_maths;
     int start = length;
     int linecount = 0;
+    bool shifted=false;
     while (*p != 0)
-    {   while (*p!=0 && *p!='\n') p++;
+    {   while (*p!=0)
+        {   if (*p==0x0e) shifted=true;
+            else if (*p==0x0f) shifted=false;
+            else if (!shifted && *p=='\n') break;
+            p++;
+        }
         if (*p=='\n') p++;
 // I hope that apart from 0x02 at the start of a line marking maths-mode
 // material that hardly anybody else needs to be aware of anything special.
@@ -3613,11 +3642,13 @@ void FXTerminal::insertMathsLines()
 // First parse the line of stuff to get a box-structure. The parsed box gets
 // a reference back to position p1+3 in the text buffer since that is where
 // the reference will be put.
+        findTeXstart();
         Box *b = parseTeX(staticCharForShowMath, p1+3);
 // Style 0 in makeTextBox gives Roman typeface at normal size.
-// Note that the blank in this message will be displayed as a sort of "`".
-// There is no blank in the Roman font that I use here!!!!!
-        if (b == NULL) b = makeTextBox("malformed expression", 20, 0);
+// Note that if I had used a blank character in the message here it would have
+// been displayed as a combining short slash. So I use a "-" which is at
+// lest slightly better!
+        if (b == NULL) b = makeTopBox(makeTextBox("malformed-TeX-input", 19, 0));
 // Remember where the box is. Note that if it gets discarded as I parse
 // another box later on this reference will be replaced with a zero.
         text->recordBoxAddress(p1+3, b);
@@ -3633,8 +3664,15 @@ void FXTerminal::insertMathsLines()
             measureBox(b);
         }
 // Move on to the next line. Note that I arrange that any special info I
-// put in the buffer will NEVER include a newline character!
-        while (p1<length && getChar(p1)!='\n') p1++;
+// put in the buffer will NEVER include a newline character except within SO/SI
+        bool shifted=false;
+        while (p1<length)
+        {   int c=getByte(p1);
+            if (c==0x0e) shifted=true;
+            else if (c==0x0f) shifted=false;
+            else if (!shifted && c=='\n') break;
+            p1++;
+        }
         if (p1 < length) p1++;
     }
 // Now I take a second pass, and in this second pass I will sort out just how
@@ -3652,8 +3690,9 @@ void FXTerminal::insertMathsLines()
         {   charPointer = p1+7;
 // Again I should tell the box that its "owner" is the place in the
 // text buffer where the pointer to it lives. (p1+3) here.
+            findTeXstart();
             b = parseTeX(staticCharForShowMath, p1+3);
-            if (b == NULL) b = makeTextBox("malformed expression", 20, 0);
+            if (b == NULL) b = makeTopBox(makeTextBox("malformed expression", 19, 0));
         }
 // Measure it (again) at the current scale. In simple cases the effect here
 // is that the measureBox() call gets done twice in an unnecessary way. I
@@ -3698,7 +3737,14 @@ void FXTerminal::insertMathsLines()
         heightString[0] = '0' + (nnrows & 0x3f);
         heightString[1] = '0' + ((nnrows>>6) & 0x3f);
         replaceStyledText(p1, 2, heightString, 2, STYLE_MATH);
-        while (p1<length && getChar(p1)!='\n') p1++;
+        bool shifted=false;
+        while (p1<length)
+        {   int c=getByte(p1);
+            if (c==0x0e) shifted=true;
+            else if (c==0x0f) shifted=false;
+            else if (!shifted && c=='\n') break;
+            p1++;
+        }
         if (p1 < length) p1++;
     }
 // A third pass turns the lead-in bytes that are at present in the form
@@ -3744,7 +3790,14 @@ void FXTerminal::insertMathsLines()
 // If it has been discarded then the recovered pointer will be NULL
 // and so there will be no need to reset a back pointer.
         if (b != NULL) updateOwner(b, p1+3);
-        while (p1<length && getChar(p1)!='\n') p1++;
+        bool shifted=false;
+        while (p1<length)
+        {   int c=getByte(p1);
+            if (c==0x0e) shifted=true;
+            else if (c==0x0f) shifted=false;
+            else if (!shifted && c=='\n') break;
+            p1++;
+        }
         if (p1 < length) p1++;
     }
 // Now I think everything is in a consistent state ready for display!
@@ -4332,9 +4385,10 @@ void FXTerminal::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) c
 // Parse again to re-create a box that had gone away. This time it happens
 // that my variables are set up so (pp+2) is the location for the reference to
 // the box, ie the "owner" info.
+        findTeXstart();
         b = parseTeX(staticCharForShowMath, pp+3);
-        if (b == NULL) b = makeTextBox("malformed expression", 20, 0);
-        else text->recordBoxAddress(pp+3, b);
+        if (b == NULL) b = makeTopBox(makeTextBox("malformed-TeX-input", 19, 0));
+        text->recordBoxAddress(pp+3, b);
 //****************************************************************************
 //** The above line has a side effect of marking the text buffer as "updated".
 //** This is MESSY since it is liable to cause the screen to be redrawn

@@ -286,6 +286,7 @@ public:
   int setInputText(const char *text, int n);
   int setInputText(const wchar_t *text, int n);
 
+  void findTeXstart() const;
   int charForShowMath();
   void insertMathsLines();
   void recordBoxAddress(int n, union Box *b);

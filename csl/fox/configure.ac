@@ -76,23 +76,37 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-X_BASE_LIBS="-lX11 -lXext"
-LIBGLU="-lGLU"
-LIBGL="-lGL"
+AC_CANONICAL_HOST
 
-# Checks for header files.
-AC_PATH_X
-AC_PATH_XTRA
+case $host_os in
+  *darwin*)
+# Ugh! With macports the autoconf recipe that establishes X11 paths
+# fails to include this one but it is needed!
+    CXXFLAGS="$CXXFLAGS -I/opt/local/include/freetype2"
+  ;;
+  *mingw32*)
+    AC_MSG_NOTICE([host_os=$host_os so building for native Windows])
+    win32="yes"
+  ;;
+esac
+
+if test "x$win32" = "xyes"
+then
+  X_BASE_LIBS="-lcomctl32 -lwsock32 -lwinspool -lmpr -lgdi32 -limm32"
+  LIBGLU="-lglu32"
+  LIBGL="-lopengl32"
+else
+  X_BASE_LIBS="-lX11 -lXext"
+  LIBGLU="-lGLU"
+  LIBGL="-lGL"
+  AC_PATH_X
+  AC_PATH_XTRA
+fi
+
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 AC_HEADER_DIRENT
 AC_FUNC_MMAP
-
-if test "$no_x" = yes; then
-X_BASE_LIBS="-lcomctl32 -lwsock32 -lwinspool -lmpr -lgdi32 -limm32"
-LIBGLU="-lglu32"
-LIBGL="-lopengl32"
-fi
 
 # Byte order
 AC_C_BIGENDIAN([FOX_BYTEORDER=1], [FOX_BYTEORDER=0])
@@ -300,20 +314,6 @@ AC_ARG_WITH(pslbuild,[  --with-pslbuild         stray option from the Reduce bui
 
 # Substitute variables in output files
 AC_SUBST(GL_LIBS)
-
-AC_CANONICAL_HOST
-
-case $host_os in
-  *darwin*)
-# Ugh! With macports the autoconf recipe that establishes X11 paths
-# fails to include this one but it is needed!
-    CXXFLAGS="$CXXFLAGS -I/opt/local/include/freetype2"
-  ;;
-  *mingw32*)
-    AC_MSG_NOTICE([host_os=$host_os so building for native Windows])
-    win32="yes"
-  ;;
-esac
 
 # Access to terminal control things...
 

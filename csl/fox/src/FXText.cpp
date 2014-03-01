@@ -100,16 +100,21 @@
   - mouse identification within maths is not yet addressed AT ALL.
   - a Maths line that (say) needs the space of 4 rows will be
     represented as
-        0x02 0x02 0x02 0x02 <data> 0x05 '\n'
+        0x02 0x02 0x02 0x02 0x0e <plain> 0x0f <data> '\n'
     and each 0x02 is treated as starting a "row". Any draw operation
     steps up and draws all the rows involved. The <data> will not have
-    and 0x02, 0x03 or '\n' bytes in it. Where I pack flags or addresses
+    any control characters or '\n' bytes in it., but the plain text enclosed
+    by 0x0e...0x0f might have.  Where I pack flags or addresses
     in there I will keep it UTF8-safe by restricting myself to use of
     7-bit characters.
+  - the plain text between SO and SI bytes (0x0e and 0x0f) is "off nat"
+    style Reduce output so that COPY on maths can grab something reasonable.
+    However I observe that the "off nat" display for matrices (and maybe
+    some other things) might contain newlines).
   - I will probably also want to mark the maths material with a style
     tag, but partly because I want to work with an existing interface
-    that generates 0x02 and 0x05 to surround displayed maths I will
-    start off using them rather than styles.
+    that generates 0x02 to surround displayed maths I will
+    start off using that rather than styles.
  */
 #endif // ! ORIGINAL_VERSION
 
@@ -749,9 +754,12 @@ FXint FXText::wrap(FXint start) const {
     if (math1) return p+1;
 // Otherwise the line just goes on until a terminating newline (or the end
 // of the buffer)
+    bool shifted = false;
     while (p<length)        // Find '\n' or end of buffer.
     { c = getByte(p);
-      if (c=='\n') return p+1;
+      if (c==0x0e) shifted = true;
+      else if (c==0x0f) shifted = false;
+      else if (!shifted && c=='\n') return p+1;
       p++;
     }
     return length;
@@ -782,11 +790,22 @@ FXint FXText::wrap(FXint start) const {
 // Count number of newlines
 FXint FXText::countLines(FXint start,FXint end) const {
   register FXint p,nl=0;
+#ifndef ORIGINAL_VERSION
+  int c;
+  bool shifted = false;
+#endif // ORIGINAL_VERSION
   FXASSERT(0<=start && end<=length+1);
   p=start;
   while(p<end){
     if(p>=length) return nl+1;
+#ifdef ORIGINAL_VERSION
     if(getByte(p)=='\n') nl++;
+#else // ! ORIGINAL_VERSION
+    c = getByte(p);
+    if (c==0x0e) shifted = true;
+    else if (c==0x0f) shifted = false;
+    else if(!shifted && c=='\n') nl++;
+#endif // ! ORIGINAL_VERSION
     p++;
     }
   return nl;
@@ -862,6 +881,8 @@ FXint FXText::countRows(FXint start,FXint end) const {
 // mathematics this will record a value that reflects the number of bytes
 // in the internal representation of the mathematical formula. Often that will
 // be quote long, and also often it will not be very meaningful to the user!
+// Furthermore if there is COPY-text present and that contains an embedded
+// newline that can give a reading here that may be "odd".
 #endif // ! ORIGINAL_VERSION
 FXint FXText::countCols(FXint start,FXint end) const {
   register FXint nc=0,in=0,ch;
@@ -931,6 +952,9 @@ FXint FXText::measureText(FXint start,FXint end,FXint& wmax,FXint& hmax) const {
     }
 #endif // ! ORIGINAL_VERSION
   else{
+#ifndef ORIGINAL_VERSION
+    bool shifted = false;
+#endif // ORIGINAL_VERSION
     wmax=0;
     p=start;
     while(p<end){
@@ -940,6 +964,11 @@ FXint FXText::measureText(FXint start,FXint end,FXint& wmax,FXint& hmax) const {
         break;
         }
       c=getChar(p);
+#ifndef ORIGINAL_VERSION
+      if (c==0x0e) shifted=true;
+      else if (c==0x0f) shifted=false;
+      else if (!shifted && c=='\n') c=' '; // defeat line-break.
+#endif ORIGINAL_VERSION
       if(c=='\n'){                      // Break at newline
         if(w>wmax) wmax=w;
         nr++;
@@ -1068,6 +1097,7 @@ FXint FXText::wordEnd(FXint pos) const {
   }
 
 
+#ifdef ORIGINAL_VERSION
 // Return position of begin of paragraph
 FXint FXText::lineStart(FXint pos) const {
   FXASSERT(0<=pos && pos<=length);
@@ -1107,6 +1137,74 @@ FXint FXText::prevLine(FXint pos,FXint nl) const {
   return 0;
   }
 
+#else // ! ORIGINAL_VERSION
+
+// Return position of begin of paragraph
+FXint FXText::lineStart(FXint pos) const {
+  int c;
+  bool shifted=false;
+  FXASSERT(0<=pos && pos<=length);
+  while(0<pos){
+    c = getByte(pos-1);
+    if (c==0x0f) shifted=true;
+    else if (c==0x0e) shifted=false;
+    else if (!shifted && c=='\n') return pos;
+    pos--;
+  }
+  return 0;
+  }
+
+
+// Return position of end of paragraph
+FXint FXText::lineEnd(FXint pos) const {
+  int c;
+  bool shifted=false;
+  FXASSERT(0<=pos && pos<=length);
+  while (pos<length){
+    c=getByte(pos);
+    if (c==0x0e) shifted=true;
+    else if (c==0x0f) shifted=false;
+    else if (!shifted && c=='\n') return pos;
+    pos++;
+  }
+  return length;
+  }
+
+
+// Return start of next line
+FXint FXText::nextLine(FXint pos,FXint nl) const {
+  int c;
+  bool shifted=false;
+  FXASSERT(0<=pos && pos<=length);
+  if(nl<=0) return pos;
+  while(pos<length){
+    c=getByte(pos);
+    if (c==0x0e) shifted=true;
+    else if (c==0x0f) shifted=false;
+    else if (!shifted && c=='\n' && --nl==0) return pos+1;
+    pos++;
+    }
+  return length;
+  }
+
+
+// Return start of previous line
+FXint FXText::prevLine(FXint pos,FXint nl) const {
+  int c;
+  bool shifted=false;
+  FXASSERT(0<=pos && pos<=length);
+  if(nl<=0) return pos;
+  while(0<pos){
+    c=getByte(pos-1);
+    if (c==0x0f) shifted=true;
+    else if (c==0x0e) shifted=false;
+    else if (!shifted && c=='\n' && nl--==0) return pos;
+    pos--;
+    }
+  return 0;
+  }
+
+#endif // !ORIGINAL_VERSION
 
 // Return row start
 FXint FXText::rowStart(FXint pos) const {
@@ -1187,6 +1285,7 @@ FXint FXText::changeBeg(FXint pos) const {
 
 // Scan forward to the end of affected area, which is the start of the next
 // paragraph; a change can cause the rest of the paragraph to reflow.
+#ifdef ORIGINAL_VERSION
 FXint FXText::changeEnd(FXint pos) const {
   FXASSERT(0<=pos && pos<=length);
   while(pos<length){
@@ -1195,6 +1294,21 @@ FXint FXText::changeEnd(FXint pos) const {
     }
   return length+1;  // YES, one more!
   }
+#else // ! ORIGINAL_VERSION
+FXint FXText::changeEnd(FXint pos) const {
+  int c;
+  bool shifted=false;
+  FXASSERT(0<=pos && pos<=length);
+  while(pos<length){
+    c=getByte(pos);
+    if (c==0x0e) shifted=true;
+    else if (c==0x0f) shifted=false;
+    else if (!shifted && c=='\n') return pos+1;
+    pos++;
+    }
+  return length+1;  // YES, one more!
+  }
+#endif // ! ORIGINAL_VERSION
 
 
 // Calculate line width
@@ -1228,6 +1342,7 @@ FXint FXText::indentFromPos(FXint start,FXint pos) const {
   FXASSERT(0<=start && pos<=length);
   while(p<pos){
     c=getChar(p);
+// I will ignore 0x0e/0x0f pairs here...
     if(c=='\n'){
       in=0;
       }

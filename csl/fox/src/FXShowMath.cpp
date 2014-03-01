@@ -359,7 +359,7 @@ static Box *makeFrameBox(Box *b0)
     return b;
 }
 
-static Box *makeTopBox(Box *b0)
+Box *makeTopBox(Box *b0)
 {
     Box *b = (Box *)poolAllocate(sizeof(TopBox));
     b->top.type = BoxTop;
@@ -1664,7 +1664,7 @@ case BoxText:
             }
         }
         w = ((FXFont *)ff)->getTextWidth(utfchars, utflength);
-        if (utflength == 1 && (utfchars[0] & 0xff) == 0xc6)
+        if (t->n == 1 && (t->text[0] & 0xff) == 0xc6)
             w = (2*w)/3;
 #else
         if (t->n == 1 && (t->text[0] & 0xff)== 0xc6)

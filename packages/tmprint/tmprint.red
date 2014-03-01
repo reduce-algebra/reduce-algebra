@@ -504,6 +504,7 @@ symbolic procedure fancy!-output(mode,l);
 symbolic procedure fancy!-out!-header();
     <<
        if posn()>0 then terpri();
+% The leading U+0002 (STX) is what TeXmacs wanted here.
        prin2 int2id 2;
        prin2 "latex:\black$\displaystyle "
     >>;
@@ -511,6 +512,7 @@ symbolic procedure fancy!-out!-header();
 symbolic procedure fancy!-out!-trailer();
     <<
        prin2 "$";
+% The trailing U+0005 (ENQ) is what TeXmacs wanted here.
        prin2 int2id 5
     >>;
 
@@ -526,15 +528,20 @@ symbolic procedure fancy!-flush();
 % output and goes COPY.
 % I will only activate this when 'showmath1 is in lispsystem!* since I will
 % use that at the CSL end to indicate that I am ready to accept and process it.
-      if memq('showmath1, lispsystem!*) then <<
+      if memq('showmath1, lispsystem!*) and most_recent_fancy then <<
 % This puts a simple flat version of the output into the GUI's buffers
+         tyo 14; % U+000E is SO (Shift Out) and historically changed font
+                 % ofr colour.
          most_recent_fancy := reverse most_recent_fancy;
          while most_recent_fancy do <<
             (maprin car most_recent_fancy) where outputhandler!* = nil,
                                                  !*nat = nil;
             most_recent_fancy := cdr most_recent_fancy >>;
-         terpri!* t where outputhandler!* = nil;
-         tyo 4 >>;
+         terpri!* nil where outputhandler!* = nil;
+% There will be a character U+000F after the flat version
+% of stuff and before the TeX version. Note that this is SI (Shift In)
+% which historically moved back to default font or colour.
+         tyo 15 >>;
       for each line in reverse fancy!-page!* do
         if line and not eqcar(car line,'tab) then <<
           if 'wx memq lispsystem!* then fancy!-out!-item "\[";
@@ -556,8 +563,8 @@ symbolic procedure fancy!-flush();
                (maprin car most_recent_fancy) where outputhandler!* = nil,
                                                     !*nat = nil;
                most_recent_fancy := cdr most_recent_fancy >>;
-            terpri!* t where outputhandler!* = nil;
-            tyo 4 >>;
+            terpri!* nil where outputhandler!* = nil;
+            prin2 "::||::" >>;
          most_recent_fancy := nil;
          for each it in reverse line do fancy!-out!-item it;
          fancy!-out!-trailer() >>;

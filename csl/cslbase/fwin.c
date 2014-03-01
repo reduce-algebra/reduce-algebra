@@ -755,7 +755,9 @@ void fwin_putchar(int c)
  * ordinary C stream functions for normal output. Provided I do an
  * fflush(stdout) before requesting input I should be OK.
  */
-#ifdef RAW_CYGWIN
+    FWIN_LOG(("Writing char [%.2x] \'%c\'\n", c, c));
+#ifdef __CYGWIN__
+    FWIN_LOG(("cygwin case\n"));
 /*
  * If I have built the system under Cygwin then we are running under
  * Windows. To keep files tidy I will (mostly) insert CRs at line-end
@@ -771,7 +773,7 @@ void fwin_puts(const char *s)
 /*
  * See comment above where putchar() is used...
  */
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
     while (*s != 0) fwin_putchar(*s++);
 #else
     puts(s);
@@ -786,7 +788,7 @@ void MS_CDECL fwin_printf(const char *fmt, ...)
 /*
  * See comment above where putchar() is used...
  */
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
 /* NOT reconstructed yet @@@ */
     vfprintf(stdout, fmt, a);
 #else
@@ -800,7 +802,7 @@ void fwin_vfprintf(const char *fmt, va_list a)
 /*
  * See comment above where putchar() is used...
  */
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
 /* Not reconstructed yet @@@ */
     vfprintf(stdout, fmt, a);
 #else
@@ -1146,7 +1148,7 @@ int find_program_directory(char *argv0)
     if (w == NULL) return 5;           /* 5 = malloc fails */
     strcpy(w, fullProgramName);
     fullProgramName = w;
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
 /*
  * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
  * suffix, so I will purge that! This code exists here because the raw
@@ -1177,7 +1179,7 @@ int find_program_directory(char *argv0)
         while (*w1 != 0) *w++ = *w1++;
         *w = 0;
     }
-#endif /* RAW_CYGWIN */
+#endif /* __CYGWIN__ */
 /* OK now I have the full name, which is of the form
  *   abc/def/fgi/xyz
  * and I need to split it at the final "/" (and by now I very fully expect

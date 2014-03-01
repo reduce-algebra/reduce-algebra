@@ -528,7 +528,18 @@ static void term_putchar(int c)
  */
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
-    for (i=0; i<n; i++) putchar(buffer[i]);
+    for (i=0; i<n; i++)
+    {   c = buffer[i];
+#ifdef __CYGWIN__
+/*
+ * On Cygwin at the stage I am printing my terminal may be in RAW mode
+ * and so I need to send CR/LF for a newline. This seems to be the case
+ * just on Cygwin: on a typical Linux/Unix/BSD system I do not need this.
+ */
+        if (c == '\n') putchar('\r');
+#endif
+        putchar(c);
+    }
 #endif
 }
 
@@ -608,7 +619,7 @@ static void putpc(int c)
 {
 /*
  * Here I will rely on being able to output a single octet without that
- * messing up any UTF8ness etc.
+ * messing up any UTF8ness etc. I will also not be sending '\n' this way.
  */
     putchar(c);
 }
@@ -721,7 +732,13 @@ static void term_putchar(int c)
  */
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
-    for (i=0; i<n; i++) putchar(buffer[i]);
+    for (i=0; i<n; i++)
+    {   c = buffer[i];
+#ifdef __CYGWIN__
+        if (c == '\n') putchar('\r');
+#endif
+        putchar(c);
+    }
 #endif
 }
 
@@ -1592,7 +1609,7 @@ static int line_wrap(int ch, int tab_offset)
 #else
             my_reset_shell_mode();
 #endif
-            term_putchar(L'\n');
+            term_putchar('\n');
             fflush(stdout);
 #ifdef WIN32
             SetConsoleMode(stdout_handle, 0);
@@ -1817,14 +1834,14 @@ static void refresh_display(void)
     if (cursory <= final_cursory)
     {   while (cursory < final_cursory)
         {   while (cursorx < columns)
-            {   term_putchar(L' ');
+            {   term_putchar(' ');
                 cursorx++;
             }
             term_move_first_column();
             term_move_down(1);
         }
         while (cursorx < final_cursorx)
-        {   term_putchar(L' ');
+        {   term_putchar(' ');
             cursorx++;
         }
     }
@@ -3768,7 +3785,7 @@ static wchar_t *term_wide_fancy_getline(void)
     term_move_first_column();
     term_move_down(final_cursory-cursory);
     set_normal();
-    term_putchar(L'\n');
+    term_putchar('\n');
     fflush(stdout);
     insert_point = wcslen(input_line);
     if (insert_point==prompt_length && ch==EOF) return NULL;

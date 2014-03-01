@@ -540,7 +540,7 @@ int find_program_directory(const char *argv0)
     if (w == NULL) return 5;           // 5 = malloc fails
     strcpy(w, fullProgramName);
     fullProgramName = w;
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
 //
 // Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
 // suffix, so I will purge that! This code exists here because the raw

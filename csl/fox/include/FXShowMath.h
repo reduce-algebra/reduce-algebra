@@ -145,6 +145,7 @@ typedef union Box
     TopBox top;
 } Box;
 
+extern Box *makeTopBox(Box *b);
 extern Box *makeTextBox(const char *s, int n, int fnt);
 
 extern void *masterFont[36];

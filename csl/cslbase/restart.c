@@ -5158,6 +5158,12 @@ static void set_up_variables(CSLbool restart_flag)
  * so that Lisp code can know it is reasonable to try to use it.
  */
 
+/*! lispsys [showmath1] \item[{\ttfamily showmath1}] \index{{\ttfamily showmath1}}
+ * This marks the fact that this version of CSL will support the output
+ * style where flat simple text preceeds TeX output, with a U+0003 (end of text)
+ * marker to separate.
+ */
+
 /*! lispsys [sixty-four] \item[{\ttfamily  sixty!-four}] \index{{\ttfamily  sixty"!-four}}
  * Present if the Lisp was compiled for a 64-bit computer.
  */
@@ -5317,7 +5323,9 @@ static void set_up_variables(CSLbool restart_flag)
  */
             if (showmathInitialised &&
                 alternative_stdout == NULL)
-                w = cons(make_keyword("showmath"), w);
+            {   w = cons(make_keyword("showmath"), w);
+                w = cons(make_keyword("showmath1"), w);
+            }
         }
 #endif
 #ifdef HAVE_LIBWX
@@ -5330,7 +5338,9 @@ static void set_up_variables(CSLbool restart_flag)
  */
             if (showmathInitialised &&
                 alternative_stdout == NULL)
-                w = cons(make_keyword("showmath"), w);
+            {   w = cons(make_keyword("showmath"), w);
+                w = cons(make_keyword("showmath1"), w);
+            }
         }
 #endif
 #endif

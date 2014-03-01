@@ -498,6 +498,8 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
     application_object->addTimeout((FXObject *)text,
                 FXTerminal::ID_TIMEOUT, 1000, NULL);
 
+    if (windowed >= 0) main_window->raise(); // Bring to top.
+
     return application_object->run();
 }
 
@@ -721,7 +723,7 @@ void fwin_putchar(int c)
 {
     if (!windowed)
     {
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
         if (c == '\n') putchar('\r');
 #endif
         putchar(c);
@@ -753,7 +755,7 @@ void fwin_puts(const char *s)
 {
     if (!windowed)
     {
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
         while (*s != 0) fwin_putchar(*s++);
 #else
         puts(s);
@@ -786,7 +788,7 @@ void
     va_start(a, fmt);
     if (!windowed)
     {
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
 /* NOT reconstructed yet @@@ */
         vfprintf(stdout, fmt, a);
         va_end(a);
@@ -825,7 +827,7 @@ void fwin_vfprintf(const char *fmt, va_list a)
 {
     if (!windowed)
     {
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
 /* Not reconstructed yet @@@ */
         vfprintf(stdout, fmt, a);
 #else

@@ -89,6 +89,7 @@ February 2014: Move towards some Unicode interface to terminal handling so
 
      (Feb 26) Most of migration to fox 1.6.49 complete.
      (Feb 27) Further tidying up. COPY & PASTE still need to be put back.
-
+     (Feb 28) Support for plain text in buffer to support COPY of maths
+              output.
 
 <end of CHANGED>

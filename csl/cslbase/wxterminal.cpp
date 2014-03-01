@@ -4964,7 +4964,7 @@ void fwin_putchar(int c)
 {
     if (!windowed)
     {
-#ifdef RAW_CYGWIN
+#ifdef __CYGWIN__
         if (c == '\n') fwin_putchar('\r');
 #endif
 #ifdef WIN32
