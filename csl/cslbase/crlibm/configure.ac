@@ -1,9 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT
 
-crlibm_version=`cat $srcdir/VERSION`
-dnl For Automake
-AM_INIT_AUTOMAKE(crlibm, $crlibm_version)
+# The next three lines were adjusted by A C Norman in March 2014 to
+# "modernise" things and hence avoid warning messages from autoconf. This
+# comments is intended to be a prominent notice of the change as required
+# by the license. 
+AC_INIT([crlibm], m4_esyscmd([cat VERSION]))
+AC_CONFIG_SRCDIR([crlibm.h])
+AM_INIT_AUTOMAKE
 
 AC_CONFIG_HEADERS([crlibm_config.h])
 

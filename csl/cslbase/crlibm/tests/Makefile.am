@@ -9,7 +9,9 @@ bin_PROGRAMS =  crlibm_testval crlibm_soaktest crlibm_testperf  crlibm_blindtest
 endif
 
 LDADD= $(top_builddir)/libcrlibm.a
-INCLUDES=-I$(top_srcdir)
+# The last line used to set INCLUDES but was changed by A C Norman in March
+# 2014 to avoid automake warning messages about that being an "old" name.
+AM_CPPFLAGS=-I$(top_srcdir)
 ../libcrlibm.a:
 	cd $(top_srcdir); make libcrlibm.a 
 

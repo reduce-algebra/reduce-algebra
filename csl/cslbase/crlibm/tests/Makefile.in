@@ -506,7 +506,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = -O0 -std=gnu99 # produces a warning, but I really need -O0 and I don't know how to get it.
 LDADD = $(top_builddir)/libcrlibm.a
-INCLUDES = -I$(top_srcdir)
+# The last line used to set INCLUDES but was changed by A C Norman in March
+# 2014 to avoid automake warning messages about that being an "old" name.
+AM_CPPFLAGS = -I$(top_srcdir)
 crlibm_testval_SOURCES = test_val.c test_common.c test_common.h
 crlibm_soaktest_SOURCES = soak_test.c test_common.c test_common.h
 crlibm_soaktest_interval_SOURCES = soak_test-interval.c test_common.c test_common.h

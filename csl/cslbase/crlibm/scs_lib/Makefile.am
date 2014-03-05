@@ -2,7 +2,10 @@
 
 
 lib_LIBRARIES = libscs.a
-INCLUDES=-I$(top_srcdir) -I. -I..
+# Changed my A C Norman March 2014 use AM_CPPFLAGS rather than INCLUDES.
+# This should not alter behaviour at all but avoids warning messages from
+# automake about what it sees as outdated usage.
+AM_CPPFLAGS=-I$(top_srcdir) -I. -I..
 
 
 libscs_a_SOURCES = scs.h scs_private.h scs_private.c \
