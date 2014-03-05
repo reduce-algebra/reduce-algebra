@@ -79,6 +79,8 @@ done
 # Now just to be double plus certain that all is well I will
 # reset date-stamps.
 
+cd $here
+
 echo Now reset all date-stamps...
 echo Step 1 of 5: configure.ac and configure.in.
 find . \( -name configure.ac -o -name configure.in \
@@ -103,7 +105,6 @@ find . -name configure -print | xargs chmod +x
 
 echo Date-stamps should now be in the proper sequence.
 
-cd $here
 scripts/resetall.sh
 
 cd $save
