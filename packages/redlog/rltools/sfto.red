@@ -709,20 +709,19 @@ asserted procedure sfto_sf2monl1(f: SF, vl: List): DottedPair;
       return append(ll, rl)
    end;
 
-asserted procedure sfto_lcx(f: SF): SF;
-   % Leading coefficient, extended version. Returns the leading coefficient of
-   % [f]. If [f] is a domain element (integer) [f] is returned.
-   if domainp f then f else lc f;
+asserted procedure sfto_mvartest(f: SF, x: Kernel): Boolean;
+   % Main variable test. Returns [t] iff [x] is the main variable of [f].
+   not domainp f and mvar f eq x;
 
-asserted procedure sfto_redx(f: SF): SF;
-   % Reductum, extended version. Returns the reductum of [f]. If [f] is a domain
-   % element (integer) [f] is returned.
-   if domainp f then nil else red f;
+asserted procedure sfto_mvarx(f: SF): SF;
+   % Main variable, extended version. Returns the mvar of [f]. If [f] is a
+   % domain element (integer), [f] is returned.
+   if domainp f then nil else mvar f;
 
 asserted procedure sfto_ldegx(f: SF): Integer;
-   % Leading degree, extended version. Returns the leading of [f]. If [f]
-   % represents zero then -1 is returned. If [f] represents a domain element
-   % (integer) 0 is returned.
+   % Leading degree, extended version. Returns the leading coeffcient of [f]. If
+   % [f] represents zero, -1 is returned. If [f] represents a domain element
+   % (integer), 0 is returned.
    if null f then
       -1
    else if domainp f then
@@ -730,9 +729,15 @@ asserted procedure sfto_ldegx(f: SF): Integer;
    else
       ldeg f;
 
-asserted procedure sfto_mvartest(f: SF, x: Kernel): Boolean;
-   % Main variable test. Returns [t] iff [x] is the main variable of [f].
-   not domainp f and mvar f eq x;
+asserted procedure sfto_lcx(f: SF): SF;
+   % Leading coefficient, extended version. Returns the leading coefficient of
+   % [f]. If [f] is a domain element (integer), [f] is returned.
+   if domainp f then f else lc f;
+
+asserted procedure sfto_redx(f: SF): SF;
+   % Reductum, extended version. Returns the reductum of [f]. If [f] is a domain
+   % element (integer) [f] is returned.
+   if domainp f then nil else red f;
 
 asserted procedure sfto_vardeg(f: SF, x: Kernel): Integer;
    % Degree of a variable. Returns the degree of [x] in [f] provided that [x] is
@@ -748,42 +753,6 @@ asserted procedure sfto_univarp1(f: SF, x: Kernel): Boolean;
 
 asserted procedure sfto_kmemberf(x: Kernel, f: SF): ExtraBoolean;
    not domainp f and (mvar f eq x or sfto_kmemberf(x, lc f) or sfto_kmemberf(x, red f));
-
-asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
-   % The Cauchy bound of [f] with respect to [v]. We assume that [f] is
-   % univariate in [v] and [mvar f eq v], in particular [f] is not a domain
-   % element.
-   begin scalar sumq, an, d, one;
-      sumq := nil ./ 1;
-      an := !*f2q absf lc f;
-      while not domainp f do <<
-	 f := red f;
-	 d := !*f2q absf if domainp f then f else lc f;
-	 sumq := addsq(sumq, quotsq(d, an))
-      >>;
-      one := 1 ./ 1;
-      if sfto_greaterq(one, sumq) then
-	 return one;
-      return sumq
-   end;
-
-asserted procedure sfto_greaterq(q1: SQ, q2: SQ): ExtraBoolean;
-   minusf numr subtrsq(q2, q1);
-
-asserted procedure sfto_lessq(q1: SQ, q2: SQ): ExtraBoolean;
-   minusf numr subtrsq(q1, q2);
-
-asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
-   (null w or minusf numr w) where w=subtrsq(q2, q1);
-
-asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
-   (null w or minusf numr w) where w=subtrsq(q1, q2);
-
-asserted procedure sfto_maxq(q1: SQ, q2: SQ): ExtraBoolean;
-   if sfto_greaterq(q1, q2) then q1 else q2;
-
-asserted procedure sfto_minq(q1: SQ, q2: SQ): ExtraBoolean;
-   if sfto_lessq(q1, q2) then q1 else q2;
 
 asserted procedure sfto_renamef(f: SF, vold: Kernel, vnew: Kernel): SF;
    begin scalar mv, recurse;
@@ -815,6 +784,44 @@ asserted procedure sfto_renamealf(f: SF, al: AList): SF;
 	 sfto_renamealf(red f, al))
    end;
 
+asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
+   % The Cauchy bound of [f] with respect to [v]. We assume that [f] is
+   % univariate in [v] and [mvar f eq v], in particular [f] is not a domain
+   % element.
+   begin scalar sumq, an, d, one;
+      sumq := nil ./ 1;
+      an := !*f2q absf lc f;
+      while not domainp f do <<
+	 f := red f;
+	 d := !*f2q absf if domainp f then f else lc f;
+	 sumq := addsq(sumq, quotsq(d, an))
+      >>;
+      one := 1 ./ 1;
+      if sfto_greaterq(one, sumq) then
+	 return one;
+      return sumq
+   end;
+
+% SQ functions:
+
+asserted procedure sfto_greaterq(q1: SQ, q2: SQ): ExtraBoolean;
+   minusf numr subtrsq(q2, q1);
+
+asserted procedure sfto_lessq(q1: SQ, q2: SQ): ExtraBoolean;
+   minusf numr subtrsq(q1, q2);
+
+asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
+   (null w or minusf numr w) where w=subtrsq(q2, q1);
+
+asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
+   (null w or minusf numr w) where w=subtrsq(q1, q2);
+
+asserted procedure sfto_maxq(q1: SQ, q2: SQ): ExtraBoolean;
+   if sfto_greaterq(q1, q2) then q1 else q2;
+
+asserted procedure sfto_minq(q1: SQ, q2: SQ): ExtraBoolean;
+   if sfto_lessq(q1, q2) then q1 else q2;
+
 asserted procedure sfto_ceilq(q: SQ): SQ;
    if eqn(denr q, 1) then
       q
@@ -822,6 +829,26 @@ asserted procedure sfto_ceilq(q: SQ): SQ;
       !*f2q sfto_int2sf(numr q / denr q)
    else
       !*f2q sfto_int2sf(numr q / denr q + 1);
+
+asserted procedure sfto_multlq(sql: List): SQ;
+   if null sql then
+      1 ./ 1
+   else
+      multsq(car sql, sfto_multlq cdr sql);
+
+asserted procedure sfto_expq(q: SQ, n: Integer): SQ;
+   % Non-negative power of SQ.
+   if eqn(n, 0) then
+      1 ./ 1
+   else
+      multsq(q, sfto_expq(q, n - 1));
+
+asserted procedure sfto_kexpq(x: Kernel, n: Integer): SQ;
+   % Non-negative power of a variable as a SQ.
+   <<
+      assert(n >= 0);
+      if eqn(n, 0) then 1 ./ 1 else (((x .^ n) .* 1) .+ nil) ./ 1
+   >>;
 
 endmodule;  % [sfto]
 
