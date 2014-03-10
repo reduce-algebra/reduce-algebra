@@ -694,18 +694,20 @@ asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
 
 %%% --- constructors and access functions --- %%%
 
-asserted procedure aex_mk(rp: RatPoly, c: AexCtx, lcnttag: Boolean, reducedtag: Boolean): Aex;
-   % [lcnttag] = t iff the leading coefficient is non-trivial, i.e. not zero
-   % according to the context. The idea is that this property is preserved under
-   % multiplication. [reducedtag]: This is another property which is preserved
-   % under addition.
-   {'aex, rp, c, lcnttag, reducedtag};
+% Tags: In a previous version of this modules, aex contained two tags: lcnttag
+% and reducedtag. [lcnttag] = t iff the leading coefficient is non-trivial, i.e.
+% not zero according to the context. The idea is that this property is preserved
+% under multiplication. [reducedtag]: This is another property which is
+% preserved under addition.
+
+asserted procedure aex_mk(rp: RatPoly, c: AexCtx): Aex;
+   {'aex, rp, c};
 
 asserted procedure aex_fromrat(r: Rational): Aex;
-   {'aex, ratpoly_fromrat r, ctx_new(), t, t};
+   {'aex, ratpoly_fromrat r, ctx_new()};
 
 asserted procedure aex_fromrp(rp: RatPoly): Aex;
-   {'aex, rp, ctx_new(), t, t};
+   {'aex, rp, ctx_new()};
 
 asserted procedure aex_fromsf(f: SF): Aex;
    aex_fromrp ratpoly_fromsf f;
@@ -722,27 +724,21 @@ asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
    aex_fromrp ratpoly_mklin(x, ba);
 
 asserted procedure aex_ex(ae: Aex): RatPoly;
-   cadr ae;
+   nth(ae, 2);
 
 asserted procedure aex_ctx(ae: Aex): AexCtx;
-   caddr ae;
-
-asserted procedure aex_lcnttag(ae: Aex): Boolean;
-   cadddr ae;
-
-asserted procedure aex_reducedtag(ae: Aex): Boolean;
-   cadr cdddr ae;
+   nth(ae, 3);
 
 asserted procedure aex_freeall(ae: Aex): Aex;
-   aex_mk(aex_ex ae, ctx_new(), t, t);
+   aex_mk(aex_ex ae, ctx_new());
 
 asserted procedure aex_free(ae: Aex, x: Kernel): Aex;
    % Free x and all higher variables.
-   aex_mk(aex_ex ae, ctx_free(x, aex_ctx ae), nil, nil);
+   aex_mk(aex_ex ae, ctx_free(x, aex_ctx ae));
 
 asserted procedure aex_free1(ae: Aex, x: Kernel): Aex;
    % Free x.
-   aex_mk(aex_ex ae, ctx_free1(x, aex_ctx ae), nil, nil);
+   aex_mk(aex_ex ae, ctx_free1(x, aex_ctx ae));
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    % TODO: ensure [a] is defined with x.
@@ -750,7 +746,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    if null aex_boundidl anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
       aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
    else
-      aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae), nil, nil);
+      aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae));
 
 asserted procedure aex_print(ae: Aex): Any;
    <<
@@ -765,33 +761,24 @@ asserted procedure aex_print(ae: Aex): Any;
 
 asserted procedure aex_neg(ae: Aex): Aex;
    % Negate.
-   aex_mk(ratpoly_neg aex_ex ae, aex_ctx ae, aex_lcnttag ae, aex_reducedtag ae);
+   aex_mk(ratpoly_neg aex_ex ae, aex_ctx ae);
 
 asserted procedure aex_addrat(ae: Aex, r: Rational): Aex;
    % Add rational number.
-   aex_mk(ratpoly_add(aex_ex ae, ratpoly_fromrat r), aex_ctx ae, nil, nil); %%%?
+   aex_mk(ratpoly_add(aex_ex ae, ratpoly_fromrat r), aex_ctx ae);
 
 asserted procedure aex_add(ae1: Aex, ae2: Aex): Aex;
    % Add, contexts are assumed to be compatible and will be merged.
    % Caveat: minimization will be needed.
-   aex_mk(ratpoly_add(aex_ex ae1, aex_ex ae2),
-      ctx_union(aex_ctx ae1, aex_ctx ae2),
-      nil,
-      aex_reducedtag ae1 and aex_reducedtag ae2);
+   aex_mk(ratpoly_add(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_minus(ae1: Aex, ae2: Aex): Aex;
    % Minus, contexts are assumed to be compatible and will be merged.
-   aex_mk(ratpoly_minus(aex_ex ae1, aex_ex ae2),
-      ctx_union(aex_ctx ae1, aex_ctx ae2),
-      nil,
-      aex_reducedtag ae1 and aex_reducedtag ae2);
+   aex_mk(ratpoly_minus(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_mult(ae1: Aex, ae2: Aex): Aex;
    % Multiplication, contexts are assumed to be compatible and will be merged.
-   aex_mk(ratpoly_mult(aex_ex ae1, aex_ex ae2),
-      ctx_union(aex_ctx ae1, aex_ctx ae2),
-      aex_lcnttag ae1 and aex_lcnttag ae2,
-      nil);
+   aex_mk(ratpoly_mult(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_foldmult(ael: AexList): Aex;
    if null ael then
@@ -813,52 +800,31 @@ asserted procedure aex_power(ae: Aex, n: Integer): Aex;
 
 asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
    % Multiply with rational number.
-   aex_mk(ratpoly_mult(aex_ex ae, ratpoly_fromrat r),
-      aex_ctx ae,
-      nil,
-      nil);
+   aex_mk(ratpoly_mult(aex_ex ae, ratpoly_fromrat r), aex_ctx ae);
 
 asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
    % Differentiate.
-   aex_mk(ratpoly_diff(aex_ex ae, x),
-      aex_ctx ae,
-      nil,
-      nil);
+   aex_mk(ratpoly_diff(aex_ex ae, x), aex_ctx ae);
 
 asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
    % Substitute algebraic form in algebraic expression.
-   aex_mk(ratpoly_subrp(aex_ex ae, x, rp),
-      aex_ctx ae,
-      nil,
-      nil); %%% minimize ex and ctx
+   aex_mk(ratpoly_subrp(aex_ex ae, x, rp), aex_ctx ae);
 
 asserted procedure aex_subrat(ae: Aex, x: Kernel, r: Rational): Aex;
    % Substitute rational number. Exact version.
-   aex_mk(ratpoly_subrat(aex_ex ae, x, r),
-      aex_ctx ae,
-      nil,
-      nil);
+   aex_mk(ratpoly_subrat(aex_ex ae, x, r), aex_ctx ae);
 
 asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
    % Substitute rational number. Exact up to sign version.
-   aex_mk(ratpoly_subrat1(aex_ex ae, x, r),
-      aex_ctx ae,
-      nil,
-      nil);
+   aex_mk(ratpoly_subrat1(aex_ex ae, x, r), aex_ctx ae);
 
 asserted procedure aex_tad(ae: Aex): Aex;
    % Throw away denominator.
-   aex_mk(ratpoly_tad aex_ex ae,
-      aex_ctx ae,
-      nil,
-      nil);
+   aex_mk(ratpoly_tad aex_ex ae, aex_ctx ae);
 
 asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
-   aex_mk(ratpoly_xtothen(x, n),
-      ctx_new(),
-      t,
-      t);
+   aex_mk(ratpoly_xtothen(x, n), ctx_new());
 
 asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
    % Degree of [x] in [ae].
@@ -908,14 +874,14 @@ asserted procedure aex_mvartest(ae: Aex, x: Kernel): Boolean;
 
 asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
    % Reductum of [ae] wrt [x]. Needs not to be minimized.
-   if aex_mvartest(ae,x) then
-      aex_mk(ratpoly_red aex_ex ae,aex_ctx ae,nil,nil) %%% mklcnt
+   if aex_mvartest(ae, x) then
+      aex_mk(ratpoly_red aex_ex ae, aex_ctx ae)
    else
       aex_0();
 
 asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
-   if aex_mvartest(ae,x) then
-      aex_mk(ratpoly_lc aex_ex ae,aex_ctx ae,nil,nil)
+   if aex_mvartest(ae, x) then
+      aex_mk(ratpoly_lc aex_ex ae,aex_ctx ae)
    else
       ae; % ctx needs not to be made smaller, as there are no singles
 
@@ -962,7 +928,7 @@ asserted procedure aex_reduce(ae: Aex): Aex;
       >>;
       % There are no free variables.
       x := aex_mvar ae;  % We assume that aex_mvar ae is a bound variable.
-      assert(x eq caar ctx_ial aex_ctx ae);  % Make sure that variables match.
+      assert(eqcar(atsoc(x, ctx_ial aex_ctx ae), x));
       alpha := ctx_get(x, aex_ctx ae);
       tmp := aex_reduce aex_free(ae, x);
       if aex_deg(tmp, x) >= aex_deg(anu_dp alpha, x) then
@@ -1027,9 +993,7 @@ asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
       return aex_mklcnt aex_mk(
 	 ratpoly_psrem(aex_ex f, aex_ex g, x),
-	 ctx_union(aex_ctx f, aex_ctx g),
-	 nil,
-	 nil)
+	 ctx_union(aex_ctx f, aex_ctx g))
    end;
 
 asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
@@ -1045,7 +1009,7 @@ asserted procedure aex_pp(ae: Aex): Aex;
    % containing at most one variable. TODO: Why!? This should work for
    % multivariate polynomials as well...
    if ratpoly_univarp aex_ex ae then
-      aex_mk(ratpoly_pp aex_ex ae, aex_ctx ae, nil, nil)
+      aex_mk(ratpoly_pp aex_ex ae, aex_ctx ae)
   else
       ae;
 

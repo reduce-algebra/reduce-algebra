@@ -1893,13 +1893,13 @@ procedure anu_mkprimitive(anu);
    anu_mk(aex_prpart anu_dp anu, anu_iv anu);
 
 procedure aex_prpart(aex);
-   aex_mk(!*f2q sfto_dprpartf numr aex_ex aex, aex_ctx aex, aex_lcnttag aex, aex_reducedtag aex);
+   aex_mk(!*f2q sfto_dprpartf numr aex_ex aex, aex_ctx aex);
 
 procedure anu_fromAex(aex);
    begin scalar avar, cb;
       assert(not aex_badp(aex, 0));
       avar := ofsf_genavar();
-      aex := aex_mk(subtrsq(!*k2q avar, aex_ex aex), aex_ctx aex, nil, nil);
+      aex := aex_mk(subtrsq(!*k2q avar, aex_ex aex), aex_ctx aex);
       assert(not aex_badp(aex, 1));
       cb := aex_cauchybound(aex, aex_mvar aex);
       cb := addsq(cb, 1 ./ 1);
@@ -2179,12 +2179,12 @@ procedure ofsf_findrat(anu1, anu2);
 
 procedure ofsf_qemkstdansupdmin(qmc, qca, manuv, manu, canuv, canu, anuv, anu);
    begin scalar aex, cdp, iv, mdp;
-      aex := aex_mk(qca, ctx_fromial {canuv . canu, anuv . anu}, t, t);
+      aex := aex_mk(qca, ctx_fromial {canuv . canu, anuv . anu});
       %ioto_tprin2t {"canu - anu = ", anu_evalf anu_fromAex aex, " sign = ", aex_sgn aex};
       %ioto_tprin2t {"canu - anu = ", aex, " sign = ", aex_sgn aex};
       if aex_sgn aex < 1 then
 	 return 'lanu . manu;
-      aex := aex_mk(qmc, ctx_fromial {manuv . manu, canuv . canu}, t, t);
+      aex := aex_mk(qmc, ctx_fromial {manuv . manu, canuv . canu});
       if aex_sgn aex < 1 then
 	 return 'gmin . manu;
       cdp := aex_ex anu_dp canu;
