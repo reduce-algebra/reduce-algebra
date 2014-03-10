@@ -17,7 +17,8 @@ testprogram_LDADD = libwindow.a
 
 $(srcdir)/autogen.stamp:	$(srcdir)/autogen.sh $(srcdir)/configure.ac \
 				$(srcdir)/Makefile.am
-	$(SHELL) $(srcdir)/autogen.sh
+	touch $(srcdir)/autogen.stamp
+	$(SHELL) $(srcdir)/../autogen.sh csl
 
 $(srcdir)/Makefile.in \
  $(srcdir)/config.h.in \

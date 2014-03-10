@@ -801,6 +801,22 @@ then
       chmod -R +rw wxWidgets-*
       mv wxWidgets-* wxWidgets
       cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets
+# Now I will force all autoconf-related files to be in the correct order.
+# This is because I really want to use the versions from the archive, and
+# I have seen cases where the default unpacked version triggers an attempt
+# to run autoconf/automake again in ways that are costly but what is worse
+# do not work on all platforms.
+      find . \( -name configure.ac -o -name configure.in \
+                -o -name Makefile.am \) -print | xargs touch
+      sleep 1
+      find wxWidgets -name aclocal.m4 -print | xargs touch
+      sleep 1
+      find wxWidgets -name configure -print | xargs touch
+      find wxWidgets -name configure -print | xargs chmod +x
+      sleep 1
+      find wxWidgets -name config.h.in -print | xargs touch
+      sleep 1
+      find wxWidgets -name Makefile.in -print | xargs touch
       echo wxWidgets unpacked from archive $a
       cd $d
 #   fi

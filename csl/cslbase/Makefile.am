@@ -36,7 +36,7 @@ TRACE = $(warning TRACE: $@ :: $?)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	@$(TRACE)if test $(ACLOCAL_M4) -ot $(top_srcdir)/configure.ac; \
 	then \
-	  $(top_srcdir)/../../autogen.sh ; \
+	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \
 	else echo Redundant attempt to remake $(ACLOCAL_M4) ; \
 	fi
 
@@ -44,7 +44,7 @@ $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
 	@$(TRACE)if test $(top_srcdir)/configure -ot $(top_srcdir)/configure.ac || \
 	   test $(top_srcdir)/configure -ot $(ACLOCAL_M4) ; \
 	then \
-	  $(top_srcdir)/../../autogen.sh ; \
+	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \
 	else echo Redundant attempt to remake configure ; \
 	fi
 
@@ -53,7 +53,7 @@ $(srcdir)/config.h.in:	$(am__configure_deps) $(top_srcdir)/configure
 	   test $(srcdir)/config.h.in -ot $(ACLOCAL_M4) || \
 	   test $(srcdir)/config.h.in -ot $(top_srcdir)/configure ; \
 	then \
-	  $(top_srcdir)/../../autogen.sh ; \
+	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \
 	else echo Redundant attempt to remake config.h.in ; \
 	fi
 	rm -f stamp-h1
@@ -67,7 +67,7 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 	   test $(srcdir)/Makefile.in -ot $(srcdir)/config.h.in || \
 	   test $(srcdir)/Makefile.in -ot $(srcdir)/Makefile.am ; \
 	then \
-	  $(top_srcdir)/../../autogen.sh ; \
+	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \
 	else echo Redundant attempt to remake Makefile.in ; \
 	fi
 

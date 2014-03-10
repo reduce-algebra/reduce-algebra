@@ -6,6 +6,18 @@
 # because I am not using autoconf's own mechanisms for sub-directories
 # and so doing an autoreconf once at the top-level is not enough.
 
+#
+# Usage:
+#     autogen.sh [path]
+# Without any arguments this regenerates ALL the autoconf-related files.
+# If it is given one then that can restrict the set of files that are
+# rebuild, so eg
+#     autogen.sh csl/cslbase
+# will update the files in csl/cslbase (and in csl/cslbase/crlibm).
+#
+
+target=${1:-.}
+
 a=$0
 c=unknown
 case $a in
@@ -52,7 +64,7 @@ then
 
   echo autoreconf command available for use.
 
-  for x in `find $here -name configure.ac -print`
+  for x in `find $target -name configure.ac -print`
   do
     echo "============================================================"
     case $x in
@@ -80,6 +92,7 @@ then
       fi
       autoreconf -f -i
     esac
+    cd $here
   done
 fi
 
@@ -90,27 +103,32 @@ fi
 
 cd $here
 
+# If in one of these steps "find" does not find anything then it could try
+# to pass an empty list of arguments to "touch" and that causes upse. So I
+# will touch this very script (ie autogen.sh) since that is a file I rather
+# know exists, and touching it should be harmless.
+
 echo Now reset all date-stamps...
 echo Step 1 of 5: configure.ac, configure.in and Makefile.am:
-find . \( -name configure.ac -o -name configure.in \
-          -o -name Makefile.am \) -print | xargs touch
+find $target \( -name configure.ac -o -name configure.in \
+          -o -name Makefile.am \) -print | xargs touch autogen.sh
 sleep 1
 
 echo Step 2 of 5: aclocal.m4:
-find . -name aclocal.m4 -print | xargs touch
+find $target -name aclocal.m4 -print | xargs touch autogen.sh
 sleep 1
 
 echo Step 3 of 5: configure:
-find . -name configure -print | xargs touch
-find . -name configure -print | xargs chmod +x
+find $target -name configure -print | xargs touch autogen.sh
+find $target -name configure -print | xargs chmod +x autogen.sh
 sleep 1
 
 echo Step 4 of 5: config.h.in:
-find . -name \*config.h.in -print | xargs touch
+find $target -name \*config.h.in -print | xargs touch autogen.sh
 sleep 1
 
 echo Step 5 of 5: Makefile.in:
-find . -name Makefile.in -print | xargs touch
+find $target -name Makefile.in -print | xargs touch autogen.sh
 
 echo Date-stamps should now be in the proper sequence.
 
