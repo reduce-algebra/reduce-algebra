@@ -1,11 +1,11 @@
-/*  eval2.c                          Copyright (C) 1989-2011 Codemist Ltd */
+/*  eval2.c                          Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * Interpreter (part 2).  apply & some special forms
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -261,7 +261,7 @@ void push_args_1(va_list a, int nargs)
 }
 
 
-Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name)
+Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, int noisy)
 /*
  * There are (nargs) arguments on the Lisp stack, and apply() must use them
  * then pop them off.  They were pushed in the order push(arg1); push(arg2),
@@ -421,7 +421,7 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name)
         }
 /* apply_lambda() will pop the args from the stack when it is done */
         if ((def = qcar(fn)) == lambda)
-            return apply_lambda(qcdr(fn), nargs, env, name);
+            return apply_lambda(qcdr(fn), nargs, env, name, noisy);
 /*
  * A bytecoded funarg is stored as (cfunarg <actual fn> <env>) and any call
  * to it behaves as if the actual function was called with the environment
@@ -441,7 +441,7 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name)
         else if (def == funarg)
         {   def = qcdr(fn);
             if (consp(def))
-                return apply_lambda(qcdr(def), nargs, qcar(def), name);
+                return apply_lambda(qcdr(def), nargs, qcar(def), name, noisy);
         }
         break;
     }
@@ -471,6 +471,24 @@ static Lisp_Object and_fn(Lisp_Object args, Lisp_Object env)
         if (!consp(args)) return eval(v, env);
         push2(args, env);
         v = eval(v, env);
+        pop2(env, args);
+        errexit();
+        if (v == nil) return onevalue(nil);
+    }
+}
+
+static Lisp_Object noisy_and_fn(Lisp_Object args, Lisp_Object env)
+/* also needs to be a macro for Common Lisp */
+{
+    Lisp_Object nil = C_nil;
+    stackcheck2(0, args, env);
+    if (!consp(args)) return onevalue(lisp_true);
+    for (;;)
+    {   Lisp_Object v = qcar(args);
+        args = qcdr(args);
+        if (!consp(args)) return noisy_eval(v, env);
+        push2(args, env);
+        v = noisy_eval(v, env);
         pop2(env, args);
         errexit();
         if (v == nil) return onevalue(nil);
@@ -553,6 +571,63 @@ static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
 #undef my_tag
 }
 
+static Lisp_Object noisy_block_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object p, nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    stackcheck2(0, args, env);
+    push3(qcar(args),          /* my_tag                               */
+          qcdr(args),          /* args                                 */
+          env);
+#define env    stack[0]
+#define args   stack[-1]
+#define my_tag stack[-2]
+/*
+ * I need to augment the (lexical) environment with the name of my
+ * tag in such a way that return-from can throw out to exactly the
+ * correct matching level.  This is done by pushing (0 . tag) onto
+ * the environment - the 0 marks this as a block name.
+ */
+    my_tag = cons(fixnum_of_int(0), my_tag);
+    errexitn(3);
+    env = cons(my_tag, env);
+    errexitn(3);
+    p = nil;
+    while (consp(args))
+    {   p = qcar(args);
+        p = noisy_eval(p, env);
+/*
+ * one of the sorts of exit that may be activated by marking nil is
+ * a return_from.  Here I need to check to see if that is what
+ * is going on.
+ */
+    nil = C_nil;
+    if (exception_pending())
+        {   flip_exception(); /* Temp restore it */
+            qcar(my_tag) = fixnum_of_int(2); /* Invalidate */
+            if (exit_reason == UNWIND_RETURN && exit_tag == my_tag)
+            {   exit_reason = UNWIND_NULL; /* not strictly needed - but tidy */
+                popv(3);
+                return nvalues(exit_value, exit_count);
+            }
+            if (SHOW_FNAME)
+            {   err_printf("\nEvaluating: ");
+                loop_print_error(qcar(args));
+                ignore_exception();
+            }
+            flip_exception(); /* re-instate exit condition */
+            popv(3);
+            return nil;
+        }
+        args = qcdr(args);
+    }
+    popv(3);
+    return p;
+#undef env
+#undef args
+#undef my_tag
+}
+
 static Lisp_Object catch_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object tag, nil = C_nil, v;
@@ -587,12 +662,46 @@ static Lisp_Object catch_fn(Lisp_Object args, Lisp_Object env)
     return v;
 }
 
+static Lisp_Object noisy_catch_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object tag, nil = C_nil, v;
+    if (!consp(args)) return onevalue(nil);
+    stackcheck2(0, args, env);
+    push2(args, env);
+    tag = qcar(args);
+    tag = noisy_eval(tag, env);
+    errexit();
+    tag = catch_tags = cons(tag, catch_tags);
+    pop2(env, args);
+    errexit();
+    push(tag);
+    v = noisy_progn_fn(qcdr(args), env);
+    pop(tag);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        catch_tags = qcdr(tag);
+        qcar(tag) = tag;
+        qcdr(tag) = nil;        /* Invalidate the catch frame */
+        if (exit_reason == UNWIND_THROW && exit_tag == tag)
+        {   exit_reason = UNWIND_NULL;
+            return nvalues(exit_value, exit_count);
+        }
+        flip_exception();
+        return nil;
+    }
+    catch_tags = qcdr(tag);
+    qcar(tag) = tag;
+    qcdr(tag) = nil;        /* Invalidate the catch frame */
+    return v;
+}
+
 #define BODY_LET            0
 #define BODY_COMPILER_LET   1
 #define BODY_PROG           2
 
 Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
-                     Lisp_Object env, int compilerp)
+                     Lisp_Object env, int compilerp, int noisy)
 /*
  * This will have to look for (declare (special ...)).
  * compiler-let forces all of its bindings to be locally special. In
@@ -677,7 +786,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
             Header h = qheader(q);
 #endif
             if (z != nil)
-            {   z = eval(z, env);
+            {   z = noisy ? noisy_eval(z, env) : eval(z, env);
                 errexitn(8);
             }
             z = cons(q, z);
@@ -736,10 +845,12 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
  * been moved into new local variables before the call..
  */
         if (compilerp == BODY_PROG)
-        {   Return(tagbody_fn(bodyx, env1x));
+        {   Return(noisy ? noisy_tagbody_fn(bodyx, env1x) :
+                           tagbody_fn(bodyx, env1x));
         }
         else
-        {   Return(progn_fn(bodyx, env1x));
+        {   Return(noisy ? noisy_progn_fn(bodyx, env1x) :
+                           progn_fn(bodyx, env1x));
         }
     }
 /*
@@ -754,8 +865,9 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
 
     {
         if (compilerp == BODY_PROG)
-             body = tagbody_fn(body, env1);
-        else body = progn_fn(body, env1);
+             body = noisy ? noisy_tagbody_fn(body, env1) :
+                            tagbody_fn(body, env1);
+        else body = noisy ? noisy_progn_fn(body, env1) : progn_fn(body, env1);
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
@@ -795,7 +907,14 @@ static Lisp_Object compiler_let_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
     if (!consp(args)) return onevalue(nil);
-    return let_fn_1(qcar(args), qcdr(args), env, BODY_COMPILER_LET);
+    return let_fn_1(qcar(args), qcdr(args), env, BODY_COMPILER_LET, 0);
+}
+
+static Lisp_Object noisy_compiler_let_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    return let_fn_1(qcar(args), qcdr(args), env, BODY_COMPILER_LET, 1);
 }
 
 #endif
@@ -819,6 +938,32 @@ static Lisp_Object cond_fn(Lisp_Object args, Lisp_Object env)
 /* Here I support the case "(cond (predicate) ...)" with no consequents */
                 if (!consp(args)) return onevalue(p1);
                 else return progn_fn(args, env);
+            }
+        }
+        args = qcdr(args);
+    }
+    return onevalue(nil);
+}
+
+static Lisp_Object noisy_cond_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object nil = C_nil;
+    stackcheck2(0, args, env);
+    while (consp(args))
+    {
+        Lisp_Object p = qcar(args);
+        if (consp(p))
+        {   Lisp_Object p1;
+            push2(args, env);
+            p1 = qcar(p);
+            p1 = noisy_eval(p1, env);
+            pop2(env, args);
+            errexit();
+            if (p1 != nil)
+            {   args = qcdr(qcar(args));
+/* Here I support the case "(cond (predicate) ...)" with no consequents */
+                if (!consp(args)) return onevalue(p1);
+                else return noisy_progn_fn(args, env);
             }
         }
         args = qcdr(args);
@@ -989,6 +1134,22 @@ static Lisp_Object eval_when_fn(Lisp_Object args, Lisp_Object env)
     return onevalue(nil);
 }
 
+static Lisp_Object noisy_eval_when_fn(Lisp_Object args, Lisp_Object env)
+/*
+ * When interpreted, eval-when just looks for the situation EVAL.
+ */
+{
+    Lisp_Object situations, nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    situations = qcar(args);
+    args = qcdr(args);
+    while (consp(situations))
+    {   if (qcar(situations) == eval_symbol) return noisy_progn_fn(args, env);
+        situations = qcdr(situations);
+    }
+    return onevalue(nil);
+}
+
 #ifdef COMMON
 
 static Lisp_Object flet_fn(Lisp_Object args, Lisp_Object env)
@@ -1020,7 +1181,39 @@ static Lisp_Object flet_fn(Lisp_Object args, Lisp_Object env)
 /*
  * Treat body as (let nil ...) to get (declare ...) recognized.
  */
-    return let_fn_1(nil, args, env, BODY_LET);
+    return let_fn_1(nil, args, env, BODY_LET, 0);
+}
+
+static Lisp_Object noisy_flet_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object my_env, d, nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    stackcheck2(0, args, env);
+    my_env = env;
+    d = qcar(args);     /* The bunch of definitions */
+    args = qcdr(args);
+    nil = C_nil;
+    while (consp(d))
+    {   Lisp_Object w = qcar(d);
+        if (consp(w) && consp(qcdr(w)))
+        {   Lisp_Object w1;
+            push4(args, d, env, w);
+            w1 = list2star(funarg, my_env, qcdr(w));
+            pop(w);
+            nil = C_nil;
+            if (!exception_pending()) w1 = cons(w1, qcar(w));
+            pop(env);
+            nil = C_nil;
+            if (!exception_pending()) env = cons(w1, env);
+            pop2(d, args);
+            errexit();
+        }
+        d = qcdr(d);
+    }
+/*
+ * Treat body as (let nil ...) to get (declare ...) recognized.
+ */
+    return let_fn_1(nil, args, env, BODY_LET, 1);
 }
 
 #endif
@@ -1093,6 +1286,32 @@ static Lisp_Object if_fn(Lisp_Object args, Lisp_Object env)
     else return eval(tr, env);      /* ... passing back values */
 }
 
+static Lisp_Object noisy_if_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object p=nil, tr=nil, fs=nil;
+    if (!consp(args)) return aerror("if");
+    p = qcar(args);
+    args = qcdr(args);
+    if (!consp(args)) return aerror("if");
+    tr = qcar(args);
+    args = qcdr(args);
+    if (!consp(args)) fs = nil;
+    else
+    {   fs = qcar(args);
+        args = qcdr(args);
+        if (args != nil) return aerror("if");
+    }
+    stackcheck4(0, p, env, tr, fs);
+    push3(fs, tr, env);
+    p = noisy_eval(p, env);
+    pop3(env, tr, fs);
+    errexit();
+    if (p == nil)
+         return noisy_eval(fs, env);      /* tail call on result     */
+    else return noisy_eval(tr, env);      /* ... passing back values */
+}
+
 #ifdef COMMON
 
 static Lisp_Object labels_fn(Lisp_Object args, Lisp_Object env)
@@ -1125,7 +1344,40 @@ static Lisp_Object labels_fn(Lisp_Object args, Lisp_Object env)
  */
     for (d=env; d!=my_env; d=qcdr(d))
         qcar(qcdr(qcar(qcar(d)))) = env;
-    return let_fn_1(nil, qcdr(args), env, BODY_LET);
+    return let_fn_1(nil, qcdr(args), env, BODY_LET, 0);
+}
+
+static Lisp_Object noisy_labels_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object my_env, d, nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    stackcheck2(0, args, env);
+    my_env = env;
+    d = qcar(args);     /* The bunch of definitions */
+    while (consp(d))
+    {   Lisp_Object w = qcar(d);
+        if (consp(w) && consp(qcdr(w)))
+        {   Lisp_Object w1;
+            push4(args, d, env, w);
+            w1 = list2star(funarg, nil, qcdr(w));
+            pop(w);
+            nil = C_nil;
+            if (!exception_pending()) w1 = cons(w1, qcar(w));
+            pop(env);
+            nil = C_nil;
+            if (!exception_pending()) env = cons(w1, env);
+            pop2(d, args);
+            errexit();
+        }
+        d = qcdr(d);
+    }
+/*
+ * Now patch up the environments stored with the local defs so as to
+ * permit mutual recursion between them all.
+ */
+    for (d=env; d!=my_env; d=qcdr(d))
+        qcar(qcdr(qcar(qcar(d)))) = env;
+    return let_fn_1(nil, qcdr(args), env, BODY_LET, 1);
 }
 
 #endif
@@ -1134,7 +1386,14 @@ static Lisp_Object let_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
     if (!consp(args)) return onevalue(nil);
-    return let_fn_1(qcar(args), qcdr(args), env, BODY_LET);
+    return let_fn_1(qcar(args), qcdr(args), env, BODY_LET, 0);
+}
+
+static Lisp_Object noisy_let_fn(Lisp_Object args, Lisp_Object env)
+{
+    Lisp_Object nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    return let_fn_1(qcar(args), qcdr(args), env, BODY_LET, 1);
 }
 
 static Lisp_Object letstar_fn(Lisp_Object args, Lisp_Object env)
@@ -1307,6 +1566,176 @@ unwind_special_bindings:
 #undef Return
 }
 
+static Lisp_Object noisy_letstar_fn(Lisp_Object args, Lisp_Object env)
+/*
+ * This will have to look for (declare (special ...)), unless
+ * I am in CSL mode.
+ */
+{
+    Lisp_Object nil = C_nil;
+    if (!consp(args)) return onevalue(nil);
+    stackcheck2(0, args, env);
+    push3(qcar(args), qcdr(args), env);
+    nil = C_nil;
+    push5(nil, nil,                /* p, q                      */
+          env, nil, nil);          /* env1, specenv, local_decs */
+#ifdef COMMON
+#define local_decs stack[0]
+#endif
+#define specenv    stack[-1]
+#define env1       stack[-2]
+#define p          stack[-3]
+#define q          stack[-4]
+#define env        stack[-5]
+#define body       stack[-6]
+#define bvl        stack[-7]
+#define Return(v)  { popv(8); return (v); }
+#ifdef COMMON
+    for (;;)
+    {   if (exception_pending() || !consp(body)) break;
+        p = macroexpand(qcar(body), env);
+        errexitn(8);
+        body = qcdr(body);
+        if (!consp(p))
+        {   if (stringp(p) && consp(body)) continue;
+            body = cons(p, body);
+            nil = C_nil;
+            break;
+        }
+        if (qcar(p) != declare_symbol)
+        {   body = cons(p, body);
+            nil = C_nil;
+            break;
+        }
+        for (p = qcdr(p); consp(p); p = qcdr(p))
+        {   q = qcar(p);
+            if (!consp(q) || qcar(q) != special_symbol) continue;
+            /* here q says (special ...) */
+            for (q=qcdr(q); consp(q); q = qcdr(q))
+            {   local_decs = cons(qcar(q), local_decs);
+                nil = C_nil;
+                if (exception_pending()) break;
+            }
+            if (exception_pending()) break;
+        }
+    }
+    if (exception_pending()) Return(nil);
+#endif
+    for (; consp(bvl); bvl=qcdr(bvl))
+    {   Lisp_Object z;
+        q = qcar(bvl);
+        if (consp(q))
+        {   z = qcdr(q);
+            q = qcar(q);
+            if (consp(z)) z = qcar(z); else z = nil;
+        }
+        else z = nil;
+        if (!is_symbol(q) || q==nil || q==lisp_true)
+        {   error(1, err_bad_bvl, q);
+            goto unwind_special_bindings;
+        }
+        else
+        {
+#ifdef COMMON
+            Header h = qheader(q);
+#endif
+            if (z != nil)
+            {   z = noisy_eval(z, env);
+                nil = C_nil;
+                if (exception_pending()) goto unwind_special_bindings;
+            }
+#ifndef COMMON
+            p = z;
+            z = acons(q, qvalue(q), specenv);
+            nil = C_nil;
+            if (!exception_pending()) specenv = z;
+            qvalue(q) = p;
+#else
+            if (h & SYM_SPECIAL_VAR)
+            {
+                p = z;
+                z = acons(q, qvalue(q), specenv);
+                nil = C_nil;
+                if (!exception_pending()) specenv = z;
+                qvalue(q) = p;
+            }
+            else
+            {
+                for (p = local_decs; p!=nil; p = qcdr(p))
+                {   Lisp_Object w;
+                    if (q != qcar(p)) continue;
+                    qcar(p) = fixnum_of_int(0);
+                    w = acons(q, qvalue(q), specenv);
+                    nil = C_nil;
+                    if (exception_pending()) goto unwind_special_bindings;
+                    specenv = w;
+                    w = acons(q, work_symbol, env);
+                    nil = C_nil;
+                    if (exception_pending()) goto unwind_special_bindings;
+                    env = w;
+                    qvalue(q) = z;
+                    goto bound;
+                }
+                q = acons(q, z, env);
+                nil = C_nil;
+                if (exception_pending()) goto unwind_special_bindings;
+                env = q;
+        bound:  ;
+            }
+#endif
+            nil = C_nil;
+            if (exception_pending()) goto unwind_special_bindings;
+        }
+    }
+#ifdef COMMON
+    while (local_decs!=nil)         /* Pervasive special declarations */
+    {   q = qcar(local_decs);
+        local_decs=qcdr(local_decs);
+        if (!is_symbol(q)) continue;
+        q = acons(q, work_symbol, env);
+        nil = C_nil;
+        if (!exception_pending()) env = q;
+        else goto unwind_special_bindings;
+    }
+#endif
+    if (specenv == nil)
+    {   Lisp_Object bodyx = body, envx = env;
+        Return(noisy_progn_fn(bodyx, envx));  /* beware Return macro! */
+    }
+    {
+        body = noisy_progn_fn(body, env);
+        nil = C_nil;
+        if (exception_pending()) goto unwind_special_bindings;
+        for (bvl = specenv; bvl != nil; bvl = qcdr(bvl))
+        {   Lisp_Object w = qcar(bvl), v = qcar(w), z = qcdr(w);
+            qvalue(v) = z;
+        }
+        {   Lisp_Object bodyx = body;
+            Return(bodyx);
+        }
+    }
+unwind_special_bindings:
+    flip_exception();
+    for (bvl = specenv; bvl != nil; bvl = qcdr(bvl))
+    {   Lisp_Object w = qcar(bvl), v = qcar(w), z = qcdr(w);
+        qvalue(v) = z;
+    }
+    flip_exception();
+    popv(8);
+    return nil;
+#ifdef COMMON
+#undef local_decs
+#endif
+#undef specenv
+#undef env1
+#undef p
+#undef q
+#undef env
+#undef body
+#undef bvl
+#undef Return
+}
+
 setup_type const eval2_setup[] =
 /*
  * A jolly curiosity - "function" and "declare" are ALSO set up in
@@ -1315,32 +1744,32 @@ setup_type const eval2_setup[] =
  * way.
  */
 {
-    {"and",                     and_fn, bad_special2, bad_specialn},
-    {"catch",                   catch_fn, bad_special2, bad_specialn},
-    {"cond",                    cond_fn, bad_special2, bad_specialn},
+    {"and",                     and_fn, (two_args *)noisy_and_fn, bad_specialn},
+    {"catch",                   catch_fn, (two_args *)noisy_catch_fn, bad_specialn},
+    {"cond",                    cond_fn, (two_args *)noisy_cond_fn, bad_specialn},
 /*
  * I am not over-enthusiastic about supporting eval-when in CSL, but
  * something of that sort seems needed by some bits of code that I have
  * come across...
  */
-    {"eval-when",               eval_when_fn, bad_special2, bad_specialn},
-    {"function",                function_fn, bad_special2, bad_specialn},
-    {"go",                      go_fn, bad_special2, bad_specialn},
-    {"if",                      if_fn, bad_special2, bad_specialn},
-    {"let*",                    letstar_fn, bad_special2, bad_specialn},
+    {"eval-when",               eval_when_fn, (two_args *)noisy_eval_when_fn, bad_specialn},
+    {"function",                function_fn, (two_args *)function_fn, bad_specialn},
+    {"go",                      go_fn, (two_args *)go_fn, bad_specialn},
+    {"if",                      if_fn, (two_args *)noisy_if_fn, bad_specialn},
+    {"let*",                    letstar_fn, (two_args *)noisy_letstar_fn, bad_specialn},
 /* DE and DM are used as low level primitives in the Common Lisp bootstrap */
-    {"de",                      defun_fn, bad_special2, bad_specialn},
-    {"dm",                      defmacro_fn, bad_special2, bad_specialn},
-    {"declare",                 declare_fn, bad_special2, bad_specialn},
+    {"de",                      defun_fn, (two_args *)defun_fn, bad_specialn},
+    {"dm",                      defmacro_fn, (two_args *)defmacro_fn, bad_specialn},
+    {"declare",                 declare_fn, (two_args *)declare_fn, bad_specialn},
 #ifdef COMMON
-    {"block",                   block_fn, bad_special2, bad_specialn},
-    {"compiler-let",            compiler_let_fn, bad_special2, bad_specialn},
-    {"flet",                    flet_fn, bad_special2, bad_specialn},
-    {"labels",                  labels_fn, bad_special2, bad_specialn},
-    {"let",                     let_fn, bad_special2, bad_specialn},
+    {"block",                   block_fn, (two_args *)noisy_block_fn, bad_specialn},
+    {"compiler-let",            compiler_let_fn, (two_args *)compiler_let_fn, bad_specialn},
+    {"flet",                    flet_fn, (two_args *)noisy_flet_fn, bad_specialn},
+    {"labels",                  labels_fn, (two_args *)noisy_labels_fn, bad_specialn},
+    {"let",                     let_fn, (two_args *)noisy_let_fn, bad_specialn},
 #else
-    {"~block",                  block_fn, bad_special2, bad_specialn},
-    {"~let",                    let_fn, bad_special2, bad_specialn},
+    {"~block",                  block_fn, (two_args *)noisy_block_fn, bad_specialn},
+    {"~let",                    let_fn, (two_args *)noisy_let_fn, bad_specialn},
 #endif
     {NULL,                      0, 0, 0}};
 

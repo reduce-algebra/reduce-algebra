@@ -1,11 +1,11 @@
-/*  eval1.c                          Copyright (C) 1989-2013 Codemist Ltd */
+/*  eval1.c                          Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * Interpreter (part 1).
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -209,15 +209,14 @@ restart:
  */
             Header h = qheader(fn);
             if (h & SYM_SPECIAL_FORM)
-            {   Lisp_Object v;
+            {
 #ifdef DEBUG
                 if (qfn1(fn) == NULL)
                 {   term_printf("Illegal special form\n");
                     my_exit(EXIT_FAILURE);
                 }
 #endif
-                v = ((Special_Form *)qfn1(fn))(args, env);
-                return v;
+                return ((Special_Form *)qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
             {
@@ -293,7 +292,235 @@ ordinary_function:
  * or a closure, env will be irrelevant.  The arguments are on the Lisp
  * stack, and it is the responsibility of apply() to pop them.
  */
-            return apply(fn, nargs, env, fn);
+            return apply(fn, nargs, env, fn, 0);
+        }
+    }
+}
+
+Lisp_Object noisy_Ceval(Lisp_Object u, Lisp_Object env)
+{
+    Lisp_Object nil = C_nil;
+#ifdef COMMON
+    int t;
+#ifdef CHECK_STACK
+    if (check_stack(__FILE__,__LINE__)) return aerror("deep stack in eval");
+#endif
+restart:
+    t = (int)u & TAG_BITS;
+/*
+ * The first case considered is of symbols - lexical and special bindings
+ * have to be sorted out.
+ */
+    if (t == TAG_SYMBOL)
+    {
+        Header h = qheader(u);
+        if (h & SYM_SPECIAL_VAR)
+        {   Lisp_Object v = qvalue(u);
+            if (v == unset_var) return error(1, err_unset_var, u);
+            else return onevalue(v);
+        }
+        else
+        {
+            while (env != nil)
+            {   Lisp_Object p = qcar(env);
+                if (qcar(p) == u)
+                {   Lisp_Object v =qcdr(p);
+/*
+ * If a variable is lexically bound to the value work_symbol that means
+ * that the symbol has been (lexically) declared to be special, so its
+ * value cell should be inspected.
+ */
+                    if (v == work_symbol)
+                    {   v = qvalue(u);
+                        if (v == unset_var) return error(1, err_unset_var, u);
+                    }
+                    return onevalue(v);
+                }
+                env = qcdr(env);
+            }
+            {   Lisp_Object v = qvalue(u);
+                if (v == unset_var) return error(1, err_unset_var, u);
+                else return onevalue(v);
+            }
+        }
+    }
+/*
+ * Things that are neither symbols nor lists evaluate to themselves,
+ * e.g. numbers and vectors.
+ */
+    else if (t != TAG_CONS) return onevalue(u);
+    else
+#endif /* COMMON */
+    {
+/*
+ * The final case is that of a list (fn ...), and one case that has to
+ * be checked is if fn is lexically bound.
+ */
+        Lisp_Object fn, args;
+#ifdef COMMON
+/*
+ * The test for nil here is because although nil is a symbol the tagging
+ * structure tested here marks it as a list.
+ */
+        if (u == nil) return onevalue(nil);
+#endif
+        stackcheck2(0, u, env);
+        fn = qcar(u);
+        args = qcdr(u);
+#ifdef COMMON
+/*
+ * Local function bindings must be looked for first.
+ */
+        {   Lisp_Object p;
+            for (p=env; p!=nil; p=qcdr(p))
+            {   Lisp_Object w = qcar(p);
+/*
+ * The form (<list> . sym) is used in an environment to indicate a local
+ * binding of a function, either as a regular function or as a macro
+ * (i.e. flet or macrolet).  The structure of the list distinguishes
+ * between these two cases.
+ */
+                if (qcdr(w) == fn && is_cons(w = qcar(w)) && w!=nil)
+                {
+                    p = qcar(w);
+                    if (p == funarg) /* ordinary function */
+                    {   fn = w;      /* (funarg ...) is OK to apply */
+                        goto ordinary_function;
+                    }
+/*
+ * Here it is a local macro. Observe that the macroexpansion is done
+ * with respect to an empty environment.  Macros that are defined at the same
+ * time may seem to be mutually recursive but there is a sense in which they
+ * are not (as well as a sense in which they are) - self and cross references
+ * only happen AFTER an expansion and can not happen during one.
+ */
+                    push2(u, env);
+                    w = cons(lambda, w);
+                    nil = C_nil;
+                    if (!exception_pending())
+                        p = Lfuncalln(nil, 4, qvalue(macroexpand_hook),
+                                      w, u, nil);
+                    pop2(env, u);
+                    nil = C_nil;
+                    if (exception_pending())
+                    {   flip_exception();
+                        if (SHOW_FNAME)
+                        {   err_printf("\nMacroexpanding: ");
+                            loop_print_error(u);
+                            nil = C_nil;
+                            if (exception_pending()) flip_exception();
+                        }
+                        flip_exception();
+                        return nil;
+                    }
+                    u = p;
+                    goto restart;
+                }
+            }
+        }
+#endif
+        if (is_symbol(fn))
+        {
+/*
+ * Special forms and macros are checked for next.  Special forms
+ * take precedence over macros.
+ */
+            Header h = qheader(fn);
+            if (h & SYM_SPECIAL_FORM)
+            {
+#ifdef DEBUG
+                if (qfn1(fn) == NULL)
+                {   term_printf("Illegal special form\n");
+                    my_exit(EXIT_FAILURE);
+                }
+#endif
+/*
+ * The fact that I use the special form's handler function from the
+ * qfn2 cell arranges to pass down that fact that I am "noisy", ie dealing
+ * with tracesetq.
+ */
+                return ((Special_Form *)qfn2(fn))(args, env);
+            }
+            else if (h & SYM_MACRO)
+            {
+                push2(u, env);
+/*
+ * the environment passed to macroexpand should only be needed to cope
+ * with macrolet, I think.  Since I use just one datastructure for the
+ * whole environment I also pass along lexical bindings etc, but I hope that
+ * they will never be accessed.  I do not think that macrolet is important
+ * enough to call for complication and slow-down in the interpreter this
+ * way - but then I am not exactly what you would call a Common Lisp Fan!
+ */
+                fn = macroexpand(u, env);
+                pop2(env, u);
+                nil = C_nil;
+                if (exception_pending())
+                {   flip_exception();
+                    if (SHOW_FNAME)
+                    {   err_printf("\nMacroexpanding: ");
+                        loop_print_error(u);
+                        nil = C_nil;
+                        if (exception_pending()) flip_exception();
+                    }
+                    flip_exception();
+                    return nil;
+                }
+                return noisy_eval(fn, env);
+            }
+        }
+/*
+ * Otherwise we have a regular function call.  I prepare the args and
+ * call APPLY.
+ */
+#ifdef COMMON
+ordinary_function:
+#endif
+        {   int nargs = 0;
+            Lisp_Object *save_stack = stack;
+/*
+ * Args are built up on the stack here...
+ */
+            while (consp(args))
+            {   Lisp_Object w;
+                push3(fn, args, env);
+                w = qcar(args);
+                w = noisy_eval(w, env);
+                pop3(env, args, fn);
+/*
+ * nil having its mark bit set indicates that a special sort of exit
+ * is in progress.  Multiple values can be ignored in this case.
+ */
+                nil = C_nil;
+                if (exception_pending())
+                {   flip_exception();
+                    stack = save_stack;
+                    if (SHOW_ARGS)
+                    {   err_printf("\nEvaluating: ");
+                        loop_print_error(qcar(args));
+                        nil = C_nil;
+                        if (exception_pending()) flip_exception();
+                    }
+                    flip_exception();
+                    return nil;
+                }
+                push(w);        /* args build up on the Lisp stack */
+                nargs++;
+                args = qcdr(args);
+            }
+
+/*
+ * I pass the environment down to apply() because it will be used if the
+ * function was a simple lambda expression.  If the function is a symbol
+ * or a closure, env will be irrelevant.  The arguments are on the Lisp
+ * stack, and it is the responsibility of apply() to pop them. There may
+ * be a question here about traceset and
+ *   ((lambda (x) ... (setq ...) ...) ARG)
+ * where I think that the setq will not be traced. If I needed to deal
+ * with that I would need a noisy_apply such that tracesetq context was
+ * preserved into the application of visible lambda expressions.
+ */
+            return apply(fn, nargs, env, fn, 1);
         }
     }
 }
@@ -371,7 +598,7 @@ static Lisp_Object key_lookup(Lisp_Object keyname, Lisp_Object args)
 #endif
 
 Lisp_Object apply_lambda(Lisp_Object def, int nargs,
-                         Lisp_Object env, Lisp_Object name)
+                         Lisp_Object env, Lisp_Object name, int noisy)
 /*
  * Here def is a lambda expression (sans the initial lambda) that is to
  * be applied.  Much horrible messing about is needed so that I can cope
@@ -863,13 +1090,13 @@ case STATE_AUX:
         Lisp_Object qname = name;
         popv(stack_used);
         push(qname);
-        bodyx = progn_fn(bodyx, envx);
+        bodyx = noisy ? noisy_progn_fn(bodyx, envx) : progn_fn(bodyx, envx);
         pop(qname);
         nil = C_nil;
         if (exception_pending()) return qname;
         return bodyx;
     }
-    {   body = progn_fn(body, env);
+    {   body = noisy ? noisy_progn_fn(body, env) : progn_fn(body, env);
         nil = C_nil;
         if (exception_pending()) goto unwind_special_bindings;
         while (specenv != nil)
@@ -882,7 +1109,7 @@ case STATE_AUX:
             popv(stack_used);
 /*
  * note that exit_count has not been disturbed since I called progn_fn,
- * so the numbert of values that will be returned remains correctly
+ * so the number of values that will be returned remains correctly
  * established (in Common Lisp mode where it is needed).
  */
             return bodyx;
@@ -967,7 +1194,7 @@ Lisp_Object MS_CDECL Lapply_n(Lisp_Object nil, int nargs, ...)
     }
     else i = 0;
     stackcheck1(stack-stack_save, fn);
-    return apply(fn, i, nil, fn);
+    return apply(fn, i, nil, fn, 0);
 }
 
 Lisp_Object Lapply_1(Lisp_Object nil, Lisp_Object fn)
@@ -984,7 +1211,7 @@ Lisp_Object Lapply0(Lisp_Object nil, Lisp_Object fn)
 {
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
     stackcheck1(0, fn);
-    return apply(fn, 0, C_nil, fn);
+    return apply(fn, 0, C_nil, fn, 0);
 }
 
 Lisp_Object Lapply1(Lisp_Object nil, Lisp_Object fn, Lisp_Object a)
@@ -992,7 +1219,7 @@ Lisp_Object Lapply1(Lisp_Object nil, Lisp_Object fn, Lisp_Object a)
     if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a);
     push(a);
     stackcheck1(1, fn);
-    return apply(fn, 1, C_nil, fn);
+    return apply(fn, 1, C_nil, fn, 0);
 }
 
 Lisp_Object MS_CDECL Lapply2(Lisp_Object nil, int nargs, ...)
@@ -1008,7 +1235,7 @@ Lisp_Object MS_CDECL Lapply2(Lisp_Object nil, int nargs, ...)
     if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a, b);
     push2(a, b);
     stackcheck1(2, fn);
-    return apply(fn, 2, C_nil, fn);
+    return apply(fn, 2, C_nil, fn, 0);
 }
 
 Lisp_Object MS_CDECL Lapply3(Lisp_Object nil, int nargs, ...)
@@ -1025,14 +1252,14 @@ Lisp_Object MS_CDECL Lapply3(Lisp_Object nil, int nargs, ...)
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a, b, c);
     push3(a, b, c);
     stackcheck1(3, fn);
-    return apply(fn, 3, C_nil, fn);
+    return apply(fn, 3, C_nil, fn, 0);
 }
 
 Lisp_Object Lfuncall1(Lisp_Object nil, Lisp_Object fn)
 {
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
     stackcheck1(0, fn);
-    return apply(fn, 0, nil, fn);
+    return apply(fn, 0, nil, fn, 0);
 }
 
 Lisp_Object Lfuncall2(Lisp_Object nil, Lisp_Object fn, Lisp_Object a1)
@@ -1040,7 +1267,7 @@ Lisp_Object Lfuncall2(Lisp_Object nil, Lisp_Object fn, Lisp_Object a1)
     if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a1);
     push(a1);
     stackcheck1(1, fn);
-    return apply(fn, 1, nil, fn);
+    return apply(fn, 1, nil, fn, 0);
 }
 
 static Lisp_Object MS_CDECL Lfuncalln_sub(Lisp_Object nil, int nargs, va_list a)
@@ -1049,7 +1276,7 @@ static Lisp_Object MS_CDECL Lfuncalln_sub(Lisp_Object nil, int nargs, va_list a)
     fn = va_arg(a, Lisp_Object);
     push_args_1(a, nargs);
     stackcheck1(stack-stack_save, fn);
-    return apply(fn, nargs-1, nil, fn);
+    return apply(fn, nargs-1, nil, fn, 0);
 }
 
 Lisp_Object MS_CDECL Lfuncalln(Lisp_Object nil, int nargs, ...)
@@ -1067,14 +1294,14 @@ case 3: fn = va_arg(a, Lisp_Object);
         a2 = va_arg(a, Lisp_Object);
         if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a1, a2);
         push2(a1, a2);
-        return apply(fn, 2, nil, fn);
+        return apply(fn, 2, nil, fn, 0);
 case 4: fn = va_arg(a, Lisp_Object);
         a1 = va_arg(a, Lisp_Object);
         a2 = va_arg(a, Lisp_Object);
         a3 = va_arg(a, Lisp_Object);
         if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a1, a2, a3);
         push3(a1, a2, a3);
-        return apply(fn, 3, nil, fn);
+        return apply(fn, 3, nil, fn, 0);
 case 5: fn = va_arg(a, Lisp_Object);
         a1 = va_arg(a, Lisp_Object);
         a2 = va_arg(a, Lisp_Object);
@@ -1082,7 +1309,7 @@ case 5: fn = va_arg(a, Lisp_Object);
         a4 = va_arg(a, Lisp_Object);
         if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 4, a1, a2, a3, a4);
         push4(a1, a2, a3, a4);
-        return apply(fn, 4, nil, fn);
+        return apply(fn, 4, nil, fn, 0);
 default:
         return Lfuncalln_sub(nil, nargs, a);
     }
@@ -1164,7 +1391,7 @@ Lisp_Object mv_call_fn(Lisp_Object args, Lisp_Object env)
         args = qcdr(args);
     }
     stackcheck2(stack-stack_save, fn, env);
-    return apply(fn, i, env, fn);
+    return apply(fn, i, env, fn, 0);
 }
 
 #endif
@@ -1174,7 +1401,7 @@ Lisp_Object interpreted1(Lisp_Object def, Lisp_Object a1)
     Lisp_Object nil = C_nil;
     push(a1);
     stackcheck1(1, def);
-    return apply_lambda(def, 1, nil, def);
+    return apply_lambda(def, 1, nil, def, 0);
 }
 
 Lisp_Object interpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
@@ -1182,7 +1409,7 @@ Lisp_Object interpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     Lisp_Object nil = C_nil;
     push2(a1, a2);
     stackcheck1(2, def);
-    return apply_lambda(def, 2, nil, def);
+    return apply_lambda(def, 2, nil, def, 0);
 }
 
 Lisp_Object MS_CDECL interpretedn(Lisp_Object def, int nargs, ...)
@@ -1201,7 +1428,7 @@ Lisp_Object MS_CDECL interpretedn(Lisp_Object def, int nargs, ...)
         push_args(a, nargs);
     }
     stackcheck1(stack-stack_save, def);
-    return apply_lambda(def, nargs, nil, def);
+    return apply_lambda(def, nargs, nil, def, 0);
 }
 
 Lisp_Object funarged1(Lisp_Object def, Lisp_Object a1)
@@ -1209,7 +1436,7 @@ Lisp_Object funarged1(Lisp_Object def, Lisp_Object a1)
     Lisp_Object nil = C_nil;
     push(a1);
     stackcheck1(1, def);
-    return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def), 0);
 }
 
 Lisp_Object funarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
@@ -1217,7 +1444,7 @@ Lisp_Object funarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     Lisp_Object nil = C_nil;
     push2(a1, a2);
     stackcheck1(2, def);
-    return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
 }
 
 Lisp_Object MS_CDECL funargedn(Lisp_Object def, int nargs, ...)
@@ -1230,7 +1457,7 @@ Lisp_Object MS_CDECL funargedn(Lisp_Object def, int nargs, ...)
         push_args(a, nargs);
     }
     stackcheck1(stack-stack_save, def);
-    return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def), 0);
 }
 
 /*
@@ -1242,7 +1469,7 @@ Lisp_Object double_interpreted1(Lisp_Object def, Lisp_Object a1)
     Lisp_Object nil = C_nil;
     push(a1);
     stackcheck1(1, def);
-    return apply_lambda(def, 1, nil, def);
+    return apply_lambda(def, 1, nil, def, 0);
 }
 
 Lisp_Object double_interpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
@@ -1250,7 +1477,7 @@ Lisp_Object double_interpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     Lisp_Object nil = C_nil;
     push2(a1, a2);
     stackcheck1(2, def);
-    return apply_lambda(def, 2, nil, def);
+    return apply_lambda(def, 2, nil, def, 0);
 }
 
 Lisp_Object MS_CDECL double_interpretedn(Lisp_Object def, int nargs, ...)
@@ -1269,7 +1496,7 @@ Lisp_Object MS_CDECL double_interpretedn(Lisp_Object def, int nargs, ...)
         push_args(a, nargs);
     }
     stackcheck1(stack-stack_save, def);
-    return apply_lambda(def, nargs, nil, def);
+    return apply_lambda(def, nargs, nil, def, 0);
 }
 
 Lisp_Object double_funarged1(Lisp_Object def, Lisp_Object a1)
@@ -1277,7 +1504,7 @@ Lisp_Object double_funarged1(Lisp_Object def, Lisp_Object a1)
     Lisp_Object nil = C_nil;
     push(a1);
     stackcheck1(1, def);
-    return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def), 0);
 }
 
 Lisp_Object double_funarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
@@ -1285,7 +1512,7 @@ Lisp_Object double_funarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     Lisp_Object nil = C_nil;
     push2(a1, a2);
     stackcheck1(2, def);
-    return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
 }
 
 Lisp_Object MS_CDECL double_funargedn(Lisp_Object def, int nargs, ...)
@@ -1298,7 +1525,7 @@ Lisp_Object MS_CDECL double_funargedn(Lisp_Object def, int nargs, ...)
         push_args(a, nargs);
     }
     stackcheck1(stack-stack_save, def);
-    return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def), 0);
 }
 
 Lisp_Object traceinterpreted1(Lisp_Object def, Lisp_Object a1)
@@ -1316,7 +1543,7 @@ Lisp_Object traceinterpreted1(Lisp_Object def, Lisp_Object a1)
     trace_printf("Arg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    r = apply_lambda(qcdr(def), 1, nil, def);
+    r = apply_lambda(qcdr(def), 1, nil, def, 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1344,7 +1571,7 @@ Lisp_Object traceinterpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
         loop_print_trace(stack[i-2]);
         trace_printf("\n");
     }
-    r = apply_lambda(qcdr(def), 2, nil, def);
+    r = apply_lambda(qcdr(def), 2, nil, def, 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1377,7 +1604,7 @@ Lisp_Object MS_CDECL traceinterpretedn(Lisp_Object def, int nargs, ...)
         loop_print_trace(stack[i-nargs]);
         trace_printf("\n");
     }
-    r = apply_lambda(qcdr(def), nargs, nil, def);
+    r = apply_lambda(qcdr(def), nargs, nil, def, 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1400,7 +1627,7 @@ Lisp_Object tracefunarged1(Lisp_Object def, Lisp_Object a1)
     loop_print_trace(qcar(def));
     trace_printf(" (1 arg)\n");
     def = qcdr(def);
-    r = apply_lambda(qcdr(def), 1, qcar(def), qcdr(def));
+    r = apply_lambda(qcdr(def), 1, qcar(def), qcdr(def), 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1423,7 +1650,7 @@ Lisp_Object tracefunarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     loop_print_trace(qcar(def));
     trace_printf(" (2 args)\n");
     def = qcdr(def);
-    r = apply_lambda(qcdr(def), 2, qcar(def), qcdr(def));
+    r = apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1451,7 +1678,167 @@ Lisp_Object MS_CDECL tracefunargedn(Lisp_Object def, int nargs, ...)
     loop_print_trace(qcar(def));
     trace_printf(" (%d args)\n", nargs);
     def = qcdr(def);
-    r = apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
+    r = apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def), 0);
+    errexit();
+    push(r);
+    trace_printf("Value = ");
+    loop_print_trace(r);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
+
+Lisp_Object tracesetinterpreted1(Lisp_Object def, Lisp_Object a1)
+/*
+ * Like interpreted() but the definition has the fn name consed on the front
+ */
+{
+    Lisp_Object nil = C_nil, r;
+    push(a1);
+    stackcheck1(1, def);
+    freshline_trace();
+    trace_printf("Entering ");
+    loop_print_trace(qcar(def));
+    trace_printf(" (1 arg)\n");
+    trace_printf("Arg1: ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    r = apply_lambda(qcdr(def), 1, nil, def, 1);
+    errexit();
+    push(r);
+    trace_printf("Value = ");
+    loop_print_trace(r);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
+
+Lisp_Object tracesetinterpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
+/*
+ * Like interpreted() but the definition has the fn name consed on the front
+ */
+{
+    Lisp_Object nil = C_nil, r;
+    int i;
+    push2(a1, a2);
+    stackcheck1(2, def);
+    freshline_trace();
+    trace_printf("Entering ");
+    loop_print_trace(qcar(def));
+    trace_printf(" (2 args)\n");
+    for (i=1; i<=2; i++)
+    {   trace_printf("Arg%d: ", i);
+        loop_print_trace(stack[i-2]);
+        trace_printf("\n");
+    }
+    r = apply_lambda(qcdr(def), 2, nil, def, 1);
+    errexit();
+    push(r);
+    trace_printf("Value = ");
+    loop_print_trace(r);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
+
+Lisp_Object MS_CDECL tracesetinterpretedn(Lisp_Object def, int nargs, ...)
+/*
+ * Like interpreted() but the definition has the fn name consed on the front
+ */
+{
+    int i;
+    Lisp_Object nil = C_nil, r;
+    Lisp_Object *stack_save = stack;
+    va_list a;
+    if (nargs != 0)
+    {   va_start(a, nargs);
+        push_args(a, nargs);
+    }
+    stackcheck1(stack-stack_save, def);
+    freshline_trace();
+    trace_printf("Entering ");
+    loop_print_trace(qcar(def));
+    trace_printf(" (%d args)\n", nargs);
+    for (i=1; i<=nargs; i++)
+    {   trace_printf("Arg%d: ", i);
+        loop_print_trace(stack[i-nargs]);
+        trace_printf("\n");
+    }
+    r = apply_lambda(qcdr(def), nargs, nil, def, 1);
+    errexit();
+    push(r);
+    trace_printf("Value = ");
+    loop_print_trace(r);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
+
+Lisp_Object tracesetfunarged1(Lisp_Object def, Lisp_Object a1)
+/*
+ * Like funarged() but with some printing
+ */
+{
+    Lisp_Object nil = C_nil, r;
+    push(a1);
+    stackcheck1(1, def);
+    freshline_trace();
+    trace_printf("Entering funarg ");
+    loop_print_trace(qcar(def));
+    trace_printf(" (1 arg)\n");
+    def = qcdr(def);
+    r = apply_lambda(qcdr(def), 1, qcar(def), qcdr(def), 1);
+    errexit();
+    push(r);
+    trace_printf("Value = ");
+    loop_print_trace(r);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
+
+Lisp_Object tracesetfunarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
+/*
+ * Like funarged() but with some printing
+ */
+{
+    Lisp_Object nil = C_nil, r;
+    push2(a1, a2);
+    stackcheck1(2, def);
+    freshline_trace();
+    trace_printf("Entering funarg ");
+    loop_print_trace(qcar(def));
+    trace_printf(" (2 args)\n");
+    def = qcdr(def);
+    r = apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 1);
+    errexit();
+    push(r);
+    trace_printf("Value = ");
+    loop_print_trace(r);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
+
+Lisp_Object MS_CDECL tracesetfunargedn(Lisp_Object def, int nargs, ...)
+/*
+ * Like funarged() but with some printing
+ */
+{
+    Lisp_Object nil = C_nil, r;
+    Lisp_Object *stack_save = stack;
+    va_list a;
+    if (nargs != 0)
+    {   va_start(a, nargs);
+        push_args(a, nargs);
+    }
+    stackcheck1(stack-stack_save, def);
+    freshline_trace();
+    trace_printf("Entering funarg ");
+    loop_print_trace(qcar(def));
+    trace_printf(" (%d args)\n", nargs);
+    def = qcdr(def);
+    r = apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def), 1);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1606,7 +1993,7 @@ Lisp_Object autoload1(Lisp_Object fname, Lisp_Object a1)
         pop(fname);
     }
     pop(fname);
-    return apply(fname, 1, nil, fname);
+    return apply(fname, 1, nil, fname, 0);
 }
 
 Lisp_Object autoload2(Lisp_Object fname, Lisp_Object a1, Lisp_Object a2)
@@ -1623,7 +2010,7 @@ Lisp_Object autoload2(Lisp_Object fname, Lisp_Object a1, Lisp_Object a2)
         pop(fname);
     }
     pop(fname);
-    return apply(fname, 2, nil, fname);
+    return apply(fname, 2, nil, fname, 0);
 }
 
 Lisp_Object MS_CDECL autoloadn(Lisp_Object fname, int nargs, ...)
@@ -1643,7 +2030,7 @@ Lisp_Object MS_CDECL autoloadn(Lisp_Object fname, int nargs, ...)
         pop(fname);
     }
     pop(fname);
-    return apply(fname, nargs, nil, fname);
+    return apply(fname, nargs, nil, fname, 0);
 }
 
 Lisp_Object undefined1(Lisp_Object fname, Lisp_Object a1)

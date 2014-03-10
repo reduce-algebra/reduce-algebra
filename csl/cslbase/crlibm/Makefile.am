@@ -44,7 +44,7 @@ $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
 	then \
 	  $(top_srcdir)/../../../autogen.sh ; \
 	else echo Redundant attempt to remake configure ; \
-        fi
+	fi
 
 $(srcdir)/crlibm_config.h.in:	$(am__configure_deps) $(top_srcdir)/configure
 	@if test $(srcdir)/crlibm_config.h.in -ot $(top_srcdir)/configure.ac || \

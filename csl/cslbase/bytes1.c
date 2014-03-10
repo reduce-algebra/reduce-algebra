@@ -1,12 +1,12 @@
 /*
- * bytes1.c              Copyright (C) 1991-2011, Codemist Ltd
+ * bytes1.c                           Copyright (C) 1991-2014, Codemist Ltd
  *
  *
  * Bytecode interpreter for Lisp
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1339,6 +1339,10 @@ char *native_stack = NULL, *native_stack_base = NULL;
 Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                                  Lisp_Object *entry_stack)
 {
+/*
+ * entry_stack may be its "1" bit set if I am to be "noisy" whenever I
+ * assign to a special/global variable.
+ */
     register unsigned char *ppc;
     register Lisp_Object A_reg;
     Lisp_Object nil = C_nil;
@@ -1370,6 +1374,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  */
 #ifndef NO_BYTECOUNT
     int32_t opcodes = 30; /* Attribute 30-bytecode overhead to entry sequence */
+#endif
 #ifdef CHECK_STACK
     {   char *my_stack = (char *)&opcodes;
         if (native_stack == NULL) native_stack = native_stack_base = my_stack;
@@ -1381,7 +1386,6 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                          native_stack_base - my_stack);
         }
     }
-#endif
 #endif
 #ifdef DEBUG
 /*
@@ -1437,6 +1441,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * information about the call stack.
  */
 #ifdef ACN
+/* ... except that I will only go the whole hog if one defines ACN */
     push2(code, lit);
     C_stack = stack;
     callstack = cons(elt(lit, 0), callstack);
@@ -1537,7 +1542,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-            C_stack = entry_stack;
+            C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -1552,7 +1557,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-            C_stack = entry_stack;
+            C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -1567,7 +1572,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-            C_stack = entry_stack;
+            C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -1577,7 +1582,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-            C_stack = entry_stack;
+            C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -1606,18 +1611,82 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #endif
 
     case OP_STOREFREE:
+            if ((1 & (int)entry_stack) != 0)
+            {   push4(codevec, litvec, B_reg, A_reg);
+                save_pc();
+                C_stack = stack;
+                freshline_trace();
+                trace_printf("+++ Inside ");
+                loop_print_trace(elt(litvec, 0));
+                trace_printf(": ");
+                loop_print_trace(elt(litvec, *ppc));
+                trace_printf(" := ");
+                loop_print_trace(C_stack[0]);
+                trace_printf("\n");
+                stack = C_stack;
+                pop4(A_reg, B_reg, litvec, codevec);
+                restore_pc();
+            }
             qvalue(elt(litvec, next_byte)) = A_reg;  /* store into special var */
             continue;
 
     case OP_STOREFREE1:
+            if ((1 & (int)entry_stack) != 0)
+            {   push4(codevec, litvec, B_reg, A_reg);
+                save_pc();
+                C_stack = stack;
+                freshline_trace();
+                trace_printf("+++ Inside ");
+                loop_print_trace(elt(litvec, 0));
+                trace_printf(": ");
+                loop_print_trace(elt(litvec, 1));
+                trace_printf(" := ");
+                loop_print_trace(C_stack[0]);
+                trace_printf("\n");
+                stack = C_stack;
+                pop4(A_reg, B_reg, litvec, codevec);
+                restore_pc();
+            }
             qvalue(elt(litvec, 1)) = A_reg;
             continue;
 
     case OP_STOREFREE2:
+            if ((1 & (int)entry_stack) != 0)
+            {   push4(codevec, litvec, B_reg, A_reg);
+                save_pc();
+                C_stack = stack;
+                freshline_trace();
+                trace_printf("+++ Inside ");
+                loop_print_trace(elt(litvec, 0));
+                trace_printf(": ");
+                loop_print_trace(elt(litvec, 2));
+                trace_printf(" := ");
+                loop_print_trace(C_stack[0]);
+                trace_printf("\n");
+                stack = C_stack;
+                pop4(A_reg, B_reg, litvec, codevec);
+                restore_pc();
+            }
             qvalue(elt(litvec, 2)) = A_reg;
             continue;
 
     case OP_STOREFREE3:
+            if ((1 & (int)entry_stack) != 0)
+            {   push4(codevec, litvec, B_reg, A_reg);
+                save_pc();
+                C_stack = stack;
+                freshline_trace();
+                trace_printf("+++ Inside ");
+                loop_print_trace(elt(litvec, 0));
+                trace_printf(": ");
+                loop_print_trace(elt(litvec, 3));
+                trace_printf(" := ");
+                loop_print_trace(C_stack[0]);
+                trace_printf("\n");
+                stack = C_stack;
+                pop4(A_reg, B_reg, litvec, codevec);
+                restore_pc();
+            }
             qvalue(elt(litvec, 3)) = A_reg;
             continue;
 
@@ -2292,7 +2361,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             }
             push(A_reg);
             C_stack = stack;
-            A_reg = apply(B_reg, 1, nil, B_reg);
+            A_reg = apply(B_reg, 1, nil, B_reg, (1 & (int)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto apply_error;
             stack = C_stack;
@@ -2322,7 +2391,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             *stack = B_reg;
             push(A_reg);
             C_stack = stack;
-            A_reg = apply(r2, 2, nil, r2);
+            A_reg = apply(r2, 2, nil, r2, (1 & (int)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto apply_error;
             stack = C_stack;
@@ -2353,7 +2422,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             *stack = r1;
             push2(B_reg, A_reg);
             C_stack = stack;
-            A_reg = apply(r2, 3, nil, r2);
+            A_reg = apply(r2, 3, nil, r2, (1 & (int)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto apply_error;
             stack = C_stack;
@@ -3963,7 +4032,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                 save_pc();
                 C_stack = stack;
                 A_reg = elt(litvec, fname);
-                A_reg = apply(A_reg, (int)(*ppc), nil, A_reg);
+                A_reg = apply(A_reg, (int)(*ppc), nil, A_reg, (1 & (int)entry_stack));
                 nil = C_nil;
                 if (exception_pending()) goto ncall_error_exit;
                 stack = C_stack;         /* args were popped by apply */
@@ -4126,7 +4195,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 /*
  * Note that I never need to call something with 0, 1, 2 or 3 args here.
  */
-            A_reg = apply(A_reg, (int)(*(ppc+1)), nil, A_reg);
+            A_reg = apply(A_reg, (int)(*(ppc+1)), nil, A_reg, (1 & (int)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto ncall_error_exit;
             stack = C_stack;                    /* args were popped by apply */
@@ -4776,7 +4845,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-            C_stack = entry_stack;
+            C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -5177,7 +5246,7 @@ jcall0: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
@@ -5190,7 +5259,7 @@ jcall0: r1 = elt(litvec, fname);
  * I make TRACECODED a special case, in effect writing it out in-line
  * here, to avoid some ugly confusion with backtraces following tail calls.
  */
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push3(litvec, codevec, r2);
             C_stack = stack;
             trace_print_0(elt(litvec, 0), stack);
@@ -5201,7 +5270,7 @@ jcall0: r1 = elt(litvec, fname);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        C_stack = entry_stack;
+        C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -5263,7 +5332,7 @@ jcall1: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push(A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
@@ -5273,7 +5342,7 @@ jcall1: r1 = elt(litvec, fname);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push(A_reg);
             push3(litvec, codevec, r2);
             C_stack = stack;
@@ -5285,7 +5354,7 @@ jcall1: r1 = elt(litvec, fname);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        C_stack = entry_stack;
+        C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -5365,7 +5434,7 @@ jcall2: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push2(B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
@@ -5375,7 +5444,7 @@ jcall2: r1 = elt(litvec, fname);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push2(B_reg, A_reg);
             push3(litvec, codevec, r2);
             C_stack = stack;
@@ -5387,7 +5456,7 @@ jcall2: r1 = elt(litvec, fname);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        C_stack = entry_stack;
+        C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -5451,7 +5520,7 @@ jcall3: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push3(r2, B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
@@ -5461,7 +5530,7 @@ jcall3: r1 = elt(litvec, fname);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
-            stack = entry_stack;
+            stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push3(r2, B_reg, A_reg);
             push3(litvec, codevec, r3);
             C_stack = stack;
@@ -5473,7 +5542,7 @@ jcall3: r1 = elt(litvec, fname);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        C_stack = entry_stack;
+        C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -5517,13 +5586,13 @@ jcalln:
  * It is strongly desirable that I do so so that backtraces will work
  * better.
  */
-        A_reg = apply(A_reg, (int)w, nil, A_reg);
+        A_reg = apply(A_reg, (int)w, nil, A_reg, (1 & (int)entry_stack));
         nil = C_nil;
         if (exception_pending()) goto ncall_error_exit;
 #ifndef NO_BYTECOUNT
         qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-        C_stack = entry_stack;
+        C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
 #endif
@@ -5622,8 +5691,8 @@ create_closure:
  * CATCH or an UNWIND-PROTECT marker.
  */
         for (;;)
-        {   unwind_stack(entry_stack, YES);
-            if (C_stack == entry_stack)
+        {   unwind_stack(((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1)), YES);
+            if (C_stack == ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1)))
             {   w = 0;
                 break;
             }
@@ -5663,7 +5732,7 @@ create_closure:
 #ifndef NO_BYTECOUNT
         qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
-        C_stack = entry_stack;
+        C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
 #endif

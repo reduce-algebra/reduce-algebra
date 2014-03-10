@@ -54,7 +54,6 @@ extern Lisp_Object wrong_no_na(Lisp_Object env, Lisp_Object a1);
 extern Lisp_Object wrong_no_nb(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
 extern Lisp_Object MS_CDECL wrong_no_1(Lisp_Object env, int nargs, ...);
 extern Lisp_Object MS_CDECL wrong_no_2(Lisp_Object env, int nargs, ...);
-extern Lisp_Object bad_special2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
 extern Lisp_Object MS_CDECL bad_specialn(Lisp_Object env, int nargs, ...);
 
 extern Lisp_Object aerror(char *s);         /* Called from C not Lisp */

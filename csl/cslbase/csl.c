@@ -682,14 +682,6 @@ Lisp_Object MS_CDECL wrong_no_2(Lisp_Object env, int nargs, ...)
     return wrong(2, nargs, env);
 }
 
-Lisp_Object bad_special2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2)
-{
-    CSL_IGNORE(env);
-    CSL_IGNORE(a1);
-    CSL_IGNORE(a2);
-    return aerror("call to special form");
-}
-
 Lisp_Object MS_CDECL bad_specialn(Lisp_Object env, int nargs, ...)
 {
     CSL_IGNORE(env);
@@ -956,9 +948,9 @@ static void lisp_main(void)
                     free(exit_charvec);
                     exit_charvec = NULL;
                     push(a);
-                    apply(supervisor, 1, nil, supervisor);
+                    apply(supervisor, 1, nil, supervisor, 0);
                 }
-                else apply(supervisor, 0, nil, supervisor);
+                else apply(supervisor, 0, nil, supervisor, 0);
             }
 /*
  * Here the default read-eval-print loop used if the user has not provided

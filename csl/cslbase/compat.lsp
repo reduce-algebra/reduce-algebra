@@ -34,7 +34,7 @@
 % variables (the one to !!fleps1 bit me!) that ought not to be done
 % more than once. 
 
-% $ Id: $
+% $Id$
 
 (cond
   ((not (fluidp '!!fleps1)) (progn
@@ -323,31 +323,38 @@ loop  (cond ((atom l) (return nil))
 (de putc (a b c)
    (put a b c))
 
-(de traceset1 (name)
-   (prog (w !*comp)
-      (setq w (getd name))
-      (cond ((not (and (eqcar w 'expr) (eqcar (cdr w) 'lambda)))
-         (princ "+++++ ") (prin name)
-         (printc " should be interpreted for traceset to work")
-         (return nil)))
-      (putd name 'expr (subst 'noisy!-setq 'setq (cdr w)))
-      (trace (list name))))
+(cond
+% Newer versions of CSL have traceset built in to the C-coded kernel and
+% so do not want this Lisp version.
+  ((null (getd 'traceset))
+   (progn
+      (de traceset1 (name)
+         (prog (w !*comp)
+            (setq w (getd name))
+            (cond ((not (and (eqcar w 'expr) (eqcar (cdr w) 'lambda)))
+               (princ "+++++ ") (prin name)
+               (printc " should be interpreted for traceset to work")
+               (return nil)))
+            (putd name 'expr (subst 'noisy!-setq 'setq (cdr w)))
+            (trace (list name))))
 
-(de untraceset1 (name)
-   (prog (w !*comp)
-      (setq w (getd name))
-      (cond ((not (and (eqcar w 'expr) (eqcar (cdr w) 'lambda)))
-         (princ "+++++ ") (prin name)
-         (printc " should be interpreted for untraceset to work")
-         (return nil)))
-      (putd name 'expr (subst 'setq 'noisy!-setq (cdr w)))
-      (untrace (list name))))
+      (de untraceset1 (name)
+         (prog (w !*comp)
+            (setq w (getd name))
+            (cond ((not (and (eqcar w 'expr) (eqcar (cdr w) 'lambda)))
+               (princ "+++++ ") (prin name)
+               (printc " should be interpreted for untraceset to work")
+               (return nil)))
+            (putd name 'expr (subst 'setq 'noisy!-setq (cdr w)))
+            (untrace (list name))))
 
-(de traceset (l)
-   (mapc l (function traceset1)))
+      (de traceset (l)
+         (mapc l (function traceset1)))
 
-(de untraceset (l)
-   (mapc l (function untraceset1)))
+      (de untraceset (l)
+         (mapc l (function untraceset1)))
+    )))
+
 
 (de deflist (a b)
   (prog (r)

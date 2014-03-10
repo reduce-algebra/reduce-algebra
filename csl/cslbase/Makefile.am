@@ -46,7 +46,7 @@ $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
 	then \
 	  $(top_srcdir)/../../autogen.sh ; \
 	else echo Redundant attempt to remake configure ; \
-        fi
+	fi
 
 $(srcdir)/config.h.in:	$(am__configure_deps) $(top_srcdir)/configure
 	@$(TRACE)if test $(srcdir)/config.h.in -ot $(top_srcdir)/configure.ac || \
@@ -823,6 +823,18 @@ $(srcdir)/../wxWidgets/wxWidgets_revision:	\
 	tar xfj support-packages/$$a ; \
 	chmod -R +rw wxWidgets-* ; \
 	mv wxWidgets-* wxWidgets ; \
+	find . \( -name configure.ac -o -name configure.in \
+	          -o -name Makefile.am \) -print | xargs touch ; \
+	sleep 1 ; \
+	find wxWidgets -name aclocal.m4 -print | xargs touch ; \
+	sleep 1 ; \
+	find wxWidgets -name configure -print | xargs touch ; \
+	find wxWidgets -name configure -print | xargs chmod +x ; \
+	sleep 1 ; \
+	find wxWidgets -name config.h.in -print | xargs touch ; \
+	sleep 1 ;
+	find wxWidgets -name Makefile.in -print | xargs touch ; \
+	cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets; \
 	cp $(srcdir)/../support-packages/wxWidgets_revision wxWidgets ; \
 	echo wxWidgets unpacked from archive $$a )
 
@@ -1791,7 +1803,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
-        else \
+	  else \
 	  $(RM) bootstrapreduce.img; \
 	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi

@@ -1,4 +1,4 @@
-/* externs.h                            Copyright (C) Codemist 1989-2013 */
+/* externs.h                            Copyright (C) Codemist 1989-2014 */
 
 /*
  *   Main batch of extern declarations.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1007,6 +1007,7 @@ extern Lisp_Object cons_no_gc(Lisp_Object a, Lisp_Object b);
 extern Lisp_Object cons_gc_test(Lisp_Object a);
 extern void        convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern Lisp_Object Ceval(Lisp_Object u, Lisp_Object env);
+extern Lisp_Object noisy_Ceval(Lisp_Object u, Lisp_Object env);
 extern uint32_t  Crand(void);
 extern Lisp_Object Cremainder(Lisp_Object a, Lisp_Object b);
 extern void        Csrand(uint32_t a, uint32_t b);
@@ -1022,9 +1023,9 @@ extern void dump_equals();
 #endif
 extern CSLbool equalp(Lisp_Object a, Lisp_Object b);
 extern Lisp_Object apply(Lisp_Object fn, int nargs,
-                         Lisp_Object env, Lisp_Object fname);
+                         Lisp_Object env, Lisp_Object fname, int noisy);
 extern Lisp_Object apply_lambda(Lisp_Object def, int nargs,
-                         Lisp_Object env, Lisp_Object name);
+                         Lisp_Object env, Lisp_Object name, int noisy);
 extern void        deallocate_pages(void);
 extern void        drop_heap_segments(void);
 extern Lisp_Object gcd(Lisp_Object a, Lisp_Object b);
@@ -1140,6 +1141,8 @@ extern void validate_string_fn(Lisp_Object a, char *f, int l);
 #ifdef COMMON
 #define eval(a, b) Ceval(a, b)
 #define voideval(a, b) Ceval(a, b)
+#define noisy_eval(a, b) noisy_Ceval(a, b)
+#define noisy_voideval(a, b) noisy_Ceval(a, b)
 #else
 /*
  * I lift the top test from eval out to be in-line so that I can
@@ -1157,6 +1160,14 @@ extern void validate_string_fn(Lisp_Object a, char *f, int l);
 /* voideval(a, b) is like (void)eval(a, b) */
 #define voideval(a, b) \
     if (is_cons(a)) Ceval(a, b) /* Beware "else" after this */
+#define noisy_eval(a, b) \
+    (is_cons(a) ? noisy_Ceval(a, b) : \
+     is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
+                     onevalue(qvalue(a))) : \
+     onevalue(a))
+/* voideval(a, b) is like (void)eval(a, b) */
+#define noisy_voideval(a, b) \
+    if (is_cons(a)) noisy_Ceval(a, b) /* Beware "else" after this */
 #endif
 
 /*
@@ -1268,11 +1279,14 @@ extern char program_name[64];
 extern Lisp_Object declare_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object function_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
-                            Lisp_Object env, int compilerp);
+                            Lisp_Object env, int compilerp, int noisy);
 extern Lisp_Object mv_call_fn(Lisp_Object args, Lisp_Object env);
+extern Lisp_Object noisy_mv_call_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env);
+extern Lisp_Object noisy_progn_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object quote_fn(Lisp_Object args, Lisp_Object env);
 extern Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env);
+extern Lisp_Object noisy_tagbody_fn(Lisp_Object args, Lisp_Object env);
 
 /*
  * The variables here are always extern - they never survive in an image

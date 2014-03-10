@@ -1708,6 +1708,10 @@ Lisp_Object Ltrace(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
+/*
+ * The following will undo traceset as well as trace.
+ */
+
 Lisp_Object Luntrace(Lisp_Object nil, Lisp_Object a)
 {
     Lisp_Object w = a;
@@ -1724,31 +1728,31 @@ Lisp_Object Luntrace(Lisp_Object nil, Lisp_Object a)
         {   one_args *f1 = qfn1(s);
             two_args *f2 = qfn2(s);
             n_args *fn = qfnn(s);
-            if (f1 == traceinterpreted1)
+            if (f1 == traceinterpreted1 || f1 == tracesetinterpreted1)
             {   set_fns(s, interpreted1, interpreted2, interpretedn);
                 qenv(s) = qcdr(qenv(s));
             }
-            else if (f1 == tracefunarged1)
+            else if (f1 == tracefunarged1 || f1 == tracesetfunarged1)
             {   set_fns(s, funarged1, funarged2, funargedn);
                 qenv(s) = qcdr(qenv(s));
             }
-            if (f1 == tracebytecoded1) ifn1(s) = (intptr_t)bytecoded1;
-            if (f2 == tracebytecoded2) ifn2(s) = (intptr_t)bytecoded2;
-            if (fn == tracebytecoded0) ifnn(s) = (intptr_t)bytecoded0;
-            if (fn == tracebytecoded3) ifnn(s) = (intptr_t)bytecoded3;
-            if (fn == tracebytecodedn) ifnn(s) = (intptr_t)bytecodedn;
-            if (f1 == tracebyteopt1) ifn1(s) = (intptr_t)byteopt1;
-            if (f2 == tracebyteopt2) ifn2(s) = (intptr_t)byteopt2;
-            if (fn == tracebyteoptn) ifnn(s) = (intptr_t)byteoptn;
-            if (f1 == tracebyteoptrest1) ifn1(s) = (intptr_t)byteoptrest1;
-            if (f2 == tracebyteoptrest2) ifn2(s) = (intptr_t)byteoptrest2;
-            if (fn == tracebyteoptrestn) ifnn(s) = (intptr_t)byteoptrestn;
-            if (f1 == tracehardopt1) ifn1(s) = (intptr_t)hardopt1;
-            if (f2 == tracehardopt2) ifn2(s) = (intptr_t)hardopt2;
-            if (fn == tracehardoptn) ifnn(s) = (intptr_t)hardoptn;
-            if (f1 == tracehardoptrest1) ifn1(s) = (intptr_t)hardoptrest1;
-            if (f2 == tracehardoptrest2) ifn2(s) = (intptr_t)hardoptrest2;
-            if (fn == tracehardoptrestn) ifnn(s) = (intptr_t)hardoptrestn;
+            if (f1 == tracebytecoded1  || f1 == tracesetbytecoded1  ) ifn1(s) = (intptr_t)bytecoded1;
+            if (f2 == tracebytecoded2  || f2 == tracesetbytecoded2  ) ifn2(s) = (intptr_t)bytecoded2;
+            if (fn == tracebytecoded0  || fn == tracesetbytecoded0  ) ifnn(s) = (intptr_t)bytecoded0;
+            if (fn == tracebytecoded3  || fn == tracesetbytecoded3  ) ifnn(s) = (intptr_t)bytecoded3;
+            if (fn == tracebytecodedn  || fn == tracesetbytecodedn  ) ifnn(s) = (intptr_t)bytecodedn;
+            if (f1 == tracebyteopt1    || f1 == tracesetbyteopt1    ) ifn1(s) = (intptr_t)byteopt1;
+            if (f2 == tracebyteopt2    || f2 == tracesetbyteopt2    ) ifn2(s) = (intptr_t)byteopt2;
+            if (fn == tracebyteoptn    || fn == tracesetbyteoptn    ) ifnn(s) = (intptr_t)byteoptn;
+            if (f1 == tracebyteoptrest1|| f1 == tracesetbyteoptrest1) ifn1(s) = (intptr_t)byteoptrest1;
+            if (f2 == tracebyteoptrest2|| f2 == tracesetbyteoptrest2) ifn2(s) = (intptr_t)byteoptrest2;
+            if (fn == tracebyteoptrestn|| fn == tracesetbyteoptrestn) ifnn(s) = (intptr_t)byteoptrestn;
+            if (f1 == tracehardopt1    || f1 == tracesethardopt1    ) ifn1(s) = (intptr_t)hardopt1;
+            if (f2 == tracehardopt2    || f2 == tracesethardopt2    ) ifn2(s) = (intptr_t)hardopt2;
+            if (fn == tracehardoptn    || fn == tracesethardoptn    ) ifnn(s) = (intptr_t)hardoptn;
+            if (f1 == tracehardoptrest1|| f1 == tracesethardoptrest1) ifn1(s) = (intptr_t)hardoptrest1;
+            if (f2 == tracehardoptrest2|| f2 == tracesethardoptrest2) ifn2(s) = (intptr_t)hardoptrest2;
+            if (fn == tracehardoptrestn|| fn == tracesethardoptrestn) ifnn(s) = (intptr_t)hardoptrestn;
             if (f1 == traced1_function)
             {   int nargs = funtable_nargs(table_entry);
                 set_fns(s, displaced1, displaced2, displacedn);
@@ -1774,6 +1778,119 @@ Lisp_Object Luntrace(Lisp_Object nil, Lisp_Object a)
                 displacedn = NULL;
             }
             qheader(s) &= ~SYM_TRACED;
+        }
+    }
+    return onevalue(a);
+}
+
+Lisp_Object Ltraceset(Lisp_Object nil, Lisp_Object a)
+{
+    Lisp_Object w = a;
+    if (symbolp(a))
+    {   a = ncons(a);
+        errexit();
+        w = a;
+    }
+    while (consp(w))
+    {   Lisp_Object s = qcar(w);
+        w = qcdr(w);
+        if (symbolp(s))
+        {   one_args *f1 = qfn1(s);
+            two_args *f2 = qfn2(s);
+            n_args *fn = qfnn(s);
+            int fixenv = 0, done = 0;
+            if (f1 == undefined1)
+            {   freshline_debug();
+                debug_printf("+++ ");
+                loop_print_debug(s);
+                debug_printf(" not yet defined\n");
+                continue;
+            }
+            qheader(s) |= SYM_TRACED;
+            if (f1 == interpreted1)
+            {   set_fns(s, tracesetinterpreted1, tracesetinterpreted2, tracesetinterpretedn);
+                fixenv = done = 1;
+            }
+            if (f1 == funarged1)
+            {   set_fns(s, tracesetfunarged1, tracesetfunarged2, tracesetfunargedn);
+                fixenv = done = 1;
+            }
+            if (fn == bytecoded0) ifnn(s) = (intptr_t)tracesetbytecoded0, done = 1;
+            if (f1 == bytecoded1) ifn1(s) = (intptr_t)tracesetbytecoded1, done = 1;
+            if (f2 == bytecoded2) ifn2(s) = (intptr_t)tracesetbytecoded2, done = 1;
+            if (fn == bytecoded3) ifnn(s) = (intptr_t)tracesetbytecoded3, done = 1;
+            if (fn == bytecodedn) ifnn(s) = (intptr_t)tracesetbytecodedn, done = 1;
+            if (f1 == byteopt1) ifn1(s) = (intptr_t)tracesetbyteopt1, done = 1;
+            if (f2 == byteopt2) ifn2(s) = (intptr_t)tracesetbyteopt2, done = 1;
+            if (fn == byteoptn) ifnn(s) = (intptr_t)tracesetbyteoptn, done = 1;
+            if (f1 == hardopt1) ifn1(s) = (intptr_t)tracesethardopt1, done = 1;
+            if (f2 == hardopt2) ifn2(s) = (intptr_t)tracesethardopt2, done = 1;
+            if (fn == hardoptn) ifnn(s) = (intptr_t)tracesethardoptn, done = 1;
+            if (f1 == byteoptrest1) ifn1(s) = (intptr_t)tracesetbyteoptrest1, done = 1;
+            if (f2 == byteoptrest2) ifn2(s) = (intptr_t)tracesetbyteoptrest2, done = 1;
+            if (fn == byteoptrestn) ifnn(s) = (intptr_t)tracesetbyteoptrestn, done = 1;
+            if (f1 == hardoptrest1) ifn1(s) = (intptr_t)tracesethardoptrest1, done = 1;
+            if (f2 == hardoptrest2) ifn2(s) = (intptr_t)tracesethardoptrest2, done = 1;
+            if (fn == hardoptrestn) ifnn(s) = (intptr_t)tracesethardoptrestn, done = 1;
+            if (fixenv)
+            {   push2(a, s);
+                a = cons(s, qenv(s));
+                errexitn(2);
+                pop(s);
+                qenv(s) = a;
+                pop(a);
+            }
+            if (done) continue;
+/*
+ * I permit the tracing of just one function from the kernel, and achieve
+ * this by installing a wrapper function in place of the real definition.
+ * Indeed this is just like Lisp-level embedding, except that I can get at the
+ * entrypoint table used by the bytecode interpreter and so trap calls made
+ * via there, and I can use that table to tell me how many arguments the
+ * traced function needed.
+ */
+            if (displaced1 == NULL)
+            {   int nargs = funtable_nargs(table_entry);
+/*
+ * Remember what function was being traced, so that it can eventually be
+ * invoked, and its name printed.
+ */
+                displaced1 = f1;
+                displaced2 = f2;
+                displacedn = fn;
+                tracedfn = s;
+/*
+ * This makes calls via the regular interpreter see the traced version...
+ */
+                set_fns(s, traced1_function, traced2_function,
+                           tracedn_function);
+                table_entry = find_built_in_function(f1, f2, fn);
+                nargs = funtable_nargs(table_entry);
+                table_entry = funtable_index(table_entry);
+                if (nargs != NOT_FOUND)
+                {
+/*
+ * .. and now I make calls via short-form bytecodes do likewise.
+ */
+                    switch (nargs)
+                    {
+                default:
+                case 0: zero_arg_functions[funtable_index(table_entry)] =
+                            tracedn_function;
+                        break;
+                case 1: one_arg_functions[funtable_index(table_entry)] =
+                            traced1_function;
+                        break;
+                case 2: two_arg_functions[funtable_index(table_entry)] =
+                            traced2_function;
+                        break;
+                case 3: three_arg_functions[funtable_index(table_entry)] =
+                            tracedn_function;
+                        break;
+                    }
+                }
+            }
+            continue;
         }
     }
     return onevalue(a);
@@ -4480,10 +4597,13 @@ setup_type const funcs2_setup[] =
     {"set-autoload",            too_few_2, Lset_autoload, wrong_no_2},
     {"remd",                    Lremd, too_many_1, wrong_no_1},
     {"trace",                   Ltrace, too_many_1, wrong_no_1},
+    {"traceset",                Ltraceset, too_many_1, wrong_no_1},
 #ifdef JIT
     {"jit",                     Ljit, too_many_1, wrong_no_1},
 #endif
     {"untrace",                 Luntrace, too_many_1, wrong_no_1},
+/* Note that untraceset is exactly the same as untrace */
+    {"untraceset",              Luntrace, too_many_1, wrong_no_1},
     {"trace-all",               Ltrace_all, too_many_1, wrong_no_1},
     {"double-execute",          Ldouble, too_many_1, wrong_no_1},
     {"undouble-execute",        Lundouble, too_many_1, wrong_no_1},
@@ -4493,10 +4613,6 @@ setup_type const funcs2_setup[] =
     {"delete",                  too_few_2, Ldelete, wrong_no_2},
     {"deleq",                   too_few_2, Ldeleq, wrong_no_2},
     {"preserve",                Lpreserve_1, Lpreserve_2, Lpreserve_03},
-#if 0
-/* This experiment is cancelled in favour of an upgrade to preserve() */
-    {"checkpoint",              Lcheckpoint_1, Lcheckpoint, Lcheckpoint_0},
-#endif
     {"mkvect",                  Lmkvect, too_many_1, wrong_no_1},
     {"nconc",                   too_few_2, Lnconc, wrong_no_2},
     {"neq",                     too_few_2, Lneq, wrong_no_2},
