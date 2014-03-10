@@ -1572,7 +1572,7 @@ procedure ofsf_trialevalsgnf(f,sp);
       if aex_simplenumberp f then
 	 numr simp aex_sgn f
       else
-	 ratpoly_tosf aex_ex f
+	 numr aex_ex f
    >>;
 
 procedure ofsf_sgnf4(f,sp);
@@ -1582,13 +1582,6 @@ procedure ofsf_sgnf4(f,sp);
 	 aex_sgn f
       else
 	 "?"
-   >>;
-
-procedure ratpoly_tosf(rp);
-   % warning: denominator might be negative.
-   << %if abs denr rp neq 1 then prin2t "***** ratpolx_tosf: invalid argument";
-      if sgn denr rp eq 1 then numr rp
-      else multf((-1),numr rp)
    >>;
 
 procedure ofsf_subsignat(at,sp,idl);

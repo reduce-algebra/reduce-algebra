@@ -588,9 +588,9 @@ procedure ofsf_pepsgn0rat(f,x,v);
       then
          null f
       else
-         rat_nullp(ratpoly_subrat(ratpoly_fromsf f,x,v))
+	 null numr ofsf_subf(f,x,v)
    else
-      rat_nullp(ratpoly_subrat(ratpoly_fromsf lc f,x,v)) and
+      null numr ofsf_subf(lc f,x,v) and
       ofsf_pepsgn0rat(red f,x,v);
 
 procedure ofsf_pepuboundepoly(f,id,r,lbexpf,ubexpf);
@@ -606,10 +606,10 @@ procedure ofsf_pepuboundepoly(f,id,r,lbexpf,ubexpf);
       then
          !*f2q f
       else
-         ratpoly_subrat(ratpoly_fromsf f,id,r)
+	 ofsf_subf(f,id,r)
    else
       begin scalar tmp;
-         tmp := ratpoly_subrat(ratpoly_fromsf lc f,id,r);
+         tmp := ofsf_subf(lc f,id,r);
          if minusf numr simp rat_sgn tmp
          then
             return addsq(multsq(tmp,exptsq(lbexpf,ldeg f)),
@@ -632,10 +632,10 @@ procedure ofsf_peplboundepoly(f,id,r,lbexpf,ubexpf);
       then
          !*f2q f
       else
-         ratpoly_subrat(ratpoly_fromsf f,id,r)
+	 ofsf_subf(f,id,r)
    else
       begin scalar tmp;
-         tmp := ratpoly_subrat(ratpoly_fromsf lc f,id,r);
+         tmp := ofsf_subf(lc f,id,r);
          if minusf numr simp rat_sgn tmp
          then
             return addsq(multsq(tmp,exptsq(ubexpf,ldeg f)),

@@ -658,7 +658,7 @@ asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
    % [al] is an Alist, where the keys are kernels and the values
    % are Anu.
    begin scalar aex;
-      aex := aex_fromrp ratpoly_fromsf f;
+      aex := aex_fromsf f;
       for each pr in al do
 	 aex := aex_bind(aex, car pr, cdr pr);
       return aex
