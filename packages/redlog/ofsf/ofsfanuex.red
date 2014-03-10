@@ -46,7 +46,6 @@ struct GRational checked by GRationalP;
 struct RatInterval checked by RatIntervalP;
 struct RatIntervalList checked by RatIntervalListP;
 struct RatPoly checked by RatPolyP;
-struct RatPolyList checked by RatPolyListP;
 struct AexCtx checked by AexCtxP;
 struct Aex checked by AexP;
 struct AexList checked by AexListP;
@@ -75,9 +74,6 @@ procedure RatIntervalListP(s);
 procedure RatPolyP(s);
    sqp s and sfpx numr s and not zerop numr s and
       fixp denr s and denr s > 0;
-
-procedure RatPolyListP(s);
-   null s or pairp s and RatPolyP car s and RatPolyListP cdr s;
 
 procedure AexCtxP(s);
    pairp s and eqcar(s, 'ctx);
@@ -330,118 +326,6 @@ asserted procedure iv_listminuslist(ivl1: RatIntervalList, ivl2: RatIntervalList
 
 % RatPoly functions.
 
-asserted procedure ratpoly_fromsf(f: SF): RatPoly;
-   % Standard form to rational number polynomial.
-   !*f2q f;
-
-asserted procedure ratpoly_fromrat(r: Rational): RatPoly;
-   % Rational number polynomial from rational number.
-   r;
-
-asserted procedure ratpoly_0(): RatPoly;
-   nil ./ 1;
-
-asserted procedure ratpoly_1(): RatPoly;
-   1 ./ 1;
-
-asserted procedure ratpoly_mklin(x: Kernel, ba: Rational): RatPoly;
-   % Makes linear polynomial a*x-b, which has the root ba.
-   ratpoly_fromsf addf(multf(numr simp x, rat_denr ba), negf rat_numr ba);
-
-asserted procedure ratpoly_print(q: RatPoly): Any;
-   ioto_prin2t ioto_form2str prepsq q;
-
-asserted procedure ratpoly_2str(q: RatPoly): Any;
-   ioto_form2str prepsq q;
-
-asserted procedure ratpoly_ratp(q: RatPoly): Boolean;
-   % Tests, if a RatPoly is a Rational.
-   (numberp numr q and not eqn(numr q, 0)) or null numr q;
-
-asserted procedure ratpoly_nullp(q: RatPoly): Boolean;
-   % Rational number polynomial null predicate.
-   null numr q;
-
-asserted procedure ratpoly_neg(q: RatPoly): RatPoly;
-   % Rational number polynomial negation.
-   negsq(q);
-
-asserted procedure ratpoly_add(q1: RatPoly, q2: RatPoly): RatPoly;
-   % Rational number polynomial addition.
-   addsq(q1,q2);
-
-asserted procedure ratpoly_minus(q1: RatPoly, q2: RatPoly): RatPoly;
-   % Rational number polynomial minus.
-   subtrsq(q1,q2);
-
-asserted procedure ratpoly_mult(q1: RatPoly, q2: RatPoly): RatPoly;
-   % Rational number polynomial multiplication.
-   multsq(q1,q2);
-
-asserted procedure ratpoly_foldmult(ql: RatPolyList): RatPoly;
-   if null ql then
-      ratpoly_1()
-   else
-      ratpoly_mult(car ql,ratpoly_foldmult(cdr ql));
-
-asserted procedure ratpoly_quot(q1: RatPoly, q2: RatPoly): RatPoly;
-   % Rational number polynomial quotient. [q2] is not null.
-   quotsq(q1, q2);
-
-asserted procedure ratpoly_pp(q: RatPoly): RatPoly;
-   sfto_dprpartksf numr q ./ denr q;
-
-asserted procedure ratpoly_univarp(q: RatPoly): Boolean;
-   sfto_univarp numr q;
-
-asserted procedure ratpoly_idl(q: RatPoly): List;
-   % Identifier list. We assume: If numr q contains a variable then mvar numr q
-   % = car kernels numr q, i.e. the main variable is always at the beginning.
-   kernels numr q;
-
-asserted procedure ratpoly_mvar(q: RatPoly): Kernel;
-   if domainp numr q then nil else mvar numr q;
-
-asserted procedure ratpoly_mvartest(q: RatPoly, x: Kernel): Boolean;
-   % Rational number polynomial main variable test.
-   sfto_mvartest(numr q, x);
-
-asserted procedure ratpoly_lc(q: RatPoly): RatPoly;
-   % Rational number polynomial leading coefficient.
-   sfto_lcx numr q ./ denr q;
-
-asserted procedure ratpoly_red(q: RatPoly): RatPoly;
-   % Rational number polynomial reductum.
-   sfto_redx numr q ./ denr q;
-
-asserted procedure ratpoly_ldeg(q: RatPoly): Integer;
-   % Rational number polynomial leading degree. Returns -1 or a natural number.
-   sfto_ldegx numr q;
-
-asserted procedure ratpoly_deg(q: RatPoly, x: Kernel): Integer;
-   % Degree of [x] in [q].
-   if ratpoly_mvartest(q, x) then
-      ratpoly_ldeg q
-   else
-      if ratpoly_nullp q then -1 else 0;
-
-asserted procedure ratpoly_exp(rp: RatPoly, n: Integer): RatPoly;
-   if eqn(n, 0) then
-      ratpoly_1()
-   else
-      ratpoly_mult(rp,ratpoly_exp(rp,n-1));
-
-asserted procedure ratpoly_xtothen(x: Kernel, n: Integer): RatPoly;
-   % Rational number polynomial x to the n.
-   <<
-      assert(n >= 0);
-      if eqn(n, 0) then 1 ./ 1 else (((x .^ n) .* 1) .+ nil) ./ 1
-   >>;
-
-asserted procedure ratpoly_diff(q: RatPoly, x: Kernel): RatPoly;
-   % Rational number polynomial derivation.
-   diffsq(q, x);
-
 asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
    % Rational number polynomial substitute rational number. The result is exact.
    % Horner's scheme is used. Correctness is guaranteed iff k eq mvar numr q.
@@ -457,7 +341,7 @@ asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
 	 res := addsq(!*f2q c, multsq(res, r));
       res := quotsq(res, !*f2q denr q);
       % Calculation self-test:
-      assert(ratpoly_nullp ratpoly_minus(res, subsq(q, {k . prepsq r})));
+      assert(null numr subtrsq(res, subsq(q, {k . prepsq r})));
       return res
    end;
 
@@ -513,15 +397,6 @@ asserted procedure ratpoly_subrp(q: RatPoly, k: Kernel, r: RatPoly): RatPoly;
       return quotfx(res, d) ./ (dd / d)
    end;
 
-asserted procedure ratpoly_sub(q: RatPoly, k: Kernel, af: Any): RatPoly;
-   % Rational number polynomial substitute algebraic form. [af] is a Lisp
-   % prefix.
-   subsq(q, {k . af});
-
-asserted procedure ratpoly_tad(q: RatPoly): RatPoly;
-   % Throw away denominator.
-   numr q ./ 1;
-
 asserted procedure ratpoly_gcd(q1: RatPoly, q2: RatPoly): RatPoly;
    % Rational number polynomial greatest common divisor.
    begin integer d1, d2, d;
@@ -554,34 +429,34 @@ asserted procedure ratpoly_factorize(q: RatPoly): List;
    begin scalar tmp;
       tmp := fctrf numr q; % gives a
       % Constant factor has multiplicity 1.
-      car tmp := ratpoly_fromrat rat_mk(car tmp,denr q) . 1;
+      car tmp := rat_mk(car tmp,denr q) . 1;
       tmp := car tmp .
 	 for each sfn in cdr tmp collect
-	    (ratpoly_fromsf car sfn) . cdr sfn;
+	    (car sfn ./ 1) . cdr sfn;
       % Calculation self-test:
-      assert(ratpoly_nullp(ratpoly_minus(q,ratpoly_foldmult(
-	    for each sfn in tmp collect ratpoly_exp(car sfn,cdr sfn)))));
+      assert(null numr subtrsq(q, sfto_multlq(
+	    for each sfn in tmp collect sfto_expq(car sfn, cdr sfn))));
       return tmp
    end;
 
 asserted procedure ratpoly_psrem(f: RatPoly, g: Ratpoly, x: Kernel): RatPoly;
    % Pseudo remainder.
-   begin scalar an, bm, tmp; integer n, m;
+   begin scalar an, bm, tmp, redf, redg; integer n, m;
       assert(mvar numr f eq x);
       assert(mvar numr g eq x);
-      f := ratpoly_tad f;
-      g := ratpoly_tad g;
-      n := ratpoly_deg(f, x);
-      m := ratpoly_deg(g, x);
-      bm := ratpoly_lc g;
+      f := numr f ./ 1;
+      g := numr g ./ 1;
+      n := sfto_vardeg(numr f, x);
+      m := sfto_vardeg(numr g, x);
+      bm := sfto_lcx numr g ./ 1;
       while n >= m do <<
-   	 an := ratpoly_lc f;
-   	 tmp := ratpoly_mult(an, ratpoly_xtothen(x, n - m));
-   	 f := ratpoly_minus(
-   	    ratpoly_mult(ratpoly_red f, bm),
-   	    ratpoly_mult(ratpoly_red g, tmp));
-	 f := ratpoly_mult(bm, f);
-   	 n := ratpoly_deg(f, x)
+   	 an := sfto_lcx numr f ./ 1;
+   	 tmp := multsq(an, sfto_kexpq(x, n - m));
+	 redf := quotsq(!*f2q sfto_redx numr f, !*f2q denr f);
+	 redg := quotsq(!*f2q sfto_redx numr g, !*f2q denr g);
+   	 f := subtrsq(multsq(redf, bm), multsq(redg, tmp));
+	 f := multsq(bm, f);
+   	 n := sfto_vardeg(numr f, x)
       >>;
       return f
    end;
@@ -704,24 +579,23 @@ asserted procedure aex_mk(rp: RatPoly, c: AexCtx): Aex;
    {'aex, rp, c};
 
 asserted procedure aex_fromrat(r: Rational): Aex;
-   {'aex, ratpoly_fromrat r, ctx_new()};
+   {'aex, r, ctx_new()};
 
 asserted procedure aex_fromrp(rp: RatPoly): Aex;
    {'aex, rp, ctx_new()};
 
 asserted procedure aex_fromsf(f: SF): Aex;
-   aex_fromrp ratpoly_fromsf f;
+   aex_fromrp(f ./ 1);
 
 asserted procedure aex_0(): Aex;
-   aex_fromrp ratpoly_0();
+   aex_fromrp(nil ./ 1);
 
 asserted procedure aex_1(): Aex;
-   aex_fromrp ratpoly_1();
+   aex_fromrp(1 ./ 1);
 
 asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
    % Make linear polynomial a*x + b.
-   % aex_fromsf addf(multf(numr simp x, rat_denr ba), negf rat_numr ba);
-   aex_fromrp ratpoly_mklin(x, ba);
+   aex_fromsf addf(multf(!*k2f x, denr ba), negf numr ba);
 
 asserted procedure aex_ex(ae: Aex): RatPoly;
    nth(ae, 2);
@@ -750,7 +624,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
 
 asserted procedure aex_print(ae: Aex): Any;
    <<
-      ratpoly_print aex_ex ae;
+      ioto_prin2t ioto_form2str prepsq aex_ex ae;
       if ctx_ial aex_ctx ae then <<
 	 prin2t ", where";
 	 ctx_print aex_ctx ae
@@ -761,24 +635,24 @@ asserted procedure aex_print(ae: Aex): Any;
 
 asserted procedure aex_neg(ae: Aex): Aex;
    % Negate.
-   aex_mk(ratpoly_neg aex_ex ae, aex_ctx ae);
+   aex_mk(negsq aex_ex ae, aex_ctx ae);
 
 asserted procedure aex_addrat(ae: Aex, r: Rational): Aex;
    % Add rational number.
-   aex_mk(ratpoly_add(aex_ex ae, ratpoly_fromrat r), aex_ctx ae);
+   aex_mk(addsq(aex_ex ae, r), aex_ctx ae);
 
 asserted procedure aex_add(ae1: Aex, ae2: Aex): Aex;
    % Add, contexts are assumed to be compatible and will be merged.
    % Caveat: minimization will be needed.
-   aex_mk(ratpoly_add(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
+   aex_mk(addsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_minus(ae1: Aex, ae2: Aex): Aex;
    % Minus, contexts are assumed to be compatible and will be merged.
-   aex_mk(ratpoly_minus(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
+   aex_mk(subtrsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_mult(ae1: Aex, ae2: Aex): Aex;
    % Multiplication, contexts are assumed to be compatible and will be merged.
-   aex_mk(ratpoly_mult(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
+   aex_mk(multsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_foldmult(ael: AexList): Aex;
    if null ael then
@@ -800,11 +674,11 @@ asserted procedure aex_power(ae: Aex, n: Integer): Aex;
 
 asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
    % Multiply with rational number.
-   aex_mk(ratpoly_mult(aex_ex ae, ratpoly_fromrat r), aex_ctx ae);
+   aex_mk(multsq(aex_ex ae, r), aex_ctx ae);
 
 asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
    % Differentiate.
-   aex_mk(ratpoly_diff(aex_ex ae, x), aex_ctx ae);
+   aex_mk(diffsq(aex_ex ae, x), aex_ctx ae);
 
 asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
    % Substitute algebraic form in algebraic expression.
@@ -820,39 +694,39 @@ asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
 
 asserted procedure aex_tad(ae: Aex): Aex;
    % Throw away denominator.
-   aex_mk(ratpoly_tad aex_ex ae, aex_ctx ae);
+   aex_mk(numr aex_ex ae ./ 1, aex_ctx ae);
 
 asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
-   aex_mk(ratpoly_xtothen(x, n), ctx_new());
+   aex_mk(sfto_kexpq(x, n), ctx_new());
 
 asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
    % Degree of [x] in [ae].
-   ratpoly_deg(aex_ex ae, x);
+   sfto_vardeg(numr aex_ex ae, x);
 
 asserted procedure aex_simpleratpolyp(ae: Aex): Boolean;
    % Simple but incomplete predicte to test, if [ae] represents a (maybe
    % constant) rational polynomial.
-   null ctx_ial aex_ctx ae or ratpoly_ratp aex_ex ae;
+   null ctx_ial aex_ctx ae or aex_simpleratp ae;
 
 asserted procedure aex_simpleratp(ae: Aex): Boolean;
-   ratpoly_ratp aex_ex ae;
+   ((numberp numr q and not eqn(numr q, 0)) or null numr q) where (q = aex_ex ae);
 
 asserted procedure aex_simplenullp(ae: Aex): Boolean;
    % Simple but incomplete null-predicate. It is complete, if [ae] is reduced,
    % i.e. leading coefficient of aex_ex is non-zero or aex_ex is zero
    % polynomial.
-   ratpoly_nullp aex_ex ae;
+   null numr aex_ex ae;
 
 asserted procedure aex_simplenumberp(ae: Aex): Boolean;
    null aex_freeidl ae;
 
 asserted procedure aex_idl(ae: Aex): List;
-   ratpoly_idl aex_ex ae;
+   kernels numr aex_ex ae;
 
 asserted procedure aex_freeidl(ae: Aex): List;
    % Free identifiers, the id with highest kernel order first.
-   lto_setminus(ratpoly_idl aex_ex ae,ctx_idl aex_ctx ae);
+   lto_setminus(aex_idl ae, ctx_idl aex_ctx ae);
 
 asserted procedure aex_boundidl(ae: Aex): List;
    lto_setminus(aex_idl ae, lto_setminus(aex_idl ae, ctx_idl aex_ctx ae));
@@ -870,26 +744,29 @@ asserted procedure aex_nullp(ae: Aex): Boolean;
    end;
 
 asserted procedure aex_mvartest(ae: Aex, x: Kernel): Boolean;
-   ratpoly_mvartest(aex_ex ae,x);
+   sfto_mvartest(numr aex_ex ae, x);
 
 asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
    % Reductum of [ae] wrt [x]. Needs not to be minimized.
-   if aex_mvartest(ae, x) then
-      aex_mk(ratpoly_red aex_ex ae, aex_ctx ae)
-   else
-      aex_0();
+   begin scalar q;
+      q := aex_ex ae;
+      if aex_mvartest(ae, x) then
+      	 return aex_mk(quotsq(!*f2q sfto_redx numr q, !*f2q denr q), aex_ctx ae);
+      return aex_0()
+   end;
 
 asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
-   if aex_mvartest(ae, x) then
-      aex_mk(ratpoly_lc aex_ex ae,aex_ctx ae)
-   else
-      ae; % ctx needs not to be made smaller, as there are no singles
+   begin scalar q;
+      q := aex_ex ae;
+      if aex_mvartest(ae, x) then
+	 return aex_mk(quotsq(!*f2q sfto_lcx numr q, !*f2q denr q), aex_ctx ae);
+      return ae  % ctx needs not to be made smaller, as there are no singles
+   end;
 
 asserted procedure aex_mvar(ae: Aex): Kernel;
    <<
-      assert(null aex_freeidl ae or
-	 eqcar(aex_freeidl ae, ratpoly_mvar aex_ex ae));
-      ratpoly_mvar aex_ex ae
+      assert(null aex_freeidl ae or eqcar(aex_freeidl ae, sfto_mvarx numr aex_ex ae));
+      sfto_mvarx numr aex_ex ae
    >>;
 
 asserted procedure aex_mklcnt(ae: Aex): Aex;
@@ -1008,10 +885,12 @@ asserted procedure aex_pp(ae: Aex): Aex;
    % Primitive part. Works only for polynomials with rational coefficients
    % containing at most one variable. TODO: Why!? This should work for
    % multivariate polynomials as well...
-   if ratpoly_univarp aex_ex ae then
-      aex_mk(ratpoly_pp aex_ex ae, aex_ctx ae)
-  else
-      ae;
+   begin scalar q;
+      q := aex_ex ae;
+      if sfto_univarp numr q then
+      	 return aex_mk(sfto_dprpartksf numr q ./ denr q, aex_ctx ae);
+      return ae
+   end;
 
 asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
    % Pseudo remainder sequence for polynomials f and g. Returns a pseudo
@@ -1146,19 +1025,19 @@ asserted procedure aex_pssqfree(f: Aex, x: Kernel): Aex;
 procedure sqfr_norm(f,x,y,palpha);
    % (RATPOLY,ID,ID,RATPOLY)->(NUM,RATPOLY,RATPOLY)
    begin scalar g,r; integer s,degree;
-      s := 0; g := f;
-      palpha := ratpoly_sub(palpha,x,y);
-       repeat <<
+      s := 0;
+      g := f;
+      palpha := subsq(palpha,{x . y});
+      repeat <<
 	 r := ratpoly_resultant(palpha,g,y);
-	 % ratpoly_deg works just if x is the leading kernel
-	 degree := ratpoly_deg(ratpoly_gcd(r,ratpoly_diff(r,x)),x);
+	 % This works if x is the leading kernel:
+	 degree := sfto_vardeg(numr ratpoly_gcd(r,diffsq(r,x)), x);
          if not eqn(degree, 0) then <<
 	    s := s+1;
- 	    g := ratpoly_sub(g,x,{'plus,x,{'minus,y}})
+ 	    g := subsq(g,{x . {'plus,x,{'minus,y}}})
 	 >>
-         >>
-	 until degree = 0;
-      return {s,g,r};
+      >> until degree = 0;
+      return {s,g,r}
    end;
 
 asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to factors
@@ -1187,7 +1066,7 @@ asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to fact
 	 aehi := aex_gcd(aehi,aeg,x); % h_i(x,alpha)=gcd(h_i(x),g(x,alpha))
 	 aeg  := aex_quot(aeg,aehi,x);
 	 aehi := aex_subrp(
-	    aehi, x, ratpoly_fromsf addf(!*k2f x, multf(s, !*k2f y)))
+	    aehi, x, addf(!*k2f x, multf(s, !*k2f y)) ./ 1)
       >>;
       % Self-test:
       assert(aex_simpleratp aex_quot(f,aex_foldmult l,x));
@@ -1374,8 +1253,8 @@ asserted procedure aex_inv(ae: Aex): Aex;
    % Invert a constant, not-zero polynomial. TODO: The case of a purely rational
    % ae occurs very often. Avoid the progn by splitting into two functions.
    begin scalar x, alpha, g, f, d, f1, drs, res;
-      if ratpoly_ratp aex_ex ae then  % [ae] is obviously a rational number.
-	 return aex_fromrp ratpoly_quot(ratpoly_1(), aex_ex ae);
+      if aex_simpleratp ae then  % [ae] is obviously a rational number.
+	 return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
       % Now we know that [ae] is a constant algebraic polynomial.
       x . alpha := car ctx_ial aex_ctx ae;  % (x . (anu f iv))
       g := aex_free(ae, x);
@@ -1436,7 +1315,7 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       assert(not aex_badp(ae, 0));
       assert(null aex_freeidl ae);
       if null aex_boundidl ae then <<
-	 assert(null ratpoly_idl aex_ex ae);
+	 assert(null aex_idl ae);
 	 r := aex_ex ae;
 	 return iv_mk(r, r)
       >>;
@@ -1784,7 +1663,7 @@ asserted procedure anu_iv(a: Anu): RatInterval;
    caddr a;
 
 asserted procedure anu_fromrat(x: Kernel, r: Rational, iv: RatInterval): Anu;
-   anu_mk(aex_fromrp ratpoly_mklin(x, r), iv);
+   anu_mk(aex_mklin(x, r), iv);
 
 asserted procedure anu_putiv(a: Anu, iv: RatInterval): Any;
    % Algebraic number put interval. Changes the isolating interval in a
