@@ -802,6 +802,53 @@ asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
       return sumq
    end;
 
+asserted procedure sfto_qsub(f: SF, al: AList): SQ;
+   sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
+
+asserted procedure sfto_qsub1(f: SF, al: AList): SQ;
+   begin scalar mv, nredq, nlcq, nhtq;
+      if domainp f then
+	 return !*f2q f;
+      mv := mvar f;
+      while al and caar al neq mv and ordop(caar al, mv) do
+	 al := cdr al;
+      if null al then
+	 return !*f2q f;
+      nredq := sfto_qsub1(red f, al);
+      if caar al eq mv then <<
+	 nlcq := sfto_qsub1(lc f, cdr al);
+	 nhtq := exptsq(cdar al, ldeg f);
+	 return addsq(multsq(nlcq, nhtq), nredq)
+      >>;
+      nlcq := sfto_qsub1(lc f, al);
+      nhtq := !*f2q(mvar f .** ldeg f .* 1 .+ nil);
+      return addsq(multsq(nlcq, nhtq), nredq)
+   end;
+
+asserted procedure sfto_fsub(f: SF, al: AList): SF;
+   sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
+
+asserted procedure sfto_fsub1(f: SF, al: AList): SF;
+   begin scalar mv, nred, nlc, nht;
+      if domainp f then
+	 return f;
+      mv := mvar f;
+      while al and caar al neq mv and ordop(caar al, mv) do
+	 al := cdr al;
+      if null al then
+	 return f;
+      nred := sfto_fsub1(red f, al);
+      if caar al eq mv then <<
+	 nlc := sfto_fsub1(lc f, cdr al);
+	 nht := exptf(cdar al, ldeg f);
+	 return addf(multf(nlc, nht), nred)
+      >>;
+      nlc := sfto_fsub1(lc f, al);
+      nht := mvar f .** ldeg f .* 1 .+ nil;
+      return addf(multf(nlc, nht), nred)
+   end;
+
+
 % SQ functions:
 
 asserted procedure sfto_greaterq(q1: SQ, q2: SQ): ExtraBoolean;
