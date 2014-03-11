@@ -848,6 +848,39 @@ asserted procedure sfto_fsub1(f: SF, al: AList): SF;
       return addf(multf(nlc, nht), nred)
    end;
 
+asserted procedure sfto_qsubhor(f: SF, x: Kernel, q: SQ): SQ;
+   % Substitute a rational number by Horner's scheme. Correctness is guaranteed
+   % iff [x] is geq than [mvar f] under the current kernel ordering, i.e., [x]
+   % occurs in [f] iff it is [mvar f].
+   begin scalar coeffl, res;
+      if not sfto_mvartest(f, x) then
+	 return !*f2q f;
+      coeffl := coeffs f;
+      res := !*f2q car coeffl;
+      for each coeff in cdr coeffl do
+	 res := addsq(!*f2q coeff, multsq(res, q));
+      return res
+   end;
+
+asserted procedure sfto_qsubhor1(f: SF, x: Kernel, q: SQ): SQ;
+   % Substitute a rational number by Horner's scheme. The result is exact up to
+   % multiplication by a positive rational number. Correctness is guaranteed iff
+   % [x] is geq than [mvar f] under the current kernel ordering, i.e., [x]
+   % occurs in [f] iff it is [mvar f].
+   begin scalar coeffl, res; integer n, d, dd;
+      if not sfto_mvartest(f, x) then
+   	 return !*f2q f;
+      n := numr q;
+      d := denr q;
+      dd := 1;
+      coeffl := coeffs f;
+      res := car coeffl;
+      for each coeff in cdr coeffl do <<
+	 dd := dd * d;
+	 res := addf(multf(coeff, dd), multf(res, n))
+      >>;
+      return !*f2q sfto_dprpartksf res
+   end;
 
 % SQ functions:
 
@@ -889,13 +922,6 @@ asserted procedure sfto_expq(q: SQ, n: Integer): SQ;
       1 ./ 1
    else
       multsq(q, sfto_expq(q, n - 1));
-
-asserted procedure sfto_kexpq(x: Kernel, n: Integer): SQ;
-   % Non-negative power of a variable as a SQ.
-   <<
-      assert(n >= 0);
-      if eqn(n, 0) then 1 ./ 1 else (((x .^ n) .* 1) .+ nil) ./ 1
-   >>;
 
 endmodule;  % [sfto]
 
