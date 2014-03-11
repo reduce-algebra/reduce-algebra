@@ -326,141 +326,58 @@ asserted procedure iv_listminuslist(ivl1: RatIntervalList, ivl2: RatIntervalList
 
 % RatPoly functions.
 
-asserted procedure ratpoly_subrat(q: RatPoly, k: Kernel, r: Rational): RatPoly;
-   % Rational number polynomial substitute rational number. The result is exact.
-   % Horner's scheme is used. Correctness is guaranteed iff k eq mvar numr q.
-   begin scalar cl, res;
-      if not sfto_mvartest(numr q, k) then
-	 return q;
-      % This might be faster here. test, if needed.
-      % !*f2q(cdr qremf(multf(numr q,exptf(denr r,ldeg numr q)),
-      %   addf(multf(!*k2f k,denr r),negf numr r)));
-      cl := coeffs numr q;
-      res := !*f2q car cl;
-      for each c in cdr cl do
-	 res := addsq(!*f2q c, multsq(res, r));
-      res := quotsq(res, !*f2q denr q);
-      % Calculation self-test:
-      assert(null numr subtrsq(res, subsq(q, {k . prepsq r})));
-      return res
-   end;
+% asserted procedure ratpoly_psrem(f: RatPoly, g: Ratpoly, x: Kernel): RatPoly;
+%    % Pseudo remainder.
+%    begin scalar an, bm, tmp, redf, redg; integer n, m;
+%       assert(mvar numr f eq x);
+%       assert(mvar numr g eq x);
+%       f := numr f ./ 1;
+%       g := numr g ./ 1;
+%       n := sfto_vardeg(numr f, x);
+%       m := sfto_vardeg(numr g, x);
+%       bm := sfto_lcx numr g ./ 1;
+%       while n >= m do <<
+%    	 an := sfto_lcx numr f ./ 1;
+%    	 tmp := multsq(an, !*f2q sfto_kexp(x, n - m));
+% 	 redf := quotsq(!*f2q sfto_redx numr f, !*f2q denr f);
+% 	 redg := quotsq(!*f2q sfto_redx numr g, !*f2q denr g);
+%    	 f := subtrsq(multsq(redf, bm), multsq(redg, tmp));
+% 	 f := multsq(bm, f);
+%    	 n := sfto_vardeg(numr f, x)
+%       >>;
+%       return f
+%    end;
 
-asserted procedure ratpoly_subrat1(q: RatPoly, k: Kernel, r: Rational): RatPoly;
-   % Rational number polynomial substitute rational number. The result is exact
-   % up to multiplication by a positive rational number. Horner's scheme is
-   % used. Correctness is guaranteed iff k eq mvar numr q.
-   begin scalar cl, res; integer n, d, dd;
-      if not sfto_mvartest(numr q, k) then
-   	 return q;
-      n := numr r;
-      d := denr r;
-      dd := 1;
-      cl := coeffs numr q;
-      res := car cl;
-      for each c in cdr cl do <<
-	 dd := dd * d;
-	 res := addf(multf(res, n), multf(c, dd))
-      >>;
-      return res ./ 1
-   end;
+% TODO: Rename and move these procedures to sfto module.
 
-asserted procedure ratpoly_subrp(q: RatPoly, k: Kernel, r: RatPoly): RatPoly;
-   % Rational number polynomial substitute rational number polynomial. The
-   % result is exact. Horner's scheme is used.
-   begin scalar qn, rordr, oo, n, cl, res, tmpres; integer d, dd;
-      qn := numr q;
-      if domainp qn or not (k memq kernels qn) then
-	 return q;
-      n := numr r;
-      d := denr r;
-      if mvar qn neq k then <<
-	 rordr := t;
-	 oo := setkorder {k};
-	 qn := reorder qn;
-	 n := reorder n
-      >>;
-      dd := 1;
-      cl := coeffs qn;
-      res := car cl;
-      for each c in cdr cl do <<
-	 dd := dd * d;
-	 res := addf(multf(res, n), multf(c, dd))
-      >>;
-      if rordr then <<
-	 setkorder oo;
-	 res := reorder res
-      >>;
-      if null res then
-	 return nil ./ 1;
-      dd := dd * denr q;
-      d := gcdn(dd, sfto_dcontentf res);
-      return quotfx(res, d) ./ (dd / d)
-   end;
+asserted procedure sfto_kexp(x: Kernel, n: Integer): SF;
+   % Non-negative power of a variable as a SF.
+   <<
+      assert(n >= 0);
+      if eqn(n, 0) then 1 else (((x .^ n) .* 1) .+ nil)
+   >>;
 
-asserted procedure ratpoly_gcd(q1: RatPoly, q2: RatPoly): RatPoly;
-   % Rational number polynomial greatest common divisor.
-   begin integer d1, d2, d;
-      d1 := denr q1;
-      d2 := denr q2;
-      d := (d1 / gcdn(d1, d2)) * d2;  % = lcm(d1, d2)
-      return !*f2q sfto_gcdf(multf(q1, d / d1), multf(q2, d / d2))
-   end;
-
-procedure ratpoly_resultant(q1,q2,y);
-   % Rational number polynomial gretest common divisor. [q1], [q2] are
-   % RATPOLY's. Returns a RATPOLY.
-   begin scalar tmp1,tmp2,res;
-      % convert to algebraic expression
-      tmp1 := prepsq q1;
-      tmp2 := prepsq q2;
-      on1 'rational;
-      % convert to sf over rationals
-      tmp1 := numr simp tmp1;
-      tmp2 := numr simp tmp2;
-      res := resultant(tmp1,tmp2,y);
-      % convert to algebraic expression
-      res := prepf res;
-      off1 'rational;
-      return simp res;
-   end;
-
-asserted procedure ratpoly_factorize(q: RatPoly): List;
-   % Type: ratpoly -> list(pair(ratpoly,num))
-   begin scalar tmp;
-      tmp := fctrf numr q; % gives a
-      % Constant factor has multiplicity 1.
-      car tmp := rat_mk(car tmp,denr q) . 1;
-      tmp := car tmp .
-	 for each sfn in cdr tmp collect
-	    (car sfn ./ 1) . cdr sfn;
-      % Calculation self-test:
-      assert(null numr subtrsq(q, sfto_multlq(
-	    for each sfn in tmp collect sfto_expq(car sfn, cdr sfn))));
-      return tmp
-   end;
-
-asserted procedure ratpoly_psrem(f: RatPoly, g: Ratpoly, x: Kernel): RatPoly;
-   % Pseudo remainder.
-   begin scalar an, bm, tmp, redf, redg; integer n, m;
-      assert(mvar numr f eq x);
-      assert(mvar numr g eq x);
-      f := numr f ./ 1;
-      g := numr g ./ 1;
-      n := sfto_vardeg(numr f, x);
-      m := sfto_vardeg(numr g, x);
-      bm := sfto_lcx numr g ./ 1;
-      while n >= m do <<
-   	 an := sfto_lcx numr f ./ 1;
-   	 tmp := multsq(an, sfto_kexpq(x, n - m));
-	 redf := quotsq(!*f2q sfto_redx numr f, !*f2q denr f);
-	 redg := quotsq(!*f2q sfto_redx numr g, !*f2q denr g);
-   	 f := subtrsq(multsq(redf, bm), multsq(redg, tmp));
-	 f := multsq(bm, f);
-   	 n := sfto_vardeg(numr f, x)
+asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel): SF;
+   % Pseudo-remainder of [f] and [g]. [f] and [g] contain [x] as the main
+   % variable.
+   begin scalar lcf, lcg, redg, tmp; integer degf, degg;
+      assert(mvar f eq x);
+      assert(mvar g eq x);
+      lcg := sfto_lcx g;
+      redg := red g;
+      degf := sfto_vardeg(f, x);
+      degg := sfto_vardeg(g, x);
+      while degf >= degg do <<
+	 lcf := sfto_lcx f;
+	 tmp := multf(lcf, sfto_kexp(x, degf - degg));
+	 f := addf(multf(lcg, red f), negf multf(tmp, redg));
+	 % To ensure that we always multiply with something positive:
+	 f := multf(f, lcg);
+	 degf := sfto_vardeg(f, x)
       >>;
       return f
    end;
-   %cdr pseudo!-qremf(numr f, numr g, x) ./ 1;
+   % cdr pseudo!-qremf(numr f, numr g, x);
 
 % AexCtx functions.
 
@@ -615,8 +532,8 @@ asserted procedure aex_free1(ae: Aex, x: Kernel): Aex;
    aex_mk(aex_ex ae, ctx_free1(x, aex_ctx ae));
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
-   % TODO: ensure [a] is defined with x.
-   % Test if [a] is rational (then use aex_subrat)
+   % TODO: Ensure that [a] is defined using variable x.
+   % Test if [a] is a rational. If yes, use aex_subrp:
    if null aex_boundidl anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
       aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
    else
@@ -682,15 +599,28 @@ asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
 
 asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
    % Substitute algebraic form in algebraic expression.
-   aex_mk(ratpoly_subrp(aex_ex ae, x, rp), aex_ctx ae);
+   % aex_mk(ratpoly_subrp(aex_ex ae, x, rp), aex_ctx ae);
+   begin scalar q, newq;
+      q := aex_ex ae;
+      newq := quotsq(sfto_qsub1(numr q, {x . rp}), !*f2q denr q);
+      return aex_mk(newq, aex_ctx ae)
+   end;
 
 asserted procedure aex_subrat(ae: Aex, x: Kernel, r: Rational): Aex;
    % Substitute rational number. Exact version.
-   aex_mk(ratpoly_subrat(aex_ex ae, x, r), aex_ctx ae);
+   begin scalar q, newq;
+      q := aex_ex ae;
+      newq := quotsq(sfto_qsubhor(numr q, x, r), !*f2q denr q);
+      return aex_mk(newq, aex_ctx ae)
+   end;
 
 asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
    % Substitute rational number. Exact up to sign version.
-   aex_mk(ratpoly_subrat1(aex_ex ae, x, r), aex_ctx ae);
+   begin scalar q, newq;
+      q := aex_ex ae;
+      newq := sfto_qsubhor1(numr q, x, r);
+      return aex_mk(newq, aex_ctx ae)
+   end;
 
 asserted procedure aex_tad(ae: Aex): Aex;
    % Throw away denominator.
@@ -698,7 +628,7 @@ asserted procedure aex_tad(ae: Aex): Aex;
 
 asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
-   aex_mk(sfto_kexpq(x, n), ctx_new());
+   aex_mk(!*f2q sfto_kexp(x, n), ctx_new());
 
 asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
    % Degree of [x] in [ae].
@@ -862,15 +792,20 @@ asserted procedure aex_psquot(f: Aex, p: Aex, x: Kernel): Aex;
 asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
    % Aex pseudo remainder. This algorithm is independent from aex_psquotrem and
    % aex_psquotrem1.
-   begin scalar w;
+   begin scalar ff, gf, psr;
       assert(not aex_simplenullp g);
       if null aex_freeidl g then
    	 return aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
-      return aex_mklcnt aex_mk(
-	 ratpoly_psrem(aex_ex f, aex_ex g, x),
-	 ctx_union(aex_ctx f, aex_ctx g))
+      ff := sfto_dprpartksf numr aex_ex f;
+      gf := sfto_dprpartksf numr aex_ex g;
+      psr := sfto_dprpartksf sfto_psrem(ff, gf, x);
+      return aex_mklcnt aex_mk(!*f2q psr, ctx_union(aex_ctx f, aex_ctx g))
+      % Old code:
+      % return aex_mklcnt aex_mk(
+      % 	 ratpoly_psrem(aex_ex f, aex_ex g, x),
+      % 	 ctx_union(aex_ctx f, aex_ctx g))
    end;
 
 asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
@@ -1019,59 +954,6 @@ asserted procedure aex_pssqfree(f: Aex, x: Kernel): Aex;
       f
    else
       car aex_psquotrem(f,lastcar aex_stdsturmchain(f,x),x);
-
-%%% --- should be after exact arithmetic --- %%%
-
-procedure sqfr_norm(f,x,y,palpha);
-   % (RATPOLY,ID,ID,RATPOLY)->(NUM,RATPOLY,RATPOLY)
-   begin scalar g,r; integer s,degree;
-      s := 0;
-      g := f;
-      palpha := subsq(palpha,{x . y});
-      repeat <<
-	 r := ratpoly_resultant(palpha,g,y);
-	 % This works if x is the leading kernel:
-	 degree := sfto_vardeg(numr ratpoly_gcd(r,diffsq(r,x)), x);
-         if not eqn(degree, 0) then <<
-	    s := s+1;
- 	    g := subsq(g,{x . {'plus,x,{'minus,y}}})
-	 >>
-      >> until degree = 0;
-      return {s,g,r}
-   end;
-
-asserted procedure aex_factorize(f: Aex, x: Kernel): AexList; %%% rename to factors
-   % Factors. [f] is a squarefree univariate alg. polynomial in [x]. Returns the
-   % list of non-constant factors of [f]. Remark: this implements Trager's
-   % alg_factor. Funthermore, if [aex_simpleratpolyp] holds, [f] needs not to be
-   % squarefree.
-   begin scalar tmp,y,alpha,s,g,r,l,aeg,aehi;
-      if aex_simpleratpolyp f then <<
-	 l := ratpoly_factorize aex_ex f;
-	 % self-test done already in ratpoly_factorize.
-	 return cdr for each rp_m in l collect aex_fromrp car rp_m;
-      >>;
-      tmp := car ctx_ial aex_ctx f; % y . alpha
-      y := car tmp; alpha := cdr tmp;
-      %tmp := aex_sqfr_norm(f,x,y); % maybe in future...
-      tmp := sqfr_norm(aex_ex f,x,y,aex_ex anu_dp alpha);
-      s := car tmp; g := cadr tmp; r := caddr tmp;
-      tmp := ratpoly_factorize r; %%%%%%%
-      % throw away multiplicities and domain element
-      l := cdr for each rp_m in tmp collect car rp_m;
-      %l := for each rp_m in l collect car rp_m;
-      aeg := aex_fromrp g; aeg := aex_bind(aeg,y,alpha); % g(x,alpha)
-      l := for each hi in l collect <<
-	 aehi := aex_fromrp hi; % h_i(x)
-	 aehi := aex_gcd(aehi,aeg,x); % h_i(x,alpha)=gcd(h_i(x),g(x,alpha))
-	 aeg  := aex_quot(aeg,aehi,x);
-	 aehi := aex_subrp(
-	    aehi, x, addf(!*k2f x, multf(s, !*k2f y)) ./ 1)
-      >>;
-      % Self-test:
-      assert(aex_simpleratp aex_quot(f,aex_foldmult l,x));
-      return l %%% minimize every element first?
-   end;
 
 %%% --- exact arithmetic - with inv --- %%%
 
