@@ -80,6 +80,20 @@ procedure AexCtxP(s);
 
 procedure AexP(s);
    pairp s and eqcar(s, 'aex);
+   % begin scalar varl, bvaral, c;
+   %    if not pairp s then
+   % 	 return nil;
+   %    if not eqcar(s, 'aex) then
+   % 	 return nil;
+   %    varl := kernels numr nth(s, 2);
+   %    bvaral := cadr nth(s, 3);
+   %    c := t; while c and bvaral do <<
+   % 	 if not (caar bvaral memq varl) then
+   % 	    c := nil;
+   % 	 bvaral := cdr bvaral
+   %    >>;
+   %    return c
+   % end;
 
 procedure AexListP(s);
    null s or pairp s and AexP car s and AexListP cdr s;
@@ -408,7 +422,7 @@ asserted procedure ctx_print(c: AexCtx): Any;
       nil
    >>;
 
-asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
+asserted procedure ctx_get(x: Kernel, c: AexCtx): ExtraBoolean;
    % Get variable assignment. Returns the algebraic number to which [x] is bound
    % by context [c]. If [x] is not bound by [c], nil is returned.
    begin scalar ial, res;
@@ -425,7 +439,7 @@ asserted procedure ctx_add(ia: DottedPair, c: AexCtx): AexCtx;
    % Add to context. [ia] is a dotted pair (x . a), where [x] is a Kernel and
    % [a] is an Anu. It is assumed that [x] is not bound by [c].
    begin scalar ial, var, prevl;
-      assert(not (car x memq ctx_idl c));
+      assert(not (car ia memq ctx_idl c));
       ial := ctx_ial c;
       var := car ia;
       while ial and ordop(var, caar ial) do <<
@@ -453,6 +467,14 @@ asserted procedure ctx_free1(x: Kernel, c: AexCtx): AexCtx;
 	    if not eqcar(e, x) then {e}}
    >>;
 
+asserted procedure ctx_filter(varl: List, c: AexCtx): AexCtx;
+   % Delete assignments to variables, which do not occur in [varl].
+   <<
+      {'ctx,
+	 for each e in ctx_ial c join
+	    if car e memq varl then {e}}
+   >>;
+
 asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    % Union of syntactically compatible contexts. Syntactically/semantically
    % compatible means: For every Kernel [x]: If (x . a1) in [c1] and (x . a2) in
@@ -466,35 +488,7 @@ asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
       return {'ctx, w}
    end;
 
-% asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
-%    % Union of syntactically compatible contexts. Syntactically/semantically
-%    % compatible means: For every Kernel [x]: If (x . a1) in [c1] and (x . a2) in
-%    % [c2] then syntactically/semantically [a1] = [a2]. We assume that [c1] and
-%    % [c2] are sorted w.r.t. the current kernel order.
-%    begin scalar ial1, ial2, w1, w2, res;
-%       ial1 := ctx_ial c1;
-%       ial2 := ctx_ial c2;
-%       while ial1 and ial2 do <<
-% 	 w1 := pop ial1;
-% 	 w2 := pop ial2;
-% 	 if car w1 eq car w2 then
-% 	    res := w1 . res
-% 	 else
-% 	    if ordop(car w1, car w2) then
-% 	       res := w2 . w1 . res
-% 	    else
-% 	       res := w1 . w2 . res
-%       >>;
-%       if null ial1 then
-% 	 return ctx_fromial append(reversip res, ial2);
-%       if null ial2 then
-% 	 return ctx_fromial append(reversip res, ial1);
-%       return ctx_fromial reversip res
-%    end;
-
 % Aex functions.
-
-%%% --- constructors and access functions --- %%%
 
 % Tags: In a previous version of this modules, aex contained two tags: lcnttag
 % and reducedtag. [lcnttag] = t iff the leading coefficient is non-trivial, i.e.
@@ -512,13 +506,13 @@ asserted procedure aex_fromrp(rp: RatPoly): Aex;
    {'aex, rp, ctx_new()};
 
 asserted procedure aex_fromsf(f: SF): Aex;
-   aex_fromrp(f ./ 1);
+   {'aex, !*f2q f, ctx_new()};
 
 asserted procedure aex_0(): Aex;
-   aex_fromrp(nil ./ 1);
+   {'aex, !*f2q nil, ctx_new()};
 
 asserted procedure aex_1(): Aex;
-   aex_fromrp(1 ./ 1);
+   {'aex, !*f2q 1, ctx_new()};
 
 asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
    % Make linear polynomial a*x + b.
@@ -543,11 +537,21 @@ asserted procedure aex_free1(ae: Aex, x: Kernel): Aex;
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
    % TODO: Ensure that [a] is defined using variable x.
-   % Test if [a] is a rational. If yes, use aex_subrp:
-   if null aex_boundidl anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
-      aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
-   else
-      aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae));
+   begin scalar r;
+      if ctx_get(x, aex_ctx ae) then
+	 return ae;
+      if not (x memq aex_idl ae) then
+	 return ae;
+      r := anu_ratp a;  % Test whether [a] is rational. If yes, use aex_subrp.
+      if r then
+	 return aex_subrp(ae, x, r);
+      return aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae))
+   end;
+% if null aex_boundidl anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
+%       aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
+%    else
+%       aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae));
+%    end;
 
 asserted procedure aex_print(ae: Aex): Any;
    <<
@@ -558,7 +562,7 @@ asserted procedure aex_print(ae: Aex): Any;
       >>
    >>;
 
-%%% --- arithmetic with pseudodivision, sign, nullp, psgcd pssqfree --- %%%
+% Aex arithmetic.
 
 asserted procedure aex_neg(ae: Aex): Aex;
    % Negate.
@@ -570,16 +574,24 @@ asserted procedure aex_addrat(ae: Aex, r: Rational): Aex;
 
 asserted procedure aex_add(ae1: Aex, ae2: Aex): Aex;
    % Add, contexts are assumed to be compatible and will be merged.
-   % Caveat: minimization will be needed.
-   aex_mk(addsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
+   begin scalar q;
+      q := addsq(aex_ex ae1, aex_ex ae2);
+      return aex_mk(q, ctx_filter(kernels numr q, ctx_union(aex_ctx ae1, aex_ctx ae2)))
+   end;
 
 asserted procedure aex_minus(ae1: Aex, ae2: Aex): Aex;
    % Minus, contexts are assumed to be compatible and will be merged.
-   aex_mk(subtrsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
+   begin scalar q;
+      q := subtrsq(aex_ex ae1, aex_ex ae2);
+      return aex_mk(q, ctx_filter(kernels numr q, ctx_union(aex_ctx ae1, aex_ctx ae2)))
+   end;
 
 asserted procedure aex_mult(ae1: Aex, ae2: Aex): Aex;
    % Multiplication, contexts are assumed to be compatible and will be merged.
-   aex_mk(multsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
+   if aex_simplenullp ae1 or aex_simplenullp ae2 then
+      aex_0()
+   else
+      aex_mk(multsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
 asserted procedure aex_foldmult(ael: AexList): Aex;
    if null ael then
@@ -588,15 +600,13 @@ asserted procedure aex_foldmult(ael: AexList): Aex;
       aex_mult(car ael, aex_foldmult cdr ael);
 
 asserted procedure aex_power(ae: Aex, n: Integer): Aex;
-   % [ae] to the power of [n].
-   begin scalar res;
-      assert(n >= 0);  % Only non-negative powers make sense.
-      res := aex_1();
-      while n > 0 do <<
-	 res := aex_mult(res, ae);
-	 n := n - 1
-      >>;
-      return res
+   % [ae] to the power of [n]. Note that here 0^0 = 1.
+   begin scalar q;
+      assert(n >= 0);  % Only non-negative powers are supported.
+      if eqn(n, 0) then
+      	 return aex_1();
+      q := aex_ex ae;
+      return aex_mk(quotsq(!*f2q exptf(numr q, n), !*f2q exptf(denr q, n)), aex_ctx ae)
    end;
 
 asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
@@ -605,7 +615,10 @@ asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
 
 asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
    % Differentiate.
-   aex_mk(diffsq(aex_ex ae, x), aex_ctx ae);
+   begin scalar q;
+      q := diffsq(aex_ex ae, x);
+      return aex_mk(q, ctx_filter(kernels numr q, aex_ctx ae))
+   end;
 
 asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
    % Substitute algebraic form in algebraic expression.
@@ -613,7 +626,7 @@ asserted procedure aex_subrp(ae: Aex, x: Kernel, rp: RatPoly): Aex;
    begin scalar q, newq;
       q := aex_ex ae;
       newq := quotsq(sfto_qsub1(numr q, {x . rp}), !*f2q denr q);
-      return aex_mk(newq, aex_ctx ae)
+      return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
    end;
 
 asserted procedure aex_subrat(ae: Aex, x: Kernel, r: Rational): Aex;
@@ -621,7 +634,7 @@ asserted procedure aex_subrat(ae: Aex, x: Kernel, r: Rational): Aex;
    begin scalar q, newq;
       q := aex_ex ae;
       newq := quotsq(sfto_qsubhor(numr q, x, r), !*f2q denr q);
-      return aex_mk(newq, aex_ctx ae)
+      return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
    end;
 
 asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
@@ -629,7 +642,7 @@ asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
    begin scalar q, newq;
       q := aex_ex ae;
       newq := sfto_qsubhor1(numr q, x, r);
-      return aex_mk(newq, aex_ctx ae)
+      return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
    end;
 
 asserted procedure aex_tad(ae: Aex): Aex;
@@ -669,7 +682,7 @@ asserted procedure aex_freeidl(ae: Aex): List;
    lto_setminus(aex_idl ae, ctx_idl aex_ctx ae);
 
 asserted procedure aex_boundidl(ae: Aex): List;
-   lto_setminus(aex_idl ae, lto_setminus(aex_idl ae, ctx_idl aex_ctx ae));
+   ctx_idl aex_ctx ae;
 
 asserted procedure aex_nullp(ae: Aex): Boolean;
    % Null predicate.
@@ -688,19 +701,23 @@ asserted procedure aex_mvartest(ae: Aex, x: Kernel): Boolean;
 
 asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
    % Reductum of [ae] wrt [x]. Needs not to be minimized.
-   begin scalar q;
-      q := aex_ex ae;
-      if aex_mvartest(ae, x) then
-      	 return aex_mk(quotsq(!*f2q sfto_redx numr q, !*f2q denr q), aex_ctx ae);
+   begin scalar q, newq;
+      if aex_mvartest(ae, x) then <<
+      	 q := aex_ex ae;
+	 newq := quotsq(!*f2q sfto_redx numr q, !*f2q denr q);
+      	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
+      >>;
       return aex_0()
    end;
 
 asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
-   begin scalar q;
-      q := aex_ex ae;
-      if aex_mvartest(ae, x) then
-	 return aex_mk(quotsq(!*f2q sfto_lcx numr q, !*f2q denr q), aex_ctx ae);
-      return ae  % ctx needs not to be made smaller, as there are no singles
+   begin scalar q, newq;
+      if aex_mvartest(ae, x) then <<
+      	 q := aex_ex ae;
+      	 newq := quotsq(!*f2q sfto_lcx numr q, !*f2q denr q);
+	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
+      >>;
+      return ae
    end;
 
 asserted procedure aex_mvar(ae: Aex): Kernel;
@@ -811,7 +828,7 @@ asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
       ff := sfto_dprpartksf numr aex_ex f;
       gf := sfto_dprpartksf numr aex_ex g;
       psr := sfto_dprpartksf sfto_psrem(ff, gf, x);
-      return aex_mklcnt aex_mk(!*f2q psr, ctx_union(aex_ctx f, aex_ctx g))
+      return aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
       % Old code:
       % return aex_mklcnt aex_mk(
       % 	 ratpoly_psrem(aex_ex f, aex_ex g, x),
@@ -1571,6 +1588,26 @@ asserted procedure anu_print(a: Anu): Any;
       prin2t ")";
       nil
    >>;
+
+asserted procedure anu_ratp(a: Anu): ExtraBoolean;
+   % A very limited rationality test. If [a] is a root of a linear polynomial
+   % with integer coefficients, the root is returned. Otherwise, [nil] is
+   % returned.
+   begin scalar aex, fvarl, x, f;
+      aex := anu_dp a;
+      if aex_boundidl aex then
+	 return nil;
+      fvarl := aex_freeidl aex;
+      assert(fvarl);
+      if cdr fvarl then
+	 return nil;
+      x := car fvarl;
+      if eqn(aex_deg(aex, x), 1) then <<
+	 f := numr aex_ex aex;
+	 return quotsq(!*f2q negf red f, !*f2q lc f)
+      >>;
+      return nil
+   end;
 
 asserted procedure anu_check(a: Anu): Boolean;
    % Algebraic number check.
