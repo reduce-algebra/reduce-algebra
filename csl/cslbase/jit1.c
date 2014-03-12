@@ -208,7 +208,10 @@ Lisp_Object MS_CDECL jitcompilemen(Lisp_Object def, int nargs, ...)
     {   va_start(a, nargs);
         push_args(a, nargs); /* FIXME stack ok? or pushed too much */
     }
-    return apply(name, nargs, qenv(name), name);
+#ifndef NO_BYTECOUNT
+    name_of_caller = "JIT compiler";
+#endif
+    return apply(name, nargs, qenv(name), name, 0);
 }
 
 

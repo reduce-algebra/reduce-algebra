@@ -75,6 +75,9 @@ Lisp_Object MS_CDECL bytecoded0(Lisp_Object def, int nargs, ...)
  */
             loop_print_trace(qcar(callstack));
         }
+#ifndef NO_BYTECOUNT
+        else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
         trace_printf("\n");
         trace_all = 1;
         nil = C_nil;
@@ -111,6 +114,9 @@ Lisp_Object bytecoded1(Lisp_Object def, Lisp_Object a)
         {   trace_printf(" from ");
             loop_print_trace(qcar(callstack));
         }
+#ifndef NO_BYTECOUNT
+        else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
         trace_printf("\nArg1: ");
         loop_print_trace(stack[-1]);
         trace_printf("\n");
@@ -168,6 +174,9 @@ Lisp_Object bytecoded2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
         {   trace_printf(" from ");
             loop_print_trace(qcar(callstack));
         }
+#ifndef NO_BYTECOUNT
+        else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
         trace_printf("\nArg1: ");
         loop_print_trace(stack[-2]);
         trace_printf("\n");
@@ -226,6 +235,9 @@ Lisp_Object MS_CDECL bytecoded3(Lisp_Object def, int nargs, ...)
         {   trace_printf(" from ");
             loop_print_trace(qcar(callstack));
         }
+#ifndef NO_BYTECOUNT
+        else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
         trace_printf("\nArg1: ");
         loop_print_trace(stack[-3]);
         trace_printf("\n");
@@ -346,6 +358,9 @@ Lisp_Object MS_CDECL tracebytecoded0(Lisp_Object def, int nargs, ...)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     nil = C_nil;
     if (exception_pending()) { popv(3); return nil; }
@@ -410,6 +425,9 @@ Lisp_Object tracebytecoded1(Lisp_Object def, Lisp_Object a)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
@@ -480,6 +498,9 @@ Lisp_Object tracebytecoded2(Lisp_Object def,
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-1]);
     nil = C_nil;
@@ -572,6 +593,9 @@ Lisp_Object MS_CDECL tracesetbytecoded3(Lisp_Object def, int nargs, ...)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-2]);
     nil = C_nil;
@@ -671,6 +695,9 @@ Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object def, int nargs, ...)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
@@ -736,6 +763,9 @@ Lisp_Object MS_CDECL tracesetbytecoded0(Lisp_Object def, int nargs, ...)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     nil = C_nil;
     if (exception_pending()) { popv(3); return nil; }
@@ -800,6 +830,9 @@ Lisp_Object tracesetbytecoded1(Lisp_Object def, Lisp_Object a)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
@@ -870,6 +903,9 @@ Lisp_Object tracesetbytecoded2(Lisp_Object def,
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-1]);
     nil = C_nil;
@@ -960,6 +996,9 @@ Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object def, int nargs, ...)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-2]);
     nil = C_nil;
@@ -1059,6 +1098,9 @@ Lisp_Object MS_CDECL tracesetbytecodedn(Lisp_Object def, int nargs, ...)
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
@@ -1700,6 +1742,9 @@ static Lisp_Object vtracebyteoptn(Lisp_Object def, int nargs,
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
@@ -1807,6 +1852,9 @@ static Lisp_Object vtracesetbyteoptn(Lisp_Object def, int nargs,
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
@@ -1939,6 +1987,9 @@ static Lisp_Object vtracebyterestn(Lisp_Object def, int nargs,
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
@@ -2088,6 +2139,9 @@ static Lisp_Object vtracesetbyterestn(Lisp_Object def, int nargs,
     {   trace_printf(" from ");
         loop_print_trace(qcar(callstack));
     }
+#ifndef NO_BYTECOUNT
+    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
+#endif
     trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);

@@ -766,6 +766,9 @@ extern int procstackp;
 #ifdef DEBUG
 extern int trace_all;
 #endif
+#ifndef NO_BYTECOUNT
+extern const char *name_of_caller;
+#endif
 
 extern int garbage_collection_permitted;
 

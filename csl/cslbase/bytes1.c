@@ -1021,7 +1021,9 @@ static int32_t total = 0, frequencies[256];
 
 Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
 {
+#if !defined NO_BYTECOUNT || defined RECORD_GET
     int32_t i;
+#endif
 #ifdef RECORD_GET
     int32_t size;
     Lisp_Object v;
@@ -1029,7 +1031,6 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
 #endif
     argcheck(nargs, 0, "bytecounts");
 #ifdef NO_BYTECOUNT
-    i = 0;
     stdout_printf("bytecode statistics not available\n");
 #else
     stdout_printf("\nFrequencies of each bytecode (%ld total)", total);
@@ -1046,7 +1047,6 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
 #ifdef RECORD_GET
     v = elt(get_counts, 4);
     if (v == nil) return onevalue(nil);
-    
     size = length_of_header(vechdr(v));
     size = (size - CELL)/CELL;
     term_printf("\n %%SCORE      TOTAL   NOTFOUND  INDICATOR-NAME\n");
@@ -1078,20 +1078,17 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
     errexit();
     get_counts = v;
 #endif
-
     return onevalue(nil);
 }
 
 Lisp_Object bytecounts1(Lisp_Object nil, Lisp_Object a)
 {
-    int32_t i;
 #ifdef RECORD_GET
-    int32_t size;
+    int32_t i, size;
     Lisp_Object v;
     double tot;
 #endif
 #ifdef NO_BYTECOUNT
-    i = 0;
     stdout_printf("bytecode statistics not available\n");
 #endif
 
@@ -1336,6 +1333,19 @@ char *native_stack = NULL, *native_stack_base = NULL;
 #endif
 #endif
 
+#ifndef NO_BYTECOUNT
+/*
+ * Before calling apply() or the function in the qfn1, qfn2 or qfnn cell
+ * of anything I will set this variable to refer to a string (which may be
+ * up to 15 characters long) naming the [bytecoded] function responsible for
+ * the call. Sometimes the variable may end up NULL which should be taken
+ * to indicate that I do not know who the caller was. For instance I set
+ * it to NULL as bytestream_interpret exits (and the string that would be
+ * used is popped form the stack).
+ */
+const char *name_of_caller = NULL;
+#endif
+
 Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                                  Lisp_Object *entry_stack)
 {
@@ -1387,7 +1397,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
         }
     }
 #endif
-#ifdef DEBUG
+#if defined DEBUG || !defined NO_BYTECOUNT
 /*
  * ffname will be the first 15 characters of the name of the function
  * that is being interpreted.
@@ -1424,10 +1434,14 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifdef CHECK_STACK
 #ifdef DEBUG
     if (check_stack((char *)&ffname[0],__LINE__))
+    {   name_of_caller = NULL;
         return aerror("stack overflow");
+    }
 #else
     if (check_stack("bytecode_interpreter",__LINE__))
+    {   name_of_caller = NULL;
         return aerror("stack overflow");
+    }
 #endif
 #else
     if_check_stack
@@ -1546,6 +1560,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
+#ifndef NO_BYTECOUNT
+            name_of_caller = NULL;
+#endif
             return A_reg;
 
 
@@ -1560,6 +1577,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
+#endif
+#ifndef NO_BYTECOUNT
+            name_of_caller = NULL;
 #endif
             return A_reg;
 
@@ -1576,6 +1596,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
 #endif
+#ifndef NO_BYTECOUNT
+            name_of_caller = NULL;
+#endif
             return A_reg;
 
     case OP_NILEXIT:
@@ -1585,6 +1608,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
+#endif
+#ifndef NO_BYTECOUNT
+            name_of_caller = NULL;
 #endif
             return onevalue(nil);
 
@@ -1611,7 +1637,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #endif
 
     case OP_STOREFREE:
-            if ((1 & (int)entry_stack) != 0)
+            if ((1 & (int)(intptr_t)entry_stack) != 0)
             {   push4(codevec, litvec, B_reg, A_reg);
                 save_pc();
                 C_stack = stack;
@@ -1631,7 +1657,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_STOREFREE1:
-            if ((1 & (int)entry_stack) != 0)
+            if ((1 & (int)(intptr_t)entry_stack) != 0)
             {   push4(codevec, litvec, B_reg, A_reg);
                 save_pc();
                 C_stack = stack;
@@ -1651,7 +1677,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_STOREFREE2:
-            if ((1 & (int)entry_stack) != 0)
+            if ((1 & (int)(intptr_t)entry_stack) != 0)
             {   push4(codevec, litvec, B_reg, A_reg);
                 save_pc();
                 C_stack = stack;
@@ -1671,7 +1697,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_STOREFREE3:
-            if ((1 & (int)entry_stack) != 0)
+            if ((1 & (int)(intptr_t)entry_stack) != 0)
             {   push4(codevec, litvec, B_reg, A_reg);
                 save_pc();
                 C_stack = stack;
@@ -2349,6 +2375,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                     my_exit(EXIT_FAILURE);
                 }
 #endif
+#ifndef NO_BYTECOUNT
+                name_of_caller = (const char *)ffname;
+#endif
                 push(B_reg);
                 C_stack = stack;
                 A_reg = f1(qenv(B_reg), A_reg);
@@ -2361,7 +2390,10 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             }
             push(A_reg);
             C_stack = stack;
-            A_reg = apply(B_reg, 1, nil, B_reg, (1 & (int)entry_stack));
+#ifndef NO_BYTECOUNT
+            name_of_caller = (const char *)ffname;
+#endif
+            A_reg = apply(B_reg, 1, nil, B_reg, (1 & (int)(intptr_t)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto apply_error;
             stack = C_stack;
@@ -2379,6 +2411,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                     my_exit(EXIT_FAILURE);
                 }
 #endif
+#ifndef NO_BYTECOUNT
+                name_of_caller = (const char *)ffname;
+#endif
                 C_stack = stack;
                 A_reg = f2(qenv(r2), B_reg, A_reg);
                 nil = C_nil;
@@ -2391,7 +2426,10 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             *stack = B_reg;
             push(A_reg);
             C_stack = stack;
-            A_reg = apply(r2, 2, nil, r2, (1 & (int)entry_stack));
+#ifndef NO_BYTECOUNT
+            name_of_caller = (const char *)ffname;
+#endif
+            A_reg = apply(r2, 2, nil, r2, (1 & (int)(intptr_t)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto apply_error;
             stack = C_stack;
@@ -2410,6 +2448,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                     my_exit(EXIT_FAILURE);
                 }
 #endif
+#ifndef NO_BYTECOUNT
+                name_of_caller = (const char *)ffname;
+#endif
                 C_stack = stack;
                 A_reg = f345(qenv(r2), 3, r1, B_reg, A_reg);
                 nil = C_nil;
@@ -2422,7 +2463,10 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             *stack = r1;
             push2(B_reg, A_reg);
             C_stack = stack;
-            A_reg = apply(r2, 3, nil, r2, (1 & (int)entry_stack));
+#ifndef NO_BYTECOUNT
+            name_of_caller = (const char *)ffname;
+#endif
+            A_reg = apply(r2, 3, nil, r2, (1 & (int)(intptr_t)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto apply_error;
             stack = C_stack;
@@ -4032,7 +4076,10 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                 save_pc();
                 C_stack = stack;
                 A_reg = elt(litvec, fname);
-                A_reg = apply(A_reg, (int)(*ppc), nil, A_reg, (1 & (int)entry_stack));
+#ifndef NO_BYTECOUNT
+                name_of_caller = (const char *)ffname;
+#endif
+                A_reg = apply(A_reg, (int)(*ppc), nil, A_reg, (1 & (int)(intptr_t)entry_stack));
                 nil = C_nil;
                 if (exception_pending()) goto ncall_error_exit;
                 stack = C_stack;         /* args were popped by apply */
@@ -4195,7 +4242,10 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 /*
  * Note that I never need to call something with 0, 1, 2 or 3 args here.
  */
-            A_reg = apply(A_reg, (int)(*(ppc+1)), nil, A_reg, (1 & (int)entry_stack));
+#ifndef NO_BYTECOUNT
+            name_of_caller = (const char *)ffname;
+#endif
+            A_reg = apply(A_reg, (int)(*(ppc+1)), nil, A_reg, (1 & (int)(intptr_t)entry_stack));
             nil = C_nil;
             if (exception_pending()) goto ncall_error_exit;
             stack = C_stack;                    /* args were popped by apply */
@@ -5199,6 +5249,9 @@ call0:  r1 = elt(litvec, fname);
             my_exit(EXIT_FAILURE);
         }
 #endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
+#endif
         save_pc();
         C_stack = stack;
         A_reg = f345(qenv(r1), 0);
@@ -5215,6 +5268,9 @@ jcall0: r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
 #ifndef NO_BYTECOUNT
         qcount(elt(litvec, 0)) += OPCOUNT;
@@ -5273,8 +5329,12 @@ jcall0: r1 = elt(litvec, fname);
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
-#endif
+        A_reg = f345(qenv(r1), 0);
+        name_of_caller = NULL;
+        return A_reg;
+#else
         return f345(qenv(r1), 0);
+#endif
 
 call1:  r1 = elt(litvec, fname);
         f1 = qfn1(r1);
@@ -5283,6 +5343,9 @@ call1:  r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
 /* CALL1:   A=fn(A); */
         save_pc();
@@ -5301,6 +5364,9 @@ jcall1: r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
 #ifndef NO_BYTECOUNT
         qcount(elt(litvec, 0)) += OPCOUNT;
@@ -5357,8 +5423,12 @@ jcall1: r1 = elt(litvec, fname);
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
-#endif
+        A_reg = f1(qenv(r1), A_reg);
+        name_of_caller = NULL;
+        return A_reg;
+#else
         return f1(qenv(r1), A_reg);
+#endif
 
 call2:  r1 = elt(litvec, fname);
         f2 = qfn2(r1);
@@ -5367,6 +5437,9 @@ call2:  r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
 /* CALL2:   A=fn(B,A); */
         save_pc();
@@ -5386,6 +5459,9 @@ call2r: r1 = elt(litvec, fname);
             my_exit(EXIT_FAILURE);
         }
 #endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
+#endif
 /* CALL2R:   A=fn(A,B); NOTE arg order reversed */
         save_pc();
         C_stack = stack;
@@ -5403,6 +5479,9 @@ jcall2: r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
 #ifndef NO_BYTECOUNT
         qcount(elt(litvec, 0)) += OPCOUNT;
@@ -5459,8 +5538,12 @@ jcall2: r1 = elt(litvec, fname);
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
-#endif
+        A_reg = f2(qenv(r1), B_reg, A_reg);
+        name_of_caller = NULL;
+        return A_reg;
+#else
         return f2(qenv(r1), B_reg, A_reg);
+#endif
 
 call3:  r1 = elt(litvec, fname);
         f345 = qfnn(r1);
@@ -5469,6 +5552,9 @@ call3:  r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
 /* CALL3:   A=fn(pop(),B,A); */
         save_pc();
@@ -5488,6 +5574,9 @@ jcall3: r1 = elt(litvec, fname);
         {   term_printf("Illegal function\n");
             my_exit(EXIT_FAILURE);
         }
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
 #endif
         pop(r2);
 #ifndef NO_BYTECOUNT
@@ -5545,8 +5634,12 @@ jcall3: r1 = elt(litvec, fname);
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
-#endif
+        A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
+        name_of_caller = NULL;
+        return A_reg;
+#else
         return f345(qenv(r1), 3, r2, B_reg, A_reg);
+#endif
 
 jcalln:
 #ifndef NO_BYTECOUNT
@@ -5586,7 +5679,10 @@ jcalln:
  * It is strongly desirable that I do so so that backtraces will work
  * better.
  */
-        A_reg = apply(A_reg, (int)w, nil, A_reg, (1 & (int)entry_stack));
+#ifndef NO_BYTECOUNT
+        name_of_caller = (const char *)ffname;
+#endif
+        A_reg = apply(A_reg, (int)w, nil, A_reg, (1 & (int)(intptr_t)entry_stack));
         nil = C_nil;
         if (exception_pending()) goto ncall_error_exit;
 #ifndef NO_BYTECOUNT
@@ -5595,6 +5691,9 @@ jcalln:
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
+#endif
+#ifndef NO_BYTECOUNT
+        name_of_caller = NULL;
 #endif
         return A_reg;
 
@@ -5737,6 +5836,9 @@ create_closure:
         if (callstack != nil) callstack = qcdr(callstack);
 #endif
         flip_exception();
+#ifndef NO_BYTECOUNT
+        name_of_caller = NULL;
+#endif
         return nil;
     }
 }

@@ -948,9 +948,18 @@ static void lisp_main(void)
                     free(exit_charvec);
                     exit_charvec = NULL;
                     push(a);
+#ifndef NO_BYTECOUNT
+                    name_of_caller = "restart function";
+#endif
                     apply(supervisor, 1, nil, supervisor, 0);
                 }
-                else apply(supervisor, 0, nil, supervisor, 0);
+                else
+                {
+#ifndef NO_BYTECOUNT
+                    name_of_caller = "restart function";
+#endif
+                    apply(supervisor, 0, nil, supervisor, 0);
+                }
             }
 /*
  * Here the default read-eval-print loop used if the user has not provided

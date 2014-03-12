@@ -74,6 +74,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 AM_CPPFLAGS = $(TRACE)
 AM_LDFLAGS  = $(TRACE)
 
+reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1
+csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
+
 # If I list all the phony targets here this may help document things you
 # can do via this Makefile
 
@@ -180,17 +183,21 @@ MY_CFLAGS   := $(shell ../bin/wx-config --cflags 2>/dev/null)
 MY_CXXFLAGS := $(shell ../bin/wx-config --cxxflags 2>/dev/null)
 MY_LIBS     := $(shell ../bin/wx-config --libs 2>/dev/null)
 
-AM_CPPFLAGS += $(MY_CPPFLAGS)
-AM_CFLAGS    = $(MY_CFLAGS)
-AM_CXXFLAGS  = $(MY_CXXFLAGS)
-AM_LIBS      = $(MY_LIBS)
+AM_CPPFLAGS     += $(MY_CPPFLAGS)
+reduce_CPPFLAGS += $(MY_CPPFLAGS)
+csl_CPPFLAGS    += $(MY_CPPFLAGS)
+AM_CFLAGS        = $(MY_CFLAGS)
+AM_CXXFLAGS      = $(MY_CXXFLAGS)
+AM_LIBS          = $(MY_LIBS)
 
 else !wx
 WXC=
 endif !wx
 
 # I wish to know where this build intends to install things...
-AM_CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
+AM_CPPFLAGS     += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
+reduce_CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
+csl_CPPFLAGS    += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
@@ -250,7 +257,7 @@ endif !cygwin
 
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
-		arith12.c char.c cslmpi.c eval1.c eval2.c \
+		arith12.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
 		eval3.c eval4.c fns1.c fns2.c fns3.c \
 		print.c cslread.c restart.c sysfwin.c
 
@@ -425,13 +432,13 @@ generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u60.lsp
 
 csl_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
-		$(jit_sources) bytes.c stubs.c
+		$(jit_sources) stubs.c
 
 bootstrapreduce_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
-		$(jit_sources) bytes1.c stubs.c
+		$(jit_sources) stubs.c
 
 reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
-		$(jit_sources) bytes.c $(generated_sources)
+		$(jit_sources) $(generated_sources)
 
 if windows
 fwin_icon = fwin-icon.$(OBJEXT)
@@ -465,7 +472,9 @@ else !mac_framework
 FONTDEP=reduce.$(fontsdir)/$(samplefont)
 endif !mac_framework
 
-AM_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
+AM_CPPFLAGS     += -Dfontsdir=reduce.$(fontsdir)
+reduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
+csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
@@ -712,7 +721,9 @@ if crlibm
 CRLIBMDEPS=../lib/libcrlibm.a ../include/crlibm.h
 
 CRINC = -I../include
-AM_CPPFLAGS += $(CRINC)
+AM_CPPFLAGS     += $(CRINC)
+reduce_CPPFLAGS += $(CRINC)
+csl_CPPFLAGS    += $(CRINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -2032,21 +2043,6 @@ else !canrun
 endif !canrun
 
 
-
-#
-# The target "bytes1a.$(OBJEXT)" recompiles bytes1.c, but with the flag set that
-# arranges that the number of GET operations performed and the associated
-# indicators will be recorded, so that (bytecounts) will display statistics
-# about it. This slows things down considerably, but can help when you are in
-# the process of deciding which indicators are specified as "fast" ones.
-#
-
-#bytes1a.$(OBJEXT):	$(C)/bytes1.c $(C)/bytes.c $(C)/tags.h $(C)/machine.h \
-#		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h \
-#		$(C)/bytes.h $(C)/arith.h
-#	$(COMPILE) -DRECORD_GET=1 \
-#		-o bytes1.$(OBJEXT) \
-#		$(C)/bytes1.c
 
 if fox
 guisrc=$(foxdemo_SOURCES) $(fontdemo_SOURCES) $(showmathdemo_SOURCES)

@@ -266,6 +266,8 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
  * There are (nargs) arguments on the Lisp stack, and apply() must use them
  * then pop them off.  They were pushed in the order push(arg1); push(arg2),
  * and so on, and the stack grows upwards.
+ * If I built in DEBUF mode then mane_of_caller names the function that
+ * called me...
  * If I return with an error I will hand back the value name rather than the
  * junk value normally used in such cases.
  */
@@ -413,8 +415,19 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
             }
         }
         else if (!is_cons(fn))
-        {   popv(nargs);
+        {
+#ifndef NO_BYTECOUNT
+            char message[48];
+#endif
+            popv(nargs);
             push(name);
+#ifndef NO_BYTECOUNT
+            if (name_of_caller != NULL)
+            {   sprintf(message, "Bad function called from %s: ", name_of_caller);
+                aerror1(message, fn);
+            }
+            else
+#endif
             error(1, err_bad_fn, fn);
             pop(name);
             return name;
@@ -427,7 +440,6 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
  * to it behaves as if the actual function was called with the environment
  * passed as a forced-in first argument.
  */
-
         else if (def == cfunarg)
         {   int i;
             push(nil);
@@ -450,6 +462,14 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
  */
     popv(nargs);
     push(name);
+#ifndef NO_BYTECOUNT
+    if (name_of_caller != NULL)
+    {   char message[48];
+        sprintf(message, "Bad function application in %s: ", name_of_caller);
+        aerror1(message, fn);
+    }
+    else
+#endif
     error(1, err_bad_apply, fn);
     pop(name);
     return name;
@@ -459,11 +479,22 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
  * Now for implementation of all the special forms...
  */
 
+#ifndef NO_BYTECOUNT
+#define SAVE_NAME \
+    const char *save_name_of_caller = name_of_caller;
+#define RESTORE_NAME \
+    name_of_caller = save_name_of_caller;
+#else
+#define SAVE_NAME
+#define RESTORE_NAME
+#endif
+
 static Lisp_Object and_fn(Lisp_Object args, Lisp_Object env)
 /* also needs to be a macro for Common Lisp */
 {
     Lisp_Object nil = C_nil;
     stackcheck2(0, args, env);
+    SAVE_NAME
     if (!consp(args)) return onevalue(lisp_true);
     for (;;)
     {   Lisp_Object v = qcar(args);
@@ -471,6 +502,7 @@ static Lisp_Object and_fn(Lisp_Object args, Lisp_Object env)
         if (!consp(args)) return eval(v, env);
         push2(args, env);
         v = eval(v, env);
+        RESTORE_NAME
         pop2(env, args);
         errexit();
         if (v == nil) return onevalue(nil);
@@ -482,6 +514,7 @@ static Lisp_Object noisy_and_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
     stackcheck2(0, args, env);
+    SAVE_NAME
     if (!consp(args)) return onevalue(lisp_true);
     for (;;)
     {   Lisp_Object v = qcar(args);
@@ -489,6 +522,7 @@ static Lisp_Object noisy_and_fn(Lisp_Object args, Lisp_Object env)
         if (!consp(args)) return noisy_eval(v, env);
         push2(args, env);
         v = noisy_eval(v, env);
+        RESTORE_NAME
         pop2(env, args);
         errexit();
         if (v == nil) return onevalue(nil);
@@ -517,6 +551,7 @@ Lisp_Object append(Lisp_Object a, Lisp_Object b)
 static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object p, nil = C_nil;
+    SAVE_NAME
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push3(qcar(args),          /* my_tag                               */
@@ -539,6 +574,7 @@ static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
     while (consp(args))
     {   p = qcar(args);
         p = eval(p, env);
+        RESTORE_NAME
 /*
  * one of the sorts of exit that may be activated by marking nil is
  * a return_from.  Here I need to check to see if that is what
@@ -574,6 +610,7 @@ static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
 static Lisp_Object noisy_block_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object p, nil = C_nil;
+    SAVE_NAME
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push3(qcar(args),          /* my_tag                               */
@@ -596,6 +633,7 @@ static Lisp_Object noisy_block_fn(Lisp_Object args, Lisp_Object env)
     while (consp(args))
     {   p = qcar(args);
         p = noisy_eval(p, env);
+        RESTORE_NAME
 /*
  * one of the sorts of exit that may be activated by marking nil is
  * a return_from.  Here I need to check to see if that is what
@@ -631,11 +669,13 @@ static Lisp_Object noisy_block_fn(Lisp_Object args, Lisp_Object env)
 static Lisp_Object catch_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object tag, nil = C_nil, v;
+    SAVE_NAME
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push2(args, env);
     tag = qcar(args);
     tag = eval(tag, env);
+    RESTORE_NAME
     errexit();
     tag = catch_tags = cons(tag, catch_tags);
     pop2(env, args);
@@ -665,11 +705,13 @@ static Lisp_Object catch_fn(Lisp_Object args, Lisp_Object env)
 static Lisp_Object noisy_catch_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object tag, nil = C_nil, v;
+    SAVE_NAME
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push2(args, env);
     tag = qcar(args);
     tag = noisy_eval(tag, env);
+    RESTORE_NAME
     errexit();
     tag = catch_tags = cons(tag, catch_tags);
     pop2(env, args);
@@ -712,6 +754,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
  */
 {
     Lisp_Object nil = C_nil;
+    SAVE_NAME
     stackcheck3(0, bvl, body, env);
     push3(bvl, body, env);
     nil = C_nil;
@@ -739,6 +782,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
     for (;;)
     {   if (exception_pending() || !consp(body)) break;
         p = macroexpand(qcar(body), env);
+        RESTORE_NAME
         errexitn(8);
         body = qcdr(body);
         if (!consp(p))
@@ -787,6 +831,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
 #endif
             if (z != nil)
             {   z = noisy ? noisy_eval(z, env) : eval(z, env);
+                RESTORE_NAME
                 errexitn(8);
             }
             z = cons(q, z);
@@ -868,6 +913,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
              body = noisy ? noisy_tagbody_fn(body, env1) :
                             tagbody_fn(body, env1);
         else body = noisy ? noisy_progn_fn(body, env1) : progn_fn(body, env1);
+        RESTORE_NAME
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
@@ -922,6 +968,7 @@ static Lisp_Object noisy_compiler_let_fn(Lisp_Object args, Lisp_Object env)
 static Lisp_Object cond_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
+    SAVE_NAME
     stackcheck2(0, args, env);
     while (consp(args))
     {
@@ -931,6 +978,7 @@ static Lisp_Object cond_fn(Lisp_Object args, Lisp_Object env)
             push2(args, env);
             p1 = qcar(p);
             p1 = eval(p1, env);
+            RESTORE_NAME
             pop2(env, args);
             errexit();
             if (p1 != nil)
@@ -948,6 +996,7 @@ static Lisp_Object cond_fn(Lisp_Object args, Lisp_Object env)
 static Lisp_Object noisy_cond_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
+    SAVE_NAME
     stackcheck2(0, args, env);
     while (consp(args))
     {
@@ -957,6 +1006,7 @@ static Lisp_Object noisy_cond_fn(Lisp_Object args, Lisp_Object env)
             push2(args, env);
             p1 = qcar(p);
             p1 = noisy_eval(p1, env);
+            RESTORE_NAME
             pop2(env, args);
             errexit();
             if (p1 != nil)
@@ -1264,6 +1314,7 @@ static Lisp_Object if_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object p=nil, tr=nil, fs=nil;
+    SAVE_NAME
     if (!consp(args)) return aerror("if");
     p = qcar(args);
     args = qcdr(args);
@@ -1279,6 +1330,7 @@ static Lisp_Object if_fn(Lisp_Object args, Lisp_Object env)
     stackcheck4(0, p, env, tr, fs);
     push3(fs, tr, env);
     p = eval(p, env);
+    RESTORE_NAME
     pop3(env, tr, fs);
     errexit();
     if (p == nil)
@@ -1290,6 +1342,7 @@ static Lisp_Object noisy_if_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object p=nil, tr=nil, fs=nil;
+    SAVE_NAME
     if (!consp(args)) return aerror("if");
     p = qcar(args);
     args = qcdr(args);
@@ -1305,6 +1358,7 @@ static Lisp_Object noisy_if_fn(Lisp_Object args, Lisp_Object env)
     stackcheck4(0, p, env, tr, fs);
     push3(fs, tr, env);
     p = noisy_eval(p, env);
+    RESTORE_NAME
     pop3(env, tr, fs);
     errexit();
     if (p == nil)
@@ -1403,6 +1457,7 @@ static Lisp_Object letstar_fn(Lisp_Object args, Lisp_Object env)
  */
 {
     Lisp_Object nil = C_nil;
+    SAVE_NAME
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push3(qcar(args), qcdr(args), env);
@@ -1424,6 +1479,7 @@ static Lisp_Object letstar_fn(Lisp_Object args, Lisp_Object env)
     for (;;)
     {   if (exception_pending() || !consp(body)) break;
         p = macroexpand(qcar(body), env);
+        RESTORE_NAME
         errexitn(8);
         body = qcdr(body);
         if (!consp(p))
@@ -1471,6 +1527,7 @@ static Lisp_Object letstar_fn(Lisp_Object args, Lisp_Object env)
 #endif
             if (z != nil)
             {   z = eval(z, env);
+                RESTORE_NAME
                 nil = C_nil;
                 if (exception_pending()) goto unwind_special_bindings;
             }
@@ -1573,6 +1630,7 @@ static Lisp_Object noisy_letstar_fn(Lisp_Object args, Lisp_Object env)
  */
 {
     Lisp_Object nil = C_nil;
+    SAVE_NAME
     if (!consp(args)) return onevalue(nil);
     stackcheck2(0, args, env);
     push3(qcar(args), qcdr(args), env);
@@ -1594,6 +1652,7 @@ static Lisp_Object noisy_letstar_fn(Lisp_Object args, Lisp_Object env)
     for (;;)
     {   if (exception_pending() || !consp(body)) break;
         p = macroexpand(qcar(body), env);
+        RESTORE_NAME
         errexitn(8);
         body = qcdr(body);
         if (!consp(p))
@@ -1641,6 +1700,7 @@ static Lisp_Object noisy_letstar_fn(Lisp_Object args, Lisp_Object env)
 #endif
             if (z != nil)
             {   z = noisy_eval(z, env);
+                RESTORE_NAME
                 nil = C_nil;
                 if (exception_pending()) goto unwind_special_bindings;
             }
