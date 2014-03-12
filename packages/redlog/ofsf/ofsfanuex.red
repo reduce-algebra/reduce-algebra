@@ -381,11 +381,13 @@ asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel): SF;
 
 % AexCtx functions.
 
-asserted procedure ctx_fromial(ial: AList): AexCtx;
-   {'ctx, ial};
+% Contexts are sorted w.r.t. ordop.
 
 asserted procedure ctx_new(): AexCtx;
-   ctx_fromial nil;
+   {'ctx, nil};
+
+asserted procedure ctx_fromial(ial: AList): AexCtx;
+   {'ctx, sort(ial, function(lambda(x, y); ordop(car x, car y)))};
 
 asserted procedure ctx_ial(c: AexCtx): AList;
    cadr c;
@@ -407,40 +409,48 @@ asserted procedure ctx_print(c: AexCtx): Any;
    >>;
 
 asserted procedure ctx_get(x: Kernel, c: AexCtx): Anu;
-   % Get variable assignment. Returns the algebraic number to which [x] is
-   % bound by context [c]. If [x] is not bound by [c], nil is returned.
-   begin scalar res;
-      res := atsoc(x, ctx_ial c);
-      if null res then
-	 return nil;
-      return cdr res
+   % Get variable assignment. Returns the algebraic number to which [x] is bound
+   % by context [c]. If [x] is not bound by [c], nil is returned.
+   begin scalar ial, res;
+      ial := ctx_ial c;
+      while ial and null res do <<
+	 if caar ial eq x then
+	    res := cdar ial;
+	 ial := cdr ial
+      >>;
+      return res
    end;
 
 asserted procedure ctx_add(ia: DottedPair, c: AexCtx): AexCtx;
-   % Add to context without check. [ia] is a dotted pair (x . a) where [x] is a
-   % Kernel and [a] is an Anu.
-   {'ctx, ia . ctx_ial c};
-
-asserted procedure ctx_rm(x: Kernel, c: AexCtx): AexCtx;
-   % Remove variable [x] from context [c].
-   ctx_fromial(
-      for each ia in ctx_ial c join
-      	 if car ia eq x then nil else {ia});
+   % Add to context. [ia] is a dotted pair (x . a), where [x] is a Kernel and
+   % [a] is an Anu. It is assumed that [x] is not bound by [c].
+   begin scalar ial, var, prevl;
+      assert(not (car x memq ctx_idl c));
+      ial := ctx_ial c;
+      var := car ia;
+      while ial and ordop(var, caar ial) do <<
+	 prevl := car ial . prevl;
+	 ial := cdr ial
+      >>;
+      return {'ctx, append(reverse prevl, ia . ial)}
+   end;
 
 asserted procedure ctx_free(x: Kernel, c: AexCtx): AexCtx;
    % Free [x] and all higher variables. [x] has to be bound by [c].
    <<
       assert(not null ctx_get(x, c));  % Variable [x] should be bound by [c].
-      ctx_fromial for each e in ctx_ial c join
-	 if ordop(car e, x) then nil else {e}
+      {'ctx,
+	 for each e in ctx_ial c join
+	    if ordop(car e, x) then nil else {e}}
    >>;
 
 asserted procedure ctx_free1(x: Kernel, c: AexCtx): AexCtx;
    % Free [x]. [x] has to be bound by [c].
    <<
       assert(not null ctx_get(x, c));  % Variable [x] should be bound by [c].
-      ctx_fromial for each e in ctx_ial c join
-	 if not eqcar(e, x) then {e}
+      {'ctx,
+	 for each e in ctx_ial c join
+	    if not eqcar(e, x) then {e}}
    >>;
 
 asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
@@ -453,7 +463,7 @@ asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
       ial2 := for each pr in ctx_ial c2 collect car pr . cdr pr;
       w := lto_almerge({ial1, ial2}, function(lambda(x, y); x));
       w := sort(w, function(lambda(x, y); ordop(car x, car y)));
-      return ctx_fromial w
+      return {'ctx, w}
    end;
 
 % asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
