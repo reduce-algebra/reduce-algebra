@@ -40,6 +40,49 @@ module ofsfanuex;
 % numbers and expressions in algebraic numbers (algebraic polynomials). The
 % features include incremental real root isolation and factorisation.
 
+% Algebraic number (Aex) consists of a rational polynomial with a context (Ctx).
+% Context binds some of the variables to algebraic numbers (Anu). Algebraic
+% number consists of a univariate (one free variable) Aex together with rational
+% internval such that the Aex has exactly one root in this interval.
+
+% Conventions:
+% Functions working with Aex and Anu rely on and ensure that the following hold:
+% 1) Bound variables are "big," w.r.t. ordop: For every free variable x and a
+% bound variable y ordop(x, y) = t. This imples that in a univariate Aex the
+% free variable is the main variable of the rational polynomial.
+% 2) If a variable x is bound to an Anu, the main variable of the algebraic
+% polynomial defining this number is x.
+
+fluid '(bigvarpref!* bigvarcount!* smallvarpref!* smallvarcount!*);
+bigvarpref!* := 'zzzzz;
+bigvarcount!* := 0;
+smallvarpref!* := '!_!_x;
+smallvarcount!* := 10000;
+
+procedure mksmallid();
+   begin scalar w; integer d;
+      smallvarcount!* := smallvarcount!* - 1;
+      w := explode smallvarcount!*;
+      d := length w;
+      while d < 5 do <<
+	 w := '!0 . w;
+	 d := d + 1
+      >>;
+      return compress append(explode smallvarpref!*, w)
+   end;
+
+procedure mkbigid();
+   begin scalar w; integer d;
+      bigvarcount!* := bigvarcount!* + 1;
+      w := explode bigvarcount!*;
+      d := length w;
+      while d < 5 do <<
+	 w := '!0 . w;
+	 d := d + 1
+      >>;
+      return compress append(explode bigvarpref!*, w)
+   end;
+
 struct Rational checked by RationalP;
 struct RationalList checked by RationalListP;
 struct GRational checked by GRationalP;
@@ -422,7 +465,7 @@ asserted procedure ctx_print(c: AexCtx): Any;
       nil
    >>;
 
-asserted procedure ctx_get(x: Kernel, c: AexCtx): ExtraBoolean;
+asserted procedure ctx_get(c: AexCtx, x: Kernel): ExtraBoolean;
    % Get variable assignment. Returns the algebraic number to which [x] is bound
    % by context [c]. If [x] is not bound by [c], nil is returned.
    begin scalar ial, res;
@@ -435,7 +478,7 @@ asserted procedure ctx_get(x: Kernel, c: AexCtx): ExtraBoolean;
       return res
    end;
 
-asserted procedure ctx_add(ia: DottedPair, c: AexCtx): AexCtx;
+asserted procedure ctx_add(c: AexCtx, ia: DottedPair): AexCtx;
    % Add to context. [ia] is a dotted pair (x . a), where [x] is a Kernel and
    % [a] is an Anu. It is assumed that [x] is not bound by [c].
    begin scalar ial, var, prevl;
@@ -449,31 +492,17 @@ asserted procedure ctx_add(ia: DottedPair, c: AexCtx): AexCtx;
       return {'ctx, append(reverse prevl, ia . ial)}
    end;
 
-asserted procedure ctx_free(x: Kernel, c: AexCtx): AexCtx;
-   % Free [x] and all higher variables. [x] has to be bound by [c].
-   <<
-      assert(not null ctx_get(x, c));  % Variable [x] should be bound by [c].
-      {'ctx,
-	 for each e in ctx_ial c join
-	    if ordop(car e, x) then nil else {e}}
-   >>;
-
-asserted procedure ctx_free1(x: Kernel, c: AexCtx): AexCtx;
-   % Free [x]. [x] has to be bound by [c].
-   <<
-      assert(not null ctx_get(x, c));  % Variable [x] should be bound by [c].
-      {'ctx,
-	 for each e in ctx_ial c join
-	    if not eqcar(e, x) then {e}}
-   >>;
+asserted procedure ctx_remove(c: AexCtx, x: Kernel): AexCtx;
+   % Delete assignment to [x].
+   {'ctx,
+      for each e in ctx_ial c join
+      	 if not eqcar(e, x) then {e}};
 
 asserted procedure ctx_filter(varl: List, c: AexCtx): AexCtx;
    % Delete assignments to variables, which do not occur in [varl].
-   <<
-      {'ctx,
-	 for each e in ctx_ial c join
-	    if car e memq varl then {e}}
-   >>;
+   {'ctx,
+      for each e in ctx_ial c join
+	 if car e memq varl then {e}};
 
 asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    % Union of syntactically compatible contexts. Syntactically/semantically
@@ -524,34 +553,40 @@ asserted procedure aex_ex(ae: Aex): RatPoly;
 asserted procedure aex_ctx(ae: Aex): AexCtx;
    nth(ae, 3);
 
-asserted procedure aex_freeall(ae: Aex): Aex;
-   aex_mk(aex_ex ae, ctx_new());
+asserted procedure aex_varl(ae: Aex): List;
+   kernels numr aex_ex ae;
 
-asserted procedure aex_free(ae: Aex, x: Kernel): Aex;
-   % Free x and all higher variables.
-   aex_mk(aex_ex ae, ctx_free(x, aex_ctx ae));
+asserted procedure aex_fvarl(ae: Aex): List;
+   % Free identifiers, the id with highest kernel order first.
+   lto_setminus(aex_varl ae, ctx_idl aex_ctx ae);
 
-asserted procedure aex_free1(ae: Aex, x: Kernel): Aex;
-   % Free x.
-   aex_mk(aex_ex ae, ctx_free1(x, aex_ctx ae));
+asserted procedure aex_bvarl(ae: Aex): List;
+   ctx_idl aex_ctx ae;
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
-   % TODO: Ensure that [a] is defined using variable x.
-   begin scalar r;
-      if ctx_get(x, aex_ctx ae) then
+   begin scalar ctx, fvarl, r, nctx, nx, rp;
+      ctx := aex_ctx ae;
+      if ctx_get(ctx, x) then
 	 return ae;
-      if not (x memq aex_idl ae) then
+      fvarl := aex_fvarl ae;
+      if not (x memq fvarl) then
 	 return ae;
       r := anu_ratp a;  % Test whether [a] is rational. If yes, use aex_subrp.
       if r then
 	 return aex_subrp(ae, x, r);
-      return aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae))
+      if x eq car reversip fvarl then <<  % [x] is the biggest free variable in [ae]
+	 nctx := ctx_add(aex_ctx ae, x . anu_rename(a, x));
+	 return aex_mk(aex_ex ae, nctx)
+      >>;
+      nx := mkbigid();
+      nctx := ctx_add(aex_ctx ae, nx . anu_rename(a, nx));
+      rp := aex_ex ae;
+      return aex_mk(quotsq(!*f2q sfto_renamef(numr rp, x, nx), !*f2q denr rp), nctx)
    end;
-% if null aex_boundidl anu_dp a and eqn(aex_deg(anu_dp a, x), 1) then
-%       aex_subrp(ae, x, aex_ex aex_linsolv(anu_dp a, x))
-%    else
-%       aex_mk(aex_ex ae, ctx_add(x . a, aex_ctx ae));
-%    end;
+
+asserted procedure aex_unbind(ae: Aex, x: Kernel): Aex;
+   % Delete assignment to [x].
+   aex_mk(aex_ex ae, ctx_remove(aex_ctx ae, x));
 
 asserted procedure aex_print(ae: Aex): Any;
    <<
@@ -562,7 +597,64 @@ asserted procedure aex_print(ae: Aex): Any;
       >>
    >>;
 
+asserted procedure aex_mvartest(ae: Aex, x: Kernel): Boolean;
+   sfto_mvartest(numr aex_ex ae, x);
+
+asserted procedure aex_nullp(ae: Aex): Boolean;
+   % Null predicate.
+   begin scalar tmp;
+      % Make the leading coefficient non-trivial, i.e. non-zero.
+      tmp := aex_mklcnt ae;
+      if aex_fvarl tmp then  % [ae] is a non-constant polynomial.
+	 return nil;
+      if eqn(aex_sgn tmp, 0) then
+	 return t;
+      return nil
+   end;
+
+asserted procedure aex_simplenullp(ae: Aex): Boolean;
+   % Simple but incomplete null-predicate. It is complete, if [ae] is reduced,
+   % i.e. leading coefficient of aex_ex is non-zero or aex_ex is zero
+   % polynomial.
+   null numr aex_ex ae;
+
+asserted procedure aex_simplenumberp(ae: Aex): Boolean;
+   null aex_fvarl ae;
+
+asserted procedure aex_simpleratp(ae: Aex): Boolean;
+   ((numberp numr q and not eqn(numr q, 0)) or null numr q) where (q = aex_ex ae);
+
 % Aex arithmetic.
+
+asserted procedure aex_mvar(ae: Aex): Kernel;
+   <<
+      assert(null aex_fvarl ae or eqcar(aex_fvarl ae, sfto_mvarx numr aex_ex ae));
+      sfto_mvarx numr aex_ex ae
+   >>;
+
+asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
+   sfto_vardeg(numr aex_ex ae, x);
+
+asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
+   begin scalar q, newq;
+      if aex_mvartest(ae, x) then <<
+      	 q := aex_ex ae;
+      	 newq := quotsq(!*f2q sfto_lcx numr q, !*f2q denr q);
+	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
+      >>;
+      return ae
+   end;
+
+asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
+   % Reductum of [ae] wrt [x]. Needs not to be minimized.
+   begin scalar q, newq;
+      if aex_mvartest(ae, x) then <<
+      	 q := aex_ex ae;
+	 newq := quotsq(!*f2q sfto_redx numr q, !*f2q denr q);
+      	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
+      >>;
+      return aex_0()
+   end;
 
 asserted procedure aex_neg(ae: Aex): Aex;
    % Negate.
@@ -593,11 +685,15 @@ asserted procedure aex_mult(ae1: Aex, ae2: Aex): Aex;
    else
       aex_mk(multsq(aex_ex ae1, aex_ex ae2), ctx_union(aex_ctx ae1, aex_ctx ae2));
 
-asserted procedure aex_foldmult(ael: AexList): Aex;
+asserted procedure aex_multl(ael: AexList): Aex;
    if null ael then
       aex_1()
    else
-      aex_mult(car ael, aex_foldmult cdr ael);
+      aex_mult(car ael, aex_multl cdr ael);
+
+asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
+   % Multiply with rational number.
+   aex_mk(multsq(aex_ex ae, r), aex_ctx ae);
 
 asserted procedure aex_power(ae: Aex, n: Integer): Aex;
    % [ae] to the power of [n]. Note that here 0^0 = 1.
@@ -608,10 +704,6 @@ asserted procedure aex_power(ae: Aex, n: Integer): Aex;
       q := aex_ex ae;
       return aex_mk(quotsq(!*f2q exptf(numr q, n), !*f2q exptf(denr q, n)), aex_ctx ae)
    end;
-
-asserted procedure aex_multrat(ae: Aex, r: Rational): Aex;
-   % Multiply with rational number.
-   aex_mk(multsq(aex_ex ae, r), aex_ctx ae);
 
 asserted procedure aex_diff(ae: Aex, x: Kernel): Aex;
    % Differentiate.
@@ -653,79 +745,6 @@ asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
    aex_mk(!*f2q sfto_kexp(x, n), ctx_new());
 
-asserted procedure aex_deg(ae: Aex, x: Kernel): Integer;
-   % Degree of [x] in [ae].
-   sfto_vardeg(numr aex_ex ae, x);
-
-asserted procedure aex_simpleratpolyp(ae: Aex): Boolean;
-   % Simple but incomplete predicte to test, if [ae] represents a (maybe
-   % constant) rational polynomial.
-   null ctx_ial aex_ctx ae or aex_simpleratp ae;
-
-asserted procedure aex_simpleratp(ae: Aex): Boolean;
-   ((numberp numr q and not eqn(numr q, 0)) or null numr q) where (q = aex_ex ae);
-
-asserted procedure aex_simplenullp(ae: Aex): Boolean;
-   % Simple but incomplete null-predicate. It is complete, if [ae] is reduced,
-   % i.e. leading coefficient of aex_ex is non-zero or aex_ex is zero
-   % polynomial.
-   null numr aex_ex ae;
-
-asserted procedure aex_simplenumberp(ae: Aex): Boolean;
-   null aex_freeidl ae;
-
-asserted procedure aex_idl(ae: Aex): List;
-   kernels numr aex_ex ae;
-
-asserted procedure aex_freeidl(ae: Aex): List;
-   % Free identifiers, the id with highest kernel order first.
-   lto_setminus(aex_idl ae, ctx_idl aex_ctx ae);
-
-asserted procedure aex_boundidl(ae: Aex): List;
-   ctx_idl aex_ctx ae;
-
-asserted procedure aex_nullp(ae: Aex): Boolean;
-   % Null predicate.
-   begin scalar tmp;
-      % Make the leading coefficient non-trivial, i.e. non-zero.
-      tmp := aex_mklcnt ae;
-      if aex_freeidl tmp then  % [ae] is a non-constant polynomial.
-	 return nil;
-      if eqn(aex_sgn tmp, 0) then
-	 return t;
-      return nil
-   end;
-
-asserted procedure aex_mvartest(ae: Aex, x: Kernel): Boolean;
-   sfto_mvartest(numr aex_ex ae, x);
-
-asserted procedure aex_red(ae: Aex, x: Kernel): Aex;
-   % Reductum of [ae] wrt [x]. Needs not to be minimized.
-   begin scalar q, newq;
-      if aex_mvartest(ae, x) then <<
-      	 q := aex_ex ae;
-	 newq := quotsq(!*f2q sfto_redx numr q, !*f2q denr q);
-      	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
-      >>;
-      return aex_0()
-   end;
-
-asserted procedure aex_lc(ae: Aex, x: Kernel): Aex;
-   begin scalar q, newq;
-      if aex_mvartest(ae, x) then <<
-      	 q := aex_ex ae;
-      	 newq := quotsq(!*f2q sfto_lcx numr q, !*f2q denr q);
-	 return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
-      >>;
-      return ae
-   end;
-
-asserted procedure aex_mvar(ae: Aex): Kernel;
-   <<
-      assert(null aex_freeidl ae or eqcar(aex_freeidl ae, sfto_mvarx numr aex_ex ae));
-      sfto_mvarx numr aex_ex ae
-   >>;
-
 asserted procedure aex_mklcnt(ae: Aex): Aex;
    % Make leading coefficient of non-constant polynomial non-trivial.
    % Was: minimize.
@@ -733,7 +752,7 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
       % Quick win: obvious cases: [ae] is a Rational or no variables are bound:
       if aex_simpleratp ae or null ctx_idl aex_ctx ae then
       	 return ae;
-      idl := aex_freeidl ae;
+      idl := aex_fvarl ae;
       if idl then <<  % [ae] is a non-constant algebraic polynomial.
       	 if aex_nullp aex_lc(ae, car idl) then
       	    return aex_mklcnt aex_red(ae, car idl);
@@ -748,23 +767,20 @@ asserted procedure aex_mklcnt(ae: Aex): Aex;
    end;
 
 asserted procedure aex_reduce(ae: Aex): Aex;
-   % Convention: the bound variable has to be defined by an anu using the same
-   % variable.
    begin scalar x, rlc, rred, alpha, tmp;
-      if null aex_boundidl ae then  % There are no bound variables.
+      if null aex_bvarl ae then
 	 return ae;
       % There are bound variables.
-      if aex_freeidl ae then <<  % There are free variables.
+      if aex_fvarl ae then <<
       	 x := aex_mvar ae;
 	 rlc := aex_reduce aex_lc(ae, x);
 	 rred := aex_reduce aex_red(ae, x);
 	 return aex_add(aex_mult(rlc, aex_xtothen(x, aex_deg(ae, x))), rred)
       >>;
       % There are no free variables.
-      x := aex_mvar ae;  % We assume that aex_mvar ae is a bound variable.
-      assert(eqcar(atsoc(x, ctx_ial aex_ctx ae), x));
-      alpha := ctx_get(x, aex_ctx ae);
-      tmp := aex_reduce aex_free(ae, x);
+      x := aex_mvar ae;
+      alpha := ctx_get(aex_ctx ae, x);
+      tmp := aex_reduce aex_unbind(ae, x);
       if aex_deg(tmp, x) >= aex_deg(anu_dp alpha, x) then
 	 tmp := aex_rem(tmp, anu_dp alpha, x);
       tmp := aex_bind(tmp, x, alpha);
@@ -772,6 +788,29 @@ asserted procedure aex_reduce(ae: Aex): Aex;
       assert(aex_nullp aex_minus(ae, tmp));
       return tmp
    end;
+
+% This version has a different recursion pattern.
+% asserted procedure aex_reduce(ae: Aex): Aex;
+%    begin scalar x, xn, alpha, rl, rred; integer d;
+%       if null aex_boundil ae then
+% 	 return ae;
+%       x := aex_mvar ae;
+%       d := aex_deg(ae, x);
+%       alpha := ctx_get(aex_ctx ae, x);
+%       rlc := aex_reduce aex_lc(ae, x);
+%       if aex_simplenullp rlc then
+% 	 return aex_reduce aex_red(ae, x);
+%       if not alpha or d < anu_dpdeg alpha then <<  % [x] is free
+%       	 rred := aex_reduce aex_red(ae, x);
+% 	 return aex_add(aex_mult(rlc, aex_xtothen(x, d)), rred)
+%       >>;
+%       % [x] is bound and x^d can be reduced
+%       rxn := aex_rem(aex_mk(!*f2q sfto_kexp(x, d), ctx_fromial {x . alpha}), anu_dp alpha, x);
+%       return aex_reduce aex_add(aex_mult(rlc, rxn), aex_red(ae, x))
+%    end;
+
+% asserted procedure anu_dpdeg(a: Anu): Integer;
+%    ldeg numr aex_ex anu_dp a;
 
 asserted procedure aex_psquotrem1(f: Aex, p: Aex, x: Kernel): DottedPair;
    % Pseudo quotient remainder one step. Returns [(q . r)] with $a_n^2f=qp+r$.
@@ -821,7 +860,7 @@ asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
    % aex_psquotrem1.
    begin scalar ff, gf, psr;
       assert(not aex_simplenullp g);
-      if null aex_freeidl g then
+      if null aex_fvarl g then
    	 return aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
@@ -905,7 +944,7 @@ asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
    begin scalar freeids;
       if aex_simplenullp ae then
 	 return 0;
-      freeids := aex_freeidl ae;
+      freeids := aex_fvarl ae;
       if null freeids then
 	 return aex_sgn ae;
       % Check if [x] is the main variable:
@@ -922,7 +961,7 @@ asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
    begin scalar freeids;
       if aex_simplenullp ae then
 	 return 0;
-      freeids := aex_freeidl ae;
+      freeids := aex_fvarl ae;
       if null freeids then
 	 return aex_sgn ae;
       % Check if [x] is the main variable:
@@ -938,10 +977,8 @@ asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
 asserted procedure aex_sgn(ae: Aex): Integer;
    % Sign. Remark: the case when [ae] has free ids, but is constant due to
    % trivial coefficients is not treated, although sgn would make sense.
-   % Possible optimization: use of aex_containment.
-   begin scalar con,x,g,alpha,f,sc;
-      % Make sure that [ae] is a constant:
-      assert(null aex_freeidl ae);
+   begin scalar con, x, alpha, g, f, sc;
+      assert(null aex_fvarl ae);
       if aex_simpleratp ae then  % [ae] is obviously rational.
 	 return rat_sgn aex_ex ae;
       % Possible optimization:
@@ -952,23 +989,17 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       	 if rat_less(iv_rb con, rat_0()) then
 	    return (-1)
       >>;
-      % [ae] is Aex and ae = g(alpha), where alpha is Anu which is the root of
-      % f(x) in interval anu_iv alpha.
+      % [ae] is Aex g(alpha), where alpha is an Anu, which is the root of f in
+      % the defining interval.
       x := aex_mvar ae;
-      alpha := ctx_get(x, aex_ctx ae);
-      g := aex_mklcnt aex_reduce aex_free(ae, x);  % reduce somewhere else, eg bind
+      alpha := ctx_get(aex_ctx ae, x);
+      g := aex_mklcnt aex_reduce aex_unbind(ae, x);
       if aex_simpleratp g then
 	 return rat_sgn aex_ex g;
-      if !*rlverbose and !*rlanuexverbose and aex_deg(g,x) <= 0 then
-	 prin2 "[aex_sgn:num!]";
+      if !*rlverbose and !*rlanuexverbose then
+	 if aex_deg(g, x) <= 0 then prin2 "[aex_sgn:num!]";
       f := anu_dp alpha;
-      % Make sure that f and g have the same main variable:
-      assert(aex_mvar f eq x);
-      % Make sure that the leading coefficient of f is not zero:
-      assert(not eqn(aex_sgn aex_lc(f, x), 0));
-      % Make sure that the leading coefficient of g is not zero:
-      assert(not eqn(aex_sgn aex_lc(g, x), 0));
-      % sc is the  sturmchain for f(x), f'g(x):
+      % [sc] is the  sturmchain for f(x), f'(x)g(x):
       % Possible optimization: call aex_reduce after aex_diff.
       sc := aex_sturmchain(f, aex_mult(aex_diff(f, x), g), x);
       return aex_sturmchainsgnch(sc, x, iv_lb anu_iv alpha)
@@ -993,7 +1024,7 @@ asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
       % Make sure that we will not divide by zero:
       assert(not aex_simplenullp g);
       % Optimization when g is a constant:
-      if null aex_freeidl g then
+      if null aex_fvarl g then
 	 return aex_mult(aex_inv g, f) . aex_0();
       % Make sure that the leading coefficient of [f] is non-zero:
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
@@ -1029,7 +1060,7 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
    % quotient.
    begin scalar an, bm, inv, tmp; integer m, n;
       assert(not aex_simplenullp g);
-      if null aex_freeidl g then
+      if null aex_fvarl g then
    	 return aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
@@ -1071,7 +1102,7 @@ asserted procedure aex_gcdext1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean)
 	 tmp := aex_inv aex_lc(aa,x); aa := aex_mult(aa,tmp);
 	 ss := aex_mult(ss,tmp); tt := aex_mult(tt,tmp);
       >>;
-      % Computation self-test:
+      % Computation self-test (aa = ss*a + tt*b):
       assert(aex_nullp aex_minus(aa,aex_add(aex_mult(ss,a),aex_mult(tt,b))));
       return {aa,ss,tt}
    end;
@@ -1161,33 +1192,28 @@ asserted procedure aex_sqfree(f: Aex, x: Kernel): Aex;
 asserted procedure aex_inv(ae: Aex): Aex;
    % Invert a constant, not-zero polynomial. TODO: The case of a purely rational
    % ae occurs very often. Avoid the progn by splitting into two functions.
-   begin scalar x, alpha, g, f, d, f1, drs, res;
+   begin scalar x, alpha, g, f, d, f1, aa, ss, tt;
       if aex_simpleratp ae then  % [ae] is obviously a rational number.
 	 return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
       % Now we know that [ae] is a constant algebraic polynomial.
       x . alpha := car ctx_ial aex_ctx ae;  % (x . (anu f iv))
-      g := aex_free(ae, x);
+      g := aex_unbind(ae, x);
       f := anu_dp alpha;
       f := aex_sqfree(f, x);  % MK + TS 12/2012
       d := car aex_gcdext(f, g, x);
-      %%% d := car aex_gcd(f,g,x); % Why segmentation violation?
       f1 := aex_quot(f, d, x);
-      % Applying extended euclidean algorithm to f1 and g, gives: 1 = rf1 + sg.
-      drs := aex_gcdext(f1, g, x);
-      % Caveat: car drs is non-zero rational, but i.g. <> 1
+      % Applying extended euclidean algorithm to f1 and g, gives: aa = ss*f1 + tt*g.
+      {aa, ss, tt} := aex_gcdext(f1, g, x);
+      % [aa] is non-zero rational, but not necessarily 1.
       if !*rlanuexgcdnormalize then
-	 res := aex_bind(aex_mult(car drs,caddr drs), x, alpha)  % here alphanew with f1
-      else
-      	 res := aex_bind(aex_mult(aex_inv car drs, caddr drs), x, alpha);
-      % Computation self-test:
-      assert(aex_nullp aex_minus(aex_1(), aex_mult(ae, res)));
-      return res
+	 return aex_bind(aex_mult(aa, tt), x, alpha);
+      return aex_bind(aex_mult(aex_inv aa, tt), x, alpha)
    end;
 
 asserted procedure aex_linsolv(ae: Aex, x: Kernel): Aex;
    % [x] is the only free variable in ae.
    <<
-      assert(aex_freeidl ae equal {x});
+      assert(aex_fvarl ae equal {x});
       aex_mult(aex_inv aex_lc(ae, x), aex_neg aex_red(ae, x))
    >>;
 
@@ -1222,17 +1248,17 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
       % coefficient and degree list, containment of a_c, interval list
       % [ae] should be a constant.
       assert(not aex_badp(ae, 0));
-      assert(null aex_freeidl ae);
-      if null aex_boundidl ae then <<
-	 assert(null aex_idl ae);
+      assert(null aex_fvarl ae);
+      if null aex_bvarl ae then <<
+	 assert(null aex_varl ae);
 	 r := aex_ex ae;
 	 return iv_mk(r, r)
       >>;
       % Now there is a bound variable.
       ia := car ctx_ial aex_ctx ae;
       ctac := anu_iv cdr ia;
-      %ae := aex_free(ae,car ia);
-      cfdgl := aex_coefdegl(aex_free(ae,car ia),car ia);
+      %ae := aex_unbind(ae,car ia);
+      cfdgl := aex_coefdegl(aex_unbind(ae,car ia),car ia);
       % Reconstruct Aex from [cfdgl] for test purposes.
       assert(aex_nullp aex_minus(ae,aex_fromcoefdegl(cfdgl, car ia)));
       ivl := for each cfdg in cfdgl collect
@@ -1306,7 +1332,7 @@ asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
    end;
 
 asserted procedure aex_findrootsoflist(ael: AexList, x: Kernel): AnuList;
-   aex_findroots(aex_foldmult ael,x);
+   aex_findroots(aex_multl ael,x);
 
 asserted procedure aex_findroots(ae: Aex, x: Kernel): AnuList;
    % Aex find roots. [ae] is an Aex(c,c+1). Returns a list of Anu(c+1). If
@@ -1475,17 +1501,22 @@ procedure aex_isoratroot(m,r,pscl,x);
       r
    >>;
 
-procedure aex_refinewrt1(alpha,pscl,scalpha);
-   % Refine [alpha] st. the sturm chain [scl] has no sign change in
-   % alpha's isolating interval. scalpha is the sturm chain for
-   % alpha's defining polynomial. No tags in here.
-   << for each psc in pscl do %%% null test necessary
-      while aex_atratnullp(car psc,x,iv_lb anu_iv alpha) or
-	 aex_atratnullp(car psc,x,iv_rb anu_iv alpha) or
-	    aex_deltastchsgnch(cdr psc,x,anu_iv alpha) > 0 do
-	 anu_refine1ip(alpha,scalpha);
-      alpha
-   >> where x=aex_mvar anu_dp alpha;
+asserted procedure aex_refinewrt1(alpha: Anu, pscl: List, scalpha: AexList): Anu;
+   % Refine [alpha] in such a way that no sturm chain from [pscl] has a sign
+   % change in alpha's isolating interval. [scalpha] is the sturm chain for
+   % alpha's defining polynomial.
+   begin scalar x, p, sc;
+      x := aex_mvar anu_dp alpha;
+      for each psc in pscl do <<
+	 p := car psc;
+      	 sc := cdr psc;
+      	 while aex_atratnullp(p, x, iv_lb anu_iv alpha) or
+	 aex_atratnullp(p, x, iv_rb anu_iv alpha) or
+	 aex_deltastchsgnch(sc, x, anu_iv alpha) > 0 do
+	    anu_refine1ip(alpha, scalpha);
+      >>;
+      return alpha
+   end;
 
 procedure aex_deltastchsgnch(sc,x,iv);
    % delta sturm chain sign changes in an interval
@@ -1595,9 +1626,9 @@ asserted procedure anu_ratp(a: Anu): ExtraBoolean;
    % returned.
    begin scalar aex, fvarl, x, f;
       aex := anu_dp a;
-      if aex_boundidl aex then
+      if aex_bvarl aex then
 	 return nil;
-      fvarl := aex_freeidl aex;
+      fvarl := aex_fvarl aex;
       assert(fvarl);
       if cdr fvarl then
 	 return nil;
@@ -1609,12 +1640,33 @@ asserted procedure anu_ratp(a: Anu): ExtraBoolean;
       return nil
    end;
 
+asserted procedure anu_rename(a: Anu, xnew: Kernel);
+   begin scalar aex, rp, varl, x, varal, rpnew, ialnew, w;
+      aex := anu_dp a;
+      rp := aex_ex aex;
+      varl := kernels numr rp;
+      x := car varl;
+      if x eq xnew then
+	 return a;
+      rpnew := quotsq(!*f2q sfto_renamealf(numr rp, {x . xnew}), !*f2q denr rp);
+      if ordop(xnew, x) then
+	 return anu_mk(aex_mk(rpnew, aex_ctx aex), anu_iv a);
+      varal := for each var in cdr varl collect
+	 var . mkbigid();
+      rpnew := quotsq(!*f2q sfto_renamealf(numr rpnew, {x . xnew}), !*f2q denr rpnew);
+      ialnew := for each pr in ctx_ial aex_ctx aex collect <<
+	 w := cdr atsoc(car pr, varal);
+	 w . anu_rename(cdr pr, w)
+      >>;
+      return anu_mk(aex_mk(rpnew, ctx_fromial ialnew), anu_iv a)
+   end;
+
 asserted procedure anu_check(a: Anu): Boolean;
    % Algebraic number check.
    begin scalar dp,x,l,r,s,valid;
       valid := t;
       dp := anu_dp a;
-      x := aex_freeidl dp; % tmp
+      x := aex_fvarl dp; % tmp
       if length x neq 1 then
 	 prin2t "***** anu_check: def. poly corrupt";
       x := car x; l := iv_lb anu_iv a; r := iv_rb anu_iv a;
@@ -1637,23 +1689,24 @@ asserted procedure anu_check(a: Anu): Boolean;
 asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
    % Algebraic number refine in place. [s] is a sturmchain. Returns an [a] with
    % smaller isolating interval. Remark: 1000 was replaced by 4.
-   begin scalar x,iv,lb,rb,m,scm;
+   begin scalar x, iv, lb, rb, m, scm;
       x := aex_mvar anu_dp a;
       iv := anu_iv a;
-      lb := iv_lb iv; rb := iv_rb iv;
-      m := rat_quot(rat_add(lb,rb),rat_mk(2,1));
-      if aex_sgn aex_subrat1(anu_dp a,x,m) = 0 then <<
-	 anu_putiv(a,iv_mk(
-	    rat_minus(m,rat_mult(rat_mk(1,4),rat_minus(m,lb))),
-	    rat_add(m,rat_mult(rat_mk(1,4),rat_minus(m,lb)))));
-	 return a;
+      lb := iv_lb iv;
+      rb := iv_rb iv;
+      m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
+      if eqn(aex_sgn aex_subrat1(anu_dp a, x, m), 0) then <<
+	 anu_putiv(a, iv_mk(
+	    rat_minus(m, rat_mult(rat_mk(1,4), rat_minus(m, lb))),
+	    rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
+	 return a
       >>;
-      scm := aex_sturmchainsgnch(s,x,m);
-      if (aex_sturmchainsgnch(s,x,lb)-scm) = 1 then <<
-	 anu_putiv(a,iv_mk(lb,m));
-	 return a;
+      scm := aex_sturmchainsgnch(s, x, m);
+      if eqn(aex_sturmchainsgnch(s, x, lb) - scm, 1) then <<
+	 anu_putiv(a, iv_mk(lb, m));
+	 return a
       >>;
-      anu_putiv(a,iv_mk(m,rb));
+      anu_putiv(a, iv_mk(m, rb));
       return a
    end;
 
