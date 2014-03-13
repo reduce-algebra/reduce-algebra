@@ -785,7 +785,6 @@ void MS_CDECL fwin_printf(const char *fmt, ...)
 {
     va_list a;
     va_start(a, fmt);
-    FWIN_LOG(("Writing printf \'%s\'\n", fmt));
 /*
  * See comment above where putchar() is used...
  */
@@ -803,7 +802,6 @@ void fwin_vfprintf(const char *fmt, va_list a)
 /*
  * See comment above where putchar() is used...
  */
-    FWIN_LOG(("Writing vfprintf \'%s\'\n", fmt));
 #ifdef __CYGWIN__
 /* Not reconstructed yet @@@ */
     vfprintf(stdout, fmt, a);

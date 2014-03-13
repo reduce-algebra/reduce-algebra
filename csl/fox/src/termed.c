@@ -1025,6 +1025,13 @@ int term_setup(int flag, const char *colour)
     my_term.c_cc[VMIN] = 1;
     my_term.c_cc[VTIME] = 0;
 #endif
+/*
+ * The tcsetattr HANGS if the console is detached/backgrounded when
+ * it is  performed, As in
+ *    ./reduce -v .... &
+ * unless SIGTTOU is blocked or ignored...
+ */
+    signal(SIGTTOU, SIG_IGN);
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
     my_def_prog_mode();
     my_reset_shell_mode();
