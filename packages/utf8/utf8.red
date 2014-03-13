@@ -228,7 +228,7 @@ procedure utf8_exptpri(x,p);
       if q then prin2!* "(";
       maprin cadr x;
       if q then prin2!* ")";
-      x := compress append('(u t f !8 !_ e x p),expo);
+      x := '!*!*!*utf8!*!*!*;
       w := for each d in expo join copy utf8_supscript d;
       put(x,'utf8, length expo . w);
       utf8_prin2!* x
