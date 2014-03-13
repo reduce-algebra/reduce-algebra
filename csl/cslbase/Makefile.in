@@ -4101,7 +4101,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
-# taken as speciying conflicting actions.
+# taken as specifing conflicting actions.
 
 @crlibm_TRUE@arith01.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@arith02.$(OBJEXT):	../include/crlibm.h
@@ -4143,6 +4143,88 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@stubs.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@sysfwin.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@sysipaq.$(OBJEXT):	../include/crlibm.h
+
+@crlibm_TRUE@csl-arith01.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith02.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith03.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith04.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith05.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith06.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith07.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith08.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith09.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith10.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith11.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith12.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-bytes1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-char.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-csl.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-cslmpi.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-cslread.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-eval1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-eval2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-eval3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-eval4.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-fasl.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-fns1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-fns2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-fns3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-gc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-imulvc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-jit1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-jit2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-jit3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-jitx86.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-ompsetup.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-openmath.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-preserve.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-print.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-pro.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+@crlibm_TRUE@csl-stubs.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-sysfwin.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-sysipaq.$(OBJEXT):	../include/crlibm.h
+
+@crlibm_TRUE@reduce-arith01.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith02.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith03.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith04.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith05.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith06.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith07.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith08.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith09.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith10.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith11.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith12.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-bytes1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-char.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-csl.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-cslmpi.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-cslread.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-eval1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-eval2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-eval3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-eval4.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-fasl.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-fns1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-fns2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-fns3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-gc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-imulvc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-jit1.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-jit2.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-jit3.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-jitx86.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-ompsetup.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-openmath.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-preserve.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-print.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-pro.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+@crlibm_TRUE@reduce-stubs.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-sysfwin.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-sysipaq.$(OBJEXT):	../include/crlibm.h
 
 @crlibm_TRUE@$(CRLIBMDEPS):
 @crlibm_TRUE@	$(TRACE)@cd ../crlibm && $(MAKE) install

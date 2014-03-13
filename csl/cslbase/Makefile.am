@@ -731,7 +731,7 @@ csl_CPPFLAGS    += $(CRINC)
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
-# taken as speciying conflicting actions.
+# taken as specifing conflicting actions.
 
 arith01.$(OBJEXT):	../include/crlibm.h
 arith02.$(OBJEXT):	../include/crlibm.h
@@ -773,6 +773,88 @@ restart.$(OBJEXT):	../include/crlibm.h machineid.c
 stubs.$(OBJEXT):	../include/crlibm.h
 sysfwin.$(OBJEXT):	../include/crlibm.h
 sysipaq.$(OBJEXT):	../include/crlibm.h
+
+csl-arith01.$(OBJEXT):	../include/crlibm.h
+csl-arith02.$(OBJEXT):	../include/crlibm.h
+csl-arith03.$(OBJEXT):	../include/crlibm.h
+csl-arith04.$(OBJEXT):	../include/crlibm.h
+csl-arith05.$(OBJEXT):	../include/crlibm.h
+csl-arith06.$(OBJEXT):	../include/crlibm.h
+csl-arith07.$(OBJEXT):	../include/crlibm.h
+csl-arith08.$(OBJEXT):	../include/crlibm.h
+csl-arith09.$(OBJEXT):	../include/crlibm.h
+csl-arith10.$(OBJEXT):	../include/crlibm.h
+csl-arith11.$(OBJEXT):	../include/crlibm.h
+csl-arith12.$(OBJEXT):	../include/crlibm.h
+csl-bytes1.$(OBJEXT):	../include/crlibm.h
+csl-char.$(OBJEXT):	../include/crlibm.h
+csl-csl.$(OBJEXT):	../include/crlibm.h
+csl-cslmpi.$(OBJEXT):	../include/crlibm.h
+csl-cslread.$(OBJEXT):	../include/crlibm.h
+csl-eval1.$(OBJEXT):	../include/crlibm.h
+csl-eval2.$(OBJEXT):	../include/crlibm.h
+csl-eval3.$(OBJEXT):	../include/crlibm.h
+csl-eval4.$(OBJEXT):	../include/crlibm.h
+csl-fasl.$(OBJEXT):	../include/crlibm.h
+csl-fns1.$(OBJEXT):	../include/crlibm.h
+csl-fns2.$(OBJEXT):	../include/crlibm.h
+csl-fns3.$(OBJEXT):	../include/crlibm.h
+csl-gc.$(OBJEXT):	../include/crlibm.h
+csl-imulvc.$(OBJEXT):	../include/crlibm.h
+csl-jit1.$(OBJEXT):	../include/crlibm.h
+csl-jit2.$(OBJEXT):	../include/crlibm.h
+csl-jit3.$(OBJEXT):	../include/crlibm.h
+csl-jitx86.$(OBJEXT):	../include/crlibm.h
+csl-ompsetup.$(OBJEXT):	../include/crlibm.h
+csl-openmath.$(OBJEXT):	../include/crlibm.h
+csl-preserve.$(OBJEXT):	../include/crlibm.h
+csl-print.$(OBJEXT):	../include/crlibm.h
+csl-pro.$(OBJEXT):	../include/crlibm.h
+csl-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+csl-stubs.$(OBJEXT):	../include/crlibm.h
+csl-sysfwin.$(OBJEXT):	../include/crlibm.h
+csl-sysipaq.$(OBJEXT):	../include/crlibm.h
+
+reduce-arith01.$(OBJEXT):	../include/crlibm.h
+reduce-arith02.$(OBJEXT):	../include/crlibm.h
+reduce-arith03.$(OBJEXT):	../include/crlibm.h
+reduce-arith04.$(OBJEXT):	../include/crlibm.h
+reduce-arith05.$(OBJEXT):	../include/crlibm.h
+reduce-arith06.$(OBJEXT):	../include/crlibm.h
+reduce-arith07.$(OBJEXT):	../include/crlibm.h
+reduce-arith08.$(OBJEXT):	../include/crlibm.h
+reduce-arith09.$(OBJEXT):	../include/crlibm.h
+reduce-arith10.$(OBJEXT):	../include/crlibm.h
+reduce-arith11.$(OBJEXT):	../include/crlibm.h
+reduce-arith12.$(OBJEXT):	../include/crlibm.h
+reduce-bytes1.$(OBJEXT):	../include/crlibm.h
+reduce-char.$(OBJEXT):	../include/crlibm.h
+reduce-csl.$(OBJEXT):	../include/crlibm.h
+reduce-cslmpi.$(OBJEXT):	../include/crlibm.h
+reduce-cslread.$(OBJEXT):	../include/crlibm.h
+reduce-eval1.$(OBJEXT):	../include/crlibm.h
+reduce-eval2.$(OBJEXT):	../include/crlibm.h
+reduce-eval3.$(OBJEXT):	../include/crlibm.h
+reduce-eval4.$(OBJEXT):	../include/crlibm.h
+reduce-fasl.$(OBJEXT):	../include/crlibm.h
+reduce-fns1.$(OBJEXT):	../include/crlibm.h
+reduce-fns2.$(OBJEXT):	../include/crlibm.h
+reduce-fns3.$(OBJEXT):	../include/crlibm.h
+reduce-gc.$(OBJEXT):	../include/crlibm.h
+reduce-imulvc.$(OBJEXT):	../include/crlibm.h
+reduce-jit1.$(OBJEXT):	../include/crlibm.h
+reduce-jit2.$(OBJEXT):	../include/crlibm.h
+reduce-jit3.$(OBJEXT):	../include/crlibm.h
+reduce-jitx86.$(OBJEXT):	../include/crlibm.h
+reduce-ompsetup.$(OBJEXT):	../include/crlibm.h
+reduce-openmath.$(OBJEXT):	../include/crlibm.h
+reduce-preserve.$(OBJEXT):	../include/crlibm.h
+reduce-print.$(OBJEXT):	../include/crlibm.h
+reduce-pro.$(OBJEXT):	../include/crlibm.h
+reduce-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+reduce-stubs.$(OBJEXT):	../include/crlibm.h
+reduce-sysfwin.$(OBJEXT):	../include/crlibm.h
+reduce-sysipaq.$(OBJEXT):	../include/crlibm.h
 
 csl_LDADD += -L../lib -lcrlibm
 bootstrapreduce_LDADD += -L../lib -lcrlibm
