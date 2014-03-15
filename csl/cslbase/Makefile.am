@@ -874,6 +874,8 @@ CRINC =
 # restart.c using a generic default rule - otherwise the lack of
 # explicit actions here would hurt.
 restart.$(OBJEXT):	machineid.c
+csl-restart.$(OBJEXT):	machineid.c
+reeduce-restart.$(OBJEXT):	machineid.c
 
 endif !crlibm
 
