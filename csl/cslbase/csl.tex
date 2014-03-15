@@ -1,4 +1,4 @@
-% Generated using doxtract Sun Nov 27 20:24:21 2011
+% Generated using doxtract Sat Mar 15 10:20:01 2014
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
@@ -13,7 +13,7 @@ are the ones that are initially present in a raw CSL image. Some
 proportion of them are not really intended to be used by end-users but
 are merely the internal components of some feature.
 
-% Generating section 01 [options] with 31 subsections
+% Generating section 01 [options] with 35 subsections
 \section{Command-line options}
 The items shown here are the ones that are recognized on the CSL command
 line. In general an option that requires an argument can be written as either
@@ -33,6 +33,15 @@ The {\ttfamily -w} option may frequently make sense in such cases, but if that
 is not used and the system tries to run in a window it will create it
 starting off minimised.
 
+\item [{\ttfamily --gui}] \index{{\ttfamily --gui}}
+Encourage the system to run in its own window. Similar behaviour
+to {\ttfamily -w+}.
+
+\item [{\ttfamily --guimin}] \index{{\ttfamily --guimin}}
+Encourage the system to run as in its own window, but
+start that window off minimised. Similar
+to {\ttfamily -w.}.
+
 \item [{\ttfamily --help}] \index{{\ttfamily --help}}
 It is probably obvious what this option does! Note that on Windows the
 application was linked as a windows binary so it carefully creates a
@@ -45,10 +54,19 @@ expected to use it for! It leads the executable to display the fully
 rooted name of the directory it was in and then terminate. It may be useful
 in some script?
 
+\item [{\ttfamily --nogui}] \index{{\ttfamily --nogui}}
+Encourage the system to run as a console-style application. Similar
+to {\ttfamily -w-} or just simply {\ttfamily -w}.
+
 \item [{\ttfamily --texmacs}] \index{{\ttfamily --texmacs}}
 If CSL/Reduce is launched from texmacs this command-line flag should be
 used to arrange that the {\ttfamily texmacs} flag is set in
 {\ttfamily lispsystem!*}, and the code may then do special things.
+
+\item [{\ttfamily --version}] \index{{\ttfamily --version}}
+It is probably obvious what this option does! But note that there is an
+issue here about whether one is looking at the CSL version identification or
+one for the Lisp application from an image file (eg often Reduce).
 
 \item [{\ttfamily -a}] \index{{\ttfamily -a}}
 {\ttfamily -a} is a curious option, not intended for general or casual use.
@@ -261,7 +279,7 @@ to compile itself.
 
 \end{description} % end of options section [csl.c]
 
-% Generating section 02 [predef] with 71 subsections
+% Generating section 02 [predef] with 72 subsections
 \section{Predefined variables}
 \begin{description}
 
@@ -284,7 +302,7 @@ The value of this variable is an end-of-line character.
 
 \item [{\ttfamily !*applyhook!*}] \index{{\ttfamily "!*applyhook"!*}} ~\newline
 If this is set it might be supposed to be the name of a function used
-by the interpreter as a callbackm but at presnet it does not actually do
+by the interpreter as a callback, but at present it does not actually do
 anything!
 
 \item [{\ttfamily !*break!-loop!*}] \index{{\ttfamily "!*break"!-loop"!*}} ~\newline
@@ -545,6 +563,10 @@ current or named user.
 The value of this variable is an space or blank character. This
 might otherwise be written as ''{\ttfamily ! }''.
 
+\item [{\ttfamily carriage\!-return}] \index{{\ttfamily carriage"!-return}} ~\newline
+The value of this variable is a carriage-return character that could arise
+in DOS-format files.
+
 \item [{\ttfamily common!-lisp!-mode}] \index{{\ttfamily common"!-lisp"!-mode}} ~\newline
 The CSL Lisp system was designed so that if necessary much of the code could
 be shared with a version that met the Common Lisp Standard. At no stage has
@@ -679,7 +701,7 @@ Used by the Reduce parser, and so best not used for other purposes.
 
 \end{description} % end of predef section [csl.c]
 
-% Generating section 03 [lispsys] with 24 subsections
+% Generating section 03 [lispsys] with 25 subsections
 \section{Items that can appear in {\ttfamily lispsystem!*}} \label{lispsys}
   
 There is a global variable called {\ttfamily lispsystem!*} whose value is
@@ -789,6 +811,11 @@ Gives the short name of the current executable, without its full path.
 \item[{\ttfamily showmath}] \index{{\ttfamily showmath}}
 If the ``showmath'' capability has been compiled into CSL this will be present
 so that Lisp code can know it is reasonable to try to use it.
+
+\item[{\ttfamily showmath1}] \index{{\ttfamily showmath1}}
+This marks the fact that this version of CSL will support the output
+style where flat simple text preceeds TeX output, with a U+0003 (end of text)
+marker to separate.
 
 \item[{\ttfamily  sixty!-four}] \index{{\ttfamily  sixty"!-four}}
 Present if the Lisp was compiled for a 64-bit computer.
