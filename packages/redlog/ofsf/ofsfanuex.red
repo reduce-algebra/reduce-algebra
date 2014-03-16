@@ -383,29 +383,15 @@ asserted procedure iv_listminuslist(ivl1: RatIntervalList, ivl2: RatIntervalList
 
 % RatPoly functions.
 
-% asserted procedure ratpoly_psrem(f: RatPoly, g: Ratpoly, x: Kernel): RatPoly;
-%    % Pseudo remainder.
-%    begin scalar an, bm, tmp, redf, redg; integer n, m;
-%       assert(mvar numr f eq x);
-%       assert(mvar numr g eq x);
-%       f := numr f ./ 1;
-%       g := numr g ./ 1;
-%       n := sfto_vardeg(numr f, x);
-%       m := sfto_vardeg(numr g, x);
-%       bm := sfto_lcx numr g ./ 1;
-%       while n >= m do <<
-%    	 an := sfto_lcx numr f ./ 1;
-%    	 tmp := multsq(an, !*f2q sfto_kexp(x, n - m));
-% 	 redf := quotsq(!*f2q sfto_redx numr f, !*f2q denr f);
-% 	 redg := quotsq(!*f2q sfto_redx numr g, !*f2q denr g);
-%    	 f := subtrsq(multsq(redf, bm), multsq(redg, tmp));
-% 	 f := multsq(bm, f);
-%    	 n := sfto_vardeg(numr f, x)
-%       >>;
-%       return f
-%    end;
-
 % TODO: Rename and move these procedures to sfto module.
+
+asserted procedure sfto_dgcd(f: SF, g: SF): Integer;
+   begin scalar cf;
+      cf := sfto_dcontentf f;
+      if eqn(cf, 1) then
+	 return cf;
+      return sfto_gcdf(cf, sfto_dcontentf g)
+   end;
 
 asserted procedure sfto_kexp(x: Kernel, n: Integer): SF;
    % Non-negative power of a variable as a SF.
@@ -414,22 +400,23 @@ asserted procedure sfto_kexp(x: Kernel, n: Integer): SF;
       if eqn(n, 0) then 1 else (((x .^ n) .* 1) .+ nil)
    >>;
 
-asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel): SF;
+asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel, s: Integer): SF;
    % Pseudo-remainder of [f] and [g]. [f] and [g] contain [x] as the main
    % variable.
-   begin scalar lcf, lcg, redg, tmp; integer degf, degg;
+   begin scalar lcf, lcg, redg, tmp; integer degf, degg, lcgcd;
       assert(mvar f eq x);
       assert(mvar g eq x);
-      lcg := sfto_lcx g;
+      lcg := lc g;
       redg := red g;
-      degf := sfto_vardeg(f, x);
-      degg := sfto_vardeg(g, x);
+      degf := ldeg f;
+      degg := ldeg g;
       while degf >= degg do <<
 	 lcf := sfto_lcx f;
-	 tmp := multf(lcf, sfto_kexp(x, degf - degg));
-	 f := addf(multf(lcg, red f), negf multf(tmp, redg));
-	 % To ensure that we always multiply with something positive:
-	 f := multf(f, lcg);
+	 lcgcd := sfto_dgcd(lcf, lcg);
+	 tmp := multf(quotfx(lcf, lcgcd), sfto_kexp(x, degf - degg));
+	 f := addf(multf(quotfx(lcg, lcgcd), red f), negf multf(tmp, redg));
+	 if eqn(s, -1) then
+	    f := negf f;
 	 degf := sfto_vardeg(f, x)
       >>;
       return f
@@ -849,20 +836,16 @@ asserted procedure aex_psquotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
 
 asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
    % Aex pseudo remainder. This algorithm is independent from aex_psquotrem.
-   begin scalar ff, gf, psr;
+   begin scalar ff, gf, lcsgn, psr;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
    	 return aex_0();
-      assert(not eqn(aex_sgn aex_lc(f, x), 0));
-      assert(not eqn(aex_sgn aex_lc(g, x), 0));
       ff := sfto_dprpartksf numr aex_ex f;
       gf := sfto_dprpartksf numr aex_ex g;
-      psr := sfto_dprpartksf sfto_psrem(ff, gf, x);
+      lcsgn := aex_sgn aex_lc(g, x);
+      assert(eqn(lcsgn, 1) or eqn(lcsgn, -1));
+      psr := sfto_dprpartksf sfto_psrem(ff, gf, x, lcsgn);
       return aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
-      % Old code:
-      % return aex_mklcnt aex_mk(
-      % 	 ratpoly_psrem(aex_ex f, aex_ex g, x),
-      % 	 ctx_union(aex_ctx f, aex_ctx g))
    end;
 
 asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
@@ -875,10 +858,7 @@ asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
 
 asserted procedure aex_pp(ae: Aex): Aex;
    % Domain primitive part.
-   begin scalar q;
-      q := aex_ex ae;
-      return aex_mk(!*f2q sfto_dprpartksf numr q, aex_ctx ae)
-   end;
+   aex_mk(!*f2q sfto_dprpartksf numr aex_ex ae, aex_ctx ae);
 
 asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
    % Pseudo remainder sequence for polynomials f and g. Returns a pseudo
