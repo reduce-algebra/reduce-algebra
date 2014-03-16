@@ -160,9 +160,19 @@ symbolic procedure readch1;
       x := car peekchar!*,
 % In general when I peek ahead I will not do case-folding as I go:
 % that has to be done now when I retrieve the character for final use.
+% The PSL rule is that if !*raise is set then characters are all converted
+% to the standard case (ie lower case). CSL has two variables !*raise and
+% !*lower and folds case as directed by them.
       peekchar!* := cdr peekchar!*,
-      (if !*lower then x := char!-downcase x
-       else if !*raise then x := char!-upcase x),
+% I had at first tried "memq('psl, lispsystem!*)" here to detect PSL but that
+% fails for two reasons in bootstrapping. First MEMQ may only be used as an
+% infix, secondly lispsystem!* is not set early enough. So I have a new
+% variable !*psl that I use to detect the relevant situation!
+      progn(
+        if !*psl then progn(
+          if !*raise then x := red!-char!-downcase x)
+        else if !*lower then x := char!-downcase x
+        else if !*raise then x := char!-upcase x),
       return x);
 % Now it is necessary to do a "real" read.
 a:  if null terminalp() then progn(
@@ -206,7 +216,7 @@ a:  if null terminalp() then progn(
 % by one in the usual way. Note that while the very final peeked character
 % could be a second "#" none of the others can be.
     if not (x eq '!;) then progn(
-      peekchar!* := cdr nreverse (x . peekchar!*),
+      peekchar!* := cdr reversip (x . peekchar!*),
       return '!#);
 % Now I have a potential character name object. It could be one of
 %        #name;

@@ -96,6 +96,13 @@ remprop('!*comp,'vartype);
 remprop('!*raise,'vartype);
 remprop('cursym!*,'vartype);
 
+% At some early stages in the bootstrapping the variable lispsystem!*
+% is not available but I want to be able to tell that I am building on
+% PSL as distinct from any other Lisp. This global value will help!
+
+global '(!*psl);
+!*psl := t;
+
 % endmodule;
 
 
