@@ -436,6 +436,29 @@ asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel): SF;
    end;
    % cdr pseudo!-qremf(numr f, numr g, x);
 
+asserted procedure sfto_psquotrem(f: SF, g: SF, x: Kernel): DottedPair;
+   % Pseudo-quotient and pseudo-remainder of [f] and [g]. [f] and [g] contain
+   % [x] as the main variable. Returns (psquot . psrem).
+   begin scalar lcf, lcg, redg, tmp, psquot; integer degf, degg;
+      assert(mvar f eq x);
+      assert(mvar g eq x);
+      lcg := sfto_lcx g;
+      redg := red g;
+      degf := sfto_vardeg(f, x);
+      degg := sfto_vardeg(g, x);
+      while degf >= degg do <<
+	 lcf := sfto_lcx f;
+	 tmp := multf(lcf, sfto_kexp(x, degf - degg));
+	 % To ensure that we always multiply with something positive:
+	 psquot := addf(multf(psquot, exptf(lcg, 2)), tmp);
+	 f := addf(multf(lcg, red f), negf multf(tmp, redg));
+	 % To ensure that we always multiply with something positive:
+	 f := multf(f, lcg);
+	 degf := sfto_vardeg(f, x)
+      >>;
+      return psquot . f
+   end;
+
 % AexCtx functions.
 
 % Contexts are sorted w.r.t. ordop.
@@ -737,30 +760,24 @@ asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
       return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
    end;
 
-asserted procedure aex_tad(ae: Aex): Aex;
-   % Throw away denominator.
-   aex_mk(numr aex_ex ae ./ 1, aex_ctx ae);
-
 asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
    aex_mk(!*f2q sfto_kexp(x, n), ctx_new());
 
 asserted procedure aex_mklcnt(ae: Aex): Aex;
-   % Make leading coefficient of non-constant polynomial non-trivial.
-   % Was: minimize.
+   % Make the leading coefficient of a non-constant polynomial non-trivial.
    begin scalar idl;
-      % Quick win: obvious cases: [ae] is a Rational or no variables are bound:
+      % Quick win: [ae] is a Rational or no variables are bound:
       if aex_simpleratp ae or null ctx_idl aex_ctx ae then
       	 return ae;
       idl := aex_fvarl ae;
       if idl then <<  % [ae] is a non-constant algebraic polynomial.
+	 assert(car idl eq aex_mvar ae);
       	 if aex_nullp aex_lc(ae, car idl) then
       	    return aex_mklcnt aex_red(ae, car idl);
 	 return ae
       >>;
-      % Now we know that [ae] is a constant.
-      % Remark: this is the second edge in the dependence graph where the
-      % argument is passed and not made smaller. This shouldn't be a problem.
+      % Now we know that [ae] is a constant algebraic polynomial.
       if eqn(aex_sgn ae, 0) then
 	 return aex_0();
       return ae
@@ -812,52 +829,26 @@ asserted procedure aex_reduce(ae: Aex): Aex;
 % asserted procedure anu_dpdeg(a: Anu): Integer;
 %    ldeg numr aex_ex anu_dp a;
 
-asserted procedure aex_psquotrem1(f: Aex, p: Aex, x: Kernel): DottedPair;
-   % Pseudo quotient remainder one step. Returns [(q . r)] with $a_n^2f=qp+r$.
-   begin scalar am,an,m,n,q;
-      am := aex_lc(f,x); % a constant algebraic poly
-      an := aex_lc(p,x); % dito
-      m := aex_deg (f,x);
-      n := aex_deg (p,x);
-      if m<n or n=-1 then
-	 return (aex_0(). f);
-      % 0<=m<=n
-      q := aex_mult(aex_xtothen(x,m-n),aex_mult(am,an));
-      return (q . aex_minus(aex_mult(f,aex_mult(an,an)),aex_mult(p,q)))
-%      return (q . aex_minus(aex_mult(aex_red f,aex_mult(an,an)),
-%      	 aex_red aex_mult(p,q)))
+asserted procedure aex_psquotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
+   % Aex pseudo quotient and remainder. Returns a pair (psquot . psrem).
+   begin scalar ff, gf, psq, psr;
+      assert(not aex_simplenullp g);
+      if null aex_fvarl g then
+   	 return f . aex_0();
+      assert(not eqn(aex_sgn aex_lc(f, x), 0));
+      assert(not eqn(aex_sgn aex_lc(g, x), 0));
+      ff := sfto_dprpartksf numr aex_ex f;
+      gf := sfto_dprpartksf numr aex_ex g;
+      psq . psr := sfto_psquotrem(ff, gf, x);
+      psq := sfto_dprpartksf psq;
+      psr := sfto_dprpartksf psr;
+      return
+	 aex_mklcnt aex_mk(!*f2q psq, ctx_filter(kernels psq, ctx_union(aex_ctx f, aex_ctx g))) .
+	 aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
    end;
-
-asserted procedure aex_psquotrem(f: Aex, p: Aex, x: Kernel): DottedPair;
-   % Pseudo quotient remainder. Returns [(q . r . j)] with $b_n^{2*j}f=qp+r$.
-   begin scalar m,n,q,r,bn2,qr1; integer j;
-      m := aex_deg(f,x);
-      n := aex_deg(p,x);
-      q := aex_0();
-      r := f;
-      if m<n or aex_simplenullp(p) then
-	 return (q . r . 0);
-      bn2 := aex_mult(bn,bn) % bn2 needed below for selftest
-      %bn2 := aex_multrat(bn,rat_fromnum aex_sgn bn) % wrong; change in psquotrem1 needed as well!
-	 where bn = aex_lc(p,x);
-      while (aex_deg(r,x) >= n) do <<
-	 qr1 := aex_psquotrem1(r,p,x);
-	 q := aex_add(aex_mult(q,bn2),car qr1);
-	 j := j+1;
-	 r := cdr qr1;
-      >>;
-      % Computation self-test:
-      assert(aex_nullp(
-	 aex_minus(aex_mult(f,aex_power(bn2,j)),aex_add(aex_mult(q,p),r))));
-      return (q . r . j);
-   end;
-
-asserted procedure aex_psquot(f: Aex, p: Aex, x: Kernel): Aex;
-   car aex_psquotrem(f, p, x);
 
 asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
-   % Aex pseudo remainder. This algorithm is independent from aex_psquotrem and
-   % aex_psquotrem1.
+   % Aex pseudo remainder. This algorithm is independent from aex_psquotrem.
    begin scalar ff, gf, psr;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
@@ -880,17 +871,13 @@ asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
 
 asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
    % Sturm chain. Pseudo remainder is used to construct the chain.
-   aex_psremseq(aex_tad f, aex_tad g, x);
+   aex_psremseq(aex_pp f, aex_pp g, x);
 
 asserted procedure aex_pp(ae: Aex): Aex;
-   % Primitive part. Works only for polynomials with rational coefficients
-   % containing at most one variable. TODO: Why!? This should work for
-   % multivariate polynomials as well...
+   % Domain primitive part.
    begin scalar q;
       q := aex_ex ae;
-      if sfto_univarp numr q then
-      	 return aex_mk(sfto_dprpartksf numr q ./ denr q, aex_ctx ae);
-      return ae
+      return aex_mk(!*f2q sfto_dprpartksf numr q, aex_ctx ae)
    end;
 
 asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
@@ -900,83 +887,62 @@ asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
       assert(not aex_simplenullp g);
       res := {g, f};
       while aex_deg(g, x) > 0 do <<
-	 rem := aex_pp aex_tad aex_psrem(f, g, x);
+	 rem := aex_psrem(f, g, x);
 	 f := g;
 	 g := aex_neg rem;
 	 if not aex_simplenullp g then
-	    res := g . res;
-      >>;
-      return reversip res
-   end;
-
-asserted procedure aex_remseq(f: Aex, g: Aex, x: Kernel): AexList;
-   % Remainder sequence. Returns a remainder sequence for polynomials f and g.
-   begin scalar rem, res;
-      assert(not aex_simplenullp g);
-      res := {g, f};
-      while aex_deg(g, x) > 0 do <<
-	 rem := aex_pp aex_tad aex_rem(f, g, x);
-	 f := g;
-	 g := aex_neg rem;
-	 if not aex_simplenullp g then
-	    res := g . res;
+	    res := g . res
       >>;
       return reversip res
    end;
 
 asserted procedure aex_sturmchainsgnch(sc: AexList, x: Kernel, r: Rational): Integer;
-   % Algebraic expression sturm chain sign changes. [sc] is a list of
-   % AEX(c,c+1). Returns the number of sign changes of $sc$ evaluated at $r$.
-   lto_sgnchg for each e in sc collect aex_sgn aex_subrat1(e,x,r);
+   % Algebraic expression sturm chain sign changes. [sc] is a list of univariate
+   % Aex in variable [x]. Returns the number of sign changes of [sc] evaluated
+   % at [r].
+   lto_sgnchg for each e in sc collect aex_sgn aex_subrat1(e, x, r);
 
 asserted procedure aex_stchsgnch(sc: AexList, x: Kernel, r: GRational): Integer;
    % Sturm chain sign changes extended version.
    if r eq 'infty then
-      lto_sgnchg for each e in sc collect aex_sgnatinfty(e,x)
+      lto_sgnchg for each e in sc collect aex_sgnatinfty(e, x)
    else if r eq 'minfty then
-      lto_sgnchg for each e in sc collect aex_sgnatminfty(e,x)
+      lto_sgnchg for each e in sc collect aex_sgnatminfty(e, x)
    else
-      aex_sturmchainsgnch(sc,x,r);
+      aex_sturmchainsgnch(sc, x, r);
 
 asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
-   % Sign at infinity. We assume: 1) [ae] contains at most one free variable. 2)
-   % [ae] has non-trivial lc or is simply null.
-   begin scalar freeids;
+   % Sign at infinity. We assume: 1) [ae] contains at most one free variable
+   % [x]. 2) [ae] has non-trivial lc or is simply null.
+   begin scalar fvarl;
       if aex_simplenullp ae then
 	 return 0;
-      freeids := aex_fvarl ae;
-      if null freeids then
+      fvarl := aex_fvarl ae;
+      if null fvarl then
 	 return aex_sgn ae;
-      % Check if [x] is the main variable:
-      assert(car freeids eq x);
-      % Check if [x] is the only free variable:
-      assert(null cdr freeids);
-      % From now on we have exactly one free variable.
+      assert(car fvarl eq x);
+      assert(null cdr fvarl);
       return aex_sgn aex_lc(ae, x)
    end;
 
 asserted procedure aex_sgnatminfty(ae: Aex, x: Kernel): Integer;
    % Sign at minus infinity. We assume: 1) [ae] contains at most one free
-   % variable. 2) [ae] has non-trivial lc or is simply null.
-   begin scalar freeids;
+   % variable [x]. 2) [ae] has non-trivial lc or is simply null.
+   begin scalar fvarl;
       if aex_simplenullp ae then
 	 return 0;
-      freeids := aex_fvarl ae;
-      if null freeids then
+      fvarl := aex_fvarl ae;
+      if null fvarl then
 	 return aex_sgn ae;
-      % Check if [x] is the main variable:
-      assert(car freeids eq x);
-      % Check if [x] is the only free variable:
-      assert(null cdr freeids);
-      % From now on we have exactly one free variable.
+      assert(car fvarl eq x);
+      assert(null cdr fvarl);
       if evenp aex_deg(ae, x) then
 	 return aex_sgn aex_lc(ae, x);
       return (-1)*aex_sgn aex_lc(ae, x)
    end;
 
 asserted procedure aex_sgn(ae: Aex): Integer;
-   % Sign. Remark: the case when [ae] has free ids, but is constant due to
-   % trivial coefficients is not treated, although sgn would make sense.
+   % Sign of a constant Aex.
    begin scalar con, x, alpha, g, f, sc;
       assert(null aex_fvarl ae);
       if aex_simpleratp ae then  % [ae] is obviously rational.
@@ -1006,48 +972,35 @@ asserted procedure aex_sgn(ae: Aex): Integer;
 	 - aex_sturmchainsgnch(sc, x, iv_rb anu_iv alpha)
    end;
 
-asserted procedure aex_pssqfree(f: Aex, x: Kernel): Aex;
-   % Pseudo square-free part.
-   if aex_deg(f,x) < 2 then
-      f
-   else
-      car aex_psquotrem(f,lastcar aex_stdsturmchain(f,x),x);
-
-%%% --- exact arithmetic - with inv --- %%%
+% Exact arithmetic with multiplicative inverses.
 
 asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
    % Quotient and remainder. [f] and [g] have to have non-trivial leading
-   % coefficient. Returns a pair (quotient . remainder). It holds that remainder
-   % has with non-zero leading coefficient. Reference: Becker, Weispfenning,
-   % Kredel: Groebner bases, p. 81.
-   begin scalar ff, gg, qq, an, bm, inv, qqi; integer m, n;
-      % Make sure that we will not divide by zero:
+   % coefficient. Returns a pair (quotient . remainder). It holds that the
+   % remainder has a non-zero leading coefficient. Reference: Becker,
+   % Weispfenning, Kredel - Groebner bases, p. 81.
+   begin scalar quot, lcg, lcginv, lcf, tmp, redg; integer degf, degg;
       assert(not aex_simplenullp g);
-      % Optimization when g is a constant:
       if null aex_fvarl g then
 	 return aex_mult(aex_inv g, f) . aex_0();
-      % Make sure that the leading coefficient of [f] is non-zero:
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
-      % Make sure that the leading coefficient of [g] is non-zero:
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
-      ff := f;
-      gg := g;
-      qq := aex_0();
-      n := aex_deg(ff, x);
-      m := aex_deg(gg, x);
-      bm := aex_lc(gg, x);
-      inv := aex_inv bm;
-      while n >= m do <<
-	 an := aex_lc(ff, x);
-	 qqi := aex_reduce aex_mult(aex_mult(an, inv),
-	    aex_xtothen(x, n - m));  % Reduce added as optimization.
-	 ff := aex_mklcnt aex_minus(ff, aex_mult(qqi, gg));
-	 qq := aex_add(qq, qqi);
-	 n := aex_deg(ff, x)
+      quot := aex_0();
+      degf := aex_deg(f, x);
+      degg := aex_deg(g, x);
+      lcg := aex_lc(g, x);
+      lcginv := aex_inv lcg;
+      redg := aex_red(g, x);
+      while degf >= degg do <<
+	 lcf := aex_lc(f, x);
+	 % aex_reduce added for optimization:
+	 tmp := aex_reduce aex_mult(aex_mult(lcf, lcginv), aex_xtothen(x, degf - degg));
+	 % Why seg violation when aex_reduce here?
+	 f := aex_mklcnt aex_minus(aex_red(f, x), aex_mult(tmp, redg));
+	 quot := aex_add(quot, tmp);
+	 degf := aex_deg(f, x)
       >>;
-      % Computation self-test:
-      assert(aex_nullp aex_minus(f, aex_add(aex_mult(qq, g), ff)));
-      return qq . ff
+      return quot . f
    end;
 
 asserted procedure aex_quot(f: Aex, g: Aex, x: Kernel): Aex;
@@ -1055,29 +1008,27 @@ asserted procedure aex_quot(f: Aex, g: Aex, x: Kernel): Aex;
    car aex_quotrem(f, g, x);
 
 asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
-   %cdr aex_quotrem(f, g, x);
    % Remainder. Just a modification of aex_quotrem avoiding computation of
    % quotient.
-   begin scalar an, bm, inv, tmp; integer m, n;
+   begin scalar lcg, lcginv, redg, lcf, tmp; integer degf, degg;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
    	 return aex_0();
       assert(not eqn(aex_sgn aex_lc(f, x), 0));
       assert(not eqn(aex_sgn aex_lc(g, x), 0));
-      n := aex_deg(f, x);
-      m := aex_deg(g, x);
-      bm := aex_lc(g, x);
-      inv := aex_inv bm;
-      while n >= m do <<
-   	 an := aex_lc(f, x);
-   	 tmp := aex_mult(an, aex_xtothen(x, n - m));
-   	 %f := aex_mklcnt aex_minus(aex_red(f, x),
-   	 %   aex_mult(aex_mult(aex_red(g, x), tmp), inv));
-   	 f := aex_minus(aex_red(f, x),
-   	    aex_mult(aex_mult(aex_red(g, x), tmp), inv));
-   	 n := aex_deg(f, x)
+      degf := aex_deg(f, x);
+      degg := aex_deg(g, x);
+      lcg := aex_lc(g, x);
+      lcginv := aex_inv lcg;
+      redg := aex_red(g, x);
+      while degf >= degg do <<
+   	 lcf := aex_lc(f, x);
+	 % aex_reduce added for optimization:
+   	 tmp := aex_reduce aex_mult(aex_mult(lcf, lcginv), aex_xtothen(x, degf - degg));
+   	 f := aex_mklcnt aex_minus(aex_red(f, x), aex_mult(tmp, redg));
+   	 degf := aex_deg(f, x)
       >>;
-      return aex_mklcnt f
+      return f
    end;
 
 asserted procedure aex_gcdext(a: Aex, b: Aex, x: Kernel): AexList;
