@@ -1312,6 +1312,8 @@ then
   AC_CHECK_SIZEOF(long long)
 fi
 
+AC_CHECK_SIZEOF(wchar_t)
+
 AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
 
 AC_CHECK_LIB(socket, socket)

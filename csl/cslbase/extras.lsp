@@ -31,7 +31,7 @@
 %% DAMAGE.                                                                *
 %%
 
-% $ Id: $
+% $Id$
 
 (dm df (u !&optional env) (prog (g w) (setq g (gensym)) (setq w (list (quote 
 list) (quote (quote let!*)) (list (quote list) (list (quote list) (mkquote (

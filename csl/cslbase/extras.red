@@ -37,7 +37,7 @@
 %
 %
 
-% $ Id: $
+% $Id$
 
 % CSL does not support user-defined special forms! So
 %    (df name (u) body)

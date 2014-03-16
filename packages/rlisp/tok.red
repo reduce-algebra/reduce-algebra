@@ -59,6 +59,12 @@ global '(!$eof!$
          ifl!*
          nxtsym!*
          outl!*
+% Values in ttype!*:
+%     0  symbol                   a,b,c,word,!+
+%     1  string                   "something"
+%     2  number                   1,2, 1.0, 2.0
+%     3  operator-like character  +,-,...
+%     4  result of quotation      '(something)
          ttype!*);
 
 flag('(adjprec),'switch);
@@ -89,8 +95,8 @@ symbolic procedure mkstrng u;
    u;
 
 symbolic procedure readch1;
-   begin scalar x;
-% This one-character look-ahead is used when parsing names that
+  begin
+% This character look-ahead is used when parsing names that
 % have colons within them, as in abc:def. In particular it is active when
 % input text such as "... abc::? ...". If the character written as "?" there
 % is a letter, digit or underscore then it continues the symbol that
@@ -101,20 +107,147 @@ symbolic procedure readch1;
 % directive to read in a file (ie 'in "filename";') can not properly end in
 % a symbol that has colons at the end of it. And also that the "in" command
 % can not end with something that messed with backslashes. This is UGLY and
-% delicate but probably OK at present. 
-      if peekchar!* then progn(x := car peekchar!*,
-                              peekchar!* := cdr peekchar!*,
-                              return x);
-      if null terminalp()
-        then progn(x := readch(),
-                   x eq !$eol!$ and (curline!* := curline!*+1),
-                   return x)
-       else if crbuf1!*
-        then begin x := car crbuf1!*; crbuf1!* := cdr crbuf1!* end
-       else x := readch();
-      crbuf!* := x . crbuf!*;
-      return x
-   end;
+% delicate but probably OK at present.
+%
+% Furthermore I will cause this to do special things with "#" so that at
+% this very low level a sequence
+%          #word;
+%    or    #number;
+% gets treated as if it was a single character. Numbers must be given in
+% hexadecimal, and the words will be (by and large) following the usage
+% in HTML. Thus "#amp;" and "&" will be equivalent. Many forms of usage
+% here will describe characters outside the safe 7-bit ASCII range,
+% so "#pound;" will be the Sterling pounds sign that is otherwise "#a3"
+% and "#Sigma;" will be the same as "#3a3;". This conversion will take
+% place everywhere, even within strings. However if the material after
+% a "#" is not a recognised word or a valid hexadecimal number (with a
+% maximum of 6 digits and a value at most 0x0010ffff) or the ";" is missing
+% then the conversion described here will not be made. It looks as if the
+% standard HTML 4 entity names are all at most 8 characters long (eg thetasym
+% is maximal). Codes in the range #00; to #ff; may be useful even in the
+% short term. Some others are looking forward to a Unicode world. In
+% particular the character items created will be made using int2id passing
+% arguments in the range 0 to 0x0010ffff not just 0 to 0xff.
+%
+% Note that an extension to try to use HTML5 entity names would lead to
+% ambiguity with #ac;, #ace; and several others. To cope with that the
+% symbolic name will take priority over a numeric interpretation, but
+% a form #Xddd; or #Uddd; can be available where X introduces hex digits and
+% U a decimal version. At present at least there are no name conflicts that
+% arise if those versions are used!
+%
+% I will note (although it is not dealt with here) that later on in
+% token1 I will make "#if", "#else", "#elif", "#endif", "#eval" and
+% "#define" special cases of tokens that can be written without needing
+% the initial "#" to be escaped. Thus I want the words involved there
+% to be disjoint from the ones I use for character entities.
+%
+% To back this up it will be good if the Lisp system lets prin2 just print
+% items (in UTF8 encoding), but print will need altering. Given a symbol
+% or a string that contains a non-ASCII character it should display it
+% using "#NNN;" (and if it is a symbol that will be preceeded by an
+% exclamation mark escape). If the name or string contains a "#" character
+% that should be rendered as "#23;" so that e.g. the string that displays
+% using prin2 as #amp; will come out via prin1 as "#23;amp;". Note that the
+% translation of funny characters is only done once, also that HTML does not
+% provide a special name for the character "#". Perhaps I ought to then the
+% output could become "#hash;amp;" which may be clearer.
+%
+%
+    scalar x, y, w, n, save;
+% First cope with anything that had been read ahead...
+    if peekchar!* then progn(
+      x := car peekchar!*,
+% In general when I peek ahead I will not do case-folding as I go:
+% that has to be done now when I retrieve the character for final use.
+      peekchar!* := cdr peekchar!*,
+      (if !*lower then x := char!-downcase x
+       else if !*raise then x := char!-upcase x),
+      return x);
+% Now it is necessary to do a "real" read.
+a:  if null terminalp() then progn(
+      x := readch(),
+      if x eq !$eol!$ then curline!* := curline!*+1)
+% crbuf1!* is a close relative of peekchar!* but is mainly used as
+% an interface for "cedit" to use so that it can have an edited
+% bit of stuff appear visible as if it was keyboard input.
+    else if crbuf1!* then progn(
+      x := car crbuf1!*,
+      crbuf1!* := cdr crbuf1!*)
+    else x := readch();
+    crbuf!* := x . crbuf!*;
+% One might worry that adding support for "#" escapes has made this code
+% a lot longer than before and that this might slow critical things down.
+% In fact about the only extra work done here in normal circumstances is
+% a fairly cheap test to see if "#" is present.
+    if null peekchar!* then progn(
+% The parentheses on the next line are unexpectedly vital because
+% otherwise things get parsed as "return (x , save := ...)" which leads
+% to grave confusion!
+      (if not (x eq '!#) then return x),
+      save := (!*raise . !*lower),
+% I switch off !*raise and !*lower while reading. That is (for instance)
+% so that #Sigma; and #sigma; can yield an upper and a lower case
+% Greek sigma character.
+      !*raise := (!*lower := nil),
+      peekchar!* := x . peekchar!*,
+      go to a)
+% Here I am accumulating a bit of stuff where I look ahead following
+% a "#" character.
+    else if liter x or digit x then progn(
+% I accumulate the initial "#" followed by any number of letters and
+% digits.
+      peekchar!* := x . peekchar!*,
+      go to a);
+    !*raise := car save;
+    !*lower := cdr save;
+% If what I find at the end is not a semicolon then I will
+% do nothing... ie I will leave the peeked characters to be read one
+% by one in the usual way. Note that while the very final peeked character
+% could be a second "#" none of the others can be.
+    if not (x eq '!;) then progn(
+      peekchar!* := cdr nreverse (x . peekchar!*),
+      return '!#);
+% Now I have a potential character name object. It could be one of
+%        #name;
+%        #hexdigits;
+%        #Xhexdigits;     (upper or lower case "x")
+%        #Udecimaldigits; (upper o lower case "u")
+% but if the name is not recognised or the numeric value is out of
+% range the sequence will just be treated as raw characters and all
+% this special treatment will have been merely a diversion.
+    y := intern list!-to!-string (x := cdr reverse peekchar!*);
+% For bootstrapping there has to be a "!" before the "_" on the next line.
+    if y := get(y, 'unicode!_character) then progn(
+       peekchar!* := nil,
+       return int2id y);
+% Now it was not a known name. Next check if it was #Udddd
+    n := 0;
+% I uprated the very initial bootstrap version of the parser so that
+% letters after "!" were not case folded.
+    if eqcar(x, '!u) or eqcar(x, '!U) then goto dec1;
+% Check for explicit hex marker, as in #Xdddd
+    if eqcar(x, '!x) or eqcar(x, '!X) then x := cdr x;
+hex:if null x then go to ok;
+    w := get(car x, 'hexdigit);
+    if null w then go to fail;
+    n := 16*n + w;
+    x := cdr x;
+    go to hex;
+dec1:
+    x := cdr x;
+dec:if null x then go to ok;
+    if null digit car x then go to fail;
+    n := 10*n + get(car x, 'hexdigit);
+    x := cdr x;
+    go to dec;
+ok: peekchar!* := nil;
+    return int2id n;
+fail:
+    peekchar!* := cdr reverse ('!; . peekchar!*);
+    return '!#
+  end;
+
 
 symbolic procedure tokquote;
    begin
@@ -485,21 +618,31 @@ symbolic procedure toknump x;
 % The following version of SCAN provides RLISP with a facility for
 % conditional compilation.  The protocol is that text is included or
 % excluded at the level of tokens.  Control by use of new reserved
-% tokens !#if, !#else and !#endif.  These are used in the form:
-%    !#if (some Lisp expression for use as a condition)
+% tokens #if, #else, #elif and #endif.  These are used in the form:
+%    #if (some Lisp expression for use as a condition)
 %    ... RLISP input ...
-%    !#else
+%    #else
 %    ... alternative RLISP input ...
-%    !#endif
+%    #endif
 %
 % The form
-%    !#if C1 ... !#elif C2 ... !#elif C3 ... !#else ... !#endif
+%    #if C1 ... #elif C2 ... #elif C3 ... #else ... #endif
 % is also supported.
+%
+% This formation will not be recognised within quoted exressions, so
+%       a := '(one
+%       #if sometimes
+%              two
+%       #endif
+%              three);
+% will not be useful. The tokens "#if" etc do not need an initial (!)
+% when they might be directives. Again this means that within quoted
+% material they will.
 %
 % Conditional compilation can be nested.  If the Lisp expression used
 % to guard a condition causes an error it is taken to be a FALSE
-% condition. It is not necessary to have an !#else before !#endif if no
-% alternative text is needed.  Although the examples here put !#if etc
+% condition. It is not necessary to have an #else before #endif if no
+% alternative text is needed.  Although the examples here put #if etc
 % at the start of lines this is not necessary (though it may count as
 % good style?).  Since the condition will be read using RLISPs own
 % list-reader there could be conditional compilation guarding parts of
@@ -508,34 +651,34 @@ symbolic procedure toknump x;
 % Making the condition a raw Lisp expression makes sure that parsing it
 % is easy. It makes it possible to express arbitrary conditions, but it
 % is hoped that most conditions will not be very elaborate - things like
-%    !#if (member 'psl lispsystem!*)
+%    #if (member 'psl lispsystem!*)
 %         magic();
-%    !#else
+%    #else
 %         error();
-%    !#endif
+%    #endif
 % or
-%    !#if debugging!-mode  % NB if variable is unset that counts as nil
+%    #if debugging!-mode  % NB if variable is unset that counts as nil
 %    print "message";      % so care should be taken to select the most
-%    !#endif               % useful default sense for such tests
+%    #endif               % useful default sense for such tests
 % should be about as complicated as reasonable people need.
 %
 % Two further facilities are provided:
-%    !#eval (any lisp expression)
+%    #eval (any lisp expression)
 % causes that expression to be evaluated at parse time.  Apart from any
 % side-effects in the evaluation the text involved is all ignored. It is
 % expected that this will only be needed in rather curious cases, for
 % instance to set system-specific options for a compiler.
 
-%    !#define symbol value
+%    #define symbol value
 % where the value should be another symbol, a string or a number,
 % causes the first symbol to be mapped onto the second value wherever
 % it occurs in subsequent input.  This uses exactly the same mechanism
 % as the existing REDUCE "define" statement and so has the same
 % limitations.  The use of a hook in SCAN to support this ensures that
-% the !#define can be written anywhere in REDUCE source code (eg within
+% the #define can be written anywhere in REDUCE source code (eg within
 % a procedure definition) and will still apply while the program
 % involved is parsed.  No special facility for undoing the effect of a
-% !#define is provided, but the general-purpose !#eval could be used to
+% #define is provided, but the general-purpose #eval could be used to
 % remove the 'newnam property that is involved.
 
 symbolic procedure addcomment u;
@@ -562,6 +705,10 @@ symbolic procedure scan;
          else if nxtsym!* eq '!% and ttype!*=3
           then progn(x := read!-comment1 'percent!_comment,
                      if !*comment then return x else go to a)
+% I might comment that the material within a quoted form is not
+% processed by SCAN and so the text "!#if" here both NEED the initial
+% escape mark and it will not be treated as introducing a cobditional
+% section.
          else if nxtsym!* eq '!#if then go to conditional
          else if nxtsym!* eq '!#else or
                  nxtsym!* eq '!#elif then progn(nxtsym!* := x := nil,
@@ -581,6 +728,7 @@ symbolic procedure scan;
          else if nxtsym!* eq !$eof!$ then return filenderr()
          else if nxtsym!* eq '!' then rederr "Invalid QUOTE"
          else if !*eoldelimp and nxtsym!* eq !$eol!$ then go to delim
+         else if nxtsym!* eq '!# and not seprp crchar!* then go to hh
          else if null (x:= get(nxtsym!*,'switch!*)) then go to l
          else if eqcar(cdr x,'!*semicol!*) then go to delim;
         bool := seprp crchar!*;
@@ -598,6 +746,28 @@ symbolic procedure scan;
         if null car x and cadr x eq '!*Comment!*
           then progn(comment!* := read!-comment(),go to a);
         go to sw1;
+  hh:
+% Here I have a "#" not preceeded by an escape marker (!) and followed
+% by something that is not a separator. I will handle that at first rather
+% as if it was the "switch" case but with extra support for some special
+% cases like "#if".
+        bool := nil;
+        x := get(nxtsym!*,'switch!*);
+        nxtsym!* := token();
+        if nxtsym!* = 'if or
+           nxtsym!* = 'else or
+           nxtsym!* = 'elif or
+           nxtsym!* = 'endif or
+           nxtsym!* = 'eval or
+           nxtsym!* = 'define then go to preprocessor;
+        if null(ttype!* = 3) then go to sw2
+         else if nxtsym!* eq !$eof!$ then return filenderr()
+         else if car x then go to sw3;
+        go to sw2;
+  preprocessor:
+        prin2x nxtsym!*;
+        nxtsym!* := compress ('!! . '!# . explode nxtsym!*);
+        go to c;
   conditional:
 % The conditional expression used here must be written in Lisp form
         x := errorset(rread(), !*backtrace, nil);
@@ -605,7 +775,15 @@ symbolic procedure scan;
         if null errorp x and car x then go to a;
         x := nil;
   skipping:
-% I support nesting of conditional inclusion.
+% I support nesting of conditional inclusion. However one new joy
+% here is that a "#" followed (immediately) by one "if, "else", "elif"
+% or "endif" must be noticed here... The way I do that here has the
+% effect that (eg) ##endif is treated as ## endif not as # #endif so will
+% not terminate a conditional block.
+        if nxtsym!* eq '!# and ttype!*=3 and not seprp crchar!* then progn(
+          nxtsym!* := token(),
+          if ttype!* = 0 then
+            nxtsym!* := compress('!! . '!# . explode nxtsym!*));
         if nxtsym!* eq '!#endif then
            if null x then go to a else x := cdr x
         else if nxtsym!* eq '!#if then x := nil . x

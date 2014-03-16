@@ -40,7 +40,7 @@
 %                                                        M A Dmitriev
 %                                                        A C Norman
 
-% $ Id: $
+% $Id$
 
 global '(i_machine);
 

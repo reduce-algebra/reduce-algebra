@@ -8,7 +8,7 @@
 
 
 %%
-%% Copyright (C) 2010, A C Norman, Codemist Ltd.                          *
+%% Copyright (C) 2014, A C Norman, Codemist Ltd.                          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
 %% DAMAGE.                                                                *
 %%
 
-% $ Id: $
+% $Id$
 
 symbolic;
 

@@ -35,7 +35,7 @@
 %% DAMAGE.                                                                *
 %%
 
-% $ Id: $
+% $Id$
 
 symbolic;
 

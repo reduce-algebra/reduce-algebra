@@ -2,7 +2,7 @@
 ; Create RLISP.  Use this via mkrlisp0.lsp or mkrlisp1.lsp
 ;
 
-% $ Id: $
+% $Id$
 
 ; Standard LISP equivalent of BOOT.RED.
 
@@ -154,7 +154,7 @@ b     (setq r (cons x r))
       (go a)))
 
 (de token nil
-   (prog (x y)
+   (prog (x y w)
       (setq x crchar*)
 a     (cond
          ((seprp x) (go sepr))
@@ -170,7 +170,11 @@ a     (cond
 a1    (setq crchar* (readch))
       (go c)
 escape(setq y (cons x y))
+      (setq w (cons !*raise !*lower))
+      (setq !*raise (setq !*lower nil))
       (setq x (readch))
+      (setq !*raise (car w))
+      (setq !*lower (cdr w))
 letter(setq ttype* 0)
 let1  (setq y (cons x y))
       (cond

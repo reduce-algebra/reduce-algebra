@@ -25,7 +25,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -81,7 +81,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -140,7 +140,7 @@ int common;
 static char *rights_message[] =
 {
 "%",
-"% Copyright (C) 2010, following the master REDUCE source files.          *",
+"% Copyright (C) 2014, following the master REDUCE source files.          *",
 "%                                                                        *",
 "% Redistribution and use in source and binary forms, with or without     *",
 "% modification, are permitted provided that the following conditions are *",

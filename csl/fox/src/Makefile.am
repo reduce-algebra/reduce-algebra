@@ -44,7 +44,7 @@ $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
 	then \
 	  $(top_srcdir)/../../autogen.sh csl/fox ; \
 	else echo Redundant attempt to remake configure ; \
-        fi
+	fi
 
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 		$(top_srcdir)/configure

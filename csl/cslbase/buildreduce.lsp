@@ -26,7 +26,7 @@
 
 % Author: Anthony C. Hearn, Stanley L. Kameny and Arthur Norman
 
-% $ Id: $
+% $Id$
 
 (verbos 3)
 

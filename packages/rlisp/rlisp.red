@@ -30,7 +30,7 @@ global '(date!* patch!-date!* version!*);
 
 create!-package('(rlisp module newtok rsupport slfns superv tok xread
                   lpri parser block form proc forstat loops statmisc
-                  smacro io infix switch where list array inter),
+                  smacro io infix switch where list array inter charname),
                  nil);
 
 flag('(rlisp),'core!_package);
