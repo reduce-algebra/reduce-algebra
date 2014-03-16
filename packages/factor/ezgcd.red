@@ -46,7 +46,7 @@ symbolic inline procedure polyzerop u; null u;
 symbolic inline procedure didntgo q; null q;
 
 symbolic inline procedure depends!-on!-var(a,v);
-  (lambda !#!#a; (not domainp !#!#a) and (mvar !#!#a=v)) a;
+  (lambda !#!#z; (not domainp !#!#z) and (mvar !#!#z=v)) a;
 
 symbolic procedure errorf u;
    rerror(ezgcd,1,list("Factorizer error:",u));

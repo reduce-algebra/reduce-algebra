@@ -1074,7 +1074,9 @@ procedure fjacob(p,w);
         begin scalar as,as1,es1,wod0,wod1,wod2,wod3,wodx;
        if numberp(length(p)) then return jacob1(p,w);
        as:=first length(p); matrix !#ala(as,as),!#ela(as,as);
-       !#ala:=gato(p);   operator !#a,!#b,!#c;
+% The space between "#c" and ";" is needed to avoid clashes with new
+% character input notation.
+       !#ala:=gato(p);   operator !#a,!#b,!#c ;
        as1:=for k:=1:as collect for l:=1:as sum
                sub(d(1)=0,der(1)=0,der(2)=0,p(k,l)*bos(!#b(l),0,0));
        for k:=1:as do << bos(part(w,k)):=part(as1,k);>>;

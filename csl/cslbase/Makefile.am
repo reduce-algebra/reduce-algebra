@@ -875,7 +875,7 @@ CRINC =
 # explicit actions here would hurt.
 restart.$(OBJEXT):	machineid.c
 csl-restart.$(OBJEXT):	machineid.c
-reeduce-restart.$(OBJEXT):	machineid.c
+reduce-restart.$(OBJEXT):	machineid.c
 
 endif !crlibm
 
@@ -1934,10 +1934,10 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # up to date before the regeneration will NOT get spotted as in need
 # of compilation even though they have changed.
 
-# I believe there is a potential race (with "make -j") if say u01.o is
+# I believe there is a potential race (with "make -j") if say reduce-u01.o is
 # out of date in a simple way and starts to get compiled, but while that
 # is going on a missing version of say u33.lsp causes the rule here to
-# trigger... and in the process re-create a new version of u05.c. I try
+# trigger... and in the process re-create a new version of reduce-u05.c. I try
 # to deal with that by deleting all the *.o files just in case some
 # parallel process has slotted one in just when I did not want that!
 # Well it is even worse - the main reduce executable can become out

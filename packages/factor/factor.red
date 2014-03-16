@@ -80,7 +80,7 @@ symbolic inline procedure carcheck u; nil;
 inline procedure didntgo q; null q;
 
 % inline procedure depends!-on!-var(a,v);
-%   (lambda !#!#a; (not domainp !#!#a) and (mvar !#!#a=v)) a;
+%   (lambda !#!#z; (not domainp !#!#z) and (mvar !#!#z=v)) a;
 
 % inline procedure l!-numeric!-c(a,vlist); lnc a;
 
@@ -100,8 +100,8 @@ inline procedure !*f2mod u; u;
 inline procedure !*mod2f u; u;
 
 %%%inline procedure adjoin!-term (p,c,r);
-%%%  (lambda !#c!#; % Lambda binding prevents repeated evaluation of C.
-%%%    if null !#c!# then r else (p .* !#c!#) .+ r) c;
+%%%  (lambda !#z!#; % Lambda binding prevents repeated evaluation of C.
+%%%    if null !#z!# then r else (p .* !#z!#) .+ r) c;
 
 symbolic inline procedure get!-f!-numvec s; cadr cddr cdddr s;
 
