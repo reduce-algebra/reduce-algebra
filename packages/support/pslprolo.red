@@ -100,8 +100,9 @@ remprop('cursym!*,'vartype);
 % is not available but I want to be able to tell that I am building on
 % PSL as distinct from any other Lisp. This global value will help!
 
-global '(!*psl);
+global '(!*psl !*csl);
 !*psl := t;
+!*csl := nil;
 
 % endmodule;
 

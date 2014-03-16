@@ -686,6 +686,10 @@ flag('(call!-foreign!-function), 'variadic);
 put('gc, 'simpfg, '((t (verbos t))
                     (nil (verbos nil))));
 
+global '(!*psl !*csl);
+!*psl := nil;
+!*csl := t;
+
 endmodule;
 
 end;

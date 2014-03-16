@@ -65,7 +65,8 @@ global '(!$eof!$
 %     2  number                   1,2, 1.0, 2.0
 %     3  operator-like character  +,-,...
 %     4  result of quotation      '(something)
-         ttype!*);
+         ttype!*
+         !*psl);
 
 flag('(adjprec),'switch);
 
@@ -215,7 +216,7 @@ a:  if null terminalp() then progn(
 % do nothing... ie I will leave the peeked characters to be read one
 % by one in the usual way. Note that while the very final peeked character
 % could be a second "#" none of the others can be.
-    if not (x eq '!;) then progn(
+    if not (x eq '!;) or null cdr peekchar!* then progn(
       peekchar!* := cdr reversip (x . peekchar!*),
       return '!#);
 % Now I have a potential character name object. It could be one of
@@ -235,7 +236,7 @@ a:  if null terminalp() then progn(
     n := 0;
 % I uprated the very initial bootstrap version of the parser so that
 % letters after "!" were not case folded.
-    if eqcar(x, '!u) or eqcar(x, '!U) then goto dec1;
+    if eqcar(x, '!u) or eqcar(x, '!U) then go to dec1;
 % Check for explicit hex marker, as in #Xdddd
     if eqcar(x, '!x) or eqcar(x, '!X) then x := cdr x;
 hex:if null x then go to ok;

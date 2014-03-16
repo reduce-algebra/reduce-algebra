@@ -519,6 +519,10 @@ symbolic procedure verbos x;
     return old
   end;
 
+global '(!*psl !*csl);
+!*psl := t;
+!*csl := nil;
+
 endmodule;
 
 end;
