@@ -747,6 +747,10 @@ asserted procedure aex_subrat1(ae: Aex, x: Kernel, r: Rational): Aex;
       return aex_mk(newq, ctx_filter(kernels numr newq, aex_ctx ae))
    end;
 
+asserted procedure aex_pp(ae: Aex): Aex;
+   % Domain primitive part.
+   aex_mk(!*f2q sfto_dprpartksf numr aex_ex ae, aex_ctx ae);
+
 asserted procedure aex_xtothen(x: Kernel, n: Integer): Aex;
    % Exponentiation. [x]^[n]
    aex_mk(!*f2q sfto_kexp(x, n), ctx_new());
@@ -848,18 +852,6 @@ asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
       return aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
    end;
 
-asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
-   % Standard sturm chain.
-   aex_sturmchain(f, aex_diff(f, x), x);
-
-asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
-   % Sturm chain. Pseudo remainder is used to construct the chain.
-   aex_psremseq(aex_pp f, aex_pp g, x);
-
-asserted procedure aex_pp(ae: Aex): Aex;
-   % Domain primitive part.
-   aex_mk(!*f2q sfto_dprpartksf numr aex_ex ae, aex_ctx ae);
-
 asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
    % Pseudo remainder sequence for polynomials f and g. Returns a pseudo
    % remainder sequence for polynomials f and g.
@@ -876,20 +868,27 @@ asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
       return reversip res
    end;
 
-asserted procedure aex_sturmchainsgnch(sc: AexList, x: Kernel, r: Rational): Integer;
-   % Algebraic expression sturm chain sign changes. [sc] is a list of univariate
-   % Aex in variable [x]. Returns the number of sign changes of [sc] evaluated
-   % at [r].
-   lto_sgnchg for each e in sc collect aex_sgn aex_subrat1(e, x, r);
+asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
+   % Standard sturm chain. Pseudo remainder is used to construct the chain.
+   aex_sturmchain(f, aex_diff(f, x), x);
+
+asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
+   % Sturm chain. Pseudo remainder is used to construct the chain.
+   aex_psremseq(aex_pp f, aex_pp g, x);
 
 asserted procedure aex_stchsgnch(sc: AexList, x: Kernel, r: GRational): Integer;
-   % Sturm chain sign changes extended version.
+   % Sturm chain sign changes. [sc] is a list of univariate Aex in variable [x].
+   % [r] is either a rational nubmer or 'infty or 'minfty. Returns the number of
+   % sign changes of [sc] evaluated at [r].
    if r eq 'infty then
       lto_sgnchg for each e in sc collect aex_sgnatinfty(e, x)
    else if r eq 'minfty then
       lto_sgnchg for each e in sc collect aex_sgnatminfty(e, x)
    else
-      aex_sturmchainsgnch(sc, x, r);
+      aex_stchsgnch1(sc, x, r);
+
+asserted procedure aex_stchsgnch1(sc: AexList, x: Kernel, r: Rational): Integer;
+   lto_sgnchg for each e in sc collect aex_sgn aex_subrat1(e, x, r);
 
 asserted procedure aex_sgnatinfty(ae: Aex, x: Kernel): Integer;
    % Sign at infinity. We assume: 1) [ae] contains at most one free variable
@@ -927,8 +926,7 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       assert(null aex_fvarl ae);
       if aex_simpleratp ae then  % [ae] is obviously rational.
 	 return rat_sgn aex_ex ae;
-      % Possible optimization:
-      if !*rlanuexsgnopt then <<
+      if !*rlanuexsgnopt then <<  % possible optimization
       	 con := aex_containment ae;
       	 if rat_less(rat_0(), iv_lb con) then
 	    return 1;
@@ -945,11 +943,11 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       if !*rlverbose and !*rlanuexverbose then
 	 if aex_deg(g, x) <= 0 then prin2 "[aex_sgn:num!]";
       f := anu_dp alpha;
-      % [sc] is the  sturmchain for f(x), f'(x)g(x):
+      % [sc] is the Sturm chain for f(x), f'(x)g(x):
       % Possible optimization: call aex_reduce after aex_diff.
       sc := aex_sturmchain(f, aex_mult(aex_diff(f, x), g), x);
-      return aex_sturmchainsgnch(sc, x, iv_lb anu_iv alpha)
-	 - aex_sturmchainsgnch(sc, x, iv_rb anu_iv alpha)
+      return aex_stchsgnch1(sc, x, iv_lb anu_iv alpha)
+	 - aex_stchsgnch1(sc, x, iv_rb anu_iv alpha)
    end;
 
 % Exact arithmetic with multiplicative inverses.
@@ -1011,10 +1009,19 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
       return f
    end;
 
-asserted procedure aex_gcdext(a: Aex, b: Aex, x: Kernel): AexList;
-   aex_gcdext1(a, b, x, !*rlanuexgcdnormalize);
+asserted procedure aex_gcd(a: Aex, b: Aex, x: Kernel): Aex;
+   begin scalar d;
+      % d := car aex_gcdext1(a, b, x, nil);
+      d := car aex_gcdext(a, b, x);
+      % Optimization: if the gcd is not a poly, then it's 1:
+      if aex_deg(d, x) < 1 then
+	 d := aex_1();
+      % Make sure that the leading coeffcient of d is non-trivial:
+      assert(not aex_nullp aex_lc(d, x));
+      return d
+   end;
 
-asserted procedure aex_gcdext1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean): AexList;
+asserted procedure aex_gcdext(a: Aex, b: Aex, x: Kernel): AexList;
    % Extended euclidean algorithm. See Becker, Weispfenning, Kredel: Groebner
    % bases, p.83.
    begin scalar aa,bb,ss,tt,uu,vv,qr,ss1,tt1,tmp;
@@ -1029,7 +1036,7 @@ asserted procedure aex_gcdext1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean)
 	 uu := aex_minus(ss1,aex_mult(car qr,uu));
 	 vv := aex_minus(tt1,aex_mult(car qr,vv));
       >>;
-      if gcdnormalize then <<
+      if !*rlanuexgcdnormalize then <<
 	 tmp := aex_inv aex_lc(aa,x); aa := aex_mult(aa,tmp);
 	 ss := aex_mult(ss,tmp); tt := aex_mult(tt,tmp);
       >>;
@@ -1037,51 +1044,6 @@ asserted procedure aex_gcdext1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean)
       assert(aex_nullp aex_minus(aa,aex_add(aex_mult(ss,a),aex_mult(tt,b))));
       return {aa,ss,tt}
    end;
-
-asserted procedure aex_gcd(a: Aex, b: Aex, x: Kernel): Aex;
-   begin scalar d;
-      d := car aex_gcdext1(a, b, x, nil);
-      % Optimization: if the gcd is not a poly, then it's 1:
-      if aex_deg(d, x) < 1 then
-	 d := aex_1();
-      % Make sure that the leading coeffcient of d is non-trivial:
-      assert(not aex_nullp aex_lc(d, x));
-      return d
-   end;
-
-asserted procedure aex_gcd1(a: Aex, b: Aex, x: Kernel, gcdnormalize: Boolean): Aex;
-   car aex_gcdext1(a,b,x,gcdnormalize);
-
-asserted procedure aex_gcdexttest(a: Aex, b: Aex, x: Kernel);
-   % should result in 0
-   aex_minus(car ddsstt,
-      aex_add(aex_mult(cadr ddsstt,a),aex_mult(caddr ddsstt,b)))
-      	 where ddsstt = aex_gcdext(a,b,x);
-
-procedure aex_pairwiseprime(ael, x); % needs testing
-   % Pairwise prime. [ael] is a list of Aex with non-trivial lc. Returns a list
-   % of Aex with non-trivial lc.
-   for each te in
-      aex_tgpairwiseprime(for each ae in ael collect tag_(ae,nil),x) collect
-	 tag_object te;
-%   begin scalar pprestlist,tmp;
-%      if length ael <= 1 then return ael;
-%      pprestlist := aex_pairwiseprime(cdr ael,x);
-%      tmp := aex_pairwiseprime1(car ael,pprestlist,x);
-%      % lets assume aex_quot returns something with lc non-trivial.
-%      return if not aex_simplenumberp tmp then
-%	 tmp . pprestlist else pprestlist
-%   end;
-
-asserted procedure aex_pairwiseprime1(ae1: AexList, ae2l: AexList, x: Kernel): AexList; % unused
-   % makes ae1 prime to ae2l.
-   %   << for each ae2 in ae2l do ae1 := aex_quot(ae1,aex_gcd(ae1,ae2,x),x);
-   %      ae1
-   %   >>;
-   << while ae2l and not aex_simplenullp ae1 do << %%% simplenumberp !?
-      ae1 := aex_quot(ae1,aex_gcd(ae1,car ae2l,x),x);
-      ae2l := cdr ae2l;
-   >>; ae1 >>;
 
 procedure aex_tgpairwiseprime(ael, x);
    % Pairwise prime. [ael] is a list of Aex with non-trivial lc. Returns a list
@@ -1141,14 +1103,7 @@ asserted procedure aex_inv(ae: Aex): Aex;
       return aex_bind(aex_mult(aex_inv aa, tt), x, alpha)
    end;
 
-asserted procedure aex_linsolv(ae: Aex, x: Kernel): Aex;
-   % [x] is the only free variable in ae.
-   <<
-      assert(aex_fvarl ae equal {x});
-      aex_mult(aex_inv aex_lc(ae, x), aex_neg aex_red(ae, x))
-   >>;
-
-%%% --- root isolation --- %%%
+% Root isolation.
 
 asserted procedure aex_coefl(ae: Aex, x: Kernel): AexList;
    if aex_mvartest(ae,x) then
@@ -1256,9 +1211,9 @@ asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
       cb := rat_min(m,n);
       aesc := aex_stdsturmchain(ae,x);
       % Check if the bound was computed correctly:
-      assert(aex_sturmchainsgnch(aesc,x,cb) eq aex_stchsgnch(aesc,x,'infty));
+      assert(aex_stchsgnch1(aesc,x,cb) eq aex_stchsgnch(aesc,x,'infty));
       assert(aex_stchsgnch(aesc,x,'minfty) eq
-	 aex_sturmchainsgnch(aesc,x,rat_minus(rat_neg cb,rat_1())));
+	 aex_stchsgnch1(aesc,x,rat_minus(rat_neg cb,rat_1())));
       return cb
    end;
 
@@ -1291,9 +1246,9 @@ asserted procedure aex_findrootsiniv1(ae: Aex, x: Kernel, iv: RatInterval, sc: A
    begin scalar lb,rb,sclb,scrb,m,ml,mr,retl,r;
       lb := iv_lb iv;
       rb := iv_rb iv;
-      sclb := aex_sturmchainsgnch(sc,x,lb);
+      sclb := aex_stchsgnch1(sc,x,lb);
       if sclb = 0 then return nil;
-      scrb := aex_sturmchainsgnch(sc,x,rb);
+      scrb := aex_stchsgnch1(sc,x,rb);
       if sclb - scrb = 0 then
 	 return nil;
       if sclb - scrb = 1 then
@@ -1320,8 +1275,8 @@ asserted procedure aex_isoroot(ae: Aex, x: Kernel, m: Rational, r: Rational, sc:
    <<
       while not (not aex_atratnullp(ae,x,rat_minus(m,r)) and
       not aex_atratnullp(ae,x,rat_add(m,r)) and
-	 aex_sturmchainsgnch(sc,x,rat_minus(m,r))-
-	    aex_sturmchainsgnch(sc,x,rat_add(m,r)) eq 1) do
+	 aex_stchsgnch1(sc,x,rat_minus(m,r))-
+	    aex_stchsgnch1(sc,x,rat_add(m,r)) eq 1) do
       	       r := rat_mult(r,rat_mk(1,2));
       r
    >>;
@@ -1383,9 +1338,9 @@ procedure aex_nextroot1(rip,x);
       % remove iv from ivl
       iv := rip_popivl rip; lb := iv_lb iv; rb := iv_rb iv;
       sc := cdar rip_pscl rip;
-      sclb := aex_sturmchainsgnch(sc,x,lb);
+      sclb := aex_stchsgnch1(sc,x,lb);
       if sclb = 0 then return nil;
-      scrb := aex_sturmchainsgnch(sc,x,rb);
+      scrb := aex_stchsgnch1(sc,x,rb);
       if sclb - scrb = 0 then return nil;
       if sclb - scrb = 1 then <<
 	 rip_addroot(rip,
@@ -1452,10 +1407,10 @@ asserted procedure aex_refinewrt1(alpha: Anu, pscl: List, scalpha: AexList): Anu
 procedure aex_deltastchsgnch(sc,x,iv);
    % delta sturm chain sign changes in an interval
    begin integer sclb, scrb;
-      sclb := aex_sturmchainsgnch(sc,x,iv_lb iv);
+      sclb := aex_stchsgnch1(sc,x,iv_lb iv);
       if eqn(sclb, 0) then
 	 return 0;
-      scrb := aex_sturmchainsgnch(sc,x,iv_rb iv);
+      scrb := aex_stchsgnch1(sc,x,iv_rb iv);
       return sclb - scrb
    end;
 
@@ -1632,8 +1587,8 @@ asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
 	    rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
 	 return a
       >>;
-      scm := aex_sturmchainsgnch(s, x, m);
-      if eqn(aex_sturmchainsgnch(s, x, lb) - scm, 1) then <<
+      scm := aex_stchsgnch1(s, x, m);
+      if eqn(aex_stchsgnch1(s, x, lb) - scm, 1) then <<
 	 anu_putiv(a, iv_mk(lb, m));
 	 return a
       >>;
