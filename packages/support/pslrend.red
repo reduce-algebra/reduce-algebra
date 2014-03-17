@@ -411,6 +411,14 @@ flag('(tr trst untr untrst),'noform);
 
 deflist('((tr rlis) (trst rlis) (untr rlis) (untrst rlis)),'stat);
 
+% Optimization for boundp function in alg/simp.red
+
+remflag('(boundp),'lose);
+
+symbolic inline procedure boundp u; null unboundp u;
+
+flag('(boundp),'lose);
+
 % Allow for direct calls to some UNIX and PSL functions.
 
 flag('(pwd cd setenv getenv set!-heap!-size set!-bndstk!-size
@@ -518,6 +526,22 @@ symbolic procedure verbos x;
     else !*gc := t;
     return old
   end;
+
+% In tthe crack code it is essential that subst arranges to share some of
+% its output with its input. The same may be the case for sublist too?
+% The standard implementation of subst in PSL does not do this.
+
+symbolic procedure subst(a, b, c);
+  if c = b then a
+  else if atom c then c
+  else begin
+    scalar sa, sd;
+    sa := subst(a, b, car c);
+    sd := subst(a, b, cdr c);
+    if sa eq car c and sd eq cdr c then return c
+    else return sa . sd
+  end;
+
 
 global '(!*psl !*csl);
 !*psl := t;
