@@ -67,7 +67,12 @@ case $host in
     echo "mingw-w64"
     ;;
   *)
-    echo "win32"
+    if test "`uname -m`" = "x86_x64"
+    then
+      echo "mingw-w64"
+    else
+      echo "win32"
+    fi
     ;;
   esac
   exit 0
