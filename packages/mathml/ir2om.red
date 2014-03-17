@@ -395,7 +395,7 @@ begin scalar sem;
   printout "<OMA>";
   indent!* t;
   sem:=cadr cadr elem;
-  list2string sem;
+  mathml_list2string sem;
   multiOM cddr elem;
   indent!* nil;
   printout "</OMA>";

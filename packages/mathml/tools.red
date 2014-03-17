@@ -306,9 +306,9 @@ else if x=car l then delall(x, cdr l)
 % It is like compress but works better when it comes to uniting and
 % printing the elements of a list.
 
-symbolic procedure list2string(a);
+symbolic procedure mathml_list2string(a);
 begin;
-  if a neq nil then <<princ car a; list2string(cdr a)>>;
+  if a neq nil then <<princ car a; mathml_list2string(cdr a)>>;
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

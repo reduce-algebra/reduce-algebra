@@ -1175,15 +1175,15 @@ begin;
         if cadar a = 'vectorml then princ "vector"
         else princ cadar a;
      >>
-     else list2string(cadar a);
+     else mathml_list2string(cadar a);
      princ"""";
      attributesML(cdr a, s);
   >>;
 end;
 
-symbolic procedure list2string(a);
+symbolic procedure mathml_list2string(a);
 begin;
-  if a neq nil then <<princ car a; list2string(cdr a)>>;
+  if a neq nil then <<princ car a; mathml_list2string(cdr a)>>;
 end;
 
 symbolic procedure declareML( elem );
@@ -1308,7 +1308,7 @@ begin;
   printout("<ci><mo>"); princ caar elem; princ "</mo></ci>";
   printout("<annotation-xml encoding=""OpenMath"">");
   indent!* t;
-  printout"<"; list2string cadar elem; princ ">";
+  printout"<"; mathml_list2string cadar elem; princ ">";
   indent!* nil;
   printout("</annotation-xml>");
   indent!* nil;
