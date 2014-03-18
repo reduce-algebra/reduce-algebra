@@ -67,7 +67,7 @@ case $host in
     echo "mingw-w64"
     ;;
   *)
-    if test "`uname -m`" = "x86_x64"
+    if test "`uname -m`" = "x86_64"
     then
       echo "mingw-w64"
     else
