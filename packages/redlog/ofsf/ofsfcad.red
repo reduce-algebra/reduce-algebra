@@ -805,6 +805,39 @@ procedure ofsf_tocprepare(hhj,xj,sp,varl);
       return w;
    end;
 
+% The following two procedures work with tagged Aexs. They were moved here from
+% the ofsfanuex module. TODO: Understand the tags.
+
+asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
+   % Pairwise prime. [ael] is a list of Aex with non-trivial lcs. Returns a list
+   % of Aex with non-trivial lcs.
+   begin scalar pprestlist, tmp;
+      if null ael or null cdr ael then
+	 return ael;
+      pprestlist := aex_tgpairwiseprime(cdr ael, x);
+      tmp := aex_tgpairwiseprime1(car ael . pprestlist, x);
+      if aex_simplenumberp tag_object car tmp then
+	 return cdr tmp;
+      return tmp
+   end;
+
+asserted procedure aex_tgpairwiseprime1(ael: AexList, x: Kernel): AexList;
+   % Pairwise prime. Makes [car ael] pairwise prime with all elements of [cdr
+   % ael].
+   begin scalar ae1, ae2, aelnew, g; integer deg;
+      ae1 := pop ael;
+      while ael and not aex_simplenumberp tag_object ae1 do <<
+	 ae2 := pop ael;
+	 g := aex_gcd(tag_object ae1, tag_object ae2, x);
+	 deg := aex_deg(g, x);
+      	 ae1 := tag_(aex_quot(tag_object ae1, g, x), tag_taglist ae1);
+	 if deg > 0 then
+	    ae2 := tag_(tag_object ae2, union(tag_taglist ae1, tag_taglist ae2));
+ 	 aelnew := ae2 . aelnew
+      >>;
+      return ae1 . aelnew
+   end;
+
 procedure caddata_mkblank();
    % Blank caddata. No arguments. Returns a CADDATA. Undefined entries
    % should have the value $'undefined$. Returns CADDATA.

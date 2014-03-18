@@ -45,6 +45,9 @@ module ofsfanuex;
 % number consists of a univariate (one free variable) Aex together with rational
 % internval such that the Aex has exactly one root in this interval.
 
+% Some of the basic algorithms (rem, psrem, gcd) were inspired by book "Groebner
+% bases" by Becker, Weispfenning, and Kredel.
+
 % Conventions:
 % Functions working with Aex and Anu rely on and ensure that the following hold:
 % 1) Bound variables are "big," w.r.t. ordop: For every free variable x and a
@@ -953,10 +956,9 @@ asserted procedure aex_sgn(ae: Aex): Integer;
 % Exact arithmetic with multiplicative inverses.
 
 asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
-   % Quotient and remainder. [f] and [g] have to have non-trivial leading
-   % coefficient. Returns a pair (quotient . remainder). It holds that the
-   % remainder has a non-zero leading coefficient. Reference: Becker,
-   % Weispfenning, Kredel - Groebner bases, p. 81.
+   % Quotient and remainder. [g] is non-zero with non-zero leading coefficient.
+   % Returns a pair (quotient . remainder). It holds that the remainder has a
+   % non-zero leading coefficient.
    begin scalar quot, lcg, lcginv, lcf, tmp, redg; integer degf, degg;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
@@ -986,7 +988,7 @@ asserted procedure aex_quot(f: Aex, g: Aex, x: Kernel): Aex;
    car aex_quotrem(f, g, x);
 
 asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
-   % Remainder. Just a modification of aex_quotrem avoiding computation of
+   % Remainder. Just a modification of aex_quotrem avoiding the computation of
    % quotient.
    begin scalar lcg, lcginv, redg, lcf, tmp; integer degf, degg;
       assert(not aex_simplenullp g);
@@ -1009,98 +1011,101 @@ asserted procedure aex_rem(f: Aex, g: Aex, x: Kernel): Aex;
       return f
    end;
 
-asserted procedure aex_gcd(a: Aex, b: Aex, x: Kernel): Aex;
-   begin scalar d;
-      % d := car aex_gcdext1(a, b, x, nil);
-      d := car aex_gcdext(a, b, x);
-      % Optimization: if the gcd is not a poly, then it's 1:
-      if aex_deg(d, x) < 1 then
-	 d := aex_1();
-      % Make sure that the leading coeffcient of d is non-trivial:
-      assert(not aex_nullp aex_lc(d, x));
-      return d
+asserted procedure aex_gcd(f: Aex, g: Aex, x: Kernel): Aex;
+   % Euclidean algorithm. [g] is non-zero with non-zero leading coefficient.
+   begin scalar tmp;
+      while not aex_simplenullp g do <<
+	 tmp := aex_rem(f, g, x);
+	 f := g;
+	 g := tmp
+      >>;
+      assert(not aex_nullp aex_lc(f, x));
+      if eqn(aex_deg(f, x), 0) then
+	 return aex_1();
+      if !*rlanuexgcdnormalize then
+	 return aex_mult(f, aex_inv aex_lc(f, x));
+      return f
    end;
 
-asserted procedure aex_gcdext(a: Aex, b: Aex, x: Kernel): AexList;
-   % Extended euclidean algorithm. See Becker, Weispfenning, Kredel: Groebner
-   % bases, p.83.
-   begin scalar aa,bb,ss,tt,uu,vv,qr,ss1,tt1,tmp;
-      aa := a; bb := b;
-      ss := aex_1(); tt := aex_0();
-      uu := aex_0(); vv := aex_1();
-      while not aex_simplenullp bb do << %%% simplenullp should suffice
-	 qr := aex_quotrem(aa,bb,x);
-	 aa := bb; bb := cdr qr; % attention: cadr with psquotrem
-	 ss1 := ss; tt1 := tt;
-	 ss := uu; tt := vv;
-	 uu := aex_minus(ss1,aex_mult(car qr,uu));
-	 vv := aex_minus(tt1,aex_mult(car qr,vv));
+asserted procedure aex_gcdext(f: Aex, g: Aex, x: Kernel): AexList;
+   % Extended Euclidean algorithm. [g] is non-zero with non-zero leading
+   % coefficient. Returns a list [{d, u, v}] such that [d] is the gcd of [f] and
+   % [g], and d = f*u + g*v.
+   begin scalar ff, fg, gf, gg, quot, rem, tff, tfg, lcinv;
+      ff := aex_1();
+      fg := aex_0();
+      gf := aex_0();
+      gg := aex_1();
+      while not aex_simplenullp g do <<
+	 quot . rem := aex_quotrem(f, g, x);
+	 f := g;
+	 g := rem;
+	 tff := ff;
+	 tfg := fg;
+	 ff := gf;
+	 fg := gg;
+	 gf := aex_minus(tff, aex_mult(quot, gf));
+	 gg := aex_minus(tfg, aex_mult(quot, gg))
       >>;
+      assert(not aex_nullp aex_lc(f, x));
       if !*rlanuexgcdnormalize then <<
-	 tmp := aex_inv aex_lc(aa,x); aa := aex_mult(aa,tmp);
-	 ss := aex_mult(ss,tmp); tt := aex_mult(tt,tmp);
+	 lcinv := aex_inv aex_lc(f, x);
+	 f := aex_mult(f, lcinv);
+	 ff := aex_mult(ff, lcinv);
+	 fg := aex_mult(fg, lcinv)
       >>;
-      % Computation self-test (aa = ss*a + tt*b):
-      assert(aex_nullp aex_minus(aa,aex_add(aex_mult(ss,a),aex_mult(tt,b))));
-      return {aa,ss,tt}
-   end;
-
-procedure aex_tgpairwiseprime(ael, x);
-   % Pairwise prime. [ael] is a list of Aex with non-trivial lc. Returns a list
-   % of Aex with non-trivial lc.
-   begin scalar pprestlist,tmp;
-      if length ael <= 1 then return ael;
-      pprestlist := aex_tgpairwiseprime(cdr ael,x);
-      tmp := aex_tgpairwiseprime1(car ael . pprestlist,x);
-      % lets assume aex_quot returns something with lc non-trivial.
-      return if not aex_simplenumberp tag_object car tmp then
-	 tmp else cdr tmp
-   end;
-
-procedure aex_tgpairwiseprime1(ael, x);
-   % makes ae1 prime to ae2l.
-   begin scalar ae1,ae2,ae2l,ae2lnew,g,n1,n2;
-      ae1 := car ael; ae2l := cdr ael; ae2lnew := nil;
-      while ae2l and not aex_simplenumberp tag_object ae1 do <<
-	 ae2 := car ae2l;
-	 g := aex_gcd(tag_object ae1,tag_object ae2,x);
-	 n1 := aex_deg(tag_object ae1,x);
-      	 ae1 := tag_(aex_quot(tag_object ae1,g,x),tag_taglist ae1);
-	 n2 := aex_deg(tag_object ae1,x);
-	 if n1 > n2 then
-	    ae2 := tag_(tag_object ae2,union(tag_taglist ae1,tag_taglist ae2));
- 	 ae2lnew := ae2 . ae2lnew;
-      	 ae2l := cdr ae2l;
-      >>;
-      return ae1 . ae2lnew
+      return {f, ff, fg}
    end;
 
 asserted procedure aex_sqfree(f: Aex, x: Kernel): Aex;
-   % Pseudo square-free part. Question: What if [f] is not reduced?
-   if aex_deg(f,x) < 2 then
+   % Square-free part. TODO: Think about precise specification, i.e.: Do we need
+   % [lc f] non-zero? Do we need [f] reduced?
+   if aex_deg(f, x) < 2 then
       f
    else
       aex_quot(f, aex_gcd(f, aex_diff(f, x), x), x);
 
+% Old code:
+% asserted procedure aex_inv(ae: Aex): Aex;
+%    % Invert a constant, non-zero polynomial.
+%    begin scalar x, alpha, g, f, d, f1, aa, ss, tt;
+%       if aex_simpleratp ae then  % [ae] is obviously a rational number.
+% 	 return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
+%       % Now we know that [ae] is a constant algebraic polynomial.
+%       x . alpha := car ctx_ial aex_ctx ae;  % (x . (anu f iv))
+%       g := aex_unbind(ae, x);
+%       f := anu_dp alpha;
+%       f := aex_sqfree(f, x);  % MK + TS 12/2012
+%       d := car aex_gcdext(f, g, x);
+%       f1 := aex_quot(f, d, x);
+%       % Applying extended euclidean algorithm to f1 and g, gives: aa = ss*f1 + tt*g.
+%       {aa, ss, tt} := aex_gcdext(f1, g, x);
+%       % [aa] is non-zero rational, but not necessarily 1.
+%       if !*rlanuexgcdnormalize then
+% 	 return aex_bind(aex_mult(aa, tt), x, alpha);
+%       return aex_bind(aex_mult(aex_inv aa, tt), x, alpha)
+%    end;
+
 asserted procedure aex_inv(ae: Aex): Aex;
-   % Invert a constant, not-zero polynomial. TODO: The case of a purely rational
-   % ae occurs very often. Avoid the progn by splitting into two functions.
-   begin scalar x, alpha, g, f, d, f1, aa, ss, tt;
-      if aex_simpleratp ae then  % [ae] is obviously a rational number.
+   % Invert a constant, non-zero polynomial.
+   begin scalar x, alpha, g, f, d, u, v;
+      if aex_simpleratp ae then
 	 return aex_fromrp quotsq(1 ./ 1, aex_ex ae);
-      % Now we know that [ae] is a constant algebraic polynomial.
-      x . alpha := car ctx_ial aex_ctx ae;  % (x . (anu f iv))
+      x := aex_mvar ae;
+      alpha := ctx_get(aex_ctx ae, x);
       g := aex_unbind(ae, x);
       f := anu_dp alpha;
-      f := aex_sqfree(f, x);  % MK + TS 12/2012
-      d := car aex_gcdext(f, g, x);
-      f1 := aex_quot(f, d, x);
-      % Applying extended euclidean algorithm to f1 and g, gives: aa = ss*f1 + tt*g.
-      {aa, ss, tt} := aex_gcdext(f1, g, x);
-      % [aa] is non-zero rational, but not necessarily 1.
+      {d, u, v} := aex_gcdext(f, g, x);
+      if aex_simpleratp d then <<
+      	 return aex_bind(aex_mult(aex_inv d, v), x, alpha)
+      >>;
+      f := aex_quot(f, d, x);
+      {d, u, v} := aex_gcdext(f, g, x);
+      % [d] represents a rational number. This does NOT imply that
+      % aex_simpleratp d holds.
       if !*rlanuexgcdnormalize then
-	 return aex_bind(aex_mult(aa, tt), x, alpha);
-      return aex_bind(aex_mult(aex_inv aa, tt), x, alpha)
+	 return aex_bind(aex_mult(aex_inv d, v), x, alpha);
+      return aex_bind(aex_mult(d, v), x, alpha)
    end;
 
 % Root isolation.
@@ -1582,6 +1587,7 @@ asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
       rb := iv_rb iv;
       m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
       if eqn(aex_sgn aex_subrat1(anu_dp a, x, m), 0) then <<
+	 % TODO: Rational number, construct simpler Anu.
 	 anu_putiv(a, iv_mk(
 	    rat_minus(m, rat_mult(rat_mk(1,4), rat_minus(m, lb))),
 	    rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
