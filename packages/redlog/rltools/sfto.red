@@ -802,6 +802,53 @@ asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
       return sumq
    end;
 
+asserted procedure sfto_lmq(f: SF): Integer;
+   begin
+      scalar cl, c, cmin, sccl1, sccl2, cc, trp, ttrp, ctrp;
+      integer d, m, dd, mm, bnd, cmax;
+      assert(not null f);
+      if domainp f then
+	 return 0;
+      f := absf f;
+      cl := sfto_lmqcoeffs f;
+      sccl1 := cdr cl;
+      while sccl1 do <<
+	 {c, d, m} := trp := pop sccl1;
+	 if numr c < 0 then <<
+   	    cmin := 'pinf;
+	    sccl2 := cl;
+	    repeat <<
+	       {cc, dd, mm} := ttrp := pop sccl2;
+	       if numr cc > 0 then <<
+		  bnd := sfto_lmqroot(multsq(!*f2q(2^mm), quotsq(negsq c, cc)), dd - d);
+		  if cmin eq 'pinf or bnd < cmin then <<
+		     cmin := bnd;
+		     ctrp := ttrp
+		  >>
+	       >>
+	    >> until car sccl2 eq trp;
+	    caddr ctrp := caddr ctrp + 1;  % We could actually choose.
+	    if cmin > cmax then
+	       cmax := cmin
+	 >>
+      >>;
+      return cmax
+   end;
+
+asserted procedure sfto_lmqcoeffs(f: SF): List;
+   % [f] is a univariate SF.
+   if domainp f then
+      {{!*f2q f, 0, 1}}
+   else
+      {!*f2q lc f, ldeg f, 1} . sfto_lmqcoeffs red f;
+
+asserted procedure sfto_lmqroot(q: SF, n: Integer): Integer;
+   begin scalar w, p;
+      w := numr sfto_ceilq q or 0;
+      p := length explode w + 1;
+      return numr sfto_ceilq sfto_rootq(q, n, p)
+   end;
+
 asserted procedure sfto_qsub(f: SF, al: AList): SQ;
    sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
 
@@ -922,6 +969,15 @@ asserted procedure sfto_expq(q: SQ, n: Integer): SQ;
       1 ./ 1
    else
       multsq(q, sfto_expq(q, n - 1));
+
+asserted procedure sfto_rootq(x: SQ, n: Integer, p: Integer): SQ;
+   % n-th root of [x] with precision [p].
+   begin scalar op, w;
+      op := precision p;
+      w := simp evalnum0 {{'expt, prepsq x, {'quotient, 1, n}}};
+      precision op;
+      return w
+   end;
 
 endmodule;  % [sfto]
 
