@@ -808,7 +808,8 @@ procedure ofsf_tocprepare(hhj,xj,sp,varl);
 % The following two procedures work with tagged Aexs. They were moved here from
 % the ofsfanuex module. TODO: Understand the tags.
 
-asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
+%asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
+procedure aex_tgpairwiseprime(ael, x);
    % Pairwise prime. [ael] is a list of Aex with non-trivial lcs. Returns a list
    % of Aex with non-trivial lcs.
    begin scalar pprestlist, tmp;
@@ -821,7 +822,8 @@ asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
       return tmp
    end;
 
-asserted procedure aex_tgpairwiseprime1(ael: AexList, x: Kernel): AexList;
+%asserted procedure aex_tgpairwiseprime1(ael: AexList, x: Kernel): AexList;
+procedure aex_tgpairwiseprime1(ael, x);
    % Pairwise prime. Makes [car ael] pairwise prime with all elements of [cdr
    % ael].
    begin scalar ae1, ae2, aelnew, g; integer deg;
@@ -1013,7 +1015,7 @@ procedure ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k);
 	    >>;
       % there is no cell left, so we need to get a root to get the next
       % two cells.
-      if tgroot := aex_nextroot(nrdata,xj) then <<
+      if tgroot := rip_nextroot(nrdata,xj) then <<
 	 root := tag_object tgroot; %%%
 	 % drop one cell in buffer (the 0-dim one)...
 	 car ncbuffer := acell_mk(2*(length rip_rootl nrdata)-1,

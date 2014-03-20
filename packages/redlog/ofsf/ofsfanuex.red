@@ -97,6 +97,7 @@ struct Aex checked by AexP;
 struct AexList checked by AexListP;
 struct Anu asserted by AnuP;
 struct AnuList asserted by AnuListP;
+struct RipT asserted by List3;
 
 procedure IntegerListP(s);
    null s or pairp s and fixp car s and IntegerListP cdr s;
@@ -383,8 +384,6 @@ asserted procedure iv_listminuslist(ivl1: RatIntervalList, ivl2: RatIntervalList
    % distinct intervals.
    for each iv1 in ivl1 join
       iv_minuslist(iv1,ivl2);
-
-% RatPoly functions.
 
 % TODO: Rename and move these procedures to sfto module.
 
@@ -1102,7 +1101,7 @@ asserted procedure aex_inv(ae: Aex): Aex;
       f := aex_quot(f, d, x);
       {d, u, v} := aex_gcdext(f, g, x);
       % [d] represents a rational number. This does NOT imply that
-      % aex_simpleratp d holds.
+      % [aex_simpleratp d] holds.
       if !*rlanuexgcdnormalize then
 	 return aex_bind(aex_mult(aex_inv d, v), x, alpha);
       return aex_bind(aex_mult(d, v), x, alpha)
@@ -1111,23 +1110,23 @@ asserted procedure aex_inv(ae: Aex): Aex;
 % Root isolation.
 
 asserted procedure aex_coefl(ae: Aex, x: Kernel): AexList;
-   if aex_mvartest(ae,x) then
-      aex_lc(ae,x) . aex_coefl(aex_red(ae,x),x)
+   if aex_mvartest(ae, x) then
+      aex_lc(ae, x) . aex_coefl(aex_red(ae, x), x)
    else
       {ae};
 
 asserted procedure aex_coefdegl(ae: Aex, x: Kernel): List;
    % Coefficients and degree list. [ae] is Aex in x.
-   if aex_mvartest(ae,x) then
-      (aex_lc(ae,x) . aex_deg(ae,x)) . aex_coefdegl(aex_red(ae,x),x)
+   if aex_mvartest(ae, x) then
+      (aex_lc(ae, x) . aex_deg(ae, x)) . aex_coefdegl(aex_red(ae, x), x)
    else
-      {aex_lc(ae,x) . 0};
+      {ae . 0};
 
-asserted procedure aex_fromcoefdegl(cfdgl: List, x: Kernel): Aex;
+asserted procedure aex_fromcoefdegl(cfdgl: AexList, x: Kernel): Aex;
    begin scalar ae;
       ae := aex_0();
       for each cd in cfdgl do
-	 ae := aex_add(ae,aex_mult(car cd,aex_xtothen(x,cdr cd)));
+	 ae := aex_add(ae, aex_mult(car cd, aex_xtothen(x, cdr cd)));
       return ae
    end;
 
@@ -1135,43 +1134,40 @@ asserted procedure aex_containment(ae: Aex): RatInterval;
    % Algebraic expression containment. [ae] is a constant Aex. Returns an
    % interval. The algebraic number represented by [ae] is contained in the
    % returned interval regarded as closed.
-   begin scalar ia,cfdgl,ctac,ivl,r;
-      % coefficient and degree list, containment of a_c, interval list
-      % [ae] should be a constant.
+   begin scalar r, x, alpha, ivalpha, cfdgl, ivl;
       assert(not aex_badp(ae, 0));
       assert(null aex_fvarl ae);
       if null aex_bvarl ae then <<
-	 assert(null aex_varl ae);
 	 r := aex_ex ae;
 	 return iv_mk(r, r)
       >>;
       % Now there is a bound variable.
-      ia := car ctx_ial aex_ctx ae;
-      ctac := anu_iv cdr ia;
-      %ae := aex_unbind(ae,car ia);
-      cfdgl := aex_coefdegl(aex_unbind(ae,car ia),car ia);
-      % Reconstruct Aex from [cfdgl] for test purposes.
-      assert(aex_nullp aex_minus(ae,aex_fromcoefdegl(cfdgl, car ia)));
-      ivl := for each cfdg in cfdgl collect
-	 iv_mult(aex_containment car cfdg,iv_tothen(ctac,cdr cfdg));
+      x := aex_mvar ae;
+      alpha := ctx_get(aex_ctx ae, x);
+      ivalpha := anu_iv alpha;
+      cfdgl := aex_coefdegl(aex_unbind(ae, x), x);
+      ivl := for each c in cfdgl collect
+	 iv_mult(aex_containment car c, iv_tothen(ivalpha, cdr c));
       return iv_mapadd ivl
    end;
 
 asserted procedure aex_distinguishpositivefromzero(ae: Aex, iv: RatInterval): Rational;
    % Algebraic expression distinguish positive from zero. [ae] is a positive
    % constant Aex, [iv] is an interval containing the positive algebraic number
-   % represented by [ae]. Returns a Rational, which lies in [0, ae].
-   begin scalar rb;
-      rb := rat_mult(iv_rb iv, rat_mk(1, 2));
+   % represented by [ae]. Returns a Rational, which lies in open interval (0,
+   % ae).
+   begin scalar half, rb;
+      half := rat_mk(1, 2);
+      rb := rat_mult(iv_rb iv, half);
       while not eqn(aex_sgn aex_addrat(ae, rat_neg rb), 1) do
-	 rb := rat_mult(rb, rat_mk(1, 2));
+	 rb := rat_mult(rb, half);
       return rb
    end;
 
 asserted procedure aex_distinguishfromzero(ae: Aex, iv: RatInterval): Rational;
    % Algebraic expression distinguish from zero. [ae] is a constant Aex, [iv] an
    % interval containing the algebraic number represented by [ae]. Returns a
-   % Rational which lies in $[0, ae]$ or $[ae, 0]$, respectively.
+   % Rational which lies in $(0, ae)$ or $(ae, 0)$, respectively.
    begin scalar sgnae;
       sgnae := aex_sgn ae;
       if eqn(sgnae, 0) then
@@ -1182,305 +1178,287 @@ asserted procedure aex_distinguishfromzero(ae: Aex, iv: RatInterval): Rational;
    end;
 
 asserted procedure aex_cauchybound(ae: Aex, x: Kernel): Rational;
-   % Algebraic expression cauchy bounds. [ae] is an univariate Aex in [x] with
-   % non-trivial leading coefficient. Returns an non-negative Rational, the
-   % minimum of the cauchy bounds of ae.
-   begin scalar cfl,am,ctam,nb,ctl,ml,m,n,minabsam,cb,aesc;
-      % [ae] should not have non-trivial degree:
+   % Algebraic expression Cauchy bound. [ae] is a univariate Aex in [x] with
+   % non-zero leading coefficient. Returns a positive Rational [cb] such that
+   % all roots of [ae] lie in open interval (-cb, cb).
+   begin scalar cfl, lcae, lcaeiv, lcest, cfestl, tmp, cb1, cb2;
       assert(not aex_badp(ae, 1));
       assert(not aex_simplenullp aex_lc(ae, x));
-      if aex_deg(ae,x) <= 0 then
-	 return rat_1(); % avoids trivial sturmchains
-      cfl := aex_coefl(ae,x); % has at least length 1
-      am := car cfl;
-      ctam := aex_containment am;
-      if iv_containszero ctam then <<
-	 if !*rlverbose and !*rlanuexverbose then
-	    prin2 "+++ aex_cauchybound: iteration case +++";
-   	 nb := aex_distinguishfromzero(am,ctam);
-	 ctam := if rat_less(nb,rat_0()) then
-	    iv_mk(iv_lb ctam,nb)
-	 else
-	    iv_mk(nb,iv_rb ctam)
-      >>;
-      % now ctam is a containing interval for a_m without 0.
-      ctl := for each cf in cdr cfl collect aex_containment cf;
-      ml := for each iv in ctl collect iv_maxabs iv;
-      minabsam := iv_minabs ctam;
-      m := rat_max(rat_1(),rat_quot(rat_addl ml,minabsam));
-      n := if null ml then
-	 rat_1()
+      if aex_deg(ae, x) < 1 then
+	 return rat_1();
+      cfl := aex_coefl(ae, x);
+      lcae := car cfl;
+      lcaeiv := aex_containment lcae;
+      if iv_containszero lcaeiv then
+   	 lcest := rat_abs aex_distinguishfromzero(lcae, lcaeiv)
       else
-	 rat_add(rat_1(),
-	    rat_mapmax for each a in ml collect rat_quot(a,minabsam));
-      cb := rat_min(m,n);
-      aesc := aex_stdsturmchain(ae,x);
-      % Check if the bound was computed correctly:
-      assert(aex_stchsgnch1(aesc,x,cb) eq aex_stchsgnch(aesc,x,'infty));
-      assert(aex_stchsgnch(aesc,x,'minfty) eq
-	 aex_stchsgnch1(aesc,x,rat_minus(rat_neg cb,rat_1())));
-      return cb
+	 lcest :=  iv_minabs lcaeiv;
+      cfestl := for each c in cdr cfl collect
+	 iv_maxabs aex_containment c;
+      cb1 := rat_0();
+      cb2 := rat_0();
+      for each cfest in cfestl do <<
+	 tmp := rat_quot(cfest, lcest);
+	 cb1 := rat_add(cb1, tmp);
+	 cb2 := rat_max(cb2, tmp)
+      >>;
+      cb1 := rat_max(rat_1(), cb1);
+      cb2 := rat_add(rat_1(), cb2);
+      return rat_add(rat_1(), rat_min(cb1, cb2))
    end;
 
 asserted procedure aex_findrootsoflist(ael: AexList, x: Kernel): AnuList;
-   aex_findroots(aex_multl ael,x);
+   aex_findroots(aex_multl ael, x);
 
 asserted procedure aex_findroots(ae: Aex, x: Kernel): AnuList;
-   % Aex find roots. [ae] is an Aex(c,c+1). Returns a list of Anu(c+1). If
-   % [ae]'s ldeg is not positive, the empty list will be returned. The interval
-   % to start with has to be slightly enlarged.
-   begin scalar cb,rootlist;
-      if aex_deg(ae,x) < 1 then return nil;
-      cb := rat_add(aex_cauchybound(ae,x),rat_1()); % necessary to add 1.
-      %cb := 256 . 1; %%% later cauchybound!!!
-      rootlist := aex_findrootsiniv1(ae,x,iv_mk(rat_neg cb,cb),
-	 aex_stdsturmchain(ae,x));
+   % Aex find roots. [ae] is a univariate Aex. If [ae]'s ldeg is not positive,
+   % the empty list will be returned.
+   begin scalar cb, rootlist;
+      if aex_deg(ae,x) < 1 then
+	 return nil;
+      cb := aex_cauchybound(ae, x);
+      rootlist := aex_findrootsiniv1(ae, x, iv_mk(rat_neg cb, cb),
+	 aex_stdsturmchain(ae, x));
       return rootlist
    end;
 
 asserted procedure aex_findrootsiniv(ae: Aex, x: Kernel, iv: RatInterval): AnuList;
-   % Aex find roots in interval. [ae] is an Aex(c,c+1). The ldeg of [ae] has to
-   % be positive, i.e. [ae] must not represent a constant polynomial. Returns an
-   % ordered list of Anu(c+1).
-   aex_findrootsiniv1(ae,x,iv,aex_stdsturmchain(ae,x));
+   % Aex find roots in interval. [ae] is a univariate Aex with positive ldeg,
+   % [ae] represents a non-constant polynomial. Returns an ordered list of Anu.
+   aex_findrootsiniv1(ae, x, iv, aex_stdsturmchain(ae, x));
 
 asserted procedure aex_findrootsiniv1(ae: Aex, x: Kernel, iv: RatInterval, sc: AexList): AnuList;
-   % Aex find roots in interval. [ae] is an Aex(c,c+1), [sc] is [ae]'s Sturm
-   % chain. The ldeg of [ae] is positive, i.e. [ae] must not represent a
-   % constant polynomial. Returns an ordered list of Anu(c+1).
-   begin scalar lb,rb,sclb,scrb,m,ml,mr,retl,r;
+   % Aex find roots in interval. [ae] is a univariate Aex with positive ldeg,
+   % [sc] is [ae]'s Sturm chain. Returns an ordered list of Anu: all roots of
+   % [ae] in open interval [iv].
+   begin scalar lb, rb, sclb, scrb, m, ml, mr, r, retl;
       lb := iv_lb iv;
       rb := iv_rb iv;
-      sclb := aex_stchsgnch1(sc,x,lb);
-      if sclb = 0 then return nil;
-      scrb := aex_stchsgnch1(sc,x,rb);
-      if sclb - scrb = 0 then
+      sclb := aex_stchsgnch1(sc, x, lb);
+      if eqn(sclb, 0) then
 	 return nil;
-      if sclb - scrb = 1 then
-	 return {anu_mk(ae,iv)};
-      m := rat_quot(rat_add(lb,rb),rat_fromnum 2);
+      scrb := aex_stchsgnch1(sc, x, rb);
+      if eqn(sclb - scrb, 0) then
+	 return nil;
+      if eqn(sclb - scrb, 1) then
+	 return {anu_mk(ae, iv)};
+      m := rat_mult(rat_add(lb, rb), rat_mk(1, 2));
       ml := mr := m;
-      if eqn(aex_sgn aex_subrat1(ae,x,m), 0) then <<
-	 r := aex_isoroot(ae,x,m,rat_mult(rat_minus(rb,lb),rat_mk(1,4)),sc);
-	 ml := rat_minus(m,r);
-	 mr := rat_add(m,r)
+      if aex_atratnullp(ae, x, m) then <<
+	 r := aex_isoratroot(ae, m, rat_mult(rat_minus(rb, lb), rat_mk(1, 4)), sc, x);
+	 ml := rat_minus(m, r);
+	 mr := rat_add(m, r)
       >>;
-      retl := aex_findrootsiniv1(ae,x,iv_mk(mr,rb),sc);
-      if not rat_eq(ml,mr) then
-	 retl := anu_mk(ae,iv_mk(ml,mr)) . retl;
-      retl := append(aex_findrootsiniv1(ae,x,iv_mk(lb,ml),sc),retl);% nconc!!!
+      retl := aex_findrootsiniv1(ae, x, iv_mk(mr, rb), sc);
+      if not rat_eq(ml, mr) then
+	 retl := anu_mk(ae, iv_mk(ml, mr)) . retl;
+      retl := append(aex_findrootsiniv1(ae, x, iv_mk(lb, ml), sc), retl);
       return retl
    end;
 
-asserted procedure aex_isoroot(ae: Aex, x: Kernel, m: Rational, r: Rational, sc: AexList): Rational;
-   % Aex isolate root. [ae] is an AEX(c,c+1), [sc] is [ae]'s Sturm chain. The
-   % ldeg of [ae] is positive, i.e. [ae] must not represent a constant
-   % polynomial. Returns a Rational $s$ such that [ae] has no root within the
-   % interval $[m-s,m+s]$.
-   <<
-      while not (not aex_atratnullp(ae,x,rat_minus(m,r)) and
-      not aex_atratnullp(ae,x,rat_add(m,r)) and
-	 aex_stchsgnch1(sc,x,rat_minus(m,r))-
-	    aex_stchsgnch1(sc,x,rat_add(m,r)) eq 1) do
-      	       r := rat_mult(r,rat_mk(1,2));
-      r
-   >>;
+asserted procedure aex_isoratroot(ae: Aex, m: Rational, r: Rational, sc: AexList, x: Kernel): Rational;
+   % Aex isolate rational root. [m] is a rational root of univariate Aex [ae] of
+   % positive degree, [sc] is [ae]'s Sturm chain, [r] is positive rational
+   % number. Returns a Rational [s] such that [ae] has exactly one root in the
+   % open interval $(m-s, m+s)$ and it holds that 0 < s <= r.
+   begin scalar mmr, mpr;
+      mmr := rat_minus(m, r);
+      mpr := rat_add(m, r);
+      while
+	 aex_atratnullp(ae, x, mmr) or
+      	 aex_atratnullp(ae, x, mpr) or
+	 not eqn(aex_stchsgnch1(sc, x, mmr) - aex_stchsgnch1(sc, x, mpr), 1) do <<
+	    r := rat_mult(r, rat_mk(1, 2));
+      	    mmr := rat_minus(m, r);
+      	    mpr := rat_add(m, r)
+	 >>;
+      return r
+   end;
+
+asserted procedure aex_isoratrootpscl(ae: Aex, m: Rational, r: Rational, sc: AexList, pscl: List, x: Kernel): Rational;
+   % Aex isolate rational root w.r.t. pscl. [m] is a rational root of univariate
+   % Aex [ae] of positive degree, [pscl] is a list of pairs [p . sc] such that
+   % [p] is a univariate Aex and [sc] is its Sturm chain. Returns a rational
+   % number [s] such that [ae] has exactly one root in in the open interval
+   % $(m-s, m+s)$ and no Sturm chain from [pscl] has a sign change in this
+   % interval.
+   begin scalar mmr, mpr, w;
+      % Refine r until p's Sturm chain has only one sign change.
+      r := aex_isoratroot(ae, m, r, sc, x);
+      % Refine r until Sturm chains in [pscl] have no sign changes.
+      mmr := rat_minus(m, r);
+      mpr := rat_add(m, r);
+      while pscl do <<
+	 w := pop pscl;
+	 ae . sc := w;
+      	 while
+	    aex_atratnullp(ae, x, mmr) or
+	    aex_atratnullp(ae, x, mpr) or
+	    not eqn(aex_deltastchsgnch(sc, x, iv_mk(mmr, mpr)), 0) do <<
+	       r := rat_mult(r, rat_mk(1, 2));
+	       mmr := rat_minus(m, r);
+      	       mpr := rat_add(m, r)
+	    >>
+      >>;
+      return r
+   end;
+
+asserted procedure aex_refinepscl(alpha: Anu, scalpha: AexList, pscl: List): Anu;
+   % Refine [alpha] in such a way that no Sturm chain from [pscl] has a sign
+   % change in the isolating interval of [alpha]. [scalpha] is the Sturm chain
+   % for alpha's defining polynomial.
+   begin scalar x, w, p, sc;
+      x := aex_mvar anu_dp alpha;
+      while pscl do <<
+	 w := pop pscl;
+	 p . sc := w;
+      	 while
+	    aex_atratnullp(p, x, iv_lb anu_iv alpha) or
+	    aex_atratnullp(p, x, iv_rb anu_iv alpha) or
+	    aex_deltastchsgnch(sc, x, anu_iv alpha) > 0 do
+	       anu_refine1ip(alpha, scalpha)
+      >>;
+      return alpha
+   end;
 
 asserted procedure aex_atratnullp(ae: Aex, x: Kernel, r: Rational): Boolean;
    % Zero at rational point predicate.
    eqn(aex_sgn aex_subrat1(ae, x, r), 0);
 
-%%% --- global root isolation --- %%%
+asserted procedure aex_deltastchsgnch(sc: AexList, x: Kernel, iv: RatInterval): Integer;
+   % delta sturm chain sign changes in an interval
+   begin integer sclb, scrb;
+      sclb := aex_stchsgnch1(sc, x, iv_lb iv);
+      if eqn(sclb, 0) then
+	 return 0;
+      scrb := aex_stchsgnch1(sc, x, iv_rb iv);
+      return sclb - scrb
+   end;
 
-%procedure aex_globalrootisolationinit(ff,x);
-%   % [ff] is a (maybe empty) list of AEX (univariate alg.
-%   % polynomials). [ff] is factorized, i.e. each root occures only in
-%   % one polynomial.
-%   {nil,nil,for each f in ff collect f . aex_stdsturmchain(f,x)};
+% RIP submodule.
 
-procedure aex_nextroot(rip,x);
-   % [rip] is of form {rootl,ivl,pscl}, where rootl is a list of ANU,
-   % ivl a list of IV, pscl a list of dotted pais p . sc where p ia an
-   % AEX (a univariate alg. polynomial) and sc is the corresponding
-   % sturmchain. Returns t, if a root is found, nil otherwise. The
-   % argument is changed in-place.
-   begin scalar rootfound,cb;
+% The functions below work with RipT data structure. An instance of RipT is of
+% the form {rootl, ivl, pscl}, where [rootl] is an AnuList, [ivl] is a
+% RatIntervalList, [pscl] a list of dotted pais [p . sc], where [p] is a
+% univariate Aex and [sc] is its Sturm chain. Note, that the data structure is
+% changed in place. Note that the polynomials in [pscl] are tagged. (See module
+% tag in ofsfcadproj.red.)
+
+asserted procedure rip_init(ael: AexList, x: Kernel): RipT;
+   % [ael] is a (maybe empty) list of TAG(AEX) (tagged univariate alg.
+   % polynomials). [ael] is factorized, i.e., each root occures only in one
+   % polynomial.
+   {nil, nil, for each ae in ael collect
+      ae . aex_stdsturmchain(tag_object ae, x)};
+
+asserted procedure rip_rootl(rip: RipT): List;
+   car rip;
+
+asserted procedure rip_ivl(rip: RipT): List;
+   cadr rip;
+
+asserted procedure rip_pscl(rip: RipT): List;
+   caddr rip;
+
+asserted procedure rip_rootlnotags(rip: RipT): AnuList;
+   for each r in car rip collect
+      tag_object r;
+
+asserted procedure rip_psclnotags(rip: RipT): List;
+   for each psc in caddr rip collect
+      tag_object car psc . cdr psc;
+
+asserted procedure rip_putivl(rip: RipT, ivl: List): Any;
+   cadr rip := ivl;
+
+asserted procedure rip_putpscl(rip: RipT, pscl: List): Any;
+   caddr rip := pscl;
+
+asserted procedure rip_addroot(rip: RipT, root: Anu): Any;
+   car rip := root . car rip;
+
+asserted procedure rip_addivl(rip: RipT, ivl: List): Any;
+   cadr rip := nconc(ivl, rip_ivl rip);
+
+asserted procedure rip_popivl(rip: RipT): RatInterval;
+   begin scalar ivl, res;
+      ivl := cadr rip;
+      res := pop ivl;
+      cadr rip := ivl;
+      return res
+   end;
+
+asserted procedure rip_poppscl(rip: RipT): AexList;
+   begin scalar pscl, res;
+      pscl := caddr rip;
+      res := pop pscl;
+      caddr rip := pscl;
+      return res
+   end;
+
+asserted procedure rip_nextroot(rip: RipT, x: Kernel): Boolean;
+   % Returns [t] if a root is found, [nil] otherwise.
+   begin scalar rootfound, cb;
       while not rootfound and rip_pscl rip do <<
-	 % pscl is not empty. if ivl is empty, mk new iv with cb.
 	 while null rip_ivl rip and rip_pscl rip do <<
-	    cb := rat_add(
-	       aex_cauchybound(tag_object caar rip_pscl rip,x),rat_1());
-	    rip_addivl(rip,iv_minuslist(iv_mk(rat_neg cb,cb),
+	    cb := aex_cauchybound(tag_object caar rip_pscl rip, x);
+	    rip_addivl(rip, iv_minuslist(iv_mk(rat_neg cb, cb),
 	       for each a in rip_rootlnotags rip collect anu_iv a));
-	    % maybe after minuslist there are no intervals left
-	    if null rip_ivl rip then rip_poppscl rip;
+	    if null rip_ivl rip then  % There is no interval left.
+	       rip_poppscl rip
 	 >>;
-	 % care for the case that there was no poly left with a root
-	 if rip_pscl rip then << % there is at least one interval and one poly
-	    % Check that there is an interval and a polynomial:
-	    assert(rip_ivl rip and rip_pscl rip);
-	    if aex_nextroot1(rip,x) then
+	 if rip_pscl rip then <<  % There is at least one interval and one polynomial.
+	    if rip_nextroot1(rip, x) then
 	       rootfound := t;
 	    if null rip_ivl rip then
 	       rip_poppscl rip
 	 >>
       >>;
-      if rootfound then <<
-	 assert(anu_check tag_object car rip_rootl rip);
-	 return car rip_rootl rip
-      >>;
+      if rootfound then
+	 return car rip_rootl rip;
       return nil
    end;
 
-procedure aex_nextroot1(rip,x);
-   % There is an interval and there is a poly. this function attempts
-   % to isolate at most one root. A root might be added to rootl and
-   % intervals might be added to ivl, but pscl is not popped. Returns
-   % t, if a root was found. Possible Optimazions: tagged intervals,
-   % use anu_fromrat if a rat. root is found. rip contains tagged
-   % polynomials.
-   begin scalar iv,lb,rb,sc,sclb,scrb,m,ml,mr,r;
-      % remove iv from ivl
-      iv := rip_popivl rip; lb := iv_lb iv; rb := iv_rb iv;
+asserted procedure rip_nextroot1(rip: RipT, x: Kernel): Boolean;
+   % [rip] contains at least one interval and at least one polynomial. This
+   % function attempts to isolate at most one root. A root might be added to
+   % [rootl] and intervals might be added to [ivl], but [pscl] is not changed.
+   % Returns [t], if a root was found.
+   begin scalar iv, lb, rb, sc, sclb, scrb, pscl, ae, sc, aetagl, m, ml, mr, r, w;
+      % Possible optimazion: tagged intervals.
+      iv := rip_popivl rip;
+      lb := iv_lb iv;
+      rb := iv_rb iv;
       sc := cdar rip_pscl rip;
-      sclb := aex_stchsgnch1(sc,x,lb);
-      if sclb = 0 then return nil;
-      scrb := aex_stchsgnch1(sc,x,rb);
-      if sclb - scrb = 0 then return nil;
-      if sclb - scrb = 1 then <<
+      sclb := aex_stchsgnch1(sc, x, lb);
+      if eqn(sclb, 0) then
+	 return nil;
+      scrb := aex_stchsgnch1(sc, x, rb);
+      if eqn(sclb - scrb, 0) then
+	 return nil;
+      pscl := rip_psclnotags rip;
+      w := pop pscl;
+      ae . sc := w;
+      aetagl := tag_taglist caar rip_pscl rip;
+      if eqn(sclb - scrb, 1) then <<
 	 rip_addroot(rip,
-	    tag_(aex_refinewrt1(anu_mk(tag_object caar rip_pscl rip,iv),
-	       cdr rip_psclnotags rip,cdar rip_pscl rip),
-	       tag_taglist caar rip_pscl rip));
+	    tag_(aex_refinepscl(anu_mk(ae, iv), sc, pscl), aetagl));
 	 return t
       >>;
-      % there are at least two roots.
-      m := rat_quot(rat_add(lb,rb),rat_fromnum 2);
+      % There are at least two roots.
+      m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
       ml := mr := m;
-      if eqn(aex_sgn aex_subrat1(tag_object caar rip_pscl rip,x,m), 0) then <<
-	 r := aex_isoratroot(m,rat_mult(rat_minus(rb,lb),rat_mk(1,4)),
-	    rip_psclnotags rip,x); % cdr rip_pscl rip would be wrong
-	 ml := rat_minus(m,r); mr := rat_add(m,r);
-	 %rip_addroot(rip,anu_mk(caar rip_pscl rip,iv_mk(ml,mr)))
-	 % instead, the following is only a very small optimization(1-2%):
-	 rip_addroot(rip,tag_(anu_fromrat(x,m,iv_mk(ml,mr)),
-	    tag_taglist caar rip_pscl rip))
+      if eqn(aex_sgn aex_subrat1(ae, x, m), 0) then <<
+	 r := aex_isoratrootpscl(ae, m, rat_mult(rat_minus(rb, lb), rat_mk(1, 4)), sc, pscl, x);
+	 ml := rat_minus(m, r);
+	 mr := rat_add(m, r);
+	 rip_addroot(rip,
+	    tag_(anu_fromrat(x, m, iv_mk(ml, mr)), aetagl))
       >>;
-      rip_addivl(rip,{iv_mk(mr,rb)});
-      rip_addivl(rip,{iv_mk(lb,ml)});
-      return not rat_eq(ml,mr);
+      rip_addivl(rip, {iv_mk(mr, rb)});
+      rip_addivl(rip, {iv_mk(lb, ml)});
+      return not rat_eq(ml, mr)
    end;
-
-procedure aex_isoratroot(m,r,pscl,x);
-   % [m] is a rational root of [caar pscl]. Returns a r such that no
-   % sturmchain from cdr scl has a sign change in (m-r,m+r), and such
-   % that car scl has 1 sign change in (m-r,m+r). No tags in here.
-   << % Refine r until p's sc has only 1 sgn change.
-      while aex_atratnullp(caar pscl,x,rat_minus(m,r)) or
-      aex_atratnullp(caar pscl,x,rat_minus(m,r)) or
-	 aex_deltastchsgnch(cdar pscl,x,
-	    iv_mk(rat_minus(m,r),rat_add(m,r))) > 1 do
-	       r := rat_mult(r,rat_mk(1,2));
-      pscl := cdr pscl;
-      % Refine r until the other sc's have no sgn changes.
-      for each psc in pscl do
-      while aex_atratnullp(car psc,x,rat_minus(m,r)) or
-	 aex_atratnullp(car psc,x,rat_minus(m,r)) or
-	    aex_deltastchsgnch(cdr psc,x,
-	       iv_mk(rat_minus(m,r),rat_add(m,r))) > 0 do
-		  r := rat_mult(r,rat_mk(1,2));
-      r
-   >>;
-
-asserted procedure aex_refinewrt1(alpha: Anu, pscl: List, scalpha: AexList): Anu;
-   % Refine [alpha] in such a way that no sturm chain from [pscl] has a sign
-   % change in alpha's isolating interval. [scalpha] is the sturm chain for
-   % alpha's defining polynomial.
-   begin scalar x, p, sc;
-      x := aex_mvar anu_dp alpha;
-      for each psc in pscl do <<
-	 p := car psc;
-      	 sc := cdr psc;
-      	 while aex_atratnullp(p, x, iv_lb anu_iv alpha) or
-	 aex_atratnullp(p, x, iv_rb anu_iv alpha) or
-	 aex_deltastchsgnch(sc, x, anu_iv alpha) > 0 do
-	    anu_refine1ip(alpha, scalpha);
-      >>;
-      return alpha
-   end;
-
-procedure aex_deltastchsgnch(sc,x,iv);
-   % delta sturm chain sign changes in an interval
-   begin integer sclb, scrb;
-      sclb := aex_stchsgnch1(sc,x,iv_lb iv);
-      if eqn(sclb, 0) then
-	 return 0;
-      scrb := aex_stchsgnch1(sc,x,iv_rb iv);
-      return sclb - scrb
-   end;
-
-% - little helpers for global root isolation - %
-% rip stands for root list, interval list, p.sc list
-
-procedure psc_sortdesc(psc1,psc2);
-   % Sort function descending. psc1 and psc2 are list of dotted pairs
-   % p.sc phere p is a ratpoly and sc is a sturmchain. To be used by
-   % generic_sort, yiels a sorted list with descending length of sturm
-   % chains.
-   sgn(length cdr psc2 - length cdr psc1);
-
-procedure psc_sortasc(psc1,psc2);
-   % Sort function asscending. psc1 and psc2 are list of dotted pairs
-   % p.sc phere p is a ratpoly and sc is a sturmchain. To be used by
-   % generic_sort, yiels a sorted list with ascending length of sturm
-   % chains.
-   sgn(length cdr psc1 - length cdr psc2);
-
-procedure rip_init(ael,x);
-   % [ael] is a (maybe empty) list of TAG(AEX) (tagged univariate alg.
-   % polynomials). [ael] is factorized, i.e. each root occures only in
-   % one polynomial.
-   {nil,nil,for each ae in ael collect
-      ae . aex_stdsturmchain(tag_object ae,x)};
-%      generic_sort(for each ae in ael collect ae . aex_stdsturmchain(ae,x),
-%	 'psc_sortasc)};
-
-procedure rip_rootl rip;
-   car rip;
-
-procedure rip_rootlnotags rip;
-   for each r in car rip collect tag_object r;
-
-procedure rip_ivl rip;
-   cadr rip;
-
-procedure rip_pscl rip;
-   caddr rip;
-
-procedure rip_psclnotags rip;
-   for each psc in caddr rip collect tag_object car psc . cdr psc;
-
-procedure rip_putivl(rip,ivl);
-   cadr rip := ivl;
-
-procedure rip_putpscl(rip,pscl);
-   caddr rip := pscl;
-
-procedure rip_addroot(rip,root);
-   car rip := root . car rip;
-
-procedure rip_addivl(rip,ivl);
-   cadr rip := nconc(ivl,rip_ivl rip);
-
-procedure rip_poppscl rip;
-   caddr rip := cdr caddr rip;
-
-procedure rip_popivl rip;
-   <<cadr rip := cdr cadr rip; carivl>> where carivl=car rip_ivl rip;
-
-%procedure aex_ivlfromrootl rootl;
-%   % interval list from root list. [rootl] is a list of ANU.
-%   for each a in rootl collect anu_iv a;
 
 % Anu functions.
 
