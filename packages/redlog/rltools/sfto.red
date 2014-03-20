@@ -651,6 +651,9 @@ asserted procedure sfto_allcoeffs1(l: List, vl: List): List;
 asserted procedure sfto_coefs(f: SF, v: Kernel): List;
    if not domainp f and mvar f eq v then coeffs f else {f};
 
+asserted procedure sfto_abssummand(f: SF): Integer;
+   if domainp f then f else sfto_abssummand red f;
+
 asserted procedure sfto_kernelp(u: Any): ExtraBoolean;
    begin scalar w;
       if idp u then
@@ -802,15 +805,16 @@ asserted procedure sfto_cauchyf(f: SF, v: Kernel): SQ;
       return sumq
    end;
 
-asserted procedure sfto_lmq(f: SF): Integer;
+asserted procedure sfto_lmq(f: SF): SQ;
    begin
-      scalar cl, c, cmin, sccl1, sccl2, cc, trp, ttrp, ctrp;
-      integer d, m, dd, mm, bnd, cmax;
+      scalar cl, c, cmin, sccl1, sccl2, cc, trp, ttrp, ctrp, bnd, cmax;
+      integer d, m, dd, mm;
       assert(not null f);
       if domainp f then
 	 return 0;
       f := absf f;
       cl := sfto_lmqcoeffs f;
+      cmax := nil ./ 1;
       sccl1 := cdr cl;
       while sccl1 do <<
 	 {c, d, m} := trp := pop sccl1;
@@ -820,15 +824,15 @@ asserted procedure sfto_lmq(f: SF): Integer;
 	    repeat <<
 	       {cc, dd, mm} := ttrp := pop sccl2;
 	       if numr cc > 0 then <<
-		  bnd := sfto_lmqroot(multsq(!*f2q(2^mm), quotsq(negsq c, cc)), dd - d);
-		  if cmin eq 'pinf or bnd < cmin then <<
+		  bnd := sfto_lmqrootq(multsq(!*f2q(2^mm), quotsq(negsq c, cc)), dd - d);
+		  if cmin eq 'pinf or sfto_lessq(bnd, cmin) then <<
 		     cmin := bnd;
 		     ctrp := ttrp
 		  >>
 	       >>
 	    >> until car sccl2 eq trp;
 	    caddr ctrp := caddr ctrp + 1;  % We could actually choose.
-	    if cmin > cmax then
+	    if sfto_greaterq(cmin, cmax) then
 	       cmax := cmin
 	 >>
       >>;
@@ -842,7 +846,23 @@ asserted procedure sfto_lmqcoeffs(f: SF): List;
    else
       {!*f2q lc f, ldeg f, 1} . sfto_lmqcoeffs red f;
 
-asserted procedure sfto_lmqroot(q: SF, n: Integer): Integer;
+asserted procedure sfto_lmqrootq(q: SQ, n: Integer): SQ;
+   % [q] is a non-negative number; [n] is positive.
+   begin scalar rnum, rden;
+      assert(null car q or (numberp car q and car q >= 1));
+      assert(numberp cdr q);
+      assert(n > 0);
+      if eqn(n, 1) or null numr q then
+ 	 return q;
+      rnum := if eqn(numr q, 1) then numr q else irootn(numr q or 0, n) + 1;
+      if eqn(denr q, 1) then
+	 return rnum ./ 1;
+      rden := irootn(denr q, n) - 1;
+      if rden > 1 then rden := rden - 1;
+      return quotsq(rnum ./ 1, rden ./ 1)
+   end;
+
+asserted procedure sfto_lmqroot(q: SQ, n: Integer): Integer;
    begin scalar w, p;
       w := numr sfto_ceilq q or 0;
       p := length explode w + 1;
@@ -928,6 +948,72 @@ asserted procedure sfto_qsubhor1(f: SF, x: Kernel, q: SQ): SQ;
       >>;
       return !*f2q sfto_dprpartksf res
    end;
+
+asserted procedure sfto_norm1(f: SF): Integer;
+   % [f] is univariate. Sum of the absolute values of the coefficients of [f].
+   if domainp f then absf f else addf(absf lc f, sfto_norm1 red f);
+
+asserted procedure sfto_norminf(f: SF): Integer;
+   % [f] is univariate. Maximum of the absolute values of the coefficients of
+   % [f].
+   if domainp f then absf f else max(absf lc f, sfto_norminf red f);
+
+asserted procedure sfto_sturmchain(f: SF, g: SF): List;
+   % [f] and [g] are univariate with integer coefficients. We compute the
+   % suppressed standard Sturm chain over the rationals and then drop the
+   % positive principal denominators so that the result is a list of univariate
+   % SF.
+   begin scalar !*rational, w, rresl, resl;
+      on1 'rational;
+      rresl := {g, f};
+      while not null g do <<
+	 w := remf(f, g);
+	 f := g;
+	 g := negf w;
+	 if g then rresl := g . rresl
+      >>;
+      for each p in rresl do
+	 resl := quotf(p, g) . resl;
+      off1 'rational;
+      resl := for each p in resl collect numr resimp !*f2q p . resl;
+      return resl
+   end;
+
+asserted procedure sfto_sturmcount(sc: List, l: SQ, u: SQ): Integer;
+   % [l] and [u] are numbers or one of +/- infinity
+   sfto_varsign(sc, l) - sfto_varsign(sc, u);
+
+asserted procedure sfto_varsign(sc: List, bound: SQ): Integer;
+   % Sturm chain sign variations. The Sturm chain [sc] is a list of univariate
+   % SFs. [bound] is a number or one of +/- infinity.
+   begin integer h, sign, cursign, signchanges;
+      while sc do <<
+	 repeat <<
+	    h := numr sfto_iqsub(pop sc, mvar h, bound);
+	    sign := if null h then 0 else if minusf h then -1 else 1;
+	 >> until null sc or not eqn(sign, 0);
+	 if sign * cursign < 0 then
+	    signchanges := signchanges + 1;
+	 cursign := sign
+      >>;
+      return signchanges
+   end;
+
+asserted procedure sfto_iqsub(f: SF, x: Kernel, q: SQ): SQ;
+   begin scalar g, hc;
+      g := numr q;
+      if domainp g then
+	 return sfto_qsub1(f, {x . q});
+      if domainp f then
+	 return !*f2q f;
+      assert(mvar g eq 'infinity);
+      if evenp ldeg f and minusf lc g then
+	 q := negsq q;
+      if minusf lc f then
+	 q := negsq q;
+      return q
+   end;
+
 
 % SQ functions:
 
