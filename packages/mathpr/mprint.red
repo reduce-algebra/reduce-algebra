@@ -231,7 +231,7 @@ symbolic procedure inprint(op,p,l);
 
 symbolic procedure flatsizec u;
    if null u then 0
-    else if atom u then lengthc u
+    else if atom u then widelengthc u
     else flatsizec car u + flatsizec cdr u + 1;
 
 symbolic procedure oprin op;
@@ -255,7 +255,7 @@ symbolic procedure prin2!* u;
       else if !*nat then <<
         if u = 'pi then u := symbol '!.pi
          else if u = 'infinity then u := symbol 'infinity>>;
-      n := lengthc u;
+      n := widelengthc u;
       % Suggested by Wolfram Koepf:
       if fixp u and n>50 and !*rounded then return rd!:prin i2rd!* u;
       m := posn!* #+ n;

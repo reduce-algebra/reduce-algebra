@@ -3938,6 +3938,37 @@ Lisp_Object Llist_to_symbol(Lisp_Object nil, Lisp_Object stream)
 #endif
 }
 
+Lisp_Object Lstring2list(Lisp_Object nil, Lisp_Object a)
+{
+    Header h;
+    Lisp_Object r;
+    int32_t i, len;
+#ifdef COMMON
+    if (complex_stringp(a)
+    {   a = simplify_string(a);
+        errexit();
+    }
+#endif
+    if (symbolp(a))
+    {   a = get_pname(a);
+        errexit();
+        h = vechdr(a);
+    }
+    else if (!is_vector(a) ||
+         type_of_header(h = vechdr(a)) != TYPE_STRING)
+        return aerror1("string2list", a);
+    len = length_of_header(h) - CELL;
+    r = nil;
+    for (i=len-1; i>=0; i--)
+    {   int c = ucelt(a, i);
+        push(a);
+        r = cons(fixnum_of_int(c), r);
+        pop(a);
+        errexit();
+    }
+    return r;
+}
+
 void read_eval_print(int noisy)
 {
     Lisp_Object nil = C_nil, *save = stack;
@@ -4971,7 +5002,9 @@ setup_type const read_setup[] =
     {"silent-system",           Lsilent_system, too_many_1, wrong_no_1},
     {"~tyi",                    wrong_no_na, wrong_no_nb, Ltyi},
     {"list-to-string",          Llist_to_string, too_many_1, wrong_no_1},
+    {"list2string",             Llist_to_string, too_many_1, wrong_no_1},
     {"list-to-symbol",          Llist_to_symbol, too_many_1, wrong_no_1},
+    {"string2list",             Lstring2list, too_many_1, wrong_no_1},
     {"where-was-that",          wrong_no_na, wrong_no_nb, Lwhere_was_that},
 #ifdef COMMON
     {"compress1",               Lcompress, too_many_1, wrong_no_1},

@@ -5302,15 +5302,29 @@ jcall0: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        else if (f345 == tracebytecoded0)
+        else if (f345 == tracebytecoded0 || f345 == tracesetbytecoded0)
         {   r2 = elt(litvec, 0);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
 /*
  * I make TRACECODED a special case, in effect writing it out in-line
  * here, to avoid some ugly confusion with backtraces following tail calls.
@@ -5398,16 +5412,30 @@ jcall1: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push(A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        else if (f1 == tracebytecoded1)
+        else if (f1 == tracebytecoded1 || f1 == tracesetbytecoded1)
         {   r2 = elt(litvec, 0);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push(A_reg);
             push3(litvec, codevec, r2);
@@ -5513,16 +5541,30 @@ jcall2: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push2(B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        else if (f2 == tracebytecoded2)
+        else if (f2 == tracebytecoded2 || f2 == tracesetbytecoded2)
         {   r2 = elt(litvec, 0);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push2(B_reg, A_reg);
             push3(litvec, codevec, r2);
@@ -5609,16 +5651,30 @@ jcall3: r1 = elt(litvec, fname);
         {   lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push3(r2, B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
             continue;
         }
-        else if (f345 == tracebytecoded3)
+        else if (f345 == tracebytecoded3 || f345 == tracesetbytecoded3)
         {   r3 = elt(litvec, 0);
             lit = qenv(r1);
             codevec = qcar(lit);
             litvec = qcdr(lit);
+#if defined DEBUG || !defined NO_BYTECOUNT
+            ffsym = elt(litvec, 0);
+            memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+            ffname[fflength] = 0;
+#endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push3(r2, B_reg, A_reg);
             push3(litvec, codevec, r3);

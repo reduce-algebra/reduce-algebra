@@ -38,9 +38,10 @@ symbolic procedure read!-comment;
       raise := !*raise;
       !*raise := nil;
       ollength := linelength 150;
-      z := list(crchar!*,'!");
-   a: if (x := readch()) eq '!*
-        then if (y := readch()) eq '!/ then go to b
+      z := list(crchar!*);
+   a: named!-character!* := nil;
+      if (x := readch()) eq '!* and not named!-character!*
+        then if (y := readch()) eq '!/ and not named!-character!* then go to b
               else z := y . x . z
        else if x = !$eof!$
         then <<!*raise := raise; rederr "EOF encountered in comment">>
@@ -49,8 +50,9 @@ symbolic procedure read!-comment;
    b:
       !*raise := raise;
       crchar!* := readch();
-      z := '!" . z;
-      z := list('!*comment!*,mkstrng compress reversip z);
+% I hope that list2string copes with character objects not just numbers -
+% but if not I will need further rework here.
+      z := list('!*comment!*, list2string reversip z);
       linelength ollength;
       return z
    end;

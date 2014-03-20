@@ -422,7 +422,7 @@ procedure assert_at2str(s);
 
 !#if (not (memq 'psl lispsystem!*))
 procedure id2string(id);
-   compress('!" . reversip('!" . reversip explode id));
+   symbol!-name id;
 !#endif
 
 endmodule;  % assert

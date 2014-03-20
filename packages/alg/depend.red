@@ -128,7 +128,7 @@ symbolic procedure depend0(u, bool);
                x := u;
                while not((x := cdr x) eq v) do depend1(y,car x,bool);
                if idp y
-                 then <<y := intern compress append(explode y,'(!! !_));
+                 then <<y := bytelist2id append(id2bytelist y, id2bytelist '!_);
                         x := u;
                         while not((x := cdr x) eq v) do
                            depend1(y,car x,bool)>>

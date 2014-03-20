@@ -36,11 +36,15 @@ symbolic inline procedure fix2 u; fix u;
 
 remflag('(lshift ashift), 'lose);
 
+% lshift & ashift are now built in to CSL
+
 symbolic inline procedure lshift(m,d); ash(m,d);
 
 symbolic inline procedure ashift(m,d); ash1(m,d);
 
 flag('(lshift ashift), 'lose);
+
+% land is now built in to CSL... (also lor, lxor and lnot)
 
 symbolic inline procedure land(a,b); logand(a,b);
 
@@ -159,8 +163,16 @@ symbolic procedure copyd(new,old);
 
 flag('(copyd), 'lose);
 
-inline procedure int2id x; compress list('!!, x);
-inline procedure id2int x; car explode2n x;
+inline procedure int2id x;
+  begin
+    scalar s;
+    s := make!-simple!-string 1;
+    putv!-char(s, 0, x);
+    return intern s;
+  end;
+
+inline procedure id2int x;
+  scharn(symbol!-name x, 0);
 
 symbolic macro procedure bothtimes u;
    list('eval!-when, '(compile load eval), cadr u);

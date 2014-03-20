@@ -241,7 +241,7 @@ lparen(setq y nil)
             (setq w (cons (cons (car w) (cdr z)) (cdr w))))
          (t (go a3)))
       (go next)
-infx  (setq z2 (mkvar (car w) z))
+infx  (setq z2 (car w))
 un1   (setq w (cdr w))
       (cond
          ((null w) (go un2))
@@ -273,8 +273,6 @@ pr4   (cond ((null (equal y 0)) (go pr1)) (t (return (car v)))) ))
 
 (de mksetq (u v) (list 'setq u v))
 
-(de mkvar (u v) u)
-
 (de rread nil
    (prog (x)
       (setq x (token))
@@ -297,7 +295,7 @@ b     (setq r (cons x r))
       (go a)))
 
 (de token nil
-   (prog (x y)
+   (prog (x y z)
       (setq x crchar!*)
 a     (cond
          ((seprp x) (go sepr))
@@ -313,7 +311,11 @@ a     (cond
 a1    (setq crchar!* (readch))
       (go c)
 escape(setq y (cons x y))
+      (setq z (cons !*raise !*lower))
+      (setq !*raise (setq !*lower nil))
       (setq x (readch))
+      (setq !*raise (car z))
+      (setq !*lower (cdr z))
 letter(setq ttype!* 0)
 let1  (setq y (cons x y))
       (cond
@@ -476,13 +478,11 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 (setq !*comp nil)
 
-
-
 (begin)
 
 symbolic;
 
-!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
+#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 
 faslout 'user;
 
@@ -580,15 +580,15 @@ rdf "$reduce/cslbuild/generated-c/u60.lsp"$
 if modulep 'smacros then load!-module 'smacros;
 
 faslend;
-!#endif
+#endif
 
 faslout 'remake;
 
-!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
+#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 
 load!-module "user";
 
-!#endif
+#endif
 
 in "$reduce/packages/support/remake.red"$
 
@@ -657,18 +657,18 @@ symbolic procedure get_configuration_data();
 symbolic procedure build_reduce_modules names;
   begin
     scalar w;
-!#if !*savedef
+#if !*savedef
     !*savedef := t;
-!#else
+#else
     !*savedef := nil;
-!#endif
+#endif
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
     w := explodec car names;
     if !*savedef then w := append(explodec "[Bootstrap] ", w);
     window!-heading list!-to!-string w;
-!#if !*savedef
+#if !*savedef
 % When building the bootstrap version I want to record what switches
 % get declared...
     if not getd 'original!-switch then <<
@@ -678,19 +678,21 @@ symbolic procedure build_reduce_modules names;
           '(lambda (x)
               (dolist (y x) (princ "+++ Declaring a switch: ") (print y))
               (original!-switch x))) >>;
-!#endif
+#endif
     package!-remake car names;
     if null (names := cdr names) then <<
         printc "Recompilation complete";
         window!-heading  "Recompilation complete" >>;
-!#if (or !*savedef (memq 'embedded lispsystem!*))
+#if (or !*savedef (memq 'embedded lispsystem!*))
     if null names then restart!-csl 'begin
     else restart!-csl('(remake build_reduce_modules), names)
-!#else
+#else
     if null names then restart!-csl '(user begin)
     else restart!-csl('(remake build_reduce_modules), names)
-!#endif
+#endif
   end;
+
+fluid '(cpulimit conslimit testdirectory);
 
 symbolic procedure test_a_package names;
   begin
@@ -1071,7 +1073,7 @@ symbolic procedure roughly_equal(a, b);
     if a = b then return t;
     a := explodec a;
     b := explodec b;
-    if !*exist_on_exact_match then return (a = b);
+    if !*insist_on_exact_match then return (a = b);
 top:
 % First deal with end of line matters.
     if null a and null b then return t
@@ -1483,9 +1485,9 @@ load!-module 'remake;
 
 symbolic;
 
-!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
+#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 load!-module 'user;
-!#endif
+#endif
 
 get_configuration_data();
 
@@ -1518,14 +1520,14 @@ package!-remake2('remake,'support);
 % will not work if you start csl manually and then do a (rdf ..) [say]
 % on buildreduce.lsp.  I told you that it was a little delicate.
 
-!#if !*savedef
+#if !*savedef
 % Some switches may be in the utter core and not introduced via the
 % "switch" declaration...
 for each y in oblist() do
   if flagp(y, 'switch) then <<
      princ "+++ Declaring a switch: ";
      print y >>;
-!#endif
+#endif
 
 get_configuration_data();
 

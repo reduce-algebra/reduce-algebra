@@ -81,7 +81,7 @@ symbolic procedure newvar u;
    if not idp u then typerr(u,"free variable")
 %   else if flagp(u,'reserved)
 %    then typerr(list("Reserved variable",u),"free variable")
-    else intern compress append(explode '!=,explode u);
+    else bytelist2id append(id2bytelist '!=, id2bytelist u);
 
 symbolic procedure formforall(u,vars,mode);
    begin scalar arbl!*,x,y;

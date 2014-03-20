@@ -29,12 +29,15 @@ module tok; % Identifier and reserved character reading.
 %
 
 % Parts of the coding style here look antique and ugly with lots of
-% goto statements. The notation "<< ... >>" for a local block is not
-% used. What is worse is that there are not even "for" and "while" loops.
+% goto statements. The notations for  "for" and "while" loops are not
+% used here.
 % This is not because we do not care about style, but because in the
 % process of bootstrapping Reduce this file is first read by a somewhat
 % minimalist cut-down version of the parser that does not support the
 % full language syntax.
+
+% Substantial changes in March 2014 to put in support for wide characters
+% generally packed in the underlying Lisp string type using utf-8 encoding.
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
         !*quotenewnam semic!* !*report!_colons);
@@ -66,7 +69,9 @@ global '(!$eof!$
 %     3  operator-like character  +,-,...
 %     4  result of quotation      '(something)
          ttype!*
-         !*psl);
+         !*csl
+         !*psl
+         named!-character!*);
 
 flag('(adjprec),'switch);
 
@@ -76,6 +81,216 @@ crchar!* := '! ;
 peekchar!* := nil;
 
 curline!* := 1;
+
+% The next few are so I have clear names for functions that will
+% support strings that have utf-8 sequences packed within them. They
+% just rely on Lisp support for strings made up of 8-bit characters.
+
+% I will want to check that Jlisp and VSL also support the things that
+% are essential here... mainly allocate-string, string2list, list2string
+% and int2id.
+
+% This takes a list of integers (each in the range 0-255) and make a
+% string. BEWARE that although PSL can print such strings at present
+% if you try passing one to explode or explode2 that can crash the
+% system. It should be consided improper to pass a list of integers
+% here if they do not represent a valid encoding in utf-8.
+%
+symbolic procedure bytelist2string u;
+  list2string u;
+
+% Given a string (that may contain bytes that are over 127) return a list
+% of positive small integers out of the raw byte data.
+%
+symbolic procedure string2bytelist u;
+% I do not want to use explode here in case at some stage I want to
+% re-work that to behave in character units not in bytes. So here I
+% will do things by hand...
+  begin
+    scalar r, w;
+    w := string2list u;
+ a: if null w then return reversip r;
+    if minusp car w then r := (256+car w) . r
+    else r := car w . r;
+    w := cdr w;
+    go to a;
+  end;
+
+% Make a symbol from the given list of bytes that are each on 0-255
+%
+symbolic procedure bytelist2id u;
+  intern list2string u;
+
+% Make a character (ie a symbol whose name is one character long)
+% out of the integer in the range 0-127. Note that this function
+% might cope also with arguments in the range 129-255 but PSL specifies
+% that if it is given 128 it will return nil.
+% In CSL this will also do the same job for the range 128-255.
+%
+% symbolic procedure int2id u; % built in / defined in csl.red
+
+% Take a list of integers (now each in the range 0-0x0010ffff) and
+% turn it into a string encoding those using utf-8
+%
+% This code could be improved by use of fixnum-only arithmetic I expect!
+%
+symbolic procedure list2widestring u;
+  begin
+    scalar u1, n, s, len;
+    len := 0;
+    u1 := u;
+ a: if null u1 then go to b;
+    n := car u1;
+    u1 := cdr u1;
+    if n < 0 then error(1, "Negative integer in list2widestring")
+% I put the constants in decimal because hex reading may not be
+% available yet.
+    else if n < 128 then len := len + 1
+    else if n < 2048 then len := len + 2
+    else if n < 65536 then len := len + 3
+    else if n < 1114112 then len := len + 4
+    else error(1, "Integer too large in list2widestring");
+    go to a;
+ b: s := allocate!-string len;
+    len := 0;
+ c: if null u then return s;
+    n := car u;
+    u := cdr u;
+    if n < 128 then progn(
+      string!-store(s, len, n),
+      (len := len + 1))
+    else if n < 2048 then progn(
+      string!-store(s, len, 192 + lshift(n, (iminus 6))),
+      string!-store(s, len+1, 128 + land(n, 63)),
+      (len := len + 2))
+    else if n < 65536 then progn(
+      string!-store(s, len, 224 + lshift(n, (iminus 12))),
+      string!-store(s, len+1, 128 + land(lshift(n, (iminus 6)), 63)),
+      string!-store(s, len+2, 128 + land(n, 63)),
+      (len := len + 3))
+    else progn(
+      string!-store(s, len, 240 + lshift(n, (iminus 18))),
+      string!-store(s, len+1, 128 + land(lshift(n, (iminus 12)), 63)),
+      string!-store(s, len+2, 128 + land(lshift(n, (iminus 6)), 63)),
+      string!-store(s, len+3, 128 + land(n, 63)),
+      (len := len + 4));
+    go to c;
+  end;
+
+% Ditto but make a symbol;
+%
+symbolic procedure list2wideid u;
+  intern list2widestring u;
+
+% Ditto but starting with a single integer
+%
+symbolic procedure int2wideid n;
+  if n < 128 then int2id n
+  else intern list2widestring list n;
+
+% Given a string that may contain bytes that are over 127 return a list
+% of positive integers corresponding to the characters in it if it
+% is interpreted as being encoded in utf-8. The behaviour if the bytes
+% are not valid utf-8 is to be considered undefined.
+%
+symbolic procedure moan!-if!-not!-follower n;
+  if not (land(n, 192) = 128) then
+    error(0, "Bad follow-on in utf-8 string")
+  else n;
+
+symbolic procedure moan!-if!-truncated u;
+  if null u then error(0, "Truncated data in utf-8 string")
+  else moan!-if!-not!-follower car u;
+
+symbolic procedure widestring2list u;
+  begin
+    scalar w, r, n, c;
+% The next line turns the string into a list of bytes. On PSL the
+% bytes may be extracted as signed values. With CSL they are all
+% positive.
+    w := string2list u;
+% Now I need to decode any utf-8 specials...
+ a: if null w then return reversip r;
+    n := car w;
+    w := cdr w;
+% I am going to rely on the fact that bytes from the string that were
+% at least 0x80 in value come back looking negative here. Thus any values
+% that are positive are simple ASCII.
+    if not (land(n, 128) = 0) then progn(
+      if land(n, 224) = 192 then progn( % Start of 2 byte code
+        c := moan!-if!-truncated w,
+        w := cdr w,
+        n := lshift(land(n, 31), 6) + land(c, 63))
+      else if land(n, 240) = 224 then progn( % Start of 3 byte code
+        c := moan!-if!-truncated w,
+        w := cdr w,
+        n := lshift(land(n, 15), 12) + lshift(land(c, 63), 6),
+        c := moan!-if!-truncated w,
+        w := cdr w,
+        n := n + land(c, 63))
+      else if land(n, 248) = 240 then progn( % Start of 4 byte code
+        c := moan!-if!-truncated w,
+        w := cdr w,
+        n := lshift(land(n, 7), 18) + lshift(land(c, 63), 12),
+        c := moan!-if!-truncated w,
+        w := cdr w,
+        n := n + lshift(land(c, 63), 6),
+        c := moan!-if!-truncated w,
+        w := cdr w,
+        n := n + land(c, 63))
+      else error(0, "Improper byte in utf-8 string"));
+    r := n . r;
+    go to a;
+  end;
+
+% Return a list of bytes corresponding to the representation of the
+% name of the symbol u. Each byte will be in the range 0 to 255.
+%
+symbolic procedure id2bytelist u;
+  string2bytelist id2string u;
+
+% Return a list of integers corresponding to the characters that make
+% up the name of the symbol u assuming it is encoded using utf-8.
+%
+symbolic procedure wideid2list u;
+  widestring2list id2string u;
+
+% The argument should be an identifier denoting a single character. It
+% mey neverthless use multiple bytes. Return the integer code for the
+% character.
+%
+symbolic procedure wideid2int u;
+  car wideid2list u;
+
+
+% Find the number of bytes that would be printed if the argument
+% was. The argument ought to be an identifier, string or number
+%
+symbolic procedure lengthc u;
+  if idp u then length string2list id2string u
+  else if stringp u then length string2list u
+  else length explode2 u;
+
+% Find the number of (wide) characters  that would arise from printing
+% the atom. This just ignores bytes that are utf-8 follow-on bytes (ie
+% those that are 10xxxxxx in binary).
+%
+symbolic procedure widelengthc u;
+  if idp u then length!-without!-followers string2list id2string u
+  else if stringp u then length!-without!-followers string2list u
+  else length explode2 u;
+
+symbolic procedure length!-without!-followers l;
+  begin
+    scalar n;
+    n := 0;
+a:  if null l then return n;
+    if not (land(car l, 192) = 128) then n := n + 1;
+    l := cdr l;
+    go to a
+  end;
+
+%==========================================================================
 
 % The function TOKEN defined below is used for reading identifiers
 % and reserved characters (such as parentheses and infix operators).
@@ -89,14 +304,6 @@ curline!* := 1;
 symbolic procedure prin2x u;
   outl!* := u . outl!*;
 
-symbolic procedure mkstrng u;
-   %converts the uninterned id U into a string;
-   %if strings are not constants, this should be replaced by
-   %list('string,u);
-   u;
-
-symbolic procedure readch1;
-  begin
 % This character look-ahead is used when parsing names that
 % have colons within them, as in abc:def. In particular it is active when
 % input text such as "... abc::? ...". If the character written as "?" there
@@ -154,7 +361,31 @@ symbolic procedure readch1;
 % provide a special name for the character "#". Perhaps I ought to then the
 % output could become "#hash;amp;" which may be clearer.
 %
+% I might note that #apos; is ('), #quot; is ("), #grave is (`),
+% #dollar; is ($).  #Tab; and #NewLine; provide layout. There are
+% a couple of very special bits of treatment in these areas implemented
+% because I believe that they will help.
+% Within a string #quot; expands to a (") but it does not terminate the
+% string. Thus a string with an embedded quote matk can be written
+% as "This string has an embedded #quot; in it". For now the previous
+% notation where the (") needs to be doubled is still available.
+% In a similar sort of way the end-of-line denoted by #NewLine; does not
+% terminate a "%" comment, and the dollar that results from #dollar;
+% does not end one that is introduced with the word "comment". These
+% three cases are handled by having a flag "named!-character!*" that
+% can identify when a character has arisen as an expansion of a sequence
+% starting with "#". This flag must be cleared before a call to readch1
+% if it is to be tested afterwards.
 %
+% The idiom (string!-length id2string x = 1) tests if x is a symbol whose
+% internal representation is just one byte long. This can identify things
+% in the range 0 to 127 that may safely be be tested using liter, digit etc.
+% In the code here I try to protect calls to liter, digit etc and as
+% a result all characters whose code exceeds 127 will be neither letters
+% not digits nor whitespace.
+
+symbolic procedure readch1;
+  begin
     scalar x, y, w, n, save;
 % First cope with anything that had been read ahead...
     if peekchar!* then progn(
@@ -170,13 +401,16 @@ symbolic procedure readch1;
 % infix, secondly lispsystem!* is not set early enough. So I have a new
 % variable !*psl that I use to detect the relevant situation!
       progn(
-        if !*psl then progn(
-          if !*raise then x := red!-char!-downcase x)
+        if !*psl then progn(if !*raise then x := red!-char!-downcase x)
         else if !*lower then x := char!-downcase x
         else if !*raise then x := char!-upcase x),
       return x);
 % Now it is necessary to do a "real" read.
 a:  if null terminalp() then progn(
+% In a fully Unicode world readch() might return a symbol whose name
+% is several bytes long but that represents a single Unicode character.
+% Doing things that way risks repeatedly packing and unpacking utf-8
+% and Unicode data but may feel most consistent.
       x := readch(),
       if x eq !$eol!$ then curline!* := curline!*+1)
 % crbuf1!* is a close relative of peekchar!* but is mainly used as
@@ -205,10 +439,13 @@ a:  if null terminalp() then progn(
       go to a)
 % Here I am accumulating a bit of stuff where I look ahead following
 % a "#" character.
-    else if liter x or digit x then progn(
+    else if (string!-length id2string x = 1) and
+       (liter x or digit x) then progn(
 % I accumulate the initial "#" followed by any number of letters and
-% digits.
-      peekchar!* := x . peekchar!*,
+% digits. Well I will only consider letters with codes in the range
+% U+0000 to u+007f here and that keeps things simpler - eg when it comes
+% to case folding things later on.
+      (peekchar!* := x . peekchar!*),
       go to a);
     !*raise := car save;
     !*lower := cdr save;
@@ -217,21 +454,23 @@ a:  if null terminalp() then progn(
 % by one in the usual way. Note that while the very final peeked character
 % could be a second "#" none of the others can be.
     if not (x eq '!;) or null cdr peekchar!* then progn(
-      peekchar!* := cdr reversip (x . peekchar!*),
+      (peekchar!* := cdr reversip (x . peekchar!*)),
       return '!#);
 % Now I have a potential character name object. It could be one of
 %        #name;
 %        #hexdigits;
 %        #Xhexdigits;     (upper or lower case "x")
-%        #Udecimaldigits; (upper o lower case "u")
+% (also  #0hexdigits;     will have the same effect)
+%        #Udecimaldigits; (upper or lower case "u")
 % but if the name is not recognised or the numeric value is out of
 % range the sequence will just be treated as raw characters and all
 % this special treatment will have been merely a diversion.
     y := intern list!-to!-string (x := cdr reverse peekchar!*);
 % For bootstrapping there has to be a "!" before the "_" on the next line.
-    if y := get(y, 'unicode!_character) then progn(
-       peekchar!* := nil,
-       return int2id y);
+    if (y := get(y, 'unicode!_character)) then progn(
+       (peekchar!* := nil),
+       (named!-character!* := t),
+       return int2wideid y);
 % Now it was not a known name. Next check if it was #Udddd
     n := 0;
 % I uprated the very initial bootstrap version of the parser so that
@@ -248,12 +487,14 @@ hex:if null x then go to ok;
 dec1:
     x := cdr x;
 dec:if null x then go to ok;
+
     if null digit car x then go to fail;
     n := 10*n + get(car x, 'hexdigit);
     x := cdr x;
     go to dec;
 ok: peekchar!* := nil;
-    return int2id n;
+    named!-character!* := t;
+    return int2wideid n;
 fail:
     peekchar!* := cdr reverse ('!; . peekchar!*);
     return '!#
@@ -281,7 +522,9 @@ symbolic procedure token!-number x;
       if y or null(x eq '!)) then y := x . y;
       if dotp then power := power - 1;
     num2:
-      if (x := readch1()) eq '!.
+      x := readch1();
+      if not (string!-length id2string x = 1) then go to ret
+       else if x eq '!.
          then if dotp
                 then rerror('rlisp,3,"Syntax error: improper number")
                else progn(dotp := t, go to num2)
@@ -296,10 +539,17 @@ symbolic procedure token!-number x;
       dotp := t;
       if (x := readch1()) eq '!- then sign := t
        else if x eq '!+ then nil
+       else if null (string!-length id2string x = 1) then go to ret
        else if null digit x then go to ret
        else z := list x;
    nume1:
-      if null digit(x := readch1()) then go to nume2;
+% Even though characters are now extended I want the digit test to pick out
+% just those decimal digits that can be handled by compress. So characters
+% such as U+1D7E6 (mathematical sans serif digit four) probably does not want
+% to pass the test...
+      x := readch1();
+      if null (string!-length id2string x = 1) then go to nume2
+       else if null digit x then go to nume2;
       z := x . z;
       go to nume1;
    hexnum:
@@ -322,6 +572,8 @@ symbolic procedure token!-number x;
       return nxtsym!*
    end;
 
+% Note that the arrangements here only support numbers written using
+% characters from the Basic Latin Block (U+0000 to U+007f).
 deflist(
  '((!0 0)  (!1 1)  (!2 2)  (!3 3)  (!4 4)
    (!5 5)  (!6 6)  (!7 7)  (!8 8)  (!9 9)
@@ -369,9 +621,14 @@ symbolic procedure token1;
 %
    begin scalar x,y,z;
         x := crchar!*;
-    a:  if seprp x and null(x eq !$eol!$ and !*eoldelimp)
+    a:  if not (string!-length id2string x = 1) then go to unicode;
+        if seprp x and null(x eq !$eol!$ and !*eoldelimp)
           then progn(x := readch1(), go to a)
          else if digit x then return token!-number x
+% Letters in the Basic Latin Block can be used without needing an escape
+% character. The status of things such as U+00c1 (latin capital A with acute)
+% and all the other supplemental characters (to say nothing of Greek letters)
+% will be a matter for the underlying Lisp to worry about.
          else if liter x then go to letter
          else if (y := get(x,'tokprop)) then return lispapply(y,nil)
          else if x eq '!% and null !*savecomments!* then go to coment
@@ -379,11 +636,16 @@ symbolic procedure token1;
           then go to escape
          else if x eq '!" then go to string
          else if x eq '!\ then go to backslash;
+    unicode:
         ttype!* := 3;
         if x eq !$eof!$ then prog2(crchar!* := '! ,filenderr());
         nxtsym!* := x;
-        if delcp x then crchar!*:= '!  else crchar!*:= readch1();
-        if null(x eq '!- and digit crchar!* and !*minusliter)
+        if (string!-length id2string x = 1) and delcp x then
+          crchar!*:= '!  else crchar!*:= readch1();
+        if null(x eq '!- and
+                (string!-length id2string crchar!*  = 1) and
+                digit crchar!* and
+                !*minusliter)
           then go to c;
         x := token!-number crchar!*;
         if numberp x then return apply1('minus,x);  % For bootstrapping.
@@ -393,25 +655,32 @@ symbolic procedure token1;
         begin scalar raise,!*lower;
            raise := !*raise;
            !*raise := nil;
-           y := x . y;
            x := readch1();
            !*raise := raise
         end;
     letter:
         ttype!* := 0;
     let1:
-        y := x . y;
-        if digit (x := readch1()) or liter x then go to let1
+        x := wideid2list x;
+    let2:
+        if null x then go to let3;
+        y := car x . y;
+        x := cdr x;
+        go to let2;
+    let3:
+        x := readch1();
+        if not (string!-length id2string crchar!*  = 1) then go to ordinarysym
+         else if digit x or liter x then go to let1
          else if x eq '!! then go to escape
          else if x eq '!- and !*minusliter
-          then progn(y := '!! . y, go to let1)
+          then go to let1
          else if x eq '!_ then go to let1     % Allow _ as letter.
 %% The following change led to problems with CSL, and perhaps it is not
 %% even needed.
 %%         else if x eq '!% then go to let1     % Allow % as letter.
          else if x eq '!: then go to maybepackage;
     ordinarysym:
-        y := intern compress reversip!* y;
+        y := list2wideid reversip!* y;
 % If I implement a package system I might want to check if the name
 % y here should map onto ppp:y for some package ppp.
         if y = !*line!-marker then nxtsym!* := curline!*
@@ -471,23 +740,33 @@ symbolic procedure token1;
         go to ordinarysym; 
     maybeextpackage:                            % Seen abc::
         x := readch1();
-        if liter x then go to isextpackage;
+        if (string!-length id2string crchar!*  = 1) and
+           liter x then go to isextpackage;
         peekchar!* := list('!:, x);
         x := '!:;
         go to ordinarysym;
     isextpackage:
 % What follows lexes a name of the form ppp::xxx
-        z := intern compress reverse y;
+        z := list2wideid reverse y;
 % In case it is useful I set z to the name of the "package" part ppp
-        y := '!: . '!! . '!: . '!! . y;
+        y := (id2int '!:) . (id2int '!:) .  y;
     extpackmore:
-        y := x . y;
-        if digit (x := readch1()) or liter x then go to extpackmore
+        x := wideid2list x;
+    ext1:
+        if null x then go to ext2;
+        y := car x . y;
+        x := cdr x;
+        go to ext1;
+    ext2:
+        x := readch1();
+        if not (string!-length id2string crchar!*  = 1) then go to extdone
+         else if digit x or liter x then go to extpackmore
          else if x eq '!! then go to extpackescape
          else if x eq '!- and !*minusliter
-          then progn(y := '!! . y, go to extpackmore)
+          then go to extpackmore
          else if x eq '!_ then go to extpackmore;    % Allow _ as letter.
-        y := intern compress reversip!* y;
+    extdone:
+        y := list2wideid reversip!* y;
 % At this stage I will always display a message reporting what I have seen.
         lprim list("Name with double colon in detected:", y);
         nxtsym!* := y;
@@ -500,7 +779,6 @@ symbolic procedure token1;
         begin scalar raise,!*lower;
            raise := !*raise;
            !*raise := nil;
-           y := x . y;
            x := readch1();
            !*raise := raise
         end;
@@ -510,18 +788,25 @@ symbolic procedure token1;
            raise := !*raise;
            !*raise := nil;
        strinx:
-           y := x . y;
+           x := wideid2list x; % extract character from the symbol.
+       dumpx:
+           if null x then go to dumped;
+           y := car x . y;
+           x := cdr x;
+           go to dumpx;
+       dumped:
+           named!-character!* := nil;
            if (x := readch1()) eq !$eof!$
              then progn(!*raise := raise,
                         crchar!* := '! ,
                         lpriw("***** End-of-file in string",nil),
                         filenderr())
-            else if null(x eq '!") then go to strinx;
-           y := x . y;
+            else if (null(x eq '!")) or named!-character!* then go to strinx;
            % Now check for embedded string character.
+           named!-character!* := nil;
            x := readch1();
-           if x eq '!" then go to strinx;
-           nxtsym!* := mkstrng compress reversip!* y;
+           if (x eq '!") and (null named!-character!*) then go to strinx;
+           nxtsym!* := list2widestring cdr reversip!* y;
            !*raise := raise
          end;
         ttype!* := 1;
@@ -531,7 +816,9 @@ symbolic procedure token1;
         begin scalar !*lower,raise;
         raise := !*raise;
         !*raise := nil;
-    comm1: if null(readch1() eq !$eol!$) then go to comm1;
+    comm1:
+        named!-character!* := nil;
+        if (null(readch1() eq !$eol!$)) or named!-character!* then go to comm1;
         !*raise := raise
         end;
         x := readch1();
@@ -827,8 +1114,15 @@ symbolic procedure read!-comment1 u;
    begin scalar !*lower,raise;
       raise := !*raise;
       !*raise := nil;
- comm1: if null(delcp crchar!* and null(crchar!* eq !$eol!$))
-          then progn(crchar!* := readch1(), go to comm1);
+      named!-character!* := nil;
+ comm1:
+      if named!-character!* or
+         (null (string!-length id2string crchar!* = 1)) or
+         (null (delcp crchar!*)) or
+         (crchar!* eq !$eol!$) then progn(
+             named!-character!* := nil,
+             crchar!* := readch1(),
+             go to comm1);
       crchar!* := '! ;
       !*raise := raise;
       condterpri()

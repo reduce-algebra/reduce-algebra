@@ -647,8 +647,7 @@ flag('(lengthc),'lose);
 symbolic procedure concat2(u,v); concat(u,v);
 
 symbolic procedure concat(u,v);
-   % This would be better supported at a lower level.
-   compress('!" . append(explode2 u,nconc(explode2 v,list '!")));
+   list2string append(string2list u, string2list v);
 
 % Used by the (old) patching mechanism.
 %

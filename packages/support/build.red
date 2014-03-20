@@ -79,8 +79,10 @@ charassoc!* :=
            (!S . !s) (!T . !t) (!U . !u) (!V . !v) (!W . !w) (!X . !x)
            (!Y . !y) (!Z . !z));
 
+% The previous version of this would fail if either string contained a
+% doublequote character.
 symbolic procedure concat(u,v);
-   compress('!" . append(explode2 u,nconc(explode2 v,list '!")));
+   list2string append(string2list u, string2list v);
 
 % End of fudges. Note that this file is only used while bootstrapping so the
 % redundant or non-optimised versions here do not persist into the final image.

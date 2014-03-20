@@ -706,37 +706,37 @@ generated_sources_deps = $(gensrc)/01.c \
 		$(gensrc)/58.c $(gensrc)/59.c \
 		$(gensrc)/60.c
 
-generated_objects = u01.$(OBJEXT) \
-		u02.$(OBJEXT) u03.$(OBJEXT) \
-		u04.$(OBJEXT) u05.$(OBJEXT) \
-		u06.$(OBJEXT) u07.$(OBJEXT) \
-		u08.$(OBJEXT) u09.$(OBJEXT) \
-		u10.$(OBJEXT) u11.$(OBJEXT) \
-		u12.$(OBJEXT) u13.$(OBJEXT) \
-		u14.$(OBJEXT) u15.$(OBJEXT) \
-		u16.$(OBJEXT) u17.$(OBJEXT) \
-		u18.$(OBJEXT) u19.$(OBJEXT) \
-		u20.$(OBJEXT) u21.$(OBJEXT) \
-		u22.$(OBJEXT) u23.$(OBJEXT) \
-		u24.$(OBJEXT) u25.$(OBJEXT) \
-		u26.$(OBJEXT) u27.$(OBJEXT) \
-		u28.$(OBJEXT) u29.$(OBJEXT) \
-		u30.$(OBJEXT) u31.$(OBJEXT) \
-		u32.$(OBJEXT) u33.$(OBJEXT) \
-		u34.$(OBJEXT) u35.$(OBJEXT) \
-		u36.$(OBJEXT) u37.$(OBJEXT) \
-		u38.$(OBJEXT) u39.$(OBJEXT) \
-		u40.$(OBJEXT) u41.$(OBJEXT) \
-		u42.$(OBJEXT) u43.$(OBJEXT) \
-		u44.$(OBJEXT) u45.$(OBJEXT) \
-		u46.$(OBJEXT) u47.$(OBJEXT) \
-		u48.$(OBJEXT) u49.$(OBJEXT) \
-		u50.$(OBJEXT) u51.$(OBJEXT) \
-		u52.$(OBJEXT) u53.$(OBJEXT) \
-		u54.$(OBJEXT) u55.$(OBJEXT) \
-		u56.$(OBJEXT) u57.$(OBJEXT) \
-		u58.$(OBJEXT) u59.$(OBJEXT) \
-		u60.$(OBJEXT)
+generated_objects = reduce-u01.$(OBJEXT) \
+		reduce-u02.$(OBJEXT) reduce-u03.$(OBJEXT) \
+		reduce-u04.$(OBJEXT) reduce-u05.$(OBJEXT) \
+		reduce-u06.$(OBJEXT) reduce-u07.$(OBJEXT) \
+		reduce-u08.$(OBJEXT) reduce-u09.$(OBJEXT) \
+		reduce-u10.$(OBJEXT) reduce-u11.$(OBJEXT) \
+		reduce-u12.$(OBJEXT) reduce-u13.$(OBJEXT) \
+		reduce-u14.$(OBJEXT) reduce-u15.$(OBJEXT) \
+		reduce-u16.$(OBJEXT) reduce-u17.$(OBJEXT) \
+		reduce-u18.$(OBJEXT) reduce-u19.$(OBJEXT) \
+		reduce-u20.$(OBJEXT) reduce-u21.$(OBJEXT) \
+		reduce-u22.$(OBJEXT) reduce-u23.$(OBJEXT) \
+		reduce-u24.$(OBJEXT) reduce-u25.$(OBJEXT) \
+		reduce-u26.$(OBJEXT) reduce-u27.$(OBJEXT) \
+		reduce-u28.$(OBJEXT) reduce-u29.$(OBJEXT) \
+		reduce-u30.$(OBJEXT) reduce-u31.$(OBJEXT) \
+		reduce-u32.$(OBJEXT) reduce-u33.$(OBJEXT) \
+		reduce-u34.$(OBJEXT) reduce-u35.$(OBJEXT) \
+		reduce-u36.$(OBJEXT) reduce-u37.$(OBJEXT) \
+		reduce-u38.$(OBJEXT) reduce-u39.$(OBJEXT) \
+		reduce-u40.$(OBJEXT) reduce-u41.$(OBJEXT) \
+		reduce-u42.$(OBJEXT) reduce-u43.$(OBJEXT) \
+		reduce-u44.$(OBJEXT) reduce-u45.$(OBJEXT) \
+		reduce-u46.$(OBJEXT) reduce-u47.$(OBJEXT) \
+		reduce-u48.$(OBJEXT) reduce-u49.$(OBJEXT) \
+		reduce-u50.$(OBJEXT) reduce-u51.$(OBJEXT) \
+		reduce-u52.$(OBJEXT) reduce-u53.$(OBJEXT) \
+		reduce-u54.$(OBJEXT) reduce-u55.$(OBJEXT) \
+		reduce-u56.$(OBJEXT) reduce-u57.$(OBJEXT) \
+		reduce-u58.$(OBJEXT) reduce-u59.$(OBJEXT) \
+		reduce-u60.$(OBJEXT)
 
 generated_lisp = $(gensrc)/u01.lsp \
 		$(gensrc)/u02.lsp $(gensrc)/u03.lsp \
@@ -4239,6 +4239,8 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 # restart.c using a generic default rule - otherwise the lack of
 # explicit actions here would hurt.
 @crlibm_FALSE@restart.$(OBJEXT):	machineid.c
+@crlibm_FALSE@csl-restart.$(OBJEXT):	machineid.c
+@crlibm_FALSE@reduce-restart.$(OBJEXT):	machineid.c
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -4939,10 +4941,10 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # up to date before the regeneration will NOT get spotted as in need
 # of compilation even though they have changed.
 
-# I believe there is a potential race (with "make -j") if say u01.o is
+# I believe there is a potential race (with "make -j") if say reduce-u01.o is
 # out of date in a simple way and starts to get compiled, but while that
 # is going on a missing version of say u33.lsp causes the rule here to
-# trigger... and in the process re-create a new version of u05.c. I try
+# trigger... and in the process re-create a new version of reduce-u05.c. I try
 # to deal with that by deleting all the *.o files just in case some
 # parallel process has slotted one in just when I did not want that!
 # Well it is even worse - the main reduce executable can become out

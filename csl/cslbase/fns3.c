@@ -3704,6 +3704,18 @@ Lisp_Object Lupbv(Lisp_Object nil, Lisp_Object v)
     return onevalue(fixnum_of_int(n));
 }
 
+Lisp_Object Lstring_length(Lisp_Object nil, Lisp_Object v)
+{
+    Header h;
+    int32_t n;
+    CSL_IGNORE(nil);
+    if (!(is_vector(v))) return aerror1("string-length", v);
+    h = vechdr(v);
+    if (type_of_header(h) != TYPE_STRING) return aerror1("string-length", v);
+    n = length_of_header(h) - CELL;
+    return onevalue(fixnum_of_int(n));
+}
+
 #ifdef COMMON
 Lisp_Object Lvecbnd(Lisp_Object nil, Lisp_Object v)
 {
@@ -3982,7 +3994,9 @@ setup_type const funcs3_setup[] =
     {"qputv",                   wrong_no_3a, wrong_no_3b, Lputv},
     {"eputv",                   wrong_no_3a, wrong_no_3b, Lputv},
     {"make-simple-string",      Lsmkvect, too_many_1, wrong_no_1},
+    {"allocate-string",         Lsmkvect, too_many_1, wrong_no_1},
     {"putv-char",               wrong_no_3a, wrong_no_3b, Lsputv},
+    {"string-store",            wrong_no_3a, wrong_no_3b, Lsputv},
     {"bps-putv",                wrong_no_3a, wrong_no_3b, Lbpsputv},
     {"bps-getv",                too_few_2, Lbpsgetv, wrong_no_2},
     {"bps-upbv",                Lbpsupbv, too_many_1, wrong_no_1},
@@ -4013,6 +4027,7 @@ setup_type const funcs3_setup[] =
     {"maphash",                 too_few_2, Lmaphash, wrong_no_2},
     {"hashcontents",            Lhashcontents, too_many_1, wrong_no_1},
     {"upbv",                    Lupbv, too_many_1, wrong_no_1},
+    {"string-length",           Lstring_length, too_many_1, wrong_no_1},
 #ifdef COMMON
     {"hashtable-flavour",       Lhash_flavour, too_many_1, wrong_no_1},
     {"getv-bit",                too_few_2, Lbgetv, wrong_no_2},

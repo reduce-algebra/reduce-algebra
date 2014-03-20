@@ -70,18 +70,20 @@ symbolic procedure evenp x; remainder(x,2)=0;
 
 flag('(evenp),'opfn);  % Make a symbolic operator.
 
-symbolic procedure lengthc u;
-   %gives character length of U excluding string and escape chars;
-   begin integer n; scalar x;
-      n := 0;
-      x := explode u;
-      if car x eq '!" then return length x-2;
-      while x do
-        <<if car x eq '!! then x := cdr x;
-          n := n+1;
-          x := cdr x>>;
-      return n
-   end;
+% The definition of this function has been migrated to rlisp/tok.red
+%
+%symbolic procedure lengthc u;
+%   %gives character length of U excluding string and escape chars;
+%   begin integer n; scalar x;
+%      n := 0;
+%      x := explode u;
+%      if car x eq '!" then return length x-2;
+%      while x do
+%        <<if car x eq '!! then x := cdr x;
+%          n := n+1;
+%          x := cdr x>>;
+%      return n
+%   end;
 
 symbolic procedure makearbcomplex;
    begin scalar ans;

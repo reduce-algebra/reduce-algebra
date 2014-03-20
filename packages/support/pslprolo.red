@@ -87,6 +87,16 @@ set('!*quotenewnam,t);
 
 remflag('(set),'eval);
 
+% It would be good to have these PSL modules available even during
+% early stages of bootstrapping. In particular strings is needed so
+% that the string-length function can be used.
+
+load get!-options;
+load strings;
+load str!-search;
+load numeric!-ops;
+load chars;
+load f!-strings; % for string-store
 
 % Resolution of non-local variable definitions.
 

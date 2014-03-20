@@ -437,7 +437,7 @@ static Lisp_Object MS_CDECL Lplus(Lisp_Object nil, int nargs, ...)
             }
         }
         r = plus2(r, w);
-        errexitn(nargs-i);
+        errexitn(nargs-i-1);
     }
     return onevalue(r);
 }
@@ -467,7 +467,7 @@ static Lisp_Object MS_CDECL Ldifference(Lisp_Object nil, int nargs, ...)
     {   Lisp_Object w;
         pop(w);
         r = difference2(r, w);
-        errexitn(nargs-i);
+        errexitn(nargs-i-1);
     }
     popv(1);
     return onevalue(r);
@@ -491,7 +491,7 @@ static Lisp_Object MS_CDECL Ltimes(Lisp_Object nil, int nargs, ...)
     {   Lisp_Object w;
         pop(w);
         r = times2(r, w);
-        errexitn(nargs-i);
+        errexitn(nargs-i-1);
     }
     return onevalue(r);
 }
@@ -516,7 +516,7 @@ Lisp_Object MS_CDECL Lquotient_n(Lisp_Object nil, int nargs, ...)
     {   Lisp_Object w;
         pop(w);
         r = CLquot2(r, w);
-        errexitn(nargs-i);
+        errexitn(nargs-i-1);
     }
     popv(1);
     return onevalue(r);
@@ -658,7 +658,7 @@ static Lisp_Object MS_CDECL Lboolfn(Lisp_Object env, int nargs, ...)
     {   Lisp_Object w;
         pop(w);
         r = (*boolop_array[what].fn)(r, w);
-        errexitn(nargs-i);
+        errexitn(nargs-i-1);
     }
     return onevalue(r);
 }
@@ -1787,6 +1787,8 @@ setup_type const arith06_setup[] =
 {
     {"ash",                     too_few_2, Lash, wrong_no_2},
     {"ash1",                    too_few_2, Lash1, wrong_no_2},
+    {"lshift",                  too_few_2, Lash, wrong_no_2},
+    {"ashift",                  too_few_2, Lash1, wrong_no_2},
     {"divide",                  too_few_2, Ldivide, wrong_no_2},
     {"evenp",                   Levenp, too_many_1, wrong_no_1},
     {"inorm",                   too_few_2, Linorm, wrong_no_2},
@@ -1794,6 +1796,10 @@ setup_type const arith06_setup[] =
     {"logeqv",                  Lidentity, Llogeqv2, Lboolfn},
     {"lognot",                  Llognot, too_many_1, wrong_no_1},
     {"logxor",                  Lidentity, Llogxor2, Lboolfn},
+    {"land",                    Lidentity, Llogand2, Lboolfn},
+    {"leqv",                    Lidentity, Llogeqv2, Lboolfn},
+    {"lnot",                    Llognot, too_many_1, wrong_no_1},
+    {"lxor",                    Lidentity, Llogxor2, Lboolfn},
     {"lsd",                     Llsd, too_many_1, wrong_no_1},
     {"make-random-state",       Lmake_random_state1, Lmake_random_state, wrong_no_2},
     {"max",                     Lidentity, Lmax2, Lmax},

@@ -69,13 +69,22 @@
 (setq !*pwrds t)
 
 % Until the following lines have been executed the
-% bitwise operations listed here will not work.
+% bitwise operations listed here will not work. However there would be
+% a disaster if the env cell of a symbol was unilaterally changed at a later
+% stage (eg if the function had been defined) so I need to arrange that I
+% only do this once
 
-(progn
-   (symbol!-set!-env 'logand 1)
-   (symbol!-set!-env 'logxor 6)
-   (symbol!-set!-env 'logor 7)
-   (symbol!-set!-env 'logeqv 9))
+(cond
+   ((null (symbol!-env 'logand))
+     (symbol!-set!-env 'logand 1)
+     (symbol!-set!-env 'logxor 6)
+     (symbol!-set!-env 'logor 7)
+     (symbol!-set!-env 'logeqv 9)
+     (symbol!-set!-env 'land 1)      % PSL names as well
+     (symbol!-set!-env 'lxor 6)
+     (symbol!-set!-env 'lor 7)
+     (symbol!-set!-env 'leqv 9))
+)
 
 (make!-special '!!fleps1)
 
