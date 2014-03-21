@@ -893,7 +893,7 @@ asserted procedure sfto_qsub1(f: SF, al: AList): SQ;
    end;
 
 asserted procedure sfto_fsub(f: SF, al: AList): SF;
-   sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
+   sfto_fsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
 
 asserted procedure sfto_fsub1(f: SF, al: AList): SF;
    begin scalar mv, nred, nlc, nht;
@@ -1029,11 +1029,33 @@ asserted procedure sfto_geqq(q1: SQ, q2: SQ): ExtraBoolean;
 asserted procedure sfto_leqq(q1: SQ, q2: SQ): ExtraBoolean;
    (null w or minusf numr w) where w=subtrsq(q1, q2);
 
-asserted procedure sfto_maxq(q1: SQ, q2: SQ): ExtraBoolean;
+asserted procedure sfto_maxq(q1: SQ, q2: SQ): SQ;
    if sfto_greaterq(q1, q2) then q1 else q2;
 
-asserted procedure sfto_minq(q1: SQ, q2: SQ): ExtraBoolean;
+asserted procedure sfto_minq(q1: SQ, q2: SQ): SQ;
    if sfto_lessq(q1, q2) then q1 else q2;
+
+asserted procedure sfto_maxql(l: List): SQ;
+   % [l] is a nonempty list.
+   begin scalar m;
+      assert(l);
+      m := car l;
+      for each q in cdr l do
+	 if sfto_greaterq(q, m) then
+	    m := q;
+      return m
+   end;
+
+asserted procedure sfto_minql(l: List): SQ;
+   % [l] is a nonempty list.
+   begin scalar m;
+      assert(l);
+      m := car l;
+      for each q in cdr l do
+	 if sfto_lessq(q, m) then
+	    m := q;
+      return m
+   end;
 
 asserted procedure sfto_ceilq(q: SQ): SQ;
    if eqn(denr q, 1) then
@@ -1048,6 +1070,9 @@ asserted procedure sfto_multlq(sql: List): SQ;
       1 ./ 1
    else
       multsq(car sql, sfto_multlq cdr sql);
+
+asserted procedure sfto_avgq(q1: SQ, q2: SQ): SQ;
+   quotsq(addsq(q1, q2), 2 ./ 1);
 
 asserted procedure sfto_expq(q: SQ, n: Integer): SQ;
    % Non-negative power of SQ.
