@@ -28,9 +28,9 @@
 
 module raarith;
 
-put('refine, 'psopfn, 'ra_refine0);
+put('refine, 'psopfn, 'ra_refine!$);
 
-asserted procedure ra_refine0(u: List): RA;
+asserted procedure ra_refine!$(u: List): RA;
    begin
       scalar x;
       integer n;
@@ -39,7 +39,7 @@ asserted procedure ra_refine0(u: List): RA;
       return aeval ra_refine(x, n)
    end;
 
-asserted procedure ra_refine(x: RA, n: Integer): RA;
+asserted procedure ra_refine0(x: RA, n: Integer): RA;
    % Refine [x] [n] times.
    begin scalar f, iv, l, u;
       f := ra_f x;
@@ -48,9 +48,10 @@ asserted procedure ra_refine(x: RA, n: Integer): RA;
       return ra_qmk(f, l, u)
    end;
 
+ra_wrap(ra_refine0, ra_refine, 2);
+
 asserted procedure ra_refine1(f: SF, l: SQ, u: SQ, n: Integer): DottedPair;
    begin scalar c;
-      off1 'ranum;
       for j := 1:n do <<
 	 c := sfto_avgq(l,u);
 	 if null numr sfto_qsub1(f, {ra_x() . c}) then
@@ -62,11 +63,10 @@ asserted procedure ra_refine1(f: SF, l: SQ, u: SQ, n: Integer): DottedPair;
 	    l := c
 	 >>
       >>;
-      on1 'ranum;
       return l . u
    end;
 
-asserted procedure ra_normalize(x: RA): RA;
+asserted procedure ra_normalize0(x: RA): RA;
    % Normaize [x]. That is, return [nil] if [x] represents 0, else refine [x]
    % such that its interval does not contain zero.
    begin scalar f, l, u;
@@ -89,10 +89,12 @@ asserted procedure ra_normalize(x: RA): RA;
       return ra_qmk(f, nil ./ 1, u)
    end;
 
+ra_wrap(ra_normalize0, ra_normalize, 1);
+
 asserted procedure ra_diff(f: SF): SF;
    numr difff(f, ra_x());
 
-asserted procedure ra_plus(x: RA, y: RA): RA;
+asserted procedure ra_plus0(x: RA, y: RA): RA;
    begin scalar ff, gg, h, lx, ux, ly, uy, l, u;
       if null x then
  	 return y;
@@ -100,7 +102,7 @@ asserted procedure ra_plus(x: RA, y: RA): RA;
 	 return x;
       ff := ra_plustransform ra_f x;
       gg := sfto_renamef(ra_f y, ra_x(), ra_y());
-      h := ra_resf(ff, gg, ra_y());
+      h := ra_resf0(ff, gg, ra_y());
       lx := iv_l ra_iv x;
       ux := iv_u ra_iv x;
       ly := iv_l ra_iv y;
@@ -113,23 +115,29 @@ asserted procedure ra_plus(x: RA, y: RA): RA;
       	 l := addsq(lx, ly);
       	 u := addsq(ux, uy)
       >>;
-      return ra_normalize ra_qmk(h, l, u)
+      return ra_normalize0 ra_qmk(h, l, u)
    end;
+
+ra_wrap(ra_plus0, ra_plus, 2);
 
 asserted procedure ra_plustransform(f: SF): SF;
    % Transform f(x) into f(x-y). TODO
-   ra_fsub1(f, {ra_x() . addf(!*k2f ra_x(), negf !*k2f ra_y())});
+   sfto_fsub1(f, {ra_x() . addf(!*k2f ra_x(), negf !*k2f ra_y())});
 
-asserted procedure ra_difference(x: RA, y: RA): RA;
-   ra_plus(x, ra_minus y);
+asserted procedure ra_difference1(x: RA, y: RA): RA;
+   ra_plus0(x, ra_minus0 y);
 
-asserted procedure ra_minus(x: RA): RA;
-   if null x then
-      nil
+ra_wrap(ra_difference0, ra_difference, 2);
+
+asserted procedure ra_minus0(x: RA): RA;
+   if ra_zerop x then
+      x
    else
       ra_mk(ra_mirror ra_f x, iv_minus ra_iv x);
 
-asserted procedure ra_minusp(x: RA): Boolean;
+ra_wrap(ra_minus0, ra_minus, 1);
+
+asserted procedure ra_minusp0(x: RA): Boolean;
    % [x] must ne normalized.
    begin scalar l;
       if null x then
@@ -138,13 +146,15 @@ asserted procedure ra_minusp(x: RA): Boolean;
       return l = iv_minf() or sfto_lessq(l, nil ./ nil)
    end;
 
-asserted procedure ra_times(x: RA, y: RA): RA;
-   begin scalar f, g, h, lx, ux, ly, uy, ll, l, u;
+ra_wrap(ra_minusp0, ra_minusp, 1);
+
+asserted procedure ra_times0(x: RA, y: RA): RA;
+   begin scalar ff, gg, h, lx, ux, ly, uy, ll, l, u;
       if null x or null y then
 	 return nil;
-      f := ra_timestransform ra_f x;
-      g := sfto_renamef(ra_f y, ra_x(), ra_y());
-      h := ra_resf(f, g, ra_y());
+      ff := ra_timestransform ra_f x;
+      gg := sfto_renamef(ra_f y, ra_x(), ra_y());
+      h := ra_resf0(ff, gg, ra_y());
       lx := iv_l ra_iv x;
       ux := iv_u ra_iv x;
       ly := iv_l ra_iv y;
@@ -153,25 +163,29 @@ asserted procedure ra_times(x: RA, y: RA): RA;
       l := sfto_minql ll;
       u := sfto_maxql ll;
       while not eqn(ra_budancount(h, l, u), 1) do <<
-	 lx . ux := ra_refine1(f, lx, ux, 1);
-	 ly . uy := ra_refine1(g, ly, uy, 1);
+	 lx . ux := ra_refine1(ra_f x, lx, ux, 1);
+	 ly . uy := ra_refine1(ra_f y, ly, uy, 1);
       	 ll := {multsq(lx, ly), multsq(lx, uy), multsq(ux, ly), multsq(ux, uy)};
       	 l := sfto_minql ll;
       	 u := sfto_maxql ll
       >>;
-      return ra_normalize ra_qmk(h, l, u)
+      return ra_normalize0 ra_qmk(h, l, u)
    end;
+
+ra_wrap(ra_times0, ra_times, 2);
 
 asserted procedure ra_timestransform(f: SF): SF;
    % Transform f(x) into y^d * f(x/y). TODO
-   numr ra_qsub1(
+   numr sfto_qsub1(
       multf(f, ra_y() .** ldeg f .* 1 .+ nil),
       {ra_x() . (!*k2f ra_x() ./ !*k2f ra_y())});
 
-asserted procedure ra_quotient(x: RA, y: RA): RA;
-   ra_times(x, ra_inverse y);
+asserted procedure ra_quotient0(x: RA, y: RA): RA;
+   ra_times0(x, ra_inverse0 y);
 
-asserted procedure ra_inverse(x: RA): RA;
+ra_wrap(ra_quotient0, ra_quotient, 2);
+
+asserted procedure ra_inverse0(x: RA): RA;
    begin scalar f, l, u, newl, newu;
       f := ra_f x;
       l := iv_l ra_iv x;
@@ -181,36 +195,18 @@ asserted procedure ra_inverse(x: RA): RA;
       return ra_qmk(ra_invtransform f, newl, newu)
    end;
 
+ra_wrap(ra_inverse0, ra_inverse, 1);
+
 asserted procedure ra_invtransform(f: SF): SF;
    % Transform f(x) into x^d * f(1/x). TODO
    numr ra_qsub1(
       multf(f, ra_x() .** ldeg f .* 1 .+ nil),
       {ra_x() . (1 ./ !*k2f ra_x())});
 
-% Wrappers
-
-asserted procedure ra_resf(f: SF, g: SF, x: Kernel): SF;
+asserted procedure ra_resf0(f: SF, g: SF, x: Kernel): SF;
    begin scalar w;
-      off1 'ranum;
       w := sfto_sqfpartf sfto_resf(f, g, x);
       if minusf w then w := negf w;
-      on1 'ranum;
-      return w
-   end;
-
-asserted procedure ra_fsub1(f: SF, al: Alist): SQ;
-   begin scalar w;
-      off1 'ranum;
-      w := sfto_fsub1(f, al);
-      on1 'ranum;
-      return w
-   end;
-
-asserted procedure ra_qsub1(f: SF, al: Alist): SQ;
-   begin scalar w;
-      off1 'ranum;
-      w := sfto_qsub1(f, al);
-      on1 'ranum;
       return w
    end;
 

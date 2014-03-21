@@ -74,6 +74,8 @@ create!-package('(ranum raarith rarcount raiv), nil);
 
 global '(domainlist!*);
 
+global '(emsg!*);
+
 fluid '(dmode!*);
 
 fluid '(!*msg);
@@ -110,6 +112,30 @@ put('!:ra!:, 'prepfn, 'ra_prep);
 put('!:ra!:, 'prifn, 'ra_print);
 
 put('!:rn!:, '!:ra!:, 'ra_rn2ra);
+
+macro procedure ra_wrap(argl);
+   begin scalar iname, oname, n, args, prgn;
+      iname := cadr argl;
+      oname := caddr argl;
+      n := get(iname, 'number!-of!-args) or if cdddr argl then cadddr argl;
+      if null n then
+	 rederr {car argl, cdr argl, "cannot determine the arity of", iname};
+      args := for i := 1:n collect mkid('a,i);
+      prgn := {'put, mkquote oname, ''number!-of!-args, n} . prgn;
+      prgn := {'de, oname, args, {'ra_wrapper, mkquote iname, 'list . args}} . prgn;
+      return 'progn . prgn
+   end;
+
+asserted procedure ra_wrapper(f: Id, argl: List): Any;
+   begin scalar w;
+      off1 'ranum;
+      argl := for each arg in argl collect mkquote arg;
+      w := errorset(f . argl, nil, !*backtrace);
+      on1 'ranum;
+      if errorp w then
+	 rederr emsg!*;
+      return car w
+   end;
 
 procedure ra_prep(x);
    x;
@@ -166,19 +192,19 @@ asserted procedure ra_print(x: RA);
 asserted procedure ra_simp(x: RA);
    ('!:ra!: . x) ./ 1;
 
-put('ra, 'psopfn, 'ra_ra);
-
-asserted procedure ra_ra(u: List): RA;
+asserted procedure ra_ra0(u: List): RA;
    begin scalar f, l, u, w;
-      off1 'ranum;
       f := numr simp car u;
       f := sfto_sqfpartf f;
       l := simp cadr u;
       u := simp caddr u;
-      w := aeval ra_normalize ra_qmk(f, l, u);
-      on1 'ranum;
+      w := aeval ra_normalize0 ra_qmk(f, l, u);
       return w
    end;
+
+ra_wrap(ra_ra0, ra_ra, 1);
+
+put('ra, 'psopfn, 'ra_ra);
 
 asserted procedure ra_zerop(x: RA): Boolean;
    null red ra_f x;
@@ -190,9 +216,9 @@ asserted procedure ra_onep(x: RA): Boolean;
 
 asserted procedure ra_intequiv(x: RA): Any;
    begin scalar f, l, u;
+      if ra_zerop x then
+	 return x;
       f := ra_f x;
-      if ra_zerop f then
-	 return nil;
       if eqn(ldeg f, 1) and eqn(lc f, 1) then
 	 return negf red f;
       % TODO

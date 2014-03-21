@@ -78,7 +78,7 @@ asserted procedure iv_rat2float(q: SQ, prec: Integer): Floating;
    begin scalar w, sh;
       sh := 10 ^ prec;
       w := (float(numr q or 0) / float denr q);
-      return float truncate(w * sh) / sh
+      return float fix(w * sh) / sh
    end;
 
 endmodule;
