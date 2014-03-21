@@ -75,8 +75,8 @@ asserted procedure ra_normalize0(x: RA): RA;
       f := ra_f x;
       l := ra_l x;
       u := ra_u x;
-      assert(not null numr ra_qsub1f, {ra_x() . l});
-      assert(not null numr ra_qsub1(f, {ra_x() . u}));
+      assert(not null numr sfto_qsub1f, {ra_x() . l});
+      assert(not null numr sfto_qsub1(f, {ra_x() . u}));
       if null numr u or minusf numr u or null l or minusf negf numr l then
 	 return x;
       % We now know l < 0 < u.
@@ -199,7 +199,7 @@ ra_wrap(ra_inverse0, ra_inverse, 1);
 
 asserted procedure ra_invtransform(f: SF): SF;
    % Transform f(x) into x^d * f(1/x). TODO
-   numr ra_qsub1(
+   numr sfto_qsub1(
       multf(f, ra_x() .** ldeg f .* 1 .+ nil),
       {ra_x() . (1 ./ !*k2f ra_x())});
 

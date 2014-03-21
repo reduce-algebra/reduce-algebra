@@ -212,7 +212,7 @@ asserted procedure ra_zerop(x: RA): Boolean;
 asserted procedure ra_onep(x: RA): Boolean;
    % Explicity treat the special case x^n - 1 for efficiency.
    iv_contains(ra_iv x, 1 ./ 1) and
-      (eqn(red ra_f x, -1) or eqn(ra_fsub1(ra_f x, {ra_x() . 1}), 1));
+      (eqn(red ra_f x, -1) or eqn(sfto_fsub1(ra_f x, {ra_x() . 1}), 1));
 
 asserted procedure ra_intequiv(x: RA): Any;
    begin scalar f, l, u;
