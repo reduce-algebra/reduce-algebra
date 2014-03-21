@@ -515,6 +515,11 @@ defautoload(assert_formproc, assert, expr, 3);
 defautoload(lalr_construct_parser);
 defautoload(yyparse, lalr, expr, 0);
 
+% Ranum
+
+switch ranum;
+put('ranum,'simpfg,'((t (load!-package 'ranum) (setdmode (quote ranum) t))));
+
 endmodule;
 
 end;
