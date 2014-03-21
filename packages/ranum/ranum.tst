@@ -12,12 +12,32 @@ wilk := numr simp xread t;
 2611655889692786813829120*x**7 + 10122095419974470210682880*x**6 +
 30198816984091441338777600 *x**5 + 67426052557934862488567808*x**4 +
 107969196810523545855590400*x**3 + 115794329499468438700032000 *x**2 +
-73425049924762651852800000*x + 20408661249006627717120000$
+   73425049924762651852800000*x + 20408661249006627717120000$
+
+mwilk := numr subf(wilk, '((x . (minus x))));
 
 on time;
 
+% load!-package 'profile;
+
+% profile ra_budan!-0!-1;
+
+sfto_lmq mwilk;
+
 ra_help ra_isolate wilk;
 
-ra_help ra_vca(wilk, -10^6 ./ 1, 10^6 ./ 1);
+for i := 1:20 do ra_isolate wilk;
+
+% algebraic proprint();
+
+f := numr simp xread t;
+x**2 - 2;
+
+ra_budancount(f, -1 ./ 1, nil ./ 1);
+ra_budancount(f, nil ./ 1, 3 ./ 1);
+
+sqrt2 := ra_mk(f, -1 ./ 1, 3 ./1);
+
+ra_normalize sqrt2;
 
 end;

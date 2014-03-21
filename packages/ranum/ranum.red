@@ -30,10 +30,8 @@ module ranum;
 % Real algebraic numbers.
 %
 % Real algebraic numbers are represented as x = (:ra: f (iv l u)), where f is a
-% univariate SF in ra_v() and l and u are SQs that are either numbers or SQ
-% representations iv_minf() or iv_pinf() of -infinity or infinity, resp.
-%
-% f need not be minimal in any way, in particular, f need not be squarefree.
+% univariate squarefree SF in ra_v() and l and u are SQs that are either numbers
+% or SQ representations iv_minf() or iv_pinf() of -infinity or infinity, resp.
 %
 % For all intervals (iv l u) it is guanranteed that
 %
@@ -72,17 +70,23 @@ struct IV checked by IVp;
 procedure IVp(s);
    eqcar(s, 'iv);
 
-create!-package('(ranum), nil);
+create!-package('(ranum raarith rarcount raiv), nil);
 
 global '(domainlist!*);
 
 fluid '(dmode!*);
 
+fluid '(!*msg);
+
+fluid '(ra_precision!*);
+
+if not ra_precision!* then ra_precision!* := 2;
+
 switch ranum;
 
 domainlist!* := union('(!:ra!:), domainlist!*);
 
-put('ranum, 'tag,' !:ra!:);
+put('ranum, 'tag, '!:ra!:);
 
 flag('(!:ra!:), 'field);
 
@@ -92,41 +96,38 @@ put('!:ra!:, 'zerop, 'ra_zerop);
 put('!:ra!:, 'onep, 'ra_onep);
 put('!:ra!:, 'minusp, 'ra_minusp);
 
+put('!:ra!:, 'i2d, 'ra_i2ra);
+
 put('!:ra!:, 'plus, 'ra_plus);
+put('!:ra!:, 'minus, 'ra_minus);
 put('!:ra!:, 'difference, 'ra_difference);
 put('!:ra!:, 'times, 'ra_times);
 put('!:ra!:, 'quotient, 'ra_quotient);
 put('!:ra!:, 'intequivfn, 'ra_intequiv);
 
+put('!:ra!:,'simpfn,'ra_simp);
 put('!:ra!:, 'prepfn, 'ra_prep);
 put('!:ra!:, 'prifn, 'ra_print);
 
-inline procedure iv_minf();
-   '((((infinity . 1) . -1)) . 1);
+put('!:rn!:, '!:ra!:, 'ra_rn2ra);
 
-inline procedure iv_pinf();
-   '((((infinity . 1) . 1)) . 1);
+procedure ra_prep(x);
+   x;
 
-asserted procedure iv_mk(l: SQ, u: SQ): IV;
-   % [l] and [u] are numbers of one of iv_minf(), iv_pinf().
-   {'iv, l, u};
-
-asserted procedure iv_l(i: IV): SQ;
-   % Lower bound.
-   cadr i;
-
-asserted procedure iv_u(i: IV): SQ;
-   % Upper bound.
-   caddr i;
-
-asserted procedure iv_plus(i1: IV, i2: IV): IV;
-   % ]l1, u1[ + ]l2, u2[ = ]l1 + l2, u1 + u2[
-   iv_mk(addsq(iv_l i1, iv_l i2), addsq(iv_u i1, iv_u i2));
-
-inline procedure ra_v();
+inline procedure ra_x();
    'x;
 
-asserted procedure ra_mk(f: SF, l: SQ, u: SQ): RA;
+inline procedure ra_y();
+   'w;
+
+inline procedure ra_zero();
+   ra_mk(!*k2f ra_x(), iv_mk(-1 ./ 1, 1 ./ 1));
+
+asserted procedure ra_mk(f: SF, i: IV): RA;
+   {'!:ra!:, f, i};
+
+asserted procedure ra_qmk(f: SF, l: SQ, u: SQ): RA;
+   % Quick make construct the interval.
    {'!:ra!:, f, iv_mk(l, u)};
 
 asserted procedure ra_f(x: RA): SF;
@@ -145,124 +146,89 @@ asserted procedure ra_u(x: RA): SQ;
    % [x] must not be zero.
    iv_u ra_iv x;
 
-asserted procedure ra_zerop(x: RA): Boolean;
-   % [x] must be normalized. The only normalized representation of zero is nil,
-   % which is caught by !:zerop.
-   nil;
-
-asserted procedure ra_onep(x: RA): Boolean;
-   % We are not doing anything special about 1. After inspecting the Reduce
-   % sources, I suspect that this is not seriuosly needed anywhere, in
-   % particular since we are in a field. I throw an error to be on the safe
-   % side anyway.
-   <<
-      backtrace();
-      rederr "!:onep is not implemented for !:ra!:!"
+asserted procedure ra_print(x: RA);
+   if not !*nat then <<
+      prin2!* "ranum(";
+      maprin prepf ra_f x;
+      prin2!* ", ";
+      maprin prepsq iv_l ra_iv x;
+      prin2!* ", ";
+      maprin prepsq iv_u ra_iv x;
+      prin2!* ")"
+   >> else <<
+      prin2!* "(";
+      maprin prepf ra_f x;
+      prin2!* ", ";
+      maprin ra_iv x;
+      prin2!* ")"
    >>;
 
-asserted procedure ra_minusp(x: RA): Boolean;
-   % [x] must ne normalized.
-   begin scalar l;
-      if null x then
- 	 return nil;
-      l := ra_l x;
-      return l = iv_minf() or sfto_lessq(l, nil ./ nil)
+asserted procedure ra_simp(x: RA);
+   ('!:ra!: . x) ./ 1;
+
+put('ra, 'psopfn, 'ra_ra);
+
+asserted procedure ra_ra(u: List): RA;
+   begin scalar f, l, u, w;
+      off1 'ranum;
+      f := numr simp car u;
+      f := sfto_sqfpartf f;
+      l := simp cadr u;
+      u := simp caddr u;
+      w := aeval ra_normalize ra_qmk(f, l, u);
+      on1 'ranum;
+      return w
    end;
 
-asserted procedure ra_normalize(x: RA): RA;
-   % Normaize [x]. That is, return [nil] if [x] represents 0, else refine [x]
-   % such that its interval does not contain zero.
-   begin scalar f, l, u, sc;
-      if null x then
-	 return x;
+asserted procedure ra_zerop(x: RA): Boolean;
+   null red ra_f x;
+
+asserted procedure ra_onep(x: RA): Boolean;
+   % Explicity treat the special case x^n - 1 for efficiency.
+   iv_contains(ra_iv x, 1 ./ 1) and
+      (eqn(red ra_f x, -1) or eqn(ra_fsub1(ra_f x, {ra_x() . 1}), 1));
+
+asserted procedure ra_intequiv(x: RA): Any;
+   begin scalar f, l, u;
       f := ra_f x;
-      l := ra_l x;
-      u := ra_u x;
-      assert(not null numr sfto_subq(f, {ra_v() . l}));
-      assert(not null numr sfto_subq(f, {ra_v() . u}));
-      if null numr u or minusf numr u or null l or minusf negf numr l then
-	 return x;
-      % We now know l < 0 < u.
-      if null sfto_abssummand f then
+      if ra_zerop f then
 	 return nil;
-      % We now know x <> 0.
-      sc := sfto_sturmchain(f, ra_diff f);
-      if eqn(sfto_sturmcount(sc, l, nil ./ 1), 1) then
-	 return ra_mk(f, l, nil ./ 1);
-      assert(eqn(sfto_sturmcount(sc, nil ./ 1, u), 1));
-      return ra_mk(f, nil ./ 1, u)
+      if eqn(ldeg f, 1) and eqn(lc f, 1) then
+	 return negf red f;
+      % TODO
+      return x
    end;
 
-asserted procedure ra_diff(f: SF): SF;
-   numr difff(f, ra_v());
+operator raprintprecision;
 
-asserted procedure ra_plus(x: RA, y: RA): RA;
-   ;
-
-
-
-asserted procedure ra_isolate(f: SF): List;
-   begin scalar cb;
-      cb := sfto_cauchyf(f, ra_v());
-      return ra_vca(f, negsq cb, cb)
+asserted procedure raprintprecision(n: Integer): Integer;
+   begin scalar w;
+      w := ra_precision!*;
+      ra_precision!* := n;
+      return w
    end;
 
-procedure ra_help(hu);
-   for each pr in hu collect {float(caar pr or 0) / float(cdar pr), float(cadr pr or 0)/float(cddr pr)};
-
-asserted procedure ra_vca(f: SF, l: SQ, u: SQ): List;
-   begin scalar ff, resl;
-      ff := numr sfto_qsub1(f, {ra_v() . ra_transform(!*k2q ra_v(), l, u)});
-      resl := ra_vca1(ff, l, u);
-      return resl
-   end;
-
-asserted procedure ra_transform(x: SQ, l: SQ, u: SQ): SQ;
-   addsq(multsq(subtrsq(u, l), x), l);
-
-asserted procedure ra_vca1(f: SF, a: SQ, b: SQ): List;
-   begin
-      scalar ff, fff, c, resl;
-      integer sv;
-      sv := ra_budan!-0!-1 f;
-      if eqn(sv, 0) then
+asserted procedure ra_i2ra(z: Integer): RA;
+   begin scalar f, l, u;
+      if eqn(z, 0) then
 	 return nil;
-      if eqn(sv, 1) then
-	 return {a . b};
-      c := quotsq(addsq(a, b), !*f2q 2);
-      ff := multf(2^ldeg f, f);
-      fff := numr sfto_qsub1(ff, {ra_v() . (!*k2f ra_v() ./ 2)});
-      resl := ra_vca1(fff, a, c);
-      if null numr sfto_qsub1(f, {ra_v() . (1 ./ 2)}) then
-	 resl := append(resl, {c . c});
-      fff := numr sfto_qsub1(ff, {ra_v() . (addf(!*k2f ra_v(), 1) ./ 2)});
-      resl := append(resl, ra_vca1(fff, c, b));
-      return resl
+      f := addf(!*k2f ra_x(), negf z);
+      l := !*f2q sfto_int2sf(z-1);
+      u := !*f2q sfto_int2sf(z+1);
+      return ra_normalize ra_qmk(f, l, u)
    end;
 
-asserted procedure ra_budan!-0!-1(f: SF): Integer;
-   begin
-      scalar xp1, ff, c;
-      integer sign, cursign, signchanges;
-      xp1 := addf(!*k2f ra_v(), 1);
-      ff := sfto_qsub1(f, {ra_v() . (1 ./ xp1)});
-      ff := multsq(!*f2q exptf(xp1, ldeg f), ff);
-      ff := numr ff;
-      while ff do <<
-	 if domainp ff then <<
-	    c := ff;
-	    ff := nil
-	 >> else <<
-	    c := lc ff;
-	    ff := red ff
-	 >>;
-	 sign := if minusf c then -1 else 1;
-	 if sign * cursign < 0 then
-	    signchanges := signchanges + 1;
-	 cursign := sign;
-      >>;
-      return signchanges
+asserted procedure ra_rn2ra(rn): RA;
+   begin scalar f, l, u;
+      if rnzerop!: rn then
+      	 return ra_zero();
+      f := addf(multf(!*k2f ra_x(), cddr rn), negf cadr rn);
+      l := sfto_int2sf(cadr rn - 1) ./ cddr rn;
+      u := sfto_int2sf(cadr rn + 1) ./ cddr rn;
+      return ra_normalize ra_qmk(f, l, u)
    end;
+
+initdmode 'ranum;
 
 endmodule;
 

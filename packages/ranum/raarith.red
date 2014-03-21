@@ -1,0 +1,219 @@
+% ----------------------------------------------------------------------
+% $Id$
+% ----------------------------------------------------------------------
+% Copyright (c) 2014 T. Sturm
+% ----------------------------------------------------------------------
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+
+module raarith;
+
+put('refine, 'psopfn, 'ra_refine0);
+
+asserted procedure ra_refine0(u: List): RA;
+   begin
+      scalar x;
+      integer n;
+      x := numr simp car u;
+      n := if cdr u then reval cadr u else 1;
+      return aeval ra_refine(x, n)
+   end;
+
+asserted procedure ra_refine(x: RA, n: Integer): RA;
+   % Refine [x] [n] times.
+   begin scalar f, iv, l, u;
+      f := ra_f x;
+      iv := ra_iv x;
+      l . u := ra_refine1(f, iv_l iv, iv_u iv, n);
+      return ra_qmk(f, l, u)
+   end;
+
+asserted procedure ra_refine1(f: SF, l: SQ, u: SQ, n: Integer): DottedPair;
+   begin scalar c;
+      off1 'ranum;
+      for j := 1:n do <<
+	 c := sfto_avgq(l,u);
+	 if null numr sfto_qsub1(f, {ra_x() . c}) then
+	    l := sfto_avgq(l, c)
+	 else if eqn(ra_budancount(f, l, c), 1) then
+	    u := c
+	 else <<
+	    assert eqn(ra_budancount(f, c, u), 1);
+	    l := c
+	 >>
+      >>;
+      on1 'ranum;
+      return l . u
+   end;
+
+asserted procedure ra_normalize(x: RA): RA;
+   % Normaize [x]. That is, return [nil] if [x] represents 0, else refine [x]
+   % such that its interval does not contain zero.
+   begin scalar f, l, u;
+      if null x then
+	 return x;
+      f := ra_f x;
+      l := ra_l x;
+      u := ra_u x;
+      assert(not null numr ra_qsub1f, {ra_x() . l});
+      assert(not null numr ra_qsub1(f, {ra_x() . u}));
+      if null numr u or minusf numr u or null l or minusf negf numr l then
+	 return x;
+      % We now know l < 0 < u.
+      if null sfto_abssummand f then
+	 return ra_zero();
+      % We now know x <> 0.
+      if eqn(ra_budancount(f, l, nil ./ 1), 1) then
+	 return ra_qmk(f, l, nil ./ 1);
+      assert(eqn(ra_budancount(f, nil ./ 1, u), 1));
+      return ra_qmk(f, nil ./ 1, u)
+   end;
+
+asserted procedure ra_diff(f: SF): SF;
+   numr difff(f, ra_x());
+
+asserted procedure ra_plus(x: RA, y: RA): RA;
+   begin scalar ff, gg, h, lx, ux, ly, uy, l, u;
+      if null x then
+ 	 return y;
+      if null y then
+	 return x;
+      ff := ra_plustransform ra_f x;
+      gg := sfto_renamef(ra_f y, ra_x(), ra_y());
+      h := ra_resf(ff, gg, ra_y());
+      lx := iv_l ra_iv x;
+      ux := iv_u ra_iv x;
+      ly := iv_l ra_iv y;
+      uy := iv_u ra_iv y;
+      l := addsq(lx, ly);
+      u := addsq(ux, uy);
+      while not eqn(ra_budancount(h, l, u), 1) do <<
+	 lx . ux := ra_refine1(ra_f x, lx, ux, 1);
+	 ly . uy := ra_refine1(ra_f y, ly, uy, 1);
+      	 l := addsq(lx, ly);
+      	 u := addsq(ux, uy)
+      >>;
+      return ra_normalize ra_qmk(h, l, u)
+   end;
+
+asserted procedure ra_plustransform(f: SF): SF;
+   % Transform f(x) into f(x-y). TODO
+   ra_fsub1(f, {ra_x() . addf(!*k2f ra_x(), negf !*k2f ra_y())});
+
+asserted procedure ra_difference(x: RA, y: RA): RA;
+   ra_plus(x, ra_minus y);
+
+asserted procedure ra_minus(x: RA): RA;
+   if null x then
+      nil
+   else
+      ra_mk(ra_mirror ra_f x, iv_minus ra_iv x);
+
+asserted procedure ra_minusp(x: RA): Boolean;
+   % [x] must ne normalized.
+   begin scalar l;
+      if null x then
+ 	 return nil;
+      l := ra_l x;
+      return l = iv_minf() or sfto_lessq(l, nil ./ nil)
+   end;
+
+asserted procedure ra_times(x: RA, y: RA): RA;
+   begin scalar f, g, h, lx, ux, ly, uy, ll, l, u;
+      if null x or null y then
+	 return nil;
+      f := ra_timestransform ra_f x;
+      g := sfto_renamef(ra_f y, ra_x(), ra_y());
+      h := ra_resf(f, g, ra_y());
+      lx := iv_l ra_iv x;
+      ux := iv_u ra_iv x;
+      ly := iv_l ra_iv y;
+      uy := iv_u ra_iv y;
+      ll := {multsq(lx, ly), multsq(lx, uy), multsq(ux, ly), multsq(ux, uy)};
+      l := sfto_minql ll;
+      u := sfto_maxql ll;
+      while not eqn(ra_budancount(h, l, u), 1) do <<
+	 lx . ux := ra_refine1(f, lx, ux, 1);
+	 ly . uy := ra_refine1(g, ly, uy, 1);
+      	 ll := {multsq(lx, ly), multsq(lx, uy), multsq(ux, ly), multsq(ux, uy)};
+      	 l := sfto_minql ll;
+      	 u := sfto_maxql ll
+      >>;
+      return ra_normalize ra_qmk(h, l, u)
+   end;
+
+asserted procedure ra_timestransform(f: SF): SF;
+   % Transform f(x) into y^d * f(x/y). TODO
+   numr ra_qsub1(
+      multf(f, ra_y() .** ldeg f .* 1 .+ nil),
+      {ra_x() . (!*k2f ra_x() ./ !*k2f ra_y())});
+
+asserted procedure ra_quotient(x: RA, y: RA): RA;
+   ra_times(x, ra_inverse y);
+
+asserted procedure ra_inverse(x: RA): RA;
+   begin scalar f, l, u, newl, newu;
+      f := ra_f x;
+      l := iv_l ra_iv x;
+      u := iv_u ra_iv x;
+      newl := if numr u then denr u ./ numr u else negsq sfto_lmq ra_mirror f;
+      newu := if numr l then denr l ./ numr l else sfto_lmq f;
+      return ra_qmk(ra_invtransform f, newl, newu)
+   end;
+
+asserted procedure ra_invtransform(f: SF): SF;
+   % Transform f(x) into x^d * f(1/x). TODO
+   numr ra_qsub1(
+      multf(f, ra_x() .** ldeg f .* 1 .+ nil),
+      {ra_x() . (1 ./ !*k2f ra_x())});
+
+% Wrappers
+
+asserted procedure ra_resf(f: SF, g: SF, x: Kernel): SF;
+   begin scalar w;
+      off1 'ranum;
+      w := sfto_sqfpartf sfto_resf(f, g, x);
+      if minusf w then w := negf w;
+      on1 'ranum;
+      return w
+   end;
+
+asserted procedure ra_fsub1(f: SF, al: Alist): SQ;
+   begin scalar w;
+      off1 'ranum;
+      w := sfto_fsub1(f, al);
+      on1 'ranum;
+      return w
+   end;
+
+asserted procedure ra_qsub1(f: SF, al: Alist): SQ;
+   begin scalar w;
+      off1 'ranum;
+      w := sfto_qsub1(f, al);
+      on1 'ranum;
+      return w
+   end;
+
+endmodule;
+
+end;
