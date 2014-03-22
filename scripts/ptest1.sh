@@ -172,9 +172,9 @@ mc=`$here/scripts/findhost.sh $mc`
 # In unusual cases it may mis-report but unless you are going to install
 # all the log files built here that is not very important!
 
-if test "x$mc" = "xi686-pc-windows" && test -d cslbuild/x86_64-w64-windows
+if test "x$mc" = "xi686-pc-windows" && test -d cslbuild/x86_64-pc-windows
 then
-  mc="x86_64-w64-windows"
+  mc="x86_64-pc-windows"
 fi
 
 # Each individual test should only take a few seconds. On my computer the

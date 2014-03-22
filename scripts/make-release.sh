@@ -170,7 +170,7 @@ then
   echo build 64-bit windows variant
 
   ./configure --with-csl --host=x86_64-w64-mingw32
-  pushd cslbuild/x86_64-w64-windows
+  pushd cslbuild/x86_64-pc-windows
     make clean
     rm -rf lib include bin
     make

@@ -60,7 +60,7 @@ if test "x$host" = "xi686-pc-windows" || test "x$host" = "x86_64-pc-windows"
 then
   case `uname` in
   *CYGWIN*WOW64* | *CYGWIN*x86_64*)
-    pathlist="x86_64-w64-windows x86_64-w64-windows-debug i686-pc-windows i686-pc-windows-debug"
+    pathlist="x86_64-pc-windows x86_64-pc-windows-debug i686-pc-windows i686-pc-windows-debug"
     ;;
   *)
     pathlist="i686-pc-windows i686-pc-windows-debug"

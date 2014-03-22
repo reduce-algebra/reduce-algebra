@@ -370,7 +370,7 @@ then
       build="i686-pc-windows"
     elif test "x$with_m64" = "xyes" -o "x$wow64" = "xyes"
     then
-      build="x86_64-w64-windows"
+      build="x86_64-pc-windows"
     else
       build="i686-pc-windows"
     fi
