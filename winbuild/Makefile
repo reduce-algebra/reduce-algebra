@@ -27,6 +27,6 @@ build-docs:
 	(cd ../doc/manual ; make)
 	
 reduce.iss:	reduce.iss.in
-	sed -e 's#\@srcdir\@#$(subst /,\\,$(shell cygpath -m $(abspath ..)))#;s#\@build\@#i686-pc-windows#;s#\@build64\@#x86_64-w64-windows#' <reduce.iss.in >reduce.iss
+	sed -e 's#\@srcdir\@#$(subst /,\\,$(shell cygpath -m $(abspath ..)))#;s#\@build\@#i686-pc-windows#;s#\@build64\@#x86_64-pc-windows#' <reduce.iss.in >reduce.iss
 
 # end of Makefile
