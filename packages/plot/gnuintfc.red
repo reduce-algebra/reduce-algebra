@@ -235,7 +235,7 @@ symbolic procedure init_gnuplot();
 % find one).
   plotcommand!* := find!-gnuplot();
 
-  if memq('win32, lispsystem!*) then <<
+  if memq('win32, lispsystem!*) or memq('win64, lispsystem!*) then <<
     plotheader!* := "";
     dirchar!* := "\";
     plotdta!* := for each n in
