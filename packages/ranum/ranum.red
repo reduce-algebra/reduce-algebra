@@ -30,32 +30,32 @@ module ranum;
 % Real algebraic numbers.
 %
 % Real algebraic numbers are represented as x = (:ra: f (iv l u)), where f is a
-% univariate squarefree SF in ra_v() and l and u are SQs that are either numbers
-% or SQ representations iv_minf() or iv_pinf() of -infinity or infinity, resp.
+% univariate squarefree SF in ra_v() and l and u are SQ representations of
+% numbers.
 %
-% For all intervals (iv l u) it is guanranteed that
+% (1) The domain-specific representation of 0 is (:ra: x (iv -1 1)).
 %
-% (1) there is exactly one zero of f in ]l, u[ but
-% (2) no such zero at the interval bounds.
+% For all intervals (iv l u) of non-zero numbers it is guanranteed that
+%
+% (2) there is exactly one zero of f in ]l, u[ but
+% (3) no such zero at the interval bounds.
 %
 % Consequently, for numbers u and l it does not matter whether the intervals are
 % considered open or closed. We consider them open, because this is cleaner with
 % respect to -infinity and infinity. Note that (1) implies that l < u and that
 % deg f > 1.
 %
-% Furthermore, most functions require that x is normalized in the following
+% Furthermore, most functions require that x <> 0 is normalized in the following
 % sense:
 %
-% (3) the only valid representation for 0 ist nil, and
 % (4) NOT l < 0 < u.
 %
-% For forms x satisfying (1) and (2) but possibly not (3) or (4), there is a
-% function ra_normalize(x) yielding x' so that x'=x and ra' satisfies (1), ...,
-% (4).
+% For forms x satisfying (1)--(3) but possibly not (4), there is a
+% function ra_normalize(x) yielding x' so that x'=x and ra' satisfies (1)--(4).
 %
-% Since (2) prohibits to represent rational numbers p/q via one-point intervals,
+% Since (3) prohibits to represent rational numbers p/q via one-point intervals,
 % the recommended way to do so is (:ar: q*x-p (iv -infinity 0)) or (:ar: q*x-p
-% (iv 0 infinity)) or any other suitable interval in the sense of (1) and (2).
+% (iv 0 infinity)) or any other suitable interval in the sense of (2) and (3).
 
 load!-package 'assert;
 load!-package 'rltools;
@@ -77,6 +77,8 @@ global '(domainlist!*);
 global '(emsg!*);
 
 fluid '(dmode!*);
+
+fluid '(!*backtrace);
 
 fluid '(!*msg);
 
@@ -107,7 +109,7 @@ put('!:ra!:, 'times, 'ra_times);
 put('!:ra!:, 'quotient, 'ra_quotient);
 put('!:ra!:, 'intequivfn, 'ra_intequiv);
 
-put('!:ra!:,'simpfn,'ra_simp);
+put('!:ra!:, 'simpfn,'ra_simp);
 put('!:ra!:, 'prepfn, 'ra_prep);
 put('!:ra!:, 'prifn, 'ra_print);
 
@@ -127,26 +129,46 @@ macro procedure ra_wrap(argl);
    end;
 
 asserted procedure ra_wrapper(f: Id, argl: List): Any;
-   begin scalar w;
-      off1 'ranum;
-      argl := for each arg in argl collect mkquote arg;
-      w := errorset(f . argl, nil, !*backtrace);
-      on1 'ranum;
-      if errorp w then
-	 rederr emsg!*;
+   begin scalar w, oldmode;
+      oldmode := get(dmode!*, 'dname);
+      w := errorset({'ra_wrapper1, mkquote f, mkquote argl, mkquote oldmode}, t, !*backtrace);
+      if errorp w then <<
+      	 lprim {"caught error - restoring domain mode", oldmode};
+	 on1 oldmode;
+	 error1()
+      >>;
       return car w
    end;
 
-procedure ra_prep(x);
-   x;
+asserted procedure ra_wrapper1(f: Id, argl: List, oldmode: Id): Any;
+   begin scalar w;
+      off1 oldmode;
+      w := apply(f, argl);
+      on1 oldmode;
+      return w
+   end;
+
+asserted procedure ra_wrappertest0(x: Integer, y: Integer): Integer;
+   <<
+      if x=7 then rederr {"x=7"};
+      x+y
+   >>;
+
+ra_wrap(ra_wrappertest0, ra_wrappertest, 2);
+
+asserted procedure ra_prep(x: RA): List;
+   {'ra, ra_f x, iv_l ra_iv x, iv_u ra_iv x};
 
 inline procedure ra_x();
    'x;
 
 inline procedure ra_y();
+   % Choosing my y smaller than my x save some reordering with resultant
+   % computations.
    'w;
 
 inline procedure ra_zero();
+   % The ranum representation of 0, in contrast to [nil].
    ra_mk(!*k2f ra_x(), iv_mk(-1 ./ 1, 1 ./ 1));
 
 asserted procedure ra_mk(f: SF, i: IV): RA;
@@ -190,9 +212,10 @@ asserted procedure ra_print(x: RA);
    >>;
 
 asserted procedure ra_simp(x: RA);
-   ('!:ra!: . x) ./ 1;
+   !*f2q ('!:ra!: . x);
 
 asserted procedure ra_ra0(u: List): RA;
+   % The Algebraic Mode constructor for real algebraic numbers.
    begin scalar f, l, u, w;
       f := numr simp car u;
       f := sfto_sqfpartf f;
@@ -209,50 +232,74 @@ put('ra, 'psopfn, 'ra_ra);
 asserted procedure ra_zerop(x: RA): Boolean;
    null red ra_f x;
 
-asserted procedure ra_onep(x: RA): Boolean;
+asserted procedure ra_onep0(x: RA): Boolean;
    % Explicity treat the special case x^n - 1 for efficiency.
    iv_contains(ra_iv x, 1 ./ 1) and
       (eqn(red ra_f x, -1) or eqn(sfto_fsub1(ra_f x, {ra_x() . 1}), 1));
 
-asserted procedure ra_intequiv(x: RA): Any;
-   begin scalar f, l, u;
+asserted procedure ra_onep0(x: RA): Boolean;
+   % Explicity treat the special case x^n - 1 for efficiency.
+   iv_contains(ra_iv x, 1 ./ 1) and
+      (eqn(red ra_f x, -1) or eqn(sfto_fsub1(ra_f x, {ra_x() . 1}), 1));
+
+ra_wrap(ra_onep0, ra_onep, 1);
+
+asserted procedure ra_intequiv0(x: RA): Any;
+   % Returns [x] or the Integer represented by [x].
+   begin scalar f, l, u, z;
       if ra_zerop x then
 	 return x;
       f := ra_f x;
       if eqn(ldeg f, 1) and eqn(lc f, 1) then
 	 return negf red f;
-      % TODO
+      l := iv_l ra_iv x;
+      u := iv_u ra_iv x;
+      while sfto_greaterq(subtrsq(u, l), 1 ./ 1) do
+	 l . u := ra_refine1(f, l, u, 1);
+      z := addf(numr sfto_floorq l, 1);
+      if sfto_lessq(!*f2q z, u) and null sfto_fsub1(f, {ra_x() . z}) then
+	 return z;
       return x
    end;
 
-operator raprintprecision;
+ra_wrap(ra_intequiv0, ra_intequiv, 1);
 
 asserted procedure raprintprecision(n: Integer): Integer;
+   % [n] is the number of digits printed after the period. At present the number
+   % of digits available is limited by other factors (pecision, machine floats,
+   % ...?) so that [n] > 5 does not make much sense. With negative [n] the
+   % rational numbers actually used internally are printed.
    begin scalar w;
       w := ra_precision!*;
       ra_precision!* := n;
       return w
    end;
 
-asserted procedure ra_i2ra(z: Integer): RA;
+operator raprintprecision;
+
+asserted procedure ra_i2ra0(z: Integer): RA;
    begin scalar f, l, u;
       if eqn(z, 0) then
-	 return nil;
+	 return ra_zero();
       f := addf(!*k2f ra_x(), negf z);
       l := !*f2q sfto_int2sf(z-1);
       u := !*f2q sfto_int2sf(z+1);
-      return ra_normalize ra_qmk(f, l, u)
+      return ra_normalize0 ra_qmk(f, l, u)
    end;
 
-asserted procedure ra_rn2ra(rn): RA;
+ra_wrap(ra_i2ra0, ra_i2ra, 1);
+
+asserted procedure ra_rn2ra0(rn: DottedPair): RA;
    begin scalar f, l, u;
       if rnzerop!: rn then
       	 return ra_zero();
       f := addf(multf(!*k2f ra_x(), cddr rn), negf cadr rn);
       l := sfto_int2sf(cadr rn - 1) ./ cddr rn;
       u := sfto_int2sf(cadr rn + 1) ./ cddr rn;
-      return ra_normalize ra_qmk(f, l, u)
+      return ra_normalize0 ra_qmk(f, l, u)
    end;
+
+ra_wrap(ra_rn2ra0, ra_rn2ra, 1);
 
 initdmode 'ranum;
 

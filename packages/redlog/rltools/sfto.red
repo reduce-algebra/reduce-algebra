@@ -1065,6 +1065,9 @@ asserted procedure sfto_ceilq(q: SQ): SQ;
    else
       !*f2q sfto_int2sf(numr q / denr q + 1);
 
+asserted procedure sfto_floorq(q: SQ): SQ;
+   if null numr q then q else !*f2q sfto_int2sf(numr q / denr q);
+
 asserted procedure sfto_multlq(sql: List): SQ;
    if null sql then
       1 ./ 1

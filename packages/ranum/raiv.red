@@ -28,14 +28,8 @@
 
 module raiv;
 
-inline procedure iv_minf();
-   '((((infinity . 1) . -1)) . 1);
-
-inline procedure iv_pinf();
-   '((((infinity . 1) . 1)) . 1);
-
 asserted procedure iv_mk(l: SQ, u: SQ): IV;
-   % [l] and [u] are numbers of one of iv_minf(), iv_pinf().
+   % [l] and [u] are numbers.
    {'iv, l, u};
 
 asserted procedure iv_l(i: IV): SQ;
