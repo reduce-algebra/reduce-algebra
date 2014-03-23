@@ -43,6 +43,7 @@ switch sfto_yun,sfto_tobey,sfto_musser;
 !*sfto_yun := T;
 
 put('sqfpart,'polyfn,'sfto_sqfpartf);
+put('dprpart,'polyfn,'sfto_dprpartf);
 put('tsqsum,'psopfn,'sfto_tsqsum!$);
 put('sqfdec,'psopfn,'sfto_sqfdec!$);
 put('pdec,'psopfn,'sfto_pdec!$);
@@ -1066,7 +1067,12 @@ asserted procedure sfto_ceilq(q: SQ): SQ;
       !*f2q sfto_int2sf(numr q / denr q + 1);
 
 asserted procedure sfto_floorq(q: SQ): SQ;
-   if null numr q then q else !*f2q sfto_int2sf(numr q / denr q);
+   if null numr q then
+      q
+   else if minusf numr q then
+      !*f2q sfto_int2sf(numr q / denr q - 1)
+   else
+      !*f2q sfto_int2sf(numr q / denr q);
 
 asserted procedure sfto_multlq(sql: List): SQ;
    if null sql then
