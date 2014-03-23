@@ -87,6 +87,11 @@ fluid '(ra_precision!*);
 if not ra_precision!* then ra_precision!* := 2;
 
 switch ranum;
+switch rasimpl;
+switch rasifac;
+
+on1 'rasimpl;
+on1 'rasifac;
 
 domainlist!* := union('(!:ra!:), domainlist!*);
 
@@ -213,24 +218,37 @@ asserted procedure ra_print(x: RA);
       prin2!* ")"
    >>;
 
-asserted procedure ra_simp0(u: List);
-   ra_simp1 cdr u;
-
-ra_wrap(ra_simp0, ra_simp, 1);
-
-asserted procedure ra_simp1(u: List): SQ;
+asserted procedure ra_simp0(u: List): SQ;
    begin scalar f, l, u, w;
+      u := cdr u;
       f := numr simp car u;
       f := sfto_dprpartf sfto_sqfpartf f;
       l := simp cadr u;
       u := simp caddr u;
-      w := !*f2q ra_normalize0 ra_qmk(f, l, u);
-      return w
+      w := ra_qmk(f, l, u);
+      return !*f2q ra_simpl0 ra_normalize0 w
    end;
+
+ra_wrap(ra_simp0, ra_simp, 1);
 
 asserted procedure ra_ra0(u: List): RA;
    % The Algebraic Mode constructor for real algebraic numbers.
-   mk!*sq ra_simp1 u;
+   begin scalar bc, f, l, u;
+      f := numr simp car u;
+      f := sfto_dprpartf sfto_sqfpartf f;
+      l := simp cadr u;
+      u := simp caddr u;
+      if null numr sfto_qsub1(f, {ra_x() . l}) then
+	 rederr {"polynomial has a zero at the lower bound of the specified interval"};
+      if null numr sfto_qsub1(f, {ra_x() . u}) then
+	 rederr {"polynomial has a zero at the upper bound of the specified interval"};
+      bc := ra_budancount(f, l, u);
+      if eqn(bc, 1) then
+      	 return mk!*sq !*f2q ra_simpl0 ra_normalize0 ra_qmk(f, l, u);
+      if eqn(bc, 0) then
+	 rederr {"polynomial has no zero on specified interval"};
+      rederr {"polynomial has more than one zero on specified interval"}
+   end;
 
 ra_wrap(ra_ra0, ra_ra, 1);
 

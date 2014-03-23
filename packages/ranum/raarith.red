@@ -115,7 +115,7 @@ asserted procedure ra_plus0(x: RA, y: RA): RA;
       	 l := addsq(lx, ly);
       	 u := addsq(ux, uy)
       >>;
-      return ra_normalize0 ra_qmk(h, l, u)
+      return ra_simpl0 ra_normalize0 ra_qmk(h, l, u)
    end;
 
 ra_wrap(ra_plus0, ra_plus, 2);
@@ -133,7 +133,7 @@ asserted procedure ra_minus0(x: RA): RA;
    if ra_zerop x then
       x
    else
-      ra_mk(ra_mirror ra_f x, iv_minus ra_iv x);
+      ra_simpl0 ra_mk(ra_mirror ra_f x, iv_minus ra_iv x);
 
 ra_wrap(ra_minus0, ra_minus, 1);
 
@@ -169,7 +169,7 @@ asserted procedure ra_times0(x: RA, y: RA): RA;
       	 l := sfto_minql ll;
       	 u := sfto_maxql ll
       >>;
-      return ra_normalize0 ra_qmk(h, l, u)
+      return ra_simpl0 ra_normalize0 ra_qmk(h, l, u)
    end;
 
 ra_wrap(ra_times0, ra_times, 2);
@@ -192,7 +192,7 @@ asserted procedure ra_inverse0(x: RA): RA;
       u := iv_u ra_iv x;
       newl := if numr u then denr u ./ numr u else negsq sfto_lmq ra_mirror f;
       newu := if numr l then denr l ./ numr l else sfto_lmq f;
-      return ra_qmk(ra_invtransform f, newl, newu)
+      return ra_simpl0 ra_qmk(ra_invtransform f, newl, newu)
    end;
 
 ra_wrap(ra_inverse0, ra_inverse, 1);
@@ -204,11 +204,38 @@ asserted procedure ra_invtransform(f: SF): SF;
       {ra_x() . (1 ./ !*k2f ra_x())});
 
 asserted procedure ra_resf0(f: SF, g: SF, x: Kernel): SF;
+   sfto_dprpartf sfto_sqfpartf sfto_resf(f, g, x);
+
+asserted procedure ra_simpl0(x: RA): RA;
    begin scalar w;
-      w := sfto_sqfpartf sfto_resf(f, g, x);
-      if minusf w then w := negf w;
-      return w
+      if not !*rasimpl then
+	 return x;
+      x := ra_sifac0 x;
+      w := ra_intequiv x;
+      if fixp w then
+	 return ra_i2ra w;
+      return x
    end;
+
+ra_wrap(ra_simpl0, ra_simpl, 1);
+
+asserted procedure ra_sifac0(x: RA): RA;
+   begin scalar facl, f, l, u, c;
+      if not !*rasifac then
+	 return x;
+      l := iv_l ra_iv x;
+      u := iv_u ra_iv x;
+      facl := for each pr in cdr fctrf ra_f x collect car pr;
+      c := t; while c and facl do <<
+	 f := pop facl;
+	 if eqn(ra_budancount(f, l, u), 1) then
+	    c := nil
+      >>;
+      assert(not c);
+      return ra_qmk(f, l, u)
+   end;
+
+ra_wrap(ra_sifac0, ra_sifac, 1);
 
 endmodule;
 
