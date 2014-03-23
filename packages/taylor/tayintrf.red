@@ -243,12 +243,7 @@ symbolic procedure taylor1sq (f, varlis, var0, n);
 symbolic procedure taylor2 (f, varlis, var0, n);
   begin scalar result,oldklist;
     oldklist := get('Taylor!*,'klist);
-    result := errorset (list ('taylor2e,
-                               mkquote f,
-                               mkquote varlis,
-                               mkquote var0,
-                               mkquote n),
-                        nil, !*backtrace);
+    result := errorset!* ({'taylor2e, mkquote f, mkquote varlis, mkquote var0, mkquote n}, nil);
     put('Taylor!*,'klist,oldklist);
     if atom result
       then Taylor!-error ('expansion, "(possible singularity!)")
