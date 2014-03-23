@@ -109,7 +109,7 @@ put('!:ra!:, 'times, 'ra_times);
 put('!:ra!:, 'quotient, 'ra_quotient);
 put('!:ra!:, 'intequivfn, 'ra_intequiv);
 
-put('!:ra!:, 'simpfn,'ra_simp);
+put('ra, 'simpfn,'ra_simp);
 put('!:ra!:, 'prepfn, 'ra_prep);
 put('!:ra!:, 'prifn, 'ra_print);
 
@@ -134,7 +134,7 @@ asserted procedure ra_wrapper(f: Id, argl: List): Any;
       w := errorset({'ra_wrapper1, mkquote f, mkquote argl, mkquote oldmode}, t, !*backtrace);
       if errorp w then <<
       	 lprim {"caught error - restoring domain mode", oldmode};
-	 on1 oldmode;
+	 if oldmode then on1 oldmode;
 	 error1()
       >>;
       return car w
@@ -142,9 +142,9 @@ asserted procedure ra_wrapper(f: Id, argl: List): Any;
 
 asserted procedure ra_wrapper1(f: Id, argl: List, oldmode: Id): Any;
    begin scalar w;
-      off1 oldmode;
+      if oldmode then off1 oldmode;
       w := apply(f, argl);
-      on1 oldmode;
+      if oldmode then on1 oldmode;
       return w
    end;
 
@@ -157,7 +157,9 @@ asserted procedure ra_wrappertest0(x: Integer, y: Integer): Integer;
 ra_wrap(ra_wrappertest0, ra_wrappertest, 2);
 
 asserted procedure ra_prep(x: RA): List;
-   {'ra, ra_f x, iv_l ra_iv x, iv_u ra_iv x};
+   {'ra, prepf ra_f x, prepsq iv_l ra_iv x, prepsq iv_u ra_iv x};
+
+put('ra, 'prifn, function(lambda u; ra_print numr ra_simp u));
 
 inline procedure ra_x();
    'x;
@@ -211,19 +213,24 @@ asserted procedure ra_print(x: RA);
       prin2!* ")"
    >>;
 
-asserted procedure ra_simp(x: RA);
-   !*f2q ('!:ra!: . x);
+asserted procedure ra_simp0(u: List);
+   ra_simp1 cdr u;
+
+ra_wrap(ra_simp0, ra_simp, 1);
+
+asserted procedure ra_simp1(u: List): SQ;
+   begin scalar f, l, u, w;
+      f := numr simp car u;
+      f := sfto_dprpartf sfto_sqfpartf f;
+      l := simp cadr u;
+      u := simp caddr u;
+      w := !*f2q ra_normalize0 ra_qmk(f, l, u);
+      return w
+   end;
 
 asserted procedure ra_ra0(u: List): RA;
    % The Algebraic Mode constructor for real algebraic numbers.
-   begin scalar f, l, u, w;
-      f := numr simp car u;
-      f := sfto_sqfpartf f;
-      l := simp cadr u;
-      u := simp caddr u;
-      w := aeval ra_normalize0 ra_qmk(f, l, u);
-      return w
-   end;
+   mk!*sq ra_simp1 u;
 
 ra_wrap(ra_ra0, ra_ra, 1);
 
@@ -248,7 +255,7 @@ asserted procedure ra_intequiv0(x: RA): Any;
    % Returns [x] or the Integer represented by [x].
    begin scalar f, l, u, z;
       if ra_zerop x then
-	 return x;
+	 return 0;
       f := ra_f x;
       if eqn(ldeg f, 1) and eqn(lc f, 1) then
 	 return negf red f;
@@ -258,7 +265,7 @@ asserted procedure ra_intequiv0(x: RA): Any;
 	 l . u := ra_refine1(f, l, u, 1);
       z := addf(numr sfto_floorq l, 1);
       if sfto_lessq(!*f2q z, u) and null sfto_fsub1(f, {ra_x() . z}) then
-	 return z;
+	 return z or 0;
       return x
    end;
 

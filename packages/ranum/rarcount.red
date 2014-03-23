@@ -28,12 +28,22 @@
 
 module raiv;
 
-asserted procedure ra_isolate(f: SF): List;
-   begin scalar lb, ub;
+asserted procedure ra_isolate0(f: SF): List;
+   begin scalar lb, ub, ivl;
+      f := sfto_dprpartf sfto_sqfpartf f;
       ub := sfto_lmq f;
       lb := negsq sfto_lmq ra_mirror f;
-      return ra_vca(f, lb , ub)
+      ivl := ra_vca(f, lb , ub);
+      return for each iv in ivl collect ra_qmk(f, car iv, cdr iv)
    end;
+
+ra_wrap(ra_isolate0, ra_isolate, 1);
+
+procedure ra_isolate!$(argl);
+   'list . for each x in ra_isolate(numr simp car argl) collect
+      mk!*sq !*f2q int!-equiv!-chk x;
+
+put('isolate, 'psopfn, 'ra_isolate!$);
 
 asserted procedure ra_mirror(f: SF): SF;
    <<

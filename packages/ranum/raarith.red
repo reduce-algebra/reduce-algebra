@@ -28,16 +28,16 @@
 
 module raarith;
 
-put('refine, 'psopfn, 'ra_refine!$);
-
 asserted procedure ra_refine!$(u: List): RA;
    begin
       scalar x;
       integer n;
       x := numr simp car u;
       n := if cdr u then reval cadr u else 1;
-      return aeval ra_refine(x, n)
+      return mk!*sq !*f2q ra_refine(x, n)
    end;
+
+put('refine, 'psopfn, 'ra_refine!$);
 
 asserted procedure ra_refine0(x: RA, n: Integer): RA;
    % Refine [x] [n] times.
