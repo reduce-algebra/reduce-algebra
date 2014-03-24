@@ -89,6 +89,7 @@ if not ra_precision!* then ra_precision!* := 2;
 switch ranum;
 switch rasimpl;
 switch rasifac;
+switch rahidepoly;
 
 on1 'rasimpl;
 on1 'rasifac;
@@ -210,13 +211,16 @@ asserted procedure ra_print(x: RA);
       prin2!* ", ";
       maprin prepsq iv_u ra_iv x;
       prin2!* ")"
-   >> else <<
-      prin2!* "(";
-      maprin prepf ra_f x;
-      prin2!* ", ";
-      maprin ra_iv x;
-      prin2!* ")"
-   >>;
+   >> else
+      if !*rahidepoly then
+      	 maprin ra_iv x
+      else <<
+      	 prin2!* "(";
+      	 maprin prepf ra_f x;
+      	 prin2!* ", ";
+      	 maprin ra_iv x;
+      	 prin2!* ")"
+      >>;
 
 asserted procedure ra_simp0(u: List): SQ;
    begin scalar f, l, u, w;
@@ -260,12 +264,8 @@ asserted procedure ra_zerop(x: RA): Boolean;
 asserted procedure ra_onep0(x: RA): Boolean;
    % Explicity treat the special case x^n - 1 for efficiency.
    iv_contains(ra_iv x, 1 ./ 1) and
-      (eqn(red ra_f x, -1) or eqn(sfto_fsub1(ra_f x, {ra_x() . 1}), 1));
-
-asserted procedure ra_onep0(x: RA): Boolean;
-   % Explicity treat the special case x^n - 1 for efficiency.
-   iv_contains(ra_iv x, 1 ./ 1) and
-      (eqn(red ra_f x, -1) or eqn(sfto_fsub1(ra_f x, {ra_x() . 1}), 1));
+      (eqn(red ra_f x, -1) and eqn(lc ra_f x, 1) or
+ 	 null sfto_fsub1(ra_f x, {ra_x() . 1}));
 
 ra_wrap(ra_onep0, ra_onep, 1);
 
