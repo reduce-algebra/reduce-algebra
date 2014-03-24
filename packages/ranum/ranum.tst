@@ -1,43 +1,96 @@
-load_package ranum;
+on ranum;
 
-lisp;
+f := (x**2-2)*x*(x-5);
 
-wilk := numr simp xread t;
-8388608*x**20 + 1761607681*x**19 + 172931153920*x**18 +
+rl := isolate f;
+
+for each r in rl collect sub(x=r, f);
+
+r1 := refine(part(rl, 1), 10);
+
+oldp := raprintprecision(-1);
+
+r1;
+
+refine(r1, 100);
+
+raprintprecision oldp;
+
+x1 := ra(f, 1, 2);
+
+off nat;
+
+x1;
+
+on nat;
+
+x2 := ra(f, 4, 10);
+
+isolate f;
+
+x1-3;
+
+x1+1/7;
+
+x1/5;
+
+-x1;
+
+x1 + x2;
+
+1/x1;
+
+x1 - x2;
+
+x1 * x2;
+
+x1^4;
+
+x1**10 - (x1*x1*x1*x1*x1*x1*x1*x1*x1*x1);
+
+wilk := 8388608*x**20 + 1761607681*x**19 + 172931153920*x**18 +
 10543221964800*x**17 + 447347234439168*x**16 +
 14028108264898560*x**15 + 336985244869591040*x**14 +
 6342720331186176000*x**13 + 94877480085669019648*x**12 +
 1137370949952460554240 *x**11 + 10968398649699241820160*x**10 +
 85079777790228273561600*x**9 + 528740774622641958944768 *x**8 +
 2611655889692786813829120*x**7 + 10122095419974470210682880*x**6 +
-30198816984091441338777600 *x**5 + 67426052557934862488567808*x**4 +
+30198816984091441338777600*x**5 + 67426052557934862488567808*x**4 +
 107969196810523545855590400*x**3 + 115794329499468438700032000 *x**2 +
-   73425049924762651852800000*x + 20408661249006627717120000$
+73425049924762651852800000*x + 20408661249006627717120000$
 
-mwilk := numr subf(wilk, '((x . (minus x))));
+sub(x=x1, wilk);
 
-on time;
+sub(x=x2, wilk);
 
-% load!-package 'profile;
+isolatingivl wilk;
 
-% profile ra_budan!-0!-1;
+on rahidepoly;
 
-sfto_lmq mwilk;
+wrl := isolate wilk;
 
-ra_help ra_isolate wilk;
+for each x in wrl collect refine(x, 10);
 
-for i := 1:20 do ra_isolate wilk;
+off rahidepoly;
 
-% algebraic proprint();
+on errcont;
 
-f := numr simp xread t;
-x**2 - 2;
+symbolic ra_wrappertest(6, 42);
 
-ra_budancount(f, -1 ./ 1, nil ./ 1);
-ra_budancount(f, nil ./ 1, 3 ./ 1);
+symbolic ra_wrappertest(7, 42);
 
-sqrt2 := ra_mk(f, -1 ./ 1, 3 ./1);
+off msg;
 
-ra_normalize sqrt2;
+ra(f, 1, 10);
+
+ra(f, 1/2, 1);
+
+ra(f, 1, 5);
+
+ra(f, 5, 10);
+
+on msg;
+
+off errcont;
 
 end;
