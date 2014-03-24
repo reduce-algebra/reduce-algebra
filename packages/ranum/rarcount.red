@@ -29,21 +29,32 @@
 module raiv;
 
 asserted procedure ra_isolate0(f: SF): List;
-   begin scalar lb, ub, ivl;
-      f := sfto_dprpartf sfto_sqfpartf f;
-      ub := sfto_lmq f;
-      lb := negsq sfto_lmq ra_mirror f;
-      ivl := ra_vca(f, lb , ub);
-      return for each iv in ivl collect ra_qmk(f, car iv, cdr iv)
-   end;
+   for each iv in ra_isolatingivl0 f collect ra_qmk(f, car iv, cdr iv);
 
 ra_wrap(ra_isolate0, ra_isolate, 1);
 
 procedure ra_isolate!$(argl);
    'list . for each x in ra_isolate(numr simp car argl) collect
-      mk!*sq !*f2q int!-equiv!-chk x;
+      mk!*sq !*f2q sfto_int2sf int!-equiv!-chk x;
 
 put('isolate, 'psopfn, 'ra_isolate!$);
+
+asserted procedure ra_isolatingivl0(f: SF): List;
+   begin scalar lb, ub, ivl;
+      f := sfto_dprpartf sfto_sqfpartf f;
+      ub := sfto_lmq f;
+      lb := negsq sfto_lmq ra_mirror f;
+      ivl := ra_vca(f, lb , ub);
+      return ivl
+   end;
+
+ra_wrap(ra_isolatingivl0, ra_isolatingivl, 1);
+
+asserted procedure ra_isolatingivl!$(argl: List): List;
+   'list . for each iv in ra_isolatingivl numr simp car argl collect
+      {'list, mk!*sq car iv, mk!*sq cdr iv};
+
+put('isolatingivl, 'psopfn, 'ra_isolatingivl!$);
 
 asserted procedure ra_mirror(f: SF): SF;
    <<
