@@ -1460,6 +1460,176 @@ asserted procedure rip_nextroot1(rip: RipT, x: Kernel): Boolean;
       return not rat_eq(ml, mr)
    end;
 
+% New RIP submodule.
+
+struct NRip asserted by NRipP;
+struct AexIData asserted by AexIDataP;
+
+procedure NRipP(s);
+   eqcar(s, 'nrip);
+
+procedure AexIDataP(s);
+   pairp s and AexP car s;
+
+asserted procedure nrip_init(ael: AexList): NRip;
+   % List of (Aex . IData); IvList; AnuList; (Aex . IData); IvList
+   begin scalar aescl;
+      aescl := for each ae in ael collect
+	 ae . aex_stdsturmchain(ae, aex_mvar ae);
+      return {'nrip, aescl, nil, nil, nil, nil}
+   end;
+
+asserted procedure nrip_ael(rip: NRip): List;
+   nth(rip, 2);
+
+asserted procedure nrip_ivl(rip: NRip): RatIntervalList;
+   nth(rip, 3);
+
+asserted procedure nrip_rootl(rip: NRip): AnuList;
+   nth(rip, 4);
+
+asserted procedure nrip_curae(rip: NRip): AexIData;
+   nth(rip, 5);
+
+asserted procedure nrip_curivl(rip: NRip): RatIntervalList;
+   nth(rip, 6);
+
+asserted procedure nrip_popael(rip: NRip): AexIData;
+   pop nth(rip, 2);
+
+asserted procedure nrip_pushivl(rip: NRip, iv: RatInterval): Any;
+   push(iv, nth(rip, 3));
+
+asserted procedure nrip_pushrootl(rip: NRip, a: Anu): Any;
+   push(a, nth(rip, 4));
+
+asserted procedure nrip_pushcurivl(rip: NRip, iv: RatInterval): Any;
+   push(iv, nth(rip, 6));
+
+asserted procedure nrip_popcurivl(rip: NRip): Any;
+   pop nth(rip, 6);
+
+asserted procedure nrip_setcurae(rip: NRip, ae: AexIData): Any;
+   nth(rip, 5) := ae;
+
+asserted procedure nrip_setcurivl(rip: NRip, ivl: RatIntervalList): Any;
+   nth(rip, 6) := ivl;
+
+asserted procedure nrip_nextroot(rip: NRip): ExtraBoolean;
+   begin scalar rootfound;
+      while not rootfound and nrip_preparecur rip do
+      	 rootfound := nrip_nextrootiv rip;
+      if not rootfound then
+	 return nil;
+      return car nrip_curae rip . car nrip_rootl rip
+   end;
+
+asserted procedure nrip_preparecur(rip: NRip): Boolean;
+   begin scalar c, w, curivl;
+      if nrip_curivl rip and nrip_curae rip then
+	 return t;
+      while null c and nrip_ael rip do <<
+	 w := nrip_popael rip;
+	 curivl := iv_minuslist(nrip_rootsiv w, nrip_ivl rip);
+	 if curivl then
+	    c := t
+      >>;
+      if c then <<
+      	 nrip_setcurae(rip, w);
+      	 nrip_setcurivl(rip, curivl);
+      	 return t
+      >>;
+      return nil
+   end;
+
+asserted procedure nrip_nextrootiv(rip: NRip): Boolean;
+   begin scalar ae, idata, iv, numroots, lb, rb, m, r;
+      assert(nrip_curae rip and nrip_curivl rip);
+      ae . idata := nrip_curae rip;
+      iv := nrip_popcurivl rip;
+      numroots := nrip_numroots(ae . idata, iv);
+      if eqn(numroots, 0) then
+	 return nil;
+      if eqn(numroots, 1) then <<
+	 nrip_addroot(rip, ae . idata, iv);
+	 return t
+      >>;
+      % There are at least two roots.
+      lb := iv_lb iv;
+      rb := iv_rb iv;
+      m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
+      if eqn(aex_sgn aex_subrat1(ae, aex_mvar ae, m), 0) then <<
+	 r := nrip_isoratroot(ae . idata, m, rat_minus(iv_rb iv, m));
+	 nrip_addroot(rip, ae . idata, iv_mk(rat_add(lb, r), rat_minus(rb, m)));
+      	 nrip_pushcurivl(rip, iv_mk(rat_add(m, r), rb));
+      	 nrip_pushcurivl(rip, iv_mk(lb, rat_minus(m, r)));
+	 return t
+      >>;
+      nrip_pushcurivl(rip, iv_mk(m, rb));
+      nrip_pushcurivl(rip, iv_mk(lb, m));
+      return nil
+   end;
+
+asserted procedure nrip_addroot(rip: NRip, f: AexIData, iv: RatInterval): Any;
+   begin scalar anu;
+      anu := nrip_refine(f, iv, nrip_ael rip);
+      nrip_pushivl(rip, anu_iv anu);
+      nrip_pushrootl(rip, anu)
+   end;
+
+% To use a different root isolation method, these procedures need to be changed:
+
+asserted procedure nrip_rootsiv(f: AexIData): RatInterval;
+   begin scalar ae, b;
+      ae := car f;
+      b := aex_cauchybound(ae, aex_mvar ae);
+      return iv_mk(rat_neg b, b)
+   end;
+
+asserted procedure nrip_numroots(f: AexIData, iv: RatInterval): Integer;
+   begin scalar ae, idata, x; integer sclb;
+      ae . idata := f;
+      x := aex_mvar ae;
+      sclb := aex_stchsgnch1(idata, x, iv_lb iv);
+      if eqn(sclb, 0) then
+	 return 0;
+      return sclb - aex_stchsgnch1(idata, x, iv_rb iv)
+   end;
+
+asserted procedure nrip_refine(f: AexIData, iv: RatInterval, ael: List): Anu;
+   begin scalar ae, sca, a, x, p, sc;
+      ae . sca := f;
+      a := anu_mk(ae, iv);
+      x := aex_mvar ae;
+      while ael do <<
+	 p . sc := pop ael;
+      	 while
+	    aex_atratnullp(p, x, iv_lb anu_iv a) or
+	    aex_atratnullp(p, x, iv_rb anu_iv a) or
+	    aex_deltastchsgnch(sc, x, anu_iv a) > 0 do
+	       anu_refine1ip(a, sca)
+      >>;
+      return a
+   end;
+
+asserted procedure nrip_isoratroot(f: AexIData, m: Rational, r: Rational): Rational;
+   begin scalar ae, sc, x, mmr, mpr;
+      ae . sc := f;
+      x := aex_mvar ae;
+      r := rat_mult(r, rat_mk(1, 2));
+      mmr := rat_minus(m, r);
+      mpr := rat_add(m, r);
+      while
+	 aex_atratnullp(ae, x, mmr) or
+      	 aex_atratnullp(ae, x, mpr) or
+	 not eqn(aex_stchsgnch1(sc, x, mmr) - aex_stchsgnch1(sc, x, mpr), 1) do <<
+	    r := rat_mult(r, rat_mk(1, 2));
+      	    mmr := rat_minus(m, r);
+      	    mpr := rat_add(m, r)
+	 >>;
+      return r
+   end;
+
 % Anu functions.
 
 asserted procedure anu_mk(ae: Aex, iv: RatInterval): Anu;
