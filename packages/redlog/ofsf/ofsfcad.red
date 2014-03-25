@@ -443,11 +443,13 @@ procedure ofsf_treeovercell(basecell,psi,cd);
       fffj := ofsf_tocprepare(getv(hh,j),xj,sp,varl);
       %fffj := for each te in fffj collect tag_object te;
       % now tag aware
-      nrdata := rip_init(fffj,xj); % initialize next root data
-      % remove p.sc's without roots; no problem with tags.
-      rip_putpscl(nrdata,for each psc in rip_pscl nrdata join
-	 if (d := aex_stchsgnch(cdr psc,xj,'minfty) -
-	    aex_stchsgnch(cdr psc,xj,'infty)) neq 0 then <<n := n+d;{psc}>>);
+      nrdata := tiri_init(fffj, xj);
+      % Old code:
+      % nrdata := rip_init(fffj,xj); % initialize next root data
+      % % remove p.sc's without roots; no problem with tags.
+      % rip_putpscl(nrdata,for each psc in rip_pscl nrdata join
+      % 	 if (d := aex_stchsgnch(cdr psc,xj,'minfty) -
+      % 	    aex_stchsgnch(cdr psc,xj,'infty)) neq 0 then <<n := n+d;{psc}>>);
       if ofsf_cadverbosep() then ioto_prin2 {":",2*n+1};
       % mildly generic CAD: add assumptions
       %if !*rlqegen1 and j<=min2(1,k) then
@@ -748,10 +750,12 @@ procedure ofsf_fulltreeovercell(basecell,ff,varl,qal,psi,probe);
       fffj := ofsf_tocprepare(list2vector getv(ff,j),xj,sp,varl);
       %ffj := for each te in ffj collect tag_object te;
       %ffj := ofsf_tocprepare(ff,xj,sp,varl);
-      nrdata := rip_init(fffj,xj); % initialize next root data
-      rip_putpscl(nrdata,for each psc in rip_pscl nrdata join
-	 if (d := aex_stchsgnch(cdr psc,xj,'minfty) -
-	    aex_stchsgnch(cdr psc,xj,'infty)) neq 0 then <<n := n+d;{psc}>>);
+      nrdata := tiri_init(fffj, xj);
+      % Old code:
+      % nrdata := rip_init(fffj,xj); % initialize next root data
+      % rip_putpscl(nrdata,for each psc in rip_pscl nrdata join
+      % 	 if (d := aex_stchsgnch(cdr psc,xj,'minfty) -
+      % 	    aex_stchsgnch(cdr psc,xj,'infty)) neq 0 then <<n := n+d;{psc}>>);
       if ofsf_cadverbosep() then ioto_prin2 {":",2*n+1};
       ncbuffer := ofsf_ncinit();
       % 2. RECURSION CASE: j<=r
@@ -839,6 +843,35 @@ procedure aex_tgpairwiseprime1(ael, x);
       >>;
       return ae1 . aelnew
    end;
+
+% Tagged root isolation. The following four functions use the incremental root
+% isolation submodule in ofsfanuex. The reason for their existence is the fact
+% that the polynomials here are tagged whereas the polynomials in ofsfanuex do
+% not have any tags.
+
+procedure tiri_init(tael, x);
+   begin scalar ael, tal;
+      ael := for each tae in tael collect
+	 tag_object tae;
+      tal := for each tae in tael collect
+	 tag_object tae . tag_taglist tae;
+      return tal . iri_init(ael, x)
+   end;
+
+procedure tiri_nextroot(tri, x);
+   begin scalar w, tag;
+      w := iri_nextroot cdr tri;
+      if null w then
+	 return nil;
+      tag := atsoc(car w, car tri);
+      return tag_(cdr w, cdr tag)
+   end;
+
+procedure tiri_rootl(tri);
+   iri_rootl cdr tri;
+
+procedure tiri_rootlnotags(tri);
+   iri_rootl cdr tri;
 
 procedure caddata_mkblank();
    % Blank caddata. No arguments. Returns a CADDATA. Undefined entries
@@ -1015,26 +1048,26 @@ procedure ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k);
 	    >>;
       % there is no cell left, so we need to get a root to get the next
       % two cells.
-      if tgroot := rip_nextroot(nrdata,xj) then <<
+      if tgroot := tiri_nextroot(nrdata,xj) then <<
 	 root := tag_object tgroot; %%%
 	 % drop one cell in buffer (the 0-dim one)...
-	 car ncbuffer := acell_mk(2*(length rip_rootl nrdata)-1,
+	 car ncbuffer := acell_mk(2*(length tiri_rootl nrdata)-1,
 	    root . sp,nil,nil,tag_taglist tgroot);
 	 % ... and return the other cell (the full-dim one) with rat. sp
 	 w := iv_lb anu_iv root;
-	 return acell_mk(2*(length rip_rootl nrdata)-2,
+	 return acell_mk(2*(length tiri_rootl nrdata)-2,
 	    anu_fromrat(xj,w,iv_mk(w,w)) . sp,nil,nil,nil);
       >>;
       % there is no cell and no root left.
       car ncbuffer := 'finished;
       % if there was no root, make cell with 0 as sample point
-      if null rip_rootl nrdata then
+      if null tiri_rootl nrdata then
 	 return acell_mk(0,anu_fromrat(xj,rat_0(),
 	    iv_mk(rat_0(),rat_0())) . sp,nil,nil,{{'arbitrary}});
       % search rootlist for the maximum of all right bounds. make cell.
-      w := rat_mapmax for each r in rip_rootlnotags nrdata collect
+      w := rat_mapmax for each r in tiri_rootl nrdata collect
 	 iv_rb anu_iv r;
-      return acell_mk(2*(length rip_rootl nrdata),
+      return acell_mk(2*(length tiri_rootl nrdata),
 	 anu_fromrat(xj,w,iv_mk(w,w)) . sp,nil,nil,nil);
    end;
 

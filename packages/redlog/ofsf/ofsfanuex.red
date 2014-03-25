@@ -97,7 +97,6 @@ struct Aex checked by AexP;
 struct AexList checked by AexListP;
 struct Anu asserted by AnuP;
 struct AnuList asserted by AnuListP;
-struct RipT asserted by List3;
 
 procedure IntegerListP(s);
    null s or pairp s and fixp car s and IntegerListP cdr s;
@@ -1275,52 +1274,6 @@ asserted procedure aex_isoratroot(ae: Aex, m: Rational, r: Rational, sc: AexList
       return r
    end;
 
-asserted procedure aex_isoratrootpscl(ae: Aex, m: Rational, r: Rational, sc: AexList, pscl: List, x: Kernel): Rational;
-   % Aex isolate rational root w.r.t. pscl. [m] is a rational root of univariate
-   % Aex [ae] of positive degree, [pscl] is a list of pairs [p . sc] such that
-   % [p] is a univariate Aex and [sc] is its Sturm chain. Returns a rational
-   % number [s] such that [ae] has exactly one root in in the open interval
-   % $(m-s, m+s)$ and no Sturm chain from [pscl] has a sign change in this
-   % interval.
-   begin scalar mmr, mpr, w;
-      % Refine r until p's Sturm chain has only one sign change.
-      r := aex_isoratroot(ae, m, r, sc, x);
-      % Refine r until Sturm chains in [pscl] have no sign changes.
-      mmr := rat_minus(m, r);
-      mpr := rat_add(m, r);
-      while pscl do <<
-	 w := pop pscl;
-	 ae . sc := w;
-      	 while
-	    aex_atratnullp(ae, x, mmr) or
-	    aex_atratnullp(ae, x, mpr) or
-	    not eqn(aex_deltastchsgnch(sc, x, iv_mk(mmr, mpr)), 0) do <<
-	       r := rat_mult(r, rat_mk(1, 2));
-	       mmr := rat_minus(m, r);
-      	       mpr := rat_add(m, r)
-	    >>
-      >>;
-      return r
-   end;
-
-asserted procedure aex_refinepscl(alpha: Anu, scalpha: AexList, pscl: List): Anu;
-   % Refine [alpha] in such a way that no Sturm chain from [pscl] has a sign
-   % change in the isolating interval of [alpha]. [scalpha] is the Sturm chain
-   % for alpha's defining polynomial.
-   begin scalar x, w, p, sc;
-      x := aex_mvar anu_dp alpha;
-      while pscl do <<
-	 w := pop pscl;
-	 p . sc := w;
-      	 while
-	    aex_atratnullp(p, x, iv_lb anu_iv alpha) or
-	    aex_atratnullp(p, x, iv_rb anu_iv alpha) or
-	    aex_deltastchsgnch(sc, x, anu_iv alpha) > 0 do
-	       anu_refine1ip(alpha, scalpha)
-      >>;
-      return alpha
-   end;
-
 asserted procedure aex_atratnullp(ae: Aex, x: Kernel, r: Rational): Boolean;
    % Zero at rational point predicate.
    eqn(aex_sgn aex_subrat1(ae, x, r), 0);
@@ -1335,223 +1288,108 @@ asserted procedure aex_deltastchsgnch(sc: AexList, x: Kernel, iv: RatInterval): 
       return sclb - scrb
    end;
 
-% RIP submodule.
+% Incremental root isolation submodule.
 
-% The functions below work with RipT data structure. An instance of RipT is of
-% the form {rootl, ivl, pscl}, where [rootl] is an AnuList, [ivl] is a
-% RatIntervalList, [pscl] a list of dotted pais [p . sc], where [p] is a
-% univariate Aex and [sc] is its Sturm chain. Note, that the data structure is
-% changed in place. Note that the polynomials in [pscl] are tagged. (See module
-% tag in ofsfcadproj.red.)
+% The Iri data structure consists of the following: 1) A list of Aex together
+% with a root isolation data, which is precomputed during the initialization of
+% the data structure. This is a list of (Aex . IData) 2) A list of intervals
+% with rational endpoints, regarded as closed such that there no polynomial from
+% 1) has a root in these intervals. 3) An AnuList of already isolated roots. 4)
+% The current polynomial as (Aex . IData) for which the roots are to be isolated
+% 5) A list of interval with rational endpoints, regarded as open such that all
+% real root of the polynomial from 4) lie in these intervals.
 
-asserted procedure rip_init(ael: AexList, x: Kernel): RipT;
-   % [ael] is a (maybe empty) list of TAG(AEX) (tagged univariate alg.
-   % polynomials). [ael] is factorized, i.e., each root occures only in one
-   % polynomial.
-   {nil, nil, for each ae in ael collect
-      ae . aex_stdsturmchain(tag_object ae, x)};
+% The data structure has to be initialized with a list of coprime univariate
+% Aex, i.e., any two polynomials have no real root in common. If {f1, ..., fn}
+% is the input. Semantically, roots of f1*...*fn will be isolated.
 
-asserted procedure rip_rootl(rip: RipT): List;
-   car rip;
+% The most important function is iri_nextroot, which isolates a next real root
+% and returns a pair (Aex . Anu) such that Aex is in the input list used for the
+% initialization and Anu is a root of Aex. Furthermore, iri_nextroot returns
+% nil if all roots of all polynomials were already isolated.
 
-asserted procedure rip_ivl(rip: RipT): List;
-   cadr rip;
-
-asserted procedure rip_pscl(rip: RipT): List;
-   caddr rip;
-
-asserted procedure rip_rootlnotags(rip: RipT): AnuList;
-   for each r in car rip collect
-      tag_object r;
-
-asserted procedure rip_psclnotags(rip: RipT): List;
-   for each psc in caddr rip collect
-      tag_object car psc . cdr psc;
-
-asserted procedure rip_putivl(rip: RipT, ivl: List): Any;
-   cadr rip := ivl;
-
-asserted procedure rip_putpscl(rip: RipT, pscl: List): Any;
-   caddr rip := pscl;
-
-asserted procedure rip_addroot(rip: RipT, root: Anu): Any;
-   car rip := root . car rip;
-
-asserted procedure rip_addivl(rip: RipT, ivl: List): Any;
-   cadr rip := nconc(ivl, rip_ivl rip);
-
-asserted procedure rip_popivl(rip: RipT): RatInterval;
-   begin scalar ivl, res;
-      ivl := cadr rip;
-      res := pop ivl;
-      cadr rip := ivl;
-      return res
-   end;
-
-asserted procedure rip_poppscl(rip: RipT): AexList;
-   begin scalar pscl, res;
-      pscl := caddr rip;
-      res := pop pscl;
-      caddr rip := pscl;
-      return res
-   end;
-
-asserted procedure rip_nextroot(rip: RipT, x: Kernel): Boolean;
-   % Returns [t] if a root is found, [nil] otherwise.
-   begin scalar rootfound, cb;
-      while not rootfound and rip_pscl rip do <<
-	 while null rip_ivl rip and rip_pscl rip do <<
-	    cb := aex_cauchybound(tag_object caar rip_pscl rip, x);
-	    rip_addivl(rip, iv_minuslist(iv_mk(rat_neg cb, cb),
-	       for each a in rip_rootlnotags rip collect anu_iv a));
-	    if null rip_ivl rip then  % There is no interval left.
-	       rip_poppscl rip
-	 >>;
-	 if rip_pscl rip then <<  % There is at least one interval and one polynomial.
-	    if rip_nextroot1(rip, x) then
-	       rootfound := t;
-	    if null rip_ivl rip then
-	       rip_poppscl rip
-	 >>
-      >>;
-      if rootfound then
-	 return car rip_rootl rip;
-      return nil
-   end;
-
-asserted procedure rip_nextroot1(rip: RipT, x: Kernel): Boolean;
-   % [rip] contains at least one interval and at least one polynomial. This
-   % function attempts to isolate at most one root. A root might be added to
-   % [rootl] and intervals might be added to [ivl], but [pscl] is not changed.
-   % Returns [t], if a root was found.
-   begin scalar iv, lb, rb, sc, sclb, scrb, pscl, ae, sc, aetagl, m, ml, mr, r, w;
-      % Possible optimazion: tagged intervals.
-      iv := rip_popivl rip;
-      lb := iv_lb iv;
-      rb := iv_rb iv;
-      sc := cdar rip_pscl rip;
-      sclb := aex_stchsgnch1(sc, x, lb);
-      if eqn(sclb, 0) then
-	 return nil;
-      scrb := aex_stchsgnch1(sc, x, rb);
-      if eqn(sclb - scrb, 0) then
-	 return nil;
-      pscl := rip_psclnotags rip;
-      w := pop pscl;
-      ae . sc := w;
-      aetagl := tag_taglist caar rip_pscl rip;
-      if eqn(sclb - scrb, 1) then <<
-	 rip_addroot(rip,
-	    tag_(aex_refinepscl(anu_mk(ae, iv), sc, pscl), aetagl));
-	 return t
-      >>;
-      % There are at least two roots.
-      m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
-      ml := mr := m;
-      if eqn(aex_sgn aex_subrat1(ae, x, m), 0) then <<
-	 r := aex_isoratrootpscl(ae, m, rat_mult(rat_minus(rb, lb), rat_mk(1, 4)), sc, pscl, x);
-	 ml := rat_minus(m, r);
-	 mr := rat_add(m, r);
-	 rip_addroot(rip,
-	    tag_(anu_fromrat(x, m, iv_mk(ml, mr)), aetagl))
-      >>;
-      rip_addivl(rip, {iv_mk(mr, rb)});
-      rip_addivl(rip, {iv_mk(lb, ml)});
-      return not rat_eq(ml, mr)
-   end;
-
-% New RIP submodule.
-
-struct NRip asserted by NRipP;
+struct Iri asserted by IriP;
 struct AexIData asserted by AexIDataP;
 
-procedure NRipP(s);
-   eqcar(s, 'nrip);
+procedure IriP(s);
+   eqcar(s, 'iri);
 
 procedure AexIDataP(s);
    pairp s and AexP car s;
 
-asserted procedure nrip_init(ael: AexList): NRip;
-   % List of (Aex . IData); IvList; AnuList; (Aex . IData); IvList
-   begin scalar aescl;
-      aescl := for each ae in ael collect
-	 ae . aex_stdsturmchain(ae, aex_mvar ae);
-      return {'nrip, aescl, nil, nil, nil, nil}
-   end;
+asserted procedure iri_ael(ir: Iri): List;
+   nth(ir, 2);
 
-asserted procedure nrip_ael(rip: NRip): List;
-   nth(rip, 2);
+asserted procedure iri_ivl(ir: Iri): RatIntervalList;
+   nth(ir, 3);
 
-asserted procedure nrip_ivl(rip: NRip): RatIntervalList;
-   nth(rip, 3);
+asserted procedure iri_rootl(ir: Iri): AnuList;
+   nth(ir, 4);
 
-asserted procedure nrip_rootl(rip: NRip): AnuList;
-   nth(rip, 4);
+asserted procedure iri_curae(ir: Iri): AexIData;
+   nth(ir, 5);
 
-asserted procedure nrip_curae(rip: NRip): AexIData;
-   nth(rip, 5);
+asserted procedure iri_curivl(ir: Iri): RatIntervalList;
+   nth(ir, 6);
 
-asserted procedure nrip_curivl(rip: NRip): RatIntervalList;
-   nth(rip, 6);
+asserted procedure iri_popael(ir: Iri): AexIData;
+   pop nth(ir, 2);
 
-asserted procedure nrip_popael(rip: NRip): AexIData;
-   pop nth(rip, 2);
+asserted procedure iri_pushivl(ir: Iri, iv: RatInterval): Any;
+   push(iv, nth(ir, 3));
 
-asserted procedure nrip_pushivl(rip: NRip, iv: RatInterval): Any;
-   push(iv, nth(rip, 3));
+asserted procedure iri_pushrootl(ir: Iri, a: Anu): Any;
+   push(a, nth(ir, 4));
 
-asserted procedure nrip_pushrootl(rip: NRip, a: Anu): Any;
-   push(a, nth(rip, 4));
+asserted procedure iri_pushcurivl(ir: Iri, iv: RatInterval): Any;
+   push(iv, nth(ir, 6));
 
-asserted procedure nrip_pushcurivl(rip: NRip, iv: RatInterval): Any;
-   push(iv, nth(rip, 6));
+asserted procedure iri_popcurivl(ir: Iri): Any;
+   pop nth(ir, 6);
 
-asserted procedure nrip_popcurivl(rip: NRip): Any;
-   pop nth(rip, 6);
+asserted procedure iri_setcurae(ir: Iri, ae: AexIData): Any;
+   nth(ir, 5) := ae;
 
-asserted procedure nrip_setcurae(rip: NRip, ae: AexIData): Any;
-   nth(rip, 5) := ae;
+asserted procedure iri_setcurivl(ir: Iri, ivl: RatIntervalList): Any;
+   nth(ir, 6) := ivl;
 
-asserted procedure nrip_setcurivl(rip: NRip, ivl: RatIntervalList): Any;
-   nth(rip, 6) := ivl;
-
-asserted procedure nrip_nextroot(rip: NRip): ExtraBoolean;
+asserted procedure iri_nextroot(ir: Iri): ExtraBoolean;
    begin scalar rootfound;
-      while not rootfound and nrip_preparecur rip do
-      	 rootfound := nrip_nextrootiv rip;
+      while not rootfound and iri_preparecur ir do
+      	 rootfound := iri_nextrootiv ir;
       if not rootfound then
 	 return nil;
-      return car nrip_curae rip . car nrip_rootl rip
+      return car iri_curae ir . car iri_rootl ir
    end;
 
-asserted procedure nrip_preparecur(rip: NRip): Boolean;
+asserted procedure iri_preparecur(ir: Iri): Boolean;
    begin scalar c, w, curivl;
-      if nrip_curivl rip and nrip_curae rip then
+      if iri_curivl ir and iri_curae ir then
 	 return t;
-      while null c and nrip_ael rip do <<
-	 w := nrip_popael rip;
-	 curivl := iv_minuslist(nrip_rootsiv w, nrip_ivl rip);
+      while null c and iri_ael ir do <<
+	 w := iri_popael ir;
+	 curivl := iv_minuslist(iri_rootsiv w, iri_ivl ir);
 	 if curivl then
 	    c := t
       >>;
       if c then <<
-      	 nrip_setcurae(rip, w);
-      	 nrip_setcurivl(rip, curivl);
+      	 iri_setcurae(ir, w);
+      	 iri_setcurivl(ir, curivl);
       	 return t
       >>;
       return nil
    end;
 
-asserted procedure nrip_nextrootiv(rip: NRip): Boolean;
-   begin scalar ae, idata, iv, numroots, lb, rb, m, r;
-      assert(nrip_curae rip and nrip_curivl rip);
-      ae . idata := nrip_curae rip;
-      iv := nrip_popcurivl rip;
-      numroots := nrip_numroots(ae . idata, iv);
+asserted procedure iri_nextrootiv(ir: Iri): Boolean;
+   begin scalar ae, idata, iv, numroots, lb, rb, m, r, mpr, mmr;
+      assert(iri_curae ir and iri_curivl ir);
+      ae . idata := iri_curae ir;
+      iv := iri_popcurivl ir;
+      numroots := iri_numroots(ae . idata, iv);
       if eqn(numroots, 0) then
 	 return nil;
       if eqn(numroots, 1) then <<
-	 nrip_addroot(rip, ae . idata, iv);
+	 iri_addroot(ir, ae . idata, iv);
 	 return t
       >>;
       % There are at least two roots.
@@ -1559,34 +1397,57 @@ asserted procedure nrip_nextrootiv(rip: NRip): Boolean;
       rb := iv_rb iv;
       m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
       if eqn(aex_sgn aex_subrat1(ae, aex_mvar ae, m), 0) then <<
-	 r := nrip_isoratroot(ae . idata, m, rat_minus(iv_rb iv, m));
-	 nrip_addroot(rip, ae . idata, iv_mk(rat_add(lb, r), rat_minus(rb, m)));
-      	 nrip_pushcurivl(rip, iv_mk(rat_add(m, r), rb));
-      	 nrip_pushcurivl(rip, iv_mk(lb, rat_minus(m, r)));
+	 r := iri_isoratroot(ae . idata, m, rat_minus(iv_rb iv, m));
+	 mpr := rat_add(m, r);
+	 mmr := rat_minus(m, r);
+	 % TODO: Add simple anu.
+	 iri_addroot(ir, ae . idata, iv_mk(mmr, mpr));
+      	 iri_pushcurivl(ir, iv_mk(mpr, rb));
+      	 iri_pushcurivl(ir, iv_mk(lb, mmr));
 	 return t
       >>;
-      nrip_pushcurivl(rip, iv_mk(m, rb));
-      nrip_pushcurivl(rip, iv_mk(lb, m));
+      iri_pushcurivl(ir, iv_mk(m, rb));
+      iri_pushcurivl(ir, iv_mk(lb, m));
       return nil
    end;
 
-asserted procedure nrip_addroot(rip: NRip, f: AexIData, iv: RatInterval): Any;
+asserted procedure iri_addroot(ir: Iri, f: AexIData, iv: RatInterval): Any;
    begin scalar anu;
-      anu := nrip_refine(f, iv, nrip_ael rip);
-      nrip_pushivl(rip, anu_iv anu);
-      nrip_pushrootl(rip, anu)
+      anu := iri_refine(f, iv, iri_ael ir);
+      iri_pushivl(ir, anu_iv anu);
+      iri_pushrootl(ir, anu)
    end;
 
-% To use a different root isolation method, these procedures need to be changed:
+% To use a different root isolation method, only the following procedures need
+% to be changed.
 
-asserted procedure nrip_rootsiv(f: AexIData): RatInterval;
+asserted procedure iri_init(ael: AexList, x: Kernel): Iri;
+   begin scalar aescl, sc; integer d;
+      % aescl := for each ae in ael collect <<
+      %  	 assert(x eq aex_mvar ae);
+      %  	 sc := aex_stdsturmchain(ae, x);
+      % 	 ae . sc
+      % >>;
+      % return {'iri, aescl, nil, nil, nil, nil}
+      % Optimization: Delete all polynomials, which do not have a real root.
+      aescl := for each ae in ael join <<
+      	 assert(x eq aex_mvar ae);
+      	 sc := aex_stdsturmchain(ae, x);
+      	 d := aex_stchsgnch(sc, x, 'minfty);
+      	 if not eqn(d, 0) and  d - aex_stchsgnch(sc, x, 'infty) > 0 then
+      	    {ae . sc}
+      >>;
+      return {'iri, aescl, nil, nil, nil, nil}
+   end;
+
+asserted procedure iri_rootsiv(f: AexIData): RatInterval;
    begin scalar ae, b;
       ae := car f;
       b := aex_cauchybound(ae, aex_mvar ae);
       return iv_mk(rat_neg b, b)
    end;
 
-asserted procedure nrip_numroots(f: AexIData, iv: RatInterval): Integer;
+asserted procedure iri_numroots(f: AexIData, iv: RatInterval): Integer;
    begin scalar ae, idata, x; integer sclb;
       ae . idata := f;
       x := aex_mvar ae;
@@ -1596,7 +1457,7 @@ asserted procedure nrip_numroots(f: AexIData, iv: RatInterval): Integer;
       return sclb - aex_stchsgnch1(idata, x, iv_rb iv)
    end;
 
-asserted procedure nrip_refine(f: AexIData, iv: RatInterval, ael: List): Anu;
+asserted procedure iri_refine(f: AexIData, iv: RatInterval, ael: List): Anu;
    begin scalar ae, sca, a, x, p, sc;
       ae . sca := f;
       a := anu_mk(ae, iv);
@@ -1612,7 +1473,7 @@ asserted procedure nrip_refine(f: AexIData, iv: RatInterval, ael: List): Anu;
       return a
    end;
 
-asserted procedure nrip_isoratroot(f: AexIData, m: Rational, r: Rational): Rational;
+asserted procedure iri_isoratroot(f: AexIData, m: Rational, r: Rational): Rational;
    begin scalar ae, sc, x, mmr, mpr;
       ae . sc := f;
       x := aex_mvar ae;
