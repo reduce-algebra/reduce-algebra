@@ -401,7 +401,8 @@ symbolic procedure readch1;
 % infix, secondly lispsystem!* is not set early enough. So I have a new
 % variable !*psl that I use to detect the relevant situation!
       progn(
-        if !*psl then progn(if !*raise then x := red!-char!-downcase x)
+        if x eq !$eof!$ then nil % Do not mess with EOF
+        else if !*psl then progn(if !*raise then x := red!-char!-downcase x)
         else if !*lower then x := char!-downcase x
         else if !*raise then x := char!-upcase x),
       return x);
@@ -439,7 +440,8 @@ a:  if null terminalp() then progn(
       go to a)
 % Here I am accumulating a bit of stuff where I look ahead following
 % a "#" character.
-    else if (string!-length id2string x = 1) and
+    else if (not (x eq !$eof!$)) and
+       (string!-length id2string x = 1) and
        (liter x or digit x) then progn(
 % I accumulate the initial "#" followed by any number of letters and
 % digits. Well I will only consider letters with codes in the range
@@ -487,7 +489,6 @@ hex:if null x then go to ok;
 dec1:
     x := cdr x;
 dec:if null x then go to ok;
-
     if null digit car x then go to fail;
     n := 10*n + get(car x, 'hexdigit);
     x := cdr x;
@@ -523,7 +524,8 @@ symbolic procedure token!-number x;
       if dotp then power := power - 1;
     num2:
       x := readch1();
-      if not (string!-length id2string x = 1) then go to ret
+      if (x eq !$eof!$) or
+         (not (string!-length id2string x = 1)) then go to ret
        else if x eq '!.
          then if dotp
                 then rerror('rlisp,3,"Syntax error: improper number")
@@ -539,7 +541,8 @@ symbolic procedure token!-number x;
       dotp := t;
       if (x := readch1()) eq '!- then sign := t
        else if x eq '!+ then nil
-       else if null (string!-length id2string x = 1) then go to ret
+       else if (x eq !$eof!$) or
+               (null (string!-length id2string x = 1)) then go to ret
        else if null digit x then go to ret
        else z := list x;
    nume1:
@@ -621,7 +624,8 @@ symbolic procedure token1;
 %
    begin scalar x,y,z;
         x := crchar!*;
-    a:  if not (string!-length id2string x = 1) then go to unicode;
+    a:  if (x eq !$eof!$) or
+           (not (string!-length id2string x = 1)) then go to unicode;
         if seprp x and null(x eq !$eol!$ and !*eoldelimp)
           then progn(x := readch1(), go to a)
          else if digit x then return token!-number x
@@ -640,9 +644,11 @@ symbolic procedure token1;
         ttype!* := 3;
         if x eq !$eof!$ then prog2(crchar!* := '! ,filenderr());
         nxtsym!* := x;
-        if (string!-length id2string x = 1) and delcp x then
-          crchar!*:= '!  else crchar!*:= readch1();
+        if not (x eq !$eof!$) then progn(
+           if (string!-length id2string x = 1) and (delcp x) then
+             crchar!*:= '!  else crchar!*:= readch1());
         if null(x eq '!- and
+                (not (crchar!* eq !$eof!$)) and
                 (string!-length id2string crchar!*  = 1) and
                 digit crchar!* and
                 !*minusliter)
@@ -669,7 +675,8 @@ symbolic procedure token1;
         go to let2;
     let3:
         x := readch1();
-        if not (string!-length id2string crchar!*  = 1) then go to ordinarysym
+        if (x eq !$eof!$) or
+            (not (string!-length id2string crchar!*  = 1)) then go to ordinarysym
          else if digit x or liter x then go to let1
          else if x eq '!! then go to escape
          else if x eq '!- and !*minusliter
@@ -740,7 +747,8 @@ symbolic procedure token1;
         go to ordinarysym; 
     maybeextpackage:                            % Seen abc::
         x := readch1();
-        if (string!-length id2string crchar!*  = 1) and
+        if (not (x eq !$eof!$)) and
+           (string!-length id2string crchar!*  = 1) and
            liter x then go to isextpackage;
         peekchar!* := list('!:, x);
         x := '!:;
@@ -759,7 +767,8 @@ symbolic procedure token1;
         go to ext1;
     ext2:
         x := readch1();
-        if not (string!-length id2string crchar!*  = 1) then go to extdone
+        if (x eq !$eof!$) or
+           (not (string!-length id2string crchar!*  = 1)) then go to extdone
          else if digit x or liter x then go to extpackmore
          else if x eq '!! then go to extpackescape
          else if x eq '!- and !*minusliter
@@ -1103,7 +1112,7 @@ symbolic procedure scan;
         prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
   l:    cursym!*:=nxtsym!*;
         nxtsym!* := token();
-        if nxtsym!* eq !$eof!$ and ttype!* = 3 then return filenderr();
+        if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
   l2:   if numberp nxtsym!*
            or (atom nxtsym!* and null get(nxtsym!*,'switch!*))
           then prin2x " ";
