@@ -71,7 +71,7 @@ let {
 !10j(-3/2,~x) => sqrt(2/(pi*x))*(-cos(x)/x-sin(x)) };
 >>;
 
-algebraic procedure cvpr130108(nu,x);
+algebraic procedure compute!:cvpr130108(nu,x);
 begin
 scalar numf,n;
 %tout est scalar
@@ -126,7 +126,8 @@ return !10j(nu,x);
 end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-algebraic <<let besselj(~n,~x) =>  cvpr130108(n,x) when (numberp n and den n = 2 and
+algebraic <<let besselj(~n,~x) =>  compute!:cvpr130108(n,x)
+                           when (numberp n and den n = 2 and
                             fixp(num n) and  abs(num n) < 6)>>;
 
 symbolic operator do!*j, do!*y, do!*i;

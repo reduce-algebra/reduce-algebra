@@ -310,11 +310,11 @@ algebraic operator Euler;
 
 algebraic
  let {    Euler(0)  => 1,
-        Euler(~n) => Euler_aux(n) when fixp n and n > 0};
+        Euler(~n) => Euler!:aux(n) when fixp n and n > 0};
 
-flag('(euler_aux),'opfn);
+flag('(Euler!:aux),'opfn);
 
-symbolic procedure Euler_aux(n);
+symbolic procedure Euler!:aux(n);
 
 if not evenp n then 0 else
 

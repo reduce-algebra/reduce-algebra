@@ -30,8 +30,19 @@ module sfbinom;   % Procedures for computing Binomial coefficients
 % algebraic operator binomial;  % Now in entry.red.
 deflist('((binomial simpiden)),'simpfn);
 
+symbolic procedure !:compute!-binomial(n,k);
+  begin scalar nn,dd,r;
+    nn := for l:=0:(k-1) product (n-l);
+    dd := rnfactorial!* !*i2rn k;
+    r := quotdd(nn,dd);
+    if null r then errach list("Exact division failed in binomial computation:",nn,dd);
+    return r;
+  end;
+
+symbolic operator !:compute!-binomial;
+
 algebraic <<
- let { binomial (~n,~k) => ((for l:=0:(k-1) product (n-l))/factorial k)
+ let { binomial (~n,~k) => !:compute!-binomial(n,k)
                         when fixp n and fixp k and  k >=0,
        binomial (~n,~k) => 1
                 when fixp n and fixp k and n >= k and k=0,

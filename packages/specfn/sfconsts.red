@@ -40,7 +40,7 @@ algebraic let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
 
 %%%%%%%%%%%%%%%%
 
-fluid '(intlogrem);
+fluid '(intlog!:rem);
 
 Comment this program is taken from:
 
@@ -79,16 +79,16 @@ algebraic <<
 % translated from a (Maple code) posting by Paul Zimmermann
 %       in sci.math.symbolic
 %
-let Khinchin => compute_Khinchin();
+let Khinchin => compute!:Khinchin();
 
-symbolic procedure compute_Khinchin();
+symbolic procedure compute!:Khinchin();
 
  (if not(!*rounded) then mk!*sq('((((Khinchin . 1) . 1)) . 1)) else
-    aeval ('compute_Khinchin1 . NIL)) where !:prec!: = !:prec!: ;
+    aeval ('compute!:Khinchin1 . NIL)) where !:prec!: = !:prec!: ;
 
-symbolic flag('(compute_Khinchin intlog),'opfn);
+symbolic flag('(compute!:Khinchin compute!:intlog),'opfn);
 
-procedure compute_Khinchin1();
+procedure compute!:Khinchin1();
   begin scalar term,summ,acc,k,ln2,ln3,oldprec,zp;
      if evenp(oldprec := precision 0) then
              precision (oldprec+13) else
@@ -99,7 +99,7 @@ procedure compute_Khinchin1();
      k:=2;
      term :=1; summ :=0;
      while abs(term) > acc do <<
-        zp := Zetaprime(k);
+        zp := compute!:Zetaprime(k);
         term :=(-1)^k*(2*zp-2^k*(zp+ln2/2^k+ln3/3^k))/k;
         summ := summ + term;
         k:=k+1   >>;
@@ -109,20 +109,20 @@ procedure compute_Khinchin1();
      return summ;
   end;
 
-procedure Zetaprime (u);
+procedure compute!:Zetaprime (u);
 
   begin scalar term,summ,n,acc,f,j,logm,m,oldprec;
      oldprec := precision 0;
      precision(oldprec+5);
      n:= u;
-     lisp setq(intlogrem,nil);
+     lisp setq(intlog!:rem,nil);
      f := -df(log(x)/x^n,x)/2;
      m:= (oldprec+5)/2;
      logm := log(m);
      term := logm;
      acc := 10^(1-(oldprec +5))/2;
      j:=1;
-     summ := -(for ii:=2:(fix m -1) sum intlog(ii)/ii^n) -
+     summ := -(for ii:=2:(fix m -1) sum compute!:intlog(ii)/ii^n) -
         (logm+1/(n-1))/m^(n-1)/(n-1)-logm/2/m^n;
      while abs(term) > acc do
           << term := Bernoulli(2*j) * sub(log(x)=logm,x=m,f);
@@ -134,25 +134,25 @@ procedure Zetaprime (u);
      return summ;
   end;
 
-symbolic procedure intlog(n);
+symbolic procedure compute!:intlog(n);
 
-  ( if found := atsoc(n,intlogrem) then cdr found else
-       << found := intlog1 n;
-    intlogrem := (( n . found)  . intlogrem);
+  ( if found := atsoc(n,intlog!:rem) then cdr found else
+       << found := compute!:intlog1 n;
+    intlog!:rem := (( n . found)  . intlog!:rem);
           found >>) where found = nil;
 
-symbolic procedure intlog1 (n);
+symbolic procedure compute!:intlog1 (n);
 
  (if n=2 or n=3 or n=4 or n=5 or n=7 then
                 rdlog!* ('!:rd!: . (n . 0)) else
   if cdr(div := divide(n,2)) #= 0 then
-                rd!:plus(intlog 2,intlog(car div)) else
+                rd!:plus(compute!:intlog 2,compute!:intlog(car div)) else
   if cdr(div := divide(n,3)) #= 0 then
-                rd!:plus(intlog 3,intlog(car div)) else
+                rd!:plus(compute!:intlog 3,compute!:intlog(car div)) else
   if cdr(div := divide(n,5)) #= 0 then
-                rd!:plus(intlog 5,intlog(car div)) else
+                rd!:plus(compute!:intlog 5,compute!:intlog(car div)) else
   if cdr(div := divide(n,7)) #= 0 then
-                rd!:plus(intlog 7,intlog(car div)) else
+                rd!:plus(compute!:intlog 7,compute!:intlog(car div)) else
    rdlog!* ('!:rd!: . (n . 0))) where div = nil;
 
 >>;
