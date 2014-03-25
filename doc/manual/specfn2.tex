@@ -1,0 +1,52 @@
+
+The (generalised) hypergeometric functions  
+\begin{displaymath}
+_pF_q \left( {{a_1, \ldots , a_p} \atop {b_1, \ldots ,b_q}} \Bigg\vert z \right)
+\end{displaymath}
+are defined in textbooks on special functions as
+\begin{displaymath}
+_pF_q \left( {{a_1, \ldots , a_p} \atop {b_1, \ldots ,b_q}} \Bigg\vert z \right)
+  = \sum_{n=0}^{\infty}\frac{(a_{1})_{n}\dots(a_{p})_{n}}{(b_{1})_{n}\dots(b_{q})_{n}}\frac{z^{n}}{n!}
+\end{displaymath}w
+where $(a)_{n}$ is the Pochhammer symbol
+\begin{displaymath}
+ (a)_{n} = \prod_{k=0}^{n-1} (a+k)
+\end{displaymath}
+
+
+\subsection{\REDUCE{} operator HYPERGEOMETRIC}
+\hypertarget{operator:HYPERGEOMETRIC}{}
+
+The operator {\tt hypergeometric} expects 3 arguments, namely the 
+list of upper parameters (which may be empty), the list of lower
+parameters (which may be empty too), and the argument, e.g the input:
+\begin{verbatim}
+hypergeometric ({},{},z);
+\end{verbatim}
+yields the output
+\begin{verbatim}
+ z
+e
+\end{verbatim}
+and the input
+\begin{verbatim}
+hypergeometric ({1/2,1},{3/2},-x^2);
+\end{verbatim}
+gives
+\begin{verbatim}
+ atan(abs(x))
+--------------
+    abs(x)
+\end{verbatim}
+
+
+\subsection{Extending the HYPERGEOMETRIC operator}
+
+Since hundreds of particular cases for the generalised hypergeometric
+functions can be found in the literature, one cannot expect that all
+cases are known to the \texttt{hypergeometric} operator.
+Nevertheless the set of special cases can be augmented by adding
+rules to the \REDUCE{} system, {\em e.g.}
+\begin{verbatim}
+let {hypergeometric({1/2,1/2},{3/2},-(~x)^2) => asinh(x)/x};
+\end{verbatim}
