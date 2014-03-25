@@ -143,7 +143,7 @@ asserted procedure ra_minusp0(x: RA): Boolean;
       if null x then
  	 return nil;
       l := ra_l x;
-      return l = iv_minf() or sfto_lessq(l, nil ./ nil)
+      return sfto_lessq(l, nil ./ nil)
    end;
 
 ra_wrap(ra_minusp0, ra_minusp, 1);
