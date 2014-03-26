@@ -383,7 +383,7 @@ int RunResource(int index, int forcegui)
 // the latter is the weird temporary file I just created.
 //
     if (forcegui) strcat(cmd1, " --gui");
-    printf("About to run %s with args\n%s\n", pPath, cmd);
+
     STARTUPINFO peStartUpInformation;
     PROCESS_INFORMATION peProcessInformation;
     memset(&peStartUpInformation, 0, sizeof(STARTUPINFO));
@@ -508,16 +508,17 @@ int main(int argc, char* argv[])
     int wow64 = 0;
 #else // FAT32
     int wow64 = IsWow64();
-    printf("wow64 = %d\n", wow64); fflush(stdout);
 
-// While debugging this code a "-32" on the command line disables 64 bit use
-// I will REMOVE this hack later on @@@@@@@@@@@@@@@@@@@@@@@
+#ifdef DEBUG
+// While debugging this code a "-32" on the command line disables 64 bit use.
+// The only need for that that I can really see is when checking the code
+// to verify that it works.
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "-32") == 0)
         {   wow64 = 0;
-            printf("Disabling wow64 flag\n"); fflush(stdout);
         }
     }
+#endif // DEBUG
 #endif // FAT32
 
     int forcegui = 0;
