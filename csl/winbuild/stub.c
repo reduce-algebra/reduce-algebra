@@ -71,6 +71,9 @@
 // Version 1.4  11 December 2005  Mark Adler
 //
 
+// Using a large buffer for decompression is expected to speed things
+// up, so here I use 256 Kbytes.
+
 #define CHUNK 0x40000
 
 //
@@ -82,7 +85,7 @@
 // is an error reading or writing the files.
 //
 
-int inf(FILE *source, FILE *dest)
+int inf(FILE *source, FILE *dest, int length)
 {
     int ret;
     unsigned have;
@@ -100,7 +103,8 @@ int inf(FILE *source, FILE *dest)
     if (ret != Z_OK)
         return ret;
 
-    // decompress until deflate stream ends or end of file
+    // decompress until deflate stream ends or end of file or given
+    // number of bytes have been written.
     do {
         strm.avail_in = fread(in, 1, CHUNK, source);
         if (ferror(source))
@@ -126,37 +130,45 @@ int inf(FILE *source, FILE *dest)
                 return ret;
             }
             have = CHUNK - strm.avail_out;
+            if (have > length) have = length;
             if (fwrite(out, 1, have, dest) != have || ferror(dest))
             {   (void)inflateEnd(&strm);
                 return Z_ERRNO;
             }
+            length -= have;
+            if (length == 0) break;
         } while (strm.avail_out == 0);
 
         // done when inflate() says it's done
-    } while (ret != Z_STREAM_END);
+    } while ((length != 0) && (ret != Z_STREAM_END));
 
     // clean up and return 
     (void)inflateEnd(&strm);
-    return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+    return ret == (Z_STREAM_END && length == 0) ? Z_OK : Z_DATA_ERROR;
 }
 
 
 #if defined FAT32
+
 // A fat 32 bit binary can be run under either native windows or
 // 32-bit cygwin. Since it is a linked as a console mode application
 // it is not suitable for launching by double-clicking. This is
 // going to be usefully smaller than the FAT64 binary, but whether the
 // space saving makes the extra complication of having this one available
 // is yet to be determined!
+
 #define NUMBER_OF_MODULES  3
 #define MODULE_ISATTY32    0
 #define MODULE_WIN32       1
 #define MODULE_CYG32       2
+
 #elif defined FAT64
+
 // A fat 64 bit binary is the full works, supporting either 32 or 64-bit
 // usage either under native windows or either 32 or 64-bit cygwin, To
 // cope with all of this makes if the biggest of all the binaries established
 // here.
+
 #define NUMBER_OF_MODULES  6
 #define MODULE_ISATTY32    0
 #define MODULE_ISATTY64    1
@@ -164,11 +176,14 @@ int inf(FILE *source, FILE *dest)
 #define MODULE_WIN64       3
 #define MODULE_CYG32       4
 #define MODULE_CYG64       5
+
 #elif defined FATWIN
+
 // A fat windows binary is linked as a windows application and as such
 // is not useful for launching from a console - but it is good for
 // double-clicking on. The version here will take advantage of 64-bit
 // windows if run in that context.
+
 #define NUMBER_OF_MODULES  2
 #define MODULE_WIN32       0
 #define MODULE_WIN64       1
@@ -235,39 +250,52 @@ static int64_t length[NUMBER_OF_MODULES];
 #define ERROR_NO_MEMORY            84
 #define ERROR_PROCESS_INFO         85
 #define ERROR_CREATEPROCESS        86
+#define ERROR_UNABLE_TO_WRITE      87
 
 int RunResource(int index, int forcegui)
 {
     FILE *src, *dest;
     int i;
     uint64_t hdr;
-printf("RunFromResource %d %d\n", index, forcegui);
-fflush(stdout);
+#ifdef DEBUG
+    printf("RunFromResource %d %d\n", index, forcegui);
+    fflush(stdout);
+#endif
     GetModuleFileName(NULL, pPath, sizeof(pPath));
-printf("my name is %s\n", pPath);
-fflush(stdout);
+#ifdef DEBUG
+    printf("my name is %s\n", pPath);
+    fflush(stdout);
+#endif
     src = fopen(pPath, "rb");
     if (src == NULL) return ERROR_UNABLE_TO_OPEN_SELF;
     fseek(src, -16*(NUMBER_OF_MODULES+1), SEEK_END);
     if ((hdr = read8(src)) != 0x1234567887654321LL)
-    {   printf("leader read at %" PRIx64 "\n", hdr);
+    {   printf("\n++++ leader read at %" PRIx64 "\n", hdr);
         return ERROR_BAD_LEADER;
     }
     for (i=0; i<NUMBER_OF_MODULES; i++)
     {   address[i] = read8(src);
         length[i] = read8(src);
-printf("Module %d at %" PRIx64 " has length %" PRId64 " = %#" PRIx64 "\n",
-       i, address[i], length[i], length[i]);
-fflush(stdout);
+#ifdef DEBUG
+        printf("Module %d at %" PRIx64 " has length %"
+               PRId64 " = %#" PRIx64 "\n",
+               i, address[i], length[i], length[i]);
+        fflush(stdout);
+#endif
     }
     if ((hdr = read8(src)) != 0x8765432112345678LL)
-    {   printf("trailer read as %" PRIx64 "\n", hdr);
+    {   printf("\n++++ trailer read as %" PRIx64 "\n", hdr);
         return ERROR_BAD_TRAILER;
     }
-    exit(0);
     strcpy(pPath, ".\\acntmp.exe");
     dest = fopen(pPath, "wb");
-//    fwrite(pImage, 1, size, f1);
+    if (dest == NULL)
+    {   printf("Failed to open %s for writing\n", pPath);
+        return ERROR_UNABLE_TO_WRITE;
+    }
+    fseek(src, address[index], SEEK_SET);
+    inf(src, dest, length[index]);
+    fclose(src);
     fclose(dest);
     chmod(pPath, 0755);
 

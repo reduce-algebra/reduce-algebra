@@ -1,14 +1,14 @@
 #! /bin/bash
 
-# ./makebin.sh dir host args
+# ./makebin.sh clean dir host args
 #
-# This configures and then builds fresh clean versions of Reduce
+# This configures and then builds versions of Reduce: clean if (clean)
 # in directory (dir) for host system (host) passing extra information
 # from (args) to the configure step.
 
 # Eg
-#        ./makebin.sh win32 i686-w64-mingw32 --with-cygbuild32=... [etc]
-# or     ./makebin.sh cyg32 i686-pc-cygwin --with-cygwin
+#        ./makebin.sh yes win32 i686-w64-mingw32 --with-cygbuild32=... [etc]
+# or     ./makebin.sh no cyg32 i686-pc-cygwin --with-cygwin
 
 # I will speed up building by using this many parallel tasks. On my
 # home computer I can use 8 tasks and the total rebuild of all four
@@ -16,25 +16,35 @@
 
 NCPUS=8
 
-dir=${1:-w32}
-host=${2:-i686-w64-mingw32}
-shift 2
+clean=${1:-yes}
+dir=${2:-w32}
+host=${3:-i686-w64-mingw32}
+shift 3
 args=$*
 
 here=`cygpath -a .`
 
-rm -rf $here/$dir
-mkdir $here/$dir
+if test "x$clean" = "xyes"
+then
+  rm -rf $here/$dir
+  mkdir $here/$dir
+fi
 
 cd $here/$dir
-$here/../../configure --with-csl --host=$host $args
 
-cd fox
-make -j$NCPUS install
+if test "x$clean" = "xyes"
+then
+  $here/../../configure --with-csl --host=$host $args
 
-cd ../crlibm
-make -j$NCPUS install
+  cd fox
+  make -j$NCPUS install
+  cd ..
 
+  cd crlibm
+  make -j$NCPUS install
+  cd ..
+
+fi
 cd ../csl
 make -j$NCPUS csl.exe
 make -j$NCPUS bootstrapreduce.exe

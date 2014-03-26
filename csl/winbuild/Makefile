@@ -2,9 +2,19 @@
 # multi-target packed executable for Reduce
 #
 
-all:	reduce32.exe reduce.exe winreduce.exe reduce.img reduce.fonts
+.PHONY:	all all32 all64
+
+all:
+	case `uname` in *WOW64*) $(MAKE) all64; ;; *) $(MAKE) all32; ;; esac
+
+
+all32:	reduce32.exe winreduce32.exe reduce.img reduce.fonts
 	ls -lhd *reduce*
-	echo all done
+	echo all 32-bit versionsdone
+
+all64:	reduce32.exe reduce.exe winreduce32.exe winreduce.exe reduce.img reduce.fonts
+	ls -lhd *reduce*
+	echo all 64 and 32-bit versionsdone
 
 # Note that it is vital that when resources are added here that they are
 # added in the order shown.
@@ -45,6 +55,9 @@ winreduce.exe:	addresources.exe stub.c $(WWIN32) $(WWIN64)
 		-Wl,--subsystem,windows --static -lz -o winreduce.exe
 	i686-w64-mingw32-strip winreduce.exe
 	./addresources winreduce.exe $(WWIN32) $(WWIN64)
+
+winreduce32.exe:	$(WWIN32)
+	cp $(WWIN32) winreduce.exe
 
 reduce.img:	win64/csl/reduce.img
 	cp win32/csl/reduce.img .
