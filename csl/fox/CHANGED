@@ -93,5 +93,7 @@ February 2014: Move towards some Unicode interface to terminal handling so
               output.
      (Mar 13) ignore SIGTTOU message so that if code is started in the
               background attempts to use tcsetattr do not make it hang.
+     (Mar 26) ignore "win" prefix and "32" suffix when extracting program
+              name.
 
 <end of CHANGED>

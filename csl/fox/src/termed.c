@@ -2900,93 +2900,6 @@ static void term_ctrl_z_command(void)
     term_redisplay();
 }
 
-/*
- * Encode into buffer b as up to 4 characters (plus a nul). Because I
- * am only concerned with Unicode I only need encode values in the
- * range 0 to 0x10ffff. Returns the number of chars packed (not counting
- * the terminating '\0').
- */
-
-int utf_encode(unsigned char *b, int c)
-{
-    unsigned char *p = b;
-    c &= 0x1fffff;   /* limit myself to 21-bit values here */
-    if (c <= 0x7f) *p++ = c;
-    else if (c <= 0x7ff)
-    {   *p++ = 0xc0 | (c >> 6);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    else if (c <= 0xffff)
-    {   *p++ = 0xe0 | (c >> 12);
-        *p++ = 0x80 | ((c >> 6) & 0x3f);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    else
-    {   *p++ = 0xf0 | (c >> 18);
-        *p++ = 0x80 | ((c >> 12) & 0x3f);
-        *p++ = 0x80 | ((c >> 6) & 0x3f);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    *p = 0;
-    return (int)(p - b);
-}
-
-/*
- * Decode utf-8 or return -1 if invalid.
- */
-
-int utf_bytes = 0;
-
-int utf_decode(unsigned char *b)
-{
-    int c = *b++, c1, c2, c3;
-    utf_bytes = 1;
-    switch (c & 0xf0)
-    {
-/*
- *  case 0x00:
- *  case 0x10:
- *  case 0x20:
- *  case 0x30:
- *  case 0x40:
- *  case 0x50:
- *  case 0x60:
- *  case 0x70:
- */
-default:
-        return c;
-case 0x80:
-case 0x90:
-case 0xa0:
-case 0xb0:
-        return -1;  /* out of place continuation marker */
-case 0xc0:
-case 0xd0:
-        c1 = *b;
-        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        utf_bytes += 1;
-        return ((c & 0x1f) << 6) | (c1 & 0x3f);
-case 0xe0:
-        c1 = *b++;
-        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        c2 = *b;
-        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
-        utf_bytes += 2;
-        return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
-case 0xf0:
-        if ((c & 0x08) != 0) return -1;
-        c1 = *b++;
-        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        c2 = *b++;
-        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
-        c3 = *b;
-        if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
-        utf_bytes += 3;
-        return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
-               ((c2 & 0x3f) << 6) | (c3 & 0x3f);
-    }
-}
-
 void term_unicode_convert(void)
 {
 /*
@@ -3819,6 +3732,93 @@ static wchar_t *term_wide_fancy_getline(void)
 }
 
 #endif /* DISABLE */
+
+/*
+ * Encode into buffer b as up to 4 characters (plus a nul). Because I
+ * am only concerned with Unicode I only need encode values in the
+ * range 0 to 0x10ffff. Returns the number of chars packed (not counting
+ * the terminating '\0').
+ */
+
+int utf_encode(unsigned char *b, int c)
+{
+    unsigned char *p = b;
+    c &= 0x1fffff;   /* limit myself to 21-bit values here */
+    if (c <= 0x7f) *p++ = c;
+    else if (c <= 0x7ff)
+    {   *p++ = 0xc0 | (c >> 6);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    else if (c <= 0xffff)
+    {   *p++ = 0xe0 | (c >> 12);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    else
+    {   *p++ = 0xf0 | (c >> 18);
+        *p++ = 0x80 | ((c >> 12) & 0x3f);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    *p = 0;
+    return (int)(p - b);
+}
+
+/*
+ * Decode utf-8 or return -1 if invalid.
+ */
+
+int utf_bytes = 0;
+
+int utf_decode(unsigned char *b)
+{
+    int c = *b++, c1, c2, c3;
+    utf_bytes = 1;
+    switch (c & 0xf0)
+    {
+/*
+ *  case 0x00:
+ *  case 0x10:
+ *  case 0x20:
+ *  case 0x30:
+ *  case 0x40:
+ *  case 0x50:
+ *  case 0x60:
+ *  case 0x70:
+ */
+default:
+        return c;
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        return -1;  /* out of place continuation marker */
+case 0xc0:
+case 0xd0:
+        c1 = *b;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 1;
+        return ((c & 0x1f) << 6) | (c1 & 0x3f);
+case 0xe0:
+        c1 = *b++;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        c2 = *b;
+        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 2;
+        return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
+case 0xf0:
+        if ((c & 0x08) != 0) return -1;
+        c1 = *b++;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        c2 = *b++;
+        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        c3 = *b;
+        if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 3;
+        return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
+               ((c2 & 0x3f) << 6) | (c3 & 0x3f);
+    }
+}
 
 wchar_t *term_wide_getline(void)
 {

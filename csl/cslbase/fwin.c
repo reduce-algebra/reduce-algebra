@@ -898,15 +898,22 @@ static char this_executable[LONGEST_LEGAL_FILENAME];
 
 int find_program_directory(char *argv0)
 {
-    char *w;
+    char *w, *w1;
     int len, ndir, npgm, j;
 /* In older code I believed that I could rely on Windows giving me
  * the full path of my executable in argv[0]. With bits of mingw/cygwin
  * anywhere near me that may not be so, so I grab the information directly
- * from the Windows APIs.
+ * from the Windows APIs. Except that that turns out to be no good for
+ * a scheme I have that chains to an executable so it can pick which
+ * variant to use, so if argv0 looks like a fully rooted windows path
+ * I will use it!
  */
-    GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
-    argv0 = this_executable;
+    if (!(isalpha(argv0[0]) &&
+          argv0[1] == ':' &&
+          argv0[2] == '\\'))
+    {   GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
+        argv0 = this_executable;
+    }
     w = argv0;
 /*
  * I turn every "\" into a "/". This make for better uniformity with other
@@ -924,7 +931,10 @@ int find_program_directory(char *argv0)
         return 0;
     }
 
-    fullProgramName = argv0;
+    w = (char *)malloc(1+strlen(argv0));
+    if (w == NULL) return 5;           /* 5 = malloc fails */
+    strcpy(w, argv0);
+    fullProgramName = w;
     len = strlen(argv0);
 /*
  * If the current program is called c:/aaa/xxx.exe, then the directory
@@ -932,30 +942,49 @@ int find_program_directory(char *argv0)
  */
     j = len-1;
     if (len > 4 &&
-        argv0[len-4] == '.' &&
-        ((tolower(argv0[len-3]) == 'e' &&
-          tolower(argv0[len-2]) == 'x' &&
-          tolower(argv0[len-1]) == 'e') ||
-         (tolower(argv0[len-3]) == 'c' &&
-          tolower(argv0[len-2]) == 'o' &&
-          tolower(argv0[len-1]) == 'm')))
-    {   program_name_dot_com = (tolower(argv0[len-3]) == 'c');
+        w[len-4] == '.' &&
+        ((tolower(w[len-3]) == 'e' &&
+          tolower(w[len-2]) == 'x' &&
+          tolower(w[len-1]) == 'e') ||
+         (tolower(w[len-3]) == 'c' &&
+          tolower(w[len-2]) == 'o' &&
+          tolower(w[len-1]) == 'm')))
+    {   program_name_dot_com = (tolower(w[len-3]) == 'c');
         len -= 4;
+        w[len] = 0;
+    }
+/*
+ * I will strip any "win" prefix from the application name and also any
+ * "32" suffix.
+ */
+    w1 = w;
+    if (strlen(w) > 2)
+    {   w += strlen(w) - 2;
+        if (w[0] == '3' && w[1] == '2') w[0] = 0;
+    }
+    w = w1;
+    while (*w != 0) w++;
+    while (w != w1 && *w != '/'  && *w != '\\') w--;
+    if (*w == '/' || *w == '\\') w++;
+    if (strncmp(w, "win", 3) == 0)
+    {   char *w2 = w + 3;
+        while (*w2 != 0) *w++ = *w2++;
+        *w = 0;
     }
     for (npgm=0; npgm<len; npgm++)
-    {   int c = argv0[len-npgm-1];
+    {   int c = fullProgramName[len-npgm-1];
         if (c == '/') break;
     }
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  /* none really visible */
     else
     {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
-        strncpy(w, argv0, ndir);
+        strncpy(w, fullProgramName, ndir);
         w[ndir] = 0;
         programDir = w;
     }
     if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
-    strncpy(w, argv0 + len - npgm, npgm);
+    strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
     return 0;
@@ -1152,7 +1181,7 @@ int find_program_directory(char *argv0)
 /*
  * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
  * suffix, so I will purge that! This code exists here because the raw
- * cygwin build has a somewhat schitzo view as to whether it is a Windows
+ * cygwin build has a somewhat mixed view as to whether it is a Windows
  * or a Unix-like system.
  */
     if (strlen(w) > 4)
@@ -1165,6 +1194,16 @@ int find_program_directory(char *argv0)
               tolower((unsigned char)w[2]) == 'o' &&
               tolower((unsigned char)w[3]) == 'm'))) w[0] = 0;
     }
+    w = fullProgramName;
+    if (strlen(w) > 2)
+    {   w += strlen(w) - 2;
+        if (w[0] == '3' && w[1] == '2') w[0] = 0;
+    }
+/*
+ * If I am building a cygwin version I will remove any prefix
+ * "cygwin-", "cygwin64-" or "win" from the front of the name of the
+ * executable and also any "32" suffix.
+ */
     w = fullProgramName;
     while (*w != 0) w++;
     while (w != fullProgramName && *w != '/'  && *w != '\\') w--;
@@ -1179,6 +1218,12 @@ int find_program_directory(char *argv0)
         while (*w1 != 0) *w++ = *w1++;
         *w = 0;
     }
+    if (strncmp(w, "win", 3) == 0)
+    {   char *w1 = w + 3;
+        while (*w1 != 0) *w++ = *w1++;
+        *w = 0;
+    }
+#else /* __CYGWIN__ */
 #endif /* __CYGWIN__ */
 /* OK now I have the full name, which is of the form
  *   abc/def/fgi/xyz

@@ -3949,37 +3949,10 @@ $as_echo "$as_me: Building with host: $host" >&6;}
 cyg32="no"
 cyg64="no"
 case $host in
-x86_64-w64-* | x86_64-pc-*)
-
-$as_echo "#define WIN32 1" >>confdefs.h
-
-
-$as_echo "#define WIN64 1" >>confdefs.h
-
-  CPPFLAGS="$CPPFLAGS"
-  DLL_CFLAGS="$CFLAGS -shared"
-  LDFLAGS="$LDFLAGS -static"
-  windows_build="yes"
-  exeext="yes"
-  X_BASE_LIBS=""
-  win64="yes"
-  case `uname -m` in
-  *i686*)
-    cyg32="yes"
-    ;;
-  *x86_64*)
-    cyg64="yes"
-    ;;
-  *)
-    as_fn_error $? "Unknown platform in cygwin build" "$LINENO" 5
-    ;;
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&5
-$as_echo "$as_me: with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64" >&6;}
-  ;;
-*-*-cygwin* | *-*-*mingw*)
+*-*-cygwin* | *-*-mingw*)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
+# Note that I may be under either cygwin32 or cygwin64 here...
   x86="yes"
   exeext="yes"
   if test "x$with_cygwin" != "xno"
@@ -3994,28 +3967,8 @@ $as_echo "$as_me: Building under cygwin" >&6;}
 # BSD license that CSL is subject to is that it would be quite proper
 # to extent it with non-open components or use it in a non-open context,
 # and the BSD license was adopted in part because I do not wish to apply
-# any constraints that would prevent that. Therefore before I just link
-# in any code that tried to "protect freedom by insisting that people
-# give it up" I will ensure that I provide clear and explicit notice and
-# warning of what is happening.
+# any constraints that would prevent that.
 #
-#
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ************************************************" >&5
-$as_echo "$as_me: ************************************************" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ** \"--with-cygwin\" set so I will link in the  **" >&5
-$as_echo "$as_me: ** \"--with-cygwin\" set so I will link in the  **" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ** library cygwin1.dll, which is subject to   **" >&5
-$as_echo "$as_me: ** library cygwin1.dll, which is subject to   **" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ** the Cygwin's license terms. Please check.  **" >&5
-$as_echo "$as_me: ** the Cygwin's license terms. Please check.  **" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ** Specifically do not distribute what you    **" >&5
-$as_echo "$as_me: ** Specifically do not distribute what you    **" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ** build in this mode without fully           **" >&5
-$as_echo "$as_me: ** build in this mode without fully           **" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ** the obligations imposed by this license.   **" >&5
-$as_echo "$as_me: ** the obligations imposed by this license.   **" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: ************************************************" >&5
-$as_echo "$as_me: ************************************************" >&6;}
 # The next line may ALMOST count as a lie, but under raw cygwin the world
 # is closer to Unix than to Windows so this does make some sense!
 
@@ -4034,10 +3987,18 @@ $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
+    case $host in
+    x86_64*)
+      cyg64="yes"
+      ;;
+    *)
+      cyg32="yes"
+      ;;
+    esac
+  else
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler via
 # "i686-w64-mingw32-gcc".
-  else
     { $as_echo "$as_me:${as_lineno-$LINENO}: Windows built creating native binary" >&5
 $as_echo "$as_me: Windows built creating native binary" >&6;}
 

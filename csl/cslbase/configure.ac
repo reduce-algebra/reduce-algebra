@@ -259,31 +259,9 @@ AC_MSG_NOTICE([Building with host: $host])
 cyg32="no"
 cyg64="no"
 case $host in
-x86_64-w64-* | x86_64-pc-*)
-  AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-  AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
-  CPPFLAGS="$CPPFLAGS"
-  DLL_CFLAGS="$CFLAGS -shared"
-  LDFLAGS="$LDFLAGS -static"
-  windows_build="yes"
-  exeext="yes"
-  X_BASE_LIBS=""
-  win64="yes"
-  case `uname -m` in
-  *i686*)
-    cyg32="yes"
-    ;;
-  *x86_64*)
-    cyg64="yes"
-    ;;
-  *)
-    AC_MSG_ERROR([Unknown platform in cygwin build])
-    ;;
-  esac
-  AC_MSG_NOTICE([with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64])
-  ;;
-*-*-cygwin* | *-*-*mingw*)
+*-*-cygwin* | *-*-mingw*)
   AC_MSG_NOTICE([Building under cygwin])
+# Note that I may be under either cygwin32 or cygwin64 here...
   x86="yes"
   exeext="yes"
   if test "x$with_cygwin" != "xno"
@@ -298,20 +276,8 @@ x86_64-w64-* | x86_64-pc-*)
 # BSD license that CSL is subject to is that it would be quite proper
 # to extent it with non-open components or use it in a non-open context,
 # and the BSD license was adopted in part because I do not wish to apply
-# any constraints that would prevent that. Therefore before I just link
-# in any code that tried to "protect freedom by insisting that people
-# give it up" I will ensure that I provide clear and explicit notice and
-# warning of what is happening.
+# any constraints that would prevent that.
 #
-#
-    AC_MSG_NOTICE([************************************************])
-    AC_MSG_NOTICE([** "--with-cygwin" set so I will link in the  **])
-    AC_MSG_NOTICE([** library cygwin1.dll, which is subject to   **])
-    AC_MSG_NOTICE([** the Cygwin's license terms. Please check.  **])
-    AC_MSG_NOTICE([** Specifically do not distribute what you    **])
-    AC_MSG_NOTICE([** build in this mode without fully           **])
-    AC_MSG_NOTICE([** the obligations imposed by this license.   **])
-    AC_MSG_NOTICE([************************************************])
 # The next line may ALMOST count as a lie, but under raw cygwin the world
 # is closer to Unix than to Windows so this does make some sense!
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
@@ -326,10 +292,18 @@ x86_64-w64-* | x86_64-pc-*)
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
+    case $host in
+    x86_64*)
+      cyg64="yes"
+      ;;
+    *)
+      cyg32="yes"
+      ;;
+    esac
+  else
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler via
 # "i686-w64-mingw32-gcc".
-  else
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
     LDFLAGS="$LDFLAGS -static"
