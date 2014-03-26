@@ -5,7 +5,10 @@
 .PHONY:	all all32 all64 clean fullclean
 
 all:
-	case `uname` in *WOW64*) $(MAKE) all64; ;; *) $(MAKE) all32; ;; esac
+	case `uname` in \
+	*WOW64*) $(MAKE) all64; ;; \
+	*) $(MAKE) all32; ;; \
+	esac
 
 # The clean target does not
 clean:
@@ -65,10 +68,13 @@ winreduce.exe:	addresources.exe stub.c $(WWIN32) $(WWIN64)
 winreduce32.exe:	$(WWIN32)
 	cp $(WWIN32) winreduce32.exe
 
-reduce.img:	win64/csl/reduce.img
-	cp win32/csl/reduce.img .
+reduce.img:	win32/csl/reduce.img
+	case `uname` in \
+	 *WOW64*) cp win64/csl/reduce.img .; ;; \
+	 *) cp win32/csl/reduce.img .; ;; \
+	esac
 
-reduce.fonts:	win64/csl/reduce.fonts
+reduce.fonts:	win32/csl/reduce.fonts
 	cp -r win32/csl/reduce.fonts .
 
 addresources.exe:	addresources.c

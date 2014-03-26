@@ -46,7 +46,7 @@ esac
 for m in subversion openssh automake make mingw64-i686-gcc-g++ \
          mingw64-x86_64-gcc-g++ libncurses-devel gcc-g++ \
          cygwin64-gcc-core libXft-devel libX11-devel \
-         libXext-devel time
+         libXext-devel time mingw64-i686-zlib
 do
   if cygcheck -c -d $m | grep $m > /dev/null
   then
@@ -208,7 +208,7 @@ echo remake and pack
 
 if test "x$ONLY32" = "xyes"
 then
-  male all32
+  make all32
 else
   make all64
 fi
