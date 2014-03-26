@@ -51,11 +51,48 @@ fluid '(compute!-bernoulli);
 %   won't be used.  This approximation is to 506 dec. places.
 %
 
-algebraic (old!*precision := precision(0));
-precision 510;
+comment 
 
-algebraic procedure get!-eulers!-constant;
-   begin scalar a;
+The original code ran in algebraic mode and consequently defined rules and variable
+assignments (e.g., to euler!*constant in algebraic mode. This conflicted with
+autoloading, since autoloading can happen at any time, even during rule processing
+when algebraic mode assignments are not possible
+;
+
+
+%%algebraic (old!*precision := precision(0));
+%%precision 510;
+%%
+%%algebraic procedure get!-eulers!-constant;
+%%   begin scalar a;
+%%      a := 577215664901532860606512090082402431 * 10^40 +
+%%                       0421593359399235988057672348848677267776;
+%%      a := a * 10^40 + 6467093694706329174674951463144724980708;
+%%      a := a * 10^40 + 2480960504014486542836224173997644923536;
+%%      a := a * 10^40 + 2535003337429373377376739427925952582470;
+%%      a := a * 10^40 + 9491600873520394816567085323315177661152;
+%%      a := a * 10^40 + 8621199501507984793745085705740029921354;
+%%      a := a * 10^40 + 7861466940296043254215190587755352673313;
+%%      a := a * 10^40 + 9925401296742051375413954911168510280798;
+%%      a := a * 10^40 + 4234877587205038431093997361372553060889;
+%%      a := a * 10^40 + 3312676001724795378367592713515772261027;
+%%      a := a * 10^40 + 3492913940798430103417771778088154957066;
+%%      a := a * 10^30 + 107501016191663340152278935868;
+%%      a := a * (10**(-506));
+%%      return a
+%%   end;
+%%
+%%algebraic (euler!*constant := get!-eulers!-constant());
+%%
+%%algebraic precision old!*precision;
+%%algebraic clear old!*precision;
+
+% Make variable accessible in symbolic and algebraic mode
+fluid('(euler!*constant));
+flag('(euler!*constant),'share);
+
+symbolic procedure set!-eulers!-constant;
+   begin scalar a,b,oldprec;
       a := 577215664901532860606512090082402431 * 10^40 +
                        0421593359399235988057672348848677267776;
       a := a * 10^40 + 6467093694706329174674951463144724980708;
@@ -69,15 +106,13 @@ algebraic procedure get!-eulers!-constant;
       a := a * 10^40 + 3312676001724795378367592713515772261027;
       a := a * 10^40 + 3492913940798430103417771778088154957066;
       a := a * 10^30 + 107501016191663340152278935868;
-      a := a * (10**(-506));
-      return a
+      b := 10^506;
+      oldprec := precision 510;
+      euler!*constant := divbf(bfloat a,bfloat b);
+      precision oldprec;
    end;
 
-algebraic (euler!*constant := get!-eulers!-constant());
-
-algebraic precision old!*precision;
-algebraic clear old!*precision;
-
+set!-eulers!-constant();
 
 %
 % Define some suitable rules for initial simplification of psi

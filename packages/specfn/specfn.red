@@ -55,15 +55,15 @@ module specfn;  % Special functions package for REDUCE.
 %              -- Struve, Lommel and Whittaker Functions         %
 %              -- Integral funtions, Si, Ci, s_i (=si), Ei,...   %
 %              -- Simplification of Factorials                   %
-%              -- Solid and Spherical Harmonics                    %
-%              -- Jacobi Elliptic Functions                        %
-%              -- Elliptic Integrals                              %
+%              -- Solid and Spherical Harmonics                  %
+%              -- Jacobi Elliptic Functions                      %
+%              -- Elliptic Integrals                             %
 %                                                                %
 %     accessible through the new operators Bernoulli, Gamma,     %
 %     Pochhammer, Psi, Polygamma, Zeta, BesselJ, BesselY,        %
 %     BesselI, BesselK, Hankel1, Hankel2, KummerM, KummerU,      %
 %     AiryAi, AiryBi, AiryAiPrime, AiryBiPrime,                  %
-%     Elliptic{sn,cn,dn...}, Elliptic{E,F,K...}
+%     Elliptic{sn,cn,dn...}, Elliptic{E,F,K...}                  %
 %     Beta, StruveL, StruveH, Lommel1, Lommel2, WhittakerM       %
 %     and WhittakerW, with the new switch SaveSFs.               %
 %                                                                %
@@ -81,7 +81,7 @@ switch savesfs;
 on savesfs;
 
 
-symbolic inline procedure mksqnew u;
+symbolic inline procedure mksq!:new u;
   !*p2f(car fkern(u) .* 1) ./ 1;
 
 symbolic fluid '(bernoulli!-alist new!*bfs bf!*base sf!-alist !*savefs);

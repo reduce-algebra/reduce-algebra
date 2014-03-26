@@ -75,10 +75,10 @@ algebraic
       Stirling2(~n,0)  => 0 when not(n=0),
       Stirling2(~n,~n-1) => binomial(n,2),
       Stirling2(~n,~m) => 0 when fixp n and fixp m and n < m,
-      Stirling2(~n,~m) => calc_stirling2(n,m)
+      Stirling2(~n,~m) => calc!:stirling2(n,m)
                         when fixp n and fixp m and n >m };
 
-algebraic procedure calc_stirling2 (n,m);
+algebraic procedure calc!:stirling2 (n,m);
 
 begin scalar bin_row;
 bin_row := binomial_row(m);

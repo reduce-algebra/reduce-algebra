@@ -26,7 +26,7 @@ module sfgen;   % Handy functions used by the special functions package.
 %
 
 
-exports sq2bf!*,bfprin!:roundup,sf!*eval;
+exports sq2bf!*,sf!*eval;
 
 symbolic procedure sf!*assoc(compare,val,alist);
    (if null alist then nil
@@ -93,25 +93,6 @@ symbolic procedure sf!*eval(name,args);
                  else result := sf!*do!*eval(name . args);
       return result;
    end;
-
-algebraic procedure complex!*off!*switch;
-   if symbolic !*complex then
-      if symbolic !*msg then
-         << off msg; off complex; on msg >>
-      else off complex
-   else t;
-
-algebraic procedure complex!*restore!*switch(fl);
-   if not fl then
-      if symbolic !*msg then
-         << off msg;
-            if symbolic !*complex then
-               off complex
-            else on complex;
-            on msg >>
-      else if symbolic !*complex then
-            off complex
-         else on complex;
 
 endmodule;
 

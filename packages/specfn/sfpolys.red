@@ -438,40 +438,40 @@ flag('(fibonacci),'integer);
 put('fibonacci,'number!-of!-args,1);
 
 symbolic procedure fibonacci(n);
- if not fixp n then mk!*sq mksqnew list ('fibonacci , n)
+ if not fixp n then mk!*sq mksq!:new list ('fibonacci , n)
   else
   begin integer i3,m1;
    if n = 0 then return 0 else if abs(n)=1 then return 1;
    if n < 0 then << m1 := -1; n := abs n >>;
-   i3 := fib_aux (n);
+   i3 := fibonacci!:aux1 (n);
    return if (m1 = -1) then << if evenp n then (-i3) else i3; >>
                         else i3;
   end;
 
-global '(fibonacci_alist);
+global '(fibonacci!:alist);
 
-symbolic << fibonacci_alist := '(( 0 . 0)
+symbolic << fibonacci!:alist := '(( 0 . 0)
                 (1 . 1) (2 . 1) (3 . 2) (4 . 3) (5 . 5)
                 (6 . 8) (7 . 13) (8 . 21) (9 . 34)) >>;
 
-symbolic procedure fib_aux (n);
+symbolic procedure fibonacci!:aux1 (n);
    begin scalar fi;
-         fi := atsoc (n,fibonacci_alist);
+         fi := atsoc (n,fibonacci!:alist);
          if fi then return cdr fi;
 
-         fi :=  fib_aux_aux n;
-         fibonacci_alist := ( n . fi) . fibonacci_alist;
+         fi :=  fibonacci!:aux2 n;
+         fibonacci!:alist := ( n . fi) . fibonacci!:alist;
          return fi;
       end;
 
-symbolic procedure fib_aux_aux (n); % from Wolfram Koepf, Sep 1998
-                % d'apres Knuth & Ptachnik: Concrete Mathematics
-  if evenp n  then (f*(f+2*fib_aux(n/2-1))) where f=fib_aux(n/2)
-  else (fib_aux ((n+1)/2)^2 + fib_aux((n-1)/2)^2);
+symbolic procedure fibonacci!:aux2 (n); % from Wolfram Koepf, Sep 1998
+                % d'apres Knuth & Patachnik: Concrete Mathematics
+  if evenp n  then (f*(f+2*fibonacci!:aux1(n/2-1))) where f=fibonacci!:aux1(n/2)
+  else (fibonacci!:aux1 ((n+1)/2)^2 + fibonacci!:aux1((n-1)/2)^2);
 
 symbolic procedure fibonaccip(n,x);
  if or(not fixp n, not idp x)
-         then mk!*sq mksqnew ('fibonaccip . list(n,x))
+         then mk!*sq mksq!:new ('fibonaccip . list(n,x))
   else
   begin integer i3,i2,i1,m1;
    if n= 0 then return 0 else if n=1 then return 1;

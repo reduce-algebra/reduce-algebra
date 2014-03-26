@@ -26,12 +26,11 @@ module sfgamm;   % Gamma function procedures and rules for REDUCE.
 %
 
 
-imports complex!*on!*switch, complex!*off!*switch,
-   complex!*restore!*switch, sf!*eval;
+imports complex!*off!*switch, complex!*restore!*switch, sf!*eval;
 
 exports do!*gamma, do!*pochhammer, do!*poch!*conj!*calc;
 
-fluid '(COMPUTE!-BERNOULLI intlogrem);
+fluid '(compute!-bernoulli);
 
 %
 %   Rule set for the gamma function.
