@@ -251,6 +251,7 @@ static int64_t length[NUMBER_OF_MODULES];
 #define ERROR_PROCESS_INFO         85
 #define ERROR_CREATEPROCESS        86
 #define ERROR_UNABLE_TO_WRITE      87
+#define ERROR_NO_TEMP_FILE         88
 
 int RunResource(int index, int forcegui)
 {
@@ -269,10 +270,12 @@ int RunResource(int index, int forcegui)
     src = fopen(pPath, "rb");
     if (src == NULL) return ERROR_UNABLE_TO_OPEN_SELF;
     fseek(src, -16*(NUMBER_OF_MODULES+1), SEEK_END);
+// The way I put "resources" in a file puts a header word before
+// a table and a trailer word after it. These form some sort of
+// signature to confirm that the file is in a good state. If either
+// is not found I exit.
     if ((hdr = read8(src)) != 0x1234567887654321LL)
-    {   printf("\n++++ leader read at %" PRIx64 "\n", hdr);
         return ERROR_BAD_LEADER;
-    }
     for (i=0; i<NUMBER_OF_MODULES; i++)
     {   address[i] = read8(src);
         length[i] = read8(src);
@@ -284,28 +287,101 @@ int RunResource(int index, int forcegui)
 #endif
     }
     if ((hdr = read8(src)) != 0x8765432112345678LL)
-    {   printf("\n++++ trailer read as %" PRIx64 "\n", hdr);
         return ERROR_BAD_TRAILER;
+// Now I want a temporary file that I can put the unpacked executable
+// into. Note that GetTempPath() will not guarantee that the directory
+// it points me to is writable! In case of trouble I fall back to creating
+// the temporary files that I need in whatever is the current directory.
+    DWORD path = GetTempPath(sizeof(pPath), pPath);
+    if (path ==0 || path > sizeof(pPath)-14)
+        strcpy(pPath, ".\\"); // Try to use currect directory
+// Now pPath holds a directory, with a "\" character at the end...
+//
+// I can not use most of the functions I would like to to create the
+// file name because most do not allow me to specify a suffix, and I
+// would like the name to be "something.exe". So I do it all myself.
+    DWORD myid = GetProcessId(GetCurrentProcess());
+    SYSTEMTIME t0;
+    GetSystemTime(&t0);
+// Here I create a number that depends on the date and time of day as
+// well as on my process number. Using this in the generated file name
+// can not guarantee to avoid clashes. but it will at least help.
+    int k = (t0.wMilliseconds + 1000*t0.wSecond) +
+            314159*(int)time(NULL) +
+            2718281*(int)myid;
+    char *fname = pPath + strlen(pPath);
+// I will try ten times in the temporary directory found above, and if
+// all those attempts fail I will try another 10 times in the current
+// directory. If all those fail I will give up.
+    int tries = 0;
+    for (;;k++, tries++)
+    {   if (tries == 10)
+        {   strcpy(pPath, ".\\");
+            fname = pPath + strlen(pPath);
+        }
+        else if (tries == 20) return ERROR_NO_TEMP_FILE;
+        sprintf(fname, "Red%.5x.exe", k & 0xfffff);
+// This use of CreateFile arranges that the file opened is guaranteed
+// to be new. This is just what I want.
+        HANDLE h = CreateFile(
+            pPath,                 // name
+            GENERIC_WRITE,         // access
+            0,                     // shared
+            NULL,                  // security attributes
+            CREATE_NEW,            // creation disposition
+            FILE_ATTRIBUTE_NORMAL, // flags & attributes
+            NULL);                 // template file
+        if (h == INVALID_HANDLE_VALUE) continue;
+// I want to write to the file using a C style FILE object so I convert
+// from a Windows handle to one of those - in two steps.
+        int ch = _open_osfhandle((intptr_t)h, 0);
+        if (ch == -1)
+        {   CloseHandle(h);
+            DeleteFile(pPath);
+            continue;
+        }
+        dest = fdopen(ch, "wb");
+        if (dest == NULL)
+        {   close(ch);
+            DeleteFile(pPath);
+            continue;
+        }
+        break;
     }
-    strcpy(pPath, ".\\acntmp.exe");
-    dest = fopen(pPath, "wb");
-    if (dest == NULL)
-    {   printf("Failed to open %s for writing\n", pPath);
-        return ERROR_UNABLE_TO_WRITE;
-    }
+#ifdef DEBUG
+    printf("File will be <%s>\n", pPath);
+#endif
     fseek(src, address[index], SEEK_SET);
+// Decompress teh relevant resource into the new file.
     inf(src, dest, length[index]);
     fclose(src);
     fclose(dest);
-    chmod(pPath, 0755);
+    chmod(pPath, 0755); // Make executable
 
     const char *cmd = GetCommandLine();
     char *cmd1 = (char *)malloc(strlen(cmd) + 12);
     if (cmd1 == NULL)
     {   printf("No memory for new command line\n"); fflush(stdout);
+        DeleteFile(pPath);
         return ERROR_NO_MEMORY;
     }
     strcpy(cmd1, cmd);
+//
+// Now a rather horrible mess. I will have several versions of Reduce
+// created here
+//     reduce.exe       the general one
+//     reduce32.exe     only supports 32-bit systems
+//     winreduce.exe    for double-clicking - does not support cygwin
+//    [winreduce32.exe] double-clickable and 32-bit only
+// The last of these does not go through this packing process.
+// To cope with all of those the code inside Reduce will strin "win" from
+// the front of an application and "32" from the end before using it
+// to decide where to look for an image file. That wal all the above
+// will be able to use a single file "reduce.img". Further it will be
+// essential that this name be picked up from argv[0] not from the
+// name of the file that the application was actually launches from since
+// the latter is the weird temporary file I just created.
+//
     if (forcegui) strcat(cmd1, " --gui");
     printf("About to run %s with args\n%s\n", pPath, cmd);
     STARTUPINFO peStartUpInformation;
@@ -313,7 +389,9 @@ int RunResource(int index, int forcegui)
     memset(&peStartUpInformation, 0, sizeof(STARTUPINFO));
     peStartUpInformation.cb = sizeof(STARTUPINFO);
     memset(&peProcessInformation, 0, sizeof(PROCESS_INFORMATION));
+#ifdef DEBUG
     printf("Launch <%s> cmd line <%s>\n", pPath, cmd1); fflush(stdout);
+#endif
     if (CreateProcessA(pPath,            // appname
                        cmd1,             // command line
                        NULL,             // process attributes
@@ -328,14 +406,19 @@ int RunResource(int index, int forcegui)
         DWORD rc;
         if (GetExitCodeProcess(peProcessInformation.hProcess, &rc) == 0)
             rc = ERROR_PROCESS_INFO; // Getting the return code failed!
+#ifdef DEBUG
         printf("CreateProcess happened, rc reported as %d = %#x\n", rc, rc);
+#endif
         fflush(stdout);
         CloseHandle(peProcessInformation.hProcess);
         CloseHandle(peProcessInformation.hThread);
+        DeleteFile(pPath);
         return rc;
     }
     else
-    {   printf("CreateProcess failed\n"); fflush(stdout);
+    {
+#ifdef DEBUG
+        printf("CreateProcess failed\n"); fflush(stdout);
         DWORD dw = GetLastError();
         LPVOID lpMsgBuf;
         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -349,6 +432,8 @@ int RunResource(int index, int forcegui)
                       NULL);
         printf("CreateProcess failed (%d): %s\n", dw, lpMsgBuf);
         fflush(stdout);
+#endif
+        DeleteFile(pPath);
         return ERROR_CREATEPROCESS;
     }
 }
@@ -410,9 +495,6 @@ int main(int argc, char* argv[])
         dashdash ||           // "--" seen: no console API needed
         t0==FILE_TYPE_DISK || // stdin or stdout disk: no console API needed
         t1==FILE_TYPE_DISK) possibly_under_cygwin = 0;
-
-    printf("possibly_under_cygwin = %d\n", possibly_under_cygwin); fflush(stdout);
-
 //
 // This stub runs as 32-bit code, but if it is on a 64-bit version of
 // windows it will be running under "wow64". Checking for that should allow
@@ -443,7 +525,7 @@ int main(int argc, char* argv[])
 #ifndef FATWIN
 // The FATWIN case does not support cygwin at all...
     if (possibly_under_cygwin)
-    {
+    {   int cygwin32 = 0;
 // Here I want to execute cygwin_isatty.exe (and/or cygwin64_isatty.exe).
 // There can not merely have their code incorporated here directly
 // because they are cygwin programs and so their startup is rather
@@ -471,33 +553,51 @@ int main(int argc, char* argv[])
 //
         int rc = -1;
 #ifdef FAT64
-        if (wow64)
-        {   rc = RunResource(MODULE_ISATTY64, 0);
-            printf("trying cygwin64_isatty yields %d = %#x\n", rc, rc); fflush(stdout);
-        }
+        if (wow64) rc = RunResource(MODULE_ISATTY64, 0);
 #endif // FAT64
-        if (rc != 1)
+        if (rc != 0)
         {   rc = RunResource(MODULE_ISATTY32, 0);
-            printf("trying cygwin32_isatty yields %d = %#x\n", rc, rc); fflush(stdout);
 #ifdef FAT64
-            if (rc == 1) wow64 = 0;
+            if (rc == 0) cygwin32 = 1;
 #endif // FAT64
         }
-        printf("cygwin_isatty(64/32) says %d = %.8x\n", rc, rc); fflush(stdout);
-        switch (rc)
-        {
-        case 0:
-            forcegui = 1;
-        default:
-            possibly_under_cygwin = 0;
-        case 1:
-            break;
+// If one of stdin or stdout is not connected to a cygwin console there is
+// no point in trying to use cygwin at all.
+        if (rc != 0) possibly_under_cygwin = 0;
+// If DISPLAY and SSH_ENV are both null then I will look at the command
+// line options...
+        else if (getenv("DISPLAY") == NULL &&
+                 getenv("SSH_HOST") == NULL)
+        {   int nogui = 0;
+// ... I look for "--nogui" (or the abbreviations "-w" or "-w-") ...
+            for (i=1; i<argc; i++)
+            {   if (strcmp(argv[i], "--nogui") == 0 ||
+                    strcmp(argv[i], "-w") == 0 ||
+                    strcmp(argv[i], "-w-") == 0)
+                {   nogui = 1;
+                    break;
+                }
+            }
+// If there was NOT a "--nogui" then I will run a native windows
+// version.
+            if (nogui == 0)
+            {   possibly_under_cygwin = 0;
+                forcegui = 1;
+            }
+// Otherwise if I found cygwin32 rather than cygwin64 I must use that version.
+            else if (cygwin32) wow64 = 0;
         }
+// Here DISPLAY or SSH_HOST was set so I just have to choose which cygwin
+// version to use.
+        else if (cygwin32) wow64 = 0;
     }
 #else
     possibly_under_cygwin = 0;
 #endif // FATWIN
-
+#ifdef DEBUG
+    printf("Analysis yields wow64=%d cygwin=%d forcegui=%d\n",
+           wow64, possibly_under_cygwin, forcegui);
+#endif
 //
 // Now I will run the version of Reduce that I have picked. All the #ifdef
 // stuff is to allow for smaller binaries that support only a subset of the
@@ -506,26 +606,20 @@ int main(int argc, char* argv[])
     switch ((wow64<<4) | possibly_under_cygwin)
     {
     case 0x00:
-        printf("Attempt to use win32 version\n"); fflush(stdout);
         return RunResource(MODULE_WIN32, forcegui);
 #ifndef FAT32
     case 0x10:
-        printf("Attempt to use win64 version\n"); fflush(stdout);
         return RunResource(MODULE_WIN64, forcegui);
 #endif
 #ifndef FATWIN
     case 0x01:
-        printf("Attempt to use cyg32 version\n"); fflush(stdout);
         return RunResource(MODULE_CYG32, forcegui);
 #ifndef FAT32
     case 0x11:
-        printf("Attempt to use cyg64 version\n"); fflush(stdout);
         return RunResource(MODULE_CYG64, forcegui);
 #endif // FAT32
 #endif // FATWIN
     default:
-        printf("wow64=%d possibly_under_cygwin=%d forcegui=%d\n",
-                wow64, possibly_under_cygwin, forcegui); fflush(stdout);
         return 1;
     }
 }

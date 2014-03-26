@@ -1,8 +1,8 @@
-/* cygwin-isatty.c                       Copyright (C) 2013 Codemist Ltd */
+/* cygwin-isatty.c                       Copyright (C) 2014 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -44,41 +44,27 @@
  * available. There is a complication in that as of mid 2013 there are
  * both 32 and 64-bit variants on cygwin and at least initially their
  * treatment of console streams differ, so a version of this built for
- * 64-bit cygwin will, when run under the 32-bit cygwin version of mintty,
- * return an error code 127. It is possible - even probable - that later
- * updates to the two varients of cygwin will make their stdio streams
- * more compatible with one another, and then it will be necessary to
- * review the tests here.
+ * 64-bit cygwin will will tend to fail to launch and vice versa.
  */
 
 /*
  * ./cygwin-isatty.exe
  * case $? in
  * 0)
- *   echo User did not specify "--nogui" and stdio is from console
- *   echo not redirected. We are also not under X11 or via SSH, so
- *   echo force use of a native Windows application running in GUI mode.
+ *   echo stdio is from console and stdout is not redirected.
  *   ;;
  * 1)
- *   echo stdio streams are attached to console, and here either the
- *   echo user has requested no GUI or is liable to need an X11 one.
- *   ;;
- * 2)
  *   echo at least one of the stdio streams has been redirected or
  *   echo comes via a pipe, so I will not be running in interactive
- *   echo mode. Use a native Windows application, which will launch
- *   echo without a GUI in this case.
+ *   echo mode.
  *   ;;
  * *)
- *   echo a return code of 127 arises if you go "./no-file-here.exe; echo $?"
- *   echo and also if you run a 64-bit cygwin version of cygwin-isatty from
- *   echo a 32-bit cygwin shell.
+ *   echo other non-zero code mean that the code here failed to run -
+ *   echo for instance the 32-bit version was tried in a 64-bit cygwin
+ *   echo context or vice versa, or cygwin1.dll was not available.
  *   ;;
  * esac
  *
- * Note that since this is a cygwin program it can only be loaded if you are
- * running with the cygwin dll on your path, but that the related utility
- * "not-under-cygwin.exe" will have been used to filter some cases first.
  */
 
 int main(int argc, char *argv[])
@@ -87,37 +73,6 @@ int main(int argc, char *argv[])
  * Note that I do not investigate stderr, only stdin and stdout. Thus
  * when invoking this code I can go "2>/dev/null" without upsetting anything.
  */
-    int n = isatty(0) && isatty(1);
-    const char *display = getenv("DISPLAY");
-    const char *ssh_host = getenv("SSH_HOST");
-    int nogui = 0;
-    int i;
-    for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--nogui") == 0 ||
-            strcmp(argv[i], "-w") == 0 ||
-            strcmp(argv[i], "-w-") == 0)
-        {   nogui = 1;
-            break;
-        }
-    }
-    for (i=0; i<argc; i++)
-        printf("argv[%d] = \"%s\"\n", i, argv[i]);
-    printf("isatty(0) = %d\n", isatty(0));
-    printf("isatty(1) = %d\n", isatty(1));
-    printf("display = %s\n", display==NULL ? "<null>" : display);
-    printf("ssh_host = %s\n", ssh_host==NULL ? "<null>" : ssh_host);
-    printf("nogui = %d\n", nogui);
-
-    printf("Return %d from cygwin_isatty\n",
-           (n && display==NULL && ssh_host==NULL && !nogui) ?
-               0 :   /* reduce.com --gui ... */
-           n ? 1 :   /* cygwin-reduce.exe */
-               2);   /* reduce.com */
-    fflush(stdout);
-
-    return (n && display==NULL && ssh_host==NULL && !nogui) ?
-               0 :   /* reduce.com --gui ... */
-           n ? 1 :   /* cygwin-reduce.exe */
-               2;    /* reduce.com */
+    return (isatty(0) && isatty(1) ? 0 : 1);
 }
 

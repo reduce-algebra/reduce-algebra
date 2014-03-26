@@ -97,6 +97,17 @@ do
   win64)
     win64="yes"
     ;;
+  help | --help)
+    echo "Usage: ./makereduce.sh [clean/remake/] [cyg32/cyg64/win32/win64]"
+    echo "  Makes some of reduce.exe, reduce32.exe, winreduce.exe, winreduce32.exe"
+    echo "  where 'win' signals a version that will only support windowed mode"
+    echo "  while without 'win' either windowed or console mode under either"
+    echo "  native windows or cygwin is possible. '32' marks versions that will"
+    echo "  only run in 32-bit mode: otherwise the code will automatically use"
+    echo "  64 or 32-bit mode. All variants use the same file reduce.img and"
+    echo "  the same directory reduce.fonts."
+    exit 0
+    ;;
   *)
     echo Unknown argument $x
     ;;
@@ -160,7 +171,7 @@ then
     script cyg32.log -c "./makebin.sh $clean cyg32 i686-pc-cygwin --with-cygwin"
   fi
 
-  if test "x$cyg64" = "xyes" && "x$ONLY32" != "xyes"
+  if test "x$cyg64" = "xyes" && test "x$ONLY32" != "xyes"
   then
     echo Remake cygwin64 version: see cyg64.log
     script cyg64.log -c "./cyg64.sh ./makebin.sh $clean cyg64 x86_64-pc-cygwin \
@@ -174,7 +185,7 @@ then
       --with-cygbuild=$here/cyg32 --with-cygbuild64=$here/cyg64"
   fi
 
-  if test "x$win64" = "xyes" && "x$ONLY32" != "xyes"
+  if test "x$win64" = "xyes" && test "x$ONLY32" != "xyes"
   then
     echo Remake win64 version: see win64.log
     script win64.log -c "./makebin.sh $clean win64 x86_64-w64-mingw32 \
