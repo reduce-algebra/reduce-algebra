@@ -149,6 +149,10 @@ expression.  In the absence of such a value, they stand for themselves.
 \hypertarget{reserved:PI}{}
 \hypertarget{reserved:T}{}
 \hypertarget{reserved:K!*}{}
+\hypertarget{reserved:EULER_GAMMA}{}
+\hypertarget{reserved:GOLDEN_RATIO}{}
+\hypertarget{reserved:CATALAN}{}
+\hypertarget{reserved:KHINCHIN}{}
 
 Several variables\index{Reserved variable} in {\REDUCE} have particular
 properties which should not be changed by the user.  These variables
@@ -158,6 +162,13 @@ include:
                \settowidth{\labelwidth}{\texttt{INFINITY}}%
                \setlength{\labelsep}{1em}%
                \settowidth{\leftmargin}{\texttt{INFINITY\hspace*{\labelsep}}}}
+
+\item[CATALAN] Catalan's constant, defined as
+  \begin{displaymath}
+    \sum_{n=0}^{\infty} \frac{(-1)^{n}}{(2n+1)^{2}} .
+  \end{displaymath}
+\ttindex{CATALAN}
+
 \item[E] Intended to represent the base of
 \ttindex{E}
 the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
@@ -165,19 +176,34 @@ automatically replaced by 1.  If \sw{ROUNDED}\ttindex{ROUNDED} is
 on, \texttt{E} is replaced by the value of E to the current degree of
 floating point precision\index{Numerical precision}.
 
+\item[EULER\_GAMMA] Euler's constant, also available as $-\psi(1)$.
+\ttindex{EULER\_GAMMA}
+
+\item[GOLDEN\_RATIO] The number $\frac{1+\sqrt{5}}{2}$.
+\ttindex{GOLDEN\_RATIO}
+
 \item[I] Intended to represent the square
 \ttindex{I}
 root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
 appropriately for higher powers of \texttt{I}.  This applies only to the
 symbol \texttt{I} used on the top
 level, not as a formal parameter in a procedure, a local variable, nor in
-the context \texttt{for i:= ...}
+the context \texttt{for i:= ...}.
 
 \item[INFINITY] Intended to represent $\infty$
 \ttindex{INFINITY}
-in limit and power series calculations for example.  Note however that the
+in limit and power series calculations for example, as well as in dfeinite integration.
+Note however that the
 current system does \emph{not} do proper arithmetic on $\infty$.  For example,
 \texttt{infinity + infinity} is \texttt{2*infinity}.
+
+\item[KHINCHIN] Khinchin's constant, defined as
+  \begin{displaymath}
+    \prod_{n=1}^{\infty}\left(1+\frac{1}{n(n+2)}\right)^{\log_{2} n} .
+  \end{displaymath}
+%, as defined in
+\ttindex{KHINCHIN}%\cite{Khinchin:64}. 
+
 
 \item[NIL] In {\REDUCE} (algebraic mode only)
 taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a

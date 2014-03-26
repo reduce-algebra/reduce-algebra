@@ -45,138 +45,140 @@ fluid '(COMPUTE!-BERNOULLI intlogrem);
 %   A numerical value is always computed if rounded mode is on.
 %
 
-algebraic operator gamma,m_gamma; % m_gamma is the incomplete gamma
- % function which happens to be produced by definite integration.
+Comment The following rules moved to core (alg/spcfnint.red);
 
-symbolic (operator do!*gamma);
-
-
-algebraic (gamma!*rules := {
-
-   gamma(~x)  =>  1 when numberp x and x = 1,
-   gamma(~x)  =>  sqrt(pi) when numberp x and x = (1/2),
-
-   gamma(~x)  =>  factorial (x-1)
-      when numberp x and impart x = 0
-         and x = floor x and x > 0,
-
-%  gamma(~x)  =>  infinity
-%     when numberp x and impart x = 0
-%        and x = floor x and x < 1,
-
-   gamma(~x)  =>  gamma(x-1) * (x-1)
-      when numberp x and not symbolic !*rounded
-       and impart x = 0 and (64*x) = floor(64*x) and x > 1 and x < 50,
-
-   gamma(~x)  =>  pi / (sin(pi*x) * gamma(-x) * (-x))
-      when numberp x and x < 0 and not (fixp x and x < 1),
-
-   gamma(~x)  =>  do!*gamma(x)
-      when numberp x and not (fixp x and x < 1) and symbolic !*rounded,
-
-   df(gamma(~x), x)  =>  gamma(x) * psi(x)
-
-})$
-
-algebraic (let gamma!*rules);
-
-
-algebraic operator beta;
-
-algebraic (beta!*rules := {
-
-beta(~z,~w)  =>  (gamma(z) * gamma(w)) / gamma(z+w)
-   when (numberp z and numberp w and impart z = 0 and impart w = 0
-         and not ((z = floor z and z < 1)
-               or (w = floor w and w < 1)
-               or (z+w = floor (z+w) and (z+w) < 1)))
-     or (numberp z and numberp w
-         and (impart z neq 0 or impart w neq 0))
-     or not (numberp z and numberp w),
-
-beta(~z,~w)  =>  0
-   when numberp z and numberp w and impart z = 0 and impart w = 0
-      and not ((z = floor z and z < 1)
-            or (w = floor w and w < 1))
-      and (z+w = floor (z+w) and (z+w) < 1)
-
-%beta(~z,~w)  =>  Infinity
-%   when numberp z and numberp w and impart z = 0 and impart w = 0
-%      and ((z = floor z and z < 1)
-%        or (w = floor w and w < 1))
-%      and not (z+w = floor (z+w) and (z+w) < 1)
-
-})$
-
-algebraic (let beta!*rules);
-
-
-
-Comment Ruleset for calculating the Pochhammer symbol
-        Author:  Wolfram Koepf, Freie Universitaet Berlin 1992,
-        Translated to Reduce syntax by Winfried Neun, ZIB Berlin.
-        Made generally safer (and uglier) by Chris Cannam, ZIB.
-        ;
-
-
-algebraic operator pochhammer;
-symbolic (operator do!*pochhammer, do!*poch!*conj!*calc);
-
-algebraic (pochhammer!*rules := {
-
-df(pochhammer(~z,~k),~z) => pochhammer(~z,~k) * (Psi(z+k)-Psi(z)),
-
-pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
-   when fixp z and z<0,
-
-pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
-   when numberp k and k < 20 and k > 0,
-
-pochhammer(~z,~k)  =>  1
-   when numberp k and k = 0,
-
-pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
-   when fixp z and z > 0,
-
-pochhammer(~z,~k -1)  =>
-   2 * pochhammer(1/2,k) / (2*k -1)
-      when numberp z and z = 1/2,
-
-pochhammer(~a,~k)  =>
-   factorial(2k)/((4^k) * factorial(k))
-      when numberp a and a = 1/2,
-
-pochhammer(~n,~k)  =>
-   do!*pochhammer(n,k)
-      when numberp n and numberp k
-         and impart n = 0 and impart k = 0
-            and n = floor n and k = floor k
-               and n > -1 and k > 0,
-
-pochhammer(~a,~k)  =>
-   do!*pochhammer(a,k)
-      when symbolic !*rounded
-         and numberp k and numberp a
-            and impart a = 0 and impart k = 0
-               and ((a neq floor a) or (a > 0))
-                  and k = floor k and k > 0,
-
-pochhammer(~n,~k)  =>
-   (-1)^k * factorial(-n) / factorial(-n-k)
-      when numberp n and numberp k
-         and impart n = 0
-            and n = floor n and n < 1 and (-n-k) >= 0,
-
-pochhammer(~a,~k)  =>
-   pochhammer(2*a-1,2k)/((4^k) * pochhammer((2 a -1)/2,k))
-      when numberp a and impart a = 0
-         and (a+1/2) = floor (a+1/2) and a > 0,
-
-pochhammer(~a,~k)  =>
-   (-1)^(-a+1/2) * Pochhammer(1-a-(-a+1/2),(-a+1/2)) *
-                   Pochhammer(a+(-a+1/2),k-(-a+1/2))
-      when numberp a and impart a = 0
-         and (a+1/2) = floor (a+1/2) and a < 0});
+%%algebraic operator gamma,m_gamma; % m_gamma is the incomplete gamma
+%% % function which happens to be produced by definite integration.
+%%
+%%symbolic (operator do!*gamma);
+%%
+%%
+%%algebraic (gamma!*rules := {
+%%
+%%   gamma(~x)  =>  1 when numberp x and x = 1,
+%%   gamma(~x)  =>  sqrt(pi) when numberp x and x = (1/2),
+%%
+%%   gamma(~x)  =>  factorial (x-1)
+%%      when numberp x and impart x = 0
+%%         and x = floor x and x > 0,
+%%
+%%%  gamma(~x)  =>  infinity
+%%%     when numberp x and impart x = 0
+%%%        and x = floor x and x < 1,
+%%
+%%   gamma(~x)  =>  gamma(x-1) * (x-1)
+%%      when numberp x and not symbolic !*rounded
+%%       and impart x = 0 and (64*x) = floor(64*x) and x > 1 and x < 50,
+%%
+%%   gamma(~x)  =>  pi / (sin(pi*x) * gamma(-x) * (-x))
+%%      when numberp x and x < 0 and not (fixp x and x < 1),
+%%
+%%   gamma(~x)  =>  do!*gamma(x)
+%%      when numberp x and not (fixp x and x < 1) and symbolic !*rounded,
+%%
+%%   df(gamma(~x), x)  =>  gamma(x) * psi(x)
+%%
+%%})$
+%%
+%%algebraic (let gamma!*rules);
+%%
+%%
+%%algebraic operator beta;
+%%
+%%algebraic (beta!*rules := {
+%%
+%%beta(~z,~w)  =>  (gamma(z) * gamma(w)) / gamma(z+w)
+%%   when (numberp z and numberp w and impart z = 0 and impart w = 0
+%%         and not ((z = floor z and z < 1)
+%%               or (w = floor w and w < 1)
+%%               or (z+w = floor (z+w) and (z+w) < 1)))
+%%     or (numberp z and numberp w
+%%         and (impart z neq 0 or impart w neq 0))
+%%     or not (numberp z and numberp w),
+%%
+%%beta(~z,~w)  =>  0
+%%   when numberp z and numberp w and impart z = 0 and impart w = 0
+%%      and not ((z = floor z and z < 1)
+%%            or (w = floor w and w < 1))
+%%      and (z+w = floor (z+w) and (z+w) < 1)
+%%
+%%%beta(~z,~w)  =>  Infinity
+%%%   when numberp z and numberp w and impart z = 0 and impart w = 0
+%%%      and ((z = floor z and z < 1)
+%%%        or (w = floor w and w < 1))
+%%%      and not (z+w = floor (z+w) and (z+w) < 1)
+%%
+%%})$
+%%
+%%algebraic (let beta!*rules);
+%%
+%%
+%%
+%%Comment Ruleset for calculating the Pochhammer symbol
+%%        Author:  Wolfram Koepf, Freie Universitaet Berlin 1992,
+%%        Translated to Reduce syntax by Winfried Neun, ZIB Berlin.
+%%        Made generally safer (and uglier) by Chris Cannam, ZIB.
+%%        ;
+%%
+%%
+%%algebraic operator pochhammer;
+%%symbolic (operator do!*pochhammer, do!*poch!*conj!*calc);
+%%
+%%algebraic (pochhammer!*rules := {
+%%
+%%df(pochhammer(~z,~k),~z) => pochhammer(~z,~k) * (Psi(z+k)-Psi(z)),
+%%
+%%pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
+%%   when fixp z and z<0,
+%%
+%%pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
+%%   when numberp k and k < 20 and k > 0,
+%%
+%%pochhammer(~z,~k)  =>  1
+%%   when numberp k and k = 0,
+%%
+%%pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
+%%   when fixp z and z > 0,
+%%
+%%pochhammer(~z,~k -1)  =>
+%%   2 * pochhammer(1/2,k) / (2*k -1)
+%%      when numberp z and z = 1/2,
+%%
+%%pochhammer(~a,~k)  =>
+%%   factorial(2k)/((4^k) * factorial(k))
+%%      when numberp a and a = 1/2,
+%%
+%%pochhammer(~n,~k)  =>
+%%   do!*pochhammer(n,k)
+%%      when numberp n and numberp k
+%%         and impart n = 0 and impart k = 0
+%%            and n = floor n and k = floor k
+%%               and n > -1 and k > 0,
+%%
+%%pochhammer(~a,~k)  =>
+%%   do!*pochhammer(a,k)
+%%      when symbolic !*rounded
+%%         and numberp k and numberp a
+%%            and impart a = 0 and impart k = 0
+%%               and ((a neq floor a) or (a > 0))
+%%                  and k = floor k and k > 0,
+%%
+%%pochhammer(~n,~k)  =>
+%%   (-1)^k * factorial(-n) / factorial(-n-k)
+%%      when numberp n and numberp k
+%%         and impart n = 0
+%%            and n = floor n and n < 1 and (-n-k) >= 0,
+%%
+%%pochhammer(~a,~k)  =>
+%%   pochhammer(2*a-1,2k)/((4^k) * pochhammer((2 a -1)/2,k))
+%%      when numberp a and impart a = 0
+%%         and (a+1/2) = floor (a+1/2) and a > 0,
+%%
+%%pochhammer(~a,~k)  =>
+%%   (-1)^(-a+1/2) * Pochhammer(1-a-(-a+1/2),(-a+1/2)) *
+%%                   Pochhammer(a+(-a+1/2),k-(-a+1/2))
+%%      when numberp a and impart a = 0
+%%         and (a+1/2) = floor (a+1/2) and a < 0});
 
 
 algebraic (special!*pochhammer!*rules := {
@@ -262,7 +264,7 @@ Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (b - 1)/(b + k -1)
                         when (b - a)=1
 })$
 
-algebraic (let pochhammer!*rules);
+%%algebraic (let pochhammer!*rules);
 
 
 

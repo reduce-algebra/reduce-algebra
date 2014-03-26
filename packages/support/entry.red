@@ -423,17 +423,27 @@ defautoload(trigsimp!*,trigsimp);
 
 % Specfn entry points
 
+defautoload_operator(compute!:Khinchin1,specfn,expr,0);
+defautoload_operator(bernoulli!*calc,specfn);
+defautoload_operator(euler!:aux,specfn);
+
 defautoload_operator(besselj,(specfn specbess));
 defautoload_operator(bessely,(specfn specbess));
 defautoload_operator(besseli,(specfn specbess));
 defautoload_operator(besselk,(specfn specbess));
 defautoload_operator(hankel1,(specfn specbess));
-defautoload_operator(gamma,(specfn sfgamma));
+%defautoload_operator(gamma,(specfn sfgamma));
 defautoload_operator(binomial,specfn);
 
 flag('(compute!:int!:functions),'opfn);
 
 defautoload(compute!:int!:functions,specfn,expr,2);
+
+defautoload(sf!*eval,specfn,expr,2);
+
+flag('(do!*gamma do!*pochhammer),'opfn);
+defautoload(do!*gamma,(specfn sfgamma));
+defautoload(do!*pochhammer,(specfn sfgamma),expr,2);
 
 % Debug module entry points.
 

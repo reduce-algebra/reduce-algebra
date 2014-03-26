@@ -26,13 +26,10 @@ module sfgamma;   % Gamma function procedures and rules for REDUCE.
 %
 
 
-remprop('gamma,'simpfn);
 remprop('igamma,'simpfn);
-remprop('beta,'simpfn);
 remprop('polygamma,'simpfn);
 remprop('ibeta,'simpfn);
 remprop('zeta,'simpfn);
-remprop('pochhammer,'simpfn);
 remprop('psi,'simpfn);
 
 create!-package ('(sfgamma sfgamm sfpsi sfigamma),'(contrib specfn));

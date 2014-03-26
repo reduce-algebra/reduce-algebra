@@ -30,7 +30,8 @@ create!-package('(alg alg!-form intro general farith numsup genmod
                   random smallmod zfactor sort reval algbool simp
                   exptchk simplog logsort sub order forall eqn rmsubs
                   algdcl opmtch prep extout depend str coeff weight
-                  linop elem showrule nestrad maxmin nssimp part map),
+                  linop elem showrule nestrad maxmin nssimp part map
+                  spcfnint),
                 nil);
 
 flag('(alg),'core_package);

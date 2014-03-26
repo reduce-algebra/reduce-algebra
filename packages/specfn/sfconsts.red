@@ -25,18 +25,17 @@ module sfconsts; % Constants from pecial functions such as Euler_Gamma,
 %
 
 
-algebraic let Euler_gamma => compute_Euler_gamma();
-
-symbolic flag('(compute_Euler_gamma),'opfn);
-
-symbolic procedure compute_Euler_gamma ();
-
-  if not(!*rounded) then mk!*sq('((((Euler_gamma . 1) . 1)) . 1))
-         else aeval '(minus (psi 1));
+%%algebraic let Euler_gamma => compute_Euler_gamma();
+%%
+%%symbolic flag('(compute_Euler_gamma),'opfn);
+%%
+%%symbolic procedure compute_Euler_gamma ();
+%%  if not(!*rounded) then mk!*sq('((((Euler_gamma . 1) . 1)) . 1))
+%%         else aeval '(minus (psi 1));
 
 %%%%%%%%%%%%%%%
 
-algebraic let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
+%%algebraic let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
 
 %%%%%%%%%%%%%%%%
 
@@ -50,25 +49,25 @@ Greg J. Fee, Dept of Comp Sci, U of Waterloo,
 
 published in ISSAC '90, ACM press ;
 
-algebraic let catalan => compute_catalan();
+%%algebraic let catalan => compute_catalan();
 
-symbolic flag('(compute_catalan),'opfn);
+%%symbolic flag('(compute_catalan),'opfn);
 
-symbolic procedure compute_catalan ();
-
-  if not(!*rounded) then mk!*sq('((((catalan . 1) . 1)) . 1)) else
-   begin scalar ii,j,p,tt,s,g,!*rounded;
-
-      g := !:prec!: + length explode !:prec!: + 3;
-      p := 10^g/2;
-      tt := p; s := tt; j :=1; ii := 1;
-
-      while tt > 0 do
-        << j := j+2; p := (p*ii) / j; tt := (tt * ii + p)/j;
-           s := s + tt; ii := ii + 1 >>;
-
-      return list('quotient,s,10^(g));
-  end;
+%%symbolic procedure compute!:catalan ();
+%%
+%%  if not(!*rounded) then mk!*sq('((((catalan . 1) . 1)) . 1)) else
+%%   begin scalar ii,j,p,tt,s,g,!*rounded;
+%%
+%%      g := !:prec!: + length explode !:prec!: + 3;
+%%      p := 10^g/2;
+%%      tt := p; s := tt; j :=1; ii := 1;
+%%
+%%      while tt > 0 do
+%%        << j := j+2; p := (p*ii) / j; tt := (tt * ii + p)/j;
+%%           s := s + tt; ii := ii + 1 >>;
+%%
+%%      return list('quotient,s,10^(g));
+%%  end;
 
 %%%%%%%%%%%%%%%%%%%%
 
@@ -79,14 +78,16 @@ algebraic <<
 % translated from a (Maple code) posting by Paul Zimmermann
 %       in sci.math.symbolic
 %
-let Khinchin => compute!:Khinchin();
+%%let Khinchin => compute!:Khinchin();
+%%
+%%symbolic procedure compute!:Khinchin();
+%%
+%% (if not(!*rounded) then mk!*sq('((((Khinchin . 1) . 1)) . 1)) else
+%%    aeval ('compute!:Khinchin1 . NIL)) where !:prec!: = !:prec!: ;
+%%
+%%symbolic flag('(compute!:Khinchin compute!:intlog),'opfn);
 
-symbolic procedure compute!:Khinchin();
-
- (if not(!*rounded) then mk!*sq('((((Khinchin . 1) . 1)) . 1)) else
-    aeval ('compute!:Khinchin1 . NIL)) where !:prec!: = !:prec!: ;
-
-symbolic flag('(compute!:Khinchin compute!:intlog),'opfn);
+symbolic operator compute!:intlog;
 
 procedure compute!:Khinchin1();
   begin scalar term,summ,acc,k,ln2,ln3,oldprec,zp;
@@ -109,6 +110,7 @@ procedure compute!:Khinchin1();
      return summ;
   end;
 
+% derivative of the Riemann Zeta Function
 procedure compute!:Zetaprime (u);
 
   begin scalar term,summ,n,acc,f,j,logm,m,oldprec;

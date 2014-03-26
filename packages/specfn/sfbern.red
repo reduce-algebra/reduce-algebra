@@ -42,22 +42,22 @@ exports nearest!-int!-to!-bf, bernoulli!*calc, multi!*bern,
    single!*bern, retrieve!*bern;
 
 
-algebraic operator bernoulli;
-symbolic operator bernoulli!*calc;
-
-
-algebraic (bernoullirules := {
-
-   bernoulli(~n)  =>  1 when numberp n and n = 0,
-   bernoulli(~n)  =>  -1/2 when numberp n and n = 1,
-   bernoulli(~n)  =>  0 when numberp n and impart n = 0
-      and n = floor n and n/2 neq floor (n/2) and n > 0,
-   bernoulli(~n)  =>  bernoulli!*calc n when numberp n
-      and impart n = 0 and n = floor n and n > 0
-
-})$
-
-algebraic (let bernoullirules);
+%%algebraic operator bernoulli;
+%%symbolic operator bernoulli!*calc;
+%%
+%%
+%%algebraic (bernoullirules := {
+%%
+%%   bernoulli(~n)  =>  1 when numberp n and n = 0,
+%%   bernoulli(~n)  =>  -1/2 when numberp n and n = 1,
+%%   bernoulli(~n)  =>  0 when numberp n and impart n = 0
+%%      and n = floor n and n/2 neq floor (n/2) and n > 0,
+%%   bernoulli(~n)  =>  bernoulli!*calc n when numberp n
+%%      and impart n = 0 and n = floor n and n > 0
+%%
+%%})$
+%%
+%%algebraic (let bernoullirules);
 
 algebraic procedure bernoulli!*calc n;
    begin scalar precom, result, prepre;
@@ -306,13 +306,13 @@ symbolic procedure single!*bern(n);
 
 % Euler numbers module by Kerry Gaskell
 
-algebraic operator Euler;
+%%algebraic operator Euler;
 
-algebraic
- let {    Euler(0)  => 1,
-        Euler(~n) => Euler!:aux(n) when fixp n and n > 0};
-
-flag('(Euler!:aux),'opfn);
+%%algebraic
+%% let {  Euler(0)  => 1,
+%%        Euler(~n) => Euler!:aux(n) when fixp n and n > 0};
+%%
+%%flag('(Euler!:aux),'opfn);
 
 symbolic procedure Euler!:aux(n);
 

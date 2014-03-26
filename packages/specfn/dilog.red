@@ -56,7 +56,7 @@ let { dilog(exp(-~t)) => - dilog(exp t) - t^2/2,
                         log (x)-pi^2/12-dilog( (x-1)^2)/2
                         when numberp x and geq(x,1) and geq(2,x)
                         and not (x = 0) and not fixp(1/x),
-      dilog(~x) => compute_dilog(x)
+      dilog(~x) => compute!:dilog(x)
                  when numberp x and lisp !*rounded and x>=0,
       dilog 2 => -pi^2/12,
       dilog 1 => 0,
@@ -79,24 +79,24 @@ let { polylog(1,~z) => -log(1-z),
       df(polylog(~n,~z),~z) => polylog(n-1,z)/z when fixp n and n>1
 };
 
-let { Lerch_Phi (~z,~s,~a) => compute_lerch_phi(z,s,a)
+let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
               when lisp !*rounded and numberp z and abs(z)<1
                      and numberp s and numberp a,
-      polylog(~n,~z) =>  compute_lerch_phi(z,n,0)
+      polylog(~n,~z) =>  compute!:lerch_phi(z,n,0)
               when lisp !*rounded and numberp z and abs(z)<1 and numberp n };
 
-procedure compute_dilog(x);
+procedure compute!:dilog(x);
    if x = 0.0 then  pi^2/6
     else if x = 1.0 then  0
     else if x = 2.0 then  -pi^2/12
     else if (x >= 1.9 and x < 2.0) then
-                 compute_dilog(1-(x-1)^2)/2 - compute_dilog(1-(x-1))
+                 compute!:dilog(1-(x-1)^2)/2 - compute!:dilog(1-(x-1))
     else if (x > 1.9 or x < -1.0) then
-                -(log x)^2/2 -compute_dilog(1/x)
+                -(log x)^2/2 -compute!:dilog(1/x)
     else if (x < 0.5 and x > 0.0)
-                 then -log(1-x)*log(x) + pi^2/6 - compute_dilog(1-x)
+                 then -log(1-x)*log(x) + pi^2/6 - compute!:dilog(1-x)
     else if (x > 0.5 and x < 1.0 )
-                then  -(log x)^2/2 -compute_dilog(1/x)
+                then  -(log x)^2/2 -compute!:dilog(1/x)
     else begin scalar !*uncached,yy,summa,ii,term,altern ,xm1,xm1!^ii;
                 !*uncached :=t;
                 yy := 10^-(lisp !:prec!:);
@@ -108,7 +108,7 @@ procedure compute_dilog(x);
                 return summa; end;
 >>;
 
-algebraic procedure compute_lerch_phi(z,s,a);
+algebraic procedure compute!:lerch_phi(z,s,a);
     begin scalar !*uncached,yy,summa,k,term,pow;
            !*uncached :=t;
            term := 1; pow := 1;

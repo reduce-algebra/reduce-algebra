@@ -157,13 +157,13 @@ defautoload_operator(Airy_Bi,specbess);
 defautoload_operator(Airy_AiPrime,specbess);
 defautoload_operator(Airy_biprime,specbess);
 
-defautoload_operator(gamma,sfgamma);
+%defautoload_operator(gamma,sfgamma);
 defautoload_operator(igamma,sfgamma);
 defautoload_operator(polygamma,sfgamma);
 defautoload_operator(psi,sfgamma);
 defautoload_operator(ibeta,sfgamma);
-defautoload_operator(beta,sfgamma);
-defautoload_operator(pochhammer,sfgamma);
+%defautoload_operator(beta,sfgamma);
+%defautoload_operator(pochhammer,sfgamma);
 defautoload_operator(zeta,sfgamma);
 
 endmodule;

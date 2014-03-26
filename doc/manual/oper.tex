@@ -215,6 +215,7 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:ATAN}{}
 \hypertarget{operator:ATANH}{}
 \hypertarget{operator:ATAN2}{}
+\hypertarget{operator:BETA}{}
 \hypertarget{operator:CI}{}
 \hypertarget{operator:COS}{}
 \hypertarget{operator:COSH}{}
@@ -225,11 +226,13 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:DILOG}{}
 \hypertarget{operator:EI}{}
 \hypertarget{operator:EXP}{}
+\hypertarget{operator:GAMMA}{}
 \hypertarget{operator:HYPOT}{}
 \hypertarget{operator:LN}{}
 \hypertarget{operator:LOG}{}
 \hypertarget{operator:LOGB}{}
 \hypertarget{operator:LOG10}{}
+\hypertarget{operator:POCHHAMMER}{}
 \hypertarget{operator:SEC}{}
 \hypertarget{operator:SECH}{}
 \hypertarget{operator:SI}{}
@@ -241,20 +244,22 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 
 {\REDUCE} knows that the following represent mathematical functions
 \index{Mathematical function} that can
-take arbitrary scalar expressions as their single argument:
+take arbitrary scalar expressions as their argument(s):
 \begin{verbatim}
    ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
-   ATAN ATANH ATAN2 CI COS COSH COT COTH CSC CSCH DILOG EI EXP
-   HYPOT LN LOG LOGB LOG10 SEC SECH SI SIN SINH SQRT TAN TANH
+   ATAN ATANH ATAN2 BETA CI COS COSH COT COTH CSC CSCH
+   DILOG EI EXP GAMMA HYPOT LN LOG LOGB LOG10 SEC SECH
+   SI SIN SINH SQRT TAN TANH
 \end{verbatim}
 \ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}
 \ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}
 \ttindex{ASECH}\ttindex{ASIN}
 \ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
-\ttindex{ATAN2}\ttindex{CI}\ttindex{COS}
+\ttindex{ATAN2}\ttindex{BETA}\ttindex{CI}\ttindex{COS}
 \ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
-\ttindex{CSCH}\ttindex{DILOG}\ttindex{Ei}\ttindex{EXP}
+\ttindex{CSCH}\ttindex{DILOG}\ttindex{Ei}\ttindex{EXP}\ttindex{GAMMA}
 \ttindex{HYPOT}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
+\ttindex{POCHHAMMER}
 \ttindex{SEC}\ttindex{SECH}\ttindex{SI}\ttindex{SIN}
 \ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
 where \texttt{LOG} is the natural logarithm (and equivalent to \texttt{LN}),
@@ -468,6 +473,39 @@ if given complex arguments.  For example, with \texttt{on rounded,complex;}
         cos(2+3i)    ->   -4.18962569097 - 9.10922789376*I
 \end{verbatim}
 
+\section{Bernoulli Numbers and Euler Numbers}
+\ttindex{Bernoulli}\index{Bernoulli numbers}
+\ttindex{Euler}\index{Euler numbers}
+\hypertarget{operator:BERNOULLI}{}
+\hypertarget{operator:EULER}{}
+
+The unary operator {\tt Bernoulli} provides notation and computation for
+Bernoulli numbers.  {\tt Bernoulli(n)} evaluates to the $n$th Bernoulli
+number; all of the odd Bernoulli numbers, except {\tt Bernoulli(1)}, are
+zero.
+
+The algorithms are based upon those by Herbert Wilf, presented by Sandra
+Fillebrown \cite{Fillebrown:92}.  If the \sw{ROUNDED} switch is off,
+the algorithms are exactly those; if it is on, some further rounding may
+be done to prevent computation of redundant digits.  Hence, these
+functions are particularly fast when used to approximate the Bernoulli
+numbers in rounded mode.
+
+Euler numbers are computed by the unary operator Euler, which
+return the nth Euler number. The computation is derived 
+directly from Pascal's triangle of binomial coefficients.
+
+
+\section{The Pochhammer Notation}
+\ttindex{Pochhammer}\index{Pochhammer notation}
+
+The Pochhammer notation $(a)_k$ is supported by the binary operator \texttt{POCHHAMMER}.
+With \sw{ROUNDED} off, this expression is evaluated
+numerically if $a$ and $k$ are both integral, and otherwise may be
+simplified where appropriate.  The simplification rules are based upon
+algorithms supplied by Wolfram Koepf \cite{Koepf:92}.
+
+
 \section{CONTINUED\_FRACTION Operator}
 \hypertarget{operator:CONTINUED_FRACTION}{}
 \index{approximation}\index{rational number}
@@ -479,8 +517,10 @@ into a continued fraction. \texttt{CONTINUED\_FRACTION} has one or
 two arguments, the number to be converted and an optional
 precision:
 \begin{syntaxtable}
-    \texttt{continued\_fraction(}\meta{num}\texttt{)} \\
- \multicolumn{3}{l}{\mbox{or}} \\
+    \texttt{continued\_fraction(}\meta{num}\texttt{)} 
+\end{syntaxtable}
+or
+\begin{syntaxtable}
     \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)}
 \end{syntaxtable}
 The result is a list of two elements: the
