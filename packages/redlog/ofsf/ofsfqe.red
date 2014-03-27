@@ -1663,21 +1663,25 @@ procedure ofsf_qemkstdans(an,svf);
       while an do <<
 	 y := pop an;
 	 {v, sub, xargl, f} := y;
-	 if sub eq 'ofsf_shift!-indicator then <<
+	 if sub eq 'arbitrary then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = arbitrary -> 0"};
+	    push({v, 'ofsf_qesubcq, {'true, nil ./ 1}}, nan)
+	 >> else if sub eq 'ofsf_shift!-indicator then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " = shift"};
-	    push(y, nan);
+	    push({v, sub, xargl}, nan);
 	    push(ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcq then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " = quotient"};
 	    yy := ofsf_qemkstdansqfq(f, nan, v, xargl, anunan);
 	    if yy then <<
-	       {v, sub, xargl} := y := yy;
+	       {v, sub, xargl} := yy;
 	       if !*rlverbose then
 	       	  ioto_prin2 {" -> ", ioto_form2str prepsq cadr xargl}
 	    >>;
-	    push(y, nan);
+	    push({v, sub, xargl}, nan);
 	    push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcr1 then <<
 	    if !*rlverbose then
@@ -1690,7 +1694,7 @@ procedure ofsf_qemkstdans(an,svf);
 	       push(yy, nan);
 	       push(v . ofsf_q2anu(cadr xargl, anunan), anunan)
 	    >> else <<
-	       push(y, nan);
+	       push({v, sub, xargl}, nan);
 	       push(v . ofsf_r2anu(cadr xargl, anunan), anunan)
 	    >>
 	 >> else if sub eq 'ofsf_qesubi then <<
@@ -2026,7 +2030,7 @@ procedure ofsf_guesspinf(atf, v);
       w := if eqn(ldeg lhs, 1) then
 	 quotsq(!*f2q negf red lhs, !*f2q lc lhs)
       else
-	 sfto_cauchyf(lhs, v);
+	 sfto_lmq lhs;
       if op eq 'geq then
 	 return w;
       if op eq 'greaterp then
@@ -2202,18 +2206,19 @@ procedure ofsf_linsf2anu(f, v);
    end;
 
 procedure ofsf_quasf2anu(f, v, rootno);
-   begin scalar aex, mid, a, b, mid, cb;
+   begin scalar aex, mid, a, b, mid, lb, ub;
       f := sfto_sqfpartf f;
       if eqn(ldeg f, 1) then
 	 return ofsf_linsf2anu(f, v);
       a := lc f;
       b := if not domainp red f then lc red f;
       mid := quotsq(!*f2q negf b, !*f2q multf(2, a));
-      cb := sfto_cauchyf(f, mvar f);
+      lb := negsq sfto_lmq sfto_mirror f;
+      ub := sfto_lmq f;
       aex := aex_fromsf sfto_renamef(f, mvar f, v);
       if eqn(rootno, 1) then
-	 return anu_mk(aex, iv_mk(negsq cb, mid));
-      return anu_mk(aex, iv_mk(mid, cb))
+	 return anu_mk(aex, iv_mk(lb, mid));
+      return anu_mk(aex, iv_mk(mid, ub))
    end;
 
 procedure ofsf_qemkans1(an);
@@ -2222,7 +2227,7 @@ procedure ofsf_qemkans1(an);
    % where $e$ is an equation and $a$ is an answer translation.
    begin
       scalar v,sub,xargl,w;
-      integer ic,ec;
+      integer ic,ec,ac;
       return for each y in an collect <<
 	 v := car y;
 	 sub := cadr y;
@@ -2244,6 +2249,8 @@ procedure ofsf_qemkans1(an);
 	    subtrsq(ofsf_preprexpr(cadr xargl),simp ofsf_newepsilon(ec := ec+1))
 	 else if sub eq 'ofsf_qesubcrpe1 then
 	    addsq(ofsf_preprexpr(cadr xargl),simp ofsf_newepsilon(ec := ec+1))
+	 else if sub eq 'arbitrary then
+	    simp ofsf_newarbitrary(ac := ac+1)
 	 else
 	    rederr "BUG IN ofsf_qemkans";
 	 v . w
@@ -2260,6 +2267,9 @@ procedure ofsf_newepsilon(ec);
       put(eps,'!:rd!:,'rdzero!*);
       return eps
    end;
+
+procedure ofsf_newarbitrary(ac);
+   mkid('arbitrary,ac);
 
 procedure ofsf_qebacksub(eql);
    % Quantifier elimination back substitution. [eql] is a list $((v . w), ...)$,

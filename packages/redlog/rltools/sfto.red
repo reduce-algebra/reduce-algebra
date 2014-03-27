@@ -870,6 +870,12 @@ asserted procedure sfto_lmqroot(q: SQ, n: Integer): Integer;
       return numr sfto_ceilq sfto_rootq(q, n, p)
    end;
 
+asserted procedure sfto_mirror(f: SF): SF;
+   if domainp f then
+      f
+   else
+      sfto_fsub1(f, {mvar f . negf !*k2f mvar f});
+
 asserted procedure sfto_qsub(f: SF, al: AList): SQ;
    sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
 

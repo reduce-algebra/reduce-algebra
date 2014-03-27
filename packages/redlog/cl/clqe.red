@@ -796,7 +796,7 @@ asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, the
       	 if alp = '(nil . nil) then <<  % [v] does not occur in [f].
       	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
  	       ioto_prin2 "*";
-      	    w := {ce_mk(delq(v,vl),f,nil,nil,ans and an)};
+      	    w := {ce_mk(delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans))};
 	    status := 'nonocc;
 	    candvl := nil
       	 >> else if car alp = 'failed then
@@ -840,7 +840,10 @@ asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL
 	    if !*rlqegsd then
 	       elimres := rl_gsd(elimres,theo);
 	    if elimres eq 'true then <<
-	       junct := {ce_mk('break,elimres,nil,nil,cl_updans(v,a,u,f,an,ans))};
+	       an := cl_updans(v,a,u,f,an,ans);
+	       for each vv in vl do
+		  an := cl_updans(vv,'arbitrary,nil,nil,an,ans);
+	       junct := {ce_mk('break,elimres,nil,nil,an)};
 	       eset := d := nil
 	    >> else if elimres neq 'false then
 	       if rl_op elimres eq 'or then
