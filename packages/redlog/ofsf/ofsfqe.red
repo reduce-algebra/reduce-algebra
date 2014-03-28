@@ -1637,7 +1637,11 @@ procedure ofsf_maybenonzero!-local(u,theo,bvl);
    end;
 
 procedure ofsf_qemkans(an,svf);
-   begin scalar res;
+   begin scalar res; integer time, gctime;
+      if !*rlverbose then <<
+	 time :=  time();
+	 gctime := gctime()
+      >>;
       if !*rlqestdans and not !*rlqegen then
 	 an := ofsf_qemkstdans(an,svf);
       res := ofsf_qemkans1 an;
@@ -1647,6 +1651,12 @@ procedure ofsf_qemkans(an,svf);
 	 ofsf_qenobacksub res;
       if !*rlqebacksub then
 	 res := sort(res, function(lambda(x,y); ordp(cadr x,cadr y)));
+      if !*rlverbose then <<
+	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
+	 gctime := gctime() - gctime;
+	 if gctime > 0 then
+	    ioto_prin2t {" plus GC time: ", gctime, " ms"}
+      >>;
       return res
    end;
 
