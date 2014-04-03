@@ -573,6 +573,58 @@ on msg;
 write (" ...");
 write ("Bessel test complete.");
 
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     10. Incomplete Gamma and Beta functions (regularized)
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+igamma(3,0);
+
+igamma(1,1);
+
+igamma(1,4);
+
+on rounded;
+
+igamma(1,1);
+
+igamma(1,4);
+
+igamma(2,4);
+
+igamma(0.5,4);
+
+beta(1,1,1);
+
+ibeta(1,2,1);
+
+ibeta(1,4,1);
+
+ibeta(2,4,1);
+
+ibeta(2,4,0.5);
+
+ibeta(0.12,0.43,0.9);
+
+precision 50;
+
+ibeta(0.12,0.43,0.9);
+
+precision  20;
+
+ibeta(0.12,0.43,0.9);
+
+on complex;
+
+ibeta(1+i,1,1.5*i);
+
+off rounded,complex;
+
+ibeta(3,2,x);
+
 end;
 
 

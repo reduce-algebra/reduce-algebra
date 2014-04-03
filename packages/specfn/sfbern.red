@@ -161,18 +161,10 @@ symbolic procedure multi!*bern(n);
       if not prernd then on rounded;
       prepre := precision 0;
 
-      if new!*bfs then
-         << gn := 2 * n * msd!: n;
-            if gn < (log2of10*!!nfpd) then precision (!!nfpd + 2)
-            else if prepre > (gn/3) or not prernd then
-                     precision (gn/3 + 1)
-            else precision (prepre + 2) >>
-      else
-         << gn := 2 * n * length explode n;
-            if gn < !!nfpd then precision (!!nfpd + 2)
-            else if prepre > gn or not prernd then
-                     precision (gn + 2)
-            else precision (prepre + 2) >>;
+      gn := 2 * n * msd!: n;
+      if gn < !!nbfpd then precision (!!nfpd + 2)
+       else if prepre > (gn/3) or not prernd then precision (gn/3 + 1)
+       else precision (prepre + 2);
 
       tpi := pi!*(); pie := divbf(bfone!*, timbf(tpi, e!*()));
 
@@ -242,18 +234,10 @@ symbolic procedure single!*bern(n);
       if not prernd then on rounded;
       prepre := precision 0;
 
-      if new!*bfs then
-         << gn := 2 * n * msd!: n;
-            if gn < (log2of10*!!nfpd) then precision (!!nfpd + 2)
-            else if prepre > (gn/3) or not prernd then
-                      precision (gn/3 + 1)
-                 else precision (prepre + 2) >>
-      else
-         << gn := 2 * n * length explode n;
-            if gn < !!nfpd then precision (!!nfpd + 2)
-            else if prepre > gn or not prernd then
-                     precision (gn + 1)
-                 else precision (prepre + 2) >>;
+      gn := 2 * n * msd!: n;
+      if gn < !!nbfpd then precision (!!nfpd + 2)
+       else if prepre > (gn/3) or not prernd then precision (gn/3 + 1)
+       else precision (prepre + 2);
 
       pie := divbf(bfone!*, timbf(pi!*(), e!*()));
 

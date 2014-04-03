@@ -58,18 +58,16 @@ symbolic inline procedure sq2bf!*(x);
                else retag cdr y) where y = !*a2f x));
 
 symbolic smacro procedure c!:prec!:;
-   (if new!*bfs then lispeval '!:bprec!: else !:prec!:);
+   !:bprec!:;
 
 % These functions are needed in other modules.
+%  complex!*on!*switch and complex!*off!*switch return t iff the
+%  switch complex was already in the correct position
 
 algebraic procedure complex!*on!*switch;
-   if not symbolic !*complex then
-      if symbolic !*msg then
-         << off msg;
-            on complex;
-            on msg >>
-      else on complex
-   else t;
+  symbolic 
+    if not !*complex then <<(onoff('complex,t) where !*msg := nil); nil>>
+     else t;
 
 algebraic procedure complex!*off!*switch;
    if symbolic !*complex then
@@ -78,17 +76,15 @@ algebraic procedure complex!*off!*switch;
       else off complex
    else t;
 
+% complex!*restore!*switch takes the value returned by complex!*on!*switch or
+%  complex!*off!*switch and restore the switch complex to its former value,
+%  i.e. the switch is flipped if the argument is nil
+
 algebraic procedure complex!*restore!*switch(fl);
-   if not fl then
-      if symbolic !*msg then
-         << off msg;
-            if symbolic !*complex then
-               off complex
-            else on complex;
-            on msg >>
-      else if symbolic !*complex then
-            off complex
-         else on complex;
+  symbolic
+    begin scalar !*msg;
+      if not fl then onoff('complex,not !*complex)
+    end;
 
 endmodule;
 

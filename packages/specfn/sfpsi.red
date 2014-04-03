@@ -139,51 +139,53 @@ set!-eulers!-constant();
 % Expressions for the derivative and integral of psi are included.
 %
 
-algebraic operator psi, polygamma;
-symbolic operator psi!*calc;
-
-algebraic (psi!*rules := {
-
-   psi(~x,~xx) => polygamma(x,xx),
-
-   psi(~z)  =>  infinity
-      when repart z = floor repart z and impart z = 0 and z < 1,
-
-   psi(~z)  =>  -euler!*constant
-      when numberp z and z = 1
-               and symbolic !*rounded and precision(0) < 501,
-
-   psi(~z)  =>  -euler!*constant - 2 * log(2)
-      when numberp z and z = (1/2)
-               and symbolic !*rounded and precision(0) < 501,
-
-   psi(~z)  =>  do!*psi(z)
-      when numberp z and impart z = 0 and symbolic !*rounded,
-
-   psi(~z)  =>  (psi(z/2) + psi((z+1)/2) + 2 * log(2)) / 2
-      when numberp z and impart z = 0
-               and (z/2) = floor (z/2)
-                  and z > 0 and not symbolic !*rounded,
-
-   psi(~z)  =>  psi(z-1) + (1 / (z-1))
-      when numberp z and impart z = 0
-               and z > 1 and not symbolic !*rounded,
-
-   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
-      when numberp z and impart z = 0
-               and z < 0 and not symbolic !*rounded,
-
-   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
-      when numberp z and impart z = 0
-         and z > 1/2 and z < 1 and not symbolic !*rounded,
-
-   df(psi(~z),z)  =>  polygamma(1, z),
-
-   int(psi(~z),z)  =>  log gamma(~z)
-
-})$
-
-algebraic (let psi!*rules);
+%% rules more to alg/spcfninst.red
+%%
+%%algebraic operator psi, polygamma;
+%%symbolic operator psi!*calc;
+%%
+%%algebraic (psi!*rules := {
+%%
+%%   psi(~x,~xx) => polygamma(x,xx),
+%%
+%%   psi(~z)  =>  infinity
+%%      when repart z = floor repart z and impart z = 0 and z < 1,
+%%
+%%   psi(~z)  =>  -euler!*constant
+%%      when numberp z and z = 1
+%%               and symbolic !*rounded and precision(0) < 501,
+%%
+%%   psi(~z)  =>  -euler!*constant - 2 * log(2)
+%%      when numberp z and z = (1/2)
+%%               and symbolic !*rounded and precision(0) < 501,
+%%
+%%   psi(~z)  =>  do!*psi(z)
+%%      when numberp z and impart z = 0 and symbolic !*rounded,
+%%
+%%   psi(~z)  =>  (psi(z/2) + psi((z+1)/2) + 2 * log(2)) / 2
+%%      when numberp z and impart z = 0
+%%               and (z/2) = floor (z/2)
+%%                  and z > 0 and not symbolic !*rounded,
+%%
+%%   psi(~z)  =>  psi(z-1) + (1 / (z-1))
+%%      when numberp z and impart z = 0
+%%               and z > 1 and not symbolic !*rounded,
+%%
+%%   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
+%%      when numberp z and impart z = 0
+%%               and z < 0 and not symbolic !*rounded,
+%%
+%%   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
+%%      when numberp z and impart z = 0
+%%         and z > 1/2 and z < 1 and not symbolic !*rounded,
+%%
+%%   df(psi(~z),z)  =>  polygamma(1, z),
+%%
+%%   int(psi(~z),z)  =>  log gamma(~z)
+%%
+%%})$
+%%
+%%algebraic (let psi!*rules);
 
 
 % PSI_SIMP.RED  F.J.Wright, 2 July 1993
@@ -200,31 +202,31 @@ algebraic;
 % Simplify to "standard form" in which argument is allowed a numeric
 % shift in the range 0 <= shift < 1:
 
-psi_rules := {
-   % Rule for integer shifts (x + 3), and non-integer shifts (x + 3/2)in
-   % a non-integer number domain (on rational) or with "on intstr, div":
-   psi(~x+~n) => psi(x+n-1) + 1/(x+n-1) when numberp n and n >= 1,
-   psi(~x+~n) => psi(x+n+1) - 1/(x+n) when numberp n and n < 0,
-   polygamma(~m,~x+~n) => polygamma(m,x+n-1)+(-1)^m*factorial(m)
-        /(x+n-1)^(m+1) when numberp n and fixp m and n >= 1,
-   polygamma(~m,~x+~n) => polygamma(m,x+n+1)-(-1)^(m)*factorial(m)
-        /(x+n)^(m+1) when numberp n and fixp m and n < 0,
-   % Rule for rational shifts (x + 3/2) in the default (integer) number
-   % domain and rational arguments (x/y + 3):
-   psi((~x+~n)/~d) => psi((x+n-d)/d) + d/(x+n-d) when
-      numberp(n/d) and n/d >= 1,
-   psi((~x+~n)/~d) => psi((x+n+d)/d) - d/(x+n) when
-      numberp(n/d) and n/d < 0,
-   polygamma(~m,(~x+~n)/~d) => polygamma(m,(x+n-d)/d) +
-      (-1)^m*factorial(m)*d^(m+1)/(x+n-d)^(m+1) when
-      fixp m and numberp(n/d) and n/d >= 1,
-   polygamma(~m,(~x+~n)/~d) => polygamma(m,(x+n+d)/d) -
-      (-1)^m*factorial(m)*d^(m+1)/(x+n)^(m+1) when
-      fixp m and numberp(n/d) and n/d < 0
-};
-% NOTE: The rational-shift rule does not work with "on intstr, div".
-
-let psi_rules;
+%%psi_rules := {
+%%   % Rule for integer shifts (x + 3), and non-integer shifts (x + 3/2)in
+%%   % a non-integer number domain (on rational) or with "on intstr, div":
+%%   psi(~x+~n) => psi(x+n-1) + 1/(x+n-1) when numberp n and n >= 1,
+%%   psi(~x+~n) => psi(x+n+1) - 1/(x+n) when numberp n and n < 0,
+%%   polygamma(~m,~x+~n) => polygamma(m,x+n-1)+(-1)^m*factorial(m)
+%%        /(x+n-1)^(m+1) when numberp n and fixp m and n >= 1,
+%%   polygamma(~m,~x+~n) => polygamma(m,x+n+1)-(-1)^(m)*factorial(m)
+%%        /(x+n)^(m+1) when numberp n and fixp m and n < 0,
+%%   % Rule for rational shifts (x + 3/2) in the default (integer) number
+%%   % domain and rational arguments (x/y + 3):
+%%   psi((~x+~n)/~d) => psi((x+n-d)/d) + d/(x+n-d) when
+%%      numberp(n/d) and n/d >= 1,
+%%   psi((~x+~n)/~d) => psi((x+n+d)/d) - d/(x+n) when
+%%      numberp(n/d) and n/d < 0,
+%%   polygamma(~m,(~x+~n)/~d) => polygamma(m,(x+n-d)/d) +
+%%      (-1)^m*factorial(m)*d^(m+1)/(x+n-d)^(m+1) when
+%%      fixp m and numberp(n/d) and n/d >= 1,
+%%   polygamma(~m,(~x+~n)/~d) => polygamma(m,(x+n+d)/d) -
+%%      (-1)^m*factorial(m)*d^(m+1)/(x+n)^(m+1) when
+%%      fixp m and numberp(n/d) and n/d < 0
+%%};
+%%% NOTE: The rational-shift rule does not work with "on intstr, div".
+%%
+%%let psi_rules;
 
 symbolic;
 
@@ -232,50 +234,51 @@ symbolic;
 % Rules for initial manipulation of polygamma functions.
 %
 
-symbolic (operator polygamma!*calc, trigamma!*halves, printerr,
+symbolic (operator polygamma!*calc, trigamma!*halves, polygamma!:error,
         polygamma_aux);
 
 
-symbolic procedure printerr(x); rederr x;
+symbolic procedure polygamma!:error(n,x);
+   rerror('specfn,0,
+         {"Index of Polygamma must be an integer >= 0, not",n});
 
 algebraic procedure polygamma_aux(n,m);
         for ii:=1:(n-1) sum (1/ii**(m+1));
 
-algebraic (polygamma!*rules := {
-
-   polygamma(~n,~x)  =>  printerr
-                 "Index of Polygamma must be an integer >= 0"
-        when numberp n and (not fixp n or n < -1),
-
-   polygamma(~n,~x)  =>  psi(x)
-      when numberp n and n = 0,
-
-   polygamma(~n,~x)  =>  infinity
-      when numberp x and impart x = 0 and x = floor x and x < 1,
-
-   polygamma(~n,~x)  =>  do!*trigamma!*halves(x)
-      when numberp n and n = 1 and numberp x and impart x = 0
-               and (not (x = floor x) and ((2*x) = floor (2*x))) and x > 1,
-
-   polygamma(~n,~x)  =>  ((-1) ** (n)) * (factorial n) * (- zeta(n+1) +
-                         polygamma_aux(x,n))
-      when fixp x and x >= 1 and not symbolic !*rounded,
-
-   polygamma(~n,~x)  => ((-1)**n) * factorial n * (-2 * (2**n) *
-               zeta(n+1) + 2 * (2**n) + zeta(n+1))
-      when numberp x and x = (3/2) and not symbolic !*rounded,
-
-   polygamma(~n,~x)  =>  do!*polygamma(n,x)
-      when numberp x and symbolic !*rounded
-               and numberp n and impart n = 0 and n = floor n,
-
-   df(polygamma(~n,~x), ~x)  =>  polygamma(n+1, x),
-
-   int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
-
-})$
-
-algebraic (let polygamma!*rules);
+%%algebraic (polygamma!*rules := {
+%%
+%%   polygamma(~n,~x)  =>  polygamma!:error(n,x)
+%%        when numberp n and (not fixp n or n < -1),
+%%
+%%   polygamma(~n,~x)  =>  psi(x)
+%%      when numberp n and n = 0,
+%%
+%%   polygamma(~n,~x)  =>  infinity
+%%      when numberp x and impart x = 0 and x = floor x and x < 1,
+%%
+%%   polygamma(~n,~x)  =>  do!*trigamma!*halves(x)
+%%      when numberp n and n = 1 and numberp x and impart x = 0
+%%               and (not (x = floor x) and ((2*x) = floor (2*x))) and x > 1,
+%%
+%%   polygamma(~n,~x)  =>  ((-1) ** (n)) * (factorial n) * (- zeta(n+1) +
+%%                         polygamma_aux(x,n))
+%%      when fixp x and x >= 1 and not symbolic !*rounded,
+%%
+%%   polygamma(~n,~x)  => ((-1)**n) * factorial n * (-2 * (2**n) *
+%%               zeta(n+1) + 2 * (2**n) + zeta(n+1))
+%%      when numberp x and x = (3/2) and not symbolic !*rounded,
+%%
+%%   polygamma(~n,~x)  =>  do!*polygamma(n,x)
+%%      when numberp x and symbolic !*rounded
+%%               and numberp n and impart n = 0 and n = floor n,
+%%
+%%   df(polygamma(~n,~x), ~x)  =>  polygamma(n+1, x),
+%%
+%%   int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
+%%
+%%})$
+%%
+%%algebraic (let polygamma!*rules);
 
 
 
@@ -291,62 +294,62 @@ algebraic (let polygamma!*rules);
 %     big when the argument is over about 30.)
 %
 
-algebraic operator zeta;
-symbolic (operator zeta!*calc, zeta!*pos!*intcalc);
-
-
-algebraic (zeta!*rules := {
-
-   zeta(~x)  =>  (- (1/2))
-      when numberp x and x = 0,
-
-   zeta(~x)  =>  (pi ** 2) / 6
-      when numberp x and x = 2,
-
-   zeta(~x)  =>  (pi ** 4) / 90
-      when numberp x and x = 4,
-
-   zeta(~x)  =>  infinity
-      when numberp x and x = 1,
-
-   zeta(~x)  =>  0
-      when numberp x and impart x = 0 and x < 0 and (x/2) = floor(x/2),
-
-   zeta(~x)  =>  ((2*pi)**x) / (2*factorial x)*(abs bernoulli!*calc x)
-      when numberp x and impart x = 0 and x > 0
-               and (x/2) = floor (x/2) and x < 31,
-
-   zeta(~x)  =>  - (bernoulli!*calc (1-x)) / (1-x)
-      when numberp x and impart x = 0 and x < 0
-               and x = floor x and x > -31,
-
-   zeta(~x)  =>  ((2*pi)**x)/(2 * factorial x)*(abs bernoulli!*calc x)
-      when numberp x and impart x = 0 and x > 0
-               and (x/2) = floor(x/2) and x < 201 and symbolic !*rounded,
-
-   zeta(~x)  =>  - (bernoulli!*calc (1-x)) / (1-x)
-      when numberp x and impart x = 0 and x < 0
-               and x = floor x and x > -201 and symbolic !*rounded,
-
-   zeta(~x)  =>  (2**x)*(pi**(x-1))*sin(pi*x/2)*gamma(1-x)*zeta(1-x)
-      when numberp x and impart x = 0 and x < 0
-               and (x neq floor x or x < -200) and symbolic !*rounded,
-
-   zeta(~x)  =>  do!*zeta!*pos!*intcalc(fix x)
-      when symbolic !*rounded and numberp x and impart(x) = 0 and x > 1
-               and x = floor x and (x <= 15 or precision 0 > 100
-                  or 2*x < precision 0),
-
-   zeta(~x)  =>  do!*zeta(x)
-      when numberp x and impart x = 0% and x > 1
-               and symbolic !*rounded,
-
-   df(zeta(~x),x)  =>  -(1/2)*log(2*pi)
-      when numberp x and x = 0
-
-})$
-
-algebraic (let zeta!*rules);
+%%algebraic operator zeta;
+%%symbolic (operator zeta!*calc, zeta!*pos!*intcalc);
+%%
+%%
+%%algebraic (zeta!*rules := {
+%%
+%%   zeta(~x)  =>  (- (1/2))
+%%      when numberp x and x = 0,
+%%
+%%   zeta(~x)  =>  (pi ** 2) / 6
+%%      when numberp x and x = 2,
+%%
+%%   zeta(~x)  =>  (pi ** 4) / 90
+%%      when numberp x and x = 4,
+%%
+%%   zeta(~x)  =>  infinity
+%%      when numberp x and x = 1,
+%%
+%%   zeta(~x)  =>  0
+%%      when numberp x and impart x = 0 and x < 0 and (x/2) = floor(x/2),
+%%
+%%   zeta(~x)  =>  ((2*pi)**x) / (2*factorial x)*(abs bernoulli!*calc x)
+%%      when numberp x and impart x = 0 and x > 0
+%%               and (x/2) = floor (x/2) and x < 31,
+%%
+%%   zeta(~x)  =>  - (bernoulli!*calc (1-x)) / (1-x)
+%%      when numberp x and impart x = 0 and x < 0
+%%               and x = floor x and x > -31,
+%%
+%%   zeta(~x)  =>  ((2*pi)**x)/(2 * factorial x)*(abs bernoulli!*calc x)
+%%      when numberp x and impart x = 0 and x > 0
+%%               and (x/2) = floor(x/2) and x < 201 and symbolic !*rounded,
+%%
+%%   zeta(~x)  =>  - (bernoulli!*calc (1-x)) / (1-x)
+%%      when numberp x and impart x = 0 and x < 0
+%%               and x = floor x and x > -201 and symbolic !*rounded,
+%%
+%%   zeta(~x)  =>  (2**x)*(pi**(x-1))*sin(pi*x/2)*gamma(1-x)*zeta(1-x)
+%%      when numberp x and impart x = 0 and x < 0
+%%               and (x neq floor x or x < -200) and symbolic !*rounded,
+%%
+%%   zeta(~x)  =>  do!*zeta!*pos!*intcalc(fix x)
+%%      when symbolic !*rounded and numberp x and impart(x) = 0 and x > 1
+%%               and x = floor x and (x <= 15 or precision 0 > 100
+%%                  or 2*x < precision 0),
+%%
+%%   zeta(~x)  =>  do!*zeta(x)
+%%      when numberp x and impart x = 0% and x > 1
+%%               and symbolic !*rounded,
+%%
+%%   df(zeta(~x),x)  =>  -(1/2)*log(2*pi)
+%%      when numberp x and x = 0
+%%
+%%})$
+%%
+%%algebraic (let zeta!*rules);
 
 
 
@@ -510,7 +513,7 @@ symbolic procedure polygamma!*calc!*s(n,z);
       integer k, nm1, nm2, rp, orda, min, scale;
 
       z := sq2bf!* z; signer := i2bf!:((-1)**(n-1));
-      admissable := divide!:(bfone!*,i2bf!:(bf!*base**c!:prec!:()),8);
+      admissable := divide!:(bfone!*,make!:ibf(1,c!:prec!:()),8);
 
       min := 10 + conv!:bf2i
               exp!:(times!:(divide!:(bfone!*,i2bf!:(300+n),8),
@@ -699,30 +702,30 @@ symbolic procedure zeta!*general!*calc!*sub(z,zp,admissable,pre,stt);
       return mk!*sq !*f2q mkround result;
    end;
 
-algebraic array stieltjes (5);  % for use in raw zeta computations
-algebraic array stf       (5);
-algebraic array psi!*ld   (1);
+algebraic array stieltjes!: (5);  % for use in raw zeta computations
+algebraic array stf!:       (5);
+algebraic array psi!*ld     (1);
 algebraic (psi!*ld(0) := -1);   % precision at which last psi was calc'd
 algebraic (psi!*ld(1) :=  0);   % lowest post-scale value acceptable at
                                 % that precision
 
 
-Stieltjes (0) := 0.577215664901532860606512$ % Euler's constant
-Stieltjes (1) := -0.0728158233766$
-Stieltjes (2) := -0.00968992187973$
-Stieltjes (3) := 0.00206262773281$
-Stieltjes (4) := 0.00250054826029$
-Stieltjes (5) := 0.00427794456482$
-Stf (0) := 1$
-Stf (1) := 1$
-Stf (2) := 2$
-Stf (3) := 6$
-Stf (4) := 24$
-Stf (5) := 120$
+Stieltjes!: (0) := 0.577215664901532860606512$ % Euler's constant
+Stieltjes!: (1) := -0.0728158233766$
+Stieltjes!: (2) := -0.00968992187973$
+Stieltjes!: (3) := 0.00206262773281$
+Stieltjes!: (4) := 0.00250054826029$
+Stieltjes!: (5) := 0.00427794456482$
+Stf!: (0) := 1$
+Stf!: (1) := 1$
+Stf!: (2) := 2$
+Stf!: (3) := 6$
+Stf!: (4) := 24$
+Stf!: (5) := 120$
 
 algebraic procedure raw!*zeta(z);
    << z := z-1;
-      1/z + (for m := 0:5 sum ((-1)**m * Stieltjes(m) * z**m / Stf(m)))
+      1/z + (for m := 0:5 sum ((-1)**m * Stieltjes!:(m) * z**m / Stf!:(m)))
    >>;
 
 endmodule;

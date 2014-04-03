@@ -236,8 +236,297 @@ pochhammer(~a,~k)  =>
 
 };
 
+special!*pochhammer!*rules := {
+
+        % these special rules are normally disabled because
+        % they produce a lot of load for the algebraic mode
+
+pochhammer(~a,~k)*pochhammer(~b,~k)  =>
+   pochhammer(2a,2k)/(4^k)
+      when (b-a)=1/2,
+
+pochhammer(~a,~k)  =>
+   (-1)^(-a+1/2) * pochhammer(1-a-(-a+1/2),-a+1/2) *
+      pochhammer(a +(-a +1/2),k-(-a+1/2))
+         when numberp a and impart a = 0
+            and (a+1/2) = floor (a+1/2) and a<0,
+
+pochhammer(~z,~k) * pochhammer(~cz,~k)  =>
+   do!*poch!*conj!*calc(z,k)
+      when numberp z and numberp cz and numberp k
+         and not(impart z = 0) and z = conj cz
+            and impart k = 0 and k = floor k and k >= 0,
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)  =>
+   factorial(3 k)/(factorial(k) * 27^k)
+      when numberp a and a = 1/3 and numberp aa and aa = 2/3,
+
+pochhammer(~a,~k) * pochhammer(~aa,~k)  =>
+   factorial(1 + 3 k)/(27 ^k * factorial(k))
+      when numberp a and a = 2/3 and numberp aa and aa = 4/3,
+
+pochhammer(~b,~k) * pochhammer(~c,~k)  =>
+   pochhammer(3*b,3*k)/( 27^k * pochhammer(b +2/3,k))
+      when numberp b and numberp c
+         and (c-b)=1/3 and (b-1/3) = floor (b-1/3) and not (b-1/3 = 0),
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)*pochhammer(~aaa,~k)  =>
+   factorial(4*k)/(factorial(k) * 64^k)
+      when numberp a and numberp aa and numberp aaa
+         and a = 1/4 and aa = 1/2 and aaa = 3/4,
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)*
+      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+   factorial(5*k)/(factorial(k) * 3125^k)
+      when numberp a and numberp aa
+         and numberp aaa and numberp aaaa
+            and a = 1/5 and aa = 2/5 and aaa = 3/5 and aaaa = 4/5,
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)*
+      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+   5*(1/5 +k)*factorial(5*k)/(factorial(k) * 3125^k)
+      when numberp a and numberp aa
+         and numberp aaa and numberp aaaa
+            and a = 2/5 and aa = 3/5 and aaa = 4/5 and aaaa = 6/5,
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)*
+      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+   (25 *(1/5+k)*(2/5 +k)*factorial(5*k)) / (factorial(k) * 2* 3125^k)
+      when numberp a and numberp aa
+         and numberp aaa and numberp aaaa
+            and a = 3/5 and aa = 4/5 and aaa = 6/5 and aaaa = 7/5,
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)*
+      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+   (125*(1/5+k)*(2/5+k)*(3/5+k)*factorial(5*k)) /
+      (factorial(k) * 6 *3125^k)
+         when numberp a and numberp aa
+            and numberp aaa and numberp aaaa
+               and a = 4/5 and aa = 6/5 and aaa = 7/5 and aaaa = 8/5,
+
+pochhammer(~a,~k)*pochhammer(~aa,~k)*
+      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+   (625*(1/5+k)*(2/5+k)*(3/5+k)*(4/5+k)*factorial(5*k)) /
+      (factorial(k) * 24 *3125^k)
+         when numberp a and numberp aa
+            and numberp aaa and numberp aaaa
+               and a = 6/5 and aa = 7/5 and aaa = 8/5 and aaaa = 9/5,
+
+Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (a + k -1)/(a - 1)
+                        when (a - b)=1,
+
+Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (b - 1)/(b + k -1)
+                        when (b - a)=1
+};
+
 let pochhammer!*rules;
 
+
+% from specfn/sfpsi.red
+
+algebraic operator psi, polygamma;
+
+psi!*rules := {
+
+   psi(~x,~xx) => polygamma(x,xx),
+
+   psi(~z)  =>  infinity
+      when repart z = floor repart z and impart z = 0 and z < 1,
+
+   psi(~z)  =>  -euler!*constant
+      when numberp z and z = 1
+               and symbolic !*rounded and precision(0) < 501,
+
+   psi(~z)  =>  -euler!*constant - 2 * log(2)
+      when numberp z and z = (1/2)
+               and symbolic !*rounded and precision(0) < 501,
+
+   psi(~z)  =>  do!*psi(z)
+      when numberp z and impart z = 0 and symbolic !*rounded,
+
+   psi(~z)  =>  (psi(z/2) + psi((z+1)/2) + 2 * log(2)) / 2
+      when numberp z and impart z = 0
+               and (z/2) = floor (z/2)
+                  and z > 0 and not symbolic !*rounded,
+
+   psi(~z)  =>  psi(z-1) + (1 / (z-1))
+      when numberp z and impart z = 0
+               and z > 1 and not symbolic !*rounded,
+
+   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
+      when numberp z and impart z = 0
+               and z < 0 and not symbolic !*rounded,
+
+   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
+      when numberp z and impart z = 0
+         and z > 1/2 and z < 1 and not symbolic !*rounded,
+
+   df(psi(~z),z)  =>  polygamma(1, z),
+
+   int(psi(~z),z)  =>  log gamma(~z)
+
+};
+
+let psi!*rules;
+
+psi_rules := {
+   % Rule for integer shifts (x + 3), and non-integer shifts (x + 3/2)in
+   % a non-integer number domain (on rational) or with "on intstr, div":
+   psi(~x+~n) => psi(x+n-1) + 1/(x+n-1) when numberp n and n >= 1,
+   psi(~x+~n) => psi(x+n+1) - 1/(x+n) when numberp n and n < 0,
+   polygamma(~m,~x+~n) => polygamma(m,x+n-1)+(-1)^m*factorial(m)
+        /(x+n-1)^(m+1) when numberp n and fixp m and n >= 1,
+   polygamma(~m,~x+~n) => polygamma(m,x+n+1)-(-1)^(m)*factorial(m)
+        /(x+n)^(m+1) when numberp n and fixp m and n < 0,
+   % Rule for rational shifts (x + 3/2) in the default (integer) number
+   % domain and rational arguments (x/y + 3):
+   psi((~x+~n)/~d) => psi((x+n-d)/d) + d/(x+n-d) when
+      numberp(n/d) and n/d >= 1,
+   psi((~x+~n)/~d) => psi((x+n+d)/d) - d/(x+n) when
+      numberp(n/d) and n/d < 0,
+   polygamma(~m,(~x+~n)/~d) => polygamma(m,(x+n-d)/d) +
+      (-1)^m*factorial(m)*d^(m+1)/(x+n-d)^(m+1) when
+      fixp m and numberp(n/d) and n/d >= 1,
+   polygamma(~m,(~x+~n)/~d) => polygamma(m,(x+n+d)/d) -
+      (-1)^m*factorial(m)*d^(m+1)/(x+n)^(m+1) when
+      fixp m and numberp(n/d) and n/d < 0
+};
+% NOTE: The rational-shift rule does not work with "on intstr, div".
+
+let psi_rules;
+
+symbolic operator polygamma!*calc, trigamma!*halves, polygamma!:error,
+                  polygamma_aux;
+
+polygamma!*rules := {
+
+   polygamma(~n,~x)  =>  polygamma!:error(n,x)
+        when numberp n and (not fixp n or n < -1),
+
+   polygamma(~n,~x)  =>  psi(x)
+      when numberp n and n = 0,
+
+   polygamma(~n,~x)  =>  infinity
+      when numberp x and impart x = 0 and x = floor x and x < 1,
+
+   polygamma(~n,~x)  =>  do!*trigamma!*halves(x)
+      when numberp n and n = 1 and numberp x and impart x = 0
+               and (not (x = floor x) and ((2*x) = floor (2*x))) and x > 1,
+
+   polygamma(~n,~x)  =>  ((-1) ** (n)) * (factorial n) * (- zeta(n+1) +
+                         polygamma_aux(x,n))
+      when fixp x and x >= 1 and not symbolic !*rounded,
+
+   polygamma(~n,~x)  => ((-1)**n) * factorial n * (-2 * (2**n) *
+               zeta(n+1) + 2 * (2**n) + zeta(n+1))
+      when numberp x and x = (3/2) and not symbolic !*rounded,
+
+   polygamma(~n,~x)  =>  do!*polygamma(n,x)
+      when numberp x and symbolic !*rounded
+               and numberp n and impart n = 0 and n = floor n,
+
+   df(polygamma(~n,~x), ~x)  =>  polygamma(n+1, x),
+
+   int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
+
+};
+
+let polygamma!*rules;
+
+operator zeta;
+symbolic operator zeta!*calc, zeta!*pos!*intcalc;
+
+zeta!*rules := {
+
+   zeta(~x)  =>  (- (1/2))
+      when numberp x and x = 0,
+
+   zeta(~x)  =>  (pi ** 2) / 6
+      when numberp x and x = 2,
+
+   zeta(~x)  =>  (pi ** 4) / 90
+      when numberp x and x = 4,
+
+   zeta(~x)  =>  infinity
+      when numberp x and x = 1,
+
+   zeta(~x)  =>  0
+      when numberp x and impart x = 0 and x < 0 and (x/2) = floor(x/2),
+
+   zeta(~x)  =>  ((2*pi)**x) / (2*factorial x)*(abs bernoulli!*calc x)
+      when numberp x and impart x = 0 and x > 0
+               and (x/2) = floor (x/2) and x < 31,
+
+   zeta(~x)  =>  - (bernoulli!*calc (1-x)) / (1-x)
+      when numberp x and impart x = 0 and x < 0
+               and x = floor x and x > -31,
+
+   zeta(~x)  =>  ((2*pi)**x)/(2 * factorial x)*(abs bernoulli!*calc x)
+      when numberp x and impart x = 0 and x > 0
+               and (x/2) = floor(x/2) and x < 201 and symbolic !*rounded,
+
+   zeta(~x)  =>  - (bernoulli!*calc (1-x)) / (1-x)
+      when numberp x and impart x = 0 and x < 0
+               and x = floor x and x > -201 and symbolic !*rounded,
+
+   zeta(~x)  =>  (2**x)*(pi**(x-1))*sin(pi*x/2)*gamma(1-x)*zeta(1-x)
+      when numberp x and impart x = 0 and x < 0
+               and (x neq floor x or x < -200) and symbolic !*rounded,
+
+   zeta(~x)  =>  do!*zeta!*pos!*intcalc(fix x)
+      when symbolic !*rounded and numberp x and impart(x) = 0 and x > 1
+               and x = floor x and (x <= 15 or precision 0 > 100
+                  or 2*x < precision 0),
+
+   zeta(~x)  =>  do!*zeta(x)
+      when numberp x and impart x = 0% and x > 1
+               and symbolic !*rounded,
+
+   df(zeta(~x),x)  =>  -(1/2)*log(2*pi)
+      when numberp x and x = 0
+
+};
+
+let zeta!*rules;
+
+
+% from specfn/sfigamma.red
+
+operator igamma, ibeta;
+
+% Set up rule definitions for igamma and ibeta functions.
+
+let
+{
+ igamma(~a,~x) => igamma!:eval(a,x)
+        when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
+
+ igamma(~a,0) => 0,
+
+% igamma(0,~x) => -ei(-x),
+
+ igamma(~a,~x) => erf(sqrt(x)) when numberp(a) and a=1/2,
+
+ igamma(1,~x) => 1-exp(-x),
+
+ df(igamma(~a,~x),~x) => x^(a-1)*exp(-z) / gamma(a)
+};
+
+let
+{
+ ibeta(~a,~b,~x) => ibeta!:eval(a,b,x)
+        when numberp(a) and numberp(b) and numberp(x) and lisp !*rounded
+             and repart(a)>0 and repart(b)>0 and x>=0 and x<=1,
+
+ ibeta(~a,1,~x) => x^a,
+ ibeta(1,~b,~x) => 1 - (1-x)^b,
+
+ df(ibeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
+
+ ibeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
+        when numberp a and fixp a and a>0 and a<6 and
+             numberp b and fixp b and b>0 and b<6
+};
 
 endmodule;
 

@@ -178,91 +178,91 @@ Comment The following rules moved to core (alg/spcfnint.red);
 %%                   Pochhammer(a+(-a+1/2),k-(-a+1/2))
 %%      when numberp a and impart a = 0
 %%         and (a+1/2) = floor (a+1/2) and a < 0});
-
-
-algebraic (special!*pochhammer!*rules := {
-
-        % these special rules are normally disabled because
-        % they produce a lot of load for the algebraic mode
-
-pochhammer(~a,~k)*pochhammer(~b,~k)  =>
-   pochhammer(2a,2k)/(4^k)
-      when (b-a)=1/2,
-
-pochhammer(~a,~k)  =>
-   (-1)^(-a+1/2) * pochhammer(1-a-(-a+1/2),-a+1/2) *
-      pochhammer(a +(-a +1/2),k-(-a+1/2))
-         when numberp a and impart a = 0
-            and (a+1/2) = floor (a+1/2) and a<0,
-
-pochhammer(~z,~k) * pochhammer(~cz,~k)  =>
-   do!*poch!*conj!*calc(z,k)
-      when numberp z and numberp cz and numberp k
-         and not(impart z = 0) and z = conj cz
-            and impart k = 0 and k = floor k and k >= 0,
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)  =>
-   factorial(3 k)/(factorial(k) * 27^k)
-      when numberp a and a = 1/3 and numberp aa and aa = 2/3,
-
-pochhammer(~a,~k) * pochhammer(~aa,~k)  =>
-   factorial(1 + 3 k)/(27 ^k * factorial(k))
-      when numberp a and a = 2/3 and numberp aa and aa = 4/3,
-
-pochhammer(~b,~k) * pochhammer(~c,~k)  =>
-   pochhammer(3*b,3*k)/( 27^k * pochhammer(b +2/3,k))
-      when numberp b and numberp c
-         and (c-b)=1/3 and (b-1/3) = floor (b-1/3) and not (b-1/3 = 0),
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)*pochhammer(~aaa,~k)  =>
-   factorial(4*k)/(factorial(k) * 64^k)
-      when numberp a and numberp aa and numberp aaa
-         and a = 1/4 and aa = 1/2 and aaa = 3/4,
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
-   factorial(5*k)/(factorial(k) * 3125^k)
-      when numberp a and numberp aa
-         and numberp aaa and numberp aaaa
-            and a = 1/5 and aa = 2/5 and aaa = 3/5 and aaaa = 4/5,
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
-   5*(1/5 +k)*factorial(5*k)/(factorial(k) * 3125^k)
-      when numberp a and numberp aa
-         and numberp aaa and numberp aaaa
-            and a = 2/5 and aa = 3/5 and aaa = 4/5 and aaaa = 6/5,
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
-   (25 *(1/5+k)*(2/5 +k)*factorial(5*k)) / (factorial(k) * 2* 3125^k)
-      when numberp a and numberp aa
-         and numberp aaa and numberp aaaa
-            and a = 3/5 and aa = 4/5 and aaa = 6/5 and aaaa = 7/5,
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
-   (125*(1/5+k)*(2/5+k)*(3/5+k)*factorial(5*k)) /
-      (factorial(k) * 6 *3125^k)
-         when numberp a and numberp aa
-            and numberp aaa and numberp aaaa
-               and a = 4/5 and aa = 6/5 and aaa = 7/5 and aaaa = 8/5,
-
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
-   (625*(1/5+k)*(2/5+k)*(3/5+k)*(4/5+k)*factorial(5*k)) /
-      (factorial(k) * 24 *3125^k)
-         when numberp a and numberp aa
-            and numberp aaa and numberp aaaa
-               and a = 6/5 and aa = 7/5 and aaa = 8/5 and aaaa = 9/5,
-
-Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (a + k -1)/(a - 1)
-                        when (a - b)=1,
-
-Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (b - 1)/(b + k -1)
-                        when (b - a)=1
-})$
-
+%%
+%%
+%%algebraic (special!*pochhammer!*rules := {
+%%
+%%        % these special rules are normally disabled because
+%%        % they produce a lot of load for the algebraic mode
+%%
+%%pochhammer(~a,~k)*pochhammer(~b,~k)  =>
+%%   pochhammer(2a,2k)/(4^k)
+%%      when (b-a)=1/2,
+%%
+%%pochhammer(~a,~k)  =>
+%%   (-1)^(-a+1/2) * pochhammer(1-a-(-a+1/2),-a+1/2) *
+%%      pochhammer(a +(-a +1/2),k-(-a+1/2))
+%%         when numberp a and impart a = 0
+%%            and (a+1/2) = floor (a+1/2) and a<0,
+%%
+%%pochhammer(~z,~k) * pochhammer(~cz,~k)  =>
+%%   do!*poch!*conj!*calc(z,k)
+%%      when numberp z and numberp cz and numberp k
+%%         and not(impart z = 0) and z = conj cz
+%%            and impart k = 0 and k = floor k and k >= 0,
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)  =>
+%%   factorial(3 k)/(factorial(k) * 27^k)
+%%      when numberp a and a = 1/3 and numberp aa and aa = 2/3,
+%%
+%%pochhammer(~a,~k) * pochhammer(~aa,~k)  =>
+%%   factorial(1 + 3 k)/(27 ^k * factorial(k))
+%%      when numberp a and a = 2/3 and numberp aa and aa = 4/3,
+%%
+%%pochhammer(~b,~k) * pochhammer(~c,~k)  =>
+%%   pochhammer(3*b,3*k)/( 27^k * pochhammer(b +2/3,k))
+%%      when numberp b and numberp c
+%%         and (c-b)=1/3 and (b-1/3) = floor (b-1/3) and not (b-1/3 = 0),
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)*pochhammer(~aaa,~k)  =>
+%%   factorial(4*k)/(factorial(k) * 64^k)
+%%      when numberp a and numberp aa and numberp aaa
+%%         and a = 1/4 and aa = 1/2 and aaa = 3/4,
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)*
+%%      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+%%   factorial(5*k)/(factorial(k) * 3125^k)
+%%      when numberp a and numberp aa
+%%         and numberp aaa and numberp aaaa
+%%            and a = 1/5 and aa = 2/5 and aaa = 3/5 and aaaa = 4/5,
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)*
+%%      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+%%   5*(1/5 +k)*factorial(5*k)/(factorial(k) * 3125^k)
+%%      when numberp a and numberp aa
+%%         and numberp aaa and numberp aaaa
+%%            and a = 2/5 and aa = 3/5 and aaa = 4/5 and aaaa = 6/5,
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)*
+%%      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+%%   (25 *(1/5+k)*(2/5 +k)*factorial(5*k)) / (factorial(k) * 2* 3125^k)
+%%      when numberp a and numberp aa
+%%         and numberp aaa and numberp aaaa
+%%            and a = 3/5 and aa = 4/5 and aaa = 6/5 and aaaa = 7/5,
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)*
+%%      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+%%   (125*(1/5+k)*(2/5+k)*(3/5+k)*factorial(5*k)) /
+%%      (factorial(k) * 6 *3125^k)
+%%         when numberp a and numberp aa
+%%            and numberp aaa and numberp aaaa
+%%               and a = 4/5 and aa = 6/5 and aaa = 7/5 and aaaa = 8/5,
+%%
+%%pochhammer(~a,~k)*pochhammer(~aa,~k)*
+%%      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+%%   (625*(1/5+k)*(2/5+k)*(3/5+k)*(4/5+k)*factorial(5*k)) /
+%%      (factorial(k) * 24 *3125^k)
+%%         when numberp a and numberp aa
+%%            and numberp aaa and numberp aaaa
+%%               and a = 6/5 and aa = 7/5 and aaa = 8/5 and aaaa = 9/5,
+%%
+%%Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (a + k -1)/(a - 1)
+%%                        when (a - b)=1,
+%%
+%%Pochhammer(~a,~k)//Pochhammer(~b,~k)  => (b - 1)/(b + k -1)
+%%                        when (b - a)=1
+%%})$
+%%
 %%algebraic (let pochhammer!*rules);
 
 
@@ -308,21 +308,21 @@ symbolic procedure log!*gamma(z, zint);
    begin scalar result, this, zpwr, zsq, admissable, abk;
       integer k, rp, orda, magn;
 
-      magn := bf!*base ** c!:prec!:();
+      magn := 2 ** c!:prec!:();
 
       if zint < 1000 then
-         if new!*bfs
-         then admissable := divbf
+%         admissable := divbf
+%                  (i2bf!: msd!: (1 + (factorial zint / 3)),
+%                   i2bf!: magn)
+         admissable := timbf
                   (i2bf!: msd!: (1 + (factorial zint / 3)),
-                   i2bf!: magn)
-         else admissable := divbf
-                  (i2bf!: length explode factorial zint,
-                   i2bf!: magn)
+		   make!:ibf(1,-!:bprec!:))
       else
          admissable := divbf
                (difbf(log!:(timbf(plubf(bftwo!*,bfhalf!*),
                      sqrt!:(exptbf(i2bf!: zint,2*zint+1,bfone!*),8)),8),
-                  i2bf!: zint),i2bf!: magn);
+%                  i2bf!: zint),i2bf!: magn);
+                  i2bf!: zint),make!:ibf(1,!:bprec!:));
 
       z := sq2bf!* z;
       result := timbf(log!* z, difference!:(z, bfhalf!*));
@@ -478,27 +478,10 @@ algebraic procedure pochhammer!*calc!*sub(a,k);
       prepre := precision 0;
       if prepre < !!nfpd then precision (1+!!nfpd);
       a0 := a;
-      result := if (symbolic new!*bfs)
-         then algebraic symbolic pochhammer!*calc!*sub!*sub!*newbf(a,k)
-         else algebraic symbolic pochhammer!*calc!*sub!*sub!*oldbf(a,k);
+      result := algebraic symbolic pochhammer!*calc!*sub!*sub!*newbf(a,k);
       precision prepre;
       complex!*restore!*switch(precom);
       return result;
-   end;
-
-
-symbolic procedure pochhammer!*calc!*sub!*sub!*oldbf(a,k);
-   begin scalar result;
-      if fixp a
-       then result := poch!*sub!*2(0, k-1, i2bf!: a)
-       else << a := sq2bf!* a;
-               if order!: a < - !:prec!:
-                  then result := poch!*sub!*2(0, k-1, bfone!*)
-                  else if length explode mt!: a < !:prec!:/2
-                              and order!: a > -2
-                          then result := poch!*sub!*2(0, k-1, a)
-                          else result := poch!*sub!*1(a, k-1,bfone!*)>>;
-      return mk!*sq !*f2q mkround result;
    end;
 
 
@@ -533,7 +516,7 @@ algebraic procedure poch!*conj!*calc(z,n);
    for i := 1:n product ((repart z + (i-1))**2 + (impart z)**2);
 
 
-% lets prod (in misc package) know about gamma.
+% lets prod (in sum package) know about gamma.
 
 algebraic
   let { prod(~n,~n,~anf,~ende) => Gamma(ende + 1)/Gamma(anf)

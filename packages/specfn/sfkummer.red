@@ -134,7 +134,7 @@ symbolic procedure kummerm!*calc!*sub(a,b,z);
       result := bfone!*; k := 1;
       pAmod := timbf(a,z); pBmod := b;
       admissable := divbf(bfone!*,
-               i2bf!: (bf!*base**(5 + c!:prec!:())));
+               i2bf!: (2**(5 + c!:prec!:())));
       orda := order!: admissable - 5;
       this := bfone!*; rp := c!:prec!:();
       while greaterp!: (abs!: this, admissable) do

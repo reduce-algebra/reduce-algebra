@@ -6,23 +6,23 @@ module igamma;
 %
 %  The incomplete gamma function.
 %
-%  igamma_iter_series(a,x,iter,sum,last_term) - iteratively computes the
+%  igamma!:iter!:series(a,x,iter,sum,last_term) - iteratively computes the
 %               value of an approximation to an infinite series used in
 %                igamma (for x<=1 or x<a).
 %
-%  igamma_cont_frac(a,x,iter,iter_max) - iteratively computes the value of
+%  igamma!:cont!:frac(a,x,iter,iter_max) - iteratively computes the value of
 %       the continuous fraction used in igamma (for other values of x).
 %
-%  igamma_eval(a,x) - returns the value at point x of the
+%  igamma!:eval(a,x) - returns the value at point x of the
 %               incomplete gamma function of order ord.
 %
 %  The incomplete beta function.
 %
-%  ibeta_cont_frac(iter,iter_max,a,b,x) - recursively computes
+%  ibeta!:cont!:frac(iter,iter_max,a,b,x) - recursively computes
 %               the value of the continuous fraction used to
 %               approximate to the incomplete beta function.
 %
-%  ibeta_eval(a,b,x) - returns the value of the incomplete beta
+%  ibeta!:eval(a,b,x) - returns the value of the incomplete beta
 %               function with
 %               parameters a and b at point x, by approximating to the
 %               incomplete beta function using a continued fraction.
@@ -55,42 +55,42 @@ module igamma;
 
 % --------------------------- global variables ----------------------------
 
-fluid '(sfiterations);
+fluid '(!:sfiterations);
 
-global '(ibeta_max_iter);
+global '(ibeta!:max!:iter);
 
 algebraic <<
 
-operator igamma , igamma_eval, ibeta, ibeta_eval;
+%% operator igamma , igamma!:eval, ibeta, ibeta!:eval;
 
 % Set the maximum number of iterations for the continued fraction
 % used in ibeta to be 200.
 
-ibeta_max_iter := 200;
+ibeta!:max!:iter := 200;
 
-% Set up rule definitions for igamma and ibeta functions.
+%%% Set up rule definitions for igamma and ibeta functions.
+%%
+%%let
+%%{
+%% igamma(~a,~x) => igamma!:eval(a,x)
+%%        when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded
+%%};
+%%
+%%let
+%%{
+%% ibeta(~a,~b,~x) => ibeta!:eval(a,b,x)
+%%        when numberp(a) and numberp(b) and numberp(x) and lisp !*rounded
+%%             and repart(a)>0 and repart(b)>0 and x>=0 and x<=1
+%%};
 
-let
-{
- igamma(~a,~x) => igamma_eval(a,x)
-        when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded
-};
 
-let
-{
- ibeta(~a,~b,~x) => ibeta_eval(a,b,x)
-        when numberp(a) and numberp(b) and numberp(x) and lisp !*rounded
-             and repart(a)>0 and repart(b)>0 and x>=0 and x<=1
-};
-
-
-% Function igamma_iter_series:     --  cum_gamma_iter        x^i
+% Function igamma!:iter!:series:   --  cum_gamma_iter        x^i
 %                                  \                       -------------
 %                                  /                       (a+1)...(a+i)
 %                                  --  i=1
 % Uses Battacharjee's method (1970) (computed recursively).
 
-expr procedure igamma_iter_series(a,x,iter,sum,last_term);
+expr procedure igamma!:iter!:series(a,x,iter,sum,last_term);
 begin
  scalar value,this_term;
 
@@ -99,20 +99,21 @@ begin
  else
  <<
   this_term := (last_term * x / (a+iter));
-  value := igamma_iter_series(a,x,iter+1,sum+this_term,this_term)
+  value := igamma!:iter!:series(a,x,iter+1,sum+this_term,this_term)
  >>;
 
  return value;
 end;
 
 
-% Function igamma_cont_frac:            1   1-a   1   2-a   2
+% Function igamma!:cont!:frac           1   1-a   1   2-a   2
 %                                      ---  ---  ---  ---  ---  ...
-%                                        x +  1 +  x +  1 +  x +
+%                                      x +  1 +  x +  1 +  x +
 % Recursively computes fraction using
-% Abramowitz and Stegun's method (1964).
+% Abramowitz and Stegun's method (1964), formula 6.5.31
+% see also DLMF, http://dlmf.nist.gov/8.9.E2
 
-expr procedure igamma_cont_frac(a,x,iter,iter_max);
+expr procedure igamma!:cont!:frac(a,x,iter,iter_max);
 begin
  scalar value;
 
@@ -121,23 +122,23 @@ begin
  else
   value := (iter - a)/
               (1 +      (iter/
-                    (x + igamma_cont_frac(a,x,iter + 1,iter_max))));
+                    (x + igamma!:cont!:frac(a,x,iter + 1,iter_max))));
 
  return value;
 end;
 
 
-% Function igamma_eval: returns the value at point x of the
+% Function igamma!:eval returns the value at point x of the
 % incomplete gamma function with order ord.
 
-expr procedure igamma_eval(a,x);
+expr procedure igamma!:eval(a,x);
 begin
- scalar arg,frac,last_frac,acc,value;
+ scalar arg,frac,last!:frac,acc,value;
 
  % Decide whether to use a series expansion or a continued fraction.
  if (x<=1 or x<a+2) then
  <<
-  value := (exp(-x) * x^a) * (1 + igamma_iter_series(a,x,1,0,1)) /
+  value := (exp(-x) * x^a) * (1 + igamma!:iter!:series(a,x,1,0,1)) /
              gamma(a + 1)
  >>
  else
@@ -146,16 +147,16 @@ begin
   % current precision.
   acc := 10 ^ -(precision(0)+3);
   % Obtain a starting value.
-  frac := igamma_cont_frac(a,x,1,1);
-  sfiterations := 1;
+  frac := igamma!:cont!:frac(a,x,1,1);
+  !:sfiterations := 1;
   % Repeat loop until successive results of continued fraction converge.
   repeat
   <<
-   sfiterations := sfiterations + 1;
-   last_frac := frac;
-   frac := igamma_cont_frac(a,x,1,sfiterations)
+   !:sfiterations := !:sfiterations + 1;
+   last!:frac := frac;
+   frac := igamma!:cont!:frac(a,x,1,!:sfiterations)
   >>
-  until (last_frac - frac) < acc;
+  until (last!:frac - frac) < acc;
 
   arg := exp(-x) * x^a / gamma(a);
   value := 1 - arg / (x + frac)
@@ -165,9 +166,9 @@ begin
 end;
 
 
-% Function ibeta_cont_frac: calculates  1   c(2)  c(3)
-%                                      ---  ----  ----  ...
-%                                      1 +  1  +  1  +
+% Function ibeta!:cont!:frac: calculates  1   c(2)  c(3)
+%                                        ---  ----  ----  ...
+%                                        1 +  1  +  1  +
 % where
 %        c(2i) =  - (a + i - 1) (b - i)   *   x
 %                ---------------------------------
@@ -177,12 +178,12 @@ end;
 %                -----------------------------
 %                (a + 2i - 1) (a + 2i) (1 - x)
 
-expr procedure ibeta_cont_frac(iter,iter_max,a,b,x);
+expr procedure ibeta!:cont!:frac(iter,iter_max,a,b,x);
 begin
  scalar value,c_odd,c_even;
 
  if not (fixp(iter) and fixp(iter_max) and numberp(x)) then
-  rederr("ibeta_cont_frac called illegally");
+  rederr("ibeta!:cont!:frac called illegally");
 
  if (iter>iter_max) then
   value := 0
@@ -192,19 +193,19 @@ begin
   c_odd := iter*(a+b+iter-1)*x / ((a+2*iter-1)*(a+2*iter)*(1-x));
   value := c_even /
                (1 + (c_odd /
-                       (1 + ibeta_cont_frac(iter+1,iter_max,a,b,x))))
+                       (1 + ibeta!:cont!:frac(iter+1,iter_max,a,b,x))))
  >>;
 
  return value;
 end;
 
 
-% Function ibeta_eval: returns the value of the incomplete beta%
+% Function ibeta!:eval: returns the value of the incomplete beta%
 % function with parameters a and b at point x. Method due to Muller (1931).
 
-expr procedure ibeta_eval(a,b,x);
+expr procedure ibeta!:eval(a,b,x);
 begin
- scalar last_value,value,arg,sfiterations;
+ scalar last_value,value,arg,!:sfiterations;
 
  if (x=0 or x=1) then
   value := x
@@ -217,22 +218,22 @@ begin
   <<
    arg := gamma(a+b) * x^a * (1-x)^(b-1) / (a * gamma(a) * gamma(b));
    % A starting point of 30 levels of continued fraction.
-   sfiterations := 30;
+   !:sfiterations := 30;
    % Starting value that will force calculation a second time at least.
    value := -1;
    repeat
    <<
     last_value := value;
-    value := arg * (1/(1 + ibeta_cont_frac(1,sfiterations,a,b,x)));
-    sfiterations := sfiterations + 10
+    value := arg * (1/(1 + ibeta!:cont!:frac(1,!:sfiterations,a,b,x)));
+    !:sfiterations := !:sfiterations + 10
    >>
    until (abs(value - last_value) < 10^-(precision(0)+3))
-    or sfiterations > ibeta_max_iter;
+    or !:sfiterations > ibeta!:max!:iter;
   >>
  >>;
 
  % Error condition should not occur, but in case it does...
- if sfiterations > ibeta_max_iter then
+ if !:sfiterations > ibeta!:max!:iter then
  write
  "*** Warning: max iteration limit exceeded; result may not be accurate";
 

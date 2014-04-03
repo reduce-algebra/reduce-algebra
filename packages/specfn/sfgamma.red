@@ -26,17 +26,15 @@ module sfgamma;   % Gamma function procedures and rules for REDUCE.
 %
 
 
-remprop('igamma,'simpfn);
-remprop('polygamma,'simpfn);
-remprop('ibeta,'simpfn);
-remprop('zeta,'simpfn);
-remprop('psi,'simpfn);
+%remprop('igamma,'simpfn);
+%remprop('polygamma,'simpfn);
+%remprop('ibeta,'simpfn);
+%remprop('zeta,'simpfn);
+%remprop('psi,'simpfn);
 
 create!-package ('(sfgamma sfgamm sfpsi sfigamma),'(contrib specfn));
 
-fluid '(bernoulli!-alist new!*bfs bf!*base sf!-alist !*savefs);
-
-bf!*base := (if new!*bfs then 2 else 10) ;
+fluid '(bernoulli!-alist sf!-alist !*savefs);
 
 symbolic inline procedure sq2bf!*(x);
    (if fixp x then i2bf!: x
@@ -44,7 +42,7 @@ symbolic inline procedure sq2bf!*(x);
                else retag cdr y) where y = !*a2f x));
 
 symbolic smacro procedure c!:prec!:;
-   (if new!*bfs then lispeval '!:bprec!: else !:prec!:);
+   !:bprec!:;
 
 endmodule;
 

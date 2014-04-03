@@ -30,7 +30,7 @@ exports sq2bf!*,sf!*eval;
 
 symbolic procedure sf!*assoc(compare,val,alist);
    (if null alist then nil
-    else if not lispeval list(compare,car car alist,val)
+    else if not apply2(compare,car car alist,val)
                then car alist
                else sf!*assoc(compare,val,cdr alist));
 
@@ -38,8 +38,7 @@ symbolic procedure sf!*multi!*assoc!*comparator(compare,vals,entry);
    (if null entry
     then (null vals)
     else (not null vals)
-      and (lispeval list(compare,list('quote,car vals),
-                                                         list('quote,car entry)))
+      and apply2(compare,car vals,car entry)
       and (sf!*multi!*assoc!*comparator(compare,cdr vals,cdr entry)));
 
 symbolic procedure sf!*multi!*assoc(compare,vals,alist);
@@ -66,31 +65,23 @@ symbolic procedure sf!*do!*eval(expression);
 symbolic procedure sf!*eval(name,args);
    begin scalar part1, part2, result;
       args := cdr args;
-      if (part1 := assoc((name . !*complex),sf!-alist))
-      then if (part2 := sf!*assoc('lessp,c!:prec!:(),cdr part1))
-           then if (result :=
+      part1 := get(name,'sf!-alist);
+      if part1 and (part1 := atsoc(!*complex,part1))
+        then if (part2 := sf!*assoc('lessp,c!:prec!:(),cdr part1))
+               then if (result :=
                        sf!*multi!*assoc('evalequal,args,cdr part2))
                       then result := cdr result
-                             else if !*savesfs
-                                  then setq(cdr part2,
-                          (args . (result := sf!*do!*eval(name . args)))
-                                              . cdr part2)
-                                  else result := sf!*do!*eval(name . args)
-                 else if !*savesfs
-                      then setq(cdr part1,
-                                   (c!:prec!:()
-                                      . list ((args .
-                                                (result := sf!*do!*eval(name . args)))))
-                                    . cdr part1)
-                      else result := sf!*do!*eval(name . args)
-      else if !*savesfs
-                 then sf!-alist :=
-                       ((name . !*complex) .
-                               list ((c!:prec!:() .
-                                    list ((args .
-                                                (result := sf!*do!*eval(name . args))
-                                               ))))) . sf!-alist
-                 else result := sf!*do!*eval(name . args);
+                     else << result := sf!*do!*eval(name . args);
+                             if !*savesfs
+                               then setq(cdr part2, (args . result) . cdr part2) >>
+              else << result := sf!*do!*eval(name . args);
+                      if !*savesfs
+                        then setq(cdr part1,
+                                   list (c!:prec!:(), (args . result)) . cdr part1) >>
+        else << result := sf!*do!*eval(name . args);
+               if !*savesfs
+                 then put(name,'sf!-alist,
+		    {!*complex, {c!:prec!:(), (args . result)}} . get('name,'sf!-alist))>>;
       return result;
    end;
 

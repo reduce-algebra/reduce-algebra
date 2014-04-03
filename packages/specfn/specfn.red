@@ -84,15 +84,10 @@ on savesfs;
 symbolic inline procedure mksq!:new u;
   !*p2f(car fkern(u) .* 1) ./ 1;
 
-symbolic fluid '(bernoulli!-alist new!*bfs bf!*base sf!-alist !*savefs);
+symbolic fluid '(bernoulli!-alist sf!-alist !*savefs);
 
 symbolic ( bernoulli!-alist := nil );
 symbolic ( sf!-alist        := nil );
-
-symbolic ( new!*bfs := fluidp '!:bprec!: );
-symbolic ( bf!*base := (if new!*bfs then 2 else 10) );
-symbolic ( if not globalp 'log2of10 then
-               << global '(log2of10); log2of10 := 3.32193 >> );
 
 symbolic inline procedure sq2bf!*(x);
    (if fixp x then i2bf!: x
@@ -100,19 +95,17 @@ symbolic inline procedure sq2bf!*(x);
                else retag cdr y) where y = !*a2f x));
 
 symbolic smacro procedure c!:prec!:;
-   (if new!*bfs then lispeval '!:bprec!: else !:prec!:);
+   !:bprec!:;
 
 
 % These functions are needed in other modules.
+%  complex!*on!*switch and complex!*off!*switch return t iff the
+%  switch complex was already in the correct position
 
 algebraic procedure complex!*on!*switch;
-   if not symbolic !*complex then
-      if symbolic !*msg then
-         << off msg;
-            on complex;
-            on msg >>
-      else on complex
-   else t;
+  symbolic 
+    if not !*complex then <<(onoff('complex,t) where !*msg := nil); nil>>
+     else t;
 
 algebraic procedure complex!*off!*switch;
    if symbolic !*complex then
@@ -121,17 +114,15 @@ algebraic procedure complex!*off!*switch;
       else off complex
    else t;
 
+% complex!*restore!*switch takes the value returned by complex!*on!*switch or
+%  complex!*off!*switch and restore the switch complex to its former value,
+%  i.e. the switch is flipped if the argument is nil
+
 algebraic procedure complex!*restore!*switch(fl);
-   if not fl then
-      if symbolic !*msg then
-         << off msg;
-            if symbolic !*complex then
-               off complex
-            else on complex;
-            on msg >>
-      else if symbolic !*complex then
-            off complex
-         else on complex;
+  symbolic
+    begin scalar !*msg;
+      if not fl then onoff('complex,not !*complex)
+    end;
 
 %algebraic operator besselJ,besselY,besselI,besselK,hankel1,hankel2;
 %algebraic (operator kummerM, kummerU, struveh, struvel
@@ -158,13 +149,13 @@ defautoload_operator(Airy_AiPrime,specbess);
 defautoload_operator(Airy_biprime,specbess);
 
 %defautoload_operator(gamma,sfgamma);
-defautoload_operator(igamma,sfgamma);
-defautoload_operator(polygamma,sfgamma);
-defautoload_operator(psi,sfgamma);
-defautoload_operator(ibeta,sfgamma);
+%defautoload_operator(igamma,sfgamma);
+%defautoload_operator(polygamma,sfgamma);
+%defautoload_operator(psi,sfgamma);
+%defautoload_operator(ibeta,sfgamma);
 %defautoload_operator(beta,sfgamma);
 %defautoload_operator(pochhammer,sfgamma);
-defautoload_operator(zeta,sfgamma);
+%defautoload_operator(zeta,sfgamma);
 
 endmodule;
 

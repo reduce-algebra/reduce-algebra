@@ -441,9 +441,21 @@ defautoload(compute!:int!:functions,specfn,expr,2);
 
 defautoload(sf!*eval,specfn,expr,2);
 
-flag('(do!*gamma do!*pochhammer),'opfn);
-defautoload(do!*gamma,(specfn sfgamma));
+flag('(do!*gamma do!*pochhammer do!*psi do!*polygamma do!*trigamma!*halves
+       do!*zeta do!*zeta!*pos!*intcalc ibeta!:eval igamma!:eval),'opfn);
+defautoload(do!*gamma,(specfn sfgamma),expr,1);
 defautoload(do!*pochhammer,(specfn sfgamma),expr,2);
+defautoload(do!*psi,(specfn sfgamma),expr,1);
+defautoload(do!*polygamma,(specfn sfgamma),expr,2);
+defautoload(do!*trigamma!*halves,(specfn sfgamma),expr,1);
+defautoload(do!*zeta,(specfn sfgamma),expr,2);
+defautoload(do!*zeta!*pos!*intcalc,(specfn sfgamma),expr,1);
+defautoload(igamma!:eval,(specfn sfgamma),expr,2);
+defautoload(ibeta!:eval,(specfn sfgamma),expr,3);
+
+flag('(SolidHarmonicY SphericalHarmonicY),'opfn);
+defautoload(SolidHarmonicY,specfn,expr,1);
+defautoload(SphericalHarmonicY,specfn,expr,1);
 
 % Debug module entry points.
 
