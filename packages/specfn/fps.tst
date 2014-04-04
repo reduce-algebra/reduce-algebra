@@ -120,6 +120,12 @@ fps(log(1-2*x*y+x^2),x);
 
 FPS(sin x,x,pi);
 
+% detect logarithmic singularity and bail out
+
+fps(dilog x,x,0);
+fps(dilog x,x,1);
+fps(dilog x,x,2);
+
 % This one takes ages :
 
 %fps(acos(cos(x)),x);

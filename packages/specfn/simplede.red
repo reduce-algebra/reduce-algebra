@@ -124,7 +124,9 @@ end;
 put('FPS,'psopfn,'fpseval);
 
 symbolic procedure FPSeval(u);
-   begin scalar gens,res,!*factor,!*precise;
+   begin scalar gens,res,opm,!*factor,!*precise;
+     if get('fps,'opmtch) and (opm := opmtchrevop ('fps . u))
+       then return aeval opm;
      if length u = 2 then
         << res := PSalg(car u,cadr u);
            if eq(res,-1) then return FPSexit(car u,cadr u,0);
@@ -394,7 +396,7 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
         if symbolic !*traceFPS then
                  << write "RE is of hypergeometric type";
                     write "Symmetry number mm := ",m;
-                    write "RE: for all k >= ",m0,": a (k + ",m,") = "
+                    write "RE: for all k >= ",m0,": a (",k," + ",m,") = "
                         ,cap_R * a(k);
                     write "leadcoeff := ",leadcoeff; >>;
 
@@ -448,15 +450,17 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
         <<
         lterm := num taylortostandard(taylor(dff(dffpointer),x,0,1));
         nn := 0;
-        if lisp(if  member('(log x) ,kernels !*q2f simp lterm)
+        if lisp(if  member(list('log, x) ,kernels !*q2f simp lterm)
                          then t else nil) % Comments?
                 then <<
+                        if dffpointer + 10 >= first length dff
+                          then return failed;
                         dff(dffpointer + 10):=dff(dffpointer) -lterm;
                         if symbolic !*traceFPS then
                                 write "=> f :=",dff(dffpointer + 10);
                         S := hypergeomRE(m, R, leadcoeff*(k-nn),
                                 dffpointer + 10,k,x);
-                        RETURN(lterm+S);
+                        RETURN(if S=failed then S else lterm+S);
                      >>;
         >>;
 

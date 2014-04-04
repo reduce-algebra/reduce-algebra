@@ -643,6 +643,28 @@ infsum(------------------------------------,k,0,infinity)
                 factorial(2*k + 1)
 
 
+% detect logarithmic singularity and bail out
+
+fps(dilog x,x,0);
+
+
+fps(dilog(x),x,0)
+
+fps(dilog x,x,1);
+
+
+               k       k
+        (x - 1) *( - 1)
+infsum(------------------,k,1,infinity)
+                2
+               k
+
+fps(dilog x,x,2);
+
+
+fps(dilog(x),x,2)
+
+
 % This one takes ages :
 
 %fps(acos(cos(x)),x);
@@ -685,8 +707,3 @@ infsum(( - x   *( - 1) *108 *factorial(k)*x)/(6*46656 *factorial(3*k + 1)
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 3780 ms  plus GC time: 281 ms
-1: real 4.41
-user 0.07
-sys 0.04
