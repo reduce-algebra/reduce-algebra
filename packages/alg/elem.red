@@ -539,9 +539,9 @@ let df(acsc(~x),x) =>  -1/(x*sqrt(x**2 - 1)),
 for all x,y let df(x**y,x)= y*x**(y-1),
                 df(x**y,y)= log x*x**y;
 
-% Ei, erf, exp and dilog.
+% Ei, erf, erfc, erfi, exp and dilog.
 
-operator dilog,ei,erf,exp;
+operator dilog,ei,erf,erfc,exp;
 
 let {
    dilog(0) => pi**2/6,
@@ -550,9 +550,11 @@ let {
    dilog(-1) => pi^2/4-i*pi*log(2)
 };
 
-for all x let df(dilog x,x)=-log x/(x-1);
+let df(dilog(~x),(~x))=-log(x)/(x-1);
 
-for all x let df(ei(x),x)=e**x/x;
+let df(ei(~x),~x)=e**x/x;
+
+
 
 let Ei(~x) => compute!:int!:functions(x,Ei)
               when numberp x and abs(x) <= 20 and lisp !*rounded;
@@ -566,6 +568,9 @@ for all x let df(erf x,x)=2*sqrt(pi)*e**(-x**2)/pi;
 
 let erf (~x) => compute!:int!:functions(x,erf)
                 when numberp x and abs(x)<5 and lisp !*rounded;
+
+let erfc(~x) => 1 - erf(x);
+let erfi(~z)  => -i * erf(i*z);
 
 for all x let exp(x)=e**x;
 

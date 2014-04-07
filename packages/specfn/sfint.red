@@ -37,7 +37,7 @@ module sfint;     % Assorted Integral Functions, Ei, Si, Ci, Li etc.
 
 % Exponential Integral etc.
 
-algebraic operator Fresnel_C, Fresnel_S, erfc,erfi;
+algebraic operator Fresnel_C, Fresnel_S;%, erfc,erfi;
 
 algebraic operator s_i, shi, chi, li;
 
@@ -122,8 +122,9 @@ let { int(cos(Pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
 algebraic
 let { limit (erf(~x),~x,infinity) => 1,
       limit (erfc(~x),~x,infinity) => 0,
-      erfc (~x) => 1-erf(x),
-      erfi(~z)  => -i * erf(i*z),
+%% Moved to alg/elem.red
+%%      erfc (~x) => 1-erf(x),
+%%      erfi(~z)  => -i * erf(i*z),
       int(1/e^(~tt^2),~tt,0,~z) => erf(z)/2*sqrt(pi) when z freeof infinity,
       int(1/e^(~tt^2),~tt,~z,infinity) => erfc(z)/2*sqrt(pi) when z freeof infinity
 % RmS 2013-04-09: rule moved to alg/elem.red, compute!:int!:functions autoloaded

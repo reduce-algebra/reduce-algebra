@@ -6994,5 +6994,115 @@ ibeta(3,2,x);
 x *( - 3*x + 4)
 
 
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     11. Dilogarithm, polylogartihm and Lerch_phi
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+polylog(n,0);
+
+
+0
+
+
+polylog(2,1);
+
+
+   2
+ pi
+-----
+  6
+
+
+polylog(3,1);
+
+
+zeta(3)
+
+
+polylog(2,i);
+
+
+                  2
+ 48*catalan*i - pi
+--------------------
+         48
+ 
+
+df(polylog(a,x),x);
+
+
+  - log( - x + 1)
+------------------
+        x
+
+
+polylog(1,x);
+
+
+ - log( - x + 1)
+
+
+precision reset;
+
+
+20
+
+on rounded;
+
+
+
+polylog(2,1/3);
+
+
+0.366213229977
+
+
+off rounded;
+
+
+
+
+lerch_phi(3,4,1);
+
+
+ polylog(4,3)
+--------------
+      3
+
+
+lerch_phi(4,0,3);
+
+
+  - 1
+------
+  3
+
+
+lerch_phi(x,a,1);
+
+
+ polylog(2,x)
+--------------
+      x
+
+
+lerch_phi(1,x,1);
+
+
+zeta(x)
+
+
+df(lerch_phi(x,3,4),x);
+
+
+  - 4*lerch_phi(x,3,4) + lerch_phi(x,2,4)
+------------------------------------------
+                    x
+
+
 end;
 

@@ -28,10 +28,64 @@ module spcfnint; % Simplification rules for special functions.
 
 algebraic;
 
+% from specfn/dilog.red
+
+operator Lerch_phi, polylog, zeta;
+
+let { 
+   Lerch_phi(~z,~s,1) => polylog(s,z)/z,
+   Lerch_phi(1,~s,1) => zeta(s),
+   Lerch_phi(1,s,a) => (2^s-1)*zeta(s) when a=1/2,
+   Lerch_phi(~z,0,~a) => 1/(1-z),
+   Lerch_phi(-1,2,1/2) => 4*Catalan,
+   df(Lerch_phi(~z,~s,~a),~a) => s * Lerch_phi(z,s,a),
+   df(Lerch_phi(~z,~s,~a),~z) => (Lerch_phi(z,s-1,a) -a*Lerch_phi(z,s,a))/z
+};
+
+let { dilog(exp(-~t)) => - dilog(exp t) - t^2/2,
+      dilog(1/e^(~t)) => - dilog(exp t) - t^2/2,
+      dilog(-~x+1) => - dilog(x) -log x * log (1-x) + pi^2/6
+                        when numberp x and geq(x,0) and geq(1,x),
+      dilog(~x)   => - dilog(1-x) - log (x) * log(1-x) + pi^2/6
+                        when numberp x and (x > 0) and geq(1,x)
+                        and not fixp(1/x),
+      dilog(1/~x) => - dilog(x) -(log x)^2/2
+                        when numberp x and geq(x,0),
+      dilog(~x) =>   dilog(x-1) - log (x - 1) *
+                        log (x)-pi^2/12-dilog( (x-1)^2)/2
+                        when numberp x and geq(x,1) and geq(2,x)
+                        and not (x = 0) and not fixp(1/x),
+      dilog(~x) => compute!:dilog(x)
+                 when numberp x and lisp !*rounded and x>=0
+};
+
+let { polylog(1,~z) => -log(1-z),
+      polylog(~n,~z) => z*df(polylog(n+1,z),z) when fixp n and n<=0,
+      polylog(~n,0) => 0,
+      polylog(1,1/2) => log(2),
+      polylog(2,-1) => -pi^2/12,
+      polylog(2,1/2) => (pi^2 - 6*log(2)^2)/12,
+      polylog(2,1) => pi^2/6,
+      polylog(2,2) => pi^2/4-i*pi*log(2),
+      polylog(2,i) => -pi^2/48 + I*catalan,
+      polylog(2,-i) => -pi^2/48 - I*catalan,
+      polylog(3,1/2) => (4*log(2)^3 - 2*pi^2*log(2) + 21*zeta(3))/24,
+      polylog(~s,1) => zeta(s),
+      df(polylog(~n,~z),~z) => polylog(n-1,z)/z when fixp n and n>1
+};
+
+let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
+              when lisp !*rounded and numberp z and abs(z)<1
+                     and numberp s and numberp a,
+      polylog(~n,~z) =>  z*compute!:lerch_phi(z,n,1)
+              when lisp !*rounded and numberp z and abs(z)<1 and numberp n
+ };
+
+
 % from specfn/sfconsts.red
 
 symbolic procedure compute!:Euler!:gamma ();
-  if not(!*rounded) then mk!*sq('((((Euler_gamma . 1) . 1)) . 1))
+  if not(!*rounded) then mk!*sq !*k2q 'Euler_gamma
          else aeval '(minus (psi 1));
 
 symbolic operator compute!:Euler!:gamma;
@@ -42,7 +96,7 @@ let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
 
 
 symbolic procedure compute!:catalan ();
-  if not(!*rounded) then mk!*sq('((((catalan . 1) . 1)) . 1)) else
+  if not(!*rounded) then mk!*sq !*k2q 'catalan else
    begin scalar ii,j,p,tt,s,g,!*rounded;
       g := !:prec!: + length explode !:prec!: + 3;
       p := 10^g/2;
@@ -72,6 +126,9 @@ symbolic operator compute!:Khinchin;
 
 let Khinchin => compute!:Khinchin();
 
+flag('(Euler_gamma Golden_ratio catalan Khinchin),'reserved);
+flag('(Euler_gamma Golden_ratio catalan Khinchin),'constant);
+flag('(Euler_gamma Golden_ratio catalan Khinchin),'realvalued);
 
 % from specfn/sfgen.red
 
@@ -433,7 +490,7 @@ polygamma!*rules := {
 
 let polygamma!*rules;
 
-operator zeta;
+
 symbolic operator zeta!*calc, zeta!*pos!*intcalc;
 
 zeta!*rules := {
@@ -501,7 +558,8 @@ let
  igamma(~a,~x) => igamma!:eval(a,x)
         when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
 
- igamma(~a,0) => 0,
+% The following is only true for a>0
+ igamma(~a,0) => 0 when numberp(a) and a>0,
 
 % igamma(0,~x) => -ei(-x),
 

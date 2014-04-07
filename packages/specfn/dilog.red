@@ -32,60 +32,68 @@ module dilog;
 
 % Lerch Phi from Wolfram's book
 
-algebraic <<
-operator fps;
-operator Lerch_phi;
-operator polylog;
+%%algebraic <<
+%%operator fps;
+%%operator Lerch_phi;
+%%operator polylog;
 
-let { fps(dilog ~x,~x,1) => infsum((-1)^k*(x-1)^k/k^2,k,1,infinity)};
-let { df(dilog(~x),~x) => - LOG(X)/(x-1)};
-let { int(log(~tt)/(~tt-1),~tt,1,~x) => -dilog x };
-let { Lerch_phi(~z,~s,0) => polylog(s,z) };
-let { Lerch_phi(1,~s,0) => zeta(s) };
+%% moved to fps file simplede.red
+%%let { fps(dilog ~x,~x,1) => infsum((-1)^k*(x-1)^k/k^2,k,1,infinity)};
+% Now in alg/elem.red
+%let { df(dilog(~x),~x) => - LOG(X)/(x-1)};
+% now in int/driver.red
+%let { int(log(~tt)/(~tt-1),~tt,1,~x) => -dilog x };
 
-let { dilog(exp(-~t)) => - dilog(exp t) - t^2/2,
-      dilog(1/e^(~t)) => - dilog(exp t) - t^2/2,
-      dilog(-~x+1) => - dilog(x) -log x * log (1-x) + pi^2/6
-                        when numberp x and geq(x,0) and geq(1,x),
-      dilog(~x)   => - dilog(1-x) - log (x) * log(1-x) + pi^2/6
-                        when numberp x and (x > 0) and geq(1,x)
-                        and not fixp(1/x),
-      dilog(1/~x) => - dilog(x) -(log x)^2/2
-                        when numberp x and geq(x,0),
-      dilog(~x) =>   dilog(x-1) - log (x - 1) *
-                        log (x)-pi^2/12-dilog( (x-1)^2)/2
-                        when numberp x and geq(x,1) and geq(2,x)
-                        and not (x = 0) and not fixp(1/x),
-      dilog(~x) => compute!:dilog(x)
-                 when numberp x and lisp !*rounded and x>=0,
-      dilog 2 => -pi^2/12,
-      dilog 1 => 0,
-      dilog 0 => pi^2/6,
-      dilog(-1) => pi^2/4-i*pi*log(2)
-};
+%%moved to alg/spcfnint.red
+%%let { Lerch_phi(~z,~s,0) => polylog(s,z) };
+%%let { Lerch_phi(1,~s,0) => zeta(s) };
 
+%%let { dilog(exp(-~t)) => - dilog(exp t) - t^2/2,
+%%      dilog(1/e^(~t)) => - dilog(exp t) - t^2/2,
+%%      dilog(-~x+1) => - dilog(x) -log x * log (1-x) + pi^2/6
+%%                        when numberp x and geq(x,0) and geq(1,x),
+%%      dilog(~x)   => - dilog(1-x) - log (x) * log(1-x) + pi^2/6
+%%                        when numberp x and (x > 0) and geq(1,x)
+%%                        and not fixp(1/x),
+%%      dilog(1/~x) => - dilog(x) -(log x)^2/2
+%%                        when numberp x and geq(x,0),
+%%      dilog(~x) =>   dilog(x-1) - log (x - 1) *
+%%                        log (x)-pi^2/12-dilog( (x-1)^2)/2
+%%                        when numberp x and geq(x,1) and geq(2,x)
+%%                        and not (x = 0) and not fixp(1/x),
+%%      dilog(~x) => compute!:dilog(x)
+%%                 when numberp x and lisp !*rounded and x>=0,
+%%% moved to alg/elem.red
+%%%      dilog 2 => -pi^2/12,
+%%%      dilog 1 => 0,
+%%%      dilog 0 => pi^2/6,
+%%%      dilog(-1) => pi^2/4-i*pi*log(2)
+%%};
+
+%% moved to fps file simplede.red
 %let { fps(polylog(~s,~x),~x,0) => infsum((-1)^k*x^k/k^s,k,1,infinity)};
 
-let { polylog(1,~z) => -log(1-z),
-      polylog(~n,~z) => z*df(polylog(n+1,z),z) when fixp n and n<=0,
-      polylog(1,1/2) => log(2),
-      polylog(2,-1) => -pi^2/12,
-      polylog(2,0) => 0,
-      polylog(2,1/2) => (pi^2 - 6*log(2)^2)/12,
-      polylog(2,1) => pi^2/6,
-      polylog(2,2) => pi^2/4-i*pi*log(2),
-      polylog(3,1/2) => (4*log(2)^3 - 2*pi^2*log(2) + 21*zeta(3))/24,
-      polylog(~s,1) => zeta(s),
-      df(polylog(~n,~z),~z) => polylog(n-1,z)/z when fixp n and n>1
-};
+%%let { polylog(1,~z) => -log(1-z),
+%%      polylog(~n,~z) => z*df(polylog(n+1,z),z) when fixp n and n<=0,
+%%      polylog(1,1/2) => log(2),
+%%      polylog(2,-1) => -pi^2/12,
+%%      polylog(2,0) => 0,
+%%      polylog(2,1/2) => (pi^2 - 6*log(2)^2)/12,
+%%      polylog(2,1) => pi^2/6,
+%%      polylog(2,2) => pi^2/4-i*pi*log(2),
+%%      polylog(3,1/2) => (4*log(2)^3 - 2*pi^2*log(2) + 21*zeta(3))/24,
+%%      polylog(~s,1) => zeta(s),
+%%      df(polylog(~n,~z),~z) => polylog(n-1,z)/z when fixp n and n>1
+%%};
+%%
+%%let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
+%%              when lisp !*rounded and numberp z and abs(z)<1
+%%                     and numberp s and numberp a,
+%%      polylog(~n,~z) =>  compute!:lerch_phi(z,n,0)
+%%              when lisp !*rounded and numberp z and abs(z)<1 and numberp n };
+%%>>;
 
-let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
-              when lisp !*rounded and numberp z and abs(z)<1
-                     and numberp s and numberp a,
-      polylog(~n,~z) =>  compute!:lerch_phi(z,n,0)
-              when lisp !*rounded and numberp z and abs(z)<1 and numberp n };
-
-procedure compute!:dilog(x);
+algebraic procedure compute!:dilog(x);
    if x = 0.0 then  pi^2/6
     else if x = 1.0 then  0
     else if x = 2.0 then  -pi^2/12
@@ -106,7 +114,7 @@ procedure compute!:dilog(x);
                  summa := summa +  term; ii:=ii+1 ;
                  altern := -1 * altern; xm1!^ii := xm1!^ii *xm1>>;
                 return summa; end;
->>;
+
 
 algebraic procedure compute!:lerch_phi(z,s,a);
     begin scalar !*uncached,yy,summa,k,term,pow;

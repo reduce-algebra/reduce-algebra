@@ -625,6 +625,44 @@ off rounded,complex;
 
 ibeta(3,2,x);
 
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     11. Dilogarithm, polylogartihm and Lerch_phi
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+polylog(n,0);
+
+polylog(2,1);
+
+polylog(3,1);
+
+polylog(2,i); 
+
+df(polylog(a,x),x);
+
+polylog(1,x);
+
+precision reset;
+on rounded;
+
+polylog(2,1/3);
+
+off rounded;
+
+
+lerch_phi(3,4,1);
+
+lerch_phi(4,0,3);
+
+lerch_phi(x,a,1);
+
+lerch_phi(1,x,1);
+
+df(lerch_phi(x,3,4),x);
+
 end;
 
 

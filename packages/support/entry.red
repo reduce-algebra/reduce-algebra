@@ -77,6 +77,8 @@ symbolic macro procedure defautoload u;
           else if numargs=2 then '(x1 x2)
           else if numargs=3 then '(x1 x2 x3)
           else if numargs=4 then '(x1 x2 x3 x4)
+          else if numargs=5 then '(x1 x2 x3 x4 x5)
+          else if numargs=6 then '(x1 x2 x3 x4 x5 x6)
           else error(99,list(numargs,"too large in DEFAUTOLOAD"));
     name := mkquote name;
     return
@@ -423,7 +425,11 @@ defautoload(trigsimp!*,trigsimp);
 
 % Specfn entry points
 
-defautoload_operator(compute!:Khinchin1,specfn,expr,0);
+flag('(compute!:dilog compute!:lerch_phi),'opfn);
+defautoload(compute!:dilog,specfn);
+defautoload(compute!:lerch_phi,specfn,expr,3);
+
+defautoload_operator(compute!:Khinchin1,specfn);
 defautoload_operator(bernoulli!*calc,specfn);
 defautoload_operator(euler!:aux,specfn);
 
@@ -432,6 +438,20 @@ defautoload_operator(bessely,(specfn specbess));
 defautoload_operator(besseli,(specfn specbess));
 defautoload_operator(besselk,(specfn specbess));
 defautoload_operator(hankel1,(specfn specbess));
+defautoload_operator(hankel2,specbess);
+defautoload_operator(kummerM,specbess);
+defautoload_operator(kummerU,specbess);
+defautoload_operator(struveh,specbess);
+defautoload_operator(struvel,specbess);
+defautoload_operator(lommel1,specbess);
+defautoload_operator(lommel2,specbess);
+defautoload_operator(whittakerm,specbess);
+defautoload_operator(whittakerw,specbess);
+defautoload_operator(Airy_Ai,specbess);
+defautoload_operator(Airy_Bi,specbess);
+defautoload_operator(Airy_AiPrime,specbess);
+defautoload_operator(Airy_biprime,specbess);
+
 %defautoload_operator(gamma,(specfn sfgamma));
 defautoload_operator(binomial,specfn);
 
@@ -443,19 +463,32 @@ defautoload(sf!*eval,specfn,expr,2);
 
 flag('(do!*gamma do!*pochhammer do!*psi do!*polygamma do!*trigamma!*halves
        do!*zeta do!*zeta!*pos!*intcalc ibeta!:eval igamma!:eval),'opfn);
-defautoload(do!*gamma,(specfn sfgamma),expr,1);
+defautoload(do!*gamma,(specfn sfgamma));
 defautoload(do!*pochhammer,(specfn sfgamma),expr,2);
-defautoload(do!*psi,(specfn sfgamma),expr,1);
+defautoload(do!*psi,(specfn sfgamma));
 defautoload(do!*polygamma,(specfn sfgamma),expr,2);
-defautoload(do!*trigamma!*halves,(specfn sfgamma),expr,1);
-defautoload(do!*zeta,(specfn sfgamma),expr,2);
-defautoload(do!*zeta!*pos!*intcalc,(specfn sfgamma),expr,1);
+defautoload(do!*trigamma!*halves,(specfn sfgamma));
+defautoload(do!*zeta,(specfn sfgamma));
+defautoload(do!*zeta!*pos!*intcalc,(specfn sfgamma));
 defautoload(igamma!:eval,(specfn sfgamma),expr,2);
 defautoload(ibeta!:eval,(specfn sfgamma),expr,3);
 
 flag('(SolidHarmonicY SphericalHarmonicY),'opfn);
-defautoload(SolidHarmonicY,specfn,expr,1);
-defautoload(SphericalHarmonicY,specfn,expr,1);
+defautoload(SolidHarmonicY,specfn,expr,6);
+defautoload(SphericalHarmonicY,specfn,expr,4);
+
+flag('(fibonacci fibonaccip),'opfn);
+flag('(fibonacci),'integer);
+defautoload(fibonacci,specfn);
+defautoload(fibonaccip,specfn,expr,2);
+
+flag('(motzkin),'opfn);
+defautoload(motzkin,specfn);
+
+% specfn2 module entry points
+
+defautoload_operator(hypergeometric,(specfn specfn2));
+defautoload_operator(MeijerG,(specfn specfn2));
 
 % Debug module entry points.
 
