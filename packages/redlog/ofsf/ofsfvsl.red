@@ -708,6 +708,8 @@ asserted procedure vsl_tinconsistentp(s: VslState): ExtraBoolean;
    end;
 
 asserted procedure vsl_analyze(l: List, kgeq0: OfsfAtf): List;
+   % [l] is a list of original constraints from stack. [kgeq0] is a conflicting
+   % inequality w.r.t. this stack.
    begin
       scalar xl, y, yl, hugo, rhugo, sysl, solal, w, nlearnl;
       integer alphac, nalphac;
@@ -720,6 +722,9 @@ asserted procedure vsl_analyze(l: List, kgeq0: OfsfAtf): List;
       hugo := addf(hugo, ofsf_arg2l kgeq0);
       rhugo := sfto_lreorder(hugo, xl);
       while not domainp rhugo and mvar rhugo memq xl do <<
+	 % The constant term [c] is not used. We know that it is negative. Thus,
+	 % finding solutions for [yl] such that all other terms are equal to
+	 % zero will render [hugo = c].
 	 push(lc rhugo, sysl);
 	 rhugo := red rhugo
       >>;
