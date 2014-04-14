@@ -49,9 +49,9 @@ Greg J. Fee, Dept of Comp Sci, U of Waterloo,
 
 published in ISSAC '90, ACM press ;
 
-%%algebraic let catalan => compute_catalan();
+%%algebraic let catalan => compute!:catalan();
 
-%%symbolic flag('(compute_catalan),'opfn);
+%%symbolic flag('(compute!:catalan),'opfn);
 
 %%symbolic procedure compute!:catalan ();
 %%
@@ -146,7 +146,7 @@ symbolic procedure compute!:intlog(n);
 symbolic procedure compute!:intlog1 (n);
 
  (if n=2 or n=3 or n=4 or n=5 or n=7 then
-                rdlog!* ('!:rd!: . (n . 0)) else
+                rdlog!* i2bf!: n else
   if cdr(div := divide(n,2)) #= 0 then
                 rd!:plus(compute!:intlog 2,compute!:intlog(car div)) else
   if cdr(div := divide(n,3)) #= 0 then
@@ -155,7 +155,7 @@ symbolic procedure compute!:intlog1 (n);
                 rd!:plus(compute!:intlog 5,compute!:intlog(car div)) else
   if cdr(div := divide(n,7)) #= 0 then
                 rd!:plus(compute!:intlog 7,compute!:intlog(car div)) else
-   rdlog!* ('!:rd!: . (n . 0))) where div = nil;
+   rdlog!* i2bf!: n) where div = nil;
 
 >>;
 endmodule;

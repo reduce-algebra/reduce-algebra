@@ -26,7 +26,25 @@ module spcfnint; % Simplification rules for special functions.
 %
 
 
+symbolic;
+
+% from specfn/specfn.red
+
+fluid '(!*savesfs);
+
+switch savesfs=on;
+
+% from specfn/simplede.red
+
+switch tracefps;
+
+% from specfn/meijerg.red
+
+switch tracespecfns;
+
+
 algebraic;
+
 
 % from specfn/dilog.red
 
@@ -86,7 +104,7 @@ let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
 
 symbolic procedure compute!:Euler!:gamma ();
   if not(!*rounded) then mk!*sq !*k2q 'Euler_gamma
-         else aeval '(minus (psi 1));
+         else aeval '(minus (do!*psi 1));
 
 symbolic operator compute!:Euler!:gamma;
 
@@ -129,6 +147,8 @@ let Khinchin => compute!:Khinchin();
 flag('(Euler_gamma Golden_ratio catalan Khinchin),'reserved);
 flag('(Euler_gamma Golden_ratio catalan Khinchin),'constant);
 flag('(Euler_gamma Golden_ratio catalan Khinchin),'realvalued);
+put('Euler_gamma,'!:rd!:,'rd_euler!*);
+put('Euler_gamma,'!:cr!:,'cr_euler!*);
 
 % from specfn/sfgen.red
 
@@ -160,6 +180,8 @@ symbolic operator euler!:aux;
 
 operator gamma,m_gamma; % m_gamma is the incomplete gamma
  % function which happens to be produced by definite integration.
+
+flag('(gamma),'realvalued);
 
 symbolic (operator do!*gamma);
 
@@ -194,6 +216,8 @@ let gamma!*rules;
 
 
 % beta function
+
+flag('(beta),'realvalued);
 
 operator beta;
 
@@ -383,6 +407,8 @@ let pochhammer!*rules;
 
 algebraic operator psi, polygamma;
 
+flag('(psi polygamma),'realvalued);
+
 psi!*rules := {
 
    psi(~x,~xx) => polygamma(x,xx),
@@ -390,11 +416,11 @@ psi!*rules := {
    psi(~z)  =>  infinity
       when repart z = floor repart z and impart z = 0 and z < 1,
 
-   psi(~z)  =>  -euler!*constant
+   psi(~z)  =>  -Euler_gamma
       when numberp z and z = 1
                and symbolic !*rounded and precision(0) < 501,
 
-   psi(~z)  =>  -euler!*constant - 2 * log(2)
+   psi(~z)  =>  -Euler_gamma - 2 * log(2)
       when numberp z and z = (1/2)
                and symbolic !*rounded and precision(0) < 501,
 

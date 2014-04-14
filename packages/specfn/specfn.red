@@ -77,14 +77,13 @@ create!-package ('(specfn sfconsts sfgen sfbern dilog sfbinom sfpolys
 
 exports sq2bf!*, c!:prec!:;
 
-switch savesfs;
-on savesfs;
+switch savesfs=on;
 
 
-symbolic inline procedure mksq!:new u;
-  !*p2f(car fkern(u) .* 1) ./ 1;
+%symbolic inline procedure mksq!:new u;
+%  !*p2q(car fkern(u) .* 1);
 
-symbolic fluid '(bernoulli!-alist sf!-alist !*savefs);
+symbolic fluid '(bernoulli!-alist sf!-alist !*savesfs);
 
 symbolic ( bernoulli!-alist := nil );
 symbolic ( sf!-alist        := nil );

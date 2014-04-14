@@ -429,9 +429,12 @@ flag('(compute!:dilog compute!:lerch_phi),'opfn);
 defautoload(compute!:dilog,specfn);
 defautoload(compute!:lerch_phi,specfn,expr,3);
 
-defautoload_operator(compute!:Khinchin1,specfn);
-defautoload_operator(bernoulli!*calc,specfn);
-defautoload_operator(euler!:aux,specfn);
+flag('(compute!:Khinchin1 bernoulli!*calc euler!:aux),'opfn);
+defautoload(compute!:Khinchin1,specfn,expr,0);
+defautoload(bernoulli!*calc,specfn,expr,0);
+defautoload(euler!:aux,specfn,expr,0);
+defautoload(rd_euler!*,(specfn sfgamma),expr,0);
+defautoload(cr_euler!*,(specfn sfgamma),expr,0);
 
 defautoload_operator(besselj,(specfn specbess));
 defautoload_operator(bessely,(specfn specbess));

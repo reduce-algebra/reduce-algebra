@@ -121,7 +121,7 @@ symbolic procedure Motzkin(n);
 if (n:= reval n)=0 then 1 else if n=1 then 1 else
 % ((3*n-3)*Motzkin(n-2) + (2*n+1)* Motzkin(n-1))/(n+2);
 if not fixp n or n <0 then
-         mk!*sq((list((list('motzkin,n) . 1) . 1)) . 1)
+         mk!*sq !*kk2q list('motzkin,n)
    else begin scalar vsop,oldv,newv;
     newv := oldv :=1;
     for i:=2:n do <<

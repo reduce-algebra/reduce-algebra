@@ -663,6 +663,37 @@ lerch_phi(1,x,1);
 
 df(lerch_phi(x,3,4),x);
 
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     12. Constants
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+on rounded;
+off complex;
+
+precision 50;
+
+euler_gamma;
+
+Khinchin;
+
+golden_ratio;
+
+Catalan;
+
+on complex;
+
+euler_gamma;
+
+Khinchin;
+
+golden_ratio;
+
+Catalan;
+
+
 end;
 
 

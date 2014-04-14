@@ -438,19 +438,19 @@ flag('(fibonacci),'integer);
 put('fibonacci,'number!-of!-args,1);
 
 symbolic procedure fibonacci(n);
- if not fixp n then mk!*sq mksq!:new list ('fibonacci , n)
+ if not fixp n then mk!*sq !*kk2q list('fibonacci, n)
+  else if n=0 then 0
+  else if n=1 or n=-1 then 1
   else
-  begin integer i3,m1;
-   if n = 0 then return 0 else if abs(n)=1 then return 1;
-   if n < 0 then << m1 := -1; n := abs n >>;
+  begin integer i3; scalar sgn;
+   if n < 0 then << sgn := t; n := -n >>;
    i3 := fibonacci!:aux1 (n);
-   return if (m1 = -1) then << if evenp n then (-i3) else i3; >>
-                        else i3;
+   return if sgn and evenp n then (-i3) else i3;
   end;
 
 global '(fibonacci!:alist);
 
-symbolic << fibonacci!:alist := '(( 0 . 0)
+symbolic << fibonacci!:alist := '((0 . 0)
                 (1 . 1) (2 . 1) (3 . 2) (4 . 3) (5 . 5)
                 (6 . 8) (7 . 13) (8 . 21) (9 . 34)) >>;
 
@@ -458,29 +458,26 @@ symbolic procedure fibonacci!:aux1 (n);
    begin scalar fi;
          fi := atsoc (n,fibonacci!:alist);
          if fi then return cdr fi;
-
          fi :=  fibonacci!:aux2 n;
-         fibonacci!:alist := ( n . fi) . fibonacci!:alist;
+         fibonacci!:alist := (n . fi) . fibonacci!:alist;
          return fi;
       end;
 
 symbolic procedure fibonacci!:aux2 (n); % from Wolfram Koepf, Sep 1998
                 % d'apres Knuth & Patachnik: Concrete Mathematics
-  if evenp n  then (f*(f+2*fibonacci!:aux1(n/2-1))) where f=fibonacci!:aux1(n/2)
-  else (fibonacci!:aux1 ((n+1)/2)^2 + fibonacci!:aux1((n-1)/2)^2);
+  if evenp n then (f*(f+2*fibonacci!:aux1(n/2-1))) where f=fibonacci!:aux1(n/2)
+   else (fibonacci!:aux1((n+1)/2)^2 + fibonacci!:aux1((n-1)/2)^2);
 
 symbolic procedure fibonaccip(n,x);
- if or(not fixp n, not idp x)
-         then mk!*sq mksq!:new ('fibonaccip . list(n,x))
-  else
-  begin integer i3,i2,i1,m1;
-   if n= 0 then return 0 else if n=1 then return 1;
-   m1 := 1;
-   if n < 0 then << m1 := -1; n := abs n >>;
-   i2 := 1; i1 :=0;
-   for i:=2:n do << i3 := reval list('plus,list('times, x ,i2),i1);
-                        i1 := i2; i2 :=i3>>;
-   return reval (list('times,list('expt,m1,list('plus,n,1)),i3));
+ if not fixp n or not idp x then mk!*sq !*kk2q list('fibonaccip,n,x)
+  else if n=0 or n=1 then n
+  else begin scalar i3,i2,i1,sgn;
+   if n < 0 then << sgn := t; n := -n >>;
+   i2 := 1; i1 := 0; i3 := 0;
+   for i:=2:n do << i3 := aeval list('plus,list('times, x ,i2),i1);
+                    i1 := i2; i2 := i3 >>;
+%   return reval (list('times,list('expt,m1,list('plus,n,1)),i3));
+   return if sgn and evenp n then aeval list('minus,i3) else i3;
   end;
 
 

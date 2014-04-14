@@ -114,6 +114,14 @@ symbolic procedure set!-eulers!-constant;
 
 set!-eulers!-constant();
 
+symbolic procedure rd_euler!*;
+  if !!rdprec < 501 then round!:mt(euler!*constant,!:bprec!:);
+
+symbolic procedure cr_euler!*;
+  (if u then mkcr(u,rdzero!*()) else nil)
+    where u=rd_euler!*
+
+
 %
 % Define some suitable rules for initial simplification of psi
 %   (digamma) function expressions.
