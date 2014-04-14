@@ -59,7 +59,7 @@ module fmprint; % Fancy output package for symbolic expressions.
 %
 %     fancy-prifn      print function for an operator
 %
-%     fancy-pprifn     print function for an oeprator including current
+%     fancy-pprifn     print function for an operator including current
 %                      operator precedence for infix printing
 %
 %     fancy!-flatprifn print function for objects which require
@@ -706,7 +706,7 @@ symbolic procedure fancy!-oprin op;
 
 put('alpha,'fancy!-special!-symbol,"\alpha");
 put('beta,'fancy!-special!-symbol,"\beta");
-put('gamma,'fancy!-special!-symbol,"\gamma");
+put('gamma,'fancy!-special!-symbol,"\Gamma");
 put('delta,'fancy!-special!-symbol,"\delta");
 put('epsilon,'fancy!-special!-symbol,"\epsilon");
 put('zeta,'fancy!-special!-symbol,"\zeta");
@@ -764,7 +764,7 @@ put('replaceby,'fancy!-infix!-symbol,222);
 put('replaceby,'fancy!-symbol!-length,8);
 
  % symbols as prefix functions
-% put('gamma,'fancy!-functionsymbol,71);  % big Gamma
+put('gamma,'fancy!-functionsymbol,71);  % big Gamma
 %
 put('!~,'fancy!-functionsymbol,34);     % forall
 put('!~,'fancy!-symbol!-length,8);
@@ -1462,6 +1462,8 @@ endmodule;
 
 module fancy_specfn;
 
+put('euler_gamma,'fancy!-special!-symbol,"\Gamma");
+
 put('besseli,'fancy!-prifn,'fancy!-bessel);
 put('besselj,'fancy!-prifn,'fancy!-bessel);
 put('bessely,'fancy!-prifn,'fancy!-bessel);
@@ -1479,6 +1481,14 @@ symbolic procedure fancy!-bessel(u);
    if testing!-width!* and w eq 'failed then return w;
    return fancy!-print!-function!-arguments cddr u;
   end;
+
+put('polylog,'fancy!-prifn,'fancy!-bessel);
+put('polylog,'fancy!-functionsymbol,'!L!i);
+
+put('ChebyshevU,'fancy!-prifn,'fancy!-bessel);
+put('ChebyshevT,'fancy!-prifn,'fancy!-bessel);
+put('ChebyshevU,'fancy!-functionsymbol,'(ascii 85));
+put('ChebyshevT,'fancy!-functionsymbol,'(ascii 84));
 
 % Hypergeometric functions.
 
