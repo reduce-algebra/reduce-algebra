@@ -517,6 +517,21 @@ procedure lto_at2str(s);
    else
       compress('!" . reversip('!" . reversip explode s));
 
+procedure lto_maxkl(kl);
+   % Maximum of a kernel list. [kl] is a list of kernels. Returns the biggest
+   % kernel w.r.t. kord!* or nil if [kl] is nil.
+   begin scalar m, w;
+      if null kl then
+      	 return nil;
+      m := pop kl;
+      while kl do <<
+	 w := pop kl;
+	 if ordop(m, w) then
+	    m := w
+      >>;
+      return m
+   end;
+
 endmodule;  % [lto]
 
 end;  % of file

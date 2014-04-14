@@ -492,13 +492,13 @@ asserted procedure ctx_get(c: AexCtx, x: Kernel): ExtraBoolean;
 asserted procedure ctx_add(c: AexCtx, ia: DottedPair): AexCtx;
    % Add to context. [ia] is a dotted pair (x . a), where [x] is a Kernel and
    % [a] is an Anu. It is assumed that [x] is not bound by [c].
-   begin scalar ial, var, prevl;
+   begin scalar ial, var, w, prevl;
       assert(not (car ia memq ctx_idl c));
       ial := ctx_ial c;
       var := car ia;
       while ial and ordop(var, caar ial) do <<
-	 prevl := car ial . prevl;
-	 ial := cdr ial
+	 w := pop ial;
+	 prevl := w . prevl
       >>;
       return {'ctx, append(reverse prevl, ia . ial)}
    end;
@@ -565,13 +565,15 @@ asserted procedure aex_ctx(ae: Aex): AexCtx;
    nth(ae, 3);
 
 asserted procedure aex_varl(ae: Aex): List;
+   % All variables, variables with the smallest kernel order first.
    kernels numr aex_ex ae;
 
 asserted procedure aex_fvarl(ae: Aex): List;
-   % Free identifiers, the id with highest kernel order first.
+   % Free variables, variables with the smallest kernel order first.
    lto_setminus(aex_varl ae, ctx_idl aex_ctx ae);
 
 asserted procedure aex_bvarl(ae: Aex): List;
+   % Bound variables, variable with the smallest kernel order first.
    ctx_idl aex_ctx ae;
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
@@ -585,7 +587,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
       r := anu_ratp a;  % Test whether [a] is rational. If yes, use aex_subrp.
       if r then
 	 return aex_subrp(ae, x, r);
-      if x eq car reversip fvarl then <<  % [x] is the biggest free variable in [ae]
+      if x eq lto_maxkl fvarl then <<  % [x] is the biggest free variable in [ae]
 	 nctx := ctx_add(aex_ctx ae, x . anu_rename(a, x));
 	 return aex_mk(aex_ex ae, nctx)
       >>;
