@@ -92,17 +92,19 @@ algebraic<<
 
 >>;
 
+fluid '(!*rounded);
+
 symbolic procedure switch!-mode!-rd u;
   begin scalar oldmode,prec,ne;
   if null u then
     <<if not memq(dmode!*,'(!:rd!: !:cr))then
-       <<oldmode:=t; setdmode('rounded,t)>>;
+       <<oldmode:=t; setdmode('rounded,!*rounded:=t)>>;
      ne := !*noequiv;
      !*noequiv:=t; prec:=precision 0;
      switch!-mode!-rd!-alg 0;
      return list(oldmode,prec,!*roundbf,ne)
     >> else <<
-     if car u then setdmode('rounded,nil);
+     if car u then setdmode('rounded,!*rounded:=nil);
      precision cadr u;
      !*roundbf := caddr u;
      !*noequiv := cadddr u;
