@@ -113,22 +113,6 @@ let Euler_gamma => compute!:Euler!:gamma();
 let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
 
 
-symbolic procedure compute!:catalan ();
-  if not(!*rounded) then mk!*sq !*k2q 'catalan else
-   begin scalar ii,j,p,tt,s,g,!*rounded;
-      g := !:prec!: + length explode !:prec!: + 3;
-      p := 10^g/2;
-      tt := p; s := tt; j :=1; ii := 1;
-      while tt > 0 do
-        << j := j+2; p := (p*ii) / j; tt := (tt * ii + p)/j;
-           s := s + tt; ii := ii + 1 >>;
-      return list('quotient,s,10^(g));
-  end;
-
-symbolic operator compute!:catalan;
-
-let catalan => compute!:catalan();
-
 
 % Khinchin's constant =(prod((1+1/(n*(n+2)))^(ln n/ln2),n,1,infinity))
 %
@@ -149,6 +133,8 @@ flag('(Euler_gamma Golden_ratio catalan Khinchin),'constant);
 flag('(Euler_gamma Golden_ratio catalan Khinchin),'realvalued);
 put('Euler_gamma,'!:rd!:,'rd_euler!*);
 put('Euler_gamma,'!:cr!:,'cr_euler!*);
+put('catalan,'!:rd!:,'rd_catalan!*);
+put('catalan,'!:cr!:,'cr_catalan!*);
 
 % from specfn/sfgen.red
 

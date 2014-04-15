@@ -435,6 +435,8 @@ defautoload(bernoulli!*calc,specfn,expr,0);
 defautoload(euler!:aux,specfn,expr,0);
 defautoload(rd_euler!*,(specfn sfgamma),expr,0);
 defautoload(cr_euler!*,(specfn sfgamma),expr,0);
+defautoload(rd_catalan!*,specfn,expr,0);
+defautoload(cr_catalan!*,specfn,expr,0);
 
 defautoload_operator(besselj,(specfn specbess));
 defautoload_operator(bessely,(specfn specbess));

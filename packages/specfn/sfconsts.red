@@ -47,7 +47,15 @@ COMPUTATION OF CATALAN'S CONSTANT USING RAMANUJAN'S FORMULA
 
 Greg J. Fee, Dept of Comp Sci, U of Waterloo,
 
-published in ISSAC '90, ACM press ;
+published in ISSAC '90, ACM press
+
+available online as
+
+  http://www.gutenberg.org/cache/epub/682/pg682.html
+
+Rewritten for bigfloat package by RmS
+
+ ;
 
 %%algebraic let catalan => compute!:catalan();
 
@@ -70,6 +78,26 @@ published in ISSAC '90, ACM press ;
 %%  end;
 
 %%%%%%%%%%%%%%%%%%%%
+
+symbolic procedure rd_catalan!*();
+   begin scalar ii,j,bj,p,tt,s;
+%      g := !:prec!: + length explode !:prec!: + 3;
+%      p := 10^g/2;
+      ii := 1;
+      j := 1;
+      s := tt := p := bfhalf!*;
+      while greaterp!:(tt,rd!-tolerance!*) do
+        << j := j+2;
+	   bj := i2bf!: j;
+	   p := divbf(times!:(p,i2bf!: ii),bj);
+	   tt := divbf(plus!:(times!:(tt,i2bf!: ii),p),bj);
+           s := plus!:(s,tt);
+ 	   ii := ii + 1 >>;
+      return s
+  end;
+
+symbolic procedure cr_catalan!*();
+   mkcr(rd_catalan!*(),rdzero!*());
 
 algebraic <<
 
