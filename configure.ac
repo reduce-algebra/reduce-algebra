@@ -628,7 +628,7 @@ esac
 
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
-AM_INIT_AUTOMAKE([1.8.3 -Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([1.8.3 -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 

@@ -135,10 +135,26 @@ extern void term_unicode_convert();
 
 typedef struct _uniname
 {
+/*
+ * Note that the names of special characters will never themselves include
+ * any special characters, so using "char *" here rather than "wchar_t *"
+ * is reasonable.
+ */
     const char *name;
     int code;
 } uniname;
+
 extern uniname unicode_names[];
+
+/*
+ * Surrogate pairs will only arise when wide characters are only 2 bytes
+ * (ie typically on Windows). These macros can be used to detect them and
+ * decent compiler optimisation will arrange that no code gets generated
+ * on systems using 32-bit values for wchar_t if these are used in tests.
+ */
+#define is_surrogate(x)      (sizeof(wchar_t)==2 && ((x)&0xf800)==0xf800)
+#define is_high_surrogate(x) (sizeof(wchar_t)==2 && ((x)&0xfc00)==0xf800)
+#define is_low_surrogate(x)  (sizeof(wchar_t)==2 && ((x)&0xfc00)==0xfc00)
 
 #ifdef __cplusplus
 }
