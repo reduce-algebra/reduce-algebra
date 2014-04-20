@@ -410,7 +410,8 @@
   (when (not (memq (int2id x)
 		   '(heaplowerbound heaplast
 				    olditem*
-				    heaptrapbound heapupperbound)))
+                     unixnull unixstderr unixstdout unixstdin unixtty
+		ebxsave!*		    heaptrapbound heapupperbound)))
 	(if (wgreaterp x kernel-maxsymbols)
 	    (markfrombase (symval x))
 	    (markfrombase (wgetv old_symval x))))
