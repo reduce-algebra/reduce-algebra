@@ -97,7 +97,9 @@
 % Defined in os-hooks.c
 %
 (external-function os_startup_hook      (pargc pargv))
-(external-function os_cleanup_hook      ())
+(external-function os_cleanup_hook      (x))
+(external-function wquotient 		(x y))
+(external-function wremainder		(x y))
  
  
 % Defined in pslextras.c
@@ -108,11 +110,9 @@
 (external-function external_timc       (buffer))
 (external-function external_stat       (path buf))
 (external-function external_link       (path1 path2))
-(external-function external_strlen     (strptr))
 (external-function external_unlink     (path))
+(external-function external_strlen     (strptr))
 (external-function external_setenv     (varstring valstring))
-(external-function external_rmdir      (path))
-(external-function external_mkdir      (path mode))
 (external-function external_getenv     (envstring))
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
@@ -124,30 +124,30 @@
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
-(external-function uxwritefloat8       (buffer floatptr convstr dummy))
-(external-function uxdoubletofloat     (x y))
-(external-function uxfloattodouble     (y y))
-(external-function uxsin           (r x))
-(external-function uxcos           (r x))
-(external-function uxtan           (r x))
-(external-function uxasin           (r x))
-(external-function uxacos           (r x))
-(external-function uxatan           (r x))
-(external-function uxsqrt           (r x))
-(external-function uxexp           (r x))
-(external-function uxlog           (r x))
-(external-function uxatan2           (r y x))
+(external-function uuxdoubletofloat     (x y))
+(external-function uuxfloattodouble     (y y))
+(external-function uuxsin           (r x))
+(external-function uuxcos           (r x))
+(external-function uuxtan           (r x))
+(external-function uuxasin           (r x))
+(external-function uuxacos           (r x))
+(external-function uuxatan           (r x))
+(external-function uuxsqrt           (r x))
+(external-function uuxexp           (r x))
+(external-function uuxlog           (r x))
+(external-function uuxatan2           (r y x))
  
  
 % Defined in pwd-fn.c
 %
 (external-function external_pwd         ())
-
+ 
  
 % Defined in sigs.c
 %
 (external-function sun3_sigset               (signame handler))
-(external-function sigrelse             (signame ))
+(external-function sun3_sigrelse             (signame handler))
+(de sigrelse(a b)(sun3_sigrelse a b))
  
  
 % Defined In unexec.c
@@ -181,7 +181,7 @@
 (external-function fflush               (fp))
 (external-function fseek                (fp offset ptrname))
 (external-function clearerr             (fp))
-(external-function xgetw                (fp))
+(external-function getw                 (fp))
 (external-function putw                 (w fp))
 (external-function signal               (signame handler))
 (external-function sleep        (sec))
@@ -226,14 +226,6 @@
 (external-function semctl (semid semnum cmd arg))
 (external-function semget (key nsems semflg))
 (external-function semop  (semid sembuf nsops))
-
-% dynamic linking
-
-
-(external-function dlopen (filenam flag))
-(external-function dlerror (void))
-(external-function dlsym (handle sym))
-(external-function dlclose (handle))
 
  
 (on r2i)

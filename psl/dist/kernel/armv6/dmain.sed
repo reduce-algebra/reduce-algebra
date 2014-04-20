@@ -1,0 +1,15 @@
+s/HEAPTRAPBOUND/heaptrapbound/g
+s/LASTBPS/lastbps/g
+s/HEAPLOWERBOUND/heaplowerbound/g
+s/HEAPUPPERBOUND/heapupperbound/g
+s/NEXTBPS/nextbps/g
+s/OLD/old/g
+s/INFBITLENGTH/infbitlength/g
+s/HEAPLAST/heaplast/g
+s/BPSLOWERBOUND/bpslowerbound/g
+s/UNIXTTY/unix_tty/g
+s/UNIXEOF/unix_eof/g
+s/UNIXSTDERR/unix_stderr/g
+s/UNIXSTDIN/unix_stdin/g
+s/UNIXSTDOUT/unix_stdout/g
+s/UNIXNULL/unix_null/g

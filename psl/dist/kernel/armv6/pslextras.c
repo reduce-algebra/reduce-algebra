@@ -39,9 +39,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
@@ -53,19 +51,9 @@ unsigned long sec;
 }
  
 int external_ualarm(usec,repeat)
-char * usec, repeat;//unsigned long usec,repeat;
-{  void *handle;
-   double (*cosine)(double);
-//handle = dlopen(usec, 1);
-  handle = dlopen("libm.so", 1);
- printf("%lx hohhhandle \n",handle);
-//*(void **) (&cosine) = dlsym(handle,repeat);
-// *(void **) (&cosine) = dsym(handle,"cos");
-printf("%lx cosine1 \n", *cosine);
-// printf("%x cosine1 \n", cosine); printf("%x cosine2 \n",*cosine );
-// return (9);0i//
-
-//  ualarm(usec,repeat);
+unsigned long usec,repeat;
+{
+  ualarm(usec,repeat);
 }
  
 char *expand_file_name();    /* from unix-io.c */
@@ -96,16 +84,6 @@ struct stat *buf;
     return stat(expand_file_name(path), buf);
 }
  
-
-int external_mkdir (name, mode)
-    int mode;
-    char * name;
- { return mkdir (name, mode); }
-
-int external_rmdir (name)
-    char * name;
- { return rmdir (name); }
-
 /* Tag( external_link )
  */
 int external_link (path1, path2)
@@ -129,21 +107,18 @@ int external_strlen (s)
 {
     return strlen(s);
 }
-
-char *getenv(const char *name);
  
 /* Tag( external_getenv )
  */
 char *external_getenv (name)
      char *name;
 {
-    return getenv(name);
+    return (char *)getenv(name);
 }
  
  
-int external_setenv (var, val,ov)
+int external_setenv (var, val)
     char *var, *val;
-    int ov;
 {
   int i;
   extern char **environ;
@@ -161,7 +136,7 @@ int external_setenv (var, val,ov)
   environ = envnew;
   strcpy(var_plus_equal_sign, var);
   strcat(var_plus_equal_sign, "=");
-  return(setenv (var_plus_equal_sign, val,ov));
+  return(setenv (var_plus_equal_sign, val));
 }
  
 /*
@@ -171,9 +146,8 @@ int external_setenv (var, val,ov)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
-setenv (var, value,ov)
-     const char *var, *value;
-     int ov;
+setenv (var, value)
+     char *var, *value;
 {
     extern char **environ;
     int index = 0;
@@ -182,7 +156,7 @@ setenv (var, value,ov)
     while (environ [index] != NULL) {
         if (strncmp (environ [index], var, len) == 0) {
         /* found it */
-        environ[index] = (void *)malloc (len + strlen (value) + 1);
+        environ[index] = (char *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
         return;
@@ -190,7 +164,7 @@ setenv (var, value,ov)
         index ++;
     }
  
-    environ [index] = (void *) malloc (len + strlen (value) + 1);
+    environ [index] = (char *) malloc (len + strlen (value) + 1);
     strcpy (environ [index], var);
     strcat (environ [index], value);
     environ [++index] = NULL;
