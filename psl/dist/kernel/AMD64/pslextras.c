@@ -53,19 +53,8 @@ unsigned long sec;
 }
  
 int external_ualarm(usec,repeat)
-char * usec, repeat;//unsigned long usec,repeat;
-{  void *handle;
-   double (*cosine)(double);
-//handle = dlopen(usec, 1);
-  handle = dlopen("libm.so", 1);
- printf("%lx hohhhandle \n",handle);
-//*(void **) (&cosine) = dlsym(handle,repeat);
-// *(void **) (&cosine) = dsym(handle,"cos");
-printf("%lx cosine1 \n", *cosine);
-// printf("%x cosine1 \n", cosine); printf("%x cosine2 \n",*cosine );
-// return (9);0i//
-
-//  ualarm(usec,repeat);
+unsigned long usec,repeat;
+{ return( ualarm(usec,repeat));
 }
  
 char *expand_file_name();    /* from unix-io.c */
