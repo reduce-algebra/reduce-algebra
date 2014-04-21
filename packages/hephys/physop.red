@@ -172,9 +172,10 @@ put('physop,'name,'physop);     %datatype name
 put('physop,'evfn,'!*physopsm!*);  % basic simplification routine
 put('physop,'typeletfn,'physoptypelet); % routine for type assignements
 
-% Note: we need to make gamma a regular id.
-
-remprop('gamma,'simpfn);  remflag('(gamma),'full);
+%% RmS 2014-04-21 Remove gamma nonsense
+%%% Note: we need to make gamma a regular id.
+%%
+%%remprop('gamma,'simpfn);  remflag('(gamma),'full);
 
 % ----RLISP procedures which have been modified -----
 % procedure for extended error handling

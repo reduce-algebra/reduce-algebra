@@ -205,7 +205,7 @@ matel := 4*(5*c  + 103*c + 154)
 off allfac;
 
 
-vecop gamma,q;
+vecop gammamat,q;
 
 
 tensop sigma(2);
@@ -214,10 +214,10 @@ tensop sigma(2);
 antisymmetric sigma;
 
 
-noncom gamma,gamma;
+noncom gammamat,gammamat;
 
 
-noncom sigma,gamma;
+noncom sigma,gammamat;
 
 
 physindex mu,nu;
@@ -226,12 +226,12 @@ physindex mu,nu;
 operator delta;
 
 
-for all mu,nu let anticomm(gamma(mu),gamma(nu))=2*delta(mu,nu)*unit,
-                  comm(gamma(mu),gamma(nu))=2*I*sigma(mu,nu);
+for all mu,nu let anticomm(gammamat(mu),gammamat(nu))=2*delta(mu,nu)*unit,
+                  comm(gammamat(mu),gammamat(nu))=2*I*sigma(mu,nu);
 
 
 
-oporder p,q,gamma,sigma;
+oporder p,q,gammamat,sigma;
 
 
 off allfac;
@@ -240,40 +240,40 @@ off allfac;
 on anticom;
 
 
-(gamma dot p)*(gamma dot q);
+(gammamat dot p)*(gammamat dot q);
 
 
-p(idx4)*q(idx5)*gamma(idx4)*gamma(idx5)
+p(idx4)*q(idx5)*gammamat(idx4)*gammamat(idx5)
 
 % showtime;
 
 off anticom;
 
 
-(gamma dot p)*(gamma dot q);
+(gammamat dot p)*(gammamat dot q);
 
 
-p(idx6)*q(idx7)*gamma(idx6)*gamma(idx7)
+p(idx6)*q(idx7)*gammamat(idx6)*gammamat(idx7)
 
 % showtime;
 
-commute((gamma dot p),(gamma dot q));
+commute((gammamat dot p),(gammamat dot q));
 
 
 2*i*p(idx8)*q(idx9)*sigma(idx8,idx9)
 
 % showtime;
-anticommute((gamma dot p),(gamma dot q));
+anticommute((gammamat dot p),(gammamat dot q));
 
 
-2*p(idx10)*q(idx11)*gamma(idx10)*gamma(idx11)
+2*p(idx10)*q(idx11)*gammamat(idx10)*gammamat(idx11)
 
  - 2*i*p(idx10)*q(idx11)*sigma(idx10,idx11)
 
 on anticom;
 
 
-anticommute((gamma dot p),(gamma dot q));
+anticommute((gammamat dot p),(gammamat dot q));
 
 
 2*delta(idx13,idx12)*p(idx12)*q(idx13)
