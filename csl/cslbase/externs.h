@@ -459,7 +459,7 @@ extern Lisp_Object expand_def_symbol, allow_key_key;
 #endif
 
 extern Lisp_Object declare_symbol, special_symbol, large_modulus;
-extern Lisp_Object used_space, avail_space;
+extern Lisp_Object used_space, avail_space, eof_symbol;
 
 #ifdef OPENMATH
 extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
@@ -703,6 +703,7 @@ extern Lisp_Object * volatile stacklimit;
 #define large_modulus         BASE[184]
 #define used_space            BASE[185]
 #define avail_space           BASE[186]
+#define eof_symbol            BASE[187]
 
 /*
  * The next are intended for use by people building custom versions
@@ -901,6 +902,9 @@ extern int load_dynamic(char *objname, char *modname,
                         Lisp_Object name, Lisp_Object fns);
 extern Lisp_Object Linstate_c_code(Lisp_Object nil,
                                    Lisp_Object name, Lisp_Object fns);
+
+extern Lisp_Object characterify(Lisp_Object a);
+extern Lisp_Object char_to_id(int ch);
 
 #ifdef MEMORY_TRACE
 extern intptr_t memory_base, memory_size;

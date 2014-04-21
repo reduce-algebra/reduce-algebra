@@ -1,11 +1,11 @@
-/*  fasl.c                          Copyright (C) 1990-2010 Codemist Ltd */
+/*  fasl.c                          Copyright (C) 1990-2014 Codemist Ltd */
 
 /*
  * Binary file support for faster loading of precompiled code etc.
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -586,7 +586,7 @@ static Lisp_Object fastread(void)
         switch (ch)
         {
     case F_END:                     /* marks end of file */
-            return CHAR_EOF;
+            return eof_symbol;      /* CHAR_EOF; */
 
     case F_NIL:                     /* represents the value NIL */
             return nil;
@@ -1491,7 +1491,7 @@ static Lisp_Object load_module(Lisp_Object nil, Lisp_Object file,
     for (;;)
     {   Lisp_Object r = fastread();
         nil = C_nil;
-        if (exception_pending() || r == CHAR_EOF) break;
+        if (exception_pending() || r == eof_symbol) break;
 #ifdef DEBUG_FASL
         trace_printf("FASL: ");
         loop_print_trace(r);
@@ -1970,7 +1970,7 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
 #endif
     if (a == nil) Iputc(F_NIL);
     else if (a == lisp_true) Iputc(F_TRU);
-    else if (a == CHAR_EOF) Iputc(F_END);
+    else if (a == eof_symbol) Iputc(F_END);
 /*
  * In Common Lisp mode there will be a certain amount of horrible fun with
  * symbols and the package system.  But a symbol that is EQ to one recently
@@ -3423,6 +3423,7 @@ Lisp_Object Lsetpchar(Lisp_Object nil, Lisp_Object a)
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
     set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
     push(old);

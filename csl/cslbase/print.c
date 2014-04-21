@@ -1,11 +1,11 @@
-/*  print.c                           Copyright (C) 1990-2013 Codemist Ltd */
+/*  print.c                           Copyright (C) 1990-2014 Codemist Ltd */
 
 /*
  * Printing, plus some file-related operations.
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -182,7 +182,7 @@ Lisp_Object Ltyo(Lisp_Object nil, Lisp_Object a)
     int c;
     Lisp_Object stream = qvalue(standard_output);
     CSL_IGNORE(nil);
-    if (a == CHAR_EOF) return onevalue(a);
+    if (a == CHAR_EOF || a == fixnum_of_int(-1)) return onevalue(a);
     else if (is_char(a)) c = (int)code_of_char(a);
     else if (is_fixnum(a)) c = (int)int_of_fixnum(a);
     else return aerror1("tyo", a);
@@ -489,10 +489,12 @@ Lisp_Object make_stream_handle(void)
     set_stream_write_fn(w, char_to_illegal);
     set_stream_write_other(w, write_action_illegal);
     stream_line_length(w) = 80;
+    stream_byte_pos(w) = 0;
     stream_char_pos(w) = 0;
     set_stream_read_fn(w, char_from_illegal);
     set_stream_read_other(w, read_action_illegal);
     stream_pushed_char(w) = NOT_CHAR;
+    stream_spare(w) = 0;  /* Not used at present */
     return w;
 }
 
@@ -660,9 +662,9 @@ Lisp_Object Lget_output_stream_string(Lisp_Object nil, Lisp_Object a)
     int32_t n, k;
     if (!is_stream(a)) return aerror1("get-output-stream-string", a);
     w = stream_write_data(a);
-    n = stream_char_pos(a);
+    n = stream_byte_pos(a);
     stream_write_data(a) = nil;
-    stream_char_pos(a) = 0;
+    stream_char_pos(a) = stream_byte_pos(a) = 0;
     push(w);
     a = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
     pop(w);
@@ -710,6 +712,7 @@ int char_to_terminal(int c, Lisp_Object dummy)
     }
     if (c == '\n' || c == '\f') terminal_column = 0;
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
+    else if ((c & 0xc0) == 0x80) /* do nothing */;
     else terminal_column++;
     if (spool_file != NULL)
     {   putc(c, spool_file);
@@ -769,6 +772,7 @@ int char_to_spool(int c, Lisp_Object stream)
     if (spool_file == NULL) return 1;
     if (c == '\n' || c == '\f') terminal_column = 0;
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
+    else if ((c & 0xc0) == 0x80) /* do nothing */ ;
     else terminal_column++;
     putc(c, spool_file);
     return 0;
@@ -776,30 +780,28 @@ int char_to_spool(int c, Lisp_Object stream)
 
 #endif
 
+/*
+ * Note that characters come through this interface as a sequence of
+ * bytes, with ones whose code is over 0x7f sent as a sequence using utf-8.
+ */
 int char_to_file(int c, Lisp_Object stream)
 {
     if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;
     }
-    if (c == '\n' || c == '\f') stream_char_pos(stream) = 0;
+    if (c == '\n' || c == '\f')
+        stream_char_pos(stream) = stream_byte_pos(stream) = 0;
     else if (c == '\t')
-        stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
-    else stream_char_pos(stream)++;
-#if defined __CYGWIN__ || !defined WIN32
-/* For chars with code of 0x80 and up I will generate a 2-octet UTF8
- * sequence. This is not quite clearly a good thing to do all the
- * time, but hey such characters should not arise often. I will want to
- * extend this to cover all of Unicode at some stage...
- */
-    if (c >= 0x80)
-    {   putc(0xc0 | ((c >> 8) & 0x3), stream_file(stream));
-        putc(0x80 | (c & 0x3f), stream_file(stream));
-    } 
-    else putc(c, stream_file(stream));
-#else
+    {   stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
+        stream_byte_pos(stream)++;
+    }
+    else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
+    else
+    {   stream_byte_pos(stream)++;
+        stream_char_pos(stream)++;
+    }
     putc(c, stream_file(stream));
-#endif /* UTF8 adjustment */
     return 0;   /* indicate success */
 }
 
@@ -814,7 +816,7 @@ int char_to_function(int c, Lisp_Object f)
 {
     Lisp_Object nil = C_nil;
     f = stream_write_data(f);  /* name of the function to call */
-    (*qfn1(f))(qenv(f), pack_char(0, 0, c & 0xff));
+    (*qfn1(f))(qenv(f), pack_char(0, c & 0xff));
     errexit();
     return 0;    /* return 0 for success */
 }
@@ -887,10 +889,17 @@ int char_to_pipeout(int c, Lisp_Object stream)
     {   io_kilo = 0;
         io_now++;
     }
-    if (c == '\n' || c == '\f') stream_char_pos(stream) = 0;
+    if (c == '\n' || c == '\f')
+        stream_byte_pos(stream) = stream_char_pos(stream) = 0;
     else if (c == '\t')
+    {   stream_byte_pos(stream)++;
         stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
-    else stream_char_pos(stream)++;
+    }
+    else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
+    else
+    {   stream_byte_pos(stream)++;
+        stream_char_pos(stream)++;
+    }
     my_pipe_putc(c, stream_file(stream));
     return 0;   /* indicate success */
 }
@@ -1988,10 +1997,52 @@ static void fp_sprint(char *buff, double x, int prec)
 }
 static int32_t local_gensym_count;
 
+/*
+ * This checks if the sequence in the string starting at offset k is
+ * of the form "WORD;" where WORD is made up of just alphanumerics.
+ */
+static int maybemagic(Lisp_Object v, int k, int len)
+{
+    while (k<len)
+    {   int c = celt(v, k) & 0xff;
+        if (c == ';') return 1;
+        else if ((c & 0x80) != 0 ||
+            !isalnum(c)) return 0;
+        k++;
+    }
+    return 0;
+}
+
+static const char *hexdig = "0123456789abcdef";
+
+static void putc_utf8(int n)
+{
+    n &= 0x001fffff;
+    if (n <= 0x7f)
+    {   putc_stream(n, active_stream);
+        return;
+    }
+    else if (n <= 0x7ff)
+    {   putc_stream(0xc0 + (n>>6), active_stream);
+        putc_stream(0x80 + (n & 0x3f), active_stream);
+    }
+    else if (n <= 0xffff)
+    {   putc_stream(0xe0 + (n>>12), active_stream);
+        putc_stream(0x80 + ((n>>6) & 0x3f), active_stream);
+        putc_stream(0x80 + (n & 0x3f), active_stream);
+    }
+    else
+    {   putc_stream(0xf0 + (n>>16), active_stream);
+        putc_stream(0x80 + ((n>>12) & 0x3f), active_stream);
+        putc_stream(0x80 + ((n>>6) & 0x3f), active_stream);
+        putc_stream(0x80 + (n & 0x3f), active_stream);
+    }
+}
+
 void internal_prin(Lisp_Object u, int blankp)
 {
     Lisp_Object w, nil = C_nil;
-    int32_t len, k;
+    int32_t len, lenchars, k;
     char my_buff[68];
 #ifdef COMMON
     int bl = blankp & 2;
@@ -2172,10 +2223,38 @@ case TAG_ODDS:
             len = length_of_header(h) - CELL;
             push(u);
             outprefix(blankp, 3+2*len);
+/*
+ * At some stage I should look at all the special notations that use "#"
+ * and ensure that none clash. Well here we go...
+ *   #Gnnn            gensym    I note that no HTML5 entity names would clash!
+ *   #<               closures etc
+ *   #[xxx]           odds
+ *   #{...}           SPID_LIBRARY
+ *   #\dd             character
+ *   #P:              structure
+ *   #S(              another variant on structure
+ *   #H(              hash table
+ *   #(               simple vector
+ *   #F[              stream
+ *   #1[              mixed1
+ *   #2[              mixed2
+ *   #3[              mixed3
+ *   #V8(             vec of bytes
+ *   #V16(            vec of shorts
+ *   #V32(            vec of 32-bit ints
+ *   #FS(             vec of floats
+ *   #FD(             vec of double
+ *   #*               bit-vector
+ *   #:               package info
+ *   #C(              complex num
+ *   #word;           )
+ *   #Udigits;        ) extended input symbol
+ *   #hexdigs;        )
+ *   #Xhexdigs;       )
+ */
             putc_stream('#', active_stream); putc_stream('[', active_stream);
             for (k = 0; k < len; k++)
             {   int ch = ((char *)data_of_bps(stack[0]))[k];
-                static char *hexdig = "0123456789abcdef";
 /*
  * Code vectors are not ever going to be re-readable (huh - I suppose there
  * is no big reason why they should not be!) so I split them across multiple
@@ -2264,8 +2343,23 @@ case TAG_VECTOR:
  */
                     if (escaped_printing & escape_yes)
                     {   for (k = 0; k < len; k++)
-                        {   int ch = celt(stack[0], k);
-                            if (ch == '"') slen += 2;
+                        {   int ch = celt(stack[0], k) & 0xff;
+/*
+ * See later for an explanation of the extra lengths indicated here...
+ * but in short they are for #xxxx; and #xxxxxx;
+ * Under cygwin (and potentially on other platforms in certain locales)
+ * case folding can change the number of utf-bytes or hex characters
+ * needed to specify a character. To avoid potential pain I will
+ * always display using at least 4 hex digits.
+ */
+                            if ((ch & 0xc0) == 0x80) /* nothing */;
+                            else if ((ch & 0xe0) == 0xc0) slen += 6;
+                            else if ((ch & 0xf0) == 0xe0) slen += 6;
+                            else if ((ch & 0x80) == 0x80) slen += 8;
+                            else if (ch == '"') slen += 2;
+                            else if (ch == '#' &&
+                                     maybemagic(stack[0], k+1, len))
+                                slen += 6;  /* render as #hash;WORD; */
 #ifdef COMMON
                             else if (ch == '\\') slen += 2;
 #endif
@@ -2275,15 +2369,22 @@ case TAG_VECTOR:
  * control characters within strings as escapes, as in a newline within a
  * string being printed as \0a. Unless the code that reads strings back in
  * understands the same conventions this is a mistake, and the Standard Lisp
- * reader (and the readre in Reduce) do not...
+ * reader (and the reader in Reduce) do not... However Reduce does now
+ * understand things like #NewLine; and #0a; so I should use that notation!
+ * Any character in the range u+00 to u+1f can be rendered as #xx;
  */
                             else if (iscntrl(ch)) slen += 3;
+#else
+                            else if (ch <= 0x1f) slen += 4;
 #endif
                             else slen += 1;
                         }
                         slen += 2;
                     }
-                    else slen = len;
+                    else
+                    {   for (k=0; k < len; k++)
+                            if ((celt(stack[0], k) & 0xc0) != 0x80) slen++;
+                    }
                     outprefix(blankp, slen);
 /*
  * I will write out the fast, easy, common case here, ie "princ" where
@@ -2301,13 +2402,11 @@ case TAG_VECTOR:
                     {   if (escaped_printing & escape_yes)
                             putc_stream('"', active_stream);
                         for (k = 0; k < len; k++)
-                        {   int ch = celt(stack[0], k);
+                        {   int ch = celt(stack[0], k) & 0xff;
 #ifdef COMMON
 /*
  * In Common Lisp mode I do something special with '"' and '\', and
- * any control characters get mapped onto an escape sequence. If I ever
- * moved to proper support for Unicode I would have significant extra work
- * to do here.
+ * any control characters get mapped onto an escape sequence.
  */
                             const char *hexdig = "0123456789abcdef";
                             if ((escaped_printing & escape_yes) &&
@@ -2323,14 +2422,121 @@ case TAG_VECTOR:
 #else
 /*
  * In Standard Lisp mode when I get a '"'  I print two doublequote. And that
- * will be the only special case!
+ * will be the only special case! Well no - I will print control characters
+ * in the form #xx; in escaped mode.
  */
                             if ((escaped_printing & escape_yes) && ch == '"')
                             {   putc_stream('"', active_stream);
                                 putc_stream('"', active_stream);
                             }
 #endif
+/*
+ * If a string contains text like "...#WORD;..." where WORD could possibly
+ * be something decoded specially on re-input then the output here will
+ * be rendered as "...#hash;WORD;..." which will defeat the #-introduced
+ * sequence from being treated as something that represents an extended
+ * character.
+ */
+                            else if (ch == '#' && 
+                                     maybemagic(stack[0], k+1, len))
+                            {   putc_stream('#', active_stream);
+                                putc_stream('h', active_stream);
+                                putc_stream('a', active_stream);
+                                putc_stream('s', active_stream);
+                                putc_stream('h', active_stream);
+                                putc_stream(';', active_stream);
+                            }
+/*
+ * The first byte of any multi-byte utf-8 sequence will be a code that is
+ * at least 0xc0. In such cases I will represent the wide character as
+ * one of #xxx;, #xxxx; or #xxxxxx; depending on how many bytes were used.
+ * in some cases that will leave a leading zero in the representation. Or
+ * if I am not displaying with escape_yes I just need to case fold it.
+ */
+                            else if (ch >= 0xc0)
+                            {   int32_t n = 0;
+                                if ((ch & 0xe0) == 0xc0) /* 2 byte */
+                                {   n = ch & 0x1f;
+                                    k++;
+                                    ch = celt(stack[0], k);
+                                    n = (n << 6) | (ch & 0x3f);
+                                    if (escaped_printing & escape_fold_down)
+                                        n = towlower(n);
+                                    else if (escaped_printing & escape_fold_up)
+                                        n = towupper(n);
+                                    if (escaped_printing & escape_yes)
+                                    {   putc_stream('#', active_stream);
+/* This first digit is very often redundant here */
+                                        putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                        putc_stream(hexdig[n&0xf], active_stream);
+                                        putc_stream(';', active_stream);
+                                    }
+                                    else putc_utf8(n);
+                                }
+                                else if ((ch & 0xf0) == 0xe0) /* 3 byte */
+                                {   n = ch & 0x0f;
+                                    k++;
+                                    ch = celt(stack[0], k);
+                                    n = (n << 6) | (ch & 0x3f);
+                                    k++;
+                                    ch = celt(stack[0], k);
+                                    n = (n << 6) | (ch & 0x3f);
+                                    if (escaped_printing & escape_fold_down)
+                                        n = towlower(n);
+                                    else if (escaped_printing & escape_fold_up)
+                                        n = towupper(n);
+                                    if (escaped_printing & escape_yes)
+                                    {   putc_stream('#', active_stream);
+                                        putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                        putc_stream(hexdig[n&0xf], active_stream);
+                                        putc_stream(';', active_stream);
+                                    }
+                                    else putc_utf8(n);
+                                }
+                                else /* assume 4 byte */
+                                {   n = ch & 0x07;
+                                    k++;
+                                    ch = celt(stack[0], k);                                
+                                    n = (n << 6) | (ch & 0x3f);
+                                    k++;
+                                    ch = celt(stack[0], k);                                
+                                    n = (n << 6) | (ch & 0x3f);
+                                    k++;
+                                    ch = celt(stack[0], k);                                
+                                    n = (n << 6) | (ch & 0x3f);
+/*
+ * When case folding if the code-point is beyond U+ffff and I am on a machine
+ * where sizeof(wchar_t) is 2 (eg Windows) I will not case fold. Gosh that
+ * seems an obscure situation!
+ */
+                                    if (sizeof(wchar_t) == 4 || n < 0x10000)
+                                    {   if (escaped_printing & escape_fold_down)
+                                            n = towlower(n);
+                                        else if (escaped_printing & escape_fold_up)
+                                            n = towupper(n);
+                                    }
+                                    if (escaped_printing & escape_yes)
+                                    {   putc_stream('#', active_stream);
+                                        putc_stream(hexdig[(n>>20)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>16)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                        putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                        putc_stream(hexdig[n&0xf], active_stream);
+                                        putc_stream(';', active_stream);
+                                    }
+                                    else putc_utf8(n);
+                                }
+                            }
                             else
+/*
+ * Here I know I have a code in the range U+00 to U+7f so I can use narrow
+ * character handling safely.
+ */
                             {   if (escaped_printing & escape_fold_down)
                                     ch = tolower(ch);
                                 else if (escaped_printing & escape_fold_up)
@@ -2378,7 +2584,9 @@ case TAG_VECTOR:
     case TYPE_STRUCTURE:
         if (elt(stack[0], 0) == package_symbol)
         {   outprefix(blankp, 3);
-            putc_stream('#', active_stream); putc_stream('P', active_stream); putc_stream(':', active_stream);
+            putc_stream('#', active_stream);
+            putc_stream('P', active_stream);
+            putc_stream(':', active_stream);
             pop(u);
             u = elt(u, 8);  /* The name of the package */
             blankp = 0;
@@ -2528,11 +2736,8 @@ case TAG_VECTOR:
             putc_stream('#', active_stream); putc_stream('V', active_stream);
             putc_stream('3', active_stream); putc_stream('2', active_stream); putc_stream('(', active_stream);
             len = len >> 2;
-/* /* I think that this is broken on 64-bit machines since then ielt
-      fetches a 64-bit value....  Oh misery! But maybe it is not a VERY
-      important part of Lisp so I can think about it later! */
             for (k=0; k<len; k++)
-            {   sprintf(my_buff, "%ld", (long)ielt(stack[0], k));
+            {   sprintf(my_buff, "%ld", (long)ielt32(stack[0], k));
                 prin_buf(my_buff, k != 0);
             }
             outprefix(NO, 1);
@@ -2689,6 +2894,10 @@ case TAG_SYMBOL:
             }
 #endif
             len = length_of_header(h);  /* counts in bytes */
+            lenchars = 0;
+/* Now see how many characters that is, allowing for utf-8 encoding */
+            for (k=0; k<(len-CELL); k++)
+                if ((celt(w, k) & 0xc0) != 0x80) lenchars++;
 /*
  * When I come to print things I will assume that I want them re-readable
  * with values of !*raise and !*lower as in effect when the printing took
@@ -2703,11 +2912,11 @@ case TAG_SYMBOL:
 #ifdef COMMON
                 switch (pkgid)
                 {
-            case 1: outprefix(blankp, len+2);
+            case 1: outprefix(blankp, lenchars+2);
                     putc_stream('#', active_stream);
                     putc_stream(':', active_stream);
                     break;
-            case 2: outprefix(blankp, len+1);
+            case 2: outprefix(blankp, lenchars+1);
                     putc_stream(':', active_stream);
                     break;
             case 3:
@@ -2715,14 +2924,14 @@ case TAG_SYMBOL:
                     putc_stream(':', active_stream);
                     if (pkgid == 4) putc_stream(':', active_stream);
                     break;
-            default:outprefix(blankp, len);
+            default:outprefix(blankp, lenchars);
                     break;
                 }
 #else
-                outprefix(blankp, len);
+                outprefix(blankp, lenchars);
 #endif
                 for (k = 0; k < len; k++)
-                {   int ch = celt(stack[0], k);
+                {   int ch = celt(stack[0], k) & 0xff;
 /*
  * Specially for the benefit of "tmprint.red" I arrange to switch off
  * line-wrapping if I have a "\x02" character but switch it back on after
@@ -2740,7 +2949,12 @@ case TAG_SYMBOL:
                 else if (qvalue(raise_symbol) != nil) raised = 1;
                 stack[0] = w;
                 len -= CELL;
-/* A really horrid case here - digits are special at the start of names! */
+/*
+ * A horrid case here - digits are special at the start of names so need
+ * escaping with a "!" there even though they do not within the body of the
+ * symbol. In Stanndard Lisp the same is true for "_" and in Common Lisp
+ * for ".".
+ */
                 if (len > 0)
                 {   int ch = celt(stack[0], 0);
                     if (escaped_printing & escape_yes &&
@@ -2758,7 +2972,20 @@ case TAG_SYMBOL:
  */
                 for (k = 0; k < len; k++)
                 {   int ch = celt(stack[0], k);
-                    if (escaped_printing & escape_yes &&
+/*
+ * If I have escape_yes set then I will map multibyte sequences onto
+ * #xxxx; or #xxxxxx; using 5 or 7 extra characters. If the only reason
+ * I am here is because of case folding I will leave extended characters
+ * alone.
+ */
+                    if ((ch & 0xc0) == 0x80) continue;
+                    else if ((ch & 0xe0) == 0xc0 &&
+                        (escaped_printing & escape_yes)==0) slen += 5, extralen++;
+                    else if ((ch & 0xf0) == 0xe0 &&
+                        (escaped_printing & escape_yes)==0) slen += 5, extralen++;
+                    else if ((ch & 0x80) != 0 &&
+                        (escaped_printing & escape_yes)==0) slen += 7, extralen++;
+                    else if ((escaped_printing & escape_yes) &&
                         !(escaped_printing &
                           (escape_fold_down |
                            escape_fold_up |
@@ -2779,6 +3006,11 @@ case TAG_SYMBOL:
  * The |xxx| notation is where the "2" here comes from, but that does not
  * make full allowance for names with '\\' in them. Tough! But view that
  * as yet another place where the code could need upgrading.
+ * 
+ * here slen is the number of characters that will be used to display the
+ * printname itself, extralen is the number of "!" characters that Standard
+ * Lisp mode would use. If extralen is non zero I will need to use "|"
+ * notation here.
  */
                 if (extralen != 0) extralen = 2;
                 switch (pkgid)
@@ -2804,29 +3036,28 @@ case TAG_SYMBOL:
 #ifdef COMMON
                 if (extralen != 0) putc_stream('|', active_stream);
 #endif
+/*
+ * I need to deal with the first character of the name specially... but
+ * only if it is one of the magic characters that needs special escaping at
+ * the start of a name but not otherwise! So I will detect such cases and
+ * if necessary emit a "!" then the normal loop will do eveything else
+ * happily. Note that in Common Lisp mode there are no special cases here
+ * if I am going to display exotic names enclosed in vertical bars.
+ * I am glad that none of "_" and "0" to "9" impact on case folding or
+ * utf-8 encoding!
+ */
+#ifndef COMMON
                 if (len > 0)
                 {   int ch = celt(stack[0], 0);
-#ifdef COMMON
-                    if (ch == '\\' || ch=='|')
+                    if (ch == '_' ||
+                        (ch >= '0' && ch <= '9'))
                         putc_stream(ESCAPE_CHAR, active_stream);
-#else
-                    if (!is_constituent(ch) ||
-                        isdigit((unsigned char)ch) ||
-                        (ch == '_') ||
-                        (!(escaped_printing &
-                            (escape_fold_down | escape_fold_up |
-                             escape_capitalize)) &&
-                         ((raised < 0 && isupper((unsigned char)ch)) ||
-                          (raised > 0 && islower((unsigned char)ch)))))
-                        putc_stream(ESCAPE_CHAR, active_stream);
-#endif
-                    if (escaped_printing & escape_fold_down)
-                        ch = (char)tolower((unsigned char)ch);
-                    else if (escaped_printing & escape_fold_up)
-                        ch = (char)toupper((unsigned char)ch);
-                    putc_stream(ch, active_stream);
                 }
-                for (k = 1; k < len; k++)
+#endif
+/*
+ * Now display the characters that make up the name.
+ */
+                for (k = 0; k < len; k++)
                 {   int ch = celt(stack[0], k);
 #ifdef COMMON
                     if (ch == '\\' || ch=='|')
@@ -2835,16 +3066,96 @@ case TAG_SYMBOL:
                     if (!(escaped_printing &
                           (escape_fold_down | escape_fold_up |
                            escape_capitalize)) &&
-                        (!is_constituent(ch) ||
+                        (
+                         !is_constituent(ch) ||
                          (raised < 0 && isupper((unsigned char)ch)) ||
                          (raised > 0 && islower((unsigned char)ch))))
                         putc_stream(ESCAPE_CHAR, active_stream);
 #endif
-                    if (escaped_printing & escape_fold_down)
-                        ch = tolower(ch);
-                    else if (escaped_printing & escape_fold_up)
-                        ch = (char)toupper((unsigned char)ch);
-                    putc_stream(ch, active_stream);
+/*
+ * If I am case-folding I may need to extract an utf-8 multi-byte
+ * sequence, case fold and then display it.
+ */
+                    if (ch >= 0xc0)
+                    {   int32_t n = 0;
+                        if ((ch & 0xe0) == 0xc0) /* 2 byte */
+                        {   n = ch & 0x1f;
+                            k++;
+                            ch = celt(stack[0], k);
+                            n = (n << 6) | (ch & 0x3f);
+                            if (escaped_printing & escape_fold_down)
+                                n = towlower(n);
+                            else if (escaped_printing & escape_fold_up)
+                                n = towupper(n);
+                            if (escaped_printing & escape_yes)
+                            {   putc_stream('#', active_stream);
+/* This first digit is very often redundant here */
+                                putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                putc_stream(hexdig[n&0xf], active_stream);
+                                putc_stream(';', active_stream);
+                            }
+                            else putc_utf8(n);
+                        }
+                        else if ((ch & 0xf0) == 0xe0) /* 3 byte */
+                        {   n = ch & 0x0f;
+                            k++;
+                            ch = celt(stack[0], k);
+                            n = (n << 6) | (ch & 0x3f);
+                            k++;
+                            ch = celt(stack[0], k);
+                            n = (n << 6) | (ch & 0x3f);
+                            if (escaped_printing & escape_fold_down)
+                                n = towlower(n);
+                            else if (escaped_printing & escape_fold_up)
+                                n = towupper(n);
+                            if (escaped_printing & escape_yes)
+                            {   putc_stream('#', active_stream);
+                                putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                putc_stream(hexdig[n&0xf], active_stream);
+                                putc_stream(';', active_stream);
+                            }
+                            else putc_utf8(n);
+                        }
+                        else /* assume 4 byte */
+                        {   n = ch & 0x07;
+                            k++;
+                            ch = celt(stack[0], k);                                
+                            n = (n << 6) | (ch & 0x3f);
+                            k++;
+                            ch = celt(stack[0], k);                                
+                            n = (n << 6) | (ch & 0x3f);
+                            k++;
+                            ch = celt(stack[0], k);                                
+                            n = (n << 6) | (ch & 0x3f);
+/*
+ * When case folding if the code-point is beyond U+ffff and I am on a machine
+ * where sizeof(wchar_t) is 2 (eg Windows) I will not case fold. Gosh that
+ * seems an obscure situation!
+ */
+                            if (sizeof(wchar_t) == 4 || n < 0x10000)
+                            {   if (escaped_printing & escape_fold_down)
+                                    n = towlower(n);
+                                else if (escaped_printing & escape_fold_up)
+                                    n = towupper(n);
+                            }
+                            if (escaped_printing & escape_yes)
+                            {   putc_stream('#', active_stream);
+                                putc_stream(hexdig[(n>>20)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>16)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                putc_stream(hexdig[n&0xf], active_stream);
+                                putc_stream(';', active_stream);
+                            }
+                            else putc_utf8(n);
+                        }
+                    }
+                    else putc_stream(ch, active_stream);
                 }
 #ifdef COMMON
                 if (extralen != 0) putc_stream('|', active_stream);
@@ -3341,19 +3652,31 @@ int char_to_list(int c, Lisp_Object f)
 {
     Lisp_Object k, nil = C_nil;
 /*
- * return at once if a previous call raised an exception
+ * return at once if a previous call raised an exception. Note that this
+ * function is only expecting characters in the range 0 to 255, ie bytes
+ * not really characters.
  */
     if (exception_pending()) return 1;
-    k = elt(charvec, c & 0xff);
+    c &= 0xff;
+    k = elt(charvec, c);
     if (k == nil)
-    {   celt(boffo, 0) = (char)c;
+    {   int len;
+        if (c <= 0x7f)
+        {   celt(boffo, 0) = (char)c;
+            len = 1;
+        }
+        else
+        {   celt(boffo, 0) = 0xc0 + (c>>6);
+            celt(boffo, 1) = 0x80 + (c & 0x3f);
+            len = 2;
+        }
         push(f);
 /*
  * It could very well be that in Common Lisp I ought to generate a list of
  * character objects here. As it is I hand back symbols, but I do take care
  * that they are in the LISP package.
  */
-        k = iintern(boffo, 1, lisp_package, 0);
+        k = iintern(boffo, len, lisp_package, 0);
         pop(f);
         nil = C_nil;
         if (exception_pending()) return 1;
@@ -3434,10 +3757,11 @@ int code_to_list(int c, Lisp_Object f)
     if (!exception_pending())
     {   stream_write_data(f) = k;
 /*
- * In this case the "position" must count in characters and not pay
- * any attention if some of them are tabs or newlines etc.
+ * In this case the "position" must not pay attention to
+ * tabs or newlines.
  */
-        stream_char_pos(f)++;
+        stream_byte_pos(f)++;
+        if ((c & 0xc0) != 0x80) stream_char_pos(f)++;
         return 0;
     }
     else return 1;
@@ -3739,25 +4063,52 @@ char memory_print_buffer[MAX_PROMPT_LENGTH];
 
 int count_character(int c, Lisp_Object f)
 {
-    int n = stream_char_pos(f);
+    int n = stream_byte_pos(f);
+/*
+ * In bad cases the memory_print_buffer will expire part way through
+ * a multi-byte character. I will tidy that up somewhere else!
+ */
     if (n < MAX_PROMPT_LENGTH-1)
     {   memory_print_buffer[n] = (char)c;
         memory_print_buffer[n+1] = 0;
     }
-    stream_char_pos(f) = n+1;
+    stream_byte_pos(f) = n+1;
+    if ((c & 0xc0) != 0x80) stream_char_pos(f)++;
     return 0;   /* indicate success */
 }
 
 Lisp_Object Llengthc(Lisp_Object nil, Lisp_Object a)
 {
 /*
- * This one counts a TAB as having width 1.
+ * This counts a TAB as having width 1. It counts the number of bytes
+ * used to print the argument.
  */
     CSL_IGNORE(nil);
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
     set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_byte_pos(lisp_work_stream) = 0;
+    stream_char_pos(lisp_work_stream) = 0;
+    active_stream = lisp_work_stream;
+    internal_prin(a, 0);
+    errexit();
+    return onevalue(fixnum_of_int(stream_byte_pos(lisp_work_stream)));
+}
+
+
+Lisp_Object Lwidelengthc(Lisp_Object nil, Lisp_Object a)
+{
+/*
+ * Like lengthc but counts characters (by ignoring bytes that
+ & are 10xxxxxx in binary).
+ */
+    CSL_IGNORE(nil);
+    escaped_printing = escape_nolinebreak;
+    set_stream_write_fn(lisp_work_stream, count_character);
+    memory_print_buffer[0] = 0;
+    set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
@@ -5079,6 +5430,7 @@ setup_type const print_setup[] =
     {"streamp",                 Lstreamp, too_many_1, wrong_no_1},
     {"is-console",              Lis_console, too_many_1, wrong_no_1},
     {"lengthc",                 Llengthc, too_many_1, wrong_no_1},
+    {"widelengthc",             Lwidelengthc, too_many_1, wrong_no_1},
     {"linelength",              Llinelength, too_many_1, Llinelength0},
     {"lposn",                   wrong_no_na, wrong_no_nb, Llposn},
     {"internal-open",           too_few_2, Lopen, wrong_no_2},

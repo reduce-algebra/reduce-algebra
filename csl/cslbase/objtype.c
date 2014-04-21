@@ -1,8 +1,8 @@
-/* objtype.c                        Copyright (C) 2005-2008 Codemist Ltd */
+/* objtype.c                        Copyright (C) 2005-2014 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

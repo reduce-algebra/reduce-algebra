@@ -1,4 +1,4 @@
-/*  restart.c                       Copyright (C) 1989-2013 Codemist Ltd */
+/*  restart.c                       Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -291,7 +291,7 @@ Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 Lisp_Object gchook, resources, callstack, procstack, procmem, trap_time;
-Lisp_Object used_space, avail_space;
+Lisp_Object used_space, avail_space, eof_symbol;
 Lisp_Object workbase[51];
 
 
@@ -4769,6 +4769,7 @@ static void cold_setup()
     resources           = make_undefined_symbol("*resources*");
     used_space          = make_undefined_symbol("*used-space*");
     avail_space         = make_undefined_symbol("*avail-space*");
+    eof_symbol          = make_undefined_symbol("\xf7\xbf\xbf\xbf");
     trap_time           = make_undefined_symbol("trap-time*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
@@ -6589,6 +6590,7 @@ void copy_into_nilseg(int fg)
     BASE[184]    = large_modulus;
     BASE[185]    = used_space;
     BASE[186]    = avail_space;
+    BASE[187]    = eof_symbol;
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -6760,6 +6762,7 @@ void copy_out_of_nilseg(int fg)
     large_modulus         = BASE[184];
     used_space            = BASE[185];
     avail_space           = BASE[186];
+    eof_symbol            = BASE[187];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

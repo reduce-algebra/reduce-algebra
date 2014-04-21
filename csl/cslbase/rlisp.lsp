@@ -1768,6 +1768,9 @@ flag('(!*rsqb!*),'delim);
 flag('(!*rsqb!*),'nodel);
 
 
+!*echo := t;
+trace '(token readch); 
+
 % ***** END STATEMENT *****
 
 symbolic procedure endstat;

@@ -719,69 +719,37 @@ typedef uintptr_t Header;
  * format of the end-of-file indicator, but I hope it will not have
  * a bad effect on anything else.
  *
- * For no especially good reason I represent an end of file marker
- * as character 4 (^D) in font number 255.  That at least keeps it
- * away from the standard characters that exist in font 0.
- * If "Kanji" is defined then Forbs Systems Co code to support
- * Eastern alphabets is enabled. Note that the original arrangement
- * of FONT/BITS/CODE that I had was as mandated for Common Lisp and that
- * the Kanji option is thus probably not directly compatible with
- * Common Lisp mode. To make life a little closer to reasonable in this
- * regard I will support both names needed for Common and Kanji.
- * Thus a character is stored using 24 bits (plus 8 bits of tag):
+ * Note that the original arrangement of FONT/BITS/CODE that I had
+ * was as mandated for Common Lisp. There was also a "kanji" option that
+ * used the BITS and CODE fields together to pack 16-bit characters.
+ * I will retire these and now use 21 bits for the codepoint and I have
+ * 3 bits for "font" information but I do not expect to do anything with it.
  *       Kanji mode           Ordinary mode      New Unicode mode
  *       font                 font               3 bits of "font"
  *       code )               bits               21 bits of "code"
  *       code ) 16 bits       code
- * Note that pack_char could now take a 21-bit code which would then fill in
- * all of code.  Note also thaT to avoid pain with re-working historical
- * bits of the CSL code I leave the macro pack_char with args in the order
- * bits/font/code.  I think I am just not going to worry about Common Lisp
- * and bits and font attributes, and if I checked I would expect to find that
- * current versions of the Common Lisp standard have moved on from the ones
- * I looked at when I first wrote this.
+ * Note that pack_char now takes a 21-bit code but only values up to
+ * 0x0010ffff are valid for Unicode.
  */
 
-#ifdef OLD_VERSION
-
-#define font_of_char(n)  (((int32_t)(n) >> 24) & 0xff)
-#define bits_of_char(n)  (((int32_t)(n) >> 16) & 0xff)
-#ifdef Kanji
-#define code_of_char(n)  (((int32_t)(n) >>  8) & 0xffff)
-#else
-/* NB cast to (char) in case that is a signed type. Ugh! */
-#define code_of_char(n)  ((char)(((int32_t)(n) >>  8) & 0xff))
-#endif
-
-#define pack_char(bits, font, code)                                \
-    ((Lisp_Object)((((uint32_t)(font)) << 24) |                  \
-    (((uint32_t)(bits)) << 16) | (((uint32_t)(code)) << 8) | TAG_CHAR))
-    
-#define CHAR_EOF pack_char(0, 0xff, 4)
-
-#else /* OLD_VERSION */
 
 #define font_of_char(n)  (((int32_t)(n) >> 29) & 0x03)
 #define bits_of_char(n)  (0)
 #define code_of_char(n)  (((int32_t)(n) >>  8) & 0x001fffff)
 
-#define pack_char(bits, font, code)                                \
+#define pack_char(font, code)                                      \
     ((Lisp_Object)((((uint32_t)(font)) << 29) |                    \
                    (((uint32_t)(code)) << 8) | TAG_CHAR))
     
-/* #define CHAR_EOF pack_char(0, 0x1, 4) */
 /*
- * The value I use to represent EOF is the historical one used with an
- * earlier character packing. In the new character format this represents
- * the character 0x001f0004 in font 7. The good news for me is that this
- * is outside the range of proper Unicode characters so as well as it having
- * a non-zero "font" it can never clash with anything ordinary. The bad news
- * is that it is outside the valid range of characters to pass to isdigit()
- * and friends...
+ * For internal purposes here I will use a pseude-character with code
+ * 0x001fffff to stand for an end of file marker. This can be packed as
+ * 4 bytes in utf-8 (f7/bf/bf/bf) but is outside the Unicode range and so
+ * should never arise in exchange. I will probably at times map it onto
+ * the integer value -1.
  */
-#define CHAR_EOF ((Lisp_Object)(int32_t)0xff000402)
+#define CHAR_EOF pack_char(0, 0x001fffff)
 
-#endif /* OLD_VERSION */ 
 
 /*
  * The following shows that a BPS entrypoint is represented with

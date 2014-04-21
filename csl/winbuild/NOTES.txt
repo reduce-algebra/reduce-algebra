@@ -1,0 +1,32 @@
+Notes - March 2014
+==================
+
+At present this script is just set up to build under the 32-bit cygwin
+installed on either a 32 or 64-bit version of Windows. On a 32-bit windows
+it will only build 32-bit executables.
+
+It expects 64-bit cygwin to have been installed in c:\cygwin64 or d:\cygwin64
+and manages to use that for building the 64-bit cygwin version of Reduce.
+
+Some of this limitation and the curiosity of using cygwin64 as well as
+because when I first started looking into this scheme the 64-bit cygwin was
+sufficiently new that some of the packages associated with it were unstable
+and it was not possible to build native windows or 32-bit cygwin applications
+under it for lack of some of the development libraries that I needed. These
+issues have probably now been resolved and so I suspect I can change things
+here so that my build can be conducted under either 32-bit or 64-bit cygwin
+equally well.
+
+But before I make that an official statement it will be necessary to
+test both versions. Until I am confident that the fat binaries I introduce
+here are a really good idea time spent doing that will not count as
+a high priority - but I might encourage others to try adapting the
+scripts here to try it out!
+
+I suggest first checking how well cygwin64 binaries can be (cross-)built
+under 32-bit cygwin and vice versa, and then adapting the scripts here to
+build based on just one version of cygwin.
+
+             Arthur Norman
+
+

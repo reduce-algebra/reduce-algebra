@@ -1,11 +1,11 @@
-/*  fns2.c                          Copyright (C) 1989-2011 Codemist Ltd */
+/*  fns2.c                          Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * Basic functions part 2.
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -4656,4 +4656,3 @@ setup_type const funcs2_setup[] =
 };
 
 /* end of fns2.c */
- 

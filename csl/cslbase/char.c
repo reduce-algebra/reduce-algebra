@@ -1,11 +1,11 @@
-/*  char.c                           Copyright (C) 1989-2011 Codemist Ltd */
+/*  char.c                           Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * Character handling.
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,49 +39,9 @@
 #include "headers.h"
 
 /*
- * I am probably going to be moving to a situation where all internal
- * data is Unicode, stored in strings in utf-8 format. That will be
- * quite close in behaviour to the existing "Kanji" arrangement, which
- * uses 16-bit wide characters in places. The full change-over will take
- * some while and in the meanwhile I hope that if people only use simple
- * ASCII characters there will be no confusion!
+ * I am now situation where all internal data is Unicode,
+ * stored in strings in utf-8 format.
  */
-
-#ifdef Kanji
-#define ISalpha(a)     iswalpha(a)
-#define ISdigit(a)     iswdigit(a)
-#define ISalnum(a)     iswalnum(a)
-#define ISspace(a)     iswspace(a)
-#define ISgraph(a)     iswgraph(a)
-#define ISupper(a)     iswupper(a)
-#define ISlower(a)     iswlower(a)
-#define TOupper(a)     towupper(a)
-#define TOlower(a)     towlower(a)
-
-int first_char(Lisp_Object ch)
-{   /* ch is a symbol. Get the first character of its name. */
-    int n;
-    ch = qpname(ch);
-    n = celt(ch, 0);
-    if (is2byte(n) && length_of_header(vechdr(ch)) != CELL)
-        n = (n << 8) + ucelt(ch, 1);
-    return n;
-}
-                            
-#else /* Kanji */
-#define ISalpha(a)     isalpha(a)
-#define ISdigit(a)     isdigit(a)
-#define ISalnum(a)     isalnum(a)
-#define ISspace(a)     isspace(a)
-#define ISgraph(a)     isgraph(a)
-#define ISupper(a)     isupper(a)
-#define ISlower(a)     islower(a)
-#define TOupper(a)     toupper(a)
-#define TOlower(a)     tolower(a)
-
-#define first_char(a)  celt(qpname(a), 0)
-
-#endif /* Kanji */
 
 /*
  * For many character functions I will permit the argument to be either
@@ -90,83 +50,121 @@ int first_char(Lisp_Object ch)
  * and (of course) very often I will just use the symbols 'a, 'b, 'c etc
  * to stand for the characters #\a, #\b, #\c....
  * If the symbol has a print-name of length other than 1 I will not
- * count it as a valid character.
+ * count it as a valid character. But note that that has to be counting
+ * in characters not bytes... so you see messy utf-8 conversion here.
  * Common Lisp seens to say that character functions ought to be handed
  * real character objects - so extending this to permit symbols as well
- * is probably safe. If it were not I could just redefine this macro as
+ * is probably safe. If it were not I could just redefine this as
  * a null expansion in Common Lisp mode.
  * NB gensyms are OK here since I only need the 1st char of the base-name
  */
-#ifdef Kanji
-#define characterify(c)                                    \
-    if (is_symbol(c) &&                                    \
-        lenth_of_header(vechdr(qpname(c))) == CELL+1)      \
-        c = pack_char(0,0,                                 \
-            is2byte(celt(qpname(c), 0)) ?                  \
-            (ucelt(qpname(c),0)<<8) + ucelt(qpname(c),1) : \
-            celt(qpname(c), 0))
-#else
-#define characterify(c) \
-    if (is_symbol(c) &&                                    \
-        length_of_header(vechdr(qpname(c))) == CELL+1)     \
-        c = pack_char(0,0, ucelt(qpname(c), 0))
-#endif
 
-#ifndef COMMON
+Lisp_Object characterify_string(Lisp_Object pn)
+{
+    int n, w, len = length_of_header(vechdr(pn)) - CELL;
+    if (len == 0) return pn; /* empty name */
+    w = ucelt(pn, 0);
+    if (w <= 0x7f && len == 1) return pack_char(0, w);
+    else if ((w & 0xe0) == 0xc0 && len == 2)
+    {   w = (w & 0x1f) << 6;
+        n = ucelt(pn, 1);
+        if ((n & 0xc0) == 0x80) return pack_char(0, w + (n & 0x3f));
+        else return pn;
+    }
+    else if ((w & 0xf0) == 0xe0 && len == 3)
+    {   w = (w & 0x0f) << 12;
+        n = ucelt(pn, 1);
+        if ((n & 0xc0) != 0x80) return pn;
+        w = w + ((n & 0x3f) << 6);
+        n = ucelt(pn, 2);
+        if ((n & 0xc0) == 0x80) return pack_char(0, w + (n & 0x3f));
+        else return pn;
+    }
+    else if ((w & 0xf8) == 0xf0 && len == 4)
+    {   w = (w & 0x07) << 18;
+        n = ucelt(pn, 1);
+        if ((n & 0xc0) != 0x80) return pn;
+        w = w + ((n & 0x3f) << 2);
+        n = ucelt(pn, 2);
+        if ((n & 0xc0) != 0x80) return pn;
+        w = w + ((n & 0x3f) << 6);
+        n = ucelt(pn, 3);
+        if ((n & 0xc0) == 0x80) return pack_char(0, w + (n & 0x3f));
+        else return pn;
+    }
+    else return pn;
+}
 
-static Lisp_Object char_to_id(int ch)
+Lisp_Object characterify(Lisp_Object c)
+{
+    if (is_symbol(c)) return characterify_string(qpname(c));
+    else if (is_vector(c) &&
+             type_of_header(vechdr(c)) == TYPE_STRING)
+        return characterify_string(c);
+    else if (is_fixnum(c)) return pack_char(0, int_of_fixnum(c));
+    else return c;
+}
+
+Lisp_Object char_to_id(int ch)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object w;
-#ifdef Kanji
-    if (iswchar(c))
-    {   celt(boffo, 0) = c>>8;
-        celt(boffo, 1) = c;
-        w = iintern(boffo, 2, lisp_package, 0);
-        errexit();
-        return onevalue(w);
+    int n;
+    if (ch == -1) return onevalue(eof_symbol);
+    ch &= 0x001fffff;
+    if (ch <= 0xff &&
+        ((w = elt(charvec, ch)) != nil)) return onevalue(w);
+    if (ch <= 0x7f)
+    {   celt(boffo, 0) = ch;
+        n = 1;
     }
-#endif
-    w = elt(charvec, ch & 0xff);
-    if (w == nil)
-    {   celt(boffo, 0) = (char)ch;
-        w = iintern(boffo, 1, lisp_package, 0);
-        errexit();
-        elt(charvec, ch & 0xff) = w;
+    else if (ch <= 0x7ff)
+    {   celt(boffo, 0) = 0xc0 + (ch>>6);
+        celt(boffo, 1) = 0x80 + (ch & 0x3f);
+        n = 2;
     }
+    else if (ch <= 0xffff)
+    {   celt(boffo, 0) = 0xe0 + (ch>>12);
+        celt(boffo, 1) = 0x80 + ((ch>>6) & 0x3f);
+        celt(boffo, 2) = 0x80 + (ch & 0x3f);
+        n = 3;
+    }
+    else
+    {   celt(boffo, 0) = 0xf0 + (ch>>18);
+        celt(boffo, 1) = 0x80 + ((ch>>12) & 0x3f);
+        celt(boffo, 2) = 0x80 + ((ch>>6) & 0x3f);
+        celt(boffo, 3) = 0x80 + (ch & 0x3f);
+        n = 4;
+    }
+    w = iintern(boffo, n, lisp_package, 0);
+    errexit();
+    if (ch <= 0xff) elt(charvec, ch) = w;
     return onevalue(w);
 }
 
-#endif
 
 /*
- * Characters have 8 bits of BITS, then 8 of FONT, then 8 of CODE.
- * The BITS and FONT information is only used in COMMON mode.
- * Even though Common Lisp refers to the components of a character
- * in the order BITS/FONT/CODE I store them as FONT/BITS/CODE so it
- * is then easy to store international characters as FONT/CODE16. The
- * option "Kanji" enables some use of this.
+ * Characters have 3 bits of FONT, then 21 of CODE.
+ * FONT information is only used in COMMON mode, if then.
  */
 
 static Lisp_Object Lchar_downcase(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
     CSL_IGNORE(nil);
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-downcase");
-    if (a == CHAR_EOF) return onevalue(a);
-    cc = code_of_char(a);
-    if (ISupper(cc))        /* Caution to help non-ANSI libraries */
-        cc = TOlower(cc);
 #ifdef COMMON
-#ifdef Kanji
-#define insert_code(old, new) \
-    (((old) & 0xff0000ff) | ((((int32_t)(new)) & 0xffff) << 8))
+    if (a == CHAR_EOF) return onevalue(a);
 #else
-#define insert_code(old, new) \
-    (((old) & 0xffff00ff) | ((((int32_t)(new)) & 0xff) << 8))
+    if (a == CHAR_EOF) return onevalue(eof_symbol);
 #endif
-    return onevalue(insert_code(a, cc));
+    cc = code_of_char(a);
+    if (cc <= 0xffff || sizeof(wchar_t)==4)
+    {   if (iswupper(cc)) cc = towlower(cc);
+    }
+#ifdef COMMON
+    return = pack_char(font_of_char(a), cc);
 #else
     return char_to_id(cc);
 #endif
@@ -180,19 +178,11 @@ Lisp_Object Lcharacter(Lisp_Object nil, Lisp_Object a)
     else if (is_vector(a))
     {   Header h = vechdr(a);
         if (type_of_header(h) == TYPE_STRING)
-        {   if (length_of_header(h) > 4)   /* @@@@ /* 4 vs CELL */
-            {   int c0 = celt(a, 0);
-#ifdef Kanji
-                if (length_of_header(h) > 5 && iswchar(c0))
-                    c0 = (c0 << 8) + ucelt(a, 1);
-#endif
-                return onevalue(pack_char(0,0,c0));
-            }
-            else return aerror1("character", a);
-        }
+            return onevalue(characterify_string(a));
 /*
  * /* The issue of strings (especially non-simple ones) and the ELT function
- * and wide characters has NOT BEEN THOUGHT THROUGH.
+ * and wide characters has NOT BEEN THOUGHT THROUGH. So this bit is a
+ * mess. 
  */
         else if (stringp(a))
         {   Lisp_Object w = Lelt(nil, a, fixnum_of_int(0));
@@ -202,12 +192,8 @@ Lisp_Object Lcharacter(Lisp_Object nil, Lisp_Object a)
         else return aerror1("character", a);
     }
     else if (is_fixnum(a))
-#ifdef Kanji
-        return onevalue(pack_char(0, 0, int_of_fixnum(a) & 0xffff));
-#else
-        return onevalue(pack_char(0, 0, int_of_fixnum(a) & 0xff));
-#endif
-    else if (is_symbol(a)) return Lcharacter(nil, qpname(a));
+        return onevalue(pack_char(0, int_of_fixnum(a) & 0x001fffff));
+    else if (is_symbol(a)) return onevalue(characterify_string(qpname(a));
     else return aerror1("character", a);
 }
 
@@ -218,16 +204,17 @@ static Lisp_Object Lcharacterp(Lisp_Object nil, Lisp_Object a)
 
 static Lisp_Object Lchar_bits(Lisp_Object nil, Lisp_Object a)
 {
+/* "bits" are no longer supported (or needed). */
     CSL_IGNORE(nil);
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-bits");
-    return onevalue(fixnum_of_int(bits_of_char(a)));
+    return onevalue(fixnum_of_int(0));
 }
 
 static Lisp_Object Lchar_font(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-font");
     return onevalue(fixnum_of_int(font_of_char(a)));
 }
@@ -238,14 +225,18 @@ static Lisp_Object Lchar_upcase(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
     CSL_IGNORE(nil);
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-upcase");
-    if (a == CHAR_EOF) return onevalue(a);
-    cc = code_of_char(a);
-    if (ISlower(cc))
-        cc = TOupper(cc);
 #ifdef COMMON
-    return onevalue(insert_code(a, cc));
+    if (a == CHAR_EOF) return onevalue(a);
+#else
+    if (a == CHAR_EOF) return onevalue(eof_symbol);
+#endif
+    cc = code_of_char(a);
+    if (cc <= 0xffff || sizeof(wchar_t) == 4)
+        cc = towupper(cc);
+#ifdef COMMON
+    return onevalue(pack_char(font_of_char(a), cc));
 #else
     return char_to_id(cc);
 #endif
@@ -254,29 +245,30 @@ static Lisp_Object Lchar_upcase(Lisp_Object nil, Lisp_Object a)
 Lisp_Object Lwhitespace_char_p(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF
-#ifndef Kanji
-        || bits_of_char(a) != 0
-#endif
-        ) return onevalue(nil);
-    /* BITS present => not whitespace (unless Kanji) */
+    if (a == CHAR_EOF) return onevalue(nil);
     cc = code_of_char(a);
-    return onevalue(Lispify_predicate(ISspace(cc)));
+    if (cc <= 0xffff || sizeof(wchar_t) == 4)
+    {   if (iswspace(cc)) return onevalue(lisp_true);
+    }
+    return onevalue(nil);
 }
 
 Lisp_Object Lalpha_char_p(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil); /* BITS present */
 #endif
     cc = code_of_char(a);
-    return onevalue(Lispify_predicate(ISalpha(cc)));
+    if (cc <= 0xffff || sizeof(wchar_t) == 4)
+    {   if (iswalpha(cc)) return onevalue(lisp_true);
+    }
+    return onevalue(nil);
 }
 
 #ifdef COMMON
@@ -284,40 +276,41 @@ Lisp_Object Lalpha_char_p(Lisp_Object nil, Lisp_Object a)
 static Lisp_Object Lgraphic_char_p(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
-#ifndef Kanji
-    if (bits_of_char(a) != 0) return onevalue(nil); /* BITS present */
-#endif
     cc = code_of_char(a);
+    if (cc <= 0xffff || sizeof(wchar_t) == 4)
+    {   if (iswgraph(cc) || cc==' ') return onevalue(lisp_true);
+    }
+    return onevalue(nil);
     return onevalue(Lispify_predicate(ISgraph(cc) || cc==' '));
 }
 
 static Lisp_Object Lupper_case_p(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
-#ifndef Kanji
-    if (bits_of_char(a) != 0) return onevalue(nil);
-#endif
     cc = code_of_char(a);
-    return onevalue(Lispify_predicate(ISupper(cc)));
+    if (cc <= 0xffff || sizeof(wchar_t) == 4)
+    {   if (iswupper(cc) || cc==' ') return onevalue(lisp_true);
+    }
+    return onevalue(nil);
 }
 
 static Lisp_Object Llower_case_p(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
-#ifndef Kanji
-    if (bits_of_char(a) != 0) return onevalue(nil);
-#endif
     cc = code_of_char(a);
-    return onevalue(Lispify_predicate(ISlower(cc)));
+    if (cc <= 0xffff || sizeof(wchar_t) == 4)
+    {   if (iswlower(cc) || cc==' ') return onevalue(lisp_true);
+    }
+    return onevalue(nil);
 }
 
 #endif
@@ -329,25 +322,15 @@ Lisp_Object Ldigit_char_p_2(Lisp_Object nil, Lisp_Object a, Lisp_Object radix)
     Lisp_Object r = radix;
     if (!is_fixnum(r) || r < fixnum_of_int(2) ||
         r >= fixnum_of_int(36)) return aerror("digit-char-p");
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a) || a == CHAR_EOF) return onevalue(nil);
-#ifndef Kanji
-    if (bits_of_char(a) != 0) return onevalue(nil);
-#endif
     cc = code_of_char(a);
-    if (!ISalnum(cc)) return onevalue(nil);
-    if (ISupper(cc))
-        cc = TOlower(cc);
-/*
- * The following code is intended to cope with EBCDIC as well as ASCII
- * character codes. The effect is still notionally not portable in that
- * a yet further character code (with 'a' to 'i' non-consecutive, say)
- * would defeat it!
- */
+    if ((cc > 0xffff && sizeof(wchar_t) < 4) ||
+        !iswalnum(cc)) return onevalue(nil);
+/* If I get here then cc is a valid argument of iswupper etc */
+    if (iswupper(cc)) cc = towlower(cc);
     if ('0' <= cc && cc <= '9') cc = cc - '0';
-    else if ('a' <= cc && cc <= 'i') cc = cc - 'a' + 10;
-    else if ('j' <= cc && cc <= 'r') cc = cc - 'j' + 19;
-    else if ('s' <= cc && cc <= 'z') cc = cc - 's' + 28;
+    else if ('a' <= cc && cc <= 'z') cc = cc - 'a' + 10;
     else cc = 255;
     if (cc >= int_of_fixnum(r)) return onevalue(nil);
     else return onevalue(fixnum_of_int((int32_t)cc));
@@ -363,14 +346,12 @@ Lisp_Object Ldigit_char_p_1(Lisp_Object nil, Lisp_Object a)
 Lisp_Object Ldigitp(Lisp_Object nil, Lisp_Object a)
 {
     int cc;
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
-#ifndef Kanji
-    if (bits_of_char(a) != 0) return onevalue(nil);
-#endif
     cc = code_of_char(a);
-    return onevalue(Lispify_predicate(ISdigit(cc)));
+    if (cc > 0xffff && sizeof(wchar_t) < 4) return onevalue(nil);
+    return onevalue(Lispify_predicate(iswdigit(cc)));
 }
 
 #ifdef COMMON
@@ -389,16 +370,10 @@ static Lisp_Object MS_CDECL Ldigit_char_n(Lisp_Object nil, int nargs, ...)
         a < 0 || r < fixnum_of_int(2) || f < 0 ||
         a >= r || r > fixnum_of_int(36) ||
         f > fixnum_of_int(255)) return onevalue(nil);
-/*
- * The following code is intended to cope with EBCDIC as well as ASCII
- * character codes. See comment in digit_char_p().
- */
     a = int_of_fixnum(a);
     if (a <= 9) a = a + '0';
-    else if (a <= 18) a = a + ('A' - 10);
-    else if (a <= 27) a = a + ('J' - 19);
-    else a = a + ('S' - 28);
-    return onevalue(pack_char(0, int_of_fixnum(f) & 0xff, a & 0xff));
+    else a = a + ('A' - 10);
+    return onevalue(pack_char(int_of_fixnum(f) & 0x7, a & 0xff));
 }
 
 static Lisp_Object Ldigit_char_2(Lisp_Object nil, Lisp_Object a,
@@ -422,37 +397,37 @@ Lisp_Object Lspecial_char(Lisp_Object nil, Lisp_Object a)
     switch (int_of_fixnum(a))
     {
 case 0:   /* space */
-        a = pack_char(0, 0, ' ');
+        a = pack_char(0, ' ');
         break;
 case 1:   /* newline */
-        a = pack_char(0, 0, '\n');
+        a = pack_char(0, '\n');
         break;
 case 2:   /* backspace */
-        a = pack_char(0, 0, '\b');
+        a = pack_char(0, '\b');
         break;
 case 3:   /* tab */
-        a = pack_char(0, 0, '\t');
+        a = pack_char(0, '\t');
         break;
 case 4:   /* linefeed (well, I use VT, '\v' in C terms) */
-        a = pack_char(0, 0, '\v');
+        a = pack_char(0, '\v');
         break;
 case 5:   /* page */
-        a = pack_char(0, 0, '\f');
+        a = pack_char(0, '\f');
         break;
 case 6:   /* return */
-        a = pack_char(0, 0, '\r');
+        a = pack_char(0, '\r');
         break;
-case 7:   /* rubout: not available in EBCDIC, sorry */
-        a = pack_char(0, 0, 0x7fL);
+case 7:   /* rubout */
+        a = pack_char(0, 0x7fL);
         break;
 case 8:   /* end of file character */
-        a = CHAR_EOF;
+        a = pack_char(0, 0x001fffff);
         break;
 case 9:   /* 'attention', typically ctrl-G */
-        a = pack_char(0, 0, '\a');
+        a = pack_char(0, '\a');
         break;
-case 10:  /* 'ESC', not available on all computers! */
-        a = pack_char(0, 0, 0x1b);
+case 10:  /* 'ESC' */
+        a = pack_char(0, 0x1b);
         break;
 default:
         return aerror("special-char");
@@ -462,16 +437,20 @@ default:
  * a "character object", and these are generally not at all useful in
  * Standard Lisp.  Two exceptions occur - first character objects are
  * valid in lists handed to compress, and secondly the character object
- * for end-of-file is used for that in Standard Lisp mode.
+ * for end-of-file is used for that in Standard Lisp mode. Well no - I am
+ * now moving to use a symbol for end-of-file...
  */
     return onevalue(a);
 }
 
+/*
+ * Given an integer this returns a list of bytes that are the utf-8 encoding
+ * for that value.
+ */
 Lisp_Object Lutf8_encode(Lisp_Object nil, Lisp_Object a)
 {
     int c;
-    if (!is_fixnum(a)) return aerror1("utf8-encode", a);    
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_fixnum(a)) return aerror1("utf8-encode", a);
     c = int_of_fixnum(a) & 0x001fffff;
     if (c <= 0x7f) return onevalue(ncons(fixnum_of_int(c)));
     else if (c <= 0x7ff) return onevalue(
@@ -487,12 +466,17 @@ Lisp_Object Lutf8_encode(Lisp_Object nil, Lisp_Object a)
               fixnum_of_int(0x80 | (c & 0x3f))));
 }
 
+/*
+ * Given four unsigned byte values this should reconstruct the value
+ * indicated by the utf-8 sequence ofthem.
+ */
 static Lisp_Object utf8_decode(int c1, int c2, int c3, int c4)
 {
+    int32_t n;
     switch (c1 & 0xf0)
     {
 default:
-        if (c2 >= 0) return aerror("utf8-decode");
+        if ((c2&0x80)==0) return aerror("utf8-decode");
         return onevalue(fixnum_of_int(c1));
 case 0x80:
 case 0x90:
@@ -501,17 +485,23 @@ case 0xb0:
         return aerror("utf8-decode");
 case 0xc0:
 case 0xd0:
-        if (c2 < 0 || c3 >= 0) return aerror("utf8-decode");
-        return onevalue(fixnum_of_int(((c1 & 0x1f)<<6) | (c2 & 0x3f)));
+        if ((c2&0x80)==0) return aerror("utf8-decode");
+        return onevalue(fixnum_of_int(((c1 & 0x1f)<<6) |
+                                      (c2 & 0x3f)));
 case 0xe0:
-        if (c2 < 0 || c3 < 0 || c4 >= 0) return aerror("utf8-decode");
+        if ((c2&0x80)==0 || (c3&0x80)==0) return aerror("utf8-decode");
         return onevalue(fixnum_of_int(((c1 & 0x0f)<<12) |
-                  ((c2 & 0x3f)<<6) | (c3 & 0x3f)));
+                                      ((c2 & 0x3f)<<6) |
+                                      (c3 & 0x3f)));
 case 0xf0:
-        if ((c1 & 0x08) != 0 || c2 < 0 || c3 < 0 || c4 < 0)
+        if ((c1 & 0x08) != 0 || (c2&0x80)==0 || (c3&0x80)==0 || (c4&0x80)==0)
             return aerror("utf8-decode");
-        return onevalue(fixnum_of_int(((c1 & 0x0f)<<18) |
-                  ((c2 & 0x3f)<<12) | ((c3 & 0x3f)<<6) | (c4 & 0x3f)));
+        n = ((c1 & 0x07)<<18) |
+            ((c2 & 0x3f)<<12) |
+            ((c3 & 0x3f)<<6) |
+            (c4 & 0x3f);
+        if (n == 0x001fffff) n = -1; /* special for EOF */
+        return onevalue(fixnum_of_int(n));
     }
 }
 
@@ -531,9 +521,10 @@ Lisp_Object Lutf8_decoden(Lisp_Object nil, int nargs, ...)
     if (!is_fixnum(b)) return aerror1("utf8-decode", b);
     if (!is_fixnum(c)) return aerror1("utf8-decode", c);
     if (!is_fixnum(d)) return aerror1("utf8-decode", d);
-    return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
-                      int_of_fixnum(c) & 0xff,
-                      nargs == 4 ? int_of_fixnum(d) & 0xff : -1);
+    return utf8_decode(int_of_fixnum(a) & 0xff,
+                       int_of_fixnum(b) & 0xff,
+                       int_of_fixnum(c) & 0xff,
+                       nargs == 4 ? int_of_fixnum(d) & 0xff : -1);
 }
 
 Lisp_Object Lutf8_decode2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
@@ -573,8 +564,9 @@ Lisp_Object Lutf8_decode1(Lisp_Object nil, Lisp_Object a)
 Lisp_Object Lchar_code(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-code");
+/* Note the special treatment of EOF here */
     if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
@@ -582,33 +574,21 @@ Lisp_Object Lchar_code(Lisp_Object nil, Lisp_Object a)
 static Lisp_Object MS_CDECL Lcode_charn(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
-    Lisp_Object a, bits, font;
+    Lisp_Object a, font;
     int32_t av;
     argcheck(nargs, 3, "code-char");
     va_start(aa, nargs);
     a = va_arg(aa, Lisp_Object);
-    bits = va_arg(aa, Lisp_Object);
+    (void)va_arg(aa, Lisp_Object);
     font = va_arg(aa, Lisp_Object);
     va_end(aa);
     CSL_IGNORE(nil);
-    if ((int32_t)bits < 0 || (int32_t)bits >= (int32_t)fixnum_of_int(16L) ||
-        (int32_t)font < 0 || (int32_t)font >= (int32_t)fixnum_of_int(256L) ||
-#ifdef Kanji
-        (int32_t)a < 0 || (int32_t)a >= (int32_t)fixnum_of_int(65536L)
-#else
-        (int32_t)a < 0 || (int32_t)a >= (int32_t)fixnum_of_int(256L)
-#endif
-        )
+    if ((int32_t)font < 0 || (int32_t)font > (int32_t)fixnum_of_int(7) ||
+        (int32_t)a < 0 || (int32_t)a > (int32_t)fixnum_of_int(0x001fffff))
             return aerror("code-char");
-#ifdef Kanji
-    av = int_of_fixnum(a) & 0xffff;
-#else
-    av = int_of_fixnum(a) & 0xff;
-#endif
+    av = int_of_fixnum(a) & 0x001fffff;
 #ifdef COMMON
-    return onevalue(pack_char(int_of_fixnum(bits),
-                              int_of_fixnum(font) & 0xff,
-                              av));
+    return onevalue(pack_char(int_of_fixnum(font) & 0x7, av));
 #else
     return char_to_id(av);
 #endif
@@ -629,15 +609,19 @@ static Lisp_Object Lcode_char2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 static Lisp_Object Lchar_int(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
-    characterify(a);
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-int");
-    return onevalue(fixnum_of_int(((uint32_t)a) >> 8));
+    else if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
+    else return onevalue(fixnum_of_int(code_of_char(a)));
 }    
 
 static Lisp_Object Lint_char(Lisp_Object nil, Lisp_Object a)
 {
-    if (!is_fixnum(a) || (a & 0xfe000000L) != 0) return nil;
-    return onevalue(TAG_CHAR + (int_of_fixnum(a) << 8));
+    int32_t n;
+    if (!is_fixnum(a)) return nil;
+    n = int_of_fixnum(a);
+    if (n == -1) n = 0x001fffff;
+    return onevalue(pack_char(0, n));
 }
 
 static Lisp_Object MS_CDECL Lmake_char(Lisp_Object nil, int nargs, ...)
@@ -653,12 +637,11 @@ static Lisp_Object MS_CDECL Lmake_char(Lisp_Object nil, int nargs, ...)
     if (nargs > 2) font = va_arg(aa, Lisp_Object);
     else font = fixnum_of_int(0);
     va_end(aa);
-    if (bits != fixnum_of_int(0) ||
-        font < 0 || font >= fixnum_of_int(3L) ||
+    a = characterify(a);
+    if (font < 0 || font > fixnum_of_int(3L) ||
         !is_char(a)) return aerror("make-char");
-    return onevalue(pack_char(int_of_fixnum(bits),
-                              int_of_fixnum(font) & 0x3,
-                              code_of_char(a) & 0x0x001fffff));
+    return onevalue(pack_char(int_of_fixnum(font) & 0x3,
+                              code_of_char(a)));
 }
 
 /*
@@ -782,7 +765,7 @@ static Lisp_Object MS_CDECL Lchar_neq_n(Lisp_Object nil, int nargs, ...)
 /*
  * /= is supposed to check that NO pair of args match.
  * Because this involves multiple scanning of the vector of args it seems
- * necessary to copy the arge into a vector that I can scan more directly
+ * necessary to copy the args into a vector that I can scan more directly
  * than va_args lets me scan the arg list.
  */
 {
@@ -901,8 +884,8 @@ static Lisp_Object casefold(Lisp_Object c)
     if (c == CHAR_EOF) return onevalue(c);
 
     cc = code_of_char(c);   /* Character in the C sense */
-    cc = TOupper(cc);
-    return insert_code(c, cc);
+    if (cc <= 0xffff || sizeof(wchar_t)== 4) cc = towupper(cc);
+    return onevalue(pack_char(font_of_char(c), cc));
 }
 
 static Lisp_Object MS_CDECL Lcharacter_eqn(Lisp_Object nil, int nargs, ...)
@@ -1023,7 +1006,7 @@ static Lisp_Object MS_CDECL Lcharacter_neq_n(Lisp_Object nil, int nargs, ...)
 /*
  * /= is supposed to check that NO pair of args match.
  * Because this involves multiple scanning of the vector of args it seems
- * necessary to copy the arge into a vector that I can scan more directly
+ * necessary to copy the args into a vector that I can scan more directly
  * than va_args lets me scan the arg list.
  */
 {
@@ -1150,7 +1133,8 @@ static Lisp_Object Lcharacter_leq_1(Lisp_Object nil, Lisp_Object a)
  * macro can access, and sets high & offset. The string will then
  * have characters with index 0 <= n < high, but to access them the offset
  * value needs to be added. If the input is not a proper string then nil
- * will be returned.
+ * will be returned. THIS HAS NOT BEEN REVIEWED for issues of utf=8
+ * packing.
  */
 
 static Lisp_Object get_char_vec(Lisp_Object v, int32_t *high, int32_t *offset)
@@ -1196,6 +1180,10 @@ static Lisp_Object Lstring_greaterp_2(Lisp_Object nil,
             else return onevalue(fixnum_of_int(i));
         }
         else if (i == la) return onevalue(nil);
+/*
+ * String comparisons here go byte by byte. I believe that this is
+ * actually OK despite utf-8 packing.
+ */
         ca = ucelt(a, i+oa);
         cb = ucelt(b, i+ob);
         if (ca == cb) continue;

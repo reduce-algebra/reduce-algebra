@@ -1,4 +1,4 @@
-/* stream.h                        Copyright (C) Codemist Ltd, 1995-2008 */
+/* stream.h                        Copyright (C) Codemist Ltd, 1995-2014 */
 
 /*
  * Header defining the structure of stream objects in CSL, and also
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,12 +54,13 @@ extern Lisp_Object Lopen(Lisp_Object nil, Lisp_Object name, Lisp_Object dir);
 /*
  * The values used here are placed where characters might be, or possibly
  * OR'd with character codes. They are now such that even if I am using
- * 16-bit characters (Unicode of Kanji) all ought to be well. Anybody who says
- * "32-bit Unicode" to me can go away for now - I do not really cope with
- * 16-bit chars yet!
+ * 21-bit characters (Unicode) all ought to be well. Anything that can be
+ * treated as a character (including an end of file marker) will be limited
+ * to                   0x001fffff
+ * so these two bits are well out of the way.
  */
-#define ESCAPED_CHAR    0x20000
-#define NOT_CHAR        0x40000
+#define ESCAPED_CHAR    0x20000000
+#define NOT_CHAR        0x40000000
 
 extern int char_to_terminal(int c, Lisp_Object f);
 extern int char_to_file(int c, Lisp_Object f);
@@ -132,14 +133,16 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
  *      character_stream_writer *write_fn;      5*CELL
  *      other_stream_op *write_other_fn;        6*CELL
  *      intptr_t line_length;                   7*CELL
- *      intptr_t char_pos;                      8*CELL
- *      character_stream_reader *read_fn;       9*CELL
- *      other_stream_op *read_other_fn;        10*CELL
- *      intptr_t pushed_char;                  11*CELL
+ *      intptr_t byte_pos;                      8*CELL
+ *      intptr_t char_pos;                      9*CELL
+ *      character_stream_reader *read_fn;      10*CELL
+ *      other_stream_op *read_other_fn;        11*CELL
+ *      intptr_t pushed_char;                  12*CELL
+ *      intptr_t spare;                        13*CELL
  *  } Lisp_STREAM;
  */
 
-#define STREAM_SIZE           (12*CELL)
+#define STREAM_SIZE           (14*CELL)
 
 #define stream_type(v)        elt(v, 0)
 #define stream_write_data(v)  elt(v, 1)
@@ -148,16 +151,18 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define stream_write_fn(v)    ((character_stream_writer *)elt(v, 4))
 #define stream_write_other(v) ((other_stream_op *)elt(v,5))
 #define stream_line_length(v) elt(v, 6)
-#define stream_char_pos(v)    elt(v, 7)
-#define stream_read_fn(v)     ((character_stream_reader *)elt(v, 8))
-#define stream_read_other(v)  ((other_stream_op *)elt(v,9))
-#define stream_pushed_char(v) elt(v, 10)
+#define stream_byte_pos(v)    elt(v, 7)
+#define stream_char_pos(v)    elt(v, 8)
+#define stream_read_fn(v)     ((character_stream_reader *)elt(v, 9))
+#define stream_read_other(v)  ((other_stream_op *)elt(v,10))
+#define stream_pushed_char(v) elt(v, 11)
+#define stream_spare(v)       elt(v, 12)
 
 #define set_stream_file(v, x)           (elt(v, 3) = (Lisp_Object)(x))
 #define set_stream_write_fn(v, x)       (elt(v, 4) = (Lisp_Object)(x))
 #define set_stream_write_other(v, x)    (elt(v, 5) = (Lisp_Object)(x))
-#define set_stream_read_fn(v, x)        (elt(v, 8) = (Lisp_Object)(x))
-#define set_stream_read_other(v, x)     (elt(v, 9) = (Lisp_Object)(x))
+#define set_stream_read_fn(v, x)        (elt(v, 9) = (Lisp_Object)(x))
+#define set_stream_read_other(v, x)     (elt(v, 10) = (Lisp_Object)(x))
 
 #define STREAM_HEADER (TAG_ODDS + TYPE_STREAM + (STREAM_SIZE<<10))
 #define STREAM_FLAG_PIPE       1

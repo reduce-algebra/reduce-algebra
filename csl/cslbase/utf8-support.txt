@@ -1,0 +1,80 @@
+These are the changes within CSL to allow for utf-8 encoded strings.
+
+(1) output streams now have a character position and a byte position.
+The character position is not incremented for a 10xxxxxx byte (second
+or subsequent byte of an utf-8 sequence) but the byte one is. However
+the character position is incremented by several if a TAB is sent.
+I am not going to cope with Unicode combining characters or cases such
+as zero-width-spece: they will all be counted as having one character
+position to fill. Ha ha backspace as well!
+
+(2) lengthc and widelengthc both exist. The first counts the number of
+bytes in the item presented, the second the number of characters.
+All widelengthc actually does is to ignore 10xxxxxx bytes.
+
+(3) for prin2 style printing and the calculation as to whether a string
+or symbol will go beyond end of line it is necessary to disregard any
+10xxxxxx characters.
+
+(4) for prin1/print printing within strings if a character that is
+represented by a two-byte utf-8 sequnce is found it gets displayed as
+#xxx;. A 3-byte sequence becomes #xxxx; while 4-byte sequences all
+end up as #xxxxxx;.
+
+(5) Also when printing strings, if the string contains a sub-string of the
+form #WORD; that might encode a special character that will be displayed
+as #hash;WORD; so as to avoid corruption on re-input.
+
+(6) I have options in the print code for folding case (consider the
+Common Lisp *print-case* variable). When case folding is requested then
+utf-8 sequences will need to be extracted, wide-character case folding
+performed and then display as in all the cases above dealt with. A question
+arises as to whether folding the case of a Unicode character can ever change
+then number of utf-8 bytes needed to encode it. The first example that makes
+me worry (even though it does not breach the ideal) is "latin letter y
+with diaeresis" where the lower case version is u+00ff and the upper case
+is u+0178: distinctly not adjacent. But both of them use the same number
+of utf-8 bytes. A program utf8check.c looked for problems and in the
+default locales on linux, Macintosh and native windows it showed up no
+worries, but under cygwin it notes u+023a (latin capital letter a with stroke)
+might fold down into u+02c56 (latin small letter a with stroke). There are
+half a dozen other similar cases! 
+
+(7) I note to myself that case folding and re-inputability are orthogonal
+issues, printing on a string with say a c-cedilla might need to
+end up displaying a C-cedilla if case folded, #xe7; if reinputable or
+#xc7; if both case folding and re-inputability are required.
+
+(8) printing symbols needs similar width calculations as that used for
+strings, however issue (5) above does not arise since the relevant text
+would end up rendered as ...!#WORD!;... and the escape before the semicolon
+keeps that unambiguous. So the main issue is that multi-byte case folding
+may be needed, multi-byte characters must be displayed as #xxxx; sequences
+and exclamation mark escapes are needed before any multi-byte character.
+
+(9) In character handling the tolower and toupper functions have to me
+multi-byte aware. Conversion between integers and character objects and
+symbols ditto. I am making the value of !$eof!$ a symbol whose name is
+a string built up from the utf-8 sequence f7/bf/bf/bf (as it where U+1fffff)
+which is well outside the valid range of Unicode characters. I treat it
+as having the integer representation -1 as well. I still cache symbols
+for u+00 through to u+ff, but codes above that go through intern each time
+they are needed. The changes to character functions (such as case folding
+etc) end up reasonably extensive even though none seem terribly deep.
+A question that is raised is the extent to which this model wll make it
+reasonable to have strings identified with arrays of characters, in that
+the offset to the nth character now becomes dependent on previous characters
+and the prospects for writing characters (as distinct from bytes) into
+strings seems horrid.
+
+(10) More work on printing symbols...
+
+(11) The family of functions "explode" need to split things into characters
+not bytes... I will implement that by first converting to a utf-8 encodeded
+stream of bytes and then collecting byte sequences for characters.
+
+(12) I need to work out how to cope with compress and then more general
+input from utf-8 sources.
+
+
+

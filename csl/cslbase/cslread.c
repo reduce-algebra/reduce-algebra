@@ -53,35 +53,11 @@
 #define CTRL_C    3
 #define CTRL_D    4
 
-#ifdef Kanji
-#define ISalpha(a)     iswalpha(a)
-#define ISdigit(a)     iswdigit(a)
-#define ISspace(a)     iswspace(a)
-#define TOupper(a)     towupper(a)
-#define TOlower(a)     towlower(a)
-
 int first_char(Lisp_Object ch)
 {   /* ch is a symbol. Get the first character of its name. */
-    int n;
-    intptr_t l;
-    ch = qpname(ch);
-    l = length_of_header(vechdr(ch)) - CELL;
-    if (l == 0) return 0;
-    n = celt(ch, 0);
-    if (is2byte(n) && l != 1)
-        n = (n << 8) + ucelt(ch, 1);
-    return n;
+    ch = characterify(ch);
+    return code_of_char(ch);
 }
-
-#else /* Kanji */
-#define ISalpha(a)     isalpha((unsigned char)(a))
-#define ISdigit(a)     isdigit((unsigned char)(a))
-#define ISspace(a)     isspace((unsigned char)(a))
-#define TOupper(a)     ((char)toupper((unsigned char)(a)))
-#define TOlower(a)     ((char)tolower((unsigned char)(a)))
-#define first_char(ch) ucelt(qpname(ch), 0)
-#endif /* Kanji */
-
 
 /*
  *      Basic version of Lisp reader.
@@ -460,20 +436,9 @@ uint32_t hash_lisp_string(Lisp_Object s)
 
 static int value_in_radix(int c, int radix)
 {
-    if (ISdigit(c)) c = c - '0';    /* Assumes digit codes are consecutive */
-/*
- * The next section tries hard not to depend on any particular character
- * code - this may slow it down a little bit but reading numbers that
- * have an explicit radix will not usually matter that much.
- */
-    else if (ISalpha(c))
-    {   char *v = "abcdefghijklmnopqrstuvwxyz";
-        int n = 0;
-        c = tolower(c);
-        while (*v++ != c)
-            if (++n >= 26) return -1;   /* break on unrecognized letter */
-        c = n + 10;
-    }
+    if (c < 0 || c > 0xff) return -1;
+    if (isdigit(c)) c = c - '0';    /* Assumes digit codes are consecutive */
+    else if (isalpha(c)) c = tolower(c) - 'a' + 10;
     else return -1;
     if (c < radix) return c;
     else return -1;
@@ -509,14 +474,15 @@ Lisp_Object intern(int len, CSLbool escaped)
             {   numberp = 6;
                 continue;
             }
-            if (ISdigit(c))        /* Really wants to inspect *read-base* */
+/* only basic characters can possibly be digits */
+            if (c <= 0xff && isdigit(c)) /* Inspect *read-base* ??? */
             {   numberp = 2;
                 continue;
             }
             numberp = -1;
             break;
     case 2:
-            if (ISdigit(c)) continue;   /* *read-base* */
+            if (c <= 0xff && isdigit(c)) continue;   /* *read-base* */
             switch (c)
             {
 #ifdef COMMON
@@ -565,7 +531,7 @@ Lisp_Object intern(int len, CSLbool escaped)
 #ifdef COMMON
     case 3:
     case 4:
-            if (ISdigit(c))   /* *read-base* */
+            if (c <= 0xff && isdigit(c))   /* *read-base* */
             {   numberp = 4;
                 continue;
             }
@@ -574,7 +540,7 @@ Lisp_Object intern(int len, CSLbool escaped)
 #endif
     case 5:
     case 8:
-            if (ISdigit(c))
+            if (c <= 0xff && isdigit(c))
             {   numberp = 8;
                 continue;
             }
@@ -615,7 +581,7 @@ Lisp_Object intern(int len, CSLbool escaped)
             }
             break;
     case 6:
-            if (ISdigit(c))
+            if (c <= 0xff && isdigit(c))
             {   numberp = 8;
                 continue;
             }
@@ -629,7 +595,7 @@ Lisp_Object intern(int len, CSLbool escaped)
             /* Drop through */
     case 10:
     case 11:
-            if (ISdigit(c))
+            if (c <= 0xff && isdigit(c))
             {   numberp = 11;
                 continue;
             }
@@ -1276,8 +1242,10 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
  * since it means that this procedure can provoke garbage collection..
  *
  * Note that the ordering here is based on the bit-patterns that
- * represent the names, so Kanji (etc) symbols may not come out in
- * an order that is especially useful.
+ * represent the names, and so will be driven by the utf-8 encoding of
+ * multibyte characters. I have not put in any adjustments that might
+ * make it match the expected lexical orderings in various locale-sensitive
+ * scenarios.
  */
 {
     Lisp_Object pn1 = qpname(v1), pn2 = qpname(v2);
@@ -2205,18 +2173,14 @@ static Lisp_Object Lkeywordp(Lisp_Object nil, Lisp_Object a)
  */
 
 int tty_count;
-#define TTYBUF_SIZE 256
-#ifdef Kanji
-static kchar_t tty_buffer[TTYBUF_SIZE];
-static kchar_t *tty_pointer;
-#else
+#define TTYBUF_SIZE 1024
 /*
- * Note: I should never have an END_OF_FILE in the buffere here: if I see
- * this condition I pack in the character CTRL-D instead.
+ * Note: this buffer is in characters so putting either wide characters or
+ * EOF in it could be a problem. I make the buffer somewhat large because of
+ * the though of multi-byte characters.
  */
 static char tty_buffer[TTYBUF_SIZE];
 static char *tty_pointer;
-#endif
 
 #if !defined HAVE_FWIN || defined EMBEDDED
 static CSLbool int_nest = NO;
@@ -2278,6 +2242,10 @@ int char_from_terminal(Lisp_Object dummy)
     else if (non_terminal_input != NULL)
     {
 #ifdef Kanji
+/*
+ * I will leave this conditionalisation in against a future change to
+ * read in multi-byte characters
+ */
         c = getwc(non_terminal_input);
 #else
         c = getc(non_terminal_input);
@@ -2381,6 +2349,7 @@ int char_from_terminal(Lisp_Object dummy)
                     {   int c;
                         sigint_must_longjmp = YES;
 #ifdef Kanji
+/* again leave against the future */
                         c = getwc(stdin);
 #else
                         c = getchar();
@@ -2388,8 +2357,13 @@ int char_from_terminal(Lisp_Object dummy)
                         sigint_must_longjmp = NO;
                         if (c == EOF)
                         {   clearerr(stdin);    /* Believed to be what is wanted */
-                            c = CTRL_D;         /* Use ASCII ^D as EOF marker */
+                           c = CTRL_D;         /* Use ASCII ^D as EOF marker */
+/* I should perhaps use f7/bf/bf/bf rather than 04? */
                         }
+/*
+ * If I fetched a wide character I would need to utf-8 encode it here...
+ * unless getchar has already delivered in that way.
+ */
                         tty_buffer[tty_count++] = (char)c;
                         if (c == '\n' || c == '\v' || c == CTRL_D) break;
                     }
@@ -2439,9 +2413,6 @@ int char_from_terminal(Lisp_Object dummy)
         else
         {   tty_count--;
             c = *tty_pointer++;
-#ifndef Kanji
-            c &= 0xff;
-#endif
         }
     }
     inject_randomness(c);
@@ -2744,7 +2715,7 @@ static Lisp_Object read_hash(Lisp_Object stream)
     Lisp_Object p;
     curchar = getc_stream(stream);
     errexit();
-    if (ISdigit(curchar))
+    if (curchar <= 0xff && isdigit(curchar))
     {   w = 0;
         do
         {   w = 10*w + curchar - '0';
@@ -2753,13 +2724,13 @@ static Lisp_Object read_hash(Lisp_Object stream)
  */
             curchar = getc_stream(stream);
             errexit();
-        } while (ISdigit(curchar));
+        } while (curchar <= 0xff &&isdigit(curchar));
     }
     switch (curchar)
     {
 default:
 /*      error("Unknown # escape");  */
-        return pack_char(0, 0, '#');
+        return pack_char(0, '#');
 #ifdef COMMON
 case '#':
         curchar = NOT_CHAR;
@@ -2841,24 +2812,19 @@ case '\\':
         w = curchar;
 #ifdef COMMON
 /*
- * The word after "#\" is always spelt in regular ASCII so Kanji support
- * does not cut in here.
+ * The word after "#\" is always spelt in regular ASCII so wide char support
+ * does not cut in here. 
  */
-        if (isalpha(w))
+        if (w <= 0x7f && isalpha(w))
         {   char buffer[32];
             int bp = 0, w0 = w;
-            while (isalpha(w) && bp < 30)
+            while (w <= 0x7f && isalpha(w) && bp < 30)
             {   buffer[bp++] = toupper(w);  /* Force word to upper case */
                 curchar = getc_stream(stream);
                 errexit();
                 w = curchar;
             }
-            if (bp == 1) 
-#ifdef Kanji
-                return pack_char(0, 0, w0 & 0xffff);
-#else
-                return pack_char(0, 0, w0 & 0xff);
-#endif
+            if (bp == 1) return pack_char(0, w0 & 0x001fffff);
             buffer[bp] = 0;
             p = make_string(buffer);
             errexit();
@@ -2871,11 +2837,7 @@ case '\\':
 #endif
         curchar = NOT_CHAR;
         errexit();
-#ifdef Kanji
-        return pack_char(0, 0, w & 0xffff);
-#else
-        return pack_char(0, 0, w & 0xff);
-#endif
+        return pack_char(0, w & 0x001fffff);
 case '.':
         curchar = NOT_CHAR;
         p = read_s(stream);
@@ -3030,7 +2992,7 @@ void packbyte(int c)
 /*
  * I expand boffo (maybe) several characters earlier than you might
  * consider necessary. Some of that is to be extra certain about having
- * space in it when I pack a multi-byte (eg Kanji) character.
+ * space in it when I pack a multi-byte character.
  */
     if (boffop >= (int)boffo_size-(int)CELL-8)
     {   Lisp_Object new_boffo =
@@ -3051,6 +3013,7 @@ void packbyte(int c)
         boffo = new_boffo;
     }
 #ifdef Kanji
+/* This is here to remind me about packing in utf-8 /* @@@ */
     if (iswchar(c)) boffo_char(boffop++) = c >> 8;
 #endif
     boffo_char(boffop) = (char)c;
@@ -3071,7 +3034,7 @@ static Lisp_Object read_s(Lisp_Object stream)
         {
     case EOF:
     case CTRL_D:
-            return CHAR_EOF;
+            return eof_symbol;
 
     case '(':
             curchar = NOT_CHAR;
@@ -3152,7 +3115,7 @@ static Lisp_Object read_s(Lisp_Object stream)
                     }
 #endif
                     if (curchar == EOF || curchar == CTRL_D)
-                        return CHAR_EOF;
+                        return eof_symbol;
                     while (curchar != '"' &&
                            curchar != EOF &&
                            curchar != CTRL_D)
@@ -3203,9 +3166,10 @@ static Lisp_Object read_s(Lisp_Object stream)
                     curchar = getc_stream(stream);
                     errexit();
 /* + or - not followed by a digit will be read as a symbol */
-                    if (!ISdigit(curchar)) return intern(boffop, NO);
+                    if (curchar > 0xff || !isdigit(curchar))
+                        return intern(boffop, NO);
                 }
-                while (ISdigit(curchar))
+                while (curchar <= 0xff && isdigit(curchar))
                 {   push(stream);
                     packbyte(curchar);
                     pop(stream);
@@ -3219,7 +3183,7 @@ static Lisp_Object read_s(Lisp_Object stream)
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();
-                    while (ISdigit(curchar))
+                    while (curchar <= 0xff && isdigit(curchar))
                     {   push(stream);
                         packbyte(curchar);
                         pop(stream);
@@ -3241,7 +3205,7 @@ static Lisp_Object read_s(Lisp_Object stream)
                         curchar = getc_stream(stream);
                         errexit();
                     }
-                    while (ISdigit(curchar))
+                    while (curchar <= 0xff && isdigit(curchar))
                     {   push(stream);
                         packbyte(curchar);
                         pop(stream);
@@ -3305,16 +3269,12 @@ static Lisp_Object read_s(Lisp_Object stream)
 #else
                 {
 #endif
-                    if (curchar != EOF)
+                    if (curchar != EOF &&
+                        (curchar<=0xffff || sizeof(wchar_t)==4))
                     {   if (qvalue(lower_symbol) != nil)
-                            curchar = TOlower(curchar);
+                            curchar = towlower(curchar);
                         else if (qvalue(raise_symbol) != nil)
-                            curchar = TOupper(curchar);
-#ifdef Kanji
-                        if (qvalue(hankaku_symbol) != nil)
-                            is (iszenkaku(curchar))
-                                curchar = tohankaku(curchar);
-#endif
+                            curchar = towupper(curchar);
                     }
                 }
 
@@ -3355,15 +3315,12 @@ static Lisp_Object read_s(Lisp_Object stream)
                             else colon = boffop, escaped = YES;
                         }
 #endif
-                        else if (qvalue(lower_symbol) != nil)
-                            curchar = TOlower(curchar);
-                        else if (qvalue(raise_symbol) != nil)
-                            curchar = TOupper(curchar);
-#ifdef Kanji
-                        if (qvalue(hankaku_symbol) != nil)
-                            is (iszenkaku(curchar))
-                                curchar = tohankaku(curchar);
-#endif
+                        else if (curchar<=0xffff || sizeof(wchar_t)==4)
+                        {   if (qvalue(lower_symbol) != nil)
+                                curchar = towlower(curchar);
+                            else if (qvalue(raise_symbol) != nil)
+                                curchar = towupper(curchar);
+                        }
 #ifdef COMMON
                     }
                 } while (within_vbars || is_constituent(curchar));
@@ -3505,6 +3462,9 @@ int char_from_file(Lisp_Object stream)
             io_now++;
         }
 #ifdef Kanji
+/*
+ * Future work /* @@@
+ */
         ch = getwc(stream_file(stream));
 #else
         ch = getc(stream_file(stream));
@@ -4072,7 +4032,7 @@ void read_eval_print(int noisy)
  * want to close the stream for ever in case somebody did (rdf nil), so
  * I tend to reset a bit of EOF info...
  */
-        if (u == CHAR_EOF)
+        if (u == eof_symbol)
         {
 #ifndef __cplusplus
             errorset_buffer = saved_buffer;
@@ -4777,11 +4737,12 @@ Lisp_Object MS_CDECL Ltyi(Lisp_Object nil, int nargs, ...)
         curchar = NOT_CHAR;
     }
     if (ch == EOF || ch == CTRL_D) return onevalue(CHAR_EOF);
-#ifdef Kanji
-    return onevalue(pack_char(0, 0, ch & 0xffff));
-#else
-    return onevalue(pack_char(0, 0, ch & 0xff));
-#endif
+/*
+ * If tyi reads just a byte then this is what I want.  But if I want
+ * a character then someewhere I need to allow for wider characters than
+ * this.
+ */
+    return onevalue(pack_char(0, ch & 0xff));
 }
 
 Lisp_Object Lreadbyte(Lisp_Object nil, Lisp_Object stream)
@@ -4799,7 +4760,7 @@ Lisp_Object Lreadbyte(Lisp_Object nil, Lisp_Object stream)
  * At one stage this code treated ^D as an end-of file marker - that is
  * most nasty for binary files! The code should now be more transparent.
  */
-    if (ch == EOF) return onevalue(CHAR_EOF);
+    if (ch == EOF) return fixnum_of_int(-1);
     else return fixnum_of_int(ch & 0xff);
 }
 
@@ -4811,40 +4772,14 @@ Lisp_Object Lreadch1(Lisp_Object nil, Lisp_Object stream)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     ch = getc_stream(stream);
     errexit();
-    if (ch == EOF || ch == CTRL_D) w = CHAR_EOF;
-    else
-    {
-        if (qvalue(lower_symbol) != nil) ch = TOlower(ch);
-        else if (qvalue(raise_symbol) != nil) ch = TOupper(ch);
-#ifdef Kanji
-        if (qvalue(hankaku_symbol) != nil)
-            is (iszenkaku(curchar)) curchar = tohankaku(curchar);
-        if (iswchar(ch))
-        {   boffo_char(0) = ch >> 8;
-            boffo_char(1) = ch;
-            w = iintern(boffo, 2, lisp_package, 1);
-            errexit();
+    if (ch == EOF || ch == CTRL_D) w = eof_symbol;
+    else 
+    {   ch &= 0xff;  /* 8-bit for now! */
+        if (ch <= 0xffff || sizeof(wchar_t)==4)
+        {   if (qvalue(lower_symbol) != nil) ch = towlower(ch);
+            else if (qvalue(raise_symbol) != nil) ch = towupper(ch);
         }
-        else
-        {   w = elt(charvec, ch & 0xff);
-            if (w == nil)
-            {   boffo_char(0) = ch;
-/* NB I always want to intern in the LISP package here */
-                w = iintern(boffo, 1, lisp_package, 0);
-                errexit();
-                elt(charvec, ch & 0xff) = w;
-            }
-        }
-#else
-        w = elt(charvec, ch & 0xff);
-        if (w == nil)
-        {   boffo_char(0) = (char)ch;
-/* NB I always want to intern in the LISP package here */
-            w = iintern(boffo, 1, lisp_package, 0);
-            errexit();
-            elt(charvec, ch & 0xff) = w;
-        }
-#endif
+        w = char_to_id(ch);
     }
     return onevalue(w);
 }
@@ -4865,7 +4800,7 @@ Lisp_Object Lpeekch2(Lisp_Object nil, Lisp_Object type, Lisp_Object stream)
     {   do
         {   ch = getc_stream(stream);
             errexit();
-        } while (ISspace(ch));
+        } while ((ch<=0xffff || sizeof(wchar_t)==4) && iswspace(ch));
     }
     else
     {   ch = getc_stream(stream);
@@ -4873,39 +4808,13 @@ Lisp_Object Lpeekch2(Lisp_Object nil, Lisp_Object type, Lisp_Object stream)
     }
     other_read_action(ch, stream);
     errexit();
-    if (ch == EOF || ch == CTRL_D) w = CHAR_EOF;
+    if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
-    {   if (qvalue(lower_symbol) != nil) ch = TOlower(ch);
-        else if (qvalue(raise_symbol) != nil) ch = TOupper(ch);
-#ifdef Kanji
-        if (qvalue(hankaku_symbol) != nil)
-            is (iszenkaku(curchar)) curchar = tohankaku(curchar);
-        if (iswchar(curchar))
-        {   boffo_char(0) = curchar >> 8;
-            boffo_char(1) = curchar;
-            w = iintern(boffo, 2, lisp_package, 0);
-            errexit();
+    {   if (ch <= 0xffff || sizeof(wchar_t)==4)
+        {   if (qvalue(lower_symbol) != nil) ch = towlower(ch);
+            else if (qvalue(raise_symbol) != nil) ch = towupper(ch);
         }
-        else
-        {   w = elt(charvec, ch & 0xff);
-            if (w == nil)
-            {   boffo_char(0) = ch;
-/* NB I always want to intern in the LISP package here */
-                w = iintern(boffo, 1, lisp_package, 0);
-                errexit();
-                elt(charvec, ch & 0xff) = w;
-            }
-        }
-#else
-        w = elt(charvec, ch & 0xff);
-        if (w == nil)
-        {   boffo_char(0) = (char)ch;
-/* NB I always want to intern in the LISP package here */
-            w = iintern(boffo, 1, lisp_package, 0);
-            errexit();
-            elt(charvec, ch & 0xff) = w;
-        }
-#endif
+        w = char_to_id(ch);
     }
     return onevalue(w);
 }
@@ -4927,9 +4836,9 @@ Lisp_Object Lunreadch2(Lisp_Object nil, Lisp_Object a, Lisp_Object stream)
     CSL_IGNORE(nil);
      if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    if (a == CHAR_EOF) ch = EOF;
+    if (a == eof_symbol || a == CHAR_EOF) ch = EOF;
     else
-    {   if (is_symbol(a)) a = pack_char(0, 0, first_char(a));
+    {   if (is_symbol(a)) a = pack_char(0, first_char(a));
         ch = (char)code_of_char(a);
     }
     other_read_action(ch, stream);
@@ -4955,7 +4864,7 @@ Lisp_Object Lreadline1(Lisp_Object nil, Lisp_Object stream)
         n++;
     }
     errexit();
-    if (ch == EOF && n == 0) w = CHAR_EOF;
+    if (ch == EOF && n == 0) w = eof_symbol;
     else
     {   w = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
         errexit();

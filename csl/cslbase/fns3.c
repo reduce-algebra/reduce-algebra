@@ -1138,7 +1138,7 @@ static uint32_t hash_equalp(Lisp_Object key)
                 goto hash_nearly_as_string;
             }
             else if (is_char(key))
-                key = pack_char(0, 0, tolower(code_of_char(key)));
+                key = pack_char(0, tolower(code_of_char(key)));
             return update_hash(r, (uint32_t)key);
     case TAG_BOXFLOAT:
     default:/* The default case here mainly covers numbers */
@@ -2020,6 +2020,8 @@ Lisp_Object MS_CDECL Lbpsputv(Lisp_Object nil, int nargs, ...)
  * really part of Standard Lisp.  For cases where you want to character
  * code I have introduced a function scharn which is almost exactly the
  * same except that it returns an integer character code not a symbol.
+ * Note that this extracts a BYTE from the string rather than a character,
+ * even though the result is packed as a character.
  */
 
 Lisp_Object Lsgetv(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
@@ -2034,37 +2036,23 @@ Lisp_Object Lsgetv(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     hl = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("schar", n);
-    w = celt(v, n1);
-#ifdef Kanji
-    if (n1 < hl-1 && is2byte(w)) w = (w << 8) + celt(v, n+1);
-#endif
+    w = celt(v, n1) & 0xff;
 #ifdef COMMON
-    return onevalue(pack_char(0, 0, w)); /* NB 16-bit chars OK here */
+    return onevalue(pack_char(0, w));
 #else
-#ifdef Kanji
-    if (w & 0xff00)
-    {   celt(boffo, 0) = w >> 8;
-        celt(boffo, 1) = w;
-/*
- * If it is an extended character I will look up a symbol for it each time.
- * this will make processing extended characters distinctly more expensive
- * than working with the basic ASCII ones, but I hope it will still be
- * acceptable.
- */
-        n = iintern(boffo, 2, lisp_package, 0);
-        errexit();
-        return onevalue(n);
-    }
-#endif
-/*
- * For 8-bit characters I keep a table of ready-interned Lisp symbols.
- */
-    n = elt(charvec, w & 0xff);
+    n = elt(charvec, w);
     if (n == nil)
-    {   celt(boffo, 0) = (char)w;
-        n = iintern(boffo, 1, lisp_package, 0);
+    {   if (w <= 0x7f)
+        {   celt(boffo, 0) = w;
+            n = iintern(boffo, 1, lisp_package, 0);
+        }
+        else
+        {   celt(boffo, 0) = 0xc0 + ((w>>6) & 0x1f);
+            celt(boffo, 1) = 0x80 + (w & 0x3f);
+            n = iintern(boffo, 2, lisp_package, 0);
+        }
         errexit();
-        elt(charvec, w & 0xff) = n;
+        elt(charvec, w) = n;
     }
     return onevalue(n);
 #endif
@@ -2082,10 +2070,7 @@ Lisp_Object Lsgetvn(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     hl = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("scharn", n);
-    w = celt(v, n1);
-#ifdef Kanji
-    if (n1 < hl-1 && is2byte(w)) w = (w << 8) + celt(v, n+1);
-#endif
+    w = celt(v, n1) & 0xff;
     return onevalue(fixnum_of_int(w));
 }
 
@@ -2881,7 +2866,7 @@ Lisp_Object MS_CDECL Laref(Lisp_Object nil, int nargs, ...)
                 hl = length_of_header(h) - CELL;
                 n1 = int_of_fixnum(n);
                 if (n1 < 0 || n1 >= hl) return aerror1("aref index range", n);
-                return onevalue(pack_char(0, 0, celt(v, n1)));
+                return onevalue(pack_char(0, celt(v, n1)));
             }
             else if (header_of_bitvector(h))
             {   va_end(a);
@@ -2949,7 +2934,7 @@ Lisp_Object MS_CDECL Laref(Lisp_Object nil, int nargs, ...)
     else if (type_of_header(h) == TYPE_STRING)
     {   hl = length_of_header(h) - CELL;
         if (n1 < 0 || n1 >= hl) return aerror("aref index range");
-        return onevalue(pack_char(0, 0, celt(v, n1)));
+        return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (header_of_bitvector(h))
     {   h = length_of_header(h) - CELL;
@@ -2998,7 +2983,7 @@ Lisp_Object Lelt(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     else if (type_of_header(h) == TYPE_STRING)
     {   hl = length_of_header(h) - CELL;
         if (n1 >= hl) return aerror1("elt index range", n);
-        return onevalue(pack_char(0, 0, celt(v, n1)));
+        return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (header_of_bitvector(h))
     {   h = length_of_header(h) - CELL;
@@ -3032,7 +3017,7 @@ Lisp_Object Lelt(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     else if (type_of_header(h) == TYPE_STRING)
     {   hl = length_of_header(h) - CELL;
         if (n1 >= hl) return aerror("elt index range");
-        return onevalue(pack_char(0, 0, celt(v, n1)));
+        return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (header_of_bitvector(h))
     {   h = length_of_header(h) - CELL;
@@ -3357,7 +3342,7 @@ static Lisp_Object Lchar(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
         hl = length_of_header(h) - CELL;
         n1 = int_of_fixnum(n);
         if (n1 < 0 || n1 >= hl) return aerror1("schar", n);
-        return onevalue(pack_char(0, 0, celt(v, n1)));
+        return onevalue(pack_char(0, celt(v, n1)));
     }
     return Laref(nil, 2, v, n);
 }

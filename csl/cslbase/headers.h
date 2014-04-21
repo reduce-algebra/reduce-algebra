@@ -61,6 +61,7 @@
 #include <float.h>
 #include <string.h>
 #include <ctype.h>
+#include <wctype.h>
 #include <time.h>
 #include <stdarg.h>
 

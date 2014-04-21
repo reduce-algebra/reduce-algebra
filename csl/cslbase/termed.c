@@ -98,11 +98,25 @@
  * then the low 10 in the dcxx unit. Code values that are in the surrogate
  * range are not valid on their own. An effect of that is that on Windows
  * the type wchar_t can not store all possible characters, so I need to
- * decide if that worries me and if so what I can do. For now my plan is
- * to use wchar_t here to hold characters and in the Windows case to treat
- * all surrogates (and hence all codepoints over ffff that they might denote)
- * as invalid.
- *
+ * decide if that worries me and if so what I can do. My plan at present
+ * is that on Linux (etc) where sizeof(wchar_t)==4 nothing special is
+ * needed. But when sizeof(wchar_t)==2 I will need to accept that some
+ * segments in a wide string are surrogate pairs. I think that the main
+ * things that this will involve me in will be:
+ * (1) the number of code units and the numbber of characters in a string
+ *     may differ.
+ * (2) moving one place backwards or forwards and deleting a single character
+ *     may involve two addressable units.
+ * (3) conversion to utf-8 may involve consolidating a surrogate pair
+ *     before expansion. Similarly utf-8 to wchar_t may involve creation of
+ *     surrogate pairs.
+ * (4) Any case folding must keep its hands off surrogate pairs. It would
+ *     be especially calamitous is folding a character changed how many units
+ *     it used!
+ * (5) Some character replacements that used to be trivial in-place may now
+ *     change the length of a string's representation.
+ * (6) By and large cursor editing and the evaluation of where on the screen
+ *     things need to appear is made messier!
  */
 
 /*
@@ -358,20 +372,13 @@ static int input_line_size;
  * Nothing at all is done here to fuss about special characters, so
  * things like ^C, backspace, ^Q etc etc etc are handled, if at all, by
  * the system that underpins "getchar".
- *
- * Note that even though I work internally with wide chars this will
- * return something where all the characters are limited to 8 bits. These
- * will be the 8 low bits of the Unicode representation of what was read,
- * with invalid inputs mapped onto "?". Well at least that will be what
- * happens when I can achieve it, and it will assume that input can
- * be read using getwchar().
  */
 
 static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
 {
-    int n, ch, k;
+    int n, ch;
     unsigned char buffer[8];
     int i;
 #ifdef TEST
@@ -382,8 +389,19 @@ static wchar_t *term_wide_plain_getline(void)
     fflush(stdout);
     if (input_line_size == 0) return NULL;
     input_line[0] = 0;
-    for (n=0, ch=getwchar(); ch!=WEOF && ch!=L'\n'; n++, ch=getwchar())
-    {   if (n >= input_line_size-20)
+    n = 0;
+    for (ch=getwchar(); ch!=WEOF && ch!=L'\n'; ch=getwchar())
+    {
+/*
+ * I will expand the buffer so that if sizeof(wchar_t)==2 I have 1.5 times
+ * as many bytes as there are wchar_t items in use. This is so that when and
+ * if I convert to utf-8 format there will still be enough space. The most
+ * dangerous case would arise if the buffer contained a sequence of codes all
+ * in the range u+800 to u+ffff since each of those could fit in a 2 byte
+ * wchar_t but needs 3 bytes in utf-8.
+ */
+        if ((n+20)*(5-sizeof(wchar_t)) >=
+            input_line_size*(4/sizeof(wchar_t)))
         {  input_line =
              (wchar_t *)realloc(input_line, 2*input_line_size*sizeof(wchar_t));
            if (input_line == NULL)
@@ -392,8 +410,7 @@ static wchar_t *term_wide_plain_getline(void)
            }
            else input_line_size = 2*input_line_size;
         }
-        k = utf_encode(buffer, ch);
-        for (i=0; i<k; i++) input_line[n++] = buffer[i];
+        input_line[n++] = ch;
         input_line[n] = 0;
     }
     if (ch==WEOF)
@@ -449,18 +466,24 @@ void term_setprompt(const char *s)
 void term_wide_setprompt(const wchar_t *s)
 {
     prompt_length = wcslen(s);
+/* I truncate the prompt if it seems too long */
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
-    if ((s[prompt_length] & 0x1ffc00) == 0xdc00) prompt_length--;
+/*
+ * If I truncate it part way through a surrogate pair I need to lose
+ * both parts of the pair.
+ */
+    if (prompt_length > 0 &&
+        is_high_surrogate(prompt_string[prompt_length-1])) prompt_length--;
     wcsncpy(prompt_string, s, prompt_length);
     prompt_string[prompt_length] = 0;
 /*
  * Now in the face of possible surrogate pairs the width in columns of the
  * prompt may not be the same as the number of wchar_t items that make it
- * up, so I will note here the calculation needed to sort that out...
+ * up, so I will sort that out by counting units ignoring any high surrogates.
  */
     prompt_width = 0;
     for (s=prompt_string; *s!=0; s++)
-        if ((*s & 0x1ffc00) != 0xdc00) prompt_width++;
+        if (!is_high_surrogate(*s)) prompt_width++;
 }
 
 #ifdef DISABLE
@@ -515,13 +538,24 @@ static void term_putchar(int c)
 /*
  * The character passed here will actually be an wchar_t and probably if I
  * was being truly proper the argument type would need to be wint_t not int.
- * However I am going to be sloppy and assume that int is good enough.
+ * However I am going to be sloppy and assume that int is good enough. Well
+ * things are worse than that. I probably want the argument to be a 20-bit
+ * Unicode character and in some cases that will turn into a surrogate pair
+ * under Windows. But then I will need to be careful when writing from a
+ * (wchar_t *) style wide string where surrogates can already exist.
  */
 #ifdef WIN32
-    DWORD nwritten = 1;
+    DWORD nwritten;
     wchar_t buffer[4];
-    buffer[0] = c;
-    WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+    if (c <= 0xffff)
+    {   buffer[0] = c;
+        WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+    }
+    else
+    {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
+        buffer[1] = 0xdc00 + (c & 0x3ff);
+        WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
+    }
 #else
 /*
  * Other than on Windows I will encode things using UTF-8
@@ -717,15 +751,23 @@ extern int utf_encode(unsigned char *b, int c);
 static void term_putchar(int c)
 {
 /*
- * The character passed here will actually be an wchar_t and probably if I
+ * The character passed here will be a Unicode character using up to 20
+ * bits...
  * was being truly proper the argument type would need to be wint_t not int.
  * However I am going to be sloppy and assume that int is good enough.
  */
 #ifdef WIN32
-    DWORD nwritten = 1;
+    DWORD nwritten;
     wchar_t buffer[4];
-    buffer[0] = c;
-    WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+    if (c <= 0xffff)
+    {   buffer[0] = c;
+        WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+    }
+    else
+    {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
+        buffer[1] = 0xdc00 + (c & 0x3ff);
+        WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
+    }
 #else
 /*
  * Other than on Windows I will encode things using UTF-8
@@ -1582,8 +1624,9 @@ static void term_bell(void)
 /*
  * line_wrap() is a part of refresh_display(), and it prints a character
  * taking care of line-wrapping. The character passed will be of flavour
- * wchar_t. I am not (at least for now) going to worry about Windows and
- * surrogate characters.
+ * wchar_t. The character may be a value over 0xffff and in the Windows case
+ * that will need to end up in the buffer as a surrogate pair. I also note
+ * that the existing buffer may contain such pairs...
  */
 
 static int line_wrap(int ch, int tab_offset)
@@ -1722,10 +1765,12 @@ static void refresh_display(void)
         }
 /*
  * I am going to display characters whose code is in the range 0x00 to
- * 0x1f with a "^", as in "^C" will denote character 3.
+ * 0x1f with a "^", as in "^C" will denote character 3. I am not certain that
+ * this is a good idea!!! But I rather hope that such characters will
+ * not get into the buffer, and at least this makes them visible if they do.
  */
         else if (ch < 0x20) finx += 2;
-        else finx += 1;
+        else if (!is_low_surrogate(ch)) finx += 1;
         if (finx >= columns)
         {   tab_offset += finx;
             finx -= columns;
@@ -1804,6 +1849,11 @@ static void refresh_display(void)
         {   tab_offset = line_wrap(L'^', tab_offset);
             /* Turn into @, A, B etc */
             tab_offset = line_wrap(ch | 0x40, tab_offset);
+        }
+        else if (is_high_surrogate(ch))
+        {   int ch1 = input_line[++i];
+            ch = 0x10000 + ((ch & 0x3ff) << 10) + (ch1 & 0x3ff);
+            tab_offset = line_wrap(ch, tab_offset);
         }
         else tab_offset = line_wrap(ch, tab_offset);
     }
@@ -1908,8 +1958,10 @@ static int term_find_next_word_forwards(void)
     do
     {   n++;
     } while (input_line[n] != 0 &&
-             (iswalnum(input_line[n]) || input_line[n] == L'_'));
-    while (input_line[n] != 0 && iswspace(input_line[n])) n++;
+             (!is_surrogate(input_line[n]) && iswalnum(input_line[n])) ||
+              input_line[n] == L'_');
+    if (is_high_surrogate(input_line[n])) n++; /* avoid middle of surrogate */
+    while (!is_surrogate(input_line[n]) && iswspace(input_line[n])) n++;
     return n;
 }
 
@@ -1920,8 +1972,13 @@ static int term_find_next_word_backwards(void)
     do
     {   n--;
     } while (n != prompt_length &&
-             (iswalnum(input_line[n]) || input_line[n] == '_'));
-    while (n != prompt_length && iswspace(input_line[n])) n--;
+             (!is_surrogate(input_line[n]) && iswalnum(input_line[n])) ||
+               input_line[n] == '_');
+    if (n != prompt_length &&
+        is_high_surrogate(input_line[n])) n--;
+    while (n != prompt_length &&
+           !is_surrogate(input_line[n]) &&
+           iswspace(input_line[n])) n--;
     if (n == prompt_length || n == insert_point-1) return n;
     else return n+1; 
 }
@@ -1930,6 +1987,7 @@ static void term_forwards_char(void)
 {
     if (input_line[insert_point] == 0) term_bell();
     else insert_point++;
+    if (is_high_surrogate(input_line[insert_point])) insert_point++;
     refresh_display();
 }
 
@@ -1948,6 +2006,8 @@ static void term_back_char(void)
 {
     if (insert_point == prompt_length) term_bell();
     else insert_point--;
+    if (insert_point != prompt_length &&
+        is_high_surrogate(input_line[insert_point])) insert_point--;
     refresh_display();
 }
 
@@ -1964,6 +2024,14 @@ static void term_back_word(void)
 static void term_delete_forwards(void)
 {
     int i = insert_point;
+/*
+ * If the unit at the insertion point is a high surrogate I must delete
+ * two units not just one - ie the high and then the low surrogate.
+ */
+    if (is_high_surrogate(input_line[i]))
+    {   input_line[i] = ' ';
+        term_delete_forwards();
+    }
     if (input_line[i] == 0) term_bell();
     else for (;;)
     {   input_line[i] = input_line[i+1];
@@ -1986,6 +2054,13 @@ static void term_delete_backwards(void)
             i++;
         }
     }
+/*
+ * If I just deleted a low surrogate so that there is now a high one left
+ * then I need to delete that too.
+ */
+    if (insert_point != prompt_length &&
+        is_high_surrogate(input_line[insert_point-1]))
+        term_delete_backwards();
     refresh_display();
 }
 
@@ -2337,6 +2412,7 @@ static int term_find_word_start(void)
  * returning the address of the first letter of the "word". If the
  * initial point is not on an alphanumeric it returns a pointer one to the
  * right of the insert point.
+ * /* surrogate pairs
  */
     int n = insert_point;
     while (n>=prompt_length &&
@@ -2350,6 +2426,7 @@ static int term_find_word_end(void)
  * returns the address of the first character beyond the end of a current
  * word. If the character at the insert point is not alphanumeric then its
  * address is returned.
+ * /* surrogate pairs
  */
     int n = insert_point;
     while (input_line[n]!=0 &&
@@ -2362,8 +2439,18 @@ static void term_capitalize_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    if (a < b) input_line[a] = towupper(input_line[a]);
-    for (i=a+1; i<b; i++) input_line[i] = towlower(input_line[i]);
+/*
+ * towupper and towlower are only guaranteed valid if the code-point passed
+ * represents a valid character in the current locale. That is, I think,
+ * something I do not know how to test for! So here I will at least filter
+ * out surrogate values and I will hope that (eg) non-characters do not lead
+ * to crashes.
+ */
+    if (a < b && !is_surrogate(input_line[a]))
+        input_line[a] = towupper(input_line[a]);
+    for (i=a+1; i<b; i++)
+        if (!is_surrogate(input_line[i]))
+            input_line[i] = towlower(input_line[i]);
     refresh_display();
 }
 
@@ -2373,7 +2460,9 @@ static void term_lowercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = (char)towlower(input_line[i]);
+    for (i=a; i<b; i++)
+        if (!is_surrogate(input_line[i]))
+            input_line[i] = towlower(input_line[i]);
     refresh_display();
 }
 
@@ -2383,7 +2472,9 @@ static void term_uppercase_word(void)
     int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-    for (i=a; i<b; i++) input_line[i] = towupper(input_line[i]);
+    for (i=a; i<b; i++)
+        if (!is_surrogate(input_line[i]))
+            input_line[i] = towupper(input_line[i]);
     refresh_display();
 }
 
@@ -2391,10 +2482,56 @@ static void term_uppercase_word(void)
 static void term_transpose_chars(void)
 {
     int c, d;
-    if (((c = input_line[insert_point]) == 0) ||
-        ((d = input_line[insert_point+1]) == 0)) term_bell();
-    else
-    {   input_line[insert_point] = d;
+/*
+ * I fear there are 4 cases here in the windows world...
+ *     x, y    =>    y, x
+ *     Xx, y   =>    x, Xx
+ *     x, Yy   =>    Yy, x
+ *     Xx, Yy  =>    Yy, Xx
+ * where Xy and Yy stand for pairs of surrogates. If sizeof(wchar_t)==4
+ * things are a lot simpler!
+ */
+    if (sizeof(wchar_t) == 4)
+    {   if (((c = input_line[insert_point]) == 0) ||
+            ((d = input_line[insert_point+1]) == 0)) term_bell();
+        else
+        {   input_line[insert_point] = d;
+            input_line[insert_point+1] = c;
+            refresh_display();
+        }
+    }
+    else if (input_line[insert_point] == 0) term_bell();
+    else if (is_high_surrogate(input_line[insert_point]))
+    {   if (input_line[insert_point+2] == 0) term_bell();
+        else if (is_high_surrogate(input_line[insert_point+2]))
+        {   c = input_line[insert_point+2];
+            d = input_line[insert_point+3];
+            input_line[insert_point+2] = input_line[insert_point];
+            input_line[insert_point+3] = input_line[insert_point+1];
+            input_line[insert_point] = c;
+            input_line[insert_point+1] = d;
+            refresh_display();
+        }
+        else
+        {   c = input_line[insert_point+2];
+            input_line[insert_point+2] = input_line[insert_point+1];
+            input_line[insert_point+1] = input_line[insert_point];
+            input_line[insert_point] = c;
+            refresh_display();
+        }
+    }
+    else if (input_line[insert_point+1] == 0) term_bell();
+    else if (is_high_surrogate(input_line[insert_point+1]))
+    {   c = input_line[insert_point+1];
+        d = input_line[insert_point+2];
+        input_line[insert_point+2] = input_line[insert_point];
+        input_line[insert_point] = c;
+        input_line[insert_point+1] = d;
+        refresh_display();
+    }
+    else 
+    {   c = input_line[insert_point];
+        input_line[insert_point] = input_line[insert_point+1];
         input_line[insert_point+1] = c;
         refresh_display();
     }
@@ -2559,11 +2696,11 @@ static int hexval(int c)
 
 uniname unicode_names[] =
 {
-
-
-
-    {"AElig",   198},    /* latin capital letter AE = latin capital ligature AE */
-
+/*
+ * It is really part of the purpose of this table that the names are all in
+ * the most basic character set, and so I keep the table using "char *" and
+ * regular narrow strings.
+ */
     {"AElig",                           198},
     {"AMP",                             38},
     {"Aacute",                          193},
@@ -4776,7 +4913,7 @@ static void term_replace_chars_backwards(int n, const wchar_t *s)
 {
 /*
  * Replace n characters that are before the caret with bytes from the
- * string s.
+ * string s. The caret had better not be in the middle of a surrogate pair!
  */
     int m = wcslen(s);
     if (n > m)        /* Overall this deletes characters */
@@ -4801,8 +4938,22 @@ static void term_replace_chars_backwards(int n, const wchar_t *s)
     while (*s != 0) input_line[m++] = *s++;
 }
 
-static wchar_t input_word[16];
-static wchar_t output_word[16];
+static wchar_t input_word[40];
+static wchar_t output_word[40];
+
+static void make_wchar(wchar_t *s, int c)
+{
+    c &= 0x001fffff;
+    if (sizeof(wchar_t) == 4 || c <= 0xffff)
+    {   s[0] = c;
+        s[1] = 0;
+    }
+    else
+    {   s[0] = 0xd800 + ((c >> 10) & 0x3ff);
+        s[1] = 0xdc00 + (c & 0x3ff);
+        s[2] = 0;
+    }
+}
 
 static void term_ctrl_z_command(void)
 {
@@ -4813,93 +4964,6 @@ static void term_ctrl_z_command(void)
     insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^X>");
     term_bell();
     term_redisplay();
-}
-
-/*
- * Encode into buffer b as up to 4 characters (plus a nul). Because I
- * am only concerned with Unicode I only need encode values in the
- * range 0 to 0x10ffff. Returns the number of chars packed (not counting
- * the terminating '\0').
- */
-
-int utf_encode(unsigned char *b, int c)
-{
-    unsigned char *p = b;
-    c &= 0x1fffff;   /* limit myself to 21-bit values here */
-    if (c <= 0x7f) *p++ = c;
-    else if (c <= 0x7ff)
-    {   *p++ = 0xc0 | (c >> 6);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    else if (c <= 0xffff)
-    {   *p++ = 0xe0 | (c >> 12);
-        *p++ = 0x80 | ((c >> 6) & 0x3f);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    else
-    {   *p++ = 0xf0 | (c >> 18);
-        *p++ = 0x80 | ((c >> 12) & 0x3f);
-        *p++ = 0x80 | ((c >> 6) & 0x3f);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    *p = 0;
-    return (int)(p - b);
-}
-
-/*
- * Decode utf-8 or return -1 if invalid.
- */
-
-int utf_bytes = 0;
-
-int utf_decode(unsigned char *b)
-{
-    int c = *b++, c1, c2, c3;
-    utf_bytes = 1;
-    switch (c & 0xf0)
-    {
-/*
- *  case 0x00:
- *  case 0x10:
- *  case 0x20:
- *  case 0x30:
- *  case 0x40:
- *  case 0x50:
- *  case 0x60:
- *  case 0x70:
- */
-default:
-        return c;
-case 0x80:
-case 0x90:
-case 0xa0:
-case 0xb0:
-        return -1;  /* out of place continuation marker */
-case 0xc0:
-case 0xd0:
-        c1 = *b;
-        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        utf_bytes += 1;
-        return ((c & 0x1f) << 6) | (c1 & 0x3f);
-case 0xe0:
-        c1 = *b++;
-        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        c2 = *b;
-        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
-        utf_bytes += 2;
-        return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
-case 0xf0:
-        if ((c & 0x08) != 0) return -1;
-        c1 = *b++;
-        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
-        c2 = *b++;
-        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
-        c3 = *b;
-        if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
-        utf_bytes += 3;
-        return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
-               ((c2 & 0x3f) << 6) | (c3 & 0x3f);
-    }
 }
 
 void term_unicode_convert(void)
@@ -4957,7 +5021,7 @@ void term_unicode_convert(void)
  *
  * I judge that restricting support to only 4 hex digits would not simplify
  * things enough to really transform matters, but I will rely on having
- * all names denote symbolc in the basic multilingual plane.
+ * all names denote symbols in the basic multilingual plane.
  *
  * The following transformation rules are designed to cause the code to
  * cycle through all possibilities:
@@ -4983,16 +5047,18 @@ void term_unicode_convert(void)
     }
 /*
  * I will first see if I can find a name, and I will look for long ones first.
+ * The "32" here is the length of the longest word in my table of names, and
+ * I note that HTML 5 has "CounterClockwiseContourIntegral" has 31 characters.
  */
-    for (n=8; n>=2; n--) /* word length to seek */
+    for (n=32; n>=2; n--) /* word length to seek */
     {   if (prompt_length+n>insert_point) continue; /* not this many chars */
         for (i=0; i<n; i++)
             input_word[i] = input_line[insert_point-n+i];
         input_word[n] = 0;           /* extract the (potential) word */
         c = lookup_wide_name(input_word);
         if (c == -1) continue;    /* not a recognised name */
-        output_word[0] = c;   /* replace word by a single character */
-        output_word[1] = 0;
+/* The code may be over u+ffff and so if sizeof(wchar_t)==2 it needs packing */
+        make_wchar(output_word, c);
         term_replace_chars_backwards(n, output_word);
         return;
     }
@@ -5017,8 +5083,7 @@ void term_unicode_convert(void)
                 c = (c << 4) | n;
             }
             if (c > 0)
-            {   output_word[0] = c;
-                output_word[1] = 0;
+            {   make_wchar(output_word, c);
                 term_replace_chars_backwards(6, output_word);
                 return;
             }
@@ -5030,8 +5095,17 @@ void term_unicode_convert(void)
  * from before the caret.
  */
     if (insert_point - prompt_length >= 1)
-        n = 1,
+    {   n = 1;
         c = input_line[insert_point-1];
+        if (is_low_surrogate(c) &&
+            insert_point - prompt_length >= 2 &&
+            is_high_surrogate(input_line[insert_point-2]))
+        {   n = 2;
+            c = 0x10000 +
+                ((input_line[insert_point-2] & 0x3ff) << 10) +
+                (c & 0x3ff);
+        }
+    }
     else n = 0, c = -1;
 /*
  * See if the character has a name.
@@ -5058,12 +5132,12 @@ void term_unicode_convert(void)
  * The code here will convert (u+203e) to oli(u+2260) via expanding to
  * the name "oline" and then re-coding the last two letters "ne". And
  * a whole pile of other similar cases such Eaccute, rang, Theta, lfloor,
- * ntilde, otimes and Yuml. I count 57 cases in the HTML 4 entity table.
+ * ntilde, otimes and Yuml. I count 57 cases in the HTML 4 entity table, and
+ * theer will be more now I have moved to use of the HTML 5 list.
  */
         if (w != -1)
         {   wcscpy(output_word, p);
-            output_word[p1-p] = w;
-            output_word[p1-p+1] = 0;
+            make_wchar(&output_word[p1-p], w);
             term_replace_chars_backwards(n, output_word);
             return;
         }
@@ -5077,7 +5151,8 @@ void term_unicode_convert(void)
         for (i=1; i+wcslen(p)<9; i++)
         {   /* i is the number of prefix characters to test for */
             if (insert_point - prompt_length >= i+n)
-            {   memcpy(input_word, &input_line[insert_point-i-n], i*sizeof(wchar_t));
+            {   memcpy(input_word, &input_line[insert_point-i-n],
+                                   i*sizeof(wchar_t));
                 wcscpy(&input_word[i], p);
 /*
  * I have now concatenated some stuff from the input buffer with the
@@ -5145,7 +5220,8 @@ void term_unicode_convert(void)
                 {   /* i is the number of prefix characters to test for */
                     int c1;
                     if (insert_point - prompt_length >= i+4)
-                    {   memcpy(input_word, &input_line[insert_point-i-4], i*sizeof(wchar_t));
+                    {   memcpy(input_word, &input_line[insert_point-i-4],
+                                           i*sizeof(wchar_t));
                         wcscpy(&input_word[i], p);
                         if ((c1 = lookup_wide_name(input_word)) != -1)
                         {   swprintf(output_word, 16, L"%.4x", c1);
@@ -5157,8 +5233,7 @@ void term_unicode_convert(void)
                 term_replace_chars_backwards(4, p);
                 return;
             }
-            output_word[0] = c;
-            output_word[1] = 0;
+            make_wchar(output_word, c);
             term_replace_chars_backwards(4, output_word);
             return;
         }
@@ -5355,10 +5430,6 @@ static void set_shell(void)
 #endif
 }
 
-/*
- * This will need a wide-character variant...
- */
-
 static wchar_t *term_wide_fancy_getline(void)
 {
     int ch, any_keys = 0, i;
@@ -5412,7 +5483,11 @@ static wchar_t *term_wide_fancy_getline(void)
         if (n > longest_history_line) longest_history_line = n;
         if (searchFlags != 0)
             n = n - regular_line_end + longest_history_line;
-        if (n >= input_line_size-20)
+/*
+ * Again allow extra space in case of a need to convert to utf-8.
+ */
+        if ((n+20)*(5-sizeof(wchar_t)) >=
+            input_line_size*(4/sizeof(wchar_t)))
         {   input_line = (wchar_t *)realloc(input_line, 2*input_line_size*sizeof(wchar_t));
             display_line = (wchar_t *)realloc(display_line, 2*input_line_size*sizeof(wchar_t));
             if (input_line == NULL || display_line == NULL)
@@ -5735,6 +5810,93 @@ static wchar_t *term_wide_fancy_getline(void)
 
 #endif /* DISABLE */
 
+/*
+ * Encode into buffer b as up to 4 characters (plus a nul). Because I
+ * am only concerned with Unicode I only need encode values in the
+ * range 0 to 0x10ffff. Returns the number of chars packed (not counting
+ * the terminating '\0').
+ */
+
+int utf_encode(unsigned char *b, int c)
+{
+    unsigned char *p = b;
+    c &= 0x1fffff;   /* limit myself to 21-bit values here */
+    if (c <= 0x7f) *p++ = c;
+    else if (c <= 0x7ff)
+    {   *p++ = 0xc0 | (c >> 6);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    else if (c <= 0xffff)
+    {   *p++ = 0xe0 | (c >> 12);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    else
+    {   *p++ = 0xf0 | (c >> 18);
+        *p++ = 0x80 | ((c >> 12) & 0x3f);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    *p = 0;
+    return (int)(p - b);
+}
+
+/*
+ * Decode utf-8 or return -1 if invalid.
+ */
+
+int utf_bytes = 0;
+
+int utf_decode(unsigned char *b)
+{
+    int c = *b++, c1, c2, c3;
+    utf_bytes = 1;
+    switch (c & 0xf0)
+    {
+/*
+ *  case 0x00:
+ *  case 0x10:
+ *  case 0x20:
+ *  case 0x30:
+ *  case 0x40:
+ *  case 0x50:
+ *  case 0x60:
+ *  case 0x70:
+ */
+default:
+        return c;
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        return -1;  /* out of place continuation marker */
+case 0xc0:
+case 0xd0:
+        c1 = *b;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 1;
+        return ((c & 0x1f) << 6) | (c1 & 0x3f);
+case 0xe0:
+        c1 = *b++;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        c2 = *b;
+        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 2;
+        return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
+case 0xf0:
+        if ((c & 0x08) != 0) return -1;
+        c1 = *b++;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        c2 = *b++;
+        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        c3 = *b;
+        if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
+        utf_bytes += 3;
+        return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
+               ((c2 & 0x3f) << 6) | (c3 & 0x3f);
+    }
+}
+
 wchar_t *term_wide_getline(void)
 {
     if (!term_enabled) return term_wide_plain_getline();
@@ -5746,19 +5908,46 @@ char *term_getline(void)
     wchar_t *r = term_wide_getline();
     if (r == NULL) return NULL;
 /*
- * To get a "narrow char" line I read a wide char line and then preserve
- * all characters whose codepoints are in the range 0x00 to 0xff and
- * replace all others with a question mark. This leaves me the first 256
- * codepoints of Unicode and that covers ordinary ASCII plus a bunch of
- * diacriticals.
+ * To get a "narrow char" line I read a wide char line and then expand
+ * it into utf-8 form.
  */
     char *p = (char *)r;
     wchar_t *q = r;
     int c;
     unsigned char buffer[8];
-    while ((c = *q++) != 0)
-    {   int n = utf_encode(buffer, c), i;
-        for (i=0; i<n; i++) *p++ = buffer[i];
+    if (sizeof(wchar_t)==4)
+    {   while ((c = *q++) != 0)
+        {   int n = utf_encode(buffer, c), i;
+            for (i=0; i<n; i++) *p++ = buffer[i];
+        }
+    }
+    else
+    {
+/*
+ * Expanding a code such as 0x1111 unto utf-8 will expand it from a 2-byte
+ * wchar_t to 3 bytes. This risks clobbering the input data. To avoid that
+ * I will move the raw input data up the buffer first.
+ */
+        size_t n = wcslen(r);
+        wchar_t *s = r + n;  /* end of original data */
+        q = s + (n/2) + 2;   /* safe place for end of copied version */
+        for (;;)
+        {   *q = *s;
+            if (s == r) break; /* will leave q pointing at the copy */
+            s--;
+            q--;
+        }
+        while ((c = *q++) != 0)
+        {   int i, n;
+/*
+ * I assume that surrogate pairs are indeed properly paired: I consolidate
+ * them into single characters here.
+ */
+            if (is_low_surrogate(c))
+                c = 0x10000 + ((c & 0x3ff)<<10) + (*q++ & 0x3ff);
+            n = utf_encode(buffer, c);
+            for (i=0; i<n; i++) *p++ = buffer[i];
+        }
     }
     *p = 0;
     return (char *)r;

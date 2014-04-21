@@ -427,7 +427,7 @@ Lisp_Object interrupted(Lisp_Object p)
         ensure_screen(); nil = C_nil;
         if (exception_pending()) return nil;
         push(prompt_thing);
-        prompt_thing = CHAR_EOF;
+        prompt_thing = nil;  /* switch off the regular prompts */
 #ifdef HAVE_FWIN
         fwin_set_prompt("+++ Type C to continue, A to abort, X to exit: ");
 #endif
