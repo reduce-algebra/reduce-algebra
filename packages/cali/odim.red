@@ -128,13 +128,13 @@ symbolic procedure odim!=reduce(a,l);
   if null cdr a or null l or odim!=greater(a, car l) then a
   else if mo_equal!?(dp_lmon cdr a,dp_lmon cdar l) then
     begin scalar z,z1,z2,b;
-    b:=car l; z1:=bc_neg dp_lc cdr a; z2:=dp_lc cdr b;
+    b:=car l; z1:=cali_bc_neg dp_lc cdr a; z2:=dp_lc cdr b;
     if !*bcsimp then
-      << if (z:=bc_inv z1) then <<z1:=bc_fi 1; z2:=bc_prod(z2,z)>>
+      << if (z:=cali_bc_inv z1) then <<z1:=cali_bc_fi 1; z2:=cali_bc_prod(z2,z)>>
          else
-           << z:=bc_gcd(z1,z2);
-              z1:=car bc_divmod(z1,z);
-              z2:=car bc_divmod(z2,z);
+           << z:=cali_bc_gcd(z1,z2);
+              z1:=car cali_bc_divmod(z1,z);
+              z2:=car cali_bc_divmod(z2,z);
            >>;
       >>;
     a:=dp_sum(dp_times_bc(z2,car a),dp_times_bc(z1,car b)) .

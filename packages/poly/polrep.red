@@ -32,7 +32,7 @@ fluid '(!*asymp!* !*exp !*factor !*gcd !*lcm !*mcd !*rationalize frlis!*
         !*roundall !*rounded !*sqfree !*sub2 asymplis!* dmode!* subfg!*
         ncmp!* powlis!* wtl!* !*!*processed !*ncmp);
 
-global '(!*group rd!-tolerance!* cr!-tolerance!*);
+global '(!*group rd!-tolerance!* cr!-tolerance!* !*physop!-loaded);
 
 put('roundall,'simpfg,'((t (rmsubs))));
 
@@ -121,7 +121,8 @@ symbolic procedure adddm(u,v);
           where x=plus2(u,v)
     else dcombine(u,v,'plus);
 
-symbolic inline procedure domainp u; atom u or atom car u;
+% in poly.red
+% symbolic inline procedure domainp u; atom u or atom car u;
 
 symbolic procedure noncomp u;
    !*ncmp and noncomp1 u;
@@ -135,7 +136,19 @@ symbolic procedure noncomp1 u;
 symbolic procedure noncomlistp u;
    pairp u and (noncomp1 car u or noncomlistp cdr u);
 
-symbolic procedure multf(u,v);
+% The physop module defines a new versions of multf and multfnc. Having name
+% clashes and function redefinitions causes pain for the CSL optimisation
+% model, so here I make physop just set a flag so that multf and multfnc can
+% divert into its version. A nicer solution will be to consolidate the two
+% versions into one, but for now I am not ready to go that far. Maybe somebody
+% who really understand the physop code will feel like working on that at
+% some time. 
+
+symbolic procedure multf(u, v);
+  if !*physop!-loaded then physop!-multf(u, v)
+  else poly!-multf(u, v);
+
+symbolic procedure poly!-multf(u,v);
    % U and V are standard forms.
    % Value is standard form for U*V.
    begin scalar x,y;
@@ -149,7 +162,7 @@ symbolic procedure multf(u,v);
         x := mvar u;
         y := mvar v;
         if noncomfp v and (noncomp x or null !*!*processed)
-          then return multfnc(u,v)
+          then return poly!-multfnc(u,v)
          else if x eq y
           then <<% Allow for free variables in rules.
                  if not fixp ldeg u or not fixp ldeg v
@@ -157,18 +170,18 @@ symbolic procedure multf(u,v);
                   else x := mkspm(x,ldeg u+ldeg v);
                  % The order in the next line is IMPORTANT. See analysis
                  % by J.H. Davenport et al. for details.
-                 y := addf(multf(red u,v),multf(!*t2f lt u,red v));
-                 return if null x or null(u := multf(lc u,lc v))
+                 y := addf(poly!-multf(red u,v),poly!-multf(!*t2f lt u,red v));
+                 return if null x or null(u := poly!-multf(lc u,lc v))
                     then <<!*asymp!* := t; y>>
                    else if x=1 then addf(u,y)
                    else if null !*mcd then addf(!*t2f(x .* u),y)
                    else x .* u .+ y>>
          else if ordop(x,y)
-          then <<x := multf(lc u,v);
-                 y := multf(red u,v);
+          then <<x := poly!-multf(lc u,v);
+                 y := poly!-multf(red u,v);
                  return if null x then y else lpow u .* x .+ y>>;
-        x := multf(u,lc v);
-        y := multf(u,red v);
+        x := poly!-multf(u,lc v);
+        y := poly!-multf(u,red v);
         return if null x then y else lpow v .* x .+ y
    end;
 
@@ -181,20 +194,24 @@ symbolic procedure noncomfp1 u;
       and (noncomp mvar u or noncomfp1 lc u or noncomfp1 red u);
 
 symbolic procedure multfnc(u,v);
+  if !*physop!-laoded then physop!-multfnc(u, v)
+  else poly!-multfnc(u, v);
+
+symbolic procedure poly!-multfnc(u,v);
    % Returns canonical product of U and V, with both main vars non-
    % commutative.
    begin scalar x,y;
-      x := multf(lc u,!*t2f lt v);
+      x := poly!-multf(lc u,!*t2f lt v);
       if null x then nil
        else if not domainp x and mvar x eq mvar u
         then x := addf(if null (y := mkspm(mvar u,ldeg u+ldeg x))
                          then nil
                         else if y = 1 then lc x
                         else !*t2f(y .* lc x),
-                       multf(!*p2f lpow u,red x))
+                       poly!-multf(!*p2f lpow u,red x))
        else if noncomp mvar u then x := !*t2f(lpow u .* x)
-       else x := multf(!*p2f lpow u,x) where !*!*processed=t;
-      return addf(x,addf(multf(red u,v),multf(!*t2f lt u,red v)))
+       else x := poly!-multf(!*p2f lpow u,x) where !*!*processed=t;
+      return addf(x,addf(poly!-multf(red u,v),poly!-multf(!*t2f lt u,red v)))
    end;
 
 symbolic procedure multd(u,v);

@@ -362,14 +362,14 @@ symbolic procedure prin2x u;
 % output could become "#hash;amp;" which may be clearer.
 %
 % I might note that #apos; is ('), #quot; is ("), #grave is (`),
-% #dollar; is ($).  #Tab; and #NewLine; provide layout. There are
+% #dollar; is ($).  #Tab; and #NewLine ; provide layout. There are
 % a couple of very special bits of treatment in these areas implemented
 % because I believe that they will help.
 % Within a string #quot; expands to a (") but it does not terminate the
-% string. Thus a string with an embedded quote matk can be written
+% string. Thus a string with an embedded quote mark can be written
 % as "This string has an embedded #quot; in it". For now the previous
 % notation where the (") needs to be doubled is still available.
-% In a similar sort of way the end-of-line denoted by #NewLine; does not
+% In a similar sort of way the end-of-line denoted by #NewLine ; does not
 % terminate a "%" comment, and the dollar that results from #dollar;
 % does not end one that is introduced with the word "comment". These
 % three cases are handled by having a flag "named!-character!*" that

@@ -68,7 +68,7 @@ symbolic procedure getrules();
   makelist for each x in get('cali,'rules) collect
         list('replaceby,prepf car x,prepf cdr x);
 
-symbolic procedure bc!=simp u;
+symbolic procedure cali_bc!=simp u;
   (if r0 then
   begin scalar r,c; integer i;
   i:=0; r:=r0;
@@ -85,57 +85,57 @@ symbolic procedure bc!=simp u;
   end
   else u) where r0:=get('cali,'rules);
 
-symbolic procedure  bc_minus!? u; minusf u;
+symbolic procedure cali_bc_minus!? u; minusf u;
 
-symbolic procedure  bc_zero!? u;
+symbolic procedure cali_bc_zero!? u;
     if (null u or u=0) then t
     else if !*hardzerotest and pairp u then
         null bc!=simp numr simp prepf u
     else nil;
 
-symbolic procedure  bc_fi a; if a=0 then nil else a;
+symbolic procedure cali_bc_fi a; if a=0 then nil else a;
 
-symbolic procedure  bc_one!? u; (u = 1);
+symbolic procedure cali_bc_one!? u; (u = 1);
 
-symbolic procedure  bc_inv u;
+symbolic procedure cali_bc_inv u;
 % Test, whether u is invertible. Return the inverse of u or nil.
   if (u=1) or (u=-1) then u
   else begin scalar v; v:=qremf(1,u);
     if cdr v then return nil else return car v;
     end;
 
-symbolic procedure  bc_neg u; negf u;
+symbolic procedure cali_bc_neg u; negf u;
 
-symbolic procedure  bc_prod (u,v); bc!=simp multf(u,v);
+symbolic procedure  cali_bc_prod (u,v); bc!=simp multf(u,v);
 
-symbolic procedure  bc_quot (u,v);
+symbolic procedure cali_bc_quot (u,v);
   (if null cdr w then bc!=simp car w else typerr(v,"denominator"))
   where w=qremf(u,v);
 
-symbolic procedure  bc_sum (u,v); addf(u,v);
+symbolic procedure cali_bc_sum (u,v); addf(u,v);
 
-symbolic procedure  bc_diff(u,v); addf(u,negf v);
+symbolic procedure cali_bc_diff(u,v); addf(u,negf v);
 
-symbolic procedure  bc_power(u,n); bc!=simp exptf(u,n);
+symbolic procedure cali_bc_power(u,n); bc!=simp exptf(u,n);
 
-symbolic procedure  bc_from_a u; bc!=simp numr simp!* u;
+symbolic procedure cali_bc_from_a u; bc!=simp numr simp!* u;
 
-symbolic procedure  bc_2a u; prepf u;
+symbolic procedure cali_bc_2a u; prepf u;
 
-symbolic procedure  bc_prin u;
+symbolic procedure cali_bc_prin u;
 % Prints a base coefficient in infix form
    ( if domainp u then
          if dmode!*='!:mod!: then prin2 prepf u
          else printsf u
      else << write"("; printsf u; write")" >>) where !*nat=nil;
 
-symbolic procedure bc_divmod(u,v); % Returns quot . rem.
+symbolic procedure cali_bc_divmod(u,v); % Returns quot . rem.
   qremf(u,v);
 
-symbolic procedure bc_gcd(u,v); gcdf!*(u,v);
+symbolic procedure cali_bc_gcd(u,v); gcdf!*(u,v);
 
-symbolic procedure bc_lcm(u,v);
-    car bc_divmod(bc_prod(u,v),bc_gcd(u,v));
+symbolic procedure cali_bc_lcm(u,v);
+    car bc_divmod(cali_bc_prod(u,v),bc_gcd(u,v));
 
 endmodule; % bcsf
 

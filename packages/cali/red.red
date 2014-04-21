@@ -134,12 +134,12 @@ symbolic procedure red!=subst1(model,basel);
         repold:=bas_rep model;
         fa:=bas_dpoly basel; z:= dp_lc fa;
         if !*bcsimp then      % modify z and z1
-          if (gcd:=bc_inv z) then
-            << z1:=bc_prod(z1,gcd); z:=bc_fi 1 >>
+          if (gcd:=cali_bc_inv z) then
+            << z1:=cali_bc_prod(z1,gcd); z:=cali_bc_fi 1 >>
           else
-            << gcd:=bc_gcd(z,z1);
-               z:=car bc_divmod(z,gcd);
-               z1:=car bc_divmod(z1,gcd)
+            << gcd:=cali_bc_gcd(z,z1);
+               z:=car cali_bc_divmod(z,gcd);
+               z1:=car cali_bc_divmod(z1,gcd)
             >>;
         mo:=mo_diff(dp_lmon polold,dp_lmon fa);
         polnew:=dp_diff(dp_times_bc(z,polold),

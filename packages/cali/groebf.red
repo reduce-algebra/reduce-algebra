@@ -605,7 +605,7 @@ symbolic procedure groebf!=elcbe(m);
 % from base elements of the dpmat m.
    for each x in dpmat_list m join
         if domainp dp_lc bas_dpoly x then {}
-        else {bc_2a dp_lc bas_dpoly x};
+        else {cali_bc_2a dp_lc bas_dpoly x};
 
 symbolic procedure groebf!=postprocess3 u;
 % Compute for the extendedresult u={m,con,vars} in prefix form

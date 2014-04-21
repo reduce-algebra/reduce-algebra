@@ -124,7 +124,6 @@ flag('(!*rsqbkt!*),'delim);
 
 flag('(!*rsqbkt!*),'nodel);
 
-
 % ***** END STATEMENT *****
 
 symbolic procedure endstat;

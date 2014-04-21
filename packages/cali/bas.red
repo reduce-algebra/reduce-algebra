@@ -140,9 +140,9 @@ symbolic procedure bas_simpelement b;
 %       gcd(dp_content bas_poly,dp_content bas_rep) canceled out
 % and dpoly_old = z * dpoly_new , rep_old= z * rep_new.
 
-  if null bas_dpoly b then b . bc_fi 1
+  if null bas_dpoly b then b . cali_bc_fi 1
   else begin scalar z,z1,pol,rep;
-    if (z:=bc_inv (z1:=dp_lc bas_dpoly b)) then
+    if (z:=cali_bc_inv (z1:=dp_lc bas_dpoly b)) then
         return bas_make1(bas_nr b,
                 dp_times_bc(z,bas_dpoly b),
                 dp_times_bc(z,bas_rep b))
@@ -150,12 +150,12 @@ symbolic procedure bas_simpelement b;
 
     % -- now we assume that base coefficients are a gcd domain ----
 
-    z:=bc_gcd(dp_content bas_dpoly b,dp_content bas_rep b);
-    if bc_minus!? z1 then z:=bc_neg z;
+    z:=cali_bc_gcd(dp_content bas_dpoly b,dp_content bas_rep b);
+    if cali_bc_minus!? z1 then z:=cali_bc_neg z;
     pol:=for each x in bas_dpoly b collect
-                car x . car bc_divmod(cdr x,z);
+                car x . car cali_bc_divmod(cdr x,z);
     rep:=for each x in bas_rep b collect
-                car x . car bc_divmod(cdr x,z);
+                car x . car cali_bc_divmod(cdr x,z);
     return bas_make1(bas_nr b,pol,rep) . z;
     end;
 
@@ -217,7 +217,7 @@ symbolic procedure bas!=detectunits p;
   if null p then nil
   else if listtest(cdr p,dp_lmon p,
         function(lambda(x,y);not mo_vdivides!?(y,car x))) then p
-  else list dp_term(bc_fi 1,dp_lmon p);
+  else list dp_term(cali_bc_fi 1,dp_lmon p);
 
 symbolic procedure bas_factorunits b;
   bas_make(bas_nr b,bas!=factorunits bas_dpoly b);

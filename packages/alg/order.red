@@ -29,6 +29,7 @@ module order; % Functions for internal ordering of expressions.
 
 
 fluid '(kord!*);
+global '(!*physop!-loaded);
 
 % symbolic procedure ordad(a,u);
 %   if null u then list a
@@ -113,7 +114,8 @@ symbolic procedure ordpv1(u,v,i,lu,lv);
           where x=getv(u,i),y=getv(v,i);
 
 symbolic procedure ordop(u,v);
-   begin scalar x;
+   if !*physop!-loaded then physop!-ordop(u,v)
+   else begin scalar x;
         x := kord!*;
     a:  if null x then return ordp(u,v)
          else if u eq car x then return t

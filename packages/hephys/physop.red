@@ -126,6 +126,8 @@ flag('(opapply), 'spaced);
 % E N D of user modifiable part                         %
 %-------------------------------------------------------%
 
+global '(!*physop!-loaded);
+!*physop!-loaded := t;
 
 %****************  the following is needed for REDUCE 3.4 *************
 fluid '(!*nosq);  % controls proper use of !*q2a
@@ -188,11 +190,11 @@ end ;
 % The following is an updated version by E.S. and is similiar to what we have
 % implemented in the sstools package.
 
-symbolic procedure multfnc(u,v);
+symbolic procedure physop!-multfnc(u,v);
    % Returns canonical product of U and V, with both main vars non-
    % commutative.
    begin scalar x,y;
-      x := multf(lc u,!*t2f lt v);
+      x := physop!-multf(lc u,!*t2f lt v);
       if null x then nil
        else if not domainp x and mvar x eq mvar u and 
 %               ((not noncomp2 mvar x) or !*contract2)
@@ -201,21 +203,21 @@ symbolic procedure multfnc(u,v);
                          then nil
                         else if y = 1 then lc x
                         else !*t2f(y .* lc x),
-                       multf(!*p2f lpow u,red x))
+                       physop!-multf(!*p2f lpow u,red x))
        else if noncomp2 mvar u 
-               then if null noncommuting(mvar u,mvar x) and null ordop(mvar u,mvar x)
-                       then if null(y := multf(!*p2f lpow u,lc x))
-                              then x := multf(!*p2f lpow u,red x)
+               then if null noncommuting(mvar u,mvar x) and null physop!-ordop(mvar u,mvar x)
+                       then if null(y := physop!-multf(!*p2f lpow u,lc x))
+                              then x := physop!-multf(!*p2f lpow u,red x)
                              else x := addf(!*t2f(lpow x .* y),
-                                            multf(!*p2f lpow u,red x))
+                                            physop!-multf(!*p2f lpow u,red x))
                      else x := !*t2f(lpow u .* x)
-       else x := multf(!*p2f lpow u,x) where !*!*processed=t;
-      return addf(x,addf(multf(red u,v),multf(!*t2f lt u,red v)))
+       else x := physop!-multf(!*p2f lpow u,x) where !*!*processed=t;
+      return addf(x,addf(physop!-multf(red u,v),physop!-multf(!*t2f lt u,red v)))
    end;
 
 %% This function could be further cleaned up. E.S.
 
-symbolic procedure multf(u,v); % changed
+symbolic procedure physop!-multf(u,v); % changed
    %U and V are standard forms.
    %Value is standard form for U*V;
    begin scalar x,y;
@@ -228,29 +230,29 @@ symbolic procedure multf(u,v); % changed
           then <<u := mkprod u; v := mkprod v; x := t; go to a>>;
         x := mvar u;
         y := mvar v;
-%       if (ncmp := noncomp y) and noncomp x then return multfnc(u,v)
-        if noncomp2f v and (noncomp2 x or null !*!*processed) then return multfnc(u,v)
-%       if noncommuting(x,y) and null !*!*processed then return multfnc(u,v)
+%       if (ncmp := noncomp y) and noncomp x then return physop!-multfnc(u,v)
+        if noncomp2f v and (noncomp2 x or null !*!*processed) then return physop!-multfnc(u,v)
+%       if noncommuting(x,y) and null !*!*processed then return physop!-multfnc(u,v)
 %    we have to put this clause here to prevent evaluation in case
 %    of equal main vars
         else if %noncommutingf(y, lc u) or  %noncommutingf shouldn't be necessary.
-                (ordop(x,y) and (x neq y))
-          then << x := multf(lc u,v);
-                 y := multf(red u,v);
+                (physop!-ordop(x,y) and (x neq y))
+          then << x := physop!-multf(lc u,v);
+                 y := physop!-multf(red u,v);
                  return if null x then y else lpow u .* x .+ y>>
          else if x = y and (not physopp x or !*contract2)
          % two forms have the same mvars
          % switch contract added here to inhibit power contraction
          % if not wanted (used by PHYSOP)
           then << x := mkspm(x,ldeg u+ldeg v);
-          y := addf(multf(red u,v),multf(!*t2f lt u,red v));
-                 return if null x or null(u := multf(lc u,lc v))
+          y := addf(physop!-multf(red u,v),physop!-multf(!*t2f lt u,red v));
+                 return if null x or null(u := physop!-multf(lc u,lc v))
                     then <<!*asymp!* := t; y>>
                    else if x=1 then addf(u,y)
                    else if null !*mcd then addf(!*t2f(x .* u),y)
                    else x .* u .+ y>>;
-        x := multf(u,lc v);
-        y := multf(u,red v);
+        x := physop!-multf(u,lc v);
+        y := physop!-multf(u,red v);
        return if null x then y else lpow v .* x .+ y
    end;
 
@@ -345,7 +347,7 @@ return v
 end;
 
 
-symbolic procedure ordop(u,v);
+symbolic procedure physop!-ordop(u,v);
 % recoded ordering procedure of operators
 % checks new list oporder!*  for physops or calls ordop2
 % default is to put anything ahead of physops
@@ -384,7 +386,7 @@ if nx < ny then t
 else if nx > ny then nil
      else if idp x then t
           else if idp y then nil
-               else ordop(cdr x, cdr y);
+               else physop!-ordop(cdr x, cdr y);
 end;
 
 symbolic procedure ordop2(u,v);
@@ -425,7 +427,7 @@ symbolic procedure physopordchk(u,v);  % new version 080591
 symbolic procedure ncmpchk(x,y); % order changed 1.02
 % x and y are physops
 % checks for correct ordering in noncommuting case
-  (not noncommuting(x,y)) or ordop(x,y);
+  (not noncommuting(x,y)) or physop!-ordop(x,y);
 
 symbolic procedure  physopordchk!*(u,v);
 % u and v are lists of physops
@@ -1455,14 +1457,14 @@ if ltype neq rtype then
  else if (invp u = v) then res := mk!*sq !*k2q 'unit
  else if u = 'unit then res := mk!*sq !*k2q  v
  else if v = 'unit then res := mk!*sq !*k2q u
- else if ordop(u,v) then
-              res :=  mk!*sq !*f2q multfnc(!*k2f u,!*k2f v)
+ else if physop!-ordop(u,v) then
+              res :=  mk!*sq !*f2q physop!-multfnc(!*k2f u,!*k2f v)
  else if noncommuting(u,v) then <<x:= comm2(u,v);
                  res:= if !*anticommchk then physopplus
                           list(list('minus,list('times,v,u)),x)
                        else  physopplus
                            list(list('times,v,u),x) >>
- else  res := mk!*sq !*f2q multfnc(!*k2f v,!*k2f u);
+ else  res := mk!*sq !*f2q physop!-multfnc(!*k2f v,!*k2f u);
 return res
 end;
 
@@ -1542,8 +1544,8 @@ if zerop n1 then return mk!*sq !*k2q
 res := (1 . 1);
 for k := 1 : n1 do <<
   if scalopp u then
-     if bool then x := multf(!*k2f invp u, !*k2f invp u) . 1
-     else x := multf(!*k2f u, !*k2f u) . 1
+     if bool then x := physop!-multf(!*k2f invp u, !*k2f invp u) . 1
+     else x := physop!-multf(!*k2f u, !*k2f u) . 1
 %    if bool then  x:= list(list((invp u . 1),((invp u . 1) . 1))) . 1
 %    else x:= list(list((u . 1),((u . 1) . 1))) . 1
   else if vecopp u then
@@ -1819,7 +1821,7 @@ if not (utype eq 'scalar) and (vtype eq 'scalar) then
 rederr2('comm2, "comm2 can only handle scalar operators");
 !*anticommchk:= nil;
 if not noncommuting(u,v) then return
-  if !*anticom then mk!*sq !*f2q multf(!*n2f 2,multfnc(!*k2f v,!*k2f u))
+  if !*anticom then mk!*sq !*f2q physop!-multf(!*n2f 2,physop!-multfnc(!*k2f v,!*k2f u))
   else mk!*sq (nil . 1);
 x := list(u,v);
 z := opmtch!* ('comm . x);

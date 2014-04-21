@@ -60,16 +60,16 @@ symbolic procedure dp_term (a,e);
 
 symbolic procedure dp_from_ei n;
 % Returns e_i as dpoly.
-  list dp_term(bc_fi 1,mo_from_ei n);
+  list dp_term(cali_bc_fi 1,mo_from_ei n);
 
 symbolic procedure dp_fi n;
 % dpoly from integer
    if n=0 then nil else
-   list dp_term(bc_fi n,mo_zero());
+   list dp_term(cali_bc_fi n,mo_zero());
 
 symbolic procedure dp_fbc c;
 % Converts the base coefficient c into a dpoly.
-   if bc_zero!? c then nil else
+   if cali_bc_zero!? c then nil else
    list dp_term(c,mo_zero());
 
 % ------------  dpoly arithmetics ---------------------------
@@ -94,7 +94,7 @@ symbolic procedure dp_neworder p;
 
 symbolic procedure dp_neg p;
 % Returns - p  for the dpoly p.
-   for each x in p collect (car x .  bc_neg cdr x);
+   for each x in p collect (car x .  cali_bc_neg cdr x);
 
 symbolic procedure dp_times_mo (mo,p);
 % Returns p * x^mo for the dpoly p and the monomial mo.
@@ -102,12 +102,12 @@ symbolic procedure dp_times_mo (mo,p);
 
 symbolic procedure dp_times_bc (bc,p);
 % Returns p * bc for the dpoly p and the base coeff. bc.
-   for each x in p collect (car x .  bc_prod(bc,cdr x));
+   for each x in p collect (car x .  cali_bc_prod(bc,cdr x));
 
 symbolic procedure dp_times_bcmo (bc,mo,p);
 % Returns p * bc * x^mo for the dpoly p, the monomial mo and the base
 % coeff. bc.
-   for each x in p collect (mo_sum(mo,car x) .  bc_prod(bc,cdr x));
+   for each x in p collect (mo_sum(mo,car x) .  cali_bc_prod(bc,cdr x));
 
 symbolic procedure dp_times_ei(i,p);
 % Returns p * e_i for the dpoly p.
@@ -120,11 +120,11 @@ symbolic procedure dp_project(p,k);
 symbolic procedure dp_content p;
 % Returns the leading coefficient, if invertible, or the content of
 % p.
-  if null p then bc_fi 0
+  if null p then cali_bc_fi 0
   else begin scalar w;
         w:=dp_lc p; p:=cdr p;
-        while p and not bc_inv w do
-         << w:=bc_gcd(w,dp_lc p); p:=cdr p >>;
+        while p and not cali_bc_inv w do
+         << w:=cali_bc_gcd(w,dp_lc p); p:=cdr p >>;
         return w
         end;
 
@@ -159,17 +159,17 @@ symbolic procedure dp_simp pol;
 %       dp_content pol canceled out
 % and pol_old = z * dpoly_new .
 
-  if null pol then pol . bc_fi 1
+  if null pol then pol . cali_bc_fi 1
   else begin scalar z,z1;
-    if (z:=bc_inv (z1:=dp_lc pol)) then
+    if (z:=cali_bc_inv (z1:=dp_lc pol)) then
         return dp_times_bc(z,pol) . z1;
 
     % -- now we assume that base coefficients are a gcd domain ----
 
     z:=dp_content pol;
-    if bc_minus!? z1 then z:=bc_neg z;
+    if cali_bc_minus!? z1 then z:=cali_bc_neg z;
     pol:=for each x in pol collect
-                car x . car bc_divmod(cdr x,z);
+                car x . car cali_bc_divmod(cdr x,z);
     return pol . z;
     end;
 
@@ -195,8 +195,8 @@ symbolic procedure dp_sum(p1,p2);
         sl := mo_compare(dp_lmon p1, dp_lmon p2);
         if sl = 1 then return car p1 . dp_sum(cdr p1, p2);
         if sl = -1 then return car p2 . dp_sum(p1, cdr p2);
-        al := bc_sum(dp_lc p1, dp_lc p2);
-        if bc_zero!? al then return dp_sum(cdr p1, cdr p2)
+        al := cali_bc_sum(dp_lc p1, dp_lc p2);
+        if cali_bc_zero!? al then return dp_sum(cdr p1, cdr p2)
         else return dp_term(al,dp_lmon p1) . dp_sum(cdr p1, cdr p2)
         end;
 
@@ -213,7 +213,7 @@ symbolic procedure dp_power(p,n);
   else dp!=power(p,n);
 
 symbolic procedure dp!=power1(p,n); % For monomials.
-  list dp_term(bc_power(dp_lc p,n),mo_power(dp_lmon p,n));
+  list dp_term(cali_bc_power(dp_lc p,n),mo_power(dp_lmon p,n));
 
 symbolic procedure dp!=power(p,n);
   if n=1 then p
@@ -255,8 +255,8 @@ symbolic procedure dp!=a2dpatom u;
 % Converts the atom (or kernel) u into a dpoly.
    if u=0 then nil
    else if numberp u or not member(u, ring_all_names cali!=basering)
-                then list dp_term(bc_from_a u,mo_zero())
-   else list dp_term(bc_fi 1,mo_from_a u);
+                then list dp_term(cali_bc_from_a u,mo_zero())
+   else list dp_term(cali_bc_fi 1,mo_from_a u);
 
 symbolic procedure dp!=fnsum u;
 % U is a list of dpoly expressions. The result is the dpoly
@@ -284,7 +284,7 @@ symbolic procedure dp!=fnpow(u,n); dp_power(u,n);
 put('expt,'dp!=fn,'dp!=fnpow);
 
 symbolic procedure dp!=fnneg u;
-   ( if null v then v else dp_term(bc_neg dp_lc v,dp_lmon v) . cdr v)
+   ( if null v then v else dp_term(cali_bc_neg dp_lc v,dp_lmon v) . cdr v)
         where v = car u;
 
 put('minus,'dp!=fn,'dp!=fnneg);
@@ -297,7 +297,7 @@ symbolic procedure dp!=fnquot u;
 
 symbolic procedure dp!=fnquot1(u,v);
    if null u then u
-    else dp_term(bc_quot(dp_lc u,v), dp_lmon u) .
+    else dp_term(cali_bc_quot(dp_lc u,v), dp_lmon u) .
             dp!=fnquot1(cdr u,v);
 
 put('quotient,'dp!=fn,'dp!=fnquot);
@@ -311,9 +311,9 @@ symbolic procedure dp_2a u;
 
 symbolic procedure dp!=2a u;
    if null u then nil
-    else ((if bc_minus!? x then
-                        list('minus,dp!=retimes(bc_2a bc_neg x . y))
-           else dp!=retimes(bc_2a x . y))
+    else ((if cali_bc_minus!? x then
+                        list('minus,dp!=retimes(cali_bc_2a cali_bc_neg x . y))
+           else dp!=retimes(cali_bc_2a x . y))
           where x = dp_lc u, y = mo_2a dp_lmon u)
                  . dp!=2a cdr u;
 
@@ -341,10 +341,10 @@ symbolic procedure dp_print1(u,v);
    if null u then if null v then print_lf 0 else nil
     else begin scalar bool,w;
        w := dp_lc u;
-       if bc_minus!? w then <<bool := t; w := bc_neg w>>;
+       if cali_bc_minus!? w then <<bool := t; w := cali_bc_neg w>>;
        if bool then print_lf " - " else if v then print_lf " + ";
-       ( if not bc_one!? w or mo_zero!? x then
-            << bc_prin w; mo_prin(x,t)>>
+       ( if not cali_bc_one!? w or mo_zero!? x then
+            << cali_bc_prin w; mo_prin(x,t)>>
          else mo_prin(x,nil))
            where x = dp_lmon u;
        dp_print1(cdr u,t)

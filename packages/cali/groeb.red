@@ -495,7 +495,7 @@ symbolic procedure groeb_spol pp;
       a:=nth(pp,4); b:=nth(pp,5); lcm:=nth(pp,3);
       pi:=bas_dpoly a; pj:=bas_dpoly b; ri:=bas_rep a; rj:=bas_rep b;
       mi:=mo_diff(lcm,dp_lmon pi); mj:=mo_diff(lcm,dp_lmon pj);
-      zi:=dp_lc pj; zj:=bc_neg dp_lc pi;
+      zi:=dp_lc pj; zj:=cali_bc_neg dp_lc pi;
       a:=dp_sum(dp_times_bcmo(zi,mi, cdr pi),
                 dp_times_bcmo(zj,mj, cdr pj));
       b:=dp_sum(dp_times_bcmo(zi,mi, ri),

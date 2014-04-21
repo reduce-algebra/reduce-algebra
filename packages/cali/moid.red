@@ -81,7 +81,7 @@ symbolic procedure moid_from_dpmat m;
 
 symbolic procedure moid_2a m;
 % Convert the moideal m to algebraic mode.
-  'list . for each x in m collect dp_2a list dp_term(bc_fi 1,x);
+  'list . for each x in m collect dp_2a list dp_term(cali_bc_fi 1,x);
 
 symbolic procedure moid_from_a m;
 % Convert a moideal from algebraic mode.

@@ -171,7 +171,7 @@ symbolic procedure lf_dualhbasis(q,s);
 
 symbolic procedure lf!=compact u;
 % Sort the cdr of the lf u and remove zeroes.
-  sort(for each x in u join if not bc_zero!? cdr x then {x},
+  sort(for each x in u join if not cali_bc_zero!? cdr x then {x},
         function (lambda(x,y);
                      apply2(get('cali,'varlessp),car x,car y)));
 
@@ -184,16 +184,16 @@ symbolic procedure lf!=times_bc(z,a);
   dp_times_bc(z,car a) . lf!=times_bc1(z,cdr a);
 
 symbolic procedure lf!=times_bc1(z,a);
-  if bc_zero!? z then nil
-  else for each x in a collect car x . bc_prod(z,cdr x);
+  if cali_bc_zero!? z then nil
+  else for each x in a collect car x . cali_bc_prod(z,cdr x);
 
 symbolic procedure lf!=sum1(a,b);
   if null a then b
   else if null b then a
   else if equal(caar a,caar b) then
-        (if bc_zero!? u then lf!=sum1(cdr a,cdr b)
+        (if cali_bc_zero!? u then lf!=sum1(cdr a,cdr b)
         else (caar a . u).lf!=sum1(cdr a,cdr b))
-        where u:=bc_sum(cdar a,cdar b)
+        where u:=cali_bc_sum(cdar a,cdar b)
   else if apply2(get('cali,'varlessp),caar a,caar b) then
         (car a).lf!=sum1(cdr a,b)
   else (car b).lf!=sum1(a,cdr b);
@@ -201,11 +201,11 @@ symbolic procedure lf!=sum1(a,b);
 symbolic procedure lf!=simp a;
   if null cdr a then car dp_simp car a. nil
   else begin scalar z;
-    if (z:=bc_inv lf!=lc a) then return lf!=times_bc(z,a);
+    if (z:=cali_bc_inv lf!=lc a) then return lf!=times_bc(z,a);
     z:=dp_content car a;
-    for each x in cdr a do z:=bc_gcd(z,cdr x);
-    return (for each x in car a collect car x . bc_quot(cdr x,z)) .
-        (for each x in cdr a collect car x . bc_quot(cdr x,z));
+    for each x in cdr a do z:=cali_bc_gcd(z,cdr x);
+    return (for each x in car a collect car x . cali_bc_quot(cdr x,z)) .
+        (for each x in cdr a collect car x . cali_bc_quot(cdr x,z));
     end;
 
 % Leading variable and coefficient assuming cdr a nonempty :
@@ -220,13 +220,13 @@ symbolic procedure lf!=reduce(a,l);
   if lf!=zero a or null l or lf!=less(a, car l) then a
   else if (lf!=lvar a = lf!=lvar car l) then
     begin scalar z,z1,z2,b;
-    b:=car l; z1:=bc_neg lf!=lc a; z2:=lf!=lc b;
+    b:=car l; z1:=cali_bc_neg lf!=lc a; z2:=lf!=lc b;
     if !*bcsimp then
-      << if (z:=bc_inv z1) then <<z1:=bc_fi 1; z2:=bc_prod(z2,z)>>
+      << if (z:=cali_bc_inv z1) then <<z1:=cali_bc_fi 1; z2:=cali_bc_prod(z2,z)>>
          else
-           << z:=bc_gcd(z1,z2);
-              z1:=bc_quot(z1,z);
-              z2:=bc_quot(z2,z);
+           << z:=cali_bc_gcd(z1,z2);
+              z1:=cali_bc_quot(z1,z);
+              z2:=cali_bc_quot(z2,z);
            >>;
       >>;
     a:=lf!=sum(lf!=times_bc(z2,a),lf!=times_bc(z1,b));
@@ -257,7 +257,7 @@ symbolic procedure affine_points!* m;
   put('cali,'evlf,'lf!=pointevlf);
   return lf_dualbasis(
         { dp_fi 1 . lf!=compact
-                for each x in names collect (x . bc_fi 1) });
+                for each x in names collect (x . cali_bc_fi 1) });
   end;
 
 symbolic operator proj_points;
@@ -278,7 +278,7 @@ symbolic procedure proj_points!* m;
   put('cali,'evlf,'lf!=pointevlf);
   return lf_dualhbasis(
         { dp_fi 1 . lf!=compact
-                for each x in names collect (x . bc_fi 1) },
+                for each x in names collect (x . cali_bc_fi 1) },
         length u);
   end;
 
@@ -287,7 +287,7 @@ symbolic procedure lf!=pointevlf(p,x);
    return q . lf!=compact
         pair(get('cali,'varnames),
         for each x in get('cali,'sublist) collect
-                bc_from_a subeval1(x,p));
+                cali_bc_from_a subeval1(x,p));
    end;
 
 symbolic procedure lf!=pointvarlessp(x,y); not ordp(x,y);
@@ -342,7 +342,7 @@ symbolic procedure lf!=toevlf(p,x);
         % Now reduce the terms in cdr p with the old borderbasis.
   for each x in cdr p do
       % b is the list of terms already in canonical form,
-      % a is a list of (can. form) . (bc_quot), where bc_quot is
+      % a is a list of (can. form) . (cali_bc_quot), where cali_bc_quot is
       %         a pair of bc's interpreted as a rational multiplier
       %         for the can. form.
       if d:=assoc(car x,c) then a:=(third d . (cdr x . second d)) .a
@@ -350,7 +350,7 @@ symbolic procedure lf!=toevlf(p,x);
   a:=for each x in a collect car x . lf!=reducebc cdr x;
   d:=lf!=denom a;
   a:=for each x in a collect
-                dp_times_bc(bc_quot(bc_prod(d,cadr x),cddr x),car x);
+                dp_times_bc(cali_bc_quot(cali_bc_prod(d,cadr x),cddr x),car x);
   b:=dp_times_bc(d,reversip b);
   for each x in a do b:=dp_sum(x,b);
   return dp_times_bc(d,car p) . b;
@@ -358,15 +358,15 @@ symbolic procedure lf!=toevlf(p,x);
 
 symbolic procedure lf!=reducebc z;
   begin scalar g;
-  if g:=bc_inv cdr z then return bc_prod(g,car z) . bc_fi 1;
-  g:=bc_gcd(car z,cdr z);
-  return bc_quot(car z,g) . bc_quot(cdr z,g);
+  if g:=cali_bc_inv cdr z then return cali_bc_prod(g,car z) . cali_bc_fi 1;
+  g:=cali_bc_gcd(car z,cdr z);
+  return cali_bc_quot(car z,g) . cali_bc_quot(cdr z,g);
   end;
 
 symbolic procedure lf!=denom a;
-  if null a then bc_fi 1
+  if null a then cali_bc_fi 1
   else if null cdr a then cddar a
-  else bc_lcm(cddar a,lf!=denom cdr a);
+  else cali_bc_lcm(cddar a,lf!=denom cdr a);
 
 % ----- The version without borderbases :
 

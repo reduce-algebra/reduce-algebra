@@ -82,7 +82,7 @@ symbolic procedure hf!=whilbmon(m,w);
    if null m then dp_fi 1
    else begin scalar p;
     m:=for each x in m collect
-        dp_sum(dp_fi 1,list dp_term(bc_fi(-1),mo_wconvert(x,w)));
+        dp_sum(dp_fi 1,list dp_term(cali_bc_fi(-1),mo_wconvert(x,w)));
     p:=car m;
     for each x in cdr m do p:=dp_prod(p,x);
     return p;
@@ -141,7 +141,7 @@ symbolic procedure hf!=whilb3(u,w);
   (if length c = dpmat_cols u then
    begin scalar p;
       for each x in c do
-        p:=dp_sum(p,{dp_term(bc_fi 1,mo_wconvert(cdr x,w))});
+        p:=dp_sum(p,{dp_term(cali_bc_fi 1,mo_wconvert(cdr x,w))});
       return p
    end else dp_fi max(1,dpmat_cols u))
   where c:=dpmat_coldegs u;

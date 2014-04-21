@@ -324,7 +324,7 @@ symbolic procedure isprime!* m;
     m1:=groeb_mingb dpmat_from_a m1;
     if dpmat_unitideal!?(m1) then
       << setring!* c1; rederr"Input must be a gbasis" >>;
-    lc:=bc_2a prime!=quot m1; setring!* c1;
+    lc:=cali_bc_2a prime!=quot m1; setring!* c1;
         % Test recontraction of m1 to be equal to m.
     m2:=gbasis!* matqquot!*(m,dp_from_a lc);
     if not submodulep!*(m2,m) then return nil;
@@ -363,9 +363,9 @@ symbolic procedure prime!=isoprimes m;
     m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
     setring!* ring_define(u,degreeorder!* u,
                         'revlex,for each x in u collect 1);
-    p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+    p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
     l:=for each x in prime!=isoprimes m1 collect
-            (dpmat_2a x . bc_2a prime!=quot x);
+            (dpmat_2a x . cali_bc_2a prime!=quot x);
     setring!* c;
     l:=for each x in l collect
                 gbasis!* matqquot!*(dpmat_from_a car x,dp_from_a cdr x);
@@ -393,9 +393,9 @@ symbolic procedure prime!=factorisoprimes m;
     m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
     setring!* ring_define(u,degreeorder!* u,
                         'revlex,for each x in u collect 1);
-    p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+    p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
     l:=for each x in prime!=factorisoprimes m1 collect
-            (dpmat_2a x . bc_2a prime!=quot x);
+            (dpmat_2a x . cali_bc_2a prime!=quot x);
     setring!* c;
     l:=listgroebfactor!* for each x in l collect
                 matqquot!*(dpmat_from_a car x,dp_from_a cdr x);
@@ -414,8 +414,8 @@ symbolic procedure prime!=quot m;
 % The lcm of the leading coefficients of m.
   begin scalar p,u;
     u:=for each x in dpmat_list m collect dp_lc bas_dpoly x;
-    if null u then return bc_fi 1;
-    p:=car u; for each x in cdr u do p:=bc_lcm(p,x);
+    if null u then return cali_bc_fi 1;
+    p:=car u; for each x in cdr u do p:=cali_bc_lcm(p,x);
     return p
   end;
 
@@ -439,8 +439,8 @@ symbolic procedure radical!* m;
     m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
     setring!* ring_define(u,degreeorder!* u,
                         'revlex,for each x in u collect 1);
-    p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
-    l:=radical!* m1; p1:=bc_2a prime!=quot l;
+    p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+    l:=radical!* m1; p1:=cali_bc_2a prime!=quot l;
     l:=dpmat_2a l; setring!* c;
     l:=gbasis!* matqquot!*(dpmat_from_a l,dp_from_a p1);
     if dp_unit!?(p:=dp_from_a p) or
@@ -475,8 +475,8 @@ symbolic procedure unmixedradical!* m;
     m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
     setring!* ring_define(u,degreeorder!* u,'revlex,
                 for each x in u collect 1);
-    p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
-    l:=zeroradical!* m1; p1:=bc_2a prime!=quot l;
+    p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+    l:=zeroradical!* m1; p1:=cali_bc_2a prime!=quot l;
     l:=dpmat_2a l; setring!* c;
     l:=matqquot!*(dpmat_from_a l,dp_from_a p1);
     if dp_unit!?(p:=dp_from_a p) then return l
@@ -517,7 +517,7 @@ symbolic procedure prime!=eqhull(m,d);
   m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
   setring!* ring_define(u,degreeorder!* u,'revlex,
                                 for each x in u collect 1);
-  p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+  p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
   setring!* c; cali!=degrees:=dpmat_coldegs m;
   if submodulep!*(l:=matqquot!*(m,dp_from_a p),m) then return m;
   m1:=gbasis!* matstabquot!*(m,annihilator2!* l);
@@ -640,10 +640,10 @@ symbolic procedure prime!=decompose1 m;
     m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
     setring!* ring_define(u,degreeorder!* u,
                                 'revlex,for each x in u collect 1);
-    p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+    p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
     l:=for each x in prime!=decompose1 m1 collect
-          {(dpmat_2a first x . bc_2a prime!=quot first x),
-           (dpmat_2a second x . bc_2a prime!=quot second x)};
+          {(dpmat_2a first x . cali_bc_2a prime!=quot first x),
+           (dpmat_2a second x . cali_bc_2a prime!=quot second x)};
     setring!* c;
     l:=for each x in l collect
     << cali!=degrees:=dpmat_coldegs m;
@@ -699,10 +699,10 @@ symbolic procedure prime!=decompose2 m;
     m1:=dpmat_2a gbasis!* dpmat_neworder(m,nil);
     setring!* ring_define(u,degreeorder!* u,
                                 'revlex,for each x in u collect 1);
-    p:=bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
+    p:=cali_bc_2a prime!=quot(m1:=groeb_mingb dpmat_from_a m1);
     l:=for each x in zeroprimarydecomposition!* m1 collect
-          {(dpmat_2a first x . bc_2a prime!=quot first x),
-           (dpmat_2a second x . bc_2a prime!=quot second x)};
+          {(dpmat_2a first x . cali_bc_2a prime!=quot first x),
+           (dpmat_2a second x . cali_bc_2a prime!=quot second x)};
     setring!* c;
     l:=for each x in l collect
     << cali!=degrees:=dpmat_coldegs m;
