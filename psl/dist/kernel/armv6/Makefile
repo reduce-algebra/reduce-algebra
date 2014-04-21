@@ -189,19 +189,6 @@ $(USERDIR)/main.o: $(USERDIR)/main.s
 	# rm -f $(USERDIR)/main.temp
 	gcc -c -m32 $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
  
-$(USERDIR)/dmain_om.o: $(USERDIR)/dmain_om.s
-	  mv $(USERDIR)/dmain_om.s $(USERDIR)/dmain.temp
-	  sed -f $(PXK)/dmain.linux.sed $(USERDIR)/dmain.temp > $(USERDIR)/dmain_om.s
-	  # rm -f $(USERDIR)/dmain.temp
-	  as $(ASARGS) -o $(USERDIR)/dmain_om.o $(USERDIR)/dmain_om.s
-
-$(USERDIR)/main_om.o: $(USERDIR)/main_om.s
-	  mv $(USERDIR)/main_om.s $(USERDIR)/main.temp
-	  sed -f $(PXK)/main.linux.sed $(USERDIR)/main.temp > $(USERDIR)/main_om.s
-	  # rm -f $(USERDIR)/main.temp
-	  as $(ASARGS) -o $(USERDIR)/main_om.o $(USERDIR)/main_om.s
-
-
 $(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed $(PXK)/dmain.linux.sed
 	-rm -f $(USERDIR)/$(MACHINE).sym
 	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
