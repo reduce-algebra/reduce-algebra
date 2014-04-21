@@ -210,6 +210,10 @@ operator f;
 solve((x-1)*(x+1)*(x-2)*(x+2)*(x-3)*(x*log(x)-1)*(f(x)-1),x);
 
 
+*** airy_ai already defined as operator 
+
+*** airy_bi already defined as operator 
+
 {f(x) - 1=0,
 
  x=root_of(log(x_)*x_ - 1,x_,tag_2),
@@ -2840,8 +2844,3 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 1620 ms  plus GC time: 171 ms
-1: real 2.09
-user 0.00
-sys 0.13

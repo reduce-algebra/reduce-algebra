@@ -201,9 +201,9 @@ fac(3);
 fac(3/2);
 
 
-       5
-gamma(---)
-       2
+ 3*sqrt(pi)
+------------
+     4
 
 
 % Legendre polynomials in ?x of order ?n, ?n a natural number.
@@ -412,13 +412,13 @@ SGhg(1) := Ghg(3,2,@(?a,?b,?c),@(?d _=?d=(1+?a+?b)/2,?e _=?e=2*?c),1) ->
 sghg(1) := ghg(3,2,@(?a,?b,?c),@(?d _= ?d=-------------,?e _= ?e=2*?c),1)->(
                                                 2
 
-                      - ?a - ?b + 2*?c + 1          2*?c + 1
-              gamma(-----------------------)*gamma(----------)
-                               2                       2
+                               - ?a - ?b + 2*?c + 1          2*?c + 1
+              sqrt(pi)*gamma(-----------------------)*gamma(----------)
+                                        2                       2
 
-                      ?a + ?b + 1          1             - ?a + 2*?c + 1
-              *gamma(-------------)*gamma(---))/(gamma(------------------)
-                           2               2                   2
+                      ?a + ?b + 1             - ?a + 2*?c + 1
+              *gamma(-------------))/(gamma(------------------)
+                           2                        2
 
                        - ?b + 2*?c + 1          ?a + 1          ?b + 1
               *gamma(------------------)*gamma(--------)*gamma(--------))
@@ -515,8 +515,3 @@ S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 10 ms
-1: real 0.25
-user 0.01
-sys 0.09

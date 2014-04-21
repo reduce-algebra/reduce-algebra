@@ -512,6 +512,7 @@ lisp(proc_list_ := '(to_do subst_level_3 separation
 
 de:=crack({de},{},{f,g,h},{});
 
+max_gc_int : 1  max # of GC's left to do: 1
 
 de := {{{},
 
@@ -1038,9 +1039,3 @@ lisp(depl!*:=nil)$
 
 end$
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 70 ms  plus GC time: 41 ms
-1:
-real 1.84
-user 0.03
-sys 0.10

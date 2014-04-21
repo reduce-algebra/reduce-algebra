@@ -68,7 +68,7 @@ symbolic procedure getrules();
   makelist for each x in get('cali,'rules) collect
         list('replaceby,prepf car x,prepf cdr x);
 
-symbolic procedure cali_bc!=simp u;
+symbolic procedure bc!=simp u;
   (if r0 then
   begin scalar r,c; integer i;
   i:=0; r:=r0;
@@ -135,7 +135,7 @@ symbolic procedure cali_bc_divmod(u,v); % Returns quot . rem.
 symbolic procedure cali_bc_gcd(u,v); gcdf!*(u,v);
 
 symbolic procedure cali_bc_lcm(u,v);
-    car bc_divmod(cali_bc_prod(u,v),bc_gcd(u,v));
+    car cali_bc_divmod(cali_bc_prod(u,v),cali_bc_gcd(u,v));
 
 endmodule; % bcsf
 

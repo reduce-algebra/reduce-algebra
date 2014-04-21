@@ -2800,6 +2800,10 @@ length one_forms janet;
 length(C := invariants janet);
 
 
+*** airy_ai already defined as operator 
+
+*** airy_bi already defined as operator 
+
 12
 
 solve(for i:=1:length C collect
@@ -2838,8 +2842,3 @@ clear x,y,z,u,v,w,C,S;
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 1850 ms  plus GC time: 151 ms
-1: real 2.27
-user 0.03
-sys 0.09

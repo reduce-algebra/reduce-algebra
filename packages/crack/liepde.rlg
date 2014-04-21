@@ -39,6 +39,10 @@ lisp(depl!*:=nil)$
 setcrackflags()$
 
 
+*** airy_ai already defined as operator 
+
+*** airy_bi already defined as operator 
+
 lisp(print_:=nil)$
 
        
@@ -1423,10 +1427,3 @@ lisp(prolong_order:=0)$
 
 end$
 
-Tested on x86_64-unknown-fedora20 CSL
-Time (counter 1): 33 ms
-
-End of Lisp run after 3.86+0.37 seconds
-real 4.71
-user 4.46
-sys 0.16

@@ -68,11 +68,11 @@ exp(-x^2-x)/sqrt(pi);
 int(ws,x,-infinity, infinity);
 
 
-  1/4          1
- e   *( - erf(---) + 1)
-               2
-------------------------
-           2
+            1
+int(------------------,x,0,infinity)
+                2
+               x  + x
+     sqrt(pi)*e
 
 
 erf(x+1/2);
@@ -97,12 +97,11 @@ df(ws,x);
 int(ws,x,-infinity, infinity);
 
 
-                  x
-      2*sqrt(pi)*e                              1
-int(------------------,x,0,infinity) + 1 - erf(---)
-          2                                     2
-      (4*x  + 1)/4
-     e            *pi
+           2*sqrt(pi)
+int(------------------------,x, - infinity,infinity)
+          2
+      (4*x  + 4*x + 1)/4
+     e                  *pi
 
 
 e^(1/4)*erf(x+1/2);
@@ -246,8 +245,3 @@ int(exp(-a^2*x^2),x,-infinity, infinity);
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 149 ms  plus GC time: 80 ms
-1: real 0.53
-user 0.01
-sys 0.10
