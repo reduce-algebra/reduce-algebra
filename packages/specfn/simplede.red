@@ -228,7 +228,7 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
 % transforming into Recurrence equation
 
         factor ba;
-        req := pssubst(deq,x,ba,nn) where subst_rules;
+        req := (pssubst(deq,x,ba,nn) where subst_rules);
 
         if symbolic !*traceFPS
           then write("Recurrence equation is :",req);
@@ -307,7 +307,7 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
    if result = 0 or not(freeof(result,failed)) then return (-1);
    lisp (erfg!* := nil);
    result:= result;
-   result:= result where hgspec_pochhammer;
+   result:= (result where hgspec_pochhammer);
    result := verbessere (result,nil);
    return result;
 end;
@@ -482,7 +482,7 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
                         if symbolic !*traceFPS then write " ck = ",ck;
                         c :=1;
                         ck := ck/C;
-                        ck := ck where hgspec_pochhammer;
+                        ck := (ck where hgspec_pochhammer);
                         if ck = 0 then S := S + c0*x^i else
                          if Rsolve!*!* = finite then S := S +
                                 C*sum(ck*x^(m*k+i), k)
@@ -579,15 +579,15 @@ let update_coeff_rules >>$
 
 algebraic;
 
-fps!*rules = {
+fps!*rules := {
    fps(dilog ~x,~x,1) => infsum((-1)^k*(x-1)^k/k^2,k,1,infinity),
 
    fps(polylog(~s,~x),~x,0) => infsum((-1)^k*x^k/k^s,k,1,infinity)
 };
+
+%% doesn't work yet
+%let fps!*rules;
+
 endmodule;
 
 end;
-
-
-
-

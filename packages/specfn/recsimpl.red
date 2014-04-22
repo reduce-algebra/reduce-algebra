@@ -77,8 +77,8 @@ begin scalar eqq,L1,L2,L3,L4,L5,F,Nargs,n,a,x,kern;
                 n := max(L5);
                 if member(n-1,L5) and member(n-2,L5) then
                    <<   spec_nnnnn:= n;
-                        << eqq := eqq; spec_nnnnn:= nil >>
-   			    where Spec_recrules;
+                        eqq := (eqq where Spec_recrules);
+                        spec_nnnnn:= nil 
                    >>;
                 L5 := adelete(n,L5);
 
