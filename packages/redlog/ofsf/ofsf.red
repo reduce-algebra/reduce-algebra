@@ -315,9 +315,61 @@ if rl_texmacsp() then
 flag('(equal neq leq geq lessp greaterp),'spaced);
 flag('(ofsf_chsimpat),'full);
 
+% Ofsf Data Types
 struct OfsfAtf asserted by List3;
 struct OfsfAtfL asserted by listp;
 
+struct Rational checked by RationalP;
+struct RationalList checked by RationalListP;
+struct GRational checked by GRationalP;
+struct RatInterval checked by RatIntervalP;
+struct RatIntervalList checked by RatIntervalListP;
+struct RatPoly checked by RatPolyP;
+struct AexCtx checked by AexCtxP;
+struct Aex checked by AexP;
+struct AexList checked by AexListP;
+struct Anu asserted by AnuP;
+struct AnuList asserted by AnuListP;
+
+procedure IntegerListP(s);
+   null s or pairp s and fixp car s and IntegerListP cdr s;
+
+procedure RationalP(s);
+   sqp s and (null numr s or (fixp numr s and not eqn(numr s, 0))) and
+      fixp denr s and denr s > 0;
+
+procedure RationalListP(s);
+   null s or pairp s and RationalP car s and RationalListP cdr s;
+
+procedure GRationalP(s);
+   RationalP s or s eq 'minfty or s eq 'infty;  % TODO: Change to 'minf, 'pinf.
+
+procedure RatIntervalP(s);
+   pairp s and RationalP car s and RationalP cdr s;
+
+procedure RatIntervalListP(s);
+   null s or pairp s and RatIntervalP car s and RatIntervalListP cdr s;
+
+procedure RatPolyP(s);
+   sqp s and sfpx numr s and not zerop numr s and
+      fixp denr s and denr s > 0;
+
+procedure AexCtxP(s);
+   pairp s and eqcar(s, 'ctx);
+
+procedure AexP(s);
+   pairp s and eqcar(s, 'aex);
+
+procedure AexListP(s);
+   null s or pairp s and AexP car s and AexListP cdr s;
+
+procedure AnuP(s);
+   pairp s and eqcar(s, 'anu);
+
+procedure AnuListP(s);
+   null s or pairp s and AnuP car s and AnuListP cdr s;
+
+% Access Functions
 inline procedure ofsf_op(atf);
    % Ordered field operator. [atf] is an atomic formula
    % $R(t_1,t_2)$. Returns $R$.
