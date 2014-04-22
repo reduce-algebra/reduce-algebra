@@ -108,23 +108,30 @@ procedure rl_simp(u);
 procedure rl_simp1(u);
    % Reduce logic [simp]. [u] is (pseudo) Lisp prefix of a formula.
    % Returns the formula encoded by [u].
-   begin scalar w;
+   begin scalar w, h;
       if null rl_cid!* then rederr {"select a context"};
       if atom u then
  	 return rl_simpatom u;
       argnochk u where !*strict_argcount = t;
-      if (w := get(car u,'rl_simpfn)) then
- 	 return if flagp(w,'full) then apply(w,{u}) else apply(w,{cdr u});
-      if (w := get(car u,get(car rl_cid!*,'simpfnname))) then
-	 return if flagp(w,'full) then apply(w,{u}) else apply(w,{cdr u});
-      if (w := get(car u,'psopfn)) then
- 	 return rl_simp1 apply1(w,cdr u);
-      if flagp(car u,'opfn) then
-	 return rl_simp1 apply(car u,for each x in cdr u collect reval x);
-      if (w := get(car u,'prepfn2)) then
- 	 return rl_simp1 apply(w,{u});
-      rl_redmsg(car u,"predicate");
-      put(car u,get(car rl_cid!*,'simpfnname),get(car rl_cid!*,'simpdefault));
+      if (w := get(car u, 'rl_simpfn)) then
+ 	 return if flagp(w, 'full) then apply(w, {u}) else apply(w, {cdr u});
+      if (w := get(car u, get(car rl_cid!*, 'simpfnname))) then
+	 return if flagp(w, 'full) then apply(w, {u}) else apply(w, {cdr u});
+      if (w := get(car u, 'psopfn)) then <<
+	 % u = (replaceby x 1) will return itself via a psopfn equalreplaceby.
+	 h := apply1(w, cdr u);
+	 if h neq u then
+ 	    return rl_simp1 h
+      >>;
+      if flagp(car u, 'opfn) then
+	 return rl_simp1 apply(car u, for each x in cdr u collect reval x);
+      if (w := get(car u, 'prepfn2)) then
+ 	 return rl_simp1 apply(w, {u});
+      h := ioto_form2str car u;
+      if (w := get(car u, 'prtch)) then
+	 h := lto_sconcat {ioto_form2str w, " (", h, ")"};
+      rl_redmsg(h, "predicate");
+      put(car u, get(car rl_cid!*, 'simpfnname), get(car rl_cid!*, 'simpdefault));
       return rl_simp1(u)
    end;
 
