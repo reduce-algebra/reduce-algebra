@@ -91,7 +91,7 @@ asserted procedure ofsf_cad(phi: Formula, mkvarlres: List, aaplus: List): Any;
       % preparation phase; Kernel order is changed.
       cd := ofsf_cadpreparation(phi, mkvarlres, aaplus);
       if !*rlverbose then
-	 caddata_print1 cd;
+	 caddata_print cd;
       if !*rlcadpreponly then
 	 return ofsf_cadfinish cd;
       % projection phase
@@ -130,7 +130,7 @@ asserted procedure ofsf_cadproj(phi: Formula, mkvarlres: List): DottedPair;
       % preparation phase; Kernel order is changed.
       cd := ofsf_cadpreparation(phi, mkvarlres, nil);
       if !*rlverbose then
-	 caddata_print1 cd;
+	 caddata_print cd;
       % projection phase
       ofsf_cadprojection cd;
       % finish
@@ -302,46 +302,6 @@ asserted procedure ofsf_cadfinish(cd: CadData): DottedPair;
 	 theo . ophi)
    end;
 
-asserted procedure ofsf_cadswitches(): Any;
-   % Prints the status of all switches relevant for cad.
-   <<
-      ioto_tprin2 ".:: list of switches ::.";
-      ioto_tprin2 "------------------------";
-      ioto_tprin2 "verbose switches:";
-      ofsf_cadswitchprint(!*rlverbose); ioto_prin2 "rlverbose";
-      ofsf_cadswitchprint(ofsf_cadverbosep()); ioto_prin2 "rlcadverbose";
-      % ofsf_cadswitchprint(!*anuexverbose); ioto_prin2 "anuexverbose";
-      ioto_tprin2 "switches for preparation phase:";
-      ofsf_cadswitchprint(!*rlcaddecdeg); ioto_prin2 "rlcaddecdeg";
-      % ioto_tprin2 "switches for projection phase:";
-      % ofsf_cadswitchprint(!*rlcadaproj);      ioto_prin2 "rlcadaproj";
-      % ofsf_cadswitchprint(!*rlcadaprojalways);ioto_prin2 "rlcadaprojalways";
-      % ofsf_cadswitchprint(!*rlcadhongproj);   ioto_prin2 "rlcadhongproj";
-      % ofsf_cadswitchprint(!*rlcadfac);  ioto_prin2 "rlcadfac";
-      ioto_tprin2 "switches for extension phase";
-      ofsf_cadswitchprint(!*rlcadpartial); ioto_prin2 "rlcadpartial";
-      ofsf_cadswitchprint(!*rlcadte); ioto_prin2 "rlcadte";
-      ofsf_cadswitchprint(!*rlcadpbfvs); ioto_prin2 "rlcadpbfvs";
-      ofsf_cadswitchprint(!*rlcadisoallroots); ioto_prin2 "rlcadisoallroots";
-      ofsf_cadswitchprint(!*rlcadtrimtree); ioto_prin2 "rlcadtrimtree";
-      ofsf_cadswitchprint(!*rlcadfasteval); ioto_prin2 "rlcadfasteval";
-      ofsf_cadswitchprint(!*rlcadfulldimonly); ioto_prin2 "rlcadfulldimonly";
-      ofsf_cadswitchprint(!*rlcadrmwc); ioto_prin2 "rlcadrmwc";
-      ioto_tprin2 "switches for solution formula construction phase";
-      ofsf_cadswitchprint(!*rlcadrawformula); ioto_prin2 "rlcadrawformula";
-      ofsf_cadswitchprint(!*rlcaddnfformula); ioto_prin2 "rlcaddnfformula";
-      ioto_tprin2 "general switches:";
-      ofsf_cadswitchprint(!*rlcadpreponly); ioto_prin2 "rlcadpreponly";
-      ofsf_cadswitchprint(!*rlcadprojonly); ioto_prin2 "rlcadprojonly";
-      % ofsf_cadswitchprint(!*rlcadbaseonly); ioto_prin2 "rlcadbaseonly";
-      ofsf_cadswitchprint(!*rlcadextonly);  ioto_prin2 "rlcadextonly";
-      % ioto_tprin2 "switches for algebraic numbers (do not change)";
-   >>;
-
-asserted procedure ofsf_cadswitchprint(b: Boolean): Any;
-   % Switch print.
-   if b then ioto_tprin2 " ON  -- " else ioto_tprin2 " OFF -- ";
-
 % Andreas' cell.
 
 % Constructors and access functions for data type Acell plus the code for
@@ -437,8 +397,8 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
    % [basecell]. Intuition: Finds for a cell C in D_j a partial cad tree that
    % has C as a root. If j >= k, then C has a truth value.
    begin
-      scalar r,k,l,j,varl,qal,hh,fffj,xj,sp,cell,treel,thetaj,neutral,nrdata,ncbuffer,res,tv,w;
-      integer d,n;
+      scalar r,k,l,j,varl,qal,hh,fffj,xj,sp,cell,treel,thetaj,neutral,nrdata,ncbuffer,res,tv;
+      integer n;
       sp := acell_getsp basecell;
       j := length sp + 1;
       if ofsf_cadverbosep() then
@@ -453,7 +413,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       % ioto_tprin2t {"Hj-1: ", getv(hh, j-1)};
       % 1. BASE CASE: j = r, evaluation case. The base cell is a leaf.
       if j > r then <<
-	 if caddata_tv cd then
+	 if !*rlcadtv then
 	    acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
@@ -461,7 +421,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       	 return atree_new basecell
       >>;
       % trial evaluation
-      if caddata_tv cd and !*rlcadte then <<
+      if !*rlcadtv and !*rlcadte then <<
 	 % ioto_tprin2t "----------";
 	 % ioto_prin2t {"sp: ",sp};
 	 % ioto_prin2t {"psi: ",psi};
@@ -497,7 +457,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       ncbuffer := ofsf_ncinit();
       % 2. RECURSION CASE: j<=r
       % 2a. 0<=j<=k or no truth values
-      if (0<=j and j<=k) or (not caddata_tv cd) then
+      if (0<=j and j<=k) or (not !*rlcadtv) then
 	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do <<
 	    if not ofsf_iswhitecell(cell,cd) then
 	       treel := ofsf_treeovercell(cell,psi,cd) . treel
@@ -524,7 +484,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	    treel := atree_new(cell) . treel;
       treel := sort(treel, function atree_sortfn);
       % ioto_tprin2t {treel};
-      if caddata_ans cd then
+      if !*rlcadans then
 	 ofsf_addanswers(basecell, treel, j, cd);
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"_", (2*n+1) - length treel, ")"};
@@ -537,7 +497,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       else
 	 res := atree_addchildlistip(atree_new basecell, treel);
       % propagation below free variable space
-      if not (caddata_tv cd and !*rlcadpbfvs) then
+      if not (!*rlcadtv and !*rlcadpbfvs) then
 	 return res;
       tv := list2set for each b in treel collect
 	 acell_gettv atree_rootlabel b;
@@ -798,8 +758,8 @@ asserted procedure ofsf_fulltreeovercell(basecell: Acell, ff: Atom, varl: List, 
    % ..., x_r), [qal] and [psi] are not needed. Returns a tree over the
    % basecell. Intuition: Finds for a cell C in D_j a full cad tree that has C
    % as a root. Each cell has a sample point, but no truth value.
-   begin scalar r,k,j,ffj,fffj,xj,sp,cell,treel,nrdata,ncbuffer;
-      integer d,n;
+   begin scalar r,k,j,fffj,xj,sp,cell,treel,nrdata,ncbuffer;
+      integer n;
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(", length acell_getsp basecell};
       % ioto_tprin2t {"tree over: ", basecell};
@@ -934,7 +894,7 @@ procedure tiri_init(tael, x);
       return tal . iri_init(ael, x)
    end;
 
-procedure tiri_nextroot(tri, x);
+procedure tiri_nextroot(tri);
    begin scalar w, tag;
       w := iri_nextroot cdr tri;
       if null w then
@@ -954,7 +914,7 @@ procedure tiri_rootlnotags(tri);
 asserted procedure caddata_mkblank(): CadData;
    % Blank caddata. Undefined entries have the value ['undefined].
    begin scalar cd;
-      cd := mkvect(31);
+      cd := mkvect(18);
       putv(cd,0, 'caddata);
       putv(cd,1, 'undefined); % [phi] is an ofsf formula in PNF
       putv(cd,2, 'undefined); % [k] is an integer
@@ -972,140 +932,45 @@ asserted procedure caddata_mkblank(): CadData;
       putv(cd,14,'undefined); % [hh] is a vector of vectors of tagged sf
       putv(cd,15,'undefined); % [l] is an integer
       % putv(cd,16,ffid); % [Fid] is a vector of lists of ids.
-      putv(cd,17,!*rlcadverbose);
-      putv(cd,18,!*rlcaddecdeg);
-      putv(cd,19,!*rlcadpartial);
-      putv(cd,20,!*rlcadisoallroots);
-      putv(cd,21,!*rlcadtrimtree);
-      putv(cd,22,!*rlcadfasteval);
-      putv(cd,23,!*rlcadfulldimonly);
-      putv(cd,24,!*rlcadte);
-      putv(cd,25,!*rlcadpbfvs);
-      putv(cd,26,!*rlcadrawformula);
-      putv(cd,27,!*rlcaddnfformula);
-      putv(cd,28,!*rlcadans);
-      putv(cd,29,!*rlcadtv);
-      putv(cd,30,'undefined); % [A] list of SF
-      putv(cd,31,'undefined); % [A+] list of SF
+      putv(cd,16,'undefined);
+      putv(cd,17,'undefined); % [A] list of SF
+      putv(cd,18,'undefined); % [A+] list of SF
       return cd
    end;
 
 % access functions
 
-% procedure caddata_phi(cd);
-%    getv(cd,1);
-% procedure caddata_k(cd);
-%    getv(cd,2);
-% procedure caddata_r(cd);
-%    getv(cd,3);
-% procedure caddata_varl(cd);
-%    getv(cd,4);
-% procedure caddata_xj(cd,j);
-%    nth(getv(cd,4),j);
-% procedure caddata_qal(cd);
-%    getv(cd,5);
-% procedure caddata_psi(cd);
-%    getv(cd,6);
-% procedure caddata_ff(cd);
-%    getv(cd,7);
-% procedure caddata_ffj(cd,j);
-%    getv(getv(cd,7),j);
-% procedure caddata_ffv(cd);
-%    getv(cd,7);
-% procedure caddata_ffl(cd);
-%    cdr vector2list getv(cd,7);
-% procedure caddata_dd(cd);
-%    getv(cd,8);
-% procedure caddata_phiprime(cd);
-%    getv(cd,9);
-% procedure caddata_oldorder(cd);
-%    getv(cd,10);
-% procedure caddata_ophi(cd);
-%    getv(cd,11);
-% procedure caddata_jj(cd);
-%    getv(cd,12);
-% procedure caddata_theo(cd);
-%    getv(cd,13);
-% procedure caddata_hh(cd);
-%    getv(cd,14);
-% procedure caddata_l(cd);
-%    getv(cd,15);
-% procedure caddata_ffid(cd);
-%    getv(cd,16);
-% procedure caddata_verbose(cd);
-%    getv(cd,17);
-% procedure caddata_decdeg(cd);
-%    getv(cd,18);
-% procedure caddata_partial(cd);
-%    getv(cd,19);
-% procedure caddata_isoallroots(cd);
-%    getv(cd,20);
-% procedure caddata_trimtree(cd);
-%    getv(cd,21);
-% procedure caddata_fasteval(cd);
-%    getv(cd,22);
-% procedure caddata_fulldimonly(cd);
-%    getv(cd,23);
-% procedure caddata_te(cd);
-%    getv(cd,24);
-% procedure caddata_pbfvs(cd);
-%    getv(cd,25);
-% procedure caddata_rawformula(cd);
-%    getv(cd,26);
-% procedure caddata_dnfformula(cd);
-%    getv(cd,27);
-% procedure caddata_ans(cd);
-%    getv(cd,28);
-% procedure caddata_tv(cd);
-%    getv(cd,29);
-% procedure caddata_aa(cd);
-%    getv(cd,30);
-% procedure caddata_aaplus(cd);
-%    getv(cd,31);
-
 procedure caddata_phi(cd);      getv(cd,1);
 procedure caddata_k(cd);        getv(cd,2);
 procedure caddata_r(cd);        getv(cd,3);
 procedure caddata_varl(cd);     getv(cd,4);
-procedure caddata_xj(cd,j);     nth(getv(cd,4),j);
+ procedure caddata_xj(cd,j);     nth(getv(cd,4),j);
 procedure caddata_qal(cd);      getv(cd,5);
 procedure caddata_psi(cd);      getv(cd,6);
 procedure caddata_ff(cd);       getv(cd,7);
 procedure caddata_ffj(cd,j);    getv(getv(cd,7),j);
-procedure caddata_ffv(cd);      getv(cd,7);
 procedure caddata_ffl(cd);      cdr vector2list getv(cd,7);
 procedure caddata_dd(cd);       getv(cd,8);
 procedure caddata_phiprime(cd); getv(cd,9);
 procedure caddata_oldorder(cd); getv(cd,10);
 procedure caddata_ophi(cd);     getv(cd,11);
-procedure caddata_jj(cd);       getv(cd,12);
+ procedure caddata_jj(cd);       getv(cd,12);
 procedure caddata_theo(cd);     getv(cd,13);
 procedure caddata_hh(cd);       getv(cd,14);
 procedure caddata_l(cd);        getv(cd,15);
 procedure caddata_ffid(cd);     getv(cd,16);
-procedure caddata_verbose(cd);	getv(cd,17);
-procedure caddata_decdeg(cd);	getv(cd,18);
-procedure caddata_partial(cd);	getv(cd,19);
-procedure caddata_isoallroots(cd);	getv(cd,20);
-procedure caddata_trimtree(cd);	getv(cd,21);
-procedure caddata_fasteval(cd);	getv(cd,22);
-procedure caddata_fulldimonly(cd);	getv(cd,23);
-procedure caddata_te(cd);	getv(cd,24);
-procedure caddata_pbfvs(cd);	getv(cd,25);
-procedure caddata_rawformula(cd);	getv(cd,26);
-procedure caddata_dnfformula(cd);	getv(cd,27);
-procedure caddata_ans(cd);	getv(cd,28);
-procedure caddata_tv(cd);	getv(cd,29);
-procedure caddata_aa(cd);	getv(cd,30);
-procedure caddata_aaplus(cd);	getv(cd,31);
+ procedure caddata_aa(cd);	getv(cd,17);
+ procedure caddata_aaplus(cd);	getv(cd,18);
 
 procedure caddata_bvl(cd);
    % bound variable list
-   for i := caddata_k cd + 1:caddata_r cd collect nth(caddata_varl cd,i);
+   for i := caddata_k cd + 1 : caddata_r cd collect
+      nth(caddata_varl cd, i);
 
 procedure caddata_fvl(cd);
    % free variable list
-   for i := 1:caddata_k cd collect nth(caddata_varl cd,i);
+   for i := 1 : caddata_k cd collect
+      nth(caddata_varl cd, i);
 
 procedure caddata_putphi(cd,phi);           putv(cd,1,phi);
 procedure caddata_putk(cd,k);               putv(cd,2,k);
@@ -1123,48 +988,111 @@ procedure caddata_puttheo(cd,theo);         putv(cd,13,theo);
 procedure caddata_puthh(cd,hh);             putv(cd,14,hh);
 procedure caddata_putl(cd,l);               putv(cd,15,l);
 procedure caddata_putffid(cd,ffid);         putv(cd,16,ffid);
-procedure caddata_putverbose(cd,a);	putv(cd,17,a);
-procedure caddata_putdecdeg(cd,a);	putv(cd,18,a);
-procedure caddata_putpartial(cd,a);	putv(cd,19,a);
-procedure caddata_putisoallroots(cd,a);	putv(cd,20,a);
-procedure caddata_puttrimtree(cd,a);	putv(cd,21,a);
-procedure caddata_putfasteval(cd,a);	putv(cd,22,a);
-procedure caddata_putfulldimonly(cd,a);	putv(cd,23,a);
-procedure caddata_putte(cd,a);          putv(cd,24,a);
-procedure caddata_putpbfvs(cd,a);	putv(cd,25,a);
-procedure caddata_putrawformula(cd,a);	putv(cd,26,a);
-procedure caddata_putdnfformula(cd,a);	putv(cd,27,a);
-procedure caddata_putans(cd,a);	        putv(cd,28,a);
-procedure caddata_puttv(cd,a);	        putv(cd,29,a);
-procedure caddata_putaa(cd,a);	        putv(cd,30,a);
-procedure caddata_putaaplus(cd,a);	putv(cd,31,a);
+procedure caddata_putaa(cd,a);	            putv(cd,17,a);
+procedure caddata_putaaplus(cd,a);	    putv(cd,18,a);
 
 asserted procedure caddata_print(cd: CadData): Any;
    begin
-      ioto_prin2t "+ caddata:";
-      if caddata_phi cd neq 'undefined then ioto_prin2t{"phi := ",caddata_phi cd};
-      if caddata_k cd neq 'undefined then ioto_prin2t{"k := ",caddata_k cd};
-      if caddata_r cd neq 'undefined then ioto_prin2t{"r := ",caddata_r cd};
-      if caddata_varl cd neq 'undefined then ioto_prin2t{"varl := ",caddata_varl cd};
-      if caddata_qal cd neq 'undefined then ioto_prin2t{"qal := ",caddata_qal cd};
-      if caddata_psi cd neq 'undefined then ioto_prin2t{"psi := ",caddata_psi cd};
-      if caddata_ff cd neq 'undefined then ioto_prin2t{"ff := ",caddata_ff cd};
-      if caddata_dd cd neq 'undefined then ioto_prin2t{"dd := ",caddata_dd cd};
-      if caddata_phiprime cd neq 'undefined then ioto_prin2t{"phiprime := ",caddata_phiprime cd};
-      if caddata_oldorder cd neq 'undefined then ioto_prin2t{"oldorder := ",caddata_oldorder cd};
-      if caddata_ophi cd neq 'undefined then ioto_prin2t{"ophi := ",caddata_ophi cd};
-      %if caddata_ cd neq 'undefined then ioto_prin2t{"",caddata_ cd};
+      ioto_prin2t "+ begin caddata";
+      if !*rlcadverbose then
+	 caddata_printall cd
+      else
+	 caddata_printsome cd;
+      ioto_prin2t "+ end caddata"
    end;
 
-asserted procedure caddata_print1(cd: CadData): Any;
+asserted procedure caddata_printall(cd: CadData): Any;
    begin
-      ioto_prin2t "+ caddata:";
-      if caddata_k cd neq 'undefined then ioto_prin2t{"k := ",caddata_k cd};
-      if caddata_r cd neq 'undefined then ioto_prin2t{"r := ",caddata_r cd};
-      if caddata_varl cd neq 'undefined then ioto_prin2t{"varl := ",caddata_varl cd};
-      if caddata_qal cd neq 'undefined then ioto_prin2t{"qal := ",caddata_qal cd};
-      if caddata_oldorder cd neq 'undefined then ioto_prin2t{"oldorder := ",caddata_oldorder cd};
+      % if caddata_phi cd neq 'undefined then
+	 ioto_prin2t{"phi := ", caddata_phi cd};
+      % if caddata_k cd neq 'undefined then
+	 ioto_prin2t{"k := ", caddata_k cd};
+      % if caddata_r cd neq 'undefined then
+	 ioto_prin2t{"r := ", caddata_r cd};
+      % if caddata_varl cd neq 'undefined then
+	 ioto_prin2t{"varl := ", caddata_varl cd};
+      % if caddata_qal cd neq 'undefined then
+	 ioto_prin2t{"qal := ", caddata_qal cd};
+      % if caddata_psi cd neq 'undefined then
+	 ioto_prin2t{"psi := ", caddata_psi cd};
+      % if caddata_ff cd neq 'undefined then
+	 ioto_prin2t{"ff := ", caddata_ff cd};
+      % if caddata_dd cd neq 'undefined then
+	 ioto_prin2t{"dd := ", caddata_dd cd};
+      % if caddata_phiprime cd neq 'undefined then
+	 ioto_prin2t{"phiprime := ", caddata_phiprime cd};
+      % if caddata_oldorder cd neq 'undefined then
+	 ioto_prin2t{"oldorder := ", caddata_oldorder cd};
+      % if caddata_ophi cd neq 'undefined then
+	 ioto_prin2t{"ophi := ", caddata_ophi cd};
+      % if caddata_jj cd neq 'undefined then
+	 ioto_prin2t{"jj := ", caddata_jj cd};
+      % if caddata_theo cd neq 'undefined then
+	 ioto_prin2t{"theo := ", caddata_theo cd};
+      % if caddata_hh cd neq 'undefined then
+	 ioto_prin2t{"hh := ", caddata_hh cd};
+      % if caddata_l cd neq 'undefined then
+	 ioto_prin2t{"l := ", caddata_l cd};
+      % if caddata_ffid cd neq 'undefined then
+	 ioto_prin2t{"ffid := ", caddata_ffid cd};
+      % if caddata_aa cd neq 'undefined then
+	 ioto_prin2t{"aa := ", caddata_aa cd};
+      % if caddata_aaplus cd neq 'undefined then
+	 ioto_prin2t{"aaplus := ", caddata_aaplus cd}
    end;
+
+asserted procedure caddata_printsome(cd: CadData): Any;
+   begin
+      if caddata_k cd neq 'undefined then
+	 ioto_prin2t{"k := ", caddata_k cd};
+      if caddata_r cd neq 'undefined then
+	 ioto_prin2t{"r := ", caddata_r cd};
+      if caddata_varl cd neq 'undefined then
+	 ioto_prin2t{"varl := ", caddata_varl cd};
+      if caddata_qal cd neq 'undefined then
+	 ioto_prin2t{"qal := ", caddata_qal cd};
+      if caddata_oldorder cd neq 'undefined then
+	 ioto_prin2t{"oldorder := ", caddata_oldorder cd}
+   end;
+
+asserted procedure ofsf_printcadswitches(): Any;
+   % Prints the status of all switches relevant to CAD.
+   <<
+      ioto_tprin2 "+ begin CAD relevant switches";
+      % ioto_tprin2 "+ verbose switches:";
+      ofsf_cadswitchprint !*rlverbose; ioto_prin2 "rlverbose;";
+      ofsf_cadswitchprint !*rlcadverbose; ioto_prin2 "rlcadverbose;";
+      ofsf_cadswitchprint !*rlanuexverbose; ioto_prin2 "rlanuexverbose;";
+      % ioto_tprin2 "+ preparation phase switches:";
+      ofsf_cadswitchprint !*rlcaddecdeg; ioto_prin2 "rlcaddecdeg;";
+      % ioto_tprin2 "+ projection phase switches:";
+      ofsf_cadswitchprint !*rlcadaproj; ioto_prin2 "rlcadaproj;";
+      ofsf_cadswitchprint !*rlcadaprojalways; ioto_prin2 "rlcadaprojalways;";
+      ofsf_cadswitchprint !*rlcadhongproj; ioto_prin2 "rlcadhongproj;";
+      ofsf_cadswitchprint !*rlcadfac; ioto_prin2 "rlcadfac;";
+      % ioto_tprin2 "+ extension phase switches";
+      ofsf_cadswitchprint !*rlcadpartial; ioto_prin2 "rlcadpartial;";
+      ofsf_cadswitchprint !*rlcadte; ioto_prin2 "rlcadte;";
+      ofsf_cadswitchprint !*rlcadpbfvs; ioto_prin2 "rlcadpbfvs;";
+      ofsf_cadswitchprint !*rlcadisoallroots; ioto_prin2 "rlcadisoallroots;";
+      ofsf_cadswitchprint !*rlcadtrimtree; ioto_prin2 "rlcadtrimtree;";
+      ofsf_cadswitchprint !*rlcadfasteval; ioto_prin2 "rlcadfasteval;";
+      ofsf_cadswitchprint !*rlcadfulldimonly; ioto_prin2 "rlcadfulldimonly;";
+      ofsf_cadswitchprint !*rlcadrmwc; ioto_prin2 "rlcadrmwc;";
+      % ioto_tprin2 "+ solution formula construction phase switches:";
+      ofsf_cadswitchprint !*rlcadrawformula; ioto_prin2 "rlcadrawformula;";
+      ofsf_cadswitchprint !*rlcaddnfformula; ioto_prin2 "rlcaddnfformula;";
+      % ioto_tprin2 "+ general switches:";
+      ofsf_cadswitchprint !*rlcadpreponly; ioto_prin2 "rlcadpreponly;";
+      ofsf_cadswitchprint !*rlcadprojonly; ioto_prin2 "rlcadprojonly;";
+      ofsf_cadswitchprint !*rlcadbaseonly; ioto_prin2 "rlcadbaseonly;";
+      ofsf_cadswitchprint !*rlcadextonly;  ioto_prin2 "rlcadextonly;";
+      ioto_tprin2 "+ end CAD relevant switches"
+   >>;
+
+asserted procedure ofsf_cadswitchprint(b: Boolean): Any;
+   % Print a single switch.
+   if b then ioto_tprin2 "on " else ioto_tprin2 "off ";
 
 % root isolation
 
@@ -1201,7 +1129,7 @@ asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, nrdata: Any, xj: K
 	 >>;
       % There is no cell left, so we need to get a root to get the next two
       % cells.
-      if tgroot := tiri_nextroot(nrdata, xj) then <<
+      if tgroot := tiri_nextroot nrdata then <<
 	 root := tag_object tgroot;
 	 % Drop one cell in buffer (the 0-dim one)...
 	 car ncbuffer := acell_mk(2*(length tiri_rootl nrdata)-1,
@@ -1638,7 +1566,7 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
       dd := caddata_dd cd;
       k := caddata_k cd;
       if memq(acell_gettv atree_rootlabel dd, {'true, 'false}) then <<
-	 if ofsf_cadverbosep() and caddata_ans cd then
+	 if ofsf_cadverbosep() and !*rlcadans then
 	    ioto_prin2t {"ANSWERS for decision problem: ",
 	       cdr atsoc('answers,acell_gettl atree_rootlabel dd)};
 	 caddata_putphiprime(cd, acell_gettv atree_rootlabel dd);
@@ -1647,7 +1575,7 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
       % dk := atree_levellabels(dd, k);
       yy := atree_tvyield dd;
       % some verbose output for qe with answers
-      if ofsf_cadverbosep() and caddata_ans cd then <<
+      if ofsf_cadverbosep() and !*rlcadans then <<
          ioto_prin2t "+++ ANSWERS: ";
 	 ioto_prin2t {"yy: ", yy};
 	 % for each cell in yy do
