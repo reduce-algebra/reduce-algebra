@@ -69,7 +69,7 @@ clear w;
 % forms corresponding to Ralston Rabinowitz
 
 load_package taylor;
-operator alpha,beta,w,k;
+operator alpha,betta,w,k;
 
 % s= order of Runge Kutta formula
 
@@ -92,7 +92,7 @@ let alpha(1)=>0;
 
 for i:=1:s do
    let k(i) => h*f(x0 + alpha(i)*h, 
-                  y(x0) + for j:=1:(i-1) sum beta(i,j)*k(j));
+                  y(x0) + for j:=1:(i-1) sum betta(i,j)*k(j));
 y1_ansatz:= y(x0) + for i:=1:s sum w(i)*k(i);
 
 y1_ansatz := taylor(y1_ansatz,h,0,s);

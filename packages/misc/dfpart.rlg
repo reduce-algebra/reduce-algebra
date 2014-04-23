@@ -250,10 +250,8 @@ clear w;
 load_package taylor;
 
 
-operator alpha,beta,w,k;
+operator alpha,betta,w,k;
 
-
-*** beta already defined as operator 
 
 
 % s= order of Runge Kutta formula
@@ -311,21 +309,19 @@ let alpha(1)=>0;
 
 for i:=1:s do
    let k(i) => h*f(x0 + alpha(i)*h, 
-                  y(x0) + for j:=1:(i-1) sum beta(i,j)*k(j));
+                  y(x0) + for j:=1:(i-1) sum betta(i,j)*k(j));
 
 
 y1_ansatz:= y(x0) + for i:=1:s sum w(i)*k(i);
 
 
-                                                   f(x0,y(x0))*h + 2*y(x0)
-y1_ansatz := f(alpha(3)*h + x0,(f(alpha(2)*h + x0,-------------------------)*h
-                                                              2
+y1_ansatz := f(alpha(3)*h + x0,
 
-                   + 4*f(x0,y(x0))*h + 12*y(x0))/12)*w(3)*h
+               betta(3,2)*f(alpha(2)*h + x0,betta(2,1)*f(x0,y(x0))*h + y(x0))*h
 
-                                   f(x0,y(x0))*h + 2*y(x0)
-              + f(alpha(2)*h + x0,-------------------------)*w(2)*h
-                                              2
+                + betta(3,1)*f(x0,y(x0))*h + y(x0))*w(3)*h
+
+              + f(alpha(2)*h + x0,betta(2,1)*f(x0,y(x0))*h + y(x0))*w(2)*h
 
               + f(x0,y(x0))*w(1)*h + y(x0)
 
@@ -335,50 +331,67 @@ y1_ansatz := taylor(y1_ansatz,h,0,s);
 
 y1_ansatz := y(x0) + f(x0,y(x0))*(w(3) + w(2) + w(1))*h + (
 
-                12*alpha(3)*f (x0,y(x0))*w(3) + 12*alpha(2)*f (x0,y(x0))*w(2)
-                             x                               x
+                alpha(3)*f (x0,y(x0))*w(3) + alpha(2)*f (x0,y(x0))*w(2)
+                          x                            x
 
-                 + 5*f (x0,y(x0))*f(x0,y(x0))*w(3)
-                      y
+                 + betta(3,2)*f (x0,y(x0))*f(x0,y(x0))*w(3)
+                               y
 
-                                                        2
-                 + 6*f (x0,y(x0))*f(x0,y(x0))*w(2))/12*h  + (
-                      y
+                 + betta(3,1)*f (x0,y(x0))*f(x0,y(x0))*w(3)
+                               y
 
-                            2
-                144*alpha(3) *f  (x0,y(x0))*w(3)
-                               xx
+                                                              2
+                 + betta(2,1)*f (x0,y(x0))*f(x0,y(x0))*w(2))*h  + (
+                               y
 
-                 + 60*alpha(3)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
-                                xy
+                        2
+                alpha(3) *f  (x0,y(x0))*w(3)
+                           xx
 
-                 + 60*alpha(3)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
-                                yx
+                 + alpha(3)*betta(3,2)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                        xy
 
-                               2
-                 + 144*alpha(2) *f  (x0,y(x0))*w(2)
-                                  xx
+                 + alpha(3)*betta(3,2)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                        yx
 
-                 + 72*alpha(2)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
-                                xy
+                 + alpha(3)*betta(3,1)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                        xy
 
-                 + 24*alpha(2)*f (x0,y(x0))*f (x0,y(x0))*w(3)
-                                x            y
+                 + alpha(3)*betta(3,1)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                        yx
 
-                 + 72*alpha(2)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
-                                yx
+                           2
+                 + alpha(2) *f  (x0,y(x0))*w(2)
+                              xx
 
-                                               2
-                 + 25*f  (x0,y(x0))*f(x0,y(x0)) *w(3)
-                       yy
+                 + 2*alpha(2)*betta(3,2)*f (x0,y(x0))*f (x0,y(x0))*w(3)
+                                          x            y
 
-                                               2
-                 + 36*f  (x0,y(x0))*f(x0,y(x0)) *w(2)
-                       yy
+                 + alpha(2)*betta(2,1)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
+                                        xy
 
-                                  2                        3      4
-                 + 12*f (x0,y(x0)) *f(x0,y(x0))*w(3))/288*h  + O(h )
-                       y
+                 + alpha(2)*betta(2,1)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
+                                        yx
+
+                             2                          2
+                 + betta(3,2) *f  (x0,y(x0))*f(x0,y(x0)) *w(3)
+                                yy
+
+                                                                    2
+                 + 2*betta(3,2)*betta(3,1)*f  (x0,y(x0))*f(x0,y(x0)) *w(3)
+                                            yy
+
+                                                       2
+                 + 2*betta(3,2)*betta(2,1)*f (x0,y(x0)) *f(x0,y(x0))*w(3)
+                                            y
+
+                             2                          2
+                 + betta(3,1) *f  (x0,y(x0))*f(x0,y(x0)) *w(3)
+                                yy
+
+                             2                          2          3      4
+                 + betta(2,1) *f  (x0,y(x0))*f(x0,y(x0)) *w(2))/2*h  + O(h )
+                                yy
 
 
 % compute y1_form - y1_ans and collect coeffients of powers of h
@@ -391,54 +404,82 @@ cl := coeff(y1_diff,h);
 
 cl := {0,
 
-       288*f(x0,y(x0))*(w(3) + w(2) + w(1) - 1),
+       6*f(x0,y(x0))*(w(3) + w(2) + w(1) - 1),
 
-       24*(12*alpha(3)*f (x0,y(x0))*w(3) + 12*alpha(2)*f (x0,y(x0))*w(2)
-                        x                               x
+       3*(2*alpha(3)*f (x0,y(x0))*w(3) + 2*alpha(2)*f (x0,y(x0))*w(2)
+                      x                              x
 
-            - 6*f (x0,y(x0)) + 5*f (x0,y(x0))*f(x0,y(x0))*w(3)
-                 x                y
+           + 2*betta(3,2)*f (x0,y(x0))*f(x0,y(x0))*w(3)
+                           y
 
-            + 6*f (x0,y(x0))*f(x0,y(x0))*w(2) - 6*f (x0,y(x0))*f(x0,y(x0))),
-                 y                                 y
+           + 2*betta(3,1)*f (x0,y(x0))*f(x0,y(x0))*w(3)
+                           y
 
-                   2
-       144*alpha(3) *f  (x0,y(x0))*w(3)
-                      xx
+           + 2*betta(2,1)*f (x0,y(x0))*f(x0,y(x0))*w(2) - f (x0,y(x0))
+                           y                               x
 
-        + 60*alpha(3)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
-                       xy
+           - f (x0,y(x0))*f(x0,y(x0))),
+              y
 
-        + 60*alpha(3)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
-                       yx
+                 2
+       3*alpha(3) *f  (x0,y(x0))*w(3)
+                    xx
+
+        + 3*alpha(3)*betta(3,2)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                 xy
+
+        + 3*alpha(3)*betta(3,2)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                 yx
+
+        + 3*alpha(3)*betta(3,1)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                 xy
+
+        + 3*alpha(3)*betta(3,1)*f  (x0,y(x0))*f(x0,y(x0))*w(3)
+                                 yx
+
+                    2
+        + 3*alpha(2) *f  (x0,y(x0))*w(2)
+                       xx
+
+        + 6*alpha(2)*betta(3,2)*f (x0,y(x0))*f (x0,y(x0))*w(3)
+                                 x            y
+
+        + 3*alpha(2)*betta(2,1)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
+                                 xy
+
+        + 3*alpha(2)*betta(2,1)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
+                                 yx
+
+                      2                          2
+        + 3*betta(3,2) *f  (x0,y(x0))*f(x0,y(x0)) *w(3)
+                         yy
+
+                                                           2
+        + 6*betta(3,2)*betta(3,1)*f  (x0,y(x0))*f(x0,y(x0)) *w(3)
+                                   yy
+
+                                              2
+        + 6*betta(3,2)*betta(2,1)*f (x0,y(x0)) *f(x0,y(x0))*w(3)
+                                   y
+
+                      2                          2
+        + 3*betta(3,1) *f  (x0,y(x0))*f(x0,y(x0)) *w(3)
+                         yy
+
+                      2                          2
+        + 3*betta(2,1) *f  (x0,y(x0))*f(x0,y(x0)) *w(2) - f  (x0,y(x0))
+                         yy                                xx
+
+        - f  (x0,y(x0))*f(x0,y(x0)) - f (x0,y(x0))*f (x0,y(x0))
+           xy                          x            y
+
+                                                               2
+        - f  (x0,y(x0))*f(x0,y(x0)) - f  (x0,y(x0))*f(x0,y(x0))
+           yx                          yy
 
                       2
-        + 144*alpha(2) *f  (x0,y(x0))*w(2)
-                         xx
-
-        + 72*alpha(2)*f  (x0,y(x0))*f(x0,y(x0))*w(2)
-                       xy
-
-        + 24*alpha(2)*f (x0,y(x0))*f (x0,y(x0))*w(3)
-                       x            y
-
-        + 72*alpha(2)*f  (x0,y(x0))*f(x0,y(x0))*w(2) - 48*f  (x0,y(x0))
-                       yx                                  xx
-
-        - 48*f  (x0,y(x0))*f(x0,y(x0)) - 48*f (x0,y(x0))*f (x0,y(x0))
-              xy                             x            y
-
-                                                                     2
-        - 48*f  (x0,y(x0))*f(x0,y(x0)) + 25*f  (x0,y(x0))*f(x0,y(x0)) *w(3)
-              yx                             yy
-
-                                      2                                    2
-        + 36*f  (x0,y(x0))*f(x0,y(x0)) *w(2) - 48*f  (x0,y(x0))*f(x0,y(x0))
-              yy                                   yy
-
-                         2                                   2
-        + 12*f (x0,y(x0)) *f(x0,y(x0))*w(3) - 48*f (x0,y(x0)) *f(x0,y(x0))}
-              y                                   y
+        - f (x0,y(x0)) *f(x0,y(x0))}
+           y
 
 
 % f_forms: forms of f and its derivatives which occur in cl
@@ -489,24 +530,32 @@ for each fr in f_forms do
 sys := for each c in sys join if c neq 0 then {c} else {};
 
 
-sys := {288*(w(3) + w(2) + w(1) - 1),
+sys := {6*(w(3) + w(2) + w(1) - 1),
 
-        144*(2*alpha(3)*w(3) + 2*alpha(2)*w(2) - 1),
+        3*(2*alpha(3)*w(3) + 2*alpha(2)*w(2) - 1),
 
-        24*(5*w(3) + 6*w(2) - 6),
+        3*(2*betta(3,2)*w(3) + 2*betta(3,1)*w(3) + 2*betta(2,1)*w(2) - 1),
 
-                      2                  2
-        48*(3*alpha(3) *w(3) + 3*alpha(2) *w(2) - 1),
+                  2                  2
+        3*alpha(3) *w(3) + 3*alpha(2) *w(2) - 1,
 
-        24*(alpha(2)*w(3) - 2),
+        6*alpha(2)*betta(3,2)*w(3) - 1,
 
-        12*(5*alpha(3)*w(3) + 6*alpha(2)*w(2) - 4),
+        3*alpha(3)*betta(3,2)*w(3) + 3*alpha(3)*betta(3,1)*w(3)
 
-        12*(5*alpha(3)*w(3) + 6*alpha(2)*w(2) - 4),
+         + 3*alpha(2)*betta(2,1)*w(2) - 1,
 
-        12*(w(3) - 4),
+        3*alpha(3)*betta(3,2)*w(3) + 3*alpha(3)*betta(3,1)*w(3)
 
-        25*w(3) + 36*w(2) - 48}
+         + 3*alpha(2)*betta(2,1)*w(2) - 1,
+
+        6*betta(3,2)*betta(2,1)*w(3) - 1,
+
+                    2                                                   2
+        3*betta(3,2) *w(3) + 6*betta(3,2)*betta(3,1)*w(3) + 3*betta(3,1) *w(3)
+
+                       2
+         + 3*betta(2,1) *w(2) - 1}
 
 
 end;
