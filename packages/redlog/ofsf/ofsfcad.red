@@ -67,29 +67,33 @@ asserted procedure ofsf_cadverbosep(): Boolean;
    !*rlverbose and !*rlcadverbose;
 
 % rlgcad entry point
-asserted procedure ofsf_gcad(phi: Formula, mkvarlres: List, aaplus: List): DottedPair;
+asserted procedure ofsf_gcad(phi: Formula, prjordl: List, aaplus: List): DottedPair;
    % Ordered field standard form generic cylindrical algebraic decomposition.
-   % [phi] is a formula, [mkvarlres] is a projection order, and [aaplus] is a
-   % list of SF. Returns a pair [theta . phip], where [theta] is a list of
-   % inequalities and [phip] is a quantifier-free formula. It holds that
-   % $\bigwedge\Theta$ implies ([phi] equivalent to [phip])$.
+   % [phi] is a formula, [prjordl] is a list of variables (projection order),
+   % and [aaplus] is a list of SF. Returns a pair [theta . phip], where [theta]
+   % is a list of inequalities and [phip] is a quantifier-free formula. It holds
+   % that $\bigwedge\theta$ implies ([phi] equivalent to [phip])$.
    begin scalar !*rlqegen;
       !*rlqegen := t;
-      return ofsf_cad(phi, mkvarlres, aaplus)
+      return ofsf_cad(phi, prjordl, aaplus)
    end;
 
 fluid '(kord!*);
 
 % rlcad entry point
-asserted procedure ofsf_cad(phi: Formula, mkvarlres: List, aaplus: List): Any;
+asserted procedure ofsf_cad(phi: Formula, prjordl: List, aaplus: List): Any;
    % Ordered field standard form cylindrical algebraic decomposition. [phi] is a
-   % formula, [mkvarlres] is a projection order. If [phi] is closed (and
-   % rlcadanuex is switched on) a quantifier-free formula equivalent to [phi] is
-   % returned, otherwise [phi] is returned in prenex normal form.
+   % formula, [prjordl] is a list of variables (projection order), and [aaplus]
+   % is a list of SF. Returns a pair [theta . phip], where [theta] is a list of
+   % inequalities and [phip] is a quantifier-free formula. It holds that
+   % $\bigwedge\theta$ implies ([phi] equivalent to [phip])$.
+   % Old comment fragment:
+   % If [phi] is closed (and rlcadanuex is switched on) a quantifier-free
+   % formula equivalent to [phi] is returned, otherwise [phi] is returned in
+   % prenex normal form.
    begin scalar cd;
-      % ophi,phiprime,tmp,varl,qal,k,r,oldorder,ff,ffr,dd,psi,w;
       % preparation phase; Kernel order is changed.
-      cd := ofsf_cadpreparation(phi, mkvarlres, aaplus);
+      cd := ofsf_cadpreparation(phi, prjordl, aaplus);
       if !*rlverbose then
 	 caddata_print cd;
       if !*rlcadpreponly then
@@ -98,8 +102,8 @@ asserted procedure ofsf_cad(phi: Formula, mkvarlres: List, aaplus: List): Any;
       ofsf_cadprojection cd;
       if !*rlcadprojonly then <<
 	 ioto_prin2t {"+ Theory: "};
-	 for each x in caddata_theo cd do
-	    mathprint rl_prepfof x;
+	 for each f in caddata_theo cd do
+	    mathprint rl_prepfof f;
 	 return ofsf_cadfinish cd
       >>;
       % extension phase; Partial CAD tree is built.
@@ -113,10 +117,10 @@ asserted procedure ofsf_cad(phi: Formula, mkvarlres: List, aaplus: List): Any;
    end;
 
 % rlcadpnum entry point
-asserted procedure ofsf_cadpnum(phi: Formula, mkvarlres: List): Integer;
+asserted procedure ofsf_cadpnum(phi: Formula, prjordl: List): Integer;
    begin scalar cd, !*rlcadtrimtree, kord!*;
       % preparation phase; Kernel order is changed.
-      cd := ofsf_cadpreparation(phi,mkvarlres,nil);
+      cd := ofsf_cadpreparation(phi, prjordl, nil);
       % projection phase
       ofsf_cadprojection cd;
       % extension phase; Partial cad tree is built.
@@ -125,17 +129,17 @@ asserted procedure ofsf_cadpnum(phi: Formula, mkvarlres: List): Integer;
    end;
 
 % rlcadproj entry point
-asserted procedure ofsf_cadproj(phi: Formula, mkvarlres: List): DottedPair;
+asserted procedure ofsf_cadproj(phi: Formula, prjordl: List): DottedPair;
    begin scalar cd, oldorder, phiprime, ophi, theo, ffl;
       % preparation phase; Kernel order is changed.
-      cd := ofsf_cadpreparation(phi, mkvarlres, nil);
+      cd := ofsf_cadpreparation(phi, prjordl, nil);
       if !*rlverbose then
 	 caddata_print cd;
       % projection phase
       ofsf_cadprojection cd;
       % finish
-      for each x in caddata_theo cd do
-	 mathprint rl_prepfof x;
+      for each f in caddata_theo cd do
+	 mathprint rl_prepfof f;
       oldorder := caddata_oldorder cd;
       phiprime := caddata_phiprime cd;
       ophi := caddata_ophi cd;
@@ -143,61 +147,63 @@ asserted procedure ofsf_cadproj(phi: Formula, mkvarlres: List): DottedPair;
 	 setkorder oldorder;
       if ofsf_cadverbosep() then
 	 ioto_tprin2 {"+ Order restored."};
-      theo := for each fo in caddata_theo cd collect
-	 cl_apply2ats(fo,
-	    function(lambda(x); ofsf_0mk2(ofsf_op x, reorder ofsf_arg2l x)));
-      % Fr,...,F1
+      theo := for each f in caddata_theo cd collect
+	 ofsf_reorder f;
       ffl := reversip for j := 1 : caddata_r cd collect
 	 for each f in caddata_ffj(cd, j) collect
 	    reorder f;
       return theo . ffl
    end;
 
-% MK: This is called from the three entry functions above.
-asserted procedure ofsf_cadpreparation(phi: Formula, mkvarlres: List, aaplus: List): CadData;
-   % Cad preparation. [phi] is a ofsf formula; [mkvarlres] is a list of
-   % variables encoding an addmitted projection order.
-   begin scalar w, ophi, tmp, varl, qal, r, k, oldorder, psi, ffr, ff, r, l, cd;
+asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List): CadData;
+   % CAD preparation. [phi] is an ofsf formula. [prjordl] is a list of variables
+   % encoding a desired variable projection order; [prjordl] contains all
+   % variables of [phi] and bound variables are in front of free variables.
+   % [aaplus] is a list of SF; additional polynomials to be added to projection
+   % polynomials.
+   begin scalar w, ophi, varl, qal, oldorder, psi, ffr, ff, cd;
+      integer r, k, l;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Preparation Phase";
       if !*rlcaddecdeg then <<
-	 if !*rlverbose then
-	    ioto_prin2 "+ decrease degrees: ";
       	 w := ofsf_decdeg0 phi;
       	 phi := car w;
-      	 if !*rlverbose then
-	    ioto_prin2 for each x in cdr w join {"(",car x,"^",cdr x,")"};
+      	 if !*rlverbose then <<
+	    ioto_prin2 "+ decrease degrees: ";
+	    ioto_prin2t for each x in cdr w join {"(", car x, "^", cdr x, ")"}
+	 >>
       >>;
-      ophi := phi := cl_pnf phi; % ophi with old term order
-      tmp := ofsf_mkvarl phi;  % ((xr,...,x_1).((x_r.Q_r),...,(x_k+1.Q_k+1)))
-      if mkvarlres then <<
-	 varl := mkvarlres;
-	 qal := for each x in cdr tmp collect << %%% dodgy, use assoc
-	    w := car mkvarlres;
-	    mkvarlres := cdr mkvarlres;
+      ophi := phi := cl_pnf phi;
+      % [ophi] with old term order
+      varl . qal := ofsf_mkvarl phi;
+      % [varl] is (x_r, ..., x_1).
+      % [qal] is ((x_r . Q_r), ..., (x_k+1 . Q_k+1)).
+      if prjordl then <<
+	 varl := prjordl;
+	 qal := for each x in qal collect <<
+	    w := pop prjordl;
 	    w . cdr x
 	 >>
-      >> else <<
-      	 varl := car tmp; % (xr,...,x_1)
-      	 qal := cdr tmp   % ((x_r.Q_r),...,(x_k+1.Q_k+1))
       >>;
-      if !*rlverbose and aaplus then
-	 ioto_prin2t {"+++ ", length aaplus, " proj. polynomials to add"};
       r := length varl;
       k := r - length qal;
-      % reordering wrt. x_(c+1),xr,...,x_1
-      oldorder := setkorder varl; %setkorder('xcplus1 . varl);
-      varl := reverse varl; % (x1,...,xr) % reversip would affect kernel order
-      qal := reversip qal; % ((x_k+1.Q_k+1),...,(x_r.Q_r))
-      phi := cl_apply2ats(phi,
-	 function(lambda(x); ofsf_0mk2(ofsf_op x, reorder ofsf_arg2l x)));
-      psi := cl_matrix phi; % phi = Q_k+1 x_k+1 ... Q_r x_r psi
+      % reordering w.r.t. varl
+      oldorder := setkorder varl;
+      varl := reverse varl;  % reversip would affect kernel order
+      % [varl] is now (x_1, ..., x_r).
+      qal := reversip qal;
+      % [qal] is now ((x_k+1 . Q_k+1), ..., (x_r . Q_r)).
+      phi := ofsf_reorder phi;
+      psi := cl_matrix phi;
+      % phi = Q_k+1 x_k+1 ... Q_r x_r psi.
       ffr := for each f in cl_terml phi collect f;
       ff := mkvect r;
       putv(ff, r, ffr);
       l := (if bvb then k + length car bvb else 0)
-	 where bvb := cdr reverse ofsf_cadvbl1 phi; %[xk..]..[..xr]
-      %ioto_prin2t {"l: ",l}; %%% should depend on rlverbose!*
+      	 where bvb := cdr reverse ofsf_cadvbl1 phi;
+      if !*rlverbose and aaplus then
+	 ioto_prin2t {"+++ Adding ", length aaplus, " projection polynomials."};
+      aaplus := for each f in aaplus collect reorder f;
       cd := caddata_mkblank();
       caddata_putphi(cd, phi);
       caddata_putk(cd, k);
@@ -206,8 +212,8 @@ asserted procedure ofsf_cadpreparation(phi: Formula, mkvarlres: List, aaplus: Li
       caddata_putqal(cd, qal);
       caddata_putpsi(cd, psi);
       caddata_putff(cd, ff);
-      caddata_putaa(cd, union(ffr,for each f in aaplus collect reorder f));
-      caddata_putaaplus(cd, for each f in aaplus collect reorder f);
+      caddata_putaa(cd, union(ffr, aaplus));
+      caddata_putaaplus(cd, aaplus);
       caddata_putdd(cd, 'undefined);
       caddata_putphiprime(cd, 'undefined);
       caddata_putoldorder(cd, oldorder);
@@ -219,36 +225,31 @@ asserted procedure ofsf_cadpreparation(phi: Formula, mkvarlres: List, aaplus: Li
       return cd
    end;
 
-% MK: This is used by the three entry functions above. This should modify the
-% caddata structure in place.
 asserted procedure ofsf_cadprojection(cd: CadData): Any;
-   begin scalar varl, k, r, ff;
-      varl := caddata_varl cd;
-      k := caddata_k cd;
+   begin scalar r, ff;
       r := caddata_r cd;
-      % ff := caddata_ff cd; % list (nil,...,nil,Fr)
-      % ffr := getv(ff,r);
-      if !*rlverbose then ioto_tprin2t {"+++ Projection Phase"};
-      ofsf_cadprojection1 cd; % here F and J is computed
-      ff := caddata_ffl cd; % list (F1,...,Fr)
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ Projection Phase"};
+      ofsf_cadprojection1 cd;  % [caddata_ff] and [caddata_jj] are computed here.
+      ff := caddata_ff cd;
       if !*rlcadprojonly and ofsf_cadverbosep() then
 	 for i := 1 : r do <<
-	    ioto_tprin2t {"+ projection factors level ", r-i+1};
-	    mathprint('list . for each f in nth(ff, r-i+1) collect prepf f)
+	    ioto_tprin2t {"+ projection factors of level ", r-i+1, ":"};
+	    mathprint('list . for each f in getv(ff, r-i+1) collect prepf f)
       	 >>;
-      if !*rlverbose then
-	 ioto_tprin2t {"+ (#F1,...,#Fr)=",
-	    for each ffi in ff collect length ffi};
-      if !*rlcadprojonly then <<
-	 ioto_tprin2t "+ switch rlcadprojonly: stopped, order unchanged.";
-	 % setkorder oldorder;
-	 return nil % rl_mk!*fof ophi;
+      if !*rlverbose then <<
+	 % ioto_tprin2t {"+ (#F1,...,#Fr)=",
+	 %    for each ffi in ffl collect length ffi};
+	 ioto_tprin2 "+ number of projection factors of level r,...,1: ";
+      	 for i := 0 : r - 2 do
+	    ioto_prin2 {length getv(ff, r-i), ","};
+	 ioto_prin2t length getv(ff, 1)
       >>;
-      % caddata_putff(cd, list2vector (nil . ff));
+      if !*rlcadprojonly then
+	 ioto_tprin2t "+ Stopping, because rlcadprojonly is on.";
       return nil
    end;
 
-% MK: This is used by the entry functions.
 asserted procedure ofsf_cadextension(cd: CadData): Any;
    begin scalar r, dd;
       r := caddata_r cd;
@@ -261,25 +262,23 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
       if !*rlcadtree2dot then
 	 atree_2dot dd;
       if !*rlcadextonly then <<
-	 %setkorder oldorder;
-	 ioto_tprin2t "+ switch rlcadextonly: stopped, order restored.";
-	 return dd %rl_mk!*fof ophi;
+	 ioto_tprin2t "+ Stopping, because rlcadextonly is on.";
+	 return nil
       >>;
       caddata_putdd(cd, dd);
       return nil
    end;
 
-% MK: This is used by the entry function ofsf_cad.
 asserted procedure ofsf_cadfinish(cd: CadData): DottedPair;
-   % Finish. [cd] is CADDATA. Returns a foformula. Depending on whether a
-   % phiprime was found, a q.f. fof or simply the input formula is returned.
+   % Returns a pair [(theo . phip)], where [phip] is [phiprime] if a
+   % quantifier-free formula equivalent to [phi]. If [phiprime] was not found,
+   % the input formula [phi] is returned.
    begin scalar oldorder, phiprime, ophi, theo;
       if !*rlverbose then
-	 ioto_tprin2t {"+++ Finish CAD"};
+	 ioto_tprin2t {"+++ Finish Phase"};
       oldorder := caddata_oldorder cd;
       phiprime := caddata_phiprime cd;
       ophi := caddata_ophi cd;
-      %%% 2=rlcadgenlevel
       if !*rlqegen1 then
 	 for j := 1 : min2(1, caddata_k cd) do
             caddata_puttheo(cd, append(for each f in caddata_ffj(cd, j) collect
@@ -288,19 +287,38 @@ asserted procedure ofsf_cadfinish(cd: CadData): DottedPair;
 	 setkorder oldorder;
       if ofsf_cadverbosep() then
 	 ioto_tprin2 {"+ Order restored."};
-      theo := for each fo in caddata_theo cd collect
-	 cl_apply2ats(fo,
-	    function(lambda(x); ofsf_0mk2(ofsf_op x, reorder ofsf_arg2l x)));
+      theo := for each f in caddata_theo cd collect
+	 ofsf_reorder f;
       if phiprime neq 'undefined then
-	 phiprime := cl_apply2ats(phiprime,
-	    function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));
+	 phiprime := ofsf_reorder phiprime;
       if !*rlqegen then
 	 theo := ofsf_thsimpl theo;
-      return (if phiprime neq 'undefined then
-	 theo . cl_simpl(phiprime,theo,-1)
-      else
-	 theo . ophi)
+      if phiprime neq 'undefined then
+	 return theo . cl_simpl(phiprime, theo, -1);
+      return theo . ophi
    end;
+
+asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
+   % Make variable list. [f] is a prenex formula. Returns a dotted pair [(vl .
+   % qal)], where [vl] is a list of all variables in [f] and [qal] is a list of
+   % dotted pairs [x . Q], where [x] is a kernel and [Q] the corresponding
+   % quantifier. The first pair in [qal] corresponds to the innermost variable
+   % with its quantifier.
+   begin scalar vl, qal;
+      vl := cl_fvarl1 f;  % list of free variables
+      while rl_quap rl_op f do <<
+	 qal := (rl_var f . rl_op f) . qal;
+	 vl := rl_var f . vl;
+	 f := rl_mat f
+      >>;
+      return vl . qal
+   end;
+
+asserted procedure ofsf_reorder(f: Formula): Formula;
+   % Reorder formula. Reorders all polynomials occurring in [f] w.r.t. the
+   % currenct kernel order.
+   cl_apply2ats(f,
+      function(lambda(atf); ofsf_0mk2(ofsf_op atf, reorder ofsf_arg2l atf)));
 
 % Andreas' cell.
 
@@ -916,25 +934,25 @@ asserted procedure caddata_mkblank(): CadData;
    begin scalar cd;
       cd := mkvect(18);
       putv(cd,0, 'caddata);
-      putv(cd,1, 'undefined); % [phi] is an ofsf formula in PNF
-      putv(cd,2, 'undefined); % [k] is an integer
-      putv(cd,3, 'undefined); % [r] is an integer
-      putv(cd,4, 'undefined); % [varl] is a list of identifiers
-      putv(cd,5, 'undefined); % [qal] is a list of dotted pairs (x . q)
-      putv(cd,6, 'undefined); % [psi] is a q.-free fof
-      putv(cd,7, 'undefined); % [ff] is a vector of SF
-      putv(cd,8, 'undefined); % [dd] is an atree
-      putv(cd,9, 'undefined); % [phiprime] is a q.-free fof
-      putv(cd,10,'undefined); % [oldorder] is a list of kernels
-      putv(cd,11,'undefined); % [ophi] is a fof, the original input formula
-      putv(cd,12,'undefined); % [J] unused
-      putv(cd,13,'undefined); % [theo] is a list of negated atoms
-      putv(cd,14,'undefined); % [hh] is a vector of vectors of tagged sf
-      putv(cd,15,'undefined); % [l] is an integer
-      % putv(cd,16,ffid); % [Fid] is a vector of lists of ids.
+      putv(cd,1, 'undefined); % [phi] is a prenex ofsf formula for which a CAD is to be constructed.
+      putv(cd,2, 'undefined); % [k] is an integer; the number of quantified variables in [phi].
+      putv(cd,3, 'undefined); % [r] is an integer; the number of all variables in [phi].
+      putv(cd,4, 'undefined); % [varl] is a list kernels; all variables in [phi].
+      putv(cd,5, 'undefined); % [qal] is a list of dotted pairs [(x . Q)], where [x] is a variable and [Q] is a quantifier; quantifier prefix of [phi].
+      putv(cd,6, 'undefined); % [psi] is a quantifier-free ofsf formula; matrix of [phi].
+      putv(cd,7, 'undefined); % [ff] is a vector of lists of SF; projection polynomials.
+      putv(cd,8, 'undefined); % [dd] is an Atree.
+      putv(cd,9, 'undefined); % [phiprime] is a quantifier-free ofsf formula; the result equivalent to [phi].
+      putv(cd,10,'undefined); % [oldorder] is a list of kernels; the old kernel ordering.
+      putv(cd,11,'undefined); % [ophi] is an ofsf formula; the original input formula using [oldorder].
+      putv(cd,12,'undefined); % [J] is unused.
+      putv(cd,13,'undefined); % [theo] is a list of negated atoms.
+      putv(cd,14,'undefined); % [hh] is a vector of vectors of tagged SF.
+      putv(cd,15,'undefined); % [l] is an integer; the number of free variables plus the number of variables in the outermost quantifier block of [phi]; if there is no quantifier, [l] is zero
+      % putv(cd,16,ffid);     % [Fid] is a vector of lists of ids.
       putv(cd,16,'undefined);
-      putv(cd,17,'undefined); % [A] list of SF
-      putv(cd,18,'undefined); % [A+] list of SF
+      putv(cd,17,'undefined); % [A] is list of SF.
+      putv(cd,18,'undefined); % [A+] is list of SF.
       return cd
    end;
 
@@ -948,8 +966,8 @@ procedure caddata_varl(cd);     getv(cd,4);
 procedure caddata_qal(cd);      getv(cd,5);
 procedure caddata_psi(cd);      getv(cd,6);
 procedure caddata_ff(cd);       getv(cd,7);
+procedure caddata_ffl(cd);      cdr vector2list getv(cd,7);  % [caddata_ff cd] as list.
 procedure caddata_ffj(cd,j);    getv(getv(cd,7),j);
-procedure caddata_ffl(cd);      cdr vector2list getv(cd,7);
 procedure caddata_dd(cd);       getv(cd,8);
 procedure caddata_phiprime(cd); getv(cd,9);
 procedure caddata_oldorder(cd); getv(cd,10);
@@ -1490,22 +1508,6 @@ asserted procedure atree_2gml_edge(efrom: Integer, eto: Integer): Any;
 % which is used for efficiency (factorization is possible). Extension code is
 % also correct for the special case of the base phase.
 
-asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
-   % Make variable list. [f] is a prenex formula. Returns a dotted pair [(vl .
-   % qal)], where [vl] corresponds to the free variables and [qal] is a list of
-   % dotted pairs [x . Q], where [x] is a kernel and [Q] the corresponding
-   % quantifier. The first pair in [qal] corresponds to the innermost variable
-   % with its quantifier.
-   begin scalar qal, vl;
-      vl := cl_fvarl1 f;  % list of free variables
-      while rl_quap rl_op f do <<
-	 qal := (rl_var f . rl_op f) . qal;
-	 vl := rl_var f . vl;
-	 f := rl_mat f
-      >>;
-      return vl . qal
-   end;
-
 % CAD solution formula
 
 % Andreas' solution formula construction for the decision case. That is, the
@@ -1513,10 +1515,10 @@ asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
 
 asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
    % old version which looks only at cells of level ddk
-   begin scalar ff, dd, k, ddk, ffk, phiprime, cellstogo;
+   begin scalar ffl, dd, k, ddk, ffk, phiprime, cellstogo;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Solution Formula Construction Phase";
-      ff := cdr vector2list caddata_ff cd;
+      ffl := caddata_ffl cd;
       dd := caddata_dd cd;
       k := caddata_k cd;
       if k eq 0 then <<
@@ -1524,10 +1526,10 @@ asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
 	 return nil
       >>;
       ddk := atree_levellabels(dd, k);
-      % ffk := nth(ff, k);
+      % ffk := nth(ffl, k);
       ffk := for i := 1 : k join
-	 nth(ff, i);
-      % acdecl = (D_k,...,D_0). ff = (F_1,...,Fr)
+	 nth(ffl, i);
+      % acdecl = (D_k,...,D_0). ffl = (F_1,...,Fr)
       if !*rlverbose then
 	 ioto_tprin2t {"+ generating signatures for ", length ffk,
 	    " polynomials in ", length ddk, " cells"};
@@ -1559,10 +1561,10 @@ asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
 
 asserted procedure ofsf_solutionformula(cd: CadData): Any;
    % Solution formula construction. The argument is changed in place.
-   begin scalar ff,dd,k,yy,yyi,ffk,phiprime,cellstogo;
+   begin scalar ffl, dd, k, yy, yyi, ffk, phiprime, cellstogo;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Solution Formula Construction Phase";
-      ff := cdr vector2list caddata_ff cd;
+      ffl := caddata_ffl cd;
       dd := caddata_dd cd;
       k := caddata_k cd;
       if memq(acell_gettv atree_rootlabel dd, {'true, 'false}) then <<
@@ -1591,8 +1593,8 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
 	 length acell_getsp cell;
       if !*rlverbose then
 	 ioto_prin2t {"+ Levels to be considered: ", yyi};
-      ffk := for each i in yyi join append(nth(ff, i), nil);
-      phiprime := ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k);
+      ffk := for each i in yyi join append(nth(ffl, i), nil);
+      phiprime := ofsf_solutionformula1(dd, ffl, ffk, yy, yyi, k);
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
 	    ioto_tprin2t "++ SSFC failed, trying all possible projection factors.";
@@ -1600,8 +1602,8 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
 	 if !*rlverbose then
 	    ioto_prin2t {"+ Levels to be considered: ", yyi};
 	 ffk := for each i in yyi join
-	    append(nth(ff, i), nil);
-	 phiprime := ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k)
+	    append(nth(ffl, i), nil);
+	 phiprime := ofsf_solutionformula1(dd, ffl, ffk, yy, yyi, k)
       >>;
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
@@ -1723,12 +1725,6 @@ asserted procedure ofsf_evalqff(f: QfFormula, sp: AnuList, idl: List): Id;
       ofsf_evalqff!-fast(f, sp, idl)
    else
       cl_simpl(cl_apply2ats1(f, function ofsf_subsignat, {sp, idl}), nil, -1);
-
-%procedure ofsf_trialevalqff(psi,sp);
-%   % [psi] is a qf fof, sp is a sample point. returns a simplified
-%   % version of psi.
-%   cl_apply2ats(psi,
-%      function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));
 
 asserted procedure ofsf_evalsignf(f: SF, sp: AnuList, idl: List): SF;
    % Algebraic number evaluate sign of standard form at sample point.
