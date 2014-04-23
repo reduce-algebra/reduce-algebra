@@ -196,14 +196,14 @@ a:  if null v then return nil
     go to a
   end;
 
-symbolic procedure sublist(u,v);
+symbolic procedure noncom2_sublist(u,v);
 % u and v are lists of sp
 % checks if all elements of u are included in v in the right order
 % return a sublist of containing the elements of u + the rest of v
   begin
     scalar x,z,y,w,reslist,n,u1;
     if not (listp u and listp v) then
-      rederr " invalid arguments to sublist";
+      rederr " invalid arguments to noncom2_sublist";
 %initialization
     if null u or null v or not (V:= member(car u,v)) then return;
 a:  if null u then return nconc(reslist,append(u1,v));
@@ -214,7 +214,7 @@ a:  if null u then return nconc(reslist,append(u1,v));
     v := cdr v;
     n:= length(z) - length(v) - 1;
     z := for k:= 1 : n collect nth(z,k);
-    trwrite(sublist,"z= ",z," v= ",v," x= ",x);
+    trwrite(noncom2_sublist,"z= ",z," v= ",v," x= ",x);
 a0: if null z then <<
        u1 := nconc(u1,list(x));
        go to a >>;
@@ -285,7 +285,7 @@ symbolic procedure replsublist(u,v,w); %new
 % replaces the sublist v in w by u
   begin
     scalar n,x,res;
-    if not (x:= sublist(v,w)) then return w;
+    if not (x:= noncom2_sublist(v,w)) then return w;
     n:= length(w)-length(x);
 % trwrite "n= ",n," x= ",x;
 % u := if listp u then u else list(u);
@@ -640,7 +640,7 @@ ab: % mark tempvar as being used in the pattern matching process
     if null cdr z then go to a2;
     if car z then
     <<
-        if not sublist(car z ,matchinglist) then
+        if not noncom2_sublist(car z ,matchinglist) then
            matchinglist:= nconc(matchinglist,car z);
         trwrite(subs3tnc, "matchinglist= ",matchinglist);
 % do the substitutions of car z in temp and bool
@@ -660,7 +660,7 @@ ab: % mark tempvar as being used in the pattern matching process
     termlist2 := pnth!*(termlist2,n+1);
     nabs := nabs + n;  %update the absolute position counter
     go to a1;
-b:  if not sublist(car z1,matchinglist) then
+b:  if not noncom2_sublist(car z1,matchinglist) then
        matchinglist:= nconc(matchinglist,car z1);
 %  special hack for nonexact power matching
     if (length(lhs) = 2) then
@@ -689,7 +689,7 @@ b:  if not sublist(car z1,matchinglist) then
 % from here on in principle all the terms in lhs are matched
     lhs := reverse lhs;
 % cross check
-    if null (termlist3 := sublist(lhs,termlist)) then go to a;
+    if null (termlist3 := noncom2_sublist(lhs,termlist)) then go to a;
     n := length(termlist)-length(termlist3);
 %   trwrite(subs3tnc, "n= ",n);
 % rebuild the termlist after rearrangement
@@ -718,7 +718,7 @@ b:  if not sublist(car z1,matchinglist) then
         x := nth(termlist,n-k+1);
         y := nth(freetemp,k);
         z:= mtchp1(x,y,boolp,bool);
-        if not sublist(car z ,matchinglist) then
+        if not noncom2_sublist(car z ,matchinglist) then
               matchinglist:= nconc(matchinglist,car z);
         for each w in car z do
             y:= subst(cdr w,car w,y);

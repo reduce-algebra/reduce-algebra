@@ -71,17 +71,24 @@ symbolic inline procedure defint_ga u;
 symbolic inline procedure defint_gb u;
   cadddr u$
 
-symbolic procedure rdwrap f;
+%*******
+% See also plotnum.red and ludecom.red where there are slighly different
+% versions of these rdwrap functions: it looks as if originally they may
+% have all been mere copies of the same thing but that bug-fixes or upgrades
+% were applie din just one place. So really they all need review and
+% consolidation.
+%*******
+symbolic procedure defint_rdwrap f;
 if numberp f then float f
   else if f='pi then 3.141592653589793238462643
   else if f='e then 2.7182818284590452353602987
   else if atom f then f
   else if eqcar(f, '!:RD!:) then
           if atom cdr f then cdr f else bf2flr f
-  else if eqcar(f, '!:DN!:) then rdwrap2 cdr f
+  else if eqcar(f, '!:DN!:) then defint_rdwrap2 cdr f
   else if eqcar(f, 'MINUS) then
     begin scalar x;
-       x := rdwrap cadr f;
+       x := defint_rdwrap cadr f;
        return if numberp x then minus float x else {'MINUS, x}
     end
   else if get(car f, 'DNAME) then
@@ -89,25 +96,27 @@ if numberp f then float f
        rerror(PLOTPACKAGE, 32, {get(car f, 'DNAME),
                                 "illegal domain for PLOT"})
     >>
-  else if eqcar(f,'expt) then rdwrap!-expt f
-  else rdwrap car f . rdwrap cdr f;
+  else if eqcar(f,'expt) then defint_rdwrap!-expt f
+  else defint_rdwrap car f . defint_rdwrap cdr f;
 
-symbolic procedure rdwrap!-expt f;
+symbolic procedure defint_rdwrap!-expt f;
 % preserve integer second argument.
-  if fixp caddr f then {'expt!-int,rdwrap cadr f,caddr f}
-    else {'expt,rdwrap cadr f, rdwrap caddr f};
+  if fixp caddr f then {'expt!-int,defint_rdwrap cadr f,caddr f}
+    else {'expt,defint_rdwrap cadr f, defint_rdwrap caddr f};
 
-symbolic procedure rdwrap2 f;
+symbolic procedure defint_rdwrap2 f;
 % Convert from domain to LISP evaluable value.
   if atom f then f else float car f * 10^cdr f;
 
-symbolic procedure rdwrap!* f;
+symbolic procedure defint_rdwrap!* f;
 % convert a domain element to float.
-  if null f then 0.0 else rdwrap f;
+  if null f then 0.0 else defint_rdwrap f;
 
+% Also in plotnum.red
 symbolic procedure rdunwrap f;
   if f=0.0 then 0 else if f=1.0 then 1 else '!:rd!: . f;
 
+% also in ludecom.red and plotnum.red with same definition
 symbolic procedure expt!-int(a,b); expt(a,fix b);
 
 put('intgg,'simpfn,'simpintgg)$
@@ -1402,10 +1411,10 @@ if null v then list(cadr u,caddr u, cadddr u,car cddddr u,
 
 symbolic procedure sublist1(u,v,z);
  % u,v,z - list PF.
- if null cdr v or null cdr z then sublist(u,car v,car z)
+ if null cdr v or null cdr z then defint_sublist(u,car v,car z)
    else
     sublist1(
-      sublist(u,car v,car z),
+      defint_sublist(u,car v,car z),
       cdr v,cdr z)$
 
 symbolic procedure subpref1(u,v,z);
@@ -1418,11 +1427,11 @@ symbolic procedure subpref(u,v,z);
 % u,v,z - pf
  prepsq subsqnew(simp!* u,simp!* v,z)$
 
-symbolic procedure sublist(u,v,z);
+symbolic procedure defint_sublist(u,v,z);
 % u - list pf
 % v,z - pf
 if null u then nil else
-     subpref(car u,v,z) . sublist(cdr u,v,z)$
+     subpref(car u,v,z) . defint_sublist(cdr u,v,z)$
 
 symbolic procedure trpar(u1,u2,u3);
   if not numberp u2 and not atom u2 and car(u2)='plus then 'FAIL else
@@ -1440,10 +1449,11 @@ symbolic procedure trpar(u1,u2,u3);
 symbolic procedure modintgg(u1,u2,u3);
  list(
     multsq(u1,invsq defint_gr u2),
-    change(u2,list(cons(defint_gw u2,list '(1 . 1))),'(1)),
-    change(u3,list(cons(defint_gw u3,list(quotsq(defint_gr u3,defint_gr u2)))),'(1)))$
+    defint_change(u2,list(cons(defint_gw u2,list '(1 . 1))),'(1)),
+    defint_change(u3,list(cons(defint_gw u3,list(quotsq(defint_gr u3,defint_gr u2)))),'(1)))$
 
-symbolic procedure change(u1,u2,u3);
+% Name adjusted to avoid clash with desir.red
+symbolic procedure defint_change(u1,u2,u3);
  begin scalar v;integer k;
   while u1 do begin
    if u3 and car u3=(k:=k+1) then
@@ -1469,7 +1479,7 @@ symbolic procedure cong(u);
 symbolic procedure modintg(u1,u2);
  list(
   multsq(u1,invsq defint_gr u2),
-  change(u2,
+  defint_change(u2,
     list(
       cons(defint_gw u2,list '(1 . 1))),'(1)))$
 

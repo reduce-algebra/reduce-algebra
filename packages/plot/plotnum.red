@@ -176,9 +176,11 @@ symbolic procedure rdwrap!* f;
   % convert a domain element to float.
   if null f then 0.0 else rdwrap f;
 
+% Also in definta.red
 symbolic procedure rdunwrap f;
     if f=0.0 then 0 else if f=1.0 then 1 else '!:rd!: . f;
 
+% Also in definta.red and ludecom.red with same definition
 symbolic procedure expt!-int(a,b); expt(a,fix b);
 
 symbolic procedure plotevalform(ff,f,a);

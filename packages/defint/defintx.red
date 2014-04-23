@@ -613,6 +613,9 @@ symbolic procedure poltstp exp;
      for each c in cdr exp do if not poltstp c then fg := t;
      return null fg end;
 
+% The next two are also present in ratint/convert.red. At present the
+% definitions agree but this still seems unsatisfactory.
+
 symbolic procedure evalmax(a,b);
    if numberp a and numberp b then max(a,b)
      else if evalgreaterp(a,b) then a else b;

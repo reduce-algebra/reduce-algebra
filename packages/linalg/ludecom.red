@@ -92,6 +92,7 @@ symbolic procedure rdwrap!* f;
 
 
 
+% also in plotnum.red and definta.red with same definition
 symbolic procedure expt!-int(a,b); expt(a,fix b);
 
 %                                                                      %

@@ -76,6 +76,9 @@ logcomplex:=
 
  %letrules logcomplex
 
+% These are reproduced in defintx.red - at present the definitions agree but
+% this still seems unsatisfactory.
+
 symbolic procedure evalplus(a,b);
 if numberp a and numberp b then a+b
   else prepsq simp!* aeval {'plus,a,b};

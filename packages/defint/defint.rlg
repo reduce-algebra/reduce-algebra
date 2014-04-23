@@ -260,16 +260,15 @@ int(x^(-1)*(sin (-2*x) + sin(x^2)),x,0,infinity);
 int(x^(-1)*(cos(x/2) - cos(x/3)),x,0,infinity);
 
 
-     -1       x          x
-int(x  *(cos(---) - cos(---)),x,0,infinity)
-              2          3
+        3
+ - log(---)
+        2
 
 
 int(x^(-1)*(cos x - cos(2*x)),x,0,infinity);
 
 
-     -1
-int(x  *(cos(x) - cos(2*x)),x,0,infinity)
+log(2)
 
 
 int(x^(-1)*(cos(x) - cos(x)),x,0,infinity);
@@ -293,33 +292,31 @@ int(cos(x)*si(x),x,0,infinity)
 int(2*cos(x)*e^(-x),x,0,infinity);
 
 
-               - x
-int(2*cos(x)*e    ,x,0,infinity)
+1
 
 
 int(x/2*cos(x)*e^(-x),x,0,infinity);
 
 
-     x           - x
-int(---*cos(x)*e    ,x,0,infinity)
-     2
+0
 
 
 int(x^2/4*cos(x)*e^(-2*x),x,0,infinity);
 
 
-      2
-     x            - 2*x
-int(----*cos(x)*e      ,x,0,infinity)
-     4
+  1
+-----
+ 125
 
 
 int(1/(2*x)*sin(x)*e^(-3*x),x,0,infinity);
 
 
-      1            - 3*x
-int(-----*sin(x)*e      ,x,0,infinity)
-     2*x
+       1
+ atan(---)
+       3
+-----------
+     2
 
 
 int(3/x^2*sin(x)*e^(-x),x,0,infinity);
@@ -334,66 +331,79 @@ int(----*sin(x)*e    ,x,0,infinity)
 int(cos(sqrt(x))*e^(-x),x,0,infinity);
 
 
-                   - x
-int(cos(sqrt(x))*e    ,x,0,infinity)
+                  i        1/4
+ sqrt( - pi)*erf(---) + 2*e
+                  2
+-------------------------------
+               1/4
+            2*e
 
 
 int(e^(-x)*besselj(2,x),x,0,infinity);
 
 
-      - x
-int(e    *besselj(2,x),x,0,infinity)
+  - 2*sqrt(2) + 3
+------------------
+     sqrt(2)
 
 
 int(cos(x^2)*e^(-x),x,0,infinity);
 
 
-         2    - x
-int(cos(x )*e    ,x,0,infinity)
+               1              1          1                  1        1
+(pi*( - 2*cos(---)*fresnel_s(---) + cos(---) + 2*fresnel_c(---)*sin(---)
+               4              4          4                  4        4
+
+             1
+      - sin(---)))/(2*sqrt(pi)*sqrt(2))
+             4
 
 
 int(erf(x)*e^(-x),x,0,infinity);
 
 
-             - x
-int(erf(x)*e    ,x,0,infinity)
+ 1/4          1
+e   *( - erf(---) + 1)
+              2
 
 
 int(besseli(2,x)*e^(-x),x,0,infinity);
 
 
-                   - x
-int(besseli(2,x)*e    ,x,0,infinity)
+                    - 1                            1
+2*hypergeometric({------},{},1) + hypergeometric({---},{},1) - 2
+                    2                              2
 
 
 int(e^(-x^2)*cos(x),x,0,infinity);
 
 
-         2
-      - x
-int(e     *cos(x),x,0,infinity)
+ sqrt(pi)
+----------
+     1/4
+  2*e
 
 
 int(x^(-1)*sin(x)*cos(x),x,0,infinity);
 
 
-     -1
-int(x  *sin(x)*cos(x),x,0,infinity)
+ pi
+----
+ 4
 
 
 int(x^(-1)*sin(x)*cos(2*x),x,0,infinity);
 
 
-     -1
-int(x  *sin(x)*cos(2*x),x,0,infinity)
+0
 
 
 int(x^(-1)*sin(x)*cos(x/2),x,0,infinity);
 
 
-     -1             x
-int(x  *sin(x)*cos(---),x,0,infinity)
-                    2
+ pi
+----
+ 2
 
 
 int(e^x,x,0,infinity);
@@ -406,47 +416,51 @@ int(e ,x,0,infinity)
 int(e^(-x^2 - x),x,0,infinity);
 
 
-          2
-     ( - x ) - x
-int(e           ,x,0,infinity)
+  1/4             1
+ e   *pi*( - erf(---) + 1)
+                  2
+---------------------------
+        2*sqrt(pi)
 
 
 int(e^(-(x+x^2+1)),x,0,infinity);
 
 
-              2
-      - (x + x  + 1)
-int(e               ,x,0,infinity)
+  1/4             1
+ e   *pi*( - erf(---) + 1)
+                  2
+---------------------------
+       2*sqrt(pi)*e
 
 
 int(e^(-(x+1/x)^2),x,0,infinity);
 
 
-                 2
-      - (x + 1/x)
-int(e             ,x,0,infinity)
+ sqrt(pi)
+----------
+      4
+   2*e
 
 
 int(e^(-(x+2))*sin(x),x,0,infinity);
 
 
-      - (x + 2)
-int(e          *sin(x),x,0,infinity)
+  1
+------
+    2
+ 2*e
 
 
 int(-3*x*e^(-1/2x),x,0,infinity);
 
 
-             - 1/2*x
-int( - 3*x*e        ,x,0,infinity)
+-12
 
 
 int(x*e^(-1/2*x^2),x,0,infinity);
 
 
-               2
-        - 1/2*x
-int(x*e         ,x,0,infinity)
+1
 
 
 int(x^2*besselj(2,x),x,0,infinity);
@@ -459,7 +473,9 @@ int(x *besselj(2,x),x,0,infinity)
 int(x*besselk(1,x),x,0,infinity);
 
 
-int(x*besselk(1,x),x,0,infinity)
+ pi
+----
+ 2
 
 
 int(-3*ei(-x),x,0,infinity);
@@ -471,93 +487,95 @@ int(-3*ei(-x),x,0,infinity);
 int(x^3*e^(-2*x^2),x,0,infinity);
 
 
-              2
-     3   - 2*x
-int(x *e       ,x,0,infinity)
+ 1
+---
+ 8
 
 
 int(sqrt(2)/2*x^(-3/2)*sin x,x,0,infinity);
 
 
-                - 3/2
-int(sqrt(2)/2*x      *sin(x),x,0,infinity)
+sqrt(pi)
 
 
 int(x^(-1)*(sin(-2*x) + sin(x^2)),x,0,infinity);
 
 
-     -1                     2
-int(x  *(sin( - 2*x) + sin(x )),x,0,infinity)
+  - pi
+-------
+   4
 
 
 int(x^(-1)*(cos(3*x) - cos(x/2)),x,0,infinity);
 
 
-     -1
-int(x  *(cos(3*x) - cos(x/2)),x,0,infinity)
+ - log(6)
 
 
 int(x^(-1)*(sin x - sin(2*x)),x,0,infinity);
 
 
-     -1
-int(x  *(sin(x) - sin(2*x)),x,0,infinity)
+0
 
 
 int(1/x*sin(x)*e^(-3*x),x,0,infinity);
 
 
-                 - 3*x
-int(1/x*sin(x)*e      ,x,0,infinity)
+      1
+atan(---)
+      3
 
 
 int(sin(x)*e^(-x),x,0,infinity);
 
 
-             - x
-int(sin(x)*e    ,x,0,infinity)
+ 1
+---
+ 2
 
 
 int(x^(-1)*sin(x)*cos(x),x,0,infinity);
 
 
-     -1
-int(x  *sin(x)*cos(x),x,0,infinity)
+ pi
+----
+ 4
 
 
 int(e^(1-x)*e^(2-x^2),x,0,infinity);
 
 
-                 2
-     1 - x  2 - x
-int(e     *e      ,x,0,infinity)
+  1/4  3             1
+ e   *e *pi*( - erf(---) + 1)
+                     2
+------------------------------
+          2*sqrt(pi)
 
 
 int(e^(-1/2x),x,0,y);
 
 
-        - 1/2*y
- - 2*(e         - 1)
+     y/2
+ 2*(e    - 1)
+--------------
+      y/2
+     e
 
 
 int(si(x),x,0,y);
 
 
-     i*y       1/4                              -1
-1/2*e   *( - 1)   *(cos(1/4*pi) + sin(1/4*pi)*i)
-
-         - i*y       1/4                              -1
- + 1/2*e      *( - 1)   *(cos(1/4*pi) + sin(1/4*pi)*i)   + si(y)*y - 1
+si(y)*y - 1 + cos(y)
 
 
 int(besselj(2,x^(1/4)),x,0,y);
 
 
-         1/4                          1/4               1/4
- - 2*(4*y   *(sqrt(y) - 4)*besselj(1,y   ) - besselj(2,y   )*y
+                                 1/4               1/4
+ - 2*((8*sqrt(y) - y)*besselj(0,y   ) - besselj(2,y   )*y
 
-                                    1/4
-       + (8*sqrt(y) - y)*besselj(0,y   ))
+            1/4   1/4        1/4                 1/4
+       + 4*y   *(y    + 2)*(y    - 2)*besselj(1,y   ))
 
 
 int(x*besseli(2,x),x,0,y);
@@ -569,63 +587,83 @@ int(x*besseli(2,x),x,0,y);
 int(x^(3/2)*e^(-x),x,0,y);
 
 
-              - y
- - (sqrt(y)*e    *(y + 3/2) - 3/4*sqrt(pi)*erf(sqrt(y)))
+             y
+ 3*sqrt(pi)*e *erf(sqrt(y)) - 4*sqrt(y)*y - 6*sqrt(y)
+------------------------------------------------------
+                            y
+                         4*e
 
 
 int(sinh(x),x,0,y);
 
 
-     y         - y
-1/2*e  + 1/2*e     - 1
+   y     2
+ (e  - 1)
+-----------
+      y
+   2*e
 
 
 int(cosh(2*x),x,0,y);
 
 
-  - 2*y       4*y
-e      *(1/4*e    - 1/4)
+   2*y        y        y
+ (e    + 1)*(e  + 1)*(e  - 1)
+------------------------------
+               2*y
+            4*e
 
 
 int(x*shi(x),x,0,y);
 
 
-          - y   -1                        y       -1
- - (1/4*e    *(y   + 1) - 1/2*shi(y)*y - e *(1/4*y   - 1/4))*sin(1/2*pi)*y
+      y   y                     2
+  - (e *(e *(y - 1) - 2*shi(y)*y ) + y + 1)
+--------------------------------------------
+                       y
+                    4*e
 
 
 int(x^2*e^(-x^2),x,0,y);
 
 
-                               2
-                            - y
-1/4*sqrt(pi)*erf(y) - 1/2*e     *y
+            2
+           y
+ sqrt(pi)*e  *erf(y) - 2*y
+---------------------------
+               2
+              y
+           4*e
 
 
 int(x^(-1)/2*sin(x),x,0,y);
 
 
-1/2*si(y)
+ si(y)
+-------
+   2
 
 
 int(sin x + cos x,x,0,y);
 
 
-            2
-2*sin(1/2*y)  + sin(y)
+sin(y) + 1 - cos(y)
 
 
 int(sin x + sin(-2*x),x,0,y);
 
 
- - (cos(y) - 1/2 - 1/2*cos(2*y))
+  - (2*cos(y) - 1 - cos(2*y))
+------------------------------
+              2
 
 
 int(sin(n*x),x,0,y);
 
 
-                   -1
- - (cos(n*y) - 1)*n
+  - (cos(n*y) - 1)
+-------------------
+         n
 
 
 int(heaviside(x-1),x,0,y);
@@ -640,317 +678,448 @@ int(heaviside(x-1),x,0,y);
 laplace_transform(1,x);
 
 
-        - s*x
-int(1*e      ,x,0,infinity)
+ 1
+---
+ s
 
 
 laplace_transform(x,x);
 
 
-        - s*x
-int(x*e      ,x,0,infinity)
+ 1
+----
+  2
+ s
  
 
 laplace_transform(x^a/factorial(a),x);
 
 
-      a             -1    - s*x
-int((x *gamma(a + 1)  )*e      ,x,0,infinity)
+  1
+------
+  a
+ s *s
 
 
 laplace_transform(x,e^(-a*x),x);
 
 
-        - a*x   - s*x
-int(x*e      *e      ,x,0,infinity)
+        1
+-----------------
+  2            2
+ a  + 2*a*s + s
 
 
 laplace_transform(x^k,e^(-a*x),x);
 
 
-     k   - a*x   - s*x
-int(x *e      *e      ,x,0,infinity)
+      gamma(k + 1)
+-------------------------
+        k            k
+ (a + s) *a + (a + s) *s
 	
 
 laplace_transform(cosh(a*x),x);
 
 
-                  - s*x
-int(mycosh(a*x)*e      ,x,0,infinity)
+   - s
+---------
+  2    2
+ a  - s
 	
 
 laplace_transform(1/(2*a^3),sinh(a*x)-sin(a*x),x);
 
 
-             -3                          - s*x
-defint2(1/2,a  ,mysinh(a*x) - sin(a*x),e      ,x)
+   - 1
+---------
+  4    4
+ a  - s
 
 
 laplace_transform(1/(a^2),1-cos(a*x),x);
 
 
-0
+     1
+-----------
+  2      3
+ a *s + s
 	
 
 laplace_transform(1/(b^2-a^2),cos(a*x)-cos(b*x),x);
 
 
-0
+             s
+----------------------------
+  2  2    2  2    2  2    4
+ a *b  + a *s  + b *s  + s
 
 
 laplace_transform(besselj(0,2*sqrt(k*x)),x);
 
 
-                             - s*x
-int(besselj(0,2*sqrt(k*x))*e      ,x,0,infinity)
+   1
+--------
+  k/s
+ e   *s
 	
 
 laplace_transform(Heaviside(x-1),x);
 
 
-                       - s*x
-int(heaviside(x - 1)*e      ,x,0,infinity)
+  1
+------
+  s
+ e *s
 
 
 laplace_transform(1/x,sin(k*x),x);
 
 
-     -1            - s*x
-int(x  *sin(k*x)*e      ,x,0,infinity)
+      k
+atan(---)
+      s
 
 
 laplace_transform(1/(k*sqrt(pi)),e^(-x^2/(4*k^2)),x);
 
 
-                              -2  2
-           - 1/2  -1   - 1/4*k  *x    - s*x
-defint2(pi      ,k  ,e             ,e      ,x)
+     2  2              2  2
+    k *s              k *s
+ - e     *erf(k*s) + e
 	
 
 laplace_transform(1/k,e^(-k^2/(4*x)),x);
 
 
-                 2  -1
-     -1   - 1/4*k *x     - s*x
-int(k  *e             *e      ,x,0,infinity)
+ besselk(1,sqrt(s)*k)
+----------------------
+       sqrt(s)
 
 
 laplace_transform(2/(sqrt(pi*x)),besselk(0,2*sqrt(2*k*x)),x);
 
 
-0
+  k/s            k
+ e   *besselk(0,---)
+                 s
+---------------------
+       sqrt(s)
 	
 
 hankel_transform(x,x);
 
 
-                       1/2
-int(x*besselj(n,2*(s*x)   ),x,0,infinity)
+         n + 4
+  gamma(-------)
+           2
+-------------------
+        n - 2    2
+ gamma(-------)*s
+          2
 	
 
 Y_transform(x,x);
 
 
-                       1/2
-int(x*bessely(n,2*(s*x)   ),x,0,infinity)
+          - n + 4          n + 4
+  gamma(----------)*gamma(-------)
+            2                2
+-------------------------------------
+         - n + 3          n - 1    2
+ gamma(----------)*gamma(-------)*s
+           2                2
 	
 
 K_transform(x,x);
 
 
-                       1/2
-int(x*besselk(n,2*(s*x)   ),x,0,infinity)
+         - n + 4          n + 4
+ gamma(----------)*gamma(-------)
+           2                2
+----------------------------------
+                  2
+               2*s
 	
 
 struveh_transform(x,x);
 
 
-                       1/2
-int(x*struveh(n,2*(s*x)   ),x,0,infinity)
+          - n - 3          n + 5
+  gamma(----------)*gamma(-------)
+            2                2
+-------------------------------------
+         - n - 2          n - 2    2
+ gamma(----------)*gamma(-------)*s
+           2                2
 
 
 fourier_sin(e^(-x),x);
 
 
-      - x
-int(e    *sin(s*x),x,0,infinity)
+   s
+--------
+  2
+ s  + 1
 	
 
 fourier_sin(sqrt(x),e^(-1/2*x),x);
 
 
-              - 1/2*x
-int(sqrt(x)*e        *sin(s*x),x,0,infinity)
+           3*atan(2*s)
+    2*sin(-------------)*pi
+                2
+--------------------------------
+              2     3/4
+ sqrt(pi)*(4*s  + 1)   *sqrt(2)
 	
 
 fourier_sin(1/x,e^(-a*x),x);
 
 
-     -1   - a*x
-int(x  *e      *sin(s*x),x,0,infinity)
+      s
+atan(---)
+      a
 	
 
 fourier_sin(x^k,x);
 
 
-     k
-int(x *sin(s*x),x,0,infinity)
+  k/2         - k          k
+ 4   *gamma(------)*gamma(---)*k
+              2            2
+---------------------------------
+         k  k
+      4*s *2 *gamma( - k)*s
 	
 
 fourier_sin(1/(b-a),(e^(-a*x)-e^(-b*x)),x);
 
 
-0
+         a*s + b*s
+----------------------------
+  2  2    2  2    2  2    4
+ a *b  + a *s  + b *s  + s
 
 
 fourier_sin(besselj(0,a*x),x);
 
 
-int(besselj(0,a*x)*sin(s*x),x,0,infinity)
+                2    2
+             - a  + s
+ heaviside(------------)
+                 2
+                a
+-------------------------
+             2    2
+    sqrt( - a  + s )
 
 
 fourier_sin(1/sqrt(pi*x),cos(2*sqrt(k*x)),x);
 
 
-          - 1/2    - 1/2
-defint2(x      ,pi      ,cos(2*sqrt(k*x)),sin(s*x),x)
+                      k                          k
+ sqrt(s)*sqrt(2)*cos(---) - sqrt(s)*sqrt(2)*sin(---)
+                      s                          s
+-----------------------------------------------------
+                         2*s
 
 
 fourier_sin(1/(k*sqrt(pi)),e^(-x^2/(4*k^2)),x);
 
 
-                              -2  2
-           - 1/2  -1   - 1/4*k  *x
-defint2(pi      ,k  ,e             ,sin(s*x),x)
+ erf(i*k*s)*i
+--------------
+      2  2
+     k *s
+    e
 
 
 fourier_cos(e^(-1/2x),x);
 
 
-      - 1/2*x
-int(e        *cos(s*x),x,0,infinity)
+    2
+----------
+    2
+ 4*s  + 1
 	
 
 fourier_cos(x,e^(-x),x);
 
 
-        - x
-int(x*e    *cos(s*x),x,0,infinity)
+       2
+    - s  + 1
+---------------
+  4      2
+ s  + 2*s  + 1
 	
 
 fourier_cos(x,e^(-1/2*x^2),x);
 
 
-               2
-        - 1/2*x
-int(x*e         *cos(s*x),x,0,infinity)
+                                 2
+                 i*s            s /2
+ sqrt(pi)*erf(---------)*i*s + e    *sqrt(2)
+               sqrt(2)
+---------------------------------------------
+                  2
+                 s /2
+                e    *sqrt(2)
 	
 
 fourier_cos(2*x^2,e^(-1/2x),x);
 
 
-        2    - 1/2*x
-int((2*x )*e        *cos(s*x),x,0,infinity)
+              2
+       - 384*s  + 32
+---------------------------
+     6       4       2
+ 64*s  + 48*s  + 12*s  + 1
 	
 
 fourier_cos(x,e^(-a*x),x);
 
 
-        - a*x
-int(x*e      *cos(s*x),x,0,infinity)
+       2    2
+      a  - s
+-------------------
+  4      2  2    4
+ a  + 2*a *s  + s
 	
 
 fourier_cos(x^n,e^(-a*x),x);
 
 
-     n   - a*x
-int(x *e      *cos(s*x),x,0,infinity)
+           s             s
+ cos(atan(---)*n + atan(---))*gamma(n + 1)
+           a             a
+-------------------------------------------
+              2    2 (n + 1)/2
+            (a  + s )
 	
 
 fourier_cos(1/x,sin(k*x),x);
 
 
-     -1
-int(x  *sin(k*x)*cos(s*x),x,0,infinity)
+       2    2
+ sign(k  - s )*pi + pi
+-----------------------
+           4
 
 
 fourier_cos(1/sqrt(pi*x),cos(2*sqrt(k*x)),x);
 
 
-          - 1/2    - 1/2
-defint2(x      ,pi      ,cos(2*sqrt(k*x)),cos(s*x),x)
+                      k                          k
+ sqrt(s)*sqrt(2)*cos(---) + sqrt(s)*sqrt(2)*sin(---)
+                      s                          s
+-----------------------------------------------------
+                         2*s
 	
 
 fourier_cos(1/(k*sqrt(pi)),e^(-x^2/(4*k^2)),x);
 
 
-                              -2  2
-           - 1/2  -1   - 1/4*k  *x
-defint2(pi      ,k  ,e             ,cos(s*x),x)
+   1
+--------
+   2  2
+  k *s
+ e
 
 
 fourier_cos(1/(pi*x),sin(2*k*sqrt(x)),x);
 
 
-          -1  -1
-defint2(pi  ,x  ,sin(2*sqrt(x)*k),cos(s*x),x)
+        2             2
+       k             k
+intfc(----) + intfs(----)
+       s             s
 	
 
 fourier_cos(1/(sqrt(pi*x)),e^(-2*k*sqrt(x)),x);
 
 
-          - 1/2    - 1/2   - 2*sqrt(x)*k
-defint2(x      ,pi      ,e              ,cos(s*x),x)
+                    2               2                   2
+                   k               k                   k
+( - 2*sqrt(s)*cos(----)*fresnel_s(----) + sqrt(s)*cos(----)
+                   s               s                   s
+
+                          2         2                   2
+                         k         k                   k
+  + 2*sqrt(s)*fresnel_c(----)*sin(----) - sqrt(s)*sin(----))/(sqrt(2)*s)
+                         s         s                   s
 
 
 laplace_transform(x^n/factorial(n)*e^(-a*x),x);
 
 
-         n             -1   - a*x   - s*x
-defint2(x ,gamma(n + 1)  ,e      ,e      ,x)
+            1
+-------------------------
+        n            n
+ (a + s) *a + (a + s) *s
 
 
 laplace_transform(1/(2*a^2)*(cosh(a*x)-cos(a*x)),x);
 
 
-             -2                               - s*x
-defint2(1/2,a  , - (cos(a*x) - mycosh(a*x)),e      ,x)
+   - s
+---------
+  4    4
+ a  - s
 
 
 laplace_transform(k*a^k/x*besselj(k,a*x),x);
 
 
-0
+          2*k
+         a
+----------------------
+        2    2      k
+ (sqrt(a  + s ) + s)
 	
 
 fourier_sin(1/x*e^(-3*x),x);
 
 
-     -1   - 3*x
-int(x  *e      *sin(s*x),x,0,infinity)
+      s
+atan(---)
+      3
 	
 
 fourier_sin(1/(pi*x)*sin(2*k*sqrt(x)),x);
 
 
-          -1  -1
-defint2(pi  ,x  ,sin(2*sqrt(x)*k),sin(s*x),x)
+        2             2
+       k             k
+intfc(----) - intfs(----)
+       s             s
 
 
 fourier_cos(x^n*e^(-a*x),x);
 
 
-     n   - a*x
-int(x *e      *cos(s*x),x,0,infinity)
+           s             s
+ cos(atan(---)*n + atan(---))*gamma(n + 1)
+           a             a
+-------------------------------------------
+              2    2 (n + 1)/2
+            (a  + s )
 	
 
 fourier_cos(1/(k*sqrt(pi))*e^(-x^2/(4*k^2)),x);
 
 
-                              -2  2
-           - 1/2  -1   - 1/4*k  *x
-defint2(pi      ,k  ,e             ,cos(s*x),x)
+   1
+--------
+   2  2
+  k *s
+ e
 
 
 end;
 
+Tested on i686-pc-windows CSL
+Time (counter 1): 3970 ms  plus GC time: 230 ms
+1: real 4.60
+user 0.01
+sys 0.10
