@@ -63,10 +63,10 @@ procedure AtreeP(s);
    pairp s and car s eq 'atree;
 
 asserted procedure ofsf_cadverbosep(): Boolean;
-   % Cad verbose predicate.
+   % CAD verbose predicate.
    !*rlverbose and !*rlcadverbose;
 
-% MK: This is not used.
+% rlgcad entry point
 asserted procedure ofsf_gcad(phi: Formula, mkvarlres: List, aaplus: List): DottedPair;
    % Ordered field standard form generic cylindrical algebraic decomposition.
    % [phi] is a formula, [mkvarlres] is a projection order, and [aaplus] is a
@@ -80,7 +80,7 @@ asserted procedure ofsf_gcad(phi: Formula, mkvarlres: List, aaplus: List): Dotte
 
 fluid '(kord!*);
 
-% MK: Entry function. This is the entry point (called from ofsf_fbqe).
+% rlcad entry point
 asserted procedure ofsf_cad(phi: Formula, mkvarlres: List, aaplus: List): Any;
    % Ordered field standard form cylindrical algebraic decomposition. [phi] is a
    % formula, [mkvarlres] is a projection order. If [phi] is closed (and
@@ -102,17 +102,17 @@ asserted procedure ofsf_cad(phi: Formula, mkvarlres: List, aaplus: List): Any;
 	    mathprint rl_prepfof x;
 	 return ofsf_cadfinish cd
       >>;
-      % extension phase; Partial cad tree is built.
+      % extension phase; Partial CAD tree is built.
       ofsf_cadextension cd;
       if !*rlcadextonly then
 	 return ofsf_cadfinish cd;
       % solution formula construction phase
       ofsf_solutionformula cd;
       % finish; Kernel order is restored.
-      return ofsf_cadfinish cd;
+      return ofsf_cadfinish cd
    end;
 
-% MK: Entry function. This is a service (rlcadpnum).
+% rlcadpnum entry point
 asserted procedure ofsf_cadpnum(phi: Formula, mkvarlres: List): Integer;
    begin scalar cd, !*rlcadtrimtree, kord!*;
       % preparation phase; Kernel order is changed.
@@ -124,7 +124,7 @@ asserted procedure ofsf_cadpnum(phi: Formula, mkvarlres: List): Integer;
       return length atree_yield caddata_dd cd
    end;
 
-% MK: Entry function. This is not used.
+% rlcadproj entry point
 asserted procedure ofsf_cadproj(phi: Formula, mkvarlres: List): DottedPair;
    begin scalar cd, oldorder, phiprime, ophi, theo, ffl;
       % preparation phase; Kernel order is changed.
@@ -731,13 +731,13 @@ algebraic procedure rlcadguessepo(phi);
    end;
 
 % MK: This is a service.
-algebraic procedure rlcadguess(pl,pord);
-   for each n in rlcadguess1(pl,pord) product n;
+algebraic procedure rlcadguess(pl, pord);
+   for each n in rlcadguess1(pl, pord) product n;
 
 symbolic operator rlcadnum1;
-lisp procedure rlcadnum1(pl,pord);
-   % . [pl] is a list (Fr,...,F1) of projection factors, [pord] is a
-   % list (xr,...,x1) of variables. Returns a list (#Dr,...,#D1) of numbers.
+procedure rlcadnum1(pl, pord);
+   % . [pl] is a list (Fr,...,F1) of projection factors, [pord] is a list
+   % (xr,...,x1) of variables. Returns a list (#Dr,...,#D1) of numbers.
    begin scalar oldorder,w,ff,varl;
       oldorder := setkorder pord;
       w := for each ffj in cdr pl collect
@@ -750,11 +750,11 @@ lisp procedure rlcadnum1(pl,pord);
    end;
 
 symbolic operator rlcadpnum;
-procedure rlcadpnum(phi,pord);
-   ofsf_cadpnum(rl_simp phi,cdr pord);
+procedure rlcadpnum(phi, pord);
+   ofsf_cadpnum(rl_simp phi, cdr pord);
 
 symbolic operator rlcadguess1;
-lisp procedure rlcadguess1(pl,pord);
+procedure rlcadguess1(pl,pord);
    % . [pl] is a list (Fr,...,F1) of projection factors, [pord] is a
    % list (xr,...,x1) of variables. Returns a list (#Dr,...,#D1) of numbers.
    begin scalar oldorder,w,ff,varl,!*rlacdguessnoc;
@@ -1348,7 +1348,7 @@ asserted procedure atree_print1(tt: Atree, d: Integer): List;
    end;
 
 asserted procedure atree_print1raw(tt: Atree, d: Integer): List;
-   % returns a list of strings.
+   % Returns a list of strings.
    begin scalar childl, w;
       childl := atree_childlist tt;
       if null childl then
@@ -1361,7 +1361,7 @@ asserted procedure atree_print1raw(tt: Atree, d: Integer): List;
    end;
 
 asserted procedure atree_printlin(tt: Atree, d: Integer): Any;
-   % print linear.
+   % Print linear.
    if null atree_childlist tt then
       ioto_prin2 {"(", d, ")"}
    else <<
@@ -1371,8 +1371,10 @@ asserted procedure atree_printlin(tt: Atree, d: Integer): Any;
       ioto_prin2 ")"
    >>;
 
-procedure atree_2dot(tt);
-   % Output tree as dot format. [tt] is an ATREE. Returns nil.
+% Atree to DOT
+
+asserted procedure atree_2dot(tt: Atree): Any;
+   % Output tree in dot format.
    begin
       out("cadtree.dot");
       ioto_prin2t("digraph cadtree {");
@@ -1381,31 +1383,36 @@ procedure atree_2dot(tt);
       shut("cadtree.dot")
    end;
 
-procedure atree_2dot1(tt,idx);
-   begin scalar i,childlist,n,idxc;
-      % Print basecell
-      atree_prinnode idx; atree_2dotnodetail atree_rootlabel tt;
+asserted procedure atree_2dot1(tt: Atree, idx: Any): Any;
+   begin scalar childlist, idxl, w; integer i, n;
+      % Print basecell:
+      atree_2dotprinnode idx;
+      atree_2dotnodetail atree_rootlabel tt;
       i := 1;
       childlist := atree_childlist tt;
       n := length childlist;
-      while i<=n do <<
-	 idxc := append(idx,{i});
-	 atree_prinnode idx; prin2 "->"; atree_prinnode idxc; ioto_prin2t "";
-      	 atree_2dot1(car childlist,idxc);
-	 childlist := cdr childlist;
-	 i := i+1;
-      >>;
+      while i <= n do <<
+	 idxl := append(idx, {i});
+	 atree_2dotprinnode idx;
+	 prin2 "->";
+	 atree_2dotprinnode idxl;
+	 ioto_prin2t "";
+	 w := pop childlist;
+      	 atree_2dot1(w, idxl);
+	 i := i+1
+      >>
    end;
 
-procedure atree_prinnode(idx);
-   % Print node. [idx] is a list of integers.
-   begin scalar i;
+asserted procedure atree_2dotprinnode(idxl: List): Any;
+   % Print node. [idxl] is a list of integers.
+   <<
       prin2 "C";
-      for each i in idx do prin2 i;
-   end;
+      for each e in idxl do
+	 prin2 e
+   >>;
 
-procedure atree_2dotnodetail(c);
-   % Print node detail. [c] is an acell. Return value is not interesting.
+asserted procedure atree_2dotnodetail(c: Acell): Any;
+   % Print node detail.
    if acell_gettv c eq 'true then
       ioto_prin2t(" [label=T shape=circle style=filled color=green]")
    else if acell_gettv c eq 'false then
@@ -1413,11 +1420,11 @@ procedure atree_2dotnodetail(c);
    else
       ioto_prin2t(" [label=""-"" shape=circle style=filled color=grey]");
 
-% Atree to TGF (Trivial Graph Format).
+% Atree to TGF (Trivial Graph Format)
 
-procedure atree_2tgf(tt, filename);
-   % Atree to tgf. [tt] is an atree. [filename] is string. Outputs the atree
-   % [tt] to file [filename] in tgf (Trivial Graph Format) syntax.
+asserted procedure atree_2tgf(tt: Atree, filename: String): Any;
+   % Atree to tgf. Outputs the atree [tt] to file [filename] in tgf (Trivial
+   % Graph Format) syntax.
    begin
       out(filename);
       atree_2tgf_nodes(tt, 1);
@@ -1426,7 +1433,7 @@ procedure atree_2tgf(tt, filename);
       shut(filename)
    end;
 
-procedure atree_2tgf_nodes(tt, number);
+asserted procedure atree_2tgf_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
       prin2 number;
       acell_prin atree_rootlabel tt;
@@ -1436,7 +1443,7 @@ procedure atree_2tgf_nodes(tt, number);
       return number
    end;
 
-procedure atree_2tgf_edges(tt, number);
+asserted procedure atree_2tgf_edges(tt: Atree, number: Integer): Integer;
    begin scalar childlist, mynumber;
       mynumber := number;
       childlist := atree_childlist tt;
@@ -1450,7 +1457,7 @@ procedure atree_2tgf_edges(tt, number);
       return number
    end;
 
-procedure acell_prin(c);
+asserted procedure acell_prin(c: Acell): Any;
    begin scalar tv, temp;
       prin2 " """;
       prin2 "idx: ";
@@ -1467,11 +1474,11 @@ procedure acell_prin(c);
       terpri()
    end;
 
-% Atree to GML (Graph Modelling Language).
+% Atree to GML (Graph Modelling Language)
 
-procedure atree_2gml(tt, filename);
-   % Atree to gml. [tt] is an atree. [filename] is string. Outputs the atree
-   % [tt] to file [filename] in gml (Graph Modelling Language) syntax.
+asserted procedure atree_2gml(tt: Atree, filename: String): Any;
+   % Atree to gml. Outputs the Atree [tt] to file [filename] in gml (Graph
+   % Modelling Language) syntax.
    begin
       out(filename);
       ioto_prin2t("Creator ""REDLOG""");
@@ -1484,7 +1491,7 @@ procedure atree_2gml(tt, filename);
       shut(filename)
    end;
 
-procedure atree_2gml_nodes(tt, number);
+asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
       atree_2gml_node(tt, number);
       childlist := atree_childlist tt;
@@ -1493,7 +1500,7 @@ procedure atree_2gml_nodes(tt, number);
       return number
    end;
 
-procedure atree_2gml_node(tt, number);
+asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
    begin scalar c, tv, anul, n, color;
       ioto_prin2t "node [";
       ioto_prin2t {"id ", number};
@@ -1520,7 +1527,7 @@ procedure atree_2gml_node(tt, number);
       ioto_prin2t "]"
    end;
 
-procedure atree_2gml_edges(tt, number);
+asserted procedure atree_2gml_edges(tt: Atree, number: Integer): Integer;
    begin scalar childlist, mynumber;
       mynumber := number;
       childlist := atree_childlist tt;
@@ -1531,7 +1538,7 @@ procedure atree_2gml_edges(tt, number);
       return number
    end;
 
-procedure atree_2gml_edge(efrom, eto);
+asserted procedure atree_2gml_edge(efrom: Integer, eto: Integer): Any;
    begin
       ioto_prin2t "edge [";
       ioto_prin2t {"source ", efrom};
@@ -1539,27 +1546,29 @@ procedure atree_2gml_edge(efrom, eto);
       ioto_prin2t "]"
    end;
 
-%procedure lto_take(l,n);
-%   begin scalar rl; % result list
-%      while n>0 do <<
-%	 rl := car l . rl; l := cdr l; n := n-1;
-%      >>;
-%      return reversip rl
-%   end;
+% asserted procedure lto_take(l: List, n: Integer): List;
+%    begin scalar rl, w;
+%       while n > 0 do <<
+% 	 w := pop l;
+% 	 rl := w . rl;
+% 	 n := n-1
+%       >>;
+%       return reversip rl
+%    end;
 
-% module acadextension;
-% Andreas' CAD extension phase. Includes additional explicit base phase
-% code, which is used for efficiency (factorization is possible).
-% Extension code is also correct for the special case of the base
-% phase.
+% CAD extension
 
-procedure ofsf_mkvarl(f);
-   % Make variable list. [f] is a prenex formula. Returns a dotted
-   % pair [(vl . qal)], where [vl] corresponds to the free variables
-   % and [qal] is a list of dotted pairs [x . Q], where [x] is a
-   % kernel and [Q] the corresponding Quantifier. The first pair in
-   % [qal] corresponds to the innermost variable plus quantifier
-   begin scalar qal,vl;
+% Andreas' CAD extension phase. Includes additional explicit base phase code,
+% which is used for efficiency (factorization is possible). Extension code is
+% also correct for the special case of the base phase.
+
+asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
+   % Make variable list. [f] is a prenex formula. Returns a dotted pair [(vl .
+   % qal)], where [vl] corresponds to the free variables and [qal] is a list of
+   % dotted pairs [x . Q], where [x] is a kernel and [Q] the corresponding
+   % quantifier. The first pair in [qal] corresponds to the innermost variable
+   % with its quantifier.
+   begin scalar qal, vl;
       vl := cl_fvarl1 f;  % list of free variables
       while rl_quap rl_op f do <<
 	 qal := (rl_var f . rl_op f) . qal;
@@ -1569,44 +1578,45 @@ procedure ofsf_mkvarl(f);
       return vl . qal
    end;
 
-% module asolution;
-% Andreas' solution formula construction for the decision case. That
-% is, the solution formula is either [true] or [false].
+% CAD solution formula
 
-procedure ofsf_solutionformula_old(cd);
+% Andreas' solution formula construction for the decision case. That is, the
+% solution formula is either [true] or [false].
+
+asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
    % old version which looks only at cells of level ddk
-   % ff is (F_1,...,Fr), dd is a cad tree
-   begin scalar ff,dd,k,ddk,ffk,phiprime,cellstogo;
+   begin scalar ff, dd, k, ddk, ffk, phiprime, cellstogo;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Solution Formula Construction Phase";
       ff := cdr vector2list caddata_ff cd;
       dd := caddata_dd cd;
       k := caddata_k cd;
       if k eq 0 then <<
-	 caddata_putphiprime(cd,acell_gettv atree_rootlabel dd);
+	 caddata_putphiprime(cd, acell_gettv atree_rootlabel dd);
 	 return nil
       >>;
-      ddk := atree_levellabels(dd,k);
-      %ffk := nth(ff,k);
-      ffk := for i := 1 : k join nth(ff,i); %%% too much?
+      ddk := atree_levellabels(dd, k);
+      % ffk := nth(ff, k);
+      ffk := for i := 1 : k join
+	 nth(ff, i);
       % acdecl = (D_k,...,D_0). ff = (F_1,...,Fr)
       if !*rlverbose then
 	 ioto_tprin2t {"+ generating signatures for ", length ffk,
-	    " polynomials in ",length ddk," cells"};
+	    " polynomials in ", length ddk, " cells"};
       cellstogo := length ddk; % for verbose output
       for each cell in ddk do <<
-	 acell_putdesc(cell,ofsf_signature(ffk,acell_getsp cell));
+	 acell_putdesc(cell, ofsf_signature(ffk, acell_getsp cell));
 	 if ofsf_cadverbosep() then
-	    ioto_prin2 {"[",cellstogo,%"idx",acell_getidx cell," ",
+	    ioto_prin2 {"[", cellstogo,  % "idx",acell_getidx cell," ",
 	       (if acell_gettv cell eq 'true then
-	       " tt" else " ff"),%acell_getdesc cell,
+	       	  " tt" else " ff"),  % acell_getdesc cell,
 	       "] "};
-	 cellstogo := cellstogo-1;
+	 cellstogo := cellstogo-1
       >>;
-      phiprime := ofsf_sfchong(ffk,ddk);
+      phiprime := ofsf_sfchong(ffk, ddk);
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
-	 ioto_tprin2t "+ Solution formula construction ssfc failed. ";
+	    ioto_tprin2t "+ Solution formula construction ssfc failed. ";
 	 return nil
       >> else <<
 	 if !*rlverbose then
@@ -1616,181 +1626,175 @@ procedure ofsf_solutionformula_old(cd);
 	 else
 	    caddata_putphiprime(cd,rl_dnf phiprime)
       >>;
-      return nil;
+      return nil
    end;
 
-procedure ofsf_solutionformula(cd);
-   % Solution formula construction. cd is CADDATA. Returns nil, the
-   % argument is changed.
-   % ff is (F_1,...,Fr), dd is a cad tree
+asserted procedure ofsf_solutionformula(cd: CadData): Any;
+   % Solution formula construction. The argument is changed in place.
    begin scalar ff,dd,k,yy,yyi,ffk,phiprime,cellstogo;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Solution Formula Construction Phase";
       ff := cdr vector2list caddata_ff cd;
       dd := caddata_dd cd;
       k := caddata_k cd;
-      if memq(acell_gettv atree_rootlabel dd,{'true,'false}) then <<
+      if memq(acell_gettv atree_rootlabel dd, {'true, 'false}) then <<
 	 if ofsf_cadverbosep() and caddata_ans cd then
 	    ioto_prin2t {"ANSWERS for decision problem: ",
-	      cdr atsoc('answers,acell_gettl atree_rootlabel dd)};
-	 caddata_putphiprime(cd,acell_gettv atree_rootlabel dd);
+	       cdr atsoc('answers,acell_gettl atree_rootlabel dd)};
+	 caddata_putphiprime(cd, acell_gettv atree_rootlabel dd);
 	 return nil
       >>;
-      %ddk := atree_levellabels(dd,k);
-      yy := atree_tvyield(dd);
-      % some verbose output for qe with answers...
+      % dk := atree_levellabels(dd, k);
+      yy := atree_tvyield dd;
+      % some verbose output for qe with answers
       if ofsf_cadverbosep() and caddata_ans cd then <<
          ioto_prin2t "+++ ANSWERS: ";
-	 ioto_prin2t {"yy: ",yy};
-%      for each cell in yy do
-%	 if acell_gettv cell eq 'true then
-% 	    ioto_prin2t {"ANSWERS: ", atsoc('answers,acell_gettl cell)};
-      	 for each c in list2set (for each cell in yy join
-             if acell_gettv cell eq 'true then
-                {atsoc('answers,acell_gettl cell)}) do
-         	   ioto_prin2t {"ANSWERS: ",c};
+	 ioto_prin2t {"yy: ", yy};
+	 % for each cell in yy do
+	 %    if acell_gettv cell eq 'true then
+	 %       ioto_prin2t {"ANSWERS: ", atsoc('answers, acell_gettl cell)};
+     	 for each c in list2set (for each cell in yy join
+	    if acell_gettv cell eq 'true then
+	       {atsoc('answers,acell_gettl cell)}) do
+		  ioto_prin2t {"ANSWERS: ", c}
       >>;
-      %%% ffk: "projection polynomials"
-      yyi := list2set for each cell in yy collect length acell_getsp cell;
-      if !*rlverbose then ioto_prin2t {"+ Levels to be considered: ",yyi};
-      ffk := for each i in yyi join append(nth(ff,i),nil);
-      phiprime := ofsf_solutionformula1(dd,ff,ffk,yy,yyi,k);
+      % ffk: projection polynomials
+      yyi := list2set for each cell in yy collect
+	 length acell_getsp cell;
+      if !*rlverbose then
+	 ioto_prin2t {"+ Levels to be considered: ", yyi};
+      ffk := for each i in yyi join append(nth(ff, i), nil);
+      phiprime := ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k);
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
-	 ioto_tprin2t "++ SSFC failed, trying all possible projection factors.";
+	    ioto_tprin2t "++ SSFC failed, trying all possible projection factors.";
 	 yyi := for i := 1 : k collect i;
-	 if !*rlverbose then ioto_prin2t {"+ Levels to be considered: ",yyi};
-	 ffk := for each i in yyi join append(nth(ff,i),nil);
-	 phiprime := ofsf_solutionformula1(dd,ff,ffk,yy,yyi,k);
+	 if !*rlverbose then
+	    ioto_prin2t {"+ Levels to be considered: ", yyi};
+	 ffk := for each i in yyi join
+	    append(nth(ff, i), nil);
+	 phiprime := ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k)
       >>;
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
-	 ioto_tprin2t "++ Simple solution formula construction failed. ";
+	    ioto_tprin2t "++ Simple solution formula construction failed.";
 	 return nil
       >> else <<
 	 if !*rlverbose then
 	    ioto_tprin2t "++ Simple solution formula construction successful.";
 	 if !*rlcadrawformula then
-	    caddata_putphiprime(cd,phiprime)
+	    caddata_putphiprime(cd, phiprime)
 	 else
-	    caddata_putphiprime(cd,rl_dnf phiprime)
+	    caddata_putphiprime(cd, rl_dnf phiprime)
       >>;
-      return nil;
+      return nil
    end;
 
-procedure ofsf_solutionformula1(dd,ff,ffk,yy,yyi,k);
+asserted procedure ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k): Any;
    begin scalar cellstogo;
       if !*rlverbose then
 	 ioto_tprin2t {"+ generating signatures for ", length ffk,
-	    " polynomials in ",length yy," cells; (Dk: ",
-	    length atree_levellabels(dd,k)," cells)"};
-      cellstogo := length yy; % for verbose output
+	    " polynomials in ", length yy,
+	    " cells; (Dk: ", length atree_levellabels(dd,k), " cells)"};
+      cellstogo := length yy;  % for verbose output
       for each cell in yy do <<
-	 acell_putdesc(cell,ofsf_signature4(ffk,acell_getsp cell));
+	 acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 {"[",cellstogo,
 	       %"idx",acell_getidx cell," ",%
-	       "sig",acell_getdesc cell," ",
-	       (if acell_gettv cell eq 'true then
-	       " tt" else " ff"),%acell_getdesc cell,
+	       "sig",acell_getdesc cell, " ",
+	       (if acell_gettv cell eq 'true then " tt" else " ff"),
+	       % acell_getdesc cell,
 	       "] "};
-	 cellstogo := cellstogo-1;
+	 cellstogo := cellstogo - 1
       >>;
-      return ofsf_ssfc2(ffk,yy);
+      return ofsf_ssfc2(ffk, yy)
    end;
 
-
-procedure ofsf_sfchong(ffk,ddk);
-   % Solution formula construction by Hong90. signatures are already
-   % calculated.
-   begin scalar wwt,wwf,wwc;
-      wwt := ofsf_signaturesbytv(ddk,'true);
-      wwf := ofsf_signaturesbytv(ddk,'false);
-      wwc := intersection(wwt,wwf);
+asserted procedure ofsf_sfchong(ffk, ddk): Any;
+   % Solution formula construction by Hong90. Signatures are already calculated.
+   begin scalar wwt, wwf, wwc;
+      wwt := ofsf_signaturesbytv(ddk, 'true);
+      wwf := ofsf_signaturesbytv(ddk, 'false);
+      wwc := intersection(wwt, wwf);
       if null wwc then
 	 return rl_smkn('or,
 	    for each sig in wwt collect
-	       ofsf_sigbasedfo(ffk,sig))
-      else
-	 return 'ssfcfailed;
+	       ofsf_sigbasedfo(ffk, sig));
+      return 'ssfcfailed
    end;
 
-procedure ofsf_ssfc2(ffk,yy);
-   % Solution formula construction by Hong90. signatures are already
-   % calculated.
+asserted procedure ofsf_ssfc2(ffk, yy): Any;
+   % Solution formula construction by Hong90. Signatures are already calculated.
    begin scalar wwt,wwf,wwc;
-      wwt := ofsf_signaturesbytv(yy,'true);
-      wwf := ofsf_signaturesbytv(yy,'false);
-      wwc := ofsf_compsig(wwt,wwf);
-      if ofsf_cadverbosep() and wwc then
-	 ioto_prin2t {"+ SSFC failed because of these compatible signatures: ",
-	    wwc};
+      wwt := ofsf_signaturesbytv(yy, 'true);
+      wwf := ofsf_signaturesbytv(yy, 'false);
+      wwc := ofsf_compsig(wwt, wwf);
       if null wwc then
 	 return rl_smkn('or,
 	    for each sig in wwt collect
-	       ofsf_sigbasedfo(ffk,sig))
-      else
-	 return 'ssfcfailed;
+	       ofsf_sigbasedfo(ffk,sig));
+      if ofsf_cadverbosep() then
+	 ioto_prin2t {"+ SSFC failed because of these compatible signatures: ", wwc};
+      return 'ssfcfailed
    end;
 
-procedure ofsf_compsig(ww1,ww2);
-   % Compatible signatures. ww1 and ww2 are lists of signatures; all
-   % signatures have same length. Returns nil, if there are no
-   % compatible signatures, (w1,w2), if w1 of ww1 is compatible to w2
-   % of ww2.
-   begin scalar ww2copy, retvalue;
-      if null ww1 then return nil;
+asserted procedure ofsf_compsig(ww1: List, ww2: List): ExtraBoolean;
+   % Compatible signatures. [ww1] and [ww2] are lists of signatures. All
+   % signatures have same length. Returns [nil], if there are no compatible
+   % signatures and (w1, w2), if [w1] from [ww1] is compatible with [w2] from [ww2].
+   begin scalar ww2copy, retvalue, w1, w2;
+      if null ww1 then
+	 return nil;
       while ww1 and not retvalue do <<
+	 w1 := pop ww1;
 	 ww2copy := ww2;
 	 while ww2copy and not retvalue do <<
-	    if ofsf_compsig1(car ww1, car ww2copy) then
- 	       retvalue := {car ww1, car ww2copy};
-	    ww2copy := cdr ww2copy
-	 >>;
-	 ww1 := cdr ww1
+	    w2 := pop ww2copy;
+	    if ofsf_compsig1(w1, w2) then
+ 	       retvalue := {w1, w2}
+	 >>
       >>;
       return retvalue
    end;
 
-procedure ofsf_compsig1(w1,w2);
-   % compatible signatrues subroutine. w1, w2 are signatures of same
-   % length; both should be not empty except for recursive calls.
-   % Returns nil or t. Remark: this is a fold, the first element of
-   % the disjunction is neutral wrt or for the base case.
+asserted procedure ofsf_compsig1(w1: List, w2: List): Boolean;
+   % Compatible signatrues subroutine. [w1], [w2] are signatures of the same
+   % length; both should be not empty except for recursive calls. Remark: This
+   % is a fold, the first element of the disjunction is neutral wrt "or" for the
+   % base case.
    (null w1 or null w2) or
       ((car w1 eq car w2 or car w1 equal "?" or car w2 equal "?") and
- 	 ofsf_compsig1(cdr w1,cdr w2));
+ 	 ofsf_compsig1(cdr w1, cdr w2));
 
-procedure ofsf_sigbasedfo(ffk,sig);
-   % signature based formula. ffk is a list of SF, sig is a signature
+asserted procedure ofsf_sigbasedfo(ffk: List, sigl: List): Formula;
+   % Signature based formula. [ffk] is a list of SF, [sig] is a signature
    % (can include "?"). returns a qf. FOF.
-   begin scalar fo;
+   begin scalar sig, fo;
       for each f in ffk do <<
-	 if not (car sig equal "?") then
-	    fo := ofsf_signofpolyfo(f,car sig) . fo;
-	 sig := cdr sig
+	 sig := pop sigl;
+	 if not (sig equal "?") then
+	    push(ofsf_signofpolyfo(f, sig), fo)
       >>;
-      return rl_smkn('and,fo)
+      return rl_smkn('and, fo)
    end;
 
-procedure ofsf_signofpolyfo(sf,sigma);
-   % sf is a standard form. sigma is in {-1,0,1}.
-   if sigma eq -1 then
-      ofsf_0mk2('lessp,sf)
-   else if sigma eq 0 then
-      ofsf_0mk2('equal,sf)
-   else if sigma eq 1 then
-      ofsf_0mk2('greaterp,sf);
+asserted procedure ofsf_signofpolyfo(f: SF, s: Integer): QfFormula;
+   % [s] is in {-1, 0, 1}.
+   if eqn(s, -1) then
+      ofsf_0mk2('lessp, f)
+   else if eqn(s, 0) then
+      ofsf_0mk2('equal, f)
+   else if eqn(s, 1) then
+      ofsf_0mk2('greaterp, f);
 
-procedure ofsf_evalqff(f,sp,idl);
-   % Evaluate quantifier-free formula at sample point. [f] is a
-   % quantifier-free OFSF formula; [sp] is a sample point. Returns
-   % ['true] or ['false]. Returns the truth value of
-   % $f(x_1,\ldots,x_r)$ at point [sp].
+asserted procedure ofsf_evalqff(f: QfFormula, sp: AnuList, idl: List): Id;
+   % Evaluate quantifier-free formula at sample point. Returns ['true] or
+   % ['false], i.e., the truth value of f(x_1,...,x_r) at point [sp].
    if !*rlcadfasteval then
-      ofsf_evalqff!-fast(f,sp,idl)
+      ofsf_evalqff!-fast(f, sp, idl)
    else
-      cl_simpl(cl_apply2ats1(f,function ofsf_subsignat,{sp,idl}),nil,-1);
+      cl_simpl(cl_apply2ats1(f, function ofsf_subsignat, {sp, idl}), nil, -1);
 
 %procedure ofsf_trialevalqff(psi,sp);
 %   % [psi] is a qf fof, sp is a sample point. returns a simplified
@@ -1798,66 +1802,60 @@ procedure ofsf_evalqff(f,sp,idl);
 %   cl_apply2ats(psi,
 %      function(lambda(x); ofsf_0mk2(ofsf_op x,reorder ofsf_arg2l x)));
 
-procedure ofsf_evalsignf(f,s,idl);
+asserted procedure ofsf_evalsignf(f: SF, sp: AnuList, idl: List): SF;
    % Algebraic number evaluate sign of standard form at sample point.
-   % f is a SF, s is a Samplepoint, idl is a list of ids. Returns a
-   % SF.
-   numr simp aex_sgn ofsf_subsp(aex_fromsf f,s,idl);
+   numr simp aex_sgn ofsf_subsp(aex_fromsf f, sp, idl);
 
-procedure ofsf_trialevalsgnf(f,sp);
-   % Trial evaluation of sign of a sf at sample point. Returns a sf.
-   % The sample point needs not to provide a number for each variable.
+asserted procedure ofsf_trialevalsgnf(f: SF, sp: AnuList): SF;
+   % Trial evaluation of sign of a SF at a sample point. The sample point needs
+   % not to provide a number for each variable.
    <<
-      f := ofsf_subsp!*(aex_fromsf f,sp);
+      f := ofsf_subsp!*(aex_fromsf f, sp);
       if aex_simplenumberp f then
 	 numr simp aex_sgn f
       else
 	 numr aex_ex f
    >>;
 
-procedure ofsf_sgnf4(f,sp);
-  <<
-      f := ofsf_subsp!*(aex_fromsf f,sp);
+asserted procedure ofsf_sgnf4(f: SF, sp: AnuList): Any;
+   <<
+      f := ofsf_subsp!*(aex_fromsf f, sp);
       if aex_simplenumberp f then
 	 aex_sgn f
       else
 	 "?"
    >>;
 
-procedure ofsf_subsignat(at,sp,idl);
-   % Substitute sign in atomic formula. [at] is an OFSF atomic
-   % formula; [sp] is a sample point. Returns an OFSF atomic formula.
-   % Returns [at] with the left-hand side $f$ replaced by the sign of
-   % $f([sp])$, or a simpler version of f under the context of sp.
-   ofsf_0mk2(ofsf_op at,ofsf_evalsignf(ofsf_arg2l at,sp,idl));
+asserted procedure ofsf_subsignat(at: QfFormula, sp: AnuList, idl: List): QfFormula;
+   % Substitute sign in atomic formula. Returns an OFSF atomic formula. Returns
+   % [at] with the left-hand side $f$ replaced by the sign of $f([sp])$, or a
+   % simpler version of f under the context of sp.
+   ofsf_0mk2(ofsf_op at, ofsf_evalsignf(ofsf_arg2l at, sp, idl));
 
-procedure ofsf_evalqff!-fast(f,sp,idl);
-   % Evaluate quantifier-free formula at sample point fastly. [f] is a
-   % quantifier-free OFSF formula in NNF; [sp] is a sample point;
-   % [idl] is a LIST of identifiers. Returns ['true] or ['false].
-   % Returns the truth value of $f(x_1,\ldots,x_r)$ at point [sp].
+asserted procedure ofsf_evalqff!-fast(f: QfFormula, sp: AnuList, idl: List): Id;
+   % Evaluate quantifier-free formula at sample point fast. [f] is a
+   % quantifier-free OFSF formula in NNF; Returns ['true] or ['false]. Returns
+   % the truth value of $f(x_1,\ldots,x_r)$ at point [sp].
    if cl_atfp f then
-      ofsf_simplat1(ofsf_subsignat(f,sp,idl),nil)
+      ofsf_simplat1(ofsf_subsignat(f, sp, idl), nil)
    else
-      ofsf_evalqff!-fast1(f,sp,idl);
+      ofsf_evalqff!-fast1(f, sp, idl);
 
-procedure ofsf_evalqff!-fast1(f,sp,idl);
-   % Evaluate quantifier-free formula at sample point fastly
-   % subroutine. [f] is a quantifier-free OFSF formula in NNF; [sp] is
-   % a sample point; [idl] is a LIST of identifiers. Returns ['true]
-   % or ['false]. Returns the truth value of $f(x_1,\ldots,x_r)$ at
-   % point [sp].
+asserted procedure ofsf_evalqff!-fast1(f: QfFormula, sp: AnuList, idl: List): Id;
+   % Evaluate quantifier-free formula at sample point fastly subroutine. [f] is
+   % a quantifier-free OFSF formula in NNF; [sp] is a sample point; [idl] is a
+   % LIST of identifiers. Returns ['true] or ['false]. Returns the truth value
+   % of $f(x_1,\ldots,x_r)$ at point [sp].
    if rl_tvalp f then
       f
    else
-      ofsf_evalqff!-gand(rl_op f,rl_argn f,sp,idl);
+      ofsf_evalqff!-gand(rl_op f, rl_argn f, sp, idl);
 
-procedure ofsf_evalqff!-gand(gand,argl,sp,idl);
-   % Evaluate quantifier-free formula at sample point generic and.
-   % [gand] is one of [and], [or]; [argl] is a list of formulas; [sp]
-   % is a sample point; [idl] is a LIST of identifiers. Returns
-   % ['true] or ['false]. Returns the truth value of $([gand] .
-   % [argl])(x_1,\ldots,x_r)$ at point [sp].
+asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, idl: List): Id;
+   % Evaluate quantifier-free formula at sample point generic and. [gand] is one
+   % of [and], [or]; [argl] is a list of formulas; [sp] is a sample point; [idl]
+   % is a LIST of identifiers. Returns ['true] or ['false]. Returns the truth
+   % value of $([gand] . [argl])(x_1,\ldots,x_r)$ at point [sp].
    begin scalar gfalse,arg,cargl,c;
       gfalse := cl_cflip('false,gand eq 'and);
       c := t; while argl and c do <<
@@ -1882,210 +1880,25 @@ procedure ofsf_evalqff!-gand(gand,argl,sp,idl);
       return cl_flip gfalse
    end;
 
-procedure ofsf_signature(fk,sp);
-   % signature. [fk] is a list of standard forms (in, say, variables
-   % x1,...,xk), [sp] is sample point (a list (ak,...,a1) of algebraic
-   % numbers. returns a list (sigma1,...,sigmak) of elements of
-   % (-1,0,1}.
+asserted procedure ofsf_signature(fk: List, sp: AnuList): List;
+   % Signature. [fk] is a list of standard forms (in, say, variables x1,...,xk),
+   % [sp] is sample point (a list (ak,...,a1) of algebraic numbers. Returns a
+   % list (sigma1,...,sigmak) of elements of {-1,0,1}.
    for each f in fk collect
-      aex_sgn ofsf_subsp!*(aex_fromsf f,sp);
+      aex_sgn ofsf_subsp!*(aex_fromsf f, sp);
 
-procedure ofsf_signature4(fk,sp);
-   % signature. [fk] is a list of standard forms (in, say, variables
-   % x1,...,xk), [sp] is sample point (a list (al,...,a1) of algebraic
-   % numbers with l <= k). returns a list (sigma1,...,sigmak) of
-   % elements of (-1,0,1,?).
+asserted procedure ofsf_signature4(fk: List, sp: AnuList): List;
+   % signature. [fk] is a list of standard forms (in, say, variables x1,...,xk),
+   % [sp] is sample point (a list (al,...,a1) of algebraic numbers with l <= k).
+   % Returns a list (sigma1,...,sigmak) of elements of {-1,0,1}.
    for each f in fk collect
-      ofsf_sgnf4(f,sp);
+      ofsf_sgnf4(f, sp);
 
-procedure ofsf_signaturesbytv(ddk,tv);
+asserted procedure ofsf_signaturesbytv(ddk: List, tv): List;
    % Signatures by truth value. [ddk] is a list of cells.
    for each c in ddk join
       if acell_gettv c eq tv then {acell_getdesc c};
 
-%%% unused
-procedure ofsf_sortsignatures(sl);
-   %[sl] is a non-empty list of signatures.
-   % {{0,1},{0,0},{1,1},{-1,1},{0,-1}}
-   <<
-      for i := length car sl step -1 until 1 do
-      	 sl := append(ofsf_s1(sl,i,-1),append(ofsf_s1(sl,i,0),ofsf_s1(sl,i,1)));
-      sl
-   >>;
-
-%%% unused
-procedure lto_orderedlist2set(s);
-   begin scalar cs;
-      if null s or null cdr s then
-      	 return s
-      else <<
-      	 cs := lto_orderedlist2set cdr s;
-      	 if car s eq car cs then return cs else return car s . cs
-      >>
-   end;
-
-procedure ofsf_s1(sl,n,sign);
-   % picks the signatures from [sl], where the [n]th element equals [sign].
-   for each s in sl join if nth(s,n) eq sign then {s};
-
-%%% --- Types --- %%%
-
-lisp procedure type_checking(ob,tp); type_checking1(ob,tp,"");
-
-lisp procedure type_checking1(ob,tp,str);
-   % Type checking. [ob] is anything, [tp] is a type, [str] is
-   % anything. Return value is not used.
-   if not type_check(ob,tp) then
-      rederr {str,":",ob,"does not match type """,tp,""""};
-
-lisp procedure type_check(ob,tp);
-   % Type check. [ob] is anything, [tp] is a type. Returns a truth value.
-   begin
-      %if not type_typep tp then rederr {"type_check:",tp,"is not a type"};
-      % atomic types
-      if tp eq 'type then return type_typep ob;
-      type_checking1(tp,'type,"type_check");
-      if tp eq 'any then return t;
-      if tp eq 'num then return numberp ob;
-      if tp eq 'atom then return atom ob;
-      if tp eq 'id then return idp ob;
-      if tp eq 'float then return floatp ob;
-      if tp eq 'string then return stringp ob;
-      if tp eq 'sf then return type_sfp ob;
-      if tp eq 'sq then return type_sqp ob;
-      % algebraic types
-      if atom tp then rederr "type_check: unknown atomic type specified";
-      if car tp eq 'pair then
-	 return pairp ob and type_check(car ob,cadr tp) and
-	 type_check(cdr ob,caddr tp);
-      if car tp eq 'list then
-	 return type_listp ob and type_checkl1(ob,cadr tp);
-      if car tp eq 'mat then
-	 return type_check(ob,{'list,{'list,cadr tp}});
-      if car tp eq 'sum then
-	 return type_check1l(ob,cdr tp);
-   end;
-
-lisp procedure type_s2a(ob,tp);
-   % Symbolic to algebraic mode conversion wrt. a type. [ob] is
-   % anything, [tp] is a type. Returns a truth value.
-   begin
-      %type_checking1(ob,tp,"type_s2a");
-      % atomic type
-      if tp memq '(type any num atom id) then return ob;
-      if tp eq 'sf then return prep ob;
-      if tp eq 'sq then return {'quotient,prep numr ob,prep denr ob};
-      if tp eq 'fof then return rl_prep ob;
-      % algebraic types
-      if atom tp then rederr {"type_s2a: unknown atomic type",tp};
-      if car tp eq 'pair then % make a two-element list
-	 return {'list,type_s2a(car ob,cadr tp),type_s2a(cdr ob,caddr tp)};
-      if car tp eq 'list then
-	 return 'list . for each o in ob collect type_s2a(o,cadr tp);
-      if car tp eq 'mat then
-	 return 'mat . for each l in ob collect
-	    for each c in l collect type_s2a(c,cadr tp);
-      if car tp eq 'sum then
-	 return type_s2a!-1l(ob,cdr tp);
-   end;
-
-% type_s2a ( 1 . 2 ,'(pair num num));
-% type_s2a ( {{1},{},{3,4}} ,'(list (list num)));
-% type_s2a ( {1,2,{3,4}} ,'(list (sum num (list num))));
-
-lisp procedure type_s2a!-1l(ob,tpl);
-   % Symbolic to algebraic mode conversion subroutine. [ob] is any,
-   % [tpl] is (list type).
-   if null tpl then rederr "type_s2a!-1l: found no matching type"
-   else if type_check(ob,car tpl) then type_s2a(ob,car tpl)
-   else type_s2a!-1l(ob,cdr tpl);
-
-lisp procedure type_a2s(ob,tp);
-   % Algebraic to symbolic mode conversion wrt. a type. [ob] is
-   % anything, [tp] is a type. Returns a truth value.
-   begin
-      % atomic type
-      if tp memq '(type any num atom id) then return ob;
-      if tp eq 'sf then return numr simp ob; % optional: check denr = 1
-      if tp eq 'sq then return simp ob;
-      if tp eq 'fof then return rl_simp ob;
-      % algebraic types
-      if atom tp then rederr {"type_a2s: unknown atomic type",tp};
-      if car tp eq 'pair then % make pair from two-element list
-	 return type_a2s(cadr ob,cadr tp) . type_a2s(caddr ob,caddr tp);
-      if car tp eq 'list then
-	 return for each o in cdr ob collect type_a2s(o,cadr tp);
-      if car tp eq 'mat then
-	 return for each l in cdr ob collect
-	    for each c in l collect type_a2s(c,cadr tp);
-%      if car tp eq 'sum then
-%	 return type_a2s!-1l(ob,cdr tp);
-      rederr {"type_a2s: unknown or yet unsupported type",tp};
-   end;
-
-% type_a2s('(quotient 1 2),'sq);
-% type_a2s('(list 1 (quotient 1 2)),'(pair num sq));
-% type_a2s('(list 1 2 3 4),'(list num));
-% type_a2s('(list (list 1) (list) (list 3 4)),'(list (list num)));
-
-lisp procedure type_checkl1(obl,tp);
-   % Type check subroutine. [obl] is (list any), [tp] is a type.
-   % Returns a truth value.
-   null obl or (type_check(car obl,tp) and type_checkl1(cdr obl,tp));
-
-lisp procedure type_check1l(ob,tpl);
-   % Type check subroutine. [ob] is any, [tpl] is (list type).
-   % Returns a truth value.
-    not null tpl and (type_check(ob,car tpl) or type_check1l(ob,cdr tpl));
-
-lisp procedure type_typep(a);
-   % Type predicate. [a] is anything. Returns a truth value.
-   begin
-      if a memq '(type any num atom id sf sq) then return t;
-      if not pairp a then return nil;
-      if car a eq 'pair and type_listp a and length a=3 and type_typep1 cdr a
-	 then return t;
-      if car a eq 'list and type_listp a and length a=2 and type_typep1 cdr a
-	 then return t;
-      if car a eq 'mat and type_listp a and length a=2 and type_typep1 cdr a
-	 then return t;
-      if car a eq 'sum and type_listp a and length a>1 and type_typep1 cdr a
-	 then return t;
-      % ...
-      return nil; % sure, unnecessary
-   end;
-
-lisp procedure type_typep1(al);
-   null al or (type_typep car al and type_typep1 cdr al);
-
-% type_typep 'any;
-%type_typep '(sum any);
-
-lisp procedure type_listp(a);
-   % List predicate. [a] is anything. Returns a truth value.
-   null a or (pairp a and type_listp cdr a);
-
-procedure type_sfp(f);
-   % Standard form with an identifier as a kernel predicate. [f] is
-   % anything. Returns a truth value.
-   null f or domainp f or
-      (pairp f and type_sfp cdr f and
-	 pairp car f and type_sfp cdar f and
-	    pairp caar f and idp caaar f and numberp cdaar f);
-
-procedure type_sqp(q);
-   % Standard quotient with an identifier as a kernel predicate. [f]
-   % is anything. Returns a truth value.
-   pairp q and type_sfp car q and type_sfp cdr q;
-
-% type_listp {1,2,3};
-% type_check({1,2,3},'(list num));
-% type_check({1,2,3},'(list any));
-% type_check(5,'(sum id num iv));
-% type_check(5,'(sum id (list any)));
-% type_check({1,'x},'(list (sum id num)));
-% type_check({{1,2},{3,4}},'(mat num));
-
-endmodule;   % asolution
+endmodule;   % ofsfcad
 
 end;  % of file
