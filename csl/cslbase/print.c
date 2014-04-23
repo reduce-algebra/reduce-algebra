@@ -674,6 +674,9 @@ Lisp_Object Lget_output_stream_string(Lisp_Object nil, Lisp_Object a)
     if (k != 0) *(int32_t *)((char *)a + k - TAG_VECTOR) = 0;
     while (n > 0)
     {   n--;
+/* /* The list can now contain big characters that need to re-expand to
+ * utf-8 form here.
+ */
         celt(a, n) = int_of_fixnum(qcar(w));
         w = qcdr(w);
     }
@@ -1857,6 +1860,7 @@ int tmprint_flag = 0;
 #define escape_hexwidth     0x3f00    /* 6 bits to specify width of hex/bin */
 #define escape_width(n)     (((n) & escape_hexwidth) >> 8)
 #define escape_checksum     0x4000    /* doing a checksum operation */
+#define escape_exploding    0x8000    /* in explode, exploden etc */
 
 static void outprefix(CSLbool blankp, int32_t len)
 /*
@@ -2414,7 +2418,7 @@ case TAG_VECTOR:
                             {   putc_stream('\\', active_stream);
                                 putc_stream(ch, active_stream);
                             }
-                            else if (iscntrl(ch))
+                            else if (ch <= 0xff && iscntrl(ch))
                             {   putc_stream('\\', active_stream);
                                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                                 putc_stream(hexdig[ch & 0xf], active_stream);
@@ -2452,6 +2456,7 @@ case TAG_VECTOR:
  * one of #xxx;, #xxxx; or #xxxxxx; depending on how many bytes were used.
  * in some cases that will leave a leading zero in the representation. Or
  * if I am not displaying with escape_yes I just need to case fold it.
+ * Well if I am doing an EXPLODE then this adjustment is not called for.
  */
                             else if (ch >= 0xc0)
                             {   int32_t n = 0;
@@ -2464,7 +2469,8 @@ case TAG_VECTOR:
                                         n = towlower(n);
                                     else if (escaped_printing & escape_fold_up)
                                         n = towupper(n);
-                                    if (escaped_printing & escape_yes)
+                                    if ((escaped_printing & escape_yes) &&
+                                        !(escaped_printing & escape_exploding))
                                     {   putc_stream('#', active_stream);
 /* This first digit is very often redundant here */
                                         putc_stream(hexdig[(n>>12)&0xf], active_stream);
@@ -2487,7 +2493,8 @@ case TAG_VECTOR:
                                         n = towlower(n);
                                     else if (escaped_printing & escape_fold_up)
                                         n = towupper(n);
-                                    if (escaped_printing & escape_yes)
+                                    if ((escaped_printing & escape_yes) &&
+                                        !(escaped_printing & escape_exploding))
                                     {   putc_stream('#', active_stream);
                                         putc_stream(hexdig[(n>>12)&0xf], active_stream);
                                         putc_stream(hexdig[(n>>8)&0xf], active_stream);
@@ -2519,7 +2526,8 @@ case TAG_VECTOR:
                                         else if (escaped_printing & escape_fold_up)
                                             n = towupper(n);
                                     }
-                                    if (escaped_printing & escape_yes)
+                                    if ((escaped_printing & escape_yes) &&
+                                        !(escaped_printing & escape_exploding))
                                     {   putc_stream('#', active_stream);
                                         putc_stream(hexdig[(n>>20)&0xf], active_stream);
                                         putc_stream(hexdig[(n>>16)&0xf], active_stream);
@@ -2534,20 +2542,21 @@ case TAG_VECTOR:
                             }
                             else
 /*
- * Here I know I have a code in the range U+00 to U+7f so I can use narrow
- * character handling safely.
+ * Here I have a character in the range u+0000 to u+007f.
  */
-                            {   if (escaped_printing & escape_fold_down)
+                            {
+                                if (escaped_printing & escape_fold_down)
                                     ch = tolower(ch);
                                 else if (escaped_printing & escape_fold_up)
-                                    ch = (char)toupper((unsigned char)ch);
+                                    ch = toupper(ch);
 /* Just For Now I Will Not Implement The Option To Capitalize Things */
                                 putc_stream(ch, active_stream);
                             }
                         }
                     }
                     popv(1);
-                    if (escaped_printing & escape_yes) putc_stream('"', active_stream);
+                    if (escaped_printing & escape_yes)
+                        putc_stream('"', active_stream);
                 }
                 return;
 
@@ -2920,7 +2929,13 @@ case TAG_SYMBOL:
                     putc_stream(':', active_stream);
                     break;
             case 3:
-            case 4: internal_prin(packname_(qpackage(u)), blankp | 2);
+            case 4:
+/*
+ * The issue of line breaks is maybe horrid here! I probably need to
+ * assess the print width of both the package name and the basic
+ * part of the name somewhere around here.
+ */
+                    internal_prin(packname_(qpackage(u)), blankp | 2);
                     putc_stream(':', active_stream);
                     if (pkgid == 4) putc_stream(':', active_stream);
                     break;
@@ -2944,6 +2959,10 @@ case TAG_SYMBOL:
                 }
             }
             else
+/*
+ * Now I have prin1 rather than prin2, or prin2 but with case folding.
+ * thus the fun really begins.
+ */
             {   int extralen = 0;
                 if (qvalue(lower_symbol) != nil) raised = -1;
                 else if (qvalue(raise_symbol) != nil) raised = 1;
@@ -2968,7 +2987,9 @@ case TAG_SYMBOL:
                 }
 /* /*
  * Again here I should perhaps take a view about linelength and
- * symbols with tabs in their names... At present I do not.
+ * symbols with tabs in their names... At present I do not. Anyway I need a
+ * first scan of the material to assess how many character positions will
+ * be needed when I print it.
  */
                 for (k = 0; k < len; k++)
                 {   int ch = celt(stack[0], k);
@@ -2980,11 +3001,11 @@ case TAG_SYMBOL:
  */
                     if ((ch & 0xc0) == 0x80) continue;
                     else if ((ch & 0xe0) == 0xc0 &&
-                        (escaped_printing & escape_yes)==0) slen += 5, extralen++;
+                        (escaped_printing & escape_yes)) slen += 5, extralen++;
                     else if ((ch & 0xf0) == 0xe0 &&
-                        (escaped_printing & escape_yes)==0) slen += 5, extralen++;
+                        (escaped_printing & escape_yes)) slen += 5, extralen++;
                     else if ((ch & 0x80) != 0 &&
-                        (escaped_printing & escape_yes)==0) slen += 7, extralen++;
+                        (escaped_printing & escape_yes)) slen += 7, extralen++;
                     else if ((escaped_printing & escape_yes) &&
                         !(escaped_printing &
                           (escape_fold_down |
@@ -2993,6 +3014,14 @@ case TAG_SYMBOL:
 #ifdef COMMON
                         (ch=='.' || ch=='\\' || ch=='|') ||
 #endif
+/*
+ * Here ch is certain to be in the range u+0000 to u+007f. Since I am
+ * rendering all characters over u+007f as escape sequences and all have an
+ * escape character prefix already there is no extra work needed to cover
+ * case folding for any of them. Whew. Well that depends on it being the case
+ * that case folding never moves something from the up to u+ffff up to
+ * the u+10000 and above range (or vice versa).
+ */
                         (!is_constituent(ch) ||
 #ifdef COMMON
                          (ch=='.' || ch=='\\' || ch=='|' || ch==':') ||
@@ -3010,7 +3039,7 @@ case TAG_SYMBOL:
  * here slen is the number of characters that will be used to display the
  * printname itself, extralen is the number of "!" characters that Standard
  * Lisp mode would use. If extralen is non zero I will need to use "|"
- * notation here.
+ * notation here in Common Lisp mode.
  */
                 if (extralen != 0) extralen = 2;
                 switch (pkgid)
@@ -3058,15 +3087,20 @@ case TAG_SYMBOL:
  * Now display the characters that make up the name.
  */
                 for (k = 0; k < len; k++)
-                {   int ch = celt(stack[0], k);
+                {   int ch = ucelt(stack[0], k);
 #ifdef COMMON
                     if (ch == '\\' || ch=='|')
                         putc_stream(ESCAPE_CHAR, active_stream);
 #else
+/*
+ * If I am case folding then I hope I am not also putting in escape
+ * marks. Well at present I will NEVER combine escape_fold_xxx with
+ * escape_yes, so I am safe here!
+ */
                     if (!(escaped_printing &
                           (escape_fold_down | escape_fold_up |
                            escape_capitalize)) &&
-                        (
+                        (ch > 0x7f ||
                          !is_constituent(ch) ||
                          (raised < 0 && isupper((unsigned char)ch)) ||
                          (raised > 0 && islower((unsigned char)ch))))
@@ -3074,7 +3108,9 @@ case TAG_SYMBOL:
 #endif
 /*
  * If I am case-folding I may need to extract an utf-8 multi-byte
- * sequence, case fold and then display it.
+ * sequence, case fold and then display it. And since I am doing
+ * prin1 then if I am not exploding I need to display multi-byte
+ * objects as escape sequences using "#".
  */
                     if (ch >= 0xc0)
                     {   int32_t n = 0;
@@ -3087,7 +3123,8 @@ case TAG_SYMBOL:
                                 n = towlower(n);
                             else if (escaped_printing & escape_fold_up)
                                 n = towupper(n);
-                            if (escaped_printing & escape_yes)
+                            if ((escaped_printing & escape_yes) &&
+                                !(escaped_printing & escape_exploding))
                             {   putc_stream('#', active_stream);
 /* This first digit is very often redundant here */
                                 putc_stream(hexdig[(n>>12)&0xf], active_stream);
@@ -3110,7 +3147,8 @@ case TAG_SYMBOL:
                                 n = towlower(n);
                             else if (escaped_printing & escape_fold_up)
                                 n = towupper(n);
-                            if (escaped_printing & escape_yes)
+                            if ((escaped_printing & escape_yes) &&
+                                !(escaped_printing & escape_exploding))
                             {   putc_stream('#', active_stream);
                                 putc_stream(hexdig[(n>>12)&0xf], active_stream);
                                 putc_stream(hexdig[(n>>8)&0xf], active_stream);
@@ -3142,7 +3180,8 @@ case TAG_SYMBOL:
                                 else if (escaped_printing & escape_fold_up)
                                     n = towupper(n);
                             }
-                            if (escaped_printing & escape_yes)
+                            if ((escaped_printing & escape_yes) &&
+                                !(escaped_printing & escape_exploding))
                             {   putc_stream('#', active_stream);
                                 putc_stream(hexdig[(n>>20)&0xf], active_stream);
                                 putc_stream(hexdig[(n>>16)&0xf], active_stream);
@@ -3648,39 +3687,88 @@ void freshline_debug(void)
 
 }
 
+static int char_to_list_state = 0;
+
 int char_to_list(int c, Lisp_Object f)
 {
     Lisp_Object k, nil = C_nil;
 /*
- * return at once if a previous call raised an exception. Note that this
- * function is only expecting characters in the range 0 to 255, ie bytes
- * not really characters.
+ * return at once if a previous call raised an exception. Codes that are
+ * large have to be converted back into utf-8 form. Characters in the
+ * range 0 to u+00ff are kept cached in a vector so that lookup is
+ * especially fast.
  */
     if (exception_pending()) return 1;
     c &= 0xff;
-    k = elt(charvec, c);
-    if (k == nil)
+    if (c <= 0x7f);  /* Simple character */
+    else if ((c & 0xc0) == 0x80) /* Continuation byte */
+    {   char_to_list_state = (char_to_list_state << 6) | (c & 0x3f);
+        if (char_to_list_state >= 0) return 0;
+        c = char_to_list_state & 0x001fffff;
+    }
+    else if ((c & 0xe0) == 0xc0)
+    {   char_to_list_state = (0x80000000u >> 6) + (c & 0x1f);
+        return 0;
+    }
+    else if ((c & 0xf0) == 0xe0)
+    {   char_to_list_state = (0x80000000u >> 12) + (c & 0x0f);
+        return 0;
+    }
+    else
+    {   char_to_list_state = (0x80000000u >> 18) + (c & 0x07);
+        return 0;
+    }
+    if (c > 0xff)
     {   int len;
-        if (c <= 0x7f)
-        {   celt(boffo, 0) = (char)c;
-            len = 1;
-        }
-        else
-        {   celt(boffo, 0) = 0xc0 + (c>>6);
+        if (c <= 0x7ff)
+        {   celt(boffo, 0) = 0xc0 + (c >> 6);
             celt(boffo, 1) = 0x80 + (c & 0x3f);
             len = 2;
         }
+        else if (c <= 0xffff)
+        {   celt(boffo, 0) = 0xe0 + (c >> 12);
+            celt(boffo, 1) = 0x80 + ((c >> 6) & 0x3f);
+            celt(boffo, 2) = 0x80 + (c & 0x3f);
+            len = 3;
+        }
+        else
+        {   celt(boffo, 0) = 0xf0 + (c >> 18);
+            celt(boffo, 1) = 0x80 + ((c >> 12) & 0x3f);
+            celt(boffo, 2) = 0x80 + ((c >> 6) & 0x3f);
+            celt(boffo, 3) = 0x80 + (c & 0x3f);
+            len = 4;
+        }
         push(f);
+        k = iintern(boffo, len, lisp_package, 0);
+        pop(f);
+        nil = C_nil;
+        if (exception_pending()) return 1;
+    }
+    else
+    {   k = elt(charvec, c);
+        if (k == nil)
+        {   int len;
+            if (c <= 0x7f)
+            {   celt(boffo, 0) = (char)c;
+                len = 1;
+            }
+            else
+            {   celt(boffo, 0) = 0xc0 + (c>>6);
+                celt(boffo, 1) = 0x80 + (c & 0x3f);
+                len = 2;
+            }
+            push(f);
 /*
  * It could very well be that in Common Lisp I ought to generate a list of
  * character objects here. As it is I hand back symbols, but I do take care
  * that they are in the LISP package.
  */
-        k = iintern(boffo, len, lisp_package, 0);
-        pop(f);
-        nil = C_nil;
-        if (exception_pending()) return 1;
-        elt(charvec, c & 0xff) = k;
+            k = iintern(boffo, len, lisp_package, 0);
+            pop(f);
+            nil = C_nil;
+            if (exception_pending()) return 1;
+            elt(charvec, c & 0xff) = k;
+        }
     }
     push(f);
     k = cons(k, stream_write_data(f));
@@ -3742,6 +3830,15 @@ void checksum(Lisp_Object u)
     CSL_MD5_Update(checksum_buffer, checksum_count);
 }
 
+/*
+ * code_to_list is used by exploden and explodecn. Also by
+ * make-string-output-stream. I want it to collect a list of codes
+ * not bytes, but by the time I get here things have been utf-8 encoded,
+ * so I need to unwind that. Ugh.
+ */
+
+static int32_t code_to_list_state = 0;
+
 int code_to_list(int c, Lisp_Object f)
 {
     Lisp_Object k, nil = C_nil;
@@ -3749,9 +3846,28 @@ int code_to_list(int c, Lisp_Object f)
  * return at once if a previous call raised an exception
  */
     if (exception_pending()) return 1;
-    k = fixnum_of_int((int32_t)c);
+    stream_byte_pos(f)++;
+    c &= 0xff;
+    if (c <= 0x7f) k = c;  /* Simple character */
+    else if ((c & 0xc0) == 0x80) /* Continuation byte */
+    {   code_to_list_state = (code_to_list_state << 6) | (c & 0x3f);
+        if (code_to_list_state >= 0) return 0;
+        k = code_to_list_state & 0x001fffff;
+    }
+    else if ((c & 0xe0) == 0xc0)
+    {   code_to_list_state = (0x80000000u >> 6) + (c & 0x1f);
+        return 0;
+    }
+    else if ((c & 0xf0) == 0xe0)
+    {   code_to_list_state = (0x80000000u >> 12) + (c & 0x0f);
+        return 0;
+    }
+    else
+    {   code_to_list_state = (0x80000000u >> 18) + (c & 0x07);
+        return 0;
+    }
     push(f);
-    k = cons(k, stream_write_data(f));
+    k = cons(fixnum_of_int(k), stream_write_data(f));
     pop(f);
     nil = C_nil;
     if (!exception_pending())
@@ -3760,8 +3876,7 @@ int code_to_list(int c, Lisp_Object f)
  * In this case the "position" must not pay attention to
  * tabs or newlines.
  */
-        stream_byte_pos(f)++;
-        if ((c & 0xc0) != 0x80) stream_char_pos(f)++;
+        stream_char_pos(f)++;
         return 0;
     }
     else return 1;
@@ -4291,7 +4406,7 @@ Lisp_Object MS_CDECL Leject(Lisp_Object nil, int nargs, ...)
 
 Lisp_Object Lexplode(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_yes+escape_nolinebreak;
+    escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4299,7 +4414,7 @@ Lisp_Object Lexplode(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplodehex(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_yes+escape_hex+escape_nolinebreak;
+    escaped_printing = escape_yes+escape_hex+escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4307,7 +4422,7 @@ Lisp_Object Lexplodehex(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplodeoctal(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_yes+escape_octal+escape_nolinebreak;
+    escaped_printing = escape_yes+escape_octal+escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4315,7 +4430,7 @@ Lisp_Object Lexplodeoctal(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplodebinary(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_yes+escape_binary+escape_nolinebreak;
+    escaped_printing = escape_yes+escape_binary+escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4323,7 +4438,7 @@ Lisp_Object Lexplodebinary(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplodec(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_nolinebreak;
+    escaped_printing = escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4331,7 +4446,7 @@ Lisp_Object Lexplodec(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplode2lc(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_fold_down+escape_nolinebreak;
+    escaped_printing = escape_fold_down+escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4339,7 +4454,7 @@ Lisp_Object Lexplode2lc(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplode2uc(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_fold_up+escape_nolinebreak;
+    escaped_printing = escape_fold_up+escape_nolinebreak+escape_exploding;
     a = explode(a);
     errexit();
     return onevalue(a);
@@ -4347,7 +4462,7 @@ Lisp_Object Lexplode2uc(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexploden(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_yes+escape_nolinebreak;
+    escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
     a = exploden(a);
     errexit();
     return onevalue(a);
@@ -4355,7 +4470,7 @@ Lisp_Object Lexploden(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplodecn(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_nolinebreak;
+    escaped_printing = escape_nolinebreak+escape_exploding;
     a = exploden(a);
     errexit();
     return onevalue(a);
@@ -4363,7 +4478,7 @@ Lisp_Object Lexplodecn(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplode2lcn(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_fold_down+escape_nolinebreak;
+    escaped_printing = escape_fold_down+escape_nolinebreak+escape_exploding;
     a = exploden(a);
     errexit();
     return onevalue(a);
@@ -4371,7 +4486,7 @@ Lisp_Object Lexplode2lcn(Lisp_Object nil, Lisp_Object a)
 
 Lisp_Object Lexplode2ucn(Lisp_Object nil, Lisp_Object a)
 {
-    escaped_printing = escape_fold_up+escape_nolinebreak;
+    escaped_printing = escape_fold_up+escape_nolinebreak+escape_exploding;
     a = exploden(a);
     errexit();
     return onevalue(a);

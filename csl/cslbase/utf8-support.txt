@@ -71,7 +71,20 @@ strings seems horrid.
 
 (11) The family of functions "explode" need to split things into characters
 not bytes... I will implement that by first converting to a utf-8 encodeded
-stream of bytes and then collecting byte sequences for characters.
+stream of bytes and then collecting byte sequences for characters. This is
+not quite the same as merely using princ/prin but redirecting output to
+a list of items! Well explodec/explodecn can be like princ but consolidating
+multi-byte characters into single integers or big characters: that is not too
+bad. But explode/exploden will want to collect (eg) !#alpha; as (!! !#alpha)
+or (33 945) rather than (eg) (!! !# a l p h a !;). Now the case that
+gives me pause is a symbol whose name is !#word!; - that is OK it should
+explode to (!! !# w o r d !! !;) but the string variant is harder in that
+(!" !# w o r d !; !") could compress back into something odd, so the
+unexpected result needs to be (!" !# h a s h !; w o r d !; !").
+In a string prin1 takes a string "#alpha;" into "#03b1;" because (at present?)
+I do not use an inverse code-to-name lookup. But explode needs to
+turn it into a list of lenth 3, (!" !#alpha; !") rather than (!" !#
+!0 !3 b !1 !;). All this is a bit of a mess!
 
 (12) I need to work out how to cope with compress and then more general
 input from utf-8 sources.
