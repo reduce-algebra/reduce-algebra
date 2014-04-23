@@ -4,6 +4,10 @@
 
 % Date: 24 October 1988.
 
+load_package solve;
+
+
+
 order p;
 
 
@@ -1795,8 +1799,3 @@ invlap(--------,p,t)
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 290 ms  plus GC time: 59 ms
-1: real 0.61
-user 0.03
-sys 0.10

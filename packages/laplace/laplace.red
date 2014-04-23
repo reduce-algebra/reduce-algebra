@@ -415,7 +415,8 @@ symbolic procedure  lpsimpg  u ;
  % Simplifies gamma(k), if k is rational and semiinteger.
  % U is in prefix form. Returns standard quotient.
  begin  scalar  n,v ;
-   u:= simpcar cdr u;  % Gamma is now flagged "full".
+   u:= simpcar if flagp('gamma,'full) then cdr u else u;
+      	 % in case Gamma is flagged "full".
    if denr u neq 1
      % Maybe we can do better than this.
      then return mksq(list('gamma,prepsq u),1);
