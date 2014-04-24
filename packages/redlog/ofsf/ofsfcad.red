@@ -78,8 +78,6 @@ asserted procedure ofsf_gcad(phi: Formula, prjordl: List, aaplus: List): DottedP
       return ofsf_cad(phi, prjordl, aaplus)
    end;
 
-fluid '(kord!*);
-
 % rlcad entry point
 asserted procedure ofsf_cad(phi: Formula, prjordl: List, aaplus: List): Any;
    % Ordered field standard form cylindrical algebraic decomposition. [phi] is a
@@ -92,66 +90,60 @@ asserted procedure ofsf_cad(phi: Formula, prjordl: List, aaplus: List): Any;
    % formula equivalent to [phi] is returned, otherwise [phi] is returned in
    % prenex normal form.
    begin scalar cd;
-      % preparation phase; Kernel order is changed.
       cd := ofsf_cadpreparation(phi, prjordl, aaplus);
       if !*rlverbose then
 	 caddata_print cd;
-      if !*rlcadpreponly then
-	 return ofsf_cadfinish cd;
-      % projection phase
-      ofsf_cadprojection cd;
-      if !*rlcadprojonly then <<
-	 ioto_prin2t {"+ Theory: "};
-	 for each f in caddata_theo cd do
-	    mathprint rl_prepfof f;
+      if !*rlcadpreponly then <<
+	 if !*rlverbose then
+	    ioto_tprin2t "+ rlcadpreponly is on: Jump into finish.";
 	 return ofsf_cadfinish cd
       >>;
-      % extension phase; Partial CAD tree is built.
+      ofsf_cadprojection cd;
+      if !*rlcadprojonly then <<
+	 if !*rlverbose then
+	    ioto_tprin2t "+ rlcadprojonly is on: Jump into finish.";
+	 return ofsf_cadfinish cd
+      >>;
       ofsf_cadextension cd;
-      if !*rlcadextonly then
-	 return ofsf_cadfinish cd;
-      % solution formula construction phase
+      if !*rlcadextonly then <<
+	 if !*rlverbose then
+	    ioto_tprin2t "+ rlcadextonly is on: Jump into finish.";
+	 return ofsf_cadfinish cd
+      >>;
       ofsf_solutionformula cd;
-      % finish; Kernel order is restored.
       return ofsf_cadfinish cd
    end;
 
+fluid '(kord!*);
+
 % rlcadpnum entry point
 asserted procedure ofsf_cadpnum(phi: Formula, prjordl: List): Integer;
-   begin scalar cd, !*rlcadtrimtree, kord!*;
-      % preparation phase; Kernel order is changed.
+   begin scalar !*rlcadtrimtree, cd;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
-      % projection phase
+      if !*rlverbose then
+	 caddata_print cd;
       ofsf_cadprojection cd;
-      % extension phase; Partial cad tree is built.
       ofsf_cadextension cd;
+      ofsf_restorekord cd;
       return length atree_yield caddata_dd cd
    end;
 
 % rlcadproj entry point
 asserted procedure ofsf_cadproj(phi: Formula, prjordl: List): DottedPair;
-   begin scalar cd, oldorder, phiprime, ophi, theo, ffl;
-      % preparation phase; Kernel order is changed.
+   begin scalar cd, theo, ffl;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
       if !*rlverbose then
 	 caddata_print cd;
-      % projection phase
       ofsf_cadprojection cd;
-      % finish
+      % if !*rlverbose then
       for each f in caddata_theo cd do
 	 mathprint rl_prepfof f;
-      oldorder := caddata_oldorder cd;
-      phiprime := caddata_phiprime cd;
-      ophi := caddata_ophi cd;
-      if oldorder neq 'undefined then
-	 setkorder oldorder;
-      if ofsf_cadverbosep() then
-	 ioto_tprin2 {"+ Order restored."};
+      ofsf_restorekord cd;
       theo := for each f in caddata_theo cd collect
 	 ofsf_reorder f;
       ffl := reversip for j := 1 : caddata_r cd collect
-	 for each f in caddata_ffj(cd, j) collect
-	    reorder f;
+	 for each p in caddata_ffj(cd, j) collect
+	    reorder p;
       return theo . ffl
    end;
 
@@ -174,7 +166,7 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
 	 >>
       >>;
       ophi := phi := cl_pnf phi;
-      % [ophi] with old term order
+      % [ophi] with old kernel order
       varl . qal := ofsf_mkvarl phi;
       % [varl] is (x_r, ..., x_1).
       % [qal] is ((x_r . Q_r), ..., (x_k+1 . Q_k+1)).
@@ -189,6 +181,8 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
       k := r - length qal;
       % reordering w.r.t. varl
       oldorder := setkorder varl;
+      if !*rlverbose then
+	 ioto_prin2t {"+ Kernel order set to ", varl};
       varl := reverse varl;  % reversip would affect kernel order
       % [varl] is now (x_1, ..., x_r).
       qal := reversip qal;
@@ -232,70 +226,63 @@ asserted procedure ofsf_cadprojection(cd: CadData): Any;
 	 ioto_tprin2t {"+++ Projection Phase"};
       ofsf_cadprojection1 cd;  % [caddata_ff] and [caddata_jj] are computed here.
       ff := caddata_ff cd;
-      if !*rlcadprojonly and ofsf_cadverbosep() then
-	 for i := 1 : r do <<
-	    ioto_tprin2t {"+ projection factors of level ", r-i+1, ":"};
-	    mathprint('list . for each f in getv(ff, r-i+1) collect prepf f)
+      if !*rlverbose then
+	 if !*rlcadprojonly then
+	    for i := 1 : r do <<
+	       ioto_tprin2t {"+ projection factors of level ", r-i+1, ":"};
+	       mathprint('list . for each f in getv(ff, r-i+1) collect prepf f)
+      	    >>
+	 else <<
+	    % ioto_tprin2t {"+ (#F1,...,#Fr)=",
+	    %    for each ffi in ffl collect length ffi};
+	    ioto_tprin2 "+ number of projection factors of level r,...,1: ";
+      	    for i := 0 : r - 2 do
+	       ioto_prin2 {length getv(ff, r-i), ","};
+	    ioto_prin2t length getv(ff, 1)
       	 >>;
-      if !*rlverbose then <<
-	 % ioto_tprin2t {"+ (#F1,...,#Fr)=",
-	 %    for each ffi in ffl collect length ffi};
-	 ioto_tprin2 "+ number of projection factors of level r,...,1: ";
-      	 for i := 0 : r - 2 do
-	    ioto_prin2 {length getv(ff, r-i), ","};
-	 ioto_prin2t length getv(ff, 1)
-      >>;
-      if !*rlcadprojonly then
-	 ioto_tprin2t "+ Stopping, because rlcadprojonly is on.";
       return nil
    end;
 
 asserted procedure ofsf_cadextension(cd: CadData): Any;
-   begin scalar r, dd;
-      r := caddata_r cd;
+   begin scalar dd; integer r;
       if !*rlverbose then
-	 ioto_tprin2t {"+++ Partial CAD (extension and truth values)"};
+	 ioto_tprin2t {"+++ Extension Phase"};
       dd := ofsf_tree cd;
-      if !*rlverbose then
+      if !*rlverbose then <<
+	 r := caddata_r cd;
 	 ioto_tprin2t {"+ (#D0,...,#Dr)=",
-	    for i := 0 : r collect length atree_levellabels(dd, i)};
+	    for i := 0 : r collect length atree_levellabels(dd, i)}
+      >>;
       if !*rlcadtree2dot then
 	 atree_2dot dd;
-      if !*rlcadextonly then <<
-	 ioto_tprin2t "+ Stopping, because rlcadextonly is on.";
-	 return nil
-      >>;
       caddata_putdd(cd, dd);
       return nil
    end;
 
 asserted procedure ofsf_cadfinish(cd: CadData): DottedPair;
-   % Returns a pair [(theo . phip)], where [phip] is [phiprime] if a
-   % quantifier-free formula equivalent to [phi]. If [phiprime] was not found,
-   % the input formula [phi] is returned.
-   begin scalar oldorder, phiprime, ophi, theo;
+   % Returns a pair [(theo . phip)], where [phip] is [caddata_phiprime cd] if a
+   % quantifier-free formula equivalent to [phi] was computed. If such a formula
+   % was not computed, the input formula [phi] is returned.
+   begin scalar w, oldorder, theo, phiprime;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ Finish Phase"};
-      oldorder := caddata_oldorder cd;
-      phiprime := caddata_phiprime cd;
-      ophi := caddata_ophi cd;
-      if !*rlqegen1 then
-	 for j := 1 : min2(1, caddata_k cd) do
-            caddata_puttheo(cd, append(for each f in caddata_ffj(cd, j) collect
-	       ofsf_0mk2('neq, f), caddata_theo cd));
-      if oldorder neq 'undefined then
-	 setkorder oldorder;
-      if ofsf_cadverbosep() then
-	 ioto_tprin2 {"+ Order restored."};
-      theo := for each f in caddata_theo cd collect
-	 ofsf_reorder f;
-      if phiprime neq 'undefined then
-	 phiprime := ofsf_reorder phiprime;
+      if !*rlqegen1 then <<
+	 % for j := 1 : min2(1, caddata_k cd) do
+         %    caddata_puttheo(cd, append(for each f in caddata_ffj(cd, j) collect
+	 %       ofsf_0mk2('neq, f), caddata_theo cd))
+	 w := for j := 1 : min2(1, caddata_k cd) join
+            for each f in caddata_ffj(cd, j) collect
+	       ofsf_0mk2('neq, f);
+	 caddata_puttheo(cd, append(w, caddata_theo cd))
+      >>;
+      ofsf_restorekord cd;
+      theo := for each f in caddata_theo cd collect ofsf_reorder f;
       if !*rlqegen then
 	 theo := ofsf_thsimpl theo;
+      phiprime := caddata_phiprime cd;
       if phiprime neq 'undefined then
-	 return theo . cl_simpl(phiprime, theo, -1);
-      return theo . ophi
+	 return theo . cl_simpl(ofsf_reorder phiprime, theo, -1);
+      return theo . caddata_ophi cd
    end;
 
 asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
@@ -314,9 +301,20 @@ asserted procedure ofsf_mkvarl(f: Formula): DottedPair;
       return vl . qal
    end;
 
+asserted procedure ofsf_restorekord(cd: CadData): Any;
+   % Restore the current kernel order to the old kernel order stored in [cd].
+   begin scalar oldorder;
+      oldorder := caddata_oldorder cd;
+      if oldorder neq 'undefined then
+	 setkorder oldorder;
+      if !*rlverbose then
+	 ioto_tprin2 {"+ Kernel order was restored."};
+      return nil
+   end;
+
 asserted procedure ofsf_reorder(f: Formula): Formula;
    % Reorder formula. Reorders all polynomials occurring in [f] w.r.t. the
-   % currenct kernel order.
+   % current kernel order.
    cl_apply2ats(f,
       function(lambda(atf); ofsf_0mk2(ofsf_op atf, reorder ofsf_arg2l atf)));
 
