@@ -208,6 +208,10 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:ACOTH}{}
 \hypertarget{operator:ACSC}{}
 \hypertarget{operator:ACSCH}{}
+\hypertarget{operator:AIRY_AI}{}
+\hypertarget{operator:AIRY_AIPRIME}{}
+\hypertarget{operator:AIRY_BI}{}
+\hypertarget{operator:AIRY_BIPRIME}{}
 \hypertarget{operator:ASEC}{}
 \hypertarget{operator:ASECH}{}
 \hypertarget{operator:ASIN}{}
@@ -215,6 +219,20 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:ATAN}{}
 \hypertarget{operator:ATANH}{}
 \hypertarget{operator:ATAN2}{}
+\hypertarget{operator:BESSELI}{}
+\hypertarget{operator:BESSELJ}{}
+\hypertarget{operator:BESSELK}{}
+\hypertarget{operator:BESSELY}{}
+\hypertarget{operator:HANKEL1}{}
+\hypertarget{operator:HANKEL2}{}
+\hypertarget{operator:KUMMERM}{}
+\hypertarget{operator:KUMMERU}{}
+\hypertarget{operator:LOMMEL1}{}
+\hypertarget{operator:LOMMEL2}{}
+\hypertarget{operator:STRUVEH}{}
+\hypertarget{operator:STRUVEL}{}
+\hypertarget{operator:WHITTAKERM}{}
+\hypertarget{operator:WHITTAKERU}{}
 \hypertarget{operator:BETA}{}
 \hypertarget{operator:CI}{}
 \hypertarget{operator:COS}{}
@@ -228,19 +246,27 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:EXP}{}
 \hypertarget{operator:GAMMA}{}
 \hypertarget{operator:HYPOT}{}
+\hypertarget{operator:IBETA}{}
+\hypertarget{operator:IGAMMA}{}
+\hypertarget{operator:LERCH_PHI}{}
 \hypertarget{operator:LN}{}
 \hypertarget{operator:LOG}{}
 \hypertarget{operator:LOGB}{}
 \hypertarget{operator:LOG10}{}
 \hypertarget{operator:POCHHAMMER}{}
+\hypertarget{operator:POLYGAMMA}{}
+\hypertarget{operator:PSI}{}
 \hypertarget{operator:SEC}{}
 \hypertarget{operator:SECH}{}
 \hypertarget{operator:SI}{}
 \hypertarget{operator:SIN}{}
 \hypertarget{operator:SINH}{}
+\hypertarget{operator:SPHERICALHARMONICY}{}
+\hypertarget{operator:SOLIDHARMONICY}{}
 \hypertarget{operator:SQRT}{}
 \hypertarget{operator:TAN}{}
 \hypertarget{operator:TANH}{}
+\hypertarget{operator:ZETA}{}
 
 {\REDUCE} knows that the following represent mathematical functions
 \index{Mathematical function} that can
@@ -248,20 +274,36 @@ take arbitrary scalar expressions as their argument(s):
 \begin{verbatim}
    ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
    ATAN ATANH ATAN2 BETA CI COS COSH COT COTH CSC CSCH
-   DILOG EI EXP GAMMA HYPOT LN LOG LOGB LOG10 SEC SECH
-   SI SIN SINH SQRT TAN TANH
+   DILOG EI EXP GAMMA HYPOT IBETA IGAMMA LN LOG LOGB LOG10
+   SEC SECH SI SIN SINH SQRT TAN TANH
+   AIRY_AI AIRY_AIPRIME AIRY_BI AIRY_BIPRIME
+   BESSELI BESSELJ BESSELK BESSELY
+   HANKEL1 HANKEL2 KUMMERM KUMMERU LOMMEL1 LOMMEL2
+   STRUVEH STRUVEL WHITTAKERM WHITTAKERU
+   POLYGAMMA PSI ZETA
+   SOLIDHARMONICY SPHERICALHARMONICY
 \end{verbatim}
 \ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}
-\ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}
-\ttindex{ASECH}\ttindex{ASIN}
-\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
-\ttindex{ATAN2}\ttindex{BETA}\ttindex{CI}\ttindex{COS}
+\ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}
+\ttindex{AIRY\_AI}\ttindex{AIRY\_AIPRIME}
+\ttindex{AIRY\_BI}\ttindex{AIRY\_BIPRIME}
+\ttindex{ASEC}\ttindex{ASECH}\ttindex{ASIN}
+\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}\ttindex{ATAN2}
+\ttindex{BESSELI}\ttindex{BESSELJ}\ttindex{BESSELK}\ttindex{BESSELY}
+\ttindex{BETA}\ttindex{CI}\ttindex{COS}
 \ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
 \ttindex{CSCH}\ttindex{DILOG}\ttindex{Ei}\ttindex{EXP}\ttindex{GAMMA}
-\ttindex{HYPOT}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
-\ttindex{POCHHAMMER}
+\ttindex{BESSELI}\ttindex{BESSELJ}\ttindex{BESSELK}\ttindex{BESSELY}
+\ttindex{HANKEL1}\ttindex{HANKEL2}
+\ttindex{KUMMERM}\ttindex{KUMMERU}
+\ttindex{LOMMEL1}\ttindex{LOMMEL2}
+\ttindex{STRUVEH}\ttindex{STRUVEL}
+\ttindex{WHITTAKERM}\ttindex{WHITTAKERU}
+\ttindex{HYPOT}\ttindex{IBETA}\ttindex{IGAMMA}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
+\ttindex{POCHHAMMER}\ttindex{POLYGAMMA}\ttindex{PSI}
 \ttindex{SEC}\ttindex{SECH}\ttindex{SI}\ttindex{SIN}
 \ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
+\ttindex{ZETA}
 where \texttt{LOG} is the natural logarithm (and equivalent to \texttt{LN}),
 and \texttt{LOGB} has two arguments of which the second is the logarithmic base.
 
@@ -450,7 +492,7 @@ applies only in the mathematically exact \texttt{off rounded} mode.  If
 \begin{verbatim}
         ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
         ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH EXP HYPOT
-        LN LOG LOGB LOG10 SEC SECH SIN SINH SQRT TAN TANH
+        IBETA IGAMMA LN LOG LOGB LOG10 SEC SECH SIN SINH SQRT TAN TANH
 \end{verbatim}
 \ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}\ttindex{ACOTH}
 \ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}\ttindex{ASECH}
@@ -495,16 +537,37 @@ Euler numbers are computed by the unary operator Euler, which
 return the nth Euler number. The computation is derived 
 directly from Pascal's triangle of binomial coefficients.
 
+\section{Fibonacci Numbers and Fibonacci Polynomials}
+\ttindex{Fibonacci}\index{Fibonacci numbers}
+\index{Fibonacci Polynomials}\ttindex{FibonacciP}
+\hypertarget{operator:FIBONACCI}{}\hypertarget{operator:FIBONACCIP}{}
 
-\section{The Pochhammer Notation}
-\ttindex{Pochhammer}\index{Pochhammer notation}
+The unary operator {\tt Fibonacci} provides notation and computation for
+Fibonacci numbers.  {\tt Fibonacci(n)} evaluates to the $n$th Fibonacci
+number. If n is a positive or negative integer, it will be evaluated following
+the definition:
 
-The Pochhammer notation $(a)_k$ is supported by the binary operator \texttt{POCHHAMMER}.
-With \sw{ROUNDED} off, this expression is evaluated
-numerically if $a$ and $k$ are both integral, and otherwise may be
-simplified where appropriate.  The simplification rules are based upon
-algorithms supplied by Wolfram Koepf \cite{Koepf:92}.
+$F_0 = 0 ; F_1 = 1 ; F_n = F_{n-1} + F_{n-2} $
 
+Fibonacci Polynomials are computed by the binary operator 
+FibonacciP. FibonacciP(n,x) returns the $n$th Fibonaccip polynomial
+in the variable x. If n is a positive or negative integer, it will be evaluated following
+the definition:
+
+$F_0(x) = 0 ; F_1(x) = 1 ; F_n(x) = x F_{n-1}(x) + F_{n-2}(x) $
+
+\section{Motzkin numbers}
+\index{Motzkin number}\ttindex{Motzkin}
+\hypertarget{operator:MOTZKIN}{}
+
+A Motzkin number $M_{n}$ (named after Theodore Motzkin) is the number of
+different ways of drawing non-intersecting chords on a circle between
+n points. For a non-negative integer $n$, the operator \texttt{Motzkin(n)} 
+returns the $n$th Motzkin number, according to the recursion formula
+\begin{displaymath}
+  M_{0} = 1 \,;\quad M_{1}=1\,; \quad
+  M_{n+1} = \frac{2n+3}{n+3}M_{n}+ \frac{3n}{n+3}M_{n-1}\,.
+\end{displaymath}
 
 \section{CONTINUED\_FRACTION Operator}
 \hypertarget{operator:CONTINUED_FRACTION}{}
@@ -894,6 +957,17 @@ identifiers created by \texttt{MKID}, for example
         set(mkid(a,3),3);
 \end{verbatim}
 will give \var{A3} the value 2.
+
+
+\section{The Pochhammer Notation}
+\ttindex{Pochhammer}\index{Pochhammer notation}
+
+The Pochhammer notation $(a)_k$ is supported by the binary operator \texttt{POCHHAMMER}.
+With \sw{ROUNDED} off, this expression is evaluated
+numerically if $a$ and $k$ are both integral, and otherwise may be
+simplified where appropriate.  The simplification rules are based upon
+algorithms supplied by Wolfram Koepf \cite{Koepf:92}.
+
 
 \section{PF Operator}\ttindex{PF}
 \hypertarget{operator:PF}{}
