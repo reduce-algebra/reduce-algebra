@@ -114,8 +114,6 @@ asserted procedure ofsf_cad(phi: Formula, prjordl: List, aaplus: List): Any;
       return ofsf_cadfinish cd
    end;
 
-fluid '(kord!*);
-
 % rlcadpnum entry point
 asserted procedure ofsf_cadpnum(phi: Formula, prjordl: List): Integer;
    begin scalar !*rlcadtrimtree, cd;
@@ -253,8 +251,10 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
 	 ioto_tprin2t {"+ (#D0,...,#Dr)=",
 	    for i := 0 : r collect length atree_levellabels(dd, i)}
       >>;
-      if !*rlcadtree2dot then
+      if !*rlcadtree2dot then <<
 	 atree_2dot dd;
+	 atree_2gml(dd, "cadtree.gml")
+      >>;
       caddata_putdd(cd, dd);
       return nil
    end;
@@ -332,32 +332,33 @@ asserted procedure ofsf_reorder(f: Formula): Formula;
 % <DESC> ::= "quantifier-free formula"
 % <TL> ::= "tag list"
 
-% IDX seems to be an integer (level of the cell) or [nil], when the cell is R^0.
+% IDX is an integer, the index of the cell. Cells representing points have odd
+% indices, cells representing intervals even indices.
 
-asserted procedure acell_mk(idx: Any, sp: AnuList, tv: Id, desc: QfFormula, tl: List): Acell;
+asserted procedure acell_mk(idx: Integer, sp: AnuList, tv: Id, desc: QfFormula, tl: List): Acell;
    % Acell make. [idx] is an IDX, [sp] is a SP, [tv] is ['true] or ['false],
    % [desc] is a DESC and [tl] is a tag list.
    % {'acell, identifier, sample point, truth value, description, tag list}
    {'acell, idx, sp, tv, desc, tl};
 
 asserted procedure acell_getidx(c: Acell): Any;
-   % Cell get index.
+   % Get index.
    nth(c, 2);
 
 asserted procedure acell_getsp(c: Acell): AnuList;
-   % Cell get sample point.
+   % Get sample point.
    nth(c, 3);
 
 asserted procedure acell_gettv(c: Acell): Id;
-   % Cell get truth value.
+   % Get truth value.
    nth(c, 4);
 
 asserted procedure acell_getdesc(c: Acell): QfFormula;
-   % Cell get description.
+   % Get description.
    nth(c, 5);
 
 asserted procedure acell_gettl(c: Acell): List;
-   % Cell get tag list.
+   % Get tag list.
    nth(c, 6);
 
 asserted procedure acell_sri(c: Acell): Id;
@@ -366,23 +367,23 @@ asserted procedure acell_sri(c: Acell): Id;
       atsoc('beyond, tl) or atsoc('arbitrary, tl) where tl=acell_gettl c;
 
 asserted procedure acell_putsp(c: Acell, sp: AnuList): Any;
-   % Cell put sample point.
+   % Put sample point.
    nth(c, 3) := sp;
 
 asserted procedure acell_puttv(c: Acell, tv: Id): Any;
-   % Cell put truth value.
+   % Put truth value.
    nth(c, 4) := tv;
 
 asserted procedure acell_putdesc(c: Acell, desc: QfFormula): Any;
-   % Cell put description.
+   % Put description.
    nth(c, 5) := desc;
 
 asserted procedure acell_puttl(c: Acell, tl: List): Any;
-   % Cell put tag list.
+   % Put tag list.
    nth(c, 6) := tl;
 
 asserted procedure acell_addtagip(c: Acell, tg: Id): Any;
-   % taglist := tg . taglist where taglist=acell_gettl c;
+   % Add tag in place.
    nth(c, 6) := tg . nth(c, 6);
 
 asserted procedure acell_tvasstring(c: Acell): String;
@@ -396,7 +397,7 @@ asserted procedure acell_tvasstring(c: Acell): String;
    end;
 
 asserted procedure acell_med(c: Acell): Rational;
-   % Middle point of the interval of the sample point's last component.
+   % Middle point of the interval of the sample point's last coordinate.
    iv_med anu_iv car acell_getsp c;
 
 asserted procedure acell_sortfn(c1: Acell, c2: Acell): Boolean;
@@ -406,104 +407,79 @@ asserted procedure acell_sortfn(c1: Acell, c2: Acell): Boolean;
 
 asserted procedure ofsf_tree(cd: CadData): Atree;
    ofsf_treeovercell(basecell, cl_nnf caddata_psi cd, cd)
-      where basecell=acell_mk(nil, nil, nil, 'true, nil); % the only cell of D0
+      where basecell=acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
 
 asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadData): Atree;
-   % Cad tree over cell. [basecell] is a cell in D_{j-1}. Returns a tree over
-   % [basecell]. Intuition: Finds for a cell C in D_j a partial cad tree that
-   % has C as a root. If j >= k, then C has a truth value.
+   % CAD tree over cell. [basecell] is a cell in R^{j-1}. Returns a tree over
+   % [basecell]. Intuition: Recursively find for a cell C in R^j a partial CAD
+   % tree that has C as a root. If j > k, then C has a truth value.
    begin
-      scalar r,k,l,j,varl,qal,hh,fffj,xj,sp,cell,treel,thetaj,neutral,nrdata,ncbuffer,res,tv;
-      integer n;
+      scalar sp, varl, xj, hhhj, cell, tree, treel, qj, neutral, nrdata, ncbuffer, res, tv, tvl;
+      integer j, r, k;
       sp := acell_getsp basecell;
       j := length sp + 1;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 {"(",j-1};
-      % ioto_tprin2t {"tree over: ", basecell};
       r := caddata_r cd;
-      k := caddata_k cd;
-      l := caddata_l cd;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {"(", j - 1};
       varl := caddata_varl cd;
-      qal := caddata_qal cd;
-      hh := caddata_hh cd;  % tagged projection factors
-      % ioto_tprin2t {"Hj-1: ", getv(hh, j-1)};
-      % 1. BASE CASE: j = r, evaluation case. The base cell is a leaf.
-      if j > r then <<
+      % (1) Base Case: j - 1 = r. [basecell] is a leaf.
+      if eqn(j - 1, r) then <<
 	 if !*rlcadtv then
 	    acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
-         % if w eq 'true then ioto_tprin2t {"tree over: ",basecell};
       	 return atree_new basecell
       >>;
       % trial evaluation
       if !*rlcadtv and !*rlcadte then <<
-	 % ioto_tprin2t "----------";
-	 % ioto_prin2t {"sp: ",sp};
-	 % ioto_prin2t {"psi: ",psi};
-      	 psi := cl_simpl(cl_apply2ats1(psi,
-	    function(lambda x, sp; ofsf_0mk2(ofsf_op x,
-	       ofsf_trialevalsgnf(ofsf_arg2l x, sp))), {sp}), nil, -1);
+	 psi := ofsf_trialeval(psi, sp);
       	 if psi memq '(true false) then <<
 	    acell_puttv(basecell, psi);
 	    if ofsf_cadverbosep() then
 	       ioto_prin2 "TE)";
 	    return atree_new basecell
-      	 >>;
-	 % ioto_prin2t "------noTE";
+      	 >>
       >>;
-      % Prepare Polynomials
-      xj := nth(varl,j);
-      fffj := ofsf_tocprepare(getv(hh, j), xj, sp, varl);
-      % fffj := for each te in fffj collect tag_object te;
-      % now tag aware
-      nrdata := tiri_init(fffj, xj);
-      % Old code:
-      % nrdata := rip_init(fffj,xj); % initialize next root data
-      % % remove p.sc's without roots; no problem with tags.
-      % rip_putpscl(nrdata,for each psc in rip_pscl nrdata join
-      % 	 if (d := aex_stchsgnch(cdr psc,xj,'minfty) -
-      % 	    aex_stchsgnch(cdr psc,xj,'infty)) neq 0 then <<n := n+d;{psc}>>);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {":", 2*n+1};
-      % mildly generic CAD: add assumptions
-      % if !*rlqegen1 and j<=min2(1,k) then
-      %	 ofsf_cadtheo!* := append(for each f in fffj collect
-      %	    ofsf_0mk2('neq,numr aex_ex f),ofsf_cadtheo!*);
-      ncbuffer := ofsf_ncinit();
-      % 2. RECURSION CASE: j<=r
-      % 2a. 0<=j<=k or no truth values
-      if (0<=j and j<=k) or (not !*rlcadtv) then
+      	 ioto_prin2 {":", 1}; % ioto_prin2 {":", 2*n+1};
+      k := caddata_k cd;
+      xj := nth(varl, j);
+      hhhj := ofsf_tocprepare(caddata_hhj(cd, j), xj, sp, varl);
+      nrdata := tiri_init(hhhj, xj);
+      ncbuffer := ncb_init();
+      % (2) Recursion Case: j <= r
+      % (2a) 1 <= j <= k or no truth values
+      assert(1 <= j and j <= r);
+      if (1 <= j and j <= k) or (not !*rlcadtv) then
 	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do <<
-	    if not ofsf_iswhitecell(cell,cd) then
-	       treel := ofsf_treeovercell(cell,psi,cd) . treel
+	    if not ofsf_iswhitecell(cell, cd) then
+	       push(ofsf_treeovercell(cell, psi, cd), treel)
 	 >>
-      else << % 2b. k<=j<r
-      	 % set tv of basecell to neutral element wrt theta_j+1
-      	 thetaj := cdr nth(qal, j-k);
-      	 neutral := if thetaj eq 'all then 'true else 'false;
-      	 acell_puttv(basecell, neutral);
-      	 % as long as the truth value of the basecell is unknown
-      	 while (acell_gettv basecell eq neutral) and
-	    (cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k)) do <<
-	       treel := ofsf_treeovercell(cell, psi, cd) . treel;
-	       acell_puttv(basecell, acell_gettv atree_rootlabel car treel)
-	    >>;
-	 % add remaining cells, if wanted
-	 if not !*rlcadpartial then
+      else <<  % (2b) k < j <= r
+	 if not !*rlcadpartial then  % Compute tree over all cells.
 	    while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do
-	       treel := ofsf_treeovercell(cell, psi, cd) . treel;
+	       push(ofsf_treeovercell(cell, psi, cd), treel)
+	 else <<
+      	    qj := cdr nth(caddata_qal cd, j - k);
+      	    neutral := if qj eq 'all then 'true else 'false;
+	    tv := neutral;
+      	    while (tv eq neutral) and
+	       (cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k)) do <<
+		  tree := ofsf_treeovercell(cell, psi, cd);
+	       	  push(tree, treel);
+		  tv := acell_gettv atree_rootlabel tree
+	       >>;
+	    acell_puttv(basecell, tv)
+	 >>
       >>;
-      % if !*rlcadisoallroots then while aex_nextroot(nrdata,xj) do ;
       if !*rlcadisoallroots then
 	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do
-	    treel := atree_new(cell) . treel;
+	    push(atree_new cell, treel);
       treel := sort(treel, function atree_sortfn);
-      % ioto_tprin2t {treel};
       if !*rlcadans then
 	 ofsf_addanswers(basecell, treel, j, cd);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {"_", (2*n+1) - length treel, ")"};
+	 ioto_prin2 {"_", 1 - length treel, ")"}; % ioto_prin2 {"_", (2*n+1) - length treel, ")"};
       % Most likely the following will never happen.
       if null treel then
 	 rederr "GCAD: stack full of white cells occured.";
@@ -515,10 +491,10 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       % propagation below free variable space
       if not (!*rlcadtv and !*rlcadpbfvs) then
 	 return res;
-      tv := list2set for each b in treel collect
+      tvl := list2set for each b in treel collect
 	 acell_gettv atree_rootlabel b;
-      if length tv eq 1 then
-	 acell_puttv(atree_rootlabel res, car tv);
+      if eqn(length tvl, 1) then
+	 acell_puttv(atree_rootlabel res, car tvl);
       return res
    end;
 
@@ -527,19 +503,22 @@ asserted procedure ofsf_iswhitecell(cell: Acell, cd: CadData): Boolean;
    begin scalar theta, sp;
       if (caddata_theo cd eq 'undefined) or (not !*rlcadrmwc) then
 	 return nil;
-      theta := rl_smkn('and, caddata_theo(cd));
-      sp := acell_getsp(cell);
-      theta := cl_simpl(cl_apply2ats1(theta,
-	 function(lambda x, sp; ofsf_0mk2(ofsf_op x,
-	    ofsf_trialevalsgnf(ofsf_arg2l x, sp))), {sp}), nil, -1);
+      theta := rl_smkn('and, caddata_theo cd);
+      sp := acell_getsp cell;
+      theta := ofsf_trialeval(theta, sp);
       if theta eq 'false then <<
-	 % acell_puttv(basecell,'white);
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 {"(", length sp, ":W)"};
 	 return t
       >>;
       return nil
    end;
+
+asserted procedure ofsf_trialeval(psi: QfFormula, sp: AnuList): QfFormula;
+   cl_simpl(cl_apply2ats1(psi,
+      function(lambda(atf, sp); ofsf_0mk2(ofsf_op atf,
+	 ofsf_trialevalsgnf(ofsf_arg2l atf, sp))), {sp}),
+      nil, -1);
 
 asserted procedure ofsf_addanswers(basecell: Acell, treel: List, j: Integer, cd: CadData): Any;
    % Add root info and answers to cells. [treel] is a non-empty list of Atrees.
@@ -764,7 +743,7 @@ asserted procedure ofsf_fulltree(ff: Atom, varl: List, probe: Boolean): Atree;
    % LIST(TAG(SF)).
    begin scalar basecell;
       % This is the only cell of D0:
-      basecell := acell_mk(nil, nil, nil, 'true, nil);
+      basecell := acell_mk(0, nil, nil, 'true, nil);
       return ofsf_fulltreeovercell(basecell, ff, varl, 'unknown, 'unknown, probe)
    end;
 
@@ -817,47 +796,46 @@ asserted procedure ofsf_fulltreeovercell(basecell: Acell, ff: Atom, varl: List, 
       return atree_addchildlistip(atree_new basecell, treel);
    end;
 
-asserted procedure ofsf_tocprepare(hhj: Atom, xj: Kernel, sp: Any, varl: List): List;
-   % Tree over cell prepare polynomials. [hhj] is a VECTOR(TAG(SF)), [xj] is a
-   % variable. Returns a List of TAG(AEX).
+asserted procedure ofsf_tocprepare(hhj: Atom, xj: Kernel, sp: AnuList, varl: List): List;
+   % Tree over cell prepare polynomials. [hhj] is a Vector of tagged SF, [xj] is
+   % a variable. Returns a List of tagged Aex.
    begin scalar w;
       w := vector2list hhj;
       if null sp then <<
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 "(base case)";
 	 return for each te in w collect
-	    tag_(aex_fromsf tag_object te, tag_taglist te);
-      >> else <<
-      	 % Convert SF to AEX and substitute the sample point from basecell.
-      	 w := for each te in w collect
-	    tag_(ofsf_subsp(aex_fromsf tag_object te, sp, varl), tag_taglist te);
-      	 % Make elements of [ffj] smaller and throw away [null] and constant
-      	 % polynomials.
-      	 w := for each ae in w collect
-	    tag_(aex_mklcnt aex_reduce tag_object ae, tag_taglist ae);
-      	 w := for each ae in w join
-	    if not aex_simplenumberp tag_object ae then
-	       {tag_(aex_reduce aex_sqfree(tag_object ae, xj), tag_taglist ae)};
-	 w := tglist2set w;
-      	 % if !*rlcaddebug then
-	 %    for each f in ffj do
-	 %       if aex_sgn aex_lc(f, xj) eq 0 then
-	 %      	  prin2t "ofsf_tocprepare: smaller but lc trivial";
-      	 % if !*rlcaddebug then
-	 %    for each f in ffj do
-	 %       if aex_simplenumberp f then
-	 %       	  prin2t "ofsf_tocprepare: smaller but number";
-      	 % Make the elements of [ffj] pairwise prime.
-      	 w := aex_tgpairwiseprime(w, xj)
-      	 % if !*rlcaddebug then
-	 %    for each f in ffj do
-	 %       if aex_sgn aex_lc(f,xj) eq 0 then
-	 %       	  prin2t "ofsf_tocprepare: pairwiseprime but lc trivial";
-      	 % if !*rlcaddebug then
-	 %    for each f in ffj do
-	 %       if aex_simplenumberp f then
-	 %       	  prin2t "ofsf_tocprepare: pairwiseprime but number";
+	    tag_(aex_fromsf tag_object te, tag_taglist te)
       >>;
+      % Convert SF to Aex and substitute the sample point [sp].
+      w := for each tsf in w collect
+	 tag_(ofsf_subsp(aex_fromsf tag_object tsf, sp, varl), tag_taglist tsf);
+      % Make elements of [hhj] smaller and throw away [null] and constant
+      % polynomials.
+      w := for each tae in w collect
+	 tag_(aex_mklcnt aex_reduce tag_object tae, tag_taglist tae);
+      w := for each tae in w join
+	 if not aex_simplenumberp tag_object tae then
+	    {tag_(aex_reduce aex_sqfree(tag_object tae, xj), tag_taglist tae)};
+      w := tglist2set w;
+      % if !*rlcaddebug then
+      %    for each f in hhj do
+      %       if aex_sgn aex_lc(f, xj) eq 0 then
+      %      	  prin2t "ofsf_tocprepare: smaller but lc trivial";
+      % if !*rlcaddebug then
+      %    for each f in hhj do
+      %       if aex_simplenumberp f then
+      %       	  prin2t "ofsf_tocprepare: smaller but number";
+      % Make the elements of [hhj] pairwise prime.
+      w := aex_tgpairwiseprime(w, xj);
+      % if !*rlcaddebug then
+      %    for each f in hhj do
+      %       if aex_sgn aex_lc(f,xj) eq 0 then
+      %       	  prin2t "ofsf_tocprepare: pairwiseprime but lc trivial";
+      % if !*rlcaddebug then
+      %    for each f in hhj do
+      %       if aex_simplenumberp f then
+      %       	  prin2t "ofsf_tocprepare: pairwiseprime but number";
       return w
    end;
 
@@ -933,7 +911,7 @@ asserted procedure caddata_mkblank(): CadData;
       cd := mkvect(18);
       putv(cd,0, 'caddata);
       putv(cd,1, 'undefined); % [phi] is a prenex ofsf formula for which a CAD is to be constructed.
-      putv(cd,2, 'undefined); % [k] is an integer; the number of quantified variables in [phi].
+      putv(cd,2, 'undefined); % [k] is an integer; the number of free variables in [phi].
       putv(cd,3, 'undefined); % [r] is an integer; the number of all variables in [phi].
       putv(cd,4, 'undefined); % [varl] is a list kernels; all variables in [phi].
       putv(cd,5, 'undefined); % [qal] is a list of dotted pairs [(x . Q)], where [x] is a variable and [Q] is a quantifier; quantifier prefix of [phi].
@@ -973,6 +951,7 @@ procedure caddata_ophi(cd);     getv(cd,11);
  procedure caddata_jj(cd);       getv(cd,12);
 procedure caddata_theo(cd);     getv(cd,13);
 procedure caddata_hh(cd);       getv(cd,14);
+procedure caddata_hhj(cd,j);      getv(getv(cd,14),j);
 procedure caddata_l(cd);        getv(cd,15);
 procedure caddata_ffid(cd);     getv(cd,16);
  procedure caddata_aa(cd);	getv(cd,17);
@@ -1112,69 +1091,75 @@ asserted procedure ofsf_cadswitchprint(b: Boolean): Any;
 
 % root isolation
 
-% TODO: Understand the ncbuffer data structure.
 % TODO: (?) Define a data structure for nrdata (next root data).
 
+% This is kept only because of the ofsf_fulltreeovercell procedure.
 asserted procedure ofsf_ncinit(): List;
-   % ncbuffer nets to hold at most one cell
    {nil};
+
+% New Cell Buffer
+
+asserted procedure ncb_init(): List;
+   % New cell buffer init. NcBuffer holds exactly one element. The lement is
+   % either [nil] or an Acell.
+   {nil};
+
+asserted procedure ncb_get(ncb: List): List;
+   % New cell buffer get. Return the single element and reset it to [nil].
+   begin scalar w;
+      w := car ncb;
+      car ncb := nil;
+      return w
+   end;
+
+asserted procedure ncb_put(w: Any, ncb: List): List;
+   % New cell buffer put.
+   <<
+      assert(null car ncb);
+      car ncb := w;
+      ncb
+   >>;
 
 asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, nrdata: Any, xj: Kernel, j: Integer, k: Integer): ExtraBoolean;
    % Returns a cell. Caveat: [j eq length sp + 1], i.e., [j] is the level of the
    % newly generated cells.
-   begin scalar tgroot,root,cell,w;
-      if car ncbuffer eq 'finished then
+   begin scalar cell, tgroot, root, w;
+      integer cind;
+      cell := ncb_get ncbuffer;
+      if cell eq 'finished then
 	 return nil;
-      % ioto_prin2 {"[", length sp, "]"};
-      % There is a cell left in ncbuffer (a 0-dim one).
-      % (!*rlcadfulldimonly and j>k): throw away
-      % (!*rlqegen1 and j<=k): throw away, generic cad
-      if car ncbuffer then
-	 if not ((!*rlcadfulldimonly and j > k) or (!*rlqegen1 and j <= min2(1, k))) then <<
-	    cell := car ncbuffer;
-	    car ncbuffer := nil;
-	    return cell
-	 >> else <<
-	    car ncbuffer := nil;
-	    if !*rlverbose then <<
-	       if !*rlqegen1 and j <= min2(1, k) then
-	       	  ioto_prin2 {"(", j, "!gen)"};
-	       if !*rlcadfulldimonly and j > k then
-	       	  ioto_prin2 {"(", j, "!fdo)"}
-	    >>
-	 >>;
-      % There is no cell left, so we need to get a root to get the next two
-      % cells.
-      if tgroot := tiri_nextroot nrdata then <<
+      if cell then <<
+	 if not ((!*rlcadfulldimonly and j > k) or (!*rlqegen1 and j <= min2(1, k))) then
+	    return cell;
+      	 if !*rlverbose then <<
+	    if !*rlqegen1 and j <= min2(1, k) then
+	       ioto_prin2 {"(", j, "!gen)"};
+	    if !*rlcadfulldimonly and j > k then
+	       ioto_prin2 {"(", j, "!fdo)"}
+	 >>
+      >>;
+      % There is no cell left, we need to get a root to get the next two cells.
+      tgroot := tiri_nextroot nrdata;
+      cind := 2*(length tiri_rootl nrdata);
+      if tgroot then <<
 	 root := tag_object tgroot;
-	 % Drop one cell in buffer (the 0-dim one)...
-	 car ncbuffer := acell_mk(2*(length tiri_rootl nrdata)-1,
-	    root . sp,nil,nil,tag_taglist tgroot);
-	 % ...and return the other cell (the full-dim one) with a rational
-	 % sample point.
+	 ncb_put(acell_mk(cind - 1, root . sp, nil, nil, tag_taglist tgroot), ncbuffer);  % Store the 0-dim cell into the [ncbuffer].
 	 w := iv_lb anu_iv root;
-	 return acell_mk(2*(length tiri_rootl nrdata)-2,
-	    anu_fromrat(xj,w,iv_mk(w,w)) . sp,nil,nil,nil);
+	 return acell_mk(cind - 2, anu_fromrat(xj, w) . sp, nil, nil, nil)  % Return the full-dim cell with a rational sample point.
       >>;
       % There is no cell and no root left.
-      car ncbuffer := 'finished;
-      % If there was no root, make a cell with 0 as the sample point.
-      if null tiri_rootl nrdata then
-	 return acell_mk(0, anu_fromrat(xj,rat_0(), iv_mk(rat_0(), rat_0())) . sp,
-	    nil, nil, {{'arbitrary}});
-      % Search rootlist for the maximum of all right bounds and make cell.
-      w := rat_mapmax for each r in tiri_rootl nrdata collect
-	 iv_rb anu_iv r;
-      return acell_mk(2*(length tiri_rootl nrdata), anu_fromrat(xj, w, iv_mk(w, w)) . sp,
-	 nil, nil, nil)
+      ncb_put('finished, ncbuffer);
+      if null tiri_rootl nrdata then  % If there was no root, make a cell with 0 as the sample point.
+	 return acell_mk(0, anu_fromrat(xj, rat_0()) . sp, nil, nil, {{'arbitrary}});
+      % Search rootlist for the maximum of all right bounds and make a cell.
+      w := rat_mapmax for each r in tiri_rootl nrdata collect iv_rb anu_iv r;
+      return acell_mk(cind, anu_fromrat(xj, w) . sp, nil, nil, nil)
    end;
 
 asserted procedure ofsf_subsp(ae: Aex, sp: AnuList, varl: List): Aex;
    % Substitute sample point. [sp] is a sample point of length j-1, [varl] is
    % [x_1, ..., x_{j-1}] or a longer list. Returns a univariate Aex.
    begin scalar x, anu;
-      % if !*rlcaddebug and not (length sp eq length varl) then
-      % 	 prin2 "***** aecad_subsp: length of sp and varl do not match";
       sp := reverse sp;
       while sp do <<
 	 x := pop varl;
@@ -1198,14 +1183,13 @@ asserted procedure ofsf_subsp!*(ae: Aex, sp: AnuList): Aex;
 
 % Atree
 
-% TODO: Find out types of rootlabel and childlist. Is childlist a list of
-% Atrees?
+% TODO: Is childlist a list of Atrees?
 
 %DS
-% <ATREE> ::= 'tree . <rootlabel> . <childlist>
+% <ATREE> ::= 'atree . <rootlabel> . <childlist>
 
-asserted procedure atree_new(a: Any): Atree;
-   % New tree. [a] is the label of the tree's root.
+asserted procedure atree_new(a: Acell): Atree;
+   % New tree. The new tree is rooted at Acell [a].
    'atree . a . nil;
 
 asserted procedure atree_rootlabel(tt: Atree): Any;
@@ -1259,20 +1243,6 @@ asserted procedure atree_tvyield(tt: Atree): List;
 asserted procedure atree_print(tt: Atree): Any;
    for each e in atree_print1(tt, 0) do
       ioto_tprin2t e;
-
-%% procedure atree_print1(tt,l2sfn);
-%%    % acell_tvasstring atree_rootlabel dd;
-%%    % atree_print1(tt,nil);
-%%    % l2sfn is a function which converts a label to a string. returns a
-%%    % list of strings.
-%%    begin scalar childl, rootlabel;
-%%       childl := atree_childlist(tt);
-%%       rootlabel := atree_rootlabel(tt);
-%%       if null childl then %return %{apply1(l2sfn,rootlabel)};
-%%       return {acell_tvasstring rootlabel};
-%%       return for each s in childl collect
-%% 	 (acell_tvasstring rootlabel . ("---" . atree_print1(s,l2sfn)))
-%%    end;
 
 asserted procedure atree_print1(tt: Atree, d: Integer): List;
    % atree_print(dd);
@@ -1489,16 +1459,6 @@ asserted procedure atree_2gml_edge(efrom: Integer, eto: Integer): Any;
       ioto_prin2t {"target ", eto};
       ioto_prin2t "]"
    end;
-
-% asserted procedure lto_take(l: List, n: Integer): List;
-%    begin scalar rl, w;
-%       while n > 0 do <<
-% 	 w := pop l;
-% 	 rl := w . rl;
-% 	 n := n-1
-%       >>;
-%       return reversip rl
-%    end;
 
 % CAD extension
 

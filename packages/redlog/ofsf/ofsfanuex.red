@@ -1440,8 +1440,8 @@ asserted procedure anu_dp(a: Anu): Aex;
 asserted procedure anu_iv(a: Anu): RatInterval;
    caddr a;
 
-asserted procedure anu_fromrat(x: Kernel, r: Rational, iv: RatInterval): Anu;
-   anu_mk(aex_mklin(x, r), iv);
+asserted procedure anu_fromrat(x: Kernel, r: Rational): Anu;
+   anu_mk(aex_mklin(x, r), iv_mk(r, r));
 
 asserted procedure anu_putiv(a: Anu, iv: RatInterval): Any;
    % Algebraic number put interval. Changes the isolating interval in a
