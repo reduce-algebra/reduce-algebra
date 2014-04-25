@@ -17,13 +17,22 @@ or symbol will go beyond end of line it is necessary to disregard any
 10xxxxxx characters.
 
 (4) for prin1/print printing within strings if a character that is
-represented by a two-byte utf-8 sequnce is found it gets displayed as
+represented by a two-byte utf-8 sequence is found it gets displayed as
 #xxx;. A 3-byte sequence becomes #xxxx; while 4-byte sequences all
-end up as #xxxxxx;.
+end up as #xxxxxx;. Well doing things this way is ultra conservative and
+guarantees re-inputability even if the external file goes via a path where
+only plain old ASCII is supported. An alternative stance is that multi-
+byte sequences can remain as they are and are then single multi-byte
+characters in the output. Also when mapping I will turn 3-byte utf-8
+sequences into #xxxxxxx; not #xxxx; in part because that is easier for me
+when I need to deal with case folding (case folding may change the number
+of hex digits needed to denote a character).
 
 (5) Also when printing strings, if the string contains a sub-string of the
 form #WORD; that might encode a special character that will be displayed
-as #hash;WORD; so as to avoid corruption on re-input.
+as #hash;WORD; so as to avoid corruption on re-input. This is required even
+if I allow myself to put multi-byte characters into the output. I will do
+this regardless of whether the WORD is one that is the name of a character.
 
 (6) I have options in the print code for folding case (consider the
 Common Lisp *print-case* variable). When case folding is requested then
@@ -50,7 +59,10 @@ strings, however issue (5) above does not arise since the relevant text
 would end up rendered as ...!#WORD!;... and the escape before the semicolon
 keeps that unambiguous. So the main issue is that multi-byte case folding
 may be needed, multi-byte characters must be displayed as #xxxx; sequences
-and exclamation mark escapes are needed before any multi-byte character.
+and exclamation mark escapes are needed before any multi-byte character. Or
+on an alternative reading I can just display a "!" followed by the multi-byte
+sequence. In the CSL code this second behaviour is almost already available
+controlled by a flag bit called escape_exploding.
 
 (9) In character handling the tolower and toupper functions have to me
 multi-byte aware. Conversion between integers and character objects and
@@ -67,9 +79,7 @@ the offset to the nth character now becomes dependent on previous characters
 and the prospects for writing characters (as distinct from bytes) into
 strings seems horrid.
 
-(10) More work on printing symbols...
-
-(11) The family of functions "explode" need to split things into characters
+(10) The family of functions "explode" need to split things into characters
 not bytes... I will implement that by first converting to a utf-8 encodeded
 stream of bytes and then collecting byte sequences for characters. This is
 not quite the same as merely using princ/prin but redirecting output to
@@ -84,10 +94,18 @@ unexpected result needs to be (!" !# h a s h !; w o r d !; !").
 In a string prin1 takes a string "#alpha;" into "#03b1;" because (at present?)
 I do not use an inverse code-to-name lookup. But explode needs to
 turn it into a list of lenth 3, (!" !#alpha; !") rather than (!" !#
-!0 !3 b !1 !;). All this is a bit of a mess!
+!0 !3 b !1 !;). It seems probable that this behaviour might be sensible for
+print as well as explode if there is a stage where I believe that all the
+editors that people use can cope with multi-byte characters.
 
-(12) I need to work out how to cope with compress and then more general
+(11) I need to work out how to cope with compress and then more general
 input from utf-8 sources.
+
+(12) on Windows I suspect that reading a wide character will sometimes
+return a high surrogate, and I will need to read the following low
+surrogate and combine the data.
+
+
 
 
 

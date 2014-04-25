@@ -2160,18 +2160,42 @@ static Lisp_Object Lrestart_lisp2(Lisp_Object nil,
     if (b != SPID_NOARG)
     {   Lisp_Object b1;
         push(a);
+/*
+ * I will need to pack the data into a character vector using utf-8
+ * encoding... exploden can hand back character codes up to 0x0010ffff.
+ */
         b1 = b = Lexploden(nil, b);
         pop(a);
         errexit();
         while (b1 != nil)
-        {   n++;            /* number of chars of arg */
+        {   int ch = int_of_fixnum(qcar(b1));
+            n++;            /* number of chars of arg */
+            if (ch > 0x7f) n++; /* extra byte */
+            if (ch > 0x7ff) n++;
+            if (ch > 0xffff) n++; /* Now have enough bytes for utf8 */
             b1 = qcdr(b1);
         }
         v = (char *)malloc(n+1);
         if (v == NULL) return aerror("space exhausted in restart-csl");
         n = 0;
         while (b != nil)
-        {   v[n++] = (char)int_of_fixnum(qcar(b));
+        {   int ch = int_of_fixnum(qcar(b));
+            if (ch <= 0x7f) v[n++] = ch;
+            else if (ch < 0x7ff)
+            {   v[n++] = 0xc0 | ((ch >> 6) & 0x1f);
+                v[n++] = 0x80 | (ch & 0x3f);
+            }
+            else if (ch < 0xffff)
+            {   v[n++] = 0xe0 | ((ch >> 12) & 0x0f);
+                v[n++] = 0x80 | ((ch >> 6) & 0x3f);
+                v[n++] = 0x80 | (ch & 0x3f);
+            }
+            else
+            {   v[n++] = 0xf0 | ((ch >> 18) & 0x07);
+                v[n++] = 0x80 | ((ch >> 12) & 0x3f);
+                v[n++] = 0x80 | ((ch >> 6) & 0x3f);
+                v[n++] = 0x80 | (ch & 0x3f);
+            }
             b = qcdr(b);
         }
         v[n] = 0;

@@ -839,14 +839,6 @@ start_again:
             {   Lisp_Object w = qcar(v1);
                 v1 = qcdr(v1);
                 ifn1(w) = (intptr_t)f1; ifn2(w) = (intptr_t)f2; ifnn(w) = (intptr_t)fn;
-/*
- * The following line copied the environment, but I think I believe that
- * it should already be set, and further that the symbol I about to
- * copy from may have had its environment cell clobbered. This needs
- * more thought and testing, but I will try it for now...
- */
-/*              qenv(w) = qenv(v);       /* Copy across environment too */
-/*              qheader(w) |= SYM_C_DEF; */
             }
         }
     }
@@ -2194,7 +2186,7 @@ int terminal_pushed = NOT_CHAR;
 
 static int kilo = 0;
 
-int char_from_terminal(Lisp_Object dummy)
+static int raw_char_from_terminal()
 /*
  * "What ..." you might ask, "is the meaning of this mess?".  Well the answer
  * is that when input is directly from the terminal I buffer up to 256
@@ -2228,7 +2220,6 @@ int char_from_terminal(Lisp_Object dummy)
  */
     int c;
     Lisp_Object nil = C_nil;
-    CSL_IGNORE(dummy);
     if (++kilo >= 1024)
     {   kilo = 0;
         io_now++;
@@ -2240,16 +2231,7 @@ int char_from_terminal(Lisp_Object dummy)
     }
     if (procedural_input != NULL) c = (*procedural_input)();
     else if (non_terminal_input != NULL)
-    {
-#ifdef Kanji
-/*
- * I will leave this conditionalisation in against a future change to
- * read in multi-byte characters
- */
-        c = getwc(non_terminal_input);
-#else
-        c = getc(non_terminal_input);
-#endif
+    {   c = getc(non_terminal_input);
     }
     else
     {   if (tty_count == 0)
@@ -2348,12 +2330,7 @@ int char_from_terminal(Lisp_Object dummy)
                 {   while (tty_count<TTYBUF_SIZE && !interrupt_pending)
                     {   int c;
                         sigint_must_longjmp = YES;
-#ifdef Kanji
-/* again leave against the future */
-                        c = getwc(stdin);
-#else
                         c = getchar();
-#endif
                         sigint_must_longjmp = NO;
                         if (c == EOF)
                         {   clearerr(stdin);    /* Believed to be what is wanted */
@@ -2428,6 +2405,26 @@ int char_from_terminal(Lisp_Object dummy)
     return c;
 }
 
+int char_from_terminal(Lisp_Object dummy)
+{
+    int ch = raw_char_from_terminal();
+    if (ch == EOF) return ch;
+    ch &= 0xff;
+    if (ch >= 0xf0)
+    {   ch = ((ch & 0x07) << 6) | (raw_char_from_terminal() & 0x3f);
+        ch = (ch << 6) | (raw_char_from_terminal() & 0x3f);
+        ch = (ch << 6) | (raw_char_from_terminal() & 0x3f);
+    }
+    else if (ch >= 0xe0)
+    {   ch = ((ch & 0x0f) << 6) | (raw_char_from_terminal() & 0x3f);
+        ch = (ch << 6) | (raw_char_from_terminal() & 0x3f);
+    }
+    else if (ch >= 0xc0)
+    {   ch = ((ch & 0x1f) << 6) | (raw_char_from_terminal() & 0x3f);
+    }
+    else if (ch >= 0x80) ch = '?'; /* badly formated utf-8 input */
+    return ch;
+}
 
 Lisp_Object Lrds(Lisp_Object nil, Lisp_Object a)
 {
@@ -2724,7 +2721,7 @@ static Lisp_Object read_hash(Lisp_Object stream)
  */
             curchar = getc_stream(stream);
             errexit();
-        } while (curchar <= 0xff &&isdigit(curchar));
+        } while (curchar <= 0xff && isdigit(curchar));
     }
     switch (curchar)
     {
@@ -3012,12 +3009,23 @@ void packbyte(int c)
                &boffo_char(0), boffop);
         boffo = new_boffo;
     }
-#ifdef Kanji
-/* This is here to remind me about packing in utf-8 /* @@@ */
-    if (iswchar(c)) boffo_char(boffop++) = c >> 8;
-#endif
-    boffo_char(boffop) = (char)c;
-    boffop++;
+    c &= 0x001fffff;
+    if (c > 0xffff)
+    {   boffo_char(boffop++) = 0xf0 + ((c >> 18) & 0x07);
+        boffo_char(boffop++) = 0x80 + ((c >> 12) & 0x3f);
+        boffo_char(boffop++) = 0x80 + ((c >> 6) & 0x3f);
+        boffo_char(boffop++) = 0x80 + (c & 0x3f);
+    }
+    else if (c > 0x7ff)
+    {   boffo_char(boffop++) = 0xe0 + ((c >> 12) & 0x0f);
+        boffo_char(boffop++) = 0x80 + ((c >> 6) & 0x3f);
+        boffo_char(boffop++) = 0x80 + (c & 0x3f);
+    }
+    else if (c > 0x7f)
+    {   boffo_char(boffop++) = 0xc0 + ((c >> 6) & 0x1f);
+        boffo_char(boffop++) = 0x80 + (c & 0x3f);
+    }
+    else boffo_char(boffop++) = c;
 }
 
 #ifdef COMMON
@@ -3451,58 +3459,47 @@ int char_from_echo(Lisp_Object stream)
 
 static int raw_input = 0;
 
+static int raw_char_from_file(Lisp_Object stream)
+{
+    Lisp_Object nil = C_nil;
+    int ch;
+    if (++kilo >= 1024)
+    {   kilo = 0;
+        io_now++;
+    }
+    ch = getc(stream_file(stream));
+    if (ch == EOF) return EOF;
+    if (qvalue(echo_symbol) != nil)
+    {   Lisp_Object stream1 = qvalue(standard_output);
+        if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
+        if (!is_stream(stream1)) stream1 = lisp_terminal_io;
+        putc_stream(ch, stream1);
+        if (exception_pending()) flip_exception();
+    }
+    return ch;
+}
+
 int char_from_file(Lisp_Object stream)
 {
     Lisp_Object nil = C_nil;
     int ch = stream_pushed_char(stream);
     if (ch == NOT_CHAR)
-    {
-        if (++kilo >= 1024)
-        {   kilo = 0;
-            io_now++;
+    {   ch = raw_char_from_file(stream);
+        if (ch == EOF) return EOF;
+        ch &= 0xff;
+        if (ch >= 0xf0)
+        {   ch = ((ch & 0x07) << 6) | (raw_char_from_file(stream) & 0x3f);
+            ch = (ch << 6) | (raw_char_from_file(stream) & 0x3f);
+            ch = (ch << 6) | (raw_char_from_file(stream) & 0x3f);
         }
-#ifdef Kanji
-/*
- * Future work /* @@@
- */
-        ch = getwc(stream_file(stream));
-#else
-        ch = getc(stream_file(stream));
-#endif
-        if (ch == EOF
-          /*    || ch == CTRL_D             */
-           ) return EOF;
-        if (qvalue(echo_symbol) != nil)
-        {   Lisp_Object stream1 = qvalue(standard_output);
-            if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
-            if (!is_stream(stream1)) stream1 = lisp_terminal_io;
-            putc_stream(ch, stream1);
-            if (exception_pending()) flip_exception();
+        else if (ch >= 0xe0)
+        {   ch = ((ch & 0x0f) << 6) | (raw_char_from_file(stream) & 0x3f);
+            ch = (ch << 6) | (raw_char_from_file(stream) & 0x3f);
         }
-#if defined __CYGWIN__ || !defined WIN32
-/*
- * There is a half-based mess here because throughout CSL I work with just
- * 8-bit characters but sometimes UTF8 will intrude. To try to be a helpful
- * person I will decode 2-byte UTF combinations here but just return the low
- * 8 bits. This action is taken prompted by misery over the british pounds
- * sign, which sometimes appears in files as 0xc2 0xa3. Some time soon I
- * hope to beef this up so that I provide genuine support for UTF-8 input.
- */
-        if ((ch & 0xe0) == 0xc0) /* leader for 2-byte utf-8 combination */
-        {   int ch1 = getc(stream_file(stream));
-            if (ch1 == EOF) return EOF;
-            if (qvalue(echo_symbol) != nil)
-            {   Lisp_Object stream1 = qvalue(standard_output);
-                if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
-                if (!is_stream(stream1)) stream1 = lisp_terminal_io;
-                putc_stream(ch1, stream1);
-                if (exception_pending()) flip_exception();
-            }
-            ch = ((ch & 0x1f) << 6) + (ch1 & 0x3f);
-/* This is where I truncate to 8 bits */
-            ch &= 0xff;
+        else if (ch >= 0xc0)
+        {   ch = ((ch & 0x1f) << 6) | (raw_char_from_file(stream) & 0x3f);
         }
-#endif /* Treatment of bits of UTF8 */
+        else if (ch >= 0x80) ch = '?'; /* badly formated utf-8 input */
     }
     else stream_pushed_char(stream) = NOT_CHAR;
     return ch;
@@ -3783,6 +3780,7 @@ int char_from_list(Lisp_Object f)
     Lisp_Object nil = C_nil;
 #endif
     Lisp_Object ch = stream_pushed_char(f);
+    int r;
     if (ch == NOT_CHAR)
     {   if (!consp(stream_read_data(f))) ch = EOF;
         else
@@ -3797,17 +3795,23 @@ int char_from_list(Lisp_Object f)
  * here I tend towards generosity - a symbol stands for the first character
  * of its name, and character objects and numbers (representing internal
  * codes) are also permitted.  Incomplete gensyms are OK here - I just
- * use the first character of the base of the name.
+ * use the first character of the base of the name. Note that by "first
+ * character" I need to mean "character" not "byte"... so the values
+ * returned here can be up to 0x0010ffff.
  */
-        if (is_symbol(ch)) ch = first_char(ch);
-        else if (is_char(ch)) ch = (char)code_of_char(ch);
-        else if (is_fixnum(ch)) ch = (char)int_of_fixnum(ch);
-        else ch = EOF;    /* Bad item in the list */
+        if (is_symbol(ch)) r = first_char(ch);
+        else if (is_char(ch)) r = code_of_char(ch);
+        else if (is_fixnum(ch)) r = int_of_fixnum(ch);
+        else r = EOF;    /* Bad item in the list */
     }
     else stream_pushed_char(f) = NOT_CHAR;
-    return ch;
+    return r;
 }
 
+/*
+ * The vector here is a vector of bytes but I want to return a character
+ * value, so I will need to be ready to decode utf-8 stuff.
+ */
 int char_from_vector(Lisp_Object f)
 {
 #ifdef COMMON
@@ -3815,7 +3819,7 @@ int char_from_vector(Lisp_Object f)
 #endif
     Lisp_Object ch = stream_pushed_char(f);
     if (ch == NOT_CHAR)
-    {   char *v = (char *)stream_file(f);
+    {   unsigned char *v = (unsigned char *)stream_file(f);
         if (v == NULL) ch = EOF;
         else
         {   if (++kilo >= 1024)
@@ -3823,6 +3827,19 @@ int char_from_vector(Lisp_Object f)
                 io_now++;
             }
             ch = *v++;
+            if (ch >= 0xf0)
+            {   ch = ((ch & 0x07) << 6) + (*v++ & 0x3f);
+                ch = (ch << 6) + (*v++ & 0x3f);
+                ch = (ch << 6) + (*v++ & 0x3f);
+            } 
+            else if (ch >= 0xe0)
+            {   ch = ((ch & 0x0f) << 6) + (*v++ & 0x3f);
+                ch = (ch << 6) + (*v++ & 0x3f);
+            } 
+            else if (ch > 0xc0)
+            {   ch = ((ch & 0x1f) << 6) + (*v++ & 0x3f);
+            } 
+            else if (ch >= 0x80) ch = '?'; /* Invalid case */
             if (ch == 0) ch = EOF;
             else set_stream_file(f, (FILE *)v);
         }
@@ -4739,7 +4756,7 @@ Lisp_Object MS_CDECL Ltyi(Lisp_Object nil, int nargs, ...)
     if (ch == EOF || ch == CTRL_D) return onevalue(CHAR_EOF);
 /*
  * If tyi reads just a byte then this is what I want.  But if I want
- * a character then someewhere I need to allow for wider characters than
+ * a character then somewhere I need to allow for wider characters than
  * this.
  */
     return onevalue(pack_char(0, ch & 0xff));
@@ -4770,12 +4787,11 @@ Lisp_Object Lreadch1(Lisp_Object nil, Lisp_Object stream)
     int ch;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    ch = getc_stream(stream);
+    ch = getc_stream(stream);  /* may now be large value */
     errexit();
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else 
-    {   ch &= 0xff;  /* 8-bit for now! */
-        if (ch <= 0xffff || sizeof(wchar_t)==4)
+    {   if (ch <= 0xffff || sizeof(wchar_t)==4)
         {   if (qvalue(lower_symbol) != nil) ch = towlower(ch);
             else if (qvalue(raise_symbol) != nil) ch = towupper(ch);
         }
