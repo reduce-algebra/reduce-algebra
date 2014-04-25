@@ -856,12 +856,12 @@ depend(!~p,!~x); % Needed for the simplification of the rule pattern.
 
 let root_of(~p,~x,~tg)^~n =>
        sub(x=root_of(p,x,tg),
-           -reduct(p,x)/coeffn(p,x,deg(p,x))) ^ (n-deg(p,x)+1)
+           -reduct(p,x)/coeffn(p,x,deg(p,x))*x ^ (n-deg(p,x)))
                when polyp(p,x) and fixp n and deg(p,x)>=1 and n>=deg(p,x);
 
 nodepend(!~p,!~x);
 
->>) where dmode!*=nil,!*modular=nil,!*rounded=nil,!*complex=nil;
+>>) where dmode!*=nil,!*modular=nil,!*rounded=nil,!*complex=nil,!*mcd:=t;
 
 symbolic procedure expand_cases u;
    begin scalar bool,sl,tags;
