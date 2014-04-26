@@ -1416,6 +1416,30 @@ put('chi,'fancy!-special!-symbol,"\chi");
 put('psi,'fancy!-special!-symbol,"\psi");
 put('omega,'fancy!-special!-symbol,"\omega");
 
+put('#alpha;,'fancy!-special!-symbol,"\alpha");
+put('#beta;,'fancy!-special!-symbol,"\beta");
+put('#gamma;,'fancy!-special!-symbol,"\Gamma");
+put('#delta;,'fancy!-special!-symbol,"\delta");
+put('#epsilon;,'fancy!-special!-symbol,"\varepsilon");
+put('#zeta;,'fancy!-special!-symbol,"\zeta");
+put('#eta;,'fancy!-special!-symbol,"\eta");
+put('#theta;,'fancy!-special!-symbol,"\theta");
+put('#iota;,'fancy!-special!-symbol,"\iota");
+put('#kappa;,'fancy!-special!-symbol,"\varkappa");
+put('#lambda;,'fancy!-special!-symbol,"\lambda");
+put('#mu;,'fancy!-special!-symbol,"\mu");
+put('#nu;,'fancy!-special!-symbol,"\nu");
+put('#xi;,'fancy!-special!-symbol,"\xi");
+put('#pi;,'fancy!-special!-symbol,"\pi");
+put('#rho;,'fancy!-special!-symbol,"\rho");
+put('#sigma;,'fancy!-special!-symbol,"\sigma");
+put('#tau;,'fancy!-special!-symbol,"\tau");
+put('#upsilon;,'fancy!-special!-symbol,"\upsilon");
+put('#phi;,'fancy!-special!-symbol,"\phi");
+put('#chi;,'fancy!-special!-symbol,"\chi");
+put('#psi;,'fancy!-special!-symbol,"\psi");
+put('#omega;,'fancy!-special!-symbol,"\omega");
+
 !#if (memq 'csl lispsystem!*)
 
 deflist('(
@@ -1431,6 +1455,19 @@ deflist('(
      (!Sigma "\Sigma ") (!Tau "\Tau ") (!Upsilon "\Upsilon ")
      (!Omega "\Omega ") (!Xi "\Xi ") (!Psi "\Psi ")
      (!Zeta "\mathit{Z}") (!varphi "\varphi ") (pound "\pound ")
+        ),'fancy!-special!-symbol);
+
+% Now for some Unicode versions!
+deflist('(
+     (!#Alpha; "\mathit{A}") (!#Beta; "\mathit{B}") (!#Chi; "\Chi ")
+     (!#Delta; "\Delta ") (!#Epsilon; "\mathit{E}") (!#Phi; "\Phi ")
+     (!#Gamma; "\Gamma ") (!#Eta; "\mathit{H}") (!#Iota; "\mathit{I}")
+     (!vartheta "\vartheta") (!#Kappa; "\Kappa ") (!#Lambda; "\Lambda ")
+     (!#Mu; "\mathit{M}") (!#Nu; "\mathit{N}") (!O "\mathit{O}")
+     (!#Pi; "\Pi ") (!#Theta; "\Theta ") (!#Rho; "\mathit{R}")
+     (!#Sigma; "\Sigma ") (!#Tau; "\Tau ") (!#Upsilon; "\Upsilon ")
+     (!#Omega; "\Omega ") (!#Xi; "\Xi ") (!#Psi; "\Psi ")
+     (!#Zeta; "\mathit{Z}") (!varphi "\varphi ") (!#pound; "\pound ")
         ),'fancy!-special!-symbol);
 
 !#else

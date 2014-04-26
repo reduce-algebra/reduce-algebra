@@ -1,11 +1,11 @@
-/* cslread.c                        Copyright (C) 1990-2011 Codemist Ltd */
+/* cslread.c                        Copyright (C) 1990-2014 Codemist Ltd */
 
 /*
  * Reading and symbol-table support.
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
