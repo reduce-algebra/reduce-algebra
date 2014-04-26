@@ -22,3 +22,4 @@ s/hashtable/hashtable/g
 s/.globl symval/.globl _symval\
  .globl symval\
 _symval:/1
+/^symval:/,/^symfnc:/s/4\*0x8000000/3\*0x8000000/'
