@@ -50,6 +50,13 @@ AC_SUBST(BUILD)
 
 pslver=`"$srcdir/../scripts/pslver.sh"`
 
+# Stop if the system type is not recognized
+
+if test "$pslver" = "unknown"
+then
+  AC_MSG_ERROR([No PSL port found for platform $BUILD])
+fi
+
 # Here if "--with-m32" is set I demote some 64-bit hosts to run in 32-bit
 # mode. This has in thge past been useful when running on a 64-bit Linux
 # host but wanting to test or build a 32-bit system.

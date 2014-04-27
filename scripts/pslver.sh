@@ -149,7 +149,7 @@ EOF
 *alpha*)
   echo "alpha"
   ;;
-x86_64*freebsd*)
+x86_64*freebsd*|amd64*freebsd*)
   echo "freeBSD64"
   ;;
 i386*freebsd*)
