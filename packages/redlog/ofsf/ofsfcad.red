@@ -361,7 +361,7 @@ asserted procedure acell_gettl(c: Acell): List;
    % Get tag list.
    nth(c, 6);
 
-asserted procedure acell_sri(c: Acell): Id;
+asserted procedure acell_sri(c: Acell): Any;
    % Symbolic root information.
    atsoc('root, tl) or atsoc('between, tl) or atsoc('below, tl) or
       atsoc('beyond, tl) or atsoc('arbitrary, tl) where tl=acell_gettl c;
@@ -382,7 +382,7 @@ asserted procedure acell_puttl(c: Acell, tl: List): Any;
    % Put tag list.
    nth(c, 6) := tl;
 
-asserted procedure acell_addtagip(c: Acell, tg: Id): Any;
+asserted procedure acell_addtagip(c: Acell, tg: Any): Any;
    % Add tag in place.
    nth(c, 6) := tg . nth(c, 6);
 
@@ -531,52 +531,52 @@ asserted procedure ofsf_addanswers(basecell: Acell, treel: List, j: Integer, cd:
       	 % if ofsf_cadverbosep() then ioto_tprin2t {for each tt in treel collect
 	 %    acell_sri atree_rootlabel tt};
       	 % 2. tag answers in case treel contains cells of level l
-      	 if j = l then for each tt in treel do
-	    if acell_gettv atree_rootlabel tt eq 'true then
-	       acell_addtagip(atree_rootlabel tt, 'answers . {nil});
-      	 acell_addtagip(basecell, 'answers . for each tt in treel join
-	    if acell_gettv atree_rootlabel tt eq 'true then
-	       for each a in cdr atsoc('answers, acell_gettl atree_rootlabel tt)
-	       	  collect acell_sri atree_rootlabel tt . a);
+      	 if j = l then
+	    for each tt in treel do
+	       if acell_gettv atree_rootlabel tt eq 'true then
+	       	  acell_addtagip(atree_rootlabel tt, 'answers . {nil});
+      	 acell_addtagip(basecell,
+	    'answers . for each tt in treel join
+	       if acell_gettv atree_rootlabel tt eq 'true then
+	       	  for each a in cdr atsoc('answers, acell_gettl atree_rootlabel tt) collect
+		     acell_sri atree_rootlabel tt . a)
       >>
    end;
 
 asserted procedure ofsf_addrootinfo(treel: List, ffids: List): Any;
-   % Add root information. [treel] is a non-empty list of ATREEs of ACELLs. The
-   % argument is changed in-place. We add the "symbolic root information" to the
-   % root labels of these trees. We assume that cells, which have a 0-dim last
+   % Add root information. [treel] is a non-empty list of Atrees. The argument
+   % is changed in-place. We add the "symbolic root information" to the root
+   % labels of these trees. We assume that cells, which have a 0-dim last
    % component, have inherited their tags from the appropriate projection
    % factors.
    begin scalar rnl, rtg, ltg;
-      % [treel] will always consist of an odd number of trees.
-      % If there is only one cell, then 'sri . 'arbitrary is there already.
+      assert(not evenp length treel);
+      % [treel] will always consist of an odd number of elements. If there is
+      % only one cell, then it is already tagged with {{'arbitrary}}.
       if null cdr treel then
 	 return nil;
       % We have at least 3 cells.
-      % rnl (root number list) is an alist id . num.
+      % [rnl] (root number list) is an alist of dotted pairs [id . num].
       rnl := for each id in ffids collect
 	 id . 0;
-      % The leftmost cell is special.
-      % tag the second cell from the left.
+      % Tag the second cell from the left.
       rtg := ofsf_addrootinfo0dim(atree_rootlabel cadr treel, rnl, ffids);
-      % tag the leftmost cell.
+      % Tag the leftmost cell.
       acell_addtagip(atree_rootlabel car treel, 'below . rtg);
-      % 'below . atsoc('root, acell_gettl atree_rootlabel cadr treel));
       treel := cddr treel;
       ltg := rtg;
-      % there are at least 3 cells
-      while cdr treel do <<
+      while cdr treel do <<  % There are at least 3 cells.
          rtg := ofsf_addrootinfo0dim(atree_rootlabel cadr treel, rnl, ffids);
 	 acell_addtagip(atree_rootlabel car treel, 'between . ltg . rtg);
 	 treel := cddr treel;
-         ltg := rtg;
+         ltg := rtg
       >>;
       acell_addtagip(atree_rootlabel car treel, 'beyond . ltg)
    end;
 
-asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: List, ffids: List): Id;
+asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: List, ffids: List): Any;
    % Add root info to cell with 0-dim last component in-place. Returns the added
-   % tag. This return value is used.
+   % tag.
    begin scalar tl, ri;
       tl := acell_gettl cell;
       ofsf_rnlinc(rnl, tl);
@@ -1104,10 +1104,11 @@ asserted procedure ncb_init(): List;
    % either [nil] or an Acell.
    {nil};
 
-asserted procedure ncb_get(ncb: List): List;
+asserted procedure ncb_get(ncb: List): ExtraBoolean;
    % New cell buffer get. Return the single element and reset it to [nil].
    begin scalar w;
       w := car ncb;
+      % car ncb := if w eq 'finished then 'finished else nil;
       car ncb := nil;
       return w
    end;
@@ -1126,8 +1127,10 @@ asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, nrdata: Any, xj: K
    begin scalar cell, tgroot, root, w;
       integer cind;
       cell := ncb_get ncbuffer;
-      if cell eq 'finished then
-	 return nil;
+      if cell eq 'finished then <<
+	 ncb_put('finished, ncbuffer);
+	 return nil
+      >>;
       if cell then <<
 	 if not ((!*rlcadfulldimonly and j > k) or (!*rlqegen1 and j <= min2(1, k))) then
 	    return cell;
