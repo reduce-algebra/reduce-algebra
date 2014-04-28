@@ -123,7 +123,7 @@ asserted procedure ofsf_cadpnum(phi: Formula, prjordl: List): Integer;
       ofsf_cadprojection cd;
       ofsf_cadextension cd;
       ofsf_restorekord cd;
-      return length atree_yield caddata_dd cd
+      return length atree_celll caddata_dd cd
    end;
 
 % rlcadproj entry point
@@ -249,13 +249,17 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
       if !*rlverbose then <<
 	 r := caddata_r cd;
 	 ioto_tprin2t {"+ (#D0,...,#Dr)=",
-	    for i := 0 : r collect length atree_levellabels(dd, i)}
+	    for i := 0 : r collect length atree_childrenatlevel(dd, i)}
       >>;
       if !*rlcadtree2dot then <<
 	 atree_2dot dd;
 	 atree_2gml(dd, "cadtree.gml")
       >>;
       caddata_putdd(cd, dd);
+      if !*rlverbose then <<
+	 ioto_tprin2t {"+ CAD tree:"};
+	 atree_print dd
+      >>;
       return nil
    end;
 
@@ -391,7 +395,7 @@ asserted procedure acell_tvasstring(c: Acell): String;
       tv := acell_gettv c;
       if tv eq 'true then
       	 return "T";
-      if tv 'false then
+      if tv eq 'false then
 	 return "F";
       return "?"
    end;
@@ -467,7 +471,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	       (cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k)) do <<
 		  tree := ofsf_treeovercell(cell, psi, cd);
 	       	  push(tree, treel);
-		  tv := acell_gettv atree_rootlabel tree
+		  tv := acell_gettv atree_rootcell tree
 	       >>;
 	    acell_puttv(basecell, tv)
 	 >>
@@ -487,14 +491,14 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       if !*rlcadtrimtree and j > k then
 	 res := atree_new basecell
       else
-	 res := atree_addchildlistip(atree_new basecell, treel);
+	 res := atree_addtochildlip(atree_new basecell, treel);
       % propagation below free variable space
       if not (!*rlcadtv and !*rlcadpbfvs) then
 	 return res;
       tvl := list2set for each b in treel collect
-	 acell_gettv atree_rootlabel b;
+	 acell_gettv atree_rootcell b;
       if eqn(length tvl, 1) then
-	 acell_puttv(atree_rootlabel res, car tvl);
+	 acell_puttv(atree_rootcell res, car tvl);
       return res
    end;
 
@@ -529,17 +533,17 @@ asserted procedure ofsf_addanswers(basecell: Acell, treel: List, j: Integer, cd:
       if !*rlcadisoallroots and k+1 <= j and j <= l then <<
       	 ofsf_addrootinfo(treel, getv(caddata_ffid cd, j));
       	 % if ofsf_cadverbosep() then ioto_tprin2t {for each tt in treel collect
-	 %    acell_sri atree_rootlabel tt};
+	 %    acell_sri atree_rootcell tt};
       	 % 2. tag answers in case treel contains cells of level l
       	 if j = l then
 	    for each tt in treel do
-	       if acell_gettv atree_rootlabel tt eq 'true then
-	       	  acell_addtagip(atree_rootlabel tt, 'answers . {nil});
+	       if acell_gettv atree_rootcell tt eq 'true then
+	       	  acell_addtagip(atree_rootcell tt, 'answers . {nil});
       	 acell_addtagip(basecell,
 	    'answers . for each tt in treel join
-	       if acell_gettv atree_rootlabel tt eq 'true then
-	       	  for each a in cdr atsoc('answers, acell_gettl atree_rootlabel tt) collect
-		     acell_sri atree_rootlabel tt . a)
+	       if acell_gettv atree_rootcell tt eq 'true then
+	       	  for each a in cdr atsoc('answers, acell_gettl atree_rootcell tt) collect
+		     acell_sri atree_rootcell tt . a)
       >>
    end;
 
@@ -560,18 +564,18 @@ asserted procedure ofsf_addrootinfo(treel: List, ffids: List): Any;
       rnl := for each id in ffids collect
 	 id . 0;
       % Tag the second cell from the left.
-      rtg := ofsf_addrootinfo0dim(atree_rootlabel cadr treel, rnl, ffids);
+      rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, ffids);
       % Tag the leftmost cell.
-      acell_addtagip(atree_rootlabel car treel, 'below . rtg);
+      acell_addtagip(atree_rootcell car treel, 'below . rtg);
       treel := cddr treel;
       ltg := rtg;
       while cdr treel do <<  % There are at least 3 cells.
-         rtg := ofsf_addrootinfo0dim(atree_rootlabel cadr treel, rnl, ffids);
-	 acell_addtagip(atree_rootlabel car treel, 'between . ltg . rtg);
+         rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, ffids);
+	 acell_addtagip(atree_rootcell car treel, 'between . ltg . rtg);
 	 treel := cddr treel;
          ltg := rtg
       >>;
-      acell_addtagip(atree_rootlabel car treel, 'beyond . ltg)
+      acell_addtagip(atree_rootcell car treel, 'beyond . ltg)
    end;
 
 asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: List, ffids: List): Any;
@@ -735,7 +739,7 @@ procedure ofsf_cadnum1(ff,varl,probe);
 	    for each f in ffj collect tag_(f,{'dummytag})),
 	 varl,probe);
 %	 list2vector(nil . ff),varl,probe);
-      return for i := 0 : length varl collect length atree_levellabels(w,i)
+      return for i := 0 : length varl collect length atree_childrenatlevel(w,i)
    end;
 
 asserted procedure ofsf_fulltree(ff: Atom, varl: List, probe: Boolean): Atree;
@@ -793,7 +797,7 @@ asserted procedure ofsf_fulltreeovercell(basecell: Acell, ff: Atom, varl: List, 
 	    while cell := ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k) do
 	       treel := ofsf_fulltreeovercell(cell, ff, varl, qal, psi, probe) . treel;
       % construct result tree
-      return atree_addchildlistip(atree_new basecell, treel);
+      return atree_addtochildlip(atree_new basecell, treel);
    end;
 
 asserted procedure ofsf_tocprepare(hhj: Atom, xj: Kernel, sp: AnuList, varl: List): List;
@@ -1186,74 +1190,64 @@ asserted procedure ofsf_subsp!*(ae: Aex, sp: AnuList): Aex;
 
 % Atree
 
-% TODO: Is childlist a list of Atrees?
-
 %DS
-% <ATREE> ::= 'atree . <rootlabel> . <childlist>
+% <ATREE> ::= {'atree, <rootcell>, <childlist>}
+% <rootcell> is an Acell
+% <childl> is a list of Atrees
 
-asserted procedure atree_new(a: Acell): Atree;
-   % New tree. The new tree is rooted at Acell [a].
-   'atree . a . nil;
+asserted procedure atree_new(c: Acell): Atree;
+   % New tree. The new tree is rooted at Acell [c].
+   {'atree, c, nil};
 
-asserted procedure atree_rootlabel(tt: Atree): Any;
-   cadr tt;
+asserted procedure atree_rootcell(tt: Atree): Any;
+   nth(tt, 2);
 
-asserted procedure atree_sortfn(t1: Atree, t2: Atree): Any;
-   % Sort function. [t1], [t2] are trees of Acells.
-   acell_sortfn(atree_rootlabel t1, atree_rootlabel t2);
+asserted procedure atree_childl(tt: Atree): List;
+   nth(tt, 3);
 
-% asserted procedure atree_addchildip(tt: Atree, c: Atree): Atree;
-%    <<
-%       cddr tt := c . cddr tt;
-%       tt
-%    >>;
+asserted procedure atree_childrenatlevel(tt: Atree, n: Integer): List;
+   % Returns the list of Acells with distance exactly [n] from the root of [tt].
+   if eqn(n, 0) then
+      {atree_rootcell tt}
+   else
+      for each child in atree_childl tt join
+      	 atree_childrenatlevel(child, n-1);
 
-asserted procedure atree_addchildlistip(tt: Atree, cl: List): Atree;
+asserted procedure atree_addtochildlip(tt: Atree, cl: List): Atree;
    <<
-      cddr tt := nconc(cl, cddr tt);
+      nth(tt, 3) := nconc(cl, nth(tt, 3));
       tt
    >>;
 
-asserted procedure atree_childlist(tt: Atree): List;
-   cddr tt;
+asserted procedure atree_sortfn(t1: Atree, t2: Atree): Any;
+   % Sort function. [t1], [t2] are trees of Acells.
+   acell_sortfn(atree_rootcell t1, atree_rootcell t2);
 
-asserted procedure atree_firstchild(tt: Atree): Any;
-   if atree_childlist tt then car atree_childlist tt;
-
-asserted procedure atree_levellabels(tt: Atree, n: Integer): List;
-   if eqn(n, 0) then
-      {atree_rootlabel tt}
+asserted procedure atree_celll(tt: Atree): List;
+   % Returns the list of all Acells in [tt].
+   if null atree_childl tt then
+      {atree_rootcell tt}
    else
-      for each child in atree_childlist tt join
-      	 atree_levellabels(child, n-1);
+      for each child in atree_childl tt join
+	 atree_celll child;
 
-asserted procedure atree_yield(tt: Atree): List;
-   % Truth value yield labels. [tt] is a tree. Returns a list of ACELL.
-   if null atree_childlist tt then
-      {atree_rootlabel tt}
+asserted procedure atree_celltvl(tt: Atree): List;
+   % Truth value cells. Returns a list of Acells, which have assigned a truth
+   % value to them.
+   if acell_gettv atree_rootcell tt neq nil then
+      {atree_rootcell tt}
    else
-      for each child in atree_childlist tt join
-	 atree_yield child;
-
-asserted procedure atree_tvyield(tt: Atree): List;
-   % Truth value yield labels. [tt] is a tree. Returns a list of ACELL.
-   if acell_gettv atree_rootlabel tt neq nil then  % undef. tv: nil
-      {atree_rootlabel tt}
-   else
-      for each child in atree_childlist tt join
-	 atree_tvyield child;
+      for each child in atree_childl tt join
+	 atree_celltvl child;
 
 asserted procedure atree_print(tt: Atree): Any;
    for each e in atree_print1(tt, 0) do
       ioto_tprin2t e;
 
 asserted procedure atree_print1(tt: Atree, d: Integer): List;
-   % atree_print(dd);
-   % l2sfn is a function which converts a label to a string. returns a
-   % list of strings. returns a list of list of strings.
    begin scalar childl, rootlabel, w;
-      childl := atree_childlist tt;
-      rootlabel := atree_rootlabel tt;
+      childl := atree_childl tt;
+      rootlabel := atree_rootcell tt;
       if null childl then
 	 return {{acell_tvasstring rootlabel}};
       w := for each s in childl join
@@ -1267,7 +1261,7 @@ asserted procedure atree_print1(tt: Atree, d: Integer): List;
 asserted procedure atree_print1raw(tt: Atree, d: Integer): List;
    % Returns a list of strings.
    begin scalar childl, w;
-      childl := atree_childlist tt;
+      childl := atree_childl tt;
       if null childl then
 	 return {{d}};
       w := for each s in childl join
@@ -1279,11 +1273,11 @@ asserted procedure atree_print1raw(tt: Atree, d: Integer): List;
 
 asserted procedure atree_printlin(tt: Atree, d: Integer): Any;
    % Print linear.
-   if null atree_childlist tt then
+   if null atree_childl tt then
       ioto_prin2 {"(", d, ")"}
    else <<
       ioto_prin2 {"(", d};
-      for each c in atree_childlist tt do
+      for each c in atree_childl tt do
 	 atree_printlin(c, d+1);
       ioto_prin2 ")"
    >>;
@@ -1304,9 +1298,9 @@ asserted procedure atree_2dot1(tt: Atree, idx: Any): Any;
    begin scalar childlist, idxl, w; integer i, n;
       % Print basecell:
       atree_2dotprinnode idx;
-      atree_2dotnodetail atree_rootlabel tt;
+      atree_2dotnodetail atree_rootcell tt;
       i := 1;
-      childlist := atree_childlist tt;
+      childlist := atree_childl tt;
       n := length childlist;
       while i <= n do <<
 	 idxl := append(idx, {i});
@@ -1353,8 +1347,8 @@ asserted procedure atree_2tgf(tt: Atree, filename: String): Any;
 asserted procedure atree_2tgf_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
       prin2 number;
-      acell_prin atree_rootlabel tt;
-      childlist := atree_childlist tt;
+      acell_prin atree_rootcell tt;
+      childlist := atree_childl tt;
       for each child in childlist do
 	 number := atree_2tgf_nodes(child, number + 1);
       return number
@@ -1363,7 +1357,7 @@ asserted procedure atree_2tgf_nodes(tt: Atree, number: Integer): Integer;
 asserted procedure atree_2tgf_edges(tt: Atree, number: Integer): Integer;
    begin scalar childlist, mynumber;
       mynumber := number;
-      childlist := atree_childlist tt;
+      childlist := atree_childl tt;
       for each child in childlist do <<
 	 prin2 mynumber;
 	 prin2 " ";
@@ -1411,7 +1405,7 @@ asserted procedure atree_2gml(tt: Atree, filename: String): Any;
 asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
       atree_2gml_node(tt, number);
-      childlist := atree_childlist tt;
+      childlist := atree_childl tt;
       for each child in childlist do
 	 number := atree_2gml_nodes(child, number + 1);
       return number
@@ -1421,7 +1415,7 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
    begin scalar c, tv, anul, n, color;
       ioto_prin2t "node [";
       ioto_prin2t {"id ", number};
-      c := atree_rootlabel tt;
+      c := atree_rootcell tt;
       ioto_prin2t "label """;
       ioto_prin2t {"idx: ", acell_getidx c};
       ioto_prin2 "tp: (";
@@ -1447,7 +1441,7 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
 asserted procedure atree_2gml_edges(tt: Atree, number: Integer): Integer;
    begin scalar childlist, mynumber;
       mynumber := number;
-      childlist := atree_childlist tt;
+      childlist := atree_childl tt;
       for each child in childlist do <<
 	 atree_2gml_edge(mynumber, number + 1);
 	 number := atree_2gml_edges(child, number + 1)
@@ -1483,10 +1477,10 @@ asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
       dd := caddata_dd cd;
       k := caddata_k cd;
       if k eq 0 then <<
-	 caddata_putphiprime(cd, acell_gettv atree_rootlabel dd);
+	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
 	 return nil
       >>;
-      ddk := atree_levellabels(dd, k);
+      ddk := atree_childrenatlevel(dd, k);
       % ffk := nth(ffl, k);
       ffk := for i := 1 : k join
 	 nth(ffl, i);
@@ -1528,15 +1522,15 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
       ffl := caddata_ffl cd;
       dd := caddata_dd cd;
       k := caddata_k cd;
-      if memq(acell_gettv atree_rootlabel dd, {'true, 'false}) then <<
+      if memq(acell_gettv atree_rootcell dd, {'true, 'false}) then <<
 	 if ofsf_cadverbosep() and !*rlcadans then
 	    ioto_prin2t {"ANSWERS for decision problem: ",
-	       cdr atsoc('answers,acell_gettl atree_rootlabel dd)};
-	 caddata_putphiprime(cd, acell_gettv atree_rootlabel dd);
+	       cdr atsoc('answers,acell_gettl atree_rootcell dd)};
+	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
 	 return nil
       >>;
-      % dk := atree_levellabels(dd, k);
-      yy := atree_tvyield dd;
+      % dk := atree_childrenatlevel(dd, k);
+      yy := atree_celltvl dd;
       % some verbose output for qe with answers
       if ofsf_cadverbosep() and !*rlcadans then <<
          ioto_prin2t "+++ ANSWERS: ";
@@ -1586,7 +1580,7 @@ asserted procedure ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k): Any;
       if !*rlverbose then
 	 ioto_tprin2t {"+ generating signatures for ", length ffk,
 	    " polynomials in ", length yy,
-	    " cells; (Dk: ", length atree_levellabels(dd,k), " cells)"};
+	    " cells; (Dk: ", length atree_childrenatlevel(dd,k), " cells)"};
       cellstogo := length yy;  % for verbose output
       for each cell in yy do <<
 	 acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
