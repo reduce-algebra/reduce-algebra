@@ -74,21 +74,58 @@ symbolic procedure times!-mod!-p(a,b);
    else adjoin!-term(lpow b,
         times!-mod!-p(a,lc b),times!-mod!-p(a,red b));
 
+%symbolic procedure times!-term!-mod!-p(term,b);
+%   % Multiply the given polynomial by the given term.
+%    if null b then nil
+%    else if domainp b then
+%        adjoin!-term(tpow term,
+%            multiply!-by!-constant!-mod!-p(tc term,b),nil)
+%    else if tvar term=mvar b then
+%         adjoin!-term(mksp(tvar term,iplus2(tdeg term,ldeg b)),
+%                      times!-mod!-p(tc term,lc b),
+%                      times!-term!-mod!-p(term,red b))
+%    else if ordop(tvar term,mvar b) then
+%      adjoin!-term(tpow term,times!-mod!-p(tc term,b),nil)
+%    else adjoin!-term(lpow b,
+%      times!-term!-mod!-p(term,lc b),
+%      times!-term!-mod!-p(term,red b));
+
+% The version provided here does not recurse all the way along the
+% polynomial, and hence it uses distinctly less stack. For HUGE inputs
+% this can be a valuable saving.
+
 symbolic procedure times!-term!-mod!-p(term,b);
-   % Multiply the given polynomial by the given term.
-    if null b then nil
-    else if domainp b then
-        adjoin!-term(tpow term,
-            multiply!-by!-constant!-mod!-p(tc term,b),nil)
-    else if tvar term=mvar b then
-         adjoin!-term(mksp(tvar term,iplus2(tdeg term,ldeg b)),
-                      times!-mod!-p(tc term,lc b),
-                      times!-term!-mod!-p(term,red b))
-    else if ordop(tvar term,mvar b) then
-      adjoin!-term(tpow term,times!-mod!-p(tc term,b),nil)
-    else adjoin!-term(lpow b,
-      times!-term!-mod!-p(term,lc b),
-      times!-term!-mod!-p(term,red b));
+  % Multiply the given polynomial by the given term.
+  begin
+    scalar w, r, tmp;
+  top:
+    if null b then << r := nil; go to exit >>
+    else if domainp b then <<
+        r := adjoin!-term(tpow term,
+            multiply!-by!-constant!-mod!-p(tc term,b),nil);
+        go to exit >>
+    else if tvar term=mvar b then <<
+         w := (mksp(tvar term,iplus2(tdeg term,ldeg b)) .*
+               times!-mod!-p(tc term,lc b)) . w;
+         b := red b;
+         go to top >>
+    else if ordop(tvar term,mvar b) then <<
+      r := adjoin!-term(tpow term,times!-mod!-p(tc term,b),nil);
+      go to exit >>
+    else <<
+      w := (lpow b .* times!-term!-mod!-p(term,lc b)) . w;
+      b := red b;
+      go to top >>;
+  exit:
+% Now result in w needs reversing into the item in r.
+    while w do <<
+      tmp := cdr w;
+      if cdar w then <<
+        rplacd(w, r);
+        r := w >>;
+      w := tmp >>;
+    return r;
+  end;
 
 symbolic procedure difference!-mod!-p(a,b);
    plus!-mod!-p(a,minus!-mod!-p b);
@@ -143,6 +180,10 @@ symbolic procedure quotient!-mod!-p(a,b);
           quotient!-mod!-p(red a,b))
     else exact!-quotient!-flag:=nil;
 
+
+% It might be a good idea to manually turn this into a non-recursive
+% version just as has been done for times!-term!-mod!-p... doing so could
+% save stack in huge calculations.
 
 symbolic procedure xquotient!-mod!-p(a,b,v);
    % Truncated quotient a/b given that b is nontrivial.

@@ -197,15 +197,16 @@ volatile char stack_contents_temp = 0;
 static int spset = 0;
 static intptr_t spbase = 0, spmin;
 
-static intptr_t stack_depth[C_STACK_ALLOCATION];
+static uintptr_t stack_depth[C_STACK_ALLOCATION];
 static int stack_line[C_STACK_ALLOCATION];
 static char *stack_file[C_STACK_ALLOCATION];
-static intptr_t c_stack_ptr = 0;
+static uintptr_t c_stack_ptr = 0;
 
 int check_stack(char *file, int line)
 {
-    intptr_t temp = (intptr_t)&temp;
+    uintptr_t temp = (intptr_t)&temp;
     char *file1;
+    int first = 1;
     if (!spset)
     {   spbase = spmin = temp;
         spset = 1;
@@ -223,11 +224,16 @@ int check_stack(char *file, int line)
     file1 = strrchr(file, '/');
     stack_file[c_stack_ptr] = (file1 == NULL ? file : file1+1);
     if (temp < spmin-250)  /* Only check at granularity of 250 bytes */
-    {   int i;
+    {   int i, j=0;
         term_printf("Stack depth %u at file %s line %d\n",
                      (unsigned int)(spbase-temp), file, line);
-        for (i=c_stack_ptr; i>=0 && i > c_stack_ptr-20; i--)
-            term_printf(" %s:%d", stack_file[i], stack_line[i]);
+        term_printf("c_stack_ptr = %d\n", c_stack_ptr);
+        for (i=c_stack_ptr; i>=0; i--)
+        {   if (first || stack_file[i][0] != '@')
+                term_printf(" %s:%d", stack_file[i], stack_line[i]);
+            if (stack_file[i][0] != '@') first = 0;
+            if ((++j)%5 ==4) term_printf("\n");
+        }
         term_printf("\n");
         spmin = temp;
         if (temp < spbase-C_STACK_ALLOCATION ||
@@ -4280,4 +4286,5 @@ PROC_handle PROC_rest(PROC_handle p)
 
 
 /* End of csl.c */
+
 

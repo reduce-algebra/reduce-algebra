@@ -91,17 +91,54 @@ symbolic inline procedure peq(u,v);
    %tests for equality of powers U and V;
    u = v;
 
+%symbolic procedure addf(u,v);
+%   % U and V are standard forms. Value is standard form for U+V.
+%   if null u then v
+%    else if null v then u
+%    else if domainp u then addd(u,v)
+%    else if domainp v then addd(v,u)
+%    else if peq(lpow u,lpow v)
+%       then (if null x then y else lpow u .* x .+ y)
+%             where x=addf(lc u,lc v),y=addf(red u,red v)
+%    else if ordpp(lpow u,lpow v) then lt u .+ addf(red u,v)
+%    else lt v .+ addf(u,red v);
+
+% Now a version that avoids having a recursion depth that is as
+% deep as the length of the polynomial. I will still permit
+% myself recursion to a depth equal to to the number of distinct
+% variables that are present.
+
 symbolic procedure addf(u,v);
-   % U and V are standard forms. Value is standard form for U+V.
-   if null u then v
-    else if null v then u
-    else if domainp u then addd(u,v)
-    else if domainp v then addd(v,u)
-    else if peq(lpow u,lpow v)
-       then (if null x then y else lpow u .* x .+ y)
-             where x=addf(lc u,lc v),y=addf(red u,red v)
-    else if ordpp(lpow u,lpow v) then lt u .+ addf(red u,v)
-    else lt v .+ addf(u,red v);
+  % U and V are standard forms. Value is standard form for U+V.
+  begin
+    scalar r, w;
+% r will end up as a (reversed) list of items to be put
+% in front of the terminating item w.
+  top:
+    if null u then << w := v; go to exit >>
+    else if null v then << w := u; go to exit >>
+    else if domainp u then << w := addd(u, v); go to exit >>
+    else if domainp v then << w := addd(v, u); go to exit >>
+    else if peq(lpow u, lpow v) then <<
+      w := addf(lc u, lc v);
+      if not null w then r := (lpow u .* w) .+ r;
+      u := red u;
+      v := red v >>
+    else if ordpp(lpow u, lpow v) then <<
+      r := lt u .+ r;
+      u := cdr u >>
+    else <<
+      r := lt v .+ r;
+      v := red v >>;
+    go to top;
+  exit:
+    while r do <<
+      u := cdr r;
+      rplacd(r, w);
+      w := r;
+      r := u >>;
+    return w;
+  end;
 
 symbolic procedure addd(u,v);
    % U is a domain element, V a standard form.
@@ -194,7 +231,7 @@ symbolic procedure noncomfp1 u;
       and (noncomp mvar u or noncomfp1 lc u or noncomfp1 red u);
 
 symbolic procedure multfnc(u,v);
-  if !*physop!-laoded then physop!-multfnc(u, v)
+  if !*physop!-loaded then physop!-multfnc(u, v)
   else poly!-multfnc(u, v);
 
 symbolic procedure poly!-multfnc(u,v);

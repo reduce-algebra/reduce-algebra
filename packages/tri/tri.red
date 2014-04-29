@@ -410,7 +410,8 @@ if cdr arg then
   ('!_!{ . nconc(makearg(cdr arg,'!,), '!} . mktag(car arg,prec,nil)))
 else ('!_!{ . nconc(mktag(car arg,prec,nil), list '!}));
 
-inline procedure inxextend(item,ld,rd);
+% This uses "result" free, so has to be an smacro.
+smacro procedure inxextend(item,ld,rd);
   nconc(result,ld.nconc(texexplode(item),list rd));
 
 symbolic procedure makeexcinx(op,arg,prec); % EXCALC extension

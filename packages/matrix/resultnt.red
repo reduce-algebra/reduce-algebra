@@ -203,27 +203,92 @@ symbolic procedure !*sf2exb(u,v);
 % Data structure is lpow ::= list of degrees in exterior product
 %                   lc   ::= standard form
 
+% The following function was implicated in extreme recursion depth
+% when used on huge formulae.. so I will replace it with a version that
+% does not use Lisp recursion...  Well in the first version I will
+% only get rid of the recursion along v since I hope that u is small.
+
+%symbolic procedure b!:extmult(u,v);
+%   %Special exterior multiplication routine. Degree of form v is
+%   %arbitrary, u is a one-form.
+%   if null u or null v then  nil
+%    else if v = 1 then u
+%    else (if x then cdr x .* (if car x then negf multf(lc u,lc v)
+%                   else multf(lc u,lc v))
+%              .+ b!:extadd(b!:extmult(!*t2f lt u,red v),
+%                    b!:extmult(red u,v))
+%       else b!:extadd(b!:extmult(red u,v),
+%              b!:extmult(!*t2f lt u,red v)))
+%      where x = b!:ordexn(car lpow u,lpow v);
+
 symbolic procedure b!:extmult(u,v);
-   %Special exterior multiplication routine. Degree of form v is
-   %arbitrary, u is a one-form.
-   if null u or null v then  nil
-    else if v = 1 then u
-    else (if x then cdr x .* (if car x then negf multf(lc u,lc v)
-                   else multf(lc u,lc v))
-              .+ b!:extadd(b!:extmult(!*t2f lt u,red v),
-                    b!:extmult(red u,v))
-       else b!:extadd(b!:extmult(red u,v),
-              b!:extmult(!*t2f lt u,red v)))
-      where x = b!:ordexn(car lpow u,lpow v);
+  % Special exterior multiplication routine. Degree of form v is
+  % arbitrary, u is a one-form. This version is somewhat ugly but
+  % is coded using its own explicit stack for the recursion along v
+  % because previously it had been implicated in very deep nesting
+  % when running some huge examples.
+  begin
+    scalar stack, x, w, r;
+  top:
+    if null u or null v then << r := nil; go to exit >>
+    else if v = 1 then << r := u; go to exit >>;
+    stack := (u . v) . stack;
+    if cdr u then u := !*t2f lt u;
+    v := red v;
+    go to top;
+  exit:
+    while stack do <<
+      u := caar stack;
+      v := cdar stack;
+      stack := cdr stack;
+      x := b!:ordexn(car lpow u, lpow v);
+      if x then <<
+        w := multf(lc u, lc v);
+        if car x then w := negf w;
+        r := (cdr x .* w) .+ b!:extadd(r,  b!:extmult(red u, v)) >>
+      else r := b!:extadd(b!:extmult(red u, v), r) >>;
+    return r;
+  end;
+
+%symbolic procedure b!:extadd(u,v);
+%   if null u then v
+%    else if null v then u
+%    else if lpow u = lpow v then
+%            (lambda x,y; if null x then y else lpow u .* x .+ y)
+%        (addf(lc u,lc v),b!:extadd(red u,red v))
+%    else if b!:ordexp(lpow u,lpow v) then lt u .+ b!:extadd(red u,v)
+%    else lt v .+ b!:extadd(u,red v);
+
+% Another function re-worked to avoid heavy stack use.
 
 symbolic procedure b!:extadd(u,v);
-   if null u then v
-    else if null v then u
-    else if lpow u = lpow v then
-            (lambda x,y; if null x then y else lpow u .* x .+ y)
-        (addf(lc u,lc v),b!:extadd(red u,red v))
-    else if b!:ordexp(lpow u,lpow v) then lt u .+ b!:extadd(red u,v)
-    else lt v .+ b!:extadd(u,red v);
+  begin
+    scalar r, w, x;
+  top:
+    if null u then << w := v; go to exit >>
+    else if null v then << w := u; go to exit >>
+    else if lpow u = lpow v then <<
+      x := addf(lc u, lc v);
+      if not null x then r := (lpow u .* x) .+ r;
+      u := red u;
+      v := red v;
+      go to top >>
+    else if b!:ordexp(lpow u,lpow v) then <<
+      r := lt u .+ r;
+      u := red u;
+      go to top >>
+    else <<
+      r := lt v .+ r;
+      v := red v;
+      go to top >>;
+  exit:
+    while r do <<
+      u := cdr r;
+      rplacd(r, w);
+      w := r;
+      r := u >>;
+    return w;
+  end;
 
 symbolic procedure b!:ordexp(u,v);
    if null u then t

@@ -2506,7 +2506,7 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
  * length of linear lists.
  */
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("Stack too deep in cl_equal\n");
         return NO;
@@ -2786,7 +2786,7 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
  * excessive...
  */
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("Stack too deep in equal\n");
         return NO;
@@ -3019,7 +3019,7 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
  * length of linear lists.
  */
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("Stack too deep in equalp\n");
         return NO;
@@ -4504,7 +4504,7 @@ Lisp_Object MS_CDECL Lsubstq(Lisp_Object nil, int nargs, ...)
     va_list aa;
     argcheck(nargs, 3, "substq");
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         return aerror("subst");
     }
@@ -4523,7 +4523,7 @@ Lisp_Object MS_CDECL Lsubst(Lisp_Object nil, int nargs, ...)
     va_list aa;
     argcheck(nargs, 3, "subst");
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         return aerror("subst");
     }
@@ -4543,7 +4543,7 @@ Lisp_Object Lsublis(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
     stackcheck2(0, al, x);
     errexit();
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         return aerror("sublis");
     }
@@ -4561,7 +4561,7 @@ Lisp_Object Lsubla(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
     stackcheck2(0, al, x);
     errexit();
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         return aerror("subla");
     }

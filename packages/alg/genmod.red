@@ -93,20 +93,47 @@ symbolic procedure general!-modular!-quotient(a,b);
 symbolic procedure general!-modular!-minus a;
     if a=0 then a else current!-modulus - a;
 
+%symbolic procedure general!-reciprocal!-by!-gcd(a,b,x,y);
+%%On input A and B should be coprime. This routine then
+%%finds X and Y such that A*X+B*Y=1, and returns the value Y
+%%on input A > B;
+%   if b=0 then rerror(alg,8,"Invalid modular division")
+%   else if b=1 then if y < 0 then y+current!-modulus else y
+%   else begin scalar w;
+%%N.B. Invalid modular division is either:
+%% a)  attempt to divide by zero directly
+%% b)  modulus is not prime, and input is not
+%%     coprime with it;
+%     w:=quotient(a,b); %Truncated integer division;
+%     return general!-reciprocal!-by!-gcd(b,a-b*w,y,x-y*w)
+%   end;
+
+% Now a version that does not rely on tail-recursion elimination.
+% For reasons I do not quite understand CSL leaves the above using
+% tail calls in the bytecodes but it may still use too much stack.
+
 symbolic procedure general!-reciprocal!-by!-gcd(a,b,x,y);
 %On input A and B should be coprime. This routine then
 %finds X and Y such that A*X+B*Y=1, and returns the value Y
 %on input A > B;
-   if b=0 then rerror(alg,8,"Invalid modular division")
-   else if b=1 then if y < 0 then y+current!-modulus else y
-   else begin scalar w;
+  begin
+   scalar w, tmp;
+top:
+   if b=0 then return rerror(alg,8,"Invalid modular division")
+   else if b=1 then return (if y < 0 then y+current!-modulus else y);
 %N.B. Invalid modular division is either:
 % a)  attempt to divide by zero directly
 % b)  modulus is not prime, and input is not
 %     coprime with it;
-     w:=quotient(a,b); %Truncated integer division;
-     return general!-reciprocal!-by!-gcd(b,a-b*w,y,x-y*w)
-   end;
+    w := quotient(a,b); %Truncated integer division;
+    tmp := a;
+    a := b;
+    b := tmp - b*w;
+    tmp := x;
+    x := y;
+    y := tmp - y*w;
+    go to top
+  end;
 
 % The next two functions compute the "reverse" of a binary number.
 % This is the number obtained when writing down the binary expansion

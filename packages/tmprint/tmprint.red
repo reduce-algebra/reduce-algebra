@@ -1142,11 +1142,20 @@ fluid '(pound1!* pound2!* bad_chars!*);
 
 % Pounds signs are HORRID! Well all sorts of characters that are not
 % in the original 96-char ASCII set are horrid, but pounds signs are
-% present on an UK keyboard and that make things hurt for me!
-pound1 := int2id 0x9c; % In code page 850 (ie DOS style)
-pound2 := int2id 0xa3; % Unicode
+% present on an UK keyboard and that make things hurt for me! I think
+% that pound1!* is WRONG now if one gets input in utf-8 and it being
+% here would mess up on a unicode system. But I will still leave it for
+% at least a while!
+pound1!* := int2id 0x9c; % In code page 850 (ie DOS style)
+pound2!* := int2id 0xa3; % Unicode
 
-bad_chars!* := blank . tab . !$eol!$ . pound1 . pound2 .
+% I will force blanki and tab to be declared and set herte since there
+% are signs that in PSL they might not be!
+fluid '(blank tab);
+blank := '! ;
+tab := '!	;
+
+bad_chars!* := blank . tab . !$eol!$ . pound1!* . pound2!* .
                '(!# !$ !% !& !{ !} !~ !^ !\);
 
 symbolic procedure contains!-tex!-special x;
@@ -1182,7 +1191,7 @@ symbolic procedure fancy!-tex!-character c;
   else if c = blank   then fancy!-line!* := '!~ . fancy!-line!*
   else if c = tab     then fancy!-line!* := '!~ . '!~ . fancy!-line!*
   else if c = !$eol!$ then fancy!-line!* := '!\!$eol!\!$ . fancy!-line!*
-  else if c = pound1 or c = pound2 then
+  else if c = pound1!* or c = pound2!* then
       fancy!-line!* := '!{!\pound!} . fancy!-line!*
   else fancy!-line!* := c . fancy!-line!*;
 

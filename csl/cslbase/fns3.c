@@ -627,7 +627,7 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
     Header ha;
     simple_msg("hash_cl_equal: ", key);
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
         my_exit(EXIT_FAILURE);
     }
@@ -811,7 +811,7 @@ static uint32_t hash_equal(Lisp_Object key)
     Header ha;
     simple_msg("hash_equal: ", key);
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
         my_exit(EXIT_FAILURE);
     }
@@ -1008,7 +1008,7 @@ static uint32_t hash_equalp(Lisp_Object key)
     Header ha;
     simple_msg("hash_equalp: ", key);
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__))
+    if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
         my_exit(EXIT_FAILURE);
     }

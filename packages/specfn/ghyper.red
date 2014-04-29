@@ -208,7 +208,7 @@ M:
                   quotsq(caar x,diff1sq(cadar x,caar x))))$
 
 % This assigns to a and b
-  symbolic procedure GHFlowering3p;
+  symbolic smacro procedure GHFlowering3p;
   %return a = (mmm . a1).
    begin scalar sa,w,mmm;    % MM used in SPDE as a global.
    sa:=a;

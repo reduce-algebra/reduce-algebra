@@ -415,6 +415,7 @@ int gc_number = 0;
 CSLbool gc_method_is_copying = 0;     /* YES if copying, NO if sliding */
 int force_reclaim_method = 0;
 int reclaim_trap_count = -1;
+int reclaim_stack_limit = 0;
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
              big_numbers, box_floats, bytestreams, other_mem,
@@ -3071,8 +3072,15 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     }
     if (spool_file != NULL) fflush(spool_file);
     if (gc_number == reclaim_trap_count)
-    {   trace_printf("\nReclaim trap count reached...\n");
+    {   reclaim_trap_count = gc_number - 1;
+        trace_printf("\nReclaim trap count reached...\n");
         return aerror("reclaim-trap-count");
+    }
+    if (reclaim_stack_limit != 0 &&
+        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stack_base)
+    {   reclaim_stack_limit = 0;
+        trace_printf("\nReclaim stack limit reached...\n");
+        return aerror("reclaim-stack-limit");
     }
 
 #ifdef CONSERVATIVE

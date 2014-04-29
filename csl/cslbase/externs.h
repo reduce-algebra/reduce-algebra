@@ -238,7 +238,7 @@ extern volatile char stack_contents_temp;
 extern int check_stack(char *file, int line);
 extern void show_stack();
 #define if_check_stack \
-   if (check_stack(__FILE__,__LINE__)) \
+   if (check_stack("@" __FILE__,__LINE__)) \
    {   show_stack(); return aerror("stack overflow"); }
 #else
 #define if_check_stack \
@@ -459,7 +459,7 @@ extern Lisp_Object expand_def_symbol, allow_key_key;
 #endif
 
 extern Lisp_Object declare_symbol, special_symbol, large_modulus;
-extern Lisp_Object used_space, avail_space, eof_symbol;
+extern Lisp_Object used_space, avail_space, eof_symbol, call_stack;
 
 #ifdef OPENMATH
 extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
@@ -704,6 +704,7 @@ extern Lisp_Object * volatile stacklimit;
 #define used_space            BASE[185]
 #define avail_space           BASE[186]
 #define eof_symbol            BASE[187]
+#define call_stack            BASE[188]
 
 /*
  * The next are intended for use by people building custom versions
@@ -822,7 +823,7 @@ extern char *standard_directory;
 
 extern int gc_number;
 extern CSLbool gc_method_is_copying;
-extern int force_reclaim_method, reclaim_trap_count;
+extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2

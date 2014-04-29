@@ -291,7 +291,7 @@ Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 Lisp_Object gchook, resources, callstack, procstack, procmem, trap_time;
-Lisp_Object used_space, avail_space, eof_symbol;
+Lisp_Object used_space, avail_space, eof_symbol, call_stack;
 Lisp_Object workbase[51];
 
 
@@ -2648,6 +2648,16 @@ static Lisp_Object Lreclaim_trap(Lisp_Object nil, Lisp_Object a)
     return onevalue(fixnum_of_int(previous));
 }
 
+static Lisp_Object Lreclaim_stack_limit(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t previous = reclaim_stack_limit;
+    if (!is_fixnum(a)) return aerror1("reclaim-stack-limit", a);
+    reclaim_stack_limit = int_of_fixnum(a);
+    term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
+        reclaim_stack_limit, previous);
+    return onevalue(fixnum_of_int(previous));
+}
+
 static void init_heap_segments(double store_size)
 /*
  * This function just makes nil and the pool of page-frames available.
@@ -3058,6 +3068,7 @@ static setup_type const restart_setup[] =
     {"reclaim",                 Lgc, too_many_1, Lgc0},
 #endif
     {"reclaim-trap",            Lreclaim_trap, too_many_1, wrong_no_1},
+    {"reclaim-stack-limit",     Lreclaim_stack_limit, too_many_1, wrong_no_1},
     {"reclaim-method",          Lreclaim_method, too_many_1, wrong_no_1},
     {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
     {NULL,                      0, 0, 0}
@@ -4770,6 +4781,7 @@ static void cold_setup()
     used_space          = make_undefined_symbol("*used-space*");
     avail_space         = make_undefined_symbol("*avail-space*");
     eof_symbol          = make_undefined_symbol("\xf7\xbf\xbf\xbf");
+    call_stack          = nil;
     trap_time           = make_undefined_symbol("trap-time*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
@@ -6591,6 +6603,7 @@ void copy_into_nilseg(int fg)
     BASE[185]    = used_space;
     BASE[186]    = avail_space;
     BASE[187]    = eof_symbol;
+    BASE[188]    = call_stack;
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -6763,6 +6776,7 @@ void copy_out_of_nilseg(int fg)
     used_space            = BASE[185];
     avail_space           = BASE[186];
     eof_symbol            = BASE[187];
+    call_stack            = BASE[188];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

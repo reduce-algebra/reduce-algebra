@@ -1327,13 +1327,10 @@ static void trace_print_3(Lisp_Object name, Lisp_Object *stack)
 #define next_byte *ppc++
 #endif
 
-#ifndef NO_BYTECOUNT
 #ifdef CHECK_STACK
 char *native_stack = NULL, *native_stack_base = NULL;
 #endif
-#endif
 
-#ifndef NO_BYTECOUNT
 /*
  * Before calling apply() or the function in the qfn1, qfn2 or qfnn cell
  * of anything I will set this variable to refer to a string (which may be
@@ -1344,10 +1341,54 @@ char *native_stack = NULL, *native_stack_base = NULL;
  * used is popped form the stack).
  */
 const char *name_of_caller = NULL;
-#endif
+
+static uintptr_t stacktop = 0;
+
+extern Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
+                                         Lisp_Object *entry_stack);
+static int maxnest = 0;
 
 Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                                  Lisp_Object *entry_stack)
+#ifdef CHECK_STACK
+{
+/*
+ * Here I have a wrapper function that is used to help me track
+ * ultra deep recursions!
+ */
+    Lisp_Object w, nil = C_nil;
+    int len = 0;
+    call_stack = cons_no_gc(elt(lit, 0), call_stack);
+    for (w = call_stack; w != nil; w = qcdr(w)) len++;
+    if (len > maxnest+(maxnest/2)+1)
+    {   maxnest = len;
+        trace_printf("\n+++++ bytecode nesting depth %d observed\n", maxnest);
+        w = call_stack;
+        while (w != nil)
+        {   *++C_stack = w;
+            prin_to_trace(qcar(w)); /* should be a symbol */
+            nil = C_nil;
+            if (exception_pending()) flip_exception();
+            w = *C_stack--;
+            w = qcdr(w);
+            trace_printf("\n");
+        }
+    }
+    if (len > 20000) flip_exception();
+    else w = bytestream_interpret1(code, lit, entry_stack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        call_stack = qcdr(call_stack);
+        flip_exception();
+    }
+    else call_stack = qcdr(call_stack);
+    return w;
+}
+
+Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
+                                  Lisp_Object *entry_stack)
+#endif /* CHECK_STACK */
 {
 /*
  * entry_stack may be its "1" bit set if I am to be "noisy" whenever I
@@ -1386,7 +1427,7 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
     int32_t opcodes = 30; /* Attribute 30-bytecode overhead to entry sequence */
 #endif
 #ifdef CHECK_STACK
-    {   char *my_stack = (char *)&opcodes;
+    {   char *my_stack = (char *)&my_stack;
         if (native_stack == NULL) native_stack = native_stack_base = my_stack;
         else if (my_stack + 10000 < native_stack)
         {   native_stack = my_stack;
@@ -1431,21 +1472,6 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * The byte-stream interpreter here uses the lisp stack and two
  * special registers, called A, and B which act as a mini stack.
  */
-#ifdef CHECK_STACK
-#ifdef DEBUG
-    if (check_stack((char *)&ffname[0],__LINE__))
-    {   name_of_caller = NULL;
-        return aerror("stack overflow");
-    }
-#else
-    if (check_stack("bytecode_interpreter",__LINE__))
-    {   name_of_caller = NULL;
-        return aerror("stack overflow");
-    }
-#endif
-#else
-    if_check_stack
-#endif
 
 #ifndef NO_BYTECOUNT
 /*
@@ -1494,6 +1520,39 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * here and speed things up by some utterly insignificant amount.
  */
     A_reg = nil;
+#ifdef CHECK_STACK
+    if ((char *)fringe <= (char *)heaplimit)
+    {   save_pc();
+        C_stack = stack;
+        A_reg = cons_gc_test(A_reg);
+        nil = C_nil;
+        if (exception_pending()) goto call_error_exit;
+        stack = C_stack;
+        restore_pc();
+    }
+
+#ifdef DEBUG
+    if (check_stack((char *)&ffname[0],__LINE__))
+    {   name_of_caller = NULL;
+        err_printf("\n+++ stack overflow\n");
+        goto pop_stack_and_exit;
+    }
+#else
+    if (check_stack("bytecode_interpreter",__LINE__))
+    {   name_of_caller = NULL;
+        err_printf("\n+++ stack overflow\n");
+        goto pop_stack_and_exit;
+    }
+#endif
+#else
+    {   char *p = (char *)&p;
+        if (p < C_stack_limit)
+        {   name_of_caller = NULL;
+            err_printf("\n+++ stack overflow\n");
+            goto pop_stack_and_exit;
+        }
+    }
+#endif
     for (;;)
     {
 #ifndef NO_BYTECOUNT
@@ -5733,7 +5792,12 @@ jcalln:
 /*
  * Also if the function is byte-coded I can enter it more directly.
  * It is strongly desirable that I do so so that backtraces will work
- * better.
+ * better. However (at present) I have not implemented the hack tha
+ * would turn a jcalln into an iteration here. That is sort of a
+ * matter of laziness and because I had not expected it to be on
+ * too many critical paths. The first case where I feel it might have
+ * been mattering is the 4-arg general-reciprocal!-by!-gcd (which I have
+ * just re-written so that what happens here is irrelevant in that case!).
  */
 #ifndef NO_BYTECOUNT
         name_of_caller = (const char *)ffname;

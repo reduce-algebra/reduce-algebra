@@ -36,7 +36,7 @@ factor!-level:=0;  % start with a numeric value.
 
 symbolic procedure !*d2n a; if null a then 0 else a;
 
-symbolic procedure adjoin!-term (p,c,r);
+symbolic inline procedure adjoin!-term (p,c,r);
    if null c then r else (p .* c) .+ r;
 
 symbolic inline procedure ttab n; spaces(n-posn());

@@ -2946,7 +2946,7 @@ case TAG_SYMBOL:
                 outprefix(blankp, lenchars);
 #endif
                 for (k = 0; k < len; k++)
-                {   int ch = celt(stack[0], k) & 0xff;
+                {   int ch = ucelt(stack[0], k);
 /*
  * Specially for the benefit of "tmprint.red" I arrange to switch off
  * line-wrapping if I have a "\x02" character but switch it back on after
@@ -2954,6 +2954,25 @@ case TAG_SYMBOL:
  * exception/backtrace.
  */
                     if (ch == 2) tmprint_flag = 1;
+/*
+ * The next is pretty much a horrible fudge, but I believe that people
+ * might only be using prin2 on an end-of-file character by accident and
+ * my internal representation is not a valid utf-8 packing of a codepoint
+ * in the Unicode range, so putting a textual form that people might
+ * at least recognise is perhaps kinder.
+ */
+                    if (ch == 0xf7 &&
+                        ucelt(stack[0], k+1) == 0xbf &&
+                        ucelt(stack[0], k+2) == 0xbf &&
+                        ucelt(stack[0], k+3) == 0xbf)
+                    {   putc_stream('$', active_stream);
+                        putc_stream('E', active_stream);
+                        putc_stream('O', active_stream);
+                        putc_stream('F', active_stream);
+                        putc_stream('$', active_stream);
+                        k += 3;
+                    }
+                    else
                     putc_stream(ch, active_stream);
                     if (ch == 5) tmprint_flag = 0;
                 }

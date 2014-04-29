@@ -85,7 +85,7 @@ Lisp_Object Ceval(Lisp_Object u, Lisp_Object env)
 #ifdef COMMON
     int t;
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__)) return aerror("deep stack in eval");
+    if (check_stack("@" __FILE__,__LINE__)) return aerror("deep stack in eval");
 #endif
 restart:
     t = (int)u & TAG_BITS;
@@ -306,7 +306,7 @@ Lisp_Object noisy_Ceval(Lisp_Object u, Lisp_Object env)
 #ifdef COMMON
     int t;
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__)) return aerror("deep stack in eval");
+    if (check_stack("@" __FILE__,__LINE__)) return aerror("deep stack in eval");
 #endif
 restart:
     t = (int)u & TAG_BITS;
