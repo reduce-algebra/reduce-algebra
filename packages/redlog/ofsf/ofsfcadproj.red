@@ -78,6 +78,9 @@ symbolic operator rlcadvbl;
 procedure rlcadvbl(phi);
    'list . for each l in ofsf_cadvbl rl_simp phi collect 'list . l;
 
+algebraic procedure rlcaddefaultorder(phi);
+   for each vb in rlcadvbl rlpnf phi join vb;
+
 procedure ofsf_cadvbl(phi);
    % Variable-block-list. Checks if [phi] is a prenex. Returns a list of
    % lists [[xr..][..xk]..[xk..x1]] of IDs.

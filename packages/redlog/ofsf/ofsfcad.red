@@ -38,7 +38,6 @@ lisp <<
 module ofsfcad;
 
 switch rlqegen1,rlcadmcproj,rlpscsgen,rlcadans,rlcadtv,rlcadtree2dot,rlcadrmwc;
-fluid '(rlcadguessnoc!*);
 
 off1 'rlqegen1;
 off1 'rlcadmcproj;
@@ -410,13 +409,15 @@ asserted procedure acell_sortfn(c1: Acell, c2: Acell): Boolean;
 % module cadtree;
 
 asserted procedure ofsf_tree(cd: CadData): Atree;
-   ofsf_treeovercell(basecell, cl_nnf caddata_psi cd, cd)
-      where basecell=acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+   begin scalar basecell;
+      basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+      return ofsf_treeovercell(basecell, cl_nnf caddata_psi cd, cd)
+   end;
 
 asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadData): Atree;
    % CAD tree over cell. [basecell] is a cell in R^{j-1}. Returns a tree over
    % [basecell]. Intuition: Recursively find for a cell C in R^j a partial CAD
-   % tree that has C as a root. If j > k, then C has a truth value.
+   % tree that has C as its root. If j > k, then C has a truth value.
    begin
       scalar sp, varl, xj, hhhj, cell, tree, treel, qj, neutral, nrdata, ncbuffer, res, tv, tvl;
       integer j, r, k;
@@ -432,7 +433,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	    acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
-      	 return atree_new basecell
+      	 return atree_mk basecell
       >>;
       % trial evaluation
       if !*rlcadtv and !*rlcadte then <<
@@ -441,17 +442,17 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	    acell_puttv(basecell, psi);
 	    if ofsf_cadverbosep() then
 	       ioto_prin2 "TE)";
-	    return atree_new basecell
+	    return atree_mk basecell
       	 >>
       >>;
       if ofsf_cadverbosep() then
-      	 ioto_prin2 {":", 1}; % ioto_prin2 {":", 2*n+1};
+      	 ioto_prin2 {":1"}; % ioto_prin2 {":", 2*n+1};
       k := caddata_k cd;
       xj := nth(varl, j);
       hhhj := ofsf_tocprepare(caddata_hhj(cd, j), xj, sp, varl);
       nrdata := tiri_init(hhhj, xj);
       ncbuffer := ncb_init();
-      % (2) Recursion Case: j <= r
+      % (2) Recursion Case: 1 <= j <= r
       % (2a) 1 <= j <= k or no truth values
       assert(1 <= j and j <= r);
       if (1 <= j and j <= k) or (not !*rlcadtv) then
@@ -478,7 +479,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       >>;
       if !*rlcadisoallroots then
 	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do
-	    push(atree_new cell, treel);
+	    push(atree_mk cell, treel);
       treel := sort(treel, function atree_sortfn);
       if !*rlcadans then
 	 ofsf_addanswers(basecell, treel, j, cd);
@@ -489,9 +490,9 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	 rederr "GCAD: stack full of white cells occured.";
       % construct result tree
       if !*rlcadtrimtree and j > k then
-	 res := atree_new basecell
+	 res := atree_mk basecell
       else
-	 res := atree_addtochildlip(atree_new basecell, treel);
+	 res := atree_addtochildlip(atree_mk basecell, treel);
       % propagation below free variable space
       if not (!*rlcadtv and !*rlcadpbfvs) then
 	 return res;
@@ -647,157 +648,99 @@ algebraic procedure quality1(p1,p2,g1,g2);
 
 % MK: This is a service.
 algebraic procedure rlcadnumauto(phi);
-%   rlcadnum(rlcadproj(phi,pord),pord)
-%      where pord=>for each vb in rlcadvbl phi join vb;
    begin scalar plist,pord;
       pord := for each vb in rlcadvbl rlpnf phi join vb;
-      plist := rlcadproj(phi,pord);
-      return rlcadnum(plist,pord)
+      plist := rlcadproj(phi, pord);
+      return rlcadnum(plist, pord)
    end;
 
 % MK: This is a service.
 algebraic procedure rlcadnumepo(phi);
-   % Number of projection polynomials for full CAD with efficient
-   % projection order.
+   % Number of projection polynomials for full CAD with efficient projection
+   % order.
    begin scalar plist,pord;
       pord := rlcadporder phi;
-      plist := rlcadproj(phi,pord);
-      return rlcadnum(plist,pord)
-   end;
-
-% MK: This is a service.
-algebraic procedure rlcaddefaultorder(phi);
-   for each vb in rlcadvbl rlpnf phi join vb;
-
-% MK: This is a service.
-algebraic procedure rlcadnum(pl,pord);
-   first rlcadnum1(pl,pord);
-
-% MK: This is a service.
-algebraic procedure rlcadguessauto(phi);
-   begin scalar plist,pord;
-      pord := for each vb in rlcadvbl rlpnf phi join vb;
-      plist := rlcadproj(phi,pord);
-      return rlcadguess(plist,pord)
-   end;
-
-% MK: This is a service.
-algebraic procedure rlcadguessepo(phi);
-   begin scalar plist,pord;
-      pord := rlcadporder phi;
-      plist := rlcadproj(phi,pord);
-      return rlcadguess(plist,pord)
-   end;
-
-% MK: This is a service.
-algebraic procedure rlcadguess(pl, pord);
-   for each n in rlcadguess1(pl, pord) product n;
-
-symbolic operator rlcadnum1;
-procedure rlcadnum1(pl, pord);
-   % . [pl] is a list (Fr,...,F1) of projection factors, [pord] is a list
-   % (xr,...,x1) of variables. Returns a list (#Dr,...,#D1) of numbers.
-   begin scalar oldorder,w,ff,varl;
-      oldorder := setkorder pord;
-      w := for each ffj in cdr pl collect
- 	 for each f in cdr ffj collect reorder numr simp f;
-      ff := reverse w;
-      varl := reverse cdr pord;
-      w := reversip ofsf_cadnum1(ff,varl,nil); % (#Dr,...,#D1)
-      setkorder oldorder;
-      return 'list . w;
+      plist := rlcadproj(phi, pord);
+      return rlcadnum(plist, pord)
    end;
 
 symbolic operator rlcadpnum;
 procedure rlcadpnum(phi, pord);
    ofsf_cadpnum(rl_simp phi, cdr pord);
 
-symbolic operator rlcadguess1;
-procedure rlcadguess1(pl,pord);
-   % . [pl] is a list (Fr,...,F1) of projection factors, [pord] is a
-   % list (xr,...,x1) of variables. Returns a list (#Dr,...,#D1) of numbers.
-   begin scalar oldorder,w,ff,varl,!*rlacdguessnoc;
+% MK: This is a service.
+algebraic procedure rlcadnum(pl, pord);
+   first rlcadnum1(pl, pord);
+
+symbolic operator rlcadnum1;
+procedure rlcadnum1(pl, pord);
+   % [pl] is a list (Fr, ..., F1) of lists of projection factors, [pord] is a
+   % list (xr, ..., x1) of variables. Returns a list (#Dr, ..., #D0) of positive
+   % integers: The number of cells on each level of the CAD tree for (Fr, ...,
+   % F1).
+   begin scalar oldorder, w, ff, varl;
       oldorder := setkorder pord;
       w := for each ffj in cdr pl collect
- 	 for each f in cdr ffj collect reorder numr simp f;
+ 	 for each f in cdr ffj collect
+	    reorder numr simp f;
       ff := reverse w;
       varl := reverse cdr pord;
-      %on1 !*rlcadguessnoc;
-      w := ofsf_cadnum1(ff,varl,t);
-      %off1 !*rlcadguessnoc;
-      w := reversip w; % (#Dr,...,#D1)
+      w := reversip ofsf_cadnum1(ff, varl);
       setkorder oldorder;
       return 'list . w;
    end;
 
-procedure ofsf_cadnum1(ff,varl,probe);
-   % Cad num subroutine. [ff] is a list (F1,...,Fr) of lists of
-   % polynomials. Returns a list of natural numbers of length r+1.
-   begin scalar w;
-      w := ofsf_fulltree(
-	 list2vector(nil . for each ffj in ff collect
-	    for each f in ffj collect tag_(f,{'dummytag})),
-	 varl,probe);
-%	 list2vector(nil . ff),varl,probe);
-      return for i := 0 : length varl collect length atree_childrenatlevel(w,i)
+asserted procedure ofsf_cadnum1(ff: List, varl: List): List;
+   % CAD num subroutine. [ff] is a list (F1, ..., Fr) of lists of polynomials.
+   % Returns a list of positive integers of length r+1.
+   begin scalar hh, w;
+      hh := for each ffj in ff collect
+	 for each f in ffj collect
+	    tag_(f, {'dummytag});
+      w := ofsf_fulltree(list2vector(nil . hh), varl);
+      return for i := 0 : length varl collect
+	 length atree_childrenatlevel(w, i)
    end;
 
-asserted procedure ofsf_fulltree(ff: Atom, varl: List, probe: Boolean): Atree;
-   % [ff] is a vector [nil, F_1, ..., F_r], where the elements are
-   % LIST(TAG(SF)).
+asserted procedure ofsf_fulltree(hh: Atom, varl: List): Atree;
+   % [hh] is a vector [nil, F_1, ..., F_r], where the elements are lists of
+   % tagged SF.
    begin scalar basecell;
-      % This is the only cell of D0:
-      basecell := acell_mk(0, nil, nil, 'true, nil);
-      return ofsf_fulltreeovercell(basecell, ff, varl, 'unknown, 'unknown, probe)
+      basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+      return ofsf_fulltreeovercell(basecell, hh, varl)
    end;
 
-asserted procedure ofsf_fulltreeovercell(basecell: Acell, ff: Atom, varl: List, qal: List, psi: Formula, probe: Boolean): Atree;
-   % Cad full tree over cell. [basecell] is a cell in D_{j-1}, [ff] is a vector
-   % [nil, F_1,...,F_r], where the elements are LIST(TAG(SF)), [varl] is (x_1,
-   % ..., x_r), [qal] and [psi] are not needed. Returns a tree over the
-   % basecell. Intuition: Finds for a cell C in D_j a full cad tree that has C
-   % as a root. Each cell has a sample point, but no truth value.
-   begin scalar r,k,j,fffj,xj,sp,cell,treel,nrdata,ncbuffer;
-      integer n;
+asserted procedure ofsf_fulltreeovercell(basecell: Acell, hh: Atom, varl: List): Atree;
+   % CAD full tree over cell. [basecell] is a cell in R^{j-1}, [hh] is a vector
+   % [nil, F_1, ..., F_r], where the elements are lists of tagged SF, [varl] is
+   % (x_1, ..., x_r). Returns an Atree over the basecell. Intuition: Recursively
+   % find for a cell C in R^j a full CAD tree that has C as its root. Each cell
+   % has a sample point, but no truth value.
+   begin scalar sp, xj, hhhj, cell, treel, nrdata, ncbuffer;
+      integer r, k, j;
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(", length acell_getsp basecell};
-      % ioto_tprin2t {"tree over: ", basecell};
-      r := length varl;
-      k := r;  % not needed, nextcell would need it for fulldimonly and gen1
-      j := length acell_getsp basecell + 1;
       sp := acell_getsp basecell;
-      % 1. BASE CASE: j=r, evaluation case. The base cell is a leaf.
-      if j > r then <<
+      r := length varl;
+      k := r;  % This is not needed. ofsf_nextcell would need it only for fulldimonly and gen1.
+      j := length sp + 1;
+      % (1) Base Case: j - 1 = r. [basecell] is a leaf.
+      if eqn(j - 1, r) then <<
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
-      	 return atree_new basecell
+      	 return atree_mk basecell
       >>;
-      % Prepare Polynomials
       xj := nth(varl, j);
-      fffj := ofsf_tocprepare(list2vector getv(ff, j), xj, sp, varl);
-      % ffj := for each te in ffj collect tag_object te;
-      % ffj := ofsf_tocprepare(ff,xj,sp,varl);
-      nrdata := tiri_init(fffj, xj);
-      % Old code:
-      % nrdata := rip_init(fffj,xj); % initialize next root data
-      % rip_putpscl(nrdata,for each psc in rip_pscl nrdata join
-      % 	 if (d := aex_stchsgnch(cdr psc,xj,'minfty) -
-      % 	    aex_stchsgnch(cdr psc,xj,'infty)) neq 0 then <<n := n+d;{psc}>>);
+      hhhj := ofsf_tocprepare(list2vector getv(hh, j), xj, sp, varl);
+      nrdata := tiri_init(hhhj, xj);
       if ofsf_cadverbosep() then
-	 ioto_prin2 {":", 2*n+1};
-      ncbuffer := ofsf_ncinit();
-      % 2. RECURSION CASE: j<=r
-      if 0 <= j and j <= r then  % full dec., no truth values
-	 if probe then <<
-	    cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k);
-	    treel := ofsf_fulltreeovercell(cell, ff, varl, qal, psi, probe) . treel;
-	    for i := 1 : (2*n+1)-1 do
-	       treel := atree_new basecell . treel;
-	 >> else
-	    while cell := ofsf_nextcell(ncbuffer,sp,nrdata,xj,j,k) do
-	       treel := ofsf_fulltreeovercell(cell, ff, varl, qal, psi, probe) . treel;
-      % construct result tree
-      return atree_addtochildlip(atree_new basecell, treel);
+	 ioto_prin2 {":1"};  % ioto_prin2 {":", 2*n+1};
+      ncbuffer := ncb_init();
+      % (2) Recursion Case: 1 <= j <= r
+      assert(1 <= j and j <= r);
+      while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do
+	 push(ofsf_fulltreeovercell(cell, hh, varl, probe), treel);
+      return atree_addtochildlip(atree_mk basecell, treel)
    end;
 
 asserted procedure ofsf_tocprepare(hhj: Atom, xj: Kernel, sp: AnuList, varl: List): List;
@@ -1095,12 +1038,6 @@ asserted procedure ofsf_cadswitchprint(b: Boolean): Any;
 
 % root isolation
 
-% TODO: (?) Define a data structure for nrdata (next root data).
-
-% This is kept only because of the ofsf_fulltreeovercell procedure.
-asserted procedure ofsf_ncinit(): List;
-   {nil};
-
 % New Cell Buffer
 
 asserted procedure ncb_init(): List;
@@ -1195,7 +1132,7 @@ asserted procedure ofsf_subsp!*(ae: Aex, sp: AnuList): Aex;
 % <rootcell> is an Acell
 % <childl> is a list of Atrees
 
-asserted procedure atree_new(c: Acell): Atree;
+asserted procedure atree_mk(c: Acell): Atree;
    % New tree. The new tree is rooted at Acell [c].
    {'atree, c, nil};
 
