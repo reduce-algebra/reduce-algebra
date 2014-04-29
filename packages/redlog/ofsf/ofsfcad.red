@@ -37,11 +37,10 @@ lisp <<
 
 module ofsfcad;
 
-switch rlqegen1,rlcadans,rlcadtv,rlcadtree2dot,rlcadrmwc;
+switch rlqegen1,rlcadans,rlcadtree2dot,rlcadrmwc;
 
 off1 'rlqegen1;
 off1 'rlcadans;
-on1 'rlcadtv;
 off1 'rlcadtree2dot;
 on1 'rlcadrmwc;
 
@@ -266,7 +265,7 @@ asserted procedure ofsf_cadfinish(cd: CadData): DottedPair;
    % Returns a pair [(theo . phip)], where [phip] is [caddata_phiprime cd] if a
    % quantifier-free formula equivalent to [phi] was computed. If such a formula
    % was not computed, the input formula [phi] is returned.
-   begin scalar w, oldorder, theo, phiprime;
+   begin scalar w, theo, phiprime;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ Finish Phase"};
       if !*rlqegen1 then <<
@@ -333,12 +332,11 @@ asserted procedure ofsf_reorder(f: Formula): Formula;
 % <TL> ::= "tag list"
 
 % IDX is an integer, the index of the cell. Cells representing points have odd
-% indices, cells representing intervals even indices.
+% indices, cells representing intervals have even indices.
 
 asserted procedure acell_mk(idx: Integer, sp: AnuList, tv: Id, desc: QfFormula, tl: List): Acell;
-   % Acell make. [idx] is an IDX, [sp] is a SP, [tv] is ['true] or ['false],
-   % [desc] is a DESC and [tl] is a tag list.
-   % {'acell, identifier, sample point, truth value, description, tag list}
+   % Acell make. [tv] is ['true], ['false], or [nil]; [tl] is a tag list.
+   % {'acell, index, sample point, truth value, description, tag list}
    {'acell, idx, sp, tv, desc, tl};
 
 asserted procedure acell_getidx(c: Acell): Any;
@@ -416,7 +414,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
    % [basecell]. Intuition: Recursively find for a cell C in R^j a partial CAD
    % tree that has C as its root. If j > k, then C has a truth value.
    begin
-      scalar sp, varl, xj, hhhj, cell, tree, treel, qj, neutral, nrdata, ncbuffer, res, tv, tvl;
+      scalar sp, varl, xj, hhj, cell, tree, treel, qj, neutral, nrdata, ncbuffer, res, tv;
       integer j, r, k;
       sp := acell_getsp basecell;
       j := length sp + 1;
@@ -426,14 +424,13 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       varl := caddata_varl cd;
       % (1) Non-recursion Case: j - 1 = r. [basecell] is a leaf.
       if eqn(j - 1, r) then <<
-	 if !*rlcadtv then
-	    acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
+	 acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
       	 return atree_mk basecell
       >>;
       % trial evaluation
-      if !*rlcadtv and !*rlcadte then <<
+      if !*rlcadte then <<
 	 psi := ofsf_trialeval(psi, sp);
       	 if psi memq '(true false) then <<
 	    acell_puttv(basecell, psi);
@@ -442,15 +439,15 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	    return atree_mk basecell
       	 >>
       >>;
+      % (2) Recursion Case: 1 <= j <= r
+      % (2a) 1 <= j <= k
+      assert(1 <= j and j <= r);
       k := caddata_k cd;
       xj := nth(varl, j);
-      hhhj := ofsf_tocprepare(caddata_hhj(cd, j), xj, sp, varl);
-      nrdata := tiri_init(hhhj, xj);
+      hhj := ofsf_tocprepare(caddata_hhj(cd, j), xj, sp, varl);
+      nrdata := tiri_init(hhj, xj);
       ncbuffer := ncb_init();
-      % (2) Recursion Case: 1 <= j <= r
-      % (2a) 1 <= j <= k or no truth values
-      assert(1 <= j and j <= r);
-      if (1 <= j and j <= k) or (not !*rlcadtv) then
+      if (1 <= j and j <= k) then
 	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do <<
 	    if ofsf_iswhitecell(cell, cd) then <<
 	       if ofsf_cadverbosep() then
@@ -479,7 +476,7 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
 	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do <<
 	    push(atree_mk cell, treel);
       	    if ofsf_cadverbosep() then
-	       ioto_prin2 {"(", j, ":I)"};
+	       ioto_prin2 {"(", j, ":I)"}
 	 >>;
       treel := sort(treel, function atree_sortfn);
       if !*rlcadans then
@@ -487,24 +484,14 @@ asserted procedure ofsf_treeovercell(basecell: Acell, psi: QfFormula, cd: CadDat
       % Most likely the following will never happen.
       if null treel then
 	 rederr "GCAD: stack full of white cells occured.";
-      % construct result tree
-      if !*rlcadtrimtree and j > k then
-	 res := atree_mk basecell
-      else
-	 res := atree_addtochildlip(atree_mk basecell, treel);
+      % Construct the resulting tree.
+      res := atree_mk basecell;
+      if not (!*rlcadtrimtree and j > k) then
+	 atree_addtochildlip(res, treel);
       % propagation below free variable space
-      if not (!*rlcadtv and !*rlcadpbfvs) then <<
-      	 if ofsf_cadverbosep() then
-	    ioto_prin2 ")";
-      	 return res
-      >>;
-      tvl := list2set for each b in treel collect
-	 acell_gettv atree_rootcell b;
-      if eqn(length tvl, 1) then
-	 acell_puttv(atree_rootcell res, car tvl);
       if ofsf_cadverbosep() then
 	 ioto_prin2 ")";
-      return res
+      return ofsf_pbfvs(res, treel)
    end;
 
 asserted procedure ofsf_iswhitecell(cell: Acell, cd: CadData): Boolean;
@@ -525,6 +512,24 @@ asserted procedure ofsf_trialeval(psi: QfFormula, sp: AnuList): QfFormula;
       function(lambda(atf, sp); ofsf_0mk2(ofsf_op atf,
 	 ofsf_trialevalsgnf(ofsf_arg2l atf, sp))), {sp}),
       nil, -1);
+
+asserted procedure ofsf_pbfvs(btr: Atree, treel: List): Atree;
+   % Propagate below free variable space.
+   begin scalar tv, c, w;
+      if not !*rlcadpbfvs then
+      	 return btr;
+      assert(not null treel);
+      w := pop treel;
+      tv := acell_gettv atree_rootcell w;
+      c := t; while c and treel do <<
+      	 w := pop treel;
+	 if tv neq acell_gettv atree_rootcell w then
+	    c := nil
+      >>;
+      if c then
+	 acell_puttv(atree_rootcell btr, tv);
+      return btr
+   end;
 
 asserted procedure ofsf_addanswers(basecell: Acell, treel: List, j: Integer, cd: CadData): Any;
    % Add root info and answers to cells. [treel] is a non-empty list of Atrees.
@@ -715,7 +720,7 @@ asserted procedure ofsf_fulltreeovercell(basecell: Acell, hh: Atom, varl: List):
    % (x_1, ..., x_r). Returns an Atree over the basecell. Intuition: Recursively
    % find for a cell C in R^j a full CAD tree that has C as its root. Each cell
    % has a sample point, but no truth value.
-   begin scalar sp, xj, hhhj, cell, treel, nrdata, ncbuffer;
+   begin scalar sp, xj, hhj, cell, treel, nrdata, ncbuffer, res;
       integer r, k, j;
       sp := acell_getsp basecell;
       j := length sp + 1;
@@ -730,8 +735,8 @@ asserted procedure ofsf_fulltreeovercell(basecell: Acell, hh: Atom, varl: List):
       	 return atree_mk basecell
       >>;
       xj := nth(varl, j);
-      hhhj := ofsf_tocprepare(list2vector getv(hh, j), xj, sp, varl);
-      nrdata := tiri_init(hhhj, xj);
+      hhj := ofsf_tocprepare(list2vector getv(hh, j), xj, sp, varl);
+      nrdata := tiri_init(hhj, xj);
       ncbuffer := ncb_init();
       % (2) Recursion Case: 1 <= j <= r
       assert(1 <= j and j <= r);
@@ -739,7 +744,9 @@ asserted procedure ofsf_fulltreeovercell(basecell: Acell, hh: Atom, varl: List):
 	 push(ofsf_fulltreeovercell(cell, hh, varl), treel);
       if ofsf_cadverbosep() then
 	 ioto_prin2 ")";
-      return atree_addtochildlip(atree_mk basecell, treel)
+      res := atree_mk basecell;
+      atree_addtochildlip(res, treel);
+      return res
    end;
 
 asserted procedure ofsf_tocprepare(hhj: Atom, xj: Kernel, sp: AnuList, varl: List): List;
@@ -1038,7 +1045,7 @@ asserted procedure ofsf_cadswitchprint(b: Boolean): Any;
 
 asserted procedure ncb_init(): List;
    % New cell buffer init. NcBuffer holds exactly one element. The lement is
-   % either [nil] or an Acell.
+   % either [nil], ['finished], or an Acell.
    {nil};
 
 asserted procedure ncb_get(ncb: List): ExtraBoolean;
@@ -1146,11 +1153,8 @@ asserted procedure atree_childrenatlevel(tt: Atree, n: Integer): List;
       for each child in atree_childl tt join
       	 atree_childrenatlevel(child, n-1);
 
-asserted procedure atree_addtochildlip(tt: Atree, cl: List): Atree;
-   <<
-      nth(tt, 3) := nconc(cl, nth(tt, 3));
-      tt
-   >>;
+asserted procedure atree_addtochildlip(tt: Atree, cl: List): Any;
+   nth(tt, 3) := nconc(cl, nth(tt, 3));
 
 asserted procedure atree_sortfn(t1: Atree, t2: Atree): Any;
    % Sort function. [t1], [t2] are trees of Acells.
