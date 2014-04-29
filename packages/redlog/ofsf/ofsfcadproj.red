@@ -41,6 +41,9 @@ fluid '(ofsf_cadbvl!* !*rlpos);
 switch rlcadmc3;
 on1 'rlcadmc3;
 
+switch rlpscsgen;
+on1 'rlpscsgen;
+
 module ofsfcadproj;
 % CAD projection. [ffr] is a list of sf's over identifiers contained
 % in [varl], [varl] is a list of identifiers (xr,...,x1), [k] is an
@@ -366,11 +369,11 @@ procedure ofsf_cadprojection1(cd);
       >>;
       caddata_putff(cd,ff); caddata_putjj(cd,jj);
       caddata_puthh(cd,hh); caddata_putffid(cd,ffid);
-      if !*rlverbose then
+      if !*rlverbose then <<
+	 ioto_tprin2t {"+ Number of all projection factors: ", length pp};
 	 if !*rlqegen then
-	    ioto_tprin2 {"+ #P=",length pp,", #Theta=",length theo}
-	 else
-	    ioto_tprin2 {"+ #P=",length pp};
+	    ioto_prin2t {"+ Number of theory elements: ", length theo}
+      >>;
       return ; % caddata changed, nothing to return
    end;
 

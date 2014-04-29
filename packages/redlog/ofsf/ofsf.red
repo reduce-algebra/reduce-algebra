@@ -99,7 +99,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlvsllearn !*rlqestdans ofsf_anuc!* !*rlqestdansq !*rlqestdansint);
 
 fluid '(!*pgnoarbcomplex !*pgspsimpl !*pgspqe);
-fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD
+fluid '(!*rlqegen1 !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
 
 flag('(ofsf),'rl_package);
