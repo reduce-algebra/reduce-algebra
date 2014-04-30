@@ -1,9 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXC:386-CMAC.SL
-% Description:  Patterns and predicates for 386 PSL cmacro expansion
+% File:         PXC:ARMv6-CMAC.SL
+% Description:  Patterns and predicates for ARM V6 PSL cmacro expansion
 % Author:       Winfried Neun
-% Created:      16 August 1989 
+% Created:      R26. April 2014 
 % Modified:
 % Mode:         Lisp
 % Package:
@@ -154,11 +154,9 @@
 (de RegP (RegName) 
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
-	  '( 1  2  3  4  5 st t1 t2 eax ecx edx ebx esp ebp esi edi
-				     al  cl ax cx 
-									 es cs ss ds fs gs))))
+	  '( 1  2  3  4  5 st t1 t2 ))))
  
-(DefList '((EAX   1) (EBX   2) (ECX   3) (EDX   4) (EBP   5) )
+(DefList '((st  13) (fp   11) (pc  15) )
 	 'RegisterNumber)
  
 (de RegisterNumber (RegSymbol)
@@ -384,11 +382,11 @@
 
 (DefCMacro *Move                          %  (*Move Source Destination)
    ( Equal              )                  % if source=dest then do nothing
-   ((fixzerop   regp) (xor ArgTwo ArgTwo))
-   ((onep       regp) (xor ArgTwo ArgTwo)
-		      (inc ArgTwo))
-   ((minus1p    regp) (xor ArgTwo ArgTwo)
-		      (dec ArgTwo))
+   ((fixzerop   regp) (eor ArgTwo ArgTwo))
+   ((onep       regp) (eor ArgTwo ArgTwo)
+		      (add ArgTwo (quote 1)))
+   ((minus1p    regp) (eor ArgTwo ArgTwo)
+		      (sub ArgTwo (quote 1)))
    ((AnyP       regP) (mov ARGONE ARGTWO))
    ((regp       anyp) (mov argone argtwo))
    ((quotep     anyp) (mov argone argtwo))
@@ -485,7 +483,7 @@
  (Expand1OperandCMacro ARG1 '*WComplement))
  
 (DefCMacro *WComplement
-	   (                  (not ARGONE))
+	   (                  (mvn ARGONE))
  )
 
 (de *Wcmp(arg1 arg2)
@@ -501,11 +499,10 @@
 	   ((AnyP  InumP)     (*MOVE (LNOT ARGTWO) ARGONE))
 	   ( Equal            (*WComplement ARGONE))
 	   ((regP AnyP)       (*MOVE ARGTWO ARGONE)
-			      (not ARGONE))
+			      (mvn ARGONE argtwo))
 	   (                  (*WNot ARGTWO (Reg T1))
 			      (*MOVE (reg t1) ARGONE))
  )
- 
 (DefCMacro *WAnd
 	   ( equal                )
 	   ((AnyP  Minus1P)       )
@@ -521,21 +518,21 @@
 	   ( equal                )
 	   ((AnyP  ZeroP)         )
 	   ((AnyP  Minus1P)     (*MOVE -1 ARGONE))
-	   ((RegP AnyP)         (or ARGTWO ARGONE))
-	   ((AnyP  RegP)        (or ARGTWO ARGONE))
-	   ((AnyP  InumP)       (or ARGTWO ARGONE))
+	   ((RegP AnyP)         (orr ARGTWO ARGONE))
+	   ((AnyP  RegP)        (orr ARGTWO ARGONE))
+	   ((AnyP  InumP)       (orr ARGTWO ARGONE))
 	   (                    (*MOVE  ARGTWO (Reg t2))
-				(or (Reg t2) ARGONE))
+				(orr (Reg t2) ARGONE))
 )
  
 (DefCMacro *WXOr                                                %  scs
 	   ((AnyP  ZeroP)         )
 	   ( equal              (*MOVE  0 ARGONE))
 	   ((AnyP  Minus1P)     (*WNOT    ARGONE))
-	   ((AnyP  InumP)       (xor ARGTWO ARGONE))
-	   ((AnyP  RegP)        (xor ARGTWO ARGONE))
+	   ((AnyP  InumP)       (eor ARGTWO ARGONE))
+	   ((AnyP  RegP)        (eor ARGTWO ARGONE))
 	   (                    (*MOVE  ARGTWO (Reg t1))
-				(xor (Reg t1) ARGONE))
+				(eor (Reg t1) ARGONE))
 )
  
  
@@ -546,35 +543,18 @@
 %  ARGONE <- ARGONE shifted by ARGTWO
 %------------------------------------------
  
-(de reg3p (x) (equal x '(reg 3)))
-
 (DefCMacro *AShift                                            %    scs
 	   ((AnyP  ZeroP)           )
 	   ((AnyP  PosInumP)  (*WShift ARGONE ARGTWO))
-	   ((RegP NegInumP)   (sar (minus ARGTWO) ARGONE))
-	   ((Reg3p Reg3p)     (*cerror "So Geht das nicht"))
-	   ((Reg3P regP)      (xchg ArgOne ArgTwo)
-			      (*Ashift ArgTwo ArgOne)
-			      (xchg ArgOne ArgTwo))
-	   ((RegP reg3P)      (cmp 0 ARGTWO)
-			      (jge TEMPLABEL)
-			      (neg ARGTWO)
-			      (sar (reg cl) ARGONE)
-			      (jmp TEMPLABEL2)
-			 (*LBL (label TEMPLABEL))
-			      (shl (Reg cl) ARGONE)
-			 (*LBL (label TEMPLABEL2)))
+	   ((RegP NegInumP)   (mov argone argone (asr (minus ARGTWO)))
 	   ((RegP regP)       (cmp 0 ARGTWO)
-			      (jge TEMPLABEL)
-			      (neg ARGTWO)
-			      (xchg argtwo (reg ecx))
-			      (sar (reg cl) ARGONE)
+			      (bge TEMPLABEL)
+			      (rsb argtwo ARGTWO 0 )
+			      (sar ARGONE argone (asr argtwo))
 			      (jmp TEMPLABEL2)
 			 (*LBL (label TEMPLABEL))
-			      (xchg argtwo (reg ecx))
-			      (shl (Reg cl) ARGONE)
+			      (mov ARGONE argone (asl argtwo))
 			 (*LBL (label TEMPLABEL2))
-			      (xchg argtwo (reg ecx)))
 	   ((RegP AnyP)        (*MOVE ARGTWO (Reg T1))
 			       (*ashift argone (reg t1)))
 	   (                    (*MOVE ARGONE (Reg t2))
@@ -582,30 +562,16 @@
 				(*MOVE (Reg t2) ARGONE))
 )
  
- 
 (DefCMacro *WShift                     %Logical shift. +index=left.
 	   ((AnyP  ZeroP)           )
 	   ((RegP  OneP)      (*WPLUS2 ARGONE ARGONE))
-	   ((RegP PosInumP)   (shl ARGTWO ARGONE))
-	   ((RegP NegInumP)   (shr (minus ARGTWO) ARGONE))
-	   ((Reg3p Reg3p)     (*cerror "So Geht das nicht"))
-	   ((Reg3P regP)      (xchg ArgOne ArgTwo)
-			      (*Wshift ArgTwo ArgOne)
-			      (xchg ArgOne ArgTwo))
-	   ((RegP reg3P)      (cmp 0 ARGTWO)
-			      (jge TEMPLABEL)
-			      (neg ARGTWO)
-			      (shr (reg cl) ARGONE)
-			      (jmp TEMPLABEL2)
-			 (*LBL (label TEMPLABEL))
-			      (shl (Reg cl) ARGONE)
-			 (*LBL (label TEMPLABEL2)))
+	   ((RegP PosInumP)   (mov ARGONE argone (lsl argtwo))
+	   ((RegP NegInumP)   (mov argone argone (lsr (minus ARGTWO) ))
 	   ((RegP regP)       (cmp 0 ARGTWO)
-			      (jge TEMPLABEL)
-			      (neg ARGTWO)
-			      (xchg argtwo (reg ecx))
-			      (shr (reg cl) ARGONE)
-			      (jmp TEMPLABEL2)
+			      (bge TEMPLABEL)
+			      (rsb argtwo ARGTWO 0)
+			      (mov ARGONE argone (lsl argtwo))
+			      (b TEMPLABEL2)
 			 (*LBL (label TEMPLABEL))
 			      (xchg argtwo (reg ecx))
 			      (shl (Reg cl) ARGONE)
@@ -619,48 +585,6 @@
 )
  
  
-(de *WLshift (ARG1 arg2)
- (Expand2OperandCMacro ARG1 ARG2 '*WLshift))
- 
-(DefCMacro *WLShift                     %Logical shift to the left.
-	   ((AnyP  ZeroP)           )
-	   ((RegP  OneP)      (*WPLUS2 ARGONE ARGONE))
-	   ((RegP InumP)      (shl ARGTWO ARGONE))
-	   ((Reg3p Reg3p)     (*cerror "So Geht das nicht"))
-	   ((Reg3P regP)      (xchg ArgOne ArgTwo)
-			      (*Wlshift ArgTwo ArgOne)
-			      (xchg ArgOne ArgTwo))
-	   ((RegP reg3P)      (shl (Reg cl) ARGONE))
-	   ((RegP regP)       (xchg argtwo (reg ecx))
-			      (shl (Reg cl) ARGONE)
-			      (xchg argtwo (reg ecx)))
-	   ((RegP AnyP)       (*MOVE ARGTWO (Reg T1))
-			      (*wlshift argone (reg t1)))
-	   (                  (*MOVE ARGONE (Reg t2))
-			      (*WlSHIFT (Reg t2) ARGTWO)
-			      (*MOVE (Reg t2) ARGONE))
-)
- 
-(de *WRshift (ARG1 arg2)
- (Expand2OperandCMacro ARG1 ARG2 '*WRshift))
- 
-(DefCMacro *WRShift                     %Logical shift to the right
-	   ((AnyP  ZeroP)           )
-	   ((RegP InumP)      (shr ARGTWO ARGONE))
-	   ((Reg3p Reg3p)     (*cerror "So Geht das nicht"))
-	   ((Reg3P regP)      (xchg ArgOne ArgTwo)
-			      (*WRshift ArgTwo ArgOne)
-			      (xchg ArgOne ArgTwo))
-	   ((RegP reg3P)      (shr (reg cl) ARGONE))
-	   ((RegP regP)       (xchg argtwo (reg ecx))
-			      (shr (reg cl) ARGONE)
-			      (xchg argtwo (reg ecx)))
-	   ((RegP AnyP)       (*MOVE ARGTWO (Reg T1))
-			      (*wrshift argone (reg t1)))
-	   (                  (*MOVE ARGONE (Reg t2))
-			      (*WRSHIFT (Reg t2) ARGTWO)
-			      (*MOVE (Reg t2) ARGONE))
-)
 
 % *JumpIfTag is an optimized form of *jumpif.It knows that we are doing word
 % compares only.
@@ -693,15 +617,16 @@
  
  
 (De *JumpEQTag (Lbl Arg1 Arg2)
-       (*JumpIfTag Arg1 Arg2 Lbl '(je  . je )))
+	
+       (*JumpIfTag Arg1 Arg2 Lbl '(beq  . beq )))
 (DefCmacro *JumpEqTag)
  
 (De *JumpNotEQTag (Lbl Arg1 Arg2)
-       (*JumpIfTag Arg1 Arg2 Lbl '(jne . jne)))
+       (*JumpIfTag Arg1 Arg2 Lbl '(bne . bne)))
 (DefCmacro *JumpNotEQTag)
  
 (De *JumpWGEQTag (Lbl Arg1 Arg2)
-       (*JumpIfTag Arg1 Arg2 Lbl '(jge . jle)))
+       (*JumpIfTag Arg1 Arg2 Lbl '(bge . ble)))
 (DefCmacro *JumpWGEQTag)
  
 (De *JumpWGreaterPTag (Lbl Arg1 Arg2)
@@ -817,7 +742,7 @@
 (DefCMacro *PutField
   ((InumP regP ZeroP AnyP)
 		     ( and  (LNOT (BITMASK  ARGTHREE ARGFOUR)) ARGTWO)
-		     ( or   (LAND (BITMASK  ARGTHREE ARGFOUR)
+		     ( ror   (LAND (BITMASK  ARGTHREE ARGFOUR)
 			     (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))
 		   ARGTWO))
   ((InumP regP AnyP  AnyP)
@@ -828,7 +753,7 @@
   ((regP regP ZeroP AnyP)
 		     (*WSHIFT ARGONE       (SHIFTAMT ARGTHREE ARGFOUR))
 		     ( and  (LNOT (BITMASK  ARGTHREE ARGFOUR)) ARGTWO)
-		     ( or   ARGONE ARGTWO))
+		     ( ror   ARGONE ARGTWO))
   ((regP regP AnyP AnyP)
 		     (*WSHIFT ARGONE       (SHIFTAMT ARGTHREE ARGFOUR))
 		     ( and  (BITMASK  ARGTHREE ARGFOUR) ARGONE)
@@ -880,7 +805,9 @@
       (T `(  % (*move (reg 1) (displacement (reg st) ,(minus (plus framesize 28)) ))
 	     % (cmp 500(reg st))
 	     % (jle (indirect(entry stackoverflow)))
-	     (sub ,framesize (reg st)))))))
+	     (stmfd (list r4 fp lr))
+             (add (reg fp) (reg st) ,(plus2 framesize -4))
+	     (sub (reg st)(reg st) ,framesize))))))
 
   % a special pass in compiler will do the job
 
@@ -908,32 +835,32 @@
    ))
 
 (DefCMacro *Call
-   ((InternallyCallableP) (call (InternalEntry ARGONE)))
-   ((FastCallableP)       (call (indirect (entry ARGONE))))
+   ((InternallyCallableP) (bl (InternalEntry ARGONE)))
+   ((FastCallableP)       (blx (indirect (entry ARGONE))))
 	   (              (*move (idloc argone) (reg t1))
-			  (call (indirect (entry ARGONE)))))
+			  (blx(indirect (entry ARGONE)))))
  
 (DefCMacro *DeAlloc
-   ((ZeroP))
-   (                    (add ARGONE (REG st))))
- 
+   ((ZeroP)             (ldmfd (list r4 fp lr))) 
+   (                    (ldmfd (list r4 fp lr)) 
+			(sub (reg st) (reg fp) ARGONE )))
 (DefCMacro *Exit
    ((ZeroP)             (ret))
-   (                    (add ARGONE (REG st))
-			(ret)))
+   (                    (add (reg st) (reg st) ARGONE ))
+			(ret))
  
 (DefCMacro *JCall
-   ((InternallyCallableP) (jmp (InternalEntry ARGONE)))
-   ((FastCallableP)       (JMP (indirect (entry ARGONE))))
+   ((InternallyCallableP) (b (InternalEntry ARGONE)))
+   ((FastCallableP)       (bx (indirect (entry ARGONE))))
 	   (              (*move (idloc argone) (reg t1))
-			  (JMP (indirect (entry ARGONE)))))
+			  (bx (indirect (entry ARGONE)))))
  
  
 (DefCMacro *Jump
-   ((Atom)        (jmp ARGONE))% internal labels before compile
-   ((TaggedLabel) (jmp ARGONE))% compiler generated labels
-   ((ImmediateP)  (jmp  (unimmediate ARGONE)))
-   (              (jmp ARGONE)))
+   ((Atom)        (b ARGONE))% internal labels before compile
+   ((TaggedLabel) (b ARGONE))% compiler generated labels
+   ((ImmediateP)  (b  (unimmediate ARGONE)))
+   (              (b ARGONE)))
  
  
 (DefCMacro *Lbl

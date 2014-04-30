@@ -61,6 +61,8 @@
   % We need to create the linked list for the unused symbols in SYMNAM,
   % and set up the hash table.  
 
+  (for (from i 0 nextsymbol) % remove an extra bit from link process
+       (do (setf (symnam i) (wand (symnam i) 16#47ffffff))))
   (for (from i nextsymbol maxsymbols)
        (do (setf (symnam i) (+ i 1))))
   (setf (symnam maxsymbols) 0)
