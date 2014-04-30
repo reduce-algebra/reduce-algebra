@@ -755,7 +755,6 @@ void fwin_putchar(int c)
  * ordinary C stream functions for normal output. Provided I do an
  * fflush(stdout) before requesting input I should be OK.
  */
-    FWIN_LOG(("Writing char [%.2x] \'%c\'\n", c, c));
 #ifdef __CYGWIN__
     FWIN_LOG(("cygwin case\n"));
 /*
