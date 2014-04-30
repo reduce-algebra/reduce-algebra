@@ -1554,9 +1554,15 @@ static void adjust_vec_heap(void)
  * as ODDS) if it was not marked.
  */
             while (is_odds(h = *(Header *)low))
-            {
-                if (is_symbol_header(h)) low += symhdr_length;
-                else low += doubleword_align_up(length_of_header(h));
+            {   intptr_t len;
+                if (is_symbol_header(h)) len = symhdr_length;
+                else len = doubleword_align_up(length_of_header(h));
+                if (len == 0)
+                {   term_printf("+++++ zero-length header %x\n", (int)h);
+                    ensure_screen();
+                    abort();
+                }
+                low += len;
             }
 /*
  * It could be that all (remaining) the vectors in this page are unmarked...

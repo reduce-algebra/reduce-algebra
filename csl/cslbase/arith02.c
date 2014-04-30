@@ -1385,9 +1385,9 @@ static Lisp_Object timesbb(Lisp_Object a, Lisp_Object b)
            (!SIXTY_FOUR_BIT && ((newlenc & 1) == 0)))
         {   bignum_digits(c)[newlenc] = 0;
             if (lenc != newlenc)    /* i.e. I padded out somewhat */
-            {
-                *(Header *)&bignum_digits(c)[newlenc+1] =
-                    make_bighdr(lenc-newlenc-1);
+            {   if (lenc != newlenc+1))
+                    *(Header *)&bignum_digits(c)[newlenc+1] =
+                        make_bighdr(lenc-newlenc-1);
                 lenc = newlenc;
                 numhdr(c) = make_bighdr(lenc+CELL/4);
             }

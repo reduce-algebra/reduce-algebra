@@ -814,7 +814,7 @@ static Lisp_Object plusbb(Lisp_Object a, Lisp_Object b)
  * I forge a header word to allow the garbage collector to skip over
  * (and in due course reclaim) the space that turned out not to be needed.
  */
-            bignum_digits(c)[j] = make_bighdr(i - j);
+            if (i != j) bignum_digits(c)[j] = make_bighdr(i - j);
             return c;
         }
 /*
@@ -850,7 +850,7 @@ static Lisp_Object plusbb(Lisp_Object a, Lisp_Object b)
             {   i = (i+1) | 1;
                 j = (j+1) | 1;     /* Round up to odd index */
             }
-            bignum_digits(c)[j] = make_bighdr(i - j);
+            if (i != j) bignum_digits(c)[j] = make_bighdr(i - j);
             return c;
         }
         return c;
