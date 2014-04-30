@@ -19,7 +19,7 @@ fp_except fp_mask,fp_stick;
 int      fp_first=0;
 #endif
 
-
+void 
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
@@ -40,7 +40,7 @@ int sig;
  
 }
  
-sun3_sigrelse(sig, action)
+void sun3_sigrelse(sig, action)
 void (*action)();
 int sig;
 {
@@ -58,18 +58,20 @@ int sig;
  
 
  
-setlinebuf()
+void setlinebuf()
 {
 }
  
-ieee_handler()
+void ieee_handler()
 {
 }
+
+void
 ualarm()
 
 {
 }
 
-ieee_flags()
+void ieee_flags()
 {
 }

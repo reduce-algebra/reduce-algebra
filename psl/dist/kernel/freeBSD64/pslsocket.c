@@ -1,4 +1,5 @@
 #include <stdio.h> 
+#include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h> 
 #include <strings.h>
@@ -6,9 +7,10 @@
 #include <netinet/in.h> 
 
  
-/* #define PORT_NUMBER 1188    /* Port number to listen on. 
+/* #define PORT_NUMBER 1188 */ /* Port number to listen on. 
                                Must be the same as in client!!!! */ 
 
+int
 unixsocketopen(name , number)
 
 char * name;
@@ -16,12 +18,12 @@ int number;
 
 {  struct hostent *host_info;
    struct sockaddr_in mail_addr;   /* Address structure */ 
-   int mail_len = sizeof(struct sockaddr_in); 
+   unsigned int mail_len = sizeof(struct sockaddr_in); 
    int port_fd, conn_fd; 
    int mail_fd, temp;
    int continue1;
    char message[80]; 
-   char *gethostname(), *getlogin();
+   char *getlogin();
  
   if (name == (char *) 0)
   {
@@ -74,6 +76,7 @@ int number;
   }
 }
 
+int
 getsocket (mail_fd , string , length)
 
 int mail_fd,length;
@@ -86,6 +89,7 @@ char * string;
   else { string[len] = (char) 0x00;
          return(len);}}}
 
+void
 writesocket (mail_fd , string , length) 
 
 int mail_fd,length; 
@@ -93,6 +97,7 @@ char * string;
  
 { send (mail_fd, string, length, 0); }
 
+void
 unixclosesocket (conn_fd)
 int conn_fd;
 

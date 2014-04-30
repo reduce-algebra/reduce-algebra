@@ -61,6 +61,7 @@ long unexec();
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <limits.h>    /* for PAGESIZE */
        #ifndef PAGESIZE
@@ -112,7 +113,8 @@ extern long long  oldheaplast;
 extern long long  oldheaptrapbound;
 
 /* Write this ourselves to keep from including half the math library */
-static power(x, n)
+/*
+static int power(x, n)
      int x, n;
 {
   int i, p;
@@ -122,11 +124,17 @@ static power(x, n)
     p = p * x;
   return(p);
 }
+*/
 
 int creloc (long long array, long len, long long diff, long long lowb);
 
+void setupbps();
+void getheap(long long);
+void read_error();
+
 long sizeofsymvectors = 0;
 
+int
 setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
@@ -195,13 +203,14 @@ setupbpsandheap(argc,argv)
 
   /* On systems in which the image does not start at address 0, this won't
      really allocate the full maximum, but close enough. */
-  current_size_in_bytes = (((int) sbrk(0))<<5)>>5;
+/*  current_size_in_bytes = (((int) sbrk(0))<<5)>>5;*/
+  current_size_in_bytes = 30000000;
   max_image_size = 0x1000000000000; /* 1 more than allowable size */
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     heapsize_in_bytes = max_image_size - current_size_in_bytes;
     total = heapsize_in_bytes + bpssize;
-printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
+printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total);
     printf("Size requested will result in pointer values larger than\n");
     printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
   }
@@ -228,10 +237,10 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
   getheap(heapsize);
 
   if (imagefile == NULL)
-  printf("bpssize = %d (%X), heapsize = %ld (%lX)\nTotal image size = %ld (%lX)\n",
+  printf("bpssize = %llu (%llX), heapsize = %llu (%llX)\nTotal image size = %llu (%llX)\n",
           bpssize, bpssize,
           heapsize, heapsize,
-          (int) sbrk(0), (int) sbrk(0));
+          (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
 
    if (imagefile != NULL) {
 	ohl = oldheaplowerbound; ohub = oldheapupperbound;
@@ -247,7 +256,7 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
       if ((int) bpscontrol[0] != headerword[0] 
                 || bpscontrol[1] != headerword[1])
 		{ printf(" Cannot start the image with this bpsl \n");
-                  printf(" %x != %x, %x != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+                  printf(" %lx != %llx, %lx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
 		  exit (-19);}
        fread (headerword,8,4,imago);
        hugo = fread (&symval,1,headerword[0],imago);
@@ -284,6 +293,7 @@ return (0);
 
 }
 
+void
 read_error()
   {
     printf("file too short\n");
@@ -298,6 +308,7 @@ read_error()
 
 #include <sys/mman.h>
 
+void
 setupbps()
 { char *p = (char *) bps;
   int bpssize;
@@ -319,12 +330,13 @@ setupbps()
    nextbps is now greater than heaplast means that unexec should be not be
    tried after this routine is called. The image would be huge.
  */
+long long
 allocatemorebps()
 {
-  int current_size_in_bytes;
+  long long current_size_in_bytes;
   int old_nextbps = nextbps;
 
-  current_size_in_bytes = sbrk(0);
+  current_size_in_bytes = (long long) sbrk(0);
 
   if ((current_size_in_bytes + EXTRABPSSIZE) >= max_image_size)
     return(0);
@@ -343,6 +355,7 @@ allocatemorebps()
 }
 
 
+void
 getheap(heapsize)
      long long heapsize;
 {
@@ -373,6 +386,7 @@ getheap(heapsize)
 
 /* Tag( alterheapsize )
  */
+int
 alterheapsize(increment)
 int increment;
 {
@@ -438,7 +452,7 @@ int increment;
   void * realo;
 
   if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
-      {  printf(" unable to allocate %x %x\n",sbrk(0),oldbreakvalue);
+      {  printf(" unable to allocate %llx %llx\n",(long long)sbrk(0),oldbreakvalue);
         return(0); }
 
   current_size_in_bytes = ( (long long) sbrk(0) <<5) >>5;
@@ -446,23 +460,23 @@ int increment;
   if ((current_size_in_bytes + 2* increment) >= max_image_size)
     return(-1);
 
-  realo = realloc(heaplowerbound,
+  realo = realloc((void *)heaplowerbound,
                oldheapupperbound - heaplowerbound + 2*increment);
   if (realo == (void *) NULL) return (-2);
-  diff =  realo - heaplowerbound;
-  if (realo < heaplowerbound)
-             {creloc((long long) &symval,sizeofsymvectors,diff,realo -1);}
+  diff =  realo - (void *)heaplowerbound;
+  if (realo < (void *)heaplowerbound)
+             {creloc((long long) &symval,sizeofsymvectors,diff,(long long)realo -1);}
         else {creloc((long long) &symval,sizeofsymvectors,diff, heaplowerbound -1);}
-   if (realo < heaplowerbound)
-             {creloc(realo,(heapupperbound - heaplowerbound)/8,diff,realo -1);}
-        else {creloc(realo,(heapupperbound - heaplowerbound)/8,diff, 
+   if (realo < (void *)heaplowerbound)
+             {creloc((long long)realo,(heapupperbound - heaplowerbound)/8,diff,(long long)realo -1);}
+        else {creloc((long long)realo,(heapupperbound - heaplowerbound)/8,diff, 
               heaplowerbound -1);}
 
 
 
   newbreakvalue = (long long) sbrk(0);
 
-  heaplowerbound        = realo;
+  heaplowerbound        = (unsigned long long) realo;
   heaplast              = heaplast + diff ;
   heapupperbound        = heapupperbound  + diff + increment ;
   heaptrapbound         = heapupperbound - 120;

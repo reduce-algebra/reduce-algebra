@@ -40,6 +40,7 @@
 */
  
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -47,13 +48,13 @@
 #include <sys/times.h>
 #include <sys/resource.h>
  
-int external_alarm(sec)
+void external_alarm(sec)
 unsigned long sec;
 {
   alarm(sec);
 }
  
-int external_ualarm(usec,repeat)
+void external_ualarm(usec,repeat)
 unsigned long usec,repeat;
 {
   ualarm(usec,repeat);
@@ -72,6 +73,7 @@ long *tloc;
  
 /* Tag( external_timc )
  */
+long
 external_timc()
 {
   struct rusage buffer;
@@ -123,9 +125,18 @@ char *external_getenv (name)
 }
  
  
-int external_setenv (var, val,ov)
+void
+block_copy (b1, b2, length)
+     char *b1, *b2;
+     int length;
+{
+  while (length-- > 0)
+    *b2++ = *b1++;
+}
+
+
+int external_setenv (var, val)
     char *var, *val;
-    int ov;
 {
   int i;
   extern char **environ;
@@ -143,7 +154,7 @@ int external_setenv (var, val,ov)
   environ = envnew;
   strcpy(var_plus_equal_sign, var);
   strcat(var_plus_equal_sign, "=");
-  return(setenv (var_plus_equal_sign, val,ov));
+  return(mysetenv (var_plus_equal_sign, val, 1));
 }
  
 /*
@@ -153,7 +164,8 @@ int external_setenv (var, val,ov)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
-setenv (var, value,ov)
+int
+mysetenv (var, value, ov)
      const char *var, *value;
      int ov;
 {
@@ -167,7 +179,7 @@ setenv (var, value,ov)
         environ[index] = (void *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
-        return;
+        return 0;
         }
         index ++;
     }
@@ -176,15 +188,9 @@ setenv (var, value,ov)
     strcpy (environ [index], var);
     strcat (environ [index], value);
     environ [++index] = NULL;
+    return 0;
 }
  
-block_copy (b1, b2, length)
-     char *b1, *b2;
-     int length;
-{
-  while (length-- > 0)
-    *b2++ = *b1++;
-}
  
 #define LISPEOF  4      /* Lisp uses ctrl-D for end of file */
  
@@ -208,7 +214,7 @@ int unixreadrecord(fp, buf)
  
 /* Tag( unixwriterecord )
  */
-int unixwriterecord(fp, buf, count)
+void unixwriterecord(fp, buf, count)
      FILE *fp;
      char *buf;
 int  count;

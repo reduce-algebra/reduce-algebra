@@ -252,14 +252,11 @@
 
        (*move (reg rdi) (reg 1))
        (*move (reg rsi) (reg 2))
-    %   (*move (displacement (reg st) 8) (fluid argc))
-    %  (*move (displacement (reg st) 16) (fluid argv))
 
        (*alloc 3) % changes Stack pointer
 
-    %  (*move (fluid argc) (frame 1))
-    %   (*move (fluid argv) (frame 2))
-    %   (*move (reg 2) (frame 3)) % have to save %ebx
+       (*move (reg 1) (frame 1))
+       (*move (reg 2) (frame 2))
 
 
   %    (*move   (fluid stack) (reg st))
@@ -268,9 +265,7 @@
   % 				     addressingunitsperitem)))
 
        %  Do OS specific initializations (uses argc and argv)
-    %   (*move (fluid argc) (reg 1))
-    %   (*move (fluid argv) (reg 2))
-    %   (*move infbitlength (fluid _infbitlength_))
+
        (*link os_startup_hook expr 2)
 
        (*move (frame 1) (fluid argc))

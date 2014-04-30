@@ -64,6 +64,7 @@
  
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
  
 /* There is an assumption here that coercing addresses into ints is OK */
 /*
@@ -85,7 +86,7 @@ extern int unixnull[2], unixeof[2];
 
 /* Tag( unixinitio )
  */
-unixinitio()
+void unixinitio()
 {
     unixstdin = stdin;
     unixstdout = stdout;
@@ -100,7 +101,7 @@ unixinitio()
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
-unixputc(c)
+void unixputc(c)
 char c;
 {
     fputc(c, stdout);
@@ -108,7 +109,7 @@ char c;
  
 /* Tag( unixputs )
  */
-unixputs(str)
+void unixputs(str)
 char *str;
 {
     fputs(str, stdout);
@@ -116,15 +117,15 @@ char *str;
  
 /* Tag( unixputn )
  */
-unixputn(n)
+void unixputn(n)
 long long n;
 {
-    fprintf(stdout, "%lx", n);
+    fprintf(stdout, "%llx", n);
 }
  
 /* Tag( unixcleario )
  */
-unixcleario()
+void unixcleario()
 {
     unixinitio();
 
@@ -170,7 +171,7 @@ char *fname;
   register int tilde;
   c = copy;
   s = fname;
-  while (*c++ = *s++);
+  while ((*c++ = *s++));
   s = copy;
   c = collect;
   *c = '\0';
@@ -191,7 +192,7 @@ char *fname;
               *e = '\0';
               if (tilde)
                 {
-          if (p = getpwnam(s))  t = (p -> pw_dir);
+          if ((p = getpwnam(s)))  t = (p -> pw_dir);
         }
               else
                 t = getenv(s);
@@ -199,7 +200,7 @@ char *fname;
               s = e;
             }
           if (t)
-        while (*c++ = *t++)
+        while ((*c++ = *t++))
           ;
           else
         return(fname);   /* name not found, just return original fname */
@@ -223,18 +224,18 @@ FILE* unixopen(filename, type)
   return(fptr);
 }
 
-unixcd(filename)
+void unixcd(filename)
      char *filename;
 {
   chdir(expand_file_name(filename));
 }
  
-unixfclose (ix)
+int unixfclose (ix)
 FILE* ix;
 
-{ fclose (ix); }
+{ return fclose (ix); }
 
-external_system(command)
+int external_system(command)
      char *command;
 {
   int value;
@@ -244,7 +245,7 @@ external_system(command)
  
 /* Tag( external_exit )
  */
-external_exit(status)
+int external_exit(status)
      int status;
 {
   exit(status);
@@ -252,7 +253,7 @@ external_exit(status)
  
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
  
-copy_argv(argc,argv)    /* copy argv into static space. */
+long long copy_argv(argc,argv)    /* copy argv into static space. */
 int argc;
 char *argv[];
 {
@@ -261,7 +262,7 @@ char *argv[];
   for (i=0; i < argc; i++)
      static_argv[i]=argv[i];
  
-  return((long)static_argv);
+  return((long long)static_argv);
 }
 long long xgetw (f)
 FILE* f;

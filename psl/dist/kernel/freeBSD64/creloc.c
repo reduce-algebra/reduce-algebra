@@ -7,7 +7,7 @@
  * Winfried Neun, ZIB
  * */
 
-int creloc (long long array[], long len, long long diff, long long lowb)
+void creloc (long long array[], long len, long long diff, long long lowb)
 
 {  long i;
    long skip;

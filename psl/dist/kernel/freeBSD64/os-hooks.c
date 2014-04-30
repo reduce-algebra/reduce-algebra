@@ -44,6 +44,13 @@
  
 jmp_buf mainenv;
  
+void clear_iob(), clear_dtabsize();
+
+void psl_main(int argc, char *argv[]);
+
+char ** copy_argv(int, char*[]);
+
+int
 main(argc,argv)
 int argc;
 char *argv[];
@@ -53,7 +60,7 @@ char *argv[];
   clear_iob();             /* clear garbage pointer in _iob[]    */
   clear_dtabsize();
   /* fpsetround(FP_RZ);  */
-/*  init_malloc_param();        /* reset malloc parameters.        */
+/*  init_malloc_param(); */       /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
  
   val=setjmp(mainenv);        /* set non-local return point for exit    */
@@ -65,7 +72,9 @@ exit(0);
  
 }
  
+int setupbpsandheap(int argc, char *argv[]);
  
+void
 os_startup_hook(argc, argv)
      int argc;
      char *argv[];
@@ -73,11 +82,13 @@ os_startup_hook(argc, argv)
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
  
+void
 os_cleanup_hook()
 {
 longjmp(mainenv,1);
 }
  
+void
 clear_iob()
 {
 }
@@ -95,6 +106,7 @@ extern char *end;
 /*
  *     Size of dtabsize is 0x34c bytes.
  */
+void
 clear_dtabsize()
 {
  int i;
