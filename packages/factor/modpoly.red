@@ -43,23 +43,69 @@ symbolic inline procedure comes!-before(p1,p2);
     (car p1=car p2 and igreaterp(cdr p1,cdr p2)) or
        (not(car p1=car p2) and ordop(car p1,car p2));
 
+%symbolic procedure plus!-mod!-p(a,b);
+%   % form the sum of the two polynomials a and b working over the
+%   % ground domain defined by the routines % modular!-plus,
+%   % modular!-times etc. the inputs to this % routine are assumed to
+%   % have coefficients already in the required domain.
+%   if null a then b
+%   else if null b then a
+%   else if domainp a then
+%      if domainp b then !*n2f modular!-plus(a,b)
+%      else (lt b) .+ plus!-mod!-p(a,red b)
+%   else if domainp b then (lt a) .+ plus!-mod!-p(red a,b)
+%   else if lpow a = lpow b then
+%      adjoin!-term(lpow a,
+%         plus!-mod!-p(lc a,lc b),plus!-mod!-p(red a,red b))
+%   else if comes!-before(lpow a,lpow b) then
+%         (lt a) .+ plus!-mod!-p(red a,b)
+%   else (lt b) .+ plus!-mod!-p(a,red b);
+
+
+% Now a version with less recursion...
+
 symbolic procedure plus!-mod!-p(a,b);
    % form the sum of the two polynomials a and b working over the
    % ground domain defined by the routines % modular!-plus,
    % modular!-times etc. the inputs to this % routine are assumed to
    % have coefficients already in the required domain.
-   if null a then b
-   else if null b then a
-   else if domainp a then
-      if domainp b then !*n2f modular!-plus(a,b)
-      else (lt b) .+ plus!-mod!-p(a,red b)
-   else if domainp b then (lt a) .+ plus!-mod!-p(red a,b)
-   else if lpow a = lpow b then
-      adjoin!-term(lpow a,
-         plus!-mod!-p(lc a,lc b),plus!-mod!-p(red a,red b))
-   else if comes!-before(lpow a,lpow b) then
-         (lt a) .+ plus!-mod!-p(red a,b)
-   else (lt b) .+ plus!-mod!-p(a,red b);
+  begin
+    scalar w, r, x;
+  top:
+    if null a then << w := b; go to exit >>
+    else if null b then << w := a; go to exit >>
+    else if domainp a then
+      if domainp b then << w := !*n2f modular!-plus(a,b); go to exit >>
+      else <<
+        r := (lt b) .+ r;
+        b := red b;
+        go to top >>
+    else if domainp b then <<
+      r := (lt a) .+ r;
+      a := red a;
+      go to top >>
+    else if lpow a = lpow b then <<
+      x := plus!-mod!-p(lc a, lc b);
+      if x then r := (lpow a .* x) .+ r;
+      a := red a;
+      b := red b;
+      go to top >>
+    else if comes!-before(lpow a,lpow b) then <<
+      r := (lt a) .+ r;
+      a := red a;
+      go to top >>
+    else <<
+      r := (lt b) .+ r;
+      b := red b;
+      go to top >>;
+  exit:
+    while r do <<
+      a := cdr r;
+      rplacd(r, w);
+      w := r;
+      r := a >>;
+    return w;
+  end;
 
 symbolic procedure times!-mod!-p(a,b);
    if (null a) or (null b) then nil
@@ -240,13 +286,32 @@ symbolic procedure xremainder!-mod!-p(a,b,v);
      return xremainder!-mod!-p(a,b,v)
    end;
 
+%symbolic procedure multiply!-by!-constant!-mod!-p(a,n);
+%   % Multiply the polynomial a by the constant n.
+%   if null a then nil
+%   else if n=1 then a
+%   else if domainp a then !*n2f modular!-times(a,n)
+%   else adjoin!-term(lpow a,multiply!-by!-constant!-mod!-p(lc a,n),
+%     multiply!-by!-constant!-mod!-p(red a,n));
+
 symbolic procedure multiply!-by!-constant!-mod!-p(a,n);
    % Multiply the polynomial a by the constant n.
-   if null a then nil
-   else if n=1 then a
-   else if domainp a then !*n2f modular!-times(a,n)
-   else adjoin!-term(lpow a,multiply!-by!-constant!-mod!-p(lc a,n),
-     multiply!-by!-constant!-mod!-p(red a,n));
+  begin
+    scalar r, x;
+    if null a then return nil
+    else if n=1 then return a;
+    while not domainp a do <<
+      x := multiply!-by!-constant!-mod!-p(lc a, n);
+      if x then r := (lpow a .* x) .+ r;
+      a := red a >>;
+    if a then a := !*n2f modular!-times(a,n);
+    while r do <<
+      x := cdr r;
+      rplacd(r, a);
+      a := r;
+      r := x >>;
+    return a;
+  end;
 
 symbolic procedure gcd!-mod!-p(a,b);
    % Return the monic gcd of the two modular univariate polynomials a

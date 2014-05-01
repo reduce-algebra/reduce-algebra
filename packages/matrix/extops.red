@@ -61,6 +61,35 @@ symbolic procedure extmult(u,v);
            else extadd(extmult(red u,v),extmult(!*t2f lt u,red v)))
           where x = ordexn(car lpow u,lpow v);
 
+% Now an iterative rather than recursive version. Se also b!:extmult
+% in resultnt.red where a similar transformation has been applied.
+
+symbolic procedure extmult(u,v);
+   % u,v: ex -> extmult: ex
+   % Special exterior multiplication routine.  Degree of form v is
+   % arbitrary, u is a one-form.
+  begin
+    scalar stack, x, w, r;
+  top:
+    if null u or null v then << r := nil; go to exit >>;
+    stack := (u . v) . stack;
+    if red u then u := !*t2f lt u;
+    v := red v;
+    go to top;
+  exit:
+    while stack do <<
+      u := caar stack;
+      v := cdar stack;
+      stack := cdr stack;
+      x := ordexn(car lpow u, lpow v);
+      if x then <<
+        w := c!:subs2multf(lc u, lc v);
+        if car x then w := negf w;
+        r := (cdr x .* w) .+ extadd(r, extmult(red u, v)) >>
+      else r := extadd(extmult(red u, v), r) >>;
+    return r;
+  end;
+
 symbolic procedure extadd(u,v);
    % u,v: ex -> extadd: ex
    % a non-recursive exterior addition routine
