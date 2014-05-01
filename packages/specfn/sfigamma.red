@@ -178,23 +178,47 @@ end;
 %                -----------------------------
 %                (a + 2i - 1) (a + 2i) (1 - x)
 
-expr procedure ibeta!:cont!:frac(iter,iter_max,a,b,x);
-begin
- scalar value,c_odd,c_even;
+%expr procedure ibeta!:cont!:frac(iter,iter_max,a,b,x);
+%begin
+% scalar value,c_odd,c_even;
+%
+% if not (fixp(iter) and fixp(iter_max) and numberp(x)) then
+%  rederr("ibeta!:cont!:frac called illegally");
+%
+% if (iter>iter_max) then
+%  value := 0
+% else
+% <<
+%  c_even := -(a+iter-1)*(b-iter)*x / ((a+2*iter-2)*(a+2*iter-1)*(1-x));
+%  c_odd := iter*(a+b+iter-1)*x / ((a+2*iter-1)*(a+2*iter)*(1-x));
+%  value := c_even /
+%               (1 + (c_odd /
+%                       (1 + ibeta!:cont!:frac(iter+1,iter_max,a,b,x))))
+% >>;
+%
+% return value;
+%end;
 
- if not (fixp(iter) and fixp(iter_max) and numberp(x)) then
+% The above version recurses to a depth of iter_max which may be reasonably
+% large. I now provide an alternative version that does the calculation
+% from the inside out and hence avoids that nesting.
+
+expr procedure ibeta!:cont!:frac(iter_first,iter_max,a,b,x);
+begin
+ scalar iter,value,c_odd,c_even;
+
+ if not (fixp(iter_first) and fixp(iter_max) and numberp(x)) then
   rederr("ibeta!:cont!:frac called illegally");
 
- if (iter>iter_max) then
-  value := 0
- else
- <<
+ value := 0;
+ iter := iter_max;
+ while iter >= iter_first do <<
   c_even := -(a+iter-1)*(b-iter)*x / ((a+2*iter-2)*(a+2*iter-1)*(1-x));
   c_odd := iter*(a+b+iter-1)*x / ((a+2*iter-1)*(a+2*iter)*(1-x));
   value := c_even /
                (1 + (c_odd /
-                       (1 + ibeta!:cont!:frac(iter+1,iter_max,a,b,x))))
- >>;
+                       (1 + value)));
+  iter := iter - 1 >>;
 
  return value;
 end;

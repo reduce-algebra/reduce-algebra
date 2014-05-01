@@ -794,19 +794,54 @@ symbolic procedure make!-image!-mod!-p(p,v);
   end;
 
 
-symbolic procedure make!-univariate!-image!-mod!-p(p,v);
+%symbolic procedure make!-univariate!-image!-mod!-p(p,v);
+%% Make a modular image of P, keeping only the variable V;
+%  if domainp p then
+%     if p=nil then nil
+%     else !*n2f modular!-number p
+%  else if mvar p=v then
+%     adjoin!-term(lpow p,
+%                  make!-univariate!-image!-mod!-p(lc p,v),
+%                  make!-univariate!-image!-mod!-p(red p,v))
+%    else plus!-mod!-p(
+%      times!-mod!-p(image!-of!-power(mvar p,ldeg p),
+%                    make!-univariate!-image!-mod!-p(lc p,v)),
+%      make!-univariate!-image!-mod!-p(red p,v));
+
+% Now an iterative rather than recursive implementation... I will
+% expect that the result (which is a univariate modular polynomial) will
+% be of fairly low degree so just how I build it should not be a huge issue.
+
+symbolic procedure make!-univariate!-image!-mod!-p(p, v);
 % Make a modular image of P, keeping only the variable V;
-  if domainp p then
-     if p=nil then nil
-     else !*n2f modular!-number p
-  else if mvar p=v then
-     adjoin!-term(lpow p,
-                  make!-univariate!-image!-mod!-p(lc p,v),
-                  make!-univariate!-image!-mod!-p(red p,v))
-    else plus!-mod!-p(
-      times!-mod!-p(image!-of!-power(mvar p,ldeg p),
-                    make!-univariate!-image!-mod!-p(lc p,v)),
-      make!-univariate!-image!-mod!-p(red p,v));
+  begin
+    scalar w, r;
+    if domainp p then <<
+      if p=nil then return nil
+      else return !*n2f modular!-number p >>;
+    if mvar p = v then <<
+      r := nil;
+      while not domainp p and mvar p = v do <<
+        w := make!-univariate!-image!-mod!-p(lc p, v);
+        if w then r := (lpow p .* w) .+ r;  % In wrong order at this stage
+        p := red p >>;
+      p := make!-univariate!-image!-mod!-p(p, v);;
+      while r do <<
+        w := cdr r;
+        rplacd(r, p);
+        p := r;
+        r := w >>;
+      return p >>
+    else <<
+      r := nil;
+      while not domainp p and not (mvar p = v) do <<
+        r := plus!-mod!-p(r,
+           times!-mod!-p(image!-of!-power(mvar p, ldeg p),
+                         make!-univariate!-image!-mod!-p(lc p, v)));
+        p := red p >>;
+      p := make!-univariate!-image!-mod!-p(p, v);
+      return plus!-mod!-p(r, p) >>
+  end;
 
 symbolic procedure image!-of!-power(v,n);
   begin

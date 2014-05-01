@@ -217,6 +217,7 @@ sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg |
       -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
       -e '/^Request to set constant bitsperword/d' \
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+      -e '/^max_gc_int :/d' \
        >csl-times/$p.rlg.orig
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <csl-times/$p.rlg.tmp | \
@@ -226,6 +227,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
       -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
       -e '/^Request to set constant bitsperword/d' \
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+      -e '/^max_gc_int :/d' \
        >csl-times/$p.rlg
 diff -B -w csl-times/$p.rlg.orig csl-times/$p.rlg >csl-times/$p.rlg.diff
 if test -s csl-times/$p.rlg.diff
@@ -270,6 +272,7 @@ sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | \
       -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
       -e '/^Request to set constant bitsperword/d' \
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+      -e '/^max_gc_int :/d' \
      >psl-times/$p.rlg.orig
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
@@ -279,6 +282,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
       -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
       -e '/^Request to set constant bitsperword/d' \
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+      -e '/^max_gc_int :/d' \
      >psl-times/$p.rlg
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff

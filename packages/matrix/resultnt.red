@@ -233,7 +233,7 @@ symbolic procedure b!:extmult(u,v);
     if null u or null v then << r := nil; go to exit >>
     else if v = 1 then << r := u; go to exit >>;
     stack := (u . v) . stack;
-    if cdr u then u := !*t2f lt u;
+    if red u then u := !*t2f lt u;
     v := red v;
     go to top;
   exit:
