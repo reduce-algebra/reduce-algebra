@@ -6,7 +6,7 @@ dnl Process this file with autoconf to produce a configure script.
 # by the license. 
 AC_INIT([crlibm], m4_esyscmd([cat VERSION]))
 AC_CONFIG_SRCDIR([crlibm.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 
 AC_CONFIG_HEADERS([crlibm_config.h])
 
