@@ -1,0 +1,266 @@
+
+comment simple tests of hypergeometric operator;
+
+
+hypergeometric ({},{},z);
+
+
+ z
+e
+
+
+hypergeometric ({1/2,1},{3/2},-x^2);
+
+
+ atan(abs(x))
+--------------
+    abs(x)
+
+
+hypergeometric ({1,1},{2},z);
+
+
+  - log( - z + 1)
+------------------
+        z
+
+
+hypergeometric ({1/2,1/2},{3/2},z^2);
+
+
+ asin(abs(z))
+--------------
+    abs(z)
+
+
+hypergeometric ({1/2,1/2},{3/2},-z^2);
+
+
+ asinh(z)
+----------
+    z
+
+
+hypergeometric ({a,b},{b},z);
+
+
+      1
+-------------
+           a
+ ( - z + 1)
+
+
+hypergeometric ({a,a+1/2},{1/2},z^2);
+
+
+                   2*a + 1     1    2
+hypergeometric({a,---------},{---},z )
+                      2        2
+
+
+hypergeometric ({a,a+1/2},{1/2},-tan(z)^2);
+
+
+                   2*a + 1     1            2
+hypergeometric({a,---------},{---}, - tan(z) )
+                      2        2
+
+
+hypergeometric ({a,a+1/2},{3/2},z^2);
+
+
+                   2*a + 1     3    2
+hypergeometric({a,---------},{---},z )
+                      2        2
+
+
+hypergeometric ({a,a+1/2},{3/2},-tan(z)^2);
+
+
+                   2*a + 1     3            2
+hypergeometric({a,---------},{---}, - tan(z) )
+                      2        2
+
+
+hypergeometric ({-a,a},{1/2},-z^2);
+
+
+                          1       2
+hypergeometric({ - a,a},{---}, - z )
+                          2
+
+
+hypergeometric ({-a,a},{1/2},sin(z)^2);
+
+
+                          1         2
+hypergeometric({ - a,a},{---},sin(z) )
+                          2
+
+
+hypergeometric ({-a,a},{3/2},-z^2);
+
+
+                          3       2
+hypergeometric({ - a,a},{---}, - z )
+                          2
+
+
+hypergeometric ({-a,a},{3/2},sin(z)^2);
+
+
+                          3         2
+hypergeometric({ - a,a},{---},sin(z) )
+                          2
+
+
+hypergeometric ({a,1-a},{3/2},-z^2);
+
+
+                              3       2
+hypergeometric({a, - a + 1},{---}, - z )
+                              2
+
+
+hypergeometric ({a,1-a},{3/2},sin(z)^2);
+
+
+                              3         2
+hypergeometric({a, - a + 1},{---},sin(z) )
+                              2
+
+
+hypergeometric ({a,a+1/2},{2*a+1},z);
+
+
+           2*a
+          2
+-------------------------
+                     2*a
+ (sqrt( - z + 1) + 1)
+
+
+hypergeometric ({a,a+1/2},{2*a},z);
+
+
+                   2*a + 1
+hypergeometric({a,---------},{2*a},z)
+                      2
+
+
+hypergeometric ({a+1,b},{a},z);
+
+
+     a*z - a - b*z
+-----------------------
+           b
+ ( - z + 1) *a*(z - 1)
+
+
+hypergeometric ({a,b},{c},1);
+
+
+  gamma( - a - b + c)*gamma(c)
+---------------------------------
+ gamma( - a + c)*gamma( - b + c)
+
+
+hypergeometric ({a,b},{a-b+1},-1);
+
+
+hypergeometric({a,b},{a - b + 1},-1)
+
+
+hypergeometric ({1,a},{a+1},-1);
+
+
+hypergeometric({a,1},{a + 1},-1)
+
+
+hypergeometric ({a,b},{(a+b+1)/2},1/2);
+
+
+                       a + b + 1    1
+hypergeometric({a,b},{-----------},---)
+                           2        2
+
+
+hypergeometric ({a,b},{(a+b)/2+1},1/2);
+
+
+                       a + b + 2    1
+hypergeometric({a,b},{-----------},---)
+                           2        2
+
+
+hypergeometric ({a,1-a},{b},1/2);
+
+
+                                 1
+hypergeometric({a, - a + 1},{b},---)
+                                 2
+
+
+df(hypergeometric({a,b},{c},z),z);
+
+
+df(hypergeometric({a,b},{c},z),z)
+
+
+hypergeometric ({a,b,c},{a-b+1,a+c-1},1);
+
+
+hypergeometric({a,b,c},{a - b + 1,a + c - 1},1)
+
+
+hypergeometric ({a,b,c},{a-b+1,a+c-1},z);
+
+
+hypergeometric({a,b,c},{a - b + 1,a + c - 1},z)
+
+
+hypergeometric ({a,b,c},{(a+b+1)/2,2*c},1);
+
+
+                         a + b + 1
+hypergeometric({a,b,c},{-----------,2*c},1)
+                             2
+
+
+hypergeometric ({a,1-a,c},{d,2*c-d+1},1);
+
+
+hypergeometric({a, - a + 1,c},{d,2*c - d + 1},1)
+
+
+% Legendre functions
+hypergeometric ({a,b},{2*b},z);
+
+
+hypergeometric({a,b},{2*b},z)
+
+
+
+comment simple tests of MeijerG operator;
+
+
+MeijerG({{},1},{{0}},x);
+
+
+ sign( - x + 1) + sign(x + 1)
+------------------------------
+              2
+
+
+MeijerG({{}},{{1+1/4},1-1/4},(x^2)/4) * sqrt pi;
+
+
+                    2                    2
+ sqrt(pi)*sqrt(-----------)*sin(abs(x))*x
+                abs(x)*pi
+-------------------------------------------
+                     4
+
+
+end;
+

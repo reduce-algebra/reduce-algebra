@@ -116,7 +116,7 @@
  (sparse        "sparse"                test                 csl psl)
  (spde          "spde"                  test                 csl psl)
  (specfn        "specfn"                test                 csl psl)
- (specfn2       "specfn"                                     csl psl)
+ (specfn2       "specfn"                test                 csl psl)
  (specfaux      "specfn"                                     csl psl)
  (specbess      "specfn"                                     csl psl)
  (sfgamma       "specfn"                                     csl psl)
