@@ -56,8 +56,7 @@ module ghyper;   % Generalized Hypergeometric Functions.
  begin scalar aa,bb;
   aa:= 'list . listprepsq a;
   bb:= 'list . listprepsq b;
-  return mksqnew('hypergeometric .
-        append(list(aa,bb),list(prepsq z)))$
+  return mksqnew({'hypergeometric,aa,bb,prepsq z});
   end;
 
 %***********************************************************************
@@ -70,7 +69,7 @@ symbolic procedure listmaxsq u;
  if null cdr u then car u else
  if null caar u then car u else
  if null caadr u then cadr u else
- if greaterp(caar u,caadr u) or equal(car u,cadr u) then
+ if caar u > caadr u or car u = cadr u then
             listmaxsq((car u) . cddr u) else
             listmaxsq((cadr u) . cddr u)$
 
@@ -108,7 +107,7 @@ M:
     s:=addsq(s,quotsq(multsq(multpochh(u,simp k),exptsq(z,k)),
         multpochh(append(list('(1 . 1)),b),simp k)));
     k:=k+1;
-    if greaterp(k,car negsq(car u)) then return s else goto m;
+    if greaterp(k,numr negsq(car u)) then return s else goto m;
    end$
 
 %***********************************************************************
@@ -127,11 +126,11 @@ M:
                         GOTO M1
                      >>
                  else
-      if numberp(prepsq diff1sq(car a,car b)) and
-         greaterp(car(diff1sq(car a,car b)),0) then
+      if numberp(prepsq subtrsq(car a,car b)) and
+         greaterp(car(subtrsq(car a,car b)),0) then
                         <<
                          b:=car b . append(w2,cdr b);
-                         a:=diff1sq(car a,car b) . append(w1,cdr a);
+                         a:=subtrsq(car a,car b) . append(w1,cdr a);
                          return T
                         >> else
                         <<
@@ -144,7 +143,7 @@ M:
  symbolic procedure lowering1(x,y,u,z);
   % x -- (m . a).
   % y -- (g . b).
-  addsq(GHFsq(u,append(list(diff1sq(addsq(car x,car y),'(1 . 1))),
+  addsq(GHFsq(u,append(list(subtrsq(addsq(car x,car y),'(1 . 1))),
                             cdr x),
                 append(list(car y),cdr y),z),
         multsq(GHFsq(u,append(list(addsq(car x,car y)),listplus(cdr x,
@@ -170,8 +169,8 @@ M:
             GOTO M1
          >>
                 else
-      if numberp(prepsq diff1sq(car b,car a)) and
-         lessp(car(diff1sq(car a,car b)),0) then
+      if numberp(prepsq subtrsq(car b,car a)) and
+         lessp(car(subtrsq(car a,car b)),0) then
                if fl then
                  if not equal(wa,car a) then
                     << b:=sb;
@@ -200,12 +199,12 @@ M:
 
    symbolic procedure lowering2(x,b,u,z);
    % x -- (r s).(a).
-  diff1sq(multsq(GHFsq(u,append(list(caar x,addsq('(1 . 1),cadar x)),
+  subtrsq(multsq(GHFsq(u,append(list(caar x,addsq('(1 . 1),cadar x)),
                         cdr x),b,z),
-                  quotsq(cadar x,diff1sq(cadar x,caar x))),
+                  quotsq(cadar x,subtrsq(cadar x,caar x))),
            multsq(GHFsq(u,append(list(addsq('(1 . 1),caar x),cadar x),
                         cdr x),b,z),
-                  quotsq(caar x,diff1sq(cadar x,caar x))))$
+                  quotsq(caar x,subtrsq(cadar x,caar x))))$
 
 % This assigns to a and b
   symbolic smacro procedure GHFlowering3p;
@@ -245,9 +244,9 @@ M2:  if null a then
   symbolic procedure lowering3(a,b,u,z);
   multsq(quotsq(multlist(difflist(b,'(1 . 1))),multsq(z,multlist(
                          difflist(cdr a,'(1 . 1))))),
-         diff1sq(GHFsq(u, (car a) . difflist(cdr a,'(1 . 1)),
+         subtrsq(GHFsq(u, (car a) . difflist(cdr a,'(1 . 1)),
                          difflist(b,'(1 . 1)),z),
-                 GHFsq(u,append(list(diff1sq(car a,'(1 . 1))),
+                 GHFsq(u,append(list(subtrsq(car a,'(1 . 1))),
                     difflist(cdr a,'(1 . 1))),difflist(b,'(1 . 1)),z)))$
 
 %***********************************************************************
@@ -261,7 +260,7 @@ M2:  if null a then
    begin scalar c,aaa;
    u:=redpar(a,b);
    a:=car u;b:=cadr u;u:=list(length(a), length(b));
-   if null car(z) then return '(1 . 1) else
+   if null numr z then return '(1 . 1) else
    if listparfool(b,(nil .1)) and not listparfool(a,(nil . 1)) then
        % return rerror('specialf,128,
         %"zero in the denominator of the GHF-function")
@@ -278,7 +277,7 @@ M2:  if null a then
    if car u = 1 and cadr u = 0 then
        if  z='(1 . 1) then return GHFexit(a,b,z)
        else
-          return expdeg(diff1sq('(1 . 1),z),if null a then '(nil . 1)
+          return expdeg(subtrsq('(1 . 1),z),if null a then '(nil . 1)
                                           else negsq(car a))
                                                           else
    if car u = 1 and cadr u = 1 then return GHF11(a,b,z)  else
@@ -304,7 +303,7 @@ M2:  if null a then
    if length(cadr c) > 0 or length(car c) > 1 then return 'FAIL
      else
       return formulaformidcase(length(b), caar c,
-                               diff1sq(car b,'(1 . 1)), z);
+                               subtrsq(car b,'(1 . 1)), z);
  end$
 
  symbolic procedure formulaformidcase(p,b,a,z);
@@ -314,7 +313,7 @@ M2:  if null a then
    else
  if b = '(1 . 1) and z='(-1 . 1) then
     quotsq(multsq(simpx1(prepsq(multsq('(-1 . 2),a)),p,1),
-               diff1sq(dfpsisq(multsq(a, '(1 . 2)),simp(p-1)),
+               subtrsq(dfpsisq(multsq(a, '(1 . 2)),simp(p-1)),
                     dfpsisq(multsq(addsq('(1 . 1),a),'(1 . 2)),
                             simp(p-1)))),
            gamsq(simp p))
@@ -323,12 +322,12 @@ M2:  if null a then
     multsq(
     subsqnew(
      derivativesq(
-       quotsq(gamsq(simp 'r),gamsq(addsq(simp 'r,diff1sq('(1 . 1),b)))),
+       quotsq(gamsq(simp 'r),gamsq(addsq(simp 'r,subtrsq('(1 . 1),b)))),
        'r,simp(p-1)),
      a,'r),
     quotsq(
       multsq(multsq(simpx1(prepsq(multsq('(-1 . 1),a)),p,1), '(-1 . 1)),
-             gamsq(diff1sq('(1 . 1),b))),
+             gamsq(subtrsq('(1 . 1),b))),
      gamsq(simp p)))
    else
  if z='(-1 . 1) and numberp prepsq(b) then
@@ -341,17 +340,17 @@ M2:  if null a then
                while prepsq(k)>0 do
                 <<
                 c:=addsq(c, multsq(gamsq(b),
-                simppochh(diff1sq(simp(1+k),simp 'r),
+                simppochh(subtrsq(simp(1+k),simp 'r),
                           simp(prepsq(b)-1-k))));
                 k:=k-1
                 >>;
               c
              >>,
              quotsq(
-               multsq(gamsq(diff1sq(b,simp 'r)),
-                diff1sq(psisq(multsq(addsq(simp 'r,'(1 . 1)),'(1 . 2))),
+               multsq(gamsq(subtrsq(b,simp 'r)),
+                subtrsq(psisq(multsq(addsq(simp 'r,'(1 . 1)),'(1 . 2))),
                              psisq(multsq(simp 'r,'(1 . 2))))),
-               multsq((2 . 1), gamsq(diff1sq('(1 . 1),simp 'r))))),
+               multsq((2 . 1), gamsq(subtrsq('(1 . 1),simp 'r))))),
       'r,p-1), a, 'r),
     quotsq(
            multsq(simpx1(prepsq(multsq('(-1 . 1),a)),p,1), '(-1 . 1)),
@@ -365,23 +364,23 @@ M2:  if null a then
 
  symbolic procedure GHF01(a,b,z);
   if znak z then
-   multsq(gamsq(car b),multsq(bessmsq(diff1sq(car b,'(1 . 1)),
+   multsq(gamsq(car b),multsq(bessmsq(subtrsq(car b,'(1 . 1)),
    multsq('(2 . 1),simpx1(prepsq z,1,2))),
-          expdeg(z,quotsq(diff1sq('(1 . 1),car b),'(2 . 1)))))
+          expdeg(z,multsq(subtrsq('(1 . 1),car b),'(1 . 2)))))
                      else
-   multsq(gamsq(car b),multsq(besssq(diff1sq(car b,'(1 . 1)),
+   multsq(gamsq(car b),multsq(besssq(subtrsq(car b,'(1 . 1)),
    multsq('(2 . 1),simpx1(prepsq(negsq z),1,2))),expdeg(negsq z,
-   quotsq(diff1sq('(1 . 1),car b),'(2 . 1))))) $
+   multsq(subtrsq('(1 . 1),car b),'(1 . 2))))) $
 
   symbolic procedure GHF11(a,b,z);
   if equal(car b,multsq('(2 . 1),car a)) then
      multsq(multsq(gamsq(addsq('(1 . 2),car a)),expdeg(simp 'e,
                        multsq(z,'(1 . 2)))),
-            multsq(expdeg(multsq(z,'(1 . 4)),diff1sq('(1 . 2),car a)),
-                   bessmsq(diff1sq(car a,'(1 . 2)),multsq(z,'(1 . 2)))))
+            multsq(expdeg(multsq(z,'(1 . 4)),subtrsq('(1 . 2),car a)),
+                   bessmsq(subtrsq(car a,'(1 . 2)),multsq(z,'(1 . 2)))))
   else
   if equal(car a,'(1 . 2)) and equal(car b,'(3 . 2)) then
-     multsq(quotsq(simpx1('pi,1,2),'(2 . 1)),
+     multsq(multsq(simpx1('pi,1,2),'(1 . 2)),
      if znak z then
        quotsq(simpfunc('erfi,simpx1(prepsq z,1,2)),simpx1(prepsq z,1,2))
                else
@@ -411,11 +410,11 @@ M2:  if null a then
         simpx1(prepsq(negsq z),1,2)) else
 %    if not equal(z,'(1 . 1)) then
 %       quotsq(simpfunc('log,addsq('(1 . 1),simpx1(prepsq z,1,2))),
-%       multsq(simpfunc('log,diff1sq('(1 . 1),simpx1(prepsq z,1,2))),
+%       multsq(simpfunc('log,subtrsq('(1 . 1),simpx1(prepsq z,1,2))),
 %       multsq('(2 . 1),simpx1(prepsq z,1,2)))) else
      if not equal(z,'(1 . 1)) then
        multsq(simpfunc('log,quotsq(addsq('(1 . 1),simpx1(prepsq z,1,2)),
-                            diff1sq('(1 . 1),simpx1(prepsq z,1,2)))),
+                            subtrsq('(1 . 1),simpx1(prepsq z,1,2)))),
               invsq(multsq('(2 . 1),simpx1(prepsq z,1,2)))) else
     GHFexit(a,b,z)
     >>
@@ -425,21 +424,21 @@ M2:  if null a then
     then
        quotsq(simpfunc('log,addsq('(1 . 1),negsq z)),negsq z)
     else
-  if equal(diff1sq(addsq(car a,cadr a),car b),'(-1 . 2)) and
+  if equal(subtrsq(addsq(car a,cadr a),car b),'(-1 . 2)) and
      (equal(multsq('(2 . 1),car a),car b) or
       equal(multsq('(2 . 1),cadr a),car b))
     then
        multsq(expdeg(addsq('(1 . 1),
-              simpx1(prepsq(diff1sq('(1 . 1),z)),1,2)),
-       diff1sq('(1 . 1),car b)),expdeg('(2 . 1),addsq(car b,'(-1 . 1))))
+              simpx1(prepsq(subtrsq('(1 . 1),z)),1,2)),
+       subtrsq('(1 . 1),car b)),expdeg('(2 . 1),addsq(car b,'(-1 . 1))))
     else
   if z='(1 . 1)
-     and (not numberp prepsq diff1sq(car b,addsq(car a, cadr a))
-          or prepsq(diff1sq(car b,addsq(car a, cadr a))) > 0 )
+     and (not numberp prepsq subtrsq(car b,addsq(car a, cadr a))
+          or prepsq(subtrsq(car b,addsq(car a, cadr a))) > 0 )
     then quotsq(multsq(gamsq(car b),
-                       gamsq(diff1sq(car b,addsq(car a,cadr a))) ),
-                multsq(gamsq(diff1sq(car b,car a)),
-                       gamsq(diff1sq(car b,cadr a))))
+                       gamsq(subtrsq(car b,addsq(car a,cadr a))) ),
+                multsq(gamsq(subtrsq(car b,car a)),
+                       gamsq(subtrsq(car b,cadr a))))
     else
   if car a='(1 . 1) and cadr a='(1 . 1) and numberp prepsq car b and
      prepsq car(b) > 0 and not(z='(1 . 1)) then
@@ -450,15 +449,15 @@ GHFexit(a,b,z)$
  begin scalar c; integer k;
  c:='(nil . 1); k:=2;
  while k<=m-1 do
-   << c:=addsq(c,quotsq(exptsq(diff1sq(z,'(1 . 1)),k),
+   << c:=addsq(c,quotsq(exptsq(subtrsq(z,'(1 . 1)),k),
                         multsq(exptsq(z,k),simp(m-k))));
       k:=k+1
    >>;
- c:=diff1sq(c,multsq(exptsq(quotsq(diff1sq(z,'(1 . 1)),z),m),
-                     simpfunc('log,diff1sq('(1 . 1),z))));
+ c:=subtrsq(c,multsq(exptsq(quotsq(subtrsq(z,'(1 . 1)),z),m),
+                     simpfunc('log,subtrsq('(1 . 1),z))));
  return
   multsq(c,
-         quotsq(multsq(simp(m-1),z),exptsq(diff1sq(z,'(1 . 1)),2)));
+         quotsq(multsq(simp(m-1),z),exptsq(subtrsq(z,'(1 . 1)),2)));
  end$
 
   symbolic procedure GHF12(a,b,z);
@@ -501,7 +500,32 @@ res1 := prepsq res;
 return if eqcar(res1,'hypergeometric) then res else simp res1;
                         end;
 
+remflag('(hypergeometric),'full);
 put('hypergeometric,'simpfn,'hypergeom);
+
+% differentiation of hypergeometric function
+
+symbolic procedure dfform_hypergeometric(ghfform,dfvar,n);
+  begin scalar a,b,var,fct,result;
+    a:= cdr cadr ghfform;
+    b:= cdr caddr ghfform;
+    var := cadddr ghfform;
+    % diff. w.r.t. one of indizes --> return unchanged
+    if depends(a,dfvar) or depends(b,dfvar)
+      then result := !*kk2q {'df,ghfform,dfvar}
+     else << fct := simp!* {'quotient,retimes a,retimes b};
+             result := simp!* {'hypergeometric,
+		         'list . for each el in a collect {'plus, el, 1},
+		         'list . for each el in b collect {'plus, el, 1},
+                         var};
+             result := multsq(fct,result) >>;
+    if n neq 1
+      then result := multsq(!*t2q((ghfform .** (n-1)) .* n),result);
+    return result;
+  end;
+
+put('hypergeometric,'dfform,'dfform_hypergeometric);
+
 
 % something is missing:
 

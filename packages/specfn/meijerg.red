@@ -57,6 +57,7 @@ if eqcar(list1,'MeijerG) then return list1 else return
                 simp list1;
                         end;
 
+remflag('(MeijerG),'full);
 put('MeijerG,'simpfn,'simpMeijerG);
 
 if not getd('simpmeijerg) then
@@ -99,22 +100,22 @@ q1:if p=0 and n=0 and m=1 then return
         % change in order to make defint(cos(x) *sin(x)/x) correct. WN
 
    if p=1 and n=0 and m=1 then return % WN
-       multsq (heavisidesq diff1sq('(1 . 1),z),
+       multsq (heavisidesq subtrsq('(1 . 1),z),
                quotsq(multsq(expdeg(z,car b),
-           expdeg(diff1sq('(1 . 1),z),
-                  diff1sq(car a,addsq('(1 . 1),car b)))),
-            gamsq(diff1sq(car a,car b))))
+           expdeg(subtrsq('(1 . 1),z),
+                  subtrsq(car a,addsq('(1 . 1),car b)))),
+            gamsq(subtrsq(car a,car b))))
       else
    if p=1 and n=1 and m=0 then return  %WN
-           multsq(heavisidesq diff1sq(z,'(1 . 1)),
-            quotsq(multsq(expdeg(z,car b),expdeg(diff1sq
-            (z,'(1 . 1)),diff1sq(car a,addsq('(1 . 1),car b)))),
-            gamsq(diff1sq(car a,car b))))
+           multsq(heavisidesq subtrsq(z,'(1 . 1)),
+            quotsq(multsq(expdeg(z,car b),expdeg(subtrsq
+            (z,'(1 . 1)),subtrsq(car a,addsq('(1 . 1),car b)))),
+            gamsq(subtrsq(car a,car b))))
    else
    if p=1 and n=1 and m=1 then return
-      multsq(gamsq(diff1sq('(1 . 1),diff1sq(car a,car b))),
+      multsq(gamsq(subtrsq('(1 . 1),subtrsq(car a,car b))),
              multsq(expdeg(z,car b),expdeg(addsq('(1 . 1),z),
-                      diff1sq(car a,addsq('(1 . 1),car b)))))
+                      subtrsq(car a,addsq('(1 . 1),car b)))))
             else return  rerror('specialf,142,
                         "***** parameter error in G-function");
 q2:  if p=2 then  return  simpGtoH(aa,bb,z) else
@@ -146,12 +147,12 @@ symbolic procedure GFMinvers(a,b,z);
          invsq z);
 
 symbolic procedure f6(a,b,z);
-  multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),besssq(diff1sq(a,b),
+  multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),besssq(subtrsq(a,b),
   multsq('(2 . 1),simpx1(prepsq z,1,2))));
 
 symbolic procedure f8(a,b,z);
   multsq('(2 . 1),multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),
-         macdsq(diff1sq (a,b),multsq('(2 . 1),simpx1(prepsq z,1,2)))));
+         macdsq(subtrsq (a,b),multsq('(2 . 1),simpx1(prepsq z,1,2)))));
 
 %***********************************************************************
 %*     Representation G-function through hypergeometric functions      *
@@ -293,7 +294,7 @@ symbolic procedure f9(a,b,z);
 
  symbolic procedure f11(a,b,c,z);
  multsq(expdeg(z,b),multsq(expdeg(simp!* 'e,negsq z),
-        tricomisq(diff1sq(a,c),addsq('(1 . 1),diff1sq(b,c)),z)));
+        tricomisq(subtrsq(a,c),addsq('(1 . 1),subtrsq(b,c)),z)));
 
 symbolic procedure q2p1m2n1(a,b,z);
  begin scalar v;
@@ -316,20 +317,20 @@ symbolic procedure f10(a,b,z);
 
 symbolic procedure q3p1m2n1(a,b,z);
   begin scalar v,v1;
-    if equal(diff1sq(car a,caddr b),'(1 . 2)) then
+    if equal(subtrsq(car a,caddr b),'(1 . 2)) then
     if equal(car a,car b) and
-       ((equal(cdr diff1sq(cadr b,caddr b),2) and
-       not numberp(car diff1sq(cadr b,caddr b))) or
-       not equal(cdr diff1sq(cadr b,caddr b),2))
+       ((equal(cdr subtrsq(cadr b,caddr b),2) and
+       not numberp(car subtrsq(cadr b,caddr b))) or
+       not equal(cdr subtrsq(cadr b,caddr b),2))
                          then return f34(caddr b,cadr b,z) else
     if equal(car a,cadr b) and
-       ((equal(cdr diff1sq(car b,caddr b),2) and
-       not numberp(car diff1sq(car b,caddr b))) or
-       not equal(cdr diff1sq(car b,caddr b),2))
+       ((equal(cdr subtrsq(car b,caddr b),2) and
+       not numberp(car subtrsq(car b,caddr b))) or
+       not equal(cdr subtrsq(car b,caddr b),2))
                          then return f34(caddr b,car b,z) else goto m;
-    if equal(diff1sq(car a,car b),'(1 . 2)) and equal(car a,cadr b) then
+    if equal(subtrsq(car a,car b),'(1 . 2)) and equal(car a,cadr b) then
                               return f35(car b,caddr b,z) else
-    if equal(diff1sq(car a,cadr b),'(1 . 2)) and equal(car a,car b) then
+    if equal(subtrsq(car a,cadr b),'(1 . 2)) and equal(car a,car b) then
                               return f35(cadr b,caddr b,z) else
              return simpGtoH((a . nil),redpar1(b,2),z);
  m: v:=addend(a,b,'(1 . 2));   v1:=cdr v;
@@ -346,23 +347,23 @@ symbolic procedure q3p1m2n1(a,b,z);
 
 symbolic procedure f34(a,b,z);
   multsq(quotsq(simp!* 'pi,
-                simpfunc('cos,multsq(simp!* 'pi,diff1sq(b,a)))),
+                simpfunc('cos,multsq(simp!* 'pi,subtrsq(b,a)))),
   multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),
-    diff1sq(bessmsq(diff1sq(b,a),
-       multsq('(2 . 1),simpx1(prepsq z,1,2))),struvelsq(diff1sq(a,b),
+    subtrsq(bessmsq(subtrsq(b,a),
+       multsq('(2 . 1),simpx1(prepsq z,1,2))),struvelsq(subtrsq(a,b),
               multsq('(2 . 1),simpx1(prepsq z,1,2))))));
 
 symbolic procedure f35(a,b,z);
   multsq(simp!* 'pi,
   multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),
-         diff1sq(bessmsq(diff1sq(a,b),
-  multsq('(2 . 1),simpx1(prepsq z,1,2))),struvelsq(diff1sq(a,b),
+         subtrsq(bessmsq(subtrsq(a,b),
+  multsq('(2 . 1),simpx1(prepsq z,1,2))),struvelsq(subtrsq(a,b),
          multsq('(2 . 1),simpx1(prepsq z,1,2))))));
 
 symbolic procedure f33(c,a,z);
   multsq(quotsq(simpx1('pi,3,2),simpfunc('sin,multsq('(2 . 1),multsq(a,
   simp!* 'pi)))),multsq(expdeg(z,c),
-      diff1sq(multsq(bessmsq(negsq a,simpx1
+      subtrsq(multsq(bessmsq(negsq a,simpx1
   (prepsq z,1,2)),bessmsq(negsq a,simpx1(prepsq z,1,2))),
   multsq(bessmsq(a,simpx1(prepsq z,1,2)),
          bessmsq(a,simpx1(prepsq z,1,2))))));
@@ -374,9 +375,9 @@ symbolic procedure f32(c,a,z);
 symbolic procedure q3p1m2n0(a,b,z);
   begin scalar v,v1;
    if equal(car a,caddr b) then
-   if equal(diff1sq(car b,car a),'(1 . 2))
+   if equal(subtrsq(car b,car a),'(1 . 2))
      then return f29(car b,cadr b,z)
-    else if equal(diff1sq(cadr b,car a),'(1 . 2)) then
+    else if equal(subtrsq(cadr b,car a),'(1 . 2)) then
                                         return f29(cadr b,car b,z);
    v:=addend(a,b,'(1 . 2));  v1:=cdr v;
    if null caar v1 and null car addsq(cadr v1,caddr v1) then
@@ -391,12 +392,12 @@ symbolic procedure q3p1m2n0(a,b,z);
   end;
 
 symbolic procedure f29(a,b,z);
-  multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),neumsq(diff1sq(b,a),
+  multsq(expdeg(z,multsq('(1 . 2),addsq(a,b))),neumsq(subtrsq(b,a),
          multsq('(2 . 1),simpx1(prepsq z,1,2))));
 
 symbolic procedure f30(c,a,z);
   multsq(quotsq(simpx1('pi,1,2),multsq('(2 . 1),simpfunc('sin,multsq(a,
-  simp!* 'pi)))),multsq(expdeg(z,c),diff1sq(multsq(besssq(negsq a,simpx1
+  simp!* 'pi)))),multsq(expdeg(z,c),subtrsq(multsq(besssq(negsq a,simpx1
   (prepsq z,1,2)),besssq(negsq a,simpx1(prepsq z,1,2))),multsq(besssq(a,
   simpx1(prepsq z,1,2)),besssq(a,simpx1(prepsq z,1,2))))));
 
@@ -407,9 +408,9 @@ symbolic procedure f31(c,a,z);
 symbolic procedure q3p1m1n1(a,b,z);
   begin scalar v,v1;
   if equal(car a,car b) then
-  if equal(diff1sq(car a,caddr b),'(1 . 2))
+  if equal(subtrsq(car a,caddr b),'(1 . 2))
     then return f28(car a,cadr b,z)
-   else if equal(diff1sq(car a,cadr b),'(1 . 2))
+   else if equal(subtrsq(car a,cadr b),'(1 . 2))
     then return f28(car a,caddr b,z);
   v:=addend(a,b,'(1 . 2));  v1:=cdr v;
     if null caar v1 and null car addsq(cadr v1,caddr v1) then
@@ -430,8 +431,8 @@ symbolic procedure f26(c,a,z);
   besssq(a,simpx1(prepsq z,1,2)),besssq(a,simpx1(prepsq z,1,2)))));
 
 symbolic procedure f28(a,b,z);
- multsq(expdeg(z,multsq('(1 . 2),diff1sq(addsq(a,b),'(1 . 2)))),
- struvehsq(diff1sq(a,addsq(b,'(1 . 2))),multsq('(2 . 1),
+ multsq(expdeg(z,multsq('(1 . 2),subtrsq(addsq(a,b),'(1 . 2)))),
+ struvehsq(subtrsq(a,addsq(b,'(1 . 2))),multsq('(2 . 1),
                         simpx1(prepsq z,1,2))));
 
 symbolic procedure q3p1m3n0(a,b,z);
@@ -455,38 +456,38 @@ symbolic procedure q3p1m3n1(a,b,z);
     if (equal(car a,cadr b) and null car(addsq(car b,caddr b))) or
        (equal(car a,caddr b) and null car(addsq(car b,cadr b))) then
                             f38(car a,car b,z) else
-    if equal(diff1sq(car a,caddr b),'(1 . 2)) and
+    if equal(subtrsq(car a,caddr b),'(1 . 2)) and
        null numr(addsq(addsq(car b,cadr b),
                       multf(-2,caaddr b) ./ cdaddr b))
                        then f39(caddr b,car b,z) else
-    if equal(diff1sq(car a,cadr b),'(1 . 2)) and
+    if equal(subtrsq(car a,cadr b),'(1 . 2)) and
      null numr(addsq(addsq(car b,caddr b),multf(-2,caadr b) ./ cdadr b))
                        then f39(cadr b,car b,z) else
-    if equal(diff1sq(car a,car b),'(1 . 2)) and
+    if equal(subtrsq(car a,car b),'(1 . 2)) and
       null numr(addsq(addsq(cadr b,caddr b),multf(-2,caar b) ./ cdar b))
                        then f39(car b,cadr b,z) else
                        simpGtoH((a . nil),(b . nil),z);
 
 symbolic procedure f38(a,b,z);
- if parfool(diff1sq('(1 . 1),addsq(a,b))) or
-    parfool(addsq('(1 . 1),diff1sq(b,a))) then
+ if parfool(subtrsq('(1 . 1),addsq(a,b))) or
+    parfool(addsq('(1 . 1),subtrsq(b,a))) then
    simpGtoH((list(a) . nil),(list(a,b,negsq b) . nil),z) else
- multsq(expdeg('(4 . 1),diff1sq('(1 . 1),a)),
-        multsq(multgamma(list(diff1sq( '(1 . 1),addsq(a,b)),
-                addsq(b,diff1sq('(1 . 1),a)))),
-                lommel2sq(diff1sq(multsq('( 2 . 1),a),'(1 . 1))
+ multsq(expdeg('(4 . 1),subtrsq('(1 . 1),a)),
+        multsq(multgamma(list(subtrsq( '(1 . 1),addsq(a,b)),
+                addsq(b,subtrsq('(1 . 1),a)))),
+                lommel2sq(subtrsq(multsq('( 2 . 1),a),'(1 . 1))
                 ,multsq('(2 . 1),b),multsq('(2 . 1),
                         simpx1(prepsq z,1,2)))));
 
 symbolic procedure f39(a,b,z);
-  if not numberp(car diff1sq(a,b)) or
-     not equal(cdr diff1sq(a,b),2) then
+  if not numberp(car subtrsq(a,b)) or
+     not equal(cdr subtrsq(a,b),2) then
   multsq(quotsq(multsq(simpx1('pi,5,2),expdeg(z,a)),multsq('(2 . 1),
-  simpfunc('cos,multsq(simp!* 'pi,diff1sq(b,a))))),multsq(hankel1sq(
-  diff1sq(b,a),simpx1(prepsq z,1,2)),hankel2sq(diff1sq(b,a),
+  simpfunc('cos,multsq(simp!* 'pi,subtrsq(b,a))))),multsq(hankel1sq(
+  subtrsq(b,a),simpx1(prepsq z,1,2)),hankel2sq(subtrsq(b,a),
   simpx1(prepsq z,1,2)))) else
        simpGtoH((list(addsq(a,'(1 . 2))) . nil),
-       (list(b,a,diff1sq(multsq('(2 . 1),a),b)) . nil),z);
+       (list(b,a,subtrsq(multsq('(2 . 1),a),b)) . nil),z);
 
 %***********************************************************************
 %*           Logarithmic case of Meijer's G-function                   *
@@ -520,7 +521,7 @@ symbolic procedure allpoles uu;
      if not null cdr u then
       if not equal(caadr u,caar u) then
            w:=cons(list(
-              kr,prepsq diff1sq(caadr u,caar u),negsq caar u),w)
+              kr,prepsq subtrsq(caadr u,caar u),negsq caar u),w)
         else w:=w
        else
           <<    w:=cons(list(kr,'infinity,negsq caar u),w);
@@ -548,12 +549,12 @@ symbolic procedure logcase u;
            >>
           else
            if equal(caar sb,caar u) or
-              and(numberp car diff1sq(caar sb,caar u),
-                  equal(cdr diff1sq(caar sb,caar u),1))
+              and(numberp car subtrsq(caar sb,caar u),
+                  equal(cdr subtrsq(caar sb,caar u),1))
              then
               << if null blog then
                     if equal(caar sb,caar u) or
-                       car diff1sq(caar sb,caar u) < 0  then
+                       car subtrsq(caar sb,caar u) < 0  then
                          blog:=list(car sb,car u)
                        else blog:=list(car u,car sb)
                             else
@@ -573,7 +574,7 @@ symbolic procedure ordern(u,v);
   %v - list of dotted pair.
   if null v then list(u)
     else
-  if equal(car u,caar v) or car diff1sq(car u,caar v) > 0 then
+  if equal(car u,caar v) or car subtrsq(car u,caar v) > 0 then
               (car v) . ordern(u,cdr v)
     else
               u . v ;
@@ -622,8 +623,8 @@ symbolic procedure specialtransf(at,a,b,z);  %some changes by WN
           a:=((car c) . car a ) .  car redpar(cdr a,list(car c));
           b:=(car redpar(car b,list(cadr c)) . (cadr c) . cdr b);
           return
-%         multsq( expdeg('(-1 . 1), diff1sq(simp car c, simp cadr c)),
-          multsq( expdeg('(-1 . 1), diff1sq(car c,  cadr c)),
+%         multsq( expdeg('(-1 . 1), subtrsq(simp car c, simp cadr c)),
+          multsq( expdeg('(-1 . 1), subtrsq(car c,  cadr c)),
                   specialtransf(at,a,b,z) )
         >>
       else
@@ -642,7 +643,7 @@ symbolic procedure findtwoparams(u, v);
  begin scalar c;
    foreach uu in u do
       foreach vv in v do
-        if parfool diff1sq(uu,vv)
+        if parfool subtrsq(uu,vv)
           then << c := list(vv,uu); u := nil; v := nil>> ;
    return c;
 end;
@@ -652,7 +653,7 @@ symbolic procedure multpoles (u,a,b,z);
   if cadr u = 0 then (nil . 1) else
      addsq(multresude(list(car u, caddr u),a,b,z),
            multpoles(list(car u,cadr u-1,
-                     diff1sq(caddr u,'(1 . 1))),a,b,z));
+                     subtrsq(caddr u,'(1 . 1))),a,b,z));
 
 symbolic procedure multresude (u,a,b,z);
   % u -- (order start).
@@ -745,7 +746,7 @@ symbolic procedure taylornom(u,v,n);
      exptsq('(-1 . 1),if null car negsq u then 0 else car negsq u),
      invsq v,
      taylornom('(1 . 1),v,n),taylornom('(1 . 1),negsq v,n),
-     taylorden(diff1sq('(1 . 1),u),negsq v,n)),n)
+     taylorden(subtrsq('(1 . 1),u),negsq v,n)),n)
     else
      multsq(gamsq(u),taylorgamma(u,v,n));
 
@@ -756,7 +757,7 @@ symbolic procedure taylorden(u,v,n);
   if parfool u then multlistasym(list(
      exptsq('(-1 . 1),if null car negsq u then 0 else car negsq u),
      v,
-     taylornom(diff1sq('(1 . 1),u),negsq v,n),
+     taylornom(subtrsq('(1 . 1),u),negsq v,n),
      taylorden('(1 . 1),v,n),
      taylorden('(1 . 1),negsq v,n)),n)
                else

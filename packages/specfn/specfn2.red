@@ -31,24 +31,24 @@ module specfn2;  % Part 2 of the Special functions package for REDUCE.
 
 
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
-%                                                                                                                %
-%     Please report bugs to Winfried Neun,                                         %
-%                                            Konrad-Zuse-Zentrum                                   %
-%                                               fuer Informationstechnik Berlin,   %
-%                                            Heilbronner Str. 10                                     %
-%                           10711 Berlin - Wilmersdorf                 %
-%                                            Federal Republic of Germany                        %
-%     or by email, neun@sc.ZIB-Berlin.de                                           %
-%                                                                                                                %
+%                                                                %
+%     Please report bugs to Winfried Neun,                       %
+%       Konrad-Zuse-Zentrum                                      %
+%       fuer Informationstechnik Berlin,                         %
+%       Heilbronner Str. 10                                      %
+%       10711 Berlin - Wilmersdorf                               %
+%       Federal Republic of Germany                              %
+%     or by email, neun@sc.ZIB-Berlin.de                         %
+%                                                                %
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
-%                                                                                                                %
-%     This package provides algebraic                                    %
-%     manipulations upon some special functions:                    %
-%                                                                                                                %
-%                   -- Generalized Hypergeometric Functions           %
-%                   -- Meijer's G Function                                                  %
-%              -- to be extended                                 %
-%                                                                                                                %
+%                                                                %
+%     This package provides algebraic                            %
+%     manipulations upon some special functions:                 %
+%                                                                %
+%      -- Generalized Hypergeometric Functions                   %
+%      -- Meijer's G Function                                    %
+%      -- to be extended                                         %
+%                                                                %
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
 
 
@@ -60,11 +60,12 @@ load_package specfn;
 %  Various help utilities and inlines for hypergeometric function
 %  simplification.
 
-symbolic inline procedure diff1sq(u,v);
-   addsq(u,negsq(v))$
+% This is a duplicate of subtrsq, defined in poly/polrep.red
+%symbolic inline procedure diff1sq(u,v);
+%   addsq(u,negsq(v))$
 
 symbolic inline procedure mksqnew u;
-  !*p2f(car fkern(u) .* 1) ./ 1;
+  !*p2q(car fkern(u) .* 1);
 
 symbolic inline procedure gamsq(u);
  mksqnew('GAMMA . list(prepsq u));
@@ -109,17 +110,17 @@ symbolic procedure subsqnew(u,v,z);
 % z -- PF  .
 begin scalar a!1,lp,a;
   a!1:=prepsq v; lp:=((z . a!1));
-  a:=quotsq(subf(car u,list lp),subf(cdr u,list lp));
+  a:=quotsq(subf(numr u,list lp),subf(denr u,list lp));
   return a;
 end$
 
 symbolic procedure expdeg(x,y);
 % x,y -- SQ.
 % value is the x**y.
- if null car y then '(1 . 1) else
- if numberp(car y) and numberp(cdr y) then
-             simpx1(prepsq x,car y,cdr y) else
- quotsq(expdeg1(car x ./ 1 ,y),expdeg1(cdr x ./ 1 ,y))$
+ if null numr y then '(1 . 1) else
+ if numberp numr y and numberp denr y then
+             simpx1(prepsq x,numr y,denr y) else
+ quotsq(expdeg1(numr x ./ 1 ,y),expdeg1(denr x ./ 1 ,y))$
 
 symbolic procedure expdeg1(x,y);
 % x,y -- SQ.
@@ -158,10 +159,10 @@ symbolic inline procedure multlist(u);
 symbolic procedure parfool u;
   % u -- SQ.
   % value is T if u = 0,-1,-2,...
-  if null car u then t
+  if null numr u then t
     else
-  if and(numberp car u,eqn(cdr u,1),lessp(car u,0)) then t
-    else nil$
+  if and(numberp numr u,eqn(denr u,1),lessp(denr u,0)) then t
+    else nil;
 
  symbolic procedure znak u;
  % u -- SQ.
@@ -181,10 +182,10 @@ symbolic procedure parfool u;
  symbolic procedure sdiff(a,b,n);
   % value is (1/b*d/db)**n(a)   .
   % a,n--SQ  b--PF              .
-  if null car n then a else
-  if and(numberp(car n),numberp(cdr n),eqn(cdr n,1),not lessp(car n,0))
+  if null numr n then a else
+  if and(numberp(numr n),numberp(denr n),eqn(denr n,1),not lessp(numr n,0))
                                         then
-     multsq(invsq(simp!* b), diffsq(sdiff(a,b,diff1sq(n, '(1 . 1))),b))
+     multsq(invsq(simp!* b), diffsq(sdiff(a,b,subtrsq(n, '(1 . 1))),b))
      else
   rerror('specialf,130,"***** error parameter in sdiff")$
 
@@ -192,26 +193,26 @@ symbolic procedure parfool u;
   % a -- SQ.
   % b -- ATOM.
   % n -- order, SQ.
- if null n or null car n then a
- else derivativesq(diffsq(a,b),b,diff1sq(n,'(1 . 1)))$
+ if null n or null numr n then a
+ else derivativesq(diffsq(a,b),b,subtrsq(n,'(1 . 1)))$
 
  symbolic procedure addend( u,v,x);
   % u,v -- lists of SQ.
   % x -- SQ.
-  cons(diff1sq(car u,x),difflist(v,diff1sq(car u,x)))$
+  cons(subtrsq(car u,x),difflist(v,subtrsq(car u,x)))$
 
  symbolic procedure parlistfool(u,v);
   %v -- list.
   %value is the T if u-(v)=0,-1,-2,...
   if null v then nil else
-  if parfool(diff1sq(u,car v)) then t else
-     parlistfool(u,cdr v)$
+  if parfool(subtrsq(u,car v)) then t else
+     parlistfool(u,cdr v);
 
  symbolic procedure listparfool(u,v);
   %u -- list.
   %value is the T if (u)-v=0,-1,-2,...
   if null u then nil else
-  if parfool(diff1sq(car u,v)) then t else
+  if parfool(subtrsq(car u,v)) then t else
      listparfool(cdr u,v)$
 
  symbolic procedure listfool u;
@@ -233,19 +234,19 @@ symbolic procedure parfool u;
   % u -- SQ.
   % v -- list of SQ.
   %value is a list: u-(v).
- for each vv in v collect diff1sq(u,vv);
+ for each vv in v collect subtrsq(u,vv);
 
 symbolic procedure redpar1(u,n);
- % value is a paire, car-part -- sublist of the length n
- %                   cdr-part --  .
+ % value is a pair, car-part -- first n elements of list u
+ %                  cdr-part -- u .
  begin scalar bm;
   while u and not(n=0) do begin
     bm:=cons (car u,bm);
     u:=cdr u;
     n:=n-1;
   end;
-  return cons(reverse bm,u);
-end$
+  return cons(reversip bm,u);
+end;
 
 symbolic procedure redpar (l1,l2);
    begin scalar l3;
@@ -270,12 +271,6 @@ symbolic inline procedure StruveHsq(v,u);
 symbolic inline procedure neumsq(v,u);
  mksqnew('BesselY . list(prepsq v,prepsq u));
 
-symbolic inline procedure simppochh(v,u);
- mksqnew('Pochhammer . list(prepsq v,prepsq u));
-
-symbolic inline procedure psisq(v);
- mksqnew('psi . list(prepsq v));
-
 symbolic inline procedure dfpsisq(v,u);
  mksqnew('Polygamma . list(prepsq u,prepsq v));
 
@@ -288,45 +283,12 @@ symbolic inline procedure tricomisq (u,v,w);
 symbolic inline procedure macdsq (v,u);
  mksqnew('BesselK . list(prepsq v,prepsq u));
 
-fluid '(v1!wq,a!g9,b!!g9);
+fluid '(v1!wq a!g9 b!!g9);
 
 symbolic inline procedure sumlist u;
    % u -- list of the PF
    <<for each pp in u do <<p := addsq(simp pp,p)>>; p>>
     where p = '(nil . 1);
-
-symbolic inline procedure difflist(u,v);
- % u -- list of SQ.
- % v -- SQ.
- % value is (u) - v.
- for each uu in u collect addsq(uu,negsq v);
-
-symbolic inline procedure addlist u;
-   % u -- list of PF.
-   <<for each pp in u do <<p := addsq(simp!* pp,p)>>; p>>
-    where p = '(nil . 1);
-
-symbolic inline procedure diff1sq(u,v);
-  addsq(u,negsq(v));
-
-symbolic inline procedure listsq(u);
- % u - list of PF.
- % value is list of SQ.
- for each uu in u collect simp!* uu;
-
-symbolic inline procedure listmin(u);
- % u - list.
- % value is (-u).
- for each uu in u collect negsq uu;
-
-symbolic inline procedure multlist(u);
-<< for each pp in u do <<p := multsq(pp,p)>>; p>> where p = '(1 . 1);
-
-symbolic inline procedure pdifflist(u,v);
-  % u -- SQ.
-  % v -- list of SQ.
-  %value is a list: u-(v).
- for each vv in v collect diff1sq(u,vv);
 
 symbolic inline procedure listprepsq(u);
  for each uu in u collect prepsq uu;
