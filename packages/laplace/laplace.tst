@@ -4,8 +4,6 @@
 
 % Date: 24 October 1988.
 
-load_package solve;
-
 order p;
 
 % Elementary functions with argument k*x, where x is object var.
