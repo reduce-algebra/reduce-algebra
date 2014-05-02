@@ -80,9 +80,9 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlsipo !*rlparallel !*rlopt1s !*rlsifac !*rlbnfsac !*rlgsvb !*rlqegen
    !*rlsitsqspl !*rlgsbnf !*rlgsutord !*rlqegenct !*rlqeheu !*rlnzden
    !*rlposden !*rladdcond !*rlqeqsc !*rlqesqsc !*rlsusi !*rlsusimult !*rlsusigs
-   !*rlsusiadd !*rlcadfac !*rlcaddnfformula !*rlcadpreponly !*rlcadbaseonly
-   !*rlcadextonly !*rlcadprojonly !*rlcadverbose !*rlcaddebug !*rlcadpartial
-   !*rlcadfulldimonly !*rlcadtrimtree !*rlcadrawformula !*rlcadisoallroots
+   !*rlsusiadd !*rlcadfac !*rlcadpreponly
+   !*rlcadextonly !*rlcadprojonly !*rlcadverbose !*rlcaddebug
+   !*rlcadfulldimonly !*rlcadtrimtree !*rlcadrawformula
    !*rlcadaproj !*rlcadaprojalways !*rlcadhongproj !*exp !*rlanuexverbose
    !*rlanuexdifferentroots !*rlanuexgcdnormalize
    !*rlanuexsgnopt !*rlcaddecdeg !*rlcadte !*rlcadpbfvs
