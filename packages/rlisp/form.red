@@ -66,6 +66,7 @@ v1:   if null v then go to v2;
       v := cdr v;
 v2:   v := cadr u;
       b := list form1(caddr u, pairvars(v,vars,mode),mode);
+% Building the PSL bootstrap image needs the "!" here
 !#if (memq 'csl lispsystem!*)
 l:    if null v then go to x;
       if fluidp car v or globalp car v then fl := car v . fl;

@@ -39,7 +39,9 @@ symbolic procedure !*d2n a; if null a then 0 else a;
 symbolic inline procedure adjoin!-term (p,c,r);
    if null c then r else (p .* c) .+ r;
 
+!#if (not (memq 'csl lispsystem!*))
 symbolic inline procedure ttab n; spaces(n-posn());
+!#endif
 
 symbolic inline procedure polyzerop u; null u;
 
@@ -102,7 +104,7 @@ symbolic procedure printvec(str1,n,str2,v);
     prin2!* i;
     prin2!* str2;
     printsf getv(v,i) >>;
-   terpri!*(nil) >>;
+    terpri!*(nil) >>;
 
 endmodule;
 

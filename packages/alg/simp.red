@@ -151,7 +151,7 @@ symbolic procedure subs2 u;
 % also cause pain! To help me understand this I will make all access to this
 % table abstract via small procedures here.
 
-
+% The PSL bootstrap build needs the "!" here
 !#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
 
 % With CSL I have hash tables and I am fairly confident both that for

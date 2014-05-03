@@ -1741,6 +1741,7 @@ if canrun
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 	mkdir -p buildlogs
+	echo Building in `pwd`
 	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- buildlogs/reduce.log \
@@ -1840,6 +1841,7 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE)$(RM) -f bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
+	echo Building in `pwd`
 	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- buildlogs/bootstrapreduce.log \
@@ -2096,6 +2098,7 @@ csl.img:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
+	echo Building in `pwd`
 	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \

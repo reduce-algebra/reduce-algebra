@@ -57,6 +57,7 @@ symbolic procedure ord2(u,v);
 
 
 
+% The PSL bootstrap build needs the "!" here
 !#if (not (memq 'csl lispsystem!*))
 
 % A version of ordp is provided built-in to CSL and the version there
@@ -64,7 +65,7 @@ symbolic procedure ord2(u,v);
 % had used a LOSE flag to make that the version that got used. However both
 % helphy/noncom2 and spde/spde redefine ordp - and if I use a LOSE flag
 % then their redefinitions get discarded as well as this one. Hence I am
-% moving to the ugly and somwhat unsatisfactory use of !#if. A better
+% moving to the ugly and somwhat unsatisfactory use of #if. A better
 % resolution will be to arrange that neither hephys nor spde redefine
 % this function!
 

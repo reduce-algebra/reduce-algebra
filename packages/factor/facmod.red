@@ -44,9 +44,11 @@ fluid '(current!-modulus
         work!-vector2);
 
 
+!#if (memq 'csl lispsystem!*)
 safe!-flag:= carcheck 0; % For speed of array access - important here.
 carcheck 0;              % and again for fasl purposes (in case carcheck
                          % is flagged EVAL).
+!#endif
 
 symbolic procedure get!-factor!-count!-mod!-p
                               (n,poly!-mod!-p,p,x!-is!-factor);
@@ -469,7 +471,9 @@ symbolic procedure append!-new!-factors(a,b);
 
 
 
+!#if (memq 'csl lispsystem!*)
 carcheck safe!-flag; % Restore status quo.
+!#endif
 
 endmodule;
 

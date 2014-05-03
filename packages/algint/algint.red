@@ -52,10 +52,6 @@ symbolic procedure superprint u; prettyprint u;
 
 % Various selectors written as macros.
 
-symbolic inline procedure argof u;
-   % Argument of a unary function.
-   cadr u;
-
 symbolic inline procedure lsubs u; car u;
 
 symbolic inline procedure rsubs u; cdr u;

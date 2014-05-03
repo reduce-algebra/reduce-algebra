@@ -1,0 +1,13 @@
+The intent is that this director will be somewhat temporary. It documents
+cases where there are functions with the same name defined in different
+parts of Reduce.
+The file clash.log is a catalogue. Sometimes one version is a patched or
+enhanced version of the other and the improvements need propagating. In
+some other cases the issues are purely name-clashes and the functions are
+not supposed to be the same.
+
+Every so often some some particular function might be identified and
+all its various definitions collected for comparison. As a start I have
+done that for "diffp".
+
+Arthur Norman. May 2014

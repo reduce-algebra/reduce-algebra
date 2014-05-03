@@ -93,9 +93,9 @@ int main(int argc, char *argv[])
     int nogui = 0;
     int i;
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[1], "--nogui") == 0 ||
-            strcmp(argv[1], "-w") == 0 ||
-            strcmp(argv[1], "-w-") == 0)
+    {   if (strcmp(argv[i], "--nogui") == 0 ||
+            strcmp(argv[i], "-w") == 0 ||
+            strcmp(argv[i], "-w-") == 0)
         {   nogui = 1;
             break;
         }

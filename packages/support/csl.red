@@ -81,6 +81,8 @@ symbolic procedure CSL_normbf x;
       return make!:ibf(mt,ep)
    end;
 
+% Use "!#if" not "#if" for bootstrapping reasons.
+
 !#if (not (memq 'vsl lispsystem!*))
 
 remflag('(normbf), 'lose);

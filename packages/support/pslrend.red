@@ -90,6 +90,9 @@ compiletime (lispsystem!* := system_list!*); % for this module
 
 !*fastcar := t;   % Since REDUCE doesn't use car and cdr on atoms.
 
+symbolic procedure carcheck fff;
+   nil;  % CSL function used much as setting !*fastcar in PSL.
+
 % Control of character case.
 
 % The PSL switch "raise" means really "fold input uniformly to the

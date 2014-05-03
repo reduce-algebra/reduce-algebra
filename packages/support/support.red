@@ -25,6 +25,8 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% Use "!#if" rather than "#if" for bootstrapping reasons.
+
 !#if (memq 'psl lispsystem!*)
      create!-package('(support pslrend compat fastmath compat psl entry pslprolo),
                     NIL);

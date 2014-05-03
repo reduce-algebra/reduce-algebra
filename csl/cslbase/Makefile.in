@@ -4765,6 +4765,7 @@ reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 @canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	echo Building in `pwd`
 @canrun_TRUE@	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 @canrun_TRUE@		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-- buildlogs/reduce.log \
@@ -4852,6 +4853,7 @@ bootstrapreduce.dep:
 bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE)$(RM) -f bootstrapreduce.img
 @canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	echo Building in `pwd`
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
 @canrun_TRUE@		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-- buildlogs/bootstrapreduce.log \
@@ -5064,6 +5066,7 @@ csl.dep:
 csl.img:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csl.img
 @canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	echo Building in `pwd`
 @canrun_TRUE@	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 @canrun_TRUE@		-D@cslbase="$(CYGSRC)" \
 @canrun_TRUE@		-- buildlogs/csl.img.log \

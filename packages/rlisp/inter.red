@@ -146,6 +146,7 @@ flag ('(cont),'ignore);
 
 trap!-time!* := nil; % nil here means no trapping active.
 
+% Building the PSL bootstrap image needs this "!"
 !#if (memq 'psl lispsystem!*)
 
 % Note that when I detect a timeout I not only throw an exception, but I

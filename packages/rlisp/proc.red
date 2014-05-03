@@ -66,6 +66,7 @@ symbolic procedure formproc(u,vars,mode);
         if null car varlis or car varlis eq 't then rsverr car varlis;
         varlis := cdr varlis;
    v2:  varlis := cadr u;
+% Building the PSL bootstrap image needs this "!"
 !#if (memq 'csl lispsystem!*)
    l:   if null varlis then go to x;
         if fluidp car varlis or globalp car varlis then

@@ -298,6 +298,7 @@ symbolic inline procedure make!:ibf (mt, ep);
 if not('ieee memq lispsystem!*) then
      flag('(fl2bf),'lose);
 
+% Use "!#if" not "#if" for bootstrapin reasons
 !#if (eq bitsperword 64)
 
 symbolic procedure fl2bf f;

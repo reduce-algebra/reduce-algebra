@@ -113,6 +113,7 @@ new_inline_definitions := nil;
 % builds may wish to share it.
 
 symbolic procedure inline_defs_file();
+% The PSL bootstrap build needs the "!" here
 !#if (memq 'vsl lispsystem!*)
    "inline-defs.dat";
 !#elif (memq 'csl lispsystem!*)

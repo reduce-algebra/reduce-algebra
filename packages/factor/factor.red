@@ -57,76 +57,14 @@ features will disable the definitions given here by use of a 'LOSE flag;
 
 deflist('((minus!-one -1)),'newnam);   % So that it EVALs properly.
 
-symbolic inline procedure carcheck u; nil;
-
-% symbolic inline procedure irecip u; 1/u;
-
-% symbolic inline procedure isdomain u; domainp u;
-
-% symbolic inline procedure readgctime; gctime();
-
-% symbolic inline procedure readtime; time()-gctime();
-
-% symbolic inline procedure ttab n; spaces(n-posn());
-
-
-%   ***** The remainder of this module used to be in FLUIDS.
-
-% Macro definitions for functions that create and access reduce-type
-% datastructures.
-
-% inline procedure polyzerop u; null u;
-
-inline procedure didntgo q; null q;
-
-% inline procedure depends!-on!-var(a,v);
-%   (lambda !#!#z; (not domainp !#!#z) and (mvar !#!#z=v)) a;
-
-% inline procedure l!-numeric!-c(a,vlist); lnc a;
-
-% Macro definitions for use in Berlekamp's algorithm.
-
-% Smacros used in linear equation package.
-
-% inline procedure getm2(a,i,j);
-%    % Store by rows, to ease pivoting process.
-%    getv(getv(a,i),j);
-
-% inline procedure putm2(a,i,j,v);
-%    putv(getv(a,i),j,v);
-
-inline procedure !*f2mod u; u;
-
-inline procedure !*mod2f u; u;
-
-%%%inline procedure adjoin!-term (p,c,r);
-%%%  (lambda !#z!#; % Lambda binding prevents repeated evaluation of C.
-%%%    if null !#z!# then r else (p .* !#z!#) .+ r) c;
-
 symbolic inline procedure get!-f!-numvec s; cadr cddr cdddr s;
-
-% !*overshoot:=nil; % Default not to show overshoot occurring.
-
-% reconstructing!-gcd:=nil;  % This is primarily a factorizer!
 
 symbolic procedure ttab!* n;
 <<if n>(linelength nil - spare!*) then n:=0;
   if posn!* > n then terpri!*(nil);
   while not(posn!*=n) do prin2!* '!  >>;
 
-inline procedure printstr l; << prin2!* l; terpri!*(nil) >>;
-
-inline procedure printvar v; printstr v;
-
-inline procedure prinvar v; prin2!* v;
-
-% inline procedure display!-time(str,mt);
-% Displays the string str followed by time mt (millisecs).
-%  << prin2 str; prin2 mt; prin2t " millisecs." >>;
-
 % trace control package.
-
-% smacro procedure trace!-time action; if !*timings then action;
 
 smacro procedure new!-level(n,c); (lambda factor!-level; c) n;
 

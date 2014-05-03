@@ -92,21 +92,21 @@ symbolic procedure start_parser();
 % The following version of YYLEX provides RLISP with a facility for
 % conditional compilation.  The protocol is that text is included or
 % excluded at the level of tokens.  Control by use of new reserved
-% tokens !#if, !#else and !#endif.  These are used in the form:
-%    !#if (some Lisp expression for use as a condition)
+% tokens #if, #else and #endif.  These are used in the form:
+%    #if (some Lisp expression for use as a condition)
 %    ... RLISP input ...
-%    !#else
+%    #else
 %    ... alternative RLISP input ...
-%    !#endif
+%    #endif
 %
 % The form
-%    !#if C1 ... !#elif C2 ... !#elif C3 ... !#else ... !#endif
+%    #if C1 ... #elif C2 ... #elif C3 ... #else ... #endif
 % is also supported.
 %
 % Conditional compilation can be nested.  If the Lisp expression used to
 % guard a condition causes an error it is taken to be a FALSE condition.
-% It is not necessary to have an !#else before !#endif if no alternative
-% text is needed. Although the examples here put !#if etc at the start of
+% It is not necessary to have an #else before #endif if no alternative
+% text is needed. Although the examples here put #if etc at the start of
 % lines this is not necessary (though it may count as good style?). Since
 % the condition will be read using RLISPs own list-reader there could be
 % condtional compilation guarding parts of it - the exploitation of that
@@ -115,39 +115,39 @@ symbolic procedure start_parser();
 % Making the condition a raw Lisp expression makes sure that parsing it
 % is easy. It makes it possible to express arbitrary conditions, but it is
 % hoped that most conditions will not be very elaborate - things like
-%    !#if (not (member 'csl lispsystem!*))
+%    #if (not (member 'csl lispsystem!*))
 %         error();
-%    !#else
+%    #else
 %         magic();
-%    !#endif
+%    #endif
 % or
-%    !#if debugging_mode   % NB if variable is unset that counts as nil
+%    #if debugging_mode   % NB if variable is unset that counts as nil
 %    print "message";      % so care should be taken to select the most
-%    !#endif               % useful default sense for such tests
+%    #endif               % useful default sense for such tests
 % should be about as complicated as reasonable people need.
 % 
 % Two further facilities are provided:
-%    !#eval (any lisp expression)
+%    #eval (any lisp expression)
 % causes that expression to be evaluated at parse time.  Apart from any
 % side-effects in the evaluation the text involved is all ignored. It is
 % expected that this will only be needed in rather curious cases, for
 % instance to set system-specific options for a compiler.
 %
-%    !#define symbol value
+%    #define symbol value
 % where the value should be another symbol, a string or a number, causes
 % the first symbol to be mapped onto the second value wherever it occurs in
 % subsequent input.  No special facility for undoing the effect of a
-% !#define is provided, but the general-purpose !#eval could be used to
-% remove the '!#define property that is involved.
+% #define is provided, but the general-purpose #eval could be used to
+% remove the '#define property that is involved.
 %
-% NOTE: The special symbols !#if etc are NOT recognised within Lisp
+% NOTE: The special symbols #if etc are NOT recognised within Lisp
 %       quoted expressions, so test like the following will be
 %       ineffective:
 %            a := '(
 %                P
-%            !#if q_is_wanted
+%            #if q_is_wanted
 %                Q
-%            !#endif
+%            #endif
 %                R);
 %       but on the other hand code like
 %            if sym = '!#if then ...
@@ -165,7 +165,7 @@ symbolic procedure yylex();
 % symbol and NOT being the keyword "begin".
     w := lex_basic_token();
 % The "while not done" loop is so that I can restart the scan after seeing
-% a pre-processor directive such as !#if.
+% a pre-processor directive such as #if.
     while not done do <<
 % The word "COMMENT" introduces a comment that terminates at the next ";"
 % or "$".
@@ -239,15 +239,15 @@ symbolic procedure yylex();
 
 
 
-% If, when reading ordinary text, I come across the token !#if I read
+% If, when reading ordinary text, I come across the token #if I read
 % the expression following. If that evaluates to TRUE I just keep on
-% on reading. So the sequence "!#if t" is in effect ignored. Then
-% if later on I just ignore an "!#endif" all will be well.  If on the other
+% on reading. So the sequence "#if t" is in effect ignored. Then
+% if later on I just ignore an "#endif" all will be well.  If on the other
 % hand the expression evaluates to NIL (or if evaluation fails), I will
 % call lex_skipping() to discard more tokens (up to and including
-% the next "!#else", "!#elif t" or "!#endif"). I keep a count of how many
-% "!#if t" equivalents I have passed so that I can match them with their
-% corresponding "!#endif" statements and moan if an "!#else" or "!#endif"
+% the next "#else", "#elif t" or "#endif"). I keep a count of how many
+% "#if t" equivalents I have passed so that I can match them with their
+% corresponding "#endif" statements and moan if an "#else" or "#endif"
 % occurs out of place.
 
 symbolic procedure lex_conditional x;
@@ -260,20 +260,20 @@ symbolic procedure lex_conditional x;
     return w
   end;
 
-% I call lex_skipping when I find "!#if nil" or "!#else" or "!#elif"
-% that is processed. When a top-level "!#else" or "!#elif" is found it
+% I call lex_skipping when I find "#if nil" or "#else" or "#elif"
+% that is processed. When a top-level "#else" or "#elif" is found it
 % is discarded before calling lex_skipping, since it must follow a
-% successful "!#if" and hence introduce material to be thrown away.
+% successful "#if" and hence introduce material to be thrown away.
 
 symbolic procedure lex_skipping(w, x);
   begin
     scalar done;
-% In this code x keep track of the depth of testing of "!#if" constructions
+% In this code x keep track of the depth of testing of "#if" constructions
     while not done do <<
         if w = 0 then done := t   % End of file
         else <<
             if w = '!:symbol then <<
-                if yylval = '!#endif then <<
+                if yylval = '#endif then <<
                     if null x then done := t
                     else x := cdr x >>
                 else if yylval = '!#if then x := nil . x

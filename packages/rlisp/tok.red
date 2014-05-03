@@ -1014,7 +1014,7 @@ symbolic procedure scan;
                      if !*comment then return x else go to a)
 % I might comment that the material within a quoted form is not
 % processed by SCAN and so the text "!#if" here both NEED the initial
-% escape mark and it will not be treated as introducing a cobditional
+% escape mark and it will not be treated as introducing a conditional
 % section.
          else if nxtsym!* eq '!#if then go to conditional
          else if nxtsym!* eq '!#else or
@@ -1073,7 +1073,7 @@ symbolic procedure scan;
         go to sw2;
   preprocessor:
         prin2x nxtsym!*;
-        nxtsym!* := compress ('!! . '!# . explode nxtsym!*);
+        nxtsym!* := intern compress ('!! . '!# . explode nxtsym!*);
         go to c;
   conditional:
 % The conditional expression used here must be written in Lisp form
@@ -1090,7 +1090,7 @@ symbolic procedure scan;
         if nxtsym!* eq '!# and ttype!*=3 and not seprp crchar!* then progn(
           nxtsym!* := token(),
           if ttype!* = 0 then
-            nxtsym!* := compress('!! . '!# . explode nxtsym!*));
+            nxtsym!* := intern compress('!! . '!# . explode nxtsym!*));
         if nxtsym!* eq '!#endif then
            if null x then go to a else x := cdr x
         else if nxtsym!* eq '!#if then x := nil . x
