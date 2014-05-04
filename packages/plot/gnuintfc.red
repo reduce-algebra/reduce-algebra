@@ -36,8 +36,8 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
          plotcleanup!* plottmp!*);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% PSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!#if (member 'psl lispsystem!*)
-   !#if (member 'unix lispsystem!*)
+#if (member 'psl lispsystem!*)
+   #if (member 'unix lispsystem!*)
 
    !*plotusepipe:=t;               % pipes: yes
    load pipes;
@@ -90,7 +90,7 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
        {"rm /tmp/plotdt*","rm /tmp/plotcmds!*"};
    !*plotinterrupts := '(10002);
 
-   !#elif (intersection '(dos os2 win32 win64 winnt alphant) lispsystem!*)
+   #elif (intersection '(dos os2 win32 win64 winnt alphant) lispsystem!*)
 
 fluid '(!*!*windows);
 
@@ -182,7 +182,7 @@ fluid '(!*!*windows);
   plotmax!* := 3e36;                    % IEEE single precision
   !*plotinterrupts := '(10002);
 
-   !#elif (member 'vms lispsystem!*)
+   #elif (member 'vms lispsystem!*)
 
    !*plotusepipe:=NIL;               % pipes: yes
    !*plotpause:=nil;                 % pause: no
@@ -197,10 +197,10 @@ fluid '(!*!*windows);
        {"del SYS$SCRATCH:plotdt*;*","del SYS$SCRATCH:plotcmds*;*"};
    !*plotinterrupts := '(10002);
 
-  !#endif
+  #endif
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% CSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!#elif (member 'csl lispsystem!*)
+#elif (member 'csl lispsystem!*)
 
 %
 % If the user has set environment variables called "tmp" or "temp" then
@@ -258,7 +258,7 @@ symbolic procedure init_gnuplot();
   
 init_gnuplot();
 
-!#endif
+#endif
 
 endmodule;
 

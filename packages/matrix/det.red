@@ -46,7 +46,7 @@ Comment Some general purpose hashing functions;
 
 flag('(array),'eval);      % Declared again for bootstrapping purposes.
 
-!#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
+#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
 
 % Use the CSL hash tables...
 
@@ -67,7 +67,7 @@ symbolic procedure matrix_puthash(key,valu);
 symbolic procedure matrix_clrhash();
   clrhash !$hash;
 
-!#else
+#else
 
 array !$hash 64;  % General array for hashing.
 
@@ -86,7 +86,7 @@ symbolic procedure matrix_puthash(key,valu);
 symbolic procedure matrix_clrhash;
    for i := 0:64 do !$hash i := nil;
 
-!#endif
+#endif
 
 Comment Determinant Routines;
 

@@ -182,7 +182,7 @@ if lr_pslp() then <<
 
 % Color PSL prompts, in case user falls through:
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 procedure lr_compute!-prompt!-string(count,level);
    lr_color lr_compute!-prompt!-string!-orig(count,level);
@@ -203,7 +203,7 @@ procedure sysmaxbuffer(fd);
 
 putv(iobuffer, 0, mkstring(sysmaxbuffer nil, '! ));
 
-!#endif
+#endif
 
 if lr_pslp() then <<
    copyd('break_prompt,'lr_break_prompt);

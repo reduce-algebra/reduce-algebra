@@ -41,9 +41,9 @@ create!-package('(utf8),nil);
 
 fluid '(lispsystem!* overflowed!* posn!* testing!-width!* !*nat);
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    fluid '(maxchannels writefunction out!*);
-!#endif
+#endif
 
 switch utf8;
 switch utf82d;
@@ -163,7 +163,7 @@ procedure utf8_scprint(u,n);
 procedure utf8_dots(n);
    for i := 1:n do prin2 " ";
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    procedure utf8_tyo(itml);
       <<
 	 setf(wgetv(lineposition,out!*),wgetv(lineposition,out!*)+car itml);
@@ -177,11 +177,11 @@ procedure utf8_dots(n);
       	    noniochannelerror(channel,"ChannelWriteChar");
       	 idapply(wgetv(writefunction,channel),{channel,char})
       >>;
-!#else
+#else
    procedure utf8_tyo(itml);
       for each itm in cdr itml do
       	 tyo itm;
-!#endif
+#endif
 
 procedure utf8_prin2(itm);
    prin2 itm;

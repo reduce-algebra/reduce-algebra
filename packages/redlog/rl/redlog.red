@@ -440,7 +440,7 @@ procedure sl_alias(new,old);
       'psopfn,
       get(intern compress append('(!s !l),explode old),'psopfn));
 
-!#if rldynamic!#
+#if rldynamic!#
 
 inline procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level
@@ -607,7 +607,7 @@ inline procedure rl_get(f,k);
 inline procedure rl_plist(f);
    car f;
 
-!#else
+#else
 
 inline procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level
@@ -770,7 +770,7 @@ inline procedure rl_get(f,k);
 inline procedure rl_plist(f);
    nil;
 
-!#endif
+#endif
 
 inline procedure rl_quap(x);
    % Reduce logic quantifier predicate. [x] is any S-expression.

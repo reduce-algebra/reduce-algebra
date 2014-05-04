@@ -56,13 +56,13 @@ fluid '(
 
 );
 
-!#if(or (errorp (errorset '!*writingfaslfile nil nil))
+#if(or (errorp (errorset '!*writingfaslfile nil nil))
         (not !*writingfaslfile)
         (errorp (errorset '(load fcomp) nil nil)))
 %  prin2t "*** No support for fast float!";
    symbolic macro procedure fdeclare u; nil;
    symbolic macro procedure thefloat u; cadr u;
-!#endif
+#endif
 
 % Create .. as infix operator.
 

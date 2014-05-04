@@ -118,26 +118,26 @@ procedure ioto_realtime();
 procedure ioto_flush();
    % Input/Output flush. No parameter. Returns ANY. Flushes the output
    % buffer.
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    <<
       flushbuffer out!*;
       channelflush out!*
    >>;
-!#else
+#else
       flush();
-!#endif
+#endif
 
 procedure ioto_datestamp();
    % Input/Output datestamp. No parameter. Returns an integer the
    % number of secons since an fixed date.
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    <<
       date();
       sys2int wgetv(datebuffer,0)
    >>;
-!#else
+#else
    datestamp();
-!#endif
+#endif
 
 procedure ioto_form2str(u);
    begin scalar buf;

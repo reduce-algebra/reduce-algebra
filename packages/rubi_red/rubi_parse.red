@@ -14,7 +14,7 @@ fluid '(mmachar);  % variable to hold next character
 
 mmachar := '! ;    % starts off as a space character
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 fluid '(blank tab);
 
@@ -24,7 +24,7 @@ tab   := intern int2id 9;
 symbolic procedure flush u;  % Flush a file...
   nil;
 
-!#endif 
+#endif 
 
 fluid '(carriage_return);
 

@@ -66,15 +66,14 @@ v1:   if null v then go to v2;
       v := cdr v;
 v2:   v := cadr u;
       b := list form1(caddr u, pairvars(v,vars,mode),mode);
-% Building the PSL bootstrap image needs the "!" here
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 l:    if null v then go to x;
       if fluidp car v or globalp car v then fl := car v . fl;
       v := cdr v;
       go to l;
 x:    if fl then b := list('declare, 'special . fl) . b;
       v := cadr u;
-!#endif
+#endif
       return 'lambda . v . b;
    end;
 
@@ -363,14 +362,14 @@ symbolic procedure !*!*a2s(u,vars);
     % Expressions involving "random" cannot be cached.
     % We need smember rather than smemq in case the "random" is
     % in a quoted expression.
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
     else if smember('random,u) then
      list(list('lambda,'(!*uncached),
        list('progn, '(declare (special !*uncached)), list(!*!*a2sfn,u))),t)
-!#else
+#else
     else if smember('random,u) then
      list(list('lambda,'(!*uncached),list(!*!*a2sfn,u)),t)
-!#endif
+#endif
     else list(!*!*a2sfn,u);
 
 symbolic procedure !*!*s2a(u,vars); u;

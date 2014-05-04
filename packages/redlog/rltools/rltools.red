@@ -55,7 +55,7 @@ imports groebner,groebnr2;
 
 off1 'assert;
 
-!#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
+#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
    fluid '(!*lower loadextentions!*);
 
    procedure modulep(u);
@@ -73,7 +73,7 @@ off1 'assert;
       	 >>;
       	 return not null found
       end;
-!#endif
+#endif
 
 if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
    if modulep 'groebner then
@@ -82,7 +82,7 @@ if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
       load!-package 'groebnr2
 >>;
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    procedure meminfo();
       begin scalar bit, hs, hsb, cpgcp, w, bs, bsb, bps, bpsb;
       	 if not memq('psl,lispsystem!*) then
@@ -158,9 +158,9 @@ if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
       	    prin2t cdr w;
       	 >>
       end;
-!#endif
+#endif
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
    procedure meminfo();
       begin scalar bit;
       	 if not memq('csl,lispsystem!*) then
@@ -170,7 +170,7 @@ if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
       	 prin2 bit;
       	 prin2t " bit";
       end;
-!#endif
+#endif
 
 procedure meminfoscale(n);
    if n >= 10^9 then
@@ -206,17 +206,17 @@ procedure meminfocomma(n,comma);
       return compress('!" . l)
    end;
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    fluid '(symbolfilename!*);
 
    procedure rltools_trunk();
       rltools_dotdotx(symbolfilename!*,4);
-!#endif
+#endif
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
    procedure rltools_trunk();
       compress('!" . append(explodec !@reduce, '(!/ !")));
-!#endif
+#endif
 
 procedure rltools_dotdotx(s,n);
    if eqn(n,0) then

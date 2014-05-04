@@ -39,9 +39,9 @@ symbolic procedure !*d2n a; if null a then 0 else a;
 symbolic inline procedure adjoin!-term (p,c,r);
    if null c then r else (p .* c) .+ r;
 
-!#if (not (memq 'csl lispsystem!*))
+#if (not (memq 'csl lispsystem!*))
 symbolic inline procedure ttab n; spaces(n-posn());
-!#endif
+#endif
 
 symbolic inline procedure polyzerop u; null u;
 

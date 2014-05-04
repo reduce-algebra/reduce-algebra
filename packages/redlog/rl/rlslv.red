@@ -45,7 +45,7 @@ put('slv,'rl_simpfn,'slv_simp);
 
 flag('(slv_simp),'full);
 
-!#if rldynamic!#
+#if rldynamic!#
 
 procedure slv_mk(n);
    {nil,'slv,n};
@@ -59,7 +59,7 @@ procedure slv_simp(u);
 procedure slv_prep(slv);
    cdr slv;
 
-!#else
+#else
 
 procedure slv_mk(n);
    {'slv,n};
@@ -73,7 +73,7 @@ procedure slv_simp(u);
 procedure slv_prep(slv);
    slv;
 
-!#endif
+#endif
 
 procedure slv_new();
    slv_mk(sl_slvc!* := sl_slvc!* + 1);

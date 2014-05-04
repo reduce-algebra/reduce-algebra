@@ -420,10 +420,10 @@ procedure assert_at2str(s);
    % of the atom [s] as a string.
    compress('!" . reversip('!" . reversip explode s));
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
 procedure id2string(id);
    symbol!-name id;
-!#endif
+#endif
 
 endmodule;  % assert
 

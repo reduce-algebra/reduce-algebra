@@ -57,8 +57,7 @@ symbolic procedure ord2(u,v);
 
 
 
-% The PSL bootstrap build needs the "!" here
-!#if (not (memq 'csl lispsystem!*))
+#if (not (memq 'csl lispsystem!*))
 
 % A version of ordp is provided built-in to CSL and the version there
 % is intended to behave just the way that this does. Now until recently I
@@ -95,7 +94,7 @@ symbolic procedure ordp(u,v);
     else if flagp(car v,'noncom) then nil
     else ordp(car u,car v);
 
-!#endif
+#endif
 
 symbolic procedure ordpl(u,v);
    % Returns TRUE if list U ordered ahead or equal to V, NIL otherwise.

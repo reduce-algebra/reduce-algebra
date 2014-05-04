@@ -302,24 +302,24 @@ procedure texmacsp;
 copyd('linelength!-orig,'linelength);
 remd('linelength);
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 procedure linelength(a);
    if texmacsp() then linelength!-orig(30000) else linelength!-orig(a);
 
-!#else
+#else
 
 % In CSL you can look for memq('texmacs,lispsystem!*) to see if the command-
 % line option "--texmacs" was given when Reduce was started.
 procedure linelength(a);
    if texmacsp() then 30000 else linelength!-orig(a);
 
-!#endif
+#endif
 
 % The next two functions provide abstraction for conversion between
 % strings and lists of character objects.
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 % Under CSL the eventual state will be that IF output is going directly
 % to a window that can support maths display then I will send stuff there
@@ -351,7 +351,7 @@ inline procedure writechar n;
 % output characters are folded to lower case.
 % CSL already has explode2lc;
 
-!#else
+#else
 
 inline procedure list!-to!-string a;
     compress ('!" . append(a, '(!")));
@@ -368,7 +368,7 @@ symbolic procedure raw!-print!-string s;
 symbolic procedure explode2lc s;
     explode2 s where !*lower = t;
 
-!#endif
+#endif
 
 symbolic procedure fancy!-tex s;
   % test output: print tex string.
@@ -415,9 +415,9 @@ symbolic procedure set!-fancymode bool;
       sumlevel!* := tablevel!* := 1;
    >>;
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 fluid '(!*standard!-output!* !*math!-output!* !*spool!-output!*);
-!#endif
+#endif
 
 fluid '(most_recent_fancy !*display!-for!-copy);
 
@@ -481,7 +481,7 @@ symbolic procedure fancy!-output(mode,l);
 % effect of discarding any built-up layout.
    <<set!-fancymode t;
       if mode = 'maprin then <<
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 % math!-display 1 will not do anything, but returns true if a spool_file
 % is active.
          if getd 'math!-display and
@@ -489,16 +489,16 @@ symbolic procedure fancy!-output(mode,l);
             math!-display 1 then <<
             maprin l where outputhandler!* = nil >>;
          most_recent_fancy := l . most_recent_fancy;
-!#endif
+#endif
          fancy!-maprin0 l >>
       else <<
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
          if getd 'math!-display and
             math!-display 0 and
             math!-display 1 then <<
             terpri!* l where outputhandler!* = nil,
                              !*standard!-output!* = !*spool!-output!* >>;
-!#endif
+#endif
          fancy!-flush() >> >>;
 
 symbolic procedure fancy!-out!-header();
@@ -516,7 +516,7 @@ symbolic procedure fancy!-out!-trailer();
        prin2 int2id 5
     >>;
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 symbolic procedure fancy!-flush();
   begin
@@ -571,7 +571,7 @@ symbolic procedure fancy!-flush();
     set!-fancymode nil
   end;
 
-!#else
+#else
 
 symbolic procedure fancy!-flush();
   begin
@@ -585,7 +585,7 @@ symbolic procedure fancy!-flush();
      set!-fancymode nil
   end;
 
-!#endif
+#endif
 
 %---------------- primitives -----------------------------------
 
@@ -712,9 +712,9 @@ flag('(texpointsize), 'opfn);
 
 fluid '(cm!-widths!*);
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 symbolic procedure list!-to!-vector a; list2vector a;
-!#endif
+#endif
 
 cm!-widths!* := list(
     % name checksum design-size (millipoints)
@@ -1449,7 +1449,7 @@ put('#chi;,'fancy!-special!-symbol,"\chi");
 put('#psi;,'fancy!-special!-symbol,"\psi");
 put('#omega;,'fancy!-special!-symbol,"\omega");
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 deflist('(
 % Many of these are just the same glyphs as ordinary upper case letters,
@@ -1479,7 +1479,7 @@ deflist('(
      (!#Zeta; "\mathit{Z}") (!varphi "\varphi ") (!#pound; "\pound ")
         ),'fancy!-special!-symbol);
 
-!#else
+#else
 
 if 'a neq '!A then deflist('(
     (!Alpha 65) (!Beta 66) (!Chi 67) (!Delta 68)
@@ -1491,7 +1491,7 @@ if 'a neq '!A then deflist('(
     (!varphi 106)
        ),'fancy!-special!-symbol);
 
-!#endif
+#endif
 
 put('infinity,'fancy!-special!-symbol,"\infty ");
 put('partial!-df,'fancy!-special!-symbol,"\partial ");
@@ -2685,7 +2685,7 @@ procedure tm_setpchar!-psl(c);
       return tm_uncolor w
    end;
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 switch redfront_mode;
 
@@ -2707,7 +2707,7 @@ procedure tm_setpchar!-csl(c);
    if !*redfront_mode then tm_uncolor tm_setpchar!-orig tm_color c
    else tm_setpchar!-orig c;
 
-!#endif
+#endif
 
 if not getd 'tm_setpchar!-orig then copyd('tm_setpchar!-orig,'setpchar);
 

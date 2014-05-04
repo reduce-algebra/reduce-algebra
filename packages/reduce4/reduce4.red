@@ -51,14 +51,14 @@ symbolic procedure !%reduce4;
       !*mode := 'algebraic;
       !*reduce4 := t;
       remflag('(plus times),'nary);
- %     !#if (member 'psl lispsystem!*)
+ %     #if (member 'psl lispsystem!*)
  %        <<remprop('off,'newnam);
  %          remprop('off,'quotenewnam);
  %          remprop('!~off,'oldnam);
  %          remprop('on,'newnam);
  %          remprop('on,'quotenewnam);
  %          remprop('!~on,'oldnam)>>;
- %     !#endif
+ %     #endif
    end;
 
 symbolic procedure !%reduce3;
@@ -69,9 +69,9 @@ symbolic procedure !%reduce3;
       if !*oldmode4 then !*mode := !*oldmode4 else !*mode := 'symbolic;
       !*reduce4 := nil;
       flag('(plus times),'nary);
- %     !#if (member 'psl lispsystem!*)
+ %     #if (member 'psl lispsystem!*)
  %         define!-alias!-list '(off on);
- %     !#endif
+ %     #endif
    end;
 
 on quotenewnam;

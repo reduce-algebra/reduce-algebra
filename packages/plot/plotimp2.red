@@ -73,7 +73,7 @@ symbolic procedure mk!-point(x0,y0,fcn);
             rederr("Implicit function cannot be plotted")
          ) where point = {x0,y0,apply2(fcn,x0,y0)};
 
-!#if (member 'csl lispsystem!*)
+#if (member 'csl lispsystem!*)
     symbolic procedure deletip1 (u,v);
        % Auxiliary function for DeletIP.
        pairp cdr v and
@@ -84,7 +84,7 @@ symbolic procedure mk!-point(x0,y0,fcn);
        if not pairp v then v
         else if u=car v then cdr v
         else <<deletip1(u,v); v>>;
-!#endif
+#endif
 
 symbolic procedure imp2!-delete!-pt!-reference(i,p);
     cdr cddr p := deletip(i,cdddr p);

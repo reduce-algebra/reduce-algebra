@@ -29,9 +29,9 @@ module trigsimp; % User controlled simplification
 %
 
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
   flag('(trigsmp1),'lap);
-!#endif
+#endif
 
 create!-package('(trigsimp trigsmp1 trigsmp2),'(contrib misc));
 

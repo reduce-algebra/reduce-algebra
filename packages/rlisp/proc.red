@@ -66,15 +66,14 @@ symbolic procedure formproc(u,vars,mode);
         if null car varlis or car varlis eq 't then rsverr car varlis;
         varlis := cdr varlis;
    v2:  varlis := cadr u;
-% Building the PSL bootstrap image needs this "!"
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
    l:   if null varlis then go to x;
         if fluidp car varlis or globalp car varlis then
           fl := car varlis . fl;
         varlis := cdr varlis;
         go to l;
    x:   varlis := cadr u;
-!#endif
+#endif
         body := caddr u;
         x := if eqcar(body,'rblock) then cadr body else nil;
         y := pairxvars(varlis,x,vars,mode);
@@ -83,7 +82,7 @@ symbolic procedure formproc(u,vars,mode);
 % !*noinlines being set causes every inline that is defined to be downgraded
 % to a regular procedure.
         if !*noinlines and type eq 'inline then type := 'expr;
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 % Note the non-Common way in which the DECLARE sits within a PROGN here.
 % Furthermore I only insert DECLARE for sort-of ordinary functions.
 % Specifically this will not include "inline procedure"... but a consequence
@@ -94,7 +93,7 @@ symbolic procedure formproc(u,vars,mode);
          body:=list('progn,
                     list('declare, 'special . fl),
                     body);
-!#endif
+#endif
         obody:=body;
         if type = 'inline then begin
            scalar dd;

@@ -151,8 +151,7 @@ symbolic procedure subs2 u;
 % also cause pain! To help me understand this I will make all access to this
 % table abstract via small procedures here.
 
-% The PSL bootstrap build needs the "!" here
-!#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
+#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
 
 % With CSL I have hash tables and I am fairly confident both that for
 % cases where alglist!* becomes long they are a significant win and that
@@ -196,7 +195,7 @@ symbolic procedure delete_from_alglist(key, l);
   if null l then nil
   else << remhash(key, l); l >>;
 
-!#else
+#else
 
 % With PSL I maintain the previous association-list model, albeit now
 % lifted by a level of abstraction.
@@ -215,7 +214,7 @@ inline procedure search_alglist(key, l);
 symbolic procedure delete_from_alglist(key, l);
   delasc(key, l);
 
-!#endif
+#endif
 
 
 symbolic procedure simp u;

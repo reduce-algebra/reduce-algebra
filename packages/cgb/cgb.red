@@ -46,7 +46,7 @@ module cgb;
 
 create!-package('(cgb gb dp gbsc),nil);
 
-!#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
+#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
 fluid '(!*lower loadextentions!*);
 
 procedure modulep(u);
@@ -64,7 +64,7 @@ procedure modulep(u);
       >>;
       return not null found
    end;
-!#endif
+#endif
 
 loadtime load!-package 'ezgcd;
 

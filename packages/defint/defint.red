@@ -43,12 +43,12 @@ create!-package ('(defint definta defintc defintf definti defint0
 %               definth defintk),
                  '(contrib defint));
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
   flag('(definta defintb definte defintf definti defintk),'lap);
-!#endif
+#endif
 
 fluid '(MELLINCOEF);
-SHARE MELLINCOEF$
+share MELLINCOEF$
 
 endmodule;
 

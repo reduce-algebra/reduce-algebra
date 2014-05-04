@@ -53,7 +53,7 @@ fluid '(renamings);
 !*lalr_verbose := t;      % How much will the parser-generator print?
                           % While I am debugging I want it noisy!
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 % CSL has special vectors that hold just 8-bit integers (it also has ones
 % for 16-bit integers) and use of those will decrease the amount of
@@ -121,7 +121,7 @@ load gsort; % Not loaded by default and not autoloaded on demand.
 symbolic procedure sort(ll, ff);
   gsort(ll, ff);
 
-!#endif
+#endif
 
 
 endmodule;

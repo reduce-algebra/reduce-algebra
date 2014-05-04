@@ -30,7 +30,7 @@
 
 module z3;
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 compiletime load!-package 'rltools;
 
@@ -237,7 +237,7 @@ procedure z3_form2ast(ctx, form);
       rederr {"syntax error in form", form}
    end;
 
-!#endif
+#endif
 
 endmodule;  % z3
 

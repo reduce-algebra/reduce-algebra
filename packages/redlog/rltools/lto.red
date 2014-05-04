@@ -424,25 +424,25 @@ procedure lto_partition(l, f);
       return reversip goodl . reversip badl
    end;
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
    procedure lto_hashid(id);
       sxhash id;
-!#endif
+#endif
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    procedure lto_hashid(id);
       id2int id;
-!#endif
+#endif
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
    procedure delq(x,l);
       % Delete with memq. [x] is ANY; [l] is a list. Returns a list.
       % The first occurence of an element identical to [x] in [l] is
       % deleted.
       if l then if car l eq x then cdr l else car l . delq(x,cdr l);
-!#endif
+#endif
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
    procedure delqip(u,v);
       % Delete with memq in place. [u] is ANY; [v] is a list. Returns
       % a list. The first occurence of an element identical to [u] in
@@ -455,9 +455,9 @@ procedure lto_partition(l, f);
 	 delqip1(u,v);
 	 v
       >>;
-!#endif
+#endif
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
    procedure delqip1(u,v);
       % Delete with memq in place subroutine. [u] is ANY; [v] is a
       % list, such that [not(car v eq u)]. Returns a list. The first
@@ -469,16 +469,16 @@ procedure lto_partition(l, f);
 	 rplacd(v,cddr v)
       else
 	 delqip1(u,cdr v);
-!#endif
+#endif
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
    procedure adjoin(x,l);
       % Adjoin. [x] is any S-expression, [l] is a list. Conses [x] to
       % [l] if [x] is not already member of [l].
       if x member l then l else x . l;
-!#endif
+#endif
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
    procedure list2set(l);
       % Remove redundant elements from L.
      if not pairp l then
@@ -487,9 +487,9 @@ procedure lto_partition(l, f);
  	 list2set cdr l
       else
  	 car l . list2set cdr l;
-!#endif
+#endif
 
-!#if (not (memq 'psl lispsystem!*))
+#if (not (memq 'psl lispsystem!*))
    procedure list2vector(l);
       % Create a vector and store the list l into it.
       begin integer i; scalar v;
@@ -501,15 +501,15 @@ procedure lto_partition(l, f);
 	 >>;
       	 return v
       end;
-!#endif
+#endif
 
-!#if (not (memq 'csl lispsystem!*))
+#if (not (memq 'csl lispsystem!*))
    procedure symbol!-name(s);
       % List tools atom to string. [s] is an atom. Returns the print name
       % of the atom [s] as a string. This is not quite correct: e.g. lto_at2str
       % '!" would fail.
       compress('!" . reversip('!" . reversip explode s));
-!#endif
+#endif
 
 procedure lto_at2str(s);
    if idp s then

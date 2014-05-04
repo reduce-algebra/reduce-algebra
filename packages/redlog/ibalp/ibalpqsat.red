@@ -124,7 +124,7 @@ procedure ibalp_qsat!-getoption(opt);
    % option.
    lto_catsoc(opt,ibalp_qsatoptions!*);
 
-!#if t
+#if t
 
 inline procedure ibalp_var!-new(id);
    % Create a new variable. [id] is the identifier of the
@@ -447,7 +447,7 @@ inline procedure ibalp_clause!-getwl(clause);
    % clause. Return the watched literal.
    caddr cddddr clause;
 
-!#else
+#else
 
 inline procedure ibalp_var!-new(id);
    % Create a new variable. [id] is the identifier of the
@@ -786,7 +786,7 @@ inline procedure ibalp_clause!-getwl(clause);
    % clause. Return the watched literal.
    getv(clause,6);
 
-!#endif
+#endif
 
 procedure ibalp_printclause(clause);
    % Helper function to print a clause.

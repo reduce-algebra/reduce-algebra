@@ -541,7 +541,7 @@ procedure evalnum0(u);
    end;
 
 % The PSL bootstrap build requires the "!" here
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 symbolic procedure list!-to!-string u;
   compress ('!" . append(u, '(!")));
@@ -565,7 +565,7 @@ symbolic procedure explodehex n;
     return r
   end;
 
-!#endif
+#endif
 
 symbolic procedure hexfloat1 w1;
 % hexfloat may be useful from symbolic mode

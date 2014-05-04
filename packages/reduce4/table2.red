@@ -170,13 +170,13 @@ rlistat '(on off);
 
 % This is a messy way to handle a PSL alias problem.
 
-!#if (member 'psl lispsystem!*)
+#if (member 'psl lispsystem!*)
    symbolic procedure !~on_list u; onoff_list(u,t);
    symbolic procedure !~off_list u; onoff_list(u,nil);
- !#else
+ #else
    symbolic procedure on_list u; onoff_list(u,t);
    symbolic procedure off_list u; onoff_list(u,nil);
- !#endif
+ #endif
 
 symbolic procedure onoff_list(u,bool);
    <<for each j in value u do onoff(value j,bool);

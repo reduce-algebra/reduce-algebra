@@ -135,14 +135,14 @@ procedure breduce_verbatim(sol);
    {'list,"\verb@",aeval sol,"@"};
 
 procedure breduce_flush();
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    <<
       flushbuffer out!*;
       channelflush out!*
    >>;
-!#else
+#else
       flush();
-!#endif
+#endif
 
 procedure breduce_prin2(l);
    breduce_prin21(l,nil,nil,nil);
@@ -198,14 +198,14 @@ procedure breduce_str2int(s);
 procedure breduce_datestamp();
    % Input/Output datestamp. No parameter. Returns an integer; the
    % number of seconds since the epoch.
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    <<
       date();
       sys2int wgetv(datebuffer,0)
    >>;
-!#else
+#else
    datestamp();
-!#endif
+#endif
 
 endmodule;
 

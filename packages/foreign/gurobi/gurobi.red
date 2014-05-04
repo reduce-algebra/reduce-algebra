@@ -30,7 +30,7 @@
 
 module gurobi;
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 fluid '(gurobi_libredgurobi!*);
 fluid '(gurobi_redgrb!*);
@@ -167,7 +167,7 @@ procedure gurobi_dumpmodel();
       system("rm -f /tmp/lpdump.lp")
    >>;
 
-!#endif
+#endif
 
 endmodule;  % gurobi
 

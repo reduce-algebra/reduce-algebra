@@ -147,7 +147,7 @@ flag ('(cont),'ignore);
 trap!-time!* := nil; % nil here means no trapping active.
 
 % Building the PSL bootstrap image needs this "!"
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 % Note that when I detect a timeout I not only throw an exception, but I
 % clear trap!-time!* so that unwinding and processing the timeout will not
@@ -159,7 +159,7 @@ symbolic procedure aftergcsystemhook();
       trap!-time!* := nil;
       throw('!@timeout!@, '!@timeout!@) >>;
 
-!#else
+#else
 
 % In CSL the gc-hook function is passed an argument that indicates something
 % about the garbage collection that just happened.
@@ -171,7 +171,7 @@ symbolic procedure aftergcsystemhook u;
       throw('!@timeout!@, '!@timeout!@) >>;
 
 !*gc!-hook!* := 'aftergcsystemhook;
-!#endif
+#endif
 
 symbolic procedure trap!-time!-value();
   trap!-time!*;
