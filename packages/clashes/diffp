@@ -323,6 +323,16 @@ symbolic procedure diffp(u,v);
 % other changes that the main version has! I think that this should just
 % be discarded since I think that the key features from here have
 % been absorbed. I do not know if odesolve requires "on allowdfint" still.
+%
+% RmS: One extra bit of code here: the bit starting with
+%
+%         >> else if !*expanddf and not atom cadr u then <<
+%            % Derivative of an algebraic operator u(a(v),...) via the
+%            % chain rule: df(u(v),v) = u_1(a(v),b(v),...)*df(a,v) + ...
+%
+% This changes behaviour, so maybe protect it with an extra switch?
+% Ultimately, I'd like to replace this by the dfp operator from the
+% dfpart package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Differentiate integrals correctly!
 
@@ -489,8 +499,8 @@ symbolic procedure diffp(u,v);
 % the same as the one from odesolve/odepatch - however it is not. Eg among
 % other things this version will not handle non-commuting variables
 % properly... Almost certainly the version in poly/diff.red is better and
-% this can just be discarded, and even more I think the version in
-% crack/fixes2.red trumps this one.
+% this can just be discarded,especially since crintfix seems to be replaced
+% by crack/fixes2.red 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The switch allowdfint ALLOWS differentiation under the integral sign
 % provided the result simplies, and should normally be on.

@@ -896,19 +896,19 @@ Restoring order to give these first-order ODEs ...
 sqrt(y)*sqrt(3)*df(y,x)
 
                         3             3
- - sqrt(3*arbconst(56)*y  + 6*log(y)*y  + 2)*plus_or_minus(tag_4)=0
+ - sqrt(3*arbconst(56)*y  + 6*log(y)*y  + 2)*plus_or_minus(tag_5)=0
 
 This is a nonlinear ODE of order 1.
 It is separable.
 
-{arbconst(57)*plus_or_minus(tag_4)
+{arbconst(57)*plus_or_minus(tag_5)
 
                                   sqrt(y)
   + sqrt(3)*int(-------------------------------------------,y)
                                       3             3
                  sqrt(3*arbconst(56)*y  + 6*log(y)*y  + 2)
 
-  - plus_or_minus(tag_4)*x=0}
+  - plus_or_minus(tag_5)*x=0}
 
 
 % (35) Differentiation method
@@ -1246,12 +1246,12 @@ and each `root ODE' will be solved separately ...
 df(G0292,G0294)*G0292
 
                                2        4
- - sqrt( - 4*arbconst(74)*G0292  + G0292  - 1)*plus_or_minus(tag_6)=0
+ - sqrt( - 4*arbconst(74)*G0292  + G0292  - 1)*plus_or_minus(tag_7)=0
 
 This is a nonlinear ODE of order 1.
 It is separable.
 
-{2*arbconst(75)*plus_or_minus(tag_6)
+{2*arbconst(75)*plus_or_minus(tag_7)
 
                                                      2  2    4  4         2  2
           - 2*arbconst(74) + sqrt( - 4*arbconst(74)*x *y  + x *y  - 1) + x *y
@@ -1259,7 +1259,7 @@ It is separable.
                                                   2
                                sqrt(4*arbconst(74)  + 1)
 
-  - 2*log(x)*plus_or_minus(tag_6)=0}
+  - 2*log(x)*plus_or_minus(tag_7)=0}
 
 
 % Revised scale-invariant example (hangs with algint option):
@@ -1313,7 +1313,7 @@ and each `root ODE' will be solved separately ...
 2*df(G0299,G0301)*G0299
 
                              2          4
- - sqrt(15*arbconst(76)*G0299  - 4*G0299  - 4)*plus_or_minus(tag_7)=0
+ - sqrt(15*arbconst(76)*G0299  - 4*G0299  - 4)*plus_or_minus(tag_8)=0
 
 This is a nonlinear ODE of order 1.
 It is separable.
@@ -1322,11 +1322,11 @@ Solution before trying to solve for dependent variable is
 
                                                                   2  2
                                              15*arbconst(76) - 8*x *y
-2*arbconst(77)*plus_or_minus(tag_7) - asin(------------------------------)
+2*arbconst(77)*plus_or_minus(tag_8) - asin(------------------------------)
                                                                  2
                                             sqrt(225*arbconst(76)  - 64)
 
- - 2*log(x)*plus_or_minus(tag_7)=0
+ - 2*log(x)*plus_or_minus(tag_8)=0
 
 
        1
@@ -1649,15 +1649,15 @@ It can be (partially) solved algebraically for the single-order derivative
 and each `root ODE' will be solved separately ...
 
                         2
-sqrt(x)*df(y,x) - sqrt(y  - 1)*plus_or_minus(tag_10)=0
+sqrt(x)*df(y,x) - sqrt(y  - 1)*plus_or_minus(tag_11)=0
 
 This is a nonlinear ODE of order 1.
 It is separable.
 
-General solution is {arbconst(101)*plus_or_minus(tag_10)
+General solution is {arbconst(101)*plus_or_minus(tag_11)
 
                                                   2
-    - 2*sqrt(x)*plus_or_minus(tag_10) + log(sqrt(y  - 1) + y)=0}
+    - 2*sqrt(x)*plus_or_minus(tag_11) + log(sqrt(y  - 1) + y)=0}
 
 
 Applying conditions {{x=0,y=1}}
@@ -1666,14 +1666,14 @@ Applying conditions {{x=0,y=1}}
 Solution before trying to solve for dependent variable is 
 
                                                2
- - 2*sqrt(x)*plus_or_minus(tag_10) + log(sqrt(y  - 1) + y)=0
+ - 2*sqrt(x)*plus_or_minus(tag_11) + log(sqrt(y  - 1) + y)=0
 
 
-            1   2*sqrt(x)*plus_or_minus(tag_10)
+            1   2*sqrt(x)*plus_or_minus(tag_11)
 soln := {y=---*e
             2
 
-             1    - 2*sqrt(x)*plus_or_minus(tag_10)
+             1    - 2*sqrt(x)*plus_or_minus(tag_11)
           + ---*e                                  }
              2
 
@@ -1681,14 +1681,14 @@ soln := {y=---*e
 soln where e^~x => cosh x + sinh x;
 
 
-{y=cosh(2*sqrt(x)*plus_or_minus(tag_10))}
+{y=cosh(2*sqrt(x)*plus_or_minus(tag_11))}
 
 % but this works ONLY with `on div, intstr; off allfac;'
 % A better alternative is ...
 trigsimp(soln, hyp, combine);
 
 
-{y=cosh(2*sqrt(x)*plus_or_minus(tag_10))}
+{y=cosh(2*sqrt(x)*plus_or_minus(tag_11))}
 
 expand_plus_or_minus ws;
 

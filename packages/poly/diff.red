@@ -339,12 +339,11 @@ symbolic procedure diffp(u,v);
                  and (not (x:= atsoc(u:=cadr w,powlis!*))
                        or not dependsl(cadddr x,cddr w))
                  and null !*depend then return nil ./ 1
-%         else if !*expanddf and not atom u 
          % do not try to apply the chain rule to cases that are handled earlier
          % (i.e. for nested/multiple derivatives, or differentiation of integrals)
          % or that may come from inconsistent dependencies, e.g. after
          %  depend u(v),a;
-         % do not replace df(u(v),v) by df(u,v),a)*df(a,v) 
+         % do not replace df(u(v),v) by df(u(v),a)*df(a,v) 
          else if !*expanddf and not atom u and null cdddr w
                  and not(car u memq '(df int)) and not smember(v,u)
                  and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))

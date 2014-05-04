@@ -118,7 +118,6 @@ getmat                         defined in lamatrix matarg
 getrtype                       defined in reval physop
 getrtype1                      defined in reval avector
 getrtype2                      defined in reval avector
-getrtypecadr                   defined in map physop
 gram!+schmid                   defined in gramschm symatvec
 groebfasttest                  defined in buchbg groeweak
 groebtestrestriction           defined in grinter2 groebrst
@@ -318,7 +317,6 @@ sq2bf!*                        defined in specfn specbess sfgamma
 sqrdist                        defined in geometry geoprover
 squarep                        defined in linalg splinalg
 state_mk                       defined in ofsfexfr clprl
-statep                         defined in physop ofsfexfr
 stats_getargs                  defined in mathml mml_ir
 sub_math                       defined in mathml mml_ir
 subeval0                       defined in sub fixes2

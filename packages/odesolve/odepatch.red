@@ -244,6 +244,35 @@ symbolic procedure diffp(u,v);
                  % Generally must re-evaluate the integral (carefully!)
                  w := 'df . reval{'int, mk!*sq w, caddr cadr u} . cddr u;
                  go to j >>;  % derivative absorbed
+           %
+           % Try chain rule for nested derivatives:
+           % (df (df v x y z ...) a) where v depends on a
+           %
+           if !*expanddf and depends(cadr u,v)
+              and (not (x := atsoc(cadr u,powlis!*)) or not depends(cadddr x,v))
+             then <<
+                if not smember(v, cadr u)
+                 then <<
+                  % first check for declared dependency of kernel cadr u on v
+                  x := assoc(cadr u, depl!*);
+                  % then if cadr u is not a simple symbol,
+                  %  check whether anything in cdr cadr u has an explicit
+                  %  dependency on v by collecting all kernels in cdr cadr u
+                  y := (not atom cadr u and cdr cadr u and get!-all!-kernels cdr cadr u);
+                  % but take care to exclude the kernel v when checking dependencies
+		  if x and y and ldepends(delete(v,y),v) then <<
+               	  % possible inconsistent dependencies, do not apply chain rule
+%                   msgpri("Possible inconsistent dependencies in",u,
+%                         nil,nil,nil);
+                    nil >>
+                   else if x and not(v memq (x:=cdr x))
+                    % declared indirect dependency, 
+                    then << w := df!-chain!-rule(u, v, x); go to e>>
+                   else if y and not smember(v,y)
+                    % possible indirect dependency of kernel arglist on v
+                    then << w := df!-chain!-rule(u, v, y); go to e>>
+                  >>
+              >>;
            if (x := find_sub_df(w:= cadr u . merge!-ind!-vars(u,v),
                                            get('df,'kvalue)))
                           then <<w := simp car x;
@@ -276,6 +305,36 @@ symbolic procedure diffp(u,v);
                  and (not (x:= atsoc(u:=cadr w,powlis!*))
                        or not dependsl(cadddr x,cddr w))
                  and null !*depend then return nil ./ 1
+         % do not try to apply the chain rule to cases that are handled earlier
+         % (i.e. for nested/multiple derivatives, or differentiation of integrals)
+         % or that may come from inconsistent dependencies, e.g. after
+         %  depend u(v),a;
+         % do not replace df(u(v),v) by df(u(v),a)*df(a,v) 
+         else if !*expanddf and not atom u and null cdddr w
+                 and not(car u memq '(df int)) and not smember(v,u)
+                 and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
+          then <<
+            % first check for declared dependency of kernel u on v
+            x := assoc(u, depl!*);
+            % then check whether anything in cdr u has an explicit
+            % dependence on v by collecting all kernels in cdr u
+            y := (cdr u and get!-all!-kernels cdr u);
+            % but take care to exclude the kernel v when checking dependencies
+            if x and y and ldepends(delete(v,y),v) then <<
+               % possible inconsistent dependencies, do not apply chain rule
+               msgpri("Possible inconsistent dependencies in",u,
+                      nil,nil,nil);
+               w := mksq(w,1) >>
+             else if x then
+                % declared dependency
+                if (v memq (x:=cdr x))
+                  then w := mksq(w,1)
+                 else w := df!-chain!-rule(u, v, x)
+             else if y then
+              % possible dependency of kernel arglist on v
+              w := if smember(v,y) then mksq(w,1) else df!-chain!-rule(u, v, y)
+             else w := mksq(w,1)
+           >>
          else w := mksq(w,1);
       go to e
    end;

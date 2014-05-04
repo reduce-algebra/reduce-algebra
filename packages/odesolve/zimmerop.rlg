@@ -478,12 +478,12 @@ odesolve(df(y(x),x,2)/y(x) - df(y(x),x)^2/y(x)^2 - 1 + 1/y(x)^3 = 0,
    y(x), x, noint);
 
 
-{arbconst(57)*plus_or_minus(tag_4) + sqrt(3)
+{arbconst(57)*plus_or_minus(tag_5) + sqrt(3)
 
                                      3                   3      - 1/2
  *int(sqrt(y(x))*(3*arbconst(56)*y(x)  + 6*log(y(x))*y(x)  + 2)      ,y(x))
 
-  - plus_or_minus(tag_4)*x=0}
+  - plus_or_minus(tag_5)*x=0}
 
 
 % (35) Differentiation method
@@ -558,7 +558,7 @@ odesolve(df(y(x),x,2)^2 - 2df(y(x),x)*df(y(x),x,2) + 2y(x)*df(y(x),x) -
 odesolve(x^2*df(y(x),x,2) + 3x*df(y(x),x) = 1/(y(x)^3*x^4), y(x), x);
 
 
-{2*arbconst(75)*plus_or_minus(tag_7) + log(
+{2*arbconst(75)*plus_or_minus(tag_8) + log(
 
                         2      - 1/2                               2      - 1/2
      - 2*(4*arbconst(74)  + 1)      *arbconst(74) + (4*arbconst(74)  + 1)
@@ -567,7 +567,7 @@ odesolve(x^2*df(y(x),x,2) + 3x*df(y(x),x) = 1/(y(x)^3*x^4), y(x), x);
     *sqrt( - 4*arbconst(74)*y(x) *x  + y(x) *x  - 1)
 
                       2      - 1/2     2  2
-     + (4*arbconst(74)  + 1)      *y(x) *x ) - 2*log(x)*plus_or_minus(tag_7)=0}
+     + (4*arbconst(74)  + 1)      *y(x) *x ) - 2*log(x)*plus_or_minus(tag_8)=0}
 
 
 % Revised scale-invariant example (hangs with algint option):
@@ -712,26 +712,26 @@ soln :=
    odesolve(x*df(y(x),x)^2 - y(x)^2 + 1 = 0, y(x)=1, x=0, explicit);
 
 
-               1   2*sqrt(x)*plus_or_minus(tag_9)
+               1   2*sqrt(x)*plus_or_minus(tag_10)
 soln := {y(x)=---*e
                2
 
-             1    - 2*sqrt(x)*plus_or_minus(tag_9)
-          + ---*e                                 }
+             1    - 2*sqrt(x)*plus_or_minus(tag_10)
+          + ---*e                                  }
              2
 
 % Alternatively ...
 soln where e^~x => cosh x + sinh x;
 
 
-{y(x)=cosh(2*sqrt(x)*plus_or_minus(tag_9))}
+{y(x)=cosh(2*sqrt(x)*plus_or_minus(tag_10))}
 
 % but this works ONLY with `on div, intstr; off allfac;'
 % A better alternative is ...
 trigsimp(soln, hyp, combine);
 
 
-{y(x)=cosh(2*sqrt(x)*plus_or_minus(tag_9))}
+{y(x)=cosh(2*sqrt(x)*plus_or_minus(tag_10))}
 
 expand_plus_or_minus ws;
 

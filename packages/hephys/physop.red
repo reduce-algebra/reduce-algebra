@@ -610,7 +610,7 @@ else <<y :=gettype x;
 return nil
 end;
 
-symbolic  procedure statep u;
+symbolic  procedure po!:statep u;
 (idp u and get(u,'phystype) = 'state) or (not atom u and
    (idp car u and get(car u,'phystype) = 'state));
 
@@ -918,23 +918,30 @@ symbolic procedure getrtype u; %modified
    % Type conflicts will later be resolved when expression is evaluated.
    begin scalar x,y;
     return
-    if atom u
-      then if not idp u then nil
-            else if flagp(u,'share) then getrtype eval u
-            else if x := get(u,'rtype)
-                    then if y := get(x,'rtypefn) then apply1(y,nil)
-                          else x
+    if null u then nil   % Suggested by P.K.H. Gragert to avoid the
+                         % loop caused if NIL has a share flag.
+     else if atom u
+      then if not idp u then not numberp u and getrtype1 u
+            else if flagp(u,'share) % then getrtype lispeval u
+             then if (x := eval u) eq u then nil else getrtype x
+            else if (x := get(u,'avalue)) and
+                       not(car x memq '(scalar generic))
+                    or (x := get(u,'rtype)) and (x := list x)
+                    then if y := get(car x,'rtypefn) then apply1(y,nil)
+                          else car x
                   else nil
      else if not idp car u then nil
      else if physopp!* u then 'physop  % added
-     else if (x := get(car u,'rtype)) and (x := get(x,'rtypefn))
-      then apply1(x, cdr u)
-     else if x := get(car u,'rtypefn) then apply1(x, cdr u)
-     else nil
+     else if (x := get(car u,'avalue)) and (x := get(car x,'rtypefn))
+      then apply1(x,cdr u)
+     % Special case handling for the SUB operator.
+     else if car u eq 'sub then 'yetunknowntype
+     else getrtype2 u
    end;
 
-symbolic procedure getrtypecadr u;
-not atom u and getrtype cadr u;
+%% defined in alg/map.red
+%%symbolic procedure getrtypecadr u;
+%%not atom u and getrtype cadr u;
 
 symbolic procedure getnewtype u;
 not atom u and get(car u,'newtype);
@@ -947,7 +954,7 @@ if physopp u then
    if scalopp u then  'scalar
    else if vecopp u then 'vector
         else if tensopp u then 'tensor
-             else if statep u then  'state
+             else if po!:statep u then  'state
                   else nil
 else if atom u then nil
 % following line suppressed 1.01
@@ -2550,16 +2557,21 @@ end;
 
 
 symbolic procedure maprint(l,p!*!*); %3.4 version
+   % Print expression l at bracket level p!*!* without terminating
+   % print line.  Special cases are handled by:
+   %    pprifn: a print function that includes bracket level as 2nd arg.
+   %     prifn: a print function with one argument.
    begin scalar p,x,y;
         p := p!*!*;     % p!*!* needed for (expt a (quotient ...)) case.
         if null l then return nil
          else if physopp l then return apply1('physoppri,l)
          else if atom l
-          then <<if not numberp l or (not(l<0) or p<=get('minus,'infix))
+          then <<if vectorp l then vec!-maprin(l,p!*!*)
+                  else if not numberp l
+                     or (not(l<0) or p<=get('minus,'infix))
                    then prin2!* l
                   else <<prin2!* "("; prin2!* l; prin2!* ")">>;
                  return l >>
-         else if stringp l then return prin2!* l
          else if not atom car l then maprint(car l,p)
          else if ((x := get(car l,'pprifn)) and
                    not(apply2(x,l,p) eq 'failed)) or
