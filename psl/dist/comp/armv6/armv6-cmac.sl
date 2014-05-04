@@ -546,7 +546,7 @@
 (DefCMacro *AShift                                            %    scs
 	   ((AnyP  ZeroP)           )
 	   ((AnyP  PosInumP)  (*WShift ARGONE ARGTWO))
-	   ((RegP NegInumP)   (mov argone argone (asr (minus ARGTWO)))
+	   ((RegP NegInumP)   (asr argone argone (minus ARGTWO)))
 	   ((RegP regP)       (cmp 0 ARGTWO)
 			      (bge TEMPLABEL)
 			      (rsb argtwo ARGTWO 0 )
@@ -554,7 +554,7 @@
 			      (jmp TEMPLABEL2)
 			 (*LBL (label TEMPLABEL))
 			      (mov ARGONE argone (asl argtwo))
-			 (*LBL (label TEMPLABEL2))
+			 (*LBL (label TEMPLABEL2)))
 	   ((RegP AnyP)        (*MOVE ARGTWO (Reg T1))
 			       (*ashift argone (reg t1)))
 	   (                    (*MOVE ARGONE (Reg t2))
@@ -565,8 +565,8 @@
 (DefCMacro *WShift                     %Logical shift. +index=left.
 	   ((AnyP  ZeroP)           )
 	   ((RegP  OneP)      (*WPLUS2 ARGONE ARGONE))
-	   ((RegP PosInumP)   (mov ARGONE argone (lsl argtwo))
-	   ((RegP NegInumP)   (mov argone argone (lsr (minus ARGTWO) ))
+	   ((RegP PosInumP)   (lsl ARGONE argone (lsl argtwo)))
+	   ((RegP NegInumP)   (lsr argone argone (minus ARGTWO) ))
 	   ((RegP regP)       (cmp 0 ARGTWO)
 			      (bge TEMPLABEL)
 			      (rsb argtwo ARGTWO 0)

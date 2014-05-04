@@ -39,12 +39,12 @@
       pass-2-3
       comp-decls
       pass-1-lap
-      386-lap
-      386-cmac
-      386-comp
+      armv6-lap
+      armv6-cmac
+      armv6-comp
       faslout
 %     muls
-      386-spec
+      armv6-spec
       fixup
 %     compat      
       nbittab 

@@ -8,7 +8,7 @@ $psys/pslcomp <<EOF
 (load lap-to-asm)
 (on pcmac)
 (print (list "nextidnumber*" nextidnumber*))
-(load unix386-asm)
+(load armv6-asm)
 (print (list "nextidnumber*" nextidnumber*))
 (dskin "unix-patch.sl")
 (print (list "nextidnumber*" nextidnumber*))

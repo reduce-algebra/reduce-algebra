@@ -244,11 +244,6 @@ $(USERDIR)/main_pvm.o: $(USERDIR)/main_pvm.s
 	# rm -f $(USERDIR)/main.temp
 	as $(ASARGS) -o $(USERDIR)/main_pvm.o $(USERDIR)/main_pvm.s
 
-$(USERDIR)/bpsl_pvm: $(CFILES)  \
-	$(USERDIR)/main_pvm.o $(USERDIR)/dmain_pvm.o \
-	$(PXK)/Makefile.linux
-	$(USERDIR)/cclnk_pvm
-
 $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl
 	$(PDIST)/make-lap $(PXK) fasl-decls
  

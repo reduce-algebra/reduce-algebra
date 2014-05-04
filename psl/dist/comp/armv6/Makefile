@@ -39,6 +39,7 @@
 ###############################################################################
 
 # PROOT   = `pwd`
+PROOT	=  $(proot)
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
@@ -71,7 +72,7 @@ all: \
 	$(PL)/tags.b
 
 $(PL)/armv6-asm.b: $(PXC)/armv6-asm.sl $(PL)/if-system.b
-	$(PDIST)/make-lap $(PXC) unixarmv6-asm
+	$(PDIST)/make-lap $(PXC) armv6-asm
 
 $(PL)/armv6-cmac.b: $(PXC)/armv6-cmac.sl $(PL)/if-system.b
 	$(PDIST)/make-lap $(PXC) armv6-cmac
@@ -79,8 +80,7 @@ $(PL)/armv6-cmac.b: $(PXC)/armv6-cmac.sl $(PL)/if-system.b
 $(PL)/armv6-comp.b: $(PXC)/armv6-comp.sl
 	$(PDIST)/make-lap $(PXC) armv6-comp
 
-$(PL)/armv6-lap.b: $(PXC)/armv6-lap.sl $(PL)/fasl-decls.b \
-        $(PXC)/armv6-inst.dat
+$(PL)/armv6-lap.b: $(PXC)/armv6-lap.sl $(PL)/fasl-decls.b
 	$(PDIST)/make-lap $(PXC) armv6-lap
 
 $(PL)/lap-to-asm.b: $(PXC)/lap-to-asm.sl
