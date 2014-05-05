@@ -605,20 +605,25 @@ asserted procedure ofsf_trialeval(psi: QfFormula, sp: AnuList): QfFormula;
       nil, -1);
 
 asserted procedure ofsf_pbfvs(btr: Atree, treel: List): Atree;
-   % Propagate below free variable space.
+   % Propagate truth value below free variable space.
    begin scalar tv, c, w;
       if not !*rlcadpbfvs then
       	 return btr;
       assert(not null treel);
       w := pop treel;
       tv := acell_gettv atree_rootcell w;
+      if tv neq 'true and tv neq 'false then
+	 return btr;
       c := t; while c and treel do <<
       	 w := pop treel;
 	 if tv neq acell_gettv atree_rootcell w then
 	    c := nil
       >>;
-      if c then
+      if c then <<
 	 acell_puttv(atree_rootcell btr, tv);
+      	 if !*rlcadtrimtree then
+	    atree_setchildl(btr, nil)
+      >>;
       return btr
    end;
 
