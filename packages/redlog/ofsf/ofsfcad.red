@@ -288,7 +288,8 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
 	 ioto_prin2t length atree_childrenatlevel(dd, r)
       >>;
       if !*rlcadtree2dot then <<
-	 atree_2dot dd;
+	 atree_2dot(dd, "cadtree.dot");
+	 atree_2tgf(dd, "cadtree.tgf");
 	 atree_2gml(dd, "cadtree.gml")
       >>;
       caddata_putdd(cd, dd);
@@ -457,7 +458,8 @@ asserted procedure ofsf_fulltree(hh: Atom, varl: List): Atree;
    % [hh] is a vector [nil, F_1, ..., F_r], where the elements are lists of
    % tagged SF.
    begin scalar basecell;
-      basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+      % basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+      basecell := acell_mk(0, nil, nil, nil, nil);  % the only cell of R^0
       return ofsf_ftoc(basecell, hh, varl)
    end;
 
@@ -492,13 +494,14 @@ asserted procedure ofsf_ftoc(basecell: Acell, hh: Atom, varl: List): Atree;
       if ofsf_cadverbosep() then
 	 ioto_prin2 ")";
       res := atree_mk basecell;
-      atree_addtochildlip(res, treel);
+      atree_setchildl(res, treel);
       return res
    end;
 
 asserted procedure ofsf_partialtree(cd: CadData): Atree;
    begin scalar basecell;
-      basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+      % basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
+      basecell := acell_mk(0, nil, nil, nil, nil);  % the only cell of R^0
       return ofsf_ptoc(basecell, cl_nnf caddata_psi cd, cd)
    end;
 
@@ -550,7 +553,7 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
 	    rederr "GCAD: stack full of white cells occured.";
 	 treel := sort(treel, function atree_sortfn);
       	 res := atree_mk basecell;
-	 atree_addtochildlip(res, treel);
+	 atree_setchildl(res, treel);
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
       	 return ofsf_pbfvs(res, treel)
@@ -575,7 +578,7 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
       res := atree_mk basecell;
       if not !*rlcadtrimtree then <<
       	 treel := sort(treel, function atree_sortfn);
-	 atree_addtochildlip(res, treel)
+	 atree_setchildl(res, treel)
       >>;
       if ofsf_cadverbosep() then
 	 ioto_prin2 ")";
@@ -1085,8 +1088,11 @@ asserted procedure atree_childrenatlevel(tt: Atree, n: Integer): List;
       for each child in atree_childl tt join
       	 atree_childrenatlevel(child, n-1);
 
-asserted procedure atree_addtochildlip(tt: Atree, cl: List): Any;
-   nth(tt, 3) := nconc(cl, nth(tt, 3));
+asserted procedure atree_setchildl(tt: Atree, cl: List): Any;
+   nth(tt, 3) := cl;
+
+% asserted procedure atree_addtochildlip(tt: Atree, cl: List): Any;
+%    nth(tt, 3) := nconc(cl, nth(tt, 3));
 
 asserted procedure atree_sortfn(t1: Atree, t2: Atree): Any;
    % Sort function. [t1], [t2] are trees of Acells.
@@ -1108,6 +1114,8 @@ asserted procedure atree_celltvl(tt: Atree): List;
    else
       for each child in atree_childl tt join
 	 atree_celltvl child;
+
+% Atree print procedures
 
 asserted procedure atree_print(tt: Atree): Any;
    for each e in atree_print1(tt, 0) do
@@ -1153,14 +1161,14 @@ asserted procedure atree_printlin(tt: Atree, d: Integer): Any;
 
 % Atree to DOT
 
-asserted procedure atree_2dot(tt: Atree): Any;
+asserted procedure atree_2dot(tt: Atree, filename: String): Any;
    % Output tree in dot format.
    begin
-      out("cadtree.dot");
+      out filename;
       ioto_prin2t("digraph cadtree {");
       atree_2dot1(tt,nil);
       ioto_prin2t("}");
-      shut("cadtree.dot")
+      shut filename
    end;
 
 asserted procedure atree_2dot1(tt: Atree, idx: Any): Any;
@@ -1174,7 +1182,7 @@ asserted procedure atree_2dot1(tt: Atree, idx: Any): Any;
       while i <= n do <<
 	 idxl := append(idx, {i});
 	 atree_2dotprinnode idx;
-	 prin2 "->";
+	 ioto_prin2 "->";
 	 atree_2dotprinnode idxl;
 	 ioto_prin2t "";
 	 w := pop childlist;
@@ -1186,19 +1194,22 @@ asserted procedure atree_2dot1(tt: Atree, idx: Any): Any;
 asserted procedure atree_2dotprinnode(idxl: List): Any;
    % Print node. [idxl] is a list of integers.
    <<
-      prin2 "C";
+      ioto_prin2 "C";
       for each e in idxl do
-	 prin2 e
+	 ioto_prin2 e
    >>;
 
 asserted procedure atree_2dotnodetail(c: Acell): Any;
    % Print node detail.
-   if acell_gettv c eq 'true then
-      ioto_prin2t(" [label=T shape=circle style=filled color=green]")
-   else if acell_gettv c eq 'false then
-      ioto_prin2t(" [label=F shape=circle style=filled color=red]")
-   else
-      ioto_prin2t(" [label=""-"" shape=circle style=filled color=grey]");
+   begin scalar tv;
+      tv := acell_gettv c;
+      if tv eq 'true then
+      	 ioto_prin2t(" [label=T shape=circle style=filled color=green]")
+      else if tv eq 'false then
+      	 ioto_prin2t(" [label=F shape=circle style=filled color=red]")
+      else
+      	 ioto_prin2t(" [label=""-"" shape=circle style=filled color=grey]")
+   end;
 
 % Atree to TGF (Trivial Graph Format)
 
@@ -1206,16 +1217,16 @@ asserted procedure atree_2tgf(tt: Atree, filename: String): Any;
    % Atree to tgf. Outputs the atree [tt] to file [filename] in tgf (Trivial
    % Graph Format) syntax.
    begin
-      out(filename);
+      out filename;
       atree_2tgf_nodes(tt, 1);
-      ioto_prin2t("#");
+      ioto_prin2t "#";
       atree_2tgf_edges(tt, 1);
-      shut(filename)
+      shut filename
    end;
 
 asserted procedure atree_2tgf_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
-      prin2 number;
+      ioto_prin2 number;
       acell_prin atree_rootcell tt;
       childlist := atree_childl tt;
       for each child in childlist do
@@ -1228,30 +1239,21 @@ asserted procedure atree_2tgf_edges(tt: Atree, number: Integer): Integer;
       mynumber := number;
       childlist := atree_childl tt;
       for each child in childlist do <<
-	 prin2 mynumber;
-	 prin2 " ";
-	 prin2 (number + 1);
-	 terpri();
+	 ioto_prin2t {mynumber, " ", number + 1};
 	 number := atree_2tgf_edges(child, number + 1)
       >>;
       return number
    end;
 
 asserted procedure acell_prin(c: Acell): Any;
-   begin scalar tv, temp;
-      prin2 " """;
-      prin2 "idx: ";
-      prin2 acell_getidx c;
-      prin2 ", tv: ";
-      tv := acell_gettv c;
-      temp := if tv eq 'true then "T" else if tv eq 'false then "F" else "?";
-      prin2 temp;
-      prin2 ", desc: ";
-      prin2 acell_getdesc c;
-      prin2 ", tl: ";
-      prin2 acell_gettl c;
-      prin2 """";
-      terpri()
+   begin scalar tmp, tv;
+      ioto_prin2 " """;
+      ioto_prin2 {"idx: ", acell_getidx c};
+      tmp := acell_gettv c;
+      tv := if tmp eq 'true then "T" else if tmp eq 'false then "F" else "?";
+      ioto_prin2 {", tv: ", tv};
+      ioto_prin2 {", desc: ", acell_getdesc c, ", tl: ", acell_gettl c};
+      ioto_prin2t """"
    end;
 
 % Atree to GML (Graph Modelling Language)
@@ -1260,7 +1262,7 @@ asserted procedure atree_2gml(tt: Atree, filename: String): Any;
    % Atree to gml. Outputs the Atree [tt] to file [filename] in gml (Graph
    % Modelling Language) syntax.
    begin
-      out(filename);
+      out filename;
       ioto_prin2t("Creator ""REDLOG""");
       ioto_prin2t("graph [");
       ioto_prin2t("label ""Graph generated by REDLOG.""");
@@ -1268,7 +1270,7 @@ asserted procedure atree_2gml(tt: Atree, filename: String): Any;
       atree_2gml_nodes(tt, 1);
       atree_2gml_edges(tt, 1);
       ioto_prin2t("]");
-      shut(filename)
+      shut filename
    end;
 
 asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
@@ -1301,9 +1303,7 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
       tv := acell_gettv c;
       color := if tv eq 'true then "#00FF00"
       else if tv eq 'false then "#FF0000" else "#C0C0C0";
-      ioto_prin2t "graphics [";
-      ioto_prin2t {"fill """, color, """"};
-      ioto_prin2t "]";
+      ioto_prin2t {"graphics [", "fill """, color, """]"};
       ioto_prin2t "]"
    end;
 
@@ -1377,88 +1377,6 @@ asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
       return nil
    end;
 
-asserted procedure ofsf_solutionformula(cd: CadData): Any;
-   % Solution formula construction. The argument is changed in place.
-   begin scalar ffl, dd, k, yy, yyi, ffk, phiprime, cellstogo;
-      if !*rlverbose then
-	 ioto_tprin2t "+++ Solution Formula Construction Phase";
-      ffl := caddata_ffl cd;
-      dd := caddata_dd cd;
-      k := caddata_k cd;
-      if memq(acell_gettv atree_rootcell dd, {'true, 'false}) then <<
-	 if ofsf_cadverbosep() and !*rlcadans then
-	    ioto_prin2t {"ANSWERS for decision problem: ",
-	       cdr atsoc('answers,acell_gettl atree_rootcell dd)};
-	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
-	 return nil
-      >>;
-      % dk := atree_childrenatlevel(dd, k);
-      yy := atree_celltvl dd;
-      % some verbose output for qe with answers
-      if ofsf_cadverbosep() and !*rlcadans then <<
-         ioto_prin2t "+++ ANSWERS: ";
-	 ioto_prin2t {"yy: ", yy};
-	 % for each cell in yy do
-	 %    if acell_gettv cell eq 'true then
-	 %       ioto_prin2t {"ANSWERS: ", atsoc('answers, acell_gettl cell)};
-     	 for each c in list2set (for each cell in yy join
-	    if acell_gettv cell eq 'true then
-	       {atsoc('answers,acell_gettl cell)}) do
-		  ioto_prin2t {"ANSWERS: ", c}
-      >>;
-      % ffk: projection polynomials
-      yyi := list2set for each cell in yy collect
-	 length acell_getsp cell;
-      if !*rlverbose then
-	 ioto_prin2t {"+ Levels to be considered: ", yyi};
-      ffk := for each i in yyi join append(nth(ffl, i), nil);
-      phiprime := ofsf_solutionformula1(dd, ffl, ffk, yy, yyi, k);
-      if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "++ SSFC failed, trying all possible projection factors.";
-	 yyi := for i := 1 : k collect i;
-	 if !*rlverbose then
-	    ioto_prin2t {"+ Levels to be considered: ", yyi};
-	 ffk := for each i in yyi join
-	    append(nth(ffl, i), nil);
-	 phiprime := ofsf_solutionformula1(dd, ffl, ffk, yy, yyi, k)
-      >>;
-      if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "++ Simple solution formula construction failed.";
-	 return nil
-      >> else <<
-	 if !*rlverbose then
-	    ioto_tprin2t "++ Simple solution formula construction successful.";
-	 if !*rlcadrawformula then
-	    caddata_putphiprime(cd, phiprime)
-	 else
-	    caddata_putphiprime(cd, rl_dnf phiprime)
-      >>;
-      return nil
-   end;
-
-asserted procedure ofsf_solutionformula1(dd, ff, ffk, yy, yyi, k): Any;
-   begin scalar cellstogo;
-      if !*rlverbose then
-	 ioto_tprin2t {"+ generating signatures for ", length ffk,
-	    " polynomials in ", length yy,
-	    " cells; (Dk: ", length atree_childrenatlevel(dd,k), " cells)"};
-      cellstogo := length yy;  % for verbose output
-      for each cell in yy do <<
-	 acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
-	 if ofsf_cadverbosep() then
-	    ioto_prin2 {"[",cellstogo,
-	       %"idx",acell_getidx cell," ",%
-	       "sig",acell_getdesc cell, " ",
-	       (if acell_gettv cell eq 'true then " tt" else " ff"),
-	       % acell_getdesc cell,
-	       "] "};
-	 cellstogo := cellstogo - 1
-      >>;
-      return ofsf_ssfc2(ffk, yy)
-   end;
-
 asserted procedure ofsf_sfchong(ffk, ddk): Any;
    % Solution formula construction by Hong90. Signatures are already calculated.
    begin scalar wwt, wwf, wwc;
@@ -1472,9 +1390,87 @@ asserted procedure ofsf_sfchong(ffk, ddk): Any;
       return 'ssfcfailed
    end;
 
-asserted procedure ofsf_ssfc2(ffk, yy): Any;
+asserted procedure ofsf_solutionformula(cd: CadData): Any;
+   % Solution formula construction. [cd] is changed in place.
+   begin scalar dd, yy, w, yyi, ffl, k, fflk, phiprime;
+      if !*rlverbose then
+	 ioto_tprin2t "+++ Simple Solution Formula Construction Phase";
+      dd := caddata_dd cd;
+      if memq(acell_gettv atree_rootcell dd, '(true false)) then <<
+	 if !*rlverbose and !*rlcadans then
+	    ioto_prin2t {"+ ANSWERS (for decision problem): ",
+	       cdr atsoc('answers, acell_gettl atree_rootcell dd)};
+	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
+	 return nil
+      >>;
+      yy := atree_celltvl dd;
+      if !*rlverbose and !*rlcadans then <<  % verbose output for QE with answers
+         % ioto_prin2t "+ Cells with defined truth value:";
+	 % for each cell in yy do
+	 %    ioto_prin2t {cell};
+	 w := for each cell in yy join
+	    if acell_gettv cell eq 'true then
+	       {atsoc('answers, acell_gettl cell)};
+	 for each c in list2set w do
+	    ioto_prin2t {"+ ANSWERS: ", c}
+      >>;
+      yyi := list2set for each cell in yy collect
+      	 length acell_getsp cell;
+      if !*rlverbose then
+	 ioto_prin2t {"+ Levels to be considered: ", yyi};
+      ffl := caddata_ffl cd;
+      fflk := for each i in yyi join
+	 append(nth(ffl, i), nil);
+      k := caddata_k cd;
+      phiprime := ofsf_solutionformula1(dd, fflk, yy, k);
+      if phiprime eq 'ssfcfailed then <<
+	 if !*rlverbose then
+	    ioto_tprin2t "+ SSFC failed, trying all possible projection factors.";
+	 yyi := for i := 1 : k collect i;
+	 if !*rlverbose then
+	    ioto_prin2t {"+ Levels to be considered: ", yyi};
+	 fflk := for each i in yyi join
+	    append(nth(ffl, i), nil);
+	 phiprime := ofsf_solutionformula1(dd, fflk, yy, k)
+      >>;
+      if phiprime eq 'ssfcfailed then <<
+	 if !*rlverbose then
+	    ioto_tprin2t "+ SSFC failed.";
+	 return nil
+      >>;
+      if !*rlverbose then
+	 ioto_tprin2t "+ SSFC succeded.";
+      if !*rlcadrawformula then
+	 caddata_putphiprime(cd, phiprime)
+      else
+	 caddata_putphiprime(cd, rl_dnf phiprime);
+      return nil
+   end;
+
+asserted procedure ofsf_solutionformula1(dd: Atree, ffk: List, yy: List, k: Integer): Any;
+   begin integer cellstogo;
+      if !*rlverbose then <<
+	 ioto_tprin2t {"+ Generating signatures for ", length ffk,
+	    " polynomials and ", length yy, " cells."};
+	 ioto_tprin2t {"+ Number of cells on level ", k, " is ",
+	    length atree_childrenatlevel(dd, k), "."};
+	 cellstogo := length yy;  % for verbose output
+      >>;
+      for each cell in yy do <<
+	 acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
+	 if !*rlverbose then <<
+	    ioto_prin2 {"[", cellstogo, " ",
+	       "sig", acell_getdesc cell, " ",
+	       (if acell_gettv cell eq 'true then "true" else "false"), "] "};
+	    cellstogo := cellstogo - 1
+	 >>
+      >>;
+      return ofsf_ssfc2(ffk, yy)
+   end;
+
+asserted procedure ofsf_ssfc2(ffk: List, yy: List): Any;
    % Solution formula construction by Hong90. Signatures are already calculated.
-   begin scalar wwt,wwf,wwc;
+   begin scalar wwt, wwf, wwc;
       wwt := ofsf_signaturesbytv(yy, 'true);
       wwf := ofsf_signaturesbytv(yy, 'false);
       wwc := ofsf_compsig(wwt, wwf);
@@ -1507,17 +1503,23 @@ asserted procedure ofsf_compsig(ww1: List, ww2: List): ExtraBoolean;
    end;
 
 asserted procedure ofsf_compsig1(w1: List, w2: List): Boolean;
-   % Compatible signatrues subroutine. [w1], [w2] are signatures of the same
-   % length; both should be not empty except for recursive calls. Remark: This
-   % is a fold, the first element of the disjunction is neutral wrt "or" for the
-   % base case.
-   (null w1 or null w2) or
-      ((car w1 eq car w2 or car w1 equal "?" or car w2 equal "?") and
- 	 ofsf_compsig1(cdr w1, cdr w2));
+   % Compatible signatures subroutine. [w1], [w2] are signature lists of the
+   % same length.
+   begin scalar c, s1, s2;
+      if null w1 then
+   	 return t;
+      c := t; while w1 and c do <<
+   	 s1 := pop w1;
+   	 s2 := pop w2;
+   	 if s1 neq s2 and not (s1 equal "?") and not (s2 equal "?") then
+   	    c := nil
+      >>;
+      return c
+   end;
 
-asserted procedure ofsf_sigbasedfo(ffk: List, sigl: List): Formula;
+asserted procedure ofsf_sigbasedfo(ffk: List, sigl: List): QfFormula;
    % Signature based formula. [ffk] is a list of SF, [sig] is a signature
-   % (can include "?"). returns a qf. FOF.
+   % (can include "?").
    begin scalar sig, fo;
       for each f in ffk do <<
 	 sig := pop sigl;
@@ -1623,21 +1625,23 @@ asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, idl: List): Id;
    end;
 
 asserted procedure ofsf_signature(fk: List, sp: AnuList): List;
-   % Signature. [fk] is a list of standard forms (in, say, variables x1,...,xk),
-   % [sp] is sample point (a list (ak,...,a1) of algebraic numbers. Returns a
-   % list (sigma1,...,sigmak) of elements of {-1,0,1}.
+   % Signature. [fk] is a list of standard forms in variables x_1, ..., x_k).
+   % [sp] is a sample point, i.e., a list (a_1, ..., a_l) of algebraic numbers
+   % with l <= k). Returns a list (sgn_1, ..., sgn_k) of elements from {-1, 0,
+   % 1}.
    for each f in fk collect
       aex_sgn ofsf_subsp!*(aex_fromsf f, sp);
 
 asserted procedure ofsf_signature4(fk: List, sp: AnuList): List;
-   % signature. [fk] is a list of standard forms (in, say, variables x1,...,xk),
-   % [sp] is sample point (a list (al,...,a1) of algebraic numbers with l <= k).
-   % Returns a list (sigma1,...,sigmak) of elements of {-1,0,1}.
+   % Signature. [fk] is a list of standard forms in variables x_1, ..., x_k).
+   % [sp] is a sample point, i.e., a list (a_1, ..., a_l) of algebraic numbers
+   % with l <= k). Returns a list (sgn_1, ..., sgn_k) of elements from {-1, 0,
+   % 1}.
    for each f in fk collect
       ofsf_sgnf4(f, sp);
 
-asserted procedure ofsf_signaturesbytv(ddk: List, tv): List;
-   % Signatures by truth value. [ddk] is a list of cells.
+asserted procedure ofsf_signaturesbytv(ddk: List, tv: Id): List;
+   % Signatures by truth value. [ddk] is a list of Acells.
    for each c in ddk join
       if acell_gettv c eq tv then {acell_getdesc c};
 
