@@ -180,7 +180,7 @@ Lisp_Object Lgetenv(Lisp_Object nil, Lisp_Object a)
     Header h;
     Lisp_Object r;
     int32_t len;
-    char *w;
+    const char *w;
     memset(parmname, 0, sizeof(parmname));
 #ifdef COMMON
     if (complex_stringp(a)

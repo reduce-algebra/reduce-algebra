@@ -1555,6 +1555,7 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
 #endif
     for (;;)
     {
+        HANDLE_BLIP;
 #ifndef NO_BYTECOUNT
 /*
  * So that there is no risk of losing information when one crashes out from

@@ -884,10 +884,39 @@ static void tidy_up_crlibm()
 }
 #endif
 
+#if defined __linux__ && defined DEBUG
+/*
+ * This is an experiment as to a possible return to generating a
+ * tick-stream using a system timer rather than "software ticks".
+ */
+volatile int blipflag = 0;
+int64_t blipcount = 0, startblip = 0;
+
+#include <stdio.h>
+#include <signal.h>
+#include <sys/time.h>
+
+void alarm_handler(int signum)
+{
+    blipflag = 1;
+}
+#endif
+
 static void lisp_main(void)
 {
     Lisp_Object nil;
     int i;
+#if defined __linux__ && defined DEBUG
+    struct itimerval tv;
+    blipflag = 0;
+    blipcount = 0;
+    signal(SIGALRM, alarm_handler);
+    tv.it_interval.tv_usec = 900000;
+    tv.it_interval.tv_sec = 0;
+    tv.it_value.tv_usec = 900000;
+    tv.it_value.tv_sec = 0;
+    setitimer(ITIMER_REAL, &tv, NULL);
+#endif
 #ifdef USE_SIGALTSTACK
 /*
  * If I get a SIGSEGV that is caused by a stack overflow then I am in
@@ -1965,7 +1994,7 @@ term_printf(
 /*
  * I do not really want this options heavily documented, since it is intended
  * for use by those maintaining CSL not for the general public. By default
- * log multiplicatiob can use a threaded implementation (to exploit multi-core
+ * log multiplication can use a threaded implementation (to exploit multi-core
  * machines). This happens when numbers get bigger than about
  * 2^(31*KARATSUBA_PARALLEL_CUTOFF). This option allows one to override the
  * default threshold so that performance effects can be measured and the

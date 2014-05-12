@@ -100,7 +100,7 @@ extern void process_file_name(char *filename, char *old, size_t n);
  */
 
 extern FILE *open_file(char *filename, char *old, size_t n,
-                       char *mode, FILE *old_file);
+                       const char *mode, FILE *old_file);
 
 /*
  * find if a file exists, and if it does return (as 24 chars) the

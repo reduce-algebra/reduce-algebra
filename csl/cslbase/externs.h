@@ -249,6 +249,26 @@ extern void show_stack();
 
 extern int32_t software_ticks, countdown;
 
+/*
+ * The next bit is JUST used under Linux for tracking stubborn bugs where
+ * I want to check where I am executing code.
+ */
+extern volatile int blipflag;
+extern int64_t blipcount, startblip;
+
+#ifdef DEBUG
+#define HANDLE_BLIP                                                       \
+    if (blipflag)                                                         \
+    {   blipflag = 0;                                                     \
+        if (startblip >= 0 && ++blipcount > startblip)                    \
+        {   fprintf(stderr, "Line %d of file %s\n", __LINE__, __FILE__);  \
+            fflush(stderr);                                               \
+        }                                                                 \
+    }
+#else
+#define HANDLE_BLIP
+#endif
+
 #define stackcheck0(k)                                      \
     if_check_stack                                          \
     if ((--countdown < 0 && deal_with_tick()) ||            \
@@ -1079,7 +1099,7 @@ extern Lisp_Object ndelete(Lisp_Object a, Lisp_Object b);
 extern Lisp_Object negate(Lisp_Object a);
 extern Lisp_Object nreverse(Lisp_Object a);
 extern FILE        *open_file(char *filename, char *original_name,
-                              size_t n, char *dirn, FILE *old_file);
+                              size_t n, const char *dirn, FILE *old_file);
 extern Lisp_Object plus2(Lisp_Object a, Lisp_Object b);
 extern void        preserve(char *msg, int len);
 extern void        preserve_native_code(void);

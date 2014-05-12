@@ -90,6 +90,10 @@ then
       then
         rm -f Makefile.in
       fi
+      if test -f config.h.in
+      then
+        rm -f config.h.in
+      fi
       autoreconf -f -i
     esac
     cd $here
@@ -103,32 +107,49 @@ fi
 
 cd $here
 
-# If in one of these steps "find" does not find anything then it could try
-# to pass an empty list of arguments to "touch" and that causes upse. So I
-# will touch this very script (ie autogen.sh) since that is a file I rather
-# know exists, and touching it should be harmless.
-
 echo Now reset all date-stamps...
+
 echo Step 1 of 5: configure.ac, configure.in and Makefile.am:
-find $target \( -name configure.ac -o -name configure.in \
-          -o -name Makefile.am \) -print | xargs touch autogen.sh
+files=`find $target \( -name configure.ac -o -name configure.in \
+          -o -name Makefile.am \) -print`
+if test "x$files" != "x"
+then
+  echo $files | xargs touch
+fi
 sleep 1
 
 echo Step 2 of 5: aclocal.m4:
-find $target -name aclocal.m4 -print | xargs touch autogen.sh
+files=`find -name aclocal.m4 -print`
+if test "x$files" != "x"
+then
+  echo $files | xargs touch
+fi
+find $target -name aclocal.m4 -print | xargs touch /dev/null
 sleep 1
 
 echo Step 3 of 5: configure:
-find $target -name configure -print | xargs touch autogen.sh
-find $target -name configure -print | xargs chmod +x autogen.sh
+files=`find -name configure -print`
+if test "x$files" != "x"
+then
+  echo $files | xargs touch
+  echo $files | xargs chmod +x
+fi
 sleep 1
 
 echo Step 4 of 5: config.h.in:
-find $target -name \*config.h.in -print | xargs touch autogen.sh
+files=`find -name config.h.in -print`
+if test "x$files" != "x"
+then
+  echo $files | xargs touch
+fi
 sleep 1
 
 echo Step 5 of 5: Makefile.in:
-find $target -name Makefile.in -print | xargs touch autogen.sh
+files=`find -name Makefile.in -print`
+if test "x$files" != "x"
+then
+  echo $files | xargs touch
+fi
 
 echo Date-stamps should now be in the proper sequence.
 

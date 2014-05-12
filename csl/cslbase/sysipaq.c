@@ -627,7 +627,7 @@ void process_file_name(char *filename, char *old, size_t n)
 }
 
 FILE *open_file(char *filename, char *old, size_t n,
-                char *mode, FILE *old_file)
+                const char *mode, FILE *old_file)
 {
 /*
  * mode is something like "r" or "w" or "rb", as needed by fopen(),

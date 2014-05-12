@@ -613,7 +613,8 @@ deflist('((tr rlis)     (trst rlis)
           (untr rlis)   (untrst rlis)
          ),'stat);
 
-symbolic procedure prop x; plist x;  % Yukky PSL compatibility.
+% Now built-in to CSL
+%symbolic procedure prop x; plist x;  % Yukky PSL compatibility.
 
 Comment The following declarations are needed to build various modules;
 
