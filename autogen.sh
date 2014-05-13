@@ -119,16 +119,15 @@ fi
 sleep 1
 
 echo Step 2 of 5: aclocal.m4:
-files=`find -name aclocal.m4 -print`
+files=`find $target -name aclocal.m4 -print`
 if test "x$files" != "x"
 then
   echo $files | xargs touch
 fi
-find $target -name aclocal.m4 -print | xargs touch /dev/null
 sleep 1
 
 echo Step 3 of 5: configure:
-files=`find -name configure -print`
+files=`find $target -name configure -print`
 if test "x$files" != "x"
 then
   echo $files | xargs touch
@@ -137,7 +136,7 @@ fi
 sleep 1
 
 echo Step 4 of 5: config.h.in:
-files=`find -name config.h.in -print`
+files=`find $target -name config.h.in -print`
 if test "x$files" != "x"
 then
   echo $files | xargs touch
@@ -145,7 +144,7 @@ fi
 sleep 1
 
 echo Step 5 of 5: Makefile.in:
-files=`find -name Makefile.in -print`
+files=`find $target -name Makefile.in -print`
 if test "x$files" != "x"
 then
   echo $files | xargs touch
