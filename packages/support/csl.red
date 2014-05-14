@@ -41,9 +41,9 @@ symbolic inline procedure fix2 u; fix u;
 %symbolic inline procedure lshift(m,d); ash(m,d);
 %
 %symbolic inline procedure ashift(m,d); ash1(m,d);
-%
-%flag('(lshift ashift), 'lose);
-%
+
+flag('(lshift ashift), 'lose);
+
 %% land is now built in to CSL... (also lor, lxor and lnot)
 %
 %symbolic inline procedure land(a,b); logand(a,b);
