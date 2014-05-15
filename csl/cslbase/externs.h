@@ -256,7 +256,7 @@ extern int32_t software_ticks, countdown;
 extern volatile int blipflag;
 extern int64_t blipcount, startblip;
 
-#ifdef DEBUG
+#if defined __linux__ && defined DEBUG
 #define HANDLE_BLIP                                                       \
     if (blipflag)                                                         \
     {   blipflag = 0;                                                     \

@@ -233,7 +233,9 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 
 extern Lisp_Object make_stream_handle(void);
 extern CSLbool use_wimp, sigint_must_longjmp;
+#ifndef __cplusplus
 extern jmp_buf sigint_buf;
+#endif
 
 extern character_reader *procedural_input;
 extern character_writer *procedural_output;

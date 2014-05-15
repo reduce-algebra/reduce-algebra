@@ -34,14 +34,14 @@ TRACE = $(warning TRACE: $@ :: $?)
 # derived from.
 
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
-	@$(TRACE)if test $(ACLOCAL_M4) -ot $(top_srcdir)/configure.ac; \
+	$(TRACE)if test $(ACLOCAL_M4) -ot $(top_srcdir)/configure.ac; \
 	then \
 	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \
 	else echo Redundant attempt to remake $(ACLOCAL_M4) ; \
 	fi
 
 $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
-	@$(TRACE)if test $(top_srcdir)/configure -ot $(top_srcdir)/configure.ac || \
+	$(TRACE)if test $(top_srcdir)/configure -ot $(top_srcdir)/configure.ac || \
 	   test $(top_srcdir)/configure -ot $(ACLOCAL_M4) ; \
 	then \
 	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \
@@ -49,7 +49,7 @@ $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
 	fi
 
 $(srcdir)/config.h.in:	$(am__configure_deps) $(top_srcdir)/configure
-	@$(TRACE)if test $(srcdir)/config.h.in -ot $(top_srcdir)/configure.ac || \
+	$(TRACE)if test $(srcdir)/config.h.in -ot $(top_srcdir)/configure.ac || \
 	   test $(srcdir)/config.h.in -ot $(ACLOCAL_M4) || \
 	   test $(srcdir)/config.h.in -ot $(top_srcdir)/configure ; \
 	then \
@@ -61,7 +61,7 @@ $(srcdir)/config.h.in:	$(am__configure_deps) $(top_srcdir)/configure
 
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 		$(srcdir)/config.h.in
-	@$(TRACE)if test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure.ac || \
+	$(TRACE)if test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure.ac || \
 	   test $(srcdir)/Makefile.in -ot $(ACLOCAL_M4) || \
 	   test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure || \
 	   test $(srcdir)/Makefile.in -ot $(srcdir)/config.h.in || \
@@ -337,37 +337,37 @@ generated_sources =             u01.c \
 		u56.c u57.c \
 		u58.c u59.c \
 		u60.c
-generated_sources_deps =             $(gensrc)/01.c \
-		$(gensrc)/02.c $(gensrc)/03.c \
-		$(gensrc)/04.c $(gensrc)/05.c \
-		$(gensrc)/06.c $(gensrc)/07.c \
-		$(gensrc)/08.c $(gensrc)/09.c \
-		$(gensrc)/10.c $(gensrc)/11.c \
-		$(gensrc)/12.c $(gensrc)/13.c \
-		$(gensrc)/14.c $(gensrc)/15.c \
-		$(gensrc)/16.c $(gensrc)/17.c \
-		$(gensrc)/18.c $(gensrc)/19.c \
-		$(gensrc)/20.c $(gensrc)/21.c \
-		$(gensrc)/22.c $(gensrc)/23.c \
-		$(gensrc)/24.c $(gensrc)/25.c \
-		$(gensrc)/26.c $(gensrc)/27.c \
-		$(gensrc)/28.c $(gensrc)/29.c \
-		$(gensrc)/30.c $(gensrc)/31.c \
-		$(gensrc)/32.c $(gensrc)/33.c \
-		$(gensrc)/34.c $(gensrc)/35.c \
-		$(gensrc)/36.c $(gensrc)/37.c \
-		$(gensrc)/38.c $(gensrc)/39.c \
-		$(gensrc)/40.c $(gensrc)/41.c \
-		$(gensrc)/42.c $(gensrc)/43.c \
-		$(gensrc)/44.c $(gensrc)/45.c \
-		$(gensrc)/46.c $(gensrc)/47.c \
-		$(gensrc)/48.c $(gensrc)/49.c \
-		$(gensrc)/50.c $(gensrc)/51.c \
-		$(gensrc)/52.c $(gensrc)/53.c \
-		$(gensrc)/54.c $(gensrc)/55.c \
-		$(gensrc)/56.c $(gensrc)/57.c \
-		$(gensrc)/58.c $(gensrc)/59.c \
-		$(gensrc)/60.c
+generated_sources_deps =             $(gensrc)/u01.c \
+		$(gensrc)/u02.c $(gensrc)/u03.c \
+		$(gensrc)/u04.c $(gensrc)/u05.c \
+		$(gensrc)/u06.c $(gensrc)/u07.c \
+		$(gensrc)/u08.c $(gensrc)/u09.c \
+		$(gensrc)/u10.c $(gensrc)/u11.c \
+		$(gensrc)/u12.c $(gensrc)/u13.c \
+		$(gensrc)/u14.c $(gensrc)/u15.c \
+		$(gensrc)/u16.c $(gensrc)/u17.c \
+		$(gensrc)/u18.c $(gensrc)/u19.c \
+		$(gensrc)/u20.c $(gensrc)/u21.c \
+		$(gensrc)/u22.c $(gensrc)/u23.c \
+		$(gensrc)/u24.c $(gensrc)/u25.c \
+		$(gensrc)/u26.c $(gensrc)/u27.c \
+		$(gensrc)/u28.c $(gensrc)/u29.c \
+		$(gensrc)/u30.c $(gensrc)/u31.c \
+		$(gensrc)/u32.c $(gensrc)/u33.c \
+		$(gensrc)/u34.c $(gensrc)/u35.c \
+		$(gensrc)/u36.c $(gensrc)/u37.c \
+		$(gensrc)/u38.c $(gensrc)/u39.c \
+		$(gensrc)/u40.c $(gensrc)/u41.c \
+		$(gensrc)/u42.c $(gensrc)/u43.c \
+		$(gensrc)/u44.c $(gensrc)/u45.c \
+		$(gensrc)/u46.c $(gensrc)/u47.c \
+		$(gensrc)/u48.c $(gensrc)/u49.c \
+		$(gensrc)/u50.c $(gensrc)/u51.c \
+		$(gensrc)/u52.c $(gensrc)/u53.c \
+		$(gensrc)/u54.c $(gensrc)/u55.c \
+		$(gensrc)/u56.c $(gensrc)/u57.c \
+		$(gensrc)/u58.c $(gensrc)/u59.c \
+		$(gensrc)/u60.c
 generated_objects =           reduce-u01.$(OBJEXT) \
 		reduce-u02.$(OBJEXT) reduce-u03.$(OBJEXT) \
 		reduce-u04.$(OBJEXT) reduce-u05.$(OBJEXT) \
@@ -927,7 +927,7 @@ $(srcdir)/../wxWidgets/wxWidgets_revision:	\
 	find wxWidgets -name configure -print | xargs chmod +x ; \
 	sleep 1 ; \
 	find wxWidgets -name config.h.in -print | xargs touch ; \
-	sleep 1 ;
+	sleep 1 ; \
 	find wxWidgets -name Makefile.in -print | xargs touch ; \
 	cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets; \
 	cp $(srcdir)/../support-packages/wxWidgets_revision wxWidgets ; \
@@ -1520,9 +1520,9 @@ image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 endif
 endif !windows
 install-data-local: $(image_files)
-	@$(NORMAL_INSTALL)
+	$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	@list='$(image_files)'; for p in $$list; do \
+	list='$(image_files)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=`echo "$$p" | sed 's,^.*/,,'`; \
 	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f"; \
@@ -1545,9 +1545,9 @@ noinstall_console_binaries =
 endif !gui
 
 install-exec-local: $(console_binaries)
-	@$(NORMAL_INSTALL)
+	$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	@list='$(console_binaries)'; for p in $$list; do \
+	list='$(console_binaries)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=`echo "$$p" | sed 's,^.*/,,'`; \
 	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f"; \
@@ -1556,8 +1556,8 @@ install-exec-local: $(console_binaries)
 	done
 
 uninstall-local:
-	@$(NORMAL_UNINSTALL)
-	@list='$(console_binaries) $(image_files)'; for p in $$list; do \
+	$(NORMAL_UNINSTALL)
+	list='$(console_binaries) $(image_files)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's,^.*/,,'`; \
 	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
 	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
@@ -1579,8 +1579,8 @@ clean-local:
 else !windows
 
 uninstall-local:
-	@$(NORMAL_UNINSTALL)
-	@list='$(image_files)'; for p in $$list; do \
+	$(NORMAL_UNINSTALL)
+	list='$(image_files)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's,^.*/,,'`; \
 	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
 	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
@@ -1742,10 +1742,21 @@ if canrun
 # before starting the build job.
 	mkdir -p buildlogs
 	echo Building in `pwd`
+# A reasonable person might ask what all the "chmod 664 $(gensrc)/* commands
+# are doing here. Well they are because if you run under a cygwin (mintty)
+# shell but execute that native windows (mingw-style) version of Reduce and
+# it creates files then the cygwin file access bits at least sometimes do not
+# get set and you can end up with files with access mode 000. That is a bit
+# of a recipe for disaster, and so I enthusiastically reset access rights
+# here. This ought to be harmless under other systems - at least I hope it
+# will be. I make the access rights 664 not 644 in case you are a group member
+# for the file-space not actually the owner.
+	chmod 664 $(gensrc)/*
 	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
+	chmod 664 $(gensrc)/*
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
 # is up to date with my lastest build. There is a complication here that I
 # only partially hack around. On the Mac I will often save image files within
@@ -1755,6 +1766,7 @@ if canrun
 	if test -f reduce.app/Contents/reduce.img; \
 	then $(CP) reduce.app/Contents/reduce.img $(gensrc); \
 	elif test -f reduce.img; then $(CP) reduce.img $(gensrc); fi
+	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
@@ -1773,11 +1785,13 @@ if canrun
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 	mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
 	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o ./reduce.img/ \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
+	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not build reduce.img on this platform
 	echo Copying from $(gensrc)
@@ -1793,11 +1807,14 @@ endif !canrun
 
 bootstraprecompile:
 if canrun
+	chmod 664 $(gensrc)/*
 	if !test -f bootstrapreduce.img; then make bootstrapreduce.img; fi
 	mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
+	chmod 664 $(gensrc)/*
 	make -t bootstrapreduce.img > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
@@ -1805,11 +1822,14 @@ endif !canrun
 
 recompile:
 if canrun
+	chmod 664 $(gensrc)/*
 	if !test -f reduce.img; then make reduce.img; fi
 	mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
 	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
+	chmod 664 $(gensrc)/*
 	make -t reduce.img > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
@@ -1842,14 +1862,17 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 if canrun
 	mkdir -p buildlogs
 	echo Building in `pwd`
+	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
+	chmod 664 $(gensrc)/*
 	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
 	then $(CP) bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
 	elif test -f bootstrapreduce.img; \
 	then $(CP) bootstrapreduce.img $(gensrc); fi
+	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
 	echo Copying from $(gensrc)
@@ -1860,6 +1883,7 @@ endif !canrun
 profile:	bootstrapreduce.img
 if canrun
 	$(TRACE)mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
@@ -1867,24 +1891,28 @@ if canrun
 # I preserve the previous profile.dat as profile.dat.old
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
+	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not profile on this platform
 endif !canrun
 
 prof-inst:	profile.dat
 	$(CP) profile.dat $(gensrc)
+	chmod 664 $(gensrc)/*
 	-$(RM) -f profile.dat
 
 $(gensrc)/profile.dat:	$(srcdir)/../generated-c/profile.dat
 	-$(TRACE)mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../generated-c/profile.dat $(gensrc)
+	chmod 664 $(gensrc)/*
 
 c-code:	$(gensrc)/make.stamp
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 		$(srcdir)/make-c-code.red
-	@$(TRACE)$(RM) -f $(gensrc)/make.tmp
-	@touch $(gensrc)/make.tmp
+	chmod 664 $(gensrc)/*
+	$(TRACE)$(RM) -f $(gensrc)/make.tmp
+	touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 # I want the C code to be created from a version of the boostrap code
 # that has ALL the inline definitions available. To ensure that things are
@@ -1897,6 +1925,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	touch $(INLINE_DEFS)
 	$(RM) -f bootstrapreduce.img
 	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	chmod 664 $(gensrc)/*
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
@@ -1908,6 +1937,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
+	chmod 664 $(gensrc)/*
 # If the inline-defs file has not changed I will restore the old one. Its
 # contents will be just what I would have seen in the new one but its
 # datestamp will be older and that can help avoid unnecessary rebuilding.
@@ -1918,7 +1948,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	else \
 	  $(RM) old-inline-defs.dat; \
 	fi
-	@mv $(gensrc)/make.tmp $(gensrc)/make.stamp
+	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
 # The following rule can lead to race conditions with parallel make if
 # several generated files have been deleted but not the make.stamp file.
@@ -1962,10 +1992,12 @@ standard-c-code $(generated_sources_deps) $(generated_lisp):	$(gensrc)/make.stam
 full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c -Dfull_c_code \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
+	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not generate C code on this platfrom
 endif !canrun
@@ -1987,6 +2019,7 @@ endif !canrun
 smacros smacros.red:	bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
 		-L buildlogs/smacros.log

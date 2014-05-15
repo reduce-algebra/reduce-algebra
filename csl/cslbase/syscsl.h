@@ -1,4 +1,4 @@
-/*  syscsl.h                      Copyright (C) 1992-2013 Codemist Ltd */
+/*  syscsl.h                      Copyright (C) 1992-2014 Codemist Ltd */
 
 /*
  * This file should contain a list of all the functions in CSL that have
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -282,7 +282,7 @@ extern void unpack_date(unsigned long int r,
 extern unsigned long int pack_date(int year, int mon, int day,
                                    int hour, int min, int sec);
 
-typedef struct date_and_type
+typedef struct date_and_type_
 {
     unsigned long int date;
     unsigned long int type;

@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     {   printf("Err = <%s>\n", dlerror()); fflush(stdout);
         return 0;
     }
-    b = dlsym(a, "callme");
+    b = (onearg *)dlsym(a, "callme");
 #endif
     printf("b = %p\n", b);
     fflush(stdout);

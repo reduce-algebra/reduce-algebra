@@ -1267,37 +1267,37 @@ entry_pointn entries_tablen[] =
 entry_pointn entries_tableio[] =
 {
     {0,                                          "illegal"},
-    {(void *)char_from_illegal,                  "char_from_illegal"},
-    {(void *)char_to_illegal,                    "char_to_illegal"},
-    {(void *)read_action_illegal,                "read_action_illegal"},
-    {(void *)write_action_illegal,               "write_action_illegal"},
-    {(void *)char_from_terminal,                 "char_from_terminal"},
-    {(void *)char_to_terminal,                   "char_to_terminal"},
-    {(void *)read_action_terminal,               "read_action_terminal"},
-    {(void *)write_action_terminal,              "write_action_terminal"},
-    {(void *)char_from_file,                     "char_from_file"},
-    {(void *)char_to_file,                       "char_to_file"},
-    {(void *)read_action_file,                   "read_action_file"},
-    {(void *)read_action_output_file,            "read_action_output_file"},
-    {(void *)write_action_file,                  "write_action_file"},
-    {(void *)binary_outchar,                     "binary_outchar"},
-    {(void *)char_from_list,                     "char_from_list"},
-    {(void *)char_to_list,                       "char_to_list"},
-    {(void *)code_to_list,                       "code_to_list"},
-    {(void *)read_action_list,                   "read_action_list"},
-    {(void *)write_action_list,                  "write_action_list"},
-    {(void *)count_character,                    "count_character"},
-    {(void *)char_to_pipeout,                    "char_to_pipeout"},
-    {(void *)write_action_pipe,                  "write_action_pipe"},
-    {(void *)char_from_synonym,                  "char_from_synonym"},
-    {(void *)char_to_synonym,                    "char_to_synonym"},
-    {(void *)read_action_synonym,                "read_action_synonym"},
-    {(void *)write_action_synonym,               "write_action_synonym"},
-    {(void *)char_from_concatenated,             "char_from_concatenated"},
-    {(void *)char_to_broadcast,                  "char_to_broadcast"},
-    {(void *)read_action_concatenated,           "read_action_concatenated"},
-    {(void *)write_action_broadcast,             "write_action_broadcast"},
-    {(void *)char_from_echo,                     "char_from_echo"},
+    {(n_args *)char_from_illegal,                "char_from_illegal"},
+    {(n_args *)char_to_illegal,                  "char_to_illegal"},
+    {(n_args *)read_action_illegal,              "read_action_illegal"},
+    {(n_args *)write_action_illegal,             "write_action_illegal"},
+    {(n_args *)char_from_terminal,               "char_from_terminal"},
+    {(n_args *)char_to_terminal,                 "char_to_terminal"},
+    {(n_args *)read_action_terminal,             "read_action_terminal"},
+    {(n_args *)write_action_terminal,            "write_action_terminal"},
+    {(n_args *)char_from_file,                   "char_from_file"},
+    {(n_args *)char_to_file,                     "char_to_file"},
+    {(n_args *)read_action_file,                 "read_action_file"},
+    {(n_args *)read_action_output_file,          "read_action_output_file"},
+    {(n_args *)write_action_file,                "write_action_file"},
+    {(n_args *)binary_outchar,                   "binary_outchar"},
+    {(n_args *)char_from_list,                   "char_from_list"},
+    {(n_args *)char_to_list,                     "char_to_list"},
+    {(n_args *)code_to_list,                     "code_to_list"},
+    {(n_args *)read_action_list,                 "read_action_list"},
+    {(n_args *)write_action_list,                "write_action_list"},
+    {(n_args *)count_character,                  "count_character"},
+    {(n_args *)char_to_pipeout,                  "char_to_pipeout"},
+    {(n_args *)write_action_pipe,                "write_action_pipe"},
+    {(n_args *)char_from_synonym,                "char_from_synonym"},
+    {(n_args *)char_to_synonym,                  "char_to_synonym"},
+    {(n_args *)read_action_synonym,              "read_action_synonym"},
+    {(n_args *)write_action_synonym,             "write_action_synonym"},
+    {(n_args *)char_from_concatenated,           "char_from_concatenated"},
+    {(n_args *)char_to_broadcast,                "char_to_broadcast"},
+    {(n_args *)read_action_concatenated,         "read_action_concatenated"},
+    {(n_args *)write_action_broadcast,           "write_action_broadcast"},
+    {(n_args *)char_from_echo,                   "char_from_echo"},
     {NULL,                                       "dummy"}
 };
 
@@ -3028,6 +3028,8 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
+    err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2, x3);
+    err_printf("version passed here %lx %lx %lx\n", c1, c2, c3);
     return aerror1("check-c-code", name);
 }
 

@@ -4860,11 +4860,11 @@ static int lookup_name(const char *s)
 {
     uniname k, *p;
     k.name = s;
-    p = bsearch(&k, unicode_names,
-                sizeof(unicode_names)/sizeof(unicode_names[0]) -
-                    sizeof(unicode_names[0]), /* allow for the terminator */
-                sizeof(unicode_names[0]),
-                compare_strings);
+    p = (uniname *)bsearch(&k, unicode_names,
+        sizeof(unicode_names)/sizeof(unicode_names[0]) -
+            sizeof(unicode_names[0]), /* allow for the terminator */
+        sizeof(unicode_names[0]),
+        compare_strings);
     if (p == NULL) return -1; /* not found */
     else return p->code;
 }

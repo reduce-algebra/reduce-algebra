@@ -53,6 +53,11 @@
 #include <wx/print.h>
 #include <wx/printdlg.h>
 
+// I am moving to a view that this code is only for use within the
+// CSL tree... so it might as well include the full set of CSL header files
+
+#include "headers.h"
+
 #include "config.h"
 
 #ifdef WIN32
@@ -817,18 +822,18 @@ wxThread::ExitCode fwinWorker::Entry()
     return (wxThread::ExitCode)rc;
 }
 
-int get_current_directory(char *s, int n)
-{
-    if (getcwd(s, n) == 0)
-    {   switch(errno)
-        {
-    case ERANGE: return -2; // negative return value flags an error.
-    case EACCES: return -3;
-    default:     return -4;
-        }
-    }
-    else return strlen(s);
-}
+//int get_current_directory(char *s, int n)
+//{
+//    if (getcwd(s, n) == 0)
+//    {   switch(errno)
+//        {
+//    case ERANGE: return -2; // negative return value flags an error.
+//    case EACCES: return -3;
+//    default:     return -4;
+//        }
+//    }
+//    else return strlen(s);
+//}
 
 /*
  * The next procedure is responsible for establishing information about
@@ -5277,7 +5282,7 @@ void fwin_ensure_screen()
 
 extern "C"
 {
-static review_switch_settings_function *review_switch_settings = NULL;
+static review_switch_settings_function *preview_switch_settings = NULL;
 }
 
 static int update_next_time = 0;
@@ -5298,8 +5303,8 @@ int fwin_getchar()
         return panel->inputBuffer[panel->inputBufferP++];
 // Now however a new line of input is needed, so I have to request it from
 // the user-interface thread.
-    if (update_next_time && review_switch_settings != NULL)
-    {   (*review_switch_settings)();
+    if (update_next_time && preview_switch_settings != NULL)
+    {   (*preview_switch_settings)();
         update_next_time = 0;
     }
     if (delay_callback != NULL) (*delay_callback)(1);
@@ -5359,7 +5364,7 @@ void fwin_menus(char **modules, char **switches,
     switches_list = switches;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    review_switch_settings = f;
+    preview_switch_settings = f;
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MENUS);
     panel->GetEventHandler()->QueueEvent(event);
 }
