@@ -436,6 +436,8 @@ symbolic procedure begin;
          w := verbos 0;
          fmp!-switch t;
          off1 'promptnumbers;
+         load!-module 'tmprint;
+         on1 'redfront_mode;
          verbos w >>
 % If the tmprint module is loaded and I have a window that can support it
 % I will display things in a "fancy" way within the CSL world.
