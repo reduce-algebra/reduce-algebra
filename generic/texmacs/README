@@ -1,0 +1,10 @@
+texmacs-plugin.tgz contains code for running REDUCE within TeXmacs.
+It can be used with CSL or PSL based REDUCE. redcsl and/or redpsl
+must be in your PATH to be detected by the plugin.
+
+Installation:
+
+cd ~/.TeXmacs/plugins
+tar zxf texmacs-plugin.tgz
+
+
