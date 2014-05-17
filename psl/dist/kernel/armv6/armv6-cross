@@ -1,18 +1,22 @@
 # /bin/csh
 echo "cross"
 $psys/pslcomp <<EOF
+(load debug)
 
 (off usermode)
 %%(load psl_case)
 (load if-system)
 (load lap-to-asm)
+(load armv6-instrs)
 (on pcmac)
 (print (list "nextidnumber*" nextidnumber*))
 (load armv6-asm)
+(load armv6-cmac)
 (print (list "nextidnumber*" nextidnumber*))
 (dskin "unix-patch.sl")
 (print (list "nextidnumber*" nextidnumber*))
 
+(remd 'foreignlink)
 (copyd 'bitma 'bitmask)
 (de bitmask (x y) (cond ((and (eq x 2) (eq y 30))  1073741823)
 			((and (eq x 2) (eq y 14))  1073676288)
@@ -21,7 +25,7 @@ $psys/pslcomp <<EOF
 %  (list 'displacement '(reg st) (plus2 20
 %        (times (difference (cadr u) (plus lastactualreg!& 1))
 %               (compiler-constant 'addressingunitsperitem)))))
+(tr *link *linke *foreignlink)
 (dskin "tmp.sl")
-
 EOF
 

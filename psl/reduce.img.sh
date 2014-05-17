@@ -142,7 +142,9 @@ cd psl
   (setq !*init!-stats!* nil))
 
 (savesystem "REDUCE" "../red/reduce" (quote ((commandline_setq)
-                                             (read-init-file "reduce"))))
+                                             (read-init-file "reduce")
+			(cond ((member "--texmacs" (vector2list unixargs!*))
+						(load tmprint))))))
 (bye)
 
 XXX

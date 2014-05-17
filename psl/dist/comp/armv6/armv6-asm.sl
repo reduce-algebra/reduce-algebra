@@ -99,10 +99,10 @@
 (setq MainEntryPointName* '!m!a!i!n)     % chose a simple default
                                           % main procedure name
 
-(setq NumericRegisterNames* '[nil "%eax" "%ebx" "%ecx" "%edx" "%ebp" ])
+(setq NumericRegisterNames* '[nil "R0" "R1" "R2" "R3" "R4" ])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
-(setq CommentFormat* "/ %p%n")          % Comments begin with a slash
+(setq CommentFormat* "@ %p%n")          % Comments begin with a slash
                                         % will group alphabetically
 
 (setq ExportedDeclarationFormat* " .globl %w%n")
@@ -127,19 +127,17 @@
 %LISTS and CONSTANT DEFINITIONS%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(setq ASMOpenParen* "(")
-(setq ASMCloseParen* ")")
+(setq ASMOpenParen* "[")
+(setq ASMCloseParen* "]")
 
 (DefList '((LAnd &) 
   (LOr !!)) 'BinaryASMOp)
 
-(DefList '(     (t1 "%edi") 
-  		(t2 "%esi") 
-                (eax "%eax") (al "%al") (ax "%ax")
-                (edx "%edx")
-                (ecx "%ecx") (cl "%cl") (cx "%cx")
-          	(sp "%esp")
-          	(st "%esp") )                      % Stack Pointer
+(DefList '(     (t1 "R5") 
+  		(t2 "R6") 
+          	(fp "fp")
+          	(sp "sp")
+          	(st "sp") )                      % Stack Pointer
   'RegisterName)
 
 
@@ -348,28 +346,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (de PrintNumericOperand (x) 
-  (printf "$%w" x))
+  (printf " #%w" x))
 
 
 (de OperandPrintIndirect (x)            % (Indirect x)
   (progn (setq x (cadr x)) 
          (if (regp x) (progn
-                        (prin2 "(")
+                        (prin2 "[")
 	 		(PrintOperand x) 
-	 		(Prin2 ")"))
+	 		(Prin2 "]"))
                (prin2 "*")
                (PrintOperand x)
                (Prin2 "")) 
 ))
 
-(put 'Indirect 'OperandPrintFunction 'OperandPrintIndirect)
+(De OperandPrintDisplacement (x)        % (Displacement (reg x) disp)
+   (progn (setq x (cdr x))
+          (Prin2 " [")
+          (Printoperand (car x))
+          (Prin2 ", #")
+          (PrintExpression (cadr x))
+          (Prin2 "]")))
 
-(de OperandPrintDisplacement (x)        % (Displacement (reg x) disp)
-   (progn (setq x (cdr x)) 
-	  (PrintExpression (cadr x)) 
-	  (Prin2 "(")
-	  (Printoperand (car x)) 
-	  (Prin2 ")")))
+ 'Indirect 'OperandPrintFunction 'OperandPrintIndirect)
+
 
 (put 'displacement 'OperandPrintFunction 'OperandPrintDisplacement)
 
@@ -380,19 +380,17 @@
 (de OperandPrintIndexed (x)  % (indexed (reg y) (displacement (reg x) disp))
   (if (regp (second x))
     (let ((part2 (third x)))
-       (printexpression (third part2))
-       (prin2 "(")
+       (prin2 "[")
        (PrintRegister (cadr part2))
        (prin2 ",")
-       (PrintRegister (cadr x))
-       (prin2 ",1)")))
+       (printexpression (third part2))))
   (if (eqcar (second x) 'times)
    (let ((part2 (third x))
          (part1 (second x)))
        (if (atom part2)
            (progn  (printexpression part2))
            (printexpression (third part2)))
-       (prin2 "(")
+       (prin2 "[")
        (when (pairp part2) (PrintRegister (cadr part2)))
        (prin2 ",")
        (PrintRegister (cadr part1))
@@ -400,7 +398,7 @@
        (when (not (memq (third part1) '(1 2 4 8)))
              (error 199 "Wrong Indexed mode"))
        (prin2 (third part1))
-       (prin2 ")")))
+       (prin2 "]")))
 )
 
 (put 'Indexed 'OperandPrintFunction 'OperandPrintIndexed)

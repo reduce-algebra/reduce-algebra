@@ -1241,7 +1241,7 @@ preload  (setq initload
  
      )
  
-(DE  !*ForeignLink (FunctionName  FunctionType NumberOfArguments)
+(DE  !*ForeLink (FunctionName  FunctionType NumberOfArguments)
      (codedeclareexternal FunctionName)
      (append (PNTH '((!*PUSH (REG 14)) (!*PUSH (REG 13))
 	     (!*PUSH (REG 12)) (!*PUSH (REG 11))

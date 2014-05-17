@@ -520,11 +520,9 @@
 	     (unless (null x)
 		     (prin2 '! )
 		     % SPACE                                  
-		     (printoperand (car x))
-		     (foreach u in (cdr x) do 
-			      (progn (prin2 '!,)
-				     % COMMA                          
-				     (printoperand u))))
+		 (printoperand (car x))
+		     (foreach u in (cdr x) do (progn (prin2 '!,) % COMMA 
+                        (printoperand u))))
 	     (prin2 !$eol!$)))))))
 
 % NEWLINE                                                                  
