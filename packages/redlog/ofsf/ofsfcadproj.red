@@ -45,63 +45,85 @@ switch rlpscsgen;
 on1 'rlpscsgen;
 
 module ofsfcadproj;
-% CAD projection. [ffr] is a list of sf's over identifiers contained
-% in [varl], [varl] is a list of identifiers (xr,...,x1), [k] is an
-% integer. Returns a list of list of sf's. The kernel order is
-% expected to be (...,xr,...,x1), and all elements of $F_r$ are
-% ordered in this respect. If switch rlcadaproj is turned off,
-% augmented projection will never be made. Otherwise, if rlcadaproj is
-% turned on: If rlcadaprojalways is turned off, augemented projection
-% is used for generating $F_{k-1},...,F_1$, otherwise, if
-% rlcadaprojalways is turned on, augmented projection is used for
-% $F_{r-1},...,F_1$. Intuition: Projection phase, maps Fr to
-% (F1,...,Fr). CAVEAT: below, varl is $x_r,...,x2$???
+% CAD projection. [ffr] is a list of SF over identifiers contained in [varl].
+% [varl] is a list of identifiers (xr, ..., x1). [k] is an integer. Returns a
+% list of list of SF. The kernel order is expected to be (xr, ..., x1), i.e.,
+% variable [xr] is the smallest variable. All elements of [ffr] are ordered
+% w.r.t. this kernel order. If the switch rlcadaproj is turned off, augmented
+% projection will never be made. Otherwise, if rlcadaproj is turned on: If
+% rlcadaprojalways is turned off, augemented projection is used for generating
+% $F_{k-1},...,F_1$, otherwise, if rlcadaprojalways is turned on, augmented
+% projection is used for $F_{r-1},...,F_1$.
+% Intuition: Projection phase, maps [ffr]to (F1, ..., Fr).
+% Caveat: Below [varl] is $x_r, ..., x2$ ???
 
 %%% --- projection order code --- %%%
 
 algebraic procedure rlcadporders(phi);
+   % Compute all admissible projection orders.
    ordersfromvbl rlcadvbl phi;
 
 algebraic procedure ordersfromvbl(vbl);
    if vbl={} then {{}} else
       for each vl1 in perturbations first vbl join
 	 for each vl2 in ordersfromvbl rest vbl collect
-	    append(vl1,vl2);
+	    append(vl1, vl2);
 
 symbolic operator rlcadpordersnum;
-lisp procedure rlcadpordersnum(phi);
-   for each n in (for each b in ofsf_cadvbl1 rl_simp phi collect length b)
-      product factorial n;
+procedure rlcadpordersnum(phi);
+   begin scalar w;
+      w := for each b in ofsf_cadvbl1 rl_simp phi collect
+	 length b;
+      return for each n in w product
+	 factorial n
+   end;
 
 symbolic operator rlcadvbl2pord;
-lisp procedure rlcadvbl2pord(vbl);
+procedure rlcadvbl2pord(vbl);
    for each vb in vbl join vb;
 
 symbolic operator rlcadvbl;
 procedure rlcadvbl(phi);
-   'list . for each l in ofsf_cadvbl rl_simp phi collect 'list . l;
+   'list . for each l in ofsf_cadvbl rl_simp phi collect
+      'list . l;
 
 algebraic procedure rlcaddefaultorder(phi);
    for each vb in rlcadvbl rlpnf phi join vb;
 
-procedure ofsf_cadvbl(phi);
-   % Variable-block-list. Checks if [phi] is a prenex. Returns a list of
-   % lists [[xr..][..xk]..[xk..x1]] of IDs.
+algebraic procedure delnth(l, n);
+   % Delete the n-th element from list.
+   if n = 1 then rest l else append({first l}, delnth(rest l, n-1));
+
+algebraic procedure mynth(l, n);
+   % nth lelement of a list
+   if n = 1 then first l else mynth(rest l, n-1);
+
+algebraic procedure perturbations(l);
+   if l = {} then
+      {{}}
+   else
+      for j := 1 : length l join
+    	 for each p in perturbations(delnth(l, j)) collect
+	    append({mynth(l, j)}, p);
+
+asserted procedure ofsf_cadvbl(phi: Formula): List;
+   % Variable-block-list. Checks if [phi] is in PNF. Returns a list of lists
+   % [[xr..][..xk]..[xk..x1]] of Kernels.
    <<
       if not cl_prenexp phi then
-      	 rederr "formula is not prenex, please use rlpnf beforehand";
-      ofsf_cadvbl1(phi)
+      	 rederr "Formula is not in prenex normal form, please use rlpnf beforehand.";
+      ofsf_cadvbl1 phi
    >>;
 
-procedure ofsf_cadvbl1(phi);
-   % Variable-block-list. [phi] is a prenex fof. Returns a list of
-   % lists [[xr..][..xk]..[xk..x1]] of IDs.
-   begin scalar tmp,fvarl,ql,cq,cll,cl,a;
-      tmp := ofsf_mkvarl phi; % ((xr,...,x_1).((x_r.Q_r),...,(x_k+1.Q_k+1)))
-      fvarl := car tmp; % ((xr,...,x_1)
+asserted procedure ofsf_cadvbl1(phi: Formula): List;
+   % Variable-block-list. [phi] is a prenex fof. Returns a list of lists
+   % [[xr..][..xk]..[xk..x1]] of Kernels.
+   begin scalar tmp, fvarl, ql, cq, cll, cl, a;
+      tmp := ofsf_mkvarl phi;  % ((xr,...,x_1).((x_r.Q_r),...,(x_k+1.Q_k+1)))
+      fvarl := car tmp;  % ((xr,...,x_1)
       ql := cdr tmp;
       if ql then <<
-      	 cq := cdar ql; % current quantifier
+      	 cq := cdar ql;  % current quantifier
       	 while ql do <<
 	    a := car ql;
 	    ql := cdr ql;
@@ -120,23 +142,22 @@ procedure ofsf_cadvbl1(phi);
       return cll
 end;
 
-procedure ofsf_gcadporder(phi);
-   % Generic CAD projection order. [phi] is an OFSF FORMULA. Returns a
-   % list of identifiers. The result is a list of all variables in a
-   % PNF of [phi] encoding an order suitable for generic CAD
-   % projection. We assume that [ofsf_gcad] uses [cl_pnf] for PNF
+asserted procedure ofsf_gcadporder(phi: Formula): List;
+   % Generic CAD projection order. Returns a list of identifiers. The result is
+   % a list of all variables in a PNF of [phi] encoding an order suitable for
+   % generic CAD projection. We assume that [ofsf_gcad] uses [cl_pnf] for PNF
    % computation.
    begin scalar !*rlqegen;
       !*rlqegen := t;
       return ofsf_cadporder phi
    end;
 
-procedure ofsf_cadporder(phi);
-   ofsf_cadporder0(phi,'ofsf_cadporder!-rate,'ofsf_cadporder!-betterp);
+asserted procedure ofsf_cadporder(phi: Formula): List;
+   ofsf_cadporder0(phi, 'ofsf_cadporder!-rate, 'ofsf_cadporder!-betterp);
 
 switch dolzmann;
 
-procedure ofsf_cadporder!-betterp(rating,optrating,theo,theoopt);
+asserted procedure ofsf_cadporder!-betterp(rating, optrating, theo, theoopt): Boolean;
    if not !*dolzmann then
       not optrating or rating < optrating or
       (!*rlqegen and rating = optrating and length theo < length theoopt)
@@ -144,17 +165,18 @@ procedure ofsf_cadporder!-betterp(rating,optrating,theo,theoopt);
       not optrating or rating > optrating or
       (!*rlqegen and rating = optrating and length theo < length theoopt);
 
-procedure ofsf_cadporder!-rate(pset);
+asserted procedure ofsf_cadporder!-rate(pset: List): Integer;
    % length pset;
    for each f in pset sum sf_stdeg f;
 
-procedure ofsf_cadporder0(phi,rate,betterp);
+asserted procedure ofsf_cadporder0(phi: Formula, rate, betterp): List;
    % CAD projection order. [phi] is an OFSF FORMULA. Returns a list of
-   % identifiers. The result is a list of all variables in a PNF of
-   % [phi] encoding an order suitable for CAD projection. We assume
-   % that [ofsf_cad] uses [cl_pnf] for PNF computation.
-   begin scalar cll,varl,!*rlcadverbose;
-      if !*rlverbose then ioto_prin2t "+++ Optimizing projection order";
+   % identifiers. The result is a list of all variables in a PNF of [phi]
+   % encoding an order suitable for CAD projection. We assume that [ofsf_cad]
+   % uses [cl_pnf] for PNF computation.
+   begin scalar cll, varl, !*rlcadverbose;
+      if !*rlverbose then
+	 ioto_prin2t "+++ Optimizing projection order.";
       if !*rlcaddecdeg then
 	 phi := ofsf_caddecdeg phi;
       phi := cl_pnf phi;
@@ -162,30 +184,30 @@ procedure ofsf_cadporder0(phi,rate,betterp);
       if !*rlverbose then <<
       	 ioto_tprin2 {"++ input order: ->"};
 	 for each x in cll do
-	    ioto_prin2 {" ",x," ->"}
+	    ioto_prin2 {" ", x, " ->"}
       >>;
-      cll := ofsf_cadporder1(ofsf_transfac(cl_terml phi,nil),cll,rate,betterp);
+      cll := ofsf_cadporder1(ofsf_transfac(cl_terml phi, nil), cll, rate, betterp);
       if !*rlverbose then <<
       	 ioto_tprin2 {"++ optimized order: ->"};
 	 for each x in cll do
-	    ioto_prin2 {" ",x," ->"}
+	    ioto_prin2 {" ", x, " ->"}
       >>;
       varl := for each cl in cll join cl;
       return varl
    end;
 
-procedure ofsf_caddecdeg(phi);
+asserted procedure ofsf_caddecdeg(phi: Formula): Formula;
    begin scalar w;
       if !*rlverbose then ioto_prin2 "- decrease degrees: ";
       w := ofsf_decdeg0 phi;
       phi := car w;
       if !*rlverbose then
-	 ioto_prin2 for each x in cdr w join {"(",car x,"^",cdr x,")"};
+	 ioto_prin2 for each x in cdr w join {"(", car x, "^", cdr x, ")"};
       return phi
    end;
 
-procedure ofsf_cadsplt(phi);
-   begin scalar fvarl,ql,cq,cll,cl,a,tmp;
+asserted procedure ofsf_cadsplt(phi: Formula): List;
+   begin scalar fvarl, ql, cq, cll, cl, a, tmp;
       tmp := ofsf_mkvarl phi;
       fvarl := car tmp;
       ql := cdr tmp;
@@ -209,12 +231,12 @@ procedure ofsf_cadsplt(phi);
       return cll
    end;
 
-procedure ofsf_cadporder1(tl,cll,rate,betterp);
-   % CAD projection order subroutine. [tl] is a list of (irreducible)
-   % SF's; [cll] is a LIST of lists of identifiers. Returns a LIST of
-   % lists of identifers. The variable order is optimized for
-   % projection within each list in [cll].
-   begin scalar w,varl,ncll,cl,theo;
+asserted procedure ofsf_cadporder1(tl,cll,rate,betterp: Boolean): List;
+   % CAD projection order subroutine. [tl] is a list of (irreducible) SF's;
+   % [cll] is a LIST of lists of identifiers. Returns a LIST of lists of
+   % identifers. The variable order is optimized for projection within each list
+   % in [cll].
+   begin scalar w, varl, ncll, cl, theo;
       varl := for each cl in cll join append(cl,nil);
       while cll do <<
 	 cl := car cll;
@@ -228,21 +250,18 @@ procedure ofsf_cadporder1(tl,cll,rate,betterp);
 	 >> else
 	    ncll := nil . ncll
       >>;
-      ncll := reversip ncll;
-      return ncll
+      return reversip ncll
    end;
 
 procedure ofsf_cadporder2(tl,cl,varl,lastp,theo,rate,betterp);
-   % CAD projection order subroutine. [tl] is a list of (irreducible)
-   % SF's; [cl] is a LIST of identifiers; [varl] is a LIST of
-   % IDENTIFIERS; [lastp] is BOOLEAN. Returns a pair $(T . V)$, where
-   % $T$ is a LIST of SF's and $V$ is a LIST of IDENTIFIER's. [varl]
-   % is the list of all variables in the original input formula in the
-   % given input order, i.e., [cl] is a subsegment of [varl]. If
-   % [lastp] is non-[nil], then we are in the last projection block.
-   % $V$ contains the variables from [cl] in an order optimized for
-   % projection, and $T$ is the projection set after projecting in
-   % this order $V$.
+   % CAD projection order subroutine. [tl] is a list of (irreducible) SF's; [cl]
+   % is a LIST of identifiers; [varl] is a LIST of IDENTIFIERS; [lastp] is
+   % BOOLEAN. Returns a pair $(T . V)$, where $T$ is a LIST of SF's and $V$ is a
+   % LIST of IDENTIFIER's. [varl] is the list of all variables in the original
+   % input formula in the given input order, i.e., [cl] is a subsegment of
+   % [varl]. If [lastp] is non-[nil], then we are in the last projection block.
+   % $V$ contains the variables from [cl] in an order optimized for projection,
+   % and $T$ is the projection set after projecting in this order $V$.
    begin scalar w,ncl,lvarl;
       if !*rlverbose then
 	 ioto_tprin2t {"+ Current input block: -> ",cl," ->"};
@@ -264,14 +283,12 @@ procedure ofsf_cadporder2(tl,cl,varl,lastp,theo,rate,betterp);
    end;
 
 procedure ofsf_cadporder3(tl,cl,lvarl,theo,rate,betterp);
-   % CAD projection order subroutine. [tl] is a list of (irreducible)
-   % SF's; [cl] is a LIST of identifiers; [lvarl] is a LIST of
-   % identifiers. Returns a pair $(T . v)$, where $T$ is a LIST of
-   % SF's and $v$ is an IDENTIFIER. [lvarl] is the tail of the list of
-   % all variables in the original input formula in the given input
-   % order starting with [cl]. $v$ is the best variables in [cl] for
-   % the next projection step and $T$ is the result of this projection
-   % step.
+   % CAD projection order subroutine. [tl] is a list of (irreducible) SF's; [cl]
+   % is a LIST of identifiers; [lvarl] is a LIST of identifiers. Returns a pair
+   % $(T . v)$, where $T$ is a LIST of SF's and $v$ is an IDENTIFIER. [lvarl] is
+   % the tail of the list of all variables in the original input formula in the
+   % given input order starting with [cl]. $v$ is the best variables in [cl] for
+   % the next projection step and $T$ is the result of this projection step.
    begin scalar pset,xopt,psetopt,optrating,theoopt,rating,j,psetpr;
       j := length lvarl;
       for each x in cl do <<
@@ -332,95 +349,79 @@ procedure ofsf_cadporder!-project1(tl,x,lvarl,j,theo);
 
 %%% --- projection code --- %%%
 
-% What the projection phase expects from CADDATA: aa, aaplus, varl, k.
-% What is filled in: ff, hh
+% What the projection phase expects from caddata: aa, aaplus, varl, k.
+% What is filled in: ff, hh.
 
-procedure ofsf_cadprojection1(cd);
-   % CAD projection phase. [cd] is CADDATA.
-   % extracted from the input formula); [varl] is the list x1,...,xr
-   % of variables; [k] is the number of free variables. Returns (Fr,...,F1).
-   begin scalar aa,varl,k,r,ff,jj,pp,w,theo,l,hh,ffid;
-      varl := caddata_varl cd; % the list x1,...,xr
-      k := caddata_k cd; % the number of free variables
-      r := length varl; % the number of variables
-      aa := getv(caddata_ff cd,r); % input formula polynomials
-      ff := mkvect r; % here go the projection factors
-      hh := mkvect r; % here go the tagged projection factors
-      jj := mkvect r; % here go the projection polynomials
-      ffid := mkvect(r); % here go the id's of the projection polynomials
+asserted procedure ofsf_cadprojection1(cd: CadData): Any;
+   % CAD projection phase.
+   begin scalar varl, aa, ff, hh, jj, ffid, pp, theo, w, tag, tagl;
+      integer k, r, l;
+      varl := caddata_varl cd;  % {x1, ..., xr}
+      k := caddata_k cd;  % the number of free variables
+      r := length varl;  % the number of all variables
+      aa := getv(caddata_ff cd, r);  % polynomials occuring in the input formula
+      ff := mkvect r;  % here go the projection factors
+      hh := mkvect r;  % here go the tagged projection factors
+      jj := mkvect r;  % here go the projection polynomials
+      ffid := mkvect r;  % here go the id's of the projection polynomials
       % hack: generic cad: new projection
       if !*rlqegen then <<
-	 ofsf_cadbvl!* := lto_drop(varl,k); % better: caddata_bvl
-	 w := ofsf_projsetcohogen(aa,varl,nil);
-	 pp := car w;
-	 theo := cdr w;
-	 caddata_puttheo(cd,theo);
-      >> else <<
-      	 pp := ofsf_projsetcoho(aa,varl)
-      >>;
-      ofsf_mapdistribute(pp,ff,varl);
-      ofsf_mapdistribute(pp,jj,varl); % unused
+	 ofsf_cadbvl!* := lto_drop(varl, k);  % better: caddata_bvl
+	 pp . theo := ofsf_projsetcohogen(aa, varl, nil);
+	 caddata_puttheo(cd, theo)
+      >> else
+      	 pp := ofsf_projsetcoho(aa, varl);
+      ofsf_mapdistribute(pp, ff, varl);
+      ofsf_mapdistribute(pp, jj, varl);  % unused
+      caddata_putff(cd, ff);
+      caddata_putjj(cd, jj);
       for j := 1 : r do <<
 	 l := 0;
-         putv(hh,j,list2vector for each f in getv(ff,j) collect
-	    %<< l := l+1; tag_(f,{{'ff,j,l}}) >>)
-	    << l := l+1; tag_(f,{ofsf_ffji(j,l)}) >>);
-	 putv(ffid,j,for l := 1:length getv(ff,j) collect ofsf_ffji(j,l));
+	 tagl := nil;
+	 w := nil;
+	 for each f in getv(ff, j) do <<
+	    l := l + 1;
+	    tag := ofsf_ffji(j, l);
+	    push(tag_(f, {tag}), w);
+	    push(tag, tagl)
+	 >>;
+         putv(hh, j, list2vector reversip w);  % the same order as in [ff]
+	 putv(ffid, j, tagl)
       >>;
-      caddata_putff(cd,ff); caddata_putjj(cd,jj);
-      caddata_puthh(cd,hh); caddata_putffid(cd,ffid);
+      caddata_puthh(cd, hh);
+      caddata_putffid(cd, ffid);
       if !*rlverbose then <<
 	 ioto_tprin2t {"+ Number of all projection factors: ", length pp};
 	 if !*rlqegen then
 	    ioto_prin2t {"+ Number of theory elements: ", length theo}
-      >>;
-      return ; % caddata changed, nothing to return
+      >>
    end;
 
-procedure ofsf_ffji(j,l);
-   % Make an identifier of the form Fj_l.
-   intern compress lto_nconcn {explode 'ff, explode j,explode '!_, explode l};
+asserted procedure ofsf_ffji(j: Integer, l: Integer): Kernel;
+   % Make an identifier of the form [ffj_l].
+   intern compress lto_nconcn {explode 'ff, explode j, explode '!_, explode l};
 
-procedure ofsf_level(f,varl); %%% candidate for sfto
-   % Level of a polynomial wrt to the variable list. Returns 0, if $f$
-   % is constant, the position of f's main variable in varl,
-   % otherwise.
+asserted procedure ofsf_mapdistribute(fl: List, ff: Atom, varl: List): Any;
+   for each f in fl do ofsf_distribute(f, ff, varl);
+
+asserted procedure ofsf_distribute(f: SF, ff: Atom, varl: List): Any;
+   begin integer l;
+      l := ofsf_level(f, varl);
+      if l > 0 and not (f member getv(ff, l)) then  % memq?
+	 putv(ff, l, f . getv(ff, l))
+   end;
+
+% TODO: Move this procedure to sfto.
+asserted procedure ofsf_level(f: SF, varl: List): Integer;
+   % Level of a polynomial w.r.t. the variable list. Returns 0, if [f] is a
+   % constant, otherwise the position of [mvar f] in [varl].
    if null varl then
       rederr "***** ofsf_level: invalid kernel"
    else if domainp f then
       0
    else if mvar f eq car varl then
       1
-   else 1+ofsf_level(f,cdr varl);
-
-procedure ofsf_mapdistribute(fl,ff,varl);
-   for each f in fl do ofsf_distribute(f,ff,varl);
-
-procedure ofsf_distribute(f,ff,varl);
-   %%% test, if the polynomial is there already
-%   (if l>0 then putv(ff,l,f . getv(ff,l))) where l=ofsf_level(f,varl);
-   (if l>0 then if not (f member getv(ff,l)) then %%% memq?
-      putv(ff,l,f . getv(ff,l))) where l=ofsf_level(f,varl);
-
-%%% --- reducta, leading coefficients,... --- %%%
-
-% removed stuff here
-
-%%% --- to be included into sfto --- %%%
-
-algebraic procedure delnth(l,n);
-   % delete [n]-th element from list [l]
-   if n=1 then rest l else append({first l},delnth(rest l,n-1));
-
-algebraic procedure mynth(l,n);
-   % nth lelement of a list
-   if n=1 then first l else mynth(rest l,n-1);
-
-algebraic procedure perturbations(l);
-   if l={} then {{}} else
-      for j := 1 : length l join
-    	 for each p in perturbations(delnth(l,j)) collect
-	    append({mynth(l,j)},p);
+   else 1 + ofsf_level(f, cdr varl);
 
 % - sum of total degrees of monomials - %
 
@@ -428,261 +429,246 @@ symbolic operator rlstdeg;
 procedure rlstdeg(f);
    sf_stdeg numr simp f;
 
-procedure sf_stdeg(f);
+asserted procedure sf_stdeg(f: SF): Integer;
    % Sum of total degrees of a polynomial.
-   if null f or f=0 then
+   if null f or f = 0 then
       -1
    else sf_stdeg1 f;
 
-procedure sf_stdeg1(f);
-   if null f or f=0 then
+asserted procedure sf_stdeg1(f: SF): Integer;
+   if null f or f = 0 then
       0 % a zero subpolynomial adds nothing to the total degree
    else if numberp f then
       0
    else
-      sf_stdeg1(lc f)+ldeg(f)+sf_stdeg1(red f);
-
-procedure sf_print(f);
-   mathprint prepf f;
+      sf_stdeg1 lc f + ldeg f + sf_stdeg1 red f;
 
 % - total degree - %
 
 symbolic operator rltdeg;
-procedure rltdeg(f,xl);
-    prepf sf_tdeg!*(numr simp f,cdr xl);
+procedure rltdeg(f, xl);
+    prepf sf_tdeg!*(numr simp f, cdr xl);
 
-procedure sf_tdeg!*(f,xl);
-   % Total degree. [f] is a SF, [xl] is a LIST(ID). Returns a NUM.
-   % Reordering is performed, so the result is correct.
-   begin scalar oldorder,w;
+asserted procedure sf_tdeg!*(f: SF, xl: List): Integer;
+   % Total degree. [f] is a SF, [xl] is a LIST(ID). Reordering is performed to
+   % obtain the correct result.
+   begin scalar oldorder, w;
       oldorder := setkorder xl;
-      w := sf_tdeg(reorder f,xl);
+      w := sf_tdeg(reorder f, xl);
       setkorder oldorder;
       return w
    end;
 
-procedure sf_tdeg(f,xl);
-   % Total degree. [f] is a SF, [xl] is a LIST(ID). Returns a NUM.
-   % [f] has to be ordered in a way compatible to [xl].
-   if null f or f=0 then
+asserted procedure sf_tdeg(f: SF, xl: List): Integer;
+   % Total degree. [f] is a SF, [xl] is a LIST(ID). [f] has to be ordered in a
+   % way compatible with [xl].
+   if null f or f = 0 then
       -1
    else if null xl then
       0
    else
-      sf_tdeg1(f,xl);
+      sf_tdeg1(f, xl);
 
-procedure sf_tdeg1(f,xl);
+asserted procedure sf_tdeg1(f: SF, xl: List): Integer;
    % Total degree subroutine.
-   if null f or f=0 then
+   if null f or f = 0 then
       0
    else if null xl then
       0
    else
-      max(sf_tdeg1(sf_lc(f,car xl),cdr xl)+sfto_vardeg(f,car xl),
-	 sf_tdeg1(sf_red(f,car xl),xl));
+      max(sf_tdeg1(sf_lc(f, car xl), cdr xl) + sfto_vardeg(f, car xl),
+	 sf_tdeg1(sf_red(f, car xl), xl));
 
 % - leading coefficient - %
 
 symbolic operator rllc;
-procedure rllc(f,x);
-   prepf sf_lc!*(numr simp f,x);
+procedure rllc(f, x);
+   prepf sf_lc!*(numr simp f, x);
 
-procedure sf_lc!*(f,x);
-   % Leading coefficient. [f] is a SF, [x] is a ID. Reordering is
-   % performed, so the result is correct.
+asserted procedure sf_lc!*(f: SF, x: Kernel): SF;
+   % Leading coefficient. Reordering is performed, so the result is correct.
    begin scalar oldorder,w;
       oldorder := setkorder {x};
-      w := sf_lc(reorder f,x);
+      w := sf_lc(reorder f, x);
       setkorder oldorder;
       return reorder w
    end;
 
-procedure sf_lc(f,x);
-   % Leading coefficient. [f] is a SF, [x] is a ID. Returns a SF. [f]
-   % has to be ordered in a way compatible to a list containing [x].
+asserted procedure sf_lc(f: SF, x: Kernel): SF;
+   % Leading coefficient. [f] is a SF, [x] is a ID. Returns a SF. [f] has to be
+   % ordered in a way compatible to a list containing [x].
    if not domainp f and mvar f eq x then lc f else f;
 
 % - reductum - %
 
 symbolic operator rlred;
-procedure rlred(f,x);
-   begin scalar oldorder,w;
+procedure rlred(f, x);
+   begin scalar oldorder, w;
       oldorder := setkorder {x};
-      w := prepf sf_red(numr simp f,x);
+      w := prepf sf_red(numr simp f, x);
       setkorder oldorder;
       return w
    end;
 
-procedure sf_red(f,x);
+asserted procedure sf_red(f: SF, x: Kernel): SF;
    % Univariate reductum of a standard form.
    if not domainp f and mvar f eq x then red f else nil;
 
 symbolic operator rldis;
-procedure rldis(f,x);
-   begin scalar oldorder,w;
+procedure rldis(f, x);
+   begin scalar oldorder, w;
       oldorder := setkorder {x};
-      w := prepf sf_discriminant(numr simp f,x);
+      w := prepf sf_discriminant(numr simp f, x);
       setkorder oldorder;
       return w
    end;
 
 % - discriminant - %
 
-procedure sf_discriminant(f,x);
-   % discriminant. caveat: deg(f,x)>0 required.
-   quotf(sfto_resf(f,numr difff(f,x),x),lc f);
+asserted procedure sf_discriminant(f: SF, x: Kernel): SF;
+   % Caveat: deg(f, x) > 0 is required.
+   quotf(sfto_resf(f, numr difff(f, x), x), lc f);
 
 symbolic operator rlres;
-procedure rlres(f,g,x);
+procedure rlres(f, g, x);
    begin scalar oldorder,w;
       oldorder := setkorder {x};
-      w := prepf sfto_resf(numr simp f,numr simp g,x);
+      w := prepf sfto_resf(numr simp f, numr simp g, x);
       setkorder oldorder;
       return w
    end;
 
-procedure sf_foldgcd(fl);
-   % fold gcd. fl is a non-empty list of SF.
-   if null cdr fl then car fl else gcdf(car fl,sf_foldgcd cdr fl);
+asserted procedure sf_foldgcd(fl: List): SF;
+   % Fold gcd. [fl] is a non-empty list of SF.
+   if null cdr fl then car fl else gcdf(car fl, sf_foldgcd cdr fl);
 
-%% procedure sf_coeffs(f,x);
-%%    % Coefficients. f is a not null SF. Returns a not dense list of
-%%    % coefficients.
-%%    if not null f then
-%%       if domainp f or mvar f neq x then {f} else lc f . sf_coeffs(red f,x);
-
-procedure sf_densecoeffs(f,x);
+asserted procedure sf_densecoeffs(f: SF, x: Kernel): List;
    % Dense coefficient list.
    begin scalar clred;
-      if sfto_vardeg(f,x)<=0 then return {f};
-      clred := sf_densecoeffs(red f,x);
-      for i :=  max(0,sfto_vardeg(red f,x))+1 : (ldeg f)-1  do clred := nil . clred;
+      if sfto_vardeg(f, x) <= 0 then
+	 return {f};
+      clred := sf_densecoeffs(red f, x);
+      for i :=  (max(0, sfto_vardeg(red f, x)) + 1) : (ldeg f - 1) do
+	 clred := nil . clred;
       clred := lc f . clred;
       return clred
    end;
 
-procedure sf_fromdensecoeffs(fl,k);
-   % Standard form from dense coefficient list. [fl] is a non-empty
-   % LIST(SF), k is a KERNEL. Returns a SF.
+asserted procedure sf_fromdensecoeffs(fl: List, k: Kernel): SF;
+   % Standard form from dense coefficient list. [fl] is a non-empty List of SF.
    begin scalar f;
-      if null cdr fl then return car fl;
-      if null car fl then return sf_fromdensecoeffs(cdr fl,k);
-      f := sf_expt(k,length(fl)-1);
+      if null cdr fl then
+	 return car fl;
+      if null car fl then
+	 return sf_fromdensecoeffs(cdr fl, k);
+      f := sf_expt(k, length fl - 1);
       set_l(f, car fl);
-      set_red(f, sf_fromdensecoeffs(cdr fl,k));
+      set_red(f, sf_fromdensecoeffs(cdr fl, k));
       return f
    end;
-
-procedure sf_c(f);
-   % Content. f is a SF.
-   if domainp f then f else sf_foldgcd sf_coeffs(f,mvar f);
-
-procedure sf_pp(f);
-   % Primitive part.
-   quotf(f,sf_c f);
 
 %%%%%%%%%%%%%%%%%%
 % - Regularity - %
 %%%%%%%%%%%%%%%%%%
 
 symbolic operator rlisregular;
-procedure rlisregular(fl,xl);
+procedure rlisregular(fl, xl);
    (if tv then 'true else 'false)
-      where tv=sf_isregular!*(for each f in fl collect numr simp f,cdr xl);
+      where tv=sf_isregular!*(for each f in fl collect numr simp f, cdr xl);
 
-procedure sf_isregular!*(fl,yl);
-   % Regularity test. [f] is a SF, [yl] is a LIST(ID). Returns a truth
-   % value. Reordering is performed, so the result is correct.
-   begin scalar oldorder,w;
+asserted procedure sf_isregular!*(fl: List, yl: List): Boolean;
+   % Regularity test. [fl] is a List of SF. [yl] is a List of Kernels.
+   % Reordering is performed, so the result is correct.
+   begin scalar oldorder, w;
       oldorder := setkorder yl;
-      w := sf_isregular(for each f in fl collect reorder f,yl);
+      w := sf_isregular(for each f in fl collect reorder f, yl);
       setkorder oldorder;
       return w
    end;
 
-procedure sf_isregular(fl,yl);
-   % Regularity test. [fl] is a LIST(SF), [yl] is a LIST(ID). Returns
-   % a truth value. [f] has to be ordered in a way compatible to [yl].
+asserted procedure sf_isregular(fl: List, yl: List): Boolean;
+   % Regularity test. [fl] is a List of SF. [yl] is a List of Kernels. [f] has
+   % to be ordered in a way compatible to [yl].
    if null fl then
       t
    else
       sf_tdeg(sf_lc(car fl,car yl),cdr yl)<=0 and sf_isregular(cdr fl,yl);
 
 symbolic operator rltransreg;
-procedure rltransreg(fl,yl,cl);
-   'list . for each fr in
-      sf_transreg!*(for each f in cdr fl collect numr simp f,cdr yl,cdr cl)
-	 collect prepf fr;
+procedure rltransreg(fl, yl, cl);
+   begin scalar w;
+      w := for each f in cdr fl collect numr simp f;
+      return 'list . for each fr in sf_transreg!*(w, cdr yl, cdr cl) collect
+	 prepf fr;
+   end;
 
-procedure sf_transreg!*(fl,yl,cl);
-    begin scalar oldorder,w;
+asserted procedure sf_transreg!*(fl: List, yl: List, cl: List): SF;
+    begin scalar oldorder, w;
       oldorder := setkorder yl;
-      w := sf_transreg(for each f in fl collect reorder f,yl,cl);
+      w := sf_transreg(for each f in fl collect reorder f, yl, cl);
       setkorder oldorder;
       return reorder w
    end;
 
-procedure sf_transreg(fl,yl,cl);
-   % Transformation into a regular polynomial. [fl] is a LIST(SF),
-   % [yl] is a LIST(ID) and [cl] is a LIST(NUM). Returns a LIST(SF).
-   for each f in fl collect sf_transregf(f,yl,cl);
+asserted procedure sf_transreg(fl: List, yl: List, cl: List): List;
+   % Transformation into a regular polynomial. [fl] is a List of SF, [yl] is a
+   % List of Kernels, and [cl] is a List of Integers. Returns a List of SF.
+   for each f in fl collect sf_transregf(f, yl, cl);
 
-procedure sf_transregf(f,yl,cl);
-   % Transformation into a regular polynomial. [f] is a SF, [yl] is a
-   % LIST(ID) and [cl] is a LIST(NUM). Returns a SF.
+asserted procedure sf_transregf(f: SF, yl: List, cl: List): SF;
+   % Transformation into a regular polynomial. [f] is a SF, [yl] is a List of
+   % Kernels, and [cl] is a List of Integers. Returns a SF.
    begin
-      scalar y1,yj,cj,al;
+      scalar y1, yj, cj, al;
       y1 := car yl;
       yl := cdr yl;
       while yl do <<
-	 yj := car yl;
-	 cj := car cl;
-	 %al := (car yl . addf(!*k2f yj,multf(cj,!*k2f y1)) . al;
-	 al := (yj . {'plus,yj,{'times,cj,y1}}) . al;
-	 yl := cdr yl;
-	 cl := cdr cl;
+	 yj := pop yl;
+	 cj := pop cl;
+	 % al := (yj . addf(!*k2f yj,multf(cj,!*k2f y1)) . al;
+	 al := (yj . {'plus, yj, {'times, cj, y1}}) . al
       >>;
-      return numr subf(f,al)
+      return numr subf(f, al)
    end;
 
 symbolic operator rlregularize;
-procedure rlregularize(fl,yl);
+procedure rlregularize(fl, yl);
    ('list . for each f in w collect prepf f)
       where
-	 w=sf_regularize!*(for each f in cdr fl collect numr simp f,cdr yl);
+	 w=sf_regularize!*(for each f in cdr fl collect numr simp f, cdr yl);
 
-procedure sf_regularize!*(fl,yl);
-    begin scalar oldorder,w;
+asserted procedure sf_regularize!*(fl: List, yl: List): List;
+    begin scalar oldorder, w;
       oldorder := setkorder yl;
-      w := sf_regularize(for each f in fl collect reorder f,yl);
+      w := sf_regularize(for each f in fl collect reorder f, yl);
       setkorder oldorder;
       return for each f in w collect reorder f
    end;
 
-procedure sf_regularize(fl,yl);
-   % Regularize. [fl] is a LIST(SF), [yl] is a LIST(ID). Returns a
-   % LIST(SF).
-   car sf_regularize1(fl,yl);
+asserted procedure sf_regularize(fl: List, yl: List): List;
+   % Regularize. [fl] is a List of SF, [yl] is a List of Kernels. Returns a List
+   % of SF.
+   car sf_regularize1(fl, yl);
 
 symbolic operator rlregularize1;
-procedure rlregularize1(fl,yl);
-   {'list, 'list . for each f in car w collect prepf f, 'list . cdr w}
-      where
-	 w=sf_regularize1!*(for each f in cdr fl collect numr simp f,cdr yl);
+procedure rlregularize1(fl, yl);
+   begin scalar w;
+      w := sf_regularize1!*(for each f in cdr fl collect numr simp f, cdr yl);
+      return {'list, 'list . for each f in car w collect prepf f, 'list . cdr w}
+   end;
 
-procedure sf_regularize1!*(fl,yl);
+asserted procedure sf_regularize1!*(fl: List, yl: List): DottedPair;
     begin scalar oldorder,w;
       oldorder := setkorder yl;
-      w := sf_regularize1(for each f in fl collect reorder f,yl);
+      w := sf_regularize1(for each f in fl collect reorder f, yl);
       setkorder oldorder;
       return (for each f in car w collect reorder f) . cdr w
    end;
 
-procedure sf_regularize1(fl,yl);
-   % Regularize. [fl] is a LIST(SF), [yl] is a LIST(ID). Returns a
-   % PAIR(LIST(SF),LIST(NUM)).
-   begin
-      scalar flr,cl1,cl2,cl;
+asserted procedure sf_regularize1(fl: List, yl: List): DottedPair;
+   % Regularize. [fl] is a List of SF, [yl] is a List of Kernels. Returns a pair
+   % (List of SF . List of Integers).
+   begin scalar flr, cl1, cl2, cl;
       flr := fl;
       cl := for each y in cdr yl collect 1;
       cl1 := cl;
@@ -697,42 +683,39 @@ procedure sf_regularize1(fl,yl);
       	 return flr . cl2
    end;
 
-procedure sf_nextcl(cl);
-   % Next constant list (Subroutine for sf_regularize). [cl] is a
-   % LIST(NUM). Returns a LIST(NUM). In an ideal world this would
-   % enumerate $\mathbb{N}^{|cl|}$.
-   begin
-      scalar c1;
+asserted procedure sf_nextcl(cl: List): List;
+   % Next constant list (Subroutine for sf_regularize). [cl] is a LIST(NUM).
+   % Returns a LIST(NUM). In an ideal world this would enumerate
+   % $\mathbb{N}^{|cl|}$.
+   begin scalar c1;
       c1 := car cl;
       return reversip ((c1+1) . (reverse cdr cl))
    end;
 
-%symbolic operator rlregoptordf;
-%procedure rlregoptordf(f,yl);
-%   'list . for each a in sf_regoptordf(numr simp f, cdr yl) collect
-%      'list . a;
+% symbolic operator rlregoptordf;
+% procedure rlregoptordf(f,yl);
+%    'list . for each a in sf_regoptordf(numr simp f, cdr yl) collect
+%       'list . a;
 
-procedure sf_regoptordf!*(f,yl);
-   begin scalar oldorder,w;
+asserted procedure sf_regoptordf!*(f: SF, yl: List): SF;
+   begin scalar oldorder, w;
       oldorder := setkorder yl;
-      w := sf_regoptordf(reorder f,yl);
+      w := sf_regoptordf(reorder f, yl);
       setkorder oldorder;
       return reorder w
    end;
 
-procedure sf_regoptordf(f,yl);
-   % Optimal order for regularization (wrt. nom). Returns a
-   % LIST(LIST(ID)).
-   begin
-      scalar ords;
+asserted procedure sf_regoptordf(f: SF, yl: List): List;
+   % Optimal order for regularization (wrt. nom). Returns a LIST(LIST(ID)).
+   begin scalar ords;
       ords := lto_choose(cdr yl);
       ords := for each o in ords collect car yl . o;
       ords := for each o in ords collect
 	 o . sf_nom(sf_regularize!*(f,o));
-      ords := for each o in ords join if
-   	 sf_isregular!*(sf_regularize!*(f,car o),yl) then {o};
+      ords := for each o in ords join
+	 if sf_isregular!*(sf_regularize!*(f, car o), yl) then {o};
       return reversip
-	 sort(for each o in ords collect car o,function length);
+	 sort(for each o in ords collect car o, function length)
    end;
 
 % - begin baustelle
@@ -864,7 +847,6 @@ procedure mymap(fn,l);
    % $a$. Returns a list of type $b$.
    % Example: mymap(function(lambda n;n+1),{1,2,3,4});
    for each a in l collect apply(fn,{a});
-
 
 %%% --- Datatype MTX (matrices) --- %%%
 % a matrix is represented as a list of lines.
