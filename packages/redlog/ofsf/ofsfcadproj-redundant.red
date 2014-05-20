@@ -49,7 +49,7 @@ asserted procedure sf_rorders(fl: List, yl: List): List;
    begin scalar ords, flr, nom;
       if null yl then
 	 rederr "empty regularization order invalid";
-      ords := lto_choose cdr yl;
+      ords := lto_powerset cdr yl;
       ords := for each o in ords collect car yl . o;
       ords := for each o in ords collect <<
 	 flr := sf_regularize!*(fl, o);
@@ -258,7 +258,7 @@ asserted procedure sf_regoptordf!*(f: SF, yl: List): SF;
 asserted procedure sf_regoptordf(f: SF, yl: List): List;
    % Optimal order for regularization (wrt. nom). Returns a LIST(LIST(ID)).
    begin scalar ords;
-      ords := lto_choose cdr yl;
+      ords := lto_powerset cdr yl;
       ords := for each o in ords collect car yl . o;
       ords := for each o in ords collect
 	 o . sf_nom sf_regularize!*(f,o);
@@ -330,6 +330,24 @@ asserted procedure sf_fromdensecoeffs(fl: List, k: Kernel): SF;
       return f
    end;
 
+asserted procedure sf_tdeg!*(f: SF, xl: List): Integer;
+   % Total degree. Reordering is performed to obtain the correct result.
+   begin scalar oldorder, w;
+      oldorder := setkorder xl;
+      w := sf_tdeg(reorder f, xl);
+      setkorder oldorder;
+      return w
+   end;
+
+asserted procedure sf_lc!*(f: SF, x: Kernel): SF;
+   % Leading coefficient. Reordering is performed, so the result is correct.
+   begin scalar oldorder,w;
+      oldorder := setkorder {x};
+      w := sf_lc(reorder f, x);
+      setkorder oldorder;
+      return reorder w
+   end;
+
 % end sf and tagged sf procedures
 
 % begin lto procedures
@@ -342,6 +360,15 @@ procedure lto_take(l, n);
    % Take the first n elements of l. [l] is a LIST, [n] is a natural number.
    % Returns a LIST.
    if l and n > 0 then car l . lto_take(cdr l, n-1);
+
+asserted procedure lto_powerset(l: List): List;
+   % Powerset.
+   begin scalar w;
+      if null l then
+	 return {{}};
+      w := lto_powerset cdr l;
+      return append(w, for each a in w collect car l . a)
+   end;
 
 % end lto procedures
 
@@ -439,7 +466,7 @@ procedure rlnom(f);
 
 symbolic operator rlchoose;
 procedure rlchoose(l);
-   'list . for each a in lto_choose cdr l collect 'list . a;
+   'list . for each a in lto_powerset cdr l collect 'list . a;
 
 symbolic operator rlpsc;
 procedure rlpsc(f, g, x, j);
