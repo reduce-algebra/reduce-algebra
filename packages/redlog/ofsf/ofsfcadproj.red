@@ -391,9 +391,9 @@ asserted procedure ofsf_cadprojection1(cd: CadData): Any;
       caddata_puthh(cd, hh);
       caddata_putffid(cd, ffid);
       if !*rlverbose then <<
-	 ioto_tprin2t {"+ Number of all projection factors: ", length pp};
+	 ioto_tprin2t {"+ number of all projection factors: ", length pp};
 	 if !*rlqegen then
-	    ioto_prin2t {"+ Number of theory elements: ", length theo}
+	    ioto_prin2t {"+ number of theory elements: ", length theo}
       >>
    end;
 
@@ -561,7 +561,7 @@ asserted procedure sf_fromdensecoeffs(fl: List, k: Kernel): SF;
 	 return car fl;
       if null car fl then
 	 return sf_fromdensecoeffs(cdr fl, k);
-      f := sf_expt(k, length fl - 1);
+      f := sfto_kexp(k, length fl - 1);
       set_l(f, car fl);
       set_red(f, sf_fromdensecoeffs(cdr fl, k));
       return f
@@ -573,8 +573,12 @@ asserted procedure sf_fromdensecoeffs(fl: List, k: Kernel): SF;
 
 symbolic operator rlisregular;
 procedure rlisregular(fl, xl);
-   (if tv then 'true else 'false)
-      where tv=sf_isregular!*(for each f in fl collect numr simp f, cdr xl);
+   begin scalar tv;
+      tv := sf_isregular!*(for each f in fl collect numr simp f, cdr xl);
+      if tv then
+	 return 'true;
+      return 'false
+   end;
 
 asserted procedure sf_isregular!*(fl: List, yl: List): Boolean;
    % Regularity test. [fl] is a List of SF. [yl] is a List of Kernels.
@@ -633,9 +637,10 @@ asserted procedure sf_transregf(f: SF, yl: List, cl: List): SF;
 
 symbolic operator rlregularize;
 procedure rlregularize(fl, yl);
-   ('list . for each f in w collect prepf f)
-      where
-	 w=sf_regularize!*(for each f in cdr fl collect numr simp f, cdr yl);
+   begin scalar w;
+      w := sf_regularize!*(for each f in cdr fl collect numr simp f, cdr yl);
+      return 'list . for each f in w collect prepf f
+   end;
 
 asserted procedure sf_regularize!*(fl: List, yl: List): List;
     begin scalar oldorder, w;
@@ -678,9 +683,8 @@ asserted procedure sf_regularize1(fl: List, yl: List): DottedPair;
 	 cl := sf_nextcl cl;
       >>;
       if null cl2 then
-	 return flr . for each y in cdr yl collect 0
-      else
-      	 return flr . cl2
+	 return flr . for each y in cdr yl collect 0;
+      return flr . cl2
    end;
 
 asserted procedure sf_nextcl(cl: List): List;
@@ -708,81 +712,35 @@ asserted procedure sf_regoptordf!*(f: SF, yl: List): SF;
 asserted procedure sf_regoptordf(f: SF, yl: List): List;
    % Optimal order for regularization (wrt. nom). Returns a LIST(LIST(ID)).
    begin scalar ords;
-      ords := lto_choose(cdr yl);
+      ords := lto_choose cdr yl;
       ords := for each o in ords collect car yl . o;
       ords := for each o in ords collect
-	 o . sf_nom(sf_regularize!*(f,o));
+	 o . sf_nom sf_regularize!*(f,o);
       ords := for each o in ords join
 	 if sf_isregular!*(sf_regularize!*(f, car o), yl) then {o};
       return reversip
 	 sort(for each o in ords collect car o, function length)
    end;
 
-% - begin baustelle
-
-symbolic operator rlrorders;
-procedure rlrorders(fl,yl);
-   'list . for each o in
-      sf_rorders!*(for each f in fl collect numr simp f, cdr yl) collect
-	 'list . o;
-
-procedure sf_rorders!*(fl,yl);
-   begin scalar oldorder,w;
-      oldorder := setkorder yl;
-      w := sf_rorders(for each f in fl collect reorder f,yl);
-      setkorder oldorder;
-      return w
-   end;
-
-procedure sf_rorders(fl,yl);
-   % Optimal orders for regularization (wrt. nom). [fl] is a LIST(SF).
-   % Returns a non-empty LIST(LIST(ID)). This list starts with the
-   % shortest order of minimal cost.
-   begin
-      scalar ords,flr,nom;
-      if null yl then
-	 rederr "empty regualrization order invalid";
-      ords := lto_choose(cdr yl);
-      ords := for each o in ords collect car yl . o;
-      ords := for each o in ords collect <<
-	 flr := sf_regularize!*(fl,o);
-	 if sf_isregular!*(flr,yl) then
-	    nom := for each f in flr sum sf_nom f
-	 else
-	    nom := -1;
-	 o . nom
-      >>;
-      % remove illegal orders
-      ords := for each p in ords join if cdr p >= 0 then {p};
-      % sort by cost and length.
-      ords := sort(ords,'ofsf_rordp);
-      return for each p in ords collect car p
-   end;
-
-procedure ofsf_rordp(p1,p2);
-   (cdr p1 < cdr p2) or (cdr p1 = cdr p2 and length car p1 < length car p2);
-
-% - end baustelle
-
 symbolic operator rlchoose;
 procedure rlchoose(l);
    'list . for each a in lto_choose cdr l collect 'list . a;
 
-procedure lto_choose(l);
+asserted procedure lto_choose(l: List): List;
    % Powerset. [l] is a LIST(ANY). Returns a LIST(LIST(ANY)).
-   begin
-      scalar w;
-      if null l then return {{}};
+   begin scalar w;
+      if null l then
+	 return {{}};
       w := lto_choose cdr l;
-      return append(w,for each a in w collect car l . a)
+      return append(w, for each a in w collect car l . a)
    end;
 
 symbolic operator rlnom;
 procedure rlnom(f);
-   sf_nom(numr simp f);
+   sf_nom numr simp f;
 
-procedure sf_nom(f);
-   % Number of monomials. [f] is a SF. Returns a NUM.
+asserted procedure sf_nom(f: SF): Integer;
+   % Number of monomials.
    if null f then
       0
    else if domainp f then
@@ -793,318 +751,255 @@ procedure sf_nom(f);
 
 %%% --- To be included into lto --- %%%
 
-procedure lto_select(fn,l);
-   % Select elements from a list. [fn] is a function of type
-   % ALPHA->BOOL, [l] is a list of ALPHA. Returns a list of ALPHA.
+% TODO: What types for functions (code pointers, lambda, things which are used
+% by the apply function) are there?
+
+asserted procedure lto_select(fn: Any, l: List): List;
+   % Select elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
+   % a list of ALPHA. Returns a list of ALPHA.
    lto_select1(fn,l,nil);
 
-procedure lto_select1(fn,l,xarl);
-   % Select elements from a list. [fn] is a function with
-   % length([xarl])+1 arguments , [l] and [xarl] are LIST. Returns a
-   % LIST.
+asserted procedure lto_select1(fn: Any, l: List, xarl: List): List;
+   % Select elements from a list. [fn] is a function with length([xarl])+1
+   % arguments, [l] and [xarl] are LIST. Returns a LIST.
    for each a in l join if apply(fn,a . xarl) then {a};
 
-procedure lto_remove(fn,l);
-   % Remove elements from a list. [fn] is a function of type
-   % ALPHA->BOOL, [l] is a list of ALPHA. Returns a list of ALPHA.
-   lto_remove1(fn,l,nil);
+asserted procedure lto_remove(fn: Any, l: List): List;
+   % Remove elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
+   % a list of ALPHA. Returns a list of ALPHA.
+   lto_remove1(fn, l, nil);
 
-procedure lto_remove1(fn,l,xarl);
-   % Remove elements from a list. [fn] is a function with
-   % length([xarl])+1 arguments , [l] and [xarl] are LIST. Returns a
-   % LIST.
-   for each a in l join if not apply(fn,a . xarl) then {a};
+asserted procedure lto_remove1(fn: Any, l: List, xarl: List): List;
+   % Remove elements from a list. [fn] is a function with length([xarl])+1
+   % arguments , [l] and [xarl] are LIST. Returns a LIST.
+   for each a in l join if not apply(fn, a . xarl) then {a};
 
-procedure sf_rmconst(fl);
+asserted procedure sf_rmconst(fl: List): List;
    % Remove constant. [fl] is a list of SF.
-%   lto_select('(lambda (f) not domainp f),fl);
    for each f in fl join if not domainp f then {f};
-
-%%% --- Access via canonical notation --- %%%
-
-%%% --- Advanced programming techniques --- %%%
-
-procedure foldr(fn,e,l);
-   % Fold right. [fn] is a binary function of type $(a,a)->a$, [e] is
-   % neutral and of type $a$, and [l] is a list of arguments, all of
-   % type $a$. Returns a value of type $a$.
-   % Example: foldr(function union,{},{{1,2},{2,3},{3,4}});
-   if null l then e else apply(fn,{car l,foldr(fn,e,cdr l)});
-
-procedure foldr1(fn,l);
-   % Fold right with non-trivial list. Arguments as in foldr, exept l
-   % is not nil. Return value as in foldr.
-   % foldr1(function(lambda a,b;a+b),{1,2,3,4});
-   if null cdr l then car l else apply(fn,{car l,foldr1(fn,cdr l)});
-
-% MAP. Caveat: map(l,fn) applies fn to each cdr of l, which is
-% unusual. mapc(l,fn) is what is usually known as map: fn is applied
-% to each element of l. Example: mapc({1,2,3,4},function(print));
-% Why does this not work: mapc({1,2,3,4},function(lambda x;x+1));
-
-procedure mymap(fn,l);
-   % map. [fn] in a function of type $a->b$, [l] is a list of type
-   % $a$. Returns a list of type $b$.
-   % Example: mymap(function(lambda n;n+1),{1,2,3,4});
-   for each a in l collect apply(fn,{a});
 
 %%% --- Datatype MTX (matrices) --- %%%
 % a matrix is represented as a list of lines.
 
-procedure mtx_0(m,n);
-   % Zero matrix. [m] and [n] are INT. Returns a mxn-matrix MTX(SF).
+struct SfMtx checked by SfMtxP;
+
+procedure SfMtxP(s);
+   listp s;
+
+asserted procedure mtx_0(m: Integer, n: Integer): SfMtx;
+   % Zero matrix. Returns a m times n SfMtx.
    for l:=1:m collect
       for c:=1:n collect nil;
 
-procedure mtx_1(n);
-   % Unit matrix. [m] and [n] are INT. Returns a mxn-matrix MTX(SF).
-   for l:=1:n collect
-      for c:=1:n collect if c eq l then 1 else nil;
+asserted procedure mtx_put(mtx: SfMtx, l: Integer, c: Integer, a: SF): Any;
+   % Put entry.
+   nth(nth(mtx, l), c) := a;
 
-procedure mtx_froml(lst,n);
-   % Make from list. [lst] is a LIST, [n] is an INT. Returns a MTX with
-   % $n$ columns. Can be further improved.
-   begin scalar mtx,m;
-      m := length(lst)/n;
-      if m*n neq length(lst) then error(nil,"mtx_froml: wrong list length");
-      mtx := mtx_0(m,n);
-      for l := 1 : m do
-	 for c := 1 : n do
-	    mtx_put(mtx,l,c,nth(lst,(l-1)*n+c));
-	    %print((l-1)*n+c);
-      return mtx;
+asserted procedure mtx_rmlscs(mtx: SfMtx, lines: List, columns: List): SfMtx;
+   % Matrix remove lines and columns. [mtx] is a MTX, [lines] and [columns] are
+   % LIST(INT). Returns a MTX.
+   for each l in lto_rmpos(mtx,lines) collect lto_rmpos(l, columns);
+
+asserted procedure mtx_sylvester(f: SF, g: SF, x: Kernel): SfMtx;
+   % Sylvester matrix. [f], [g] are non-zero. Returns a MTX (m+n lines and
+   % colums if m is degree of f in x and n is degree of g in x).
+   begin scalar syl, cfl, cgl; integer m, n, mpn;
+      m := sfto_vardeg(f, x);
+      n := sfto_vardeg(g, x);
+      mpn := m + n;
+      if eqn(mpn, 0) then
+	 return mtx_0(0, 0);
+      syl := mtx_0(mpn, mpn);
+      cfl := sf_coeffs(f, x);
+      cgl := sf_coeffs(g, x);
+      for l := 1 : n do
+	 for c := l : l + m do
+  	    mtx_put(syl, l, c, nth(cfl, 1+(c-l)));
+      for l := n+1 : m+n do
+	 for c := l-n : l do
+  	    mtx_put(syl, l, c, nth(cgl, 1+(c-(l-n))));
+      return syl
    end;
 
-procedure mtx_tol(mtx);
-   % Matrix to list (destructive).
-   for each l in mtx join l;
+asserted procedure mtx_det(mtx: SfMtx): SF;
+   ofsf_det mtx;
 
-procedure mtx_nol(mtx);
-   % Number of lines. [mtx] is a MTX. Returns an INT.
-   length mtx;
+asserted procedure mtx_resultant(f: SF, g: SF, x: Kernel): SF;
+   if null f or null g then
+      0
+   else if eqn(sfto_vardeg(f, x) + sfto_vardeg(g, x), 0) then
+      1
+   else
+      mtx_det mtx_sylvester(f, g, x);
 
-procedure mtx_noc(mtx);
-   % Number of lines. [mtx] is a MTX. Returns an INT.
-   if null mtx then 0 else length car mtx;
+asserted procedure mtx_mmji(f: SF, g: SF, x: Kernel, j: Integer, i: Integer): SfMtx;
+   % Modified Sylvester matrix Mji.
+   begin scalar ltd1,ltd2,ctd1,ctd2; integer m, n, mpn;
+      % ltd: lines to delete; ctd: columns to delete
+      m := sfto_vardeg(f, x);
+      n := sfto_vardeg(g, x);
+      mpn := m + n;
+      ltd1 := for k := mpn-j+1 : mpn collect k;
+      ltd2 := for k := n-j+1 : n collect k;
+      ctd1 := for k := (mpn-i-j)+1 : mpn collect k;
+      ctd2 := for k := mpn-(2*j+1)+1 : (mpn-i-j)-1 collect k;
+      return mtx_rmlscs(mtx_sylvester(f, g, x), union(ltd1, ltd2), union(ctd1, ctd2))
+   end;
 
-procedure mtx_get(mtx,l,c);
-   % Get matrix entry.
-   nth(nth(mtx,l),c);
+% TODO: Move to sfto.
+asserted procedure sf_coeffs(f: SF, x: Kernel): SfMtx;
+   % List of all coefficients, even those that are zero. Returns a List of SF of
+   % length max(0, degree(f, x)).
+   if domainp f or mvar f neq x then {f} else coeffs f;
 
-procedure mtx_put(mtx,l,c,a);
-   % Put entry.
-   nth(nth(mtx,l),c) := a;
-
-procedure mtx_print(mtx);
-   % Print.
-   for each l in mtx do print l;
-
-procedure lto_rmpos(lst,posl);
-   % Remove positions. [lst] is a LIST, [posl] is a LIST(INT). Returns a LIST.
+% TODO: Move to lto.
+asserted procedure lto_rmpos(lst: List, posl: List): List;
+   % Remove positions. [lst] is a List. [posl] is a List of Integers.
    begin scalar pos;
       pos := 0;
       return for each a in lst join <<
-	 pos := pos+1;
-	 if not memq(pos,posl) then {a}
+	 pos := pos + 1;
+	 if not memq(pos, posl) then {a}
       >>
    end;
 
-procedure mtx_rmlscs(mtx,lines,columns);
-   % Matrix remove lines and columns. [mtx] is a MTX, [lines] and
-   % [columns] are LIST(INT). Returns a MTX.
-   for each l in lto_rmpos(mtx,lines) collect lto_rmpos(l,columns);
-
-procedure sf_coeffs(f,x);
-   % List of all coefficients, even those that are zero. .Returns a
-   % LIST(SF) of length max(0,degree(f,x).
-   if domainp f or mvar f neq x then {f} else coeffs f;
-
-procedure mtx_sylvester(f,g,x);
-   % Sylvester matrix. [f], [g] are non-zero SF, [x] is an ID. Returns a MTX
-   % (m+n lines and colums if m is degree of f in x and n is degree of
-   % g in x).
-   begin scalar m,n,syl,cf,cg;
-      m := sfto_vardeg(f,x);
-      n := sfto_vardeg(g,x);
-      if m+n eq 0 then return mtx_0(0,0) else syl:= mtx_0(m+n,m+n);
-      cf := sf_coeffs(f,x);
-      cg := sf_coeffs(g,x);
-      for l := 1 : n do
-	 for c := l : l+m do
-  	    mtx_put(syl,l,c,nth(cf,1+(c-l)));
-      for l := n+1 : m+n do
-	 for c := l-n : (l-n)+n do
-  	    mtx_put(syl,l,c,nth(cg,1+(c-(l-n))));
-      return syl;
-   end;
-
-procedure mtx_det(mtx); ofsf_det mtx;
-
-procedure mtx_resultant(f,g,x);
-   if null f or null g then
-      0
-   else if sfto_vardeg(f,x)+sfto_vardeg(g,x) eq 0 then
-      1
-   else
-      mtx_det mtx_sylvester(f,g,x);
-
-procedure mtx_mmji(f,g,x,j,i);
-   % Modified Sylvester matrix Mji.
-   begin scalar m,n,ltd1,ltd2,ctd1,ctd2; % ltd: lines to delete, ctd: columns to del.
-      m := sfto_vardeg(f,x);
-      n := sfto_vardeg(g,x);
-      ltd1 := for k := (m+n)-j+1 : m+n collect k;
-      ltd2 := for k := n-j+1 : n collect k;
-      ctd1 := for k := (m+n-i-j)+1 : m+n collect k;
-      ctd2 := for k := (m+n)-(2*j+1)+1 : (m+n-i-j)-1 collect k;
-      return mtx_rmlscs(mtx_sylvester(f,g,x),union(ltd1,ltd2),union(ctd1,ctd2))
-   end;
-
 symbolic operator rlpsc;
-procedure rlpsc(f,g,x,j);
+procedure rlpsc(f, g, x, j);
    begin scalar oldorder,w;
       oldorder := setkorder {x};
-      w := prepf sf_psc(numr simp f,numr simp g,x,j);
+      w := prepf sf_psc(numr simp f, numr simp g, x, j);
       setkorder oldorder;
       return w
    end;
 
-procedure sf_psc(f,g,x,j);
-   % Principal subresultant coefficient. . Returns a SF, the [j]-th
-   % psc of [f] and [g].
-   mtx_det(mtx_mmji(f,g,x,j,j));
+% TODO: Move to sfto.
+asserted procedure sf_psc(f: SF, g: SF, x: Kernel, j: Integer): SF;
+   % Principal the [j]-th principal subresultant coefficient of [f] a and [g].
+   mtx_det mtx_mmji(f, g, x, j, j);
 
-procedure sf_expt(k,n);
-   % Raise a kernel to an exponent.
-   mksp!*(numr simp k,n);
-
-procedure sf_subresultant(f,g,x,j);
+% TODO: Move to sfto.
+asserted procedure sf_subresultant(f: SF, g: SF, x: Kernel, j: Integer): SF;
    % Subresultant.
    begin scalar summed;
       for i := 0 : j do
-	 summed := addf(multf(mtx_det(mtx_mmji(f,g,x,j,i)),sf_expt(x,i)),summed);
+	 summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
       return summed
    end;
 
-procedure sf_factorize(f);
-   % Factorize. [f] is a SF. Returns a PAIR(DOM,LIST(PAIR(SF,INT))).
+% TODO: Move to sfto.
+asserted procedure sf_factorize(f: SF): DottedPair;
+   % Factorize. Returns a Pair [DOM . LIST(PAIR(SF, INT))].
    fctrf f;
 
-procedure sf_factors(f);
-   % Factorize. [f] is a SF. Returns a LIST(SF).
+% TODO: Move to sfto.
+asserted procedure sf_factors(f: SF): List;
+   % Factorize. Returns a List of SF.
    for each a in cdr sf_factorize f collect car a;
-
-%%% --- module pair --- %%%
-% pair of sets.
-
-procedure pairunion(p1,p2);
-   union(car p1,car p2) . union (cdr p1,cdr p2);
 
 %%% --- module tag --- %%%
 
-% implements the datatype TAG(alpha). such an element consists of a
-% pair of an object (of type alpha) and a set of tags.
+% This module implements the datatype Tag(Alpha). An element of this datatype is
+% a pair of an object (of type Alpha) and a set of tags.
 
-procedure tag_(a,l);
-   % Tag item for the first time. [a] is ANY, [l] is a list. Returns a
-   % TAG(ANY).
+asserted procedure tag_(a: Any, l: List): DottedPair;
+   % Tag item for the first time.
    a . list2set l;
 
-procedure tag_object(te);
-   % Tag list of an tagged item. [te] is TAG(ALPHA). Returns an ALPHA,
-   % the object without tags.
+asserted procedure tag_object(te: DottedPair): Any;
+   % Object of a tagged item.
    car te;
 
-procedure tag_taglist(te);
-   % Tag list of an tagged item. [te] is TAG. Retruns a TAG(ANY).
+asserted procedure tag_taglist(te: DottedPair): List;
+   % Tag list of a tagged item.
    cdr te;
 
-procedure tag_add(te,a);
-   % Add a tag to a tagged object. [te] is TAG, a is anything. Returns
-   % a TAG.
-   if member(a, tag_taglist te) then te
-   else  tag_object te . (a . tag_taglist te);
+asserted procedure tag_add(te: DottedPair, a: Any): DottedPair;
+   % Add a tag to a tagged object.
+   if member(a, tag_taglist te) then
+      te
+   else
+      tag_object te . (a . tag_taglist te);
 
-% - tagged versions of common procedures - %
+% - tagged versions of common SF procedures - %
 
-procedure tgdomainp(tf);
-   % Domain predicate, tagged version. [tf] is a TAG(SF). Returns a
-   % BOOL.
+% TODO: Do we need a new data type "tagged standard form"?
+
+asserted procedure tgdomainp(tf: DottedPair): Boolean;
+   % Domain predicate, tagged version. [tf] is a tagged SF.
    domainp tag_object tf;
 
-procedure sf_tgdeg(tf,x);
-   % Tagged standard form degree. [tf] is a TAG(SF), [x]
-   % is a kernel. Returns an INT.
-   sfto_vardeg(tag_object tf,x);
+asserted procedure sf_tgdeg(tf: DottedPair, x: Kernel): Integer;
+   % Tagged SF degree. [tf] is a tagged SF.
+   sfto_vardeg(tag_object tf, x);
 
-procedure sf_tglc(tf,x);
-   % Tagged standard form leading coefficient. [tf] is a TAG(SF), [x]
-   % is a kernel. Returns an INT.
-   tag_(sf_lc(tag_object tf,x),tag_taglist tf);
+asserted procedure sf_tglc(tf: DottedPair, x: Kernel): DottedPair;
+   % Tagged SF leading coefficient. [tf] is a tagged SF.
+   tag_(sf_lc(tag_object tf, x), tag_taglist tf);
 
-procedure sf_tgred(tf,x);
-   % Tagged standard form reductum. [t] is a TAG(SF), [x] is a kernel.
-   % Returns a TAG(SF).
-   tag_(sf_red(tag_object tf,x),tag_taglist tf);
+asserted procedure sf_tgred(tf: DottedPair, x: Kernel): DottedPair;
+   % Tagged SF reductum. [tf] is a tagged SF. Returns a tagged SF.
+   tag_(sf_red(tag_object tf, x), tag_taglist tf);
 
-procedure sf_tgdiscriminant(tf,x);
-   % Tagged standard form discriminant. [tf] is a TAG(SF), [x] is a
-   % kernel. Returns a TAG(SF).
-   tag_(sf_discriminant(tag_object tf,x),tag_taglist tf);
+asserted procedure sf_tgdiscriminant(tf: DottedPair, x: Kernel): DottedPair;
+   % Tagged SF discriminant. [tf] is a tagged SF. Returns a tagged SF.
+   tag_(sf_discriminant(tag_object tf, x), tag_taglist tf);
 
-procedure tgresultant(tf1,tf2,x);
-   % Tagged standard form resultant. [tf1], [tf2] are TAG(SF), [x] is a
-   % kernel. Returns a TAG(SF).
+asserted procedure tgresultant(tf1: DottedPair, tf2: DottedPair, x: Kernel): DottedPair;
+   % Tagged SF resultant. [tf1] and [tf2] are tagged SF. Returns a tagged SF.
    tag_(sfto_resf(tag_object tf1,tag_object tf2,x),
       union(tag_taglist tf1,tag_taglist tf2));
 
-procedure tgunion(st1,st2);
-   % Union of tagged expressions. [st1], [st2] are sets of tagged
-   % expressions. Returns a set of tagged expressions.
-   << if st1 then for each t1 in st1 do st2 := tgunion1(t1,st2); st2 >>;
+asserted procedure tgunion(st1: List, st2: List): List;
+   % Union of tagged elements. [st1] and [st2] are sets of tagged elements.
+   % Returns a set of tagged elements.
+   <<
+      if st1 then
+	 for each t1 in st1 do
+	    st2 := tgunion1(t1, st2);
+      st2
+   >>;
 
-procedure tgunion1(te,ste);
-   % Union of tagged expressions subroutine. [te] is TAG, [set] is
-   % SET(TAG). REturns SET(TAG).
+asserted procedure tgunion1(te: DottedPair, ste: List): List;
+   % Union of tagged elements subroutine. [te] is a tagged element, [ste] is a
+   % set of tagged elements.
    if null ste then
       {te}
    else if tag_object te = tag_object car ste then
-      tag_(tag_object te,union(tag_taglist te,tag_taglist car ste)) . cdr ste
+      tag_(tag_object te, union(tag_taglist te, tag_taglist car ste)) . cdr ste
    else
-      car ste . tgunion1(te,cdr ste);
+      car ste . tgunion1(te, cdr ste);
 
-procedure tglist2set(lte);
-   % List to set for tagged expressions. [lte] is LIST(TAG). Returns
-   % SET(TAG) s.t. no object occurs twice.
-   tgunion(lte,{});
+asserted procedure tglist2set(lte: List): List;
+   % List to set for tagged elements. [lte] is List of tagged elements. Returns
+   % a list of tagged elements such that no element occurs twice.
+   tgunion(lte, {});
 
 %%% --- Projection set and phase --- %%%
 
 procedure rlprojamat2(fn,afl,l);
    % Algebraic mode access template 2. [fn] is a function of type
-   % (LIST(SF),LIST(ID))->(LIST(SF), [afl] is a list of algebraic forms
-   % (lisp prefix) and [l] is an list of identifiers. Returns a list of
-   % algebraic forms.
+   % (LIST(SF),LIST(ID))->(LIST(SF), [afl] is a list of algebraic forms (lisp
+   % prefix) and [l] is an list of identifiers. Returns a list of algebraic
+   % forms.
    begin scalar oldorder,w;
       oldorder := setkorder reverse cdr l;
-      w := apply(fn,{for each af in cdr afl collect numr simp af,cdr l});
+      w := apply(fn, {for each af in cdr afl collect numr simp af, cdr l});
       w := 'list . for each f in w collect prepf f;
-      setkorder(oldorder);
+      setkorder oldorder;
       return w
    end;
 
 procedure rltgprojamat2(fn,afl,l);
-   % Algebraic mode access template 2, tagged version. [fn] is a
-   % function of type (LIST(SF),LIST(ID))->(LIST(TAG(SF)), [afl] is a
-   % list of algebraic forms (lisp prefix) and [l] is an list of
-   % identifiers. Returns a list of lists, each list having an
-   % algebraic form as first entry.
+   % Algebraic mode access template 2, tagged version. [fn] is a function of
+   % type (LIST(SF),LIST(ID))->(LIST(TAG(SF)), [afl] is a list of algebraic
+   % forms (lisp prefix) and [l] is an list of identifiers. Returns a list of
+   % lists, each list having an algebraic form as first entry.
    begin scalar oldorder,w;
       oldorder := setkorder reverse cdr l;
-      w := apply(fn,{for each af in cdr afl collect numr simp af,cdr l});
+      w := apply(fn, {for each af in cdr afl collect numr simp af, cdr l});
       w := 'list . for each tf in w collect
 	 ('list . prepf tag_object tf . tag_taglist tf);
-      setkorder(oldorder);
+      setkorder oldorder;
       return w
    end;
 
@@ -1138,8 +1033,8 @@ procedure rlprojsetcoho(afl,l); rlprojamat2(function(ofsf_projsetcoho),afl,l);
 procedure ofsf_projsetcoho(aa,varl);
    ofsf_projset('ofsf_transfac,'ofsf_projopcoho,aa,varl);
 
-%symbolic operator rlprojsetcohogen;
-%procedure rlprojsetcohogen(afl,l); rlprojamat2(function(ofsf_projsetcohogen),afl,l);
+% symbolic operator rlprojsetcohogen;
+% procedure rlprojsetcohogen(afl, l); rlprojamat2(function(ofsf_projsetcohogen), afl, l);
 
 procedure ofsf_projsetcohogen(aa,varl,theo);
    ofsf_genprojset('ofsf_transfac,'ofsf_projopcohogen,aa,varl,theo);
@@ -1234,11 +1129,6 @@ procedure ofsf_tgpolyoflevel(pp,varl,j);
 %%% --- Transformations on projection sets --- %%%
 % PAIR(LIST(SF),ID)->LIST(SF)
 
-procedure ofsf_transid(pp,x);
-   % Identity transformation. [pp] is a LIST(SF), [x] is an ID.
-   % Returns a LIST(SF).
-   pp;
-
 symbolic operator rltransfac;
 procedure rltransfac(afl,x); rlprojamat(function(ofsf_transfac),afl,x);
 
@@ -1321,7 +1211,8 @@ procedure ofsf_tgprojopmcbr(aa,varl,j);
 %%% --- Projection operators --- %%%
 % PAIR(LIST(SF),ID)->LIST(SF)
 
-procedure notdomainp(f); not domainp(f);
+asserted procedure notdomainp(f: Any): Boolean;
+   not domainp f;
 
 symbolic operator rlprojco;
 procedure rlprojco(afl,x); rlprojamat(function(ofsf_projco),afl,x);
@@ -1693,7 +1584,7 @@ procedure sfto_zerodimp2(x,htl);
 procedure sfto_hterm(f);
    % Highest term. f is a SF. Returns a SF.
    if domainp f then f
-   else multf(sf_lc(f,mvar f),sf_expt(mvar f,sfto_vardeg(f,mvar f)));
+   else multf(sf_lc(f,mvar f),sfto_kexp(mvar f,sfto_vardeg(f,mvar f)));
 
 procedure ofsf_projcobbv2gen(aa,x,theo);
    % . . Returns as dotted pair a LIST(SF) and a theory.
@@ -1775,7 +1666,7 @@ procedure sf_fromcdl(cdl,k);
    % non-empty LIST(PAIR(SF,INT)), x in an ID. Returns a SF.
    begin scalar f;
       if null cdr cdl then return caar cdl;
-      f := sf_expt(k,cdar cdl);
+      f := sfto_kexp(k,cdar cdl);
       set_lc(f, caar cdl);
       set_red(f, sf_fromcdl(cdr cdl,k));
       return f
@@ -1958,9 +1849,6 @@ procedure ofsf_projhoss2gen(bb,x,theo);
       if ofsf_cadverbosep() then ioto_prin2 {length ss2,") "};
       return ss2 . theo
    end;
-
-symbolic operator show;
-procedure show(a); print a;
 
 endmodule;  % ofsfcadprojection
 
