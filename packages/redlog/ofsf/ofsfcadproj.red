@@ -57,54 +57,17 @@ module ofsfcadproj;
 % Intuition: Projection phase, maps [ffr]to (F1, ..., Fr).
 % Caveat: Below [varl] is $x_r, ..., x2$ ???
 
+% TODO: What types for functions (code pointers, lambda, things which are used
+% by the apply function) are there?
+% TODO: Do we need a new data type "tagged standard form"?
+
+% Matrix with Standard Form Entries
+struct SfMtx checked by SfMtxP;
+
+procedure SfMtxP(s);
+   listp s;
+
 %%% --- projection order code --- %%%
-
-algebraic procedure rlcadporders(phi);
-   % Compute all admissible projection orders.
-   ordersfromvbl rlcadvbl phi;
-
-algebraic procedure ordersfromvbl(vbl);
-   if vbl={} then {{}} else
-      for each vl1 in perturbations first vbl join
-	 for each vl2 in ordersfromvbl rest vbl collect
-	    append(vl1, vl2);
-
-symbolic operator rlcadpordersnum;
-procedure rlcadpordersnum(phi);
-   begin scalar w;
-      w := for each b in ofsf_cadvbl1 rl_simp phi collect
-	 length b;
-      return for each n in w product
-	 factorial n
-   end;
-
-symbolic operator rlcadvbl2pord;
-procedure rlcadvbl2pord(vbl);
-   for each vb in vbl join vb;
-
-symbolic operator rlcadvbl;
-procedure rlcadvbl(phi);
-   'list . for each l in ofsf_cadvbl rl_simp phi collect
-      'list . l;
-
-algebraic procedure rlcaddefaultorder(phi);
-   for each vb in rlcadvbl rlpnf phi join vb;
-
-algebraic procedure delnth(l, n);
-   % Delete the n-th element from list.
-   if n = 1 then rest l else append({first l}, delnth(rest l, n-1));
-
-algebraic procedure mynth(l, n);
-   % nth lelement of a list
-   if n = 1 then first l else mynth(rest l, n-1);
-
-algebraic procedure perturbations(l);
-   if l = {} then
-      {{}}
-   else
-      for j := 1 : length l join
-    	 for each p in perturbations(delnth(l, j)) collect
-	    append({mynth(l, j)}, p);
 
 asserted procedure ofsf_cadvbl(phi: Formula): List;
    % Variable-block-list. Checks if [phi] is in PNF. Returns a list of lists
@@ -406,28 +369,23 @@ asserted procedure ofsf_mapdistribute(fl: List, ff: Atom, varl: List): Any;
 
 asserted procedure ofsf_distribute(f: SF, ff: Atom, varl: List): Any;
    begin integer l;
-      l := ofsf_level(f, varl);
+      l := sf_level(f, varl);
       if l > 0 and not (f member getv(ff, l)) then  % memq?
 	 putv(ff, l, f . getv(ff, l))
    end;
 
-% TODO: Move this procedure to sfto.
-asserted procedure ofsf_level(f: SF, varl: List): Integer;
+% begin sfto procedures
+
+asserted procedure sf_level(f: SF, varl: List): Integer;
    % Level of a polynomial w.r.t. the variable list. Returns 0, if [f] is a
    % constant, otherwise the position of [mvar f] in [varl].
    if null varl then
-      rederr "***** ofsf_level: invalid kernel"
+      rederr "***** sf_level: invalid kernel"
    else if domainp f then
       0
    else if mvar f eq car varl then
       1
-   else 1 + ofsf_level(f, cdr varl);
-
-% - sum of total degrees of monomials - %
-
-symbolic operator rlstdeg;
-procedure rlstdeg(f);
-   sf_stdeg numr simp f;
+   else 1 + sf_level(f, cdr varl);
 
 asserted procedure sf_stdeg(f: SF): Integer;
    % Sum of total degrees of a polynomial.
@@ -442,12 +400,6 @@ asserted procedure sf_stdeg1(f: SF): Integer;
       0
    else
       sf_stdeg1 lc f + ldeg f + sf_stdeg1 red f;
-
-% - total degree - %
-
-symbolic operator rltdeg;
-procedure rltdeg(f, xl);
-    prepf sf_tdeg!*(numr simp f, cdr xl);
 
 asserted procedure sf_tdeg!*(f: SF, xl: List): Integer;
    % Total degree. [f] is a SF, [xl] is a LIST(ID). Reordering is performed to
@@ -479,12 +431,6 @@ asserted procedure sf_tdeg1(f: SF, xl: List): Integer;
       max(sf_tdeg1(sf_lc(f, car xl), cdr xl) + sfto_vardeg(f, car xl),
 	 sf_tdeg1(sf_red(f, car xl), xl));
 
-% - leading coefficient - %
-
-symbolic operator rllc;
-procedure rllc(f, x);
-   prepf sf_lc!*(numr simp f, x);
-
 asserted procedure sf_lc!*(f: SF, x: Kernel): SF;
    % Leading coefficient. Reordering is performed, so the result is correct.
    begin scalar oldorder,w;
@@ -499,245 +445,13 @@ asserted procedure sf_lc(f: SF, x: Kernel): SF;
    % ordered in a way compatible to a list containing [x].
    if not domainp f and mvar f eq x then lc f else f;
 
-% - reductum - %
-
-symbolic operator rlred;
-procedure rlred(f, x);
-   begin scalar oldorder, w;
-      oldorder := setkorder {x};
-      w := prepf sf_red(numr simp f, x);
-      setkorder oldorder;
-      return w
-   end;
-
 asserted procedure sf_red(f: SF, x: Kernel): SF;
    % Univariate reductum of a standard form.
    if not domainp f and mvar f eq x then red f else nil;
 
-symbolic operator rldis;
-procedure rldis(f, x);
-   begin scalar oldorder, w;
-      oldorder := setkorder {x};
-      w := prepf sf_discriminant(numr simp f, x);
-      setkorder oldorder;
-      return w
-   end;
-
-% - discriminant - %
-
 asserted procedure sf_discriminant(f: SF, x: Kernel): SF;
    % Caveat: deg(f, x) > 0 is required.
    quotf(sfto_resf(f, numr difff(f, x), x), lc f);
-
-symbolic operator rlres;
-procedure rlres(f, g, x);
-   begin scalar oldorder,w;
-      oldorder := setkorder {x};
-      w := prepf sfto_resf(numr simp f, numr simp g, x);
-      setkorder oldorder;
-      return w
-   end;
-
-asserted procedure sf_foldgcd(fl: List): SF;
-   % Fold gcd. [fl] is a non-empty list of SF.
-   if null cdr fl then car fl else gcdf(car fl, sf_foldgcd cdr fl);
-
-asserted procedure sf_densecoeffs(f: SF, x: Kernel): List;
-   % Dense coefficient list.
-   begin scalar clred;
-      if sfto_vardeg(f, x) <= 0 then
-	 return {f};
-      clred := sf_densecoeffs(red f, x);
-      for i :=  (max(0, sfto_vardeg(red f, x)) + 1) : (ldeg f - 1) do
-	 clred := nil . clred;
-      clred := lc f . clred;
-      return clred
-   end;
-
-asserted procedure sf_fromdensecoeffs(fl: List, k: Kernel): SF;
-   % Standard form from dense coefficient list. [fl] is a non-empty List of SF.
-   begin scalar f;
-      if null cdr fl then
-	 return car fl;
-      if null car fl then
-	 return sf_fromdensecoeffs(cdr fl, k);
-      f := sfto_kexp(k, length fl - 1);
-      set_l(f, car fl);
-      set_red(f, sf_fromdensecoeffs(cdr fl, k));
-      return f
-   end;
-
-%%%%%%%%%%%%%%%%%%
-% - Regularity - %
-%%%%%%%%%%%%%%%%%%
-
-symbolic operator rlisregular;
-procedure rlisregular(fl, xl);
-   begin scalar tv;
-      tv := sf_isregular!*(for each f in fl collect numr simp f, cdr xl);
-      if tv then
-	 return 'true;
-      return 'false
-   end;
-
-asserted procedure sf_isregular!*(fl: List, yl: List): Boolean;
-   % Regularity test. [fl] is a List of SF. [yl] is a List of Kernels.
-   % Reordering is performed, so the result is correct.
-   begin scalar oldorder, w;
-      oldorder := setkorder yl;
-      w := sf_isregular(for each f in fl collect reorder f, yl);
-      setkorder oldorder;
-      return w
-   end;
-
-asserted procedure sf_isregular(fl: List, yl: List): Boolean;
-   % Regularity test. [fl] is a List of SF. [yl] is a List of Kernels. [f] has
-   % to be ordered in a way compatible to [yl].
-   if null fl then
-      t
-   else
-      sf_tdeg(sf_lc(car fl,car yl),cdr yl)<=0 and sf_isregular(cdr fl,yl);
-
-symbolic operator rltransreg;
-procedure rltransreg(fl, yl, cl);
-   begin scalar w;
-      w := for each f in cdr fl collect numr simp f;
-      return 'list . for each fr in sf_transreg!*(w, cdr yl, cdr cl) collect
-	 prepf fr;
-   end;
-
-asserted procedure sf_transreg!*(fl: List, yl: List, cl: List): SF;
-    begin scalar oldorder, w;
-      oldorder := setkorder yl;
-      w := sf_transreg(for each f in fl collect reorder f, yl, cl);
-      setkorder oldorder;
-      return reorder w
-   end;
-
-asserted procedure sf_transreg(fl: List, yl: List, cl: List): List;
-   % Transformation into a regular polynomial. [fl] is a List of SF, [yl] is a
-   % List of Kernels, and [cl] is a List of Integers. Returns a List of SF.
-   for each f in fl collect sf_transregf(f, yl, cl);
-
-asserted procedure sf_transregf(f: SF, yl: List, cl: List): SF;
-   % Transformation into a regular polynomial. [f] is a SF, [yl] is a List of
-   % Kernels, and [cl] is a List of Integers. Returns a SF.
-   begin
-      scalar y1, yj, cj, al;
-      y1 := car yl;
-      yl := cdr yl;
-      while yl do <<
-	 yj := pop yl;
-	 cj := pop cl;
-	 % al := (yj . addf(!*k2f yj,multf(cj,!*k2f y1)) . al;
-	 al := (yj . {'plus, yj, {'times, cj, y1}}) . al
-      >>;
-      return numr subf(f, al)
-   end;
-
-symbolic operator rlregularize;
-procedure rlregularize(fl, yl);
-   begin scalar w;
-      w := sf_regularize!*(for each f in cdr fl collect numr simp f, cdr yl);
-      return 'list . for each f in w collect prepf f
-   end;
-
-asserted procedure sf_regularize!*(fl: List, yl: List): List;
-    begin scalar oldorder, w;
-      oldorder := setkorder yl;
-      w := sf_regularize(for each f in fl collect reorder f, yl);
-      setkorder oldorder;
-      return for each f in w collect reorder f
-   end;
-
-asserted procedure sf_regularize(fl: List, yl: List): List;
-   % Regularize. [fl] is a List of SF, [yl] is a List of Kernels. Returns a List
-   % of SF.
-   car sf_regularize1(fl, yl);
-
-symbolic operator rlregularize1;
-procedure rlregularize1(fl, yl);
-   begin scalar w;
-      w := sf_regularize1!*(for each f in cdr fl collect numr simp f, cdr yl);
-      return {'list, 'list . for each f in car w collect prepf f, 'list . cdr w}
-   end;
-
-asserted procedure sf_regularize1!*(fl: List, yl: List): DottedPair;
-    begin scalar oldorder,w;
-      oldorder := setkorder yl;
-      w := sf_regularize1(for each f in fl collect reorder f, yl);
-      setkorder oldorder;
-      return (for each f in car w collect reorder f) . cdr w
-   end;
-
-asserted procedure sf_regularize1(fl: List, yl: List): DottedPair;
-   % Regularize. [fl] is a List of SF, [yl] is a List of Kernels. Returns a pair
-   % (List of SF . List of Integers).
-   begin scalar flr, cl1, cl2, cl;
-      flr := fl;
-      cl := for each y in cdr yl collect 1;
-      cl1 := cl;
-      while not sf_isregular(flr,yl) do <<
-	 flr := sf_transreg(fl,yl,cl);
-	 cl2 := cl;
-	 cl := sf_nextcl cl;
-      >>;
-      if null cl2 then
-	 return flr . for each y in cdr yl collect 0;
-      return flr . cl2
-   end;
-
-asserted procedure sf_nextcl(cl: List): List;
-   % Next constant list (Subroutine for sf_regularize). [cl] is a LIST(NUM).
-   % Returns a LIST(NUM). In an ideal world this would enumerate
-   % $\mathbb{N}^{|cl|}$.
-   begin scalar c1;
-      c1 := car cl;
-      return reversip ((c1+1) . (reverse cdr cl))
-   end;
-
-% symbolic operator rlregoptordf;
-% procedure rlregoptordf(f,yl);
-%    'list . for each a in sf_regoptordf(numr simp f, cdr yl) collect
-%       'list . a;
-
-asserted procedure sf_regoptordf!*(f: SF, yl: List): SF;
-   begin scalar oldorder, w;
-      oldorder := setkorder yl;
-      w := sf_regoptordf(reorder f, yl);
-      setkorder oldorder;
-      return reorder w
-   end;
-
-asserted procedure sf_regoptordf(f: SF, yl: List): List;
-   % Optimal order for regularization (wrt. nom). Returns a LIST(LIST(ID)).
-   begin scalar ords;
-      ords := lto_choose cdr yl;
-      ords := for each o in ords collect car yl . o;
-      ords := for each o in ords collect
-	 o . sf_nom sf_regularize!*(f,o);
-      ords := for each o in ords join
-	 if sf_isregular!*(sf_regularize!*(f, car o), yl) then {o};
-      return reversip
-	 sort(for each o in ords collect car o, function length)
-   end;
-
-symbolic operator rlchoose;
-procedure rlchoose(l);
-   'list . for each a in lto_choose cdr l collect 'list . a;
-
-asserted procedure lto_choose(l: List): List;
-   % Powerset. [l] is a LIST(ANY). Returns a LIST(LIST(ANY)).
-   begin scalar w;
-      if null l then
-	 return {{}};
-      w := lto_choose cdr l;
-      return append(w, for each a in w collect car l . a)
-   end;
-
-symbolic operator rlnom;
-procedure rlnom(f);
-   sf_nom numr simp f;
 
 asserted procedure sf_nom(f: SF): Integer;
    % Number of monomials.
@@ -748,11 +462,105 @@ asserted procedure sf_nom(f: SF): Integer;
    else
       sf_nom lc f + sf_nom red f;
 
+asserted procedure sf_coeffs(f: SF, x: Kernel): SfMtx;
+   % List of all coefficients, even those that are zero. Returns a List of SF of
+   % length max(0, degree(f, x)).
+   if domainp f or mvar f neq x then {f} else coeffs f;
 
-%%% --- To be included into lto --- %%%
+asserted procedure sf_psc(f: SF, g: SF, x: Kernel, j: Integer): SF;
+   % Principal the [j]-th principal subresultant coefficient of [f] a and [g].
+   mtx_det mtx_mmji(f, g, x, j, j);
 
-% TODO: What types for functions (code pointers, lambda, things which are used
-% by the apply function) are there?
+asserted procedure sf_subresultant(f: SF, g: SF, x: Kernel, j: Integer): SF;
+   % Subresultant.
+   begin scalar summed;
+      for i := 0 : j do
+	 summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
+      return summed
+   end;
+
+asserted procedure sf_factorize(f: SF): DottedPair;
+   % Factorize. Returns a Pair [DOM . LIST(PAIR(SF, INT))].
+   fctrf f;
+
+asserted procedure sf_factors(f: SF): List;
+   % Factorize. Returns a List of SF.
+   for each a in cdr sf_factorize f collect car a;
+
+asserted procedure sf_cdl(f: SF, x: Kernel): List;
+   % Coefficient and degree list. Retuns a List of pairs [SF . Integer].
+   if sfto_vardeg(f, x) >= 1 then
+      (lc f . ldeg f) . sf_cdl(red f, x)
+   else
+      {(f . 0)};
+
+asserted procedure sf_fromcdl(cdl: List, x: Kernel): SF;
+   % Standard form from coefficient and degree list. [cdl] is a non-empty List
+   % of pairs [SF . Integer].
+   begin scalar f;
+      assert(not null cdl);
+      if null cdr cdl then
+	 return caar cdl;
+      f := sfto_kexp(x, cdar cdl);
+      set_lc(f, caar cdl);
+      set_red(f, sf_fromcdl(cdr cdl, x));
+      return f
+   end;
+
+asserted procedure sf_pscs(a: SF, b: SF, x: Kernel): List;
+   % All pscs. Returns a List of SF.
+   for k := 0 : min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 collect
+      sf_psc(a, b, x, k);
+
+asserted procedure sf_pscsgen(a: SF, b: SF, x: Kernel, theo: List): DottedPair;
+   % All pscs, generic version. Returns as a dotted pair a list of SF and a
+   % theory.
+   begin scalar k, pscl, finished;
+      if not !*rlpscsgen then
+	 return sf_pscs(a, b, x) . theo;
+      k := 0;
+      if k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 then
+	 return nil . theo;
+      repeat <<
+	 pscl := sf_psc(a,b,x,k) . pscl;
+	 k := k+1;
+	 if k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 then <<
+	    if ofsf_cadverbosep() then
+	       ioto_prin2 "(end)"
+	 >> else if ofsf_surep(ofsf_0mk2('neq, car pscl), theo) then <<
+	    if ofsf_cadverbosep() then
+	       if domainp car pscl then
+	       	  ioto_prin2 "(dom)"
+	       else
+		  ioto_prin2 "(=>)";
+	    finished := t
+	 >> else if ofsf_cadvalassp(ofsf_cadbvl!*,car pscl) then <<
+	    if ofsf_cadverbosep() then
+	       ioto_prin2 "(>th)";
+	    theo := ofsf_0mk2('neq,car pscl) . theo;
+	    finished := t
+	 >>;
+      >> until finished or k > min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1;
+      % if ofsf_cadverbosep() then
+      % 	 ioto_prin2 {" (- ", min(sfto_vardeg(a, x), sfto_vardeg(b, x))-k, ") "};
+      return pscl . theo;
+   end;
+
+asserted procedure sf_diff(f: SF, x: Kernel): SF;
+   numr difff(f, x);
+
+% end sfto procedures
+
+% begin lto procedures
+
+asserted procedure lto_choose(l: List): List;
+   % Powerset. [l] is a LIST(ANY). Returns a LIST(LIST(ANY)).
+   begin scalar w;
+      if null l then
+	 return {{}};
+      w := lto_choose cdr l;
+      return append(w, for each a in w collect car l . a)
+   end;
 
 asserted procedure lto_select(fn: Any, l: List): List;
    % Select elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
@@ -774,22 +582,36 @@ asserted procedure lto_remove1(fn: Any, l: List, xarl: List): List;
    % arguments , [l] and [xarl] are LIST. Returns a LIST.
    for each a in l join if not apply(fn, a . xarl) then {a};
 
-asserted procedure sf_rmconst(fl: List): List;
-   % Remove constant. [fl] is a list of SF.
-   for each f in fl join if not domainp f then {f};
+asserted procedure lto_rmpos(lst: List, posl: List): List;
+   % Remove positions. [lst] is a List. [posl] is a List of Integers.
+   begin scalar pos;
+      pos := 0;
+      return for each a in lst join <<
+	 pos := pos + 1;
+	 if not memq(pos, posl) then {a}
+      >>
+   end;
+
+asserted procedure lto_drop(l: List, n: Integer): List;
+   % Drop the first n elements of l.
+   if l and n > 0 then lto_drop(cdr l, n-1) else l;
+
+asserted procedure lto_init(l: List): List;
+   % Initial part of a non-empty list, with the last element removed.
+   <<
+      assert(not null l);
+      if cdr l then car l . lto_init cdr l
+   >>;
+
+% end lto procedures
 
 %%% --- Datatype MTX (matrices) --- %%%
 % a matrix is represented as a list of lines.
 
-struct SfMtx checked by SfMtxP;
-
-procedure SfMtxP(s);
-   listp s;
-
 asserted procedure mtx_0(m: Integer, n: Integer): SfMtx;
-   % Zero matrix. Returns a m times n SfMtx.
-   for l:=1:m collect
-      for c:=1:n collect nil;
+   % Zero matrix. Returns an m times n zero matrix.
+   for l := 1 : m collect
+      for c := 1 : n collect nil;
 
 asserted procedure mtx_put(mtx: SfMtx, l: Integer, c: Integer, a: SF): Any;
    % Put entry.
@@ -846,56 +668,6 @@ asserted procedure mtx_mmji(f: SF, g: SF, x: Kernel, j: Integer, i: Integer): Sf
       return mtx_rmlscs(mtx_sylvester(f, g, x), union(ltd1, ltd2), union(ctd1, ctd2))
    end;
 
-% TODO: Move to sfto.
-asserted procedure sf_coeffs(f: SF, x: Kernel): SfMtx;
-   % List of all coefficients, even those that are zero. Returns a List of SF of
-   % length max(0, degree(f, x)).
-   if domainp f or mvar f neq x then {f} else coeffs f;
-
-% TODO: Move to lto.
-asserted procedure lto_rmpos(lst: List, posl: List): List;
-   % Remove positions. [lst] is a List. [posl] is a List of Integers.
-   begin scalar pos;
-      pos := 0;
-      return for each a in lst join <<
-	 pos := pos + 1;
-	 if not memq(pos, posl) then {a}
-      >>
-   end;
-
-symbolic operator rlpsc;
-procedure rlpsc(f, g, x, j);
-   begin scalar oldorder,w;
-      oldorder := setkorder {x};
-      w := prepf sf_psc(numr simp f, numr simp g, x, j);
-      setkorder oldorder;
-      return w
-   end;
-
-% TODO: Move to sfto.
-asserted procedure sf_psc(f: SF, g: SF, x: Kernel, j: Integer): SF;
-   % Principal the [j]-th principal subresultant coefficient of [f] a and [g].
-   mtx_det mtx_mmji(f, g, x, j, j);
-
-% TODO: Move to sfto.
-asserted procedure sf_subresultant(f: SF, g: SF, x: Kernel, j: Integer): SF;
-   % Subresultant.
-   begin scalar summed;
-      for i := 0 : j do
-	 summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
-      return summed
-   end;
-
-% TODO: Move to sfto.
-asserted procedure sf_factorize(f: SF): DottedPair;
-   % Factorize. Returns a Pair [DOM . LIST(PAIR(SF, INT))].
-   fctrf f;
-
-% TODO: Move to sfto.
-asserted procedure sf_factors(f: SF): List;
-   % Factorize. Returns a List of SF.
-   for each a in cdr sf_factorize f collect car a;
-
 %%% --- module tag --- %%%
 
 % This module implements the datatype Tag(Alpha). An element of this datatype is
@@ -920,34 +692,10 @@ asserted procedure tag_add(te: DottedPair, a: Any): DottedPair;
    else
       tag_object te . (a . tag_taglist te);
 
-% - tagged versions of common SF procedures - %
-
-% TODO: Do we need a new data type "tagged standard form"?
-
-asserted procedure tgdomainp(tf: DottedPair): Boolean;
-   % Domain predicate, tagged version. [tf] is a tagged SF.
-   domainp tag_object tf;
-
-asserted procedure sf_tgdeg(tf: DottedPair, x: Kernel): Integer;
-   % Tagged SF degree. [tf] is a tagged SF.
-   sfto_vardeg(tag_object tf, x);
-
-asserted procedure sf_tglc(tf: DottedPair, x: Kernel): DottedPair;
-   % Tagged SF leading coefficient. [tf] is a tagged SF.
-   tag_(sf_lc(tag_object tf, x), tag_taglist tf);
-
-asserted procedure sf_tgred(tf: DottedPair, x: Kernel): DottedPair;
-   % Tagged SF reductum. [tf] is a tagged SF. Returns a tagged SF.
-   tag_(sf_red(tag_object tf, x), tag_taglist tf);
-
-asserted procedure sf_tgdiscriminant(tf: DottedPair, x: Kernel): DottedPair;
-   % Tagged SF discriminant. [tf] is a tagged SF. Returns a tagged SF.
-   tag_(sf_discriminant(tag_object tf, x), tag_taglist tf);
-
-asserted procedure tgresultant(tf1: DottedPair, tf2: DottedPair, x: Kernel): DottedPair;
-   % Tagged SF resultant. [tf1] and [tf2] are tagged SF. Returns a tagged SF.
-   tag_(sfto_resf(tag_object tf1,tag_object tf2,x),
-      union(tag_taglist tf1,tag_taglist tf2));
+asserted procedure tglist2set(lte: List): List;
+   % List to set for tagged elements. [lte] is List of tagged elements. Returns
+   % a list of tagged elements such that no element occurs twice.
+   tgunion(lte, {});
 
 asserted procedure tgunion(st1: List, st2: List): List;
    % Union of tagged elements. [st1] and [st2] are sets of tagged elements.
@@ -969,349 +717,125 @@ asserted procedure tgunion1(te: DottedPair, ste: List): List;
    else
       car ste . tgunion1(te, cdr ste);
 
-asserted procedure tglist2set(lte: List): List;
-   % List to set for tagged elements. [lte] is List of tagged elements. Returns
-   % a list of tagged elements such that no element occurs twice.
-   tgunion(lte, {});
+%%% --- Projection subsets --- %%%
+% PAIR(LIST(SF),ID)->LIST(SF)
 
-%%% --- Projection set and phase --- %%%
+procedure ofsf_projsetcoho(aa, varl);
+   ofsf_projset('ofsf_transfac, 'ofsf_projopcoho, aa, varl);
 
-procedure rlprojamat2(fn,afl,l);
-   % Algebraic mode access template 2. [fn] is a function of type
-   % (LIST(SF),LIST(ID))->(LIST(SF), [afl] is a list of algebraic forms (lisp
-   % prefix) and [l] is an list of identifiers. Returns a list of algebraic
-   % forms.
-   begin scalar oldorder,w;
-      oldorder := setkorder reverse cdr l;
-      w := apply(fn, {for each af in cdr afl collect numr simp af, cdr l});
-      w := 'list . for each f in w collect prepf f;
-      setkorder oldorder;
-      return w
-   end;
+procedure ofsf_projsetcohogen(aa, varl, theo);
+   ofsf_genprojset('ofsf_transfac, 'ofsf_projopcohogen, aa, varl, theo);
 
-procedure rltgprojamat2(fn,afl,l);
-   % Algebraic mode access template 2, tagged version. [fn] is a function of
-   % type (LIST(SF),LIST(ID))->(LIST(TAG(SF)), [afl] is a list of algebraic
-   % forms (lisp prefix) and [l] is an list of identifiers. Returns a list of
-   % lists, each list having an algebraic form as first entry.
-   begin scalar oldorder,w;
-      oldorder := setkorder reverse cdr l;
-      w := apply(fn, {for each af in cdr afl collect numr simp af, cdr l});
-      w := 'list . for each tf in w collect
-	 ('list . prepf tag_object tf . tag_taglist tf);
-      setkorder oldorder;
-      return w
-   end;
+procedure ofsf_projset(transfn, projopfn, aa, varl);
+   % Projection set. [transfn] is a transformation on the projection set.
+   % [projopfn] is a combined projection operator, [aa] is the list of input
+   % polynomials and [varl] the list of variables. Returns a list of SF.
+   ofsf_projset1(transfn, projopfn, aa, varl, 'ofsf_polyoflevel, 'union);
 
-symbolic operator rlprojsetco;
-procedure rlprojsetco(afl,l); rlprojamat2(function(ofsf_projsetco),afl,l);
-
-procedure ofsf_projsetco(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopco,aa,varl);
-
-symbolic operator rlprojsetcov22;
-procedure rlprojsetcov22(afl,l); rlprojamat2(function(ofsf_projsetcov22),afl,l);
-
-procedure ofsf_projsetcov22(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopcov22,aa,varl);
-
-symbolic operator rlprojsetcov23;
-procedure rlprojsetcov23(afl,l); rlprojamat2(function(ofsf_projsetcov23),afl,l);
-
-procedure ofsf_projsetcov23(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopcov23,aa,varl);
-
-symbolic operator rlprojsetcov33;
-procedure rlprojsetcov33(afl,l); rlprojamat2(function(ofsf_projsetcov33),afl,l);
-
-procedure ofsf_projsetcov33(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopcov33,aa,varl);
-
-symbolic operator rlprojsetcoho;
-procedure rlprojsetcoho(afl,l); rlprojamat2(function(ofsf_projsetcoho),afl,l);
-
-procedure ofsf_projsetcoho(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopcoho,aa,varl);
-
-% symbolic operator rlprojsetcohogen;
-% procedure rlprojsetcohogen(afl, l); rlprojamat2(function(ofsf_projsetcohogen), afl, l);
-
-procedure ofsf_projsetcohogen(aa,varl,theo);
-   ofsf_genprojset('ofsf_transfac,'ofsf_projopcohogen,aa,varl,theo);
-
-symbolic operator rlprojsetcolg;
-procedure rlprojsetcolg(afl,l); rlprojamat2(function(ofsf_projsetcolg),afl,l);
-
-procedure ofsf_projsetcolg(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopcolg,aa,varl);
-
-symbolic operator rlprojsetmc;
-procedure rlprojsetmc(afl,l); rlprojamat2(function(ofsf_projsetmc),afl,l);
-
-procedure ofsf_projsetmc(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopmc,aa,varl);
-
-symbolic operator rlprojsetmcbr;
-procedure rlprojsetmcbr(afl,l); rlprojamat2(function(ofsf_projsetmcbr),afl,l);
-
-procedure ofsf_projsetmcbr(aa,varl);
-   ofsf_projset('ofsf_transfac,'ofsf_projopmcbr,aa,varl);
-
-symbolic operator rltgprojsetmcbr;
-procedure rltgprojsetmcbr(afl,l); rltgprojamat2(function(ofsf_tgprojsetmcbr),afl,l);
-
-procedure ofsf_tgprojsetmcbr(aa,varl);
-   % .[aa] is a LIST(TAG(SF)). Returns a LIST(TAG(SF)).
-   ofsf_tgprojset('ofsf_tgtransfac,'ofsf_tgprojopmcbr,aa,varl);
-
-procedure ofsf_projset(transfn,projopfn,aa,varl);
-   % Projection set (as of Brown). [transfn] is a transformation on
-   % the projection set. [projopfn] is a combined projection operator,
-   % [aa] is the list of input polynomials and [varl] the list of
-   % variables. Returns a list of SF.
-   ofsf_projset1(transfn,projopfn,aa,varl,'ofsf_polyoflevel,'union);
-
-procedure ofsf_tgprojset(tgtransfn,tgprojopfn,aa,varl);
-   % Tagged projection set (as of Brown). [tgtransfn] is a tagged
-   % transformation on the projection set, [tgprojopfn] is a tagged
-   % combined projection operator, [aa] is the list of input
-   % polynomials and [varl] the list of variables. Returns a
-   % LIST(tag(SF)).
-   ofsf_projset1(tgtransfn,tgprojopfn,
-      for each a in aa collect tag_(a,{'input}),varl,
-      'ofsf_tgpolyoflevel,'tgunion);
-
-procedure ofsf_projset1(transfn,projopfn,aa,varl,polyoflevelfn,unionfn);
-   begin scalar r,pp,ppj;
+procedure ofsf_projset1(transfn, projopfn, aa, varl, polyoflevelfn, unionfn);
+   begin scalar r, pp, w, ppj;
       r := length varl;
-      pp := apply(transfn,{aa,nth(varl,r)});
+      pp := apply(transfn, {aa, nth(varl, r)});
       for j := r step -1 until 2 do <<
-	 if ofsf_cadverbosep() then
-	    ioto_tprin2t{"+ Projection  F",j," -> F",j-1,
-	       ", variable: ",nth(varl,j),", variables left: ",j-1,
-	       ", #P=",length pp};
-	 ppj := apply(polyoflevelfn,{pp,varl,j});
-	 pp := apply(unionfn,
-	    {pp,apply(transfn,{apply(projopfn,{ppj,varl,j}),nth(varl,j-1)})});
+	 if ofsf_cadverbosep() then <<
+	    ioto_tprin2 {"+ projection F", j, " -> F", j-1};
+	    ioto_tprin2t {"+ variable: ", nth(varl, j), ", variables left: ", j-1}
+	    % ioto_tprin2t {", #P = ", length pp}
+	 >>;
+	 ppj := apply(polyoflevelfn, {pp, varl, j});
+	 w := apply(transfn, {apply(projopfn, {ppj, varl, j}), nth(varl, j-1)});
+	 pp := apply(unionfn, {pp, w})
       >>;
       return pp
    end;
 
-%('ofsf_transfac,'ofsf_projopcohogen,aa,varl,theo);
-procedure ofsf_genprojset(transfn,projopfn,aa,varl,theo);
-   begin scalar r,pp,ppj,pp_theo,polyoflevelfn;
+% ('ofsf_transfac, 'ofsf_projopcohogen, aa, varl, theo);
+procedure ofsf_genprojset(transfn, projopfn, aa, varl, theo);
+   begin scalar r, pp, ppj, pp_theo, polyoflevelfn;
       polyoflevelfn := 'ofsf_polyoflevel;
       r := length varl;
-      pp := apply(transfn,{aa,nth(varl,r)});
+      pp := apply(transfn, {aa, nth(varl, r)});
       for j := r step -1 until 2 do <<
-	 if ofsf_cadverbosep() then
-	    ioto_tprin2t{"+ genProjection  F",j," -> F",j-1,
-	       ", variable: ",nth(varl,j),", variables left: ",j-1,
-	       ", #P=",length pp};
-	 ppj := apply(polyoflevelfn,{pp,varl,j});
+	 if ofsf_cadverbosep() then <<
+	    ioto_tprin2 {"+ genprojection F", j, " -> F", j-1};
+	    ioto_tprin2t {", variable: ", nth(varl, j), ", variables left: ", j-1}
+	    % ioto_tprin2t {", #P = ", length pp}
+	 >>;
+	 ppj := apply(polyoflevelfn, {pp, varl, j});
 	 %pp := apply(unionfn,
 	 %   {pp,apply(transfn,{apply(projopfn,{ppj,varl,j}),nth(varl,j-1)})});
-	 pp_theo := apply(projopfn,{ppj,varl,j,theo});
-	 pp := union(apply(transfn,{car pp_theo,nth(varl,j-1)}),pp);
-	 theo := union(cdr pp_theo,theo);
+	 pp_theo := apply(projopfn, {ppj, varl, j, theo});
+	 pp := union(apply(transfn,{car pp_theo, nth(varl, j-1)}), pp);
+	 theo := union(cdr pp_theo, theo)
       >>;
       return pp . theo
    end;
 
-procedure ofsf_polyoflevel(pp,varl,j);
-   % Polynomials of level j. . Returns a list of SF.
-   lto_select1(function(lambda p,varl,j;sfto_vardeg(p,nth(varl,j))>0),pp,{varl,j});
+procedure ofsf_polyoflevel(pp, varl, j);
+   % Polynomials of level [j]. Returns a List of SF.
+   lto_select1(function(lambda p, varl, j; sfto_vardeg(p, nth(varl, j)) > 0), pp, {varl, j});
 
-procedure ofsf_tgpolyoflevel(pp,varl,j);
-   % Tagged polynomials of level j. . Returns a list of TAG(SF).
-   lto_select1(function(lambda p,varl,j;sf_tgdeg(p,nth(varl,j))>0),pp,{varl,j});
-
-%%% --- Transformations on projection sets --- %%%
-% PAIR(LIST(SF),ID)->LIST(SF)
-
-symbolic operator rltransfac;
-procedure rltransfac(afl,x); rlprojamat(function(ofsf_transfac),afl,x);
-
-procedure ofsf_transfac(pp,x);
-   % Factorization transformation. [pp] is a LIST(SF), [x] is an ID.
-   % Returns a LIST(SF).
+procedure ofsf_transfac(pp, x);
+   % Factorization transformation. [pp] is a LIST(SF), [x] is an ID. Returns a
+   % LIST(SF).
    list2set for each p in pp join sf_factors p;
-
-procedure ofsf_tgtransfac(tgpp,x);
-   % Factorization transformation. [tgpp] is a LIST(TAG(SF)), [x] is an ID.
-   % Returns a SET(TAG(SF)). %%% more efficient: successive tgunion
-   tglist2set for each tgp in tgpp join
-      for each f in sf_factors tag_object tgp collect
-	 tag_(f,tag_taglist tgp);
 
 %%% --- Combined projection operators --- %%%
 
-procedure ofsf_projopco(aa,varl,j);
-   % Combined Collins' projection operator.
-   if j eq 2 then ofsf_projco2v(aa,nth(varl,j)) else ofsf_projco(aa,nth(varl,j));
-
-procedure ofsf_projopcov22(aa,varl,j);
-   % Combined Collins' projection operator.
-   if j eq 2 then ofsf_projco2v(aa,nth(varl,j)) else ofsf_projcov22(aa,nth(varl,j));
-
-procedure ofsf_projopcov23(aa,varl,j);
-   % Combined Collins' projection operator, version 2-3.
-   if j eq 2 then ofsf_projco2v(aa,nth(varl,j)) else ofsf_projcov23(aa,nth(varl,j));
-
-procedure ofsf_projopcov33(aa,varl,j);
-   % Combined Collins' projection operator, version 3-3.
-   if j eq 2 then
-      ofsf_projco2v(aa,nth(varl,j))
+procedure ofsf_projopcoho(aa, varl, j);
+   % Combined Collins' projection operator with Hong's improvement (based on
+   % Collins version 3).
+   if eqn(j, 2) then
+      ofsf_projco2v(aa, nth(varl, j))
+   else if eqn(j, 3) and !*rlcadmc3 then
+      ofsf_projmc(aa, nth(varl, j))
    else
-      ofsf_projcov33(aa,lto_take(varl,j));
+      ofsf_projcoho(aa, nth(varl, j));
 
-procedure lto_take(l,n);
-   % Take the first n elements of l. [l] is a LIST, [n] is a natural
-   % number. Returns a LIST.
-   if l and n>0 then car l . lto_take(cdr l,n-1);
-
-procedure lto_drop(l,n);
-   % Drop the first n elements of l. [l] is a LIST, [n] is a natural
-   % number. Returns a LIST.
-   if l and n>0 then lto_drop(cdr l,n-1) else l;
-
-procedure lto_init(l);
-   % Initial part of a list, with the last element removed, error if l
-   % is empty.
-   if cdr l then car l . lto_init cdr l;
-
-procedure ofsf_projopcoho(aa,varl,j);
-   % Combined Collins' projection operator with Hong's improvement
-   % (based on Collins version 3).
-   if j eq 2 then ofsf_projco2v(aa,nth(varl,j)) else
-      if j eq 3 and !*rlcadmc3 then ofsf_projmc(aa,nth(varl,j)) else
-      	 ofsf_projcoho(aa,nth(varl,j));
-
-procedure ofsf_projopcohogen(aa,varl,j,theo);
-   % Combined Collins' projection operator with Hong's improvement
-   % (based on Collins version 3).
-   if j eq 2 then ofsf_projco2v(aa,nth(varl,j)) . theo else
-      if j eq 3 and !*rlcadmc3 then ofsf_projmcgen(aa,nth(varl,j),theo) else
-      	 ofsf_projcohogen(aa,nth(varl,j),theo);
-
-% ofsf_projopcolg: legacy operator defined above
-
-procedure ofsf_projopmc(aa,varl,j);
-   % Combined McCallum's projection operator.
-   ofsf_projmc(aa,nth(varl,j));
-
-procedure ofsf_projopmcbr(aa,varl,j);
-   % Combined Brown's improvement to McCallum's projection operator.
-   ofsf_projmcbr(aa,nth(varl,j));
-
-procedure ofsf_tgprojopmcbr(aa,varl,j);
-   % Combined tagged Brown's improvement to McCallum's projection operator.
-   ofsf_tgprojmcbr(aa,nth(varl,j));
-
-%%% --- Projection operators --- %%%
-% PAIR(LIST(SF),ID)->LIST(SF)
+procedure ofsf_projopcohogen(aa, varl, j, theo);
+   % Combined Collins' projection operator with Hong's improvement (based on
+   % Collins version 3).
+   if eqn(j, 2) then
+      ofsf_projco2v(aa,nth(varl,j)) . theo
+   else if eqn(j, 3) and !*rlcadmc3 then
+      ofsf_projmcgen(aa, nth(varl, j), theo)
+   else
+      ofsf_projcohogen(aa, nth(varl, j), theo);
 
 asserted procedure notdomainp(f: Any): Boolean;
    not domainp f;
 
-symbolic operator rlprojco;
-procedure rlprojco(afl,x); rlprojamat(function(ofsf_projco),afl,x);
-
-procedure ofsf_projco(aa,x);
-   % Collin's projection operator, simplest version.
-   begin scalar bb,ll,ss1,ss2;
-      bb := ofsf_projcobb(aa,x);
-      ll := ofsf_projcoll(bb,x);
-      ss1 := ofsf_projcoss1(bb,x);
-      ss2 := ofsf_projcoss2(bb,x);
-      return list2set lto_select('notdomainp,union(union(ll,ss1),ss2))
-   end;
-
-symbolic operator rlprojcov22;
-procedure rlprojcov22(afl,x); rlprojamat(function(ofsf_projcov22),afl,x);
-
-procedure ofsf_projcov22(aa,x);
-   % Collin's projection operator, B and S1 version 2.
-   begin scalar bb,ll,ss1,ss2;
-      bb := ofsf_projcobbv2(aa,x);
-      ll := ofsf_projcoll(bb,x);
-      ss1 := ofsf_projcoss1(bb,x);
-      ss2 := ofsf_projcoss2v2(bb,x);
-      return list2set lto_select('notdomainp,union(union(ll,ss1),ss2))
-   end;
-
-symbolic operator rlprojcov23;
-procedure rlprojcov23(afl,x); rlprojamat(function(ofsf_projcov23),afl,x);
-
-procedure ofsf_projcov23(aa,x);
-   % Collin's projection operator, version 3. . Returns a SET(SF) with
-   % non-domain elements. Remark: union does not require the first
+procedure ofsf_projcoho(aa, x);
+   % Collin's projection operator with Hong's improvement to S2. Returns a
+   % SET(SF) with non-domain elements. Remark: union does not require the first
    % argument to be a set.
-   begin scalar bb,ll,ss1,ss2;
-      bb := ofsf_projcobbv2(aa,x);
-      ll := ofsf_projcoll(bb,x);
-      ss1 := ofsf_projcoss1(bb,x);
-      ss2 := list2set ofsf_projcoss2v3(bb,x);
-      return lto_select('notdomainp,union(union(ll,ss1),ss2))
-   end;
-
-symbolic operator rlprojcov33;
-procedure rlprojcov33(afl,l); rlprojamat2(function(ofsf_projcov33),afl,l);
-
-procedure ofsf_projcov33(aa,l);
-   % Collin's projection operator, version 3. . Returns a SET(SF) with
-   % non-domain elements.
-   begin scalar bb,ll,ss1,ss2,x;
-      bb := ofsf_projcobbv3(aa,l);
-      x := lto_last l;
-      ll := ofsf_projcoll(bb,x);
-      ss1 := ofsf_projcoss1(bb,x);
-      ss2 := list2set ofsf_projcoss2v3(bb,x);
-      return lto_select('notdomainp,union(union(ll,ss1),ss2))
-   end;
-
-procedure lto_last(l);
-   % Last element of a list. [l] is a non-empty list.
-   if cdr l then lto_last cdr l else car l;
-
-symbolic operator rlprojcoho;
-procedure rlprojcoho(afl,x); rlprojamat(function(ofsf_projcoho),afl,x);
-
-procedure ofsf_projcoho(aa,x);
-   % Collin's projection operator with Hong's improvement to S2. .
-   % Returns a SET(SF) with non-domain elements. Remark: union does
-   % not require the first argument to be a set.
-   begin scalar bb,ll,ss1,ss2;
-      bb := ofsf_projcobbv2(aa,x);
+   begin scalar bb, ll, ss1, ss2;
+      bb := ofsf_projcobbv2(aa, x);
       bb := ofsf_defpdel bb;
-      ll := ofsf_projcoll(bb,x);
+      ll := ofsf_projcoll(bb, x);
       ll := ofsf_defpdel ll;
-      ss1 := ofsf_projcoss1(bb,x);
+      ss1 := ofsf_projcoss1(bb, x);
       ss1 := ofsf_defpdel ss1;
-      ss2 := list2set ofsf_projhoss2(bb,x);
+      ss2 := list2set ofsf_projhoss2(bb, x);
       ss2 := ofsf_defpdel ss2;
-      return lto_select('notdomainp,union(union(ll,ss1),ss2))
+      return lto_select('notdomainp, union(union(ll, ss1), ss2))
    end;
 
 procedure ofsf_defpdel(l);
-   % Definite predicate deletion. [l] is a list of SFs. Returns a list
-   % of SFs. Delete all elements from [l] for which surep can verify
-   % definiteness.
-      for each f in l join
-	 if not ofsf_surep(ofsf_0mk2('neq,f),nil) then
-	    {f}
-	 else if !*rlverbose then <<
-	    ioto_prin2 "*";
-	    nil
-	 >>;
+   % Definite predicate deletion. [l] is a list of SFs. Returns a list of SFs.
+   % Delete all elements from [l] for which surep can verify definiteness.
+   for each f in l join
+      if not ofsf_surep(ofsf_0mk2('neq, f), nil) then
+	 {f}
+      else if !*rlverbose then <<
+	 ioto_prin2 "*";
+	 nil
+      >>;
 
-%symbolic operator rlprojcohogen;
-%procedure rlprojcohogen(afl,x); rlprojamat(function(ofsf_projcohogen),afl,x);
-
-procedure ofsf_projcohogen(aa,x,theo);
-   % Collin's projection operator with Hong's improvement to S2,
-   % generic version. . Returns a SET(SF) with non-domain elements.
-   % Remark: union does not require the first argument to be a set.
+procedure ofsf_projcohogen(aa, x, theo);
+   % Collin's projection operator with Hong's improvement to S2, generic
+   % version. Returns a SET(SF) with non-domain elements. Remark: union does not
+   % require the first argument to be a set.
    begin scalar bb_theo,bb,ll,ss1_theo,ss1,ss2_theo,ss2;
       % Redukta
       bb_theo := ofsf_projcobbv2gen(aa,x,theo);
@@ -1328,155 +852,53 @@ procedure ofsf_projcohogen(aa,x,theo);
       ss2 := list2set car ss2_theo;
       theo := cdr ss2_theo;
       return lto_select('notdomainp,union(union(ll,ss1),ss2)) . theo
-      %return lto_select(function(lambda p;notdomainp car p),
-%	 pairunion(pairunion(ll . nil,ss1_theo),ss2_theo))
+      % return lto_select(function(lambda p;notdomainp car p),
+      % 	 pairunion(pairunion(ll . nil,ss1_theo),ss2_theo))
    end;
 
-symbolic operator rlprojco2v;
-procedure rlprojco2v(afl,x); rlprojamat(function(ofsf_projco2v),afl,x);
-
-procedure ofsf_projco2v(aa,x);
-   % Collins' projection operator for two variable case. Returns a
-   % LIST(SF) without domain elements.
-   begin scalar ll,dd,rr,jj1;
-      if ofsf_cadverbosep() then ioto_prin2 "[projco2v ";
-      ll := ofsf_projcoll(aa,x);
-      dd := for each a in aa join if sfto_vardeg(a,x)>=2 then {sf_discriminant(a,x)};
+procedure ofsf_projco2v(aa, x);
+   % Collins' projection operator for two variable case. Returns a LIST(SF)
+   % without domain elements.
+   begin scalar ll, dd, rr, jj1;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 "[projco2v ";
+      ll := ofsf_projcoll(aa, x);
+      dd := for each a in aa join
+	 if sfto_vardeg(a, x) >= 2 then
+	    {sf_discriminant(a, x)};
       rr := for each a1 on aa join for each a2 in cdr aa collect
-	 sfto_resf(car a1,a2,x);
-      jj1 := list2set lto_remove('domainp,union(union(ll,dd),rr));
-      if ofsf_cadverbosep() then ioto_prin2 {length jj1,"]"};
+	 sfto_resf(car a1, a2, x);
+      jj1 := list2set lto_remove('domainp, union(union(ll, dd), rr));
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {length jj1, "]"};
       return jj1
    end;
 
-symbolic operator rlprojmc;
-procedure rlprojmc(afl,x); rlprojamat(function(ofsf_projmc),afl,x);
-
-procedure ofsf_projmc(aa,x);
-   % McCallum's projection operator for squarefree basis. . Returns a
-   % LIST(SF).
-   begin scalar ll,dd,rr;
-      %ll := ofsf_projmcll(aa,x);
-      ll := ofsf_projcoll(ofsf_projcobbv2(aa,x),x);
-      dd := for each a in aa collect sf_discriminant(a,x);
+procedure ofsf_projmc(aa, x);
+   % McCallum's projection operator for squarefree basis. Returns a List of SF.
+   begin scalar ll, dd, rr;
+      % ll := ofsf_projmcll(aa, x);
+      ll := ofsf_projcoll(ofsf_projcobbv2(aa, x), x);
+      dd := for each a in aa collect
+	 sf_discriminant(a, x);
       rr := for each a1 on aa join for each a2 in cdr aa collect
-	 sfto_resf(car a1,a2,x);
-      return list2set lto_remove('domainp,union(union(ll,dd),rr))
+	 sfto_resf(car a1, a2, x);
+      return list2set lto_remove('domainp, union(union(ll, dd), rr))
    end;
 
-procedure ofsf_projmcgen(aa,x,theo);
-   % McCallum's projection operator for squarefree basis, generic
-   % version. . Returns a LIST(SF).
-   begin scalar bb_theo,ll,dd,rr;
-      %ll := ofsf_projmcll(aa,x);
-      bb_theo := ofsf_projcobbv2gen(aa,x,theo);
-      ll := ofsf_projcoll(car bb_theo,x);
-      dd := for each a in aa collect sf_discriminant(a,x);
+procedure ofsf_projmcgen(aa, x, theo);
+   % McCallum's projection operator for squarefree basis, generic version.
+   % Returns a LIST(SF).
+   begin scalar bb_theo, ll, dd, rr;
+      % ll := ofsf_projmcll(aa, x);
+      bb_theo := ofsf_projcobbv2gen(aa, x, theo);
+      ll := ofsf_projcoll(car bb_theo, x);
+      dd := for each a in aa collect
+	 sf_discriminant(a, x);
       rr := for each a1 on aa join for each a2 in cdr aa collect
-	 sfto_resf(car a1,a2,x);
-      return list2set lto_remove('domainp,union(union(ll,dd),rr)) . cdr bb_theo
+	 sfto_resf(car a1, a2, x);
+      return list2set lto_remove('domainp, union(union(ll,dd),rr)) . cdr bb_theo
    end;
-
-%symbolic operator rltgprojmc;
-%procedure rltgprojmc(afl,x); rlprojamat(function(ofsf_tgprojmc),afl,x);
-
-procedure ofsf_tgprojmc(tgaa,x);
-   % McCallum's projection operator for squarefree basis, tagged
-   % version. [tgaa] is a LIST(TAG(SF)). Returns a LIST(TAG(SF)).
-   begin scalar aa,tgll,tgdd,tgrr;
-      % strip off all the tags
-      aa := for each te in tgaa join
-	 if not domainp tag_object te then {tag_object te};
-      % tag the leading coefficients
-      tgll := for each f in ofsf_projmcll(aa,x) collect
-	 tag_(sf_lc(f,x),{'lc});
-      % tag the discriminants
-      tgdd := for each a in aa collect tag_(sf_discriminant(a,x),{'dis});
-      % tag the resultants
-      tgrr := for each a1 on aa join for each a2 in cdr aa collect
-	 tag_(sfto_resf(car a1,a2,x),{'res});
-      return lto_remove('tgdomainp,
-	 tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
-   end;
-
-symbolic operator rlprojmcbr;
-procedure rlprojmcbr(afl,x); rlprojamat(function(ofsf_projmcbr),afl,x);
-
-procedure ofsf_projmcbr(aa,x);
-   % Brown's improvement to McCallum's projection operator for
-   % squarefree basis. . Returns a LIST(SF).
-   begin scalar bb,ll,dd,rr;
-      bb := lto_remove('domainp,aa);
-      ll := for each f in bb collect sf_lc(f,x);
-      dd := for each a in bb collect sf_discriminant(a,x);
-      rr := for each a1 on bb join for each a2 in cdr bb collect
-	 sfto_resf(car a1,a2,x);
-      return list2set lto_remove('domainp,union(union(ll,dd),rr))
-   end;
-
-%symbolic operator rltgprojmcbr;
-%procedure rltgprojmcbr(afl,x); rlprojamat(function(ofsf_tgprojmcbr),afl,x);
-
-procedure ofsf_tgprojmcbr(tgaa,x);
-   % Brown's improvement to McCallum's projection operator for
-   % squarefree basis, tagged version. [tgaa] is a LIST(TAG(SF)).
-   % Returns a LIST(TAG(SF)).
-   begin scalar bb,tgll,tgdd,tgrr;
-      %      bb := lto_remove('tgdomainp,tgaa);
-      % strip off all the tags
-      bb := for each te in tgaa join
-	 if not domainp tag_object te then {tag_object te};
-      % tag the leading coefficients
-      tgll := for each f in bb collect tag_(sf_lc(f,x),{'lc});
-      % tag the discriminants
-      tgdd := for each a in bb collect tag_(sf_discriminant(a,x),{'dis});
-      % tag the resultants
-      tgrr := for each a1 on bb join for each a2 in cdr bb collect
-	 tag_(sfto_resf(car a1,a2,x),{'res});
-      return lto_remove('tgdomainp,
-	 tgunion(tgll,tgunion(tgdd,tglist2set tgrr)) )
-   end;
-
-%%% --- Projection subsets --- %%%
-% PAIR(LIST(SF),ID)->LIST(SF)
-
-procedure rlprojamat(fn,afl,x);
-   % Algebraic mode access template. [fn] is a function of type
-   % (LIST(SF),ID)->(LIST(SF), [afl] is a list of algebraic forms
-   % (lisp prefix) and [x] is an identifier. Returns a list of
-   % algebraic forms.
-   begin scalar oldorder,w;
-      oldorder := setkorder {x};
-      w := apply(fn,{for each af in cdr afl collect numr simp af,x});
-      w := 'list . for each f in w collect prepf f;
-      setkorder(oldorder);
-      return w
-   end;
-
-% - Collins -%
-
-symbolic operator rlprojcobb;
-procedure rlprojcobb(afl,x); rlprojamat(function(ofsf_projcobb),afl,x);
-
-procedure ofsf_projcobb(aa,x);
-   % Collins' projection set of redukta R (straightforward version).
-   % [aa] is a list of SF, x is an identifier. Returns a set of SF.
-   % Note that the output is compliant with ofsf_projcoss1v3.
-   for each f in aa join ofsf_projcobb1(f,x);
-
-procedure ofsf_projcobb1(f,x);
-   % Collins' redukta (straightworward) subroutine R1. [f] is a SF,
-   % [x] is an identifier. Returns a list of SF with positive total
-   % degree, the list is ordered such that the degrees are descending.
-   begin scalar redl;
-      redl := nil;
-      %while sfto_vardeg(f,x)>=1 do << redl := f . redl; f := red(f) >>;
-      while not domainp f do << redl := f . redl; f := sf_red(f,x) >>;
-      return reversip redl
-   end;
-
-symbolic operator rlprojcobbv2;
-procedure rlprojcobbv2(afl,x); rlprojamat(function(ofsf_projcobbv2),afl,x);
 
 procedure ofsf_projcobbv2(aa,x);
    % Collins' projection set of redukta Rv2 (version 2). [aa] is a
@@ -1490,13 +912,11 @@ procedure ofsf_projcobbv2(aa,x);
       return bb;
    end;
 
-
 procedure ofsf_projcobb1v2(f,x);
-   % Collins' redukta (version 2) subroutine R1v2. [f] is a
-   % SF, [x] is an identifier. Returns a list of SF with positive
-   % degree in [x], the list is ordered such that the degrees are
-   % descending; furthermore, the first reduktum with domain
-   % coefficient, is the last entry in the list.
+   % Collins' redukta (version 2) subroutine R1v2. [f] is a SF, [x] is an
+   % identifier. Returns a list of SF with positive degree in [x], the list is
+   % ordered such that the degrees are descending; furthermore, the first
+   % reduktum with domain coefficient, is the last entry in the list.
    begin scalar rr1,rr1p;
       rr1 := ofsf_projcobb1(f,x);
       if null rr1 then return rr1;
@@ -1507,87 +927,21 @@ procedure ofsf_projcobb1v2(f,x);
       return reversip rr1p;
    end;
 
-symbolic operator rlprojcobbv3;
-procedure rlprojcobbv3(afl,l); rlprojamat2(function(ofsf_projcobbv3),afl,l);
-
-procedure ofsf_projcobbv3(aa,l);
-   for each f in aa join ofsf_projcobb1v3(f,l);
-
-procedure ofsf_projcobb1v3(f,varl);
-   % Collins' redukta (version 2) subroutine R1v3. [f] is a SF, [varl]
-   % is a list of identifiers. Returns a list of SF with positive
-   % degree in [x], the list is ordered such that the degrees are
-   % descending;
-   begin scalar rr2,rr2p;
-      rr2 := ofsf_projcobb1v2(f,nth(varl,length varl));
-      if null rr2 then return rr2;
-      repeat <<
-	 rr2p := car rr2 . rr2p;
-	 rr2 := cdr rr2;
-      >> until null rr2 or sfto_zerodimp(rr2p,varl);
-      return reversip rr2p;
+procedure ofsf_projcobb1(f,x);
+   % Collins' redukta (straightworward) subroutine R1. [f] is a SF,
+   % [x] is an identifier. Returns a list of SF with positive total
+   % degree, the list is ordered such that the degrees are descending.
+   begin scalar redl;
+      %while sfto_vardeg(f,x)>=1 do << redl := f . redl; f := red(f) >>;
+      while not domainp f do <<
+	 push(f, redl);
+	 f := sf_red(f, x)
+      >>;
+      return reversip redl
    end;
-
-symbolic operator rlzerodimp;
-procedure rlzerodimp(afl,l);
-   % . [afl] is a list of algebraic forms (lisp prefix) and [l] is an
-   % list of identifiers. Returns a natural number or the empty set {}.
-   begin scalar oldorder,w;
-      oldorder := setkorder reverse cdr l;
-      w := apply(function(sfto_zerodimp1),
-	 {for each af in cdr afl collect numr simp af});
-      setkorder(oldorder);
-      return if null w then '(list) else w
-   end;
-
-procedure sfto_zerodimp(l,varl);
-   % Zero dimensional predicate. [l] is a list of SF, varl is a list
-   % of IDs. Returns a natural number (an upper limit for the
-   % dimension) or nil (if the ideal is not zero dimensional).
-   begin scalar oldorder,res;
-      oldorder := setkorder reverse varl;
-      res := sfto_zerodimp1(l);
-      setkorder oldorder;
-      return res
-   end;
-
-procedure sfto_zerodimp1(l);
-   % Zero dimensional predicate. [l] is a list of SF. Returns a
-   % natural number (an upper bound for the dimension) or nil (if the
-   % ideal is not zero dimensional).
-   begin scalar svkord,oldtorder,basis,htl,minexpl;
-      svkord := kord!*;
-      oldtorder := cdr torder {'list . kord!*,'revgradlex}; % gb notwendig
-      basis := sfto_groebnerf l;
-      torder oldtorder;
-      kord!* := svkord;
-      htl := for each f in basis collect sfto_hterm f;
-      minexpl := for each x in kord!* collect sfto_zerodimp2(x,htl);
-      if memq(nil,minexpl) then return nil;
-      return foldr1(function(lambda a,b;a*b),minexpl);
-   end;
-
-procedure sfto_zerodimp2(x,htl);
-   % . x is an ID, [htl] is a list of SF (head terms). Returns a
-   % natural number or nil.
-   begin scalar expl;
-      expl := nil;
-      for each ht in htl do
-	 if domainp ht then
-	    expl := 0 . expl
-	 else if (mvar ht eq x and domainp sf_lc(ht,x)) then
-	    expl := sfto_vardeg(ht,x) .expl;
-      if null expl then return nil else
-	 return foldr1(function(lambda a,b;if a<b then a else b),expl);
-   end;
-
-procedure sfto_hterm(f);
-   % Highest term. f is a SF. Returns a SF.
-   if domainp f then f
-   else multf(sf_lc(f,mvar f),sfto_kexp(mvar f,sfto_vardeg(f,mvar f)));
 
 procedure ofsf_projcobbv2gen(aa,x,theo);
-   % . . Returns as dotted pair a LIST(SF) and a theory.
+   % Returns as dotted pair a LIST(SF) and a theory.
    begin scalar bb,bb_theo;
       if ofsf_cadverbosep() then ioto_prin2 "(B2gen: ";
       bb := for each f in aa join <<
@@ -1603,7 +957,8 @@ procedure ofsf_projcobbv2gen1(f,x,theo);
    % generic reducta for 1 poly. .Returns as dotted pair a LIST(SF)
    % and a theory.
    begin scalar redl, finished;
-      if domainp f then return nil;
+      if domainp f then
+	 return nil;
       repeat <<
 	 redl := f . redl; f := sf_red(f,x);
 	 if domainp f then << % f can be nil here
@@ -1629,9 +984,6 @@ procedure ofsf_cadvalassp(bvl,sf);
    % containing [sf] is valid. Depends on switch [!*rlqegenct].
    (!*rlqegenct or sfto_monfp sf) and null intersection(bvl,kernels sf);
 
-symbolic operator rlprojcoll;
-procedure rlprojcoll(afl,x); rlprojamat(function(ofsf_projcoll),afl,x);
-
 procedure ofsf_projcoll(bb,x);
    % Collins' projection set of leading coefficients L(B). [bb] is a
    % list of SF, [x] is an identifier. Returns a list of SF.
@@ -1643,69 +995,12 @@ procedure ofsf_projcoll(bb,x);
       return ll;
    end;
 
-symbolic operator rlprojmcll;
-procedure rlprojmcll(afl,x); rlprojamat(function(ofsf_projmcll),afl,x);
-
 procedure ofsf_projmcll(aa,x);
    % McCallum's projection set of leading coefficients L(A). [aa] is a
    % list of SF, [x] is an identifier. Returns a list of SF.
    for each f in aa join
       for each cd in sf_cdl(f,x) join
 	 if not domainp car cd then {car cd};
-
-procedure sf_cdl(f,x);
-   % Coefficient and degree list. [f] is a SF, [x] is an ID. Retuns a
-   % LIST(PAIR(SF,INT)).
-   if sfto_vardeg(f,x)>=1 then
-      (lc f . ldeg f) . sf_cdl(red f,x)
-   else
-      {(f . 0)};
-
-procedure sf_fromcdl(cdl,k);
-   % Standard form from coefficient and degree list. [cdl] is a
-   % non-empty LIST(PAIR(SF,INT)), x in an ID. Returns a SF.
-   begin scalar f;
-      if null cdr cdl then return caar cdl;
-      f := sfto_kexp(k,cdar cdl);
-      set_lc(f, caar cdl);
-      set_red(f, sf_fromcdl(cdr cdl,k));
-      return f
-   end;
-
-procedure sf_pscs(a,b,x);
-   % All pscs. . Returns a list of SF.
-   for k := 0 : min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1 collect sf_psc(a,b,x,k);
-
-procedure sf_pscsgen(a,b,x,theo);
-   % All pscs, generic version. . Returns as a dotted pair a list of
-   % SF and a theory.
-   begin scalar k,pscl,finished;
-      if not !*rlpscsgen then return sf_pscs(a,b,x) . theo;
-      k := 0;
-      if k>min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1 then return nil . theo;
-      repeat <<
-	 pscl := sf_psc(a,b,x,k) . pscl; k := k+1;
-	 if k>min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1 then <<
-	    if ofsf_cadverbosep() then ioto_prin2 "(end)"
-	 >> else if ofsf_surep(ofsf_0mk2('neq,car pscl),theo) then <<
-	    if ofsf_cadverbosep() then if domainp car pscl then
-	       ioto_prin2 "(dom)" else ioto_prin2 "(=>)";
-	    finished := t
-	 >> else if ofsf_cadvalassp(ofsf_cadbvl!*,car pscl) then <<
-	    if ofsf_cadverbosep() then ioto_prin2 "(>th)";
-	    theo := ofsf_0mk2('neq,car pscl) . theo;
-	    finished := t
-	 >>;
-      >> until finished or k>min(sfto_vardeg(a,x),sfto_vardeg(b,x))-1;
-%      if ofsf_cadverbosep() then ioto_prin2 {" (- ",min(sfto_vardeg(a,x),sfto_vardeg(b,x))-k,") "};
-      return pscl . theo;
-   end;
-
-procedure sf_diff(f,x);
-   numr difff(f,x);
-
-symbolic operator rlprojcoss1;
-procedure rlprojcoss1(afl,x); rlprojamat(function(ofsf_projcoss1),afl,x);
 
 procedure ofsf_projcoss1(bb,x);
    % Collins' projection set S1(A). [bb] is a list of SF, [x] is an
@@ -1716,9 +1011,6 @@ procedure ofsf_projcoss1(bb,x);
       if ofsf_cadverbosep() then ioto_prin2 {length ss1,") "};
       return ss1;
    end;
-
-%symbolic operator rlprojcoss1gen;
-%procedure rlprojcoss1gen(afl,x); rlprojamat(function(ofsf_projcoss1gen),afl,x);
 
 procedure ofsf_projcoss1gen(bb,x,theo);
    % Collins' projection set S1(A) generic version. [bb] is a list of
@@ -1732,40 +1024,6 @@ procedure ofsf_projcoss1gen(bb,x,theo);
       >>;
       if ofsf_cadverbosep() then ioto_prin2 {length ss,") "};
       return ss . theo;
-   end;
-
-symbolic operator rlprojcoss2;
-procedure rlprojcoss2(afl,x); rlprojamat(function(ofsf_projcoss2),afl,x);
-
-procedure ofsf_projcoss2(bb,x);
-   % Collins' projection set S1 simplest version. [bb] is a list of
-   % SF, [x] is an identifier. Returns a list of SF.
-   for each b1 in bb join for each b2 in cdr bb join sf_pscs(b1,b2,x);
-
-symbolic operator rlprojcoss2v2;
-procedure rlprojcoss2v2(afl,x); rlprojamat(function(ofsf_projcoss2v2),afl,x);
-
-procedure ofsf_projcoss2v2(bb,x);
-   % Collins' projection set version 2. [bb] is a list of SF, [x] is an
-   % identifier. Returns a list of SF.
-   for each b1 on bb join for each b2 in cdr bb join sf_pscs(car b1,b2,x);
-
-symbolic operator rlprojcoss2v3;
-procedure rlprojcoss2v3(afl,x); rlprojamat(function(ofsf_projcoss2v3),afl,x);
-
-procedure ofsf_projcoss2v3(bb,x);
-   % Collins' projection set S1 version 3. [bb] is a list of SF, [x]
-   % is an identifier. Returns a list of SF. Note that for this to
-   % work properly, the list bb of reducta has to look like
-   % {f,red(f),red(red(f)),...,g,red(g),red(red(g)),...}
-   begin scalar ss2,redll;
-      % 1. break bb up into sets containing an imput poly and its reducta
-      redll := ofsf_splitredl(bb,x);
-      % 2.
-      ss2 := for each ll on redll join for each l in cdr ll join
-	 % car ll and l are lists of SF
-	 for each b1 in car ll join for each b2 in l join sf_pscs(b1,b2,x);
-      return ss2
    end;
 
 procedure ofsf_splitredl(bb,x);
@@ -1807,9 +1065,6 @@ procedure ofsf_splitredlordp(l1,l2);
       >>;
       return res
    end;
-
-symbolic operator rlprojhoss2;
-procedure rlprojhoss2(afl,x); rlprojamat(function(ofsf_projhoss2),afl,x);
 
 procedure ofsf_projhoss2(bb,x);
    % Hong's projection set S1 version 3. [bb] is a list of SF, [x]
