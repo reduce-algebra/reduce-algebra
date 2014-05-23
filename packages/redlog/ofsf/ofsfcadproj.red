@@ -45,27 +45,28 @@ switch rlpscsgen;
 on1 'rlpscsgen;
 
 module ofsfcadproj;
-% CAD projection. [ffr] is a list of SF over identifiers contained in [varl].
-% [varl] is a list of identifiers (xr, ..., x1). [k] is an integer. Returns a
-% list of list of SF. The kernel order is expected to be (xr, ..., x1), i.e.,
-% variable [xr] is the smallest variable. All elements of [ffr] are ordered
-% w.r.t. this kernel order. If the switch rlcadaproj is turned off, augmented
-% projection will never be made. Otherwise, if rlcadaproj is turned on: If
-% rlcadaprojalways is turned off, augemented projection is used for generating
-% $F_{k-1},...,F_1$, otherwise, if rlcadaprojalways is turned on, augmented
-% projection is used for $F_{r-1},...,F_1$.
-% Intuition: Projection phase, maps [ffr]to (F1, ..., Fr).
-% Caveat: Below [varl] is $x_r, ..., x2$ ???
+% CAD projection. The following are given:
+% a) [pp]: a SFList over kernels contained in [varl]
+% b) [varl]: KernelList  (x_1, ..., x_r) [k] is an integer.
+% The whole projection code assumes that
+% a) the kernel order is (x_r, ..., x_1), i.e., [x_r] is the smallest variable
+% b) all elements of [pp] are ordered w.r.t. this kernel oder
+% The order of projection is from right to left, i.e., the first projection is
+% computed w.r.t. [x_r].
+
+% The level of a polynomial [p] in our context here is not an Integer but either
+% a Kernel or [nil]. If [p] contains variables, then the level of [p] is [mvar
+% p]. Otherwise it is [nil].
 
 % TODO: What types for functions (code pointers, lambda, things which are used
 % by the apply function) are there?
 % TODO: Do we need a new data type "tagged standard form"?
 
 struct MtxSF checked by MtxSFP;  % Matrix with Standard Form Entries
-struct SFList checked by SFListP;
-struct KernelList checked by KernelListP;
+struct SFList checked by SFListP;  % List of SF
+struct KernelList checked by KernelListP;  % List of Kernel
 
-% TODO: Be more precise here. MtxSF is a list of lists of SF.
+% TODO: Be more precise here. MtxSF is a List of SFList.
 procedure MtxSFP(s);
    listp s;
 
@@ -76,15 +77,6 @@ procedure KernelListP(s);
    listp s and (null s or assert_kernelp car s and KernelListP cdr s);
 
 %%% --- projection order code --- %%%
-
-asserted procedure ofsf_cadvbl(phi: Formula): List;
-   % Variable-block-list. Checks if [phi] is in PNF. Returns a list of lists
-   % [[xr..][..xk]..[xk..x1]] of Kernels.
-   <<
-      if not cl_prenexp phi then
-      	 rederr "Formula is not in prenex normal form, please use rlpnf beforehand.";
-      ofsf_cadvbl1 phi
-   >>;
 
 asserted procedure ofsf_cadvbl1(phi: Formula): List;
    % Variable-block-list. [phi] is a prenex fof. Returns a list of lists
@@ -157,7 +149,7 @@ asserted procedure ofsf_cadporder0(phi: Formula, rate, betterp): List;
 	 for each x in cll do
 	    ioto_prin2 {" ", x, " ->"}
       >>;
-      cll := ofsf_cadporder1(ofsf_transfac(cl_terml phi, nil), cll, rate, betterp);
+      cll := ofsf_cadporder1(ofsf_transfac cl_terml phi, cll, rate, betterp);
       if !*rlverbose then <<
       	 ioto_tprin2 {"++ optimized order: ->"};
 	 for each x in cll do
@@ -313,28 +305,27 @@ procedure ofsf_cadporder!-project1(tl,x,lvarl,j,theo);
       pset :=  if !*rlqegen then <<
 	 w := ofsf_projopcohogen(ffj,reverse lvarl,j,theo);
 	 theo := cdr w;
-	 ofsf_transfac(car w,x)
+	 ofsf_transfac car w
       >> else
-	 ofsf_transfac(ofsf_projopcoho(ffj,reverse lvarl,j),x);
+	 ofsf_transfac ofsf_projopcoho(ffj,reverse lvarl,j);
       return (pset . ffi)
    end;
 
 %%% --- projection code --- %%%
 
-% What the projection phase expects from caddata: aa, aaplus, varl, k.
+% What the projection phase expects from caddata: aa, aaplus, varl, r, k.
 % What is filled in: ff, hh.
 
 asserted procedure ofsf_cadprojection1(cd: CadData): Any;
    % CAD projection phase.
-   begin scalar varl, aa, ff, hh, jj, ffid, pp, theo, w, tag, tagl;
+   begin scalar varl, aa, ff, hh, ffid, pp, theo, w, tag, tagl;
       integer k, r, l;
       varl := caddata_varl cd;  % {x1, ..., xr}
       k := caddata_k cd;  % the number of free variables
       r := length varl;  % the number of all variables
-      aa := getv(caddata_ff cd, r);  % polynomials occuring in the input formula
+      aa := append(caddata_aa cd, caddata_aaplus cd);  % polynomials occuring in the input formula
       ff := mkvect r;  % here go the projection factors
       hh := mkvect r;  % here go the tagged projection factors
-      jj := mkvect r;  % here go the projection polynomials
       ffid := mkvect r;  % here go the id's of the projection polynomials
       % hack: generic cad: new projection
       if !*rlqegen then <<
@@ -344,9 +335,7 @@ asserted procedure ofsf_cadprojection1(cd: CadData): Any;
       >> else
       	 pp := ofsf_projsetcoho(aa, varl);
       ofsf_distribute(pp, ff, varl);
-      ofsf_distribute(pp, jj, varl);  % unused
       caddata_putff(cd, ff);
-      caddata_putjj(cd, jj);
       for j := 1 : r do <<
 	 l := 0;
 	 tagl := nil;
@@ -544,12 +533,14 @@ asserted procedure sf_diff(f: SF, x: Kernel): SF;
 asserted procedure lto_select(fn: Any, l: List): List;
    % Select elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
    % a list of ALPHA. Returns a list of ALPHA.
-   lto_select1(fn,l,nil);
+   lto_select1(fn, l, nil);
 
 asserted procedure lto_select1(fn: Any, l: List, xarl: List): List;
    % Select elements from a list. [fn] is a function with length([xarl])+1
-   % arguments, [l] and [xarl] are LIST. Returns a LIST.
-   for each a in l join if apply(fn,a . xarl) then {a};
+   % arguments, [l] and [xarl] are LIST.
+   for each a in l join
+      if apply(fn, a . xarl) then
+	 {a};
 
 asserted procedure lto_remove(fn: Any, l: List): List;
    % Remove elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
@@ -558,8 +549,10 @@ asserted procedure lto_remove(fn: Any, l: List): List;
 
 asserted procedure lto_remove1(fn: Any, l: List, xarl: List): List;
    % Remove elements from a list. [fn] is a function with length([xarl])+1
-   % arguments , [l] and [xarl] are LIST. Returns a LIST.
-   for each a in l join if not apply(fn, a . xarl) then {a};
+   % arguments , [l] and [xarl] are LIST.
+   for each a in l join
+      if not apply(fn, a . xarl) then
+	 {a};
 
 asserted procedure lto_rmpos(lst: List, posl: List): List;
    % Remove positions. [lst] is a List. [posl] is a List of Integers.
@@ -597,9 +590,9 @@ asserted procedure mtx_put(mtx: MtxSF, l: Integer, c: Integer, a: SF): Any;
    nth(nth(mtx, l), c) := a;
 
 asserted procedure mtx_rmlscs(mtx: MtxSF, lines: List, columns: List): MtxSF;
-   % Matrix remove lines and columns. [mtx] is a MTX, [lines] and [columns] are
-   % LIST(INT). Returns a MTX.
-   for each l in lto_rmpos(mtx,lines) collect lto_rmpos(l, columns);
+   % Matrix remove lines and columns. [lines] and [columns] are LIST(INT).
+   for each l in lto_rmpos(mtx, lines) collect
+      lto_rmpos(l, columns);
 
 asserted procedure mtx_sylvester(f: SF, g: SF, x: Kernel): MtxSF;
    % Sylvester matrix. [f], [g] are non-zero. Returns a MTX (m+n lines and
@@ -715,73 +708,70 @@ procedure ofsf_projset(transfn, projopfn, aa, varl);
    ofsf_projset1(transfn, projopfn, aa, varl, 'ofsf_polyoflevel, 'union);
 
 procedure ofsf_projset1(transfn, projopfn, aa, varl, polyoflevelfn, unionfn);
-   begin scalar r, pp, w, ppj;
+   begin scalar r, pp, cvar, w, ppj;
       r := length varl;
-      pp := apply(transfn, {aa, nth(varl, r)});
+      pp := apply(transfn, {aa});
       for j := r step -1 until 2 do <<
+	 cvar := nth(varl, j);
 	 if ofsf_cadverbosep() then <<
 	    ioto_tprin2 {"+ projection F", j, " -> F", j-1};
-	    ioto_tprin2t {"+ variable: ", nth(varl, j), ", variables left: ", j-1}
-	    % ioto_tprin2t {", #P = ", length pp}
+	    ioto_tprin2t {"+ variable: ", cvar}
 	 >>;
-	 ppj := apply(polyoflevelfn, {pp, varl, j});
-	 w := apply(transfn, {apply(projopfn, {ppj, varl, j}), nth(varl, j-1)});
+	 ppj := apply(polyoflevelfn, {pp, cvar});
+	 w := apply(transfn, {apply(projopfn, {ppj, cvar, j})});
 	 pp := apply(unionfn, {pp, w})
       >>;
       return pp
    end;
 
-% ('ofsf_transfac, 'ofsf_projopcohogen, aa, varl, theo);
 procedure ofsf_projsetgen(transfn, projopfn, aa, varl, theo);
-   begin scalar r, pp, ppj, pp_theo;
+   begin scalar r, pp, cvar, ppj, pp_theo;
       r := length varl;
-      pp := apply(transfn, {aa, nth(varl, r)});
+      pp := apply(transfn, {aa});
       for j := r step -1 until 2 do <<
+	 cvar := nth(varl, j);
 	 if ofsf_cadverbosep() then <<
 	    ioto_tprin2 {"+ genprojection F", j, " -> F", j-1};
-	    ioto_tprin2t {", variable: ", nth(varl, j), ", variables left: ", j-1}
-	    % ioto_tprin2t {", #P = ", length pp}
+	    ioto_prin2t {", variable: ", nth(varl, j)}
 	 >>;
-	 ppj := ofsf_polyoflevel(pp, varl, j);
-	 % pp := apply(unionfn,
-	 %    {pp, apply(transfn, {apply(projopfn, {ppj, varl, j}), nth(varl, j-1)})});
-	 pp_theo := apply(projopfn, {ppj, varl, j, theo});
-	 pp := union(apply(transfn, {car pp_theo, nth(varl, j-1)}), pp);
+	 ppj := ofsf_polyoflevel(pp, cvar);
+	 pp_theo := apply(projopfn, {ppj, cvar, j, theo});
+	 pp := union(apply(transfn, {car pp_theo}), pp);
 	 theo := union(cdr pp_theo, theo)
       >>;
       return pp . theo
    end;
 
-asserted procedure ofsf_polyoflevel(pp: SFList, varl: KernelList, j: Integer): SFList;
-   % Polynomials of level [j].
-   lto_select1(
-      function(lambda p, varl, j; sfto_vardeg(p, nth(varl, j)) > 0), pp, {varl, j});
+asserted procedure ofsf_polyoflevel(aa: SFList, x: Kernel): SFList;
+   for each f in aa join
+      if sfto_mvartest(f, x) then
+	 {f};
 
-asserted procedure ofsf_transfac(pp: SFList, x: Kernel): SFList;
+asserted procedure ofsf_transfac(pp: SFList): SFList;
    % Factorization transformation.
    list2set for each p in pp join sf_factors p;
 
 %%% --- Combined projection operators --- %%%
 
-asserted procedure ofsf_projopcoho(aa: SFList, varl: KernelList, j: Integer): SFList;
+asserted procedure ofsf_projopcoho(aa: SFList, var: Kernel, j: Integer): SFList;
    % Combined Collins' projection operator with Hong's improvement based on
    % Collins version 3.
    if eqn(j, 2) then
-      ofsf_projco2v(aa, nth(varl, j))
+      ofsf_projco2v(aa, var)
    else if eqn(j, 3) and !*rlcadmc3 then
-      ofsf_projmc(aa, nth(varl, j))
+      ofsf_projmc(aa, var)
    else
-      ofsf_projcoho(aa, nth(varl, j));
+      ofsf_projcoho(aa, var);
 
-asserted procedure ofsf_projopcohogen(aa: SFList, varl: KernelList, j: Integer, theo: List): DottedPair;
+asserted procedure ofsf_projopcohogen(aa: SFList, var: Kernel, j: Integer, theo: List): DottedPair;
    % Combined Collins' projection operator with Hong's improvement (based on
    % Collins version 3).
    if eqn(j, 2) then
-      ofsf_projco2v(aa, nth(varl,j)) . theo
+      ofsf_projco2v(aa, var) . theo
    else if eqn(j, 3) and !*rlcadmc3 then
-      ofsf_projmcgen(aa, nth(varl, j), theo)
+      ofsf_projmcgen(aa, var, theo)
    else
-      ofsf_projcohogen(aa, nth(varl, j), theo);
+      ofsf_projcohogen(aa, var, theo);
 
 asserted procedure ofsf_projco2v(aa: SFList, x: Kernel): SFList;
    % Collins' projection operator for two variable case without domain elements.

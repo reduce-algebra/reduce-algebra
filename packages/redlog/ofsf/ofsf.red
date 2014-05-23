@@ -83,7 +83,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlsusiadd !*rlcadfac !*rlcadpreponly
    !*rlcadextonly !*rlcadprojonly !*rlcadverbose !*rlcaddebug
    !*rlcadfulldimonly !*rlcadtrimtree !*rlcadrawformula
-   !*rlcadaproj !*rlcadaprojalways !*rlcadhongproj !*exp !*rlanuexverbose
+   !*rlcadhongproj !*exp !*rlanuexverbose
    !*rlanuexdifferentroots !*rlanuexgcdnormalize
    !*rlanuexsgnopt !*rlcaddecdeg !*rlcadte !*rlcadpbfvs
    !*rlvmatvb ofsf_cadtheo!* cl_pal!* cl_lps!* cl_theo!* !*rlcadfasteval

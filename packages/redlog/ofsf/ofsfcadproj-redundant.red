@@ -1,3 +1,12 @@
+asserted procedure ofsf_cadvbl(phi: Formula): List;
+   % Variable-block-list. Checks if [phi] is in PNF. Returns a list of lists
+   % [[xr..][..xk]..[xk..x1]] of Kernels.
+   <<
+      if not cl_prenexp phi then
+      	 rederr "Formula is not in prenex normal form, please use rlpnf beforehand.";
+      ofsf_cadvbl1 phi
+   >>;
+
 % begin advanced programming techniques
 
 procedure foldr(fn,e,l);

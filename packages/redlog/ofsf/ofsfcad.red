@@ -177,13 +177,17 @@ procedure rlcadfnum(pl, prjordl);
       return 'list . ofsf_cadfnum(pl, cdr prjordl)
    end;
 
+% TODO: We need a clear concept when is a field [nil] and when ['undefined]. An
+% example is caddata_theo. This has something to do with switches !*rlqegen and
+% !*rlqegen1. Understand the switches.
+
 asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List): CadData;
    % CAD preparation. [phi] is an ofsf formula. [prjordl] is a list of variables
    % encoding a desired variable projection order; [prjordl] contains all
    % variables of [phi] and bound variables are in front of free variables.
    % [aaplus] is a list of SF; additional polynomials to be added to projection
    % polynomials.
-   begin scalar w, ophi, varl, qal, oldorder, psi, ffr, ff, cd;
+   begin scalar w, ophi, varl, qal, oldorder, psi, aa, cd;
       integer r, k, l;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Preparation Phase";
@@ -220,14 +224,14 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
       phi := ofsf_reorder phi;
       psi := cl_matrix phi;
       % phi = Q_k+1 x_k+1 ... Q_r x_r psi.
-      ffr := for each f in cl_terml phi collect f;
-      ff := mkvect r;
-      putv(ff, r, ffr);
+      aa := for each f in cl_terml phi collect f;
+      if aaplus then <<
+	 if !*rlverbose then
+	    ioto_prin2t {"+++ Adding ", length aaplus, " projection polynomials."};
+      	 aaplus := for each f in aaplus collect reorder f
+      >>;
       l := (if bvb then k + length car bvb else 0)
       	 where bvb := cdr reverse ofsf_cadvbl1 phi;
-      if !*rlverbose and aaplus then
-	 ioto_prin2t {"+++ Adding ", length aaplus, " projection polynomials."};
-      aaplus := for each f in aaplus collect reorder f;
       cd := caddata_mkblank();
       caddata_putphi(cd, phi);
       caddata_putk(cd, k);
@@ -235,25 +239,22 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
       caddata_putvarl(cd, varl);
       caddata_putqal(cd, qal);
       caddata_putpsi(cd, psi);
-      caddata_putff(cd, ff);
-      caddata_putaa(cd, union(ffr, aaplus));
-      caddata_putaaplus(cd, aaplus);
-      caddata_putdd(cd, 'undefined);
-      caddata_putphiprime(cd, 'undefined);
       caddata_putoldorder(cd, oldorder);
       caddata_putophi(cd, ophi);
-      caddata_putjj(cd, 'undefined);
       caddata_puttheo(cd, nil);
-      caddata_puthh(cd, nil);
       caddata_putl(cd, l);
+      caddata_putaa(cd, aa);
+      caddata_putaaplus(cd, aaplus);
       return cd
    end;
 
 asserted procedure ofsf_cadprojection(cd: CadData): Any;
    begin scalar r, ff;
       r := caddata_r cd;
-      if !*rlverbose then
+      if !*rlverbose then <<
 	 ioto_tprin2t {"+++ Projection Phase"};
+	 ioto_prin2t {"+ projection order: ", reverse caddata_varl cd}
+      >>;
       ofsf_cadprojection1 cd;  % [caddata_ff] and [caddata_hh] are computed here.
       ff := caddata_ff cd;
       if !*rlverbose then
@@ -789,8 +790,6 @@ procedure tiri_rootlnotags(tri);
 
 % CadData
 
-% TODO: caddata_jj, caddata_aa, caddata_aaplus are all unused. Delete them
-% properly.
 % TODO: Understand the tagged polynomials caddata_hh, and if redundant, delete
 % it as well.
 
@@ -802,7 +801,7 @@ asserted procedure caddata_mkblank(): CadData;
       putv(cd,1, 'undefined); % [phi] is a prenex ofsf formula for which a CAD is to be constructed.
       putv(cd,2, 'undefined); % [k] is an integer; the number of free variables in [phi].
       putv(cd,3, 'undefined); % [r] is an integer; the number of all variables in [phi].
-      putv(cd,4, 'undefined); % [varl] is a list kernels; all variables in [phi].
+      putv(cd,4, 'undefined); % [varl] is a list kernels; all variables in [phi]. This determines the projection order: The last variable is projected first, the first variable is projected last.
       putv(cd,5, 'undefined); % [qal] is a list of dotted pairs [(x . Q)], where [x] is a variable and [Q] is a quantifier; quantifier prefix of [phi].
       putv(cd,6, 'undefined); % [psi] is a quantifier-free ofsf formula; matrix of [phi].
       putv(cd,7, 'undefined); % [ff] is a vector of lists of SF; projection polynomials.
@@ -810,14 +809,14 @@ asserted procedure caddata_mkblank(): CadData;
       putv(cd,9, 'undefined); % [phiprime] is a quantifier-free ofsf formula; the result equivalent to [phi].
       putv(cd,10,'undefined); % [oldorder] is a list of kernels; the old kernel ordering.
       putv(cd,11,'undefined); % [ophi] is an ofsf formula; the original input formula using [oldorder].
-      putv(cd,12,'undefined); % [jj]
+      % [jj] was here
       putv(cd,13,'undefined); % [theo] is a list of negated atoms.
       putv(cd,14,'undefined); % [hh] is a vector of vectors of tagged SF.
       putv(cd,15,'undefined); % [l] is an integer; the number of free variables plus the number of variables in the outermost quantifier block of [phi]; if there is no quantifier, [l] is zero
       % putv(cd,16,ffid);     % [Fid] is a vector of lists of ids.
       putv(cd,16,'undefined);
-      putv(cd,17,'undefined); % [A] is list of SF.
-      putv(cd,18,'undefined); % [A+] is list of SF.
+      putv(cd,17,'undefined); % [aa] is list of SF.
+      putv(cd,18,'undefined); % [aaplus] is list of SF.
       return cd
    end;
 
@@ -836,14 +835,14 @@ procedure caddata_dd(cd);       getv(cd,8);
 procedure caddata_phiprime(cd); getv(cd,9);
 procedure caddata_oldorder(cd); getv(cd,10);
 procedure caddata_ophi(cd);     getv(cd,11);
-procedure caddata_jj(cd);     getv(cd,12);
+% [jj] was here
 procedure caddata_theo(cd);     getv(cd,13);
 procedure caddata_hh(cd);       getv(cd,14);
 procedure caddata_hhj(cd,j);      getv(getv(cd,14),j);
 procedure caddata_l(cd);        getv(cd,15);
 procedure caddata_ffid(cd);     getv(cd,16);
-procedure caddata_aa(cd);	getv(cd,17);
-procedure caddata_aaplus(cd);	getv(cd,18);
+procedure caddata_aa(cd);       getv(cd,17);
+procedure caddata_aaplus(cd);   getv(cd,18);
 
 procedure caddata_bvl(cd);
    % bound variable list
@@ -866,13 +865,13 @@ procedure caddata_putdd(cd,dd);             putv(cd,8,dd);
 procedure caddata_putphiprime(cd,phiprime); putv(cd,9,phiprime);
 procedure caddata_putoldorder(cd,oldorder); putv(cd,10,oldorder);
 procedure caddata_putophi(cd,phi);          putv(cd,11,phi);
-procedure caddata_putjj(cd,jj);             putv(cd,12,jj);
+% [jj] was here
 procedure caddata_puttheo(cd,theo);         putv(cd,13,theo);
 procedure caddata_puthh(cd,hh);             putv(cd,14,hh);
 procedure caddata_putl(cd,l);               putv(cd,15,l);
 procedure caddata_putffid(cd,ffid);         putv(cd,16,ffid);
-procedure caddata_putaa(cd,a);	            putv(cd,17,a);
-procedure caddata_putaaplus(cd,a);	    putv(cd,18,a);
+procedure caddata_putaa(cd,aa);             putv(cd,17,aa);
+procedure caddata_putaaplus(cd,aaplus);     putv(cd,18,aaplus);
 
 asserted procedure caddata_print(cd: CadData): Any;
    begin
@@ -908,8 +907,6 @@ asserted procedure caddata_printall(cd: CadData): Any;
 	 ioto_prin2t{"oldorder := ", caddata_oldorder cd};
       % if caddata_ophi cd neq 'undefined then
 	 ioto_prin2t{"ophi := ", caddata_ophi cd};
-      % if caddata_jj cd neq 'undefined then
-	 ioto_prin2t{"jj := ", caddata_jj cd};
       % if caddata_theo cd neq 'undefined then
 	 ioto_prin2t{"theo := ", caddata_theo cd};
       % if caddata_hh cd neq 'undefined then
@@ -920,7 +917,7 @@ asserted procedure caddata_printall(cd: CadData): Any;
 	 ioto_prin2t{"ffid := ", caddata_ffid cd};
       % if caddata_aa cd neq 'undefined then
 	 ioto_prin2t{"aa := ", caddata_aa cd};
-      % if caddata_aaplus cd neq 'undefined then
+      % if caddata_aaplu cd neq 'undefined then
 	 ioto_prin2t{"aaplus := ", caddata_aaplus cd}
    end;
 
@@ -938,9 +935,7 @@ asserted procedure caddata_printsome(cd: CadData): Any;
 	 ioto_prin2t{"oldorder := ", caddata_oldorder cd}
    end;
 
-% TODO: Switches !*rlcadaproj and !*rlcadaprojalways a not used. It seems that
-% they are for augmented projection. Understand and delete, if really redundant.
-% TODO: Switches !*rlcadhongproj and !*rlcadfac are not used either...
+% TODO: Switches !*rlcadhongproj and !*rlcadfac are not used. Remove them.
 
 asserted procedure ofsf_printcadswitches(): Any;
    % Prints the status of all switches relevant to CAD.
@@ -953,8 +948,6 @@ asserted procedure ofsf_printcadswitches(): Any;
       % ioto_tprin2 "+ preparation phase switches:";
       ofsf_cadswitchprint !*rlcaddecdeg; ioto_prin2 "rlcaddecdeg;";
       % ioto_tprin2 "+ projection phase switches:";
-      ofsf_cadswitchprint !*rlcadaproj; ioto_prin2 "rlcadaproj;";
-      ofsf_cadswitchprint !*rlcadaprojalways; ioto_prin2 "rlcadaprojalways;";
       ofsf_cadswitchprint !*rlcadhongproj; ioto_prin2 "rlcadhongproj;";
       ofsf_cadswitchprint !*rlcadfac; ioto_prin2 "rlcadfac;";
       % ioto_tprin2 "+ extension phase switches";
