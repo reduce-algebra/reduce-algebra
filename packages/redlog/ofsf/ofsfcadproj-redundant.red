@@ -585,11 +585,11 @@ procedure rlprojcobbv2(afl, x);
 
 symbolic operator rlprojcoll;
 procedure rlprojcoll(afl, x);
-   rlprojamat(function ofsf_projcoll, afl, x);
+   rlprojamat(function ofsf_projlcs, afl, x);
 
 symbolic operator rlprojmcll;
 procedure rlprojmcll(afl, x);
-   rlprojamat(function ofsf_projmcll, afl, x);
+   rlprojamat(function ofsf_projmccoeffs, afl, x);
 
 symbolic operator rlprojcoss1;
 procedure rlprojcoss1(afl, x);
@@ -764,7 +764,7 @@ procedure ofsf_projco(aa, x);
    % Collin's projection operator, simplest version.
    begin scalar bb, ll, ss1, ss2;
       bb := ofsf_projcobb(aa, x);
-      ll := ofsf_projcoll(bb, x);
+      ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
       ss2 := ofsf_projcoss2(bb, x);
       return list2set lto_select('notdomainp, union(union(ll, ss1), ss2))
@@ -774,7 +774,7 @@ procedure ofsf_projcov22(aa, x);
    % Collin's projection operator, B and S1 version 2.
    begin scalar bb, ll, ss1, ss2;
       bb := ofsf_projcobbv2(aa, x);
-      ll := ofsf_projcoll(bb, x);
+      ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
       ss2 := ofsf_projcoss2v2(bb, x);
       return list2set lto_select('notdomainp, union(union(ll, ss1), ss2))
@@ -785,7 +785,7 @@ procedure ofsf_projcov23(aa, x);
    % elements. Remark: union does not require the first argument to be a set.
    begin scalar bb, ll, ss1, ss2;
       bb := ofsf_projcobbv2(aa, x);
-      ll := ofsf_projcoll(bb, x);
+      ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
       ss2 := list2set ofsf_projcoss2v3(bb, x);
       return lto_select('notdomainp, union(union(ll, ss1), ss2))
@@ -797,7 +797,7 @@ procedure ofsf_projcov33(aa, l);
    begin scalar bb, ll, ss1, ss2, x;
       bb := ofsf_projcobbv3(aa, l);
       x := lto_last l;
-      ll := ofsf_projcoll(bb, x);
+      ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
       ss2 := list2set ofsf_projcoss2v3(bb, x);
       return lto_select('notdomainp, union(union(ll, ss1), ss2))
@@ -811,7 +811,7 @@ procedure ofsf_tgprojmc(tgaa,x);
       aa := for each te in tgaa join
 	 if not domainp tag_object te then {tag_object te};
       % tag the leading coefficients
-      tgll := for each f in ofsf_projmcll(aa,x) collect
+      tgll := for each f in ofsf_projmccoeffs(aa,x) collect
 	 tag_(sf_lc(f,x),{'lc});
       % tag the discriminants
       tgdd := for each a in aa collect tag_(sf_discriminant(a,x),{'dis});
