@@ -72,7 +72,7 @@ then
 # want the files there to be exactly as unpacked from the wxWidgets
 # archive, and will believe that use of tar to unpack the archive will
 # have left files with datestamps correctly ordered.
-    */csl/wxWidgets*)
+    *wxWidgets*)
       echo Leaving $x untouched.
       ;;
     *)

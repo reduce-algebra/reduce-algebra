@@ -42,14 +42,14 @@ TRACE = $(warning TRACE: $@ :: $?)
 # derived from.
 
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
-	@$(TRACE)if test $(ACLOCAL_M4) -ot $(top_srcdir)/configure.ac; \
+	$(TRACE)if test $(ACLOCAL_M4) -ot $(top_srcdir)/configure.ac; \
 	then \
 	  $(top_srcdir)/autogen.sh ; \
 	else echo Redundant attempt to remake $(ACLOCAL_M4) ; \
 	fi
 
 $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
-	@$(TRACE)if test $(top_srcdir)/configure -ot $(top_srcdir)/configure.ac || \
+	$(TRACE)if test $(top_srcdir)/configure -ot $(top_srcdir)/configure.ac || \
 	   test $(top_srcdir)/configure -ot $(ACLOCAL_M4) ; \
 	then \
 	  $(top_srcdir)/autogen.sh ; \
@@ -57,7 +57,7 @@ $(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
 	fi
 
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
-	@$(TRACE)if test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure.ac || \
+	$(TRACE)if test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure.ac || \
 	   test $(srcdir)/Makefile.in -ot $(ACLOCAL_M4) || \
 	   test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure || \
 	   test $(srcdir)/Makefile.in -ot $(srcdir)/Makefile.am ; \
@@ -110,19 +110,19 @@ endif
 
 all:	$(FOXDEP) $(WXDEP)
 	echo Build all: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) all
-	@cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 
 if csl
 if fox
 fox $(FOXDEP):
 	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
-	@cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 endif
 if wx
 wx $(WXDEP):
 	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
-	@cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 endif
 
 # If one of the major foundations of this Makefile have a date later than that
@@ -140,7 +140,7 @@ endif
 
 %::	$(FOXDEP) $(WXDEP)
 	echo $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) makecmdgoals=$(MAKECMDGOALS)
-	@cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) $(MAKECMDGOALS) MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) $(MAKECMDGOALS) MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 # end of Makefile.am
 

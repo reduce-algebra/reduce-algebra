@@ -106,7 +106,10 @@ symbolic procedure msd!: m;
     return (i + 1);
   end;
 
-symbolic inline procedure ashift(m,d);
+% For both PSL and CSL this is a built-in, so making it inline here is not
+% useful and at one time it cause me pain.
+
+symbolic procedure ashift(m,d);
    % This procedure resembles loosely an arithmetic shift.
    %  It returns m*2**d
    if d=0 then m
