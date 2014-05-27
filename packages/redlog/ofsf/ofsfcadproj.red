@@ -303,11 +303,11 @@ procedure ofsf_cadporder!-project1(tl,x,lvarl,j,theo);
 	 else
 	    ffi := f . ffi;
       pset :=  if !*rlqegen then <<
-	 w := ofsf_projopcohogen(ffj,reverse lvarl,j,theo);
+	 w := ofsf_projopcohogen(ffj, nth(reverse lvarl, j), j, theo);
 	 theo := cdr w;
 	 ofsf_transfac car w
       >> else
-	 ofsf_transfac ofsf_projopcoho(ffj,reverse lvarl,j);
+	 ofsf_transfac ofsf_projopcoho(ffj, nth(reverse lvarl, j), j);
       return (pset . ffi)
    end;
 
