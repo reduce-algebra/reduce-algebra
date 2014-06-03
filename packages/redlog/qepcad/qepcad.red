@@ -115,7 +115,7 @@ procedure qepcad_qepcad1(f,fn);
       oldprtch := get('expt,'prtch);
       put('expt,'prtch,'!^);
       if !*rlqepnf then f := cl_pnf f;
-      w := cl_varl1 f;
+      w := cl_fvarl1 f . reversip cl_qvarl1 f;
       free := length car w;
       w := nconc(reversip car w,reversip cdr w);
       out(fn1);
