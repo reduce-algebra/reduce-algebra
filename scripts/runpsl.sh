@@ -78,6 +78,8 @@ then
       bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
       img=`cygpath -m $here/../pslbuild/$hx/red/reduce.img`
+      export fasl="$here/../pslbuild/$host$hx/red"
+      export reduce="$here/.."
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td 16000000 -f $img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
@@ -96,6 +98,8 @@ else
         STORE=$($here/pslmem64.sh)
       fi
       bin="$here/../pslbuild/$host$hx/psl/$ap"
+      export fasl="$here/../pslbuild/$host$hx/red"
+      export reduce="$here/.."
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
