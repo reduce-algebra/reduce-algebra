@@ -66,8 +66,7 @@ if null plotmax!* then
    plotmax!* := !!plumax;     % IEEE double precision
 >>;
 
-plotmin!*:= 1.0/plotmax!*;
-
+plotmin!*:= 1/plotmax!*;
 
 fluid '(plotranges!* plotfunctions!*  plotstyle!* !*plotoverflow
         !*roundbf);
@@ -85,7 +84,8 @@ symbolic procedure ploteval u;
     plotranges!* := plotfunctions!* := nil;
     plotstyle!* := 'lines;
     bye!-actions!* := union('((plotreset)),bye!-actions!*);
-% "init" on the next line looks like an undeclared variable, however
+% "init" on the next line looks like an und!*eclared variable, however
+t!-reval
 % plotdriver is a macro and uses it as a literal...
     plotdriver(init);
     for each option in u do ploteval1 plot!-reval option;
