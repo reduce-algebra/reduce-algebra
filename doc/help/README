@@ -1,0 +1,8 @@
+This directory used to contain the text files for the now obsolete
+Windows Help system. 
+
+The files can still be found in the "historical" subtree of the repository,
+e.g., at
+
+  historical/r38/doc/help
+
