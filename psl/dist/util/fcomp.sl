@@ -202,7 +202,10 @@
 (ds inline-float(w)
   ((lambda(q)(cond((floatp q) q)(t (float q)))) w))
 
+(if (eq heaplowerbound (inf heaplowerbound))  %no high address bits, 
+                                     % like in 32 bit linux
 (ds float-adr(w) (floatbase (fltinf w)))
+(ds float-adr(w) (wplus2 16#8000000 (floatbase (fltinf w)))))
 
 (de float*1(u c r w l n)    
   (nconc c
