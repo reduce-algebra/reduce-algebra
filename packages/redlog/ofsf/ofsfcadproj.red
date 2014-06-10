@@ -383,25 +383,25 @@ asserted procedure sf_level(f: SF, varl: KernelList): Integer;
       0
    else if mvar f eq car varl then
       1
-   else 1 + sf_level(f, cdr varl);
+   else
+      1 + sf_level(f, cdr varl);
 
 asserted procedure sf_stdeg(f: SF): Integer;
    % Sum of total degrees of a polynomial.
-   if null f or f = 0 then
+   if null f or eqn(f, 0) then
       -1
-   else sf_stdeg1 f;
+   else
+      sf_stdeg1 f;
 
 asserted procedure sf_stdeg1(f: SF): Integer;
-   if null f or f = 0 then
-      0 % a zero subpolynomial adds nothing to the total degree
-   else if numberp f then
+   if domainp f then
       0
    else
       sf_stdeg1 lc f + ldeg f + sf_stdeg1 red f;
 
 asserted procedure sf_tdeg(f: SF, xl: KernelList): Integer;
-   % Total degree. [f] has to be ordered in a way compatible with [xl].
-   if null f or f = 0 then
+   % Total degree.
+   if null f or eqn(f, 0) then
       -1
    else if null xl then
       0
@@ -410,7 +410,7 @@ asserted procedure sf_tdeg(f: SF, xl: KernelList): Integer;
 
 asserted procedure sf_tdeg1(f: SF, xl: KernelList): Integer;
    % Total degree subroutine.
-   if null f or f = 0 then
+   if null f or eqn(f, 0) then
       0
    else if null xl then
       0
@@ -431,37 +431,20 @@ asserted procedure sf_discriminant(f: SF, x: Kernel): SF;
    % Caveat: deg(f, x) > 0 is required.
    quotf(sfto_resf(f, numr difff(f, x), x), lc f);
 
-asserted procedure sf_nom(f: SF): Integer;
-   % Number of monomials.
-   if null f then
-      0
-   else if domainp f then
-      1
-   else
-      sf_nom lc f + sf_nom red f;
-
 asserted procedure sf_coeffs(f: SF, x: Kernel): SFList;
    % List of all coefficients, even those that are zero.
    if domainp f or mvar f neq x then {f} else coeffs f;
 
 asserted procedure sf_psc(f: SF, g: SF, x: Kernel, j: Integer): SF;
-   % Principal the [j]-th principal subresultant coefficient of [f] a and [g].
+   % The [j]-th principal subresultant coefficient of [f] and [g].
    mtx_det mtx_mmji(f, g, x, j, j);
 
-asserted procedure sf_subresultant(f: SF, g: SF, x: Kernel, j: Integer): SF;
-   % Subresultant.
-   begin scalar summed;
-      for i := 0 : j do
-	 summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
-      return summed
-   end;
-
 asserted procedure sf_factorize(f: SF): DottedPair;
-   % Factorize. Returns a Pair [DOM . LIST(PAIR(SF, INT))].
+   % Factorize. Returns a pair [Integer . List of Pairs (SF . Integer)]: content
+   % and factors with multiplicities.
    fctrf f;
 
 asserted procedure sf_factors(f: SF): SFList;
-   % Factorize.
    for each a in cdr sf_factorize f collect car a;
 
 asserted procedure sf_cdl(f: SF, x: Kernel): List;
@@ -471,27 +454,14 @@ asserted procedure sf_cdl(f: SF, x: Kernel): List;
    else
       {(f . 0)};
 
-asserted procedure sf_fromcdl(cdl: List, x: Kernel): SF;
-   % Standard form from coefficient and degree list. [cdl] is a non-empty List
-   % of pairs [SF . Integer].
-   begin scalar f;
-      assert(not null cdl);
-      if null cdr cdl then
-	 return caar cdl;
-      f := sfto_kexp(x, cdar cdl);
-      set_lc(f, caar cdl);
-      set_red(f, sf_fromcdl(cdr cdl, x));
-      return f
-   end;
-
-asserted procedure sf_pscs(a: SF, b: SF, x: Kernel): SFList;
-   % All pscs.
-   for k := 0 : min(sfto_vardeg(a, x), sfto_vardeg(b, x))-1 collect
-      sf_psc(a, b, x, k);
+asserted procedure sf_pscs(f: SF, g: SF, x: Kernel): SFList;
+   % All principal subresultant coefficients of [f] and [g].
+   for k := 0 : min(sfto_vardeg(f, x), sfto_vardeg(g, x))-1 collect
+      sf_psc(f, g, x, k);
 
 asserted procedure sf_pscsgen(a: SF, b: SF, x: Kernel, theo: List): DottedPair;
-   % All pscs, generic version. Returns as a dotted pair a list of SF and a
-   % theory.
+   % All principal subresultant coefficients of [f] and [g], generic version.
+   % Returns a dotted Pair (SFList . theory).
    begin scalar k, pscl, finished;
       if not !*rlpscsgen then
 	 return sf_pscs(a, b, x) . theo;
@@ -590,45 +560,41 @@ asserted procedure mtx_put(mtx: MtxSF, l: Integer, c: Integer, a: SF): Any;
    nth(nth(mtx, l), c) := a;
 
 asserted procedure mtx_rmlscs(mtx: MtxSF, lines: List, columns: List): MtxSF;
-   % Matrix remove lines and columns. [lines] and [columns] are LIST(INT).
+   % Matrix remove lines and columns. [lines] and [columns] are Lists of
+   % Integers.
    for each l in lto_rmpos(mtx, lines) collect
       lto_rmpos(l, columns);
 
 asserted procedure mtx_sylvester(f: SF, g: SF, x: Kernel): MtxSF;
-   % Sylvester matrix. [f], [g] are non-zero. Returns a MTX (m+n lines and
-   % colums if m is degree of f in x and n is degree of g in x).
-   begin scalar syl, cfl, cgl; integer m, n, mpn;
+   % Sylvester matrix. [f] and [g] are non-zero polynomials in [x]. Returns a a
+   % square matrix of dimension [m+n], where if [m] is the degree of [f] in [x],
+   % and [n] is the degree of [g] in [x].
+   begin scalar res, cfl, cgl;
+      integer m, n, mpn;
       m := sfto_vardeg(f, x);
       n := sfto_vardeg(g, x);
       mpn := m + n;
       if eqn(mpn, 0) then
 	 return mtx_0(0, 0);
-      syl := mtx_0(mpn, mpn);
+      res := mtx_0(mpn, mpn);
       cfl := sf_coeffs(f, x);
       cgl := sf_coeffs(g, x);
-      for l := 1 : n do
-	 for c := l : l + m do
-  	    mtx_put(syl, l, c, nth(cfl, 1+(c-l)));
-      for l := n+1 : m+n do
-	 for c := l-n : l do
-  	    mtx_put(syl, l, c, nth(cgl, 1+(c-(l-n))));
-      return syl
+      for j := 1 : n do
+	 for k := j : j + m do
+  	    mtx_put(res, j, k, nth(cfl, 1+(k-j)));
+      for j := n+1 : mpn do
+	 for k := j-n : j do
+  	    mtx_put(res, j, k, nth(cgl, 1+(k-(j-n))));
+      return res
    end;
 
 asserted procedure mtx_det(mtx: MtxSF): SF;
    ofsf_det mtx;
 
-asserted procedure mtx_resultant(f: SF, g: SF, x: Kernel): SF;
-   if null f or null g then
-      0
-   else if eqn(sfto_vardeg(f, x) + sfto_vardeg(g, x), 0) then
-      1
-   else
-      mtx_det mtx_sylvester(f, g, x);
-
 asserted procedure mtx_mmji(f: SF, g: SF, x: Kernel, j: Integer, i: Integer): MtxSF;
    % Modified Sylvester matrix Mji.
-   begin scalar ltd1,ltd2,ctd1,ctd2; integer m, n, mpn;
+   begin scalar ltd1, ltd2, ctd1, ctd2;
+      integer m, n, mpn;
       % ltd: lines to delete; ctd: columns to delete
       m := sfto_vardeg(f, x);
       n := sfto_vardeg(g, x);
@@ -872,18 +838,30 @@ asserted procedure ofsf_projcored(aa: SFList, x: Kernel): SFList;
    end;
 
 asserted procedure ofsf_projcored1(f: SF, x: Kernel): SFList;
-   % Collins' projection set of redukta for a single polynomial.
-   begin scalar finished, resl;
+   % Collins' projection set of redukta for a single polynomial. This procedure
+   % computes the smallest possible set by using local equational theory as
+   % follows: If a coefficient is found to be zero w.r.t. to [eqtheo], the
+   % reductum is not needed and we continue. If a coefficient is found to be
+   % non-zero w.r.t. [eqtheo], it is the last reductum we add to [resl].
+   % Otherwise, we add the reductum to [resl] and [lcq = 0] to [eqtheo].
+   begin scalar lcf, finished, resl, eqtheo;
       assert(sfto_mvartest(f, x));
       repeat <<
-	 push(f, resl);
 	 if sfto_mvartest(f, x) then <<
-	    % if ofsf_surep(ofsf_0mk2('neq, lc f), nil) then
-	    if domainp lc f then
-	       finished := t;
+	    lcf := lc f;
+	    if ofsf_surep(ofsf_0mk2('neq, lcf), eqtheo) then <<
+	       push(f, resl);
+	       finished := t
+	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), eqtheo) then <<
+	       push(f, resl);
+	       push(ofsf_0mk2('equal, lcf), eqtheo)
+	    >>;
 	    f := red f
-      	 >> else
+      	 >> else <<
 	    finished := t;
+	    if not ofsf_surep(ofsf_0mk2('equal, f), eqtheo) then
+	       push(f, resl)
+	 >>
       >> until finished;
       return reversip resl  % natural order of redukta
    end;

@@ -960,3 +960,41 @@ procedure sfto_hterm(f);
       f
    else
       multf(sf_lc(f,mvar f),sfto_kexp(mvar f,sfto_vardeg(f,mvar f)));
+
+asserted procedure sf_nom(f: SF): Integer;
+   % Number of monomials.
+   if null f then
+      0
+   else if domainp f then
+      1
+   else
+      sf_nom lc f + sf_nom red f;
+
+asserted procedure sf_subresultant(f: SF, g: SF, x: Kernel, j: Integer): SF;
+   % Subresultant.
+   begin scalar summed;
+      for i := 0 : j do
+	 summed := addf(multf(mtx_det mtx_mmji(f,g,x,j,i),sfto_kexp(x,i)), summed);
+      return summed
+   end;
+
+asserted procedure sf_fromcdl(cdl: List, x: Kernel): SF;
+   % Standard form from coefficient and degree list. [cdl] is a non-empty List
+   % of pairs [SF . Integer].
+   begin scalar f;
+      assert(not null cdl);
+      if null cdr cdl then
+	 return caar cdl;
+      f := sfto_kexp(x, cdar cdl);
+      set_lc(f, caar cdl);
+      set_red(f, sf_fromcdl(cdr cdl, x));
+      return f
+   end;
+
+asserted procedure mtx_resultant(f: SF, g: SF, x: Kernel): SF;
+   if null f or null g then
+      0
+   else if eqn(sfto_vardeg(f, x) + sfto_vardeg(g, x), 0) then
+      1
+   else
+      mtx_det mtx_sylvester(f, g, x);
