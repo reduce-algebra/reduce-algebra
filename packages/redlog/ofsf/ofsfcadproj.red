@@ -741,9 +741,7 @@ asserted procedure ofsf_projopcohogen(aa: SFList, var: Kernel, j: Integer, theo:
 asserted procedure ofsf_projco2v(aa: SFList, x: Kernel): SFList;
    % Collins' projection operator for two variable case.
    begin scalar ll, dd, rr, resl;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 "(projco2v ";
-      ll := ofsf_projlcs(aa, x);
+      ll := ofsf_projlcsll({aa}, x);
       dd := for each a in aa join
 	 if sfto_vardeg(a, x) >= 2 then
 	    {sf_discriminant(a, x)};
@@ -752,15 +750,13 @@ asserted procedure ofsf_projco2v(aa: SFList, x: Kernel): SFList;
 	    sfto_resf(car a1, a2, x);
       resl := list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
-	 ioto_prin2 {" ", length resl, ")"};
+	 ioto_prin2 {"(projco2v ", length resl, ")"};
       return resl
    end;
 
 asserted procedure ofsf_projmc(aa: SFList, x: Kernel): SFList;
    % McCallum's projection operator.
    begin scalar ll, dd, rr, resl;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 "(projmc ";
       ll := ofsf_projmccoeffs(aa, x);
       dd := for each a in aa collect
 	 sf_discriminant(a, x);
@@ -769,38 +765,37 @@ asserted procedure ofsf_projmc(aa: SFList, x: Kernel): SFList;
 	    sfto_resf(car a1, a2, x);
       resl := list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
-	 ioto_prin2 {" ", length resl, ")"};
+	 ioto_prin2 {"(projmc ", length resl, ")"};
       return resl
    end;
 
 asserted procedure ofsf_projmcgen(aa: SFList, x: Kernel, theo: List): List;
    % McCallum's projection operator; generic version.
-   begin scalar bb_theo, ll, dd, rr;
-      % ll := ofsf_projmccoeffs(aa, x);
-      bb_theo := ofsf_projcoredgen(aa, x, theo);
-      ll := ofsf_projlcs(car bb_theo, x);
+   begin scalar ll, dd, rr, resl;
+      ll . theo := ofsf_projmccoeffsgen(aa, x, theo);
       dd := for each a in aa collect
 	 sf_discriminant(a, x);
-      rr := for each a1 on aa join for each a2 in cdr aa collect
-	 sfto_resf(car a1, a2, x);
-      return list2set lto_remove('domainp, union(union(ll,dd),rr)) . cdr bb_theo
+      rr := for each a1 on aa join
+	 for each a2 in cdr aa collect
+	    sfto_resf(car a1, a2, x);
+      resl := list2set lto_remove('domainp, union(union(ll, dd), rr));
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {"(projmcgen ", length resl, ")"};
+      return resl . theo
    end;
 
 asserted procedure ofsf_projcoho(aa: SFList, x: Kernel): SFList;
    % Collin's projection operator with Hong's improvement to S2.
-   begin scalar bb, ll, ss1, ss2, resl;
+   begin scalar bll, ll, ss1, ss2, resl;
       if ofsf_cadverbosep() then
 	 ioto_prin2 "(projcoho ";
-      bb := ofsf_projcored(aa, x);
-      bb := ofsf_defpdel bb;
-      % ll := ofsf_projmccoeffs(aa, x);
-      ll := ofsf_projlcs(bb, x);
-      ll := ofsf_defpdel ll;
-      ss1 := ofsf_projcoss1(bb, x);
-      ss1 := ofsf_defpdel ss1;
-      ss2 := list2set ofsf_projhoss2(bb, x);
-      ss2 := ofsf_defpdel ss2;
-      resl := lto_select('notdomainp, union(union(ll, ss1), ss2));
+      bll := ofsf_projcored(aa, x);
+      % TODO: Understand when is a call to list2set really needed. Originally it
+      % was used only for [ss2] here and in ofsf_projcohogen, as well.
+      ll := list2set ofsf_projlcsll(bll, x);
+      ss1 := list2set ofsf_projcoss1(bll, x);
+      ss2 := list2set ofsf_projhoss2(bll, x);
+      resl := union(union(ll, ss1), ss2);
       if ofsf_cadverbosep() then
 	 ioto_prin2 {" ", length resl, ")"};
       return resl
@@ -809,57 +804,63 @@ asserted procedure ofsf_projcoho(aa: SFList, x: Kernel): SFList;
 asserted procedure ofsf_projcohogen(aa: SFList, x: Kernel, theo: List): DottedPair;
    % Collin's projection operator with Hong's improvement to S2; generic
    % version.
-   begin scalar bb_theo, bb, ll, ss1_theo, ss1, ss2_theo, ss2;
-      % redukta
-      bb_theo := ofsf_projcoredgen(aa, x, theo);
-      bb := car bb_theo;
-      theo := cdr bb_theo;
-      % leading coefficients
-      ll := ofsf_projlcs(bb, x);
-      % S1
-      ss1_theo := ofsf_projcoss1gen(bb, x, theo);
-      ss1 := car ss1_theo;
-      theo := cdr ss1_theo;
-      % S2
-      ss2_theo := ofsf_projhoss2gen(bb, x, theo);
-      ss2 := list2set car ss2_theo;
-      theo := cdr ss2_theo;
-      return lto_select('notdomainp, union(union(ll, ss1), ss2)) . theo
+   begin scalar bll, ll, ss1, ss2, resl;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 "(projcohogen ";
+      bll . theo := ofsf_projcoredgen(aa, x, theo);
+      ll := list2set ofsf_projlcsll(bll, x);
+      ss1 . theo := ofsf_projcoss1gen(bll, x, theo);
+      ss1 := list2set ss1;
+      ss2 . theo := ofsf_projhoss2gen(bll, x, theo);
+      ss2 := list2set ss2;
+      resl := union(union(ll, ss1), ss2);
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {" ", length resl, ")"};
+      return resl . theo
    end;
 
-asserted procedure ofsf_projcored(aa: SFList, x: Kernel): SFList;
-   % Collins' projection set of redukta for a list of polynomials.
-   begin scalar resl;
-      resl := for each f in aa join
-   	 ofsf_projcored1(f, x);
-      if ofsf_cadverbosep() then
-   	 ioto_prin2 {"(red ", length resl, ")"};
-      return resl
+asserted procedure ofsf_projcored(aa: SFList, x: Kernel): List;
+   % Collins' projection set of redukta for a list of polynomials. Returns a
+   % list of lists of SF.
+   begin scalar w, resll; integer c;
+      for each f in aa do <<
+   	 w := ofsf_projcored1(f, x);
+	 w := ofsf_defpdel(w, nil);
+	 if w then
+	    push(w, resll)
+      >>;
+      resll := reversip resll;
+      if ofsf_cadverbosep() then <<
+	 c := for each l in resll sum
+	    length l;
+   	 ioto_prin2 {"(red ", c, ")"}
+      >>;
+      return resll
    end;
 
 asserted procedure ofsf_projcored1(f: SF, x: Kernel): SFList;
    % Collins' projection set of redukta for a single polynomial. This procedure
    % computes the smallest possible set by using local equational theory as
-   % follows: If a coefficient is found to be zero w.r.t. to [eqtheo], the
+   % follows: If a coefficient is found to be zero w.r.t. to [ltheo], the
    % reductum is not needed and we continue. If a coefficient is found to be
-   % non-zero w.r.t. [eqtheo], it is the last reductum we add to [resl].
-   % Otherwise, we add the reductum to [resl] and [lcq = 0] to [eqtheo].
-   begin scalar lcf, finished, resl, eqtheo;
+   % non-zero w.r.t. [ltheo], it is the last reductum we add to [resl].
+   % Otherwise, we add the reductum to [resl] and [lcq = 0] to [ltheo].
+   begin scalar lcf, finished, resl, ltheo;
       assert(sfto_mvartest(f, x));
       repeat <<
 	 if sfto_mvartest(f, x) then <<
 	    lcf := lc f;
-	    if ofsf_surep(ofsf_0mk2('neq, lcf), eqtheo) then <<
+	    if ofsf_surep(ofsf_0mk2('neq, lcf), ltheo) then <<
+	       finished := t;
+	       push(f, resl)
+	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), ltheo) then <<
 	       push(f, resl);
-	       finished := t
-	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), eqtheo) then <<
-	       push(f, resl);
-	       push(ofsf_0mk2('equal, lcf), eqtheo)
+	       push(ofsf_0mk2('equal, lcf), ltheo)
 	    >>;
 	    f := red f
       	 >> else <<
 	    finished := t;
-	    if not ofsf_surep(ofsf_0mk2('equal, f), eqtheo) then
+	    if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
 	       push(f, resl)
 	 >>
       >> until finished;
@@ -868,55 +869,131 @@ asserted procedure ofsf_projcored1(f: SF, x: Kernel): SFList;
 
 asserted procedure ofsf_projcoredgen(aa: SFList, x: Kernel, theo: List): DottedPair;
    % Collins' projection set of redukta for a list of polynomials; generic
-   % version. Returns a DottedPair of the form SFList . theory.
-   begin scalar bb, bb_theo;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 "(redgen: ";
-      bb := for each f in aa join <<
-	 bb_theo := ofsf_projcoredgen1(f, x, theo);
-	 theo := cdr bb_theo;
-	 car bb_theo
+   % version. Returns a DottedPair of the form List of List of SF . theory.
+   begin scalar w, resll; integer c;
+      for each f in aa do <<
+	 w . theo := ofsf_projcoredgen1(f, x, theo);
+	 w := ofsf_defpdel(w, theo);
+	 if w then
+	    push(w, resll)
       >>;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 {length bb, ")"};
-      return bb . theo;
+      resll := reversip resll;
+      if ofsf_cadverbosep() then <<
+	 c := for each l in resll sum
+	    length l;
+	 ioto_prin2 {"(redgen ", c, ")"}
+      >>;
+      return resll . theo
    end;
 
 asserted procedure ofsf_projcoredgen1(f: SF, x: Kernel, theo: List): DottedPair;
    % Collins' projection set of redukta for a single polynomial; generic
    % version. Returns a dotted pair of the form SFList . theory.
-   begin scalar redl, finished;
-      if domainp f then
-	 return nil;
+   begin scalar ctheo, ltheo, lcf, finished, resl;
+      assert(sfto_mvartest(f, x));
       repeat <<
-	 redl := f . redl;
-	 f := sf_red(f, x);
-	 if domainp f then << % f can be nil here
-	    if ofsf_cadverbosep() then
-	       ioto_prin2 "(end)";
-	    finished := t
-	 >> else if ofsf_surep(ofsf_0mk2('neq, sf_lc(car redl, x)), theo) then <<
-	    if ofsf_cadverbosep() then
-	       if domainp sf_lc(car redl, x) then
-   	       	  ioto_prin2 "(dom)"
-	       else
-		  ioto_prin2 "(=>)";
-	    finished := t
-	 >> else if ofsf_cadvalassp(ofsf_cadbvl!*, sf_lc(car redl, x)) then <<
-	    if ofsf_cadverbosep() then
-	       ioto_prin2 "(>th)";
-	    theo := ofsf_0mk2('neq, sf_lc(car redl, x)) . theo;
-	    finished := t
-	 >>;
+	 ctheo := append(theo, ltheo);
+	 if sfto_mvartest(f, x) then <<
+	    lcf := lc f;
+	    if ofsf_surep(ofsf_0mk2('neq, lcf), ctheo) then <<
+	       finished := t;
+	       push(f, resl)
+	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), ctheo) then <<
+	       if ofsf_cadvalassp(ofsf_cadbvl!*, lcf) then <<
+	       	  finished := t;
+	       	  push(ofsf_0mk2('neq, lcf), theo)
+	       >> else
+		  push(ofsf_0mk2('equal, lcf), ltheo);
+	       push(f, resl)
+	    >>;
+	    f := red f
+	 >> else <<
+	    finished := t;
+	    if not ofsf_surep(ofsf_0mk2('equal, f), ctheo) then
+	       push(f, resl)
+	 >>
       >> until finished;
-      return reversip redl . theo
+      return reversip resl . theo  % natural order of redukta
    end;
 
-asserted procedure ofsf_projlcs(bb: SFList, x: Kernel): SFList;
-   % Set of leading coefficients of [bb].
-   begin scalar resl;
-      resl := for each f in bb collect
-	 sf_lc(f, x);
+asserted procedure ofsf_projcoss1(bll: List, x: Kernel): SFList;
+   % Collins' projection set S1(bll). [bll] is a List of List of SF.
+   begin scalar w, resl;
+      for each bl in bll do <<
+	 w := for each f in bl join
+	    sf_pscs(f, sf_diff(f, x), x);
+	 w := ofsf_defpdel(w, nil);
+	 resl := append(resl, w)
+      >>;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {"(S1 ", length resl, ")"};
+      return resl
+   end;
+
+asserted procedure ofsf_projcoss1gen(bll: List, x: Kernel, theo: List): DottedPair;
+   % Collins' projection set S1(bll); generic version. [bll] is a List of List of SF.
+   begin scalar w, pscs, resl;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 "(S1gen ";
+      for each bl in bll do <<
+	 w := for each f in bl join <<
+	    pscs . theo := sf_pscsgen(f, sf_diff(f, x), x, theo);
+	    pscs
+	 >>;
+	 w := ofsf_defpdel(w, theo);
+	 resl := append(resl, w)
+      >>;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {length resl, ")"};
+      return resl . theo
+   end;
+
+asserted procedure ofsf_projhoss2(bll: List, x: Kernel): SFList;
+   % Hong's projection set S2(bll). [bll] is a List of List of SF.
+   begin scalar bl, w, resl, redll;
+      while bll do <<
+	 bl := pop bll;
+	 w := for each f in bl join
+	    for each tmp in bll join
+	       sf_pscs(f, car tmp, x);
+	 w := ofsf_defpdel(w, nil);
+	 resl := append(resl, w)
+      >>;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {"(S2 ", length resl, ")"};
+      return resl
+   end;
+
+asserted procedure ofsf_projhoss2gen(bll: List, x: Kernel, theo: List): DottedPair;
+   % Hong's projection set S2(bll); generic version. [bll] is a List of List of
+   % SF.
+   begin scalar bl, w, pscs, resl;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 "(S2gen ";
+      while bll do <<
+	 bl := pop bll;
+	 w := for each f in bl join
+	    for each tmp in bll join <<
+	       pscs . theo := sf_pscsgen(f, car tmp, x, theo);
+	       pscs
+	    >>;
+	 w := ofsf_defpdel(w, theo);
+	 resl := append(resl, w)
+      >>;
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {length resl, ")"};
+      return resl . theo
+   end;
+
+asserted procedure ofsf_projlcsll(bll: List, x: Kernel): SFList;
+   % Leading coefficients of [bll]. [bll] is a list of lists of SF.
+   begin scalar w, resl;
+      for each bl in bll do <<
+	 w := for each f in bl collect
+	    sf_lc(f, x);
+	 w := ofsf_defpdel(w, nil);
+	 resl := append(resl, w)
+      >>;
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(lcs ", length resl, ")"};
       return resl
@@ -927,6 +1004,7 @@ asserted procedure ofsf_projmccoeffs(aa: SFList, x: Kernel): SFList;
    begin scalar resl;
       resl := for each f in aa join
 	 ofsf_projmccoeffs1(f, x);
+      resl := ofsf_defpdel(resl, nil);
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(coeffs ", length resl, ")"};
       return resl
@@ -934,30 +1012,75 @@ asserted procedure ofsf_projmccoeffs(aa: SFList, x: Kernel): SFList;
 
 asserted procedure ofsf_projmccoeffs1(f: SF, x: Kernel): SFList;
    % McCallum's projection set of coefficients for a single polynomial.
-   begin scalar lcf, finished, resl;
+   begin scalar lcf, finished, resl, ltheo;
       assert(sfto_mvartest(f, x));
       repeat <<
 	 if sfto_mvartest(f, x) then <<
 	    lcf := lc f;
-	    f := red f
+	    if ofsf_surep(ofsf_0mk2('neq, lcf), ltheo) then
+	       finished := t
+	    else if not ofsf_surep(ofsf_0mk2('equal, lcf), ltheo) then <<
+	       push(lcf, resl);
+	       push(ofsf_0mk2('equal, lcf), ltheo)
+	    >>;
+	    f := red f;
 	 >> else <<
-	    lcf := f;
-	    finished := t
-	 >>;
-	 % if ofsf_surep(ofsf_0mk2('neq, lcf), nil) then
-	 if domainp lcf then
-	    finished := t
-	 else
-	    push(lcf, resl)
+	    finished := t;
+	    if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
+	       push(f, resl)
+	 >>
       >> until finished;
-      return resl
+      return reversip resl  % natural order of coefficients
    end;
 
-asserted procedure ofsf_defpdel(l: SFList): SFList;
-   % Definite predicate deletion. Delete all elements from [l] for which
-   % ofsf_surep can verify definiteness.
+asserted procedure ofsf_projmccoeffsgen(aa: SFList, x: Kernel, theo: List): DottedPair;
+   % McCallum's projection set of coefficients for a list of polynomials;
+   % generic version.
+   begin scalar resl, w;
+      resl := for each f in aa join <<
+	 w . theo := ofsf_projmccoeffsgen1(f, x, theo);
+      	 w
+      >>;
+      resl := ofsf_defpdel(resl, theo);
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {"(coeffsgen ", length resl, ")"};
+      return resl . theo
+   end;
+
+asserted procedure ofsf_projmccoeffsgen1(f: SF, x: Kernel, theo: List): SFList;
+   % McCallum's projection set of coefficients for a single polynomial; generic
+   % version.
+   begin scalar ctheo, ltheo, lcf, finished, resl;
+      assert(sfto_mvartest(f, x));
+      repeat <<
+	 ctheo := append(theo, ltheo);
+	 if sfto_mvartest(f, x) then <<
+	    lcf := lc f;
+	    if ofsf_surep(ofsf_0mk2('neq, lcf), ctheo) then
+	       finished := t
+	    else if not ofsf_surep(ofsf_0mk2('equal, lcf), ctheo) then
+	       if ofsf_cadvalassp(ofsf_cadbvl!*, lcf) then <<
+		  finished := t;
+	       	  push(ofsf_0mk2('neq, lcf), theo)
+	       >> else <<
+		  push(lcf, resl);
+	       	  push(ofsf_0mk2('equal, lcf), ltheo)
+	       >>;
+	    f := red f
+	 >> else <<
+	    finished := t;
+	    if not ofsf_surep(ofsf_0mk2('equal, f), ltheo) then
+	       push(f, resl)
+	 >>
+      >> until finished;
+      return reversip resl . theo  % natural order of coefficients
+   end;
+
+asserted procedure ofsf_defpdel(l: SFList, theo: List): SFList;
+   % Definite predicate deletion. Delete all elements from [l], which can be
+   % proved to be non-zero w.r.t. [theo] by ofsf_surep.
    for each f in l join
-      if not ofsf_surep(ofsf_0mk2('neq, f), nil) then
+      if not ofsf_surep(ofsf_0mk2('neq, f), theo) then
 	 {f}
       else if !*rlverbose then <<
 	 ioto_prin2 "*";
@@ -968,119 +1091,6 @@ asserted procedure ofsf_cadvalassp(bvl: KernelList, f: SF): Boolean;
    % Ordered field standard form valid assumption. Returns [T] if an assumption
    % containing [sf] is valid. Depends on switch [!*rlqegenct].
    (!*rlqegenct or sfto_monfp f) and null intersection(bvl, kernels f);
-
-asserted procedure ofsf_projcoss1(bb: SFList, x: Kernel): SFList;
-   % Collins' projection set S1(bb).
-   begin scalar ss1;
-      ss1 := for each b in bb join
-	 sf_pscs(b, sf_diff(b, x), x);
-      if ofsf_cadverbosep() then
-	 ioto_prin2 {"(S1 ", length ss1, ")"};
-      return ss1
-   end;
-
-asserted procedure ofsf_projcoss1gen(bb: SFList, x: Kernel, theo: List): DottedPair;
-   % Collins' projection set S1(bb) generic version.
-   begin scalar ss, pscs_theo;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 "(S1gen: ";
-      ss := for each b in bb join <<
-	 pscs_theo := sf_pscsgen(b, sf_diff(b, x), x, theo);
-	 theo := cdr pscs_theo;
-	 car pscs_theo
-      >>;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 {length ss, ")"};
-      return ss . theo
-   end;
-
-asserted procedure ofsf_splitredl(bb: SFList, x: Kernel): List;
-   % Split redukta list into list of lists of redukta.
-   begin scalar redl,redll;
-      % break up [bb] into sets containing an input poly and its reducta
-      while bb do <<
-      	 redl := {car bb};
-	 bb := cdr bb;
-      	 while bb and sf_red(car redl, x) = car bb do <<  % eq is possible here
-	    redl := car bb . redl;
-	    bb := cdr bb
-      	 >>;
-      	 redll := reversip redl . redll
-      >>;
-      % function(lambda(x, y); length x > length y)
-      redll := sort(redll, function ofsf_splitredlordp);
-      return redll
-   end;
-
-asserted procedure ofsf_splitredlordp(l1: SFList, l2: SFList): Boolean;
-   % We assume that [l1] and [l2] are non-empty and their cars contain the
-   % current variable as mvar.
-   begin scalar le1, le2, x, hit, res, d1, d2;
-      le1 := length l1;
-      le2 := length l2;
-      if le1 > le2 then
-	 return t;
-      if le1 < le2 then
-	 return nil;
-      x := mvar car l1;
-      while l1 and not hit do <<
-	 d1 := sfto_vardeg(car l1, x);
-	 d2 := sfto_vardeg(car l2, x);
-	 l1 := cdr l1;
-	 l2 := cdr l2;
-      	 if d1 > d2 then
-	    res := hit := t;
-	 if d1 < d2 then <<
-	    res := nil;
-	    hit := t
-	 >>
-      >>;
-      return res
-   end;
-
-asserted procedure ofsf_projhoss2(bb: SFList, x: Kernel): SFList;
-   % Hong's projection set S2 version 3. Note that for this to work properly,
-   % the list bb of reducta has to look like
-   % {f,red(f),red(red(f)),...,g,red(g),red(red(g)),...}
-   begin scalar ss2, redll;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 "(S2 ";
-      % 1. break up [bb] into sets containing an input poly and its reducta
-      redll := ofsf_splitredl(bb, x);
-      % 2.
-      % if ofsf_cadverbosep() then
-      % 	 ioto_prin2 {"[", length redll, "]"};
-      ss2 := for each ll on redll join for each l in cdr ll join
-	 % car ll and l are lists of SF
-	 for each b2 in l join
-	    sf_pscs(caar ll, b2, x);
-      if ofsf_cadverbosep() then
-	 ioto_prin2 {length ss2, ")"};
-      return ss2
-   end;
-
-asserted procedure ofsf_projhoss2gen(bb: SFList, x: Kernel, theo: List): DottedPair;
-   % Hong's projection set S1 version 3 generic. Note that for this to work
-   % properly, the list bb of reducta has to look like
-   % {f,red(f),red(red(f)),...,g,red(g),red(red(g)),...}
-   begin scalar ss2, redll, pscs_theo;
-      % 1. break bb up into sets containing an imput poly and its reducta
-      redll := ofsf_splitredl(bb, x);
-      % 2.
-      if ofsf_cadverbosep() then
-	 ioto_prin2 "(hoS2gen ";
-      ss2 := for each ll on redll join
-	 for each l in cdr ll join
-	    % car ll and l are lists of SF
-	    for each b2 in l join <<
-	       pscs_theo := sf_pscsgen(caar ll,b2,x,theo);
-	       theo := cdr pscs_theo ;
-	       car pscs_theo
-	    >>;
-      if ofsf_cadverbosep() then
-	 ioto_prin2 {length ss2, ")"};
-      return ss2 . theo
-   end;
 
 endmodule;  % ofsfcadprojection
 

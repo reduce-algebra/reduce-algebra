@@ -998,3 +998,57 @@ asserted procedure mtx_resultant(f: SF, g: SF, x: Kernel): SF;
       1
    else
       mtx_det mtx_sylvester(f, g, x);
+
+asserted procedure ofsf_projlcs(bb: SFList, x: Kernel): SFList;
+   % Set of leading coefficients of [bb].
+   begin scalar resl;
+      resl := for each f in bb collect
+	 sf_lc(f, x);
+      if ofsf_cadverbosep() then
+	 ioto_prin2 {"(lcs ", length resl, ")"};
+      return resl
+   end;
+
+asserted procedure ofsf_splitredl(bb: SFList, x: Kernel): List;
+   % Split redukta list into list of lists of redukta.
+   begin scalar redl,redll;
+      % break up [bb] into sets containing an input poly and its reducta
+      while bb do <<
+      	 redl := {car bb};
+	 bb := cdr bb;
+      	 while bb and sf_red(car redl, x) = car bb do <<  % eq is possible here
+	    redl := car bb . redl;
+	    bb := cdr bb
+      	 >>;
+      	 redll := reversip redl . redll
+      >>;
+      % function(lambda(x, y); length x > length y)
+      redll := sort(redll, function ofsf_splitredlordp);
+      return redll
+   end;
+
+asserted procedure ofsf_splitredlordp(l1: SFList, l2: SFList): Boolean;
+   % We assume that [l1] and [l2] are non-empty and their cars contain the
+   % current variable as mvar.
+   begin scalar le1, le2, x, hit, res, d1, d2;
+      le1 := length l1;
+      le2 := length l2;
+      if le1 > le2 then
+	 return t;
+      if le1 < le2 then
+	 return nil;
+      x := mvar car l1;
+      while l1 and not hit do <<
+	 d1 := sfto_vardeg(car l1, x);
+	 d2 := sfto_vardeg(car l2, x);
+	 l1 := cdr l1;
+	 l2 := cdr l2;
+      	 if d1 > d2 then
+	    res := hit := t;
+	 if d1 < d2 then <<
+	    res := nil;
+	    hit := t
+	 >>
+      >>;
+      return res
+   end;
