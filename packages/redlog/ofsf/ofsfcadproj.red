@@ -399,33 +399,10 @@ asserted procedure sf_stdeg1(f: SF): Integer;
    else
       sf_stdeg1 lc f + ldeg f + sf_stdeg1 red f;
 
-asserted procedure sf_tdeg(f: SF, xl: KernelList): Integer;
-   % Total degree.
-   if null f or eqn(f, 0) then
-      -1
-   else if null xl then
-      0
-   else
-      sf_tdeg1(f, xl);
-
-asserted procedure sf_tdeg1(f: SF, xl: KernelList): Integer;
-   % Total degree subroutine.
-   if null f or eqn(f, 0) then
-      0
-   else if null xl then
-      0
-   else
-      max(sf_tdeg1(sf_lc(f, car xl), cdr xl) + sfto_vardeg(f, car xl),
-	 sf_tdeg1(sf_red(f, car xl), xl));
-
 asserted procedure sf_lc(f: SF, x: Kernel): SF;
    % Leading coefficient. [f] is a SF, [x] is a ID. Returns a SF. [f] has to be
    % ordered in a way compatible to a list containing [x].
    if not domainp f and mvar f eq x then lc f else f;
-
-asserted procedure sf_red(f: SF, x: Kernel): SF;
-   % Univariate reductum of a standard form.
-   if not domainp f and mvar f eq x then red f else nil;
 
 asserted procedure sf_discriminant(f: SF, x: Kernel): SF;
    % Caveat: deg(f, x) > 0 is required.
@@ -446,13 +423,6 @@ asserted procedure sf_factorize(f: SF): DottedPair;
 
 asserted procedure sf_factors(f: SF): SFList;
    for each a in cdr sf_factorize f collect car a;
-
-asserted procedure sf_cdl(f: SF, x: Kernel): List;
-   % Coefficient and degree list. Retuns a List of pairs [SF . Integer].
-   if sfto_mvartest(f, x) then
-      (lc f . ldeg f) . sf_cdl(red f, x)
-   else
-      {(f . 0)};
 
 asserted procedure sf_pscs(f: SF, g: SF, x: Kernel): SFList;
    % All principal subresultant coefficients of [f] and [g].
@@ -500,18 +470,6 @@ asserted procedure sf_diff(f: SF, x: Kernel): SF;
 
 % begin lto procedures
 
-asserted procedure lto_select(fn: Any, l: List): List;
-   % Select elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
-   % a list of ALPHA. Returns a list of ALPHA.
-   lto_select1(fn, l, nil);
-
-asserted procedure lto_select1(fn: Any, l: List, xarl: List): List;
-   % Select elements from a list. [fn] is a function with length([xarl])+1
-   % arguments, [l] and [xarl] are LIST.
-   for each a in l join
-      if apply(fn, a . xarl) then
-	 {a};
-
 asserted procedure lto_remove(fn: Any, l: List): List;
    % Remove elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
    % a list of ALPHA. Returns a list of ALPHA.
@@ -537,13 +495,6 @@ asserted procedure lto_rmpos(lst: List, posl: List): List;
 asserted procedure lto_drop(l: List, n: Integer): List;
    % Drop the first n elements of l.
    if l and n > 0 then lto_drop(cdr l, n-1) else l;
-
-asserted procedure lto_init(l: List): List;
-   % Initial part of a non-empty list, with the last element removed.
-   <<
-      assert(not null l);
-      if cdr l then car l . lto_init cdr l
-   >>;
 
 % end lto procedures
 
@@ -654,9 +605,6 @@ asserted procedure tgunion1(te: DottedPair, ste: List): List;
       tag_(tag_object te, union(tag_taglist te, tag_taglist car ste)) . cdr ste
    else
       car ste . tgunion1(te, cdr ste);
-
-asserted procedure notdomainp(f: Any): Boolean;
-   not domainp f;
 
 %%% --- Projection subsets --- %%%
 % PAIR(LIST(SF),ID)->LIST(SF)

@@ -357,6 +357,36 @@ asserted procedure sf_lc!*(f: SF, x: Kernel): SF;
       return reorder w
    end;
 
+asserted procedure sf_tdeg(f: SF, xl: KernelList): Integer;
+   % Total degree.
+   if null f or eqn(f, 0) then
+      -1
+   else if null xl then
+      0
+   else
+      sf_tdeg1(f, xl);
+
+asserted procedure sf_tdeg1(f: SF, xl: KernelList): Integer;
+   % Total degree subroutine.
+   if null f or eqn(f, 0) then
+      0
+   else if null xl then
+      0
+   else
+      max(sf_tdeg1(sf_lc(f, car xl), cdr xl) + sfto_vardeg(f, car xl),
+	 sf_tdeg1(sf_red(f, car xl), xl));
+
+asserted procedure sf_red(f: SF, x: Kernel): SF;
+   % Univariate reductum of a standard form.
+   if not domainp f and mvar f eq x then red f else nil;
+
+asserted procedure sf_cdl(f: SF, x: Kernel): List;
+   % Coefficient and degree list. Retuns a List of pairs [SF . Integer].
+   if sfto_mvartest(f, x) then
+      (lc f . ldeg f) . sf_cdl(red f, x)
+   else
+      {(f . 0)};
+
 % end sf and tagged sf procedures
 
 % begin lto procedures
@@ -378,6 +408,25 @@ asserted procedure lto_powerset(l: List): List;
       w := lto_powerset cdr l;
       return append(w, for each a in w collect car l . a)
    end;
+
+asserted procedure lto_select(fn: Any, l: List): List;
+   % Select elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
+   % a list of ALPHA. Returns a list of ALPHA.
+   lto_select1(fn, l, nil);
+
+asserted procedure lto_select1(fn: Any, l: List, xarl: List): List;
+   % Select elements from a list. [fn] is a function with length([xarl])+1
+   % arguments, [l] and [xarl] are LIST.
+   for each a in l join
+      if apply(fn, a . xarl) then
+	 {a};
+
+asserted procedure lto_init(l: List): List;
+   % Initial part of a non-empty list, with the last element removed.
+   <<
+      assert(not null l);
+      if cdr l then car l . lto_init cdr l
+   >>;
 
 % end lto procedures
 
