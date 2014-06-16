@@ -45,7 +45,7 @@
 
 const char *fontfilename[][2] =
 {
-#ifdef MAC
+#ifdef MACINTOSH
     {"CMU Typewriter Text Regular",   "cmuntt"},
     {"DejaVu Sans Mono",              "DejaVuSansMono"},
     {"AR PL New Sung",                "fireflysung"},

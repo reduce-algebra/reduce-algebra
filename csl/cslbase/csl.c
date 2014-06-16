@@ -1517,12 +1517,46 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     max_store_size = 0.0;
 #if (defined HAVE_LIBPTHREAD || defined WIN32) && !HAVE_CILK
     if (number_of_processors() >= 3)
-    {   sem_init(&kara_sem1a, 0, 0);
+    {
+#ifdef MACINTOSH
+        sem_unlink("/sem1a");
+        if ((kara_sem1a = sem_open("/sem1a", O_CREAT, 0644, 0)) == SEM_FAILED)
+        {   perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
+        sem_unlink("/sem1b");
+        if ((kara_sem1b = sem_open("/sem1b", O_CREAT, 0644, 0)) == SEM_FAILED)
+        {   perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
+        sem_unlink("/sem1c");
+        if ((kara_sem1c = sem_open("/sem1c", O_CREAT, 0644, 0)) == SEM_FAILED)
+        {   perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
+        sem_unlink("/sem2a");
+        if ((kara_sem2a = sem_open("/sem2a", O_CREAT, 0644, 0)) == SEM_FAILED)
+        {   perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
+        sem_unlink("/sem2b");
+        if ((kara_sem2b = sem_open("/sem2b", O_CREAT, 0644, 0)) == SEM_FAILED)
+        {   perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
+        sem_unlink("/sem2c");
+        if ((kara_sem2c = sem_open("/sem2c", O_CREAT, 0644, 0)) == SEM_FAILED)
+        {   perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
+#else /* MACINTOSH */
+        sem_init(&kara_sem1a, 0, 0);
         sem_init(&kara_sem1b, 0, 0);
         sem_init(&kara_sem1c, 0, 0);
         sem_init(&kara_sem2a, 0, 0);
         sem_init(&kara_sem2b, 0, 0);
         sem_init(&kara_sem2c, 0, 0);
+#endif /* MACINTOSH */
 #ifdef WIN32
         kara_thread1 = CreateThread(NULL, 0, kara_worker1, NULL, 0, NULL);
         kara_thread2 = CreateThread(NULL, 0, kara_worker2, NULL, 0, NULL);
