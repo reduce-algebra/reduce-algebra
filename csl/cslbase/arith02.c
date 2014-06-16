@@ -713,8 +713,13 @@ static void shownum(FILE *log, uint32_t *p, int n, const char *s)
 #endif
 
 #ifndef WITH_CILK
+#ifdef MACINTOSH
+sem_t *kara_sem1a, *kara_sem1b, *kara_sem1c,
+      *kara_sem2a, *kara_sem2b, *kara_sem2c;
+#else
 sem_t kara_sem1a, kara_sem1b, kara_sem1c,
       kara_sem2a, kara_sem2b, kara_sem2c;
+#endif
 #endif /* ! WITH_CILK */
 
 static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
@@ -745,32 +750,62 @@ KARARESULT WINAPI kara_worker1(KARAARG p)
  * fall out of step and that would be bad. So I loop on the sem_wait until
  * it returns zero.
  */
-        while (sem_wait(&kara_sem1a) != 0);  // wait until asked to do something.
+#ifdef MACINTOSH
+        while (sem_wait(kara_sem1a) != 0)
+            /*NOTHING*/;   /* wait until asked to do something */
+#else
+        while (sem_wait(&kara_sem1a) != 0)
+            /*NOTHING*/;  /* wait until asked to do something */
+#endif
         shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
         shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
         if (kara_1_lenc != 0)
             long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
                        kara_1_lena, kara_1_lenb, kara_1_lenc);
         shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
+#ifdef MACINTOSH
+        sem_post(kara_sem1b);   // announce that result is ready.
+#else
         sem_post(&kara_sem1b);  // announce that result is ready.
+#endif
 
-        while (sem_wait(&kara_sem1c) != 0);  // wait until asked to do something.
+#ifdef MACINTOSH
+        while (sem_wait(kara_sem1c) != 0)
+            /*NOTHING*/;   /* wait until asked to do something */
+#else
+        while (sem_wait(&kara_sem1c) != 0)
+            /*NOTHING*/;  /* wait until asked to do something */
+#endif
         shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
         shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
         if (kara_1_lenc != 0)
             long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
                        kara_1_lena, kara_1_lenb, kara_1_lenc);
         shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
+#ifdef MACINTOSH
+        sem_post(kara_sem1a);   // announce that result is ready.
+#else
         sem_post(&kara_sem1a);  // announce that result is ready.
+#endif
 
-        while (sem_wait(&kara_sem1b) != 0);  // wait until asked to do something.
+#ifdef MACINTOSH
+        while (sem_wait(kara_sem1b) != 0)
+            /*NOTHING*/;   /* wait until asked to do something */
+#else
+        while (sem_wait(&kara_sem1b) != 0)
+            /*NOTHING*/;  /* wait until asked to do something */
+#endif
         shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
         shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
         if (kara_1_lenc != 0)
             long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
                        kara_1_lena, kara_1_lenb, kara_1_lenc);
         shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
+#ifdef MACINTOSH
+        sem_post(kara_sem1c);   // announce that result is ready.
+#else
         sem_post(&kara_sem1c);  // announce that result is ready.
+#endif
     }
 /* The code here never exits! */
     return (KARARESULT)0;
@@ -790,32 +825,62 @@ KARARESULT WINAPI kara_worker2(KARAARG p)
 #endif
     for (;;)
     {
-        while (sem_wait(&kara_sem2a) != 0);  // wait until asked to do something.
+#ifdef MACINTOSH
+        while (sem_wait(kara_sem2a) != 0)
+            /*NOTHING*/;   /* wait until asked to do something */
+#else
+        while (sem_wait(&kara_sem2a) != 0)
+            /*NOTHING*/;  /* wait until asked to do something */
+#endif
         shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
         shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
         if (kara_2_lenc != 0)
             long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
                        kara_2_lena, kara_2_lenb, kara_2_lenc);
         shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
+#ifdef MACINTOSH
+        sem_post(kara_sem2b);   // announce that result is ready.
+#else
         sem_post(&kara_sem2b);  // announce that result is ready.
+#endif
 
-        while (sem_wait(&kara_sem2c) != 0);  // wait until asked to do something.
+#ifdef MACINTOSH
+        while (sem_wait(kara_sem2c) != 0)
+            /*NOTHING*/;   /* wait until asked to do something */
+#else
+        while (sem_wait(&kara_sem2c) != 0)
+            /*NOTHING*/;  /* wait until asked to do something */
+#endif
         shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
         shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
         if (kara_2_lenc != 0)
             long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
                        kara_2_lena, kara_2_lenb, kara_2_lenc);
         shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
+#ifdef MACINTOSH
+        sem_post(kara_sem2a);   // announce that result is ready.
+#else
         sem_post(&kara_sem2a);  // announce that result is ready.
+#endif
 
-        while (sem_wait(&kara_sem2b) != 0);  // wait until asked to do something.
+#ifdef MACINTOSH
+        while (sem_wait(kara_sem2b) != 0)
+            /*NOTHING*/;   /* wait until asked to do something */
+#else
+        while (sem_wait(&kara_sem2b) != 0)
+            /*NOTHING*/;  /* wait until asked to do something */
+#endif
         shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
         shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
         if (kara_2_lenc != 0)
             long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
                        kara_2_lena, kara_2_lenb, kara_2_lenc);
         shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
+#ifdef MACINTOSH
+        sem_post(kara_sem2c);   // announce that result is ready.
+#else
         sem_post(&kara_sem2c);  // announce that result is ready.
+#endif
     }
 /* The code here never exits! */
     return (KARARESULT)0;
@@ -867,6 +932,17 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 #ifndef WITH_CILK
         switch (semaphore_usage)
         {
+#ifdef MACINTOSH
+    case 0: sem_post(kara_sem1a);   /* allow worker 1 to start. */
+            sem_post(kara_sem2a);   /* allow worker 2 to start. */
+            break;
+    case 1: sem_post(kara_sem1c);   /* allow worker 1 to start. */
+            sem_post(kara_sem2c);   /* allow worker 2 to start. */
+            break;
+    case 2: sem_post(kara_sem1b);   /* allow worker 1 to start. */
+            sem_post(kara_sem2b);   /* allow worker 2 to start. */
+            break;
+#else
     case 0: sem_post(&kara_sem1a);  /* allow worker 1 to start. */
             sem_post(&kara_sem2a);  /* allow worker 2 to start. */
             break;
@@ -876,6 +952,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
             sem_post(&kara_sem2b);  /* allow worker 2 to start. */
             break;
+#endif
         }
 #else /* WITH_CILK */
         cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
@@ -889,18 +966,45 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 #ifndef WITH_CILK
         switch (semaphore_usage)
         {
-    case 0: while (sem_wait(&kara_sem1b) != 0);  /* wait for worker 1 to finish. */
-            while (sem_wait(&kara_sem2b) != 0);  /* wait for worker 2 to finish. */
+#ifdef MACINTOSH
+    case 0: while (sem_wait(kara_sem1b) != 0)
+                /*NOTHING*/;   /* wait for worker 1 to finish. */
+            while (sem_wait(kara_sem2b) != 0)
+                /*NOTHING*/;   /* wait for worker 2 to finish. */
             semaphore_usage = 1;
             break;
-    case 1: while (sem_wait(&kara_sem1a) != 0);  /* wait for worker 1 to finish. */
-            while (sem_wait(&kara_sem2a) != 0);  /* wait for worker 2 to finish. */
+    case 1: while (sem_wait(kara_sem1a) != 0)
+                /*NOTHING*/;   /* wait for worker 1 to finish. */
+            while (sem_wait(kara_sem2a) != 0)
+                /*NOTHING*/;   /* wait for worker 2 to finish. */
             semaphore_usage = 2;
             break;
-    case 2: while (sem_wait(&kara_sem1c) != 0);  /* wait for worker 1 to finish. */
-            while (sem_wait(&kara_sem2c) != 0);  /* wait for worker 2 to finish. */
+    case 2: while (sem_wait(kara_sem1c) != 0)
+                /*NOTHING*/;   /* wait for worker 1 to finish. */
+            while (sem_wait(kara_sem2c) != 0)
+                /*NOTHING*/;   /* wait for worker 2 to finish. */
             semaphore_usage = 0;
             break;
+#else
+    case 0: while (sem_wait(&kara_sem1b) != 0)
+                /*NOTHING*/;  /* wait for worker 1 to finish. */
+            while (sem_wait(&kara_sem2b) != 0)
+                /*NOTHING*/;  /* wait for worker 2 to finish. */
+            semaphore_usage = 1;
+            break;
+    case 1: while (sem_wait(&kara_sem1a) != 0)
+                /*NOTHING*/;  /* wait for worker 1 to finish. */
+            while (sem_wait(&kara_sem2a) != 0)
+                /*NOTHING*/;  /* wait for worker 2 to finish. */
+            semaphore_usage = 2;
+            break;
+    case 2: while (sem_wait(&kara_sem1c) != 0)
+                /*NOTHING*/;  /* wait for worker 1 to finish. */
+            while (sem_wait(&kara_sem2c) != 0)
+                /*NOTHING*/;  /* wait for worker 2 to finish. */
+            semaphore_usage = 0;
+            break;
+#endif
         }
 #else /* WITH_CILK */
         cilk_sync;
@@ -955,6 +1059,17 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 #ifndef WITH_CILK
     switch (semaphore_usage)
     {
+#ifdef MACINTOSH
+case 0: sem_post(kara_sem2a);   /* allow worker 1 to start. */
+        sem_post(kara_sem1a);   /* allow worker 2 to start. */
+        break;
+case 1: sem_post(kara_sem1c);   /* allow worker 1 to start. */
+        sem_post(kara_sem2c);   /* allow worker 2 to start. */
+        break;
+case 2: sem_post(kara_sem1b);   /* allow worker 1 to start. */
+        sem_post(kara_sem2b);   /* allow worker 2 to start. */
+        break;
+#else
 case 0: sem_post(&kara_sem2a);  /* allow worker 1 to start. */
         sem_post(&kara_sem1a);  /* allow worker 2 to start. */
         break;
@@ -964,6 +1079,7 @@ case 1: sem_post(&kara_sem1c);  /* allow worker 1 to start. */
 case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
         sem_post(&kara_sem2b);  /* allow worker 2 to start. */
         break;
+#endif
     }
 #else /* WITH_CILK */
     if (kara_1_lenc != 0) 
@@ -1008,6 +1124,20 @@ case 2: sem_post(&kara_sem1b);  /* allow worker 1 to start. */
 #ifndef WITH_CILK
     switch (semaphore_usage)
     {
+#ifdef MACINTOSH
+case 0: while (sem_wait(kara_sem1b) != 0);   /* wait for worker 1 to finish. */
+        while (sem_wait(kara_sem2b) != 0);   /* wait for worker 2 to finish. */
+        semaphore_usage = 1;
+        break;
+case 1: while (sem_wait(kara_sem1a) != 0);   /* wait for worker 1 to finish. */
+        while (sem_wait(kara_sem2a) != 0);   /* wait for worker 2 to finish. */
+        semaphore_usage = 2;
+        break;
+case 2: while (sem_wait(kara_sem1c) != 0);   /* wait for worker 1 to finish. */
+        while (sem_wait(kara_sem2c) != 0);   /* wait for worker 2 to finish. */
+        semaphore_usage = 0;
+        break;
+#else
 case 0: while (sem_wait(&kara_sem1b) != 0);  /* wait for worker 1 to finish. */
         while (sem_wait(&kara_sem2b) != 0);  /* wait for worker 2 to finish. */
         semaphore_usage = 1;
@@ -1020,6 +1150,7 @@ case 2: while (sem_wait(&kara_sem1c) != 0);  /* wait for worker 1 to finish. */
         while (sem_wait(&kara_sem2c) != 0);  /* wait for worker 2 to finish. */
         semaphore_usage = 0;
         break;
+#endif
     }
 #else /* WITH_CILK */
     cilk_sync;

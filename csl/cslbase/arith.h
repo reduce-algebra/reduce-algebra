@@ -230,8 +230,13 @@ extern KARARESULT kara_worker2(KARAARG p);
 
 #endif
 
+#ifdef MACINTOSH
+extern sem_t *kara_sem1a, *kara_sem1b, *kara_sem1c,
+             *kara_sem2a, *kara_sem2b, *kara_sem2c;
+#else
 extern sem_t kara_sem1a, kara_sem1b, kara_sem1c,
              kara_sem2a, kara_sem2b, kara_sem2c;
+#endif
 
 extern int karatsuba_parallel;
 
