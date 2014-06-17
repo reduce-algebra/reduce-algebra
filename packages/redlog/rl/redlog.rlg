@@ -443,9 +443,9 @@ rlnnf hugo;
 rlpnf hugo;
 
 
-all y1 ex y0 (((a = 0 and b = 0 and y < 0) and ( - a + y0 >= 0 or a > 0))
+all y2 ex y1 (((a = 0 and b = 0 and y < 0) and ( - a + y1 >= 0 or a > 0))
 
- or ((a <> 0 or b <> 0 or y >= 0) and ( - a + y1 < 0 and a <= 0)))
+ or ((a <> 0 or b <> 0 or y >= 0) and ( - a + y2 < 0 and a <= 0)))
 
 
 % Length and Part

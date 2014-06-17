@@ -231,23 +231,75 @@ procedure cl_interchange(l,junctor,a);
 procedure cl_contains!-quantifier(l);
    l and (rl_quap rl_op car l or cl_contains!-quantifier(cdr l));
 
-procedure cl_rename!-vars(f);
-   % Common logic rename variables. [f] is a formula. Returns an
-   % equivalent formula in which each quantified variable is unique,
-   % i.e., occurs neither boundly or freely elsewhere in [f].
-   car cl_rename!-vars1(f,cl_replace!-varl f);
+asserted procedure cl_rename!-vars(f: Formula): Formula;
+   % Common logic rename variables. [f] is a formula. Returns an equivalent
+   % formula in which each quantified variable is unique, i.e., occurs neither
+   % boundly nor freely elsewhere in [f].
+   car cl_rename!-vars1(f, cl_replace!-varl f);
 
-procedure cl_replace!-varl(f);
-   begin scalar a,d,all,replace;
-      << a := car vl1; d := cdr vl1 >>
- 	 where vl1=cl_varl1 f;
-      all := a;
-      for each x on d do <<
-      	 if car x memq cdr x or car x memq a then
-      	    replace := lto_insert((car x) . 0,replace);
-      	 all := lto_insert(car x,all)
+asserted procedure cl_replace!-varl(f: Formula): DottedPair;
+   begin scalar fvl, bvl, avl, x, replacel;
+      fvl . bvl := cl_varl1 f;  % We assume that [fvl] and [bvl] do not contain duplicates.
+      avl := append(fvl, bvl);
+      while bvl do <<
+	 x := pop bvl;
+      	 if x memq fvl then
+      	    push(x . 1, replacel)
+	 else
+      	    push(x . 0, replacel)
       >>;
-      return all . replace
+      return avl . replacel
+   end;
+
+asserted procedure cl_rename!-vars1(f: Formula, vl: DottedPair): DottedPair;
+   begin scalar op, w, rnf, rnb, nvar;
+      op := rl_op f;
+      if rl_boolp op then <<
+	 for each ff in rl_argn f do <<
+	    rnf . vl := cl_rename!-vars1(ff, vl);
+	    push(rnf, w)
+	 >>;
+      	 return rl_mkn(op, reversip w) . vl
+      >>;
+      if rl_quap op then <<
+	 rnf . vl := cl_rename!-vars1(rl_mat f, vl);
+	 w := assoc(rl_var f, cdr vl);
+	 if w then <<
+	    if eqn(cdr w, 0) then <<
+	       cdr w := 1;
+	       return rl_mkq(op, rl_var f, rnf) . vl
+	    >>;
+	    repeat <<
+	       nvar := mkid(car w, cdr w);
+	       cdr w := cdr w + 1
+	    >> until not (nvar memq car vl or get(nvar, 'avalue));
+	    push(nvar, car vl);
+	    rnf := cl_apply2ats1(rnf, 'rl_varsubstat, {nvar, car w});
+	    return rl_mkq(op, nvar, rnf) . vl
+	 >>;
+	 return rl_mkq(op, rl_var f, rnf) . vl
+      >>;
+      if rl_bquap op then <<  % a bounded quantifier in PASF
+	 rnf . vl := cl_rename!-vars1(rl_mat f, vl);
+	 w := assoc(rl_var f, cdr vl);
+	 if w then <<
+	    if eqn(cdr w, 0) then <<
+	       cdr w := 1;
+	       return rl_mkbq(op, rl_var f, rl_b f, rnf) . vl
+	    >>;
+	    repeat <<
+	       nvar := mkid(car w, cdr w);
+	       cdr w := cdr w + 1
+	    >> until not (nvar memq car vl or get(nvar,'avalue));
+	    push(nvar, car vl);
+	    rnb := cl_apply2ats1(rl_b f, 'rl_varsubstat, {nvar, car w});
+	    rnf := cl_apply2ats1(rnf, 'rl_varsubstat, {nvar, car w});
+	    return rl_mkbq(op, nvar, rnb, rnf) . vl
+	 >>;
+	 return rl_mkbq(op, rl_var f, rl_b f, rnf) . vl
+      >>;
+      % [f] is a truth value or an atomic formula.
+      return f . vl
    end;
 
 procedure cl_fvarl(f);
@@ -326,49 +378,6 @@ asserted procedure cl_qvarl1(f: Formula): KernelL;
       >>;
       % tval or atomic formula
       return nil
-   end;
-
-procedure cl_rename!-vars1(f,vl);
-   begin scalar op,h,w,newid;
-      op := rl_op f;
-      if rl_boolp op then
-    	 return rl_mkn(op,for each x in rl_argn f collect <<
-      	    vl := cdr rnv;
-      	    car rnv
-    	 >> where rnv=cl_rename!-vars1(x,vl)) . vl;
-      if rl_quap op then <<
-      	 << h := car rnv; vl := cdr rnv >>
- 	    where rnv=cl_rename!-vars1(rl_mat f,vl);
-      	    if (w := assoc(cadr f,cdr vl)) then <<
-               repeat <<
-               	  newid := mkid(car w,cdr w);
-               	  cdr w := cdr w + 1
-               >> until not (newid memq car vl or get(newid,'avalue));
-               car vl := lto_insertq(newid,car vl);
-	       return rl_mkq(op,newid,cl_apply2ats1(
-		  h,'rl_varsubstat,{newid,car w})) . vl
-      	    >>;
-	    return rl_mkq(op,rl_var f,h) . vl
-      >>;
-      % /LASARUK
-      if rl_bquap op then <<
-      	 << h := car rnv; vl := cdr rnv >>
- 	    where rnv=cl_rename!-vars1(rl_mat f,vl);
-	    if (w := assoc(rl_var f,cdr vl)) then <<
-	       repeat <<
-		  newid := mkid(car w,cdr w);
-		  cdr w := cdr w + 1
-	       >> until not (newid memq car vl or get(newid,'avalue));
-               car vl := lto_insertq(newid,car vl);
-	       return rl_mkbq(op, newid,
-	       	  cl_apply2ats1(rl_b f, 'rl_varsubstat, {newid, car w}),
-	       	  cl_apply2ats1(h,'rl_varsubstat, {newid, car w})) . vl
-      	    >>;
-	    return rl_mkbq(op,rl_var f,rl_b f, h) . vl
-      >>;
-      % /LASARUK
-      % [f] is a truth value or an atomic formula.
-      return f . vl;
    end;
 
 procedure cl_apnf(phi);
