@@ -754,9 +754,11 @@ procedure aex_tgpairwiseprime1(ael, x);
       	 ae1 := tag_(aex_quot(tag_object ae1, g, x), tag_taglist ae1);
 	 if deg > 0 then
 	    ae2 := tag_(tag_object ae2, union(tag_taglist ae1, tag_taglist ae2));
- 	 aelnew := ae2 . aelnew
+ 	 push(ae2, aelnew)
       >>;
-      return ae1 . aelnew
+      aelnew := reversip aelnew;
+      push(ae1, aelnew);
+      return append(aelnew, ael)
    end;
 
 % Tagged root isolation. The following four functions use the incremental root
@@ -801,7 +803,7 @@ asserted procedure caddata_mkblank(): CadData;
       putv(cd,1, 'undefined); % [phi] is a prenex ofsf formula for which a CAD is to be constructed.
       putv(cd,2, 'undefined); % [k] is an integer; the number of free variables in [phi].
       putv(cd,3, 'undefined); % [r] is an integer; the number of all variables in [phi].
-      putv(cd,4, 'undefined); % [varl] is a list kernels; all variables in [phi]. This determines the projection order: The last variable is projected first, the first variable is projected last.
+      putv(cd,4, 'undefined); % [varl] is a list of kernels; all variables in [phi]. This list also determines the projection order: The last variable is projected first, the first variable is projected last.
       putv(cd,5, 'undefined); % [qal] is a list of dotted pairs [(x . Q)], where [x] is a variable and [Q] is a quantifier; quantifier prefix of [phi].
       putv(cd,6, 'undefined); % [psi] is a quantifier-free ofsf formula; matrix of [phi].
       putv(cd,7, 'undefined); % [ff] is a vector of lists of SF; projection polynomials.
@@ -813,10 +815,9 @@ asserted procedure caddata_mkblank(): CadData;
       putv(cd,13,'undefined); % [theo] is a list of negated atoms.
       putv(cd,14,'undefined); % [hh] is a vector of vectors of tagged SF.
       putv(cd,15,'undefined); % [l] is an integer; the number of free variables plus the number of variables in the outermost quantifier block of [phi]; if there is no quantifier, [l] is zero
-      % putv(cd,16,ffid);     % [Fid] is a vector of lists of ids.
-      putv(cd,16,'undefined);
-      putv(cd,17,'undefined); % [aa] is list of SF.
-      putv(cd,18,'undefined); % [aaplus] is list of SF.
+      putv(cd,16,'undefined); % [ffid] is a vector of lists of ids.
+      putv(cd,17,'undefined); % [aa] is list of SF; all polynomials occurring in [phi].
+      putv(cd,18,'undefined); % [aaplus] is list of SF; polynomials to be added to the projection set before computing the projection.
       return cd
    end;
 
