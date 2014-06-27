@@ -186,6 +186,30 @@ symbolic procedure xread1 u;
   preced:
         if null x then if y=0 then go to end2 else nil
 %        else if z eq 'setq then nil
+% The next line is intended to generate a diagnostic in cases such as
+%       a ^ - b * c
+% and   a / - b / c
+% where the precedence of the prefix operator is lower than that of the
+% two infix operators surrounding it. In general it is intended to encourage
+% people to write something like
+%       a ^ ( - b ) * c
+% with explicit parentheses. It tries to avoid raising complaints in
+% cases such as
+%       a ^ - b + c
+% where the precedent rules seem to manage to lead to results that more
+% people would view as "expected". Note that in Reduce parsers certainly from
+% version 3,3 onwards and probably for ever the following parses applied
+%      - a * b       => - (a * b)
+%      a / - b / c   => a / (- (b / c))      !!!!!
+%      a ^ - b * c   => a ^ (- (b * c))      !!!!!
+%      a ^ (- b) * c => (a ^ (-b)^ * c
+% and because of the very long-standing nature of this behaviour a silent
+% change seems dangerous. I hope that the test here detects and flags as
+% problematic a minimal set of cases that deserve explicit brackets for
+% avopidance of ambiguity, and so it will not hurt existing safe code.
+         else if v and eqcar(cdr v, '!*!*un!*!*) and
+                 cdr x and y >= caar x and y <= caadr x then
+            symerr("Please use parentheses around use of unary operator", nil) 
         % Makes parsing a + b := c more natural.
          else if y<caar x
            or (y=caar x
@@ -193,7 +217,9 @@ symbolic procedure xread1 u;
                                  and null flagp(z,'right))
                              or get(cdar x,'alt)))
           then go to pr2;
-  pr1:  x:= (y . z) . x;
+  pr1:  %if v and eqcar(cdr v,'!*!*un!*!*) and not (car v eq '!*!*un!*!*)
+        %  then symerr("Invalid combination of prefix and infix operator",nil);
+        x:= (y . z) . x;
         if null(z eq '!*comma!*) then go to in3
          else if cdr x or null u or u memq '(lambda paren)
             or flagp(u,'struct)

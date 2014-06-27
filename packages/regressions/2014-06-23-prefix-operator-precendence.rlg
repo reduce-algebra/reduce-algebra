@@ -1,0 +1,79 @@
+
+load_package sets;
+
+
+
+on defn;
+
+
+
+--b;(aeval (list 'minus (list 'minus 'b)))
+
+
+--a*b;(aeval (list 'minus (list 'minus (list 'times 'a 'b))))
+
+
+--a*--b;(aeval
+           (list
+              'minus
+              (list 'minus (list 'times 'a (list 'minus (list 'minus 'b)))) ))
+
+
+a ^ - b * c ;(aeval (list 'expt 'a (list 'minus (list 'times 'b 'c))))
+
+
+a / - b / c ;(aeval (list 'quotient 'a (list 'minus (list 'quotient 'b 'c))))
+
+
+a ^ - b + c ;(aeval (list 'plus (list 'expt 'a (list 'minus 'b)) 'c))
+
+
+a ^ (- b) * c ;(aeval (list 'times (list 'expt 'a (list 'minus 'b)) 'c))
+
+
+- a * b ;(aeval (list 'minus (list 'times 'a 'b)))
+
+
+-b*-c;(aeval (list 'minus (list 'times 'b (list 'minus 'c))))
+
+
+a * b^-2 * c^3 ;(aeval
+                   (list
+                      'times
+                      'a
+                      (list
+                         'expt
+                         'b
+                         (list 'minus (list 'times 2 (list 'expt 'c 3)))) ))
+
+
+a intersection union b intersection c;(aeval
+                                         (list
+                                            'intersection
+                                            'a
+                                            (list
+                                               'union
+                                               (list 'intersection 'b 'c))))
+
+
+a intersection (union b) intersection c;(aeval
+                                           (list
+                                              'intersection
+                                              'a
+                                              (list 'union 'b)
+                                              'c))
+
+
+a union intersection b union c;(aeval
+                                  (list 'union 'a (list 'intersection 'b) 'c))
+
+
+a union (intersection b) union c;(aeval
+                                    (list 'union 'a (list 'intersection 'b) 'c))
+
+
+off defn;
+
+
+end;
+

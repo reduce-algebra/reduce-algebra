@@ -3,6 +3,12 @@ load_package sets;
 
 on defn;
 
+--b;
+
+--a*b;
+
+--a*--b;
+
 a ^ - b * c ;
 
 a / - b / c ;
