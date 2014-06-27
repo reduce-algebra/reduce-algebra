@@ -467,7 +467,7 @@ a:  if null terminalp() then progn(
 % but if the name is not recognised or the numeric value is out of
 % range the sequence will just be treated as raw characters and all
 % this special treatment will have been merely a diversion.
-    y := intern list!-to!-string (x := cdr reverse peekchar!*);
+    y := intern list2string (x := cdr reverse peekchar!*);
 % For bootstrapping there has to be a "!" before the "_" on the next line.
     if (y := get(y, 'unicode!_character)) then progn(
        (peekchar!* := nil),
