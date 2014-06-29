@@ -401,13 +401,13 @@ symbolic procedure intg(u1,u2,u3);
                    listplus(car redpar1(defint_gb u1,defint_gm u1),u2),
                    listplus(
                      listmin(car redpar1(defint_ga u1,defint_gn u1)),
-                     diff1sq('(1 . 1),u2)))),
+                     subtrsq('(1 . 1),u2)))),
                multgamma(
                  append(
                    listplus(cdr redpar1(defint_ga u1,defint_gn u1),u2),
                    listplus(
                      listmin(cdr redpar1(defint_gb u1,defint_gm u1)),
-                     diff1sq('(1 . 1),u2)))))));
+                     subtrsq('(1 . 1),u2)))))));
    return multsq(if numberp(mellincoef) then simp(mellincoef)
                                      else cadr mellincoef,
                  v);
@@ -1440,7 +1440,7 @@ symbolic procedure trpar(u1,u2,u3);
            (v2:=dubdeg(cdr simp u1,'x))='FAIL or
            (v3:=dubdeg(car simp u2,u3))='FAIL or
            (v4:=dubdeg(cdr simp u2,u3))='FAIL then return 'FAIL;
-   a!3:=multsq(diff1sq(v1,v2), diff1sq(v3,v4));
+   a!3:=multsq(subtrsq(v1,v2), subtrsq(v3,v4));
    l!1:=subpref(u1,u2,'x);
    l!1:=subpref(l!1,1,u3);
    return list(simp!*(l!1),a!3);
@@ -1489,12 +1489,12 @@ symbolic procedure ccgf(u);
      '(2 . 1))$
 
 symbolic procedure vgg(u1,u2);
-  diff1sq(
+  subtrsq(
      simp(defint_gq u2 - defint_gp u2),
      multsq(defint_gr u2,simp(defint_gq u1 - defint_gp u1)))$
 
 symbolic procedure nugg(u1,u2,u3);
-  diff1sq( diff1sq('(1 . 1), multsq(u3, simp(defint_gq u1 - defint_gp u1))),
+  subtrsq( subtrsq('(1 . 1), multsq(u3, simp(defint_gq u1 - defint_gp u1))),
            addsq(mugf u2,mugf u1))$
 
 symbolic inline procedure sumlistsq(u);
@@ -1511,7 +1511,7 @@ symbolic procedure coefintg(u1,u2,u3);
      expdeg(defint_gk u2 . 1,mugf u2),
      expdeg(defint_gl u2 . 1,
        addsq(mugf u1,
-         diff1sq(
+         subtrsq(
             multsq(u3,(defint_gq u1-defint_gp u1) . 1),
             '(1 . 1)))),
      expdeg(defint_gw u1,negsq u3),
