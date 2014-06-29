@@ -2800,10 +2800,6 @@ length one_forms janet;
 length(C := invariants janet);
 
 
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
 12
 
 solve(for i:=1:length C collect

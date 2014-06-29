@@ -39,10 +39,6 @@ lisp(depl!*:=nil)$
 setcrackflags()$
 
 
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
 lisp(print_:=nil)$
 
        
