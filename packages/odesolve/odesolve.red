@@ -91,7 +91,7 @@ fluid '(!*evallhseqp !*multiplicities !*div !*intstr
 fluid '(kord!* depl!*)$
 
 % Common global ODESolve variables:
-fluid '(!*odesolve!-solvable!-xy)$
+fluid '(!*odesolve!-solvable!-xy !*df_partial)$
 
 symbolic operator member, delete, !*eqn2a, depends, smember, gensym$
 

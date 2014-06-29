@@ -109,11 +109,11 @@ symbolic procedure odesolve!-eval args;
       NoInt2Int reval result else NoInt2Int result) where result =
       begin scalar !*evallhseqp, !*multiplicities, !*div, !*intstr,
             !*exp, !*mcd, !*factor, !*ifactor, !*precise,
-            !*nopowers, !*algint, !*echo;
+            !*nopowers, !*algint, !*echo, !*df_partial;
          %% Turn echo off to stop Win32 PSL REDUCE (only)
          %% outputting its trigsimp lap code at the end of
          %% odesolve.tst.  (Don't ask!)
-         !*evallhseqp := !*exp := !*mcd := t;
+         !*df_partial := !*evallhseqp := !*exp := !*mcd := t;
          return odesolve!-eval1 args
       end$
 

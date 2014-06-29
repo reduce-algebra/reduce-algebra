@@ -32,7 +32,7 @@ module diff; % Differentiation package.
 
 fluid '(!*depend frlis!* powlis!* subfg!* wtl!* depl!*);
 
-fluid '(!*allowdfint !*dfint !*expanddf !*intflag!*);
+fluid '(!*allowdfint !*dfint !*expanddf !*intflag!* !*df_partial);
 
 global '(mcond!*);
 
@@ -108,6 +108,13 @@ deflist('((commutedf ((t (off1 'nocommutedf) (rmsubs))))
 
 switch expanddf;
 deflist('((expanddf ((t (rmsubs))))), 'simpfg);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% !*df_partial is for interfacing with the odesolve package that needs
+% for its internal operation the symbolic partial derivative of an
+% algebraic operator u(a(v),b(v),...) via the chain rule, expressed as:
+%    df(u(v),v) = u_1(a(v),b(v),...)*df(a,v) + ...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -330,6 +337,21 @@ symbolic procedure diffp(u,v);
                                         w := diffsq(w,car el);
                                  go to e>>
                        else w := 'df . w
+        >> else if !*df_partial and !*expanddf and not atom cadr u then <<
+           % Derivative of an algebraic operator u(a(v),...) via the
+           % chain rule: df(u(v),v) = u_1(a(v),b(v),...)*df(a,v) + ...
+           x := intern compress nconc(explode car u, '(!! !! !_));
+           y := cdr u;  w := nil ./ 1;  m := 0;
+           for each a in y do
+           begin scalar b;
+              m:=m+1;
+              if numr(b:=simp{'df,a,v}) then <<
+                 z := mkid(x, m);
+                 put(z, 'simpfn, 'simpiden);
+                 w := addsq(w, multsq(simp(z . y), b))
+              >>
+           end;
+           go to e
         >> else w := {'df,u,v};
    j:   if (x := opmtch w) then w := simp x
          % At this point nested df's may have been collapsed, so
