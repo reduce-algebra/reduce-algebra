@@ -1,0 +1,49 @@
+Algorithm for incomplete Gamma Integral:
+
+  http://www.jstor.org/discover/10.2307/2346339?uid=3737864&uid=2129&uid=2&uid=70&uid=4&sid=21103807043597
+
+Incomplete Gamma function at Wolfram Mathworld:
+
+  http://mathworld.wolfram.com/IncompleteGammaFunction.html
+
+Computational Procedure for incomplete Gamma functions:
+
+  https://www.cs.purdue.edu/homes/wxg/selected_works/section_02/068.pdf
+
+An efficient algorithm for accelerating the convergence of oscillatory series, useful for computing the polylogarithm and Hurwitz zeta functions
+
+  http://arxiv.org/abs/math/0702243
+
+Numerical evaluation of multiple polylogarithms
+
+  http://arxiv.org/pdf/hep-ph/0410259.pdf
+
+Lerch transcendent at Wolfram Mathworld:
+
+  http://mathworld.wolfram.com/LerchTranscendent.html
+
+Arithmetic-Geometric Mean at Wolfram Mathworld:
+
+  http://mathworld.wolfram.com/Arithmetic-GeometricMean.html
+
+MEANS OF COMPLEX NUMBERS
+
+  http://faculty.sfasu.edu/robersonpamel/txcmj/vol1/MeansOfComplexNumbers.PDF
+
+complex arithmetic-geometric mean
+
+  http://planetmath.org/sites/default/files/texpdf/39480.pdf
+
+AN EFFICIENT ALGORITHM FOR ACCELERATING THE CONVERGENCE
+OF OSCILLATORY SERIES, USEFUL FOR COMPUTING THE
+POLYLOGARITHM AND HURWITZ ZETA FUNCTIONS#
+
+  http://www.linas.org/math/hurwitz.pdf
+
+The Computation of Polylogarithms
+
+  http://kar.kent.ac.uk/21052/1/ThecompD.pdf
+
+Computation of Catalan's constant:
+
+  http://www.gutenberg.org/cache/epub/682/pg682.html
