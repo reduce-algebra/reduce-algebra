@@ -333,8 +333,11 @@ symbolic procedure solve11(e1,x1,var,mu);
                 then y := solnsmerge(solvesq(subtrsq(simp!* cadr x1,
                                  simp!* list(z,mk!*sq lincoeff)),
                                  var,mu),y)
-               else y := list(list subtrsq(simp!* x1,lincoeff),nil,mu)
-                            . y>>;
+%% RmS: at this point we have a kernel in x1, nontrivial in var,
+%%      but without an idea how to solve. So, we return a roots_of form
+%               else y := list(list subtrsq(simp!* x1,lincoeff),nil,mu)
+               else y := solnsmerge(mkrootsof(subtrsq(simp!* x1,lincoeff),var,mu),
+                             y)>>;
          return y
         end
        else if hipow=2

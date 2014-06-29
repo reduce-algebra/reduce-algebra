@@ -210,13 +210,9 @@ operator f;
 solve((x-1)*(x+1)*(x-2)*(x+2)*(x-3)*(x*log(x)-1)*(f(x)-1),x);
 
 
-*** airy_ai already defined as operator 
+{x=root_of(f(x_) - 1,x_,tag_4),
 
-*** airy_bi already defined as operator 
-
-{f(x) - 1=0,
-
- x=root_of(log(x_)*x_ - 1,x_,tag_2),
+ x=root_of(log(x_)*x_ - 1,x_,tag_3),
 
  x=3,
 
@@ -261,7 +257,7 @@ solve((x**(1/2)-(x-a)**(1/3))*(acos x-acos(2*x-b))* (2*log x
                  2*(e  - 1)
 
                       2/3
- x=root_of(( - a + x_)    - x_,x_,tag_7),
+ x=root_of(( - a + x_)    - x_,x_,tag_9),
 
  x=b}
 
@@ -604,7 +600,7 @@ solve ({e^x - e^(1/2 * x) - 7},{x});
    solve({sin x + x - 1/2},{x});
 
 
-{x=root_of(2*sin(x_) + 2*x_ - 1,x_,tag_13)}
+{x=root_of(2*sin(x_) + 2*x_ - 1,x_,tag_15)}
 
  
    % Variable inside and outside of exponential.
@@ -614,7 +610,7 @@ solve ({e^x - e^(1/2 * x) - 7},{x});
 
                              - 1
 {x= - 2*lambert_w(-------------------------)}
-                   2*plus_or_minus(tag_14)
+                   2*plus_or_minus(tag_16)
 
 
    % Variable inside trigonometrical functions with different forms.
@@ -2501,7 +2497,7 @@ solve({e^(x+y)+sin x,x-y},{x,y});
 
 
                  2*y_
-{{x=y,y=root_of(e     + sin(y_),y_,tag_16)}}
+{{x=y,y=root_of(e     + sin(y_),y_,tag_18)}}
  % no algebraic solution exists.
 
 solve({e^(x+y)-1,x-y**2},{x,y});
@@ -2681,21 +2677,21 @@ solve(x^5 - x - 1,x);
 
 
              5
-{x=root_of(x_  - x_ - 1,x_,tag_22)}
+{x=root_of(x_  - x_ - 1,x_,tag_24)}
 
 
 w:=rhs first ws;
 
 
                5
-w := root_of(x_  - x_ - 1,x_,tag_22)
+w := root_of(x_  - x_ - 1,x_,tag_24)
 
 
 w^5;
 
 
           5
-root_of(x_  - x_ - 1,x_,tag_22) + 1
+root_of(x_  - x_ - 1,x_,tag_24) + 1
 
 
 w^5-w;
@@ -2714,7 +2710,7 @@ clear w;
 solve(x-Pi/2 = cos(x+Pi),x);
 
 
-{x=root_of(2*cos(x_) - pi + 2*x_,x_,tag_24)}
+{x=root_of(2*cos(x_) - pi + 2*x_,x_,tag_26)}
 
 
 solve(exp(x^2+x+2)-1,x);
@@ -2769,7 +2765,7 @@ solve(z=log(w)/log(2)+w^2,w);
 
 
                               2
-{w=root_of(log(w_) + log(2)*w_  - log(2)*z,w_,tag_27)}
+{w=root_of(log(w_) + log(2)*w_  - log(2)*z,w_,tag_29)}
 
 
 solve(w*2^(w^2)=5,w);
@@ -2777,14 +2773,14 @@ solve(w*2^(w^2)=5,w);
 
               2
             w_
-{w=root_of(2   *w_ - 5,w_,tag_29)}
+{w=root_of(2   *w_ - 5,w_,tag_31)}
 
 
 solve(log(x/y)=1/y^2*(x+(1/x)),y);
 
 
                 x        2    2
-{y=root_of(log(----)*x*y_  - x  - 1,y_,tag_31)}
+{y=root_of(log(----)*x*y_  - x  - 1,y_,tag_33)}
                 y_
 
 
@@ -2792,7 +2788,7 @@ solve(exp(z)=w*z^(-n),z);
 
 
              n  z_
-{z=root_of(z_ *e   - w,z_,tag_33)}
+{z=root_of(z_ *e   - w,z_,tag_35)}
 
 
 solve(-log(3)+log(2+y/3)/2-log(y/3)/2=(-I)/2*Pi,y);
@@ -2819,7 +2815,7 @@ solve((I+1)*log(x)+(3*I+3)*log(x+3)=7,x);
 {x=root_of(x_ *(x_ + 3)   *x_  + 9*x_ *(x_ + 3)   *x_  + 27*x_ *(x_ + 3)   *x_
 
                    i         3*i       7
-            + 27*x_ *(x_ + 3)   *x_ - e ,x_,tag_35)}
+            + 27*x_ *(x_ + 3)   *x_ - e ,x_,tag_37)}
 
 
 solve(x+sqrt(x)=1,x);
