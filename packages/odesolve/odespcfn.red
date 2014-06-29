@@ -33,7 +33,8 @@ module odespcfn$  % Linear special function ODEs
 % this approach may be too slow with more patterns anyway.
 
 % If the specfn package is not loaded then we need this declaration:
-algebraic operator Airy_Ai, Airy_Bi$
+%% no longer needed, since autoloaded
+%% algebraic operator Airy_Ai, Airy_Bi$
 
 algebraic operator odesolve!-specfn!*$  % internal wrapper function
 
