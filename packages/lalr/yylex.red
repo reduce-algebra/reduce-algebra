@@ -273,7 +273,7 @@ symbolic procedure lex_skipping(w, x);
         if w = 0 then done := t   % End of file
         else <<
             if w = '!:symbol then <<
-                if yylval = '#endif then <<
+                if yylval = '!#endif then <<
                     if null x then done := t
                     else x := cdr x >>
                 else if yylval = '!#if then x := nil . x
