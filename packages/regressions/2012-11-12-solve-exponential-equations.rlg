@@ -5,10 +5,6 @@
 solve(13^(x+1)-2*13^x=(1/5)*5^x,x);
 
 
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
     2*arbint(1)*i*pi + log(55)
 {x=----------------------------}
                  5
