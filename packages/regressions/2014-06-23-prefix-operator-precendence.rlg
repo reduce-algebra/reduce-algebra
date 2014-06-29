@@ -19,10 +19,18 @@ on defn;
               (list 'minus (list 'times 'a (list 'minus (list 'minus 'b)))) ))
 
 
-a ^ - b * c ;(aeval (list 'expt 'a (list 'minus (list 'times 'b 'c))))
+a ^ - b * c ;
+
+a^-b*$$$c;
+
+***** Please use parentheses around use of unary operator 
 
 
-a / - b / c ;(aeval (list 'quotient 'a (list 'minus (list 'quotient 'b 'c))))
+a / - b / c ;
+
+a/-b/$$$c;
+
+***** Please use parentheses around use of unary operator 
 
 
 a ^ - b + c ;(aeval (list 'plus (list 'expt 'a (list 'minus 'b)) 'c))
@@ -37,23 +45,18 @@ a ^ (- b) * c ;(aeval (list 'times (list 'expt 'a (list 'minus 'b)) 'c))
 -b*-c;(aeval (list 'minus (list 'times 'b (list 'minus 'c))))
 
 
-a * b^-2 * c^3 ;(aeval
-                   (list
-                      'times
-                      'a
-                      (list
-                         'expt
-                         'b
-                         (list 'minus (list 'times 2 (list 'expt 'c 3)))) ))
+a * b^-2 * c^3
+
+ ;a*b^-2*$$$c^3;
+
+***** Please use parentheses around use of unary operator 
 
 
-a intersection union b intersection c;(aeval
-                                         (list
-                                            'intersection
-                                            'a
-                                            (list
-                                               'union
-                                               (list 'intersection 'b 'c))))
+a intersection union b intersection c;
+
+a intersection union b intersection $$$c;
+
+***** Please use parentheses around use of unary operator 
 
 
 a intersection (union b) intersection c;(aeval
