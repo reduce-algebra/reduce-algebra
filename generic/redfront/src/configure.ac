@@ -197,8 +197,18 @@ AC_DEFINE_UNQUOTED(PACKAGE_MAP,"$packagemap",
 dnl Checks for libraries.
 dnl AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
 dnl AC_MSG_ERROR("install a termcap library first"))
-AC_CHECK_LIB(curses,main,LIBS="-lcurses $LIBS",\
-AC_MSG_ERROR("install a curses library first"))
+  curses_header="no"
+  AC_CHECK_HEADER(curses.h,
+    [AC_DEFINE(HAVE_CURSES_H, [1], [Header file curses.h available])
+     curses_header="yes"])
+  AC_CHECK_HEADER(ncurses.h,
+    [AC_DEFINE(HAVE_NCURSES_H, [], [Header file ncurses.h available])
+     curses_header="yes"])
+  if test "x$curses_header" = "xno"
+  then
+    AC_MSG_ERROR([neither "curses.h" nor "ncurses.h" found])
+  fi
+
 AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")
 
 AC_CHECK_HEADERS(wait.h sys/wait.h,break)
@@ -290,9 +300,9 @@ AS_IF([test "$editline" = yes &&
   [if test "$editlinepath" != "yes" ; then
      ebd=$editlinepath
      CFLAGS="$CFLAGS -I$ebd/include"
-     LDFLAGS="$LDFLAGS -L$ebd/lib"
+     LDFLAGS="$LDFLAGS -L$ebd/lib -L$ebd/lib64"
      if test "X$on_windows" != Xyes && test "X$on_darwin" != Xyes ; then
-         LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib"
+         LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib -Wl,-rpath,$ebd/lib64"
      fi
    fi
    AC_CHECK_HEADERS(filecomplete.h,
