@@ -328,8 +328,13 @@ struct RatPoly checked by RatPolyP;
 struct AexCtx checked by AexCtxP;
 struct Aex checked by AexP;
 struct AexList checked by AexListP;
+struct TgAex checked by TgAexP;
+struct TgAexList checked by TgAexListP;
 struct Anu asserted by AnuP;
+struct TgAnu asserted by TgAnuP;
 struct AnuList asserted by AnuListP;
+struct TgAnuList asserted by TgAnuListP;
+struct Iri asserted by IriP;
 
 procedure IntegerListP(s);
    null s or pairp s and fixp car s and IntegerListP cdr s;
@@ -363,11 +368,26 @@ procedure AexP(s);
 procedure AexListP(s);
    null s or pairp s and AexP car s and AexListP cdr s;
 
+procedure TgAexP(s);
+   pairp s and AexP car s;
+
+procedure TgAexListP(s);
+   null s or pairp s and TgAexP car s and TgAexListP cdr s;
+
 procedure AnuP(s);
    pairp s and eqcar(s, 'anu);
 
 procedure AnuListP(s);
    null s or pairp s and AnuP car s and AnuListP cdr s;
+
+procedure TgAnuP(s);
+   pairp s and AnuP car s;
+
+procedure TgAnuListP(s);
+   null s or pairp s and TgAnuP car s and TgAnuListP cdr s;
+
+procedure IriP(s);
+   eqcar(s, 'iri);
 
 % Access Functions
 inline procedure ofsf_op(atf);

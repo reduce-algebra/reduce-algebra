@@ -1228,90 +1228,108 @@ asserted procedure aex_deltastchsgnch(sc: AexList, x: Kernel, iv: RatInterval): 
 
 % Incremental root isolation submodule.
 
-% The Iri data structure consists of the following: 1) A list of Aex together
-% with a root isolation data, which is precomputed during the initialization of
-% the data structure. This is a list of (Aex . IData) 2) A list of intervals
-% with rational endpoints, regarded as closed such that there no polynomial from
-% 1) has a root in these intervals. 3) An AnuList of already isolated roots. 4)
-% The current polynomial as (Aex . IData) for which the roots are to be isolated
-% 5) A list of interval with rational endpoints, regarded as open such that all
-% real root of the polynomial from 4) lie in these intervals.
+% The Iri data structure consists of the following:
+% 1) a list of Irp, i.e., incremental root isolation polynomials
+% 2) a list of intervals with rational endpoints, regarded as closed, such that
+% no polynomial from 1) has a root in these intervals
+% 3) a list of already isolated roots
+% 4) the current polynomial (of type Irp) whose roots will be isolated next
+% 5) a list of intervals with rational endpoints, regarded as open, such that
+% all real roots of the polynomial from 4) lie exclusively in these intervals
 
-% The data structure has to be initialized with a list of coprime univariate
-% Aex, i.e., any two polynomials have no real root in common. If {f1, ..., fn}
-% is the input. Semantically, roots of f1*...*fn will be isolated.
+% The Irp data structure representing a single polynomial consists of the
+% following:
+% 1) square-free univariate Aex
+% 2) root isolation data, which is precomputed during the initialization of an
+% Irp instance; At present this is the standard Sturm chain.
+% 3) a tag of an unspecified type
 
-% The most important function is iri_nextroot, which isolates a next real root
-% and returns a pair (Aex . Anu) such that Aex is in the input list used for the
-% initialization and Anu is a root of Aex. Furthermore, iri_nextroot returns
-% nil if all roots of all polynomials were already isolated.
+% The Iri data structure has to be initialized with a list of univariate,
+% coprime, and square-free Irp. If {f1, ..., fn} is the input, then semantically
+% roots of f1*...*fn will be isolated.
 
-struct Iri asserted by IriP;
-struct AexIData asserted by AexIDataP;
+% The most important function is iri_nextroot, which isolates the next real
+% root, and returns a tagged Anu [anu . tag] such that the [anu] is a root of
+% polynomial with tag [tag]. Furthermore, iri_nextroot returns nil if all roots
+% of all polynomials were already isolated. The data structure is changed
+% in-place by iri_nextroot and other functions.
 
-procedure IriP(s);
-   eqcar(s, 'iri);
+struct Irp asserted by list3p;
+struct IrpList asserted by listp;
 
-procedure AexIDataP(s);
-   pairp s and AexP car s;
+asserted procedure irp_aex(p: Irp): Aex;
+   nth(p, 1);
 
-asserted procedure iri_ael(ir: Iri): List;
+asserted procedure irp_idata(p: Irp): Any;
+   nth(p, 2);
+
+asserted procedure irp_tag(p: Irp): Any;
+   nth(p, 3);
+
+asserted procedure irp_mk(a: Aex, d: Any, tag: Any): Irp;
+   {a, d, tag};
+
+asserted procedure iri_irpl(ir: Iri): IrpList;
    nth(ir, 2);
 
 asserted procedure iri_ivl(ir: Iri): RatIntervalList;
    nth(ir, 3);
 
-asserted procedure iri_rootl(ir: Iri): AnuList;
+asserted procedure iri_rootl(ir: Iri): TgAnuList;
    nth(ir, 4);
 
-asserted procedure iri_curae(ir: Iri): AexIData;
+asserted procedure iri_curirp(ir: Iri): Irp;
    nth(ir, 5);
 
 asserted procedure iri_curivl(ir: Iri): RatIntervalList;
    nth(ir, 6);
 
-asserted procedure iri_popael(ir: Iri): AexIData;
+asserted procedure iri_popirpl(ir: Iri): Irp;
    pop nth(ir, 2);
 
-asserted procedure iri_pushivl(ir: Iri, iv: RatInterval): Any;
+asserted procedure iri_pushivl(iv: RatInterval, ir: Iri): Any;
    push(iv, nth(ir, 3));
 
-asserted procedure iri_pushrootl(ir: Iri, a: Anu): Any;
+asserted procedure iri_pushrootl(a: TgAnu, ir: Iri): Any;
    push(a, nth(ir, 4));
 
-asserted procedure iri_pushcurivl(ir: Iri, iv: RatInterval): Any;
+asserted procedure iri_pushcurivl(iv: RatInterval, ir: Iri): Any;
    push(iv, nth(ir, 6));
 
-asserted procedure iri_popcurivl(ir: Iri): Any;
+asserted procedure iri_popcurivl(ir: Iri): RatInterval;
    pop nth(ir, 6);
 
-asserted procedure iri_setcurae(ir: Iri, ae: AexIData): Any;
-   nth(ir, 5) := ae;
+asserted procedure iri_setcurirp(ir: Iri, p: Irp): Any;
+   nth(ir, 5) := p;
 
 asserted procedure iri_setcurivl(ir: Iri, ivl: RatIntervalList): Any;
    nth(ir, 6) := ivl;
 
+asserted procedure iri_mk(pl: IrpList): Iri;
+   {'iri, pl, nil, nil, nil, nil};
+
 asserted procedure iri_nextroot(ir: Iri): ExtraBoolean;
+   % Returns either nil or TgAnu.
    begin scalar rootfound;
       while not rootfound and iri_preparecur ir do
       	 rootfound := iri_nextrootiv ir;
       if not rootfound then
 	 return nil;
-      return car iri_curae ir . car iri_rootl ir
+      return car iri_rootl ir
    end;
 
 asserted procedure iri_preparecur(ir: Iri): Boolean;
-   begin scalar c, w, curivl;
-      if iri_curivl ir and iri_curae ir then
+   begin scalar c, p, curivl;
+      if iri_curivl ir and iri_curirp ir then
 	 return t;
-      while null c and iri_ael ir do <<
-	 w := iri_popael ir;
-	 curivl := iv_minuslist(iri_rootsiv w, iri_ivl ir);
+      while null c and iri_irpl ir do <<
+	 p := iri_popirpl ir;
+	 curivl := iv_minuslist(irp_rootsiv p, iri_ivl ir);
 	 if curivl then
 	    c := t
       >>;
       if c then <<
-      	 iri_setcurae(ir, w);
+      	 iri_setcurirp(ir, p);
       	 iri_setcurivl(ir, curivl);
       	 return t
       >>;
@@ -1319,101 +1337,109 @@ asserted procedure iri_preparecur(ir: Iri): Boolean;
    end;
 
 asserted procedure iri_nextrootiv(ir: Iri): Boolean;
-   begin scalar ae, idata, iv, numroots, lb, rb, m, r, mpr, mmr;
-      assert(iri_curae ir and iri_curivl ir);
-      ae . idata := iri_curae ir;
+   begin scalar p, ae, iv, numroots, lb, rb, m, r, mpr, mmr;
+      assert(iri_curirp ir and iri_curivl ir);
+      p := iri_curirp ir;
       iv := iri_popcurivl ir;
-      numroots := iri_numroots(ae . idata, iv);
+      numroots := irp_numroots(p, iv);
       if eqn(numroots, 0) then
 	 return nil;
       if eqn(numroots, 1) then <<
-	 iri_addroot(ir, ae . idata, iv);
+	 iri_addroot(ir, p, iv);
 	 return t
       >>;
       % There are at least two roots.
+      ae := irp_aex p;
       lb := iv_lb iv;
       rb := iv_rb iv;
       m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
       if eqn(aex_sgn aex_subrat1(ae, aex_mvar ae, m), 0) then <<
-	 r := iri_isoratroot(ae . idata, m, rat_minus(iv_rb iv, m));
+	 % ioto_tprin2t "FOUND A RATIONAL ROOT!";
+	 r := irp_isoratroot(p, m, rat_minus(iv_rb iv, m));
 	 mpr := rat_add(m, r);
 	 mmr := rat_minus(m, r);
-	 % TODO: Add simple anu.
-	 iri_addroot(ir, ae . idata, iv_mk(mmr, mpr));
-      	 iri_pushcurivl(ir, iv_mk(mpr, rb));
-      	 iri_pushcurivl(ir, iv_mk(lb, mmr));
+	 % TODO: Add simple anu, representing a rational number.
+	 iri_addroot(ir, p, iv_mk(mmr, mpr));
+      	 iri_pushcurivl(iv_mk(mpr, rb), ir);
+      	 iri_pushcurivl(iv_mk(lb, mmr), ir);
 	 return t
       >>;
-      iri_pushcurivl(ir, iv_mk(m, rb));
-      iri_pushcurivl(ir, iv_mk(lb, m));
+      iri_pushcurivl(iv_mk(m, rb), ir);
+      iri_pushcurivl(iv_mk(lb, m), ir);
       return nil
    end;
 
-asserted procedure iri_addroot(ir: Iri, f: AexIData, iv: RatInterval): Any;
+asserted procedure iri_addroot(ir: Iri, p: Irp, iv: RatInterval): Any;
    begin scalar anu;
-      anu := iri_refine(f, iv, iri_ael ir);
-      iri_pushivl(ir, anu_iv anu);
-      iri_pushrootl(ir, anu)
+      anu := irp_refine(p, iv, iri_irpl ir);
+      iri_pushivl(anu_iv anu, ir);
+      iri_pushrootl(anu . irp_tag p, ir)
    end;
 
 % To use a different root isolation method, only the following procedures need
 % to be changed.
 
-asserted procedure iri_init(ael: AexList, x: Kernel): Iri;
-   begin scalar aescl, sc; integer d;
-      % aescl := for each ae in ael collect <<
-      %  	 assert(x eq aex_mvar ae);
-      %  	 sc := aex_stdsturmchain(ae, x);
-      % 	 ae . sc
-      % >>;
-      % return {'iri, aescl, nil, nil, nil, nil}
-      % Optimization: Delete all polynomials, which do not have a real root.
-      aescl := for each ae in ael join <<
+asserted procedure iri_init(tael: TgAexList, x: Kernel): Iri;
+   begin scalar ae, tag, sc, irpl; integer d;
+      while tael do <<
+	 ae . tag := pop tael;
       	 assert(x eq aex_mvar ae);
       	 sc := aex_stdsturmchain(ae, x);
       	 d := aex_stchsgnch(sc, x, 'minfty);
+      	 % Optimization: Delete all polynomials, which do not have a real root:
       	 if not eqn(d, 0) and  d - aex_stchsgnch(sc, x, 'infty) > 0 then
-      	    {ae . sc}
+      	    push(irp_mk(ae, sc, tag), irpl)
       >>;
-      return {'iri, aescl, nil, nil, nil, nil}
+      return iri_mk reversip irpl
    end;
 
-asserted procedure iri_rootsiv(f: AexIData): RatInterval;
+asserted procedure irp_rootsiv(p: Irp): RatInterval;
+   % Returns an interval, regarded as open, such that all roots of [p] lie in
+   % this interval.
    begin scalar ae, b;
-      ae := car f;
+      ae := irp_aex p;
       b := aex_cauchybound(ae, aex_mvar ae);
       return iv_mk(rat_neg b, b)
    end;
 
-asserted procedure iri_numroots(f: AexIData, iv: RatInterval): Integer;
-   begin scalar ae, idata, x; integer sclb;
-      ae . idata := f;
+asserted procedure irp_numroots(p: Irp, iv: RatInterval): Integer;
+   % Returns the number of real roots of [p] in [iv].
+   begin scalar ae, sc, x; integer sclb;
+      ae := irp_aex p;
+      sc := irp_idata p;
       x := aex_mvar ae;
-      sclb := aex_stchsgnch1(idata, x, iv_lb iv);
+      sclb := aex_stchsgnch1(sc, x, iv_lb iv);
       if eqn(sclb, 0) then
 	 return 0;
-      return sclb - aex_stchsgnch1(idata, x, iv_rb iv)
+      return sclb - aex_stchsgnch1(sc, x, iv_rb iv)
    end;
 
-asserted procedure iri_refine(f: AexIData, iv: RatInterval, ael: List): Anu;
-   begin scalar ae, sca, a, x, p, sc;
-      ae . sca := f;
+asserted procedure irp_refine(p: Irp, iv: RatInterval, ppl: IrpList): Anu;
+   % We assume that [p] has exactly one root in [iv]. The interval [iv] is
+   % refined in such a way that no polynomial from [ppl] has a root in it.
+   % Finally, an Anu with [iv] as the bounding interval is returned.
+   begin scalar ae, sc, a, x, pp, aepp, scpp;
+      ae := irp_aex p;
+      sc := irp_idata p;
       a := anu_mk(ae, iv);
       x := aex_mvar ae;
-      while ael do <<
-	 p . sc := pop ael;
+      while ppl do <<
+	 pp := pop ppl;
+	 aepp := irp_aex pp;
+	 scpp := irp_idata pp;
       	 while
-	    aex_atratnullp(p, x, iv_lb anu_iv a) or
-	    aex_atratnullp(p, x, iv_rb anu_iv a) or
-	    aex_deltastchsgnch(sc, x, anu_iv a) > 0 do
-	       anu_refine1ip(a, sca)
+	    aex_deltastchsgnch(scpp, x, anu_iv a) > 0 or
+	    aex_atratnullp(aepp, x, iv_lb anu_iv a) or
+	    aex_atratnullp(aepp, x, iv_rb anu_iv a) do
+	       anu_refine1ip(a, sc)
       >>;
       return a
    end;
 
-asserted procedure iri_isoratroot(f: AexIData, m: Rational, r: Rational): Rational;
+asserted procedure irp_isoratroot(p: Irp, m: Rational, r: Rational): Rational;
    begin scalar ae, sc, x, mmr, mpr;
-      ae . sc := f;
+      ae := irp_aex p;
+      sc := irp_idata p;
       x := aex_mvar ae;
       r := rat_mult(r, rat_mk(1, 2));
       mmr := rat_minus(m, r);

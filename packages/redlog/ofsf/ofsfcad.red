@@ -402,7 +402,7 @@ asserted procedure acell_gettl(c: Acell): List;
 asserted procedure acell_sri(c: Acell): Any;
    % Symbolic root information.
    atsoc('root, tl) or atsoc('between, tl) or atsoc('below, tl) or
-      atsoc('beyond, tl) or atsoc('arbitrary, tl) where tl=acell_gettl c;
+      atsoc('above, tl) or atsoc('arbitrary, tl) where tl=acell_gettl c;
 
 asserted procedure acell_putsp(c: Acell, sp: AnuList): Any;
    % Put sample point.
@@ -449,28 +449,27 @@ asserted procedure ofsf_cadfnum1(ff: List, varl: List): List;
    begin scalar hh, w;
       hh := for each ffj in ff collect
 	 for each f in ffj collect
-	    tag_(f, {'dummytag});
+	    'dummytag . f;
       w := ofsf_fulltree(list2vector(nil . hh), varl);
       return for i := 0 : length varl collect
 	 length atree_childrenatlevel(w, i)
    end;
 
 asserted procedure ofsf_fulltree(hh: Atom, varl: List): Atree;
-   % [hh] is a vector [nil, F_1, ..., F_r], where the elements are lists of
-   % tagged SF.
+   % [hh] is a vector [nil, F_1, ..., F_r], where the elements are Alists of
+   % tag . SF.
    begin scalar basecell;
-      % basecell := acell_mk(0, nil, nil, 'true, nil);  % the only cell of R^0
       basecell := acell_mk(0, nil, nil, nil, nil);  % the only cell of R^0
       return ofsf_ftoc(basecell, hh, varl)
    end;
 
 asserted procedure ofsf_ftoc(basecell: Acell, hh: Atom, varl: List): Atree;
    % Full CAD tree over cell. [basecell] is a cell in R^{j-1}, [hh] is a vector
-   % [nil, F_1, ..., F_r], where the elements are lists of tagged SF, [varl] is
+   % [nil, F_1, ..., F_r], where the elements are Alists of tag . SF, [varl] is
    % (x_1, ..., x_r). Returns an Atree over the basecell. Intuition: Recursively
    % find for a cell C in R^j and recursively build a full CAD tree that has C
    % as its root. Each cell has a sample point, but no truth value.
-   begin scalar sp, xj, hhj, cell, treel, nrdata, ncbuffer, res;
+   begin scalar sp, xj, cell, treel, iri, ncbuffer, res;
       integer r, k, j;
       sp := acell_getsp basecell;
       j := length sp + 1;
@@ -478,19 +477,18 @@ asserted procedure ofsf_ftoc(basecell: Acell, hh: Atom, varl: List): Atree;
 	 ioto_prin2 {"(", j - 1};
       r := length varl;
       k := r;  % This is not needed. ofsf_nextcell would need it only for fulldimonly and gen1.
-      % (1) Non-recursion Case: j - 1 = r. [basecell] is a leaf.
+      % (1) Non-recursion Case: j = r + 1. [basecell] is a leaf.
       if eqn(j - 1, r) then <<
 	 if ofsf_cadverbosep() then
 	    ioto_prin2 ")";
       	 return atree_mk basecell
       >>;
       xj := nth(varl, j);
-      hhj := ofsf_tocprepare(list2vector getv(hh, j), xj, sp, varl);
-      nrdata := tiri_init(hhj, xj);
+      iri := ofsf_iriprepare(getv(hh, j), xj, sp, varl);
       ncbuffer := ncb_init();
       % (2) Recursion Case: 1 <= j <= r
       assert(1 <= j and j <= r);
-      while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do
+      while cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k) do
 	 push(ofsf_ftoc(cell, hh, varl), treel);
       if ofsf_cadverbosep() then
 	 ioto_prin2 ")";
@@ -512,7 +510,7 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
    % R^j a partial CAD tree that has C as its root. If j > k, then C has a truth
    % value.
    begin
-      scalar sp, varl, xj, hhj, cell, tree, treel, qj, neutral, nrdata, ncbuffer, res, tv;
+      scalar sp, varl, xj, cell, tree, treel, qj, neutral, iri, ncbuffer, res, tv;
       integer j, r, k;
       sp := acell_getsp basecell;
       j := length sp + 1;
@@ -520,7 +518,7 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
 	 ioto_prin2 {"(", j - 1};
       r := caddata_r cd;
       varl := caddata_varl cd;
-      % (1) Non-recursion Case: j - 1 = r. [basecell] is a leaf.
+      % (1) Non-recursion Case: j = r + 1. [basecell] is a leaf.
       if eqn(j - 1, r) then <<
 	 acell_puttv(basecell, ofsf_evalqff(psi, sp, varl));
 	 if ofsf_cadverbosep() then
@@ -540,11 +538,10 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
       >>;
       k := caddata_k cd;
       xj := nth(varl, j);
-      hhj := ofsf_tocprepare(caddata_hhj(cd, j), xj, sp, varl);
-      nrdata := tiri_init(hhj, xj);
+      iri := ofsf_iriprepare(caddata_hhj(cd, j), xj, sp, varl);
       ncbuffer := ncb_init();
       if (1 <= j and j <= k) then <<  % (2a) Subcase: 1 <= j <= k
-	 while cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k) do
+	 while cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k) do
 	    if ofsf_iswhitecell(cell, cd) then <<
 	       if ofsf_cadverbosep() then
 	    	  ioto_prin2 {"(", j, ":W)"}
@@ -552,6 +549,8 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
 	       push(ofsf_ptoc(cell, psi, cd), treel);
       	 if null treel then  % TODO: Understand why this is an error!
 	    rederr "GCAD: stack full of white cells occured.";
+	 % This sort should not be needed from correctness point of view.
+   	 % TODO: Verify this to be 100% sure!
 	 treel := sort(treel, function atree_sortfn);
       	 res := atree_mk basecell;
 	 atree_setchildl(res, treel);
@@ -559,24 +558,29 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
 	    ioto_prin2 ")";
       	 return ofsf_pbfvs(res, treel)
       >>;
-      % Subcase: (2b) k < j <= r
+      % (2b) Subcase: k < j <= r
       qj := cdr nth(caddata_qal cd, j - k);
       neutral := if qj eq 'all then 'true else 'false;
       tv := neutral;
       while (tv eq neutral) and
-	 (cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k)) do <<
+	 (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do <<
 	    tree := ofsf_ptoc(cell, psi, cd);
 	    push(tree, treel);
 	    tv := acell_gettv atree_rootcell tree
 	 >>;
       acell_puttv(basecell, tv);
+      res := atree_mk basecell;
       if !*rlcadans then <<
 	 % To add answers we need to isolate all remaining roots:
-	 while (cell := ofsf_nextcell(ncbuffer, sp, nrdata, xj, j, k)) do
+	 while (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do
 	    push(atree_mk cell, treel);
-	 ofsf_addanswers(basecell, treel, j, cd)
+      	 treel := sort(treel, function atree_sortfn);
+	 ofsf_addanswers(basecell, treel, j, cd);
+      	 if ofsf_cadverbosep() then
+	    ioto_prin2 ")";
+	 atree_setchildl(res, treel);
+	 return res
       >>;
-      res := atree_mk basecell;
       if not !*rlcadtrimtree then <<
       	 treel := sort(treel, function atree_sortfn);
 	 atree_setchildl(res, treel)
@@ -633,191 +637,183 @@ asserted procedure ofsf_addanswers(basecell: Acell, treel: List, j: Integer, cd:
    begin integer k, l;
       k := caddata_k cd;
       l := caddata_l cd;
-      % 1. add root information
       if k+1 <= j and j <= l then <<
-      	 ofsf_addrootinfo(treel, getv(caddata_ffid cd, j));
-      	 % 2. tag answers in case treel contains cells of level l
-      	 if j = l then
-	    for each tt in treel do
-	       if acell_gettv atree_rootcell tt eq 'true then
-	       	  acell_addtagip(atree_rootcell tt, 'answers . {nil});
-      	 acell_addtagip(basecell,
-	    'answers . for each tt in treel join
-	       if acell_gettv atree_rootcell tt eq 'true then
-	       	  for each a in cdr atsoc('answers, acell_gettl atree_rootcell tt) collect
-		     acell_sri atree_rootcell tt . a)
+      	 ofsf_addrootinfo(treel, getv(caddata_hhtags cd, j));
+	 % The following is a propagation of an answer to lower levels.
+	 % TODO: Rewrite this in a proper way.
+      	 % 	 if j = l then
+      	 % 	    for each tt in treel do
+      	 % 	       if acell_gettv atree_rootcell tt eq 'true then
+      	 % 	       	  acell_addtagip(atree_rootcell tt, 'answers . {nil});
+      	 % 	 acell_addtagip(basecell,
+      	 % 	    'answers . for each tt in treel join
+      	 % 	       if acell_gettv atree_rootcell tt eq 'true then
+      	 % 	       	  for each a in cdr atsoc('answers, acell_gettl atree_rootcell tt) collect
+      	 % 	 	     acell_sri atree_rootcell tt . a)
       >>
    end;
 
-asserted procedure ofsf_addrootinfo(treel: List, ffids: List): Any;
+asserted procedure ofsf_addrootinfo(treel: List, hhtags: List): Any;
    % Add root information. [treel] is a non-empty list of Atrees. The argument
    % is changed in-place. We add the "symbolic root information" to the root
    % labels of these trees. We assume that cells, which have a 0-dim last
    % component, have inherited their tags from the appropriate projection
    % factors.
    begin scalar rnl, rtg, ltg;
+      % [treel] has to consist of an odd number of elements.
       assert(not evenp length treel);
-      % [treel] will always consist of an odd number of elements. If there is
-      % only one cell, then it is already tagged with {{'arbitrary}}.
+      % If there is only one cell, then it is already tagged with 'arbitrary.
       if null cdr treel then
 	 return nil;
-      % We have at least 3 cells.
-      % [rnl] (root number list) is an alist of dotted pairs [id . num].
-      rnl := for each id in ffids collect
-	 id . 0;
-      % Tag the second cell from the left.
-      rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, ffids);
-      % Tag the leftmost cell.
-      acell_addtagip(atree_rootcell car treel, 'below . rtg);
+      % There are at least 3 cells.
+      % [rnl] (root number list) is an Alist of dotted pairs [tag . num].
+      rnl := for each tag in hhtags collect
+	 tag . 0;
+      % Add info to the second cell from the left.
+      rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, hhtags);
+      % Add info to the leftmost cell.
+      acell_puttl(atree_rootcell car treel, {'below, rtg});
       treel := cddr treel;
       ltg := rtg;
       while cdr treel do <<  % There are at least 3 cells.
-         rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, ffids);
-	 acell_addtagip(atree_rootcell car treel, 'between . ltg . rtg);
+         rtg := ofsf_addrootinfo0dim(atree_rootcell cadr treel, rnl, hhtags);
+	 acell_puttl(atree_rootcell car treel, {'between, ltg, rtg});
 	 treel := cddr treel;
          ltg := rtg
       >>;
-      acell_addtagip(atree_rootcell car treel, 'beyond . ltg)
+      acell_puttl(atree_rootcell car treel, {'above, ltg})
    end;
 
-asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: List, ffids: List): Any;
-   % Add root info to cell with 0-dim last component in-place. Returns the added
-   % tag.
+asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: AList, hhtags: List): Any;
+   % Add root info to a cell with 0-dim last component in-place. Returns the
+   % added info.
    begin scalar tl, ri;
       tl := acell_gettl cell;
       ofsf_rnlinc(rnl, tl);
-      ri := 'root . for each tg in intersection(ffids, tl) collect
-	 tg . cdr atsoc(tg, rnl);
-      acell_addtagip(cell, ri);
+      ri := 'root . for each tag in intersection(hhtags, tl) collect
+	 tag . cdr atsoc(tag, rnl);
+      % acell_addtagip(cell, ri);
+      acell_puttl(cell, ri);
       return ri
    end;
 
-asserted procedure ofsf_rnlinc(rnl: List, tl: List): Any;
-   % Increment rnl.
-   if rnl then <<
-      ofsf_rnlinc(cdr rnl, tl);
-      if memq(caar rnl, tl) then
-	 cdar rnl := cdar rnl + 1
-   >>;
+asserted procedure ofsf_rnlinc(rnl: AList, tl: List): Any;
+   % Increment those elements in [rnl] whose car is in [tl]. This is done
+   % in-place.
+   for each rn in rnl do
+      if memq(car rn, tl) then
+	 cdr rn := cdr rn + 1;
 
-asserted procedure ofsf_tocprepare(hhj: Atom, xj: Kernel, sp: AnuList, varl: List): List;
-   % Tree over cell prepare polynomials. [hhj] is a Vector of tagged SF, [xj] is
-   % a variable. Returns a List of tagged Aex.
+asserted procedure ofsf_iriprepare(hhj: AList, xj: Kernel, sp: AnuList, varl: List): Iri;
+   % Prepare polynomials for incremental root isolation. [hhj] is an AList of
+   % tag . SF, [xj] is a variable, [sp] is a sample point. Returns an Iri data
+   % structure, which can be used to incrementally isolate the roots of [hhj].
    begin scalar w;
-      w := vector2list hhj;
-      if null sp then
-	 return for each te in w collect
-	    tag_(aex_fromsf tag_object te, tag_taglist te);
-      % Convert SF to Aex and substitute the sample point [sp].
-      w := for each tsf in w collect
-	 tag_(ofsf_subsp(aex_fromsf tag_object tsf, sp, varl), tag_taglist tsf);
-      % Make elements of [hhj] smaller and throw away [null] and constant
-      % polynomials.
+      w := for each pr in hhj collect
+	 aex_fromsf cdr pr . {car pr};
       w := for each tae in w collect
-	 tag_(aex_mklcnt aex_reduce tag_object tae, tag_taglist tae);
+	 ofsf_subsp(car tae, sp, varl) . cdr tae;
+      w := for each tae in w collect
+	 aex_mklcnt aex_reduce car tae . cdr tae;
       w := for each tae in w join
-	 if not aex_simplenumberp tag_object tae then
-	    {tag_(aex_reduce aex_sqfree(tag_object tae, xj), tag_taglist tae)};
-      w := tglist2set w;
-      % Make the elements of [hhj] pairwise prime.
+	 if not aex_simplenumberp car tae then
+	    {aex_reduce aex_sqfree(car tae, xj) . cdr tae};
+      % w := tglist2set w;
+      % Make the elements of [w] pairwise prime.
       w := aex_tgpairwiseprime(w, xj);
-      return w
+      return iri_init(w, xj)
    end;
 
-% The following two procedures work with tagged Aex. They were moved here from
-% the ofsfanuex module. TODO: Understand the tags.
-
-%asserted procedure aex_tgpairwiseprime(ael: AexList, x: Kernel): AexList;
-procedure aex_tgpairwiseprime(ael, x);
-   % Pairwise prime. [ael] is a list of Aex with non-trivial lcs. Returns a list
-   % of Aex with non-trivial lcs.
-   begin scalar pprestlist, tmp;
-      if null ael or null cdr ael then
-	 return ael;
-      pprestlist := aex_tgpairwiseprime(cdr ael, x);
-      tmp := aex_tgpairwiseprime1(car ael . pprestlist, x);
-      if aex_simplenumberp tag_object car tmp then
-	 return cdr tmp;
-      return tmp
+asserted procedure aex_tgpairwiseprime(tael: TgAexList, x: Kernel): TgAexList;
+   % Pairwise prime with tags. [tael] is transformed to another TgAexList, which
+   % has the same real roots, but no two polynomials have a common root. This is
+   % achieved by systematically dividing the gcd of all pairs of polynomials in
+   % [tael], and adding the gcd as a "new" polynomial, which inherits tags from
+   % the polynomials it divides.
+   begin scalar pprestlist;
+      if null tael or null cdr tael then
+	 return tael;
+      pprestlist := aex_tgpairwiseprime(cdr tael, x);
+      return aex_tgpairwiseprime1(car tael . pprestlist, x)
    end;
 
-%asserted procedure aex_tgpairwiseprime1(ael: AexList, x: Kernel): AexList;
-procedure aex_tgpairwiseprime1(ael, x);
-   % Pairwise prime. Makes [car ael] pairwise prime with all elements of [cdr
-   % ael].
-   begin scalar ae1, ae2, aelnew, g; integer deg;
-      ae1 := pop ael;
-      while ael and not aex_simplenumberp tag_object ae1 do <<
-	 ae2 := pop ael;
-	 g := aex_gcd(tag_object ae1, tag_object ae2, x);
+asserted procedure aex_tgpairwiseprime1(tael: TgAexList, x: Kernel): TgAexList;
+   begin scalar tae1, tae2, taelnew, g, tg;
+      integer d1, deg;
+      tae1 := pop tael;
+      d1 := aex_deg(car tae1, x);
+      while tael and not eqn(d1, 0) do <<
+	 tae2 := pop tael;
+	 g := aex_gcd(tag_o tae1, tag_o tae2, x);
 	 deg := aex_deg(g, x);
-      	 ae1 := tag_(aex_quot(tag_object ae1, g, x), tag_taglist ae1);
-	 if deg > 0 then
-	    ae2 := tag_(tag_object ae2, union(tag_taglist ae1, tag_taglist ae2));
- 	 push(ae2, aelnew)
+	 if deg > 0 then <<
+      	    tae1 := tag_mktag(aex_quot(tag_o tae1, g, x), tag_t tae1);
+	    tae2 := tag_mktag(aex_quot(tag_o tae2, g, x), tag_t tae2);
+	    tg := tag_mktag(g, union(tag_t tae1, tag_t tae2));
+	    d1 := d1 - deg;
+	    push(tg, taelnew)
+	 >>;
+	 if aex_deg(tag_o tae2, x) > 0 then
+ 	    push(tae2, taelnew)
       >>;
-      aelnew := reversip aelnew;
-      push(ae1, aelnew);
-      return append(aelnew, ael)
+      taelnew := reversip taelnew;
+      if not eqn(d1, 0) then
+      	 push(tae1, taelnew);
+      return append(taelnew, tael)
    end;
-
-% Tagged root isolation. The following four functions use the incremental root
-% isolation submodule in ofsfanuex. The reason for their existence is the fact
-% that the polynomials here are tagged whereas the polynomials in ofsfanuex do
-% not have any tags.
-
-procedure tiri_init(tael, x);
-   begin scalar ael, tal;
-      ael := for each tae in tael collect
-	 tag_object tae;
-      tal := for each tae in tael collect
-	 tag_object tae . tag_taglist tae;
-      return tal . iri_init(ael, x)
-   end;
-
-procedure tiri_nextroot(tri);
-   begin scalar w, tag;
-      w := iri_nextroot cdr tri;
-      if null w then
-	 return nil;
-      tag := atsoc(car w, car tri);
-      return tag_(cdr w, cdr tag)
-   end;
-
-procedure tiri_rootl(tri);
-   iri_rootl cdr tri;
-
-procedure tiri_rootlnotags(tri);
-   iri_rootl cdr tri;
 
 % CadData
-
-% TODO: Understand the tagged polynomials caddata_hh, and if redundant, delete
-% it as well.
 
 asserted procedure caddata_mkblank(): CadData;
    % Blank caddata. Undefined entries have the value ['undefined].
    begin scalar cd;
       cd := mkvect(18);
       putv(cd,0, 'caddata);
-      putv(cd,1, 'undefined); % [phi] is a prenex ofsf formula for which a CAD is to be constructed.
-      putv(cd,2, 'undefined); % [k] is an integer; the number of free variables in [phi].
-      putv(cd,3, 'undefined); % [r] is an integer; the number of all variables in [phi].
-      putv(cd,4, 'undefined); % [varl] is a list of kernels; all variables in [phi]. This list also determines the projection order: The last variable is projected first, the first variable is projected last.
-      putv(cd,5, 'undefined); % [qal] is a list of dotted pairs [(x . Q)], where [x] is a variable and [Q] is a quantifier; quantifier prefix of [phi].
-      putv(cd,6, 'undefined); % [psi] is a quantifier-free ofsf formula; matrix of [phi].
-      putv(cd,7, 'undefined); % [ff] is a vector of lists of SF; projection polynomials.
-      putv(cd,8, 'undefined); % [dd] is an Atree.
-      putv(cd,9, 'undefined); % [phiprime] is a quantifier-free ofsf formula; the result equivalent to [phi].
-      putv(cd,10,'undefined); % [oldorder] is a list of kernels; the old kernel ordering.
-      putv(cd,11,'undefined); % [ophi] is an ofsf formula; the original input formula using [oldorder].
+      putv(cd,1, 'undefined);
+      % [phi] is a ofsf formula in prenex normal form; the input formula for
+      % which a CAD is to be constructed.
+      putv(cd,2, 'undefined);
+      % [k] is an integer; the number of free variables in [phi].
+      putv(cd,3, 'undefined);
+      % [r] is an integer; the number of all variables in [phi].
+      putv(cd,4, 'undefined);
+      % [varl] is a list of kernels; all variables in [phi]. This list also
+      % determines the projection order: The last variable is projected first,
+      % the first variable is projected last.
+      putv(cd,5, 'undefined);
+      % [qal] is a list of dotted pairs [(x . Q)], where [x] is a variable and
+      % [Q] is a quantifier; quantifier prefix of [phi].
+      putv(cd,6, 'undefined);
+      % [psi] is a quantifier-free ofsf formula; matrix of [phi].
+      putv(cd,7, 'undefined);
+      % [ff] is a vector of lists of SF; projection polynomials.
+      putv(cd,8, 'undefined);
+      % [dd] is an Atree.
+      putv(cd,9, 'undefined);
+      % [phiprime] is a quantifier-free ofsf formula; the result equivalent to
+      % [phi].
+      putv(cd,10,'undefined);
+      % [oldorder] is a list of kernels; the old kernel ordering.
+      putv(cd,11,'undefined);
+      % [ophi] is an ofsf formula; the original input formula using [oldorder].
       % [jj] was here
-      putv(cd,13,'undefined); % [theo] is a list of negated atoms.
-      putv(cd,14,'undefined); % [hh] is a vector of vectors of tagged SF.
-      putv(cd,15,'undefined); % [l] is an integer; the number of free variables plus the number of variables in the outermost quantifier block of [phi]; if there is no quantifier, [l] is zero
-      putv(cd,16,'undefined); % [ffid] is a vector of lists of ids.
-      putv(cd,17,'undefined); % [aa] is list of SF; all polynomials occurring in [phi].
-      putv(cd,18,'undefined); % [aaplus] is list of SF; polynomials to be added to the projection set before computing the projection.
+      putv(cd,13,'undefined);
+      % [theo] is a list of negated atoms.
+      putv(cd,14,'undefined);
+      % [hh] is a vector of alists; tagged projection polynomials; An element of
+      % some alist here is a pair id . SF. The first compoment is a tag uniquely
+      % identifying the given projection polynomial.
+      putv(cd,15,'undefined);
+      % [l] is an integer; the number of free variables plus the number of
+      % variables in the outermost quantifier block of [phi]; if there is no
+      % quantifier, [l] is zero
+      putv(cd,16,'undefined);
+      % [hhtags] is a vector of lists of ids; tags of all projection polynomials
+      putv(cd,17,'undefined);
+      % [aa] is list of SF; all polynomials occurring in [phi].
+      putv(cd,18,'undefined);
+      % [aaplus] is list of SF; polynomials to be added to the projection set
+      % before computing the projection.
       return cd
    end;
 
@@ -841,7 +837,7 @@ procedure caddata_theo(cd);     getv(cd,13);
 procedure caddata_hh(cd);       getv(cd,14);
 procedure caddata_hhj(cd,j);      getv(getv(cd,14),j);
 procedure caddata_l(cd);        getv(cd,15);
-procedure caddata_ffid(cd);     getv(cd,16);
+procedure caddata_hhtags(cd);     getv(cd,16);
 procedure caddata_aa(cd);       getv(cd,17);
 procedure caddata_aaplus(cd);   getv(cd,18);
 
@@ -870,7 +866,7 @@ procedure caddata_putophi(cd,phi);          putv(cd,11,phi);
 procedure caddata_puttheo(cd,theo);         putv(cd,13,theo);
 procedure caddata_puthh(cd,hh);             putv(cd,14,hh);
 procedure caddata_putl(cd,l);               putv(cd,15,l);
-procedure caddata_putffid(cd,ffid);         putv(cd,16,ffid);
+procedure caddata_puthhtags(cd,hhtags);         putv(cd,16,hhtags);
 procedure caddata_putaa(cd,aa);             putv(cd,17,aa);
 procedure caddata_putaaplus(cd,aaplus);     putv(cd,18,aaplus);
 
@@ -914,8 +910,8 @@ asserted procedure caddata_printall(cd: CadData): Any;
 	 ioto_prin2t{"hh := ", caddata_hh cd};
       % if caddata_l cd neq 'undefined then
 	 ioto_prin2t{"l := ", caddata_l cd};
-      % if caddata_ffid cd neq 'undefined then
-	 ioto_prin2t{"ffid := ", caddata_ffid cd};
+      % if caddata_hhtags cd neq 'undefined then
+	 ioto_prin2t{"hhtags := ", caddata_hhtags cd};
       % if caddata_aa cd neq 'undefined then
 	 ioto_prin2t{"aa := ", caddata_aa cd};
       % if caddata_aaplu cd neq 'undefined then
@@ -999,9 +995,9 @@ asserted procedure ncb_put(w: Any, ncb: List): List;
       ncb
    >>;
 
-asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, nrdata: Any, xj: Kernel, j: Integer, k: Integer): ExtraBoolean;
-   % Returns a cell. Caveat: [j = length sp + 1], i.e., [j] is the level of the
-   % newly generated cells.
+asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, iri: Iri, xj: Kernel, j: Integer, k: Integer): ExtraBoolean;
+   % Returns either a new Acell or nil. Caveat: [j = length sp + 1], i.e., [j]
+   % is the level of the newly generated cell.
    begin scalar cell, tgroot, root, w;
       integer cind;
       cell := ncb_get ncbuffer;
@@ -1020,20 +1016,22 @@ asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, nrdata: Any, xj: K
 	 >>
       >>;
       % There is no cell left, we need to get a root to get the next two cells.
-      tgroot := tiri_nextroot nrdata;
-      cind := 2*(length tiri_rootl nrdata);
+      tgroot := iri_nextroot iri;
+      cind := 2*(length iri_rootl iri);
       if tgroot then <<
-	 root := tag_object tgroot;
-	 ncb_put(acell_mk(cind - 1, root . sp, nil, nil, tag_taglist tgroot), ncbuffer);  % Store the 0-dim cell into the [ncbuffer].
+	 root := tag_o tgroot;
+	 % Store the 0-dim cell into the [ncbuffer]:
+	 ncb_put(acell_mk(cind - 1, root . sp, nil, nil, tag_t tgroot), ncbuffer);
 	 w := iv_lb anu_iv root;
-	 return acell_mk(cind - 2, anu_fromrat(xj, w) . sp, nil, nil, nil)  % Return the full-dim cell with a rational sample point.
+	 % Return the full-dim cell with a rational sample point:
+	 return acell_mk(cind - 2, anu_fromrat(xj, w) . sp, nil, nil, nil)
       >>;
       % There is no cell and no root left.
       ncb_put('finished, ncbuffer);
-      if null tiri_rootl nrdata then  % If there was no root, make a cell with 0 as the sample point.
-	 return acell_mk(0, anu_fromrat(xj, rat_0()) . sp, nil, nil, {{'arbitrary}});
+      if null iri_rootl iri then  % If there was no root, make a cell with 0 as the sample point.
+	 return acell_mk(0, anu_fromrat(xj, rat_0()) . sp, nil, nil, 'arbitrary);
       % Search rootlist for the maximum of all right bounds and make a cell.
-      w := rat_mapmax for each r in tiri_rootl nrdata collect iv_rb anu_iv r;
+      w := rat_mapmax for each tanu in iri_rootl iri collect iv_rb anu_iv tag_o tanu;
       return acell_mk(cind, anu_fromrat(xj, w) . sp, nil, nil, nil)
    end;
 
@@ -1061,6 +1059,55 @@ asserted procedure ofsf_subsp!*(ae: Aex, sp: AnuList): Aex;
       >>;
       return ae
    end;
+
+% Tag
+
+% This module implements the datatype Tag(Alpha). An element of this datatype is
+% a pair of an object (of type Alpha) and a set of tags.
+
+asserted procedure tag_mktag(a: Any, tag: Any): DottedPair;
+   % Tag [a] with [tag].
+   a . tag;
+
+asserted procedure tag_o(ti: DottedPair): Any;
+   % Object of a tagged item.
+   car ti;
+
+asserted procedure tag_t(ti: DottedPair): List;
+   % Tag of a tagged item.
+   cdr ti;
+
+% asserted procedure tag_add(te: DottedPair, a: Any): DottedPair;
+%    % Add a tag to a tagged object.
+%    if member(a, tag_t te) then
+%       te
+%    else
+%       tag_o te . (a . tag_t te);
+
+% asserted procedure tglist2set(lte: List): List;
+%    % List to set for tagged elements. [lte] is List of tagged elements. Returns
+%    % a list of tagged elements such that no element occurs twice.
+%    tgunion(lte, {});
+
+% asserted procedure tgunion(st1: List, st2: List): List;
+%    % Union of tagged elements. [st1] and [st2] are sets of tagged elements.
+%    % Returns a set of tagged elements.
+%    <<
+%       if st1 then
+% 	 for each t1 in st1 do
+% 	    st2 := tgunion1(t1, st2);
+%       st2
+%    >>;
+
+% asserted procedure tgunion1(te: DottedPair, ste: List): List;
+%    % Union of tagged elements subroutine. [te] is a tagged element, [ste] is a
+%    % set of tagged elements.
+%    if null ste then
+%       {te}
+%    else if tag_o te = tag_o car ste then
+%       tag_(tag_o te, union(tag_t te, tag_t car ste)) . cdr ste
+%    else
+%       car ste . tgunion1(te, cdr ste);
 
 % Atree
 

@@ -195,7 +195,7 @@ asserted procedure ofsf_cadsplt(phi: Formula): List;
       return cll
    end;
 
-asserted procedure ofsf_cadporder1(tl,cll,rate,betterp: Boolean): List;
+asserted procedure ofsf_cadporder1(tl,cll,rate,betterp): List;
    % CAD projection order subroutine. [tl] is a list of (irreducible) SF's;
    % [cll] is a LIST of lists of identifiers. Returns a LIST of lists of
    % identifers. The variable order is optimized for projection within each list
@@ -318,7 +318,7 @@ procedure ofsf_cadporder!-project1(tl,x,lvarl,j,theo);
 
 asserted procedure ofsf_cadprojection1(cd: CadData): Any;
    % CAD projection phase.
-   begin scalar varl, aa, ff, hh, ffid, pp, theo, w, tag, tagl;
+   begin scalar varl, aa, ff, hh, hhtags, pp, theo, w, tag, tagl;
       integer k, r, l;
       varl := caddata_varl cd;  % {x1, ..., xr}
       k := caddata_k cd;  % the number of free variables
@@ -326,9 +326,8 @@ asserted procedure ofsf_cadprojection1(cd: CadData): Any;
       aa := append(caddata_aa cd, caddata_aaplus cd);  % polynomials occuring in the input formula
       ff := mkvect r;  % here go the projection factors
       hh := mkvect r;  % here go the tagged projection factors
-      ffid := mkvect r;  % here go the id's of the projection polynomials
-      % hack: generic cad: new projection
-      if !*rlqegen then <<
+      hhtags := mkvect r;  % here go the tags of the projection polynomials
+      if !*rlqegen then <<  % hack: generic CAD: new projection
 	 ofsf_cadbvl!* := lto_drop(varl, k);  % better: caddata_bvl
 	 pp . theo := ofsf_projsetcohogen(aa, varl, nil);
 	 caddata_puttheo(cd, theo)
@@ -342,15 +341,15 @@ asserted procedure ofsf_cadprojection1(cd: CadData): Any;
 	 w := nil;
 	 for each f in getv(ff, j) do <<
 	    l := l + 1;
-	    tag := ofsf_ffji(j, l);
-	    push(tag_(f, {tag}), w);
+	    tag := ofsf_mkhhtag(j, l);
+	    push(tag . f, w);
 	    push(tag, tagl)
 	 >>;
-         putv(hh, j, list2vector reversip w);  % the same order as in [ff]
-	 putv(ffid, j, tagl)
+         putv(hh, j, reversip w);  % the same order as in [ff]
+	 putv(hhtags, j, reversip tagl)
       >>;
       caddata_puthh(cd, hh);
-      caddata_putffid(cd, ffid);
+      caddata_puthhtags(cd, hhtags);
       if !*rlverbose then <<
 	 ioto_tprin2t {"+ number of all projection factors: ", length pp};
 	 if !*rlqegen then
@@ -363,12 +362,12 @@ asserted procedure ofsf_distribute(fl: SfList, ff: Atom, varl: KernelList): Any;
    begin integer l;
       for each f in fl do <<
       	 l := sf_level(f, varl);
-	 if l > 0 and not (f member getv(ff, l)) then  % memq?
+	 if l > 0 and not (f member getv(ff, l)) then
 	    putv(ff, l, f . getv(ff, l))
       >>
    end;
 
-asserted procedure ofsf_ffji(j: Integer, l: Integer): Kernel;
+asserted procedure ofsf_mkhhtag(j: Integer, l: Integer): Kernel;
    % Make an identifier of the form [ffj_l].
    intern compress lto_nconcn {explode 'ff, explode j, explode '!_, explode l};
 
@@ -556,55 +555,6 @@ asserted procedure mtx_mmji(f: SF, g: SF, x: Kernel, j: Integer, i: Integer): Mt
       ctd2 := for k := mpn-(2*j+1)+1 : (mpn-i-j)-1 collect k;
       return mtx_rmlscs(mtx_sylvester(f, g, x), union(ltd1, ltd2), union(ctd1, ctd2))
    end;
-
-%%% --- module tag --- %%%
-
-% This module implements the datatype Tag(Alpha). An element of this datatype is
-% a pair of an object (of type Alpha) and a set of tags.
-
-asserted procedure tag_(a: Any, l: List): DottedPair;
-   % Tag item for the first time.
-   a . list2set l;
-
-asserted procedure tag_object(te: DottedPair): Any;
-   % Object of a tagged item.
-   car te;
-
-asserted procedure tag_taglist(te: DottedPair): List;
-   % Tag list of a tagged item.
-   cdr te;
-
-asserted procedure tag_add(te: DottedPair, a: Any): DottedPair;
-   % Add a tag to a tagged object.
-   if member(a, tag_taglist te) then
-      te
-   else
-      tag_object te . (a . tag_taglist te);
-
-asserted procedure tglist2set(lte: List): List;
-   % List to set for tagged elements. [lte] is List of tagged elements. Returns
-   % a list of tagged elements such that no element occurs twice.
-   tgunion(lte, {});
-
-asserted procedure tgunion(st1: List, st2: List): List;
-   % Union of tagged elements. [st1] and [st2] are sets of tagged elements.
-   % Returns a set of tagged elements.
-   <<
-      if st1 then
-	 for each t1 in st1 do
-	    st2 := tgunion1(t1, st2);
-      st2
-   >>;
-
-asserted procedure tgunion1(te: DottedPair, ste: List): List;
-   % Union of tagged elements subroutine. [te] is a tagged element, [ste] is a
-   % set of tagged elements.
-   if null ste then
-      {te}
-   else if tag_object te = tag_object car ste then
-      tag_(tag_object te, union(tag_taglist te, tag_taglist car ste)) . cdr ste
-   else
-      car ste . tgunion1(te, cdr ste);
 
 %%% --- Projection subsets --- %%%
 % PAIR(LIST(SF),ID)->LIST(SF)
