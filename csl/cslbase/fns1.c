@@ -3603,6 +3603,87 @@ Lisp_Object Lcallf2(Lisp_Object nil, Lisp_Object entry, Lisp_Object arg)
     return Lcallfn(nil, 2, entry, arg);;
 }
 
+/*
+ * It may be useful to pass callbacks into CSL to a foreign function so that
+ * they can be stored and used...
+ */
+
+static Lisp_Object Lget_callback(Lisp_Object nil, Lisp_Object a)
+{
+    void *r = NULL;
+    if (!is_fixnum(a)) return aerror("get_callback needs an integer arg");
+    switch (int_of_fixnum(a))
+    {
+case  0:  r = (void *)execute_lisp_function;
+        break;
+case  1:  r = (void *)PROC_set_callbacks;
+        break;
+case  2:  r = (void *)PROC_load_package;
+        break;
+case  3:  r = (void *)PROC_set_switch;
+        break;
+case  4:  r = (void *)PROC_gc_messages;
+        break;
+case  5:  r = (void *)PROC_clear_stack;
+        break;
+case  6:  r = (void *)PROC_push_symbol;
+        break;
+case  7:  r = (void *)PROC_push_string;
+        break;
+case  8:  r = (void *)PROC_push_small_integer;
+        break;
+case  9:  r = (void *)PROC_push_big_integer;
+        break;
+case 10:  r = (void *)PROC_push_floating;
+        break;
+case 11:  r = (void *)PROC_make_function_call;
+        break;
+case 12:  r = (void *)PROC_save;
+        break;
+case 13:  r = (void *)PROC_load;
+        break;
+case 14:  r = (void *)PROC_dup;
+        break;
+case 15:  r = (void *)PROC_pop;
+        break;
+case 16:  r = (void *)PROC_simplify;
+        break;
+case 17:  r = (void *)PROC_make_printable;
+        break;
+case 18:  r = (void *)PROC_get_value;
+        break;
+case 19:  r = (void *)PROC_atom;
+        break;
+case 20:  r = (void *)PROC_null;
+        break;
+case 21:  r = (void *)PROC_fixnum;
+        break;
+case 22:  r = (void *)PROC_floatnum;
+        break;
+case 23:  r = (void *)PROC_string;
+        break;
+case 24:  r = (void *)PROC_symbol;
+        break;
+case 25:  r = (void *)PROC_first;
+        break;
+case 26:  r = (void *)PROC_rest;
+        break;
+case 27:  r = (void *)PROC_integer_value;
+        break;
+case 28:  r = (void *)PROC_floating_value;
+        break;
+case 29:  r = (void *)PROC_symbol_name;
+        break;
+case 30:  r = (void *)PROC_string_data;
+        break;
+case 31:  r = (void *)PROC_lisp_eval;
+        break;
+case 32:  r = (void *)PROC_get_raw_value;
+        break;
+    }
+    return onevalue(make_lisp_integer64((Lisp_Object)r));
+}
+
 setup_type const funcs1_setup[] =
 {
     {"acons",                   wrong_no_na, wrong_no_nb, Lacons},
@@ -3757,6 +3838,7 @@ setup_type const funcs1_setup[] =
     {"open-foreign-library",    Lopen_foreign_library, too_many_1, wrong_no_1},
     {"find-foreign-function",   too_few_2, Lfind_foreign_function, wrong_no_2},
     {"call-foreign-function",   Lcallf1, Lcallf2, Lcallfn},
+    {"get-callback",            Lget_callback, too_many_1, wrong_no_1},
     {NULL,                      0, 0, 0}
 };
 
