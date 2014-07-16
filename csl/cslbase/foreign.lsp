@@ -26,6 +26,19 @@
 (call!-foreign!-function (find!-foreign!-function "vffd" a) 'double 123.45)
 (call!-foreign!-function (find!-foreign!-function "vffs" a) 'string "Test Data")
 
+% Now something messier. I register some callbacks so that the foreign
+% code can call back into Lisp
 
+(setq register_callback (find!-foreign!-function "register_callback" a))
+(dotimes (i 33)
+   (call!-foreign!-function register_callback 'int32 i
+                                              'int64 (get!-callback i)))
+
+(dotimes (x 3)
+   (princ "About to try with x = ")
+   (print x)
+   (print (call!-foreign!-function
+             (find!-foreign!-function 'two_way a) 'int32 x 'int32))
+   (terpri))
 
 (stop)
