@@ -1,6 +1,9 @@
 
 load_package sets;
 
+comment longer linelength so that differences in prettyprinter margins do not show ;
+lisp linelength 100;
+
 on defn;
 
 --b;
