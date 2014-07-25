@@ -102,9 +102,9 @@ begin scalar u,f,j,dvar,flg;
              mathprint list('equal,list('df,car row,caar col),
                             sqchk cdr col)
         >>;
-     flg := !*derexp;
-     !*derexp := t;
-
+%     flg := !*derexp;
+%     !*derexp := t;
+     begin scalar !*expanddf; !*expanddf := t; 
      v := changearg(dvar,u,v);
 
      for each  entry in f do
@@ -117,7 +117,8 @@ begin scalar u,f,j,dvar,flg;
        for each old in f do
           << let2(list('df,new,car old), nil, nil, nil);
              let2(list('df,new,car old), nil, t,   nil) >>;
-     !*derexp := flg;
+%     !*derexp := flg;
+     end;
      return v;
 end;
 
@@ -147,99 +148,230 @@ if atom x then x
 %          but if DEREXP is ON then the chain rule is taken further to
 %          yield the result:    DF(F(R),R)*DF(R,X)  .
 
-remflag('(diffp),'lose);   % Since we want to reload it.
+%% RmS: commented out since it is no longer necessary to redefine diffp
 
-symbolic procedure diffp(u,v);
-   %U is a standard power, V a kernel.
-   % Value is the standard quotient derivative of U wrt V.
-   begin scalar n,w,x,y,z,key; integer m;
-        n := cdr u;     %integer power;
-        u := car u;     %main variable;
-        if u eq v and (w := 1 ./ 1) then go to e
-         else if atom u then go to f
-         %else if (x := assoc(u,dsubl!*)) and (x := atsoc(v,cdr x))
-%               and (w := cdr x) then go to e   %deriv known;
-             %DSUBL!* not used for now;
-         else if (not atom car u and (w:= difff(u,v)))
-                  or (car u eq '!*sq and (w:= diffsq(cadr u,v)))
-          then go to c  %extended kernel found;
-         else if x := get(car u,'dfform) then return apply3(x,u,v,n)
-         else if x:= get(car u,dfn_prop u) then nil
-         else if car u eq 'plus and (w:=diffsq(simp u,v))
-          then go to c
-         else go to h;  %unknown derivative;
-        y := x;
-        z := cdr u;
-    a:  w := diffsq(simp car z,v) . w;
-        if caar w and null car y then go to h;  %unknown deriv;
-        y := cdr y;
-        z := cdr z;
-        if z and y then go to a
-         else if z or y then go to h;  %arguments do not match;
-        y := reverse w;
-        z := cdr u;
-        w := nil ./ 1;
-    b:  %computation of kernel derivative;
-        if caar y
-          then w := addsq(multsq(car y,simp subla(pair(caar x,z),
-                                                   cdar x)),
-                          w);
-        x := cdr x;
-        y := cdr y;
-        if y then go to b;
-    c:  %save calculated deriv in case it is used again;
-        %if x := atsoc(u,dsubl!*) then go to d
-        %else x := u . nil;
-        %dsubl!* := x . dsubl!*;
-  % d:   rplacd(x,xadd(v . w,cdr x,t));
-    e:  %allowance for power;
-        %first check to see if kernel has weight;
-        if (x := atsoc(u,wtl!*))
-          then w := multpq('k!* .** (-cdr x),w);
-        m := n-1;
-        % Evaluation is far more efficient if results are rationalized.
-        return rationalizesq if n=1 then w
-                else if flagp(dmode!*,'convert)
-                     and null(n := int!-equiv!-chk
-                                           apply1(get(dmode!*,'i2d),n))
-                 then nil ./ 1
-                else multsq(!*t2q((u .** m) .* n),w);
-    f:  % Check for possible unused substitution rule.
-        if not depends(u,v)
-           and (not (x:= atsoc(u,powlis!*))
-                 or not smember(v,simp cadddr x))
-          then return nil ./ 1;
-        w := list('df,u,v);
-        go to j;
-    h:  %final check for possible kernel deriv;
-        y := nil;
-        if car u eq 'df then key:=t;
-        w := if key then 'df . cadr u . derad(v,cddr u)
-              else list('df,u,v);
-        y := cddr u;
-        w := if (x := opmtch w) then simp x
-              else if (not depends(cadr w,lastcar w))
-                 and (not numberp lastcar w)
-               then nil ./ 1
-              else if !*derexp then
-                    begin
-                        if atom cadr w then return mksq(w,1);
-                        w := nil ./ 1;
-                        for each m in cdr(if key then cadr u else u) do
-                          w := addsq(multsq(
-                                 if (x := opmtch (z :=
-                                  'df . if key then (cadr u.derad(m,y))
-                                         else list(u,m) )) then
-                                  simp x else mksq(z,1),
-                                  diffsq(simp m,v)),
-                                  w);
-                        return w
-                    end
-              else mksq(w,1);
-        go to e;
-    j:  w := if x := opmtch w then simp x else mksq(w,1);
-        go to e
-   end;
+%% remflag('(diffp),'lose);   % Since we want to reload it.
+%%
+%% symbolic procedure diffp(u,v);
+%%    % U is a standard power, V a kernel.
+%%    % Value is the standard quotient derivative of U wrt V.
+%%    begin scalar n,w,x,y,z,key; integer m;
+%%         n := cdr u;     % integer power.
+%%         u := car u;     % main variable.
+%%         % Take care with noncommuting expressions.
+%%         if n>1 and noncomp u
+%%           then return addsq(multsq(simpdf {u,v},simpexpt {u,n - 1}),
+%%                             multpq(u .** 1,diffp(u . (n - 1),v)))
+%%          else if u eq v and (w := 1 ./ 1) then go to e
+%%          else if atom u then go to f
+%%          %else if (x := assoc(u,dsubl!*)) and (x := atsoc(v,cdr x))
+%% %               and (w := cdr x) then go to e   % deriv known.
+%%              % DSUBL!* not used for now.
+%%          else if (not atom car u and (w:= difff(u,v)))
+%%                   or (car u eq '!*sq and (w:= diffsq(cadr u,v)))
+%%           then go to c  % extended kernel found.
+%%          else if x := get(car u,'dfform) then return apply3(x,u,v,n)
+%%          else if x:= get(car u,dfn_prop u) then nil
+%%          else if car u eq 'plus and (w := diffsq(simp u,v))
+%%           then go to c
+%%          else go to h;  % unknown derivative.
+%%         y := x;
+%%         z := cdr u;
+%%     a:  w := diffsq(simp car z,v) . w;
+%%         if caar w and null car y then go to h;  % unknown deriv.
+%%         y := cdr y;
+%%         z := cdr z;
+%%         if z and y then go to a
+%%          else if z or y then go to h;  % arguments do not match.
+%%         y := reverse w;
+%%         z := cdr u;
+%%         w := nil ./ 1;
+%%         % computation of kernel derivative.
+%%         repeat <<
+%%           if caar y
+%%             then w := addsq(multsq(car y,simp subla(pair(caar x,z),
+%%                                                     cdar x)),
+%%                             w);
+%%           x := cdr x;
+%%           y := cdr y >>
+%%          until null y;
+%%     c:  % save calculated deriv in case it is used again.
+%%         % if x := atsoc(u,dsubl!*) then go to d
+%%         %  else x := u . nil;
+%%         % dsubl!* := x . dsubl!*;
+%%   % d:   rplacd(x,xadd(v . w,cdr x,t));
+%%     e:  % allowance for power.
+%%         % first check to see if kernel has weight.
+%%         if (x := atsoc(u,wtl!*))
+%%           then w := multpq('k!* .** (-cdr x),w);
+%%         m := n-1;
+%%         % Evaluation is far more efficient if results are rationalized.
+%%         return rationalizesq if n=1 then w
+%%                 else if flagp(dmode!*,'convert)
+%%                      and null(n := int!-equiv!-chk
+%%                                            apply1(get(dmode!*,'i2d),n))
+%%                  then nil ./ 1
+%%                 else multsq(!*t2q((u .** m) .* n),w);
+%%     f:  % Check for possible unused substitution rule.
+%%         if not depends(u,v)
+%%            and (not (x:= atsoc(u,powlis!*))
+%%                  or not depends(cadddr x,v))
+%%            and null !*depend
+%%           then return nil ./ 1;
+%%         % Derivative of a dependent identifier; maybe apply chain
+%%         % rule.  Suppose u(v) = u(a(v),b(v),...), i.e. given
+%%         % depend {u}, a, b, {a, b}, v;
+%%         % then (essentially) depl!* = ((b v) (a v) (u b a))
+%%         if !*expanddf
+%%            and (not (x := atsoc(u,powlis!*)) or not depends(cadddr x,v))
+%%            and (x := atsoc(u, depl!*)) and not(v memq (x:=cdr x)) then <<
+%%            w := df!-chain!-rule(u, v, x);
+%%            go to e
+%%         >>;
+%%         w := list('df,u,v);
+%%         w := if x := opmtch w then simp x else mksq(w,1);
+%%         go to e;
+%%     h:  % Final check for possible kernel deriv.
+%%         if car u eq 'df then <<         % multiple derivative
+%%            key:=t;
+%%            if cadr u eq v then <<
+%%               % (df (df v x y z ...) v) ==> 0 if commutedf
+%%               if !*commutedf and null !*depend then return nil ./ 1
+%%               else if !*simpnoncomdf and (w:=atsoc(v, depl!*))
+%%                  and null cddr w % and (cadr w eq (x:=caddr u))
+%%               then
+%%                  % (df (df v x) v) ==> (df v x 2)/(df v x) etc.
+%%                  % if single independent variable
+%%                  <<
+%%                     x := caddr u;
+%%                     % w := simp {'quotient, {'df,u,x}, {'df,v,x}};
+%%                     w := quotsq(simp{'df,u,x},simp{'df,v,x});
+%%                     go to e
+%%                  >>
+%%               >>
+%%            else if eqcar(cadr u, 'int) then
+%%               % (df (df (int F x) A) v) ==> (df (df (int F x) v) A) ?
+%%               % Commute the derivatives to differentiate the integral?
+%%               if caddr cadr u eq v then
+%%                  % Evaluating (df u v) where u = (df (int F v) A)
+%%                  % Just return (df F A) - derivative absorbed
+%%                  << w := 'df . cadr cadr u . cddr u;  go to j >>
+%%               else if !*allowdfint and
+%%                  % Evaluating (df u v) where u = (df (int F x) A)
+%%                  % (If dfint is also on then this will not arise!)
+%%                  % Commute only if the result simplifies:
+%%                  not_df_p(w := diffsq(simp!* cadr cadr u, v))
+%%               then <<
+%%                  % Generally must re-evaluate the integral (carefully!)
+%%                  w := 'df . reval{'int, mk!*sq w, caddr cadr u} . cddr u;
+%%                  go to j >>;  % derivative absorbed
+%%            %
+%%            % Try chain rule for nested derivatives:
+%%            % (df (df v x y z ...) a) where v depends on a
+%%            %
+%%            if !*expanddf and depends(cadr u,v)
+%%               and (not (x := atsoc(cadr u,powlis!*)) or not depends(cadddr x,v))
+%%              then <<
+%%                 if not smember(v, cadr u)
+%%                  then <<
+%%                   % first check for declared dependency of kernel cadr u on v
+%%                   x := assoc(cadr u, depl!*);
+%%                   % then if cadr u is not a simple symbol,
+%%                   %  check whether anything in cdr cadr u has an explicit
+%%                   %  dependency on v by collecting all kernels in cdr cadr u
+%%                   y := (not atom cadr u and cdr cadr u and get!-all!-kernels cdr cadr u);
+%%                   % but take care to exclude the kernel v when checking dependencies
+%% 		  if x and y and ldepends(delete(v,y),v) then <<
+%%                	  % possible inconsistent dependencies, do not apply chain rule
+%% %                   msgpri("Possible inconsistent dependencies in",u,
+%% %                         nil,nil,nil);
+%%                     nil >>
+%%                    else if x and not(v memq (x:=cdr x))
+%%                     % declared indirect dependency, 
+%%                     then << w := df!-chain!-rule(u, v, x); go to e>>
+%%                    else if y and not smember(v,y)
+%%                     % possible indirect dependency of kernel arglist on v
+%%                     then << w := df!-chain!-rule(u, v, y); go to e>>
+%%                   >>
+%%               >>;
+%%            if (x := find_sub_df(w:= cadr u . merge!-ind!-vars(u,v),
+%%                                            get('df,'kvalue)))
+%%                           then <<w := simp car x;
+%%                                  for each el in cdr x do
+%%                                     for i := 1:cdr el do
+%%                                         w := diffsq(w,car el);
+%%                                  go to e>>
+%%                        else w := 'df . w
+%%         >> else if !*df_partial and !*expanddf and not atom cadr u then <<
+%%            % Derivative of an algebraic operator u(a(v),...) via the
+%%            % chain rule: df(u(v),v) = u_1(a(v),b(v),...)*df(a,v) + ...
+%%            x := intern compress nconc(explode car u, '(!! !! !_));
+%%            y := cdr u;  w := nil ./ 1;  m := 0;
+%%            for each a in y do
+%%            begin scalar b;
+%%               m:=m+1;
+%%               if numr(b:=simp{'df,a,v}) then <<
+%%                  z := mkid(x, m);
+%%                  put(z, 'simpfn, 'simpiden);
+%%                  w := addsq(w, multsq(simp(z . y), b))
+%%               >>
+%%            end;
+%%            go to e
+%%         >> else w := {'df,u,v};
+%%    j:   if (x := opmtch w) then w := simp x
+%%          % At this point nested df's may have been collapsed, so
+%%          % we have to consider all dependencies on all variables
+%%          % and be very careful about returning zero.
+%%          else if not depends(u,v)
+%%                  and (not (x:= atsoc(u:=cadr w,powlis!*))
+%%                        or not dependsl(cadddr x,cddr w))
+%%                  and null !*depend then return nil ./ 1
+%%          % do not try to apply the chain rule to cases that are handled earlier
+%%          % (i.e. for nested/multiple derivatives, or differentiation of integrals)
+%%          % or that may come from inconsistent dependencies, e.g. after
+%%          %  depend u(v),a;
+%%          % do not replace df(u(v),v) by df(u(v),a)*df(a,v) 
+%%          else if !*expanddf and not atom u and null cdddr w
+%%                  and not(car u memq '(df int)) and not smember(v,u)
+%%                  and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
+%%           then <<
+%%             % first check for declared dependency of kernel u on v
+%%             x := assoc(u, depl!*);
+%%             % then check whether anything in cdr u has an explicit
+%%             % dependence on v by collecting all kernels in cdr u
+%%             y := (cdr u and get!-all!-kernels cdr u);
+%%             % but take care to exclude the kernel v when checking dependencies
+%%             if x and y and ldepends(delete(v,y),v) then <<
+%%                % possible inconsistent dependencies, do not apply chain rule
+%%                msgpri("Possible inconsistent dependencies in",u,
+%%                       nil,nil,nil);
+%%                w := mksq(w,1) >>
+%%              else if x then
+%%                 % declared dependency
+%%                 if (v memq (x:=cdr x))
+%%                   then w := mksq(w,1)
+%%                  else w := df!-chain!-rule(u, v, x)
+%%              else if y then
+%%               % possible dependency of kernel arglist on v
+%%               w := if smember(v,y) then mksq(w,1) else df!-chain!-rule(u, v, y)
+%%              else w := mksq(w,1)
+%%            >>
+%% %         else if !*derexp then
+%% %               if atom cadr w then w := mksq(w,1)
+%% %                else <<
+%%          else if !*derexp and not atom cadr w then <<
+%%                    w := nil ./ 1;
+%%                    for each m in cdr(if key then cadr u else u) do
+%%                      w := addsq(multsq(
+%%                             if (x := opmtch (z :=
+%%                              'df . if key then (cadr u.derad(m,cddr u))
+%%                                     else list(u,m) )) then
+%%                              simp x else mksq(z,1),
+%%                              diffsq(simp m,v)),
+%%                              w)>>
+%%          else w := mksq(w,1);
+%%       go to e
+%%    end;
 
 endmodule;
 
