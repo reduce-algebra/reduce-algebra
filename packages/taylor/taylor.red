@@ -7,7 +7,7 @@ module Taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2013 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2014 by Rainer M. Schoepf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -80,6 +80,9 @@ module Taylor;
 %
 %*****************************************************************
 %
+%
+% 25-Jul-2014    2.2e
+%   Set default value for switches.
 %
 % 06-Feb-2013    2.2d
 %   Improved trace output.
@@ -908,26 +911,26 @@ comment This package has six switches:
         `VERBOSELOAD' is a variable used by Portable Standard Lisp
         and causes a loading info to be printed;
 
-switch taylorautocombine,
-       taylorautoexpand,
-       taylorkeeporiginal,
-       taylorprintorder,
-       trtaylor,
+switch taylorautocombine=on,
+       taylorautoexpand=off,
+       taylorkeeporiginal=off,
+       taylorprintorder=on,
+       trtaylor=off,
        verboseload;
 
 convert!-Taylor!* := nil;      % flag indicating that Taylor kernels
                                % should be converted to prefix forms
 TaylorPrintTerms := 5;         % Only this nubmer of non-zero terms 
                                % will normally be printed.
-!*taylorkeeporiginal := nil;   % used to indicate if the original
+%!*taylorkeeporiginal := nil;   % used to indicate if the original
                                % expressions (before the expansion)
                                % are to be kept.
-!*taylorautoexpand := nil;     % set if non-taylor expressions are to
+%!*taylorautoexpand := nil;     % set if non-taylor expressions are to
                                % be expanded automatically on
                                % combination.
-!*taylorautocombine := t;      % set if taysimpsq should be added to
+%!*taylorautocombine := t;      % set if taysimpsq should be added to
                                % the MUL!* list.
-!*taylorprintorder := t;       % set if Taylor kernels should be printed
+%!*taylorprintorder := t;       % set if Taylor kernels should be printed
                                % with big-O notation, now on by default.
 %!*verboseload := nil;         % set if loading info should be printed
 !*tayexpanding!* := nil;       % set by taylorexpand to indicate that
@@ -940,8 +943,8 @@ TaylorPrintTerms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-Taylor!:version := "2.2d";      % version number of the package
-Taylor!:date!* := "06-Feb-2013"; % release date
+Taylor!:version := "2.2e";      % version number of the package
+Taylor!:date!* := "25-Aug-2014"; % release date
 
 if !*verboseload then
   << terpri ();
