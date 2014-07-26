@@ -1598,7 +1598,7 @@ symbolic procedure fancy!-quotpri u;
        then return fancy!-fail(pos,tpos,fl);
      fancy!-pos!* := pos;
      fancy!-texpos := tpos;
-     w := fancy!-maprint!-tex!-bkt(caddr u,0,nil);
+     w := fancy!-maprint!-tex!-bkt(caddr u,0,t);
      n2 := fancy!-pos!*;
      n2t := fancy!-texpos;
      if w='failed
