@@ -85,7 +85,6 @@ symbolic procedure ploteval u;
     plotstyle!* := 'lines;
     bye!-actions!* := union('((plotreset)),bye!-actions!*);
 % "init" on the next line looks like an und!*eclared variable, however
-t!-reval
 % plotdriver is a macro and uses it as a literal...
     plotdriver(init);
     for each option in u do ploteval1 plot!-reval option;
