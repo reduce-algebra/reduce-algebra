@@ -378,7 +378,7 @@ void print_banner(int vb) {
 	   BUILDTIME);
     //    if (unicode) printf("%c%c",0xC2,0xA9); else printf("(C)");
     printf("(C)");
-    printf(" 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
+    printf(" 1999-2008 A. Dolzmann, 1999-2014 T. Sturm\n");
     printf("Based on earlier projects by C. Cannam and W. Neun\n");
     printf("Reports bugs to <%s>\n\n",PACKAGE_BUGREPORT);
   } else {

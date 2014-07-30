@@ -304,6 +304,21 @@ void read_until_prompt(char der_prompt[]){
 
   while(status != FINISHED) {
     ncharread = read(ReduceToMe[0],buffer,1000);
+    if (ncharread < 0) {
+      perror("read_until_prompt");
+      rf_exit(-1);
+    }
+    if (ncharread == 0) {
+      /* There is a SIGCHLD in the air, but I already know that it is over. */
+      signal(SIGCHLD, SIG_IGN);
+      line_end_history();
+      line_end();
+      if (verbose) {
+	textcolor(redfrontcolor);
+	printf("Redfront normally exiting on EOF from Reduce.\n");
+      }
+      rf_exit(0);
+    }
     for (ii=0; ii < ncharread; ii++) {
       ch = buffer[ii];
       if (ch == (char) 0x01) {

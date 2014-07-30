@@ -55,6 +55,7 @@ void sig_skipUntilString(int,const char *);
 RETSIGTYPE sig_sigChld(int);
 RETSIGTYPE sig_sigTstp(int);
 void sig_installHandlers(void);
+sig_t sig_signal(int, sig_t);
 const char *sig_identify(int);
 
 RETSIGTYPE sig_sigGen(int arg) {
@@ -122,7 +123,7 @@ RETSIGTYPE sig_sigChld(int arg) {
   line_end();
   if (verbose) {
     textcolor(redfrontcolor);
-    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
+    printf("Redfront normally exiting on signal %d (%s).\n",arg,sig_identify(arg));
   }
   rf_exit(0);
 }
@@ -133,18 +134,30 @@ RETSIGTYPE sig_sigTstp(int arg) {
 }
 
 void sig_installHandlers(void) {
-  signal(SIGQUIT,sig_sigGen);
-  signal(SIGHUP,sig_sigGen);
-  signal(SIGINT,(dist == PSL) ? sig_sigGen : SIG_IGN);
-  signal(SIGILL,sig_sigGen);
-  signal(SIGTSTP,sig_sigTstp);
+  sig_signal(SIGQUIT,sig_sigGen);
+  sig_signal(SIGQUIT,sig_sigGen);
+  sig_signal(SIGHUP,sig_sigGen);
+  sig_signal(SIGINT,(dist == PSL) ? sig_sigGen : SIG_IGN);
+  sig_signal(SIGILL,sig_sigGen);
+  sig_signal(SIGTSTP,sig_sigTstp);
 #ifndef LINUX
-  signal(SIGBUS,sig_sigGen);
+  sig_signal(SIGBUS,sig_sigGen);
 #endif
-  signal(SIGSEGV,sig_sigGen);
-  signal(SIGPIPE,sig_sigGen);
-  signal(SIGCHLD,sig_sigChld);
-  signal(SIGTERM,sig_sigGen);
+  sig_signal(SIGSEGV,sig_sigGen);
+  sig_signal(SIGPIPE,sig_sigGen);
+  sig_signal(SIGCHLD,sig_sigChld);
+  sig_signal(SIGTERM,sig_sigGen);
+}
+
+sig_t sig_signal(int sig, sig_t func) {
+  sig_t s;
+
+  s = signal(sig, func);
+  if (s == SIG_ERR) {
+    perror(NULL);
+    rf_exit(-1);
+  }
+  return s;
 }
 
 const char *sig_identify(int signo) {
