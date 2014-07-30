@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------
    $Id$
    ---------------------------------------------------------------------
-   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   (c) 1999-2009 A. Dolzmann and T. Sturm, 1999-2014 T. Sturm
    ---------------------------------------------------------------------
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -94,10 +94,10 @@ int deb_fprintf(FILE *file,const char *msg,...) {
     oldcolor = textcolor(debugcolor);
     ecode = vfprintf(file,msg,ap);
     textcolor(oldcolor);
+    fflush(file);
     deb_mutex(UNLOCK);
   }
   va_end(ap);
-  fflush(file);
 
   return ecode;
 }

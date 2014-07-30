@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------
    $Id$
    ---------------------------------------------------------------------
-   (c) 1999-2009 A. Dolzmann and T. Sturm, 1999-2009 T. Sturm
+   (c) 1999-2009 A. Dolzmann and T. Sturm, 1999-2014 T. Sturm
    ---------------------------------------------------------------------
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -74,8 +74,10 @@ void stextcolor1(char *,int,int,int);
 void resetcolor(void);
 int vbprintf(const char *,...);
 void rf_exit(int);
+char **create_call(int, char **);
 
 int main(int argc,char **argv,char **envp) {
+  char **nargv;
 
   dist = det_dist(argv[0]);
 
@@ -91,6 +93,10 @@ int main(int argc,char **argv,char **envp) {
 
   init_channels();
 
+  /* I am preparing the argument for the child's execv() here, because malloc()
+     after fork() might be problematic. */
+  nargv = create_call(argc,argv);
+
   if ((reduceProcessID = fork())) {  /* I am not the child */
 
     if (reduceProcessID < 0) {  /* Failure */
@@ -100,13 +106,15 @@ int main(int argc,char **argv,char **envp) {
 
     deb_fprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
 
+    free(nargv);
+
     parent();
 
   } else {  /* I am the child */
 
     deb_fprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
 
-    child(argc,argv,envp);
+    child(nargv);
   }
 
   return -1;
@@ -460,4 +468,92 @@ void rf_exit(int ecode) {
   deb_cleanup();
   resetcolor();
   exit(ecode);
+}
+
+char **create_call(int argc,char *argv[]) {
+  char **nargv;
+  int tempfd;
+  int i,xa0;
+
+  deb_fprintf(stderr,"entering create_call\n");
+
+  nargv = (char **)malloc((argc - xargstart + 6)*sizeof(char *));
+
+  if (dist == PSL) {
+    if ((tempfd = open(BPSL,O_RDONLY)) == -1) {  /* Does not check x */
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",BPSL);
+      perror(errstr);
+      rf_exit(-1);
+    } else
+      close(tempfd);
+
+    if ((tempfd = open(REDIMG,O_RDONLY)) == -1) {
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",REDIMG);
+      perror(errstr);
+      rf_exit(-1);
+    } else
+      close(tempfd);
+
+    if (strcmp(memory,"0") == 0) {
+      char *sixtyfour;
+      int i;
+      /* malloc one more in case the name of bpsl is only 1 char: */
+      sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
+      strcpy(sixtyfour,BPSL);
+      i = strlen(BPSL);
+      while (sixtyfour[i-1] != '/')
+	i--;
+      sixtyfour[i++] = '6';
+      sixtyfour[i++] = '4';
+      sixtyfour[i] = (char)0;
+      deb_fprintf(stderr,"checking for %s ... ",sixtyfour);
+      if ((tempfd = open(sixtyfour,O_RDONLY)) != -1) {
+	close(tempfd);
+	deb_fprintf(stderr,"positive\n");
+	memory = "2000";
+      } else {
+	deb_fprintf(stderr,"negative\n");
+	memory = "16000000";
+      }
+    }
+
+    nargv[0] = BPSL;
+    nargv[1] = "-td";
+    nargv[2] = memory;
+    nargv[3] = "-f";
+    nargv[4] = REDIMG;
+    for (i = xargstart; i < argc; i++)
+      nargv[i - xargstart + 5] = argv[i];
+    nargv[argc - xargstart + 5] = (char *)0;
+  } else {  // dist == CSL
+    if ((tempfd = open(REDUCE,O_RDONLY)) == -1) {  /* Does not check x */
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",REDUCE);
+      perror(errstr);
+      rf_exit(-1);
+    } else
+      close(tempfd);
+
+    nargv[0] = REDUCE;
+    nargv[1] = "-w";
+    nargv[2] = "-b";
+    if (verbose) {
+      nargv[3] = "-V";
+      xa0 = 4;
+    } else
+      xa0 = 3;
+    for (i = xargstart; i < argc; i++)
+      nargv[i - xargstart + xa0] = argv[i];
+    for (i = xa0; i <= 5; i++)
+      nargv[argc - xargstart + i] = (char *)0;
+  }
+
+  for (i = 0; i <= argc - xargstart + 5; i++)
+    deb_fprintf(stderr,"argv[%d]=%s\n",i,nargv[i]);
+
+  deb_fprintf(stderr,"leaving create_call\n");
+
+  return nargv;
 }

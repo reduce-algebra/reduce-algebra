@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------
    $Id$
    ---------------------------------------------------------------------
-   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   (c) 1999-2009 A. Dolzmann and T. Sturm, 1999-2014 T. Sturm
    ---------------------------------------------------------------------
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -114,7 +114,7 @@ void rf_exit(int);
 void parent(void);
 void send_reduce(char *);
 
-void child(int,char **,char **);
+void child(char **);
 
 void line_init_history(void);
 void line_add_history(char *);
@@ -129,7 +129,6 @@ void line_end(void);
 
 RETSIGTYPE sig_sigInt(int);
 void sig_installHandlers(void);
-void sig_removeHandlers(void);
 void sig_killChild(void);
 
 struct strbuf *addchar(char,struct strbuf *);
