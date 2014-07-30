@@ -29,8 +29,8 @@
 
 BUILD = $(shell ../../scripts/findhost.sh $(shell src/config.guess))
 
-#LIBEDIT_TGZ = libedit-20090923-3.0.tar.gz
 LIBEDIT_TGZ = libedit-20130712-3.1.tar.gz
+#LIBEDIT_TGZ = libedit-20140620-3.1.tar.gz
 LIBEDIT = $(shell basename $(LIBEDIT_TGZ) .tar.gz)
 BUILD_LIBEDIT = $(BUILD)/libedit
 
@@ -38,6 +38,8 @@ BUILD_LIBEDIT = $(BUILD)/libedit
 	uninstall-psl clean distclean maintainer-clean echo
 
 all: $(BUILD)/redfront/redfront
+
+debug: $(BUILD)/redfront-debug/redfront
 
 src/configure:
 	cd src; \
@@ -47,7 +49,13 @@ src/configure:
 $(BUILD)/redfront/redfront: $(BUILD)/libedit/include/editline/readline.h src/configure
 	mkdir -p $(BUILD)/redfront; \
 	cd $(BUILD)/redfront; \
-	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit) ; \
+	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit); \
+	make
+
+$(BUILD)/redfront-debug/redfront: $(BUILD)/libedit/include/editline/readline.h src/configure
+	mkdir -p $(BUILD)/redfront-debug; \
+	cd $(BUILD)/redfront-debug; \
+	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit) --enable-debug; \
 	make
 
 $(LIBEDIT):
@@ -58,12 +66,6 @@ $(BUILD)/libedit/include/editline/readline.h: $(LIBEDIT)
 	mkdir -p $(BUILD_LIBEDIT)
 	cd $(BUILD_LIBEDIT); \
 	../../$(LIBEDIT)/configure --prefix=$$(pwd) --disable-dependency-tracking; \
-	make install
-
-universal:  # EXPERIMENTAL - DO NOT USE!
-	mkdir -p universal/libedit; \
-	cd universal/libedit; \
-	CFLAGS="-arch i386 -arch x86_64 -arch ppc" ../../libedit/configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	make install
 
 install-home-bin: install-home-bin-csl install-home-bin-psl
