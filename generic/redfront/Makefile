@@ -29,8 +29,8 @@
 
 BUILD = $(shell ../../scripts/findhost.sh $(shell src/config.guess))
 
-LIBEDIT_TGZ = libedit-20130712-3.1.tar.gz
-#LIBEDIT_TGZ = libedit-20140620-3.1.tar.gz
+#LIBEDIT_TGZ = libedit-20130712-3.1.tar.gz
+LIBEDIT_TGZ = libedit-20140620-3.1.tar.gz
 LIBEDIT = $(shell basename $(LIBEDIT_TGZ) .tar.gz)
 BUILD_LIBEDIT = $(BUILD)/libedit
 

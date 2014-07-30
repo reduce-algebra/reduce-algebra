@@ -74,10 +74,7 @@ char *fn_filename_completion_function(const char *, int);
 
 #include <sys/stat.h>
 
-#ifdef EL_PROMPT_ESC
 #define PROMPT_IGNORE '@'
-#endif
-
 #define QUERY_ITEMS 100
 
 extern int verbose;
@@ -127,7 +124,6 @@ void line_init(void) {
 #else
   el_set(e,EL_PROMPT,line_get_prompt);
 #endif
-  /*  el_set(e,EL_RPROMPT,line_get_rprompt); */
   el_set(e,EL_EDITOR,"emacs");
   el_set(e,EL_BIND,"^R","em-inc-search-prev",NULL);
   el_set(e,EL_ADDFN,"line_complete","ReadLine style completion",line_complete);
@@ -150,10 +146,6 @@ unsigned char _line_learn_completion(EditLine *ignore,int invoking_key) {
 
 char *line_get_prompt(EditLine *e) {
   return line_prompt;
-}
-
-char *line_get_rprompt(EditLine *e) {
-  return "***";
 }
 
 unsigned char line_complete(EditLine *ignore,int invoking_key)
@@ -380,10 +372,7 @@ char *line_color_prompt(char der_prompt[]) {
 	    tmp,
 	    PROMPT_IGNORE,0x1B,0,inputcolor+30,9+40,PROMPT_IGNORE);
 #else
-    sprintf(der_prompt,"%c[%d;%d;%dm%s%c[%d;%d;%dm",
-	    0x1B,0,promptcolor+30,9+40,
-	    tmp,
-	    0x1B,0,inputcolor+30,9+40);
+    sprintf(der_prompt, "%s", tmp);
 #endif
   }
   return der_prompt;
