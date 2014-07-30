@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1999-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm
+% (c) 1999-2009 A. Dolzmann and T. Sturm, 2010-2014 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -274,6 +274,22 @@ procedure redfront_send!-packages(fn);
    <<
       for each pack in cdr redfront_read_package_map fn do
 	 prin2t redfront_learncolor pack;
+      statcounter := statcounter - 1;
+      nil
+   >>;
+
+procedure redfront_fwl();
+   begin scalar fwl;
+      fwl := for each x in oblist() join
+ 	 if get(x, 'psopfn) or get(x, 'opfn) or get(x, 'polyfn) then
+ 	    {x};
+      return sort(fwl,'ordp)
+   end;
+
+procedure redfront_send!-functions();
+   <<
+      for each fw in redfront_fwl() do
+	 prin2t redfront_learncolor fw;
       statcounter := statcounter - 1;
       nil
    >>;

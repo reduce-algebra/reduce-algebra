@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------
    $Id$
    ---------------------------------------------------------------------
-   Copyright (c) 2009 Thomas Sturm
+   Copyright (c) 2009-2014 Thomas Sturm
    ---------------------------------------------------------------------
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -52,6 +52,7 @@ static strl line_switchlist = NULL;
 static strl line_packlist = NULL;
 static strl line_loadlist = NULL;
 static strl line_adhoclist = NULL;
+static strl line_funclist = NULL;
 
 
 #ifdef HAVE_LIBEDIT
@@ -95,12 +96,12 @@ strl line_learn_until_prompt(char *,const char *);
 char *line_get_prompt(EditLine *);
 char *line_get_rprompt(EditLine *);
 unsigned char line_complete(EditLine *,int);
-unsigned char line_fn_complete(EditLine *,char *(*)(const char *, int),
-			       const char *, const char *(*)(const char *),
-			       size_t);
+unsigned char line_fn_complete(EditLine *,  char *(*)(const char *, int),  
+			       const char *(*)(const char *));
 char *line_filename_completion_function(const char *, int);
 const char *line_append_char_function(const char *);
 char *line_switch_completion_function(const char *, int);
+char *line_func_completion_function(const char *, int);
 char *line_pack_completion_function(const char *, int);
 char *line_load_completion_function(const char *, int);
 char *line_strl_completion_function(const char *, int, strl);
@@ -150,73 +151,44 @@ char *line_get_prompt(EditLine *e) {
 
 unsigned char line_complete(EditLine *ignore,int invoking_key)
 {
-  unsigned char hit=0;
   const LineInfo *li;
   const char *ctemp;
+  unsigned char hit=0;
 
   li = el_line(e);
 
-  for (ctemp = li->cursor; ctemp >= li->buffer; ctemp--) {
+  ctemp = li->buffer;
 
-    if (strncmp(ctemp,"load_package",12) == 0) {
-      hit = line_fn_complete(e,
-			      line_pack_completion_function,
-			      line_break_chars,
-			      line_append_no_char,
-			      QUERY_ITEMS);
-      break;
-    }
-
-    else if (strncmp(ctemp,"load",4) == 0) {
-      hit = line_fn_complete(e,
-			      line_load_completion_function,
-			      line_break_chars,
-			      line_append_no_char,
-			      QUERY_ITEMS);
-      break;
-    }
-
-    else if (*ctemp == '"') {
-      hit = line_fn_complete(e,
-			      line_filename_completion_function,
-			      line_break_chars,
-			      line_append_char_function,
-			      QUERY_ITEMS);
-      break;
-    }
-
-    else if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0) {
-      hit = line_fn_complete(e,
-			      line_switch_completion_function,
-			      line_break_chars,
-			      line_append_no_char,
-			      QUERY_ITEMS);
-      break;
-    }
-  }
-
+  hit = line_fn_complete(e, line_adhoc_completion_function, line_append_no_char);
   if (hit)
     return hit;
 
-  return line_fn_complete(e,
-			  line_adhoc_completion_function,
-			  line_break_chars,
-			  line_append_no_char,
-			  QUERY_ITEMS);
+  if (strncmp(ctemp,"load_package",12) == 0)
+    return line_fn_complete(e, line_pack_completion_function, line_append_no_char);
+
+  if (strncmp(ctemp,"load",4) == 0)
+    return line_fn_complete(e, line_load_completion_function, line_append_no_char);
+    
+  if (*ctemp == '"')
+      return line_fn_complete(e, line_filename_completion_function, line_append_char_function);
+
+  if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0)
+      return line_fn_complete(e, line_switch_completion_function, line_append_no_char);
+
+  return line_fn_complete(e, line_func_completion_function, line_append_no_char);
+
 }
 
-unsigned char line_fn_complete(EditLine *el,
-			       char *(*complet_func)(const char *, int),
-			       const char *word_break,
-			       const char *(*app_func)(const char *),
-			       size_t query_items) {
+unsigned char line_fn_complete(EditLine *el, 
+			       char *(*complet_func)(const char *, int),  
+			       const char *(*app_func)(const char *)) {
   return (unsigned char )fn_complete(el,
 				     complet_func,
 				     NULL,
-				     word_break,
+				     line_break_chars,
 				     NULL,
 				     app_func,
-				     query_items,
+				     QUERY_ITEMS, 
 				     NULL,
 				     NULL,
 				     NULL,
@@ -267,6 +239,10 @@ char *line_pack_completion_function(const char *text, int state) {
 
 char *line_load_completion_function(const char *text, int state) {
   return line_strl_completion_function(text,state,line_loadlist);
+}
+
+char *line_func_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_funclist);
 }
 
 char *line_strl_completion_function(const char *text, int state,strl clist) {
@@ -434,9 +410,6 @@ char *line_pack_completion_function(const char *, int);
 char *line_load_completion_function(const char *, int);
 char *line_strl_completion_function(const char *, int, strl);
 
-
-
-
 char **line_completion_list(const char *text, int start, int end) {
   char **matches = (char **)NULL;
   char *ctemp = rl_line_buffer;
@@ -460,8 +433,9 @@ char **line_completion_list(const char *text, int start, int end) {
   else if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0) {
     return rl_completion_matches(text, line_switch_completion_function);
   }
-
-  return matches;
+  else {
+    return rl_completion_matches(text, line_func_completion_function);
+  }
 }
 
 char *line_switch_completion_function(const char *text, int state) {
@@ -607,6 +581,12 @@ void line_learn_completion(char der_prompt[]) {
     line_loadlist = line_learn_until_prompt(der_prompt,"modules");
   } else
     line_loadlist = line_packlist;
+
+  vbprintf(", ");
+
+  line_funclist = strl_delete(line_funclist);
+  send_reduce("lisp redfront_send!-functions()$");
+  line_funclist = line_learn_until_prompt(der_prompt,"functions");
 
   vbprintf(", ");
 
