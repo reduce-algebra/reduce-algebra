@@ -192,6 +192,7 @@
  (rubi_red      "rubi_red"                                   csl psl)
  (lalr          "lalr"                  test                 csl psl)
  (ranum         "ranum"                 test                 csl psl)
+ (listvecops	"listvecops"                                 csl psl)
 )
 
 % End of configuration data
