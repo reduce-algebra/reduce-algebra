@@ -122,9 +122,21 @@ symbolic procedure listexpt(u,v);
    begin scalar x,y;
      x := reval1(car u,v);
      y := reval1(cadr u,v);
-     return 'list . for each j in cdr x collect mk!*sq simpexpt {j,y}
+     %if eqcar(y,'list) then rederr "A list can only be exponentiated by a scalar.";
+     return 'list . if null eqcar(x,'list) 
+                       then for each j in cdr y collect mk!*sq simpexpt {x,j}
+                     else if null eqcar(y,'list) 
+                       then for each j in cdr x collect mk!*sq simpexpt {j,y}
+                     else listexpt2(cdr x,cdr y)
    end;
 
+symbolic procedure listexpt2(u,v);
+       if null u then if v then rederr "Unequal length lists found in expt."
+                   else nil
+    else if null v then rederr "Unequal length lists found in expt."
+    else mk!*sq simpexpt {car u,car v} . listexpt2(cdr u,cdr v);
+
+put('expt,'rtypefn,'getrtypeor);
 put('expt,'listfn,'listexpt);
 
 symbolic procedure listdotprod(u,v);
@@ -150,13 +162,14 @@ symbolic procedure listdotprod2(u,v);
         go to a
    end;
 
-put('listdot,'listfn,'listdotprod);
+infix ldot;
 
-put('listdot,'rtype,'list);
+newtok '((!* !.) ldot);
 
-infix listdot;
+put('ldot,'listfn,'listdotprod);
 
-%newtok '((whatever) listdot);
+put('ldot,'rtype,'list);
+
 
 endmodule;
 
