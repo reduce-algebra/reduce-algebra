@@ -35,7 +35,7 @@ symbolic procedure listplus(u,v);
     r := cdar z;
     z := cdr z;
     for each j in z do if null eqcar(car z,'list) 
-                          then rederr "Only list can be added to a list."
+                          then rederr "Only a list can be added to a list."
                         else r := listadd2(r,cdar z);
     return 'list . for each j in r collect mk!*sq j
   end;
@@ -95,9 +95,9 @@ symbolic procedure listtimes1(u,v);
    for each j in u collect mk!*sq multsq(simp j,v);
 
 symbolic procedure listtimes2(u,v);
-   if null u then if v then rederr "Not equal length lists found in times."
+   if null u then if v then rederr "Unequal length lists found in times."
                    else nil
-    else if null v then rederr "Not equal length lists found in times."
+    else if null v then rederr "Unequal length lists found in times."
     else mk!*sq multsq(simp car u,simp car v) . listtimes2(cdr u,cdr v);
 
 put('times,'listfn,'listtimes); 
@@ -106,10 +106,57 @@ symbolic procedure listquotient(u,v);
   begin scalar x,y;
     x := reval1(car u,v);
     y := reval1(cadr u,v);
-    return 'list . for each j in cdr x collect mk!*sq simpquot {j,y};
+    return 'list . if eqcar(y,'list) then listquotient2(cdr x,cdr y)
+                    else for each j in cdr x collect mk!*sq simpquot {j,y};
   end;
 
+symbolic procedure listquotient2(u,v);
+    if null u then if v then rederr "Unequal length lists found in quotient."
+                   else nil
+    else if null v then rederr "Unequal length lists found in quotient."
+    else mk!*sq quotsq(simp car u,simp car v) . listquotient2(cdr u, cdr v);
+
 put('quotient,'listfn,'listquotient);
+
+symbolic procedure listexpt(u,v);
+   begin scalar x,y;
+     x := reval1(car u,v);
+     y := reval1(cadr u,v);
+     return 'list . for each j in cdr x collect mk!*sq simpexpt {j,y}
+   end;
+
+put('expt,'listfn,'listexpt);
+
+symbolic procedure listdotprod(u,v);
+   begin scalar x,y;
+     x := reval1(car u,v);
+     y := reval1(cadr u,v);
+     if null(eqcar(x,'list) and eqcar(y,'list)) 
+        then rederr "Dot product can only be applied to two lists.";
+     return mk!*sq listdotprod2(cdr x,cdr y);
+   end;
+
+symbolic procedure listdotprod2(u,v);
+   begin scalar x;
+     x := nil ./ 1;
+     a: if null u then if v 
+           then rederr "Unequal length lists found in dot product."
+                        else return x
+         else if null v 
+                 then rederr "Unequal length lists found in dot product.";
+        x := addsq(multsq(simp car u,simp car v),x);
+        u := cdr u;
+        v := cdr v;
+        go to a
+   end;
+
+put('listdot,'listfn,'listdotprod);
+
+put('listdot,'rtype,'list);
+
+infix listdot;
+
+%newtok '((whatever) listdot);
 
 endmodule;
 
