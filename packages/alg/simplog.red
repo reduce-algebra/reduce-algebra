@@ -42,8 +42,7 @@ symbolic inline procedure get!-log!-base u;
 symbolic procedure simplog u;
    (if !*expandlogs then
      (resimp simplogbi(x,get!-log!-base u) where !*expandlogs=nil)
-%%% next line temporarily left out: causes CRACK test file to fail
-%    else if x=0 then rerror(alg,210,{car u,"0 formed"})
+    else if x=0 then rerror(alg,210,{car u,"0 formed"})
     else if fixp x and car u='log10 and not(dmode!* and get('log10,dmode!*))
       then simplogbn(x,get!-log!-base u,t)
     else if eqcar(x,'quotient) and cadr x=1
