@@ -72,6 +72,7 @@ put('difference,'listfn,'listdifference);
 symbolic procedure listminus(u,v);
    begin scalar x;
      x := reval1(car u,v);
+     if null eqcar(u,'list) then return x;
      return 'list . for each j in cdr x collect mk!*sq negsq simp j;
    end;
 
@@ -148,6 +149,17 @@ symbolic procedure listdotprod(u,v);
      return mk!*sq listdotprod2(cdr x,cdr y);
    end;
 
+symbolic procedure simpldot u;
+   begin scalar x,y;
+     x := reval1(car u,t);
+     y := reval1(cadr u,t);
+     if null(eqcar(x,'list) and eqcar(y,'list)) 
+      then rederr "Both arguments to ldot must be lists.";
+     return listdotprod2(cdr x,cdr y)
+   end;
+
+put('ldot,'simpfn,'simpldot);
+
 symbolic procedure listdotprod2(u,v);
    begin scalar x;
      x := nil ./ 1;
@@ -165,10 +177,6 @@ symbolic procedure listdotprod2(u,v);
 infix ldot;
 
 newtok '((!* !.) ldot);
-
-put('ldot,'listfn,'listdotprod);
-
-put('ldot,'rtype,'list);
 
 
 endmodule;
