@@ -868,19 +868,23 @@ symbolic procedure solvealginv u;
       if(m:=assoc(lh,inv!*))then
       <<m:=cdr m;lh :=car m;kl!*:=eqn;
         if eqcar(lh,'cond) or eqcar(lh,'quote) then
-              lh:=car(m:=eval lh);
-        rh:=solvenlnrsimp subst(prepsq rh,'!&,cadr m)>>;
+              lh:=car(m:=lispeval lh);
+%        rh:=solvenlnrsimp subst(prepsq rh,'!&,cadr m)>>;
+        rh := subst(prepsq rh,'!&,cadr m);
+	rh := errorset({'solvenlnrsimp,mkquote rh},!*trnonlnr,nil) where !*protfg := t;
+	if errorp rh then << abort := t >> else rh := car rh>>;
+      if not abort then
           % If local variable, append to substitution.
-      if not member(lh,uv!*) and !*expli then
-      <<sub:=append(sub,{lh.(z:=prepsq subsq(rh,sub))});
-        if smember(lh,r) then r:=subst(z,lh,r)>>;
-          % Append to the final output.
-      if (member(lh,uv!*) or not !*expli)
-               % Inhibit repeated same values.
-            and not<<z:=subsq(rh,sub);
-                     n:=length member(z,r);
-                     n>0 and lh=nth(v,length v + 1 - n)>>
-         then<<r:=z.r;v:=lh.v;>> >>;
+      <<if not member(lh,uv!*) and !*expli then
+        <<sub:=append(sub,{lh.(z:=prepsq subsq(rh,sub))});
+          if smember(lh,r) then r:=subst(z,lh,r)>>;
+            % Append to the final output.
+        if (member(lh,uv!*) or not !*expli)
+                 % Inhibit repeated same values.
+              and not<<z:=subsq(rh,sub);
+                       n:=length member(z,r);
+                       n>0 and lh=nth(v,length v + 1 - n)>>
+        then<<r:=z.r;v:=lh.v;>> >> >>;
       % Classify result.
   % for each x in uv!* do
   %   if tag and not member(x,v) and smember(x,r) then tag:=nil;
