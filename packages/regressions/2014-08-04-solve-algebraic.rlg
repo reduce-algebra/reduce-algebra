@@ -1,0 +1,63 @@
+% Several test cases for algebraic solver
+
+
+% Single Solution: x=arbcomplex(1), y=0
+solve(e^x*y,{x,y});
+
+
+{{x=arbcomplex(1),y=0}}
+
+
+
+% Solution 1: x=arbcomplex(1), y=0
+% Solution 2: x=pi*arbint(1), y=arbcomplex(2)
+
+solve(sin(x)*y,{x,y});
+
+
+{{x=arbcomplex(5),y=0},
+
+ {x=pi*(2*arbint(6) + 1),y=arbcomplex(7)},
+
+ {x=2*arbint(6)*pi,y=arbcomplex(8)}}
+
+
+
+% Solution 1: x=arbcomplex(1), y=0
+% Solution 2: x=1, y=arbcomplex(2)
+
+solve(y*log x,{x,y});
+
+
+{{x=arbcomplex(9),y=0},{x=1,y=arbcomplex(10)}}
+
+
+
+% Solution 1: x=arbcomplex(1), y=0
+% Solution 2: x=sqrt(2*pi*i*arbint(1)), y=arbcomplex(1)
+
+solve(y*(e^(x^2)-1));
+
+
+Unknowns: {x,y}
+
+{{x=arbcomplex(11),y=0},
+
+ {x=sqrt(pi)*sqrt(arbint(12)*i)*sqrt(2),
+
+  y=arbcomplex(13)}}
+
+
+
+% Border case: solve returns same roots twice:
+
+solve(cos x + 1);
+
+
+Unknown: x
+
+{x=pi*(2*arbint(14) + 1),x=pi*(2*arbint(14) - 1)}
+
+
+end;
+

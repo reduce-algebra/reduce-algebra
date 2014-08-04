@@ -378,7 +378,7 @@ symbolic procedure solvenonlnrsys2();
              (r:=solvenonlnrtanhsub(prepf(w:=car system!*),car uv!*))
              and car r
             then return solvenonlnrtanhsolve(r,car uv!*,w);
-      if atom (errorset('(solvealgk1),!*trnonlnr,nil)) where dmode!*=nil
+      if errorp (errorset('(solvealgk1),!*trnonlnr,nil)) where dmode!*=nil
          then return (system!*:='(failed));
       system!*:='list.for each p in system!* collect prepf p;
       if not('groebner memq loaded!-packages!*)
@@ -1020,7 +1020,7 @@ symbolic procedure solvenonlnrtansolve(u,x,w);
      r:=union(y,r)>>;
     % Test for the special cases x=pi(not covered by tangent substitution).
    y := errorset2 {'subf,mkquote w,mkquote{x . 'pi}};
-   if null errorp y and null numr y
+   if null errorp y and null numr car y
      then <<!!arbint:=ar; r:=union(solve0({'equal,{'cos,x},-1},x),r)>>;
    return t.r end;
 
