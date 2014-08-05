@@ -74,12 +74,37 @@ begin scalar !*ezgcd,gblist,oldtorder,res,!*groebopt,!*precise,
     <<writepri("starting from basis ",'first);
      writepri(mkquote gb,'last)>>;
      for each r in res do if gb
+       then <<if !*trgroesolv then
+	      <<writepri("Redundancy check: comparing basis ",'first);
+		writepri(mkquote gb,'last);
+		writepri("against already solved ",'first);
+		writepri(mkquote car r,'last)>>;
                 % Do not compare with the mother problem .
-             and not subsetp(car r,car u)
-       then if groesolvidsubset!?(gb,car r,variables!*)then
-              res:=delete(r,res)else
-            if groesolvidsubset!?(car r,gb,variables!*)then
-             <<gb:=nil;if !*trgroesolv then writepri("redundant",'only)>>;
+	      if subsetp(car r,car u) then
+              <<if !*trgroesolv then
+                <<writepri("Skipping redundancy check: already solved is a subset of mother problem ",'first);
+	   	  writepri(mkquote car u,'last)>> >>
+              else if groesolvidsubset!?(gb,car r,variables!*)then
+              <<if !*trgroesolv then
+                <<writepri("basis ",'first);
+		  writepri(mkquote gb,'last);
+		  writepri("more general than already solved ",'first);
+		  writepri(mkquote car r,'last);
+		  writepri("deleting the latter",'only)>>;
+		res:=delete(r,res)>>
+	      else if groesolvidsubset!?(car r,gb,variables!*)then
+              <<
+	       if !*trgroesolv then 
+	       <<writepri("basis ",'first);
+ 	         writepri(mkquote gb,'last);
+	         writepri("is special case of already solved ",'first);
+	         writepri(mkquote car r,'last);
+	         writepri("removing redundant basis ",'first);
+	         writepri(mkquote gb,'last);>>;
+       	       gb:=nil;>>
+	      else if !*trgroesolv then
+ 	      <<writepri("Not redundant: keeping ",'first);
+	 	writepri(mkquote gb,'last); >> >>;
      if gb then
      <<y:=groesolvearb(groesolve0(gb,variables!*), variables!*);
       if y neq'failed then res:=(gb.y).res else fail:=t;
@@ -87,7 +112,12 @@ begin scalar !*ezgcd,gblist,oldtorder,res,!*groebopt,!*precise,
       <<writepri("partial result: ",'first);
          writepri(mkquote('list.cdar res),'last)>>;
       for each d in denominators!* do
-       problems:={append(gb,{d}), variables!*}.problems;
+       <<if !*trgroesolv then
+	<<writepri("Denominator: ",'first);
+	  writepri(mkquote d,'last);
+	  writepri(" --> adding problem ",'first);
+	  writepri(mkquote append(gb,{d}),'last)>>;
+       	problems:={append(gb,{d}), variables!*}.problems>>;
       denominators!*:=nil>>>>>>;
  apply1('torder,{oldtorder});
  problems:=nil;if fail then res:=nil;
