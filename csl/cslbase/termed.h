@@ -99,7 +99,7 @@ extern void term_close(void);
 #define INPUT_HISTORY_SIZE 100
 
 extern wchar_t *input_history[INPUT_HISTORY_SIZE];
-extern int input_history_next, input_history_current;
+extern int input_history_next;
 
 extern void input_history_init(void);
 

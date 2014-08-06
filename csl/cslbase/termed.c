@@ -134,6 +134,16 @@
 #include "config.h"
 #endif
 
+/*
+ * The following variables must hold arrays of strings to be used in
+ * the completion of various items... For CSL they are provided with
+ * useful values - for free-standing use they can be defined with
+ * the value NULL.
+ */
+
+extern char **loadable_packages, **switches;
+
+
 #ifdef WIN32
 
 #include <windows.h>
@@ -279,6 +289,7 @@ static void write_log(char *s, ...)
  */
 
 wchar_t *input_history[INPUT_HISTORY_SIZE];
+wchar_t *pending_history_line = NULL;
 int input_history_next = 0,
     input_history_current = 0,
     longest_history_line = 0;
@@ -290,6 +301,7 @@ void input_history_init(void)
     input_history_next = longest_history_line = 0;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
         input_history[i] = NULL;
+    pending_history_line = NULL;
 }
 
 void input_history_end(void)
@@ -298,13 +310,58 @@ void input_history_end(void)
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
     {   if (input_history[i] != NULL) free(input_history[i]);
     }
+    if (pending_history_line != NULL) free(pending_history_line);
+}
+
+
+void input_history_stage(const wchar_t *s)
+{
+    size_t n;
+    if (s == NULL) return;
+/*
+ * The first line after a new prompt just simply forms the pending input
+ * line.
+ */
+    if (pending_history_line == NULL)
+    {   pending_history_line = (wchar_t *)
+            malloc((wcslen(s)+1)*sizeof(wchar_t));
+        if (pending_history_line != NULL) // in case malloc fails
+            wcscpy(pending_history_line, s);
+printf("staged a new line for history\n"); fflush(stdout);
+        return;
+    }
+/*
+ * Second and sunsequent lines get added to the end of the stored line, with
+ * "\n" characters to mark the line-breaks. This means that when I retrieve
+ * something from the history I will need to worry about those newlines
+ * and potentially how they display with or without associated prompts.
+ */
+    n = wcslen(pending_history_line);
+    pending_history_line = (wchar_t *)
+        realloc(pending_history_line, (wcslen(s) + n + 2)*sizeof(wchar_t));
+    if (pending_history_line == NULL) return; // make be space leak here!
+    pending_history_line[n] = '\n';
+    wcscpy(pending_history_line+n+1, s);
+printf("staged a subsequent line for history\n"); fflush(stdout);
 }
 
 void input_history_add(const wchar_t *s)
 {
+    wchar_t *scopy;
+    int p;
+printf("Actually add to history\n"); fflush(stdout);
+/*
+ * If the line I am attempting to add is empty or is identical to the
+ * most recently added entry that is already present I will do nothing.
+ */
+    if (s==NULL || *s==0) return;
+    p = input_history_next;
+    if (p > 0 &&
+        (scopy = input_history[(p-1)%INPUT_HISTORY_SIZE]) != NULL &&
+        wcscmp(s, scopy) == 0) return;
 /* Make a copy of the input string... */
-    wchar_t *scopy = (wchar_t *)malloc((wcslen(s) + 1)*sizeof(wchar_t));
-    int p = input_history_next % INPUT_HISTORY_SIZE;
+    scopy = (wchar_t *)malloc((wcslen(s) + 1)*sizeof(wchar_t));
+    p = input_history_next % INPUT_HISTORY_SIZE;
 /* If malloc returns NULL I just store an empty history entry. */
     if (scopy != NULL) wcscpy(scopy, s);
     LOG("History entry has %d characters in it\n", wcslen(s));
@@ -379,7 +436,6 @@ static void term_putchar(int c);
 static wchar_t *term_wide_plain_getline(void)
 {
     int n, ch;
-    unsigned char buffer[8];
     int i;
 #ifdef TEST
     fprintf(stderr, "plain_getline:");
@@ -453,6 +509,23 @@ void term_setprompt(const char *s)
         prompt_string[i] = c;
     }
     prompt_string[i] = 0;
+/*
+ * Now when I set a prompt I need to add the previous bunch of lines
+ * to the history.
+ */
+    if (pending_history_line != NULL)
+    {   input_history_add(pending_history_line);
+/*
+ * Adding an entry could cause an old one to be discarded. So I now ensure
+ * that I know what the first and last recorded numbers are.
+ */
+        historyLast = input_history_next - 1;
+        historyFirst = input_history_next - INPUT_HISTORY_SIZE;
+        if (historyFirst < 0) historyFirst = 0;
+        historyNumber = historyLast + 1; /* so that ALT-P moves to first entry */
+        free(pending_history_line);
+        pending_history_line = NULL;
+    }
 }
 
 /*
@@ -1958,8 +2031,8 @@ static int term_find_next_word_forwards(void)
     do
     {   n++;
     } while (input_line[n] != 0 &&
-             (!is_surrogate(input_line[n]) && iswalnum(input_line[n])) ||
-              input_line[n] == L'_');
+             ((!is_surrogate(input_line[n]) && iswalnum(input_line[n])) ||
+               input_line[n] == L'_'));
     if (is_high_surrogate(input_line[n])) n++; /* avoid middle of surrogate */
     while (!is_surrogate(input_line[n]) && iswspace(input_line[n])) n++;
     return n;
@@ -1972,8 +2045,8 @@ static int term_find_next_word_backwards(void)
     do
     {   n--;
     } while (n != prompt_length &&
-             (!is_surrogate(input_line[n]) && iswalnum(input_line[n])) ||
-               input_line[n] == '_');
+             ((!is_surrogate(input_line[n]) && iswalnum(input_line[n])) ||
+                input_line[n] == '_'));
     if (n != prompt_length &&
         is_high_surrogate(input_line[n])) n--;
     while (n != prompt_length &&
@@ -5790,15 +5863,7 @@ static wchar_t *term_wide_fancy_getline(void)
  * Stick the line into my history record: WITHOUT any newline at its end.
  */
     input_line[insert_point] = 0;
-    input_history_add(input_line+prompt_length);
-/*
- * Adding an entry could cause an old one to be discarded. So I now ensure
- * that I know what the first and last recorded numbers are.
- */
-    historyLast = input_history_next - 1;
-    historyFirst = input_history_next - INPUT_HISTORY_SIZE;
-    if (historyFirst < 0) historyFirst = 0;
-    historyNumber = historyLast + 1; /* so that ALT-P moves to first entry */
+    input_history_stage(input_line+prompt_length);
 /*
  * Whether the user terminated the line with CR or LF I will always
  * return "\n" to the program.

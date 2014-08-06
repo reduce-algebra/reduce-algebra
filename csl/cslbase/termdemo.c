@@ -1,4 +1,4 @@
-/* termdemo.c                       Copyright (C) 2004-2008 Codemist Ltd */
+/* termdemo.c                       Copyright (C) 2004-2014 Codemist Ltd */
 
 
 /*
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  *
  * Because of my intended use for this code I have allocated some keys to
  * menu shortcuts that will not be relevant to other people but that are
- * useful to me. NOt all keys can and not all keys do work under both
+ * useful to me. Not all keys can and not all keys do work under both
  * FXTerminal and termed environments. I annotate this key-list with a
  * ($) for things not active under FXTerminal and with (!) for not active
  * or incomplete under termed.
@@ -81,41 +81,65 @@
  * assign behaviours to some of those keys. I also want to reserve the
  * possibility of making keys with both Control and ALT have yet different
  * effects.
+ * I will put a comment line in here where I feel I am in a world of
+ * particular conflict, and will try to explain.
  *
  *Key   Control              ALT
  *
  * @    Set Mark ($!)        -                    (note this key is not
  *                                                 always detected!)
+++ The input ^@ would have code U+0000 and at least on some platforms I
+++ do not seem to receive it reliably. For emacs users it may be expected
+++ to be "set mark" but at present because I can not make it work everywhere
+++ I will just not allocate it to any action.
  * A    To beginning         -                    (also Home key)
  * B    Back char            Back word            (also left arrow key)
  * C    ^C interrupt         Capitalise word
+++ I choose to make ^C send an interrupt (as best I can, which is not in
+++ fact always very well) while in Windowed usage one might expect ^C to be
+++ for COPY (as in cut/copy/paste). This feels like a conflict of cultures
+++ where I just need to make a choice. The idea of making usage configurable
+++ by the users seems to me to be a path towards madness.
  * D    Delete forward       Delete word          (also the Delete key)
  *      Also ^D before any other input on a line sends EOF
+++ Observe the attempt to follow the tradition that U+0004 = EOT.
  * E    To end               [Edit menu] (!)      (also End key)
+++ ALT-E opens an edit menu if you have a GUI.
  * F    Forward char         Foward word          (also right arrow key)
+++ ALT-F might be expected to open a file menu, but I will not provide
+++ that keyboard shortcut.
  * G    ^G interrupt/cancel input (!)     -       <<also escape search mode>>
- *
+++ ^G is in some sense a relative of ^C.
  * H    Delete back          Del word back
- * I    TAB                  [File menu] (!)      (also TAB key)
+ * I    complete             [File menu] (!)      (also TAB key)
+++ In the current implementation ^I just inserts a tab. As I change that
+++ to support bash/readline/libedit motivated completion I will need to
+++ force people to use ^V^I if they want a genuine tab character.
  * J    Newline              -
  * K    Kill line            -
  * L    Clear screen         Lowercase word
  * M    Newline              [Module load menu] ($!)
  * N    Next history         Search history next  (also down arrow key)
  * O    Discard output (!?)  [Font menu] (!)
- *
+++ I think I see redfront binding ALT-OQ to "line_help"???
  * P    Previous history     Search history prev  (also up arrow key)
  * Q    Resume output (!?)   -
+++ I am not quite certain about the status of ^S and ^Q for pausing
+++ output - either in terms of what I actually do at present or in terms
+++ of what I want to!
  * R    Redisplay            [Break menu] (!)
+++ redfront appears to use ^R to start a backwards incremental search
+++ which if it searchs history is something I trigger with ALT-P ???
  * S    Pause output (!?)    [Switch menu] (!)
  * T    Transpose chars      -
  * U    Undo($!)escape srch  Uppercase word
  * V    Quoted insert ($!)   -
  * W    Del Word back        Copy region ($!)
- *
  * X    eXtended command ($!)Obey command ($!)
  * Y    Yank (=Paste) (!)    -
- * Z    Stop execution (!?)  -
+ * Z    pause ($!)           learn completion
+++ learning completions is not yet implemented and am not even certain
+++ what it should do!
  * [    =ESC: Meta prefix    -
  * \    Quit                 -
  * ]    -                    -
@@ -182,6 +206,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "termed.h"
@@ -189,6 +214,7 @@
 int main(int argc, char *argv[])
 {
     int i;
+    int oldpnumber = 0, pnumber = 1;
     const char *colours = NULL;
     for (i=1; i<argc; i++)
     {   const char *a = argv[i];
@@ -198,10 +224,18 @@ int main(int argc, char *argv[])
     printf("Hello: setup = %d\n", i);
     atexit(term_close);
 
-    term_setprompt("IN: ");
-
-    for (i=7; i<12; i++)
+    for (i=0; i<10; i++)
     {   char *d;
+        char prompt[16];
+/*
+ * The prompt number starts at 1 and increases if there is a ";" on the
+ * input line. I only reset it if it has changed.
+ */
+        if (pnumber != oldpnumber)
+        {   sprintf(prompt, "IN%d: ", pnumber);
+            term_setprompt(prompt);
+            oldpnumber = pnumber;
+        }
         printf("Ordinary output for line %d\n", i);
         d = term_getline();
         if (d == NULL)
@@ -209,7 +243,8 @@ int main(int argc, char *argv[])
             break;
         }
         else
-        {   printf("Input line was <");
+        {   if (strchr(d, ';') != NULL) pnumber++;
+            printf("Input line was <");
             while (*d != 0)
             {   int ch = *d++ & 0xff;
                 if (ch < 0x20) printf("^%c", ch | 0x40);
