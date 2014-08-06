@@ -512,7 +512,6 @@ lisp(proc_list_ := '(to_do subst_level_3 separation
 
 de:=crack({de},{},{f,g,h},{});
 
-max_gc_int : 1  max # of GC's left to do: 1
 
 de := {{{},
 
@@ -934,13 +933,16 @@ de := f  - f *x*y + x
 crack({de},{},{f},{});
 
 
-{{{},{f=log(y%1) - c_28},{c_28},{}}}
+                        2
+          - 2*c_28 - x%1
+{{{},{f=------------------},{c_28},{}}}
+                2
 
 
 fdep third first ws$
 
 
-c_28=c_28(x!%1)
+c_28=c_28(y!%1)
 
 write "The list of transformations done (here only one): ",
       lisp done_trafo;
@@ -948,7 +950,7 @@ write "The list of transformations done (here only one): ",
 
                                                                 2
                                                                x /2
-The list of transformations done (here only one): {{y%1=y,x%1=e    *y}}
+The list of transformations done (here only one): {{x%1=x,y%1=e    *y}}
 
 
 nodependlist {f}$

@@ -2660,7 +2660,7 @@ sol4 := {}
 sol5 := solve(eq5,x);
 
 
-sol5 := {x=arbcomplex(36)}
+sol5 := {x=arbcomplex(37)}
    % This solution should be the open interval
 			% (-1,1).
 

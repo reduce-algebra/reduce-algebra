@@ -369,7 +369,7 @@ symbolic procedure solvenonlnrsys2();
       for each f in system!* do solvealgk0
          (if dmode!* then numr subf(f,nil) where dmode!*=nil else f);
       if !*trnonlnr then print list("original kernels:",kl!*);
-      if null cdr system!* then
+      if null cdr system!* and null cdr uv!* then
           if (smemq('sin,system!*)or smemq('cos,system!*)) and
              (r:=solvenonlnrtansub(prepf(w:=car system!*),car uv!*))
              and car r
@@ -885,6 +885,11 @@ symbolic procedure solvealginv u;
                        n:=length member(z,r);
                        n>0 and lh=nth(v,length v + 1 - n)>>
         then<<r:=z.r;v:=lh.v;>> >> >>;
+    for each x in uv!* do
+      if not member(x,v) then
+        if not smember(x,r) then
+          <<z:=mvar makearbcomplex();
+             y:=z;v:=x.v;r:=simp y.r;arbs:=x.arbs>>;
       % Classify result.
   % for each x in uv!* do
   %   if tag and not member(x,v) and smember(x,r) then tag:=nil;
