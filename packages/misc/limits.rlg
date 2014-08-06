@@ -824,6 +824,15 @@ limit(h,x,0);
   7
  % -6^(3/5)/7^(1/5)
 
+comment one sided limit from bug report by Zbynek Konecny ;
+
+
+limit!-((abs(x)-3)/(x-3),x,3);
+
+
+1
+
+
 end;
 
 Tested on i686-pc-windows CSL
