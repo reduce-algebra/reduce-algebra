@@ -34,17 +34,17 @@ symbolic procedure listplus(u,v);
     z := for each j in u collect reval1(j,v);
     r := cdar z;
     z := cdr z;
-    for each j in z do if null eqcar(car z,'list) 
+    for each j in z do if j=0 then nil else if null eqcar(j,'list) 
                           then rederr "Only a list can be added to a list."
-                        else r := listadd2(r,cdar z);
-    return 'list . for each j in r collect mk!*sq j
+                        else r := listadd2(r,cdr j,v);
+    return 'list . r
   end;
 
-symbolic procedure listadd2(u,v);
+symbolic procedure listadd2(u,v,w);
    if null u then if v then rederr "Unequal length lists in add."
                    else nil
     else if null v then rederr "Unequal length lists in add."
-    else addsq(simp car u,simp car v) . listadd2(cdr u,cdr v);
+    else reval1({'plus,car u,car v},w) . listadd2(cdr u,cdr v,w);
 
 %put('plus,'rtypefn,getrtypeor); %This would allow for stricter type checking.
        
@@ -60,20 +60,20 @@ symbolic procedure listdifference(u,v);
     y := cdr y;
     if length x neq length y 
        then rederr "Not equal length lists found in difference.";
-    return 'list . listdifference2(x,y)
+    return 'list . listdifference2(x,y,v)
   end;
 
-symbolic procedure listdifference2(u,v);
+symbolic procedure listdifference2(u,v,w);
    if null u then nil
-    else mk!*sq simpdiff {car u,car v} . listdifference2(cdr u,cdr v);
+    else reval1({'difference,car u,car v},w) . listdifference2(cdr u,cdr v,w);
 
 put('difference,'listfn,'listdifference);
 
 symbolic procedure listminus(u,v);
    begin scalar x;
      x := reval1(car u,v);
-     if null eqcar(u,'list) then return x;
-     return 'list . for each j in cdr x collect mk!*sq negsq simp j;
+     if null eqcar(x,'list) then return x;
+     return 'list . for each j in cdr x collect reval1({'minus,j},v);
    end;
 
 put('minus,'listfn,'listminus);
@@ -81,25 +81,25 @@ put('minus,'listfn,'listminus);
 symbolic procedure listtimes(u,v); 
   begin scalar x,z;
      x := reval1(car u,v);
-     if null eqcar(x,'list) then x := simp x;
+     %if null eqcar(x,'list) then x := simp x;
      for each j in cdr u do
          <<z := reval1(j,v);
            x := if eqcar(z,'list) 
-                   then if eqcar(x,'list) then 'list . listtimes2(cdr x,cdr z)
-                    else 'list . listtimes1(cdr z,x)
-            else if eqcar(x,'list) then 'list . listtimes1(cdr x,simp z)
-            else multsq(x,simp z)>>;
+                   then if eqcar(x,'list) then 'list . listtimes2(cdr x,cdr z,v)
+                    else 'list . listtimes1(cdr z,x,v)
+            else if eqcar(x,'list) then 'list . listtimes1(cdr x,z,v)
+            else reval1({'times,x,z},v)>>;
      return x 
    end;
 
-symbolic procedure listtimes1(u,v);
-   for each j in u collect mk!*sq multsq(simp j,v);
+symbolic procedure listtimes1(u,v,w);
+   for each j in u collect reval1({'times,j,v},w);
 
-symbolic procedure listtimes2(u,v);
+symbolic procedure listtimes2(u,v,w);
    if null u then if v then rederr "Unequal length lists found in times."
                    else nil
     else if null v then rederr "Unequal length lists found in times."
-    else mk!*sq multsq(simp car u,simp car v) . listtimes2(cdr u,cdr v);
+    else reval1({'times,car u,car v},w) . listtimes2(cdr u,cdr v,w);
 
 put('times,'listfn,'listtimes); 
 
@@ -107,15 +107,15 @@ symbolic procedure listquotient(u,v);
   begin scalar x,y;
     x := reval1(car u,v);
     y := reval1(cadr u,v);
-    return 'list . if eqcar(y,'list) then listquotient2(cdr x,cdr y)
-                    else for each j in cdr x collect mk!*sq simpquot {j,y};
+    return 'list . if eqcar(y,'list) then listquotient2(cdr x,cdr y,v)
+                    else for each j in cdr x collect reval1({'quotient,j,y},v);
   end;
 
-symbolic procedure listquotient2(u,v);
+symbolic procedure listquotient2(u,v,w);
     if null u then if v then rederr "Unequal length lists found in quotient."
                    else nil
     else if null v then rederr "Unequal length lists found in quotient."
-    else mk!*sq quotsq(simp car u,simp car v) . listquotient2(cdr u, cdr v);
+    else reval1({'quotient,car u,car v},w) . listquotient2(cdr u, cdr v,w);
 
 put('quotient,'listfn,'listquotient);
 
@@ -125,17 +125,17 @@ symbolic procedure listexpt(u,v);
      y := reval1(cadr u,v);
      %if eqcar(y,'list) then rederr "A list can only be exponentiated by a scalar.";
      return 'list . if null eqcar(x,'list) 
-                       then for each j in cdr y collect mk!*sq simpexpt {x,j}
+                       then for each j in cdr y collect reval1({'expt,x,j},v)
                      else if null eqcar(y,'list) 
-                       then for each j in cdr x collect mk!*sq simpexpt {j,y}
-                     else listexpt2(cdr x,cdr y)
+                       then for each j in cdr x collect reval1({'expt,j,y},v)
+                     else listexpt2(cdr x,cdr y,v)
    end;
 
-symbolic procedure listexpt2(u,v);
+symbolic procedure listexpt2(u,v,w);
        if null u then if v then rederr "Unequal length lists found in expt."
                    else nil
     else if null v then rederr "Unequal length lists found in expt."
-    else mk!*sq simpexpt {car u,car v} . listexpt2(cdr u,cdr v);
+    else reval1({'expt,car u,car v},w) . listexpt2(cdr u,cdr v,w);
 
 put('expt,'rtypefn,'getrtypeor);
 put('expt,'listfn,'listexpt);
@@ -151,24 +151,24 @@ symbolic procedure listdotprod(u,v);
 
 symbolic procedure simpldot u;
    begin scalar x,y;
-     x := reval1(car u,t);
-     y := reval1(cadr u,t);
+     x := reval1(car u,nil);
+     y := reval1(cadr u,nil);
      if null(eqcar(x,'list) and eqcar(y,'list)) 
-      then rederr "Both arguments to ldot must be lists.";
-     return listdotprod2(cdr x,cdr y)
+      then return multsq(simp x,simp y); %rederr "Both arguments to ldot must be lists.";
+     return simp listdotprod2(cdr x,cdr y)
    end;
 
 put('ldot,'simpfn,'simpldot);
 
 symbolic procedure listdotprod2(u,v);
    begin scalar x;
-     x := nil ./ 1;
+     x := 0;
      a: if null u then if v 
            then rederr "Unequal length lists found in dot product."
                         else return x
          else if null v 
                  then rederr "Unequal length lists found in dot product.";
-        x := addsq(multsq(simp car u,simp car v),x);
+        x := reval1({'plus,reval1({'ldot,car u,car v},nil),x},nil);
         u := cdr u;
         v := cdr v;
         go to a
