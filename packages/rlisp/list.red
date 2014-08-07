@@ -175,6 +175,7 @@ symbolic procedure listeval0 u;
        then if flagp(u,'share) then u := listeval0 eval u
              else if (v := get(u,'avalue)) and cadr v neq u
               then u := listeval0 cadr v;
+     if getrtype car u eq 'array then u := listeval0 getelv u;
      simpcount!* := simpcount!* - 1;
      return u
    end;

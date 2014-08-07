@@ -210,6 +210,7 @@ symbolic procedure getrtype u;
                           else car x
                   else nil
      else if not idp car u then nil
+     else if arrayp car u then getrtype getelv u
      else if (x := get(car u,'avalue)) and (x := get(car x,'rtypefn))
       then apply1(x,cdr u)
      % Special case handling for the SUB operator.
