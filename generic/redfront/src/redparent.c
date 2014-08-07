@@ -90,9 +90,9 @@ void atoploop(void) {
 
   deb_fprintf(stderr,"parent: read first prompt\n");
 
-  while (1) {
+  line_learn_completion(der_prompt);
 
-    line_learn_completion(der_prompt);
+  while (1) {
 
     //    if (dist == PSL)
       signal(SIGINT,SIG_IGN);
