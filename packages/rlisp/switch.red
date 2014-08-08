@@ -28,7 +28,32 @@
 %
 
 
-global '(!*switchcheck switchlist!*);
+global '(!*switchcheck switchlist!* switchtree!* switchstring!*);
+
+% I will maintain an ordered binary tree of the names of switches that
+% are at present available. The procedures that manage this can be used
+% for other analagous data too.
+
+symbolic procedure add!-to!-sorted!-tree(x, u);
+  if null u then nil . (x . nil)
+  else if x = cadr u then u
+  else if orderp(x, cadr u) then
+     add!-to!-sorted!-tree(x, car u) . cdr u
+  else car u . (cadr u . add!-to!-sorted!-tree(x, cddr u));
+
+symbolic procedure flatten!-sorted!-tree(u, l);
+  if null u then l
+  else flatten!-sorted!-tree(car u,
+     cadr u . flatten!-sorted!-tree(cddr u, l));
+
+% Given a list (abc def ghi) this makes a string "abc;def;ghi"
+
+symbolic procedure string!-of!-list l;
+  if null l then ""
+  else list2string cdr (for each x in l conc ('!; . explode x));
+
+switchtree!* := nil;
+switchstring!* := "";
 
 % No references to RPLAC-based functions in this module.
 
@@ -78,8 +103,10 @@ symbolic procedure switch u;
                          x := cadr x>>
                  else typerr(caddr x,"switch default value");
          if not idp x then typerr(x,"switch");
-         if not(x memq switchlist!*)
-           then switchlist!* := x . switchlist!*;
+         switchtree!* := add!-to!-sorted!-tree(x, switchtree!*);
+% Building switchlist!* this way keeps it sorted, which feels tidy to me.
+         switchlist!* := flatten!-sorted!-tree(switchtree!*, nil);
+         switchstring!* := string!-of!-list switchlist!*;
          flag(list x,'switch);
          y := intern compress append(explode '!*,explode x);
          if not fluidp y and not globalp y then fluid list y;
