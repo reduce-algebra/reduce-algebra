@@ -30,6 +30,45 @@
 
 global '(!*switchcheck switchlist!* switchtree!* switchstring!*);
 
+% (memq 'psl lispsystem!*) does not work here because lispsystem!* is
+% not yet fully set up.
+
+!#if !*psl
+
+% PSL defined ORDERP in pslrend.red - ie "not yet", so here I transcribe
+% the definition that will happen so I can use it now.
+
+% symbolic procedure orderp(u,v);
+%    % U, V are non-numeric atoms (but can be vectors).
+%    % Returns true if U has same or higher order than id V by some
+%    % consistent convention (eg unique position in memory).
+%    wleq(inf u,inf v);       % PSL 3.4 form.
+% %  id2int u <= id2int v;    % PSL 3.2 form.
+
+symbolic procedure orderp(u,v);
+   % This PSL-specific definition of ORDERP is designed to work in
+   % lexicographical order.  It also checks to make sure arguments are
+   % truly id's, which should be true with current REDUCE.
+   begin scalar i,j,k,l,m;  % All sints.
+      if idp u then u := strinf symnam idinf u
+       else return typerr(u,"identifier");
+      if idp v then v := strinf symnam idinf v
+       else return typerr(v,"identifier");
+      i := 0;
+      j := strlen u;
+      k := strlen v;
+      % In the following, we assume size of u and v are inums.
+   a: if null((l := strbyt(u,i)) eq (m := strbyt(v,i)))
+        then return ilessp(l,m)
+       else if i eq j then return null igreaterp(j,k)
+       else if i eq k then return nil;
+      i := iplus2(i,1);
+      go to a;
+   end;
+
+
+!#endif
+
 % I will maintain an ordered binary tree of the names of switches that
 % are at present available. The procedures that manage this can be used
 % for other analagous data too.
