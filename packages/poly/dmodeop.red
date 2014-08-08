@@ -230,6 +230,17 @@ symbolic procedure int!-equiv!-chk u;
 %      then !:minus cadr u
 %     else u;
 
+% RmS 2014-08-08: support for abs, needed for non-constant domain modes
+%                 like !:ps!:
+
+symbolic procedure !:abs u;
+   if null u then nil
+    else if atom u then if minusp u then -u else u
+    else (if x then apply1(x,u)
+           else if apply1(get(car u,'minusp),u) then !:minus u
+           else u)
+       where x=get(car u,'abs);
+
 endmodule;
 
 end;

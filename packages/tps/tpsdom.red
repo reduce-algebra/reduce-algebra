@@ -50,6 +50,8 @@ put('!:ps!:,'pprifn,'ps!:print);
 put('!:ps!:,'intequivfn,'psintequiv!:);
 put('!:ps!:,'expt,'ps!:expt!:);
 
+put('!:ps!:,'abs,'ps!:abs!:);
+
 % conversion functions
 
 put('!:ps!:,'!:mod!:,mkdmoderr('!:ps!:,'!:mod!:));
@@ -188,6 +190,14 @@ symbolic procedure ps!:onep!: u;
 
 symbolic procedure ps!:prepfn!: u;
    u;
+
+symbolic procedure ps!:abs!: u;
+  begin scalar x;
+     x := simp {'abs,ps!:value u};
+     if kernp x and eqcar(mvar numr x,'abs)
+       then return !*kk2f {'abs,u}
+      else return numr simpps1(mk!*sq x,ps!:depvar u, ps!:expansion!-point u);
+  end;
 
 initdmode 'tps;
 

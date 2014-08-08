@@ -1331,7 +1331,7 @@ symbolic procedure mkabsf1 u;
         end;
 
 symbolic procedure mkabsfd u;
-   if null get('i,'idvalfn) then absf u ./ 1
+   if null get('i,'idvalfn) then !:abs u ./ 1
     else (simpexpt list(prepsq nrm,'(quotient 1 2))
           where nrm = addsq(multsq(car us,car us),
                              multsq(cdr us,cdr us))

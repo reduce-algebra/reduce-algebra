@@ -75,6 +75,10 @@ To introduce a new domain, we need to define:
 10) Optionally, an exponentiation function. If this is not provided,
     repeated squaring is used (cf !:expt in dmodeop.red)
 
+11) Optionally, a function for computing the absolute value. If this is
+    not provided, the corresponding instance of MINUSP is used to determine
+    the absolute value.
+
 To facilitate this, all such modes should be listed in the global
 variable DOMAINLIST!*.
 
