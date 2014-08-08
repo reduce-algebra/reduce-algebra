@@ -32,6 +32,7 @@ create!-package('(listvecops),nil);
 symbolic procedure listplus(u,v);
   begin scalar r,z;
     z := for each j in u collect reval1(j,v);
+    while car z = 0 do z := cdr z;
     r := cdar z;
     z := cdr z;
     for each j in z do if j=0 then nil else if null eqcar(j,'list) 
@@ -46,7 +47,7 @@ symbolic procedure listadd2(u,v,w);
     else if null v then rederr "Unequal length lists in add."
     else reval1({'plus,car u,car v},w) . listadd2(cdr u,cdr v,w);
 
-%put('plus,'rtypefn,getrtypeor); %This would allow for stricter type checking.
+put('plus,'rtypefn,'getrtypeor); %This would allow for stricter type checking.
        
 put('plus,'listfn,'listplus);
 
@@ -81,7 +82,6 @@ put('minus,'listfn,'listminus);
 symbolic procedure listtimes(u,v); 
   begin scalar x,z;
      x := reval1(car u,v);
-     %if null eqcar(x,'list) then x := simp x;
      for each j in cdr u do
          <<z := reval1(j,v);
            x := if eqcar(z,'list) 
@@ -123,7 +123,6 @@ symbolic procedure listexpt(u,v);
    begin scalar x,y;
      x := reval1(car u,v);
      y := reval1(cadr u,v);
-     %if eqcar(y,'list) then rederr "A list can only be exponentiated by a scalar.";
      return 'list . if null eqcar(x,'list) 
                        then for each j in cdr y collect reval1({'expt,x,j},v)
                      else if null eqcar(y,'list) 
@@ -154,7 +153,7 @@ symbolic procedure simpldot u;
      x := reval1(car u,nil);
      y := reval1(cadr u,nil);
      if null(eqcar(x,'list) and eqcar(y,'list)) 
-      then return multsq(simp x,simp y); %rederr "Both arguments to ldot must be lists.";
+      then return multsq(simp x,simp y);
      return simp listdotprod2(cdr x,cdr y)
    end;
 
@@ -178,6 +177,23 @@ infix ldot;
 
 newtok '((!* !.) ldot);
 
+symbolic procedure listdf(u,v);
+   begin scalar x;
+     x := reval1(car u,v);
+     return 'list . for each j in cdr x collect reval1('df . j . cdr u,v);
+   end;
+
+put('df,'listfn,'listdf);
+put('df,'rtypefn,'getrtypecar);
+
+symbolic procedure listint(u,v);
+   begin scalar x;
+     x := reval1(car u,v);
+     return 'list . for each j in cdr x collect reval1('int . j . cdr u,v);
+   end;
+
+put('int,'listfn,'listint);
+put('int,'rtypefn,'getrtypecar);
 
 endmodule;
 
