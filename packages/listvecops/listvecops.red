@@ -107,7 +107,9 @@ symbolic procedure listquotient(u,v);
   begin scalar x,y;
     x := reval1(car u,v);
     y := reval1(cadr u,v);
-    return 'list . if eqcar(y,'list) then listquotient2(cdr x,cdr y,v)
+    return 'list . if null eqcar(x,'list) 
+                     then for each j in cdr y collect reval1({'quotient,x,j},v)
+                    else if eqcar(y,'list) then listquotient2(cdr x,cdr y,v)
                     else for each j in cdr x collect reval1({'quotient,j,y},v);
   end;
 
