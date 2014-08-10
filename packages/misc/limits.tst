@@ -187,7 +187,7 @@ limit(h,x,0); % -6^(3/5)/7^(1/5)
 
 comment one sided limit from bug report by Zbynek Konecny ;
 
-limit!-((abs(x)-3)/(x-3),x,3);
+limit!-((abs(x)-3)/(x-3),x,3); % 1
 
 end;
 

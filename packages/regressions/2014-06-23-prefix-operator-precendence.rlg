@@ -28,14 +28,14 @@ a ^ - b * c ;
 
 a^-b*$$$c;
 
-***** Please use parentheses around use of unary operator 
+***** Please use parentheses around use of the unary operator 
 
 
 a / - b / c ;
 
 a/-b/$$$c;
 
-***** Please use parentheses around use of unary operator 
+***** Please use parentheses around use of the unary operator 
 
 
 a ^ - b + c ;(aeval (list 'plus (list 'expt 'a (list 'minus 'b)) 'c))
@@ -54,14 +54,14 @@ a * b^-2 * c^3
 
  ;a*b^-2*$$$c^3;
 
-***** Please use parentheses around use of unary operator 
+***** Please use parentheses around use of the unary operator 
 
 
 a intersection union b intersection c;
 
 a intersection union b intersection $$$c;
 
-***** Please use parentheses around use of unary operator 
+***** Please use parentheses around use of the unary operator 
 
 
 a intersection (union b) intersection c;(aeval (list 'intersection 'a (list 'union 'b) 'c))
@@ -97,7 +97,7 @@ $$$v*(u4(m+1,k+1)+u4(m-1,k+1)-u4(m+1,k-1)-u4(m-1,k-1)+u4(k+2)-u4(k-2)))/hx+ht*(2
 2*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-u2(m-1,k-1))+4*w*p*c**2*(-u3(m+1,k+1)+u3(m+1,k-1)+u3(m-1,k+1
 )-u3(m-1,k-1))+4*w*v*(-u4(m+1,k+1)+u4(m+1,k-1)+u4(m-1,k+1)-u4(m-1,k-1)))/hx/hx$
 
-***** Please use parentheses around use of unary operator 
+***** Please use parentheses around use of the unary operator 
 
 
 off defn;
