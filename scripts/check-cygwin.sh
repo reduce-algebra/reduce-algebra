@@ -44,11 +44,8 @@ for p in \
   findutils \
   flex \
   fontconfig \
-  gcc \
   gcc-core \
   gcc-g++ \
-  gcc4-core \
-  gcc4-g++ \
   gdb \
   grep \
   gzip \
@@ -97,7 +94,6 @@ for p in \
   subversion \
   time \
   unzip \
-  w32api \
   w32api-headers \
   w32api-runtime \
   wget \
