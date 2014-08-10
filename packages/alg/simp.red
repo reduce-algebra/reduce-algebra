@@ -322,7 +322,7 @@ symbolic procedure simpatom u;
    if null u then nil ./ 1   % Allow NIL as default 0.
     else if numberp u
      then if u=0 then nil ./ 1
-           else if not fixp u then ('!:rd!: . cdr fl2bf u) ./ 1
+           else if not fixp u then rd!:simp u
              % we assume that a non-fixp number is a float.
            else if dmode!* eq '!:mod!: and current!-modulus = 1
             then nil ./ 1
@@ -1331,7 +1331,7 @@ symbolic procedure mkabsf1 u;
         end;
 
 symbolic procedure mkabsfd u;
-   if null get('i,'idvalfn) then !:abs u ./ 1
+   if null idomainp() then !:abs u ./ 1
     else (simpexpt list(prepsq nrm,'(quotient 1 2))
           where nrm = addsq(multsq(car us,car us),
                              multsq(cdr us,cdr us))
@@ -1339,7 +1339,7 @@ symbolic procedure mkabsfd u;
 
 symbolic procedure positive!-sfp u;
    if domainp u
-      then if get('i,'idvalfn)
+      then if idomainp()
               then !:zerop impartf u and null !:minusp repartf u
             else null !:minusp u
     else positive!-powp lpow u and positive!-sfp lc u
