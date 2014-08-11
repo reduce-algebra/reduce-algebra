@@ -9,13 +9,25 @@ shift
 shift
 case "x$OS" in
 xWindows_NT)
-
-  case `uname -m` in
+# Here I have three situations that might be relevant:
+# (1) I am on a 32-bit Windows
+# (2) I am on 64-bit Windows running 32-bit cygwin
+# (3) I am running 64-bit cygwin
+  case `uname -a` in
   *x86_64*)
+# 64-bit cygwin
     c64="64";
+    try64="yes"
+    ;;
+  *WOW64*)
+# 32-bit cygwin on 64-bit Windows
+    c64=""
+    try64="yes"
     ;;
   *)
+# 32-bit Windows
     c64=""
+    try64="no";
     ;;
   esac
   pre=""
@@ -43,13 +55,21 @@ xWindows_NT)
 # run fastest. Failing any of those I try a 32-bit version. If none of those
 # are present I try for the same varieties but with debug builds. I will use
 # the first of these where I find a built version...
-  for hx in "x86_64-pc-windows" "x86_64-pc-windows-wx" \
-            "x86_64-pc-windows-nogui" \
-            "i686-pc-windows" "i686-pc-window-wx" "i686-pc-windows-nogui" \
-            "x86_64-pc-windows-debug" "x86_64-pc-window-wx-debug" \
-            "x86_64-pc-windows-nogui-debug" \
-            "i686-pc-windows-debug" "i686-pc-windows-wx-debug" \
-            "i686-pc-windows-nogui-debug"
+  if test "$try64" = "yes"
+  then
+    versions="x86_64-pc-windows x86_64-pc-windows-wx \
+            x86_64-pc-windows-nogui \
+            i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
+            x86_64-pc-windows-debug x86_64-pc-window-wx-debug \
+            x86_64-pc-windows-nogui-debug \
+            i686-pc-windows-debug i686-pc-windows-wx-debug \
+            i686-pc-windows-nogui-debug"
+  else
+    versions="i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
+            i686-pc-windows-debug i686-pc-windows-wx-debug \
+            i686-pc-windows-nogui-debug"
+  fi
+  for hx in $versions
   do
 #   echo Try: -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     if test -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
