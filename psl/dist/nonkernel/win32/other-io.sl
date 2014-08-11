@@ -50,7 +50,7 @@
 
 (fluid '(in* out*))
 
-(fluid '(*raise   % controls case conversion of IDs
+(fluid '(*raise **low-case   % controls case conversion of IDs
 	 *cr      % controls the reading of cr characters
 	 ))
 
@@ -95,16 +95,17 @@
 
 (de channelreadch (chn)
   % Read a single character ID
-  (prog (x)
+    (prog (x)
         % for Standard Lisp compatibility
         (setq x (channelreadchar chn))
-        % converts lower to upper when *RAISE
-        (when (and *raise (wgeq x (char (lower a)))
-                   (wleq x (char (lower z))))
-          (setq x (wplus2 (char a) (wdifference x (char (lower a))))))
-	(when (and (weq x (char cr))(not *cr))
-		   (setq x (char eol)))
-	(return (mkid x))))
+        % converts when *RAISE
+    (if **low-case
+        (when (and *raise (wgeq x (char !A)) (wleq x (char !Z)))
+          (setq x (wplus2 (char !a) (wdifference x (char !A)))))
+        (when (and *raise (wgeq x (char !a)) (wleq x (char !z)))
+          (setq x (wplus2 (char !A) (wdifference x (char !a)))))
+    )
+    (return (mkid x))))
 
 (de readch ()
   % Read a single character ID
