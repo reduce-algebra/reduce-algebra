@@ -58,7 +58,7 @@ class QtReduceDefaults(object):
     FONTSIZEFS = 14
 
     # Reduce
-    REDUCE = "../../bin/redpsl"
+    REDUCE = "../../bin/redcsl"
 
     # Preferences
     CURRENTITEM = "Toolbar"
@@ -191,7 +191,7 @@ class QtReduceIconSets(QObject):
                         self.tr("Zoom Default"):"view-refresh.png"}}
             self._ready = True
 
-    def icon(self,act):
+    def icon(self, act):
         settings = QSettings()
         iconSet = settings.value("toolbar/iconset",QtReduceDefaults.ICONSET)
         iconSize = settings.value("toolbar/iconsize",

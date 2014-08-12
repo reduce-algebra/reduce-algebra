@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2010 T. Sturm, C. Zengler
+# (c) 2010 T. Sturm, C. Zengler, 2011-2014 T. Sturm
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -67,9 +67,11 @@ from qrdefaults import QtReduceIconSets
 
 
 class QtReducePreferencePane(QDialog):
+    # QtReducePreferencePane are the dialog windows for setting preferences.
+    # Instances are created via menu or keyboard shortcut in QtReduceMainWindow.
 
-    def __init__(self,parent=None):
-        super(QtReducePreferencePane,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtReducePreferencePane, self).__init__(parent)
 
         self.__createContents()
 
@@ -146,6 +148,17 @@ class QtReduceComboBox(QComboBox):
         self.setEditable(False)
 
 
+class QtReduceIconSizeComboBox(QtReduceComboBox):
+    currentIconSizeChanged = Signal(StringType)
+
+    def __init__(self,parent=None):
+        super(QtReduceIconSizeComboBox,self).__init__()
+        self.currentIndexChanged.connect(self.currentIndexChangedHandler)
+
+    def currentIndexChangedHandler(self,index):
+        return self.currentIconSizeChanged.emit(self.currentText())
+
+            
 class QtReducePreferencesToolBar(QWidget):
     def __init__(self,parent=None):
         super(QtReducePreferencesToolBar,self).__init__(parent)
@@ -158,11 +171,16 @@ class QtReducePreferencesToolBar(QWidget):
         iDbKeys = QtReduceIconSets().db.keys()
         iDbKeys.sort()
         self.iconSetCombo.addItems(iDbKeys)
+
+        settings.setValue("toolbar/iconset","Oxygen") # Hack
+
+        traceLogger.debug("toolbar/iconset=%s" % settings.value("toolbar/iconset"))
+
         self.iconSetCombo.setCurrentIndex(
             self.iconSetCombo.findText(
                 settings.value("toolbar/iconset",QtReduceDefaults.ICONSET)))
 
-        self.iconSizeCombo = QtReduceComboBox()
+        self.iconSizeCombo = QtReduceIconSizeComboBox()
         self.iconSizeCombo.addItems(["16","22","32"])
         self.iconSizeCombo.setCurrentIndex(
             self.iconSizeCombo.findText(
@@ -178,7 +196,7 @@ class QtReducePreferencesToolBar(QWidget):
                            self.tr(QtReduceDefaults.BUTTONSTYLE))))
 
         toolBarLayout = QFormLayout()
-        toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
+#        toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
         toolBarLayout.addRow(self.tr("Symbol Size"),self.iconSizeCombo)
         toolBarLayout.addRow(self.tr("Show"),self.showCombo)
 
@@ -189,7 +207,7 @@ class QtReducePreferencesToolBar(QWidget):
 
         self.setLayout(mainLayout)
 
-
+        
 class QtReduceFontComboBox(QtReduceComboBox):
     currentFontChanged = Signal(QFont)
 
@@ -241,7 +259,35 @@ class QtReduceFontComboBox(QtReduceComboBox):
     def currentIndexChangedHandler(self,index):
         return self.currentFontChanged.emit(self.currentFont())
 
+    
+class QtReduceFontSizeComboBox(QtReduceComboBox):
+    currentFontSizeChanged = Signal(StringType)
 
+    def __init__(self,parent=None):
+        super(QtReduceFontSizeComboBox,self).__init__()
+        self.currentIndexChanged.connect(self.currentIndexChangedHandler)
+
+    def currentFontSize(self):
+        return self.findText(currentSize)
+
+    def currentIndexChangedHandler(self,index):
+        return self.currentFontSizeChanged.emit(self.currentText())
+
+            
+class QtReduceFontSizeComboBoxFs(QtReduceComboBox):
+    currentFontSizeChangedFs = Signal(StringType)
+
+    def __init__(self,parent=None):
+        super(QtReduceFontSizeComboBoxFs,self).__init__()
+        self.currentIndexChanged.connect(self.currentIndexChangedHandler)
+
+    def currentFontSize(self):
+        return self.findText(currentSize)
+
+    def currentIndexChangedHandler(self,index):
+        return self.currentFontSizeChangedFs.emit(self.currentText())
+
+            
 class QtReducePreferencesWorksheet(QWidget):
     def __init__(self,parent=None):
         super(QtReducePreferencesWorksheet,self).__init__(parent)
@@ -253,8 +299,8 @@ class QtReducePreferencesWorksheet(QWidget):
         self.fontCombo.setEditable(False)
         self.fontCombo.setCurrentFont(self.parent().parent().controller.view.font())
 
-        self.sizeCombo = QtReduceComboBox()
-        self.sizeComboFs = QtReduceComboBox()
+        self.sizeCombo = QtReduceFontSizeComboBox()
+        self.sizeComboFs = QtReduceFontSizeComboBoxFs()
         self.findSizes(self.fontCombo.currentFont())
         self.fontCombo.currentFontChanged.connect(self.findSizes)
 

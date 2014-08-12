@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
+# (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler, 2011-2014 T. Sturm
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

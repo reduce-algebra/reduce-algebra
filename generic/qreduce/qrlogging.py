@@ -37,7 +37,7 @@ ch.setFormatter(formatter)
 
 signalLogger = logging.getLogger("sig")
 signalLogger.addHandler(ch)
-signalLogger.setLevel(logging.WARNING)
+signalLogger.setLevel(logging.DEBUG)
 
 fontLogger = logging.getLogger("fnt")
 fontLogger.addHandler(ch)

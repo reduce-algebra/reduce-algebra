@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
+# (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler, 2011-2014 T. Sturm
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -44,8 +44,8 @@ from qrview import SubCell
 from types import BooleanType
 from types import StringType
 
-class QtReduceController(QObject):
 
+class QtReduceController(QObject):
     endComputation = Signal(object)
     acceptAbort = Signal(BooleanType)
     fileNameChanged = Signal(StringType)

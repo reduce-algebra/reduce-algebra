@@ -57,11 +57,21 @@ from qrlogging import traceLogger
 
 from qrdefaults import QtReduceDefaults
 
+from subprocess import Popen, PIPE
+
+here = os.path.dirname(os.path.realpath(__file__))
+p = Popen("%s/../../config.guess" % here, stdout=PIPE, stderr=PIPE)
+config_guess, err = p.communicate()
+p = Popen(["%s/../../scripts/findhost.sh" % here, config_guess], stdout=PIPE, stderr=PIPE)
+arch, err = p.communicate()
+sys.path.append("%s/../libreduce/%s" % (here, arch.rstrip()))
+
 from RedPy import procNew, procDelete, ansNew, ansDelete
 
 
 class Reduce(QObject):
-    def __init__(self,reduce='../../bin/redpsl'):
+    def __init__(self,reduce='../../bin/redcsl'):
+        traceLogger.debug("######### reduce is %s", reduce)
         super(Reduce,self).__init__()
         self.__process = procNew(sys.path[0] + "/" + reduce)
         self.__processId = self.__process['processId']

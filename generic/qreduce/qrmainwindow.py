@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C.Zengler
+# (c) 2009 T. Sturm, 2010 T. Sturm, C.Zengler, 2011-2014 T. Sturm
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -76,13 +76,27 @@ from types import StringType
 
 
 class QtReduceMainWindow(QMainWindow):
+    # QtReduceMainWindow is the actual GUI. It creates one instance of
+    # QtReduceController, which in turn creates one instance of each of
+    # QtReduceModel and QtReduceFrameView.
+    #
+    # At present, QtReduceMainWindow also exerimentally generates an instance of
+    # QtReduceTableView for debugging and verifiying the MVC concept. Probably,
+    # this should be better moved into QtReduceController.
+    
     iconSetChanged = Signal(StringType)
     iconSizeChanged = Signal(StringType)
     toolButtonStyleChanged = Signal(StringType)
 
     def __init__(self, parent=None):
-        super(QtReduceMainWindow,self).__init__(parent)
-        if os.uname()[0] != "Darwin":
+        super(QtReduceMainWindow, self).__init__(parent)
+        iconSize = QSettings().value("toolbar/iconsize", QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("0######### QtReduceDefaults.ICONSIZE is %s", QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("0######### iconSize is %s", iconSize)
+        hugo = QSettings().value("toolbar/hugo", QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("0######### hugo is %s", hugo)
+
+        if os.uname()[0] != "Darwin":  # For the Mac the icon is set for the app in qreduce.py.
             self.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
         self.setUnifiedTitleAndToolBarOnMac(True)
         self.controller = QtReduceController(self)
@@ -95,7 +109,7 @@ class QtReduceMainWindow(QMainWindow):
         self.__createActions()
         self.__createMenus()
         self.__createToolBar()
-        self.__resizeByFont(QtReduceDefaults.WIDTH,QtReduceDefaults.HEIGHT)
+        self.__resizeByFont(QtReduceDefaults.WIDTH, QtReduceDefaults.HEIGHT)
         self.raise_()
         self.show()
         self.rawModelView = QtReduceTableView(self)
@@ -112,12 +126,12 @@ class QtReduceMainWindow(QMainWindow):
             '</span>'
             '<p>'
             '<span style="font-weight:normal;">'
-            'A Worksheet-Oriented GUI '
+            'A Worksheet-Based GUI '
             'for the Computer Algebra System Reduce'
             '</span>'
             '<p>'
             '<span style="font-size:small;font-weight:normal;color:#808080">'
-            '&copy; 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
+            '&copy; 2009-2014 T. Sturm, 2010 C. Zengler'
             '</span>'
             '</span>'))
 
@@ -137,12 +151,11 @@ class QtReduceMainWindow(QMainWindow):
         self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def currentSizeChangedHandler(self,size):
-        self.controller.view.currentSizeChangedHandler(size,
-                                                       self.isFullScreen())
+        signalLogger.debug("size=%s" % size)
+        self.controller.view.currentSizeChangedHandler(size, self.isFullScreen())
 
     def currentSizeChangedHandlerFs(self,size):
-        self.controller.view.currentSizeChangedHandlerFs(size,
-                                                         self.isFullScreen())
+        self.controller.view.currentSizeChangedHandlerFs(size, self.isFullScreen())
 
     def license_(self):
         lic = QTextEdit(self)
@@ -156,7 +169,7 @@ class QtReduceMainWindow(QMainWindow):
         font.setItalic(False)
         lic.setFont(font)
         lic.setText(
-            'Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
+            'Copyright (c) 2009-2014 T. Sturm, 2010 C. Zengler'
             '<p>'
             'All rights reserved.'
             '<p>'
@@ -267,14 +280,13 @@ class QtReduceMainWindow(QMainWindow):
         None
 
     def toggleFullScreen(self):
-        self.setUnifiedTitleAndToolBarOnMac(False)
         self.rawModelView.hide()
         self.rawModelAct.setText('Show Raw Model')
         if self.isFullScreen():
             self.showNormal()
             self.rawModelAct.setEnabled(True)
             self.rawModelView.setWindowFlags(Qt.Drawer)
-            self.addToolBar(Qt.TopToolBarArea,self.toolBar)
+#            self.addToolBar(Qt.TopToolBarArea,self.toolBar)
             fs = QSettings().value("worksheet/fontsize",
                                    QtReduceDefaults.FONTSIZE)
             self.controller.view.setupFont(fs)
@@ -285,14 +297,13 @@ class QtReduceMainWindow(QMainWindow):
         else:
             self.showFullScreen()
             self.rawModelAct.setEnabled(False)
-            self.addToolBar(Qt.LeftToolBarArea,self.toolBar)
+#            self.addToolBar(Qt.LeftToolBarArea,self.toolBar)
             fs = QSettings().value("worksheet/fontsizefs",
                                    QtReduceDefaults.FONTSIZEFS)
             self.controller.view.setupFont(fs)
             self.fullScreenAct.setText("Exit Full Screen")
             self.fullScreenAct.setShortcut(Qt.Key_Escape)
             self.__setFullScreenIcons(True)
-        self.setUnifiedTitleAndToolBarOnMac(True)
 
     def updateActionIcons(self):
         for act in [self.openAct,
@@ -325,70 +336,80 @@ class QtReduceMainWindow(QMainWindow):
         self.controller.view.zoomOut()
 
     def __createActions(self):
+        # Open ...
         self.openAct = QAction(self.tr("Open ..."), self,
                                iconText=self.tr("Open ..."),
                                shortcut=QKeySequence(QKeySequence.Open),
                                triggered=self.open)
         self.openAct.setMenu(self.recentFileMenu)
 
+        # Save
         self.saveAct = QAction(self.tr("Save"), self,
                                shortcut=QKeySequence(QKeySequence.Save),
                                triggered=self.save)
 
+        # Save As ...
         self.saveAsAct = QAction(self.tr("Save As ..."), self,
                                  iconText=self.tr("Save As"),
                                  shortcut=QKeySequence(QKeySequence.SaveAs),
                                  triggered=self.saveAs)
 
+        # Quit
         self.quitAct = QAction(self.tr("Quit"), self,
                                menuRole=QAction.QuitRole,
                                shortcut=QKeySequence(QKeySequence.Quit),
                                triggered=self.close)
 
+        # Preferences ...
         self.preferencesAct = QAction(self.tr("Preferences ..."), self,
                                       menuRole=QAction.PreferencesRole,
-                                      shortcut=QKeySequence(
-                                          QKeySequence.Preferences),
+                                      shortcut=QKeySequence(QKeySequence.Preferences),
                                       triggered=self.preferencePane.show)
 
+        # Zoom Default
         self.zoomDefAct = QAction(self.tr("Zoom Default"), self,
-                                  shortcut=QKeySequence(Qt.ControlModifier|
-                                                        Qt.Key_Equal),
+                                  shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_Equal),
                                   triggered=self.zoomDef)
 
+        # Zoom In
         self.zoomInAct = QAction(self.tr("Zoom In"), self,
                                  shortcut=QKeySequence(QKeySequence.ZoomIn),
                                  triggered=self.zoomIn)
 
+        # Zoom Out
         self.zoomOutAct = QAction(self.tr("Zoom Out"), self,
                                  shortcut=QKeySequence(QKeySequence.ZoomOut),
                                  triggered=self.zoomOut)
 
+        # Enter FullScreen
         self.fullScreenAct = QAction(self.tr("Enter Full Screen"), self,
-                                     shortcut=QKeySequence(Qt.ControlModifier|
-                                                           Qt.Key_F),
+                                     shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_F),
                                      triggered=self.toggleFullScreen)
 
+        # Evaluate Selection
         self.evalSelAct = QAction(self.tr("Evaluate Selection"), self,
                                enabled=False,
                                triggered=self.controller.evaluateSelection)
 
+        # Evaluate All
         self.evalAct = QAction(self.tr("Evaluate All"), self,
                                enabled=True,
                                iconText=self.tr("Evaluate All"),
                                triggered=self.controller.evaluateAll)
 
+        # Delete All Output
         self.delOutpAct = QAction(self.tr("Delete All Output"), self,
                                   enabled=True,
                                   iconText=self.tr("Delete All Output"),
                                   triggered=self.controller.deleteOutput)
 
+        # Delete Group
         self.deleteAct = QAction(self.tr("Delete Group"), self,
-                                      shortcut=QKeySequence(Qt.ControlModifier|
-                                                            Qt.Key_Backspace),
+                                      shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_Backspace),
                                       enabled=True,
                                       triggered=self.controller.deleteRowOrPreviousRow)
 
+        # Insert Group Above
         self.insertAboveAct = QAction(self.tr("Insert Group Above"), self,
                                       shortcut=QKeySequence(Qt.ShiftModifier|
                                                             Qt.ControlModifier|
@@ -396,12 +417,13 @@ class QtReduceMainWindow(QMainWindow):
                                       enabled=True,
                                       triggered=self.controller.insertAbove)
 
+        # Insert Group Below
         self.insertBelowAct = QAction(self.tr("Insert Group Below"), self,
                                       enabled=True,
-                                      shortcut=QKeySequence(Qt.ControlModifier|
-                                                            Qt.Key_Return),
+                                      shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_Return),
                                       triggered=self.controller.insertBelow)
 
+        # Abort Evaluation
         self.abortAct = QAction(self.tr("Abort Evaluation"), self,
                                 enabled=False,
                                 iconText=self.tr("Abort"),
@@ -409,29 +431,39 @@ class QtReduceMainWindow(QMainWindow):
                                 triggered=self.controller.abortComputation)
         self.controller.acceptAbort.connect(self.abortAct.setEnabled)
 
+        # Show Raw Model
         self.rawModelAct = QAction(self.tr("Show Raw Model"), self,
                                enabled=True,
                                triggered=self.toggleRawModel)
 
+        # A hook for development
         self.testAct = QAction(self.tr("MainWindow::test"), self,
                                enabled=True,
-                               shortcut=QKeySequence(Qt.ControlModifier|
-                                                     Qt.Key_T),
+                               shortcut=QKeySequence(Qt.ControlModifier|Qt.Key_T),
                                triggered=self.test)
 
+        # About
         self.aboutAct = QAction(self.tr("About"), self,
                                 menuRole=QAction.AboutRole,
                                 triggered=self.about)
 
+        # License
         self.licenseAct = QAction(self.tr("License"), self,
                                   triggered=self.license_)
 
+        # Icons belong to actions. Technically, they could have been set in the
+        # QAction calls above. However, we want to be able to exchange the icon
+        # set via the Preferences. Therefore we explicitly set them in a loop in
+        # a public method:
+        self.updateActionIcons()
+        
+        # Listen to modifications of the icon set in the Preferences:
         self.iconSetChanged.connect(self.updateActionIcons)
         self.iconSizeChanged.connect(self.updateActionIcons)
 
-        self.updateActionIcons()
 
     def __createMenus(self):
+        # File
         self.fileMenu = self.menuBar().addMenu(self.tr("File"))
         self.fileMenu.addAction(self.openAct)
         self.fileMenu.addMenu(self.recentFileMenu)
@@ -441,9 +473,11 @@ class QtReduceMainWindow(QMainWindow):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.quitAct)
 
+        # Edit
         self.editMenu = self.menuBar().addMenu(self.tr("Edit"))
         self.editMenu.addAction(self.preferencesAct)
 
+        # View
         self.viewMenu = self.menuBar().addMenu(self.tr("View"))
         self.viewMenu.addAction(self.fullScreenAct)
         self.viewMenu.addSeparator()
@@ -451,6 +485,7 @@ class QtReduceMainWindow(QMainWindow):
         self.viewMenu.addAction(self.zoomInAct)
         self.viewMenu.addAction(self.zoomOutAct)
 
+        # Worksheet
         self.worksheetMenu = self.menuBar().addMenu(self.tr("Worksheet"))
         self.worksheetMenu.addAction(self.evalSelAct)
         self.worksheetMenu.addAction(self.evalAct)
@@ -464,11 +499,13 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheetMenu.addSeparator()
         self.worksheetMenu.addAction(self.abortAct)
 
+        # Develop
         self.develMenu = self.menuBar().addMenu(self.tr("Develop"))
         self.develMenu.addAction(self.rawModelAct)
         self.develMenu.addSeparator()
         self.develMenu.addAction(self.testAct)
 
+        # Help
         self.helpMenu = self.menuBar().addMenu(self.tr("Help"))
         self.helpMenu.addAction(self.aboutAct)
         self.helpMenu.addAction(self.licenseAct)
@@ -476,6 +513,7 @@ class QtReduceMainWindow(QMainWindow):
     def __createPreferences(self):
         self.preferencePane = QtReducePreferencePane(self)
 
+        # Connect signals for Toolbar pane:
         self.preferencePane.toolBar.iconSetCombo.currentIndexChanged.connect(
             self.iconSetChanged)
         self.preferencePane.toolBar.iconSetCombo.currentIndexChanged.connect(
@@ -483,36 +521,39 @@ class QtReduceMainWindow(QMainWindow):
         self.preferencePane.toolBar.iconSetCombo.currentIndexChanged.connect(
             self.updateActionIcons)
 
-        self.preferencePane.toolBar.iconSizeCombo.currentIndexChanged.connect(
+        self.preferencePane.toolBar.iconSizeCombo.currentIconSizeChanged.connect(
             self.iconSizeChanged)
-        self.preferencePane.toolBar.iconSizeCombo.currentIndexChanged.connect(
+        self.preferencePane.toolBar.iconSizeCombo.currentIconSizeChanged.connect(
             QtReduceIconSets().iconSizeChanged)
-        self.preferencePane.toolBar.iconSizeCombo.currentIndexChanged.connect(
+        self.preferencePane.toolBar.iconSizeCombo.currentIconSizeChanged.connect(
             self.updateActionIcons)
 
         self.preferencePane.toolBar.showCombo.currentIndexChanged.connect(
             self.toolButtonStyleChanged)
 
+        # Connect signals for Worksheet pane:
         self.preferencePane.worksheet.fontCombo.currentFontChanged.connect(
             self.currentFontChangedHandler)
 
-        self.preferencePane.worksheet.sizeCombo.currentIndexChanged.connect(
+        self.preferencePane.worksheet.sizeCombo.currentFontSizeChanged.connect(
             self.currentSizeChangedHandler)
 
-        self.preferencePane.worksheet.sizeComboFs.currentIndexChanged.connect(
+        self.preferencePane.worksheet.sizeComboFs.currentFontSizeChangedFs.connect(
             self.currentSizeChangedHandlerFs)
+
+        # Nothing to connect for Computation pane because the Reduce binary is
+        # evaluated only at startup.
 
     def __createStatusBar(self):
         self.setStatusBar(QtReduceStatusBar(self))
-        self.controller.startComputation.connect(
-            self.statusBar().startComputationHandler)
-        self.controller.endComputation.connect(
-            self.statusBar().endComputationHandler)
-        self.controller.view.cursorPositionChanged.connect(
-            self.statusBar().clearMessage)
+        self.controller.startComputation.connect(self.statusBar().startComputationHandler)
+        self.controller.endComputation.connect(self.statusBar().endComputationHandler)
+        self.controller.view.cursorPositionChanged.connect(self.statusBar().clearMessage)
 
     def __createToolBar(self):
         self.toolBar = QtReduceToolBar(self)
+
+        self.toolBar.setMovable(False)
 
         self.toolBar.addAction(self.openAct)
         self.toolBar.addAction(self.saveAct)
@@ -528,6 +569,7 @@ class QtReduceMainWindow(QMainWindow):
         self.iconSetChanged.connect(self.toolBar.refresh)
         self.iconSizeChanged.connect(self.toolBar.iconSizeChanged)
         self.toolButtonStyleChanged.connect(self.toolBar.toolButtonStyleChanged)
+
     def __initTitleBar(self):
         self.setTitle(os.path.dirname(''))
         self.controller.fileNameChanged.connect(self.setTitle)
@@ -736,6 +778,8 @@ class QtReduceToolBar(QToolBar):
 
         iconSize = QSettings().value("toolbar/iconsize",
                                      QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("2######### QtReduceDefaults.ICONSIZE is %s", QtReduceDefaults.ICONSIZE)
+        traceLogger.debug("2######### iconSize is %s", iconSize)
         self.setIconSize(QSize(int(iconSize),int(iconSize)))
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
