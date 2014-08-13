@@ -327,7 +327,9 @@ void input_history_stage(const wchar_t *s)
             malloc((wcslen(s)+1)*sizeof(wchar_t));
         if (pending_history_line != NULL) // in case malloc fails
             wcscpy(pending_history_line, s);
+#ifdef DEBUG
 printf("staged a new line for history\n"); fflush(stdout);
+#endif
         return;
     }
 /*
@@ -342,14 +344,18 @@ printf("staged a new line for history\n"); fflush(stdout);
     if (pending_history_line == NULL) return; // make be space leak here!
     pending_history_line[n] = '\n';
     wcscpy(pending_history_line+n+1, s);
+#ifdef DEBUG
 printf("staged a subsequent line for history\n"); fflush(stdout);
+#endif
 }
 
 void input_history_add(const wchar_t *s)
 {
     wchar_t *scopy;
     int p;
+#ifdef DEBUG
 printf("Actually add to history\n"); fflush(stdout);
+#endif
 /*
  * If the line I am attempting to add is empty or is identical to the
  * most recently added entry that is already present I will do nothing.
