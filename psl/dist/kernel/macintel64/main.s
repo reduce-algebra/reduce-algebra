@@ -2260,7 +2260,7 @@ plantlambdalink:
  mov _symval@GOTPCREL(%rip),%r8
  mov 2928(%r8),%r8
  add %r8,%rbx
- mov LambdaLinkInstruction@GOTPCREL(%rip),%rdi
+ leaq LambdaLinkInstruction@GOTPCREL(%rip),%rdi
  mov 0(%rdi),%rdi
  mov %rdi,0(%rbx)
  ret

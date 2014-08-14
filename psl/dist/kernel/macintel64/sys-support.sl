@@ -31,7 +31,7 @@
        (add   (reg 2) (reg 2))             % ID*8
 
        (*WPLUS2 (reg 2) (fluid SYMFNC))       
-       (mov "UndefinedFunctionInstruction@GOTPCREL(%rip)" (reg t1))
+       (leaq "UndefinedFunctionInstruction@GOTPCREL(%rip)" (reg t1))
        (*move (displacement (reg t1) 0) (reg t1))
        (*move (reg t1) (displacement (reg 2) 0))
        (!*EXIT 0)
@@ -63,7 +63,7 @@
        (add (reg 2) (reg 2))             % ID*8
 
        (*WPLUS2 (reg 2) (fluid SYMFNC))                        
-       (mov "LambdaLinkInstruction@GOTPCREL(%rip)" (reg t1))
+       (leaq mov "LambdaLinkInstruction@GOTPCREL(%rip)" (reg t1))
        (*move (displacement (reg t1) 0) (reg t1))
        (*move (reg t1) (displacement (reg 2) 0))
        (!*EXIT 0)

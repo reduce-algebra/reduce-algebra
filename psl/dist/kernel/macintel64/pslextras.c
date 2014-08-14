@@ -165,9 +165,10 @@ setenv (var, value,ov)
         environ[index] = (void *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
-        return;
+        return ov;
         }
         index ++;
+   return (ov);
     }
  
     environ [index] = (void *) malloc (len + strlen (value) + 1);
