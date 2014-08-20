@@ -29,6 +29,8 @@ module listvecops;   % Vector operations on lists.
 
 create!-package('(listvecops),nil);
 
+global '(cursym!*);
+
 symbolic procedure listplus(u,v);
   begin scalar r,z;
     z := for each j in u collect reval1(j,v);
@@ -176,6 +178,7 @@ symbolic procedure listdotprod2(u,v);
    end;
 
 infix ldot;
+precedence ldot,times;
 
 newtok '((!* !.) ldot);
 
@@ -196,6 +199,35 @@ symbolic procedure listint(u,v);
 
 put('int,'listfn,'listint);
 put('int,'rtypefn,'getrtypecar);
+
+% A lazy hack to allow for list procedures.
+% 
+
+symbolic procedure readlistproc;
+   begin
+     cursym!* := 'procedure;
+     return 'listproc . procstat1 'algebraic
+   end;
+
+put('listproc,'stat,'readlistproc);
+
+symbolic procedure formlistproc(u,v,w);
+   begin 
+     return {'progn,
+             formproc(cdr u,v,w),
+             {'put,mkquote caddr u,''rtypefn,''(lambda(x) 'list)},
+             {'put,mkquote caddr u,''listfn,
+              {'list,''lambda,''(x y),
+                     {'list,''listproceval,mkquote mkquote caddr u,''x,''y}}},
+             {'remflag,{'list,mkquote caddr u},''opfn},
+             mkquote caddr u}
+   end;
+
+put('listproc,'formfn,'formlistproc);
+
+symbolic procedure listproceval(op,u,v);
+   reval1(opfneval(op . u),v);
+     
 
 endmodule;
 

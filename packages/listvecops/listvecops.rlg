@@ -255,5 +255,51 @@ int({sin x,cos x},x);
 { - cos(x),sin(x)}
 
 
+listproc spat3(u,v,w);
+   begin scalar x,y;
+     x := u *. w;
+     y := u *. v;
+     return v*x - w*y
+   end;
+
+
+spat3
+
+
+u := {ux,uy,uz};
+
+
+u := {ux,uy,uz}
+
+v := {vx,vy,vz};
+
+
+v := {vx,vy,vz}
+
+w := {wx,wy,wz};
+
+
+w := {wx,wy,wz}
+
+
+z := spat3(u,v,w) - 3*spat3(v,u,w);
+
+
+z := { - 3*ux*vy*wy - 3*ux*vz*wz + uy*vx*wy + 2*uy*vy*wx + uz*vx*wz + 2*uz*vz*wx
+
+      ,
+
+      2*ux*vx*wy + ux*vy*wx - 3*uy*vx*wx - 3*uy*vz*wz + uz*vy*wz + 2*uz*vz*wy,
+
+      2*ux*vx*wz + ux*vz*wx + 2*uy*vy*wz + uy*vz*wy - 3*uz*vx*wx - 3*uz*vy*wy}
+
+ 
+spat3(u,v,w)+spat3(u,w,v);
+
+
+{0,0,0}
+
+
+
 end;
 
