@@ -579,7 +579,7 @@ let
 
  igamma(1,~x) => 1-exp(-x),
 
- df(igamma(~a,~x),~x) => x^(a-1)*exp(-z) / gamma(a)
+ df(igamma(~a,~x),~x) => x^(a-1)*exp(-x) / gamma(a)
 };
 
 let
