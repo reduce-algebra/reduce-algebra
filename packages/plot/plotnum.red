@@ -99,9 +99,10 @@ symbolic procedure plot!-form!-call2(ff,f,x,x0,y,y0);
 % expression into a form which can be evaluated directly in LISP.
 
 symbolic procedure rdwrap f;
-  begin scalar r,!*msg,!*protfg;
-    !*protfg:=t;
+  begin scalar r,!*msg,!*protfg,erfg;
+    !*protfg:=t;erfg:=erfg!*;
     r:=errorset({'rdwrap1,mkquote f},nil,nil);
+    erfg!*:=erfg;
     return if errorp r then 'failed else car r;
   end;
 
@@ -185,13 +186,14 @@ symbolic procedure expt!-int(a,b); expt(a,fix b);
 
 symbolic procedure plotevalform(ff,f,a);
   % ff is LISP evaluable,f REDUCE evaluable.
-  begin scalar u,w,!*protfg,mn,r,!*msg;
-    !*protfg := t;
+  begin scalar u,w,!*protfg,mn,r,!*msg,erfg;
+    !*protfg := t; erfg := erfg!*;
 %   if ff='failed then goto non_lisp;
     if ff eq 'failed or not atom ff and 'failed memq ff
       then goto non_lisp;
 % WN 12. May.97  plot(e^(abs x)); bombed
     u:= errorset({'plotevalform1,mkquote ff,mkquote a},nil,nil);
+    erfg!* := erfg;
     if not ploterrorp u and numberp (u:=car u) then
     <<if abs u > plotmax!* then return plotoverflow plotmax!* else
       return u;
@@ -259,7 +261,7 @@ symbolic procedure plotevalform1(f,a);
      idapply(car f,{plotevalform1(cadr f,a)});
  err:
   plotsynerr!*:=t;
-  typerr(prepsq f,"numeric value");
+  typerr(f,"numeric value");
 end;
 
 
