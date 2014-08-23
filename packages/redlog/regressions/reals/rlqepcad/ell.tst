@@ -4,6 +4,8 @@ rlset reals;
 
 load_package qepcad;
 
+rlrndseed 7;
+
 rlqepcadn(100*10^6);
 rlqepcadl(200*10^3);
 

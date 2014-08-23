@@ -7,6 +7,8 @@ rlset reals;
 
 load_package qepcad;
 
+rlrndseed 11;
+
 % Open unit ball with center at the origin in $R^3$.
 
 b1 := x**2+y**2+z**2<1$
