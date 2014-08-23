@@ -1,0 +1,47 @@
+% x-axis ellipse problem
+
+rlset reals;
+
+
+{}
+
+
+load_package qepcad;
+
+
+
+rlqepcadn(100*10^6);
+
+
+rlqepcadl(200*10^3);
+
+
+
+ell := all({x,y},b**2*(x-c)**2+a**2*y**2-a**2*b**2=0 impl x**2+y**2-1 <=0);
+
+
+                        2  2    2  2    2  2      2        2  2
+ell := all x all y ( - a *b  + a *y  + b *c  - 2*b *c*x + b *x  = 0
+
+       2    2
+ impl x  + y  - 1 <= 0)
+
+
+rlqepcad ell;
+
+
+a <> 0 and b <> 0 and a + c - 1 <= 0 and a + c + 1 >= 0 and  - a + c - 1 <= 0
+
+ and  - a + c + 1 >= 0
+
+           2                2            2  2    2    4    2  2    2
+ and (a + b  < 0 or  - a + b  < 0 or  - a *b  + a  + b  + b *c  - b  <= 0)
+
+
+end;
+
+Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
+Time (counter 1): 6 ms  plus GC time: 85 ms
+1: real 4.31
+user 3.81
+sys 0.31

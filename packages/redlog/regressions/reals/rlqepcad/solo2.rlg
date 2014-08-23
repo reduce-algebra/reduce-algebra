@@ -1,0 +1,35 @@
+% Testing CAD
+% Solotareff's problem (cubic) [Ho92] (in [CJ98], p. 211)
+
+rlset reals;
+
+
+{}
+
+
+load_package qepcad;
+
+
+
+solo2 := ex({x,y},1<=4*a<=7 and -3<=4*b<=3 and -1<=x<=0 and 0<=y<=1 and
+   3*x**2-2*x-a=0 and x**3-x**2-a*x=2*b-a+2 and 3*y**2-2*y-a=0 and
+      y**3-y**2-a*y=a-2)$
+
+
+
+rlqepcad solo2;
+
+
+a - 1 = 0 and 4*b + 3 > 0
+
+         3      2                       2
+ and  - a  + 2*a  - 18*a*b - 19*a + 27*b  + 56*b + 29 = 0
+
+
+end;
+
+Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
+Time (counter 1): 5 ms  plus GC time: 86 ms
+1: real 0.45
+user 0.25
+sys 0.03
