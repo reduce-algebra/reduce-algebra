@@ -206,11 +206,29 @@ procedure meminfocomma(n,comma);
       return compress('!" . l)
    end;
 
+procedure rlrndseed(s);
+   % Call with a unique odd number.
+   <<
+      if 'csl memq lispsystem!* then
+ 	 s := 2 * s;
+      random_new_seed s
+   >>;
+
+operator rlrndseed;
+
 #if (memq 'psl lispsystem!*)
    fluid '(symbolfilename!*);
 
    procedure rltools_trunk();
       rltools_dotdotx(symbolfilename!*,4);
+#endif
+
+#if (memq 'psl lispsystem!*)
+   procedure datestamp();
+   <<
+      date();
+      sys2int wgetv(datebuffer,0)
+   >>;
 #endif
 
 #if (memq 'csl lispsystem!*)
