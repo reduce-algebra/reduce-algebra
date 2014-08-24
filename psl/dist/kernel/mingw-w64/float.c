@@ -82,8 +82,8 @@ uxplus2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
   *f1 = *f2 + *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -93,8 +93,8 @@ uxdifference(f1,f2,f3)
      double *f1, *f2, *f3;
 {
   *f1 = *f2 - *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -104,8 +104,8 @@ uxtimes2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
   *f1 = *f2 * *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -115,8 +115,8 @@ uxquotient(f1,f2,f3)
      double *f1, *f2, *f3;
 {
   *f1 = *f2 / *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -213,8 +213,8 @@ uxsin (r, x)
      double *r, *x;
 {
     *r = sin( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -222,8 +222,8 @@ uxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -231,8 +231,8 @@ uxtan (r, x)
      double *r, *x;
 {
     *r = tan( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }
@@ -241,8 +241,8 @@ uxasin (r, x)
      double *r, *x;
 {
     *r = asin( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }
@@ -251,8 +251,8 @@ uxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }
@@ -261,8 +261,8 @@ uxatan (r, x)
      double *r, *x;
 {
     *r = atan( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }
@@ -271,8 +271,8 @@ uxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }
@@ -281,8 +281,8 @@ uxexp (r, x)
      double *r, *x;
 {
     *r = exp( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }
@@ -291,8 +291,8 @@ uxlog (r, x)
      double *r, *x;
 {
     *r = log( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
 
@@ -300,8 +300,8 @@ uxatan2 (r, y, x)
      double *r, *y, *x;
 {
     *r = atan2( *y, *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 
 }

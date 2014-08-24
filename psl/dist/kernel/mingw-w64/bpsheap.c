@@ -56,7 +56,6 @@
 %  PSL.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
-extern void *sbrk (long long size);
 
 long long unexec();
 
@@ -70,6 +69,9 @@ long long unexec();
 #define PAGESIZE 4096
 #endif
 
+#ifndef _SYS_UNISTD_H
+extern void *sbrk (long long size);
+#endif
 
 
 
@@ -278,18 +280,20 @@ if (bpscontrol[0] != headerword[0]
 		  exit (-19);}
        fread (headerword,8,4,imago);
        hugo = fread (&symval,1,headerword[0],imago);
-//       printf("neu: %lx => %lx\n",hlb, heaplowerbound);
+       printf("neu: %lx => %lx\n",hlb, heaplowerbound);
        diff = hlb-heaplowerbound;
-       if (hlb < heaplowerbound)
-             {creloc(&symval,headerword[0]/8,diff,hlb -1);} 
-        else {creloc(&symval,headerword[0]/8,diff, heaplowerbound -1);}
+//       if (hlb < heaplowerbound)
+//             {creloc(&symval,headerword[0]/8,diff,hlb -1);} 
+//        else
+	 {creloc(&symval,headerword[0]/8,diff, heaplowerbound -1);}
 
        if (hugo != headerword[0]) read_error();
 
        hugo = fread ((char*)hlb,1,headerword[1],imago);
-       if (hlb < heaplowerbound)
-	 {creloc((long long *)hlb,headerword[1]/8,diff,hlb -1);}
-        else {creloc((long long *)hlb,headerword[1]/8,diff, heaplowerbound -1);}
+//       if (hlb < heaplowerbound)
+//	 {creloc((long long *)hlb,headerword[1]/8,diff,hlb -1);}
+//       else
+	 {creloc((long long *)hlb,headerword[1]/8,diff, heaplowerbound -1);}
        heaplast += diff;
 
        if (hugo != headerword[1]) read_error();

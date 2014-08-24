@@ -18,7 +18,9 @@
  * worth of swap space (potentially many megabytes) just to exec "pwd".
  */
 
-#include "direct.h"  
+//#include "direct.h"  
+#include <unistd.h>
+#include <string.h>
 
 #define MAXPATHLEN 255
 
