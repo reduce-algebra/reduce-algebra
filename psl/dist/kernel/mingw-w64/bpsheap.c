@@ -380,7 +380,7 @@ getheap(heapsize)
 #else
   heaplowerbound        = (long long)sbrk(2 * heapsize);  /* allocate first heap */;
 #endif
-  if (heaplowerbound  == (long long) -1 )  {
+  if (heaplowerbound  == (long long) -1 || heaplowerbound == (long long) 0)  {
     perror("GETHEAP");
     exit(-1);
   }

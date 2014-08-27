@@ -269,15 +269,26 @@ gcleanup ()
     }
 }
 
+#ifndef _SYS_UNISTD_H
 static void*
 findRegion (void* start_address, SIZE_T size)
 {
+  SIZE_T result;
   MEMORY_BASIC_INFORMATION info;
   while ((unsigned long long)start_address < TOP_MEMORY)
     {
-      VirtualQuery (start_address, &info, sizeof (info));
-      if (info.State != MEM_FREE)
+      printf("Calling VirtualQuery with %llx\n",start_address);
+      result = VirtualQuery (start_address, &info, sizeof (info));
+      if (result == 0) {
+	printf("VirtualQuery returned 0\n");
+      } 
+      printf("VirtualQuery State = %d %llX %llX %llx(%lld)\n",
+             info.State,info.BaseAddress,info.AllocationBase,
+                       info.RegionSize, info.RegionSize);
+
+      if (info.State != MEM_FREE) {
 	start_address = (char*)info.BaseAddress + info.RegionSize;
+      }
       else if (info.RegionSize >= size)
 	return start_address;
       else
@@ -329,9 +340,21 @@ sbrk (SIZE_T size)
       if (gAddressBase == 0)
 	{
 	  gAllocatedSize = max (RESERVED_SIZE, AlignPage (size));
+ 	  printf("sbrk: size: %lld, allocated: %lld\n",size,gAllocatedSize);
+	  tmp = findBase (gAllocatedSize);
 	  gNextAddress = gAddressBase =
-	    (unsigned long long)VirtualAlloc (findBase (gAllocatedSize),
+	    (unsigned long long)VirtualAlloc (tmp,
 			      gAllocatedSize,	MEM_RESERVE, PAGE_NOACCESS);
+          if (gNextAddress == 0) {
+                printf("sbrk error: %d %lld %llX retrying \n",GetLastError(),gAllocatedSize,tmp);
+          tmp = findRegion (tmp+0x10000,gAllocatedSize);
+            gNextAddress = gAddressBase =
+            (unsigned long long)VirtualAlloc (tmp,
+                              gAllocatedSize,   MEM_RESERVE, PAGE_NOACCESS);
+          if (gNextAddress == 0) {
+                printf("sbrk error: %d %lld %llX fail \n",GetLastError(),gAllocatedSize,tmp);
+		}
+	}	
 	} else if (AlignPage (gNextAddress + size) > (gAddressBase +
 						      gAllocatedSize))
 	{
@@ -374,6 +397,7 @@ sbrk (SIZE_T size)
 	}
       tmp = (void*)gNextAddress;
       gNextAddress = (unsigned long long)tmp + size;
+      if (tmp == 0) printf("sbrk error (tmp): %d\n",GetLastError());
       return tmp;
     }
   else if (size < 0)
@@ -385,6 +409,7 @@ sbrk (SIZE_T size)
 	  VirtualFree ((void*)alignedGoal, gNextAddress - alignedGoal,
 		       MEM_DECOMMIT);
 	  gNextAddress = gNextAddress + size;
+	  if (gNextAddress == 0) printf("sbrk error (3)\n");
 	  return (void*)gNextAddress;
 	}
       else
@@ -401,6 +426,7 @@ sbrk (SIZE_T size)
       return (void*)gNextAddress;
     }
 }
+#endif
 
 /*
 #define _XOPEN_SOURCE 500
@@ -445,7 +471,7 @@ wait (int *status)
 #include <sys/shm.h>
 */
 
-typedef int key_t;
+typedef long long key_t;
 typedef unsigned int uid_t;
 typedef unsigned int gid_t;
 typedef unsigned long int shmatt_t;

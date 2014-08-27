@@ -250,13 +250,14 @@
 
 (lap '((*entry !m!a!i!n expr 0)
 
-       (*move (reg rcx) (reg 1))
-       (*move (reg rdx) (reg 2))
+       %(*move (reg rcx) (reg 1))
+       %(*move (reg rdx) (reg 2))
 
        (*alloc 3) % changes Stack pointer
 
-       (*move (reg 1) (frame 1))
-       (*move (reg 2) (frame 2))
+       (*move (reg rcx) (frame 1))
+       (*move (reg rdx) (frame 2))
+       (*move (reg 5) (frame 3)) % have to save %rbp
 
     %  (*move (fluid argc) (frame 1))
     %   (*move (fluid argv) (frame 2))
@@ -272,6 +273,8 @@
     %   (*move (fluid argc) (reg 1))
     %   (*move (fluid argv) (reg 2))
     %   (*move infbitlength (fluid _infbitlength_))
+       (*move (frame 1) (reg 1))
+       (*move (frame 2) (reg 2))
        (*link os_startup_hook expr 2)
 
        (*move (frame 1) (fluid argc))
