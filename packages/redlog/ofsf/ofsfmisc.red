@@ -624,26 +624,27 @@ procedure ofsf_smt2PrintT1(op,argl);
       ofsf_smt2PrintT1('times, for i:=1:cadr argl collect car argl);
 
 procedure ofsf_smt2ReadAt(form);
-   begin scalar op, w;
+   begin scalar op, w, lhs, rhs;
       op := car form;
       w := atsoc(op, '((!>!= . geq) (!<!= . leq) (!< . lessp) (!> . greaterp)
    	 (!= . equal)));
       if not w then
 	 cl_smt2ReadError {"error: expecting logical symbol but found ", op};
       op := cdr w;
-      return ofsf_0mk2(op,
-      	 addf(ofsf_smt2ReadTerm cadr form, negf(ofsf_smt2ReadTerm caddr form)))
+      lhs := ofsf_smt2ReadTerm cadr form;
+      rhs := ofsf_smt2ReadTerm caddr form;
+      return ofsf_0mk2(op, numr subtrsq(lhs, rhs))
    end;
 
 procedure ofsf_smt2ReadTerm(u);
-   numr simp ofsf_smt2ReadTerm1 u;
+   simp ofsf_smt2ReadTerm1 u;
 
 procedure ofsf_smt2ReadTerm1(u);
    begin scalar op, w;
-      if atom u then
+      if atom u or eqcar(u, '!:dn!:) or eqcar(u, '_) then
  	 return u;
       op := car u;
-      w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times)));
+      w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times) (!/ . quotient)));
       if not w then
 	 cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
       op := cdr w;

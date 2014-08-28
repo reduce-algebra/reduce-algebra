@@ -580,6 +580,13 @@ defautoload(yyparse, lalr, expr, 0);
 switch ranum;
 put('ranum,'simpfg,'((t (load!-package 'ranum) (setdmode (quote ranum) t))));
 
+% Smt
+operator smt;
+defautoload(smt, smt, expr, 0);
+
+operator smts_mainloop;
+defautoload(smts_mainloop, smt, expr, 0);
+
 endmodule;
 
 end;
