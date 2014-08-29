@@ -51,6 +51,8 @@
 
 */ 
 
+extern int Debug;
+
 unsigned int
 external_alarm (unsigned int sec)
 {
@@ -277,15 +279,17 @@ findRegion (void* start_address, SIZE_T size)
   MEMORY_BASIC_INFORMATION info;
   while ((unsigned long long)start_address < TOP_MEMORY)
     {
-      printf("Calling VirtualQuery with %llx\n",start_address);
+      if (Debug > 0)
+        fprintf(stderr,"Calling VirtualQuery with %llx\n",start_address);
       result = VirtualQuery (start_address, &info, sizeof (info));
-      if (result == 0) {
-	printf("VirtualQuery returned 0\n");
+      if (result == 0 && Debug > 0) {
+	fprintf(stderr,"VirtualQuery returned 0\n");
       } 
-      printf("VirtualQuery State = %d %llX %llX %llx(%lld)\n",
-             info.State,info.BaseAddress,info.AllocationBase,
-                       info.RegionSize, info.RegionSize);
-
+      if (Debug > 0) {
+        fprintf(stderr,"VirtualQuery State = %d %llX %llX %llx(%lld)\n",
+                info.State,info.BaseAddress,info.AllocationBase,
+                info.RegionSize, info.RegionSize);
+      }
       if (info.State != MEM_FREE) {
 	start_address = (char*)info.BaseAddress + info.RegionSize;
       }
@@ -323,6 +327,10 @@ mprotect_exec (void *addr,  long long size)
   return VirtualProtect (addr, size, PAGE_EXECUTE_READWRITE, &OldProtect);
 }
 
+/*
+ * Shift start address of memory by this amount if first attempt fails
+ */
+#define RETRY_INCREMENT 0x10000 
 void*
 sbrk (SIZE_T size)
 {
@@ -340,21 +348,26 @@ sbrk (SIZE_T size)
       if (gAddressBase == 0)
 	{
 	  gAllocatedSize = max (RESERVED_SIZE, AlignPage (size));
- 	  printf("sbrk: size: %lld, allocated: %lld\n",size,gAllocatedSize);
+          if (Debug > 0)
+ 	    fprintf(stderr,"sbrk: size: %lld, allocated: %lld\n",
+                    size,gAllocatedSize);
 	  tmp = findBase (gAllocatedSize);
 	  gNextAddress = gAddressBase =
 	    (unsigned long long)VirtualAlloc (tmp,
 			      gAllocatedSize,	MEM_RESERVE, PAGE_NOACCESS);
           if (gNextAddress == 0) {
-                printf("sbrk error: %d %lld %llX retrying \n",GetLastError(),gAllocatedSize,tmp);
-          tmp = findRegion (tmp+0x10000,gAllocatedSize);
+            if (Debug > 0)
+              fprintf(stderr,"sbrk error: %d %lld %llX retrying \n",
+                      GetLastError(),gAllocatedSize,tmp);
+            tmp = findRegion (tmp+RETRY_INCREMENT,gAllocatedSize);
             gNextAddress = gAddressBase =
             (unsigned long long)VirtualAlloc (tmp,
                               gAllocatedSize,   MEM_RESERVE, PAGE_NOACCESS);
-          if (gNextAddress == 0) {
-                printf("sbrk error: %d %lld %llX fail \n",GetLastError(),gAllocatedSize,tmp);
-		}
-	}	
+            if (gNextAddress == 0 && Debug > 0) {
+              fprintf(stderr,"sbrk error: %d %lld %llX fail\n",
+                      GetLastError(),gAllocatedSize,tmp);
+	    }
+	  }
 	} else if (AlignPage (gNextAddress + size) > (gAddressBase +
 						      gAllocatedSize))
 	{
@@ -397,7 +410,8 @@ sbrk (SIZE_T size)
 	}
       tmp = (void*)gNextAddress;
       gNextAddress = (unsigned long long)tmp + size;
-      if (tmp == 0) printf("sbrk error (tmp): %d\n",GetLastError());
+      if (tmp == 0 && Debug > 0)
+        fprintf(stderr,"sbrk error (tmp): %d\n",GetLastError());
       return tmp;
     }
   else if (size < 0)
@@ -409,7 +423,6 @@ sbrk (SIZE_T size)
 	  VirtualFree ((void*)alignedGoal, gNextAddress - alignedGoal,
 		       MEM_DECOMMIT);
 	  gNextAddress = gNextAddress + size;
-	  if (gNextAddress == 0) printf("sbrk error (3)\n");
 	  return (void*)gNextAddress;
 	}
       else

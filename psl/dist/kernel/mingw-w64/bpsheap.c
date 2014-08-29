@@ -91,6 +91,8 @@ Be sure to update $pxnk/load-psl.sl to include correct collector. */
 #define BPSSIZE         1600000    /* Default bps size in number of bytes */
 #endif
 
+extern int Debug;
+
 char *  imagefile ;
 long long   max_image_size;
 long long   oldbreakvalue;
@@ -243,8 +245,9 @@ if (strncmp (prog, "bpsl", 4))
 
 if (imagefile == NULL)
 { printf("Setting heap limit as follows:\n");
-//    printf("Total heap & bps space \n",//= %ld (%lx)\n",// bps = %.2f, heap = %.2f\n",
-//         total, total, bpspercent, heappercent);
+  if (Debug > 0)
+    printf("Total heap & bps space \n",//= %ld (%lx)\n",// bps = %.2f, heap = %.2f\n",
+           total, total, bpspercent, heappercent);
 }
 
 setupbps();
@@ -280,7 +283,9 @@ if (bpscontrol[0] != headerword[0]
 		  exit (-19);}
        fread (headerword,8,4,imago);
        hugo = fread (&symval,1,headerword[0],imago);
-       printf("neu: %lx => %lx\n",hlb, heaplowerbound);
+       if (Debug > 0) {
+         printf("neu: %lx => %lx\n",hlb, heaplowerbound);
+       }
        diff = hlb-heaplowerbound;
 //       if (hlb < heaplowerbound)
 //             {creloc(&symval,headerword[0]/8,diff,hlb -1);} 

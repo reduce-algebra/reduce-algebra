@@ -40,6 +40,8 @@
 
 jmp_buf mainenv;
  
+int Debug = 0;
+
 extern void gcleanup ();
 
 main(argc,argv)
@@ -53,6 +55,9 @@ char *argv[];
   /* fpsetround(FP_RZ);  */
 /*  init_malloc_param();        /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IONBF,BUFSIZ);
+
+  if (getenv("BPSL_DEBUG") != NULL) 
+     Debug = 1;
  
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
