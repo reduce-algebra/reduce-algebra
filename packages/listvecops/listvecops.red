@@ -182,6 +182,13 @@ precedence ldot,times;
 
 newtok '((!* !.) ldot);
 
+% Provide underscore as an infix operator for part as an alternative to
+% access list elements (as used by Rene).
+
+infix part;
+newtok '(( !_ ) part);
+precedence part,times;
+
 symbolic procedure listdf(u,v);
    begin scalar x;
      x := reval1(car u,v);

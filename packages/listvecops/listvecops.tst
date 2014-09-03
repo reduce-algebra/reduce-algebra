@@ -44,6 +44,32 @@ df({sin x*y,x^3*cos y},x,2,y);
 
 int({sin x,cos x},x);
 
+% Example of a list-valued procedure.
+
+listproc spat3(u,v,w);
+   begin scalar x,y;
+     x := u *. w;
+     y := u *. v;
+     return v*x - w*y
+   end;
+
+u := {ux,uy,uz};
+v := {vx,vy,vz};
+w := {wx,wy,wz};
+
+z := spat3(u,v,w) - 3*spat3(v,u,w);
+ 
+spat3(u,v,w)+spat3(u,w,v);
+
+% Accesing list elements with infix operator _ .
+
+l := {1,{2,3},4};
+
+l _2*3;
+
+l _2 _2;
+
+
 end;
 
 
