@@ -255,6 +255,8 @@ int({sin x,cos x},x);
 { - cos(x),sin(x)}
 
 
+% Example of a list-valued procedure.
+
 listproc spat3(u,v,w);
    begin scalar x,y;
      x := u *. w;
@@ -298,6 +300,26 @@ spat3(u,v,w)+spat3(u,w,v);
 
 
 {0,0,0}
+
+
+% Accesing list elements with infix operator _ .
+
+l := {1,{2,3},4};
+
+
+l := {1,{2,3},4}
+
+
+l _2*3;
+
+
+{6,9}
+
+
+l _2 _2;
+
+
+3
 
 
 
