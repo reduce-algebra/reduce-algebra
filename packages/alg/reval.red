@@ -75,7 +75,9 @@ symbolic procedure reval1(u,v);
                                     else reval1(cadr x,v)>>
               else nil
        else if not idp car u % or car u eq '!*comma!*
-        then errpri2(u,t)
+      % Dispatch a function on a tagged item. (e.g. a matrix structure)
+        then if (x := get(caar u,'structfn)) then return apply(x,{u})
+              else errpri2(u,t)
        else if car u eq '!*sq
         then return if caddr u and null !*resimp
                       then if null v then u else prepsqxx cadr u

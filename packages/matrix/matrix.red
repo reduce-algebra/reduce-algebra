@@ -30,7 +30,7 @@ module matrix;  % Header for matrix package.
 
 % This module has one reference to rplaca.
 
-create!-package('(matrix matsm matpri extops bareiss det glmat nullsp
+create!-package('(matrix matsm matpri matproc extops bareiss det glmat nullsp
                   rank nestdom resultnt cofactor),nil);
 
 fluid '(!*sub2 subfg!*);

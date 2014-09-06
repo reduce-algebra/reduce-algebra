@@ -78,7 +78,9 @@ symbolic procedure formproc(u,vars,mode);
         x := if eqcar(body,'rblock) then cadr body else nil;
         y := pairxvars(varlis,x,vars,mode);
         if x then body := car body . rplaca!*(cdr body,cdr y);
-        body:= form1(body,car y,mode);   % FORMC here would add REVAL.
+%        body:= form1(body,car y,mode);   % FORMC here would add REVAL.
+        body := if flagp(name,'formc) then formc(body,car y,mode)
+                 else form1(body,car y,mode);
 % !*noinlines being set causes every inline that is defined to be downgraded
 % to a regular procedure.
         if !*noinlines and type eq 'inline then type := 'expr;

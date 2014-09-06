@@ -810,6 +810,9 @@ symbolic procedure setk0(u,v);
         % We must update alglist!* when an element is defined.
         then <<alglist!* := nil . nil; apply2(x,u,v)>>
         % alglist!* is updated here in simp0.
+       else if null atom u and null atom car u 
+               and (x := get(caar u,'setstructfn))
+        then <<alglist!* := nil . nil; apply2(x,u,v)>>
        else let2(u,v,nil,t);
       return v
    end;
