@@ -189,6 +189,16 @@ int  count;
     fputc(*buf, fp);
 }
 
+int
+mprotect_exec (void *addr,  long long size)
+{
+  DWORD OldProtect;
+
+  return VirtualProtect (addr, size, PAGE_EXECUTE_READWRITE, &OldProtect);
+}
+
+#if (USE_WIN_HEAPFUNCTIONS != 1)
+
 /*
   winsup/cygwin/dlmalloc.c
 
@@ -319,14 +329,6 @@ findBase (SIZE_T size)
   return findRegion ((void *)base, size);
 }
 
-int
-mprotect_exec (void *addr,  long long size)
-{
-  DWORD OldProtect;
-
-  return VirtualProtect (addr, size, PAGE_EXECUTE_READWRITE, &OldProtect);
-}
-
 /*
  * Shift start address of memory by this amount if first attempt fails
  */
@@ -439,6 +441,12 @@ sbrk (SIZE_T size)
       return (void*)gNextAddress;
     }
 }
+#endif
+
+#else
+
+void gcleanup() {}
+
 #endif
 
 /*

@@ -69,8 +69,20 @@ long long unexec();
 #define PAGESIZE 4096
 #endif
 
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+
+#include <windows.h>
+#include <winbase.h>
+
+HANDLE heapHandle;
+LPVOID heapBaseAddr;
+
+#else
+
 #ifndef _SYS_UNISTD_H
 extern void *sbrk (long long size);
+#endif
+
 #endif
 
 
@@ -92,6 +104,7 @@ Be sure to update $pxnk/load-psl.sl to include correct collector. */
 #endif
 
 extern int Debug;
+
 
 char *  imagefile ;
 long long   max_image_size;
@@ -202,7 +215,9 @@ heapsize_in_bytes = total - bpssize;
 
 /* On systems in which the image does not start at address 0, this won't
 really allocate the full maximum, but close enough. */
+#if (USE_WIN_HEAPFUNCTIONS != 1)
 current_size_in_bytes = (((long long) sbrk(0))<<5)>>5;
+#endif
 max_image_size = 0x1000000000000LL; /* 1 more than allowable size */
 
 if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
@@ -243,11 +258,12 @@ if (strncmp (prog, "bpsl", 4))
 }
 }
 
-if (imagefile == NULL)
-{ printf("Setting heap limit as follows:\n");
-  if (Debug > 0)
-    printf("Total heap & bps space \n",//= %ld (%lx)\n",// bps = %.2f, heap = %.2f\n",
+if (imagefile == NULL) {
+  if (Debug > 0) {
+    printf("Setting heap limit as follows:\n");
+    printf("Total heap & bps space = %lld (%llx) bps = %.2f, heap = %.2f\n",
            total, total, bpspercent, heappercent);
+  }
 }
 
 setupbps();
@@ -261,7 +277,11 @@ printf("bpsaddr = %lld (%llX), heapaddr = %lld (%llX)\n",
 printf("bpssize = %lld (%llX), heapsize = %lld (%llX)\nTotal image size = %lld (%llX)\n",
  bpssize, bpssize,
  heapsize, heapsize,
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+ oldbreakvalue, oldbreakvalue);
+#else
  (long long) sbrk(0), (long long) sbrk(0));
+#endif
 }
 
 if (imagefile != NULL) {
@@ -353,8 +373,33 @@ setupbps ()
  */
 allocatemorebps()
 {
-  long long current_size_in_bytes;
   int old_nextbps = nextbps;
+
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+
+  /* always allocate two bytes more so that we can increment to an even
+   * number
+   */
+  nextbps = (long long) HeapAlloc(heapHandle,(DWORD) 0,EXTRABPSSIZE + 2);
+
+  if (nextbps == 0) {
+    nextbps = old_nextbps;
+    return 0;
+  }
+
+  if ((nextbps + EXTRABPSSIZE)  >= max_image_size) {
+    /* Cannot use this address */
+    HeapFree(heapHandle, (DWORD) 0, (LPVOID) nextbps);
+    return 0;
+  }
+
+  if (nextbps % 2 == 1) {
+    nextbps++;
+  }
+
+#else
+
+  long long current_size_in_bytes;
 
   current_size_in_bytes = (long long)sbrk(0);
 
@@ -369,6 +414,16 @@ allocatemorebps()
     nextbps = old_nextbps;
     return(0);
   }
+
+#endif
+
+  if (!mprotect_exec ((char *)nextbps, EXTRABPSSIZE)) {
+    perror("Couldn’t mprotect");
+    nextbps = old_nextbps;
+    return 0;
+  }
+
+
   lastbps = nextbps + EXTRABPSSIZE;
 
   return(EXTRABPSSIZE);   /* This will be a paramter later */
@@ -378,6 +433,57 @@ allocatemorebps()
 getheap(heapsize)
      long long heapsize;
 {
+
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+
+  long long lastheapaddress;
+  long long heapsize_in_bytes;
+
+  oldheaplowerbound     = -1;
+
+  heapHandle = GetProcessHeap();
+
+  if (heapHandle == NULL) {
+    fprintf(stderr,"getheap: GetProcessHeap failed: %d\n",GetLastError());
+    exit(-1);
+  }
+
+  heapsize_in_bytes =  NUMBEROFHEAPS * (SIZE_T) heapsize;
+
+  heapBaseAddr = HeapAlloc(heapHandle,
+                           (DWORD) 0,
+	 		   heapsize_in_bytes);
+
+  if (heapBaseAddr == NULL) {
+     fprintf(stderr,"getheap: HeapAlloc failed\n");
+    exit(-1);
+  }
+
+  heaplowerbound = (long long) heapBaseAddr;
+
+  if (heaplowerbound + heapsize_in_bytes >= max_image_size) {
+
+    heapsize_in_bytes = max_image_size - heaplowerbound;
+
+    printf("Heap limits %llx %llx\n", heaplowerbound, heaplowerbound + heapsize_in_bytes);
+    printf("Size requested will result in pointer values larger than\n");
+    printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
+
+    heapBaseAddr = HeapReAlloc(heapHandle,
+                               HEAP_REALLOC_IN_PLACE_ONLY,
+			       heapBaseAddr,
+			       heapsize_in_bytes);
+
+    if (heapBaseAddr == NULL) {
+      fprintf(stderr,"getheap: HeapReAlloc failed\n");
+      exit(-1);
+    }
+
+    heaplowerbound = (long long) heapBaseAddr;
+
+  }
+
+#else
 
 #if (NUMBEROFHEAPS == 1)
   heaplowerbound        = (long long)sbrk(heapsize);  /* allocate first heap */;
@@ -389,6 +495,9 @@ getheap(heapsize)
     perror("GETHEAP");
     exit(-1);
   }
+
+#endif
+
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
   heaptrapbound         = heapupperbound -120;
@@ -399,7 +508,12 @@ getheap(heapsize)
   oldheaplast           = oldheaplowerbound;
   oldheaptrapbound      = oldheapupperbound -120;
 #endif
+
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+  oldbreakvalue = heaplowerbound + NUMBEROFHEAPS * heapsize;
+#else
   oldbreakvalue = (long long)sbrk(0);
+#endif
 }
 
 /* Tag( alterheapsize )
@@ -424,6 +538,9 @@ int increment;
 
   int heapsize;
   int current_size_in_bytes;
+
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+#endif
 
 #if (NUMBEROFHEAPS == 1)
   int gcarraysize, newbreakvalue;
@@ -463,8 +580,39 @@ int increment;
   oldbreakvalue    = newbreakvalue;
   return(increment);
 #else
+
+#if (USE_WIN_HEAPFUNCTIONS == 1)
+
+  long long newbreakvalue;
+  SIZE_T heapSize;
+  LPVOID newHeapBaseAddr;
+
+  heapSize = HeapSize(heapHandle,(DWORD) 0,heapBaseAddr);
+  if (heapSize == (SIZE_T)-1) {
+    /* internal error */
+    printf("***** HeapSize failed -- cannot extend heap\n");
+    return(0);
+  }
+
+  newHeapBaseAddr = HeapReAlloc(heapHandle,
+				HEAP_REALLOC_IN_PLACE_ONLY,
+				heapBaseAddr,
+				heapSize + 2 * increment);
+
+  if (newHeapBaseAddr == NULL) {
+    printf("***** HeapReAlloc failed -- cannot extend heap\n");
+    return(0);
+  }
+  else if (newHeapBaseAddr != heapBaseAddr) {
+    printf("***** Internal error: HeapReAlloc moved heap -- ABORT\n");
+    exit(-2);
+  }
+
+  newbreakvalue = oldbreakvalue + increment;
+					  
+#else
   /* assumes the current heap is the 'lower' one */
-  int newbreakvalue;
+  long long newbreakvalue;
 
   if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
       {  printf(" unable to allocate %llx %llx\n",
@@ -480,6 +628,8 @@ int increment;
      return(-2);
 
   newbreakvalue = (long long) sbrk(0);
+
+#endif
 
   heapupperbound        = heapupperbound + increment ;
   heaptrapbound         = heapupperbound - 120;

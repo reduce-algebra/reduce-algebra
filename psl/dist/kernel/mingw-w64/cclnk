@@ -1,4 +1,5 @@
 x86_64-w64-mingw32-gcc -m64 -o $pxk/bpsl.exe -DBPSSIZE=20500000 \
+            -DUSE_WIN_HEAPFUNCTIONS=1 \
 	    $pxk/bps.c $pxk/bpsheap.c \
 	    $pxk/echo.c $pxk/file-status.c $pxk/float.c $pxk/os-hooks.c \
 	    $pxk/pslextras.c $pxk/pslsocket.c $pxk/pwd-fn.c $pxk/sigs.c \
