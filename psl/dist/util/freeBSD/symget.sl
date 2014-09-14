@@ -204,7 +204,6 @@
 
 (null (progn
 	     (setq &symgetsize& 20)                  % default
-	     (setq symget (gtwarray maxsymbols))     % geoeffnet
 	     (ifor (from i 0 maxsymbols 1)
 		   (do (setf (symget i) nil)))
 	     (setq &symflag& (make-words maxsymbols 0))))
