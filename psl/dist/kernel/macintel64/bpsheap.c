@@ -35,7 +35,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
-long unexec();
+long long unexec();
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +46,7 @@ long unexec();
        #endif
 
 
+void * sbrk(int);
 
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
@@ -54,7 +55,7 @@ long unexec();
 
 #define NUMBEROFHEAPS 2
 
-#define MINSIZE        5000000  /* Default total in number of bytes. */
+#define MINSIZE        50000000 /* Default total in number of bytes. */
 #define MALLOCSIZE     500000   /* Default size for OS support functions. */
 #define EXTRABPSSIZE   300000   /* Minimum amount to increase bps by. */
 #define MINIMUMHEAPADD 20000    /* Minimum amount to increase heap by */
@@ -64,11 +65,13 @@ long unexec();
 #define BPSSIZE         1600000    /* Default bps size in number of bytes */
 #endif
 
+extern int Debug;
+
 char *  imagefile ;
 long long   max_image_size;
 long long   oldbreakvalue;
 
-long bpscontrol[2];
+long long bpscontrol[2];
 
 extern long long  alreadysetupbpsandheap;
 extern long long  hashtable;
@@ -90,7 +93,7 @@ extern long long  oldheaplast;
 extern long long  oldheaptrapbound;
 
 /* Write this ourselves to keep from including half the math library */
-static power(x, n)
+static int power(x, n)
      int x, n;
 {
   int i, p;
@@ -104,12 +107,17 @@ static power(x, n)
 
 int creloc (long long array, long len, long long diff, long long lowb);
 
+void setupbps();
+void getheap(long long);
+void read_error();
+
 long sizeofsymvectors = 0;
 
+int
 setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
-{ long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub;
+{ long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
   int memset = 0;
   FILE * imago;
   long long headerword [8];
@@ -180,7 +188,7 @@ setupbpsandheap(argc,argv)
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     heapsize_in_bytes = max_image_size - current_size_in_bytes;
     total = heapsize_in_bytes + bpssize;
-printf("total %lX %lX %lx\n",heapsize_in_bytes , current_size_in_bytes,total);
+printf("total %llX %llX %llx\n",heapsize_in_bytes , current_size_in_bytes,total);
     printf("Size requested will result in pointer values larger than\n");
     printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
   }
@@ -196,18 +204,20 @@ printf("total %lX %lX %lx\n",heapsize_in_bytes , current_size_in_bytes,total);
 
   if (imagefile == NULL)
   { printf("Setting heap limit as follows:\n");
-//    printf("Total heap & bps space \n",//= %ld (%lx)\n",// bps = %.2f, heap = %.2f\n",
- //         total, total, bpspercent, heappercent);
+    if (Debug > 0) {
+      printf("Total heap & bps space = %lld (%llx), bps = %.2f, heap = %.2f\n",
+             total, total, bpspercent, heappercent);
+    }
   }
 
   setupbps();
   getheap(heapsize);
 
   if (imagefile == NULL)
-  printf("bpssize = %d (%X), heapsize = %ld (%lX)\nTotal image size = %ld (%lX)\n",
+  printf("bpssize = %llu (%llX), heapsize = %llu (%llX)\nTotal image size = %llu (%llX)\n",
           bpssize, bpssize,
           heapsize, heapsize,
-          (int) sbrk(0), (int) sbrk(0));
+          (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
 
    if (imagefile != NULL) {
 	ohl = oldheaplowerbound; ohub = oldheapupperbound;
@@ -224,16 +234,28 @@ printf("total %lX %lX %lx\n",heapsize_in_bytes , current_size_in_bytes,total);
       if ((long long) bpscontrol[0] != headerword[0] 
                 || bpscontrol[1] != headerword[1])
 		{ printf(" Cannot start the image with this bpsl \n");
-                  printf(" %lx != %lx, %lx != %lx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+                  printf(" %llx != %llx, %llx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
 		  exit (-19); }
        fread (headerword,8,4,imago);
        hugo = fread (&symval,1,headerword[0],imago);
+       if (hugo != headerword[0]) read_error();
 
        sizeofsymvectors = headerword[0]/8;
 
-       if (hugo != headerword[0]) read_error();
+       diff = hlb-heaplowerbound;
 
-       hugo = fread ((char*)heaplowerbound,1,headerword[1],imago);
+       if (diff != 0) {
+	 if (Debug > 0) {
+	   printf("relocate heap: %llx(img) => %llx(new)\n", heaplowerbound, hlb);
+	 }
+         creloc((long long)&symval, sizeofsymvectors, diff, heaplowerbound -1);
+       }
+
+       hugo = fread ((char*)hlb,1,headerword[1],imago);
+       if (diff != 0)
+	 creloc((long long)hlb,headerword[1]/8,diff, heaplowerbound -1);
+       heaplast += diff;
+
        if (hugo != headerword[1]) read_error();
        hugo = fread (&hashtable,1,headerword[2],imago);
        if (hugo != headerword[2]) read_error();
@@ -251,6 +273,7 @@ return (0);
 
 }
 
+void
 read_error()
   {
     printf("file too short\n");
@@ -265,6 +288,7 @@ read_error()
 
 #include <sys/mman.h>
 
+void
 setupbps()
 { char *p = (char *) bps;
   int bpssize;
@@ -286,12 +310,13 @@ setupbps()
    nextbps is now greater than heaplast means that unexec should be not be
    tried after this routine is called. The image would be huge.
  */
+long long
 allocatemorebps()
 {
   int current_size_in_bytes;
   int old_nextbps = nextbps;
 
-  current_size_in_bytes = sbrk(0);
+  current_size_in_bytes = (long long)sbrk(0);
 
   if ((current_size_in_bytes + EXTRABPSSIZE) >= max_image_size)
     return(0);
@@ -310,6 +335,7 @@ allocatemorebps()
 }
 
 
+void
 getheap(heapsize)
      long long heapsize;
 {
@@ -334,6 +360,7 @@ getheap(heapsize)
 
 /* Tag( alterheapsize )
  */
+long long
 alterheapsize(increment)
 int increment;
 {
@@ -399,7 +426,7 @@ int increment;
   void * realo;
 
   if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
-      {  printf(" unable to allocate %x %x\n",sbrk(0),oldbreakvalue);
+      {  printf(" unable to allocate %llx %llx\n",(long long)sbrk(0),oldbreakvalue);
         return(0); }
 
   current_size_in_bytes = ( (long long) sbrk(0) <<5) >>5;
@@ -407,22 +434,34 @@ int increment;
   if ((current_size_in_bytes + 2* increment) >= max_image_size)
     return(-1);
 
-  realo = realloc(heaplowerbound,
+  if (Debug > 0) {
+    fprintf(stderr,"Trying to increase heap size by %d bytes\n",increment);
+  }
+
+  realo = realloc((void *)heaplowerbound,
                oldheapupperbound - heaplowerbound + 2*increment);
-  if (realo == (void *) NULL) return (-2);
-  diff =  realo - heaplowerbound;
-  if (realo < heaplowerbound)
-             {creloc((long long) &symval,sizeofsymvectors,diff,realo -1);}
+  if (realo == (void *) NULL) {
+    if (Debug > 0) {
+      fprintf(stderr,"realloc returned NULL\n");
+    }
+    return (-2);
+  }
+  if (Debug > 0) {
+    fprintf(stderr,"Old heaplowerbound = %lld (%llX), new = %lld (%llX)\n",heaplowerbound,heaplowerbound,(long long)realo,(long long)realo);
+  }
+  diff =  realo - (void *)heaplowerbound;
+  if (realo < (void *)heaplowerbound)
+             {creloc((long long) &symval,sizeofsymvectors,diff,(long long)realo -1);}
         else {creloc((long long) &symval,sizeofsymvectors,diff, heaplowerbound -1);}
-   if (realo < heaplowerbound)
-             {creloc(realo,(heapupperbound - heaplowerbound)/8,diff,realo -1);}
-        else {creloc(realo,(heapupperbound - heaplowerbound)/8,diff,
+   if (realo < (void *)heaplowerbound)
+             {creloc((long long)realo,(heapupperbound - heaplowerbound)/8,diff,(long long)realo -1);}
+        else {creloc((long long)realo,(heapupperbound - heaplowerbound)/8,diff,
               heaplowerbound -1);}
 
 
   newbreakvalue = (long long) sbrk(0);
 
-  heaplowerbound        = realo;
+  heaplowerbound        = (unsigned long long) realo;
   heaplast              = heaplast + diff ;
   heapupperbound        = heapupperbound  + diff + increment ;
   heaptrapbound         = heapupperbound - 120;
@@ -447,10 +486,10 @@ int increment;
 
 }
 
-long unexec()
+long long unexec()
 {
   bpscontrol[0] = bpslowerbound;
   bpscontrol[1] = BPSSIZE;
-  return((long) bpscontrol);
+  return((long long) bpscontrol);
 }
 

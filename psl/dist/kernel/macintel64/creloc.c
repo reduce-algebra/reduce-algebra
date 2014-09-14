@@ -7,7 +7,7 @@
  * Winfried Neun, ZIB
  * */
 
-int creloc (long long array[], long len, long long diff, long long lowb)
+void creloc (long long array[], long len, long long diff, long long lowb)
 
 {  long i;
    long skip;
@@ -21,7 +21,7 @@ int creloc (long long array[], long len, long long diff, long long lowb)
           skip = 1;
           if ( tag == 0 ) continue;  // posint
           if ( tag > 250 ) continue; // negint to forward
- //     printf(" %d before %d %lx",tag,i,array[i]);
+//      printf(" %ld before %ld %llx",tag,i,array[i]);
           if ( tag < 31  && (inf > lowb ))
                   {array[i] += diff;}
           if (tag == 247)
@@ -29,6 +29,7 @@ int creloc (long long array[], long len, long long diff, long long lowb)
              else if (tag==249) { skip = inf + 2;}
              else if (tag==250) { skip = 1;} // work on the vect contents
 // One has to make sure that bignums are *NOT* vectors in gc, but WORD-VECT.
-//      printf(" %d after %lx\n",skip, array[i]);
+//      printf(" %ld after %llx\n",skip, array[i]);
        } 
+//   printf("creloc finished\n");
 }

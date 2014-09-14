@@ -53,6 +53,7 @@
 
 /* Tag( uxfloat )
  */
+void
 uxfloat(f,i)
      double *f;
      long long i;
@@ -70,6 +71,7 @@ long long uxfix(f)
 
 /* Tag( uxassign )
  */
+void
 uxassign(f1,f2)
      double *f1, *f2;
 {
@@ -80,6 +82,7 @@ fexcept_t flagp;
 
 /* Tag( uxplus2 )
  */
+int
 uxplus2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -92,6 +95,7 @@ uxplus2(f1,f2,f3)
 
 /* Tag( uxdifference )
  */
+int
 uxdifference(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -104,6 +108,7 @@ uxdifference(f1,f2,f3)
 
 /* Tag( uxtimes2 )
  */
+int
 uxtimes2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -116,6 +121,7 @@ uxtimes2(f1,f2,f3)
 
 /* Tag( uxquotient )
  */
+int
 uxquotient(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -152,14 +158,7 @@ long long uxlessp(f1,f2,val1,val2)
 
 /* Tag( uxwritefloat )
  */
-
-uxwritefloat8(buf, flt, convstr,dummy)
-     char *buf;          /* String buffer to return float int */
-     double *flt;        /* Pointer to the float */
-     char *convstr;      /* String containing conversion field for sprintf */
-     int dummy;  /* We need to have 128 bit alingemnt of the stack */
-{ uxwritefloat(buf, flt, convstr); }
-
+void
 uxwritefloat(buf, flt, convstr)
      char *buf;          /* String buffer to return float int */
      double *flt;        /* Pointer to the float */
@@ -177,6 +176,7 @@ uxwritefloat(buf, flt, convstr)
    */
   dot = rindex(temps, '.');
   if (dot == '\0')
+    {
     /* Check to see if the number is in scientific notation. If so, we need
      *  add the .0 into the middle of the string, just before the e.
      */
@@ -191,15 +191,27 @@ uxwritefloat(buf, flt, convstr)
     {
       strcat(temps, ".0");
     }
-  
+  }
+
   /* Install the length of the string into the Lisp header word
    */
   *((long long *)buf) = strlen(temps) - 1;
 }
 
 
+void
+uxwritefloat8(buf, flt, convstr,dummy)
+     char *buf;          /* String buffer to return float int */
+     double *flt;        /* Pointer to the float */
+     char *convstr;      /* String containing conversion field for sprintf */
+     int dummy;  /* We need to have 128 bit alingemnt of the stack */
+{ uxwritefloat(buf, flt, convstr); }
+
+
+
 /* Tag( uxdoubletofloat )
  */
+void
 uxdoubletofloat (dbl,flt)
      double *dbl;
      float  *flt;
@@ -207,6 +219,7 @@ uxdoubletofloat (dbl,flt)
   *flt = (float) *dbl;
 }
 
+void
 uxfloattodouble (flt,dbl)
      float  *flt;             
      double *dbl;             
@@ -215,60 +228,70 @@ uxfloattodouble (flt,dbl)
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
+int
 uxsin (r, x)
      double *r, *x;
 {
     *r = sin( *x );
 }
 
+int
 uxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
 }
 
+int
 uxtan (r, x)
      double *r, *x;
 {
     *r = tan( *x );
 }
 
+int
 uxasin (r, x)
      double *r, *x;
 {
     *r = asin( *x );
 }
 
+int
 uxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
 }
 
+int
 uxatan (r, x)
      double *r, *x;
 {
     *r = atan( *x );
 }
 
+int
 uxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
 }
 
+int
 uxexp (r, x)
      double *r, *x;
 {
     *r = exp( *x );
 }
 
+int
 uxlog (r, x)
      double *r, *x;
 {
     *r = log( *x );
 }
 
+int
 uxatan2 (r, y, x)
      double *r, *y, *x;
 {

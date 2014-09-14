@@ -10,6 +10,7 @@
  *           renamed sigset to sun3_sigset for sun os 4.
  */
  
+#include <unistd.h>
 #include <signal.h>
 
 #ifndef LINUX
@@ -20,12 +21,19 @@ int      fp_first=0;
 #endif
 
 
+void
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
 {
-   if (signal(sig, SIG_IGN) != SIG_IGN) 
-    signal(sig, action);
+   struct sigaction act = {0};
+
+   if (signal(sig, SIG_IGN) != SIG_IGN)  {
+     act.sa_sigaction = action;
+     act.sa_flags = SA_SIGINFO;
+     sigaction(sig, &act, (void*)0);
+   }
+
 
 #ifndef LINUX
    if(sig == SIGFPE && fp_first == 0)
@@ -40,6 +48,7 @@ int sig;
  
 }
  
+void
 sun3_sigrelse(sig, action)
 void (*action)();
 int sig;
@@ -58,17 +67,17 @@ int sig;
  
 
  
+void
 setlinebuf()
 {
 }
  
+void
 ieee_handler()
 {
 }
-ualarm()
 
-{
-}
+
 #include <sys/file.h>
 #include <fcntl.h>
 
@@ -80,8 +89,9 @@ if (a1 == 1) { return( flock(a2,a3));};
 if (a1 == 2) { return( fcntl(a2,a3,a4));};
 if (a1 == 3) { return( open((char *)a2,a3,a4));};
 if (a1 == 4) { return( close(a2));}; 
-if (a1 == 5) { return( read(a2,a3,a4));}; 
-if (a1 == 6) { return( write(a2,a3,a4));}; 
+if (a1 == 5) { return( read(a2,(void *)a3,a4));}; 
+if (a1 == 6) { return( write(a2,(void *)a3,a4));}; 
 if (a1 == 7) { return( lseek(a2,a3,a4));}; 
+return 0;	// keep compiler happy, cannot be reached since a1 is never <1 or >7
 }
 

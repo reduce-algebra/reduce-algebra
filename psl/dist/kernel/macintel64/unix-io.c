@@ -64,6 +64,7 @@
  
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
  
 /* There is an assumption here that coercing addresses into ints is OK */
@@ -86,6 +87,7 @@ extern int unixnull[2], unixeof[2];
 
 /* Tag( unixinitio )
  */
+void
 unixinitio()
 {
     unixstdin = stdin;
@@ -101,6 +103,7 @@ unixinitio()
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
+void
 unixputc(c)
 char c;
 {
@@ -109,6 +112,7 @@ char c;
  
 /* Tag( unixputs )
  */
+void
 unixputs(str)
 char *str;
 {
@@ -117,6 +121,7 @@ char *str;
  
 /* Tag( unixputn )
  */
+void
 unixputn(n)
 long long n;
 {
@@ -125,6 +130,7 @@ long long n;
  
 /* Tag( unixcleario )
  */
+void
 unixcleario()
 {
     unixinitio();
@@ -171,7 +177,7 @@ char *fname;
   register int tilde;
   c = copy;
   s = fname;
-  while (*c++ = *s++);
+  while ((*c++ = *s++));
   s = copy;
   c = collect;
   *c = '\0';
@@ -192,7 +198,7 @@ char *fname;
               *e = '\0';
               if (tilde)
                 {
-          if (p = getpwnam(s))  t = (p -> pw_dir);
+          if ((p = getpwnam(s)))  t = (p -> pw_dir);
         }
               else
                 t = getenv(s);
@@ -200,7 +206,7 @@ char *fname;
               s = e;
             }
           if (t)
-        while (*c++ = *t++)
+        while ((*c++ = *t++))
           ;
           else
         return(fname);   /* name not found, just return original fname */
@@ -231,13 +237,13 @@ FILE* unixopen(filename, type)
 {
   FILE* fptr;
  
-  /*  printf("open %s %s ",filename,type);    * /
+  //  printf("open %s %s ",filename,type);    
   fptr = fopen(expand_file_name(filename), type);
   if(fptr==(int)NULL)
-  { /* try file name in dos syntax * /
+  { // try file name in dos syntax * /
     char c,nfname[255];
     int i,j,k,kmax;
-    /*  printf("open failed %s %s ",filename,type); /*  * /
+    //  printf("open failed %s %s ",filename,type); 
     k=0;kmax=8;j=0;
     for(i=0;filename[i];i++)
     { c=filename[i]; nfname[j++]=c; k++; 
@@ -246,26 +252,29 @@ FILE* unixopen(filename, type)
       else if(k > kmax) j--;
     };
     nfname[j]='\0';
-    /*   printf(" reformatted  %s  ",nfname); /*  * /
+    //   printf(" reformatted  %s  ",nfname);
     fptr = (int) fopen(expand_file_name(nfname), type);
-    /*   printf(" --> %x\n",fptr);  /* * /
+    //   printf(" --> %x\n",fptr);
   };
   return(fptr);
 }
 */
 
 
+void
 unixcd(filename)
      char *filename;
 {
   chdir(expand_file_name(filename));
 }
  
+int
 unixfclose (ix)
 FILE* ix;
 
-{ fclose (ix); }
+{ return fclose (ix); }
 
+int
 external_system(command)
      char *command;
 {
@@ -276,6 +285,7 @@ external_system(command)
  
 /* Tag( external_exit )
  */
+int
 external_exit(status)
      int status;
 {
