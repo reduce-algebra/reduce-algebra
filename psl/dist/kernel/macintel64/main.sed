@@ -1,7 +1,8 @@
-s/main/_psl_main/g
+s/ main/ _psl_main/g
 s/\*jumphugo %rax/jmp  \*%rax/g
 s/mov \[\[/mov $\[\[/g
 s/cmp \[\[/cmp $\[\[/g
+s/cmp \$/cmpq \$/g
 s/,@/@/g
 s/lastbps/_lastbps/g
 s/heaplowerbound/_heaplowerbound/g
