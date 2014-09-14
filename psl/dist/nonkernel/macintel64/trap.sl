@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber*))
+(fluid '(errornumber* sigaddr*))
 
 (compiletime
  (progn
@@ -65,6 +65,10 @@
        % Return the the function definition for the signal handler.
        `((*entry ,function expr 0)
      (*lbl (label ,handler))
+     % rdx has address of ucontext structure
+     (*move (memory (reg rdx) 48) (reg rax))	% address of machine context
+     (*move (memory (reg rax) 144) (fluid sigaddr*))   % instruction pointer at fault
+     (*move (reg 2) (fluid ebxsave!*))		% save rbx (callee-saved)
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1)(fluid errornumber*))
      (lea   (label ,handler) (reg 2))
@@ -127,6 +131,20 @@
      % (*link build-trap-message expr 2)     % This leaves its result in reg
                                            % 1, so the new message is
      (push (reg 1))
+     (push (reg NIL))			   % r15 is called-saved
+     (*move 128 (reg NIL))
+     (*mkitem (reg NIL) id-tag)            % make sure (reg nil) contains nil
+     % if this is a terminal interrupt (errornumber* = 2) we check
+     % whether it occured within lisp code. If not, just return.
+     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*move (fluid sigaddr*) (reg 1))
+     (*link codeaddressp expr 1)
+     (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
+     (*move (fluid ebxsave!*) (reg 2))		% restore called-saved registers
+     (pop (reg NIL))
+     (pop (reg 1))
+     (ret)
+    in-lisp
      (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
      (pop (reg 2))
