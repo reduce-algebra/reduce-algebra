@@ -147,6 +147,7 @@
     in-lisp
      (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
+     (pop (reg 2))			% remove last frame from stack, contains (reg NIL)
      (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
