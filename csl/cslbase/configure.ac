@@ -87,7 +87,7 @@ AC_ARG_WITH(mingw64,
 AC_ARG_WITH(SDK,
   AC_HELP_STRING([--with-SDK], [Eg try --with-SDK=10.7. For CSL/MacOSX]),
   [],
-  [with_SDK="10.8"])
+  [with_SDK="10.9"])
 
 AC_ARG_WITH(gui,
   AC_HELP_STRING([--with-gui], [this option is ignored here!]),
@@ -1492,21 +1492,19 @@ then
 # 10.3  Panther  )
 # 10.4  Tiger    )
 # 10.5  Leopard  )
-#
-# 10.6  Snow Leopard   [Since my test machine runs Lion I will not
-#                      be (easily) able to test anything on Snow Leopard]
+# 10.6  Snow Leopard
 # 10.7  Lion
-# 10.8  Mountain Lion
-# 10.9  Mavericks
+# 10.8  Mountain Lion   This is the oldest version I will really worry about
+# 10.9  Mavericks       I will tend to use the SDK from this version
+# 10.10 Yosemite        My test machine runs this
 
-# Well now that 10.9 has been released I will always target
-# 10.7 and support for earlier versions is no longer guaranteed. I may
-# well feel obliged to dump 10.7 soon.
+# Well now that 10.10 has been (nearly been) released I will always target
+# 10.8 and support for earlier versions is no longer guaranteed.
   if test "x$with_wx" != "xno"
   then
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.7
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
   else
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.7
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
   fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"

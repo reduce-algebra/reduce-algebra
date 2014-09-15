@@ -116,7 +116,7 @@ AC_ARG_WITH(SDK,
    AC_HELP_STRING([--with-SDK],
                   [Select MacOSX SDK (eg --with-SDK=10.8) (CSL ONLY)]),
    [],
-   [with_SDK="10.8"])
+   [with_SDK="10.9"])
 
 AC_ARG_WITH(lto,
    AC_HELP_STRING([--with-lto],
@@ -917,12 +917,16 @@ then
 #     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
 # For wxWidgets I will ONLY support x86_64, and you should only at all
-# expect 10.6, 10.7 and 10.8 versions of the SDK to be useful.
+# expect versions of the SDK from 10.6 onwards to be at all to be useful.
+# I will tend to use the SDK from the versio of OSX one before where we
+# are today and set the minimum supported target one behind that. SO for now
+# that is using the Mavericks SDK and supporting Mountain Lion but not
+# Lion or earlier.
       MACARCH="--enable-macos_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
           --with-macosx-sdk=$SDK \
-          --with-macosx-version-min=10.7 \
+          --with-macosx-version-min=10.8 \
           $MACARCH "
       ;;
     *)

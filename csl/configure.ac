@@ -215,31 +215,15 @@ x86_64-w64-*)
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
     AC_LANG_CONFTEST(
       [AC_LANG_PROGRAM([], [])])
-    if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
+    if gcc -isysroot /Developer/SDKs/MacOSX10.9.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
     then
-      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.7])
-#     enable_dependency_tracking="no"
+      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.9])
     else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
+      if gcc -isysroot /Developer/SDKs/MacOSX10.8.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
       then
-        AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.6])
-#     enable_dependency_tracking="no"
-#--   else
-#--   if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-#--   then
-#--     AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
-#--     enable_dependency_tracking="no"
-#--   else
-#--     if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-#--     then
-#--       AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
-#--       enable_dependency_tracking="no"
-#--     else
-#--       AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
-#--       AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
-#--     fi
+        AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.8])
       else
-        AC_MSG_ERROR([Need MACOSX SDK version 10.6 or 10.7])
+        AC_MSG_ERROR([Need MACOSX SDK version 10.8 or 10.9])
       fi
     fi
   fi
@@ -493,31 +477,31 @@ then
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      AC_MSG_NOTICE([Checking for OSX10.7 framework])
+      AC_MSG_NOTICE([Checking for OSX10.9 framework])
       OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.9.sdk"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                       [[printf("\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.9.sdk"
          AC_MSG_NOTICE([MacOS10.6 SDK found])
-         sysroot="/Developer/SDKs/MacOSX10.7.sdk"],
+         sysroot="/Developer/SDKs/MacOSX10.9.sdk"],
         [CFLAGS="$OLDCFLAGS"
-         AC_MSG_NOTICE([MacOS10.7 SKD NOT found])])
+         AC_MSG_NOTICE([MacOS10.9 SKD NOT found])])
       if test "x$sysroot" = "x"
       then
-        AC_MSG_NOTICE([Checking for OSX10.6 framework])
-        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+        AC_MSG_NOTICE([Checking for OSX10.8 framework])
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                         [[printf("\n");]])],
-          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-           AC_MSG_NOTICE([MacOS10.6 SDK found])
-           sysroot="/Developer/SDKs/MacOSX10.6"],
+          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
+           AC_MSG_NOTICE([MacOS10.8 SDK found])
+           sysroot="/Developer/SDKs/MacOSX10.8"],
           [CFLAGS="$OLDCFLAGS"
-           AC_MSG_NOTICE([MacOS10.6 SKD NOT found])])
+           AC_MSG_NOTICE([MacOS10.8 SKD NOT found])])
       fi
       if test "x$sysroot" = "x"
       then
-        AC_MSG_ERROR([Need MACOSX SDK 10.6 or 10.7])
+        AC_MSG_ERROR([Need MACOSX SDK 10.8 or 10.9])
       fi
     fi
   fi
@@ -872,7 +856,7 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
@@ -896,4 +880,3 @@ AC_OUTPUT
 AC_MSG_NOTICE([Build environment seems OK])
 
 # end of "configure.ac"
-
