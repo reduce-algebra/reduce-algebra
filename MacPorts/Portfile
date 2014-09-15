@@ -23,7 +23,7 @@ long_description    REDUCE is an interactive program designed for general \
 homepage            http://reduce-algebra.sourceforge.net/
 
 fetch.type          svn
-svn.url             https://reduce-algebra.svn.sourceforge.net/svnroot/reduce-algebra/trunk
+svn.url             http://svn.code.sf.net/p/reduce-algebra/code/trunk
 svn.method          checkout
 worksrcdir          trunk
 
