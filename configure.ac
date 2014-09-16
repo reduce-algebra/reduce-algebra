@@ -112,29 +112,11 @@ AC_ARG_WITH(mingw64,
    [],
    [with_mingw64="default"])
 
-AC_ARG_WITH(SDK,
-   AC_HELP_STRING([--with-SDK],
-                  [Select MacOSX SDK (eg --with-SDK=10.8) (CSL ONLY)]),
-   [],
-   [with_SDK="10.9"])
-
 AC_ARG_WITH(lto,
    AC_HELP_STRING([--with-lto],
                   [Experiment with extreme optimisation in gcc (CSL only)]),
    [],
    [with_lto="no"])
-
-AC_ARG_WITH(m32,
-   AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even on 64-bit gcc]),
-   [],
-   [with_m32="no"])
-
-AC_ARG_WITH(m64,
-   AC_HELP_STRING([--with-m64],
-                  [Force 64-bit model even if 32-bit is default (CSL only)]),
-   [],
-   [with_m64="no"])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
@@ -364,11 +346,7 @@ if test "x$with_psl" != "xno"
 then
   if test "x$host" = "xi686-pc-cygwin"
   then
-# building PSL on Windows - need to decide whether to build for 32 or 64bit
-    if test "x$with_m32" = "xyes"
-    then 
-      build="i686-pc-windows"
-    elif test "x$with_m64" = "xyes" -o "x$wow64" = "xyes"
+    if test "x$wow64" = "xyes"
     then
       build="x86_64-pc-windows"
     else
@@ -896,36 +874,14 @@ then
       fi
       ;;
     *Darwin* | *darwin*)
-# Note I do not even try to build wxWidgets with an SDK older than 10.6
-# because that is the first one that provides reasonably full support for
-# 64-bit systems. So binaries that I build will not be suitable for anything
-# prior to Snow Leopard. I will now build JUST for x86_64 because there
-# are not liable to be Intel Macs that do not support 64-bit mode, and ppc
-# can now be viewed as obsolete.
-      oldSDKloc=/Developer/SDKs
-      newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
-      if test -e $newSDKloc/MacOSX$with_SDK.sdk
-      then
-        SDK=$newSDKloc/MacOSX$with_SDK.sdk
-      elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
-      then
-        SDK=$oldSDKloc/MacOSX$with_SDK.sdk
-      else
-        AC_MSG_ERROR([SDK $with_SDK not found])
-      fi
 # clang on MacOSX does not provide -mfpmath
 #     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
 # For wxWidgets I will ONLY support x86_64, and you should only at all
 # expect versions of the SDK from 10.6 onwards to be at all to be useful.
-# I will tend to use the SDK from the versio of OSX one before where we
-# are today and set the minimum supported target one behind that. SO for now
-# that is using the Mavericks SDK and supporting Mountain Lion but not
-# Lion or earlier.
       MACARCH="--enable-macos_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
-          --with-macosx-sdk=$SDK \
           --with-macosx-version-min=10.8 \
           $MACARCH "
       ;;
@@ -937,22 +893,6 @@ then
       extras="--with-xft --with-xim"
       ;;
   esac
-
-  if test "x$with_m32" != "xno"
-  then
-    CFLAGS="$CFLAGS -m32"
-    CXXFLAGS="$CXXFLAGS -m32"
-    LDFLAGS="$LDFLAGS -m32"
-    extras="$extras --x-libraries=/usr/X11R6/lib"
-  fi
-
-  if test "x$with_m64" != "xno"
-  then
-    CFLAGS="$CFLAGS -m64"
-    CXXFLAGS="$CXXFLAGS -m64"
-    LDFLAGS="$LDFLAGS -m64"
-    extras="$extras --x-libraries=/usr/X11R6/lib64"
-  fi
 
   if test "x$with_wx" != "xno"
   then

@@ -5,14 +5,6 @@
 #
 # Special flags that can be used here:
 #
-#   --with-m32        Force 32-bit compilation when host is 64-bit gcc
-#   --with-m64        Force 64-bit compilation even if default is 32-bit
-# Both --with-m32 and --with-m64 should be viewed as archaic, in that
-# building for a word-width that is not the main native one for the
-# build platform should be treated as cross compilation using "--host=xxx".
-# Various versions of gcc now seem to be withdrawing support form "-m32" and
-# "-m64"...
-#
 #   --with-lto        Try link-time optimisation with gcc. EXPERIMENTAL.
 #   --with-cygwin     Build native cygwin X11 based system, 
 #                     Please note cygwin licensing issues, which do not
@@ -83,11 +75,6 @@ AC_ARG_WITH(mingw64,
   AC_HELP_STRING([--with-mingw64], [this option is ignored here!]),
   [],
   [])
-
-AC_ARG_WITH(SDK,
-  AC_HELP_STRING([--with-SDK], [Eg try --with-SDK=10.7. For CSL/MacOSX]),
-  [],
-  [with_SDK="10.9"])
 
 AC_ARG_WITH(gui,
   AC_HELP_STRING([--with-gui], [this option is ignored here!]),
@@ -165,33 +152,6 @@ AC_ARG_WITH(lto,
                   [Force extreme optimisation with gcc]),
    [],
    [with_lto="no"])
-
-# The next line may be of use when building on a 64-bit system that uses
-# gcc. It forces "-m32" into CFLAGS etc.
-
-AC_ARG_WITH(m32,
-   AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even on 64-bit gcc (deprecated)]),
-   [],
-   [with_m32="no"])
-
-if test "x$with_m32" = "xyes"
-then
-  bits32="yes"
-fi
-
-# gcc only: Force "-m64" into CFLAGS etc.
-
-AC_ARG_WITH(m64,
-   AC_HELP_STRING([--with-m64],
-                  [Force 64-bit model even if 32-bit is default (deprecated)]),
-   [],
-   [with_m64="no"])
-
-if test "x$with_m64" = "xyes"
-then
-  bits64="yes"
-fi
 
 AC_ARG_WITH(fox,
   AC_HELP_STRING([--with-fox=DIR],
@@ -412,35 +372,6 @@ case $host in
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-# I need to make a provisional judgement about whether I will be supporting
-# fat binaries here so that if I am I can disable dependency tracking. The
-# mode of dependency tracking gets decided during the elaboration of
-# AC_PROG_CC, and the "proper" test for fat binary support can only happen
-# after I have found myself a C compiler. Since I KNOW I am on MacOSX here
-# I will make the test command-line simple and explicit, not using $CFLAGS
-# or any such.
-    archflags=""
-    AC_LANG_CONFTEST(
-      [AC_LANG_PROGRAM([], [])])
-    oldSDKloc=/Developer/SDKs
-    newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
-    if test -e $newSDKloc/MacOSX$with_SDK.sdk
-    then
-      SDK=$newSDKloc/MacOSX$with_SDK.sdk
-      AC_MSG_NOTICE([Use SDK=$SDK])
-    elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
-    then
-      SDK=$oldSDKloc/MacOSX$with_SDK.sdk
-      AC_MSG_NOTICE([Use SDK=$SDK])
-    else
-      AC_MSG_ERROR([SDK $with_SDK not found])
-    fi
-    if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch x86_64"
-    else
-      AC_MSG_ERROR([Failed to compile test code-fragment using SDK $SDK])
-    fi
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
   ;;
@@ -463,7 +394,7 @@ case $host in
 # be done.
   if test "x$with_gui" != "xno"
   then
-    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    if test "x$cross_compiling" != "xyes"
     then
       AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
     else
@@ -493,7 +424,7 @@ case $host in
 # To survive 64-bit Linux the next line seems needed.
   if test "x$with_gui" != "xno"
   then
-    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    if test "x$cross_compiling" != "xyes"
     then
       AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
     else
@@ -549,16 +480,6 @@ if test "x$distrib" != "xunknown"
 then
   foxdir=`echo $foxdir | sed -e s/linux-gnu/$distrib/`
   foxdir=`echo $foxdir | sed -e s/apple/$distrib/`
-fi
-
-if test "x$bits32" = "xyes"
-then
-  foxdir="$foxdir-m32"
-fi
-
-if test "x$bits64" = "xyes"
-then
-  foxdir="$foxdir-m64"
 fi
 
 # Debugging turned on?
@@ -683,56 +604,6 @@ then
      AC_MSG_NOTICE(--hash-style=both not available)])
 fi
 
-# $bits32 gets set to "yes" if I pass the "--with-m32" option. This is
-# intended for use when the build-machine is a 64-bit one but I want to
-# create a 32-bit compatible system. This is a fairly commonplace situation
-# on 64-bit Linux where gcc is a bi-architecture compiler, with the flag
-# "-m32" switching it to work for 32-bit targets. Trying to use this option
-# other than with gcc in the above situation will be ineffective.
-
-# On a Mac one should not need to use this because multi-arch binaries are
-# built by default.
-
-if test "x$bits32" = "xyes"
-then
-  AC_MSG_CHECKING([if -m32 option can be used])
-  if test "x$GCC" = "xyes"
-  then
-     OLDCFLAGS="$CFLAGS"
-     CFLAGS="$CFLAGS -m32"
-     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("\n");]])],
-       [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])
-        CXXFLAGS="$CXXFLAGS -m32"
-        LDFLAGS="$LDFLAGS -m32"],
-       [CFLAGS="$OLDCPPFLAGS"
-         AC_MSG_NOTICE([This version of gcc does not accept -m32])])
-  else
-    AC_MSG_NOTICE([--with-m32 specified but not using gcc])
-  fi
-fi
-
-# Similarly for $bits64
-
-if test "x$bits64" = "xyes"
-then
-  AC_MSG_CHECKING([if -m64 option can be used])
-  if test "x$GCC" = "xyes"
-  then
-    OLDCFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -m64"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("\n");]])],
-      [AC_MSG_NOTICE([Using -m64 to force 64-bit compilation])
-       CXXFLAGS="$CXXFLAGS -m64"
-       LDFLAGS="$LDFLAGS -m64"],
-      [CFLAGS="$OLDCPPFLAGS"
-        AC_MSG_NOTICE([This version of gcc does not accept -m64])])
-  else
-    AC_MSG_NOTICE([--with-m64 specified but not using gcc])
-  fi
-fi
-
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
 # I want the flag "-rdynamic" enabled (if possible) so that dynamic modules
@@ -833,24 +704,6 @@ then
   if test "x$framework_available" = "xyes"
   then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
-  fi
-
-  if test "x$GCC" = "xyes"
-  then
-    if test "x$macintosh_build" = "xyes"
-    then
-      sysroot=""
-      AC_MSG_NOTICE([Checking for MacOSX framework : $SDK])
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot $SDK"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot $SDK"
-         AC_MSG_NOTICE([MacOS SDK found as $SDK])
-         sysroot="$SDK"],
-        [CFLAGS="$OLDCFLAGS"
-         AC_MSG_ERROR([MacOS SDK NOT found])])
-    fi
   fi
 fi
 
@@ -1496,9 +1349,9 @@ then
 # 10.5  Leopard  )
 # 10.6  Snow Leopard
 # 10.7  Lion
-# 10.8  Mountain Lion   This is the oldest version I will really worry about
-# 10.9  Mavericks       I will tend to use the SDK from this version
-# 10.10 Yosemite        My test machine runs this
+# 10.8  Mountain Lion   This is the oldest version I will worry about.
+# 10.9  Mavericks       Really needs to be supported still.
+# 10.10 Yosemite        My test machine runs this.
 
 # Well now that 10.10 has been (nearly been) released I will always target
 # 10.8 and support for earlier versions is no longer guaranteed.

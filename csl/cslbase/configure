@@ -792,7 +792,6 @@ enable_silent_rules
 with_csl
 with_psl
 with_mingw64
-with_SDK
 with_gui
 with_build
 with_pslbuild
@@ -800,8 +799,6 @@ with_cygbuild
 with_cygbuild64
 with_crlibm
 with_lto
-with_m32
-with_m64
 with_fox
 with_wx
 with_cygwin
@@ -1473,7 +1470,6 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system. Do not use here!
   --with-mingw64          this option is ignored here!
-  --with-SDK              Eg try --with-SDK=10.7. For CSL/MacOSX
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
   --with-pslbuild         used if I wish to call the PSL version
@@ -1481,9 +1477,6 @@ Optional Packages:
   --with-cygbuild64       used if I wish to call the 64-bit cygwin version
   --with-crlibm           Can be used to disable use of crlibm
   --with-lto              Force extreme optimisation with gcc
-  --with-m32              Force 32-bit model even on 64-bit gcc (deprecated)
-  --with-m64              Force 64-bit model even if 32-bit is default
-                          (deprecated)
   --with-fox=DIR          FOX installation location
   --with-wx               enable use of wxWidgets
   --with-cygwin           Force use of raw cywgin (note Cygwin license)
@@ -3354,15 +3347,6 @@ fi
 
 
 
-# Check whether --with-SDK was given.
-if test "${with_SDK+set}" = set; then :
-  withval=$with_SDK;
-else
-  with_SDK="10.9"
-fi
-
-
-
 # Check whether --with-gui was given.
 if test "${with_gui+set}" = set; then :
   withval=$with_gui;
@@ -3561,39 +3545,6 @@ else
   with_lto="no"
 fi
 
-
-# The next line may be of use when building on a 64-bit system that uses
-# gcc. It forces "-m32" into CFLAGS etc.
-
-
-# Check whether --with-m32 was given.
-if test "${with_m32+set}" = set; then :
-  withval=$with_m32;
-else
-  with_m32="no"
-fi
-
-
-if test "x$with_m32" = "xyes"
-then
-  bits32="yes"
-fi
-
-# gcc only: Force "-m64" into CFLAGS etc.
-
-
-# Check whether --with-m64 was given.
-if test "${with_m64+set}" = set; then :
-  withval=$with_m64;
-else
-  with_m64="no"
-fi
-
-
-if test "x$with_m64" = "xyes"
-then
-  bits64="yes"
-fi
 
 
 # Check whether --with-fox was given.
@@ -4395,46 +4346,6 @@ $as_echo "#define UNIX 1" >>confdefs.h
 
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-# I need to make a provisional judgement about whether I will be supporting
-# fat binaries here so that if I am I can disable dependency tracking. The
-# mode of dependency tracking gets decided during the elaboration of
-# AC_PROG_CC, and the "proper" test for fat binary support can only happen
-# after I have found myself a C compiler. Since I KNOW I am on MacOSX here
-# I will make the test command-line simple and explicit, not using $CFLAGS
-# or any such.
-    archflags=""
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-    oldSDKloc=/Developer/SDKs
-    newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
-    if test -e $newSDKloc/MacOSX$with_SDK.sdk
-    then
-      SDK=$newSDKloc/MacOSX$with_SDK.sdk
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Use SDK=$SDK" >&5
-$as_echo "$as_me: Use SDK=$SDK" >&6;}
-    elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
-    then
-      SDK=$oldSDKloc/MacOSX$with_SDK.sdk
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Use SDK=$SDK" >&5
-$as_echo "$as_me: Use SDK=$SDK" >&6;}
-    else
-      as_fn_error $? "SDK $with_SDK not found" "$LINENO" 5
-    fi
-    if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch x86_64"
-    else
-      as_fn_error $? "Failed to compile test code-fragment using SDK $SDK" "$LINENO" 5
-    fi
   fi
   for ac_prog in /usr/bin/Rez /Developer/tools/Rez
 do
@@ -4502,7 +4413,7 @@ $as_echo "#define UNIX 1" >>confdefs.h
 # be done.
   if test "x$with_gui" != "xno"
   then
-    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    if test "x$cross_compiling" != "xyes"
     then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/X11R6/lib64" >&5
 $as_echo_n "checking for /usr/X11R6/lib64... " >&6; }
@@ -4556,7 +4467,7 @@ $as_echo "#define UNIX 1" >>confdefs.h
 # To survive 64-bit Linux the next line seems needed.
   if test "x$with_gui" != "xno"
   then
-    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    if test "x$cross_compiling" != "xyes"
     then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/X11R6/lib64" >&5
 $as_echo_n "checking for /usr/X11R6/lib64... " >&6; }
@@ -4847,16 +4758,6 @@ if test "x$distrib" != "xunknown"
 then
   foxdir=`echo $foxdir | sed -e s/linux-gnu/$distrib/`
   foxdir=`echo $foxdir | sed -e s/apple/$distrib/`
-fi
-
-if test "x$bits32" = "xyes"
-then
-  foxdir="$foxdir-m32"
-fi
-
-if test "x$bits64" = "xyes"
-then
-  foxdir="$foxdir-m64"
 fi
 
 # Debugging turned on?
@@ -8022,92 +7923,6 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 
-# $bits32 gets set to "yes" if I pass the "--with-m32" option. This is
-# intended for use when the build-machine is a 64-bit one but I want to
-# create a 32-bit compatible system. This is a fairly commonplace situation
-# on 64-bit Linux where gcc is a bi-architecture compiler, with the flag
-# "-m32" switching it to work for 32-bit targets. Trying to use this option
-# other than with gcc in the above situation will be ineffective.
-
-# On a Mac one should not need to use this because multi-arch binaries are
-# built by default.
-
-if test "x$bits32" = "xyes"
-then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if -m32 option can be used" >&5
-$as_echo_n "checking if -m32 option can be used... " >&6; }
-  if test "x$GCC" = "xyes"
-  then
-     OLDCFLAGS="$CFLAGS"
-     CFLAGS="$CFLAGS -m32"
-     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Using -m32 to force 32-bit compilation" >&5
-$as_echo "$as_me: Using -m32 to force 32-bit compilation" >&6;}
-        CXXFLAGS="$CXXFLAGS -m32"
-        LDFLAGS="$LDFLAGS -m32"
-else
-  CFLAGS="$OLDCPPFLAGS"
-         { $as_echo "$as_me:${as_lineno-$LINENO}: This version of gcc does not accept -m32" >&5
-$as_echo "$as_me: This version of gcc does not accept -m32" >&6;}
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: --with-m32 specified but not using gcc" >&5
-$as_echo "$as_me: --with-m32 specified but not using gcc" >&6;}
-  fi
-fi
-
-# Similarly for $bits64
-
-if test "x$bits64" = "xyes"
-then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if -m64 option can be used" >&5
-$as_echo_n "checking if -m64 option can be used... " >&6; }
-  if test "x$GCC" = "xyes"
-  then
-    OLDCFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -m64"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Using -m64 to force 64-bit compilation" >&5
-$as_echo "$as_me: Using -m64 to force 64-bit compilation" >&6;}
-       CXXFLAGS="$CXXFLAGS -m64"
-       LDFLAGS="$LDFLAGS -m64"
-else
-  CFLAGS="$OLDCPPFLAGS"
-        { $as_echo "$as_me:${as_lineno-$LINENO}: This version of gcc does not accept -m64" >&5
-$as_echo "$as_me: This version of gcc does not accept -m64" >&6;}
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: --with-m64 specified but not using gcc" >&5
-$as_echo "$as_me: --with-m64 specified but not using gcc" >&6;}
-  fi
-fi
-
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
 # I want the flag "-rdynamic" enabled (if possible) so that dynamic modules
@@ -8257,40 +8072,6 @@ $as_echo "$as_me: framework=$framework_available" >&6;}
 
 $as_echo "#define MAC_FRAMEWORK 1" >>confdefs.h
 
-  fi
-
-  if test "x$GCC" = "xyes"
-  then
-    if test "x$macintosh_build" = "xyes"
-    then
-      sysroot=""
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for MacOSX framework : $SDK" >&5
-$as_echo "$as_me: Checking for MacOSX framework : $SDK" >&6;}
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot $SDK"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-printf("\n");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  CXXFLAGS="$CXXFLAGS -isysroot $SDK"
-         { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS SDK found as $SDK" >&5
-$as_echo "$as_me: MacOS SDK found as $SDK" >&6;}
-         sysroot="$SDK"
-else
-  CFLAGS="$OLDCFLAGS"
-         as_fn_error $? "MacOS SDK NOT found" "$LINENO" 5
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    fi
   fi
 fi
 
@@ -11741,9 +11522,9 @@ then
 # 10.5  Leopard  )
 # 10.6  Snow Leopard
 # 10.7  Lion
-# 10.8  Mountain Lion   This is the oldest version I will really worry about
-# 10.9  Mavericks       I will tend to use the SDK from this version
-# 10.10 Yosemite        My test machine runs this
+# 10.8  Mountain Lion   This is the oldest version I will worry about.
+# 10.9  Mavericks       Really needs to be supported still.
+# 10.10 Yosemite        My test machine runs this.
 
 # Well now that 10.10 has been (nearly been) released I will always target
 # 10.8 and support for earlier versions is no longer guaranteed.

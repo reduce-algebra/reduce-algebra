@@ -8,8 +8,6 @@
 # aggregated with same. 
 
 #
-#   --with-m32        Force 32-bit compilation when host is 64-bit gcc
-#   --with-m64        Force 64-bit compilation even if default is 32-bit
 #   --with-cygwin     Build native cygwin X11 based system.
 #   --enable-debug    Switch on debugging.
 #
@@ -48,19 +46,6 @@ AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
 AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
 
 foxdir="$host"
-
-# The next line may be of use when building on a 64-bit system that uses
-# gcc. It forces "-m32" into CFLAGS etc.
-
-AC_ARG_WITH(m32,
-   [  --with-m32              Force 32-bit model even on 64-bit gcc],
-   bits32="yes")
-
-# gcc only: Force "-m64" into CFLAGS etc.
-
-AC_ARG_WITH(m64,
-   [  --with-m64              Force 64-bit model even if 32-bit is default],
-   bits64="yes")
 
 
 AC_ARG_WITH(csl,
@@ -107,11 +92,6 @@ AC_ARG_WITH(crlibm,
   AC_HELP_STRING([--with-crlibm], [Used internally]),
   [],
   [])
-
-AC_ARG_WITH(SDK,
-  AC_HELP_STRING([--with-SDK], [Eg --with-sdk=10.7]),
-  [],
-  [with_SDK="10.8"])
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
@@ -238,26 +218,6 @@ x86_64-w64-*)
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-    archflags=""
-    AC_LANG_CONFTEST(
-      [AC_LANG_PROGRAM([], [])])
-    oldSDKloc=/Developer/SDKs
-    newSDKloc=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
-    if test -e $newSDKloc/MacOSX$with_SDK.sdk
-    then
-      SDK=$newSDKloc/MacOSX$with_SDK.sdk
-    elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
-    then
-      SDK=$oldSDKloc/MacOSX$with_SDK.sdk
-    else
-      AC_MSG_ERROR([SDK $with_SDK not found])
-    fi
-    if gcc -isysroot $SDK -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
-    then
-      archflags="-arch x86_64"
-    else
-      AC_MSG_ERROR([Failed to compile test code-fragment using SDK $with_SDK])
-    fi
   fi
   ;;
 *-freebsd*)
@@ -277,7 +237,7 @@ x86_64-w64-*)
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$cross_compiling" != "xyes"
   then
     AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
   else
@@ -303,7 +263,7 @@ x86_64-w64-*)
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$cross_compiling" != "xyes"
   then
     AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
   else
@@ -354,16 +314,6 @@ if test "x$distrib" != "xunknown"
 then
   foxdir=`echo $foxdir | sed -e s/linux-gnu/$distrib/`
   foxdir=`echo $foxdir | sed -e s/apple/$distrib/`
-fi
-
-if test "x$bits32" = "xyes"
-then
-  foxdir="$foxdir-m32"
-fi
-
-if test "x$bits64" = "xyes"
-then
-  foxdir="$foxdir-m64"
 fi
 
 # Debugging turned on?
@@ -425,53 +375,6 @@ then
      AC_MSG_NOTICE(--hash-style=both not available)])
 fi
 
-# $bits32 gets set to "yes" if I pass the "--with-m32" option. This is
-# intended for use when the build-machine is a 64-bit one but I want to
-# create a 32-bit compatible system. This is a fairly commonplace situation
-# on 64-bit Linux where gcc is a bi-architecture compiler, with the flag
-# "-m32" switching it to work for 32-bit targets. Trying to use this option
-# other than with gcc in the above situation will be ineffective.
-
-if test "x$bits32" = "xyes"
-then
-  AC_MSG_CHECKING([if -m32 option can be used])
-  if test "x$GCC" = "xyes"
-  then
-     OLDCFLAGS="$CFLAGS"
-     CFLAGS="$CFLAGS -m32"
-     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("Hello\n");]])],
-       [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])
-        CXXFLAGS="$CXXFLAGS -m32"
-        LDFLAGS="$LDFLAGS -m32"],
-       [CFLAGS="$OLDCPPFLAGS"
-         AC_MSG_NOTICE([This version of gcc does not accept -m32])])
-  else
-    AC_MSG_NOTICE([--with-m32 specified but not using gcc])
-  fi
-fi
-
-# Similarly for $bits64
-
-if test "x$bits64" = "xyes"
-then
-  AC_MSG_CHECKING([if -m64 option can be used])
-  if test "x$GCC" = "xyes"
-  then
-    OLDCFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -m64"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                       [[printf("Hello\n");]])],
-      [AC_MSG_NOTICE([Using -m64 to force 64-bit compilation])
-       CXXFLAGS="$CXXFLAGS -m64"
-       LDFLAGS="$LDFLAGS -m64"],
-      [CFLAGS="$OLDCPPFLAGS"
-        AC_MSG_NOTICE([This version of gcc does not accept -m64])])
-  else
-    AC_MSG_NOTICE([--with-m64 specified but not using gcc])
-  fi
-fi
-
 if test "x$darwin_build" = "xyes"
 then
 # I COULD be trying to build on raw Darwin without MacOS present, and in that
@@ -493,28 +396,6 @@ then
   if test "x$framework_available" = "xyes"
   then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
-  fi
-
-  if test "x$GCC" = "xyes"
-  then
-    if test "x$macintosh_build" = "xyes"
-    then
-      sysroot=""
-      AC_MSG_NOTICE([Checking for OSX framework])
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot $SDK"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot $SDK"
-         AC_MSG_NOTICE([MacOSX SDK found])
-         sysroot="$SDK"],
-        [CFLAGS="$OLDCFLAGS"
-         AC_MSG_NOTICE([MacOS SKD NOT found])])
-      if test "x$sysroot" = "x"
-      then
-        AC_MSG_ERROR([Need MacOSX SDK])
-      fi
-    fi
   fi
 fi
 
@@ -901,7 +782,7 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.7
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi

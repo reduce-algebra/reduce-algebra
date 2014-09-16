@@ -84,29 +84,6 @@ fi
 # What host am I on?
 AC_CANONICAL_HOST()
 
-AC_ARG_WITH(m32,
-   AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even on 64-bit gcc]),
-   [],
-   [with_m32="no"])
-
-if test "x$with_m32" = "xyes"
-then
-  bits32="yes"
-fi
-
-AC_ARG_WITH(m64,
-   AC_HELP_STRING([--with-m64],
-                  [Force 64-bit model even if 32-bit is default]),
-   [],
-   [with_m64="no"])
-
-if test "x$with_m64" = "xyes"
-then
-  bits64="yes"
-fi
-
-
 case $host in
 x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
@@ -213,19 +190,6 @@ x86_64-w64-*)
     macintosh_build="yes"
     darwin_build="yes"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-    AC_LANG_CONFTEST(
-      [AC_LANG_PROGRAM([], [])])
-    if gcc -isysroot /Developer/SDKs/MacOSX10.9.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
-    then
-      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.9])
-    else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.8.sdk -arch ix86_64 conftest.c -o conftest > /dev/null 2>&1
-      then
-        AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.8])
-      else
-        AC_MSG_ERROR([Need MACOSX SDK version 10.8 or 10.9])
-      fi
-    fi
   fi
   ;;
 *-freebsd*)
@@ -242,7 +206,7 @@ x86_64-w64-*)
      x86="yes"
      ;;
   esac
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$cross_compiling" != "xyes"
   then
     AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
   else
@@ -266,7 +230,7 @@ x86_64-w64-*)
      x86="yes"
      ;;
   esac
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$cross_compiling" != "xyes"
   then
     AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
   else
@@ -377,44 +341,6 @@ then
      AC_MSG_NOTICE(--hash-style=both not available)])
 fi
 
-if test "x$bits32" = "xyes"
-then
-  AC_MSG_CHECKING([if -m32 option can be used])
-  if test "x$GCC" = "xyes"
-  then
-     OLDCFLAGS="$CFLAGS"
-     CFLAGS="$CFLAGS -m32"
-     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("\n");]])],
-       [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])
-        CXXFLAGS="$CXXFLAGS -m32"
-        LDFLAGS="$LDFLAGS -m32"],
-       [CFLAGS="$OLDCPPFLAGS"
-         AC_MSG_NOTICE([This version of gcc does not accept -m32])])
-  else
-    AC_MSG_NOTICE([--with-m32 specified but not using gcc])
-  fi
-fi
-
-if test "x$bits64" = "xyes"
-then
-  AC_MSG_CHECKING([if -m64 option can be used])
-  if test "x$GCC" = "xyes"
-  then
-    OLDCFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -m64"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                       [[printf("\n");]])],
-      [AC_MSG_NOTICE([Using -m64 to force 64-bit compilation])
-       CXXFLAGS="$CXXFLAGS -m64"
-       LDFLAGS="$LDFLAGS -m64"],
-      [CFLAGS="$OLDCPPFLAGS"
-        AC_MSG_NOTICE([This version of gcc does not accept -m64])])
-  else
-    AC_MSG_NOTICE([--with-m64 specified but not using gcc])
-  fi
-fi
-
 if test "x$windows_build" = "xyes"
 then
   if test "x$WINDRES" = "x"
@@ -469,41 +395,6 @@ then
   if test "x$framework_available" = "xyes"
   then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
-  fi
-
-  AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
-  if test "x$GCC" = "xyes"
-  then
-    if test "x$macintosh_build" = "xyes"
-    then
-      sysroot=""
-      AC_MSG_NOTICE([Checking for OSX10.9 framework])
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.9.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.9.sdk"
-         AC_MSG_NOTICE([MacOS10.6 SDK found])
-         sysroot="/Developer/SDKs/MacOSX10.9.sdk"],
-        [CFLAGS="$OLDCFLAGS"
-         AC_MSG_NOTICE([MacOS10.9 SKD NOT found])])
-      if test "x$sysroot" = "x"
-      then
-        AC_MSG_NOTICE([Checking for OSX10.8 framework])
-        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("\n");]])],
-          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.8.sdk"
-           AC_MSG_NOTICE([MacOS10.8 SDK found])
-           sysroot="/Developer/SDKs/MacOSX10.8"],
-          [CFLAGS="$OLDCFLAGS"
-           AC_MSG_NOTICE([MacOS10.8 SKD NOT found])])
-      fi
-      if test "x$sysroot" = "x"
-      then
-        AC_MSG_ERROR([Need MACOSX SDK 10.8 or 10.9])
-      fi
-    fi
   fi
 fi
 

@@ -1320,7 +1320,7 @@ else !mac_framework
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
 	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
 	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
-	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
+	$(CP) $(srcdir)/cm-unicode/README.cm-unicode reduce.$(fontsdir)/README.cm-unicode
 if windows
 # With Windows I will want a .ttf version for any time I am using gdiplus.
 	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)

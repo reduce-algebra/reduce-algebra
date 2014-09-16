@@ -4482,7 +4482,7 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README.cm-unicode reduce.$(fontsdir)/README.cm-unicode
 # With Windows I will want a .ttf version for any time I am using gdiplus.
 @mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
 @mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/l*.ttf reduce.$(fontsdir)
