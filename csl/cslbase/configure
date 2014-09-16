@@ -4419,9 +4419,13 @@ _ACEOF
     if test -e $newSDKloc/MacOSX$with_SDK.sdk
     then
       SDK=$newSDKloc/MacOSX$with_SDK.sdk
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Use SDK=$SDK" >&5
+$as_echo "$as_me: Use SDK=$SDK" >&6;}
     elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
     then
       SDK=$oldSDKloc/MacOSX$with_SDK.sdk
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Use SDK=$SDK" >&5
+$as_echo "$as_me: Use SDK=$SDK" >&6;}
     else
       as_fn_error $? "SDK $with_SDK not found" "$LINENO" 5
     fi
@@ -4429,7 +4433,7 @@ _ACEOF
     then
       archflags="-arch x86_64"
     else
-      as_fn_error $? "Failed to compile test code-fragment using SDK $with_SDK" "$LINENO" 5
+      as_fn_error $? "Failed to compile test code-fragment using SDK $SDK" "$LINENO" 5
     fi
   fi
   for ac_prog in /usr/bin/Rez /Developer/tools/Rez
@@ -8260,8 +8264,8 @@ $as_echo "#define MAC_FRAMEWORK 1" >>confdefs.h
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for MacOSX framework" >&5
-$as_echo "$as_me: Checking for MacOSX framework" >&6;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for MacOSX framework : $SDK" >&5
+$as_echo "$as_me: Checking for MacOSX framework : $SDK" >&6;}
       OLDCFLAGS="$CFLAGS"
       CFLAGS="$CFLAGS -isysroot $SDK"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -8282,7 +8286,7 @@ $as_echo "$as_me: MacOS SDK found as $SDK" >&6;}
          sysroot="$SDK"
 else
   CFLAGS="$OLDCFLAGS"
-         as_fn_error $? "MacOS SKD NOT found" "$LINENO" 5
+         as_fn_error $? "MacOS SDK NOT found" "$LINENO" 5
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext

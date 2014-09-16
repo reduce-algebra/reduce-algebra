@@ -427,9 +427,11 @@ case $host in
     if test -e $newSDKloc/MacOSX$with_SDK.sdk
     then
       SDK=$newSDKloc/MacOSX$with_SDK.sdk
+      AC_MSG_NOTICE([Use SDK=$SDK])
     elif test -e $oldSDKloc/MacOSX$with_SDK.sdk
     then
       SDK=$oldSDKloc/MacOSX$with_SDK.sdk
+      AC_MSG_NOTICE([Use SDK=$SDK])
     else
       AC_MSG_ERROR([SDK $with_SDK not found])
     fi
@@ -437,7 +439,7 @@ case $host in
     then
       archflags="-arch x86_64"
     else
-      AC_MSG_ERROR([Failed to compile test code-fragment using SDK $with_SDK])
+      AC_MSG_ERROR([Failed to compile test code-fragment using SDK $SDK])
     fi
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
@@ -838,7 +840,7 @@ then
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      AC_MSG_NOTICE([Checking for MacOSX framework])
+      AC_MSG_NOTICE([Checking for MacOSX framework : $SDK])
       OLDCFLAGS="$CFLAGS"
       CFLAGS="$CFLAGS -isysroot $SDK"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
@@ -847,7 +849,7 @@ then
          AC_MSG_NOTICE([MacOS SDK found as $SDK])
          sysroot="$SDK"],
         [CFLAGS="$OLDCFLAGS"
-         AC_MSG_ERROR([MacOS SKD NOT found])])
+         AC_MSG_ERROR([MacOS SDK NOT found])])
     fi
   fi
 fi

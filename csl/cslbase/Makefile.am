@@ -1675,9 +1675,6 @@ if canrun
 
 if windows
 
-# On windows I must avoid -mno-cygwin here if only because that is an option
-# that no longer exists!
-
 objtype$(EXEEXT):	$(srcdir)/objtype.c
 	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
 
@@ -1770,6 +1767,13 @@ if canrun
 else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc). I do not put
+# any careful dependencies here to enforce that. If you are running on
+# a 32-bit Windows and trying to cross-build the 64-bit Windows system it
+# can all work but I will insist that you build the 32-bit version first and
+# leave it to YOU to check that this happens late enough to behave well and
+# that the image gets re-copied when that is needed.
 	-$(RM) -rf reduce.img
 	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
@@ -1795,6 +1799,8 @@ if canrun
 else !canrun
 	echo Can not build reduce.img on this platform
 	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 	-$(RM) -rf reduce.img
 	$(CP) -r $(gensrc)/reduce.img .
 endif !canrun
@@ -1876,6 +1882,8 @@ if canrun
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
 	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 	-$(RM) -rf bootstrapreduce.img
 	$(CP) $(gensrc)/bootstrapreduce.img .
 endif !canrun
@@ -2142,6 +2150,8 @@ if canrun
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 	-$(RM) -rf csl.img
 	$(CP) -r $(gensrc)/csl.img .
 endif !canrun
@@ -2158,6 +2168,8 @@ if canrun
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 	-$(RM) -rf csl.img
 	$(CP) -r $(gensrc)/csl.img .
 endif !canrun

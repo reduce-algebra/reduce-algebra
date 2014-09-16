@@ -4708,9 +4708,6 @@ default:	reduce$(EXEEXT) reduce.img
 dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(dyndep)
 	$(COMPILE_DLL) $(srcdir)/dynmodule.c $(dyndep) $(DEST)dynmodule.$(DLLEXT)
 
-# On windows I must avoid -mno-cygwin here if only because that is an option
-# that no longer exists!
-
 @canrun_TRUE@@windows_TRUE@objtype$(EXEEXT):	$(srcdir)/objtype.c
 @canrun_TRUE@@windows_TRUE@	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
 
@@ -4794,6 +4791,13 @@ reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_FALSE@	echo Can not build reduce.img on this platform.
 @canrun_FALSE@	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc). I do not put
+# any careful dependencies here to enforce that. If you are running on
+# a 32-bit Windows and trying to cross-build the 64-bit Windows system it
+# can all work but I will insist that you build the 32-bit version first and
+# leave it to YOU to check that this happens late enough to behave well and
+# that the image gets re-copied when that is needed.
 @canrun_FALSE@	-$(RM) -rf reduce.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/reduce.img .
 
@@ -4816,6 +4820,8 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_FALSE@	echo Can not build reduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 @canrun_FALSE@	-$(RM) -rf reduce.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/reduce.img .
 
@@ -4888,6 +4894,8 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_FALSE@	echo Can not build bootstrapreduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 @canrun_FALSE@	-$(RM) -rf bootstrapreduce.img
 @canrun_FALSE@	$(CP) $(gensrc)/bootstrapreduce.img .
 
@@ -5110,6 +5118,8 @@ csl.img:	csl$(COM) $(csldep)
 @canrun_TRUE@	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 @canrun_FALSE@	-$(RM) -rf csl.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/csl.img .
 
@@ -5122,6 +5132,8 @@ csl.dir:	csl$(COM) $(csldep)
 @canrun_TRUE@		-j csl.dep
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
+# Note that the following will only behave properly if some version where the
+# image file CAN be made has already put it in $(gensrc).
 @canrun_FALSE@	-$(RM) -rf csl.img
 @canrun_FALSE@	$(CP) -r $(gensrc)/csl.img .
 
