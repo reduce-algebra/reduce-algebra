@@ -1,0 +1,5 @@
+
+ mv ~/main.s .
+  mv ~/dmain.s .
+  sed -f dmain.sed dmain.s > dmain.tmp
+  mv dmain.tmp dmain.s

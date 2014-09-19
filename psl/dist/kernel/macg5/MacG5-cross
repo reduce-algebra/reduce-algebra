@@ -1,0 +1,3 @@
+#
+$pxk/bpsl -f $pxk/MacG5-cross.img -td 8000000
+
