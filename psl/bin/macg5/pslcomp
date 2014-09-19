@@ -1,0 +1,10 @@
+#! /bin/csh
+
+if ( "$1" == "" ) then
+   set MEMORY=800
+  else
+   set MEMORY=$1
+ endif
+
+$pxk/bpsl -td $MEMORY -f $psys/pslcomp.img
+

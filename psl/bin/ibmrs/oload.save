@@ -1,0 +1,227 @@
+#! /bin/csh -f
+#echo "Greetings skiers, this has been hacked for Sun 3's by JDG, beware\!"
+#echo "[modified for SunOS 4.0 by IJS.]"
+# ---------------------------------------------------------------------------
+#
+# oload - A .o loader hack for sun386i PSL
+#
+# Uses "ld -A" to prepare C object code and libraries to be loaded into the 
+# PSL.  Code grows up from the bottom of BPS and data grows down from the top,
+# so that the pure, shareable code can be made part of the text segment when
+# PSL is saved and restarted.
+#
+# --------------------------------
+# Arguments -
+#
+# First argument is the name of the file to get the base symbol table from.
+# (See -A flag to ld.)
+#
+# Next two args are the origin address for the text to be loaded and
+# top address for the data segments.  (BPS in the PSL grows together from
+# the ends.)  Addresses are given in decimal.
+#
+# Remaining args are a list of .o files, .a files, and loader flags 
+# starting with "-".
+#
+# --------------------------------
+# Output files -
+# 
+# .oload.size.sl, containing symbol definitions to tell the running PSL where
+# to load the results.  If the text and data sizes are both zero, the load
+# has failed.
+#
+# .oload.out, containing the relocated absolute code to be loaded into the
+# running PSL along with the PSL symbol table augmented by the new symbols.
+# (This is the file to get the symbol table from when unexec'ing the PSL
+# with new stuff loaded in.)
+#
+# .oload.syms.sl, containing symbol definitions to tell the PSL compiler the
+# names and locations of the entry points to the loaded functions.  The symbol
+# names will be case insensitive when referenced within PSL, and have the
+# prefix underscore added by C left on.
+#
+#  1988 modified for SUN 4 by yamamoto and burdorf
+# ---------------------------------------------------------------------------
+# alias rm echo -- to save the temp files for debugging
+#
+if ( $#argv < 4 ) then
+    echo 'usage: oload symtab-file text-start-addr data-end-addr .o-.a-ldr-arg[s]'
+    exit
+endif
+
+## Clear sizes so failure will be visible.
+cat > .oload.size.sl << 'EOF'
+(SETQ OLOAD_TEXT_SIZE 0)
+(SETQ OLOAD_DATA_SEG_SIZE 0)
+'EOF'
+
+## Check that the base file exists and is readable.
+set symtab = $1
+if ( ! -e $symtab ) then
+    echo "Base symbol table file $symtab does not exist."
+    exit
+endif
+if ( ! -r $symtab ) then
+    echo "Base symbol table file $symtab is not readable."
+    exit
+endif
+
+set symtab = $1				# Specified symbol table.
+if ( "$symtab" == ".oload.out" ) then	# Preserve old symtab.
+    cp .oload.out .oload.old
+endif
+echo "getting symtab from $symtab"
+
+## Get low and high addressess.
+@ textorg = 4 * $2
+@ endaddr = 4 * $3
+echo "text origin = $textorg, end address = $endaddr"
+
+## Collect the rest of the args for ld, extracting symbol table info.
+if ( -e .oload.syms ) rm .oload.syms
+touch .oload.syms
+set ldargs = ""
+foreach arg ( $argv[4-] )
+    set ftype = $arg:e
+    switch ( $ftype )		# Handling based on extension of file args.
+	case o:	# Collect global symbol names in file .oload.syms
+	case a:	# Also collect first entries of .o's in .a to force load.
+	if ( ! -e $arg ) then
+	    echo "oload: file $arg not found."
+	    continue
+	else
+	    nm -gnB $arg | \
+		awk -F$ftype \
+		    'BEGIN { ftype = FS; FS = " " } # File type from arg. \
+		     /:$/{ fname = $1; next }	    # Remember filenames. \
+		     /[0-9a-f]* C/{ print; next }   # Extract common defns. \
+		     /[0-9a-f]* [TDB]/{ print;      # Extract global defns. \
+			if ( fname && ftype == "a" )# Stash first sym of lib.\
+			    { print "-u " $3 > ".oload.-u"; fname = "" }; \
+		 	next }' \
+		>> .oload.syms	# Concatenate to previous symbol file.
+	endif
+	if ( -e .oload.-u ) then
+	    set uargs = `cat .oload.-u`
+	    set ldargs = ($ldargs $uargs)
+	    rm .oload.-u
+	endif		# continue into default case...
+
+	default:
+	    set ldargs = ($ldargs $arg)
+    endsw
+end
+
+## Build a blank piece of text to pad up from the next lower text page addr.
+@ pageaddr = ( $textorg & -8192 )              # Down to page boundary.
+set hexpageaddr = `echo $pageaddr | awk '{printf "%x\n", $1}' `
+@ textgap = $textorg - $pageaddr
+echo "page addr = $pageaddr($hexpageaddr), gap to start of loaded text = $textgap"
+cat >.oload.tgap.s << EOF
+  .file 2 ".oload.tgap.s"
+  .text
+textgap:
+  .byte 0 : $textgap
+endtextgap:
+EOF
+as -G 0 .oload.tgap.s -o .oload.tgap.o
+
+## Pass 1 load, so the data gap size can be calculated.
+set ldcmd = ( ld -dc -A $symtab  -Bstatic -z -T $hexpageaddr .oload.tgap.o $ldargs -o .oload.out1 )
+echo $ldcmd | fold -78
+$ldcmd
+set loadstat = $status
+
+if ( $status ) then
+    echo "oload: status $status returned from load, aborted."
+    exit
+endif
+
+## Sizes from output file.
+####( dd if=.oload.out1 ibs=16 count=1 | od -D +4 | \
+####	sed -n '/^0000004/s/0000004 //p' > .oload.tmp ) >& /dev/null
+size -B .oload.out1 | awk ' /^text/ { next } \
+				{print $1 , $2 , $3}' > .oload.tmp
+set sizes = ( `cat .oload.tmp` )
+@ textsize = $sizes[1] - $textgap	# Just program, without the gap.
+# find next 8k boundary in a.out file
+@ textsegsize = ( ( $sizes[1] + 8191 ) & -8192 )
+# kludge to avoid changing oload.sl (seek to data adds size of hdr back in)
+@ textsegsize = $textsegsize - 32        # subtract out size of header
+@ datasize = $sizes[2]
+@ bsssize = $sizes[3]
+@ datasegsize = $datasize + $bsssize	# Data segment is .data + .bss .
+echo "text size = $textsize, data size = $datasize, bss size = $bsssize"
+echo "text seg size = $textsegsize, data seg size = $datasegsize"
+
+rm .oload.out1          # That's all we needed the first pass for.
+
+## Build a blank piece of data the size of the gap in the middle of BPS.
+@ dataorg = $endaddr - $datasegsize	# Desired start of data.
+# Where ld would put the data segment.  (Round up to 8k boundary.) changed for
+#  SUN 3: SEGSIZE = 131072 (this should not be hardwired) 
+@ datasegstart = ( ( $pageaddr + $textsegsize + 32 + 131071) & -131072 )
+set hexdatasegstart = `echo $datasegstart | awk '{printf "%x\n", $1}' `
+@ datagap = $dataorg - $datasegstart
+echo "data origin = $dataorg, data seg start = $datasegstart, data gap size = $datagap"
+echo "data seg start (hex) = $hexdatasegstart"
+if ( $datagap < 0 ) then
+    echo "unexec: Not enough BPS space to load into."
+    exit
+endif
+cat > .oload.dgap.s << EOF
+  .file 2 ".oload.dgap.s"
+  .data
+gap:
+  .byte 0 : $datagap
+endgap:
+EOF
+as -G 0 .oload.dgap.s -o .oload.dgap.o
+
+## Pass 2 load, add the gap and load it all in again.
+set ldcmd = ( ld -dc -A $symtab  -Bstatic -z -T $hexpageaddr -D $hexdatasegstart .oload.tgap.o .oload.dgap.o $ldargs -o .oload.out )
+#set ldcmd = ( ld -dc -A $symtab  -Bstatic -z -T $hexpageaddr .oload.tgap.o .oload.dgap.o $ldargs -o .oload.out )
+echo $ldcmd | fold -78
+$ldcmd
+set loadstat = $status
+
+rm .oload.[td]gap.o             # Big temp files, not needed any more.
+
+if ( $loadstat ) then
+    echo "oload: status $status returned from load, aborting."
+    if ( -e .oload.old ) mv .oload.old .oload.out	# Restore oload.out.
+    exit
+endif
+
+## Collect symbol definitions for PSL.
+sort -u +2 .oload.syms > .oload.sort
+nm -gnB .oload.out >.oload.nm		# To avoid "broken pipe" msgs
+sort -u +2 .oload.nm > .oload.nmso
+    join -j 3 .oload.nmso .oload.sort | \
+    awk '{ \
+	if ( $3 == "T" ) 	# Function entry points (in text segment.) \
+	    print "(NEWFOREIGNFN (QUOTE " $1 ") 16#" $2 " )" \
+	else			# Global data areas ("D"ata,"B"ss,"C"ommon.) \
+	    print "(NEWFOREIGNDATA (QUOTE " $1 ") 16#" $2 " 16#" $4 " )"; \
+    }' > .oload.syms.sl
+
+## Clean up temp files, except for .oload.out and .oload.syms.sl .
+rm ` ls .oload.* | sed -e '/.oload.out/d' -e '/.oload.syms.sl/d' `
+
+## Successful completion, dump the sizes to direct loading into the PSL.
+# Skip the header and the text gap in the .oload.out file, then read the
+# text block into BPS.  Skip the remainder of the text segment and the data
+# gap, then read the data block from the file and zero the bss space.
+cat > .oload.size.sl << EOF
+(SETQ OLOAD_HEADER_SIZE 0) %%%%160)
+
+(SETQ OLOAD_TEXT_GAP_SIZE $textgap)		% How much to skip after hdr.
+(SETQ OLOAD_TEXT_ORIGIN (quotient $textorg 4))	% Where oload said to put BPS.
+(SETQ OLOAD_TEXT_SIZE $textsize)		% How much to read.
+(SETQ OLOAD_TEXT_SEGMENT_SIZE $textsegsize)	% Multiple of page size.
+
+(SETQ OLOAD_DATA_GAP_SIZE $datagap)		% How much to skip after text.
+(SETQ OLOAD_DATA_ORIGIN (Quotient $dataorg 4))	% Start of WArray block.
+(SETQ OLOAD_DATA_SIZE $datasize)		% How much to read.
+(SETQ OLOAD_DATA_SEG_SIZE $datasegsize)		% Bigger due to BSS space.
+EOF
