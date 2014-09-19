@@ -1,0 +1,47 @@
+#! /bin/csh
+
+setenv proot `pwd`
+
+echo " Please put  DISK # 2 into the floppy disk reader "
+echo " and press ENTER key when ready"
+
+set answer=$<
+
+uncompress bin/ibmrs/pslcomp.img dist/kernel/ibmrs/bpsl
+chmod +x bin/ibmrs/pslcomp.img dist/kernel/ibmrs/bpsl
+
+tar -xf /dev/rfd0
+uncompress -c < tarfilepsl.Z | tar -xf -
+rm tarfilepsl.Z
+
+echo " Please put  DISK # 3 into the floppy disk reader "
+echo " and press ENTER key when ready"
+
+set answer=$<
+
+tar -xf /dev/rfd0
+uncompress -c < tarfilepsl.Z | tar -xf -
+rm tarfilepsl.Z
+
+echo " *** Floppy Disk Drive will not be needed furtheron *** "
+
+
+mkdir $proot/dist/lap
+mkdir $proot/dist/lap/ibmrs
+mkdir $proot/dist/nonkernel/ibmrs/lap
+
+set MACHINE=ibmrs
+setenv MACHINE ibmrs
+
+csh dist/distrib/newroot.csh `pwd` ibmrs
+
+source dist/psl-names
+
+mv $pxdist/make-bare-psl $pdist
+mv $pxdist/make-psl $pdist
+mv $pxdist/make-pslcomp $pdist
+mv $pxdist/Makefile $psl
+
+csh dist/distrib/newroot.csh `pwd`
+
+

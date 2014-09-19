@@ -1,0 +1,37 @@
+#! /bin/csh
+
+setenv proot `pwd`
+
+echo "---> DISK #2 <----, aber ein bisschen flott"
+
+set answer=$<
+
+uncompress bin/ibmrs/pslcomp.img  dist/kernel/ibmrs/bpsl &
+
+uncompress < /dev/rfd0 | tar -xf -
+
+echo "---> DISK #3 <----, aber ein bisschen flott"
+
+set answer=$<
+
+uncompress < /dev/rfd0 | tar -xf -
+
+echo " *** Floppy Disk Drive will not be needed furtheron *** "
+
+mv $proot/bin/ibmrs/temppslcomp $proot/bin/ibmrs/pslcomp
+mv $proot/dist/kernel/ibmrs/bpsl $proot/bin/ibmrs
+
+mkdir $proot/dist/lap
+mkdir $proot/dist/nonkernel/ibmrs/lap
+
+dist/distrib/newroot.csh `pwd`
+
+set MACHINE=ibmrs
+setenv MACHINE ibmrs
+
+source dist/psl-names
+
+cd dist
+
+make
+

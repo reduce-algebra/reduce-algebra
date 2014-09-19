@@ -1,0 +1,43 @@
+#! /bin/csh -fx
+###############################################################################
+#
+# File:           PDIST:MAKE-PSL
+# Description:    This file constructs a new fullpsl
+# Author:         Harold Carr and Leigh Stoller
+# Created:        
+# Modified:       
+# Mode:           C Shell
+# Package:        Tools
+#
+# (c) Copyright 1986, University of Utah, all rights reserved.
+#
+###############################################################################
+#
+# Revisions:
+#
+# 17-Mar-87 (Harold Carr & Leigh Stoller)
+#  General cleaning in preparation for 3.4 release. Nothing interesting.
+#
+###############################################################################
+
+pushd $psys
+
+setenv SavingPSL yes		# skip user startup before savesystem
+
+$psys/bare-psl << EOF
+(setq loaddirectories* '("" "\$pl/" "\$pll/"))
+(on verboseload)
+(load init-file)
+(load debug useful common)
+(load numeric-ops)
+(off verboseload)
+(savesystem "PSL 3.4" "\$psys/psl" '((read-init-file "psl")))
+(exitlisp)
+EOF
+
+@ pslcompstatus = $status
+popd
+$psys/sparsify $psys/psl.img
+@ status = $pslcompstatus
+
+# End of file.

@@ -1,0 +1,62 @@
+#! /bin/csh -fx
+###############################################################################
+#
+# File:           PDIST:MAKE-bare-psl_pvm
+# Description:    This file constructs a new  bare-psl_pvm
+# Author:         Leigh Stoller
+# Created:        01-Nov-86
+# Modified:       
+# Mode:           C Shell
+# Package:        Tools
+#
+# (c) Copyright 1986, University of Utah, all rights reserved.
+#
+###############################################################################
+# Revisions:
+# 
+# 21.Nov 1991 (Winfried Neun)
+#  changes to support .img files (for IBM RS6000, HP Risc, etc
+#
+###############################################################################
+
+unset inprocess
+
+if ($MACHINE == apollo) then
+   set imagesize=3000000
+  else
+   if ($MACHINE == sun386) then
+   set imagesize=3000000
+  else
+   set imagesize=5000000 
+ endif
+ endif
+
+pushd $pnkl			# Go where the files to be loaded are.
+setenv SavingPSL yes		# skip user startup before savesystem
+
+if ( -e $psys/.imago) then
+    mv -f $psys/bare-psl_pvm.img $psys/old-bare-psl_pvm.img
+  else
+    mv -f $psys/bare-psl_pvm $psys/old-bare-psl_pvm
+endif
+
+$pxk/bpsl_pvm -td $imagesize << EOF
+(setq loaddirectories* '("" "\$pl/"))
+(on verboseload)
+(setq symbolfilename* "\$pxk/bpsl_pvm")
+(savesystem "Bare PSL 3.4 with pvm 3.1" "\$psys/bare-psl_pvm" NIL)
+(exitlisp)
+EOF
+
+@ pslcompstatus = $status
+popd
+
+if ( -e $psys/.imago) then
+    $psys/sparsify $psys/bare-psl_pvm.img
+  else
+    $psys/sparsify $psys/bare-psl_pvm
+endif
+
+@ status = $pslcompstatus
+
+# End of file.

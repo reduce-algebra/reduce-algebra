@@ -1,0 +1,31 @@
+
+
+
+
+   ***** Important Notice ******
+
+
+The installation of PSL 3.4 requires that
+a systemcall is added to the AIX operating
+system. PSL 3.4 cannot run otherwise.
+
+The installation of the systemcall requires
+super user privilege.
+
+The systemcall can be installed easily by running
+the installation procedure as described in the
+NOTES ON USING THE IBM RS/6000 PSL FILE TREE
+
+cd ./dist/kernel/ibmrs/syscall
+./installsysc
+
+The directory ./dist/kernel/ibmrs/syscall 
+
+contains the sources of the program installsysc.
+
+It is recommendable to add the call to
+
+cd ./dist/kernel/ibmrs/syscall ; ./installsysc 
+
+to the AIX boot files.
+

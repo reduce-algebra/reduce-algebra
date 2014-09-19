@@ -1,0 +1,103 @@
+#! /bin/csh
+
+cd $psl/..
+source dist/psl-names
+
+pushd $pk
+chmod -r apollo linux sequent alphant winnt i860 os2 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+chmod -r ibmrs/bpsl ibmrs/*.o 
+popd
+pushd $pnk
+chmod -r apollo linux sequent alphant winnt i860 os2 next sun ibmrs/lap dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $pc
+chmod -r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $pu
+chmod -r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $pdist
+chmod -r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $psys/..
+chmod -r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+
+chmod 0 $psl/lap
+
+echo "---> DISK #1 <----, einlegen, dann RETURN druecken"
+
+
+stty new
+set answer=$<
+
+cp $pdist/ibmrs/install_psl .
+format /dev/rfd0 
+tar -cvhf /dev/rfd0 ./install_psl ./bin/ibmrs/pslcomp \
+   ./bin/ibmrs/bare-psl ./bin/ibmrs/psl \
+ ./bin/ibmrs/pslcomp.img.Z ./dist/kernel/ibmrs/bpsl.Z \
+ ./dist/distrib ./dist/psl-names ./dist/psl-intro \
+ ./dist/Makefile ./bin/ibmrs/sparsify*
+
+rm ./install_psl
+
+eject
+
+echo "---> DISK #2 <----, einlegen, dann RETURN druecken"
+
+stty new
+set answer=$<
+format /dev/rfd0
+
+tar -cvf /tmp/tarfilepsl ./dist/comp ./dist/kernel ./dist/nonkernel \
+   ./dist/util ./dist/README
+compress /tmp/tarfilepsl 
+
+pushd /tmp
+tar -cvf /dev/rfd0 tarfilepsl.Z
+popd
+
+rm /tmp/tarfilepsl.Z
+
+eject
+
+echo "---> DISK #3 <----, einlegen, dann RETURN druecken"
+
+stty new
+set answer=$<
+format /dev/rfd0
+
+tar -cvf /tmp/tarfilepsl ./dist/lpt ./dist/doc ./dist/README
+
+compress /tmp/tarfilepsl 
+
+pushd /tmp
+tar -cvf /dev/rfd0 tarfilepsl.Z
+popd
+
+rm /tmp/tarfilepsl.Z
+
+eject
+
+pushd $pk
+chmod +r apollo linux sequent alphant winnt i860 os2 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+chmod +r ibmrs/bpsl ibmrs/*.o
+popd
+pushd $pnk
+chmod +r apollo linux sequent alphant winnt i860 os2 next sun ibmrs/lap dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $pc
+chmod +r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $pu
+chmod +r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $pdist
+chmod +r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+pushd $psys/..
+chmod +r apollo linux sequent alphant winnt i860 next sun dos386 bobcat cray* 88k-aviion sparc spectrum snake ibmxa* fuji os2 sun4 solaris stardent low* convex conv32 88k-aviion sun386 alpha* vax* mips_* unix38*
+popd
+
+chmod 774 $psl/lap
+

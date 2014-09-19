@@ -1,0 +1,49 @@
+#! /bin/csh -fx
+###############################################################################
+#
+# File:           PDIST:MAKE-BARE-PSL
+# Description:    This file constructs a new  BARE-PSL
+# Author:         Leigh Stoller
+# Created:        01-Nov-86
+# Modified:       
+# Mode:           C Shell
+# Package:        Tools
+#
+# (c) Copyright 1986, University of Utah, all rights reserved.
+#
+###############################################################################
+# Revisions:
+#
+###############################################################################
+
+unset inprocess
+
+if ($MACHINE == apollo) then
+   set imagesize=3000000
+  else
+   if ($MACHINE == sun386) then
+   set imagesize=3000000
+  else
+   set imagesize=5500000 
+ endif
+ endif
+
+pushd $pnkl			# Go where the files to be loaded are.
+setenv SavingPSL yes		# skip user startup before savesystem
+
+mv -f $psys/bare-psl.img $psys/old-bare-psl.img
+
+$pxk/bpsl -td $imagesize << EOF
+(setq loaddirectories* '("" "\$pl/"))
+(on verboseload)
+(setq symbolfilename* "\$pxk/bpsl")
+(savesystem "Bare PSL 3.4" "\$psys/bare-psl" NIL)
+(exitlisp)
+EOF
+
+@ pslcompstatus = $status
+popd
+$psys/sparsify $psys/bare-psl.img
+@ status = $pslcompstatus
+
+# End of file.

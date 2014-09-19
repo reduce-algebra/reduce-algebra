@@ -1,0 +1,89 @@
+#! /bin/csh -fx
+##############################################################################
+#
+# File:         PDIST:MAKE-ibmrs-COMP
+# Description:  This file constructs a new cross compiler
+# Author:       Leigh Stoller
+# Created:      03-Nov-86
+# Modified:     
+# Mode:         Text
+#
+# (c) Copyright 1986, University of Utah, all rights reserved.
+#
+##############################################################################
+#
+# Revisions:
+#
+# 03-Mar-87 (Leigh Stoller)
+#  Now load pslcomp, which does not use objects or pathnames. See pslcomp.sl
+#   in the comp directory.
+#
+###############################################################################
+
+pushd $psys
+
+setenv SavingPSL yes		# skip user startup before savesystem
+
+$psys/pslcomp << EOF
+(setq symbolfilename* "$pxk/bpsl")
+(setq loaddirectories* '("" "\$pl/"))
+(on verboseload)
+
+(when (and (equal (getenv "MACHINE")"IIbmrs")
+          (not (memq 'psl_case options*)))
+      (setq loaddirectories!* (append loaddirectories!*
+           '("/silo/cons/verkaufpsl/dist/lap/ibmrs/")))
+      (load psl_case)
+)
+%(load fast-int)
+% (put 'fast-integers 'simpfg '((!T   (enable-fast-numeric-operators))
+%                             (NIL (disable-fast-numeric-operators))
+%                             ))
+%(setq *fast-integers nil)
+
+      (put '!T 'registername 'r0)
+      (put '!T '*other-name 0)
+      (put '!t 'registername 'r0)
+      (put '!t '*other-name 0)
+      (setprop '!l (prop '!L))
+)
+
+(load strings common)
+(load compiler if-system lap-to-asm !Ibmrs-asm init-file)
+(load fasl-decls f-strings fast-vector hash-decls s-strings strings)
+
+(off usermode)
+(load useful numeric-ops)
+
+(on immediatequote)
+
+(remprop 'cons 'opencode)
+(remprop 'ncons 'opencode)
+(remprop 'xcons 'opencode)
+
+(put 'addressingunitsperitemasm 'compiler-constant? t)
+(put 'addressingunitsperitemasm 'compiler-constant-value 4)
+
+
+(put 'addressingunitsperfunctioncellasm 'compiler-constant? t)
+(put 'addressingunitsperfunctioncellasm 'compiler-constant-value 4)
+(put 'addressingunitsperfunctioncell 'compiler-constant-value 4)
+
+
+(flag '(idloc label) 'terminaloperand)
+
+(on writingasmfile)
+(setq *syslisp t)
+(off usermode)
+
+(savesystem "PSL 3.4 Kernel Cross-Asm Compiler" "$pxk/Ibmrs-cross"
+   '((read-init-file "pslcomp")))
+(exitlisp)
+EOF
+
+@ pslcompstatus = $status
+popd
+$psys/sparsify $pxk/Ibmrs-cross.img
+@ status = $pslcompstatus
+
+# End of file.
