@@ -1,0 +1,23 @@
+(compiletime (ds bbsize (v) (veclen (vecinf v))))
+
+(compiletime (ds bbminusp (v1) (eq (igetv v1 0) 'bigneg)))
+
+(de floatfrombignum (v)
+  (cond ((bzerop v) 0.00000E+000)
+        ((or (bgreaterp v bigfloathi!*) (blessp v bigfloatlow!*))
+         (error 99 (list "Argument, " v " to FLOAT is too large")))
+        (t (prog (res sn i j base)
+                 (setq i (bbsize v))
+                 (setq j (idifference i bigitsPerMantissa*))
+                 (when (ilessp j 1) (setq j 1))
+                 (setq base (float-expt floatbbase!* (isub1 j)))
+                 (setq sn (bbminusp v))
+                 (setq res  (floattimes2 (intfloat (igetv v j)) base))
+                 (setq j(iadd1 j))
+                 (while (not(igreaterp j i))
+                     (setq base (floattimes2 base floatbbase!*))
+                     (setq res (floatplus2 res
+                                (floattimes2 (intfloat (igetv v j)) base))) 
+                     (setq j(iadd1 j)))
+                 (when sn (setq res (floattimes2 -1.0 res)))
+                 (return (cleanstack res))))))
