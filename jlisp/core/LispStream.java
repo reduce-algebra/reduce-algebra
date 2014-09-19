@@ -210,12 +210,16 @@ class LispStream extends LispObject
         int c;
         try
         {   c = reader.read();
-            if (c == -1) return c;
+            if (c == -1)
+            {   currentOutput.println("<EOF>"); // @@@ Temp always noisy
+                return c;
+            }
         }
         catch (IOException e)
         {   return -1;
         }
-        if (Jlisp.lit[Lit.starecho].car/*value*/ != Jlisp.nil)
+// @@@@ Temporarily make it noisy ALWAYS 
+        if (true || Jlisp.lit[Lit.starecho].car/*value*/ != Jlisp.nil)
         {   LispStream o = (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;
             o.print(String.valueOf((char)c));
         }

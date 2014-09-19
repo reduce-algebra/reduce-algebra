@@ -319,6 +319,13 @@ public class LispSmallInteger extends LispInteger
         else return this;
     }
 
+    public LispObject leftshift(int n) throws Exception
+    {
+// Here I should worry about overflow and expand into a big integer as
+// necessary.
+        return valueOf(value << n);
+    }
+
     public LispObject rightshift(int n) throws Exception
     {
         return valueOf(value >> n);

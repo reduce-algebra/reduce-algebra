@@ -254,6 +254,11 @@ class LispBigInteger extends LispInteger
         else return this;
     }
 
+    public LispObject leftshift(int n) throws Exception
+    {
+        return valueOf(value.shiftLeft(n));
+    }
+
     public LispObject rightshift(int n) throws Exception
     {
         return valueOf(value.shiftRight(n));

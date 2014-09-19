@@ -80,6 +80,7 @@ class Specfn
         {"list",     new ListSpecial()},
         {"list*",    new ListStarSpecial()},
         {"declare",  new DeclareSpecial()},
+//      {"unwind-protect",  new UnwindProtectSpecial()}, // until fixed!
     };
 
 
@@ -497,6 +498,24 @@ class DeclareSpecial extends SpecialFunction
     }
 }
 
+}
+
+class UnwindProtectSpecial extends SpecialFunction
+{
+    LispObject op(LispObject args) throws Exception
+    {
+        LispObject r;
+        if (args.atom) return Jlisp.nil;
+        try
+        {   r = args.car.eval();
+        }
+        finally
+        {
+            args = args.cdr;
+            if (!args.atom) args.car.eval();
+        }
+        return r;
+    }
 }
 
 // End of Specfn.java

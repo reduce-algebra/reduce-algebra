@@ -51,6 +51,7 @@ class Fns3
 {
     Object [][] builtins = 
     {
+        {"list2string",                 new List2stringFn()},
         {"liter",                       new LiterFn()},
         {"load-module",                 new Load_moduleFn()},
         {"lposn",                       new LposnFn()},
@@ -195,6 +196,9 @@ class Fns3
         {"stop",                        new StopFn()},
         {"streamp",                     new StreampFn()},
         {"stringp",                     new StringpFn()},
+        {"string-length",               new String_lengthFn()},
+        {"string-store",                new String_storeFn()},
+        {"string2list",                 new String2listFn()},
         {"stub1",                       new Stub1Fn()},
         {"stub2",                       new Stub2Fn()},
         {"subla",                       new SublaFn()},
@@ -241,7 +245,6 @@ class Fns3
         {"untrace",                     new UntraceFn()},
         {"untraceset",                  new UntracesetFn()},
         {"untraceset1",                 new Untraceset1Fn()},
-        {"unwind-protect",              new Unwind_protectFn()},
         {"upbv",                        new UpbvFn()},
         {"user-homedir-pathname",       new User_homedir_pathnameFn()},
         {"vectorp",                     new VectorpFn()},
@@ -260,6 +263,34 @@ class Fns3
         {"~tyi",                        new TyiFn()}
     };
 
+
+
+class List2stringFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+// This must take in a list in UTF8...
+        String a = "";
+        while (!arg1.atom)
+        {   LispObject c = arg1.car;
+            char n;
+            arg1 = arg1.cdr;
+// Now c might be an integer or a symbol or a string - I want to
+// interpret it as a single character.
+            if (c instanceof LispInteger) n = (char)c.intValue();
+            else if (c instanceof Symbol)
+            {   ((Symbol)c).completeName();
+                n = ((Symbol)c).pname.charAt(0);
+            }
+            else if (c instanceof LispString)
+            {   n = ((LispString)c).string.charAt(0);
+            }
+            else return error("bad character in list2string");
+            a = a + n;
+        }
+        return new LispString(a);
+    }
+}
 
 
 class LiterFn extends BuiltinFunction
@@ -2212,6 +2243,10 @@ class Start_moduleFn extends BuiltinFunction
 
 class StopFn extends BuiltinFunction
 {
+    public LispObject op0() throws Exception
+    {
+        return op1(LispInteger.valueOf(0));
+    }
     public LispObject op1(LispObject arg1) throws Exception
     {
         Jlisp.println();
@@ -2236,6 +2271,56 @@ class StringpFn extends BuiltinFunction
     {
         return arg1 instanceof LispString ? Jlisp.lispTrue :
                Jlisp.nil;
+    }
+}
+
+class String_storeFn extends BuiltinFunction
+{
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length != 3)
+            return error("putv-char called with " + args.length +
+                "args when 3 expected");
+        String v = ((LispString)args[0]).string;
+        LispSmallInteger n = (LispSmallInteger)args[1];
+        int i = n.value;
+        char [] v1 = v.toCharArray();
+        v1[i] = (char)(((LispSmallInteger)args[2]).value);
+        ((LispString)args[0]).string = new String(v1);
+        return args[2];
+    }
+}
+
+class String_lengthFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        LispObject r = Jlisp.nil;
+        if (!(arg1 instanceof LispString))
+            return error("not a string for string2list");
+        String s = ((LispString)arg1).string;
+        return LispInteger.valueOf(s.length());
+    }
+}
+
+class String2listFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        LispObject r = Jlisp.nil;
+        String s;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
+        else if (arg1 instanceof LispString)
+            s = ((LispString)arg1).string;
+        else return error("not a string for string2list");
+// This must emit its output in UTF-8
+        for (char c : s.toCharArray())
+        {   r = new Cons(LispInteger.valueOf((int)c), r);
+        }
+        return Fns.reversip(r);
     }
 }
 
@@ -2776,14 +2861,6 @@ class UntracesetFn extends BuiltinFunction
 }
 
 class Untraceset1Fn extends BuiltinFunction
-{
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return error(name + " not yet implemented");
-    }
-}
-
-class Unwind_protectFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {

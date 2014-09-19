@@ -53,6 +53,7 @@ class Fns1
     {
         {"userjava",                    new UserJavaFn()},
         {"acons",                       new AconsFn()},
+        {"allocate-string",             new Allocate_stringFn()},
         {"append",                      new AppendFn()},
         {"apply",                       new ApplyFn()},
         {"apply0",                      new Apply0Fn()},
@@ -359,6 +360,16 @@ class AconsFn extends BuiltinFunction
             return error("acons called with " + args.length +
                          " args when 3 were expected");
         return new Cons(new Cons(args[0], args[1]), args[2]);
+    }
+}
+
+class Allocate_stringFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        int n = arg1.intValue();
+        String s = new String(new char[n]);
+        return new LispString(s);
     }
 }
 

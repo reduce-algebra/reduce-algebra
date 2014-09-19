@@ -218,6 +218,7 @@ class Fns
                 body = body.cdr;
             }
         }
+// restore all bound variables
         finally
         {   nvars = 0;
             for (LispObject b1 = bvl; !b1.atom; b1 = b1.cdr)

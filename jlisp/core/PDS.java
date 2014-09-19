@@ -451,7 +451,7 @@ void addToDirectory(String member) throws IOException, ResourceException
 // First I search to find the final index block.
         for (int kk=0;;)
         {   seek(p);
-            Jlisp.println("Seeking to " + p);
+//          Jlisp.println("Seeking to " + p);
             if (kk++ > 100)
             {   Jlisp.println("Looping...");
                 throw new IOException("Sorry - mangled image file");

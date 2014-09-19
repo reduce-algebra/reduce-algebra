@@ -105,6 +105,7 @@ class Fns2
         {"greaterp",                    new GreaterpFn()},
         {"hypot",                       new HypotFn()},
         {"iadd1",                       new Iadd1Fn()},
+        {"id2string",                   new Id2stringFn()},
         {"idifference",                 new IdifferenceFn()},
         {"igeq",                        new IgeqFn()},
         {"igreaterp",                   new IgreaterpFn()},
@@ -123,6 +124,8 @@ class Fns2
         {"iplus2",                      new Iplus2Fn()},
         {"iquotient",                   new IquotientFn()},
         {"iremainder",                  new IremainderFn()},
+        {"ashift",                      new AshiftFn()},
+        {"lshift",                      new LshiftFn()},
         {"irightshift",                 new IrightshiftFn()},
         {"isub1",                       new Isub1Fn()},
         {"itimes",                      new ItimesFn()},
@@ -134,10 +137,12 @@ class Fns2
         {"ln",                          new LnFn()},
         {"log",                         new LogFn()},
         {"log10",                       new Log10Fn()},
+        {"land",                        new LogandFn()},
         {"logand",                      new LogandFn()},
         {"logb",                        new LogbFn()},
         {"logeqv",                      new LogeqvFn()},
         {"lognot",                      new LognotFn()},
+        {"lor",                         new LogorFn()},
         {"logor",                       new LogorFn()},
         {"logxor",                      new LogxorFn()},
         {"lose-precision",              new Lose_precisionFn()},
@@ -827,6 +832,16 @@ class Iadd1Fn extends BuiltinFunction
     }
 }
 
+class Id2stringFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        if (!(arg1 instanceof Symbol)) return error("not an identifier for id2string");
+        ((Symbol)arg1).completeName();
+        return new LispString(((Symbol)arg1).pname);
+    }
+}
+
 class IdifferenceFn extends BuiltinFunction
 {
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
@@ -1031,6 +1046,26 @@ class IremainderFn extends BuiltinFunction
     {
         return arg1.remainder(arg2);
     }    
+}
+
+class AshiftFn extends BuiltinFunction
+{
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
+    {
+        int n = ((LispSmallInteger)arg2).value;
+        if (n < 0) return arg1.rightshift(-n);
+        else return arg1.leftshift(n);
+    }
+}
+
+class LshiftFn extends BuiltinFunction
+{
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
+    {
+        int n = ((LispSmallInteger)arg2).value;
+        if (n < 0) return arg1.rightshift(-n);
+        else return arg1.leftshift(n);
+    }
 }
 
 class IrightshiftFn extends BuiltinFunction

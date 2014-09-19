@@ -296,6 +296,11 @@ public abstract class LispObject extends Object
         return Jlisp.error("Number needed", this);
     }
 
+    public LispObject leftshift(int n) throws Exception
+    {
+        return Jlisp.error("Number needed", this);
+    }
+
     public LispObject rightshift(int n) throws Exception
     {
         return Jlisp.error("Number needed", this);
