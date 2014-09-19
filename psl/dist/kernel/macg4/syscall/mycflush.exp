@@ -1,0 +1,6 @@
+#!/unix
+* !/u/schleich/NewSyscall/mycflush
+*
+* This is "mycflush.exp"
+*
+mycflush SYSCALL

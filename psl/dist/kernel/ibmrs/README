@@ -1,0 +1,65 @@
+                                               Berlin, May 3rd, 1992
+
+
+
+ Dear REDUCE / PSL customer,
+
+
+
+the IBM RS/6000 version of Reduce or PSL we sent out to you is defective
+under certain circumstances.
+
+Problems occur on the RS/6000-550 mostly causing an illegal instruction
+trap of the hardware. 
+
+Please find enclosed a diskette with the fixed software.
+The diskette is undumped to a temporary storage by 
+
+
+tar -xf /dev/rfd0
+uncompress *.Z
+chmod +x bpsl
+
+
+Four files are undumped from diskette, namely
+
+bpsl , pslcomp.img and bpsheap.c plus this README file
+
+If you did not order "full PSL", please delete pslcomp.img and bpsheap.c.
+In order to fix REDUCE, please 
+
+move the file bpsl to $reduce/psl and run
+$reduce/util/mkreduce
+
+
+for PSL (using PSL naming conventions), please move bpsl to $pxk,
+pslcomp.img to $psys and bpsheap.c to $pxk . After that, please do
+
+cd $psl 
+make
+
+Both Reduce and PSL should work properly now.
+We regret the inconvenience and problems you encountered using the software.
+
+
+PLEASE NOTE for a change to AIX 3.2
+-----------------------------------
+
+We did not yet upgrade our AIX system, but we got hints that the binary files
+in $pxk/syscall (or $reduce/psl/syscall) have to be recompiled under the new
+OS level prior to using PSL or Reduce. You can do that by
+
+
+cd $reduce/psl/syscall    # or cd $pk/ibmrs/syscall
+./install
+
+
+After recompilation you can use the kernel extension as usual.
+
+In case of problems please send email to:  neun@sc.ZIB-Berlin.de
+
+Regards,
+
+Winfried Neun
+
+ZIB Berlin

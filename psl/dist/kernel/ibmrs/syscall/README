@@ -1,0 +1,16 @@
+This directory contains an example for adding a systemcall to /unix.
+Files:
+
+install          Shell script for installing and testing the
+                 systemcall
+
+installsysc.c    Pgm for installing the systemcall with sysconfig
+
+mycflush.c       the systemcall
+
+mycflush.exp     List of exported symbols. Must be imported by all
+                 programs which use the systemcall
+
+uninstallsysc.c  Pgm for deleting the systemcall from /unix
+
+usecflush.c      using the systemcall

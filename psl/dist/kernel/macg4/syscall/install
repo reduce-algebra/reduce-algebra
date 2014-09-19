@@ -1,0 +1,29 @@
+#!/bin/sh
+set -x
+# compile the systemcall & his friends
+cc -c mycflush.c
+cc -o mycflush -e mycflush -bexport:./mycflush.exp -bimport:/lib/kernex.exp mycflush.o -lsys -lcsys
+cc -o installsysc installsysc.c
+cc -o uninstallsysc uninstallsysc.c
+cc -c usecflush.c
+cc -o usecflush usecflush.o -bimport:mycflush.exp 
+#
+#  Install the systemcall
+#
+kmid=`./installsysc`
+echo "installing system call"
+echo "    kmid=$kmid"
+#
+#  use the systemcall
+#
+./usecflush
+#
+# remove the systemcall
+#
+./uninstallsysc $kmid
+
+
+# Install it finally
+
+./installsysc
+

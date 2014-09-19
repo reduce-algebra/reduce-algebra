@@ -1,0 +1,8 @@
+(global (quote (nextsymbol show-new-ids)))
+(fluid (quote (code-base-hack symfnc symval tokenbuffer argumentblock)))
+(*define-constant (quote reloc-movex) 1)
+(*define-constant (quote reloc-call) 2)
+(*define-constant (quote reloc-xidloc) 3)
+(fluid (quote (lastbps nextbps heaplast heaptrapbound heapupperbound heaptrapped
+nextsymbol using-other-bps-spaces*)))
+(fluid (quote (bpslowerbound nextbps)))

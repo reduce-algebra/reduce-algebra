@@ -1,0 +1,3 @@
+#! /bin/csh -f
+fdformat -h
+tar -cvhf /dev/rfd0 ./bpsl.Z ./pslcomp.img.Z README bpsheap.c
