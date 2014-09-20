@@ -515,9 +515,7 @@ symbolic procedure find!-gnuplot;
 !#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
     % if on windows, check registry
     path := get!-registry!-value("HKLM","Software\Microsoft\Windows\CurrentVersion\App Paths\wgnuplot.exe",nil);
-    if path and car path = 1 then <<
-      path := find!-gnuplot!-aux cdr path;
-      if path then return path >>;
+    if path and car path = 1 and filep cdr path then return cdr path;
 !#endif
 
     % last resort: return the name without path
