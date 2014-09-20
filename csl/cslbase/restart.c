@@ -356,6 +356,13 @@ char program_name[64] = {0};
 
 #ifndef COMMON
 #ifdef HAVE_FWIN
+
+/*
+ * The tables here are slightly oddly formatted. Every other entry is
+ * NULL (reserved for other uses...) and each string has a single character
+ * stuck on its front that is also used as a marker elsewhere...
+ */
+
 char **loadable_packages = NULL, **switches = NULL;
 #endif
 #endif

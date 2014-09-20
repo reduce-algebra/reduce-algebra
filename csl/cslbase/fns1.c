@@ -1,11 +1,11 @@
-/* fns1.c                           Copyright (C) 1989-2013 Codemist Ltd */
+/* fns1.c                           Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * Basic functions part 1.
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2476,6 +2476,8 @@ Lisp_Object Lopen_foreign_library(Lisp_Object nil, Lisp_Object name)
  */
 #ifdef WIN32
     if (w1 == NULL) strcat(libname, ".dll");
+    for (w=libname; *w!=0; w++)
+        if (*w == '/') *w = '\\';
 /*
  * For now I will leave the trace print of the library name here, since
  * it should only appear once per run so ought not to cause over-much grief.
@@ -2559,7 +2561,11 @@ Lisp_Object Lfind_foreign_function(Lisp_Object nil, Lisp_Object name,
 /*
  * Again I will leave the print statement in on a temporary basis...
  */
+#ifdef __CYGWIN__
+    printf("name to look up = %s\r\n", sname);
+#else
     printf("name to look up = %s\n", sname);
+#endif
 #ifdef WIN32
     b = (void *)GetProcAddress(a, sname);
 #else

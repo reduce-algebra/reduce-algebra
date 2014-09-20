@@ -33,7 +33,7 @@
 %% DAMAGE.                                                                *
 %%
 
-% $Id$
+
 
 % Pretty-well all internal functions defined here and all fluid and
 % global variables have been written with names of the form s!:xxx. This
@@ -3074,7 +3074,10 @@ symbolic procedure s!:comcatch(x, env, context);
     s!:set_label g
   end;
 
-put('catch, 's!:compfn, 's!:comcatch);
+if not memq('jlisp, lispsystem!*) then
+   put('catch, 's!:compfn, 's!:comcatch);
+
+% Compiled support for catch, throw and errorset not working in Jlisp yet!
 
 symbolic procedure s!:comthrow(x, env, context);
   begin
@@ -3086,7 +3089,8 @@ symbolic procedure s!:comthrow(x, env, context);
     rplacd(env, cddr env)
   end;
 
-put('throw, 's!:compfn, 's!:comthrow);
+if not memq('jlisp, lispsystem!*) then
+   put('throw, 's!:compfn, 's!:comthrow);
 
 symbolic procedure s!:comunwind!-protect(x, env, context);
   begin
@@ -3112,7 +3116,8 @@ symbolic procedure s!:comunwind!-protect(x, env, context);
     rplacd(env, cddddr env)
   end;
 
-put('unwind!-protect, 's!:compfn, 's!:comunwind!-protect);
+if not memq('jlisp, lispsystem!*) then
+   put('unwind!-protect, 's!:compfn, 's!:comunwind!-protect);
 
 symbolic procedure s!:comdeclare(x, env, context);
 % I print a message if I find DECLARE where I am compiling things.
@@ -6053,13 +6058,6 @@ symbolic procedure compile l;
 % the bytecode compiler...
 
 in "$cslbase/ccomp.red"$
-
-% And also one that generated Java for use with Jlisp.
-% Well I am not doing that yet since there is potential conflict
-% between it and ccomp.red... I will install it when I am confident
-% that I have made jcomp.red properly independent.
-%
-%   in "$cslbase/jcomp.red"$
 
 
 end;

@@ -3,7 +3,7 @@
 
 
 %%
-%% Copyright (C) 2010, following the master REDUCE source files.          *
+%% Copyright (C) 2014, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -31,7 +31,6 @@
 %% DAMAGE.                                                                *
 %%
 
-% $Id$
 
 (dm df (u !&optional env) (prog (g w) (setq g (gensym)) (setq w (list (quote 
 list) (quote (quote let!*)) (list (quote list) (list (quote list) (mkquote (

@@ -3,7 +3,7 @@
 
 
 %%
-%% Copyright (C) 2010, following the master REDUCE source files.          *
+%% Copyright (C) 2014, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -31,7 +31,6 @@
 %% DAMAGE.                                                                *
 %%
 
-% $Id$
 
 (global (quote (s!:opcodelist)))
 
@@ -1568,14 +1567,16 @@ cons 0 (cons 0 (cdr env))))) (s!:comval (cons (quote progn) (cddr x)) env
 context) (s!:outopcode0 (quote UNCATCH) (quote (UNCATCH))) (rplacd env (
 cddddr env)) (s!:set_label g)))
 
-(put (quote catch) (quote s!:compfn) (quote s!:comcatch))
+(cond ((not (memq (quote jlisp) lispsystem!*)) (put (quote catch) (quote 
+s!:compfn) (quote s!:comcatch))))
 
 (de s!:comthrow (x env context) (prog nil (s!:comval (cadr x) env 1) (
 s!:outopcode0 (quote PUSH) (quote (PUSH))) (rplacd env (cons 0 (cdr env))) (
 s!:comval (caddr x) env 1) (s!:outopcode0 (quote THROW) (quote (THROW))) (
 rplacd env (cddr env))))
 
-(put (quote throw) (quote s!:compfn) (quote s!:comthrow))
+(cond ((not (memq (quote jlisp) lispsystem!*)) (put (quote throw) (quote 
+s!:compfn) (quote s!:comthrow))))
 
 (de s!:comunwind!-protect (x env context) (prog (g) (setq g (gensym)) (
 s!:comval (quote (load!-spid)) env 1) (s!:outjump (quote CATCH) g) (rplacd 
@@ -1585,7 +1586,8 @@ PROTECT))) (s!:set_label g) (rplaca (cdr env) 0) (s!:comval (cons (quote
 progn) (cddr x)) env context) (s!:outopcode0 (quote UNPROTECT) (quote (
 UNPROTECT))) (rplacd env (cddddr env))))
 
-(put (quote unwind!-protect) (quote s!:compfn) (quote s!:comunwind!-protect))
+(cond ((not (memq (quote jlisp) lispsystem!*)) (put (quote unwind!-protect) (
+quote s!:compfn) (quote s!:comunwind!-protect))))
 
 (de s!:comdeclare (x env context) (prog nil (cond (!*pwrds (progn (princ 
 "+++ ") (prin x) (princ " ignored") (terpri))))))
@@ -3373,7 +3375,7 @@ setq o (cdddr o)) (setq d (cons (caddr o) (cons (cadr o) (cons (car o) d))))
 !-) d)))))) (setq O_file (wrs C_file)) (setq c!:defnames nil) (cond (hdrnow (
 c!:printf "\n/* Module: %s %tMachine generated C code %<*/\n\n" setupname 25)
 ) (t (c!:printf "\n/* %s.c %tMachine generated C code %<*/\n\n" name 25))) (
-c!:printf "/* Signature: 00000000 %s %<*/\n\n" d) (c!:printf 
+c!:printf "/* $I") (c!:printf "d: $ */\n\n") (c!:printf 
 "#include <stdio.h>\n") (c!:printf "#include <stdlib.h>\n") (c!:printf 
 "#include <string.h>\n") (c!:printf "#include <ctype.h>\n") (c!:printf 
 "#include <stdarg.h>\n") (c!:printf "#include <time.h>\n") (c!:printf 

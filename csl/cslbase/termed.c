@@ -5509,9 +5509,23 @@ static void set_shell(void)
 #endif
 }
 
+/*
+ * Following on from selection of some history I might have accumulated a
+ * multi-line chunk of input here. In such a case the first line of the
+ * chunk will be returned by an initial call to term_wide_fancy_getline(),
+ * which will have displayed a prompt (and the user will have typed some keys
+ * that provoke history activity and then hit ENTER). When the left-over
+ * is to be returned the prompt must not be re-displayed...
+ */
+
+static int left_over = 0;
+
 static wchar_t *term_wide_fancy_getline(void)
 {
     int ch, any_keys = 0, i;
+    if (left_over != 0)
+    {
+    }
 #ifdef WIN32
     SetConsoleMode(stdout_handle, 0);
 #else
@@ -5637,7 +5651,8 @@ static wchar_t *term_wide_fancy_getline(void)
 /*
  * I treat tab as an "ordinary" character here, so it just gets inserted
  * into the input line. This is achieved by letting it hit the "default" case
- * in this switch block!
+ * in this switch block! Ah well, soon I may be expecting to handle tab to
+ * provide some form of completion.
  *
  *  case CTRL('I'):
  *          goto default;
@@ -5750,6 +5765,7 @@ static wchar_t *term_wide_fancy_getline(void)
             term_file_menu();
             continue;
     case CTRL('J') + ALT_BIT: case 'J' + ALT_BIT: case 'j' + ALT_BIT:  /* line-feed */
+/* ALT-Enter inserts a newline without terminating the block */
             break;
     case CTRL('K') + ALT_BIT: case 'K' + ALT_BIT: case 'k' + ALT_BIT:
             term_kill_line();
