@@ -64,7 +64,7 @@ then
 
   echo autoreconf command available for use.
 
-  for x in `find $target -name configure.ac -print`
+  for x in `find $target \( -name configure.ac -o -name configure.in \) -print`
   do
     echo "============================================================"
     case $x in
@@ -72,8 +72,8 @@ then
 # want the files there to be exactly as unpacked from the wxWidgets
 # archive, and will believe that use of tar to unpack the archive will
 # have left files with datestamps correctly ordered.
-    *wxWidgets*)
-      echo Leaving $x untouched.
+    *wxWidgets* | *crlibm*)
+      echo Leaving directory ${x%/configure.ac} untouched.
       ;;
     *)
       x1=`echo $x | sed -e 's+/configure.ac$++'`
