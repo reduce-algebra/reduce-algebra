@@ -582,3 +582,73 @@ semop (int semid, struct sembuf *sops, size_t nsops)
 {
   return (0);
 }
+
+#define REGBUFLEN 1024
+static char regbuffer[REGBUFLEN];
+
+long
+get_registry_value(char *key, char *subkey, char* name, long long *infobuf)
+{
+  int length = REGBUFLEN;
+  HKEY hKey;
+  HKEY keyhandle;
+  LONG r, r1;
+  DWORD type;
+
+  if (strcmp(key,"HKCR") == 0) {
+    hKey = HKEY_CLASSES_ROOT;
+  }
+  else if (strcmp(key,"HKCC") == 0) {
+    hKey = HKEY_CURRENT_CONFIG;
+  }
+  else if (strcmp(key,"HKCU") == 0) {
+    hKey = HKEY_CURRENT_USER;
+  }
+  else if (strcmp(key,"HKLM") == 0) {
+    hKey = HKEY_LOCAL_MACHINE;
+  }
+  else if (strcmp(key,"HKU") == 0) {
+    hKey = HKEY_USERS;
+  }
+  else {
+  // unknown keytype
+    return -1;
+  }
+
+//  printf("Starting with type %s/%d infobuf=%lld/%llx\n",key,hKey,infobuf,infobuf);
+  r1 = RegOpenKeyEx(hKey,
+                    (LPCTSTR) subkey,
+		    (DWORD) 0,
+                    KEY_QUERY_VALUE,
+                    &keyhandle);
+
+//  printf("RegOpenKeyEx: %ld %ld\n",r1,keyhandle);
+  if (r1 != ERROR_SUCCESS) {
+    return r1;
+  }
+
+  r = RegQueryValueEx(keyhandle,
+                      (LPCTSTR) name,
+                      NULL,
+		      (LPDWORD)&type,
+                      (PVOID)regbuffer,
+                      (LPDWORD)&length);
+
+//  printf("RegQueryValueEx: %ld %ld\n",r,length);
+
+
+  r1 = RegCloseKey(keyhandle);
+  if (r != ERROR_SUCCESS) {
+    return r;
+  }
+  else {
+    infobuf[0] = type;
+    infobuf[1] = length;
+    infobuf[2] = (long long) regbuffer;
+//    printf("Returning with type %d, length %d, resultbuf = %lld/%llX\n",
+//            type,length,regbuffer,regbuffer);
+    return 0;
+  }
+}
+
+

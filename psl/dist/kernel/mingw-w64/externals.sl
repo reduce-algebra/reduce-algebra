@@ -125,16 +125,18 @@
 (external-function uxwritefloat8       (buffer floatptr convstr dummy))
 (external-function uxdoubletofloat     (x y))
 (external-function uxfloattodouble     (y y))
-(external-function uxsin           (r x))
-(external-function uxcos           (r x))
-(external-function uxtan           (r x))
-(external-function uxasin           (r x))
-(external-function uxacos           (r x))
-(external-function uxatan           (r x))
-(external-function uxsqrt           (r x))
-(external-function uxexp           (r x))
-(external-function uxlog           (r x))
-(external-function uxatan2           (r y x))
+(external-function uxsin               (r x))
+(external-function uxcos               (r x))
+(external-function uxtan               (r x))
+(external-function uxasin              (r x))
+(external-function uxacos              (r x))
+(external-function uxatan              (r x))
+(external-function uxsqrt              (r x))
+(external-function uxexp               (r x))
+(external-function uxlog               (r x))
+(external-function uxatan2             (r y x))
+
+(external-function get_registry_value  (key subkey name infobuffer))
  
  
 % Defined in pwd-fn.c
