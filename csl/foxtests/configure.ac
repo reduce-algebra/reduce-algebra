@@ -204,16 +204,12 @@ x86_64-w64-*)
 # OK. -fno-common causes C programs to lead to a linker error if you have
 #     declarations of variables in several files. It may thus count as
 #     and extra safety measure.
-#     -no-cpp-precomp was historically useful because some people
-#     found that the Apple pre-processor gave them trouble, so I think it
-#     arranges a slower but possibly safer compilation. It is probably not
-#     needed at all these days.
-    CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
-    CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
+    CFLAGS="$CFLAGS -fno-common"
+    CXXFLAGS="$CXXFLAGS -fno-common"
 # At least maybe MacOS 10.2 may not put X11 headers on the standard include
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
-    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
+    CPPFLAGS="$CPPFLAGS -fno-common -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/local/lib -L/opt/X11/lib"

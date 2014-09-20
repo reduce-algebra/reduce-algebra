@@ -152,7 +152,9 @@ AC_MSG_RESULT([$enable_release])
 if test "x$enable_release" = "xyes" && test "x$enable_debug" != "xyes"; then
   CXXFLAGS="${CXXFLAGS} -O2 -DNDEBUG"
   if test "${GXX}" = "yes" ; then
-    CXXFLAGS="${CXXFLAGS} -Wuninitialized -ffast-math -fstrict-aliasing -finline-functions -fomit-frame-pointer -fexpensive-optimizations"
+# This used to include "-fomit-frame-pointer" but I have seen some reports of
+# that causing problems on the Macintosh.
+    CXXFLAGS="${CXXFLAGS} -Wuninitialized -ffast-math -fstrict-aliasing -finline-functions -fexpensive-optimizations"
     LDFLAGS="-s ${LDFLAGS}"
   fi
 fi
@@ -374,8 +376,8 @@ AC_CHECK_HEADERS([unistd.h])
 
 case $host_os in
   *darwin*)
-    CC="MACOSX_DEPLOYMENT_TARGET=10.8 $CC"
-    CXX="MACOSX_DEPLOYMENT_TARGET=10.8 $CXX"
+    CC="MACOSX_DEPLOYMENT_TARGET=10.9 $CC"
+    CXX="MACOSX_DEPLOYMENT_TARGET=10.9 $CXX"
   ;;
 esac
 

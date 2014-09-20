@@ -4329,17 +4329,13 @@ $as_echo "#define MACINTOSH 1" >>confdefs.h
 # OK. -fno-common causes C programs to lead to a linker error if you have
 #     declarations of variables in several files. It may thus count as
 #     and extra safety measure.
-#     -no-cpp-precomp was historically useful because some people
-#     found that the Apple pre-processor gave them trouble, so I think it
-#     arranges a slower but possibly safer compilation. It is probably not
-#     needed at all these days.
-    CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
-    CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
+    CFLAGS="$CFLAGS -fno-common"
+    CXXFLAGS="$CXXFLAGS -fno-common"
 # At least maybe MacOS 10.2 may not put X11 headers on the standard include
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
 # Note that 10.2 now counts as seriously archaic.
-    CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -I/usr/X11R6/include"
+    CPPFLAGS="$CPPFLAGS -fno-common -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
 
 $as_echo "#define UNIX 1" >>confdefs.h
@@ -11523,16 +11519,19 @@ then
 # 10.6  Snow Leopard
 # 10.7  Lion
 # 10.8  Mountain Lion   This is the oldest version I will worry about.
-# 10.9  Mavericks       Really needs to be supported still.
+# 10.9  Mavericks       It seems that I may NEED to specify this as the
+#                       oldest supported platform, because changes that
+#                       Apple made that are triggered by (merely) setting
+#                       an earlier deployment target appear to cause trouble.
 # 10.10 Yosemite        My test machine runs this.
 
 # Well now that 10.10 has been (nearly been) released I will always target
 # 10.8 and support for earlier versions is no longer guaranteed.
   if test "x$with_wx" != "xno"
   then
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.9
   else
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.8
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.9
   fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"

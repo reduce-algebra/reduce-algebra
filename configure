@@ -3449,12 +3449,14 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
 # clang on MacOSX does not provide -mfpmath
 #     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
-# For wxWidgets I will ONLY support x86_64, and you should only at all
-# expect versions of the SDK from 10.6 onwards to be at all to be useful.
+# For wxWidgets I will ONLY support x86_64, and I will demand at least
+# Operating System 10.9 (Mavericks). I believe there were significant
+# changes introduces between supporting 10.8 and 10.9 as the lowest
+# release and these cause real compilation problems.
       MACARCH="--enable-macos_arch=x86_64"
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
-          --with-macosx-version-min=10.8 \
+          --with-macosx-version-min=10.9 \
           $MACARCH "
       ;;
     *)
