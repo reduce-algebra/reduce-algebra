@@ -34,7 +34,14 @@ exports ashift, msd!:, fl2bf, integerp!:, normbf, oddintp, preci!:;
 
 fluid '(bbits!*);
 
-global '(bfz!* bitsperword);
+global '(bfz!* bitsperword dirchar!*);
+
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+   dirchar!* := "\";
+!#else
+   dirchar!* := "/";
+!#endif
+
 
 compiletime
   global '(!!fleps1exp !!plumaxexp !!pluminexp !!timmaxexp !!timminexp);
@@ -488,6 +495,52 @@ if 'IBMRS member lispsystem!* then
    <<remflag('(fltinf),'lose);
      ds(fltinf,x(),mkstr x);
      flag('(fltinf),'lose)>>;
+
+% find path to gnuplot executable
+
+global '(!*gnuplot_name!*);
+
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+    !*gnuplot_name!* := "wgnuplot.exe";
+!#else
+    !*gnuplot_name!* := "gnuplot";
+!#endif
+
+symbolic procedure find!-gnuplot;
+  begin scalar path;
+    % first check environment variable gnuplot
+    path := find!-gnuplot!-aux getenv("GNUPLOT");
+    if path then return path;
+
+!#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
+    % if on windows, check registry
+    path := get!-registry!-value("HKLM","Software\Microsoft\Windows\CurrentVersion\App Paths\wgnuplot.exe",nil);
+    if path and car path = 1 then <<
+      path := find!-gnuplot!-aux cdr path;
+      if path then return path >>;
+!#endif
+
+    % last resort: return the name without path
+    return !*gnuplot_name!*;
+  end;
+
+symbolic procedure find!-gnuplot!-aux path;
+  %
+  % check that dirpath path contains gnuplot executable
+  %
+  if null path then nil
+   else <<
+    if idp path then path := id2string path;
+
+    % remove trailing directory separator if present
+    if subseq(path,isub1 string!-length path, string!-length path) member '(!\ !/)
+      then path := subseq(path,0,isub1 string!-length path);
+    % build path
+    path := bldmsg("%w%w%w",path,dirchar!*,!*gnuplot_name!*);
+
+    % check existence
+    (filep path and path)>>;
+  
 
 endmodule;
 
