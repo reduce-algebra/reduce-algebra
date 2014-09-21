@@ -364,7 +364,7 @@ _unixtty  DD 29*08000000h+OFFSET 299
  PUBLIC _bruch_bruch
   ALIGN 4
 _bruch_bruch  DD 29*08000000h+OFFSET 305
- DD 500
+ DD 501
  DD 30*08000000h+OFFSET 128
  DD symval
  PUBLIC _old_symval
@@ -566,6 +566,7 @@ _stacklowerbound  DD 29*08000000h+OFFSET 324
  DD 29*08000000h+OFFSET 497
  DD 29*08000000h+OFFSET 498
  DD 29*08000000h+OFFSET 499
+ DD 29*08000000h+OFFSET 500
  PUBLIC symfnc
   ALIGN 4
 symfnc  dd undefinedfunction
@@ -890,7 +891,7 @@ symfnc  dd undefinedfunction
  DD l0014
  DD l0017
  DD l0012
- DD l0230
+ DD l0231
  DD _psl_main
  dd undefinedfunction
  dd undefinedfunction
@@ -905,18 +906,18 @@ symfnc  dd undefinedfunction
  dd undefinedfunction
  DD external_strlen
  DD l0021
- DD l0210
  DD l0211
+ DD l0212
  DD l0023
- DD l0209
- DD l0214
- DD l0262
+ DD l0210
+ DD l0215
+ DD l0263
  DD binaryopenread
- DD l0235
+ DD l0236
  DD binaryread
  DD fread
  DD binaryreadblock
- DD l0232
+ DD l0233
  DD binaryclose
  DD l0050
  dd undefinedfunction
@@ -939,7 +940,7 @@ symfnc  dd undefinedfunction
  DD gtwrds
  DD l0079
  DD l0071
- DD l0256
+ DD l0257
  DD delbps
  dd undefinedfunction
  DD l0086
@@ -1024,21 +1025,21 @@ symfnc  dd undefinedfunction
  DD l0206
  DD l0207
  DD l0208
- DD l0212
+ DD l0209
  DD l0213
- DD l0215
+ DD l0214
  DD l0216
- DD l0218
- DD l0220
- DD l0222
- DD l0224
- DD l0226
- DD l0228
+ DD l0217
+ DD l0219
+ DD l0221
+ DD l0223
+ DD l0225
+ DD l0227
  DD l0229
- DD l0231
- DD l0233
+ DD l0230
+ DD l0232
  DD l0234
- DD l0236
+ DD l0235
  DD l0237
  DD l0238
  DD l0239
@@ -1050,18 +1051,19 @@ symfnc  dd undefinedfunction
  DD l0245
  DD l0246
  DD l0247
+ DD l0248
  DD fputc
  DD fgetc
  DD fgets
  DD fwrite
  DD fflush
- DD l0249
- DD l0252
- DD l0254
+ DD l0250
+ DD l0253
+ DD l0255
  DD plantlambdalink
  DD bittable
  DD undefinedfunction
- DD l0260
+ DD l0261
  dd undefinedfunction
  DD compiledcallinginterpreted
  dd undefinedfunction

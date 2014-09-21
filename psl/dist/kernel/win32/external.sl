@@ -177,25 +177,26 @@
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
-(external-function uuxdoubletofloat     (x y))
-(external-function uuxfloattodouble     (y y))
-(external-function uuxsin           (r x))
-(external-function uuxcos           (r x))
-(external-function uuxtan           (r x))
-(external-function uuxasin           (r x))
-(external-function uuxacos           (r x))
-(external-function uuxatan           (r x))
-(external-function uuxsqrt           (r x))
-(external-function uuxexp           (r x))
-(external-function uuxlog           (r x))
-(external-function uuxatan2           (r y x))
- 
+(external-function uuxdoubletofloat    (x y))
+(external-function uuxfloattodouble    (y y))
+(external-function uuxsin              (r x))
+(external-function uuxcos              (r x))
+(external-function uuxtan              (r x))
+(external-function uuxasin             (r x))
+(external-function uuxacos             (r x))
+(external-function uuxatan             (r x))
+(external-function uuxsqrt             (r x))
+(external-function uuxexp              (r x))
+(external-function uuxlog              (r x))
+(external-function uuxatan2            (r y x))
+
+(external-function get_registry_value  (key subkey name infobuffer))
  
 % Defined in pwd-fn.c
 %
 (external-function external_pwd         ())
- 
- 
+
+
 % Defined in sigs.c
 %
 (external-function sun3_sigset               (signame handler))

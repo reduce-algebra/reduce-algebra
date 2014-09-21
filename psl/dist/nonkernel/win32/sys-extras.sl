@@ -369,7 +369,8 @@
 	(setq arg0 (indx unixargs* 0))
 	(when (setq filename 
 		    (progn (for (from i 0 (size arg0) 1) 
-			    (do (when (eq (indx arg0 i) (char '/))
+                            (do (when (or (eq (indx arg0 i) (char '/))
+                                          (eq (indx arg0 i) (char '!\)))
 			       (return arg0))))))
 	  (return filename))
 	% Otherwise, have to look along the PATH environment var for directory.
@@ -385,12 +386,10 @@
 				       (sub path dirstart 
 					(difference 
 					 (difference i dirstart) 1))
-				       "/"))
-				     (when (or (equal dir "./") 
-					    (equal dir "/"))
+				       "\"))
+				     (when (or (equal dir ".\") 
+					    (equal dir "\"))
 				       (setq dir (pwd)))
-				     (when (equal dir "//")
-				       (setq dir "/"))
 				     % Dot is current directory.           
 				     (setq filename (concat dir arg0))
 				     % Build a name.                       
@@ -406,6 +405,47 @@
 (de unix-time ()
   (sys2int (external_time 0)))
 
+%
+% query the registry
+% key must be one of the strings
+%  HKCR HKCC HKCU HKLM HKU
+%
+% returns (type . data) where type is one of
+% REG_SZ 1
+% REG_EXPAND_SZ 2
+% REG_BINARY 3
+% REG_DWORD 4
+% REG_MULTI_SZ 7
+% REG_QUAD 11
+% only 1 2 4 implemented
+
+(declare-warray reg-infobuf size 3)
+
+(de get-registry-value (key subkey name)
+  (let ((result) (bufaddr) (type) (len) (str))
+    (setq result (get_registry_value (strbase (strinf key))
+                                     (strbase (strinf subkey)) 
+                                     (if name
+                                         (strbase (strinf name)) 
+                                       0)
+                                     reg-infobuf))
+    (if (weq result 0)
+        (progn
+          (setq type (wgetv reg-infobuf 0))
+          (setq len (wgetv reg-infobuf 1))
+          (setq bufaddr (wgetv reg-infobuf 2))
+          (cons type
+            (cond ((weq type 4)    % REG_DWORD
+                   (wgetv bufaddr 0))
+                  ((or (weq type 1) (weq type 2))    % REG_SZ, REG_EXPAND_SZ
+                   (if (weq 0 (byte bufaddr (isub1 len)))
+                       (setq len (isub1 len)))
+                   (setq str (gtstr (isub1 len)))
+                   (for (from i 0 (isub1 len) 1)
+                     (do (setf (strbyt str i) (byte bufaddr i))))
+                   (mkstr str))))))))
+           
+  
 %---------- windows callback functions ---------------------------------
 
 (fluid '(win-messages))

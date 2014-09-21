@@ -74,7 +74,7 @@
        (!*EXIT 0)
        (fullword 0) 
     UndefinedFunctionInstruction
-       (fullword UndefinedFunction))
+       (fullword UndefinedFunction)
        ))
 
 (de PlantCodePointer (idnum fn) 
