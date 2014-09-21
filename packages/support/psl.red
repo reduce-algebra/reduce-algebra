@@ -501,7 +501,7 @@ if 'IBMRS member lispsystem!* then
 global '(!*gnuplot_name!*);
 
 !#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
-    !*gnuplot_name!* := "wgnuplot.exe";
+    !*gnuplot_name!* := "gnuplot.exe";
 !#else
     !*gnuplot_name!* := "gnuplot";
 !#endif
@@ -510,17 +510,28 @@ symbolic procedure find!-gnuplot;
   begin scalar path;
     % first check environment variable gnuplot
     path := find!-gnuplot!-aux getenv("GNUPLOT");
-    if path then return path;
+    if path then return find!-gnuplot!-quotify path;
 
 !#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
     % if on windows, check registry
-    path := get!-registry!-value("HKLM","Software\Microsoft\Windows\CurrentVersion\App Paths\wgnuplot.exe",nil);
-    if path and car path = 1 and filep cdr path then return cdr path;
+    path := get!-registry!-value("HKLM","Software\Microsoft\Windows\CurrentVersion\App Paths\gnuplot.exe",nil);
+    if path and car path = 1 and filep cdr path
+      then return find!-gnuplot!-quotify cdr path;
 !#endif
 
     % last resort: return the name without path
-    return !*gnuplot_name!*;
+    return find!-gnuplot!-quotify !*gnuplot_name!*;
   end;
+
+symbolic procedure find!-gnuplot!-quotify path;
+  %
+  % for Windows, put double quotes around path
+  %
+!#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
+  concat("""",concat(path,""""));
+!#else
+  path;
+!#endif
 
 symbolic procedure find!-gnuplot!-aux path;
   %

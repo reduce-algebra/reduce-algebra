@@ -79,11 +79,12 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
            ));
 
       % add $reduce/plot to the path when using X11 (gnuplot will load a child).
-   plotcommand!*:=
-    begin scalar p;
-     if not(p:=getenv "gnuplot") then
-        p:=bldmsg("%w/plot",getenv "reduce");
-     return bldmsg("PATH=$PATH:%w;export PATH;gnuplot",p);
+%%   plotcommand!*:=
+%%    begin scalar p;
+%%     if not(p:=getenv "gnuplot") then
+%%        p:=bldmsg("%w/plot",getenv "reduce");
+%%     return bldmsg("PATH=$PATH:%w;export PATH;gnuplot",p);
+   plotcommand!* := find!-gnuplot();
     end;
 
    plotcleanup!* :=                  % delete scratch files
@@ -132,16 +133,17 @@ fluid '(!*!*windows);
      if not member('win64,lispsystem!*) then load w!-pipes;
      !*plotusepipe:=t;
      plotcmds!* := bldmsg("%w\plotcmds",plottmp!*);;
-     plotcommand!* := bldmsg(
-%      "%w\plot\wgnupl32.exe;wgnuplot_parent;wgnuplot_text",
-%      "%w\plot\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
-       if member('dos,lispsystem!*) then
-        "%w\wutil\dos386\wgnuplot.exe;wgnuplot_parent;wgnuplot_text"
-        else if member('alphant,lispsystem!*) then
-        "%w\wutil\alphant\wgnuplot.exe;wgnuplot_parent;wgnuplot_text"
-        else
-        "%w\wutil\win32\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
-        getenv("reduce"));
+%%     plotcommand!* := bldmsg(
+%%%      "%w\plot\wgnupl32.exe;wgnuplot_parent;wgnuplot_text",
+%%%      "%w\plot\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
+%%       if member('dos,lispsystem!*) then
+%%        "%w\wutil\dos386\wgnuplot.exe;wgnuplot_parent;wgnuplot_text"
+%%        else if member('alphant,lispsystem!*) then
+%%        "%w\wutil\alphant\wgnuplot.exe;wgnuplot_parent;wgnuplot_text"
+%%        else
+%%        "%w\wutil\win32\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
+%%        getenv("reduce"));
+     plotcommand!* := find!-gnuplot();
      plotheader!* := "";
      plotcleanup!* :=                     % delete scratch files
        bldmsg("del %w",plotcmds!*) .
