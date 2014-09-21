@@ -111,9 +111,7 @@ extern int32_t read_action_illegal(int32_t c, Lisp_Object f);
 extern int32_t read_action_list(int32_t c, Lisp_Object f);
 extern int32_t read_action_vector(int32_t c, Lisp_Object f);
 
-#ifndef MAX_PROMPT_LENGTH
-#  define MAX_PROMPT_LENGTH 256
-#endif
+#define MAX_PROMPT_LENGTH 80
 extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 
 /*

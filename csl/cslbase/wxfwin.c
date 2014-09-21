@@ -1054,7 +1054,9 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/') fullProgramName = argv0;
+    else if (argv0[0] == '/')
+    {   fullProgramName = argv0;
+    }
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */

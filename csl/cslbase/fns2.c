@@ -712,26 +712,17 @@ Lisp_Object Lsymbol_protect(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
  *                                  fastget usage set.
  * (symbol-make-fastget 'xxx n)     sets it to n (0 <= n < 63)
  * (symbol-make-fastget 'xxx -1)    sets the option off
- * (symbol-make-fastget n)          specify fast-get range (n <= 63)
  */
 
 Lisp_Object Lsymbol_make_fastget1(Lisp_Object nil, Lisp_Object a)
 {
-    int32_t n, n1 = fastget_size;
-    CSL_IGNORE(nil);
-    if (!is_fixnum(a) ||
-        (n = int_of_fixnum(a)) < 0 ||
-        (n > MAX_FASTGET_SIZE)) return aerror1("symbol-make-fastget", a);
 /*
- * At one time I felt that a message here was helpful. Now I view it
- * as unnecessary, so I am commenting it out.
+ * Originally I had thought I would let people change the fastget size here,
+ * but I think that is dangerous and unnecessary so I will not do so any
+ * more. Anybody who tries will get a cryptic message!
  */
-/*  term_printf("+++ Fastget size was %d, now %d\n", n1, n); */
-/* Changing the fastget size on the fly seems to me to be a very bad idea
- * now - so I will just ignore this call...
- */
-/*  fastget_size = n; */
-    return onevalue(fixnum_of_int(n1));
+    term_printf("+++ symbol-make-fastget called with only 1 argument\n");
+    return onevalue(nil);
 }
 
 Lisp_Object Lsymbol_make_fastget(Lisp_Object nil, Lisp_Object a, Lisp_Object n)

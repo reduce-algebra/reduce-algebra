@@ -42,7 +42,6 @@
 #include "bytes.h"
 
 /*
- * I put all the code that handles property lists in this file since then
  * I can arrange that the option that allows me to count the number of byte
  * opcodes that are executed also lets me collect statistics on which
  * indicators are most heavily used with PUT and GET.
@@ -1324,8 +1323,10 @@ static void trace_print_3(Lisp_Object name, Lisp_Object *stack)
 #ifdef MEMORY_TRACE
 #define next_byte (cmemory_reference((intptr_t)ppc), *ppc++)
 #else
-#define next_byte *ppc++
+#define next_byte (*ppc++)
 #endif
+
+#define most_recent_byte (*(ppc-1))
 
 #ifdef CHECK_STACK
 char *native_stack = NULL, *native_stack_base = NULL;
@@ -1465,7 +1466,9 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
         *((int *)(-1)) = 0x55555555; /* Collapse! */
         abort(); 
     }
+    debug_record(ffname);
     CSL_IGNORE(ffsym);
+    debug_assert(1);
 #endif
 
 /*
@@ -4314,11 +4317,14 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_BUILTIN0:
+            debug_assert(1);
             f345 = zero_arg_functions[next_byte];
+            debug_record_int("BUILTIN0", most_recent_byte);
 /* BUILTIN0:  A=fn() */
             save_pc();
             C_stack = stack;
             A_reg = f345(nil, 0);
+            debug_assert(1);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
             stack = C_stack;
@@ -4326,11 +4332,14 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_BUILTIN2R:
+            debug_assert(1);
             f2 = two_arg_functions[next_byte];
+            debug_record_int("BUILTIN2R", most_recent_byte);
 /* BUILTIN2R:   A=fn(A,B); NOTE arg order reversed */
             save_pc();
             C_stack = stack;
             A_reg = f2(nil, A_reg, B_reg);
+            debug_assert(1);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
             stack = C_stack;
@@ -4338,12 +4347,15 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_BUILTIN3:
+            debug_assert(1);
             f345 = three_arg_functions[next_byte];
+            debug_record_int("BUILTIN3", most_recent_byte);
 /* CALL3:   A=fn(pop(),B,A); */
             save_pc();
             pop(r1);
             C_stack = stack;
             A_reg = f345(nil, 3, r1, B_reg, A_reg);
+            debug_assert(1);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
             stack = C_stack;
@@ -4923,11 +4935,14 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_BUILTIN1:
+            debug_assert(1);
             f1 = one_arg_functions[next_byte];
+            debug_record_int("BUILTIN1", most_recent_byte);
 /* BUILTIN1:   A=fn(A); */
             save_pc();
             C_stack = stack;
             A_reg = f1(nil, A_reg);
+            debug_assert(1);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
             stack = C_stack;
@@ -4935,11 +4950,14 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             continue;
 
     case OP_BUILTIN2:
+            debug_assert(1);
             f2 = two_arg_functions[next_byte];
+            debug_record_int("BUILTIN2", most_recent_byte);
 /* BUILTIN2:   A=fn(B,A); */
             save_pc();
             C_stack = stack;
             A_reg = f2(nil, B_reg, A_reg);
+            debug_assert(1);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
             stack = C_stack;
@@ -5296,6 +5314,8 @@ catcher:
         continue;
 
 call0:  r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
 /*
  * NB I set fname to be the literal-vector offset in the line above so that
  * it will be possible to find the name of the function that was called
@@ -5315,6 +5335,7 @@ call0:  r1 = elt(litvec, fname);
         save_pc();
         C_stack = stack;
         A_reg = f345(qenv(r1), 0);
+        debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         stack = C_stack;
@@ -5322,6 +5343,8 @@ call0:  r1 = elt(litvec, fname);
         continue;
 
 jcall0: r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f345 = qfnn(r1);
 #ifdef DEBUG
         if (f345 == NULL)
@@ -5411,6 +5434,8 @@ jcall0: r1 = elt(litvec, fname);
 #endif
 
 call1:  r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f1 = qfn1(r1);
 #ifdef DEBUG
         if (f1 == NULL)
@@ -5425,6 +5450,7 @@ call1:  r1 = elt(litvec, fname);
         save_pc();
         C_stack = stack;
         A_reg = f1(qenv(r1), A_reg);
+        debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         stack = C_stack;
@@ -5432,6 +5458,8 @@ call1:  r1 = elt(litvec, fname);
         continue;
 
 jcall1: r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f1 = qfn1(r1);
 #ifdef DEBUG
         if (f1 == NULL)
@@ -5519,6 +5547,8 @@ jcall1: r1 = elt(litvec, fname);
 #endif
 
 call2:  r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f2 = qfn2(r1);
 #ifdef DEBUG
         if (f2 == NULL)
@@ -5533,6 +5563,7 @@ call2:  r1 = elt(litvec, fname);
         save_pc();
         C_stack = stack;
         A_reg = f2(qenv(r1), B_reg, A_reg);
+        debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         stack = C_stack;
@@ -5540,6 +5571,8 @@ call2:  r1 = elt(litvec, fname);
         continue;
 
 call2r: r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f2 = qfn2(r1);
 #ifdef DEBUG
         if (f2 == NULL)
@@ -5554,6 +5587,7 @@ call2r: r1 = elt(litvec, fname);
         save_pc();
         C_stack = stack;
         A_reg = f2(qenv(r1), A_reg, B_reg);
+        debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         stack = C_stack;
@@ -5561,6 +5595,8 @@ call2r: r1 = elt(litvec, fname);
         continue;
 
 jcall2: r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f2 = qfn2(r1);
 #ifdef DEBUG
         if (f2 == NULL)
@@ -5648,6 +5684,8 @@ jcall2: r1 = elt(litvec, fname);
 #endif
 
 call3:  r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f345 = qfnn(r1);
 #ifdef DEBUG
         if (f345 == NULL)
@@ -5663,6 +5701,7 @@ call3:  r1 = elt(litvec, fname);
         pop(r2);
         C_stack = stack;
         A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
+        debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         stack = C_stack;
@@ -5670,6 +5709,8 @@ call3:  r1 = elt(litvec, fname);
         continue;
 
 jcall3: r1 = elt(litvec, fname);
+        debug_record_symbol(r1);
+        debug_assert(1);
         f345 = qfnn(r1);
 #ifdef DEBUG
         if (f345 == NULL)
@@ -5790,6 +5831,8 @@ jcalln:
         push2(B_reg, A_reg);
         C_stack = stack;
         A_reg = elt(litvec, fname);
+        debug_record_symbol(A_reg);
+        debug_assert(1);
 /*
  * Also if the function is byte-coded I can enter it more directly.
  * It is strongly desirable that I do so so that backtraces will work
@@ -5804,6 +5847,7 @@ jcalln:
         name_of_caller = (const char *)ffname;
 #endif
         A_reg = apply(A_reg, (int)w, nil, A_reg, (1 & (int)(intptr_t)entry_stack));
+        debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto ncall_error_exit;
 #ifndef NO_BYTECOUNT

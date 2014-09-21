@@ -247,9 +247,7 @@ extern int fwin_getchar(void);
  * number of characters) should be used as a prompt.
  */
 
-#ifndef MAX_PROMPT_LENGTH
-#  define MAX_PROMPT_LENGTH 80
-#endif
+#define MAX_PROMPT_LENGTH 80
 
 extern void fwin_set_prompt(const char *s);
 
@@ -499,9 +497,6 @@ extern void MS_CDECL sigint_handler(int code);
 extern void MS_CDECL sigbreak_handler(int code);
 
 extern int plain_worker(int argc, char *argv[], fwin_entrypoint *fwin_main);
-#ifndef MAX_PROMPT_LENGTH
-#  define MAX_PROMPT_LENGTH 80
-#endif
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
 
 #ifdef __cplusplus

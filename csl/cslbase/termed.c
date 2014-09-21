@@ -413,9 +413,7 @@ static int historyFirst, historyNumber, historyLast;
 static int searchFlags; 
 
 
-#ifndef MAX_PROMPT_LENGTH
-#  define MAX_PROMPT_LENGTH 80
-#endif
+#define MAX_PROMPT_LENGTH 80
 
 static wchar_t prompt_string[MAX_PROMPT_LENGTH+1] = L">";
 

@@ -250,6 +250,41 @@ extern void show_stack();
 extern int32_t software_ticks, countdown;
 
 /*
+ * Extra debugging help...
+ */
+
+#ifdef DEBUG
+
+extern char debug_trail[32][32];
+extern char debug_trail_file[32][32];
+extern int debug_trail_line[32];
+extern int debug_trailp;
+extern void debug_record_raw(const char *data, const char *file, int line);
+extern void debug_record_int_raw(const char *s, int n, const char *file, int line);
+extern void debug_show_trail_raw(const char *msg, const char *file, int line);
+
+#define debug_record(data) debug_record_raw(data, __FILE__, __LINE__)
+#define debug_record_int(s, n) debug_record_int_raw(s, n, __FILE__, __LINE__)
+#define debug_record_string(s) debug_record(&celt(s, 0))
+#define debug_record_symbol(x) debug_record_string(qpname(x))
+#define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
+
+#define debug_assert(x) \
+  if (!(x)) { debug_show_trail("Assertion failed"); exit(7); }
+
+#else
+
+#define debug_record(data)
+#define debug_record_int(s, n)
+#define debug_record_string(s)
+#define debug_record_symbol(x)
+#define debug_show_trail(x)
+
+#define debug_assert(x)
+
+#endif
+
+/*
  * The next bit is JUST used under Linux for tracking stubborn bugs where
  * I want to check where I am executing code.
  */

@@ -276,6 +276,8 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
     for (;;)
     {   if (symbolp(fn))
         {
+            debug_assert(1);
+            debug_record_symbol(fn);
             def = qenv(fn); /* this is passed as arg1 to the called code */
 /*
  * apply_lambda() will find arguments on the stack and is responsible for
@@ -402,6 +404,7 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
                     def = apply_lots(nargs, qfnn(fn), def);
                     break;
                 }
+                debug_assert(1);
 /*
  * here I have to pop the stack by hand - note that popv does not
  * corrupt exit_count, which tells me how many results were being handed

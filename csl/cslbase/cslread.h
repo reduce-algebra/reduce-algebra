@@ -104,9 +104,7 @@ extern Lisp_Object iintern(Lisp_Object str, int32_t h, Lisp_Object p,
 extern Lisp_Object find_package(char *name, int len);
 extern Lisp_Object read_from_vector(char *v);
 
-#ifndef MAX_PROMPT_LENGTH
-#  define MAX_PROMPT_LENGTH 256
-#endif
+#define MAX_PROMPT_LENGTH 80
 extern char prompt_string[MAX_PROMPT_LENGTH];
 
 /* These two are now specified in LispObject units not bytes */

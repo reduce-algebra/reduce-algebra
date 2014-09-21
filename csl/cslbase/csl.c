@@ -1,4 +1,4 @@
-/*  csl.c                            Copyright (C) 1989-2014 Codemist Ltd */
+/* csl.c                            Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -900,6 +900,78 @@ void alarm_handler(int signum)
 {
     blipflag = 1;
 }
+#endif
+
+#ifdef DEBUG
+
+char debug_trail[32][32] =
+{
+  "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", ""
+};
+
+char debug_trail_file[32][32] =
+{
+  "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", ""
+};
+
+int debug_trail_line[32] =
+{
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0
+};
+
+int debug_trailp = 0;
+
+void debug_record_raw(const char *data, const char *file, int line)
+{
+    const char *f1 = strrchr(file, '/');
+    if (f1 != NULL) f1++;
+    else f1 = file;
+    if (data != NULL)
+    {   strncpy(debug_trail[debug_trailp], data, 32);
+        strncpy(debug_trail_file[debug_trailp], f1, 32);
+        debug_trail_line[debug_trailp] = line;
+        debug_trailp = (debug_trailp+1)%32;
+    }
+}
+
+void debug_record_int_raw(const char *data, int n, const char *file, int line)
+{
+    const char *f1 = strrchr(file, '/');
+    if (f1 != NULL) f1++;
+    else f1 = file;
+    if (data != NULL)
+    {   sprintf(debug_trail[debug_trailp], "%s%d", data, n);
+        strncpy(debug_trail_file[debug_trailp], f1, 32);
+        debug_trail_line[debug_trailp] = line;
+        debug_trailp = (debug_trailp+1)%32;
+    }
+}
+
+void debug_show_trail_raw(const char *msg, const char *file, int line)
+{
+    int i;
+    const char *f1 = strrchr(file, '/');
+    if (f1 != NULL) f1++;
+    printf("\n+++++ Debug trail %s\n", msg);
+    for (i=0; i<32; i++)
+    {   if (debug_trail[debug_trailp][0] == 0) continue;
+        printf("%d: %.32s at %.32s:%d\n", i, debug_trail[debug_trailp],
+            debug_trail_file[debug_trailp], debug_trail_line[debug_trailp]);
+        debug_trailp = (debug_trailp+1)%32;
+    }
+    printf("Current at %d:%d", f1, line);
+    fflush(stdout);
+}
+
 #endif
 
 static void lisp_main(void)

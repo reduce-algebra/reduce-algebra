@@ -96,6 +96,7 @@ restart:
     if (t == TAG_SYMBOL)
     {
         Header h = qheader(u);
+        debug_record_symbol(u);
         if (h & SYM_SPECIAL_VAR)
         {   Lisp_Object v = qvalue(u);
             if (v == unset_var) return error(1, err_unset_var, u);
@@ -208,6 +209,7 @@ restart:
  * take precedence over macros.
  */
             Header h = qheader(fn);
+            debug_record_symbol(fn);
             if (h & SYM_SPECIAL_FORM)
             {
 #ifdef DEBUG
@@ -229,7 +231,9 @@ restart:
  * enough to call for complication and slow-down in the interpreter this
  * way - but then I am not exactly what you would call a Common Lisp Fan!
  */
+                debug_record("About to expand a macro");
                 fn = macroexpand(u, env);
+                debug_record("macro expanded");
                 pop2(env, u);
                 nil = C_nil;
                 if (exception_pending())
@@ -1218,7 +1222,10 @@ Lisp_Object Lapply_2(Lisp_Object nil, Lisp_Object fn, Lisp_Object a1)
 
 Lisp_Object Lapply0(Lisp_Object nil, Lisp_Object fn)
 {
+#ifndef DEBUG
+/* I avoid this optimisation if debugging... */
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
+#endif
     stackcheck1(0, fn);
 #ifndef NO_BYTECOUNT
     name_of_caller = "apply";
@@ -1228,7 +1235,9 @@ Lisp_Object Lapply0(Lisp_Object nil, Lisp_Object fn)
 
 Lisp_Object Lapply1(Lisp_Object nil, Lisp_Object fn, Lisp_Object a)
 {
+#ifndef DEBUG
     if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a);
+#endif
     push(a);
     stackcheck1(1, fn);
 #ifndef NO_BYTECOUNT
@@ -1247,7 +1256,9 @@ Lisp_Object MS_CDECL Lapply2(Lisp_Object nil, int nargs, ...)
     a = va_arg(aa, Lisp_Object);
     b = va_arg(aa, Lisp_Object);
     va_end(aa);
+#ifndef DEBUG
     if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a, b);
+#endif
     push2(a, b);
     stackcheck1(2, fn);
 #ifndef NO_BYTECOUNT
@@ -1267,7 +1278,9 @@ Lisp_Object MS_CDECL Lapply3(Lisp_Object nil, int nargs, ...)
     b = va_arg(aa, Lisp_Object);
     c = va_arg(aa, Lisp_Object);
     va_end(aa);
+#ifndef DEBUG
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a, b, c);
+#endif
     push3(a, b, c);
     stackcheck1(3, fn);
 #ifndef NO_BYTECOUNT
@@ -1278,7 +1291,9 @@ Lisp_Object MS_CDECL Lapply3(Lisp_Object nil, int nargs, ...)
 
 Lisp_Object Lfuncall1(Lisp_Object nil, Lisp_Object fn)
 {
+#ifndef DEBUG
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
+#endif
     stackcheck1(0, fn);
 #ifndef NO_BYTECOUNT
     name_of_caller = "funcall";
@@ -1288,7 +1303,9 @@ Lisp_Object Lfuncall1(Lisp_Object nil, Lisp_Object fn)
 
 Lisp_Object Lfuncall2(Lisp_Object nil, Lisp_Object fn, Lisp_Object a1)
 {
+#ifndef DEBUG
     if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a1);
+#endif
     push(a1);
     stackcheck1(1, fn);
 #ifndef NO_BYTECOUNT
@@ -1322,7 +1339,9 @@ case 2: return aerror("funcall wrong call");
 case 3: fn = va_arg(a, Lisp_Object);
         a1 = va_arg(a, Lisp_Object);
         a2 = va_arg(a, Lisp_Object);
+#ifndef DEBUG
         if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a1, a2);
+#endif
         push2(a1, a2);
 #ifndef NO_BYTECOUNT
         name_of_caller = "funcall";
@@ -1332,7 +1351,9 @@ case 4: fn = va_arg(a, Lisp_Object);
         a1 = va_arg(a, Lisp_Object);
         a2 = va_arg(a, Lisp_Object);
         a3 = va_arg(a, Lisp_Object);
+#ifndef DEBUG
         if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a1, a2, a3);
+#endif
         push3(a1, a2, a3);
 #ifndef NO_BYTECOUNT
         name_of_caller = "funcall";
@@ -1343,7 +1364,9 @@ case 5: fn = va_arg(a, Lisp_Object);
         a2 = va_arg(a, Lisp_Object);
         a3 = va_arg(a, Lisp_Object);
         a4 = va_arg(a, Lisp_Object);
+#ifndef DEBUG
         if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 4, a1, a2, a3, a4);
+#endif
         push4(a1, a2, a3, a4);
 #ifndef NO_BYTECOUNT
         name_of_caller = "funcall";
@@ -2168,12 +2191,14 @@ Lisp_Object MS_CDECL undefinedn(Lisp_Object fname, int nargs, ...)
 Lisp_Object MS_CDECL f0_as_0(Lisp_Object env, int nargs, ...)
 {
     if (nargs != 0) return aerror1("wrong number of args (0->0)", env);
+    debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 0);
 }
 
 Lisp_Object f1_as_0(Lisp_Object env, Lisp_Object a)
 {
     CSL_IGNORE(a);
+    debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 0);
 }
 
@@ -2181,23 +2206,27 @@ Lisp_Object f2_as_0(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 {
     CSL_IGNORE(a);
     CSL_IGNORE(b);
+    debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 0);
 }
 
 Lisp_Object MS_CDECL f3_as_0(Lisp_Object env, int nargs, ...)
 {
     if (nargs != 3) return aerror1("wrong number of args (3->0)", env);
+    debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 0);
 }
 
 Lisp_Object f1_as_1(Lisp_Object env, Lisp_Object a)
 {
+    debug_record_symbol(env);
     return (*qfn1(env))(qenv(env), a);
 }
 
 Lisp_Object f2_as_1(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 {
     CSL_IGNORE(b);
+    debug_record_symbol(env);
     return (*qfn1(env))(qenv(env), a);
 }
 
@@ -2209,11 +2238,13 @@ Lisp_Object MS_CDECL f3_as_1(Lisp_Object env, int nargs, ...)
     va_start(a, nargs);
     a1 = va_arg(a, Lisp_Object);
     va_end(a);
+    debug_record_symbol(env);
     return (*qfn1(env))(qenv(env), a1);
 }
 
 Lisp_Object f2_as_2(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 {
+    debug_record_symbol(env);
     return (*qfn2(env))(qenv(env), a, b);
 }
 
@@ -2226,6 +2257,7 @@ Lisp_Object MS_CDECL f3_as_2(Lisp_Object env, int nargs, ...)
     a1 = va_arg(a, Lisp_Object);
     a2 = va_arg(a, Lisp_Object);
     va_end(a);
+    debug_record_symbol(env);
     return (*qfn2(env))(qenv(env), a1, a2);
 }
 
@@ -2239,6 +2271,7 @@ Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
     a2 = va_arg(a, Lisp_Object);
     a3 = va_arg(a, Lisp_Object);
     va_end(a);
+    debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 3, a1, a2, a3);
 }
 
