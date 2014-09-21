@@ -66,18 +66,23 @@ then
 
   for x in `find $target \( -name configure.ac -o -name configure.in \) -print`
   do
-    echo "============================================================"
     case $x in
 # I will not try reconfiguring in the wxWidgets directory. I will
 # want the files there to be exactly as unpacked from the wxWidgets
 # archive, and will believe that use of tar to unpack the archive will
 # have left files with datestamps correctly ordered.
-    *wxWidgets* | *crlibm*)
-      echo Leaving directory ${x%/configure.ac} untouched.
+# cslplus is an ACN experiment not checked in to the main tree but it is
+# useful to ignore it here...
+    *wxWidgets* | *crlibm* | *cslplus* | *psl/support-packages*)
+# I think that being told about the directories I do not deal with
+# is getting dull, so I remove the print statement here.
+#     echo Leaving directory ${x%/configure.ac} untouched.
       ;;
     *)
       x1=`echo $x | sed -e 's+/configure.ac$++'`
+      x1=`echo $x1 | sed -e 's+/configure.in$++'`
       cd $x1
+      echo "============================================================"
       echo Updating autoconf files in `pwd`:
       rm -rf aclocal.m4 autom4te.cache
 # The files configure and Makefile.in might sometimes have been
