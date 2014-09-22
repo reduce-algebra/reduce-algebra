@@ -46,10 +46,26 @@ cp -r cslwin64/csl/reduce.resources reduce.resources
 
 ./fatbinary.sh
 
+# I want a program that can establish cygwin symlinks but that is a regular
+# Windows program This is for calling from an installer
+
+./set-up-symlinks.sh
+
 # The files that I list here are the ones that are the "results" from
 # this script.
 
-ls -lhd reduce.exe winreduce.exe reduce.img reduce.fonts reduce.resources
+ls -lhd reduce.exe winreduce.exe reduce.img reduce.fonts \
+	reduce.resources make-cygwin-symlink.exe
+
+# I hope that the installer will include a copy of make-cygwin-symlink
+# (which will not be required beyond install time) and will go something
+# rather like
+#   ./make-cygwin-symlink "c:\Program Files\reduce\csl-reduce\reduce.exe" \
+#                         redcsl
+# which should put a symlink called redcsl in /usr/local/bin of any cygwin
+# installation that my code manages to find. After that a cygwin user
+# will be able to gu just "redcsl" to pop up a windows Reduce or
+# "redcsl -w" for a console mode one.
 
 
 # end of build script
