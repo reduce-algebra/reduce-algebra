@@ -4337,9 +4337,9 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 	-$(RM) -f csl$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/csl .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/csl-nogui .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make csl.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make csl.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make csl.exe
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f csl$(COM)
@@ -4357,7 +4357,7 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 # See "gui-or-not.txt" for an explanation of what this is about...
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/reduce .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/reduce-nogui .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make reduce.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make reduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 @cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
@@ -4389,9 +4389,9 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 	-$(RM) -f bootstrapreduce$(EXEEXT)
 # See "gui-or-not.txt" for an explanation of what this is about...
 @windows_TRUE@	$(CP) $(srcdir)/bootstrapreduce .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make bootstrapreduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe;
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make bootstrapreduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
@@ -4403,9 +4403,9 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 	-$(RM) -f fwindemo$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo-nogui .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild)/csl && make fwindemo.exe
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make fwindemo.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	cd $(with_cygbuild64)/csl && make fwindemo.exe;
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make fwindemo.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f fwindemo$(COM)

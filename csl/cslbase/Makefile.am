@@ -1025,11 +1025,11 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	cd $(with_cygbuild)/csl && make csl.exe
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make csl.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
 if cyg64
-	cd $(with_cygbuild64)/csl && make csl.exe
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
@@ -1076,7 +1076,7 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	cd $(with_cygbuild)/csl && make reduce.exe
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make reduce.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 if cyg64
@@ -1135,11 +1135,11 @@ if windows
 	$(CP) $(srcdir)/bootstrapreduce .
 if !cygwin
 if cyg32
-	cd $(with_cygbuild)/csl && make bootstrapreduce.exe
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make bootstrapreduce.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
 if cyg64
-	cd $(with_cygbuild64)/csl && make bootstrapreduce.exe;
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make bootstrapreduce.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
@@ -1173,11 +1173,11 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	cd $(with_cygbuild)/csl && make fwindemo.exe
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make fwindemo.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
 if cyg64
-	cd $(with_cygbuild64)/csl && make fwindemo.exe;
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make fwindemo.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
