@@ -62,6 +62,7 @@ symbolic procedure mkrandtabl(u,base,ar);
 if not fixp base and not !*rounded then
                               rederr("ROUNDED should be on") else
 begin scalar ve; integer lu;
+ if base = 1 then base := '!:rd!: . 1.0;
  lu:=length(u:=alg_to_symb u);
  % if lu > 2 then typerr(u,"one or two integer list");
  ve:=mkarray1(u,'algebraic);
