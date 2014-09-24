@@ -173,10 +173,10 @@ procedure cl_simpltb(op,var,b,mtx);
    % equivalent formula.
    begin scalar bfvl;
       % Note: Simplification of the bound to false is context dependent
-      if b eq 'false then <<
- 	 if op eq 'bex then return 'false;
-	 if op eq 'ball then return 'true
-      >>;
+      if b eq 'false then
+ 	 return if op eq 'bex then 'false else 'true;
+      if mtx eq 'false and op eq 'bex or mtx eq 'true and op eq 'ball then
+	 return mtx;
       % Matrix does not contain the bound variable. Note: nil as a result of
       % rl_bsatp means, that satisfability test has failed.
       if not(var memq rl_fvarl mtx) and rl_bsatp(b,var) then return mtx;
