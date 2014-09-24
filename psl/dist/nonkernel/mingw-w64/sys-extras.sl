@@ -340,7 +340,7 @@
 (declare-warray reg-infobuf size 3)
 
 (de get-registry-value (key subkey name)
-  (let ((result) (bufaddr) (len) (str))
+  (let ((result) (bufaddr) (type) (len) (str))
     (setq result (get_registry_value (strbase (strinf key))
                                      (strbase (strinf subkey)) 
                                      (if name
