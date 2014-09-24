@@ -4,7 +4,12 @@
 # version. Note it needs my "cyg64" utility to arrange that it runs under
 # 64-bit cygwin...
 
-reduce=`pwd`/..
+# It is important here that the current directory was preserved during the
+# change-over made by the "cyg64" utility...
+
+reduce=`cygpath -a ..`
+reduce="${reduce%/}"
+echo $reduce
 
 # For this to work you MUST have a 64-bit version of cygwin installed in
 # a directory like /cygdrive/c/cygwin64 or /cygdrive/d/cygwin64
@@ -17,7 +22,8 @@ pushd cslcyg64
 
 mkdir crlibm
 pushd crlibm
-../../cyg64 $reduce/csl/cslbase/crlibm/configure --prefix=$reduce/winbuild/cslcyg64
+../../cyg64 $reduce/csl/cslbase/crlibm/configure \
+    --prefix=$reduce/winbuild/cslcyg64
 ../../cyg64 make install
 popd
 
@@ -27,7 +33,8 @@ foxflags="--enable-release --with-opengl=no \
           --disable-jpeg --disable-zlib --disable-bz2lib \
           --disable-png --disable-tiff"
 extras="--with-xft --with-xim"
-../../cyg64 $reduce/csl/fox/configure --prefix=$reduce/winbuild/cslcyg64 $foxflags $extras
+../../cyg64 $reduce/csl/fox/configure \
+    --prefix=$reduce/winbuild/cslcyg64 $foxflags $extras
 ../../cyg64 make install
 popd
 

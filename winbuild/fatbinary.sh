@@ -1,6 +1,13 @@
 #! /bin/sh
 
-# First create the utility program that will compress executables and
+# Assemble some of the built files & directories  I will want, putting them
+# in the current directory where I can see them.
+
+cp cslwin64/csl/reduce.img reduce.img
+cp -r cslwin64/csl/reduce.fonts reduce.fonts
+cp -r cslwin64/csl/reduce.resources reduce.resources
+
+# Create the utility program that will compress executables and
 # tag the commpressed data onto the end of an existing file.
 
 gcc addresources.c -lz -oaddresources.exe

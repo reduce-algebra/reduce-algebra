@@ -3,7 +3,9 @@
 # Configure and build CSL version from scratch. This makes a 32-bit cygwin
 # version
 
-reduce=`pwd`/..
+reduce=`cygpath -a ..`
+reduce="${reduce%/}"
+echo $reduce
 
 rm -rf cslcyg32
 mkdir cslcyg32
@@ -30,7 +32,7 @@ pushd csl
 $reduce/csl/cslbase/configure --prefix=$reduce/winbuild/cslcyg32 \
     --with-cygwin --with-fox=$reduce/winbuild/cslcyg32 --with-fox-pending \
     --without-wx
-make full-code
+make standard-c-code
 make
 ls -lh reduce.exe reduce.img csl.exe csl.img
 popd

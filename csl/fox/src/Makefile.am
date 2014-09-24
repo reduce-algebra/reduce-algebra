@@ -67,7 +67,8 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 
 CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
-RESWRAP  = $(top_builddir)/utils/reswrap$(EXEEXT)
+# ACN change to use abd_top_builddir - an absolute pathname...
+RESWRAP  = $(abs_top_builddir)/utils/reswrap$(EXEEXT)
 SUFFIXES = .gif .bmp
 
 noinst_DATA =
@@ -516,14 +517,22 @@ fxpriv.h \
 $(CURSORS) \
 $(ICONS)
 
-$(srcdir)/FXApp.cpp: icons.h
+# ACN changes: the original version here seemed to assume that FOX had
+# been configured in-place and so it expected that reswrap would find all
+# the $(ICONS) in the currect directory. I have changed it so I move to the
+# source directory for that - and then I needed to make the $(RESWRAP)
+# definition use an absolute path. So I believe it is now safe to build outside
+# the source tree even if for any reason datestamps start off in a less
+# than helpful order.
 
-icons.h: $(ICONS)
-	$(RESWRAP) -i -n FX -o icons.h $(ICONS)
+$(srcdir)/FXApp.cpp: $(srcdir)/icons.h
+
+$(srcdir)/icons.h: $(ICONS)
+	cd $(srcdir) && $(RESWRAP) -i -n FX -o icons.h $(ICONS)
 
 
-icons.cpp: $(ICONS)
-	$(RESWRAP) -e -n FX -o icons.cpp $(ICONS)
+$(srcdir)/icons.cpp: $(ICONS)
+	cd $(srcdir) && $(RESWRAP) -e -n FX -o icons.cpp $(ICONS)
 
 
 EXTRA_DIST = Makefile.bc \

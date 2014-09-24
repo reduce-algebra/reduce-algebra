@@ -1,8 +1,12 @@
 #! /bin/bash -v
 
-# Configure and build CSL version from scratch
+# If you just checked out a copy of Reduce it seems best to reset a load
+# of time-stamps hers since subversion may have left them in a mess. Doing
+# this is expected to avoid any use of autoreconf during the builds.
 
-reduce=`pwd`/..
+../scripts/stamp.sh
+
+# Configure and build CSL version from scratch
 
 # (1) a cygwin32 version
 
@@ -16,7 +20,6 @@ reduce=`pwd`/..
 
 ./cslwin64.sh
 
-
 # (4) a cygwin64 version
 
 ./cslcyg64.sh
@@ -25,13 +28,6 @@ reduce=`pwd`/..
 
 ls -lh csl*/csl/csl.exe csl*/csl/csl.com csl*/csl/csl.img
 ls -lh csl*/csl/reduce.exe csl*/csl/reduce.com csl*/csl/reduce.img
-
-# Assemble some of the built files & directories  I will want, putting them
-# in the current directory where I can see them.
-
-cp cslwin64/csl/reduce.img reduce.img
-cp -r cslwin64/csl/reduce.fonts reduce.fonts
-cp -r cslwin64/csl/reduce.resources reduce.resources
 
 # Now assemble the various executables that I made in the cslwin32, cslwin64,
 # cslcyg32 and cslcyg64 directories, together with two small helper programs

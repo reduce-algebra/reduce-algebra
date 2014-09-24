@@ -3,7 +3,9 @@
 # Configure and build CSL version from scratch. This is a native version
 # for Windows in 32-bit mode.
 
-reduce=`pwd`/..
+reduce=`cygpath -a ..`
+reduce="${reduce%/}"
+echo $reduce
 
 rm -rf cslwin32
 mkdir cslwin32
