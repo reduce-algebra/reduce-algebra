@@ -167,6 +167,7 @@
   (let ((id (mkid id-number)))
     (setf (symnam id-number) print-name)
     (setf (symprp id-number) nil)
+    (wputv symget id-number nil)
     (setf (symval id-number) (mkitem unbound-tag id-number))
     (plantunbound id-number)
     id

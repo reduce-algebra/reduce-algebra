@@ -531,10 +531,12 @@
     (initializesymnam)
     (datareserveblock (plus (difference maxsymbol nextidnumber*) 1))
     (dataprintf "  DD %w DUP (?) %n" (times2 4 maxsymbol))
+    (initializesymget)   % SYMGET feature
+    (datareserveblock (plus (difference maxsymbol nextidnumber*) 1))
+    (dataprintf "  DD %w DUP (?) %n"
+      (plus (difference maxsymbol nextidnumber*) 1))
     (close dataout*)
     (setq dataout* olddataout)
-%   (initializesymget)   % SYMGET feature
-%   (datareserveblock (plus (difference maxsymbol nextidnumber*) 1))
 %    (dataalignfullword)
 %    (dataprintgloballabel (findgloballabel 'nextsymbol))
 %    (dataprintfullword nextidnumber*)

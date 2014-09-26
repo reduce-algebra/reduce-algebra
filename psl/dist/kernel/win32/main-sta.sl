@@ -15,56 +15,31 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-
-%
-
 % (c) Copyright 1982, University of Utah
-
 %
-
 % Redistribution and use in source and binary forms, with or without
-
 % modification, are permitted provided that the following conditions are met:
 %
-
 %    * Redistributions of source code must retain the relevant copyright
-
 %      notice, this list of conditions and the following disclaimer.
-
 %
 %    * Redistributions in binary form must reproduce the above copyright
-
 %      notice, this list of conditions and the following disclaimer in the
-
 %      documentation and/or other materials provided with the distribution.
-
 %
-
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-
 % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-
 % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % 
@@ -155,6 +130,7 @@
    old_symval
    old_symfnc
    old_symprp
+   old_symget
 
    _infbitlength_
    lastbps
@@ -175,6 +151,7 @@
 
 (internal-global
  '(
+   symget
    symnam
    symval
    symfnc
@@ -183,6 +160,7 @@
 
 (system-global
  '(
+   symget
    symnam
    symval
    symprp
@@ -253,10 +231,11 @@
     % establish final id tables - excuted BEFORE image loading
   (setq bruch_bruch 0)
   (setq kernel-maxsymbols nextsymbol)
-  (setq old_symval symval old_symfnc symfnc old_symprp symprp)
+  (setq old_symval symval old_symfnc symfnc old_symprp symprp old_symget symget)
   (setq symval symms)
   (setq symfnc (wplus2 symval (times2 maxsymbols addressingunitsperitem)))
   (setq symprp (wplus2 symfnc (times2 maxsymbols addressingunitsperitem)))
+  %(setq symget (wplus2 symprp (times2 maxsymbols addressingunitsperitem)))
 )
 
 (de &&init-tables2()
@@ -273,6 +252,7 @@
          (&&symcopy old_symfnc symfnc)
          (&&symcopy old_symval symval)
          (&&symcopy old_symprp symprp)
+         %(&&symcopy old_symget symget)
           )))
 
 (de &&symcopy(from to)  
@@ -346,18 +326,19 @@ panic-exit                      % need to do UNIX cleanup after
 (de &time-control(u) nil)    % hook
 
 (de pre-main ()
-%  (unixcleario)
-% (console-print-string "BPS:   ")(unixputn nextbps)
-% (console-print-string "-")(unixputn lastbps)(console-newline)
-% (console-print-string "HEAP:  ")(unixputn heaplast)
-% (console-print-string "-")(unixputn heapupperbound)(console-newline)
-% (console-print-string "STACK: ")(unixputn stacklowerbound)
-% (console-print-string "-")(unixputn stackupperbound)(console-newline)
-% (console-print-string "SYMVAL: ")(unixputn symval)
-% (console-print-string " SYMFNC: ")(unixputn symfnc)
-% (console-print-string " SYMPRP: ")(unixputn symprp)
-% (console-print-string " SYMNAM: ")(unixputn symnam)
-% (console-newline)
+  (unixcleario)
+ (console-print-string "BPS:   ")(unixputn nextbps)
+ (console-print-string "-")(unixputn lastbps)(console-newline)
+ (console-print-string "HEAP:  ")(unixputn heaplast)
+ (console-print-string "-")(unixputn heapupperbound)(console-newline)
+ (console-print-string "STACK: ")(unixputn stacklowerbound)
+ (console-print-string "-")(unixputn stackupperbound)(console-newline)
+ (console-print-string "SYMVAL: ")(unixputn symval)
+ (console-print-string " SYMFNC: ")(unixputn symfnc)
+ (console-print-string " SYMPRP: ")(unixputn symprp)
+ (console-print-string " SYMNAM: ")(unixputn symnam)
+ (console-print-string " SYMGET: ")(unixputn symget)
+ (console-newline)
 
   (initialize-symbol-table)
   (initcode)

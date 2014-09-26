@@ -1,5 +1,5 @@
-Loading image file :C:\Cygwin\home\rainer\software\reduce\psl\bin\win32\pslcomp.img 
-PSL 4.2 Compiler, 16-Aug-2013
+Loading image file :c:\Cygwin\home\rainer\software\reduce\psl\bin\win32\pslcomp.img 
+PSL 4.2 Compiler, 26-Sep-2014
 1 lisp> nil
 2 lisp> 2 lisp> t
 3 lisp> 3 lisp> nil
@@ -92,14 +92,13 @@ external_alarm external_ualarm external_time external_timc external_stat
 external_link external_unlink external_setenv external_getenv uxfloat uxfix 
 uxassign uxplus2 uxdifference uxtimes2 uxquotient uxgreaterp uxlessp 
 uxwritefloat uuxdoubletofloat uuxfloattodouble uuxsin uuxcos uuxtan uuxasin 
-uuxacos uuxatan uuxsqrt uuxexp uuxlog uuxatan2 external_pwd sun3_sigset 
-sigrelse unexec unixputc unixputs unixputn unixcleario expand_file_name 
-unixopen unixcd unixfread unixfputc unixfgetc unixfgets unixfwrite 
-unixfflush ctime external_system external_exit fopen fclose fseek clearerr 
-getw putw signal sleep ieee_handler ieee_flags setlinebuf popen pclose 
-profil datetag psll_call unix-profile fread fputc fgetc fgets fwrite fflush26 *DEFN lisp> plantunbound
-*** Unmatched right parenthesis
-plantcodepointer plantlambdalink bittable kernel-fatal-error27 *DEFN lisp> *** global `bpslowerbound' cannot become fluid
+uuxacos uuxatan uuxsqrt uuxexp uuxlog uuxatan2 get_registry_value 
+external_pwd sun3_sigset sigrelse unexec unixputc unixputs unixputn 
+unixcleario expand_file_name unixopen unixcd unixfread unixfputc unixfgetc 
+unixfgets unixfwrite unixfflush ctime external_system external_exit fopen 
+fclose fseek clearerr getw putw signal sleep ieee_handler ieee_flags 
+setlinebuf popen pclose profil datetag psll_call unix-profile fread fputc 
+fgetc fgets fwrite fflush26 *DEFN lisp> plantunbound plantcodepointer plantlambdalink bittable kernel-fatal-error27 *DEFN lisp> *** global `bpslowerbound' cannot become fluid
 *** global `nextbps' cannot become fluid
 codeaddressp lastkernel28 *DEFN lisp> 28 *DEFN lisp> initcode29 lisp> 
 Quitting
