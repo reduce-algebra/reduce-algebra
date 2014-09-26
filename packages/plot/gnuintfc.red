@@ -32,24 +32,32 @@ module gnuintfc; % REDUCE-gnuplot interface.
 
 fluid '(plotstyle!*);
 
-global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
-         plotcleanup!* plottmp!*);
+global '(
+   !*plotinterrupts			% list of error codes caused by interrupts (ctl-C)
+   !*plotpause 				% NIL if gnuplot should not wait 
+   !*plotusepipe	                % T if using pipes, NIL if writing to command file
+   plotheader!*				% list of Gnuplot commands (strings) for initializing GNUPLOT
+   plotcleanup!*                        % list of OS command for cleaning up (like removing temp files
+   plottmp!*				% location of temporary files (including trailing directory spearator)
+      );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% PSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #if (member 'psl lispsystem!*)
    #if (member 'unix lispsystem!*)
 
    !*plotusepipe:=t;               % pipes: yes
-   load pipes;
+%% already loaded at reduce build time
+%%   load pipes;
    !*plotpause:=nil;                 % pause: no
-   plottmp!* := "/tmp/";
    if getenv "LOGNAME" then
-      plottmp!* := bldmsg("%w%w.",plottmp!*,getenv "LOGNAME")
+      plottmp!* := bldmsg("%w%w%w.",tempdir!*,dirchar!*,getenv "LOGNAME")
     else if getenv "USER" then
-      plottmp!* := bldmsg("%w%w.",plottmp!*,getenv "USER");
+      plottmp!* := bldmsg("%w%w%w.",tempdir*,dirchar!*,getenv "USER")
+    else 
+      plottmp!* := concat(tempdir!*,dirchar!*);
    plotdta!* := for i:=1:10 collect
-         bldmsg("%wplotdta%w*",plottmp!*,i); % scratch data files
-   plotcmds!* :=bldmsg("%wplotcmds*",plottmp!*); % if pipes not accessible
+         bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
+   plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
 
      % select header lines for setting the appropriate GNUPLOT
      % terminal type.
@@ -78,17 +86,17 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
                 ("vt102" . "tek40xx")
            ));
 
-      % add $reduce/plot to the path when using X11 (gnuplot will load a child).
+%%      % add $reduce/plot to the path when using X11 (gnuplot will load a child).
 %%   plotcommand!*:=
 %%    begin scalar p;
 %%     if not(p:=getenv "gnuplot") then
 %%        p:=bldmsg("%w/plot",getenv "reduce");
 %%     return bldmsg("PATH=$PATH:%w;export PATH;gnuplot",p);
+%%    end;
    plotcommand!* := find!-gnuplot();
-    end;
 
    plotcleanup!* :=                  % delete scratch files
-       {"rm /tmp/plotdt*","rm /tmp/plotcmds!*"};
+       {bldmsg("rm %wplotdt*",plottmp!*),bldmsg("rm %wplotcmds*",plottmp!*)};
    !*plotinterrupts := '(10002);
 
    #elif (intersection '(dos os2 win32 win64 winnt alphant) lispsystem!*)
@@ -97,11 +105,11 @@ fluid '(!*!*windows);
 
      % the following system selection must be done at load time
 
-   plottmp!* := bldmsg("%w\",getenv "tmp" or getenv "temp");
-   if null plottmp!* then
+   if null tempdir!* then
    <<prin2t "warning: no TMP directory found. Using >C:<";
-     plottmp!*:="c:";
-   >>;
+     plottmp!*:="c:\";
+   >>
+   else plottmp!* := bldmsg("%w%w",tempdir!*,dirchar!*);
    !*plotpause:=nil;                       % no pause
    plotdta!* := for i:=1:10 collect
          bldmsg("%wplotdt%w.dat",plottmp!*,i); % scratch data files
@@ -113,15 +121,16 @@ fluid '(!*!*windows);
       %   write command file and data to directory /tmp
 
      !*plotusepipe:=nil;                   % no pipes
-     plotcmds!* := bldmsg("%w\plotcmds",plottmp!*);
+     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
      plotcommand!* :=
 %    fnexpand bldmsg("$reduce\plot\wgnuplot.exe %w",plotcmds!*);
      fnexpand bldmsg("$reduce\wutil\win32\wgnuplot.exe %w",plotcmds!*);
      plotheader!* :=  "";
      plotcleanup!* := NIL;                 % delete scratch files
      !*plotpause := -1;
-     copyd('plot!-exec,'system);
-     flag('(plot!-exec),'lose);
+%% Not Needed: defined in gnupldrv.red
+%%     copyd('plot!-exec,'system);
+%%     flag('(plot!-exec),'lose);
     >> else
 
    if !*!*windows eq 1 or member('winnt,lispsystem!*)
@@ -130,9 +139,9 @@ fluid '(!*!*windows);
    <<
       % for windows:
       %  use plot pipe
-     if not member('win64,lispsystem!*) then load w!-pipes;
+     if not getd 'pipe!-open then load w!-pipes;
      !*plotusepipe:=t;
-     plotcmds!* := bldmsg("%w\plotcmds",plottmp!*);;
+     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);;
 %%     plotcommand!* := bldmsg(
 %%%      "%w\plot\wgnupl32.exe;wgnuplot_parent;wgnuplot_text",
 %%%      "%w\plot\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
@@ -152,7 +161,7 @@ fluid '(!*!*windows);
   else if member('os2,lispsystem!*) then
     <<
      !*plotusepipe:=nil;                   % no pipes
-     plotcmds!* := bldmsg("%w\plotcmds",plottmp!*);
+     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
      plotcommand!* := "";
      plotheader!* := "";
 
@@ -171,7 +180,7 @@ fluid '(!*!*windows);
       %   write command file and data to directory /tmp
 
      !*plotusepipe:=nil;                   % no pipes
-     plotcmds!* := bldmsg("%w\plotcmds",plottmp!*);
+     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
      plotcommand!* :=
      fnexpand bldmsg("$reduce\wutil\dos386\gnuplot.exe %w",plotcmds!*);
      plotheader!* :=  "set term vga";
@@ -180,23 +189,23 @@ fluid '(!*!*windows);
         for each f in plotdta!* collect bldmsg("del %w",f);
     >>;
 
-
-  plotmax!* := 3e36;                    % IEEE single precision
+%%  no longer necessary
+%%  plotmax!* := 3e36;                    % IEEE single precision
   !*plotinterrupts := '(10002);
 
    #elif (member 'vms lispsystem!*)
 
-   !*plotusepipe:=NIL;               % pipes: yes
+   !*plotusepipe:=NIL;               % pipes: no
    !*plotpause:=nil;                 % pause: no
-   plottmp!* := "SYS$SCRATCH";
+   plottmp!* := "SYS$SCRATCH:";
    plotdta!* := for i:=1:10 collect
-         bldmsg("%w:plotdt%w",plottmp!*,i); % scratch data files
-   plotcmds!* :=bldmsg("%w:plotcmds",plottmp!*); % if pipes not accessible
+         bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
+   plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
    plotcommand!* := bldmsg("gnuplot %w",plotcmds!*);
    plotheader!* :=    "set term x11;";
 
    plotcleanup!* :=                  % delete scratch files
-       {"del SYS$SCRATCH:plotdt*;*","del SYS$SCRATCH:plotcmds*;*"};
+       {bldmsg("del %wplotdt*;*",plottmp!*),bldmsg("del %wplotcmds*;*",plottmp!*)};
    !*plotinterrupts := '(10002);
 
   #endif

@@ -24,7 +24,7 @@ module plotnum; % Numeric evaluation of algebraic expressions.
 %
 
 
-fluid '(plotsynerr!* ploteval!-alist2!*);
+fluid '(plotsynerr!* ploteval!-alist2!* !*plotoverflow);
 
 global '(!*plotinterrupts);
 

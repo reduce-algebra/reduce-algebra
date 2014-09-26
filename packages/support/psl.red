@@ -34,12 +34,14 @@ exports ashift, msd!:, fl2bf, integerp!:, normbf, oddintp, preci!:;
 
 fluid '(bbits!*);
 
-global '(bfz!* bitsperword dirchar!*);
+global '(bfz!* bitsperword dirchar!* tempdir!*);
 
 !#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
    dirchar!* := "\";
+   tempdir := getenv "TMP" or getenv "TEMP";
 !#else
    dirchar!* := "/";
+   tempdir!* := "/tmp";
 !#endif
 
 
