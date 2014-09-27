@@ -1,6 +1,9 @@
                        Fetching and Building REDUCE
                        ============================
 
+[This document was written some while ago and needs a full review - I
+am putting this comment in in September 2014 as a reminder to prompt
+that re-work. ACN]
 
 The prerequisites for using this package will depend somewhat on whether
 you choose to use the CSL or PSL build.
@@ -42,7 +45,11 @@ libraries and header files installed. While most relevant run-time libraries
 are liable to have been provided for them by default, the development versions
 might not have. On a 64-bit Linux it can also be nice to have the libraries
 and compiler options that make it possible to compile and run 32-bit code as
-well as 64-bit.
+well as 64-bit. The state of your cygwin installation can be checked using
+scripts/cygwin-sanity-check.sh but please be aware that the tests that does
+are indicative rather than definitive and when (occasionally) either Reduce
+is extended and additional dependencies arise or cygwin is reorganised and the
+names of some packages alter the tests may become outdated.
 
 If you try to build REDUCE but one of the programming tools or development
 libraries that is required is not available then there is no guarantee that
@@ -62,7 +69,10 @@ succeeded and you can try building Reduce. If not then it probably reports
 a step where some header file or library is missing. You need to search the
 installation sources relevant your operating system and install more stuff,
 then try again. Eg for cygwin you re-run "setup", while on Linux I like it when
-my distribution lets me use "synaptic".
+my distribution lets me use "synaptic", but "apt-get" and "yum" and various
+other package managers can also be used. You need to check the documentation
+of your particular operating system - or perhaps better fina local expert to
+get you started.
 
 Note that if you configure using "--with-csl --with-wx" you also need GTK2
 (GTK+) development files if you are on an X11-based platform, but at present
@@ -128,6 +138,7 @@ svn checkout
   https://reduce-algebra.svn.sourceforge.net/svnroot/reduce-algebra
   reduce-algebra
 (all the above three lines really stand for one long line of input)
+[Ha this URL is now painfully WRONG and out of date]
 
     That should create a directory called "reduce-algebra" for you.
     To refresh your files, enter the reduce-algebra directory and go
@@ -168,7 +179,7 @@ that the usual "configure" option "--prefix=..." or the idiom "make install"
 will behave as you might have hoped. Indeed there are reports that at
 present "make install" is deeply broken and SHOULD NOT BE ATTEMPTED.]
 
-Any machine you are on is attributed an identity siuch as i686-pc-windows
+Any machine you are on is attributed an identity such as i686-pc-windows
 or x86_64-unknown-ubuntu10.10. Note that this is slightly more specific than
 the normal GNU host triple in that it attempts to include the name of a Linux
 distribution. Binaries are actually built within cslbuild/<triple> or
@@ -293,5 +304,6 @@ is there so you can also join in the debugging and propse fixes (please!)
 
 A C Norman. July 2008. Updated Jan 2009, September 2010, March 2011
 
+[more updates needed - September 2014]
 
 
