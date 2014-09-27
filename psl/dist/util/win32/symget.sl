@@ -185,6 +185,7 @@
 			       (copyd 'remprop '!%remprop))
 
 (de !%flag1 (a b)
+         (when (not (idp a)) (noniderror a 'flag1))
 	 (when (get b 'symflag?) 
 	       (putsymflag a (get b 'symflagval)))
 	 (old-flag1 a b))
@@ -193,6 +194,7 @@
 			     (copyd 'flag1 '!%flag1))
 
 (de !%remflag1 (a b)
+         (when (not (idp a)) (noniderror a 'remflag1))
 	 (when (get b 'symflag?)
 		 (delsymflag a (get b 'symflagval)))
 	 (old-remflag1 a b))

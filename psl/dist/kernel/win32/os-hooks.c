@@ -89,6 +89,7 @@ extern char bps[];
 
 jmp_buf mainenv,signalenv;
 
+int Debug = 0;
 
 void clear_dtabsize();
 extern setupbpsandheap();
@@ -147,6 +148,9 @@ char *argv[];
   clear_dtabsize();
   unixinitio(); 
   bruch_bruch = 0;
+
+  if (getenv("BPSL_DEBUG") != NULL)
+     Debug = 1;
 
   init_fp();	// initilialize floating point exception handling
 

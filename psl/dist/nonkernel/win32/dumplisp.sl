@@ -79,6 +79,7 @@
                                         lastbps))
         (binarywrite unexecresult heaplowerbound)
         (binarywriteblock unexecresult SYMNAM maxsymbols)
+        (binarywriteblock unexecresult SYMGET maxsymbols)
         (binarywriteblock unexecresult SYMVAL maxi)
         (binarywriteblock unexecresult heaplowerbound
                 (wshift (wplus2 (wdifference heaplast heaplowerbound) 12) -2))

@@ -72,6 +72,8 @@
 #define BPSSIZE         5600000    /* Default bps size in number of bytes */
 #endif
 
+extern int Debug;
+
 char *  imagefile ;
 int     max_image_size;
 int     oldbreakvalue;
@@ -83,6 +85,7 @@ extern int  mainstartinitialize;
 extern int  HASHTABLE;
 extern char  bps[];
 extern char * SYMNAM;
+extern char * SYMGET;
 extern int  symms []; 
 extern int  lastbps;
 extern int  nextbps;
@@ -343,10 +346,14 @@ setupbpsandheap(argc,argv)
 
       fread (headerword,4,7,imago);
        i = fread (SYMNAM,1,240000 /* headerword[0] */,imago);
+       i = fread (SYMGET,1,240000 /* headerword[0] */,imago);
        i = fread (symms ,1,720000 /* headerword[0] */,imago); 
   
-       /* printf (" heaplowerbound = %x (new) %x (file)\n", heaplowerbound,
-			headerword[6]); */
+       if (Debug > 0) {
+          printf (" heaplowerbound = %x (new) %x (file)\n", heaplowerbound,
+			headerword[6]);
+       }
+
 	if(   
 	       /* headerword[6] > heaplowerbound + feder/2 ||  */
 	   
