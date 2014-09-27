@@ -349,9 +349,11 @@ setupbpsandheap(argc,argv)
        i = fread (SYMGET,1,240000 /* headerword[0] */,imago);
        i = fread (symms ,1,720000 /* headerword[0] */,imago); 
   
-       if (Debug > 0) {
-          printf (" heaplowerbound = %x (new) %x (file)\n", heaplowerbound,
-			headerword[6]);
+       if (heaplowerbound != headerword[6]) {
+         if (Debug > 0) {
+            printf (" heaplowerbound = %x (new) %x (file)\n", heaplowerbound,
+	  		headerword[6]);
+	 }
        }
 
 	if(   

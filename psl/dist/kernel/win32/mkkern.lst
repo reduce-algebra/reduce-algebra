@@ -1,5 +1,6 @@
 Loading image file :c:\Cygwin\home\rainer\software\reduce\psl\bin\win32\pslcomp.img 
-PSL 4.2 Compiler, 26-Sep-2014
+ heaplowerbound = bfbb20 (new) bfbb20 (file)
+PSL 4.2 Compiler, 27-Sep-2014
 1 lisp> nil
 2 lisp> 2 lisp> t
 3 lisp> 3 lisp> nil

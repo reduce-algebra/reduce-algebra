@@ -914,7 +914,7 @@ l0075:
  mov ebx,68023
  mov eax, DWORD PTR 16[esp]
  add esp,20
- cdq 
+ xor edx,edx
  idiv ebx
  mov eax,edx
  ret 
