@@ -7,6 +7,15 @@
 \usepackage{times}
 \usepackage{amsmath}
 
+\usepackage{graphicx}
+
+\makeatletter
+
+\@ifundefined{Configure}
+ {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.pdf}}}
+ {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.png}}}
+\makeatother
+
 %\usepackage{cmbright}
 %\usepackage{charter}
 %\renewcommand{\rmdefault}{uaq}
