@@ -59,7 +59,7 @@ boolean(a or not(b and c)); -> boolean(not(b) \/ not(c) \/ a)
 boolean(a equiv not c);     -> boolean(not(a)/\c \/ a/\not(c))
 \end{verbatim}
 
-\section{Normal forms}
+\subsection{Normal forms}
 
 The {\bf disjunctive} normal form is used by default. It
 represents the ``natural'' view and allows us to represent
@@ -101,7 +101,7 @@ boolean(a/\b/\c \/ a/\not(b)/\c \/ not(a)/\b/\c \/ not(a)/\not(b)/\c
 
 The keywords {\bf full} and {\bf and} may be combined.
 
-\section{Evaluation of a boolean expression}
+\subsection{Evaluation of a boolean expression}
 
 If the leafs of the boolean expression are algebraic expressions
 which may evaluate to logical values because the environment

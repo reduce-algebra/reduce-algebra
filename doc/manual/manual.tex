@@ -6,7 +6,8 @@
 \usepackage{makeidx}
 \usepackage{times}
 \usepackage{amsmath}
-
+\usepackage{amssymb}
+\usepackage{chapterbib}
 \usepackage{graphicx}
 
 \makeatletter
@@ -15,6 +16,10 @@
  {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.pdf}}}
  {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.png}}}
 \makeatother
+
+\let\subsubsubsection\paragraph
+
+\sectionbib{\subsection*}{subsection}
 
 %\usepackage{cmbright}
 %\usepackage{charter}
