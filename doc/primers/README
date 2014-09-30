@@ -1,0 +1,33 @@
+                               doc/primers
+
+
+
+The files in this directory are intende to be the key ones that people
+wishing to build new packages for Reduce (or do large scale maintenance
+of old ones) might find helpful. It is possible that some of the
+files included here may also be present elsewhere in the Reduce source
+tree, but the copies here are so that a programmer can find much of what
+they need in just one place.
+
+The initial set of files here includes
+ (1) The Standard Lisp Report, documenting the set of Lisp functions
+     that Reduce relied on from around 1980. Note that in reality the
+     current understanding of what can be used has drifted onwards, but
+     this is still a good starting point.
+ (2) The Symbolic Mode Primer by Herbert Melenk, which can help a programmer
+     get to grips with the key conventions and data structures used in
+     Reduce.
+ (3) A document "Inside Reduce" by Norman and Vitolo that covers similar
+     ground to the Melenk primer, but may be found useful since it
+     provides additional or complementary coverage of some topics.
+
+Reduce develpers are users are invited to contribute more material that
+could be useful to the audience addressed by the above documents. If the
+contribution will comfortably fit as an extra section within one of the
+existing douments and the contributor agrees it may end up merged in that
+way (eg the Standard Lisp Report could perhaps do with an appendix
+documenting some of the alterations to usage made since 1980), but
+free-standing documents of any size would be welcome.
+
+
+
