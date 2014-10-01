@@ -11,6 +11,7 @@
 \usepackage{chapterbib}
 \usepackage{graphicx}
 \usepackage{xspace}
+\usepackage{caption}
 
 \makeatletter
 
@@ -20,6 +21,7 @@
 \makeatother
 
 \let\subsubsubsection\paragraph
+\let\savedsectionbib\sectionbib
 
 \sectionbib{\subsection*}{subsection}
 
@@ -209,6 +211,7 @@
 \include{util}
 \include{maintain}
 \include{appenda}
+\include{biblio}
 \include{changes}
 
 \pdfbookmark[0]{Index}{Index}
