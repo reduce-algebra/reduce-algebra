@@ -7,8 +7,10 @@
 \usepackage{times}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{chapterbib}
 \usepackage{graphicx}
+\usepackage{xspace}
 
 \makeatletter
 
@@ -81,8 +83,8 @@
 \newlength{\rboxwidth}
 \setlength{\rboxwidth}{2.6in}
 
-\newcommand{\REDUCE}{REDUCE}
-\newcommand{\RLISP}{RLISP}
+\newcommand{\REDUCE}{REDUCE\xspace}
+\newcommand{\RLISP}{RLISP\xspace}
 \newcommand{\underscore}{\char`\_}
 \newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
                           \index{#1@\texttt{#1}}}}
@@ -157,6 +159,8 @@
 \noindent{\bf Example \theexamplectr}}
 
 \setcounter{examplectr}{0}
+
+\newcommand{\Sym}{\operatorname{Sym}}
 
 
 %%\pagenumbering{roman}
