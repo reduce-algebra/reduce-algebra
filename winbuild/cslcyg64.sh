@@ -7,14 +7,14 @@
 # It is important here that the current directory was preserved during the
 # change-over made by the "cyg64" utility...
 
-reduce=`cygpath -a ..`
-reduce="${reduce%/}"
-echo $reduce
-
 # For this to work you MUST have a 64-bit version of cygwin installed in
 # a directory like /cygdrive/c/cygwin64 or /cygdrive/d/cygwin64
 
 ./make-cyg64.sh
+
+reduce=`./cyg64 cygpath -a ..`
+reduce="${reduce%/}"
+echo $reduce
 
 rm -rf cslcyg64
 mkdir cslcyg64
