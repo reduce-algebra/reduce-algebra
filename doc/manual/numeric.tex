@@ -9,16 +9,15 @@ please use standard mathematical libraries for these.
 \subsection{Syntax}
 
 \subsubsection{Intervals, Starting Points}
+\ttindextype{..}{operator}
 
 Intervals are generally coded as lower bound and
 upper bound connected by the operator \verb+`..'+, usually
 associated to a variable in an
 equation. E.g.
-
 \begin{verbatim}
      x= (2.5 .. 3.5)
 \end{verbatim}
-
 means that the variable x is taken in the range from 2.5 up to
 3.5. Note, that the bounds can be algebraic
 expressions, which, however, must evaluate to numeric results.
@@ -27,11 +26,9 @@ and upper bounds can be extracted by the \verb+PART+ operator
 as the first and second part respectively.
 A starting point is specified by an equation with a numeric
 righthand side, e.g.
-
 \begin{verbatim}
      x=3.0
 \end{verbatim}
-
 If for multivariate applications several coordinates must be
 specified by intervals or as a starting point, these
 specifications can be collected in one parameter (which is then
@@ -52,18 +49,19 @@ error message. The values reached so far are then returned
 as the result.
 
 \subsubsection{tracing}
+\ttindex{TRNUMERIC}
 
 Normally the algorithms produce only a minimum of printed
 output during their operation. In cases of an unsuccessful
 or unexpected long operation a trace of the iteration can be
 printed by setting
-
 \begin{verbatim}
     on trnumeric;
 \end{verbatim}
 
 
 \subsection{Minima}
+\ttindex{NUM\_MIN}
 
 The Fletcher Reeves version of the $steepest\ descent$
 algorithms is used to find the minimum of a
@@ -120,6 +118,7 @@ Examples:
 \end{verbatim}
 
 \subsection{Roots of Functions/ Solutions of Equations}
+\ttindex{NUM\_SOLVE}
 
 An adaptively damped Newton iteration is used to find
 an approximative zero of a function, a function vector or the solution
@@ -170,7 +169,6 @@ variable JACOBIAN.
 \end{description}
 
 Example:
-
 \begin{verbatim}
     num_solve({sin x=cos y, x + y = 1},{x=1,y=2});
 
@@ -184,6 +182,7 @@ Example:
 \end{verbatim}
 
 \subsection{Integrals}
+\ttindex{NUM\_INT}
 
 For the numerical evaluation of univariate integrals over a finite
 interval the following strategy is used:
@@ -233,6 +232,7 @@ Example:
 \end{verbatim}
 
 \subsection{Ordinary Differential Equations}
+\ttindex{NUM\_ODESOLVE}
 
 A Runge-Kutta method of order 3 finds an approximate graph for
 the solution of a ordinary differential equation
@@ -276,7 +276,6 @@ approximate solution of the ODE problem.
 
 
 Example:
-
 \begin{verbatim}
 
     num_odesolve(df(y,x)=y,y=1,x=(0 .. 1), iterations=5);
@@ -286,7 +285,6 @@ Example:
   {0.8,2.2255208258},{1.0,2.7182511366}}
 
 \end{verbatim}
-
 Remarks:
 
 \begin{enumerate}
@@ -308,6 +306,7 @@ the evaluation is stopped with an error message.
 \end{enumerate}
 
 \subsection{Bounds of a Function}
+\ttindex{BOUNDS}
 
 Upper and lower bounds of a real valued function over an
 interval or a rectangular multivariate domain are computed
@@ -363,6 +362,10 @@ Example:
 \end{verbatim}
 
 \subsection{Chebyshev Curve Fitting}
+\ttindex{CHEBYSHEV\_FIT}
+\ttindex{CHEBYSHEV\_EVAL}
+\ttindex{CHEBYSHEV\_DF}
+\ttindex{CHEBYSHEV\_INT}
 
 The operator family $Chebyshev\_\ldots$ implements approximation
 and evaluation of functions by the Chebyshev method.
@@ -423,6 +426,7 @@ chebyshev_eval(second w, x=(1 .. 3), x=2.1);
 \end{verbatim}
 
 \subsection{General Curve Fitting}
+\ttindex{NUM\_FIT}
 
 The operator $NUM\_FIT$ finds for a set of
 points the linear combination of a given set of
@@ -487,6 +491,14 @@ Example:
 \end{verbatim}
 
 \subsection{Function Bases}
+\ttindex{MONOMIAL\_BASE}
+\ttindex{TRIGONOMETRIC\_BASE}
+\ttindex{BERNSTEIN\_BASE}
+\ttindex{LEGENDRE\_BASE}
+\ttindex{LAGUERRE\_BASE}
+\ttindex{HERMITE\_BASE}
+\ttindex{CHEBYSHEV\_BASE\_T}
+\ttindex{CHEBYSHEV\_BASE\_U}
 
 The following procedures compute sets of functions
 e.g. to be used for approximation.
@@ -518,7 +530,6 @@ element.
 \end{verbatim}
 
 Example:
-
 \begin{verbatim}
  Bernstein_base(x,5);
 

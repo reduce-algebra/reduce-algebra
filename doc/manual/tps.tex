@@ -25,7 +25,7 @@ Syntax:
 \noindent{\tt PS}(EXPRN:{\em algebraic},DEPVAR:{\em kernel},
 ABOUT:{\em algebraic}):{\em ps object}
 
-\index{PS operator}
+\ttindextype{PS}{operator}
 The {\tt PS} operator returns a  power series object
 (a tagged domain element)
 representing the univariate formal power series expansion of EXPRN with
@@ -38,7 +38,7 @@ an error will result.  If ABOUT is the identifier {\tt INFINITY}
 then the power series expansion about DEPVAR = $\infty$ is
 obtained in ascending powers of 1/DEPVAR.
 
-\index{PSEXPLIM operator}
+\ttindextype{PSEXPLIM}{operator}
 If the command is terminated by a semi-colon, a power series object
 representing EXPRN is compiled and then a number of terms of the
 power series expansion are evaluated and printed.  The expansion is
@@ -98,7 +98,7 @@ default.
  
 \subsection{PSEXPLIM Operator}
 
-\index{PSEXPLIM Operator}
+\ttindextype{PSEXPLIM}{Operator}
 Syntax:
 
 \hspace*{2em} {\tt PSEXPLIM}(UPTO:{\em integer}):{\em integer}
@@ -118,7 +118,7 @@ the expansion limit is returned.
 
 \subsection{PSORDLIM Operator}
 
-\index{PSORDLIM operator}
+\ttindextype{PSORDLIM}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSORDLIM}(UPTO:{\em integer}):{\em integer}
@@ -151,7 +151,7 @@ recognized as such by REDUCE.
 
 \subsection{PSTERM Operator}
 
-\index{PSTERM operator}
+\ttindextype{PSTERM}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSTERM}(TPS:{\em power series object},
@@ -165,7 +165,7 @@ should be noted that an integer is treated as a power series.
 
 \subsection{PSORDER Operator}
 
-\index{PSORDER operator}
+\ttindextype{PSORDER}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSORDER}(TPS:{\em power series object}):{\em integer}
@@ -177,7 +177,7 @@ TPS is zero, the identifier {\tt UNDEFINED} is returned.
 
 \subsection{PSSETORDER Operator}
 
-\index{PSSETORDER operator}
+\ttindextype{PSSETORDER}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSSETORDER}(TPS:{\em power series object},
@@ -195,7 +195,7 @@ series package is inadequate to determine the order automatically.
 
 \subsection{PSDEPVAR Operator}
 
-\index{PSDEPVAR operator}
+\ttindextype{PSDEPVAR}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSDEPVAR}(TPS:{\em power series object})
@@ -208,7 +208,7 @@ is an integer, the identifier {\tt UNDEFINED} is returned.
 
 \subsection{PSEXPANSIONPT operator}
 
-\index{PSEXPANSIONPT operator}
+\ttindextype{PSEXPANSIONPT}{operator}
 Syntax:
 
 \hspace*{2em}
@@ -223,7 +223,7 @@ returned.
 
 \subsection{PSFUNCTION Operator}
 
-\index{PSFUNCTION operator}
+\ttindextype{PSFUNCTION}{operator}
 Syntax:
 
 \hspace*{2em}
@@ -236,7 +236,7 @@ results.
 
 \subsection{PSCHANGEVAR Operator}
 
-\index{PSCHANGEVAR operator}
+\ttindextype{PSCHANGEVAR}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSCHANGEVAR}(TPS:{\em power series object},
@@ -251,7 +251,7 @@ variable is returned.
 
 \subsection{PSREVERSE Operator}
 
-\index{PSREVERSE operator}
+\ttindextype{PSREVERSE}{operator}
 Syntax:
 
 \hspace*{2em}
@@ -293,7 +293,7 @@ If TPS is not a power series object after evaluation an error results.
 
 \subsection{PSCOMPOSE Operator}
 
-\index{PSCOMPOSE operator}
+\ttindextype{PSCOMPOSE}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSCOMPOSE}(TPS1:{\em power series},
@@ -346,7 +346,7 @@ infinite sums) and a REDUCE error occurs.
 
 \subsection{PSSUM Operator}
 
-\index{PSSUM operator}
+\ttindextype{PSSUM}{operator}
 Syntax:
 
 \begin{tabbing}
@@ -398,7 +398,7 @@ LOWLIM to {\tt INFINITY}.
 
 \subsection{PSCOPY Operator}
 
-\index{PSCOPY operator}
+\ttindextype{PSCOPY}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSCOPY}(TPS:{\em power series}):{\em power series}
@@ -428,7 +428,7 @@ substitution, thus:
 
 \subsection{PSTRUNCATE Operator}
 
-\index{PSTRUNCATE operator}
+\ttindextype{PSTRUNCATE}{operator}
 Syntax:
 
 \hspace*{2em} {\tt PSTRUNCATE}(TPS:{\em power series} POWER: {\em integer)}
@@ -462,9 +462,9 @@ normal way.
 For example if A and B are power series objects then the commands
 such as:
 
-\index{+ ! power series} \index{- ! power series}
-\index{/ ! power series} \index{* ! power series}
-\index{** ! power series}
+\ttindextype{+}{ ! power series} \ttindextype{-}{ ! power series}
+\ttindextype{/}{ ! power series} \ttindextype{*}{ ! power series}
+\ttindextype{**}{ ! power series}
 \begin{verbatim}
     a*b;
     a/b;

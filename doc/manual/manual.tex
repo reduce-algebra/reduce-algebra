@@ -3,6 +3,7 @@
 
 \documentclass[11pt,a4paper]{book}
 
+\usepackage[T1]{fontenc}
 \usepackage{makeidx}
 \usepackage{times}
 \usepackage{amsmath}
@@ -14,6 +15,13 @@
 \usepackage{caption}
 
 \makeatletter
+
+\let\oldtheindex=\theindex
+\def\theindex{\oldtheindex
+   \pdfbookmark[0]{Index}{Index}%
+   \addtocontents{toc}{\protect\contentsline{chapter}{Index}{\thepage}{Index1}}%
+%   \addcontentsline{toc}{chapter}{Index}%
+}
 
 \@ifundefined{Configure}
  {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.pdf}}}
@@ -38,6 +46,8 @@
   pdfauthor={\textcopyright Anthony C. Hearn},
   pdfdisplaydoctitle=true,
 }
+
+\usepackage{bookmark}
 
 \hyphenation{unique}
 \hyphenation{effect}
@@ -90,6 +100,14 @@
 \newcommand{\underscore}{\char`\_}
 \newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
                           \index{#1@\texttt{#1}}}}
+\def\ttindextypehelper#1#2\relax{\let\blubber=#1}
+\newcommand{\ttindextype}[2]{{\renewcommand{\_}{\protect\underscore}%
+                              \ttindextypehelper#2\relax
+                              \ifx!\blubber
+                                \index{#1@\texttt{#1} #2}%
+                              \else
+                                \index{#1 #2@\texttt{#1} #2}%
+                              \fi}}
 \newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
 % \meta{...} is an alternative sentential form in descriptions using \it.
 \newcommand{\meta}[1]{\mbox{$\langle$\textit{#1}$\rangle$}}
@@ -180,7 +198,7 @@
 
 \pagestyle{headings}
 %\setcounter{page}{0}
-\pdfbookmark[0]{Contents}{toc}
+\pdfbookmark[0]{Contents}{tocContents}
 \tableofcontents
 
 \include{abstract}
@@ -214,7 +232,6 @@
 \include{biblio}
 \include{changes}
 
-\pdfbookmark[0]{Index}{Index}
 \printindex
 
 \end{document}

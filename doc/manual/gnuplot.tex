@@ -1,7 +1,6 @@
 
-\newcommand{\VERYLARGE}{\fontsize{40}{65pt}\selectfont}
 
-\def\xr{{\tt XR}}
+%\newcommand{\xr}{\texttt{XR}}
 
 %\setlength{\oddsidemargin}{5mm}
 %\setlength{\evensidemargin}{-5mm}
@@ -64,6 +63,7 @@ from a server, e.g.
 
 
 \subsection{Command PLOT}
+\ttindex{PLOT}
 
 Under {\REDUCE} GNUPLOT is used as graphical output
 server, invoked by the command \verb+PLOT(...)+.
@@ -352,6 +352,7 @@ removal is not available with point lists.
 
 
 \subsection{GNUPLOT operation}
+\ttindex{PLOTRESET}
 
 The command \verb+PLOTRESET;+ deletes the current GNUPLOT output
 window. The next call to \verb+PLOT+ will then open a new one.
@@ -377,15 +378,14 @@ GNUPLOT windows, use the command button from the
 GNUPLOT text window - it offers an exit function.
 
 \subsection{Saving GNUPLOT command sequence}
+\ttindex{TRPLOT}\ttindex{PLOTKEEP}
 
 If you want to use the internal GNUPLOT command sequence
 more than once (e.g. for producing a picture for a publication),
 you may set 
-
 \begin{verbatim}
 ON TRPLOT,PLOTKEEP;
 \end{verbatim}
-
 TRPLOT causes all GNUPLOT commands
 to be written additionally to the actual
 {\REDUCE} output. Normally the data files are
@@ -393,6 +393,7 @@ erased after calling GNUPLOT, however with PLOTKEEP on
 the files are not erased.
 
 \subsection{Direct Call of GNUPLOT}
+\ttindextype{GNUPLOT}{command}
 
 GNUPLOT has a lot of facilities which are not accessed by
 the operators and parameters described above. Therefore

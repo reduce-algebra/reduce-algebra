@@ -140,7 +140,7 @@ The ZEILBERG package must be loaded by:
 1: load zeilberg;
 \end{verbatim}
 }\noindent
-The {\tt gosper} operator is an implementation of the Gosper algorithm.
+The \texttt{gosper} operator\ttindex{GOSPER} is an implementation of the Gosper algorithm.
 \begin{itemize}
 \item
 {\tt gosper(a,k)} determines a closed
@@ -286,12 +286,12 @@ g_k=\prod_{j=1}^k (e+b\,j+c\,j^2+d\,j^3)
 and for analogous expressions of higher degree polynomials.
 
 \subsection{\REDUCE{} operator {\tt EXTENDED\_GOSPER}}
-
-The {\tt extended\verb+_+gosper} operator is an implementation of an extended
+\ttindex{EXTENDED\_GOSPER}
+The {\tt extended\_gosper} operator is an implementation of an extended
 version of Gosper's algorithm given by Koepf \cite{Koepf}.
 \begin{itemize}
 \item
-{\tt extended\verb+_+gosper(a,k)} determines an antidifference $g_k$ of $a_k$
+{\tt extended\_gosper(a,k)} determines an antidifference $g_k$ of $a_k$
 whenever there is a number $m$ such that $h_{k}-h_{k-m}=a_k$, and $h_k$ is an
 {\sl $m$-fold hypergeometric term}, i.\ e.
 \[
@@ -299,7 +299,7 @@ h_{k}/h_{k-m}\quad\mbox{is a rational function with respect to $k$.}
 \]
 If it does not return a solution, then such a solution does not exist.
 \item
-{\tt extended\verb+_+gosper(a,k,m)} 
+{\tt extended\_gosper(a,k,m)} 
 determines an {\sl $m$-fold antidifference} $h_k$ of $a_k$,
 i.\ e.\ $h_{k}-h_{k-m}=a_k$, if it is an $m$-fold hypergeometric term.
 \end{itemize}
@@ -324,6 +324,7 @@ Examples:
 }\noindent
 
 \subsection{\REDUCE{} operator {\tt SUMRECURSION}}
+\ttindex{SUMRECURSION}
 
 The {\tt sumrecursion} operator is an implementation of the (fast)
 Zeilberger algorithm.
@@ -335,13 +336,13 @@ for
 {\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)
 \]
 with respect to $n$, applying
-{\tt extended\verb+_+sumrecursion} if necessary, 
+{\tt extended\_sumrecursion} if necessary, 
 see \S~\ref{sec:EXTENDED_SUMRECURSION}.
 The resulting expression equals zero.
 \item
 {\tt sumrecursion(f,k,n,j)} % $(j\in\mathbb{N})$ 
 searches for a holonomic recurrence equation of order $j$. This 
-operator does not use {\tt extended\verb+_+sumrecursion} automatically.
+operator does not use {\tt extended\_sumrecursion} automatically.
 Note that if $j$ is too large, the recurrence equation
 may not be unique, and only one particular solution is returned.
 \end{itemize}
@@ -479,13 +480,14 @@ and finally check the initial conditions:
 
 \subsection{\REDUCE{} operator {\tt EXTENDED\_SUMRECURSION}}
 \label{sec:EXTENDED_SUMRECURSION}
+\ttindex{EXTENDED\_SUMRECURSION}
 
-The {\tt extended\verb+_+sumrecursion} operator is an implementation 
+The {\tt extended\_sumrecursion} operator is an implementation 
 of an extension of the (fast) Zeilberger algorithm given by Koepf
 \cite{Koepf}.
 \begin{itemize}
 \item
-{\tt extended\verb+_+sumrecursion(f,k,n,m,l)} determines a holonomic recurrence 
+{\tt extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence 
 equation for ${\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$ 
 with respect to $n$ if $f(n,k)$ is an {\sl $(m,l)$-fold hypergeometric term} 
 with respect to $(n,k)$, i.\ e.\
@@ -499,7 +501,7 @@ with respect to $(n,k)$, i.\ e.\
 are rational functions with respect to both $n$ and $k$.
 The resulting expression equals zero.
 \item
-{\tt sumrecursion(f,k,n)} invokes {\tt extended\verb+_+sumrecursion(f,k,n,m,l)}
+{\tt sumrecursion(f,k,n)} invokes {\tt extended\_sumrecursion(f,k,n,m,l)}
 with suitable values $m$ and $l$, and covers therefore the extended
 algorithm completely.
 \end{itemize}
@@ -543,6 +545,7 @@ resulting recurrence equation (see \cite{Koepf}, Table 3, (1.3)).
 
 
 \subsection{\REDUCE{} operator {\tt HYPERRECURSION}}
+\ttindex{HYPERRECURSION}\ttindex{HYPERTERM}
 
 Sums to which the Zeilberger algorithm applies, in general are
 special cases of the {\sl generalized hypergeometric function}
@@ -573,12 +576,12 @@ $, where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
 is the list of upper parameters, and 
 {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 is the list of lower parameters depending on $n$. If Zeilberger's algorithm
-does not apply, {\tt extended\verb+_+sumrecursion} 
+does not apply, {\tt extended\_sumrecursion} 
 of \S~\ref{sec:EXTENDED_SUMRECURSION} is used.
 \item
 {\tt hyperrecursion(upper,lower,x,n,j)} $(j\in\mathbb{N})$
 searches only for a holonomic recurrence equation of order $j$. This
-operator does not use {\tt extended\verb+_+sumrecursion} automatically.
+operator does not use {\tt extended\_sumrecursion} automatically.
 \end{itemize}
 Therefore
 
@@ -692,6 +695,7 @@ and get the three three-term recurrence equations
 with respect to the parameters $n$, $x$, and $N$ respectively.
 
 \subsection{\REDUCE{} operator {\tt HYPERSUM}}
+\ttindex{HYPERSUM}
 
 With the operator {\tt hypersum}, hypergeometric sums are directly
 evaluated in closed form whenever the extended 
@@ -822,6 +826,7 @@ _3 F_2\left.
 \]
 
 \subsection{\REDUCE{} operator {\tt SUMTOHYPER}}
+\ttindex{SUMTOHYPER}
 
 With the operator {\tt sumtohyper}, sums given in 
 factorial-$\Gamma$-binomial-Poch\-hammer notation
@@ -866,6 +871,12 @@ hypergeometric({ - n, - n, - n},{1,1},-1)
 
 
 \subsection{Simplification Operators}
+\ttindex{SIMPLIFY\_GAMMA}
+\ttindex{simplify\_combinatorial}
+\ttindex{GAMMATOFACTORIAL}
+\ttindex{simplify\_gamma2}
+\ttindex{simplify\_gamman}
+
 For the decision that an expression $a_k$ is a hypergeometric term, it is 
 necessary to find out whether or not $a_{k}/a_{k-1}$ is a rational
 function with respect to $k$. For the purpose to decide
@@ -875,18 +886,18 @@ binomial coefficients, and Pochhammer symbols is a hypergeometric term,
 the following simplification operators can be used:
 \begin{itemize}
 \item
-{\tt simplify\verb+_+gamma(f)} simplifies an expression {\tt f} involving 
+{\tt simplify\_gamma(f)} simplifies an expression {\tt f} involving 
 only rational, powers and $\Gamma$ function terms according to a recursive 
 application of the simplification rule $\Gamma\:(a+1)=a\,\Gamma\:(a)$ 
 to the expression tree. Since all $\Gamma$ arguments with integer difference
 are transformed, this gives a decision procedure for rationality
 for integer-linear $\Gamma$ term product ratios.
 \item
-{\tt simplify\verb+_+combinatorial(f)} simplifies an expression {\tt f} 
+{\tt simplify\_combinatorial(f)} simplifies an expression {\tt f} 
 involving powers, factorials, $\Gamma$ function terms,
 binomial coefficients, and Pochhammer symbols by converting
 factorials, binomial coefficients, and Poch\-hammer symbols into 
-$\Gamma$ function terms, and applying {\tt simplify\verb+_+gamma} to its
+$\Gamma$ function terms, and applying {\tt simplify\_gamma} to its
 result. If the output is not rational,
 it is given in terms of $\Gamma$ functions. If you prefer factorials
 you may use
@@ -894,13 +905,13 @@ you may use
 {\tt gammatofactorial} (rule) converting $\Gamma$ function terms into
 factorials using $\Gamma\:(x)\rightarrow (x-1)!$.
 \item
-{\tt simplify\verb+_+gamma2(f)}
+{\tt simplify\_gamma2(f)}
 uses the duplication formula of the $\Gamma$ function to simplify $f$.
 \item
-{\tt simplify\verb+_+gamman(f,n)}
+{\tt simplify\_gamman(f,n)}
 uses the multiplication formula of the $\Gamma$ function to simplify $f$.
 \end{itemize}
-The use of {\tt simplify\verb+_+combinatorial(f)} is a safe way to
+The use of {\tt simplify\_combinatorial(f)} is a safe way to
 decide the rationality for any ratio of products of powers, factorials,
 $\Gamma$ function terms, binomial coefficients, and Pochhammer symbols.
 
@@ -955,8 +966,9 @@ Other examples are
 }\noindent
 
 \subsection{Tracing}
-If you set 
+\ttindextype{ZB\_TRACE}{switch}
 
+If you set 
 {\small
 \begin{verbatim}
 48: on zb_trace;
@@ -1048,14 +1060,22 @@ Zeilberger algorithm successful
 }\noindent
 
 \subsection{Global Variables and Switches}
+\ttindextype{ZB\_TRACE}{switch}
+\ttindextype{ZB\_DIRECTION}{variable}
+\ttindextype{ZB\_ORDER}{variable}
+\ttindextype{ZB\_FACTOR}{switch}
+\ttindextype{ZB\_PROOF}{switch}
+\ttindextype{GOSPER\_REPRESENTATION}{variable}
+\ttindextype{ZEILBERGER\_REPRESENTATION}{variable}
+
 The following global variables and switches can be used in connection with
 the {\tt ZEILBERG} package:
 \begin{itemize}
 \item
-{\tt zb\verb+_+trace}, switch; default setting {\tt off}. 
+{\tt zb\_trace}, switch; default setting {\tt off}. 
 Turns tracing on and off.
 \item
-{\tt zb\verb+_+direction}, variable; settings: {\tt down}, {\tt up};
+{\tt zb\_direction}, variable; settings: {\tt down}, {\tt up};
 default setting {\tt down}. 
 
 In the case of the Gosper algorithm, either a downward or a forward
@@ -1082,22 +1102,22 @@ sum(n + 1)*n + sum(n + 1) - 4*sum(n)*n - 2*sum(n)
 \end{verbatim}
 }\noindent
 \item
-{\tt zb\verb+_+order}, variable; settings: any nonnegative integer;
+{\tt zb\_order}, variable; settings: any nonnegative integer;
 default setting~{\tt 5}. 
 Gives the maximal order for the recurrence
 equation that {\tt sumrecursion} searches for.
 \item
-{\tt zb\verb+_+factor}, switch; default setting {\tt on}.
+{\tt zb\_factor}, switch; default setting {\tt on}.
 If {\tt off}, the factorization of the output usually producing nicer results
 is suppressed.
 \item
-{\tt zb\verb+_+proof}, switch; default setting {\tt off}. If {\tt on},
+{\tt zb\_proof}, switch; default setting {\tt off}. If {\tt on},
 then several intermediate results are stored in global variables:
 \item
-{\tt gosper\verb+_+representation}, variable; default setting {\tt nil}.
+{\tt gosper\_representation}, variable; default setting {\tt nil}.
 
 If a {\tt gosper} command is issued, and if the Gosper algorithm is applicable,
-then the variable {\tt gosper\verb+_+representation} is set to the
+then the variable {\tt gosper\_representation} is set to the
 list of polynomials (with respect to $k$) {\tt \{p,q,r,f\}}
 corresponding to the representation
 \[
@@ -1142,11 +1162,11 @@ see \cite{Gos}. Examples:
 \end{verbatim}
 }\noindent
 \item
-{\tt zeilberger\verb+_+representation}, variable; default setting {\tt nil}.
+{\tt zeilberger\_representation}, variable; default setting {\tt nil}.
 
 If a {\tt sumrecursion} command is issued, and if the Zeilberger
 algorithm is successful, then the variable 
-{\tt zeilberger\verb+_+representation} is set to the final Gosper
+{\tt zeilberger\_representation} is set to the final Gosper
 representation used, see \cite{Koornwinder}.
 \end{itemize}
 
@@ -1175,13 +1195,13 @@ Example input:
 
 {\tt gosper(k)}.
 \item
-{\tt ***** Zeilberger algorithm fails.\ Enlarge zb\verb+_+order}
+{\tt ***** Zeilberger algorithm fails.\ Enlarge zb\_order}
 
 Example input:
 
 {\tt sumrecursion(binomial(n,k)*binomial(6*k,n),k,n)}
 
-For  this example a setting {\tt zb\verb+_+order:=6} is needed.
+For  this example a setting {\tt zb\_order:=6} is needed.
 \item
 {\tt ***** Zeilberger algorithm not applicable}
 

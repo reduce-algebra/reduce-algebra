@@ -1,7 +1,7 @@
 
 \subsection{Basic Use}
 
-The most important operator is `\verb+TAYLOR+'. \index{TAYLOR operator}
+The most important operator is `\verb+TAYLOR+'. \ttindextype{TAYLOR}{operator}
 It is used as follows:
 \hypertarget{operator:TAYLOR}{}
 \begin{verbatim}
@@ -37,7 +37,7 @@ The expansion is performed variable per variable, i.e.\ in the example
 above by first expanding $\exp(x^{2}+y^{2})$ with respect to $x$ and
 then expanding every coefficient with respect to $y$.
 
-\index{IMPLICIT\_TAYLOR operator}\index{INVERSE\_TAYLOR}
+\ttindextype{IMPLICIT\_TAYLOR}{operator}\ttindex{IMPLICIT\_TAYLOR}
 \hypertarget{operator:IMPLICIT_TAYLOR}{}
 There are two
 extra operators to compute the Taylor expansions of implicit and
@@ -84,7 +84,7 @@ yields
 \end{verbatim}
 
 
-\index{TAYLORPRINTTERMS variable}\hypertarget{reserved:TAYLORPRINTTERMS}{}
+\ttindextype{TAYLORPRINTTERMS}{variable}\hypertarget{reserved:TAYLORPRINTTERMS}{}
 When a Taylor kernel is printed, only a certain number of (non-zero)
 coefficients are shown. If there are more, an expression of the form
 \f{($n$ terms)} is printed to indicate how many non-zero
@@ -94,13 +94,13 @@ Allowed values are integers and the special identifier \f{ALL}. The
 latter setting specifies that all terms are to be printed. The default
 setting is $5$.
 
-\index{PART operator}\index{PART}
+\ttindextype{PART}{operator}\ttindex{PART}
 The \f{PART} operator can be used to extract subexpressions of a
 Taylor expansion in the usual way. All terms can be accessed,
 irregardless of the value of the variable \f{TAYLORPRINTTERMS}.
 
 
-\index{TAYLORKEEPORIGINAL switch}
+\ttindextype{TAYLORKEEPORIGINAL}{switch}
 If the switch \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{TAYLORKEEPORIGINAL}}
 is set to \f{ON} the
 original expression EXP is kept for later reference.
@@ -165,7 +165,7 @@ If \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{TAYLORKEEPORIGINAL}} is set to \f{ON
 kernels in \f{exp} have their original expressions kept
 \hyperlink{operator:TAYLORCOMBINE}{\f{TAYLORCOMBINE}} will also combine these and store the result
 as the original expression of the resulting Taylor kernel.
-\index{TAYLORAUTOEXPAND switch}
+\ttindextype{TAYLORAUTOEXPAND}{switch}
 There is also the switch \hyperlink{switch:TAYLORAUTOEXPAND}{\f{TAYLORAUTOEXPAND}} (see below).
 
 There are a few restrictions to avoid mathematically undefined
@@ -222,20 +222,20 @@ gives
 This package introduces a number of new switches:
 \begin{description}
 
-\index{TAYLORAUTOCOMBINE switch}
+\ttindextype{TAYLORAUTOCOMBINE}{switch}
 \item[\sw{TAYLORAUTOCOMBINE}] \hypertarget{switch:TAYLORAUTOCOMBINE}{}causes
     Taylor expressions to be automatically combined during the simplification
     process.  This is equivalent to applying \f{TAYLORCOMBINE} to
     every expression that contains Taylor kernels.
     Default is \f{ON}.
 
-\index{TAYLORAUTOEXPAND switch}
+\ttindextype{TAYLORAUTOEXPAND}{switch}
 \item[\sw{TAYLORAUTOEXPAND}] \hypertarget{switch:TAYLORAUTOEXPAND}{} makes Taylor expressions ``contagious''
     in the sense that \f{TAYLORCOMBINE} tries to Taylor expand
     all non-Taylor subexpressions and to combine the result with the
     rest. Default is \f{OFF}.
 
-\index{TAYLORKEEPORIGINAL switch}\hypertarget{switch:TAYLORKEEPORIGINAL}{}
+\ttindextype{TAYLORKEEPORIGINAL}{switch}\hypertarget{switch:TAYLORKEEPORIGINAL}{}
 \item[\sw{TAYLORKEEPORIGINAL}] forces the
     package to keep the original expression, i.e.\ the expression
     that was Taylor expanded.  All operations performed on the
@@ -243,12 +243,12 @@ This package introduces a number of new switches:
     be recovered using the operator \f{TAYLORORIGINAL}.
     Default is \f{OFF}.
 
-\index{TAYLORPRINTORDER switch}\hypertarget{switch:TAYLORPRINTORDER}{}
+\ttindextype{TAYLORPRINTORDER}{switch}\hypertarget{switch:TAYLORPRINTORDER}{}
 \item[\sw{TAYLORPRINTORDER}] causes the
     remainder to be printed in big-$O$ notation.  Otherwise, three
     dots are printed. Default is \f{ON}.
 
-\index{VERBOSELOAD switch}
+\ttindextype{VERBOSELOAD}{switch}
 \item[\sw{VERBOSELOAD}] will cause
     \REDUCE{} to print some information when the Taylor package is
     loaded.  This switch is already present in \textsf{PSL} systems.
@@ -301,7 +301,7 @@ operator.
     power yields a non analytical term (i.e.\ a fractional power).
 
 \item[\msg{***** Cannot replace part ... in Taylor kernel}]\mbox{}\\
-\index{PART Operator}%
+\ttindextype{PART}{Operator}%
     The \f{PART} operator can only be used to either replace the
     template of a Taylor kernel (part 2) or the original expression
     that is kept for reference (part 3).    

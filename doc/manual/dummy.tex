@@ -19,7 +19,7 @@ The package does handle any number of dummy variables and summations
 present in expressions which are arbitrary multivariate polynomials  
 and which  have operator objects eventually dependent on one (or several) 
 dummy variable(s) as some of their indeterminates.
-These operators have the same generality as the one existing in {\tt REDUCE}.  
+These operators have the same generality as the one existing in {\REDUCE}.  
 They can be noncommutative, anticommutative or commutative. They can have 
 any kind of symmetry property.
 Such polynomials will be called in the following {\em dummy} polynomials.
@@ -34,7 +34,7 @@ are given.
 In section 3, the commands allowing to give 
 various algebraic properties to the operators are described.
 
-In section 4, the use of the function {\tt CANONICAL} is 
+In section 4, the use of the function \f{CANONICAL} is 
 explained and illustrated.
 
 In section 5, a fairly complete set of references is given.
@@ -84,7 +84,8 @@ $$
 $$
 where $dv_1,\ldots,$ are dummy variables while $fr_1, \ldots, $ 
 are ordinary or free variables. 
-  
+
+\ttindex{DUMMY\_BASE}\ttindex{DUMMY\_NAME}
 To declare dummy variables, two commands are available:
 \begin{itemize}
 \item{i.}
@@ -123,6 +124,7 @@ When this is done, an expression like
 means a sum over $dv_1,dv_2$.
 To clear the dummy base, and to create the dummy names $i,j,k$ one is 
 to do
+\ttindex{CLEAR\_DUMMY\_BASE}
 \begin{verbatim}
 
       clear_dummy_base; ==> t
@@ -139,7 +141,7 @@ means a sum over $i$.
 One should keep in mind that every application of the above commands 
 erases the previous ones. 
 It is also possible to display the declared dummy names using 
-{\tt SHOW\_DUMMY\_NAMES}:
+\f{SHOW\_DUMMY\_NAMES}:\ttindex{SHOW\_DUMMY\_NAMES}
 \begin{verbatim}
      show_dummy_names(); ==> {i,j,k}
 \end{verbatim}
@@ -176,7 +178,7 @@ makes the operators $at_1$ and $at_2$ anticommutative.
 One can also give symmetry properties to them. The usual declarations
 {\tt SYMMETRIC and AN\-TI\-SYM\-ME\-TRIC} are taken into account. Moreover
 and most important they can be endowed with a {\em partial} symmetry 
-through the command {\tt SYMTREE}.
+through the command {\tt SYMTREE}.\ttindex{SYMTREE}
 Here are three illustrative examples for the $r$ operator:
 \begin{verbatim}
      symtree (r,{!+, 1, 2, 3, 4});
@@ -204,13 +206,14 @@ The anticommutation property and the various
 symmetry properties may be suppressed by the commands {\tt REMANTICOM} and 
 {\tt REMSYM}. To eliminate partial symmetry properties one can also use 
 {\tt SYMTREE}  itself. For example, assuming that $r$ has the Riemann symmetry,
-to eliminate it do 
+to eliminate it do\ttindex{REMANTICOM}\ttindex{REMSYM}
 \begin{verbatim}
      symtree (r,{!*, 1, 2, 3, 4});  
 \end{verbatim}
 However, notice that the number of indices remains fixed and equal to 4
 while with {\tt REMSYM} it becomes again arbitrary.
 \subsection{The Function {\tt CANONICAL}}
+\ttindex{CANONICAL}
 {\tt CANONICAL} is the most important functionality of the package.
 It can be applied on any polynomial whether it is a dummy polynommial 
 or not. It returns a normal form uniquely determined 

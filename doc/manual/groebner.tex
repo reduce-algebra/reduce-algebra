@@ -18,7 +18,8 @@ M\"oller. The algorithms implemented in the current version are
 documented in \cite{Faugere:89}, \cite{Gebauer:88},
 \cite{Kredel:88a} and \cite{Giovini:91}.
 The operator $saturation$ has been implemented in July 2000 (Herbert Melenk).
-\subsection{Background}
+
+<\subsection{Background}
 
 \subsubsection{Variables, Domains and Polynomials}
 
@@ -787,7 +788,7 @@ The shortest polynomial with different polynomial term orders is computed
 with the operator $greduce$\_$orders$:
  
 \begin{description}
-\ttindex{$greduce$\_$orders$}
+\ttindex{greduce\_orders}
 \item[{\it greduce\_orders}]($exp$, \{$exp1$, $exp2$, \ldots , $expm$\}
 [,\{$v_1$,$v_2$ \ldots $v_n$\}]);
 
@@ -850,7 +851,7 @@ domain, the input coefficients may be changed by global factors.
 
 \newpage
 
-\example \index{groebner package ! example}
+\example \index{Groebner package ! example}
 
 {\it on groebprot} \$ \\
 {\it preduce} $ (5*y**2 + 2*x**2*y + 5/2*x*y + 3/2*y + 8*x**2 $ \\
@@ -929,7 +930,7 @@ sets of equations ($groebnert$) or equations ($preducet$), where
 a {\it lhs} is the computed value, while the {\it rhs} is its equivalent
 in terms of the input names.
 
-\example \index{groebner package ! example}
+\example \index{Groebner package ! example}
 
 We calculate the Gr\"obner basis for an ellipse (named ``$p1$'' ) and a
 line (named ``$p2$'' ); $p2$ is member of the basis immediately and so
@@ -945,7 +946,7 @@ gb1 := {2*x - y + 1=p2,
         9*y  - 2*y - 199= - 2*x*p2 - y*p2 + 2*p1 + p2}
 \end{verbatim}
 
-\example \index{groebner package ! example}
+\example \index{Groebner package ! example}
 
 We want to reduce the polynomial \verb+ x**2+ {\it  wrt}
 the above Gr\"obner basis and need knowledge about the reduction
@@ -970,7 +971,7 @@ x^2 = (\frac{1}{2} x + \frac{1}{4} y - \frac{1}{4}) g1
 \]
 
 
-\example \index{groebner package ! example}
+\example \index{Groebner package ! example}
 
 If we reduce a polynomial which is member of the ideal, we
 consequently get a result with {\it lhs} zero:
@@ -1250,7 +1251,7 @@ of the variables as ``free parameters'',  these subsets are usually
 again of triangular type.
 
 \example (Intersubsections of a line with a circle):
-\index{groebner package ! example}
+\index{Groebner package ! example}
 
 \[ groesolve(\{x**2 - y**2 - a, p*x+q*y+s\},\{x,y\}); \]
 
@@ -1382,7 +1383,7 @@ The result is the Gr\"obner basis of the quotient.
 
 \subsubsubsection{Saturation: Saturation of an Ideal and an Expression}
 \ttindex{saturation}
-The $saturation$ computes the quotient on an ideal and an arbitrary power
+The $saturation$ operator computes the quotient on an ideal and an arbitrary power
 of an expression $exp**n$ with arbitrary $n$. The call is
 \[ saturation (\{exp1, \ldots , expm\}, exp); \]
 where $\{exp1, exp2, \ldots , expm\}$ is a list of any number of

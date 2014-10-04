@@ -88,7 +88,7 @@ the routines for solving linear equations can easily be used for the
 calculation of quotients.  We are still left with the problem of
 introducing a particular algebraic number.  In the current version this is
 done by giving the defining polynomial to the statement {\bf defpoly}.  The
-\index{DEFPOLY statement}
+\ttindextype{DEFPOLY}{statement}
 algebraic number sqrt(2), for example, can be introduced by
 \begin{verbatim}
    defpoly sqrt2**2 - 2;
@@ -189,7 +189,7 @@ calculations.
 
    (x + (1/2*a + 1/2))*(x - (1/2*a - 1/2))
 \end{verbatim}
-\index{SPLIT\_FIELD function}
+\ttindextype{SPLIT\_FIELD}{function}
 We have also incorporated a function {\bf split\_field} for the calculation
 of a primitive element of minimal degree for which a given polynomial splits
 into linear factors.  The algorithm as described in Trager's article is

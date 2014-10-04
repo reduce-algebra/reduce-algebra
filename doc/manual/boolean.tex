@@ -14,13 +14,14 @@ of its atomic parts is supported.
 
 \subsection{Entering boolean expressions}
 
+\ttindextype{BOOLEAN}{operator}
 In order to distinguish boolean data expressions from 
 boolean expressions in the \REDUCE programming
 language (e.g. in an {\bf if} statement), each expression
-must be tagged explicitly by an operator {\bf boolean}.
+must be tagged explicitly by an operator \f{boolean}.
 Otherwise the boolean operators are not accepted in the
 \REDUCE  algebraic mode input.
-The first argument of {\bf boolean} can be any boolean expression,
+The first argument of \f{boolean} can be any boolean expression,
 which may contain references to other boolean values.
 \begin{verbatim}
     boolean (a and b or c);

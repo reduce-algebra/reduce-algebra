@@ -29,7 +29,7 @@ factors.
 Any name may be declared to be a vector, provided that it has
 not previously been declared as a matrix or an array. To
 declare a list of names to be vectors use the VEC command:
-\index{VEC command}
+\ttindextype{VEC}{command}
 \begin{verbatim}
    VEC A,B,C;
 \end{verbatim}
@@ -43,7 +43,7 @@ If a vector value is assigned to a scalar variable, then that
 variable will automatically be declared as a vector and the
 user will be notified that this has happened.
 
-\index{AVEC function}
+\ttindextype{AVEC}{function}
 A vector may be initialised using the {\tt AVEC} function which
 takes three scalar arguments and returns a vector made up
 from those scalars. For example
@@ -71,7 +71,7 @@ divide one vector by another.
 {\tt V := -V1;} & Negation \\
 \end{tabular}
 
-\index{DOT ! vector} \index{Dot product} \index{CROSS ! vector}
+\ttindextype{DOT}{ ! vector} \index{Dot product} \ttindextype{CROSS}{ ! vector}
 \index{cross product}
 \noindent Vector multiplication is carried out using the infix
 operators {\tt DOT} and {\tt CROSS}. These are defined to have
@@ -88,20 +88,16 @@ division.
 The last two expressions are equivalent due to the precedence of
 the {\tt CROSS} operator.
 
-\index{VMOD operator}
+\ttindextype{VMOD}{operator}
 The modulus of a vector may be calculated using the {\tt VMOD} operator.
-
 \begin{verbatim}
    S := VMOD V;
 \end{verbatim}
-
 A unit vector may be generated from any vector using the {\tt VMOD}
 operator.
-
 \begin{verbatim}
    V1 := V/(VMOD V);
 \end{verbatim}
-
 Components may be extracted from any vector using index notation
 in the same way as an array.
 
@@ -114,11 +110,9 @@ in the same way as an array.
 
 It is also possible to set values of individual components. Following
 from above:
-
 \begin{verbatim}
    V(1) := B;
 \end{verbatim}
-
 The vector {\tt V} now has components {\tt AX}, {\tt B}, {\tt AZ}.
 
 \index{vector ! differentiation} \index{vector ! integration}
@@ -143,10 +137,10 @@ applying the function component-wise to the argument vector.
 
 \subsection{ Vector calculus}
 
-\index{DIV ! operator} \index{divergence ! vector field}
-\index{GRAD ! operator} \index{gradient ! vector field}
-\index{CURL ! operator} \index{curl ! vector field}
-\index{DELSQ ! operator} \index{Laplacian ! vector field}
+\ttindextype{DIV}{ ! operator} \index{divergence ! vector field}
+\ttindextype{GRAD}{ ! operator} \index{gradient ! vector field}
+\ttindextype{CURL}{ ! operator} \index{curl ! vector field}
+\ttindextype{DELSQ}{ ! operator} \index{Laplacian ! vector field}
 The vector calculus operators div, grad and curl are recognised.
 The Laplacian operator is also available and may be applied to
 scalar and vector arguments.
@@ -164,29 +158,25 @@ system. The user may alter the names of the coordinates and the values
 of the scale factors. Initially the coordinates are {\tt X}, {\tt Y}
 and {\tt Z} and the scale factors are all unity.
 
-\index{COORDS vector} \index{HFACTORS scale factors}
+\ttindextype{COORDS}{vector} \ttindextype{HFACTORS}{scale factors}
 There are two special vectors : {\tt COORDS} contains the names
 of the coordinates in the current system and {\tt HFACTORS}
 contains the values of the scale factors.
 
-\index{COORDINATES operator}
+\ttindextype{COORDINATES}{operator}
 The coordinate names may be changed using the {\tt COORDINATES}
 operator.
-
 \begin{verbatim}
    COORDINATES R,THETA,PHI;
 \end{verbatim}
-
 This command changes the coordinate names to {\tt R}, {\tt THETA} and
 {\tt PHI}.
 
-\index{SCALEFACTORS operator}
+\ttindextype{SCALEFACTORS}{operator}
 The scale factors may be altered using the {\tt SCALEFACTORS} operator.
-
 \begin{verbatim}
    SCALEFACTORS(1,R,R*SIN(THETA));
 \end{verbatim}
-
 This command changes the scale factors to {\tt 1}, {\tt R} and {\tt R
 SIN(THETA)}.
 
@@ -201,29 +191,25 @@ variables and the scale factors are employed in the calculation.
 Mechanics', Appendix 2.)
 
 
-\index{"!*CSYSTEMS global (AVECTOR)}
+\ttindextype{"!*CSYSTEMS}{global (AVECTOR)}
 Several coordinate systems are pre-defined and may be invoked by
 name. To see a list of valid names enter
-
 \begin{verbatim}
    SYMBOLIC !*CSYSTEMS;
 \end{verbatim}
-
 and REDUCE will respond with something like
-
 \begin{verbatim}
    (CARTESIAN SPHERICAL CYLINDRICAL)
 \end{verbatim}
 
-\index{GETCSYSTEM command}
+\ttindextype{GETCSYSTEM}{command}
 To choose a coordinate system by name, use the command {\tt GETCSYSTEM}.
 
 To choose the Cartesian coordinate system :
 \begin{verbatim}
    GETCSYSTEM 'CARTESIAN;
 \end{verbatim}
-\index{PUTCSYSTEM command}
-
+\ttindextype{PUTCSYSTEM}{command}
 Note the quote which prefixes the name of the coordinate system. This
 is required because {\tt GETCSYSTEM} (and its complement {\tt
 PUTCSYSTEM}) is a {\tt SYMBOLIC} procedure which requires a literal
@@ -231,23 +217,17 @@ argument.
 
 REDUCE responds by typing a list of the coordinate names in that
 coordinate system. The example above would produce the response
-
 \begin{verbatim}
    (X Y Z)
 \end{verbatim}
-
 whilst
-
 \begin{verbatim}
    GETCSYSTEM 'SPHERICAL;
 \end{verbatim}
-
 would produce
-
 \begin{verbatim}
    (R THETA PHI)
 \end{verbatim}
-
 Note that any attempt to invoke a coordinate system is subject to the
 same restrictions as the implied calls to {\tt COORDINATES} and {\tt
 SCALEFACTORS}.  In particular, {\tt GETCSYSTEM} fails if any of the
@@ -262,15 +242,12 @@ command {\tt PUTCSYSTEM}. It may then be re-invoked at a later stage using
 
 We define a general coordinate system with coordinate names {\tt
 X},{\tt Y},{\tt Z} and scale factors {\tt H1},{\tt H2},{\tt H3} :
-
 \begin{verbatim}
    COORDINATES X,Y,Z;
    SCALEFACTORS(H1,H2,H3);
    PUTCSYSTEM 'GENERAL;
 \end{verbatim}
-
 This system may later be invoked by entering
-
 \begin{verbatim}
    GETCSYSTEM 'GENERAL;
 \end{verbatim}
@@ -287,20 +264,18 @@ using the {\tt DEFINT} function.
 
 \example\index{AVECTOR package ! example}
 
-\index{DEFINT function} \index{integration ! definite (simple)}
+\ttindextype{DEFINT}{function} \index{integration ! definite (simple)}
 \index{definite integration (simple)}
 \noindent To calculate the definite integral of $\sin(x)^2$ between 0 and
 2$\pi$ we enter
-
 \begin{verbatim}
    DEFINT(SIN(X)**2,X,0,2*PI);
 \end{verbatim}
-
 This function is a simple extension of the {\tt INT} function taking
 two extra arguments, the lower and upper bounds of integration
 respectively.
 
-\index{VOLINTEGRAL function} \index{integration ! volume}
+\ttindextype{VOLINTEGRAL}{function} \index{integration ! volume}
 Definite volume integrals may be calculated using the {\tt
 VOLINTEGRAL} function whose syntax is as follows :
 
@@ -321,7 +296,7 @@ sphere by integrating unity over the range $r$=0 to {\tt RR}, $\theta$=0 to
 {\tt VOLINTEGRAL(1,VLB,VUB);} & \\
 \end{tabular}
 
-\index{VOLINTORDER vector}
+\ttindextype{VOLINTORDER}{vector}
 Note the use of the special vector {\tt VOLINTORDER} which controls
 the order in which the integrations are carried out. This vector
 should be set to contain the number 0, 1 and 2 in the required order.
@@ -346,19 +321,17 @@ We evaluate the volume by integrating a series of infinitesimally thin
 circular disks of constant z-value. The integration is thus performed
 in the order : d($\phi$) from 0 to $2\pi$, dr from 0 to p*Z, dz from 0 to H.
 The order of the indices is thus 2, 0, 1.
-
 \begin{verbatim}
    VOLINTORDER := AVEC(2,0,1);
    VLB := AVEC(0,0,0);
    VUB := AVEC(P*Z,H,2*PI);
    VOLINTEGRAL(1,VLB,VUB);
 \end{verbatim}
-
 (At this stage, we replace {\tt P*H} by {\tt RR}, the base radius of the cone,
 to obtain the result in its more familiar form.)
 
 
-\index{LINEINT function} \index{DEFLINEINT function}
+\ttindextype{LINEINT}{function} \ttindextype{DEFLINEINT}{function}
 \index{integration ! line} \index{line integrals}
 Line integrals may be calculated using the {\tt LINEINT} and {\tt DEFLINEINT}
 functions. Their general syntax is

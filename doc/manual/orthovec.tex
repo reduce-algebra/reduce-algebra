@@ -159,14 +159,14 @@ and in the case of scalar arguments reduce to the usual definitions of
 $ +, -, *, /, $ etc.
 
 The operators are represented by symbols 
-\index{+ ! 3-D vector} \index{- ! 3-D vector} \index{/ ! 3-D vector}
-\index{* ! 3-D vector} \index{* ! 3-D vector} \index{"\^{} ! 3-D vector}
-\index{$><$ ! 3-D vector}
+\ttindextype{+}{ ! 3-D vector} \ttindextype{-}{ ! 3-D vector} 
+\ttindextype{/}{ ! 3-D vector} \ttindextype{*}{ ! 3-D vector} 
+\ttindextype{*}{ ! 3-D vector} \ttindextype{"\^}{ ! 3-D vector}
+\ttindextype{><}{ ! 3-D vector}
 \begin{verbatim}  
 +, -, /, *, ^, ><
 \end{verbatim}
-
-\index{$><$ ! diphthong} The composite {\tt ><} is an
+\ttindextype{><}{ ! diphthong} The composite {\tt ><} is an
 attempt to represent the cross product symbol 
 $\times$ in ASCII characters.
 If we let ${\bf v}$ be a vector and $s$ be a scalar, then
@@ -268,7 +268,7 @@ operators, in increasing order of precedence is
 \end{verbatim}
 and these are placed in the precedence list defined in REDUCE
 after $<$.
-The differential operator DOTGRAD is defined in the \index{DOTGRAD operator}
+The differential operator DOTGRAD is defined in the \ttindextype{DOTGRAD}{operator}
 following section, and the component selector {\tt \_} was introduced in
 section 3.
 

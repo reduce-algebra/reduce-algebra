@@ -189,14 +189,15 @@ the length of expressions and the overall structure of the PDE-system.
 Also the extension of the class of PDEs which can be integrated exactly is
 a problem to be pursuit further.
 
-The program {\tt LIEPDE} which formulates the symmetry conditions calls the
-program {\tt CRACK} to solve them. This is done in a number of successive
-calls in order to formulate and solve some first order PDEs of the
-overdetermined system first and use their solution to formulate and solve the
-next subset of conditions as described in the previous subsection. 
-Also, {\tt LIEPDE} can work on DEs that contain parametric constants and
-parametric functions. An ansatz for the symmetry generators can be
-formulated. For more details see \cite{LIEPDE} or \cite{WoBra}.
+The program {\tt LIEPDE}\ttindex{LIEPDE} which formulates the symmetry
+conditions calls the program {\tt CRACK} to solve them. This is done
+in a number of successive calls in order to formulate and solve some
+first order PDEs of the overdetermined system first and use their
+solution to formulate and solve the next subset of conditions as
+described in the previous subsection. Also, {\tt LIEPDE} can work on
+DEs that contain parametric constants and parametric functions. An
+ansatz for the symmetry generators can be formulated. For more details
+see \cite{LIEPDE} or \cite{WoBra}.
 
 The procedure {\tt LIEPDE} is called through \\
 {\tt LIEPDE({\it problem,symtype,flist,inequ}); } \\
@@ -527,7 +528,7 @@ Usually one will generalize the solution gradually to make solving
 (\ref{ODEsys}) gradually more difficult.
 %---------------------------------------
 \subsubsection{Syntax}
-The call of {\tt APPLYSYM} is
+The call of \texttt{APPLYSYM}\ttindex{APPLYSYM} is
 {\tt APPLYSYM}(\{{\it de}, {\it fun}, {\it var}\}, \{{\it sym}, {\it cons}\});
 \begin{itemize}
 \item {\it de} is a single DE or a list of DEs in the form of a vanishing
@@ -562,6 +563,7 @@ where
 After modus 2, {\tt APPLYSYM} returns the generalized special solution.
 %---------------------------------------
 \subsubsection{Example: A second order ODE}
+\index{APPLYSYM package ! example}
 Weyl's class of solutions of Einsteins field equations consists of
 axialsymmetric time independent metrics of the form
 \begin{equation}
@@ -668,7 +670,8 @@ The equivalent characteristic system:
 for the functions: h(r)  u_(r).
 \end{verbatim} \normalsize
 The PDE is equation (\ref{ql2}).
-\small \begin{verbatim}
+\begin{small}
+\begin{verbatim}
 The general solution of the PDE is given through
 0 = ff(u_,h*r)
 with arbitrary function ff(..).
@@ -676,7 +679,8 @@ A suggestion for this function ff provides:
 0 =  - h*r + u_
 Do you like this choice? (Y or N)
 ?y
-\end{verbatim} \normalsize
+\end{verbatim}
+\end{small}
 For the following calculation only a single special solution of the PDE is
 necessary
 and this has to be specified from the general solution by choosing a special
@@ -769,7 +773,8 @@ or exit the program                                   (enter  `;')
 Input:3: ;
 \end{verbatim}
 We stop here. The following is returned from our {\tt APPLYSYM} call:
-\small \begin{verbatim}
+\begin{small}
+\begin{verbatim}
                              3  6             2  3
 {{{3*df(u,v,2)*v - 16*df(u,v) *v  - 20*df(u,v) *v + 5*df(u,v)},
   {u},
@@ -777,7 +782,8 @@ We stop here. The following is returned from our {\tt APPLYSYM} call:
      sqrt(u)*sqrt(2)
  {r=-----------------, h=sqrt(u)*sqrt(2)*v }}
            2*u
-\end{verbatim} \normalsize
+\end{verbatim}
+\end{small}
 The use of {\tt APPLYSYM} effectively provided us the finite
 transformation
 \begin{equation}
@@ -833,6 +839,7 @@ the solution of the unsolved algebraic system or the unsolved linear PDE.
 \subsection{Solving quasilinear PDEs}
 %---------------------------------------
 \subsubsection{The content of {\tt QUASILINPDE}}
+\ttindex{QUASILINPDE}
 The generalization of special solutions of DEs as well as the computation of
 similarity and symmetry variables involve the general solution of single
 first order linear PDEs.
@@ -1020,6 +1027,7 @@ solvability can be given.
 \subsection{Transformation of DEs}
 %---------------------------------------
 \subsubsection{The content of {\tt DETRAFO}}
+\ttindex{DETRAFO}
 Finally, after having found the finite transformations,
 the program {\tt APPLYSYM} calls the procedure
 {\tt DETRAFO} to perform the transformations. {\tt DETRAFO}

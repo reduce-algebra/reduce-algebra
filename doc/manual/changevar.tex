@@ -62,9 +62,10 @@ So if it is not autoloaded in your REDUCE implementation, say
 \changevareg{LOAD\_PACKAGE MATRIX;}
 in the REDUCE environment. Then load {\tt CHANGEVR} by the statement:
 \changevareg{LOAD\_PACKAGE CHANGEVR\$}
+\ttindextype{CHANGEVAR}{operator}
 Now the REDUCE function {\tt CHANGEVAR} is ready to use. {\bf Note:  The
 package is named CHANGEVR, but the function has the name CHANGEVAR}.  The
-function {\tt CHANGEVAR} has (at least) four different arguments.  Here we
+function \f{CHANGEVAR} has (at least) four different arguments.  Here we
 give a list them:
 \begin{itemize}
 \item {\bf FIRST ARGUMENT} \\
@@ -100,7 +101,7 @@ list.
 
 It is possible to display the entries of the inverse Jacobian, explained
 in the introduction.  To do so, turn {\tt ON} the flag {DISPJACOBIAN} by a
-statement: \changevareg{ON DISPJACOBIAN;}
+statement: \changevareg{ON DISPJACOBIAN;}\ttindextype{DISPJACOBIAN}{switch}
 
 \subsection{AN EXAMPLE\ldots\ldots The 2-dim. Laplace Equation}
 The 2-dimensional Laplace equation in cartesian coordinates is:

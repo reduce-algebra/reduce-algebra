@@ -56,6 +56,7 @@ than this number will generate an error.
 
 
 \subsubsection*{xorder}
+\ttindex{XORDER}
 
 \f{xorder} sets the term ordering for all other calculations. The syntax is
 \begin{verbatim}
@@ -74,6 +75,7 @@ The default ordering is \f{deglex}.
 
 
 \subsubsection*{xvars}
+\ttindex{XVARS}
 
 It is possible to consider scalar and 0-form variables in exterior
 polynomials in two ways: as variables or as coefficient parameters. This
@@ -107,6 +109,7 @@ XIDEAL term ordering.
 
 
 \subsubsection*{xideal}
+\ttindex{XIDEAL}
 
 \f{xideal} calculates a Gr{\"o}bner left ideal basis in
 an exterior algebra. The syntax is
@@ -130,6 +133,7 @@ switches \f{trxideal} and \f{xfullreduction}.
 
 
 \subsubsection*{xmodideal}
+\ttindex{XMODIDEAL}
 
 \f{xmodideal} reduces exterior forms to their (unique) normal forms modulo
 a left ideal. The syntax is
@@ -158,6 +162,7 @@ is calculated using the degree of \f{F} (or the maximal degree in
 
 
 \subsubsection*{xmod}
+\ttindex{XMOD}
 
 \f{xmod} reduces exterior forms to their (not necessarily unique) normal
 forms modulo a set of exterior polynomials. The syntax is
@@ -182,6 +187,7 @@ xideal(S,exdegree F)}. See also \f{trxmod}.
 
 
 \subsubsection*{xauto}
+\ttindex{XAUTO}
 
 \f{xauto} autoreduces a set of exterior forms. The syntax is
 \begin{verbatim}
@@ -194,6 +200,7 @@ form of the coefficient matrix.
 
 
 \subsubsection*{excoeffs}
+\ttindex{EXCOEFFS}
 
 The operator \f{excoeffs}, with syntax
 \begin{verbatim}
@@ -205,6 +212,7 @@ parameters is controlled by the command \f{xvars}.
 
 
 \subsubsection*{exvars}
+\ttindex{EXVARS}
 
 The operator \f{exvars}, with syntax
 \begin{verbatim}
@@ -219,6 +227,7 @@ parameters is controlled by the command \f{xvars}.
 
 
 \subsubsection*{xfullreduce}
+\ttindextype{XFULLREDUCE}{switch}
 
 \f{on xfullreduce} allows \f{xideal} and \f{xmodideal} to calculate
 reduced, monic Gr{\"o}bner bases, which speeds up subsequent reductions, and
@@ -228,6 +237,7 @@ basis. \f{xfullreduce} is \f{on} by default.
 
 
 \subsubsection*{trxideal}
+\ttindextype{TRXIDEAL}{switch}
 
 \f{on trxideal} produces a trace of the calculations done by \f{xideal} and
 \f{xmodideal}, showing the basis polynomials and the results of the
@@ -236,6 +246,7 @@ critical element calculations. This can generate profuse amounts of output.
 
 
 \subsubsection*{trxmod}
+\ttindextype{TRXMOD}{switch}
 
 \f{on trxmod} produces a trace of reductions to normal form during
 calculations by XIDEAL operators. \f{trxmod} is \f{off} by default.

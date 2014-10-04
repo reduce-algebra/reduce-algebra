@@ -27,8 +27,7 @@ duplicate elements are not allowed (or are ignored).  Hence a list
 provides a perfectly natural and satisfactory representation for a set
 (but not vice versa).  Some languages, such as Maple, provide
 different internal representations for sets and lists, which may allow
-sets to be processed more efficiently, but this is not {\em
-necessary}.
+sets to be processed more efficiently, but this is not \emph{necessary}.
 
 This package supports set theoretic operations on lists and represents
 the results as normal algebraic-mode lists, so that all other REDUCE
@@ -65,6 +64,7 @@ subset freeof + - setdiff union intersection * / ^ .
 
 
 \subsection{Explicit set representation and {\tt mkset}}
+\ttindex{MKSET}
 
 Explicit sets are represented by lists, and this package does not
 require any restrictions at all on the forms of lists that are
@@ -104,6 +104,7 @@ The empty set is represented by the empty list \verb|{}|.
 
 
 \subsection{Union and intersection}
+\ttindex{UNION}\ttindex{INTERSECTION}
 
 The operator {\tt intersection} (the name used internally) has the
 shorter synonym {\tt intersect}.  These operators will probably most
@@ -190,6 +191,8 @@ a intersection b union a intersection c
 
 
 \subsection{Set difference}
+\ttindex{SETDIFF}
+\ttindextype{\char`\\}{operator (\texttt{SETDIFF})}
 
 The set difference operator is represented by the symbol \verb|\| and
 is always output using this symbol, although it can also be input using
@@ -226,6 +229,7 @@ a
 
 
 \subsection{Predicates on sets}
+\ttindex{EVALB}
 
 These are all binary infix operators.  Currently, like all REDUCE
 predicates, they can only be used within conditional statements ({\tt
@@ -271,6 +275,7 @@ if} statement for purposes of illustration.
 
 
 \subsubsection{Set membership}
+\ttindex{MEMBER}
 
 Set membership is tested by the predicate {\tt member}.  Its left
 operand is regarded as a potential set element and its right operand
@@ -295,6 +300,7 @@ evalb(a member b);
 
 
 \subsubsection{Set inclusion}
+\ttindex{SUBSET\_EQ}
 
 Set inclusion is tested by the predicate {\tt subset\_eq} where {\tt a
 subset\_eq b} is true if the set $a$ is either a subset of or equal to
@@ -344,6 +350,7 @@ false
 
 
 \subsubsection{Set equality}
+\ttindex{SET\_EQ}
 
 As explained above, equality of two sets in canonical form can be
 reliably tested by the standard REDUCE equality predicate ({\tt =}).
