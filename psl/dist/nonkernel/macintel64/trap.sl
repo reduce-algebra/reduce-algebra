@@ -134,9 +134,12 @@
      (push (reg NIL))			   % r15 is called-saved
      (*move 128 (reg NIL))
      (*mkitem (reg NIL) id-tag)            % make sure (reg nil) contains nil
-     % if this is a terminal interrupt (errornumber* = 2) we check
+     % if this is a terminal interrupt (errornumber* = 2) or
+     % SIGPIPE (errornumber* = 13), we check
      % whether it occured within lisp code. If not, just return.
+     (*jumpeq (label check-not-in-lisp) (fluid errornumber*) 13)
      (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+    check-not-in-lisp
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
      (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
