@@ -51,6 +51,13 @@
 
 (compiletime (load hash-decls f-strings))
 
+(compiletime
+  (put 'wremainder-unsigned 'opencode
+       '((xor (reg rdx) (reg rdx))
+         (idiv (reg 2))
+         (*move (reg rdx) (reg 1))))
+)
+
 (on fast-integers fast-strings)
 
 (global '(nextsymbol show-new-ids))
@@ -174,7 +181,7 @@
 	 (do (setf result 
 	       (^ result (<< (strbyt inf i) 
 			     (- (- bitsperword 8) i))))))
-    (wremainder result hash-table-size)
+    (wremainder-unsigned result hash-table-size)
     ))
 
 (off fast-integers)

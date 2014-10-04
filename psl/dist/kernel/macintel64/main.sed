@@ -1,3 +1,4 @@
+s/^main/_psl_main/
 s/ main/ _psl_main/g
 s/\*jumphugo %rax/jmp  \*%rax/g
 s/mov \[\[/mov $\[\[/g
