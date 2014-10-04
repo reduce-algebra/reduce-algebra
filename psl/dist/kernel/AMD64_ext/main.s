@@ -658,7 +658,7 @@ l0061:
  mov $68023,%rbx
  mov 32(%rsp),%rax
  add $40,%rsp
- cqto
+ xor %rdx,%rdx
  idiv %rbx
  mov %rdx,%rax
  ret
@@ -1154,7 +1154,7 @@ l0103:
  mov %rax,(%rsp)
  cmp %r15,%rax
  jne l0104
- call *symfnc+2952
+ call *symfnc+2944
 l0104:
  cmp $10,(%rsp)
  jle l0105
@@ -1177,8 +1177,7 @@ l0105:
  jle l0106
  mov %rax,symval+2296
  mov l0100,%rax
- mov $368,%rdi
- call *symfnc+2944
+ call *symfnc+2952
  cmp %r15,%rax
  je l0107
  mov (%rsp),%rax
@@ -8811,13 +8810,13 @@ l0738:
  .byte 112,117,116,101,110,116,114,121,0,0
  .globl l0739
 l0739:
- .quad 3
- .byte 103,101,116,100,0,0
- .globl l0740
-l0740:
  .quad 14
  .byte 103,116,98,112,115,45,110,105,108,45
  .byte 101,114,114,111,114,0
+ .globl l0740
+l0740:
+ .quad 3
+ .byte 103,101,116,100,0,0
  .globl l0741
 l0741:
  .quad 19
