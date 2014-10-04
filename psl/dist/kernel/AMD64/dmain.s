@@ -401,7 +401,7 @@ stacklowerbound:
  .quad [[253<<56]+327]
  .quad [[253<<56]+328]
  .quad [[253<<56]+329]
- .quad 486
+ .quad 487
  .quad symnam
  .quad [[253<<56]+332]
  .quad [[254<<56]+128]
@@ -557,7 +557,8 @@ stacklowerbound:
  .quad [[253<<56]+483]
  .quad [[253<<56]+484]
  .quad [[253<<56]+485]
-  .space 516120
+ .quad [[253<<56]+486]
+  .space 516112
  .globl symprp
 symprp:
  .quad [[254<<56]+128]
@@ -1046,7 +1047,8 @@ symprp:
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
-  .space 516120
+ .quad [[254<<56]+128]
+  .space 516112
  .globl symnam
 symnam:
  .globl l0313
@@ -2021,7 +2023,9 @@ symnam:
  .quad [[4<<56]+l0797]
  .globl l0798
  .quad [[4<<56]+l0798]
-  .space 516120
+ .globl l0799
+ .quad [[4<<56]+l0799]
+  .space 516112
  .globl symfnc
 symfnc:
  .quad undefinedfunction
@@ -2495,6 +2499,8 @@ symfnc:
  .quad undefinedfunction
  .globl plantlambdalink
  .quad plantlambdalink
+ .globl addressapplyx
+ .quad addressapplyx
  .globl undefinedfunction
  .quad undefinedfunction
  .globl l0201
@@ -2674,7 +2680,7 @@ symfnc:
  .quad undefinedfunction
  .globl lastkernel
  .quad lastkernel
-  .space 516120
+  .space 516112
  .globl symget
 symget:
  .quad [[254<<56]+128]
@@ -3163,4 +3169,5 @@ symget:
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
-  .space 516120
+ .quad [[254<<56]+128]
+  .space 516112
