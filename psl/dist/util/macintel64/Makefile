@@ -61,7 +61,7 @@ all: \
 	$(PL)/nbig30.b $(PL)/nbig30a.b $(PL)/double.b \
 	$(PL)/nbig32.b $(PL)/nbig32a.b $(PL)/double32.b \
 	$(PL)/mbarith.b \
-	$(PL)/qualcount.b $(PL)/pipes.b\
+	$(PL)/qualcount.b \
 	$(PL)/qualified-timing.b $(PL)/spy.b 
 
 # MODEL should be either AREGMODEL for 3.2 or DREGMODEL for 3.4.
@@ -142,9 +142,6 @@ $(PL)/muls32.b: $(PXU)/muls32.sl
 
 $(PL)/syslisp.b: $(PU)/syslisp.sl
 	(cd $(PU) ; make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/syslisp.b)
-
-$(PL)/pipes.b: $(PXU)/pipes.sl $(PNKL)/io-decls.b
-	$(PDIST)/make-lap $(PXU) pipes
 
 
 # Nothing needs to be done, but it needs to be here to interact with the
