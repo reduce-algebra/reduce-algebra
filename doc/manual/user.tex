@@ -434,7 +434,7 @@ algebra, e.g. for elimination of variables,\index{Variable elimination}
 converting surd expressions to implicit polynomial form,
 computation of dimensions, solution of polynomial equation systems 
 \index{Polynomial equations} etc. 
-The package is also used internally by the {\tt SOLVE} \ttindex{SOLVE} 
+The package is also used internally by the \f{SOLVE} \ttindex{SOLVE} 
 operator.
 
 Authors: Herbert Melenk, H.M. M\"oller and Winfried Neun.
@@ -582,6 +582,13 @@ off modular;
 m_roots(x^2-1,8);         ->  {1,3,5,7}
 m_roots(x^3-x,7);         ->  {0,1,6}
 \end{verbatim}
+
+\ttindex{LEGENDRE\_SYMBOL}
+The operator \f{legendre\_symbol}(a,p) denotes the Legendre symbol
+\begin{displaymath}
+  \left(\frac{a}{p}\right) \equiv a^{\frac{p-1}{2}} \pmod{p}
+\end{displaymath}
+which, by its very definition can only have one of the values $\{-1,0,1\}$.
 
 There is no further documentation for this package.
 

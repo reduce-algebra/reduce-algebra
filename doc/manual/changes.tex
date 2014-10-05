@@ -16,7 +16,7 @@ redfront
 reduce4
 utf8
 
-\paragraph*{Package rlisp}
+\paragraph*{Core package rlisp}
 
 Support for namespaces (::)
 
@@ -24,49 +24,57 @@ Default value in switch statement
 
 Support for utf8 characters
 
-\paragraph*{Package alg}
+\paragraph*{Core package poly}
 
-New switch precise\_complex
+Improvements for differentiation: new switches \sw{expanddf}, \sw {allowdfint} etc
+(from odesolve)
 
-Improvements for switch combineexpt (exptchk.red)
+\paragraph*{Core package alg}
 
-Operators si, ci, gamma, igamma, psi, polygamma, beta, ibeta, euler,
-bernoulli, pochhammer, lerch\_phi, polylog, zeta, 
-besselj,
-bessely,
-besseli,
-besselk,
-hankel1,
-hankel2,
-kummerM,
-kummerU,
-struveh,
-struvel,
-lommel1,
-lommel2,
-whittakerm,
-whittakerw,
-Airy\_Ai,
-Airy\_Bi,
-Airy\_AiPrime,
-Airy\_biprime,
-binomial,
-solidharmonic,
-sphericalharmonic,
-fibonacci,fibonaccip,
-motzkin,
-hypergeometric, MeijerG now known as part of the
-core, as well as constants catalan, euler\_gamma, golden\_ratio,
-khinchin
+New switch \sw{precise\_complex}
 
-\paragraph*{Package poly}
+Improvements for switch \sw{combineexpt} (exptchk.red)
 
-Improvements for differentiation: new switches expanddf, allowdfint etc (from odesolve)
+New operators \f{continued\_fraction}, \f{totaldeg},
 
-\paragraph*{Package solve}
+Operators now defined in the \REDUCE core:\\
+\f{si}, \f{ci}, \f{gamma}, \f{igamma}, \f{psi}, \f{polygamma}, \f{beta}, \f{ibeta},
+\f{euler},
+\f{bernoulli}, \f{pochhammer}, \f{lerch\_phi}, \f{polylog}, \f{zeta}, 
+\f{besselj},
+\f{bessely},
+\f{besseli},
+\f{besselk},
+\f{hankel1},
+\f{hankel2},
+\f{kummerM},
+\f{kummerU},
+\f{struveh},
+\f{struvel},
+\f{lommel1},
+\f{lommel2},
+\f{whittakerm},
+\f{whittakerw},
+\f{Airy\_Ai},
+\f{Airy\_Bi},
+\f{Airy\_AiPrime},
+\f{Airy\_biprime},
+\f{binomial},
+\f{solidharmonic},
+\f{sphericalharmonic},
+\f{fibonacci},\f{fibonaccip},
+\f{motzkin},
+\f{hypergeometric}, \f{MeijerG}.
 
-polyp
+Constants now part of the core:\\
+ now known as part of the
+core, as well as constants \var{catalan}, \var{euler\_gamma}, \var{golden\_ratio},
+\var{khinchin}.
 
-\paragraph*{Package modsr}
+\paragraph*{Core Package solve}
 
-legendre\_symbol
+New boolean operator \f{polyp}(p,var), to determine whether p is a pure polynomial
+in var, ie. the coefficients of p do not contain var.
+
+
+
