@@ -292,7 +292,17 @@ defautoload(odesolve!-eval,odesolve);
 
 % Plot entry point.
 
-put('plot,'psopfn,'(lambda(u) (load!-package 'gnuplot) (ploteval u)));
+put('plot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (ploteval u))));
+
+%% define .. operator so that you don't get an error when used before autoloaded
+put('!*interval!*,'simpfn,'simpiden);
+
+newtok '((!. !.) !*interval!*);
+
+put('!*interval!*,'prtch,'! !.!.! );
+
+precedence .., or;
+
 
 % Prettyprint module entry point (built into CSL).
 
@@ -397,6 +407,18 @@ flag('(pf),'opfn);
 flag('(pf),'noval);
 
 defautoload(pf,pf,expr,2);
+
+% Compact entry point.
+
+defautoload(simpcompact,compact);
+
+put('compact,'simpfn,'simpcompact);
+
+% Changevar entry point
+
+defautoload(simpchangevar,changevr);
+
+put('changevar,'simpfn,'simpchangevar);
 
 % Sum entry points.
 
