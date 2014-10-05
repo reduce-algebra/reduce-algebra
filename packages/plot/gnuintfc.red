@@ -235,7 +235,8 @@ symbolic procedure gtmpnam base;
 % a function, which I then call.
 
 symbolic procedure init_gnuplot();
-<<
+begin
+  scalar w;
   !*plotpause := -1;                % wait for newline from user
 
   tempdir!* := getenv 'tmp;
@@ -245,8 +246,24 @@ symbolic procedure init_gnuplot();
 % find-gnuplot returns the full name of a version of gnuplot (if it can
 % find one).
   plotcommand!* := find!-gnuplot();
-
-  if memq('win32, lispsystem!*) or memq('win64, lispsystem!*) then <<
+% The Cygwin case can be "funny" here, and the case I wish to trap is
+% where a Cygwin version of Reduce is tryying to use the native Windows
+% version of gnuplot. I believe I can detect this by seeing of
+% the plotcommand!* starts off as "/cygdrive/"...
+  w := explodec plotcommand!*;
+  if eqcar(w, '!") and
+     eqcar(w:= cdr w, '!/) and
+     eqcar(w:= cdr w, 'c) and
+     eqcar(w:= cdr w, 'y) and
+     eqcar(w:= cdr w, 'g) and
+     eqcar(w:= cdr w, 'd) and
+     eqcar(w:= cdr w, 'r) and
+     eqcar(w:= cdr w, 'i) and
+     eqcar(w:= cdr w, 'v) and
+     eqcar(w:= cdr w, 'e) and
+     eqcar(w:= cdr w, '!/) then w := t
+  else w := nil;
+  if memq('win32, lispsystem!*) or memq('win64, lispsystem!*) or w then <<
     plotheader!* := "";
     dirchar!* := "\";
     plotdta!* := for each n in
@@ -265,7 +282,8 @@ symbolic procedure init_gnuplot();
     plotcmds!*:= tmpnam();
     plotcleanup!* := bldmsg("rm %w", plotcmds!*) .
       for each f in plotdta!* collect bldmsg("rm %w", f) >>;
-  nil >>;
+  return nil
+end;
   
 init_gnuplot();
 

@@ -184,6 +184,19 @@ BOOL CALLBACK find_text(HWND h, LPARAM x)
 
 FILE *my_popen(char *command, char *direction)
 {
+/*
+ * Here I have something that might count as an ugliness. If I am on
+ * Windows and am using a console-mode binary then in fact I am using a
+ * cygwin-built version of Reduce. That means that WIN32 will not be
+ * defined and this special magic will not be activated - I will end up
+ * requiring that /usr/bin/gnuplot exists in the cygwin sense of the
+ * meaning of that path-name, and that X11 and DISPLAY are available. This
+ * may mildly astonish some people. However when I tried to use the
+ * Windows-specific code in my Cygwin build I found problems to do with
+ * (perhaps) collision between Cygwin and Windows libraries, or to do with
+ * availablity of the relevant Windows system-calls under cygwin. So for
+ * now that somewhat unsatisfactory arrangement will persist.
+ */
 #ifdef WIN32
 /*
  * Here I take a pretty shameless direction and spot the special case of
@@ -617,6 +630,7 @@ int find_gnuplot(char *name)
 {
     const char *w = getenv("GNUPLOT");
     size_t len;
+    int d;
     if (w != NULL && (len = strlen(w)) > 0)
     {   if (w[len-1] == '/' ||
             w[len-1] == '\\') len--;
@@ -641,6 +655,46 @@ int find_gnuplot(char *name)
     {   strcpy(&name[len+1], GPNAME);
         if (executable_file(name)) return 1;
     }
+#ifdef __CYGWIN__
+/*
+ * As usual Cygwin is an odd case. If DISPLAY is set and /usr/bin/gnuplot
+ * exists then I will try for an X11 usage of gnuplot. That should be
+ * the "natural" case!
+ */
+    w = getenv("DISPLAY");
+    if (w!=NULL && *w!=0 &&
+        executable_file("/usr/bin/gnuplot.exe"))
+    {   strcpy(name, "/usr/bin/gnuplot.exe");
+        return 1;
+    }
+/*
+ * ... well actually people may be using the cygwin version of Reduce because
+ * they ran the console mode version of Reduce under Cygwin's mintty. But
+ * they may not have X11 available. In the case perhaps I should try for
+ * a native Windows version of gnuplot for them... Right now I will not
+ * scan the registry, which is perhaps what I should. I will look for
+ * files "/c/Program Files/..." and "../Program Files (x86)/.." and then
+ * on drives d,e,f up to z. Finally I will check a and b. I really hope
+ * that the executable_file check will not be terribly slow for drives
+ * that are not mounted etc! But for MANY people it will turn out that
+ * if gnuplot is inatlled it will be on C: and this will all happen
+ * smoothly and quite fast!
+ */
+    for (d=0; d<26; d++)
+    {   int dr = d<24 ? 'c'+d : 'a'+d-24;
+        char pp[80];
+        sprintf(pp, "/cygdrive/%c/Program Files/gnuplot/bin/gnuplot.exe", dr);
+        if (executable_file(pp))
+        {   strcpy(name, pp);
+            return 1;
+        }
+        sprintf(pp, "/cygdrive/%c/Program Files (x86)/gnuplot/bin/gnuplot.exe", dr);
+        if (executable_file(pp))
+        {   strcpy(name, pp);
+            return 1;
+        }
+    }
+#endif
 #ifdef WIN32
     {   HKEY keyhandle;
 /*
