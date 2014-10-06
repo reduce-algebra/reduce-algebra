@@ -5,6 +5,7 @@ JOBNAME=manual
 CONFIG=reduce
 
 SECTIONINGDEPTH=3
+
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
 # Remove .ind file, could be left over from latex run

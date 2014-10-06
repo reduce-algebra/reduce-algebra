@@ -26,6 +26,13 @@
 \@ifundefined{Configure}
  {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.pdf}}}
  {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.png}}}
+
+\@ifpackageloaded{tex4ht}{
+  \def\currentpdfbookmark{}
+  \def\subpdfbookmark{}
+  \def\belowpdfbookmark{}
+}
+
 \makeatother
 
 \let\subsubsubsection\paragraph
