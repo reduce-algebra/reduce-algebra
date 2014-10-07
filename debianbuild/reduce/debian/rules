@@ -124,7 +124,7 @@ install-stamp: build-stamp
 	ln -s redfront.1 $(MANDIR)/man1/rfpsl.1
 	cp $(GENERICTOPDIR)/breduce/breduce.1 $(MANDIR)/man1
 # copy CSL files
-	cp $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(LIBDIR)/cslbuild/csl
+	cp -r $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(CSLBUILDDIR)/csl/reduce.resources $(LIBDIR)/cslbuild/csl
 #	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
 	mkdir -p $(FONTDIR)
 	$(RSYNC_CMD) --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
