@@ -818,6 +818,7 @@ wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 @windows_FALSE@DLLEXT = so
 @windows_TRUE@DLLEXT = dll
 dyndemo_SOURCES = dyndemo.c
@@ -846,7 +847,6 @@ dyndemo_SOURCES = dyndemo.c
 @cygwin_TRUE@@windows_FALSE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
-@windows_TRUE@AWKFILES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
 @windows_TRUE@fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 @windows_FALSE@csl_LDADD = $(FOX_LIBS) $(am__append_7)
@@ -4866,10 +4866,12 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.txt reduce.doc
 
-$(AWKFILES):	$(srcdir)/../../packages/redlog/mma/mma.awk \
-	$(srcdir)/../../packages/redlog/qepcad/qepcad.awk
+reduce.resources/mma.awk:	$(srcdir)/../../packages/redlog/mma/mma.awk
 	-mkdir -p reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
+
+reduce.resources/qepcad.awk:	$(srcdir)/../../packages/redlog/qepcad/qepcad.awk
+	-mkdir -p reduce.resources
 	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
 
 -include bootstrapreduce.dep

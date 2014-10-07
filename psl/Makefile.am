@@ -94,8 +94,19 @@ red/bootstrap.img:	psl/* \
 		$(reducec)/packages/rlisp/*.red \
 		$(reducec)/packages/alg/*.red  \
 		$(reducec)/packages/poly/* \
-		$(reducec)/packages/arith/*.red
+		$(reducec)/packages/arith/*.red \
+		red/mma.awk red/qepcad.awk
 	$(srcdir)/bootstrap.sh $(BUILD)
+
+# These files are needed by redlog, and putting copies of them in
+# the "red" directory will mean that Reduce can find them even if the
+# full set of source files are not available.
+
+red/mma.awk:	$(reducec)/packages/redlog/mma/mma.awk
+	cp $(reducec)/packages/redlog/mma/mma.awk red/mma.awk
+
+red/qepcad.awk:	$(reducec)/packages/redlog/qepcad/qepcad.awk
+	cp $(reducec)/packages/redlog/qepcad/qepcad.awk red/qepcad.awk
 
 tryboot:
 	psl/bpsl -td $(STORE2) -f red/bootstrap.img
