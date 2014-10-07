@@ -48,8 +48,10 @@ fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
 
 qepcad_qepcad!* := "qepcad";
 qepcad_slfq!* := "slfq";
+% Both the temporary directory and the reliance on awk may give problems
+% under Windows.
 qepcad_wd!* := "/tmp/";
-qepcad_awk!* := lto_sconcat {rltools_trunk(),"packages/redlog/qepcad/qepcad.awk"};
+qepcad_awk!* := lto_sconcat {get_resource_directory(),"/qepcad.awk"};
 
 switch rlqefbqepcad;
 switch rlqefbslfq;
@@ -159,6 +161,7 @@ procedure qepcad_qepcad1(f,fn);
 	 result := xread t;
 	 close rds fh;
 	 !*echo := oldecho;
+% This call is not suitable for use on Windows.
 	 system lto_sconcat{"rm -f ",fn1," ",fn2};
 	 if null result then
 	    lprim "qepcad failed"
@@ -314,6 +317,7 @@ procedure qepcad_slfq1(f,fn);
 	 result := xread t;
 	 close rds fh;
 	 !*echo := oldecho;
+% This system call is not suitable for use on Windows.
 	 system lto_sconcat{"rm -f ",fn1," ",fn2};
 	 if null result then
 	    lprim "slfq failed"

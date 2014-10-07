@@ -47,9 +47,14 @@ fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
 
 switch rlqefbmma;
 
+% Beware that the value set in mma_call!* here can only possibly
+% apply on a Macintosh - there is not even a pretence of portability!
+% Similarly the temporary directory in mma_wd!* would not be suitable
+% on a typical Windows system.
+
 mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
 mma_wd!* := "/tmp/";
-mma_awk!* := lto_sconcat {rltools_trunk(),"packages/redlog/mma/mma.awk"};
+mma_awk!* := lto_sconcat {get_resource_directory(),"/mma.awk"};
 
 put('ofsf,'rl_services,
    '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));

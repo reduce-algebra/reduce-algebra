@@ -221,6 +221,16 @@ operator rlrndseed;
 
    procedure rltools_trunk();
       rltools_dotdotx(symbolfilename!*,4);
+
+% get_resource_directory() returns the name of a directory in which
+% "resources" may be found. For PSL it will be something like
+%    .../pslbuild/xxxx/red
+% where .../pslbuild/xxx/psl contains the executable file bpsl. Note that
+% the name of the directory is returned (without any trailing "/").
+
+   symbolic procedure get_resource_directory();
+      concat(rltools_dotdot symbolfilename!*, "red");
+
 #endif
 
 #if (memq 'psl lispsystem!*)
@@ -234,6 +244,10 @@ operator rlrndseed;
 #if (memq 'csl lispsystem!*)
    procedure rltools_trunk();
       compress('!" . append(explodec !@reduce, '(!/ !")));
+
+   symbolic procedure get_resource_directory();
+      concat(get_lisp_directory(), "/reduce.resources");
+
 #endif
 
 procedure rltools_dotdotx(s,n);

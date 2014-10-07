@@ -199,14 +199,15 @@ procedure lto_almerge(all,merge);
 procedure lto_idconcat2(id1,id2);
    % List tools identifier concatenation 2. [id1] and [id2] are
    % identifiers. Returns an identifier. The returned identifier is
-   % the concatenation [s1][s2]. The result is not interned.
+   % the concatenation [s1][s2]. The result is not interned if you are
+   % using PSL.
    compress nconc(explode id1,explode id2);
 
 procedure lto_idconcat(l);
    % List tools identifier concatenation. [l] is a list of
    % identifiers. Returns an identifier. The returned identifier is
    % the concatenation of all identifiers in [l]. The result is not
-   % interned.
+   % interned if you are using PSL.
    compress for each id in l join explode id;
 
 procedure lto_sconcat2(s1,s2);
