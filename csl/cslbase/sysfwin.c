@@ -51,6 +51,15 @@
 
 /* $Id$ */
 
+#ifdef __CYGWIN__
+/*
+ * If I am under Cygwin and I will need to use some Windows calls it
+ * appears best to include this file very early - otherwise I have found
+ * some confusion between cygwin and mingw entrypoints hurting me.
+ */
+#include <windows.h>
+#endif
+
 #include "headers.h"
 
 /*
@@ -203,7 +212,7 @@ FILE *my_popen(char *command, char *direction)
  * opening an output pipe to gnuplot... and hook in a behind-the-scenes
  * way.
  */
-    int i = 0, j;
+    int i = 0;
 /*
  * The following test would trigger if the string "wgnuplot.exe" was present
  * within the path even if it was not the final component. I think that at
@@ -630,7 +639,6 @@ int find_gnuplot(char *name)
 {
     const char *w = getenv("GNUPLOT");
     size_t len;
-    int d;
     if (w != NULL && (len = strlen(w)) > 0)
     {   if (w[len-1] == '/' ||
             w[len-1] == '\\') len--;
@@ -671,27 +679,50 @@ int find_gnuplot(char *name)
  * ... well actually people may be using the cygwin version of Reduce because
  * they ran the console mode version of Reduce under Cygwin's mintty. But
  * they may not have X11 available. In the case perhaps I should try for
- * a native Windows version of gnuplot for them... Right now I will not
- * scan the registry, which is perhaps what I should. I will look for
- * files "/c/Program Files/..." and "../Program Files (x86)/.." and then
- * on drives d,e,f up to z. Finally I will check a and b. I really hope
- * that the executable_file check will not be terribly slow for drives
- * that are not mounted etc! But for MANY people it will turn out that
- * if gnuplot is inatlled it will be on C: and this will all happen
- * smoothly and quite fast!
+ * a native Windows version of gnuplot for them... I look for gnuplot.exe here
+ * rather than wgnuplot.exe and will use it via a pipe rather than using
+ * the windows-special interface method.
  */
-    for (d=0; d<26; d++)
-    {   int dr = d<24 ? 'c'+d : 'a'+d-24;
-        char pp[80];
-        sprintf(pp, "/cygdrive/%c/Program Files/gnuplot/bin/gnuplot.exe", dr);
-        if (executable_file(pp))
-        {   strcpy(name, pp);
-            return 1;
-        }
-        sprintf(pp, "/cygdrive/%c/Program Files (x86)/gnuplot/bin/gnuplot.exe", dr);
-        if (executable_file(pp))
-        {   strcpy(name, pp);
-            return 1;
+    {   HKEY keyhandle;
+/*
+ * I need to use RegQueryValueEx here rather than RegGetValue if I am to
+ * support 32-bit Windows XP. Note that buffer overflow in the path to
+ * gnuplot could leave an unterminated string, but that should not happen
+ * here.
+ */
+        DWORD length = LONGEST_LEGAL_FILENAME, type;
+        int ll, i;
+        LONG r = RegOpenKeyEx(
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\gnuplot.exe",
+            0,
+            KEY_QUERY_VALUE,
+            &keyhandle);
+        if (r == ERROR_SUCCESS) 
+        {   r = RegQueryValueEx(keyhandle,
+               NULL,
+               NULL,
+               (LPDWORD)&type,
+               (PVOID)name,
+               (LPDWORD)&length);
+            name[LONGEST_LEGAL_FILENAME-1] = 0;
+            if (r == ERROR_SUCCESS)
+            {
+/*
+ * Now I have a further delight. The path I have just identified is a
+ * Windows one, but I need to convert it into a Cygwin-style one. It
+ * should start "x:\" with a drive name so I map that onto "/cygdrive/x/"
+ * and convert every "\" to a "/". The code here is rather grotty with the
+ * numeric "magic offsets" and the use of sprintf followed by patching
+ * up after the terminating null from that, but it is at least concise.
+ */
+                ll = strlen(name);
+                for (i=ll; i>=0; i--)
+                    name[i+9] = name[i]=='\\' ? '/' : name[i];
+                sprintf(name, "/cygdrive/%c", name[0]);
+                name[11] = '/';
+                return 1;
+            }
         }
     }
 #endif
@@ -704,20 +735,22 @@ int find_gnuplot(char *name)
  * here.
  */
         DWORD length = LONGEST_LEGAL_FILENAME, type;
-        LONG r, r1 = RegOpenKeyEx(
+        LONG r = RegOpenKeyEx(
             HKEY_LOCAL_MACHINE,
             "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wgnuplot.exe",
             0,
             KEY_QUERY_VALUE,
             &keyhandle);
-        r = RegQueryValueEx(keyhandle,
-            NULL,
-            NULL,
-            (LPDWORD)&type,
-            (PVOID)name,
-            (LPDWORD)&length);
-        name[LONGEST_LEGAL_FILENAME-1] = 0;
-        if (r == ERROR_SUCCESS) return 1;
+        if (r == ERROR_SUCCESS)
+        {   r = RegQueryValueEx(keyhandle,
+               NULL,
+               NULL,
+               (LPDWORD)&type,
+               (PVOID)name,
+               (LPDWORD)&length);
+            name[LONGEST_LEGAL_FILENAME-1] = 0;
+            if (r == ERROR_SUCCESS) return 1;
+        }
     }
 /*
  * If wgnuplot.exe is not installed then I will drop through and a last
@@ -835,6 +868,5 @@ int number_of_processors()
 #endif
 #endif
 #endif
-
 
 /* end of sysfwin.c */
