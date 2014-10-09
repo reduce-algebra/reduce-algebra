@@ -28,6 +28,7 @@ DOCSRCDIR=$(TOPDIR)/doc/manual
 DOCMISCDIR=$(TOPDIR)/doc/misc
 
 DOCBASENAME=manual
+EXTRADOCIMAGEBASENAMES=bild cmsy10 gnuplotex turtleeg
 
 GENERICTOPDIR=$(TOPDIR)/generic
 
@@ -111,10 +112,13 @@ install-stamp: build-stamp
 	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR) $(MANDIR)/man1
 	mkdir -p $(REDFRONTSHAREDIR)/redfront $(EMACSSITELISPDIR) $(EMACSSITESTARTDIR) $(ADDONDOCDIR)
 # copy documentation files
-	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf $(TOPDIR)/csl/reduce.doc/BINARY-LICENSE.txt $(TOPDIR)/csl/reduce.doc/BSD-LICENSE.txt $(TOPDIR)/csl/reduce.doc/LGPL-2.1.txt $(TOPDIR)/doc/manual/redlogo.png $(DOCDIR)
+	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf \
+           $(TOPDIR)/csl/reduce.doc/BINARY-LICENSE.txt $(TOPDIR)/csl/reduce.doc/BSD-LICENSE.txt $(TOPDIR)/csl/reduce.doc/LGPL-2.1.txt $(TOPDIR)/doc/manual/redlogo.png $(DOCDIR)
 	cp $(DOCSRCDIR)/*.tex $(DOCDIR)
 	cp $(DOCSRCDIR)/$(DOCBASENAME).pdf $(DOCSRCDIR)/$(DOCBASENAME)*.html $(DOCSRCDIR)/$(DOCBASENAME)*.png $(DOCSRCDIR)/$(DOCBASENAME).css $(DOCDIR)
+	for n in $(EXTRADOCIMAGEBASENAMES); do cp $(DOCSRCDIR)/${n}*.png $(DOCDIR) ; done
 	cp $(DOCDIR)/$(DOCBASENAME).html $(DOCDIR)/index.html
+	chmod -x $(DOCDIR)/*
 	cp $(REDFRONTSRCDIR)/README $(ADDONDOCDIR)/README
 	cp $(GENERICTOPDIR)/breduce/breduce.tex $(GENERICTOPDIR)/breduce/breduce.bbl $(GENERICTOPDIR)/breduce/breduce.pdf $(ADDONDOCDIR)
 # copy man files
@@ -127,15 +131,18 @@ install-stamp: build-stamp
 	cp -r $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(CSLBUILDDIR)/csl/reduce.resources $(LIBDIR)/cslbuild/csl
 #	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
 	mkdir -p $(FONTDIR)
-	$(RSYNC_CMD) --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
-	chmod -x $(FONTDIR)/*.ttf
+	$(RSYNC_CMD) --chmod=Fa-x --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
+#	chmod -x $(FONTDIR)/*.ttf $(FONTDIR)/*.pfa $(FONTDIR)/*.pfb
 ifneq ($(BUILDPSL),)                                                          # copy PSL files
 	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" $(PSLBUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
+	chmod -x $(LIBDIR)/pslbuild/psl/*.b
 	$(RSYNC_CMD) $(PSLBUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
+	chmod -x $(LIBDIR)/pslbuild/red/*
 	$(TOPDIR)/psl/saveimage.sh $(PSLBUILDDIR) $(abspath $(LIBDIR)/pslbuild/red) /usr/lib/reduce/pslbuild
 endif
 # copy common files
-	$(RSYNC_CMD) --no-perms --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
+	$(RSYNC_CMD) --no-perms --chmod=Fa-x --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
+	chmod a+x $(TOPDIR)/packages/gcref/gcref $(TOPDIR)/packages/redlog/regressions/make.sh
 	ln -f -s ../../../../share/reduce/fonts $(LIBDIR)/cslbuild/csl/reduce.fonts
 	ln -f -s ../../../../share/doc/reduce $(LIBDIR)/cslbuild/csl/reduce.doc
 	ln -f -s ../../lib/reduce/pslbuild $(SHAREDIR)/pslbuild
@@ -144,7 +151,7 @@ endif
 	mkdir -p $(TTFONTDIR) $(TYPE1FONTDIR)
 	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.ttf $(TTFONTDIR)
 	cp $(CSLBUILDDIR)/csl/reduce.fonts/*.pfb $(TYPE1FONTDIR)
-	chmod -x $(TTFONTDIR)/*
+	chmod -x $(TTFONTDIR)/* $(TYPE1FONTDIR)/*
 # copy shell scripts for running REDUCE
 	cp -a debian/runpsl.sh $(BINDIR)/redpsl
 	cp -a debian/runcsl.sh $(BINDIR)/redcsl
@@ -155,6 +162,7 @@ endif
 	cp $(GENERICTOPDIR)/breduce/breduce $(BINDIR)
 	cp $(GENERICTOPDIR)/emacs/reduce-mode.el $(EMACSSITELISPDIR)
 	cp debian/50reduce-emacs.el $(EMACSSITESTARTDIR)
+	chmod a-x $(EMACSSITELISPDIR)/reduce-mode.el $(EMACSSITESTARTDIR)/50reduce-emacs.el
 
 # run dh_install to copy the files into the package build dirs
 	dh_install
@@ -162,7 +170,7 @@ endif
 	touch install-stamp
 
 
-# Build architecture-dependent files here.
+# Build architecture-independent files here.
 binary-indep: install
 	dh_testdir -i
 	dh_testroot -i
@@ -175,6 +183,7 @@ binary-indep: install
 #	dh_desktop -i
 	dh_installinfo -i
 	dh_installchangelogs  -i
+	dh_lintian -i
 	dh_link -i
 	dh_strip -i
 	dh_compress -i 
@@ -198,6 +207,7 @@ binary-arch: install
 #	dh_desktop -a
 	dh_installinfo -a
 	dh_installchangelogs  -a
+	dh_lintian -a
 	dh_link -a
 	dh_strip -a $(NO_STRIP)
 	dh_compress -a
