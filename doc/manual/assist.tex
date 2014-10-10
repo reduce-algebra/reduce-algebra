@@ -1128,7 +1128,7 @@ The function \f{MKDEPTH\_ONE} described above implements that functionality.
 symbolic functions \f{LT} and \f{RED}. They give, respectively, the
 {\em leading term} and the {\em reductum} of a polynomial. They also work
 for rational functions. Their interest lies in the fact that they do not
-@@require one to extract the main variable. They work according to the current
+require one to extract the main variable. They work according to the current
 ordering of the system:
 \begin{verbatim}
 
@@ -1178,9 +1178,9 @@ returns both the quotient and its remainder.
 \subsection{Handling of Transcendental Functions}
 %\item[i.]
 The functions \f{TRIGREDUCE} and \f{TRIGEXPAND} and the equivalent
-@@ones for hyperbolic functions \f{HYPREDUCE} and \f{HYPEXPAND}
+ones for hyperbolic functions \f{HYPREDUCE} and \f{HYPEXPAND}
 make the transformations to multiple arguments and from
-@@multiple arguments to elementary arguments. Here is a simple example:
+multiple arguments to elementary arguments. Here is a simple example:
 \begin{verbatim}
 
         aa:=sin(x+y)$
@@ -1242,7 +1242,7 @@ Explicit vectors in {\tt EUCLIDEAN} space may be represented by
 list-like or bag-like objects of depth 1.
 The components may be bags but may {\bf not} be lists.
 Functions are provided to do the sum, the difference and the
-@@scalar product. When the space-dimension is three there are also functions
+scalar product. When the space-dimension is three there are also functions
 for the cross and mixed products.
 \f{SUMVECT, MINVECT, SCALVECT, CROSSVECT} have two arguments.
 \f{MPVECT} has three arguments. The following example
@@ -1280,7 +1280,7 @@ The functions in this module represent the minimum functionality
 required to identify them and to handle their specific features.
 
 \f{PUTGRASS} is a (nary) command which give identifiers the property
-@@of being the names of Grassmann kernels. \f{REMGRASS} removes this property.
+of being the names of Grassmann kernels. \f{REMGRASS} removes this property.
 
 \f{GRASSP} is a boolean function which detects grassmann kernels.
 
@@ -1329,7 +1329,7 @@ This module provides functions for handling matrices more comfortably.
 \item[i.]
 Often, one needs to construct some {\tt UNIT} matrix of
 a given dimension. This construction is done by the system thanks
-@@to the function \f{UNITMAT}. It is a nary function. The command is
+to the function \f{UNITMAT}. It is a nary function. The command is
 \begin{verbatim}
 
         UNITMAT M1(n1), M2(n2), .....Mi(ni) ;
@@ -1338,7 +1338,7 @@ a given dimension. This construction is done by the system thanks
 where \verb+M1,...Mi+ are names of matrices and
 \verb+ n1, n2, ..., ni+ are integers .
 
-@@\f{MKIDM} is a generalization of \f{MKID}. It allows one to connect
+\f{MKIDM} is a generalization of \f{MKID}. It allows one to connect
 two or several matrices. If \verb+u+ and \verb+u1+ are two matrices,
 one can go from one to the other:
 \begin{verbatim}
@@ -1359,7 +1359,7 @@ one can go from one to the other:
                 [0  1]
 
 \end{verbatim}
-@@This function allows one to make loops on matrices like in the following
+This function allows one to make loops on matrices like in the following
 illustration. If \verb+U, U1, U2,.., U5+ are matrices:
 \begin{verbatim}
 
@@ -1403,15 +1403,15 @@ The functions \f{SUBMAT, MATEXTR, MATEXTC} take parts of a given matrix.
 
 \end{verbatim}
 The first is the matrix name, and the other two are the row  and column
-@@numbers.  It gives the
-@@submatrix obtained from \verb+U+ by deleting the row \verb+nr+ and
+numbers.  It gives the
+submatrix obtained from \verb+U+ by deleting the row \verb+nr+ and
 the column \verb+nc+.
 When one of them is equal to zero only column \verb+nc+
 or row \verb+nr+ is deleted.
 
 \f{MATEXTR} and \f{MATEXTC} extract a row or a column and place it into
 a list-like or bag-like object.
-@@The entries are
+The entries are
 \begin{verbatim}
 
         MATEXTR(U,VN,nr)
@@ -1466,12 +1466,12 @@ The entry is
 
 \end{verbatim}
 where \verb+HU+ is the identifier for the hermitian matrix of \verb+U+.
-@@It should be {\bf unassigned} for this function to work  successfully.
+It should be {\bf unassigned} for this function to work  successfully.
 This is done on  purpose to prevent accidental redefinition of an already
 used identifier .
 \item[iv.]
 \f{SETELMAT GETELMAT} are functions of two integers. The first one
-@@resets the element \verb+(i,j)+ while the second one extracts an
+resets the element \verb+(i,j)+ while the second one extracts an
 element identified by \verb+(i,j)+. They may be useful when
 dealing with matrices {\em inside procedures}.
 \end{itemize}
