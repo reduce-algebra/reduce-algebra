@@ -1,11 +1,13 @@
 
 \index{ORTHOVEC package}
-
+\iffalse
 The revised version of ORTHOVEC is a collection of REDUCE 3.4 procedures and
 operations which provide a simple to use environment for the manipulation of
 scalars and vectors.  Operations include addition, subtraction, dot and cross
 products, division, modulus, div, grad, curl, laplacian, differentiation,
-integration, ${\bf a \cdot \nabla}$ and Taylor expansion.  Version 2 is
+integration, ${\bf a \cdot \nabla}$ and Taylor expansion. 
+\fi
+Version 2 is
 summarized in \cite{Eastwood:91}.  It differs from the original (\cite
 {Eastwood:87}) in revised notation and extended capabilities.
 
@@ -58,9 +60,8 @@ and vector expansions frequently met in many areas of applied mathematics.
 The revisions have been introduced for two reasons: firstly, to add extra
 capabilities missing from the original and secondly, to tidy up input and
 output to make the package easier to use.
-\newpage
-The changes from Version 1 include:
 
+The changes from Version 1 include:
 \begin{enumerate}
 \item merging of scalar and vector unary and binary operators, $+, - , *, /
 $
@@ -159,14 +160,14 @@ and in the case of scalar arguments reduce to the usual definitions of
 $ +, -, *, /, $ etc.
 
 The operators are represented by symbols 
-\ttindextype{+}{ ! 3-D vector} \ttindextype{-}{ ! 3-D vector} 
-\ttindextype{/}{ ! 3-D vector} \ttindextype{*}{ ! 3-D vector} 
-\ttindextype{*}{ ! 3-D vector} \ttindextype{"\^}{ ! 3-D vector}
-\ttindextype{><}{ ! 3-D vector}
+\ttindextype{+}{!3-D vector} \ttindextype{-}{!3-D vector} 
+\ttindextype{/}{!3-D vector} \ttindextype{*}{!3-D vector} 
+\ttindextype{*}{!3-D vector} \ttindextype{"\^}{!3-D vector}
+\ttindextype{><}{!3-D vector}
 \begin{verbatim}  
 +, -, /, *, ^, ><
 \end{verbatim}
-\ttindextype{><}{ ! diphthong} The composite {\tt ><} is an
+\ttindextype{><}{!diphthong} The composite {\tt ><} is an
 attempt to represent the cross product symbol 
 $\times$ in ASCII characters.
 If we let ${\bf v}$ be a vector and $s$ be a scalar, then
