@@ -40,25 +40,26 @@ module 'cdiffx;
 % The material in her ewas originally in four separate files - these
 % have been consolidated.
 
-% akf
-define sj=solve_jacobi_identities_of,
-   god=generators_of_degree,
-   cod=commutators_of_degree,
-   uso=unsolved_identities_of,
-   ng=new_generators,
-   ls=linear_solve_and_assign,
-   oc=operator_coeff,
-   ra=relation_analysis;
-
-define es=integrate_equation,
-   seq=integrate_equations,
-   xes=integrate_exceptional_equation,
-   pr=show_equation,
-   preq=show_equations,
-   te=equations_used(),
-   pte=put_equations_used,
-   fu=functions_used,
-   pfu=put_functions_used;
+% afk: this file containdes just shortcuts that have been commented
+%      to avoid the danger of conflicts
+%% define sj=solve_jacobi_identities_of,
+%%    god=generators_of_degree,
+%%    cod=commutators_of_degree,
+%%    uso=unsolved_identities_of,
+%%    ng=new_generators,
+%%    ls=linear_solve_and_assign,
+%%    oc=operator_coeff,
+%%    ra=relation_analysis;
+%%
+%% define es=integrate_equation,
+%%    seq=integrate_equations,
+%%    xes=integrate_exceptional_equation,
+%%    pr=show_equation,
+%%    preq=show_equations,
+%%    te=equations_used(),
+%%    pte=put_equations_used,
+%%    fu=functions_used,
+%%    pfu=put_functions_used;
 
 
 % losop

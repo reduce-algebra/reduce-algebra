@@ -1,7 +1,7 @@
 % Hamiltonian operators on KdV
 % Raffaele Vitolo, 10 April 2010
 % In order to work with the examples, load first CDIFF with the command
-% load_package cdiff;
+load_package cdiff;
 
 super_vectorfield(ddx,{x,t,u,u1,u2,u3,u4,u5,u6,u7,
 u8,u9,u10,u11,u12,u13,u14,u15,u16,u17},
@@ -90,6 +90,8 @@ ut12:=ddx ut11;
 ut13:=ddx ut12;
 ut14:=ddx ut13;
 
+operator ev;
+
 for i:=1:17 do write ev(0,i):=ddt(ddx(0,i))-ddx(ddt(0,i));
 
 %we now introduce odd variables ext 1,....,ext 20, and associated relations
@@ -173,6 +175,7 @@ grd17:= mkvarlist1(17,17)$
 grd18:= mkvarlist1(18,18)$
 grd19:= mkvarlist1(19,19)$
 
+operator c,equ;
 
 ctel:=0;
 
@@ -234,13 +237,13 @@ tel1:=tel;
 
 for i:=2:tel1 do begin splitvars i;equ i:=0;end;
 
-pte tel;
+put_equations_used tel;
 
 for i:=2:tel do write equ i:=equ i;
 
 pause;
 
-for i:=2:tel do es i;
+for i:=2:tel do integrate_equation i;
 
 end;
 

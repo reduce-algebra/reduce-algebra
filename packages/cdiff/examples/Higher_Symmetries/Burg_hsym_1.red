@@ -1,7 +1,7 @@
 % Raffaele Vitolo, 09/10/09
 % This is the computation for (higher) symmetries of Burgers
 % In order to work with the examples, load first CDIFF with the command
-% load_package cdiff;
+load_package cdiff;
 
 % The following instructions initialize the total derivatives. The first
 % string is the name of the vector field,
@@ -112,6 +112,8 @@ ut14:=ddx ut13;
 % Highest order defined terms yield some `letop'
 % which means `careful' in Dutch and is treated as a new variable.
 
+operator ev;
+
 for i:=1:17 do write ev(0,i):=ddt(ddx(0,i))-ddx(ddt(0,i));
 
 pause;
@@ -145,6 +147,8 @@ grd15:= mkvarlist1(15,15)$
 grd16:= mkvarlist1(16,16)$
 
 % Initialize a counter for the vector of arbitrary constants
+
+operator c,equ;
 
 ctel:=0;
 
@@ -199,7 +203,7 @@ splitvars 1;
 % Next command tells the solver the total number of equations obtained
 % after running splitvars.
 
-pte tel;
+put_equations_used tel;
 
 % It is worth to write down the equations for the coefficients.
 
@@ -210,7 +214,7 @@ pause;
 % This command solves the equations for the coefficients.
 % Note that we have to skip the initial equations!
 
-for i:=2:te do es i;
+for i:=2:tel do integrate_equation i;
 
 ;end;
 

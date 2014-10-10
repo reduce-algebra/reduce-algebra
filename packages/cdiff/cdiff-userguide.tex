@@ -566,6 +566,8 @@ ut14:=ddx ut13;
 Test for verifying the commutation of total derivatives.
 Highest order defined terms may yield some \texttt{letop}.
 \begin{verbatim}
+operator ev;
+
 for i:=1:17 do write ev(0,i):=ddt(ddx(0,i))-ddx(ddt(0,i));
 \end{verbatim}
 
@@ -598,8 +600,11 @@ grd15:= mkvarlist1(15,15)$
 grd16:= mkvarlist1(16,16)$
 \end{verbatim}
 
-Initialize a counter for the vector of arbitrary constants
+Initialize a counter \texttt{ctel} for arbitrary constants \texttt{c};
+initialize equations:
 \begin{verbatim}
+operator c,equ;
+
 ctel:=0;
 \end{verbatim}
 
@@ -676,7 +681,7 @@ splitvars 1;
 Next command tells the solver the total number of equations obtained
 after running splitvars.
 \begin{verbatim}
-pte tel;
+put_equations_used tel;
 \end{verbatim}
 
 It is worth to write down the equations for the coefficients.
@@ -687,7 +692,7 @@ for i:=2:tel do write equ i;
 This command solves the equations for the coefficients.
 Note that we have to skip the initial equations!
 \begin{verbatim}
-for i:=2:te do es i;
+for i:=2:tel do integrate_equation i;
 ;end;
 \end{verbatim}
 
@@ -790,8 +795,8 @@ Note that this gives a grading which is compatible with the gradings of
 \begin{verbatim}
 initialize_equations(equ,tel,{},{cc,cctel,0},{f,0,0});
 for i:=1:2 do begin splitvars i;end;
-pte tel;
-for i:=3:tel do es i;
+put_equations_used tel;
+for i:=3:tel do integrate_equation i;
 end;
 \end{verbatim}
 issuing the commands
@@ -943,10 +948,10 @@ for i:=2:tel1 do begin splitvars i;equ i:=0;end;
 \end{verbatim}
 Now we are ready to solve all equations:
 \begin{verbatim}
-pte tel;
+put_equations_used tel;
 for i:=2:tel do write equ i:=equ i;
 pause;
-for i:=2:tel do es i;
+for i:=2:tel do integrate_equation i;
 end;
 \end{verbatim}
 Note that we want \emph{all} equations to be solved!
