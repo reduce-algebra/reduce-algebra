@@ -246,7 +246,7 @@ operator rlrndseed;
       compress('!" . append(explodec !@reduce, '(!/ !")));
 
    symbolic procedure get_resource_directory();
-      concat(get_lisp_directory(), "/reduce.resources");
+      concat(get!-lisp!-directory(), "/reduce.resources");
 
 #endif
 
