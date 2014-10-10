@@ -106,9 +106,11 @@
 \newcommand{\RLISP}{RLISP\xspace}
 \newcommand{\underscore}{\char`\_}
 \newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
+                          \renewcommand{\|}{\protect\textbar}%
                           \index{#1@\texttt{#1}}}}
 \def\ttindextypehelper#1#2\relax{\let\blubber=#1}
 \newcommand{\ttindextype}[2]{{\renewcommand{\_}{\protect\underscore}%
+                              \renewcommand{\|}{\protect\textbar}%
                               \ttindextypehelper#2\relax
                               \ifx!\blubber
                                 \index{#1@\texttt{#1} #2}%

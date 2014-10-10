@@ -16,6 +16,11 @@ mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}
 tex '\def\filename{{'${JOBNAME}'}{idx}{4dx}{ind}} \input idxmake.4ht'
 
 # finally, run makeindex and latex once
+sed -e 's/^\(\\indexentry{[^@]*\)\\textbar/\1"|/' \
+    -e 's/^\(\\indexentry{[^@]*\)\\underscore/\1_/' \
+    -e 's/^\(\\indexentry{[^@]*\)\\char `\\\\/\1\\\\/' \
+  <manual.4dx >manual.4dxtmp ; mv manual.4dxtmp manual.4dx
+
 makeindex -o ${JOBNAME}.ind ${JOBNAME}.4dx
 
 mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}

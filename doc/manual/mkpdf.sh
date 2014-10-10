@@ -22,6 +22,11 @@ until [ ${SUCCESS} = 1 ] ; do
 done
 
 # finally, run makeindex and latex once
+sed -e 's/^\(\\indexentry{[^@]*\)\\textbar/\1"|/' \
+    -e 's/^\(\\indexentry{[^@]*\)\\underscore/\1_/' \
+    -e 's/^\(\\indexentry{[^@]*\)\\char `\\\\/\1\\\\/' \
+  <manual.idx >manual.idxtmp ; mv manual.idxtmp manual.idx
+
 makeindex ${JOBNAME}
 pdflatex ${JOBNAME}
 
