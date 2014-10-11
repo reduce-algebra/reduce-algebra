@@ -71,6 +71,7 @@ endif
 all:
 # The arrangement here is somewhat odd to try to cope with the way that this
 # Makefile gets extended via created include files when it runs.
+	test -d red || mkdir red; \
 	if ! test -f red/bootstrap.img; \
 	then $(MAKE) red/bootstrap.img; \
 	     if test -f red/bootstrap.img; then $(MAKE) reduce; fi; \
