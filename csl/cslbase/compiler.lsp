@@ -4259,10 +4259,10 @@ cdr c)) env)) (c!:endblock (quote goto) (list join))))) (c!:startblock l2)))
 
 (de c!:cfunction (u env) (prog (v) (setq u (cadr u)) (cond ((not (atom u)) (
 progn (cond ((not (eqcar u (quote lambda))) (error 0 (list 
-"lambda expression needed" u)))) (setq v (dated!-name (quote lambda))) (setq 
-pending_functions (cons (cons (quote de) (cons v (cdr u))) pending_functions)
-) (setq u v)))) (setq v (c!:newreg)) (c!:outop (quote movk) v u (
-c!:find_literal u)) (return v)))
+"lambda expression needed" u)))) (setq v (hashtagged!-name (quote lambda) u))
+(setq pending_functions (cons (cons (quote de) (cons v (cdr u))) 
+pending_functions)) (setq u v)))) (setq v (c!:newreg)) (c!:outop (quote movk)
+v u (c!:find_literal u)) (return v)))
 
 (de c!:valid_function (x) (cond ((atom x) nil) (t (cond ((not (null (cdr x)))
 nil) (t (cond ((idp (car x)) t) (t (cond ((atom (car x)) nil) (t (cond ((not

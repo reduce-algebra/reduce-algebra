@@ -2326,7 +2326,7 @@ symbolic procedure c!:cfunction(u, env);
     if not atom u then <<
        if not eqcar(u, 'lambda) then 
            error(0, list("lambda expression needed", u));
-       v := dated!-name 'lambda;
+       v := hashtagged!-name('lambda, u);
        pending_functions :=
           ('de . v . cdr u) . pending_functions;
        u := v >>;
