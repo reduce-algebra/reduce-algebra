@@ -724,14 +724,22 @@ static int dependency_count = 0, dependency_capacity = 0;
 void report_file(const char *s)
 {
     char *c;
+    const char *s1;
     int i;
     if (dependency_file == NULL) return;
 /*
  * In a really odd way I will avoid recording inline-defs.dat as a
  * dependency and insist that if it is to be one that the Makefile should
- * list that explicitly.
+ * list that explicitly. This helps me avoid some dependency circularities.
+ * but note that inline-defs.dat may not be in the current directory.
+ * Use of that file-name for any other purposes may cause issues!
+ * Here I find the final component of the path - ie the bit following the
+ * last "/" or "\" present if there is one of those.
  */
-    if (strcmp(s, "inline-defs.dat") == 0) return;
+    if ((s1 = strrchr(s, '/')) != NULL) s1++;
+    else if ((s1 = strrchr(s, '\\')) != NULL) s1++;
+    else s1 = s;
+    if (strcmp(s1, "inline-defs.dat") == 0) return;
     if (dependency_count >= dependency_capacity)
     {   dependency_capacity = 2*dependency_capacity + 40;
         dependency_map = (char **)realloc(dependency_map,
