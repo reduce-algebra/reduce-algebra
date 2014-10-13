@@ -1,4 +1,4 @@
-#! /bin/bash
+ #! /bin/bash
 
 # This little script is intended to check if all the cygwin
 # packages that you need in order to build the CSL version of
@@ -44,9 +44,10 @@
 case `uname -m` in
 i686)
     for m in automake bc bison cygwin64-gcc-g++ cygwin64-libXext \
-        cygwin64-libXft cygwin64-ncurses gcc-g++ libncurses-devel \
-        libXext-devel libXft-devel make mingw64-i686-gcc-g++ \
-        mingw64-x86_64-gcc-g++ openssh subversion time
+        cygwin64-libXft cygwin64-ncurses cygwin64-zlib gcc-g++ \
+        libncurses-devel libXext-devel libXft-devel make mingw64-i686-gcc-g++ \
+        mingw64-i686-zlib mingw64-x86_64-gcc-g++ mingw64-x86_64-zlib \
+        openssh subversion time
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then
@@ -58,9 +59,10 @@ i686)
     ;;
 x86_64)
     for m in automake bc bison cygwin32-gcc-g++ \
-        cygwin32-ncurses gcc-g++ libncurses-devel \
+        cygwin32-ncurses cygwin32-zlib gcc-g++ libncurses-devel \
         libXext-devel libXft-devel make mingw64-i686-gcc-g++ \
-        mingw64-x86_64-gcc-g++ openssh subversion time
+        mingw64-i686-zlib mingw64-x86_64-gcc-g++ mingw64-x86_64-zlib \
+        openssh subversion time
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then

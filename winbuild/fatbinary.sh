@@ -3,25 +3,55 @@
 # Assemble some of the built files & directories  I will want, putting them
 # in the current directory where I can see them.
 
-cp cslwin64/csl/reduce.img reduce.img
-cp -r cslwin64/csl/reduce.fonts reduce.fonts
-cp -r cslwin64/csl/reduce.resources reduce.resources
+case ${1:-2} in
+1 | 3)
+  ver=cslwin64
+  ;;
+2)
+  ver=cslwin32
+  ;;
+*)
+  echo argument $1 invalid: should ba 1, 2 or 3
+  exit 1
+  ;;
+esac
+
+cp $ver/csl/reduce.img reduce.img
+cp -r $ver/csl/reduce.fonts reduce.fonts
+cp -r $ver/csl/reduce.resources reduce.resources
 
 # Create the utility program that will compress executables and
-# tag the commpressed data onto the end of an existing file.
+# tag the commpressed data onto the end of an existing file. I will
+# build thus using i686-w64-mingw32-gcc since then the executable should
+# run on all possible platforms.
 
-gcc addresources.c -lz -oaddresources.exe
+i686-w64-mingw32-gcc addresources.c -static -lz -oaddresources.exe
 
 # I will need two helper programs that have been built so as to run
 # under cygwin32 and cygwin64. Here I build them...
 # The code tries to launch thes eto determine whether cygwin is active, and
 # if it is whether stdin and stdout are linked directly to a cygwin console.
 
-gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
-strip cygwin32-isatty.exe
+case `uname -m` in
+i686)
+  gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
+  strip cygwin32-isatty.exe
 
-x86_64-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
-x86_64-pc-cygwin-strip cygwin64-isatty.exe
+  x86_64-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
+  x86_64-pc-cygwin-strip cygwin64-isatty.exe
+  ;;
+x86_64)
+  i686-pc-cygwin32-gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
+  i686-pc-cygwin-strip cygwin32-isatty.exe
+
+  gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
+  strip cygwin64-isatty.exe
+  ;;
+*)
+  echo unknown architecture `uname -n`
+  exit 1
+  ;;
+esac
 
 # stub.c is a stub program that tests the environment it is launched from
 # and chains to a suitable version of the code...

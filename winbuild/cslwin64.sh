@@ -38,3 +38,5 @@ ls -lh reduce.exe reduce.com reduce.img csl.exe csl.img
 popd
 
 popd
+
+# end of script
