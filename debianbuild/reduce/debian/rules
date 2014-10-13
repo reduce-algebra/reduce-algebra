@@ -88,7 +88,7 @@ ifneq ($(BUILDPSL),)
 endif
 	mkdir -p $(REDFRONTBUILDDIR)
 	cd $(REDFRONTSRCDIR) ; autoconf ; autoheader
-	cd $(REDFRONTBUILDDIR) ; ../../src/configure --with-libedit --with-redfront-root=/usr/share/reduce-addonts/redfront --with-package-map=/usr/share/reduce/packages/package.map --with-csl-reduce=/usr/share/reduce/cslbuild/csl/reduce --with-bpsl=/usr/share/reduce/pslbuild/psl/bpsl --with-reduce-img=/usr/share/reduce/pslbuild/red/reduce.img
+	cd $(REDFRONTBUILDDIR) ; ../../src/configure --with-libedit --with-redfront-root=/usr/share/reduce-addons/redfront --with-package-map=/usr/share/reduce/packages/package.map --with-csl-reduce=/usr/share/reduce/cslbuild/csl/reduce --with-bpsl=/usr/share/reduce/pslbuild/psl/bpsl --with-reduce-img=/usr/share/reduce/pslbuild/red/reduce.img
 	touch configure-stamp
 
 
