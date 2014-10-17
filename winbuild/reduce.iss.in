@@ -126,6 +126,7 @@ var
   NeedGnuPlotInstall: Boolean;
   GnuPlotPath: String;
 
+
 function InitializeSetup(): Boolean;
 var
   RegVal: String;
@@ -169,7 +170,7 @@ ReducePSL=Files for PSL
 
 ;=== German === LID=$0407 CodePage=1252
 
-de.FullInstallation=Vollstdndige Installation
+de.FullInstallation=Vollständige Installation
 de.CslOnlyInstallation=Nur CSL installieren
 de.PslOnlyInstallation=Nur PSL installieren
 de.CustomInstallation=Benutzerdefinierte Installation
@@ -181,12 +182,12 @@ de.ReducePSL=PSL-Dateien
 
 ;=== French === LID=$040C CodePage=1252
 
-fr.FullInstallation=Installation complhte
+fr.FullInstallation=Installation complète
 fr.CslOnlyInstallation=Installez CSL seulement
 fr.PslOnlyInstallation=Installez PSL seulement
-fr.CustomInstallation=Installation personnalisie
+fr.CustomInstallation=Installation personnalisée
 
-fr.ReduceCommon=Fichiers communs ` CSL et PSL
+fr.ReduceCommon=Fichiers communs à CSL et PSL
 fr.ReduceCSL=Fichiers pour CSL
 fr.ReducePSL=Fichiers pour PSL
 
@@ -203,13 +204,12 @@ it.ReduceCSL=File per CSL
 it.ReducePSL=File per PSL
 
 
-es.FullInstallation=Instalacisn completa
-es.CslOnlyInstallation=Instalar sslo CSL
-es.PSLOnlyInstallation=Instalar sslo PSL
-es.CustomInstallation=Instalacisn personalizada
+es.FullInstallation=Instalación completa
+es.CslOnlyInstallation=Instalar sólo CSL
+es.PSLOnlyInstallation=Instalar sólo PSL
+es.CustomInstallation=Instalación personalizada
 
 es.ReduceCommon=Archivos comunes de CSL y PSL
 es.ReduceCSL=Archivos para CSL
 es.ReducePSL=Archivos para PSL
-
 
