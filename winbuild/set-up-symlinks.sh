@@ -8,5 +8,5 @@
 #   ln -s `cygpath "full windows name"` /usr/local/bin/short-linux-name
 # for each installation of cygwin found.
 
-i686-w64-mingw32-gcc make-cygwin-symlink.c -o make-cygwin-symlink
+i686-w64-mingw32-gcc make-cygwin-symlink.c -o cslbuild/make-cygwin-symlink
 

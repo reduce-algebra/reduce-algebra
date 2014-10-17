@@ -15,7 +15,11 @@ mkdir crlibm
 pushd crlibm
 $reduce/csl/cslbase/crlibm/configure --prefix=$reduce/winbuild/cslwin32 \
     --host=i686-w64-mingw32
-make install
+# This script is invoked on its own ahead of the other builds of Reduce
+# versions and so I feel entitled to use "-j4" for parallel building.
+# I argue that even on a single processor machine (now increasingly rare)
+# this will not be a calamity, and on a multicore machine it will really help.
+make -j4 install
 popd
 
 mkdir fox
@@ -25,7 +29,7 @@ foxflags="--enable-release --with-opengl=no \
           --disable-png --disable-tiff"
 $reduce/csl/fox/configure --prefix=$reduce/winbuild/cslwin32 $foxflags \
     --host=i686-w64-mingw32
-make install
+make -j4 install
 popd
 
 mkdir csl
@@ -33,7 +37,8 @@ pushd csl
 $reduce/csl/cslbase/configure --prefix=$reduce/winbuild/cslwin32 \
     --host=i686-w64-mingw32 --with-fox=$reduce/winbuild/cslwin32 \
     --with-fox-pending --without-wx
-make
+make -j4 standard-c-code
+make -j4
 ls -lh reduce.exe reduce.com reduce.img csl.exe csl.img
 popd
 

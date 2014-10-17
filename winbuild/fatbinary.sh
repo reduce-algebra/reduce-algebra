@@ -16,9 +16,11 @@ case ${1:-2} in
   ;;
 esac
 
-cp $ver/csl/reduce.img reduce.img
-cp -r $ver/csl/reduce.fonts reduce.fonts
-cp -r $ver/csl/reduce.resources reduce.resources
+mkdir -p cslbuild
+
+cp $ver/csl/reduce.img cslbuild/reduce.img
+cp -r $ver/csl/reduce.fonts cslbuild/reduce.fonts
+cp -r $ver/csl/reduce.resources cslbuild/reduce.resources
 
 # Create the utility program that will compress executables and
 # tag the commpressed data onto the end of an existing file. I will
@@ -29,7 +31,7 @@ i686-w64-mingw32-gcc addresources.c -static -lz -oaddresources.exe
 
 # I will need two helper programs that have been built so as to run
 # under cygwin32 and cygwin64. Here I build them...
-# The code tries to launch thes eto determine whether cygwin is active, and
+# The code tries to launch these to determine whether cygwin is active, and
 # if it is whether stdin and stdout are linked directly to a cygwin console.
 
 case `uname -m` in
@@ -57,14 +59,14 @@ esac
 # and chains to a suitable version of the code...
 
 i686-w64-mingw32-gcc -DFAT64 -O2 stub.c \
-	--static -lz -o reduce.exe
-i686-w64-mingw32-strip reduce.exe
+	--static -lz -o cslbuild/reduce.exe
+i686-w64-mingw32-strip cslbuild/reduce.exe
 
 # Now I create the real version of a "reduce.exe" that will be launchable
 # from a console (either Windows or 32 or 64-bit cygwin) by packing
 # stuff on the end of the stub.
 
-./addresources reduce.exe \
+./addresources cslbuild/reduce.exe \
 	cygwin32-isatty.exe \
 	cygwin64-isatty.exe \
 	cslwin32/csl/reduce.com \
@@ -77,8 +79,8 @@ i686-w64-mingw32-strip reduce.exe
 # but it will be the correct thing to double click on.
 
 i686-w64-mingw32-gcc -DFATWIN -O2 stub.c \
-	-Wl,--subsystem,windows --static -lz -o winreduce.exe
-i686-w64-mingw32-strip winreduce.exe
+	-Wl,--subsystem,windows --static -lz -o cslbuild/winreduce.exe
+i686-w64-mingw32-strip cslbuild/winreduce.exe
 
 # Add the relevant things to this... Observe that actually the only thing
 # it has to do that is at all clever is to decide whether it is running
@@ -86,12 +88,16 @@ i686-w64-mingw32-strip winreduce.exe
 # to install a 32 or 64-bit binary, but this way a single binary will be
 # good for everybody.
 
-./addresources winreduce.exe \
+./addresources cslbuild/winreduce.exe \
 	cslwin32/csl/reduce.exe \
 	cslwin64/csl/reduce.exe
 
 # Inspect the files created.
 
-ls -lhd reduce.exe winreduce.exe reduce.img reduce.fonts reduce.resources
+ls -lhd cslbuild
+
+# Tidy up the the helper apps
+
+rm cygwin32-isatty.exe cygwin64-isatty.exe
 
 echo all versions built

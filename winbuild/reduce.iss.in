@@ -13,10 +13,9 @@
 ;;----------------------------------------------------------------;;
 
 
-#define CslBuild    "@srcdir@\cslbuild\@build@"
-#define CslBuild64  "@srcdir@\cslbuild\@build64@"
-#define PslBuild    "@srcdir@\pslbuild\@build@"
-#define PslBuild64  "@srcdir@\pslbuild\@build64@"
+;;#define CslBuild    "@here@\cslbuild"
+;;#define PslBuild    "@srcdir@\pslbuild\@build@"
+;;#define PslBuild64  "@srcdir@\pslbuild\@build64@"
 
 [Setup]
 AppName=REDUCE
@@ -87,15 +86,14 @@ Source: "@srcdir@\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: "co
 Source: "@srcdir@\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
 
 ; csl
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: not Is64BitInstallMode
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: not Is64BitInstallMode
-Source: "@srcdir@\cslbuild\@build@\csl\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl"; Check: not Is64BitInstallMode
+Source: "cslbuild\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl";
+Source: "cslbuild\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl";
+Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resources"; Components: "csl";
 
-Source: "@srcdir@\cslbuild\@build64@\csl\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: Is64BitInstallMode
-Source: "@srcdir@\cslbuild\@build64@\csl\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl"; Check: Is64BitInstallMode
-Source: "@srcdir@\cslbuild\@build64@\csl\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl"; Check: Is64BitInstallMode
+Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: "csl";
 
-Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
+;; I think that the reduce.bat script is probably not much use here now.
+;;Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
 
 
 ;psl
@@ -121,13 +119,12 @@ Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{ap
 
 [Run]
 Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
-
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: "{app}\lib\csl\reduce.exe"; Flags: postinstall; Components: "csl"
 
 [Code]
 var
   NeedGnuPlotInstall: Boolean;
   GnuPlotPath: String;
-
 
 function InitializeSetup(): Boolean;
 var
@@ -172,7 +169,7 @@ ReducePSL=Files for PSL
 
 ;=== German === LID=$0407 CodePage=1252
 
-de.FullInstallation=Vollständige Installation
+de.FullInstallation=Vollstdndige Installation
 de.CslOnlyInstallation=Nur CSL installieren
 de.PslOnlyInstallation=Nur PSL installieren
 de.CustomInstallation=Benutzerdefinierte Installation
@@ -184,12 +181,12 @@ de.ReducePSL=PSL-Dateien
 
 ;=== French === LID=$040C CodePage=1252
 
-fr.FullInstallation=Installation complète
+fr.FullInstallation=Installation complhte
 fr.CslOnlyInstallation=Installez CSL seulement
 fr.PslOnlyInstallation=Installez PSL seulement
-fr.CustomInstallation=Installation personnalisée
+fr.CustomInstallation=Installation personnalisie
 
-fr.ReduceCommon=Fichiers communs à CSL et PSL
+fr.ReduceCommon=Fichiers communs ` CSL et PSL
 fr.ReduceCSL=Fichiers pour CSL
 fr.ReducePSL=Fichiers pour PSL
 
@@ -206,12 +203,13 @@ it.ReduceCSL=File per CSL
 it.ReducePSL=File per PSL
 
 
-es.FullInstallation=Instalación completa
-es.CslOnlyInstallation=Instalar sólo CSL
-es.PSLOnlyInstallation=Instalar sólo PSL
-es.CustomInstallation=Instalación personalizada
+es.FullInstallation=Instalacisn completa
+es.CslOnlyInstallation=Instalar sslo CSL
+es.PSLOnlyInstallation=Instalar sslo PSL
+es.CustomInstallation=Instalacisn personalizada
 
 es.ReduceCommon=Archivos comunes de CSL y PSL
 es.ReduceCSL=Archivos para CSL
 es.ReducePSL=Archivos para PSL
+
 

@@ -32,7 +32,6 @@ pushd csl
 $reduce/csl/cslbase/configure --prefix=$reduce/winbuild/cslcyg32 \
     --with-cygwin --with-fox=$reduce/winbuild/cslcyg32 --with-fox-pending \
     --without-wx
-make standard-c-code
 make
 ls -lh reduce.exe reduce.img csl.exe csl.img
 popd

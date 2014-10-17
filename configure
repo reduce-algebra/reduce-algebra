@@ -687,6 +687,8 @@ with_force
 with_crlibm
 with_mingw64
 with_lto
+with_m32
+with_m64
 with_cygwin
 with_gui
 with_wx
@@ -1345,6 +1347,9 @@ Optional Packages:
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
   --with-lto              Experiment with extreme optimisation in gcc (CSL
+                          only)
+  --with-m32              Force 32-bit model even on 64-bit gcc
+  --with-m64              Force 64-bit model even if 32-bit is default (CSL
                           only)
   --with-cygwin           Force use of raw cygwin (note licensing consequences
                           please) (CSL only)
@@ -2048,6 +2053,24 @@ fi
 
 
 
+# Check whether --with-m32 was given.
+if test "${with_m32+set}" = set; then :
+  withval=$with_m32;
+else
+  with_m32="no"
+fi
+
+
+
+# Check whether --with-m64 was given.
+if test "${with_m64+set}" = set; then :
+  withval=$with_m64;
+else
+  with_m64="no"
+fi
+
+
+
 # Check whether --with-cygwin was given.
 if test "${with_cygwin+set}" = set; then :
   withval=$with_cygwin;
@@ -2310,7 +2333,11 @@ if test "x$with_psl" != "xno"
 then
   if test "x$host" = "xi686-pc-cygwin"
   then
-    if test "x$wow64" = "xyes"
+# building PSL on Windows - need to decide whether to build for 32 or 64bit
+    if test "x$with_m32" = "xyes"
+    then
+      build="i686-pc-windows"
+    elif test "x$with_m64" = "xyes" -o "x$wow64" = "xyes"
     then
       build="x86_64-pc-windows"
     else
@@ -3467,7 +3494,6 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       extras="--with-xft --with-xim"
       ;;
   esac
-
   if test "x$with_wx" != "xno"
   then
     cd wxWidgets

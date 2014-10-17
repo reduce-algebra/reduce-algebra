@@ -1,4 +1,8 @@
-#! /bin/bash -v
+#! /bin/bash
+
+# First verify that I have as much of cygwin installed as I am liable to need
+
+../scripts/cygwin-sanity-check.sh
 
 # Ha ha ha - there are a whole range of configurations where you may launch
 # this script. I will mostly test the one that applies to me, but I will
@@ -97,41 +101,118 @@ case $cygwin in
   ;;
 esac
 
-# Configure and build CSL version from scratch
+# Sometimes I will need the "other" cygwin installed as well. Detect that
+# case and check that all will be well...
 
-# (1) a cygwin32 version. This uses native compilation in cases a and 2
-#     and temporary version flipping in case 3
-
-case $buildcase in
-1 | 2)
-  ./cslcyg32.sh
+case buildcase in
+1)
+  ./cyg64 ../scripts/cygwin-sanity-check.sh
   ;;
 3)
-  ../cslcyg32x.sh
+  ./cyg32 ../scripts/cygwin-sanity-check.sh
   ;;
 esac
 
-# (2) a native-style win32 version. Always done the same way
+
+# Configure and build CSL version from scratch
+
+# (1) a native-style win32 version. Always done the same way
+
+# I build this one first and it will include re-creation of the C code
+# that optimises Reduce. This is done this way because a 32-bit windows
+# variant is the version I can be certain should behave regardless of
+# the build platform.
+#
 
 ./cslwin32.sh
+
+# (2) a cygwin32 version. This uses native compilation in cases a and 2
+#     and temporary version flipping in case 3
+
+# This and the subseqent builds should be independent, and so I run them all
+# in parallel. On a single-core computer this will not hurt too much and
+# on multi-core systems it will sharply reduce the overall build time.
+
+
+case $buildcase in
+1 | 2)
+  ./cslcyg32.sh &
+  CYG32=$!
+  ;;
+3)
+  ../cslcyg32x.sh &
+  CYG32=$!
+  ;;
+esac
 
 # (3) a native-style win64 version. Always done the same way. If you have a
 #     32-bit version of Widnows this will not create reduce.img - it will copy
 #     a version of that from somewhere that may not be useful for this
 #     build.
 
-./cslwin64.sh
+./cslwin64.sh &
+WIN64=$!
 
 # (4) a cygwin64 version
 
 case $buildcase in
 1 | 2)
-  ./cslcyg64x.sh
+  ./cslcyg64x.sh &
+  CYG64=$!
   ;;
 3)
-  ./cslcyg64.sh
+  ./cslcyg64.sh &
+  cyg64=$!
   ;;
 esac
+
+# Wait for all the sub-builds to complete
+
+cyg32ok=yes
+win64ok=yes
+cyg64ok=yes
+
+if ! wait $CYG32
+then
+  cyg32ok=no
+fi
+
+if ! wait $WIN64
+then
+  win64ok=no
+fi
+
+if ! wait $CYG64
+then
+  cyg64ok=no
+fi
+
+# I wait for all the sub-tasks to complete before reporting how things
+# went so that a transcript of the output from this script does not hide
+# potentially important information in the middle of other stuff.
+
+if test "$cyg32ok$win64ok$cyg64ok" = "yesyesyes"
+then
+  echo "cygwin32, windows64 and cygwin64 versions all seem to have buildt OK"
+fi
+
+if test "$cyg32ok" = "no"
+then
+  echo "cygwin32 build failed"
+  exit 1
+fi
+
+if test "$win64ok" = "no"
+then
+  echo "win64 build failed"
+  exit 1
+fi
+
+if test "$cyg64ok" = "no"
+then
+  ech "cygwin64 build failed"
+  exit 1
+fi
 
 # Now all versions should be built. Check sizes again
 
@@ -149,18 +230,20 @@ ls -lh csl*/csl/reduce.exe csl*/csl/reduce.com csl*/csl/reduce.img
 # machine or escalate to 64-bit on a 64-bit version of Windows. Both of
 # these (and in all circumstances) use the same single reduce.img image file.
 
+rm -rf cslbuild
+mkdir -p cslbuild
+
 ./fatbinary.sh $buildcase
 
 # I want a program that can establish cygwin symlinks but that is a regular
-# Windows program This is for calling from an installer
+# Windows program. This is for calling from an installer.
 
 ./set-up-symlinks.sh
 
 # The files that I list here are the ones that are the "results" from
 # this script.
 
-ls -lhd reduce.exe winreduce.exe reduce.img reduce.fonts \
-	reduce.resources make-cygwin-symlink.exe
+ls -lh cslbuild
 
 # I hope that the installer will include a copy of make-cygwin-symlink
 # (which will not be required beyond install time) and will go something
@@ -173,5 +256,6 @@ ls -lhd reduce.exe winreduce.exe reduce.img reduce.fonts \
 # "redcsl -w" for a console mode one.
 
 
-# end of build script
+# Reduce built in the cslbuild directory
+
 

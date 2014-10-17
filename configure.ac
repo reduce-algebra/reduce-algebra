@@ -118,6 +118,18 @@ AC_ARG_WITH(lto,
    [],
    [with_lto="no"])
 
+AC_ARG_WITH(m32,
+   AC_HELP_STRING([--with-m32],
+                  [Force 32-bit model even on 64-bit gcc]),
+   [],
+   [with_m32="no"])
+
+AC_ARG_WITH(m64,
+   AC_HELP_STRING([--with-m64],
+                  [Force 64-bit model even if 32-bit is default (CSL only)]),
+   [],
+   [with_m64="no"])
+
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
                  [Force use of raw cygwin (note licensing consequences please) (CSL only)]),
@@ -346,7 +358,11 @@ if test "x$with_psl" != "xno"
 then
   if test "x$host" = "xi686-pc-cygwin"
   then
-    if test "x$wow64" = "xyes"
+# building PSL on Windows - need to decide whether to build for 32 or 64bit
+    if test "x$with_m32" = "xyes"
+    then 
+      build="i686-pc-windows"
+    elif test "x$with_m64" = "xyes" -o "x$wow64" = "xyes"
     then
       build="x86_64-pc-windows"
     else
@@ -895,7 +911,6 @@ then
       extras="--with-xft --with-xim"
       ;;
   esac
-
   if test "x$with_wx" != "xno"
   then
     cd wxWidgets
