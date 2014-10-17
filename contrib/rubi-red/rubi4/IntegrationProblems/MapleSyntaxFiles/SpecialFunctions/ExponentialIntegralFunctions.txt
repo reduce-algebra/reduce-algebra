@@ -1,0 +1,92 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Exponential Integral Functions
+
+
+# ::Subsection:: 
+#Exponential integral En function
+
+
+# ::Subsection::Closed:: 
+#Exponential integral Ei function
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m ExpIntegral[b x]^n
+
+
+# Integrands of x^m*ExpIntegralEi[b*x] where m is an integer 
+[Ei(b*x)/x^3, x, 5, -(exp(b*x)/(4*x^2)) - (b*exp(b*x))/(4*x) + (1/4)*(b^2 - 2/x^2)*Ei(b*x)],
+[Ei(b*x)/x^2, x, 4, -(exp(b*x)/x) + (b - 1/x)*Ei(b*x)],
+[Ei(b*x)/x, x, 0, Int(Ei(b*x)/x, x)],
+[Ei(b*x), x, 1, -(exp(b*x)/b) + ((b*x)*Ei(b*x))/b],
+[x*Ei(b*x), x, 4, exp(b*x)/(2*b^2) - (exp(b*x)*x)/(2*b) + (1/2)*x^2*Ei(b*x)],
+[x^2*Ei(b*x), x, 5, -((2*exp(b*x))/(3*b^3)) + (2*exp(b*x)*x)/(3*b^2) - (exp(b*x)*x^2)/(3*b) + (1/3)*x^3*Ei(b*x)],
+[x^3*Ei(b*x), x, 6, (3*exp(b*x))/(2*b^4) - (3*exp(b*x)*x)/(2*b^3) + (3*exp(b*x)*x^2)/(4*b^2) - (exp(b*x)*x^3)/(4*b) + (1/4)*x^4*Ei(b*x)],
+[x^m*Ei(b*x), x, 3, (x^(1 + m)*Ei(b*x))/(1 + m) + (x^(1 + m)*((-b)*x)^(-1 - m)*GAMMA(1 + m, (-b)*x))/(1 + m)],
+
+
+# Integrands of x^m*ExpIntegralEi[b*x]^2 where m is an integer 
+[Ei(b*x)^2/x^3, x, 0, Int(Ei(b*x)^2/x^3, x)],
+[Ei(b*x)^2/x^2, x, 0, Int(Ei(b*x)^2/x^2, x)],
+[Ei(b*x)^2/x, x, 0, Int(Ei(b*x)^2/x, x)],
+[Ei(b*x)^2, x, 4, -((2*exp(b*x)*Ei(b*x))/b) + x*Ei(b*x)^2 + (2*Ei(2*b*x))/b],
+[x*Ei(b*x)^2, x, 7, exp(2*b*x)/(2*b^2) + (exp(b*x)*(1 - b*x)*Ei(b*x))/b^2 + (1/2)*x^2*Ei(b*x)^2 - Ei(2*b*x)/b^2],
+[x^2*Ei(b*x)^2, x, 11, -((5*exp(2*b*x))/(6*b^3)) + (exp(2*b*x)*x)/(3*b^2) - (2*exp(b*x)*(2 - 2*b*x + b^2*x^2)*Ei(b*x))/(3*b^3) + (1/3)*x^3*Ei(b*x)^2 + (4*Ei(2*b*x))/(3*b^3)],
+[x^3*Ei(b*x)^2, x, 16, (2*exp(2*b*x))/b^4 - (exp(2*b*x)*x)/b^3 + (exp(2*b*x)*x^2)/(4*b^2) + (exp(b*x)*(6 - 6*b*x + 3*b^2*x^2 - b^3*x^3)*Ei(b*x))/(2*b^4) + (1/4)*x^4*Ei(b*x)^2 - (3*Ei(2*b*x))/b^4],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m ExpIntegral[a+b x]^n
+
+
+# Integrands of x^m*ExpIntegralEi[a+b*x] where m is an integer 
+[Ei(a + b*x)/x^3, x, 8, -((b*exp(a + b*x))/(2*a*x)) - ((1 - a)*b^2*E^a*Ei(b*x))/(2*a^2) + (1/2)*(b^2/a^2 - 1/x^2)*Ei(a + b*x)],
+[Ei(a + b*x)/x^2, x, 6, (b*E^a*Ei(b*x))/a - ((a + b*x)*Ei(a + b*x))/(a*x)],
+[Ei(a + b*x)/x, x, 0, Int(Ei(a + b*x)/x, x)],
+[Ei(a + b*x), x, 1, -(exp(a + b*x)/b) + ((a + b*x)*Ei(a + b*x))/b],
+[x*Ei(a + b*x), x, 8, exp(a + b*x)/(2*b^2) + (a*exp(a + b*x))/(2*b^2) - (exp(a + b*x)*x)/(2*b) - (1/2)*(a^2/b^2 - x^2)*Ei(a + b*x)],
+[x^2*Ei(a + b*x), x, 11, -((2*exp(a + b*x))/(3*b^3)) - (a*exp(a + b*x))/(3*b^3) - (a^2*exp(a + b*x))/(3*b^3) + (2*exp(a + b*x)*x)/(3*b^2) + (a*exp(a + b*x)*x)/(3*b^2) - (exp(a + b*x)*x^2)/(3*b) + (1/3)*(a^3/b^3 + x^3)*Ei(a + b*x)],
+[x^3*Ei(a + b*x), x, 15, (3*exp(a + b*x))/(2*b^4) + (a*exp(a + b*x))/(2*b^4) + (a^2*exp(a + b*x))/(4*b^4) + (a^3*exp(a + b*x))/(4*b^4) - (3*exp(a + b*x)*x)/(2*b^3) - (a*exp(a + b*x)*x)/(2*b^3) - (a^2*exp(a + b*x)*x)/(4*b^3) + (3*exp(a + b*x)*x^2)/(4*b^2) + (a*exp(a + b*x)*x^2)/(4*b^2) - (exp(a + b*x)*x^3)/(4*b) - (1/4)*(a^4/b^4 - x^4)*Ei(a + b*x)],
+[x^m*Ei(a + b*x), x, 5, (x^(1 + m)*Ei(a + b*x))/(1 + m) + (E^a*x^(1 + m)*((-b)*x)^(-1 - m)*GAMMA(1 + m, (-b)*x))/(1 + m) + (a*E^a*Int((exp(b*x)*x^m)/(a + b*x), x))/(1 + m)],
+
+
+# Integrands of x^m*ExpIntegralEi[a+b*x]^2 where m is an integer 
+[Ei(a + b*x)^2/x^3, x, 0, Int(Ei(a + b*x)^2/x^3, x)],
+[Ei(a + b*x)^2/x^2, x, 0, Int(Ei(a + b*x)^2/x^2, x)],
+[Ei(a + b*x)^2/x, x, 0, Int(Ei(a + b*x)^2/x, x)],
+[Ei(a + b*x)^2, x, 4, -((2*exp(a + b*x)*Ei(a + b*x))/b) + ((a + b*x)*Ei(a + b*x)^2)/b + (2*Ei(2*(a + b*x)))/b],
+[x*Ei(a + b*x)^2, x, 14, exp(2*a + 2*b*x)/(2*b^2) + (exp(a + b*x)*(1 + a - b*x)*Ei(a + b*x))/b^2 - (1/2)*(a^2/b^2 - x^2)*Ei(a + b*x)^2 - ((1 + 2*a)*Ei(2*(a + b*x)))/b^2],
+[x^2*Ei(a + b*x)^2, x, 32, -((5*exp(2*a + 2*b*x))/(6*b^3)) - (2*a*exp(2*a + 2*b*x))/(3*b^3) + (exp(2*a + 2*b*x)*x)/(3*b^2) - (2*exp(a + b*x)*(2 + a + a^2 - 2*b*x - a*b*x + b^2*x^2)*Ei(a + b*x))/(3*b^3) + (1/3)*(a^3/b^3 + x^3)*Ei(a + b*x)^2 + (2*(2 + 3*a + 3*a^2)*Ei(2*(a + b*x)))/(3*b^3)],
+# {x^3*ExpIntegralEi[a + b*x]^2, x, 61, (2*E^(2*a + 2*b*x))/b^4 + (3*a*E^(2*a + 2*b*x))/(2*b^4) + (3*a^2*E^(2*a + 2*b*x))/(4*b^4) - (E^(2*a + 2*b*x)*x)/b^3 - (a*E^(2*a + 2*b*x)*x)/(2*b^3) + (E^(2*a + 2*b*x)*x^2)/(4*b^2) + (E^(a + b*x)*(6 + a^3 - 6*b*x + 3*b^2*x^2 - b^3*x^3 + a^2*(1 - b*x) + a*(2 - 2*b*x + b^2*x^2))*ExpIntegralEi[a + b*x])/(2*b^4) - (1/4)*(a^4/b^4 - x^4)*ExpIntegralEi[a + b*x]^2 - ((3 + 4*a + 3*a^2 + 2*a^3)*ExpIntegralEi[2*(a + b*x)])/b^4} 
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m E^(b x) ExpIntegral[b x]^n
+
+
+# Integrands of x^m*E^(b*x)*ExpIntegralEi[b*x] where m is an integer 
+[exp(b*x)*Ei(b*x)/x^3, x, 11, -(exp(2*b*x)/(4*x^2)) - (b*exp(2*b*x))/x - (exp(b*x)*(1 + b*x)*Ei(b*x))/(2*x^2) + (1/4)*b^2*Ei(b*x)^2 + 2*b^2*Ei(2*b*x)],
+[exp(b*x)*Ei(b*x)/x^2, x, 6, -(exp(2*b*x)/x) - (exp(b*x)*Ei(b*x))/x + (1/2)*b*Ei(b*x)^2 + 2*b*Ei(2*b*x)],
+[exp(b*x)*Ei(b*x)/x, x, 2, (1/2)*Ei(b*x)^2],
+[exp(b*x)*Ei(b*x), x, 3, (exp(b*x)*Ei(b*x))/b - Ei(2*b*x)/b],
+[x*exp(b*x)*Ei(b*x), x, 6, -(exp(2*b*x)/(2*b^2)) - (exp(b*x)*(1 - b*x)*Ei(b*x))/b^2 + Ei(2*b*x)/b^2],
+[x^2*exp(b*x)*Ei(b*x), x, 10, (5*exp(2*b*x))/(4*b^3) - (exp(2*b*x)*x)/(2*b^2) + (exp(b*x)*(2 - 2*b*x + b^2*x^2)*Ei(b*x))/b^3 - (2*Ei(2*b*x))/b^3],
+[x^3*exp(b*x)*Ei(b*x), x, 15, -((4*exp(2*b*x))/b^4) + (2*exp(2*b*x)*x)/b^3 - (exp(2*b*x)*x^2)/(2*b^2) - (exp(b*x)*(6 - 6*b*x + 3*b^2*x^2 - b^3*x^3)*Ei(b*x))/b^4 + (6*Ei(2*b*x))/b^4],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m E^(a+b x) ExpIntegral[c+d x]^n
+
+
+# Integrands of x^m*E^(a + b*x)*ExpIntegralEi[c+d*x] where m is an integer 
+[exp(a + b*x)*Ei(c + d*x)/x^3, x, 15, -((d*exp(a + c + (b + d)*x))/(2*c*x)) + (d*(2*b*c - (1 - c)*d)*exp(a + c)*Ei((b + d)*x))/(2*c^2) - (exp(a + b*x)*(1 + b*x)*Ei(c + d*x))/(2*x^2) - ((b*c - d)*d*exp(a - (b*c)/d)*Ei(((b + d)*(c + d*x))/d))/(2*c^2) + (1/2)*b^2*E^a*Int((exp(b*x)*Ei(c + d*x))/x, x)],
+[exp(a + b*x)*Ei(c + d*x)/x^2, x, 7, (d*exp(a + c)*Ei((b + d)*x))/c - (exp(a + b*x)*Ei(c + d*x))/x - (d*exp(a - (b*c)/d)*Ei(((b + d)*(c + d*x))/d))/c + b*E^a*Int((exp(b*x)*Ei(c + d*x))/x, x)],
+[exp(a + b*x)*Ei(c + d*x)/x, x, 1, E^a*Int((exp(b*x)*Ei(c + d*x))/x, x)],
+[exp(a + b*x)*Ei(c + d*x), x, 4, (exp(a + b*x)*Ei(c + d*x))/b - (exp(a - (b*c)/d)*Ei(((b + d)*(c + d*x))/d))/b],
+[x*exp(a + b*x)*Ei(c + d*x), x, 10, -(exp(a + c + (b + d)*x)/(b*(b + d))) - (exp(a + b*x)*(1 - b*x)*Ei(c + d*x))/b^2 + ((b*c + d)*exp(a - (b*c)/d)*Ei(((b + d)*(c + d*x))/d))/(b^2*d)],
+[x^2*exp(a + b*x)*Ei(c + d*x), x, 18, exp(a + c + (b + d)*x)/(b*(b + d)^2) + (2*exp(a + c + (b + d)*x))/(b^2*(b + d)) + (c*exp(a + c + (b + d)*x))/(b*d*(b + d)) - (exp(a + c + (b + d)*x)*x)/(b*(b + d)) + (exp(a + b*x)*(2 - 2*b*x + b^2*x^2)*Ei(c + d*x))/b^3 - ((b^2*c^2 + 2*b*c*d + 2*d^2)*exp(a - (b*c)/d)*Ei(((b + d)*(c + d*x))/d))/(b^3*d^2)]
+# {x^3*E^(a + b*x)*ExpIntegralEi[c + d*x], x, 29, -((2*E^(a + c + (b + d)*x))/(b*(b + d)^3)) - (3*E^(a + c + (b + d)*x))/(b^2*(b + d)^2) - (c*E^(a + c + (b + d)*x))/(b*d*(b + d)^2) - (6*E^(a + c + (b + d)*x))/(b^3*(b + d)) - (c^2*E^(a + c + (b + d)*x))/(b*d^2*(b + d)) - (3*c*E^(a + c + (b + d)*x))/(b^2*d*(b + d)) + (2*E^(a + c + (b + d)*x)*x)/(b*(b + d)^2) + (3*E^(a + c + (b + d)*x)*x)/(b^2*(b + d)) + (c*E^(a + c + (b + d)*x)*x)/(b*d*(b + d)) - (E^(a + c + (b + d)*x)*x^2)/(b*(b + d)) - (E^(a + b*x)*(6 - 6*b*x + 3*b^2*x^2 - b^3*x^3)*ExpIntegralEi[c + d*x])/b^4 + ((b^3*c^3 + 3*b^2*c^2*d + 6*b*c*d^2 + 6*d^3)*E^(a - (b*c)/d)*ExpIntegralEi[((b + d)*(c + d*x))/d])/(b^4*d^3)} 
+]:

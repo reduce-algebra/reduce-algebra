@@ -1,0 +1,1142 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Logarithms
+
+
+# ::Section::Closed:: 
+#Integrands involving logarithms of monomials
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[c x^n]^p
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form Log[a x^n]^p / x
+
+
+# Integrands of the form Log[a*x^n]^p/x 
+[log(a*x)/x, x, 2, log(a*x)^2/2],
+[log(a*x)^2/x, x, 2, log(a*x)^3/3],
+[log(a*x)^3/x, x, 2, log(a*x)^4/4],
+[1/(x*log(a*x)), x, 2, log(log(a*x))],
+[1/(x*log(a*x)^2), x, 2, -log(a*x)^(-1)],
+[1/(x*log(a*x)^3), x, 2, -1/(2*log(a*x)^2)],
+[log(a*x)^p/x, x, 2, log(a*x)^(1 + p)/(1 + p)],
+
+[sqrt(log(a*x^n))/x, x, 2, (2*log(a*x^n)^(3/2))/(3*n)],
+[log(a*x^n)^(3/2)/x, x, 2, (2*log(a*x^n)^(5/2))/(5*n)],
+[1/(x*sqrt(log(a*x^n))), x, 2, (2*sqrt(log(a*x^n)))/n],
+[1/(x*log(a*x^n)^(3/2)), x, 2, -2/(n*sqrt(log(a*x^n)))],
+
+[log(a*x^n)/x, x, 2, log(a*x^n)^2/(2*n)],
+[log(a*x^n)^2/x, x, 2, log(a*x^n)^3/(3*n)],
+[log(a*x^n)^3/x, x, 2, log(a*x^n)^4/(4*n)],
+[1/(x*log(a*x^n)), x, 2, log(log(a*x^n))/n],
+[1/(x*log(a*x^n)^2), x, 2, -(1/(n*log(a*x^n)))],
+[1/(x*log(a*x^n)^3), x, 2, -(1/(2*n*log(a*x^n)^2))],
+[log(a*x^n)^p/x, x, 2, log(a*x^n)^(1 + p)/((1 + p)*n)],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Log[a x^n]^p where p is an integer
+
+
+# Integrands of the form x^m*Log[a*x^n] 
+[log(a*x), x, 1, -x + x*log(a*x)],
+[x*log(a*x), x, 1, -(x^2/4) + (1/2)*x^2*log(a*x)],
+[x^2*log(a*x), x, 1, -(x^3/9) + (1/3)*x^3*log(a*x)],
+[x^3*log(a*x), x, 1, -(x^4/16) + (1/4)*x^4*log(a*x)],
+[log(a*x)/x^2, x, 1, -(1/x) - log(a*x)/x],
+[log(a*x)/x^3, x, 1, -(1/(4*x^2)) - log(a*x)/(2*x^2)],
+[x^m*log(a*x), x, 1, -(x^(1 + m)/(1 + m)^2) + (x^(1 + m)*log(a*x))/(1 + m)],
+
+[sqrt(x)*log(a*x), x, 1, -((4*x^(3/2))/9) + (2/3)*x^(3/2)*log(a*x)],
+[x^(3/2)*log(a*x), x, 1, -((4*x^(5/2))/25) + (2/5)*x^(5/2)*log(a*x)],
+[log(a*x)/sqrt(x), x, 1, -4*sqrt(x) + 2*sqrt(x)*log(a*x)],
+[log(a*x)/x^(3/2), x, 1, -(4/sqrt(x)) - (2*log(a*x))/sqrt(x)],
+
+[log(1/x), x, 1, x + x*log(1/x)],
+[log(1/x)/x^2, x, 1, 1/x - log(1/x)/x],
+
+[log(a*x^n), x, 1, (-n)*x + x*log(a*x^n)],
+[x*log(a*x^n), x, 1, -((n*x^2)/4) + (1/2)*x^2*log(a*x^n)],
+[x^2*log(a*x^n), x, 1, -((n*x^3)/9) + (1/3)*x^3*log(a*x^n)],
+[x^3*log(a*x^n), x, 1, -((n*x^4)/16) + (1/4)*x^4*log(a*x^n)],
+[log(a*x^n)/x^2, x, 1, -(n/x) - log(a*x^n)/x],
+[log(a*x^n)/x^3, x, 1, -(n/(4*x^2)) - log(a*x^n)/(2*x^2)],
+[x^(n-1)*log(a*x^n), x, 1, -(x^n/n) + (x^n*log(a*x^n))/n],
+[x^m*log(a*x^n), x, 1, -((n*x^(1 + m))/(1 + m)^2) + (x^(1 + m)*log(a*x^n))/(1 + m)],
+[x^3*log(c*(a*x^n)^p), x, 1, (-(1/16))*n*p*x^4 + (1/4)*x^4*log(c*(a*x^n)^p)],
+[x^m*log(c*(a*x^n)^p), x, 1, -((n*p*x^(1 + m))/(1 + m)^2) + (x^(1 + m)*log(c*(a*x^n)^p))/(1 + m)],
+
+
+# Integrands of the form x^m*Log[a*x^n]^2 
+[log(a*x)^2, x, 2, 2*x - 2*x*log(a*x) + x*log(a*x)^2],
+[x*log(a*x)^2, x, 2, x^2/4 - (1/2)*x^2*log(a*x) + (1/2)*x^2*log(a*x)^2],
+[x^2*log(a*x)^2, x, 2, (2*x^3)/27 - (2/9)*x^3*log(a*x) + (1/3)*x^3*log(a*x)^2],
+[x^3*log(a*x)^2, x, 2, x^4/32 - (1/8)*x^4*log(a*x) + (1/4)*x^4*log(a*x)^2],
+[log(a*x)^2/x^2, x, 2, -(2/x) - (2*log(a*x))/x - log(a*x)^2/x],
+[log(a*x)^2/x^3, x, 2, -(1/(4*x^2)) - log(a*x)/(2*x^2) - log(a*x)^2/(2*x^2)],
+[x^m*log(a*x)^2, x, 2, (2*x^(1 + m))/(1 + m)^3 - (2*x^(1 + m)*log(a*x))/(1 + m)^2 + (x^(1 + m)*log(a*x)^2)/(1 + m)],
+
+[log(a*x^n)^2, x, 2, 2*n^2*x - 2*n*x*log(a*x^n) + x*log(a*x^n)^2],
+[x*log(a*x^n)^2, x, 2, (n^2*x^2)/4 - (1/2)*n*x^2*log(a*x^n) + (1/2)*x^2*log(a*x^n)^2],
+[x^2*log(a*x^n)^2, x, 2, (2*n^2*x^3)/27 - (2/9)*n*x^3*log(a*x^n) + (1/3)*x^3*log(a*x^n)^2],
+[x^3*log(a*x^n)^2, x, 2, (n^2*x^4)/32 - (1/8)*n*x^4*log(a*x^n) + (1/4)*x^4*log(a*x^n)^2],
+[log(a*x^n)^2/x^2, x, 2, -((2*n^2)/x) - (2*n*log(a*x^n))/x - log(a*x^n)^2/x],
+[log(a*x^n)^2/x^3, x, 2, -(n^2/(4*x^2)) - (n*log(a*x^n))/(2*x^2) - log(a*x^n)^2/(2*x^2)],
+[x^m*log(a*x^n)^2, x, 2, (2*n^2*x^(1 + m))/(1 + m)^3 - (2*n*x^(1 + m)*log(a*x^n))/(1 + m)^2 + (x^(1 + m)*log(a*x^n)^2)/(1 + m)],
+
+
+# Integrands of the form x^m*Log[a*x^n]^3 
+[log(a*x)^3, x, 3, -6*x + 6*x*log(a*x) - 3*x*log(a*x)^2 + x*log(a*x)^3],
+[x*log(a*x)^3, x, 3, -((3*x^2)/8) + (3/4)*x^2*log(a*x) - (3/4)*x^2*log(a*x)^2 + (1/2)*x^2*log(a*x)^3],
+[x^2*log(a*x)^3, x, 3, -((2*x^3)/27) + (2/9)*x^3*log(a*x) - (1/3)*x^3*log(a*x)^2 + (1/3)*x^3*log(a*x)^3],
+[x^3*log(a*x)^3, x, 3, -((3*x^4)/128) + (3/32)*x^4*log(a*x) - (3/16)*x^4*log(a*x)^2 + (1/4)*x^4*log(a*x)^3],
+[log(a*x)^3/x^2, x, 3, -(6/x) - (6*log(a*x))/x - (3*log(a*x)^2)/x - log(a*x)^3/x],
+[log(a*x)^3/x^3, x, 3, -(3/(8*x^2)) - (3*log(a*x))/(4*x^2) - (3*log(a*x)^2)/(4*x^2) - log(a*x)^3/(2*x^2)],
+[x^m*log(a*x)^3, x, 3, -((6*x^(1 + m))/(1 + m)^4) + (6*x^(1 + m)*log(a*x))/(1 + m)^3 - (3*x^(1 + m)*log(a*x)^2)/(1 + m)^2 + (x^(1 + m)*log(a*x)^3)/(1 + m)],
+
+[log(a*x^n)^3, x, 3, -6*n^3*x + 6*n^2*x*log(a*x^n) - 3*n*x*log(a*x^n)^2 + x*log(a*x^n)^3],
+[x*log(a*x^n)^3, x, 3, (-(3/8))*n^3*x^2 + (3/4)*n^2*x^2*log(a*x^n) - (3/4)*n*x^2*log(a*x^n)^2 + (1/2)*x^2*log(a*x^n)^3],
+[x^2*log(a*x^n)^3, x, 3, (-(2/27))*n^3*x^3 + (2/9)*n^2*x^3*log(a*x^n) - (1/3)*n*x^3*log(a*x^n)^2 + (1/3)*x^3*log(a*x^n)^3],
+[x^3*log(a*x^n)^3, x, 3, (-(3/128))*n^3*x^4 + (3/32)*n^2*x^4*log(a*x^n) - (3/16)*n*x^4*log(a*x^n)^2 + (1/4)*x^4*log(a*x^n)^3],
+[log(a*x^n)^3/x^2, x, 3, -((6*n^3)/x) - (6*n^2*log(a*x^n))/x - (3*n*log(a*x^n)^2)/x - log(a*x^n)^3/x],
+[log(a*x^n)^3/x^3, x, 3, -((3*n^3)/(8*x^2)) - (3*n^2*log(a*x^n))/(4*x^2) - (3*n*log(a*x^n)^2)/(4*x^2) - log(a*x^n)^3/(2*x^2)],
+[x^m*log(a*x^n)^3, x, 3, -((6*n^3*x^(1 + m))/(1 + m)^4) + (6*n^2*x^(1 + m)*log(a*x^n))/(1 + m)^3 - (3*n*x^(1 + m)*log(a*x^n)^2)/(1 + m)^2 + (x^(1 + m)*log(a*x^n)^3)/(1 + m)],
+
+
+# Integrands of the form x^m/Log[a*x^n] 
+[1/log(a*x), x, 1, Li(a*x)/a],
+[x/log(a*x), x, 1, Ei(2*log(a*x))/a^2],
+[x^2/log(a*x), x, 1, Ei(3*log(a*x))/a^3],
+[x^3/log(a*x), x, 1, Ei(4*log(a*x))/a^4],
+[1/(x^2*log(a*x)), x, 1, a*Ei(-log(a*x))],
+[1/(x^3*log(a*x)), x, 1, a^2*Ei(-2*log(a*x))],
+[x^m/log(a*x), x, 1, x^(1 + m)*(a*x)^(-1 - m)*Ei((1 + m)*log(a*x))],
+
+[1/log(a*x^n), x, 1, (x*Ei(log(a*x^n)/n))/(n*(a*x^n)^(n^(-1)))],
+[x/log(a*x^n), x, 1, (x^2*Ei((2*log(a*x^n))/n))/(n*(a*x^n)^(2/n))],
+[x^2/log(a*x^n), x, 1, (x^3*Ei((3*log(a*x^n))/n))/(n*(a*x^n)^(3/n))],
+[x^3/log(a*x^n), x, 1, (x^4*Ei((4*log(a*x^n))/n))/(n*(a*x^n)^(4/n))],
+[1/(x^2*log(a*x^n)), x, 1, ((a*x^n)^(n^(-1))*Ei(-(log(a*x^n)/n)))/(n*x)],
+[1/(x^3*log(a*x^n)), x, 1, ((a*x^n)^(2/n)*Ei((-2*log(a*x^n))/n))/(n*x^2)],
+[x^m/log(a*x^n), x, 1, (x^(1 + m)*Ei(((1 + m)*log(a*x^n))/n))/(n*(a*x^n)^((1 + m)/n))],
+[x^m/log(c*(a*x^n)^p), x, 2, (x^(1 + m)*Ei(((1 + m)*log(c*(a*x^n)^p))/(n*p)))/((c*(a*x^n)^p)^((1 + m)/(n*p))*(n*p))],
+
+
+# Integrands of the form x^m/Log[a*x^n]^2 
+[1/log(a*x)^2, x, 2, -(x/log(a*x)) + Li(a*x)/a],
+[x/log(a*x)^2, x, 2, (2*Ei(2*log(a*x)))/a^2 - x^2/log(a*x)],
+[x^2/log(a*x)^2, x, 2, (3*Ei(3*log(a*x)))/a^3 - x^3/log(a*x)],
+[x^3/log(a*x)^2, x, 2, (4*Ei(4*log(a*x)))/a^4 - x^4/log(a*x)],
+[1/(x^2*log(a*x)^2), x, 2, -(a*Ei(-log(a*x))) - 1/(x*log(a*x))],
+[1/(x^3*log(a*x)^2), x, 2, -2*a^2*Ei(-2*log(a*x)) - 1/(x^2*log(a*x))],
+[x^m/log(a*x)^2, x, 2, (1 + m)*x^(1 + m)*(a*x)^(-1 - m)*Ei((1 + m)*log(a*x)) - x^(1 + m)/log(a*x)],
+
+[1/log(a*x^n)^2, x, 2, (x*Ei(log(a*x^n)/n))/((a*x^n)^(n^(-1))*n^2) - x/(n*log(a*x^n))],
+[x/log(a*x^n)^2, x, 2, (2*x^2*Ei((2*log(a*x^n))/n))/((a*x^n)^(2/n)*n^2) - x^2/(n*log(a*x^n))],
+[x^2/log(a*x^n)^2, x, 2, (3*x^3*Ei((3*log(a*x^n))/n))/((a*x^n)^(3/n)*n^2) - x^3/(n*log(a*x^n))],
+[x^3/log(a*x^n)^2, x, 2, (4*x^4*Ei((4*log(a*x^n))/n))/((a*x^n)^(4/n)*n^2) - x^4/(n*log(a*x^n))],
+[1/(x^2*log(a*x^n)^2), x, 2, -(((a*x^n)^(1/n)*Ei(-(log(a*x^n)/n)))/(n^2*x)) - 1/(n*x*log(a*x^n))],
+[1/(x^3*log(a*x^n)^2), x, 2, -((2*(a*x^n)^(2/n)*Ei(-((2*log(a*x^n))/n)))/(n^2*x^2)) - 1/(n*x^2*log(a*x^n))],
+[x^m/log(a*x^n)^2, x, 2, ((1 + m)*x^(1 + m)*Ei(((1 + m)*log(a*x^n))/n))/((a*x^n)^((1 + m)/n)*n^2) - x^(1 + m)/(n*log(a*x^n))],
+
+
+# Integrands of the form x^m/Log[a*x^n]^3 
+[1/log(a*x)^3, x, 3, -(x/(2*log(a*x)^2)) - x/(2*log(a*x)) + Li(a*x)/(2*a)],
+[x/log(a*x)^3, x, 3, (2*Ei(2*log(a*x)))/a^2 - x^2/(2*log(a*x)^2) - x^2/log(a*x)],
+[x^2/log(a*x)^3, x, 3, (9*Ei(3*log(a*x)))/(2*a^3) - x^3/(2*log(a*x)^2) - (3*x^3)/(2*log(a*x))],
+[x^3/log(a*x)^3, x, 3, (8*Ei(4*log(a*x)))/a^4 - x^4/(2*log(a*x)^2) - (2*x^4)/log(a*x)],
+[1/(x^2*log(a*x)^3), x, 3, (1/2)*a*Ei(-log(a*x)) - 1/(2*x*log(a*x)^2) + 1/(2*x*log(a*x))],
+[1/(x^3*log(a*x)^3), x, 3, 2*a^2*Ei(-2*log(a*x)) - 1/(2*x^2*log(a*x)^2) + 1/(x^2*log(a*x))],
+[x^m/log(a*x)^3, x, 3, (1/2)*(1 + m)^2*x^(1 + m)*(a*x)^(-1 - m)*Ei((1 + m)*log(a*x)) - x^(1 + m)/(2*log(a*x)^2) - ((1 + m)*x^(1 + m))/(2*log(a*x))],
+
+[1/log(a*x^n)^3, x, 3, (x*Ei(log(a*x^n)/n))/((a*x^n)^(n^(-1))*(2*n^3)) - x/(2*n*log(a*x^n)^2) - x/(2*n^2*log(a*x^n))],
+[x/log(a*x^n)^3, x, 3, (2*x^2*Ei((2*log(a*x^n))/n))/((a*x^n)^(2/n)*n^3) - x^2/(2*n*log(a*x^n)^2) - x^2/(n^2*log(a*x^n))],
+[x^2/log(a*x^n)^3, x, 3, (9*x^3*Ei((3*log(a*x^n))/n))/((a*x^n)^(3/n)*(2*n^3)) - x^3/(2*n*log(a*x^n)^2) - (3*x^3)/(2*n^2*log(a*x^n))],
+[x^3/log(a*x^n)^3, x, 3, (8*x^4*Ei((4*log(a*x^n))/n))/((a*x^n)^(4/n)*n^3) - x^4/(2*n*log(a*x^n)^2) - (2*x^4)/(n^2*log(a*x^n))],
+[1/(x^2*log(a*x^n)^3), x, 3, ((a*x^n)^(1/n)*Ei(-(log(a*x^n)/n)))/(2*n^3*x) - 1/(2*n*x*log(a*x^n)^2) + 1/(2*n^2*x*log(a*x^n))],
+[1/(x^3*log(a*x^n)^3), x, 3, (2*(a*x^n)^(2/n)*Ei(-((2*log(a*x^n))/n)))/(n^3*x^2) - 1/(2*n*x^2*log(a*x^n)^2) + 1/(n^2*x^2*log(a*x^n))],
+[x^m/log(a*x^n)^3, x, 3, ((1 + m)^2*x^(1 + m)*Ei(((1 + m)*log(a*x^n))/n))/((a*x^n)^((1 + m)/n)*(2*n^3)) - x^(1 + m)/(2*n*log(a*x^n)^2) - ((1 + m)*x^(1 + m))/(2*n^2*log(a*x^n))],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Log[a x^n]^p where p is a half-integer
+
+
+# Integrands of the form x^m*Log[a*x^n]^(3/2) 
+[log(a*x^n)^(3/2), x, 3, ((3/4)*n^(3/2)*sqrt(Pi)*x*erfi(sqrt(log(a*x^n))/sqrt(n)))/(a*x^n)^(n^(-1)) - (3/2)*n*x*sqrt(log(a*x^n)) + x*log(a*x^n)^(3/2)],
+[x*log(a*x^n)^(3/2), x, 3, ((3/16)*n^(3/2)*sqrt(Pi/2)*x^2*erfi((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(a*x^n)^(2/n) - (3/8)*n*x^2*sqrt(log(a*x^n)) + (1/2)*x^2*log(a*x^n)^(3/2)],
+[x^2*log(a*x^n)^(3/2), x, 3, ((1/12)*n^(3/2)*sqrt(Pi/3)*x^3*erfi((sqrt(3)*sqrt(log(a*x^n)))/sqrt(n)))/(a*x^n)^(3/n) - (1/6)*n*x^3*sqrt(log(a*x^n)) + (1/3)*x^3*log(a*x^n)^(3/2)],
+[x^3*log(a*x^n)^(3/2), x, 3, ((3/128)*n^(3/2)*sqrt(Pi)*x^4*erfi((2*sqrt(log(a*x^n)))/sqrt(n)))/(a*x^n)^(4/n) - (3/32)*n*x^4*sqrt(log(a*x^n)) + (1/4)*x^4*log(a*x^n)^(3/2)],
+[log(a*x^n)^(3/2)/x^2, x, 3, (3*n^(3/2)*sqrt(Pi)*(a*x^n)^(1/n)*erf(sqrt(log(a*x^n))/sqrt(n)))/(4*x) - (3*n*sqrt(log(a*x^n)))/(2*x) - log(a*x^n)^(3/2)/x],
+[log(a*x^n)^(3/2)/x^3, x, 3, (3*n^(3/2)*sqrt(Pi/2)*(a*x^n)^(2/n)*erf((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(16*x^2) - (3*n*sqrt(log(a*x^n)))/(8*x^2) - log(a*x^n)^(3/2)/(2*x^2)],
+[x^m*log(a*x^n)^(3/2), x, 3, (3*n^(3/2)*sqrt(Pi)*x^(1 + m)*erfi((sqrt(1 + m)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^((1 + m)/n)*(4*(1 + m)^(5/2))) - (3*n*x^(1 + m)*sqrt(log(a*x^n)))/(2*(1 + m)^2) + (x^(1 + m)*log(a*x^n)^(3/2))/(1 + m)],
+
+
+# Integrands of the form x^m*Sqrt[Log[a*x^n]] 
+[sqrt(log(a*x^n)), x, 2, -(sqrt(n)*sqrt(Pi)*x*erfi(sqrt(log(a*x^n))/sqrt(n)))/(2*(a*x^n)^(n^(-1))) + x*sqrt(log(a*x^n))],
+[x*sqrt(log(a*x^n)), x, 2, ((-(1/4))*sqrt(n)*sqrt(Pi/2)*x^2*erfi((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(a*x^n)^(2/n) + (1/2)*x^2*sqrt(log(a*x^n))],
+[x^2*sqrt(log(a*x^n)), x, 2, ((-(1/6))*sqrt(n)*sqrt(Pi/3)*x^3*erfi((sqrt(3)*sqrt(log(a*x^n)))/sqrt(n)))/(a*x^n)^(3/n) + (1/3)*x^3*sqrt(log(a*x^n))],
+[x^3*sqrt(log(a*x^n)), x, 2, ((-(1/16))*sqrt(n)*sqrt(Pi)*x^4*erfi((2*sqrt(log(a*x^n)))/sqrt(n)))/(a*x^n)^(4/n) + (1/4)*x^4*sqrt(log(a*x^n))],
+[sqrt(log(a*x^n))/x^2, x, 2, (sqrt(n)*sqrt(Pi)*(a*x^n)^(1/n)*erf(sqrt(log(a*x^n))/sqrt(n)))/(2*x) - sqrt(log(a*x^n))/x],
+[sqrt(log(a*x^n))/x^3, x, 2, (sqrt(n)*sqrt(Pi/2)*(a*x^n)^(2/n)*erf((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(4*x^2) - sqrt(log(a*x^n))/(2*x^2)],
+[x^m*sqrt(log(a*x^n)), x, 2, -((sqrt(n)*sqrt(Pi)*x^(1 + m)*erfi((sqrt(1 + m)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^((1 + m)/n)*(2*(1 + m)^(3/2)))) + (x^(1 + m)*sqrt(log(a*x^n)))/(1 + m)],
+
+
+# Integrands of the form x^m/Sqrt[Log[a*x^n]] 
+[1/sqrt(log(a*x^n)), x, 1, (sqrt(Pi)*x*erfi(sqrt(log(a*x^n))/sqrt(n)))/(sqrt(n)*(a*x^n)^(n^(-1)))],
+[x/sqrt(log(a*x^n)), x, 1, (sqrt(Pi/2)*x^2*erfi((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(sqrt(n)*(a*x^n)^(2/n))],
+[x^2/sqrt(log(a*x^n)), x, 1, (sqrt(Pi/3)*x^3*erfi((sqrt(3)*sqrt(log(a*x^n)))/sqrt(n)))/(sqrt(n)*(a*x^n)^(3/n))],
+[x^3/sqrt(log(a*x^n)), x, 1, (sqrt(Pi)*x^4*erfi((2*sqrt(log(a*x^n)))/sqrt(n)))/(2*sqrt(n)*(a*x^n)^(4/n))],
+[1/(x^2*sqrt(log(a*x^n))), x, 1, (sqrt(Pi)*(a*x^n)^(n^(-1))*erf(sqrt(log(a*x^n))/sqrt(n)))/(sqrt(n)*x)],
+[1/(x^3*sqrt(log(a*x^n))), x, 1, (sqrt(Pi/2)*(a*x^n)^(2/n)*erf((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(sqrt(n)*x^2)],
+[x^m/sqrt(log(a*x^n)), x, 1, (sqrt(Pi)*x^(1 + m)*erfi((sqrt(1 + m)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^((1 + m)/n)*(sqrt(1 + m)*sqrt(n)))],
+
+
+# Integrands of the form x^m/Log[a*x^n]^(3/2) 
+[1/log(a*x^n)^(3/2), x, 2, (2*sqrt(Pi)*x*erfi(sqrt(log(a*x^n))/sqrt(n)))/(n^(3/2)*(a*x^n)^(n^(-1))) - (2*x)/(n*sqrt(log(a*x^n)))],
+[x/log(a*x^n)^(3/2), x, 2, (2*sqrt(2*Pi)*x^2*erfi((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^(2/n)*n^(3/2)) - (2*x^2)/(n*sqrt(log(a*x^n)))],
+[x^2/log(a*x^n)^(3/2), x, 2, (2*sqrt(3*Pi)*x^3*erfi((sqrt(3)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^(3/n)*n^(3/2)) - (2*x^3)/(n*sqrt(log(a*x^n)))],
+[x^3/log(a*x^n)^(3/2), x, 2, (4*sqrt(Pi)*x^4*erfi((2*sqrt(log(a*x^n)))/sqrt(n)))/(n^(3/2)*(a*x^n)^(4/n)) - (2*x^4)/(n*sqrt(log(a*x^n)))],
+[1/(x^2*log(a*x^n)^(3/2)), x, 2, -((2*sqrt(Pi)*(a*x^n)^(1/n)*erf(sqrt(log(a*x^n))/sqrt(n)))/(n^(3/2)*x)) - 2/(n*x*sqrt(log(a*x^n)))],
+[1/(x^3*log(a*x^n)^(3/2)), x, 2, -((2*sqrt(2*Pi)*(a*x^n)^(2/n)*erf((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(n^(3/2)*x^2)) - 2/(n*x^2*sqrt(log(a*x^n)))],
+[x^m/log(a*x^n)^(3/2), x, 2, (2*sqrt(1 + m)*sqrt(Pi)*x^(1 + m)*erfi((sqrt(1 + m)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^((1 + m)/n)*n^(3/2)) - (2*x^(1 + m))/(n*sqrt(log(a*x^n)))],
+
+
+# Integrands of the form x^m/Log[a*x^n]^(5/2) 
+[1/log(a*x^n)^(5/2), x, 3, (4*sqrt(Pi)*x*erfi(sqrt(log(a*x^n))/sqrt(n)))/((a*x^n)^(n^(-1))*(3*n^(5/2))) - (2*x)/(3*n*log(a*x^n)^(3/2)) - (4*x)/(3*n^2*sqrt(log(a*x^n)))],
+[x/log(a*x^n)^(5/2), x, 3, (8*sqrt(2*Pi)*x^2*erfi((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^(2/n)*(3*n^(5/2))) - (2*x^2)/(3*n*log(a*x^n)^(3/2)) - (8*x^2)/(3*n^2*sqrt(log(a*x^n)))],
+[x^2/log(a*x^n)^(5/2), x, 3, (4*sqrt(3*Pi)*x^3*erfi((sqrt(3)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^(3/n)*n^(5/2)) - (2*x^3)/(3*n*log(a*x^n)^(3/2)) - (4*x^3)/(n^2*sqrt(log(a*x^n)))],
+[x^3/log(a*x^n)^(5/2), x, 3, (32*sqrt(Pi)*x^4*erfi((2*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^(4/n)*(3*n^(5/2))) - (2*x^4)/(3*n*log(a*x^n)^(3/2)) - (16*x^4)/(3*n^2*sqrt(log(a*x^n)))],
+[1/(x^2*log(a*x^n)^(5/2)), x, 3, (4*sqrt(Pi)*(a*x^n)^(1/n)*erf(sqrt(log(a*x^n))/sqrt(n)))/(3*n^(5/2)*x) - 2/(3*n*x*log(a*x^n)^(3/2)) + 4/(3*n^2*x*sqrt(log(a*x^n)))],
+[1/(x^3*log(a*x^n)^(5/2)), x, 3, (8*sqrt(2*Pi)*(a*x^n)^(2/n)*erf((sqrt(2)*sqrt(log(a*x^n)))/sqrt(n)))/(3*n^(5/2)*x^2) - 2/(3*n*x^2*log(a*x^n)^(3/2)) + 8/(3*n^2*x^2*sqrt(log(a*x^n)))],
+[x^m/log(a*x^n)^(5/2), x, 3, (4*(1 + m)^(3/2)*sqrt(Pi)*x^(1 + m)*erfi((sqrt(1 + m)*sqrt(log(a*x^n)))/sqrt(n)))/((a*x^n)^((1 + m)/n)*(3*n^(5/2))) - (2*x^(1 + m))/(3*n*log(a*x^n)^(3/2)) - (4*(1 + m)*x^(1 + m))/(3*n^2*sqrt(log(a*x^n)))],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Log[a x^n]^p where p is symbolic
+
+
+# Integrands of the form x^m*Log[a*x^n]^p where p is symbolic 
+[log(a*x)^p, x, 1, (GAMMA(1 + p, -log(a*x))*log(a*x)^p)/((-log(a*x))^p*a)],
+[x*log(a*x)^p, x, 1, (2^(-1 - p)*GAMMA(1 + p, -2*log(a*x))*log(a*x)^p)/((-log(a*x))^p*a^2)],
+[x^2*log(a*x)^p, x, 1, (3^(-1 - p)*GAMMA(1 + p, -3*log(a*x))*log(a*x)^p)/((-log(a*x))^p*a^3)],
+[x^3*log(a*x)^p, x, 1, (4^(-1 - p)*GAMMA(1 + p, -4*log(a*x))*log(a*x)^p)/((-log(a*x))^p*a^4)],
+[log(a*x)^p/x^2, x, 1, (-a)*GAMMA(1 + p, log(a*x))],
+[log(a*x)^p/x^3, x, 1, (-2^(-1 - p))*a^2*GAMMA(1 + p, 2*log(a*x))],
+[x^m*log(a*x)^p, x, 1, (x^(1 + m)*(a*x)^(-1 - m)*GAMMA(1 + p, -((1 + m)*log(a*x)))*log(a*x)^p)/((-((1 + m)*log(a*x)))^p*(1 + m))],
+
+[log(a*x^n)^p, x, 1, (x*GAMMA(1 + p, -(log(a*x^n)/n))*log(a*x^n)^p)/((a*x^n)^(n^(-1))*(-(log(a*x^n)/n))^p)],
+[x*log(a*x^n)^p, x, 1, (2^(-1 - p)*x^2*GAMMA(1 + p, -((2*log(a*x^n))/n))*log(a*x^n)^p)/((a*x^n)^(2/n)*(-(log(a*x^n)/n))^p)],
+[x^2*log(a*x^n)^p, x, 1, (3^(-1 - p)*x^3*GAMMA(1 + p, -((3*log(a*x^n))/n))*log(a*x^n)^p)/((a*x^n)^(3/n)*(-(log(a*x^n)/n))^p)],
+[x^3*log(a*x^n)^p, x, 1, (4^(-1 - p)*x^4*GAMMA(1 + p, -((4*log(a*x^n))/n))*log(a*x^n)^p)/((a*x^n)^(4/n)*(-(log(a*x^n)/n))^p)],
+[log(a*x^n)^p/x^2, x, 1, -(((a*x^n)^(1/n)*GAMMA(1 + p, log(a*x^n)/n)*log(a*x^n)^p)/((log(a*x^n)/n)^p*x))],
+[log(a*x^n)^p/x^3, x, 1, -((2^(-1 - p)*(a*x^n)^(2/n)*GAMMA(1 + p, (2*log(a*x^n))/n)*log(a*x^n)^p)/((log(a*x^n)/n)^p*x^2))],
+[x^m*log(a*x^n)^p, x, 1, (x^(1 + m)*GAMMA(1 + p, -(((1 + m)*log(a*x^n))/n))*log(a*x^n)^p)/((a*x^n)^((1 + m)/n)*(-(((1 + m)*log(a*x^n))/n))^p*(1 + m))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m (a+b Log[c x^n]^p
+
+
+# Integrands of the form (a+b*Log[c*x^n])^m 
+[(a + b*log(c*x^n))^3, x, 4, 6*a*b^2*n^2*x - 6*b^3*n^3*x + 6*b^3*n^2*x*log(c*x^n) - 3*b*n*x*(a + b*log(c*x^n))^2 + x*(a + b*log(c*x^n))^3],
+[(a + b*log(c*x^n))^2, x, 3, -2*a*b*n*x + 2*b^2*n^2*x - 2*b^2*n*x*log(c*x^n) + x*(a + b*log(c*x^n))^2],
+[(a + b*log(c*x^n)), x, 2, a*x - b*n*x + b*x*log(c*x^n)],
+[1/(a + b*log(c*x^n)), x, 1, (x*Ei((a + b*log(c*x^n))/(b*n)))/(b*exp(a/(b*n))*n*(c*x^n)^(n^(-1)))],
+[1/(a + b*log(c*x^n))^2, x, 2, (x*Ei((a + b*log(c*x^n))/(b*n)))/(exp(a/(b*n))*(c*x^n)^(n^(-1))*(b^2*n^2)) - x/(b*n*(a + b*log(c*x^n)))],
+[1/(a + b*log(c*x^n))^3, x, 3, (x*Ei((a + b*log(c*x^n))/(b*n)))/(exp(a/(b*n))*(c*x^n)^(n^(-1))*(2*b^3*n^3)) - x/(2*b*n*(a + b*log(c*x^n))^2) - x/(2*b^2*n^2*(a + b*log(c*x^n)))],
+[(a + b*log(c*x^n))^m, x, 1, (x*GAMMA(1 + m, -((a + b*log(c*x^n))/(b*n)))*(a + b*log(c*x^n))^m)/(exp(a/(b*n))*(c*x^n)^(n^(-1))*(-((a + b*log(c*x^n))/(b*n)))^m)],
+
+
+# Integrands of the form x^m*(a+b*Log[c*x^n])^p 
+[x^m/(a + b*log(c*x^n)), x, 1, (x^(1 + m)*Ei(((1 + m)*(a + b*log(c*x^n)))/(b*n)))/(exp((a*(1 + m))/(b*n))*(c*x^n)^((1 + m)/n)*(b*n))],
+[x^m/(a + b*log(c*x^n))^2, x, 2, ((1 + m)*x^(1 + m)*Ei(((1 + m)*(a + b*log(c*x^n)))/(b*n)))/(exp((a*(1 + m))/(b*n))*(c*x^n)^((1 + m)/n)*(b^2*n^2)) - x^(1 + m)/(b*n*(a + b*log(c*x^n)))],
+[x^m*(a + b*log(c*x^n))^p, x, 1, (x^(1 + m)*GAMMA(1 + p, -(((1 + m)*(a + b*log(c*x^n)))/(b*n)))*(a + b*log(c*x^n))^p)/(exp((a*(1 + m))/(b*n))*(c*x^n)^((1 + m)/n)*(-(((1 + m)*(a + b*log(c*x^n)))/(b*n)))^p*(1 + m))],
+
+
+[x^(n - 1)*log(-b*x^n/a)/(a + b*x^n), x, 2, -polylog(2, 1 + b*x^n/a)/(b*n)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form (a+b x)^m Log[c x^n]^p
+
+
+# Integrands of the form (a+b*x)^m*Log[c*x] 
+[(a + b*x)^3*log(c*x), x, 3, (-a^3)*x - (3/4)*a^2*b*x^2 - (1/3)*a*b^2*x^3 - (b^3*x^4)/16 - (a^4*log(x))/(4*b) + ((a + b*x)^4*log(c*x))/(4*b)],
+[(a + b*x)^2*log(c*x), x, 3, (-a^2)*x - (1/2)*a*b*x^2 - (b^2*x^3)/9 - (a^3*log(x))/(3*b) + ((a + b*x)^3*log(c*x))/(3*b)],
+[(a + b*x)*log(c*x), x, 3, (-a)*x - (b*x^2)/4 + (1/2)*x*(2*a + b*x)*log(c*x), (-a)*x - (b*x^2)/4 - (a^2*log(x))/(2*b) + ((a + b*x)^2*log(c*x))/(2*b)],
+[log(c*x)/(a + b*x), x, 1, (log(c*x)*log((a + b*x)/a))/b + polylog(2, -((b*x)/a))/b],
+[log(c*x)/(a + b*x)^2, x, 2, log(x)/(a*b) - log(c*x)/(b*(a + b*x)) - log(a + b*x)/(a*b)],
+[log(c*x)/(2 + 4*x)^2, x, 3, (-(1/4))*arctanh(1 + 4*x) - log(c*x)/(8*(1 + 2*x))],
+[log(c*x)/(a + b*x)^3, x, 5, 1/(2*a*b*(a + b*x)) + log(x)/(2*a^2*b) - log(c*x)/(2*b*(a + b*x)^2) - log(a + b*x)/(2*a^2*b)],
+
+
+# Integrands of the form (a+b*x)^m*Log[c*x^n] 
+[(a + b*x)^3*log(c*x^n), x, 4, (-a^3)*n*x - (3/4)*a^2*b*n*x^2 - (1/3)*a*b^2*n*x^3 - (1/16)*b^3*n*x^4 - (a^4*n*log(x))/(4*b) + ((a + b*x)^4*log(c*x^n))/(4*b)],
+[(a + b*x)^2*log(c*x^n), x, 4, (-a^2)*n*x - (1/2)*a*b*n*x^2 - (1/9)*b^2*n*x^3 - (a^3*n*log(x))/(3*b) + ((a + b*x)^3*log(c*x^n))/(3*b)],
+[(a + b*x)*log(c*x^n), x, 4, (-a)*n*x - (1/4)*b*n*x^2 - (a^2*n*log(x))/(2*b) + ((a + b*x)^2*log(c*x^n))/(2*b)],
+[log(c*x^n)/(a + b*x), x, 1, (log(c*x^n)*log((a + b*x)/a))/b + (n*polylog(2, -((b*x)/a)))/b],
+[log(c*x^n)/(a + b*x)^2, x, 3, (n*log(x))/(a*b) - log(c*x^n)/(b*(a + b*x)) - (n*log(a + b*x))/(a*b)],
+[log(c*x^n)/(2 + 4*x)^2, x, 3, (-(1/4))*n*arctanh(1 + 4*x) - log(c*x^n)/(8*(1 + 2*x))],
+[log(c*x^n)/(a + b*x)^3, x, 6, n/(2*a*b*(a + b*x)) + (n*log(x))/(2*a^2*b) - log(c*x^n)/(2*b*(a + b*x)^2) - (n*log(a + b*x))/(2*a^2*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Log[a x^n] x^(n-1) / (1-a x^n)
+
+
+[(x*log(a*x^2))/(1 - a*x^2), x, 2, polylog(2, 1 - a*x^2)/(2*a)],
+[log(a*x)/(1 - a*x), x, 1, polylog(2, 1 - a*x)/a],
+[log(a/x)/(a*x - x^2), x, 1, polylog(2, 1 - a/x)/a],
+[log(a/x^2)/(a*x - x^3), x, 1, polylog(2, 1 - a/x^2)/(2*a)],
+[log(x/a)/(a - x), x, 1, polylog(2, 1 - (1/a)*x)],
+[(x*log(x^2/a))/(a - x^2), x, 2, (1/2)*polylog(2, 1 - x^2/a)],
+
+
+# ::Section::Closed:: 
+#Integrands involving logarithms of binomials
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Log[c (a+b (d+e x)^n)^p]
+
+
+[log(c*(b*(d + e*x)^n)^p), x, 1, (-n)*p*x + ((d + e*x)*log(c*(b*(d + e*x)^n)^p))/e],
+
+[log(c*(a + b*(d + e*x)^2)^p), x, 3, -2*p*x + (2*sqrt(a)*p*arctan((sqrt(b)*(d + e*x))/sqrt(a)))/(sqrt(b)*e) + ((d + e*x)*log(c*(a + b*(d + e*x)^2)^p))/e],
+[log(c*(a + b*(d + e*x))^p), x, 3, (-p)*x + (a*p*log(a + b*d + b*e*x))/(b*e) + ((d + e*x)*log(c*(a + b*(d + e*x))^p))/e],
+[log(c*(a + b/(d + e*x))^p), x, 3, (b*p*log(b + a*d + a*e*x))/(a*e) + ((d + e*x)*log(c*(a + b/(d + e*x))^p))/e],
+[log(c*(a + b/(d + e*x)^2)^p), x, 3, (2*sqrt(b)*p*arctan((sqrt(a)*(d + e*x))/sqrt(b)))/(sqrt(a)*e) + ((d + e*x)*log(c*(a + b/(d + e*x)^2)^p))/e],
+[log(c*(a + b*(d + e*x)^n)^p), x, 2, (-n)*p*x + ((d + e*x)*log(c*(a + b*(d + e*x)^n)^p))/e + (a*n*p*subst(Int(1/(a + b*x^n), x), x, d + e*x))/e],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form (a+b Log[c (d+e x)^n])^p
+
+
+[(a + b*log(c*(d + e*x)^n))^4, x, 5, -24*a*b^3*n^3*x + 24*b^4*n^4*x - (24*b^4*n^3*(d + e*x)*log(c*(d + e*x)^n))/e + (12*b^2*n^2*(d + e*x)*(a + b*log(c*(d + e*x)^n))^2)/e - (4*b*n*(d + e*x)*(a + b*log(c*(d + e*x)^n))^3)/e + ((d + e*x)*(a + b*log(c*(d + e*x)^n))^4)/e],
+[(a + b*log(c*(d + e*x)^n))^3, x, 4, 6*a*b^2*n^2*x - 6*b^3*n^3*x + (6*b^3*n^2*(d + e*x)*log(c*(d + e*x)^n))/e - (3*b*n*(d + e*x)*(a + b*log(c*(d + e*x)^n))^2)/e + ((d + e*x)*(a + b*log(c*(d + e*x)^n))^3)/e],
+[(a + b*log(c*(d + e*x)^n))^2, x, 3, -2*a*b*n*x + 2*b^2*n^2*x - (2*b^2*n*(d + e*x)*log(c*(d + e*x)^n))/e + ((d + e*x)*(a + b*log(c*(d + e*x)^n))^2)/e],
+[(a + b*log(c*(d + e*x)^n)), x, 2, a*x - b*n*x + (b*(d + e*x)*log(c*(d + e*x)^n))/e],
+[1/(a + b*log(c*(d + e*x)^n)), x, 1, ((d + e*x)*Ei((a + b*log(c*(d + e*x)^n))/(b*n)))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(b*e*n))],
+[1/(a + b*log(c*(d + e*x)^n))^2, x, 2, ((d + e*x)*Ei((a + b*log(c*(d + e*x)^n))/(b*n)))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(b^2*e*n^2)) - (d + e*x)/(b*e*n*(a + b*log(c*(d + e*x)^n)))],
+[1/(a + b*log(c*(d + e*x)^n))^3, x, 3, ((d + e*x)*Ei((a + b*log(c*(d + e*x)^n))/(b*n)))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(2*b^3*e*n^3)) - (d + e*x)/(2*b*e*n*(a + b*log(c*(d + e*x)^n))^2) - (d + e*x)/(2*b^2*e*n^2*(a + b*log(c*(d + e*x)^n)))],
+
+[(a + b*log(c*(d + e*x)^n))^(5/2), x, 4, -((15*b^(5/2)*n^(5/2)*sqrt(Pi)*(d + e*x)*erfi(sqrt(a + b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(8*e))) + (15*b^2*n^2*(d + e*x)*sqrt(a + b*log(c*(d + e*x)^n)))/(4*e) - (5*b*n*(d + e*x)*(a + b*log(c*(d + e*x)^n))^(3/2))/(2*e) + ((d + e*x)*(a + b*log(c*(d + e*x)^n))^(5/2))/e],
+[(a + b*log(c*(d + e*x)^n))^(3/2), x, 3, (3*b^(3/2)*n^(3/2)*sqrt(Pi)*(d + e*x)*erfi(sqrt(a + b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(4*e)) - (3*b*n*(d + e*x)*sqrt(a + b*log(c*(d + e*x)^n)))/(2*e) + ((d + e*x)*(a + b*log(c*(d + e*x)^n))^(3/2))/e],
+[(a + b*log(c*(d + e*x)^n))^(1/2), x, 2, -((sqrt(b)*sqrt(n)*sqrt(Pi)*(d + e*x)*erfi(sqrt(a + b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(2*e))) + ((d + e*x)*sqrt(a + b*log(c*(d + e*x)^n)))/e],
+[1/(a + b*log(c*(d + e*x)^n))^(1/2), x, 1, (sqrt(Pi)*(d + e*x)*erfi(sqrt(a + b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(sqrt(b)*e*sqrt(n)))],
+[1/(a + b*log(c*(d + e*x)^n))^(3/2), x, 2, (2*sqrt(Pi)*(d + e*x)*erfi(sqrt(a + b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(b^(3/2)*e*n^(3/2))) - (2*(d + e*x))/(b*e*n*sqrt(a + b*log(c*(d + e*x)^n)))],
+[1/(a + b*log(c*(d + e*x)^n))^(5/2), x, 3, (4*sqrt(Pi)*(d + e*x)*erfi(sqrt(a + b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(3*b^(5/2)*e*n^(5/2))) - (2*(d + e*x))/(3*b*e*n*(a + b*log(c*(d + e*x)^n))^(3/2)) - (4*(d + e*x))/(3*b^2*e*n^2*sqrt(a + b*log(c*(d + e*x)^n)))],
+
+[(a - b*log(c*(d + e*x)^n))^(5/2), x, 4, -((15*b^(5/2)*exp(a/(b*n))*n^(5/2)*sqrt(Pi)*(d + e*x)*erf(sqrt(a - b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/((c*(d + e*x)^n)^(n^(-1))*(8*e))) + (15*b^2*n^2*(d + e*x)*sqrt(a - b*log(c*(d + e*x)^n)))/(4*e) + (5*b*n*(d + e*x)*(a - b*log(c*(d + e*x)^n))^(3/2))/(2*e) + ((d + e*x)*(a - b*log(c*(d + e*x)^n))^(5/2))/e],
+[(a - b*log(c*(d + e*x)^n))^(3/2), x, 3, -((3*b^(3/2)*exp(a/(b*n))*n^(3/2)*sqrt(Pi)*(d + e*x)*erf(sqrt(a - b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/((c*(d + e*x)^n)^(n^(-1))*(4*e))) + (3*b*n*(d + e*x)*sqrt(a - b*log(c*(d + e*x)^n)))/(2*e) + ((d + e*x)*(a - b*log(c*(d + e*x)^n))^(3/2))/e],
+[(a - b*log(c*(d + e*x)^n))^(1/2), x, 2, -((sqrt(b)*exp(a/(b*n))*sqrt(n)*sqrt(Pi)*(d + e*x)*erf(sqrt(a - b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/((c*(d + e*x)^n)^(n^(-1))*(2*e))) + ((d + e*x)*sqrt(a - b*log(c*(d + e*x)^n)))/e],
+[1/(a - b*log(c*(d + e*x)^n))^(1/2), x, 1, -((exp(a/(b*n))*sqrt(Pi)*(d + e*x)*erf(sqrt(a - b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/((c*(d + e*x)^n)^(n^(-1))*(sqrt(b)*e*sqrt(n))))],
+[1/(a - b*log(c*(d + e*x)^n))^(3/2), x, 2, (2*exp(a/(b*n))*sqrt(Pi)*(d + e*x)*erf(sqrt(a - b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/((c*(d + e*x)^n)^(n^(-1))*(b^(3/2)*e*n^(3/2))) + (2*(d + e*x))/(b*e*n*sqrt(a - b*log(c*(d + e*x)^n)))],
+[1/(a - b*log(c*(d + e*x)^n))^(5/2), x, 3, -((4*exp(a/(b*n))*sqrt(Pi)*(d + e*x)*erf(sqrt(a - b*log(c*(d + e*x)^n))/(sqrt(b)*sqrt(n))))/((c*(d + e*x)^n)^(n^(-1))*(3*b^(5/2)*e*n^(5/2)))) + (2*(d + e*x))/(3*b*e*n*(a - b*log(c*(d + e*x)^n))^(3/2)) - (4*(d + e*x))/(3*b^2*e*n^2*sqrt(a - b*log(c*(d + e*x)^n)))],
+
+[(a + b*log(c*(d + e*x)^n))^p, x, 1, ((d + e*x)*GAMMA(1 + p, -((a + b*log(c*(d + e*x)^n))/(b*n)))*(a + b*log(c*(d + e*x)^n))^p)/(exp(a/(b*n))*(c*(d + e*x)^n)^(n^(-1))*(-((a + b*log(c*(d + e*x)^n))/(b*n)))^p*e)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[c (a+b x^n)^p]
+
+
+# Integrands of the form Log[a*x^n]/x 
+[log(a*x)/x, x, 2, (1/2)*log(a*x)^2],
+[log(a/x)/x, x, 2, (-(1/2))*log(a/x)^2],
+[log(a*x^n)/x, x, 2, log(a*x^n)^2/(2*n)],
+
+
+# Integrands of the form Log[1+a*x^n]/x 
+[log(1 + a*x)/x, x, 1, -polylog(2, (-a)*x)],
+[log(1 + a/x)/x, x, 1, polylog(2, -(a/x))],
+[log(1 + a*x^n)/x, x, 1, -(polylog(2, (-a)*x^n)/n)],
+
+[log((a + x)/x)/x, x, 1, polylog(2, -(a/x))],
+[log((a + x^2)/x^2)/x, x, 2, (1/2)*polylog(2, -(a/x^2))],
+[log((a + x^n)/x^n)/x, x, 2, polylog(2, -a/x^n)/n],
+
+
+# Integrands of the form Log[a+b*x^n]/x 
+[log(a + b*x)/x, x, 2, log(-((b*x)/a))*log(a + b*x) + polylog(2, 1 + (b*x)/a)],
+[log(a + b/x)/x, x, 3, (-log(a + b/x))*log(-(b/(a*x))) - polylog(2, 1 + b/(a*x))],
+[log(a + b*x^n)/x, x, 3, (log(-((b*x^n)/a))*log(a + b*x^n))/n + polylog(2, 1 + (b*x^n)/a)/n],
+
+[log((a + b*x)/x)/x, x, 4, (-log(b + a/x))*log(-(a/(b*x))) - polylog(2, 1 + a/(b*x))],
+[log((a + b*x^2)/x^2)/x, x, 4, (-(1/2))*log(b + a/x^2)*log(-(a/(b*x^2))) - (1/2)*polylog(2, 1 + a/(b*x^2))],
+[log((a + b*x^n)/x^n)/x, x, 4, -((log(-(a/(x^n*b)))*log(b + a/x^n))/n) - polylog(2, 1 + a/(x^n*b))/n],
+
+
+# Integrands of the form x^m*Log[c*(a+b*x)^n] where m is an integer 
+[x^4*log(c*(a + b*x)^n), x, 5, -((a^4*n*x)/(5*b^4)) + (a^3*n*x^2)/(10*b^3) - (a^2*n*x^3)/(15*b^2) + (a*n*x^4)/(20*b) - (n*x^5)/25 + (a^5*n*log(a + b*x))/(5*b^5) + (1/5)*x^5*log(c*(a + b*x)^n)],
+[x^3*log(c*(a + b*x)^n), x, 5, (a^3*n*x)/(4*b^3) - (a^2*n*x^2)/(8*b^2) + (a*n*x^3)/(12*b) - (n*x^4)/16 - (a^4*n*log(a + b*x))/(4*b^4) + (1/4)*x^4*log(c*(a + b*x)^n)],
+[x^2*log(c*(a + b*x)^n), x, 5, -((a^2*n*x)/(3*b^2)) + (a*n*x^2)/(6*b) - (n*x^3)/9 + (a^3*n*log(a + b*x))/(3*b^3) + (1/3)*x^3*log(c*(a + b*x)^n)],
+[x*log(c*(a + b*x)^n), x, 5, (a*n*x)/(2*b) - (n*x^2)/4 - (a^2*n*log(a + b*x))/(2*b^2) + (1/2)*x^2*log(c*(a + b*x)^n)],
+[log(c*(a + b*x)^n), x, 1, (-n)*x + ((a + b*x)*log(c*(a + b*x)^n))/b],
+[log(c*(a + b*x)^n)/x, x, 2, log(-((b*x)/a))*log(c*(a + b*x)^n) + n*polylog(2, 1 + (b*x)/a)],
+[log(c*(a + b*x)^n)/x^2, x, 2, (b*n*log(x))/a - (b*n*log(a + b*x))/a - log(c*(a + b*x)^n)/x],
+[log(c*(a + b*x)^n)/x^3, x, 5, -((b*n)/(2*a*x)) - (b^2*n*log(x))/(2*a^2) + (b^2*n*log(a + b*x))/(2*a^2) - log(c*(a + b*x)^n)/(2*x^2)],
+[log(c*(a + b*x)^n)/x^4, x, 5, -((b*n)/(6*a*x^2)) + (b^2*n)/(3*a^2*x) + (b^3*n*log(x))/(3*a^3) - (b^3*n*log(a + b*x))/(3*a^3) - log(c*(a + b*x)^n)/(3*x^3)],
+
+
+# Integrands of the form x^m*Log[c*(a+b*x^2)^n] where m is an integer 
+[x^4*log(c*(a + b*x^2)^n), x, 5, -((2*a^2*n*x)/(5*b^2)) + (2*a*n*x^3)/(15*b) - (2*n*x^5)/25 + (2*a^(5/2)*n*arctan((sqrt(b)*x)/sqrt(a)))/(5*b^(5/2)) + (1/5)*x^5*log(c*(a + b*x^2)^n)],
+[x^3*log(c*(a + b*x^2)^n), x, 6, (a*n*x^2)/(4*b) - (n*x^4)/8 - (a^2*n*log(a + b*x^2))/(4*b^2) + (1/4)*x^4*log(c*(a + b*x^2)^n)],
+[x^2*log(c*(a + b*x^2)^n), x, 5, (2*a*n*x)/(3*b) - (2*n*x^3)/9 - (2*a^(3/2)*n*arctan((sqrt(b)*x)/sqrt(a)))/(3*b^(3/2)) + (1/3)*x^3*log(c*(a + b*x^2)^n)],
+[x*log(c*(a + b*x^2)^n), x, 2, -((n*x^2)/2) + ((a + b*x^2)*log(c*(a + b*x^2)^n))/(2*b)],
+[log(c*(a + b*x^2)^n), x, 2, -2*n*x + (2*sqrt(a)*n*arctan((sqrt(b)*x)/sqrt(a)))/sqrt(b) + x*log(c*(a + b*x^2)^n)],
+[log(c*(a + b*x^2)^n)/x, x, 3, (1/2)*log(-((b*x^2)/a))*log(c*(a + b*x^2)^n) + (1/2)*n*polylog(2, 1 + (b*x^2)/a)],
+[log(c*(a + b*x^2)^n)/x^2, x, 2, (2*sqrt(b)*n*arctan((sqrt(b)*x)/sqrt(a)))/sqrt(a) - log(c*(a + b*x^2)^n)/x],
+[log(c*(a + b*x^2)^n)/x^3, x, 2, (b*n*log(x))/a - ((a + b*x^2)*log(c*(a + b*x^2)^n))/(2*a*x^2), (b*n*log(x))/a - (b*n*log(a + b*x^2))/(2*a) - log(c*(a + b*x^2)^n)/(2*x^2)],
+[log(c*(a + b*x^2)^n)/x^4, x, 5, -((2*b*n)/(3*a*x)) - (2*b^(3/2)*n*arctan((sqrt(b)*x)/sqrt(a)))/(3*a^(3/2)) - log(c*(a + b*x^2)^n)/(3*x^3)],
+
+
+# Integrands of the form x^m*Log[c*(a+b*x^3)^n] where m is an integer 
+[x^4*log(c*(a + b*x^3)^n), x, 8, (3*a*n*x^2)/(10*b) - (3*n*x^5)/25 + (sqrt(3)*a^(5/3)*n*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(5*b^(5/3)) + (a^(5/3)*n*log(a^(1/3) + b^(1/3)*x))/(5*b^(5/3)) - (a^(5/3)*n*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(10*b^(5/3)) + (1/5)*x^5*log(c*(a + b*x^3)^n)],
+[x^3*log(c*(a + b*x^3)^n), x, 8, (3*a*n*x)/(4*b) - (3*n*x^4)/16 + (sqrt(3)*a^(4/3)*n*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(4*b^(4/3)) - (a^(4/3)*n*log(a^(1/3) + b^(1/3)*x))/(4*b^(4/3)) + (a^(4/3)*n*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(8*b^(4/3)) + (1/4)*x^4*log(c*(a + b*x^3)^n)],
+[x^2*log(c*(a + b*x^3)^n), x, 2, -((n*x^3)/3) + ((a + b*x^3)*log(c*(a + b*x^3)^n))/(3*b)],
+[x*log(c*(a + b*x^3)^n), x, 8, -((3*n*x^2)/4) - (sqrt(3)*a^(2/3)*n*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(2*b^(2/3)) - (a^(2/3)*n*log(a^(1/3) + b^(1/3)*x))/(2*b^(2/3)) + (a^(2/3)*n*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(4*b^(2/3)) + (1/2)*x^2*log(c*(a + b*x^3)^n)],
+[log(c*(a + b*x^3)^n), x, 5, -3*n*x - (sqrt(3)*a^(1/3)*n*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/b^(1/3) + (a^(1/3)*n*log(a^(1/3) + b^(1/3)*x))/b^(1/3) - (a^(1/3)*n*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(2*b^(1/3)) + x*log(c*(a + b*x^3)^n)],
+[log(c*(a + b*x^3)^n)/x, x, 3, (1/3)*log(-((b*x^3)/a))*log(c*(a + b*x^3)^n) + (1/3)*n*polylog(2, 1 + (b*x^3)/a)],
+[log(c*(a + b*x^3)^n)/x^2, x, 5, -((sqrt(3)*b^(1/3)*n*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/a^(1/3)) - (b^(1/3)*n*log(a^(1/3) + b^(1/3)*x))/a^(1/3) + (b^(1/3)*n*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(2*a^(1/3)) - log(c*(a + b*x^3)^n)/x],
+[log(c*(a + b*x^3)^n)/x^3, x, 5, -((sqrt(3)*b^(2/3)*n*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(2*a^(2/3))) + (b^(2/3)*n*log(a^(1/3) + b^(1/3)*x))/(2*a^(2/3)) - (b^(2/3)*n*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(4*a^(2/3)) - log(c*(a + b*x^3)^n)/(2*x^2)],
+[log(c*(a + b*x^3)^n)/x^4, x, 2, (b*n*log(x))/a - (b*n*log(a + b*x^3))/(3*a) - log(c*(a + b*x^3)^n)/(3*x^3)],
+
+
+# Integrands of the form x^m*Log[c*(a+b/x)^n] where m is an integer 
+[x^4*log(c*(a + b/x)^n), x, 5, -((b^4*n*x)/(5*a^4)) + (b^3*n*x^2)/(10*a^3) - (b^2*n*x^3)/(15*a^2) + (b*n*x^4)/(20*a) + (1/5)*x^5*log(c*(a + b/x)^n) + (b^5*n*log(b + a*x))/(5*a^5)],
+[x^3*log(c*(a + b/x)^n), x, 5, (b^3*n*x)/(4*a^3) - (b^2*n*x^2)/(8*a^2) + (b*n*x^3)/(12*a) + (1/4)*x^4*log(c*(a + b/x)^n) - (b^4*n*log(b + a*x))/(4*a^4)],
+[x^2*log(c*(a + b/x)^n), x, 5, -((b^2*n*x)/(3*a^2)) + (b*n*x^2)/(6*a) + (1/3)*x^3*log(c*(a + b/x)^n) + (b^3*n*log(b + a*x))/(3*a^3)],
+[x*log(c*(a + b/x)^n), x, 4, (b*n*x)/(2*a) + (1/2)*x^2*log(c*(a + b/x)^n) - (b^2*n*log(b + a*x))/(2*a^2)],
+[log(c*(a + b/x)^n), x, 2, x*log(c*(a + b/x)^n) + (b*n*log(b + a*x))/a],
+[log(c*(a + b/x)^n)/x, x, 3, (-log(c*(a + b/x)^n))*log(-(b/(a*x))) - n*polylog(2, 1 + b/(a*x))],
+[log(c*(a + b/x)^n)/x^2, x, 2, n/x - ((a + b/x)*log(c*(a + b/x)^n))/b],
+[log(c*(a + b/x)^n)/x^3, x, 5, n/(4*x^2) - (a*n)/(2*b*x) - log(c*(a + b/x)^n)/(2*x^2) - (a^2*n*log(x))/(2*b^2) + (a^2*n*log(b + a*x))/(2*b^2)],
+[log(c*(a + b/x)^n)/x^4, x, 5, n/(9*x^3) - (a*n)/(6*b*x^2) + (a^2*n)/(3*b^2*x) - log(c*(a + b/x)^n)/(3*x^3) + (a^3*n*log(x))/(3*b^3) - (a^3*n*log(b + a*x))/(3*b^3)],
+
+
+# Integrands of the form x^m*Log[c*(a+b/x^2)^n] where m is an integer 
+[x^4*log(c*(a + b/x^2)^n), x, 5, -((2*b^2*n*x)/(5*a^2)) + (2*b*n*x^3)/(15*a) + (2*b^(5/2)*n*arctan((sqrt(a)*x)/sqrt(b)))/(5*a^(5/2)) + (1/5)*x^5*log(c*(a + b/x^2)^n)],
+[x^3*log(c*(a + b/x^2)^n), x, 5, (b*n*x^2)/(4*a) + (1/4)*x^4*log(c*(a + b/x^2)^n) - (b^2*n*log(b + a*x^2))/(4*a^2)],
+[x^2*log(c*(a + b/x^2)^n), x, 4, (2*b*n*x)/(3*a) - (2*b^(3/2)*n*arctan((sqrt(a)*x)/sqrt(b)))/(3*a^(3/2)) + (1/3)*x^3*log(c*(a + b/x^2)^n)],
+[x*log(c*(a + b/x^2)^n), x, 2, (1/2)*x^2*log(c*(a + b/x^2)^n) + (b*n*log(b + a*x^2))/(2*a)],
+[log(c*(a + b/x^2)^n), x, 2, (2*sqrt(b)*n*arctan((sqrt(a)*x)/sqrt(b)))/sqrt(a) + x*log(c*(a + b/x^2)^n)],
+[log(c*(a + b/x^2)^n)/x, x, 3, (-(1/2))*log(c*(a + b/x^2)^n)*log(-(b/(a*x^2))) - (1/2)*n*polylog(2, 1 + b/(a*x^2))],
+[log(c*(a + b/x^2)^n)/x^2, x, 5, (2*n)/x + (2*sqrt(a)*n*arctan((sqrt(a)*x)/sqrt(b)))/sqrt(b) - log(c*(a + b/x^2)^n)/x],
+[log(c*(a + b/x^2)^n)/x^3, x, 2, n/(2*x^2) - ((a + b/x^2)*log(c*(a + b/x^2)^n))/(2*b)],
+[log(c*(a + b/x^2)^n)/x^4, x, 5, (2*n)/(9*x^3) - (2*a*n)/(3*b*x) - (2*a^(3/2)*n*arctan((sqrt(a)*x)/sqrt(b)))/(3*b^(3/2)) - log(c*(a + b/x^2)^n)/(3*x^3)],
+
+
+# Integrands of the form x^m*Log[c*(a+b*Sqrt[x])^n] where m is an integer 
+[x^4*log(c*(a + b*sqrt(x))^n), x, 6, (a^9*n*sqrt(x))/(5*b^9) - (a^8*n*x)/(10*b^8) + (a^7*n*x^(3/2))/(15*b^7) - (a^6*n*x^2)/(20*b^6) + (a^5*n*x^(5/2))/(25*b^5) - (a^4*n*x^3)/(30*b^4) + (a^3*n*x^(7/2))/(35*b^3) - (a^2*n*x^4)/(40*b^2) + (a*n*x^(9/2))/(45*b) - (n*x^5)/50 - (a^10*n*log(a + b*sqrt(x)))/(5*b^10) + (1/5)*x^5*log(c*(a + b*sqrt(x))^n)],
+[x^3*log(c*(a + b*sqrt(x))^n), x, 6, (a^7*n*sqrt(x))/(4*b^7) - (a^6*n*x)/(8*b^6) + (a^5*n*x^(3/2))/(12*b^5) - (a^4*n*x^2)/(16*b^4) + (a^3*n*x^(5/2))/(20*b^3) - (a^2*n*x^3)/(24*b^2) + (a*n*x^(7/2))/(28*b) - (n*x^4)/32 - (a^8*n*log(a + b*sqrt(x)))/(4*b^8) + (1/4)*x^4*log(c*(a + b*sqrt(x))^n)],
+[x^2*log(c*(a + b*sqrt(x))^n), x, 6, (a^5*n*sqrt(x))/(3*b^5) - (a^4*n*x)/(6*b^4) + (a^3*n*x^(3/2))/(9*b^3) - (a^2*n*x^2)/(12*b^2) + (a*n*x^(5/2))/(15*b) - (n*x^3)/18 - (a^6*n*log(a + b*sqrt(x)))/(3*b^6) + (1/3)*x^3*log(c*(a + b*sqrt(x))^n)],
+[x*log(c*(a + b*sqrt(x))^n), x, 6, (a^3*n*sqrt(x))/(2*b^3) - (a^2*n*x)/(4*b^2) + (a*n*x^(3/2))/(6*b) - (n*x^2)/8 - (a^4*n*log(a + b*sqrt(x)))/(2*b^4) + (1/2)*x^2*log(c*(a + b*sqrt(x))^n)],
+[log(c*(a + b*sqrt(x))^n), x, 5, (a*n*sqrt(x))/b - (n*x)/2 - (a^2*n*log(a + b*sqrt(x)))/b^2 + x*log(c*(a + b*sqrt(x))^n)],
+[log(c*(a + b*sqrt(x))^n)/x, x, 3, 2*log(c*(a + b*sqrt(x))^n)*log(-((b*sqrt(x))/a)) + 2*n*polylog(2, 1 + (b*sqrt(x))/a)],
+[log(c*(a + b*sqrt(x))^n)/x^2, x, 6, -((b*n)/(a*sqrt(x))) + (b^2*n*log(a + b*sqrt(x)))/a^2 - log(c*(a + b*sqrt(x))^n)/x - (b^2*n*log(sqrt(x)))/a^2],
+[log(c*(a + b*sqrt(x))^n)/x^3, x, 6, -((b*n)/(6*a*x^(3/2))) + (b^2*n)/(4*a^2*x) - (b^3*n)/(2*a^3*sqrt(x)) + (b^4*n*log(a + b*sqrt(x)))/(2*a^4) - log(c*(a + b*sqrt(x))^n)/(2*x^2) - (b^4*n*log(sqrt(x)))/(2*a^4)],
+[log(c*(a + b*sqrt(x))^n)/x^4, x, 6, -((b*n)/(15*a*x^(5/2))) + (b^2*n)/(12*a^2*x^2) - (b^3*n)/(9*a^3*x^(3/2)) + (b^4*n)/(6*a^4*x) - (b^5*n)/(3*a^5*sqrt(x)) + (b^6*n*log(a + b*sqrt(x)))/(3*a^6) - log(c*(a + b*sqrt(x))^n)/(3*x^3) - (b^6*n*log(sqrt(x)))/(3*a^6)],
+
+
+[log(1 + sqrt(x)), x, 5, sqrt(x) - x/2 - log(1 + sqrt(x)) + x*log(1 + sqrt(x))],
+[log(1 + x^4), x, 6, -4*x - sqrt(2)*arctan(1 - sqrt(2)*x) + sqrt(2)*arctan(1 + sqrt(2)*x) - log(1 - sqrt(2)*x + x^2)/sqrt(2) + log(1 + sqrt(2)*x + x^2)/sqrt(2) + x*log(1 + x^4)],
+[x*log(sqrt(1 + x^2)), x, 3, -(x^2/4) + (1/4)*(1 + x^2)*log(1 + x^2)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[a+b x]^p
+
+
+# Integrands of the form x^m/Log[a+b*x] where m is an integer 
+[x^5/log(a + b*x), x, 9, (5*a^4*Ei(2*log(a + b*x)))/b^6 - (10*a^3*Ei(3*log(a + b*x)))/b^6 + (10*a^2*Ei(4*log(a + b*x)))/b^6 - (5*a*Ei(5*log(a + b*x)))/b^6 + Ei(6*log(a + b*x))/b^6 - (a^5*Li(a + b*x))/b^6],
+[x^4/log(a + b*x), x, 8, -((4*a^3*Ei(2*log(a + b*x)))/b^5) + (6*a^2*Ei(3*log(a + b*x)))/b^5 - (4*a*Ei(4*log(a + b*x)))/b^5 + Ei(5*log(a + b*x))/b^5 + (a^4*Li(a + b*x))/b^5],
+[x^3/log(a + b*x), x, 7, (3*a^2*Ei(2*log(a + b*x)))/b^4 - (3*a*Ei(3*log(a + b*x)))/b^4 + Ei(4*log(a + b*x))/b^4 - (a^3*Li(a + b*x))/b^4],
+[x^2/log(a + b*x), x, 6, -((2*a*Ei(2*log(a + b*x)))/b^3) + Ei(3*log(a + b*x))/b^3 + (a^2*Li(a + b*x))/b^3],
+[x/log(a + b*x), x, 5, Ei(2*log(a + b*x))/b^2 - (a*Li(a + b*x))/b^2],
+[1/log(a + b*x), x, 1, Li(a + b*x)/b],
+[1/(x*log(a + b*x)), x, 0, Int(1/(x*log(a + b*x)), x)],
+[1/(x^2*log(a + b*x)), x, 0, Int(1/(x^2*log(a + b*x)), x)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[a+b x^2]^p
+
+
+# Integrands of the form x^m*Log[a+b*x^2]^n 
+[log(a + b*x^2)^2, x, 1, 8*x - 4*x*log(a + b*x^2) + x*log(a + b*x^2)^2 - (1/sqrt(-b))*(sqrt(a)*(log(-(sqrt(a)/sqrt(-b)) + x)^2 - log(sqrt(a)/sqrt(-b) + x)^2 + 4*arctanh((sqrt(-b)*x)/sqrt(a))*(log(-(sqrt(a)/sqrt(-b)) + x) + log(sqrt(a)/sqrt(-b) + x)) - 4*log(-((sqrt(a) - sqrt(-b)*x)/(sqrt(a) + sqrt(-b)*x))) + 2*log(sqrt(a)/sqrt(-b) + x)*log(1/2 - (sqrt(-b)*x)/(2*sqrt(a))) - 2*log(-(sqrt(a)/sqrt(-b)) + x)*log((1/2)*(1 + (sqrt(-b)*x)/sqrt(a))) - 4*arctanh((sqrt(-b)*x)/sqrt(a))*log(a + b*x^2) - 2*polylog(2, 1/2 - (sqrt(-b)*x)/(2*sqrt(a))) + 2*polylog(2, (1/2)*(1 + (sqrt(-b)*x)/sqrt(a)))))],
+[x*log(a + b*x^2)^2, x, 3, x^2 - ((a + b*x^2)*log(a + b*x^2))/b + ((a + b*x^2)*log(a + b*x^2)^2)/(2*b)],
+[x^3*log(a + b*x^2)^2, x, 9, -((3*a*x^2)/(4*b)) + x^4/8 + (3*a^2*log(a + b*x^2))/(4*b^2) + (a*x^2*log(a + b*x^2))/(2*b) - (1/4)*x^4*log(a + b*x^2) - (a^2*log(a + b*x^2)^2)/(4*b^2) + (1/4)*x^4*log(a + b*x^2)^2],
+[log(a + b*x^2)^2/x, x, 5, (1/2)*log(-((b*x^2)/a))*log(a + b*x^2)^2 + log(a + b*x^2)*polylog(2, 1 + (b*x^2)/a) - polylog(3, (a + b*x^2)/a)],
+[log(a + b*x^2)^2/x^3, x, 4, (b*log(-((b*x^2)/a))*log(a + b*x^2))/a - ((a + b*x^2)*log(a + b*x^2)^2)/(2*a*x^2) + (b*polylog(2, 1 + (b*x^2)/a))/a],
+
+[x*log(a + b*x^2)^3, x, 4, -3*x^2 + (3*(a + b*x^2)*log(a + b*x^2))/b - (3*(a + b*x^2)*log(a + b*x^2)^2)/(2*b) + ((a + b*x^2)*log(a + b*x^2)^3)/(2*b)],
+[x^3*log(a + b*x^2)^3, x, 13, (21*a*x^2)/(8*b) - (3*x^4)/16 - (21*a^2*log(a + b*x^2))/(8*b^2) - (9*a*x^2*log(a + b*x^2))/(4*b) + (3/8)*x^4*log(a + b*x^2) - (3/8)*x^4*log(a + b*x^2)^2 + (9*a*(a + (2*b*x^2)/3)*log(a + b*x^2)^2)/(8*b^2) - (a^2*log(a + b*x^2)^3)/(4*b^2) + (1/4)*x^4*log(a + b*x^2)^3],
+[log(a + b*x^2)^3/x, x, 6, (1/2)*log(-((b*x^2)/a))*log(a + b*x^2)^3 + (3/2)*log(a + b*x^2)^2*polylog(2, 1 + (b*x^2)/a) - 3*log(a + b*x^2)*polylog(3, 1 + (b*x^2)/a) + 3*polylog(4, (a + b*x^2)/a)],
+[log(a + b*x^2)^3/x^3, x, 6, (3*b*log(-((b*x^2)/a))*log(a + b*x^2)^2)/(2*a) - ((a + b*x^2)*log(a + b*x^2)^3)/(2*a*x^2) + (3*b*log(a + b*x^2)*polylog(2, 1 + (b*x^2)/a))/a - (3*b*polylog(3, (a + b*x^2)/a))/a],
+
+[x/log(a + b*x^2), x, 2, Li(a + b*x^2)/(2*b)],
+[x^3/log(a + b*x^2), x, 6, Ei(2*log(a + b*x^2))/(2*b^2) - (a*Li(a + b*x^2))/(2*b^2)],
+[1/(x*log(a + b*x^2)), x, 1, subst(Int(1/(x*log(a + b*x)), x), x, x^2)/2],
+[1/(x^3*log(a + b*x^2)), x, 1, (1/2)*subst(Int(1/(x^2*log(a + b*x)), x), x, x^2)],
+
+[x/log(a + b*x^2)^2, x, 3, -((a + b*x^2)/(2*b*log(a + b*x^2))) + Li(a + b*x^2)/(2*b)],
+[x^3/log(a + b*x^2)^2, x, 8, Ei(2*log(a + b*x^2))/b^2 + (a*(a + b*x^2))/(2*b^2*log(a + b*x^2)) - (a + b*x^2)^2/(2*b^2*log(a + b*x^2)) - (a*Li(a + b*x^2))/(2*b^2)],
+[1/(x*log(a + b*x^2)^2), x, 1, subst(Int(1/(x*log(a + b*x)^2), x), x, x^2)/2],
+[1/(x^3*log(a + b*x^2)^2), x, 1, (1/2)*subst(Int(1/(x^2*log(a + b*x)^2), x), x, x^2)],
+
+[x/log(a + b*x^2)^3, x, 4, -((a + b*x^2)/(4*b*log(a + b*x^2)^2)) - (a + b*x^2)/(4*b*log(a + b*x^2)) + Li(a + b*x^2)/(4*b)],
+[x^3/log(a + b*x^2)^3, x, 10, Ei(2*log(a + b*x^2))/b^2 + (a*(a + b*x^2))/(4*b^2*log(a + b*x^2)^2) - (a + b*x^2)^2/(4*b^2*log(a + b*x^2)^2) + (a*(a + b*x^2))/(4*b^2*log(a + b*x^2)) - (a + b*x^2)^2/(2*b^2*log(a + b*x^2)) - (a*Li(a + b*x^2))/(4*b^2)],
+[1/(x*log(a + b*x^2)^3), x, 1, subst(Int(1/(x*log(a + b*x)^3), x), x, x^2)/2],
+[1/(x^3*log(a + b*x^2)^3), x, 1, (1/2)*subst(Int(1/(x^2*log(a + b*x)^3), x), x, x^2)],
+
+
+# Integrands of the form x^m*Log[c*(a+b*x^2)^n]^n 
+[log(c*(a + b*x^2)^n)^2, x, 1, 8*n^2*x - 4*n*x*log(c*(a + b*x^2)^n) + x*log(c*(a + b*x^2)^n)^2 - (1/sqrt(-b))*(sqrt(a)*n*(n*log(-(sqrt(a)/sqrt(-b)) + x)^2 - n*log(sqrt(a)/sqrt(-b) + x)^2 + 4*n*arctanh((sqrt(-b)*x)/sqrt(a))*(log(-(sqrt(a)/sqrt(-b)) + x) + log(sqrt(a)/sqrt(-b) + x)) - 4*n*log(-((sqrt(a) - sqrt(-b)*x)/(sqrt(a) + sqrt(-b)*x))) + 2*n*log(sqrt(a)/sqrt(-b) + x)*log(1/2 - (sqrt(-b)*x)/(2*sqrt(a))) - 2*n*log(-(sqrt(a)/sqrt(-b)) + x)*log((1/2)*(1 + (sqrt(-b)*x)/sqrt(a))) - 4*arctanh((sqrt(-b)*x)/sqrt(a))*log(c*(a + b*x^2)^n) - 2*n*polylog(2, 1/2 - (sqrt(-b)*x)/(2*sqrt(a))) + 2*n*polylog(2, (1/2)*(1 + (sqrt(-b)*x)/sqrt(a)))))],
+[x*log(c*(a + b*x^2)^n)^2, x, 3, n^2*x^2 - (n*(a + b*x^2)*log(c*(a + b*x^2)^n))/b + ((a + b*x^2)*log(c*(a + b*x^2)^n)^2)/(2*b)],
+[x^3*log(c*(a + b*x^2)^n)^2, x, 9, -((3*a*n^2*x^2)/(4*b)) + (n^2*x^4)/8 + (a^2*n^2*log(a + b*x^2))/(4*b^2) - (1/4)*n*x^4*log(c*(a + b*x^2)^n) + (a*n*(a + b*x^2)*log(c*(a + b*x^2)^n))/(2*b^2) - (a^2*log(c*(a + b*x^2)^n)^2)/(4*b^2) + (1/4)*x^4*log(c*(a + b*x^2)^n)^2],
+[log(c*(a + b*x^2)^n)^2/x, x, 5, (1/2)*log(-((b*x^2)/a))*log(c*(a + b*x^2)^n)^2 + n*log(c*(a + b*x^2)^n)*polylog(2, 1 + (b*x^2)/a) - n^2*polylog(3, (a + b*x^2)/a)],
+[log(c*(a + b*x^2)^n)^2/x^3, x, 4, (b*n*log(-((b*x^2)/a))*log(c*(a + b*x^2)^n))/a - ((a + b*x^2)*log(c*(a + b*x^2)^n)^2)/(2*a*x^2) + (b*n^2*polylog(2, 1 + (b*x^2)/a))/a],
+
+[x*log(c*(a + b*x^2)^n)^3, x, 4, -3*n^3*x^2 + (3*n^2*(a + b*x^2)*log(c*(a + b*x^2)^n))/b - (3*n*(a + b*x^2)*log(c*(a + b*x^2)^n)^2)/(2*b) + ((a + b*x^2)*log(c*(a + b*x^2)^n)^3)/(2*b)],
+[x^3*log(c*(a + b*x^2)^n)^3, x, 13, (21*a*n^3*x^2)/(8*b) - (3*n^3*x^4)/16 - (3*a^2*n^3*log(a + b*x^2))/(8*b^2) + (3/8)*n^2*x^4*log(c*(a + b*x^2)^n) - (9*a*n^2*(a + b*x^2)*log(c*(a + b*x^2)^n))/(4*b^2) - (3/8)*n*x^4*log(c*(a + b*x^2)^n)^2 + (9*a*n*(a + (2*b*x^2)/3)*log(c*(a + b*x^2)^n)^2)/(8*b^2) - (a^2*log(c*(a + b*x^2)^n)^3)/(4*b^2) + (1/4)*x^4*log(c*(a + b*x^2)^n)^3],
+[log(c*(a + b*x^2)^n)^3/x, x, 6, (1/2)*log(-((b*x^2)/a))*log(c*(a + b*x^2)^n)^3 + (3/2)*n*log(c*(a + b*x^2)^n)^2*polylog(2, 1 + (b*x^2)/a) - 3*n^2*log(c*(a + b*x^2)^n)*polylog(3, 1 + (b*x^2)/a) + 3*n^3*polylog(4, (a + b*x^2)/a)],
+[log(c*(a + b*x^2)^n)^3/x^3, x, 6, (3*b*n*log(-((b*x^2)/a))*log(c*(a + b*x^2)^n)^2)/(2*a) - ((a + b*x^2)*log(c*(a + b*x^2)^n)^3)/(2*a*x^2) + (3*b*n^2*log(c*(a + b*x^2)^n)*polylog(2, 1 + (b*x^2)/a))/a - (3*b*n^3*polylog(3, (a + b*x^2)/a))/a],
+
+[x/log(c*(a + b*x^2)^n), x, 2, ((a + b*x^2)*Ei(log(c*(a + b*x^2)^n)/n))/(2*b*n*(c*(a + b*x^2)^n)^(n^(-1)))],
+[x^3/log(c*(a + b*x^2)^n), x, 6, -((a*(a + b*x^2)*Ei(log(c*(a + b*x^2)^n)/n))/((c*(a + b*x^2)^n)^(n^(-1))*(2*b^2*n))) + ((a + b*x^2)^2*Ei((2*log(c*(a + b*x^2)^n))/n))/((c*(a + b*x^2)^n)^(2/n)*(2*b^2*n))],
+
+[x/log(c*(a + b*x^2)^n)^2, x, 3, ((a + b*x^2)*Ei(log(c*(a + b*x^2)^n)/n))/((c*(a + b*x^2)^n)^(n^(-1))*(2*b*n^2)) - (a + b*x^2)/(2*b*n*log(c*(a + b*x^2)^n))],
+[x^3/log(c*(a + b*x^2)^n)^2, x, 8, -((a*(a + b*x^2)*Ei(log(c*(a + b*x^2)^n)/n))/((c*(a + b*x^2)^n)^(n^(-1))*(2*b^2*n^2))) + ((a + b*x^2)^2*Ei((2*log(c*(a + b*x^2)^n))/n))/((c*(a + b*x^2)^n)^(2/n)*(b^2*n^2)) + (a*(a + b*x^2))/(2*b^2*n*log(c*(a + b*x^2)^n)) - (a + b*x^2)^2/(2*b^2*n*log(c*(a + b*x^2)^n))],
+
+[x/log(c*(a + b*x^2)^n)^3, x, 4, ((a + b*x^2)*Ei(log(c*(a + b*x^2)^n)/n))/((c*(a + b*x^2)^n)^(n^(-1))*(4*b*n^3)) - (a + b*x^2)/(4*b*n*log(c*(a + b*x^2)^n)^2) - (a + b*x^2)/(4*b*n^2*log(c*(a + b*x^2)^n))],
+[x^3/log(c*(a + b*x^2)^n)^3, x, 10, -((a*(a + b*x^2)*Ei(log(c*(a + b*x^2)^n)/n))/((c*(a + b*x^2)^n)^(n^(-1))*(4*b^2*n^3))) + ((a + b*x^2)^2*Ei((2*log(c*(a + b*x^2)^n))/n))/((c*(a + b*x^2)^n)^(2/n)*(b^2*n^3)) + (a*(a + b*x^2))/(4*b^2*n*log(c*(a + b*x^2)^n)^2) - (a + b*x^2)^2/(4*b^2*n*log(c*(a + b*x^2)^n)^2) + (a*(a + b*x^2))/(4*b^2*n^2*log(c*(a + b*x^2)^n)) - (a + b*x^2)^2/(2*b^2*n^2*log(c*(a + b*x^2)^n))],
+
+
+# Integrands of the form Log[c*(a+b/x)^n]^p 
+[log((c*(b + a*x))/x), x, 3, (b*log(b + a*x))/a + x*log((c*(b + a*x))/x)],
+[log((c*(b + a*x))/x)^2, x, 4, ((b + a*x)*log(a*c + (b*c)/x)^2)/a - (2*b*log(a*c + (b*c)/x)*log(-(b/(a*x))))/a - (2*b*polylog(2, 1 + b/(a*x)))/a],
+[log((c*(b + a*x))/x)^3, x, 6, ((b + a*x)*log(a*c + (b*c)/x)^3)/a - (3*b*log(a*c + (b*c)/x)^2*log(-(b/(a*x))))/a - (6*b*log(a*c + (b*c)/x)*polylog(2, 1 + b/(a*x)))/a + (6*b*polylog(3, (a + b/x)/a))/a],
+
+[log((c*x)/(b + a*x)), x, 3, x*log((c*x)/(b + a*x)) - (b*log(b + a*x))/a],
+[log((c*x)/(b + a*x))^2, x, 4, (2*b*log(b/(b + a*x))*log((c*x)/(b + a*x)))/a + x*log((c*x)/(b + a*x))^2 + (2*b*polylog(2, (a*x)/(b + a*x)))/a],
+[log((c*x)/(b + a*x))^3, x, 6, (3*b*log(b/(b + a*x))*log((c*x)/(b + a*x))^2)/a + x*log((c*x)/(b + a*x))^3 + (6*b*log((c*x)/(b + a*x))*polylog(2, (a*x)/(b + a*x)))/a - (6*b*polylog(3, (a*x)/(b + a*x)))/a],
+
+[log((c*(b + a*x)^2)/x^2), x, 3, (2*b*log(b + a*x))/a + x*log((c*(b + a*x)^2)/x^2)],
+[log((c*(b + a*x)^2)/x^2)^2, x, 5, ((b + a*x)*log(c*(a + b/x)^2)^2)/a - (4*b*log(c*(a + b/x)^2)*log(-(b/(a*x))))/a - (8*b*polylog(2, 1 + b/(a*x)))/a],
+[log((c*(b + a*x)^2)/x^2)^3, x, 7, ((b + a*x)*log(c*(a + b/x)^2)^3)/a - (6*b*log(c*(a + b/x)^2)^2*log(-(b/(a*x))))/a - (24*b*log(c*(a + b/x)^2)*polylog(2, 1 + b/(a*x)))/a + (48*b*polylog(3, (a + b/x)/a))/a],
+
+[log((c*x^2)/(b + a*x)^2), x, 3, x*log((c*x^2)/(b + a*x)^2) - (2*b*log(b + a*x))/a],
+[log((c*x^2)/(b + a*x)^2)^2, x, 5, ((b + a*x)*log(c/(a + b/x)^2)^2)/a + (4*b*log(c/(a + b/x)^2)*log(-(b/(a*x))))/a - (8*b*polylog(2, 1 + b/(a*x)))/a],
+[log((c*x^2)/(b + a*x)^2)^3, x, 7, ((b + a*x)*log(c/(a + b/x)^2)^3)/a + (6*b*log(c/(a + b/x)^2)^2*log(-(b/(a*x))))/a - (24*b*log(c/(a + b/x)^2)*polylog(2, 1 + b/(a*x)))/a - (48*b*polylog(3, (a + b/x)/a))/a],
+
+
+[log(c*(a + b/x)^n)^2, x, 4, ((b + a*x)*log(c*(a + b/x)^n)^2)/a - (2*b*n*log(c*(a + b/x)^n)*log(-(b/(a*x))))/a - (2*b*n^2*polylog(2, 1 + b/(a*x)))/a],
+[log(c*(a + b/x)^n)^3, x, 6, ((b + a*x)*log(c*(a + b/x)^n)^3)/a - (3*b*n*log(c*(a + b/x)^n)^2*log(-(b/(a*x))))/a - (6*b*n^2*log(c*(a + b/x)^n)*polylog(2, 1 + b/(a*x)))/a + (6*b*n^3*polylog(3, (a + b/x)/a))/a],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[a+b x^n]^p
+
+
+[log(a + b*sqrt(x))/sqrt(x), x, 2, -2*sqrt(x) + (2*(a + b*sqrt(x))*log(a + b*sqrt(x)))/b],
+
+
+# Integrands of the form Log[c*(a+b*x^m)^n]^p/x where p is an integer 
+[log(1 + b*x^m)/x, x, 1, -(polylog(2, -(b*x^m))/m)],
+[log(2 + b*x^m)/x, x, 2, log(2)*log(x) - polylog(2, -((b*x^m)/2))/m],
+[log(2*(3 + b*x^m))/x, x, 2, log(6)*log(x) - polylog(2, -((b*x^m)/3))/m],
+[log(c*(a + b*x^m))/x, x, 3, (log(-((b*x^m)/a))*log(c*(a + b*x^m)))/m + polylog(2, 1 + (b*x^m)/a)/m],
+
+[log(c*(a + b*x^m)^n)/x, x, 3, (log(-((b*x^m)/a))*log(c*(a + b*x^m)^n))/m + (n*polylog(2, 1 + (b*x^m)/a))/m],
+[log(c*(a + b*x^m)^n)^2/x, x, 5, (log(-((b*x^m)/a))*log(c*(a + b*x^m)^n)^2)/m + (2*n*log(c*(a + b*x^m)^n)*polylog(2, 1 + (b*x^m)/a))/m - (2*n^2*polylog(3, (a + b*x^m)/a))/m],
+[log(c*(a + b*x^m)^n)^3/x, x, 6, (log(-((b*x^m)/a))*log(c*(a + b*x^m)^n)^3)/m + (3*n*log(c*(a + b*x^m)^n)^2*polylog(2, 1 + (b*x^m)/a))/m - (6*n^2*log(c*(a + b*x^m)^n)*polylog(3, 1 + (b*x^m)/a))/m + (6*n^3*polylog(4, (a + b*x^m)/a))/m],
+
+
+# Integrands of the form x^m*Log[c*(a+b*x)^n]^p where m and p are integers 
+# {x^3*Log[c*(a + b*x)^n]^2, x, 20, -((25*a^3*n^2*x)/(24*b^3)) + (13*a^2*n^2*x^2)/(48*b^2) - (7*a*n^2*x^3)/(72*b) + (n^2*x^4)/32 + (13*a^4*n^2*Log[a + b*x])/(24*b^4) - (a^2*n*x^2*Log[c*(a + b*x)^n])/(4*b^2) + (a*n*x^3*Log[c*(a + b*x)^n])/(6*b) - (1/8)*n*x^4*Log[c*(a + b*x)^n] + (a^3*n*(a + b*x)*Log[c*(a + b*x)^n])/(2*b^4) - (a^4*Log[c*(a + b*x)^n]^2)/(4*b^4) + (1/4)*x^4*Log[c*(a + b*x)^n]^2} 
+[x^2*log(c*(a + b*x)^n)^2, x, 14, (11*a^2*n^2*x)/(9*b^2) - (5*a*n^2*x^2)/(18*b) + (2*n^2*x^3)/27 - (5*a^3*n^2*log(a + b*x))/(9*b^3) + (a*n*x^2*log(c*(a + b*x)^n))/(3*b) - (2/9)*n*x^3*log(c*(a + b*x)^n) - (2*a^2*n*(a + b*x)*log(c*(a + b*x)^n))/(3*b^3) + (a^3*log(c*(a + b*x)^n)^2)/(3*b^3) + (1/3)*x^3*log(c*(a + b*x)^n)^2],
+[x*log(c*(a + b*x)^n)^2, x, 8, -((3*a*n^2*x)/(2*b)) + (n^2*x^2)/4 + (a^2*n^2*log(a + b*x))/(2*b^2) - (1/2)*n*x^2*log(c*(a + b*x)^n) + (a*n*(a + b*x)*log(c*(a + b*x)^n))/b^2 - (a^2*log(c*(a + b*x)^n)^2)/(2*b^2) + (1/2)*x^2*log(c*(a + b*x)^n)^2],
+[log(c*(a + b*x)^n)^2, x, 2, 2*n^2*x - (2*n*(a + b*x)*log(c*(a + b*x)^n))/b + ((a + b*x)*log(c*(a + b*x)^n)^2)/b],
+[log(c*(a + b*x)^n)^2/x, x, 4, log(-((b*x)/a))*log(c*(a + b*x)^n)^2 + 2*n*log(c*(a + b*x)^n)*polylog(2, 1 + (b*x)/a) - 2*n^2*polylog(3, (a + b*x)/a)],
+[log(c*(a + b*x)^n)^2/x^2, x, 3, (2*b*n*log(-((b*x)/a))*log(c*(a + b*x)^n))/a - ((a + b*x)*log(c*(a + b*x)^n)^2)/(a*x) + (2*b*n^2*polylog(2, 1 + (b*x)/a))/a],
+[log(c*(a + b*x)^n)^2/x^3, x, 6, (b^2*n^2*log(x))/a^2 - (b^2*n^2*log(a + b*x))/a^2 - (b*n*log(c*(a + b*x)^n))/(a*x) - (b^2*n*log(-((b*x)/a))*log(c*(a + b*x)^n))/a^2 + (b^2*log(c*(a + b*x)^n)^2)/(2*a^2) - log(c*(a + b*x)^n)^2/(2*x^2) - (b^2*n^2*polylog(2, 1 + (b*x)/a))/a^2],
+
+# {x^3*Log[c*(a + b*x)^n]^3, x, 46, (415*a^3*n^3*x)/(96*b^3) - (115*a^2*n^3*x^2)/(192*b^2) + (37*a*n^3*x^3)/(288*b) - (3*n^3*x^4)/128 - (115*a^4*n^3*Log[a + b*x])/(96*b^4) + (13*a^2*n^2*x^2*Log[c*(a + b*x)^n])/(16*b^2) - (7*a*n^2*x^3*Log[c*(a + b*x)^n])/(24*b) + (3/32)*n^2*x^4*Log[c*(a + b*x)^n] - (25*a^3*n^2*(a + b*x)*Log[c*(a + b*x)^n])/(8*b^4) + (25*a^4*n*Log[c*(a + b*x)^n]^2)/(16*b^4) + (3*a^3*n*x*Log[c*(a + b*x)^n]^2)/(4*b^3) - (3*a^2*n*x^2*Log[c*(a + b*x)^n]^2)/(8*b^2) + (a*n*x^3*Log[c*(a + b*x)^n]^2)/(4*b) - (3/16)*n*x^4*Log[c*(a + b*x)^n]^2 - (a^4*Log[c*(a + b*x)^n]^3)/(4*b^4) + (1/4)*x^4*Log[c*(a + b*x)^n]^3} 
+# {x^2*Log[c*(a + b*x)^n]^3, x, 25, -((85*a^2*n^3*x)/(18*b^2)) + (19*a*n^3*x^2)/(36*b) - (2*n^3*x^3)/27 + (19*a^3*n^3*Log[a + b*x])/(18*b^3) - (5*a*n^2*x^2*Log[c*(a + b*x)^n])/(6*b) + (2/9)*n^2*x^3*Log[c*(a + b*x)^n] + (11*a^2*n^2*(a + b*x)*Log[c*(a + b*x)^n])/(3*b^3) - (11*a^3*n*Log[c*(a + b*x)^n]^2)/(6*b^3) - (a^2*n*x*Log[c*(a + b*x)^n]^2)/b^2 + (a*n*x^2*Log[c*(a + b*x)^n]^2)/(2*b) - (1/3)*n*x^3*Log[c*(a + b*x)^n]^2 + (a^3*Log[c*(a + b*x)^n]^3)/(3*b^3) + (1/3)*x^3*Log[c*(a + b*x)^n]^3} 
+[x*log(c*(a + b*x)^n)^3, x, 12, (21*a*n^3*x)/(4*b) - (3*n^3*x^2)/8 - (3*a^2*n^3*log(a + b*x))/(4*b^2) + (3/4)*n^2*x^2*log(c*(a + b*x)^n) - (9*a*n^2*(a + b*x)*log(c*(a + b*x)^n))/(2*b^2) - (3/4)*n*x^2*log(c*(a + b*x)^n)^2 + (9*a*n*(a + (2*b*x)/3)*log(c*(a + b*x)^n)^2)/(4*b^2) - (a^2*log(c*(a + b*x)^n)^3)/(2*b^2) + (1/2)*x^2*log(c*(a + b*x)^n)^3],
+[log(c*(a + b*x)^n)^3, x, 3, -6*n^3*x + (6*n^2*(a + b*x)*log(c*(a + b*x)^n))/b - (3*n*(a + b*x)*log(c*(a + b*x)^n)^2)/b + ((a + b*x)*log(c*(a + b*x)^n)^3)/b],
+[log(c*(a + b*x)^n)^3/x, x, 5, log(-((b*x)/a))*log(c*(a + b*x)^n)^3 + 3*n*log(c*(a + b*x)^n)^2*polylog(2, 1 + (b*x)/a) - 6*n^2*log(c*(a + b*x)^n)*polylog(3, 1 + (b*x)/a) + 6*n^3*polylog(4, (a + b*x)/a)],
+[log(c*(a + b*x)^n)^3/x^2, x, 5, (3*b*n*log(-((b*x)/a))*log(c*(a + b*x)^n)^2)/a - ((a + b*x)*log(c*(a + b*x)^n)^3)/(a*x) + (6*b*n^2*log(c*(a + b*x)^n)*polylog(2, 1 + (b*x)/a))/a - (6*b*n^3*polylog(3, (a + b*x)/a))/a],
+[log(c*(a + b*x)^n)^3/x^3, x, 9, (3*b^2*n^2*log(-((b*x)/a))*log(c*(a + b*x)^n))/a^2 - (3*b*n*(a + b*x)*log(c*(a + b*x)^n)^2)/(2*a^2*x) - (3*b^2*n*log(-((b*x)/a))*log(c*(a + b*x)^n)^2)/(2*a^2) + (b^2*log(c*(a + b*x)^n)^3)/(2*a^2) - log(c*(a + b*x)^n)^3/(2*x^2) + (3*b^2*n^2*(n - log(c*(a + b*x)^n))*polylog(2, 1 + (b*x)/a))/a^2 + (3*b^2*n^3*polylog(3, (a + b*x)/a))/a^2],
+
+[x^3/log(c*(a + b*x)^n), x, 7, -((a^3*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b^4*n))) + (3*a^2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^4*n)) - (3*a*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(b^4*n)) + ((a + b*x)^4*Ei((4*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(4/n)*(b^4*n))],
+[x^2/log(c*(a + b*x)^n), x, 6, (a^2*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b^3*n)) - (2*a*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^3*n)) + ((a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(b^3*n))],
+[x/log(a + b*x), x, 5, Ei(2*log(a + b*x))/b^2 - (a*Li(a + b*x))/b^2],
+[x/log(c*(a + b*x)^n), x, 5, -((a*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b^2*n))) + ((a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^2*n))],
+[1/log(c*(a + b*x)^n), x, 1, ((a + b*x)*Ei(log(c*(a + b*x)^n)/n))/(b*n*(c*(a + b*x)^n)^(n^(-1)))],
+[1/(x*log(c*(a + b*x)^n)), x, 0, Int(1/(x*log(c*(a + b*x)^n)), x)],
+[1/(x^2*log(c*(a + b*x)^n)), x, 0, Int(1/(x^2*log(c*(a + b*x)^n)), x)],
+[1/(x^3*log(c*(a + b*x)^n)), x, 0, Int(1/(x^3*log(c*(a + b*x)^n)), x)],
+
+[x^3/log(c*(a + b*x)^n)^2, x, 11, -((a^3*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b^4*n^2))) + (6*a^2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^4*n^2)) - (9*a*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(b^4*n^2)) + (4*(a + b*x)^4*Ei((4*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(4/n)*(b^4*n^2)) + (a^3*(a + b*x))/(b^4*n*log(c*(a + b*x)^n)) - (3*a^2*(a + b*x)^2)/(b^4*n*log(c*(a + b*x)^n)) + (3*a*(a + b*x)^3)/(b^4*n*log(c*(a + b*x)^n)) - (a + b*x)^4/(b^4*n*log(c*(a + b*x)^n))],
+[x^2/log(c*(a + b*x)^n)^2, x, 9, (a^2*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b^3*n^2)) - (4*a*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^3*n^2)) + (3*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(b^3*n^2)) - (a^2*(a + b*x))/(b^3*n*log(c*(a + b*x)^n)) + (2*a*(a + b*x)^2)/(b^3*n*log(c*(a + b*x)^n)) - (a + b*x)^3/(b^3*n*log(c*(a + b*x)^n))],
+[x/log(c*(a + b*x)^n)^2, x, 7, -((a*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b^2*n^2))) + (2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^2*n^2)) + (a*(a + b*x))/(b^2*n*log(c*(a + b*x)^n)) - (a + b*x)^2/(b^2*n*log(c*(a + b*x)^n))],
+[1/log(c*(a + b*x)^n)^2, x, 2, ((a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(b*n^2)) - (a + b*x)/(b*n*log(c*(a + b*x)^n))],
+[1/(x*log(c*(a + b*x)^n)^2), x, 0, Int(1/(x*log(c*(a + b*x)^n)^2), x)],
+[1/(x^2*log(c*(a + b*x)^n)^2), x, 0, Int(1/(x^2*log(c*(a + b*x)^n)^2), x)],
+[1/(x^3*log(c*(a + b*x)^n)^2), x, 0, Int(1/(x^3*log(c*(a + b*x)^n)^2), x)],
+
+[x^3/log(c*(a + b*x)^n)^3, x, 15, -((a^3*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b^4*n^3))) + (6*a^2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^4*n^3)) - (27*a*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(2*b^4*n^3)) + (8*(a + b*x)^4*Ei((4*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(4/n)*(b^4*n^3)) - (x^3*(a + b*x))/(2*b*n*log(c*(a + b*x)^n)^2) - (x^2*(a + b*x)*(3*a + 4*b*x))/(2*b^2*n^2*log(c*(a + b*x)^n)), -((a^3*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b^4*n^3))) + (6*a^2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^4*n^3)) - (27*a*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(2*b^4*n^3)) + (8*(a + b*x)^4*Ei((4*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(4/n)*(b^4*n^3)) + (a^3*(a + b*x))/(2*b^4*n*log(c*(a + b*x)^n)^2) - (3*a^2*(a + b*x)^2)/(2*b^4*n*log(c*(a + b*x)^n)^2) + (3*a*(a + b*x)^3)/(2*b^4*n*log(c*(a + b*x)^n)^2) - (a + b*x)^4/(2*b^4*n*log(c*(a + b*x)^n)^2) + (a^3*(a + b*x))/(2*b^4*n^2*log(c*(a + b*x)^n)) - (3*a^2*(a + b*x)^2)/(b^4*n^2*log(c*(a + b*x)^n)) + (9*a*(a + b*x)^3)/(2*b^4*n^2*log(c*(a + b*x)^n)) - (2*(a + b*x)^4)/(b^4*n^2*log(c*(a + b*x)^n))],
+[x^2/log(c*(a + b*x)^n)^3, x, 12, (a^2*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b^3*n^3)) - (4*a*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^3*n^3)) + (9*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(2*b^3*n^3)) - (x^2*(a + b*x))/(2*b*n*log(c*(a + b*x)^n)^2) - (x*(a + b*x)*(2*a + 3*b*x))/(2*b^2*n^2*log(c*(a + b*x)^n)), (a^2*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b^3*n^3)) - (4*a*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^3*n^3)) + (9*(a + b*x)^3*Ei((3*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(3/n)*(2*b^3*n^3)) - (a^2*(a + b*x))/(2*b^3*n*log(c*(a + b*x)^n)^2) + (a*(a + b*x)^2)/(b^3*n*log(c*(a + b*x)^n)^2) - (a + b*x)^3/(2*b^3*n*log(c*(a + b*x)^n)^2) - (a^2*(a + b*x))/(2*b^3*n^2*log(c*(a + b*x)^n)) + (2*a*(a + b*x)^2)/(b^3*n^2*log(c*(a + b*x)^n)) - (3*(a + b*x)^3)/(2*b^3*n^2*log(c*(a + b*x)^n))],
+[x/log(c*(a + b*x)^n)^3, x, 9, -((a*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b^2*n^3))) + (2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^2*n^3)) - (x*(a + b*x))/(2*b*n*log(c*(a + b*x)^n)^2) - ((a + b*x)*(a + 2*b*x))/(2*b^2*n^2*log(c*(a + b*x)^n)), -((a*(a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b^2*n^3))) + (2*(a + b*x)^2*Ei((2*log(c*(a + b*x)^n))/n))/((c*(a + b*x)^n)^(2/n)*(b^2*n^3)) + (a*(a + b*x))/(2*b^2*n*log(c*(a + b*x)^n)^2) - (a + b*x)^2/(2*b^2*n*log(c*(a + b*x)^n)^2) + (a*(a + b*x))/(2*b^2*n^2*log(c*(a + b*x)^n)) - (a + b*x)^2/(b^2*n^2*log(c*(a + b*x)^n))],
+[1/log(c*(a + b*x)^n)^3, x, 3, ((a + b*x)*Ei(log(c*(a + b*x)^n)/n))/((c*(a + b*x)^n)^(n^(-1))*(2*b*n^3)) - (a + b*x)/(2*b*n*log(c*(a + b*x)^n)^2) - (a + b*x)/(2*b*n^2*log(c*(a + b*x)^n))],
+[1/(x*log(c*(a + b*x)^n)^3), x, 0, Int(1/(x*log(c*(a + b*x)^n)^3), x)],
+[1/(x^2*log(c*(a + b*x)^n)^3), x, 0, Int(1/(x^2*log(c*(a + b*x)^n)^3), x)],
+[1/(x^3*log(c*(a + b*x)^n)^3), x, 0, Int(1/(x^3*log(c*(a + b*x)^n)^3), x)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form (d+e x)^m Log[c (a+b x)^n]^p
+
+
+[(a + b*x)^3*log(c + d*x), x, 8, ((b*c - a*d)^3*x)/(4*d^3) - ((b*c - a*d)^2*(a + b*x)^2)/(8*b*d^2) + ((b*c - a*d)*(a + b*x)^3)/(12*b*d) - (a + b*x)^4/(16*b) - ((b*c - a*d)^4*log(c + d*x))/(4*b*d^4) + ((a + b*x)^4*log(c + d*x))/(4*b)],
+[(a + b*x)^2*log(c + d*x), x, 7, -(((b*c - a*d)^2*x)/(3*d^2)) + ((b*c - a*d)*(a + b*x)^2)/(6*b*d) - (a + b*x)^3/(9*b) + ((b*c - a*d)^3*log(c + d*x))/(3*b*d^3) + ((a + b*x)^3*log(c + d*x))/(3*b)],
+[(a + b*x)*log(c + d*x), x, 6, ((b*c - a*d)*x)/(2*d) - (a + b*x)^2/(4*b) - ((b*c - a*d)^2*log(c + d*x))/(2*b*d^2) + ((a + b*x)^2*log(c + d*x))/(2*b)],
+
+
+[log(c + d*x)/(a + b*x)^1, x, 1, (log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x))/b + polylog(2, (b*(c + d*x))/(b*c - a*d))/b],
+[log(c + d*x)/(a + b*x)^2, x, 6, (d*log(a + b*x))/(b*(b*c - a*d)) - (d*log(c + d*x))/(b*(b*c - a*d)) - log(c + d*x)/(b*(a + b*x))],
+[log(c + d*x)/(a + b*x)^3, x, 7, -(d/(2*b*(b*c - a*d)*(a + b*x))) - (d^2*log(a + b*x))/(2*b*(b*c - a*d)^2) + (d^2*log(c + d*x))/(2*b*(b*c - a*d)^2) - log(c + d*x)/(2*b*(a + b*x)^2)],
+
+[log((c + d*x)^2)/(a + b*x)^1, x, 1, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2))/b + (2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^2)/(a + b*x)^2, x, 6, (2*d*log(a + b*x))/(b*(b*c - a*d)) - (2*d*log(c + d*x))/(b*(b*c - a*d)) - log((c + d*x)^2)/(b*(a + b*x))],
+[log((c + d*x)^2)/(a + b*x)^3, x, 7, -(d/(b*(b*c - a*d)*(a + b*x))) - (d^2*log(a + b*x))/(b*(b*c - a*d)^2) + (d^2*log(c + d*x))/(b*(b*c - a*d)^2) - log((c + d*x)^2)/(2*b*(a + b*x)^2)],
+
+[log((c + d*x)^3)/(a + b*x)^1, x, 1, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3))/b + (3*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^3)/(a + b*x)^2, x, 6, (3*d*log(a + b*x))/(b*(b*c - a*d)) - (3*d*log(c + d*x))/(b*(b*c - a*d)) - log((c + d*x)^3)/(b*(a + b*x))],
+[log((c + d*x)^3)/(a + b*x)^3, x, 7, -((3*d)/(2*b*(b*c - a*d)*(a + b*x))) - (3*d^2*log(a + b*x))/(2*b*(b*c - a*d)^2) + (3*d^2*log(c + d*x))/(2*b*(b*c - a*d)^2) - log((c + d*x)^3)/(2*b*(a + b*x)^2)],
+
+[log((c + d*x)^n)/(a + b*x)^1, x, 1, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n))/b + (n*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^n)/(a + b*x)^2, x, 6, (d*n*log(a + b*x))/(b*(b*c - a*d)) - (d*n*log(c + d*x))/(b*(b*c - a*d)) - log((c + d*x)^n)/(b*(a + b*x))],
+[log((c + d*x)^n)/(a + b*x)^3, x, 7, -((d*n)/(2*b*(b*c - a*d)*(a + b*x))) - (d^2*n*log(a + b*x))/(2*b*(b*c - a*d)^2) + (d^2*n*log(c + d*x))/(2*b*(b*c - a*d)^2) - log((c + d*x)^n)/(2*b*(a + b*x)^2)],
+
+
+[log(c + d*x)^2/(a + b*x)^1, x, 4, (log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x)^2)/b + (2*log(c + d*x)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (2*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b],
+[log(c + d*x)^2/(a + b*x)^2, x, 6, (2*d*log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x))/(b*(b*c - a*d)) - (d*log(c + d*x)^2)/(b*(b*c - a*d)) - log(c + d*x)^2/(b*(a + b*x)) + (2*d*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log(c + d*x)^2/(a + b*x)^3, x, 12, (d^2*log(a + b*x))/(b*(b*c - a*d)^2) - (d^2*log(c + d*x))/(b*(b*c - a*d)^2) - (d*log(c + d*x))/(b*(b*c - a*d)*(a + b*x)) - (d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x))/(b*(b*c - a*d)^2) + (d^2*log(c + d*x)^2)/(2*b*(b*c - a*d)^2) - log(c + d*x)^2/(2*b*(a + b*x)^2) - (d^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+[log((c + d*x)^2)^2/(a + b*x)^1, x, 4, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2)^2)/b + (4*log((c + d*x)^2)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (8*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^2)^2/(a + b*x)^2, x, 6, (4*d*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2))/(b*(b*c - a*d)) - (d*log((c + d*x)^2)^2)/(b*(b*c - a*d)) - log((c + d*x)^2)^2/(b*(a + b*x)) + (8*d*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log((c + d*x)^2)^2/(a + b*x)^3, x, 12, (4*d^2*log(a + b*x))/(b*(b*c - a*d)^2) - (4*d^2*log(c + d*x))/(b*(b*c - a*d)^2) - (2*d*log((c + d*x)^2))/(b*(b*c - a*d)*(a + b*x)) - (2*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2))/(b*(b*c - a*d)^2) + (d^2*log((c + d*x)^2)^2)/(2*b*(b*c - a*d)^2) - log((c + d*x)^2)^2/(2*b*(a + b*x)^2) - (4*d^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+[log((c + d*x)^3)^2/(a + b*x)^1, x, 4, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3)^2)/b + (6*log((c + d*x)^3)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (18*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^3)^2/(a + b*x)^2, x, 6, (6*d*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3))/(b*(b*c - a*d)) - (d*log((c + d*x)^3)^2)/(b*(b*c - a*d)) - log((c + d*x)^3)^2/(b*(a + b*x)) + (18*d*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log((c + d*x)^3)^2/(a + b*x)^3, x, 12, (9*d^2*log(a + b*x))/(b*(b*c - a*d)^2) - (9*d^2*log(c + d*x))/(b*(b*c - a*d)^2) - (3*d*log((c + d*x)^3))/(b*(b*c - a*d)*(a + b*x)) - (3*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3))/(b*(b*c - a*d)^2) + (d^2*log((c + d*x)^3)^2)/(2*b*(b*c - a*d)^2) - log((c + d*x)^3)^2/(2*b*(a + b*x)^2) - (9*d^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+[log((c + d*x)^n)^2/(a + b*x)^1, x, 4, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n)^2)/b + (2*n*log((c + d*x)^n)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (2*n^2*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^n)^2/(a + b*x)^2, x, 6, (2*d*n*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n))/(b*(b*c - a*d)) - (d*log((c + d*x)^n)^2)/(b*(b*c - a*d)) - log((c + d*x)^n)^2/(b*(a + b*x)) + (2*d*n^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log((c + d*x)^n)^2/(a + b*x)^3, x, 12, (d^2*n^2*log(a + b*x))/(b*(b*c - a*d)^2) - (d^2*n^2*log(c + d*x))/(b*(b*c - a*d)^2) - (d*n*log((c + d*x)^n))/(b*(b*c - a*d)*(a + b*x)) - (d^2*n*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n))/(b*(b*c - a*d)^2) + (d^2*log((c + d*x)^n)^2)/(2*b*(b*c - a*d)^2) - log((c + d*x)^n)^2/(2*b*(a + b*x)^2) - (d^2*n^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+
+[log(c + d*x)^3/(a + b*x)^1, x, 5, (log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x)^3)/b + (3*log(c + d*x)^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (6*log(c + d*x)*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b + (6*polylog(4, (b*(c + d*x))/(b*c - a*d)))/b],
+[log(c + d*x)^3/(a + b*x)^2, x, 9, (3*d*log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x)^2)/(b*(b*c - a*d)) - (d*log(c + d*x)^3)/(b*(b*c - a*d)) - log(c + d*x)^3/(b*(a + b*x)) + (6*d*log(c + d*x)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)) - (6*d*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log(c + d*x)^3/(a + b*x)^3, x, 15, (3*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x))/(b*(b*c - a*d)^2) - (3*d^2*log(c + d*x)^2)/(2*b*(b*c - a*d)^2) - (3*d*log(c + d*x)^2)/(2*b*(b*c - a*d)*(a + b*x)) - (3*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x)^2)/(2*b*(b*c - a*d)^2) + (d^2*log(c + d*x)^3)/(2*b*(b*c - a*d)^2) - log(c + d*x)^3/(2*b*(a + b*x)^2) + (3*d^2*(1 - log(c + d*x))*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2) + (3*d^2*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+[log((c + d*x)^2)^3/(a + b*x)^1, x, 5, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2)^3)/b + (6*log((c + d*x)^2)^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (24*log((c + d*x)^2)*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b + (48*polylog(4, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^2)^3/(a + b*x)^2, x, 9, (6*d*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2)^2)/(b*(b*c - a*d)) - (d*log((c + d*x)^2)^3)/(b*(b*c - a*d)) - log((c + d*x)^2)^3/(b*(a + b*x)) + (24*d*log((c + d*x)^2)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)) - (48*d*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log((c + d*x)^2)^3/(a + b*x)^3, x, 15, (12*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2))/(b*(b*c - a*d)^2) - (3*d^2*log((c + d*x)^2)^2)/(b*(b*c - a*d)^2) - (3*d*log((c + d*x)^2)^2)/(b*(b*c - a*d)*(a + b*x)) - (3*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^2)^2)/(b*(b*c - a*d)^2) + (d^2*log((c + d*x)^2)^3)/(2*b*(b*c - a*d)^2) - log((c + d*x)^2)^3/(2*b*(a + b*x)^2) + (12*d^2*(2 - log((c + d*x)^2))*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2) + (24*d^2*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+[log((c + d*x)^3)^3/(a + b*x)^1, x, 5, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3)^3)/b + (9*log((c + d*x)^3)^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (54*log((c + d*x)^3)*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b + (162*polylog(4, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^3)^3/(a + b*x)^2, x, 9, (9*d*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3)^2)/(b*(b*c - a*d)) - (d*log((c + d*x)^3)^3)/(b*(b*c - a*d)) - log((c + d*x)^3)^3/(b*(a + b*x)) + (54*d*log((c + d*x)^3)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)) - (162*d*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log((c + d*x)^3)^3/(a + b*x)^3, x, 15, (27*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3))/(b*(b*c - a*d)^2) - (9*d^2*log((c + d*x)^3)^2)/(2*b*(b*c - a*d)^2) - (9*d*log((c + d*x)^3)^2)/(2*b*(b*c - a*d)*(a + b*x)) - (9*d^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^3)^2)/(2*b*(b*c - a*d)^2) + (d^2*log((c + d*x)^3)^3)/(2*b*(b*c - a*d)^2) - log((c + d*x)^3)^3/(2*b*(a + b*x)^2) + (27*d^2*(3 - log((c + d*x)^3))*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2) + (81*d^2*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+[log((c + d*x)^n)^3/(a + b*x)^1, x, 5, (log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n)^3)/b + (3*n*log((c + d*x)^n)^2*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b - (6*n^2*log((c + d*x)^n)*polylog(3, (b*(c + d*x))/(b*c - a*d)))/b + (6*n^3*polylog(4, (b*(c + d*x))/(b*c - a*d)))/b],
+[log((c + d*x)^n)^3/(a + b*x)^2, x, 9, (3*d*n*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n)^2)/(b*(b*c - a*d)) - (d*log((c + d*x)^n)^3)/(b*(b*c - a*d)) - log((c + d*x)^n)^3/(b*(a + b*x)) + (6*d*n^2*log((c + d*x)^n)*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)) - (6*d*n^3*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d))],
+[log((c + d*x)^n)^3/(a + b*x)^3, x, 15, (3*d^2*n^2*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n))/(b*(b*c - a*d)^2) - (3*d^2*n*log((c + d*x)^n)^2)/(2*b*(b*c - a*d)^2) - (3*d*n*log((c + d*x)^n)^2)/(2*b*(b*c - a*d)*(a + b*x)) - (3*d^2*n*log(-((d*(a + b*x))/(b*c - a*d)))*log((c + d*x)^n)^2)/(2*b*(b*c - a*d)^2) + (d^2*log((c + d*x)^n)^3)/(2*b*(b*c - a*d)^2) - log((c + d*x)^n)^3/(2*b*(a + b*x)^2) + (3*d^2*n^2*(n - log((c + d*x)^n))*polylog(2, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2) + (3*d^2*n^3*polylog(3, (b*(c + d*x))/(b*c - a*d)))/(b*(b*c - a*d)^2)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form (a+b x)^m Log[c+d x^n]
+
+
+[log(a + b*x^2)/(c + d*x), x, 5, -((log((d*(sqrt(-a) - sqrt(b)*x))/(sqrt(b)*c + sqrt(-a)*d))*log(c + d*x))/d) - (log(-((d*(sqrt(-a) + sqrt(b)*x))/(sqrt(b)*c - sqrt(-a)*d)))*log(c + d*x))/d + (log(c + d*x)*log(a + b*x^2))/d - polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c - sqrt(-a)*d))/d - polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c + sqrt(-a)*d))/d],
+[log(a + b*x^2)/(c + d*x)^2, x, 8, (2*sqrt(a)*sqrt(b)*arctan((sqrt(b)*x)/sqrt(a)))/(b*c^2 + a*d^2) - (2*b*c*log(c + d*x))/(d*(b*c^2 + a*d^2)) + (b*c*log(a + b*x^2))/(d*(b*c^2 + a*d^2)) - log(a + b*x^2)/(d*(c + d*x))],
+[log(a + b*x^2)/(c + d*x)^3, x, 9, (b*c)/(d*(b*c^2 + a*d^2)*(c + d*x)) + (2*sqrt(a)*b^(3/2)*c*arctan((sqrt(b)*x)/sqrt(a)))/(b*c^2 + a*d^2)^2 - (b*(b*c^2 - a*d^2)*log(c + d*x))/(d*(b*c^2 + a*d^2)^2) + (b*(b*c^2 - a*d^2)*log(a + b*x^2))/(2*d*(b*c^2 + a*d^2)^2) - log(a + b*x^2)/(2*d*(c + d*x)^2)],
+
+
+[log(a + b*x^3)/(c + d*x), x, 6, -((log((d*((-1)^(1/3)*a^(1/3) - b^(1/3)*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d))*log(c + d*x))/d) - (log(-((d*(a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - a^(1/3)*d)))*log(c + d*x))/d - (log(-((d*((-1)^(2/3)*a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d)))*log(c + d*x))/d + (log(c + d*x)*log(a + b*x^3))/d - polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - a^(1/3)*d))/d - polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d))/d - polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d))/d],
+[log(a + b*x^3)/(c + d*x)^2, x, 15, -((sqrt(3)*a^(1/3)*b^(2/3)*c*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(b*c^3 - a*d^3)) + (sqrt(3)*a^(2/3)*b^(1/3)*d*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(b*c^3 - a*d^3) + (a^(1/3)*b^(2/3)*c*log(a^(1/3) + b^(1/3)*x))/(b*c^3 - a*d^3) + (a^(2/3)*b^(1/3)*d*log(a^(1/3) + b^(1/3)*x))/(b*c^3 - a*d^3) - (3*b*c^2*log(c + d*x))/(d*(b*c^3 - a*d^3)) - (a^(1/3)*b^(2/3)*c*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(2*(b*c^3 - a*d^3)) - (a^(2/3)*b^(1/3)*d*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(2*(b*c^3 - a*d^3)) + (b*c^2*log(a + b*x^3))/(d*(b*c^3 - a*d^3)) - log(a + b*x^3)/(d*(c + d*x))],
+[log(a + b*x^3)/(c + d*x)^3, x, 16, (3*b*c^2)/(2*d*(b*c^3 - a*d^3)*(c + d*x)) + (3*sqrt(3)*a^(2/3)*b^(4/3)*c^2*d*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(2*(b*c^3 - a*d^3)^2) - (sqrt(3)*a^(1/3)*b^(2/3)*(2*b*c^3 + a*d^3)*arctan((a^(1/3) - 2*b^(1/3)*x)/(sqrt(3)*a^(1/3))))/(2*(b*c^3 - a*d^3)^2) + (3*a^(2/3)*b^(4/3)*c^2*d*log(a^(1/3) + b^(1/3)*x))/(2*(b*c^3 - a*d^3)^2) + (a^(1/3)*b^(2/3)*(2*b*c^3 + a*d^3)*log(a^(1/3) + b^(1/3)*x))/(2*(b*c^3 - a*d^3)^2) - (3*b*c*(b*c^3 + 2*a*d^3)*log(c + d*x))/(2*d*(b*c^3 - a*d^3)^2) - (3*a^(2/3)*b^(4/3)*c^2*d*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(4*(b*c^3 - a*d^3)^2) - (a^(1/3)*b^(2/3)*(2*b*c^3 + a*d^3)*log(a^(2/3) - a^(1/3)*b^(1/3)*x + b^(2/3)*x^2))/(4*(b*c^3 - a*d^3)^2) + (b*c*(b*c^3 + 2*a*d^3)*log(a + b*x^3))/(2*d*(b*c^3 - a*d^3)^2) - log(a + b*x^3)/(2*d*(c + d*x)^2)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[c+d x] / (a+b x^n)
+
+
+[log(c + d*x)/(a + b*x^2), x, 3, (log((d*(sqrt(-a) - sqrt(b)*x))/(sqrt(b)*c + sqrt(-a)*d))*log(c + d*x))/(2*sqrt(-a)*sqrt(b)) - (log(-((d*(sqrt(-a) + sqrt(b)*x))/(sqrt(b)*c - sqrt(-a)*d)))*log(c + d*x))/(2*sqrt(-a)*sqrt(b)) - polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c - sqrt(-a)*d))/(2*sqrt(-a)*sqrt(b)) + polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c + sqrt(-a)*d))/(2*sqrt(-a)*sqrt(b))],
+[x*log(c + d*x)/(a + b*x^2), x, 3, (log((d*(sqrt(-a) - sqrt(b)*x))/(sqrt(b)*c + sqrt(-a)*d))*log(c + d*x))/(2*b) + (log(-((d*(sqrt(-a) + sqrt(b)*x))/(sqrt(b)*c - sqrt(-a)*d)))*log(c + d*x))/(2*b) + polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c - sqrt(-a)*d))/(2*b) + polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c + sqrt(-a)*d))/(2*b)],
+
+
+[log(c + d*x)/(a + b*x^3), x, 6, -(((-1)^(1/3)*log((d*((-1)^(1/3)*a^(1/3) - b^(1/3)*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d))*log(c + d*x))/(3*a^(2/3)*b^(1/3))) + (log(-((d*(a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - a^(1/3)*d)))*log(c + d*x))/(3*a^(2/3)*b^(1/3)) + ((-1)^(2/3)*log(-((d*((-1)^(2/3)*a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d)))*log(c + d*x))/(3*a^(2/3)*b^(1/3)) + polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - a^(1/3)*d))/(3*a^(2/3)*b^(1/3)) - ((-1)^(1/3)*polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d)))/(3*a^(2/3)*b^(1/3)) + ((-1)^(2/3)*polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d)))/(3*a^(2/3)*b^(1/3))],
+[(x*log(c + d*x))/(a + b*x^3), x, 6, -(((-1)^(2/3)*log((d*((-1)^(1/3)*a^(1/3) - b^(1/3)*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d))*log(c + d*x))/(3*a^(1/3)*b^(2/3))) - (log(-((d*(a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - a^(1/3)*d)))*log(c + d*x))/(3*a^(1/3)*b^(2/3)) + ((-1)^(1/3)*log(-((d*((-1)^(2/3)*a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d)))*log(c + d*x))/(3*a^(1/3)*b^(2/3)) - polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - a^(1/3)*d))/(3*a^(1/3)*b^(2/3)) - ((-1)^(2/3)*polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d)))/(3*a^(1/3)*b^(2/3)) + ((-1)^(1/3)*polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d)))/(3*a^(1/3)*b^(2/3))],
+[(x^2*log(c + d*x))/(a + b*x^3), x, 4, (log((d*((-1)^(1/3)*a^(1/3) - b^(1/3)*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d))*log(c + d*x))/(3*b) + (log(-((d*(a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - a^(1/3)*d)))*log(c + d*x))/(3*b) + (log(-((d*((-1)^(2/3)*a^(1/3) + b^(1/3)*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d)))*log(c + d*x))/(3*b) + polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - a^(1/3)*d))/(3*b) + polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c + (-1)^(1/3)*a^(1/3)*d))/(3*b) + polylog(2, (b^(1/3)*(c + d*x))/(b^(1/3)*c - (-1)^(2/3)*a^(1/3)*d))/(3*b)],
+
+
+[log(c + d*x)/(a + b*x^4), x, 9, (log((d*((-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + (-a)^(1/4)*d))*log(c + d*x))/(4*(-a)^(3/4)*b^(1/4)) - (log(-((d*((-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - (-a)^(1/4)*d)))*log(c + d*x))/(4*(-a)^(3/4)*b^(1/4)) + (sqrt(-sqrt(-a))*log((d*(sqrt(-a) - sqrt(-sqrt(-a))*b^(1/4)*x))/(sqrt(-sqrt(-a))*b^(1/4)*c + sqrt(-a)*d))*log(c + d*x))/(4*a*b^(1/4)) - (sqrt(-sqrt(-a))*log(-((d*(sqrt(-a) + sqrt(-sqrt(-a))*b^(1/4)*x))/(sqrt(-sqrt(-a))*b^(1/4)*c - sqrt(-a)*d)))*log(c + d*x))/(4*a*b^(1/4)) - polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - (-a)^(1/4)*d))/(4*(-a)^(3/4)*b^(1/4)) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + (-a)^(1/4)*d))/(4*(-a)^(3/4)*b^(1/4)) - (sqrt(-sqrt(-a))*polylog(2, (sqrt(-sqrt(-a))*b^(1/4)*(c + d*x))/(sqrt(-sqrt(-a))*b^(1/4)*c - sqrt(-a)*d)))/(4*a*b^(1/4)) + (sqrt(-sqrt(-a))*polylog(2, (sqrt(-sqrt(-a))*b^(1/4)*(c + d*x))/(sqrt(-sqrt(-a))*b^(1/4)*c + sqrt(-a)*d)))/(4*a*b^(1/4))],
+[(x*log(c + d*x))/(a + b*x^4), x, 7, -((log((d*(I*(-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + I*(-a)^(1/4)*d))*log(c + d*x))/(4*sqrt(-a)*sqrt(b))) + (log((d*((-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + (-a)^(1/4)*d))*log(c + d*x))/(4*sqrt(-a)*sqrt(b)) - (log(-((d*(I*(-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - I*(-a)^(1/4)*d)))*log(c + d*x))/(4*sqrt(-a)*sqrt(b)) + (log(-((d*((-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - (-a)^(1/4)*d)))*log(c + d*x))/(4*sqrt(-a)*sqrt(b)) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - (-a)^(1/4)*d))/(4*sqrt(-a)*sqrt(b)) - polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - I*(-a)^(1/4)*d))/(4*sqrt(-a)*sqrt(b)) - polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + I*(-a)^(1/4)*d))/(4*sqrt(-a)*sqrt(b)) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + (-a)^(1/4)*d))/(4*sqrt(-a)*sqrt(b))],
+[(x^2*log(c + d*x))/(a + b*x^4), x, 8, -((I*log((d*(I*(-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + I*(-a)^(1/4)*d))*log(c + d*x))/(4*(-a)^(1/4)*b^(3/4))) + (log((d*((-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + (-a)^(1/4)*d))*log(c + d*x))/(4*(-a)^(1/4)*b^(3/4)) + (I*log(-((d*(I*(-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - I*(-a)^(1/4)*d)))*log(c + d*x))/(4*(-a)^(1/4)*b^(3/4)) - (log(-((d*((-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - (-a)^(1/4)*d)))*log(c + d*x))/(4*(-a)^(1/4)*b^(3/4)) - polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - (-a)^(1/4)*d))/(4*(-a)^(1/4)*b^(3/4)) + (I*polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - I*(-a)^(1/4)*d)))/(4*(-a)^(1/4)*b^(3/4)) - (I*polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + I*(-a)^(1/4)*d)))/(4*(-a)^(1/4)*b^(3/4)) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + (-a)^(1/4)*d))/(4*(-a)^(1/4)*b^(3/4))],
+[(x^3*log(c + d*x))/(a + b*x^4), x, 5, (log((d*(I*(-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + I*(-a)^(1/4)*d))*log(c + d*x))/(4*b) + (log((d*((-a)^(1/4) - b^(1/4)*x))/(b^(1/4)*c + (-a)^(1/4)*d))*log(c + d*x))/(4*b) + (log(-((d*(I*(-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - I*(-a)^(1/4)*d)))*log(c + d*x))/(4*b) + (log(-((d*((-a)^(1/4) + b^(1/4)*x))/(b^(1/4)*c - (-a)^(1/4)*d)))*log(c + d*x))/(4*b) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - (-a)^(1/4)*d))/(4*b) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c - I*(-a)^(1/4)*d))/(4*b) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + I*(-a)^(1/4)*d))/(4*b) + polylog(2, (b^(1/4)*(c + d*x))/(b^(1/4)*c + (-a)^(1/4)*d))/(4*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Log[c (a+b x)^n]^p / (d + e x^2)
+
+
+[log(c*(a + b*x)^n)^3/(d + e*x^2), x, 11, (log(c*(a + b*x)^n)^3*log((b*(sqrt(-d) - sqrt(e)*x))/(b*sqrt(-d) + a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) - (log(c*(a + b*x)^n)^3*log((b*(sqrt(-d) + sqrt(e)*x))/(b*sqrt(-d) - a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) - (3*n*log(c*(a + b*x)^n)^2*polylog(2, -((sqrt(e)*(a + b*x))/(b*sqrt(-d) - a*sqrt(e)))))/(2*sqrt(-d)*sqrt(e)) + (3*n*log(c*(a + b*x)^n)^2*polylog(2, (sqrt(e)*(a + b*x))/(b*sqrt(-d) + a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) + (3*n^2*log(c*(a + b*x)^n)*polylog(3, -((sqrt(e)*(a + b*x))/(b*sqrt(-d) - a*sqrt(e)))))/(sqrt(-d)*sqrt(e)) - (3*n^2*log(c*(a + b*x)^n)*polylog(3, (sqrt(e)*(a + b*x))/(b*sqrt(-d) + a*sqrt(e))))/(sqrt(-d)*sqrt(e)) - (3*n^3*polylog(4, -((sqrt(e)*(a + b*x))/(b*sqrt(-d) - a*sqrt(e)))))/(sqrt(-d)*sqrt(e)) + (3*n^3*polylog(4, (sqrt(e)*(a + b*x))/(b*sqrt(-d) + a*sqrt(e))))/(sqrt(-d)*sqrt(e))],
+[log(c*(a + b*x)^n)^2/(d + e*x^2), x, 9, (log(c*(a + b*x)^n)^2*log((b*(sqrt(-d) - sqrt(e)*x))/(b*sqrt(-d) + a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) - (log(c*(a + b*x)^n)^2*log((b*(sqrt(-d) + sqrt(e)*x))/(b*sqrt(-d) - a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) - (n*log(c*(a + b*x)^n)*polylog(2, -((sqrt(e)*(a + b*x))/(b*sqrt(-d) - a*sqrt(e)))))/(sqrt(-d)*sqrt(e)) + (n*log(c*(a + b*x)^n)*polylog(2, (sqrt(e)*(a + b*x))/(b*sqrt(-d) + a*sqrt(e))))/(sqrt(-d)*sqrt(e)) + (n^2*polylog(3, -((sqrt(e)*(a + b*x))/(b*sqrt(-d) - a*sqrt(e)))))/(sqrt(-d)*sqrt(e)) - (n^2*polylog(3, (sqrt(e)*(a + b*x))/(b*sqrt(-d) + a*sqrt(e))))/(sqrt(-d)*sqrt(e))],
+[log(c*(a + b*x)^n)/(d + e*x^2), x, 3, (log(c*(a + b*x)^n)*log((b*(sqrt(-d) - sqrt(e)*x))/(b*sqrt(-d) + a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) - (log(c*(a + b*x)^n)*log((b*(sqrt(-d) + sqrt(e)*x))/(b*sqrt(-d) - a*sqrt(e))))/(2*sqrt(-d)*sqrt(e)) - (n*polylog(2, -((sqrt(e)*(a + b*x))/(b*sqrt(-d) - a*sqrt(e)))))/(2*sqrt(-d)*sqrt(e)) + (n*polylog(2, (sqrt(e)*(a + b*x))/(b*sqrt(-d) + a*sqrt(e))))/(2*sqrt(-d)*sqrt(e))],
+[1/((d + e*x^2)*log(c*(a + b*x)^n)), x, 1, (1/2)*Int(1/((d - sqrt(-d)*sqrt(e)*x)*log(c*(a + b*x)^n)), x) + (1/2)*Int(1/((d + sqrt(-d)*sqrt(e)*x)*log(c*(a + b*x)^n)), x)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Log[c (a+b x)^n]^p / (d + e x + f x^2)
+
+
+# Integrands of the form Log[c*(a+b*x)^n]^p/(d+e*x+f*x^2) where p is an integer 
+[log(c*(a + b*x)^n)^3/(d*x + e*x^2), x, 12, (log(-((b*x)/a))*log(c*(a + b*x)^n)^3)/d - (log(c*(a + b*x)^n)^3*log((b*(d + e*x))/(b*d - a*e)))/d - (3*n*log(c*(a + b*x)^n)^2*polylog(2, -((e*(a + b*x))/(b*d - a*e))))/d + (3*n*log(c*(a + b*x)^n)^2*polylog(2, 1 + (b*x)/a))/d + (6*n^2*log(c*(a + b*x)^n)*polylog(3, -((e*(a + b*x))/(b*d - a*e))))/d - (6*n^2*log(c*(a + b*x)^n)*polylog(3, 1 + (b*x)/a))/d + (6*n^3*polylog(4, (a + b*x)/a))/d - (6*n^3*polylog(4, -((e*(a + b*x))/(b*d - a*e))))/d],
+[log(c*(a + b*x)^n)^2/(d*x + e*x^2), x, 10, (log(-((b*x)/a))*log(c*(a + b*x)^n)^2)/d - (log(c*(a + b*x)^n)^2*log((b*(d + e*x))/(b*d - a*e)))/d - (2*n*log(c*(a + b*x)^n)*polylog(2, -((e*(a + b*x))/(b*d - a*e))))/d + (2*n*log(c*(a + b*x)^n)*polylog(2, 1 + (b*x)/a))/d - (2*n^2*polylog(3, (a + b*x)/a))/d + (2*n^2*polylog(3, -((e*(a + b*x))/(b*d - a*e))))/d],
+[log(c*(a + b*x)^n)/(d*x + e*x^2), x, 5, (log(-((b*x)/a))*log(c*(a + b*x)^n))/d - (log(c*(a + b*x)^n)*log((b*(d + e*x))/(b*d - a*e)))/d - (n*polylog(2, -((e*(a + b*x))/(b*d - a*e))))/d + (n*polylog(2, 1 + (b*x)/a))/d],
+[1/((d*x + e*x^2)*log(c*(a + b*x)^n)), x, 2, Int(1/(x*log(c*(a + b*x)^n)), x)/d - (e*Int(1/((d + e*x)*log(c*(a + b*x)^n)), x))/d],
+
+[log(c*(a + b*x)^n)^3/(d + e*x + f*x^2), x, 11, (log(c*(a + b*x)^n)^3*log(-((b*(e - sqrt(e^2 - 4*d*f) + 2*f*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f))))))/sqrt(e^2 - 4*d*f) - (log(c*(a + b*x)^n)^3*log(-((b*(e + sqrt(e^2 - 4*d*f) + 2*f*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f))))))/sqrt(e^2 - 4*d*f) + (3*n*log(c*(a + b*x)^n)^2*polylog(2, (2*f*(a + b*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) - (3*n*log(c*(a + b*x)^n)^2*polylog(2, (2*f*(a + b*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) - (6*n^2*log(c*(a + b*x)^n)*polylog(3, (2*f*(a + b*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) + (6*n^2*log(c*(a + b*x)^n)*polylog(3, (2*f*(a + b*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) + (6*n^3*polylog(4, (2*f*(a + b*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) - (6*n^3*polylog(4, (2*f*(a + b*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f)],
+[log(c*(a + b*x)^n)^2/(d + e*x + f*x^2), x, 9, (log(c*(a + b*x)^n)^2*log(-((b*(e - sqrt(e^2 - 4*d*f) + 2*f*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f))))))/sqrt(e^2 - 4*d*f) - (log(c*(a + b*x)^n)^2*log(-((b*(e + sqrt(e^2 - 4*d*f) + 2*f*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f))))))/sqrt(e^2 - 4*d*f) + (2*n*log(c*(a + b*x)^n)*polylog(2, (2*f*(a + b*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) - (2*n*log(c*(a + b*x)^n)*polylog(2, (2*f*(a + b*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) - (2*n^2*polylog(3, (2*f*(a + b*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) + (2*n^2*polylog(3, (2*f*(a + b*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f)],
+[log(c*(a + b*x)^n)/(d + e*x + f*x^2), x, 3, (log(c*(a + b*x)^n)*log(-((b*(e - sqrt(e^2 - 4*d*f) + 2*f*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f))))))/sqrt(e^2 - 4*d*f) - (log(c*(a + b*x)^n)*log(-((b*(e + sqrt(e^2 - 4*d*f) + 2*f*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f))))))/sqrt(e^2 - 4*d*f) + (n*polylog(2, (2*f*(a + b*x))/(2*a*f - b*(e - sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f) - (n*polylog(2, (2*f*(a + b*x))/(2*a*f - b*(e + sqrt(e^2 - 4*d*f)))))/sqrt(e^2 - 4*d*f)],
+[1/((d + e*x + f*x^2)*log(c*(a + b*x)^n)), x, 1, (2*f*Int(1/((e - sqrt(e^2 - 4*d*f) + 2*f*x)*log(c*(a + b*x)^n)), x))/sqrt(e^2 - 4*d*f) - (2*f*Int(1/((e + sqrt(e^2 - 4*d*f) + 2*f*x)*log(c*(a + b*x)^n)), x))/sqrt(e^2 - 4*d*f)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Log[a+b x^n] / (c+d x)
+
+
+# Integrands of the form Log[a*x^n]/(c+d*x) 
+[log(a*x)/(c + d*x), x, 1, (log(a*x)*log((c + d*x)/c))/d + polylog(2, -((d*x)/c))/d],
+[log(a/x)/(c + d*x), x, 1, (log(a/x)*log((c + d*x)/c))/d - polylog(2, -((d*x)/c))/d],
+[log(a*x^n)/(c + d*x), x, 1, (log(a*x^n)*log((c + d*x)/c))/d + (n*polylog(2, -((d*x)/c)))/d],
+[log(x^n)/(a + b*x), x, 1, (log(x^n)*log((a + b*x)/a))/b + (n*polylog(2, -((b*x)/a)))/b],
+
+
+# Integrands of the form Log[a+b*x^n]/x 
+[log(a + b*x)/(c + d*x), x, 1, (log(a + b*x)*log((b*(c + d*x))/(b*c - a*d)))/d + polylog(2, -((d*(a + b*x))/(b*c - a*d)))/d],
+[log(a + b/x)/(c + d*x), x, 7, (log(a + b/x)*log(c + d*x))/d + (log(-((d*x)/c))*log(c + d*x))/d - (log(-((d*(b + a*x))/(a*c - b*d)))*log(c + d*x))/d - polylog(2, (a*(c + d*x))/(a*c - b*d))/d + polylog(2, 1 + (d*x)/c)/d],
+[log(a + b*x^n)/(c + d*x), x, 0, Int(log(a + b*x^n)/(c + d*x), x)],
+
+[log((a + b*x)/x)/(c + d*x), x, 7, (log(-((d*x)/c))*log(c + d*x))/d - (log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x))/d + (log((a + b*x)/x)*log(c + d*x))/d - polylog(2, (b*(c + d*x))/(b*c - a*d))/d + polylog(2, 1 + (d*x)/c)/d],
+[log((a + b*x^2)/x^2)/(c + d*x), x, 9, (2*log(-((d*x)/c))*log(c + d*x))/d - (log((d*(sqrt(-a) - sqrt(b)*x))/(sqrt(b)*c + sqrt(-a)*d))*log(c + d*x))/d - (log(-((d*(sqrt(-a) + sqrt(b)*x))/(sqrt(b)*c - sqrt(-a)*d)))*log(c + d*x))/d + (log(c + d*x)*log((a + b*x^2)/x^2))/d - polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c - sqrt(-a)*d))/d - polylog(2, (sqrt(b)*(c + d*x))/(sqrt(b)*c + sqrt(-a)*d))/d + (2*polylog(2, 1 + (d*x)/c))/d],
+[log((a + b*x^n)/x^n)/(c + d*x), x, 1, Int(log(b + a/x^n)/(c + d*x), x)],
+
+
+# ::Section::Closed:: 
+#Integrands involving logarithms of trinomials
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[b x+c x^2]
+
+
+# Integrands of the form x^m*Log[d*(b*x+c*x^2)^n]^p where p is an integer 
+[log(d*(b*x + c*x^2)^n), x, 5, -2*n*x + (b*n*log(b + c*x))/c + x*log(d*(b*x + c*x^2)^n)],
+[log(d*(b*x + c*x^2)^n)^2, x, 25, 8*n^2*x - (4*b*n^2*log(b + c*x))/c - (2*b*n^2*log(-((c*x)/b))*log(b + c*x))/c - (b*n^2*log(b + c*x)^2)/c - 4*n*x*log(d*(b*x + c*x^2)^n) + (2*b*n*log(b + c*x)*log(d*(b*x + c*x^2)^n))/c + x*log(d*(b*x + c*x^2)^n)^2 - (2*b*n^2*polylog(2, 1 + (c*x)/b))/c],
+[log(d*(b*x + c*x^2)^n)/x, x, 7, (-(1/2))*n*log(x)^2 - n*log(x)*log((b + c*x)/b) + log(x)*log(d*(b*x + c*x^2)^n) - n*polylog(2, -((c*x)/b))],
+
+[log(b*x + c*x^2), x, 4, -2*x + (b*log(b + c*x))/c + x*log(b*x + c*x^2)],
+[x*log(b*x + c*x^2), x, 5, (b*x)/(2*c) - x^2/2 - (b^2*log(b + c*x))/(2*c^2) + (1/2)*x^2*log(b*x + c*x^2)],
+[x^2*log(b*x + c*x^2), x, 5, -((b^2*x)/(3*c^2)) + (b*x^2)/(6*c) - (2*x^3)/9 + (b^3*log(b + c*x))/(3*c^3) + (1/3)*x^3*log(b*x + c*x^2)],
+[x^3*log(b*x + c*x^2), x, 5, (b^3*x)/(4*c^3) - (b^2*x^2)/(8*c^2) + (b*x^3)/(12*c) - x^4/8 - (b^4*log(b + c*x))/(4*c^4) + (1/4)*x^4*log(b*x + c*x^2)],
+[log(b*x + c*x^2)/x, x, 6, (-(1/2))*log(x)^2 - log(x)*log((b + c*x)/b) + log(x)*log(b*x + c*x^2) - polylog(2, -((c*x)/b))],
+[log(b*x + c*x^2)/x^2, x, 5, -(1/x) + (c*log(x))/b - (c*log(b + c*x))/b - log(b*x + c*x^2)/x],
+[log(b*x + c*x^2)/x^3, x, 5, -(1/(4*x^2)) - c/(2*b*x) - (c^2*log(x))/(2*b^2) + (c^2*log(b + c*x))/(2*b^2) - log(b*x + c*x^2)/(2*x^2)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m Log[a+b x+c x^2]
+
+
+# Integrands of the form x^m*Log[d*(a+b*x+c*x^2)^n]^p where p is an integer 
+[log(d*(a + b*x + c*x^2)^n), x, 6, -2*n*x + (sqrt(b^2 - 4*a*c)*n*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/c + (b*n*log(a + b*x + c*x^2))/(2*c) + x*log(d*(a + b*x + c*x^2)^n)],
+# {Log[d*(a + b*x + c*x^2)^n]^2, x, 0, 0} 
+[log(d*(a + b*x + c*x^2)^n)/x, x, 10, (-n)*log(x)*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))) - n*log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))) + log(x)*log(d*(a + b*x + c*x^2)^n) - n*polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c)))) - n*polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c))))],
+
+[log(1 + x + x^2), x, 5, -2*x + sqrt(3)*arctan((1 + 2*x)/sqrt(3)) + (1/2)*log(1 + x + x^2) + x*log(1 + x + x^2)],
+[log(a + b*x + c*x^2), x, 5, -2*x + (sqrt(b^2 - 4*a*c)*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/c + (b*log(a + b*x + c*x^2))/(2*c) + x*log(a + b*x + c*x^2)],
+[x*log(a + b*x + c*x^2), x, 6, (b*x)/(2*c) - x^2/2 - (b*sqrt(b^2 - 4*a*c)*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/(2*c^2) - ((b^2 - 2*a*c)*log(a + b*x + c*x^2))/(4*c^2) + (1/2)*x^2*log(a + b*x + c*x^2)],
+[x^2*log(a + b*x + c*x^2), x, 6, -(((b^2 - 2*a*c)*x)/(3*c^2)) + (b*x^2)/(6*c) - (2*x^3)/9 + ((b^4 - a*c*(5*b^2 - 4*a*c))*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/(3*c^3*sqrt(b^2 - 4*a*c)) + (b*(b^2 - 3*a*c)*log(a + b*x + c*x^2))/(6*c^3) + (1/3)*x^3*log(a + b*x + c*x^2)],
+[x^3*log(a + b*x + c*x^2), x, 6, (b*(b^2 - 3*a*c)*x)/(4*c^3) - ((b^2 - 2*a*c)*x^2)/(8*c^2) + (b*x^3)/(12*c) - x^4/8 - (b*(b^4 - 2*a*c*(3*b^2 - 4*a*c))*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/(4*c^4*sqrt(b^2 - 4*a*c)) - ((b^4 - 4*a*b^2*c + 2*a^2*c^2)*log(a + b*x + c*x^2))/(8*c^4) + (1/4)*x^4*log(a + b*x + c*x^2)],
+[log(a + b*x + c*x^2)/x, x, 9, (-log(x))*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))) - log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))) + log(x)*log(a + b*x + c*x^2) - polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c)))) - polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c))))],
+[log(a + b*x + c*x^2)/x^2, x, 6, (sqrt(b^2 - 4*a*c)*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/a + (b*log(x))/a - (b*log(a + b*x + c*x^2))/(2*a) - log(a + b*x + c*x^2)/x],
+[log(a + b*x + c*x^2)/x^3, x, 6, -(b/(2*a*x)) - (b*sqrt(b^2 - 4*a*c)*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/(2*a^2) - ((b^2 - 2*a*c)*log(x))/(2*a^2) + ((b^2 - 2*a*c)*log(a + b*x + c*x^2))/(4*a^2) - log(a + b*x + c*x^2)/(2*x^2)],
+
+# {Log[a + b*x + c*x^2]^2, x, 0, 0} 
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form (d+e x)^m Log[a+b x+c x^2]
+
+
+[log(a + b*x + c*x^2)/(d + e*x), x, 9, -((log(-((e*(b - sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c*d - (b - sqrt(b^2 - 4*a*c))*e)))*log(d + e*x))/e) - (log(-((e*(b + sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c*d - (b + sqrt(b^2 - 4*a*c))*e)))*log(d + e*x))/e + (log(d + e*x)*log(a + b*x + c*x^2))/e - polylog(2, (2*c*(d + e*x))/(2*c*d - (b - sqrt(b^2 - 4*a*c))*e))/e - polylog(2, (2*c*(d + e*x))/(2*c*d - (b + sqrt(b^2 - 4*a*c))*e))/e],
+[log(a + b*x + c*x^2)/(d + e*x)^2, x, 6, (sqrt(b^2 - 4*a*c)*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/(c*d^2 - e*(b*d - a*e)) - ((2*c*d - b*e)*log(d + e*x))/(e*(c*d^2 - e*(b*d - a*e))) + ((2*c*d - b*e)*log(a + b*x + c*x^2))/(2*e*(c*d^2 - e*(b*d - a*e))) - log(a + b*x + c*x^2)/(e*(d + e*x))],
+[log(a + b*x + c*x^2)/(d + e*x)^3, x, 7, (2*c*d - b*e)/(2*e*(c*d^2 - e*(b*d - a*e))*(d + e*x)) + (sqrt(b^2 - 4*a*c)*(2*c*d - b*e)*arctanh((b + 2*c*x)/sqrt(b^2 - 4*a*c)))/(2*(c*d^2 - e*(b*d - a*e))^2) - ((2*c^2*d^2 + b^2*e^2 - 2*c*e*(b*d + a*e))*log(d + e*x))/(2*e*(c*d^2 - e*(b*d - a*e))^2) + ((2*c^2*d^2 - 2*b*c*d*e + b^2*e^2 - 2*a*c*e^2)*log(a + b*x + c*x^2))/(4*e*(c*d^2 - e*(b*d - a*e))^2) - log(a + b*x + c*x^2)/(2*e*(d + e*x)^2)],
+
+
+# ::Section::Closed:: 
+#Integrands involving logarithms of exponential functions
+
+
+# Integrands of the form x^m*Log[c+d*f^(a+b*x)] 
+[log(1 + c*f^(a + b*x)), x, 1, -(polylog(2, -(c*f^(a + b*x)))/(b*log(f)))],
+[x*log(1 + c*f^(a + b*x)), x, 2, -((x*polylog(2, (-c)*f^(a + b*x)))/(b*log(f))) + polylog(3, (-c)*f^(a + b*x))/(b^2*log(f)^2)],
+[x^2*log(1 + c*f^(a + b*x)), x, 3, -((x^2*polylog(2, (-c)*f^(a + b*x)))/(b*log(f))) + (2*x*polylog(3, (-c)*f^(a + b*x)))/(b^2*log(f)^2) - (2*polylog(4, (-c)*f^(a + b*x)))/(b^3*log(f)^3)],
+
+[log(a + b*exp(x)), x, 2, x*log(a + b*exp(x)) - x*log(1 + (b*exp(x))/a) - polylog(2, -((b*exp(x))/a))],
+[log(c + d*f^(a + b*x)), x, 2, x*log(c + d*f^(a + b*x)) - x*log(1 + (d*f^(a + b*x))/c) - polylog(2, -((d*f^(a + b*x))/c))/(b*log(f))],
+[x*log(c + d*f^(a + b*x)), x, 3, (1/2)*x^2*log(c + d*f^(a + b*x)) - (1/2)*x^2*log(1 + (d*f^(a + b*x))/c) - (x*polylog(2, -((d*f^(a + b*x))/c)))/(b*log(f)) + polylog(3, -((d*f^(a + b*x))/c))/(b^2*log(f)^2)],
+[x^2*log(c + d*f^(a + b*x)), x, 4, (1/3)*x^3*log(c + d*f^(a + b*x)) - (1/3)*x^3*log(1 + (d*f^(a + b*x))/c) - (x^2*polylog(2, -((d*f^(a + b*x))/c)))/(b*log(f)) + (2*x*polylog(3, -((d*f^(a + b*x))/c)))/(b^2*log(f)^2) - (2*polylog(4, -((d*f^(a + b*x))/c)))/(b^3*log(f)^3)],
+
+
+[log(exp(a + b*x)), x, 3, log(exp(a + b*x))^2/(2*b)],
+[log(exp(a + b*x^n)), x, 3, -((b*n*x^(1 + n))/(1 + n)) + x*log(exp(a + b*x^n))],
+
+
+[exp(x)*log(a + b*exp(x)), x, 2, -exp(x) + ((a + b*exp(x))*log(a + b*exp(x)))/b],
+
+
+[1/(x*log(exp(x))), x, -1, (-log(x) + log(log(exp(x))))/(x - log(exp(x)))],
+
+
+# ::Section::Closed:: 
+#Integrands involving logarithms of trig functions
+
+
+# ::Subsection::Closed:: 
+#Integrands involving logarithms of circular trig functions
+
+
+[log(a*sin(x)), x, 5, (I*x^2)/2 - x*log(1 - exp(2*I*x)) + x*log(a*sin(x)) + (1/2)*I*polylog(2, exp(2*I*x))],
+[log(a*sin(x)^2), x, 6, I*x^2 - 2*x*log(1 - exp(2*I*x)) + x*log(a*sin(x)^2) + I*polylog(2, exp(2*I*x))],
+[log(a*sin(x)^n), x, 6, (1/2)*I*n*x^2 - n*x*log(1 - exp(2*I*x)) + x*log(a*sin(x)^n) + (1/2)*I*n*polylog(2, exp(2*I*x))],
+
+[log(a*cos(x)), x, 6, (I*x^2)/2 - x*log(1 + exp(2*I*x)) + x*log(a*cos(x)) + (1/2)*I*polylog(2, -exp(2*I*x))],
+[log(a*cos(x)^2), x, 6, I*x^2 - 2*x*log(1 + exp(2*I*x)) + x*log(a*cos(x)^2) + I*polylog(2, -exp(2*I*x))],
+[log(a*cos(x)^n), x, 6, (1/2)*I*n*x^2 - n*x*log(1 + exp(2*I*x)) + x*log(a*cos(x)^n) + (1/2)*I*n*polylog(2, -exp(2*I*x))],
+
+[log(a*tan(x)), x, 6, 2*x*arctanh(exp(2*I*x)) + x*log(a*tan(x)) - (1/2)*I*polylog(2, -exp(2*I*x)) + (1/2)*I*polylog(2, exp(2*I*x))],
+[log(a*tan(x)^2), x, 7, 4*x*arctanh(exp(2*I*x)) + x*log(a*tan(x)^2) - I*polylog(2, -exp(2*I*x)) + I*polylog(2, exp(2*I*x))],
+[log(a*tan(x)^n), x, 7, 2*n*x*arctanh(exp(2*I*x)) + x*log(a*tan(x)^n) - (1/2)*I*n*polylog(2, -exp(2*I*x)) + (1/2)*I*n*polylog(2, exp(2*I*x))],
+
+[log(a*cot(x)), x, 7, -2*x*arctanh(exp(2*I*x)) + x*log(a*cot(x)) + (1/2)*I*polylog(2, -exp(2*I*x)) - (1/2)*I*polylog(2, exp(2*I*x))],
+[log(a*cot(x)^2), x, 7, -4*x*arctanh(exp(2*I*x)) + x*log(a*cot(x)^2) + I*polylog(2, -exp(2*I*x)) - I*polylog(2, exp(2*I*x))],
+[log(a*cot(x)^n), x, 7, -2*n*x*arctanh(exp(2*I*x)) + x*log(a*cot(x)^n) + (1/2)*I*n*polylog(2, -exp(2*I*x)) - (1/2)*I*n*polylog(2, exp(2*I*x))],
+
+[log(a*sec(x)), x, 5, -((I*x^2)/2) + x*log(1 + exp(2*I*x)) + x*log(a*sec(x)) - (1/2)*I*polylog(2, -exp(2*I*x))],
+[log(a*sec(x)^2), x, 6, (-I)*x^2 + 2*x*log(1 + exp(2*I*x)) + x*log(a*sec(x)^2) - I*polylog(2, -exp(2*I*x))],
+[log(a*sec(x)^n), x, 6, (-(1/2))*I*n*x^2 + n*x*log(1 + exp(2*I*x)) + x*log(a*sec(x)^n) - (1/2)*I*n*polylog(2, -exp(2*I*x))],
+
+[log(a*csc(x)), x, 6, -((I*x^2)/2) + x*log(1 - exp(2*I*x)) + x*log(a*csc(x)) - (1/2)*I*polylog(2, exp(2*I*x))],
+[log(a*csc(x)^2), x, 6, (-I)*x^2 + 2*x*log(1 - exp(2*I*x)) + x*log(a*csc(x)^2) - I*polylog(2, exp(2*I*x))],
+[log(a*csc(x)^n), x, 6, (-(1/2))*I*n*x^2 + n*x*log(1 - exp(2*I*x)) + x*log(a*csc(x)^n) - (1/2)*I*n*polylog(2, exp(2*I*x))],
+
+
+# Integrands involving logarithms of trig functions 
+[cos(x)*log((1 - cos(2*x))/2), x, 2, -2*sin(x) + log(sin(x)^2)*sin(x)],
+[cot(x)/log(E*sin(x)), x, 3, log(1 + log(sin(x)))],
+[cot(x)/log(exp(sin(x))), x, -1, (log(log(exp(sin(x)))) - log(sin(x)))/(-log(exp(sin(x))) + sin(x))],
+[log(cos(x))*sec(x)^2, x, 3, -x + tan(x) + log(cos(x))*tan(x)],
+[cot(x)*log(sin(x)), x, 3, log(sin(x))^2/2],
+[cos(x)*log(sin(x))*sin(x)^2, x, 2, (-(1/9))*sin(x)^3 + (1/3)*log(sin(x))*sin(x)^3],
+[log(sin(a/2 + b*x/2)*cos(a/2 + b*x/2))*cos(a + b*x), x, 2, -(sin(a + b*x)/b) + (log((1/2)*sin(a + b*x))*sin(a + b*x))/b],
+[tan(x)/log(cos(x)), x, 3, -log(log(cos(x)))],
+[csc(x)*log(tan(x))*sec(x), x, 2, log(tan(x))^2/2],
+[csc(2*x)*log(tan(x)), x, 3, log(tan(x))^2/4],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving logarithms of hyperbolic trig functions
+
+
+[log(a*sinh(x)), x, 5, x^2/2 - x*log(1 - exp(2*x)) + x*log(a*sinh(x)) - (1/2)*polylog(2, exp(2*x))],
+[log(a*sinh(x)^2), x, 6, x^2 - 2*x*log(1 - exp(2*x)) + x*log(a*sinh(x)^2) - polylog(2, exp(2*x))],
+[log(a*sinh(x)^n), x, 6, (n*x^2)/2 - n*x*log(1 - exp(2*x)) + x*log(a*sinh(x)^n) - (1/2)*n*polylog(2, exp(2*x))],
+
+[log(a*cosh(x)), x, 5, x^2/2 - x*log(1 + exp(2*x)) + x*log(a*cosh(x)) - (1/2)*polylog(2, -exp(2*x))],
+[log(a*cosh(x)^2), x, 6, x^2 - 2*x*log(1 + exp(2*x)) + x*log(a*cosh(x)^2) - polylog(2, -exp(2*x))],
+[log(a*cosh(x)^n), x, 6, (n*x^2)/2 - n*x*log(1 + exp(2*x)) + x*log(a*cosh(x)^n) - (1/2)*n*polylog(2, -exp(2*x))],
+
+[log(tanh(x)), x, 6, 2*x*arctanh(exp(2*x)) + x*log(tanh(x)) + (1/2)*polylog(2, -exp(2*x)) - (1/2)*polylog(2, exp(2*x))],
+[log(a*tanh(x)), x, 6, 2*x*arctanh(exp(2*x)) + x*log(a*tanh(x)) + (1/2)*polylog(2, -exp(2*x)) - (1/2)*polylog(2, exp(2*x))],
+[log(a*tanh(x)^2), x, 7, 4*x*arctanh(exp(2*x)) + x*log(a*tanh(x)^2) + polylog(2, -exp(2*x)) - polylog(2, exp(2*x))],
+[log(a*tanh(x)^n), x, 7, 2*n*x*arctanh(exp(2*x)) + x*log(a*tanh(x)^n) + (1/2)*n*polylog(2, -exp(2*x)) - (1/2)*n*polylog(2, exp(2*x))],
+
+[log(coth(x)), x, 7, -2*x*arctanh(exp(2*x)) + x*log(coth(x)) - (1/2)*polylog(2, -exp(2*x)) + (1/2)*polylog(2, exp(2*x))],
+[log(a*coth(x)), x, 7, -2*x*arctanh(exp(2*x)) + x*log(a*coth(x)) - (1/2)*polylog(2, -exp(2*x)) + (1/2)*polylog(2, exp(2*x))],
+[log(a*coth(x)^2), x, 7, -4*x*arctanh(exp(2*x)) + x*log(a*coth(x)^2) - polylog(2, -exp(2*x)) + polylog(2, exp(2*x))],
+[log(a*coth(x)^n), x, 7, -2*n*x*arctanh(exp(2*x)) + x*log(a*coth(x)^n) - (1/2)*n*polylog(2, -exp(2*x)) + (1/2)*n*polylog(2, exp(2*x))],
+
+[log(a*sech(x)), x, 6, -(x^2/2) + x*log(1 + exp(2*x)) + x*log(a*sech(x)) + (1/2)*polylog(2, -exp(2*x))],
+[log(a*sech(x)^2), x, 6, -x^2 + 2*x*log(1 + exp(2*x)) + x*log(a*sech(x)^2) + polylog(2, -exp(2*x))],
+[log(a*sech(x)^n), x, 6, -((n*x^2)/2) + n*x*log(1 + exp(2*x)) + x*log(a*sech(x)^n) + (1/2)*n*polylog(2, -exp(2*x))],
+
+[log(a*csch(x)), x, 6, -(x^2/2) + x*log(1 - exp(2*x)) + x*log(a*csch(x)) + (1/2)*polylog(2, exp(2*x))],
+[log(a*csch(x)^2), x, 6, -x^2 + 2*x*log(1 - exp(2*x)) + x*log(a*csch(x)^2) + polylog(2, exp(2*x))],
+[log(a*csch(x)^n), x, 6, -((n*x^2)/2) + n*x*log(1 - exp(2*x)) + x*log(a*csch(x)^n) + (1/2)*n*polylog(2, exp(2*x))],
+
+
+# ::Section::Closed:: 
+#Problems from Calculus textbooks
+
+
+# ::Subsection::Closed:: 
+#Anton Calculus, 4th Edition
+
+
+[log(x)/sqrt(x), x, 1, -4*sqrt(x) + 2*sqrt(x)*log(x)],
+[x*log(2 - 3*x^2), x, 2, -(x^2/2) - (1/6)*(2 - 3*x^2)*log(2 - 3*x^2)],
+
+
+# ::Subsection::Closed:: 
+#Apostol Calculus, Volume 1, 2nd Edition, Section 6.9
+
+
+[log(x)^2, x, 2, 2*x - 2*x*log(x) + x*log(x)^2],
+[x*log(x), x, 1, -(x^2/4) + (1/2)*x^2*log(x)],
+[x*log(x)^2, x, 2, x^2/4 - (1/2)*x^2*log(x) + (1/2)*x^2*log(x)^2],
+[x^m*log(x), x, 1, -(x^(1 + m)/(1 + m)^2) + (x^(1 + m)*log(x))/(1 + m)],
+[x^(m + n)*log(x), x, 1, -(x^(1 + m + n)/(1 + m + n)^2) + (x^(1 + m + n)*log(x))/(1 + m + n)],
+[x^m*log(a*x), x, 1, -(x^(1 + m)/(1 + m)^2) + (x^(1 + m)*log(a*x))/(1 + m)],
+[x^2*log(x)^2, x, 2, (2*x^3)/27 - (2/9)*x^3*log(x) + (1/3)*x^3*log(x)^2],
+[x^3*log(x)^3, x, 3, -((3*x^4)/128) + (3/32)*x^4*log(x) - (3/16)*x^4*log(x)^2 + (1/4)*x^4*log(x)^3],
+
+
+# ::Subsection::Closed:: 
+#Edwards and Penney Calculus
+
+
+[1/(x*sqrt(1 - log(x)^2)), x, 2, arcsin(log(x))],
+
+
+# ::Subsection::Closed:: 
+#Thomas Calculus, 8th Edition
+
+
+[16*x^3*log(x)^2, x, 3, x^4/2 - 2*x^4*log(x) + 4*x^4*log(x)^2],
+[log(sqrt(a + b*x)), x, 1, -(x/2) + ((a + b*x)*log(sqrt(a + b*x)))/b],
+[x*log(sqrt(2 + x)), x, 5, x/2 - x^2/8 + (1/2)*x^2*log(sqrt(2 + x)) - log(2 + x)],
+[x*log((1 + 3*x)^(1/3)), x, 5, x/18 - x^2/12 + (1/2)*x^2*log((1 + 3*x)^(1/3)) - (1/54)*log(1 + 3*x)],
+[x*log(x + x^3), x, 5, -((3*x^2)/4) + (1/2)*log(1 + x^2) + (1/2)*x^2*log(x + x^3)],
+[log(x + sqrt(1 + x^2)), x, 3, -sqrt(1 + x^2) + x*log(x + sqrt(1 + x^2))],
+[log(x + sqrt(-1 + x^2)), x, 3, -sqrt(-1 + x^2) + x*log(x + sqrt(-1 + x^2))],
+[log(x - sqrt(-1 + x^2)), x, 4, sqrt(-1 + x^2) + x*log(x - sqrt(-1 + x^2))],
+[log(sqrt(x) + sqrt(1 + x)), x, 5, (-(1/2))*sqrt(x/(1 + x))*(1 + x) + (1/2)*arctanh(sqrt(x/(1 + x))) + x*log(sqrt(x) + sqrt(1 + x))],
+
+
+# ::Section::Closed:: 
+#Problems from integration competitions
+
+
+# ::Subsection::Closed:: 
+#MIT Integration Competition
+
+
+[x^(1/3)*log(x), x, 1, -((9*x^(4/3))/16) + (3/4)*x^(4/3)*log(x)],
+
+
+# ::Subsection::Closed:: 
+#University of Wisconsin Integration Competition
+
+
+[2^log(x), x, 2, x^(1 + log(2))/(1 + log(2))],
+[(1 - log(x))/x^2, x, 4, log(x)/x],
+
+
+# ::Section::Closed:: 
+#Miscellaneous problems
+
+
+# Problems contributed by Michael Wester 
+
+# => x log|x^2 - a^2| - 2 x + a log|(x + a)/(x - a)|      [Gradshteyn and Ryzhik 2.736(1)] 
+# {Log[Abs[x^2 - a^2]], x, 0, x*Log[Abs[x^2 - a^2]] - 2*x + a*Log[(x + a)/(x - a)]} 
+[complexexpand(log(abs(x^2 - a^2))), x, 3, -2*x + 2*a*arctanh(x/a) + (1/2)*x*log((a^2 - x^2)^2)],
+
+
+[log(1 + x + sqrt(1 + x)), x, 3, -1 - x + sqrt(1 + x) + log(sqrt(1 + x)) + x*log(1 + x + sqrt(1 + x))],
+[log(x + x^3), x, 4, -3*x + 2*arctan(x) + x*log(x + x^3)],
+[2^log(-8 + 7*x), x, 2, (-8 + 7*x)^(1 + log(2))/(7*(1 + log(2)))],
+[log((-11 + 5*x)/(5 + 76*x)), x, 6, (-(11/5))*log(11 - 5*x) + x*log(-((11 - 5*x)/(5 + 76*x))) - (5/76)*log(5 + 76*x)],
+[log((1 + x)/(-1 + x))/x^2, x, 3, -2*arctanh(1 - 2*x^2) - log(-((1 + x)/(1 - x)))/x],
+[log((13 + x)^(-1)), x, 1, x + (13 + x)*log((13 + x)^(-1))],
+[x*log((1 + x)/x^2), x, 6, x/2 + x^2/4 - (1/2)*log(1 + x) + (1/2)*x^2*log((1 + x)/x^2)],
+[x^3*log((7 + 5*x)/x^2), x, 6, (343*x)/500 - (49*x^2)/200 + (7*x^3)/60 + x^4/16 - (2401*log(7 + 5*x))/2500 + (1/4)*x^4*log((7 + 5*x)/x^2)],
+# {x^3*Log[d + c*x]^4, x, 89, (c*x*(-70140*d^3 + 5190*c*d^2*x - 700*c^2*d*x^2 + 81*c^3*x^3) + 12*(5845*d^4 + 4980*c*d^3*x - 690*c^2*d^2*x^2 + 148*c^3*d*x^3 - 27*c^4*x^4)*Log[d + c*x] - 72*(415*d^4 + 300*c*d^3*x - 78*c^2*d^2*x^2 + 28*c^3*d*x^3 - 9*c^4*x^4)*Log[d + c*x]^2 + 288*(25*d^4 + 12*c*d^3*x - 6*c^2*d^2*x^2 + 4*c^3*d*x^3 - 3*c^4*x^4)*Log[d + c*x]^3 - 864*(d^4 - c^4*x^4)*Log[d + c*x]^4)/(3456*c^4)} 
+
+
+# Integrands of the form (a+b*x)^m*Log[a+b*x] where m is an integer 
+[(a + b*x)*log(a + b*x), x, 2, -((a + b*x)^2/(4*b)) + ((a + b*x)^2*log(a + b*x))/(2*b)],
+[(a + b*x)^2*log(a + b*x), x, 2, -((a + b*x)^3/(9*b)) + ((a + b*x)^3*log(a + b*x))/(3*b)],
+[log(a + b*x)/(a + b*x), x, 2, log(a + b*x)^2/(2*b)],
+[log(a + b*x)/(a + b*x)^2, x, 2, -(1/(b*(a + b*x))) - log(a + b*x)/(b*(a + b*x))],
+[(a + b*x)^n*log(a + b*x), x, 2, -((a + b*x)^(1 + n)/(b*(1 + n)^2)) + ((a + b*x)^(1 + n)*log(a + b*x))/(b*(1 + n))],
+
+
+# Integrands of the form Log[(a+b*x)/(c+d*x)]^m/x where m is an integer 
+[log((a + b*x)/(c + d*x))/x, x, 5, (-log((b*c - a*d)/(b*(c + d*x))))*log((a + b*x)/(c + d*x)) + log(-(((b*c - a*d)*x)/(a*(c + d*x))))*log((a + b*x)/(c + d*x)) - polylog(2, (d*(a/b + x))/(c + d*x)) + polylog(2, (c*(1 + (b*x)/a))/(c + d*x))],
+[log((a + b*x)/(c + d*x))^2/x, x, 9, (-log((b*c - a*d)/(b*(c + d*x))))*log((a + b*x)/(c + d*x))^2 + log(-(((b*c - a*d)*x)/(a*(c + d*x))))*log((a + b*x)/(c + d*x))^2 - 2*log((a + b*x)/(c + d*x))*polylog(2, (d*(a/b + x))/(c + d*x)) + 2*log((a + b*x)/(c + d*x))*polylog(2, (c*(a + b*x))/(a*(c + d*x))) - 2*polylog(3, (c*(a + b*x))/(a*(c + d*x))) + 2*polylog(3, (d*(a + b*x))/(b*(c + d*x)))],
+[log((a + b*x)/(c + d*x))^3/x, x, 11, (-log((b*c - a*d)/(b*(c + d*x))))*log((a + b*x)/(c + d*x))^3 + log(-(((b*c - a*d)*x)/(a*(c + d*x))))*log((a + b*x)/(c + d*x))^3 - 3*log((a + b*x)/(c + d*x))^2*polylog(2, (d*(a/b + x))/(c + d*x)) + 3*log((a + b*x)/(c + d*x))^2*polylog(2, (c*(a + b*x))/(a*(c + d*x))) + 6*log((a + b*x)/(c + d*x))*polylog(3, (d*(a/b + x))/(c + d*x)) - 6*log((a + b*x)/(c + d*x))*polylog(3, (c*(a + b*x))/(a*(c + d*x))) + 6*polylog(4, (c*(a + b*x))/(a*(c + d*x))) - 6*polylog(4, (d*(a + b*x))/(b*(c + d*x)))],
+
+
+# Integrands of the form x^m*Log[a*Log[b*x^n]^p] 
+[log(a*log(b*x)^p), x, 2, x*log(a*log(b*x)^p) - (p*Li(b*x))/b],
+[log(a*log(b*x^n)^p), x, 2, ((-p)*x*Ei(log(b*x^n)/n))/(b*x^n)^(n^(-1)) + x*log(a*log(b*x^n)^p)],
+[log(a*log(b*x)^p)/x, x, 1, (-log(b*x))*(p - log(a*log(b*x)^p))],
+[log(a*log(b*x^n)^p)/x, x, 1, -((log(b*x^n)*(p - log(a*log(b*x^n)^p)))/n)],
+[x^m*log(a*log(b*x)^p), x, 2, -((p*x^(1 + m)*(b*x)^(-1 - m)*Ei((1 + m)*log(b*x)))/(1 + m)) + (x^(1 + m)*log(a*log(b*x)^p))/(1 + m)],
+[x^m*log(a*log(b*x^n)^p), x, 2, -((p*x^(1 + m)*Ei(((1 + m)*log(b*x^n))/n))/((b*x^n)^((1 + m)/n)*(1 + m))) + (x^(1 + m)*log(a*log(b*x^n)^p))/(1 + m)],
+
+
+# Integrands of the form (A+B*Log[x])/Sqrt[a+b*Log[x]] 
+[log(x)/sqrt(a + b*log(x)), x, 4, -(((2*a + b)*sqrt(Pi)*erfi(sqrt(a + b*log(x))/sqrt(b)))/(exp(a/b)*(2*b^(3/2)))) + (x*sqrt(a + b*log(x)))/b],
+[log(x)/sqrt(a - b*log(x)), x, 4, -(((2*a - b)*exp(a/b)*sqrt(Pi)*erf(sqrt(a - b*log(x))/sqrt(b)))/(2*b^(3/2))) - (x*sqrt(a - b*log(x)))/b],
+
+[(A + B*log(x))/sqrt(a + b*log(x)), x, 4, ((2*A*b - (2*a + b)*B)*sqrt(Pi)*erfi(sqrt(a + b*log(x))/sqrt(b)))/(exp(a/b)*(2*b^(3/2))) + (B*x*sqrt(a + b*log(x)))/b],
+[(A + B*log(x))/sqrt(a - b*log(x)), x, 4, -(((2*A*b + (2*a - b)*B)*exp(a/b)*sqrt(Pi)*erf(sqrt(a - b*log(x))/sqrt(b)))/(2*b^(3/2))) - (B*x*sqrt(a - b*log(x)))/b],
+
+
+# Integrands of the form Log[x]*f[a+b*x]^n where n is an integer 
+[log(x)*exp(a + b*x), x, 3, -((E^a*Ei(b*x))/b) + (exp(a + b*x)*log(x))/b],
+
+[log(x)*sin(a + b*x), x, 5, (cos(a)*Ci(b*x))/b - (cos(a + b*x)*log(x))/b - (sin(a)*Si(b*x))/b],
+[log(x)*sin(a + b*x)^2, x, 5, -(x/2) + (Ci(2*b*x)*sin(2*a))/(4*b) + (1/2)*log(x)*(x - (cos(a + b*x)*sin(a + b*x))/b) + (cos(2*a)*Si(2*b*x))/(4*b)],
+[log(x)*sin(a + b*x)^3, x, 15, (3*cos(a)*Ci(b*x))/(4*b) - (cos(3*a)*Ci(3*b*x))/(12*b) - (cos(a + b*x)*(3 - cos(a + b*x)^2)*log(x))/(3*b) - (3*sin(a)*Si(b*x))/(4*b) + (sin(3*a)*Si(3*b*x))/(12*b)],
+
+[log(x)*cos(a + b*x), x, 5, -((Ci(b*x)*sin(a))/b) + (log(x)*sin(a + b*x))/b - (cos(a)*Si(b*x))/b],
+[log(x)*cos(a + b*x)^2, x, 5, -(x/2) - (Ci(2*b*x)*sin(2*a))/(4*b) + (1/2)*log(x)*(x + (cos(a + b*x)*sin(a + b*x))/b) - (cos(2*a)*Si(2*b*x))/(4*b)],
+[log(x)*cos(a + b*x)^3, x, 15, -((3*Ci(b*x)*sin(a))/(4*b)) - (Ci(3*b*x)*sin(3*a))/(12*b) + (log(x)*sin(a + b*x)*(3 - sin(a + b*x)^2))/(3*b) - (3*cos(a)*Si(b*x))/(4*b) - (cos(3*a)*Si(3*b*x))/(12*b)],
+
+[log(x)*sinh(a + b*x), x, 5, -((cosh(a)*Chi(b*x))/b) + (cosh(a + b*x)*log(x))/b - (sinh(a)*Shi(b*x))/b],
+[log(x)*sinh(a + b*x)^2, x, 5, x/2 - (Chi(2*b*x)*sinh(2*a))/(4*b) - (1/2)*log(x)*(x - (cosh(a + b*x)*sinh(a + b*x))/b) - (cosh(2*a)*Shi(2*b*x))/(4*b)],
+[log(x)*sinh(a + b*x)^3, x, 15, (3*cosh(a)*Chi(b*x))/(4*b) - (cosh(3*a)*Chi(3*b*x))/(12*b) - (cosh(a + b*x)*(3 - cosh(a + b*x)^2)*log(x))/(3*b) + (3*sinh(a)*Shi(b*x))/(4*b) - (sinh(3*a)*Shi(3*b*x))/(12*b)],
+
+[log(x)*cosh(a + b*x), x, 5, -((Chi(b*x)*sinh(a))/b) + (log(x)*sinh(a + b*x))/b - (cosh(a)*Shi(b*x))/b],
+[log(x)*cosh(a + b*x)^2, x, 5, -(x/2) - (Chi(2*b*x)*sinh(2*a))/(4*b) + (1/2)*log(x)*(x + (cosh(a + b*x)*sinh(a + b*x))/b) - (cosh(2*a)*Shi(2*b*x))/(4*b)],
+[log(x)*cosh(a + b*x)^3, x, 15, -((3*Chi(b*x)*sinh(a))/(4*b)) - (Chi(3*b*x)*sinh(3*a))/(12*b) + (log(x)*sinh(a + b*x)*(3 + sinh(a + b*x)^2))/(3*b) - (3*cosh(a)*Shi(b*x))/(4*b) - (cosh(3*a)*Shi(3*b*x))/(12*b)],
+
+[log(sinh(a/2 + b*x/2)*cosh(a/2 + b*x/2))*cosh(a + b*x), x, 2, -(sinh(a + b*x)/b) + (log((1/2)*sinh(a + b*x))*sinh(a + b*x))/b],
+
+[x*sqrt(4 + x^2)*log(x), x, 5, (-(4/3))*sqrt(4 + x^2) - (1/9)*(4 + x^2)^(3/2) + (8/3)*arctanh(sqrt(4 + x^2)/2) + (1/3)*(4 + x^2)^(3/2)*log(x)],
+[(x*log(x))/sqrt(-1 + x^2), x, 3, -sqrt(-1 + x^2) + arctan(sqrt(-1 + x^2)) + sqrt(-1 + x^2)*log(x)],
+
+[log(cos(x))*tan(x), x, 3, -log(cos(x))^2/2],
+[log(cos(x))*sin(x), x, 2, cos(x) - cos(x)*log(cos(x))],
+[log(cos(x))*cos(x), x, 4, arctanh(sin(x)) - sin(x) + log(cos(x))*sin(x)],
+
+[log(sin(x))*cos(x), x, 2, -sin(x) + log(sin(x))*sin(x)],
+[log(sin(x))*sin(x)^2, x, 9, x/4 + (I*x^2)/4 - (1/2)*x*log(1 - exp(2*I*x)) + (1/4)*I*polylog(2, exp(2*I*x)) + (1/4)*cos(x)*sin(x) + (1/2)*log(sin(x))*(x - cos(x)*sin(x))],
+[log(sin(x))*sin(x)^3, x, 8, (-(2/3))*arctanh(cos(x)) + (2*cos(x))/3 - cos(x)^3/9 - (1/3)*cos(x)*(3 - cos(x)^2)*log(sin(x))],
+[log(sin(sqrt(x))), x, 7, (I/3)*x^(3/2) - x*log(1 - exp((2*I)*sqrt(x))) + x*log(sin(sqrt(x))) + I*sqrt(x)*polylog(2, exp((2*I)*sqrt(x))) - polylog(3, exp((2*I)*sqrt(x)))/2],
+[log(sin(x))*csc(x)^2, x, 3, -x - cot(x) - cot(x)*log(sin(x))],
+
+[log(cosh(x)^2)*sinh(x), x, 2, -2*cosh(x) + cosh(x)*log(cosh(x)^2)],
+
+[cos(x)*log(x) + sin(x)/x, x, 4, log(x)*sin(x)],
+
+
+# Integrands of the form x^m*Log[x]/(a+b*x+c*x^2) 
+[log(x)/(a + b*x + c*x^2), x, 3, (log(x)*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))))/sqrt(b^2 - 4*a*c) - (log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))))/sqrt(b^2 - 4*a*c) + polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c))))/sqrt(b^2 - 4*a*c) - polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c))))/sqrt(b^2 - 4*a*c)],
+[x*log(x)/(a + b*x + c*x^2), x, 3, ((1 - b/sqrt(b^2 - 4*a*c))*log(x)*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))))/(2*c) + ((1 + b/sqrt(b^2 - 4*a*c))*log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))))/(2*c) + ((1 - b/sqrt(b^2 - 4*a*c))*polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c)))))/(2*c) + ((1 + b/sqrt(b^2 - 4*a*c))*polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c)))))/(2*c)],
+[x^2*log(x)/(a + b*x + c*x^2), x, 11, -(x/c) + (x*log(x))/c + ((b - sqrt(b^2 - 4*a*c))^2*log(x)*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))))/(4*c^2*sqrt(b^2 - 4*a*c)) - ((b + sqrt(b^2 - 4*a*c))^2*log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))))/(4*c^2*sqrt(b^2 - 4*a*c)) + ((b - sqrt(b^2 - 4*a*c))^2*polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c)))))/(4*c^2*sqrt(b^2 - 4*a*c)) - ((b + sqrt(b^2 - 4*a*c))^2*polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c)))))/(4*c^2*sqrt(b^2 - 4*a*c))],
+
+[log(x)/(x*(a + b*x + c*x^2)), x, 11, (c*log(x)^2)/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))) - (c*log(x)^2)/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))) - (2*c*log(x)*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))))/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))) + (2*c*log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))))/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))) - (2*c*polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c)))))/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))) + (2*c*polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c)))))/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c)))],
+[log(x)/(x^2*(a + b*x + c*x^2)), x, 13, -((2*c)/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))*x)) + (2*c)/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))*x) - (2*c*log(x))/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))*x) + (2*c*log(x))/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))*x) - (2*c^2*log(x)^2)/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))^2) + (2*c^2*log(x)^2)/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))^2) + (4*c^2*log(x)*log((b - sqrt(b^2 - 4*a*c) + 2*c*x)/(b - sqrt(b^2 - 4*a*c))))/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))^2) - (4*c^2*log(x)*log((b + sqrt(b^2 - 4*a*c) + 2*c*x)/(b + sqrt(b^2 - 4*a*c))))/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))^2) + (4*c^2*polylog(2, -((2*c*x)/(b - sqrt(b^2 - 4*a*c)))))/(sqrt(b^2 - 4*a*c)*(b - sqrt(b^2 - 4*a*c))^2) - (4*c^2*polylog(2, -((2*c*x)/(b + sqrt(b^2 - 4*a*c)))))/(sqrt(b^2 - 4*a*c)*(b + sqrt(b^2 - 4*a*c))^2)],
+
+
+# Integrands of the form 1/(a*x+b*x*Log[c*x^n]^m) where m is an integer 
+[1/(a*x + b*x*log(c*x^n)), x, 3, log(a + b*log(c*x^n))/(b*n)],
+[1/(a*x + b*x*log(c*x^n)^2), x, 3, arctan((sqrt(b)*log(c*x^n))/sqrt(a))/(sqrt(a)*sqrt(b)*n)],
+[1/(a*x + b*x*log(c*x^n)^3), x, 6, -(arctan((a^(1/3) - 2*b^(1/3)*log(c*x^n))/(sqrt(3)*a^(1/3)))/(sqrt(3)*a^(2/3)*b^(1/3)*n)) + log(a^(1/3) + b^(1/3)*log(c*x^n))/(3*a^(2/3)*b^(1/3)*n) - log(a^(2/3) - a^(1/3)*b^(1/3)*log(c*x^n) + b^(2/3)*log(c*x^n)^2)/(6*a^(2/3)*b^(1/3)*n)],
+[1/(a*x + b*x*log(c*x^n)^4), x, 5, -(arctan((b^(1/4)*log(c*x^n))/(-a)^(1/4))/(2*(-a)^(3/4)*b^(1/4)*n)) - arctanh((b^(1/4)*log(c*x^n))/(-a)^(1/4))/(2*(-a)^(3/4)*b^(1/4)*n)],
+
+[1/(a*x + b*x/log(c*x^n)), x, 5, log(c*x^n)/(a*n) - (b*log(b + a*log(c*x^n)))/(a^2*n)],
+[1/(a*x + b*x/log(c*x^n)^2), x, 5, -((sqrt(b)*arctan((sqrt(a)*log(c*x^n))/sqrt(b)))/(a^(3/2)*n)) + log(c*x^n)/(a*n)],
+[1/(a*x + b*x/log(c*x^n)^3), x, 8, (b^(1/3)*arctan((b^(1/3) - 2*a^(1/3)*log(c*x^n))/(sqrt(3)*b^(1/3))))/(sqrt(3)*a^(4/3)*n) + log(c*x^n)/(a*n) - (b^(1/3)*log(b^(1/3) + a^(1/3)*log(c*x^n)))/(3*a^(4/3)*n) + (b^(1/3)*log(b^(2/3) - a^(1/3)*b^(1/3)*log(c*x^n) + a^(2/3)*log(c*x^n)^2))/(6*a^(4/3)*n)],
+[1/(a*x + b*x/log(c*x^n)^4), x, 7, -(((-b)^(1/4)*arctan((a^(1/4)*log(c*x^n))/(-b)^(1/4)))/(2*a^(5/4)*n)) - ((-b)^(1/4)*arctanh((a^(1/4)*log(c*x^n))/(-b)^(1/4)))/(2*a^(5/4)*n) + log(c*x^n)/(a*n)],
+
+
+# Integrands of the form (a + b*Log[c*x])^n/x 
+[1/(x*(3 + log(x))), x, 2, log(3 + log(x))],
+[sqrt(1 + log(x))/x, x, 2, (2*(1 + log(x))^(3/2))/3],
+[(1 + log(x))^5/x, x, 2, (1 + log(x))^6/6],
+[1/(x*sqrt(log(x))), x, 2, 2*sqrt(log(x))],
+
+[1/(x*(1 + log(x)^2)), x, 2, arctan(log(x))],
+[1/(x*sqrt(-3 + log(x)^2)), x, 2, arctanh(log(x)/sqrt(-3 + log(x)^2))],
+[1/(x*sqrt(4 - 9*log(x)^2)), x, 2, arcsin((3*log(x))/2)/3],
+[1/(x*sqrt(4 + log(x)^2)), x, 2, arcsinh(log(x)/2)],
+[1/(x*(2 + 3*log(6*x)^3)), x, 6, -(arctan((2^(1/3)*3^(2/3) - 6*log(6*x))/(3*2^(1/3)*3^(1/6)))/(2^(2/3)*3^(5/6))) + log(2^(1/3)*3^(2/3) + 3*log(6*x))/(3*2^(2/3)*3^(1/3)) - log(2^(2/3)*3^(1/3) - 2^(1/3)*3^(2/3)*log(6*x) + 3*log(6*x)^2)/(6*2^(2/3)*3^(1/3))],
+
+[log(log(6*x))/(x*log(6*x)), x, 3, log(log(6*x))^2/2],
+[2^log(x)/x, x, 2, 2^log(x)/log(2)],
+[sin(log(x))^2/x, x, 2, log(x)/2 - (1/2)*cos(log(x))*sin(log(x))],
+[(7 - log(x))/(x*(3 + log(x))), x, 4, -log(x) + 10*log(3 + log(x))],
+[((2 - log(x))*(3 + log(x))^2)/x, x, 3, (11/12)*(3 + log(x))^3 - (1/4)*log(x)*(3 + log(x))^3],
+[(log(x)^2*sqrt(1 + log(x)^2))/x, x, 4, (-(1/8))*arcsinh(log(x)) + (1/8)*log(x)*sqrt(1 + log(x)^2) + (1/4)*log(x)^3*sqrt(1 + log(x)^2)],
+[(1 + log(x))/(x*(3 + 2*log(x))^2), x, 5, 1/(4*(3 + 2*log(x))) + (1/4)*log(3 + 2*log(x))],
+[log(x)/(x*sqrt(1 + log(x))), x, 3, (-(4/3))*sqrt(1 + log(x)) + (2/3)*log(x)*sqrt(1 + log(x))],
+[log(x)/(x*sqrt(-1 + 4*log(x))), x, 3, (1/12)*sqrt(-1 + 4*log(x)) + (1/6)*log(x)*sqrt(-1 + 4*log(x))],
+[sqrt(1 + log(x))/(x*log(x)), x, 3, -2*arctanh(sqrt(1 + log(x))) + 2*sqrt(1 + log(x))],
+[(1 - 4*log(x) + log(x)^2)/(x*(-1 + log(x))^4), x, 6, -(2/(3*(1 - log(x))^3)) + 1/(1 - log(x))^2 + 1/(1 - log(x))],
+
+[log(x)/(x + 4*x*log(x)^2), x, 4, log(1 + 4*log(x)^2)/8],
+[(x + x*log(7*x) + x*log(7*x)^2)^(-1), x, 3, (2*arctan((1 + 2*log(7*x))/sqrt(3)))/sqrt(3)],
+
+[(-1 + log(3*x))/(x*(1 - log(3*x) + log(3*x)^2)), x, 3, arctan((1 - 2*log(3*x))/sqrt(3))/sqrt(3) + (1/2)*log(1 - log(3*x) + log(3*x)^2)],
+# Need to cancel gcd to get simpler answer. 
+[(-1 + log(3*x)^2)/(x + x*log(3*x)^3), x, -10, arctan((1 - 2*log(3*x))/sqrt(3))/sqrt(3) + (1/2)*log(1 - log(3*x) + log(3*x)^2)],
+[(-1 + log(3*x)^2)/(x + x*log(3*x) + x*log(3*x)^2), x, 6, -(sqrt(3)*arctan((1 + 2*log(3*x))/sqrt(3))) + log(x) - log(1 + log(3*x) + log(3*x)^2)/2],
+
+
+# Miscellaneous integrands involving logarithms 
+[log(1/x)^2/x^5, x, 2, -(1/(32*x^4)) + log(1/x)/(8*x^4) - log(1/x)^2/(4*x^4)],
+
+[(log(a*x^n)^2)^p/x, x, 2, (log(a*x^n)*(log(a*x^n)^2)^p)/(n*(1 + 2*p))],
+[(log(a*x^n)^m)^p/x, x, 2, (log(a*x^n)*(log(a*x^n)^m)^p)/(n*(1 + m*p))],
+[sqrt(log(a*x^n)^2)/x, x, 2, (log(a*x^n)*sqrt(log(a*x^n)^2))/(2*n)],
+[(b*log(a*x^n)^m)^p/x, x, 2, (log(a*x^n)*(b*log(a*x^n)^m)^p)/(n*(1 + m*p))],
+
+[1/sqrt(-log(a*x^2)), x, 1, -((sqrt(Pi/2)*x*erf(sqrt(-log(a*x^2))/sqrt(2)))/sqrt(a*x^2))],
+[1/sqrt(-log(a/x^2)), x, 1, sqrt(Pi/2)*sqrt(a/x^2)*x*erfi(sqrt(-log(a/x^2))/sqrt(2))],
+[1/sqrt(-log(a*x^n)), x, 1, -((sqrt(Pi)*x*erf(sqrt(-log(a*x^n))/sqrt(n)))/(sqrt(n)*(a*x^n)^(n^(-1))))],
+
+[log(1 + sqrt(x) - x)/x, x, 10, -2*log((-(1/4))*(1 + sqrt(5))*(1 - sqrt(5) - 2*sqrt(x)))*log(sqrt(x)) - 2*log((-(1/4))*(1 - sqrt(5))*(1 + sqrt(5) - 2*sqrt(x)))*log(sqrt(x)) + 2*log(1 + sqrt(x) - x)*log(sqrt(x)) - 2*polylog(2, (-(1/2))*(1 - sqrt(5))*sqrt(x)) - 2*polylog(2, (-(1/2))*(1 + sqrt(5))*sqrt(x))],
+
+[(x*log(c + d*x))/(a + b*x), x, 4, -(x/b) + ((c + d*x)*log(c + d*x))/(b*d) - (a*log(-((d*(a + b*x))/(b*c - a*d)))*log(c + d*x))/b^2 - (a*polylog(2, (b*(c + d*x))/(b*c - a*d)))/b^2],
+[log(x)/(-1 + x), x, 1, -polylog(2, 1 - x)],
+[(x*log(1 - a - b*x))/(a + b*x), x, 4, -(x/b) - ((1 - a - b*x)*log(1 - a - b*x))/b^2 + (a*polylog(2, a + b*x))/b^2],
+[((b + 2*c*x)*log(x))/(x*(b + c*x)), x, 5, log(x)^2/2 + log(x)*log((b + c*x)/b) + polylog(2, -((c*x)/b))],
+
+[sin(x*log(x)) + log(x)*sin(x*log(x)), x, 2, -cos(x*log(x))],
+[log((1 - x^2)/(1 + x^2))/(1 + x)^2, x, 10, -(1/(1 + x)) - arctan(x) + (1/2)*log(1 - x) + (1/2)*log(1 + x) - log((1 - x^2)/(1 + x^2))/(1 + x) - (1/2)*log(1 + x^2)],
+[log((1 - (-1 + x)^2)/(1 + (-1 + x)^2))/x^2, x, 8, -(1/x) + arctan(1 - x) + (1/2)*log(2 - x) + log(x)/2 - log(((2 - x)*x)/(1 + (1 - x)^2))/x - (1/2)*log(2 - 2*x + x^2)],
+[log(a + b*x)^2/x, x, 4, log(-((b*x)/a))*log(a + b*x)^2 + 2*log(a + b*x)*polylog(2, 1 + (b*x)/a) - 2*polylog(3, (a + b*x)/a)],
+[log(sqrt(x) + x), x, 6, sqrt(x) - x - log(1 + sqrt(x)) + x*log(sqrt(x) + x)],
+[log(-(x/(1 + x))), x, 2, x*log(-(x/(1 + x))) - log(1 + x)],
+[log((-1 + x)/(1 + x)), x, 4, x*log(-((1 - x)/(1 + x))) - log(1 - x^2)],
+
+[log(x^2/(1 + x^2))/(1 + x^2), x, 18, (1/2)*I*log(1/(1 + 1/x^2))*log(1 - I*x) + (1/2)*I*log((-(1/2))*I*(I - x))*log(1 - I*x) + (1/4)*I*log(1 - I*x)^2 - (1/2)*I*log(1/(1 + 1/x^2))*log(1 + I*x) - (1/4)*I*log(1 + I*x)^2 - (1/2)*I*log(1 + I*x)*log((-(1/2))*I*(I + x)) + (1/2)*I*polylog(2, (1/2)*(1 - I*x)) - (1/2)*I*polylog(2, (1/2)*(1 + I*x)) - I*polylog(2, (-I)*x) + I*polylog(2, I*x)]
+]:

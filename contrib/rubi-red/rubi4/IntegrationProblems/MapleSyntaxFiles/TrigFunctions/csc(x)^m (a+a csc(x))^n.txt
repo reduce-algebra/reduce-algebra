@@ -1,0 +1,87 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration problems of the form 
+#Csc[c+d x]^m (A+B Csc[c+d x]+C Csc[c+d x]^2) (a+b Csc[c+d x])^n when a^2=b^2
+
+
+# ::Section:: 
+#Csc[c+d x]^m (a+a Csc[c+d x])^n
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Csc[c+d x]^m (a+a Csc[c+d x])^n
+
+
+[csc(x)^4/(a + a*csc(x)), x, 4, -((3*arctanh(cos(x)))/(2*a)) + (2*cot(x))/a - (3*cot(x)*csc(x))/(2*a) + (cot(x)*csc(x)^2)/(a + a*csc(x))],
+[csc(x)^3/(a + a*csc(x)), x, 3, arctanh(cos(x))/a - (2*cot(x))/a + (cot(x)*csc(x))/(a + a*csc(x))],
+[csc(x)^2/(a + a*csc(x)), x, 3, -(arctanh(cos(x))/a) + cot(x)/(a + a*csc(x))],
+[csc(x)^1/(a + a*csc(x)), x, 1, -(cot(x)/(a + a*csc(x)))],
+[sin(x)^1/(a + a*csc(x)), x, 3, -(x/a) - (2*cos(x))/a + cos(x)/(a + a*csc(x))],
+[sin(x)^2/(a + a*csc(x)), x, 4, (3*x)/(2*a) + (2*cos(x))/a - (3*cos(x)*sin(x))/(2*a) + (cos(x)*sin(x))/(a + a*csc(x))],
+[sin(x)^3/(a + a*csc(x)), x, 5, -((3*x)/(2*a)) - (8*cos(x))/(3*a) + (3*cos(x)*sin(x))/(2*a) - (4*cos(x)*sin(x)^2)/(3*a) + (cos(x)*sin(x)^2)/(a + a*csc(x))],
+[sin(x)^4/(a + a*csc(x)), x, 6, (15*x)/(8*a) + (8*cos(x))/(3*a) - (15*cos(x)*sin(x))/(8*a) + (4*cos(x)*sin(x)^2)/(3*a) - (5*cos(x)*sin(x)^3)/(4*a) + (cos(x)*sin(x)^3)/(a + a*csc(x))],
+
+
+# Integrands of the form (a+b*Csc[c+d*x])^n where a^2-b^2=0 and n is an integer 
+[1/(a + a*csc(c + d*x)), x, 2, x/a + cot(c + d*x)/(d*(a + a*csc(c + d*x)))],
+[1/(a + a*csc(c + d*x))^2, x, 3, x/a^2 + cot(c + d*x)/(3*d*(a + a*csc(c + d*x))^2) + (4*cot(c + d*x))/(3*a*d*(a + a*csc(c + d*x)))],
+[1/(a + a*csc(c + d*x))^3, x, 4, x/a^3 + cot(c + d*x)/(5*d*(a + a*csc(c + d*x))^3) + (7*cot(c + d*x))/(15*a*d*(a + a*csc(c + d*x))^2) + (22*cot(c + d*x))/(15*a^2*d*(a + a*csc(c + d*x)))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Csc[c+d x]^m (a+a Csc[c+d x])^(n/2)
+
+
+# Integrands of the form (a+b*Csc[c+d*x])^n where a^2-b^2=0 and n is a half-integer 
+[(a + a*csc(x))^(5/2), x, 4, -2*a^(5/2)*arctan((sqrt(a)*cot(x))/sqrt(a + a*csc(x))) - (14*a^3*cot(x))/(3*sqrt(a + a*csc(x))) - (2/3)*a^2*cot(x)*sqrt(a + a*csc(x))],
+[(a + a*csc(x))^(3/2), x, 3, -2*a^(3/2)*arctan((sqrt(a)*cot(x))/sqrt(a + a*csc(x))) - (2*a^2*cot(x))/sqrt(a + a*csc(x))],
+[(a + a*csc(x))^(1/2), x, 1, -2*sqrt(a)*arctan((sqrt(a)*cot(x))/sqrt(a + a*csc(x)))],
+[1/(a + a*csc(x))^(1/2), x, 3, -((2*arctan((sqrt(a)*cot(x))/sqrt(a + a*csc(x))))/sqrt(a)) + (sqrt(2)*arctan((sqrt(a)*cot(x))/(sqrt(2)*sqrt(a + a*csc(x)))))/sqrt(a)],
+[1/(a + a*csc(x))^(3/2), x, 4, -((2*arctan((sqrt(a)*cot(x))/sqrt(a + a*csc(x))))/a^(3/2)) + (5*arctan((sqrt(a)*cot(x))/(sqrt(2)*sqrt(a + a*csc(x)))))/(2*sqrt(2)*a^(3/2)) + cot(x)/(2*(a + a*csc(x))^(3/2))],
+[1/(a + a*csc(x))^(5/2), x, 5, -((2*arctan((sqrt(a)*cot(x))/sqrt(a + a*csc(x))))/a^(5/2)) + (43*arctan((sqrt(a)*cot(x))/(sqrt(2)*sqrt(a + a*csc(x)))))/(16*sqrt(2)*a^(5/2)) + cot(x)/(4*(a + a*csc(x))^(5/2)) + (11*cot(x))/(16*a*(a + a*csc(x))^(3/2))],
+
+[(a - a*csc(x))^(5/2), x, 4, -2*a^(5/2)*arctan((sqrt(a)*cot(x))/sqrt(a - a*csc(x))) - (14*a^3*cot(x))/(3*sqrt(a - a*csc(x))) - (2/3)*a^2*cot(x)*sqrt(a - a*csc(x))],
+[(a - a*csc(x))^(3/2), x, 3, -2*a^(3/2)*arctan((sqrt(a)*cot(x))/sqrt(a - a*csc(x))) - (2*a^2*cot(x))/sqrt(a - a*csc(x))],
+[(a - a*csc(x))^(1/2), x, 1, -2*sqrt(a)*arctan((sqrt(a)*cot(x))/sqrt(a - a*csc(x)))],
+[1/(a - a*csc(x))^(1/2), x, 3, -((2*arctan((sqrt(a)*cot(x))/sqrt(a - a*csc(x))))/sqrt(a)) + (sqrt(2)*arctan((sqrt(a)*cot(x))/(sqrt(2)*sqrt(a - a*csc(x)))))/sqrt(a)],
+[1/(a - a*csc(x))^(3/2), x, 4, -((2*arctan((sqrt(a)*cot(x))/sqrt(a - a*csc(x))))/a^(3/2)) + (5*arctan((sqrt(a)*cot(x))/(sqrt(2)*sqrt(a - a*csc(x)))))/(2*sqrt(2)*a^(3/2)) + cot(x)/(2*(a - a*csc(x))^(3/2))],
+[1/(a - a*csc(x))^(5/2), x, 5, -((2*arctan((sqrt(a)*cot(x))/sqrt(a - a*csc(x))))/a^(5/2)) + (43*arctan((sqrt(a)*cot(x))/(sqrt(2)*sqrt(a - a*csc(x)))))/(16*sqrt(2)*a^(5/2)) + cot(x)/(4*(a - a*csc(x))^(5/2)) + (11*cot(x))/(16*a*(a - a*csc(x))^(3/2))]
+
+
+# ::Section:: 
+#Csc[c+d x]^m (A+B Csc[c+d x]) (a+a Csc[c+d x])^n
+
+
+# ::Subsection:: 
+#Integrands of the form Csc[c+d x]^m (A+B Csc[c+d x]) (a+a Csc[c+d x])^n
+
+
+# ::Subsection:: 
+#Integrands of the form Csc[c+d x]^m (A+B Csc[c+d x]) (a+a Csc[c+d x])^(n/2)
+
+
+# ::Section:: 
+#Csc[c+d x]^m (A+C Csc[c+d x]^2) (a+a Csc[c+d x])^n
+
+
+# ::Subsection:: 
+#Integrands of the form Csc[c+d x]^m (A+C Csc[c+d x]^2) (a+a Csc[c+d x])^n
+
+
+# ::Subsection:: 
+#Integrands of the form Csc[c+d x]^m (A+C Csc[c+d x]^2) (a+a Csc[c+d x])^(n/2)
+
+
+# ::Section:: 
+#Csc[c+d x]^m (A+B Csc[c+d x]+C Csc[c+d x]^2) (a+a Csc[c+d x])^n
+
+
+# ::Subsection:: 
+#Integrands of the form Csc[c+d x]^m (A+B Csc[c+d x]+C Csc[c+d x]^2) (a+a Csc[c+d x])^n
+
+
+# ::Subsection:: 
+#Integrands of the form Csc[c+d x]^m (A+B Csc[c+d x]+C Csc[c+d x]^2) (a+a Csc[c+d x])^(n/2)
+]:

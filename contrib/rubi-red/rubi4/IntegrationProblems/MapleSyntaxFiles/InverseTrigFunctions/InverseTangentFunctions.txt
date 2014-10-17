@@ -1,0 +1,265 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Inverse Tangents
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse tangents
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m ArcTan[a x]^n
+
+
+# Integrands of the form x^m*ArcTan[a*x] where m is an integer 
+[x^5*arctan(a*x), x, 6, -(x/(6*a^5)) + x^3/(18*a^3) - x^5/(30*a) + arctan(a*x)/(6*a^6) + (1/6)*x^6*arctan(a*x)],
+[x^4*arctan(a*x), x, 5, x^2/(10*a^3) - x^4/(20*a) + (1/5)*x^5*arctan(a*x) - log(1 + a^2*x^2)/(10*a^5)],
+[x^3*arctan(a*x), x, 4, x/(4*a^3) - x^3/(12*a) - arctan(a*x)/(4*a^4) + (1/4)*x^4*arctan(a*x)],
+[x^2*arctan(a*x), x, 3, -(x^2/(6*a)) + (1/3)*x^3*arctan(a*x) + log(1 + a^2*x^2)/(6*a^3)],
+[x*arctan(a*x), x, 2, -(x/(2*a)) + arctan(a*x)/(2*a^2) + (1/2)*x^2*arctan(a*x)],
+[arctan(a*x), x, 1, x*arctan(a*x) - log(1 + a^2*x^2)/(2*a)],
+[arctan(a*x)/x, x, 3, (1/2)*I*polylog(2, (-I)*a*x) - (1/2)*I*polylog(2, I*a*x)],
+[arctan(a*x)/x^2, x, 2, -(arctan(a*x)/x) - a*arctanh(1 + 2*a^2*x^2)],
+[arctan(a*x)/x^3, x, 2, -(a/(2*x)) - (1/2)*a^2*arctan(a*x) - arctan(a*x)/(2*x^2)],
+[arctan(a*x)/x^4, x, 4, -(a/(6*x^2)) - arctan(a*x)/(3*x^3) + (1/3)*a^3*arctanh(1 + 2*a^2*x^2)],
+[arctan(a*x)/x^5, x, 4, -(a/(12*x^3)) + a^3/(4*x) + (1/4)*a^4*arctan(a*x) - arctan(a*x)/(4*x^4)],
+
+
+# Integrands of the form x^m*ArcTan[a*x]^2 where m is an integer 
+[x^5*arctan(a*x)^2, x, 12, -((4*x^2)/(45*a^4)) + x^4/(60*a^2) - (x*arctan(a*x))/(3*a^5) + (x^3*arctan(a*x))/(9*a^3) - (x^5*arctan(a*x))/(15*a) + arctan(a*x)^2/(6*a^6) + (1/6)*x^6*arctan(a*x)^2 + (23*log(1 + a^2*x^2))/(90*a^6)],
+[x^4*arctan(a*x)^2, x, 12, -((3*x)/(10*a^4)) + x^3/(30*a^2) + (3*arctan(a*x))/(10*a^5) + (x^2*arctan(a*x))/(5*a^3) - (x^4*arctan(a*x))/(10*a) + (I*arctan(a*x)^2)/(5*a^5) + (1/5)*x^5*arctan(a*x)^2 + (2*arctan(a*x)*log((2*I)/(I - a*x)))/(5*a^5) + (I*polylog(2, 1 - (2*I)/(I - a*x)))/(5*a^5)],
+[x^3*arctan(a*x)^2, x, 6, x^2/(12*a^2) + (x*arctan(a*x))/(2*a^3) - (x^3*arctan(a*x))/(6*a) - arctan(a*x)^2/(4*a^4) + (1/4)*x^4*arctan(a*x)^2 - log(1 + a^2*x^2)/(3*a^4)],
+[x^2*arctan(a*x)^2, x, 7, x/(3*a^2) - arctan(a*x)/(3*a^3) - (x^2*arctan(a*x))/(3*a) - (I*arctan(a*x)^2)/(3*a^3) + (1/3)*x^3*arctan(a*x)^2 - (2*arctan(a*x)*log((2*I)/(I - a*x)))/(3*a^3) - (I*polylog(2, 1 - (2*I)/(I - a*x)))/(3*a^3)],
+[x*arctan(a*x)^2, x, 2, -((x*arctan(a*x))/a) + arctan(a*x)^2/(2*a^2) + (1/2)*x^2*arctan(a*x)^2 + log(1 + a^2*x^2)/(2*a^2)],
+[arctan(a*x)^2, x, 4, (I*arctan(a*x)^2)/a + x*arctan(a*x)^2 + (2*arctan(a*x)*log((2*I)/(I - a*x)))/a + (I*polylog(2, 1 - (2*I)/(I - a*x)))/a],
+[arctan(a*x)^2/x, x, 6, 2*arctan(a*x)^2*arctanh(1 - (2*I)/(I - a*x)) - I*arctan(a*x)*polylog(2, 1 - (2*I)/(I - a*x)) + I*arctan(a*x)*polylog(2, -1 + (2*I)/(I - a*x)) - (1/2)*polylog(3, 1 - (2*I)/(I - a*x)) + (1/2)*polylog(3, -1 + (2*I)/(I - a*x))],
+[arctan(a*x)^2/x^2, x, 4, (-I)*a*arctan(a*x)^2 - arctan(a*x)^2/x + 2*a*arctan(a*x)*log((2*a*x)/(I + a*x)) - I*a*polylog(2, -1 + (2*I)/(I + a*x))],
+[arctan(a*x)^2/x^3, x, 3, -((a*arctan(a*x))/x) - (1/2)*a^2*arctan(a*x)^2 - arctan(a*x)^2/(2*x^2) - a^2*arctanh(1 + 2*a^2*x^2)],
+[arctan(a*x)^2/x^4, x, 7, -(a^2/(3*x)) - (1/3)*a^3*arctan(a*x) - (a*arctan(a*x))/(3*x^2) + (1/3)*I*a^3*arctan(a*x)^2 - arctan(a*x)^2/(3*x^3) - (2/3)*a^3*arctan(a*x)*log((2*a*x)/(I + a*x)) + (1/3)*I*a^3*polylog(2, -1 + (2*I)/(I + a*x))],
+[arctan(a*x)^2/x^5, x, 8, -(a^2/(12*x^2)) - (a*arctan(a*x))/(6*x^3) + (a^3*arctan(a*x))/(2*x) + (1/4)*a^4*arctan(a*x)^2 - arctan(a*x)^2/(4*x^4) + (2/3)*a^4*arctanh(1 + 2*a^2*x^2)],
+
+
+# Integrands of the form x^m*ArcTan[a*x]^3 where m is an integer 
+[x^5*arctan(a*x)^3, x, 26, (19*x)/(60*a^5) - x^3/(60*a^3) - (19*arctan(a*x))/(60*a^6) - (4*x^2*arctan(a*x))/(15*a^4) + (x^4*arctan(a*x))/(20*a^2) - (23*I*arctan(a*x)^2)/(30*a^6) - (x*arctan(a*x)^2)/(2*a^5) + (x^3*arctan(a*x)^2)/(6*a^3) - (x^5*arctan(a*x)^2)/(10*a) + arctan(a*x)^3/(6*a^6) + (1/6)*x^6*arctan(a*x)^3 - (23*arctan(a*x)*log((2*I)/(I - a*x)))/(15*a^6) - (23*I*polylog(2, 1 - (2*I)/(I - a*x)))/(30*a^6)],
+[x^4*arctan(a*x)^3, x, 15, -(x^2/(20*a^3)) - (9*x*arctan(a*x))/(10*a^4) + (x^3*arctan(a*x))/(10*a^2) + (9*arctan(a*x)^2)/(20*a^5) + (3*x^2*arctan(a*x)^2)/(10*a^3) - (3*x^4*arctan(a*x)^2)/(20*a) + (I*arctan(a*x)^3)/(5*a^5) + (1/5)*x^5*arctan(a*x)^3 + (3*arctan(a*x)^2*log((2*I)/(I - a*x)))/(5*a^5) + log(1 + a^2*x^2)/(2*a^5) + (3*I*arctan(a*x)*polylog(2, 1 - (2*I)/(I - a*x)))/(5*a^5) + (3*polylog(3, 1 - (2*I)/(I - a*x)))/(10*a^5)],
+[x^3*arctan(a*x)^3, x, 13, -(x/(4*a^3)) + arctan(a*x)/(4*a^4) + (x^2*arctan(a*x))/(4*a^2) + (I*arctan(a*x)^2)/a^4 + (3*x*arctan(a*x)^2)/(4*a^3) - (x^3*arctan(a*x)^2)/(4*a) - arctan(a*x)^3/(4*a^4) + (1/4)*x^4*arctan(a*x)^3 + (2*arctan(a*x)*log((2*I)/(I - a*x)))/a^4 + (I*polylog(2, 1 - (2*I)/(I - a*x)))/a^4],
+[x^2*arctan(a*x)^3, x, 8, (x*arctan(a*x))/a^2 - arctan(a*x)^2/(2*a^3) - (x^2*arctan(a*x)^2)/(2*a) - (I*arctan(a*x)^3)/(3*a^3) + (1/3)*x^3*arctan(a*x)^3 - (arctan(a*x)^2*log((2*I)/(I - a*x)))/a^3 - log(1 + a^2*x^2)/(2*a^3) - (I*arctan(a*x)*polylog(2, 1 - (2*I)/(I - a*x)))/a^3 - polylog(3, 1 - (2*I)/(I - a*x))/(2*a^3)],
+[x*arctan(a*x)^3, x, 5, -((3*I*arctan(a*x)^2)/(2*a^2)) - (3*x*arctan(a*x)^2)/(2*a) + arctan(a*x)^3/(2*a^2) + (1/2)*x^2*arctan(a*x)^3 - (3*arctan(a*x)*log((2*I)/(I - a*x)))/a^2 - (3*I*polylog(2, 1 - (2*I)/(I - a*x)))/(2*a^2)],
+[arctan(a*x)^3, x, 5, (I*arctan(a*x)^3)/a + x*arctan(a*x)^3 + (3*arctan(a*x)^2*log((2*I)/(I - a*x)))/a + (3*I*arctan(a*x)*polylog(2, 1 - (2*I)/(I - a*x)))/a + (3*polylog(3, 1 - (2*I)/(I - a*x)))/(2*a)],
+[arctan(a*x)^3/x, x, 8, 2*arctan(a*x)^3*arctanh(1 - (2*I)/(I - a*x)) - (3/2)*I*arctan(a*x)^2*polylog(2, 1 - (2*I)/(I - a*x)) + (3/2)*I*arctan(a*x)^2*polylog(2, -1 + (2*I)/(I - a*x)) - (3/2)*arctan(a*x)*polylog(3, 1 - (2*I)/(I - a*x)) + (3/2)*arctan(a*x)*polylog(3, -1 + (2*I)/(I - a*x)) + (3/4)*I*polylog(4, 1 - (2*I)/(I - a*x)) - (3/4)*I*polylog(4, -1 + (2*I)/(I - a*x))],
+[arctan(a*x)^3/x^2, x, 5, (-I)*a*arctan(a*x)^3 - arctan(a*x)^3/x + 3*a*arctan(a*x)^2*log((2*a*x)/(I + a*x)) - 3*I*a*arctan(a*x)*polylog(2, -1 + (2*I)/(I + a*x)) + (3/2)*a*polylog(3, -1 + (2*I)/(I + a*x))],
+[arctan(a*x)^3/x^3, x, 5, (-(3/2))*I*a^2*arctan(a*x)^2 - (3*a*arctan(a*x)^2)/(2*x) - (1/2)*a^2*arctan(a*x)^3 - arctan(a*x)^3/(2*x^2) + 3*a^2*arctan(a*x)*log((2*a*x)/(I + a*x)) - (3/2)*I*a^2*polylog(2, -1 + (2*I)/(I + a*x))],
+[arctan(a*x)^3/x^4, x, 9, -((a^2*arctan(a*x))/x) - (1/2)*a^3*arctan(a*x)^2 - (a*arctan(a*x)^2)/(2*x^2) + (1/3)*I*a^3*arctan(a*x)^3 - arctan(a*x)^3/(3*x^3) - a^3*arctanh(1 + 2*a^2*x^2) - a^3*arctan(a*x)^2*log((2*a*x)/(I + a*x)) + I*a^3*arctan(a*x)*polylog(2, -1 + (2*I)/(I + a*x)) - (1/2)*a^3*polylog(3, -1 + (2*I)/(I + a*x))],
+[arctan(a*x)^3/x^5, x, 13, -(a^3/(4*x)) - (1/4)*a^4*arctan(a*x) - (a^2*arctan(a*x))/(4*x^2) + I*a^4*arctan(a*x)^2 - (a*arctan(a*x)^2)/(4*x^3) + (3*a^3*arctan(a*x)^2)/(4*x) + (1/4)*a^4*arctan(a*x)^3 - arctan(a*x)^3/(4*x^4) - 2*a^4*arctan(a*x)*log((2*a*x)/(I + a*x)) + I*a^4*polylog(2, -1 + (2*I)/(I + a*x))],
+
+
+# ::Subsubsection::Closed:: 
+#Miscellaneous integrands involving inverse tangents
+
+
+[arctan(sqrt(1 - a*x)/sqrt(1 + a*x))/(1 - a^2*x^2), x, -5, -((I*polylog(2, -((I*sqrt(1 - a*x))/sqrt(1 + a*x))))/(2*a)) + (I*polylog(2, (I*sqrt(1 - a*x))/sqrt(1 + a*x)))/(2*a)],
+
+
+# Integrands of the form x^m*ArcTan[a+b*x] where m is an integer 
+[arctan(a + b*x), x, 1, ((a + b*x)*arctan(a + b*x))/b - log(1 + (a + b*x)^2)/(2*b)],
+[x*arctan(a + b*x), x, 5, -(x/(2*b)) + ((1 - a^2)*arctan(a + b*x))/(2*b^2) + (1/2)*x^2*arctan(a + b*x) + (a*log(1 + a^2 + 2*a*b*x + b^2*x^2))/(2*b^2)],
+[x^2*arctan(a + b*x), x, 6, (2*a*x)/(3*b^2) - x^2/(6*b) - (a*(3 - a^2)*arctan(a + b*x))/(3*b^3) + (1/3)*x^3*arctan(a + b*x) + ((1 - 3*a^2)*log(1 + a^2 + 2*a*b*x + b^2*x^2))/(6*b^3)],
+[arctan(a + b*x)/x, x, 5, (1/2)*I*log((I*b*x)/(1 - I*a))*log(1 - I*a - I*b*x) - (1/2)*I*log(-((I*b*x)/(1 + I*a)))*log(1 + I*a + I*b*x) + (1/2)*I*polylog(2, 1 - (I*b*x)/(1 - I*a)) - (1/2)*I*polylog(2, 1 + (I*b*x)/(1 + I*a))],
+[arctan(a + b*x)/x^2, x, 6, -((a*b*arctan(a + b*x))/(1 + a^2)) - arctan(a + b*x)/x + (b*log(x))/(1 + a^2) - (b*log(1 + a^2 + 2*a*b*x + b^2*x^2))/(2*(1 + a^2))],
+
+
+# Integrands of the form (a+b*x)^m*ArcTan[a+b*x] where m is an integer 
+[(a + b*x)*arctan(a + b*x), x, 3, -((a + b*x)/(2*b)) + arctan(a + b*x)/(2*b) + ((a + b*x)^2*arctan(a + b*x))/(2*b)],
+[(a + b*x)^2*arctan(a + b*x), x, 4, -((a + b*x)^2/(6*b)) + ((a + b*x)^3*arctan(a + b*x))/(3*b) + log(1 + (a + b*x)^2)/(6*b)],
+[arctan(1 + x)/(2 + 2*x), x, 5, (1/4)*I*polylog(2, (-I)*(1 + x)) - (1/4)*I*polylog(2, I*(1 + x))],
+[arctan(a + b*x)/(a + b*x), x, 4, (I*polylog(2, (-I)*(a + b*x)))/(2*b) - (I*polylog(2, I*(a + b*x)))/(2*b)],
+[arctan(a + b*x)/(a + b*x)^2, x, 3, -(arctan(a + b*x)/(b*(a + b*x))) - arctanh(1 + 2*(a + b*x)^2)/b],
+
+
+# Integrands of the form ArcTan[a+b*x]/Pn where Pn is a polynomial 
+[arctan(x)/(a + b*x), x, 3, -((I*log(1 + I*x)*log((I*(a + b*x))/(I*a - b)))/(2*b)) + (I*log(1 - I*x)*log((I*(a + b*x))/(I*a + b)))/(2*b) + (I*polylog(2, (b*(1 - I*x))/(I*a + b)))/(2*b) - (I*polylog(2, -((b*(1 + I*x))/(I*a - b))))/(2*b)],
+[arctan(x)/(a + b*x^2), x, 7, (I*log(1 - I*x)*log((I*(sqrt(-a) - sqrt(b)*x))/(I*sqrt(-a) - sqrt(b))))/(4*sqrt(-a)*sqrt(b)) - (I*log(1 + I*x)*log((I*(sqrt(-a) - sqrt(b)*x))/(I*sqrt(-a) + sqrt(b))))/(4*sqrt(-a)*sqrt(b)) + (I*log(1 + I*x)*log((I*(sqrt(-a) + sqrt(b)*x))/(I*sqrt(-a) - sqrt(b))))/(4*sqrt(-a)*sqrt(b)) - (I*log(1 - I*x)*log((I*(sqrt(-a) + sqrt(b)*x))/(I*sqrt(-a) + sqrt(b))))/(4*sqrt(-a)*sqrt(b)) + (I*polylog(2, -((sqrt(b)*(1 - I*x))/(I*sqrt(-a) - sqrt(b)))))/(4*sqrt(-a)*sqrt(b)) - (I*polylog(2, (sqrt(b)*(1 - I*x))/(I*sqrt(-a) + sqrt(b))))/(4*sqrt(-a)*sqrt(b)) + (I*polylog(2, -((sqrt(b)*(1 + I*x))/(I*sqrt(-a) - sqrt(b)))))/(4*sqrt(-a)*sqrt(b)) - (I*polylog(2, (sqrt(b)*(1 + I*x))/(I*sqrt(-a) + sqrt(b))))/(4*sqrt(-a)*sqrt(b))],
+[arctan(x)/(a + b*x + c*x^2), x, 7, -((I*log(1 + I*x)*log(-((I*(b - sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c - I*(b - sqrt(b^2 - 4*a*c))))))/(2*sqrt(b^2 - 4*a*c))) + (I*log(1 - I*x)*log((I*(b - sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c + I*(b - sqrt(b^2 - 4*a*c)))))/(2*sqrt(b^2 - 4*a*c)) + (I*log(1 + I*x)*log(-((I*(b + sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c - I*(b + sqrt(b^2 - 4*a*c))))))/(2*sqrt(b^2 - 4*a*c)) - (I*log(1 - I*x)*log((I*(b + sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c + I*(b + sqrt(b^2 - 4*a*c)))))/(2*sqrt(b^2 - 4*a*c)) + (I*polylog(2, (2*c*(1 - I*x))/(2*c + I*(b - sqrt(b^2 - 4*a*c)))))/(2*sqrt(b^2 - 4*a*c)) - (I*polylog(2, (2*c*(1 - I*x))/(2*c + I*(b + sqrt(b^2 - 4*a*c)))))/(2*sqrt(b^2 - 4*a*c)) - (I*polylog(2, (2*c*(1 + I*x))/(2*c - I*(b - sqrt(b^2 - 4*a*c)))))/(2*sqrt(b^2 - 4*a*c)) + (I*polylog(2, (2*c*(1 + I*x))/(2*c - I*(b + sqrt(b^2 - 4*a*c)))))/(2*sqrt(b^2 - 4*a*c))],
+
+[arctan(d + e*x)/(a + b*x), x, 3, (I*log((I*e*(a + b*x))/(b*(1 - I*d) + I*a*e))*log(1 - I*d - I*e*x))/(2*b) - (I*log(-((I*e*(a + b*x))/(b*(1 + I*d) - I*a*e)))*log(1 + I*d + I*e*x))/(2*b) + (I*polylog(2, (b*(1 - I*d - I*e*x))/(b*(1 - I*d) + I*a*e)))/(2*b) - (I*polylog(2, (b*(1 + I*d + I*e*x))/(b*(1 + I*d) - I*a*e)))/(2*b)],
+[arctan(d + e*x)/(a + b*x^2), x, 8, (I*log((e*(sqrt(-a) - sqrt(b)*x))/(sqrt(b)*(I + d) + sqrt(-a)*e))*log((-I)*(I + d) - I*e*x))/(4*sqrt(-a)*sqrt(b)) - (I*log(-((e*(sqrt(-a) + sqrt(b)*x))/(sqrt(b)*(I + d) - sqrt(-a)*e)))*log((-I)*(I + d) - I*e*x))/(4*sqrt(-a)*sqrt(b)) - (I*log((I*e*(sqrt(-a) - sqrt(b)*x))/(sqrt(b)*(1 + I*d) + I*sqrt(-a)*e))*log(1 + I*d + I*e*x))/(4*sqrt(-a)*sqrt(b)) + (I*log(-((I*e*(sqrt(-a) + sqrt(b)*x))/(sqrt(b)*(1 + I*d) - I*sqrt(-a)*e)))*log(1 + I*d + I*e*x))/(4*sqrt(-a)*sqrt(b)) + (I*polylog(2, (sqrt(b)*(1 + I*d + I*e*x))/(sqrt(b)*(1 + I*d) - I*sqrt(-a)*e)))/(4*sqrt(-a)*sqrt(b)) - (I*polylog(2, (sqrt(b)*(1 + I*d + I*e*x))/(sqrt(b)*(1 + I*d) + I*sqrt(-a)*e)))/(4*sqrt(-a)*sqrt(b)) - (I*polylog(2, (sqrt(b)*(I + d + e*x))/(sqrt(b)*(I + d) - sqrt(-a)*e)))/(4*sqrt(-a)*sqrt(b)) + (I*polylog(2, (sqrt(b)*(I + d + e*x))/(sqrt(b)*(I + d) + sqrt(-a)*e)))/(4*sqrt(-a)*sqrt(b))],
+[arctan(d + e*x)/(a + b*x + c*x^2), x, 7, (I*log((I*e*(b - sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c*(1 - I*d) + I*(b - sqrt(b^2 - 4*a*c))*e))*log(1 - I*d - I*e*x))/(2*sqrt(b^2 - 4*a*c)) - (I*log((I*e*(b + sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c*(1 - I*d) + I*(b + sqrt(b^2 - 4*a*c))*e))*log(1 - I*d - I*e*x))/(2*sqrt(b^2 - 4*a*c)) - (I*log(-((I*e*(b - sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c*(1 + I*d) - I*(b - sqrt(b^2 - 4*a*c))*e)))*log(1 + I*d + I*e*x))/(2*sqrt(b^2 - 4*a*c)) + (I*log(-((I*e*(b + sqrt(b^2 - 4*a*c) + 2*c*x))/(2*c*(1 + I*d) - I*(b + sqrt(b^2 - 4*a*c))*e)))*log(1 + I*d + I*e*x))/(2*sqrt(b^2 - 4*a*c)) + (I*polylog(2, (2*c*(1 - I*d - I*e*x))/(2*c*(1 - I*d) + I*(b - sqrt(b^2 - 4*a*c))*e)))/(2*sqrt(b^2 - 4*a*c)) - (I*polylog(2, (2*c*(1 - I*d - I*e*x))/(2*c*(1 - I*d) + I*(b + sqrt(b^2 - 4*a*c))*e)))/(2*sqrt(b^2 - 4*a*c)) - (I*polylog(2, (2*c*(1 + I*d + I*e*x))/(2*c*(1 + I*d) - I*(b - sqrt(b^2 - 4*a*c))*e)))/(2*sqrt(b^2 - 4*a*c)) + (I*polylog(2, (2*c*(1 + I*d + I*e*x))/(2*c*(1 + I*d) - I*(b + sqrt(b^2 - 4*a*c))*e)))/(2*sqrt(b^2 - 4*a*c))],
+
+
+# Integrands of the form ArcTan[x]^m*(1+x^2)^n where n is an integer 
+[1/((1 + x^2)*arctan(x)), x, 1, log(arctan(x))],
+[arctan(x)/(1 + x^2), x, 1, arctan(x)^2/2],
+[arctan(x)^n/(1 + x^2), x, 1, arctan(x)^(1 + n)/(1 + n)],
+[arctan(x)/(1 + x^2)^2, x, 2, 1/(4*(1 + x^2)) + (x*arctan(x))/(2*(1 + x^2)) + arctan(x)^2/4],
+[arctan(x)^2/(1 + x^2)^2, x, 4, -(x/(4*(1 + x^2))) - arctan(x)/4 + arctan(x)/(2*(1 + x^2)) + (x*arctan(x)^2)/(2*(1 + x^2)) + arctan(x)^3/6],
+
+[1/((a + a*x^2)*(b - 2*b*arctan(x))), x, 3, -(log(1 - 2*arctan(x))/(2*a*b))],
+
+
+[arctan(b*x)/(1 + x^2), x, 9, (1/4)*log(-((I*b*(I - x))/(1 + b)))*log(1 - I*b*x) - (1/4)*log((I*b*(I + x))/(1 - b))*log(1 - I*b*x) - (1/4)*log((I*b*(I - x))/(1 - b))*log(1 + I*b*x) + (1/4)*log(-((I*b*(I + x))/(1 + b)))*log(1 + I*b*x) - (1/4)*polylog(2, (1 - I*b*x)/(1 - b)) + (1/4)*polylog(2, (1 - I*b*x)/(1 + b)) - (1/4)*polylog(2, (1 + I*b*x)/(1 - b)) + (1/4)*polylog(2, (1 + I*b*x)/(1 + b))],
+[arctan(a+b*x)/(1 + x^2), x, 9, (1/4)*log((I*b*(I - x))/(I*(I + a) - b))*log((-I)*(I + a) - I*b*x) - (1/4)*log(-((I*b*(I + x))/(I*(I + a) + b)))*log((-I)*(I + a) - I*b*x) - (1/4)*log((I*b*(I - x))/(1 + I*a - b))*log(1 + I*a + I*b*x) + (1/4)*log(-((I*b*(I + x))/(1 + I*a + b)))*log(1 + I*a + I*b*x) - (1/4)*polylog(2, (1 + I*a + I*b*x)/(1 + I*a - b)) + (1/4)*polylog(2, (1 + I*a + I*b*x)/(1 + I*a + b)) + (1/4)*polylog(2, (I*(I + a + b*x))/(I*(I + a) - b)) - (1/4)*polylog(2, (I*(I + a + b*x))/(I*(I + a) + b))],
+
+
+[(x*arctan(x))/(1 + x^2), x, 3, (-(1/2))*I*arctan(x)^2 - arctan(x)*log((2*I)/(I - x)) - (1/2)*I*polylog(2, 1 - (2*I)/(I - x))],
+[(x*arctan(x))/(1 + x^2)^2, x, 3, x/(4*(1 + x^2)) + arctan(x)/4 - arctan(x)/(2*(1 + x^2))],
+[(x*arctan(x))/(1 + x^2)^3, x, 4, x/(16*(1 + x^2)^2) + (3*x)/(32*(1 + x^2)) + (3*arctan(x))/32 - arctan(x)/(4*(1 + x^2)^2)],
+
+
+# Integrands of the form ArcTan[x]/(a+b*x^2)^n where n is a half-integer 
+[arctan(x)/(a + b*x^2)^(3/2), x, 3, (x*arctan(x))/(a*sqrt(a + b*x^2)) + arctanh(sqrt(a + b*x^2)/sqrt(a - b))/(a*sqrt(a - b))],
+[arctan(x)/(a + b*x^2)^(5/2), x, 8, -(1/(3*a*(a - b)*sqrt(a + b*x^2))) + (x*(3*a + 2*b*x^2)*arctan(x))/(3*a^2*(a + b*x^2)^(3/2)) + ((3*a - 2*b)*arctanh(sqrt(a + b*x^2)/sqrt(a - b)))/(3*a^2*(a - b)^(3/2))],
+[arctan(x)/(a + b*x^2)^(7/2), x, 8, -(1/(15*a*(a - b)*(a + b*x^2)^(3/2))) - (7*a - 4*b)/(15*a^2*(a - b)^2*sqrt(a + b*x^2)) + (x*(8*(a + b*x^2)^2 + a*(7*a + 4*b*x^2))*arctan(x))/(15*a^3*(a + b*x^2)^(5/2)) + ((15*a^2 - 20*a*b + 8*b^2)*arctanh(sqrt(a + b*x^2)/sqrt(a - b)))/(15*a^3*(a - b)^(5/2))],
+
+[arctan(x)*(a + a*x^2)^(1/2), x, 3, (-(1/2))*sqrt(a + a*x^2) + (1/2)*x*sqrt(a + a*x^2)*arctan(x) - (I*a*sqrt(1 + x^2)*(2*arctan(sqrt(1 + I*x)/sqrt(1 - I*x))*arctan(x) - polylog(2, -((I*sqrt(1 + I*x))/sqrt(1 - I*x))) + polylog(2, (I*sqrt(1 + I*x))/sqrt(1 - I*x))))/(2*sqrt(a + a*x^2))],
+[arctan(x)/(a + a*x^2)^(1/2), x, 2, -((I*sqrt(1 + x^2)*(2*arctan(sqrt(1 + I*x)/sqrt(1 - I*x))*arctan(x) - polylog(2, -((I*sqrt(1 + I*x))/sqrt(1 - I*x))) + polylog(2, (I*sqrt(1 + I*x))/sqrt(1 - I*x))))/sqrt(a + a*x^2))],
+[arctan(x)/(a + a*x^2)^(3/2), x, 1, 1/(a*sqrt(a + a*x^2)) + (x*arctan(x))/(a*sqrt(a + a*x^2))],
+[arctan(x)/(a + a*x^2)^(5/2), x, 2, 1/(9*a*(a + a*x^2)^(3/2)) + 2/(3*a^2*sqrt(a + a*x^2)) + (x*arctan(x))/(3*a*(a + a*x^2)^(3/2)) + (2*x*arctan(x))/(3*a^2*sqrt(a + a*x^2))],
+[arctan(x)/(a + a*x^2)^(7/2), x, 3, 1/(25*a*(a + a*x^2)^(5/2)) + 4/(45*a^2*(a + a*x^2)^(3/2)) + 8/(15*a^3*sqrt(a + a*x^2)) + (x*arctan(x))/(5*a*(a + a*x^2)^(5/2)) + (4*x*arctan(x))/(15*a^2*(a + a*x^2)^(3/2)) + (8*x*arctan(x))/(15*a^3*sqrt(a + a*x^2))],
+
+
+# Integrands of the form x^m*ArcTan[Sqrt[x]] where m is an integer 
+[arctan(sqrt(x)), x, 4, -sqrt(x) + arctan(sqrt(x)) + x*arctan(sqrt(x))],
+[x*arctan(sqrt(x)), x, 5, sqrt(x)/2 - x^(3/2)/6 - arctan(sqrt(x))/2 + (1/2)*x^2*arctan(sqrt(x))],
+[x^2*arctan(sqrt(x)), x, 6, -(sqrt(x)/3) + x^(3/2)/9 - x^(5/2)/15 + arctan(sqrt(x))/3 + (1/3)*x^3*arctan(sqrt(x))],
+[arctan(sqrt(x))/x, x, 3, I*polylog(2, (-I)*sqrt(x)) - I*polylog(2, I*sqrt(x))],
+[arctan(sqrt(x))/x^2, x, 4, -(1/sqrt(x)) - arctan(sqrt(x)) - arctan(sqrt(x))/x],
+[arctan(sqrt(x))/x^3, x, 5, -(1/(6*x^(3/2))) + 1/(2*sqrt(x)) + arctan(sqrt(x))/2 - arctan(sqrt(x))/(2*x^2)],
+
+[sqrt(x)*arctan(sqrt(x)), x, 5, -(x/3) + (2/3)*x^(3/2)*arctan(sqrt(x)) + (1/3)*log(1 + x)],
+[x^(3/2)*arctan(sqrt(x)), x, 6, x/5 - x^2/10 + (2/5)*x^(5/2)*arctan(sqrt(x)) - (1/5)*log(1 + x)],
+[arctan(sqrt(x))/sqrt(x), x, 2, 2*sqrt(x)*arctan(sqrt(x)) - log(1 + x)],
+[arctan(sqrt(x))/x^(3/2), x, 3, -((2*arctan(sqrt(x)))/sqrt(x)) - 2*arctanh(1 + 2*x)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse trig functions of exponentials
+
+
+# Integrands of the form x^m*ArcTan[E^x] 
+[arctan(exp(x)), x, 3, (1/2)*I*polylog(2, (-I)*exp(x)) - (1/2)*I*polylog(2, I*exp(x))],
+[x*arctan(exp(x)), x, 5, (1/2)*I*x*polylog(2, (-I)*exp(x)) - (1/2)*I*x*polylog(2, I*exp(x)) - (1/2)*I*polylog(3, (-I)*exp(x)) + (1/2)*I*polylog(3, I*exp(x))],
+[x^2*arctan(exp(x)), x, 7, (1/2)*I*x^2*polylog(2, (-I)*exp(x)) - (1/2)*I*x^2*polylog(2, I*exp(x)) - I*x*polylog(3, (-I)*exp(x)) + I*x*polylog(3, I*exp(x)) + I*polylog(4, (-I)*exp(x)) - I*polylog(4, I*exp(x))],
+
+
+# Integrands of the form x^m*ArcTan[E^(a+b*x)] 
+[arctan(exp(a + b*x)), x, 3, (I*polylog(2, (-I)*exp(a + b*x)))/(2*b) - (I*polylog(2, I*exp(a + b*x)))/(2*b)],
+[x*arctan(exp(a + b*x)), x, 5, (I*x*polylog(2, (-I)*exp(a + b*x)))/(2*b) - (I*x*polylog(2, I*exp(a + b*x)))/(2*b) - (I*polylog(3, (-I)*exp(a + b*x)))/(2*b^2) + (I*polylog(3, I*exp(a + b*x)))/(2*b^2)],
+[x^2*arctan(exp(a + b*x)), x, 7, (I*x^2*polylog(2, (-I)*exp(a + b*x)))/(2*b) - (I*x^2*polylog(2, I*exp(a + b*x)))/(2*b) - (I*x*polylog(3, (-I)*exp(a + b*x)))/b^2 + (I*x*polylog(3, I*exp(a + b*x)))/b^2 + (I*polylog(4, (-I)*exp(a + b*x)))/b^3 - (I*polylog(4, I*exp(a + b*x)))/b^3],
+
+
+# Integrands of the form x^m*ArcTan[a+b*f^(c+d*x)] 
+[arctan(a + b*f^(c + d*x)), x, 5, x*arctan(a + b*f^(c + d*x)) + (1/2)*I*x*log(1 - (b*f^(c + d*x))/(I - a)) - (1/2)*I*x*log(1 + (b*f^(c + d*x))/(I + a)) + (I*polylog(2, (b*f^(c + d*x))/(I - a)))/(2*d*log(f)) - (I*polylog(2, -((b*f^(c + d*x))/(I + a))))/(2*d*log(f)), (1/2)*I*x*log(1 - I*a - I*b*f^(c + d*x)) - (1/2)*I*x*log(1 + I*a + I*b*f^(c + d*x)) - (1/2)*I*x*log(1 - (I*b*f^(c + d*x))/(1 - I*a)) + (1/2)*I*x*log(1 + (I*b*f^(c + d*x))/(1 + I*a)) - (I*polylog(2, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d*log(f)) + (I*polylog(2, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d*log(f))],
+[x*arctan(a + b*f^(c + d*x)), x, 7, (1/2)*x^2*arctan(a + b*f^(c + d*x)) - (1/4)*I*x^2*log(1 - (I*b*f^(c + d*x))/(1 - I*a)) + (1/4)*I*x^2*log(1 + (I*b*f^(c + d*x))/(1 + I*a)) - (I*x*polylog(2, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d*log(f)) + (I*x*polylog(2, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d*log(f)) + (I*polylog(3, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d^2*log(f)^2) - (I*polylog(3, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d^2*log(f)^2), (1/4)*I*x^2*log(1 - I*a - I*b*f^(c + d*x)) - (1/4)*I*x^2*log(1 + I*a + I*b*f^(c + d*x)) - (1/4)*I*x^2*log(1 - (I*b*f^(c + d*x))/(1 - I*a)) + (1/4)*I*x^2*log(1 + (I*b*f^(c + d*x))/(1 + I*a)) - (I*x*polylog(2, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d*log(f)) + (I*x*polylog(2, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d*log(f)) + (I*polylog(3, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d^2*log(f)^2) - (I*polylog(3, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d^2*log(f)^2)],
+[x^2*arctan(a + b*f^(c + d*x)), x, 9, (1/3)*x^3*arctan(a + b*f^(c + d*x)) - (1/6)*I*x^3*log(1 - (I*b*f^(c + d*x))/(1 - I*a)) + (1/6)*I*x^3*log(1 + (I*b*f^(c + d*x))/(1 + I*a)) - (I*x^2*polylog(2, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d*log(f)) + (I*x^2*polylog(2, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d*log(f)) + (I*x*polylog(3, (I*b*f^(c + d*x))/(1 - I*a)))/(d^2*log(f)^2) - (I*x*polylog(3, -((I*b*f^(c + d*x))/(1 + I*a))))/(d^2*log(f)^2) - (I*polylog(4, (I*b*f^(c + d*x))/(1 - I*a)))/(d^3*log(f)^3) + (I*polylog(4, -((I*b*f^(c + d*x))/(1 + I*a))))/(d^3*log(f)^3), (1/6)*I*x^3*log(1 - I*a - I*b*f^(c + d*x)) - (1/6)*I*x^3*log(1 + I*a + I*b*f^(c + d*x)) - (1/6)*I*x^3*log(1 - (I*b*f^(c + d*x))/(1 - I*a)) + (1/6)*I*x^3*log(1 + (I*b*f^(c + d*x))/(1 + I*a)) - (I*x^2*polylog(2, (I*b*f^(c + d*x))/(1 - I*a)))/(2*d*log(f)) + (I*x^2*polylog(2, -((I*b*f^(c + d*x))/(1 + I*a))))/(2*d*log(f)) + (I*x*polylog(3, (I*b*f^(c + d*x))/(1 - I*a)))/(d^2*log(f)^2) - (I*x*polylog(3, -((I*b*f^(c + d*x))/(1 + I*a))))/(d^2*log(f)^2) - (I*polylog(4, (I*b*f^(c + d*x))/(1 - I*a)))/(d^3*log(f)^3) + (I*polylog(4, -((I*b*f^(c + d*x))/(1 + I*a))))/(d^3*log(f)^3)],
+
+
+[arctan(exp(x))/exp(x), x, 3, x - arctan(exp(x))/exp(x) - (1/2)*log(1 + exp(2*x))],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse trig functions of trig functions
+
+
+# Integrands of the form ArcTan[a+b*Trig[x]] 
+[arctan(tan(x)), x, 2, -(x^2/2) + x*arctan(tan(x))],
+[arctan(b*tan(x)), x, 12, x*arctan(b*tan(x)) + (1/2)*I*x*log(1 + ((1 - b^2)*exp(2*I*x))/(1 - 2*b + b^2)) - (1/2)*I*x*log(1 + ((1 - b^2)*exp(2*I*x))/(1 + 2*b + b^2)) + (1/4)*polylog(2, -(((1 - b^2)*exp(2*I*x))/(1 - 2*b + b^2))) - (1/4)*polylog(2, -(((1 - b^2)*exp(2*I*x))/(1 + 2*b + b^2)))],
+[arctan(a+b*tan(x)), x, 10, (1/4)*log((I*b*(I - tan(x)))/(I*(I + a) - b))*log((-I)*(I + a) - I*b*tan(x)) - (1/4)*log(-((I*b*(I + tan(x)))/(I*(I + a) + b)))*log((-I)*(I + a) - I*b*tan(x)) - (1/4)*log((I*b*(I - tan(x)))/(1 + I*a - b))*log(1 + I*a + I*b*tan(x)) + (1/4)*log(-((I*b*(I + tan(x)))/(1 + I*a + b)))*log(1 + I*a + I*b*tan(x)) - (1/4)*polylog(2, (1 + I*a + I*b*tan(x))/(1 + I*a - b)) + (1/4)*polylog(2, (1 + I*a + I*b*tan(x))/(1 + I*a + b)) + (1/4)*polylog(2, (I*(I + a + b*tan(x)))/(I*(I + a) - b)) - (1/4)*polylog(2, (I*(I + a + b*tan(x)))/(I*(I + a) + b))],
+
+[arctan(b*cot(x)), x, 12, x*arctan(b*cot(x)) - (1/2)*I*x*log(1 - ((1 - b^2)*exp(2*I*x))/(1 - 2*b + b^2)) + (1/2)*I*x*log(1 - ((1 - b^2)*exp(2*I*x))/(1 + 2*b + b^2)) - (1/4)*polylog(2, ((1 - b^2)*exp(2*I*x))/(1 - 2*b + b^2)) + (1/4)*polylog(2, ((1 - b^2)*exp(2*I*x))/(1 + 2*b + b^2))],
+[arctan(a+b*cot(x)), x, 10, (-(1/4))*log((I*b*(I - cot(x)))/(I*(I + a) - b))*log((-I)*(I + a) - I*b*cot(x)) + (1/4)*log(-((I*b*(I + cot(x)))/(I*(I + a) + b)))*log((-I)*(I + a) - I*b*cot(x)) + (1/4)*log((I*b*(I - cot(x)))/(1 + I*a - b))*log(1 + I*a + I*b*cot(x)) - (1/4)*log(-((I*b*(I + cot(x)))/(1 + I*a + b)))*log(1 + I*a + I*b*cot(x)) + (1/4)*polylog(2, (1 + I*a + I*b*cot(x))/(1 + I*a - b)) - (1/4)*polylog(2, (1 + I*a + I*b*cot(x))/(1 + I*a + b)) - (1/4)*polylog(2, (I*(I + a + b*cot(x)))/(I*(I + a) - b)) + (1/4)*polylog(2, (I*(I + a + b*cot(x)))/(I*(I + a) + b))],
+
+
+# Integrands of the form x^m*ArcTan[Sinh[x]] where m is an integer 
+[arctan(sinh(x)), x, 5, -2*x*arctan(exp(x)) + x*arctan(sinh(x)) + I*polylog(2, (-I)*exp(x)) - I*polylog(2, I*exp(x))],
+[x*arctan(sinh(x)), x, 7, (-x^2)*arctan(exp(x)) + (1/2)*x^2*arctan(sinh(x)) + I*x*polylog(2, (-I)*exp(x)) - I*x*polylog(2, I*exp(x)) - I*polylog(3, (-I)*exp(x)) + I*polylog(3, I*exp(x))],
+[x^2*arctan(sinh(x)), x, 9, (-(2/3))*x^3*arctan(exp(x)) + (1/3)*x^3*arctan(sinh(x)) + I*x^2*polylog(2, (-I)*exp(x)) - I*x^2*polylog(2, I*exp(x)) - 2*I*x*polylog(3, (-I)*exp(x)) + 2*I*x*polylog(3, I*exp(x)) + 2*I*polylog(4, (-I)*exp(x)) - 2*I*polylog(4, I*exp(x))],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving exponentials of inverse trig functions
+
+
+# Integrands of the form x^m*E^ArcTan[x] where m is an integer 
+[E^arctan(x), x, 1, subst(Int(exp(x)*sec(x)^2, x), x, arctan(x))],
+
+
+# Integrands of the form E^ArcTan[x]/(a+a*x^2)^n 
+[E^arctan(x)/(a + a*x^2), x, 2, E^arctan(x)/a],
+[E^arctan(x)/(a + a*x^2)^2, x, 3, (2*E^arctan(x))/(5*a^2) + E^arctan(x)/(5*a^2*(1 + x^2)) + (2*E^arctan(x)*x)/(5*a^2*(1 + x^2))],
+[E^arctan(x)/(a + a*x^2)^3, x, 4, (24*E^arctan(x))/(85*a^3) + E^arctan(x)/(17*a^3*(1 + x^2)^2) + (4*E^arctan(x)*x)/(17*a^3*(1 + x^2)^2) + (12*E^arctan(x))/(85*a^3*(1 + x^2)) + (24*E^arctan(x)*x)/(85*a^3*(1 + x^2))],
+
+[E^arctan(x)/(1 + x^2)^(3/2), x, 4, E^arctan(x)/(2*sqrt(1 + x^2)) + (E^arctan(x)*x)/(2*sqrt(1 + x^2))],
+[E^arctan(x)/(a + a*x^2)^(3/2), x, 4, (E^arctan(x)*(1 + x))/(2*a*sqrt(a*(1 + x^2)))],
+[E^arctan(x)/(a + a*x^2)^(5/2), x, 5, (E^arctan(x)*(4 + 6*x + 3*x^2 + 3*x^3))/(10*a*(a*(1 + x^2))^(3/2)), (E^arctan(x)*(3 + 3*x + 1/(1 + x^2) + (3*x)/(1 + x^2)))/(10*a^2*sqrt(a*(1 + x^2)))],
+[E^arctan(x)/(a + a*x^2)^(7/2), x, 6, (E^arctan(x)*(9 + 17*x + 14*x^2 + 18*x^3 + 6*x^4 + 6*x^5))/(26*a*(a*(1 + x^2))^(5/2)), (E^arctan(x)*(6 + 6*x + 1/(1 + x^2)^2 + (5*x)/(1 + x^2)^2 + 2/(1 + x^2) + (6*x)/(1 + x^2)))/(26*a^3*sqrt(a*(1 + x^2)))],
+
+
+[E^arctan(x)*x/(1 + x^2)^(3/2), x, 4, -(E^arctan(x)/(2*sqrt(1 + x^2))) + (E^arctan(x)*x)/(2*sqrt(1 + x^2))],
+
+
+# ::Subsection::Closed:: 
+#Problems from Calculus textbooks
+
+
+# ::Subsubsection::Closed:: 
+#Apostol Calculus, Volume 1, 2nd Edition, Section 622
+
+
+[arctan(sqrt(x))/(sqrt(x)*(1 + x)), x, 2, arctan(sqrt(x))^2],
+
+
+# ::Subsubsection::Closed:: 
+#Edwards and Penney Calculus
+
+
+[arctan(x)/(-1 + x)^3, x, 8, 1/(4*(1 - x)) - arctan(x)/(2*(1 - x)^2) - (1/4)*log(1 - x) + (1/8)*log(1 + x^2)],
+[arctan(1 + 2*x)/(4 + 3*x)^3, x, 8, -(1/(34*(4 + 3*x))) + (8/867)*arctan(1 + 2*x) - arctan(1 + 2*x)/(6*(4 + 3*x)^2) + (5/289)*log(4 + 3*x) - (5/578)*log(1 + 2*x + 2*x^2)],
+
+
+# ::Subsubsection::Closed:: 
+#Grossman Calculus
+
+
+[x*arctan(x^2), x, 2, (1/2)*x^2*arctan(x^2) - (1/4)*log(1 + x^4)],
+[x^5*arctan(x^2), x, 4, -(x^4/12) + (1/6)*x^6*arctan(x^2) + (1/12)*log(1 + x^4)],
+[x^5*arctan(x^3), x, 3, -(x^3/6) + arctan(x^3)/6 + (1/6)*x^6*arctan(x^3)],
+[x*arctan(x^3), x, 7, -(arctan(x)/2) + (1/2)*x^2*arctan(x^3) - (1/4)*arctan(x/(1 - x^2)) + (1/4)*sqrt(3)*arctanh((sqrt(3)*x)/(1 + x^2))],
+
+
+# ::Subsubsection::Closed:: 
+#Thomas Calculus, 8th Edition
+
+
+[1/((1 + x^2)*(2 + arctan(x))), x, 2, log(2 + arctan(x))],
+[arctan(sqrt(1 + x)), x, 6, -sqrt(1 + x) + 2*arctan(sqrt(1 + x)) + x*arctan(sqrt(1 + x))],
+
+
+# ::Subsection::Closed:: 
+#Miscellaneous problems
+
+
+[arctan(1/x), x, 1, x*arccot(x) + log(1 + x^2)/2],
+
+
+[arctan(a + b*x)/((a*d)/b + d*x), x, 6, (I*polylog(2, (-I)*(a + b*x)))/(2*d) - (I*polylog(2, I*(a + b*x)))/(2*d)],
+
+
+[arctan(a*x^n)/x, x, 3, (I*polylog(2, (-I)*a*x^n))/(2*n) - (I*polylog(2, I*a*x^n))/(2*n)],
+
+[arctan(a*x^5)/x, x, 3, (1/10)*I*polylog(2, (-I)*a*x^5) - (1/10)*I*polylog(2, I*a*x^5)],
+
+
+[x^3*arctan(a + b*x^4), x, 2, ((a + b*x^4)*arctan(a + b*x^4))/(4*b) - log(1 + (a + b*x^4)^2)/(8*b)],
+
+[x^(n-1)*arctan(a + b*x^n), x, 2, ((a + b*x^n)*arctan(a + b*x^n))/(b*n) - log(1 + (a + b*x^n)^2)/(2*b*n)],
+
+
+[arctan(1 + x)/x^4, x, 6, -(1/(12*x^2)) + 1/(6*x) + (1/12)*arctan(1 + x) - arctan(1 + x)/(3*x^3) + log(x)/12 - (1/24)*log(2 + 2*x + x^2)],
+[arctan(1 + x + x^2)/x^2, x, 8, (1/2)*arctan(1 + x) - arctan(1 + x + x^2)/x + log(x)/2 - (1/2)*log(1 + x^2) + (1/4)*log(2 + 2*x + x^2)],
+[sqrt(x)*arctan(x), x, 9, -((4*sqrt(x))/3) - (1/3)*sqrt(2)*arctan(1 - sqrt(2)*sqrt(x)) + (1/3)*sqrt(2)*arctan(1 + sqrt(2)*sqrt(x)) + (2/3)*x^(3/2)*arctan(x) - log(1 - sqrt(2)*sqrt(x) + x)/(3*sqrt(2)) + log(1 + sqrt(2)*sqrt(x) + x)/(3*sqrt(2))],
+
+
+[(x + x^3 + (1 + x)^2*arctan(x))/((1 + x)^2*(1 + x^2)), x, 5, 1/(1 + x) + arctan(x)^2/2 + log(1 + x)]
+]:

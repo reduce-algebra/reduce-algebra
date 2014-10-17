@@ -1,0 +1,84 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Inverse Hyperbolic Secants
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse hyperbolic secants
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m ArcSech[a x]^n
+
+
+# Integrands of the form x^m*ArcSech[a*x] where m is an integer 
+[x^4*arcsech(a*x), x, 12, -((3*sqrt((1 - a*x)/(1 + a*x))*(1 + a*x))/(40*a^5)) - (sqrt((1 - a*x)/(1 + a*x))*(1 + a*x)^2)/(40*a^5) - (sqrt((1 - a*x)/(1 + a*x))*(1 + a*x)^3)/(100*a^5) + (sqrt((1 - a*x)/(1 + a*x))*(1 + a*x)^4)/(200*a^5) + (11*((1 - a*x)/(1 + a*x))^(3/2)*(1 + a*x)^4)/(200*a^5) + (((1 - a*x)/(1 + a*x))^(5/2)*(1 + a*x)^4)/(40*a^5) + (((1 - a*x)/(1 + a*x))^(7/2)*(1 + a*x)^4)/(40*a^5) + (1/5)*x^5*arcsech(a*x) - (3*arctan(sqrt((1 - a*x)/(1 + a*x))))/(20*a^5)],
+[x^3*arcsech(a*x), x, 5, -((sqrt((1 - a*x)/(1 + a*x))*(1 + a*x)^3)/(16*a^4)) - (((1 - a*x)/(1 + a*x))^(3/2)*(1 + a*x)^3)/(24*a^4) - (((1 - a*x)/(1 + a*x))^(5/2)*(1 + a*x)^3)/(16*a^4) + (1/4)*x^4*arcsech(a*x)],
+[x^2*arcsech(a*x), x, 5, -((sqrt((1 - a*x)/(1 + a*x))*(1 + a*x))/(6*a^3)) + (((1 - a*x)/(1 + a*x))^(3/2)*(1 + a*x)^2)/(6*a^3) + (1/3)*x^3*arcsech(a*x) - arctan(sqrt((1 - a*x)/(1 + a*x)))/(3*a^3)],
+[x*arcsech(a*x), x, 3, -((sqrt((1 - a*x)/(1 + a*x))*(1 + a*x))/(2*a^2)) + (1/2)*x^2*arcsech(a*x)],
+[arcsech(a*x), x, 1, x*arcsech(a*x) - (2*arctan(sqrt((1 - a*x)/(1 + a*x))))/a],
+[arcsech(a*x)/x, x, 6, (1/2)*arcsech(a*x)^2 - arcsech(a*x)*log(1 + exp(2*arcsech(a*x))) - (1/2)*polylog(2, -exp(2*arcsech(a*x)))],
+[arcsech(a*x)/x^2, x, 3, (sqrt((1 - a*x)/(1 + a*x))*(1 + a*x))/x - arcsech(a*x)/x],
+[arcsech(a*x)/x^3, x, 8, (a*sqrt((1 - a*x)/(1 + a*x))*(1 + a*x))/(4*x) + (((1 - a*x)/(1 + a*x))^(3/2)*(1 + a*x)^2)/(4*x^2) - arcsech(a*x)/(2*x^2) + (1/2)*a^2*arctanh(sqrt((1 - a*x)/(1 + a*x)))],
+[arcsech(a*x)/x^4, x, 5, (sqrt((1 - a*x)/(1 + a*x))*(1 + a*x)^3)/(12*x^3) - (((1 - a*x)/(1 + a*x))^(3/2)*(1 + a*x)^3)/(18*x^3) + (((1 - a*x)/(1 + a*x))^(5/2)*(1 + a*x)^3)/(12*x^3) - arcsech(a*x)/(3*x^3)],
+
+
+# ::Subsubsection::Closed:: 
+#Miscellaneous integrands involving inverse hyperbolic secants
+
+
+# Integrands of the form x^m*ArcSech[a+b*x] where m is an integer 
+[x*arcsech(a + b*x), x, 7, -(sqrt((1 - a - b*x)/(1 + a + b*x))/(b^2*(1 + (1 - a - b*x)/(1 + a + b*x)))) - (a*(a + b*x)*arcsech(a + b*x))/b^2 + ((a + b*x)^2*arcsech(a + b*x))/(2*b^2) + (2*a*arctan(sqrt((1 - a - b*x)/(1 + a + b*x))))/b^2],
+[x^2*arcsech(a + b*x), x, 12, (2*((1 - a - b*x)/(1 + a + b*x))^(3/2))/(3*b^3*(1 + (1 - a - b*x)/(1 + a + b*x))^2) - sqrt((1 - a - b*x)/(1 + a + b*x))/(3*b^3*(1 + (1 - a - b*x)/(1 + a + b*x))) + (2*a*sqrt((1 - a - b*x)/(1 + a + b*x)))/(b^3*(1 + (1 - a - b*x)/(1 + a + b*x))) + (a^2*(a + b*x)*arcsech(a + b*x))/b^3 - (a*(a + b*x)^2*arcsech(a + b*x))/b^3 + ((a + b*x)^3*arcsech(a + b*x))/(3*b^3) - arctan(sqrt((1 - a - b*x)/(1 + a + b*x)))/(3*b^3) - (2*a^2*arctan(sqrt((1 - a - b*x)/(1 + a + b*x))))/b^3],
+[arcsech(a + b*x)/x, x, 3, Int(arcsech(a + b*x)/x, x)],
+# {ArcSech[a + b*x]/x^2, x, 0, (b*ArcCsch[a + b*x])/a - ArcSech[a + b*x]/x - (Sqrt[-1 + (a + b*x)^2]*ArcTanh[(-(1/b) + (a*(a + b*x))/b)/(Sqrt[-(1/b^2) + a^2/b^2]*Sqrt[-1 + (a + b*x)^2])])/(a*Sqrt[-(1/b^2) + a^2/b^2]*(a + b*x)*Sqrt[1 - 1/(a + b*x)^2])} 
+
+
+# Integrands of the form x^m*ArcSech[Sqrt[x]] where m is an integer 
+[arcsech(sqrt(x)), x, 4, (-sqrt((1 - sqrt(x))/(1 + sqrt(x))))*(1 + sqrt(x)) + x*arcsech(sqrt(x))],
+[x*arcsech(sqrt(x)), x, 6, (-(1/8))*sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x))^3 - (1/12)*((1 - sqrt(x))/(1 + sqrt(x)))^(3/2)*(1 + sqrt(x))^3 - (1/8)*((1 - sqrt(x))/(1 + sqrt(x)))^(5/2)*(1 + sqrt(x))^3 + (1/2)*x^2*arcsech(sqrt(x))],
+[x^2*arcsech(sqrt(x)), x, 8, (-(1/48))*sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x))^5 - (1/36)*((1 - sqrt(x))/(1 + sqrt(x)))^(3/2)*(1 + sqrt(x))^5 - (29/360)*((1 - sqrt(x))/(1 + sqrt(x)))^(5/2)*(1 + sqrt(x))^5 - (1/36)*((1 - sqrt(x))/(1 + sqrt(x)))^(7/2)*(1 + sqrt(x))^5 - (1/48)*((1 - sqrt(x))/(1 + sqrt(x)))^(9/2)*(1 + sqrt(x))^5 + (1/3)*x^3*arcsech(sqrt(x))],
+[arcsech(sqrt(x))/x, x, 7, arcsech(sqrt(x))^2 - 2*arcsech(sqrt(x))*log(1 + exp(2*arcsech(sqrt(x)))) - polylog(2, -exp(2*arcsech(sqrt(x))))],
+[arcsech(sqrt(x))/x^2, x, 9, (((1 - sqrt(x))/(1 + sqrt(x)))^(3/2)*(1 + sqrt(x))^2)/(2*x) + (sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x)))/(2*sqrt(x)) - arcsech(sqrt(x))/x + arctanh(sqrt((1 - sqrt(x))/(1 + sqrt(x))))],
+[arcsech(sqrt(x))/x^3, x, 13, -((sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x))^4)/(80*x^2)) + (11*((1 - sqrt(x))/(1 + sqrt(x)))^(3/2)*(1 + sqrt(x))^4)/(80*x^2) - (((1 - sqrt(x))/(1 + sqrt(x)))^(5/2)*(1 + sqrt(x))^4)/(16*x^2) + (((1 - sqrt(x))/(1 + sqrt(x)))^(7/2)*(1 + sqrt(x))^4)/(16*x^2) + (sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x))^3)/(40*x^(3/2)) + (sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x))^2)/(16*x) + (3*sqrt((1 - sqrt(x))/(1 + sqrt(x)))*(1 + sqrt(x)))/(16*sqrt(x)) - arcsech(sqrt(x))/(2*x^2) + (3/8)*arctanh(sqrt((1 - sqrt(x))/(1 + sqrt(x))))],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse hyperbolic functions of exponentials
+
+
+[arcsech(c*exp(a + b*x)), x, 7, arcsech(c*exp(a + b*x))^2/(2*b) - (arcsech(c*exp(a + b*x))*log(1 + exp(2*arcsech(c*exp(a + b*x)))))/b - polylog(2, -exp(2*arcsech(c*exp(a + b*x))))/(2*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving exponentials of arcsecants
+
+
+[x^2*E^arcsech(x), x, 18, x^2/2 - (1/3)*sqrt((1 - x)/(1 + x)) - (1/3)*x*sqrt((1 - x)/(1 + x)) + (1/3)*x^2*sqrt((1 - x)/(1 + x)) + (1/3)*x^3*sqrt((1 - x)/(1 + x)), x^2/2 - (2/3)*sqrt((1 - x)/(1 + x))*(1 + x)^2 - ((1 - x)/(1 + x))^(3/2)*(1 + x)^2 + (1/3)*sqrt((1 - x)/(1 + x))*(1 + x)^3 + (1/2)*((1 - x)/(1 + x))^(3/2)*(1 + x)^3 + (1/2)*((1 - x)/(1 + x))^(5/2)*(1 + x)^3],
+[x*E^arcsech(x), x, 12, x + (1/2)*x*sqrt((1 - x)/(1 + x)) + (1/2)*x^2*sqrt((1 - x)/(1 + x)) - arctan(sqrt((1 - x)/(1 + x))), x + (3/2)*sqrt((1 - x)/(1 + x))*(1 + x) - (1/2)*sqrt((1 - x)/(1 + x))*(1 + x)^2 - ((1 - x)/(1 + x))^(3/2)*(1 + x)^2 - arctan(sqrt((1 - x)/(1 + x)))],
+[E^arcsech(x), x, 10, sqrt((1 - x)/(1 + x))*(1 + x) - 2*arctanh(sqrt((1 - x)/(1 + x))) + log(x)],
+[E^arcsech(x)/x, x, 11, -(1/x) - (sqrt((1 - x)/(1 + x))*(1 + x))/x + 2*arctan(sqrt((1 - x)/(1 + x)))],
+[E^arcsech(x)/x^2, x, 13, -(1/(2*x^2)) - (3*sqrt((1 - x)/(1 + x))*(1 + x))/(2*x) + (sqrt((1 - x)/(1 + x))*(1 + x)^2)/(2*x^2) - (((1 - x)/(1 + x))^(3/2)*(1 + x)^2)/x^2 + arctanh(sqrt((1 - x)/(1 + x)))],
+
+
+# ::Subsection::Closed:: 
+#Miscellaneous integrands involving inverse hyperbolic secants
+
+
+[arcsech(1/x), x, 1, -(sqrt(-1 + x)*sqrt(1 + x)) + x*arccosh(x)],
+
+
+[arcsech(a + b*x)/((a*d)/b + d*x), x, 9, arcsech(a + b*x)^2/(2*d) - (arcsech(a + b*x)*log(1 + exp(2*arcsech(a + b*x))))/d - polylog(2, -exp(2*arcsech(a + b*x)))/(2*d)],
+
+
+[arcsech(a*x^n)/x, x, 7, arcsech(a*x^n)^2/(2*n) - (arcsech(a*x^n)*log(1 + exp(2*arcsech(a*x^n))))/n - polylog(2, -exp(2*arcsech(a*x^n)))/(2*n)],
+
+[arcsech(a*x^5)/x, x, 7, (1/10)*arcsech(a*x^5)^2 - (1/5)*arcsech(a*x^5)*log(1 + exp(2*arcsech(a*x^5))) - (1/10)*polylog(2, -exp(2*arcsech(a*x^5)))],
+
+
+[x^3*arcsech(a + b*x^4), x, 2, ((a + b*x^4)*arcsech(a + b*x^4))/(4*b) - arctan(sqrt((1 - a - b*x^4)/(1 + a + b*x^4)))/(2*b)],
+
+[x^(n-1)*arcsech(a + b*x^n), x, 2, ((a + b*x^n)*arcsech(a + b*x^n))/(b*n) - (2*arctan(sqrt((1 - a - b*x^n)/(1 + a + b*x^n))))/(b*n)]
+]:

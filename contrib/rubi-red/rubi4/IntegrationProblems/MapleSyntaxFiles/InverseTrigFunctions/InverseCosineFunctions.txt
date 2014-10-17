@@ -1,0 +1,160 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Inverse Cosines
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m ArcCos[a x]^n
+
+
+# Integrands of the form x^m*ArcCos[a*x] where m is an integer 
+[x^4*arccos(a*x), x, 5, -((8*sqrt(1 - a^2*x^2))/(75*a^5)) - (4*x^2*sqrt(1 - a^2*x^2))/(75*a^3) - (x^4*sqrt(1 - a^2*x^2))/(25*a) + (1/5)*x^5*arccos(a*x)],
+[x^3*arccos(a*x), x, 4, -((3*x*sqrt(1 - a^2*x^2))/(32*a^3)) - (x^3*sqrt(1 - a^2*x^2))/(16*a) + (1/4)*x^4*arccos(a*x) + (3*arcsin(a*x))/(32*a^4)],
+[x^2*arccos(a*x), x, 4, -((2*sqrt(1 - a^2*x^2))/(9*a^3)) - (x^2*sqrt(1 - a^2*x^2))/(9*a) + (1/3)*x^3*arccos(a*x)],
+[x*arccos(a*x), x, 3, -((x*sqrt(1 - a^2*x^2))/(4*a)) + (1/2)*x^2*arccos(a*x) + arcsin(a*x)/(4*a^2)],
+[arccos(a*x), x, 1, -(sqrt(1 - a^2*x^2)/a) + x*arccos(a*x)],
+[arccos(a*x)/x, x, 5, (-(1/2))*I*arccos(a*x)^2 + arccos(a*x)*log(1 + exp(2*I*arccos(a*x))) - (1/2)*I*polylog(2, -exp(2*I*arccos(a*x)))],
+[arccos(a*x)/x^2, x, 2, -(arccos(a*x)/x) + a*arctanh(sqrt(1 - a^2*x^2))],
+[arccos(a*x)/x^3, x, 2, (a*sqrt(1 - a^2*x^2))/(2*x) - arccos(a*x)/(2*x^2)],
+[arccos(a*x)/x^4, x, 3, (a*sqrt(1 - a^2*x^2))/(6*x^2) - arccos(a*x)/(3*x^3) + (1/6)*a^3*arctanh(sqrt(1 - a^2*x^2))],
+
+
+# Integrands of the form x^m*ArcCos[a*x]^2 where m is an integer 
+[x^4*arccos(a*x)^2, x, 5, -((16*x)/(75*a^4)) - (8*x^3)/(225*a^2) - (2*x^5)/125 - (16*sqrt(1 - a^2*x^2)*arccos(a*x))/(75*a^5) - (8*x^2*sqrt(1 - a^2*x^2)*arccos(a*x))/(75*a^3) - (2*x^4*sqrt(1 - a^2*x^2)*arccos(a*x))/(25*a) + (1/5)*x^5*arccos(a*x)^2],
+[x^3*arccos(a*x)^2, x, 4, -((3*x^2)/(32*a^2)) - x^4/32 - (3*x*sqrt(1 - a^2*x^2)*arccos(a*x))/(16*a^3) - (x^3*sqrt(1 - a^2*x^2)*arccos(a*x))/(8*a) - (3*arccos(a*x)^2)/(32*a^4) + (1/4)*x^4*arccos(a*x)^2],
+[x^2*arccos(a*x)^2, x, 4, -((4*x)/(9*a^2)) - (2*x^3)/27 - (4*sqrt(1 - a^2*x^2)*arccos(a*x))/(9*a^3) - (2*x^2*sqrt(1 - a^2*x^2)*arccos(a*x))/(9*a) + (1/3)*x^3*arccos(a*x)^2],
+[x*arccos(a*x)^2, x, 2, -(x^2/4) - (x*sqrt(1 - a^2*x^2)*arccos(a*x))/(2*a) - arccos(a*x)^2/(4*a^2) + (1/2)*x^2*arccos(a*x)^2],
+[arccos(a*x)^2, x, 2, -2*x - (2*sqrt(1 - a^2*x^2)*arccos(a*x))/a + x*arccos(a*x)^2],
+[arccos(a*x)^2/x, x, 6, (-(1/3))*I*arccos(a*x)^3 + arccos(a*x)^2*log(1 + exp(2*I*arccos(a*x))) - I*arccos(a*x)*polylog(2, -exp(2*I*arccos(a*x))) + (1/2)*polylog(3, -exp(2*I*arccos(a*x)))],
+[arccos(a*x)^2/x^2, x, 5, -(arccos(a*x)^2/x) - 4*I*a*arccos(a*x)*arctan(exp(I*arccos(a*x))) + 2*I*a*polylog(2, (-I)*exp(I*arccos(a*x))) - 2*I*a*polylog(2, I*exp(I*arccos(a*x)))],
+[arccos(a*x)^2/x^3, x, 2, (a*sqrt(1 - a^2*x^2)*arccos(a*x))/x - arccos(a*x)^2/(2*x^2) + a^2*log(x)],
+[arccos(a*x)^2/x^4, x, 7, -(a^2/(3*x)) + (a*sqrt(1 - a^2*x^2)*arccos(a*x))/(3*x^2) - arccos(a*x)^2/(3*x^3) - (2/3)*I*a^3*arccos(a*x)*arctan(exp(I*arccos(a*x))) + (1/3)*I*a^3*polylog(2, (-I)*exp(I*arccos(a*x))) - (1/3)*I*a^3*polylog(2, I*exp(I*arccos(a*x)))],
+[arccos(a*x)^2/x^5, x, 4, -(a^2/(12*x^2)) + (a*sqrt(1 - a^2*x^2)*arccos(a*x))/(6*x^3) + (a^3*sqrt(1 - a^2*x^2)*arccos(a*x))/(3*x) - arccos(a*x)^2/(4*x^4) + (1/3)*a^4*log(x)],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form x^m ArcCos[a x^n]
+
+
+[x^3*arccos(a*x^2), x, 5, -((x^2*sqrt(1 - a^2*x^4))/(8*a)) + (1/4)*x^4*arccos(a*x^2) + arcsin(a*x^2)/(8*a^2)],
+[x^2*arccos(a*x^2), x, 4, -((2*x*sqrt(1 - a^2*x^4))/(9*a)) + (1/3)*x^3*arccos(a*x^2) + (2*EllipticF(arcsin(sqrt(a)*x), -1))/(9*a^(3/2))],
+[x*arccos(a*x^2), x, 2, -(sqrt(1 - a^2*x^4)/(2*a)) + (1/2)*x^2*arccos(a*x^2)],
+[arccos(a*x^2), x, 3, x*arccos(a*x^2) + (2*EllipticE(arcsin(sqrt(a)*x), -1))/sqrt(a) - (2*EllipticF(arcsin(sqrt(a)*x), -1))/sqrt(a)],
+[arccos(a*x^2)/x, x, 5, (-(1/4))*I*arccos(a*x^2)^2 + (1/2)*arccos(a*x^2)*log(1 + exp(2*I*arccos(a*x^2))) - (1/4)*I*polylog(2, -exp(2*I*arccos(a*x^2)))],
+[arccos(a*x^2)/x^2, x, 3, -(arccos(a*x^2)/x) - 2*sqrt(a)*EllipticF(arcsin(sqrt(a)*x), -1)],
+
+
+[x^2*arccos(a/x), x, 4, (-(1/6))*a*sqrt(1 - a^2/x^2)*x^2 + (1/3)*x^3*arcsec(x/a) - (1/6)*a^3*arctanh(sqrt(1 - a^2/x^2))],
+[x*arccos(a/x), x, 3, (-(1/2))*a*sqrt(1 - a^2/x^2)*x + (1/2)*x^2*arcsec(x/a)],
+[arccos(a/x), x, 4, x*arcsec(x/a) - a*arctanh(sqrt(1 - a^2/x^2))],
+[arccos(a/x)/x, x, 5, (1/2)*I*arccos(a/x)^2 - arccos(a/x)*log(1 + exp(2*I*arccos(a/x))) + (1/2)*I*polylog(2, -exp(2*I*arccos(a/x)))],
+[arccos(a/x)/x^2, x, 4, sqrt(1 - a^2/x^2)/a - arcsec(x/a)/x],
+[arccos(a/x)/x^3, x, 5, sqrt(1 - a^2/x^2)/(4*a*x) - arcsec(x/a)/(2*x^2) - arcsin(a/x)/(4*a^2)],
+[arccos(a/x)/x^4, x, 5, (2*sqrt(1 - a^2/x^2))/(9*a^3) + sqrt(1 - a^2/x^2)/(9*a*x^2) - arcsec(x/a)/(3*x^3)],
+
+
+# Integrands of the form x^m*ArcCos[Sqrt[x]] where m is an integer 
+[x^2*arccos(sqrt(x)), x, 6, (-(5/48))*sqrt(1 - x)*sqrt(x) - (5/72)*sqrt(1 - x)*x^(3/2) - (1/18)*sqrt(1 - x)*x^(5/2) + (1/3)*x^3*arccos(sqrt(x)) + (5*arcsin(sqrt(x)))/48],
+[x*arccos(sqrt(x)), x, 5, (-(3/16))*sqrt(1 - x)*sqrt(x) - (1/8)*sqrt(1 - x)*x^(3/2) + (1/2)*x^2*arccos(sqrt(x)) + (3*arcsin(sqrt(x)))/16],
+[arccos(sqrt(x)), x, 4, (-(1/2))*sqrt(1 - x)*sqrt(x) + x*arccos(sqrt(x)) + arcsin(sqrt(x))/2],
+[arccos(sqrt(x))/x, x, 5, (-I)*arccos(sqrt(x))^2 + 2*arccos(sqrt(x))*log(1 + exp(2*I*arccos(sqrt(x)))) - I*polylog(2, -exp(2*I*arccos(sqrt(x))))],
+[arccos(sqrt(x))/x^2, x, 3, sqrt(1 - x)/sqrt(x) - arccos(sqrt(x))/x],
+[arccos(sqrt(x))/x^3, x, 4, sqrt(1 - x)/(6*x^(3/2)) + sqrt(1 - x)/(3*sqrt(x)) - arccos(sqrt(x))/(2*x^2)],
+[arccos(sqrt(x))/x^4, x, 5, sqrt(1 - x)/(15*x^(5/2)) + (4*sqrt(1 - x))/(45*x^(3/2)) + (8*sqrt(1 - x))/(45*sqrt(x)) - arccos(sqrt(x))/(3*x^3)],
+[arccos(sqrt(x))/x^5, x, 6, sqrt(1 - x)/(28*x^(7/2)) + (3*sqrt(1 - x))/(70*x^(5/2)) + (2*sqrt(1 - x))/(35*x^(3/2)) + (4*sqrt(1 - x))/(35*sqrt(x)) - arccos(sqrt(x))/(4*x^4)],
+
+
+# Integrands of the form ArcTrig[a*x^n]/x 
+[arccos(a*x^n)/x, x, 5, -((I*arccos(a*x^n)^2)/(2*n)) + (arccos(a*x^n)*log(1 + exp(2*I*arccos(a*x^n))))/n - (I*polylog(2, -exp(2*I*arccos(a*x^n))))/(2*n)],
+[arccos(a*x^5)/x, x, 5, (-(1/10))*I*arccos(a*x^5)^2 + (1/5)*arccos(a*x^5)*log(1 + exp(2*I*arccos(a*x^5))) - (1/10)*I*polylog(2, -exp(2*I*arccos(a*x^5)))],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse cosines
+
+
+[arccos(a + b*x)/x, x, -2, (-(1/8))*I*(Pi - 2*arcsin(a + b*x))^2 + 2*I*arctanh(((1 + a)*(-1 + a + b*x - I*sqrt(1 - (a + b*x)^2)))/(sqrt(-1 + a^2)*(1 + a + b*x - I*sqrt(1 - (a + b*x)^2))))*(log(2) - 2*log(I*sqrt(1 - a) + sqrt(1 + a))) + (arccos(a + b*x) + I*(log(2) - 2*log(I*sqrt(1 - a) + sqrt(1 + a))))*log(1 - (a + sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2))) + (arccos(a + b*x) - I*(log(2) - 2*log(I*sqrt(1 - a) + sqrt(1 + a))))*log(1 + (-a + sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2))) - I*polylog(2, (a - sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2))) - I*polylog(2, (a + sqrt(-1 + a^2))*(a + b*x + I*sqrt(1 - (a + b*x)^2)))],
+
+
+# Integrands of the form ArcCos[a+b*x]^n where n is an integer 
+[arccos(a + b*x), x, 1, -(sqrt(1 - (a + b*x)^2)/b) + ((a + b*x)*arccos(a + b*x))/b],
+[arccos(a + b*x)^2, x, 2, -2*x - (2*sqrt(1 - (a + b*x)^2)*arccos(a + b*x))/b + ((a + b*x)*arccos(a + b*x)^2)/b],
+[arccos(a + b*x)^3, x, 2, (6*sqrt(1 - (a + b*x)^2))/b - (6*(a + b*x)*arccos(a + b*x))/b - (3*sqrt(1 - (a + b*x)^2)*arccos(a + b*x)^2)/b + ((a + b*x)*arccos(a + b*x)^3)/b],
+[1/arccos(a + b*x), x, 1, -(Si(arccos(a + b*x))/b)],
+[1/arccos(a + b*x)^2, x, 1, sqrt(1 - (a + b*x)^2)/(b*arccos(a + b*x)) - Ci(arccos(a + b*x))/b],
+[1/arccos(a + b*x)^3, x, 2, sqrt(1 - (a + b*x)^2)/(2*b*arccos(a + b*x)^2) + (a + b*x)/(2*b*arccos(a + b*x)) + Si(arccos(a + b*x))/(2*b)],
+
+
+# Integrands of the form ArcCos[a+b*x]^n where n is a half-integer 
+[sqrt(arccos(a + b*x)), x, 1, ((a + b*x)*sqrt(arccos(a + b*x)))/b - (sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arccos(a + b*x))))/b],
+[arccos(a + b*x)^(3/2), x, 2, -((3*sqrt(1 - (a + b*x)^2)*sqrt(arccos(a + b*x)))/(2*b)) + ((a + b*x)*arccos(a + b*x)^(3/2))/b + (3*sqrt(Pi/2)*FresnelS(sqrt(2/Pi)*sqrt(arccos(a + b*x))))/(2*b)],
+[arccos(a + b*x)^(5/2), x, 2, -((15*(a + b*x)*sqrt(arccos(a + b*x)))/(4*b)) - (5*sqrt(1 - (a + b*x)^2)*arccos(a + b*x)^(3/2))/(2*b) + ((a + b*x)*arccos(a + b*x)^(5/2))/b + (15*sqrt(Pi/2)*FresnelC(sqrt(2/Pi)*sqrt(arccos(a + b*x))))/(4*b)],
+[1/sqrt(arccos(a + b*x)), x, 1, -((sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arccos(a + b*x))))/b)],
+[arccos(a + b*x)^(-3/2), x, 2, (2*sqrt(1 - (a + b*x)^2))/(b*sqrt(arccos(a + b*x))) - (2*sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arccos(a + b*x))))/b],
+[arccos(a + b*x)^(-5/2), x, 2, (2*sqrt(1 - (a + b*x)^2))/(3*b*arccos(a + b*x)^(3/2)) + (4*(a + b*x))/(3*b*sqrt(arccos(a + b*x))) + (4*sqrt(2*Pi)*FresnelS(sqrt(2/Pi)*sqrt(arccos(a + b*x))))/(3*b)],
+
+
+# Integrands of the form x^m*ArcCos[a+b*x] where m is an integer 
+[x*arccos(a + b*x), x, 5, (3*a*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(4*b^2) - (x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(4*b) + (1/2)*x^2*arccos(a + b*x) + arcsin(a + b*x)/(4*b^2) + (a^2*arcsin(a + b*x))/(2*b^2)],
+[x^2*arccos(a + b*x), x, 8, -((2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(9*b^3)) - (11*a^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(18*b^3) + (5*a*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(18*b^2) - (x^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(9*b) + (1/3)*x^3*arccos(a + b*x) - (a*arcsin(a + b*x))/(2*b^3) - (a^3*arcsin(a + b*x))/(3*b^3)],
+[x^3*arccos(a + b*x), x, 13, (55*a*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(96*b^4) + (25*a^3*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^4) - (3*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(32*b^3) - (13*a^2*x*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^3) + (7*a*x^2*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(48*b^2) - (x^3*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(16*b) + (1/4)*x^4*arccos(a + b*x) + (15*a^2*arcsin(a + b*x))/(16*b^4) + (5*a^4*arcsin(a + b*x))/(32*b^4) + (3*(1 - a^2)^2*arcsin(a + b*x))/(32*b^4)],
+[arccos(a + b*x)/x, x, 2, Int(arccos(a + b*x)/x, x)],
+[arccos(a + b*x)/x^2, x, 2, -(arccos(a + b*x)/x) + (b*arctanh((1 - a^2 - a*b*x)/(sqrt(1 - a^2)*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))))/sqrt(1 - a^2)],
+[arccos(a + b*x)/x^3, x, 3, (b*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))/(2*(1 - a^2)*x) - arccos(a + b*x)/(2*x^2) + (a*b^2*arctanh((1 - a^2 - a*b*x)/(sqrt(1 - a^2)*sqrt(1 - a^2 - 2*a*b*x - b^2*x^2))))/(2*(1 - a^2)^(3/2))],
+
+
+# Integrands of the form (a+b*ArcCos[c+d*x])^n 
+[1/sqrt(a + b*arccos(c + d*x)), x, 6, -((sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a + b*arccos(c + d*x)))/sqrt(b)))/(sqrt(b)*d)) + (sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a + b*arccos(c + d*x)))/sqrt(b))*sin(a/b))/(sqrt(b)*d)],
+[1/sqrt(a - b*arccos(c + d*x)), x, 6, -((sqrt(2*Pi)*cos(a/b)*FresnelS((sqrt(2/Pi)*sqrt(a - b*arccos(c + d*x)))/sqrt(b)))/(sqrt(b)*d)) + (sqrt(2*Pi)*FresnelC((sqrt(2/Pi)*sqrt(a - b*arccos(c + d*x)))/sqrt(b))*sin(a/b))/(sqrt(b)*d)],
+
+
+[arccos(a + b*x)/((a*d)/b + d*x), x, 8, -((I*arccos(a + b*x)^2)/(2*d)) + (arccos(a + b*x)*log(1 + exp(2*I*arccos(a + b*x))))/d - (I*polylog(2, -exp(2*I*arccos(a + b*x))))/(2*d)],
+
+
+[x/(sqrt(1 - x^2)*sqrt(arccos(x))), x, 2, -sqrt(2*Pi)*FresnelC(sqrt(2/Pi)*sqrt(arccos(x)))],
+
+
+[x/(sqrt(1 - x^2)*arccos(x)), x, 2, -Ci(arccos(x))],
+
+
+[x^3*arccos(a + b*x^4), x, 2, -(sqrt(1 - (a + b*x^4)^2)/(4*b)) + ((a + b*x^4)*arccos(a + b*x^4))/(4*b)],
+[x^(n-1)*arccos(a + b*x^n), x, 2, -(sqrt(1 - (a + b*x^n)^2)/(b*n)) + ((a + b*x^n)*arccos(a + b*x^n))/(b*n)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse trig functions of exponentials
+
+
+[arccos(c*exp(a + b*x)), x, 6, -((I*arccos(c*exp(a + b*x))^2)/(2*b)) + (arccos(c*exp(a + b*x))*log(1 + exp(2*I*arccos(c*exp(a + b*x)))))/b - (I*polylog(2, -exp(2*I*arccos(c*exp(a + b*x)))))/(2*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving exponentials of inverse trig functions
+
+
+# Integrands of the form x^m*E^ArcCos[x] where m is an integer 
+[x^3*E^arccos(x), x, 6, (1/10)*E^arccos(x)*cos(2*arccos(x)) + (1/34)*E^arccos(x)*cos(4*arccos(x)) - (1/20)*E^arccos(x)*sin(2*arccos(x)) - (1/136)*E^arccos(x)*sin(4*arccos(x))],
+[x^2*E^arccos(x), x, 6, (1/8)*E^arccos(x)*x - (1/8)*E^arccos(x)*sqrt(1 - x^2) + (3/40)*E^arccos(x)*cos(3*arccos(x)) - (1/40)*E^arccos(x)*sin(3*arccos(x))],
+[x*E^arccos(x), x, 5, (1/5)*E^arccos(x)*cos(2*arccos(x)) - (1/10)*E^arccos(x)*sin(2*arccos(x))],
+[E^arccos(x), x, 1, (1/2)*E^arccos(x)*(x - sqrt(1 - x^2))],
+[E^arccos(x)/x, x, 2, -subst(Int(exp(x)*tan(x), x), x, arccos(x))],
+
+
+# ::Subsection::Closed:: 
+#Problems from Calculus textbooks
+
+
+[arccos(sqrt(x))/sqrt(x), x, 2, -2*sqrt(1 - x) + 2*sqrt(x)*arccos(sqrt(x))],
+
+
+# ::Subsection::Closed:: 
+#Miscellaneous problems
+
+
+[sqrt(1 - x^2)*arccos(x), x, 3, x^2/4 + (1/2)*x*sqrt(1 - x^2)*arccos(x) - arccos(x)^2/4, (1/4)*(-1 + x^2) + (1/2)*x*sqrt(1 - x^2)*arccos(x) - arccos(x)^2/4],
+
+
+[arccos(c/(a + b*x)), x, 4, ((a + b*x)*arcsec(a/c + (b*x)/c))/b - (c*arctanh(sqrt(1 - c^2/(a + b*x)^2)))/b]
+]:

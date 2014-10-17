@@ -1,0 +1,166 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Hyperbolic Tangents
+
+
+# ::Subsection::Closed:: 
+#Tanh[a+b x]^n
+
+
+# Integrands of the form Tanh[a+b*x]^n where n is a positive integer 
+[tanh(a+b*x), x, 1, log(cosh(a+b*x))/b],
+[tanh(a+b*x)^2, x, 1, x - tanh(a+b*x)/b],
+[tanh(a+b*x)^3, x, 2, log(cosh(a + b*x))/b - tanh(a + b*x)^2/(2*b)],
+[tanh(a+b*x)^4, x, 2, x - tanh(a + b*x)/b - tanh(a + b*x)^3/(3*b)],
+[tanh(a+b*x)^5, x, 3, log(cosh(a + b*x))/b - tanh(a + b*x)^2/(2*b) - tanh(a + b*x)^4/(4*b)],
+
+
+# Integrands of the form Tanh[a+b*x]^n where n is a half-integer 
+[tanh(a+b*x)^(1/2), x, 5, -(arctan(sqrt(tanh(a + b*x)))/b) + arctanh(sqrt(tanh(a + b*x)))/b],
+[tanh(a+b*x)^(3/2), x, 6, arctan(sqrt(tanh(a + b*x)))/b + arctanh(sqrt(tanh(a + b*x)))/b - (2*sqrt(tanh(a + b*x)))/b],
+[tanh(a+b*x)^(5/2), x, 6, -(arctan(sqrt(tanh(a + b*x)))/b) + arctanh(sqrt(tanh(a + b*x)))/b - (2*tanh(a + b*x)^(3/2))/(3*b)],
+
+[1/tanh(a+b*x)^(1/2), x, 5, arctan(sqrt(tanh(a + b*x)))/b + arctanh(sqrt(tanh(a + b*x)))/b],
+[1/tanh(a+b*x)^(3/2), x, 6, -(arctan(sqrt(tanh(a + b*x)))/b) + arctanh(sqrt(tanh(a + b*x)))/b - 2/(b*sqrt(tanh(a + b*x)))],
+[1/tanh(a+b*x)^(5/2), x, 6, arctan(sqrt(tanh(a + b*x)))/b + arctanh(sqrt(tanh(a + b*x)))/b - 2/(3*b*tanh(a + b*x)^(3/2))],
+
+[tanh(8*x)^(1/3), x, 7, (-(1/16))*sqrt(3)*arctan((1 + 2*tanh(8*x)^(2/3))/sqrt(3)) - (1/16)*log(1 - tanh(8*x)^(2/3)) + (1/32)*log(1 + tanh(8*x)^(2/3) + tanh(8*x)^(4/3))],
+
+
+# ::Subsection::Closed:: 
+#x^m Tanh[a+b x]^n
+
+
+# Integrands of the form x^m*Tanh[a+b*x]^n where m and n are integers 
+[x*tanh(a + b*x), x, 4, -(x^2/2) + (x*log(1 + exp(2*a + 2*b*x)))/b + polylog(2, -exp(2*a + 2*b*x))/(2*b^2)],
+[x*tanh(a + b*x)^2, x, 3, x^2/2 + log(cosh(a + b*x))/b^2 - (x*tanh(a + b*x))/b],
+[x*tanh(a + b*x)^3, x, 6, -(x^2/2) + (x*log(1 + exp(2*a + 2*b*x)))/b + polylog(2, -exp(2*a + 2*b*x))/(2*b^2) + (x*sech(a + b*x)^2)/(2*b) - tanh(a + b*x)/(2*b^2)],
+
+[x^2*tanh(a + b*x), x, 5, -(x^3/3) + (x^2*log(1 + exp(2*a + 2*b*x)))/b + (x*polylog(2, -exp(2*a + 2*b*x)))/b^2 - polylog(3, -exp(2*a + 2*b*x))/(2*b^3)],
+[x^2*tanh(a + b*x)^2, x, 6, -(x^2/b) + x^3/3 + (2*x*log(1 + exp(2*a + 2*b*x)))/b^2 + polylog(2, -exp(2*a + 2*b*x))/b^3 - (x^2*tanh(a + b*x))/b],
+[x^2*tanh(a + b*x)^3, x, 9, -(x^3/3) + (x^2*log(1 + exp(2*a + 2*b*x)))/b + log(cosh(a + b*x))/b^3 + (x*polylog(2, -exp(2*a + 2*b*x)))/b^2 - polylog(3, -exp(2*a + 2*b*x))/(2*b^3) + (x^2*sech(a + b*x)^2)/(2*b) - (x*tanh(a + b*x))/b^2],
+
+[x^3*tanh(a + b*x), x, 6, -(x^4/4) + (x^3*log(1 + exp(2*a + 2*b*x)))/b + (3*x^2*polylog(2, -exp(2*a + 2*b*x)))/(2*b^2) - (3*x*polylog(3, -exp(2*a + 2*b*x)))/(2*b^3) + (3*polylog(4, -exp(2*a + 2*b*x)))/(4*b^4)],
+[x^3*tanh(a + b*x)^2, x, 7, -(x^3/b) + x^4/4 + (3*x^2*log(1 + exp(2*a + 2*b*x)))/b^2 + (3*x*polylog(2, -exp(2*a + 2*b*x)))/b^3 - (3*polylog(3, -exp(2*a + 2*b*x)))/(2*b^4) - (x^3*tanh(a + b*x))/b],
+[x^3*tanh(a + b*x)^3, x, 13, -((3*x^2)/(2*b^2)) - x^4/4 + (3*x*log(1 + exp(2*a + 2*b*x)))/b^3 + (x^3*log(1 + exp(2*a + 2*b*x)))/b + (3*(1 + b^2*x^2)*polylog(2, -exp(2*a + 2*b*x)))/(2*b^4) - (3*x*polylog(3, -exp(2*a + 2*b*x)))/(2*b^3) + (3*polylog(4, -exp(2*a + 2*b*x)))/(4*b^4) + (x^3*sech(a + b*x)^2)/(2*b) - (3*x^2*tanh(a + b*x))/(2*b^2)],
+
+[tanh(a + b*x)/x, x, 0, Int(tanh(a + b*x)/x, x)],
+[tanh(a + b*x)^2/x, x, 0, Int(tanh(a + b*x)^2/x, x)],
+[tanh(a + b*x)^3/x, x, 0, Int(tanh(a + b*x)^3/x, x)],
+
+[tanh(a + b*x)/x^2, x, 0, Int(tanh(a + b*x)/x^2, x)],
+[tanh(a + b*x)^2/x^2, x, 0, Int(tanh(a + b*x)^2/x^2, x)],
+[tanh(a + b*x)^3/x^2, x, 0, Int(tanh(a + b*x)^3/x^2, x)],
+
+[tanh(a + b*x)/x^3, x, 0, Int(tanh(a + b*x)/x^3, x)],
+[tanh(a + b*x)^2/x^3, x, 0, Int(tanh(a + b*x)^2/x^3, x)],
+[tanh(a + b*x)^3/x^3, x, 0, Int(tanh(a + b*x)^3/x^3, x)],
+
+
+# ::Subsection::Closed:: 
+#(a Tanh[a+b x]^n)^m
+
+
+# Integrands of the form (a*Tanh[x]^n)^m where n is an integer and m is a half-integer 
+[sqrt(a*tanh(x)), x, 5, (-sqrt(a))*arctan(sqrt(a*tanh(x))/sqrt(a)) + sqrt(a)*arctanh(sqrt(a*tanh(x))/sqrt(a))],
+[sqrt(a*tanh(x)^2), x, 2, coth(x)*log(cosh(x))*sqrt(a*tanh(x)^2)],
+[sqrt(a*tanh(x)^3), x, 8, ((arctan(sqrt(tanh(x))) + arctanh(sqrt(tanh(x))) - 2*sqrt(tanh(x)))*sqrt(a*tanh(x)^3))/tanh(x)^(3/2)],
+[sqrt(a*tanh(x)^4), x, 2, (-coth(x))*sqrt(a*tanh(x)^4) + x*coth(x)^2*sqrt(a*tanh(x)^4)],
+
+[(a*tanh(x))^(3/2),x, 7, a^(3/2)*arctan(sqrt(a*tanh(x))/sqrt(a)) + a^(3/2)*arctanh(sqrt(a*tanh(x))/sqrt(a)) - 2*a*sqrt(a*tanh(x))],
+[(a*tanh(x)^2)^(3/2),x, 3, a*coth(x)*log(cosh(x))*sqrt(a*tanh(x)^2) - (1/2)*a*tanh(x)*sqrt(a*tanh(x)^2)],
+[(a*tanh(x)^3)^(3/2),x, 9, -((a*sqrt(a*tanh(x)^3)*(21*arctan(sqrt(tanh(x))) - 21*arctanh(sqrt(tanh(x))) + 14*tanh(x)^(3/2) + 6*tanh(x)^(7/2)))/(21*tanh(x)^(3/2)))],
+[(a*tanh(x)^4)^(3/2),x, 4, (-a)*coth(x)*sqrt(a*tanh(x)^4) + a*x*coth(x)^2*sqrt(a*tanh(x)^4) - (1/3)*a*tanh(x)*sqrt(a*tanh(x)^4) - (1/5)*a*tanh(x)^3*sqrt(a*tanh(x)^4)],
+
+[1/sqrt(a*tanh(x)), x, 6, arctan(sqrt(a*tanh(x))/sqrt(a))/sqrt(a) + arctanh(sqrt(a*tanh(x))/sqrt(a))/sqrt(a)],
+[1/sqrt(a*tanh(x)^2), x, 2, (log(sinh(x))*tanh(x))/sqrt(a*tanh(x)^2)],
+[1/sqrt(a*tanh(x)^3), x, 10, -(((2 + (arctan(sqrt(tanh(x))) - arctanh(sqrt(tanh(x))))*sqrt(tanh(x)))*tanh(x))/sqrt(a*tanh(x)^3))],
+[1/sqrt(a*tanh(x)^4), x, 2, -(tanh(x)/sqrt(a*tanh(x)^4)) + (x*tanh(x)^2)/sqrt(a*tanh(x)^4)],
+
+
+# ::Subsection::Closed:: 
+#(a+b Tanh[c+d x])^n           where a^2 - b^2 is zero
+
+
+# Integrands of the form (a+b*Tanh[x])^n where a^2-b^2 is zero 
+[(1 + tanh(x))^3, x, 6, 4*x + 4*log(cosh(x)) - 3*tanh(x) - tanh(x)^2/2],
+[(1 + tanh(x))^2, x, 4, 2*x + 2*log(cosh(x)) - tanh(x)],
+[1/(1 + tanh(x)), x, 1, x/2 - 1/(2*(1 + tanh(x)))],
+[1/(1 + tanh(x))^2, x, 2, x/4 - 1/(4*(1 + tanh(x))^2) - 1/(4*(1 + tanh(x)))],
+[1/(1 + tanh(x))^3, x, 3, x/8 - 1/(6*(1 + tanh(x))^3) - 1/(8*(1 + tanh(x))^2) - 1/(8*(1 + tanh(x)))],
+
+[(1 + tanh(x))^(5/2), x, 3, 4*sqrt(2)*arctanh(sqrt(1 + tanh(x))/sqrt(2)) - 4*sqrt(1 + tanh(x)) - (2/3)*(1 + tanh(x))^(3/2)],
+[(1 + tanh(x))^(3/2), x, 2, 2*sqrt(2)*arctanh(sqrt(1 + tanh(x))/sqrt(2)) - 2*sqrt(1 + tanh(x))],
+[(1 + tanh(x))^(1/2), x, 1, sqrt(2)*arctanh(sqrt(1 + tanh(x))/sqrt(2))],
+[1/(1 + tanh(x))^(1/2), x, 2, arctanh(sqrt(1 + tanh(x))/sqrt(2))/sqrt(2) - 1/sqrt(1 + tanh(x))],
+[1/(1 + tanh(x))^(3/2), x, 3, arctanh(sqrt(1 + tanh(x))/sqrt(2))/(2*sqrt(2)) - 1/(3*(1 + tanh(x))^(3/2)) - 1/(2*sqrt(1 + tanh(x)))],
+[1/(1 + tanh(x))^(5/2), x, 4, arctanh(sqrt(1 + tanh(x))/sqrt(2))/(4*sqrt(2)) - 1/(5*(1 + tanh(x))^(5/2)) - 1/(6*(1 + tanh(x))^(3/2)) - 1/(4*sqrt(1 + tanh(x)))],
+
+
+# ::Subsection::Closed:: 
+#(a+b Tanh[c+d x])^n           where a^2 - b^2 is nonzero
+
+
+# Integrands of the form (a+b*Tanh[c+d*x])^n where a^2-b^2 is nonzero 
+[(a + b*tanh(c + d*x))^3, x, 6, a^3*x + 3*a*b^2*x + (3*a^2*b*log(cosh(c + d*x)))/d + (b^3*log(cosh(c + d*x)))/d - (3*a*b^2*tanh(c + d*x))/d - (b^3*tanh(c + d*x)^2)/(2*d)],
+[(a + b*tanh(c + d*x))^2, x, 4, a^2*x + b^2*x + (2*a*b*log(cosh(c + d*x)))/d - (b^2*tanh(c + d*x))/d],
+[1/(4 - 6*tanh(x)), x, 2, -(x/5) - (3/10)*log(2*cosh(x) - 3*sinh(x))],
+[1/(a + b*tanh(c + d*x)),x, 1, (a*x)/(a^2 - b^2) - (b*log(a*cosh(c + d*x) + b*sinh(c + d*x)))/((a^2 - b^2)*d)],
+[1/(a + b*tanh(c + d*x))^2,x, 8, -(log(1 - tanh(c + d*x))/(2*(a + b)^2*d)) + log(1 + tanh(c + d*x))/(2*(a - b)^2*d) - (2*a*b*log(a + b*tanh(c + d*x)))/((a^2 - b^2)^2*d) + b/((a^2 - b^2)*d*(a + b*tanh(c + d*x)))],
+[1/(a + b*tanh(c + d*x))^3,x, 9, -(log(1 - tanh(c + d*x))/(2*(a + b)^3*d)) + log(1 + tanh(c + d*x))/(2*(a - b)^3*d) - (b*(3*a^2 + b^2)*log(a + b*tanh(c + d*x)))/((a^2 - b^2)^3*d) + b/(2*(a^2 - b^2)*d*(a + b*tanh(c + d*x))^2) + (2*a*b)/((a^2 - b^2)^2*d*(a + b*tanh(c + d*x)))],
+
+[sqrt(a + b*tanh(c + d*x)), x, 5, -((sqrt(a - b)*arctanh(sqrt(a + b*tanh(c + d*x))/sqrt(a - b)))/d) + (sqrt(a + b)*arctanh(sqrt(a + b*tanh(c + d*x))/sqrt(a + b)))/d],
+[1/sqrt(a + b*tanh(c + d*x)), x, 5, -(arctanh(sqrt(a + b*tanh(c + d*x))/sqrt(a - b))/(sqrt(a - b)*d)) + arctanh(sqrt(a + b*tanh(c + d*x))/sqrt(a + b))/(sqrt(a + b)*d)],
+
+
+# ::Subsection::Closed:: 
+#(a+b Tanh[c+d x]^n)^m
+
+
+[1/(1 - 2*tanh(x)^2), x, 1, -x + sqrt(2)*arctanh(sqrt(2)*tanh(x))],
+
+[1/(1 + tanh(x)^3), x, 6, x/2 - (2*arctan((1 - 2*tanh(x))/sqrt(3)))/(3*sqrt(3)) - 1/(6*(1 + tanh(x))), -((2*arctan((1 - 2*tanh(x))/sqrt(3)))/(3*sqrt(3))) + (1/2)*I*Pi*modsx(-((I*x)/Pi)) - 1/(6*(1 + tanh(x)))],
+
+
+# Integrands of the form (a+b*Tanh[x]^2)^m where m is a half-integer 
+[sqrt(1 + tanh(x)^2), x, 4, -arcsinh(tanh(x)) + sqrt(2)*arctanh((sqrt(2)*tanh(x))/sqrt(1 + tanh(x)^2))],
+[sqrt(1 - tanh(x)^2), x, 2, arcsin(tanh(x))],
+[sqrt(-1 + tanh(x)^2), x, 3, -arctanh(tanh(x)/sqrt(-sech(x)^2))],
+[sqrt(-1 - tanh(x)^2), x, 4, arctan(tanh(x)/sqrt(-1 - tanh(x)^2)) - sqrt(2)*arctan((sqrt(2)*tanh(x))/sqrt(-1 - tanh(x)^2))],
+[sqrt(a + b*tanh(x)^2), x, 4, (-sqrt(b))*arctanh((sqrt(b)*tanh(x))/sqrt(a + b*tanh(x)^2)) + sqrt(a + b)*arctanh((sqrt(a + b)*tanh(x))/sqrt(a + b*tanh(x)^2))],
+
+[1/sqrt(1 + tanh(x)^2), x, 2, arctanh((sqrt(2)*tanh(x))/sqrt(1 + tanh(x)^2))/sqrt(2)],
+[1/sqrt(1 - tanh(x)^2), x, 2, tanh(x)/sqrt(sech(x)^2)],
+[1/sqrt(-1 + tanh(x)^2), x, 3, tanh(x)/sqrt(-sech(x)^2)],
+[1/sqrt(-1 - tanh(x)^2), x, 2, arctan((sqrt(2)*tanh(x))/sqrt(-1 - tanh(x)^2))/sqrt(2)],
+[1/sqrt(a + b*tanh(x)^2), x, 2, arctanh((sqrt(a + b)*tanh(x))/sqrt(a + b*tanh(x)^2))/sqrt(a + b)],
+
+[(1 + tanh(x)^2)^(3/2), x, 8, (-(5/2))*arcsinh(tanh(x)) + 2*sqrt(2)*arctanh((sqrt(2)*tanh(x))/sqrt(1 + tanh(x)^2)) - (1/2)*tanh(x)*sqrt(1 + tanh(x)^2)],
+[(1 - tanh(x)^2)^(3/2), x, 3, (1/2)*arcsin(tanh(x)) + (1/2)*sqrt(sech(x)^2)*tanh(x)],
+[(-1 + tanh(x)^2)^(3/2), x, 4, (1/2)*arctanh(tanh(x)/sqrt(-sech(x)^2)) - (1/2)*sqrt(-sech(x)^2)*tanh(x)],
+[(-1 - tanh(x)^2)^(3/2), x, 7, (-(5/2))*arctan(tanh(x)/sqrt(-1 - tanh(x)^2)) + 2*sqrt(2)*arctan((sqrt(2)*tanh(x))/sqrt(-1 - tanh(x)^2)) + (1/2)*tanh(x)*sqrt(-1 - tanh(x)^2)],
+[(a + b*tanh(x)^2)^(3/2), x, 8, (-(3/2))*a*sqrt(b)*arctanh((sqrt(b)*tanh(x))/sqrt(a + b*tanh(x)^2)) - b^(3/2)*arctanh((sqrt(b)*tanh(x))/sqrt(a + b*tanh(x)^2)) + (a + b)^(3/2)*arctanh((sqrt(a + b)*tanh(x))/sqrt(a + b*tanh(x)^2)) - (1/2)*b*tanh(x)*sqrt(a + b*tanh(x)^2)],
+
+
+# ::Subsection::Closed:: 
+#x^m Tanh[a+b Log[c x^n]]^p
+
+
+# Integrands of the form Tanh[a+b*Log[c*x^n]]^p/x where p is an integer 
+[tanh(a + b*log(c*x^n))/x, x, 2, log(cosh(a + b*log(c*x^n)))/(b*n)],
+[tanh(a + b*log(c*x^n))^2/x, x, 2, log(c*x^n)/n - tanh(a + b*log(c*x^n))/(b*n)],
+[tanh(a + b*log(c*x^n))^3/x, x, 3, log(cosh(a + b*log(c*x^n)))/(b*n) - tanh(a + b*log(c*x^n))^2/(2*b*n)],
+[tanh(a + b*log(c*x^n))^4/x, x, 3, log(c*x^n)/n - tanh(a + b*log(c*x^n))/(b*n) - tanh(a + b*log(c*x^n))^3/(3*b*n)],
+[tanh(a + b*log(c*x^n))^5/x, x, 4, log(cosh(a + b*log(c*x^n)))/(b*n) - tanh(a + b*log(c*x^n))^2/(2*b*n) - tanh(a + b*log(c*x^n))^4/(4*b*n)],
+
+
+# Integrands of the form Tanh[a+b*Log[c*x^n]]^p/x where p is a half-integer 
+[tanh(a + b*log(c*x^n))^(5/2)/x, x, 7, -(arctan(sqrt(tanh(a + b*log(c*x^n))))/(b*n)) + arctanh(sqrt(tanh(a + b*log(c*x^n))))/(b*n) - (2*tanh(a + b*log(c*x^n))^(3/2))/(3*b*n)],
+[tanh(a + b*log(c*x^n))^(3/2)/x, x, 7, arctan(sqrt(tanh(a + b*log(c*x^n))))/(b*n) + arctanh(sqrt(tanh(a + b*log(c*x^n))))/(b*n) - (2*sqrt(tanh(a + b*log(c*x^n))))/(b*n)],
+[sqrt(tanh(a + b*log(c*x^n)))/x, x, 6, -(arctan(sqrt(tanh(a + b*log(c*x^n))))/(b*n)) + arctanh(sqrt(tanh(a + b*log(c*x^n))))/(b*n)],
+[1/(x*sqrt(tanh(a + b*log(c*x^n)))), x, 6, arctan(sqrt(tanh(a + b*log(c*x^n))))/(b*n) + arctanh(sqrt(tanh(a + b*log(c*x^n))))/(b*n)],
+[1/(x*tanh(a + b*log(c*x^n))^(3/2)), x, 7, -(arctan(sqrt(tanh(a + b*log(c*x^n))))/(b*n)) + arctanh(sqrt(tanh(a + b*log(c*x^n))))/(b*n) - 2/(b*n*sqrt(tanh(a + b*log(c*x^n))))],
+[1/(x*tanh(a + b*log(c*x^n))^(5/2)), x, 7, arctan(sqrt(tanh(a + b*log(c*x^n))))/(b*n) + arctanh(sqrt(tanh(a + b*log(c*x^n))))/(b*n) - 2/(3*b*n*tanh(a + b*log(c*x^n))^(3/2))]
+]:

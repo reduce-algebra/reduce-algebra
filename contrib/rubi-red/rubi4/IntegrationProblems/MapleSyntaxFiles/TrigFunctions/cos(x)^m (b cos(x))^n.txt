@@ -1,0 +1,682 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration problems of the form 
+#Cos[c+d x]^m (A+B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Section:: 
+#Cos[c+d x]^m (b Cos[c+d x])^(n/2)
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^m (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^5*sqrt(b*cos(c + d*x)), x, 6, (30*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(77*d*sqrt(b*cos(c + d*x))) + (30*sqrt(b*cos(c + d*x))*sin(c + d*x))/(77*d) + (18*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*b^2*d) + (2*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^4*d)],
+[cos(c + d*x)^4*sqrt(b*cos(c + d*x)), x, 5, (14*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (14*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b*d) + (2*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^3*d)],
+[cos(c + d*x)^3*sqrt(b*cos(c + d*x)), x, 5, (10*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^2*d)],
+[cos(c + d*x)^2*sqrt(b*cos(c + d*x)), x, 4, (6*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b*d)],
+[cos(c + d*x)^1*sqrt(b*cos(c + d*x)), x, 4, (2*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[cos(c + d*x)^0*sqrt(b*cos(c + d*x)), x, 2, (2*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1*sqrt(b*cos(c + d*x)), x, 3, (2*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*sqrt(b*cos(c + d*x)), x, 4, -((2*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*b*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*sqrt(b*cos(c + d*x)), x, 4, (2*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^2*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^4*sqrt(b*cos(c + d*x)), x, 5, -((6*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^3*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (6*b*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^5*sqrt(b*cos(c + d*x)), x, 5, (10*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b^4*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (10*b^2*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^6*sqrt(b*cos(c + d*x)), x, 6, -((14*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x)))) + (2*b^5*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (14*b^3*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (14*b*sin(c + d*x))/(15*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^4*(b*cos(c + d*x))^(3/2), x, 6, (30*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(77*d*sqrt(b*cos(c + d*x))) + (30*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(77*d) + (18*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*b*d) + (2*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^3*d)],
+[cos(c + d*x)^3*(b*cos(c + d*x))^(3/2), x, 5, (14*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (14*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*d) + (2*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^2*d)],
+[cos(c + d*x)^2*(b*cos(c + d*x))^(3/2), x, 5, (10*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b*d)],
+[cos(c + d*x)^1*(b*cos(c + d*x))^(3/2), x, 4, (6*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[cos(c + d*x)^0*(b*cos(c + d*x))^(3/2), x, 3, (2*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sec(c + d*x)^1*(b*cos(c + d*x))^(3/2), x, 3, (2*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*(b*cos(c + d*x))^(3/2), x, 3, (2*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*(b*cos(c + d*x))^(3/2), x, 4, -((2*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*b^2*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4*(b*cos(c + d*x))^(3/2), x, 4, (2*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^3*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^5*(b*cos(c + d*x))^(3/2), x, 5, -((6*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^4*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (6*b^2*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^6*(b*cos(c + d*x))^(3/2), x, 5, (10*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b^5*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (10*b^3*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^7*(b*cos(c + d*x))^(3/2), x, 6, -((14*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x)))) + (2*b^6*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (14*b^4*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (14*b^2*sin(c + d*x))/(15*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^3*(b*cos(c + d*x))^(5/2), x, 6, (30*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(77*d*sqrt(b*cos(c + d*x))) + (30*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(77*d) + (18*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*d) + (2*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^2*d)],
+[cos(c + d*x)^2*(b*cos(c + d*x))^(5/2), x, 5, (14*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (14*b*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*d) + (2*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b*d)],
+[cos(c + d*x)^1*(b*cos(c + d*x))^(5/2), x, 5, (10*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*d)],
+[cos(c + d*x)^0*(b*cos(c + d*x))^(5/2), x, 3, (6*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[sec(c + d*x)^1*(b*cos(c + d*x))^(5/2), x, 4, (2*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sec(c + d*x)^2*(b*cos(c + d*x))^(5/2), x, 3, (2*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*(b*cos(c + d*x))^(5/2), x, 3, (2*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4*(b*cos(c + d*x))^(5/2), x, 4, -((2*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*b^3*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^5*(b*cos(c + d*x))^(5/2), x, 4, (2*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^4*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^6*(b*cos(c + d*x))^(5/2), x, 5, -((6*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^5*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (6*b^3*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^7*(b*cos(c + d*x))^(5/2), x, 5, (10*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b^6*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (10*b^4*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^8*(b*cos(c + d*x))^(5/2), x, 6, -((14*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x)))) + (2*b^7*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (14*b^5*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (14*b^3*sin(c + d*x))/(15*d*sqrt(b*cos(c + d*x)))],
+
+
+[(b*cos(c + d*x))^(7/2), x, 4, (10*b^4*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b^3*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*b*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*d)],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[cos(c + d*x)^6/sqrt(b*cos(c + d*x)), x, 6, (30*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(77*d*sqrt(b*cos(c + d*x))) + (30*sqrt(b*cos(c + d*x))*sin(c + d*x))/(77*b*d) + (18*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*b^3*d) + (2*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^5*d)],
+[cos(c + d*x)^5/sqrt(b*cos(c + d*x)), x, 5, (14*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (14*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^2*d) + (2*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^4*d)],
+[cos(c + d*x)^4/sqrt(b*cos(c + d*x)), x, 5, (10*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b*d) + (2*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^3*d)],
+[cos(c + d*x)^3/sqrt(b*cos(c + d*x)), x, 4, (6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^2*d)],
+[cos(c + d*x)^2/sqrt(b*cos(c + d*x)), x, 4, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b*d)],
+[cos(c + d*x)^1/sqrt(b*cos(c + d*x)), x, 3, (2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^0/sqrt(b*cos(c + d*x)), x, 2, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1/sqrt(b*cos(c + d*x)), x, 3, (sqrt(cos(c + d*x))*(-((2*EllipticE((1/2)*(c + d*x), 2))/d) + (2*sin(c + d*x))/(d*sqrt(cos(c + d*x)))))/sqrt(b*cos(c + d*x))],
+[sec(c + d*x)^2/sqrt(b*cos(c + d*x)), x, 4, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^3/sqrt(b*cos(c + d*x)), x, 5, -((6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^2*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (6*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4/sqrt(b*cos(c + d*x)), x, 5, (10*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b^3*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (10*b*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^5/sqrt(b*cos(c + d*x)), x, 6, -((14*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x)))) + (2*b^4*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (14*b^2*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (14*sin(c + d*x))/(15*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^7/(b*cos(c + d*x))^(3/2), x, 6, (30*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(77*b*d*sqrt(b*cos(c + d*x))) + (30*sqrt(b*cos(c + d*x))*sin(c + d*x))/(77*b^2*d) + (18*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*b^4*d) + (2*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^6*d)],
+[cos(c + d*x)^6/(b*cos(c + d*x))^(3/2), x, 5, (14*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*b*d*sqrt(b*cos(c + d*x))) + (14*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^3*d) + (2*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^5*d)],
+[cos(c + d*x)^5/(b*cos(c + d*x))^(3/2), x, 5, (10*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (10*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^2*d) + (2*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^4*d)],
+[cos(c + d*x)^4/(b*cos(c + d*x))^(3/2), x, 4, (6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^3*d)],
+[cos(c + d*x)^3/(b*cos(c + d*x))^(3/2), x, 4, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^2*d)],
+[cos(c + d*x)^2/(b*cos(c + d*x))^(3/2), x, 3, (2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^1/(b*cos(c + d*x))^(3/2), x, 3, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^0/(b*cos(c + d*x))^(3/2), x, 3, -((2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x)))) + (2*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1/(b*cos(c + d*x))^(3/2), x, 4, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^2/(b*cos(c + d*x))^(3/2), x, 5, -((6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b*d*sqrt(b*cos(c + d*x)))) + (2*b*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (6*sin(c + d*x))/(5*b*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3/(b*cos(c + d*x))^(3/2), x, 5, (10*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (2*b^2*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (10*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^4/(b*cos(c + d*x))^(3/2), x, 6, -((14*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*b*d*sqrt(b*cos(c + d*x)))) + (2*b^3*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (14*b*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (14*sin(c + d*x))/(15*b*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^8/(b*cos(c + d*x))^(5/2), x, 6, (30*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(77*b^2*d*sqrt(b*cos(c + d*x))) + (30*sqrt(b*cos(c + d*x))*sin(c + d*x))/(77*b^3*d) + (18*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*b^5*d) + (2*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^7*d)],
+[cos(c + d*x)^7/(b*cos(c + d*x))^(5/2), x, 5, (14*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*b^2*d*sqrt(b*cos(c + d*x))) + (14*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^4*d) + (2*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^6*d)],
+[cos(c + d*x)^6/(b*cos(c + d*x))^(5/2), x, 5, (10*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (10*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^3*d) + (2*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^5*d)],
+[cos(c + d*x)^5/(b*cos(c + d*x))^(5/2), x, 4, (6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^4*d)],
+[cos(c + d*x)^4/(b*cos(c + d*x))^(5/2), x, 4, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^3*d)],
+[cos(c + d*x)^3/(b*cos(c + d*x))^(5/2), x, 3, (2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^2/(b*cos(c + d*x))^(5/2), x, 3, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^1/(b*cos(c + d*x))^(5/2), x, 4, -((2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x)))) + (2*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^0/(b*cos(c + d*x))^(5/2), x, 3, (2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*sin(c + d*x))/(3*b*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^1/(b*cos(c + d*x))^(5/2), x, 5, -((6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^2*d*sqrt(b*cos(c + d*x)))) + (2*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (6*sin(c + d*x))/(5*b^2*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2/(b*cos(c + d*x))^(5/2), x, 5, (10*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (2*b*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (10*sin(c + d*x))/(21*b*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^3/(b*cos(c + d*x))^(5/2), x, 6, -((14*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*b^2*d*sqrt(b*cos(c + d*x)))) + (2*b^2*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (14*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (14*sin(c + d*x))/(15*b^2*d*sqrt(b*cos(c + d*x)))],
+
+
+[1/(b*cos(c + d*x))^(7/2), x, 4, -((6*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^3*d*sqrt(b*cos(c + d*x)))) + (2*sin(c + d*x))/(5*b*d*(b*cos(c + d*x))^(5/2)) + (6*sin(c + d*x))/(5*b^3*d*sqrt(b*cos(c + d*x)))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^(m/2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^(7/2)*(b*cos(c + d*x))^(1/2), x, 3, (3*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (3*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(1/2), x, 3, (sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) - (sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(1/2), x, 2, (x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[cos(c + d*x)^(1/2)*(b*cos(c + d*x))^(1/2), x, 2, (sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)*(b*cos(c + d*x))^(1/2), x, 2, (x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x))],
+[cos(c + d*x)^(-3/2)*(b*cos(c + d*x))^(1/2), x, 2, (arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)*(b*cos(c + d*x))^(1/2), x, 2, (sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-7/2)*(b*cos(c + d*x))^(1/2), x, 3, (arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2))],
+[cos(c + d*x)^(-9/2)*(b*cos(c + d*x))^(1/2), x, 3, (sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2)) + (sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*cos(c + d*x)^(7/2))],
+[cos(c + d*x)^(-11/2)*(b*cos(c + d*x))^(1/2), x, 4, (3*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (3*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2))],
+
+
+[cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(3/2), x, 3, (3*b*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (3*b*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(3/2), x, 3, (b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) - (b*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(1/2)*(b*cos(c + d*x))^(3/2), x, 2, (b*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[cos(c + d*x)^(-1/2)*(b*cos(c + d*x))^(3/2), x, 2, (b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)*(b*cos(c + d*x))^(3/2), x, 2, (b*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x))],
+[cos(c + d*x)^(-5/2)*(b*cos(c + d*x))^(3/2), x, 2, (b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-7/2)*(b*cos(c + d*x))^(3/2), x, 2, (b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-9/2)*(b*cos(c + d*x))^(3/2), x, 3, (b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2))],
+[cos(c + d*x)^(-11/2)*(b*cos(c + d*x))^(3/2), x, 3, (b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2)) + (b*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*cos(c + d*x)^(7/2))],
+[cos(c + d*x)^(-13/2)*(b*cos(c + d*x))^(3/2), x, 4, (3*b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (3*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2))],
+
+
+[cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(5/2), x, 3, (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) - (2*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*sqrt(cos(c + d*x))) + (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x)^5)/(5*d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(5/2), x, 3, (3*b^2*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (3*b^2*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b^2*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[cos(c + d*x)^(1/2)*(b*cos(c + d*x))^(5/2), x, 3, (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) - (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)*(b*cos(c + d*x))^(5/2), x, 2, (b^2*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b^2*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[cos(c + d*x)^(-3/2)*(b*cos(c + d*x))^(5/2), x, 2, (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)*(b*cos(c + d*x))^(5/2), x, 2, (b^2*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x))],
+[cos(c + d*x)^(-7/2)*(b*cos(c + d*x))^(5/2), x, 2, (b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-9/2)*(b*cos(c + d*x))^(5/2), x, 2, (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-11/2)*(b*cos(c + d*x))^(5/2), x, 3, (b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2))],
+[cos(c + d*x)^(-13/2)*(b*cos(c + d*x))^(5/2), x, 3, (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2)) + (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(3*d*cos(c + d*x)^(7/2))],
+[cos(c + d*x)^(-15/2)*(b*cos(c + d*x))^(5/2), x, 4, (3*b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (3*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[cos(c + d*x)^(11/2)/(b*cos(c + d*x))^(1/2), x, 3, (sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x))) - (2*sqrt(cos(c + d*x))*sin(c + d*x)^3)/(3*d*sqrt(b*cos(c + d*x))) + (sqrt(cos(c + d*x))*sin(c + d*x)^5)/(5*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(9/2)/(b*cos(c + d*x))^(1/2), x, 3, (3*x*sqrt(cos(c + d*x)))/(8*sqrt(b*cos(c + d*x))) + (3*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*d*sqrt(b*cos(c + d*x))) + (cos(c + d*x)^(7/2)*sin(c + d*x))/(4*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(7/2)/(b*cos(c + d*x))^(1/2), x, 3, (sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x))) - (sqrt(cos(c + d*x))*sin(c + d*x)^3)/(3*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(5/2)/(b*cos(c + d*x))^(1/2), x, 2, (x*sqrt(cos(c + d*x)))/(2*sqrt(b*cos(c + d*x))) + (cos(c + d*x)^(3/2)*sin(c + d*x))/(2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(3/2)/(b*cos(c + d*x))^(1/2), x, 2, (sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(1/2)/(b*cos(c + d*x))^(1/2), x, 2, (x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x))],
+[cos(c + d*x)^(-1/2)/(b*cos(c + d*x))^(1/2), x, 2, (arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)/(b*cos(c + d*x))^(1/2), x, 2, sin(c + d*x)/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)/(b*cos(c + d*x))^(1/2), x, 3, (arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*d*sqrt(b*cos(c + d*x))) + sin(c + d*x)/(2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-7/2)/(b*cos(c + d*x))^(1/2), x, 3, sin(c + d*x)/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))) + sin(c + d*x)^3/(3*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-9/2)/(b*cos(c + d*x))^(1/2), x, 4, (3*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*d*sqrt(b*cos(c + d*x))) + sin(c + d*x)/(4*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + (3*sin(c + d*x))/(8*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^(11/2)/(b*cos(c + d*x))^(3/2), x, 3, (3*x*sqrt(cos(c + d*x)))/(8*b*sqrt(b*cos(c + d*x))) + (3*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*b*d*sqrt(b*cos(c + d*x))) + (cos(c + d*x)^(7/2)*sin(c + d*x))/(4*b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(9/2)/(b*cos(c + d*x))^(3/2), x, 3, (sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x))) - (sqrt(cos(c + d*x))*sin(c + d*x)^3)/(3*b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(7/2)/(b*cos(c + d*x))^(3/2), x, 2, (x*sqrt(cos(c + d*x)))/(2*b*sqrt(b*cos(c + d*x))) + (cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(5/2)/(b*cos(c + d*x))^(3/2), x, 2, (sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(3/2)/(b*cos(c + d*x))^(3/2), x, 2, (x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(1/2)/(b*cos(c + d*x))^(3/2), x, 2, (arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)/(b*cos(c + d*x))^(3/2), x, 2, sin(c + d*x)/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)/(b*cos(c + d*x))^(3/2), x, 3, (arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b*d*sqrt(b*cos(c + d*x))) + sin(c + d*x)/(2*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)/(b*cos(c + d*x))^(3/2), x, 3, sin(c + d*x)/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))) + sin(c + d*x)^3/(3*b*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-7/2)/(b*cos(c + d*x))^(3/2), x, 4, (3*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*b*d*sqrt(b*cos(c + d*x))) + sin(c + d*x)/(4*b*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + (3*sin(c + d*x))/(8*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^(13/2)/(b*cos(c + d*x))^(5/2), x, 3, (3*x*sqrt(cos(c + d*x)))/(8*b^2*sqrt(b*cos(c + d*x))) + (3*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*b^2*d*sqrt(b*cos(c + d*x))) + (cos(c + d*x)^(7/2)*sin(c + d*x))/(4*b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(11/2)/(b*cos(c + d*x))^(5/2), x, 3, (sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x))) - (sqrt(cos(c + d*x))*sin(c + d*x)^3)/(3*b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(9/2)/(b*cos(c + d*x))^(5/2), x, 2, (x*sqrt(cos(c + d*x)))/(2*b^2*sqrt(b*cos(c + d*x))) + (cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(7/2)/(b*cos(c + d*x))^(5/2), x, 2, (sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(5/2)/(b*cos(c + d*x))^(5/2), x, 2, (x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(3/2)/(b*cos(c + d*x))^(5/2), x, 2, (arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(1/2)/(b*cos(c + d*x))^(5/2), x, 2, sin(c + d*x)/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)/(b*cos(c + d*x))^(5/2), x, 3, (arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b^2*d*sqrt(b*cos(c + d*x))) + sin(c + d*x)/(2*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)/(b*cos(c + d*x))^(5/2), x, 3, sin(c + d*x)/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))) + sin(c + d*x)^3/(3*b^2*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)/(b*cos(c + d*x))^(5/2), x, 4, (3*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*b^2*d*sqrt(b*cos(c + d*x))) + sin(c + d*x)/(4*b^2*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + (3*sin(c + d*x))/(8*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+
+
+# ::Section:: 
+#Cos[c+d x]^m (A+B Cos[c+d x]) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^m (A+B Cos[c+d x]) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^2*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 9, (6*A*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (10*b*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*A*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^2*d)],
+[cos(c + d*x)^1*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 8, (6*b*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b*d)],
+[cos(c + d*x)^0*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 6, (2*A*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*b*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sec(c + d*x)^1*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 6, (2*b*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 7, -((2*A*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*b*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 8, -((2*b*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*A*b*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 9, -((6*A*b*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^2*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (6*A*b*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^1*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 9, (6*A*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (10*b^2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*A*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b*d)],
+[cos(c + d*x)^0*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 7, (6*b^2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[sec(c + d*x)^1*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 7, (2*A*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sec(c + d*x)^2*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 6, (2*b^2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 7, -((2*A*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*b^2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 8, -((2*b^2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*A*b^2*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b^2*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^5*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 9, -((6*A*b^2*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^3*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (6*A*b^2*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^0*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 8, (6*A*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (10*b^3*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*A*b*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*d)],
+[sec(c + d*x)^1*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 8, (6*b^3*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (2*b*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[sec(c + d*x)^2*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 7, (2*A*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^3*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sec(c + d*x)^3*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 6, (2*b^3*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 7, -((2*A*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*b^3*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^5*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 8, -((2*b^3*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*A*b^3*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b^3*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^6*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 9, -((6*A*b^3*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^3*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^5*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^4*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (6*A*b^3*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[cos(c + d*x)^3*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 9, (6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b*d) + (2*A*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^2*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^3*d)],
+[cos(c + d*x)^2*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 8, (6*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^2*d)],
+[cos(c + d*x)^1*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 7, (2*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b*d)],
+[cos(c + d*x)^0*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 5, (2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 7, -((2*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 8, -((2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 9, -((6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (6*A*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^4*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 9, (6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^2*d) + (2*A*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^3*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^4*d)],
+[cos(c + d*x)^3*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 8, (6*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^2*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^3*d)],
+[cos(c + d*x)^2*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 7, (2*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^2*d)],
+[cos(c + d*x)^1*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 6, (2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^0*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 6, -((2*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 8, -((2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b*d*sqrt(b*cos(c + d*x)))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*B*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 9, -((6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b*d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (6*A*sin(c + d*x))/(5*b*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^5*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 9, (6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^3*d) + (2*A*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^4*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^5*d)],
+[cos(c + d*x)^4*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 8, (6*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^3*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^4*d)],
+[cos(c + d*x)^3*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 7, (2*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^3*d)],
+[cos(c + d*x)^2*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 6, (2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^1*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 7, -((2*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^0*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 7, -((2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(b^2*d*sqrt(b*cos(c + d*x)))) + (2*A*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*b*d*(b*cos(c + d*x))^(3/2)) + (2*B*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 9, -((6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^2*d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*B*sin(c + d*x))/(3*b*d*(b*cos(c + d*x))^(3/2)) + (6*A*sin(c + d*x))/(5*b^2*d*sqrt(b*cos(c + d*x)))],
+
+
+[(A + B*cos(c + d*x))/(b*cos(c + d*x))^(7/2), x, 8, -((6*A*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^3*d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*b^3*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(5*b*d*(b*cos(c + d*x))^(5/2)) + (2*B*sin(c + d*x))/(3*b^2*d*(b*cos(c + d*x))^(3/2)) + (6*A*sin(c + d*x))/(5*b^3*d*sqrt(b*cos(c + d*x)))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^(m/2) (A+B Cos[c+d x]) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^(5/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 5, (3*B*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (3*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (A*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (B*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[cos(c + d*x)^(3/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 4, (A*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (A*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d) + (B*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[cos(c + d*x)^(1/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 3, (B*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[cos(c + d*x)^(-1/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 4, (A*b*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (b*B*sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 3, (B*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 4, (B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-7/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 5, (A*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-9/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(1/2), x, 6, (B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (2*A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+
+
+[cos(c + d*x)^(3/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 5, (3*b*B*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (3*b*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (A*b*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (b*B*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[cos(c + d*x)^(1/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 4, (A*b*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (2*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (A*b*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d) + (b*B*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[cos(c + d*x)^(-1/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 3, (b*B*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) + (b*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[cos(c + d*x)^(-3/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 3, (A*b*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 3, (b*B*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-7/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 4, (b*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-9/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 5, (A*b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-11/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(3/2), x, 6, (b*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (2*A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+
+
+[cos(c + d*x)^(1/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 5, (3*b^2*B*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (3*b^2*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (A*b^2*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (b^2*B*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[cos(c + d*x)^(-1/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 4, (A*b^2*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (2*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d) + (b^2*B*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[cos(c + d*x)^(-3/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 3, (b^2*B*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) + (b^2*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[cos(c + d*x)^(-5/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 3, (A*b^2*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-7/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 3, (b^2*B*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(-9/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 4, (b^2*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-11/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 5, (A*b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[cos(c + d*x)^(-13/2)*(A + B*cos(c + d*x))*(b*cos(c + d*x))^(5/2), x, 6, (b^2*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (2*A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[cos(c + d*x)^(5/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 4, (A*x*sqrt(cos(c + d*x)))/(2*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x))) + (A*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(3/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 3, (B*x*sqrt(cos(c + d*x)))/(2*sqrt(b*cos(c + d*x))) + (A*sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(1/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 4, (A*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (B*sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 3, (B*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 4, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 5, (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-7/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(1/2), x, 6, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(3*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^(7/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 4, (A*x*sqrt(cos(c + d*x)))/(2*b*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x))) + (A*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(5/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 3, (B*x*sqrt(cos(c + d*x)))/(2*b*sqrt(b*cos(c + d*x))) + (A*sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(3/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 3, (A*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(1/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 3, (B*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 4, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 5, (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-5/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(3/2), x, 6, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(3*b*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(2*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^(9/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 4, (A*x*sqrt(cos(c + d*x)))/(2*b^2*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (A*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(7/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 3, (B*x*sqrt(cos(c + d*x)))/(2*b^2*sqrt(b*cos(c + d*x))) + (A*sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(5/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 3, (A*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(3/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 3, (B*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(1/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 4, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-1/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 5, (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^(-3/2)*(A + B*cos(c + d*x))/(b*cos(c + d*x))^(5/2), x, 6, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(3*b^2*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(2*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+
+
+# ::Section:: 
+#Cos[c+d x]^m (A+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^m (A+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^2*sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2), x, 5, (2*b*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^3*d)],
+[cos(c + d*x)*sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2), x, 5, (2*b*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^2*d)],
+[sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2), x, 3, (2*b*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b*d)],
+[sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2)*sec(c + d*x), x, 4, (2*b*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2)*sec(c + d*x)^2, x, 4, (-2*b*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2)*sec(c + d*x)^3, x, 4, (2*b*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2)*sec(c + d*x)^4, x, 5, (-2*b*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2)*sec(c + d*x)^5, x, 5, (2*b*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^2*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+
+
+[cos(c + d*x)*(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2), x, 5, (2*b^2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*d*sqrt(b*cos(c + d*x))) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^2*d)],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2), x, 4, (2*b^2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b*d)],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x), x, 4, (2*b^2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^2, x, 4, (2*b^2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^3, x, 4, (-2*b^2*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^4, x, 4, (2*b^2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^5, x, 5, (-2*b^2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^2*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^6, x, 5, (2*b^2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^5*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^3*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+
+
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2), x, 4, (2*b^3*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*d*sqrt(b*cos(c + d*x))) + (2*b*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b*d)],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x), x, 5, (2*b^3*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b^2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*d)],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^2, x, 4, (2*b^3*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^3, x, 4, (2*b^3*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^4, x, 4, (-2*b^3*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^5, x, 4, (2*b^3*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^6, x, 5, (-2*b^3*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*A*b^5*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^3*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2)*sec(c + d*x)^7, x, 5, (2*b^3*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^6*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^4*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[cos(c + d*x)^4*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 6, (10*(11*A + 9*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(231*d*sqrt(b*cos(c + d*x))) + (10*(11*A + 9*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(231*b*d) + (2*(11*A + 9*C)*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(77*b^3*d) + (2*C*(b*cos(c + d*x))^(9/2)*sin(c + d*x))/(11*b^5*d)],
+[cos(c + d*x)^3*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 5, (2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^2*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^4*d)],
+[cos(c + d*x)^2*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 5, (2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^3*d)],
+[cos(c + d*x)^1*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 4, (2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^2*d)],
+[cos(c + d*x)^0*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 3, (2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b*d)],
+[sec(c + d*x)^1*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 4, -((2*(A - C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*A*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 4, (2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^3*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 5, -((2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*A*b^2*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^4*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 5, (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^5*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(1/2), x, 6, -((2*(7*A + 9*C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x)))) + (2*A*b^4*sin(c + d*x))/(9*d*(b*cos(c + d*x))^(9/2)) + (2*b^2*(7*A + 9*C)*sin(c + d*x))/(45*d*(b*cos(c + d*x))^(5/2)) + (2*(7*A + 9*C)*sin(c + d*x))/(15*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^4*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 5, (2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*b*d*sqrt(b*cos(c + d*x))) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^3*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^5*d)],
+[cos(c + d*x)^3*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 5, (2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^2*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^4*d)],
+[cos(c + d*x)^2*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 4, (2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^3*d)],
+[cos(c + d*x)^1*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 4, (2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^2*d)],
+[cos(c + d*x)^0*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 3, (-2*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^1*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 4, (2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^2*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 5, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*b*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^3*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 5, (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2))],
+
+
+[cos(c + d*x)^5*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 5, (2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*b^2*d*sqrt(b*cos(c + d*x))) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^4*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^6*d)],
+[cos(c + d*x)^4*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 5, (2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^3*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^5*d)],
+[cos(c + d*x)^3*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 4, (2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^4*d)],
+[cos(c + d*x)^2*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 4, (2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^3*d)],
+[cos(c + d*x)^1*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 4, (-2*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[cos(c + d*x)^0*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 3, (2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*b*d*(b*cos(c + d*x))^(3/2))],
+[sec(c + d*x)^1*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 5, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*b^2*d*sqrt(b*cos(c + d*x)))],
+[sec(c + d*x)^2*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 5, (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*(5*A + 7*C)*sin(c + d*x))/(21*b*d*(b*cos(c + d*x))^(3/2))],
+
+
+[cos(c + d*x)^0*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(7/2), x, 4, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^3*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(5*b*d*(b*cos(c + d*x))^(5/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*b^3*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)^0*(A + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(9/2), x, 4, (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b^4*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(7*b*d*(b*cos(c + d*x))^(7/2)) + (2*(5*A + 7*C)*sin(c + d*x))/(21*b^3*d*(b*cos(c + d*x))^(3/2))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^(m/2) (A+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2), x, 4, ((5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d*sqrt(cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d) - ((5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(15*d*sqrt(cos(c + d*x)))],
+[cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2), x, 3, ((4*A + 3*C)*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + ((4*A + 3*C)*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (C*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2), x, 3, ((3*A + 2*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[(sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2))/sqrt(cos(c + d*x)), x, 3, (A*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (C*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[(sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(3/2), x, 3, (A*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[(sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(5/2), x, 3, (C*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[(sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(7/2), x, 3, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2))],
+[(sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(9/2), x, 3, (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + ((2*A + 3*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+[(sqrt(b*cos(c + d*x))*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(11/2), x, 4, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + ((3*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2))],
+
+
+[cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2), x, 4, (b*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d*sqrt(cos(c + d*x))) + (b*C*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d) - (b*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(15*d*sqrt(cos(c + d*x)))],
+[sqrt(cos(c + d*x))*(b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2), x, 3, (b*(4*A + 3*C)*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (b*(4*A + 3*C)*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b*C*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/sqrt(cos(c + d*x)), x, 3, (b*(3*A + 2*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (b*C*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(3/2), x, 3, (A*b*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b*C*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b*C*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(5/2), x, 3, (A*b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (b*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(7/2), x, 3, (b*C*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(9/2), x, 3, (b*(A + 2*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2))],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(11/2), x, 3, (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b*(2*A + 3*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(3/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(13/2), x, 4, (b*(3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (b*(3*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2))],
+
+
+[sqrt(cos(c + d*x))*(b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2), x, 4, (b^2*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d*sqrt(cos(c + d*x))) + (b^2*C*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d) - (b^2*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x)^3)/(15*d*sqrt(cos(c + d*x)))],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/sqrt(cos(c + d*x)), x, 3, (b^2*(4*A + 3*C)*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (b^2*(4*A + 3*C)*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b^2*C*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(3/2), x, 3, (b^2*(3*A + 2*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (b^2*C*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(5/2), x, 3, (A*b^2*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b^2*C*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b^2*C*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(7/2), x, 3, (A*b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (b^2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(9/2), x, 3, (b^2*C*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(11/2), x, 3, (b^2*(A + 2*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2))],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(13/2), x, 3, (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b^2*(2*A + 3*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(5/2)*(A + C*cos(c + d*x)^2))/cos(c + d*x)^(15/2), x, 4, (b^2*(3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (b^2*(3*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[(cos(c + d*x)^(5/2)*(A + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 3, ((4*A + 3*C)*x*sqrt(cos(c + d*x)))/(8*sqrt(b*cos(c + d*x))) + ((4*A + 3*C)*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sin(c + d*x))/(4*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(3/2)*(A + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 3, ((3*A + 2*C)*sqrt(cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x)))],
+[(sqrt(cos(c + d*x))*(A + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 3, (A*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (C*x*sqrt(cos(c + d*x)))/(2*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*d*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))), x, 3, (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(d*sqrt(b*cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))), x, 3, (C*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (A*sin(c + d*x))/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))), x, 3, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))), x, 3, (A*sin(c + d*x))/(3*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + ((2*A + 3*C)*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(9/2)*sqrt(b*cos(c + d*x))), x, 4, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(4*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + ((3*A + 4*C)*sin(c + d*x))/(8*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+
+
+[(cos(c + d*x)^(7/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 3, ((4*A + 3*C)*x*sqrt(cos(c + d*x)))/(8*b*sqrt(b*cos(c + d*x))) + ((4*A + 3*C)*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*b*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sin(c + d*x))/(4*b*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(5/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 3, ((3*A + 2*C)*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(3/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 3, (A*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (C*x*sqrt(cos(c + d*x)))/(2*b*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b*d*sqrt(b*cos(c + d*x)))],
+[(sqrt(cos(c + d*x))*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 3, (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b*d*sqrt(b*cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(sqrt(cos(c + d*x))*(b*cos(c + d*x))^(3/2)), x, 3, (C*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(3/2)), x, 3, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(3/2)), x, 3, (A*sin(c + d*x))/(3*b*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + ((2*A + 3*C)*sin(c + d*x))/(3*b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(7/2)*(b*cos(c + d*x))^(3/2)), x, 4, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(4*b*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + ((3*A + 4*C)*sin(c + d*x))/(8*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+
+
+[(cos(c + d*x)^(9/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 3, ((4*A + 3*C)*x*sqrt(cos(c + d*x)))/(8*b^2*sqrt(b*cos(c + d*x))) + ((4*A + 3*C)*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*b^2*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sin(c + d*x))/(4*b^2*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(7/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 3, ((3*A + 2*C)*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(5/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 3, (A*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (C*x*sqrt(cos(c + d*x)))/(2*b^2*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b^2*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(3/2)*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 3, (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b^2*d*sqrt(b*cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[(sqrt(cos(c + d*x))*(A + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 3, (C*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(sqrt(cos(c + d*x))*(b*cos(c + d*x))^(5/2)), x, 3, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(5/2)), x, 3, (A*sin(c + d*x))/(3*b^2*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + ((2*A + 3*C)*sin(c + d*x))/(3*b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + C*cos(c + d*x)^2)/(cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(5/2)), x, 4, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(4*b^2*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + ((3*A + 4*C)*sin(c + d*x))/(8*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x)))],
+
+
+# ::Section:: 
+#Cos[c+d x]^m (B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^m (B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection:: 
+#n>0
+
+
+# ::Subsubsection:: 
+#n<0
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^(m/2) (B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection:: 
+#n>0
+
+
+# ::Subsubsection:: 
+#n<0
+
+
+# ::Section:: 
+#Cos[c+d x]^m (A+B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^m (A+B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^2*sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 10, (2*b*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(15*d*sqrt(b*cos(c + d*x))) + (10*b*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^2*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^3*d)],
+[cos(c + d*x)*sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 9, (6*b*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^2*d)],
+[sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 7, (2*b*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b*d)],
+[sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x), x, 7, (2*b*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^2, x, 7, (-2*b*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^3, x, 8, (-2*b*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^4, x, 9, (-2*b*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^2*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^5, x, 10, -((6*b*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^3*B*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^2*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2)) + (6*b*B*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+[cos(c + d*x)*(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 10, (2*b^2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*d*sqrt(b*cos(c + d*x))) + (10*b^2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^2*d)],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 8, (6*b^2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b^2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b*d)],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x), x, 8, (2*b^2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b^2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^2, x, 7, (2*b^2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^3, x, 7, (-2*b^2*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^4, x, 8, (-2*b^2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b^2*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^5, x, 9, (-2*b^2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b^2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^3*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b^2*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^6, x, 10, -((6*b^2*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^5*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^4*B*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^3*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2)) + (6*b^2*B*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 9, (2*b^3*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*d*sqrt(b*cos(c + d*x))) + (10*b^3*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*b*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b*d)],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x), x, 9, (6*b^3*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b^3*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*b^2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*d) + (2*b*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*d)],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^2, x, 8, (2*b^3*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b^3*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (2*b*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*d)],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^3, x, 7, (2*b^3*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^3*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*b^2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^4, x, 7, (-2*b^3*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^3*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^5, x, 8, (-2*b^3*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*b^3*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^4*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b^3*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^6, x, 9, (-2*b^3*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*b^3*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^5*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^4*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*b^3*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^7, x, 10, -((6*b^3*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*b^3*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^6*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^5*B*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b^4*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2)) + (6*b^3*B*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[(cos(c + d*x)^3*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 10, (2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b*d) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^2*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^3*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^4*d)],
+[(cos(c + d*x)^2*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 9, (6*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^2*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^3*d)],
+[(cos(c + d*x)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 8, (2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b*d) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^2*d)],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/sqrt(b*cos(c + d*x)), x, 6, (2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b*d)],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x))/sqrt(b*cos(c + d*x)), x, 7, -((2*(A - C)*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x)))) + (2*B*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^2)/sqrt(b*cos(c + d*x)), x, 8, (-2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(d*sqrt(b*cos(c + d*x))) + (2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*B*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^3)/sqrt(b*cos(c + d*x)), x, 9, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^4)/sqrt(b*cos(c + d*x)), x, 10, -((6*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*d*sqrt(b*cos(c + d*x)))) + (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*d*sqrt(b*cos(c + d*x))) + (2*A*b^3*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b^2*B*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*b*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2)) + (6*B*sin(c + d*x))/(5*d*sqrt(b*cos(c + d*x)))],
+
+
+[(cos(c + d*x)^4*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 10, (2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*b*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^2*d) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^3*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^4*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^5*d)],
+[(cos(c + d*x)^3*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 9, (6*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^2*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^3*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^4*d)],
+[(cos(c + d*x)^2*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 8, (2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^2*d) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^3*d)],
+[(cos(c + d*x)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 7, (2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^2*d)],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 6, (-2*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x))/(b*cos(c + d*x))^(3/2), x, 8, (-2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b*d*sqrt(b*cos(c + d*x))) + (2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*B*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^2)/(b*cos(c + d*x))^(3/2), x, 9, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*B*sin(c + d*x))/(3*d*(b*cos(c + d*x))^(3/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*b*d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^3)/(b*cos(c + d*x))^(3/2), x, 10, -((6*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b*d*sqrt(b*cos(c + d*x)))) + (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b*d*sqrt(b*cos(c + d*x))) + (2*A*b^2*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*b*B*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*(5*A + 7*C)*sin(c + d*x))/(21*d*(b*cos(c + d*x))^(3/2)) + (6*B*sin(c + d*x))/(5*b*d*sqrt(b*cos(c + d*x)))],
+
+
+[(cos(c + d*x)^5*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 10, (2*(9*A + 7*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(15*b^2*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (10*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^3*d) + (2*(9*A + 7*C)*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(45*b^4*d) + (2*B*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^5*d) + (2*C*(b*cos(c + d*x))^(7/2)*sin(c + d*x))/(9*b^6*d)],
+[(cos(c + d*x)^4*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 9, (6*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (2*(7*A + 5*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(21*b^3*d) + (2*B*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^4*d) + (2*C*(b*cos(c + d*x))^(5/2)*sin(c + d*x))/(7*b^5*d)],
+[(cos(c + d*x)^3*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 8, (2*(5*A + 3*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^3*d) + (2*C*(b*cos(c + d*x))^(3/2)*sin(c + d*x))/(5*b^4*d)],
+[(cos(c + d*x)^2*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 7, (2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*(3*A + C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*b^3*d)],
+[(cos(c + d*x)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 7, (-2*(A - C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 7, (-2*B*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(b^2*d*sqrt(b*cos(c + d*x))) + (2*(A + 3*C)*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(3*b*d*(b*cos(c + d*x))^(3/2)) + (2*B*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x))/(b*cos(c + d*x))^(5/2), x, 9, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^2*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*B*sin(c + d*x))/(3*b*d*(b*cos(c + d*x))^(3/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*b^2*d*sqrt(b*cos(c + d*x)))],
+[((A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^2)/(b*cos(c + d*x))^(5/2), x, 10, -((6*B*sqrt(cos(c + d*x))*EllipticE((1/2)*(c + d*x), 2))/(5*b^2*d*sqrt(b*cos(c + d*x)))) + (2*(5*A + 7*C)*sqrt(cos(c + d*x))*EllipticF((1/2)*(c + d*x), 2))/(21*b^2*d*sqrt(b*cos(c + d*x))) + (2*A*b*sin(c + d*x))/(7*d*(b*cos(c + d*x))^(7/2)) + (2*B*sin(c + d*x))/(5*d*(b*cos(c + d*x))^(5/2)) + (2*(5*A + 7*C)*sin(c + d*x))/(21*b*d*(b*cos(c + d*x))^(3/2)) + (6*B*sin(c + d*x))/(5*b^2*d*sqrt(b*cos(c + d*x)))],
+
+
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(b*cos(c + d*x))^(7/2), x, 8, (-2*(3*A + 5*C)*sqrt(cos(c + d*x))*EllipticE((c + d*x)/2, 2))/(5*b^3*d*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*EllipticF((c + d*x)/2, 2))/(3*b^3*d*sqrt(b*cos(c + d*x))) + (2*A*sin(c + d*x))/(5*b*d*(b*cos(c + d*x))^(5/2)) + (2*B*sin(c + d*x))/(3*b^2*d*(b*cos(c + d*x))^(3/2)) + (2*(3*A + 5*C)*sin(c + d*x))/(5*b^3*d*sqrt(b*cos(c + d*x)))],
+
+
+# ::Subsection::Closed:: 
+#Integrands of the form Cos[c+d x]^(m/2) (A+B Cos[c+d x]+C Cos[c+d x]^2) (b Cos[c+d x])^(n/2)
+
+
+# ::Subsubsection::Closed:: 
+#n>0
+
+
+[cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 6, (3*B*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(15*d*sqrt(cos(c + d*x))) + (3*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + ((5*A + 4*C)*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(15*d) + (B*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d) + (C*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d)],
+[cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 5, ((4*A + 3*C)*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + ((4*A + 3*C)*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (B*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (C*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 4, (B*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + ((3*A + 2*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d) + (C*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[(sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(cos(c + d*x)), x, 4, (A*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (C*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[(sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(3/2), x, 4, (B*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[(sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(5/2), x, 4, (C*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[(sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(7/2), x, 5, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[(sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(9/2), x, 6, (B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + ((2*A + 3*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+[(sqrt(b*cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(11/2), x, 7, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (A*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + ((3*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2)) + (2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+
+
+[cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 6, (3*b*B*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*b*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(15*d*sqrt(cos(c + d*x))) + (3*b*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b*(5*A + 4*C)*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(15*d) + (b*B*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d) + (b*C*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d)],
+[sqrt(cos(c + d*x))*(b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 5, (b*(4*A + 3*C)*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (b*(4*A + 3*C)*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b*B*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (b*C*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(cos(c + d*x)), x, 4, (b*B*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b*(3*A + 2*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (b*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d) + (b*C*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(3/2), x, 4, (A*b*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b*C*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) + (b*C*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(5/2), x, 4, (b*B*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*b*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (b*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(7/2), x, 4, (b*C*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(9/2), x, 5, (b*(A + 2*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(11/2), x, 6, (b*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (b*(2*A + 3*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(13/2), x, 7, (b*(3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (A*b*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b*(3*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2)) + (2*b*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+
+
+[sqrt(cos(c + d*x))*(b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2), x, 6, (3*b^2*B*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*b^2*(5*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(15*d*sqrt(cos(c + d*x))) + (3*b^2*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b^2*(5*A + 4*C)*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(15*d) + (b^2*B*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d) + (b^2*C*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(5*d)],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(cos(c + d*x)), x, 5, (b^2*(4*A + 3*C)*x*sqrt(b*cos(c + d*x)))/(8*sqrt(cos(c + d*x))) + (2*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (b^2*(4*A + 3*C)*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d) + (b^2*B*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d) + (b^2*C*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d)],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(3/2), x, 4, (b^2*B*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b^2*(3*A + 2*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))) + (b^2*B*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d) + (b^2*C*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d)],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(5/2), x, 4, (A*b^2*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b^2*C*x*sqrt(b*cos(c + d*x)))/(2*sqrt(cos(c + d*x))) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x))) + (b^2*C*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d)],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(7/2), x, 4, (b^2*B*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (A*b^2*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (b^2*C*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*sqrt(cos(c + d*x)))],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(9/2), x, 4, (b^2*C*x*sqrt(b*cos(c + d*x)))/sqrt(cos(c + d*x)) + (b^2*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(11/2), x, 5, (b^2*(A + 2*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(13/2), x, 6, (b^2*B*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(2*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(2*d*cos(c + d*x)^(5/2)) + (b^2*(2*A + 3*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+[((b*cos(c + d*x))^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/cos(c + d*x)^(15/2), x, 7, (b^2*(3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(b*cos(c + d*x)))/(8*d*sqrt(cos(c + d*x))) + (A*b^2*sqrt(b*cos(c + d*x))*sin(c + d*x))/(4*d*cos(c + d*x)^(9/2)) + (b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(7/2)) + (b^2*(3*A + 4*C)*sqrt(b*cos(c + d*x))*sin(c + d*x))/(8*d*cos(c + d*x)^(5/2)) + (2*b^2*B*sqrt(b*cos(c + d*x))*sin(c + d*x))/(3*d*cos(c + d*x)^(3/2))],
+
+
+# ::Subsubsection::Closed:: 
+#n<0
+
+
+[(cos(c + d*x)^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 5, ((4*A + 3*C)*x*sqrt(cos(c + d*x)))/(8*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x))) + ((4*A + 3*C)*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sin(c + d*x))/(4*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 4, (B*x*sqrt(cos(c + d*x)))/(2*sqrt(b*cos(c + d*x))) + ((3*A + 2*C)*sqrt(cos(c + d*x))*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*d*sqrt(b*cos(c + d*x)))],
+[(sqrt(cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/sqrt(b*cos(c + d*x)), x, 4, (A*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (C*x*sqrt(cos(c + d*x)))/(2*sqrt(b*cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*d*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x))), x, 4, (B*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(d*sqrt(b*cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sin(c + d*x))/(d*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))), x, 4, (C*x*sqrt(cos(c + d*x)))/sqrt(b*cos(c + d*x)) + (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))), x, 5, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))), x, 6, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(3*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + ((2*A + 3*C)*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(9/2)*sqrt(b*cos(c + d*x))), x, 7, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(4*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(3*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + ((3*A + 4*C)*sin(c + d*x))/(8*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (2*B*sin(c + d*x))/(3*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+
+
+[(cos(c + d*x)^(7/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 5, ((4*A + 3*C)*x*sqrt(cos(c + d*x)))/(8*b*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x))) + ((4*A + 3*C)*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*b*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sin(c + d*x))/(4*b*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 4, (B*x*sqrt(cos(c + d*x)))/(2*b*sqrt(b*cos(c + d*x))) + ((3*A + 2*C)*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 4, (A*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (C*x*sqrt(cos(c + d*x)))/(2*b*sqrt(b*cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b*d*sqrt(b*cos(c + d*x)))],
+[(sqrt(cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(3/2), x, 4, (B*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b*d*sqrt(b*cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sin(c + d*x))/(b*d*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(sqrt(cos(c + d*x))*(b*cos(c + d*x))^(3/2)), x, 4, (C*x*sqrt(cos(c + d*x)))/(b*sqrt(b*cos(c + d*x))) + (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(3/2)), x, 5, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(3/2)), x, 6, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(3*b*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(2*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + ((2*A + 3*C)*sin(c + d*x))/(3*b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(7/2)*(b*cos(c + d*x))^(3/2)), x, 7, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*b*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(4*b*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(3*b*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + ((3*A + 4*C)*sin(c + d*x))/(8*b*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (2*B*sin(c + d*x))/(3*b*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+
+
+[(cos(c + d*x)^(9/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 5, ((4*A + 3*C)*x*sqrt(cos(c + d*x)))/(8*b^2*sqrt(b*cos(c + d*x))) + (2*B*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x))) + ((4*A + 3*C)*cos(c + d*x)^(3/2)*sin(c + d*x))/(8*b^2*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(7/2)*sin(c + d*x))/(4*b^2*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(7/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 4, (B*x*sqrt(cos(c + d*x)))/(2*b^2*sqrt(b*cos(c + d*x))) + ((3*A + 2*C)*sqrt(cos(c + d*x))*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x))) + (B*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(5/2)*sin(c + d*x))/(3*b^2*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(5/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 4, (A*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (C*x*sqrt(cos(c + d*x)))/(2*b^2*sqrt(b*cos(c + d*x))) + (B*sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x))) + (C*cos(c + d*x)^(3/2)*sin(c + d*x))/(2*b^2*d*sqrt(b*cos(c + d*x)))],
+[(cos(c + d*x)^(3/2)*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 4, (B*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (A*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b^2*d*sqrt(b*cos(c + d*x))) + (C*sqrt(cos(c + d*x))*sin(c + d*x))/(b^2*d*sqrt(b*cos(c + d*x)))],
+[(sqrt(cos(c + d*x))*(A + B*cos(c + d*x) + C*cos(c + d*x)^2))/(b*cos(c + d*x))^(5/2), x, 4, (C*x*sqrt(cos(c + d*x)))/(b^2*sqrt(b*cos(c + d*x))) + (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(sqrt(cos(c + d*x))*(b*cos(c + d*x))^(5/2)), x, 5, ((A + 2*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(2*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(3/2)*(b*cos(c + d*x))^(5/2)), x, 6, (B*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(2*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(3*b^2*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(2*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + ((2*A + 3*C)*sin(c + d*x))/(3*b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))],
+[(A + B*cos(c + d*x) + C*cos(c + d*x)^2)/(cos(c + d*x)^(5/2)*(b*cos(c + d*x))^(5/2)), x, 7, ((3*A + 4*C)*arctanh(sin(c + d*x))*sqrt(cos(c + d*x)))/(8*b^2*d*sqrt(b*cos(c + d*x))) + (A*sin(c + d*x))/(4*b^2*d*cos(c + d*x)^(7/2)*sqrt(b*cos(c + d*x))) + (B*sin(c + d*x))/(3*b^2*d*cos(c + d*x)^(5/2)*sqrt(b*cos(c + d*x))) + ((3*A + 4*C)*sin(c + d*x))/(8*b^2*d*cos(c + d*x)^(3/2)*sqrt(b*cos(c + d*x))) + (2*B*sin(c + d*x))/(3*b^2*d*sqrt(cos(c + d*x))*sqrt(b*cos(c + d*x)))]
+]:

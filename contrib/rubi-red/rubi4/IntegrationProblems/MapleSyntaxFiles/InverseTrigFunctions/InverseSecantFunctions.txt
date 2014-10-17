@@ -1,0 +1,76 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Inverse Secants
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse secants
+
+
+# Integrands of the form x^m*ArcSec[a*x] where m is an integer 
+[x*arcsec(a*x), x, 2, -((sqrt(1 - 1/(a^2*x^2))*x)/(2*a)) + (1/2)*x^2*arcsec(a*x)],
+[x^2*arcsec(a*x), x, 3, -((sqrt(1 - 1/(a^2*x^2))*x^2)/(6*a)) + (1/3)*x^3*arcsec(a*x) - arctanh(sqrt(1 - 1/(a^2*x^2)))/(6*a^3)],
+[x^3*arcsec(a*x), x, 3, -((sqrt(1 - 1/(a^2*x^2))*x)/(6*a^3)) - (sqrt(1 - 1/(a^2*x^2))*x^3)/(12*a) + (1/4)*x^4*arcsec(a*x)],
+[x^4*arcsec(a*x), x, 4, -((3*sqrt(1 - 1/(a^2*x^2))*x^2)/(40*a^3)) - (sqrt(1 - 1/(a^2*x^2))*x^4)/(20*a) + (1/5)*x^5*arcsec(a*x) - (3*arctanh(sqrt(1 - 1/(a^2*x^2))))/(40*a^5)],
+
+[arcsec(a*x)/x, x, 6, (1/2)*I*arcsec(a*x)^2 - arcsec(a*x)*log(1 + exp(2*I*arcsec(a*x))) + (1/2)*I*polylog(2, -exp(2*I*arcsec(a*x)))],
+[arcsec(a*x)/x^2, x, 3, a*sqrt(1 - 1/(a^2*x^2)) - arcsec(a*x)/x],
+[arcsec(a*x)/x^3, x, 4, (a*sqrt(1 - 1/(a^2*x^2)))/(4*x) - (1/4)*a^2*arccsc(a*x) - arcsec(a*x)/(2*x^2)],
+[arcsec(a*x)/x^4, x, 4, (2/9)*a^3*sqrt(1 - 1/(a^2*x^2)) + (a*sqrt(1 - 1/(a^2*x^2)))/(9*x^2) - arcsec(a*x)/(3*x^3)],
+
+
+# Integrands of the form x^m*ArcSec[a+b*x] where m is an integer 
+[arcsec(a + b*x), x, 3, ((a + b*x)*arcsec(a + b*x))/b - arctanh(sqrt(1 - 1/(a + b*x)^2))/b],
+[x*arcsec(a + b*x), x, 7, -(((a + b*x)*sqrt(1 - 1/(a + b*x)^2))/(2*b^2)) - (a*(a + b*x)*arcsec(a + b*x))/b^2 + ((a + b*x)^2*arcsec(a + b*x))/(2*b^2) + (a*arctanh(sqrt(1 - 1/(a + b*x)^2)))/b^2],
+[x^2*arcsec(a + b*x), x, 10, (a*(a + b*x)*sqrt(1 - 1/(a + b*x)^2))/b^3 - ((a + b*x)^2*sqrt(1 - 1/(a + b*x)^2))/(6*b^3) + (a^2*(a + b*x)*arcsec(a + b*x))/b^3 - (a*(a + b*x)^2*arcsec(a + b*x))/b^3 + ((a + b*x)^3*arcsec(a + b*x))/(3*b^3) - arctanh(sqrt(1 - 1/(a + b*x)^2))/(6*b^3) - (a^2*arctanh(sqrt(1 - 1/(a + b*x)^2)))/b^3],
+[arcsec(a + b*x)/x, x, 4, Int(arcsec(a + b*x)/x, x)],
+# {ArcSec[a + b*x]/x^2, x, 0, (b*ArcCsc[a + b*x])/a - ArcSec[a + b*x]/x - (Sqrt[-1 + (a + b*x)^2]*ArcTanh[(-(1/b) + (a*(a + b*x))/b)/(Sqrt[-(1/b^2) + a^2/b^2]*Sqrt[-1 + (a + b*x)^2])])/(a*Sqrt[-(1/b^2) + a^2/b^2]*(a + b*x)*Sqrt[1 - 1/(a + b*x)^2])} 
+
+
+# Integrands of the form x^m*ArcSec[Sqrt[x]] where m is an integer 
+[arcsec(sqrt(x)), x, 3, -sqrt(-1 + x) + x*arcsec(sqrt(x))],
+[x*arcsec(sqrt(x)), x, 4, (-(1/3))*sqrt(1 - 1/x)*sqrt(x) - (1/6)*sqrt(1 - 1/x)*x^(3/2) + (1/2)*x^2*arcsec(sqrt(x))],
+[x^2*arcsec(sqrt(x)), x, 5, (-(8/45))*sqrt(1 - 1/x)*sqrt(x) - (4/45)*sqrt(1 - 1/x)*x^(3/2) - (1/15)*sqrt(1 - 1/x)*x^(5/2) + (1/3)*x^3*arcsec(sqrt(x))],
+[arcsec(sqrt(x))/x, x, 6, I*arcsec(sqrt(x))^2 - 2*arcsec(sqrt(x))*log(1 + exp(2*I*arcsec(sqrt(x)))) + I*polylog(2, -exp(2*I*arcsec(sqrt(x))))],
+[arcsec(sqrt(x))/x^2, x, 5, sqrt(-1 + x)/(2*x) - arccsc(sqrt(x))/2 - arcsec(sqrt(x))/x, sqrt(1 - 1/x)/(2*sqrt(x)) - arccsc(sqrt(x))/2 - arcsec(sqrt(x))/x],
+[arcsec(sqrt(x))/x^3, x, 6, sqrt(-1 + x)/(8*x^2) + (3*sqrt(-1 + x))/(16*x) - (3*arccsc(sqrt(x)))/16 - arcsec(sqrt(x))/(2*x^2), sqrt(1 - 1/x)/(8*x^(3/2)) + (3*sqrt(1 - 1/x))/(16*sqrt(x)) - (3*arccsc(sqrt(x)))/16 - arcsec(sqrt(x))/(2*x^2)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving inverse trig functions of exponentials
+
+
+[arcsec(c*exp(a + b*x)), x, 7, (I*arcsec(c*exp(a + b*x))^2)/(2*b) - (arcsec(c*exp(a + b*x))*log(1 + exp(2*I*arcsec(c*exp(a + b*x)))))/b + (I*polylog(2, -exp(2*I*arcsec(c*exp(a + b*x)))))/(2*b)],
+
+
+# ::Subsection::Closed:: 
+#Integrands involving exponentials of inverse trig functions
+
+
+# Integrands of the form x^m*E^ArcSec[x] where m is an integer 
+[E^arcsec(x), x, 1, subst(Int(exp(x)*sec(x)*tan(x), x), x, arcsec(x))],
+[E^arcsec(x)/x, x, 1, subst(Int(exp(x)*tan(x),x),x,arcsec(x))],
+[E^arcsec(x)/x^2, x, 2, (1/2)*E^arcsec(x)*sqrt(1 - 1/x^2) - E^arcsec(x)/(2*x)],
+
+
+# ::Subsection::Closed:: 
+#Miscellaneous problems
+
+
+[arcsec(1/x), x, 1, -sqrt(1 - x^2) + x*arccos(x)],
+
+
+[arcsec(a + b*x)/((a*d)/b + d*x), x, 8, (I*arcsec(a + b*x)^2)/(2*d) - (arcsec(a + b*x)*log(1 + exp(2*I*arcsec(a + b*x))))/d + (I*polylog(2, -exp(2*I*arcsec(a + b*x))))/(2*d)],
+
+
+[arcsec(a*x^n)/x, x, 7, (I*arcsec(a*x^n)^2)/(2*n) - (arcsec(a*x^n)*log(1 + exp(2*I*arcsec(a*x^n))))/n + (I*polylog(2, -exp(2*I*arcsec(a*x^n))))/(2*n)],
+
+[arcsec(a*x^5)/x, x, 7, (1/10)*I*arcsec(a*x^5)^2 - (1/5)*arcsec(a*x^5)*log(1 + exp(2*I*arcsec(a*x^5))) + (1/10)*I*polylog(2, -exp(2*I*arcsec(a*x^5)))],
+
+
+[x^3*arcsec(a + b*x^4), x, 4, ((a + b*x^4)*arcsec(a + b*x^4))/(4*b) - arctanh(sqrt(1 - 1/(a + b*x^4)^2))/(4*b)],
+
+[x^(n-1)*arcsec(a + b*x^n), x, 4, ((a + b*x^n)*arcsec(a + b*x^n))/(b*n) - arctanh(sqrt(1 - 1/(a + b*x^n)^2))/(b*n)]
+]:

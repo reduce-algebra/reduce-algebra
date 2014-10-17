@@ -1,0 +1,197 @@
+lst:=[
+# ::Package:: 
+
+# ::Title:: 
+#Integration Problems Involving Trig Integral Functions
+
+
+# ::Subsection::Closed:: 
+#Sine integral function
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m SinIntegral[b x]^n
+
+
+[Si(b*x)/x^3, x, 5, -((b*cos(b*x))/(4*x)) - sin(b*x)/(4*x^2) - ((2 + b^2*x^2)*Si(b*x))/(4*x^2)],
+[Si(b*x)/x^2, x, 4, b*Ci(b*x) - sin(b*x)/x - Si(b*x)/x],
+[Si(b*x)/x, x, 0, Int(Si(b*x)/x, x)],
+[Si(b*x), x, 1, cos(b*x)/b + x*Si(b*x)],
+[x*Si(b*x), x, 4, (x*cos(b*x))/(2*b) - sin(b*x)/(2*b^2) + (1/2)*x^2*Si(b*x)],
+[x^2*Si(b*x), x, 5, -((2*cos(b*x))/(3*b^3)) + (x^2*cos(b*x))/(3*b) - (2*x*sin(b*x))/(3*b^2) + (1/3)*x^3*Si(b*x)],
+[x^3*Si(b*x), x, 6, -((3*x*cos(b*x))/(2*b^3)) + (x^3*cos(b*x))/(4*b) + (3*sin(b*x))/(2*b^4) - (3*x^2*sin(b*x))/(4*b^2) + (1/4)*x^4*Si(b*x)],
+[x^m*Si(b*x), x, 5, -((I*x^(1 + m)*((-I)*b*x)^(-1 - m)*GAMMA(1 + m, (-I)*b*x))/(2*(1 + m))) + (I*x^(1 + m)*(I*b*x)^(-1 - m)*GAMMA(1 + m, I*b*x))/(2*(1 + m)) + (x^(1 + m)*Si(b*x))/(1 + m)],
+
+
+[Si(b*x)^2/x^3, x, 0, Int(Si(b*x)^2/x^3, x)],
+[Si(b*x)^2/x^2, x, 0, Int(Si(b*x)^2/x^2, x)],
+[Si(b*x)^2/x, x, 0, Int(Si(b*x)^2/x, x)],
+[Si(b*x)^2, x, 6, (2*cos(b*x)*Si(b*x))/b + x*Si(b*x)^2 - Si(2*b*x)/b],
+[x*Si(b*x)^2, x, 11, -(Ci(2*b*x)/(2*b^2)) + log(x)/(2*b^2) - sin(b*x)^2/(2*b^2) + ((b*x*cos(b*x) - sin(b*x))*Si(b*x))/b^2 + (1/2)*x^2*Si(b*x)^2],
+[x^2*Si(b*x)^2, x, 13, (5*x)/(6*b^2) - (5*cos(b*x)*sin(b*x))/(6*b^3) - (x*sin(b*x)^2)/(3*b^2) - (2*((2 - b^2*x^2)*cos(b*x) + 2*b*x*sin(b*x))*Si(b*x))/(3*b^3) + (1/3)*x^3*Si(b*x)^2 + (2*Si(2*b*x))/(3*b^3)],
+[x^3*Si(b*x)^2, x, 20, x^2/(2*b^2) + (3*Ci(2*b*x))/(2*b^4) - (3*log(x))/(2*b^4) - (x*cos(b*x)*sin(b*x))/b^3 + (2*sin(b*x)^2)/b^4 - (x^2*sin(b*x)^2)/(4*b^2) - ((b*x*(6 - b^2*x^2)*cos(b*x) - 3*(2 - b^2*x^2)*sin(b*x))*Si(b*x))/(2*b^4) + (1/4)*x^4*Si(b*x)^2],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m SinIntegral[a+b x]^n
+
+
+[Si(a + b*x)/x^3, x, 12, (b^2*Ci(b*x)*(a*cos(a) - sin(a)))/(2*a^2) - (b*sin(a + b*x))/(2*a*x) - (b^2*(cos(a) + a*sin(a))*Si(b*x))/(2*a^2) + (1/2)*(b^2/a^2 - 1/x^2)*Si(a + b*x)],
+[Si(a + b*x)/x^2, x, 8, (b*Ci(b*x)*sin(a))/a + (b*cos(a)*Si(b*x))/a - ((a + b*x)*Si(a + b*x))/(a*x)],
+[Si(a + b*x)/x, x, 0, Int(Si(a + b*x)/x, x)],
+[Si(a + b*x), x, 1, cos(a + b*x)/b + ((a + b*x)*Si(a + b*x))/b],
+[x*Si(a + b*x), x, 8, -((a*cos(a + b*x))/(2*b^2)) + (x*cos(a + b*x))/(2*b) - sin(a + b*x)/(2*b^2) - (1/2)*(a^2/b^2 - x^2)*Si(a + b*x)],
+[x^2*Si(a + b*x), x, 11, -((2*cos(a + b*x))/(3*b^3)) + (a^2*cos(a + b*x))/(3*b^3) - (a*x*cos(a + b*x))/(3*b^2) + (x^2*cos(a + b*x))/(3*b) + (a*sin(a + b*x))/(3*b^3) - (2*x*sin(a + b*x))/(3*b^2) + (1/3)*(a^3/b^3 + x^3)*Si(a + b*x)],
+[x^3*Si(a + b*x), x, 15, (a*cos(a + b*x))/(2*b^4) - (a^3*cos(a + b*x))/(4*b^4) - (3*x*cos(a + b*x))/(2*b^3) + (a^2*x*cos(a + b*x))/(4*b^3) - (a*x^2*cos(a + b*x))/(4*b^2) + (x^3*cos(a + b*x))/(4*b) + (3*sin(a + b*x))/(2*b^4) - (a^2*sin(a + b*x))/(4*b^4) + (a*x*sin(a + b*x))/(2*b^3) - (3*x^2*sin(a + b*x))/(4*b^2) - (1/4)*(a^4/b^4 - x^4)*Si(a + b*x)],
+[x^m*Si(a + b*x), x, 6, -((I*exp(I*a)*x^(1 + m)*((-I)*b*x)^(-1 - m)*GAMMA(1 + m, (-I)*b*x))/(2*(1 + m))) + (I*x^(1 + m)*(I*b*x)^(-1 - m)*GAMMA(1 + m, I*b*x))/(exp(I*a)*(2*(1 + m))) + (a*Int((x^m*sin(a + b*x))/(a + b*x), x))/(1 + m) + (x^(1 + m)*Si(a + b*x))/(1 + m)],
+
+
+[Si(a + b*x)^2/x^3, x, 0, Int(Si(a + b*x)^2/x^3, x)],
+[Si(a + b*x)^2/x^2, x, 0, Int(Si(a + b*x)^2/x^2, x)],
+[Si(a + b*x)^2/x, x, 0, Int(Si(a + b*x)^2/x, x)],
+[Si(a + b*x)^2, x, 6, (2*cos(a + b*x)*Si(a + b*x))/b + ((a + b*x)*Si(a + b*x)^2)/b - Si(2*(a + b*x))/b],
+[x*Si(a + b*x)^2, x, 19, cos(2*a + 2*b*x)/(4*b^2) - Ci(2*(a + b*x))/(2*b^2) + log(a + b*x)/(2*b^2) - (((a - b*x)*cos(a + b*x) + sin(a + b*x))*Si(a + b*x))/b^2 - (1/2)*(a^2/b^2 - x^2)*Si(a + b*x)^2 + (a*Si(2*(a + b*x)))/b^2],
+[x^2*Si(a + b*x)^2, x, 42, (2*x)/(3*b^2) - (a*cos(2*a + 2*b*x))/(3*b^3) + (x*cos(2*a + 2*b*x))/(6*b^2) + (a*Ci(2*(a + b*x)))/b^3 - (a*log(a + b*x))/b^3 - (2*cos(a + b*x)*sin(a + b*x))/(3*b^3) - sin(2*a + 2*b*x)/(12*b^3) - (2*((2 - a^2 + a*b*x - b^2*x^2)*cos(a + b*x) - (a - 2*b*x)*sin(a + b*x))*Si(a + b*x))/(3*b^3) + (1/3)*(a^3/b^3 + x^3)*Si(a + b*x)^2 + ((2 - 3*a^2)*Si(2*(a + b*x)))/(3*b^3)],
+# {x^3*SinIntegral[a + b*x]^2, x, 77, -((5*a*x)/(4*b^3)) + (3*x^2)/(8*b^2) - (13*Cos[2*a + 2*b*x])/(16*b^4) + (3*a^2*Cos[2*a + 2*b*x])/(8*b^4) - (a*x*Cos[2*a + 2*b*x])/(4*b^3) + (x^2*Cos[2*a + 2*b*x])/(8*b^2) + (3*(1 - a^2)*CosIntegral[2*(a + b*x)])/(2*b^4) - (3*Log[a + b*x])/(2*b^4) + (3*a^2*Log[a + b*x])/(2*b^4) + (5*a*Cos[a + b*x]*Sin[a + b*x])/(4*b^4) - (3*x*Cos[a + b*x]*Sin[a + b*x])/(4*b^3) + (3*Sin[a + b*x]^2)/(8*b^4) + (a*Sin[2*a + 2*b*x])/(8*b^4) - (x*Sin[2*a + 2*b*x])/(8*b^3) + (((2*a - a^3 - 6*b*x + a^2*b*x - a*b^2*x^2 + b^3*x^3)*Cos[a + b*x] + (6 - a^2 + 2*a*b*x - 3*b^2*x^2)*Sin[a + b*x])*SinIntegral[a + b*x])/(2*b^4) - (1/4)*(a^4/b^4 - x^4)*SinIntegral[a + b*x]^2 - (a*(2 - a^2)*SinIntegral[2*(a + b*x)])/b^4} 
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Trig[b x] SinIntegral[b x]^n
+
+
+[sin(b*x)*Si(b*x)/x^3, x, 16, b^2*Ci(2*b*x) - (b*cos(b*x)*sin(b*x))/(2*x) - sin(b*x)^2/(4*x^2) - (b*sin(2*b*x))/(4*x) - ((b*x*cos(b*x) + sin(b*x))*Si(b*x))/(2*x^2) - (1/4)*b^2*Si(b*x)^2],
+[sin(b*x)*Si(b*x)/x^2, x, 7, -(1/(2*x)) + cos(2*b*x)/(2*x) + b*Int((cos(b*x)*Si(b*x))/x, x) - (sin(b*x)*Si(b*x))/x + b*Si(2*b*x)],
+[sin(b*x)*Si(b*x)/x, x, 2, (1/2)*Si(b*x)^2],
+[sin(b*x)*Si(b*x), x, 5, -((cos(b*x)*Si(b*x))/b) + Si(2*b*x)/(2*b)],
+[x*sin(b*x)*Si(b*x), x, 10, Ci(2*b*x)/(2*b^2) - log(x)/(2*b^2) + sin(b*x)^2/(2*b^2) - ((b*x*cos(b*x) - sin(b*x))*Si(b*x))/b^2],
+[x^2*sin(b*x)*Si(b*x), x, 12, -((5*x)/(4*b^2)) + (5*cos(b*x)*sin(b*x))/(4*b^3) + (x*sin(b*x)^2)/(2*b^2) + (((2 - b^2*x^2)*cos(b*x) + 2*b*x*sin(b*x))*Si(b*x))/b^3 - Si(2*b*x)/b^3],
+[x^3*sin(b*x)*Si(b*x), x, 19, -(x^2/b^2) - (3*Ci(2*b*x))/b^4 + (3*log(x))/b^4 + (2*x*cos(b*x)*sin(b*x))/b^3 - (4*sin(b*x)^2)/b^4 + (x^2*sin(b*x)^2)/(2*b^2) + ((b*x*(6 - b^2*x^2)*cos(b*x) - 3*(2 - b^2*x^2)*sin(b*x))*Si(b*x))/b^4],
+
+
+[cos(b*x)*Si(b*x)/x^3, x, 14, b/(4*x) - (b*cos(2*b*x))/(2*x) - (1/2)*b^2*Int((cos(b*x)*Si(b*x))/x, x) - sin(2*b*x)/(8*x^2) - ((cos(b*x) - b*x*sin(b*x))*Si(b*x))/(2*x^2) - b^2*Si(2*b*x)],
+[cos(b*x)*Si(b*x)/x^2, x, 8, b*Ci(2*b*x) - sin(2*b*x)/(2*x) - (cos(b*x)*Si(b*x))/x - (1/2)*b*Si(b*x)^2],
+[cos(b*x)*Si(b*x)/x, x, 0, Int((cos(b*x)*Si(b*x))/x, x)],
+[cos(b*x)*Si(b*x), x, 6, Ci(2*b*x)/(2*b) - log(x)/(2*b) + (sin(b*x)*Si(b*x))/b],
+[x*cos(b*x)*Si(b*x), x, 8, -(x/(2*b)) + (cos(b*x)*sin(b*x))/(2*b^2) + ((cos(b*x) + b*x*sin(b*x))*Si(b*x))/b^2 - Si(2*b*x)/(2*b^2)],
+[x^2*cos(b*x)*Si(b*x), x, 14, -(x^2/(4*b)) - Ci(2*b*x)/b^3 + log(x)/b^3 + (x*cos(b*x)*sin(b*x))/(2*b^2) - (5*sin(b*x)^2)/(4*b^3) + ((2*b*x*cos(b*x) - (2 - b^2*x^2)*sin(b*x))*Si(b*x))/b^3],
+[x^3*cos(b*x)*Si(b*x), x, 17, (4*x)/b^3 - x^3/(6*b) - (4*cos(b*x)*sin(b*x))/b^4 + (x^2*cos(b*x)*sin(b*x))/(2*b^2) - (2*x*sin(b*x)^2)/b^3 - ((3*(2 - b^2*x^2)*cos(b*x) + b*x*(6 - b^2*x^2)*sin(b*x))*Si(b*x))/b^4 + (3*Si(2*b*x))/b^4],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Trig[a+b x] SinIntegral[c+d x]^n
+
+
+# {Sin[a + b*x]*SinIntegral[c + d*x]/x^3, x, 0, 0} 
+[sin(a + b*x)*Si(c + d*x)/x^2, x, 20, (d*cos(a - c)*Ci((b - d)*x))/(2*c) - (d*cos(a + c)*Ci((b + d)*x))/(2*c) - (d*cos(a - (b*c)/d)*Ci(((b - d)*(c + d*x))/d))/(2*c) + (d*cos(a - (b*c)/d)*Ci(((b + d)*(c + d*x))/d))/(2*c) + b*Int((cos(a + b*x)*Si(c + d*x))/x, x) - (d*sin(a - c)*Si((b - d)*x))/(2*c) + (d*sin(a + c)*Si((b + d)*x))/(2*c) - (sin(a + b*x)*Si(c + d*x))/x + (d*sin(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*c) - (d*sin(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*c)],
+[sin(a + b*x)*Si(c + d*x)/x, x, 0, Int((sin(a + b*x)*Si(c + d*x))/x, x)],
+[sin(a + b*x)*Si(c + d*x), x, 11, -((Ci(((b - d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*b)) + (Ci(((b + d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*b) - (cos(a + b*x)*Si(c + d*x))/b - (cos(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*b) + (cos(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*b)],
+[x*sin(a + b*x)*Si(c + d*x), x, 27, cos(a - c + (b - d)*x)/(2*b*(b - d)) - cos(a + c + (b + d)*x)/(2*b*(b + d)) - (Ci(((b - d)*(c + d*x))/d)*(d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d)))/(2*b^2*d) + (Ci(((b + d)*(c + d*x))/d)*(d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d)))/(2*b^2*d) - ((b*x*cos(a + b*x) - sin(a + b*x))*Si(c + d*x))/b^2 + ((b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d))*Si(((b - d)*(c + d*x))/d))/(2*b^2*d) - ((b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d))*Si(((b + d)*(c + d*x))/d))/(2*b^2*d)],
+# {x^2*Sin[a + b*x]*SinIntegral[c + d*x], x, 46, -((c*Cos[a - c + (b - d)*x])/(2*b*(b - d)*d)) + (x*Cos[a - c + (b - d)*x])/(2*b*(b - d)) + (c*Cos[a + c + (b + d)*x])/(2*b*d*(b + d)) - (x*Cos[a + c + (b + d)*x])/(2*b*(b + d)) + (CosIntegral[((b - d)*(c + d*x))/d]*(2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d]))/(2*b^3*d^2) - (CosIntegral[((b + d)*(c + d*x))/d]*(2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d]))/(2*b^3*d^2) - Sin[a - c + (b - d)*x]/(2*b*(b - d)^2) - Sin[a - c + (b - d)*x]/(b^2*(b - d)) + Sin[a + c + (b + d)*x]/(2*b*(b + d)^2) + Sin[a + c + (b + d)*x]/(b^2*(b + d)) + (((2 - b^2*x^2)*Cos[a + b*x] + 2*b*x*Sin[a + b*x])*SinIntegral[c + d*x])/b^3 - (((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d])*SinIntegral[((b - d)*(c + d*x))/d])/(2*b^3*d^2) + (((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d])*SinIntegral[((b + d)*(c + d*x))/d])/(2*b^3*d^2)} 
+# {x^3*Sin[a + b*x]*SinIntegral[c + d*x], x, 0, 0} 
+
+
+# {Cos[a + b*x]*SinIntegral[c + d*x]/x^3, x, 0, 0} 
+[cos(a + b*x)*Si(c + d*x)/x^2, x, 21, (-b)*Int((sin(a + b*x)*Si(c + d*x))/x, x) - (d*Ci((b - d)*x)*sin(a - c))/(2*c) + (d*Ci((b + d)*x)*sin(a + c))/(2*c) + (d*Ci(((b - d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*c) - (d*Ci(((b + d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*c) - (d*cos(a - c)*Si((b - d)*x))/(2*c) + (d*cos(a + c)*Si((b + d)*x))/(2*c) - (cos(a + b*x)*Si(c + d*x))/x + (d*cos(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*c) - (d*cos(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*c)],
+[cos(a + b*x)*Si(c + d*x)/x, x, 0, Int((cos(a + b*x)*Si(c + d*x))/x, x)],
+[cos(a + b*x)*Si(c + d*x), x, 10, -((cos(a - (b*c)/d)*Ci(((b - d)*(c + d*x))/d))/(2*b)) + (cos(a - (b*c)/d)*Ci(((b + d)*(c + d*x))/d))/(2*b) + (sin(a + b*x)*Si(c + d*x))/b + (sin(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*b) - (sin(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*b)],
+[x*cos(a + b*x)*Si(c + d*x), x, 27, (Ci(((b - d)*(c + d*x))/d)*(b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d)))/(2*b^2*d) - (Ci(((b + d)*(c + d*x))/d)*(b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d)))/(2*b^2*d) - sin(a - c + (b - d)*x)/(2*b*(b - d)) + sin(a + c + (b + d)*x)/(2*b*(b + d)) + ((cos(a + b*x) + b*x*sin(a + b*x))*Si(c + d*x))/b^2 + ((d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d))*Si(((b - d)*(c + d*x))/d))/(2*b^2*d) - ((d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d))*Si(((b + d)*(c + d*x))/d))/(2*b^2*d)],
+# {x^2*Cos[a + b*x]*SinIntegral[c + d*x], x, 46, -(Cos[a - c + (b - d)*x]/(2*b*(b - d)^2)) - Cos[a - c + (b - d)*x]/(b^2*(b - d)) + Cos[a + c + (b + d)*x]/(2*b*(b + d)^2) + Cos[a + c + (b + d)*x]/(b^2*(b + d)) - (CosIntegral[((b - d)*(c + d*x))/d]*((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d]))/(2*b^3*d^2) + (CosIntegral[((b + d)*(c + d*x))/d]*((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d]))/(2*b^3*d^2) + (c*Sin[a - c + (b - d)*x])/(2*b*(b - d)*d) - (x*Sin[a - c + (b - d)*x])/(2*b*(b - d)) - (c*Sin[a + c + (b + d)*x])/(2*b*d*(b + d)) + (x*Sin[a + c + (b + d)*x])/(2*b*(b + d)) + ((2*b*x*Cos[a + b*x] - (2 - b^2*x^2)*Sin[a + b*x])*SinIntegral[c + d*x])/b^3 - ((2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d])*SinIntegral[((b - d)*(c + d*x))/d])/(2*b^3*d^2) + ((2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d])*SinIntegral[((b + d)*(c + d*x))/d])/(2*b^3*d^2)} 
+# {x^3*Cos[a + b*x]*SinIntegral[c + d*x], x, 0, 0} 
+
+
+# ::Subsection::Closed:: 
+#Cosine integral function
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m CosIntegral[b x]^n
+
+
+[Ci(b*x)/x^3, x, 5, -(cos(b*x)/(4*x^2)) - ((2 + b^2*x^2)*Ci(b*x))/(4*x^2) + (b*sin(b*x))/(4*x)],
+[Ci(b*x)/x^2, x, 4, -(cos(b*x)/x) - Ci(b*x)/x - b*Si(b*x)],
+[Ci(b*x)/x, x, 0, Int(Ci(b*x)/x, x)],
+[Ci(b*x), x, 1, x*Ci(b*x) - sin(b*x)/b],
+[x*Ci(b*x), x, 4, -(cos(b*x)/(2*b^2)) + (1/2)*x^2*Ci(b*x) - (x*sin(b*x))/(2*b)],
+[x^2*Ci(b*x), x, 5, -((2*x*cos(b*x))/(3*b^2)) + (1/3)*x^3*Ci(b*x) + (2*sin(b*x))/(3*b^3) - (x^2*sin(b*x))/(3*b)],
+[x^3*Ci(b*x), x, 6, (3*cos(b*x))/(2*b^4) - (3*x^2*cos(b*x))/(4*b^2) + (1/4)*x^4*Ci(b*x) + (3*x*sin(b*x))/(2*b^3) - (x^3*sin(b*x))/(4*b)],
+[x^m*Ci(b*x), x, 5, (x^(1 + m)*Ci(b*x))/(1 + m) + (x^(1 + m)*((-I)*b*x)^(-1 - m)*GAMMA(1 + m, (-I)*b*x))/(2*(1 + m)) + (x^(1 + m)*(I*b*x)^(-1 - m)*GAMMA(1 + m, I*b*x))/(2*(1 + m))],
+
+
+[Ci(b*x)^2/x^3, x, 0, Int(Ci(b*x)^2/x^3, x)],
+[Ci(b*x)^2/x^2, x, 0, Int(Ci(b*x)^2/x^2, x)],
+[Ci(b*x)^2/x, x, 0, Int(Ci(b*x)^2/x, x)],
+[Ci(b*x)^2, x, 6, x*Ci(b*x)^2 - (2*Ci(b*x)*sin(b*x))/b + Si(2*b*x)/b],
+[x*Ci(b*x)^2, x, 11, (1/2)*x^2*Ci(b*x)^2 + Ci(2*b*x)/(2*b^2) + log(x)/(2*b^2) + sin(b*x)^2/(2*b^2) - (Ci(b*x)*(cos(b*x) + b*x*sin(b*x)))/b^2],
+[x^2*Ci(b*x)^2, x, 13, x/(2*b^2) + (1/3)*x^3*Ci(b*x)^2 + (5*cos(b*x)*sin(b*x))/(6*b^3) + (x*sin(b*x)^2)/(3*b^2) - (2*Ci(b*x)*(2*b*x*cos(b*x) - (2 - b^2*x^2)*sin(b*x)))/(3*b^3) - (2*Si(2*b*x))/(3*b^3)],
+[x^3*Ci(b*x)^2, x, 20, x^2/(4*b^2) + (3*cos(b*x)^2)/(8*b^4) + (1/4)*x^4*Ci(b*x)^2 - (3*Ci(2*b*x))/(2*b^4) - (3*log(x))/(2*b^4) + (x*cos(b*x)*sin(b*x))/b^3 - (13*sin(b*x)^2)/(8*b^4) + (x^2*sin(b*x)^2)/(4*b^2) + (Ci(b*x)*(3*(2 - b^2*x^2)*cos(b*x) + b*x*(6 - b^2*x^2)*sin(b*x)))/(2*b^4)],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m CosIntegral[a+b x]^n
+
+
+[Ci(a + b*x)/x^3, x, 12, -((b*cos(a + b*x))/(2*a*x)) + (1/2)*(b^2/a^2 - 1/x^2)*Ci(a + b*x) - (b^2*Ci(b*x)*(cos(a) + a*sin(a)))/(2*a^2) - (b^2*(a*cos(a) - sin(a))*Si(b*x))/(2*a^2)],
+[Ci(a + b*x)/x^2, x, 8, (b*cos(a)*Ci(b*x))/a - ((a + b*x)*Ci(a + b*x))/(a*x) - (b*sin(a)*Si(b*x))/a],
+[Ci(a + b*x)/x, x, 0, Int(Ci(a + b*x)/x, x)],
+[Ci(a + b*x), x, 1, ((a + b*x)*Ci(a + b*x))/b - sin(a + b*x)/b],
+[x*Ci(a + b*x), x, 8, -(cos(a + b*x)/(2*b^2)) - (1/2)*(a^2/b^2 - x^2)*Ci(a + b*x) + (a*sin(a + b*x))/(2*b^2) - (x*sin(a + b*x))/(2*b)],
+[x^2*Ci(a + b*x), x, 11, (a*cos(a + b*x))/(3*b^3) - (2*x*cos(a + b*x))/(3*b^2) + (1/3)*(a^3/b^3 + x^3)*Ci(a + b*x) + (2*sin(a + b*x))/(3*b^3) - (a^2*sin(a + b*x))/(3*b^3) + (a*x*sin(a + b*x))/(3*b^2) - (x^2*sin(a + b*x))/(3*b)],
+[x^3*Ci(a + b*x), x, 15, (3*cos(a + b*x))/(2*b^4) - (a^2*cos(a + b*x))/(4*b^4) + (a*x*cos(a + b*x))/(2*b^3) - (3*x^2*cos(a + b*x))/(4*b^2) - (1/4)*(a^4/b^4 - x^4)*Ci(a + b*x) - (a*sin(a + b*x))/(2*b^4) + (a^3*sin(a + b*x))/(4*b^4) + (3*x*sin(a + b*x))/(2*b^3) - (a^2*x*sin(a + b*x))/(4*b^3) + (a*x^2*sin(a + b*x))/(4*b^2) - (x^3*sin(a + b*x))/(4*b)],
+[x^m*Ci(a + b*x), x, 6, (x^(1 + m)*Ci(a + b*x))/(1 + m) + (exp(I*a)*x^(1 + m)*((-I)*b*x)^(-1 - m)*GAMMA(1 + m, (-I)*b*x))/(2*(1 + m)) + (x^(1 + m)*(I*b*x)^(-1 - m)*GAMMA(1 + m, I*b*x))/(exp(I*a)*(2*(1 + m))) + (a*Int((x^m*cos(a + b*x))/(a + b*x), x))/(1 + m)],
+
+
+[Ci(a + b*x)^2/x^3, x, 0, Int(Ci(a + b*x)^2/x^3, x)],
+[Ci(a + b*x)^2/x^2, x, 0, Int(Ci(a + b*x)^2/x^2, x)],
+[Ci(a + b*x)^2/x, x, 0, Int(Ci(a + b*x)^2/x, x)],
+[Ci(a + b*x)^2, x, 6, ((a + b*x)*Ci(a + b*x)^2)/b - (2*Ci(a + b*x)*sin(a + b*x))/b + Si(2*(a + b*x))/b],
+[x*Ci(a + b*x)^2, x, 19, -(cos(2*a + 2*b*x)/(4*b^2)) - (1/2)*(a^2/b^2 - x^2)*Ci(a + b*x)^2 + Ci(2*(a + b*x))/(2*b^2) + log(a + b*x)/(2*b^2) - (Ci(a + b*x)*(cos(a + b*x) - (a - b*x)*sin(a + b*x)))/b^2 - (a*Si(2*(a + b*x)))/b^2],
+[x^2*Ci(a + b*x)^2, x, 42, (2*x)/(3*b^2) + (a*cos(2*a + 2*b*x))/(3*b^3) - (x*cos(2*a + 2*b*x))/(6*b^2) + (1/3)*(a^3/b^3 + x^3)*Ci(a + b*x)^2 - (a*Ci(2*(a + b*x)))/b^3 - (a*log(a + b*x))/b^3 + (2*cos(a + b*x)*sin(a + b*x))/(3*b^3) + (2*Ci(a + b*x)*((a - 2*b*x)*cos(a + b*x) + (2 - a^2 + a*b*x - b^2*x^2)*sin(a + b*x)))/(3*b^3) + sin(2*a + 2*b*x)/(12*b^3) - ((2 - 3*a^2)*Si(2*(a + b*x)))/(3*b^3)],
+# {x^3*CosIntegral[a + b*x]^2, x, 77, -((5*a*x)/(4*b^3)) + (3*x^2)/(8*b^2) + (3*Cos[a + b*x]^2)/(8*b^4) + (13*Cos[2*a + 2*b*x])/(16*b^4) - (3*a^2*Cos[2*a + 2*b*x])/(8*b^4) + (a*x*Cos[2*a + 2*b*x])/(4*b^3) - (x^2*Cos[2*a + 2*b*x])/(8*b^2) - (1/4)*(a^4/b^4 - x^4)*CosIntegral[a + b*x]^2 - (3*(1 - a^2)*CosIntegral[2*(a + b*x)])/(2*b^4) - (3*Log[a + b*x])/(2*b^4) + (3*a^2*Log[a + b*x])/(2*b^4) - (5*a*Cos[a + b*x]*Sin[a + b*x])/(4*b^4) + (3*x*Cos[a + b*x]*Sin[a + b*x])/(4*b^3) + (CosIntegral[a + b*x]*((6 - a^2 + 2*a*b*x - 3*b^2*x^2)*Cos[a + b*x] + (a^3 + 6*b*x - a^2*b*x - b^3*x^3 - a*(2 - b^2*x^2))*Sin[a + b*x]))/(2*b^4) - (a*Sin[2*a + 2*b*x])/(8*b^4) + (x*Sin[2*a + 2*b*x])/(8*b^3) + (a*(2 - a^2)*SinIntegral[2*(a + b*x)])/b^4} 
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Trig[b x] CosIntegral[b x]^n
+
+
+[sin(b*x)*Ci(b*x)/x^3, x, 14, -(b/(4*x)) - (b*cos(2*b*x))/(2*x) - (1/2)*b^2*Int((Ci(b*x)*sin(b*x))/x, x) - (Ci(b*x)*(b*x*cos(b*x) + sin(b*x)))/(2*x^2) - sin(2*b*x)/(8*x^2) - b^2*Si(2*b*x)],
+[sin(b*x)*Ci(b*x)/x^2, x, 8, (1/2)*b*Ci(b*x)^2 + b*Ci(2*b*x) - (Ci(b*x)*sin(b*x))/x - sin(2*b*x)/(2*x)],
+[sin(b*x)*Ci(b*x)/x, x, 0, Int((Ci(b*x)*sin(b*x))/x, x)],
+[sin(b*x)*Ci(b*x), x, 6, -((cos(b*x)*Ci(b*x))/b) + Ci(2*b*x)/(2*b) + log(x)/(2*b)],
+[x*sin(b*x)*Ci(b*x), x, 8, x/(2*b) - (Ci(b*x)*(b*x*cos(b*x) - sin(b*x)))/b^2 + (cos(b*x)*sin(b*x))/(2*b^2) - Si(2*b*x)/(2*b^2)],
+[x^2*sin(b*x)*Ci(b*x), x, 14, x^2/(4*b) + cos(b*x)^2/(4*b^3) - Ci(2*b*x)/b^3 - log(x)/b^3 + (x*cos(b*x)*sin(b*x))/(2*b^2) - sin(b*x)^2/b^3 + (Ci(b*x)*((2 - b^2*x^2)*cos(b*x) + 2*b*x*sin(b*x)))/b^3],
+[x^3*sin(b*x)*Ci(b*x), x, 17, -((5*x)/(2*b^3)) + x^3/(6*b) + (x*cos(b*x)^2)/(2*b^3) - (4*cos(b*x)*sin(b*x))/b^4 + (x^2*cos(b*x)*sin(b*x))/(2*b^2) - (3*x*sin(b*x)^2)/(2*b^3) + (Ci(b*x)*(b*x*(6 - b^2*x^2)*cos(b*x) - 3*(2 - b^2*x^2)*sin(b*x)))/b^4 + (3*Si(2*b*x))/b^4],
+
+
+[cos(b*x)*Ci(b*x)/x^3, x, 16, -(cos(b*x)^2/(4*x^2)) - (1/4)*b^2*Ci(b*x)^2 - b^2*Ci(2*b*x) + (b*cos(b*x)*sin(b*x))/(2*x) - (Ci(b*x)*(cos(b*x) - b*x*sin(b*x)))/(2*x^2) + (b*sin(2*b*x))/(4*x)],
+[cos(b*x)*Ci(b*x)/x^2, x, 7, -(1/(2*x)) - cos(2*b*x)/(2*x) - (cos(b*x)*Ci(b*x))/x - b*Int((Ci(b*x)*sin(b*x))/x, x) - b*Si(2*b*x)],
+[cos(b*x)*Ci(b*x)/x, x, 2, (1/2)*Ci(b*x)^2],
+[cos(b*x)*Ci(b*x), x, 5, (Ci(b*x)*sin(b*x))/b - Si(2*b*x)/(2*b)],
+[x*cos(b*x)*Ci(b*x), x, 10, -(Ci(2*b*x)/(2*b^2)) - log(x)/(2*b^2) - sin(b*x)^2/(2*b^2) + (Ci(b*x)*(cos(b*x) + b*x*sin(b*x)))/b^2],
+[x^2*cos(b*x)*Ci(b*x), x, 12, -((3*x)/(4*b^2)) - (5*cos(b*x)*sin(b*x))/(4*b^3) - (x*sin(b*x)^2)/(2*b^2) + (Ci(b*x)*(2*b*x*cos(b*x) - (2 - b^2*x^2)*sin(b*x)))/b^3 + Si(2*b*x)/b^3],
+[x^3*cos(b*x)*Ci(b*x), x, 19, -(x^2/(2*b^2)) - (3*cos(b*x)^2)/(4*b^4) + (3*Ci(2*b*x))/b^4 + (3*log(x))/b^4 - (2*x*cos(b*x)*sin(b*x))/b^3 + (13*sin(b*x)^2)/(4*b^4) - (x^2*sin(b*x)^2)/(2*b^2) - (Ci(b*x)*(3*(2 - b^2*x^2)*cos(b*x) + b*x*(6 - b^2*x^2)*sin(b*x)))/b^4],
+
+
+# ::Subsubsection::Closed:: 
+#Integrands of the form x^m Trig[a+b x] CosIntegral[c+d x]^n
+
+
+[cos(5*x)*Ci(2*x), x, 5, (1/5)*Ci(2*x)*sin(5*x) - (1/10)*Si(3*x) - (1/10)*Si(7*x)],
+
+
+# {Sin[a + b*x]*CosIntegral[c + d*x]/x^3, x, 0, 0} 
+[sin(a + b*x)*Ci(c + d*x)/x^2, x, 20, b*Int((cos(a + b*x)*Ci(c + d*x))/x, x) + (d*Ci((b - d)*x)*sin(a - c))/(2*c) + (d*Ci((b + d)*x)*sin(a + c))/(2*c) - (d*Ci(((b - d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*c) - (d*Ci(((b + d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*c) - (Ci(c + d*x)*sin(a + b*x))/x + (d*cos(a - c)*Si((b - d)*x))/(2*c) + (d*cos(a + c)*Si((b + d)*x))/(2*c) - (d*cos(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*c) - (d*cos(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*c)],
+[sin(a + b*x)*Ci(c + d*x)/x, x, 0, Int((Ci(c + d*x)*sin(a + b*x))/x, x)],
+[sin(a + b*x)*Ci(c + d*x), x, 10, -((cos(a + b*x)*Ci(c + d*x))/b) + (cos(a - (b*c)/d)*Ci(((b - d)*(c + d*x))/d))/(2*b) + (cos(a - (b*c)/d)*Ci(((b + d)*(c + d*x))/d))/(2*b) - (sin(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*b) - (sin(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*b)],
+[x*sin(a + b*x)*Ci(c + d*x), x, 26, -((Ci(((b - d)*(c + d*x))/d)*(b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d)))/(2*b^2*d)) - (Ci(((b + d)*(c + d*x))/d)*(b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d)))/(2*b^2*d) - (Ci(c + d*x)*(b*x*cos(a + b*x) - sin(a + b*x)))/b^2 + sin(a - c + (b - d)*x)/(2*b*(b - d)) + sin(a + c + (b + d)*x)/(2*b*(b + d)) - ((d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d))*Si(((b - d)*(c + d*x))/d))/(2*b^2*d) - ((d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d))*Si(((b + d)*(c + d*x))/d))/(2*b^2*d)],
+# {x^2*Sin[a + b*x]*CosIntegral[c + d*x], x, 46, Cos[a - c + (b - d)*x]/(2*b*(b - d)^2) + Cos[a - c + (b - d)*x]/(b^2*(b - d)) + Cos[a + c + (b + d)*x]/(2*b*(b + d)^2) + Cos[a + c + (b + d)*x]/(b^2*(b + d)) + (CosIntegral[((b - d)*(c + d*x))/d]*((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d]))/(2*b^3*d^2) + (CosIntegral[((b + d)*(c + d*x))/d]*((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d]))/(2*b^3*d^2) + (CosIntegral[c + d*x]*((2 - b^2*x^2)*Cos[a + b*x] + 2*b*x*Sin[a + b*x]))/b^3 - (c*Sin[a - c + (b - d)*x])/(2*b*(b - d)*d) + (x*Sin[a - c + (b - d)*x])/(2*b*(b - d)) - (c*Sin[a + c + (b + d)*x])/(2*b*d*(b + d)) + (x*Sin[a + c + (b + d)*x])/(2*b*(b + d)) + ((2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d])*SinIntegral[((b - d)*(c + d*x))/d])/(2*b^3*d^2) + ((2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d])*SinIntegral[((b + d)*(c + d*x))/d])/(2*b^3*d^2)} 
+# {x^3*Sin[a + b*x]*CosIntegral[c + d*x], x, 0, 0} 
+
+
+# {Cos[a + b*x]*CosIntegral[c + d*x]/x^3, x, 0, 0} 
+[cos(a + b*x)*Ci(c + d*x)/x^2, x, 20, (d*cos(a - c)*Ci((b - d)*x))/(2*c) + (d*cos(a + c)*Ci((b + d)*x))/(2*c) - (cos(a + b*x)*Ci(c + d*x))/x - (d*cos(a - (b*c)/d)*Ci(((b - d)*(c + d*x))/d))/(2*c) - (d*cos(a - (b*c)/d)*Ci(((b + d)*(c + d*x))/d))/(2*c) - b*Int((Ci(c + d*x)*sin(a + b*x))/x, x) - (d*sin(a - c)*Si((b - d)*x))/(2*c) - (d*sin(a + c)*Si((b + d)*x))/(2*c) + (d*sin(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*c) + (d*sin(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*c)],
+[cos(a + b*x)*Ci(c + d*x)/x, x, 0, Int((cos(a + b*x)*Ci(c + d*x))/x, x)],
+[cos(a + b*x)*Ci(c + d*x), x, 10, -((Ci(((b - d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*b)) - (Ci(((b + d)*(c + d*x))/d)*sin(a - (b*c)/d))/(2*b) + (Ci(c + d*x)*sin(a + b*x))/b - (cos(a - (b*c)/d)*Si(((b - d)*(c + d*x))/d))/(2*b) - (cos(a - (b*c)/d)*Si(((b + d)*(c + d*x))/d))/(2*b)],
+[x*cos(a + b*x)*Ci(c + d*x), x, 26, cos(a - c + (b - d)*x)/(2*b*(b - d)) + cos(a + c + (b + d)*x)/(2*b*(b + d)) - (Ci(((b - d)*(c + d*x))/d)*(d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d)))/(2*b^2*d) - (Ci(((b + d)*(c + d*x))/d)*(d*cos(a - (b*c)/d) - b*c*sin(a - (b*c)/d)))/(2*b^2*d) + (Ci(c + d*x)*(cos(a + b*x) + b*x*sin(a + b*x)))/b^2 + ((b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d))*Si(((b - d)*(c + d*x))/d))/(2*b^2*d) + ((b*c*cos(a - (b*c)/d) + d*sin(a - (b*c)/d))*Si(((b + d)*(c + d*x))/d))/(2*b^2*d)]
+# {x^2*Cos[a + b*x]*CosIntegral[c + d*x], x, 46, -((c*Cos[a - c + (b - d)*x])/(2*b*(b - d)*d)) + (x*Cos[a - c + (b - d)*x])/(2*b*(b - d)) - (c*Cos[a + c + (b + d)*x])/(2*b*d*(b + d)) + (x*Cos[a + c + (b + d)*x])/(2*b*(b + d)) + (CosIntegral[((b - d)*(c + d*x))/d]*(2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d]))/(2*b^3*d^2) + (CosIntegral[((b + d)*(c + d*x))/d]*(2*b*c*d*Cos[a - (b*c)/d] - (b^2*c^2 - 2*d^2)*Sin[a - (b*c)/d]))/(2*b^3*d^2) + (CosIntegral[c + d*x]*(2*b*x*Cos[a + b*x] - (2 - b^2*x^2)*Sin[a + b*x]))/b^3 - Sin[a - c + (b - d)*x]/(2*b*(b - d)^2) - Sin[a - c + (b - d)*x]/(b^2*(b - d)) - Sin[a + c + (b + d)*x]/(2*b*(b + d)^2) - Sin[a + c + (b + d)*x]/(b^2*(b + d)) - (((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d])*SinIntegral[((b - d)*(c + d*x))/d])/(2*b^3*d^2) - (((b^2*c^2 - 2*d^2)*Cos[a - (b*c)/d] + 2*b*c*d*Sin[a - (b*c)/d])*SinIntegral[((b + d)*(c + d*x))/d])/(2*b^3*d^2)} 
+# {x^3*Cos[a + b*x]*CosIntegral[c + d*x], x, 0, 0} 
+]:
