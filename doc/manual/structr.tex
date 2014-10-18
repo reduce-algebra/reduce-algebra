@@ -207,6 +207,15 @@ is a separation command.  All terms involving fixed powers of the declared
 expressions are printed as a product of the fixed powers and a sum of the
 rest of the terms.
 
+For example, after the declaration
+\begin{verbatim}
+        factor x;
+\end{verbatim}
+the polynomial $(x+y+1)^{2}$ will be printed as
+\begin{verbatim}
+         2                  2
+        X  + 2*X*(Y + 1) + Y  + 2*Y + 1
+\end{verbatim}
 All expressions involving a given prefix operator may also be factored by
 putting the operator name in the list of factored identifiers. For example:
 \begin{verbatim}
