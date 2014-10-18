@@ -1,41 +1,92 @@
-# Makefile for getting readt to make Windows installer package
+# Makefile for getting ready to make Windows installer package
 
+# If the following path to Inno Setup is correct then running "make" will
+# be able to run Inno Setup automatically. If it is not then there will
+# be no terrible harm, but when you run "make" it will end by displaying
+# a message asking you to run Inno Setup manually.
 
-# This version makes a "fat" binary for CSl.
+inno=/cygdrive/c/Program Files (x86)/Inno Setup 5
 
-all:	configure-all build-all package-win
+all:	package-win
 
-configure-all:	clean-tree/configure configure-psl
+# The sub-parts of this build process are controlled by a collection
+# of datestamp files *.stamp. "make clean" will remove all of these and so
+# force you to remake everything from scratch. Otherwise once one of these
+# has been created it just sits there and prevents re-building of its
+# component
 
-clean-tree/configure:
+# "clean-tree" is a copy of the main Reduce source tree. It will include
+# everything that is checked in to the subversion repository but it will
+# not include locally created files. If you have updated a file locally
+# (even if you have not yet committed your changes) then that update will
+# find its way into the clean tree. The purpose of all this is so that the
+# setup process can dump large sections of the Reduce tree into the
+# installation set without needing to enumerate files individually. A previous
+# version of the script used the local copy of the main tree and could end
+# up getting ready to distribute large amounts of temporary or experimental
+# material.
+
+clean-tree.stamp:
 	rm -rf clean-tree
 	svn export .. clean-tree
+	touch clean-tree.stamp
 
-build-all:	clean-tree/configure build-csl build-psl build-docs
+# The CSL version of Reduce gets build using an elaborate scheme that
+# creates a sort of Windows "fat binary" such that a single binary can be
+# used on 32 or 64-bit systems and to run as a Windowed version or under
+# a Windows console - or under cygwin mintty or using an X server!
 
-package-win:	clean-tree/configure reduce.iss
-	clean-tree/psl/saveimage.sh clean-tree/pslbuild/x86_64-pc-windows  $(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
-	clean-tree/psl/saveimage.sh clean-tree/pslbuild/i686-pc-windows $(abspath .) '$$reduce/lib/psl'
-	@echo Please run Innosetup on winbuild/reduce.iss
-
-configure-psl:	clean-tree/configure
-	(cd clean-tree ; ./configure --with-psl ; ./configure --with-psl -with-m32)
-
-build-csl:	clean-tree/configure
+csl.stamp:	clean-tree.stamp
 	./cslbuild.sh
+	touch csl.stamp
 
-build-psl:	clean-tree/configure
+# The PSL version gets built for both 32 and 64-bit architectures. Because
+# it is built in the clean tree it will be a fully fresh pair of versions
+# fully re-build here.
+
+psl.stamp:	clean-tree.stamp
+	(cd clean-tree ; ./configure --with-psl ; \
+		./configure --with-psl -with-m32)
 	make -C clean-tree psl
+	touch psl.stamp
 
-build-docs:	clean-tree/configure
+# Documentation is also re-generated in the clean tree so that regardless
+# of history it should end up fresh and tidy.
+
+docs.stamp:	clean-tree.stamp
 	(cd clean-tree/doc/misc ; make)
 	(cd clean-tree/doc/manual ; make)
+	touch docs.stamp
 	
+# reduce.iss is the script for Inno Setup. It is created here by
+# setting the string @here@ in it to the absolute path to this
+# directory. That is so that when Inno Setup processes it there is no
+# reliance on any "current directory".
+
 reduce.iss:	reduce.iss.in
-	sed -e 's#\@here\@#$(subst /,\\,$(shell cygpath -m $(abspath .)))#;s#\@srcdir\@#$(subst /,\\,$(shell cygpath -m $(abspath ./clean-tree)))#;s#\@build\@#i686-pc-windows#;s#\@build64\@#x86_64-pc-windows#' <reduce.iss.in >reduce.iss
+	sed -e 's#\@here\@#$(subst /,\\,$(shell cygpath -m $(abspath .)))#; s#\@VERSION\@#$(shell date +%Y-%m-%d)#' \
+		<reduce.iss.in >reduce.iss
+
+# The final step in the creation of an installer involved saving PSL
+# images for both 32 and 64-bit versions and then invoking Inno Setup
+# to pack up everything.
+
+package-win:	clean-tree.stamp csl.stamp psl.stamp docs.stamp reduce.iss
+	clean-tree/psl/saveimage.sh clean-tree/pslbuild/x86_64-pc-windows \
+		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
+	clean-tree/psl/saveimage.sh clean-tree/pslbuild/i686-pc-windows \
+		$(abspath .) '$$reduce/lib/psl'
+	if test -x "$(inno)/ISCC.exe"; then "$(inno)/ISCC" reduce.iss;\
+		else echo Please run Innosetup on winbuild/reduce.iss; fi
+
+# It will be a really good idea to go "make clean" before any wholesale
+# "make" here - this removes all the working files that get created
+# during the build. It will leave any final installer that is in the
+# directory "Output"
 
 clean:
-	rm -rf *red*.exe *.img clean-tree cslwin32 cslwin64 cslcyg32 cslcyg64 \
-		cslbuild log reduce.iss Output
+	rm -rf cyg*.exe add*.exe *red*.exe *.img clean-tree \
+		cslwin32 cslwin64 cslcyg32 cslcyg64 \
+		cslbuild log reduce.iss *.stamp
 
 # end of Makefile

@@ -13,10 +13,6 @@
 ;;----------------------------------------------------------------;;
 
 
-;;#define CslBuild    "@here@\cslbuild"
-;;#define PslBuild    "@srcdir@\pslbuild\@build@"
-;;#define PslBuild64  "@srcdir@\pslbuild\@build64@"
-
 [Setup]
 AppName=REDUCE
 AppVerName=REDUCE
@@ -32,7 +28,7 @@ OutputBaseFilename=Reduce-Setup
 DefaultDirName={pf}\Reduce
 DefaultGroupName=Reduce
 AllowNoIcons=yes
-LicenseFile=@srcdir@\csl\reduce.doc\BINARY-LICENSE.txt
+LicenseFile=@here@\clean-tree\csl\reduce.doc\BINARY-LICENSE.txt
 Compression=lzma/ultra
 SolidCompression=yes
 Uninstallable=yes
@@ -66,24 +62,24 @@ Name: "psl"; Description: "{cm:ReducePSL}"; Types: full pslonly custom
 
 [Files]
 ; common
-Source: "@srcdir@\csl\reduce.doc\BINARY-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\csl\reduce.doc\BSD-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\csl\reduce.doc\LGPL-2.1.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\misc\primer.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\misc\sl.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\misc\sl.bib"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\manual\redlogo.png"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\manual\*.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\manual\manual.pdf"; DestDir: "{app}\lib\csl\reduce.doc\"; Flags: ignoreversion; Components: "common"
-Source: "@srcdir@\doc\manual\manual*.html"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
-Source: "@srcdir@\doc\manual\manual*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
-Source: "@srcdir@\doc\manual\manual.css"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
-Source: "@srcdir@\doc\manual\manual.html"; DestDir: "{app}\lib\csl\reduce.doc\"; DestName: "index.html"; Components: "common"
-Source: "@srcdir@\winbuild\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: "common"
+Source: "@here@\clean-tree\csl\reduce.doc\BINARY-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\csl\reduce.doc\BSD-LICENSE.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\csl\reduce.doc\LGPL-2.1.txt"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\misc\primer.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\misc\sl.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\misc\sl.bib"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\manual\redlogo.png"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\manual\*.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\manual\manual.pdf"; DestDir: "{app}\lib\csl\reduce.doc\"; Flags: ignoreversion; Components: "common"
+Source: "@here@\clean-tree\doc\manual\manual*.html"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
+Source: "@here@\clean-tree\doc\manual\manual*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
+Source: "@here@\clean-tree\doc\manual\manual.css"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: "common"
+Source: "@here@\clean-tree\doc\manual\manual.html"; DestDir: "{app}\lib\csl\reduce.doc\"; DestName: "index.html"; Components: "common"
+Source: "@here@\clean-tree\winbuild\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: "common"
 
-Source: "@srcdir@\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
+Source: "@here@\clean-tree\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
 
 ; csl
 Source: "cslbuild\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl";
@@ -95,22 +91,24 @@ Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resource
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: "csl";
 
 ;; I think that the reduce.bat script is probably not much use here now.
-;;Source: "@srcdir@\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
+;;Source: "@here@\clean-tree\bin\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl"
 
 
 ;psl
-Source: "@srcdir@\pslbuild\@build@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"; Check: not Is64BitInstallMode
-Source: "@srcdir@\pslbuild\@build@\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: not Is64BitInstallMode
-Source: "@srcdir@\pslbuild\@build@\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Flags: skipifsourcedoesntexist; Check: not Is64BitInstallMode
+Source: "@here@\clean-tree\pslbuild\i686-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@here@\clean-tree\pslbuild\i686-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@here@\clean-tree\pslbuild\i686-pc-windows\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Flags: skipifsourcedoesntexist; Check: not Is64BitInstallMode
 
-Source: "@srcdir@\pslbuild\@build64@\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"; Check: Is64BitInstallMode
-Source: "@srcdir@\pslbuild\@build64@\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode
-Source: "@srcdir@\pslbuild\@build64@\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode; Flags: skipifsourcedoesntexist;
+Source: "@here@\clean-tree\pslbuild\x86_64-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@here@\clean-tree\pslbuild\x86_64-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@here@\clean-tree\pslbuild\x86_64-pc-windows\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode; Flags: skipifsourcedoesntexist;
 
-Source: "@srcdir@\winbuild\reduce.img"; DestDir: "{app}\lib\psl\red\"; Components: "psl"; Check: Is64BitInstallMode
-Source: "@srcdir@\winbuild\reduce64.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: "psl"; Check: not Is64BitInstallMode
-Source: "@srcdir@\winbuild\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"
-Source: "@srcdir@\winbuild\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"
+Source: "@here@\reduce64.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@here@\reduce.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@here@\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: not Is64BitInstallMode
+Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: Is64BitInstallMode
+Source: "@here@\redpslw64.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: Is64BitInstallMode
 
 
 [Icons]
@@ -121,7 +119,7 @@ Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{ap
 
 [Run]
 Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
-Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: "{app}\lib\csl\reduce.exe"; Components: "csl"
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\reduce.exe"" redcsl"; Flags: runhidden; Components: "csl"
 
 [Code]
 var

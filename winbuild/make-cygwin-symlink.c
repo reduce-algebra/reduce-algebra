@@ -175,6 +175,14 @@ int main(int argc, char *argv[])
 {
     char volumeName[100];
     HANDLE v;
+#if 0
+    {   int i;
+        FILE *o = fopen("c:\\symlink.log", "w");
+        fprintf(o, "make-cygwin-symlink %d\n", argc);
+        for (i=0; i<argc; i++) fprintf(o, "%d) \"%s\"\n", i, argv[i]);
+        fclose(o);
+    }
+#endif
     if (argc != 3 || strncmp(argv[1], "--h", 3) == 0)
     {   printf("[%d] Usage:\n", argc);
         printf("     make-cygwin-symlink winname cygname\n");
