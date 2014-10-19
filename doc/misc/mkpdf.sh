@@ -22,8 +22,10 @@ until [ ${SUCCESS} = 1 ] ; do
 done
 
 # finally, run makeindex and latex once
-makeindex ${JOBNAME}
-pdflatex ${JOBNAME}
+if test -f ${JOBNAME}.idx ; then
+  makeindex ${JOBNAME}
+  pdflatex ${JOBNAME}
+fi
 
 exit 0
 
