@@ -3,7 +3,7 @@
 # Configure and build CSL version from scratch. This is a native version
 # for Windows in 32-bit mode.
 
-reduce=`cygpath -a ./clean-tree`
+reduce=`cygpath -a ./C`
 reduce="${reduce%/}"
 echo $reduce
 

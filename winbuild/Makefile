@@ -15,7 +15,7 @@ all:	package-win
 # has been created it just sits there and prevents re-building of its
 # component
 
-# "clean-tree" is a copy of the main Reduce source tree. It will include
+# "C" is a copy of the main Reduce source tree. It will include
 # everything that is checked in to the subversion repository but it will
 # not include locally created files. If you have updated a file locally
 # (even if you have not yet committed your changes) then that update will
@@ -26,17 +26,17 @@ all:	package-win
 # up getting ready to distribute large amounts of temporary or experimental
 # material.
 
-clean-tree.stamp:
-	rm -rf clean-tree
-	svn export .. clean-tree
-	touch clean-tree.stamp
+C.stamp:
+	rm -rf C
+	svn export .. C
+	touch C.stamp
 
 # The CSL version of Reduce gets build using an elaborate scheme that
 # creates a sort of Windows "fat binary" such that a single binary can be
 # used on 32 or 64-bit systems and to run as a Windowed version or under
 # a Windows console - or under cygwin mintty or using an X server!
 
-csl.stamp:	clean-tree.stamp
+csl.stamp:	C.stamp
 	./cslbuild.sh
 	touch csl.stamp
 
@@ -44,18 +44,19 @@ csl.stamp:	clean-tree.stamp
 # it is built in the clean tree it will be a fully fresh pair of versions
 # fully re-build here.
 
-psl.stamp:	clean-tree.stamp
-	(cd clean-tree ; ./configure --with-psl ; \
-		./configure --with-psl -with-m32)
-	make -C clean-tree psl
+psl.stamp:	C.stamp
+	(cd C ; \
+		./configure --with-psl ; \
+		./configure --with-psl -with-m32 ; \
+		make psl )
 	touch psl.stamp
 
 # Documentation is also re-generated in the clean tree so that regardless
 # of history it should end up fresh and tidy.
 
-docs.stamp:	clean-tree.stamp
-	(cd clean-tree/doc/misc ; make)
-	(cd clean-tree/doc/manual ; make)
+docs.stamp:	C.stamp
+	(cd C/doc/misc ; make)
+	(cd C/doc/manual ; make)
 	touch docs.stamp
 	
 # reduce.iss is the script for Inno Setup. It is created here by
@@ -71,10 +72,10 @@ reduce.iss:	reduce.iss.in
 # images for both 32 and 64-bit versions and then invoking Inno Setup
 # to pack up everything.
 
-package-win:	clean-tree.stamp csl.stamp psl.stamp docs.stamp reduce.iss
-	clean-tree/psl/saveimage.sh clean-tree/pslbuild/x86_64-pc-windows \
+package-win:	C.stamp csl.stamp psl.stamp docs.stamp reduce.iss
+	C/psl/saveimage.sh C/pslbuild/x86_64-pc-windows \
 		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
-	clean-tree/psl/saveimage.sh clean-tree/pslbuild/i686-pc-windows \
+	C/psl/saveimage.sh C/pslbuild/i686-pc-windows \
 		$(abspath .) '$$reduce/lib/psl'
 	if test -x "$(inno)/ISCC.exe"; then "$(inno)/ISCC" reduce.iss;\
 		else echo Please run Innosetup on winbuild/reduce.iss; fi
@@ -85,7 +86,7 @@ package-win:	clean-tree.stamp csl.stamp psl.stamp docs.stamp reduce.iss
 # directory "Output"
 
 clean:
-	rm -rf cyg*.exe add*.exe *red*.exe *.img clean-tree \
+	rm -rf cyg*.exe add*.exe *red*.exe *.img C \
 		cslwin32 cslwin64 cslcyg32 cslcyg64 \
 		cslbuild log reduce.iss *.stamp
 

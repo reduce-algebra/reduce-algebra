@@ -3,7 +3,7 @@
 # Configure and build CSL version from scratch. This makes a 64-bit cygwin
 # version and is launched froma cygwin64 shell.
 
-reduce=`cygpath -a ./clean-tree`
+reduce=`cygpath -a ./C`
 reduce="${reduce%/}"
 echo $reduce
 
