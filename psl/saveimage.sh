@@ -124,8 +124,6 @@ cd psl
 
 (load zbig)                        % PSL bignums.
 (errorset '(load pslcompat) nil nil)  % Load PSL-based functions if there.
-(remprop 'forall 'pass!-1!-reform)
-
 (load module)                      % Contains definition of load-package.
 (load pslprolo)                    % PSL specific code.
 
@@ -136,7 +134,7 @@ cd psl
 (load!-package 'alg)
 (load!-package 'mathpr)
 (load!-package 'entry)
-(setq version!* "REDUCE Experimental Version") (setq date!* (date))
+(setq version!* "Reduce (Free PSL version)") (setq date!* (date))
 (initreduce)
 
 (setq !*loadversion t)             % Load entry module during BEGIN.
@@ -145,6 +143,20 @@ cd psl
 (cond ((and (memq (quote sparc) lispsystem!*)
             (getd (quote supersparc)))
        (supersparc)))
+
+(flag '(fancy) 'switch)
+
+(put 'fancy 'simpfg
+  '((t (load fmprint) (fmp!-switch t))
+    (nil (fmp!-switch nil)) ))
+
+% implant graphics mode switch
+
+(setq *fancy nil)
+
+(cond ((not (unboundp 'win-messages))
+      (putv win-messages 3 '(~on '(fancy)))
+      (putv win-messages 4 '(and *fancy (~off '(fancy))))))
 
 (prog nil
    (reclaim)
