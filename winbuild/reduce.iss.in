@@ -87,6 +87,7 @@ Source: "cslbuild\winreduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl";
 Source: "cslbuild\reduce.img"; DestDir: "{app}\lib\csl\"; Components: "csl";
 Source: "cslbuild\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: "csl";
 Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resources"; Components: "csl";
+Source: "@here@\redcsl.bat"; DestDir: "{app}\bin\"; Components: "csl";
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: "csl";
 
@@ -106,9 +107,9 @@ Source: "@here@\clean-tree\pslbuild\x86_64-pc-windows\red\*.lap"; DestDir: "{app
 Source: "@here@\reduce64.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: "psl"; Check: Is64BitInstallMode
 Source: "@here@\reduce.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: "psl"; Check: not Is64BitInstallMode
 Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: not Is64BitInstallMode
-Source: "@here@\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: not Is64BitInstallMode
+;;;Source: "@here@\redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: not Is64BitInstallMode
 Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: Is64BitInstallMode
-Source: "@here@\redpslw64.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: Is64BitInstallMode
+;;;Source: "@here@\redpsl64w.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: "psl"; Check: Is64BitInstallMode
 
 
 [Icons]

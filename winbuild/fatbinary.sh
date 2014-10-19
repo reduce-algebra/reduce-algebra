@@ -56,7 +56,26 @@ x86_64)
 esac
 
 # stub.c is a stub program that tests the environment it is launched from
-# and chains to a suitable version of the code...
+# and chains to a suitable version of the code... But I want the stub to
+# be able to recover reasonably if not enough cygwin components have been
+# installed so I will first sort out just which DLLs the reduce binaries
+# rely on.
+
+case `uname -m`
+in
+i686)
+  objdump -p cslcyg32/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll32.c
+  x86_64-pc-cygwin-objdump -p cslcyg64/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll64.c
+  ;;
+x86_64)
+  i686-pc-cygwin-objdump -p cslcyg32/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll32.c
+  objdump -p cslcyg64/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll64.c
+  ;;
+*)
+  echo Unknown machine `uname -m`
+  ;;
+esac
+
 
 i686-w64-mingw32-gcc -DFAT64 -O2 stub.c \
 	--static -lz -o cslbuild/reduce.exe

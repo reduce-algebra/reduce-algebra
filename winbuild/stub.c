@@ -465,6 +465,50 @@ int RunResource(int index, int forcegui, const char *modulename)
     }
 }
     
+static const char *dll32[] =
+{
+#include "dll32.c"
+    NULL
+};
+
+static const char *dll64[] =
+{
+#include "dll64.c"
+    NULL
+};
+
+#include <windows.h>
+#include <stdio.h>
+
+void dllcheck(const char **table)
+{
+    int i, messaged = 0;
+    for (i=0; table[i]!=NULL; i++)
+    {   HMODULE h = LoadLibraryEx(table[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
+        if (h == NULL)
+        {   if (!messaged)
+            {   printf("\nCygwin needs at least %s", table[i]);
+                messaged = 3;
+            }
+            else if (messaged >= 5)
+            {   printf(",\n  %s", table[1]);
+                messaged = 1;
+            }
+            else
+            {   printf(", %s", table[i]);
+                messaged++;
+            }
+        }
+        else FreeLibrary(h);
+    }
+    if (messaged)
+    {   printf("\n");
+        printf("Please run cygwin setup and install packages that will\n");
+        printf("provide these. Then try again.\n\n");
+        fflush(stdout);
+    }
+}
+
 int main(int argc, char* argv[])
 {
 //
@@ -488,7 +532,7 @@ int main(int argc, char* argv[])
 // try to disable that here.
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
-    int possibly_under_cygwin = 1;
+    int possibly_under_cygwin = 1, rc;
 //
 // I will start by detecting a number of cases where I will NOT want to
 // use the cygwin version of the code. So
@@ -641,10 +685,18 @@ int main(int argc, char* argv[])
 #endif
 #ifndef FATWIN
     case 0x01:
-        return RunResource(MODULE_CYG32, forcegui, "cyg32");
+        rc = RunResource(MODULE_CYG32, forcegui, "cyg32");
+        if (rc != 0)
+        {   dllcheck(dll32);
+        }
+        return rc;
 #ifndef FAT32
     case 0x11:
-        return RunResource(MODULE_CYG64, forcegui, "cyg64");
+        rc = RunResource(MODULE_CYG64, forcegui, "cyg64");
+        if (rc != 0)
+        {   dllcheck(dll64);
+        }
+        return rc;
 #endif // FAT32
 #endif // FATWIN
     default:
