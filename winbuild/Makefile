@@ -28,7 +28,7 @@ all:	package-win
 
 C.stamp:
 	rm -rf C
-	svn export .. C
+	svn export .. C > C.log
 	touch C.stamp
 
 # The CSL version of Reduce gets build using an elaborate scheme that
@@ -37,7 +37,7 @@ C.stamp:
 # a Windows console - or under cygwin mintty or using an X server!
 
 csl.stamp:	C.stamp
-	./cslbuild.sh
+	script -c "time ./cslbuild.sh" csl.log
 	touch csl.stamp
 
 # The PSL version gets built for both 32 and 64-bit architectures. Because
@@ -48,15 +48,15 @@ psl.stamp:	C.stamp
 	(cd C ; \
 		./configure --with-psl ; \
 		./configure --with-psl -with-m32 ; \
-		make psl )
+		script -c "time make psl" psl.log )
 	touch psl.stamp
 
 # Documentation is also re-generated in the clean tree so that regardless
 # of history it should end up fresh and tidy.
 
 docs.stamp:	C.stamp
-	(cd C/doc/misc ; make)
-	(cd C/doc/manual ; make)
+	(cd C/doc/misc ; make > docmist.log )
+	(cd C/doc/manual ; make > docmanual.log )
 	touch docs.stamp
 	
 # reduce.iss is the script for Inno Setup. It is created here by
@@ -88,6 +88,6 @@ package-win:	C.stamp csl.stamp psl.stamp docs.stamp reduce.iss
 clean:
 	rm -rf cyg*.exe add*.exe *red*.exe *.img C \
 		cslwin32 cslwin64 cslcyg32 cslcyg64 \
-		cslbuild log reduce.iss *.stamp
+		cslbuild log reduce.iss dll*.c *.stamp
 
 # end of Makefile
