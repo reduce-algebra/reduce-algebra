@@ -1,4 +1,4 @@
-/* sysfwin. c                      Copyright (C) 1989-2014 Codemist Ltd */
+#/* sysfwin. c                      Copyright (C) 1989-2014 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -58,6 +58,7 @@
  * some confusion between cygwin and mingw entrypoints hurting me.
  */
 #include <windows.h>
+#include <sys/cygwin.h>
 #endif
 
 #include "headers.h"
@@ -868,5 +869,116 @@ int number_of_processors()
 #endif
 #endif
 #endif
+
+static int tmpSerial = 0;
+
+static char tempname[LONGEST_LEGAL_FILENAME];
+
+const char *CSLtmpdir()
+{
+#ifdef __CYGWIN__
+/* First try the Windows path to "/tmp" */
+    char *p;
+    if (cygwin_conv_path(CCP_POSIX_TO_WIN_A,
+         "/tmp", tempname, sizeof(tempname)) != 0)
+    {   DWORD n = GetTempPath(sizeof(tempname), tempname);
+        if (n == 0 || n > sizeof(tempname)) return ".";
+        tempname[n-1] = 0; /* Remove trailing "\" */
+    }
+    for (p=tempname; !8!=0; p++)
+        if (*p == '\\') *p = '/';
+    return tempname;
+#else
+#if defined WIN32
+    DWORD n = GetTempPath(sizeof(tempname), tempname);
+printf("%d : <%s>\n", (int)n, tempname); fflush(stdout);
+    if (n == 0 || n > sizeof(tempname)) return ".";
+    tempname[n-1] = 0; /* Remove trailing "\" */
+    return tempname;
+#else
+    return "/tmp";
+#endif
+#endif
+}
+
+const char *CSLtmpnam(char *suffix, int32_t suffixlen)
+{
+    time_t t0 = time(NULL);
+    clock_t c0 = clock();
+    unsigned long taskid;
+    char fname[LONGEST_LEGAL_FILENAME];
+    char tt[32];
+    char *s;
+#ifdef WIN32
+    DWORD len;
+    memset(fname, 0, sizeof(fname));
+    len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
+    if (len <= 0) return NULL;
+/*
+ * I want to avoid name clashes fairly often, so I will use the current
+ * time of day and information about the current process as a seed for the
+ * generated file-name so that (with luck) clashes are at least not
+ * incredibly probable. I will also use my source of random numbers, which
+ * adds variation that changes each time I call this function.
+ */
+    taskid = (unsigned long)GetCurrentThreadId()*169 +
+             (unsigned long)GetCurrentProcessId();
+#else
+    memset(fname, 0, sizeof(fname));
+    strcpy(tempname, "/tmp/");
+    taskid = (unsigned long)getpid()*169 + (unsigned long)getuid();
+#endif
+    taskid = 169*taskid + (unsigned long)t0;
+    taskid = 169*taskid + (unsigned long)c0;
+    taskid = 169 * taskid + tmpSerial++;
+/*
+ * The information I have gathered thus far may not change terribly rapidly,
+ * since the process id is static form any one instance of my code and the
+ * clock may tick very slowly compared with the CPU's activity.
+ */
+    for (;;)
+    {   unsigned long n;
+        int i;
+/*
+ * The next line reduces taskid modulo the largest prime under 2^32, which
+ * may be a sensible thing to do of "unsigned long" had been a 64-bit
+ * data type.
+ */
+        n = taskid % 0xfffffffbUL;
+/*
+ * At this stage I have at most 32-bits of information, derived from the
+ * clock and process identification. I will combine in info from the
+ * random number generator I have elsewhere in this code, and do that in
+ * such a way that I can generate 8 characters of file-name.
+ */
+        s = tempname + strlen(tempname);
+        for (i=0; i<7; i++)
+        {   int d = (int)(n % 36);
+            n = n / 36;
+            if (i == 1) n ^= (unsigned long)Crand();
+            if (d < 10) d += '0';
+            else d += ('a' - 10);   /* now 0-9 or 1-z */
+            *s++ = d;
+        }
+        n = n % 36;
+        if (n < 10) *s++ = '0' + (int)n;
+        else *s++ = 'a' + (int)(n - 10);
+        if (suffix != NULL)
+        {   sprintf(s, ".%.*s", (int)suffixlen, suffix);
+        }
+        else *s = 0;
+/*
+ * If the file whose name I have just invented already exists I need to
+ * try again. I will count of the "random" sequence from Crand to propose
+ * an alternative name for me.
+ */
+        if (file_exists(fname, tempname, strlen(tempname), tt)) 
+        {   taskid ^= n;
+            continue;
+        }
+        break;
+    }
+    return tempname;
+}
 
 /* end of sysfwin.c */

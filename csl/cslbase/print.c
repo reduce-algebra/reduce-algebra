@@ -976,86 +976,6 @@ static int tmpSerial = 0;
 
 static char tempname[LONGEST_LEGAL_FILENAME];
 
-char *CSLtmpnam(char *suffix, int32_t suffixlen)
-{
-    time_t t0 = time(NULL);
-    clock_t c0 = clock();
-    unsigned long taskid;
-    char fname[LONGEST_LEGAL_FILENAME];
-    char tt[32];
-    char *s;
-#ifdef WIN32
-    DWORD len;
-    memset(fname, 0, sizeof(fname));
-    len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
-    if (len <= 0) return NULL;
-/*
- * I want to avoid name clashes fairly often, so I will use the current
- * time of day and information about the current process as a seed for the
- * generated file-name so that (with luck) clashes are at least not
- * incredibly probable. I will also use my source of random numbers, which
- * adds variation that changes each time I call this function.
- */
-    taskid = (unsigned long)GetCurrentThreadId()*169 +
-             (unsigned long)GetCurrentProcessId();
-#else
-    memset(fname, 0, sizeof(fname));
-    strcpy(tempname, "/tmp/");
-    taskid = (unsigned long)getpid()*169 + (unsigned long)getuid();
-#endif
-    taskid = 169*taskid + (unsigned long)t0;
-    taskid = 169*taskid + (unsigned long)c0;
-    taskid = 169 * taskid + tmpSerial++;
-/*
- * The information I have gathered thus far may not change terribly rapidly,
- * since the process id is static form any one instance of my code and the
- * clock may tick very slowly compared with the CPU's activity.
- */
-    for (;;)
-    {   unsigned long n;
-        int i;
-/*
- * The next line reduces taskid modulo the largest prime under 2^32, which
- * may be a sensible thing to do of "unsigned long" had been a 64-bit
- * data type.
- */
-        n = taskid % 0xfffffffbUL;
-/*
- * At this stage I have at most 32-bits of information, derived from the
- * clock and process identification. I will combine in info from the
- * random number generator I have elsewhere in this code, and do that in
- * such a way that I can generate 8 characters of file-name.
- */
-        s = tempname + strlen(tempname);
-        for (i=0; i<7; i++)
-        {   int d = (int)(n % 36);
-            n = n / 36;
-            if (i == 1) n ^= (unsigned long)Crand();
-            if (d < 10) d += '0';
-            else d += ('a' - 10);   /* now 0-9 or 1-z */
-            *s++ = d;
-        }
-        n = n % 36;
-        if (n < 10) *s++ = '0' + (int)n;
-        else *s++ = 'a' + (int)(n - 10);
-        if (suffix != NULL)
-        {   sprintf(s, ".%.*s", (int)suffixlen, suffix);
-        }
-        else *s = 0;
-/*
- * If the file whose name I have just invented already exists I need to
- * try again. I will count of the "random" sequence from Crand to propose
- * an alternative name for me.
- */
-        if (file_exists(fname, tempname, strlen(tempname), tt)) 
-        {   taskid ^= n;
-            continue;
-        }
-        break;
-    }
-    return tempname;
-}
-
 Lisp_Object MS_CDECL Ltmpnam1(Lisp_Object nil, Lisp_Object extn)
 /*
  * Returns a string that is suitable for use as the name of a temporary
@@ -1099,6 +1019,24 @@ Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
     Lisp_Object r;
     argcheck(nargs, 0, "tmpnam");
     s = CSLtmpnam("tmp", 3);
+    r = make_string(s);
+    errexit();
+    return onevalue(r);
+}
+
+Lisp_Object MS_CDECL Ltmpdir(Lisp_Object nil, int nargs, ...)
+/*
+ * Returns a string that is suitable for use as the name of a directory
+ * to hold temporary files. Does not have a trailing "/", so will be
+ * "/tmp" on Unix and something like "c:\xxx\yyy" on Windows. On Cygwin
+ * it is in "mixed" mode, so the dircetory is indicated with "x:" but "/"
+ * rather than "\" is used as the path separator.
+ */
+{
+    const char *s;
+    Lisp_Object r;
+    argcheck(nargs, 0, "tmpdir");
+    s = CSLtmpdir();
     r = make_string(s);
     errexit();
     return onevalue(r);
@@ -5592,6 +5530,7 @@ setup_type const print_setup[] =
     {"posn",                    Lposn_1, wrong_no_nb, Lposn},
     {"spaces",                  Lxtab, too_many_1, wrong_no_1},
     {"terpri",                  wrong_no_na, wrong_no_nb, Lterpri},
+    {"tmpdir",                  wrong_no_na, wrong_no_nb, Ltmpdir},
     {"tmpnam",                  Ltmpnam1, wrong_no_nb, Ltmpnam},
     {"ttab",                    Lttab, too_many_1, wrong_no_1},
     {"wrs",                     Lwrs, too_many_1, wrong_no_1},

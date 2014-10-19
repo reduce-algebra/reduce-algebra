@@ -1000,7 +1000,8 @@ extern int32_t Iread(void *buff, int32_t size);
 extern CSLbool Iputc(int ch);
 extern CSLbool Iwrite(void *buff, int32_t size);
 extern long int Ioutsize(void);
-extern char *CSLtmpnam(char *suffix, int32_t suffixlen);
+extern const char *CSLtmpdir();
+extern const char *CSLtmpnam(char *suffix, int32_t suffixlen);
 extern int Cmkdir(char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
