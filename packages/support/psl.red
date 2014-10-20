@@ -551,7 +551,19 @@ symbolic procedure find!-gnuplot!-aux path;
 
     % check existence
     (filep path and path)>>;
-  
+
+
+symbolic procedure get!-tempdir();
+  begin
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+   tempdir!* := getenv "TMP" or getenv "TEMP";
+!#elif (member 'vms lispsystem!*)
+   tempdir!* := "SYS$SCRATCH:";
+!#else
+   tempdir!* := "/tmp";
+!#endif
+   return tempdir!*;
+  end;
 
 endmodule;
 

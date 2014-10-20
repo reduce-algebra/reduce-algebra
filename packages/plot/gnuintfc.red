@@ -50,11 +50,11 @@ global '(
 %%   load pipes;
    !*plotpause:=nil;                 % pause: no
    if getenv "LOGNAME" then
-      plottmp!* := bldmsg("%w%w%w.",tempdir!*,dirchar!*,getenv "LOGNAME")
+      plottmp!* := bldmsg("%w%w%w.",get!-tempdir(),dirchar!*,getenv "LOGNAME")
     else if getenv "USER" then
-      plottmp!* := bldmsg("%w%w%w.",tempdir*,dirchar!*,getenv "USER")
+      plottmp!* := bldmsg("%w%w%w.",get!-tempdir(),dirchar!*,getenv "USER")
     else 
-      plottmp!* := concat(tempdir!*,dirchar!*);
+      plottmp!* := concat(get!-tempdir(),dirchar!*);
    plotdta!* := for i:=1:10 collect
          bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
    plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
@@ -105,11 +105,11 @@ fluid '(!*!*windows);
 
      % the following system selection must be done at load time
 
-   if null tempdir!* then
+   if null get!-tempdir() then
    <<prin2t "warning: no TMP directory found. Using >C:<";
-     plottmp!*:="c:\";
+     plottmp!*:="C:\";
    >>
-   else plottmp!* := bldmsg("%w%w",tempdir!*,dirchar!*);
+   else plottmp!* := bldmsg("%w%w",get!-tempdir(),dirchar!*);
    !*plotpause:=nil;                       % no pause
    plotdta!* := for i:=1:10 collect
          bldmsg("%wplotdt%w.dat",plottmp!*,i); % scratch data files
@@ -197,7 +197,8 @@ fluid '(!*!*windows);
 
    !*plotusepipe:=NIL;               % pipes: no
    !*plotpause:=nil;                 % pause: no
-   plottmp!* := "SYS$SCRATCH:";
+   %plottmp!* := "SYS$SCRATCH:";
+   plottmp!* := get!-tempdir();
    plotdta!* := for i:=1:10 collect
          bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
    plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
