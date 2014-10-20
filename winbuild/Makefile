@@ -28,7 +28,7 @@ all:	package-win
 
 C.stamp:
 	rm -rf C
-	svn export .. C > C.log
+	( time svn export .. C ) > C.log
 	touch C.stamp
 
 # The CSL version of Reduce gets build using an elaborate scheme that
@@ -48,15 +48,15 @@ psl.stamp:	C.stamp
 	(cd C ; \
 		./configure --with-psl ; \
 		./configure --with-psl -with-m32 ; \
-		script -c "time make psl" psl.log )
+		script -c "time make psl" ../psl.log )
 	touch psl.stamp
 
 # Documentation is also re-generated in the clean tree so that regardless
 # of history it should end up fresh and tidy.
 
 docs.stamp:	C.stamp
-	(cd C/doc/misc ; make > docmist.log )
-	(cd C/doc/manual ; make > docmanual.log )
+	(cd C/doc/misc ; script -c "time make"  ../../../docmisc.log )
+	(cd C/doc/manual ; script -c "time make" ../../../docmanual.log )
 	touch docs.stamp
 	
 # reduce.iss is the script for Inno Setup. It is created here by

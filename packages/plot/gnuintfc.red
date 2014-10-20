@@ -216,9 +216,9 @@ fluid '(!*!*windows);
 %
 % If the user has set environment variables called "tmp" or "temp" then
 % that specify (in that priority order) directories to place temporary data
-% in. If neither is set then the current directory will be used. If tmp or
-% temp is set but does not name a directory then everything probably fails.
-%
+% in. If neither is set then a function tmpdir() from CSL is called to deliver
+% a suitable location.
+
 
 global '(plotdir!* dirchar!* opsys!* tempdir!*);
 
@@ -241,13 +241,19 @@ begin
 
   tempdir!* := getenv 'tmp;
   if null tempdir!* then tempdir!* := getenv 'temp;
+% Because the tmpdir() function is new in October 2014 I will check for
+% its availability before use. On cygwin tmpdir passes back a "mixed" format
+% name such as "C:/cygwin/tmp" which tends to make it safe to pass to the
+% shell in case where back-slashes might be an issue, however note that
+% there could be whitespace in the path.
+  if null tempdir!* and getd 'tmpdir then tempdir!* := tmpdir();
 
   !*plotusepipe := t;
 % find-gnuplot returns the full name of a version of gnuplot (if it can
 % find one).
   plotcommand!* := find!-gnuplot();
 % The Cygwin case can be "funny" here, and the case I wish to trap is
-% where a Cygwin version of Reduce is tryying to use the native Windows
+% where a Cygwin version of Reduce is trying to use the native Windows
 % version of gnuplot. I believe I can detect this by seeing of
 % the plotcommand!* starts off as "/cygdrive/"...
   w := explodec plotcommand!*;
@@ -271,7 +277,7 @@ begin
         "gnutmp.tm5", "gnutmp.tm6", "gnutmp.tm7", "gnutmp.tm8"}
        collect gtmpnam n;
     plotcleanup!* := if null tempdir!* then {"erase gnutmp.tm*"}
-                     else {bldmsg("erase %w\gnutmp.tm*", tempdir!*)} >>
+                     else {bldmsg("erase ""%w\gnutmp.tm*""", tempdir!*)} >>
   else <<  % Assume Unix with X11 in general, but if the version of GNUPLOT
            % being used knows about the "aqua" terminal type then assume that
            % we are on a Macintosh with that capability available and best.
@@ -280,8 +286,8 @@ begin
 "if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
     plotdta!* := for i:=1:10 collect tmpnam();
     plotcmds!*:= tmpnam();
-    plotcleanup!* := bldmsg("rm %w", plotcmds!*) .
-      for each f in plotdta!* collect bldmsg("rm %w", f) >>;
+    plotcleanup!* := bldmsg("rm ""%w""", plotcmds!*) .
+      for each f in plotdta!* collect bldmsg("rm ""%w""", f) >>;
   return nil
 end;
   
