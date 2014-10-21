@@ -132,12 +132,12 @@ wputs(char * s,LONG n)
   }
 
 
-char * my_gets(char * s)
+char * my_gets(char * s,LONG len)
   {
     if(pipe_mode)
-	return(my_pread(s,255),s);
+	return(my_pread(s,len),s);
     else
-	return(fgets(s,255,stdin));
+	return(fgets(s,len,stdin));
   }
 
 
@@ -185,7 +185,7 @@ unixfread(char*buf, LONG size,LONG count, FILE*fp)
      if((FPTYPE)fp == unixstdin)   
      {
        if(scriptin) return(fread(buf,size,count,scriptin));
-	else return((LONG)my_gets(buf));
+       else return(strlen(my_gets(buf,size*count))/size);
      }
      { long l;
        l = fread(buf,size,count,fp);
@@ -235,7 +235,7 @@ LONG unixfgets(char*buf,LONG count,FILE*fp)
      if((FPTYPE)fp == unixstdin) 
      { 
        if(scriptin) return((LONG)fgets(buf,count,scriptin));
-       return((LONG)my_gets(buf));
+       return((LONG)my_gets(buf,count));
      }
      return((LONG)fgets(buf,(size_t)count,fp));
    }
