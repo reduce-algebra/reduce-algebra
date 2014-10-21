@@ -1,0 +1,25 @@
+%
+% Testing the #if conditional compilation scheme
+
+off echo;
+
+
+nil
+"A1: should appear"
+"A2: should appear"
+"A4: should appear"
+"A7: should appear"
+"A8: should appear"
+"A12: should appear"
+"A14: should appear"
+"A19: should appear"
+"A20: should appear"
+"A21: should appear"
+"A22: should appear"
+"A23: should appear"
+"A24: should appear"
+"A25: should appear"
+"A26: should appear"
+"A27: should appear"
+
+nil

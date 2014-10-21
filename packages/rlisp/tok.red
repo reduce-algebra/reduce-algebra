@@ -1018,8 +1018,9 @@ symbolic procedure scan;
 % section.
          else if nxtsym!* eq '!#if then go to conditional
          else if nxtsym!* eq '!#else or
-                 nxtsym!* eq '!#elif then progn(nxtsym!* := x := nil,
-                                                go to skipping)
+                 nxtsym!* eq '!#elif then progn(
+                     nxtsym!* := x := bool := nil,
+                     go to skipping)
          else if nxtsym!* eq '!#endif then go to a
          else if nxtsym!* eq '!#eval then progn(
                      errorset(rread(), !*backtrace, nil),
@@ -1081,6 +1082,7 @@ symbolic procedure scan;
 % errors in evaluation count as NIL
         if null errorp x and car x then go to a;
         x := nil;
+        bool := t;
   skipping:
 % I support nesting of conditional inclusion. However one new joy
 % here is that a "#" followed (immediately) by one "if, "else", "elif"
@@ -1094,8 +1096,8 @@ symbolic procedure scan;
         if nxtsym!* eq '!#endif then
            if null x then go to a else x := cdr x
         else if nxtsym!* eq '!#if then x := nil . x
-        else if (nxtsym!* eq '!#else) and null x then go to a
-        else if (nxtsym!* eq '!#elif) and null x then go to conditional;
+        else if (nxtsym!* eq '!#else) and null x and bool then go to a
+        else if (nxtsym!* eq '!#elif) and null x and bool then go to conditional;
         nxtsym!* := token();
         if (ttype!*=3) and (nxtsym!* eq !$eof!$)
           then return filenderr()
