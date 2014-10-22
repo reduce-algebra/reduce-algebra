@@ -1,0 +1,33 @@
+%
+% use correct print name for internally mapped names
+%
+
+% The following used to print "~map1" in PSL:
+mkid(map,1);
+
+
+map1
+
+
+off int;
+
+
+
+% Similarly, PSL printed "~spaces2" in the warning message
+spaces2(x);
+
+
+*** spaces2 declared operator 
+
+spaces2(x)
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.04 seconds
+real 0.18
+user 0.03
+sys 0.07

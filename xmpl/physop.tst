@@ -81,31 +81,31 @@ matel := matel;
 
 
 off allfac;
-vecop gamma,q;
+vecop gammamat,q;
 tensop sigma(2);
 antisymmetric sigma;
-noncom gamma,gamma;
-noncom sigma,gamma;
+noncom gammamat,gammamat;
+noncom sigma,gammamat;
 physindex mu,nu;
 operator delta;
-for all mu,nu let anticomm(gamma(mu),gamma(nu))=2*delta(mu,nu)*unit,
-                  comm(gamma(mu),gamma(nu))=2*I*sigma(mu,nu);
+for all mu,nu let anticomm(gammamat(mu),gammamat(nu))=2*delta(mu,nu)*unit,
+                  comm(gammamat(mu),gammamat(nu))=2*I*sigma(mu,nu);
 
-oporder p,q,gamma,sigma;
+oporder p,q,gammamat,sigma;
 off allfac;
 on anticom;
-(gamma dot p)*(gamma dot q);
+(gammamat dot p)*(gammamat dot q);
 % showtime;
 
 off anticom;
-(gamma dot p)*(gamma dot q);
+(gammamat dot p)*(gammamat dot q);
 % showtime;
 
-commute((gamma dot p),(gamma dot q));
+commute((gammamat dot p),(gammamat dot q));
 % showtime;
-anticommute((gamma dot p),(gamma dot q));
+anticommute((gammamat dot p),(gammamat dot q));
 on anticom;
-anticommute((gamma dot p),(gamma dot q));
+anticommute((gammamat dot p),(gammamat dot q));
 % showtime;
 
 end;

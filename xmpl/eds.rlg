@@ -2809,14 +2809,14 @@ solve(for i:=1:length C collect
 S := select(lhs ~q = u,first ws);
 
 
-             3             2                                     3             3
-s := {u=(k1*x  + 3*k1*x*y*z  - 6*k10*y*z - 6*k11 - 6*k12*z - k2*x *z - k2*x*y*z
+                3             3                                   3
+s := {u=( - k1*x *z - k1*x*y*z  - 3*k10*x - 3*k11 - 3*k12*z - k2*x
 
-                                          2           3                    2
-          - 6*k3*x*y*z - 6*k4*x*y - 3*k5*x *z - k5*y*z  - 6*k6*x*z - 3*k7*x
+                      2                                                     2
+          - 3*k2*x*y*z  - 6*k3*x*y*z - 3*k4*x*y - 3*k5*y - 6*k6*y*z - 3*k7*x
 
-                    2
-          - 3*k7*y*z  - 6*k8*x - 6*k9*y)/6}
+                    2         2           3
+          - 3*k7*y*z  - 3*k8*x *z - k8*y*z  - 6*k9*x*z)/6}
 
 
 % Check solution
@@ -2838,8 +2838,10 @@ clear x,y,z,u,v,w,C,S;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1945 ms  plus GC time: 79 ms
-real	0m2.708s
-user	0m0.045s
-sys	0m0.108s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 983 ms  plus GC time: 95 ms
+
+End of Lisp run after 0.98+0.15 seconds
+real 1.54
+user 0.01
+sys 0.07

@@ -321,8 +321,10 @@ Pseudo-division OK
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 32 ms
-real	0m0.627s
-user	0m0.062s
-sys	0m0.138s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.18
+user 0.04
+sys 0.03

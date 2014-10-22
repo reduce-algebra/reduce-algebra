@@ -1,0 +1,99 @@
+%
+% Test for error in trigsimp
+%  https://sourceforge.net/p/reduce-algebra/bugs/51/
+%
+
+1-(sin(pi*x/2))*2;
+
+
+          pi*x
+ - 2*sin(------) + 1
+           2
+
+
+trigsimp(ws);
+
+
+          pi*x
+ - 2*sin(------) + 1
+           2
+
+
+trigsimp(ws,cos);
+
+
+          pi*x
+ - 2*sin(------) + 1
+           2
+
+
+%
+% some more failures
+%
+
+trigsimp sin(1/2);
+
+
+     1
+sin(---)
+     2
+
+
+trigsimp  sin(x*y/2) ;
+
+
+     x*y
+sin(-----)
+      2
+
+
+trigsimp sin(x^2/2);
+
+
+      2
+     x
+sin(----)
+     2
+
+
+trigsimp  sin(1/(2*x));
+
+
+      1
+sin(-----)
+     2*x
+
+
+sin(1/(2*x)) + sin(x/2);
+
+
+     x           1
+sin(---) + sin(-----)
+     2          2*x
+
+
+trigsimp ws;
+
+
+     x           1
+sin(---) + sin(-----)
+     2          2*x
+
+
+trigsimp (  sin(x/(2*y)) + sin(y/(3*x)));
+
+
+      x            y
+sin(-----) + sin(-----)
+     2*y          3*x
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.20
+user 0.01
+sys 0.03

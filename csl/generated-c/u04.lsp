@@ -1,7 +1,37 @@
 
 % u04.lsp           Machine generated Lisp
 
-(c!:install "u04" 682 9435779 2312139)
+(c!:install "u04" 4045 1830498 4045865)
+
+(c!:install 'addsq '(addsq nil !*exp !*lcm t addf mkprod gcdf!* quotf
+canonsq multf gcdf) 1993568376341925867)
+
+(c!:install 'ckrn1 '(ckrn1 t gck2 noncomp) 90271371165667460)
+
+(c!:install 'kernord!-sort '(kernord!-sort nil maxdeg delallasc) 
+56803409204703797)
+
+(c!:install 'subs2!* '(subs2!* !*sub2 subs2) 1995500531078698319)
+
+(c!:install 'exptchk '(exptchk t nil comm_kernels exptchk0) 
+301128499200549347)
+
+(c!:install 'xdiv '(xdiv sublistp listdiff) 869492217981606789)
+
+(c!:install 'rd!:minusp '(rd!:minusp minusp!:) 1581282821481386261)
+
+(c!:install 'collectindices '(collectindices nil collectindices_reversed
+) 1821664726582691824)
+
+(c!:install 'negf '(negf t dmode!* nil !:minus nreverse) 
+2284781767503357505)
+
+(c!:install 'rev '(rev) 2251673657076134434)
+
+(c!:install 'sfto_reorder '(sfto_reorder setkorder reorder) 
+776219512282437951)
+
+(c!:install 'delallasc '(delallasc nreverse) 934118118743225630)
 
 (c!:install 'quotf1 '(quotf1 nil t !*mcd quotfd ordop quotk rank lt!* to
 negf multf addf aconc!* rnconc) 1828444422231483601)
@@ -31,39 +61,31 @@ physopmapping physopp hasonephysop) 76957525370170601)
 
 (c!:install 'qassoc '(qassoc nil) 272092484517487447)
 
-(c!:install 'negf '(negf t dmode!* nil !:minus nreverse) 
-2284781767503357505)
-
 (c!:install 'widestring2list '(widestring2list
-"Improper byte in utf-8 string" string2list logand error
-moan!-if!-truncated) 1766271677153549579)
-
-(c!:install 'arraychk '(arraychk array nil) 932998197290211439)
+"Improper byte in utf-8 string" string2list land error
+moan!-if!-truncated lshift) 1597162389415694430)
 
 (c!:install 'nonzero!-length '(nonzero!-length) 1750574501613621881)
 
 (c!:install 'fs!:plus '(fs!:plus nil addsq fs!:angle!-order
 angles!-equal) 68458874584036423)
 
+(c!:install 'cali_trace '(cali_trace cali) 609622391811814372)
+
 (c!:install 'pv_sort '(pv_sort nil pv_sort1) 538007479266055019)
 
-(c!:install 'gen!-mult!-by!-const!-mod!-p '(gen!-mult!-by!-const!-mod!-p
-nil t general!-modular!-times !*n2f adjoin!-term) 2005762497988320311)
-
-(c!:install 'bfzerop!: '(bfzerop!:) 1839026735274812755)
-
 (c!:install 'times!-mod!-p '(times!-mod!-p t nil
-multiply!-by!-constant!-mod!-p ordop adjoin!-term times!-term!-mod!-p
-plus!-mod!-p) 782978871126277227)
+multiply!-by!-constant!-mod!-p ordop times!-term!-mod!-p plus!-mod!-p) 
+145613856328056169)
+
+(c!:install 'convprec!* '(convprec!* !:rd!: convchk) 1859208267860746683
+)
 
 (c!:install 'lalr_same_core '(lalr_same_core lalr_core) 
 1424875235796980500)
 
 (c!:install 'anform '(anform !*globals nil locls!* glb2rf globs!*
 anform1) 513186927183167842)
-
-(c!:install 'get!-print!-name '(get!-print!-name nil) 
-1025304676581173854)
 
 (c!:install 'maxdeg '(maxdeg) 2023301551127978644)
 
@@ -73,6 +95,8 @@ anform1) 513186927183167842)
 (c!:install 'get!+vec!+dim '(get!+vec!+dim) 406524361290163167)
 
 (c!:install 'pasf_dec '(pasf_dec t nil negf addf) 1630335138241627333)
+
+(c!:install 'aex_ctx '(aex_ctx nth) 1561071128493664236)
 
 (c!:install 'mathml_list2string '(mathml_list2string) 
 2067523969789147953)
@@ -91,13 +115,12 @@ mtp pair mcharg2) 262540088831149407)
 
 (c!:install '!:times '(!:times t nil times dcombine) 603444015858783716)
 
-(c!:install 'constimes '(constimes nil cstimes) 122202550279103973)
-
-(c!:install 'getrtype '(getrtype nil (scalar generic) sub yetunknowntype
-getrtype2 getrtype1 eval) 633194027386232454)
+(c!:install 'arraychk '(arraychk array nil) 932998197290211439)
 
 (c!:install 'fs!:timestermterm '(fs!:timestermterm nil (1 . 2) sin cos
 multsq make!-term fs!:plus negsq) 814944861454025712)
+
+(c!:install 'mo!=degcomp '(mo!=degcomp) 1709148423301717658)
 
 (c!:install 'insert_pv '(insert_pv nil sieve_pv pv_renorm insert_pv1) 
 1622887481856036454)
@@ -107,12 +130,10 @@ multsq make!-term fs!:plus negsq) 814944861454025712)
 (c!:install 'general!-modular!-number '(general!-modular!-number
 current!-modulus) 1133087115591053565)
 
-(c!:install 'times!-term!-mod!-p '(times!-term!-mod!-p nil t
-multiply!-by!-constant!-mod!-p adjoin!-term ordop times!-mod!-p mksp) 
-1815215736170475390)
+(c!:install 'gen!-mult!-by!-const!-mod!-p '(gen!-mult!-by!-const!-mod!-p
+nil t general!-modular!-times !*n2f) 2054500631570331573)
 
-(c!:install 'convprec!* '(convprec!* !:rd!: convchk) 1859208267860746683
-)
+(c!:install 'bfzerop!: '(bfzerop!:) 1839026735274812755)
 
 (c!:install 'stable!-sortip '(stable!-sortip nil) 349688021140228034)
 
@@ -122,10 +143,12 @@ multiply!-by!-constant!-mod!-p adjoin!-term ordop times!-mod!-p mksp)
 (c!:install 'rl_ordatp '(rl_ordatp rl_ordatp!* apply) 323878800305080664
 )
 
-(c!:install 'ofsf_clnegrel '(ofsf_clnegrel ofsf_lnegrel) 
-1495032427540284046)
+(c!:install 'get!-print!-name '(get!-print!-name nil) 
+1025304676581173854)
 
 (c!:install 'sfto_davp '(sfto_davp t nil) 1350198900027366189)
+
+(c!:install 'sqchk '(sqchk prepf) 1749112851600943144)
 
 (c!:install 'gcdf '(gcdf !*exp !*rounded !*mcd t !*ezgcd dmode!*
 !*combineexpt gcdf1 minusf negf ezgcdf free!-powerp) 940727046805833939)
@@ -146,27 +169,10 @@ get_content butes attributes get_token) 1391870221205348692)
 (c!:install 'multi_isarb_int '(multi_isarb_int nil isarb_int) 
 1648937422110285971)
 
+(c!:install 'prepd '(prepd minus prepfn !:minus prepd1) 
+408508342710755559)
+
 (c!:install 'minus!: '(minus!: !:rd!:) 924477152894658145)
-
-(c!:install 'revlis '(revlis nil reval) 1255571845258796108)
-
-(c!:install 'dm!-times '(dm!-times zero2nil !:times) 919583183715914233)
-
-(c!:install 'rmsubs '(rmsubs !*sqvar!* nil t alglist!*) 
-1361578351643690688)
-
-(c!:install 'ordad '(ordad nil ordp) 620517250458500821)
-
-(c!:install 'prin2!-downcase '(prin2!-downcase nil red!-char!-downcase) 
-693786191323036882)
-
-(c!:install 'expdrmacro '(expdrmacro t noexpand nil !*cref expand
-!*force getrmacro) 1899023807540812485)
-
-(c!:install 'prepsqx '(prepsqx !*intstr prepsq!* prepsq) 
-2057516612996716158)
-
-(c!:install 'cdiv '(cdiv resimp) 154007605449781332)
 
 
 % End of generated Lisp code

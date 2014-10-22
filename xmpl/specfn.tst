@@ -355,6 +355,9 @@ do!*one!*zeta(0);
 for k := 4 step 2 until 35 do 
    do!*one!*zeta(k);
 
+for k := 1 step 2 until 31 do 
+   do!*one!*zeta(-k);
+
 do!*one!*zeta(-17/3);
 do!*one!*zeta(190);
 do!*one!*zeta(300);
@@ -569,6 +572,127 @@ on msg;
 
 write (" ...");
 write ("Bessel test complete.");
+
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     10. Incomplete Gamma and Beta functions (regularized)
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+igamma(3,0);
+
+igamma(1,1);
+
+igamma(1,4);
+
+on rounded;
+
+igamma(1,1);
+
+igamma(1,4);
+
+igamma(2,4);
+
+igamma(0.5,4);
+
+beta(1,1,1);
+
+ibeta(1,2,1);
+
+ibeta(1,4,1);
+
+ibeta(2,4,1);
+
+ibeta(2,4,0.5);
+
+ibeta(0.12,0.43,0.9);
+
+precision 50;
+
+ibeta(0.12,0.43,0.9);
+
+precision  20;
+
+ibeta(0.12,0.43,0.9);
+
+on complex;
+
+ibeta(1+i,1,1.5*i);
+
+off rounded,complex;
+
+ibeta(3,2,x);
+
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     11. Dilogarithm, polylogartihm and Lerch_phi
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+polylog(n,0);
+
+polylog(2,1);
+
+polylog(3,1);
+
+polylog(2,i); 
+
+df(polylog(a,x),x);
+
+polylog(1,x);
+
+precision reset;
+on rounded;
+
+polylog(2,1/3);
+
+off rounded;
+
+
+lerch_phi(3,4,1);
+
+lerch_phi(4,0,3);
+
+lerch_phi(x,a,1);
+
+lerch_phi(1,x,1);
+
+df(lerch_phi(x,3,4),x);
+
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     12. Constants
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+on rounded;
+off complex;
+
+precision 50;
+
+euler_gamma;
+
+Khinchin;
+
+golden_ratio;
+
+Catalan;
+
+on complex;
+
+euler_gamma;
+
+Khinchin;
+
+golden_ratio;
+
+Catalan;
+
 
 end;
 

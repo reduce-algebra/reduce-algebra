@@ -1,0 +1,46 @@
+on modular;
+
+
+
+setmod 3;
+
+
+1
+
+
+int(x,x);
+
+
+   2
+2*x
+
+
+lisp !*mode;
+
+
+algebraic
+
+
+int(sqrt(1-x^2),x,0,1);
+
+
+ 1
+---*pi
+ 4
+ 
+
+lisp !*mode;
+
+
+algebraic
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms  plus GC time: 31 ms
+
+End of Lisp run after 0.01+0.09 seconds
+real 0.23
+user 0.01
+sys 0.04

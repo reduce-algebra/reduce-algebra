@@ -890,6 +890,12 @@ taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,6);
      3        1890        11907
 
 
+taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,0);
+
+
+1 + O(x)
+
+
 
 comment If the expansion point is not constant, it has to be taken
         care of in differentation, as the following examples show;
@@ -2494,3 +2500,10 @@ comment That's all, folks;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 141 ms
+
+End of Lisp run after 0.14+0.04 seconds
+real 0.33
+user 0.04
+sys 0.04

@@ -1,0 +1,22 @@
+% Regression test "off cref"
+
+% Added by Rainer Schöpf, 31 Aug 2011
+
+% off cref shouldn't give an error message when the rcref package
+% has not been loaded.
+
+off cref;
+
+
+% used to print:
+% ***** `crefoff' is an undefined function
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.17
+user 0.01
+sys 0.04

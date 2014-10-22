@@ -1,0 +1,33 @@
+load_package linalg;
+
+
+
+hu := {
+   - n2 <= -1,
+   - n1 - n2 <= 0,
+   2*n1 + n2 <= 0,
+   5*n1 + 2*n2 <= 0,
+   5*n1 - n2 <= 0}$
+
+
+
+simplex(min, 0, hu);
+
+
+***** Error in simplex: Problem has no feasible solution. 
+
+simplex(max, n1, hu);
+
+
+***** Error in simplex: Problem has no feasible solution. 
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.19
+user 0.00
+sys 0.06

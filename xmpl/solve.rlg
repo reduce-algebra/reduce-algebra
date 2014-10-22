@@ -210,9 +210,9 @@ operator f;
 solve((x-1)*(x+1)*(x-2)*(x+2)*(x-3)*(x*log(x)-1)*(f(x)-1),x);
 
 
-{f(x) - 1=0,
+{x=root_of(f(x_) - 1,x_,tag_4),
 
- x=root_of(log(x_)*x_ - 1,x_,tag_2),
+ x=root_of(log(x_)*x_ - 1,x_,tag_3),
 
  x=3,
 
@@ -257,7 +257,7 @@ solve((x**(1/2)-(x-a)**(1/3))*(acos x-acos(2*x-b))* (2*log x
                  2*(e  - 1)
 
                       2/3
- x=root_of(( - a + x_)    - x_,x_,tag_7),
+ x=root_of(( - a + x_)    - x_,x_,tag_9),
 
  x=b}
 
@@ -600,7 +600,7 @@ solve ({e^x - e^(1/2 * x) - 7},{x});
    solve({sin x + x - 1/2},{x});
 
 
-{x=root_of(2*sin(x_) + 2*x_ - 1,x_,tag_13)}
+{x=root_of(2*sin(x_) + 2*x_ - 1,x_,tag_15)}
 
  
    % Variable inside and outside of exponential.
@@ -610,7 +610,7 @@ solve ({e^x - e^(1/2 * x) - 7},{x});
 
                              - 1
 {x= - 2*lambert_w(-------------------------)}
-                   2*plus_or_minus(tag_14)
+                   2*plus_or_minus(tag_16)
 
 
    % Variable inside trigonometrical functions with different forms.
@@ -2329,7 +2329,7 @@ y1*y3 - 750*y1 - 225*y3**2 - 750*y3 + 14575)/81,
 y2**2*y3 - 225*y1*y2**2 - 594*y1*y2*y3**2 + 2592*y1*y2*y3 + 2550
 *y1*y2 - 225*y1*y3**2 + 2550*y1*y3 - 3575*y1 - 225*y2**2*y3 +
 1650*y2**2 - 225*y2*y3**2 + 2550*y2*y3 - 3575*y2 + 1650*y3**2 -
-3575*y3 - 30250))/81}, {y1,y2,y3,y4});
+3575*y3 - 30250))/81}, {y1,y2,y3});
 
 
            2
@@ -2444,9 +2444,11 @@ solve apu;
 
 Unknowns: {a,a6,b,c3,n1,x}
 
-     a6
-{{a=----,
-     2
+     arbcomplex(35)
+{{a=----------------,
+           2
+
+  a6=arbcomplex(35),
 
       1
   b=------,
@@ -2497,7 +2499,7 @@ solve({e^(x+y)+sin x,x-y},{x,y});
 
 
                  2*y_
-{{x=y,y=root_of(e     + sin(y_),y_,tag_16)}}
+{{x=y,y=root_of(e     + sin(y_),y_,tag_18)}}
  % no algebraic solution exists.
 
 solve({e^(x+y)-1,x-y**2},{x,y});
@@ -2660,7 +2662,7 @@ sol4 := {}
 sol5 := solve(eq5,x);
 
 
-sol5 := {x=arbcomplex(36)}
+sol5 := {x=arbcomplex(37)}
    % This solution should be the open interval
 			% (-1,1).
 
@@ -2677,21 +2679,21 @@ solve(x^5 - x - 1,x);
 
 
              5
-{x=root_of(x_  - x_ - 1,x_,tag_22)}
+{x=root_of(x_  - x_ - 1,x_,tag_24)}
 
 
 w:=rhs first ws;
 
 
                5
-w := root_of(x_  - x_ - 1,x_,tag_22)
+w := root_of(x_  - x_ - 1,x_,tag_24)
 
 
 w^5;
 
 
           5
-root_of(x_  - x_ - 1,x_,tag_22) + 1
+root_of(x_  - x_ - 1,x_,tag_24) + 1
 
 
 w^5-w;
@@ -2710,7 +2712,7 @@ clear w;
 solve(x-Pi/2 = cos(x+Pi),x);
 
 
-{x=root_of(2*cos(x_) - pi + 2*x_,x_,tag_24)}
+{x=root_of(2*cos(x_) - pi + 2*x_,x_,tag_26)}
 
 
 solve(exp(x^2+x+2)-1,x);
@@ -2765,7 +2767,7 @@ solve(z=log(w)/log(2)+w^2,w);
 
 
                               2
-{w=root_of(log(w_) + log(2)*w_  - log(2)*z,w_,tag_27)}
+{w=root_of(log(w_) + log(2)*w_  - log(2)*z,w_,tag_29)}
 
 
 solve(w*2^(w^2)=5,w);
@@ -2773,14 +2775,14 @@ solve(w*2^(w^2)=5,w);
 
               2
             w_
-{w=root_of(2   *w_ - 5,w_,tag_29)}
+{w=root_of(2   *w_ - 5,w_,tag_31)}
 
 
 solve(log(x/y)=1/y^2*(x+(1/x)),y);
 
 
                 x        2    2
-{y=root_of(log(----)*x*y_  - x  - 1,y_,tag_31)}
+{y=root_of(log(----)*x*y_  - x  - 1,y_,tag_33)}
                 y_
 
 
@@ -2788,7 +2790,7 @@ solve(exp(z)=w*z^(-n),z);
 
 
              n  z_
-{z=root_of(z_ *e   - w,z_,tag_33)}
+{z=root_of(z_ *e   - w,z_,tag_35)}
 
 
 solve(-log(3)+log(2+y/3)/2-log(y/3)/2=(-I)/2*Pi,y);
@@ -2815,7 +2817,7 @@ solve((I+1)*log(x)+(3*I+3)*log(x+3)=7,x);
 {x=root_of(x_ *(x_ + 3)   *x_  + 9*x_ *(x_ + 3)   *x_  + 27*x_ *(x_ + 3)   *x_
 
                    i         3*i       7
-            + 27*x_ *(x_ + 3)   *x_ - e ,x_,tag_35)}
+            + 27*x_ *(x_ + 3)   *x_ - e ,x_,tag_37)}
 
 
 solve(x+sqrt(x)=1,x);
@@ -2840,8 +2842,10 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1522 ms  plus GC time: 78 ms
-real	0m2.205s
-user	0m0.030s
-sys	0m0.184s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 814 ms  plus GC time: 45 ms
+
+End of Lisp run after 0.81+0.10 seconds
+real 1.08
+user 0.01
+sys 0.06

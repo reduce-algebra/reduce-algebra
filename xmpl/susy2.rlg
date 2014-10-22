@@ -9569,8 +9569,10 @@ as5 := fer(f,2,1)*bos(f,0,0)
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 10081 ms  plus GC time: 138 ms
-real	0m10.760s
-user	0m0.045s
-sys	0m0.045s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 4127 ms  plus GC time: 189 ms
+
+End of Lisp run after 4.12+0.23 seconds
+real 4.96
+user 0.03
+sys 0.01

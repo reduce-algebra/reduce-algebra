@@ -1826,6 +1826,73 @@ Zeta of 32 is zeta(32)
 Zeta of 34 is zeta(34)
 
 
+for k := 1 step 2 until 31 do 
+   do!*one!*zeta(-k);
+
+
+                - 1
+Zeta of -1 is ------
+                12
+
+                1
+Zeta of -3 is -----
+               120
+
+                - 1
+Zeta of -5 is ------
+               252
+
+                1
+Zeta of -7 is -----
+               240
+
+                - 1
+Zeta of -9 is ------
+               132
+
+                 691
+Zeta of -11 is -------
+                32760
+
+                 - 1
+Zeta of -13 is ------
+                 12
+
+                3617
+Zeta of -15 is ------
+                8160
+
+                 - 43867
+Zeta of -17 is ----------
+                 14364
+
+                174611
+Zeta of -19 is --------
+                 6600
+
+                 - 77683
+Zeta of -21 is ----------
+                  276
+
+                236364091
+Zeta of -23 is -----------
+                  65520
+
+                 - 657931
+Zeta of -25 is -----------
+                   12
+
+                3392780147
+Zeta of -27 is ------------
+                   3480
+
+                 - 1723168255201
+Zeta of -29 is ------------------
+                     85932
+
+Zeta of -31 is zeta(-31)
+
+
 do!*one!*zeta(-17/3);
 
 
@@ -6782,10 +6849,342 @@ write ("Bessel test complete.");
 Bessel test complete.
 
 
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     10. Incomplete Gamma and Beta functions (regularized)
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+igamma(3,0);
+
+
+0
+
+
+igamma(1,1);
+
+
+ e - 1
+-------
+   e
+
+
+igamma(1,4);
+
+
+  4
+ e  - 1
+--------
+    4
+   e
+
+
+on rounded;
+
+
+
+igamma(1,1);
+
+
+0.6321205588285577
+
+
+igamma(1,4);
+
+
+0.9816843611112658
+
+
+igamma(2,4);
+
+
+0.9084218055563291
+
+
+igamma(0.5,4);
+
+
+0.9953206825613376
+
+
+beta(1,1,1);
+
+
+beta(1,1,1)
+
+
+ibeta(1,2,1);
+
+
+1
+
+
+ibeta(1,4,1);
+
+
+1
+
+
+ibeta(2,4,1);
+
+
+1
+
+
+ibeta(2,4,0.5);
+
+
+0.8125
+
+
+ibeta(0.12,0.43,0.9);
+
+
+0.9114011367359803
+
+
+precision 50;
+
+
+16
+
+
+ibeta(0.12,0.43,0.9);
+
+
+0.91140113673598029129193960252752697713018702246564
+
+
+precision  20;
+
+
+50
+
+
+ibeta(0.12,0.43,0.9);
+
+
+0.91140113673598029129
+
+
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+
+ibeta(1+i,1,1.5*i);
+
+
+ - 0.12299596333468401978 + 0.28653674999354031595*i
+
+
+off rounded,complex;
+
+
+*** Domain mode complex-rounded changed to complex 
+
+
+ibeta(3,2,x);
+
+
+ 3
+x *( - 3*x + 4)
+
+
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     11. Dilogarithm, polylogartihm and Lerch_phi
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+polylog(n,0);
+
+
+0
+
+
+polylog(2,1);
+
+
+   2
+ pi
+-----
+  6
+
+
+polylog(3,1);
+
+
+zeta(3)
+
+
+polylog(2,i);
+
+
+                  2
+ 48*catalan*i - pi
+--------------------
+         48
+ 
+
+df(polylog(a,x),x);
+
+
+  - log( - x + 1)
+------------------
+        x
+
+
+polylog(1,x);
+
+
+ - log( - x + 1)
+
+
+precision reset;
+
+
+20
+
+on rounded;
+
+
+
+polylog(2,1/3);
+
+
+0.366213229977
+
+
+off rounded;
+
+
+
+
+lerch_phi(3,4,1);
+
+
+ polylog(4,3)
+--------------
+      3
+
+
+lerch_phi(4,0,3);
+
+
+  - 1
+------
+  3
+
+
+lerch_phi(x,a,1);
+
+
+ polylog(2,x)
+--------------
+      x
+
+
+lerch_phi(1,x,1);
+
+
+zeta(x)
+
+
+df(lerch_phi(x,3,4),x);
+
+
+  - 4*lerch_phi(x,3,4) + lerch_phi(x,2,4)
+------------------------------------------
+                    x
+
+
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%     12. Constants
+
+% =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+on rounded;
+
+
+off complex;
+
+
+
+precision 50;
+
+
+12
+
+
+euler_gamma;
+
+
+0.57721566490153286060651209008240243104215933593992
+
+
+Khinchin;
+
+
+2.6854520010653064453097148354817956938203822939945
+
+
+golden_ratio;
+
+
+1.6180339887498948482045868343656381177203091798058
+
+
+Catalan;
+
+
+0.91596559417721901505460351493238411077414937428167
+
+
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+
+euler_gamma;
+
+
+0.57721566490153286060651209008240243104215933593992
+
+
+Khinchin;
+
+
+2.6854520010653064453097148354817956938203822939945
+
+
+golden_ratio;
+
+
+1.6180339887498948482045868343656381177203091798058
+
+
+Catalan;
+
+
+0.91596559417721901505460351493238411077414937428167
+
+
+
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1289 ms  plus GC time: 46 ms
-real	0m2.016s
-user	0m0.046s
-sys	0m0.122s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1501 ms  plus GC time: 79 ms
+
+End of Lisp run after 1.50+0.14 seconds
+real 1.94
+user 0.00
+sys 0.07

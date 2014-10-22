@@ -7628,8 +7628,10 @@ Intermediate representation:
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 60 ms
-real	0m0.596s
-user	0m0.030s
-sys	0m0.105s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 32 ms
+
+End of Lisp run after 0.03+0.04 seconds
+real 0.20
+user 0.01
+sys 0.09

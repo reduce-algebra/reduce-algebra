@@ -1,0 +1,114 @@
+
+load_package sets;
+
+
+
+comment longer linelength so that differences in prettyprinter margins do not show ;
+
+lisp linelength 100;
+
+
+80
+
+
+on defn;
+
+
+
+--b;(aeval (list 'minus (list 'minus 'b)))
+
+
+--a*b;(aeval (list 'minus (list 'minus (list 'times 'a 'b))))
+
+
+--a*--b;(aeval (list 'minus (list 'minus (list 'times 'a (list 'minus (list 'minus 'b)))) ))
+
+
+a ^ - b * c ;
+
+a^-b*$$$c;
+
+***** Please use parentheses around use of the unary operator 
+
+
+a / - b / c ;
+
+a/-b/$$$c;
+
+***** Please use parentheses around use of the unary operator 
+
+
+a ^ - b + c ;(aeval (list 'plus (list 'expt 'a (list 'minus 'b)) 'c))
+
+
+a ^ (- b) * c ;(aeval (list 'times (list 'expt 'a (list 'minus 'b)) 'c))
+
+
+- a * b ;(aeval (list 'minus (list 'times 'a 'b)))
+
+
+-b*-c;(aeval (list 'minus (list 'times 'b (list 'minus 'c))))
+
+
+a * b^-2 * c^3
+
+ ;a*b^-2*$$$c^3;
+
+***** Please use parentheses around use of the unary operator 
+
+
+a intersection union b intersection c;
+
+a intersection union b intersection $$$c;
+
+***** Please use parentheses around use of the unary operator 
+
+
+a intersection (union b) intersection c;(aeval (list 'intersection 'a (list 'union 'b) 'c))
+
+
+a union intersection b union c;(aeval (list 'union 'a (list 'intersection 'b) 'c))
+
+
+a union (intersection b) union c;(aeval (list 'union 'a (list 'intersection 'b) 'c))
+
+
+aa(1,4):=4*(u4(n+1)-u4(n))/ht+(p*c**2*(u2(m+2)-u2(m-2)+u2(m+1,k+1)+
+         u2(m+1,k-1)-u2(m-1,k+1)-u2(m-1,k-1))+w*(u4(m+2)-
+         u4(m-2)+u4(m+1,k+1)+u4(m+1,k-1)-u4(m-1,k+1)-u4(m-1,k-1))+
+         +p*c**2*(u3(m+1,k+1)+u3(m-1,k+1)-u3(m+1,k-1)-
+         u3(m-1,k-1)+u3(k+2)-u3(k-2))+v*(
+
+u4(m+1,k+1)+u4(m-1,k+1)-
+         u4(m+1,k-1)-u4(m-1,k-1)+u4(k+2)-u4(k-2)))/hx+ht*
+         (2*w**2*(-u4(m+2)+2*u4(m)-u4(m-2))+4*w*p*c**2*(-u2(m+2)+
+         2*u2(m)-u2(m-2))+2*c**2*(-u4(m+2)+2*u4(m)-u4(m-2))+
+         4*p*v*c**2*(-u3(k+2)+2*u3(k)-u3(k-2))+2*c**2*(-u4(k+2)+
+         2*u4(k)-u4(k-2))+2*v**2*(-u4(k+2)+2*u4(k)-u4(k-2))+
+         4*p*v*c**2*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-
+         u2(m-1,k-1))+4*w*p*c**2*(-u3(m+1,k+1)+u3(m+1,k-1)+
+         u3(m-1,k+1)-u3(m-1,k-1))+4*w*v*(-u4(m+1,k+1)+
+         u4(m+1,k-1)+u4(m-1,k+1)-u4(m-1,k-1)))/hx/hx$aa(1,4):=4*(u4(n+1)-u4(n))/ht+(p*c**2*(u2(m+2)-
+u2(m-2)+u2(m+1,k+1)+u2(m+1,k-1)-u2(m-1,k+1)-u2(m-1,k-1))+w*(u4(m+2)-u4(m-2)+u4(m+1,k+1)+u4(m+1,k-1)-
+u4(m-1,k+1)-u4(m-1,k-1))++p*c**2*(u3(m+1,k+1)+u3(m-1,k+1)-u3(m+1,k-1)-u3(m-1,k-1)+u3(k+2)-u3(k-2))+
+$$$v*(u4(m+1,k+1)+u4(m-1,k+1)-u4(m+1,k-1)-u4(m-1,k-1)+u4(k+2)-u4(k-2)))/hx+ht*(2*w**2*(-u4(m+2)+2*u4
+(m)-u4(m-2))+4*w*p*c**2*(-u2(m+2)+2*u2(m)-u2(m-2))+2*c**2*(-u4(m+2)+2*u4(m)-u4(m-2))+4*p*v*c**2*(-u3
+(k+2)+2*u3(k)-u3(k-2))+2*c**2*(-u4(k+2)+2*u4(k)-u4(k-2))+2*v**2*(-u4(k+2)+2*u4(k)-u4(k-2))+4*p*v*c**
+2*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-u2(m-1,k-1))+4*w*p*c**2*(-u3(m+1,k+1)+u3(m+1,k-1)+u3(m-1,k+1
+)-u3(m-1,k-1))+4*w*v*(-u4(m+1,k+1)+u4(m+1,k-1)+u4(m-1,k+1)-u4(m-1,k-1)))/hx/hx$
+
+***** Please use parentheses around use of the unary operator 
+
+
+off defn;
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.20
+user 0.00
+sys 0.04

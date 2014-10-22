@@ -87,8 +87,10 @@ sqrt(1+x^2*y^2+(x^2+y^2-3));
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 36 ms
-real	0m0.701s
-user	0m0.061s
-sys	0m0.061s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.10 seconds
+real 0.23
+user 0.00
+sys 0.06

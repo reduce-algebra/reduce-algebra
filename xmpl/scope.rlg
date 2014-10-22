@@ -1042,8 +1042,10 @@ makeopts$
 
 end;
 
-Tested on x86_64-unknown-ubuntu11.04 CSL
-Time (counter 1): 20 ms
-real	0m0.160s
-user	0m0.090s
-sys	0m0.010s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 31 ms
+
+End of Lisp run after 0.03+0.06 seconds
+real 0.21
+user 0.01
+sys 0.07

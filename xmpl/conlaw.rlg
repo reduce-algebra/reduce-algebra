@@ -1,51 +1,4 @@
-%*******************************************************************%
-%                                                                   %
-%                      C O N L A W . T S T                          %
-%                      -------------------                          %
-%  conlaw.tst  contains test examples for the programs conlaw0.red  %
-%  conlaw1.red, conlaw2.red, conlaw3.red, conlaw4.red. To run       %
-%  this test read in the files crack.red, conlaw0.red, conlaw1.red, %
-%  conlaw2.red, conlaw3.red, conlaw4.red or load their compiled     %
-%  version before.                                                  %
-%                                                                   %
-%  Author: Thomas Wolf                                              %
-%  Date:   15. June 1999, 6. May 2003                               %
-%                                                                   %
-%  Details about the syntax of conlaw1-4 are given in conlaw.tex.   %
-%  To run this file read in or load crack, conlaw0 before.          %
-%                                                                   %
-%  The statement lisp(print_:=nil); suppresses output of the        %
-%  computation. To see details of it do lisp(print_:=50).           %
-%                                                                   %
-%*******************************************************************%
-
-load crack ;
-
- % ,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4$
-
-lisp(depl!*:=nil)$
-
-     % clearing of all dependencies
-%setcrackflags()$       % standart flags
-lisp(print_:=nil)$
-
-     % no output of the calculation
-
-%% off batch_mode$
-
-comment -------------------------------------------------------------
-The following example calculates all conservation laws of the KdV-
-equation with a characteristic function of order not higher than two;
-
-
-nodepnd {u}$
-
-           % deletes all dependencies of u
-depend u,x,t$
-
-          % declares u to be a function of x,t
-conlaw4({{df(u,t) = u*df(u,x)+df(u,x,3)}, {u}, {t,x}},
-        {0, 2, t, {}, {}}                             )$
+off echo;
 
 
 --------------------------------------------------------------------------
@@ -63,169 +16,139 @@ for the function(s): u(t,x)
 Currently conservation laws with characteristic
 function(s) of order 0 are determined
 ======================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+Step 1: 
+
+>>>>>>>>> Solution : 
+no equations
+
+
+Functions : q_1(u,x,t)
+with 1 terms
+
+Variables : u, x, t
+no equations
+1 function with 3 arguments : q_1
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+q_1 = q_1(u,x,t) is not constant!
+- - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Conservation law:
+-----------------
 
-( u ) * ( u  - u   - u *u )
-           t    3x    x
-
- = 
-
-     1   2
-df( ---*u , t )
-     2
-
-+
-
-                1    2    1   3
-df(  - u  *u + ---*u   - ---*u , x )
-        2x      2   x     3
-
-======================================================
-
-Conservation law:
-
-( t*u + x ) * ( u  - u   - u *u )
-                 t    3x    x
-
- = 
-
-     1     2
-df( ---*t*u  + u*x, t )
-     2
-
-+
-
-                          1    2           1     3    1   2
-df(  - u  *t*u - u  *x + ---*u  *t + u  - ---*t*u  - ---*u *x, x )
-        2x        2x      2   x       x    3          2
-
-======================================================
-
-Conservation law:
-
-( 1 ) * ( u  - u   - u *u )
-           t    3x    x
-
- = 
-
-df( u, t )
-
-+
-
-              1   2
-df(  - u   - ---*u , x )
-        2x    2
+  ( q_1 ) * ( u  - u   - u *u )
+               t    3x    x
+should be a divergence but the program was
+not able to find the conserved current.
 
 ======================================================
 Currently conservation laws with characteristic
 function(s) of order 1 are determined
 ======================================================
+Start of splitting equations
+1 equations result
 
-There is no conservation law of this order.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+Step 1: 
+
+>>>>>>>>> Solution : 
+no equations
+
+
+Lists with at least one non-vanishing sub-list 
+(ie. a sub-list of which no element vanishes.): 
+{{
+q_1
+   u`2
+
+}{
+q_1
+   u`1
+
+}}
+
+Functions : q_1(u!`2,u!`1,u,x,t)
+with 1 terms
+
+Variables : u`2, u`1, u, x, t
+no equations
+1 function with 5 arguments : q_1
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+q_1 = q_1(u!`2,u!`1,u,x,t) is not constant!
+- - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Conservation law:
+-----------------
+
+  ( q_1 ) * ( u  - u   - u *u )
+               t    3x    x
+should be a divergence but the program was
+not able to find the conserved current.
 
 ======================================================
 Currently conservation laws with characteristic
 function(s) of order 2 are determined
 ======================================================
+Start of splitting equations
+1 equations result
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+Step 1: 
+
+>>>>>>>>> Solution : 
+no equations
+
+
+Lists with at least one non-vanishing sub-list 
+(ie. a sub-list of which no element vanishes.): 
+{{
+q_1
+   u`2`2
+
+}{
+q_1
+   u`1`2
+
+}{
+q_1
+   u`1`1
+
+}}
+
+Functions : q_1(u!`2!`2,u!`1!`2,u!`1!`1,u!`2,u!`1,u,x,t)
+with 1 terms
+
+Variables : u`2`2, u`1`2, u`1`1, u`2, u`1, u, x, t
+no equations
+1 function with 8 arguments : q_1
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+q_1 = q_1(u!`2!`2,u!`1!`2,u!`1!`1,u!`2,u!`1,u,x,t) is not constant!
+- - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Conservation law:
+-----------------
 
-              2
-(  - 2*u   - u  ) * ( u  - u   - u *u )
-        2x             t    3x    x
-
- = 
-
-      2    1   3
-df( u   - ---*u , t )
-     x     3
-
-+
-
-                    2        2    1   4
-df(  - 2*u *u  + u    + u  *u  + ---*u , x )
-          t  x    2x     2x       4
+  ( q_1 ) * ( u  - u   - u *u )
+               t    3x    x
+should be a divergence but the program was
+not able to find the conserved current.
 
 ======================================================
-
-                     2
-{{{ - 2*df(u,x,2) - u },
-
-             2    3
-    3*df(u,x)  - u
-  {-----------------,
-           3
-
-                                      2                2    4
-     - 8*df(u,t)*df(u,x) + 4*df(u,x,2)  + 4*df(u,x,2)*u  + u
-   -----------------------------------------------------------}},
-                                4
-
-                            2
-           - 2*df(u,x,2) - u
- {{1},{u,---------------------}},
-                   2
-
- {{t*u + x},
-
-    u*(t*u + 2*x)
-  {---------------,
-          2
-
-                                                  2                      3
-   ( - 6*df(u,x,2)*t*u - 6*df(u,x,2)*x + 3*df(u,x) *t + 6*df(u,x) - 2*t*u
-
-          2
-     - 3*u *x)/6}},
-
- {{u},
-
-     2                               2      3
-    u     - 6*df(u,x,2)*u + 3*df(u,x)  - 2*u
-  {----,--------------------------------------}}}
-    2                     6
-
-
-comment -------------------------------------------------------------
-The next example demonstrates that one can specify an ansatz
-for the characteristic function of one or more equations of the
-PDE-system. In this example all conservation laws of the wave
-equation which is written as a first order system are calculated
-such that the characteristic functions of the first of both
-equations is proportional to df(u,x,2). (This will include zero
-as it is a multiple of df(u,x,2) too.)
-
-In the following input the equations are solved for the t-derivatives,
-so the t-derivatives will be substituted in the conservation-law-
-conditions, so the ansatz for q_1 should have no t-derivatives of u
-included. Therefore the function r in q_1 below is specified as
-depending on t,x,u,v,df(u,x),df(v,x). 
-In the call of conlaw2 the list of variables is {t,x} and x is
-the second of the variables (could equally well be in reverse order).
-Therefore df(u,x) takes the form u!`2 when the dependencies of r
-are specified (see conlaw.tex);
-
-
-nodepnd {u,v,r}$
-
-
-depend u,x,t$
-
-
-depend v,x,t$
-
-
-depend r,t,x,u,v,u!`2,v!`2$
-
-
-q_1:=r*df(u,x,2)$
-
-
-conlaw2({{df(u,t)=df(v,x),
-          df(v,t)=df(u,x) }, {u,v}, {t,x}},
-        {2, 2, t, {r}, {}})$
-
 
 --------------------------------------------------------------------------
 
@@ -245,16 +168,215 @@ for the function(s): u(x,t), v(x,t)
 A special ansatz of order 2 for the characteristic
 function(s) is investigated.
 
+Start of splitting equations
+22 equations result
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+e_12 is a consequence of e_4.
+e_13 is a consequence of e_8.
+e_14 is a consequence of e_5.
+e_15 is a consequence of e_1.
+e_16 is a consequence of e_3.
+e_18 is a consequence of e_10.
+e_19 is a consequence of e_2.
+e_21 is a consequence of e_7.
+Step 1: 
+new function: c_1(v!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_10
+
+Step 2: 
+The substitution:
+q_2= - c_1
+
+transformed one factor:
+q_2
+   u`2`2
+
+of one expression within one OR-inequality modulo
+all other equations to zero.
+
+Substitution of q_2(v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
+c_1(v!`2!`2,v!`2,u!`2,v,u,x,t) found in e_10 : 
+q_2= - c_1
+
+
+Step 3: 
+new function: c_2(v!`2!`2,u!`2,v,u,x,t)
+Integration of e_20
+
+Step 4: 
+Substitution of c_1(v!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
+c_2(v!`2!`2,u!`2,v,u,x,t) found in e_20 : 
+c_1= - c_2
+
+
+Step 5: 
+new function: c_3(u!`2,v,u,x,t)
+Integration of e_5
+
+Step 6: 
+Substitution of r(v!`2,u!`2,v,u,x,t) by an expression in 
+c_3(u!`2,v,u,x,t) found in e_5 : 
+r= - c_3
+
+
+Step 7: 
+new function: c_4(v,u,x,t)
+Integration of e_3
+
+Step 8: 
+Substitution of c_3(u!`2,v,u,x,t) by an expression in 
+c_4(v,u,x,t) found in e_3 : 
+c_3= - c_4
+
+
+Step 9: 
+new function: c_5(v!`2!`2,v,u,x,t)
+Integration of e_9
+
+Step 10: 
+Substitution of c_2(v!`2!`2,u!`2,v,u,x,t) by an expression in 
+c_5(v!`2!`2,v,u,x,t) found in e_9 : 
+c_2= - c_5
+
+
+Step 11: 
+new function: c_6(v!`2!`2,u,x,t)
+Integration of e_2
+
+Step 12: 
+Substitution of c_5(v!`2!`2,v,u,x,t) by an expression in 
+c_6(v!`2!`2,u,x,t) found in e_2 : 
+c_5= - c_6
+
+
+Step 13: 
+new function: c_7(u,x,t)
+Integration of e_4
+
+Step 14: 
+Substitution of c_4(v,u,x,t) by an expression in 
+c_7(u,x,t) found in e_4 : 
+c_4= - c_7
+
+
+Step 15: 
+new function: c_8(x,t)
+Integration of e_1
+
+Step 16: 
+Substitution of c_7(u,x,t) by an expression in 
+c_8(x,t) found in e_1 : 
+c_7= - c_8
+
+
+Step 17: 
+new function: c_9(v!`2!`2,x,t)
+Integration of e_8
+
+Step 18: 
+Substitution of c_6(v!`2!`2,u,x,t) by an expression in 
+c_9(v!`2!`2,x,t) found in e_8 : 
+c_6= - c_9
+
+
+Step 19: 
+new function: c_10(v!`2!`2,t)
+Integration of e_22
+
+Step 20: 
+Substitution of c_9(v!`2!`2,x,t) by an expression in 
+c_10(v!`2!`2,t) found in e_22 : 
+c_9= - c_10
+
+
+Step 21: 
+new function: c_11(t)
+Integration of e_6
+
+Step 22: 
+Substitution of c_8(x,t) by an expression in 
+c_11(t) found in e_6 : 
+c_8= - c_11
+
+
+Step 23: 
+new constant: c_12
+Integration of e_17
+
+Step 24: 
+Substitution of c_11(t) by an expression in 
+c_12 found in e_17 : 
+c_11= - c_12
+
+
+Step 25: 
+new function: c_13(v!`2!`2)
+Integration of e_11
+
+Step 26: 
+Substitution of c_10(v!`2!`2,t) by an expression in 
+c_13(v!`2!`2) found in e_11 : 
+c_10= - c_13
+
+
+Step 27: 
+new constant: c_14
+Integration of e_7
+
+Step 28: 
+Due to vanishing expressions an OR-inequality is now
+converted to a normal inequality where each of the
+following factors must not vanish: 
+{c_12}
+
+
+The list of inequalities got extended by: 
+c_12
+
+
+Substitution of c_13(v!`2!`2) by an expression in 
+c_12, c_14 found in e_7 : 
+c_13= - (c_12*v`2`2 + c_14)
+
+
+Step 29: 
+
+>>>>>>>>> Solution : 
+no equations
+
+
+Non-vanishing expressions: c_12
+
+Functions : 
+q_2=c_12*v`2`2 + c_14
+
+
+r=c_12
+
+c_12, c_14
+with 5 terms
+
+Variables : v`2`2, u`2`2, v`2, u`2, v, u, x, t
+no equations
+2 constants : c_12,c_14
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Multipliers {0,1} are dropped because they are of too low order.
 
 Conservation law:
+-----------------
 
-( u   ) * ( u  - v  )
-   2x        t    x
+  ( u   ) * ( u  - v  )
+     2x        t    x
 
-+
-
-( v   ) * (  - u  + v  )
-   2x           x    t
++ ( v   ) * (  - (u  - v ) )
+     2x            x    t
 
  = 
 
@@ -269,50 +391,17 @@ df( u *u  - u *v  + v *v , x )
 
 ======================================================
 
-{{{df(u,x,2),df(v,x,2)},
-
-               2          2
-     - (df(u,x)  + df(v,x) )
-  {--------------------------,
-               2
-
-   df(u,t)*df(u,x) - df(u,x)*df(v,x) + df(v,t)*df(v,x)}}}
-
-clear q_1$
-
-
-nodepnd {q_1}$
-
-
-
-comment -------------------------------------------------------------
-For the Burgers equation the following example finds all conservation
-laws of zero'th order in the characteristic function up to the solution
-of the linear heat equation. This is an example for what happens when 
-not all conditions could be solved, but it is also an example which 
-shows that not only characteristic functions of polynomial or rational
-form can be found;
-
-
-nodepnd {u}$
-
-
-depend u,x,t$
-
-
-conlaw1({{df(u,t)=df(u,x,2)+df(u,x)**2/2}, {u}, {t,x}}, 
-        {0, 0, t, {}, {}}                              )$
-
-
 --------------------------------------------------------------------------
 
 This is CONLAW1 - a program for calculating conservation laws of DEs
 
 The DE under investigation is :
 
-          1    2
-u =u   + ---*u
- t  2x    2   x
+              2
+    2*u   + u
+       2x    x
+u =-------------
+ t       2
 
 for the function(s): u(x,t)
 
@@ -320,76 +409,88 @@ for the function(s): u(x,t)
 Currently conservation laws with a conserved density
 of order 0 are determined
 ======================================================
-The function c_66(x,t) is not constant!
+Start of splitting equations
+4 equations result
 
-There are remaining conditions: {c_66  + c_66  }
-                                     t       2x
-for the functions: c_66(x,t)
-Corresponding CLs might not be shown below as they
-could be of too low order.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+Step 1: 
+new function: c_17(u!`2,x,t)
+Integration of e_2
+
+Step 2: 
+Substitution of p_x(u!`2,u,x,t) by an expression in 
+c_17(u!`2,x,t) found in e_2 : 
+p_x= - c_17
+
+
+Step 3: 
+new function: c_18(x,t)
+Integration of e_1
+
+Step 4: 
+Substitution of p_t(u,x,t) by an expression in 
+c_18(x,t) found in e_1 : 
+p_t= - c_18
+
+
+Step 5: 
+new function: c_19(x,t)
+Integration of e_3
+
+Step 6: 
+Substitution of c_17(u!`2,x,t) by an expression in 
+c_19(x,t) found in e_3 : 
+c_17= - c_19
+
+
+Step 7: 
+new function: c_20(x,t)
+Potential integration of e_4 yields (e_4 e_5)
+
+Step 8: 
+Substitution of c_18(x,t) by an expression in 
+c_20(x,t) found in e_5 : 
+c_18=c_20
+         x
+
+
+Step 9: 
+Substitution of c_19(x,t) by an expression in 
+c_20(x,t) found in e_4 : 
+c_19=c_20
+         t
+
+
+Step 10: 
+
+>>>>>>>>> Solution : 
+no equations
+
+
+Functions : 
+p_x=c_20
+        t
+
+
+p_t= - c_20
+           x
+
+c_20(x,t)
+with 3 terms
+
+Variables : u`2, u, x, t
+no equations
+1 function with 2 arguments : c_20
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+There is no conservation law of this order.
+
 ======================================================
-
-Conservation law:
-
-   u/2                        1    2
-( e   *c_66 ) * ( u  - u   - ---*u   )
-                   t    2x    2   x
-
- = 
-
-       u/2
-df( 2*e   *c_66, t )
-
-+
-
-       u/2          u/2
-df( 2*e   *c_66  - e   *u *c_66, x )
-               x         x
-
-An attempt to factor out linear differential operators:
-
-                  1    2
-eq_1:=u  - u   - ---*u
-       t    2x    2   x
-
-      u/2
-l_1:=e
-
- u/2
-e   *eq_1 = 2*(l_1  - l_1  )
-                  t      2x
-
-======================================================
-
-    u/2
-{{{e   *c_66},
-
-      u/2
-  {2*e   *c_66,
-
-    u/2
-   e   *(2*df(c_66,x) - df(u,x)*c_66)}}}
-      
-
-comment -------------------------------------------------------------
-In this example all conservation laws of the Ito system are calculated
-that have a conserved density of order not higher than one.
-This is a further example of non-polynomial conservation laws;
-
-
-nodepnd {u,v}$
-
-
-depend u,x,t$
-
-
-depend v,x,t$
-
-
-conlaw1({{df(u,t)=df(u,x,3)+6*u*df(u,x)+2*v*df(v,x),
-          df(v,t)=2*df(u,x)*v+2*u*df(v,x)           }, {u,v}, {t,x}},
-        {0, 1, t, {}, {}})$
-
 
 --------------------------------------------------------------------------
 
@@ -409,232 +510,300 @@ for the function(s): u(x,t), v(x,t)
 Currently conservation laws with a conserved density
 of order 0 are determined
 ======================================================
+Start of splitting equations
+17 equations result
 
-Conservation law:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
 
-( -1 ) * (  - 2*u *v + v  - 2*v *u )
-                 x      t      x
+e_4 is a consequence of e_2.
+e_10 is a consequence of e_1.
+Step 1: 
+new function: c_24(u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2
+,v,u,x,t)
+Integration of e_16
 
-+
+Step 2: 
+Substitution of 
+p_x(v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,
+v,u,x,t) by an expression in 
+c_24(u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+ found in e_16 : 
+p_x= - c_24
 
-( 0 ) * ( u  - u   - 6*u *u - 2*v *v )
-           t    3x      x        x
 
- = 
+Step 3: 
+new function: c_25(v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_9
 
-df(  - v, t )
+Step 4: 
+Substitution of c_24(u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,
+u!`2,v,u,x,t) by an expression in 
+c_25(v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_9 : 
+c_24= - c_25
 
-+
 
-df( 2*u*v, x )
+Step 5: 
+new function: c_26(u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_15
 
-======================================================
+Step 6: 
+Substitution of c_25(v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+ by an expression in 
+c_26(u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_15 : 
+c_25= - c_26
 
-Conservation law:
 
-( 2*v ) * (  - 2*u *v + v  - 2*v *u )
-                  x      t      x
+Step 7: 
+new function: c_27(v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_8
 
-+
+Step 8: 
+Substitution of c_26(u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) by an 
+expression in 
+c_27(v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_8 : 
+c_26= - c_27
 
-( 2*u ) * ( u  - u   - 6*u *u - 2*v *v )
-             t    3x      x        x
 
- = 
+Step 9: 
+new function: c_28(u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_14
 
-     2    2
-df( u  + v , t )
+Step 10: 
+Substitution of c_27(v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
+c_28(u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_14 : 
+c_27= - c_28
 
-+
 
-                   2      3        2
-df(  - 2*u  *u + u   - 4*u  - 4*u*v , x )
-          2x      x
+Step 11: 
+new function: c_29(u!`2!`2,u!`2,v,u,x,t)
+Integration of e_13
 
-======================================================
+Step 12: 
+Substitution of c_28(u!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
+c_29(u!`2!`2,u!`2,v,u,x,t) found in e_13 : 
+c_28= - c_29
 
-Conservation law:
 
-( 0 ) * (  - 2*u *v + v  - 2*v *u )
-                x      t      x
+Step 13: 
+new function: c_30(u!`2!`2,v,u,x,t)
+Integration of e_6
 
-+
+Step 14: 
+Substitution of c_29(u!`2!`2,u!`2,v,u,x,t) by an expression in 
+c_30(u!`2!`2,v,u,x,t) found in e_6 : 
+c_29= - c_30
 
-( 1 ) * ( u  - u   - 6*u *u - 2*v *v )
-           t    3x      x        x
 
- = 
+Step 15: 
+new function: c_31(u!`2!`2,u,x,t)
+Integration of e_12
 
-df( u, t )
+Step 16: 
+Substitution of c_30(u!`2!`2,v,u,x,t) by an expression in 
+c_31(u!`2!`2,u,x,t) found in e_12 : 
+c_30= - c_31
 
-+
 
-                2    2
-df(  - u   - 3*u  - v , x )
-        2x
+Step 17: 
+new function: c_32(u,x,t)
+Integration of e_2
+
+Step 18: 
+The substitution:
+p_t= - c_32
+
+transformed one factor:
+p_t
+   v
+
+of one expression within one OR-inequality modulo
+all other equations to zero.
+
+Due to vanishing expressions an OR-inequality is now
+converted to a normal inequality where each of the
+following factors must not vanish: 
+{c_32 }
+     u
+
+
+The list of inequalities got extended by: 
+c_32
+    u
+
+
+c_32
+
+
+Substitution of p_t(v,u,x,t) by an expression in 
+c_32(u,x,t) found in e_2 : 
+p_t= - c_32
+
+
+leads to a contradiction in : 
+0=p_t
+     u
+
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+There is no conservation law of this order.
 
 ======================================================
 Currently conservation laws with a conserved density
 of order 1 are determined
 ======================================================
+Start of splitting equations
+26 equations result
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+e_6 is a consequence of e_2.
+e_7 is a consequence of e_3.
+e_8 is a consequence of e_4.
+e_10 is a consequence of e_4.
+e_16 is a consequence of e_1.
+e_17 is a consequence of e_2.
+e_19 is a consequence of e_2.
+Step 1: 
+new function: 
+c_33(u!`2!`2!`2!`2!`2,v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,
+u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_25
+
+Step 2: 
+Substitution of 
+p_x(v!`2!`2!`2!`2!`2,u!`2!`2!`2!`2!`2,v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,
+u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
+
+c_33(u!`2!`2!`2!`2!`2,v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,
+u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_25 : 
+p_x= - c_33
 
 
-Conservation law:
+Step 3: 
+new function: 
+c_34(v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2
+,v,u,x,t)
+Integration of e_15
 
-(  - 2*v ) * (  - 2*u *v + v  - 2*v *u )
-                     x      t      x
+Step 4: 
+Substitution of 
+c_33(u!`2!`2!`2!`2!`2,v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,
+u!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
 
-+
+c_34(v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2
+,v,u,x,t) found in e_15 : 
+c_33= - c_34
 
-(  - 2*u ) * ( u  - u   - 6*u *u - 2*v *v )
-                t    3x      x        x
 
- = 
+Step 5: 
+new function: c_35(u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2
+,v,u,x,t)
+Integration of e_24
 
-        2    2
-df(  - u  - v , t )
+Step 6: 
+Substitution of 
+c_34(v!`2!`2!`2!`2,u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2
+,v,u,x,t) by an expression in 
+c_35(u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+ found in e_24 : 
+c_34= - c_35
 
-+
 
-                2      3        2
-df( 2*u  *u - u   + 4*u  + 4*u*v , x )
-       2x      x
+Step 7: 
+new function: c_36(v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_14
+
+Step 8: 
+Substitution of c_35(u!`2!`2!`2!`2,v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,
+u!`2,v,u,x,t) by an expression in 
+c_36(v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_14 : 
+c_35= - c_36
+
+
+Step 9: 
+new function: c_37(u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_23
+
+Step 10: 
+Substitution of c_36(v!`2!`2!`2,u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+ by an expression in 
+c_37(u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_23 : 
+c_36= - c_37
+
+
+Step 11: 
+new function: c_38(u!`2!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t)
+Integration of e_22
+
+Step 12: 
+Substitution of c_37(u!`2!`2!`2,v!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) by an 
+expression in 
+c_38(u!`2!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) found in e_22 : 
+c_37= - c_38
+
+
+Step 13: 
+new function: c_39(u!`2!`2!`2,u!`2!`2,u!`2,v,u,x,t)
+Integration of e_21
+
+Step 14: 
+Substitution of c_38(u!`2!`2!`2,u!`2!`2,v!`2,u!`2,v,u,x,t) by an expression in 
+c_39(u!`2!`2!`2,u!`2!`2,u!`2,v,u,x,t) found in e_21 : 
+c_38= - c_39
+
+
+Step 15: 
+new function: c_40(u!`2,v,u,x,t)
+Integration of e_4
+
+Step 16: 
+The substitution:
+p_t= - c_40
+
+transformed one factor:
+p_t
+   v`2
+
+of one expression within one OR-inequality modulo
+all other equations to zero.
+
+Due to vanishing expressions an OR-inequality is now
+converted to a normal inequality where each of the
+following factors must not vanish: 
+{c_40   }
+     u`2
+
+
+The list of inequalities got extended by: 
+c_40
+    u`2
+
+
+c_40
+
+
+Substitution of p_t(v!`2,u!`2,v,u,x,t) by an expression in 
+c_40(u!`2,v,u,x,t) found in e_4 : 
+p_t= - c_40
+
+
+leads to a contradiction in : 
+0=p_t
+     u`2
+
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+There is no conservation law of this order.
 
 ======================================================
-
-Conservation law:
-
-(  - 4*u*v ) * (  - 2*u *v + v  - 2*v *u )
-                       x      t      x
-
-+
-
-                2      2
-(  - 2*u   - 6*u  - 2*v  ) * ( u  - u   - 6*u *u - 2*v *v )
-        2x                      t    3x      x        x
-
- = 
-
-      2      3        2
-df( u   - 2*u  - 2*u*v , t )
-     x
-
-+
-
-                    2          2          2      4       2  2    4
-df(  - 2*u *u  + u    + 6*u  *u  + 2*u  *v  + 9*u  + 10*u *v  + v , x )
-          t  x    2x       2x         2x
-
-======================================================
-
-Conservation law:
-
-                 2        2
-   2*v  *v - 3*v   - 4*u*v
-      2x        x
-( -------------------------- ) * (  - 2*u *v + v  - 2*v *u )
-               4                         x      t      x
-              v
-
-+
-
-   4
-( --- ) * ( u  - u   - 6*u *u - 2*v *v )
-   v         t    3x      x        x
-
- = 
-
-          2        2
-      - v   + 4*u*v
-         x
-df( -----------------, t )
-            3
-           v
-
-+
-
-               2                             2        2  2      4
-      - 4*u  *v  - 4*u *v *v + 2*v *v  - 2*v  *u - 8*u *v  - 8*v
-           2x         x  x        t  x      x
-df( --------------------------------------------------------------, x )
-                                   3
-                                  v
-
-======================================================
-
-                             2        2
-    2*df(v,x,2)*v - 3*df(v,x)  - 4*u*v    4
-{{{-------------------------------------,---},
-                     4                    v
-                    v
-
-              2        2
-     - df(v,x)  + 4*u*v
-  {----------------------,
-              3
-             v
-
-                       2                                                  2
-   (2*( - 2*df(u,x,2)*v  - 2*df(u,x)*df(v,x)*v + df(v,t)*df(v,x) - df(v,x) *u
-
-             2  2      4    3
-        - 4*u *v  - 4*v ))/v }},
-
-                                 2    2
- {{ - 4*u*v,2*( - df(u,x,2) - 3*u  - v )},
-
-          2      3        2
-  {df(u,x)  - 2*u  - 2*u*v ,
-
-                                   2                2                2      4
-    - 2*df(u,t)*df(u,x) + df(u,x,2)  + 6*df(u,x,2)*u  + 2*df(u,x,2)*v  + 9*u
-
-          2  2    4
-    + 10*u *v  + v }},
-
- {{ - 2*v, - 2*u},
-
-        2    2
-  { - (u  + v ),
-
-                          2      3        2
-   2*df(u,x,2)*u - df(u,x)  + 4*u  + 4*u*v }},
-
-                             2    2
- {{0,1},{u, - df(u,x,2) - 3*u  - v }},
-
- {{2*v,2*u},
-
-    2    2
-  {u  + v ,
-
-                             2      3        2
-    - 2*df(u,x,2)*u + df(u,x)  - 4*u  - 4*u*v }},
-
- {{-1,0},{ - v,2*u*v}}}
-
-
-comment -------------------------------------------------------------
-In the next example the 5th order Korteweg - de Vries equation is
-investigated concerning conservation laws of order 0 and 1 in the
-conserved density P_t. Parameters a,b,c in the PDE are determined
-such that conservation laws exist. This complicates the problem by
-making it non-linear with a number of cases to be considered.
-Some of the subcases below can be combined to reduce their number
-which currently is not done automatically;
-
-
-nodepnd {u}$
-
-
-depend u,x,t$
-
-
-conlaw1({{df(u,t)=-df(u,x,5)-a*u**2*df(u,x)
-                  -b*df(u,x)*df(u,x,2)-c*u*df(u,x,3)}, 
-         {u}, {t,x}},
-        {0, 1, t, {a,b,c}, {}})$
-
 
 --------------------------------------------------------------------------
 
@@ -652,15 +821,490 @@ for the function(s): u(x,t)
 Currently conservation laws with a conserved density
 of order 0 are determined
 ======================================================
-The function c_232(x,t) is not constant!
-The function c_236(t) is not constant!
+Start of splitting equations
+11 equations result
 
-There are remaining conditions: {c_232  + c_232   - c_236}
-                                      t        5x
-for the functions: c_236(t), c_232(x,t)
-Corresponding CLs might not be shown below as they
-could be of too low order.
-======================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
+
+Step 1: 
+new function: c_41(u!`2!`2!`2!`2,u!`2!`2,u!`2,u,x,t)
+Integration of e_9
+
+Step 2: 
+Substitution of p_x(u!`2!`2!`2!`2,u!`2!`2!`2,u!`2!`2,u!`2,u,x,t) by an 
+expression in 
+c_41(u!`2!`2!`2!`2,u!`2!`2,u!`2,u,x,t) found in e_9 : 
+p_x= - c_41
+
+
+Step 3: 
+new function: c_42(u!`2!`2!`2!`2,u!`2,u,x,t)
+Integration of e_8
+
+Step 4: 
+Substitution of c_41(u!`2!`2!`2!`2,u!`2!`2,u!`2,u,x,t) by an expression in 
+c_42(u!`2!`2!`2!`2,u!`2,u,x,t) found in e_8 : 
+c_41= - c_42
+
+
+Step 5: 
+new function: c_43(u!`2!`2!`2!`2,u,x,t)
+Integration of e_7
+
+Step 6: 
+Substitution of c_42(u!`2!`2!`2!`2,u!`2,u,x,t) by an expression in 
+c_43(u!`2!`2!`2!`2,u,x,t) found in e_7 : 
+c_42= - c_43
+
+
+Step 7: 
+new function: c_44(x,t)
+Integration of e_1
+
+Step 8: 
+Step 9: 
+new function: c_45(x,t)
+Integration of e_3
+
+Step 10: 
+Step 11: 
+new function: c_46(x,t)
+Integration of e_5
+
+Step 12: 
+Step 13: 
+new function: c_47(u!`2!`2!`2!`2,x,t)
+Integration of e_6
+
+Step 14: 
+Substitution of c_43(u!`2!`2!`2!`2,u,x,t) by an expression in 
+c_47(u!`2!`2!`2!`2,x,t) found in e_6 : 
+c_43= - c_47
+
+
+Step 15: 
+for the substitution of p_t by e_1 we have to consider the case 0=e_15: 
+0=a
+
+The coefficient to be set = 0 in the first subcase is:
+
+e_15 : 
+0=a
+
+
+New level :     1.
+
+Step 16: 
+Substitution of a found in e_15 : 
+a=0
+
+
+Step 17: 
+Step 18: 
+Step 19: 
+for the substitution of p_t by e_3 we have to consider the case 0=e_17: 
+0=c
+
+The coefficient to be set = 0 in the first subcase is:
+
+e_17 : 
+0=c
+
+
+New level :     1.1.
+
+Step 20: 
+Substitution of c found in e_17 : 
+c=0
+
+
+Step 21: 
+Step 22: 
+Step 23: 
+for the substitution of p_t by e_5 we have to consider the case 0=e_19: 
+0=b
+
+The coefficient to be set = 0 in the first subcase is:
+
+e_19 : 
+0=b
+
+
+New level :     1.1.1.
+
+Step 24: 
+Substitution of b found in e_19 : 
+b=0
+
+
+Step 25: 
+Step 26: 
+Step 27: 
+generalized separation of e_11
+new function: c_48(x,t)
+separation yields 2 new equations : e_22,e_21
+
+Step 28: 
+new function: c_49(x,t)
+new function: c_50(u,x)
+Partially potential integration of e_21 yields (e_21 e_23)
+
+Step 29: 
+Substitution of c_48(x,t) by an expression in 
+c_49(x,t) found in e_23 : 
+c_48=c_49
+         t
+
+
+Step 30: 
+Substitution of p_t(u,x,t) by an expression in 
+c_50(u,x), c_49(x,t) found in e_21 : 
+p_t= - (c_49 + c_50)
+
+
+Step 31: 
+new function: c_51(x,t)
+new function: c_52(u!`2!`2!`2!`2,t)
+Partially potential integration of e_22 yields (e_22 e_25)
+
+Step 32: 
+Substitution of c_49(x,t) by an expression in 
+c_51(x,t) found in e_25 : 
+c_49=c_51
+         x
+
+
+Step 33: 
+Substitution of c_47(u!`2!`2!`2!`2,x,t) by an expression in 
+c_52(u!`2!`2!`2!`2,t), c_51(x,t) found in e_22 : 
+c_47=c_51  - c_52
+         t
+
+
+Step 34: 
+generalized separation of e_24
+new function: c_53(x)
+separation yields 2 new equations : e_27,e_26
+
+Step 35: 
+generalized separation of e_27
+new function: c_54(t)
+separation yields 2 new equations : e_29,e_28
+
+Step 36: 
+generalized separation of e_29
+new constant: c_55
+separation yields 2 new equations : e_31,e_30
+
+Step 37: 
+Step 38: 
+Step 39: 
+Substitution of c_54(t) by an expression in 
+c_55 found in e_31 : 
+c_54= - c_55
+
+
+Step 40: 
+Substitution of c_53(x) by an expression in 
+c_55 found in e_30 : 
+c_53= - c_55
+
+
+Step 41: 
+new function: c_56(x)
+Integration of e_26
+
+Step 42: 
+Substitution of c_50(u,x) by an expression in 
+c_56(x), c_55 found in e_26 : 
+c_50=c_55*u - c_56
+
+
+Step 43: 
+new function: c_57(t)
+Integration of e_28
+
+Step 44: 
+Substitution of c_52(u!`2!`2!`2!`2,t) by an expression in 
+c_57(t), c_55 found in e_28 : 
+c_52=c_55*u`2`2`2`2 - c_57
+
+
+Step 45: 
+
+>>>>>>>>> Solution of level 111 : 
+no equations
+
+
+Functions : 
+p_x=c_51  - c_55*u`2`2`2`2 + c_57
+        t
+
+
+p_t= - c_51  - c_55*u + c_56
+           x
+
+
+a=0
+
+
+b=0
+
+
+c=0
+
+c_51(x,t), c_56(x), c_57(t), c_55
+with 10 terms
+
+Variables : u`2`2`2`2, u`2`2`2, u`2`2, u`2, u, x, t
+no equations
+1 function with 2 arguments : c_51
+2 functions with 1 argument  : c_56,c_57
+1 constant : c_55
+
+Back to level : 1.1.
+
+New level :     1.1.2.
+
+now back to the substitution of p_t by e_5
+The list of inequalities got extended by: 
+b
+
+
+Step 46: 
+Substitution of p_t(u,x,t) by an expression in 
+c_46(x,t), b found in e_5 : 
+      - c_46
+p_t=---------
+        b
+
+
+Step 47: 
+new function: c_62(x,t)
+Integration of e_10
+
+Step 48: 
+Substitution of c_47(u!`2!`2!`2!`2,x,t) by an expression in 
+c_62(x,t) found in e_10 : 
+c_47= - c_62
+
+
+Step 49: 
+new function: c_63(x,t)
+Potential integration of e_19 yields (e_19 e_20)
+
+Step 50: 
+Substitution of c_46(x,t) by an expression in 
+c_63(x,t) found in e_20 : 
+c_46=c_63
+         x
+
+
+Step 51: 
+Substitution of c_62(x,t) by an expression in 
+c_63(x,t), b found in e_19 : 
+       - c_63
+             t
+c_62=----------
+         b
+
+
+Step 52: 
+
+>>>>>>>>> Solution of level 112 : 
+no equations
+
+
+Non-vanishing expressions: b
+
+Functions : 
+     c_63
+         t
+p_x=-------
+       b
+
+
+      - c_63
+            x
+p_t=----------
+        b
+
+
+a=0
+
+b, 
+c=0
+
+c_63(x,t)
+with 6 terms
+
+Variables : u`2`2`2`2, u`2`2`2, u`2`2, u`2, u, x, t
+no equations
+1 function with 2 arguments : c_63
+1 constant : b
+
+Back to level : 1.1.
+
+Back to level : 1.
+
+New level :     1.2.
+
+now back to the substitution of p_t by e_3
+The list of inequalities got extended by: 
+c
+
+
+Step 53: 
+Substitution of p_t(u,x,t) by an expression in 
+c_45(x,t), c found in e_3 : 
+      - c_45
+p_t=---------
+        c
+
+
+Step 54: 
+Step 55: 
+new function: c_67(x,t)
+Integration of e_10
+
+Step 56: 
+Substitution of c_47(u!`2!`2!`2!`2,x,t) by an expression in 
+c_67(x,t) found in e_10 : 
+c_47= - c_67
+
+
+Step 57: 
+new function: c_68(x,t)
+Potential integration of e_17 yields (e_17 e_18)
+
+Step 58: 
+Substitution of c_45(x,t) by an expression in 
+c_68(x,t) found in e_18 : 
+c_45=c_68
+         x
+
+
+Step 59: 
+Substitution of c_67(x,t) by an expression in 
+c_68(x,t), c found in e_17 : 
+       - c_68
+             t
+c_67=----------
+         c
+
+
+Step 60: 
+
+>>>>>>>>> Solution of level 12 : 
+no equations
+
+
+Non-vanishing expressions: c
+
+Functions : 
+     c_68
+         t
+p_x=-------
+       c
+
+
+      - c_68
+            x
+p_t=----------
+        c
+
+
+a=0
+
+b, c, c_68(x,t)
+with 7 terms
+
+Variables : u`2`2`2`2, u`2`2`2, u`2`2, u`2, u, x, t
+no equations
+1 function with 2 arguments : c_68
+2 constants : b,c
+
+Back to level : 1.
+
+New level :     2.
+
+now back to the substitution of p_t by e_1
+The list of inequalities got extended by: 
+a
+
+
+Step 61: 
+Substitution of p_t(u,x,t) by an expression in 
+c_44(x,t), a found in e_1 : 
+      - c_44
+p_t=---------
+        a
+
+
+Step 62: 
+Step 63: 
+Step 64: 
+new function: c_72(x,t)
+Integration of e_10
+
+Step 65: 
+Substitution of c_47(u!`2!`2!`2!`2,x,t) by an expression in 
+c_72(x,t) found in e_10 : 
+c_47= - c_72
+
+
+Step 66: 
+new function: c_73(x,t)
+Potential integration of e_15 yields (e_15 e_16)
+
+Step 67: 
+Substitution of c_44(x,t) by an expression in 
+c_73(x,t) found in e_16 : 
+c_44=c_73
+         x
+
+
+Step 68: 
+Substitution of c_72(x,t) by an expression in 
+c_73(x,t), a found in e_15 : 
+       - c_73
+             t
+c_72=----------
+         a
+
+
+Step 69: 
+
+>>>>>>>>> Solution of level 2 : 
+no equations
+
+
+Non-vanishing expressions: a
+
+Functions : 
+     c_73
+         t
+p_x=-------
+       a
+
+
+      - c_73
+            x
+p_t=----------
+        a
+
+a, b, c, c_73(x,t)
+with 8 terms
+
+Variables : u`2`2`2`2, u`2`2`2, u`2`2, u`2, u, x, t
+no equations
+1 function with 2 arguments : c_73
+3 constants : a,b,c
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 Conservation law:
 
@@ -673,33 +1317,8 @@ b=0,
 a=0,
 
 
-(  - c_232  ) * ( u  + u   )
-          x        t    5x
-
- = 
-
-df(  - c_232 *u, t )
-            x
-
-+
-
-df( c_232 *u + c_232  *u  - c_232  *u   + c_232  *u   - c_232 *u   + c_236*u, x
-         t          4x  x        3x  2x        2x  3x        x  4x
-
- )
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-( 1 ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-           t    5x    3x          2x  x
+  ( 1 ) * ( u  + u   )
+             t    5x
 
  = 
 
@@ -707,1604 +1326,366 @@ df( u, t )
 
 +
 
-                      2
-df( u   + u  *c*u + u  *c, x )
-     4x    2x        x
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-(  - x ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-              t    5x    3x          2x  x
-
- = 
-
-df(  - u*x, t )
-
-+
-
-                                   2
-df(  - u  *x + u   - u  *c*u*x - u  *c*x + u *c*u, x )
-        4x      3x    2x          x         x
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-    2
-   x
-( ---- ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-   c          t    5x    3x          2x  x
-
- = 
-
-        2
-     u*x
-df( ------, t )
-      c
-
-+
-
-          2                      2             2    2                   2
-     u  *x  - 2*u  *x + u  *c*u*x  + 2*u   + u  *c*x  - 2*u *c*u*x + c*u
-      4x         3x      2x             2x    x            x
-df( ----------------------------------------------------------------------, x )
-                                      c
-
-======================================================
-
-Conservation law:
-
-                                                 2
-( -6 ) * ( u  + u   + u  *c*u + u  *u *b + u *a*u  )
-            t    5x    3x        2x  x      x
-
- = 
-
-df(  - 6*u, t )
-
-+
-
-                               2         2          3
-df(  - 6*u   - 6*u  *c*u - 3*u  *b + 3*u  *c - 2*a*u , x )
-          4x      2x          x         x
-
-======================================================
-
-Conservation law:
-
-b=2*c,
-
-
-                                                       2
-(  - 4*u ) * ( u  + u   + u  *c*u + 2*u  *u *c + u *a*u  )
-                t    5x    3x          2x  x      x
-
- = 
-
-          2
-df(  - 2*u , t )
-
-+
-
-                                 2            2      4
-df(  - 4*u  *u + 4*u  *u  - 2*u    - 4*u  *c*u  - a*u , x )
-          4x        3x  x      2x       2x
-
-======================================================
-
-Conservation law:
-
-b=2*c,
-
-
-                                                   2
-( -6 ) * ( u  + u   + u  *c*u + 2*u  *u *c + u *a*u  )
-            t    5x    3x          2x  x      x
-
- = 
-
-df(  - 6*u, t )
-
-+
-
-                               2          3
-df(  - 6*u   - 6*u  *c*u - 3*u  *c - 2*a*u , x )
-          4x      2x          x
-
-======================================================
-The function c_254(x,t) is not constant!
-The function c_259(t) is not constant!
-
-There are remaining conditions: {c_254  + c_254   + c_259}
-                                      t        5x
-for the functions: c_259(t), c_254(x,t)
-Corresponding CLs might not be shown below as they
-could be of too low order.
-======================================================
-
-Conservation law:
-
-c=0,
-
-
-b=0,
-
-
-a=0,
-
-
-(  - 2*u ) * ( u  + u   )
-                t    5x
-
- = 
-
-        2
-df(  - u , t )
-
-+
-
-                               2
-df(  - 2*u  *u + 2*u  *u  - u   , x )
-          4x        3x  x    2x
-
-======================================================
-
-Conservation law:
-
-c=0,
-
-
-b=0,
-
-
-a=0,
-
-
-(  - c_254  ) * ( u  + u   )
-          x        t    5x
-
- = 
-
-df(  - c_254 *u, t )
-            x
-
-+
-
-df( c_254 *u + c_254  *u  - c_254  *u   + c_254  *u   - c_254 *u   + c_259*u, x
-         t          4x  x        3x  2x        2x  3x        x  4x
-
- )
-
-======================================================
-
-Conservation law:
-
-b=0,
-
-
-c=0,
-
-
-    - 3                         2
-( ------ ) * ( u  + u   + u *a*u  )
-    a           t    5x    x
-
- = 
-
-      - 3*u
-df( --------, t )
-       a
-
-+
-
-                   3
-      - 3*u   - a*u
-           4x
-df( -----------------, x )
-            a
-
-======================================================
-
-Conservation law:
-
-b=0,
-
-
-c=0,
-
-
-                                2
-(  - 4*u ) * ( u  + u   + u *a*u  )
-                t    5x    x
-
- = 
-
-          2
-df(  - 2*u , t )
-
-+
-
-                                 2      4
-df(  - 4*u  *u + 4*u  *u  - 2*u    - a*u , x )
-          4x        3x  x      2x
+df( u  , x )
+     4x
 
 ======================================================
 Currently conservation laws with a conserved density
 of order 1 are determined
 ======================================================
+Start of splitting equations
+17 equations result
 
-Conservation law:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
 
-b=0,
-
-
-c=0,
-
-
-    - 4*u                         2
-( -------- ) * ( u  + u   + u *a*u  )
-     a            t    5x    x
-
- = 
-
-           2
-      - 2*u
-df( ---------, t )
-        a
-
-+
-
-                                  2      4
-      - 4*u  *u + 4*u  *u  - 2*u    - a*u
-           4x        3x  x      2x
-df( ---------------------------------------, x )
-                       a
-
-======================================================
-
-Conservation law:
-
-b=3*c,
+The list of inequalities got extended by: 
+p_t
+   u`2
 
 
-   3                                                 2
-( ---- ) * ( u  + u   + u  *c*u + 3*u  *u *c + u *a*u  )
-    2         t    5x    3x          2x  x      x
-   a
+p_t
 
- = 
+e_1 is a consequence of e_2
 
-     3*u
-df( -----, t )
-      2
-     a
+e_4 is a consequence of e_2.e_5 is a consequence of e_6
+e_8 is a consequence of e_11
 
-+
-
-                             2        3
-     3*u   + 3*u  *c*u + 3*u  *c + a*u
-        4x      2x          x
-df( ------------------------------------, x )
-                      2
-                     a
-
-======================================================
-The function c_294(x,t) is not constant!
-The function c_303(x) is not constant!
-
-There are remaining conditions: {c_294  + c_294   + c_303  }
-                                      t        5x        4x
-for the functions: c_303(x), c_294(x,t)
-Corresponding CLs might not be shown below as they
-could be of too low order.
-======================================================
-
-Conservation law:
-
-c=0,
+Step 1: 
+Substitution of a found in e_2 : 
+a=0
 
 
-b=0,
+Step 2: 
+e_9 is a consequence of e_11.
+Substitution of c found in e_6 : 
+c=0
 
 
-a=0,
+Step 3: 
+Substitution of b found in e_11 : 
+b=0
 
 
-( 2*u ) * ( u  + u   )
-             t    5x
+Step 4: 
+new function: c_77(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2!`2,u!`2,u,x,t)
+Integration of e_14
 
- = 
-
-     2
-df( u , t )
-
-+
-
-                            2
-df( 2*u  *u - 2*u  *u  + u   , x )
-       4x        3x  x    2x
-
-======================================================
-
-Conservation law:
-
-c=0,
+Step 5: 
+Substitution of p_x(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2!`2!`2,u!`2!`2,u!`2,u,x,t
+) by an expression in 
+c_77(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2!`2,u!`2,u,x,t) found in e_14 : 
+p_x= - c_77
 
 
-b=0,
+Step 6: 
+new function: c_78(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2,u,x,t)
+Integration of e_13
+
+Step 7: 
+Substitution of c_77(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2!`2,u!`2,u,x,t) by an 
+expression in 
+c_78(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2,u,x,t) found in e_13 : 
+c_77= - c_78
 
 
-a=0,
+Step 8: 
+new function: c_79(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u,x,t)
+Integration of e_12
+
+Step 9: 
+Substitution of c_78(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u!`2,u,x,t) by an 
+expression in 
+c_79(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u,x,t) found in e_12 : 
+c_78= - c_79
 
 
-(  - 2*u   ) * ( u  + u   )
-        2x        t    5x
+Step 10: 
+new function: c_80(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,x,t)
+Integration of e_10
 
- = 
-
-      2
-df( u  , t )
-     x
-
-+
-
-                                2                          2         2    2
-df(  - 2*u *u  - 2*u  *u   + u    - 2*u  *u *c*u - 2*u  *u  *b - 2*u  *a*u , x )
-          t  x      4x  2x    3x       3x  x          2x  x         x
-
-======================================================
-
-Conservation law:
-
-c=0,
+Step 11: 
+Substitution of c_79(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,u,x,t) by an expression in 
+c_80(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,x,t) found in e_10 : 
+c_79= - c_80
 
 
-b=0,
+Step 12: 
+generalized separation of e_17
+new function: c_81(u,x,t)
+separation yields 2 new equations : e_19,e_18
+
+Step 13: 
+generalized separation of e_19
+new function: c_82(u!`2!`2!`2!`2,x,t)
+separation yields 2 new equations : e_21,e_20
+
+Step 14: 
+generalized separation of e_21
+new function: c_83(x,t)
+separation yields 2 new equations : e_23,e_22
+
+Step 15: 
+Step 16: 
+Step 17: 
+Substitution of c_82(u!`2!`2!`2!`2,x,t) by an expression in 
+c_83(x,t) found in e_23 : 
+c_82=c_83
 
 
-a=0,
+Step 18: 
+Substitution of c_81(u,x,t) by an expression in 
+c_83(x,t) found in e_22 : 
+c_81= - c_83
 
 
-(  - c_294  + c_303 ) * ( u  + u   )
-          x                t    5x
+Step 19: 
+new function: c_84(x,t)
+new function: c_85(u!`2,u,x)
+Partially potential integration of e_18 yields (e_18 e_24)
 
- = 
+Step 20: 
+Substitution of c_83(x,t) by an expression in 
+c_84(x,t) found in e_24 : 
+c_83=c_84
+         t
 
-df(  - c_294 *u + c_303*u, t )
-            x
 
-+
+Step 21: 
+The list of inequalities got extended by: 
+c_84 - c_85
 
-df( c_294 *u + c_294  *u  - c_294  *u   + c_294  *u   - c_294 *u   - c_303  *u
-         t          4x  x        3x  2x        2x  3x        x  4x        3x  x
 
- + c_303  *u   - c_303 *u   + u  *c_303 - u  *c*c_294*u - u  *u *b*c_294
-        2x  2x        x  3x    4x          3x              2x  x
+The list of inequalities got extended by: 
+c_85
+    u`2
 
-               2
- - u *a*c_294*u , x )
+
+c_85
+
+
+Substitution of p_t(u!`2,u,x,t) by an expression in 
+c_85(u!`2,u,x), c_84(x,t) found in e_18 : 
+p_t=c_84 - c_85
+
+
+Step 22: 
+new function: c_86(x,t)
+new function: c_87(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,t)
+Partially potential integration of e_20 yields (e_20 e_25)
+
+Step 23: 
+The list of inequalities got extended by: 
+c_86  - c_85
     x
 
-An attempt to factor out linear differential operators:
 
-eq_1:=u  + u
-       t    5x
-
-l_1:=u
-      x
-
-l_2:= - u
-
-l_3:=u    + u
-      t,x    6x
-
-eq_1  = l_3
-    x
-
-eq_1 = l_1   - l_2
-          4x      t
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-( 1 ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-           t    5x    3x          2x  x
-
- = 
-
-df( u, t )
-
-+
-
-                      2
-df( u   + u  *c*u + u  *c, x )
-     4x    2x        x
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-( x ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-           t    5x    3x          2x  x
-
- = 
-
-df( u*x, t )
-
-+
-
-                                2
-df( u  *x - u   + u  *c*u*x + u  *c*x - u *c*u, x )
-     4x      3x    2x          x         x
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-       2
-    - x
-( ------- ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-     c           t    5x    3x          2x  x
-
- = 
-
-           2
-      - u*x
-df( ---------, t )
-        c
-
-+
-
-             2                      2             2    2                   2
-      - u  *x  + 2*u  *x - u  *c*u*x  - 2*u   - u  *c*x  + 2*u *c*u*x - c*u
-         4x         3x      2x             2x    x            x
-df( -------------------------------------------------------------------------, x
-                                        c
-
- )
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=3*c,
-
-
-                  2
-(  - 6*u   - 3*c*u  ) * ( u  + u   + u  *c*u + 3*u  *u *c )
-        2x                 t    5x    3x          2x  x
-
- = 
-
-        2      3
-df( 3*u   - c*u , t )
-       x
-
-+
-
-                                      2        2                       2
-df(  - 6*u *u  - 6*u  *u   - 3*u  *c*u  + 3*u    + 6*u  *u *c*u - 6*u   *c*u
-          t  x      4x  2x      4x           3x       3x  x          2x
-
-           2              2            2  3       2    2
- - 6*u  *u  *b + 12*u  *u  *c - 3*u  *c *u  - 6*u  *a*u , x )
-      2x  x          2x  x         2x            x
-
-======================================================
-
-Conservation law:
-
-   3    2
-a=----*c ,
-   10
-
-
-b=2*c,
-
-
-                                                3       2  2
-( -100 ) * ( u  + u   + u  *c*u + 2*u  *u *c + ----*u *c *u  )
-              t    5x    3x          2x  x      10   x
-
- = 
-
-df(  - 100*u, t )
-
-+
-
-                              2    2                               3    2
-df(  - 100*u   + 30*u  *u *b*c *t*u  - 100*u  *u *b*x - 60*u  *u *c *t*u
-            4x       2x  x                  2x  x           2x  x
-
-                                       2              2    4             2
- + 200*u  *u *c*x - 100*u  *c*u - 50*u  *c + 30*u *a*c *t*u  - 100*u *a*u *x
-        2x  x            2x           x          x                  x
-
-         4    4          2  2         2  3
- - 9*u *c *t*u  + 30*u *c *u *x - 10*c *u , x )
-      x               x
-
-======================================================
-
-Conservation law:
-
-   3    2
-a=----*c ,
-   10
-
-
-b=2*c,
-
-
-                                                    3       2  2
-(  - 100*u ) * ( u  + u   + u  *c*u + 2*u  *u *c + ----*u *c *u  )
-                  t    5x    3x          2x  x      10   x
-
- = 
-
-           2
-df(  - 50*u , t )
-
-+
-
-                                      2                2    3
-df(  - 100*u  *u + 100*u  *u  - 50*u    + 30*u  *u *b*c *t*u  - 100*u  *u *b*u*x
-            4x          3x  x       2x        2x  x                  2x  x
-
-              3    3                                 2            2    5
- - 60*u  *u *c *t*u  + 200*u  *u *c*u*x - 100*u  *c*u  + 30*u *a*c *t*u
-       2x  x                2x  x              2x            x
-
-             3           4    5          2  3      15   2  4
- - 100*u *a*u *x - 9*u *c *t*u  + 30*u *c *u *x - ----*c *u , x )
-        x             x               x            2
-
-======================================================
-
-Conservation law:
-
-   3    2
-a=----*c ,
-   10
-
-
-b=2*c,
-
-
-                       2                                          3       2  2
-(  - 1000*u   - 300*c*u  ) * ( u  + u   + u  *c*u + 2*u  *u *c + ----*u *c *u  )
-           2x                   t    5x    3x          2x  x      10   x
-
- = 
-
-          2          3
-df( 500*u   - 100*c*u , t )
+Substitution of c_84(x,t) by an expression in 
+c_86(x,t) found in e_25 : 
+c_84=c_86
          x
 
-+
 
-                                              2          2
-df(  - 1000*u *u  - 1000*u  *u   - 300*u  *c*u  + 500*u    + 600*u  *u *c*u
-             t  x         4x  2x        4x             3x         3x  x
+Step 24: 
+Substitution of c_80(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,x,t) by an expression in 
+c_87(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,t), c_86(x,t) found in e_20 : 
+c_80= - (c_86  + c_87)
+             t
 
-          2                  2                2                  3    4
- - 800*u   *c*u - 1000*u  *u  *b + 1400*u  *u  *c + 90*u  *u *b*c *t*u
-        2x              2x  x            2x  x          2x  x
 
-                   2                 4    4               2  2              2  3
- - 300*u  *u *b*c*u *x - 180*u  *u *c *t*u  + 600*u  *u *c *u *x - 300*u  *c *u
-        2x  x                 2x  x                2x  x                2x
+Step 25: 
+generalized separation of e_16
+new function: c_88(u,x)
+separation yields 2 new equations : e_27,e_26
 
-          2    2         2  2  2            3    6               4
- - 1000*u  *a*u  + 300*u  *c *u  + 90*u *a*c *t*u  - 300*u *a*c*u *x
-         x              x              x                  x
+Step 26: 
+generalized separation of e_27
+new function: c_89(u!`2!`2!`2!`2,t)
+separation yields 2 new equations : e_29,e_28
 
-          5    6          3  4         3  5
- - 27*u *c *t*u  + 90*u *c *u *x - 18*c *u , x )
-       x               x
+Step 27: 
+generalized separation of e_29
+new function: c_90(x)
+separation yields 2 new equations : e_31,e_30
 
-======================================================
+Step 28: 
+generalized separation of e_31
+new function: c_91(t)
+separation yields 2 new equations : e_33,e_32
 
-Conservation law:
+Step 29: 
+generalized separation of e_33
+new constant: c_92
+separation yields 2 new equations : e_35,e_34
 
-   3    2
-a=----*c ,
-   10
+Step 30: 
+Step 31: 
+Step 32: 
+Step 33: 
+Step 34: 
+Substitution of c_88(u,x) by an expression in 
+c_90(x) found in e_30 : 
+c_88= - c_90
 
 
-b=2*c,
+Step 35: 
+Substitution of c_89(u!`2!`2!`2!`2,t) by an expression in 
+c_91(t) found in e_32 : 
+c_89= - c_91
 
 
-                          2    2
-    - 2000*u  *c*t - 600*c *t*u  + 2000*x
-            2x
-( ---------------------------------------- ) * ( u  + u   + u  *c*u + 2*u  *u *c
-                     c                            t    5x    3x          2x  x
+Step 36: 
+Substitution of c_91(t) by an expression in 
+c_92 found in e_35 : 
+c_91= - c_92
 
-    3       2  2
- + ----*u *c *u  )
-    10   x
 
- = 
+Step 37: 
+Substitution of c_90(x) by an expression in 
+c_92 found in e_34 : 
+c_90= - c_92
 
-            2            2    3
-     1000*u  *c*t - 200*c *t*u  + 2000*u*x
-           x
-df( ---------------------------------------, t )
-                       c
 
-+
+Step 38: 
+new function: c_93(u,x)
+Integration of e_26
 
-                                                     2    2
-df( ( - 2000*u *u *c*t - 2000*u  *u  *c*t - 600*u  *c *t*u  + 2000*u  *x
-              t  x             4x  2x            4x                 4x
-
-                2                    2                          2  2
-      + 1000*u   *c*t + 1200*u  *u *c *t*u - 2000*u   - 1600*u   *c *t*u
-              3x              3x  x                3x         2x
-
-                   2                    2  2                  4  2  4
-      - 2000*u  *u  *b*c*t + 2800*u  *u  *c *t + 90*u  *u *b*c *t *u
-              2x  x                2x  x             2x  x
-
-                      2    2                    2               5  2  4
-      - 600*u  *u *b*c *t*u *x + 1000*u  *u *b*x  - 180*u  *u *c *t *u
-             2x  x                     2x  x             2x  x
-
-                     3    2                    2            3    3
-      + 1200*u  *u *c *t*u *x - 2000*u  *u *c*x  - 600*u  *c *t*u
-              2x  x                   2x  x             2x
-
-                                2        2         2  3    2          2
-      + 2000*u  *c*u*x - 2000*u  *a*c*t*u  + 600*u  *c *t*u  + 1000*u  *c*x
-              2x               x                  x                  x
-
-                 4  2  6             2    4                2  2          6  2  6
-      + 90*u *a*c *t *u  - 600*u *a*c *t*u *x + 1000*u *a*u *x  - 27*u *c *t *u
-            x                   x                     x               x
-
-                4    4             2  2  2                     4    5
-      + 180*u *c *t*u *x - 300*u *c *u *x  - 2000*u *c*u - 36*c *t*u
-             x                  x                  x
-
-             2  3
-      + 200*c *u *x)/c, x )
-
-======================================================
-
-Conservation law:
-
-      1   2    7          3    2
-a= - ---*b  + ----*b*c - ----*c ,
-      5        10         10
-
-
-                                              1      2  2    7           2
-( -100 ) * ( u  + u   + u  *c*u + u  *u *b - ---*u *b *u  + ----*u *b*c*u
-              t    5x    3x        2x  x      5   x          10   x
-
-    3       2  2
- - ----*u *c *u  )
-    10   x
-
- = 
-
-df(  - 100*u, t )
-
-+
-
-                                    2          2              2    4
-df(  - 100*u   - 100*u  *c*u - 50*u  *b + 50*u  *c - 20*u *a*b *t*u
-            4x        2x           x          x          x
-
-                  4            2    4             2           4    4
- + 70*u *a*b*c*t*u  - 30*u *a*c *t*u  - 100*u *a*u *x - 4*u *b *t*u
-       x                  x                  x             x
-
-          3      4          2  2    4          2  2              3    4
- + 28*u *b *c*t*u  - 61*u *b *c *t*u  - 20*u *b *u *x + 42*u *b*c *t*u
-       x                 x                  x               x
-
-              2           4    4          2  2      20   2  3    70       3
- + 70*u *b*c*u *x - 9*u *c *t*u  - 30*u *c *u *x + ----*b *u  - ----*b*c*u
-       x               x               x            3            3
-
-       2  3
- + 10*c *u , x )
-
-======================================================
-
-Conservation law:
-
-      1   2    7          3    2
-a= - ---*b  + ----*b*c - ----*c ,
-      5        10         10
-
-
-                       2          2
-(  - 1000*u   - 200*b*u  + 100*c*u  ) * ( u  + u   + u  *c*u + u  *u *b
-           2x                              t    5x    3x        2x  x
-
-    1      2  2    7           2    3       2  2
- - ---*u *b *u  + ----*u *b*c*u  - ----*u *c *u  )
-    5   x          10   x           10   x
-
- = 
-
-          2    200     3    100     3
-df( 500*u   - -----*b*u  + -----*c*u , t )
-         x      3            3
-
-+
-
-                                              2              2          2
-df(  - 1000*u *u  - 1000*u  *u   - 200*u  *b*u  + 100*u  *c*u  + 500*u
-             t  x         4x  2x        4x             4x             3x
-
-                                            2              2                 2
- + 400*u  *u *b*u - 200*u  *u *c*u - 200*u   *b*u - 400*u   *c*u - 400*u  *u  *b
-        3x  x            3x  x            2x             2x             2x  x
-
-             2                  3            2  3          2    2
- + 200*u  *u  *c - 200*u  *b*c*u  + 100*u  *c *u  - 1000*u  *a*u
-        2x  x           2x               2x               x
-
-         2  2  2         2      2         2  2  2            3    6
- - 200*u  *b *u  + 700*u  *b*c*u  - 300*u  *c *u  - 40*u *a*b *t*u
-        x               x                x              x
-
-             2      6               2    6               4              3    6
- + 160*u *a*b *c*t*u  - 130*u *a*b*c *t*u  - 200*u *a*b*u *x + 30*u *a*c *t*u
-        x                    x                    x                x
-
-               4           5    6          4      6           3  2    6
- + 100*u *a*c*u *x - 8*u *b *t*u  + 60*u *b *c*t*u  - 150*u *b *c *t*u
-        x               x               x                  x
-
-          3  4             2  3    6           2    4              4    6
- - 40*u *b *u *x + 145*u *b *c *t*u  + 160*u *b *c*u *x - 60*u *b*c *t*u
-       x                x                   x                 x
-
-             2  4           5    6          3  4        3  5       2    5
- - 130*u *b*c *u *x + 9*u *c *t*u  + 30*u *c *u *x + 8*b *u  - 32*b *c*u
-        x                x               x
-
-         2  5      3  5
- + 26*b*c *u  - 6*c *u , x )
-
-======================================================
-
-Conservation law:
-
-      1   2    7          3    2
-a= - ---*b  + ----*b*c - ----*c ,
-      5        10         10
-
-
-                                         2    2               2        2    2
-( ( - 2000*u  *b*t + 6000*u  *c*t - 400*b *t*u  + 1400*b*c*t*u  - 600*c *t*u
-            2x             2x
-
-                                                               1      2  2
-    - 2000*x)/(b - 3*c) ) * ( u  + u   + u  *c*u + u  *u *b - ---*u *b *u
-                               t    5x    3x        2x  x      5   x
-
-    7           2    3       2  2
- + ----*u *b*c*u  - ----*u *c *u  )
-    10   x           10   x
-
- = 
-
-            2              2        400   2    3    1400         3        2    3
-df( (1000*u  *b*t - 3000*u  *c*t - -----*b *t*u  + ------*b*c*t*u  - 200*c *t*u
-           x              x          3               3
-
-      - 2000*u*x)/(b - 3*c), t )
-
-+
-
-df( ( - 2000*u *u *b*t + 6000*u *u *c*t - 2000*u  *u  *b*t + 6000*u  *u  *c*t
-              t  x             t  x             4x  2x             4x  2x
-
-                 2    2                   2            2    2
-      - 400*u  *b *t*u  + 1400*u  *b*c*t*u  - 600*u  *c *t*u  - 2000*u  *x
-             4x                 4x                 4x                 4x
-
-                2               2                   2
-      + 1000*u   *b*t - 3000*u   *c*t + 800*u  *u *b *t*u - 2800*u  *u *b*c*t*u
-              3x              3x             3x  x                3x  x
-
-                     2                         2  2              2
-      + 1200*u  *u *c *t*u + 2000*u   - 400*u   *b *t*u + 400*u   *b*c*t*u
-              3x  x                3x        2x                2x
-
-                2  2                 2  2                2
-      + 2400*u   *c *t*u - 800*u  *u  *b *t + 2800*u  *u  *b*c*t
-              2x                2x  x               2x  x
-
-                   2  2              2      3               2    3
-      - 1200*u  *u  *c *t - 400*u  *b *c*t*u  + 1400*u  *b*c *t*u
-              2x  x              2x                   2x
-
-                 3    3                           2        2          2        2
-      - 600*u  *c *t*u  - 2000*u  *c*u*x - 2000*u  *a*b*t*u  + 6000*u  *a*c*t*u
-             2x                 2x               x                   x
-
-              2  3    2          2  2      2          2    2    2          2
-      - 400*u  *b *t*u  + 2600*u  *b *c*t*u  - 4800*u  *b*c *t*u  - 1000*u  *b*x
-             x                  x                    x                    x
-
-               2  3    2          2                4  2  6             3    2  6
-      + 1800*u  *c *t*u  + 1000*u  *c*x - 40*u *a*b *t *u  + 280*u *a*b *c*t *u
-              x                  x            x                   x
-
-                  2  2  2  6             2    4                 3  2  6
-      - 610*u *a*b *c *t *u  - 400*u *a*b *t*u *x + 420*u *a*b*c *t *u
-             x                      x                    x
-
-                         4              4  2  6             2    4
-      + 1400*u *a*b*c*t*u *x - 90*u *a*c *t *u  - 600*u *a*c *t*u *x
-              x                    x                   x
-
-                   2  2         6  2  6          5    2  6           4  2  2  6
-      - 1000*u *a*u *x  - 8*u *b *t *u  + 84*u *b *c*t *u  - 330*u *b *c *t *u
-              x              x                x                   x
-
-               4    4             3  3  2  6           3      4
-      - 80*u *b *t*u *x + 595*u *b *c *t *u  + 560*u *b *c*t*u *x
-            x                  x                    x
-
-                2  4  2  6            2  2    4             2  2  2
-      - 495*u *b *c *t *u  - 1220*u *b *c *t*u *x - 200*u *b *u *x
-             x                     x                     x
-
-                  5  2  6             3    4                 2  2
-      + 189*u *b*c *t *u  + 840*u *b*c *t*u *x + 700*u *b*c*u *x
-             x                   x                    x
-
-               6  2  6           4    4             2  2  2
-      - 27*u *c *t *u  - 180*u *c *t*u *x - 300*u *c *u *x  + 2000*u *c*u
-            x                 x                  x                  x
-
-            4    5        3      5        2  2    5    400   2  3
-      + 16*b *t*u  - 112*b *c*t*u  + 244*b *c *t*u  + -----*b *u *x
-                                                        3
-
-               3    5    1400       3         4    5        2  3
-      - 168*b*c *t*u  - ------*b*c*u *x + 36*c *t*u  + 200*c *u *x)/(b - 3*c), x
-                          3
-
- )
-
-======================================================
-
-Conservation law:
-
-b=2*c,
-
-
-                                                    2
-( 4*u ) * ( u  + u   + u  *c*u + 2*u  *u *c + u *a*u  )
-             t    5x    3x          2x  x      x
-
- = 
-
-       2
-df( 2*u , t )
-
-+
-
-                              2            2      4
-df( 4*u  *u - 4*u  *u  + 2*u    + 4*u  *c*u  + a*u , x )
-       4x        3x  x      2x       2x
-
-======================================================
-
-Conservation law:
-
-b=2*c,
-
-
-                                                  2
-( 6 ) * ( u  + u   + u  *c*u + 2*u  *u *c + u *a*u  )
-           t    5x    3x          2x  x      x
-
- = 
-
-df( 6*u, t )
-
-+
-
-                            2          3
-df( 6*u   + 6*u  *c*u + 3*u  *c + 2*a*u , x )
-       4x      2x          x
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=2*c,
-
-
-( 2 ) * ( u  + u   + u  *c*u + 2*u  *u *c )
-           t    5x    3x          2x  x
-
- = 
-
-df( 2*u, t )
-
-+
-
-                          2
-df( 2*u   + 2*u  *c*u + u  *c, x )
-       4x      2x        x
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-b=2*c,
-
-
-( 2*u ) * ( u  + u   + u  *c*u + 2*u  *u *c )
-             t    5x    3x          2x  x
-
- = 
-
-     2
-df( u , t )
-
-+
-
-                            2            2
-df( 2*u  *u - 2*u  *u  + u    + 2*u  *c*u , x )
-       4x        3x  x    2x       2x
-
-======================================================
-
-Conservation law:
-
-    - 6                                              2
-( ------ ) * ( u  + u   + u  *c*u + u  *u *b + u *a*u  )
-    a           t    5x    3x        2x  x      x
-
- = 
-
-      - 6*u
-df( --------, t )
-       a
-
-+
-
-                                2         2          3
-      - 6*u   - 6*u  *c*u - 3*u  *b + 3*u  *c - 2*a*u
-           4x      2x          x         x
-df( ---------------------------------------------------, x )
-                             a
-
-======================================================
-
-Conservation law:
-
-a=0,
-
-
-( 2 ) * ( u  + u   + u  *c*u + u  *u *b )
-           t    5x    3x        2x  x
-
- = 
-
-df( 2*u, t )
-
-+
-
-                          2       2
-df( 2*u   + 2*u  *c*u + u  *b - u  *c, x )
-       4x      2x        x       x
-
-======================================================
-
-{{{2},
-
-  {2*u,
-
-                                          2            2
-   2*df(u,x,4) + 2*df(u,x,2)*c*u + df(u,x) *b - df(u,x) *c}},
-
-     - 6
- {{------},
-     a
-
-     - 6*u
-  {--------,
-      a
-
-                                                2              2          3
-     - 6*df(u,x,4) - 6*df(u,x,2)*c*u - 3*df(u,x) *b + 3*df(u,x) *c - 2*a*u
-   -------------------------------------------------------------------------}},
-                                       a
-
- {{2*u},
-
-    2
-  {u ,
-
-                                                  2                  2
-   2*df(u,x,4)*u - 2*df(u,x,3)*df(u,x) + df(u,x,2)  + 2*df(u,x,2)*c*u }},
-
- {{2},
-
-  {2*u,
-
-                                          2
-   2*df(u,x,4) + 2*df(u,x,2)*c*u + df(u,x) *c}},
-
- {{6},
-
-  {6*u,
-
-                                            2          3
-   6*df(u,x,4) + 6*df(u,x,2)*c*u + 3*df(u,x) *c + 2*a*u }},
-
- {{4*u},
-
-      2
-  {2*u ,
-
-                                                    2                  2      4
-   4*df(u,x,4)*u - 4*df(u,x,3)*df(u,x) + 2*df(u,x,2)  + 4*df(u,x,2)*c*u  + a*u }
-
-  },
-
-                                                     2    2            2
- {{(200*( - 10*df(u,x,2)*b*t + 30*df(u,x,2)*c*t - 2*b *t*u  + 7*b*c*t*u
-
-               2    2
-          - 3*c *t*u  - 10*x))/(b - 3*c)},
-
-                   2                 2          2    3            3      2    3
-  {(200*(15*df(u,x) *b*t - 45*df(u,x) *c*t - 2*b *t*u  + 7*b*c*t*u  - 3*c *t*u
-
-          - 30*u*x))/(3*(b - 3*c)),
-
-   ( - 6000*df(u,t)*df(u,x)*b*t + 18000*df(u,t)*df(u,x)*c*t
-
-     - 6000*df(u,x,4)*df(u,x,2)*b*t + 18000*df(u,x,4)*df(u,x,2)*c*t
-
-                       2    2                         2                   2    2
-     - 1200*df(u,x,4)*b *t*u  + 4200*df(u,x,4)*b*c*t*u  - 1800*df(u,x,4)*c *t*u
-
-                                        2                     2
-     - 6000*df(u,x,4)*x + 3000*df(u,x,3) *b*t - 9000*df(u,x,3) *c*t
-
-                               2
-     + 2400*df(u,x,3)*df(u,x)*b *t*u - 8400*df(u,x,3)*df(u,x)*b*c*t*u
-
-                               2                                      2  2
-     + 3600*df(u,x,3)*df(u,x)*c *t*u + 6000*df(u,x,3) - 1200*df(u,x,2) *b *t*u
-
-                     2                         2  2
-     + 1200*df(u,x,2) *b*c*t*u + 7200*df(u,x,2) *c *t*u
-
-                             2  2                           2
-     - 2400*df(u,x,2)*df(u,x) *b *t + 8400*df(u,x,2)*df(u,x) *b*c*t
-
-                             2  2                     2      3
-     - 3600*df(u,x,2)*df(u,x) *c *t - 1200*df(u,x,2)*b *c*t*u
-
-                         2    3                   3    3
-     + 4200*df(u,x,2)*b*c *t*u  - 1800*df(u,x,2)*c *t*u  - 6000*df(u,x,2)*c*u*x
-
-                   2        2                2        2               2  3    2
-     - 6000*df(u,x) *a*b*t*u  + 18000*df(u,x) *a*c*t*u  - 1200*df(u,x) *b *t*u
-
-                   2  2      2                2    2    2               2
-     + 7800*df(u,x) *b *c*t*u  - 14400*df(u,x) *b*c *t*u  - 3000*df(u,x) *b*x
-
-                   2  3    2               2                      4  2  6
-     + 5400*df(u,x) *c *t*u  + 3000*df(u,x) *c*x - 120*df(u,x)*a*b *t *u
-
-                      3    2  6                   2  2  2  6
-     + 840*df(u,x)*a*b *c*t *u  - 1830*df(u,x)*a*b *c *t *u
-
-                       2    4                       3  2  6
-     - 1200*df(u,x)*a*b *t*u *x + 1260*df(u,x)*a*b*c *t *u
-
-                             4                    4  2  6
-     + 4200*df(u,x)*a*b*c*t*u *x - 270*df(u,x)*a*c *t *u
-
-                       2    4                     2  2               6  2  6
-     - 1800*df(u,x)*a*c *t*u *x - 3000*df(u,x)*a*u *x  - 24*df(u,x)*b *t *u
-
-                    5    2  6                4  2  2  6                4    4
-     + 252*df(u,x)*b *c*t *u  - 990*df(u,x)*b *c *t *u  - 240*df(u,x)*b *t*u *x
-
-                     3  3  2  6                 3      4
-     + 1785*df(u,x)*b *c *t *u  + 1680*df(u,x)*b *c*t*u *x
-
-                     2  4  2  6                 2  2    4
-     - 1485*df(u,x)*b *c *t *u  - 3660*df(u,x)*b *c *t*u *x
-
-                    2  2  2                  5  2  6                   3    4
-     - 600*df(u,x)*b *u *x  + 567*df(u,x)*b*c *t *u  + 2520*df(u,x)*b*c *t*u *x
-
-                         2  2               6  2  6                4    4
-     + 2100*df(u,x)*b*c*u *x  - 81*df(u,x)*c *t *u  - 540*df(u,x)*c *t*u *x
-
-                    2  2  2                          4    5        3      5
-     - 900*df(u,x)*c *u *x  + 6000*df(u,x)*c*u + 48*b *t*u  - 336*b *c*t*u
-
-            2  2    5        2  3            3    5             3
-     + 732*b *c *t*u  + 400*b *u *x - 504*b*c *t*u  - 1400*b*c*u *x
-
-            4    5        2  3
-     + 108*c *t*u  + 600*c *u *x)/(3*(b - 3*c))}},
-
-                               2      2
- {{100*( - 10*df(u,x,2) - 2*b*u  + c*u )},
-
-                   2        3      3
-    100*(15*df(u,x)  - 2*b*u  + c*u )
-  {-----------------------------------,
-                    3
-
-                                                                         2
-    - 1000*df(u,t)*df(u,x) - 1000*df(u,x,4)*df(u,x,2) - 200*df(u,x,4)*b*u
-
-                       2                2
-    + 100*df(u,x,4)*c*u  + 500*df(u,x,3)  + 400*df(u,x,3)*df(u,x)*b*u
-
-                                               2                    2
-    - 200*df(u,x,3)*df(u,x)*c*u - 200*df(u,x,2) *b*u - 400*df(u,x,2) *c*u
-
-                           2                          2                        3
-    - 400*df(u,x,2)*df(u,x) *b + 200*df(u,x,2)*df(u,x) *c - 200*df(u,x,2)*b*c*u
-
-                     2  3               2    2              2  2  2
-    + 100*df(u,x,2)*c *u  - 1000*df(u,x) *a*u  - 200*df(u,x) *b *u
-
-                 2      2              2  2  2                 3    6
-    + 700*df(u,x) *b*c*u  - 300*df(u,x) *c *u  - 40*df(u,x)*a*b *t*u
-
-                     2      6                    2    6                    4
-    + 160*df(u,x)*a*b *c*t*u  - 130*df(u,x)*a*b*c *t*u  - 200*df(u,x)*a*b*u *x
-
-                    3    6                    4                5    6
-    + 30*df(u,x)*a*c *t*u  + 100*df(u,x)*a*c*u *x - 8*df(u,x)*b *t*u
-
-                  4      6                3  2    6               3  4
-    + 60*df(u,x)*b *c*t*u  - 150*df(u,x)*b *c *t*u  - 40*df(u,x)*b *u *x
-
-                   2  3    6                2    4                   4    6
-    + 145*df(u,x)*b *c *t*u  + 160*df(u,x)*b *c*u *x - 60*df(u,x)*b*c *t*u
-
-                     2  4                5    6               3  4        3  5
-    - 130*df(u,x)*b*c *u *x + 9*df(u,x)*c *t*u  + 30*df(u,x)*c *u *x + 8*b *u
-
-          2    5         2  5      3  5
-    - 32*b *c*u  + 26*b*c *u  - 6*c *u }},
-
- {{-100},
-
-  { - 100*u,
-
-                                                      2                2
-   ( - 300*df(u,x,4) - 300*df(u,x,2)*c*u - 150*df(u,x) *b + 150*df(u,x) *c
-
-                     2    4                        4                 2    4
-     - 60*df(u,x)*a*b *t*u  + 210*df(u,x)*a*b*c*t*u  - 90*df(u,x)*a*c *t*u
-
-                      2                 4    4               3      4
-     - 300*df(u,x)*a*u *x - 12*df(u,x)*b *t*u  + 84*df(u,x)*b *c*t*u
-
-                    2  2    4               2  2                    3    4
-     - 183*df(u,x)*b *c *t*u  - 60*df(u,x)*b *u *x + 126*df(u,x)*b*c *t*u
-
-                        2                 4    4               2  2         2  3
-     + 210*df(u,x)*b*c*u *x - 27*df(u,x)*c *t*u  - 90*df(u,x)*c *u *x + 20*b *u
-
-               3       2  3
-     - 70*b*c*u  + 30*c *u )/3}},
-
-                                  2    2
-    200*( - 10*df(u,x,2)*c*t - 3*c *t*u  + 10*x)
- {{----------------------------------------------},
-                         c
-
-                  2        2    3
-    200*(5*df(u,x) *c*t - c *t*u  + 10*u*x)
-  {-----------------------------------------,
-                       c
-
-   ( - 2000*df(u,t)*df(u,x)*c*t - 2000*df(u,x,4)*df(u,x,2)*c*t
-
-                      2    2                                    2
-     - 600*df(u,x,4)*c *t*u  + 2000*df(u,x,4)*x + 1000*df(u,x,3) *c*t
-
-                               2                                      2  2
-     + 1200*df(u,x,3)*df(u,x)*c *t*u - 2000*df(u,x,3) - 1600*df(u,x,2) *c *t*u
-
-                             2                               2  2
-     - 2000*df(u,x,2)*df(u,x) *b*c*t + 2800*df(u,x,2)*df(u,x) *c *t
-
-                               4  2  4                            2    2
-     + 90*df(u,x,2)*df(u,x)*b*c *t *u  - 600*df(u,x,2)*df(u,x)*b*c *t*u *x
-
-                                 2                          5  2  4
-     + 1000*df(u,x,2)*df(u,x)*b*x  - 180*df(u,x,2)*df(u,x)*c *t *u
-
-                               3    2                               2
-     + 1200*df(u,x,2)*df(u,x)*c *t*u *x - 2000*df(u,x,2)*df(u,x)*c*x
-
-                      3    3                                      2        2
-     - 600*df(u,x,2)*c *t*u  + 2000*df(u,x,2)*c*u*x - 2000*df(u,x) *a*c*t*u
-
-                  2  3    2               2                     4  2  6
-     + 600*df(u,x) *c *t*u  + 1000*df(u,x) *c*x + 90*df(u,x)*a*c *t *u
-
-                      2    4                     2  2               6  2  6
-     - 600*df(u,x)*a*c *t*u *x + 1000*df(u,x)*a*u *x  - 27*df(u,x)*c *t *u
-
-                    4    4                  2  2  2
-     + 180*df(u,x)*c *t*u *x - 300*df(u,x)*c *u *x  - 2000*df(u,x)*c*u
-
-           4    5        2  3
-     - 36*c *t*u  + 200*c *u *x)/c}},
-
-                               2
- {{100*( - 10*df(u,x,2) - 3*c*u )},
-
-                 2      3
-  {100*(5*df(u,x)  - c*u ),
-
-                                                                         2
-    - 1000*df(u,t)*df(u,x) - 1000*df(u,x,4)*df(u,x,2) - 300*df(u,x,4)*c*u
-
-                   2                                            2
-    + 500*df(u,x,3)  + 600*df(u,x,3)*df(u,x)*c*u - 800*df(u,x,2) *c*u
-
-                            2                           2
-    - 1000*df(u,x,2)*df(u,x) *b + 1400*df(u,x,2)*df(u,x) *c
-
-                              3    4                              2
-    + 90*df(u,x,2)*df(u,x)*b*c *t*u  - 300*df(u,x,2)*df(u,x)*b*c*u *x
-
-                             4    4                          2  2
-    - 180*df(u,x,2)*df(u,x)*c *t*u  + 600*df(u,x,2)*df(u,x)*c *u *x
-
-                     2  3               2    2              2  2  2
-    - 300*df(u,x,2)*c *u  - 1000*df(u,x) *a*u  + 300*df(u,x) *c *u
-
-                    3    6                    4                 5    6
-    + 90*df(u,x)*a*c *t*u  - 300*df(u,x)*a*c*u *x - 27*df(u,x)*c *t*u
-
-                  3  4         3  5
-    + 90*df(u,x)*c *u *x - 18*c *u }},
-
- {{ - 100*u},
-
-          2
-  { - 50*u ,
-
-                                                              2
-   ( - 200*df(u,x,4)*u + 200*df(u,x,3)*df(u,x) - 100*df(u,x,2)
-
-                               2    3
-     + 60*df(u,x,2)*df(u,x)*b*c *t*u  - 200*df(u,x,2)*df(u,x)*b*u*x
-
-                              3    3
-     - 120*df(u,x,2)*df(u,x)*c *t*u  + 400*df(u,x,2)*df(u,x)*c*u*x
-
-                        2                 2    5                  3
-     - 200*df(u,x,2)*c*u  + 60*df(u,x)*a*c *t*u  - 200*df(u,x)*a*u *x
-
-                   4    5               2  3         2  4
-     - 18*df(u,x)*c *t*u  + 60*df(u,x)*c *u *x - 15*c *u )/2}},
-
- {{-100},
-
-  { - 100*u,
-
-                                              2    2
-    - 100*df(u,x,4) + 30*df(u,x,2)*df(u,x)*b*c *t*u  - 100*df(u,x,2)*df(u,x)*b*x
-
-                            3    2
-    - 60*df(u,x,2)*df(u,x)*c *t*u  + 200*df(u,x,2)*df(u,x)*c*x
-
-                                    2                   2    4
-    - 100*df(u,x,2)*c*u - 50*df(u,x) *c + 30*df(u,x)*a*c *t*u
-
-                     2                4    4               2  2         2  3
-    - 100*df(u,x)*a*u *x - 9*df(u,x)*c *t*u  + 30*df(u,x)*c *u *x - 10*c *u }},
-
-                          2
- {{3*( - 2*df(u,x,2) - c*u )},
-
-            2      3
-  {3*df(u,x)  - c*u ,
-
-                                                                  2            2
-   3*( - 2*df(u,t)*df(u,x) - 2*df(u,x,4)*df(u,x,2) - df(u,x,4)*c*u  + df(u,x,3)
-
-                                              2                          2
-       + 2*df(u,x,3)*df(u,x)*c*u - 2*df(u,x,2) *c*u - 2*df(u,x,2)*df(u,x) *b
-
-                            2                2  3            2    2
-       + 4*df(u,x,2)*df(u,x) *c - df(u,x,2)*c *u  - 2*df(u,x) *a*u )}},
-
-        2
-     - x
- {{-------},
-      c
-
-          2
-     - u*x
-  {---------,
-       c
-
-                  2                                  2
-   ( - df(u,x,4)*x  + 2*df(u,x,3)*x - df(u,x,2)*c*u*x  - 2*df(u,x,2)
-
-              2    2                        2
-     - df(u,x) *c*x  + 2*df(u,x)*c*u*x - c*u )/c}},
-
- {{x},
-
-  {u*x,
-
-                                                      2
-   df(u,x,4)*x - df(u,x,3) + df(u,x,2)*c*u*x + df(u,x) *c*x - df(u,x)*c*u}},
-
- {{1},
-
-  {u,
-
-                                      2
-   df(u,x,4) + df(u,x,2)*c*u + df(u,x) *c}},
-
- {{ - df(c_294,x) + c_303},
-
-  {u*( - df(c_294,x) + c_303),
-
-   df(c_294,t)*u + df(c_294,x,4)*df(u,x) - df(c_294,x,3)*df(u,x,2)
-
-    + df(c_294,x,2)*df(u,x,3) - df(c_294,x)*df(u,x,4) - df(c_303,x,3)*df(u,x)
-
-    + df(c_303,x,2)*df(u,x,2) - df(c_303,x)*df(u,x,3) + df(u,x,4)*c_303
-
-                                                                         2
-    - df(u,x,3)*c*c_294*u - df(u,x,2)*df(u,x)*b*c_294 - df(u,x)*a*c_294*u }},
-
- {{ - 2*df(u,x,2)},
-
-          2
-  {df(u,x) ,
-
-                                                           2
-    - 2*df(u,t)*df(u,x) - 2*df(u,x,4)*df(u,x,2) + df(u,x,3)
-
-                                                   2              2    2
-    - 2*df(u,x,3)*df(u,x)*c*u - 2*df(u,x,2)*df(u,x) *b - 2*df(u,x) *a*u }},
-
- {{2*u},
-
-    2
-  {u ,
-
-                                                  2
-   2*df(u,x,4)*u - 2*df(u,x,3)*df(u,x) + df(u,x,2) }},
-
-    3
- {{----},
-     2
-    a
-
-    3*u
-  {-----,
-     2
-    a
-
-                                             2        3
-    3*df(u,x,4) + 3*df(u,x,2)*c*u + 3*df(u,x) *c + a*u
-   -----------------------------------------------------}},
-                             2
-                            a
-
-     - 4*u
- {{--------},
-      a
-
-          2
-     - 2*u
-  {---------,
-       a
-
-                                                        2      4
-     - 4*df(u,x,4)*u + 4*df(u,x,3)*df(u,x) - 2*df(u,x,2)  - a*u
-   --------------------------------------------------------------}},
-                                 a
-
- {{ - 4*u},
-
-         2
-  { - 2*u ,
-
-                                                       2      4
-    - 4*df(u,x,4)*u + 4*df(u,x,3)*df(u,x) - 2*df(u,x,2)  - a*u }},
-
-     - 3
- {{------},
-     a
-
-                                 3
-     - 3*u    - 3*df(u,x,4) - a*u
-  {--------,-----------------------}},
-      a                a
-
- {{ - df(c_254,x)},
-
-  { - df(c_254,x)*u,
-
-   df(c_254,t)*u + df(c_254,x,4)*df(u,x) - df(c_254,x,3)*df(u,x,2)
-
-    + df(c_254,x,2)*df(u,x,3) - df(c_254,x)*df(u,x,4) + c_259*u}},
-
- {{ - 2*u},
-
-       2
-  { - u ,
-
-                                                     2
-    - 2*df(u,x,4)*u + 2*df(u,x,3)*df(u,x) - df(u,x,2) }},
-
- {{-6},
-
-  { - 6*u,
-
-                                               2          3
-    - 6*df(u,x,4) - 6*df(u,x,2)*c*u - 3*df(u,x) *c - 2*a*u }},
-
- {{ - 4*u},
-
-         2
-  { - 2*u ,
-
-                                                       2                  2
-    - 4*df(u,x,4)*u + 4*df(u,x,3)*df(u,x) - 2*df(u,x,2)  - 4*df(u,x,2)*c*u
-
-         4
-    - a*u }},
-
- {{-6},
-
-  { - 6*u,
-
-                                               2              2          3
-    - 6*df(u,x,4) - 6*df(u,x,2)*c*u - 3*df(u,x) *b + 3*df(u,x) *c - 2*a*u }},
-
-     2
+Step 39: 
+The list of inequalities got extended by: 
+c_86  + c_92*u`2 + c_93
     x
- {{----},
-    c
-
-       2
-    u*x
-  {------,
-     c
-
-               2                                  2
-   (df(u,x,4)*x  - 2*df(u,x,3)*x + df(u,x,2)*c*u*x  + 2*df(u,x,2)
-
-              2    2                        2
-     + df(u,x) *c*x  - 2*df(u,x)*c*u*x + c*u )/c}},
-
- {{ - x},
-
-  { - u*x,
-
-                                                         2
-    - df(u,x,4)*x + df(u,x,3) - df(u,x,2)*c*u*x - df(u,x) *c*x + df(u,x)*c*u}},
-
- {{1},
-
-  {u,
-
-                                      2
-   df(u,x,4) + df(u,x,2)*c*u + df(u,x) *c}},
-
- {{ - df(c_232,x)},
-
-  { - df(c_232,x)*u,
-
-   df(c_232,t)*u + df(c_232,x,4)*df(u,x) - df(c_232,x,3)*df(u,x,2)
-
-    + df(c_232,x,2)*df(u,x,3) - df(c_232,x)*df(u,x,4) + c_236*u}}}
 
 
-comment -------------------------------------------------------------
-conlawi can also be used to determine first integrals of ODEs.
-The generality of the ansatz is not just specified by the order.
-For example, the Lorentz system below is a first order system
-therefore any first integrals are zero order expressions.
-The ansatz to be investigated below looks for first integrals of
-the form a1(x,1)+a2(y,t)+a3(x,t)=const. and determines parameters
-s,b,r such that first integrals exist;
+The list of inequalities got extended by: 
+c_92*u`2 + c_93
 
 
-nodepnd {x,y,z,a1,a2,a3,b,s,r}$
+The list of inequalities got extended by: 
+c_92
 
 
-depend x,t$
+Substitution of c_85(u!`2,u,x) by an expression in 
+c_93(u,x), c_92 found in e_26 : 
+c_85= - (c_92*u`2 + c_93)
 
 
-depend y,t$
+Step 40: 
+new function: c_94(u!`2!`2!`2!`2,t)
+Integration of e_28
+
+Step 41: 
+Substitution of c_87(u!`2!`2!`2!`2!`2,u!`2!`2!`2!`2,t) by an expression in 
+c_94(u!`2!`2!`2!`2,t), c_92 found in e_28 : 
+c_87= - (c_92*u`2`2`2`2`2 + c_94)
 
 
-depend z,t$
+Step 42: 
+generalized separation of e_15
+new function: c_95(x)
+separation yields 2 new equations : e_37,e_36
+
+Step 43: 
+generalized separation of e_37
+new function: c_96(t)
+separation yields 2 new equations : e_39,e_38
+
+Step 44: 
+generalized separation of e_39
+new constant: c_97
+separation yields 2 new equations : e_41,e_40
+
+Step 45: 
+Step 46: 
+Step 47: 
+Substitution of c_96(t) by an expression in 
+c_97 found in e_41 : 
+c_96= - c_97
 
 
-depend a1,x,t$
+Step 48: 
+Substitution of c_95(x) by an expression in 
+c_97 found in e_40 : 
+c_95= - c_97
 
 
-depend a2,y,t$
+Step 49: 
+new function: c_98(x)
+Integration of e_36
+
+Step 50: 
+The list of inequalities got extended by: 
+c_92*u`2 + c_97*u - c_98
 
 
-depend a3,z,t$
+The list of inequalities got extended by: 
+c_86  + c_92*u`2 + c_97*u - c_98
+    x
 
 
+Substitution of c_93(u,x) by an expression in 
+c_98(x), c_97 found in e_36 : 
+c_93=c_97*u - c_98
 
-p_t:=a1+a2+a3$
+
+Step 51: 
+new function: c_99(t)
+Integration of e_38
+
+Step 52: 
+Substitution of c_94(u!`2!`2!`2!`2,t) by an expression in 
+c_99(t), c_97 found in e_38 : 
+c_94=c_97*u`2`2`2`2 - c_99
 
 
-conlaw1({{df(x,t) = - s*x + s*y,
-          df(y,t) = x*z + r*x - y,
-          df(z,t) = x*y - b*z},
-         {x,y,z},{t}
-	},
-	{0,0,t,{a1,a2,a3,s,r,b},{}})$
+Step 53: 
 
+>>>>>>>>> Solution : 
+no equations
+
+
+Non-vanishing expressions: c_92
+
+c_86  + c_92*u`2 + c_97*u - c_98
+    x
+
+
+c_92*u`2 + c_97*u - c_98
+
+
+Functions : 
+p_x= - (c_86  - c_92*u`2`2`2`2`2 - c_97*u`2`2`2`2 + c_99)
+            t
+
+
+p_t=c_86  + c_92*u`2 + c_97*u - c_98
+        x
+
+
+a=0
+
+
+b=0
+
+
+c=0
+
+c_86(x,t), c_98(x), c_99(t), c_92, c_97
+with 13 terms
+
+Variables : u`2`2`2`2`2, u`2`2`2`2, u`2`2`2, u`2`2, u`2, u, 
+x, t
+no equations
+1 function with 2 arguments : c_86
+2 functions with 1 argument  : c_98,c_99
+2 constants : c_92,c_97
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+There is no conservation law of this order.
+
+======================================================
 
 --------------------------------------------------------------------------
 
@@ -2326,64 +1707,744 @@ for the function(s): x(t), y(t), z(t)
 ======================================================
 A special ansatz of order 0 for the conserved current is investigated.
 
+Start of splitting equations
+1 equations result
 
-Conservation law:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is CRACK - a solver for overdetermined partial differential equations
 
+Step 1: 
+generalized separation of e_1
+separation w.r.t. y . 
+new function: c_105(t)
+new function: c_106(t)
+new function: c_107(t)
+new function: c_108(t)
+separation yields 4 new equations : e_2,e_5,e_3,e_4
+
+Step 2: 
+Separation of e_4 yields (e_6 e_7)
+
+e_6 is a consequence of e_5.
+Step 3: 
+Separation of e_5 yields (e_9 e_8)
+
+Step 4: 
+Step 5: 
+Substitution of c_106(t) found in e_9 : 
+c_106=0
+
+
+Step 6: 
+new function: c_109(t)
+Integration of e_8
+
+Step 7: 
+Substitution of a2(y,t) by an expression in 
+c_105(t), c_109(t) found in e_8 : 
+           2
+    c_105*y  - 2*c_109
+a2=--------------------
+            2
+
+
+Step 8: 
+Separation of e_7 yields (e_10 e_12 e_11)
+
+Step 9: 
+new constant: c_110
+Integration of e_10
+
+Step 10: 
+Substitution of c_105(t) by an expression in 
+c_110 found in e_10 : 
+       2*t
+c_105=e   *c_110
+
+
+Step 11: 
+new function: c_111(t)
+Integration of e_11
+
+Step 12: 
+Step 13: 
+for the substitution of a1 by e_11 we have to consider the case 0=e_14: 
+0=2*s
+
+The coefficient to be set = 0 in the first subcase is:
+
+e_14 : 
+0=s
+
+
+New level :     1.
+
+Step 14: 
+Substitution of s found in e_14 : 
+s=0
+
+
+Step 15: 
+Separation of e_15 yields (e_17 e_16)
+
+Step 16: 
+Step 17: 
+Step 18: 
+Substitution of c_107(t) by an expression in 
+r, c_110 found in e_16 : 
+       2*t
+c_107=e   *c_110*r
+
+
+Step 19: 
+new function: c_112(t)
+new function: c_113(x)
+Partially potential integration of e_12 yields (e_12 e_19)
+
+Step 20: 
+Substitution of c_108(t) by an expression in 
+c_112(t) found in e_19 : 
+c_108=c_112
+           t
+
+
+Step 21: 
+Substitution of a1(x,t) by an expression in 
+c_109(t), c_113(x), c_112(t) found in e_12 : 
+a1=c_109 + c_112 - c_113
+
+
+Step 22: 
+new function: c_114(t)
+Integration of e_18
+
+Step 23: 
+Substitution of a3(z,t) by an expression in 
+c_114(t), r, c_110 found in e_18 : 
+          2*t              2*t        2
+     - 2*e   *c_110*r*z - e   *c_110*z  - 2*c_114
+a3=-----------------------------------------------
+                          2
+
+
+Step 24: 
+Separation of e_20 yields (e_23 e_21 e_22)
+
+Step 25: 
+New level :     1.1.
+
+CRACK is now called with assuming  
+
+c_110
+
+ to be nonzero. 
+The list of inequalities got extended by: 
+c_110
+
+
+Step 26: 
+Substitution of b found in e_21 : 
+b=1
+
+
+Step 27: 
+Substitution of r found in e_22 : 
+r=0
+
+
+Step 28: 
+new constant: c_115
+Integration of e_23
+
+Step 29: 
+Substitution of c_112(t) by an expression in 
+c_114(t), c_115 found in e_23 : 
+c_112=c_114 - c_115
+
+
+Step 30: 
+non-essential dropped constant(s) or function(s): c_115
+
+>>>>>>>>> Solution of level 11 : 
+no equations
+
+
+Non-vanishing expressions: c_110
+
+Functions : 
+b=1
+
+
+r=0
+
+
+s=0
+
+
+        2*t        2
+     - e   *c_110*z  - 2*c_114
+a3=----------------------------
+                2
+
+
+     2*t        2
+    e   *c_110*y  - 2*c_109
+a2=-------------------------
+               2
+
+
+a1=c_109 - c_113 + c_114
+
+c_109(t), c_113(x), c_114(t), c_110
+with 14 terms
+
+Variables : z, y, x, t
+no equations
+3 functions with 1 argument  : c_109,c_113,c_114
+1 constant : c_110
+
+Back to level : 1.
+
+New level :     1.2.
+
+CRACK is now called with the assumption 0 = e_29 : 
+0=c_110
+
+e_22,e_21 are consequences of e_29
+
+Step 31: 
+Substitution of c_110 found in e_29 : 
+c_110=0
+
+
+Step 32: 
+new constant: c_121
+Integration of e_23
+
+Step 33: 
+Substitution of c_112(t) by an expression in 
+c_114(t), c_121 found in e_23 : 
+c_112=c_114 - c_121
+
+
+Step 34: 
+non-essential dropped constant(s) or function(s): c_121
+
+>>>>>>>>> Solution of level 12 : 
+no equations
+
+
+Functions : 
+s=0
+
+
+a3= - c_114
+
+
+a2= - c_109
+
+
+a1=c_109 - c_113 + c_114
+
+b, r, c_109(t), c_113(x), c_114(t)
+with 10 terms
+
+Variables : z, y, x, t
+no equations
+3 functions with 1 argument  : c_109,c_113,c_114
+2 constants : r,b
+
+Back to level : 1.
+
+This completes the investigation of all cases of a case-distinction.
+
+New level :     2.
+
+now back to the substitution of a1 by e_11
+The list of inequalities got extended by: 
+s
+
+
+Step 35: 
+Substitution of a1(x,t) by an expression in 
+c_107(t), c_111(t), s, r, c_110 found in e_11 : 
+        2*t          2          2
+     - e   *c_110*r*x  + c_107*x  - 2*c_111
+a1=-----------------------------------------
+                      2*s
+
+
+Step 36: 
+Separation of e_12 yields (e_15 e_14)
+
+Step 37: 
+new function: c_126(t)
+Integration of e_2
+
+Step 38: 
+Substitution of a3(z,t) by an expression in 
+c_107(t), c_126(t), c_110 found in e_2 : 
+        2*t        2
+     - e   *c_110*z  - 2*c_107*z - 2*c_126
+a3=----------------------------------------
+                      2
+
+
+Step 39: 
+Separation of e_16 yields (e_19 e_18 e_17)
+
+Step 40: 
+New level :     2.1.
+
+CRACK is now called with assuming  
+
+c_110
+
+ to be nonzero. 
+The list of inequalities got extended by: 
+c_110
+
+
+Step 41: 
+Substitution of b found in e_17 : 
+b=1
+
+
+Step 42: 
+new constant: c_127
+Integration of e_22
+
+Step 43: 
+Substitution of c_107(t) by an expression in 
+c_127 found in e_22 : 
+       t
+c_107=e *c_127
+
+
+Step 44: 
+Separation of e_23 yields (e_25 e_24)
+
+Step 45: 
+New level :     2.1.1.
+
+CRACK is now called with assuming  
+
+c_127
+
+ to be nonzero. 
+The list of inequalities got extended by: 
+c_127
+
+
+Step 46: 
+Substitution of s found in e_25 : 
    1
-s=---*b,
+s=---
    2
 
 
-      b*t
-(  - e    ) * ( z  + b*z - x*y )
-                 t
+Step 47: 
+Substitution of r found in e_30 : 
+r=0
 
-+
 
-( 0 ) * ( y  - r*x - x*z + y )
+Step 48: 
+Substitution of c_108(t) by an expression in 
+c_126(t) found in e_19 : 
+c_108=c_126
            t
 
-+
 
-      b*t
-   2*e   *x              1         1
-( ---------- ) * ( x  + ---*b*x - ---*b*y )
-      b             t    2         2
+Step 49: 
+new constant: c_128
+Integration of e_32
 
- = 
-
-         b*t        b*t  2
-      - e   *b*z + e   *x
-df( -----------------------, t )
-               b
-
-======================================================
-The function c_473(x) is not constant!
-======================================================
-
-Conservation law:
-
-s=0,
+Step 50: 
+Substitution of c_109(t) by an expression in 
+c_111(t), c_126(t), c_128 found in e_32 : 
+c_109= - 2*c_111 - c_126 - c_128
 
 
-( 0 ) * ( z  + b*z - x*y )
+Step 51: 
+
+>>>>>>>>> Solution of level 211 : 
+no equations
+
+
+Non-vanishing expressions: c_110,c_127
+
+Functions : 
+    t        2
+a1=e *c_127*x  - 2*c_111
+
+
+     2*t        2
+    e   *c_110*y  + 4*c_111 + 2*c_126 + 2*c_128
+a2=---------------------------------------------
+                         2
+
+
+        2*t        2      t
+     - e   *c_110*z  - 2*e *c_127*z - 2*c_126
+a3=-------------------------------------------
+                        2
+
+
+   1
+s=---
+   2
+
+
+r=0
+
+
+b=1
+
+c_111(t), c_126(t), c_110, c_127, c_128
+with 19 terms
+
+Variables : z, y, x, t
+no equations
+2 functions with 1 argument  : c_111,c_126
+3 constants : c_110,c_127,c_128
+
+Back to level : 2.1.
+
+New level :     2.1.2.
+
+CRACK is now called with the assumption 0 = e_30 : 
+0=c_127
+
+e_25 is a consequence of e_30
+
+Step 52: 
+Substitution of c_127 found in e_30 : 
+c_127=0
+
+
+Step 53: 
+New level :     2.1.2.1.
+
+CRACK is now called with assuming  
+
+r
+
+ to be nonzero. 
+The list of inequalities got extended by: 
+r
+
+
+Step 54: 
+Substitution of s found in e_24 : 
+s=1
+
+
+Step 55: 
+Substitution of c_108(t) by an expression in 
+c_126(t) found in e_19 : 
+c_108=c_126
            t
 
-+
 
-( 0 ) * ( y  - r*x - x*z + y )
+Step 56: 
+new constant: c_134
+Integration of e_32
+
+Step 57: 
+Substitution of c_109(t) by an expression in 
+c_111(t), c_126(t), c_134 found in e_32 : 
+c_109= - (c_111 + c_126 + c_134)
+
+
+Step 58: 
+
+>>>>>>>>> Solution of level 2121 : 
+no equations
+
+
+Non-vanishing expressions: r,c_110
+
+Functions : 
+        2*t          2
+     - e   *c_110*r*x  - 2*c_111
+a1=------------------------------
+                 2
+
+
+     2*t        2
+    e   *c_110*y  + 2*c_111 + 2*c_126 + 2*c_134
+a2=---------------------------------------------
+                         2
+
+
+        2*t        2
+     - e   *c_110*z  - 2*c_126
+a3=----------------------------
+                2
+
+
+s=1
+
+r, 
+b=1
+
+c_111(t), c_126(t), c_110, c_134
+with 18 terms
+
+Variables : z, y, x, t
+no equations
+2 functions with 1 argument  : c_111,c_126
+3 constants : r,c_110,c_134
+
+Back to level : 2.1.2.
+
+New level :     2.1.2.2.
+
+CRACK is now called with the assumption 0 = e_31 : 
+0=r
+
+e_24 is a consequence of e_31
+
+Step 59: 
+Substitution of r found in e_31 : 
+r=0
+
+
+Step 60: 
+Substitution of c_108(t) by an expression in 
+c_126(t) found in e_19 : 
+c_108=c_126
            t
 
-+
 
-( c_473  ) * ( x  )
-       x        t
+Step 61: 
+new constant: c_139
+Integration of e_15
 
- = 
+Step 62: 
+Substitution of c_111(t) by an expression in 
+c_109(t), c_126(t), s, c_139 found in e_15 : 
+c_111= - (c_109*s + c_126*s + c_139)
 
-df( c_473, t )
 
-======================================================
+Step 63: 
+
+>>>>>>>>> Solution of level 2122 : 
+no equations
+
+
+Non-vanishing expressions: s,c_110
+
+Functions : 
+    c_109*s + c_126*s + c_139
+a1=---------------------------
+                s
+
+
+     2*t        2
+    e   *c_110*y  - 2*c_109
+a2=-------------------------
+               2
+
+
+        2*t        2
+     - e   *c_110*z  - 2*c_126
+a3=----------------------------
+                2
+
+s, 
+r=0
+
+
+b=1
+
+c_109(t), c_126(t), c_110, c_139
+with 16 terms
+
+Variables : z, y, x, t
+no equations
+2 functions with 1 argument  : c_109,c_126
+3 constants : s,c_110,c_139
+
+Back to level : 2.1.2.
+
+This completes the investigation of all cases of a case-distinction.
+
+Back to level : 2.1.
+
+This completes the investigation of all cases of a case-distinction.
+
+Back to level : 2.
+
+New level :     2.2.
+
+CRACK is now called with the assumption 0 = e_22 : 
+0=c_110
+
+e_17 is a consequence of e_22
+
+Step 64: 
+Substitution of c_110 found in e_22 : 
+c_110=0
+
+
+Step 65: 
+new constant: c_144
+Integration of e_23
+
+Step 66: 
+Substitution of c_107(t) by an expression in 
+s, c_144 found in e_23 : 
+       2*s*t
+c_107=e     *c_144
+
+
+Step 67: 
+New level :     2.2.1.
+
+CRACK is now called with assuming  
+
+c_144
+
+ to be nonzero. 
+The list of inequalities got extended by: 
+c_144
+
+
+Step 68: 
+The list of inequalities got extended by: 
+b
+
+
+Substitution of s by an expression in 
+b found in e_24 : 
+   b
+s=---
+   2
+
+
+Step 69: 
+Substitution of c_108(t) by an expression in 
+c_126(t) found in e_19 : 
+c_108=c_126
+           t
+
+
+Step 70: 
+new constant: c_145
+Integration of e_28
+
+Step 71: 
+Substitution of c_111(t) by an expression in 
+c_109(t), c_126(t), b, c_145 found in e_28 : 
+        - (b*c_109 + b*c_126 + c_145)
+c_111=--------------------------------
+                     2
+
+
+Step 72: 
+
+>>>>>>>>> Solution of level 221 : 
+no equations
+
+
+Non-vanishing expressions: c_144,b
+
+Functions : 
+     b*t        2
+    e   *c_144*x  + b*c_109 + b*c_126 + c_145
+a1=-------------------------------------------
+                        b
+
+
+a2= - c_109
+
+
+        b*t
+a3= - (e   *c_144*z + c_126)
+
+
+   b
+s=---
+   2
+
+r, b, c_109(t), c_126(t), c_144, c_145
+with 16 terms
+
+Variables : z, y, x, t
+no equations
+2 functions with 1 argument  : c_109,c_126
+4 constants : r,b,c_144,c_145
+
+Back to level : 2.2.
+
+New level :     2.2.2.
+
+CRACK is now called with the assumption 0 = e_27 : 
+0=c_144
+
+e_24 is a consequence of e_27
+
+Step 73: 
+Substitution of c_144 found in e_27 : 
+c_144=0
+
+
+Step 74: 
+Substitution of c_108(t) by an expression in 
+c_126(t) found in e_19 : 
+c_108=c_126
+           t
+
+
+Step 75: 
+new constant: c_150
+Integration of e_15
+
+Step 76: 
+Substitution of c_111(t) by an expression in 
+c_109(t), c_126(t), s, c_150 found in e_15 : 
+c_111= - (c_109*s + c_126*s + c_150)
+
+
+Step 77: 
+
+>>>>>>>>> Solution of level 222 : 
+no equations
+
+
+Non-vanishing expressions: s
+
+Functions : 
+    c_109*s + c_126*s + c_150
+a1=---------------------------
+                s
+
+
+a2= - c_109
+
+
+a3= - c_126
+
+s, r, b, c_109(t), c_126(t), c_150
+with 12 terms
+
+Variables : z, y, x, t
+no equations
+2 functions with 1 argument  : c_109,c_126
+4 constants : s,r,b,c_150
+
+Back to level : 2.2.
+
+This completes the investigation of all cases of a case-distinction.
+
+Back to level : 2.
+
+This completes the investigation of all cases of a case-distinction.
+
+This is the end of the CRACK run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 Conservation law:
 
@@ -2393,21 +2454,17 @@ b=1,
 s=1,
 
 
-        2*t
-(  - 2*e   *z ) * ( z  - x*y + z )
-                     t
-
-+
-
-     2*t
-( 2*e   *y ) * ( y  - r*x - x*z + y )
-                  t
-
-+
-
-        2*t
-(  - 2*e   *r*x ) * ( x  + x - y )
+          2*t
+  (  - 2*e   *z ) * ( z  - x*y + z )
                        t
+
+       2*t
++ ( 2*e   *y ) * ( y  - r*x - x*z + y )
+                    t
+
+          2*t
++ (  - 2*e   *r*x ) * ( x  + x - y )
+                         t
 
  = 
 
@@ -2424,20 +2481,16 @@ b=1,
 r=0,
 
 
-        2*t
-(  - 2*e   *z ) * ( z  - x*y + z )
-                     t
+          2*t
+  (  - 2*e   *z ) * ( z  - x*y + z )
+                       t
 
-+
+       2*t
++ ( 2*e   *y ) * ( y  - x*z + y )
+                    t
 
-     2*t
-( 2*e   *y ) * ( y  - x*z + y )
-                  t
-
-+
-
-( 0 ) * ( x  + s*x - s*y )
-           t
++ ( 0 ) * ( x  + s*x - s*y )
+             t
 
  = 
 
@@ -2459,20 +2512,16 @@ s=---,
    2
 
 
-      t
-(  - e  ) * ( z  - x*y + z )
-               t
+        t
+  (  - e  ) * ( z  - x*y + z )
+                 t
 
-+
++ ( 0 ) * ( y  - x*z + y )
+             t
 
-( 0 ) * ( y  - x*z + y )
-           t
-
-+
-
-     t               1       1
-( 2*e *x ) * ( x  + ---*x - ---*y )
-                t    2       2
+       t               1       1
++ ( 2*e *x ) * ( x  + ---*x - ---*y )
+                  t    2       2
 
  = 
 
@@ -2494,56 +2543,17 @@ s=---,
    2
 
 
-        2*t
-(  - 2*e   *z ) * ( z  - x*y + z )
-                     t
+          2*t
+  (  - 2*e   *z ) * ( z  - x*y + z )
+                       t
 
-+
+       2*t
++ ( 2*e   *y ) * ( y  - x*z + y )
+                    t
 
-     2*t
-( 2*e   *y ) * ( y  - x*z + y )
-                  t
-
-+
-
-                1       1
-( 0 ) * ( x  + ---*x - ---*y )
-           t    2       2
-
- = 
-
-     2*t  2    2*t  2
-df( e   *y  - e   *z , t )
-
-======================================================
-The function c_489(x) is not constant!
-======================================================
-
-Conservation law:
-
-b=1,
-
-
-r=0,
-
-
-s=0,
-
-
-        2*t
-(  - 2*e   *z ) * ( z  - x*y + z )
-                     t
-
-+
-
-     2*t
-( 2*e   *y ) * ( y  - x*z + y )
-                  t
-
-+
-
-( 0 ) * ( x  )
-           t
+                  1       1
++ ( 0 ) * ( x  + ---*x - ---*y )
+             t    2       2
 
  = 
 
@@ -2554,96 +2564,115 @@ df( e   *y  - e   *z , t )
 
 Conservation law:
 
-b=1,
+   1
+s=---*b,
+   2
+
+
+        b*t
+  (  - e    ) * ( z  + b*z - x*y )
+                   t
+
++ ( 0 ) * ( y  - r*x - x*z + y )
+             t
+
+        b*t
+     2*e   *x              1         1
++ ( ---------- ) * ( x  + ---*b*x - ---*b*y )
+        b             t    2         2
+
+ = 
+
+         b*t        b*t  2
+      - e   *b*z + e   *x
+df( -----------------------, t )
+               b
+
+======================================================
+c_113 = c_113(x) is not constant.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Conservation law:
+
+s=0,
+
+
+  ( 0 ) * ( z  + b*z - x*y )
+             t
+
++ ( 0 ) * ( y  - r*x - x*z + y )
+             t
+
++ ( c_113  ) * ( x  )
+         x        t
+
+ = 
+
+df( c_113, t )
+
+======================================================
+c_113 = c_113(x) is not constant.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Conservation law:
+
+s=0,
 
 
 r=0,
 
 
-s=0,
+b=1,
 
 
-( 0 ) * ( z  - x*y + z )
-           t
+          2*t
+  (  - 2*e   *z ) * ( z  - x*y + z )
+                       t
 
-+
+       2*t
++ ( 2*e   *y ) * ( y  - x*z + y )
+                    t
 
-( 0 ) * ( y  - x*z + y )
-           t
-
-+
-
-( c_489  ) * ( x  )
-       x        t
++ ( 0 ) * ( x  )
+             t
 
  = 
 
-df( c_489, t )
+     2*t  2    2*t  2
+df( e   *y  - e   *z , t )
 
 ======================================================
 
-{{{0,0,df(c_489,x)},{c_489}},
+Conservation law:
 
-         2*t      2*t
- {{ - 2*e   *z,2*e   *y,0},
-
-    2*t   2    2
-  {e   *(y  - z )}},
-
-         2*t      2*t
- {{ - 2*e   *z,2*e   *y,0},
-
-    2*t   2    2
-  {e   *(y  - z )}},
-
-       t      t
- {{ - e ,0,2*e *x},
-
-    t   2
-  {e *(x  - z)}},
-
-         2*t      2*t
- {{ - 2*e   *z,2*e   *y,0},
-
-    2*t   2    2
-  {e   *(y  - z )}},
-
-         2*t
- {{ - 2*e   *z,
-
-      2*t
-   2*e   *y,
-
-         2*t
-    - 2*e   *r*x},
-
-    2*t        2    2    2
-  {e   *( - r*x  + y  - z )}},
-
- {{0,0,df(c_473,x)},{c_473}},
-
-                 b*t
-       b*t    2*e   *x
- {{ - e   ,0,----------},
-                 b
-
-     b*t            2
-    e   *( - b*z + x )
-  {--------------------}}}
-            b
+s=0,
 
 
-clear p_t$
+r=0,
 
 
-nodepnd {u,v,r,p_t,x,y,z,a1,a2,a3,b,s,r}$
+b=1,
 
 
+  ( 0 ) * ( z  - x*y + z )
+             t
 
-end$
++ ( 0 ) * ( y  - x*z + y )
+             t
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 256 ms
-real	0m16.847s
-user	0m0.107s
-sys	0m0.138s
++ ( c_113  ) * ( x  )
+         x        t
+
+ = 
+
+df( c_113, t )
+
+======================================================
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 62 ms
+
+End of Lisp run after 1.32+0.15 seconds
+real 1.71
+user 0.00
+sys 0.09

@@ -824,10 +824,21 @@ limit(h,x,0);
   7
  % -6^(3/5)/7^(1/5)
 
+comment one sided limit from bug report by Zbynek Konecny ;
+
+
+limit!-((abs(x)-3)/(x-3),x,3);
+
+
+1
+ % 1
+
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 640 ms  plus GC time: 11 ms
-real	0m1.301s
-user	0m0.062s
-sys	0m0.168s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 281 ms
+
+End of Lisp run after 0.28+0.06 seconds
+real 0.47
+user 0.01
+sys 0.01

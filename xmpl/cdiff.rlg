@@ -1,6 +1,10 @@
 % Raffaele Vitolo, 09/10/09
 % This is the computation for (higher) symmetries of Burgers
 
+load_package(cdiff);
+
+
+
 % The following instructions initialize the total derivatives. The first
 % string is the name of the vector field,
 % the second item is the list of even variables
@@ -274,11 +278,12 @@ ut14 := 2*u*u15 + 30*u1*u14 + 6006*u10*u5 + 2730*u11*u4 + 910*u12*u3
 % Test for verifying the commutation of total derivatives.
 % Highest order defined terms yield some `letop'
 % which means `careful' in Dutch and is treated as a new variable.
+operator ev;
+
+
 
 for i:=1:17 do write ev(0,i):=ddt(ddx(0,i))-ddx(ddt(0,i));
 
-
-*** ev declared operator 
 
 ev(0,1) := 0
 
@@ -318,10 +323,6 @@ ev(0,17) := letop - 2*u*u16 - 32*u1*u15 - 16016*u10*u6 - 8736*u11*u5
 
                        2
              - 12870*u8
-
-
-pause;
-
 
 
 %% This is the list of variables with respect to their grading,
@@ -427,6 +428,9 @@ grd16:= mkvarlist1(16,16)$
 
 
 % Initialize a counter for the vector of arbitrary constants
+operator c,equ;
+
+
 
 ctel:=0;
 
@@ -445,8 +449,6 @@ sym:=
 (for each el in grd5 sum (c(ctel:=ctel+1)*el))$
 
 
-*** c declared operator 
-
 
 % This is the equation ell_B(sym)=0, where B=0 is Burgers'equation
 % and sym is the generating function. From now on all equations
@@ -454,8 +456,6 @@ sym:=
 
 equ 1:=ddt(sym)-ddx(ddx(sym))-2*u*ddx(sym)-2*u1*sym ;
 
-
-*** equ declared operator 
 
                                                                             2
 equ(1) := 2*(4*c(19)*u1*u4 + 10*c(19)*u2*u3 + 3*c(18)*u*u1*u3 + 3*c(18)*u*u2
@@ -573,7 +573,7 @@ splitvars 1;
 % Next command tells the solver the total number of equations obtained
 % after running splitvars.
 
-pte tel;
+put_equations_used tel;
 
 
 24
@@ -631,14 +631,10 @@ for i:=2:tel do write equ i;
 2*(4*c(19) - c(18))
 
 
-pause;
-
-
-
 % This command solves the equations for the coefficients.
 % Note that we have to skip the initial equations!
 
-for i:=2:te do es i;
+for i:=2:tel do integrate_equation i;
 
 
 equ(2) = 0
@@ -688,12 +684,27 @@ equ(23): Solved for c(19)
 equ(24) = 0
 
 
+write "sym:=",sym;
+
+
+                3                2                   2
+sym:=(12*c(14)*u *u1 + 18*c(14)*u *u2 + 36*c(14)*u*u1  + 12*c(14)*u*u3
+
+                                                2
+       + 30*c(14)*u1*u2 + 3*c(14)*u4 + 12*c(9)*u *u1 + 12*c(9)*u*u2
+
+                   2
+       + 12*c(9)*u1  + 4*c(9)*u3 + 12*c(6)*u*u1 + 6*c(6)*u2 + 12*c(4)*u1)/12
+
+
 ;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 56 ms  plus GC time: 12 ms
-real	0m0.532s
-user	0m0.030s
-sys	0m0.075s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms  plus GC time: 15 ms
+
+End of Lisp run after 0.01+0.06 seconds
+real 0.23
+user 0.01
+sys 0.04

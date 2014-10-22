@@ -135,7 +135,7 @@ symbolic initialize!-integral!-test();
 testint(1+x+x**2,x);
 testint(x**2*(2*x**2+x)**2,x);
 testint(x*(x**2+2*x+1),x);
-testint(1/x,x);  % 2.01 #2;
+testint(1/x,x);                 % 2.01 #2
 testint((x+1)**3/(x-1)**4,x);
 testint(1/(x*(x-1)*(x+1)**2),x);
 testint((a*x+b)/((x-p)*(x-q)),x);
@@ -225,10 +225,10 @@ testint(log(log(log(log(x)))),x);
 
 % Examples involving circular functions.
 
-testint(sin x,x); % 2.01 #5;
-testint(cos x,x); %     #6;
-testint(tan x,x); %     #11;
-testint(1/tan(x),x); % 2.01 #12;
+testint(sin x,x);                 % 2.01 #5
+testint(cos x,x);                 %     #6
+testint(tan x,x);                 %     #11
+testint(1/tan(x),x);              % 2.01 #12
 testint(1/(1+tan(x))**2,x);
 testint(1/cos x,x);
 testint(1/sin x,x);
@@ -314,8 +314,8 @@ testint(cos log x,x);
 
 % Examples involving exponentials.
 
-testint(e**x,x); % 2.01 #3;
-testint(a**x,x); % 2.01 #4;
+testint(e**x,x);                % 2.01 #3
+testint(a**x,x);                % 2.01 #4
 testint(e**(a*x),x);
 testint(e**(a*x)/x,x);
 testint(1/(a+b*e**(m*x)),x);
@@ -331,6 +331,10 @@ testint(x*a**x/(1+b*x)**2,x);
 testint(x*e**(a*x)/(1+a*x)**2,x);
 testint(x*k**(x**2),x);
 testint(e**(x**2),x);
+testint(2**(x**2),x);
+testint(2**(2*x**2),x);
+testint(e**(a*x**2),x);
+testint(e**(a**2*x**2),x);
 testint(x*e**(x**2),x);
 testint((x+1)*e**(1/x)/x**4,x);
 testint((2*x**3+x)*(e**(x**2))**2*e**(1-x*e**(x**2))/(1-x*e**(x**2))**2,

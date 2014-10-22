@@ -185,6 +185,10 @@ limit(ss,x,0); % 2
 h := (X^(1/5) + 3*X**(1/4))^2/(7*(SQRT(X + 9) - 3 - x/6))**(1/5);
 limit(h,x,0); % -6^(3/5)/7^(1/5)
 
+comment one sided limit from bug report by Zbynek Konecny ;
+
+limit!-((abs(x)-3)/(x-3),x,3); % 1
+
 end;
 
 comment  The following examples all fail with the present limit package.

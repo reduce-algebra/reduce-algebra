@@ -1,0 +1,334 @@
+load_package listvecops;
+
+
+
+a := {a1,a2,a3,a4};
+
+
+a := {a1,a2,a3,a4}
+
+
+b := {b1,b2,b3,b4};
+
+
+b := {b1,b2,b3,b4}
+
+
+a + b;
+
+
+{a1 + b1,
+
+ a2 + b2,
+
+ a3 + b3,
+
+ a4 + b4}
+
+
+a - b;
+
+
+{a1 - b1,
+
+ a2 - b2,
+
+ a3 - b3,
+
+ a4 - b4}
+
+ 
+-a;
+
+
+{ - a1, - a2, - a3, - a4}
+
+
+3*x*a +7*y*b;
+
+
+{3*a1*x + 7*b1*y,
+
+ 3*a2*x + 7*b2*y,
+
+ 3*a3*x + 7*b3*y,
+
+ 3*a4*x + 7*b4*y}
+
+
+{a,b} + {b,a};
+
+
+{{a1 + b1,
+
+  a2 + b2,
+
+  a3 + b3,
+
+  a4 + b4},
+
+ {a1 + b1,
+
+  a2 + b2,
+
+  a3 + b3,
+
+  a4 + b4}}
+
+
+{a,b} - {b,a};
+
+
+{{a1 - b1,
+
+  a2 - b2,
+
+  a3 - b3,
+
+  a4 - b4},
+
+ { - a1 + b1,
+
+   - a2 + b2,
+
+   - a3 + b3,
+
+   - a4 + b4}}
+
+
+a*b;
+
+
+{a1*b1,
+
+ a2*b2,
+
+ a3*b3,
+
+ a4*b4}
+
+
+{a*b,{x,y}}*{{1,1,1,1},{3,5}};
+
+
+{{a1*b1,
+
+  a2*b2,
+
+  a3*b3,
+
+  a4*b4},
+
+ {3*x,5*y}}
+
+
+a/b + b/a;
+
+
+    2     2
+  a1  + b1
+{-----------,
+    a1*b1
+
+    2     2
+  a2  + b2
+ -----------,
+    a2*b2
+
+    2     2
+  a3  + b3
+ -----------,
+    a3*b3
+
+    2     2
+  a4  + b4
+ -----------}
+    a4*b4
+
+
+3*a/{1,2,3,4} + {x,y,z,u}*5;
+
+
+{3*a1 + 5*x,
+
+  3*a2 + 10*y
+ -------------,
+       2
+
+ a3 + 5*z,
+
+  3*a4 + 20*u
+ -------------}
+       4
+
+
+1/a;
+
+
+  1    1    1    1
+{----,----,----,----}
+  a1   a2   a3   a4
+
+
+a^3;
+
+
+   3   3   3   3
+{a1 ,a2 ,a3 ,a4 }
+
+
+a^b;
+
+
+   b1
+{a1  ,
+
+   b2
+ a2  ,
+
+   b3
+ a3  ,
+
+   b4
+ a4  }
+
+
+x^a + b;
+
+
+  a1
+{x   + b1,
+
+  a2
+ x   + b2,
+
+  a3
+ x   + b3,
+
+  a4
+ x   + b4}
+
+
+a^b;
+
+
+   b1
+{a1  ,
+
+   b2
+ a2  ,
+
+   b3
+ a3  ,
+
+   b4
+ a4  }
+
+
+a *. b;
+
+
+a1*b1 + a2*b2 + a3*b3 + a4*b4
+
+
+{a,{3,5,7,9}} *. {{2,4,6,8},b};
+
+
+2*a1 + 4*a2 + 6*a3 + 8*a4 + 3*b1 + 5*b2 + 7*b3 + 9*b4
+
+
+a *. log b;
+
+
+log(b1)*a1 + log(b2)*a2 + log(b3)*a3 + log(b4)*a4
+
+
+df({sin x*y,x^3*cos y},x,2,y);
+
+
+{ - sin(x), - 6*sin(y)*x}
+
+
+int({sin x,cos x},x);
+
+
+{ - cos(x),sin(x)}
+
+
+% Example of a list-valued procedure.
+
+listproc spat3(u,v,w);
+   begin scalar x,y;
+     x := u *. w;
+     y := u *. v;
+     return v*x - w*y
+   end;
+
+
+spat3
+
+
+u := {ux,uy,uz};
+
+
+u := {ux,uy,uz}
+
+v := {vx,vy,vz};
+
+
+v := {vx,vy,vz}
+
+w := {wx,wy,wz};
+
+
+w := {wx,wy,wz}
+
+
+z := spat3(u,v,w) - 3*spat3(v,u,w);
+
+
+z := { - 3*ux*vy*wy - 3*ux*vz*wz + uy*vx*wy + 2*uy*vy*wx + uz*vx*wz + 2*uz*vz*wx
+
+      ,
+
+      2*ux*vx*wy + ux*vy*wx - 3*uy*vx*wx - 3*uy*vz*wz + uz*vy*wz + 2*uz*vz*wy,
+
+      2*ux*vx*wz + ux*vz*wx + 2*uy*vy*wz + uy*vz*wy - 3*uz*vx*wx - 3*uz*vy*wy}
+
+ 
+spat3(u,v,w)+spat3(u,w,v);
+
+
+{0,0,0}
+
+
+% Accesing list elements with infix operator _ .
+
+l := {1,{2,3},4};
+
+
+l := {1,{2,3},4}
+
+
+l _2*3;
+
+
+{6,9}
+
+
+l _2 _2;
+
+
+3
+
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.04 seconds
+real 0.18
+user 0.03
+sys 0.01

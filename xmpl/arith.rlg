@@ -2385,8 +2385,10 @@ algebraic;
 
 end;
 
-Tested on x86_64-unknown-ubuntu11.04 CSL
-Time (counter 1): 20 ms
-real	0m0.147s
-user	0m0.070s
-sys	0m0.020s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms  plus GC time: 16 ms
+
+End of Lisp run after 0.00+0.07 seconds
+real 0.21
+user 0.01
+sys 0.06

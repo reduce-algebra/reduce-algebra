@@ -1,3 +1,5 @@
+load liepde;
+
 %*******************************************************************%
 %                                                                   %
 %                      L I E P D E . T S T                          %
@@ -5,14 +7,14 @@
 %  liepde.tst contains test examples for the program liepde.red.    %
 %                                                                   %
 %  Author of this file: Thomas Wolf                                 %
-%  Date:  21. April 1998, 6. May 2003                               %
+%  Date:  21. April 1998, 6. May 2003, 14. Feb 2006                 %
 %                                                                   %
 %  Details about the syntax of liepde.red are given in liepde.tex.  %
 %                                                                   %
 %  To run this demo you need to load liepde and crack through       %
 %     load crack,liepde$                                            %
 %  and to read in this file as                                      %
-%     in "liepde.tst";                                              %
+%     in "liepde.tst"$                                              %
 %  If you got the source code of a newer version of liepde then     %
 %  either read it in through                                        %
 %     in "crack.red","liepde.red"$                                  %
@@ -29,11 +31,9 @@
 %                                                                   %
 %*******************************************************************%
 
-load crack;
-
 lisp(depl!*:=nil)$     % clearing of all dependences
-%setcrackflags()$
-lisp(print_:=nil)$
+setcrackflags()$
+lisp(print_:=nil)$       
 on dfprint$
 
 comment
@@ -43,7 +43,7 @@ the computation of infinitesimal symmetries. Times given
 below refer to a 8 MB session under LINUX on a 133 MHz
 Pentium PC with the CRACK version of April 1998 running
 PSL Reduce.
--------------------------------------------------------;
+-------------------------------------------------------$
 
 lisp(prelim_:=nil)$      % not necessary as this is the default value
 lisp(individual_:=nil)$  % not necessary as this is the default value
@@ -53,8 +53,8 @@ comment
 The first example is a single ODE with a parametric
 function f=f(x) for which point symmetries are to be
 determined.
-(Time ~ 6 sec.);
-write"-------------------------------------------------------";
+(Time ~ 6 sec.)$
+write"-------------------------------------------------------"$
 
 lisp(freeint_:=nil)$ % This enables the solution of differential equ.s in
                      % which unevaluated integrals remain. This becomes
@@ -79,8 +79,8 @@ order symmetries. The equation is used to substitute
 df(u,t) and all derivatives of df(u,t). This computation
 also shows that any equations that remain unsolved are
 returned, like in this case the heat quation.
-(Time ~ 15 sec.);
-write"-------------------------------------------------------";
+(Time ~ 15 sec.)$
+write"-------------------------------------------------------"$
 
 nodepnd {u}$
 depend u,t,x$
@@ -90,14 +90,14 @@ comment
 -------------------------------------------------------
 Now the same equation is investigated, this time only
 df(u,x,2) and its derivatives are substituted. As a
-consequence less jet-variables (u-derivatives of lower
+consequence fewer jet-variables (u-derivatives of lower
 order) are generated in the process of formulating the
-symmetry conditions. Less jet-variables in which the
-conditions have to be fulfilled identically means less
+symmetry conditions. Fewer jet-variables in which the
+conditions have to be fulfilled identically mean less
 overdetermined conditions and more solutions which to
 compute takes longer than before.
-(Time ~ 85 sec.);
-write"-------------------------------------------------------";
+(Time ~ 85 sec.)$
+write"-------------------------------------------------------"$
 
 liepde({df(u,x,2)=df(u,t)-df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 nodepnd {u}$
@@ -128,17 +128,16 @@ quickly. Then any substitutions are done in the smaller
 set and the next set of conditions is shorter. For
 example, for the Karpman equations below the speedup for
 prelim_:=t and individual_:=t is a factor of 10.
-(Time ~ 1 min.);
-write"-------------------------------------------------------";
+(Time ~ 1 min.)$
+write"-------------------------------------------------------"$
 
 lisp(prelim_:=t)$
 lisp(individual_:=t)$
 
-depend r,x,y,z,t;
-depend f,x,y,z,t;
-depend v,x,y,z,t;
+depend r,x,y,z,t$
+depend f,x,y,z,t$
+depend v,x,y,z,t$
 
-on time$
 liepde({
 
 first 
@@ -164,7 +163,6 @@ solve(
        
        {},{})$
 
-off time$
 nodepnd {r,f,v}$
 
 comment
@@ -190,16 +188,16 @@ is more appropriate in this example.
 
 Because 4th order conditions are to be computed the
 `binding stack size' is increased.
-(Time ~ 5 min.);
-write"-------------------------------------------------------";
+(Time ~ 5 min.)$
+write"-------------------------------------------------------"$
 
 lisp(prelim_:=nil)$
 lisp(individual_:=nil)$
 lisp(if getd 'set_bndstk_size then set_bndstk_size(7000))$
 
 nodepnd {u,v}$
-depend  u,x,t;
-depend  v,x,t;
+depend  u,x,t$
+depend  v,x,t$
 
 des:={df(u,t)=+df(u,x,2) + (u + v)*df(u,x) + u*df(v,x),
       df(v,t)=-df(v,x,2) + (u + v)*df(v,x) + v*df(u,x)
@@ -217,5 +215,25 @@ liepde({des,{u,v},{t,x}},
        {f,g},{}
       )$
 nodepnd {f,g}$
+
+comment
+-------------------------------------------------------
+A relative new feature of the package CRACK is to be able to solve
+non-linear problems where unknowns to be determined may appear in
+exponents. This is the case when parameters in a differential equation
+is to be determined such that symmetries exist. The following ODE is
+such an example where the exponent `n' is to be determined so that
+the ODE has one or more symmetries. 
+  Something else is demonstrated in the following example. The
+parameter prolong_order allows to compute and print the prolongation
+of each of the found symmetry generators. In the following example
+all found symmetry generators are prolonged to order 2.$
+write"-------------------------------------------------------"$
+
+lisp(prolong_order:=2)$
+depend y,x$
+liepde({df(y,x,2) = x**n*y**2,y,x},{"point"},{n},{})$
+nodepnd {y}$
+lisp(prolong_order:=0)$
 
 end$

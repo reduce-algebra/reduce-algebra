@@ -1,0 +1,19 @@
+% test proper printing of syntax error message
+
+symbolic procedure goo x; ) - 
+
+3;$$$)-3;
+
+***** Too many right parentheses 
+
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.04 seconds
+real 0.19
+user 0.00
+sys 0.07

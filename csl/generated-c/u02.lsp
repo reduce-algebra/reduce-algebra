@@ -1,7 +1,7 @@
 
 % u02.lsp           Machine generated Lisp
 
-(c!:install "u02" 19434 6975425 7743266)
+(c!:install "u02" 7102 3679452 7610586)
 
 (c!:install 'mchk '(mchk nil !*sq frlis!* minus difference plus prepsqxx
 mcharg mchkopt mchkminus) 148810512295251760)
@@ -15,6 +15,10 @@ mcharg mchkopt mchkminus) 148810512295251760)
 (c!:install 'ibalp_cequal '(ibalp_cequal nil lto_setequalq) 
 340985478912468488)
 
+(c!:install 'reorder '(reorder t raddf rmultpf) 1342638692105521622)
+
+(c!:install 'addf '(addf t nil addd ordpp) 589911931644006365)
+
 (c!:install 'compress!* '(compress!* nil !/ t !- !; !. !!) 
 20421565559074398)
 
@@ -22,9 +26,9 @@ mcharg mchkopt mchkminus) 148810512295251760)
 
 (c!:install 'constp '(constp nil domainlist!*) 183478987393720483)
 
-(c!:install 'bczero!? '(bczero!? !*grmod!*) 959009914141473250)
+(c!:install 'sfp '(sfp nil) 722215270922230913)
 
-(c!:install 'addd '(addd t adddm nreverse) 764260890471838260)
+(c!:install 'bczero!? '(bczero!? !*grmod!*) 959009914141473250)
 
 (c!:install 'int!-equiv!-chk '(int!-equiv!-chk !*noequiv nil) 
 872083308430638116)
@@ -34,13 +38,16 @@ isanindex) 1509162473494053938)
 
 (c!:install 'sinitl '(sinitl eval) 1398428616857584375)
 
-(c!:install 'aeval!* '(aeval!* nil alglist!* reval1) 482345260368919483)
+(c!:install 'timesip '(timesip times i nil) 450242453837008834)
+
+(c!:install 'adddm '(adddm nil dmode!* t plus !*n2f int!-equiv!-chk
+dcombine) 1437450480841186786)
+
+(c!:install 'ring_ecart '(ring_ecart nth) 2226491237225987502)
 
 (c!:install 'dlesslex '(dlesslex nil t) 425803061485750766)
 
 (c!:install 'pappl '(pappl nil unpkp) 1633146380107844515)
-
-(c!:install 'getpower '(getpower expt nil t !*sub2) 1213961177307631295)
 
 (c!:install 'rassoc '(rassoc nil) 262355675409862461)
 
@@ -56,10 +63,10 @@ isanindex) 1509162473494053938)
 (c!:install 'qqe_qopaddp '(qqe_qopaddp (ladd radd) t) 
 2234959905804940602)
 
-(c!:install 'reorder '(reorder t raddf rmultpf) 1342638692105521622)
-
 (c!:install 'ibalp_cec '(ibalp_cec nil ibalp_emptyclausep) 
 606834723958425292)
+
+(c!:install 'aex_ex '(aex_ex nth) 2263208313757175895)
 
 (c!:install 'get_token '(get_token nil ch !> !$) 1652791797976288160)
 
@@ -78,17 +85,23 @@ isanindex) 1509162473494053938)
 
 (c!:install 'idlistp '(idlistp t nil) 1018634262389906610)
 
-(c!:install 'getrtypecar '(getrtypecar getrtype) 1223747814191161394)
+(c!:install 'aeval!* '(aeval!* nil alglist!* reval1) 482345260368919483)
 
-(c!:install 'adddm '(adddm nil dmode!* t plus !*n2f int!-equiv!-chk
-dcombine) 1437450480841186786)
+(c!:install 'mo!=sprod '(mo!=sprod t) 120809299247349605)
 
 (c!:install 'sieve_pv '(sieve_pv t sieve_pv0) 1860405538996181998)
 
 (c!:install 'upbve '(upbve) 978815961146830322)
 
+(c!:install 'rnonep!: '(rnonep!: nil) 1747058154865774180)
+
 (c!:install '!*i2mod '(!*i2mod general!-modular!-number !*modular2f) 
 1180803561621763680)
+
+(c!:install 'general!-modular!-plus '(general!-modular!-plus
+current!-modulus) 1176804135381338572)
+
+(c!:install '!*d2n '(!*d2n) 1327497365554127659)
 
 (c!:install 'lalr_prin_symbol '(lalr_prin_symbol "$" "<empty>" !. "."
 terminals nil rassoc explode2uc) 1425308608905677328)
@@ -134,20 +147,15 @@ subs2f1 subs2q) 502527326963291445)
 (c!:install '!*collectphysops_reversed '(!*collectphysops_reversed nil
 physopp) 158985461405150257)
 
+(c!:install 'getrtypecar '(getrtypecar getrtype) 1223747814191161394)
+
 (c!:install 'dless '(dless ordering lex t nil glex grev dlesslex) 
 2146410063035175783)
 
 (c!:install 'pappl0 '(pappl0 unpkp pappl pkp) 625645324720507398)
 
-(c!:install 'rnonep!: '(rnonep!: nil) 1747058154865774180)
-
 (c!:install 'modtimes!: '(modtimes!: general!-modular!-times !*modular2f
 ) 2018380723683617023)
-
-(c!:install 'general!-modular!-plus '(general!-modular!-plus
-current!-modulus) 1176804135381338572)
-
-(c!:install '!*d2n '(!*d2n) 1327497365554127659)
 
 (c!:install 'list2wideid '(list2wideid list2widestring) 
 1217832507119901657)
@@ -156,6 +164,9 @@ current!-modulus) 1176804135381338572)
 
 (c!:install 'ofsf_posdefp '(ofsf_posdefp !*rlpos ofsf_posdefp!-pos
 sfto_tsqsumf) 1236087242496565195)
+
+(c!:install 'symbollessp '(symbollessp nil t wukord!* wuorderp) 
+1583322228156140406)
 
 (c!:install 'lt!* '(lt!* !*mcd degr) 315368629084493785)
 
@@ -173,7 +184,7 @@ get!-free!-form union) 2174368323223760095)
 (c!:install 'qqe_rbopp '(qqe_rbopp (equal neq lessp leq geq greaterp)) 
 1869043606676884770)
 
-(c!:install 'aex_ex '(aex_ex nth) 2263208313757175895)
+(c!:install 'rmultpf '(rmultpf t nreverse reordop) 255241822251523411)
 
 (c!:install 'get_content '(get_content nil ch !< !$eof!$ space !$ scharn
 ) 2141400064445522687)
@@ -202,21 +213,7 @@ ps!:getv) 430550880245056049)
 (c!:install 'rl_varlat '(rl_varlat rl_varlat!* apply) 416207086982297933
 )
 
-(c!:install 'rmultpf '(rmultpf t nreverse reordop) 255241822251523411)
-
-(c!:install 'symbollessp '(symbollessp nil t wukord!* wuorderp) 
-1583322228156140406)
-
 (c!:install 'comfac!-to!-poly '(comfac!-to!-poly) 97749502039726256)
-
-(c!:install 'mtchk '(mtchk noncomp mtchp1 lispeval nocp) 
-1667397711752801291)
-
-(c!:install 'mri_floorkernelp '(mri_floorkernelp kernels mri_floorp) 
-731092302887257096)
-
-(c!:install 'qqe_qopheadp '(qqe_qopheadp (lhead rhead)) 
-1345659865354742545)
 
 
 % End of generated Lisp code

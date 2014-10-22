@@ -4,7 +4,6 @@ load_package redlog;
 rlset ibalp;
 
 
-*** turned off switch lower 
 
 {}
 
@@ -3580,8 +3579,10 @@ false
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 2519 ms  plus GC time: 88 ms
-real	0m3.169s
-user	0m0.031s
-sys	0m0.077s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1464 ms  plus GC time: 127 ms
+
+End of Lisp run after 1.46+0.20 seconds
+real 1.95
+user 0.03
+sys 0.04

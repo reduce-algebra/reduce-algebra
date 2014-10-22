@@ -140,8 +140,10 @@ trying all possible substitutions
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 397 ms  plus GC time: 21 ms
-real	0m1.034s
-user	0m0.015s
-sys	0m0.122s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 126 ms  plus GC time: 16 ms
+
+End of Lisp run after 0.12+0.06 seconds
+real 0.38
+user 0.01
+sys 0.06

@@ -23,8 +23,10 @@ p1 p2
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 5 ms
-real	0m0.528s
-user	0m0.046s
-sys	0m0.091s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.20
+user 0.00
+sys 0.04

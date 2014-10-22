@@ -4,42 +4,48 @@ symbolic;
 nil
 
 
-struct any;
-*** struct any is not checked 
+on1 'assert;
+
+
+nil
+
+
+struct Tag;
+*** struct tag is not checked 
 
 
 
 nil
 
-struct number checked by numberp;
+struct PosNumber asserted by PosNumberP;
 
 
-numberp
-
-struct sf checked by sfpx;
+nil
 
 
-sfpx
-
-struct sq checked by sqp;
-
-
-sqp
+procedure PosNumberP(s);
+   numberp s and s > 0;
 
 
-declare hugo: (number,any) -> number;
+posnumberp
+
+
+asserted procedure hugo(x1: Number, x2: PosNumber, x3: Tag): DottedPair;
+   x3 . (x1 + x2);
 
 
 (hugo)
 
 
-procedure hugo(x1,x2);
-   x2;
-*** local variable x1 in procedure hugo not used 
+hugo(1, 1, 'y);
 
 
+(y . 2)
 
-hugo
+hugo(1, -1, 'y);
+
+
+(y . 0)
 
 
 assert_install hugo;
@@ -48,53 +54,53 @@ assert_install hugo;
 nil
 
 
-hugo(0,0);
+hugo(1, 1, 'y);
 
 
-0
+(y . 2)
 
-hugo('x,0);
-
-
-*** declaration hugo: (number,any) -> number violated by arg1 x 
-
-0
-
-hugo(0,'x);
+hugo(1, -1, 'y);
 
 
-*** declaration hugo: (number,any) -> number violated by result x 
+*** declaration hugo: (number, posnumber, tag) -> dottedpair violated by arg2 -1
+ 
 
-x
-
-
-declare addf: (sf,sf) -> sf;
+(y . 0)
 
 
-(addf hugo)
-
-declare addsq: (sq,sq) -> sq;
-
-
-(addsq addf hugo)
-
-
-assert_install addf,addsq;
+assert_uninstall hugo;
 
 
 nil
 
 
-addsq(simp 'x,numr simp 'x);
+declare addf: (SF, SF) -> SF;
 
 
-*** declaration addsq: (sq,sq) -> sq violated by arg2 (((x . 1) . 1)) 
+(addf hugo)
 
-*** declaration addf: (sf,sf) -> sf violated by arg2 ((x . 1) . 1) 
+declare addsq: (SQ, SQ) -> SQ;
 
-*** declaration addf: (sf,sf) -> sf violated by result ((x . 1) . 1) 
 
-*** declaration addsq: (sq,sq) -> sq violated by result (((x . 1) . 1)) 
+(addsq addf hugo)
+
+
+assert_install addf, addsq;
+
+
+nil
+
+
+addsq(simp 'x, numr simp 'x);
+
+
+*** declaration addsq: (sq, sq) -> sq violated by arg2 (((x . 1) . 1)) 
+
+*** declaration addf: (sf, sf) -> sf violated by arg2 ((x . 1) . 1) 
+
+*** declaration addf: (sf, sf) -> sf violated by result ((x . 1) . 1) 
+
+*** declaration addsq: (sq, sq) -> sq violated by result (((x . 1) . 1)) 
 
 (((x . 1) . 1))
 
@@ -110,18 +116,24 @@ function          #calls              #bad calls   #assertion violations
 ------------------------------------------------------------------------
 addf                   1                       1                       2
 addsq                  1                       1                       2
-hugo                   3                       2                       2
+hugo                   2                       1                       1
 ------------------------------------------------------------------------
-sum                    5                       4                       6
+sum                    4                       3                       5
 ------------------------------------------------------------------------
 
 
 assert_uninstall_all;
 
 
+*** assert not installed for hugo 
+
 
 end;
 
-Tested on x86_64-mac_10.7_lion-darwin11.1.0-nogui CSL
+Tested on x86_64-pc-windows CSL
 Time (counter 1): 0 ms
-real	0m0.001s
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.20
+user 0.04
+sys 0.03

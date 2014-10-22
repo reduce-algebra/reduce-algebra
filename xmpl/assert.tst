@@ -1,27 +1,32 @@
 symbolic;
 
-struct any;
-struct number checked by numberp;
-struct sf checked by sfpx;
-struct sq checked by sqp;
+on1 'assert;
 
-declare hugo: (number,any) -> number;
+struct Tag;
+struct PosNumber asserted by PosNumberP;
 
-procedure hugo(x1,x2);
-   x2;
+procedure PosNumberP(s);
+   numberp s and s > 0;
+
+asserted procedure hugo(x1: Number, x2: PosNumber, x3: Tag): DottedPair;
+   x3 . (x1 + x2);
+
+hugo(1, 1, 'y);
+hugo(1, -1, 'y);
 
 assert_install hugo;
 
-hugo(0,0);
-hugo('x,0);
-hugo(0,'x);
+hugo(1, 1, 'y);
+hugo(1, -1, 'y);
 
-declare addf: (sf,sf) -> sf;
-declare addsq: (sq,sq) -> sq;
+assert_uninstall hugo;
 
-assert_install addf,addsq;
+declare addf: (SF, SF) -> SF;
+declare addsq: (SQ, SQ) -> SQ;
 
-addsq(simp 'x,numr simp 'x);
+assert_install addf, addsq;
+
+addsq(simp 'x, numr simp 'x);
 
 algebraic;
 

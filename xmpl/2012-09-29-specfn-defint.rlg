@@ -1,0 +1,38 @@
+% Some gaussian integral give erf(infinity) when specfn is loaded,
+% spotted by Andrey G. Grozin
+
+load_package specfn;
+
+
+
+int(exp(-x^2),x,0,infinity);
+
+
+ sqrt(pi)
+----------
+    2
+
+
+int(exp(-x^2),x,-infinity,0);
+
+
+ sqrt(pi)
+----------
+    2
+
+
+int(exp(-x^2),x,-infinity,infinity);
+
+
+sqrt(pi)
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms  plus GC time: 31 ms
+
+End of Lisp run after 0.01+0.07 seconds
+real 0.24
+user 0.01
+sys 0.04

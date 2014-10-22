@@ -473,8 +473,10 @@ ok
  
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 129 ms
-real	0m0.760s
-user	0m0.030s
-sys	0m0.139s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 47 ms
+
+End of Lisp run after 0.04+0.07 seconds
+real 0.27
+user 0.01
+sys 0.04

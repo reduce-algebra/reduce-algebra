@@ -853,8 +853,10 @@ gcd(-9955*v**9*x**3*y**4*z**8+2020*v*y**7*z**4
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 109 ms  plus GC time: 32 ms
-real	0m0.624s
-user	0m0.075s
-sys	0m0.060s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 47 ms
+
+End of Lisp run after 0.04+0.06 seconds
+real 0.24
+user 0.01
+sys 0.06

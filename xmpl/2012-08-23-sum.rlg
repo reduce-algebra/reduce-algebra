@@ -1,0 +1,47 @@
+load_package sum;
+
+
+
+on rounded;
+
+
+
+sum(x**0.5,x,1,2);
+
+
+2.41421356237
+
+
+operator f;
+
+
+
+symbolic;
+
+
+nil
+
+
+% The following forms shpuld both evaluate to nil
+
+freeof!-df(aeval '(df (f u v) u v),'v);
+
+
+nil
+
+freeof!-df(reval '(df (f u v) u v),'v);
+
+
+nil
+
+
+end;
+
+nil
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms
+
+End of Lisp run after 0.01+0.04 seconds
+real 0.19
+user 0.03
+sys 0.04

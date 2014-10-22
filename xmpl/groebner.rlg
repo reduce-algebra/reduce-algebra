@@ -921,7 +921,6 @@ torder_compile(levelt,mat(
   (0,0,0,0,0,0,1,0,0,0),
   (0,0,0,0,0,0,0,0,1,0)));
 
-+++ levelt compiled, 338 + 20 bytes
 
 levelt
 
@@ -1230,8 +1229,10 @@ clear g, gg, trinkspolys, trinksvars$
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 200 ms  plus GC time: 35 ms
-real	0m0.762s
-user	0m0.046s
-sys	0m0.106s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 47 ms  plus GC time: 16 ms
+
+End of Lisp run after 0.04+0.07 seconds
+real 0.28
+user 0.01
+sys 0.07

@@ -9,6 +9,7 @@ rlqe phi;
 rlgqe phi;
 rlqea phi;
 rlgqea phi;
+rllqe(phi,{},{b=1});
 rlposqe phi;
 rlposqea phi;
 rlcad phi;
@@ -77,29 +78,6 @@ rlqe p9;
 % Hoon Hong, talk at the University of Passau, 20 Dec 2005.
 hong := all(x,ex(y,x**2+x*y+b>0 and x+a*y**2+b<=0))$
 rlqe hong;
-
-% Highly non-linear, varseltry, massive factorization, precise qe:
-gatermann := ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and
-(((k21*vv1**2*vv2 - k34*vv1 + k43*vv3 + k46 - k64*vv1 = 0 and -
-k21*vv1**2*vv2 + k56 - k65*vv2 = 0) and k34*vv1 - k43*vv3 = 0) and -
-k21*k43*k64*vv1**2 + 2*k21*k43*k65*vv1*vv2 - k43*k64*k65 < 0 and
-k21**2*k34*vv1**4 - 2*k21**2*k34*vv1**3*vv2 + k21**2*k43*vv1**4 -
-4*k21**2*k43*vv1**3*vv2 + 4*k21**2*k43*vv1**2*vv2**2 + k21**2*k64*vv1**4
-- 2*k21**2*k64*vv1**3*vv2 - 2*k21**2*k65*vv1**3*vv2 +
-4*k21**2*k65*vv1**2*vv2**2 + k21*k34**2*vv1**2 + 2*k21*k34*k43*vv1**2 -
-2*k21*k34*k43*vv1*vv2 + 2*k21*k34*k64*vv1**2 + 2*k21*k34*k65*vv1**2 -
-4*k21*k34*k65*vv1*vv2 + k21*k43**2*vv1**2 - 2*k21*k43**2*vv1*vv2 +
-2*k21*k43*k64*vv1**2 - 4*k21*k43*k64*vv1*vv2 + 2*k21*k43*k65*vv1**2 -
-4*k21*k43*k65*vv1*vv2 + k21*k64**2*vv1**2 + 2*k21*k64*k65*vv1**2 -
-4*k21*k64*k65*vv1*vv2 - 2*k21*k65**2*vv1*vv2 + k34**2*k65 + k34*k43*k64
-+ 2*k34*k43*k65 + 2*k34*k64*k65 + k34*k65**2 + k43**2*k64 + k43**2*k65 +
-k43*k64**2 + 2*k43*k64*k65 + k43*k65**2 + k64**2*k65 + k64*k65**2 = 0)
-and ((((( - k21 < 0 and - k46 < 0) and - k64 < 0) and - k34 < 0) and -
-k43 < 0) and - k56 < 0) and - k65 < 0)))$
-
-on rlqevarseltry,rlsifaco,rlqeprecise;
-rlqe rlex gatermann;
-off rlqevarseltry,rlsifaco,rlqeprecise;
 
 % Positive qe:
 % Examples from
@@ -638,10 +616,154 @@ for each ex in testseries collect {rlatnum ex,rlatnum rlgsn ex};
 % Result of the rectangle problem from testing rlqe above.
 rlitab rp2sol;
 
-% Optimizer
-sc50b!-t := -1*vCOL00004$
+% Polynomial exponential problems
 
-sc50b!-c := {
+% A.1 Complete Example
+a1 := ex({x, y}, e**x-y**2=0 and x-y=0);
+rldpep a1;
+
+% A.2 Properties of the Exponential Function
+a21 := ex(x, e**x<=0);
+rldpep a21;
+
+a22 := all(x, e**x>=1+x);
+rldpep a22;
+
+a23 := all(x, (1-x)*e**x<=1 or x>=1);
+rldpep a23;
+
+% A.3 Exponential Systems
+a32 := ex({x, y, z}, 2x-y+z+e**(2x)=0 and 3y-z=0 and 2x+y+3z+e**x=0);
+rldpep a32;
+
+a33 := ex(x, e**(2x)-x*e**x-1=0 and e**(2x)+e**x-2x>0);
+rldpep a33;
+
+% A.4 Examples with Hyperbolic Functions
+% tanh(x):
+a43 := all(x, x>0 impl x*e**(2x)-x>(x-1)*e**(2x)+x-1);
+rldpep a43;
+
+% A.5 Examples with the Gauss Curve
+a51 := ex({z, x}, 4*x**2*e**z=1+x**2 and z+x**2=0);
+rldpep a51;
+
+a52 := ex({z, x}, 10*e**z=-8*x**2+10 and x neq 0 and z+x**2=0);
+rldpep a52;
+
+% Additional Examples with the Gauss Curve
+add53 := all({z, x}, x**2+z=0 impl e**z>0);
+rldpep add53;
+
+% Some simple tropical decision using only Reduce simplex
+rlptropsat(x=0 or x+1 = 0);
+
+rltropsat(x=0 or x+1 = 0);
+
+on zeropzero;
+
+pzerop(x**2+x);
+
+zerop(x**2+x);
+
+oldprec := precision 24;
+
+pzerop(-2x1^6+x1^3*x2-3x1^3+2x1*x2^2);
+evalf ws;
+
+precision oldprec;
+
+off zeropzero;
+
+% Optimizer and VS with learning
+
+% Test case for an ofsf_xopt bug discovered by Eddy Westbrook.
+rlqe ex(y,(y=x or y=-x) and y>=0);
+
+% from Marc van Dongen. Finding the first feasible solution for the
+% solution of systems of linear diophantine inequalities.
+dong := {
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+sol := rlopt(dong,0);
+
+% Parameter-Free Linear Optimization -
+% Examples sc50a and sc50b taken from the ZIB netlib-lp
+% ftp://ftp.zib.de/pub/mp-testdata/lp/netlib-lp/
+
+sc50a_c := {
+vCOL00001 >= 0,vCOL00002 >= 0,vCOL00003 >= 0,vCOL00004 >= 0,vCOL00005 >= 0,
+vCOL00006 >= 0,vCOL00007 >= 0,vCOL00008 >= 0,vCOL00009 >= 0,vCOL00010 >= 0,
+vCOL00011 >= 0,vCOL00012 >= 0,vCOL00013 >= 0,vCOL00014 >= 0,vCOL00015 >= 0,
+vCOL00016 >= 0,vCOL00017 >= 0,vCOL00018 >= 0,vCOL00019 >= 0,vCOL00020 >= 0,
+vCOL00021 >= 0,vCOL00022 >= 0,vCOL00023 >= 0,vCOL00024 >= 0,vCOL00025 >= 0,
+vCOL00026 >= 0,vCOL00027 >= 0,vCOL00028 >= 0,vCOL00029 >= 0,vCOL00030 >= 0,
+vCOL00031 >= 0,vCOL00032 >= 0,vCOL00033 >= 0,vCOL00034 >= 0,vCOL00035 >= 0,
+vCOL00036 >= 0,vCOL00037 >= 0,vCOL00038 >= 0,vCOL00039 >= 0,vCOL00040 >= 0,
+vCOL00041 >= 0,vCOL00042 >= 0,vCOL00043 >= 0,vCOL00044 >= 0,vCOL00045 >= 0,
+vCOL00046 >= 0,vCOL00047 >= 0,vCOL00048 >= 0,
+2*vCOL00001+(1*vCOL00002)+(1.5*vCOL00003) <= 170,
+1*vCOL00001+(2*vCOL00002)+(1.5*vCOL00003) <= 130,
+1*vCOL00004+(-1*vCOL00005) = 0,
+-1*vCOL00001+(1*vCOL00006) = 0,
+-1*vCOL00002+(1*vCOL00007) = 0,
+-1*vCOL00003+(1*vCOL00008) = 0,
+-1*vCOL00006+(1*vCOL00009) <= 0,
+-1*vCOL00007+(1*vCOL00010) <= 0,
+-1*vCOL00008+(1*vCOL00011) <= 0,
+-1*vCOL00009+(2*vCOL00012)+(1*vCOL00013)+(1.5*vCOL00014) <= 170,
+-1*vCOL00010+(1*vCOL00012)+(2*vCOL00013)+(1.5*vCOL00014) <= 130,
+1*vCOL00005+(-1*vCOL00011) <= 0,
+1.1*vCOL00004+(-1*vCOL00015) = 0,
+1*vCOL00005+(1*vCOL00015)+(-1*vCOL00016) = 0,
+-1*vCOL00006+(-1*vCOL00012)+(1*vCOL00017) = 0,
+-1*vCOL00007+(-1*vCOL00013)+(1*vCOL00018) = 0,
+-1*vCOL00008+(-1*vCOL00014)+(1*vCOL00019) = 0,
+-1*vCOL00017+(1*vCOL00020) <= 0,
+-1*vCOL00018+(1*vCOL00021) <= 0,
+-1*vCOL00019+(1*vCOL00022) <= 0,
+-1*vCOL00020+(2*vCOL00023)+(1*vCOL00024)+(1.5*vCOL00025) <= 170,
+-1*vCOL00021+(1*vCOL00023)+(2*vCOL00024)+(1.5*vCOL00025) <= 130,
+1*vCOL00016+(-1*vCOL00022) <= 0,
+1.1*vCOL00015+(-1*vCOL00026) = 0,
+1*vCOL00016+(1*vCOL00026)+(-1*vCOL00027) = 0,
+-1*vCOL00017+(-1*vCOL00023)+(1*vCOL00028) = 0,
+-1*vCOL00018+(-1*vCOL00024)+(1*vCOL00029) = 0,
+-1*vCOL00019+(-1*vCOL00025)+(1*vCOL00030) = 0,
+-1*vCOL00028+(1*vCOL00031) <= 0,
+-1*vCOL00029+(1*vCOL00032) <= 0,
+-1*vCOL00030+(1*vCOL00033) <= 0,
+-1*vCOL00031+(2*vCOL00034)+(1*vCOL00035)+(1.5*vCOL00036) <= 170,
+-1*vCOL00032+(1*vCOL00034)+(2*vCOL00035)+(1.5*vCOL00036) <= 130,
+1*vCOL00027+(-1*vCOL00033) <= 0,
+1.1*vCOL00026+(-1*vCOL00037) = 0,
+1*vCOL00027+(1*vCOL00037)+(-1*vCOL00038) = 0,
+-1*vCOL00028+(-1*vCOL00034)+(1*vCOL00039) = 0,
+-1*vCOL00029+(-1*vCOL00035)+(1*vCOL00040) = 0,
+-1*vCOL00030+(-1*vCOL00036)+(1*vCOL00041) = 0,
+-1*vCOL00039+(1*vCOL00042) <= 0,
+-1*vCOL00040+(1*vCOL00043) <= 0,
+-1*vCOL00041+(1*vCOL00044) <= 0,
+-1*vCOL00042+(2*vCOL00045)+(1*vCOL00046)+(1.5*vCOL00047) <= 170,
+-1*vCOL00043+(1*vCOL00045)+(2*vCOL00046)+(1.5*vCOL00047) <= 130,
+1*vCOL00038+(-1*vCOL00044) <= 0,
+1.1*vCOL00037+(-1*vCOL00048) = 0,
+-0.8*vCOL00045+(0.1*vCOL00046)+(0.15*vCOL00047) <= 0,
+0.1*vCOL00045+(-0.8*vCOL00046)+(0.15*vCOL00047) <= 0,
+-1*vCOL00047+(1*vCOL00048) <= 0}$
+
+sc50a_t := -1*vCOL00004$
+
+rlopt(sc50a_c,sc50a_t);
+
+sc50b_t := -1*vCOL00004$
+
+sc50b_c := {
 vCOL00001 >= 0,vCOL00002 >= 0,vCOL00003 >= 0,vCOL00004 >= 0,vCOL00005 >= 0,
 vCOL00006 >= 0,vCOL00007 >= 0,vCOL00008 >= 0,vCOL00009 >= 0,vCOL00010 >= 0,
 vCOL00011 >= 0,vCOL00012 >= 0,vCOL00013 >= 0,vCOL00014 >= 0,vCOL00015 >= 0,
@@ -701,19 +823,18 @@ vCOL00046 >= 0,vCOL00047 >= 0,vCOL00048 >= 0,
 -1*vCOL00046+(0.400000*vCOL00048) <= 0,
 -1*vCOL00047+(0.600000*vCOL00048) <= 0}$
 
-rlopt(sc50b!-c,sc50b!-t);
+rlopt(sc50b_c,sc50b_t);
 
-% from Marc van Dongen. Finding the first feasible solution for the
-% solution of systems of linear diophantine inequalities.
-dong := {
-  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
-  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
-  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
-  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
-  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
-  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
-     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
-sol := rlopt(dong,0);
+% Adding a constraints choosing the objective function slightly smaller than the
+% known minimum, which renders the problem infeasible.
+
+sc50a_infeasible := cons(sc50a_t <= -65, sc50a_c)$
+
+rlvsl sc50a_infeasible;
+
+sc50b_infeasible := cons(sc50b_t <= -71, sc50b_c)$
+
+rlvsl sc50b_infeasible;
 
 % Substitution
 sub(first second sol,for each atf in dong mkand atf);

@@ -723,8 +723,10 @@ prod(e**(sin(n*x)),n);
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 72 ms  plus GC time: 3 ms
-real	0m0.456s
-user	0m0.000s
-sys	0m0.046s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 31 ms
+
+End of Lisp run after 0.03+0.06 seconds
+real 0.23
+user 0.00
+sys 0.06

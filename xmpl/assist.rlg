@@ -2587,8 +2587,10 @@ clear g,op;
 % showtime;
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 57 ms  plus GC time: 6 ms
-real	0m1.473s
-user	0m0.045s
-sys	0m0.124s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms
+
+End of Lisp run after 0.01+0.04 seconds
+real 0.21
+user 0.01
+sys 0.06

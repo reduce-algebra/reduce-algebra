@@ -29,9 +29,37 @@ true
 rlqea rlex sec;
 
 
-{{true,{n = 1,b = 1,a = 0}},
+{{true,
 
- {true,{n = 2,b = 3,a = 1}}}
+  {n = g0016,
+
+        3*g0016
+   b = ---------,
+           2
+
+        g0016
+   a = -------,
+          2
+
+   !,
+
+   g0016 + 2 >= 0 and g0016 - 2 <= 0}},
+
+ {true,
+
+  {n = g0012,
+
+        3*g0012 - 1
+   b = -------------,
+             2
+
+        g0012 - 1
+   a = -----------,
+            2
+
+   !,
+
+   g0012 + 2 >= 0 and g0012 - 2 <= 0}}}
 
 
 rlqe ex(n,sec);
@@ -58,13 +86,13 @@ rlwqe phi;
 bex g0020 [ - a  + 2*a*b - b  - 2 <= g0020 <= a  - 2*a*b + b  + 2] (a - b < 0
 
                   2
- and a - b + g0020  = 0 and a + b #2# 0 and a + b - 2*g0020 + 1 = 0) or bex 
+ and a - b + g0020  = 0 and a + b ~2~ 0 and a + b - 2*g0020 = 0) or bex g0019 [
 
-           2            2                  2            2
-g0019 [ - a  + 2*a*b - b  - 2 <= g0019 <= a  - 2*a*b + b  + 2] (a - b < 0
+    2            2                  2            2
+ - a  + 2*a*b - b  - 2 <= g0019 <= a  - 2*a*b + b  + 2] (a - b < 0
 
                   2
- and a - b + g0019  = 0 and a + b ~2~ 0 and a + b - 2*g0019 = 0)
+ and a - b + g0019  = 0 and a + b #2# 0 and a + b - 2*g0019 + 1 = 0)
 
 
 % Integer Roots
@@ -167,21 +195,21 @@ f:=t2(2)$
  ws;
 
 
-(a1 + a2 - b1 - b2 = 0 and a2 - b2 <= 0 and a2 >= 0 and b1 >= 0)
+(a1 + a2 - b1 - b2 = 0 and a2 - b1 - 1 <= 0 and a2 > 0 and b2 > 0)
 
- or (a1 + a2 - b1 - b2 = 0 and a2 - b2 - 1 <= 0 and a2 > 0 and b1 > 0)
-
- or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - b2 <= 0 and a2 - b2 >= 0 and b2 >= 0)
-
- or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - b2 < 0 and a2 - b2 + 1 >= 0 and b2 > 0)
+ or (a1 + a2 - b1 - b2 = 0 and a2 - b1 <= 0 and a2 >= 0 and b2 >= 0)
 
  or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - b2 < 0 and a2 - b1 + 1 >= 0 and b1 > 0)
 
  or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - b2 <= 0 and a2 - b1 >= 0 and b1 >= 0)
 
- or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - 1 <= 0 and a2 > 0 and b2 > 0)
+ or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - b2 <= 0 and a2 - b2 >= 0 and b2 >= 0)
 
- or (a1 + a2 - b1 - b2 = 0 and a2 - b1 <= 0 and a2 >= 0 and b2 >= 0)
+ or (a1 + a2 - b1 - b2 = 0 and a2 - b1 - b2 < 0 and a2 - b2 + 1 >= 0 and b2 > 0)
+
+ or (a1 + a2 - b1 - b2 = 0 and a2 - b2 <= 0 and a2 >= 0 and b1 >= 0)
+
+ or (a1 + a2 - b1 - b2 = 0 and a2 - b2 - 1 <= 0 and a2 > 0 and b1 > 0)
 
 
 % Dependency Analysis for Automatic Parallelization
@@ -196,7 +224,7 @@ depsol := rlwqe dep$
 rlatnum depsol;
 
 
-11031
+11021
 
 
 rlexpand rlsimpl sub(m=4,n=4,depsol);
@@ -244,8 +272,10 @@ z - 3 > 0
 
 end;
 
-Tested on x86_64-unknown-ubuntu11.04 CSL
-Time (counter 1): 5569 ms  plus GC time: 100 ms
-real	0m5.947s
-user	0m5.870s
-sys	0m0.020s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1030 ms  plus GC time: 172 ms
+
+End of Lisp run after 1.03+0.25 seconds
+real 1.56
+user 0.00
+sys 0.06

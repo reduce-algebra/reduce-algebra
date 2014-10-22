@@ -1,10 +1,10 @@
-if lisp !*rounded then rounded_was_on := t 
+if lisp !*rounded then rounded_was_on := t
  else rounded_was_on := nil;
 
 mat1  := mat((1,2,3,4,5),(2,3,4,5,6),(3,4,5,6,7),(4,5,6,7,8),(5,6,7,8,9));
 mat2  := mat((1,1,1,1),(2,2,2,2),(3,3,3,3),(4,4,4,4));
 mat3  := mat((x),(x),(x),(x));
-mat4  := mat((3,3),(4,4),(5,5),(6,6)); 
+mat4  := mat((3,3),(4,4),(5,5),(6,6));
 mat5  := mat((1,2,1,1),(1,2,3,1),(4,5,1,2),(3,4,5,6));
 mat6  := mat((i+1,i+2,i+3),(4,5,2),(1,i,0));
 mat7  := mat((1,1,0),(1,3,1),(0,1,1));
@@ -26,10 +26,10 @@ add_to_columns(mat1,{1,2,3},y);
 add_to_rows(mat1,2,1000);
 add_to_rows(mat1,{1,2,3},x);
 
-augment_columns(mat1,2);  
+augment_columns(mat1,2);
 augment_columns(mat1,{1,2,5});
-stack_rows(mat1,3);  
-stack_rows(mat1,{1,3,5});  
+stack_rows(mat1,3);
+stack_rows(mat1,{1,3,5});
 
 char_poly(mat1,x);
 
@@ -55,7 +55,7 @@ get_rows(mat1,{1,3});
 
 hermitian_tp(mat6);
 
-% matrix_augment and matrix_stack can take both a list of arguments 
+% matrix_augment and matrix_stack can take both a list of arguments
 % or just the arguments.
 matrix_augment({mat1,mat2});
 matrix_augment(mat4,mat2,mat4);
@@ -133,7 +133,7 @@ off not_negative;
 random_matrix(3,3,100);
 off rounded;
 
-% toeplitz and vandermonde can take both a list of arguments or just 
+% toeplitz and vandermonde can take both a list of arguments or just
 % the arguments.
 toeplitz({1,2,3,4,5});
 toeplitz(x,y,z);
@@ -163,11 +163,11 @@ gram_schmidt({1,0,0},{1,1,0},{1,1,1});
 gram_schmidt({1,2},{3,4});
 
 on rounded; % again, makes large quotients a bit more readable.
-% The algorithm used for lu_decom sometimes swaps the rows of the input 
-% matrix so that (given matrix A, lu_decom(A) = {L,U,vec}), we find L*U 
-% does not equal A but a row equivalent of it. The call convert(A,vec) 
+% The algorithm used for lu_decom sometimes swaps the rows of the input
+% matrix so that (given matrix A, lu_decom(A) = {L,U,vec}), we find L*U
+% does not equal A but a row equivalent of it. The call convert(A,vec)
 % will return this row equivalent (ie: L*U = convert(A,vec)).
-lu := lu_decom(mat5); 
+lu := lu_decom(mat5);
 mat5;
 tmp := first lu * second lu;
 tmp1 := convert(mat5,third lu);
@@ -189,8 +189,8 @@ simplex(max,10000 x1 + 1000 x2 + 100 x3 + 10 x4 + x5,{ x1 <= 1, 20 x1 +
  <= 1000000, 20000 x1 + 2000 x2 + 200 x3 + 20 x4 + x5 <= 100000000});
 
 simplex(max, 5 x1 + 4 x2 + 3 x3,
-           { 2 x1 + 3 x2 + x3 <= 5, 
-             4 x1 + x2 + 2 x3 <= 11, 
+           { 2 x1 + 3 x2 + x3 <= 5,
+             4 x1 + x2 + 2 x3 <= 11,
              3 x1 + 4 x2 + 2 x3 <= 8 });
 
 simplex(min,3 x1 + 5 x2,{ x1 + 2 x2 >= 2, 22 x1 + x2 >= 3});
@@ -209,10 +209,10 @@ simplex(maxx,x,{x>=5});
 simplex(max,x,x>=5);
 simplex(max,x,{x<=y});
 
-simplex(max, 346 X11 + 346 X12 + 248 X21 + 248 X22 + 399 X31 + 399 X32 + 
+simplex(max, 346 X11 + 346 X12 + 248 X21 + 248 X22 + 399 X31 + 399 X32 +
              200 Y11 + 200 Y12 + 75 Y21 + 75 Y22 + 2.35 Z1 + 3.5 Z2,
-{ 
- 4 X11 + 4 X12 + 2 X21 + 2 X22 + X31 + X32 + 250 Y11 + 250 Y12 + 125 Y21 + 
+{
+ 4 X11 + 4 X12 + 2 X21 + 2 X22 + X31 + X32 + 250 Y11 + 250 Y12 + 125 Y21 +
   125 Y22 <= 25000,
  X11 + X12 + X21 + X22 + X31 + X32 + 2 Y11 + 2 Y12 + Y21 + Y22 <= 300,
  20 X11 + 15 X12 + 30 Y11 + 20 Y21 + Z1 <= 1500,
@@ -223,7 +223,7 @@ simplex(max, 346 X11 + 346 X12 + 248 X21 + 248 X22 + 399 X31 + 399 X32 +
 });
 
 
-% from Marc van Dongen. Finding the first feasible solution for the 
+% from Marc van Dongen. Finding the first feasible solution for the
 % solution of systems of linear diophantine inequalities.
 simplex(max,0,{
   3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
@@ -233,6 +233,13 @@ simplex(max,0,{
   X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
   X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
   X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1});
+
+
+% An example with a bound section:
+simplex(min, 0,
+   {-n2 <= -1, -n1-n2 <= 0, 2*n1+n2 <= 0, 5*n1+2*n2 <= 0, 5*n1-n2 <= 0},
+   {-infinity <= n1, -infinity <= n2 <= 2});
+
 
 svd_ans := svd(mat8);
 tmp := tp first svd_ans * second svd_ans * third svd_ans;

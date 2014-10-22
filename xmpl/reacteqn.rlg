@@ -125,8 +125,10 @@ new species: a4
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 22 ms  plus GC time: 4 ms
-real	0m0.680s
-user	0m0.015s
-sys	0m0.152s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.19
+user 0.03
+sys 0.04

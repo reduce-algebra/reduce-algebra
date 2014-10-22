@@ -1795,8 +1795,10 @@ invlap(--------,p,t)
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 330 ms  plus GC time: 37 ms
-real	0m0.844s
-user	0m0.015s
-sys	0m0.137s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 109 ms  plus GC time: 47 ms
+
+End of Lisp run after 0.10+0.10 seconds
+real 0.34
+user 0.03
+sys 0.03

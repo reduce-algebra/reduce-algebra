@@ -1,0 +1,23 @@
+%
+% Bug #38
+% http://sourceforge.net/p/reduce-algebra/bugs/38/
+%
+
+load_package numeric;
+
+
+num_solve({3=c*a^4,3=c*a^3},{c,a});
+
+
+{c=3.0,a=1}
+
+
+end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.04 seconds
+real 0.20
+user 0.00
+sys 0.07

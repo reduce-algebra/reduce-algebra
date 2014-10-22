@@ -1,14 +1,29 @@
 
 % u06.lsp           Machine generated Lisp
 
-(c!:install "u06" 6992 4364553 1422138)
+(c!:install "u06" 22231 1989908 8627398)
+
+(c!:install 'subs2f1 '(subs2f1 t nil powlis!* expt quotient alglist!*
+dmode!* powlis1!* !*structure !*exp times !*d2q degr simp exptsq cancel
+subs2p raddsq multsq addsq mkprod mtchp mksq simpexpt) 
+127942258716955345)
+
+(c!:install 'rl_susibin '(rl_susibin rl_susibin!* apply) 
+955015218789633271)
+
+(c!:install 'mathml '(mathml nil lex sub_math) 2254284459118856999)
+
+(c!:install 'boundindp '(boundindp t nil) 1064389598032379844)
+
+(c!:install 'abs!: '(abs!: !:rd!:) 975369350784946772)
+
+(c!:install 'simpminus '(simpminus minus carx simp negsq) 
+1284525534617631377)
 
 (c!:install 'macrochk '(macrochk symbolic t nil macrofn expdrmacro) 
 1701682591504882799)
 
-(c!:install '!*ssave '(!*ssave !*uncached alglist!* !*sub2 t
-alglist_count!* alglist_limit!* 2.0 simpcount!* mkhash puthash) 
-1303204249617263052)
+(c!:install 'dp_diff '(dp_diff dp_neg dp_sum) 837692868180533857)
 
 (c!:install 'resimp '(resimp nil varstack!* resimp1) 245030305365798647)
 
@@ -16,6 +31,12 @@ alglist_count!* alglist_limit!* 2.0 simpcount!* mkhash puthash)
 
 (c!:install 'modplus!: '(modplus!: general!-modular!-plus !*modular2f) 
 1110839783751197034)
+
+(c!:install 'minus!-mod!-p '(minus!-mod!-p t nreverse) 30039259488710504
+)
+
+(c!:install 'quotfd '(quotfd dmode!* t divd quotdd quotk) 
+928016986791257599)
 
 (c!:install 'get_action '(get_action action_index action_terminal t nil
 action_result getv16) 2068751376502553077)
@@ -37,8 +58,10 @@ action_result getv16) 2068751376502553077)
 
 (c!:install 'ibalp_minclnr '(ibalp_minclnr nil) 1353917149415492781)
 
-(c!:install 'round!:mt '(round!:mt !:rd!: nil msd round!:last bflerrmsg)
- 1685284475190532183)
+(c!:install 'powers2 '(powers2 t powers4) 2248553067075566006)
+
+(c!:install 'round!:mt '(round!:mt !:rd!: nil msd ashift round!:last
+bflerrmsg) 470569939916828053)
 
 (c!:install 'dm!-difference '(dm!-difference zero2nil !:difference) 
 1691222856956670203)
@@ -55,17 +78,22 @@ action_result getv16) 2068751376502553077)
 
 (c!:install 'vecopp '(vecopp nil vector isanindex) 1308112416519313373)
 
+(c!:install 'getroad '(getroad qassoc) 992728965709038886)
+
 (c!:install 'command1 '(command1 cursym!* key!* nil scan setcloc!*
 xread1) 1549821558856573651)
 
+(c!:install '!*ssave '(!*ssave !*uncached alglist!* !*sub2 t
+alglist_count!* alglist_limit!* 2.0 simpcount!* mkhash puthash) 
+1303204249617263052)
+
 (c!:install 'gperm1 '(gperm1 rev) 509176850750202277)
+
+(c!:install 'arzerop!: '(arzerop!:) 1099280663986886832)
 
 (c!:install 'c!:ordexp '(c!:ordexp t c!:ordxp) 2210592478747308295)
 
-(c!:install 'times!-in!-vector '(times!-in!-vector nil) 
-167978836511768691)
-
-(c!:install 'prin2t '(prin2t) 758949842117611195)
+(c!:install 'mkgi '(mkgi !:gi!:) 599723127963381976)
 
 (c!:install 'removev '(removev "Vertex" "is absent." cerror) 
 226037569635619048)
@@ -84,9 +112,6 @@ xread1) 1549821558856573651)
 (c!:install 'subscriptedvarp '(subscriptedvarp nil subscripted symtabget
 ) 823931260129252585)
 
-(c!:install 'carx '(carx alg "Wrong number of arguments to" rerror) 
-5224861291872731)
-
 (c!:install 'fast!-column!-dim '(fast!-column!-dim) 1398208638989839514)
 
 (c!:install 'xdegree '(xdegree deg!*form) 2098009032036352522)
@@ -104,39 +129,32 @@ bf2flck) 2300856283230210226)
 (c!:install 'getphystype!*sq '(getphystype!*sq getphystypesf) 
 1828407296140790969)
 
-(c!:install 'contrsp2 '(contrsp2 nil) 521920708506451753)
-
 (c!:install 'getrmacro '(getrmacro nil macro inline smacro getd) 
 1339114767799960791)
 
-(c!:install 's!:prinl1 '(s!:prinl1 !*print!-level!* nil
-!*prinl!-visited!-nodes!* !*prinl!-index!* !*print!-array!*
-!*print!-length!* gethash puthash simple!-vector!-p gensymp) 
-1520547945095265479)
+(c!:install 'getel1 '(getel1 "array index" rlisp "Array out of bounds"
+rerror typerr) 314199095299300736)
+
+(c!:install 'groeb!=testa '(groeb!=testa nth mo_divides!?) 
+859365508378418073)
 
 (c!:install 'pcmult '(pcmult nil cprod) 1325726446480199114)
 
 (c!:install 'tsym4 '(tsym4 pv_applp sieve_pv pv_renorm insert_pv) 
 65497059478221620)
 
-(c!:install 'arzerop!: '(arzerop!:) 1099280663986886832)
+(c!:install 'general!-modular!-reciprocal '(general!-modular!-reciprocal
+!*balanced_mod current!-modulus general!-reciprocal!-by!-gcd) 
+2002659737781213311)
 
-(c!:install 'minus!-mod!-p '(minus!-mod!-p t nreverse) 30039259488710504
-)
+(c!:install 'gcddd '(gcddd t gcd dcombine fieldp) 1780464485320243296)
 
-(c!:install 'mkgi '(mkgi !:gi!:) 599723127963381976)
-
-(c!:install 'quotfd '(quotfd dmode!* t divd quotdd quotk) 
-928016986791257599)
+(c!:install 'prin2t '(prin2t) 758949842117611195)
 
 (c!:install 'raddf '(raddf t addd nreverse ordpp) 140242031874101853)
 
 (c!:install 'freevarinexptchk '(freevarinexptchk t nil) 
 1872275930377380044)
-
-(c!:install 'aex_ctx '(aex_ctx nth) 1561071128493664236)
-
-(c!:install 'powers2 '(powers2 t powers4) 2248553067075566006)
 
 (c!:install 'rationalizei '(rationalizei t i kord!* (i . 1) nil reordsq
 to reorder multf negf) 1800103029890896399)
@@ -150,11 +168,9 @@ to reorder multf negf) 1800103029890896399)
 (c!:install '!*collectphysops '(!*collectphysops nil
 !*collectphysops_reversed) 678976667235871438)
 
-(c!:install 'gperm '(gperm nil gperm0 pkp) 61328638419335509)
+(c!:install 'contrsp2 '(contrsp2 nil) 521920708506451753)
 
-(c!:install 'general!-modular!-reciprocal '(general!-modular!-reciprocal
-!*balanced_mod current!-modulus general!-reciprocal!-by!-gcd) 
-2002659737781213311)
+(c!:install 'gperm '(gperm nil gperm0 pkp) 61328638419335509)
 
 (c!:install 'polynomadd '(polynomadd nil monomcompare) 
 2116639427254958855)
@@ -171,48 +187,20 @@ ibalp_lenisone) 315151883877394543)
 (c!:install 'exchk2 '(exchk2 !*nosqrts expt (quotient 1 2) sqrt 0.5
 prepsqx) 134566784218215801)
 
-(c!:install 'gsetsugar '(gsetsugar !*gsugar nil sugar vdptdeg vdpputprop
-) 1344414678585937196)
-
 (c!:install 'getphystype '(getphystype scalar vector tensor state nil
 phystypefn "PHYSOP type conflict in" physopp scalopp vecopp tensopp
-statep collectphystype rederr2) 1541198464352777992)
+po!:statep collectphystype rederr2) 838306680328065380)
+
+(c!:install 'dp_term '(dp_term) 1030431448728476156)
 
 (c!:install 'dquot '(dquot nil) 1254828911740559560)
 
-(c!:install 'gcddd '(gcddd t gcd dcombine fieldp) 1780464485320243296)
+(c!:install 'aronep!: '(aronep!:) 1394016138025509984)
 
-(c!:install 'lto_insert '(lto_insert) 1833896451968246408)
+(c!:install 'gizerop!: '(gizerop!: nil) 1833918778371753539)
 
 (c!:install 'sfto_gcdf!* '(sfto_gcdf!* t !*gcd sfto_gcdf) 
 531260957521927603)
-
-(c!:install 'mcharg2 '(mcharg2 nil mchk updtemplate msappend lastpair) 
-1393188779926853418)
-
-(c!:install 'mri_type '(mri_type nil) 565157034042844519)
-
-(c!:install 'omobjs '(omobjs char (!/ o m a) nil omobj lex) 
-2278753406332972096)
-
-(c!:install 'isarb_compl '(isarb_compl arbcomplex found_compl nil
-multi_isarb_compl) 1177739313881177277)
-
-(c!:install 'rdprep1 '(rdprep1 !:bprec!: round!:mt) 2075681569030334644)
-
-(c!:install 'downwght '(downwght delhisto downwght1 inshisto) 
-2244525671779326163)
-
-(c!:install 'genp '(genp gen nil mgenp) 1714129966852143812)
-
-(c!:install 'vdpgetprop '(vdpgetprop nil vdp dipoly
-"vdpgetprop given a non-vdp as 1st parameter" rerror) 223486886559639659
-)
-
-(c!:install 'termordp '(termordp wedgefax monordp) 217193576870404836)
-
-(c!:install '!:difference '(!:difference nil difference dcombine !:minus
-) 930566649603551463)
 
 
 % End of generated Lisp code

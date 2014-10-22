@@ -30,20 +30,21 @@ load crack,applysym$
 %                                                                   %
 %*******************************************************************%
 
-load crack;
-
-
-
 lisp(depl!*:=nil)$
 
      % clearing of all dependencies
-%setcrackflags()$
+setcrackflags()$
+
+
 lisp(print_:=nil)$
 
+   % to avoid printing the process of solving the char. sys.
+lisp(print_more:=t)$
 
+ % to print some verbal comments about the solution  
 on dfprint$
 
-
+          % to print derivatives as subscripts
 
 comment
 -------------------------------------------------------
@@ -75,17 +76,16 @@ depend w,x,y,z$
 QUASILINPDE( df(w,x)*x+df(w,y)*y+2*df(w,z)*z-2*w-x*y,  w,  {x,y,z} )$
 
 
-   x*y
-{{-----,
-    z
+The quasilinear PDE:  0 = w *x + w *y + 2*w *z - 2*w - x*y.
+                           x      y        z
 
-    - log(z)*x*y + 2*w
-  ---------------------,
-            z
+The general solution of the PDE is given through
 
-      x
-  ---------}}
-   sqrt(z)
+         - log(z)*x*y + 2*w   sqrt(z)*y   sqrt(z)*x
+0 = ff(---------------------,-----------,-----------)
+                 z                z           z
+
+with arbitrary function ff(..).
 
 nodepend w,x,y,z$
 
@@ -129,7 +129,14 @@ depend z,x,y$
 QUASILINPDE( x*df(z,x)-y, z, {x,y})$
 
 
-{{log(x)*y - z,y}}
+The quasilinear PDE:  0 = z *x - y.
+                           x
+
+The general solution of the PDE is given through
+
+0 = ff(log(x)*y - z,y)
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -145,9 +152,17 @@ depend z,x,y$
 QUASILINPDE( x**2*df(z,x)+y**2*df(z,y), z, {x,y})$
 
 
-    - x + y
-{{----------,z}}
-     x*y
+                              2       2
+The quasilinear PDE:  0 = z *x  + z *y .
+                           x       y
+
+The general solution of the PDE is given through
+
+        x - y
+0 = ff(-------,z)
+         x*y
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -163,10 +178,18 @@ depend z,x,y$
 QUASILINPDE( (x**2-y**2)*df(z,x)+2*x*y*df(z,y), z, {x,y})$
 
 
-          2    2
-      - (x  + y )
-{{z,--------------}}
-          y
+                              2       2
+The quasilinear PDE:  0 = z *x  - z *y  + 2*z *x*y.
+                           x       x         y
+
+The general solution of the PDE is given through
+
+           2    2
+          x  + y
+0 = ff(z,---------)
+             y
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -182,9 +205,17 @@ depend z,x,y$
 QUASILINPDE( (a0*x-a1)*df(z,x)+(a0*y-a2)*df(z,y), z, {x,y})$
 
 
-    a1*y - a2*x
-{{----------------,z}}
-   a1*(a0*x - a1)
+The quasilinear PDE:  0 = z *a0*x - z *a1 + z *a0*y - z *a2.
+                           x         x       y         y
+
+The general solution of the PDE is given through
+
+         a1*y - a2*x
+0 = ff(---------------,z)
+                    2
+        a0*a1*x - a1
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -200,10 +231,16 @@ depend z,x,y$
 QUASILINPDE( a*df(z,x)+b*df(z,y)-x**2+y**2, z, {x,y})$
 
 
-   2  3            2      3        2  2      2  3
-{{a *y  - 3*a*b*x*y  - 3*b *z + 3*b *x *y - b *y ,
+                                         2    2
+The quasilinear PDE:  0 = z *a + z *b - x  + y .
+                           x      y
 
-  a*y - b*x}}
+The general solution of the PDE is given through
+
+        2  3            2      3        2  2      2  3
+0 = ff(a *y  - 3*a*b*x*y  - 3*b *z + 3*b *x *y - b *y ,a*y - b*x)
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -219,9 +256,16 @@ depend z,x,y$
 QUASILINPDE( x*df(z,x)+y*df(z,y)-a*x, z, {x,y})$
 
 
-            - a*x
-{{a*x - z,--------}}
-             y
+The quasilinear PDE:  0 = z *x + z *y - a*x.
+                           x      y
+
+The general solution of the PDE is given through
+
+                x
+0 = ff(a*x - z,---)
+                y
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -237,8 +281,17 @@ depend z,x,y$
 QUASILINPDE( df(z,x)+df(z,y)-a*z, z, {x,y})$
 
 
-   a*x
-{{e   ,x - y}}
+The quasilinear PDE:  0 = z  + z  - a*z.
+                           x    y
+
+The general solution of the PDE is given through
+
+         z
+0 = ff(------,x - y)
+         a*x
+        e
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -254,8 +307,15 @@ depend z,x,y$
 QUASILINPDE( df(z,x)-y*df(z,y)+z, z, {x,y})$
 
 
-   x    x
-{{e *z,e *y}}
+The quasilinear PDE:  0 = z  - z *y + z.
+                           x    y
+
+The general solution of the PDE is given through
+
+        x    x
+0 = ff(e *z,e *y)
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -271,8 +331,15 @@ depend z,x,y$
 QUASILINPDE( 2*df(z,x)-y*df(z,y)+z, z, {x,y})$
 
 
-   x/2    x/2
-{{e   *z,e   *y}}
+The quasilinear PDE:  0 = 2*z  - z *y + z.
+                             x    y
+
+The general solution of the PDE is given through
+
+        x/2    x/2
+0 = ff(e   *z,e   *y)
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -288,10 +355,17 @@ depend z,x,y$
 QUASILINPDE( a*df(z,x)+y*df(z,y)-b*z, z, {x,y})$
 
 
-   (b*x)/a   y
-{{e       ,------}}
-             x/a
-            e
+The quasilinear PDE:  0 = z *a + z *y - b*z.
+                           x      y
+
+The general solution of the PDE is given through
+
+           z        y
+0 = ff(----------,------)
+         (b*x)/a    x/a
+        e          e
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -307,7 +381,15 @@ depend z,x,y$
 QUASILINPDE( x*(df(z,x)-df(z,y))-y*df(z,y), z,{x,y})$
 
 
-{{x*(x + 2*y),z}}
+The quasilinear PDE:  0 = z *x - z *x - z *y.
+                           x      y      y
+
+The general solution of the PDE is given through
+
+        2
+0 = ff(x  + 2*x*y,z)
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -323,7 +405,17 @@ depend z,x,y$
 QUASILINPDE( x*df(z,x)+y*df(z,y)-az, z, {x,y})$
 
 
-{{y,x}}
+The quasilinear PDE:  0 = z *x + z *y - az.
+                           x      y
+
+The general solution of the PDE is given through
+
+          y       x
+0 = ff(-------,-------)
+         z/az    z/az
+        e       e
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -339,10 +431,18 @@ depend z,x,y$
 QUASILINPDE( x*df(z,x)+y*df(z,y)-z+x**2+y**2-1, z, {x,y})$
 
 
-    2    2
-   x  + y  + z + 1   x
-{{-----------------,---}}
-          y          y
+                                         2    2
+The quasilinear PDE:  0 = z *x + z *y + x  + y  - z - 1.
+                           x      y
+
+The general solution of the PDE is given through
+
+         2    2
+        x  + y  + z + 1   x
+0 = ff(-----------------,---)
+               y          y
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -358,13 +458,17 @@ depend z,x,y$
 QUASILINPDE( a*x**2*df(z,x)+b*y**2*df(z,y)-c*z**2, z, {x,y})$
 
 
-   b*y - c*z
-{{-----------,
-     c*y*z
+                                2         2      2
+The quasilinear PDE:  0 = z *a*x  + z *b*y  - c*z .
+                           x         y
 
-    - a*x + b*y
-  --------------}}
-      a*x*y
+The general solution of the PDE is given through
+
+         - b*y + c*z   a*x - b*y
+0 = ff(--------------,-----------)
+            y*z           x*y
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -381,15 +485,19 @@ QUASILINPDE( x*y**2*df(z,x)+2*y**3*df(z,y)-2*(y*z-x**2)**2, z,
              {x,y})$
 
 
-           4           2        2
-   log(y)*x  - log(y)*x *y*z - y *z
-{{----------------------------------,
-             2   2
-            x *(x  - y*z)
+                                2         3      4      2          2  2
+The quasilinear PDE:  0 = z *x*y  + 2*z *y  - 2*x  + 4*x *y*z - 2*y *z .
+                           x           y
 
-      x
-  ---------}}
-   sqrt(y)
+The general solution of the PDE is given through
+
+                   4           2        2
+         - log(y)*x  + log(y)*x *y*z + y *z      x
+0 = ff(-------------------------------------,---------)
+                     4    2                   sqrt(y)
+                    x  - x *y*z
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -406,18 +514,23 @@ QUASILINPDE( x*df(w,x)+(a*x+b*y)*df(w,y)+(c*x+d*y+f*z)*df(w,z), w,
              {x,y,z})$
 
 
-                                                           2
-    - a*d*x + b*c*x + b*f*z - b*z - c*f*x - d*f*y + d*y - f *z + f*z
-{{-------------------------------------------------------------------,
-                          f             2
-                         x *(b*f - b - f  + f)
+The quasilinear PDE:  0 = w *x + w *a*x + w *b*y + w *c*x + w *d*y + w *f*z.
+                           x      y        y        z        z        z
 
-     d*(a*x + b*y - y)
-  -----------------------,
-    b   2
-   x *(b  - b*f - b + f)
+The general solution of the PDE is given through
 
-  w}}
+                                                                2
+         - a*d*x + b*c*x + b*f*z - b*z - c*f*x - d*f*y + d*y - f *z + f*z
+0 = ff(-------------------------------------------------------------------,
+                           f        f      f  2    f
+                          x *b*f - x *b - x *f  + x *f
+
+        a*x + b*y - y
+       ---------------,w)
+           b      b
+          x *b - x
+
+with arbitrary function ff(..).
 
 write"-------------------"$
 
@@ -430,8 +543,10 @@ lisp(depl!*:=nil)$
 
 end$
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 75 ms
-real	0m2.029s
-user	0m0.075s
-sys	0m0.154s
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 204 ms  plus GC time: 47 ms
+
+End of Lisp run after 0.20+0.10 seconds
+real 0.49
+user 0.03
+sys 0.03

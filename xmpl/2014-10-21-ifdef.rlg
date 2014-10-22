@@ -1,0 +1,32 @@
+%
+% Testing the #if conditional compilation scheme
+
+off echo;
+
+
+nil
+"A1: should appear"
+"A2: should appear"
+"A4: should appear"
+"A7: should appear"
+"A8: should appear"
+"A12: should appear"
+"A14: should appear"
+"A19: should appear"
+"A20: should appear"
+"A21: should appear"
+"A22: should appear"
+"A23: should appear"
+"A24: should appear"
+"A25: should appear"
+"A26: should appear"
+"A27: should appear"
+
+nil
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.01+0.04 seconds
+real 0.19
+user 0.00
+sys 0.04
