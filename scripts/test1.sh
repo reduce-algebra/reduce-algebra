@@ -255,6 +255,8 @@ fi
 
 if test "$install" = "yes"
 then
+  cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
+  cat csl-times/$p.rlg csl-times/$p.time > $here/xmpl/$p.rlg
   cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
 fi
 
