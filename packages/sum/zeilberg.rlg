@@ -1163,8 +1163,10 @@ hypergeom({k + 1, - k + 1},{3},x)*k*x
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 6190 ms  plus GC time: 350 ms
-1: real 6.82
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1377 ms  plus GC time: 61 ms
+
+End of Lisp run after 1.37+0.10 seconds
+real 1.79
 user 0.01
-sys 0.10
+sys 0.07

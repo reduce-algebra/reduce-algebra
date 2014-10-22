@@ -560,3 +560,10 @@ sys := {6*(w(3) + w(2) + w(1) - 1),
 
 end;
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 31 ms
+
+End of Lisp run after 0.03+0.04 seconds
+real 0.24
+user 0.01
+sys 0.04

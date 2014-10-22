@@ -49,7 +49,10 @@ switch trnumeric;
 
 % Create .. as infix operator.
 
-newtok '( (!. !.) !*interval!*);
+begin
+   scalar !*msg;
+   newtok '( (!. !.) !*interval!*)
+end;
 
 if null get('!*interval!*,'simpfn) then
 <<precedence .., or;

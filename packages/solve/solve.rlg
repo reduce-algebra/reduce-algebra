@@ -2842,3 +2842,10 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 
 end;
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 688 ms  plus GC time: 46 ms
+
+End of Lisp run after 0.68+0.09 seconds
+real 0.99
+user 0.00
+sys 0.04

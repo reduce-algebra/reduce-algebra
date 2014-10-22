@@ -2838,3 +2838,10 @@ clear x,y,z,u,v,w,C,S;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 922 ms  plus GC time: 63 ms
+
+End of Lisp run after 0.92+0.12 seconds
+real 1.30
+user 0.00
+sys 0.06

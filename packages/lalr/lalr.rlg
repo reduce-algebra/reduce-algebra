@@ -33,12 +33,12 @@ lalr_construct_parser grammar;
 Terminal symbols are:
  cc:268 dd:267
 Non-terminal symbols are:
-[0]S'               : S                         { }
+[0]s'               : s                         { }
                     ;
-[1]S                : C C                       { a1 }
+[1]s                : c c                       { a1 }
                     ;
-[2]C                : CC C                      { a2 }
-                    | DD                        { a3 }
+[2]c                : cc c                      { a2 }
+                    | dd                        { a3 }
                     ;
 
 Action map:
@@ -47,103 +47,103 @@ Action map:
 2:          (a2)
 3:          (a3)
 FIRST sets for each non-terminal:
-S':             dd cc
-S:              cc dd
-C:              dd cc
+s':             dd cc
+s:              cc dd
+c:              dd cc
 LR(1) Items:
 Item number 0
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . dd  :  cc
-C -> . dd  :  dd
-S -> . C C  :  $
-S' -> . S  :  $
+c -> . cc c  :  cc
+c -> . cc c  :  dd
+c -> . dd  :  cc
+c -> . dd  :  dd
+s -> . c c  :  $
+s' -> . s  :  $
           dd GOTO state 4
+          c GOTO state 2
           cc GOTO state 3
-          S GOTO state 1
-          C GOTO state 2
+          s GOTO state 1
 Item number 1
-S' -> S .  :  $
+s' -> s .  :  $
 Item number 2
-C -> . cc C  :  $
-C -> . dd  :  $
-S -> C . C  :  $
+c -> . cc c  :  $
+c -> . dd  :  $
+s -> c . c  :  $
           dd GOTO state 8
+          c GOTO state 6
           cc GOTO state 7
-          C GOTO state 6
 Item number 3
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . dd  :  cc
-C -> . dd  :  dd
-C -> cc . C  :  cc
-C -> cc . C  :  dd
+c -> . cc c  :  cc
+c -> . cc c  :  dd
+c -> . dd  :  cc
+c -> . dd  :  dd
+c -> cc . c  :  cc
+c -> cc . c  :  dd
           dd GOTO state 4
+          c GOTO state 5
           cc GOTO state 3
-          C GOTO state 5
 Item number 4
-C -> dd .  :  cc
-C -> dd .  :  dd
+c -> dd .  :  cc
+c -> dd .  :  dd
 Item number 5
-C -> cc C .  :  cc
-C -> cc C .  :  dd
+c -> cc c .  :  cc
+c -> cc c .  :  dd
 Item number 6
-S -> C C .  :  $
+s -> c c .  :  $
 Item number 7
-C -> . cc C  :  $
-C -> . dd  :  $
-C -> cc . C  :  $
+c -> . cc c  :  $
+c -> . dd  :  $
+c -> cc . c  :  $
           dd GOTO state 8
+          c GOTO state 9
           cc GOTO state 7
-          C GOTO state 9
 Item number 8
-C -> dd .  :  $
+c -> dd .  :  $
 Item number 9
-C -> cc C .  :  $
+c -> cc c .  :  $
 Merged Items:
 Item number 0
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . dd  :  cc
-C -> . dd  :  dd
-S -> . C C  :  $
-S' -> . S  :  $
+c -> . cc c  :  cc
+c -> . cc c  :  dd
+c -> . dd  :  cc
+c -> . dd  :  dd
+s -> . c c  :  $
+s' -> . s  :  $
           dd GOTO state 4
+          c GOTO state 2
           cc GOTO state 3
-          S GOTO state 1
-          C GOTO state 2
+          s GOTO state 1
 Item number 1
-S' -> S .  :  $
+s' -> s .  :  $
 Item number 2
-C -> . cc C  :  $
-C -> . dd  :  $
-S -> C . C  :  $
+c -> . cc c  :  $
+c -> . dd  :  $
+s -> c . c  :  $
           dd GOTO state 4
+          c GOTO state 6
           cc GOTO state 3
-          C GOTO state 6
 Item number 3
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . cc C  :  $
-C -> . dd  :  cc
-C -> . dd  :  dd
-C -> . dd  :  $
-C -> cc . C  :  cc
-C -> cc . C  :  dd
-C -> cc . C  :  $
+c -> . cc c  :  cc
+c -> . cc c  :  dd
+c -> . cc c  :  $
+c -> . dd  :  cc
+c -> . dd  :  dd
+c -> . dd  :  $
+c -> cc . c  :  cc
+c -> cc . c  :  dd
+c -> cc . c  :  $
           dd GOTO state 4
+          c GOTO state 5
           cc GOTO state 3
-          C GOTO state 5
 Item number 4
-C -> dd .  :  cc
-C -> dd .  :  dd
-C -> dd .  :  $
+c -> dd .  :  cc
+c -> dd .  :  dd
+c -> dd .  :  $
 Item number 5
-C -> cc C .  :  cc
-C -> cc C .  :  dd
-C -> cc C .  :  $
+c -> cc c .  :  cc
+c -> cc c .  :  dd
+c -> cc c .  :  $
 Item number 6
-S -> C C .  :  $
+s -> c c .  :  $
 Actions:
 0                   dd                  (shift 4)
 0                   cc                  (shift 3)
@@ -152,13 +152,13 @@ Actions:
 2                   cc                  (shift 3)
 3                   dd                  (shift 4)
 3                   cc                  (shift 3)
-4                   $                   reduce C -> dd { 3 }
-4                   dd                  reduce C -> dd { 3 }
-4                   cc                  reduce C -> dd { 3 }
-5                   $                   reduce C -> cc C { 2 }
-5                   dd                  reduce C -> cc C { 2 }
-5                   cc                  reduce C -> cc C { 2 }
-6                   $                   reduce S -> C C { 1 }
+4                   $                   reduce c -> dd { 3 }
+4                   dd                  reduce c -> dd { 3 }
+4                   cc                  reduce c -> dd { 3 }
+5                   $                   reduce c -> cc c { 2 }
+5                   dd                  reduce c -> cc c { 2 }
+5                   cc                  reduce c -> cc c { 2 }
+6                   $                   reduce s -> c c { 1 }
 ACTION_TABLE = 
 (0 (267 (shift 4)) (268 (shift 3)))
 (1 (0 accept))
@@ -204,13 +204,13 @@ action_result #V16(4 3 0 4 3 4 3 -3 -3 -3 -2 -2 -2 -1)
 action_fn [nil nil nil nil]
 action_n #V8(2 2 1)
 action_A #V16(1 2 2)
-0         S GOTO state 1
-0         C GOTO state 2
-2         C GOTO state 6
-3         C GOTO state 5
-goto_index: #V16(0 0 1)
-goto_old_state: #V16(-1 0 2 -1)
-goto_new_state: #V16(1 2 6 5)
+0         c GOTO state 2
+2         c GOTO state 6
+3         c GOTO state 5
+0         s GOTO state 1
+goto_index: #V16(0 3 0)
+goto_old_state: #V16(0 2 -1 -1)
+goto_new_state: #V16(2 6 5 1)
 
 nil
 
@@ -354,15 +354,15 @@ One-character string found <:> with code 42
 Terminal symbols are:
  !::42 !:symbol:256
 Non-terminal symbols are:
-[0]S'               : S                         { }
+[0]s'               : s                         { }
                     ;
-[1]S                : L "=" R                   { a1 }
-                    | R                         { a2 }
+[1]s                : l "=" r                   { a1 }
+                    | r                         { a2 }
                     ;
-[2]L                : "*" R                     { a3 }
-                    | !:SYMBOL                  { a4 }
+[2]l                : "*" r                     { a3 }
+                    | :symbol                   { a4 }
                     ;
-[3]R                : L                         { a5 }
+[3]r                : l                         { a5 }
                     ;
 
 Action map:
@@ -373,58 +373,58 @@ Action map:
 4:          (a4)
 5:          (a5)
 FIRST sets for each non-terminal:
-S':             !:symbol 267 268
-S:              !:symbol 268 267
-L:              !:symbol
-R:              !:symbol
+s':             !:symbol 267 268
+s:              !:symbol 268 267
+l:              !:symbol
+r:              !:symbol
 LR(1) Items:
 Item number 0
-L -> . "*" R  :  $
-L -> . !:symbol  :  $
-R -> . L  :  $
-S -> . L "=" R  :  $
-S -> . R  :  $
-S' -> . S  :  $
-          S GOTO state 1
+l -> . "*" r  :  $
+l -> . !:symbol  :  $
+r -> . l  :  $
+s -> . l "=" r  :  $
+s -> . r  :  $
+s' -> . s  :  $
           !:symbol GOTO state 4
-          L GOTO state 2
-          R GOTO state 3
+          r GOTO state 3
+          s GOTO state 1
+          l GOTO state 2
 Item number 1
-S' -> S .  :  $
+s' -> s .  :  $
 Item number 2
-R -> L .  :  $
-S -> L . "=" R  :  $
+r -> l .  :  $
+s -> l . "=" r  :  $
 Item number 3
-S -> R .  :  $
+s -> r .  :  $
 Item number 4
-L -> !:symbol .  :  $
+l -> !:symbol .  :  $
 Merged Items:
 Item number 0
-L -> . "*" R  :  $
-L -> . !:symbol  :  $
-R -> . L  :  $
-S -> . L "=" R  :  $
-S -> . R  :  $
-S' -> . S  :  $
-          S GOTO state 1
+l -> . "*" r  :  $
+l -> . !:symbol  :  $
+r -> . l  :  $
+s -> . l "=" r  :  $
+s -> . r  :  $
+s' -> . s  :  $
           !:symbol GOTO state 4
-          L GOTO state 2
-          R GOTO state 3
+          s GOTO state 1
+          l GOTO state 2
+          r GOTO state 3
 Item number 1
-S' -> S .  :  $
+s' -> s .  :  $
 Item number 2
-R -> L .  :  $
-S -> L . "=" R  :  $
+r -> l .  :  $
+s -> l . "=" r  :  $
 Item number 3
-S -> R .  :  $
+s -> r .  :  $
 Item number 4
-L -> !:symbol .  :  $
+l -> !:symbol .  :  $
 Actions:
 0                   !:symbol            (shift 4)
 1                   $                   accept
-2                   $                   reduce R -> L { 5 }
-3                   $                   reduce S -> R { 2 }
-4                   $                   reduce L -> !:symbol { 4 }
+2                   $                   reduce r -> l { 5 }
+3                   $                   reduce s -> r { 2 }
+4                   $                   reduce l -> !:symbol { 4 }
 ACTION_TABLE = 
 (0 (256 (shift 4)))
 (1 (0 accept))
@@ -449,9 +449,9 @@ action_result #V16(4 0 -5 -2 -4)
 action_fn [nil nil nil nil nil nil]
 action_n #V8(0 1 0 1 1)
 action_A #V16(0 1 0 2 3)
-0         S GOTO state 1
-0         L GOTO state 2
-0         R GOTO state 3
+0         s GOTO state 1
+0         l GOTO state 2
+0         r GOTO state 3
 goto_index: #V16(1 0 1 2)
 goto_old_state: #V16(-1 -1 -1)
 goto_new_state: #V16(1 2 3)
@@ -503,29 +503,16 @@ sym stack: nil
 next input: 94
 action code: 4
 w = 4
-*xstate stack: (4 0)
-sym stack: (94)
-next input: 94
-action code: -4
-w = -4
-state stack: (2 0)
-sym stack: ((94))
-next input: 94
-action code: -5
-w = -5
-state stack: (3 0)
-sym stack: (((94)))
-next input: 94
-action code: -2
-w = -2
-state stack: (1 0)
-sym stack: ((((94))))
-next input: 94
-action code: 0
-Seem to have finished...
-+++ Error undefined function (1 arg): eof
-xx = *x eof
++++ Error: intern (not a string) 94
+*xxx = *x eof
 
 end;
 
 nil
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.04 seconds
+real 0.19
+user 0.01
+sys 0.06

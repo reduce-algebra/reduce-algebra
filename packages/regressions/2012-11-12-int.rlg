@@ -457,8 +457,10 @@ df(ws,x);
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 3749 ms  plus GC time: 199 ms
-1: real 4.21
-user 0.01
-sys 0.10
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1499 ms  plus GC time: 31 ms
+
+End of Lisp run after 1.49+0.07 seconds
+real 1.74
+user 0.03
+sys 0.03

@@ -75,7 +75,7 @@ t
 show_spaces();
 
 
-{{wholespace,6,signature=1,indexrange=0 .. 5}}
+{{wholespace,6,signature=1,indexrange=0..5}}
 
 rem_spaces wholespace;
 
@@ -102,9 +102,9 @@ show_spaces();
 
 {{wholespace,11,signature=1},
 
- {mink,4,signature=1,indexrange=0 .. 3},
+ {mink,4,signature=1,indexrange=0..3},
 
- {eucl,6,euclidian,indexrange=4 .. 9}}
+ {eucl,6,euclidian,indexrange=4..9}}
 
 %
 % if input error or modifications necessary:
@@ -132,9 +132,9 @@ show_spaces();
 
 {{wholespace,11,signature=1},
 
- {mink,4,signature=1,indexrange=0 .. 3},
+ {mink,4,signature=1,indexrange=0..3},
 
- {eucl,7,euclidian,indexrange=4 .. 10}}
+ {eucl,7,euclidian,indexrange=4..10}}
 
 % done
 %
@@ -148,11 +148,11 @@ show_spaces();
 
 {{wholespace,11,signature=1},
 
- {mink,4,signature=1,indexrange=0 .. 3},
+ {mink,4,signature=1,indexrange=0..3},
 
- {eucl,7,euclidian,indexrange=4 .. 10},
+ {eucl,7,euclidian,indexrange=4..10},
 
- {eucl1,1,euclidian,indexrange=11 .. 11}}
+ {eucl1,1,euclidian,indexrange=11..11}}
 
 rem_spaces wholespace,mink,eucl,eucl1;
 
@@ -799,9 +799,9 @@ show_spaces();
 
 {{wholespace,7,signature=1},
 
- {mink,4,signature=1,indexrange=0 .. 3},
+ {mink,4,signature=1,indexrange=0..3},
 
- {eucl,3,euclidian,indexrange=4 .. 6}}
+ {eucl,3,euclidian,indexrange=4..6}}
 
 make_tensor_belong_space(te,eucl);
 
@@ -1925,8 +1925,10 @@ canonical aa;
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 20 ms
-1: real 0.26
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms
+
+End of Lisp run after 0.01+0.06 seconds
+real 0.22
 user 0.01
-sys 0.09
+sys 0.04

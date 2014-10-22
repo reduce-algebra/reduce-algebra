@@ -1118,8 +1118,10 @@ fourier_cos(1/(k*sqrt(pi))*e^(-x^2/(4*k^2)),x);
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 3970 ms  plus GC time: 230 ms
-1: real 4.60
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1622 ms  plus GC time: 112 ms
+
+End of Lisp run after 1.62+0.18 seconds
+real 2.04
 user 0.01
-sys 0.10
+sys 0.04

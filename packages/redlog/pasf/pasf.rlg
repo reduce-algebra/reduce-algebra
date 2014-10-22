@@ -224,7 +224,7 @@ depsol := rlwqe dep$
 rlatnum depsol;
 
 
-11031
+11021
 
 
 rlexpand rlsimpl sub(m=4,n=4,depsol);
@@ -272,8 +272,10 @@ z - 3 > 0
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 2899 ms  plus GC time: 281 ms
-1: real 3.52
-user 0.04
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 1001 ms  plus GC time: 139 ms
+
+End of Lisp run after 1.00+0.21 seconds
+real 1.47
+user 0.01
 sys 0.06

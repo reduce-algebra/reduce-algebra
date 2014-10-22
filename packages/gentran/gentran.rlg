@@ -166,8 +166,10 @@ GENTRAN
 
 END$
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 10 ms
-1: real 0.32
-user 0.06
-sys 0.07
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.20
+user 0.03
+sys 0.03

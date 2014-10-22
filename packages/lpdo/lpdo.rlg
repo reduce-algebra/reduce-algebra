@@ -221,8 +221,10 @@ partial(x2)
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 2099 ms  plus GC time: 180 ms
-1: real 2.68
-user 0.09
-sys 0.10
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 750 ms  plus GC time: 47 ms
+
+End of Lisp run after 0.75+0.14 seconds
+real 1.13
+user 0.01
+sys 0.06

@@ -891,7 +891,6 @@ const char *CSLtmpdir()
 #else
 #if defined WIN32
     DWORD n = GetTempPath(sizeof(tempname), tempname);
-printf("%d : <%s>\n", (int)n, tempname); fflush(stdout);
     if (n == 0 || n > sizeof(tempname)) return ".";
     tempname[n-1] = 0; /* Remove trailing "\" */
     return tempname;

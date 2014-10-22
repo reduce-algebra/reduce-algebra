@@ -355,8 +355,10 @@ mrv_limit(misc4,x,infinity);
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 510 ms  plus GC time: 31 ms
-1: real 0.87
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 172 ms  plus GC time: 15 ms
+
+End of Lisp run after 0.17+0.07 seconds
+real 0.40
 user 0.04
-sys 0.12
+sys 0.03

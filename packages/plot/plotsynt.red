@@ -30,9 +30,10 @@ fluid '(bye!-actions!*);
 
 % Create .. as the infix operator if not yet done.
 
-!*msg := nil;  % prevent message  ".. redefined" during load
-
-newtok '( (!. !.) !*interval!*);
+begin
+   scalar !*msg;  % prevent message  ".. redefined" during load
+   newtok '( (!. !.) !*interval!*)
+end;
 
 if not(gettype '!*interval!* = 'operator) then
 <<

@@ -38,8 +38,10 @@ nil
 end;
 
 nil
-Tested on i686-pc-windows CSL
+Tested on x86_64-pc-windows CSL
 Time (counter 1): 0 ms
-1: real 0.34
-user 0.03
-sys 0.16
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.21
+user 0.01
+sys 0.06

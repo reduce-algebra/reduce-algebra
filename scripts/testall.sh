@@ -3,11 +3,19 @@
 # Test all package
 
 # Usage:
-#    scripts/testall.sh         test everything
-#    scripts/testall.sh --csl   test just the CSL version
-#    scripts/testall.sh --psl   test just the PSL version
+#    scripts/testall.sh [--install]        test everything
+#    scripts/testall.sh [--install] --csl   test just the CSL version
+#    scripts/testall.sh [--install] --psl   test just the PSL version
 
 # The flags are mostly handled by being passed down to the test1.sh script
+
+install=
+case ${1:-x} in
+--install)
+  install=--install
+  shift
+  ;;
+esac
 
 if test $# = 0
 then
@@ -83,7 +91,7 @@ packages=`sed -e '/^\%/d' $here/packages/package.map | \
 for p in $packages
 do
   echo "Test package $p"
-  $here/scripts/test1.sh $* $p
+  $here/scripts/test1.sh $install $* $p
 done
 
 for p1 in $here/packages/regressions/*.tst
@@ -91,7 +99,7 @@ do
   p=${p1%.tst}
   p=${p##*/}
   echo "Test regression case $p"
-  $here/scripts/test1.sh $* regressions $p
+  $here/scripts/test1.sh $install $* regressions $p
 done
 
 if test "$csl" = "yes"

@@ -456,8 +456,10 @@ wu({z*z,y*z-1,x*z-1}, {x,y,z});
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 19 ms
-1: real 0.28
-user 0.01
-sys 0.10
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms
+
+End of Lisp run after 0.01+0.04 seconds
+real 0.19
+user 0.03
+sys 0.04

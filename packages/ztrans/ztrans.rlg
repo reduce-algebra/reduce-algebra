@@ -1533,3 +1533,10 @@ result:=preresult where solveresult;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 468 ms
+
+End of Lisp run after 0.46+0.06 seconds
+real 0.70
+user 0.01
+sys 0.04

@@ -3029,7 +3029,6 @@ symbolic summarize!-integral!-test();
 Number of integrals tested: 280
 
 
-
 Number of incorrect integrals: 0
 
 Number of unevaluated integrals: 18
@@ -3130,3 +3129,10 @@ erf(a + x)
 
 end;
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 359 ms  plus GC time: 16 ms
+
+End of Lisp run after 0.35+0.06 seconds
+real 0.60
+user 0.03
+sys 0.03

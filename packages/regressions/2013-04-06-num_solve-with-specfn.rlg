@@ -14,8 +14,10 @@ num_solve(erf(x)=0.9,x=1);
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 0 ms  plus GC time: 30 ms
-1: real 0.35
-user 0.01
-sys 0.09
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 0 ms  plus GC time: 16 ms
+
+End of Lisp run after 0.00+0.06 seconds
+real 0.22
+user 0.00
+sys 0.06

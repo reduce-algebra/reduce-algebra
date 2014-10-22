@@ -3070,8 +3070,10 @@ showtime;
 
 end;
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 1511 ms  plus GC time: 180 ms
-1: real 2.09
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 2298 ms  plus GC time: 61 ms
+
+End of Lisp run after 2.29+0.12 seconds
+real 2.68
 user 0.01
-sys 0.16
+sys 0.06

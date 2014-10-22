@@ -4,10 +4,19 @@
 # An option "--csl" or "--psl" can specify that only that one Lisp
 # is to be used.
 
-#    scripts/test1.sh [--keep] [--csl or --psl] package_name 
-# OR scripts/test1.sh [--keep] [--csl or --psl] regressions testname
+#    scripts/test1.sh [--install] [--keep] [--csl or --psl] package_name 
+# OR scripts/test1.sh [--install] [--keep] [--csl or --psl] regressions testname
 
+install="no"
 keep="no"
+
+# --install has to be the very first option given.
+case $1 in
+--install)
+  install="yes"
+  shift
+  ;;
+esac
 
 csl="yes"
 psl="yes"
@@ -242,6 +251,11 @@ sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | \
 if test "x$keep" = "xno"
 then
   rm -f csl-times/$p.rlg.tmp
+fi
+
+if test "$install" = "yes"
+then
+  cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
 fi
 
 fi # CSL case

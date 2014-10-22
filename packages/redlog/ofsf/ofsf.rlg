@@ -239,7 +239,7 @@ d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
 
  and a - b - d1 = 0)
 
- or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0)
+ or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0) 
 
 or (d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0
 
@@ -253,7 +253,7 @@ or (d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0
 
  and (a - b = 0 or a - b + d1 = 0) and (b - d1 = 0 or a - b + d1 = 0)) or (
 
-d1 > 0 and b > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0) or
+d1 > 0 and b > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0) or 
 
 (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
 
@@ -792,14 +792,14 @@ ellvgqf := {{b <> 0,
              and b - 1 < 0 and a > 0 and a - 1 < 0 and a - c - 1 < 0
 
                                                                         2
-             and a - c + 1 > 0 and a + c - 1 < 0 and a - b < 0 and a - b  > 0)
+             and a - c + 1 > 0 and a + c - 1 < 0 and a - b < 0 and a - b  > 0) 
 
             or (c > 0 and b > 0 and b - 1 < 0 and a > 0 and a - 1 < 0
 
              and a - c - 1 < 0 and a - c + 1 > 0 and a + c - 1 <= 0
 
                                     2          2  2    2    4    2  2    2
-             and a - b > 0 and a - b  > 0 and a *b  - a  - b  - b *c  + b  < 0)
+             and a - b > 0 and a - b  > 0 and a *b  - a  - b  - b *c  + b  < 0) 
 
             or (c = 0 and b > 0 and b - 1 < 0 and a > 0 and a - 1 < 0
 
@@ -2133,3 +2133,11 @@ true
 
 
 end;
+
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 3267 ms  plus GC time: 345 ms
+
+End of Lisp run after 3.26+0.45 seconds
+real 4.04
+user 0.01
+sys 0.06

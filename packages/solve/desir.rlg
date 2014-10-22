@@ -969,8 +969,10 @@ Si on reporte cette solution dans l'equation, le terme significatif du reste
  est :  - -----------------------*x     *e                      *x
                847288609443
 
-Tested on i686-pc-windows CSL
-Time (counter 1): 400 ms  plus GC time: 39 ms
-1: real 0.70
-user 0.03
-sys 0.09
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 188 ms
+
+End of Lisp run after 0.18+0.06 seconds
+real 0.39
+user 0.00
+sys 0.06

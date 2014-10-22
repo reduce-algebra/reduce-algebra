@@ -66,7 +66,10 @@ fluid '(
 
 % Create .. as infix operator.
 
-newtok '((!. !.) !*interval!*);
+begin
+   scalar !*msg;  % So we do not get a refefinition moan at load time
+   newtok '((!. !.) !*interval!*)
+end;
 
 put('!*interval!*,'prtch,'! !.!.! );
 

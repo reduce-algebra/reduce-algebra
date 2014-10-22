@@ -2669,3 +2669,10 @@ df( c_113, t )
 
 ======================================================
 
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 63 ms
+
+End of Lisp run after 1.29+0.14 seconds
+real 1.66
+user 0.06
+sys 0.01
