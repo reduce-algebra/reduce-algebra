@@ -63,6 +63,9 @@ begin scalar !*ezgcd,gblist,oldtorder,res,!*groebopt,!*precise,
  problems:={u};
  while problems and not fail do
  <<u:=car problems;problems:=cdr problems;
+  if !*trgroesolv then
+  << writepri("Next problem: ",'first);
+     writepri(mkquote car u,'last)>>;
   gblist:=cdr groebnerfeval u;
   at:=union(at,cdr glterms);
   !*groebopt:=nil;% 29.8.88
