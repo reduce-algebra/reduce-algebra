@@ -453,8 +453,8 @@ defautoload(compute!:lerch_phi,specfn,expr,3);
 
 flag('(compute!:Khinchin1 bernoulli!*calc euler!:aux),'opfn);
 defautoload(compute!:Khinchin1,specfn,expr,0);
-defautoload(bernoulli!*calc,specfn,expr,0);
-defautoload(euler!:aux,specfn,expr,0);
+defautoload(bernoulli!*calc,specfn,expr,1);
+defautoload(euler!:aux,specfn,expr,1);
 defautoload(rd_euler!*,(specfn sfgamma),expr,0);
 defautoload(cr_euler!*,(specfn sfgamma),expr,0);
 defautoload(rd_catalan!*,specfn,expr,0);

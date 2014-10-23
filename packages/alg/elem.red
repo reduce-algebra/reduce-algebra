@@ -541,7 +541,7 @@ for all x,y let df(x**y,x)= y*x**(y-1),
 
 % Ei, erf, erfc, erfi, exp and dilog.
 
-operator dilog,ei,erf,erfc,exp;
+operator dilog,ei,erf,erfi,erfc,exp;
 
 let {
    dilog(0) => pi**2/6,
@@ -550,9 +550,9 @@ let {
    dilog(-1) => pi^2/4-i*pi*log(2)
 };
 
-let df(dilog(~x),(~x))=-log(x)/(x-1);
+let df(dilog(~x),(~x)) => -log(x)/(x-1);
 
-let df(ei(~x),~x)=e**x/x;
+let df(ei(~x),~x) => e**x/x;
 
 
 
