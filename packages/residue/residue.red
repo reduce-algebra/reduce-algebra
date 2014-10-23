@@ -29,9 +29,7 @@ module residue; % Calculation of residues
 
 % needs taylor package for execution.
 
-remflag('(load_package),'eval);
-
-load_package taylor;
+packages!_to!_load taylor;
 
 create!-package('(residue),'(contrib misc));
 
