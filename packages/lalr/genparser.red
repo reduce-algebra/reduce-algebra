@@ -343,7 +343,7 @@ symbolic procedure lalr_print_items(heading, cc);
             princ "  :  ";
             lalr_prin_symbol cadr x;
             terpri() >>;
-        for each x in hashcontents goto_cache do
+        for each x in sort(hashcontents goto_cache, function ordp) do
           for each xx in cdr x do
             if car xx = cdr y then <<
                 ttab 10; lalr_prin_symbol car x;
@@ -602,7 +602,7 @@ symbolic procedure lalr_make_gotos();
   begin
     scalar p, r1, w, r;
     p := 0;
-    for each x in hashcontents goto_cache do
+    for each x in sort(hashcontents goto_cache, function ordp) do
         if not numberp car x then <<
             if !*lalr_verbose then
                 for each xx in cdr x do <<

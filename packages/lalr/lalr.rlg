@@ -58,19 +58,19 @@ c -> . dd  :  cc
 c -> . dd  :  dd
 s -> . c c  :  $
 s' -> . s  :  $
-          dd GOTO state 4
           c GOTO state 2
-          cc GOTO state 3
           s GOTO state 1
+          cc GOTO state 3
+          dd GOTO state 4
 Item number 1
 s' -> s .  :  $
 Item number 2
 c -> . cc c  :  $
 c -> . dd  :  $
 s -> c . c  :  $
-          dd GOTO state 8
           c GOTO state 6
           cc GOTO state 7
+          dd GOTO state 8
 Item number 3
 c -> . cc c  :  cc
 c -> . cc c  :  dd
@@ -78,9 +78,9 @@ c -> . dd  :  cc
 c -> . dd  :  dd
 c -> cc . c  :  cc
 c -> cc . c  :  dd
-          dd GOTO state 4
           c GOTO state 5
           cc GOTO state 3
+          dd GOTO state 4
 Item number 4
 c -> dd .  :  cc
 c -> dd .  :  dd
@@ -93,9 +93,9 @@ Item number 7
 c -> . cc c  :  $
 c -> . dd  :  $
 c -> cc . c  :  $
-          dd GOTO state 8
           c GOTO state 9
           cc GOTO state 7
+          dd GOTO state 8
 Item number 8
 c -> dd .  :  $
 Item number 9
@@ -108,19 +108,19 @@ c -> . dd  :  cc
 c -> . dd  :  dd
 s -> . c c  :  $
 s' -> . s  :  $
-          dd GOTO state 4
           c GOTO state 2
-          cc GOTO state 3
           s GOTO state 1
+          cc GOTO state 3
+          dd GOTO state 4
 Item number 1
 s' -> s .  :  $
 Item number 2
 c -> . cc c  :  $
 c -> . dd  :  $
 s -> c . c  :  $
-          dd GOTO state 4
           c GOTO state 6
           cc GOTO state 3
+          dd GOTO state 4
 Item number 3
 c -> . cc c  :  cc
 c -> . cc c  :  dd
@@ -131,9 +131,9 @@ c -> . dd  :  $
 c -> cc . c  :  cc
 c -> cc . c  :  dd
 c -> cc . c  :  $
-          dd GOTO state 4
           c GOTO state 5
           cc GOTO state 3
+          dd GOTO state 4
 Item number 4
 c -> dd .  :  cc
 c -> dd .  :  dd
@@ -208,7 +208,7 @@ action_A #V16(1 2 2)
 2         c GOTO state 6
 3         c GOTO state 5
 0         s GOTO state 1
-goto_index: #V16(0 3 0)
+goto_index: #V16(4 3 0)
 goto_old_state: #V16(0 2 -1 -1)
 goto_new_state: #V16(2 6 5 1)
 
@@ -385,10 +385,10 @@ r -> . l  :  $
 s -> . l "=" r  :  $
 s -> . r  :  $
 s' -> . s  :  $
-          !:symbol GOTO state 4
+          l GOTO state 2
           r GOTO state 3
           s GOTO state 1
-          l GOTO state 2
+          !:symbol GOTO state 4
 Item number 1
 s' -> s .  :  $
 Item number 2
@@ -406,10 +406,10 @@ r -> . l  :  $
 s -> . l "=" r  :  $
 s -> . r  :  $
 s' -> . s  :  $
-          !:symbol GOTO state 4
-          s GOTO state 1
           l GOTO state 2
           r GOTO state 3
+          s GOTO state 1
+          !:symbol GOTO state 4
 Item number 1
 s' -> s .  :  $
 Item number 2
@@ -449,12 +449,12 @@ action_result #V16(4 0 -5 -2 -4)
 action_fn [nil nil nil nil nil nil]
 action_n #V8(0 1 0 1 1)
 action_A #V16(0 1 0 2 3)
-0         s GOTO state 1
 0         l GOTO state 2
 0         r GOTO state 3
-goto_index: #V16(1 0 1 2)
+0         s GOTO state 1
+goto_index: #V16(3 2 0 1)
 goto_old_state: #V16(-1 -1 -1)
-goto_new_state: #V16(1 2 3)
+goto_new_state: #V16(2 3 1)
 
 nil
 
@@ -509,10 +509,3 @@ w = 4
 end;
 
 nil
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.04 seconds
-real 0.19
-user 0.01
-sys 0.06
