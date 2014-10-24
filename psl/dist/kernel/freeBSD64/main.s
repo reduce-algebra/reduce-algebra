@@ -650,7 +650,7 @@ l0069:
  mov $68023,%rbx
  mov 32(%rsp),%rax
  add $40,%rsp
- cqto
+ xor %rdx,%rdx
  idiv %rbx
  mov %rdx,%rax
  ret
