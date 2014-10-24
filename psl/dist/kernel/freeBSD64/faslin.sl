@@ -151,7 +151,7 @@
 (compiletime (ds reloc-word-inf (x) (wshift (wshift x 34) -34)))
 (compiletime (ds reloc-word-tag (x) (wshift (wshift x 32) -62)))
 (compiletime (put 'put_a_halfword 'opencode '(
-   (mov  "%ebx" "0(%eax)")))) %% (reg 2) (displacement (reg eax) 0)))))
+   (movl "%ebx" "0(%rax)")))) %% (reg 2) (displacement (reg eax) 0)))))
 (compiletime (put 'get_a_halfword 'opencode '(
    (!*move (displacement (reg eax) 0) (reg eax)))))
 

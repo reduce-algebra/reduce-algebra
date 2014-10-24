@@ -945,7 +945,7 @@ l0094:
  mov %rax,%rbx
  mov (%rsp),%rax
  add $32,%rsp
- mov %ebx,0(%eax)
+ movl %ebx,0(%rax)
  ret
 l0093:
  .quad [[254<<56]+128]
