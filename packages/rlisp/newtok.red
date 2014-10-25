@@ -84,7 +84,7 @@ symbolic procedure newtok u;
       put(caar u,'switch!*,
           cdr newtok1(car u,cadr u,get(caar u,'switch!*)));
       % set up PRTCH property.
-      y := intern string2list car u;
+      y := intern list2string car u;
       if !*redeflg!* then lprim list(y,"redefined");
       put(cadr u,'prtch,y);
       if x := get(cadr u,'unary) then put(x,'prtch,y)
