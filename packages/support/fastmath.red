@@ -26,7 +26,7 @@ module fastmath;  % Definitions of key functions in the math module of
 %
 
 
-global '(!!deg2rad !!rad2deg !!floatbits);
+global '(!!deg2rad !!rad2deg !!floatbits log2);
 
 compiletime
   global '(!!fleps1exp !!plumaxexp !!pluminexp !!timmaxexp !!timminexp);

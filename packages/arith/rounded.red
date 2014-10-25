@@ -62,7 +62,7 @@ fluid '(dmode!* !*bfspace !*numval !*roundbf !*!*roundbf !*norndbf);
 
 fluid '(!*noconvert);
 
-global '(bfone!* epsqrt!* log2of10);
+global '(bfone!* epsqrt!* log2of10 log2);
 
 global '(domainlist!* !!nfpd !!nbfpd !!flprec !!rdprec mxflbf!!
          mnflbf!!);

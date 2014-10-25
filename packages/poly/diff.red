@@ -34,7 +34,7 @@ fluid '(!*depend frlis!* powlis!* subfg!* wtl!* depl!*);
 
 fluid '(!*allowdfint !*dfint !*expanddf !*intflag!* !*df_partial);
 
-global '(mcond!*);
+global '(mcond!* !!fleps1);
 
 % Contains a reference to RPLACD (a table update), commented out.
 
