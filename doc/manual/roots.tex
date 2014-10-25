@@ -4,7 +4,7 @@
 
 The root finding package is designed so that it can be used as an
 independent package, or it can be integrated with and called by {\tt
-SOLVE}. \index{SOLVE package ! with ROOTS package} This document describes
+SOLVE}. \index{SOLVE package!with ROOTS package} This document describes
 the package in its independent use.  It can be used to find some or all of
 the roots of univariate polynomials with real or complex coefficients, to
 the accuracy specified by the user.
@@ -288,7 +288,7 @@ increase accuracy and/or precision if it detects equal roots.  If,
 however, the initial accuracy specified was too low, and it was not
 possible to separate the roots, the program will abort.)
 
-\index{tracing ! ROOTS package}
+\index{Tracing!ROOTS package}
 \ttindex{TRROOT}
 \item[TRROOT] (Default OFF) If switch {\tt TRROOT} is on, trace messages
 are printed out during the course of root determination, to show the
@@ -351,9 +351,9 @@ test package.  It is usually best to let the roots package
 determine the precision needed to compute roots.
 
 The number of digits that can be safely represented in floating point in
-the lisp system are contained in the global variable {\tt !!NFPD}.
+the lisp system are contained in the global variable \texttt{!!NFPD}.
 Similarly, the maximum number of significant figures in floating point
-output are contained in the global variable {\tt !!FLIM}.  The roots
+output are contained in the global variable \texttt{!!FLIM}.  The roots
 package computes these values, which are needed to control the logic of
 the program. \ttindex{"!"!FLIM} \ttindex{"!"!NFPD}
 

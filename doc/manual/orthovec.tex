@@ -100,11 +100,11 @@ menu of standard coordinate systems:-
 
 
 \begin{enumerate}
-\index{cartesian coordinates}
+\index{Cartesian coordinates}\index{Coordinates!cartesian}
 \item cartesian $(x, y, z) = $ {\tt (x, y, z)}
-\index{cylindrical coordinates}
+\index{Cylindrical coordinates}\index{Coordinates!cylindrical}
 \item cylindrical $(r, \theta, z) = $ {\tt (r, th, z)}
-\index{spherical coordinates}
+\index{Spherical coordinates}\index{coordinates!spherical}
 \item spherical $(r, \theta, \phi) = $ {\tt (r, th, ph) }
 \item general $( u_1, u_2, u_3 ) = $ {\tt (u1, u2, u3) }
 \item others
@@ -179,7 +179,7 @@ are as summarised below.  The notation used is\\
 
 \newpage
 \underline{Vector Addition} \\
-\ttindex{VECTORPLUS} \ttindex{VECTORADD} \index{vector ! addition}
+\ttindex{VECTORPLUS} \ttindex{VECTORADD} \index{Vector!addition}
 \begin{tabular}{rclcrcl}
 {\bf v} &:=& VECTORPLUS({\bf v})  &{\rm or}& {\bf v} &:=&  +  {\bf v} \\
      s  &:=& VECTORPLUS(s)  &{\rm or} &      s  &:=&  +       s  \\
@@ -189,7 +189,7 @@ are as summarised below.  The notation used is\\
 \end{tabular} \\
 
 \underline{Vector Subtraction} \\
-\ttindex{VECTORMINUS} \ttindex{VECTORDIFFERENCE} \index{vector ! subtraction}
+\ttindex{VECTORMINUS} \ttindex{VECTORDIFFERENCE} \index{Vector!subtraction}
 \begin{tabular}{rclcrcl}
 {\bf v} &:=& VECTORMINUS({\bf v})  &{\rm or}&
  {\bf v} &:=&  -  {\bf v} \\
@@ -200,7 +200,7 @@ are as summarised below.  The notation used is\\
 \end{tabular} \\
 
 \underline{Vector Division}\\
-\ttindex{VECTORRECIP} \ttindex{VECTORQUOTIENT} \index{vector ! division}
+\ttindex{VECTORRECIP} \ttindex{VECTORQUOTIENT} \index{Vector!division}
 \begin{tabular}{rclcrcl}
 {\bf v} &:=& VECTORRECIP({\bf v})  &{\rm or}& {\bf v} &:=&  /  
 {\bf v} \\
@@ -216,7 +216,7 @@ are as summarised below.  The notation used is\\
 \end{tabular} \\
 
 \underline{Vector Multiplication}\\ 
-\ttindex{VECTORTIMES} \index{vector ! multiplication}
+\ttindex{VECTORTIMES} \index{Vector!multiplication}
 \begin{tabular}{rclcrcl}
 {\bf v} &:=& VECTORTIMES(   s   ,{\bf v})  &{\rm or }& {\bf v} &:=&     
 s    *  {\bf v} \\
@@ -229,14 +229,14 @@ s    *     s    \\
 \end{tabular} \\
  
 \underline{Vector Cross Product} \\
-\ttindex{VECTORCROSS} \index{cross product} \index{vector ! cross product}
+\ttindex{VECTORCROSS} \index{Cross product} \index{Vector!cross product}
 \begin{tabular}{rclcrcl}
 {\bf v} &:=& VECTORCROSS({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=& {\bf
  v} $\times$   {\bf v} \\
 \end{tabular} \\
  
 \underline{Vector Exponentiation}\\
-\ttindex{VECTOREXPT} \index{vector ! exponentiation}
+\ttindex{VECTOREXPT} \index{Vector!exponentiation}
 \begin{tabular}{rclcrcl}
    s    &:=& VECTOREXPT ({\bf v},   s   )  &{\rm or }&    s    &:=& {\bf
  v}  \^{} s   \\
@@ -245,7 +245,7 @@ s    *     s    \\
 \end{tabular} \\
 
 \underline{Vector Modulus}\\
-\ttindex{VMOD} \index{vector ! modulus}
+\ttindex{VMOD} \index{Vector!modulus}
 \begin{tabular}{rcl}
    s    &:=& VMOD (s)\\
    s    &:=& VMOD ({\bf v}) \\
@@ -254,8 +254,8 @@ s    *     s    \\
 All other combinations of operands for these operators lead to error 
 messages being issued.  The first two instances of vector
 multiplication are scalar multiplication of vectors, the third is the
-\index{vector ! dot product} \index{vector ! inner product}
-\index{inner product} \index{dot product}
+\index{Vector!dot product} \index{Vector!inner product}
+\index{Inner product} \index{Dot product}
 product of two scalars and the last is the inner (dot) product.  The
 prefix operators  {\tt +, -, /} can take either scalar or vector
 arguments and return results of the same type as their arguments. 
@@ -291,8 +291,8 @@ ${\bf a}^n \equiv  {\rm VMOD}(a)^n =   \mid {\bf a} \mid^n$
 
 \subsection{Differential Operations}
 Differential operators provided are div, grad, curl, delsq, and dotgrad.
-\index{div operator} \index{grad operator} \index{curl operator}
-\index{delsq operator} \index{dotgrad operator}
+\index{Div operator} \index{Grad operator} \index{Curl operator}
+\index{Delsq operator} \index{Dotgrad operator}
 All but the last of these are prefix operators having a single
 vector or scalar argument as appropriate.  Valid combinations of 
 operator and argument, and the type of the result are shown in table~\ref{vvecttable}.
@@ -500,7 +500,7 @@ The input lines were taken from the file
 {\em orthovectest.red} (the Test Run Input), but could 
 equally well be typed in at the Terminal.
 
-\example\index{ORTHOVEC package! example}
+\example\index{ORTHOVEC package!example}
 
 Show that
 \begin{eqnarray*}
@@ -509,7 +509,7 @@ Show that
  + ({\bf a} \cdot {\bf d})({\bf b} \cdot {\bf c}) \equiv 0
 \end{eqnarray*}
  
-\example\index{ORTHOVEC package! example}\label{ORTHOVEC:eqm}
+\example\index{ORTHOVEC package!example}\label{ORTHOVEC:eqm}
 
 Write the equation of motion
 \begin{eqnarray*}
@@ -518,7 +518,7 @@ Write the equation of motion
 \end{eqnarray*}
 in cylindrical coordinates.
 
-\example\index{ORTHOVEC package! example}\label{ORTHOVEC:taylor}
+\example\index{ORTHOVEC package!example}\label{ORTHOVEC:taylor}
 
 Taylor expand
 \begin{itemize}
@@ -532,13 +532,13 @@ fifth order in $z$.
 ${\bf v} = (x/ \sin(x),(e^y-1)/y,(1+z)^{10})$.
 \end{itemize}
 
-\example\index{ORTHOVEC package! example}
+\example\index{ORTHOVEC package!example}
 
 Obtain the second component of the equation of motion in
 example~\ref{ORTHOVEC:eqm}, and the first component of the final
 vector Taylor series in example~\ref{ORTHOVEC:taylor}.
 
-\example\index{ORTHOVEC package! example}
+\example\index{ORTHOVEC package!example}
 
 Evaluate the line integral 
 \begin{eqnarray*}
@@ -551,7 +551,7 @@ ${\bf r}_2 = (2,4,8)$ along the path $(x,y,z) = (s, s^2, s^3)$ where\\
 \end{eqnarray*}
 and $({\bf i, j, k})$ are unit vectors in the ($x,y,z$) directions.
 
-\example\index{ORTHOVEC package! example}
+\example\index{ORTHOVEC package!example}
 
 Find the volume $V$ common to the intersecting cylinders $x^2 + y^2 
 = r^2$ and $x^2 + z^2 = r^2$ i.e. evaluate
