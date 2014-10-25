@@ -527,7 +527,9 @@ number; all of the odd Bernoulli numbers, except {\tt Bernoulli(1)}, are
 zero.
 
 The algorithms are based upon those by Herbert Wilf, presented by Sandra
-Fillebrown \cite{Fillebrown:92}.  If the \sw{ROUNDED} switch is off,
+Fillebrown.%
+ \cite{Fillebrown:92}.  
+If the \sw{ROUNDED} switch is off,
 the algorithms are exactly those; if it is on, some further rounding may
 be done to prevent computation of redundant digits.  Hence, these
 functions are particularly fast when used to approximate the Bernoulli
@@ -962,11 +964,11 @@ will give \var{A3} the value 2.
 \section{The Pochhammer Notation}
 \ttindex{Pochhammer}\index{Pochhammer notation}
 
-The Pochhammer notation $(a)_k$ is supported by the binary operator \texttt{POCHHAMMER}.
+The Pochhammer notation $(a)_k$ is supported by the binary operator \texttt{POCHHAMMER(A,K)}.
 With \sw{ROUNDED} off, this expression is evaluated
 numerically if $a$ and $k$ are both integral, and otherwise may be
 simplified where appropriate.  The simplification rules are based upon
-algorithms supplied by Wolfram Koepf \cite{Koepf:92}.
+algorithms supplied by Wolfram Koepf.% \cite{Koepf:92}.
 
 
 \section{PF Operator}\ttindex{PF}
@@ -982,12 +984,14 @@ algorithm), the code may be unacceptably slow in complicated cases.
 \textit{Example:}
 Given \texttt{2/((x+1)\textasciicircum2*(x+2))} in the workspace,
 \texttt{pf(ws,x);} gives the result
+\begin{samepage}
 \begin{verbatim}
             2      - 2         2
         {-------,-------,--------------} .
           X + 2   X + 1    2
                           X  + 2*X + 1
 \end{verbatim}
+\end{samepage}
 
 If you want the denominators in factored form, use \texttt{off exp;}.
 Thus, with \texttt{2/((x+1)\textasciicircum2*(x+2))} in the workspace,

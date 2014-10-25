@@ -104,16 +104,19 @@ assigns the value \texttt{X} to \texttt{A23}.
 
 \section{Group Statements}
 
+\index{<<@\texttt{<}\texttt{<} (begin group)}
+\index{>>@\texttt{>}\texttt{>} (end group)}
 The group statement\index{Group statement} is a construct used where
 {\REDUCE} expects a single statement, but a series of actions needs to be
 performed.  It is formed by enclosing one or more statements (of any kind)
-between the symbols \texttt{<<} and \texttt{>>}, separated by semicolons or
+between the symbols \texttt{<}\texttt{<} and \texttt{>}\texttt{>}, 
+separated by semicolons or
 dollar signs -- it doesn't matter which.  The statements are executed one
 after another.
 
 Examples will be given in the sections on \texttt{IF}\ttindex{IF} and other
-types of statements in which the \texttt{<<} \ldots \texttt{>>} construct is
-useful.
+types of statements in which the \texttt{<}\texttt{<} \ldots \texttt{>}\texttt{>} 
+construct is useful.
 
 If the last statement in the enclosed group has a value, then that is also
 the value of the group statement.  Care must be taken not to have a
@@ -314,8 +317,8 @@ is known in advance.  If the criterion for repetition is more complicated,
 The \texttt{WHILE} \ldots{} \texttt{DO} controls the single statement
 following \texttt{DO}.
 If several statements are to be repeated, as is almost always the case,
-they must be grouped using the \texttt{<<} \ldots{} \texttt{>>} or
-\texttt{BEGIN} \ldots{} \texttt{END}
+they must be grouped using the \texttt{<}\texttt{<} \ldots{} \texttt{>}\texttt{>} 
+or \texttt{BEGIN} \ldots{} \texttt{END}
 as in the example below.
 
 The \texttt{WHILE} condition is tested each time \emph{before} the action
@@ -391,7 +394,8 @@ enclosed between the words \texttt{BEGIN} and \texttt{END}\ttindex{BEGIN \ldots
 END} forming what is technically called a \emph{block}\index{Block} or
 \emph{compound} statement.  Such a compound statement can in fact be used
 wherever a group statement appears.  The converse is not true: {\tt BEGIN
-\ldots END} can be used in ways that \texttt{<<} \ldots{} \texttt{>>} cannot.
+\ldots END} can be used in ways 
+that \texttt{<}\texttt{<} \ldots{} \texttt{>}\texttt{>} cannot.
 
 \hypertarget{command:SCALAR}{}
 \hypertarget{command:INTEGER}{}
@@ -556,8 +560,8 @@ understand, we tabulate some cautions concerning its use.
 statement, i.e. as one of the statements bracketed together by the 
 \texttt{BEGIN} \ldots{} \texttt{END}\ttindex{BEGIN \ldots END}
 
-\item \texttt{RETURN} can be used within a top level \texttt{<<}
-  \ldots{} \texttt{>>} construction within the compound statement. In
+\item \texttt{RETURN} can be used within a top level \texttt{<}\texttt{<}
+  \ldots{} \texttt{>}\texttt{>} construction within the compound statement. In
   this case, the \texttt{RETURN} transfers control out of both the
   group statement and the compound statement.
 

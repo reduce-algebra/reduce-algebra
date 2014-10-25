@@ -80,7 +80,7 @@ scientific notation.
 
 \textit{CAUTION:}  The unsigned part of any number\index{Number} may \emph{not}
 begin with a decimal point, as this causes confusion with the \texttt{CONS} (.)
-operator, i.e., \emph{NOT ALLOWED}: \texttt{.5  -.23  +.12};
+operator, i.e., \emph{NOT ALLOWED ARE}: \texttt{.5  -.23  +.12};
 use \texttt{0.5 -0.23 +0.12} instead.
 
 \section{Identifiers}
@@ -127,11 +127,13 @@ and procedures.
 
 \subsection*{Restrictions}
 
-The reserved words listed in another section may not be used as
+The reserved words listed in section (\ref{reservedids)} may not be used as
 identifiers.  No spaces may appear within an identifier, and an identifier
-may not extend over a line of text. (Hyphenation of an identifier, by
-using a reserved character as a hyphen before an end-of-line character is
-possible in some versions of {\REDUCE}).
+may not extend over a line of text.
+
+%(Hyphenation of an identifier, by
+%using a reserved character as a hyphen before an end-of-line character is
+%possible in some versions of {\REDUCE}).
 
 \section{Variables}
 
@@ -262,7 +264,7 @@ attention to it.  There are two ways to do this:
 \item Everything from the word \texttt{COMMENT}\ttindex{COMMENT} to the next
 statement terminator, normally ; or \$, is ignored.  Such comments
 can be placed anywhere a blank could properly appear. (Note that \texttt{END}
-and \texttt{>>} are \emph{not} treated as \texttt{COMMENT} delimiters!)
+and \texttt{>}\texttt{>} are \emph{not} treated as \texttt{COMMENT} delimiters!)
 
 \item Everything from the symbol \texttt{\%}\index{Percent sign} to the end
 of the line on which it appears is ignored.  Such comments can be placed
