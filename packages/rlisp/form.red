@@ -749,15 +749,9 @@ symbolic procedure mkarg(u,vars);
 
 put('!:dn!:,'formfn,'dnform);
 
-% symbolic procedure dnform(u,vars,mode);
-%    if mode eq 'symbolic
-%      then compress nconc!*(explode cadr u,'!. . 'e . explode cddr u)
-%     else progn(if !*adjprec then precmsg length explode abs cadr u,
-%                mkquote(quote !:rd!: . cdr u));
-
 symbolic procedure dnform(u,vars,mode);
-   if mode eq 'symbolic
-     then compress nconc!*(explode cadr u,'!. . 'e . explode cddr u)
+   if mode eq 'symbolic then  % Format as nnn.Emmm then is in FP format
+     compress nconc!*(explode cadr u,'!. . 'e . explode cddr u)
     else progn(if !*adjprec then precmsg length explode abs cadr u,
                mkquote if cddr u >= 0
                          then decimal2internal(cadr u,cddr u)

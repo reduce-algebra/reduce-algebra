@@ -101,7 +101,7 @@ symbolic procedure lalr_decode_symbol x;
     else if numberp x and (w := rassoc(x, terminals)) then
        return car w
     else if stringp x then return x
-    else return intern compress (for each c in explode2uc x collect c)
+    else return intern list2string (for each c in explode2uc x collect c)
   end;
 
 symbolic procedure lalr_display_symbols();
@@ -175,7 +175,7 @@ symbolic procedure lalr_set_grammar g;
           for each v in car vv do <<
             if stringp v then <<
                if null cdr (tnum := explodecn v) then <<
-                  v := intern compress ('!! . '!: . tnum);
+                  v := intern string2list ('!: . tnum);
                   princ "One-character string found <";
                   princ v;
                   princ "> with code ";

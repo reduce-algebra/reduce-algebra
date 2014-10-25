@@ -453,14 +453,13 @@ symbolic procedure glob!-filenames pat;
          chan := pipe!-open(cmd,'input);
          if chan=0 then return rederr "error opening pipe";
          oldchan := rds chan;
-         strbuf := list '!";
+         strbuf := nil;
          while (chr := readch()) neq !$eof!$ do <<
            if chr neq !$eol!$
              then strbuf := chr . strbuf    % collect character for filename
-            else <<                       % eol - finish filename
-             strbuf := '!" . strbuf;
-	     filelist := (compress reversip strbuf) . filelist;
-             strbuf := list '!">>;
+            else <<                         % eol - finish filename
+	     filelist := (list2string reversip strbuf) . filelist;
+             strbuf := nil>>;
          >>;
          close rds oldchan>>,
        !*raise := raise);

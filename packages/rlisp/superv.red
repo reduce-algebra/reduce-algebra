@@ -218,9 +218,9 @@ symbolic procedure update!_prompt;
    begin
       statcounter := statcounter + 1;
       promptexp!* :=
-         compress('!! . append(explode statcounter,
-                     explode if null symchar!* or !*mode eq 'algebraic
-                               then '!:!  else '!*! ));
+         intern list2string append(explode statcounter,
+                     if null symchar!* or !*mode eq 'algebraic
+                     then '(!: ! ) else '(!* ! ));
       setpchar promptexp!*
    end;
 

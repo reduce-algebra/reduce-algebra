@@ -248,18 +248,6 @@ symbolic procedure printf1(fmt, args);
 symbolic macro procedure bldmsg u;
   list('bldmsg1, cadr u, 'list . cddr u);
 
-symbolic procedure bldstring r;
-% Could possibly be (list!-to!-string nreverse r) ???
-  begin
-    scalar w;
-    w := '(!");
-    while r do <<
-       w := car r . w;
-       if car r eq '!" then w := '!" . w;
-       r := cdr r >>;
-    return compress ('!" . w)
-  end;
-
 symbolic procedure bldcolumn(s, n);
   if null s or eqcar(s, !$eol!$) then n
   else bldcolumn(cdr s, n+1);
@@ -297,7 +285,7 @@ symbolic procedure bldmsg1(fmt, args);
             else if c = '!x then r := append(reverse explodehex a, r)
             else rerror('cslrend,1,list(c,"bad format character")) >> >>
       else r := c . r >>;
-    return bldstring r
+    return list2string nreverse r
   end;
 
 put('gc, 'simpfg, '((t (verbos t)) (nil (verbos nil))));

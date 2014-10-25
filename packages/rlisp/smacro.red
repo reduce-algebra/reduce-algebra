@@ -430,7 +430,7 @@ symbolic procedure expand_accessor(u, path, r);
                          list(get(car path, 'mutator),
                               makecarcdr(cdr path, 'u),
                               'v))) . r >>;
-    u := intern compress append('(s e t !_), explode u);
+    u := intern list2string append('(s e t !_), explode2 u);
     r := list('put, mkquote u, ''number!-of!-args, 2) . r;
     if not !*noinlines then
        r := list('putc, mkquote u, ''inline,

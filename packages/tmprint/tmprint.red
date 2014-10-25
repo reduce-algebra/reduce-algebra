@@ -331,9 +331,6 @@ procedure linelength(a);
 % directly to the screen I will issue the codes that texmacs likes to see.
 %
 
-% Convert a list of character objects into a string.
-% (The function list!-to!-string already exists...)
-
 % Convert a string into a list of character objects.
 inline procedure string!-to!-list a;
     explode2 a;
@@ -355,9 +352,6 @@ inline procedure writechar n;
 % CSL already has explode2lc;
 
 #else
-
-inline procedure list!-to!-string a;
-    compress ('!" . append(a, '(!")));
 
 inline procedure string!-to!-list a;
     explode2 a;
@@ -2500,7 +2494,7 @@ symbolic procedure fancy!-texsym u;
    fancy!-level
     begin
       if null u then return;
-      fancy!-prin2 list!-to!-string ('!\ . explode2 cadr u);
+      fancy!-prin2 list2string ('!\ . explode2 cadr u);
       u := cddr u;
       while u do <<
          fancy!-line!* := "{" . fancy!-line!*;
@@ -2520,7 +2514,7 @@ symbolic procedure fancy!-texstring u;
     for each s in cdr u do <<
       if not atom s then fancy!-maprint(s, 0)
       else <<
-         if not stringp s then s := list!-to!-string explode2 s;
+         if not stringp s then s := list2string explode2 s;
          fancy!-line!* := s . fancy!-line!* >> >>;
 
 % texbox(h) is a box of given height (in points)
@@ -2660,7 +2654,7 @@ procedure tm_color(c);
          ec := if ec and eqcar(ec,'!*) then {'!*};
       >>;
       ec := append(tm_bprompt(), append(ec, tm_eprompt()));
-      ec := list!-to!-string ec;
+      ec := list2string ec;
       if sf then return ec
       else return intern ec
    end;
@@ -2676,7 +2670,7 @@ procedure tm_uncolor(c);
        ec := tm_prunelhead(ec, tm_bprompt());
        if car ec eq '!  then ec := cdr ec; % strip space
        ec := tm_pruneltail(ec, tm_eprompt());
-       ec := list!-to!-string ec;
+       ec := list2string ec;
        if sf then return ec
        else return intern ec
    end;

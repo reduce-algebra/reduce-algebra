@@ -125,6 +125,13 @@ symbolic procedure start_parser();
 %    print "message";      % so care should be taken to select the most
 %    #endif               % useful default sense for such tests
 % should be about as complicated as reasonable people need.
+%
+% NOTE: in the emplementation of this in rlisp/tok.red there was for
+% some time a bug whereby
+%  #if t ; ... ; #elif x ; ... ; #else XXX #endif
+% included the text XXX because #else was taken as just flipping the
+% acceptance state. I neeed to review and test the code here to ensure that
+% it does not suffer from the same badness!
 % 
 % Two further facilities are provided:
 %    #eval (any lisp expression)
@@ -354,33 +361,27 @@ symbolic procedure lex_basic_token();
 % some exception led to an error exit from within yyreadch they would
 % end up restored. However the Standard Lisp Report says that !*raise must
 % be global, and PSL follows that.
-          scalar raise, lower;      % Save !*raise & !*lower to avoid ..
-          raise := !*raise;
-          lower := !*lower;
-          !*raise := !*lower := nil;
-          r := lex_char . r;        % .. case folding when the next ..
-          yyreadch();               % character is read.
+          scalar raise, !*lower;    % Save !*raise & !*lower to avoid ..
+          raise := !*raise;         % .. case folding after (!)
+          !*raise := nil;
+          yyreadch();
           !*raise := raise;
-          !*lower := lower;
           return (w := t) end) then <<
       r := lex_char. r;
       while liter(yyreadch()) or
             digit lex_char or
             lex_char = '!_ or
             (lex_char = '!! and begin
-               scalar raise, lower;      % Save !*raise & !*lower.
+               scalar raise, !*lower;      % Save !*raise & !*lower.
                raise := !*raise;
-               lower := !*lower;
-               !*raise := !*lower := nil;
-               r := lex_char . r;
+               !*raise := nil;
                yyreadch();
                !*raise := raise;
-               !*lower := lower;
                return (w := t) end) do
         r := lex_char . r;
-% If there was a '!' in the word I will never treat it as a keyword.
-% The intern here is for the benefit of PSL.
-      yylval := intern compress reversip r;
+% If there was a '!' in the word I will never treat it as a keyword. The
+% flag variable w indicates this situation.
+      yylval := intern list2string reversip r;
       if not w and yylval = 'eof then return 0; % Special fudge for now
       return if w then '!:symbol else '!:symbol_or_keyword >>
 % Numbers are either integers or floats. A floating point number is
@@ -411,6 +412,8 @@ symbolic procedure lex_basic_token();
         else <<
           r := lex_char . r;
           while digit (yyreadch()) do r := lex_char . r >> >>;
+% Here I have a number, so I can use compress to parse it without concern
+% aboout upper vs. lower case.
       yylval := compress reversip r;
       return '!:number >>
 % Strings are enclosed in double-quotes, and "abc""def" is a string with
@@ -420,17 +423,22 @@ symbolic procedure lex_basic_token();
       begin
         scalar raise, lower;      % Save !*raise & !*lower.
         raise := !*raise;
+        !*raise := nil;
+#if (memq 'csl lispsystem!*)
         lower := !*lower;
-        !*raise := !*lower := nil;
+        !*lower := nil;
+#endif
         repeat <<
-          r := lex_char . r;
-          while not ((yyreadch()) = '!") do r := lex_char . r;
+          while not (yyreadch() = '!") do r := lex_char . r;
           r := lex_char . r;
           yyreadch() >> until not (lex_char = '!");
         !*raise := raise;
+#if (memq 'csl lispsystem!*)
         !*lower := lower;
+#endif
       end;
-      yylval := compress reversip r;
+      yylval := list2string reversip cdr r;
+      lex_char := w;
       return '!:string >>
 % "'" and "`"(backquote) introduce Lisp syntax S-expressions
     else if lex_char = '!' then <<

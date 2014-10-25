@@ -58,7 +58,6 @@ global '(!$eol!$
          !*extraecho
          !*loadversion
          !*raise
-         charassoc!*
          crbuflis!*
          crchar!*
          date!*
@@ -178,25 +177,44 @@ symbolic procedure mkfil u;
 
 symbolic procedure string!-downcase u;
    begin scalar z;
-      if not stringp u then u := '!" . append(explode2 u,'(!"))
-       else u := explode u;
-      for each x in u do z := red!-char!-downcase x . z;
-      return compress reverse z
+      for each x in explode2 u do z := red!-char!-downcase x . z;
+      return list2string reversip z
    end;
 
-remflag('(red!-char!-downcase),'lose);
+global '(uc!-charassoc!*);
 
-symbolic procedure red!-char!-downcase u;
-   (if x then cdr x else u) where x = atsoc(u,charassoc!*);
+uc!-charassoc!* :=
+         '((!a   !A) (!b . !B) (!c . !C) (!d . !D) (!e . !E) (!f . !F)
+           (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L)
+           (!m . !M) (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R)
+           (!s . !S) (!t . !T) (!u . !U) (!v . !V) (!w . !W) (!x . !X)
+           (!y . !Y) (!z . !Z));
 
-flag('(red!-char!-downcase),'lose);
+symbolic procedure explode2uc u;
+  for each c in explode2 u collect
+    ((if x then cdr x else c) where x = atsoc(c, uc!-charassoc!*));
 
-charassoc!* :=
-         '((!A . !a) (!B . !b) (!C . !c) (!D . !d) (!E . !e) (!F . !f)
+global '(lc!-charassoc!*);
+
+lc!-charassoc!* :=
+         '((!A   !a) (!B . !b) (!C . !c) (!D . !d) (!E . !e) (!F . !f)
            (!G . !g) (!H . !h) (!I . !i) (!J . !j) (!K . !k) (!L . !l)
            (!M . !m) (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r)
            (!S . !s) (!T . !t) (!U . !u) (!V . !v) (!W . !w) (!X . !x)
            (!Y . !y) (!Z . !z));
+
+symbolic procedure explode2lc u;
+  for each c in explode2 u collect
+    ((if x then cdr x else c) where x = atsoc(c, lc!-charassoc!*));
+
+remflag('(red!-char!-downcase),'lose);
+
+symbolic procedure red!-char!-downcase u;
+   (if x then cdr x else u) where x = atsoc(u,lc!-charassoc!*);
+
+flag('(red!-char!-downcase),'lose);
+
+
 
 % symbolic procedure orderp(u,v);
 %    % U, V are non-numeric atoms (but can be vectors).

@@ -78,9 +78,9 @@ symbolic procedure Taylor!*print1 u;
              if not null numr TayCfSq pp then
                notprinted := notprinted + 1;
            if notprinted=1 then rest := "(1 term)" . rest
-            else rest := compress append('(!" !(),
+            else rest := list2string ('!( .
                            nconc(explode notprinted,
-                                 '(!  !t !e !r !m !s !) !"))) . rest
+                                 '(!  !t !e !r !m !s !)) )) . rest
         end
         %%%if prepexpr=0 and null cdr rest then return car rest
         >>

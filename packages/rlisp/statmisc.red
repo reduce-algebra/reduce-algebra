@@ -126,7 +126,7 @@ symbolic procedure local!-symbol(env);
   tryagain:
     if null current!-new!-symbols then <<
       new!-symbol!-counter := new!-symbol!-counter + 1;
-      r := intern compress append('(w), explode new!-symbol!-counter);
+      r := intern list2string append('(w), explode new!-symbol!-counter);
       all!-new!-symbols := append(all!-new!-symbols, list r) >>
     else <<
       r := car current!-new!-symbols;

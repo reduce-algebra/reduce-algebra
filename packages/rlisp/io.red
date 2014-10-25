@@ -102,13 +102,13 @@ symbolic procedure in_list1a(fl,echop,prefixchars);
       w := explode2 fl;
       if eqcar(w, '!$) and
          (eqcar(cdr w, '!/) or eqcar(cdr w, '!\)) then <<
-        if null ifl!* then fl := compress('!" . '!. . append(cdr w, '(!")))
+        if null ifl!* then fl := list2string('!. . cdr w)
         else <<
           w1 := reverse explode2 car ifl!*;
           while w1 and not (eqcar(w1, '!/) or eqcar(w1, '!\)) do w1 := cdr w1;
           if null w1 then w1 := '(!/ !.);
-          w := '!" . append(reverse w1, append(cddr w, '(!")));
-          fl := compress w >> >>;
+          w := append(reverse w1, cddr w);
+          fl := list2string w >> >>;
       chan := open(fl,'input);
       ochan := rds chan;
       if assoc(fl,linelist!*) then nil;

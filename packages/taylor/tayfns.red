@@ -971,8 +971,12 @@ comment The algorithm for the trigonometric functions is also
 
         ;
 
+% I rather suspect that the idea here is to create a symbol whose name is
+% tayexp but that is not interned and hence could not clash with any user
+% symbol that happened to have that name. Rather than relying on an
+% uninterned symbol I will just use one with an unusual name.
 
-!*!*taylor!-epsilon!*!* := compress '(t a y e p s);
+!*!*taylor!-epsilon!*!* := '!~tayeps!~;
 
 symbolic procedure taysimptan u;
   %

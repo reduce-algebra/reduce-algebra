@@ -543,9 +543,6 @@ procedure evalnum0(u);
 % The PSL bootstrap build requires the "!" here
 #if (memq 'psl lispsystem!*)
 
-symbolic procedure list!-to!-string u;
-  compress ('!" . append(u, '(!")));
-
 symbolic procedure hexdig w;
   cdr assoc(w, '((0 . !0) (1 . !1) (2 . !2) (3 . !3)
                  (4 . !4) (5 . !5) (6 . !6) (7 . !7)
@@ -610,7 +607,7 @@ symbolic procedure hexfloat1 w1;
       w := append(m2, '!_ . w);
       w := append(m1, '!_ . w);
       if s then w := '!- . w;
-      return list!-to!-string w
+      return list2string w
     end
   else if atom w1 then w1
   else hexfloat1 car w1 . hexfloat1 cdr w1;

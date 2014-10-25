@@ -100,9 +100,10 @@ symbolic procedure formload(u,vars,mode);
 
 symbolic procedure load!-package u;
    begin scalar x,y;
-      if stringp u
-        then return load!-package intern intern compress explode u
-   % intern intern is needed for, e.g., "../huhu".
+      if stringp u then return load!-package intern u
+% And earlier comment said 'intern intern is needed for, e.g., "../huhu".'
+% but when I try both PSL and CSL the string "../huhu" when passed to intern
+% yields the symbol !.!.!/huhu as expected...
        else if null idp u then rederr list(u,"is not a package name")
        else if memq(u,loaded!-packages!*)
 %       then progn(lprim list("Package",u,"already loaded"), return u)

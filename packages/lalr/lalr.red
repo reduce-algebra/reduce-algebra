@@ -71,19 +71,6 @@ inline procedure getv16(v, n); getv(v, n);
 
 % Other CSL-isms that need simulation in PSL.
 
-global '(uc!-charassoc!*);
-
-uc!-charassoc!* :=
-         '((!a   !A) (!b . !B) (!c . !C) (!d . !D) (!e . !E) (!f . !F)
-           (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L)
-           (!m . !M) (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R)
-           (!s . !S) (!t . !T) (!u . !U) (!v . !V) (!w . !W) (!x . !X)
-           (!y . !Y) (!z . !Z));
-
-symbolic procedure explode2uc u;
-  for each c in explode2 u collect
-    ((if x then cdr x else c) where x = atsoc(c, uc!-charassoc!*));
-
 % If PSL does not have built-in hash tables I will model the
 % effect that they provide using association lists. To arrange that
 % a "table" can be updated in place I will have a list of length 1

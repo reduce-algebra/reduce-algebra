@@ -84,6 +84,9 @@ Source: "@here@\C\doc\manual\manual.html"; DestDir: "{app}\lib\csl\reduce.doc\";
 Source: "@here@\C\winbuild\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: "common"
 
 Source: "@here@\C\packages\*.*"; Excludes: "regressions\*"; DestDir: "{app}\packages\"; Flags: recursesubdirs; Components: "common"
+Source: "@here@\C\xmpl\*.tst"; DestDir: "{app}\xmpl\"; Components: "common"
+Source: "@here@\C\xmpl\*.rlg"; DestDir: "{app}\xmpl\"; Components: "common"
+Source: "@here@\C\xmpl\README"; DestDir: "{app}\xmpl\"; Components: "common"
 
 ; csl
 Source: "cslbuild\reduce.exe"; DestDir: "{app}\lib\csl\"; Components: "csl";

@@ -111,7 +111,7 @@ symbolic procedure onoff(u,bool);
 %       then if !*switchcheck
                then rerror(rlisp,25,list(u,"not defined as switch"));
 %             else lpriw("*****",list(u,"not defined as switch"));
-      x := intern compress append(explode '!*,explode u);
+      x := intern list2string append('!*, explode2 u);
       if !*switchcheck and lispeval x eq bool then return nil
        else if y := atsoc(bool,get(u,'simpfg))
         then lispeval('progn . append(cdr y,list nil));
@@ -147,7 +147,7 @@ symbolic procedure switch u;
          switchlist!* := flatten!-sorted!-tree(switchtree!*, nil);
          switchstring!* := string!-of!-list switchlist!*;
          flag(list x,'switch);
-         y := intern compress append(explode '!*,explode x);
+         y := intern list2string append(explode '!*, explode2 x);
          if not fluidp y and not globalp y then fluid list y;
          if not null dflt then <<put(x,'switchdefault,car dflt); set(y,car dflt)>>
       end;

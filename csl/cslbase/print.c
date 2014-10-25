@@ -3151,7 +3151,13 @@ case TAG_SYMBOL:
                             else putc_utf8(n);
                         }
                     }
-                    else putc_stream(ch, active_stream);
+                    else
+                    {   if (escaped_printing & escape_fold_down)
+                            ch = tolower(ch);
+                        else if (escaped_printing & escape_fold_up)
+                            ch = toupper(ch);
+                        putc_stream(ch, active_stream);
+                    }
                 }
 #ifdef COMMON
                 if (extralen != 0) putc_stream('|', active_stream);

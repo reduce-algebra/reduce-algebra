@@ -1,5 +1,12 @@
 module rend; % CL REDUCE "back-end".
 
+% Note that this file related to experimental support for Reduce on top
+% of Common Lisp. Observe the date on it - 1993. There is no guarantee that
+% it has been updated since then and it shoudl be viewed as unsupported
+% an un-maintained - but left here as a starting point for anybody who
+% really needed to revive it.    ACN 2014.
+
+
 % Copyright (c) 1993 RAND.  All Rights Reserved.
 
 % Redistribution and use in source and binary forms, with or without
@@ -138,8 +145,7 @@ symbolic procedure cedit n;
       if x eq 'failed then nil
       % Following changed for CL version.
       else
-        crbuf1!* := compress(append('(!") ,
-                                       append(x, '(!" ))));
+        crbuf1!* := list2string x;
    end;
 
 flag('(cedit),'lose);

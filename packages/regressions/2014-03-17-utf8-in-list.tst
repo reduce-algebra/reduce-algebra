@@ -56,6 +56,7 @@ on echo;
 % This section uses prin1 and variations on explode to process first strings
 % and then symbols with various contents. For prin1 the requirement is that
 % the output be re-inputable.
+% The string here is intended to contain a jolly mix of potential issues.
   w1 := "2AbCd #pi; #ForAll; #Bopf; #hash;pi; #quot; #gamma; #Gamma;";
   foreach x in list(w1, intern w1) do <<
      terpri();
@@ -64,21 +65,21 @@ on echo;
      terpri();
 % prin2 is used just to display the information "naturally" (at least
 % if you have an utf-8 capable terminal with enough fonts installed.
-     prin2 x; print posn();
+     prin2 "Raw: "; prin2 x; print posn();
 
 % prin1 should generate re-inputable material, and to assure that it
 % renders extended characters as hex sequence such as "#1234;". Within a
 % string if such a sequence literally occured then the initial "#" is expanded
 % to be "#hash;". In strings any double quote mark is doubled, while in
 % symbols special characters are preceeded by an exclamation mark.
-     prin1 x; print posn();
+     prin2 "prin1: "; prin1 x; print posn();
 
 % explode2 should be rather like prin2 except that it generates a list of
 % characters. Note that this means that multi-byte sequences in the data will
 % need to be rendered as single multi-byte character objects. E.g.
 % explode2 "#alpha;" => (#alpha;), a list of length 1.
 % spaces) it must explode2 as 
-     prin1 explode2 x; print posn();
+     prin2 "explode2: "; prin1 explode2 x; print posn();
 
 % explode is like prin1 except that it can end up with extended characters...
 % thus
@@ -86,24 +87,26 @@ on echo;
 % here is that if the string contains a literal sequence "# w o r d ;" (without
 % the spaces) then that has to end up as (!" !# h a s h !; w o r d !; !")
 % so it can be re-inputable.
-     prin1 explode x; print posn();
+     prin2 "explode: "; prin1 explode x; print posn();
 % explodecn is like explodec but returns a list of the numeric codes of
 % the characters involved. E.g.
 % explodecn "#alpha;" => (945)
-     prin1 explodecn x; print posn();
+     princ "explodecn: "; prin1 explodecn x; print posn();
 % exploden is like explode but returns a list of integer codes.
 % Note some codes can be bigger than 0xff.
-     prin1 exploden x; print posn();
+     princ "exploden: "; prin1 exploden x; print posn();
 % explode2uc (and explode2lc, explode2ucn, explode2lcn) are like
-% explode (not explode2!) except that they folds characters to upper or
-% lower case.
+% explode2 except that they folds characters to upper or lower case.
 % There are two issues here. The first is whether #alpha; will change to
 % #Alpha; (and similarly for all other non-Latin letters), the second
 % is that the names for special characters will need to retain their
 % regular case, so for instance #Alpha; must appear not #ALPHA; even
-% after conversion to upper case. In some locales only a-x and A-Z will
-% be changed by case folding...
-     prin1 explode2uc x; print posn() >>;
+% after conversion to upper case. If in fact extended characters are
+% printed in hex not using names much of that worry evaporates.
+% In some - perhaps all - locales only a-x and A-Z will be changed
+% by case folding...
+     princ "explode2uc: "; prin1 explode2uc x; print posn() >>;
+     princ "explode2lc: "; prin1 explode2lc x; print posn() >>;
   terpri() >>;
 
 end;

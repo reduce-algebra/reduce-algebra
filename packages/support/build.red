@@ -53,11 +53,10 @@ symbolic procedure mkfil u;
 
 symbolic procedure string!-downcase u;
    begin scalar z;
-      if not stringp u then u := '!" . append(explode2 u,'(!"))
-      else u := explode u;
+      u := explode2 u;
 % This has to be written in the bootstrap kernel of the RLISP language
 % and so looks a little ugly.
-   a: if null u then return compress reverse z;
+   a: if null u then return list2string reversip z;
       z := red!-char!-downcase car u . z;
       u := cdr u;
       go to a;

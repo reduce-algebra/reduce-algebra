@@ -563,9 +563,11 @@ symbolic procedure token!-number x;
       go to hexnum1;
    nume2:
       if null z then rerror('rlisp,4,"Syntax error: improper number");
+% This use of compress is for a number...
       z := compress reversip!* z;
       if sign then power := power - z else power := power + z;
    ret:
+% This use of compress is for a number...
       y := compress reversip!* y;
    ret1:
       nxtsym!* := if dotp then '!:dn!: . (y . power)
@@ -594,8 +596,11 @@ deflist(
 % reading from a file.
 
 fluid '(!*line!-marker !*file!-marker);
-!*line!-marker := intern compress '(!! !_ l i n e !! !_);
-!*file!-marker := intern compress '(!! !_ f i l e !! !_);
+% Note I can NOT just go "!*line!-marker := '__line__;" here since that
+% would end up mapped to the line number in this file rather than the
+% desired literal symbol - hence the use of intern on a string!
+!*line!-marker := intern "__line__";
+!*file!-marker := intern "__file__";
 
 symbolic procedure token1;
 %
@@ -1074,7 +1079,7 @@ symbolic procedure scan;
         go to sw2;
   preprocessor:
         prin2x nxtsym!*;
-        nxtsym!* := intern compress ('!! . '!# . explode nxtsym!*);
+        nxtsym!* := intern list2string ('!# . explode2 nxtsym!*);
         go to c;
   conditional:
 % The conditional expression used here must be written in Lisp form
@@ -1092,7 +1097,7 @@ symbolic procedure scan;
         if nxtsym!* eq '!# and ttype!*=3 and not seprp crchar!* then progn(
           nxtsym!* := token(),
           if ttype!* = 0 then
-            nxtsym!* := intern compress('!! . '!# . explode nxtsym!*));
+            nxtsym!* := intern list2string ('!# . explode2 nxtsym!*));
         if nxtsym!* eq '!#endif then
            if null x then go to a else x := cdr x
         else if nxtsym!* eq '!#if then x := nil . x

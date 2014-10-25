@@ -51,7 +51,7 @@ fluid '(ps ps!:order!-limit ps!:max!-order);
 %                       else if ps!:numberp about then !*n2f about
 %                       else if (u:=!*pre2dp about) then !*n2f u
 %                       else !*k2f(symbolic!-exp!-pt:= compress
-%                          append(explode ps!:depvar p, explode '0))));
+%                          append(explode ps!:depvar p, '(!0)))));
 %       if symbolic!-exp!-pt then prin2!* "[";
 %       prin2!* "{";
 %       for i:=(ps!:order p): ps!:exp!-lim do

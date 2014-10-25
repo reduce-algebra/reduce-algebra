@@ -1,0 +1,182 @@
+                    Thoughts on name-spaces for Reduce
+
+
+
+This is a first draft about use of namespaces system for Reduce. This is also
+a discussion document to see what others think of it - in terms of how useful
+it might be, what awkwardnesses it has that I have not spotted, what extra
+features are really needed and if some alternative might be a lot better!
+
+NOTE VERY WELL that it is not describing anything that has been implemented or
+that is guaranteed to be implemented ever.
+
+The objective is that as much as possible existing code can remain unchanged,
+but that names will be local to the package they are used in. Note first that
+I think this needs to be arranged by the package not by the module.
+
+The key idea is that there will be one namespace of unmangled names, and
+a range of other ones that are "mangled" in that they contain a double-colon.
+When building a package there are a number of things that inflence the
+treatment of names and/or are involved with building packages:
+
+   create!-package('(packname modname1 modname2...), ...)
+         established a package and lists the various modules that
+         make it up.
+
+   module modname;
+         directive for compilation, as at present.
+
+   in!-package packname;
+         starts name-mangling using the specified package name.
+         So the proper usage at the start of a package will be
+                 module foo;
+                 create!-package('(foo ...), ...);
+                 in!-package foo;
+         and at the start of a module within the package it should go
+                 module foosub;
+                 in!-package foo;
+         with at most comments between them.
+
+         Note that name-mangling only happens at parse time so by the
+         time anything ends up in a fasl file no more adjustment is called
+         for. Also this means that I want all the activity associated with
+         in!-package to happen at parse time so that it ends up just as
+         a no-op in any fasl file.
+
+         One reason that in!-package is not folded in with either
+         create!-package or module is so that when it is not used names
+         will not get mangled... and hence any package that has not been
+         changed to call in!-package will remain just as it historically has
+         with every symbol in it global.
+
+   export name1, name2, ...;
+
+   import pack1::name1, pack2::name2, ...;
+
+   use!-package packname1, packname2, ...;
+
+         Except when symbols are to be global any symbol read while in a
+         package has its name "mangled" so that it is of the form
+         "packname::name". This is done in the rlisp token reader.
+         The mapping gets established the first time the name is encountered
+         and can then be arranged using a 'newnam property. When 'newnam
+         information is set up within a module it will be removed when
+         endmodule is called.
+         So the tail of this note is to discuss when names will NOT
+         end up decorated with the name of the package they are being used in.
+         I think I have to be rather careful here in that export etc may have
+         quite different aspects of their behaviour at parse and load time.
+         At parse time export must set up names so that they are exported.
+         At load time it must not do this - all it should do is set up
+         information that use!-package can access. This is because you must be
+         able to have a package loaded but not used.
+
+   end!-package;
+         closes the processing that starts with in!-package. This must pop
+         the name-handling environment back to the state it was before
+         in!-package.
+
+   endmodule;
+         Evry module should end with
+             end!-package;
+             endmodule;
+         but in exceptional cases (perhaps particularly during the initial
+         bootstrap buyild process) package/name control and fasl module
+         creation may not go exactly in step.
+
+
+
+
+(1) Any symbol whose name is just a single character will never be mangled.
+This provision is to make character handling comfortable. As a protection
+there will then be a diagnostic on any attempt to define a function or
+declare a fluid/global variable with a name that is only one character
+long. An effect is that simple local variables as in
+   symbolic procedure foo u; begin scalar x,y,z;...  a: ... goto a; ...;
+leave a, u, x, y and z as they are, but the compiler means that there is no
+way that they can clash with local variables elsewhere.
+Also any symbol whose name already includes a pair of colons is already
+an external reference and will not need adjusting (except see (4) below).
+
+(2) name with a "~" as their first character need to mangle so that "~foo"
+turns into "~package::foo" rather than "foo::~package" because the initial
+"~" is used specially in pattern matching rules.
+
+(3) Any symbol that is used in an "export" statement must remain unmangled, and
+the mention in the export statement must be the first one within the current
+package. I note to myself that when the statement "export name1, name2;" is
+parsed the words name1 and name2 get read as package::name1 and package::name2,
+so I will need to undo that conversion and mark the names such that it will
+not happen again. The idea here is that names that have been exported are
+global and will be available to anybody anywhere in the code.
+
+(4) The notation "global::name" will map onto just the symbol "name" regardless
+of where it is used and so allows exceptional access to such names. Maybe the
+notation should be just ::name.
+
+(5) use!-package ensures that the named package has been loaded at
+compile time. Maybe just using load!-package is sufficient and nothing extra
+is needed. But while I am here I will remind myself that the text
+   "use!-package 'fum;"
+will tend to be parsed as "use!-package 'package::fum;" so that the prefix
+must be stripped before use. Anyway the issue of note here is that when
+a package is loaded its export statements must be activated, and as
+a consequence all of the names it wanted to make public become available.
+There needs to be a check that when an attemnpt is made to make a name
+exported that it has neither been used as a non-exported name before
+nor previously exported (potentially by a a different package).
+
+(6) I might want to support
+   "import otherpackage::othername, ...;
+which would newnam "othername" to "otherpackage::othername" thereby providing
+a concise way to refer to the given symbol without needing to have loaded the
+package that it lives in.
+
+(7) All functions (and globals and property indicators) in Standard Lisp
+will be marked as exported from the start. I think I might like the idea that
+CSL and PSL specials should have names like "csl::enable!-erroset" so that
+anybody using any such would need either to specify the full name every
+time or use an "import" statement. However achieving that would involve
+altering the Lisp systems and so involves deeper negotiation.
+
+(8) Maybe the biggest risk I can see to separating out names to be
+(by default) local to within packages is that there will end up places where
+package A tries to use a function from package B without importing it in
+any manner. My proposed scheme to police that is the adjust the build
+process in remake!-module so that it collects a list of all the functions
+defined and all the ones visibly called and compares them - generating a
+diagnostic on relevant mismatches. So if a package calls a function "fum"
+but does not define it and had not imported it then it will actually
+be calling "package::fum" and any definition of such a name ought to
+be within that package's files.
+
+(9) Merely loading a package (or the package being pre-loaded in the
+image you are using) will make all its external symbols available or
+global for you. Thus loading a package part way through some process can
+have an effect on subsequent parsing. There are three cases to look at:
+ (a) Loading at parse/compile time. This could either be because some
+     (typically algebraic mode) code gets run at parse/form/compile time
+     and triggers an autoload, or because of an explicit load request
+     in the source code. In either case if the name has been used as
+     a local (mangled) name and now becomes exported that can be reported
+     as an error.
+ (b) At load_package time. Well I believe that when you are loading a
+     package you will never parse fresh tokens, since that happened
+     when the package was compiled. This does mean that there is a real
+     difference between 'in "src/package.red";' and 'load!-module package;".
+     But if you load a fasl file and that does not parse tokens then all
+     this stuff has no effect and one packet can be loaded while you are
+     in the middle of loading another without that giving pain!
+ (c) At execution time. When an algebraic-mode user does load_package
+     either explicitly or via an autoload then I expect that they will be
+     in the global environment (ie not between module and endmodule) so
+     their names will not be being mangled. Loading the module can at most
+     mark some other names as exported, ie to remain unmangled even when
+     you are in a package. So provided the package that is loaded properly
+     pairs endmodule with module and hence restores all naming rules that had
+     been set up as local to that package all will be well.
+
+
+ACN April 2014
+
+

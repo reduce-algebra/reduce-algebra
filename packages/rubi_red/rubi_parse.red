@@ -149,7 +149,7 @@ symbolic procedure next_mma_tok1();  % read next token
         mmachar := next_mma_char() >>;
       mmachar := next_mma_char();
       buff := reverse buff;
-      mmatok := list!-to!-string buff;    % A string
+      mmatok := list2string buff;    % A string
       !*raise := save!*raise;
       !*lower := save!*lower;
       return mmatok >>
@@ -1096,7 +1096,7 @@ symbolic procedure read_one_rubi_test(filename, version4);
     while save and eqcar(r, car save) do << r := cdr r; save := cdr save >>;
     if null save and r and eqcar(cdr r, '!/) then <<
        r := car r . '!: . cdr r;
-       testdirectory := list!-to!-string r >>;
+       testdirectory := list2string r >>;
     if version4 then
        filename := concat(testdirectory, concat("/tests4/", filename))
     else filename := concat(testdirectory, concat("/tests/", filename));

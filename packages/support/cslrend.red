@@ -589,7 +589,7 @@ symbolic procedure begin;
               scalar name;
               name := assoc('shortname, lispsystem!*);
               if atom name then name := "reduce"
-              else name := list!-to!-string explode2lc cdr name;
+              else name := list2string explode2lc cdr name;
               erfg!* := nil;
               read!-init!-file name end >>
         else !*mode := 'symbolic;
