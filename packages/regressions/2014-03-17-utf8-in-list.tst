@@ -105,7 +105,7 @@ on echo;
 % printed in hex not using names much of that worry evaporates.
 % In some - perhaps all - locales only a-x and A-Z will be changed
 % by case folding...
-     princ "explode2uc: "; prin1 explode2uc x; print posn() >>;
+     princ "explode2uc: "; prin1 explode2uc x; print posn();
      princ "explode2lc: "; prin1 explode2lc x; print posn() >>;
   terpri() >>;
 

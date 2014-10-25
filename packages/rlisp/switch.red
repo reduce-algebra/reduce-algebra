@@ -1,4 +1,4 @@
-	module switch;  % Support for switches and ON and OFF statements.
+module switch;  % Support for switches and ON and OFF statements.
 
 % Author: Anthony C. Hearn.
 
@@ -147,7 +147,7 @@ symbolic procedure switch u;
          switchlist!* := flatten!-sorted!-tree(switchtree!*, nil);
          switchstring!* := string!-of!-list switchlist!*;
          flag(list x,'switch);
-         y := intern list2string ('!*. explode2 x);
+         y := intern list2string ('!* . explode2 x);
          if not fluidp y and not globalp y then fluid list y;
          if not null dflt then <<put(x,'switchdefault,car dflt); set(y,car dflt)>>
       end;

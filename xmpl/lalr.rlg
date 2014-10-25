@@ -33,12 +33,12 @@ lalr_construct_parser grammar;
 Terminal symbols are:
  cc:268 dd:267
 Non-terminal symbols are:
-[0]s'               : s                         { }
+[0]S'               : S                         { }
                     ;
-[1]s                : c c                       { a1 }
+[1]S                : C C                       { a1 }
                     ;
-[2]c                : cc c                      { a2 }
-                    | dd                        { a3 }
+[2]C                : CC C                      { a2 }
+                    | DD                        { a3 }
                     ;
 
 Action map:
@@ -47,103 +47,103 @@ Action map:
 2:          (a2)
 3:          (a3)
 FIRST sets for each non-terminal:
-s':             dd cc
-s:              cc dd
-c:              dd cc
+S':             dd cc
+S:              cc dd
+C:              dd cc
 LR(1) Items:
 Item number 0
-c -> . cc c  :  cc
-c -> . cc c  :  dd
-c -> . dd  :  cc
-c -> . dd  :  dd
-s -> . c c  :  $
-s' -> . s  :  $
-          dd GOTO state 4
-          c GOTO state 2
+C -> . cc C  :  cc
+C -> . cc C  :  dd
+C -> . dd  :  cc
+C -> . dd  :  dd
+S -> . C C  :  $
+S' -> . S  :  $
+          C GOTO state 2
+          S GOTO state 1
           cc GOTO state 3
-          s GOTO state 1
+          dd GOTO state 4
 Item number 1
-s' -> s .  :  $
+S' -> S .  :  $
 Item number 2
-c -> . cc c  :  $
-c -> . dd  :  $
-s -> c . c  :  $
-          dd GOTO state 8
-          c GOTO state 6
+C -> . cc C  :  $
+C -> . dd  :  $
+S -> C . C  :  $
+          C GOTO state 6
           cc GOTO state 7
+          dd GOTO state 8
 Item number 3
-c -> . cc c  :  cc
-c -> . cc c  :  dd
-c -> . dd  :  cc
-c -> . dd  :  dd
-c -> cc . c  :  cc
-c -> cc . c  :  dd
-          dd GOTO state 4
-          c GOTO state 5
+C -> . cc C  :  cc
+C -> . cc C  :  dd
+C -> . dd  :  cc
+C -> . dd  :  dd
+C -> cc . C  :  cc
+C -> cc . C  :  dd
+          C GOTO state 5
           cc GOTO state 3
+          dd GOTO state 4
 Item number 4
-c -> dd .  :  cc
-c -> dd .  :  dd
+C -> dd .  :  cc
+C -> dd .  :  dd
 Item number 5
-c -> cc c .  :  cc
-c -> cc c .  :  dd
+C -> cc C .  :  cc
+C -> cc C .  :  dd
 Item number 6
-s -> c c .  :  $
+S -> C C .  :  $
 Item number 7
-c -> . cc c  :  $
-c -> . dd  :  $
-c -> cc . c  :  $
-          dd GOTO state 8
-          c GOTO state 9
+C -> . cc C  :  $
+C -> . dd  :  $
+C -> cc . C  :  $
+          C GOTO state 9
           cc GOTO state 7
+          dd GOTO state 8
 Item number 8
-c -> dd .  :  $
+C -> dd .  :  $
 Item number 9
-c -> cc c .  :  $
+C -> cc C .  :  $
 Merged Items:
 Item number 0
-c -> . cc c  :  cc
-c -> . cc c  :  dd
-c -> . dd  :  cc
-c -> . dd  :  dd
-s -> . c c  :  $
-s' -> . s  :  $
-          dd GOTO state 4
-          c GOTO state 2
+C -> . cc C  :  cc
+C -> . cc C  :  dd
+C -> . dd  :  cc
+C -> . dd  :  dd
+S -> . C C  :  $
+S' -> . S  :  $
+          C GOTO state 2
+          S GOTO state 1
           cc GOTO state 3
-          s GOTO state 1
+          dd GOTO state 4
 Item number 1
-s' -> s .  :  $
+S' -> S .  :  $
 Item number 2
-c -> . cc c  :  $
-c -> . dd  :  $
-s -> c . c  :  $
-          dd GOTO state 4
-          c GOTO state 6
+C -> . cc C  :  $
+C -> . dd  :  $
+S -> C . C  :  $
+          C GOTO state 6
           cc GOTO state 3
+          dd GOTO state 4
 Item number 3
-c -> . cc c  :  cc
-c -> . cc c  :  dd
-c -> . cc c  :  $
-c -> . dd  :  cc
-c -> . dd  :  dd
-c -> . dd  :  $
-c -> cc . c  :  cc
-c -> cc . c  :  dd
-c -> cc . c  :  $
-          dd GOTO state 4
-          c GOTO state 5
+C -> . cc C  :  cc
+C -> . cc C  :  dd
+C -> . cc C  :  $
+C -> . dd  :  cc
+C -> . dd  :  dd
+C -> . dd  :  $
+C -> cc . C  :  cc
+C -> cc . C  :  dd
+C -> cc . C  :  $
+          C GOTO state 5
           cc GOTO state 3
+          dd GOTO state 4
 Item number 4
-c -> dd .  :  cc
-c -> dd .  :  dd
-c -> dd .  :  $
+C -> dd .  :  cc
+C -> dd .  :  dd
+C -> dd .  :  $
 Item number 5
-c -> cc c .  :  cc
-c -> cc c .  :  dd
-c -> cc c .  :  $
+C -> cc C .  :  cc
+C -> cc C .  :  dd
+C -> cc C .  :  $
 Item number 6
-s -> c c .  :  $
+S -> C C .  :  $
 Actions:
 0                   dd                  (shift 4)
 0                   cc                  (shift 3)
@@ -152,13 +152,13 @@ Actions:
 2                   cc                  (shift 3)
 3                   dd                  (shift 4)
 3                   cc                  (shift 3)
-4                   $                   reduce c -> dd { 3 }
-4                   dd                  reduce c -> dd { 3 }
-4                   cc                  reduce c -> dd { 3 }
-5                   $                   reduce c -> cc c { 2 }
-5                   dd                  reduce c -> cc c { 2 }
-5                   cc                  reduce c -> cc c { 2 }
-6                   $                   reduce s -> c c { 1 }
+4                   $                   reduce C -> dd { 3 }
+4                   dd                  reduce C -> dd { 3 }
+4                   cc                  reduce C -> dd { 3 }
+5                   $                   reduce C -> cc C { 2 }
+5                   dd                  reduce C -> cc C { 2 }
+5                   cc                  reduce C -> cc C { 2 }
+6                   $                   reduce S -> C C { 1 }
 ACTION_TABLE = 
 (0 (267 (shift 4)) (268 (shift 3)))
 (1 (0 accept))
@@ -204,11 +204,11 @@ action_result #V16(4 3 0 4 3 4 3 -3 -3 -3 -2 -2 -2 -1)
 action_fn [nil nil nil nil]
 action_n #V8(2 2 1)
 action_A #V16(1 2 2)
-0         c GOTO state 2
-2         c GOTO state 6
-3         c GOTO state 5
-0         s GOTO state 1
-goto_index: #V16(3 3 0)
+0         C GOTO state 2
+2         C GOTO state 6
+3         C GOTO state 5
+0         S GOTO state 1
+goto_index: #V16(4 3 0)
 goto_old_state: #V16(0 2 -1 -1)
 goto_new_state: #V16(2 6 5 1)
 
@@ -349,114 +349,7 @@ g4_46 := '((S   ((L "=" R) a1)
 
 lalr_construct_parser g4_46;
 
-One-character string found <:> with code 61
-One-character string found <:> with code 42
-Terminal symbols are:
- !::42 !:symbol:256
-Non-terminal symbols are:
-[0]s'               : s                         { }
-                    ;
-[1]s                : l "=" r                   { a1 }
-                    | r                         { a2 }
-                    ;
-[2]l                : "*" r                     { a3 }
-                    | :symbol                   { a4 }
-                    ;
-[3]r                : l                         { a5 }
-                    ;
-
-Action map:
-0:          nil
-1:          (a1)
-2:          (a2)
-3:          (a3)
-4:          (a4)
-5:          (a5)
-FIRST sets for each non-terminal:
-s':             !:symbol 267 268
-s:              !:symbol 268 267
-l:              !:symbol
-r:              !:symbol
-LR(1) Items:
-Item number 0
-l -> . "*" r  :  $
-l -> . !:symbol  :  $
-r -> . l  :  $
-s -> . l "=" r  :  $
-s -> . r  :  $
-s' -> . s  :  $
-          r GOTO state 3
-          !:symbol GOTO state 4
-          l GOTO state 2
-          s GOTO state 1
-Item number 1
-s' -> s .  :  $
-Item number 2
-r -> l .  :  $
-s -> l . "=" r  :  $
-Item number 3
-s -> r .  :  $
-Item number 4
-l -> !:symbol .  :  $
-Merged Items:
-Item number 0
-l -> . "*" r  :  $
-l -> . !:symbol  :  $
-r -> . l  :  $
-s -> . l "=" r  :  $
-s -> . r  :  $
-s' -> . s  :  $
-          !:symbol GOTO state 4
-          r GOTO state 3
-          s GOTO state 1
-          l GOTO state 2
-Item number 1
-s' -> s .  :  $
-Item number 2
-r -> l .  :  $
-s -> l . "=" r  :  $
-Item number 3
-s -> r .  :  $
-Item number 4
-l -> !:symbol .  :  $
-Actions:
-0                   !:symbol            (shift 4)
-1                   $                   accept
-2                   $                   reduce r -> l { 5 }
-3                   $                   reduce s -> r { 2 }
-4                   $                   reduce l -> !:symbol { 4 }
-ACTION_TABLE = 
-(0 (256 (shift 4)))
-(1 (0 accept))
-(2 (0 (reduce (r l) (5))))
-(3 (0 (reduce (s r) (2))))
-(4 (0 (reduce (l 256) (4))))
-Posn 0 -1 / 4
-Posn 1 -1 / 0
-REDUCE (r l) : (5)
-Semantic Action (1)  ((a5) . 5)
-Posn 2 -1 / -5
-REDUCE (s r) : (2)
-Semantic Action (1)  ((a2) . 2)
-Posn 3 -1 / -2
-REDUCE (l 256) : (4)
-Semantic Action (1)  ((a4) . 4)
-Posn 4 -1 / -4
-Now fill in the table
-action_index #V16(0 1 2 3 4)
-action_terminal #V16(-1 -1 -1 -1 -1)
-action_result #V16(4 0 -5 -2 -4)
-action_fn [nil nil nil nil nil nil]
-action_n #V8(0 1 0 1 1)
-action_A #V16(0 1 0 2 3)
-0         r GOTO state 3
-0         s GOTO state 1
-0         l GOTO state 2
-goto_index: #V16(1 1 2 0)
-goto_old_state: #V16(-1 -1 -1)
-goto_new_state: #V16(3 1 2)
-
-nil
++++ Error: string2list (!: 61)
 
 
 yyparse();
@@ -467,30 +360,26 @@ leftsym yylex returns 256
 state stack: (0)
 sym stack: nil
 next input: 256
-action code: 4
-w = 4
-= state stack: (4 0)
-sym stack: (!:symbol)
+action code: 3
+w = 3
+= state stack: (3 0)
+sym stack: (!256)
 next input: 61
-action code: -4
-w = -4
-state stack: (2 0)
-sym stack: ((!:symbol))
-next input: 61
-action code: -5
-w = -5
-state stack: (3 0)
-sym stack: (((!:symbol)))
-next input: 61
-action code: -2
-w = -2
-state stack: (1 0)
-sym stack: ((((!:symbol))))
-next input: 61
-action code: 0
-Seem to have finished...
-((((!:symbol))))
-rightsym eof
+action code: 3
+w = 3
+rightsym state stack: (3 3 0)
+sym stack: (!61 !256)
+next input: 256
+action code: 3
+w = 3
+eof
+state stack: (3 3 3 0)
+sym stack: (!256 !61 !256)
+next input: 0
+action code: 3
+w = 3
+
++++ error: 0 "End of file detected"
 
 
 yyparse();
@@ -501,10 +390,41 @@ yyparse();
 state stack: (0)
 sym stack: nil
 next input: 94
-action code: 4
-w = 4
-+++ Error: intern (not a string) 94
-*xxx = *x eof
+action code: 3
+w = 3
+*xstate stack: (3 0)
+sym stack: (!94)
+next input: 94
+action code: 3
+w = 3
+xx state stack: (3 3 0)
+sym stack: (!94 !94)
+next input: 256
+action code: 3
+w = 3
+= state stack: (3 3 3 0)
+sym stack: (!256 !94 !94)
+next input: 61
+action code: 3
+w = 3
+*xstate stack: (3 3 3 3 0)
+sym stack: (!61 !256 !94 !94)
+next input: 42
+action code: 3
+w = 3
+ state stack: (3 3 3 3 3 0)
+sym stack: (!42 !61 !256 !94 !94)
+next input: 256
+action code: 3
+w = 3
+eof
+state stack: (3 3 3 3 3 3 0)
+sym stack: (!256 !42 !61 !256 !94 !94)
+next input: 0
+action code: 3
+w = 3
+
++++ error: 0 "End of file detected"
 
 end;
 
@@ -512,7 +432,7 @@ nil
 Tested on x86_64-pc-windows CSL
 Time (counter 1): 0 ms
 
-End of Lisp run after 0.00+0.06 seconds
-real 0.18
+End of Lisp run after 0.00+0.04 seconds
+real 0.25
 user 0.00
-sys 0.07
+sys 0.04
