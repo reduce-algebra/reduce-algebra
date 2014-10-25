@@ -6,7 +6,7 @@
 This package \footnote{Reference: Computer Physics Communications,
 {\bf 54}, 295-305 (1989)}
 is written in RLISP (the LISP meta-language) and is
-intended for use with REDUCE 3.4. \index{vector algebra} It provides
+intended for use with REDUCE 3.4. \index{Vector algebra} It provides
 REDUCE with the ability to perform vector algebra using the same
 notation as scalar algebra.  The basic algebraic operations are
 supported, as are differentiation and integration of vectors with
@@ -72,8 +72,8 @@ divide one vector by another.
 {\tt V := -V1;} & Negation \\
 \end{tabular}
 
-\ttindextype{DOT}{ ! vector} \index{Dot product} \ttindextype{CROSS}{ ! vector}
-\index{cross product}
+\ttindextype{DOT}{!vector} \index{Dot product} \ttindextype{CROSS}{!vector}
+\index{Cross product}
 \noindent Vector multiplication is carried out using the infix
 operators {\tt DOT} and {\tt CROSS}. These are defined to have
 higher precedence than scalar multiplication and
@@ -116,8 +116,8 @@ from above:
 \end{verbatim}
 The vector {\tt V} now has components {\tt AX}, {\tt B}, {\tt AZ}.
 
-\index{vector ! differentiation} \index{vector ! integration}
-\index{differentiation ! vector} \index{differentiation ! vector}
+\index{Vector!differentiation} \index{Vector!integration}
+\index{Differentiation!vector} \index{Differentiation!vector}
 Vectors may be used as arguments in the differentiation and
 integration routines in place of the dependent expression.
 
@@ -138,10 +138,10 @@ applying the function component-wise to the argument vector.
 
 \subsection{ Vector calculus}
 
-\ttindextype{DIV}{ ! operator} \index{divergence ! vector field}
-\ttindextype{GRAD}{ ! operator} \index{gradient ! vector field}
-\ttindextype{CURL}{ ! operator} \index{curl ! vector field}
-\ttindextype{DELSQ}{ ! operator} \index{Laplacian ! vector field}
+\ttindextype{DIV}{!operator} \index{Divergence!vector field}
+\ttindextype{GRAD}{!operator} \index{Gradient!vector field}
+\ttindextype{CURL}{!operator} \index{Curl!vector field}
+\ttindextype{DELSQ}{!operator} \index{Laplacian!vector field}
 The vector calculus operators div, grad and curl are recognised.
 The Laplacian operator is also available and may be applied to
 scalar and vector arguments.
@@ -239,7 +239,7 @@ A user-defined coordinate system can be assigned a name using the
 command {\tt PUTCSYSTEM}. It may then be re-invoked at a later stage using
 {\tt GETCSYSTEM}.
 
-\example\index{AVECTOR package ! example}
+\example\index{AVECTOR package!example}
 
 We define a general coordinate system with coordinate names {\tt
 X},{\tt Y},{\tt Z} and scale factors {\tt H1},{\tt H2},{\tt H3} :
@@ -263,10 +263,10 @@ make use of the scale factors described in the previous section.
 Definite integrals of scalar and vector expressions may be calculated
 using the {\tt DEFINT} function.
 
-\example\index{AVECTOR package ! example}
+\example\index{AVECTOR package!example}
 
-\ttindextype{DEFINT}{function} \index{integration ! definite (simple)}
-\index{definite integration (simple)}
+\ttindextype{DEFINT}{function} \index{Integration!definite (simple)}
+\index{Definite integration (simple)}
 \noindent To calculate the definite integral of $\sin(x)^2$ between 0 and
 2$\pi$ we enter
 \begin{verbatim}
@@ -276,14 +276,14 @@ This function is a simple extension of the {\tt INT} function taking
 two extra arguments, the lower and upper bounds of integration
 respectively.
 
-\ttindextype{VOLINTEGRAL}{function} \index{integration ! volume}
+\ttindextype{VOLINTEGRAL}{function} \index{Integration!volume}
 Definite volume integrals may be calculated using the {\tt
 VOLINTEGRAL} function whose syntax is as follows :
 
 \noindent {\tt VOLINTEGRAL}({\tt integrand}, vector {\tt lower-bound},
 vector {\tt upper-bound});
 
-\example\index{AVECTOR package ! example}
+\example\index{AVECTOR package!example}
 
 \noindent In spherical polar coordinates we may calculate the volume of a
 sphere by integrating unity over the range $r$=0 to {\tt RR}, $\theta$=0 to
@@ -306,7 +306,7 @@ first integration variable, the second component is the index of the
 second integration variable and the third component is the index of
 the third integration variable.
 
-\example\index{AVECTOR package ! example}
+\example\index{AVECTOR package!example}
 
 Suppose we wish to calculate the volume of a right circular cone. This
 is equivalent to integrating unity over a conical region with the
@@ -333,7 +333,7 @@ to obtain the result in its more familiar form.)
 
 
 \ttindextype{LINEINT}{function} \ttindextype{DEFLINEINT}{function}
-\index{integration ! line} \index{line integrals}
+\index{Integration!line} \index{Line integrals}
 Line integrals may be calculated using the {\tt LINEINT} and {\tt DEFLINEINT}
 functions. Their general syntax is
 
@@ -354,7 +354,7 @@ integration in terms of the independent variable;
 independent variable.
 \end{description}
 
-\example\index{AVECTOR package ! example}
+\example\index{AVECTOR package!example}
 
 In spherical polar coordinates, we may integrate round a line of
 constant theta (`latitude') to find the length of such a line. The

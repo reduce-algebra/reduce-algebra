@@ -147,7 +147,7 @@ Finally there is
 which tries to combine all Taylor kernels found in EXP into one.
 \ttindex{TAYLORCOMBINE}
 Operations currently possible are:
-\index{Taylor series ! arithmetic}
+\index{Taylor series!arithmetic}
 \begin{itemize}
   \item Addition, subtraction, multiplication, and division.
   \item Roots, exponentials, and logarithms.
@@ -179,26 +179,26 @@ expanding numerator and denominator separately and combining the
 results.)  Essential singularities of the known functions (see above)
 are handled correctly.
 
-\index{Taylor series ! differentiation}
+\index{Taylor series!differentiation}
 Differentiation of a Taylor expression is possible.  If you
 differentiate with respect to one of the Taylor variables the order
 will decrease by one.
 
-\index{Taylor series ! substitution}
+\index{Taylor series!substitution}
 Substitution is a bit restricted: Taylor variables can only be replaced
 by other kernels.  There is one exception to this rule: you can always
 substitute a Taylor variable by an expression that evaluates to a
 constant.  Note that \REDUCE{} will not always be able to determine
 that an expression is constant.
 
-\index{Taylor series ! integration}
+\index{Taylor series!integration}
 Only simple taylor kernels can be integrated. More complicated
 expressions that contain Taylor kernels as parts of themselves are
 automatically converted into a standard representation by means of the
 \hyperlink{operator:TAYLORTOSTANDARD}{\f{TAYLORTOSTANDARD}} operator. 
 In this case a suitable warning is printed.
 
-\index{Taylor series ! reversion} It is possible to revert a Taylor
+\index{Taylor series!reversion} It is possible to revert a Taylor
 series of a function $f$, i.e., to compute the first terms of the
 expansion of the inverse of $f$ from the expansion of $f$. This is
 done by the operator
@@ -255,10 +255,10 @@ This package introduces a number of new switches:
     Default is \f{OFF}.
 
 \end{description}
-\index{defaults ! TAYLOR package}
+\index{Defaults! TAYLOR package}
 
 \subsection{Caveats}
-\index{caveats ! TAYLOR package}
+\index{Caveats!TAYLOR package}
 
 \f{TAYLOR} should always detect non-analytical expressions in
 its first argument. As an example, consider the function $xy/(x+y)$
@@ -278,7 +278,7 @@ to be converted to standard form first using the \f{TAYLORTOSTANDARD}
 operator.
 
 \subsection{Warning messages}
-\index{warnings ! TAYLOR package}
+\index{warnings!TAYLOR package}
 \begin{description}
 
 \item[\msg{*** Cannot expand further... truncation done}]\mbox{}\\
@@ -292,7 +292,7 @@ operator.
 \end{description}
 
 \subsection{Error messages}
-\index{errors ! TAYLOR package}
+\index{Errors!TAYLOR package}
 \begin{description}
 
 \item[\msg{***** Branch point detected in ...}]\mbox{}\\

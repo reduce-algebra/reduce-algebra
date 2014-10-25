@@ -14,7 +14,7 @@ their suggestions and work on testing this program.
 
 \subsection{Introduction}
 
-\index{differential geometry}
+\index{Differential geometry}
 {\bf EXCALC} is designed for easy use by all who are familiar with the
 calculus of Modern Differential Geometry.  Its syntax is kept as close
 as possible to standard textbook notations.  Therefore, no great
@@ -24,7 +24,7 @@ been written down for a hand-calculation.  For example, the statement
 \begin{verbatim}
                        f*x^y + u _| (y^z^x)
 \end{verbatim}
-\index{exterior calculus}
+\index{Exterior calculus}
 would be recognized by the program as a formula involving exterior
 products and an inner product.  The program is currently able to
 handle scalar-valued exterior forms, vectors and operations between
@@ -59,7 +59,7 @@ Everything that has no declaration is treated as a constant; therefore
 zero-forms must also be declared.
 
 An exterior form is introduced by\label{PFORM} \ttindextype{PFORM}{statement}
-\index{exterior form ! declaration}
+\index{Exterior form!declaration}
 
 \hspace*{2em} \k{PFORM} \s{declaration$_1$}, \s{declaration$_2$}, \ldots;
 
@@ -79,7 +79,7 @@ form of degree 4, {\tt F} to be a form of degree 0 (a function), and {\tt W}
 to be a form of degree {\tt DIM}-1.
 
 If the exterior form should have indices, the declaration would be
-\index{exterior form ! with indices}
+\index{Exterior form!with indices}
 \begin{verbatim}
      pform curv(a,b)=2,chris(a,b)=1;
 \end{verbatim}
@@ -90,7 +90,7 @@ Exterior forms of the same degree can be grouped into lists to save typing.
      pform {x,y,z}=0,{rho(k,l),u,v(k)}=1;
 \end{verbatim}
 The declaration of vectors is similar. The command {\tt TVECTOR}\label{TVECTOR}
-takes a list of names. \ttindextype{TVECTOR}{command} \index{exterior form ! vector}
+takes a list of names. \ttindextype{TVECTOR}{command} \index{Exterior form!vector}
 
 \hspace*{2em} \k{TVECTOR} \s{name$_1$}, \s{name$_2$}, \ldots;
 
@@ -117,13 +117,13 @@ Example:
 
 \subsection{Exterior Multiplication}
 
-\ttindextype{"\^}{! exterior multiplication} \index{exterior product}
+\ttindextype{"\^}{! exterior multiplication} \index{Exterior product}
 Exterior multiplication between exterior forms is carried out with the
 nary infix operator \^{ } (wedge)\label{wedge}.  Factors are ordered
 according to the usual ordering in {\REDUCE} using the commutation
 rule for exterior products.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      pform u=1,v=1,w=k;
@@ -151,7 +151,7 @@ rule for exterior products.
 \end{verbatim}
 
 It is possible to declare the dimension of the underlying space
-by\label{SPACEDIM} \ttindextype{SPACEDIM}{command} \index{dimension}
+by\label{SPACEDIM} \ttindextype{SPACEDIM}{command} \index{Dimension}
 
 \hspace*{2em} \k{SPACEDIM} \s{number} $\mid$ \s{identifier};
 
@@ -173,10 +173,10 @@ space, it is replaced by 0:
 
 Partial differentiation is denoted by the operator {\tt @}\label{at}.  Its
 capability is the same as the {\REDUCE} {\tt DF} operator.
-\ttindextype{"@}{operator} \index{partial differentiation}
-\index{differentiation ! partial}
+\ttindextype{"@}{operator} \index{Partial differentiation}
+\index{Differentiation!partial}
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      @(sin x,x);
@@ -209,12 +209,12 @@ Applying {\tt @} to {\tt F} and {\tt H} would result in
      0
 \end{verbatim}
 
-\index{tangent vector}
+\index{Tangent vector}
 The partial derivative symbol can also be an operator with a single
 argument.  It then represents a natural base element of a tangent
 vector\label{at1}.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      a*@ x + b*@ y;
@@ -224,7 +224,7 @@ vector\label{at1}.
 \end{verbatim}
 
 \subsection{Exterior Differentiation}
-\index{exterior differentiation}
+\index{Exterior differentiation}
 Exterior differentiation of exterior forms is carried out by the
 operator {\tt d}\label{d}.  Products are normally differentiated out,
 {\em i.e.}
@@ -286,7 +286,7 @@ expanded into partial derivatives:
 \end{verbatim}
 
 If an argument of an implicitly defined function has further
-dependencies the chain rule will be applied {\em e.g.} \index{chain rule}
+dependencies the chain rule will be applied {\em e.g.} \index{Chain rule}
 
 
 \begin{verbatim}
@@ -320,14 +320,14 @@ higher degree than the dimension of the space.
      0
 \end{verbatim}
 \subsection{Inner Product}
-\index{inner product ! exterior form}
+\index{Inner product!exterior form}
 The inner product between a vector and an exterior form is represented
 by the diphthong \_$|$ \label{innerp} (underscore or-bar), which is the
 notation of many textbooks.  If the exterior form is an exterior
 product, the inner product is carried through any factor.
 \ttindextype{\_\textbar}{operator}
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      pform x=0,y=k,z=m;
@@ -382,7 +382,7 @@ If the arguments of the Lie derivative are vectors, the vectors are
 ordered using the anticommutivity property, and functions (zero forms)
 are differentiated out.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      tvector u,v;
@@ -417,8 +417,8 @@ example shows how the factor is chosen here
            (K  + K*N)
      ( - 1)          *X*SGN
 \end{verbatim}
-\pagebreak
-\ttindextype{SGN}{! indeterminate sign} \index{coframe}
+%\pagebreak
+\ttindextype{SGN}{! indeterminate sign} \index{Coframe}
 The indeterminate SGN in the above example denotes the sign of the
 determinant of the metric. It can be assigned a value or will be
 automatically set if more of the metric structure is specified (via
@@ -443,7 +443,7 @@ More simplifications are performed if a coframe is defined.
 
 \subsection{Variational Derivative}
 
-\index{derivative ! variational} \index{variational derivative}
+\index{Derivative!variational} \index{Variational derivative}
 \ttindex{VARDF}
 The function {\tt VARDF}\label{VARDF} returns as its value the
 variation of a given Lagrangian n-form with respect to a specified
@@ -456,7 +456,7 @@ Syntax:
 
 \hspace*{2em} \k{VARDF}(\s{Lagrangian n-form},\s{exterior form})
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 \begin{verbatim}
   spacedim 4;
 
@@ -486,7 +486,7 @@ is provided.  It has the syntax:
 \hspace*{2em}
 \k{NOETHER}(\s{Lagrangian n-form},\s{field},\s{symmetry generator})
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 \begin{verbatim}
   pform l=4,a=1,f=2;
 
@@ -509,7 +509,7 @@ as a translation;
 
 
 \subsection{Handling of Indices}
-\index{exterior form ! with indices}
+\index{Exterior form!with indices}
 Exterior forms and vectors may have indices.  On input, the indices
 are given as arguments of the object.  A positive argument denotes a
 superscript and a negative argument a subscript.  On output, the
@@ -517,7 +517,7 @@ indexed quantity is displayed two dimensionally if {\tt NAT} is on.
 \ttindextype{NAT}{flag}
 Indices may be identifiers or numbers.  
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      pform om(k,l)=m,e(k)=1;
@@ -541,7 +541,7 @@ removed soon.  If the index range (the values that the indices can
 obtain) is specified, the given expression is evaluated for all
 possible index values, and the summation convention is understood.
 
-\example\label{INDEXRANGE}\index{EXCALC package ! example}
+\example\label{INDEXRANGE}\index{EXCALC package!example}
 
 \begin{verbatim}
      indexrange t,r,ph,z;
@@ -674,7 +674,7 @@ effect.
 
 \subsection{Metric Structures}
 
-\index{metric structure} \index{coframe}
+\index{Metric structure} \index{Coframe}
 A metric structure is defined in {\bf EXCALC} by specifying a set of
 basis one-forms (the coframe) together with the metric.
 
@@ -691,17 +691,17 @@ Syntax:\label{COFRAME}
 \> \hspace{1em} \k{WITH} \k{METRIC} \s{name}=\s{expression}; \\
 \end{tabbing}
 
-\index{euclidean metric} \index{COFRAME ! WITH METRIC}
+\index{Euclidean metric} \index{COFRAME!WITH METRIC}
 This statement automatically sets the dimension of the space and the
 index range. The clause {\tt WITH METRIC} can be omitted if the metric
-\index{COFRAME ! WITH SIGNATURE}
+\index{COFRAME!WITH SIGNATURE}
 is Euclidean and the shorthand {\tt WITH SIGNATURE \s{diagonal elements}}
 \label{SIGNATURE} can be used in the case of a pseudo-Euclidean metric. The
 splitting of a metric structure in its metric tensor coefficients and
 basis one-forms is completely arbitrary including the extremes of an
 orthonormal frame and a coordinate frame.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
  coframe e r=d r, e(ph)=r*d ph
@@ -722,7 +722,7 @@ orthonormal frame and a coordinate frame.
 
 Individual elements of the metric can be accessed just by calling them
 with the desired indices. The value of the determinant of the
-\index{determinant ! in DETM"!*} \ttindex{DETM"!*}
+\index{Determinant!in DETM"!*} \ttindex{DETM"!*}
 covariant metric is stored in the variable {\tt DETM!*}.  The metric
 is not needed for lowering or raising of indices as the system
 performs this automatically, {\em i.e.} no matter in what index
@@ -730,7 +730,7 @@ position values were assigned to an indexed quantity, the values can
 be retrieved for any index position just by writing the indexed
 quantity with the desired indices.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      coframe e t=d t,e x=d x,e y=d y
@@ -766,8 +766,8 @@ Any expression containing differentials of the coordinate functions will
 be transformed into an expression of the basis one-forms.The system also
 knows how to take the exterior derivative of the basis one-forms.
 
-\index{spherical coordinates}
-\example (Spherical coordinates)\index{EXCALC package ! example}
+\index{Spherical coordinates}
+\example (Spherical coordinates)\index{EXCALC package!example}
 
 \begin{verbatim}
      coframe e(r)=d(r), e(th)=r*d(th), e(ph)=r*sin(th)*d(ph);
@@ -807,7 +807,7 @@ This command causes the
 dual property to be recognized, and the tangent vectors of the
 coordinate functions are replaced by the frame basis vectors.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
    coframe b r=d r,b ph=r*d ph,e z=d z; %Cylindrical coframe;
@@ -842,7 +842,7 @@ coordinate functions are replaced by the frame basis vectors.
 
 \end{verbatim}
 
-\ttindextype{DISPLAYFRAME}{command} \index{tracing ! EXCALC}
+\ttindextype{DISPLAYFRAME}{command} \index{Tracing!EXCALC}\index{EXCALC package!tracing}
 As a convenience, the frames can be displayed at any point in a program
 by the command {\tt DISPLAYFRAME;}\label{DISPLAYFRAME}.
 
@@ -868,7 +868,7 @@ connection from the differential of the basis one-forms and using
 inner products.
 
 \example (Calculate the connection 1-form and curvature 2-form on S(2))
-\index{EXCALC package ! example}
+\index{EXCALC package!example}
 
 \begin{verbatim}
    coframe e th=r*d th,e ph=r*sin(th)*d ph;
@@ -919,7 +919,8 @@ inner products.
 
 \subsection{Ordering and Structuring}
 
-\index{ordering ! exterior form} \ttindextype{FORDER}{command}
+\index{Ordering!exterior form} \index{Exterior form!ordering}
+\ttindextype{FORDER}{command}
 The ordering of an exterior form or vector can be changed by the
 command {\tt FORDER}.\label{FORDER}  In an expression, the first
 identifier or kernel in the arguments of {\tt FORDER} is ordered ahead
@@ -942,7 +943,7 @@ introducing its definition in an expression. In an expression the system
 also tries by reordering to generate as many instances of \s{name} as
 possible.
 
-\example\index{EXCALC package ! example}
+\example\index{EXCALC package!example}
 
 \begin{verbatim}
      pform x=0,y=0,z=0,f=0,j=3;
@@ -969,7 +970,7 @@ possible.
       X
 \end{verbatim}
 
-\index{exterior product}
+\index{Exterior product}
 The capabilities of {\tt KEEP} are currently very limited.  Only exterior
 products should occur as righthand sides in {\tt KEEP}.
 
@@ -980,7 +981,7 @@ defined on.
 
 \begin{table}
 \begin{tabular}{l l r}
-\ttindextype{"\^}{! exterior multiplication} \index{wedge}
+\ttindextype{"\^}{! exterior multiplication} \index{Wedge}
 \^{ }  &  Exterior Multiplication & \pageref{wedge} \\
 \ttindextype{"@}{! partial differentiation}
 @  & Partial Differentiation & \pageref{at}  \\
@@ -1048,7 +1049,7 @@ VARDF & Variational derivative  & \pageref{VARDF} \\
 \ttindextype{XPND}{command}
 XPND d & Enables the use of product rule for d & \pageref{XPNDD} \\
   & (default)  &   \\
-\ttindex{XPND ! "@}
+\ttindex{XPND!"@}
 XPND @ & Enables expansion into partial derivatives & \pageref{XPNDA} \\
   & (default)
 \end{tabular}
@@ -1061,7 +1062,7 @@ The following examples should illustrate the use of {\bf EXCALC}. It is not
 intended to show the most efficient or most elegant way of stating the
 problems; rather the variety of syntactic constructs are exemplified.
 The examples are on a test file distributed with {\bf EXCALC}.
-\index{EXCALC package ! example}
+\index{EXCALC package!example}
 {\small
 \begin{verbatim}
 

@@ -1,5 +1,5 @@
 
-\index{power series} \index{truncated power series}
+\index{Power series} \index{truncated power series}
 \index{Barnes, Alan} \index{Padget, Julian}
 \subsection{Introduction}
 \index{Power series expansions}
@@ -63,7 +63,7 @@ Laurent series expansion will be produced.
     ps(sin x/(1-cos x),x,0);
 \end{verbatim}
 
-\index{power series ! of user defined function}
+\index{Power series! of user defined function}
 New user-defined functions may be expanded provided the user provides
 LET rules giving
 
@@ -80,7 +80,7 @@ LET rules giving
     ps(sech(x**2),x,0);
 \end{verbatim}
  
-\index{power series ! of integral}
+\index{Power series! of integral}
 The power series expansion of an integral may also be obtained (even if
 REDUCE cannot evaluate the integral in closed form).  An example of
 this is
@@ -299,7 +299,7 @@ Syntax:
 \hspace*{2em} {\tt PSCOMPOSE}(TPS1:{\em power series},
 TPS2:{\em power series}):{\em power series}
 
-\index{power series ! composition}
+\index{Power series! composition}
 {\tt PSCOMPOSE} performs power series composition.
 The power series TPS1 and TPS2 are functionally composed.
 That is to say that TPS2 is substituted for the expansion
@@ -454,7 +454,7 @@ returned.  If {\tt POWER} does not simplify to an integer or if
 
 \subsection{Arithmetic Operations}
 
-\index{power series ! arithmetic}
+\index{Power series! arithmetic}
 As power series objects are domain elements they may be combined
 together in algebraic expressions in algebraic mode of REDUCE in the
 normal way.
@@ -477,7 +477,7 @@ respectively.
  
 \subsection{Differentiation}
 
-\index{power series ! differentiation}
+\index{Power series! differentiation}
 If A is a power series object depending on X then the input
 {\tt df(a, x);} will produce the power series expansion of the
 derivative of A with respect to X.

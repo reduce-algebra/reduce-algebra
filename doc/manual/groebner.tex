@@ -85,8 +85,9 @@ denominators are included in the result list.
 In the theory of Gr\"obner bases, the terms of polynomials are
 considered as ordered. Several order modes are available in
 the current package, including the basic modes:
-\index{lex ! term order} \index{gradlex ! term order}
-\index{revgradlex ! term order}
+\index{lex!term order}\index{Groebner package!term order!lex}
+\index{gradlex!term order}\index{Groebner package!term order!gradlex}
+\index{revgradlex!term order}\index{Groebner package!term order!revgradlex}
 
 \begin{center}
 $lex$, $gradlex$, $revgradlex$
@@ -116,7 +117,7 @@ The $revgradlex$ method also compares the total degree first, but
 afterward it uses the $lex$ method in the reverse direction; this is the
 method originally used by Buchberger.
 
-\example \ with $\{x,y,z\}$: \index{Groebner package ! example}
+\example \ with $\{x,y,z\}$: \index{Groebner package!example}
 \[
 \begin{array}{rlll}
 \multicolumn{2}{l}{\hspace*{-1cm}\mbox{\bf lex:}}\\
@@ -167,7 +168,7 @@ Note that the $lex$ ordering is identical to the standard \REDUCE \
 kernel ordering, when $korder$ is set explicitly to the sequence of
 variables.
 
-\index{default ! term order}
+\index{Default!term order}\index{Groebner package!term order!default}
 $lex$ is the default term order mode in the $groebner$ package.
 
 It is beyond the scope of this manual to discuss the functionality of
@@ -269,7 +270,7 @@ $preduce$ call. A basis has the property ``Gr\"obner'' only with respect
 to the variable sequences which had been active during its computation.
 \end{description}
 
-\example \index{Groebner package ! example}
+\example \index{Groebner package!example}
 \begin{verbatim}
    torder({},lex)$
    groebner{3*x**2*y + 2*x*y + y + 9*x**2 + 5*x - 3,
@@ -851,7 +852,7 @@ domain, the input coefficients may be changed by global factors.
 
 \newpage
 
-\example \index{Groebner package ! example}
+\example \index{Groebner package!example}
 
 {\it on groebprot} \$ \\
 {\it preduce} $ (5*y**2 + 2*x**2*y + 5/2*x*y + 3/2*y + 8*x**2 $ \\
@@ -930,7 +931,7 @@ sets of equations ($groebnert$) or equations ($preducet$), where
 a {\it lhs} is the computed value, while the {\it rhs} is its equivalent
 in terms of the input names.
 
-\example \index{Groebner package ! example}
+\example \index{Groebner package!example}
 
 We calculate the Gr\"obner basis for an ellipse (named ``$p1$'' ) and a
 line (named ``$p2$'' ); $p2$ is member of the basis immediately and so
@@ -946,7 +947,7 @@ gb1 := {2*x - y + 1=p2,
         9*y  - 2*y - 199= - 2*x*p2 - y*p2 + 2*p1 + p2}
 \end{verbatim}
 
-\example \index{Groebner package ! example}
+\example \index{Groebner package!example}
 
 We want to reduce the polynomial \verb+ x**2+ {\it  wrt}
 the above Gr\"obner basis and need knowledge about the reduction
@@ -971,7 +972,7 @@ x^2 = (\frac{1}{2} x + \frac{1}{4} y - \frac{1}{4}) g1
 \]
 
 
-\example \index{Groebner package ! example}
+\example \index{Groebner package!example}
 
 If we reduce a polynomial which is member of the ideal, we
 consequently get a result with {\it lhs} zero:
@@ -1251,7 +1252,7 @@ of the variables as ``free parameters'',  these subsets are usually
 again of triangular type.
 
 \example (Intersubsections of a line with a circle):
-\index{Groebner package ! example}
+\index{Groebner package!example}
 
 \[ groesolve(\{x**2 - y**2 - a, p*x+q*y+s\},\{x,y\}); \]
 
