@@ -103,7 +103,7 @@ load f!-strings; % for string-store
 % The following PSL variables differ from the Standard LISP Report
 
 remprop('!*comp,'vartype);
-remprop('!*raise,'vartype);
+%remprop('!*raise,'vartype);
 remprop('cursym!*,'vartype);
 
 % At some early stages in the bootstrapping the variable lispsystem!*

@@ -40,7 +40,7 @@ module tok; % Identifier and reserved character reading.
 % generally packed in the underlying Lisp string type using utf-8 encoding.
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
-        peekchar!* !*quotenewnam semic!* !*report!_colons);
+        peekchar!* !*quotenewnam !*raise semic!* !*report!_colons);
 
 !*report!_colons := t;
 
@@ -49,7 +49,6 @@ fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
 global '(!$eof!$
          !$eol!$
          !*micro!-version
-         !*raise
          !*savecomments!*
          comment!*
          crbuf!*

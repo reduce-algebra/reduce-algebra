@@ -32,12 +32,12 @@ module rcref; % Cross reference program.
 create!-package('(rcref redio),'(util));
 
 fluid '(!*backtrace !*cref !*defn !*mode !*nocrefpri calls!* curfun!*
-        dfprint!* globs!* locls!* toplv!*);
+        dfprint!* globs!* locls!* toplv!* !*raise);
 
 global '(undefg!* gseen!* btime!* expand!* haveargs!* notuse!* nolist!*
         dclglb!* entpts!* undefns!* seen!* tseen!* xseen!* op!*!* cloc!*
         pfiles!* curlin!* pretitl!* !*creftime !*saveprops maxarg!*
-        !*crefsummary !*comp !*raise !*rlisp !*globals !*algebraics);
+        !*crefsummary !*comp !*rlisp !*globals !*algebraics);
 
 switch cref;
 

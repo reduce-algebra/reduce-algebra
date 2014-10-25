@@ -52,9 +52,9 @@ module ftr;  % Various utilities for working with files and modules.
 create!-package('(ftr),'(util));
 
 fluid '(!*echo !*downcase !*upcase current!-char!* previous!-char!*
-        member!-channel!* old!-channel!*);
+        member!-channel!* old!-channel!* !*raise);
 
-global '(!*raise charassoc!*);
+global '(charassoc!*);
 
 global '(dir!*);  % output directory name.
 

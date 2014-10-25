@@ -42,6 +42,7 @@ fluid '(!*break
         !*pgwd
         !*plap
         !*pwrds
+        !*raise
         !*rlisp88
         !*usermode
         !*verboseload
@@ -57,7 +58,6 @@ fluid '(!*break
 global '(!$eol!$
          !*extraecho
          !*loadversion
-         !*raise
          crbuflis!*
          crchar!*
          date!*
