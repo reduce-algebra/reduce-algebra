@@ -1809,7 +1809,7 @@ Lisp_Object Lmkvect8(Lisp_Object nil, Lisp_Object n)
     Lisp_Object w;
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect8", n);
-    nn = int_of_fixnum(n);
+    nn = 1 + int_of_fixnum(n);  /* Note that in Standard Lisp style the +1 */
     w = getvector(TAG_VECTOR, TYPE_VEC8, nn+CELL);
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
@@ -1829,7 +1829,7 @@ Lisp_Object Lmkvect16(Lisp_Object nil, Lisp_Object n)
     Lisp_Object w;
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect16", n);
-    nn = 2*int_of_fixnum(n);
+    nn = 2*(1 + int_of_fixnum(n)); /* Note 1+ for Standard Lisp style */
     w = getvector(TAG_VECTOR, TYPE_VEC16, nn+CELL);
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
@@ -1849,7 +1849,7 @@ Lisp_Object Lmkvect32(Lisp_Object nil, Lisp_Object n)
     Lisp_Object w;
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect32", n);
-    nn = 4*int_of_fixnum(n);
+    nn = 4*(1 + int_of_fixnum(n));
     w = getvector(TAG_VECTOR, TYPE_VEC32, nn+CELL);
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
@@ -1869,7 +1869,7 @@ Lisp_Object Lmkfvect32(Lisp_Object nil, Lisp_Object n)
     Lisp_Object w;
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect32", n);
-    nn = 4*int_of_fixnum(n);
+    nn = 4*(1 + int_of_fixnum(n));
     w = getvector(TAG_VECTOR, TYPE_FLOAT32, nn+CELL);
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
@@ -1889,7 +1889,7 @@ Lisp_Object Lmkfvect64(Lisp_Object nil, Lisp_Object n)
     Lisp_Object w;
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect64", n);
-    nn = 8*int_of_fixnum(n);
+    nn = 8*(1 + int_of_fixnum(n));
     if (!SIXTY_FOUR_BIT) nn += 4; /* get the doubles aligned */
     w = getvector(TAG_VECTOR, TYPE_FLOAT64, nn+CELL);
     errexit();
