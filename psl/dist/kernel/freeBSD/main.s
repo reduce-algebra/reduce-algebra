@@ -687,7 +687,7 @@ l0053:
  movl $68023,%ebx
  movl 16(%esp),%eax
  add $20,%esp
- cltd
+ xor %edx,%edx
  idiv %ebx
  movl %edx,%eax
  ret
