@@ -62,7 +62,7 @@ symbolic procedure string!-downcase u;
       go to a;
    end;
 
-fluid '(charassoc!*);
+global '(charassoc!*);
 
 symbolic procedure red!-char!-downcase u;
    begin scalar x;
