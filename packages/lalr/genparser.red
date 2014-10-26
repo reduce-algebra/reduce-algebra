@@ -89,6 +89,9 @@ symbolic procedure lalr_prin_symbol x;
     else if numberp x and (w := rassoc(x, terminals)) then
        prin car w
     else if stringp x then prin x
+% I print the name of the symbol in upper case even if it was in lower or
+% mixed case internally. I might worry about the consequences if both (say)
+% "L" and "l" occur in the same grammar!
     else for each c in explode2uc x do princ c
   end;
 
@@ -118,6 +121,9 @@ symbolic procedure lalr_display_symbols();
        princ "["; prin get(x, 'non_terminal_code); princ "]";
        lalr_prin_symbol x;
        w := ":";
+       if !*tracelex then <<
+           princ "#";   % Show genuine name as well as upper case variant
+           prin x >>;
        for each y in lalr_productions x do <<
            ttab 20; princ w; w := "|";
            for each z in car y do << princ " "; lalr_prin_symbol z >>;
@@ -174,8 +180,8 @@ symbolic procedure lalr_set_grammar g;
         for each vv in cdr x do
           for each v in car vv do <<
             if stringp v then <<
-               if null cdr (tnum := explodecn v) then <<
-                  v := intern string2list ('!: . tnum);
+               if null cdr (tnum := explode2 v) then <<
+                  v := intern list2string ('!: . explode2 id2int car tnum);
                   princ "One-character string found <";
                   princ v;
                   princ "> with code ";
@@ -228,9 +234,9 @@ symbolic procedure lalr_set_grammar g;
                 action_map := w . action_map >>;
             rplacd(a, list cdr w) >>;
     action_map := reversip action_map;
-    action_fn := mkvect tnum;
-    action_n := mkvect8 tnum;
-    action_A := mkvect16 tnum;
+    action_fn := mkvect sub1 tnum;
+    action_n := mkvect8 sub1 tnum;
+    action_A := mkvect16 sub1 tnum;
     action_first_error := tnum;
     if !*lalr_verbose then lalr_print_action_map();
 % Now whenever I start to set up a new grammar I need the FIRST information
@@ -246,7 +252,7 @@ symbolic procedure lalr_set_grammar g;
 
 symbolic procedure lalr_clean_up();
   begin
-    for each x in terminals do <<
+    for each x in append(terminals, non_terminals) do <<
         remprop(x, 'produces);
         remprop(x, 'lalr_first);
         remprop(x, 'non_terminal_code) >>;
@@ -543,7 +549,7 @@ symbolic procedure lalr_make_actions c;
             else if null w and caar r = 's!' then
                 aa := list(0, 'accept) . aa >>;
         action_table := (cdr i . lalr_remove_duplicates aa) . action_table >>;
-    action_index := mkvect16 (caar action_table + 1);
+    action_index := mkvect16 caar action_table;
     action_table := reversip action_table;
     if !*lalr_verbose then lalr_print_actions action_table;
     printc "ACTION_TABLE = ";
@@ -572,13 +578,13 @@ symbolic procedure lalr_make_actions c;
               princ "Semantic Action "; prin list rn;
               princ "  "; print rassoc(rx, action_map);
               putv8(action_n, rx-1, rn);
-              putv16(action_A, rx-1, get(rA, 'non_terminal_code));
+              putv16(action_A, rx-1, get(ra, 'non_terminal_code));
               rr := -rx >>;
 princ "Posn "; prin j; princ " "; prin tt; princ " / "; print rr;
            w := (tt . rr) . w;
            j := j + 1 end >>;
-    action_terminal := mkvect16 j;
-    action_result := mkvect16 j;
+    action_terminal := mkvect16 sub1 j;
+    action_result := mkvect16 sub1 j;
 printc "Now fill in the table";
     while j > 0 do <<
         j := j - 1;
@@ -598,6 +604,45 @@ symbolic procedure lalr_most_common_dest p;
     return car w
   end;
 
+symbolic procedure printvec v;
+  begin
+    scalar ch;
+    ch := '![;
+    for i := 0:upbv v do <<
+       princ ch;
+       ch := '! ;
+       prin getv(v, i) >>;
+    princ '!];
+    terpri();
+    return v
+  end;
+
+symbolic procedure print8 v;
+  begin
+    scalar ch;
+    ch := '!#!V8![;
+    for i := 0:upbv v do <<
+       princ ch;
+       ch := '! ;
+       prin getv8(v, i) >>;
+    princ '!];
+    terpri();
+    return v
+  end;
+
+symbolic procedure print16 v;
+  begin
+    scalar ch;
+    ch := '!#!V16![;
+    for i := 0:upbv v do <<
+       princ ch;
+       ch := '! ;
+       prin getv16(v, i) >>;
+    princ '!];
+    terpri();
+    return v
+  end;
+
 symbolic procedure lalr_make_gotos();
   begin
     scalar p, r1, w, r;
@@ -607,8 +652,11 @@ symbolic procedure lalr_make_gotos();
             if !*lalr_verbose then
                 for each xx in cdr x do <<
                     prin car xx; ttab 10; lalr_prin_symbol car x;
+                    if !*tracelex then << princ '!#; prin car x >>;
                     princ " GOTO state "; prin cdr xx; terpri() >>;
-            r1 := (get(car x, 'non_terminal_code) . p) . r1;
+            w := get(car x, 'non_terminal_code);
+            if not fixp w then error(99, list('lalr_make_gotos, x, w));
+            r1 := (w . p) . r1;
             if cdr x then <<
                 w := lalr_most_common_dest cdr x;
                 for each xx in cdr x do if not (cdr xx = w) then <<
@@ -616,18 +664,18 @@ symbolic procedure lalr_make_gotos();
                     p := p + 1 >>;
                 r := ((-1) . w) . r;
                 p := p + 1 >> >>;
-    goto_index := mkvect16 length non_terminals;
-    goto_old_state := mkvect16 p;
-    goto_new_state := mkvect16 p;
+    goto_index := mkvect16 sub1 length non_terminals;
+    goto_old_state := mkvect16 sub1 p;
+    goto_new_state := mkvect16 sub1 p;
     for each x in r1 do putv16(goto_index, car x, cdr x);
     while p > 0 do <<
         p := p - 1;
         putv16(goto_old_state, p, caar r);
         putv16(goto_new_state, p, cdar r);
         r := cdr r >>;
-    princ "goto_index: ";     print goto_index;
-    princ "goto_old_state: "; print goto_old_state;
-    princ "goto_new_state: "; print goto_new_state
+    princ "goto_index: ";     print16 goto_index;
+    princ "goto_old_state: "; print16 goto_old_state;
+    princ "goto_new_state: "; print16 goto_new_state
   end;
 
 % A main driver function that performs all the steps involved
@@ -651,12 +699,12 @@ symbolic procedure lalr_construct_parser g;
     lalr_rename_gotos();
     if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
     lalr_make_actions cc;
-    princ "action_index "; print action_index;
-    princ "action_terminal "; print action_terminal;
-    princ "action_result "; print action_result;
-    princ "action_fn "; print action_fn;
-    princ "action_n "; print action_n;
-    princ "action_A "; print action_A;
+    princ "action_index "; print16 action_index;
+    princ "action_terminal "; print16 action_terminal;
+    princ "action_result "; print16 action_result;
+    princ "action_fn "; printvec action_fn;
+    princ "action_n "; print8 action_n;
+    princ "action_A "; print16 action_A;
     lalr_make_gotos();
     lalr_clean_up()
   end;

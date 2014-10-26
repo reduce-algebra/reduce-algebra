@@ -4,6 +4,11 @@
 
 symbolic;
 
+load_package lalr;
+
+in "packages/lalr/yylex.red"$
+in "packages/lalr/genparser.red"$
+
 % Here I set up a sample grammar
 %    S' -> S
 %    S  -> C C     { A1 }
@@ -14,6 +19,8 @@ symbolic;
 % the production S' -> S for myself since the analysis code will
 % augment my grammar with it for me anyway.
 % Example 4.54 in the more recent Purple book.
+
+on tracelex;
 
 grammar := '((S  ((C C) A1))
              (C  ((cc C) A2)
@@ -56,7 +63,7 @@ yyparse();
 end;  % for now...
 
 % Now a much more complicated grammar - one that recognizes the syntax of
-% RLISP. In order to survice this grammar my paser generator will need to
+% RLISP. In order to survive this grammar my paser generator will need to
 % be extended to deal with ambiguous grammars both to cope with the
 % standard problem of "dangling else" clauses and to use precedence
 % declarations to disambiguate the uses of infix operators. Well at

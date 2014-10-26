@@ -594,7 +594,7 @@ defautoload(assert_formproc, assert, expr, 3);
 
 % LALR
 
-defautoload(lalr_construct_parser);
+defautoload(lalr_construct_parser, lalr, expr, 1);
 defautoload(yyparse, lalr, expr, 0);
 
 % Ranum

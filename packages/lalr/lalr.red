@@ -59,12 +59,26 @@ fluid '(renamings);
 % for 16-bit integers) and use of those will decrease the amount of
 % memory consumed by the parser tables. However if PSL does not have these
 % it does not matter much since I can just use ordinary Lisp vectors...
+% I set initial contents as all 0 rather than all nil since these are
+% supposed to contain (small) integer values.
 
-inline procedure mkvect8 n; mkvect n;
+symbolic procedure mkvect8 n;
+  begin
+    scalar r;
+    r := mkvect n;
+    for i := 0:n do putv(r, i, 0);
+    return r
+  end;
 inline procedure putv8(v, n, x); putv(v, n, x);
 inline procedure getv8(v, n); getv(v, n);
 
-inline procedure mkvect16 n; mkvect n;
+procedure mkvect16 n;
+  begin
+    scalar r;
+    r := mkvect n;
+    for i := 0:n do putv(r, i, 0);
+    return r
+  end;
 inline procedure putv16(v, n, x); putv(v, n, x);
 inline procedure getv16(v, n); getv(v, n);
 

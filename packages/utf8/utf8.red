@@ -190,13 +190,13 @@ procedure utf8_indexsplit(u);
    begin integer idxlen; scalar l,d;
       if numberp u or digit u then
 	 return nil;
-      l := reversip explode u;
+      l := reversip explode2 u;
       while digit car l do <<
 	 idxlen := idxlen + 1;
-	 d := append(utf8_subscript car l,d);
+	 d := append(utf8_subscript car l, d);
       	 l := cdr l
       >>;
-      return intern compress reversip l . (idxlen . d)
+      return intern list2string reversip l . (idxlen . d)
    end;
 
 procedure utf8_subscript(d);

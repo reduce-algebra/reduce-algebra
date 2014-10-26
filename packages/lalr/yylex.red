@@ -34,16 +34,21 @@ module 'yylex;
 % This is a lexical anaylser for use with RLISP. Its interface is
 % styles after the one needed by yacc, in that it exports a function
 % called yylex() that returns as a value a numeric category code, but
-% sets a variable yylval
+% sets a variable yylval to details associated with the item
 % just parsed. Single character objects are coded as their (ASCII?) code
 % [leaving this code non-portable to machines with other encodings?].
 % Other things must have been given 'lex_code properties indicate the
 % associated category code.  This lexer handles ' and ` as special prefix
 % characters that introduce Lisp-stype s-expressions. and it knows about
 % RLISP-style comments and a few diphthongs. It also supports some
-% simple preprocessor directives.
+% simple preprocessor directives. This would need review if it was to
+% be able to copy with UTF8/Unicode because then numeric codes just over
+% 255 would not be available and the range of characters actually relevant
+% might not be in any compact block of sensible size.
 %
 
+
+switch tracelex; % For debugging
 
 % I keep a circular buffer with the last 64 characters that have been
 % read. Initially the buffer contains NILs rather than characters, so I can
@@ -64,15 +69,15 @@ symbolic procedure yyerror msg;
   begin
     scalar c;
     terpri();
-    princ "+++++ Parse error at line "; prin which_line; princ ":";
+    prin2 "+++++ Parse error at line "; prin1 which_line; prin2 ":";
     if atom msg then msg := list msg;
-    for each s in msg do << princ " "; princ s >>;
+    for each s in msg do << prin2 " "; prin2 s >>;
     terpri();
     for i := 1:64 do <<
        last64p := last64p + 1;
        if last64p = 64 then last64p := 0;
        c := getv(last64, last64p);
-       if not (c = nil) then princ c >>;
+       if not (c = nil) then prin2 c >>;
     if not (c = !$eol!$) then terpri();
     if lex_char = !$eof!$ then printc "<EOF>"
   end;
@@ -86,6 +91,9 @@ symbolic procedure start_parser();
     last64p := 0;
     which_line := 1;
     if_depth := 0;
+    if !*tracelex then <<
+      if posn() neq 0 then terpri();
+      printc "yylex initialized" >>;
     yyreadch() >>;
 
 %
@@ -241,6 +249,9 @@ symbolic procedure yylex();
         else <<
             done := t;
             w := get(w, 'lex_code) >> >>;
+    if !*tracelex then <<
+        if posn() neq 0 then terpri();
+        prin2 "yylex = "; prin1 w; prin2 " : "; print yylval >>;
     return w
   end;
 
@@ -334,19 +345,13 @@ next_lex_code := 267;
 % value is numeric for single-character tokens, but otherwise a descriptive
 % symbol.
 
-% Some people would consider the Lisp dialect that I am using here to be
-% significantly flawed, in that I need to build symbols, numbers and
-% strings up as lists, and then use COMPRESS to make the real objects. The
-% CONS operations involved can be seen as an overhead, and going back to
-% something like the VERY old-fashioned clearbuff/pack/boffo world might
-% avoid that.
-
 symbolic procedure lex_basic_token();
   begin
     scalar r, w;
 % First skip over whitespace. Note that at some stage in the future RLISP
 % may want to make newlines significant and partially equivalent to
 % semicolons, but that is not supported at present.
+if !*tracelex then printc "+++ lex_basic_token +++";
     while lex_char = '!  or lex_char = !$eol!$ or
           (lex_char = '!% and <<
              while not (lex_char = !$eol!$ or lex_char = !$eof!$) do
@@ -355,30 +360,16 @@ symbolic procedure lex_basic_token();
 % Symbols start with a letter or an escaped character and continue with
 % letters, digits, underscores and escapes.
     if liter lex_char or
-       (lex_char = '!! and begin
-% If both !*raise and !*lower were FLUID rather than GLOBAL I could
-% just rebind them here, and that would have the extra benefit that if
-% some exception led to an error exit from within yyreadch they would
-% end up restored. However the Standard Lisp Report says that !*raise must
-% be global, and PSL follows that.
-          scalar raise, !*lower;    % Save !*raise & !*lower to avoid ..
-          raise := !*raise;         % .. case folding after (!)
-          !*raise := nil;
-          yyreadch();
-          !*raise := raise;
-          return (w := t) end) then <<
+       (lex_char = '!! and <<
+          yyreadch() where !*raise = nil, !*lower = nil;
+          w := t >>) then <<
       r := lex_char. r;
-      while liter(yyreadch()) or
+      while yyreadch() = '!_ or
+            liter lex_char or
             digit lex_char or
-            lex_char = '!_ or
-            (lex_char = '!! and begin
-               scalar raise, !*lower;      % Save !*raise & !*lower.
-               raise := !*raise;
-               !*raise := nil;
-               yyreadch();
-               !*raise := raise;
-               return (w := t) end) do
-        r := lex_char . r;
+            (lex_char = '!! and <<
+               yyreadch() where !*raise = nil, !*lower = nil;
+               w := t >>) do r := lex_char . r;
 % If there was a '!' in the word I will never treat it as a keyword. The
 % flag variable w indicates this situation.
       yylval := intern list2string reversip r;
@@ -391,11 +382,11 @@ symbolic procedure lex_basic_token();
 % :number in both cases.
     else if digit lex_char then <<
       r := list lex_char;
-      while digit (yyreadch()) do r := lex_char . r;
+      while << yyreadch(); digit lex_char >> do r := lex_char . r;
       if lex_char = '!. then <<
         w := t;       % Flag to indicate floating point
         r := lex_char . r;
-        while digit (yyreadch()) do r := lex_char . r >>;
+        while <<yyreadch(); digit lex_char >> do r := lex_char . r >>;
 % I permit the user to write the exponent marker in either case.
       if lex_char = '!e or lex_char = '!E then <<
 % If the input as 1234E56 I expand it as 1234.0E56
@@ -411,9 +402,8 @@ symbolic procedure lex_basic_token();
         if not digit lex_char then r := '!0 . r
         else <<
           r := lex_char . r;
-          while digit (yyreadch()) do r := lex_char . r >> >>;
-% Here I have a number, so I can use compress to parse it without concern
-% aboout upper vs. lower case.
+          while << yyreadch(); digit lex_char >> do r := lex_char . r >> >>;
+% Here I have a number, so I can use compress to parse it.
       yylval := compress reversip r;
       return '!:number >>
 % Strings are enclosed in double-quotes, and "abc""def" is a string with
@@ -421,21 +411,11 @@ symbolic procedure lex_basic_token();
 % string.
     else if lex_char = '!" then <<
       begin
-        scalar raise, lower;      % Save !*raise & !*lower.
-        raise := !*raise;
-        !*raise := nil;
-#if (memq 'csl lispsystem!*)
-        lower := !*lower;
-        !*lower := nil;
-#endif
+        scalar !*raise, !*lower;      % Make !*raise & !*lower both nil.
         repeat <<
           while not (yyreadch() = '!") do r := lex_char . r;
           r := lex_char . r;
           yyreadch() >> until not (lex_char = '!");
-        !*raise := raise;
-#if (memq 'csl lispsystem!*)
-        !*lower := lower;
-#endif
       end;
       yylval := list2string reversip cdr r;
       lex_char := w;
