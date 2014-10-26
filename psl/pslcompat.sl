@@ -31,15 +31,19 @@
     '(and ($fluid !*int) (eq ($fluid ifl!*) (quote nil))))
 
 (def-pass-1-reform liter (u)
-  `((lambda (($local &u&) ($local &infu&))
+  `((lambda (($local &u&))
     (eq '0 (wor (wxor 
-		  (field ($local &u&) ',tagstartingbit ',infstartingbit) ',id-tag)
-	       (wshift
-		  (wand (wor (wdifference ($local &infu&) '8#141) % a
-			     (wdifference '8#172 ($local &infu&))) % z
-			(wor (wdifference ($local &infu&) '8#101) % A
-			     (wdifference '8#132 ($local &infu&))) % Z
-		   ) '-31)))) ,u (field ,u ',infstartingbit ',infbitlength)))
+		 (field ($local &u&) ',tagstartingbit ',infstartingbit) ',id-tag)
+                ((lambda (($local &infu&))
+		   (wshift
+		    (wand (wor (wdifference ($local &infu&) '8#141) % a
+			       (wdifference '8#172 ($local &infu&))) % z
+			  (wor (wdifference ($local &infu&) '8#101) % A
+			       (wdifference '8#132 ($local &infu&))) % Z
+		    ) '-31))
+		 (field ($local &u&) ',infstartingbit ',infbitlength))
+		)))
+    ,u))
 
 (def-pass-1-reform   length (u)
    %  length (length (explode x)) -> (flatsize x)
