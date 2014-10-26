@@ -38,13 +38,14 @@ module assert;
 
 create!-package('(assert assertcheckfn assertproc),nil);
 
-global '(assert_functionl!* exlist !*comp);
+global '(assert_functionl!* exlist);
 
 global '(outl!*);
 global '(curline!*);
 global '(ifl!*);
 
 fluid '(!*backtrace);
+fluid '(!*comp);
 fluid '(!*msg);
 fluid '(lispsystem!*);
 

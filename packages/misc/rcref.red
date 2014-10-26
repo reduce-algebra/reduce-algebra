@@ -32,12 +32,12 @@ module rcref; % Cross reference program.
 create!-package('(rcref redio),'(util));
 
 fluid '(!*backtrace !*cref !*defn !*mode !*nocrefpri calls!* curfun!*
-        dfprint!* globs!* locls!* toplv!* !*raise);
+        dfprint!* globs!* locls!* toplv!* !*raise !*comp);
 
 global '(undefg!* gseen!* btime!* expand!* haveargs!* notuse!* nolist!*
         dclglb!* entpts!* undefns!* seen!* tseen!* xseen!* op!*!* cloc!*
         pfiles!* curlin!* pretitl!* !*creftime !*saveprops maxarg!*
-        !*crefsummary !*comp !*rlisp !*globals !*algebraics);
+        !*crefsummary !*rlisp !*globals !*algebraics);
 
 switch cref;
 
@@ -66,7 +66,7 @@ nolist!* := append('(and cond endmodule lambda list max min module or
 flag ('(plus times and or lambda progn max min cond prog case list),
        'naryargs);
 
-dclglb!*:='(!*comp emsg!* !*raise);
+dclglb!*:='(emsg!*);
 
 if not getd 'begin then
   flag('(rds deflist flag fluid global remprop remflag unfluid

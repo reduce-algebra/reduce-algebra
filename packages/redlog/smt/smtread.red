@@ -32,8 +32,6 @@ module smtread;
 
 global '(!$eof!$);
 global '(!$eol!$);
-global '(!*quotenewnam);
-global '(!*raise);
 global '(crbuf!*);
 global '(crbuf1!*);
 global '(crchar!*);
@@ -44,6 +42,9 @@ global '(ifl!*);
 global '(nxtsym!*);
 global '(outl!*);
 global '(ttype!*);
+
+fluid '(!*quotenewnam);
+fluid '(!*raise);
 
 % Values in ttype!*:
 % 0  symbol                   a, b, c, word, !+

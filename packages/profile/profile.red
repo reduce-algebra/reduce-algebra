@@ -32,7 +32,7 @@ module profile;
 
 loadtime load!-package 'rltools;
 
-global '(!*comp);
+fluid '(!*comp);
 
 fluid '(!*utf8);
 

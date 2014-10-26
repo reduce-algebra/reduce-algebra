@@ -90,7 +90,7 @@ symbolic procedure unrtrace L;
    mapcar(L, function unrtrace1)$
 
 fluid '(!*rtrace!-setq)$
-% !*comp is pre-declared, to be fluid in CSL and global in PSL!
+% !*comp is pre-declared, to be fluid in CSL and fluid in PSL!
 
 symbolic procedure rtraceset L;
    mapcar(L, function rtrace1) where !*rtrace!-setq = t$

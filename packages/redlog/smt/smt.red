@@ -37,8 +37,8 @@ create!-package('(smt smtread), nil);
 load!-package 'rltools;
 
 global '(emsg!*);
-global '(!*raise);
 
+fluid '(!*raise);
 fluid '(!*lower);
 fluid '(!*backtrace);
 fluid '(smts_assertionl!*);

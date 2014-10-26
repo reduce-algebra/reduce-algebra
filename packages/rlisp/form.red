@@ -29,10 +29,10 @@ module form;  % Performs a mode analysis of parsed forms.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-fluid '(!*!*a2sfn !*cref !*defn !*mode !*reduce4 !*rlisp88
+fluid '(!*!*a2sfn !*comp !*cref !*defn !*mode !*reduce4 !*rlisp88
         current!-modulus fname!* ftype!* !*strict_argcount);
 
-global '(!*argnochk !*comp !*composites !*force !*micro!-version
+global '(!*argnochk !*composites !*force !*micro!-version
          !*vars!* cursym!*);
 
 !*!*a2sfn := 'aeval;

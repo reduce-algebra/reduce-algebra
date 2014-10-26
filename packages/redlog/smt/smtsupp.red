@@ -33,8 +33,8 @@ module smtsupp;
 % trunk/psl/dist/nonkernel/token-decls.sl
 
 global '(emsg!*);
-global '(!*raise);
 
+fluid '(!*raise);
 fluid '(!*lower);
 fluid '(!*backtrace);
 fluid '(smts_assertionl!*);

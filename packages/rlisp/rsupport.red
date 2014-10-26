@@ -28,9 +28,7 @@ module rsupport;   % Basic functions needed to support RLISP and REDUCE.
 %
 
 
-fluid '(!*backtrace);
-
-global '(!*comp);
+fluid '(!*backtrace !*comp);
 
 symbolic procedure aconc(u,v);
    % Adds element v to the tail of u. u is destroyed in process.

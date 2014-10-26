@@ -29,12 +29,12 @@ module proc;   % Procedure statement.
 
 
 fluid '(!*noinlines !*loginlines !*redeflg!* fname!* ftype!*
-        !*strict_argcount);
+        !*strict_argcount !*comp);
 
 % !*loginlines will cause a compile-time report of patterns of inline usage.
 !*loginlines := t;
 
-global '(!*argnochk !*comp !*lose !*micro!-version cursym!* erfg!*
+global '(!*argnochk !*lose !*micro!-version cursym!* erfg!*
          ftypes!*);
 
 fluid '(!*defn new_inline_definitions);
