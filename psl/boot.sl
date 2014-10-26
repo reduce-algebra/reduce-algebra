@@ -4,11 +4,11 @@
 
 % Copyright (c) 1991 RAND.  All Rights Reserved.
 
-(fluid '(fname!* !*blockp !*lower !*mode))
+(fluid '(fname!* !*blockp !*lower !*mode !*raise))
 
 (global '(oldchan!*))
 
-(global '(!*raise crchar!* cursym!* nxtsym!* ttype!* !$eol!$))
+(global '(crchar!* cursym!* nxtsym!* ttype!* !$eol!$))
 
 (put '!; 'switch!* '(nil !*semicol!*))
 

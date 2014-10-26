@@ -236,7 +236,7 @@
   *trststep              % stop after printing an assignment
   -visited*))            % for PRINTX
 	
-(global
+(fluid
   '(*comp))               % Standard Lisp flag
 
 (setq *btr t)
