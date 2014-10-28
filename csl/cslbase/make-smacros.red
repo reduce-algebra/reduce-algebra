@@ -499,7 +499,7 @@ close wrs ofil;
 prin count; printc " smacros created";
 
 window!-heading
-  list!-to!-string
+  list2string
     append(explodec count, explodec " smacros created");
 
 >>;

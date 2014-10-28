@@ -742,13 +742,13 @@ typedef uintptr_t Header;
                    (((uint32_t)(code)) << 8) | TAG_CHAR))
     
 /*
- * For internal purposes here I will use a pseude-character with code
- * 0x001fffff to stand for an end of file marker. This can be packed as
- * 4 bytes in utf-8 (f7/bf/bf/bf) but is outside the Unicode range and so
- * should never arise in exchange. I will probably at times map it onto
- * the integer value -1.
+ * For internal purposes here I will use a pseudo-character with code
+ * 0x0010ffff to stand for an end of file marker. This can be packed as
+ * 4 bytes in utf-8 (f4/8f/bf/bf) and it is the last codepoint in the
+ * Unicode range and is reserved in Unicode as not baing a valid
+ * character.
  */
-#define CHAR_EOF pack_char(0, 0x001fffff)
+#define CHAR_EOF pack_char(0, 0x0010ffff)
 
 
 /*

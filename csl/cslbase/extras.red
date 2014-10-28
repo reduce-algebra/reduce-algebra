@@ -144,7 +144,7 @@ symbolic procedure s!:stamp n;
         s!:stamp truncate(n ,36);
 
 symbolic procedure dated!-name base;
-   intern list!-to!-string 
+   intern list2string 
       append(explodec base, 
          '!_ . append(reverse s!:stamp datestamp(),
              '!_ . explodec(s!:gensym!-serial := s!:gensym!-serial + 1)));
@@ -160,7 +160,7 @@ symbolic procedure dated!-name base;
 % definition.
 
 symbolic procedure hashtagged!-name(base, value);
-   intern list!-to!-string 
+   intern list2string 
       append(explodec base, '!_ . s!:stamp md60 value);
 
 %
@@ -459,7 +459,7 @@ symbolic procedure s!:format(dest, fmt, args);
        else <<
           if null dest then res := c . res
           else princ c >> >>;
-    if null dest then return list!-to!-string reversip res
+    if null dest then return list2string reversip res
     else << wrs o; return nil >>
   end;
 

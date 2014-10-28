@@ -5490,7 +5490,7 @@ symbolic procedure faslend;
 % created the C code... The issue is that module names that have a "-"
 % in them give trouble since "-" is not a good constituent for a
 % C name. So I map it onto "_".
-           nn := list!-to!-string
+           nn := list2string
                (for each c in explodec nn collect
                    if c = '!- then '!_ else c);
            deff := tmpnam "def";
@@ -5541,7 +5541,7 @@ symbolic procedure faslend;
 % to have one such active at once). If the module was called xxx and the
 % machine architecture is yyy I will use the name xxx/yyy.
            copysrc := obj;
-           copydest := list!-to!-string append(explodec car s!:faslmod_name,
+           copydest := list2string append(explodec car s!:faslmod_name,
                             '!. . explodec cdr assoc('linker, lispsystem!*));
            if not !*save_native then <<
               delete!-file s!:native_file;
@@ -5574,7 +5574,7 @@ symbolic procedure s!:file s;
     while s and not (eqcar(s, '!/) or eqcar(s, '!\)) do <<
        r := car s . r;
        s := cdr s >>;
-    return list!-to!-string r
+    return list2string r
   end;
 
 symbolic procedure s!:trim!.c s;
@@ -5585,7 +5585,7 @@ symbolic procedure s!:trim!.c s;
     if eqcar(s, 'c) then <<
         s := cdr s;
         if eqcar(s, '!.) then s := cdr s >>;
-    return list!-to!-string reverse s
+    return list2string reverse s
   end;
 
 symbolic procedure s!:dir s;
@@ -5595,7 +5595,7 @@ symbolic procedure s!:dir s;
     while s and not (eqcar(s, '!/) or eqcar(s, '!\)) do s := cdr s;
     if s then s := cdr s;
     if null s then return "."
-    else return list!-to!-string reverse s
+    else return list2string reverse s
   end;
 
 symbolic procedure faslout u;

@@ -4789,7 +4789,7 @@ static void cold_setup()
     resources           = make_undefined_symbol("*resources*");
     used_space          = make_undefined_symbol("*used-space*");
     avail_space         = make_undefined_symbol("*avail-space*");
-    eof_symbol          = make_undefined_symbol("\xf7\xbf\xbf\xbf");
+    eof_symbol          = make_undefined_symbol("\xf4\x8f\xbf\xbf");
     call_stack          = nil;
     trap_time           = make_undefined_symbol("trap-time*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;

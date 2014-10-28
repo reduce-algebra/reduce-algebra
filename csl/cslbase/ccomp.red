@@ -892,7 +892,7 @@ symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
 !#endif
     c!:registers := c!:available := c!:used := nil;
 % File_name will be the undecorated name as a string when hdrnow is false,
-    File_name := list!-to!-string explodec name;
+    File_name := list2string explodec name;
     Setup_name := explodec setupname;
 % I REALLY want the user to give me a module name that is a valid C
 % identifier, but in REDUCE I find just one case where a name has an embedded
@@ -900,7 +900,7 @@ symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
 % take care to be aware of this! Also if any idiot tried to have two modules
 % called a-b and a_b they would now clash with one another.
     Setup_name := subst('!_, '!-, Setup_name);
-    Setup_name := list!-to!-string Setup_name;
+    Setup_name := list2string Setup_name;
     if dir then <<
        if 'win32 memq lispsystem!* then
           name := c!:concat(dir, c!:concat("\", name))
@@ -1030,7 +1030,7 @@ procedure C!-end1 create_lfile;
     c3 := c3 / 10000000;
     c2 := remainder(c3, 10000000);
     c3 := c3 / 10000000;
-    checksum := list!-to!-string append(explodec c3,
+    checksum := list2string append(explodec c3,
                      '!  . append(explodec c2, '!  . explodec c1));
     c!:printf("    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n",
               Setup_name, checksum);
