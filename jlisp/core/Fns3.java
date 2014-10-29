@@ -46,6 +46,7 @@ import java.util.*;
 import java.util.zip.*;
 import java.text.*;
 import java.math.*;
+import java.nio.charset.*;
 
 class Fns3
 {
@@ -270,24 +271,32 @@ class List2stringFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
 // This must take in a list in UTF8...
-        String a = "";
+        byte [] b = new byte[32];
+        int n = 0;
         while (!arg1.atom)
         {   LispObject c = arg1.car;
-            char n;
+            int v;
             arg1 = arg1.cdr;
 // Now c might be an integer or a symbol or a string - I want to
-// interpret it as a single character.
-            if (c instanceof LispInteger) n = (char)c.intValue();
+// interpret it as a single character, and I will only keep the low
+// 8 bits
+            if (c instanceof LispInteger) v = c.intValue();
             else if (c instanceof Symbol)
             {   ((Symbol)c).completeName();
-                n = ((Symbol)c).pname.charAt(0);
+                v = ((Symbol)c).pname.codePointAt(0);
             }
             else if (c instanceof LispString)
-            {   n = ((LispString)c).string.charAt(0);
+            {   v = ((LispString)c).string.codePointAt(0);
             }
             else return error("bad character in list2string");
-            a = a + n;
+            if (n >= b.length)
+            {   byte [] b1 = new byte[2*n];
+                for (int i=0; i<n; i++) b1[i] = b[1];
+                b = b1;
+            }
+            b[n++] = (byte)v;
         }
+        String a = new String(b, 0, n, utf8);
         return new LispString(a);
     }
 }
@@ -2274,6 +2283,8 @@ class StringpFn extends BuiltinFunction
     }
 }
 
+static Charset utf8 = Charset.forName("UTF-8");
+
 class String_storeFn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
@@ -2284,9 +2295,9 @@ class String_storeFn extends BuiltinFunction
         String v = ((LispString)args[0]).string;
         LispSmallInteger n = (LispSmallInteger)args[1];
         int i = n.value;
-        char [] v1 = v.toCharArray();
-        v1[i] = (char)(((LispSmallInteger)args[2]).value);
-        ((LispString)args[0]).string = new String(v1);
+        byte [] v1 = v.getBytes(utf8);
+        v1[i] = (byte)((LispSmallInteger)args[2]).value;
+        ((LispString)args[0]).string = new String(v1, utf8);
         return args[2];
     }
 }
@@ -2298,8 +2309,9 @@ class String_lengthFn extends BuiltinFunction
         LispObject r = Jlisp.nil;
         if (!(arg1 instanceof LispString))
             return error("not a string for string2list");
-        String s = ((LispString)arg1).string;
-        return LispInteger.valueOf(s.length());
+        byte []s = ((LispString)arg1).string.getBytes(utf8);
+// Counts the number of bytes in an UTF-8 encoding of the string
+        return LispInteger.valueOf(s.length);
     }
 }
 
@@ -2309,6 +2321,7 @@ class String2listFn extends BuiltinFunction
     {
         LispObject r = Jlisp.nil;
         String s;
+        int prev = -1;
         if (arg1 instanceof Symbol)
         {   ((Symbol)arg1).completeName();
             s = ((Symbol)arg1).pname;
@@ -2318,7 +2331,15 @@ class String2listFn extends BuiltinFunction
         else return error("not a string for string2list");
 // This must emit its output in UTF-8
         for (char c : s.toCharArray())
-        {   r = new Cons(LispInteger.valueOf((int)c), r);
+        {   int ic = (int)c;
+            if (ic >= 0xd800 && ic < 0xdc00) // lead surrogate
+                prev = ic & 0x3ff;
+            else
+            {   if (prev >= 0 && ic >= 0xdc00 && ic < 0xe000) // trail
+                    ic = (ic & 0x3ff) + (prev << 10) + 0x10000;
+                r = new Cons(LispInteger.valueOf(ic), r);
+                prev = -1;
+            }
         }
         return Fns.reversip(r);
     }

@@ -68,7 +68,7 @@ class Lit
 	"input",
 	"output",
 	"noncom",          // special treatment or ORDERP for Reduce. Ugh!
-	"<eof>",           // various special characters
+	"\udbff\udfff",    // various special characters. Eof is U+10ffff
 	" ",
 	"\n",
 	"\b",
@@ -161,5 +161,4 @@ class Lit
 }
 
 // end of Lit.java
-
 
