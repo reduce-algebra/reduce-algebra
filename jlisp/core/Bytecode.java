@@ -2197,7 +2197,7 @@ case QGETV:
         continue;
 case QGETVN:
         arg = bytecodes[pc++] & 0xff;
-        a = builtin2[BIget].op2(a, LispInteger.valueOf(arg));
+        a = builtin2[BIgetv].op2(a, LispInteger.valueOf(arg));
         continue;
 case BIGSTACK:
         iw = bytecodes[pc++] & 0xff;
