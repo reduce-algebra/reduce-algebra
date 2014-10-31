@@ -112,6 +112,8 @@ echo ++++++ Build initial bootstrap system ++++++
 % pslcompat.b has to be built separately, because PSL Lisp has
 % incompatible versions of if, when, backquote etc.
 
+(or loaddirectories!* (setq loaddirectories!* (list "")))
+
 (load pslcomp useful)
 
 (faslout "pslcompat")
