@@ -256,11 +256,18 @@ symbolic
                        badpart:=denbad;
                        put('tan,'opmtch,temp)>>
              else <<
+#if (memq 'jlisp lispsystem!*)
+                    denbad:=errorset!*(list('integratesq,mkquote denbad,
+                                            mkquote svar,mkquote xlogs, nil),
+                                       !*backtrace);
+                    put('tan,'opmtch,temp);
+#else
                     unwind!-protect(
                       denbad:=errorset!*(list('integratesq,mkquote denbad,
                                          mkquote svar,mkquote xlogs, nil),
                                          !*backtrace),
                       put('tan,'opmtch,temp));
+#endif
            %%% JPF fix for distributive version
                      if not atom denbad then <<
                         denbad:=car denbad;     % As from an errorset

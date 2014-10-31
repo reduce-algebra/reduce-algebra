@@ -291,7 +291,7 @@ class List2stringFn extends BuiltinFunction
             else return error("bad character in list2string");
             if (n >= b.length)
             {   byte [] b1 = new byte[2*n];
-                for (int i=0; i<n; i++) b1[i] = b[1];
+                for (int i=0; i<n; i++) b1[i] = b[i];
                 b = b1;
             }
             b[n++] = (byte)v;
@@ -2308,7 +2308,7 @@ class String_lengthFn extends BuiltinFunction
     {
         LispObject r = Jlisp.nil;
         if (!(arg1 instanceof LispString))
-            return error("not a string for string2list");
+            return error("not a string for string-length");
         byte []s = ((LispString)arg1).string.getBytes(utf8);
 // Counts the number of bytes in an UTF-8 encoding of the string
         return LispInteger.valueOf(s.length);

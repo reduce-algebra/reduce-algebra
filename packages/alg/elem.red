@@ -342,9 +342,14 @@ symbolic procedure knowledge_about(op,arg,top);
      or null !*elem!-inherit then nil else
     (begin scalar r,old;
        old:=get(top,'opmtch); put(top,'opmtch,nil);
+#if (memq 'jlisp lispsystem!*)
+       r:=  errorset!*({'aeval,mkquote{op,arg}},nil);
+       put(top,'opmtch,old);
+#else
        unwind!-protect(
          r:= errorset!*({'aeval,mkquote{op,arg}},nil),
          put(top,'opmtch,old));
+#endif
        return not errorp r and not smemq(op,car r)
              and not smemq(top,car r);
     end) where varstack!*=nil;

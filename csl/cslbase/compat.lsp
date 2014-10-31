@@ -171,7 +171,7 @@
 
 % End of file is #10ffff which is "not a character" and is the highest
 % codepoint in Unicode,
-   (setq !$eof!$ (intern (list!-to!-string '(244 143 191 191))))
+   (setq !$eof!$ (intern (list2string '(244 143 191 191))))
 %%! predef [$eof$] \item [{\ttfamily !\$eof!\$}] \index{{\ttfamily "!\$eof"!\$}} ~\newline
 %% The value of this variable is a pseudo-character returned from various
 %% read functions to signal end-of-file.
