@@ -165,16 +165,11 @@ symbolic procedure copyd(new,old);
 
 flag('(copyd), 'lose);
 
-inline procedure int2id x;
-  begin
-    scalar s;
-    s := make!-simple!-string 1;
-    putv!-char(s, 0, x);
-    return intern s;
-  end;
+inline procedure int2id x; % Turns 8-bit value into name. Only OK is under 0x80
+  intern list2string list x;
 
-inline procedure id2int x;
-  scharn(symbol!-name x, 0);
+inline procedure id2int x; % Gets first octet of UTF-8 form of name
+  car string2list x;
 
 symbolic macro procedure bothtimes u;
    list('eval!-when, '(compile load eval), cadr u);

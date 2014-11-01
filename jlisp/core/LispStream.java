@@ -218,8 +218,7 @@ class LispStream extends LispObject
         catch (IOException e)
         {   return -1;
         }
-// @@@@ Temporarily make it noisy ALWAYS 
-        if (true || Jlisp.lit[Lit.starecho].car/*value*/ != Jlisp.nil)
+        if (Jlisp.lit[Lit.starecho].car/*value*/ != Jlisp.nil)
         {   LispStream o = (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;
             o.print(String.valueOf((char)c));
         }

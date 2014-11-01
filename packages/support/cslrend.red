@@ -481,14 +481,14 @@ single precision integers should be used;
 
 largest!-small!-modulus := 2**23;
 
-#if (not (memq 'vsl lispsystem!*))
+!#if (not (memq 'vsl lispsystem!*))
 
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
        modular!-times modular!-expt set!-small!-modulus
        safe!-modular!-reciprocal), 'lose);
 
-#endif
+!#endif
 
 % flag('(random next!-random!-number), 'lose);
 
@@ -498,12 +498,12 @@ set!-small!-modulus 3;
 % and (hence?) maybe low level tricks or special floating point
 % tricks can help with speed.
 
-#if (memq  'vsl lispsystem!*)
+!#if (memq  'vsl lispsystem!*)
 
 flag('(cos exp expt log sin sqrt fix
        ceiling floor round clrhash puthash gethash remhash), 'lose);
 
-#else
+!#else
 
 flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        asech asin asind asinh atan atand atan2 atan2d atanh cbrt cos
@@ -511,7 +511,7 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        logb log10 sec secd sech sin sind sinh sqrt tan tand tanh fix
        ceiling floor round clrhash puthash gethash remhash), 'lose);
 
-#endif
+!#endif
 
 
 global '(loaded!-packages!* no!_init!_file personal!-dir!*);
@@ -735,11 +735,11 @@ flag('(mkquote spaces subla boundp error1),'lose);
 % to REDUCE.
 flag('(union intersection), 'lose);
 
-#if (null (memq 'vsl lispsystem!*))
+!#if (null (memq 'vsl lispsystem!*))
 
 flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot), 'lose);
 
-#endif
+!#endif
 
 % I USED to flag ordp as LOSE, but there are three different definitions in
 % different places within Reduce and the LOSE mechanism is not quite
@@ -804,7 +804,7 @@ put('gc, 'simpfg, '((t (verbos t))
 % interpreter then does not support those cases. So as a temporary measure
 % here is something that does not actually deal with errors but gets the
 % recovery form evaluated in the easy case when things do not exit
-% abruptly. I had hopeed I could macroexpand to something using errorset
+% abruptly. I had hoped I could macroexpand to something using errorset
 % and obtain full functionality here but that seems to be unduly hard
 % mainly because of access to local variables.
 
@@ -821,6 +821,9 @@ symbolic macro procedure unwind!-protect u;
        'progn . u,
        list('return, g))
   end;
+
+symbolic procedure find!-gnuplot();
+  "gnuplot";
 
 !#endif
 
