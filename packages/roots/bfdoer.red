@@ -71,7 +71,7 @@ fluid '(acc!# sprec!# pfactor!# rr!# ss!# !*xn !*zp !*xobf !*noeqns
 
 fluid '(iniprec!#);
 
-global '(bfz!* bfone!* bfhalf!* bftwo!* prd!% log2 bfee!* !!ee);
+global '(bfz!* bfone!* bfhalf!* bftwo!* prd!% !!log2 bfee!* !!ee);
 
 bfee!* := bfloat !!ee;
 
@@ -293,7 +293,7 @@ symbolic procedure bfloatrd p;
 
 symbolic procedure logrtn(x,n);
   % floating log of x**(1/n) using bfloat logic as boost.
-  (y/n) where y=log(m/2.0**p)+(p+ep!: x)*log2
+  (y/n) where y=log(m/2.0**p)+(p+ep!: x)*!!log2
         where p=msd!: m-1 where m=mt!: x;
 
 symbolic procedure fl2bfexp m; if !*bftag then expfl2bf m else exp m;

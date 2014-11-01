@@ -62,7 +62,7 @@ fluid '(!*pcmp prec!# acc!# sprec!# !*xn eps!# accm!# !*xobf froot!#);
 fluid '(nwmax!# lgmax!# !*xo !*keepimp !1rp !*zx1 !*mb tht!# prm!#
  !*bfsh !*strm mltr!# emsg!# lims!# incmsg!$ cpxt!# sh!# pfl!# acfl!#
  pfactor!# rprec!# rr!# ss!# prx!# nrst!$ !*xd !*zp intv!# pnn!#);
-global '(bfone!* bfhalf!* bfz!* cpval!# polnix!$ polrem!$ lm!#);
+global '(bfone!* bfhalf!* bfz!* !!log2of10 cpval!# polnix!$ polrem!$ lm!#);
 nwmax!# := 200; lgmax!# := 100;
 !*multiroot := !*powergcd := t;
 
@@ -287,7 +287,7 @@ symbolic procedure prreq(p,x,rl);
         <<x := getprec(); setprec 8;
           rl := ep!: round!:mt(
               divbf(timbf(rx,decimal2internal (1, (acc!#+2))),x1),1);
-          setprec x; 1 + ceiling (rl / log2of10)>> end;
+          setprec x; 1 + ceiling (rl / !!log2of10)>> end;
 
 symbolic procedure sizatom u;
    begin scalar c,x; c := !*complex; on complex;

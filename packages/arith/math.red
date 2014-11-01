@@ -173,26 +173,30 @@ symbolic procedure rounddec (x,p);
             return xl/sc
           end;
 
-global '(log2 sq2 sq2!-1 logsq2 logten log1000 log1e9);
-global '(log1e81 log1e27);
+global '(!!log!&2list);
 
-sq2 := sqrt 2.0; sq2!-1 := 1/(1+sq2);
+global(!!log!&2list := '(!!log2 !!sq2 !!sq2!-1 !!logsq2 
+      	       	         !!logten !!log1000 !!log1e9 !!log1e81 !!log1e27));
+
+remflag(!!log!&2list,'reserved);
+
+!!sq2 := sqrt 2.0; !!sq2!-1 := 1/(1+!!sq2);
 
 symbolic procedure log x;
    begin scalar s,lx; integer p;
       if fixp(x) and (lx := ilog2(x)) > !!floatbits
-        then return log2*(lx - !!floatbits)
+        then return !!log2*(lx - !!floatbits)
                       + log(x/2^(lx - !!floatbits))
        else if (x := float x)<=0.0 then terrlst(x,'log)
        else if x - 1<0 then x := 1/x else s := t;
       lx := 0.0;
-      while x>1.0e81 do <<x := x/1.0e81; lx := lx+log1e81>>;
-      while x>1.0e27 do <<x := x/1.0e27; lx := lx+log1e27>>;
-      while x>1.0e9 do <<x := x/1.0e9; lx := lx+log1e9>>;
-      while x>1000 do <<x := x/1000; lx := lx+log1000>>;
-      while x>10 do <<x := x/10; lx := lx+logten>>;
-      while x>2 do <<x := x/2; lx := lx+log2>>;
-      if x>sq2 then <<x := x/sq2; lx := lx+logsq2>>;
+      while x>1.0e81 do <<x := x/1.0e81; lx := lx+!!log1e81>>;
+      while x>1.0e27 do <<x := x/1.0e27; lx := lx+!!log1e27>>;
+      while x>1.0e9 do <<x := x/1.0e9; lx := lx+!!log1e9>>;
+      while x>1000 do <<x := x/1000; lx := lx+!!log1000>>;
+      while x>10 do <<x := x/10; lx := lx+!!logten>>;
+      while x>2 do <<x := x/2; lx := lx+!!log2>>;
+      if x>!!sq2 then <<x := x/!!sq2; lx := lx+!!logsq2>>;
       lx := lx+sclogx!-1(x - 1);
       return if s then lx else -lx end;
 
@@ -205,9 +209,10 @@ symbolic procedure sclogx!-1 x;
          for each i in sl do lx := lx+i;
          return lx end;
 
-log2 := 2*(logsq2 := sclogx!-1 sq2!-1);
-log1e81 := 3*(log1e27 := 3*(log1e9 := 3*(log1000 :=
-  3*(logten := log 10.0))));
+!!log2 := 2*(!!logsq2 := sclogx!-1 !!sq2!-1);
+!!log1e81 := 3*(!!log1e27 := 3*(!!log1e9 := 3*(!!log1000 := 3*(!!logten := log 10.0))));
+
+flag(!!log!&2list,'reserved);
 
 global '(!!pilist);
 
@@ -471,7 +476,7 @@ symbolic procedure expt(x,y);
       iy := fix y;
       fy := y - float iy; % fractional part of y.
       % Now I need to compute 2**iy * 2**fy.
-      r := r * exp(fy*log2);
+      r := r * exp(fy*!!log2);
       % I can afford to use iexpt() here since powers of 2.0 have exact
       % representations as floats (with binary machines!) so there
       % should be no rounding errors in what follows.
@@ -724,7 +729,7 @@ symbolic procedure acsch x;
 symbolic procedure ln x; log x;
 
 symbolic procedure log10 x;
-   if x>0 then log x/logten else terrlst(x,'logten);
+   if x>0 then log x/!!logten else terrlst(x,'log10);
 
 symbolic procedure logb (x,b); %log x to base b;
    begin scalar a,s; a:=x>0; s:=not(b<=0 or zerop(b - 1));

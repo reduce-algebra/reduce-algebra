@@ -60,7 +60,7 @@ imports !*crn2cr, !*f2q, abs!:, bfloat, bfloatem, bfmin, bfminus,
 fluid '(!*trroot !*rootmsg !*multiroot !*roundbf !:bprec!: !*complex
   !*msg !*bftag !*sqfree !*ratroot !*nosqfr rootacc!# iniprec!#);
 switch trroot,rootmsg,multiroot,ratroot;
-global '(!!nfpd !!nbfpd !!flim bfz!* log2of10 rlval!# cpval!#);
+global '(!!nfpd !!nbfpd !!flim bfz!* !!log2of10 rlval!# cpval!#);
 global '(!!shbinfl rootsreal rootscomplex den!* lm!# !!flprec);
 flag('(rootsreal rootscomplex),'share);
 fluid '(!*pfsav pr!# acc!# bfl!# emsg!# eps!# rootacc!#!#);
@@ -352,7 +352,7 @@ symbolic procedure find!!flim;
        until explode(1.0+n)=explode 1.0; !!flim>> where n=1.0;
 
 symbolic procedure xnsiz x;
-  ceiling (xnsiz1 x / log2of10);
+  ceiling (xnsiz1 x / !!log2of10);
 
 symbolic procedure xnsiz1 x;
    if bfnump x then bfsiz x

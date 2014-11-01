@@ -55,7 +55,7 @@ imports complex!*on!*switch, complex!*off!*switch,
 % use a wrapper and use the algebraic operators- it's slower, but at
 % least that way you'll get the answers.
 
-global '(logten);
+global '(!!logten);
 
 algebraic operator besselJ, besselY, besselI, besselK, hankel1, hankel2;
 
@@ -300,11 +300,11 @@ symbolic procedure j!*calc!*s!*sub(n,z,fkgamnk,prepre);
 
       if lessp!:(abs!: result, bfone!*) then
                admissable := abs!: divbf (bfone!*,
-                  timbf (exp!:(timbf(fl2bf logten, i2bf!:(prepre +
+                  timbf (exp!:(timbf(fl2bf !!logten, i2bf!:(prepre +
                                   length explode fkgamnk)), 8), modify))
       else
                admissable := abs!: divbf (bfone!*,
-                  timbf (exp!:(timbf(fl2bf logten, i2bf!:(prepre +
+                  timbf (exp!:(timbf(fl2bf !!logten, i2bf!:(prepre +
                                   length explode (1 + conv!:bf2i abs!: result))), 8),
                      modify));
 
@@ -555,14 +555,14 @@ symbolic procedure y!*calc!*s!*sub(n,z,ps,fkgamnk,prepre, st0);
 
       if lessp!: (abs!: plubf(result, start), bfone!*) then
          admissable := abs!: divbf(divbf(bfone!*,
-               exp!:(timbf(fl2bf logten, plubf(i2bf!:(prepre+2),
+               exp!:(timbf(fl2bf !!logten, plubf(i2bf!:(prepre+2),
                   divbf(log!:(divbf(bfone!*,
                         plubf(abs!: result, abs!: start)), 5),
-                     fl2bf logten))), 5)), modify)
+                     fl2bf !!logten))), 5)), modify)
       else admissable := abs!: divbf(divbf(bfone!*,
-               exp!:(timbf(fl2bf logten, plubf(i2bf!:(prepre+2),
+               exp!:(timbf(fl2bf !!logten, plubf(i2bf!:(prepre+2),
                   divbf(log!:(plubf(abs!: result, abs!: start), 5),
-                     fl2bf logten))), 5)), modify);
+                     fl2bf !!logten))), 5)), modify);
 
       this := plubf(admissable, bfone!*);
 
@@ -622,11 +622,11 @@ symbolic procedure i!*calc!*s!*sub(n,z,fkgamnk,prepre);
 
       if lessp!:(abs!: result, bfone!*) then
                admissable := abs!: divbf (bfone!*,
-                  timbf (exp!:(timbf(fl2bf logten, i2bf!:(prepre +
+                  timbf (exp!:(timbf(fl2bf !!logten, i2bf!:(prepre +
                                   length explode fkgamnk)), 8), modify))
       else
                admissable := abs!: divbf (bfone!*,
-                  timbf (exp!:(timbf(fl2bf logten, i2bf!:(prepre +
+                  timbf (exp!:(timbf(fl2bf !!logten, i2bf!:(prepre +
                                   length explode (1 + conv!:bf2i abs!: result))),
                                8),
                      modify));

@@ -26,7 +26,7 @@ module fastmath;  % Definitions of key functions in the math module of
 %
 
 
-global '(!!deg2rad !!rad2deg !!floatbits log2);
+global '(!!deg2rad !!rad2deg !!floatbits !!log2);
 
 compiletime
   global '(!!fleps1exp !!plumaxexp !!pluminexp !!timmaxexp !!timminexp);
@@ -160,7 +160,7 @@ symbolic procedure log x;
       if x <= 0.0
         then error(99,list("non-positive argument to LOG:",x))
        else if fixp(x) and (ilog2x:=ilog2(x)) > !!floatbits
-        then return log2*(ilog2x - !!floatbits)
+        then return !!log2*(ilog2x - !!floatbits)
                  + log(x/2^(ilog2x - !!floatbits));
       x := float x;
       result := gtfltn();

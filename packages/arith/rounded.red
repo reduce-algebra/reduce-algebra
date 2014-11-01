@@ -62,13 +62,13 @@ fluid '(dmode!* !*bfspace !*numval !*roundbf !*!*roundbf !*norndbf);
 
 fluid '(!*noconvert);
 
-global '(bfone!* epsqrt!* log2of10 log2);
+global '(bfone!* epsqrt!* !!log2of10 !!log2);
 
 global '(domainlist!* !!nfpd !!nbfpd !!flprec !!rdprec mxflbf!!
          mnflbf!!);
 
 global '(!!plumax !!plumin !!timmax !!timmin !!maxflbf !!minflbf
-         !!fleps1 !!fleps2 !!flint !!maxbflexp log2 !!maxarg);
+         !!fleps1 !!fleps2 !!flint !!maxbflexp !!maxarg);
 
 global '(rd!-tolerance!* cr!-tolerance!* yy!! bfz!* !!smlsin);
 
@@ -81,7 +81,7 @@ switch rounded;
 
 symbolic procedure logfp x;
   % floating log of x**(1/n) using bfloat logic as boost.
-  (log(m/float lshift(1,p))+(p+ep!: x)*log2)
+  (log(m/float lshift(1,p))+(p+ep!: x)*!!log2)
     where p=(preci!: x - 1) where m=mt!: x;
 
 symbolic procedure roundconstants;
@@ -177,13 +177,13 @@ symbolic procedure precision n;
        then rerror(arith,6,"positive number required");
      precision1(n,t)>>;
 
-log2of10 := log 10 / log 2;
+!!log2of10 := log 10 / log 2;
 
 symbolic procedure decprec2internal p;
-   ceiling(p * log2of10) + 3;
+   ceiling(p * !!log2of10) + 3;
 
 % symbolic procedure internal2decprec p;
-%    floor ((p - 3) / log2of10);
+%    floor ((p - 3) / !!log2of10);
 
 symbolic procedure precision1(n,bool);
    begin scalar oldprec;

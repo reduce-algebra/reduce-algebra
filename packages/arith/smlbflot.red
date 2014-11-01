@@ -104,7 +104,7 @@ symbolic procedure multiply!-by!-power!-of!-ten (x, n);
        f := normbf cut!:mt (times!: (f, f), !:bprec!:) >>;
      normbf cut!:mt (x, !:bprec!:) >> where f := bften!*;
 
-global '(log2of10);
+global '(!!log2of10);
 
 symbolic procedure round!:dec (x, p);
   %
@@ -120,7 +120,7 @@ symbolic procedure round!:dec (x, p);
     if ex < 0 then x := divide!-by!-power!-of!-ten (x, -ex)
      else if ex > 0 then x := multiply!-by!-power!-of!-ten (x, ex);
     if setpr then precision setpr;
-    return round!:mt (x, ceiling (p * log2of10))
+    return round!:mt (x, ceiling (p * !!log2of10))
   end;
 
 symbolic procedure round!:dec1 (x, p);
