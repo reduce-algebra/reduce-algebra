@@ -197,7 +197,7 @@ public class LispSmallInteger extends LispInteger
 
     public LispObject sub1() throws Exception
     {
-        if (value == 0xc0000000) return new LispBigInteger(0xbfffffff);
+        if (value == 0xc0000000) return new LispBigInteger(value-1);
         return valueOf(value-1);
     }
 
@@ -321,9 +321,7 @@ public class LispSmallInteger extends LispInteger
 
     public LispObject leftshift(int n) throws Exception
     {
-// Here I should worry about overflow and expand into a big integer as
-// necessary.
-        return valueOf(value << n);
+        return valueOf(BigInteger.valueOf(value).shiftLeft(n));
     }
 
     public LispObject rightshift(int n) throws Exception
@@ -656,6 +654,9 @@ public class LispSmallInteger extends LispInteger
 
     LispObject subtractSmallInteger(LispSmallInteger a) throws Exception
     {
+// I keep the values of SmallIntegers rather less than 32-bits wide, so
+// when I expand to longs here there is precision in hand for the
+// multiplication to be performed without overflow.
         return valueOf(a.value - value);
     }
 
