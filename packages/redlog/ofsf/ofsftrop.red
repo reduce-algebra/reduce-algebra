@@ -39,15 +39,12 @@ switch rlgurobi;  % use the Gurobi optimizer
 off1 'rlgurobi;
 
 switch rltropdel0;  % delete the (0,...,0) monomial
-on1 'rltropdel0;
+off 'rltropdel0;
 
 switch rltropilp;  % use ILP solving instead of LP solving
 on1 'rltropilp;
 
 switch rltropint;  % use integers, not floats, even with off rltropilp
-
-switch zeropzero;  % approximate the zero in the end
-off1 'zeropzero;
 
 switch rltropsos;  % use sum of squares instead of sum for conjunctions
 off1 'rltropsos;
@@ -92,10 +89,6 @@ asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
 %%       if null vl or null cdr vl then
 %% 	 rederr {car argl, "is not multivariate"};
       w := ofsf_zerop1(f, posp);
-      if !*zeropzero and (!*rltropilp or !*rltropint) and  eqcar(w, 1)
- 	 and not eqn(caddr cadr w,0 )
-      then
-	 w := ofsf_zerosolve(f, w);
       return 'list . w
    end;
 
@@ -108,11 +101,20 @@ asserted procedure ofsf_pzerop(f: SF): List;
       ofsf_zerop1(f, t);
 
 asserted procedure ofsf_tropsat1(f: QfFormula, posp: Boolean): Id;
-   begin scalar w;
-      w := ofsf_sat2pol1(f, posp);
-      w := ofsf_zerop1(w, posp);
-      if eqcar(w, 1) then
+   begin scalar p, w, sol, vl;
+      p := ofsf_sat2pol1(f, posp);
+      w := ofsf_zerop1(p, posp);
+      if eqcar(w, 1) then <<
+	 if !*rlverbose then
+ 	    ioto_tprin2 "found candidate, solving ... ";
+	 sol := ofsf_zerosolve(p, w);
+	 if !*rlverbose then
+ 	    ioto_prin2t "done";
+	 vl := cl_fvarl1 f;
+	 sol := for each pr in sol join if car pr memq vl then {pr};
+	 % Evaluate f at sol
 	 return 'sat;
+      >>;
       if eqcar(w, 0) then
 	 return 'unsat;
       if eqcar(w, -1) then
@@ -218,7 +220,9 @@ asserted procedure ofsf_neq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, 
    end;
 
 asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List;
-   begin scalar one, fone, vl, w, flag, signfone, tryonesol;
+   begin
+      scalar one, fone, vl, w, flag, signfone, tryonesol;
+      integer ofsf_anuc!*;
       if domainp f then
 	 return if null f then
  	    '(1 (list (list) 0))
@@ -503,7 +507,114 @@ asserted procedure ofsf_realizeinfinity(fsol: SQ): DottedPair;
       return pow . val
    end;
 
-asserted procedure ofsf_zerosolve(f: SF, l: List): List;
+asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
+   % Returns (x_1 . anu_1, ..., x_n .  anu_n).
+   %
+   % g(p_1, ..., p_n) < 0 < g(q_1, ..., q_n)
+   %
+   % g(x_1, ..., x_n) = 0
+   % x_1 = p_1 + Y * (q_1 - p_1)
+   % ...
+   % x_n = p_n + Y * (q_n - p_n)
+   %
+   begin
+      scalar p, q, y, yq, subal, g0, g0ae, rl, res, x_i, p_i, q_i;
+      assert(eqcar(l, 1));
+      ofsf_anuc!* := 10000;
+      p := cdr cadr cadr l;
+      q := cdr cadr caddr l;
+      y := !*a2k ofsf_genavar();
+      yq := !*k2q y;
+      subal := for each w in p collect <<
+	 x_i := !*a2k cadr w;
+	 p_i := simp caddr w;
+	 q_i := simp caddr pop q;
+	 x_i . addsq(p_i, multsq(yq, subtrsq(q_i, p_i)))
+      >>;
+      g0 := sfto_qsub(g, subal);
+      assert(domainp denr g0);
+      g0ae := aex_prpart aex_fromrp g0;
+      rl := aex_findroots(g0ae, y);
+      assert(rl);           % One ...
+      assert(null cdr rl);  % and only one root.
+      res := for each pr in subal collect
+	 car pr . aex_bind(aex_fromsf cdr pr, y, car rl);
+      return res
+   end;
+
+asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
+   % Returns (x_1 . anu_1, ..., x_n .  anu_n).
+   %
+   % g(p_1, ..., p_n) < 0 < g(q_1, ..., q_n)
+   %
+   % g(x_1, ..., x_n) = 0
+   % x_1 = p_1 + Y * (q_1 - p_1)
+   % ...
+   % x_n = p_n + Y * (q_n - p_n)
+   %
+   begin
+      scalar p, q, y, yq, subal, g0, g0ae, rl, res, x_i, p_i, q_i;
+      assert(eqcar(l, 1));
+      return ofsf_zeroapprox(g, l);
+      p := cdr cadr cadr l;
+      q := cdr cadr caddr l;
+      yq := !*k2q ra_x();
+      subal := for each w in p collect <<
+	 x_i := !*a2k cadr w;
+	 p_i := simp caddr w;
+	 q_i := simp caddr pop q;
+	 x_i . addsq(p_i, multsq(yq, subtrsq(q_i, p_i)))
+      >>;
+      g0 := sfto_qsub(g, subal);
+      assert(domainp denr g0);
+      on1 'ranum;
+      rl := ra_isolate numr g0;
+      off1 'ranum;
+      assert(rl);           % One ...
+      assert(null cdr rl);  % and only one root.
+      res := for each pr in subal collect
+	 car pr . aex_bind(aex_fromsf cdr pr, y, car rl);
+      return res
+   end;
+
+asserted procedure ofsf_signatanuat(at: OfsfAtf, al: AList): OfsfAtf;
+   begin scalar lhs;
+      lhs := ofsf_lhs at;
+   end;
+
+put('zeroapprox, 'psopfn, 'ofsf_zeroapproxeval);
+
+asserted procedure ofsf_zeroapproxeval(l: List): List;
+   begin scalar f, zres; integer len, prec;
+      len := length l;
+      if len < 2 or len > 3 then
+	 rederr "usage: zeroapprox(<polynomial>, <[p]zero result>, [precision])";
+      f := numr simp pop l;
+      zres := reval pop l;
+      prec := if l then reval pop l;
+      if null prec then
+ 	 prec := precision 0;
+      if not numberp prec or prec < 8 then <<
+	 lprim "specified precision not in {8, 9, ...} - using precision 8";
+	 prec := 8
+      >>;
+      return ofsf_zeroapprox0(f, zres, prec)
+   end;
+
+asserted procedure ofsf_zeroapprox0(f: SF, l: List, prec: Integer): List;
+   begin scalar oldprec, oldpprec, w;
+      % need errorset here ... later ...
+      oldprec := precision prec;
+      oldpprec := getprintprecision();
+      setprintprecision prec;
+      setprintprecision prec;
+      w := ofsf_zeroapprox(f, cdr l);
+      precision oldprec;
+      setprintprecision oldpprec;
+      return nth(w, 3)
+   end;
+
+asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
    begin scalar p1, p2, subal, f0, g, rl, zero, fzero;
       if !*rlverbose then <<
 	 terpri();
@@ -512,8 +623,8 @@ asserted procedure ofsf_zerosolve(f: SF, l: List): List;
       >>;
       if car l neq 1 then
 	 return l;
-      p1 := cdr cadr cadr l;
-      p2 := cdr cadr caddr l;
+      p1 := cdr cadr cadr l;   % positive point as a symbolic list of equations
+      p2 := cdr cadr caddr l;  % negative point as a symbolic list of equations
       g := intern gensym();
       subal := for each e1 in p1 collect
 	 cadr e1 . {'plus, caddr e1, {'times, g, {'plus, caddr pop p2, {'minus, caddr e1}}}};
