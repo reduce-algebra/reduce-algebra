@@ -387,8 +387,8 @@ l0035:
  movb 0(%rax,%rbx,1),%al
  cbtw
  cwtl
- shl $8,%rax
- shr $8,%rax
+ shl $56,%rax
+ shr $56,%rax
  mov $254,%rdi
  shl $56,%rdi
  or %rdi,%rax
