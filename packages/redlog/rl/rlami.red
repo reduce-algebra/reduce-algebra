@@ -130,7 +130,7 @@ procedure rl_simp1(u);
       h := ioto_form2str car u;
       if (w := get(car u, 'prtch)) then
 	 h := lto_sconcat {ioto_form2str w, " (", h, ")"};
-      rl_redmsg(h, "predicate");
+      redmsg(h, "predicate");
       put(car u, get(car rl_cid!*, 'simpfnname), get(car rl_cid!*, 'simpdefault));
       return rl_simp1(u)
    end;
@@ -242,16 +242,6 @@ procedure rl_gettype(v);
    % Get type. Return type information if present. Handle scalars
    % properly.
    (if w then car w else get(v,'rtype)) where w = get(v,'avalue);
-
-procedure rl_redmsg(u,v);
-   % Reduce msg. [u] is an identifier, [v] is a category which must be
-   % "predicate". Ask for declaring [u] predicate.
-   if null !*msg or v neq "predicate" then
-      nil  % :-)
-   else if terminalp() then
-      yesp list("Declare",u,v,"?") or error1()
-   else
-      lprim list(u,"declared",v);
 
 procedure rl_lengthlogical(u);
    rl_lengthfof rl_simp u;

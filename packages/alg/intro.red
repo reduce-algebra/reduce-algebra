@@ -258,17 +258,18 @@ symbolic procedure errpri2(u,v);
    msgpri("Syntax error:",u,"invalid",nil,v);
 
 symbolic procedure redmsg(u,v);
-    if !*wsm or null !*msg or v neq "operator" then nil
-     else if terminalp()
-      then yesp list("Declare",get!-print!-name u,v,"?") or error1()
-     else lprim list(get!-print!-name u,"declared",v);
+   if null !*wsm and !*msg and v member '("operator" "predicate") then
+      if terminalp() then
+      	 yesp list("Declare",get!-print!-name u,v,"?") or error1()
+      else
+      	 lprim list(get!-print!-name u,"declared",v);
 
 symbolic procedure typerr(u,v);
    % Note this replaces definition in rlisp/lpri. If outputhandler!* is
    % non-nil I go back to the simple old version, which may be less
    % pretty but that does not end up with messages getting lost so often!
    if outputhandler!*
-     then rerror('rlisp,6, 
+     then rerror('rlisp,6,
                  if not atom u and atom car u and cdr u and atom cadr u
                     and null cddr u
                    then list(car u,cadr u,"invalid as",v)
