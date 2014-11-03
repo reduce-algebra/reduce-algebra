@@ -585,33 +585,19 @@ asserted procedure ofsf_signatanuat(at: OfsfAtf, al: AList): OfsfAtf;
 put('zeroapprox, 'psopfn, 'ofsf_zeroapproxeval);
 
 asserted procedure ofsf_zeroapproxeval(l: List): List;
-   begin scalar f, zres; integer len, prec;
+   begin scalar f, zres; integer len;
       len := length l;
-      if len < 2 or len > 3 then
-	 rederr "usage: zeroapprox(<polynomial>, <[p]zero result>, [precision])";
+      if not eqn(len, 2) then
+	 rederr "usage: zeroapprox(<polynomial>, <[p]zero result>)";
       f := numr simp pop l;
       zres := reval pop l;
-      prec := if l then reval pop l;
-      if null prec then
- 	 prec := precision 0;
-      if not numberp prec or prec < 8 then <<
-	 lprim "specified precision not in {8, 9, ...} - using precision 8";
-	 prec := 8
-      >>;
-      return ofsf_zeroapprox0(f, zres, prec)
+      return ofsf_zeroapprox0(f, zres)
    end;
 
-asserted procedure ofsf_zeroapprox0(f: SF, l: List, prec: Integer): List;
+asserted procedure ofsf_zeroapprox0(f: SF, l: List): List;
    begin scalar oldprec, oldpprec, w;
-      % need errorset here ... later ...
-      oldprec := precision prec;
-      oldpprec := getprintprecision();
-      setprintprecision prec;
-      setprintprecision prec;
       w := ofsf_zeroapprox(f, cdr l);
-      precision oldprec;
-      setprintprecision oldpprec;
-      return nth(w, 3)
+      return w
    end;
 
 asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
@@ -629,25 +615,28 @@ asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
       subal := for each e1 in p1 collect
 	 cadr e1 . {'plus, caddr e1, {'times, g, {'plus, caddr pop p2, {'minus, caddr e1}}}};
       f0 := numr subf(f, subal);
-      rl := ofsf_realrootswrap f0;
+      rl := ofsf_realrootswrap1 f0;
+      on1 'rounded;
       zero := for each pr in subal collect
-	 car pr . prepsq subsq(simp cdr pr, rl);
-      fzero := prepsq subf(f, zero);
+	 car pr . mk!*sq subsq(simp cdr pr, rl);
+      fzero := mk!*sq subf(f, zero);
       zero := for each pr in zero collect
 	 {'equal, car pr, cdr pr};
-      return append(l, {{'list, 'list . zero, fzero}})
+      off1 'rounded;
+      return {'list, 'list . zero, fzero}
    end;
 
 asserted procedure ofsf_realrootswrap(f: SF): List;
-   begin scalar rl, w;
-      rl := for each e in cdr realroots {prepf f} collect
- 	 cadr e . caddr e;
-      rl := for each pr in rl collect <<
-	 w := numr simp cdr pr;
-	 car pr . if rdp w  then prepf !*rd2rn w else w
-      >>;
-      return rl
+   begin scalar w;
+      return for each pr in ofsf_realrootswrap1 f collect <<
+      	 w := numr simp cdr pr;
+      	 car pr . if rdp w  then prepf !*rd2rn w else w
+      >>
    end;
+
+asserted procedure ofsf_realrootswrap1(f: SF): List;
+   for each e in cdr realroots {prepf f} collect
+      cadr e . caddr e;
 
 algebraic procedure testpzerop(hu, sol);
    begin scalar w, subsol, foundsol, ok;
