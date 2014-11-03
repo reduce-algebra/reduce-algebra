@@ -280,7 +280,6 @@ procedure smts_ptoken();
    end;
 
 procedure smts_rread1();
-   % Modified to use QUOTENEWNAM's for ids.
    begin scalar x,y;
       x := smts_ptoken();
       if not eqn(ttype!*, 3) then

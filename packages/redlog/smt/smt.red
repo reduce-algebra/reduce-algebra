@@ -95,10 +95,12 @@ procedure smts_processForm(form);
       smts_processPrintAssertions()
    else if eqcar(form, 'reset) then
       smts_processReset()
-   else if eqcar (form, 'set!-logic) then
+   else if eqcar(form, 'set!-logic) then
       smts_processSetLogic cadr form
-   else if eqcar (form, 'reduce!-eval) then
+   else if eqcar(form, 'reduce!-eval) then
       prin2t smts_processReduceEval cadr form
+   else if eqcar(form, 'quit) then
+      quit
    else if eqcar(form, 'help) then
       smts_processHelp()
    else
