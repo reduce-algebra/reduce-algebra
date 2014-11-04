@@ -80,8 +80,8 @@
                        c)
                       ((idp u) % take first char of ID print name
 
-                       (strbyt (strinf (symnam (idinf u))) 0))
-                      ((stringp u) (strbyt (strinf u) 0))
+                       (wand 16#ff (strbyt (strinf (symnam (idinf u))) 0)))
+                      ((stringp u) (wand (strbyt (strinf u) 0)))
                       (t % take first character of Lisp string
 
                          (noncharactererror u 'lisp2char))))))
@@ -130,7 +130,7 @@
       (for % in case GC occurred
 
        (from i 0 n 1)
-       (do (setf (vecitm v i) (mkint (strbyt stripu i)))))
+       (do (setf (vecitm v i) (mkint (wand 16#ff (strbyt stripu i))))))
       (return (mkvec v)))
     (nonstringerror u 'string2vector)))
 
@@ -168,7 +168,7 @@
       (setq l nil)
       (setq n (strlen (strinf s)))
       (for (from i n 0 -1)
-	   (do (setq l (cons (mkint (strbyt (strinf s) i)) l))))
+	   (do (setq l (cons (mkint (wand 16#ff (strbyt (strinf s) i))) l))))
       % strip S each time in case GC
       (return l))
     (nonstringerror s 'string2list)))

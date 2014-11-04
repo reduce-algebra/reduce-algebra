@@ -198,8 +198,8 @@
 
   % Pull the next character out of the buffer.
   
-  (let ((chr (strbyt (strinf (igetv iobuffer channel))
-                     (wgetv nextposition channel))))
+  (let ((chr (wand 16#ff (strbyt (strinf (igetv iobuffer channel))
+                     (wgetv nextposition channel)))))
     (setf (wgetv nextposition channel) (+ (wgetv nextposition channel) 1))
     (when *echo
       (writechar chr))

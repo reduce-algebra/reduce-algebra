@@ -96,7 +96,7 @@
   (let* ((name  (symnam (idinf u)))
 	 (len   (strlen (strinf name))))
     (if (eq len 0)
-      (mkid (strbyt (strinf name) 0))
+      (mkid (wand 16#ff (strbyt (strinf name) 0)))
       (let ((hash-table-index (hash-into-table (symnam (idinf u)))))
 	(if (occupied-slot? hash-table-index)
 	  (mkid (hash-table-entry hash-table-index))
