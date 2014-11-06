@@ -475,6 +475,9 @@ static void startup1(String [] args) throws ResourceException
             (String)specfn.specials[i][0];
         builtinSpecials.put(specfn.specials[i][0], specfn.specials[i][1]);
     }
+
+    if (extrabuiltins != null) extrabuiltins.recorduserfns(builtinFunctions);
+
     Bytecode.setupBuiltins();
 
 // I open all the image files that the user had mentioned...
@@ -1666,7 +1669,8 @@ static LispObject readObject() throws IOException, ResourceException
                 String s = new String(data, "UTF8");
                 w = (LispObject)builtinFunctions.get(s);
                 if (w == null)
-                    Jlisp.lispErr.println(s + " not found");
+                    Jlisp.lispErr.println("function " + s +
+                        " not found while restoring from heap image");
             }
             break;
     case LispObject.X_SPECFN:
@@ -1676,7 +1680,8 @@ static LispObject readObject() throws IOException, ResourceException
                 String s = new String(data, "UTF8");
                 w = (LispObject)builtinSpecials.get(s);
                 if (w == null)
-                    Jlisp.lispErr.println(s + " not found");
+                    Jlisp.lispErr.println("special function " + s +
+                         " not found while restoring from heap image");
             }
             break;
     case LispObject.X_STORE:
@@ -2050,7 +2055,11 @@ static void initSymbols() throws ResourceException
     // initfns(fns5.builtins);
     // initfns(fns6.builtins);
 
-    if (extrabuiltins != null) extrabuiltins.inituserfns();
+    if (extrabuiltins != null)
+    {   System.out.printf("Initialising extra builtins\n");
+        extrabuiltins.inituserfns();
+    }
+    else System.out.printf("Initialising plain builtins\n");
 
     {   Object [][] specials = specfn.specials;
         for (int i=0; i<specials.length; i++)

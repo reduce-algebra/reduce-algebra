@@ -38,9 +38,12 @@ package uk.co.codemist.jlisp.core;
 
 // JlispExtras.java
 
+import java.util.*;
+
 abstract class JlispExtras
 {
     abstract void inituserfns();
+    abstract void recorduserfns(HashMap h);
 }
 
 

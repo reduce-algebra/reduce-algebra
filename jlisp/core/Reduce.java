@@ -120,6 +120,7 @@ static U60 u60 = new U60();
 
 void inituserfns()
 {
+    System.out.printf("inituserfns\n");
     Jlisp.initfns(u01.builtins); 
     Jlisp.initfns(u02.builtins); 
     Jlisp.initfns(u03.builtins); 
@@ -182,8 +183,82 @@ void inituserfns()
     Jlisp.initfns(u60.builtins); 
 }
 
+private void record1(Object [][]builtins, HashMap builtinFunctions)
+{
+    for (int i=0; i<builtins.length; i++)
+    {   ((LispFunction)builtins[i][1]).name = (String)builtins[i][0];
+        builtinFunctions.put(builtins[i][0], builtins[i][1]);
+    }
+}
+
+void recorduserfns(HashMap builtinFunctions)
+{
+    System.out.printf("recorduserfns\n");
+    record1(u01.builtins, builtinFunctions); 
+    record1(u02.builtins, builtinFunctions); 
+    record1(u03.builtins, builtinFunctions); 
+    record1(u04.builtins, builtinFunctions); 
+    record1(u05.builtins, builtinFunctions); 
+    record1(u06.builtins, builtinFunctions); 
+    record1(u07.builtins, builtinFunctions); 
+    record1(u08.builtins, builtinFunctions); 
+    record1(u09.builtins, builtinFunctions); 
+    record1(u10.builtins, builtinFunctions); 
+    record1(u11.builtins, builtinFunctions); 
+    record1(u12.builtins, builtinFunctions); 
+    record1(u13.builtins, builtinFunctions); 
+    record1(u14.builtins, builtinFunctions); 
+    record1(u15.builtins, builtinFunctions); 
+    record1(u16.builtins, builtinFunctions); 
+    record1(u17.builtins, builtinFunctions); 
+    record1(u18.builtins, builtinFunctions); 
+    record1(u19.builtins, builtinFunctions); 
+    record1(u20.builtins, builtinFunctions); 
+    record1(u21.builtins, builtinFunctions); 
+    record1(u22.builtins, builtinFunctions); 
+    record1(u23.builtins, builtinFunctions); 
+    record1(u24.builtins, builtinFunctions); 
+    record1(u25.builtins, builtinFunctions); 
+    record1(u26.builtins, builtinFunctions); 
+    record1(u27.builtins, builtinFunctions); 
+    record1(u28.builtins, builtinFunctions); 
+    record1(u29.builtins, builtinFunctions); 
+    record1(u30.builtins, builtinFunctions); 
+    record1(u31.builtins, builtinFunctions); 
+    record1(u32.builtins, builtinFunctions); 
+    record1(u33.builtins, builtinFunctions); 
+    record1(u34.builtins, builtinFunctions); 
+    record1(u35.builtins, builtinFunctions); 
+    record1(u36.builtins, builtinFunctions); 
+    record1(u37.builtins, builtinFunctions); 
+    record1(u38.builtins, builtinFunctions); 
+    record1(u39.builtins, builtinFunctions); 
+    record1(u40.builtins, builtinFunctions); 
+    record1(u41.builtins, builtinFunctions); 
+    record1(u42.builtins, builtinFunctions); 
+    record1(u43.builtins, builtinFunctions); 
+    record1(u44.builtins, builtinFunctions); 
+    record1(u45.builtins, builtinFunctions); 
+    record1(u46.builtins, builtinFunctions); 
+    record1(u47.builtins, builtinFunctions); 
+    record1(u48.builtins, builtinFunctions); 
+    record1(u49.builtins, builtinFunctions); 
+    record1(u50.builtins, builtinFunctions); 
+    record1(u51.builtins, builtinFunctions); 
+    record1(u52.builtins, builtinFunctions); 
+    record1(u53.builtins, builtinFunctions); 
+    record1(u54.builtins, builtinFunctions); 
+    record1(u55.builtins, builtinFunctions); 
+    record1(u56.builtins, builtinFunctions); 
+    record1(u57.builtins, builtinFunctions); 
+    record1(u58.builtins, builtinFunctions); 
+    record1(u59.builtins, builtinFunctions); 
+    record1(u60.builtins, builtinFunctions); 
+}
+
 public static void main(String []args)
 {
+    System.out.printf("Entering Reduce rather than Jlisp\n");
     Jlisp.extrabuiltins = new Reduce();
     CWin.main(args);
 }

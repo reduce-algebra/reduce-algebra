@@ -12,22 +12,22 @@ clean:
 # Reduce, and so "java -jar reduce.jar" will launch the system with its
 # default image file.
 
-reduce.jar:	core/*.java jlisp_manifest reduce.img
+reduce.jar:	core/*.java reduce_manifest reduce.img
 	javac -d . core/*.java
 	cp reduce.img default.img
 	-rm -f reduce.jar
-	jar cmf jlisp_manifest reduce.jar uk default.img
+	jar cmf reduce_manifest reduce.jar uk default.img
 	rm default.img
 
 # minireduce.jar is a cut-down system not containing all the Reduce modules.
 # It will thus be smaller (albeit less capable of performing advanced
 # operations).
 
-minireduce.jar:	core/*.java jlisp_manifest minireduce.img
+minireduce.jar:	core/*.java reduce_manifest minireduce.img
 	javac -d . core/*.java
 	cp minireduce.img default.img
 	-rm -f minireduce.jar
-	jar cmf jlisp_manifest minireduce.jar uk default.img
+	jar cmf reduce_manifest minireduce.jar uk default.img
 	rm default.img
 
 # jlisp.jar is merely the Lisp system without any algebra. If may sometimes
@@ -77,7 +77,7 @@ jlisp.img:
 reduce.img:
 	javac -d . core/*.java
 	-rm -f reduce.img
-	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o reduce.img \
+	java uk.co.codemist.jlisp.core.Reduce -w -v -z -o reduce.img \
 	"$(C)/buildreduce.lsp" -D@srcdir="$(C)" -D@reduce="$(C)/../.." \
 	-- reduce.log
 
@@ -86,7 +86,7 @@ reduce.img:
 minireduce.img:
 	javac -d . core/*.java
 	-rm -f minireduce.img
-	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o minireduce.img \
+	java uk.co.codemist.jlisp.core.Reduce -w -v -z -o minireduce.img \
 	"$(C)/buildreduce.lsp" -Dminireduce -D@srcdir="$(C)" \
 	-D@reduce="$(C)/../.." -- reduce.log
 
