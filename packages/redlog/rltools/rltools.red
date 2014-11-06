@@ -229,7 +229,7 @@ operator rlrndseed;
 % the name of the directory is returned (without any trailing "/").
 
    symbolic procedure get_resource_directory();
-      concat(rltools_dotdot symbolfilename!*, "red");
+      concat(rltools_dotdot rltools_dotdot symbolfilename!*, "red");
 
 #endif
 
