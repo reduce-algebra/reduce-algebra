@@ -28,27 +28,46 @@
 
 module raiv;
 
-asserted procedure ra_isolate0(f: SF): List;
-   for each iv in ra_isolatingivl0 f collect ra_qmk(f, car iv, cdr iv);
+asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
+   for each iv in ra_isolatingivl0(f, lb, ub) collect ra_qmk(f, car iv, cdr iv);
 
-ra_wrap(ra_isolate0, ra_isolate, 1);
+ra_wrap(ra_isolate0, ra_isolate, 3);
 
 procedure ra_isolate!$(argl);
-   'list . for each x in ra_isolate(numr simp car argl) collect
-      mk!*sq !*f2q sfto_int2sf int!-equiv!-chk x;
+   begin scalar lb, ub;
+      if cdr argl then <<
+	 lb := simp cadr argl;
+	 if not ra_ratnump lb then
+	    rederr "bounds must be rational numbers";
+      	 if cddr argl then <<
+	    ub := simp caddr argl;
+	    if not ra_ratnump ub then
+	       rederr "bounds must be rational numbers"
+	 >>
+      >>;
+      return 'list . for each x in ra_isolate(numr simp car argl, lb, ub) collect
+      	 mk!*sq !*f2q sfto_int2sf int!-equiv!-chk x
+   end;
 
 put('isolate, 'psopfn, 'ra_isolate!$);
 
-asserted procedure ra_isolatingivl0(f: SF): List;
-   begin scalar lb, ub, ivl;
+asserted procedure ra_ratnump(q: SQ): ExtraBoolean;
+   (null numr q or numberp numr q) and numberp denr q;
+
+asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): List;
+   % If [lb] is [nil], then a suitable lower bound on the zeros is computed.
+   % Analogously for ub.
+   begin scalar ivl;
       f := sfto_dprpartf sfto_sqfpartf f;
-      ub := sfto_lmq f;
-      lb := negsq sfto_lmq ra_mirror f;
+      if null ub then
+      	 ub := sfto_lmq f;
+      if null lb then
+      	 lb := negsq sfto_lmq ra_mirror f;
       ivl := ra_vca(f, lb , ub);
       return ivl
    end;
 
-ra_wrap(ra_isolatingivl0, ra_isolatingivl, 1);
+ra_wrap(ra_isolatingivl0, ra_isolatingivl, 3);
 
 asserted procedure ra_isolatingivl!$(argl: List): List;
    'list . for each iv in ra_isolatingivl numr simp car argl collect

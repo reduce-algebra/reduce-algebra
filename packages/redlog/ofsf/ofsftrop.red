@@ -240,7 +240,7 @@ asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List;
 	       "looking for a positive point of f"};
 	 w := ofsf_zerop2(f, nil, posp);
 	 flag := if w eq 'nd then 0 else if w eq 'failed then -1 else 1;
-	 return {flag, w, {'list, one, fone}}
+	 return {flag, {'list, one, fone}, w}
       >>;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ f is positive at (1, ..., 1), ",
@@ -507,39 +507,22 @@ asserted procedure ofsf_realizeinfinity(fsol: SQ): DottedPair;
       return pow . val
    end;
 
-asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
-   % Returns (x_1 . anu_1, ..., x_n .  anu_n).
-   %
-   % g(p_1, ..., p_n) < 0 < g(q_1, ..., q_n)
-   %
-   % g(x_1, ..., x_n) = 0
-   % x_1 = p_1 + Y * (q_1 - p_1)
-   % ...
-   % x_n = p_n + Y * (q_n - p_n)
-   %
-   begin
-      scalar p, q, y, yq, subal, g0, g0ae, rl, res, x_i, p_i, q_i;
-      assert(eqcar(l, 1));
-      ofsf_anuc!* := 10000;
-      p := cdr cadr cadr l;
-      q := cdr cadr caddr l;
-      y := !*a2k ofsf_genavar();
-      yq := !*k2q y;
-      subal := for each w in p collect <<
-	 x_i := !*a2k cadr w;
-	 p_i := simp caddr w;
-	 q_i := simp caddr pop q;
-	 x_i . addsq(p_i, multsq(yq, subtrsq(q_i, p_i)))
-      >>;
-      g0 := sfto_qsub(g, subal);
-      assert(domainp denr g0);
-      g0ae := aex_prpart aex_fromrp g0;
-      rl := aex_findroots(g0ae, y);
-      assert(rl);           % One ...
-      assert(null cdr rl);  % and only one root.
-      res := for each pr in subal collect
-	 car pr . aex_bind(aex_fromsf cdr pr, y, car rl);
-      return res
+put('zerosolve, 'psopfn, 'ofsf_zerosolveeval);
+
+asserted procedure ofsf_zerosolveeval(l: List): List;
+   begin scalar f, zres; integer len;
+      len := length l;
+      if not eqn(len, 2) then
+	 rederr "usage: zerosolve(<polynomial>, <[p]zero result>)";
+      f := numr simp pop l;
+      zres := reval pop l;
+      return ofsf_zerosolve0(f, zres)
+   end;
+
+asserted procedure ofsf_zerosolve0(f: SF, l: List): List;
+   begin scalar oldprec, oldpprec, w;
+      w := ofsf_zerosolve(f, cdr l);
+      return w
    end;
 
 asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
@@ -550,15 +533,23 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
    % g(x_1, ..., x_n) = 0
    % x_1 = p_1 + Y * (q_1 - p_1)
    % ...
-   % x_n = p_n + Y * (q_n - p_n)
-   %
+   % x_n = p_n + Y * (q_n - p_n), Y in [0,1]
    begin
-      scalar p, q, y, yq, subal, g0, g0ae, rl, res, x_i, p_i, q_i;
+      scalar g, p, q, y, yq, subal, g0, rl, ral, x_i, p_i, q_i, zero, w, val, precq, op, gzero, floatzero;
       assert(eqcar(l, 1));
-      return ofsf_zeroapprox(g, l);
-      p := cdr cadr cadr l;
-      q := cdr cadr caddr l;
-      yq := !*k2q ra_x();
+      if !*rlverbose then <<
+	 ioto_tprin2t {"+++ computing zero, ranum print precision is ", ra_precision!*, " ..."};
+	 ioto_tprin2t {"**********************************************************************"};
+	 ioto_tprin2t {"* Intervals of algebraic numbers are refined and printed to that     *"};
+	 ioto_tprin2t {"* precision. The returned function value is the float value at the   *"};
+	 ioto_tprin2t {"* lower limits of the intervals; substituion of the actual algebraic *"};
+	 ioto_tprin2t {"* numbers into the original polynomial is infeasible at present.     *"};
+	 ioto_tprin2t {"**********************************************************************"}
+      >>;
+      p := cdr cadr cadr l;   % positive point as a symbolic list of equations
+      q := cdr cadr caddr l;  % negative point as a symbolic list of equations
+      y := ra_x();
+      yq := !*f2q !*k2f y;
       subal := for each w in p collect <<
 	 x_i := !*a2k cadr w;
 	 p_i := simp caddr w;
@@ -568,13 +559,34 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
       g0 := sfto_qsub(g, subal);
       assert(domainp denr g0);
       on1 'ranum;
-      rl := ra_isolate numr g0;
+      rl := ra_isolate(numr g0, nil ./ 1, 1 ./ 1);
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ found ", length rl, " zero", if cdr rl then "s" else "", " on the relevant line segment"};
+      if null rl then
+	 rederr {"severe error - no zero on the relevant line segement"};
+      %      mathprint('list . rl);
+      ral := {y . car rl};
+      precq := 1 ./ 10 ^ (ra_precision!* + 2);
+      zero := for each pr in subal collect <<
+	 w := quotsq(!*f2q sfto_fsub(numr cdr pr, ral), !*f2q denr cdr pr);
+	 assert(eqn(denr(w, 1)));
+	 val := numr w;
+	 if not numberp val then
+	    while sfto_geqq(subtrsq(ra_u val, ra_l val), precq) do
+	       val := ra_refine(val,1);
+	 car pr . (val ./ 1)
+      >>;
       off1 'ranum;
-      assert(rl);           % One ...
-      assert(null cdr rl);  % and only one root.
-      res := for each pr in subal collect
-	 car pr . aex_bind(aex_fromsf cdr pr, y, car rl);
-      return res
+      on1 'rounded;
+      op := precision ra_precision!*;
+      floatzero := for each pr in zero collect
+	 car pr . reval prepsq if numberp numr cdr pr then cdr pr else ra_l numr cdr pr;
+      gzero := mk!*sq subf(g, floatzero);
+      precision op;
+      off rounded;
+      zero := for each pr in zero collect
+	 {'equal, car pr, mk!*sq cdr pr};
+      return {'list, 'list . zero, gzero}
    end;
 
 asserted procedure ofsf_signatanuat(at: OfsfAtf, al: AList): OfsfAtf;
@@ -603,8 +615,6 @@ asserted procedure ofsf_zeroapprox0(f: SF, l: List): List;
 asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
    begin scalar p1, p2, subal, f0, g, rl, zero, fzero;
       if !*rlverbose then <<
-	 terpri();
-	 terpri();
 	 ioto_tprin2t {"+++ approximating zero, float precision is ", precision 0, " ..."}
       >>;
       if car l neq 1 then
@@ -617,6 +627,11 @@ asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
       f0 := numr subf(f, subal);
       rl := ofsf_realrootswrap1 f0;
       on1 'rounded;
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ found ", length rl, " zero", if cdr rl then "s" else "", " on the relevant line segment"};
+      if null rl then
+	 rederr {"severe error - no zero on the relevant line segement"};
+      rl := {car rl};
       zero := for each pr in subal collect
 	 car pr . mk!*sq subsq(simp cdr pr, rl);
       fzero := mk!*sq subf(f, zero);
@@ -627,16 +642,14 @@ asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
    end;
 
 asserted procedure ofsf_realrootswrap(f: SF): List;
-   begin scalar w;
-      return for each pr in ofsf_realrootswrap1 f collect <<
-      	 w := numr simp cdr pr;
-      	 car pr . if rdp w  then prepf !*rd2rn w else w
-      >>
-   end;
+   for each pr in ofsf_realrootswrap1 f collect
+      if rdp cdr pr  then car pr . prepf !*rd2rn cdr pr else pr;
 
 asserted procedure ofsf_realrootswrap1(f: SF): List;
-   for each e in cdr realroots {prepf f} collect
-      cadr e . caddr e;
+   % The result is an Alist (... (kernel .  solution) ...), where the solution
+   % is in the :rn: domain.
+   for each e in cdr realroots {prepf f, 0, 1} collect
+      cadr e . numr simp caddr e;
 
 algebraic procedure testpzerop(hu, sol);
    begin scalar w, subsol, foundsol, ok;

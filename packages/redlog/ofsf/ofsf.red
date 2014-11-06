@@ -98,6 +98,8 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg !*rlbrkcxk !*rlffi !*rlvsllog
    !*rlvsllearn !*rlqestdans ofsf_anuc!* !*rlqestdansq !*rlqestdansint);
 
+fluid '(ra_precision!*);
+
 fluid '(!*pgnoarbcomplex !*pgspsimpl !*pgspqe);
 fluid '(!*rlqegen1 !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE

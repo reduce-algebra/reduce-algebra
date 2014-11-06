@@ -1080,6 +1080,12 @@ asserted procedure sfto_floorq(q: SQ): SQ;
    else
       !*f2q sfto_int2sf(numr q / denr q);
 
+asserted procedure sfto_truncq(q: SQ, d: Integer): SQ;
+   begin scalar shiftq;
+      shiftq := 10 ^ d ./ 1;
+      return quotsq(sfto_floorq multsq(q, shiftq), shiftq)
+   end;
+
 asserted procedure sfto_multlq(sql: List): SQ;
    if null sql then
       1 ./ 1

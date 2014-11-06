@@ -54,7 +54,7 @@ module ranum;
 % function ra_normalize(x) yielding x' so that x'=x and ra' satisfies (1)--(4).
 %
 % Since (3) prohibits to represent rational numbers p/q via one-point intervals,
-% the recommended way to do so is (:ar: q*x-p (iv -infinity 0)) or (:ar: q*x-p
+% the recommended way to do so is (:ra: q*x-p (iv -infinity 0)) or (:ra: q*x-p
 % (iv 0 infinity)) or any other suitable interval in the sense of (2) and (3).
 
 load!-package 'assert;
@@ -116,7 +116,8 @@ put('!:ra!:, 'quotient, 'ra_quotient);
 put('!:ra!:, 'intequivfn, 'ra_intequiv);
 
 put('ra, 'simpfn,'ra_simp);
-put('!:ra!:, 'prepfn, 'ra_prep);
+put('!:ra!:, 'prepfn, function(lambda x; x));
+put('!:ra!:, 'simpfn, function(lambda x; !*f2q {'!:ra!: . x}));
 put('!:ra!:, 'prifn, 'ra_print);
 
 put('!:rn!:, '!:ra!:, 'ra_rn2ra);
@@ -171,7 +172,7 @@ inline procedure ra_x();
    'x;
 
 inline procedure ra_y();
-   % Choosing my y smaller than my x save some reordering with resultant
+   % Choosing my y smaller than my x saves some reordering with resultant
    % computations.
    'w;
 
