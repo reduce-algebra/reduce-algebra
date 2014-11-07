@@ -370,6 +370,7 @@ l0039:
  movb 0(%rax,%rbx,1),%al
  cbtw
  cwtl
+ and $255,%rax
  shl $8,%rax
  shr $8,%rax
  mov $254,%rdi
