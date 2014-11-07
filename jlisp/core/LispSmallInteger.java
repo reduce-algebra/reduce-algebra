@@ -326,7 +326,9 @@ public class LispSmallInteger extends LispInteger
 
     public LispObject rightshift(int n) throws Exception
     {
-        return valueOf(value >> n);
+// This seems to be what is needed to agree with CSL.
+        int v = ((value < 0) ? - value : value) >> n;
+        return valueOf(value < 0 ? -v : v);
     }
 
     public LispObject evenp() throws Exception

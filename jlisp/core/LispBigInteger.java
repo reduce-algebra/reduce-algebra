@@ -261,7 +261,10 @@ class LispBigInteger extends LispInteger
 
     public LispObject rightshift(int n) throws Exception
     {
-        return valueOf(value.shiftRight(n));
+// Logic to match CSL's behaviour
+        BigInteger v = value.abs().shiftRight(n);
+        if (value.compareTo(BigInteger.ZERO) < 0) v = v.negate();
+        return valueOf(v);
     }
 
     public LispObject evenp() throws Exception

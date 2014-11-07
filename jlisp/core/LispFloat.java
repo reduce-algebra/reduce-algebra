@@ -196,6 +196,7 @@ class LispFloat extends LispNumber
             if (len == 1) r.append("0");
             else r.append(s1, 1, len-1);
             r.append("e");
+            if (x+len-1 > 0) r.append("+");
             r.append(x+len-1);
         }
         else // use "F" style

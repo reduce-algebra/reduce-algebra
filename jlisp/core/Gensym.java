@@ -57,7 +57,12 @@ class Gensym extends Symbol
 
     void completeName()
     {   if (pname != null) return;
-        pname = nameBase + (myNumber = gensymCounter++);
+        myNumber = gensymCounter++;
+        pname = nameBase;
+        if (myNumber < 10) pname += "0";
+        if (myNumber < 100) pname += "0";
+        if (myNumber < 1000) pname += "0";
+        pname += myNumber;
     }
 
     void dump() throws IOException

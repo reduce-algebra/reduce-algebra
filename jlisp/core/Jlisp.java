@@ -685,7 +685,6 @@ static void startup1(String [] args) throws ResourceException
             if (!restarting)
                 lispIO.setReader("<stdin>", in, standAlone, true);
             standardStreams();
-System.out.printf("set up standard streams%n");
             try
             {   readEvalPrintLoop(noRestart);
                 throw new ProgEvent(ProgEvent.STOP, nil, "EOF");
@@ -2055,11 +2054,7 @@ static void initSymbols() throws ResourceException
     // initfns(fns5.builtins);
     // initfns(fns6.builtins);
 
-    if (extrabuiltins != null)
-    {   System.out.printf("Initialising extra builtins\n");
-        extrabuiltins.inituserfns();
-    }
-    else System.out.printf("Initialising plain builtins\n");
+    if (extrabuiltins != null) extrabuiltins.inituserfns();
 
     {   Object [][] specials = specfn.specials;
         for (int i=0; i<specials.length; i++)

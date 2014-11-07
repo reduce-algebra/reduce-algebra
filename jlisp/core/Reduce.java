@@ -120,7 +120,6 @@ static U60 u60 = new U60();
 
 void inituserfns()
 {
-    System.out.printf("inituserfns\n");
     Jlisp.initfns(u01.builtins); 
     Jlisp.initfns(u02.builtins); 
     Jlisp.initfns(u03.builtins); 
@@ -193,7 +192,6 @@ private void record1(Object [][]builtins, HashMap builtinFunctions)
 
 void recorduserfns(HashMap builtinFunctions)
 {
-    System.out.printf("recorduserfns\n");
     record1(u01.builtins, builtinFunctions); 
     record1(u02.builtins, builtinFunctions); 
     record1(u03.builtins, builtinFunctions); 
@@ -258,7 +256,6 @@ void recorduserfns(HashMap builtinFunctions)
 
 public static void main(String []args)
 {
-    System.out.printf("Entering Reduce rather than Jlisp\n");
     Jlisp.extrabuiltins = new Reduce();
     CWin.main(args);
 }
