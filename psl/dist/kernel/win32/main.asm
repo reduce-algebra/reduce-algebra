@@ -655,6 +655,7 @@ l0050:
  mov al,0[eax][ebx*1]
  cbw 
  cwde 
+ and eax,255
  and eax,134217727
  or eax,-268435456
  jmp l0052
