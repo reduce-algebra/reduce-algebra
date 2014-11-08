@@ -53,7 +53,7 @@ l0003:
 l0002:
  .quad [[254<<56]+128]
  .quad 0
-/ (*entry psl_main expr 0)
+/ (*entry main expr 0)
 psl_main:
  .globl psl_main
  mov %rdi,%rax
@@ -373,6 +373,7 @@ l0040:
  movb 0(%rax,%rbx,1),%al
  cbtw
  cwtl
+ and $255,%rax
  shl $8,%rax
  shr $8,%rax
  mov $254,%rdi

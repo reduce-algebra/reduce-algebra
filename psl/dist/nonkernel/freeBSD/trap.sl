@@ -172,7 +172,7 @@
        (fstcw (displacement (reg 3) 0))
        (wait)
        (*move (displacement (reg 3) 0) (reg 2))
-       (*wor (reg 2)  2#110000000000)
+%       (*wor (reg 2)  2#110000000000)
        (*wand (reg 2) 2#11111111110010)
        (*move (reg 2) (displacement (reg 3) 0))
        (fldcw (displacement (reg 3) 0))

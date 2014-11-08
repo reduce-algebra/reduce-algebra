@@ -1,4 +1,4 @@
-s/ main/ psl_main/g
+s/ main$/ psl_main/g
 s/lastbps/lastbps/g
 s/heaplowerbound/heaplowerbound/g
 s/heapupperbound/heapupperbound/g

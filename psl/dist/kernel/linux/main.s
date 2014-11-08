@@ -423,6 +423,7 @@ l0028:
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
+ and $255,%eax
  and $134217727,%eax
  or $-268435456,%eax
  jmp l0030
