@@ -90,6 +90,13 @@ flag('(copyd), 'lose);
 % The following are built into CSL and so any definition found within
 % the REDUCE sources should be viewed as "portability" but should be ignored.
 
+% note that the elementary functions within CSL are (almost always)
+% implemented using "crlibm" the "correctly rounded mathematical library"
+% which is certainly higher quality than the portable code within Reduce
+% and often gets more accuract answers that the elementary functions provided
+% by vendors. Its use shoudl also ensure that CSL delivers bit-identical
+% results on any platform it runs on.
+
 if memq('vsl, lispsystem!*) then
    flag('(atsoc copy eqcar gcdn geq lastpair leq mkquote neq reversip
        rplacw iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
@@ -135,10 +142,7 @@ else
        safe!-fp!-plus safe!-fp!-times safe!-fp!-quot threevectorp
        sort stable!-sort stable!-sortip lengthc prin2 princ),'lose);
 
-% substq has only been built into CSL since July 2011 so I will be cautious
-% here for when this file is used with a legacy version of CSL.
-
-if getd 'substq then flag('(substq), 'lose);
+flag('(substq), 'lose);
 
 !*argnochk := t;
 

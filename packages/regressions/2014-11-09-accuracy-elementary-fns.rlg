@@ -1,0 +1,220 @@
+% This is for testing trig functions
+
+on rounded;
+
+
+precision 200;
+
+
+12
+
+
+lisp;
+
+
+nil
+
+
+% A bigfloat is stored as (!:rd!: m . x)
+
+symbolic procedure machine_to_big u;
+% This is intended to turn a machine floating point number into
+% a bigfloat not losing any information. It will fail on NaNs and
+% infinities. The existing reduce function fl2bf should do the same job
+% but that relies on going via explode, so I rather expect this to be
+% more reliable.
+  if u = 0.0 then '(!:rd!: 0 . 0)
+  else begin
+    scalar m, x, hi, lo;
+    m := u;
+    x := 0;
+    while m >= 2.0 do << m := m/2.0; x := x + 1 >>;
+    while m < 1.0 do << m := m*2.0; x := x - 1 >>;
+% Now 1 <= m < 2
+    m := m * (1024.0*1024.0*256.0);
+    x := x - 28;
+    hi := round m;
+    m := m - float hi;
+    m := m*(1024.0*1024.0*256.0);
+    hi := hi*(1024*1024*256);
+    x := x - 28;
+    lo := round m;
+    if not (float lo = m) then error(99, "Conversion failed");
+    return normbf ('!:rd!: . (hi+lo) . x);
+  end;
+
+
+machine_to_big
+
+
+global '(two_100 two_140 two_100f);
+
+
+nil
+
+
+two_100 := expt(2, 100)$
+
+
+two_140 := expt(2, 140)$
+
+
+two_100f := for i := 1:100 product 2.0$
+
+  % With no risk of rounding!
+
+% And something to convert back from bigfloats to machine
+% floats also with care to do the rounding just once.
+
+symbolic procedure big_to_machine u;
+  begin
+    scalar s, m, x, w;
+    m := cadr u;
+    if m = 0 then return 0.0;
+    x := cddr u + 100;
+    if m < 0 then << m := -m; s := t >>;
+    while m < two_140 do << m := m*2; x := x - 1 >>;
+    while m > two_140 do << m := m/2; x := x + 1 >>;
+    w := divide(m, two_100);
+    m := float car w + (float cdr w / two_100f); % should round properly
+    if x > 0 then for i := 1:x do m := m*2.0
+    else for i := 1:-x do m := m/2.0;
+    return if s then -m else m
+  end;
+
+
+big_to_machine
+
+
+% I can use rdsin!* etc on bigfloats.
+
+symbolic procedure accurate_sin x;
+  big_to_machine rdsin!* machine_to_big x;
+
+
+accurate_sin
+
+
+symbolic procedure accurate_cos x;
+  big_to_machine rdcos!* machine_to_big x;
+
+
+accurate_cos
+
+
+symbolic procedure accurate_tan x;
+  big_to_machine rdtan!* machine_to_big x;
+
+
+accurate_tan
+
+
+% Test a collection of values linearly spread from 0 to pi. If all
+% is well this produces no output at all!
+
+fails1 := 0$
+
+
+for i := 0:350 do <<
+  x := float i / 100.0;
+  s1 := sin x;
+  s2 := accurate_sin x;
+  c1 := cos x;
+  c2 := accurate_cos x;
+  t1 := tan x;
+  t2 := accurate_tan x;
+  if s1 neq s2 or c1 neq c2 or t1 neq t2 then <<
+    fails1 := fails1 + 1;
+    if fails1 < 5 then <<
+      prin2 "x =              ";   print x;
+      prin2 "x =              ";   prin2t hexfloat1 x;
+      if s1 neq s2 then <<
+        prin2 "sin x =          "; prin2t hexfloat1 s1;
+        prin2 "accurate sin x = "; prin2t hexfloat1 s2 >>;
+      if c1 neq c2 then <<
+        prin2 "cos x =          "; prin2t hexfloat1 c1;
+        prin2 "accurate cos x = "; prin2t hexfloat1 c2 >>;
+      if t1 neq t2 then <<
+        prin2 "tan x =          "; prin2t hexfloat1 t1;
+        prin2 "accurate tan x = "; prin2t hexfloat1 t2 >> >> >> >>$
+
+
+
+% Now try a geometric progression of values ranging up to 3.0e11 
+
+x := 0.001$
+
+
+fails2 := 0$
+
+
+for i := 0:350 do <<
+  x := x * 1.1;
+  s1 := sin x;
+  s2 := accurate_sin x;
+  c1 := cos x;
+  c2 := accurate_cos x;
+  t1 := tan x;
+  t2 := accurate_tan x;
+  if s1 neq s2 or c1 neq c2 or t1 neq t2 then <<
+    fails2 := fails2 + 1;
+    if fails2 < 5 then <<
+      prin2 "x =              ";   print x;
+      prin2 "x =              ";   prin2t hexfloat1 x;
+      if s1 neq s2 then <<
+        prin2 "sin x =          "; prin2t hexfloat1 s1;
+        prin2 "accurate sin x = "; prin2t hexfloat1 s2 >>;
+      if c1 neq c2 then <<
+        prin2 "cos x =          "; prin2t hexfloat1 c1;
+        prin2 "accurate cos x = "; prin2t hexfloat1 c2 >>;
+      if t1 neq t2 then <<
+        prin2 "tan x =          "; prin2t hexfloat1 t1;
+        prin2 "accurate tan x = "; prin2t hexfloat1 t2 >> >> >> >>$
+
+
+
+% Now try another geometric progression, this time values up to BIG
+% values around 10^150. For the Reduce bigfloat code to get these
+% cases right I have to set "precision 200" or so.
+
+x := 22.0/7.0$
+
+
+fails3 := 0$
+
+
+for i := 0:350 do <<
+  x := x * 2.71828;
+  s1 := sin x;
+  s2 := accurate_sin x;
+  c1 := cos x;
+  c2 := accurate_cos x;
+  t1 := tan x;
+  t2 := accurate_tan x;
+  if s1 neq s2 or c1 neq c2 or t1 neq t2 then <<
+    fails3 := fails3 + 1;
+    if fails3 < 5 then <<
+      prin2 "x =              ";   print x;
+      prin2 "x =              ";   prin2t hexfloat1 x;
+      if s1 neq s2 then <<
+        prin2 "sin x =          "; prin2t hexfloat1 s1;
+        prin2 "accurate sin x = "; prin2t hexfloat1 s2 >>;
+      if c1 neq c2 then <<
+        prin2 "cos x =          "; prin2t hexfloat1 c1;
+        prin2 "accurate cos x = "; prin2t hexfloat1 c2 >>;
+      if t1 neq t2 then <<
+        prin2 "tan x =          "; prin2t hexfloat1 t1;
+        prin2 "accurate tan x = "; prin2t hexfloat1 t2 >> >> >> >>$
+
+
+
+list("Fail counts", fails1, fails2, fails3);
+
+
+("Fail counts" 0 0 0)
+
+
+
+end;
+
+nil
