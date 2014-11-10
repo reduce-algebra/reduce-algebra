@@ -117,7 +117,7 @@ put('!:ra!:, 'intequivfn, 'ra_intequiv);
 
 put('ra, 'simpfn,'ra_simp);
 put('!:ra!:, 'prepfn, function(lambda x; x));
-put('!:ra!:, 'simpfn, function(lambda x; !*f2q {'!:ra!: . x}));
+put('!:ra!:, 'simpfn, function(lambda x; !*f2q('!:ra!: . x)));
 put('!:ra!:, 'prifn, 'ra_print);
 
 put('!:rn!:, '!:ra!:, 'ra_rn2ra);
@@ -249,7 +249,7 @@ asserted procedure ra_ra0(u: List): RA;
 	 rederr {"polynomial has a zero at the upper bound of the specified interval"};
       bc := ra_budancount(f, l, u);
       if eqn(bc, 1) then
-      	 return mk!*sq !*f2q ra_simpl0 ra_normalize0 ra_qmk(f, l, u);
+      	 return ra_simpl0 ra_normalize0 ra_qmk(f, l, u);
       if eqn(bc, 0) then
 	 rederr {"polynomial has no zero on specified interval"};
       rederr {"polynomial has more than one zero on specified interval"}

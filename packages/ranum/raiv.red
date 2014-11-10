@@ -53,30 +53,28 @@ asserted procedure iv_contains(i: IV, q: SQ): Boolean;
 
 put('iv, 'prifn, 'iv_print);
 
-asserted procedure iv_print(i: IV);
-   begin scalar op, opp, w;
-      op := precision ra_precision!*;
-%      opp := setprintprecision ra_precision!*;
+asserted procedure iv_print0(i: IV);
+   begin scalar op, opp, w1, w2;
       prin2!* "]";
       if ra_precision!* geq 0 then <<
-	 w := sfto_truncq(iv_l i, ra_precision!*);
+      	 op := precision ra_precision!*;
+	 w1 := sfto_truncq(iv_l i, ra_precision!*);
+	 w2 := sfto_truncq(iv_u i, ra_precision!*);
 	 on1 'rounded;
-	 maprin reval prepsq w;
-	 off1 'rounded
-      >> else
+	 maprin reval prepsq w1;
+      	 prin2!* ", ";
+	 maprin reval prepsq w2;
+	 off1 'rounded;
+	 precision op
+      >> else <<
 	 maprin prepsq iv_l i;
-      prin2!* ", ";
-      if ra_precision!* geq 0 then <<
-	 w := sfto_truncq(iv_u i, ra_precision!*);
-	 on1 'rounded;
-	 maprin reval prepsq w;
-	 off1 'rounded
-      >> else
-	 maprin prepsq iv_u i;
-      prin2!* "[";
-      precision op;
-%      setprintprecision opp
+      	 prin2!* ", ";
+	 maprin prepsq iv_u i
+      >>;
+      prin2!* "["
    end;
+
+ra_wrap(iv_print0, iv_print, 1);
 
 asserted procedure iv_rat2float(q: SQ, prec: Integer): Floating;
    begin scalar w, sh;

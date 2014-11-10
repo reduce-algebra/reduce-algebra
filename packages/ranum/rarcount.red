@@ -29,7 +29,8 @@
 module raiv;
 
 asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
-   for each iv in ra_isolatingivl0(f, lb, ub) collect ra_qmk(f, car iv, cdr iv);
+   for each iv in ra_isolatingivl0(f, lb, ub) collect
+      ra_simpl0 ra_normalize0 ra_qmk(f, car iv, cdr iv);
 
 ra_wrap(ra_isolate0, ra_isolate, 3);
 
@@ -70,7 +71,7 @@ asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): List;
 ra_wrap(ra_isolatingivl0, ra_isolatingivl, 3);
 
 asserted procedure ra_isolatingivl!$(argl: List): List;
-   'list . for each iv in ra_isolatingivl numr simp car argl collect
+   'list . for each iv in ra_isolatingivl(numr simp car argl, nil, nil) collect
       {'list, mk!*sq car iv, mk!*sq cdr iv};
 
 put('isolatingivl, 'psopfn, 'ra_isolatingivl!$);
