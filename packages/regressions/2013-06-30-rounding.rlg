@@ -23,7 +23,7 @@ nil
 !#if (memq 'psl lispsystem!*)
 
 symbolic procedure ttab n;
-  spaces (n - posn());
+  spaces (n - posn())$
 
 !#endif
 
@@ -226,5 +226,5 @@ Time (counter 1): 0 ms
 
 End of Lisp run after 0.00+0.04 seconds
 real 0.19
-user 0.04
-sys 0.04
+user 0.01
+sys 0.07
