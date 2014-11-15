@@ -107,12 +107,14 @@ asserted procedure ofsf_tropsat1(f: QfFormula, posp: Boolean): Id;
       if eqcar(w, 1) then <<
 	 if !*rlverbose then
  	    ioto_tprin2 "found candidate, solving ... ";
-	 sol := ofsf_zerosolve(p, w);
+	 sol := car ofsf_zerosolve(p, w);
 	 if !*rlverbose then
  	    ioto_prin2t "done";
 	 vl := cl_fvarl1 f;
 	 sol := for each pr in sol join if car pr memq vl then {pr};
 	 % Evaluate f at sol
+	 if !*rlverbose then
+ 	    ioto_prin2t "evaluating input formula at candidate solution";
 	 return 'sat;
       >>;
       if eqcar(w, 0) then
@@ -510,22 +512,19 @@ asserted procedure ofsf_realizeinfinity(fsol: SQ): DottedPair;
 put('zerosolve, 'psopfn, 'ofsf_zerosolveeval);
 
 asserted procedure ofsf_zerosolveeval(l: List): List;
-   begin scalar f, zres; integer len;
+   begin scalar f, zres, zero, gzero; integer len;
       len := length l;
       if not eqn(len, 2) then
 	 rederr "usage: zerosolve(<polynomial>, <[p]zero result>)";
       f := numr simp pop l;
-      zres := reval pop l;
-      return ofsf_zerosolve0(f, zres)
+      zres := cdr reval pop l;
+      zero . gzero := ofsf_zerosolve(f, zres);
+      zero := for each pr in zero collect
+	 {'equal, car pr, mk!*sq cdr pr};
+      return {'list, 'list . zero, gzero}
    end;
 
-asserted procedure ofsf_zerosolve0(f: SF, l: List): List;
-   begin scalar oldprec, oldpprec, w;
-      w := ofsf_zerosolve(f, cdr l);
-      return w
-   end;
-
-asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
+asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
    % Returns (x_1 . anu_1, ..., x_n .  anu_n).
    %
    % g(p_1, ..., p_n) < 0 < g(q_1, ..., q_n)
@@ -571,7 +570,7 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
 	 w := quotsq(!*f2q sfto_fsub(numr cdr pr, ral), !*f2q denr cdr pr);
 	 assert(eqn(denr(w, 1)));
 	 val := numr w;
-	 if not numberp val then
+	 if val and not numberp val then
 	    while sfto_geqq(subtrsq(ra_u val, ra_l val), precq) do
 	       val := ra_refine(val,1);
 	 car pr . (val ./ 1)
@@ -580,13 +579,12 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): AList;
       on1 'rounded;
       op := precision ra_precision!*;
       floatzero := for each pr in zero collect
-	 car pr . reval prepsq if numberp numr cdr pr then cdr pr else ra_l numr cdr pr;
+	 car pr . reval prepsq if null numr cdr pr or numberp numr cdr pr then
+ 	    cdr pr else ra_l numr cdr pr;
       gzero := mk!*sq subf(g, floatzero);
       precision op;
       off rounded;
-      zero := for each pr in zero collect
-	 {'equal, car pr, mk!*sq cdr pr};
-      return {'list, 'list . zero, gzero}
+      return zero . gzero
    end;
 
 asserted procedure ofsf_signatanuat(at: OfsfAtf, al: AList): OfsfAtf;

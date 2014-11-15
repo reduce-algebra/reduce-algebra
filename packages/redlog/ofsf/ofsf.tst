@@ -660,20 +660,25 @@ rlptropsat(x=0 or x+1 = 0);
 
 rltropsat(x=0 or x+1 = 0);
 
-on zeropzero;
+w := pzerop(x**2+x);
 
-pzerop(x**2+x);
+w := zerop(x**2+x);
+zeroapprox(x**2+x, w);
+zerosolve(x**2+x, w);
 
-zerop(x**2+x);
+oldprec := precision 12;
+oldraprec := raprintprecision 12;
 
-oldprec := precision 24;
+w := pzerop(x**2-2);
+zeroapprox(x**2-2, w);
+zerosolve(x**2-2, w);
 
-pzerop(-2x1^6+x1^3*x2-3x1^3+2x1*x2^2);
-evalf ws;
+w := pzerop(-2x1^6+x1^3*x2-3x1^3+2x1*x2^2);
+zeroapprox(-2x1^6+x1^3*x2-3x1^3+2x1*x2^2, w);
+zerosolve(-2x1^6+x1^3*x2-3x1^3+2x1*x2^2, w);
 
 precision oldprec;
-
-off zeropzero;
+raprintprecision oldraprec;
 
 % Optimizer and VS with learning
 

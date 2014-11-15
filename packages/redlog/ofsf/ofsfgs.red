@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_gs_rcsid!* ofsf_gs_copyright!*);
@@ -215,10 +215,10 @@ procedure ofsf_gssimplify(f,atl);
 
 procedure ofsf_gspreducef(f,gl);
    numr gb_reducef(f,gl,ofsf_gsvl(),ofsf_gssm(),ofsf_gssx());
-   
+
 procedure ofsf_gsgreducef(f,gl);
    ofsf_gspreducef(f,gb_gbf(gl,ofsf_gsvl(),ofsf_gssm(),ofsf_gssx()));
-      
+
 procedure ofsf_gsgbf(fl);
    gb_gbf(fl,ofsf_gsvl(),ofsf_gssm(),ofsf_gssx());
 
@@ -233,10 +233,10 @@ procedure ofsf_gssx();
 
 %% procedure ofsf_gsvl();
 %%    td_vars();
-%% 
+%%
 %% procedure ofsf_gssm();
 %%    td_sortmode();
-%% 
+%%
 %% procedure ofsf_gssx();
 %%    td_sortextension();
 
