@@ -38,6 +38,10 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
+#ifdef USE_CRLIBM
+#include "crlibm.h"
+#endif
+
 jmp_buf mainenv;
  
 int Debug = 0;
@@ -53,6 +57,10 @@ char *argv[];
   clear_iob();             /* clear garbage pointer in _iob[]    */
   clear_dtabsize();
   /* fpsetround(FP_RZ);  */
+
+#ifdef USE_CRLIBM
+  crlibm_init();
+#endif
 /*  init_malloc_param();        /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IONBF,BUFSIZ);
 
@@ -68,6 +76,7 @@ char *argv[];
   exit(0);
 }
  
+
 os_startup_hook(argc, argv)
      int argc;
      char *argv[];
