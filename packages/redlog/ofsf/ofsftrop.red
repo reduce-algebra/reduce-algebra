@@ -534,15 +534,15 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
    % ...
    % x_n = p_n + Y * (q_n - p_n), Y in [0,1]
    begin
-      scalar g, p, q, y, yq, subal, g0, rl, ral, x_i, p_i, q_i, zero, w, val, precq, op, gzero, floatzero;
+      scalar g, p, q, y, yq, subal, g0, rl, ral, x_i, p_i, q_i, zero, w, val, precq, gzero, floatzero;
       assert(eqcar(l, 1));
       if !*rlverbose then <<
-	 ioto_tprin2t {"+++ computing zero, ranum print precision is ", ra_precision!*, " ..."};
+	 ioto_tprin2t {"+++ computing zero, precision is ", precision 0, " ..."};
 	 ioto_tprin2t {"**********************************************************************"};
 	 ioto_tprin2t {"* Intervals of algebraic numbers are refined and printed to that     *"};
-	 ioto_tprin2t {"* precision. The returned function value is the float value at the   *"};
-	 ioto_tprin2t {"* lower limits of the intervals; substituion of the actual algebraic *"};
-	 ioto_tprin2t {"* numbers into the original polynomial is infeasible at present.     *"};
+	 ioto_tprin2t {"* precision. The returned function value is the value at the lower   *"};
+	 ioto_tprin2t {"* bounds of the intervals; substituion of the actual algebraic       *"};
+	 ioto_tprin2t {"* numbers into the original polynomial is not feasible at present.   *"};
 	 ioto_tprin2t {"**********************************************************************"}
       >>;
       p := cdr cadr cadr l;   % positive point as a symbolic list of equations
@@ -565,7 +565,7 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
 	 rederr {"severe error - no zero on the relevant line segement"};
       %      mathprint('list . rl);
       ral := {y . car rl};
-      precq := 1 ./ 10 ^ (ra_precision!* + 2);
+      precq := 1 ./ 10 ^ (precision 0 + 2);
       zero := for each pr in subal collect <<
 	 w := quotsq(!*f2q sfto_fsub(numr cdr pr, ral), !*f2q denr cdr pr);
 	 assert(eqn(denr(w, 1)));
@@ -577,12 +577,10 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
       >>;
       off1 'ranum;
       on1 'rounded;
-      op := precision ra_precision!*;
       floatzero := for each pr in zero collect
 	 car pr . reval prepsq if null numr cdr pr or numberp numr cdr pr then
  	    cdr pr else ra_l numr cdr pr;
       gzero := mk!*sq subf(g, floatzero);
-      precision op;
       off rounded;
       return zero . gzero
    end;
@@ -595,19 +593,13 @@ asserted procedure ofsf_signatanuat(at: OfsfAtf, al: AList): OfsfAtf;
 put('zeroapprox, 'psopfn, 'ofsf_zeroapproxeval);
 
 asserted procedure ofsf_zeroapproxeval(l: List): List;
-   begin scalar f, zres; integer len;
+   begin scalar f, zres; integer len, p;
       len := length l;
       if not eqn(len, 2) then
 	 rederr "usage: zeroapprox(<polynomial>, <[p]zero result>)";
       f := numr simp pop l;
       zres := reval pop l;
-      return ofsf_zeroapprox0(f, zres)
-   end;
-
-asserted procedure ofsf_zeroapprox0(f: SF, l: List): List;
-   begin scalar oldprec, oldpprec, w;
-      w := ofsf_zeroapprox(f, cdr l);
-      return w
+      return ofsf_zeroapprox(f, cdr zres)
    end;
 
 asserted procedure ofsf_zeroapprox(f: SF, l: List): List;

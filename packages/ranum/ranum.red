@@ -82,14 +82,11 @@ fluid '(!*backtrace);
 
 fluid '(!*msg);
 
-fluid '(ra_precision!*);
-
-if not ra_precision!* then ra_precision!* := 2;
-
 switch ranum;
 switch rasimpl;
 switch rasifac;
 switch rahidepoly;
+switch rarat;
 
 on1 'rasimpl;
 on1 'rasifac;
@@ -289,19 +286,6 @@ asserted procedure ra_intequiv0(x: RA): Any;
    end;
 
 ra_wrap(ra_intequiv0, ra_intequiv, 1);
-
-asserted procedure raprintprecision(n: Integer): Integer;
-   % [n] is the number of digits printed after the period. At present the number
-   % of digits available is limited by other factors (pecision, machine floats,
-   % ...?) so that [n] > 5 does not make much sense. With negative [n] the
-   % rational numbers actually used internally are printed.
-   begin scalar w;
-      w := ra_precision!*;
-      ra_precision!* := n;
-      return w
-   end;
-
-operator raprintprecision;
 
 asserted procedure ra_i2ra0(z: Integer): RA;
    begin scalar f, l, u;

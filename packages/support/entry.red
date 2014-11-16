@@ -602,6 +602,9 @@ defautoload(yyparse, lalr, expr, 0);
 switch ranum;
 put('ranum,'simpfg,'((t (load!-package 'ranum) (setdmode (quote ranum) t))));
 
+defautoload(ra_x, ranum, expr, 0);
+defautoload(ra_y, ranum, expr, 0);
+
 % Smt
 operator smt;
 defautoload(smt, smt, expr, 0);
