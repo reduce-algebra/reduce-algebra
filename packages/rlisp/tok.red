@@ -130,7 +130,8 @@ symbolic procedure bytelist2id u;
 % Take a list of integers (now each in the range 0-0x0010ffff) and
 % turn it into a string encoding those using utf-8
 %
-% This code could be improved by use of fixnum-only arithmetic I expect!
+% It will also support use of identifiers or strings as well as integers,
+% and will use the first character (n.b. not octet) as the code concerned.
 %
 symbolic procedure list2widestring u;
   begin
@@ -140,6 +141,9 @@ symbolic procedure list2widestring u;
  a: if null u1 then go to b;
     n := car u1;
     u1 := cdr u1;
+    if idp n then n := car widestring2list symbol!-name n
+    else if stringp n and n neq "" then n := car widestring2list n
+    else if not fixp n then rederr "Invalid item in arg to list2widestring";
     if n < 0 then error(1, "Negative integer in list2widestring")
 % I put the constants in decimal because hex reading may not be
 % available yet.
@@ -153,6 +157,8 @@ symbolic procedure list2widestring u;
     len := 0;
  c: if null u then return s;
     n := car u;
+    if idp n then n := car widestring2list symbol!-name n
+    else if stringp n and n neq "" then n := car widestring2list n;
     u := cdr u;
     if n < 128 then progn(
       string!-store(s, len, n),
