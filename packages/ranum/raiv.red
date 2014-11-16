@@ -28,41 +28,41 @@
 
 module raiv;
 
-asserted procedure iv_mk(l: SQ, u: SQ): IV;
+asserted procedure riv_mk(l: SQ, u: SQ): IV;
    % [l] and [u] are numbers.
    {'iv, l, u};
 
-asserted procedure iv_l(i: IV): SQ;
+asserted procedure riv_l(i: IV): SQ;
    % Lower bound.
    cadr i;
 
-asserted procedure iv_u(i: IV): SQ;
+asserted procedure riv_u(i: IV): SQ;
    % Upper bound.
    caddr i;
 
-asserted procedure iv_plus(i1: IV, i2: IV): IV;
+asserted procedure riv_plus(i1: IV, i2: IV): IV;
    % ]l1, u1[ + ]l2, u2[ = ]l1 + l2, u1 + u2[
-   iv_mk(addsq(iv_l i1, iv_l i2), addsq(iv_u i1, iv_u i2));
+   riv_mk(addsq(riv_l i1, riv_l i2), addsq(riv_u i1, riv_u i2));
 
-asserted procedure iv_minus(i: IV): IV;
+asserted procedure riv_minus(i: IV): IV;
    % - ]l, u[ = ]-u, -l[
-   iv_mk(negsq iv_u i, negsq iv_l i);
+   riv_mk(negsq riv_u i, negsq riv_l i);
 
-asserted procedure iv_contains(i: IV, q: SQ): Boolean;
-   sfto_lessq(iv_l i, q) and sfto_lessq(q, iv_u i);
+asserted procedure riv_contains(i: IV, q: SQ): Boolean;
+   sfto_lessq(riv_l i, q) and sfto_lessq(q, riv_u i);
 
-put('iv, 'prifn, 'iv_print);
+put('iv, 'prifn, 'riv_print);
 
-asserted procedure iv_print0(i: IV);
+asserted procedure riv_print0(i: IV);
    begin scalar w1, w2;
       prin2!* "]";
       if !*rarat then <<
-	 maprin prepsq iv_l i;
+	 maprin prepsq riv_l i;
       	 prin2!* ", ";
-	 maprin prepsq iv_u i
+	 maprin prepsq riv_u i
       >> else <<
-	 w1 := sfto_truncq(iv_l i, precision 0);
-	 w2 := sfto_truncq(iv_u i, precision 0);
+	 w1 := sfto_truncq(riv_l i, precision 0);
+	 w2 := sfto_truncq(riv_u i, precision 0);
 	 on1 'rounded;
 	 maprin reval prepsq w1;
       	 prin2!* ", ";
@@ -72,9 +72,9 @@ asserted procedure iv_print0(i: IV);
       prin2!* "["
    end;
 
-ra_wrap(iv_print0, iv_print, 1);
+ra_wrap(riv_print0, riv_print, 1);
 
-asserted procedure iv_rat2float(q: SQ, prec: Integer): Floating;
+asserted procedure riv_rat2float(q: SQ, prec: Integer): Floating;
    begin scalar w, sh;
       sh := 10 ^ prec;
       w := (float(numr q or 0) / float denr q);

@@ -44,7 +44,7 @@ asserted procedure ra_refine0(x: RA, n: Integer): RA;
    begin scalar f, iv, l, u;
       f := ra_f x;
       iv := ra_iv x;
-      l . u := ra_refine1(f, iv_l iv, iv_u iv, n);
+      l . u := ra_refine1(f, riv_l iv, riv_u iv, n);
       return ra_qmk(f, l, u)
    end;
 
@@ -103,10 +103,10 @@ asserted procedure ra_plus0(x: RA, y: RA): RA;
       ff := ra_plustransform ra_f x;
       gg := sfto_renamef(ra_f y, ra_x(), ra_y());
       h := ra_resf0(ff, gg, ra_y());
-      lx := iv_l ra_iv x;
-      ux := iv_u ra_iv x;
-      ly := iv_l ra_iv y;
-      uy := iv_u ra_iv y;
+      lx := riv_l ra_iv x;
+      ux := riv_u ra_iv x;
+      ly := riv_l ra_iv y;
+      uy := riv_u ra_iv y;
       l := addsq(lx, ly);
       u := addsq(ux, uy);
       while not eqn(ra_budancount(h, l, u), 1) do <<
@@ -133,7 +133,7 @@ asserted procedure ra_minus0(x: RA): RA;
    if ra_zerop x then
       x
    else
-      ra_simpl0 ra_mk(ra_mirror ra_f x, iv_minus ra_iv x);
+      ra_simpl0 ra_mk(ra_mirror ra_f x, riv_minus ra_iv x);
 
 ra_wrap(ra_minus0, ra_minus, 1);
 
@@ -155,10 +155,10 @@ asserted procedure ra_times0(x: RA, y: RA): RA;
       ff := ra_timestransform ra_f x;
       gg := sfto_renamef(ra_f y, ra_x(), ra_y());
       h := ra_resf0(ff, gg, ra_y());
-      lx := iv_l ra_iv x;
-      ux := iv_u ra_iv x;
-      ly := iv_l ra_iv y;
-      uy := iv_u ra_iv y;
+      lx := riv_l ra_iv x;
+      ux := riv_u ra_iv x;
+      ly := riv_l ra_iv y;
+      uy := riv_u ra_iv y;
       ll := {multsq(lx, ly), multsq(lx, uy), multsq(ux, ly), multsq(ux, uy)};
       l := sfto_minql ll;
       u := sfto_maxql ll;
@@ -188,8 +188,8 @@ ra_wrap(ra_quotient0, ra_quotient, 2);
 asserted procedure ra_inverse0(x: RA): RA;
    begin scalar f, l, u, newl, newu;
       f := ra_f x;
-      l := iv_l ra_iv x;
-      u := iv_u ra_iv x;
+      l := riv_l ra_iv x;
+      u := riv_u ra_iv x;
       newl := if numr u then denr u ./ numr u else negsq sfto_lmq ra_mirror f;
       newu := if numr l then denr l ./ numr l else sfto_lmq f;
       return ra_simpl0 ra_qmk(ra_invtransform f, newl, newu)
@@ -223,8 +223,8 @@ asserted procedure ra_sifac0(x: RA): RA;
    begin scalar facl, f, l, u, c;
       if not !*rasifac then
 	 return x;
-      l := iv_l ra_iv x;
-      u := iv_u ra_iv x;
+      l := riv_l ra_iv x;
+      u := riv_u ra_iv x;
       facl := for each pr in cdr fctrf ra_f x collect car pr;
       c := t; while c and facl do <<
 	 f := pop facl;

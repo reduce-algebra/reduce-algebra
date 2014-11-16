@@ -161,7 +161,7 @@ asserted procedure ra_wrappertest0(x: Integer, y: Integer): Integer;
 ra_wrap(ra_wrappertest0, ra_wrappertest, 2);
 
 asserted procedure ra_prep(x: RA): List;
-   {'ra, prepf ra_f x, prepsq iv_l ra_iv x, prepsq iv_u ra_iv x};
+   {'ra, prepf ra_f x, prepsq riv_l ra_iv x, prepsq riv_u ra_iv x};
 
 put('ra, 'prifn, function(lambda u; ra_print numr ra_simp u));
 
@@ -175,14 +175,14 @@ inline procedure ra_y();
 
 inline procedure ra_zero();
    % The ranum representation of 0, in contrast to [nil].
-   ra_mk(!*k2f ra_x(), iv_mk(-1 ./ 1, 1 ./ 1));
+   ra_mk(!*k2f ra_x(), riv_mk(-1 ./ 1, 1 ./ 1));
 
 asserted procedure ra_mk(f: SF, i: IV): RA;
    {'!:ra!:, f, i};
 
 asserted procedure ra_qmk(f: SF, l: SQ, u: SQ): RA;
    % Quick make construct the interval.
-   {'!:ra!:, f, iv_mk(l, u)};
+   {'!:ra!:, f, riv_mk(l, u)};
 
 asserted procedure ra_f(x: RA): SF;
    % [x] must not be zero.
@@ -194,20 +194,20 @@ asserted procedure ra_iv(x: RA): IV;
 
 asserted procedure ra_l(x: RA): SQ;
    % [x] must not be zero.
-   iv_l ra_iv x;
+   riv_l ra_iv x;
 
 asserted procedure ra_u(x: RA): SQ;
    % [x] must not be zero.
-   iv_u ra_iv x;
+   riv_u ra_iv x;
 
 asserted procedure ra_print(x: RA);
    if not !*nat then <<
       prin2!* "ranum(";
       maprin prepf ra_f x;
       prin2!* ", ";
-      maprin prepsq iv_l ra_iv x;
+      maprin prepsq riv_l ra_iv x;
       prin2!* ", ";
-      maprin prepsq iv_u ra_iv x;
+      maprin prepsq riv_u ra_iv x;
       prin2!* ")"
    >> else
       if !*rahidepoly then
@@ -261,7 +261,7 @@ asserted procedure ra_zerop(x: RA): Boolean;
 
 asserted procedure ra_onep0(x: RA): Boolean;
    % Explicity treat the special case x^n - 1 for efficiency.
-   iv_contains(ra_iv x, 1 ./ 1) and
+   riv_contains(ra_iv x, 1 ./ 1) and
       (eqn(red ra_f x, -1) and eqn(lc ra_f x, 1) or
  	 null sfto_fsub1(ra_f x, {ra_x() . 1}));
 
@@ -275,8 +275,8 @@ asserted procedure ra_intequiv0(x: RA): Any;
       f := ra_f x;
       if eqn(ldeg f, 1) and eqn(lc f, 1) then
 	 return negf red f;
-      l := iv_l ra_iv x;
-      u := iv_u ra_iv x;
+      l := riv_l ra_iv x;
+      u := riv_u ra_iv x;
       while sfto_greaterq(subtrsq(u, l), 1 ./ 1) do
 	 l . u := ra_refine1(f, l, u, 1);
       z := addf(numr sfto_floorq l, 1);
