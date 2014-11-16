@@ -41,6 +41,9 @@ create!-package('(utf8),nil);
 
 fluid '(lispsystem!* overflowed!* posn!* testing!-width!* !*nat);
 
+fluid '(utf8_c!*);
+utf8_c!* := 0;
+
 #if (memq 'psl lispsystem!*)
    fluid '(maxchannels writefunction out!*);
 #endif
@@ -232,7 +235,8 @@ procedure utf8_exptpri(x,p);
       if q then prin2!* "(";
       maprin cadr x;
       if q then prin2!* ")";
-      x := '!*!*!*utf8!*!*!*;
+      x := mkid(mkid('!*!*!*utf8_, utf8_c!*), '!*!*!*);
+      utf8_c!* := utf8_c!* + 1;
       w := for each d in expo join copy utf8_supscript d;
       put(x,'utf8, length expo . w);
       utf8_prin2!* x
