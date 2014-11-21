@@ -83,7 +83,7 @@ symbolic procedure yyparse();
 % is performed. Note that state 0 must be the initial state for
 % the parser.
     state_stack := list 0;
-    start_parser();
+    lex_init();
     next_input := yylex();
     princ "yylex returns "; print next_input;
 % The action code that I access here will be 0 for "accept", which is why
@@ -101,7 +101,8 @@ symbolic procedure yyparse();
             if next_input = 0 then error(0, "End of file detected");
             sym_stack := (lalr_decode_symbol next_input) . sym_stack;
             state_stack := w . state_stack;
-            next_input := yylex() >>
+            next_input := yylex();
+            princ "yylex returns "; print next_input >>
         else begin                                   % REDUCE
             scalar A, n, action;
             w := - (w + 1);

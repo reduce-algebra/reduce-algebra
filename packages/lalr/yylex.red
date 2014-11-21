@@ -33,36 +33,227 @@ module 'yylex;
 %
 % This is a lexical anaylser for use with RLISP. Its interface is
 % styles after the one needed by yacc, in that it exports a function
-% called yylex() that returns as a value a numeric category code, but
+% called yylex() that returns as a value a category code, but
 % sets a variable yylval to details associated with the item
-% just parsed. Single character objects are coded as their (ASCII?) code
-% [leaving this code non-portable to machines with other encodings?].
-% Other things must have been given 'lex_code properties indicate the
-% associated category code.  This lexer handles ' and ` as special prefix
-% characters that introduce Lisp-stype s-expressions. and it knows about
-% RLISP-style comments and a few diphthongs. It also supports some
-% simple preprocessor directives. This would need review if it was to
-% be able to copy with UTF8/Unicode because then numeric codes just over
-% 255 would not be available and the range of characters actually relevant
-% might not be in any compact block of sensible size.
+% just parsed. The result will be an integer corresponding to a token
+% type.
+
+% Before using this lexer all the special tokens that it must handle
+% must be passed to it. These are passed as strings. Some of these
+% will be purely made up out of letters and would otherwise be treated
+% a "symbols" but when advised about them the code here will allocate
+% a category code and treat them as keywords. Thus one might have
+%     lex_keywords '("if" "else" "begin" "end");
+% These cases do not have any effect on how the lexer groups characters
+% to form tokens, but do alter the result it gives in the cases concerned.
+% Note that in RLISP an exclamation mark escapes the following character
+% so it can appear in a symbol. A name written with one or more exclamation
+% marks will never be treated as a keyword, and so even if the input 'begin'
+% is special any of the inputs '!begin', 'b!egin' or '!b!e!g!i!n' (and of
+% course many other variants) just yield a symbol.
 %
+% The second case is of keyword made up from punctuation marks. It is
+% required (at least to start with) that keywords are either entirely
+% alphanumeric or entirely punctuation. If no keywords have been set up then
+% punctuation characters form single-character symbols. Thus for instance
+% the input 'a:=b' would tokenise as a sequence of four symbols, 'a', ':',
+% '=' and 'b'. If a multi-characters string has been passed to lex_keywords
+% then dipthongs can be formed, so after
+%     lex_keywords '(":=");
+% the same input would tokenise to 3 items, the symbols 'a', a keyword ':='
+% and then the symbol 'b'.
+% If a sequence  punctuation marks is passed the behaviour is as if each
+% prefix had been to. Thus after the above plus
+%     lex_keywords '("<==>");
+% the behaviour is just as if the user had presented
+%     lex_keywords '(":" ":=" "<" "<=" "<==" "<==>");
+% and any grammar using the lexer may thus need to deal with the intermediate
+% cases.
+%
+% Input that is not exactly the string of characters making up a keyword will
+% not be read as a keyword. That means that escape characters (!) have an
+% effect. For alphanumeric cases the result will just be a symbol
+%     beg!in            is the symbol whose name is 'begin'.
+% For punctuation sequences an exclamation mark terminates a token and
+% starts another (which will then always be a symbol). So
+%     <=!=>             is the keyword '<=' followed by the
+%                       symbol '=' followed by the keyword or symbol '>',
+%                       much as if it had been written as '<= != >' with
+%                       extra whitespace to make eveything clearer. 
+%
+% lex_keywords can be called multiple times so you do not have to declare
+% all your keywords at once.
+%
+% After use of the lexer it will be desirable to call lex_cleanup() which
+% will discard all tables and other information that was created. It will
+% typically be vital to do this before starting to create a fresh grammar!
+%
+% To use the lexer call lex_init() and then repeatdly call yylex();
+%
+% At present this design provides for having just one lexer (and its tables)
+% available at a time. I could imagine wanting to have several available
+% for different purposes - the extension of this interface to support that
+% case is something I will worry about later - maybe!
+
+global '(lex_keyword_names lex_next_code lex_initial_next_code lex_codename);
+
+% The various primitive lex types have pre-set codes. These exist once
+% and for all so get established on a static base here.
+
+%   :eof           End of file
+%                  for testing purposes I will also cause the token 'eof'
+%                  to act as this.
+%   :symbol        Either a single punctuation character that has not
+%                  been declared as a keyword, or a letter followed
+%                  by letters, digits and underscores, also excluding
+%                  cases that are keywords, or any other string of
+%                  characters with leading digits or underscores and any
+%                  punctuation marks preceeded by exclamation marks.
+%   :string        Enclosed in double quotes. To include a double quote
+%                  within a string double it, as in "with ""inside"" quotes".
+%   :number        Either an integer or a floating point value. I will need
+%                  to review whether non-decimal representations for
+%                  integers (eg 0xff) are supported.
+%   :list          Either a quote or a backquote followed by Lisp-like
+%                  data, for instance 'word or `(template ,sub1 ,@sub2 end).
+
+put('!:eof,    'lex_code, 1);
+put('eof,      'lex_code, 1);             % Just while I test
+put('!:symbol, 'lex_code, 2);
+put('!:string, 'lex_code, 3);
+put('!:number, 'lex_code, 4);
+put('!:list,   'lex_code, 5);
+
+% lex_codename is just used when generating trace output and maps from
+% numeric codes back to the corresponding terminal symbols. Because it isd
+% only used for tracing I am not concerned about performance and I will use
+% a simple association list.
+
+lex_codename := '((1 . !:eof) (2 . !:symbol) (3 . !:string)
+                  (4 . !:number) (5 . !:list));
+
+% All further terminals are given codes beyond the range used for the
+% primitive ones.
+
+lex_initial_next_code := lex_next_code := 6;
+
+lex_keyword_names := nil;
+
+global '(lex_escaped
+         lex_eof_code lex_symbol_code lex_number_code
+         lex_string_code lex_list_code);
+
+lex_eof_code    := get('!:eof,    'lex_code);
+lex_symbol_code := get('!:symbol, 'lex_code);
+lex_number_code := get('!:number, 'lex_code);
+lex_string_code := get('!:string, 'lex_code);
+lex_list_code   := get('!:list,   'lex_code);
+
+
+% I will treat just very plain letters as items that can be in
+% alphanumeric keywords. By "very plain" I mean the letters A-Z and
+% a-x in the range U+0000 to U+007f. So accented letters. Greek letters and
+% letters with style variations (eg small caps, fullwidth (U+ff41 et seq),
+% mathematical (eg U+1d41a et seq)) are not treated as things that could
+% make a simple symbol without the nees for escapes. 
+
+symbolic procedure lex_unicode_alphabetic c;
+  (c >= 0x41 and c <= 0x5a) or (c >= 0x61 and c <= 0x7a);
+
+% Similarly only basic Latin digits can be used in numbers. "Other language"
+% digits and mathematical presentation forms will not count.
+
+symbolic procedure lex_unicode_numeric c;
+  (c >= 0x30 and c <= 0x39);
+
+symbolic procedure lex_keywords l;
+  for each x in l do
+    begin
+      scalar w, ok, pre;
+% I will see what all the characters in the string are. By using
+% widestring2list I get the codes for those characters even if some
+% are over U+00FF. The resulting list is a list of integers...
+      w := widestring2list x;
+      if null w then rederr "Empty string passed to lex_keywords";
+% Now I will check if the string starts with a letter and continues
+% with letters, digits and underscores...
+      ok := lex_unicode_alphabetic car w;
+      for each c in cdr w do
+        if not lex_unicode_alphabetic c and
+           not lex_unicode_numeric c and
+           c neq 0x5f then ok := nil;      % 0x5f is '_'
+      if null cdr w or ok then << % Simple case without dipthong consequences
+        w := intern x;
+        if null get(w, 'lex_code) then <<
+          lex_keyword_names := w . lex_keyword_names;
+          put(w, 'lex_code, lex_next_code);
+          lex_codename := (lex_next_code . w) . lex_codename;
+          if !*tracelex then <<
+            princ "Token '";
+            prin w;
+            princ "' allocated code ";
+            print lex_next_code >>;
+          lex_next_code := lex_next_code + 1 >>;
+        return >>; % remember that RETURN just exits the begin/end block.
+% Now I have something that may be introducing a dipthong. I will set things
+% up so that each case where there is a prefix "ABC" "X" that the token "ABC"
+% is a keyword and then I will go
+%    put(ABC, 'lex_dipthong, (X . ABCX) . get(abc, 'lex_dipthing))
+     x := intern x;
+     if not get(x, 'lex_code) then << % may have been seen already
+        lex_keyword_names := x . lex_keyword_names;
+        put(x, 'lex_code, lex_next_code);
+        lex_next_code := lex_next_code + 1;
+% Recurse to deal with prefixes...
+        pre := list2widestring reverse cdr reverse w;
+        lex_keywords list pre;
+        pre := intern pre;
+        w := intern list2widestring list lastcar w;
+        if !*tracelex then <<
+          if not zerop posn() then terpri();
+          princ "dipthong data '";
+          prin pre;
+          princ "' plus '";
+          prin w;
+          princ "' => '";
+          prin x;
+          printc "'" >>;
+        put(pre, 'lex_dipthong, (w . x) . get(pre, 'lex_dipthong)) >>;
+    end;
+
+symbolic procedure lex_cleanup();
+  begin
+% Note that !:symbol etc retain their lex_code properties since the values
+% they have are universal.
+    for each x in lex_keyword_names do <<
+      remprop(x, 'lex_code);
+      remprop(x, 'lex_dipthong) >>;
+    lex_keyword_names := nil;
+    lex_next_code := lex_initial_next_code;
+    lex_codename := '((1 . !:eof) (2 . !:symbol) (3 . !:string)
+                      (4 . !:number) (5 . !:list));
+  end;
 
 
 switch tracelex; % For debugging
 
 % I keep a circular buffer with the last 64 characters that have been
 % read. Initially the buffer contains NILs rather than characters, so I can
-% tell when it is only partially filled. I have made yyreadch() a macro
+% tell when it is only partially filled. I have tagged yyreadch() inline
 % because it is probably one of the time-critical parts of the entire
 % parsing process.
 
-inline procedure yyreadch();
+% Note that in CSL (ar least) readch will return a character and it will
+% interpret UTF-8 multi-byte sequences as single characters where necessary.
+% So this code is (at least on CSL) unicode friendly.
+
+symbolic procedure yyreadch();
  << lex_char := readch();
     if lex_char = !$eol!$ then which_line := which_line + 1;
     if lex_char neq !$eof!$ then << 
-       last64p := last64p + 1;
-       if last64p = 64 then last64p := 0;
-       putv(last64, last64p, lex_char) >>;
+      last64p := last64p + 1;
+      if last64p = 64 then last64p := 0;
+      putv(last64, last64p, lex_char) >>;
     lex_char >>;
 
 symbolic procedure yyerror msg;
@@ -74,10 +265,10 @@ symbolic procedure yyerror msg;
     for each s in msg do << prin2 " "; prin2 s >>;
     terpri();
     for i := 1:64 do <<
-       last64p := last64p + 1;
-       if last64p = 64 then last64p := 0;
-       c := getv(last64, last64p);
-       if not (c = nil) then prin2 c >>;
+      last64p := last64p + 1;
+      if last64p = 64 then last64p := 0;
+      c := getv(last64, last64p);
+      if not (c = nil) then prin2 c >>;
     if not (c = !$eol!$) then terpri();
     if lex_char = !$eof!$ then printc "<EOF>"
   end;
@@ -86,7 +277,9 @@ symbolic procedure yyerror msg;
 % ensure that lex_char is set suitably and that the circular buffer
 % used to store characters for error messages is ready for use.
 
-symbolic procedure start_parser();
+global '(lex_peeked);
+
+symbolic procedure lex_init();
  << last64 := mkvect 64;
     last64p := 0;
     which_line := 1;
@@ -94,6 +287,7 @@ symbolic procedure start_parser();
     if !*tracelex then <<
       if posn() neq 0 then terpri();
       printc "yylex initialized" >>;
+    lex_peeked := nil;
     yyreadch() >>;
 
 %
@@ -134,11 +328,11 @@ symbolic procedure start_parser();
 %    #endif               % useful default sense for such tests
 % should be about as complicated as reasonable people need.
 %
-% NOTE: in the emplementation of this in rlisp/tok.red there was for
+% NOTE: in the implementation of this in rlisp/tok.red there was for
 % some time a bug whereby
 %  #if t ; ... ; #elif x ; ... ; #else XXX #endif
 % included the text XXX because #else was taken as just flipping the
-% acceptance state. I neeed to review and test the code here to ensure that
+% acceptance state. I need to review and test the code here to ensure that
 % it does not suffer from the same badness!
 % 
 % Two further facilities are provided:
@@ -153,7 +347,9 @@ symbolic procedure start_parser();
 % the first symbol to be mapped onto the second value wherever it occurs in
 % subsequent input.  No special facility for undoing the effect of a
 % #define is provided, but the general-purpose #eval could be used to
-% remove the '#define property that is involved.
+% remove the '#define property that is involved. The result generated this
+% was is not re-scanned and can not end up being treated as a preprocessor
+% directive.
 %
 % NOTE: The special symbols #if etc are NOT recognised within Lisp
 %       quoted expressions, so test like the following will be
@@ -183,76 +379,73 @@ symbolic procedure yylex();
 % a pre-processor directive such as #if.
     while not done do <<
 % The word "COMMENT" introduces a comment that terminates at the next ";"
-% or "$".
-        while yylval = 'comment and
-              w = '!:symbol_or_keyword do <<
-            while not (lex_char = '!; or lex_char = '!$) do
-                yyreadch();
-            yyreadch();
-            w := lex_basic_token() >>;
+% or "$". But note that "co!mment" (for instance) would not since that will
+% be classifed as a symbol not as a keyword because of the embedded escape.
+% So if you REALLY want to have a symbol with name "comment" in your input
+% you can write it as (again for instance) "!comment" so it is not processed
+% here. Ha ha ha "comment" is now a keyword in that it will never generate
+% a lexer-code to pass back as a result. But it is recognised in the same
+% sort of circumstances that keywords are.
+    while w = lex_symbol_code and yylval = 'comment and
+          not lex_escaped do <<
+      while not (lex_char = '!; or lex_char = '!$) do yyreadch();
+      yyreadch();
+      w := lex_basic_token() >>;
 % If a word was spelt out directly (without any escape characters in it) it
-% may be a keyword - if it is, then convert it here.
-        if w = '!:symbol_or_keyword then <<
-            if w := get(yylval, '!#define) then <<
-                yylval := cdr w; 
-                w := car w >>
-            else <<
-                if done := get(yylval, 'lex_code) then w := done
-                else if flagp(yylval, 'rlis) then
-                    w := get('rlistat, 'lex_code)
-                else if flagp(yylval, 'endstat) then
-                    w := get('endstat, 'lex_code)
-                else w := get('!:symbol, 'lex_code);
-                done := t >> >>
-% A word with escapes in might be a pre-processor directive.
-        else if w = '!:symbol then <<
-            if yylval eq '!#if then <<
-                read_s_expression();
-                w := lex_conditional yylval >>
-            else if yylval eq '!#else or
-                    yylval eq '!#elif then <<
-                if if_depth = 0 then yyerror "Unexpected #else of #elif"
-                else if_depth := if_depth-1;
-                yylval := nil;
-                w := lex_skipping(w, nil) >>
-            else if yylval eq '!#endif then <<
-                if if_depth = 0 then yyerror "Unexpected #endif"
-                else if_depth := if_depth-1;
-                w := lex_basic_token() >>
-            else if yylval eq '!#eval then << 
-                read_s_expression();
-                errorset(yylval, nil, nil);
-                w := lex_basic_token() >>
-            else if yylval eq '!#define then <<
-                read_s_expression();
-                w := yylval;    % Ought to be a symbol
-                done := read_s_expression();
-                if idp w then put(w, '!#define, done . yylval);
-                w := lex_basic_token();
-                done := nil >>
-            else <<
-                w := get('!:symbol, 'lex_code);
-                done := t >> >>
-        else if numberp w then <<
-% Now gobble up extra characters for multi-character operators (eg ">=").
-% Note that I only look one character ahead here.
-            while done := atsoc(lex_char, get(yylval, 'lex_dipthong)) do <<
-                w := cdr done;
-                yylval := cdr w;
-                w := get(car w, 'lex_code);
-                yyreadch() >>;
-            if done := get(yylval, '!#define) then <<
-                yylval := cdr done;
-                w := car done;
-                done := nil >>
-            else done := t >>
-        else <<
-            done := t;
-            w := get(w, 'lex_code) >> >>;
+% may be a keyword - if it is, then deal with it it here.
+    if w = lex_symbol_code and not lex_escaped then <<
+% #define provides a simple (very simple) macro substitution scheme that is
+% probably too limited to be really useful.
+      if done := get(yylval, '!#define) then <<
+        yylval := done;
+        if numberp done then w := lex_number_code
+        else if stringp done then w := lex_string_code;
+        done := t >> 
+      else done := t >>
+% A word with escapes in might be a pre-processor directive because I will
+% allow "!#if" as well as "#if" to be used. That is going to require
+% lex_basic_token() to accept #if (and other cases) directly.
+    else if w = lex_symbol_code then <<
+% Note that the conditional compilation keywords are not recognised within
+% quoted expressions, so "'!#if" is safe here.
+      if yylval eq '!#if then <<
+        read_s_expression();
+        w := lex_conditional yylval >>
+      else if yylval eq '!#else or
+              yylval eq '!#elif then <<
+        if if_depth = 0 then yyerror "Unexpected #else of #elif"
+        else if_depth := if_depth-1;
+        yylval := nil;
+        w := lex_skipping(w, nil) >>
+      else if yylval eq '!#endif then <<
+        if if_depth = 0 then yyerror "Unexpected #endif"
+        else if_depth := if_depth-1;
+        w := lex_basic_token() >>
+      else if yylval eq '!#eval then << 
+        read_s_expression();
+        errorset(yylval, nil, nil);
+        w := lex_basic_token() >>
+      else if yylval eq '!#define then <<
+        read_s_expression();
+        w := yylval;    % Ought to be a symbol, number of string
+        done := read_s_expression();
+        if idp w or numberp w or stringp w then
+          put(w, '!#define, done);
+        w := lex_basic_token();
+        done := nil >>
+      else if not lex_escaped then <<
+        if done := get(yylval, '!#define) then <<
+          yylval := done;
+          if numberp done then w := lex_number_code
+          else if stringp done then w := lex_string_code;
+          done := t >>
+        else done := t >>
+      else done := t >>
+    else done := t >>;
     if !*tracelex then <<
-        if posn() neq 0 then terpri();
-        prin2 "yylex = "; prin1 w; prin2 " : "; print yylval >>;
-    return w
+      if posn() neq 0 then terpri();
+      prin2 "yylex = "; prin1 yylval; prin2 " type "; print w >>;
+    return w;
   end;
 
 
@@ -288,105 +481,95 @@ symbolic procedure lex_skipping(w, x);
     scalar done;
 % In this code x keep track of the depth of testing of "#if" constructions
     while not done do <<
-        if w = 0 then done := t   % End of file
-        else <<
-            if w = '!:symbol then <<
-                if yylval = '!#endif then <<
-                    if null x then done := t
-                    else x := cdr x >>
-                else if yylval = '!#if then x := nil . x
-                else if yylval = '!#else and null x then done := t
-                else if yylval = '!#elif and null x then <<
-                    read_s_expression();
-                    done := errorset(yylval, nil, nil);
-                    if errorp done or null car done then done := nil >> >>;
-            w := lex_basic_token() >> >>;
+      if w = lex_eof_code then done := t   % End of file
+      else <<
+        if w = '!:symbol then <<
+          if yylval = '!#endif then <<
+            if null x then done := t
+            else x := cdr x >>
+          else if yylval = '!#if then x := nil . x
+          else if yylval = '!#else and null x then done := t
+          else if yylval = '!#elif and null x then <<
+            read_s_expression();
+            done := errorset(yylval, nil, nil);
+            if errorp done or null car done then done := nil >> >>;
+      w := lex_basic_token() >> >>;
     return w
   end;
 
 
-
-% In some cases RLISP operators are made up out of two (or more) characters.
-% I map '**' onto '^', and >=, <= onto GEQ and LEQ.
-% ":=" becomes SETQ.   I turn << and >> onto symbols that can not be
-% read directly (!:lsect and !:rsect).
-% This means that the system that sets up lex_code properties had really
-% better make sure that it gives setq, geq, leq, !:rsect and !:lsect values.
-
-put('!*, 'lex_dipthong, '((!* !^ . !^)));
-put('!:, 'lex_dipthong, '((!= setq . setq)));
-put('!>, 'lex_dipthong, '((!= geq . geq),
-                          (!> !:rsect . !:rsect)));
-put('!<, 'lex_dipthong, '((!= leq . leq),
-                          (!< !:lsect . !:lsect)));
-
-put('!^, 'lex_code, char!-code '!^);
-
-put('!:symbol, 'lex_code, 256);
-put('!:lsect,  'lex_code, 257);
-put('!:rsect,  'lex_code, 258);
-put('geq,      'lex_code, 259);
-put('leq,      'lex_code, 260);
-put('setq,     'lex_code, 261);
-put('rlistat,  'lex_code, 262);
-put('endstat,  'lex_code, 263);
-put('!:number, 'lex_code, 264);
-put('!:string, 'lex_code, 265);
-put('!:list,   'lex_code, 266);
-
-next_lex_code := 267;
-
-
 % lex_basic_token() will read the next token from the current input stream
-% and leave a value in yylval to show what was found. It does not handle
-% the word "comment", nor does it consolidate things like ':' followed by
-% '=' into ':='. Those steps are left to yylex(). But lex_basic_token()
-% does recognize the quote prefix, as in '(lisp expression).  The return
-% value is numeric for single-character tokens, but otherwise a descriptive
-% symbol.
+% and leave a value in yylval to show what was found.
+% It recognize the quote prefix, as in '(lisp expression) and
+% `(backquoted thing).  The return value is a numeric code.
+% It leaves a variable lex_escaped true if the "word" that was
+% read had any "!" characers used to escape parts of it.
+
+global '(lex_peeked lex_peeked_yylval lex_peeked_escaped);
 
 symbolic procedure lex_basic_token();
   begin
     scalar r, w;
+% The item I peeked ahead and read will have started with a letter or an
+% exclamation mark so should be a :symbol or some keyword, and not either
+% a number or a string. And one further key fact is that it can not have
+% started with a "#".
+% Oh dear, what about the input
+%     #!#if
+% well that will return # and then #if, and because the inner "#if" is
+%  introduced with an exclamation mark it can not cause nested attempts at
+% look-ahead. Whew.
+    if lex_peeked then <<
+      r := lex_peeked;
+      yylval := lex_peeked_yylval;
+      lex_escaped := lex_peeked_escaped;
+      lex_peeked := lex_peeked_yylval := lex_peeked_escaped := nil;
+      return r >>;
+    lex_escaped := nil;
 % First skip over whitespace. Note that at some stage in the future RLISP
 % may want to make newlines significant and partially equivalent to
 % semicolons, but that is not supported at present.
-if !*tracelex then printc "+++ lex_basic_token +++";
     while lex_char = '!  or lex_char = !$eol!$ or
+% I treat from "%" to the en dof a line as being comment.
           (lex_char = '!% and <<
-             while not (lex_char = !$eol!$ or lex_char = !$eof!$) do
-                yyreadch();
-             t >>) do yyreadch();
+            while not (lex_char = !$eol!$ or lex_char = !$eof!$) do yyreadch();
+            t >>) do yyreadch();
 % Symbols start with a letter or an escaped character and continue with
 % letters, digits, underscores and escapes.
     if liter lex_char or
        (lex_char = '!! and <<
           yyreadch() where !*raise = nil, !*lower = nil;
-          w := t >>) then <<
+          lex_escaped := t >>) then <<
       r := lex_char. r;
       while yyreadch() = '!_ or
             liter lex_char or
             digit lex_char or
             (lex_char = '!! and <<
                yyreadch() where !*raise = nil, !*lower = nil;
-               w := t >>) do r := lex_char . r;
-% If there was a '!' in the word I will never treat it as a keyword. The
-% flag variable w indicates this situation.
-      yylval := intern list2string reversip r;
-      if not w and yylval = 'eof then return 0; % Special fudge for now
-      return if w then '!:symbol else '!:symbol_or_keyword >>
+               lex_escaped := t >>) do r := lex_char . r;
+% If there was a '!' in the word I will never treat it as a keyword.
+% That situation is spottable by virtue of the variable lex_escaped.
+% Note that list2widestring is passed a list of symbols here not integers,
+% bur recent implementations of it support that case.
+      yylval := intern list2widestring reversip r;
+      if !*tracelex then <<
+        princ "symbol is '"; prin yylval;
+        princ "' lex_escaped="; prin lex_escaped;
+        princ " lex_code="; print get(yylval, 'lex_code) >>;
+      if not lex_escaped and (w := get(yylval, 'lex_code)) then return w
+      else return lex_symbol_code >>
 % Numbers are either integers or floats. A floating point number is
 % indicated by either a point "." or an exponent marker "e". In the code
 % here I keep a flag (in w) to indicate if I had a floating or integer
 % value, but in the end I ignore this and hand back the lexical category
-% :number in both cases.
+% for :number in both cases. At present I will not handle radix specifiers.
     else if digit lex_char then <<
       r := list lex_char;
       while << yyreadch(); digit lex_char >> do r := lex_char . r;
       if lex_char = '!. then <<
         w := t;       % Flag to indicate floating point
         r := lex_char . r;
-        while <<yyreadch(); digit lex_char >> do r := lex_char . r >>;
+        while << yyreadch(); digit lex_char >> do r := lex_char . r >>;
 % I permit the user to write the exponent marker in either case.
       if lex_char = '!e or lex_char = '!E then <<
 % If the input as 1234E56 I expand it as 1234.0E56
@@ -405,7 +588,7 @@ if !*tracelex then printc "+++ lex_basic_token +++";
           while << yyreadch(); digit lex_char >> do r := lex_char . r >> >>;
 % Here I have a number, so I can use compress to parse it.
       yylval := compress reversip r;
-      return '!:number >>
+      return lex_number_code >>
 % Strings are enclosed in double-quotes, and "abc""def" is a string with
 % a double-quote mark within it. Note no case folding on characters in a
 % string.
@@ -417,30 +600,57 @@ if !*tracelex then printc "+++ lex_basic_token +++";
           r := lex_char . r;
           yyreadch() >> until not (lex_char = '!");
       end;
-      yylval := list2string reversip cdr r;
+      yylval := list2widestring reversip cdr r;
       lex_char := w;
-      return '!:string >>
+      return lex_string_code >>
 % "'" and "`"(backquote) introduce Lisp syntax S-expressions
     else if lex_char = '!' then <<
       yyreadch();
       read_s_expression();
       yylval := list('quote, yylval);
-      return '!:list >>
+      return lex_list_code >>
     else if lex_char = '!` then <<
       yyreadch();
       read_s_expression();
       yylval := list('backquote, yylval);
-      return '!:list >>
+      return lex_list_code >>
     else <<
       yylval := lex_char;
 % I take special notice of end of file, since it is fairly drastic.
 % In particular I do not attempt to advance lex_char beyond it. So I do
-% TWO things here: I avoid advancing the input, and I return the code 0
+% TWO things here: I avoid advancing the input, and I return the lex_eof_code
 % as an end-of-file indication.
-      if yylval = !$eof!$ then return 0
-      else <<
-        yyreadch();
-        return char!-code yylval >> >>
+      if yylval = !$eof!$ then return lex_eof_code;
+      if yylval = '!# or get(yylval, 'lex_dipthong) then yyreadch()
+      else lex_char := '! ;  % Try to avoid reading beyond where I HAVE to.
+% There is a bit of horribly magic needed here. I want
+%  #if #else #elif #endif #eval and #define
+% to be accepted without needing an initial exclamation mark.
+% The spelling "!#if" (etc) will already have been coped with,
+% it is the case with no escape character I am concered
+% about here, and that requires a 1-symbol look-ahead. Well even there
+% the look ahead only has to consider a whole symbol if the character after
+% the "#" is a letter (or an "!").
+      if yylval = '!# and liter lex_char or lex_char = '!! then <<
+        r := lex_basic_token();
+% Observe that I only check yylval here not the type of token returned.
+% That is because words like "if" and "define" stand a real chance of being
+% keywords! For this to be safe it is important that lex_basic_token
+% always updates yylval whatever it returns.
+        if memq(yylval,'(if else elif endif define eval)) then <<
+          yylval := intern list2widestring(
+                      '!# . widestring2list symbol!-name yylval) >>
+        else <<   % set up the peeked token for later processing.
+          lex_peeked := r;
+          lex_peeked_yylval := yylval;
+          lex_peeked_escaped := lex_escaped;
+          yylval := '!#;
+          lex_escaped := nil >> >>;
+        while w := atsoc(lex_char, get(yylval, 'lex_dipthong)) do <<
+          yylval := cdr w;
+          yyreadch() >>;
+      if w := get(yylval, 'lex_code) then return w
+      else return lex_symbol_code >>
   end;
 
 %
@@ -537,7 +747,7 @@ symbolic procedure read_s_expression();
         read_s_expression();
         yylval := list('!,!@, yylval) >>
       else <<
-        read_s_expresssion();
+        read_s_expression();
         yylval := list('!,, yylval) >>;
       'list >>
 % Care with ")" and "]" not to read ahead further than is essential.

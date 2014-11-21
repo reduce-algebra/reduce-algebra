@@ -36,11 +36,12 @@ module lalr;
 
 create!-package('(lalr genparser yylex yyparse), nil);
 
+switch tracelex, lalr_verbose;
+!*tracelex := !*lalr_verbose := t; % While this is still under development.
+
 global '(lex_char yylval last64 last64p which_line if_depth);
 global '(next_lex_code);
 global '(dot_char rpar_char rsquare_char);
-
-global '(!*lalr_verbose);
 
 global '(goto_index goto_old_state goto_new_state);
 global '(action_index, action_terminal action_result);
@@ -50,10 +51,7 @@ global '(action_fn action_A action_n);
 global '(terminals non_terminals symbols goto_cache action_map);
 fluid '(renamings);
 
-!*lalr_verbose := t;      % How much will the parser-generator print?
-                          % While I am debugging I want it noisy!
-
-#if (memq 'psl lispsystem!*)
+#if (or (memq 'psl lispsystem!*) (memq 'jlisp lispsystem!*))
 
 % CSL has special vectors that hold just 8-bit integers (it also has ones
 % for 16-bit integers) and use of those will decrease the amount of
@@ -69,7 +67,9 @@ symbolic procedure mkvect8 n;
     for i := 0:n do putv(r, i, 0);
     return r
   end;
+
 inline procedure putv8(v, n, x); putv(v, n, x);
+
 inline procedure getv8(v, n); getv(v, n);
 
 procedure mkvect16 n;
@@ -79,7 +79,9 @@ procedure mkvect16 n;
     for i := 0:n do putv(r, i, 0);
     return r
   end;
+
 inline procedure putv16(v, n, x); putv(v, n, x);
+
 inline procedure getv16(v, n); getv(v, n);
 
 
