@@ -19,7 +19,7 @@ lisp;
 !#if (memq 'psl lispsystem!*)
 
 symbolic procedure ttab n;
-  spaces (n - posn());
+  spaces (n - posn())$
 
 !#endif
 

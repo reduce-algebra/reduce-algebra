@@ -1042,9 +1042,9 @@ lisp(depl!*:=nil)$
 end$
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 32 ms
+Time (counter 1): 15 ms
 
-End of Lisp run after 0.39+0.09 seconds
-real 0.63
+End of Lisp run after 0.31+0.10 seconds
+real 0.62
 user 0.03
-sys 0.04
+sys 0.03

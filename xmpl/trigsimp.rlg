@@ -1403,9 +1403,9 @@ trigfactorize(1 + cos(2x) + 2cos(x)*cosh(x), x/2);
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 407 ms  plus GC time: 77 ms
+Time (counter 1): 407 ms  plus GC time: 62 ms
 
-End of Lisp run after 0.40+0.13 seconds
-real 0.68
-user 0.00
+End of Lisp run after 0.40+0.10 seconds
+real 0.67
+user 0.01
 sys 0.04

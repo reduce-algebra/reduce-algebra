@@ -222,9 +222,9 @@ partial(x2)
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 689 ms  plus GC time: 107 ms
+Time (counter 1): 750 ms  plus GC time: 47 ms
 
-End of Lisp run after 0.68+0.21 seconds
+End of Lisp run after 0.75+0.14 seconds
 real 1.13
-user 0.00
+user 0.01
 sys 0.06

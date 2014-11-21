@@ -727,6 +727,6 @@ Tested on x86_64-pc-windows CSL
 Time (counter 1): 31 ms
 
 End of Lisp run after 0.03+0.06 seconds
-real 0.23
+real 0.24
 user 0.00
 sys 0.06

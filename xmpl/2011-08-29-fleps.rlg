@@ -29,9 +29,9 @@ num_odesolve(df(y,x)=y,y=2,x=(0 .. 1),iterations=4);
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
+Time (counter 1): 16 ms
 
-End of Lisp run after 0.00+0.06 seconds
+End of Lisp run after 0.01+0.04 seconds
 real 0.20
 user 0.03
-sys 0.03
+sys 0.04

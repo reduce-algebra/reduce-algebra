@@ -8,13 +8,13 @@ for each r in rl collect sub(x=r, f);
 
 r1 := refine(part(rl, 1), 10);
 
-oldp := raprintprecision(-1);
+on rarat;
 
 r1;
 
 refine(r1, 100);
 
-raprintprecision oldp;
+off rarat;
 
 x1 := ra(f, 1, 2);
 

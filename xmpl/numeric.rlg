@@ -2234,9 +2234,9 @@ off rounded;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 219 ms  plus GC time: 30 ms
+Time (counter 1): 186 ms  plus GC time: 32 ms
 
-End of Lisp run after 0.21+0.09 seconds
-real 0.49
-user 0.01
-sys 0.03
+End of Lisp run after 0.18+0.09 seconds
+real 0.45
+user 0.00
+sys 0.06

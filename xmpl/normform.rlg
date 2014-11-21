@@ -1283,9 +1283,9 @@ j := mat((sqrt(----*b  + 6*b - 12)*i - (---*b - 2),0),
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 267 ms  plus GC time: 16 ms
+Time (counter 1): 265 ms  plus GC time: 31 ms
 
-End of Lisp run after 0.26+0.07 seconds
-real 0.52
-user 0.04
-sys 0.04
+End of Lisp run after 0.26+0.09 seconds
+real 0.53
+user 0.03
+sys 0.01

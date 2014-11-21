@@ -383,9 +383,9 @@ y + ---*y  + ----*y  + -----*y  + O(y )
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms  plus GC time: 16 ms
+Time (counter 1): 16 ms
 
-End of Lisp run after 0.00+0.07 seconds
+End of Lisp run after 0.01+0.04 seconds
 real 0.20
-user 0.04
-sys 0.01
+user 0.01
+sys 0.07

@@ -1,6 +1,64 @@
-
 % Test cases for the parser generator. This all runs in
 % symbolic mode...
+
+
+%
+% This is where (for now) I will put documentation of the syntax I
+% will use when creating a grammer. There is a main function called
+% lalr_construct_parser and that is passed a list that describes
+% a grammar. It is in the form of a sequence of productions, and the first
+% one given is taken to be the top-level target.
+%
+% Each production is in the form
+%     (LHS   ((rhs1.1 rhs1.2 ...) (a1.1 a1.2 ...))
+%            ((rhs2.1 rhs2.1 ...) (a2.1 a2.2 ...))
+%            ...)
+% which in regular publication style for grammars might be interpreted
+% as meaning
+%      LHS ::= rhs1.1 rhs1.2 ... { a1.1 a1.2 ... }
+%          |   rhs2.1 rhs2.2 ... { a2.1 a2.2 ... }
+%          ...
+%          ;
+%
+% Each LHS is treated as a non-terminal symbol and is specified as a simple
+% name. Note that by default the Reduce parser will be folding characters
+% within names to lower case and so it will be best to choose names for
+% non-terminals that are unambiguous even when case-folded, but I would like
+% to establish a convention that in source code they are written in capitals.
+%
+% The rhs items may be either non-terminals (identified because they are
+% present in the left hand side of some production) or terminals. Terminal
+% symbols can be specified in two different ways.
+% The lexer has built-in recipies that decode certain sequences of characters
+% and return the special markers for !:symbol, !:number, !:string, !:list for
+% commonly used cases. In these cases the variable yylval gets left set
+% to associated data, so for instance in the case of !:symbol it gets set
+% to the particular symbol concerned.
+% The token type :list is used for Lisp or rlisp-like notation where the
+% input contains
+%     'expression
+% or  `expression
+% so for instance the input `(a b c) leads to the lexer returning !:list and
+% yylvel being set to (backquote (a b c)). This treatment is specialised for
+% handling rlisp-like syntax.
+%
+% Other terminals are indicated by writing a string. That may either
+% consist of characters that would otherwise form a symbol (ie a letter
+% followed by letters, digits and underscores) or a sequence of
+% non-alphanumeric characters. In the latter case if a sequence of three or
+% more punctuation marks make up a terminal then all the shorter prefixes
+% of it will also be grouped to form single entities. So if "<-->" is a
+% terminal then '<', '<-' and '<--' will each by parsed as single tokens, and
+% any of them that are not used as terminals will be classified as !:symbol.
+%
+% When the lexer processes input it will return a numeric code that identifies
+% the type of the item seen, so in a production one might write
+%     (!:symbol ":=" EXPRESSION)
+% and as it recognises the first two tokens the lexer will return a numeric
+% code for !:symbol (and set yylval to the actual symbol as seen) and then
+% a numeric code that it allocates for ":=". In the latter case it will
+% also set yylval to the symbol !:!= in case that is useful.
+
 
 symbolic;
 
@@ -8,70 +66,225 @@ symbolic;
 nil
 
 
+load_package lalr;
+
+
+nil
+
+
+% Before testing parser generation I will demonstrate the lexer..
+%
+
+lex_cleanup();
+
+
+nil
+
+
+lex_keywords '("begin" "<=>" "<==");
+
+Token 'begin' allocated code 6
+Token '!<' allocated code 9
+dipthong data '!<' plus '!=' => '!<!='
+dipthong data '!<!=' plus '!>' => '!<!=!>'
+dipthong data '!<!=' plus '!=' => '!<!=!='
+
+nil
+
+
+% The output from this is expected to be
+
+%  Result: (1 symbol)
+%  Result: (3 200)
+%  Result: (3 3.542)
+%  Result: (2 "a string")
+%  Result: (1 nil)
+%  Result: (4 (quote (quoted lisp)))
+%  Result: (4 (backquote (backquoted (!, comma) (!,!@ comma_at))))
+%  Result: (1 !+)
+%  Result: (1 !<!=!>)
+%  Result: (1 !-)
+%  Result: (1 !=)
+%  Result: (1 !>)
+%  Result: (1 !<)
+%  Result: (1 !<!=)
+%  Result: (5 begin)
+%  Result: (1 null)
+%  Result: (1 null)
+%  Result: (1 null)
+%
+%  nil
+%  null null null null 'x;
+
+% The row of "null null null" at the end provides some protection so that
+% if faults in the lexer were to cause it to read more or less than it ought
+% to then what is left over is reasonably likely to remain as valid rlisp
+% syntax and so the rest of this test file will be able to continue happily.
+
+
+<< off echo;
+   lex_init();
+   for i := 1:18 do <<
+     tt := yylex();
+     if not zerop posn() then terpri();
+     princ "Result: ";
+     print list(tt, yylval) >>;
+   on echo >>;
+
+yylex initialized
+symbol is 'symbol' lex_escaped=nil lex_code=nil
+yylex = symbol type 2
+Result: (2 symbol)
+yylex = 200 type 4
+Result: (4 200)
+yylex = 3.542 type 4
+Result: (4 3.542)
+yylex = "a string" type 3
+Result: (3 "a string")
+yylex = nil type 2
+Result: (2 nil)
+symbol is 'quoted' lex_escaped=nil lex_code=nil
+symbol is 'lisp' lex_escaped=nil lex_code=nil
+yylex = (quote (quoted lisp)) type 5
+Result: (5 (quote (quoted lisp)))
+symbol is 'backquoted' lex_escaped=nil lex_code=nil
+symbol is 'comma' lex_escaped=nil lex_code=nil
+symbol is 'comma_at' lex_escaped=nil lex_code=nil
+yylex = (backquote (backquoted (!, comma) (!,!@ comma_at))) type 5
+Result: (5 (backquote (backquoted (!, comma) (!,!@ comma_at))))
+yylex = !+ type 2
+Result: (2 !+)
+yylex = !<!=!> type 7
+Result: (7 !<!=!>)
+yylex = !- type 2
+Result: (2 !-)
+yylex = != type 2
+Result: (2 !=)
+yylex = !> type 2
+Result: (2 !>)
+yylex = !< type 9
+Result: (9 !<)
+yylex = !<!= type 8
+Result: (8 !<!=)
+symbol is 'begin' lex_escaped=nil lex_code=6
+yylex = begin type 6
+Result: (6 begin)
+symbol is 'null' lex_escaped=nil lex_code=nil
+yylex = null type 2
+Result: (2 null)
+symbol is 'null' lex_escaped=nil lex_code=nil
+yylex = null type 2
+Result: (2 null)
+symbol is 'null' lex_escaped=nil lex_code=nil
+yylex = null type 2
+Result: (2 null)
+
+nil
+null null null null 'x;
+
+
+t
+
+
+
 % Here I set up a sample grammar
 %    S' -> S
-%    S  -> C C     { A1 }
-%    C  -> c C     { A2 }
-%        | d       { A3 }
+%    S  -> C C        { A1 }
+%    C  -> "cc" C     { A2 }
+%        | "dd"       { A3 }
 % Example 4.42 from Aho, Sethi and Ullman's Red Dragon book, with
-% some dummy semantic actions added. Note that I do not need to insert
+% some simple semantic actions added. Note that I do not need to insert
 % the production S' -> S for myself since the analysis code will
 % augment my grammar with it for me anyway.
 % Example 4.54 in the more recent Purple book.
+% Well I have added a ";" terminator rather than risking running on for too
+% long...
 
-grammar := '((S  ((C C) A1))
-             (C  ((cc C) A2)
-                 ((dd) A3))
+% Note that this grammar will introduce "c" and "d" as keywords rather than
+% being general symbols. When I construct a subsequent grammar that will
+% undo that setting. The semantic actions here illustrate the !$1, !$2 etc
+% can be used to access the semantic result from each component in the
+% rule that is matched.
+
+
+% BEWARE. For now the names used for non-termninals must be disjoint from the
+% spellings used for terminals. I will fix that bug at some stage!  Also I
+% MUST have the "eof" on the end of the input text to allow yyparse to tell
+% when to stop.
+
+% Further limitations are
+% (1) Semantic actions are not paid attentio to.
+% (2) I will need a way to specify precedence if this is to be feasibly
+%     useful.
+% (3) At present the parser generator will not cope with large grammars
+%     because it does not merge rules promptly enough.
+% (4) The lexer is hand-written and can not readily be reconfigured for
+%     use with languages other than rlisp. For instance it has use of "!"
+%     as a character escape built into it.
+%
+%
+% However if even one small grammar can be handled this is a strep forward!
+
+
+grammar := '((S  ((C C) ((list !$1 !$2))))
+             (C  (("cc" C) ((list 'c !$2)))
+                 (("dd") ('d)))
             );
 
 
-((s ((c c) a1)) (c ((cc c) a2) ((dd) a3)))
+((s ((c c) ((list !$1 !$2)))) (c (("cc" c) ((list (quote c) !$2))) (("dd") ((
+quote d)))))
 
 
 lalr_construct_parser grammar;
 
+Token 'dd' allocated code 6
+Token 'cc' allocated code 7
 Terminal symbols are:
- cc:268 dd:267
+ !:eof:1 !:symbol:2 !:string:3 !:number:4 !:list:5 "dd":6 "cc":7
 Non-terminal symbols are:
-[0]S'               : S                         { }
+[0]S'#!S!'          : S                         { }
                     ;
-[1]S                : C C                       { a1 }
+[1]S#s              : C C                       { ((list !$1 !$2)) }
                     ;
-[2]C                : CC C                      { a2 }
-                    | DD                        { a3 }
+[2]C#c              : "cc" C                    { ((list (quote c) !$2)) }
+                    | "dd"                      { ((quote d)) }
                     ;
 
 Action map:
 0:          nil
-1:          (a1)
-2:          (a2)
-3:          (a3)
+1:          (((list !$1 !$2)))
+2:          (((list (quote c) !$2)))
+3:          (((quote d)))
 FIRST sets for each non-terminal:
-S':             dd cc
+S':             cc dd
 S:              cc dd
-C:              dd cc
+C:              cc dd
 LR(1) Items:
 Item number 0
+S' -> . S  :  $
 C -> . cc C  :  cc
 C -> . cc C  :  dd
 C -> . dd  :  cc
 C -> . dd  :  dd
 S -> . C C  :  $
-S' -> . S  :  $
-          C GOTO state 2
-          S GOTO state 1
-          cc GOTO state 3
-          dd GOTO state 4
+          C GOTO state 1
+          S GOTO state 2
+          cc GOTO state 4
+          dd GOTO state 3
 Item number 1
-S' -> S .  :  $
-Item number 2
 C -> . cc C  :  $
 C -> . dd  :  $
 S -> C . C  :  $
           C GOTO state 6
-          cc GOTO state 7
-          dd GOTO state 8
+          cc GOTO state 8
+          dd GOTO state 7
+Item number 2
+S' -> S .  :  $
 Item number 3
+C -> dd .  :  cc
+C -> dd .  :  dd
+Item number 4
 C -> . cc C  :  cc
 C -> . cc C  :  dd
 C -> . dd  :  cc
@@ -79,49 +292,51 @@ C -> . dd  :  dd
 C -> cc . C  :  cc
 C -> cc . C  :  dd
           C GOTO state 5
-          cc GOTO state 3
-          dd GOTO state 4
-Item number 4
-C -> dd .  :  cc
-C -> dd .  :  dd
+          cc GOTO state 4
+          dd GOTO state 3
 Item number 5
 C -> cc C .  :  cc
 C -> cc C .  :  dd
 Item number 6
 S -> C C .  :  $
 Item number 7
+C -> dd .  :  $
+Item number 8
 C -> . cc C  :  $
 C -> . dd  :  $
 C -> cc . C  :  $
           C GOTO state 9
-          cc GOTO state 7
-          dd GOTO state 8
-Item number 8
-C -> dd .  :  $
+          cc GOTO state 8
+          dd GOTO state 7
 Item number 9
 C -> cc C .  :  $
+End of LR(1) Items:
 Merged Items:
 Item number 0
+S' -> . S  :  $
 C -> . cc C  :  cc
 C -> . cc C  :  dd
 C -> . dd  :  cc
 C -> . dd  :  dd
 S -> . C C  :  $
-S' -> . S  :  $
-          C GOTO state 2
-          S GOTO state 1
-          cc GOTO state 3
-          dd GOTO state 4
+          C GOTO state 1
+          S GOTO state 2
+          cc GOTO state 4
+          dd GOTO state 3
 Item number 1
-S' -> S .  :  $
-Item number 2
 C -> . cc C  :  $
 C -> . dd  :  $
 S -> C . C  :  $
           C GOTO state 6
-          cc GOTO state 3
-          dd GOTO state 4
+          cc GOTO state 4
+          dd GOTO state 3
+Item number 2
+S' -> S .  :  $
 Item number 3
+C -> dd .  :  cc
+C -> dd .  :  dd
+C -> dd .  :  $
+Item number 4
 C -> . cc C  :  cc
 C -> . cc C  :  dd
 C -> . cc C  :  $
@@ -132,307 +347,763 @@ C -> cc . C  :  cc
 C -> cc . C  :  dd
 C -> cc . C  :  $
           C GOTO state 5
-          cc GOTO state 3
-          dd GOTO state 4
-Item number 4
-C -> dd .  :  cc
-C -> dd .  :  dd
-C -> dd .  :  $
+          cc GOTO state 4
+          dd GOTO state 3
 Item number 5
 C -> cc C .  :  cc
 C -> cc C .  :  dd
 C -> cc C .  :  $
 Item number 6
 S -> C C .  :  $
+End of Merged Items:
 Actions:
-0                   dd                  (shift 4)
-0                   cc                  (shift 3)
-1                   $                   accept
-2                   dd                  (shift 4)
-2                   cc                  (shift 3)
-3                   dd                  (shift 4)
-3                   cc                  (shift 3)
-4                   $                   reduce C -> dd { 3 }
-4                   dd                  reduce C -> dd { 3 }
-4                   cc                  reduce C -> dd { 3 }
+0                   dd                  (shift 3)
+0                   cc                  (shift 4)
+1                   dd                  (shift 3)
+1                   cc                  (shift 4)
+2                   $                   accept
+3                   $                   reduce C -> dd { 3 }
+3                   dd                  reduce C -> dd { 3 }
+3                   cc                  reduce C -> dd { 3 }
+4                   dd                  (shift 3)
+4                   cc                  (shift 4)
 5                   $                   reduce C -> cc C { 2 }
 5                   dd                  reduce C -> cc C { 2 }
 5                   cc                  reduce C -> cc C { 2 }
 6                   $                   reduce S -> C C { 1 }
 ACTION_TABLE = 
-(0 (267 (shift 4)) (268 (shift 3)))
-(1 (0 accept))
-(2 (267 (shift 4)) (268 (shift 3)))
-(3 (267 (shift 4)) (268 (shift 3)))
-(4 (0 (reduce (c 267) (3))) (267 (reduce (c 267) (3))) (268 (reduce (c 267) (3))
-))
-(5 (0 (reduce (c 268 c) (2))) (267 (reduce (c 268 c) (2))) (268 (reduce (c 268 c
-) (2))))
+(0 (6 (shift 3)) (7 (shift 4)))
+(1 (6 (shift 3)) (7 (shift 4)))
+(2 (0 accept))
+(3 (0 (reduce (c 6) (3))) (6 (reduce (c 6) (3))) (7 (reduce (c 6) (3))))
+(4 (6 (shift 3)) (7 (shift 4)))
+(5 (0 (reduce (c 7 c) (2))) (6 (reduce (c 7 c) (2))) (7 (reduce (c 7 c) (2))))
 (6 (0 (reduce (s c c) (1))))
-Posn 0 267 / 4
-Posn 1 -1 / 3
-Posn 2 -1 / 0
-Posn 3 267 / 4
-Posn 4 -1 / 3
-Posn 5 267 / 4
-Posn 6 -1 / 3
-REDUCE (c 267) : (3)
-Semantic Action (1)  ((a3) . 3)
-Posn 7 0 / -3
-REDUCE (c 267) : (3)
-Semantic Action (1)  ((a3) . 3)
-Posn 8 267 / -3
-REDUCE (c 267) : (3)
-Semantic Action (1)  ((a3) . 3)
-Posn 9 -1 / -3
-REDUCE (c 268 c) : (2)
-Semantic Action (2)  ((a2) . 2)
-Posn 10 0 / -2
-REDUCE (c 268 c) : (2)
-Semantic Action (2)  ((a2) . 2)
-Posn 11 267 / -2
-REDUCE (c 268 c) : (2)
-Semantic Action (2)  ((a2) . 2)
-Posn 12 -1 / -2
+REDUCE (c 6) : (3)
+Semantic Action (1)  ((((quote d))) . 3)
+REDUCE (c 6) : (3)
+Semantic Action (1)  ((((quote d))) . 3)
+REDUCE (c 6) : (3)
+Semantic Action (1)  ((((quote d))) . 3)
+REDUCE (c 7 c) : (2)
+Semantic Action (2)  ((((list (quote c) !$2))) . 2)
+REDUCE (c 7 c) : (2)
+Semantic Action (2)  ((((list (quote c) !$2))) . 2)
+REDUCE (c 7 c) : (2)
+Semantic Action (2)  ((((list (quote c) !$2))) . 2)
 REDUCE (s c c) : (1)
-Semantic Action (2)  ((a1) . 1)
-Posn 13 -1 / -1
-Now fill in the table
-action_index #V16(0 2 3 5 7 10 13)
-action_terminal #V16(267 -1 -1 267 -1 267 -1 0 267 -1 0 267 -1 -1)
-action_result #V16(4 3 0 4 3 4 3 -3 -3 -3 -2 -2 -2 -1)
-action_fn [nil nil nil nil]
-action_n #V8(2 2 1)
-action_A #V16(1 2 2)
-0         C GOTO state 2
-2         C GOTO state 6
-3         C GOTO state 5
-0         S GOTO state 1
-goto_index: #V16(4 3 0)
-goto_old_state: #V16(0 2 -1 -1)
-goto_new_state: #V16(2 6 5 1)
+Semantic Action (2)  ((((list !$1 !$2))) . 1)
+action_index #V16[0 2 4 5 8 10 13]
+action_terminal #V16[6 -1 6 -1 -1 0 6 -1 6 -1 0 6 -1 -1]
+action_result #V16[3 4 3 4 0 -3 -3 -3 3 4 -2 -2 -2 -1]
+action_fn [nil nil nil]
+action_n #V8[2 2 1]
+action_A #V16[1 2 2]
+0         C#c GOTO state 1
+1         C#c GOTO state 6
+4         C#c GOTO state 5
+0         S#s GOTO state 2
+goto_index: #V16[0 3 0]
+goto_old_state: #V16[0 1 -1 -1]
+goto_new_state: #V16[1 6 5 2]
 
 nil
 
 
 yyparse();
 
+yylex initialized
 
 
-cc yylex returns 268
+cc symbol is 'cc' lex_escaped=nil lex_code=7
+yylex = cc type 7
+yylex returns 7
 state stack: (0)
 sym stack: nil
-next input: 268
-action code: 3
-w = 3
-cc state stack: (3 0)
+next input: 7
+action code: 4
+w = 4
+cc symbol is 'cc' lex_escaped=nil lex_code=7
+yylex = cc type 7
+yylex returns 7
+state stack: (4 0)
 sym stack: (cc)
-next input: 268
-action code: 3
-w = 3
-cc state stack: (3 3 0)
+next input: 7
+action code: 4
+w = 4
+cc symbol is 'cc' lex_escaped=nil lex_code=7
+yylex = cc type 7
+yylex returns 7
+state stack: (4 4 0)
 sym stack: (cc cc)
-next input: 268
-action code: 3
-w = 3
-dd state stack: (3 3 3 0)
+next input: 7
+action code: 4
+w = 4
+dd symbol is 'dd' lex_escaped=nil lex_code=6
+yylex = dd type 6
+yylex returns 6
+state stack: (4 4 4 0)
 sym stack: (cc cc cc)
-next input: 267
-action code: 4
-w = 4
-cc state stack: (4 3 3 3 0)
-sym stack: (dd cc cc cc)
-next input: 268
-action code: -3
-w = -3
-state stack: (5 3 3 3 0)
-sym stack: ((dd) cc cc cc)
-next input: 268
-action code: -2
-w = -2
-state stack: (5 3 3 0)
-sym stack: ((cc (dd)) cc cc)
-next input: 268
-action code: -2
-w = -2
-state stack: (5 3 0)
-sym stack: ((cc (cc (dd))) cc)
-next input: 268
-action code: -2
-w = -2
-state stack: (2 0)
-sym stack: ((cc (cc (cc (dd)))))
-next input: 268
+next input: 6
 action code: 3
 w = 3
-dd state stack: (3 2 0)
-sym stack: (cc (cc (cc (cc (dd)))))
-next input: 267
-action code: 4
-w = 4
-eof
-state stack: (4 3 2 0)
-sym stack: (dd cc (cc (cc (cc (dd)))))
-next input: 0
+cc symbol is 'cc' lex_escaped=nil lex_code=7
+yylex = cc type 7
+yylex returns 7
+state stack: (3 4 4 4 0)
+sym stack: (dd cc cc cc)
+next input: 7
 action code: -3
 w = -3
-state stack: (5 3 2 0)
-sym stack: ((dd) cc (cc (cc (cc (dd)))))
-next input: 0
+state stack: (5 4 4 4 0)
+sym stack: ((dd) cc cc cc)
+next input: 7
 action code: -2
 w = -2
-state stack: (6 2 0)
+state stack: (5 4 4 0)
+sym stack: ((cc (dd)) cc cc)
+next input: 7
+action code: -2
+w = -2
+state stack: (5 4 0)
+sym stack: ((cc (cc (dd))) cc)
+next input: 7
+action code: -2
+w = -2
+state stack: (1 0)
+sym stack: ((cc (cc (cc (dd)))))
+next input: 7
+action code: 4
+w = 4
+dd symbol is 'dd' lex_escaped=nil lex_code=6
+yylex = dd type 6
+yylex returns 6
+state stack: (4 1 0)
+sym stack: (cc (cc (cc (cc (dd)))))
+next input: 6
+action code: 3
+w = 3
+eof
+symbol is 'eof' lex_escaped=nil lex_code=1
+yylex = eof type 1
+yylex returns 1
+state stack: (3 4 1 0)
+sym stack: (dd cc (cc (cc (cc (dd)))))
+next input: 1
+action code: -3
+w = -3
+state stack: (5 4 1 0)
+sym stack: ((dd) cc (cc (cc (cc (dd)))))
+next input: 1
+action code: -2
+w = -2
+state stack: (6 1 0)
 sym stack: ((cc (dd)) (cc (cc (cc (dd)))))
-next input: 0
+next input: 1
 action code: -1
 w = -1
-state stack: (1 0)
+state stack: (2 0)
 sym stack: (((cc (cc (cc (dd)))) (cc (dd))))
-next input: 0
+next input: 1
 action code: 0
 Seem to have finished...
 (((cc (cc (cc (dd)))) (cc (dd))))
 
 yyparse();
 
+yylex initialized
 
 
-dd yylex returns 267
+dd symbol is 'dd' lex_escaped=nil lex_code=6
+yylex = dd type 6
+yylex returns 6
 state stack: (0)
 sym stack: nil
-next input: 267
-action code: 4
-w = 4
-dd state stack: (4 0)
+next input: 6
+action code: 3
+w = 3
+dd symbol is 'dd' lex_escaped=nil lex_code=6
+yylex = dd type 6
+yylex returns 6
+state stack: (3 0)
 sym stack: (dd)
-next input: 267
+next input: 6
 action code: -3
 w = -3
-state stack: (2 0)
+state stack: (1 0)
 sym stack: ((dd))
-next input: 267
-action code: 4
-w = 4
+next input: 6
+action code: 3
+w = 3
 eof
-state stack: (4 2 0)
+symbol is 'eof' lex_escaped=nil lex_code=1
+yylex = eof type 1
+yylex returns 1
+state stack: (3 1 0)
 sym stack: (dd (dd))
-next input: 0
+next input: 1
 action code: -3
 w = -3
-state stack: (6 2 0)
+state stack: (6 1 0)
 sym stack: ((dd) (dd))
-next input: 0
+next input: 1
 action code: -1
 w = -1
-state stack: (1 0)
+state stack: (2 0)
 sym stack: (((dd) (dd)))
-next input: 0
+next input: 1
 action code: 0
 Seem to have finished...
 (((dd) (dd)))
 
-
+#if nil  % Skip the rest of this test file...
 
 
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
 % "Compilers: principles, techniques and tools", second edition 2007).
 
-g4_46 := '((S   ((L "=" R) a1)
-                ((R)       a2))
-           (L   (("*" R)   a3)
-                ((!:symbol)  a4))
-           (R   ((L)       a5)));
-
-
-((s ((l "=" r) a1) ((r) a2)) (l (("*" r) a3) ((!:symbol) a4)) (r ((l) a5)))
-
+g4_46 := '((S   ((L "=" R)   ((print (list !$1 !$2 !$3))
+                              (list 'equal !$1 !$3)))
+                ((R)         (!$1)))
+           (L   (("*" R)     ((print !$2) (list 'star !$2)))
+                ((!:symbol)  (!$1)))
+           (R   ((L)         (!$1))));
 
 lalr_construct_parser g4_46;
 
-+++ Error: string2list (!: 61)
+yyparse();
+
+leftsym = rightsym eof
 
 
 yyparse();
 
+****abc = *def eof
 
 
-leftsym yylex returns 256
-state stack: (0)
-sym stack: nil
-next input: 256
-action code: 3
-w = 3
-= state stack: (3 0)
-sym stack: (!256)
-next input: 61
-action code: 3
-w = 3
-rightsym state stack: (3 3 0)
-sym stack: (!61 !256)
-next input: 256
-action code: 3
-w = 3
-eof
-state stack: (3 3 3 0)
-sym stack: (!256 !61 !256)
-next input: 0
-action code: 3
-w = 3
+% The next example will not work until I have precedence rules imlemented
+% but is expected to be reasonably representative of natural small grammars.
 
-+++ error: 0 "End of file detected"
+gtest := '((S  ((P) (!$1))
+               ((S op P) ((list !$2 !$1 !$3)))
+               (("-" P) (list 'minus !$2))
+               (("+" P) (!$2)))
+           (op (("+") ('plus))
+               (("-") ('difference))
+               (("*") ('times))
+               (("/") ('quotient))
+               (("**") ('expt))
+               (("^") ('expt)))
+           (P  (("(" S ")") (!$2))
+               ((!:symbol) (!$1))
+               ((!:string) (!$1))
+               ((!:number) (!$1))));
 
+lalr_construct_parser gtest;
 
 yyparse();
 
+a * (b/c + d/e) ^ 2 ^ g - "stringdata" eof 
 
 
-***yylex returns 94
-state stack: (0)
-sym stack: nil
-next input: 94
-action code: 3
-w = 3
-*xstate stack: (3 0)
-sym stack: (!94)
-next input: 94
-action code: 3
-w = 3
-xx state stack: (3 3 0)
-sym stack: (!94 !94)
-next input: 256
-action code: 3
-w = 3
-= state stack: (3 3 3 0)
-sym stack: (!256 !94 !94)
-next input: 61
-action code: 3
-w = 3
-*xstate stack: (3 3 3 3 0)
-sym stack: (!61 !256 !94 !94)
-next input: 42
-action code: 3
-w = 3
- state stack: (3 3 3 3 3 0)
-sym stack: (!42 !61 !256 !94 !94)
-next input: 256
-action code: 3
-w = 3
-eof
-state stack: (3 3 3 3 3 3 0)
-sym stack: (!256 !42 !61 !256 !94 !94)
-next input: 0
-action code: 3
-w = 3
+% Now a much more complicated grammar - one that recognizes the syntax of
+% RLISP. In order to survive this grammar my paser generator will need to
+% be extended to deal with ambiguous grammars both to cope with the
+% standard problem of "dangling else" clauses and to use precedence
+% declarations to disambiguate the uses of infix operators. Well at
+% present the grammar is written in a grossly bloated form so that
+% operator predcedence is hard wired into it... that too will need changing.
 
-+++ error: 0 "End of file detected"
+% Note that a naive implementaion of LALR parser table generation via
+% initial construction of a full LR(1) table leads to ridiculous expense
+% when processing a grammar of this scale.
+
+rlisp_grammar := '(
+
+(command         ((  cmnd sep ) (dummy_action))
+                 ((  end sep ) (dummy_action))
+                 ((  command cmnd sep ) (dummy_action))
+                 ((  command end sep ) (dummy_action))
+)
+
+
+(sep             ((  ";" ) (dummy_action))
+                 ((  "$" ) (dummy_action))
+)
+
+
+(proc_type       ((  "symbolic" ) (dummy_action))
+                 ((  "algebraic" ) (dummy_action))
+)
+
+
+(proc_qual       ((  "expr" ) (dummy_action))
+                 ((  "macro" ) (dummy_action))
+                 ((  "smacro" ) (dummy_action))
+)
+
+
+(sym_list        ((  ")" ) (dummy_action))
+                 ((  "," !:symbol sym_list ) (dummy_action))
+)
+
+
+(infix           ((  "setq" ) (dummy_action))
+                 ((  "or" ) (dummy_action))
+                 ((  "and" ) (dummy_action))
+                 ((  "member" ) (dummy_action))
+                 ((  "memq" ) (dummy_action))
+                 ((  "=" ) (dummy_action))
+                 ((  "neq" ) (dummy_action))
+                 ((  "eq" ) (dummy_action))
+                 ((  ">=" ) (dummy_action))
+                 ((  ">" ) (dummy_action))
+                 ((  "<=" ) (dummy_action))
+                 ((  "<" ) (dummy_action))
+                 ((  "freeof" ) (dummy_action))
+                 ((  "+" ) (dummy_action))
+                 ((  "-" ) (dummy_action))
+                 ((  "*" ) (dummy_action))
+                 ((  "/" ) (dummy_action))
+                 ((  "^" ) (dummy_action))
+                 ((  "**" ) (dummy_action))
+                 ((  "." ) (dummy_action))
+)
+
+(prefix          ((  "not" ) (dummy_action))
+                 ((  "+" ) (dummy_action))
+                 ((  "-" ) (dummy_action))
+)
+
+
+(proc_head       ((  !:symbol ) (dummy_action))
+                 ((  !:symbol !:symbol ) (dummy_action))
+                 ((  !:symbol "(" ")" ) (dummy_action))
+                 ((  !:symbol "(" !:symbol sym_list ) (dummy_action))
+                 ((  prefix !:symbol ) (dummy_action))
+                 ((  !:symbol infix !:symbol ) (dummy_action))
+)
+
+
+(proc_def        ((  "procedure" proc_head sep cmnd ) (dummy_action))
+                 ((  proc_type "procedure" proc_head sep cmnd ) (dummy_action))
+                 ((  proc_qual "procedure" proc_head sep cmnd ) (dummy_action))
+                 ((  proc_type proc_qual "procedure" proc_head sep cmnd ) (dummy_action))
+)
+
+
+% The type "!:rlistat" is dodgy here... it doe snot (yet) exist!
+
+(rlistat         ((  !:rlistat ) (dummy_action))
+                 ((  "in" ) (dummy_action))
+                 ((  "on" ) (dummy_action))
+)
+
+
+(rltail          ((  expr ) (dummy_action))
+                 ((  expr "," rltail ) (dummy_action))
+)
+
+
+(cmnd            ((  expr ) (dummy_action))
+                 ((  rlistat rltail ) (dummy_action))
+)
+
+
+(if_stmt         ((  "if" expr "then" cmnd "else" cmnd ) (dummy_action))
+                 ((  "if" expr "then" cmnd ) (dummy_action))
+)
+
+
+(for_update      ((  ":" expr ) (dummy_action))
+                 ((  "step" expr "until" expr ) (dummy_action))
+)
+
+
+(for_action      ((  "do" ) (dummy_action))
+                 ((  "sum" ) (dummy_action))
+                 ((  "collect" ) (dummy_action))
+)
+
+
+(for_inon        ((  "in" ) (dummy_action))
+                 ((  "on" ) (dummy_action))
+)
+
+
+(for_stmt        ((  "for" !:symbol !:setq expr for_update for_action cmnd ) (dummy_action))
+                 ((  "for" "each" !:symbol for_inon expr for_action cmnd ) (dummy_action))
+                 ((  "foreach" !:symbol for_inon expr for_action cmnd ) (dummy_action))
+)
+
+
+(while_stmt      ((  "while" expr "do" cmnd ) (dummy_action))
+)
+
+
+(repeat_stmt     ((  "repeat" cmnd "until" expr ) (dummy_action))
+)
+
+
+(return_stmt     ((  "return" ) (dummy_action))
+                 ((  "return" expr ) (dummy_action))
+)
+
+
+(goto_stmt       ((  "goto" !:symbol ) (dummy_action))
+                 ((  "go" !:symbol ) (dummy_action))
+                 ((  "go" "to" !:symbol ) (dummy_action))
+)
+
+
+(group_tail      ((  ">>" ) (dummy_action))
+                 ((  sep ">>" ) (dummy_action))
+                 ((  sep cmnd group_tail ) (dummy_action))
+)
+
+
+(group_expr      ((  "<<" cmnd group_tail ) (dummy_action))
+)
+
+
+(scalar_tail     ((  sep ) (dummy_action))
+                 ((  "," !:symbol scalar_tail ) (dummy_action))
+                 ((  "," integer scalar_tail ) (dummy_action))
+)
+
+
+(scalar_def      ((  "scalar" !:symbol scalar_tail ) (dummy_action))
+                 ((  "integer" !:symbol scalar_tail ) (dummy_action))
+)
+
+
+(scalar_defs     ((  scalar_def ) (dummy_action))
+                 ((  scalar_defs scalar_def ) (dummy_action))
+)
+
+
+(block_tail      ((  "end" ) (dummy_action))
+                 ((  cmnd "end" ) (dummy_action))
+                 ((  !:symbol ":" block_tail ) (dummy_action))
+                 ((  cmnd sep block_tail ) (dummy_action))
+                 ((  sep block_tail ) (dummy_action))
+)
+
+(block_expr      ((  "begin" scalar_defs block_tail ) (dummy_action))
+                 ((  "begin" block_tail ) (dummy_action))
+)
+
+
+(lambda_vars     ((  sep ) (dummy_action))
+                 ((  "," !:symbol lambda_vars ) (dummy_action))
+)
+
+
+(lambda_expr     ((  "lambda" !:symbol lambda_vars cmnd ) (dummy_action))
+                 ((  "lambda" "(" ")" sep cmnd ) (dummy_action))
+                 ((  "lambda" "(" !:symbol sym_list sep cmnd ) (dummy_action))
+)
+
+
+(expr            ((  rx0 ) (dummy_action))
+                 ((  lx0 ) (dummy_action))
+)
+
+
+(rx0             ((  lx0 "where" !:symbol "=" rx1 ) (dummy_action))
+                 ((  rx1 ) (dummy_action))
+)
+
+
+(lx0             ((  lx0 "where" !:symbol "=" lx1 ) (dummy_action))
+                 ((  lx1 ) (dummy_action))
+)
+
+
+(rx1             ((  lx2 ":=" rx1 ) (dummy_action))
+                 ((  rx2 ) (dummy_action))
+)
+
+
+(lx1             ((  lx2 ":=" lx1 ) (dummy_action))
+                 ((  lx2 ) (dummy_action))
+)
+
+
+(rx2tail         ((  rx3 ) (dummy_action))
+                 ((  lx3 "or" rx2tail ) (dummy_action))
+)
+
+(rx2             ((  lx3 "or" rx2tail ) (dummy_action))
+                 ((  rx3 ) (dummy_action))
+)
+
+
+(lx2tail         ((  lx3 ) (dummy_action))
+                 ((  lx3 "or" lx2tail ) (dummy_action))
+)
+
+(lx2             ((  lx3 "or" lx2tail ) (dummy_action))
+                 ((  lx3 ) (dummy_action))
+)
+
+
+(rx3tail         ((  rx4 ) (dummy_action))
+                 ((  lx4 "and" rx3tail ) (dummy_action))
+)
+
+(rx3             ((  lx4 "and" rx3tail ) (dummy_action))
+                 ((  rx4 ) (dummy_action))
+)
+
+
+(lx3tail         ((  lx4 ) (dummy_action))
+                 ((  lx4 "and" lx3tail ) (dummy_action))
+)
+
+(lx3             ((  lx4 "and" lx3tail ) (dummy_action))
+                 ((  lx4 ) (dummy_action))
+)
+
+
+(rx4             ((  "not" rx4 ) (dummy_action))
+                 ((  rx5 ) (dummy_action))
+)
+
+
+(lx4             ((  "not" lx4 ) (dummy_action))
+                 ((  lx5 ) (dummy_action))
+)
+
+% The fact that this lists "member" and "memq" (etc) here makes those names
+% keywords, and so possibly disables use as function names as in
+%    member(a, b)
+
+(rx5             ((  lx6 "member" ry6 ) (dummy_action))
+                 ((  lx6 "memq" ry6 ) (dummy_action))
+                 ((  lx6 "=" ry6 ) (dummy_action))
+                 ((  lx6 "neq" ry6 ) (dummy_action))
+                 ((  lx6 "eq" ry6 ) (dummy_action))
+                 ((  lx6 ">=" ry6 ) (dummy_action))
+                 ((  lx6 ">" ry6 ) (dummy_action))
+                 ((  lx6 "<=" ry6 ) (dummy_action))
+                 ((  lx6 "<" ry6 ) (dummy_action))
+                 ((  lx6 "freeof" ry6 ) (dummy_action))
+                 ((  rx6 ) (dummy_action))
+)
+
+
+(lx5             ((  lx6 "member" ly6 ) (dummy_action))
+                 ((  lx6 "memq" ly6 ) (dummy_action))
+                 ((  lx6 "=" ly6 ) (dummy_action))
+                 ((  lx6 "neq" ly6 ) (dummy_action))
+                 ((  lx6 "eq" ly6 ) (dummy_action))
+                 ((  lx6 ">=" ly6 ) (dummy_action))
+                 ((  lx6 ">" ly6 ) (dummy_action))
+                 ((  lx6 "<=" ly6 ) (dummy_action))
+                 ((  lx6 "<" ly6 ) (dummy_action))
+                 ((  lx6 "freeof" ly6 ) (dummy_action))
+                 ((  lx6 ) (dummy_action))
+)
+
+
+(ry6             ((  "not" ry6 ) (dummy_action))
+                 ((  rx6 ) (dummy_action))
+)
+
+
+(ly6             ((  "not" ly6 ) (dummy_action))
+                 ((  lx6 ) (dummy_action))
+)
+
+
+(rx6tail         ((  ry6a ) (dummy_action))
+                 ((  ly6a "+" rx6tail ) (dummy_action))
+)
+
+(rx6             ((  lx6a "+" rx6tail ) (dummy_action))
+                 ((  rx6a ) (dummy_action))
+)
+
+
+(lx6tail         ((  ly6a ) (dummy_action))
+                 ((  ly6a "+" lx6tail ) (dummy_action))
+)
+
+(lx6             ((  lx6a "+" lx6tail ) (dummy_action))
+                 ((  lx6a ) (dummy_action))
+)
+
+
+(ry6a            ((  not ry6a ) (dummy_action))
+                 ((  rx6a ) (dummy_action))
+)
+
+
+(rx6a            ((  lx6a "-" ry7 ) (dummy_action))
+                 ((  rx7 ) (dummy_action))
+)
+
+
+(ly6a            ((  not ly6a ) (dummy_action))
+                 ((  lx6a ) (dummy_action))
+)
+
+
+(lx6a            ((  lx6a "-" ly7 ) (dummy_action))
+                 ((  lx7 ) (dummy_action))
+)
+
+
+(ry7             ((  not ry7 ) (dummy_action))
+                 ((  rx7 ) (dummy_action))
+)
+
+
+(rx7             ((  "+" ry7 ) (dummy_action))
+                 ((  "-" ry7 ) (dummy_action))
+                 ((  rx8 ) (dummy_action))
+)
+
+
+(ly7             ((  not ly7 ) (dummy_action))
+                 ((  lx7 ) (dummy_action))
+)
+
+
+(lx7             ((  "+" ly7 ) (dummy_action))
+                 ((  "-" ly7 ) (dummy_action))
+                 ((  lx8 ) (dummy_action))
+)
+
+
+(rx8tail         ((  ry9 ) (dummy_action))
+                 ((  ly9 "*" rx8tail ) (dummy_action))
+)
+
+(rx8             ((  lx9 "*" rx8tail ) (dummy_action))
+                 ((  rx9 ) (dummy_action))
+)
+
+
+(lx8tail         ((  ly9 ) (dummy_action))
+                 ((  ly9 "*" lx8tail ) (dummy_action))
+)
+
+(lx8             ((  lx9 "*" lx8tail ) (dummy_action))
+                 ((  lx9 ) (dummy_action))
+)
+
+
+(ry9             ((  "not" ry9 ) (dummy_action))
+                 ((  "+" ry9 ) (dummy_action))
+                 ((  "-" ry9 ) (dummy_action))
+                 ((  rx9 ) (dummy_action))
+)
+
+
+(rx9             ((  lx9 "/" ry10 ) (dummy_action))
+                 ((  rx10 ) (dummy_action))
+)
+
+
+(ly9             ((  "not" ly9 ) (dummy_action))
+                 ((  "+" ly9 ) (dummy_action))
+                 ((  "-" ly9 ) (dummy_action))
+                 ((  lx9 ) (dummy_action))
+)
+
+
+(lx9             ((  lx9 "/" ly10 ) (dummy_action))
+                 ((  lx10 ) (dummy_action))
+)
+
+
+(ly10            ((  "not" ly10 ) (dummy_action))
+                 ((  "+" ly10 ) (dummy_action))
+                 ((  "-" ly10 ) (dummy_action))
+                 ((  lx10 ) (dummy_action))
+)
+
+
+(lx10            ((  lx11 "^" ly10 ) (dummy_action))
+                 ((  lx11 ) (dummy_action))
+)
+
+
+(ry10            ((  "not" ry10 ) (dummy_action))
+                 ((  "+" ry10 ) (dummy_action))
+                 ((  "-" ry10 ) (dummy_action))
+                 ((  rx10 ) (dummy_action))
+)
+
+
+(rx10            ((  lx11 "^" ry10 ) (dummy_action))
+                 ((  rx11 ) (dummy_action))
+)
+
+
+(ry11            ((  "not" ry11 ) (dummy_action))
+                 ((  "+" ry11 ) (dummy_action))
+                 ((  "-" ry11 ) (dummy_action))
+                 ((  rx11 ) (dummy_action))
+)
+
+
+(rx11            ((  x12 "." ry11 ) (dummy_action))
+                 ((  if_stmt ) (dummy_action))
+                 ((  for_stmt ) (dummy_action))
+                 ((  while_stmt ) (dummy_action))
+                 ((  repeat_stmt ) (dummy_action))
+                 ((  return_stmt ) (dummy_action))
+                 ((  goto_stmt ) (dummy_action))
+                 ((  lambda_expr ) (dummy_action))
+                 ((  proc_type ) (dummy_action))
+                 ((  proc_def ) (dummy_action))
+                 ((  endstat ) (dummy_action))
+)
+
+
+(ly11            ((  "not" ly11 ) (dummy_action))
+                 ((  "+" ly11 ) (dummy_action))
+                 ((  "-" ly11 ) (dummy_action))
+                 ((  lx11 ) (dummy_action))
+)
+
+
+(lx11            ((  x12 "." ly11 ) (dummy_action))
+                 ((  x12 ) (dummy_action))
+)
+
+
+(arg_list        ((  expr ")" ) (dummy_action))
+                 ((  expr "," arg_list ) (dummy_action))
+)
+
+
+(x12             ((  x13 "[" expr "]" ) (dummy_action))
+                 ((  x13 "(" ")" ) (dummy_action))
+                 ((  x13 "(" expr "," arg_list ) (dummy_action))
+                 ((  x13 x12 ) (dummy_action))
+                 ((  x13 ) (dummy_action))
+)
+
+
+(x13             ((  !:symbol ) (dummy_action))
+                 ((  !:number ) (dummy_action))
+                 ((  !:string ) (dummy_action))
+                 ((  !:list ) (dummy_action))     % Both 'xxx and `xxx here
+                 ((  group_expr ) (dummy_action))
+                 ((  block_expr ) (dummy_action))
+                 ((  "(" expr ")" ) (dummy_action))
+)
+)$
+
+
+% lalr_construct_parser rlisp_grammar;
+
+#endif
 
 end;
 
 nil
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.04 seconds
-real 0.25
-user 0.00
-sys 0.04

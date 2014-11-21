@@ -704,9 +704,9 @@ infsum(( - x   *( - 1) *108 *factorial(k)*x)/(6*46656 *factorial(3*k + 1)
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 1824 ms  plus GC time: 111 ms
+Time (counter 1): 1793 ms  plus GC time: 157 ms
 
-End of Lisp run after 1.82+0.17 seconds
-real 2.34
-user 0.01
-sys 0.04
+End of Lisp run after 1.79+0.22 seconds
+real 2.24
+user 0.00
+sys 0.06

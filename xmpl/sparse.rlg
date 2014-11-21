@@ -3617,5 +3617,5 @@ Time (counter 1): 48 ms
 
 End of Lisp run after 0.04+0.06 seconds
 real 0.27
-user 0.04
-sys 0.03
+user 0.03
+sys 0.06

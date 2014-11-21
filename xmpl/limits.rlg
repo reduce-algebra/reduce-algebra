@@ -836,9 +836,9 @@ limit!-((abs(x)-3)/(x-3),x,3);
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 281 ms
+Time (counter 1): 250 ms  plus GC time: 15 ms
 
-End of Lisp run after 0.28+0.06 seconds
-real 0.47
+End of Lisp run after 0.25+0.06 seconds
+real 0.49
 user 0.01
-sys 0.01
+sys 0.06

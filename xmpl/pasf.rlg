@@ -273,9 +273,9 @@ z - 3 > 0
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 1030 ms  plus GC time: 172 ms
+Time (counter 1): 1001 ms  plus GC time: 139 ms
 
-End of Lisp run after 1.03+0.25 seconds
-real 1.56
-user 0.00
+End of Lisp run after 1.00+0.21 seconds
+real 1.47
+user 0.01
 sys 0.06

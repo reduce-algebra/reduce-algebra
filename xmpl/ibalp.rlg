@@ -3580,9 +3580,9 @@ false
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 1464 ms  plus GC time: 127 ms
+Time (counter 1): 1314 ms  plus GC time: 124 ms
 
-End of Lisp run after 1.46+0.20 seconds
-real 1.95
-user 0.03
+End of Lisp run after 1.31+0.18 seconds
+real 1.81
+user 0.04
 sys 0.04

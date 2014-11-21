@@ -2288,9 +2288,9 @@ showtime;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 204 ms  plus GC time: 15 ms
+Time (counter 1): 203 ms  plus GC time: 16 ms
 
-End of Lisp run after 0.20+0.06 seconds
-real 0.43
+End of Lisp run after 0.20+0.07 seconds
+real 0.42
 user 0.01
-sys 0.03
+sys 0.04

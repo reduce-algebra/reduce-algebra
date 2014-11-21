@@ -79,9 +79,9 @@ and rhead(ltail(ltail(ltail(rtail(rtail(q))))))
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms  plus GC time: 16 ms
+Time (counter 1): 0 ms
 
-End of Lisp run after 0.00+0.10 seconds
-real 0.26
-user 0.01
+End of Lisp run after 0.00+0.09 seconds
+real 0.25
+user 0.03
 sys 0.04

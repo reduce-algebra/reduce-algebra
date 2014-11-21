@@ -138,7 +138,7 @@ end;
 Tested on x86_64-pc-windows CSL
 Time (counter 1): 16 ms
 
-End of Lisp run after 0.01+0.04 seconds
-real 0.22
+End of Lisp run after 0.01+0.06 seconds
+real 0.21
 user 0.00
 sys 0.06

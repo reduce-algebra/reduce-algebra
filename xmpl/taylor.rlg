@@ -2501,9 +2501,9 @@ comment That's all, folks;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 141 ms
+Time (counter 1): 126 ms
 
-End of Lisp run after 0.14+0.04 seconds
+End of Lisp run after 0.12+0.04 seconds
 real 0.33
-user 0.04
-sys 0.04
+user 0.03
+sys 0.06

@@ -4400,9 +4400,9 @@ erf(a + x)
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 750 ms  plus GC time: 46 ms
+Time (counter 1): 671 ms  plus GC time: 15 ms
 
-End of Lisp run after 0.75+0.10 seconds
-real 1.15
+End of Lisp run after 0.67+0.07 seconds
+real 1.00
 user 0.01
-sys 0.04
+sys 0.07
