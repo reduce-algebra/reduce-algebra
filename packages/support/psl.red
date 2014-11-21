@@ -551,11 +551,47 @@ symbolic procedure find!-gnuplot!-aux path;
     % check existence
     (filep path and path)>>;
 
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+
+% When the Windows version of PSL is launched from a cygwin (mintty) shell
+% it can be that neither TEMP nor TMP is set. Under cygwin the directory
+% "/tmp" should be available but the path to it required by Reduce will
+% be something like "C:\cygwin\tmp" and the exact location that cygwin
+% had been installed in may vary from case to case. The code here tries
+% to sort this out!
+
+global '(cygin_tmp!*);
+
+cygwin_tmp!* := nil;
+
+symbolic procedure tempdir_for_cygwin();
+  begin
+    scalar a, b, c;
+% I will only make the tests here once (if they succeed).
+    if cygwin_tmp!* then return cygwin_tmp!*;
+% The next line will generate output like "sh: 1: cygpath: not found" if
+% cygpath is not available, and something like "c:\cygwin\tmp" if it is!
+    a := errorset('(pipe!-open "cygpath -w /tmp 2>&1" 'input), nil, nil);
+    if not errorp a then <<
+      b := rds car a;
+      c := readline();
+      rds b;
+      close car a  >> where !*echo = nil;
+    a := explode2 c;
+% I will assume that if the result ended up as "x:\..." for some x that it
+% was valid.
+    if a and eqcar(cdr a, '!:) and eqcar(cddr a, '!\) then
+      return (cygwin_tmp!* := c)
+    else return nil
+  end;
+
+!#endif
 
 symbolic procedure get!-tempdir();
   begin
 !#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
    tempdir!* := getenv "TMP" or getenv "TEMP";
+   if null tempdir!* then tempdir!* := tempdir_for_cygwin();
 !#else
 !#if (member 'vms lispsystem!*)
    tempdir!* := "SYS$SCRATCH:";
