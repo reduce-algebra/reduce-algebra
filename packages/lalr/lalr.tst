@@ -73,29 +73,28 @@ lex_keywords '("begin" "<=>" "<==");
 
 % The output from this is expected to be
 
-%  Result: (1 symbol)
-%  Result: (3 200)
-%  Result: (3 3.542)
-%  Result: (2 "a string")
-%  Result: (1 nil)
-%  Result: (4 (quote (quoted lisp)))
-%  Result: (4 (backquote (backquoted (!, comma) (!,!@ comma_at))))
-%  Result: (1 !+)
-%  Result: (1 !<!=!>)
-%  Result: (1 !-)
-%  Result: (1 !=)
-%  Result: (1 !>)
-%  Result: (1 !<)
-%  Result: (1 !<!=)
+%  Result: (2 symbol)
+%  Result: (4 200)
+%  Result: (4 3.542)
+%  Result: (3 "a string")
+%  Result: (2 nil)
+%  Result: (5 (quote (quoted lisp)))
+%  Result: (5 (backquote (backquoted (!, comma) (!,!@ comma_at))))
+%  Result: (2 !+)
+%  Result: (7 !<!=!>)
+%  Result: (2 !-)
+%  Result: (2 !=)
+%  Result: (2 !>)
+%  Result: (9 !<)
+%  Result: (8 !<!=)
 %  Result: (5 begin)
-%  Result: (1 null)
-%  Result: (1 null)
-%  Result: (1 null)
+%  Result: (2 !;)
+%  Result: (2 !;)
+%  Result: (2 !;)
 %
 %  nil
-%  null null null null 'x;
 
-% The row of "null null null" at the end provides some protection so that
+% The row of "; ; ;" at the end provides some protection so that
 % if faults in the lexer were to cause it to read more or less than it ought
 % to then what is left over is reasonably likely to remain as valid rlisp
 % syntax and so the rest of this test file will be able to continue happily.
@@ -123,16 +122,14 @@ symbol
 <
 <=
 begin
-null
-null
-null null null null null 'x;
+; ; ; ; ; ; ; ;
 
 
 % Here I set up a sample grammar
 %    S' -> S
 %    S  -> C C        { A1 }
-%    C  -> "cc" C     { A2 }
-%        | "dd"       { A3 }
+%    C  -> "c" C      { A2 }
+%        | "d"        { A3 }
 % Example 4.42 from Aho, Sethi and Ullman's Red Dragon book, with
 % some simple semantic actions added. Note that I do not need to insert
 % the production S' -> S for myself since the analysis code will
@@ -167,22 +164,20 @@ null null null null null 'x;
 % However if even one small grammar can be handled this is a strep forward!
 
 
-grammar := '((S  ((C C) ((list !$1 !$2))))
-             (C  (("cc" C) ((list 'c !$2)))
-                 (("dd") ('d)))
+grammar := '((S  ((C C)      ((list !$1 !$2))))
+             (C  (("c" C)    ((list 'c !$2)))
+                 (("d")      ('d)))
             );
 
 lalr_construct_parser grammar;
 
 yyparse();
 
-cc cc cc dd cc dd eof
+c c c d c d eof
 
 yyparse();
 
-dd dd eof
-
-#if nil  % Skip the rest of this test file...
+d d eof
 
 
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
@@ -190,10 +185,10 @@ dd dd eof
 
 g4_46 := '((S   ((L "=" R)   ((print (list !$1 !$2 !$3))
                               (list 'equal !$1 !$3)))
-                ((R)         (!$1)))
-           (L   (("*" R)     ((print !$2) (list 'star !$2)))
-                ((!:symbol)  (!$1)))
-           (R   ((L)         (!$1))));
+                ((R)         ((print "R") !$1)))
+           (L   (("*" R)     ((print "*") (print !$2) (list 'star !$2)))
+                ((!:symbol)  ((print "sym") !$1)))
+           (R   ((L)         ((print "L as R") !$1))));
 
 lalr_construct_parser g4_46;
 
@@ -205,6 +200,8 @@ leftsym = rightsym eof
 yyparse();
 
 ****abc = *def eof
+
+#if nil  % Skip the rest of this test file...
 
 
 % The next example will not work until I have precedence rules imlemented

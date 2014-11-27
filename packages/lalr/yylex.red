@@ -117,12 +117,12 @@ global '(lex_keyword_names lex_next_code lex_initial_next_code lex_codename);
 %   :list          Either a quote or a backquote followed by Lisp-like
 %                  data, for instance 'word or `(template ,sub1 ,@sub2 end).
 
-put('!:eof,    'lex_code, 1);
-put('eof,      'lex_code, 1);             % Just while I test
-put('!:symbol, 'lex_code, 2);
-put('!:string, 'lex_code, 3);
-put('!:number, 'lex_code, 4);
-put('!:list,   'lex_code, 5);
+put('!:eof,    'lex_fixed_code, 1);
+put('eof,      'lex_fixed_code, 1);             % Just while I test
+put('!:symbol, 'lex_fixed_code, 2);
+put('!:string, 'lex_fixed_code, 3);
+put('!:number, 'lex_fixed_code, 4);
+put('!:list,   'lex_fixed_code, 5);
 
 % lex_codename is just used when generating trace output and maps from
 % numeric codes back to the corresponding terminal symbols. Because it isd
@@ -143,11 +143,11 @@ global '(lex_escaped
          lex_eof_code lex_symbol_code lex_number_code
          lex_string_code lex_list_code);
 
-lex_eof_code    := get('!:eof,    'lex_code);
-lex_symbol_code := get('!:symbol, 'lex_code);
-lex_number_code := get('!:number, 'lex_code);
-lex_string_code := get('!:string, 'lex_code);
-lex_list_code   := get('!:list,   'lex_code);
+lex_eof_code    := get('!:eof,    'lex_fixed_code);
+lex_symbol_code := get('!:symbol, 'lex_fixed_code);
+lex_number_code := get('!:number, 'lex_fixed_code);
+lex_string_code := get('!:string, 'lex_fixed_code);
+lex_list_code   := get('!:list,   'lex_fixed_code);
 
 
 % I will treat just very plain letters as items that can be in
@@ -616,6 +616,7 @@ symbolic procedure lex_basic_token();
       return lex_list_code >>
     else <<
       yylval := lex_char;
+print list("yylex.red line 619, lex_char = ", lex_char);
 % I take special notice of end of file, since it is fairly drastic.
 % In particular I do not attempt to advance lex_char beyond it. So I do
 % TWO things here: I avoid advancing the input, and I return the lex_eof_code

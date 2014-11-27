@@ -94,29 +94,28 @@ nil
 
 % The output from this is expected to be
 
-%  Result: (1 symbol)
-%  Result: (3 200)
-%  Result: (3 3.542)
-%  Result: (2 "a string")
-%  Result: (1 nil)
-%  Result: (4 (quote (quoted lisp)))
-%  Result: (4 (backquote (backquoted (!, comma) (!,!@ comma_at))))
-%  Result: (1 !+)
-%  Result: (1 !<!=!>)
-%  Result: (1 !-)
-%  Result: (1 !=)
-%  Result: (1 !>)
-%  Result: (1 !<)
-%  Result: (1 !<!=)
+%  Result: (2 symbol)
+%  Result: (4 200)
+%  Result: (4 3.542)
+%  Result: (3 "a string")
+%  Result: (2 nil)
+%  Result: (5 (quote (quoted lisp)))
+%  Result: (5 (backquote (backquoted (!, comma) (!,!@ comma_at))))
+%  Result: (2 !+)
+%  Result: (7 !<!=!>)
+%  Result: (2 !-)
+%  Result: (2 !=)
+%  Result: (2 !>)
+%  Result: (9 !<)
+%  Result: (8 !<!=)
 %  Result: (5 begin)
-%  Result: (1 null)
-%  Result: (1 null)
-%  Result: (1 null)
+%  Result: (2 !;)
+%  Result: (2 !;)
+%  Result: (2 !;)
 %
 %  nil
-%  null null null null 'x;
 
-% The row of "null null null" at the end provides some protection so that
+% The row of "; ; ;" at the end provides some protection so that
 % if faults in the lexer were to cause it to read more or less than it ought
 % to then what is left over is reasonably likely to remain as valid rlisp
 % syntax and so the rest of this test file will be able to continue happily.
@@ -141,6 +140,7 @@ yylex = 3.542 type 4
 Result: (4 3.542)
 yylex = "a string" type 3
 Result: (3 "a string")
+("yylex.red line 619, lex_char = " nil)
 yylex = nil type 2
 Result: (2 nil)
 symbol is 'quoted' lex_escaped=nil lex_code=nil
@@ -152,46 +152,69 @@ symbol is 'comma' lex_escaped=nil lex_code=nil
 symbol is 'comma_at' lex_escaped=nil lex_code=nil
 yylex = (backquote (backquoted (!, comma) (!,!@ comma_at))) type 5
 Result: (5 (backquote (backquoted (!, comma) (!,!@ comma_at))))
+("yylex.red line 619, lex_char = " !+)
 yylex = !+ type 2
 Result: (2 !+)
+("yylex.red line 619, lex_char = " !<)
 yylex = !<!=!> type 7
 Result: (7 !<!=!>)
+("yylex.red line 619, lex_char = " !-)
 yylex = !- type 2
 Result: (2 !-)
+("yylex.red line 619, lex_char = " !=)
 yylex = != type 2
 Result: (2 !=)
+("yylex.red line 619, lex_char = " !>)
 yylex = !> type 2
 Result: (2 !>)
+("yylex.red line 619, lex_char = " !<)
 yylex = !< type 9
 Result: (9 !<)
+("yylex.red line 619, lex_char = " !<)
 yylex = !<!= type 8
 Result: (8 !<!=)
 symbol is 'begin' lex_escaped=nil lex_code=6
 yylex = begin type 6
 Result: (6 begin)
-symbol is 'null' lex_escaped=nil lex_code=nil
-yylex = null type 2
-Result: (2 null)
-symbol is 'null' lex_escaped=nil lex_code=nil
-yylex = null type 2
-Result: (2 null)
-symbol is 'null' lex_escaped=nil lex_code=nil
-yylex = null type 2
-Result: (2 null)
+("yylex.red line 619, lex_char = " !;)
+yylex = !; type 2
+Result: (2 !;)
+("yylex.red line 619, lex_char = " !;)
+yylex = !; type 2
+Result: (2 !;)
+("yylex.red line 619, lex_char = " !;)
+yylex = !; type 2
+Result: (2 !;)
 
 nil
-null null null null 'x;
+ ;
 
 
-t
+nil
+ ;
+
+
+nil
+ ;
+
+
+nil
+ ;
+
+
+nil
+ ;
+
+
+nil
 
 
 
 % Here I set up a sample grammar
 %    S' -> S
 %    S  -> C C        { A1 }
-%    C  -> "cc" C     { A2 }
-%        | "dd"       { A3 }
+%    C  -> "c" C      { A2 }
+%        | "d"        { A3 }
 % Example 4.42 from Aho, Sethi and Ullman's Red Dragon book, with
 % some simple semantic actions added. Note that I do not need to insert
 % the production S' -> S for myself since the analysis code will
@@ -226,29 +249,29 @@ t
 % However if even one small grammar can be handled this is a strep forward!
 
 
-grammar := '((S  ((C C) ((list !$1 !$2))))
-             (C  (("cc" C) ((list 'c !$2)))
-                 (("dd") ('d)))
+grammar := '((S  ((C C)      ((list !$1 !$2))))
+             (C  (("c" C)    ((list 'c !$2)))
+                 (("d")      ('d)))
             );
 
 
-((s ((c c) ((list !$1 !$2)))) (c (("cc" c) ((list (quote c) !$2))) (("dd") ((
-quote d)))))
+((s ((c c) ((list !$1 !$2)))) (c (("c" c) ((list (quote c) !$2))) (("d") ((quote
+d)))))
 
 
 lalr_construct_parser grammar;
 
-Token 'dd' allocated code 6
-Token 'cc' allocated code 7
+Token 'd' allocated code 6
+Token 'c' allocated code 7
 Terminal symbols are:
- !:eof:1 !:symbol:2 !:string:3 !:number:4 !:list:5 "dd":6 "cc":7
+ !:eof:1 !:symbol:2 !:string:3 !:number:4 !:list:5 "d":6 "c":7
 Non-terminal symbols are:
-[0]S'#!S!'          : S                         { }
+[0]S'               : S                         { }
                     ;
-[1]S#s              : C C                       { ((list !$1 !$2)) }
+[1]S                : C C                       { ((list !$1 !$2)) }
                     ;
-[2]C#c              : "cc" C                    { ((list (quote c) !$2)) }
-                    | "dd"                      { ((quote d)) }
+[2]C                : "c" C                     { ((list (quote c) !$2)) }
+                    | "d"                       { ((quote d)) }
                     ;
 
 Action map:
@@ -257,128 +280,84 @@ Action map:
 2:          (((list (quote c) !$2)))
 3:          (((quote d)))
 FIRST sets for each non-terminal:
-S':             cc dd
-S:              cc dd
-C:              cc dd
-LR(1) Items:
-Item number 0
-S' -> . S  :  $
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . dd  :  cc
-C -> . dd  :  dd
-S -> . C C  :  $
-          C GOTO state 1
-          S GOTO state 2
-          cc GOTO state 4
-          dd GOTO state 3
-Item number 1
-C -> . cc C  :  $
-C -> . dd  :  $
-S -> C . C  :  $
-          C GOTO state 6
-          cc GOTO state 8
-          dd GOTO state 7
-Item number 2
-S' -> S .  :  $
-Item number 3
-C -> dd .  :  cc
-C -> dd .  :  dd
-Item number 4
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . dd  :  cc
-C -> . dd  :  dd
-C -> cc . C  :  cc
-C -> cc . C  :  dd
-          C GOTO state 5
-          cc GOTO state 4
-          dd GOTO state 3
-Item number 5
-C -> cc C .  :  cc
-C -> cc C .  :  dd
-Item number 6
-S -> C C .  :  $
-Item number 7
-C -> dd .  :  $
-Item number 8
-C -> . cc C  :  $
-C -> . dd  :  $
-C -> cc . C  :  $
-          C GOTO state 9
-          cc GOTO state 8
-          dd GOTO state 7
-Item number 9
-C -> cc C .  :  $
-End of LR(1) Items:
+S':             c d
+S:              c d
+C:              c d
 Merged Items:
 Item number 0
-S' -> . S  :  $
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . dd  :  cc
-C -> . dd  :  dd
-S -> . C C  :  $
+  S' -> . S  :  $
+  C -> . c C  :  c
+  C -> . c C  :  d
+  C -> . d  :  c
+  C -> . d  :  d
+  S -> . C C  :  $
           C GOTO state 1
           S GOTO state 2
-          cc GOTO state 4
-          dd GOTO state 3
+          c GOTO state 4
+          d GOTO state 3
 Item number 1
-C -> . cc C  :  $
-C -> . dd  :  $
-S -> C . C  :  $
+  C -> . c C  :  $
+  C -> . d  :  $
+  S -> C . C  :  $
           C GOTO state 6
-          cc GOTO state 4
-          dd GOTO state 3
+          c GOTO state 4
+          d GOTO state 3
 Item number 2
-S' -> S .  :  $
+  S' -> S .  :  $
 Item number 3
-C -> dd .  :  cc
-C -> dd .  :  dd
-C -> dd .  :  $
+  C -> d .  :  c
+  C -> d .  :  d
+  C -> d .  :  $
 Item number 4
-C -> . cc C  :  cc
-C -> . cc C  :  dd
-C -> . cc C  :  $
-C -> . dd  :  cc
-C -> . dd  :  dd
-C -> . dd  :  $
-C -> cc . C  :  cc
-C -> cc . C  :  dd
-C -> cc . C  :  $
+  C -> . c C  :  c
+  C -> . c C  :  d
+  C -> . c C  :  $
+  C -> . d  :  c
+  C -> . d  :  d
+  C -> . d  :  $
+  C -> c . C  :  c
+  C -> c . C  :  d
+  C -> c . C  :  $
           C GOTO state 5
-          cc GOTO state 4
-          dd GOTO state 3
+          c GOTO state 4
+          d GOTO state 3
 Item number 5
-C -> cc C .  :  cc
-C -> cc C .  :  dd
-C -> cc C .  :  $
+  C -> c C .  :  c
+  C -> c C .  :  d
+  C -> c C .  :  $
 Item number 6
-S -> C C .  :  $
+  S -> C C .  :  $
 End of Merged Items:
 Actions:
-0                   dd                  (shift 3)
-0                   cc                  (shift 4)
-1                   dd                  (shift 3)
-1                   cc                  (shift 4)
+0                   d                   (shift 3)
+0                   c                   (shift 4)
+1                   d                   (shift 3)
+1                   c                   (shift 4)
 2                   $                   accept
-3                   $                   reduce C -> dd { 3 }
-3                   dd                  reduce C -> dd { 3 }
-3                   cc                  reduce C -> dd { 3 }
-4                   dd                  (shift 3)
-4                   cc                  (shift 4)
-5                   $                   reduce C -> cc C { 2 }
-5                   dd                  reduce C -> cc C { 2 }
-5                   cc                  reduce C -> cc C { 2 }
+3                   $                   reduce C -> d { 3 }
+3                   d                   reduce C -> d { 3 }
+3                   c                   reduce C -> d { 3 }
+4                   d                   (shift 3)
+4                   c                   (shift 4)
+5                   $                   reduce C -> c C { 2 }
+5                   d                   reduce C -> c C { 2 }
+5                   c                   reduce C -> c C { 2 }
 6                   $                   reduce S -> C C { 1 }
 ACTION_TABLE = 
-(0 (6 (shift 3)) (7 (shift 4)))
-(1 (6 (shift 3)) (7 (shift 4)))
-(2 (0 accept))
-(3 (0 (reduce (c 6) (3))) (6 (reduce (c 6) (3))) (7 (reduce (c 6) (3))))
-(4 (6 (shift 3)) (7 (shift 4)))
-(5 (0 (reduce (c 7 c) (2))) (6 (reduce (c 7 c) (2))) (7 (reduce (c 7 c) (2))))
-(6 (0 (reduce (s c c) (1))))
+(0    (6 (shift 3))
+      (7 (shift 4)))
+(1    (6 (shift 3))
+      (7 (shift 4)))
+(2    (0 accept))
+(3    (0 (reduce (c 6) (3)))
+      (6 (reduce (c 6) (3)))
+      (7 (reduce (c 6) (3))))
+(4    (6 (shift 3))
+      (7 (shift 4)))
+(5    (0 (reduce (c 7 c) (2)))
+      (6 (reduce (c 7 c) (2)))
+      (7 (reduce (c 7 c) (2))))
+(6    (0 (reduce (s c c) (1))))
 REDUCE (c 6) : (3)
 Semantic Action (1)  ((((quote d))) . 3)
 REDUCE (c 6) : (3)
@@ -399,10 +378,10 @@ action_result #V16[3 4 3 4 0 -3 -3 -3 3 4 -2 -2 -2 -1]
 action_fn [nil nil nil]
 action_n #V8[2 2 1]
 action_A #V16[1 2 2]
-0         C#c GOTO state 1
-1         C#c GOTO state 6
-4         C#c GOTO state 5
-0         S#s GOTO state 2
+0         C GOTO state 1
+1         C GOTO state 6
+4         C GOTO state 5
+0         S GOTO state 2
 goto_index: #V16[0 3 0]
 goto_old_state: #V16[0 1 -1 -1]
 goto_new_state: #V16[1 6 5 2]
@@ -415,148 +394,146 @@ yyparse();
 yylex initialized
 
 
-cc symbol is 'cc' lex_escaped=nil lex_code=7
-yylex = cc type 7
+c symbol is 'c' lex_escaped=nil lex_code=7
+yylex = c type 7
 yylex returns 7
 state stack: (0)
 sym stack: nil
 next input: 7
 action code: 4
 w = 4
-cc symbol is 'cc' lex_escaped=nil lex_code=7
-yylex = cc type 7
+c symbol is 'c' lex_escaped=nil lex_code=7
+yylex = c type 7
 yylex returns 7
 state stack: (4 0)
-sym stack: (cc)
+sym stack: (c)
 next input: 7
 action code: 4
 w = 4
-cc symbol is 'cc' lex_escaped=nil lex_code=7
-yylex = cc type 7
+c symbol is 'c' lex_escaped=nil lex_code=7
+yylex = c type 7
 yylex returns 7
 state stack: (4 4 0)
-sym stack: (cc cc)
+sym stack: (c c)
 next input: 7
 action code: 4
 w = 4
-dd symbol is 'dd' lex_escaped=nil lex_code=6
-yylex = dd type 6
+d symbol is 'd' lex_escaped=nil lex_code=6
+yylex = d type 6
 yylex returns 6
 state stack: (4 4 4 0)
-sym stack: (cc cc cc)
+sym stack: (c c c)
 next input: 6
 action code: 3
 w = 3
-cc symbol is 'cc' lex_escaped=nil lex_code=7
-yylex = cc type 7
+c symbol is 'c' lex_escaped=nil lex_code=7
+yylex = c type 7
 yylex returns 7
 state stack: (3 4 4 4 0)
-sym stack: (dd cc cc cc)
+sym stack: (d c c c)
 next input: 7
 action code: -3
 w = -3
 state stack: (5 4 4 4 0)
-sym stack: ((dd) cc cc cc)
+sym stack: (d c c c)
 next input: 7
 action code: -2
 w = -2
 state stack: (5 4 4 0)
-sym stack: ((cc (dd)) cc cc)
+sym stack: ((c d) c c)
 next input: 7
 action code: -2
 w = -2
 state stack: (5 4 0)
-sym stack: ((cc (cc (dd))) cc)
+sym stack: ((c (c d)) c)
 next input: 7
 action code: -2
 w = -2
 state stack: (1 0)
-sym stack: ((cc (cc (cc (dd)))))
+sym stack: ((c (c (c d))))
 next input: 7
 action code: 4
 w = 4
-dd symbol is 'dd' lex_escaped=nil lex_code=6
-yylex = dd type 6
+d symbol is 'd' lex_escaped=nil lex_code=6
+yylex = d type 6
 yylex returns 6
 state stack: (4 1 0)
-sym stack: (cc (cc (cc (cc (dd)))))
+sym stack: (c (c (c (c d))))
 next input: 6
 action code: 3
 w = 3
 eof
-symbol is 'eof' lex_escaped=nil lex_code=1
-yylex = eof type 1
-yylex returns 1
+symbol is 'eof' lex_escaped=nil lex_code=nil
+yylex = eof type 2
+yylex returns 2
 state stack: (3 4 1 0)
-sym stack: (dd cc (cc (cc (cc (dd)))))
-next input: 1
+sym stack: (d c (c (c (c d))))
+next input: 2
 action code: -3
 w = -3
 state stack: (5 4 1 0)
-sym stack: ((dd) cc (cc (cc (cc (dd)))))
-next input: 1
+sym stack: (d c (c (c (c d))))
+next input: 2
 action code: -2
 w = -2
 state stack: (6 1 0)
-sym stack: ((cc (dd)) (cc (cc (cc (dd)))))
-next input: 1
+sym stack: ((c d) (c (c (c d))))
+next input: 2
 action code: -1
 w = -1
 state stack: (2 0)
-sym stack: (((cc (cc (cc (dd)))) (cc (dd))))
-next input: 1
+sym stack: (((c (c (c d))) (c d)))
+next input: 2
 action code: 0
 Seem to have finished...
-(((cc (cc (cc (dd)))) (cc (dd))))
+((c (c (c d))) (c d))
 
 yyparse();
 
 yylex initialized
 
 
-dd symbol is 'dd' lex_escaped=nil lex_code=6
-yylex = dd type 6
+d symbol is 'd' lex_escaped=nil lex_code=6
+yylex = d type 6
 yylex returns 6
 state stack: (0)
 sym stack: nil
 next input: 6
 action code: 3
 w = 3
-dd symbol is 'dd' lex_escaped=nil lex_code=6
-yylex = dd type 6
+d symbol is 'd' lex_escaped=nil lex_code=6
+yylex = d type 6
 yylex returns 6
 state stack: (3 0)
-sym stack: (dd)
+sym stack: (d)
 next input: 6
 action code: -3
 w = -3
 state stack: (1 0)
-sym stack: ((dd))
+sym stack: (d)
 next input: 6
 action code: 3
 w = 3
 eof
-symbol is 'eof' lex_escaped=nil lex_code=1
-yylex = eof type 1
-yylex returns 1
+symbol is 'eof' lex_escaped=nil lex_code=nil
+yylex = eof type 2
+yylex returns 2
 state stack: (3 1 0)
-sym stack: (dd (dd))
-next input: 1
+sym stack: (d d)
+next input: 2
 action code: -3
 w = -3
 state stack: (6 1 0)
-sym stack: ((dd) (dd))
-next input: 1
+sym stack: (d d)
+next input: 2
 action code: -1
 w = -1
 state stack: (2 0)
-sym stack: (((dd) (dd)))
-next input: 1
+sym stack: ((d d))
+next input: 2
 action code: 0
 Seem to have finished...
-(((dd) (dd)))
-
-#if nil  % Skip the rest of this test file...
+(d d)
 
 
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
@@ -564,21 +541,393 @@ Seem to have finished...
 
 g4_46 := '((S   ((L "=" R)   ((print (list !$1 !$2 !$3))
                               (list 'equal !$1 !$3)))
-                ((R)         (!$1)))
-           (L   (("*" R)     ((print !$2) (list 'star !$2)))
-                ((!:symbol)  (!$1)))
-           (R   ((L)         (!$1))));
+                ((R)         ((print "R") !$1)))
+           (L   (("*" R)     ((print "*") (print !$2) (list 'star !$2)))
+                ((!:symbol)  ((print "sym") !$1)))
+           (R   ((L)         ((print "L as R") !$1))));
+
+
+((s ((l "=" r) ((print (list !$1 !$2 !$3)) (list (quote equal) !$1 !$3))) ((r) (
+(print "R") !$1))) (l (("*" r) ((print "*") (print !$2) (list (quote star) !$2))
+) ((!:symbol) ((print "sym") !$1))) (r ((l) ((print "L as R") !$1))))
+
 
 lalr_construct_parser g4_46;
 
+Token '!*' allocated code 6
+Token '!=' allocated code 7
+Terminal symbols are:
+ !:eof:1 !:symbol:2 !:string:3 !:number:4 !:list:5 "*":6 "=":7
+Non-terminal symbols are:
+[0]S'               : S                         { }
+                    ;
+[1]S                : L "=" R                   { ((print (list !$1 !$2 !$3)) (
+list (quote equal) !$1 !$3)) }
+                    | R                         { ((print "R") !$1) }
+                    ;
+[2]L                : "*" R                     { ((print "*") (print !$2) (list
+(quote star) !$2)) }
+                    | :SYMBOL                   { ((print "sym") !$1) }
+                    ;
+[3]R                : L                         { ((print "L as R") !$1) }
+                    ;
+
+Action map:
+0:          nil
+1:          (((print (list !$1 !$2 !$3)) (list (quote equal) !$1 !$3)))
+2:          (((print "R") !$1))
+3:          (((print "*") (print !$2) (list (quote star) !$2)))
+4:          (((print "sym") !$1))
+5:          (((print "L as R") !$1))
+FIRST sets for each non-terminal:
+S':             !* !:symbol
+S:              !* !:symbol
+L:              !* !:symbol
+R:              !* !:symbol
+Merged Items:
+Item number 0
+  S' -> . S  :  $
+  L -> . !* R  :  !=
+  L -> . !* R  :  $
+  L -> . !:symbol  :  !=
+  L -> . !:symbol  :  $
+  R -> . L  :  $
+  S -> . L != R  :  $
+  S -> . R  :  $
+          L GOTO state 2
+          R GOTO state 1
+          S GOTO state 3
+          !* GOTO state 5
+          !:symbol GOTO state 4
+Item number 1
+  S -> R .  :  $
+Item number 2
+  R -> L .  :  $
+  S -> L . != R  :  $
+          != GOTO state 8
+Item number 3
+  S' -> S .  :  $
+Item number 4
+  L -> !:symbol .  :  !=
+  L -> !:symbol .  :  $
+Item number 5
+  L -> . !* R  :  !=
+  L -> . !* R  :  $
+  L -> . !:symbol  :  !=
+  L -> . !:symbol  :  $
+  L -> !* . R  :  !=
+  L -> !* . R  :  $
+  R -> . L  :  !=
+  R -> . L  :  $
+          L GOTO state 7
+          R GOTO state 6
+          !* GOTO state 5
+          !:symbol GOTO state 4
+Item number 6
+  L -> !* R .  :  !=
+  L -> !* R .  :  $
+Item number 7
+  R -> L .  :  !=
+  R -> L .  :  $
+Item number 8
+  L -> . !* R  :  $
+  L -> . !:symbol  :  $
+  R -> . L  :  $
+  S -> L != . R  :  $
+          L GOTO state 7
+          R GOTO state 9
+          !* GOTO state 5
+          !:symbol GOTO state 4
+Item number 9
+  S -> L != R .  :  $
+End of Merged Items:
+Actions:
+0                   !:symbol            (shift 4)
+0                   !*                  (shift 5)
+1                   $                   reduce S -> R { 2 }
+2                   $                   reduce R -> L { 5 }
+2                   !=                  (shift 8)
+3                   $                   accept
+4                   $                   reduce L -> !:symbol { 4 }
+4                   !=                  reduce L -> !:symbol { 4 }
+5                   !:symbol            (shift 4)
+5                   !*                  (shift 5)
+6                   $                   reduce L -> !* R { 3 }
+6                   !=                  reduce L -> !* R { 3 }
+7                   $                   reduce R -> L { 5 }
+7                   !=                  reduce R -> L { 5 }
+8                   !:symbol            (shift 4)
+8                   !*                  (shift 5)
+9                   $                   reduce S -> L != R { 1 }
+ACTION_TABLE = 
+(0    (2 (shift 4))
+      (6 (shift 5)))
+(1    (0 (reduce (s r) (2))))
+(2    (0 (reduce (r l) (5)))
+      (7 (shift 8)))
+(3    (0 accept))
+(4    (0 (reduce (l 2) (4)))
+      (7 (reduce (l 2) (4))))
+(5    (2 (shift 4))
+      (6 (shift 5)))
+(6    (0 (reduce (l 6 r) (3)))
+      (7 (reduce (l 6 r) (3))))
+(7    (0 (reduce (r l) (5)))
+      (7 (reduce (r l) (5))))
+(8    (2 (shift 4))
+      (6 (shift 5)))
+(9    (0 (reduce (s l 7 r) (1))))
+REDUCE (s r) : (2)
+Semantic Action (1)  ((((print "R") !$1)) . 2)
+REDUCE (r l) : (5)
+Semantic Action (1)  ((((print "L as R") !$1)) . 5)
+REDUCE (l 2) : (4)
+Semantic Action (1)  ((((print "sym") !$1)) . 4)
+REDUCE (l 2) : (4)
+Semantic Action (1)  ((((print "sym") !$1)) . 4)
+REDUCE (l 6 r) : (3)
+Semantic Action (2)  ((((print "*") (print !$2) (list (quote star) !$2))) . 3)
+REDUCE (l 6 r) : (3)
+Semantic Action (2)  ((((print "*") (print !$2) (list (quote star) !$2))) . 3)
+REDUCE (r l) : (5)
+Semantic Action (1)  ((((print "L as R") !$1)) . 5)
+REDUCE (r l) : (5)
+Semantic Action (1)  ((((print "L as R") !$1)) . 5)
+REDUCE (s l 7 r) : (1)
+Semantic Action (3)  ((((print (list !$1 !$2 !$3)) (list (quote equal) !$1 !$3))
+) . 1)
+action_index #V16[0 2 3 5 6 8 10 12 14 16]
+action_terminal #V16[2 -1 -1 0 -1 -1 0 -1 2 -1 0 -1 0 -1 2 -1 -1]
+action_result #V16[4 5 -2 -5 8 0 -4 -4 4 5 -3 -3 -5 -5 4 5 -1]
+action_fn [nil nil nil nil nil]
+action_n #V8[3 1 2 1 1]
+action_A #V16[1 1 2 2 3]
+0         L GOTO state 2
+5         L GOTO state 7
+8         L GOTO state 7
+0         R GOTO state 1
+5         R GOTO state 6
+8         R GOTO state 9
+0         S GOTO state 3
+goto_index: #V16[0 5 0 2]
+goto_old_state: #V16[0 -1 0 5 -1 -1]
+goto_new_state: #V16[2 7 1 6 9 3]
+
+nil
+
+
 yyparse();
 
-leftsym = rightsym eof
+yylex initialized
+
+
+leftsym symbol is 'leftsym' lex_escaped=nil lex_code=nil
+yylex = leftsym type 2
+yylex returns 2
+state stack: (0)
+sym stack: nil
+next input: 2
+action code: 4
+w = 4
+=("yylex.red line 619, lex_char = " !=)
+yylex = != type 7
+yylex returns 7
+state stack: (4 0)
+sym stack: (leftsym)
+next input: 7
+action code: -4
+w = -4
+state stack: (2 0)
+sym stack: (leftsym)
+next input: 7
+action code: 8
+w = 8
+ rightsym symbol is 'rightsym' lex_escaped=nil lex_code=nil
+yylex = rightsym type 2
+yylex returns 2
+state stack: (8 2 0)
+sym stack: (!= leftsym)
+next input: 2
+action code: 4
+w = 4
+eof
+symbol is 'eof' lex_escaped=nil lex_code=nil
+yylex = eof type 2
+yylex returns 2
+state stack: (4 8 2 0)
+sym stack: (rightsym != leftsym)
+next input: 2
+action code: -4
+w = -4
+state stack: (7 8 2 0)
+sym stack: (rightsym != leftsym)
+next input: 2
+action code: -5
+w = -5
+state stack: (9 8 2 0)
+sym stack: (rightsym != leftsym)
+next input: 2
+action code: -1
+w = -1
+state stack: (3 0)
+sym stack: ((leftsym != rightsym))
+next input: 2
+action code: 0
+Seem to have finished...
+(leftsym != rightsym)
 
 
 yyparse();
 
-****abc = *def eof
+yylex initialized
+
+
+*("yylex.red line 619, lex_char = " !*)
+yylex = !* type 6
+yylex returns 6
+state stack: (0)
+sym stack: nil
+next input: 6
+action code: 5
+w = 5
+*("yylex.red line 619, lex_char = " !*)
+yylex = !* type 6
+yylex returns 6
+state stack: (5 0)
+sym stack: (!*)
+next input: 6
+action code: 5
+w = 5
+*("yylex.red line 619, lex_char = " !*)
+yylex = !* type 6
+yylex returns 6
+state stack: (5 5 0)
+sym stack: (!* !*)
+next input: 6
+action code: 5
+w = 5
+*("yylex.red line 619, lex_char = " !*)
+yylex = !* type 6
+yylex returns 6
+state stack: (5 5 5 0)
+sym stack: (!* !* !*)
+next input: 6
+action code: 5
+w = 5
+abc symbol is 'abc' lex_escaped=nil lex_code=nil
+yylex = abc type 2
+yylex returns 2
+state stack: (5 5 5 5 0)
+sym stack: (!* !* !* !*)
+next input: 2
+action code: 4
+w = 4
+=("yylex.red line 619, lex_char = " !=)
+yylex = != type 7
+yylex returns 7
+state stack: (4 5 5 5 5 0)
+sym stack: (abc !* !* !* !*)
+next input: 7
+action code: -4
+w = -4
+state stack: (7 5 5 5 5 0)
+sym stack: (abc !* !* !* !*)
+next input: 7
+action code: -5
+w = -5
+state stack: (6 5 5 5 5 0)
+sym stack: (abc !* !* !* !*)
+next input: 7
+action code: -3
+w = -3
+state stack: (7 5 5 5 0)
+sym stack: ((!* abc) !* !* !*)
+next input: 7
+action code: -5
+w = -5
+state stack: (6 5 5 5 0)
+sym stack: ((!* abc) !* !* !*)
+next input: 7
+action code: -3
+w = -3
+state stack: (7 5 5 0)
+sym stack: ((!* (!* abc)) !* !*)
+next input: 7
+action code: -5
+w = -5
+state stack: (6 5 5 0)
+sym stack: ((!* (!* abc)) !* !*)
+next input: 7
+action code: -3
+w = -3
+state stack: (7 5 0)
+sym stack: ((!* (!* (!* abc))) !*)
+next input: 7
+action code: -5
+w = -5
+state stack: (6 5 0)
+sym stack: ((!* (!* (!* abc))) !*)
+next input: 7
+action code: -3
+w = -3
+state stack: (2 0)
+sym stack: ((!* (!* (!* (!* abc)))))
+next input: 7
+action code: 8
+w = 8
+ *("yylex.red line 619, lex_char = " !*)
+yylex = !* type 6
+yylex returns 6
+state stack: (8 2 0)
+sym stack: (!= (!* (!* (!* (!* abc)))))
+next input: 6
+action code: 5
+w = 5
+def symbol is 'def' lex_escaped=nil lex_code=nil
+yylex = def type 2
+yylex returns 2
+state stack: (5 8 2 0)
+sym stack: (!* != (!* (!* (!* (!* abc)))))
+next input: 2
+action code: 4
+w = 4
+eof
+symbol is 'eof' lex_escaped=nil lex_code=nil
+yylex = eof type 2
+yylex returns 2
+state stack: (4 5 8 2 0)
+sym stack: (def !* != (!* (!* (!* (!* abc)))))
+next input: 2
+action code: -4
+w = -4
+state stack: (7 5 8 2 0)
+sym stack: (def !* != (!* (!* (!* (!* abc)))))
+next input: 2
+action code: -5
+w = -5
+state stack: (6 5 8 2 0)
+sym stack: (def !* != (!* (!* (!* (!* abc)))))
+next input: 2
+action code: -3
+w = -3
+state stack: (7 8 2 0)
+sym stack: ((!* def) != (!* (!* (!* (!* abc)))))
+next input: 2
+action code: -5
+w = -5
+state stack: (9 8 2 0)
+sym stack: ((!* def) != (!* (!* (!* (!* abc)))))
+next input: 2
+action code: -1
+w = -1
+state stack: (3 0)
+sym stack: (((!* (!* (!* (!* abc)))) != (!* def)))
+next input: 2
+action code: 0
+Seem to have finished...
+((!* (!* (!* (!* abc)))) != (!* def))
+
+#if nil  % Skip the rest of this test file...
 
 
 % The next example will not work until I have precedence rules imlemented
@@ -1107,3 +1456,10 @@ rlisp_grammar := '(
 end;
 
 nil
+Tested on x86_64-pc-windows CSL
+Time (counter 1): 16 ms
+
+End of Lisp run after 0.01+0.06 seconds
+real 0.24
+user 0.03
+sys 0.01

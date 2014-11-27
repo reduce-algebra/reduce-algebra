@@ -61,6 +61,19 @@ module 'genparser;
 %       '(some quoted lisp-like data)
 %
 
+% Precedence can be applied using a call such as
+%   lalr_precedence '(!:right "^" !:left ("*" "/") ("+" "-"));
+% where terminal symbols are listed from highest to lowest precedence. The
+% words !:left and !:right indicate that until further notice symbols
+% associate in that direction. Symbols (represented as strings) can either
+% be listed individually or put in groups that will then all share the same
+% precedence levels. So in the above "^" has the highest precedence and
+% it associates to the right. Next "*" and "/" associate to the left and
+% have the same precedence - so for instance P*Q/R*S will mean (((P*Q)/R)*S).
+% Finally "+" and "-" have equal but lower precedence. The default
+% associativity will be !:left.
+%                                   [not implemented yet]
+
 % Here is an example of a rather trivial grammar where I have not put in
 % an actions at all:
 
@@ -175,8 +188,10 @@ symbolic procedure lalr_set_grammar g;
 % will be the first item.
     non_terminals := reversip non_terminals;
 % Now I allocate numeric codes for all non-terminals, with 0 for the
-% start symbol. These numbers need to count as a different sequence from those
-% used to identify terminals!
+% start symbol. On the stack terminals should be used to look up actions
+% an non-terminals to look up gotos so I might believe I could re-use the
+% same sequence of integer codes - but maybe would be cleaner to use non-
+% overlapping ranges of values?
     tnum := -1;
     for each v in non_terminals do
       put(v, 'non_terminal_code, tnum := tnum+1);
@@ -188,9 +203,9 @@ symbolic procedure lalr_set_grammar g;
 % building an association list that will help.
     w := nil;
     for each s in terminals do
-      if stringp s then w := (s . get(intern s, 'lex_code)) . w
-      else if idp s and get(s, 'lex_code) then
-        w := (s . get(s, 'lex_code)) . w;
+      w := (s . get(intern s, 'lex_code)) . w;
+    for each s in '(!:eof !:symbol !:string !:number !:list) do
+      w := (s . get(s, 'lex_fixed_code)) . w;
 % Use the map to re-work the list of productions.
     for each x in non_terminals do
       lalr_set_productions(x, 
@@ -230,6 +245,7 @@ symbolic procedure lalr_set_grammar g;
 symbolic procedure lalr_prin_symbol x;
   begin
     scalar w;
+% Item zero is a pseudo-token used to mark the end of input.
     if x = 0 then princ "$"
     else if x = nil then princ "<empty>"
     else if x = '!. then princ "."
@@ -259,7 +275,7 @@ symbolic procedure lalr_display_symbols();
     princ "Terminal symbols are:"; terpri();
     for each x in '(!:eof !:symbol !:string !:number !:list) do <<
       princ " "; prin x;
-      princ ":"; prin get(x, 'lex_code) >>;
+      princ ":"; prin get(x, 'lex_fixed_code) >>;
     for each x in terminals do <<
       princ " "; prin x;
       princ ":"; prin get(intern x, 'lex_code) >>;
@@ -270,9 +286,6 @@ symbolic procedure lalr_display_symbols();
       princ "["; prin get(x, 'non_terminal_code); princ "]";
       lalr_prin_symbol x;
       w := ":";
-      if !*tracelex then <<
-        princ "#";   % Show genuine name as well as upper case variant
-        prin x >>;
       for each y in lalr_productions x do <<
         ttab 20; princ w; w := "|";
         for each z in car y do << princ " "; lalr_prin_symbol z >>;
@@ -306,7 +319,8 @@ symbolic procedure lalr_cleanup();
       remprop(x, 'lalr_first);
       remprop(x, 'non_terminal_code) >>;
 %   terminals := nil;
-    non_terminals := symbols := nil;
+%   non_terminals := nil;    % needed by find_goto!
+    symbols := nil;
     goto_cache := action_map := nil;
 %   lex_cleanup()     % @@@@ review this!
   end;
@@ -351,19 +365,20 @@ symbolic procedure lalr_calculate_first g;
       more_added := nil;
       for each x in g do <<
         z := get(x, 'lalr_first);
-%       princ "Scan "; prin x; princ " : "; prin z;
-%       princ " / "; print lalr_productions x;
+%       if !*lalr_verbose then <<
+%         princ "[calculate_first] Scan "; prin x; princ " : "; prin z;
+%         princ " / "; print lalr_productions x >>;
         for each y1 in lalr_productions x do <<
           y := car y1;
           while y and
-                not numberp y
-                and (nil member (w := get(car y, 'lalr_first))) do <<
+                not numberp car y
+                and member(nil, (w := get(car y, 'lalr_first))) do <<
             z := union(w, z);
             y := cdr y >>;
           if null y then nil
           else if numberp car y then z := union(list car y, z)
           else z := union(get(car y, 'lalr_first), z) >>;
-        if not (z = get(x, 'lalr_first)) then more_added := t;
+        if z neq get(x, 'lalr_first) then more_added := t;
         put(x, 'lalr_first, z) >>
     >> until not more_added;
     if !*lalr_verbose then lalr_print_firsts g;
@@ -394,7 +409,7 @@ symbolic procedure lalr_print_items(heading, cc);
     for each y in cc do <<
       princ "Item number "; prin cdr y; terpri();
       for each x in sort(car y, function ordp) do <<
-        lalr_prin_symbol caar x; princ " ->";
+        princ "  "; lalr_prin_symbol caar x; princ " ->";
         for each y in cdar x do << princ " "; lalr_prin_symbol y >>;
         princ "  :  ";
         lalr_prin_symbol cadr x;
@@ -415,12 +430,15 @@ symbolic procedure lalr_items();
     if cdr val then error(0, "Starting state must only reduce to one thing")
     else val := caar val;
     n := 0;
+% This is where I introduce code zero for "$", the notional symbol that
+% exists after the material that I actually parse.
     c := list (lalr_closure list list(('!S!' . '!. . val), 0) . n);
     repeat <<
       done := nil;
       for each i in c do
         for each x in symbols do <<
-          x1 := get(intern x, 'lex_code);
+          x1 := (stringp x and get(intern x, 'lex_code)) or
+                (idp x and get(x, 'lex_fixed_code));
           if null x1 then x1 := x;
           if w := lalr_goto(car i, x1) then <<
 % The lalr_goto computed here is a new set of states. If it is EXACTLY
@@ -447,7 +465,10 @@ symbolic procedure lalr_items();
                 done := t >> >> >>
     >> until not done;
     c := reversip c;   % So that item numbers come out in nicer order.
-    if !*lalr_verbose then lalr_print_items("LR(1) Items:", c);
+%
+% I think that I can now manage without seeing the LR(1) items...
+%   if !*lalr_verbose then lalr_print_items("LR(1) Items:", c);
+%
     return c
   end;
 
@@ -558,7 +579,8 @@ symbolic procedure lalr_rename_gotos();
   begin
     scalar w, x1;
     for each x in symbols do <<
-      x1 := get(intern x, 'lex_code);
+      x1 := (stringp x and get(intern x, 'lex_code)) or
+            (idp x and get(x, 'lex_fixed_code));
       if null x1 then x1 := x;
       w := sublis(renamings, gethash(x1, goto_cache));
       puthash(x1, goto_cache, lalr_remove_duplicates w) >>
@@ -608,7 +630,14 @@ symbolic procedure lalr_make_actions c;
     action_table := reversip action_table;
     if !*lalr_verbose then lalr_print_actions action_table;
     printc "ACTION_TABLE = ";
-    for each x in action_table do print x;
+    for each x in action_table do <<
+      princ "(";
+      prin car x;
+      for each y in cdr x do <<
+        if cdr x and cadr x neq y then terpri(); % all but first
+        ttab 6;
+        prin y >>;
+      printc ")" >>;
     j := 0; w := nil;
     for each x in action_table do <<
       putv16(action_index, car x, j);
@@ -632,6 +661,7 @@ symbolic procedure lalr_make_actions c;
 %                       car rassoc(rx, action_map));
           princ "Semantic Action "; prin list rn;
           princ "  "; print rassoc(rx, action_map);
+%print list("rx=", rx, "rn=", rn, "ra=", ra);
           putv8(action_n, rx-1, rn);
           putv16(action_A, rx-1, get(ra, 'non_terminal_code));
           rr := -rx >>;
@@ -714,7 +744,6 @@ symbolic procedure lalr_make_gotos();
         if !*lalr_verbose then
           for each xx in cdr x do <<
             prin car xx; ttab 10; lalr_prin_symbol car x;
-            if !*tracelex then << princ '!#; prin car x >>;
           princ " GOTO state "; prin cdr xx; terpri() >>;
           w := get(car x, 'non_terminal_code);
           if not fixp w then error(99, list('lalr_make_gotos, x, w));

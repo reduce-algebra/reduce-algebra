@@ -51,10 +51,13 @@ module 'yyparse;
 symbolic procedure get_goto(state, non_terminal);
   begin
     scalar w1, w2;
+%print list("get_goto", state, non_terminal);
     w1 := getv16(goto_index, non_terminal);
     while not (((w2 := getv16(goto_old_state, w1)) = -1) or
                w2 = state) do w1 := w1 + 1;
-    return getv16(goto_new_state, w1)
+    w1 := getv16(goto_new_state, w1);
+%print list("next state", w1);
+    return w1
   end;
 
 % In a rather similar way, actions are found via an association-list
@@ -71,6 +74,17 @@ symbolic procedure get_action(state, terminal);
     while not (((w2 := getv16(action_terminal, w1)) = -1) or
                w2 = terminal) do w1 := w1 + 1;
     return getv16(action_result, w1)
+  end;
+
+symbolic procedure ntname n;
+  begin
+    scalar w;
+    w := non_terminals;
+    if n >= length w or n < 0 then return list("bad", n, w);
+    while not zerop n do <<
+      n := n - 1;
+      w := cdr w >>;
+    return car w
   end;
 
 symbolic procedure yyparse();
@@ -99,7 +113,12 @@ symbolic procedure yyparse();
         princ "w = "; print w;
         if w > 0 then <<                             % SHIFT
             if next_input = 0 then error(0, "End of file detected");
-            sym_stack := (lalr_decode_symbol next_input) . sym_stack;
+            if next_input = lex_symbol_code or
+               next_input = lex_number_code or
+               next_input = lex_string_code or
+               next_input = lex_list_code then
+              sym_stack := yylval . sym_stack
+            else sym_stack := (lalr_decode_symbol next_input) . sym_stack;
             state_stack := w . state_stack;
             next_input := yylex();
             princ "yylex returns "; print next_input >>
@@ -110,6 +129,8 @@ symbolic procedure yyparse();
                 action := getv(action_fn, w);
                 n := getv8(action_n, w);             % RHS count
                 A := getv16(action_A, w);            % LHS non-terminal
+%print list("action", w, "state", car state_stack, "non_terminals", non_terminals, "A", a);
+%princ "RHS count "; prin n; princ " turn into "; print ntname A;
 % I am now reducing by "A -> beta { action() }" where beta has n items
                 w := nil;
                 for i := 1:n do <<
@@ -118,8 +139,13 @@ symbolic procedure yyparse();
                     state_stack := cdr state_stack >>;
 % To help me while developing this code I will not crash out if I have
 % a missing action function, but will instead just build a bit of list.
-                if action then w := apply1(action, w);
+% Well if the production is L ::= r1 r1 r3 then I will make a list (r1 r2 r3)
+% but if the production was merely L ::= r then I will leave r unchanged.
+                if action then w := apply1(action, w)
+                else if n = 1 then w := car w;
                 sym_stack := w . sym_stack;
+%princ "now get goto for "; prin car state_stack; princ " and "; prin ntname A;
+%princ " = "; print get_goto(car state_stack, A);
                 state_stack := get_goto(car state_stack, A) . state_stack >>
             else <<
                 w := w - action_first_error;
@@ -132,7 +158,7 @@ symbolic procedure yyparse();
                 next_input := 0 >>
         end >>;
     princ "Seem to have finished...";
-    return sym_stack
+    return car sym_stack
   end;
 
 endmodule;
