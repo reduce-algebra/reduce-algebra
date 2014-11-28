@@ -61,6 +61,18 @@ loaddirectories!*))
                     (mulld (reg t1) (Reg t1) (reg t2))
                     (*move (reg t1) ArgOne)))
 
+(copyd 'dpxw 'depositxword)
+
+(de depositxword (x) % BOOT
+  (if (and (fixp x) (negp x))
+  (progn
+  (depositword -1)
+  (depositword  x)
+  (updatebittable 8 0)
+  (setq currentoffset!* (plus2 currentoffset!* -8 )))
+ (dpxw x)))
+
+
 
 %(faslout "load-psl")
 %(de hu (x) 
