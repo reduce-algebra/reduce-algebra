@@ -176,6 +176,8 @@ cd psl
    (prin2t (free-bps))
   (setq !*init!-stats!* nil))
 
+(de alterheapsize (d) (rederr "Sorry, but at present the Heap cannot be extended. Please start Reduce again with a larger heap (-td parameter) and rerun."))
+
 (setq symbolfilename!* "$topdir/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$topdir/red/" "$topdir/psl/")))
 
