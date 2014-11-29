@@ -52,6 +52,8 @@
 /*
  * At present CSL is single threaded - at least as regards file IO - and
  * using the unlocked versions of putc and getc can be a MAJOR saving.
+ * I put these macros here not in soem header to try to keep me reminded
+ * that if threads ever happened I would need to do my own buffering.
  */
 
 #ifdef HAVE_GETC_UNLOCKED
@@ -932,11 +934,59 @@ int char_to_pipeout(int c, Lisp_Object stream)
     return 0;   /* indicate success */
 }
 
+int char_from_pipe(Lisp_Object stream)
+{
+    int ch = stream_pushed_char(stream);
+    if (ch == NOT_CHAR)
+    {
+        if (++io_kilo >= 1024)
+        {   io_kilo = 0;
+            io_now++;
+        }
+        ch = GETC(stream_file(stream));
+        if (ch == EOF
+          /*    || ch == CTRL_D             */
+           ) return EOF;
+    }
+    else stream_pushed_char(stream) = NOT_CHAR;
+    return ch;
+}
+
+int32_t read_action_pipe(int32_t op, Lisp_Object f)
+{
+    if (op < -1) return 1;
+    else if (op <= 0xffff) return (stream_pushed_char(f) = op);
+    else switch (op)
+    {
+case READ_CLOSE:
+        if (stream_file(f) == NULL) op = 0;
+        else my_pclose(stream_file(f));
+        set_stream_read_fn(f, char_from_illegal);
+        set_stream_read_other(f, read_action_illegal);
+        set_stream_file(f, NULL);
+        return 0;
+case READ_FLUSH:
+        stream_pushed_char(f) = NOT_CHAR;
+        return 0;
+case READ_TELL:
+        return -1;
+case READ_IS_CONSOLE:
+        return 0;
+default:
+        return 0;
+    }
+}
+
 #else
 
 int char_to_pipeout(int c, Lisp_Object stream)
 {
     return char_to_illegal(c, stream);
+}
+
+int char_from_pipe(Lisp_Object stream)
+{
+    return EOF;
 }
 
 #endif
@@ -1342,8 +1392,19 @@ case DIRECTION_OUTPUT | OPEN_PIPE:
 #endif
 
 case DIRECTION_INPUT | OPEN_PIPE:
+#if defined HAVE_POPEN || defined HAVE_FWIN
+        pipep = YES;
+        memcpy(filename, w, (size_t)len);
+        filename[len] = 0;
+        file = my_popen(filename, "r");
+        if (file == NULL) return error(1, err_pipe_failed, name);
+        break;
+#else
+        return aerror("pipes not available with this version of CSL");
+#endif
+
 case DIRECTION_IO | OPEN_PIPE:
-        return aerror("reading from pipes is not supported in CCL\n");
+        return aerror("reading and writing from pipes is not supported in CSL\n");
     }
 
     push(name);
@@ -1354,6 +1415,10 @@ case DIRECTION_IO | OPEN_PIPE:
     set_stream_file(r, file);
     switch (d & (DIRECTION_MASK | OPEN_PIPE))
     {
+case DIRECTION_INPUT | OPEN_PIPE:
+	set_stream_read_fn(r, char_from_pipe);
+        set_stream_read_other(r, read_action_pipe);
+	break;
 case DIRECTION_INPUT:
         set_stream_read_fn(r, char_from_file);
         set_stream_read_other(r, read_action_file);

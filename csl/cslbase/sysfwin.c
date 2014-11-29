@@ -118,6 +118,23 @@
 #endif
 
 /*
+ * At present CSL is single threaded - at least as regards file IO - and
+ * using the unlocked versions of putc and getc can be a MAJOR saving.
+ * I put these macros here not in soem header to try to keep me reminded
+ * that if threads ever happened I would need to do my own buffering.
+ */
+
+#ifdef HAVE_PUTC_UNLOCKED
+#define PUTC(x, y) putc_unlocked((x), (y))
+#else
+#ifdef HAVE__PUTC_NOLOCK
+#define PUTC(x, y) _putc_nolock((x), (y))
+#else
+#define PUTC(x, y) putc((x), (y))
+#endif
+#endif
+
+/*
  * Jollies re GC statistics...
  */
  
@@ -297,7 +314,7 @@ int my_pipe_putc(int c, FILE *f)
     }
     else 
 #endif
-    return putc(c, f);
+    return PUTC(c, f);
 }
 
 int my_pipe_flush(FILE *f)

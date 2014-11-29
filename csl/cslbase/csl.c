@@ -2945,20 +2945,10 @@ term_printf(
                 segvtrap = NO;
                 continue;
 /*
- * -Y  sets the variable !*hankaku , which causes the lisp reader convert
- * a Zenkaku code to Hankaku one when read. I leave this option decoded
- * on the command line even if the Kanji support code is not otherwise
- * compiled into CSL just so I can reduce conditional compilation.
- * This was part of the Internationalisation effort for CSL but I repeat
- * that it is no longer supported.
+ * -Y  currently unused!
  */
 /*! options [-y] \item [{\ttfamily -y}] \index{{\ttfamily -y}}
- * {\ttfamily -y } sets the variable {\ttfamily !*hankaku}, which causes the
- * lisp reader convert a Zenkaku code to Hankaku one when read. I leave this
- * option decoded on the command line even if the Kanji support code is not
- * otherwise compiled into CSL just so I can reduce conditional compilation.
- * This was part of the Internationalisation effort for CSL bu this is no longer
- * supported.
+ * {\ttfamily -y } is at present unused.
  */
 
         case 'y':

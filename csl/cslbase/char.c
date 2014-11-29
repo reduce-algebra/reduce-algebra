@@ -261,9 +261,6 @@ Lisp_Object Lalpha_char_p(Lisp_Object nil, Lisp_Object a)
     a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
-#ifndef Kanji
-    if (bits_of_char(a) != 0) return onevalue(nil); /* BITS present */
-#endif
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
     {   if (iswalpha(cc)) return onevalue(lisp_true);

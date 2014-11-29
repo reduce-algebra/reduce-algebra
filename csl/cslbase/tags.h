@@ -712,24 +712,22 @@ typedef uintptr_t Header;
 #define library_number(x) (((x) >> 20) & 0xfff)
 
 /*
- * I will now be re-awakaing the Kanji support to make the internals
- * of this code work in Unicode. But I will support the full Unicode
- * range not merely 0x0 to 0xffff.
- * This might end up being an incompatible change as regards the data
- * format of the end-of-file indicator, but I hope it will not have
- * a bad effect on anything else.
+ * I will now try to support the full range of Unicode from
+ * U+0000 to U+10FFFF.
  *
  * Note that the original arrangement of FONT/BITS/CODE that I had
  * was as mandated for Common Lisp. There was also a "kanji" option that
  * used the BITS and CODE fields together to pack 16-bit characters.
  * I will retire these and now use 21 bits for the codepoint and I have
  * 3 bits for "font" information but I do not expect to do anything with it.
+ *       ( ==== now no longer in use === )       ( == Current == )
  *       Kanji mode           Ordinary mode      New Unicode mode
  *       font                 font               3 bits of "font"
  *       code )               bits               21 bits of "code"
- *       code ) 16 bits       code
+ *       code ) 16 bits       code               no support for "bits"
  * Note that pack_char now takes a 21-bit code but only values up to
- * 0x0010ffff are valid for Unicode.
+ * 0x0010ffff are valid for Unicode. Internally I will often pack
+ * things using utf-8 encoded strings.
  */
 
 

@@ -1966,16 +1966,7 @@ Lisp_Object MS_CDECL Lsputv(Lisp_Object nil, int nargs, ...)
     hl = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("putv-char", n);
-#ifdef Kanji
-    if (iswchar((int)vx)
-    {   if (n1 == hl-1) return aerror1("putv-char", n);
-        celt(v, n1) = (char)(vx >> 8);
-        celt(v, n1+1) = (char)vx;
-    }
-    else celt(v, n1) = (char)vx;
-#else
     celt(v, n1) = (char)vx;
-#endif
     return onevalue(x);
 }
 

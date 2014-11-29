@@ -114,14 +114,6 @@
  * {\ttfamily verbos} function controls.
  */
 
-/*! predef [*hanaku] \item [{\ttfamily !*hankaku}] \index{{\ttfamily "!*hankaku}} ~\newline
- * This was concerned with internationalisation to support a Japanese
- * locale but has not been activated for some while. In the fullness of time I
- * hope to migrate CSL to use an UTF8 representation of Unicode characters
- * internally, but that upgrade is at present an ideal and a project not
- * a reality. Volunteers to help welcome!
- */
-
 /*! predef [*lower] \item [{\ttfamily !*lower}] \index{{\ttfamily "!*lower}} ~\newline
  * In CSL if the fluid variable {\ttfamily !*lower} is set (which it is
  * by default) then when characters are read they are folded to lower case.

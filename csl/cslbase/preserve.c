@@ -2465,6 +2465,13 @@ static void unadjust_vecheap(void)
                         set_stream_write_other(ss, write_action_illegal);
                         set_stream_file(ss, NULL);
                     }
+                    if (elt(ss, 4) == (intptr_t)char_from_pipe &&
+                        elt(ss, 3) != 0)
+                    {   my_pclose(stream_file(ss));
+                        set_stream_read_fn(ss, char_to_illegal);
+                        set_stream_read_other(ss, write_action_illegal);
+                        set_stream_file(ss, NULL);
+                    }
 #endif
                     if (elt(ss, 8) == (intptr_t)char_from_file &&
                         elt(ss, 3) != 0)

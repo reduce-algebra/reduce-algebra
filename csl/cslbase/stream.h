@@ -93,6 +93,7 @@ extern int32_t write_action_spool(int32_t c, Lisp_Object f);
 
 extern int char_from_terminal(Lisp_Object f);
 extern int char_from_file(Lisp_Object f);
+extern int char_from_pipe(Lisp_Object f);
 extern int char_from_synonym(Lisp_Object f);
 extern int char_from_concatenated(Lisp_Object f);
 extern int char_from_echo(Lisp_Object f);

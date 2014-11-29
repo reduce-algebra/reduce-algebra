@@ -4764,13 +4764,6 @@ static void cold_setup()
     raise_symbol        = make_undefined_symbol("*raise");
     lower_symbol        = make_undefined_symbol("*lower");
     echo_symbol         = make_undefined_symbol("*echo");
-/*
- * I think that having a built-in symbol called *hankaku even if Kanji support
- * is not otherwise present is not too severe a problem, and making the
- * symbol present always will help keep image files re-usable from one
- * version of CSL to another.
- */
-    hankaku_symbol      = make_undefined_symbol("*hankaku");
     comp_symbol         = make_undefined_symbol("*comp");
     compiler_symbol     = make_undefined_symbol("compile");
     native_symbol       = make_undefined_symbol("native-compile");
