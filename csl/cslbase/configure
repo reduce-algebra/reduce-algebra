@@ -9831,7 +9831,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: inttypes_header=$inttypes_header" >&5
 $as_echo "$as_me: inttypes_header=$inttypes_header" >&6;}
 
-for ac_header in fcntl.h float.h malloc.h memory.h
+for ac_header in fcntl.h float.h malloc.h memory.h stdio.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -11218,17 +11218,29 @@ _ACEOF
 fi
 done
 
-ac_fn_c_check_decl "$LINENO" "CLOCK_THREAD_CPUTIME_ID" "ac_cv_have_decl_CLOCK_THREAD_CPUTIME_ID" "#include <time.h>
-"
-if test "x$ac_cv_have_decl_CLOCK_THREAD_CPUTIME_ID" = xyes; then :
-  ac_have_decl=1
-else
-  ac_have_decl=0
-fi
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_CLOCK_THREAD_CPUTIME_ID $ac_have_decl
+for ac_func in getc_unlocked putc_unlocked
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
+
+fi
+done
+
+for ac_func in _getc_nolock _putc_nolock
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
 
 
 if test x$ac_cv_header_sys_resource_h = "xyes"

@@ -36,10 +36,6 @@
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
 
-/* Define to 1 if you have the declaration of `CLOCK_THREAD_CPUTIME_ID', and
-   to 0 if you don't. */
-#undef HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
-
 /* Define to 1 if you have the declaration of `RLIM_SAVED_CUR', and to 0 if
    you don't. */
 #undef HAVE_DECL_RLIM_SAVED_CUR
@@ -72,6 +68,9 @@
 
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
+
+/* Define to 1 if you have the `getc_unlocked' function. */
+#undef HAVE_GETC_UNLOCKED
 
 /* Define to 1 if you have the `gethostbyaddr' function. */
 #undef HAVE_GETHOSTBYADDR
@@ -179,6 +178,9 @@
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
+/* Define to 1 if you have the `putc_unlocked' function. */
+#undef HAVE_PUTC_UNLOCKED
+
 /* Define to 1 if you have the `rmdir' function. */
 #undef HAVE_RMDIR
 
@@ -233,6 +235,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -382,6 +387,12 @@
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
+
+/* Define to 1 if you have the `_getc_nolock' function. */
+#undef HAVE__GETC_NOLOCK
+
+/* Define to 1 if you have the `_putc_nolock' function. */
+#undef HAVE__PUTC_NOLOCK
 
 /* Name of CPU */
 #undef HOST_CPU

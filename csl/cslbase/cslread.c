@@ -50,6 +50,31 @@
 #include <windows.h>
 #endif
 
+/*
+ * At present CSL is single threaded - at least as regards file IO - and
+ * using the unlocked versions of putc and getc can be a MAJOR saving.
+ */
+
+#ifdef HAVE_GETC_UNLOCKED
+#define GETC(x) getc_unlocked((x))
+#else
+#ifdef HAVE__GETC_NOLOCK
+#define GETC(x) _getc_nolock((x))
+#else
+#define GETC(x) getc((x))
+#endif
+#endif
+
+#ifdef HAVE_PUTC_UNLOCKED
+#define PUTC(x, y) putc_unlocked((x), (y))
+#else
+#ifdef HAVE__PUTC_NOLOCK
+#define PUTC(x, y) _putc_nolock((x), (y))
+#else
+#define PUTC(x, y) putc((x), (y))
+#endif
+#endif
+
 #define CTRL_C    3
 #define CTRL_D    4
 
@@ -2231,7 +2256,7 @@ static int raw_char_from_terminal()
     }
     if (procedural_input != NULL) c = (*procedural_input)();
     else if (non_terminal_input != NULL)
-    {   c = getc(non_terminal_input);
+    {   c = GETC(non_terminal_input);
     }
     else
     {   if (tty_count == 0)
@@ -2401,7 +2426,7 @@ static int raw_char_from_terminal()
         putc_stream(c, stream);
         if (exception_pending()) flip_exception();
     }
-    else if (spool_file != NULL) putc(c, spool_file);
+    else if (spool_file != NULL) PUTC(c, spool_file);
     return c;
 }
 
@@ -3467,7 +3492,7 @@ static int raw_char_from_file(Lisp_Object stream)
     {   kilo = 0;
         io_now++;
     }
-    ch = getc(stream_file(stream));
+    ch = GETC(stream_file(stream));
     if (ch == EOF) return EOF;
     if (qvalue(echo_symbol) != nil)
     {   Lisp_Object stream1 = qvalue(standard_output);
@@ -4072,7 +4097,7 @@ void read_eval_print(int noisy)
         }
 
         if (qvalue(standard_input) == lisp_terminal_io &&
-            spool_file != NULL) putc('\n', spool_file);
+            spool_file != NULL) PUTC('\n', spool_file);
 
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;

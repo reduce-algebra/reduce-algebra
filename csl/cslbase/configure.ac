@@ -1073,7 +1073,7 @@ AC_CHECK_HEADER([inttypes.h],
                 [inttypes_header=n])
 AC_MSG_NOTICE([inttypes_header=$inttypes_header])
 
-AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
+AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h stdio.h])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h sys/resource.h time.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
@@ -1162,7 +1162,8 @@ AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday times])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
 AC_CHECK_FUNCS([clock_gettime])
-AC_CHECK_DECLS([CLOCK_THREAD_CPUTIME_ID],[],[],[[#include <time.h>]])
+AC_CHECK_FUNCS([getc_unlocked putc_unlocked])
+AC_CHECK_FUNCS([_getc_nolock _putc_nolock])
    
 if test x$ac_cv_header_sys_resource_h = "xyes"
 then

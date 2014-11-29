@@ -2115,6 +2115,7 @@ FILE *open_file(char *filename, char *old, size_t n,
         if (old_file == NULL) ff = fopen(filename, mode);
         else ff = freopen(filename, mode, old_file);
     }
+    if (ff != NULL) setvbuf(ff, NULL, _IOFBF, 0x10000);
     return ff;
 }
 

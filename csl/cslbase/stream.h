@@ -117,7 +117,7 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 /*
  * The following typedef shows the expected layout of a Lisp_STREAM object,
  * but it is not used directly because I need to insist that each field is
- * exactly 4 bytes wide. Thus when I access things that contain pointers I
+ * exactly CELL wide. Thus when I access things that contain pointers I
  * will perform horrible casts. This is essential if I am to be able to host
  * this system on certain 64-bit systems.
  *
@@ -138,9 +138,21 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
  *      intptr_t pushed_char;                  12*CELL
  *      intptr_t spare;                        13*CELL
  *  } Lisp_STREAM;
+ *
+ * Now in fact I could make STREAM objects longer than this provided I
+ * accept that if a stream is moved from a 32 to a 64-bit world its length
+ * will alter. If the extra space is for use as a buffer that feels OK to me
+ * because the stream should not be active while it is being dumped and
+ * re-loaded. I can use stream_spare to tell me where the buffer begins.
+ * So here I am now putting STREAM_BUFFER_SIZE bytes at the end of each
+ * STREAM object, and that will be 64K on a 64-bit machine and 32K on
+ * a 32-bit one. I am not yet doing that and may not need to until and unless
+ * I make the code here multi-threaded.
  */
 
+#define STREAM_BUFFER_SIZE    (8192*CELL)
 #define STREAM_SIZE           (14*CELL)
+#define BUFFERED_STREAM_SIZE  (STREAM_SIZE+STREAM_BUFFER_SIZE)
 
 #define stream_type(v)        elt(v, 0)
 #define stream_write_data(v)  elt(v, 1)

@@ -49,6 +49,31 @@
 #include "sockhdr.h"
 #endif
 
+/*
+ * At present CSL is single threaded - at least as regards file IO - and
+ * using the unlocked versions of putc and getc can be a MAJOR saving.
+ */
+
+#ifdef HAVE_GETC_UNLOCKED
+#define GETC(x) getc_unlocked((x))
+#else
+#ifdef HAVE__GETC_NOLOCK
+#define GETC(x) _getc_nolock((x))
+#else
+#define GETC(x) getc((x))
+#endif
+#endif
+
+#ifdef HAVE_PUTC_UNLOCKED
+#define PUTC(x, y) putc_unlocked((x), (y))
+#else
+#ifdef HAVE__PUTC_NOLOCK
+#define PUTC(x, y) _putc_nolock((x), (y))
+#else
+#define PUTC(x, y) putc((x), (y))
+#endif
+#endif
+
 FILE *spool_file = NULL;
 char spool_file_name[32];
 
@@ -718,7 +743,7 @@ int char_to_terminal(int c, Lisp_Object dummy)
     else if ((c & 0xc0) == 0x80) /* do nothing */;
     else terminal_column++;
     if (spool_file != NULL)
-    {   putc(c, spool_file);
+    {   PUTC(c, spool_file);
 #ifdef DEBUG
         fflush(spool_file);
 #endif
@@ -726,7 +751,7 @@ int char_to_terminal(int c, Lisp_Object dummy)
     if (procedural_output != NULL) return (*procedural_output)(c);
 #ifdef WINDOW_SYSTEM
     if (alternative_stdout != NULL)
-    {   putc(c, alternative_stdout);
+    {   PUTC(c, alternative_stdout);
         return 0;
     }
 #endif
@@ -777,7 +802,7 @@ int char_to_spool(int c, Lisp_Object stream)
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
     else if ((c & 0xc0) == 0x80) /* do nothing */ ;
     else terminal_column++;
-    putc(c, spool_file);
+    PUTC(c, spool_file);
     return 0;
 }
 
@@ -804,7 +829,7 @@ int char_to_file(int c, Lisp_Object stream)
     {   stream_byte_pos(stream)++;
         stream_char_pos(stream)++;
     }
-    putc(c, stream_file(stream));
+    PUTC(c, stream_file(stream));
     return 0;   /* indicate success */
 }
 
@@ -4499,7 +4524,7 @@ int binary_outchar(int c, Lisp_Object dummy)
 {
     CSL_IGNORE(dummy);
     if (binary_outfile == NULL) return 1;
-    putc(c, binary_outfile);
+    PUTC(c, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return 0;   /* indicate success */
 }
@@ -4540,7 +4565,7 @@ static Lisp_Object Lbinary_prinbyte(Lisp_Object nil, Lisp_Object a)
     if (binary_outfile == NULL) return onevalue(nil);
     if (!is_fixnum(a)) return aerror1("binary_prinbyte", a);
     x = (int)int_of_fixnum(a);
-    putc(x, binary_outfile);
+    PUTC(x, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return onevalue(nil);
 }
@@ -4551,8 +4576,8 @@ static Lisp_Object Lbinary_prin2(Lisp_Object nil, Lisp_Object a)
     if (binary_outfile == NULL) return onevalue(nil);
     if (!is_fixnum(a)) return aerror1("binary_prin2", a);
     x = int_of_fixnum(a);
-    putc((int)(x >> 8), binary_outfile);
-    putc((int)x, binary_outfile);
+    PUTC((int)(x >> 8), binary_outfile);
+    PUTC((int)x, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return onevalue(nil);
 }
@@ -4563,9 +4588,9 @@ static Lisp_Object Lbinary_prin3(Lisp_Object nil, Lisp_Object a)
     if (binary_outfile == NULL) return onevalue(nil);
     if (!is_fixnum(a)) return aerror1("binary_prin3", a);
     x = int_of_fixnum(a);
-    putc((int)(x >> 16), binary_outfile);
-    putc((int)(x >> 8), binary_outfile);
-    putc((int)x, binary_outfile);
+    PUTC((int)(x >> 16), binary_outfile);
+    PUTC((int)(x >> 8), binary_outfile);
+    PUTC((int)x, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return onevalue(nil);
 }
@@ -4577,15 +4602,15 @@ static Lisp_Object Lbinary_prinfloat(Lisp_Object nil, Lisp_Object a)
     if (!is_float(a)) return aerror1("binary_prinfloat", a);
     w = (uint32_t *)&double_float_val(a);
     x = w[0];
-    putc((int)(x >> 24), binary_outfile);
-    putc((int)(x >> 16), binary_outfile);
-    putc((int)(x >> 8), binary_outfile);
-    putc((int)x, binary_outfile);
+    PUTC((int)(x >> 24), binary_outfile);
+    PUTC((int)(x >> 16), binary_outfile);
+    PUTC((int)(x >> 8), binary_outfile);
+    PUTC((int)x, binary_outfile);
     x = w[1];
-    putc((int)(x >> 24), binary_outfile);
-    putc((int)(x >> 16), binary_outfile);
-    putc((int)(x >> 8), binary_outfile);
-    putc((int)x, binary_outfile);
+    PUTC((int)(x >> 24), binary_outfile);
+    PUTC((int)(x >> 16), binary_outfile);
+    PUTC((int)(x >> 8), binary_outfile);
+    PUTC((int)x, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return onevalue(nil);
 }
@@ -4593,7 +4618,7 @@ static Lisp_Object Lbinary_prinfloat(Lisp_Object nil, Lisp_Object a)
 static Lisp_Object MS_CDECL Lbinary_terpri(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "binary_terpri");
-    if (binary_outfile != NULL) putc('\n', binary_outfile);
+    if (binary_outfile != NULL) PUTC('\n', binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return onevalue(nil);
 }
@@ -4641,7 +4666,7 @@ static Lisp_Object MS_CDECL Lbinary_readbyte(Lisp_Object nil, int nargs, ...)
     {   io_kilo = 0;
         io_now++;
     }
-    return onevalue(fixnum_of_int((int32_t)getc(binary_infile) & 0xff));
+    return onevalue(fixnum_of_int((int32_t)GETC(binary_infile) & 0xff));
 }
 
 static Lisp_Object MS_CDECL Lbinary_read2(Lisp_Object nil, int nargs, ...)
@@ -4649,8 +4674,8 @@ static Lisp_Object MS_CDECL Lbinary_read2(Lisp_Object nil, int nargs, ...)
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-read2");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
-    {   int32_t c1 = (int32_t)getc(binary_infile) & 0xff;
-        int32_t c2 = (int32_t)getc(binary_infile) & 0xff;
+    {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
+        int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         ++io_kilo;
         if (++io_kilo >= 1024)
         {   io_kilo = 0;
@@ -4665,9 +4690,9 @@ static Lisp_Object MS_CDECL Lbinary_read3(Lisp_Object nil, int nargs, ...)
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-read3");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
-    {   int32_t c1 = (int32_t)getc(binary_infile) & 0xff;
-        int32_t c2 = (int32_t)getc(binary_infile) & 0xff;
-        int32_t c3 = (int32_t)getc(binary_infile) & 0xff;
+    {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
+        int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
+        int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
         io_kilo += 2;
         if (++io_kilo >= 1024)
         {   io_kilo = 0;
@@ -4682,10 +4707,10 @@ static Lisp_Object MS_CDECL Lbinary_read4(Lisp_Object nil, int nargs, ...)
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-read4");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
-    {   int32_t c1 = (int32_t)getc(binary_infile) & 0xff;
-        int32_t c2 = (int32_t)getc(binary_infile) & 0xff;
-        int32_t c3 = (int32_t)getc(binary_infile) & 0xff;
-        int32_t c4 = (int32_t)getc(binary_infile) & 0xff;
+    {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
+        int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
+        int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
+        int32_t c4 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t r = (c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
         io_kilo += 3;
         if (++io_kilo >= 1024)
@@ -4703,15 +4728,15 @@ static Lisp_Object MS_CDECL Lbinary_readfloat(Lisp_Object nil, int nargs, ...)
     errexit();
     argcheck(nargs, 0, "binary-readfloat");
     if (binary_infile == NULL) return onevalue(r);
-    w = (int32_t)getc(binary_infile) & 0xff;
-    w = (w<<8) | ((int32_t)getc(binary_infile) & 0xff);
-    w = (w<<8) | ((int32_t)getc(binary_infile) & 0xff);
-    w = (w<<8) | ((int32_t)getc(binary_infile) & 0xff);
+    w = (int32_t)GETC(binary_infile) & 0xff;
+    w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
+    w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
+    w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
     ((uint32_t *)&double_float_val(r))[0] = w;
-    w = (int32_t)getc(binary_infile) & 0xff;
-    w = (w<<8) | ((int32_t)getc(binary_infile) & 0xff);
-    w = (w<<8) | ((int32_t)getc(binary_infile) & 0xff);
-    w = (w<<8) | ((int32_t)getc(binary_infile) & 0xff);
+    w = (int32_t)GETC(binary_infile) & 0xff;
+    w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
+    w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
+    w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
     ((uint32_t *)&double_float_val(r))[1] = w;
     io_kilo += 7;
     if (++io_kilo >= 1024)
