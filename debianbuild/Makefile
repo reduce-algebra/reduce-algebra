@@ -2,6 +2,7 @@
 SNAPSHOT=$(shell LANG=C date "+%Y%m%d")
 NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog
+BUILDTOPDIR=C
 
 all:	update-changelog reduce-packages
 
@@ -18,10 +19,15 @@ update-changelog:
         fi
  
 
-reduce-packages:	debpackages rpmpackages
+$(BUILDTOPDIR).stamp:
+	rm -rf $(BUILDTOPDIR)
+	( time svn export -r HEAD .. $(BUILDTOPDIR) ) | tee $(BUILDTOPDIR).log
+	touch $(BUILDTOPDIR).stamp
+
+reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages
 
 debpackages:
-	cd reduce ; debuild -b -us -uc 
+	cd reduce ; debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) -b -us -uc
 
 rpmpackages:
 	fakeroot alien -k -r reduce-*_$(SNAPSHOT)_*.deb
