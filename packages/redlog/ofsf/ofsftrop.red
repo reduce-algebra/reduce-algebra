@@ -35,13 +35,14 @@ ofsf_lpsolprec!* := 8;
 
 fluid '(rlsat2polatnum!*);
 
-switch rlgurobi;  % use the Gurobi optimizer
+switch rlgurobi;   % use the Gurobi optimizer
 off1 'rlgurobi;
 
-switch rltropdel0;  % delete the (0,...,0) monomial
-off 'rltropdel0;
+switch rltropdel0; % delete the (0,...,0) monomial
+on 'rltropdel0;
 
-switch rltropilp;  % use ILP solving instead of LP solving
+switch rltropilp;  % use ILP solving instead of LP solving with Gurobi
+                   % ignore otherwise
 on1 'rltropilp;
 
 switch rltropint;  % use integers, not floats, even with off rltropilp
@@ -51,11 +52,6 @@ off1 'rltropsos;
 
 switch rltroplcm;  % use lcm instead of product for disjunctions
 on1 'rltroplcm;
-
-% Entry points.
-
-put('zerop, 'psopfn, 'ofsf_zeropeval);
-put('pzerop, 'psopfn, 'ofsf_pzeropeval);
 
 asserted procedure ofsf_tropsat(f: QfFormula);
    % Redlog service
@@ -73,41 +69,14 @@ asserted procedure ofsf_psat2pol(f: QfFormula): SF;
    % Redlog service.
    ofsf_sat2pol1(f, t);
 
-asserted procedure ofsf_zeropeval(argl: List): List;
-   % psopfn AM entry point
-   ofsf_zeropeval1(argl, nil);
-
-asserted procedure ofsf_pzeropeval(argl: List): List;
-   % psopfn AM entry point
-   ofsf_zeropeval1(argl, t);
-
-asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
-   begin integer f, vl, w;
-%%      ioto_tprin2t {"!*echo = ", !*echo};
-      f := numr simp car argl;
-%%      vl := sort(kernels f, 'ordop);
-%%       if null vl or null cdr vl then
-%% 	 rederr {car argl, "is not multivariate"};
-      w := ofsf_zerop1(f, posp);
-      return 'list . w
-   end;
-
-asserted procedure ofsf_zerop(f: SF): List;
-   % SM entry point
-   ofsf_zerop1(f, nil);
-
-asserted procedure ofsf_pzerop(f: SF): List;
-   % SM entry point
-      ofsf_zerop1(f, t);
-
 asserted procedure ofsf_tropsat1(f: QfFormula, posp: Boolean): Id;
-   begin scalar p, w, sol, vl;
+   begin scalar p, sol, vl, flag, one, other;
       p := ofsf_sat2pol1(f, posp);
-      w := ofsf_zerop1(p, posp);
-      if eqcar(w, 1) then <<
+      {flag, one, other} := ofsf_zerop1(p, posp);
+      if eqn(flag, 1) then <<
 	 if !*rlverbose then
  	    ioto_tprin2 "found candidate, solving ... ";
-	 sol := car ofsf_zerosolve(p, w);
+	 sol := car ofsf_zerosolve(p, car one, car other);
 	 if !*rlverbose then
  	    ioto_prin2t "done";
 	 vl := cl_fvarl1 f;
@@ -115,13 +84,13 @@ asserted procedure ofsf_tropsat1(f: QfFormula, posp: Boolean): Id;
 	 % Evaluate f at sol
 	 if !*rlverbose then
  	    ioto_prin2t "evaluating input formula at candidate solution";
-	 return 'sat;
+	 return 'sat
       >>;
-      if eqcar(w, 0) then
+      if eqn(flag, 0) then
 	 return 'unsat;
-      if eqcar(w, -1) then
+      if eqn(flag, -1) then
 	 return 'unknown;
-      rederr {"something wrong in ofsf_tropsat: ofsf_zerop1 returned ", w}
+      rederr {"something wrong in ofsf_tropsat: ofsf_zerop1 returned ", flag}
    end;
 
 asserted procedure ofsf_sat2pol1(f: QfFormula, posp: Boolean): SF;
@@ -152,9 +121,9 @@ asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, nea
 	    {ee, geal, gral, neal} := ofsf_formula2pol1(a, geal, gral, neal, posp);
 	    if !*rltropsos then
 	       ee := exptf(ee, 2);
-	    e := sfto_sqfpartf addf(ee, e)
+	    e := addf(ee, e)
       	 >>;
-%	 e := sfto_sqfpartf e;
+	 e := sfto_sqfpartf e;
 	 return {e, geal, gral, neal}
       >>;
       if !*rlverbose then
@@ -221,94 +190,161 @@ asserted procedure ofsf_neq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, 
       return {e, geal, gral, (lhs . e) . neal}
    end;
 
-asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List;
-   begin
-      scalar one, fone, vl, w, flag, signfone, tryonesol;
-      integer ofsf_anuc!*;
+put('zerop, 'psopfn, 'ofsf_zeropeval);
+put('pzerop, 'psopfn, 'ofsf_pzeropeval);
+
+asserted procedure ofsf_zeropeval(argl: List): List;
+   % psopfn AM entry point
+   ofsf_zeropeval1(argl, nil);
+
+asserted procedure ofsf_pzeropeval(argl: List): List;
+   % psopfn AM entry point
+   ofsf_zeropeval1(argl, t);
+
+asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
+   begin scalar f, flag, one, other;
+      f := numr simp car argl;
+      {flag, one, other} := ofsf_zerop1(f, posp);
+      if not eqn(flag, 1) then
+      	 return {'list, flag};
+      one := ofsf_s2aPointPair one;
+      other := ofsf_s2aPointPair other;
+      return {'list, flag, one, other}
+   end;
+
+asserted procedure ofsf_s2aPointPair(pp: List2): List2;
+   {'list, ofsf_al2eql car pp, cadr pp};
+
+asserted procedure ofsf_al2eql(al: AList): List;
+   'list . for each pr in al collect {'equal, car pr, cdr pr};
+
+asserted procedure ofsf_zerop(f: SF): List;
+   % SM entry point
+   ofsf_zerop1(f, nil);
+
+asserted procedure ofsf_pzerop(f: SF): List;
+   % SM entry point
+   ofsf_zerop1(f, t);
+
+asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List3;
+   % Returns (FLAG, ONE, OTHER). The semantics of FLAG is as follows:
+   %
+   % FLAG = -1: This incomplete method failed.
+   % FLAG =  0: f has no (positive) zero.
+   % FLAG >  0: f has at least one (positive) zero.
+   % FLAG =  1: There is at least one (positive) zero.
+   % FLAG =  2: f(1, ..., 1) = 0
+   % FLAG =  3: f is positive definite (on the first hyper-octant).
+   %
+   % If FLAG = 1, then ONE = (1, ..., 1), f(1, ..., 1)) and OTHER = (p, f(p))
+   % such that f(1, ..., 1) * f(p) < 0, i.e., OTHER is the witness for the
+   % existence of a zero via the intermediate value theorem. All coordinates of
+   % p are integer powers of 2. For all other values of FLAG we have ONE = OTHER
+   % = nil.
+   %
+   begin scalar one, fone, other, vl; integer flag;
       if domainp f then
 	 return if null f then
- 	    '(1 (list (list) 0))
-  	 else if minusf f then
-	    {0, 'nd, {'list, {'list}, f}}
+ 	    '(1 nil nil)
+ 	 else if minusf f then
+ 	    '(0 nil nil)
 	 else
-	    {0, {'list, {'list}, f}, 'pd};
+ 	    '(3 nil  nil);
       vl := sort(kernels f, 'ordop);
-      {signfone, one, fone, tryonesol} := ofsf_zeropTryOne(f, vl);
-      if eqn(signfone, 0) then
-	 return tryonesol;
-      if eqn(signfone, -1) then <<
-	 if !*rlverbose then
-	    ioto_tprin2t {"+++ f is negative at (1, ..., 1), ",
-	       "looking for a positive point of f"};
-	 w := ofsf_zerop2(f, nil, posp);
-	 flag := if w eq 'nd then 0 else if w eq 'failed then -1 else 1;
-	 return {flag, {'list, one, fone}, w}
-      >>;
-      if !*rlverbose then
-	 ioto_tprin2t {"+++ f is positive at (1, ..., 1), ",
-	    "looking for a positive point of -f"};
-      w := ofsf_zerop2(negf f, t, posp);
-      flag := if w eq 'pd then 0 else if w eq 'failed then -1 else 1;
-      return {flag, {'list, one, fone}, w}
+      {flag, one, fone} := ofsf_zeropTryOne(f, vl);
+      if eqn(flag, 2) then
+	 return '(2 nil nil);
+      assert(flag = -1);
+      {flag, other} := ofsf_zerop2(f, fone > 0, posp);
+      if eqn(flag, -1) then
+	 return '(-1 nil nil);
+      if eqn(flag, 0) then
+	 return '(0 nil nil);
+      assert(flag = 1);
+      return {1, {one, fone}, other}
    end;
 
-asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List4;
-   if !*rltropilp or !*rltropint then
-      ofsf_zeropTryOneInt(f, vl)
-   else
-      ofsf_zeropTryOneFloat(f, vl);
-
-asserted procedure ofsf_zeropTryOneInt(f: SF, vl: List): List4;
-   begin scalar one, fone;
-      one := 'list . for each v in vl collect {'equal, v, 1};
-      fone := subf(f, for each v in vl collect v . 1);
-      if null numr fone then <<
+asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
+   % Returns (FLAG, ONE, FONE). The semantics of FLAG is as follows:
+   %
+   % FLAG = -1: f(1, ..., 1) <> 0
+   % FLAG =  2: f(1, ..., 1) = 0
+   %
+   % If FLAG = -1, then ONE = (x_1 . 1, ..., x_n . 1) and FONE = f(1, ..., 1)).
+   % Else ONE = FONE = nil.
+   %
+   begin scalar eins, one, fone;
+      eins := if !*rltropilp or !*rltropint then 1 else 1.0;
+      one := for each v in vl collect v . eins;
+      fone := sfto_sf2int ofsf_fsubf(f, one);
+      if eqn(fone, 0) then <<
 	 if !*rlverbose then
-	    ioto_tprin2t {"+++ f is zero at (1, ..., 1)"};
-	 return {0, one, fone, {1, {'list, one, 0}}}
+ 	    ioto_tprin2t {"+++ f is zero at (1, ..., 1)"};
+	 return '(2 nil nil)
       >>;
-      return {sgn numr fone, one, prepsq fone, nil}
+      return {-1, one, fone}
    end;
 
-asserted procedure ofsf_zeropTryOneFloat(f: SF, vl: List): List4;
-   begin scalar one, fone;
-      one := 'list . for each v in vl collect {'equal, v, 1.0};
-      fone := ofsf_fsubf(f, for each v in vl collect v . 1.0);
-      if fone = 0.0 then <<
-	 if !*rlverbose then
-	    ioto_tprin2t {"+++ f is zero at (1, ..., 1)"};
-	 return {0, one, fone, {1, {'list, one, 0}}}
-      >>;
-      return {sgn fone, one, fone, nil}
-   end;
-
-asserted procedure ofsf_zerop2(f: SF, negp: Boolean, posp: Boolean): List;
-   begin
-      scalar monl, vl, status, dir, ev, nvar;
-      integer  d;
-      vl . monl := sfto_sf2monl f;
+asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
+   % Returns (FLAG, OTHER). Define ff := if negatep then -f else f. The
+   % semantics of FLAG is as follows:
+   %
+   % FLAG = -1: This incomplete method failed.
+   % FLAG =  0: f has no (positive) zero.
+   % FLAG =  1: We have found a point p such that ff(p) > 0.
+   %
+   % If FLAG = 1, then OTHER = (p, f(p)). Else OTHER = nil.
+   %
+   begin scalar ff, monl, vl, status, dir, ev, nvar; integer  d;
+      ff := ofsf_zeropcnegate(f, negatep);
+      vl . monl := sfto_sf2monl ff;
       d := length vl;
       if !*rlverbose then
       	 ioto_tprin2t {"+++ dimension: ", d};
       {status, dir, ev, nvar} := ofsf_posdirp(d, vl, monl, posp);
-      if status eq 'infeasible then
-	 return 'failed;
       if status eq 'definite then <<
+	 % We did not find a coefficient in ff suitable for our purposes. In the
+	 % posp case, this means that all coefficients are negative, and we may
+	 % conclude that ff is negative definite on the first hyper-octant. In
+	 % the general case, this means all coefficients negative and all
+	 % degrees are even, and we may conclude that ff is negative definite.
+	 % It follows that the original polynomial f is either positive or
+	 % negative definite. In both variants our incomplete method was
+	 % successful with a negative answer: we guarantee that there is no
+	 % (positive) zero.
 	 if !*rlverbose then
-	    ioto_tprin2t {"+++ the ", if negp then "negated " else "",
- 	       "polynomial is negative definite"};
-	 return if negp then 'pd else 'nd
+	    ioto_tprin2t {"+++ ", if negatep then "-" else "",
+ 	       "f is negative definite"};
+	 return '(0 nil)
       >>;
+      if status eq 'infeasible then
+	 % There were suitable coefficients in the frame but none of them was in
+	 % the Newton polytope. Thas is ILP solving returned "infeasible" for
+	 % all of them. This is exactly where our incomplete method fails.
+	 return '(-1 nil);
       if !*rlverbose then <<
-	 ioto_tprin2 {"+++ found approximate direction of positive value: "};
-	 mathprint('list . dir);
-	 ioto_tprin2 {"+++ at point: "};
+	 ioto_tprin2t {"+++ found approximate direction of positive value: "};
+	 mathprint ofsf_al2eql dir;
+	 ioto_tprin2t {"+++ at point: "};
 	 mathprint('list . for each v in vl collect {'equal, v, pop ev});
       >>;
       if !*rltropilp or !*rltropint then
- 	 return ofsf_zeropLp1int(f, negp, d, vl, dir, nvar);
-      return ofsf_zeropLp1float(f, negp, d, vl, dir, nvar)
+ 	 return ofsf_zeropLp1int(ff, negatep, d, vl, dir, nvar);
+      return ofsf_zeropLp1float(ff, negatep, d, vl, dir, nvar)
    end;
+
+asserted procedure ofsf_zeropcnegate(f: SF, negatep: Boolean): SF;
+   if negatep then <<
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ f is positive at (1, ..., 1), ",
+	    "looking for a positive point of -f"};
+      negf f
+   >> else <<
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ f is negative at (1, ..., 1), ",
+	    "looking for a positive point of f"};
+      f
+   >>;
 
 asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
    % Returns a variable with an odd corresponding exponent in [ev] or [nil].
@@ -319,6 +355,20 @@ asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
  	 ofsf_softnegp(cdr vl, cdr ev);
 
 asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): List4;
+   % Returns (FLAG, DIR, EV, NEVAR). We refer to exponent vector as points and
+   % to the sign of a corresponding coefficient as the sign of the point. Then
+   % the semantics of FLAG is as follows:
+   %
+   % FLAG =   definite: no positive (or weakly negative) point at all
+   % FLAG = infeasible: no positive (or weakly negative) point in the Newton polytope.
+   % FLAG =   feasible: We found a point with a suitable coefficient in the Newton polytope.
+   %
+   % If FLAG = feasible, then EV is the point, DIR is the normal vector of a
+   % separating hyperplane for EV, given as a set of equations introducing
+   % variables c, n_i. If we are not in the posp case, then NEVAR is one
+   % variable whose corresponding exponent in EV is odd. If FLAG is in
+   % {definite, infeasible}, then DIR = EV = NEVAR = nil.
+   %
    begin scalar posl, snegl, hnegl, w, delposp; integer np, ns, nh;
       if !*rltropilp then
       	 lp_newmodel(1, d)
@@ -360,9 +410,6 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): L
       return w
    end;
 
-asserted procedure ofsf_zerolistp(l);
-   null l or eqn(car l, 0) and ofsf_zerolistp cdr l;
-
 asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List4;
    begin scalar cnt, w, dir, ev; integer i;
       if null l then
@@ -373,8 +420,6 @@ asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, sneg
 	    c := c - 1
 	 >>;
 	 ev := pop l;
-%% ev1 := copy ev;
-%% mathprint reval ('times . for each v in vl join << ee := pop ev1; if ee neq 0 then {{'expt, v, ee}} >>);
 	 lp_negconstr1();
 	 w := lp_optimize();
 	 if w neq 'infeasible then
@@ -386,9 +431,12 @@ asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, sneg
       >>;
       if w eq 'infeasible then
       	 return {'infeasible, nil, nil, nil};
-      dir := {'equal, 'c, pop w} . for i := 1:d collect {'equal, mkid('n, i), pop w};
+      dir := ('c . pop w) . for i := 1:d collect mkid('n, i) . pop w;
       return {'feasible, dir, ev, if snegp then ofsf_softnegp(vl, ev)}
    end;
+
+asserted procedure ofsf_zerolistp(l: List): Boolean;
+   null l or eqn(car l, 0) and ofsf_zerolistp cdr l;
 
 asserted procedure ofsf_addconstraints(l: List);
    for each pt in l do
@@ -397,44 +445,52 @@ asserted procedure ofsf_addconstraints(l: List);
 asserted procedure ofsf_oddevp(ev: List): ExtraBoolean;
    ev and (not evenp car ev or ofsf_oddevp cdr ev);
 
-asserted procedure ofsf_zeropLp1int(f: SF, negp: Boolean, d: Integer, vl: List, dirp: List, nvar: ExtraBoolean): List;
-   begin scalar isol, fsol, sol, fval, v, inf; integer  pow, ee;
+asserted procedure ofsf_zeropLp1int(f: SF, negatep: Boolean, d: Integer, vl: List, dirp: AList, nvar: ExtraBoolean): List;
+   begin scalar isol, fsol, sol, fval, v, inf; integer ee;
       dirp := ofsf_spoint2intpoint dirp;
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ lifted to integers: "};
-	 mathprint('list . dirp)
+	 mathprint ofsf_al2eql dirp
       >>;
       pop dirp;
       isol := for i := 1:d collect <<
 	 v := pop vl;
-	 ee := caddr pop dirp;
-	 inf := if v eq nvar then
-	    {'minus, {'expt, 'infinity, ee}}
+	 ee := cdr pop dirp;
+	 inf := ofsf_mkpowq('infinity, ee);
+	 if v eq nvar then
+	    v . negsq inf
 	 else
-	    {'expt, 'infinity, ee};
-	 {'equal, v, inf}
+	    v . inf
       >>;
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ modulo rounding errors there ",
 	    "is a positive value at: "};
-	 mathprint('list . isol)
+	 mathprint ofsf_al2eql for each pr in isol collect car pr . prepsq cdr pr
       >>;
-      fsol := subf(f, for each e in isol collect cadr e . caddr e);
+      if !*rlverbose then
+	 ioto_tprin2 {"+++ computing ", if negatep then "-" else "",
+ 	    "f at that infinite point ... "};
+      fsol := sfto_qsub(f, isol);
       if !*rlverbose then <<
-	 ioto_tprin2t {"+++ ", if negp then "negated " else "",
- 	    "polynomial at that infinite point: "};
+	 ioto_prin2t "done";
 	 mathprint prepsq fsol
       >>;
       if !*rlverbose then
-	 ioto_tprin2t {"+++ realizing infinity by increasing powers of 2 ..."};
-      pow . fval := ofsf_realizeinfinity fsol;
-      sol := 'list . for each e in isol collect
-	 {'equal, cadr e, prepsq subsq(simp caddr e, {'infinity . pow})};
-      if negp then fval := negsq fval;
-      return {'list, sol, prepsq fval}
+	 ioto_tprin2 {"+++ realizing infinity by increasing powers of 2: "};
+      sol .  fval := ofsf_realizeinfinity(isol, fsol);
+      if negatep then fval := negsq fval;
+      return {1, {sol, prepsq fval}}
    end;
 
-asserted procedure ofsf_zeropLp1float(f: SF, negp: Boolean, d: Integer, vl: List, dirp: List, nvar: ExtraBoolean): List;
+asserted procedure ofsf_mkpowq(k: Kernel, pow: Integer): SQ;
+   if eqn(pow, 0) then
+      1 ./ 1
+   else if pow > 0 then
+      (((k .** pow) .* 1) .+ nil) ./ 1
+   else
+      1 ./ (((k .** -pow) .* 1) .+ nil);
+
+asserted procedure ofsf_zeropLp1float(f: SF, negatep: Boolean, d: Integer, vl: List, dirp: List, nvar: ExtraBoolean): List;
    begin scalar subl, scvl, val, pow, this, v, expo;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ realizing infinity by increasing powers of 2 ..."};
@@ -445,15 +501,16 @@ asserted procedure ofsf_zeropLp1float(f: SF, negp: Boolean, d: Integer, vl: List
 	 scvl := vl;
 	 subl := for each e in cdr dirp collect <<
 	    v := pop scvl;
-	    expo := if eqcar(caddr e, 'minus) then - cadr caddr e else caddr e;
+	    expo := if eqcar(cdr e, 'minus) then - cadr cdr e else cdr e;
 	    this := pow ^ expo;
 	    if v eq nvar then this := -this;
 	    v . this
 	 >>;
 	 val := ofsf_fsubf(f, subl)
       >> until val > 0;
-      if negp then val := -val;
-      return {'list, 'list . for each pr in subl collect {'equal, car pr, cdr pr}, val}
+      if negatep then val := -val;
+      return {1, {subl, val}}
+%      return {'list, 'list . for each pr in subl collect {'equal, car pr, cdr pr}, val}
    end;
 
 asserted procedure ofsf_fsubf(f: SF, subl: AList): Floating;
@@ -468,64 +525,76 @@ asserted procedure ofsf_spoint2intpoint(dirp: List): List;
    else
       ofsf_rpoint2intpoint dirp;
 
-asserted procedure ofsf_fpoint2intpoint(dirp: List): List;
+asserted procedure ofsf_fpoint2intpoint(dirp: AList): List;
    begin scalar res, w; integer g;
       res := car dirp . for each e in cdr dirp collect <<
 	 w := fix(if !*rltropilp then
- 	    caddr e
+ 	    cdr e
  	 else
- 	    10^ofsf_lpsolprec!* * caddr e + 0.5 * sgn caddr e);
+ 	    10^ofsf_lpsolprec!* * cdr e + 0.5 * sgn caddr e);
 	 g := gcdn(g, w);
- 	 {'equal, cadr e, w}
+ 	 car e . w
       >>;
       for each e in cdr res do
-	 caddr e := caddr e / g;
+	 cdr e := cdr e / g;
       return res
    end;
 
 asserted procedure ofsf_rpoint2intpoint(dirp: List): List;
    begin scalar res, w; integer g;
       res := car dirp . for each e in cdr dirp collect <<
-	 w := simp caddr e;
+	 w := simp cdr e;
 	 g := gcdn(g, denr w);
- 	 {'equal, cadr e, w}
+ 	 car e . w
       >>;
       g := !*f2q g;
       for each e in cdr res do
-	 caddr e := sfto_sf2int numr multsq(caddr e, g);
+	 cdr e := sfto_sf2int numr multsq(cdr e, g);
       return res
    end;
 
-asserted procedure ofsf_realizeinfinity(fsol: SQ): DottedPair;
-   begin scalar val; integer pow;
-      if minusf numr fsol then
+asserted procedure ofsf_realizeinfinity(isol: AList, fsol: SQ): DottedPair;
+   begin scalar nfsol, nval, val, ipow, sol; integer pow;
+      nfsol := numr fsol;
+      if minusf nfsol then
 	 rederr "negative lc - probably something wrong";
       repeat <<
 	 pow := if eqn(pow, 0) then 1 else pow * 2;
 	 if !*rlverbose then
 	    ioto_prin2 {"[", pow, "] "};
-	 val := subsq(fsol, {'infinity . pow})
-      >> until numr val and numr val > 0;
-      return pow . val
+	 nval := sfto_fsub(nfsol, {'infinity . pow})
+      >> until nval and nval > 0;
+      ioto_cterpri();
+      ipow := {'infinity . pow};
+      val := quotsq(!*f2q nval, !*f2q sfto_fsub(denr fsol, ipow));
+      sol := for each e in isol collect
+	 car e . prepsq sfto_fsubq(cdr e, ipow);
+      return sol . val
    end;
 
 put('zerosolve, 'psopfn, 'ofsf_zerosolveeval);
 
 asserted procedure ofsf_zerosolveeval(l: List): List;
-   begin scalar f, zres, zero, gzero; integer len;
+   begin scalar f, zres, zero, gzero, p, q; integer len;
       len := length l;
       if not eqn(len, 2) then
 	 rederr "usage: zerosolve(<polynomial>, <[p]zero result>)";
       f := numr simp pop l;
       zres := cdr reval pop l;
-      zero . gzero := ofsf_zerosolve(f, zres);
+      if not eqcar(zres, 1) then
+	 rederr {"second argument is not of a solvable type"};
+      % extract points as alists:
+      p := for each ee in cdr cadr cadr zres collect
+ 	 cadr ee . caddr ee;
+      q := for each ee in cdr cadr caddr zres collect
+  	 cadr ee . caddr ee;
+      zero . gzero := ofsf_zerosolve(f, p, q);
       zero := for each pr in zero collect
 	 {'equal, car pr, mk!*sq cdr pr};
-      return {'list, 'list . zero, gzero}
+      return {'list, 'list . zero, mk!*sq gzero}
    end;
 
-asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
-   % Returns (x_1 . anu_1, ..., x_n .  anu_n).
+asserted procedure ofsf_zerosolve(g: SF, p: AList, q: AList): DottedPair;
    %
    % g(p_1, ..., p_n) < 0 < g(q_1, ..., q_n)
    %
@@ -533,26 +602,25 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
    % x_1 = p_1 + Y * (q_1 - p_1)
    % ...
    % x_n = p_n + Y * (q_n - p_n), Y in [0,1]
+   %
    begin
-      scalar g, p, q, y, yq, subal, g0, rl, ral, x_i, p_i, q_i, zero, w, val, precq, gzero, floatzero;
-      assert(eqcar(l, 1));
+      scalar y, yq, subal, g0, rl, ral, x_i, p_i, q_i, zero, w, val, precq, gzero, floatzero;
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ computing zero, precision is ", precision 0, " ..."};
-	 ioto_tprin2t {"**********************************************************************"};
-	 ioto_tprin2t {"* Intervals of algebraic numbers are refined and printed to that     *"};
-	 ioto_tprin2t {"* precision. The returned function value is the value at the lower   *"};
-	 ioto_tprin2t {"* bounds of the intervals; substituion of the actual algebraic       *"};
-	 ioto_tprin2t {"* numbers into the original polynomial is not feasible at present.   *"};
-	 ioto_tprin2t {"**********************************************************************"}
+	 ioto_tprin2t {"******************************************************************"};
+	 ioto_tprin2t {"* Intervals of algebraic numbers are refined and printed to the  *"};
+	 ioto_tprin2t {"* current precision of the rounded domain. The returned function *"};
+	 ioto_tprin2t {"* value is the value at the lower bounds of the intervals;       *"};
+	 ioto_tprin2t {"* substituion of the actual algebraic numbers into the original  *"};
+	 ioto_tprin2t {"* polynomial is not feasible at present.                         *"};
+	 ioto_tprin2t {"******************************************************************"}
       >>;
-      p := cdr cadr cadr l;   % positive point as a symbolic list of equations
-      q := cdr cadr caddr l;  % negative point as a symbolic list of equations
       y := ra_x();
       yq := !*f2q !*k2f y;
       subal := for each w in p collect <<
-	 x_i := !*a2k cadr w;
-	 p_i := simp caddr w;
-	 q_i := simp caddr pop q;
+	 x_i := !*a2k car w;
+	 p_i := simp cdr w;
+	 q_i := simp cdr pop q;
 	 x_i . addsq(p_i, multsq(yq, subtrsq(q_i, p_i)))
       >>;
       g0 := sfto_qsub(g, subal);
@@ -563,7 +631,6 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
 	 ioto_tprin2t {"+++ found ", length rl, " zero", if cdr rl then "s" else "", " on the relevant line segment"};
       if null rl then
 	 rederr {"severe error - no zero on the relevant line segement"};
-      %      mathprint('list . rl);
       ral := {y . car rl};
       precq := 1 ./ 10 ^ (precision 0 + 2);
       zero := for each pr in subal collect <<
@@ -576,59 +643,67 @@ asserted procedure ofsf_zerosolve(g: SF, l: List): DottedPair;
 	 car pr . (val ./ 1)
       >>;
       off1 'ranum;
+      % Here using rounded instead of rationals seems to be faster by a factor
+      % of two:
       on1 'rounded;
       floatzero := for each pr in zero collect
-	 car pr . reval prepsq if null numr cdr pr or numberp numr cdr pr then
- 	    cdr pr else ra_l numr cdr pr;
-      gzero := mk!*sq subf(g, floatzero);
+	 car pr . numr resimp if null numr cdr pr or numberp numr cdr pr then
+ 	    cdr pr
+ 	 else
+ 	    ra_l numr cdr pr;
+      gzero := !*f2q sfto_fsub(g, floatzero);
       off rounded;
       return zero . gzero
-   end;
-
-asserted procedure ofsf_signatanuat(at: OfsfAtf, al: AList): OfsfAtf;
-   begin scalar lhs;
-      lhs := ofsf_lhs at;
    end;
 
 put('zeroapprox, 'psopfn, 'ofsf_zeroapproxeval);
 
 asserted procedure ofsf_zeroapproxeval(l: List): List;
-   begin scalar f, zres; integer len, p;
+   begin scalar f, zres, zero, gzero, p, q; integer len;
       len := length l;
       if not eqn(len, 2) then
 	 rederr "usage: zeroapprox(<polynomial>, <[p]zero result>)";
       f := numr simp pop l;
-      zres := reval pop l;
-      return ofsf_zeroapprox(f, cdr zres)
+      zres := cdr reval pop l;
+      if not eqcar(zres, 1) then
+	 rederr {"second argument is not of a solvable type"};
+      % extract points as alists:
+      p := for each ee in cdr cadr cadr zres collect
+ 	 cadr ee . caddr ee;
+      q := for each ee in cdr cadr caddr zres collect
+  	 cadr ee . caddr ee;
+      zero . gzero := ofsf_zeroapprox(f, p, q);
+      zero := for each pr in zero collect
+	 {'equal, car pr, mk!*sq cdr pr};
+      return {'list, 'list . zero, mk!*sq gzero}
    end;
 
-asserted procedure ofsf_zeroapprox(f: SF, l: List): List;
-   begin scalar p1, p2, subal, f0, g, rl, zero, fzero;
-      if !*rlverbose then <<
-	 ioto_tprin2t {"+++ approximating zero, float precision is ", precision 0, " ..."}
+asserted procedure ofsf_zeroapprox(g: SF, p: AList, q: AList): DottedPair;
+   begin scalar subal, x_i, p_i, q_i, g0, y, yq, w, rl, ral, zero, gzero;
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ approximating zero, float precision is ", precision 0, " ..."};
+      y := intern gensym();
+      yq := !*f2q !*k2f y;
+      subal := for each w in p collect <<
+	 x_i := !*a2k car w;
+	 p_i := simp cdr w;
+	 q_i := simp cdr pop q;
+	 x_i . addsq(p_i, multsq(yq, subtrsq(q_i, p_i)))
       >>;
-      if car l neq 1 then
-	 return l;
-      p1 := cdr cadr cadr l;   % positive point as a symbolic list of equations
-      p2 := cdr cadr caddr l;  % negative point as a symbolic list of equations
-      g := intern gensym();
-      subal := for each e1 in p1 collect
-	 cadr e1 . {'plus, caddr e1, {'times, g, {'plus, caddr pop p2, {'minus, caddr e1}}}};
-      f0 := numr subf(f, subal);
-      rl := ofsf_realrootswrap1 f0;
+      g0 := sfto_qsub(g, subal);
+      assert(domainp denr g0);
+      rl := ofsf_realrootswrap1 numr g0;
       on1 'rounded;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ found ", length rl, " zero", if cdr rl then "s" else "", " on the relevant line segment"};
       if null rl then
 	 rederr {"severe error - no zero on the relevant line segement"};
-      rl := {car rl};
+      ral := {car rl};
       zero := for each pr in subal collect
-	 car pr . mk!*sq subsq(simp cdr pr, rl);
-      fzero := mk!*sq subf(f, zero);
-      zero := for each pr in zero collect
-	 {'equal, car pr, cdr pr};
+	 car pr . quotsq(!*f2q sfto_fsub(numr cdr pr, ral), !*f2q denr cdr pr);
+      gzero := sfto_qsub(g, zero);
       off1 'rounded;
-      return {'list, 'list . zero, fzero}
+      return zero . gzero
    end;
 
 asserted procedure ofsf_realrootswrap(f: SF): List;

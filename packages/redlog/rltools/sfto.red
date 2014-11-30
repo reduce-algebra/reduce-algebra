@@ -1111,6 +1111,14 @@ asserted procedure sfto_rootq(x: SQ, n: Integer, p: Integer): SQ;
       return w
    end;
 
+asserted procedure sfto_fsubq(x: SQ, al: AList): SQ;
+   % Substitute SFs into SQ to obtain SQ.
+   quotsq(!*f2q sfto_fsub(numr x, al), !*f2q sfto_fsub(denr x, al));
+
+asserted procedure sfto_qsubq(x: SQ, al: AList): SQ;
+   % Substitute SQs into SQ to obtain SQ.
+   quotsq(sfto_qsub(numr x, al), sfto_qsub(denr x, al));
+
 endmodule;  % [sfto]
 
 end;  % of file
