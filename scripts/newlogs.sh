@@ -1,9 +1,9 @@
 # newlogs.sh
 
 
-# This expects a full set of log file sto have been created locally, and it
+# This expects a full set of log files to have been created locally, and it
 # copies them all into the packages directory with a ".new" suffix. This
-# is expected to ba a foundation for installing a full new set of logs
+# is expected to be a foundation for installing a full new set of logs
 # in the source tree when a major release is made.
 
 # It is also an illustration that the packages.map file can be processed using

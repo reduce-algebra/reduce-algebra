@@ -29,7 +29,6 @@
 
 module 'yylex;
 
-
 %
 % This is a lexical anaylser for use with RLISP. Its interface is
 % styles after the one needed by yacc, in that it exports a function
@@ -101,8 +100,6 @@ global '(lex_keyword_names lex_next_code lex_initial_next_code lex_codename);
 % and for all so get established on a static base here.
 
 %   :eof           End of file
-%                  for testing purposes I will also cause the token 'eof'
-%                  to act as this.
 %   :symbol        Either a single punctuation character that has not
 %                  been declared as a keyword, or a letter followed
 %                  by letters, digits and underscores, also excluding
@@ -118,7 +115,6 @@ global '(lex_keyword_names lex_next_code lex_initial_next_code lex_codename);
 %                  data, for instance 'word or `(template ,sub1 ,@sub2 end).
 
 put('!:eof,    'lex_fixed_code, 1);
-put('eof,      'lex_fixed_code, 1);             % Just while I test
 put('!:symbol, 'lex_fixed_code, 2);
 put('!:string, 'lex_fixed_code, 3);
 put('!:number, 'lex_fixed_code, 4);
@@ -234,8 +230,6 @@ symbolic procedure lex_cleanup();
                       (4 . !:number) (5 . !:list));
   end;
 
-
-switch tracelex; % For debugging
 
 % I keep a circular buffer with the last 64 characters that have been
 % read. Initially the buffer contains NILs rather than characters, so I can
@@ -552,10 +546,10 @@ symbolic procedure lex_basic_token();
 % Note that list2widestring is passed a list of symbols here not integers,
 % bur recent implementations of it support that case.
       yylval := intern list2widestring reversip r;
-      if !*tracelex then <<
-        princ "symbol is '"; prin yylval;
-        princ "' lex_escaped="; prin lex_escaped;
-        princ " lex_code="; print get(yylval, 'lex_code) >>;
+%     if !*tracelex then <<
+%       princ "symbol is '"; prin yylval;
+%       princ "' lex_escaped="; prin lex_escaped;
+%       princ " lex_code="; print get(yylval, 'lex_code) >>;
       if not lex_escaped and (w := get(yylval, 'lex_code)) then return w
       else return lex_symbol_code >>
 % Numbers are either integers or floats. A floating point number is
@@ -616,7 +610,6 @@ symbolic procedure lex_basic_token();
       return lex_list_code >>
     else <<
       yylval := lex_char;
-print list("yylex.red line 619, lex_char = ", lex_char);
 % I take special notice of end of file, since it is fairly drastic.
 % In particular I do not attempt to advance lex_char beyond it. So I do
 % TWO things here: I avoid advancing the input, and I return the lex_eof_code

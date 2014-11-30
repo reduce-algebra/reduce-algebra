@@ -10,8 +10,8 @@
 % one given is taken to be the top-level target.
 %
 % Each production is in the form
-%     (LHS   ((rhs1.1 rhs1.2 ...) (a1.1 a1.2 ...))
-%            ((rhs2.1 rhs2.1 ...) (a2.1 a2.2 ...))
+%     (LHS   ((rhs1.1 rhs1.2 ...) a1.1 a1.2 ...)
+%            ((rhs2.1 rhs2.1 ...) a2.1 a2.2 ...)
 %            ...)
 % which in regular publication style for grammars might be interpreted
 % as meaning
@@ -62,10 +62,10 @@
 
 symbolic;
 
-load_package lalr;
-
 % Before testing parser generation I will demonstrate the lexer..
-%
+% If I was julpy about the exact behaviour of the lexer I could go
+%               on tracelex;
+% to get some more tracing.
 
 lex_cleanup();
 
@@ -122,84 +122,88 @@ symbol
 <
 <=
 begin
-; ; ; ; ; ; ; ;
+; ; ; ;
 
+
+on lalr_verbose;
 
 % Here I set up a sample grammar
 %    S' -> S
-%    S  -> C C        { A1 }
-%    C  -> "c" C      { A2 }
-%        | "d"        { A3 }
+%    S  -> C C        { }
+%    C  -> "c" C      { }
+%        | "d"        { }
 % Example 4.42 from Aho, Sethi and Ullman's Red Dragon book, with
 % some simple semantic actions added. Note that I do not need to insert
 % the production S' -> S for myself since the analysis code will
 % augment my grammar with it for me anyway.
 % Example 4.54 in the more recent Purple book.
-% Well I have added a ";" terminator rather than risking running on for too
-% long...
 
 % Note that this grammar will introduce "c" and "d" as keywords rather than
 % being general symbols. When I construct a subsequent grammar that will
-% undo that setting. The semantic actions here illustrate the !$1, !$2 etc
-% can be used to access the semantic result from each component in the
-% rule that is matched.
+% undo that setting. I will omit semantic actions here so that the default
+% action of building a form of tree is used.
 
-
-% BEWARE. For now the names used for non-termninals must be disjoint from the
-% spellings used for terminals. I will fix that bug at some stage!  Also I
-% MUST have the "eof" on the end of the input text to allow yyparse to tell
-% when to stop.
-
-% Further limitations are
-% (1) Semantic actions are not paid attentio to.
-% (2) I will need a way to specify precedence if this is to be feasibly
-%     useful.
-% (3) At present the parser generator will not cope with large grammars
+% Limitations are
+% (1) I will need a way to specify precedence if this is to be feasibly
+%     useful. I have some planning for this but have not implemented it yet.
+% (2) At present the parser generator will not cope with large grammars
 %     because it does not merge rules promptly enough.
-% (4) The lexer is hand-written and can not readily be reconfigured for
+% (3) The lexer is hand-written and can not readily be reconfigured for
 %     use with languages other than rlisp. For instance it has use of "!"
 %     as a character escape built into it.
 %
 %
-% However if even one small grammar can be handled this is a strep forward!
 
 
-grammar := '((S  ((C C)      ((list !$1 !$2))))
-             (C  (("c" C)    ((list 'c !$2)))
-                 (("d")      ('d)))
-            );
+grammar := '(
+  (S  ((C C)    )   % One production for S, no semantic actions
+  )
+  (C  (("c" C)  )   % First production for C
+      (("d")    )   % Second production for C
+  ));
 
 lalr_construct_parser grammar;
 
-yyparse();
+printc yyparse()$
 
-c c c d c d eof
+c c c d c d ;
 
-yyparse();
+printc yyparse()$
 
-d d eof
+d d ;
 
 
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
 % "Compilers: principles, techniques and tools", second edition 2007).
 
-g4_46 := '((S   ((L "=" R)   ((print (list !$1 !$2 !$3))
-                              (list 'equal !$1 !$3)))
-                ((R)         ((print "R") !$1)))
-           (L   (("*" R)     ((print "*") (print !$2) (list 'star !$2)))
-                ((!:symbol)  ((print "sym") !$1)))
-           (R   ((L)         ((print "L as R") !$1))));
+% The semantic actions here contain print statements that will
+% print some sort of trace as the parsing progresses.
+
+symbolic procedure neatprintc x;
+ << if not zerop posn() then terpri();
+    printc x >>;
+
+g4_46 := '((S   ((L "=" R)   (neatprintc "## S => L = R")
+                             (list 'equal !$1 !$3))
+                ((R)         (neatprintc "## S => R")
+                             !$1))
+           (L   (("*" R)     (neatprintc "## L => * R")
+                             (list 'star !$2))
+                ((!:symbol)  (neatprintc "## L => symbol")
+                             !$1))
+           (R   ((L)         (neatprintc "## R => L")
+                             !$1)));
 
 lalr_construct_parser g4_46;
 
-yyparse();
+printc yyparse()$
 
-leftsym = rightsym eof
+leftsym = rightsym ;
 
 
-yyparse();
+printc yyparse()$
 
-****abc = *def eof
+****abc = *def ;
 
 #if nil  % Skip the rest of this test file...
 
@@ -207,26 +211,26 @@ yyparse();
 % The next example will not work until I have precedence rules imlemented
 % but is expected to be reasonably representative of natural small grammars.
 
-gtest := '((S  ((P) (!$1))
-               ((S op P) ((list !$2 !$1 !$3)))
+gtest := '((S  ((P) !$1)
+               ((S op P) (list !$2 !$1 !$3))
                (("-" P) (list 'minus !$2))
-               (("+" P) (!$2)))
-           (op (("+") ('plus))
-               (("-") ('difference))
-               (("*") ('times))
-               (("/") ('quotient))
-               (("**") ('expt))
-               (("^") ('expt)))
-           (P  (("(" S ")") (!$2))
-               ((!:symbol) (!$1))
-               ((!:string) (!$1))
-               ((!:number) (!$1))));
+               (("+" P) !$2))
+           (op (("+") 'plus)
+               (("-") 'difference)
+               (("*") 'times)
+               (("/") 'quotient)
+               (("**") 'expt)
+               (("^") 'expt))
+           (P  (("(" S ")") !$2)
+               ((!:symbol) !$1)
+               ((!:string) !$1)
+               ((!:number) !$1)));
 
 lalr_construct_parser gtest;
 
-yyparse();
+printc yyparse()$
 
-a * (b/c + d/e) ^ 2 ^ g - "stringdata" eof 
+a * (b/c + d/e) ^ 2 ^ g - "stringdata" ;
 
 
 % Now a much more complicated grammar - one that recognizes the syntax of
@@ -243,482 +247,482 @@ a * (b/c + d/e) ^ 2 ^ g - "stringdata" eof
 
 rlisp_grammar := '(
 
-(command         ((  cmnd sep ) (dummy_action))
-                 ((  end sep ) (dummy_action))
-                 ((  command cmnd sep ) (dummy_action))
-                 ((  command end sep ) (dummy_action))
+(command         ((  cmnd sep ))
+                 ((  end sep ))
+                 ((  command cmnd sep ))
+                 ((  command end sep ))
 )
 
 
-(sep             ((  ";" ) (dummy_action))
-                 ((  "$" ) (dummy_action))
+(sep             ((  ";" ))
+                 ((  "$" ))
 )
 
 
-(proc_type       ((  "symbolic" ) (dummy_action))
-                 ((  "algebraic" ) (dummy_action))
+(proc_type       ((  "symbolic" ))
+                 ((  "algebraic" ))
 )
 
 
-(proc_qual       ((  "expr" ) (dummy_action))
-                 ((  "macro" ) (dummy_action))
-                 ((  "smacro" ) (dummy_action))
+(proc_qual       ((  "expr" ))
+                 ((  "macro" ))
+                 ((  "smacro" ))
 )
 
 
-(sym_list        ((  ")" ) (dummy_action))
-                 ((  "," !:symbol sym_list ) (dummy_action))
+(sym_list        ((  ")" ))
+                 ((  "," !:symbol sym_list ))
 )
 
 
-(infix           ((  "setq" ) (dummy_action))
-                 ((  "or" ) (dummy_action))
-                 ((  "and" ) (dummy_action))
-                 ((  "member" ) (dummy_action))
-                 ((  "memq" ) (dummy_action))
-                 ((  "=" ) (dummy_action))
-                 ((  "neq" ) (dummy_action))
-                 ((  "eq" ) (dummy_action))
-                 ((  ">=" ) (dummy_action))
-                 ((  ">" ) (dummy_action))
-                 ((  "<=" ) (dummy_action))
-                 ((  "<" ) (dummy_action))
-                 ((  "freeof" ) (dummy_action))
-                 ((  "+" ) (dummy_action))
-                 ((  "-" ) (dummy_action))
-                 ((  "*" ) (dummy_action))
-                 ((  "/" ) (dummy_action))
-                 ((  "^" ) (dummy_action))
-                 ((  "**" ) (dummy_action))
-                 ((  "." ) (dummy_action))
+(infix           ((  "setq" ))
+                 ((  "or" ))
+                 ((  "and" ))
+                 ((  "member" ))
+                 ((  "memq" ))
+                 ((  "=" ))
+                 ((  "neq" ))
+                 ((  "eq" ))
+                 ((  ">=" ))
+                 ((  ">" ))
+                 ((  "<=" ))
+                 ((  "<" ))
+                 ((  "freeof" ))
+                 ((  "+" ))
+                 ((  "-" ))
+                 ((  "*" ))
+                 ((  "/" ))
+                 ((  "^" ))
+                 ((  "**" ))
+                 ((  "." ))
 )
 
-(prefix          ((  "not" ) (dummy_action))
-                 ((  "+" ) (dummy_action))
-                 ((  "-" ) (dummy_action))
-)
-
-
-(proc_head       ((  !:symbol ) (dummy_action))
-                 ((  !:symbol !:symbol ) (dummy_action))
-                 ((  !:symbol "(" ")" ) (dummy_action))
-                 ((  !:symbol "(" !:symbol sym_list ) (dummy_action))
-                 ((  prefix !:symbol ) (dummy_action))
-                 ((  !:symbol infix !:symbol ) (dummy_action))
+(prefix          ((  "not" ))
+                 ((  "+" ))
+                 ((  "-" ))
 )
 
 
-(proc_def        ((  "procedure" proc_head sep cmnd ) (dummy_action))
-                 ((  proc_type "procedure" proc_head sep cmnd ) (dummy_action))
-                 ((  proc_qual "procedure" proc_head sep cmnd ) (dummy_action))
-                 ((  proc_type proc_qual "procedure" proc_head sep cmnd ) (dummy_action))
+(proc_head       ((  !:symbol ))
+                 ((  !:symbol !:symbol ))
+                 ((  !:symbol "(" ")" ))
+                 ((  !:symbol "(" !:symbol sym_list ))
+                 ((  prefix !:symbol ))
+                 ((  !:symbol infix !:symbol ))
+)
+
+
+(proc_def        ((  "procedure" proc_head sep cmnd ))
+                 ((  proc_type "procedure" proc_head sep cmnd ))
+                 ((  proc_qual "procedure" proc_head sep cmnd ))
+                 ((  proc_type proc_qual "procedure" proc_head sep cmnd ))
 )
 
 
 % The type "!:rlistat" is dodgy here... it doe snot (yet) exist!
 
-(rlistat         ((  !:rlistat ) (dummy_action))
-                 ((  "in" ) (dummy_action))
-                 ((  "on" ) (dummy_action))
+(rlistat         ((  !:rlistat ))
+                 ((  "in" ))
+                 ((  "on" ))
 )
 
 
-(rltail          ((  expr ) (dummy_action))
-                 ((  expr "," rltail ) (dummy_action))
+(rltail          ((  expr ))
+                 ((  expr "," rltail ))
 )
 
 
-(cmnd            ((  expr ) (dummy_action))
-                 ((  rlistat rltail ) (dummy_action))
+(cmnd            ((  expr ))
+                 ((  rlistat rltail ))
 )
 
 
-(if_stmt         ((  "if" expr "then" cmnd "else" cmnd ) (dummy_action))
-                 ((  "if" expr "then" cmnd ) (dummy_action))
+(if_stmt         ((  "if" expr "then" cmnd "else" cmnd ))
+                 ((  "if" expr "then" cmnd ))
 )
 
 
-(for_update      ((  ":" expr ) (dummy_action))
-                 ((  "step" expr "until" expr ) (dummy_action))
+(for_update      ((  ":" expr ))
+                 ((  "step" expr "until" expr ))
 )
 
 
-(for_action      ((  "do" ) (dummy_action))
-                 ((  "sum" ) (dummy_action))
-                 ((  "collect" ) (dummy_action))
+(for_action      ((  "do" ))
+                 ((  "sum" ))
+                 ((  "collect" ))
 )
 
 
-(for_inon        ((  "in" ) (dummy_action))
-                 ((  "on" ) (dummy_action))
+(for_inon        ((  "in" ))
+                 ((  "on" ))
 )
 
 
-(for_stmt        ((  "for" !:symbol !:setq expr for_update for_action cmnd ) (dummy_action))
-                 ((  "for" "each" !:symbol for_inon expr for_action cmnd ) (dummy_action))
-                 ((  "foreach" !:symbol for_inon expr for_action cmnd ) (dummy_action))
+(for_stmt        ((  "for" !:symbol !:setq expr for_update for_action cmnd ))
+                 ((  "for" "each" !:symbol for_inon expr for_action cmnd ))
+                 ((  "foreach" !:symbol for_inon expr for_action cmnd ))
 )
 
 
-(while_stmt      ((  "while" expr "do" cmnd ) (dummy_action))
+(while_stmt      ((  "while" expr "do" cmnd ))
 )
 
 
-(repeat_stmt     ((  "repeat" cmnd "until" expr ) (dummy_action))
+(repeat_stmt     ((  "repeat" cmnd "until" expr ))
 )
 
 
-(return_stmt     ((  "return" ) (dummy_action))
-                 ((  "return" expr ) (dummy_action))
+(return_stmt     ((  "return" ))
+                 ((  "return" expr ))
 )
 
 
-(goto_stmt       ((  "goto" !:symbol ) (dummy_action))
-                 ((  "go" !:symbol ) (dummy_action))
-                 ((  "go" "to" !:symbol ) (dummy_action))
+(goto_stmt       ((  "goto" !:symbol ))
+                 ((  "go" !:symbol ))
+                 ((  "go" "to" !:symbol ))
 )
 
 
-(group_tail      ((  ">>" ) (dummy_action))
-                 ((  sep ">>" ) (dummy_action))
-                 ((  sep cmnd group_tail ) (dummy_action))
+(group_tail      ((  ">>" ))
+                 ((  sep ">>" ))
+                 ((  sep cmnd group_tail ))
 )
 
 
-(group_expr      ((  "<<" cmnd group_tail ) (dummy_action))
+(group_expr      ((  "<<" cmnd group_tail ))
 )
 
 
-(scalar_tail     ((  sep ) (dummy_action))
-                 ((  "," !:symbol scalar_tail ) (dummy_action))
-                 ((  "," integer scalar_tail ) (dummy_action))
+(scalar_tail     ((  sep ))
+                 ((  "," !:symbol scalar_tail ))
+                 ((  "," integer scalar_tail ))
 )
 
 
-(scalar_def      ((  "scalar" !:symbol scalar_tail ) (dummy_action))
-                 ((  "integer" !:symbol scalar_tail ) (dummy_action))
+(scalar_def      ((  "scalar" !:symbol scalar_tail ))
+                 ((  "integer" !:symbol scalar_tail ))
 )
 
 
-(scalar_defs     ((  scalar_def ) (dummy_action))
-                 ((  scalar_defs scalar_def ) (dummy_action))
+(scalar_defs     ((  scalar_def ))
+                 ((  scalar_defs scalar_def ))
 )
 
 
-(block_tail      ((  "end" ) (dummy_action))
-                 ((  cmnd "end" ) (dummy_action))
-                 ((  !:symbol ":" block_tail ) (dummy_action))
-                 ((  cmnd sep block_tail ) (dummy_action))
-                 ((  sep block_tail ) (dummy_action))
+(block_tail      ((  "end" ))
+                 ((  cmnd "end" ))
+                 ((  !:symbol ":" block_tail ))
+                 ((  cmnd sep block_tail ))
+                 ((  sep block_tail ))
 )
 
-(block_expr      ((  "begin" scalar_defs block_tail ) (dummy_action))
-                 ((  "begin" block_tail ) (dummy_action))
-)
-
-
-(lambda_vars     ((  sep ) (dummy_action))
-                 ((  "," !:symbol lambda_vars ) (dummy_action))
+(block_expr      ((  "begin" scalar_defs block_tail ))
+                 ((  "begin" block_tail ))
 )
 
 
-(lambda_expr     ((  "lambda" !:symbol lambda_vars cmnd ) (dummy_action))
-                 ((  "lambda" "(" ")" sep cmnd ) (dummy_action))
-                 ((  "lambda" "(" !:symbol sym_list sep cmnd ) (dummy_action))
+(lambda_vars     ((  sep ))
+                 ((  "," !:symbol lambda_vars ))
 )
 
 
-(expr            ((  rx0 ) (dummy_action))
-                 ((  lx0 ) (dummy_action))
+(lambda_expr     ((  "lambda" !:symbol lambda_vars cmnd ))
+                 ((  "lambda" "(" ")" sep cmnd ))
+                 ((  "lambda" "(" !:symbol sym_list sep cmnd ))
 )
 
 
-(rx0             ((  lx0 "where" !:symbol "=" rx1 ) (dummy_action))
-                 ((  rx1 ) (dummy_action))
+(expr            ((  rx0 ))
+                 ((  lx0 ))
 )
 
 
-(lx0             ((  lx0 "where" !:symbol "=" lx1 ) (dummy_action))
-                 ((  lx1 ) (dummy_action))
+(rx0             ((  lx0 "where" !:symbol "=" rx1 ))
+                 ((  rx1 ))
 )
 
 
-(rx1             ((  lx2 ":=" rx1 ) (dummy_action))
-                 ((  rx2 ) (dummy_action))
+(lx0             ((  lx0 "where" !:symbol "=" lx1 ))
+                 ((  lx1 ))
 )
 
 
-(lx1             ((  lx2 ":=" lx1 ) (dummy_action))
-                 ((  lx2 ) (dummy_action))
+(rx1             ((  lx2 ":=" rx1 ))
+                 ((  rx2 ))
 )
 
 
-(rx2tail         ((  rx3 ) (dummy_action))
-                 ((  lx3 "or" rx2tail ) (dummy_action))
-)
-
-(rx2             ((  lx3 "or" rx2tail ) (dummy_action))
-                 ((  rx3 ) (dummy_action))
+(lx1             ((  lx2 ":=" lx1 ))
+                 ((  lx2 ))
 )
 
 
-(lx2tail         ((  lx3 ) (dummy_action))
-                 ((  lx3 "or" lx2tail ) (dummy_action))
+(rx2tail         ((  rx3 ))
+                 ((  lx3 "or" rx2tail ))
 )
 
-(lx2             ((  lx3 "or" lx2tail ) (dummy_action))
-                 ((  lx3 ) (dummy_action))
-)
-
-
-(rx3tail         ((  rx4 ) (dummy_action))
-                 ((  lx4 "and" rx3tail ) (dummy_action))
-)
-
-(rx3             ((  lx4 "and" rx3tail ) (dummy_action))
-                 ((  rx4 ) (dummy_action))
+(rx2             ((  lx3 "or" rx2tail ))
+                 ((  rx3 ))
 )
 
 
-(lx3tail         ((  lx4 ) (dummy_action))
-                 ((  lx4 "and" lx3tail ) (dummy_action))
+(lx2tail         ((  lx3 ))
+                 ((  lx3 "or" lx2tail ))
 )
 
-(lx3             ((  lx4 "and" lx3tail ) (dummy_action))
-                 ((  lx4 ) (dummy_action))
-)
-
-
-(rx4             ((  "not" rx4 ) (dummy_action))
-                 ((  rx5 ) (dummy_action))
+(lx2             ((  lx3 "or" lx2tail ))
+                 ((  lx3 ))
 )
 
 
-(lx4             ((  "not" lx4 ) (dummy_action))
-                 ((  lx5 ) (dummy_action))
+(rx3tail         ((  rx4 ))
+                 ((  lx4 "and" rx3tail ))
+)
+
+(rx3             ((  lx4 "and" rx3tail ))
+                 ((  rx4 ))
+)
+
+
+(lx3tail         ((  lx4 ))
+                 ((  lx4 "and" lx3tail ))
+)
+
+(lx3             ((  lx4 "and" lx3tail ))
+                 ((  lx4 ))
+)
+
+
+(rx4             ((  "not" rx4 ))
+                 ((  rx5 ))
+)
+
+
+(lx4             ((  "not" lx4 ))
+                 ((  lx5 ))
 )
 
 % The fact that this lists "member" and "memq" (etc) here makes those names
 % keywords, and so possibly disables use as function names as in
 %    member(a, b)
 
-(rx5             ((  lx6 "member" ry6 ) (dummy_action))
-                 ((  lx6 "memq" ry6 ) (dummy_action))
-                 ((  lx6 "=" ry6 ) (dummy_action))
-                 ((  lx6 "neq" ry6 ) (dummy_action))
-                 ((  lx6 "eq" ry6 ) (dummy_action))
-                 ((  lx6 ">=" ry6 ) (dummy_action))
-                 ((  lx6 ">" ry6 ) (dummy_action))
-                 ((  lx6 "<=" ry6 ) (dummy_action))
-                 ((  lx6 "<" ry6 ) (dummy_action))
-                 ((  lx6 "freeof" ry6 ) (dummy_action))
-                 ((  rx6 ) (dummy_action))
+(rx5             ((  lx6 "member" ry6 ))
+                 ((  lx6 "memq" ry6 ))
+                 ((  lx6 "=" ry6 ))
+                 ((  lx6 "neq" ry6 ))
+                 ((  lx6 "eq" ry6 ))
+                 ((  lx6 ">=" ry6 ))
+                 ((  lx6 ">" ry6 ))
+                 ((  lx6 "<=" ry6 ))
+                 ((  lx6 "<" ry6 ))
+                 ((  lx6 "freeof" ry6 ))
+                 ((  rx6 ))
 )
 
 
-(lx5             ((  lx6 "member" ly6 ) (dummy_action))
-                 ((  lx6 "memq" ly6 ) (dummy_action))
-                 ((  lx6 "=" ly6 ) (dummy_action))
-                 ((  lx6 "neq" ly6 ) (dummy_action))
-                 ((  lx6 "eq" ly6 ) (dummy_action))
-                 ((  lx6 ">=" ly6 ) (dummy_action))
-                 ((  lx6 ">" ly6 ) (dummy_action))
-                 ((  lx6 "<=" ly6 ) (dummy_action))
-                 ((  lx6 "<" ly6 ) (dummy_action))
-                 ((  lx6 "freeof" ly6 ) (dummy_action))
-                 ((  lx6 ) (dummy_action))
+(lx5             ((  lx6 "member" ly6 ))
+                 ((  lx6 "memq" ly6 ))
+                 ((  lx6 "=" ly6 ))
+                 ((  lx6 "neq" ly6 ))
+                 ((  lx6 "eq" ly6 ))
+                 ((  lx6 ">=" ly6 ))
+                 ((  lx6 ">" ly6 ))
+                 ((  lx6 "<=" ly6 ))
+                 ((  lx6 "<" ly6 ))
+                 ((  lx6 "freeof" ly6 ))
+                 ((  lx6 ))
 )
 
 
-(ry6             ((  "not" ry6 ) (dummy_action))
-                 ((  rx6 ) (dummy_action))
+(ry6             ((  "not" ry6 ))
+                 ((  rx6 ))
 )
 
 
-(ly6             ((  "not" ly6 ) (dummy_action))
-                 ((  lx6 ) (dummy_action))
+(ly6             ((  "not" ly6 ))
+                 ((  lx6 ))
 )
 
 
-(rx6tail         ((  ry6a ) (dummy_action))
-                 ((  ly6a "+" rx6tail ) (dummy_action))
+(rx6tail         ((  ry6a ))
+                 ((  ly6a "+" rx6tail ))
 )
 
-(rx6             ((  lx6a "+" rx6tail ) (dummy_action))
-                 ((  rx6a ) (dummy_action))
-)
-
-
-(lx6tail         ((  ly6a ) (dummy_action))
-                 ((  ly6a "+" lx6tail ) (dummy_action))
-)
-
-(lx6             ((  lx6a "+" lx6tail ) (dummy_action))
-                 ((  lx6a ) (dummy_action))
+(rx6             ((  lx6a "+" rx6tail ))
+                 ((  rx6a ))
 )
 
 
-(ry6a            ((  not ry6a ) (dummy_action))
-                 ((  rx6a ) (dummy_action))
+(lx6tail         ((  ly6a ))
+                 ((  ly6a "+" lx6tail ))
+)
+
+(lx6             ((  lx6a "+" lx6tail ))
+                 ((  lx6a ))
 )
 
 
-(rx6a            ((  lx6a "-" ry7 ) (dummy_action))
-                 ((  rx7 ) (dummy_action))
+(ry6a            ((  not ry6a ))
+                 ((  rx6a ))
 )
 
 
-(ly6a            ((  not ly6a ) (dummy_action))
-                 ((  lx6a ) (dummy_action))
+(rx6a            ((  lx6a "-" ry7 ))
+                 ((  rx7 ))
 )
 
 
-(lx6a            ((  lx6a "-" ly7 ) (dummy_action))
-                 ((  lx7 ) (dummy_action))
+(ly6a            ((  not ly6a ))
+                 ((  lx6a ))
 )
 
 
-(ry7             ((  not ry7 ) (dummy_action))
-                 ((  rx7 ) (dummy_action))
+(lx6a            ((  lx6a "-" ly7 ))
+                 ((  lx7 ))
 )
 
 
-(rx7             ((  "+" ry7 ) (dummy_action))
-                 ((  "-" ry7 ) (dummy_action))
-                 ((  rx8 ) (dummy_action))
+(ry7             ((  not ry7 ))
+                 ((  rx7 ))
 )
 
 
-(ly7             ((  not ly7 ) (dummy_action))
-                 ((  lx7 ) (dummy_action))
+(rx7             ((  "+" ry7 ))
+                 ((  "-" ry7 ))
+                 ((  rx8 ))
 )
 
 
-(lx7             ((  "+" ly7 ) (dummy_action))
-                 ((  "-" ly7 ) (dummy_action))
-                 ((  lx8 ) (dummy_action))
+(ly7             ((  not ly7 ))
+                 ((  lx7 ))
 )
 
 
-(rx8tail         ((  ry9 ) (dummy_action))
-                 ((  ly9 "*" rx8tail ) (dummy_action))
-)
-
-(rx8             ((  lx9 "*" rx8tail ) (dummy_action))
-                 ((  rx9 ) (dummy_action))
+(lx7             ((  "+" ly7 ))
+                 ((  "-" ly7 ))
+                 ((  lx8 ))
 )
 
 
-(lx8tail         ((  ly9 ) (dummy_action))
-                 ((  ly9 "*" lx8tail ) (dummy_action))
+(rx8tail         ((  ry9 ))
+                 ((  ly9 "*" rx8tail ))
 )
 
-(lx8             ((  lx9 "*" lx8tail ) (dummy_action))
-                 ((  lx9 ) (dummy_action))
-)
-
-
-(ry9             ((  "not" ry9 ) (dummy_action))
-                 ((  "+" ry9 ) (dummy_action))
-                 ((  "-" ry9 ) (dummy_action))
-                 ((  rx9 ) (dummy_action))
+(rx8             ((  lx9 "*" rx8tail ))
+                 ((  rx9 ))
 )
 
 
-(rx9             ((  lx9 "/" ry10 ) (dummy_action))
-                 ((  rx10 ) (dummy_action))
+(lx8tail         ((  ly9 ))
+                 ((  ly9 "*" lx8tail ))
+)
+
+(lx8             ((  lx9 "*" lx8tail ))
+                 ((  lx9 ))
 )
 
 
-(ly9             ((  "not" ly9 ) (dummy_action))
-                 ((  "+" ly9 ) (dummy_action))
-                 ((  "-" ly9 ) (dummy_action))
-                 ((  lx9 ) (dummy_action))
+(ry9             ((  "not" ry9 ))
+                 ((  "+" ry9 ))
+                 ((  "-" ry9 ))
+                 ((  rx9 ))
 )
 
 
-(lx9             ((  lx9 "/" ly10 ) (dummy_action))
-                 ((  lx10 ) (dummy_action))
+(rx9             ((  lx9 "/" ry10 ))
+                 ((  rx10 ))
 )
 
 
-(ly10            ((  "not" ly10 ) (dummy_action))
-                 ((  "+" ly10 ) (dummy_action))
-                 ((  "-" ly10 ) (dummy_action))
-                 ((  lx10 ) (dummy_action))
+(ly9             ((  "not" ly9 ))
+                 ((  "+" ly9 ))
+                 ((  "-" ly9 ))
+                 ((  lx9 ))
 )
 
 
-(lx10            ((  lx11 "^" ly10 ) (dummy_action))
-                 ((  lx11 ) (dummy_action))
+(lx9             ((  lx9 "/" ly10 ))
+                 ((  lx10 ))
 )
 
 
-(ry10            ((  "not" ry10 ) (dummy_action))
-                 ((  "+" ry10 ) (dummy_action))
-                 ((  "-" ry10 ) (dummy_action))
-                 ((  rx10 ) (dummy_action))
+(ly10            ((  "not" ly10 ))
+                 ((  "+" ly10 ))
+                 ((  "-" ly10 ))
+                 ((  lx10 ))
 )
 
 
-(rx10            ((  lx11 "^" ry10 ) (dummy_action))
-                 ((  rx11 ) (dummy_action))
+(lx10            ((  lx11 "^" ly10 ))
+                 ((  lx11 ))
 )
 
 
-(ry11            ((  "not" ry11 ) (dummy_action))
-                 ((  "+" ry11 ) (dummy_action))
-                 ((  "-" ry11 ) (dummy_action))
-                 ((  rx11 ) (dummy_action))
+(ry10            ((  "not" ry10 ))
+                 ((  "+" ry10 ))
+                 ((  "-" ry10 ))
+                 ((  rx10 ))
 )
 
 
-(rx11            ((  x12 "." ry11 ) (dummy_action))
-                 ((  if_stmt ) (dummy_action))
-                 ((  for_stmt ) (dummy_action))
-                 ((  while_stmt ) (dummy_action))
-                 ((  repeat_stmt ) (dummy_action))
-                 ((  return_stmt ) (dummy_action))
-                 ((  goto_stmt ) (dummy_action))
-                 ((  lambda_expr ) (dummy_action))
-                 ((  proc_type ) (dummy_action))
-                 ((  proc_def ) (dummy_action))
-                 ((  endstat ) (dummy_action))
+(rx10            ((  lx11 "^" ry10 ))
+                 ((  rx11 ))
 )
 
 
-(ly11            ((  "not" ly11 ) (dummy_action))
-                 ((  "+" ly11 ) (dummy_action))
-                 ((  "-" ly11 ) (dummy_action))
-                 ((  lx11 ) (dummy_action))
+(ry11            ((  "not" ry11 ))
+                 ((  "+" ry11 ))
+                 ((  "-" ry11 ))
+                 ((  rx11 ))
 )
 
 
-(lx11            ((  x12 "." ly11 ) (dummy_action))
-                 ((  x12 ) (dummy_action))
+(rx11            ((  x12 "." ry11 ))
+                 ((  if_stmt ))
+                 ((  for_stmt ))
+                 ((  while_stmt ))
+                 ((  repeat_stmt ))
+                 ((  return_stmt ))
+                 ((  goto_stmt ))
+                 ((  lambda_expr ))
+                 ((  proc_type ))
+                 ((  proc_def ))
+                 ((  endstat ))
 )
 
 
-(arg_list        ((  expr ")" ) (dummy_action))
-                 ((  expr "," arg_list ) (dummy_action))
+(ly11            ((  "not" ly11 ))
+                 ((  "+" ly11 ))
+                 ((  "-" ly11 ))
+                 ((  lx11 ))
 )
 
 
-(x12             ((  x13 "[" expr "]" ) (dummy_action))
-                 ((  x13 "(" ")" ) (dummy_action))
-                 ((  x13 "(" expr "," arg_list ) (dummy_action))
-                 ((  x13 x12 ) (dummy_action))
-                 ((  x13 ) (dummy_action))
+(lx11            ((  x12 "." ly11 ))
+                 ((  x12 ))
 )
 
 
-(x13             ((  !:symbol ) (dummy_action))
-                 ((  !:number ) (dummy_action))
-                 ((  !:string ) (dummy_action))
-                 ((  !:list ) (dummy_action))     % Both 'xxx and `xxx here
-                 ((  group_expr ) (dummy_action))
-                 ((  block_expr ) (dummy_action))
-                 ((  "(" expr ")" ) (dummy_action))
+(arg_list        ((  expr ")" ))
+                 ((  expr "," arg_list ))
+)
+
+
+(x12             ((  x13 "[" expr "]" ))
+                 ((  x13 "(" ")" ))
+                 ((  x13 "(" expr "," arg_list ))
+                 ((  x13 x12 ))
+                 ((  x13 ))
+)
+
+
+(x13             ((  !:symbol ))
+                 ((  !:number ))
+                 ((  !:string ))
+                 ((  !:list ))     % Both 'xxx and `xxx here
+                 ((  group_expr ))
+                 ((  block_expr ))
+                 ((  "(" expr ")" ))
 )
 )$
 
@@ -728,3 +732,4 @@ rlisp_grammar := '(
 #endif
 
 end;
+

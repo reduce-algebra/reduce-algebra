@@ -67,6 +67,18 @@ symbolic procedure get_goto(state, non_terminal);
 % state 0].  The value 0 in the table represents ACCEPT. This leaves
 % negative values to cover reductions and error cases.
 
+% This first version tries to determine an action without needing to look
+% at the next input symbol. It will return nil if its is unable to do
+% that.
+
+symbolic procedure get_action_without_lookahead(state);
+  begin
+    scalar w1, w2;
+    w1 := getv16(action_index, state);
+    if getv16(action_terminal, w1) neq -1 then return nil
+    else return getv16(action_result, w1)
+  end;
+
 symbolic procedure get_action(state, terminal);
   begin
     scalar w1, w2;
@@ -98,20 +110,20 @@ symbolic procedure yyparse();
 % the parser.
     state_stack := list 0;
     lex_init();
-    next_input := yylex();
-    princ "yylex returns "; print next_input;
+    next_input := -1;  % An invalid number code here to avoid un-necessary
+                       % reading ahead.
 % The action code that I access here will be 0 for "accept", which is why
 % the WHILE loop looks for this case. Positive values will be shifts,
 % while negative ones are either reductions or error cases.
-    while << princ "state stack: "; print state_stack;
-             princ "sym stack: "; print sym_stack;
-             princ "next input: "; print next_input;
-             princ "action code: ";
-             print get_action(car state_stack, next_input);
-       t >> and
-       not ((w := get_action(car state_stack, next_input)) = 0) do <<
-        princ "w = "; print w;
+    while <<
+      w := get_action_without_lookahead(car state_stack);
+      if null w then <<
+% This delays reading a new symbol until it is really necessary.
+        if next_input < 0 then next_input := yylex();
+        w := get_action(car state_stack, next_input) >>;
+      w neq 0 >> do <<
         if w > 0 then <<                             % SHIFT
+            if next_input < 0 then next_input := yylex();
             if next_input = 0 then error(0, "End of file detected");
             if next_input = lex_symbol_code or
                next_input = lex_number_code or
@@ -120,8 +132,7 @@ symbolic procedure yyparse();
               sym_stack := yylval . sym_stack
             else sym_stack := (lalr_decode_symbol next_input) . sym_stack;
             state_stack := w . state_stack;
-            next_input := yylex();
-            princ "yylex returns "; print next_input >>
+            next_input := -1 >>
         else begin                                   % REDUCE
             scalar A, n, action;
             w := - (w + 1);
@@ -141,7 +152,8 @@ symbolic procedure yyparse();
 % a missing action function, but will instead just build a bit of list.
 % Well if the production is L ::= r1 r1 r3 then I will make a list (r1 r2 r3)
 % but if the production was merely L ::= r then I will leave r unchanged.
-                if action then w := apply1(action, w)
+% princ "Apply "; prin action; princ " to "; prin length w; princ " items "; print w;
+                if action then w := apply(action, w)
                 else if n = 1 then w := car w;
                 sym_stack := w . sym_stack;
 %princ "now get goto for "; prin car state_stack; princ " and "; prin ntname A;
@@ -157,7 +169,8 @@ symbolic procedure yyparse();
                 sym_stack := '(error);
                 next_input := 0 >>
         end >>;
-    princ "Seem to have finished...";
+    if not zerop posn() then terpri();
+    princ "Seems to have finished... ";
     return car sym_stack
   end;
 

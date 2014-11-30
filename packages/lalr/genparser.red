@@ -90,14 +90,20 @@ module 'genparser;
 % It will also be possible to put a sequence of semantic actions associated
 % with each production. For instance the start of the above could have
 % read
-%    ((E    ((S)         ((print !$1)))
-%           ((E "+" S)   ((list 'plus !$1 !$3)))
+%    ((E    ((S)         (print !$1))
+%           ((E "+" S)   (list 'plus !$1 !$3))
 %           ...
 % and in semantic actions the symbol !$1 (etc) refer to the semantic
 % values associated with the corresponding entity in the production. There
 % may be several actions in a sequence and the value yielded by the final
 % one is the value returned. If no semantic action is specified a default
-% value will be returned. I have not yet worked out what that will be!
+% value will be returned. If there is only one symbol making up the
+% right hand size of the production then the value is the value derived
+% from that, otherwise it is a list of the values from each symbol.
+% Thus to revisit the current example the default behaviour is as from
+%    ((E    ((S)         !$1)
+%           ((E "+" S)   (list !$1 !$2 !$3))
+
 
 inline procedure lalr_productions x;
     get(x, 'produces);
@@ -218,10 +224,15 @@ symbolic procedure lalr_set_grammar g;
     tnum := -1;
     for each x in non_terminals do
       for each a in lalr_productions x do <<
-        w := assoc(cdr a, action_map);
+% I will alloacte one action code for each case where I have a distinct
+% non-terminal A with a number n of items in the associated production
+% and a particular semantic action S.
+        w := assoc((x . length car a) . cdr a, action_map);
         if null w then <<
-          w := cdr a . (tnum := tnum + 1);
+          w := ((x . length car a) . cdr a) . (tnum := tnum + 1);
           action_map := w . action_map >>;
+% I update the actual production to put the action's numeric code in
+% in place of the action itself.
         rplacd(a, list cdr w) >>;
     action_map := reversip action_map;
     action_fn := mkvect sub1 tnum;
@@ -292,7 +303,7 @@ symbolic procedure lalr_display_symbols();
         if posn() > 48 then terpri();
         ttab 48;
         princ "{";
-        for each z in cdr y do << princ " "; prin z >>;
+        if cdr y then for each z in cadr y do << princ " "; prin z >>;
         princ " }";
         terpri() >>;
       ttab 20;
@@ -305,7 +316,7 @@ symbolic procedure lalr_print_action_map();
   begin
     princ "Action map:"; terpri();
     for each x in action_map do <<
-      prin cdr x; princ ":"; ttab 12; prin car x; terpri() >>
+      prin cdr x; princ ":"; ttab 12; prin cdar x; terpri() >>
   end;
 
 % The intent is that lalr_cleanup() should tidy up ALL global state used
@@ -609,6 +620,21 @@ symbolic procedure lalr_print_actions action_table;
         else << prin w; terpri() >> >>
   end;
 
+fluid '(lalr_action_counter);
+lalr_action_counter := 0;
+
+% I create names for the functions that implement semantic actions. Well
+% I could base them on a checksum of the action itself, but using a simple
+% sequence is easier.
+
+symbolic procedure lalr_gensym();
+  intern concat("lalr_action_function_",
+    list2string explode (lalr_action_counter := add1 lalr_action_counter));
+
+symbolic procedure lalr_make_arglist n;
+  for i := 1:n collect
+    intern list2string ('!$ . explode2 i);
+
 symbolic procedure lalr_make_actions c;
   begin
     scalar action_table, aa, j, w;
@@ -642,7 +668,7 @@ symbolic procedure lalr_make_actions c;
     for each x in action_table do <<
       putv16(action_index, car x, j);
       for each y on cdr x do begin
-        scalar tt, rr, rx, rn, rA;
+        scalar tt, rr, rx, ff, fn, rn, rA;
 % The final terminal in each search-chunk will be stored as
 % "-1" which is a wild-card. This will then be the action that is
 % carried out if a syntax error is present.
@@ -652,16 +678,29 @@ symbolic procedure lalr_make_actions c;
         else if car rr = 'shift then rr := cadr rr
         else <<  % (reduce (A b c d) (rule#))
           rr := cdr rr;
-          princ "REDUCE "; prin car rr; princ " : "; print cadr rr;
+%         princ "REDUCE "; prin car rr; princ " : "; print cadr rr;
           rx := caadr rr;       % index of semantic action
           ra := caar rr;        % non-terminal to reduce to
           rn := length cdar rr; % number of items to pop
-          putv(action_fn, rx-1, nil); % for the moment
-% function should be (lambda (v<1> .. v<rn>)
-%                       car rassoc(rx, action_map));
-          princ "Semantic Action "; prin list rn;
-          princ "  "; print rassoc(rx, action_map);
+%         princ "Semantic Action "; prin list rn;
+%         princ "  "; print rassoc(rx, action_map);
+          ff := rassoc(rx, action_map);
+          if ff then ff := car ff;
+% ff is now ((A . n) . '(s1 s2 ...)) where A is the non-terminal,
+% n the number of items on the RHS of the production and the sequence
+% s1, s2,... is the semantic action list. If the action list is empty
+% I will put nil as the action function, otherwise I will construct
+% a function to call.
 %print list("rx=", rx, "rn=", rn, "ra=", ra);
+          if null cdr ff then putv(action_fn, rx-1, nil)
+          else <<
+            fn := cdr ff;
+            ff := 'lambda . lalr_make_arglist cdar ff . fn;
+%           prettyprint ff; % @@@
+            fn := lalr_gensym(); % Name for generated function
+% I do not want messages from the Lisp compiler here!
+            putd(fn, 'expr, ff) where !*pwrds = nil;
+            putv(action_fn, rx-1, fn) >>;
           putv8(action_n, rx-1, rn);
           putv16(action_A, rx-1, get(ra, 'non_terminal_code));
           rr := -rx >>;

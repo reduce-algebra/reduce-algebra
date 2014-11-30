@@ -37,7 +37,6 @@ module lalr;
 create!-package('(lalr genparser yylex yyparse), nil);
 
 switch tracelex, lalr_verbose;
-!*tracelex := !*lalr_verbose := t; % While this is still under development.
 
 global '(lex_char yylval last64 last64p which_line if_depth);
 global '(next_lex_code);
