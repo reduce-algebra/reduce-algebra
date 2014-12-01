@@ -217,6 +217,16 @@ procedure rlrndseed(s);
 operator rlrndseed;
 
 #if (memq 'psl lispsystem!*)
+   procedure lcmn(a, b);
+      if eqn(a,1) then
+	 b
+      else if eqn(b,1) then
+	 a
+      else
+ 	 a * (b / gcdn(a,b));
+#endif
+
+ #if (memq 'psl lispsystem!*)
    fluid '(symbolfilename!*);
 
    procedure rltools_trunk();
@@ -230,7 +240,6 @@ operator rlrndseed;
 
    symbolic procedure get_resource_directory();
       concat(rltools_dotdot rltools_dotdot symbolfilename!*, "red");
-
 #endif
 
 #if (memq 'psl lispsystem!*)

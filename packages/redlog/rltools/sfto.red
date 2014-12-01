@@ -692,13 +692,13 @@ asserted procedure sfto_int2sf(n: Integer): SF;
 asserted procedure sfto_sf2int(n: Integer): SF;
    n or 0;
 
-asserted procedure sfto_sf2monl(f: SF): List;
+asserted procedure sfto_sf2monl(f: SF): DottedPair;
    begin scalar vl;
       vl := sort(kernels f, 'ordop);
       return vl . sfto_sf2monl1(f, vl)
    end;
 
-asserted procedure sfto_sf2monl1(f: SF, vl: List): DottedPair;
+asserted procedure sfto_sf2monl1(f: SF, vl: List): List;
    begin scalar rl, ll;
       if null f then
 	 return nil;
@@ -711,6 +711,31 @@ asserted procedure sfto_sf2monl1(f: SF, vl: List): DottedPair;
  	 (ldeg f . car pr) . cdr pr;
       rl := sfto_sf2monl1(red f, vl);
       return append(ll, rl)
+   end;
+
+asserted procedure sfto_sf2monlip(f: SF): DottedPair;
+   begin scalar vl;
+      vl := sort(kernels f, 'ordop);
+      return vl . sfto_sf2monlip1(f, vl)
+   end;
+
+asserted procedure sfto_sf2monlip1(f: SF, vl: List): List;
+   begin scalar monl, rmonl;
+      if null f then
+	 return nil;
+      if domainp f then
+	 return {(for each v in vl collect 0) . f};
+      if not eqcar(vl, mvar f) then <<
+	 monl := sfto_sf2monlip1(f, cdr vl);
+	 for each pr in monl do
+	    car pr := 0 . car pr;
+	 return monl
+      >>;
+      monl := sfto_sf2monlip1(lc f, cdr vl);
+      for each pr in monl do
+ 	 car pr := ldeg f . car pr;
+      rmonl := sfto_sf2monlip1(red f, vl);
+      return nconc(monl, rmonl)
    end;
 
 asserted procedure sfto_mvartest(f: SF, x: Kernel): Boolean;
@@ -956,6 +981,13 @@ asserted procedure sfto_qsubhor1(f: SF, x: Kernel, q: SQ): SQ;
       return !*f2q sfto_dprpartksf res
    end;
 
+asserted procedure sfto_floatsub(f: SF, subl: AList): Floating;
+   % All kernels in f must be bound to a lisp float in subl.
+   if domainp f then
+      f or 0.0
+   else
+      cdr atsoc(mvar f, subl)^ldeg f * sfto_floatsub(lc f, subl) + sfto_floatsub(red f, subl);
+
 asserted procedure sfto_norm1(f: SF): Integer;
    % [f] is univariate. Sum of the absolute values of the coefficients of [f].
    if domainp f then absf f else addf(absf lc f, sfto_norm1 red f);
@@ -1101,6 +1133,14 @@ asserted procedure sfto_expq(q: SQ, n: Integer): SQ;
       1 ./ 1
    else
       multsq(q, sfto_expq(q, n - 1));
+
+asserted procedure sfto_mkpowq(k: Kernel, pow: Integer): SQ;
+   if eqn(pow, 0) then
+      1 ./ 1
+   else if pow > 0 then
+      (((k .** pow) .* 1) .+ nil) ./ 1
+   else
+      1 ./ (((k .** -pow) .* 1) .+ nil);
 
 asserted procedure sfto_rootq(x: SQ, n: Integer, p: Integer): SQ;
    % n-th root of [x] with precision [p].

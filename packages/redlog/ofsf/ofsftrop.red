@@ -45,8 +45,6 @@ switch rltropilp;  % use ILP solving instead of LP solving with Gurobi
                    % ignore otherwise
 on1 'rltropilp;
 
-switch rltropint;  % use integers, not floats, even with off rltropilp
-
 switch rltropsos;  % use sum of squares instead of sum for conjunctions
 off1 'rltropsos;
 
@@ -274,9 +272,9 @@ asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
    % Else ONE = FONE = nil.
    %
    begin scalar eins, one, fone;
-      eins := if !*rltropilp or !*rltropint then 1 else 1.0;
+      eins := if !*rltropilp then 1 else 1.0;
       one := for each v in vl collect v . eins;
-      fone := sfto_sf2int ofsf_fsubf(f, one);
+      fone := sfto_sf2int sfto_floatsub(f, one);
       if eqn(fone, 0) then <<
 	 if !*rlverbose then
  	    ioto_tprin2t {"+++ f is zero at (1, ..., 1)"};
@@ -296,8 +294,13 @@ asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
    % If FLAG = 1, then OTHER = (p, f(p)). Else OTHER = nil.
    %
    begin scalar ff, monl, vl, status, dir, ev, nvar; integer  d;
-      ff := ofsf_zeropcnegate(f, negatep);
-      vl . monl := sfto_sf2monl ff;
+      if !*rlverbose then
+	 ioto_tprin2t if negatep then
+	    {"+++ f is positive at (1,...,1), looking for a positive point of -f"}
+	 else
+	    {"+++ f is negative at (1,...,1) looking for a positive point of f"};
+      ff := if negatep then negf f else f;
+      vl . monl := sfto_sf2monlip ff;
       d := length vl;
       if !*rlverbose then
       	 ioto_tprin2t {"+++ dimension: ", d};
@@ -313,8 +316,7 @@ asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
 	 % successful with a negative answer: we guarantee that there is no
 	 % (positive) zero.
 	 if !*rlverbose then
-	    ioto_tprin2t {"+++ ", if negatep then "-" else "",
- 	       "f is negative definite"};
+	    ioto_tprin2t {"+++ ", if negatep then "-" else "", "f is negative definite"};
 	 return '(0 nil)
       >>;
       if status eq 'infeasible then
@@ -322,37 +324,13 @@ asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
 	 % the Newton polytope. Thas is ILP solving returned "infeasible" for
 	 % all of them. This is exactly where our incomplete method fails.
 	 return '(-1 nil);
-      if !*rlverbose then <<
-	 ioto_tprin2t {"+++ found approximate direction of positive value: "};
-	 mathprint ofsf_al2eql dir;
-	 ioto_tprin2t {"+++ at point: "};
-	 mathprint('list . for each v in vl collect {'equal, v, pop ev});
-      >>;
-      if !*rltropilp or !*rltropint then
- 	 return ofsf_zeropLp1int(ff, negatep, d, vl, dir, nvar);
-      return ofsf_zeropLp1float(ff, negatep, d, vl, dir, nvar)
+      return if !*rlgurobi and !*rltropilp then
+ 	 ofsf_zerop3i(ff, negatep, d, vl, ev, dir, nvar)
+      else if !*rlgurobi then
+ 	 ofsf_zerop3f(ff, negatep, vl, ev, dir, nvar)
+      else  % Reduce Simplex
+	 ofsf_zerop3r(ff, negatep, d, vl, ev, dir, nvar)
    end;
-
-asserted procedure ofsf_zeropcnegate(f: SF, negatep: Boolean): SF;
-   if negatep then <<
-      if !*rlverbose then
-	 ioto_tprin2t {"+++ f is positive at (1, ..., 1), ",
-	    "looking for a positive point of -f"};
-      negf f
-   >> else <<
-      if !*rlverbose then
-	 ioto_tprin2t {"+++ f is negative at (1, ..., 1), ",
-	    "looking for a positive point of f"};
-      f
-   >>;
-
-asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
-   % Returns a variable with an odd corresponding exponent in [ev] or [nil].
-   if ev then
-      if not evenp car ev then
- 	 car vl
-      else
- 	 ofsf_softnegp(cdr vl, cdr ev);
 
 asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): List4;
    % Returns (FLAG, DIR, EV, NEVAR). We refer to exponent vector as points and
@@ -375,14 +353,14 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): L
       else
       	 lp_newmodel(d+1, 0);
       for each pt in monl do
-	 if !*rltropdel0 and ofsf_zerolistp car pt then <<
+	 if !*rltropdel0 and lto_0listp car pt then <<
 	    if !*rlverbose then
 	       ioto_tprin2t "+++ deleting (0,...,0)";
 	    delposp := cdr pt > 0
 	 >> else if cdr pt > 0 then <<
 	    posl := car pt . posl;
 	    np := np + 1
-	 >> else if ofsf_softnegp(vl, car pt) then <<
+	 >> else if not posp and ofsf_softnegp(vl, car pt) then <<
 	    snegl := car pt . snegl;
 	    ns := ns + 1
 	 >> else <<
@@ -390,10 +368,12 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): L
 	    nh := nh + 1
 	 >>;
       if !*rlverbose then <<
-	 ioto_tprin2 "+++ #points in the frame (+, soft -, hard -, all): ";
-	 ioto_prin2t {np, ", ", ns, ", ", nh, ", ", np + ns + nh};
-      	 ioto_tprin2 "+++ ";
-	 ioto_prin2t lp_optaction()
+	 ioto_tprin2 {"+++ number of points in the frame "};
+	 if posp then
+	     ioto_prin2 {"(+, -, all): ", np, ", ", nh, ", ", np + nh}
+	 else
+	    ioto_tprin2 {"(+, soft -, hard -, all): ", np, ", ", ns, ", ", nh, ", ", np + ns + nh};
+      	 ioto_tprin2t {"+++ ", lp_optaction()}
       >>;
       if null posl and (posp or null snegl) and not delposp then
       	  return {'definite, nil, nil, nil};
@@ -435,126 +415,62 @@ asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, sneg
       return {'feasible, dir, ev, if snegp then ofsf_softnegp(vl, ev)}
    end;
 
-asserted procedure ofsf_zerolistp(l: List): Boolean;
-   null l or eqn(car l, 0) and ofsf_zerolistp cdr l;
+asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
+   % Returns a variable with an odd corresponding exponent in [ev] or [nil].
+   if ev then
+      if not evenp car ev then
+ 	 car vl
+      else
+ 	 ofsf_softnegp(cdr vl, cdr ev);
 
 asserted procedure ofsf_addconstraints(l: List);
    for each pt in l do
       lp_addconstraint('leq, (-1) . pt, -1);
 
-asserted procedure ofsf_oddevp(ev: List): ExtraBoolean;
-   ev and (not evenp car ev or ofsf_oddevp cdr ev);
-
-asserted procedure ofsf_zeropLp1int(f: SF, negatep: Boolean, d: Integer, vl: List, dirp: AList, nvar: ExtraBoolean): List;
-   begin scalar isol, fsol, sol, fval, v, inf; integer ee;
-      dirp := ofsf_spoint2intpoint dirp;
+asserted procedure ofsf_zerop3i(f: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
+   begin integer w, g;
       if !*rlverbose then <<
-	 ioto_tprin2t {"+++ lifted to integers: "};
-	 mathprint ofsf_al2eql dirp
+	 ioto_tprin2 {"+++ found integer direction towards a positive value"};
+	 mathprint ofsf_al2eql dirp;
+	 ioto_tprin2t {"+++ at monomial: "};
+	 mathprint('times . for each v in vl collect {'expt, v, pop ev});
       >>;
+      dirp := car dirp . for each e in cdr dirp collect <<
+	 w := fix cdr e;
+	 g := gcdn(g, w);
+ 	 car e . w
+      >>;
+      for each e in cdr dirp do  % I have copied dirp right above
+	 cdr e := cdr e / g;
+      return ofsf_zerop4i(f, negatep, d, vl, dirp, nvar)
+   end;
+
+asserted procedure ofsf_zerop4i(f: SF, negatep: Boolean, d: Integer, vl: List, dirp: AList, nvar: ExtraBoolean): List;
+   begin scalar v, isol, fsol, sol, fval, inf;
       pop dirp;
       isol := for i := 1:d collect <<
 	 v := pop vl;
-	 ee := cdr pop dirp;
-	 inf := ofsf_mkpowq('infinity, ee);
-	 if v eq nvar then
-	    v . negsq inf
-	 else
-	    v . inf
+	 inf := sfto_mkpowq('infinity, cdr pop dirp);
+	 v . if v eq nvar then negsq inf else inf
       >>;
       if !*rlverbose then <<
-	 ioto_tprin2t {"+++ modulo rounding errors there ",
-	    "is a positive value at: "};
-	 mathprint ofsf_al2eql for each pr in isol collect car pr . prepsq cdr pr
+	 ioto_tprin2t {"+++ there is a positive value at: "};
+	 mathprint ofsf_al2eql for each pr in isol collect car pr . prepsq cdr pr;
+	 ioto_tprin2 {"+++ computing ", if negatep then "-" else "", "f at that nonstandard point ... "}
       >>;
-      if !*rlverbose then
-	 ioto_tprin2 {"+++ computing ", if negatep then "-" else "",
- 	    "f at that infinite point ... "};
       fsol := sfto_qsub(f, isol);
       if !*rlverbose then <<
-	 ioto_prin2t "done";
-	 mathprint prepsq fsol
+	 ioto_prin2t "done:";
+	 mathprint prepsq fsol;
+	 ioto_tprin2 {"+++ realizing infinity by increasing powers of 2: "}
       >>;
-      if !*rlverbose then
-	 ioto_tprin2 {"+++ realizing infinity by increasing powers of 2: "};
       sol .  fval := ofsf_realizeinfinity(isol, fsol);
       if negatep then fval := negsq fval;
       return {1, {sol, prepsq fval}}
    end;
 
-asserted procedure ofsf_mkpowq(k: Kernel, pow: Integer): SQ;
-   if eqn(pow, 0) then
-      1 ./ 1
-   else if pow > 0 then
-      (((k .** pow) .* 1) .+ nil) ./ 1
-   else
-      1 ./ (((k .** -pow) .* 1) .+ nil);
-
-asserted procedure ofsf_zeropLp1float(f: SF, negatep: Boolean, d: Integer, vl: List, dirp: List, nvar: ExtraBoolean): List;
-   begin scalar subl, scvl, val, pow, this, v, expo;
-      if !*rlverbose then
-	 ioto_tprin2t {"+++ realizing infinity by increasing powers of 2 ..."};
-      repeat <<
-	 pow := if null pow then 1.0 else pow * 2;
-	 if !*rlverbose then
-	    ioto_prin2 {"[", pow, "] "};
-	 scvl := vl;
-	 subl := for each e in cdr dirp collect <<
-	    v := pop scvl;
-	    expo := if eqcar(cdr e, 'minus) then - cadr cdr e else cdr e;
-	    this := pow ^ expo;
-	    if v eq nvar then this := -this;
-	    v . this
-	 >>;
-	 val := ofsf_fsubf(f, subl)
-      >> until val > 0;
-      if negatep then val := -val;
-      return {1, {subl, val}}
-%      return {'list, 'list . for each pr in subl collect {'equal, car pr, cdr pr}, val}
-   end;
-
-asserted procedure ofsf_fsubf(f: SF, subl: AList): Floating;
-   if domainp f then
-      f or 0
-   else
-      cdr atsoc(mvar f, subl)^ldeg f * ofsf_fsubf(lc f, subl) + ofsf_fsubf(red f, subl);
-
-asserted procedure ofsf_spoint2intpoint(dirp: List): List;
-   if !*rlgurobi then
-      ofsf_fpoint2intpoint dirp
-   else
-      ofsf_rpoint2intpoint dirp;
-
-asserted procedure ofsf_fpoint2intpoint(dirp: AList): List;
-   begin scalar res, w; integer g;
-      res := car dirp . for each e in cdr dirp collect <<
-	 w := fix(if !*rltropilp then
- 	    cdr e
- 	 else
- 	    10^ofsf_lpsolprec!* * cdr e + 0.5 * sgn caddr e);
-	 g := gcdn(g, w);
- 	 car e . w
-      >>;
-      for each e in cdr res do
-	 cdr e := cdr e / g;
-      return res
-   end;
-
-asserted procedure ofsf_rpoint2intpoint(dirp: List): List;
-   begin scalar res, w; integer g;
-      res := car dirp . for each e in cdr dirp collect <<
-	 w := simp cdr e;
-	 g := gcdn(g, denr w);
- 	 car e . w
-      >>;
-      g := !*f2q g;
-      for each e in cdr res do
-	 cdr e := sfto_sf2int numr multsq(cdr e, g);
-      return res
-   end;
-
 asserted procedure ofsf_realizeinfinity(isol: AList, fsol: SQ): DottedPair;
-   begin scalar nfsol, nval, val, ipow, sol; integer pow;
+   begin scalar nfsol, nval, val, isubl, sol; integer pow;
       nfsol := numr fsol;
       if minusf nfsol then
 	 rederr "negative lc - probably something wrong";
@@ -562,14 +478,63 @@ asserted procedure ofsf_realizeinfinity(isol: AList, fsol: SQ): DottedPair;
 	 pow := if eqn(pow, 0) then 1 else pow * 2;
 	 if !*rlverbose then
 	    ioto_prin2 {"[", pow, "] "};
-	 nval := sfto_fsub(nfsol, {'infinity . pow})
+      	 isubl := {'infinity . pow};
+	 nval := sfto_fsub(nfsol, isubl)
       >> until nval and nval > 0;
       ioto_cterpri();
-      ipow := {'infinity . pow};
-      val := quotsq(!*f2q nval, !*f2q sfto_fsub(denr fsol, ipow));
+      val := quotsq(!*f2q nval, !*f2q sfto_fsub(denr fsol, isubl));
       sol := for each e in isol collect
-	 car e . prepsq sfto_fsubq(cdr e, ipow);
+	 car e . prepsq sfto_fsubq(cdr e, isubl);
       return sol . val
+   end;
+
+asserted procedure ofsf_zerop3f(f: SF, negatep: Boolean, vl: List, ev: List, dirp: List, nvar: ExtraBoolean): List;
+   begin scalar subl, scvl, val, pow, this, v, isol;
+      if !*rlverbose then <<
+	 ioto_tprin2 {"+++ found approximate direction towards a positive value"};
+	 mathprint ofsf_al2eql dirp;
+	 ioto_tprin2t {"+++ at monomial: "};
+	 mathprint('times . for each v in vl collect {'expt, v, pop ev});
+      	 isol := 'list . for each pr in cdr dirp collect {'expt, 'infinity, cdr pr};
+	 ioto_tprin2t {"+++ modulo rounding errors there is a positive value at: "};
+	 mathprint isol;
+	 ioto_tprin2t {"+++ realizing infinity by increasing powers of 2 ..."}
+      >>;
+      repeat <<
+	 pow := if null pow then 1.0 else pow * 2;
+	 if !*rlverbose then
+	    ioto_prin2 {"[", pow, "] "};
+	 scvl := vl;
+	 subl := for each e in cdr dirp collect <<
+	    v := pop scvl;
+	    this := pow ^ cdr e;
+	    v . if v eq nvar then -this else this
+	 >>;
+	 val := sfto_floatsub(f, subl)
+      >> until val > 0;
+      ioto_cterpri();
+      if negatep then val := -val;
+      return {1, {subl, val}}
+   end;
+
+asserted procedure ofsf_zerop3r(f: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
+   begin integer w, l;
+      if !*rlverbose then <<
+	 ioto_tprin2 {"+++ found rational direction towards a positive value"};
+	 mathprint ofsf_al2eql dirp;
+	 ioto_tprin2t {"+++ at monomial: "};
+	 mathprint('times . for each v in vl collect {'expt, v, pop ev});
+      >>;
+      l := 1;
+      dirp := car dirp . for each pr in cdr dirp collect <<
+	 w := simp cdr pr;
+	 l := lcmn(l, denr w);
+ 	 car pr . w
+      >>;
+      l := !*f2q l;
+      for each pr in cdr dirp do  % I have copied dirp right above
+	 cdr pr := sfto_sf2int numr multsq(cdr pr, l);
+      return ofsf_zerop4i(f, negatep, d, vl, dirp, nvar)
    end;
 
 put('zerosolve, 'psopfn, 'ofsf_zerosolveeval);
@@ -708,7 +673,7 @@ asserted procedure ofsf_zeroapprox(g: SF, p: AList, q: AList): DottedPair;
 
 asserted procedure ofsf_realrootswrap(f: SF): List;
    for each pr in ofsf_realrootswrap1 f collect
-      if rdp cdr pr  then car pr . prepf !*rd2rn cdr pr else pr;
+      if rdp cdr pr then car pr . prepf !*rd2rn cdr pr else pr;
 
 asserted procedure ofsf_realrootswrap1(f: SF): List;
    % The result is an Alist (... (kernel .  solution) ...), where the solution

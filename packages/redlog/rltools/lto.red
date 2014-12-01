@@ -533,6 +533,9 @@ procedure lto_maxkl(kl);
       return m
    end;
 
+asserted procedure lto_0listp(l: List): Boolean;
+   null l or eqn(car l, 0) and lto_0listp cdr l;
+
 endmodule;  % [lto]
 
 end;  % of file
