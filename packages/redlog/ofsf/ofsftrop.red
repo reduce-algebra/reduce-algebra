@@ -324,12 +324,7 @@ asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
 	 % the Newton polytope. Thas is ILP solving returned "infeasible" for
 	 % all of them. This is exactly where our incomplete method fails.
 	 return '(-1 nil);
-      return if !*rlgurobi and !*rltropilp then
- 	 ofsf_zerop3i(ff, negatep, d, vl, ev, dir, nvar)
-      else if !*rlgurobi then
- 	 ofsf_zerop3f(ff, negatep, vl, ev, dir, nvar)
-      else  % Reduce Simplex
-	 ofsf_zerop3r(ff, negatep, d, vl, ev, dir, nvar)
+      return ofsf_zerop3(ff, negatep, d, vl, ev, dir, nvar)
    end;
 
 asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): List4;
@@ -403,6 +398,7 @@ asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, sneg
 	 lp_negconstr1();
 	 w := lp_optimize();
 	 if w neq 'infeasible then
+	    % HIER
 	    cnt := nil
 	 else <<
 	    lp_delconstr1();
@@ -426,6 +422,14 @@ asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
 asserted procedure ofsf_addconstraints(l: List);
    for each pt in l do
       lp_addconstraint('leq, (-1) . pt, -1);
+
+asserted procedure ofsf_zerop3(ff: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dir: AList, nvar: ExtraBoolean): List;
+   if !*rlgurobi and !*rltropilp then
+      ofsf_zerop3i(ff, negatep, d, vl, ev, dir, nvar)
+   else if !*rlgurobi then
+      ofsf_zerop3f(ff, negatep, vl, ev, dir, nvar)
+   else  % Reduce Simplex
+      ofsf_zerop3r(ff, negatep, d, vl, ev, dir, nvar);
 
 asserted procedure ofsf_zerop3i(f: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
    begin integer w, g;
@@ -647,6 +651,10 @@ asserted procedure ofsf_zeroapprox(g: SF, p: AList, q: AList): DottedPair;
    begin scalar subal, x_i, p_i, q_i, g0, y, yq, w, rl, ral, zero, gzero;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ approximating zero, float precision is ", precision 0, " ..."};
+      % I am now going to possibly turn machine floats obtained with !*rltropilp
+      % into standard quotient fractions. In some experiment (viz. mapke5e6 with
+      % precision 24) using realroots with :rd: coefficients turned out
+      % incredibly unstable, numerically.
       y := intern gensym();
       yq := !*f2q !*k2f y;
       subal := for each w in p collect <<
@@ -658,12 +666,14 @@ asserted procedure ofsf_zeroapprox(g: SF, p: AList, q: AList): DottedPair;
       g0 := sfto_qsub(g, subal);
       assert(domainp denr g0);
       rl := ofsf_realrootswrap1 numr g0;
-      on1 'rounded;
-      if !*rlverbose then
-	 ioto_tprin2t {"+++ found ", length rl, " zero", if cdr rl then "s" else "", " on the relevant line segment"};
       if null rl then
 	 rederr {"severe error - no zero on the relevant line segement"};
+      if !*rlverbose then
+	 ioto_tprin2t {"+++ found ", length rl, " zero", if cdr rl then "s" else "", " on the relevant line segment"};
       ral := {car rl};
+      % realroots has delivered me a solution as :rd: although rounded was off.
+      % Now is the time to go rounded.
+      on1 'rounded;
       zero := for each pr in subal collect
 	 car pr . quotsq(!*f2q sfto_fsub(numr cdr pr, ral), !*f2q denr cdr pr);
       gzero := sfto_qsub(g, zero);
