@@ -114,24 +114,24 @@ global '(lex_keyword_names lex_next_code lex_initial_next_code lex_codename);
 %   :list          Either a quote or a backquote followed by Lisp-like
 %                  data, for instance 'word or `(template ,sub1 ,@sub2 end).
 
-put('!:eof,    'lex_fixed_code, 1);
-put('!:symbol, 'lex_fixed_code, 2);
-put('!:string, 'lex_fixed_code, 3);
-put('!:number, 'lex_fixed_code, 4);
-put('!:list,   'lex_fixed_code, 5);
+put('!:eof,    'lex_fixed_code, 0);
+put('!:symbol, 'lex_fixed_code, 1);
+put('!:string, 'lex_fixed_code, 2);
+put('!:number, 'lex_fixed_code, 3);
+put('!:list,   'lex_fixed_code, 4);
 
 % lex_codename is just used when generating trace output and maps from
 % numeric codes back to the corresponding terminal symbols. Because it isd
 % only used for tracing I am not concerned about performance and I will use
 % a simple association list.
 
-lex_codename := '((1 . !:eof) (2 . !:symbol) (3 . !:string)
-                  (4 . !:number) (5 . !:list));
+lex_codename := '((0 . !:eof) (1 . !:symbol) (2 . !:string)
+                  (3 . !:number) (4 . !:list));
 
 % All further terminals are given codes beyond the range used for the
 % primitive ones.
 
-lex_initial_next_code := lex_next_code := 6;
+lex_initial_next_code := lex_next_code := 5;
 
 lex_keyword_names := nil;
 
@@ -226,8 +226,8 @@ symbolic procedure lex_cleanup();
       remprop(x, 'lex_dipthong) >>;
     lex_keyword_names := nil;
     lex_next_code := lex_initial_next_code;
-    lex_codename := '((1 . !:eof) (2 . !:symbol) (3 . !:string)
-                      (4 . !:number) (5 . !:list));
+    lex_codename := '((0 . !:eof) (1 . !:symbol) (2 . !:string)
+                      (3 . !:number) (4 . !:list));
   end;
 
 

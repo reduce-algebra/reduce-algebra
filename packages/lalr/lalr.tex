@@ -4,20 +4,79 @@
 \begin{document}
 \maketitle
 
-The code here is, at the time of writing, work in progress and
-is buggy and incomplete!
-
 This code serves the same sort of purpose as the well known utilities
 \verb+yacc+ and \verb+bison+, in that it accepts a specification of a
 contex free grammar and builds a parser for the language that it describes.
 The techniques used are those described in standard texts (eg Aho, Lam,
 Sethi and Ullman) as ``LALR''.
 
-When the code is more fully operational I will extend this document to
-provide further explanation of how to use it, and will include example
-grammars that it can accept. Meanwhile read the source code and the
-test script.
+Grammars are presented to the code here as lists. In a grammar
+strings will denote terminal symbols and most symbols non-terminals. A
+small number of special symbols will stand for classes of terminal that
+are especially useful.
 
+A grammar is given as a list of rules. Each rule has a single non-terminal
+and then a seqence of productions for it. Each production can optionally
+be provided with an associated semantic action.
+
+\begin{verbatim}
+ GRAMMAR ::= "(" GTAIL
+         ;
+
+ GTAIL   ::= ")"         % Sequence of rules
+         |   RULE GTAIL
+         ;
+
+ RULE    ::= "(" nonterminal RULETAIL
+         ;
+
+ RULETAIL::= ")"         % Sequence of productions
+         | PRODUCTION RULETAIL
+         ;
+
+ PRODUCTION ::= "(" "(" PT1 PT2
+         ;
+
+ PT1     ::= ")"         % Symbols to make one production
+         | nonterminal PT1
+         | terminal PT1
+         ;
+
+ PT2     ::= ")"         % Semantic actions as Lisp code
+         | lisp-s-expressoin PT2
+         ; 
+\end{verbatim}
+
+Before specifying a grammar it is possible to declare the precedence and
+associativity of some of the terminal symbols it will use. Here is an
+example:
+\begin{verbatim}
+ lalr_precedence '("." !:right "^" !:left ("*" "/") ("+" "-"));
+\end{verbatim}
+\noindent will arrange that the token ``\verb@.@'' has highest precedence
+and that it is left associative. Next comes ``\verb@^@'' which is right
+associative.
+Both ``\verb@*@'' and ``\verb@/@'' have the same precedence and both are
+left associative, and finally ``\verb@+@'' and ``\verb@-@'' are also equal
+in precedence but lower than ``\verb@*@''.
+
+With those precedences in place one could specify a grammar by
+\begin{verbatim}
+ lalr_construct_parser '(
+    (S  ((!:symbol))
+        ((!:number))
+        ((S "." S))
+        ((S "^" S))
+        ((S "*" S))
+        ((S "/" S))
+        ((S "+" S))
+        ((S "-" S))));
+\end{verbatim}
+
+The special markers \verb+!:symbol+ and \verb+!:number+ will match any
+symbols or numbers -- for commentary on what count as such see the discussion
+of the lexter later on. The strings stand for fixed tokens and by virtue
+of them being used in the grammer the lexer will recognise them specially.
 
 
 \end{document}

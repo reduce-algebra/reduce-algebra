@@ -58,12 +58,24 @@
 % code for !:symbol (and set yylval to the actual symbol as seen) and then
 % a numeric code that it allocates for ":=". In the latter case it will
 % also set yylval to the symbol !:!= in case that is useful.
+%
+% Precedence can be set using lalr_precedence. See examples lower down in this
+% file.
+
+% Limitations are
+% (1) At present the parser generator will not cope with large grammars
+%     because it does not merge rules promptly enough.
+% (2) The lexer is hand-written and can not readily be reconfigured for
+%     use with languages other than rlisp. For instance it has use of "!"
+%     as a character escape built into it.
+%
+%
 
 
 symbolic;
 
 % Before testing parser generation I will demonstrate the lexer..
-% If I was julpy about the exact behaviour of the lexer I could go
+% If I was jumpy about the exact behaviour of the lexer I could go
 %               on tracelex;
 % to get some more tracing.
 
@@ -132,27 +144,14 @@ on lalr_verbose;
 %    S  -> C C        { }
 %    C  -> "c" C      { }
 %        | "d"        { }
-% Example 4.42 from Aho, Sethi and Ullman's Red Dragon book, with
-% some simple semantic actions added. Note that I do not need to insert
-% the production S' -> S for myself since the analysis code will
-% augment my grammar with it for me anyway.
-% Example 4.54 in the more recent Purple book.
+% This is example 4.42 from Aho, Sethi and Ullman's Red Dragon book.
+% It is example 4.54 in the more recent Purple book.
 
 % Note that this grammar will introduce "c" and "d" as keywords rather than
 % being general symbols. When I construct a subsequent grammar that will
 % undo that setting. I will omit semantic actions here so that the default
 % action of building a form of tree is used.
 
-% Limitations are
-% (1) I will need a way to specify precedence if this is to be feasibly
-%     useful. I have some planning for this but have not implemented it yet.
-% (2) At present the parser generator will not cope with large grammars
-%     because it does not merge rules promptly enough.
-% (3) The lexer is hand-written and can not readily be reconfigured for
-%     use with languages other than rlisp. For instance it has use of "!"
-%     as a character escape built into it.
-%
-%
 
 
 grammar := '(
@@ -175,6 +174,9 @@ d d ;
 
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
 % "Compilers: principles, techniques and tools", second edition 2007).
+%
+% This is used there as an example of a grammar that is not SLR(1) but
+% that can be handled by LALR .
 
 % The semantic actions here contain print statements that will
 % print some sort of trace as the parsing progresses.
@@ -205,32 +207,47 @@ printc yyparse()$
 
 ****abc = *def ;
 
-#if nil  % Skip the rest of this test file...
+% This next example is expected to be reasonably representative of
+% small grammars. It needs precedence rules to disambiguate the
+% grammar, and illustrates both left and right associativity, and
+% cases where two operators have the same precedence.
 
+gtest := '((S  ((P))
+               ((S "^" S) (list 'expt !$1 !$3))
+               ((S "**" S) (list 'expt !$1 !$3))
+               ((S "*" S) (list 'times !$1 !$3))
+               ((S "/" S) (list 'quotient !$1 !$3))
+               ((S "+" S) (list 'plus !$1 !$3))
+               ((S "-" S) (list 'difference !$1 !$3))
+               ((S "=" S) (list 'equals !$1 !$3))
+               (("-" S) (list 'minus !$2))
+               (("+" S) !$2))
 
-% The next example will not work until I have precedence rules imlemented
-% but is expected to be reasonably representative of natural small grammars.
-
-gtest := '((S  ((P) !$1)
-               ((S op P) (list !$2 !$1 !$3))
-               (("-" P) (list 'minus !$2))
-               (("+" P) !$2))
-           (op (("+") 'plus)
-               (("-") 'difference)
-               (("*") 'times)
-               (("/") 'quotient)
-               (("**") 'expt)
-               (("^") 'expt))
            (P  (("(" S ")") !$2)
-               ((!:symbol) !$1)
-               ((!:string) !$1)
-               ((!:number) !$1)));
+               ((!:symbol))
+               ((!:string))
+               ((!:number))));
+
+% "^" and "**" both have the same high precedence and are right
+% associative. Next come "*" and "/" which are left associative,
+% and after that "+" and "-". Finally "=" has lowest precedence and
+% must not associate with itself, so (a=b=c) should be a syntax error.
+
+lalr_precedence '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
 
 lalr_construct_parser gtest;
 
 printc yyparse()$
+a^b^c;
 
-a * (b/c + d/e) ^ 2 ^ g - "stringdata" ;
+printc yyparse()$
+a*b+c*d;
+
+printc yyparse()$
+a * (b/c + d/e/f) ^ 2 ^ g - "stringdata" ;
+
+
+#if nil  % Skip the rest of this test file...
 
 
 % Now a much more complicated grammar - one that recognizes the syntax of

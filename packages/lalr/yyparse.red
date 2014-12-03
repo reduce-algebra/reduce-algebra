@@ -51,12 +51,12 @@ module 'yyparse;
 symbolic procedure get_goto(state, non_terminal);
   begin
     scalar w1, w2;
-%print list("get_goto", state, non_terminal);
+    if !*lalr_verbose then print list("get_goto", state, non_terminal);
     w1 := getv16(goto_index, non_terminal);
     while not (((w2 := getv16(goto_old_state, w1)) = -1) or
                w2 = state) do w1 := w1 + 1;
     w1 := getv16(goto_new_state, w1);
-%print list("next state", w1);
+    if !*lalr_verbose then print list("next state", w1);
     return w1
   end;
 
@@ -123,51 +123,58 @@ symbolic procedure yyparse();
         w := get_action(car state_stack, next_input) >>;
       w neq 0 >> do <<
         if w > 0 then <<                             % SHIFT
-            if next_input < 0 then next_input := yylex();
-            if next_input = 0 then error(0, "End of file detected");
-            if next_input = lex_symbol_code or
-               next_input = lex_number_code or
-               next_input = lex_string_code or
-               next_input = lex_list_code then
-              sym_stack := yylval . sym_stack
-            else sym_stack := (lalr_decode_symbol next_input) . sym_stack;
-            state_stack := w . state_stack;
-            next_input := -1 >>
+          if next_input < 0 then next_input := yylex();
+          if next_input = 0 then error(0, "End of file detected");
+          if next_input = lex_symbol_code or
+            next_input = lex_number_code or
+            next_input = lex_string_code or
+            next_input = lex_list_code then
+            sym_stack := yylval . sym_stack
+          else sym_stack := (lalr_decode_symbol next_input) . sym_stack;
+          state_stack := w . state_stack;
+          next_input := -1 >>
         else begin                                   % REDUCE
-            scalar A, n, action;
-            w := - (w + 1);
-            if w < action_first_error then <<
-                action := getv(action_fn, w);
-                n := getv8(action_n, w);             % RHS count
-                A := getv16(action_A, w);            % LHS non-terminal
-%print list("action", w, "state", car state_stack, "non_terminals", non_terminals, "A", a);
-%princ "RHS count "; prin n; princ " turn into "; print ntname A;
+          scalar A, n, action;
+          w := - (w + 1);
+          if w < action_first_error then <<
+            action := getv(action_fn, w);
+            n := getv8(action_n, w);             % RHS count
+            A := getv16(action_A, w);            % LHS non-terminal
+            if !*lalr_verbose then <<
+              print list("action", w, "state", car state_stack,
+                "non_terminals", non_terminals, "A", a);
+              princ "RHS count "; prin n; princ " turn into ";
+              print ntname A >>;
 % I am now reducing by "A -> beta { action() }" where beta has n items
-                w := nil;
-                for i := 1:n do <<
-                    w := car sym_stack . w;
-                    sym_stack := cdr sym_stack;
-                    state_stack := cdr state_stack >>;
+            w := nil;
+            for i := 1:n do <<
+              w := car sym_stack . w;
+              sym_stack := cdr sym_stack;
+              state_stack := cdr state_stack >>;
 % To help me while developing this code I will not crash out if I have
 % a missing action function, but will instead just build a bit of list.
 % Well if the production is L ::= r1 r1 r3 then I will make a list (r1 r2 r3)
 % but if the production was merely L ::= r then I will leave r unchanged.
-% princ "Apply "; prin action; princ " to "; prin length w; princ " items "; print w;
-                if action then w := apply(action, w)
-                else if n = 1 then w := car w;
-                sym_stack := w . sym_stack;
-%princ "now get goto for "; prin car state_stack; princ " and "; prin ntname A;
-%princ " = "; print get_goto(car state_stack, A);
-                state_stack := get_goto(car state_stack, A) . state_stack >>
-            else <<
-                w := w - action_first_error;
-                yyerror getv(action_error_messages, w);
+            if !*lalr_verbose then <<
+              princ "Apply "; prin action; princ " to ";
+              prin length w; princ " items "; print w >>;
+            if action then w := apply(action, w)
+            else if n = 1 then w := car w;
+            sym_stack := w . sym_stack;
+            if !*lalr_verbose then <<
+              princ "now get goto for "; prin car state_stack;
+              princ " and "; prin ntname A;
+              princ " = "; print get_goto(car state_stack, A) >>;
+            state_stack := get_goto(car state_stack, A) . state_stack >>
+          else <<
+            w := w - action_first_error;
+            yyerror getv(action_error_messages, w);
 % The next activity must result in the loop ending... At present I do not
 % make any attempt to repair or recover from the error. This is obviously
 % a bad state of affairs!
-                state_stack := list 0;
-                sym_stack := '(error);
-                next_input := 0 >>
+            state_stack := list 0;
+            sym_stack := '(error);
+            next_input := 0 >>
         end >>;
     if not zerop posn() then terpri();
     princ "Seems to have finished... ";

@@ -62,20 +62,23 @@ module 'genparser;
 %
 
 % Precedence can be applied using a call such as
-%   lalr_precedence '(!:right "^" !:left ("*" "/") ("+" "-"));
+%   lalr_precedence '(!:right "^" !:left ("*" "/") ("+" "-") !:none "=");
 % where terminal symbols are listed from highest to lowest precedence. The
 % words !:left and !:right indicate that until further notice symbols
-% associate in that direction. Symbols (represented as strings) can either
-% be listed individually or put in groups that will then all share the same
-% precedence levels. So in the above "^" has the highest precedence and
-% it associates to the right. Next "*" and "/" associate to the left and
-% have the same precedence - so for instance P*Q/R*S will mean (((P*Q)/R)*S).
-% Finally "+" and "-" have equal but lower precedence. The default
-% associativity will be !:left.
-%                                   [not implemented yet]
+% associate in that direction. The token !:none introduces items that must
+% not associate. So after the above the following apply
+%     a^b^c      =>    a^(b^c)
+%     a+b+c      =>    (a+b)+c
+%     a=b=c      =>    error message.
+%     a+b^c*d=e  =>    (a+((b^c)*d))=e
+%
+% Symbols (represented as strings) can either be listed individually or put
+% in groups that will then all share the same precedence levels.
+% The default associativity will be !:left.
 
 % Here is an example of a rather trivial grammar where I have not put in
-% an actions at all:
+% an actions at all and where I have used multiple rules rather than
+% a precedence declaration:
 
 %    ((E    ((S))            The first symbol defined is the top-level
 %           ((E "+" S))      target for the grammar.
@@ -111,6 +114,37 @@ inline procedure lalr_productions x;
 inline procedure lalr_set_productions(x, y);
     put(x, 'produces, y);
 
+fluid '(lalr_precedence!* lalr_precedence_table);
+
+symbolic procedure lalr_precedence l;
+  begin
+    scalar n, dir, w;
+% Clear out any previous settings.
+    for each x in lalr_precedence!* do remprop(x, 'lalr_precedence);
+    lalr_precedence!* := nil;
+    n := 1;
+% Count how many items may be being given precedence settings
+    for each x in l do
+      if atom x then n := n + 1
+      else n := n + length x;
+    n := 3*n;
+    dir := -1; % Start off as ":left"
+    for each x in l do
+      if x = '!:left then dir := -1
+      else if x = '!:right then dir := 1
+      else if x = '!:none then dir := 0
+      else <<
+        n := n-3;
+        for each y in (if atom x then list x else x) do <<
+          w := intern y;
+          lalr_precedence!* := w . lalr_precedence!*;
+          put(w, 'lalr_precedence, (n+dir) . (n-dir));
+          if !*lalr_verbose then <<
+            princ "Predecence for "; prin y;
+            princ " is "; print get(w, 'lalr_precedence) >> >> >>;
+    return nil
+  end;
+
 %
 % lalr_set_grammar G expects that G will be a list of productions
 % in the format described earlier. The symbol mentioned on the left of the
@@ -121,7 +155,7 @@ inline procedure lalr_set_productions(x, y);
 
 symbolic procedure lalr_set_grammar g;
   begin
-    scalar name, vals, tnum, w;
+    scalar name, vals, tnum, n, w;
 
     lex_cleanup();       % So that any previous grammar does not interfere.
     terminals := non_terminals := nil;
@@ -190,6 +224,11 @@ symbolic procedure lalr_set_grammar g;
 % both terminals and non-terminals. 
     symbols := append(non_terminals,
       append('(!:eof !:symbol !:string !:number !:list), terminals));
+    lalr_precedence_table := mkvect sub1 (n := length symbols);
+    for each x in lalr_precedence!* do <<
+      tnum := get(x, 'lex_code);
+      if tnum then
+        putv(lalr_precedence_table, tnum, get(x, 'lalr_precedence)) >>;
 % I reverse the list of non-terminals here so that the starting symbol
 % will be the first item.
     non_terminals := reversip non_terminals;
@@ -282,6 +321,7 @@ symbolic procedure lalr_decode_symbol x;
 
 symbolic procedure lalr_display_symbols();
   begin
+    scalar w;
     if not zerop posn() then terpri();
     princ "Terminal symbols are:"; terpri();
     for each x in '(!:eof !:symbol !:string !:number !:list) do <<
@@ -289,7 +329,9 @@ symbolic procedure lalr_display_symbols();
       princ ":"; prin get(x, 'lex_fixed_code) >>;
     for each x in terminals do <<
       princ " "; prin x;
-      princ ":"; prin get(intern x, 'lex_code) >>;
+      w := intern x;
+      princ ":"; prin get(w, 'lex_code);
+      if w := get(w, 'lalr_precedence) then prin w >>;
     terpri();
     princ "Non-terminal symbols are:"; terpri();
     for each x in non_terminals do begin
@@ -303,7 +345,7 @@ symbolic procedure lalr_display_symbols();
         if posn() > 48 then terpri();
         ttab 48;
         princ "{";
-        if cdr y then for each z in cadr y do << princ " "; prin z >>;
+        if cdr y then for each z in cdr y do << princ " "; prin z >>;
         princ " }";
         terpri() >>;
       ttab 20;
@@ -652,6 +694,7 @@ symbolic procedure lalr_make_actions c;
         else if null w and caar r = '!S!' then
           aa := list(0, 'accept) . aa >>;
         action_table := (cdr i . lalr_remove_duplicates aa) . action_table >>;
+    action_table := lalr_resolve_conflicts action_table;
     action_index := mkvect16 caar action_table;
     action_table := reversip action_table;
     if !*lalr_verbose then lalr_print_actions action_table;
@@ -713,6 +756,124 @@ symbolic procedure lalr_make_actions c;
       putv16(action_terminal, j, caar w);
       putv16(action_result, j, cdar w);
       w := cdr w >>
+  end;
+
+% The action table that is initially created may contain conflicts.
+% Here I will detect and deal with them. The procedures I will apply will be
+% (1) reduce-reduce conflict: warn the user and use the reduction given
+%     earliest in the grammar. That is remarkably easy to arrange in that
+%     I have given numerical codes to each non-terminal and and reduce
+%     is of the form "S -> ..." so I just keep the one where the
+%     non-terminal S has the lowest valued code.
+% (2) shift-reduce conflict:
+%        nn    x    (shift mm)
+%        nn    x    reduce A -> B y C { Q }
+% where nn is the state, x the look-ahead symbol and the shift and
+% reductions are as shown. I will look at the last terminal symbol in the
+% reducion, here y. I then compare the right precedence of y with the
+% left precedence of x. If it is strictly higher I will keep the reduce,
+% otherwise the shift. The precedences I will use will be whatever
+% lalr_precedence had established.
+%
+% If no explicit precedence had been given then I will warn the user and
+% prefer the shift operation.
+%
+% There can never be two (or more) shifts in one action (ie shift-shift
+% conflicts can never arise). Thus if there are three or more conflicting
+% actions all but one must be reduces. So I will resolve the reduce-reduce
+% conflicts first (by issuing a warning and then keeping the one that
+% came first in the original grammar) and finally address any shift-reduce
+% issue.
+
+
+symbolic procedure lalr_resolve_conflicts action_table;
+  begin
+    scalar r;
+    terpri(); prettyprint action_table;
+    for each x in action_table do
+      r := (car x . lalr_resolve_conflicts1 cdr x) . r;
+    terpri(); prettyprint r;
+    return reverse r;
+  end;
+
+% In fact this function is provided in alg/sort.red so is not needed here.
+% symbolic procedure lesspcar(a, b);
+%   car a < car b;
+
+symbolic procedure lalr_resolve_conflicts1 x;
+  begin
+    scalar r, w, s, shift, reduce, rterm, p1, p2;
+% Here I have a list of items each of which is of the form
+%        (k (shift n))
+% or     (k (reduce (X ...) ..)
+% where k is a numeric code standing for a terminal. I want to identify all
+% cases where there are repeats on k. So I will sort on that field and then
+% matching cases will be adjacent.
+    x := sort(x, function lesspcar);
+    while x do <<
+      w := list car x;
+      x := cdr x;
+      while x and caar x = caar w do <<
+        w := car x . w;
+        x := cdr x >>;
+% Now w is a set of cases all with the same next symbol. If this
+% has more than one item in it I have a conflict.
+      if cdr w then << % conflict resolution here
+        shift := reduce := nil;
+        for each q in w do
+          if eqcar(cadr q, 'shift) then shift := q
+          else if null reduce then reduce := q
+          else <<
+            if not zerop posn() then terpri();
+            princ "+++ reduce/reduce conflict on ";
+            prin cadr cadr reduce;
+            princ " and ";
+            print cadr cadr q;
+% Pick which one to keep here...
+            nil >>;
+          if shift and reduce then <<
+            rterm := nil;
+            s := cadr cadr reduce;
+            for each s1 in cdr s do
+              if numberp s1 then rterm := s1;
+            p1 := getv(lalr_precedence_table, car shift);
+            if rterm then p2 := getv(lalr_precedence_table, rterm)
+            else p2 := nil;
+            if !*lalr_verbose then <<
+              princ "Shift/reduce conflict: ";
+              princ "P1="; prin p1;
+              princ "  P2="; print p2 >>;
+% Unless both symbols had been given explicit precedences I will
+% resolve in favour of SHIFT, but display a message saying that that is
+% what I am doing.
+            if p1 and p2 then <<
+% If left and right precedents are the same that disallows all associativity
+% so I will discard both actions. The result should be that if the parser
+% reaches that state it will end up reporting an error.
+              if car p1 = cdr p2 then shift := reduce := nil
+              else if car p1 > cdr p2 then reduce := nil
+              else shift := nil >>
+            else <<
+              if not zerop posn() then terpri();
+              princ "+++ shift/reduce conflict for ";
+              s := cadr cadr reduce;
+              lalr_prin_symbol car s;
+              princ " ->";
+              for each s1 in cdr s do <<
+                princ " ";
+                lalr_prin_symbol s1 >>;
+              princ " followed  by ";
+              lalr_prin_symbol car shift;
+              terpri();
+              printc "Resolved in favour of SHIFT operation";
+              reduce := nil >> >>;
+        if shift then w := list shift
+        else if reduce then w := list reduce
+        else w := nil >>;
+      if w then r := car w . r >>;
+    terpri();
+    prettyprint r;
+    return r;
   end;
 
 symbolic procedure lalr_most_common_dest p;
