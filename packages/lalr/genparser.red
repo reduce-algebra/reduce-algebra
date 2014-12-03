@@ -325,10 +325,13 @@ symbolic procedure lalr_display_symbols();
     if not zerop posn() then terpri();
     princ "Terminal symbols are:"; terpri();
     for each x in '(!:eof !:symbol !:string !:number !:list) do <<
-      princ " "; prin x;
-      princ ":"; prin get(x, 'lex_fixed_code) >>;
+      if posn() > 55 then << terpri(); princ "    " >>
+      else princ " ";
+      prin x; princ ":"; prin get(x, 'lex_fixed_code) >>;
     for each x in terminals do <<
-      princ " "; prin x;
+      if posn() > 55 then << terpri(); princ "    " >>
+      else princ " ";
+      prin x;
       w := intern x;
       princ ":"; prin get(w, 'lex_code);
       if w := get(w, 'lalr_precedence) then prin w >>;
@@ -698,15 +701,6 @@ symbolic procedure lalr_make_actions c;
     action_index := mkvect16 caar action_table;
     action_table := reversip action_table;
     if !*lalr_verbose then lalr_print_actions action_table;
-    printc "ACTION_TABLE = ";
-    for each x in action_table do <<
-      princ "(";
-      prin car x;
-      for each y in cdr x do <<
-        if cdr x and cadr x neq y then terpri(); % all but first
-        ttab 6;
-        prin y >>;
-      printc ")" >>;
     j := 0; w := nil;
     for each x in action_table do <<
       putv16(action_index, car x, j);
@@ -721,12 +715,9 @@ symbolic procedure lalr_make_actions c;
         else if car rr = 'shift then rr := cadr rr
         else <<  % (reduce (A b c d) (rule#))
           rr := cdr rr;
-%         princ "REDUCE "; prin car rr; princ " : "; print cadr rr;
           rx := caadr rr;       % index of semantic action
           ra := caar rr;        % non-terminal to reduce to
           rn := length cdar rr; % number of items to pop
-%         princ "Semantic Action "; prin list rn;
-%         princ "  "; print rassoc(rx, action_map);
           ff := rassoc(rx, action_map);
           if ff then ff := car ff;
 % ff is now ((A . n) . '(s1 s2 ...)) where A is the non-terminal,
@@ -734,12 +725,10 @@ symbolic procedure lalr_make_actions c;
 % s1, s2,... is the semantic action list. If the action list is empty
 % I will put nil as the action function, otherwise I will construct
 % a function to call.
-%print list("rx=", rx, "rn=", rn, "ra=", ra);
           if null cdr ff then putv(action_fn, rx-1, nil)
           else <<
             fn := cdr ff;
             ff := 'lambda . lalr_make_arglist cdar ff . fn;
-%           prettyprint ff; % @@@
             fn := lalr_gensym(); % Name for generated function
 % I do not want messages from the Lisp compiler here!
             putd(fn, 'expr, ff) where !*pwrds = nil;
@@ -789,10 +778,10 @@ symbolic procedure lalr_make_actions c;
 symbolic procedure lalr_resolve_conflicts action_table;
   begin
     scalar r;
-    terpri(); prettyprint action_table;
+%   terpri(); prettyprint action_table;
     for each x in action_table do
       r := (car x . lalr_resolve_conflicts1 cdr x) . r;
-    terpri(); prettyprint r;
+%   terpri(); prettyprint r;
     return reverse r;
   end;
 
@@ -840,6 +829,7 @@ symbolic procedure lalr_resolve_conflicts1 x;
             if rterm then p2 := getv(lalr_precedence_table, rterm)
             else p2 := nil;
             if !*lalr_verbose then <<
+              if not zerop posn() then terpri();
               princ "Shift/reduce conflict: ";
               princ "P1="; prin p1;
               princ "  P2="; print p2 >>;
@@ -871,8 +861,8 @@ symbolic procedure lalr_resolve_conflicts1 x;
         else if reduce then w := list reduce
         else w := nil >>;
       if w then r := car w . r >>;
-    terpri();
-    prettyprint r;
+%   terpri();
+%   prettyprint r;
     return r;
   end;
 
@@ -964,9 +954,10 @@ symbolic procedure lalr_make_gotos();
       putv16(goto_old_state, p, caar r);
       putv16(goto_new_state, p, cdar r);
       r := cdr r >>;
-    princ "goto_index: ";     print16 goto_index;
-    princ "goto_old_state: "; print16 goto_old_state;
-    princ "goto_new_state: "; print16 goto_new_state
+    if !*lalr_verbose then <<
+      princ "goto_index: ";     print16 goto_index;
+      princ "goto_old_state: "; print16 goto_old_state;
+      princ "goto_new_state: "; print16 goto_new_state >>
   end;
 
 % A main driver function that performs all the steps involved
@@ -990,12 +981,13 @@ symbolic procedure lalr_construct_parser g;
     lalr_rename_gotos();
     if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
     lalr_make_actions cc;
-    princ "action_index "; print16 action_index;
-    princ "action_terminal "; print16 action_terminal;
-    princ "action_result "; print16 action_result;
-    princ "action_fn "; printvec action_fn;
-    princ "action_n "; print8 action_n;
-    princ "action_A "; print16 action_A;
+    if !*lalr_verbose then <<
+      princ "action_index "; print16 action_index;
+      princ "action_terminal "; print16 action_terminal;
+      princ "action_result "; print16 action_result;
+      princ "action_fn "; printvec action_fn;
+      princ "action_n "; print8 action_n;
+      princ "action_A "; print16 action_A >>;
     lalr_make_gotos();
     lalr_cleanup()
   end;

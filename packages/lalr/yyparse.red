@@ -176,8 +176,9 @@ symbolic procedure yyparse();
             sym_stack := '(error);
             next_input := 0 >>
         end >>;
-    if not zerop posn() then terpri();
-    princ "Seems to have finished... ";
+    if !*lalr_verbose then <<
+      if not zerop posn() then terpri();
+      princ "Seems to have finished... " >>;
     return car sym_stack
   end;
 

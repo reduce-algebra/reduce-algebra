@@ -163,11 +163,20 @@ grammar := '(
 
 lalr_construct_parser grammar;
 
-printc yyparse()$
+symbolic procedure pparse();
+  begin
+    scalar r;
+    r := yyparse();
+    terpri();
+    princ "= ";
+    print r
+  end;
+
+pparse()$
 
 c c c d c d ;
 
-printc yyparse()$
+pparse()$
 
 d d ;
 
@@ -198,12 +207,12 @@ g4_46 := '((S   ((L "=" R)   (neatprintc "## S => L = R")
 
 lalr_construct_parser g4_46;
 
-printc yyparse()$
+pparse()$
 
 leftsym = rightsym ;
 
 
-printc yyparse()$
+pparse()$
 
 ****abc = *def ;
 
@@ -213,13 +222,13 @@ printc yyparse()$
 % cases where two operators have the same precedence.
 
 gtest := '((S  ((P))
-               ((S "^" S) (list 'expt !$1 !$3))
-               ((S "**" S) (list 'expt !$1 !$3))
-               ((S "*" S) (list 'times !$1 !$3))
-               ((S "/" S) (list 'quotient !$1 !$3))
+               ((S "^" S) (list 'pow !$1 !$3))
+               ((S "**" S) (list 'pow !$1 !$3))
+               ((S "*" S) (list 'tms !$1 !$3))
+               ((S "/" S) (list 'quot !$1 !$3))
                ((S "+" S) (list 'plus !$1 !$3))
-               ((S "-" S) (list 'difference !$1 !$3))
-               ((S "=" S) (list 'equals !$1 !$3))
+               ((S "-" S) (list 'diff !$1 !$3))
+               ((S "=" S) (list 'eq !$1 !$3))
                (("-" S) (list 'minus !$2))
                (("+" S) !$2))
 
@@ -237,14 +246,30 @@ lalr_precedence '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
 
 lalr_construct_parser gtest;
 
-printc yyparse()$
+pparse()$
 a^b^c;
 
-printc yyparse()$
+pparse()$
 a*b+c*d;
 
-printc yyparse()$
-a * (b/c + d/e/f) ^ 2 ^ g - "stringdata" ;
+pparse()$
+a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
+
+% Now the same example with the tracing switched off so you can see
+% what output would arise in production code.
+
+off tracelex, lalr_verbose;
+
+lalr_construct_parser gtest;
+
+pparse()$
+a^b^c;
+
+pparse()$
+a*b+c*d;
+
+pparse()$
+a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
 
 
 #if nil  % Skip the rest of this test file...
