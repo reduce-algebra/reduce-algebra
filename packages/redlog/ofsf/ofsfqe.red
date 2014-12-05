@@ -2153,27 +2153,10 @@ procedure ofsf_qemkstdansaexpe(f, v, anu);
 
 procedure ofsf_subconstq(f, v, q);
    % [f] is a univariate positive formula.
-   begin scalar op, argl;
-      op := rl_op f;
-      if rl_tvalp op then
-	 return op;
-      if op eq 'and then
-	 return ofsf_subconstq!-gand('and, rl_argn f, v, q, 'true);
-      if op eq 'or then
-	 return ofsf_subconstq!-gand('or, rl_argn f, v, q, 'false);
-      return ofsf_subconstat(f, v, q)
-   end;
+   cl_eval(f, {v . q}, function(ofsf_subconstat));
 
-procedure ofsf_subconstq!-gand(gand, argl, v, q, gtrue);
-   begin scalar res, arg;
-      res := gtrue;
-      while res eq gtrue and argl do
-	 res := ofsf_subconstq(pop argl, v, q);
-      return res
-   end;
-
-procedure ofsf_subconstat(at, v, q);
-   if ofsf_evalatp(ofsf_op at, numr ofsf_subf(ofsf_arg2l at, v, q)) then 'true else 'false;
+procedure ofsf_subconstat(at, subal);
+   if ofsf_evalatp(ofsf_op at, numr ofsf_subf(ofsf_arg2l at, caar subal, cdar subal)) then 'true else 'false;
 
 procedure ofsf_findrat(anu1, anu2);
    % We assume anu1 < anu2. Returns a rational number [q], s.t. anu1 < q < anu2.

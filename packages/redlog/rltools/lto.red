@@ -425,6 +425,42 @@ procedure lto_partition(l, f);
       return reversip goodl . reversip badl
    end;
 
+procedure lto_delnthip(l, n);
+   % Delete the nth member of l in place.
+   begin scalar scl;
+      if null l then
+	 rederr {"index", n, "out of range for in lto_delnthip"};
+      if n < 1 then
+ 	 return l;
+      if eqn(n, 1) then
+      	 return cdr l;
+      scl := l;
+      for i := 1 : n-2 do
+	 if cdr scl then
+ 	    scl := cdr scl
+	 else
+	    rederr {"index", n, "out of range in lto_delnthip"};
+      if cdr scl then
+      	 cdr scl := cddr scl
+      else
+	 rederr {"index", n, "out of range in lto_delnthip"};
+      return l
+   end;
+
+procedure lto_apply2nthip(l, n, fun, xargl);
+   begin scalar scl;
+      if n < 1 then
+	 rederr {"index", n, "out of range in lto_apply2nthip"};
+      scl := l;
+      for i := 1 : n-1 do
+	 if cdr scl then
+	    scl := cdr scl
+	 else
+	    rederr {"index", n, "out of range in lto_apply2nthip"};
+      car scl := apply(fun, car scl . xargl);
+      return l
+   end;
+
 #if (memq 'csl lispsystem!*)
    procedure lto_hashid(id);
       sxhash id;

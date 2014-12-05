@@ -39,7 +39,9 @@ fluid '(gurobi_addconstr!*);
 fluid '(gurobi_addconstrFast!*);
 fluid '(gurobi_numVars!*);
 fluid '(gurobi_delconstr1!*);
+fluid '(gurobi_delconstr!*);
 fluid '(gurobi_negconstr1!*);
+fluid '(gurobi_negconstr!*);
 fluid '(gurobi_updatemodel!*);
 fluid '(gurobi_write!*);
 fluid '(gurobi_newDoubleArray!*);
@@ -60,7 +62,9 @@ if filep gurobi_libredgurobi!* then <<
    gurobi_addconstrFast!* := find!-foreign!-function("gurobi_addconstrFast", gurobi_redgurobi!*);
    gurobi_numVars!* := find!-foreign!-function("gurobi_numVars", gurobi_redgurobi!*);
    gurobi_negconstr1!* := find!-foreign!-function("gurobi_negconstr1", gurobi_redgurobi!*);
+   gurobi_negconstr!* := find!-foreign!-function("gurobi_negconstr", gurobi_redgurobi!*);
    gurobi_delconstr1!* := find!-foreign!-function("gurobi_delconstr1", gurobi_redgurobi!*);
+   gurobi_delconstr!* := find!-foreign!-function("gurobi_delconstr", gurobi_redgurobi!*);
    gurobi_updatemodel!* := find!-foreign!-function("gurobi_updatemodel", gurobi_redgurobi!*);
    gurobi_write!* := find!-foreign!-function("gurobi_write", gurobi_redgurobi!*);
    gurobi_newDoubleArray!* := find!-foreign!-function("gurobi_newDoubleArray", gurobi_redgurobi!*);
@@ -100,8 +104,14 @@ inline procedure gurobi_numVars();
 inline procedure gurobi_negconstr1();
    call!-foreign!-function gurobi_negconstr1!*;
 
+inline procedure gurobi_negconstr(n);
+   call!-foreign!-function(gurobi_negconstr!*, 'int32, n);
+
 inline procedure gurobi_delconstr1();
    call!-foreign!-function gurobi_delconstr1!*;
+
+inline procedure gurobi_delconstr(n);
+   call!-foreign!-function(gurobi_delconstr!*, 'int32, n);
 
 inline procedure gurobi_updatemodel();
    call!-foreign!-function gurobi_updatemodel!*;

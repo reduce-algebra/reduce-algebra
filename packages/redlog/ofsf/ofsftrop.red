@@ -70,7 +70,7 @@ asserted procedure ofsf_psat2pol(f: QfFormula): SF;
 asserted procedure ofsf_tropsat1(f: QfFormula, posp: Boolean): Id;
    begin scalar p, sol, vl, flag, one, other;
       p := ofsf_sat2pol1(f, posp);
-      {flag, one, other} := ofsf_zerop1(p, posp);
+      {flag, one, other} := ofsf_zerop1(p, 'true, posp);
       if eqn(flag, 1) then <<
 	 if !*rlverbose then
  	    ioto_tprin2 "found candidate, solving ... ";
@@ -200,14 +200,16 @@ asserted procedure ofsf_pzeropeval(argl: List): List;
    ofsf_zeropeval1(argl, t);
 
 asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
-   begin scalar f, flag, one, other;
+   begin scalar f, scond, flag, one, other, zero;
       f := numr simp car argl;
-      {flag, one, other} := ofsf_zerop1(f, posp);
+      scond := if cdr argl then rl_simp cadr argl else 'true;
+      {flag, one, other, zero} := ofsf_zerop1(f, scond, posp);
       if not eqn(flag, 1) then
       	 return {'list, flag};
       one := ofsf_s2aPointPair one;
       other := ofsf_s2aPointPair other;
-      return {'list, flag, one, other}
+      zero := ofsf_s2aPointPair zero;
+      return {'list, flag, one, other, zero}
    end;
 
 asserted procedure ofsf_s2aPointPair(pp: List2): List2;
@@ -216,16 +218,16 @@ asserted procedure ofsf_s2aPointPair(pp: List2): List2;
 asserted procedure ofsf_al2eql(al: AList): List;
    'list . for each pr in al collect {'equal, car pr, cdr pr};
 
-asserted procedure ofsf_zerop(f: SF): List;
+asserted procedure ofsf_zerop(f: SF, scond: QfFormula): List;
    % SM entry point
-   ofsf_zerop1(f, nil);
+   ofsf_zerop1(f, scond, nil);
 
-asserted procedure ofsf_pzerop(f: SF): List;
+asserted procedure ofsf_pzerop(f: SF, scond: QfFormula): List;
    % SM entry point
-   ofsf_zerop1(f, t);
+   ofsf_zerop1(f, scond, t);
 
-asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List3;
-   % Returns (FLAG, ONE, OTHER). The semantics of FLAG is as follows:
+asserted procedure ofsf_zerop1(f: SF, scond: QfFormula, posp: Boolean): List4;
+   % Returns (FLAG, ONE, OTHER, ZERO). The semantics of FLAG is as follows:
    %
    % FLAG = -1: This incomplete method failed.
    % FLAG =  0: f has no (positive) zero.
@@ -236,30 +238,30 @@ asserted procedure ofsf_zerop1(f: SF, posp: Boolean): List3;
    %
    % If FLAG = 1, then ONE = (1, ..., 1), f(1, ..., 1)) and OTHER = (p, f(p))
    % such that f(1, ..., 1) * f(p) < 0, i.e., OTHER is the witness for the
-   % existence of a zero via the intermediate value theorem. All coordinates of
-   % p are integer powers of 2. For all other values of FLAG we have ONE = OTHER
-   % = nil.
+   % existence of a zero via the intermediate value theorem, and ZERO = (z,
+   % f(z)) is such a zero. For all other values of FLAG we have ONE = OTHER =
+   % ZERO = nil.
    %
-   begin scalar one, fone, other, vl; integer flag;
+   begin scalar one, fone, other, zero, vl; integer flag;
       if domainp f then
 	 return if null f then
- 	    '(1 nil nil)
+ 	    '(1 nil nil nil)
  	 else if minusf f then
- 	    '(0 nil nil)
+ 	    '(0 nil nil nil)
 	 else
- 	    '(3 nil  nil);
+ 	    '(3 nil nil nil);
       vl := sort(kernels f, 'ordop);
       {flag, one, fone} := ofsf_zeropTryOne(f, vl);
       if eqn(flag, 2) then
-	 return '(2 nil nil);
+	 return '(2 nil nil nil);
       assert(flag = -1);
-      {flag, other} := ofsf_zerop2(f, fone > 0, posp);
+      {flag, other, zero} := ofsf_zerop2(f, scond, one, fone, posp);
       if eqn(flag, -1) then
-	 return '(-1 nil nil);
+	 return '(-1 nil nil nil);
       if eqn(flag, 0) then
-	 return '(0 nil nil);
+	 return '(0 nil nil nil);
       assert(flag = 1);
-      return {1, {one, fone}, other}
+      return {1, {one, fone}, other, zero}
    end;
 
 asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
@@ -268,13 +270,12 @@ asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
    % FLAG = -1: f(1, ..., 1) <> 0
    % FLAG =  2: f(1, ..., 1) = 0
    %
-   % If FLAG = -1, then ONE = (x_1 . 1, ..., x_n . 1) and FONE = f(1, ..., 1)).
+   % If FLAG = -1, then ONE = (x_1 . 1, ..., x_n . 1) and FONE = f(1, ..., 1).
    % Else ONE = FONE = nil.
    %
-   begin scalar eins, one, fone;
-      eins := if !*rltropilp then 1 else 1.0;
-      one := for each v in vl collect v . eins;
-      fone := sfto_sf2int sfto_floatsub(f, one);
+   begin scalar one, fone;
+      one := for each v in vl collect v . 1;
+      fone := sfto_sf2int sfto_fsub(f, one);
       if eqn(fone, 0) then <<
 	 if !*rlverbose then
  	    ioto_tprin2t {"+++ f is zero at (1, ..., 1)"};
@@ -283,29 +284,30 @@ asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
       return {-1, one, fone}
    end;
 
-asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
-   % Returns (FLAG, OTHER). Define ff := if negatep then -f else f. The
-   % semantics of FLAG is as follows:
+asserted procedure ofsf_zerop2(f: SF, scond: QfFormula, one: AList, fone: Integer, posp: Boolean): List3;
+   % Returns (FLAG, OTHER, ZERO). The semantics of FLAG is as follows:
    %
    % FLAG = -1: This incomplete method failed.
    % FLAG =  0: f has no (positive) zero.
-   % FLAG =  1: We have found a point p such that ff(p) > 0.
+   % FLAG =  1: We have found a point p such that f(1)*f(p) < 0, and a point z
+   %            such that f(z) = 0 using the intermediate value theorem.
    %
-   % If FLAG = 1, then OTHER = (p, f(p)). Else OTHER = nil.
+   % If FLAG = 1, then OTHER = (p, f(p)) and ZERO = (z, f(z)). Else OTHER = zero
+   % = nil.
    %
-   begin scalar ff, monl, vl, status, dir, ev, nvar; integer  d;
+   begin scalar ff, monl, vl, w; integer  d;
       if !*rlverbose then
-	 ioto_tprin2t if negatep then
+	 ioto_tprin2t if fone > 0 then
 	    {"+++ f is positive at (1,...,1), looking for a positive point of -f"}
 	 else
 	    {"+++ f is negative at (1,...,1) looking for a positive point of f"};
-      ff := if negatep then negf f else f;
+      ff := if fone > 0 then negf f else f;
       vl . monl := sfto_sf2monlip ff;
       d := length vl;
       if !*rlverbose then
       	 ioto_tprin2t {"+++ dimension: ", d};
-      {status, dir, ev, nvar} := ofsf_posdirp(d, vl, monl, posp);
-      if status eq 'definite then <<
+      w := ofsf_posdirp(ff, scond, one, fone, d, vl, monl, posp);
+      if eqcar(w, 0) then <<
 	 % We did not find a coefficient in ff suitable for our purposes. In the
 	 % posp case, this means that all coefficients are negative, and we may
 	 % conclude that ff is negative definite on the first hyper-octant. In
@@ -316,33 +318,35 @@ asserted procedure ofsf_zerop2(f: SF, negatep: Boolean, posp: Boolean): List;
 	 % successful with a negative answer: we guarantee that there is no
 	 % (positive) zero.
 	 if !*rlverbose then
-	    ioto_tprin2t {"+++ ", if negatep then "-" else "", "f is negative definite"};
-	 return '(0 nil)
+	    ioto_tprin2t {"+++ ", if fone > 0 then "-" else "", "f is negative definite"};
+	 return '(0 nil nil)
       >>;
-      if status eq 'infeasible then
+      if eqcar(w, -1) then
 	 % There were suitable coefficients in the frame but none of them was in
-	 % the Newton polytope. Thas is ILP solving returned "infeasible" for
+	 % the Newton polytope. Thas is (I)LP solving returned "infeasible" for
 	 % all of them. This is exactly where our incomplete method fails.
-	 return '(-1 nil);
-      return ofsf_zerop3(ff, negatep, d, vl, ev, dir, nvar)
+	 return '(-1 nil nil);
+      return w
    end;
 
-asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): List4;
-   % Returns (FLAG, DIR, EV, NEVAR). We refer to exponent vector as points and
-   % to the sign of a corresponding coefficient as the sign of the point. Then
-   % the semantics of FLAG is as follows:
+switch rmonl;
+
+asserted procedure ofsf_posdirp(ff: SF, scond: QfFormula, one: AList, fone: Integer, d: Integer, vl: List, monl: List, posp: Boolean): List3;
+   % Returns (FLAG, OTHER, ZERO). We refer to exponent vector as points and to the
+   % sign of a corresponding coefficient as the sign of the point. Then the
+   % semantics of FLAG is as follows:
    %
-   % FLAG =   definite: no positive (or weakly negative) point at all
-   % FLAG = infeasible: no positive (or weakly negative) point in the Newton polytope.
-   % FLAG =   feasible: We found a point with a suitable coefficient in the Newton polytope.
+   % FLAG = -1: no positive (or weakly negative) point in the Newton polytope.
+   % FLAG =  0: no positive (or weakly negative) point at all
+   % FLAG =  1: We found a point p with a suitable coefficient in the Newton
+   %            polytope. That is, f(1)*f(p) < 0, and we could also compute a
+   %            point z such that f(z) = 0 using the intermediate value theorem.
    %
-   % If FLAG = feasible, then EV is the point, DIR is the normal vector of a
-   % separating hyperplane for EV, given as a set of equations introducing
-   % variables c, n_i. If we are not in the posp case, then NEVAR is one
-   % variable whose corresponding exponent in EV is odd. If FLAG is in
-   % {definite, infeasible}, then DIR = EV = NEVAR = nil.
+   % If FLAG = 1, then OTHER = (p, f(p)) and ZERO = (z, f(z)). Else OTHER = ZERO
+   % = nil.
    %
    begin scalar posl, snegl, hnegl, w, delposp; integer np, ns, nh;
+      if !*rmonl then monl := reversip monl;
       if !*rltropilp then
       	 lp_newmodel(1, d)
       else
@@ -368,48 +372,103 @@ asserted procedure ofsf_posdirp(d: List, vl: List, monl: List, posp: Boolean): L
 	     ioto_prin2 {"(+, -, all): ", np, ", ", nh, ", ", np + nh}
 	 else
 	    ioto_tprin2 {"(+, soft -, hard -, all): ", np, ", ", ns, ", ", nh, ", ", np + ns + nh};
-      	 ioto_tprin2t {"+++ ", lp_optaction()}
       >>;
       if null posl and (posp or null snegl) and not delposp then
-      	  return {'definite, nil, nil, nil};
+	 return '(0 nil nil);
+      if !*rlverbose then
+	 ioto_tprin2 {"+++ generating basic ", if !*rltropilp then "I" else "", "LP problem ... "};
       for each l in {posl, snegl, hnegl} do
       	 ofsf_addconstraints l;
       lp_updatemodel();
-      w := ofsf_posdirp1(posl, np, d, vl, nil);
-      if not posp and eqcar(w, 'infeasible) then <<
+      if !*rlverbose then <<
+	 ioto_prin2t "done";
+      	 ioto_tprin2 {"+++ ", if !*rltropilp then "I" else "", "LP solving ", lp_optaction(), ": " }
+      >>;
+      w := ofsf_posdirp1(ff, scond, one, fone, posl, np, d, vl, nil);
+      if not posp and eqcar(w, -1) then <<
 	 if !*rlverbose then
 	    ioto_cterpri();
-      	 w := ofsf_posdirp1(snegl, ns, d, vl, t)
+      	 w := ofsf_posdirp1(ff, scond, one, fone, snegl, ns, d, vl, t)
       >>;
       lp_freemodel();
       return w
    end;
 
-asserted procedure ofsf_posdirp1(l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List4;
-   begin scalar cnt, w, dir, ev; integer i;
+asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Integer, l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List3;
+   % Returns (FLAG, OTHER, ZERO). We refer to exponent vector as points and to
+   % the sign of a corresponding coefficient as the sign of the point. Then the
+   % semantics of FLAG is as follows:
+   %
+   % FLAG = -1: no positive (or weakly negative) point in the Newton polytope.
+   % FLAG = 1:  We found a point p with a suitable coefficient in the Newton
+   %            polytope. That is, f(1)*f(p) < 0, and we could also compute a
+   %            point z such that f(z) = 0 using the intermediate value theorem.
+   %
+   % If FLAG = 1, then OTHER = (p, f(p)) and ZERO = (z, f(z)). Else OTHER = ZERO
+   % = nil.
+   %
+   begin scalar cnt, w, dir, ev, nvar, flag, other, zero, fzero, ww; integer i, skiprows;
       if null l then
-	 return {'infeasible, nil, nil, nil};
+	 return '(-1 nil nil);
       cnt := t; while cnt and l do <<
 	 if !*rlverbose then <<
 	    ioto_prin2 {"[", c, "] "};
 	    c := c - 1
 	 >>;
 	 ev := pop l;
-	 lp_negconstr1();
+	 lp_negconstr skiprows;
 	 w := lp_optimize();
-	 if w neq 'infeasible then
-	    % HIER
-	    cnt := nil
-	 else <<
-	    lp_delconstr1();
+	 if not (w memq '(infeasible unbounded)) then <<
+	    % Unbounded is actually feasible but without a solution. I have to
+	    % think about this. For now I am just skipping it.
+	    dir := ('c . pop w) . for i := 1:d collect mkid('n, i) . pop w;
+	    nvar := if snegp then ofsf_softnegp(vl, ev);
+	    {flag, other} := ofsf_zerop3(ff, fone, d, vl, ev, dir, nvar);
+	    % I am going to use the possibly negated ff instead of the original
+	    % f, which shoud not matter.
+	    zero .  fzero := if !*rltropilp then
+	       ofsf_zerosolve(ff, one, car other)
+	    else
+ 	       ofsf_zeroapprox(ff, one, car other);
+	    if !*rlverbose and scond neq 'true then <<
+	       mathprint ofsf_s2aPointPair {
+		  for each pr in zero collect car pr . mk!*sq cdr pr, mk!*sq fzero};
+	       ioto_tprin2 "+++ verifying the side condition ... "
+	    >>;
+	    ww := ofsf_sceval(scond, zero);
+	    if !*rlverbose and scond neq 'true then
+	       ioto_prin2t ww;
+	    if ww eq 'true then
+	       cnt := nil
+	    else <<
+	       w := 'skip;
+	       if l then <<
+	       	  if !*rlverbose then
+		     ioto_tprin2 {"+++ resuming ", if !*rltropilp then "I" else "", "LP solving: "};
+	       	  lp_negconstr skiprows;  % undo current negation
+	       	  lp_updatemodel();
+		  skiprows := skiprows + 1
+	       >>
+	    >>
+	 >> else <<
+	    lp_delconstr skiprows;
       	    lp_updatemodel()
 	 >>
       >>;
-      if w eq 'infeasible then
-      	 return {'infeasible, nil, nil, nil};
-      dir := ('c . pop w) . for i := 1:d collect mkid('n, i) . pop w;
-      return {'feasible, dir, ev, if snegp then ofsf_softnegp(vl, ev)}
+      if w memq '(infeasible unbounded skip) then
+      	 return '(-1 nil nil);
+      zero := for each pr in zero collect car pr . mk!*sq cdr pr;
+      return {flag, other, {zero, mk!*sq fzero}}
    end;
+
+asserted procedure ofsf_sceval(f: QfFormula, subl: AList): TruthValue;
+   cl_eval(f, subl, function(ofsf_scevalat));
+
+asserted procedure ofsf_scevalat(at: OfsfAtf, subl: AList): TruthValue;
+   % subl assigns SQs representing :rd: or :ra: domain elements to all
+   % variables. We assume that the domain mode is nil when calling this
+   % function.
+   if ofsf_evalatp(rl_op at, numr sfto_qsub(ofsf_arg2l at, subl)) then 'true else 'false;
 
 asserted procedure ofsf_softnegp(vl: List, ev: List): ExtraBoolean;
    % Returns a variable with an odd corresponding exponent in [ev] or [nil].
@@ -423,18 +482,21 @@ asserted procedure ofsf_addconstraints(l: List);
    for each pt in l do
       lp_addconstraint('leq, (-1) . pt, -1);
 
-asserted procedure ofsf_zerop3(ff: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dir: AList, nvar: ExtraBoolean): List;
-   if !*rlgurobi and !*rltropilp then
-      ofsf_zerop3i(ff, negatep, d, vl, ev, dir, nvar)
-   else if !*rlgurobi then
-      ofsf_zerop3f(ff, negatep, vl, ev, dir, nvar)
-   else  % Reduce Simplex
-      ofsf_zerop3r(ff, negatep, d, vl, ev, dir, nvar);
+asserted procedure ofsf_zerop3(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dir: AList, nvar: ExtraBoolean): List;
+   begin scalar flag, other;
+      {flag, other} := if !*rlgurobi and !*rltropilp then
+      	 ofsf_zerop3i(ff, fone, d, vl, ev, dir, nvar)
+      else if !*rlgurobi then
+      	 ofsf_zerop3f(ff, fone, vl, ev, dir, nvar)
+      else  % Reduce Simplex
+      	 ofsf_zerop3r(ff, fone, d, vl, ev, dir, nvar);
+      return {flag, other}
+   end;
 
-asserted procedure ofsf_zerop3i(f: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop3i(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
    begin integer w, g;
       if !*rlverbose then <<
-	 ioto_tprin2 {"+++ found integer direction towards a positive value"};
+	 ioto_tprin2t {"+++ found integer direction towards a positive value"};
 	 mathprint ofsf_al2eql dirp;
 	 ioto_tprin2t {"+++ at monomial: "};
 	 mathprint('times . for each v in vl collect {'expt, v, pop ev});
@@ -446,11 +508,11 @@ asserted procedure ofsf_zerop3i(f: SF, negatep: Boolean, d: Integer, vl: List, e
       >>;
       for each e in cdr dirp do  % I have copied dirp right above
 	 cdr e := cdr e / g;
-      return ofsf_zerop4i(f, negatep, d, vl, dirp, nvar)
+      return ofsf_zerop4i(ff, fone, d, vl, dirp, nvar)
    end;
 
-asserted procedure ofsf_zerop4i(f: SF, negatep: Boolean, d: Integer, vl: List, dirp: AList, nvar: ExtraBoolean): List;
-   begin scalar v, isol, fsol, sol, fval, inf;
+asserted procedure ofsf_zerop4i(ff: SF, fone: Integer, d: Integer, vl: List, dirp: AList, nvar: ExtraBoolean): List;
+   begin scalar v, isol, ffinfty, sol, ffval, inf;
       pop dirp;
       isol := for i := 1:d collect <<
 	 v := pop vl;
@@ -460,39 +522,42 @@ asserted procedure ofsf_zerop4i(f: SF, negatep: Boolean, d: Integer, vl: List, d
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ there is a positive value at: "};
 	 mathprint ofsf_al2eql for each pr in isol collect car pr . prepsq cdr pr;
-	 ioto_tprin2 {"+++ computing ", if negatep then "-" else "", "f at that nonstandard point ... "}
+	 ioto_tprin2 {"+++ computing ", if fone > 0 then "-" else "", "f at that nonstandard point ... "}
       >>;
-      fsol := sfto_qsub(f, isol);
+      ffinfty := sfto_qsub(ff, isol);
       if !*rlverbose then <<
 	 ioto_prin2t "done:";
-	 mathprint prepsq fsol;
+	 mathprint prepsq ffinfty;
 	 ioto_tprin2 {"+++ realizing infinity by increasing powers of 2: "}
       >>;
-      sol .  fval := ofsf_realizeinfinity(isol, fsol);
-      if negatep then fval := negsq fval;
-      return {1, {sol, prepsq fval}}
+      sol .  ffval := ofsf_realizeinfinity(isol, ffinfty);
+      if !*rlverbose then <<
+	 ioto_tprin2t {"+++ found a point with positive value:"};
+      	 mathprint ofsf_s2apointPair {sol, mk!*sq ffval}
+      >>;
+      if fone > 0 then ffval := negsq ffval;
+      return {1, {sol, mk!*sq ffval}}
    end;
 
-asserted procedure ofsf_realizeinfinity(isol: AList, fsol: SQ): DottedPair;
-   begin scalar nfsol, nval, val, isubl, sol; integer pow;
-      nfsol := numr fsol;
-      if minusf nfsol then
+asserted procedure ofsf_realizeinfinity(isol: AList, ffinfty: SQ): DottedPair;
+   begin scalar nffinfty, nval, val, isubl, sol; integer pow;
+      nffinfty := numr ffinfty;
+      if minusf nffinfty then
 	 rederr "negative lc - probably something wrong";
       repeat <<
 	 pow := if eqn(pow, 0) then 1 else pow * 2;
 	 if !*rlverbose then
 	    ioto_prin2 {"[", pow, "] "};
       	 isubl := {'infinity . pow};
-	 nval := sfto_fsub(nfsol, isubl)
+	 nval := sfto_fsub(nffinfty, isubl)
       >> until nval and nval > 0;
-      ioto_cterpri();
-      val := quotsq(!*f2q nval, !*f2q sfto_fsub(denr fsol, isubl));
+      val := quotsq(!*f2q nval, !*f2q sfto_fsub(denr ffinfty, isubl));
       sol := for each e in isol collect
 	 car e . prepsq sfto_fsubq(cdr e, isubl);
       return sol . val
    end;
 
-asserted procedure ofsf_zerop3f(f: SF, negatep: Boolean, vl: List, ev: List, dirp: List, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop3f(ff: SF, fone: Integer, vl: List, ev: List, dirp: List, nvar: ExtraBoolean): List;
    begin scalar subl, scvl, val, pow, this, v, isol;
       if !*rlverbose then <<
 	 ioto_tprin2 {"+++ found approximate direction towards a positive value"};
@@ -506,22 +571,25 @@ asserted procedure ofsf_zerop3f(f: SF, negatep: Boolean, vl: List, ev: List, dir
       >>;
       repeat <<
 	 pow := if null pow then 1.0 else pow * 2;
-	 if !*rlverbose then
-	    ioto_prin2 {"[", pow, "] "};
 	 scvl := vl;
 	 subl := for each e in cdr dirp collect <<
 	    v := pop scvl;
 	    this := pow ^ cdr e;
 	    v . if v eq nvar then -this else this
 	 >>;
-	 val := sfto_floatsub(f, subl)
+	 val := sfto_floatsub(ff, subl);
+	 if !*rlverbose then
+	    ioto_prin2 {"[", pow, ", ", val, "] "};
       >> until val > 0;
-      ioto_cterpri();
-      if negatep then val := -val;
+      if !*rlverbose then <<
+	 ioto_tprin2t {"+++ found a point with positive value:"};
+      	 mathprint ofsf_s2apointPair {subl, val}
+      >>;
+      if fone > 0 then val := -val;
       return {1, {subl, val}}
    end;
 
-asserted procedure ofsf_zerop3r(f: SF, negatep: Boolean, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop3r(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
    begin integer w, l;
       if !*rlverbose then <<
 	 ioto_tprin2 {"+++ found rational direction towards a positive value"};
@@ -538,7 +606,7 @@ asserted procedure ofsf_zerop3r(f: SF, negatep: Boolean, d: Integer, vl: List, e
       l := !*f2q l;
       for each pr in cdr dirp do  % I have copied dirp right above
 	 cdr pr := sfto_sf2int numr multsq(cdr pr, l);
-      return ofsf_zerop4i(f, negatep, d, vl, dirp, nvar)
+      return ofsf_zerop4i(ff, fone, d, vl, dirp, nvar)
    end;
 
 put('zerosolve, 'psopfn, 'ofsf_zerosolveeval);

@@ -71,6 +71,7 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
 struct Formula;
 struct QfFormula;
 struct QfFormulaL asserted by listp;
+struct TruthValue asserted by rl_tvalp;
 struct Theory asserted by listp;
 struct TheoryFormulaPair asserted by pairp;
 struct KernelL asserted by listp;

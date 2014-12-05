@@ -49,8 +49,10 @@ int32_t gurobi_numVars(void);
 void gurobi_addconstr(char*, double*, double);
 void gurobi_addconstrFast(char*, double);
 void gurobi_delconstr1(void);
+void gurobi_delconstr(int32_t);
 void gurobi_updatemodel(void);
 void gurobi_negconstr1(void);
+void gurobi_negconstr(int32_t);
 void gurobi_write(char*);
 const char *gurobi_optimize(void);
 double gurobi_getSol(int32_t);
@@ -160,28 +162,38 @@ void gurobi_addconstrFast(char rel[], double c) {
 }
 
 void gurobi_delconstr1(void) {
-  int error;
-  int first[] = {0};
+  /* for backward compatibility */
+  gurobi_delconstr(0);
+}
 
-  error = GRBdelconstrs(model, 1, first);
+void gurobi_delconstr(int32_t n) {
+  int error;
+  int row[] = {(int)n};
+
+  error = GRBdelconstrs(model, 1, row);
   ERRORCHECK(error);
 }
 
 void gurobi_negconstr1(void) {
+  /* for backward compatibility */
+  gurobi_negconstr(0);
+}
+
+void gurobi_negconstr(int32_t n) {
   
   int i;
   int error;
   double v;
-  int first[NumVars];
+  int cind[NumVars];
 
   for (i=0; i<NumVars; i++) {
-    first[i] = 0;
-    error = GRBgetcoeff (model, 0, i, &v);
+    cind[i] = n;
+    error = GRBgetcoeff (model, n, i, &v);
     ERRORCHECK(error);
     Val[i] = -v;
   }
 
-  error = GRBchgcoeffs(model, NumVars, first, ind, Val);
+  error = GRBchgcoeffs(model, NumVars, cind, ind, Val);
   if (error) {
     printf("NumVars = %d\n", NumVars);
     for (i=0; i<NumVars; i++) {

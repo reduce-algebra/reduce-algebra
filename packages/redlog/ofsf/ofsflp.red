@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2013 T. Sturm
+% Copyright (c) 2013-2014 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -80,26 +80,29 @@ procedure lp_updatemodel();
    >>;
 
 procedure lp_negconstr1();
+   lp_negconstr 0;
+
+procedure lp_negconstr(n);
    if !*rlgurobi and !*rlffi and !*lp_cslp then
-      gurobi_negconstr1()
-   else if lp_model!* then
-      lp_model!* := lp_negconstr car lp_model!* . cdr lp_model!*
-   else if lp_modelcache!* then <<
-      lp_modelcache!* := reversip lp_modelcache!*;
-      lp_negconstr car lp_modelcache!* . cdr lp_modelcache!*;
-      lp_modelcache!* := reversip lp_modelcache!*
+      gurobi_negconstr n
+   else <<
+      lp_updatemodel();
+      lto_apply2nthip(lp_model!*, n+1, function(lp_donegconstr), nil)
    >>;
 
-procedure lp_negconstr(c);
+procedure lp_donegconstr(c);
    {car c, 'plus . for each s in cdr cadr c collect {'times, -cadr s, caddr s}, caddr c};
 
 procedure lp_delconstr1();
+   lp_delconstr 0;
+
+procedure lp_delconstr(n);
    if !*rlgurobi and !*rlffi and !*lp_cslp then
-      gurobi_delconstr1()
-   else if lp_model!* then
-      lp_model!* := cdr lp_model!*
-   else if lp_modelcache!* then
-      lp_modelcache!* := reversip cdr reversip lp_modelcache!*;
+      gurobi_delconstr n
+   else <<
+      lp_updatemodel();
+      lto_delnthip(lp_model!*, n+1)
+   >>;
 
 procedure lp_freemodel();
    if !*rlgurobi and !*rlffi and !*lp_cslp then

@@ -663,6 +663,31 @@ procedure cl_divide(f);
 procedure cl_qbopcompat(q,bop);
    (q eq 'ex and bop eq 'or) or (q eq 'all and bop eq 'and);
 
+procedure cl_eval(f, subal, evalat);
+   % [f] is a univariate positive formula.
+   begin scalar op;
+      op := rl_op f;
+      if rl_tvalp op then
+	 return op;
+      if op eq 'and then
+	 return cl_eval!-gand('and, rl_argn f, subal, evalat, 'true);
+      if op eq 'or then
+	 return cl_eval!-gand('or, rl_argn f, subal, evalat, 'false);
+      return apply(evalat, {f, subal})
+   end;
+
+procedure cl_eval!-gand(gand, argl, subal, evalat, gtrue);
+   begin scalar res;
+      res := gtrue;
+      while res eq gtrue and argl do
+	 res := cl_eval(pop argl, subal, evalat);
+      return res
+   end;
+
+procedure ofsf_subconstat(at, v, q);
+   if ofsf_evalatp(ofsf_op at, numr ofsf_subf(ofsf_arg2l at, v, q)) then 'true else 'false;
+
+
 procedure cl_dfgPrint(f,fname);
    % Prefix print.
    <<
