@@ -87,7 +87,7 @@ symbolic procedure in_list1(fl,echop);
    in_list1a(fl,echop,nil);
 
 symbolic procedure in_list1a(fl,echop,prefixchars);
-   begin scalar chan,echo,ochan,w,w1;
+   begin scalar chan,echo,ochan,w,w1,usepipe;
       echo := !*echo;   % Save current echo status.
       if !*reduce4 then if type fl neq 'string then typerr(fl,'string)
                          else fl := value fl;
@@ -100,7 +100,10 @@ symbolic procedure in_list1a(fl,echop,prefixchars);
 % the "$" is replaced by the directory portion of car ifl!*. Or by "." if
 % ifl!*=nil or it does not contain a "/" or "\". 
       w := explode2 fl;
-      if eqcar(w, '!$) and
+      if eqcar(w, '!|) then <<
+        usepipe := t;
+        fl := list2string cdr w >>
+      else if eqcar(w, '!$) and
          (eqcar(cdr w, '!/) or eqcar(cdr w, '!\)) then <<
         if null ifl!* then fl := list2string('!. . cdr w)
         else <<
@@ -109,7 +112,7 @@ symbolic procedure in_list1a(fl,echop,prefixchars);
           if null w1 then w1 := '(!/ !.);
           w := append(reverse w1, cddr w);
           fl := list2string w >> >>;
-      chan := open(fl,'input);
+      chan := if usepipe then pipe!-open(fl,'input) else open(fl,'input);
       ochan := rds chan;
       if assoc(fl,linelist!*) then nil;
       curline!* := 1;
