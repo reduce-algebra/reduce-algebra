@@ -462,7 +462,23 @@ asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Int
    end;
 
 asserted procedure ofsf_sceval(f: QfFormula, subl: AList): TruthValue;
-   cl_eval(f, subl, function(ofsf_scevalat));
+   % subl assigns SQs representing :rd: or :ra: domain elements to all
+   % variables. We assume that the domain mode is nil when calling this
+   % function.
+   begin scalar n;
+      if !*rltropilp then
+	 % We evaluate at the lower bounds of the isolating intervals.
+	 % Evaluating at the actual ranum would work but is way too expensive at
+	 % present.
+      	 subl := for each pr in subl collect <<
+	    n := numr cdr pr;
+	    if n and not numberp n then
+	       car pr . ra_l n
+ 	    else
+	       pr
+	 >>;
+      return cl_eval(f, subl, function(ofsf_scevalat))
+   end;
 
 asserted procedure ofsf_scevalat(at: OfsfAtf, subl: AList): TruthValue;
    % subl assigns SQs representing :rd: or :ra: domain elements to all

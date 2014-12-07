@@ -1056,6 +1056,9 @@ asserted procedure sfto_iqsub(f: SF, x: Kernel, q: SQ): SQ;
 
 % SQ functions:
 
+asserted procedure sfto_absq(q: SQ);
+   absf numr q ./ denr q;
+
 asserted procedure sfto_greaterq(q1: SQ, q2: SQ): ExtraBoolean;
    minusf numr subtrsq(q2, q1);
 
