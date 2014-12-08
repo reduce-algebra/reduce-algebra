@@ -4,64 +4,67 @@
 %\def\rtri{$\triangleright$}
 %\newcommand{\tribound}[1]{\rtri#1\ltri}
 
-\def\exprlist  {expr$_{1}$,expr$_{2}$, \ldots ,expr$_{{\tt n}}$}
-\def\lineqlist {lin\_eqn$_{1}$,lin\_eqn$_{2}$, \ldots ,lin\_eqn$_{n}$}
-\def\matlist   {mat$_{1}$,mat$_{2}$, \ldots ,mat$_{n}$}
-\def\veclist   {vec$_{1}$,vec$_{2}$, \ldots ,vec$_{n}$}
+\newcommand\exprlist  {expr$_{1}$,expr$_{2}$, \ldots ,expr$_{{\tt n}}$}
+\newcommand\lineqlist {lin\_eqn$_{1}$,lin\_eqn$_{2}$, \ldots ,lin\_eqn$_{n}$}
+\newcommand\matlist   {mat$_{1}$,mat$_{2}$, \ldots ,mat$_{n}$}
+\newcommand\veclist   {vec$_{1}$,vec$_{2}$, \ldots ,vec$_{n}$}
 
-\def\lazyfootnote{\footnote{If you're feeling lazy then the \{\}'s can 
+\newcommand\lazyfootnote{\footnote{If you're feeling lazy then the \{\}'s can 
                   be omitted.}}
 
 %\renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
+\setcounter{secnumdepth}{3}
 
 \index{Linear Algebra package}
 
 \subsection{Introduction}
-This package provides a selection of functions that are useful 
-in the world of linear algebra. These functions are described 
-alphabetically in subsection \ref{linalg:subsec3} and are labelled
-\ref{linalg:subsec3}.1 to \ref{linalg:subsec3}.51. 
-They can be classified into four sections(n.b: the numbers after 
-the dots signify the function label in section \ref{linalg:subsec3}).
+
+This package provides a selection of functions that are useful in the world of
+linear algebra. These functions are described alphabetically in subsection
+\ref{linalg:subsec3} and are labelled \ref{linalg:add_columns} to
+\ref{linalg:kronecker_product}.  They can be classified into four sections(n.b:
+the numbers after the dots signify the function label in section
+\ref{linalg:subsec3}).
 
 Contributions to this package have been made by Walter Tietze (ZIB).
 
 \subsubsection{Basic matrix handling}
 
 \begin{center}
-\begin{tabular}{l l l l l l}
-add\_columns     & \ldots & \ref{linalg:addcolumns}  & 
-add\_rows        & \ldots & 3.2  \\
-add\_to\_columns & \ldots & 3.3  &
-add\_to\_rows    & \ldots & 3.4  \\
-augment\_columns & \ldots & 3.5  &
-char\_poly       & \ldots & 3.9  \\
-column\_dim      & \ldots & 3.12  &
-copy\_into       & \ldots & 3.14 \\
-diagonal         & \ldots & 3.15 &
-extend           & \ldots & 3.16 \\
-find\_companion  & \ldots & 3.17  &
-get\_columns     & \ldots & 3.18 \\
-get\_rows        & \ldots & 3.19 &
-hermitian\_tp    & \ldots & 3.21 \\
-matrix\_augment  & \ldots & 3.28 &
-matrix\_stack    & \ldots & 3.30 \\
-minor            & \ldots & 3.31 &
-mult\_columns    & \ldots & 3.32 \\ 
-mult\_rows       & \ldots & 3.33 &
-pivot            & \ldots & 3.34 \\
-remove\_columns  & \ldots & 3.37 &
-remove\_rows     & \ldots & 3.38 \\
-row\_dim         & \ldots & 3.39 &
-rows\_pivot      & \ldots & 3.40 \\
-stack\_rows      & \ldots & 3.43 &
-sub\_matrix      & \ldots & 3.44 \\
-swap\_columns    & \ldots & 3.46 &
-swap\_entries    & \ldots & 3.47 \\
-swap\_rows       & \ldots & 3.48 &
-\end{tabular}
+  \begin{tabular}{l l l l l l}
+    add\_columns     & \ldots & \ref{linalg:add_columns}  & 
+    add\_rows        & \ldots & \ref{linalg:add_rows}  \\
+    add\_to\_columns & \ldots & \ref{linalg:add_to_columns}  &
+    add\_to\_rows    & \ldots & \ref{linalg:add_to_rows}  \\
+    augment\_columns & \ldots & \ref{linalg:augment_columns}  &
+    char\_poly       & \ldots & \ref{linalg:char_poly}  \\
+    column\_dim      & \ldots & \ref{linalg:column_dim}  &
+    copy\_into       & \ldots & \ref{linalg:copy_into} \\
+    diagonal         & \ldots & \ref{linalg:diagonal} &
+    extend           & ldots & \ref{linalg:extend} \\
+    find\_companion  & \ldots & \ref{linalg:find_companion}  &
+    get\_columns     & \ldots & \ref{linalg:get_columns} \\
+    get\_rows        & \ldots & \ref{linalg:get_rows} &
+    hermitian\_tp    & \ldots & \ref{linalg:hermitian_tp} \\
+    matrix\_augment  & \ldots & \ref{linalg:matrix_augment} &
+    matrix\_stack    & \ldots & \ref{linalg:matrix_stack} \\
+    minor            & \ldots & \ref{linalg:minor} &
+    mult\_columns    & \ldots & \ref{linalg:mult_columns} \\ 
+    mult\_rows       & \ldots & \ref{linalg:mult_rows} &
+    pivot            & \ldots & \ref{linalg:pivot} \\
+    remove\_columns  & \ldots & \ref{linalg:remove_columns} &
+    remove\_rows     & \ldots & \ref{linalg:remove_rows} \\
+    row\_dim         & \ldots & \ref{linalg:row_dim} &
+    rows\_pivot      & \ldots & \ref{linalg:rows_pivot} \\
+    stack\_rows      & \ldots & \ref{linalg:stack_rows} &
+    sub\_matrix      & \ldots & \ref{linalg:sub_matrix} \\
+    swap\_columns    & \ldots & \ref{linalg:swap_columns} &
+    swap\_entries    & \ldots & \ref{linalg:swap_entries} \\
+    swap\_rows       & \ldots & \ref{linalg:swap_rows} &
+  \end{tabular}
 \end{center}
+
 
 \subsubsection{Constructors}
 
@@ -69,20 +72,20 @@ Functions that create matrices.
 
 \begin{center}
 \begin{tabular}{l l l l l l}
-band\_matrix       & \ldots & 3. 6 & 
-block\_matrix      & \ldots & 3. 7 \\
-char\_matrix       & \ldots & 3. 8 & 
-coeff\_matrix      & \ldots & 3. 11 \\ 
-companion          & \ldots & 3. 13 & 
-hessian            & \ldots & 3. 22 \\
-hilbert            & \ldots & 3. 23 & 
-mat\_jacobian      & \ldots & 3. 24 \\
-jordan\_block      & \ldots & 3. 25 & 
-make\_identity     & \ldots & 3. 27 \\
-random\_matrix     & \ldots & 3. 36 & 
-toeplitz           & \ldots & 3. 50 \\
-Vandermonde        & \ldots & 3. 51 &
-Kronecker\_Product & \ldots & 3. 52  
+band\_matrix       & \ldots &\ref{linalg:band_matrix} &
+block\_matrix      & \ldots &\ref{linalg:block_matrix} \\
+char\_matrix       & \ldots &\ref{linalg:char_matrix} & 
+coeff\_matrix      & \ldots &\ref{linalg:coeff_matrix} \\ 
+companion          & \ldots &\ref{linalg:companion} & 
+hessian            & \ldots &\ref{linalg:hessian} \\
+hilbert            & \ldots &\ref{linalg:hilbert} & 
+mat\_jacobian      & \ldots &\ref{linalg:mat_jacobian} \\
+jordan\_block      & \ldots &\ref{linalg:jordan_block} & 
+make\_identity     & \ldots &\ref{linalg:make_identity} \\
+random\_matrix     & \ldots &\ref{linalg:random_matrix} & 
+toeplitz           & \ldots &\ref{linalg:toeplitz} \\
+Vandermonde        & \ldots &\ref{linalg:Vandermonde} &
+Kronecker\_Product & \ldots &\ref{linalg:kronecker_product}  
 \end{tabular}
 \end{center}
 
@@ -90,42 +93,43 @@ Kronecker\_Product & \ldots & 3. 52
 
 \begin{center}
 \begin{tabular}{l l l l l l}
-char\_poly       & \ldots & 3.9 & 
-cholesky         & \ldots & 3.10 \\ 
-gram\_schmidt    & \ldots & 3.20 & 
-lu\_decom        & \ldots & 3.26 \\
-pseudo\_inverse  & \ldots & 3.35 & 
-simplex          & \ldots & 3.41 \\
-svd              & \ldots & 3.45 & 
-triang\_adjoint  & \ldots & 3.51
+char\_poly       & \ldots &\ref{linalg:char_poly} & 
+cholesky         & \ldots &\ref{linalg:cholesky} \\ 
+gram\_schmidt    & \ldots &\ref{linalg:gram_schmidt} & 
+lu\_decom        & \ldots &\ref{linalg:lu_decom} \\
+pseudo\_inverse  & \ldots &\ref{linalg:pseudo_inverse} & 
+simplex          & \ldots &\ref{linalg:simplex} \\
+svd              & \ldots &\ref{linalg:svd} & 
+triang\_adjoint  & \ldots &\ref{linalg:triang_adjoint}
 \end{tabular}
 \end{center}
 
 \vspace*{5mm}
 There is a separate {\small NORMFORM}[1] package for computing 
-the following matrix normal forms in \REDUCE.
-
+the following matrix normal forms in \REDUCE:
 \begin{center}
-smithex, smithex\_int, frobenius, ratjordan, jordansymbolic, jordan.
+  smithex, smithex\_int, frobenius, ratjordan, jordansymbolic, jordan.
 \end{center}
+
 
 \subsubsection{Predicates}
 
 \begin{center}
-\begin{tabular}{l l l l l l}
-matrixp     & \ldots & 3.29 & 
-squarep     & \ldots & 3.42 \\
-symmetricp  & \ldots & 3.49 & 
-\end{tabular}
+  \begin{tabular}{l l l l l l}
+    matrixp     & \ldots &\ref{linalg:matrixp} & 
+    squarep     & \ldots &\ref{linalg:squarep} \\
+    symmetricp  & \ldots &\ref{linalg:symmetricp} & 
+  \end{tabular}
 \end{center}
+
 
 \subsubsection*{Note on examples:} 
 
-In the examples the matrix ${\cal A}$ will be 
+In the examples the matrix $\mathcal{A}$ will be 
 
 \begin{flushleft}
 \begin{math}
-{\cal A} = \left( \begin{array}{ccc} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9
+\mathcal{A} = \left( \begin{array}{ccc} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9
 \end{array} \right)
 \end{math}
 \end{flushleft}
@@ -134,12 +138,12 @@ In the examples the matrix ${\cal A}$ will be
 \subsubsection*{Notation}
 
 Throughout ${\cal I}$ is used to indicate the identity matrix and 
-${\cal A}^T$ to indicate the transpose of the matrix ${\cal A}$.
+$\mathcal{A}^T$ to indicate the transpose of the matrix $\mathcal{A}$.
 
 \subsection{Getting started}
 
-If you have not used matrices within {\REDUCE} before then the 
-following may be helpful.
+If you have not used matrices within {\REDUCE} before then the following may be
+helpful.
 
 \subsubsection*{Creating matrices}
 
@@ -158,7 +162,7 @@ mat1 := \left( \begin{array}{ccc} a & b & c \\ d & e & f \\ g & h & i
 
 \subsubsection*{Getting at the entries}
 
-The (i,$\,$j)'th entry can be accessed by:
+The $(i,j)$th entry can be accessed by:
 
 {\tt mat1(i,j);}
 
@@ -174,27 +178,26 @@ The package is loaded by:
 \label{linalg:subsec3}
 
 \subsubsection{add\_columns, add\_rows}
-
-\label{linalg:addcolumns}
+\label{linalg:add_columns}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt add\_columns(${\cal A}$,c1,c2,expr);} 
+\hspace*{0.175in} {\tt add\_columns($\mathcal{A}$,c1,c2,expr);} 
 
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-${\cal A}$ & :- & a matrix. \\
-c1,c2      & :- & positive integers. \\
+$\mathcal{A}$ & :- & a matrix. \\
+$c1,c2$      & :- & positive integers. \\
 expr       & :- & a scalar expression. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-\parbox[t]{0.95\linewidth}{{\tt add\_columns} replaces column c2 of 
-${\cal A}$ by expr $*$ column(${\cal A}$,c1) $+$ column(${\cal A}$,c2).}
+\parbox[t]{0.95\linewidth}{{\tt add\_columns} replaces column $c$2 of 
+$\mathcal{A}$ by \texttt{expr} $*$ \texttt{column($\mathcal{A}$,c1)} $+$ \texttt{column($\mathcal{A}$,c2)}.}
 
-{\tt add\_rows} performs the equivalent task on the rows of ${\cal A}$.
+{\tt add\_rows} performs the equivalent task on the rows of $\mathcal{A}$.
 
 \end{addtolength}
 
@@ -204,7 +207,7 @@ ${\cal A}$ by expr $*$ column(${\cal A}$,c1) $+$ column(${\cal A}$,c2).}
 \begin{math}
 \hspace*{0.16in}
 \begin{array}{ccc}
-{\tt add\_columns}({\cal A},1,2,x) & = & 
+{\tt add\_columns}(\mathcal{A},1,2,x) & = & 
 \left( \begin{array}{ccc} 1 & x+2 & 3 \\ 4 & 4*x+5 & 6 \\ 7 & 7*x+8 & 9
 \end{array} \right)  
 \end{array}
@@ -217,7 +220,7 @@ ${\cal A}$ by expr $*$ column(${\cal A}$,c1) $+$ column(${\cal A}$,c2).}
 \hspace*{0.1in}
 \begin{math}
 \begin{array}{ccc}
-{\tt add\_rows}({\cal A},2,3,5) & = & 
+{\tt add\_rows}(\mathcal{A},2,3,5) & = & 
 \left( \begin{array}{ccc} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 27 & 33 & 39 
 \end{array} \right)  
 \end{array}
@@ -231,19 +234,21 @@ ${\cal A}$ by expr $*$ column(${\cal A}$,c1) $+$ column(${\cal A}$,c2).}
 
 
 \subsubsection{add\_rows}
+\label{linalg:add_rows}
 
 \hspace*{0.175in} see: {\tt add\_columns}.
 
 
 \subsubsection{add\_to\_columns, add\_to\_rows}
+\label{linalg:add_to_columns}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt add\_to\_columns(${\cal A}$,column\_list,expr);}
+\hspace*{0.175in} {\tt add\_to\_columns($\mathcal{A}$,column\_list,expr);}
 
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-${\cal A}$   &:-& a matrix. \\
+$\mathcal{A}$   &:-& a matrix. \\
 column\_list &:-& a positive integer or a list of positive integers. \\
 expr        &:-& a scalar expression.
 \end{tabular}
@@ -252,10 +257,10 @@ expr        &:-& a scalar expression.
 
 \begin{addtolength}{\leftskip}{0.22in}
 {\tt add\_to\_columns} adds expr to each column specified in 
-column\_list of ${\cal A}$.  
+column\_list of $\mathcal{A}$.  
 
 {\tt add\_to\_rows} performs the equivalent task on the rows of 
-${\cal A}$.
+$\mathcal{A}$.
 
 \end{addtolength}
 
@@ -265,7 +270,7 @@ ${\cal A}$.
 \hspace*{0.175in}
 \begin{math}
 \begin{array}{ccc}
-{\tt add\_to\_columns}({\cal A},\{1,2\},10) & = & 
+{\tt add\_to\_columns}(\mathcal{A},\{1,2\},10) & = & 
 \left( \begin{array}{ccc} 11 & 12 & 3 \\ 14 & 15 & 6 \\ 17 & 18 & 9 
 \end{array} \right)  
 \end{array}
@@ -278,7 +283,7 @@ ${\cal A}$.
 \hspace*{0.175in}
 \begin{math}
 \begin{array}{ccc}
-{\tt add\_to\_rows}({\cal A},2,-x) & = & 
+{\tt add\_to\_rows}(\mathcal{A},2,-x) & = & 
 \left( \begin{array}{ccc} 1 & 2 & 3 \\ -x+4 & -x+5 & -x+6 \\ 7 & 8 & 9 
 \end{array} \right)  
 \end{array}
@@ -293,19 +298,20 @@ ${\cal A}$.
 
 
 \subsubsection{add\_to\_rows}
+\label{linalg:add_to_rows}
 
 \hspace*{0.175in} see: {\tt add\_to\_columns}.
 
 
 \subsubsection{augment\_columns, stack\_rows}
-
+\label{linalg:augment_columns}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt augment\_columns(${\cal A}$,column\_list);}
+\hspace*{0.175in} {\tt augment\_columns($\mathcal{A}$,column\_list);}
 
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-${\cal A}$  &:-& a matrix. \\
+$\mathcal{A}$  &:-& a matrix. \\
 column\_list &:-&  either a positive integer or a list of positive 
                    integers. 
 \end{tabular}
@@ -313,11 +319,11 @@ column\_list &:-&  either a positive integer or a list of positive
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt augment\_columns} gets hold of the columns of ${\cal A}$ specified 
+{\tt augment\_columns} gets hold of the columns of $\mathcal{A}$ specified 
 in column\_list and sticks them together. 
 
 {\tt stack\_rows} performs the same task on rows of 
-                ${\cal A}$.
+                $\mathcal{A}$.
 
 \end{addtolength}
 
@@ -327,7 +333,7 @@ in column\_list and sticks them together.
 \hspace*{0.1in}
 \begin{math}
 \begin{array}{ccc}
-{\tt augment\_columns}({\cal A},\{1,2\}) & = & 
+{\tt augment\_columns}(\mathcal{A},\{1,2\}) & = & 
 \left( \begin{array}{cc} 1 & 2 \\ 4 & 5 \\ 7 & 8  
 \end{array} \right)  
 \end{array}
@@ -340,7 +346,7 @@ in column\_list and sticks them together.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt stack\_rows}({\cal A},\{1,3\}) & = & 
+{\tt stack\_rows}(\mathcal{A},\{1,3\}) & = & 
 \left( \begin{array}{ccc} 1 & 2 & 3 \\ 7 & 8 & 9
 \end{array} \right)  
 \end{array}  
@@ -354,7 +360,7 @@ in column\_list and sticks them together.
 
 
 \subsubsection{band\_matrix}
-
+\label{linalg:band_matrix}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt band\_matrix(expr\_list,square\_size);}
@@ -376,11 +382,11 @@ square\_size &:-& a positive integer.
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-                {\tt band\_matrix} creates a square matrix of dimension
-                square\_size. The diagonal consists of the middle expr
-                of the expr\_list. The exprs to the left of this fill
-                the required number of sub\_diagonals and the exprs 
-                to the right the super\_diagonals. 
+                {\tt band\_matrix} creates a square matrix of
+                dimension \texttt{square\_size}. The diagonal consists of the
+                middle expr of the \texttt{expr\_list}. The expressions to the
+                left of this fill the required number of sub-diagonals and the
+                expressions to the right the super-diagonals.
 
 \end{addtolength}
 
@@ -405,22 +411,22 @@ square\_size &:-& a positive integer.
 
 
 \subsubsection{block\_matrix}
-
+\label{linalg:block_matrix}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt block\_matrix(r,c,matrix\_list);}
 
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-r,c          &:-& positive integers. \\
-matrix\_list &:-& a list of matrices. 
+$r,c$          &:-& positive integers. \\
+\texttt{matrix\_list} &:-& a list of matrices. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt block\_matrix} creates a matrix that consists of r by c matrices 
-filled from the matrix\_list row wise.
+{\tt block\_matrix} creates a matrix that consists of $r\times c$ matrices 
+filled from the \texttt{matrix\_list} row-wise.
 
 \end{addtolength}
 
@@ -458,24 +464,23 @@ filled from the matrix\_list row wise.
 
 
 \subsubsection{char\_matrix}
+\label{linalg:char_matrix}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt char\_matrix(${\cal A},\lambda$);}
+\hspace*{0.175in} {\tt char\_matrix($\mathcal{A},\lambda$);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a square matrix. \\
+$\mathcal{A}$ &:-& a square matrix. \\
 $\lambda$  &:-& a symbol or algebraic expression. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt char\_matrix} creates the characteristic matrix ${\cal C}$ of 
-${\cal A}$.
-
-This is ${\cal C} = \lambda * {\cal I} - {\cal A}$. 
+{\tt char\_matrix} creates the characteristic matrix $\mathcal{C}$ of 
+$\mathcal{A}$.  This is $\mathcal{C} = \lambda \mathcal{I} - \mathcal{A}$. 
 
 \end{addtolength}
 
@@ -485,9 +490,8 @@ This is ${\cal C} = \lambda * {\cal I} - {\cal A}$.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt char\_matrix}({\cal A},x) & = & 
-\left( \begin{array}{ccc} x-1 & -2 & -3 \\ -4 & x-5 & -6 \\ -7 & -8 & 
-x-9 
+{\tt char\_matrix}(\mathcal{A},x) & = & 
+\left( \begin{array}{ccc} x-1 & -2 & -3 \\ -4 & x-5 & -6 \\ -7 & -8 & x-9 
 \end{array} \right)  
 \end{array}  
 \end{math}  
@@ -499,14 +503,14 @@ x-9
 
 
 \subsubsection{char\_poly}
-
+\label{linalg:char_poly}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt char\_poly(${\cal A},\lambda$);}
+\hspace*{0.175in} {\tt char\_poly($\mathcal{A},\lambda$);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a square matrix. \\
+$\mathcal{A}$ &:-& a square matrix. \\
 $\lambda$ &:-& a symbol or algebraic expression.
 \end{tabular}
 
@@ -514,16 +518,16 @@ $\lambda$ &:-& a symbol or algebraic expression.
 
 \begin{addtolength}{\leftskip}{0.22in}
 {\tt char\_poly} finds the characteristic polynomial of
-                ${\cal A}$.  
+                $\mathcal{A}$.  
 
-This is the determinant of $\lambda * {\cal I} - {\cal A}$.
+This is the determinant of $\lambda \mathcal{I} - \mathcal{A}$.
 
 \end{addtolength}
 
 {\bf Examples:}
 
 \hspace*{0.175in}
-{\tt char\_poly({\cal A},$x$) $= x^3-15*x^2-18*x$} 
+{\tt char\_poly($\mathcal{A},x$) $= x^3-15*x^2-18*x$} 
 
 {\bf Related functions:}
 
@@ -531,23 +535,23 @@ This is the determinant of $\lambda * {\cal I} - {\cal A}$.
 
 
 \subsubsection{cholesky}
-
+\label{linalg:cholesky}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt cholesky(${\cal A}$);}
+\hspace*{0.175in} {\tt cholesky($\mathcal{A}$);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a positive definite matrix containing numeric entries.
+$\mathcal{A}$ &:-& a positive definite matrix containing numeric entries.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt cholesky} computes the cholesky decomposition of ${\cal A}$.
+{\tt cholesky} computes the cholesky decomposition of $\mathcal{A}$.
 
 It returns \{${\cal L,U}$\} where ${\cal L}$
-is a lower matrix, ${\cal U}$ is an upper matrix, \\ ${\cal A} = 
+is a lower matrix, ${\cal U}$ is an upper matrix, \\ $\mathcal{A} = 
 {\cal LU}$, and ${\cal U} = {\cal L}^T$.
 
 \end{addtolength}
@@ -582,7 +586,7 @@ ${\tt cholesky}$({\cal F}) & = &
 
 
 \subsubsection{coeff\_matrix}
-
+\label{linalg:coeff_matrix} 
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt coeff\_matrix(\{\lineqlist{}\});} 
@@ -597,9 +601,7 @@ of the form {\it equation $=$ number} or just {\it equation}.}
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt coeff\_matrix} creates the coefficient matrix 
-                ${\cal C}$ of the linear equations. 
-
+{\tt coeff\_matrix} creates the coefficient matrix $\mathcal{C}$ of the linear equations. 
 It returns \{${\cal C,X,B}$\} such that ${\cal CX} = {\cal B}$.
 
 \end{addtolength}
@@ -625,38 +627,38 @@ It returns \{${\cal C,X,B}$\} such that ${\cal CX} = {\cal B}$.
 \end{flushleft}
 
 \subsubsection{column\_dim, row\_dim}
-
+\label{linalg:column_dim}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt column\_dim(${\cal A}$);}
+\hspace*{0.175in} {\tt column\_dim($\mathcal{A}$);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a matrix.
+$\mathcal{A}$ &:-& a matrix.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \hspace*{0.175in} {\tt column\_dim} finds the column dimension of 
-                ${\cal A}$. 
+                $\mathcal{A}$. 
 
-\hspace*{0.175in} {\tt row\_dim} finds the row dimension of ${\cal A}$.
+\hspace*{0.175in} {\tt row\_dim} finds the row dimension of $\mathcal{A}$.
 
 {\bf Examples:}
 
 \hspace*{0.175in}
-{\tt column\_dim}(${\cal A}$) = 3
+{\tt column\_dim}($\mathcal{A}$) = 3
 
 \subsubsection{companion}
-
+\label{linalg:companion}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt companion(poly,x);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-poly &:-& a monic univariate polynomial in x. \\
-x    &:-& the variable.
+\texttt{poly} &:-& a monic univariate polynomial in $x$. \\
+$x$    &:-& the variable.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
@@ -664,15 +666,12 @@ x    &:-& the variable.
 
 \begin{addtolength}{\leftskip}{0.22in}
                 {\tt companion} creates the companion matrix ${\cal C}$
-                of poly. 
+                of \texttt{poly}. 
 
-This is the square matrix of dimension n, where n is the degree of poly 
-w.r.t. x.
-
-The entries of ${\cal C}$ are: 
-                ${\cal C}$(i,n) = -coeffn(poly,x,i-1) for i = 1 
-                \ldots n, ${\cal C}$(i,i-1) = 1 for i = 2 \ldots n and 
-                the rest are 0.
+This is the square matrix of dimension $n$, where $n$ is the degree
+of \texttt{poly} w.r.t. $x$. The entries of $\mathcal{C}$ are: $\mathcal{C}(i,n)
+= -\texttt{coeffn}(\texttt{poly},x,i-1)$ for $i = 1,\ldots, n$,
+$\mathcal{C}(i,i-1) = 1$ for $i=2,\ldots,n$ and the rest are 0.
 
 \end{addtolength}
 
@@ -697,21 +696,21 @@ The entries of ${\cal C}$ are:
 
 
 \subsubsection{copy\_into}
-
+\label{linalg:copy_into}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt copy\_into(${\cal A,B}$,r,c);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A,B}$ &:-& matrices. \\
-r,c          &:-& positive integers. 
+$\mathcal{A,B}$ &:-& matrices. \\
+$r,c$          &:-& positive integers. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
-\hspace*{0.175in} {\tt copy\_into} copies matrix ${\cal A}$ into 
-                ${\cal B}$ with ${\cal A}$(1,1) at ${\cal B}$(r,c).
+\hspace*{0.175in} {\tt copy\_into} copies matrix $\mathcal{A}$ into 
+                $\mathcal{B}$ with $\mathcal{A}(1,1)$ at $\mathcal{B}(r,c)$.
 
 {\bf Examples:} 
 
@@ -746,7 +745,7 @@ r,c          &:-& positive integers.
 
 
 \subsubsection{diagonal}
-
+\label{linalg:diagonal}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt diagonal(\{\matlist{}\});}\lazyfootnote{}
@@ -776,7 +775,7 @@ input on the diagonal.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt diagonal}(\{{\cal A},x,{\cal H}\}) & = & 
+{\tt diagonal}(\{\mathcal{A},x,{\cal H}\}) & = & 
 \left( \begin{array}{cccccc} 1 & 2 & 3 & 0 & 0 & 0 \\ 4 & 5 & 6 & 0 & 0
 & 0 \\ 7 & 8 & 9 & 0 & 0 & 0 \\ 0 & 0 & 0 & x & 0 & 0 \\ 0 & 0 & 0 & 0 
 & 66 & 77 \\ 0 & 0 & 0 & 0 & 88 & 99 
@@ -791,24 +790,25 @@ input on the diagonal.
 
 
 \subsubsection{extend}
+\label{linalg:extend}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt extend(${\cal A}$,r,c,expr);}
+\hspace*{0.175in} {\tt extend($\mathcal{A}$,r,c,expr);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a matrix. \\
-r,c        &:-& positive integers. \\
-expr      &:-& algebraic expression or symbol.
+$\mathcal{A}$ &:-& a matrix. \\
+$r,c$              &:-& positive integers. \\
+\texttt{expr}      &:-& algebraic expression or symbol.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-                {\tt extend} returns a copy of ${\cal A}$ that has been 
-                extended by r rows and c columns. The new entries are
-                made equal to expr.
+                {\tt extend} returns a copy of $\mathcal{A}$ that has been 
+                extended by $r$ rows and $c$ columns. The new entries are
+                made equal to \texttt{expr}.
 
 \end{addtolength}
 
@@ -818,7 +818,7 @@ expr      &:-& algebraic expression or symbol.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt extend}({\cal A},1,2,x) & = & 
+{\tt extend}(\mathcal{A},1,2,x) & = & 
 \left( \begin{array}{ccccc} 1 & 2 & 3 & x & x \\ 4 & 5 & 6 & x & x
 \\ 7 & 8 & 9 & x & x \\ x & x & x & x & x 
 \end{array} \right)
@@ -836,13 +836,14 @@ expr      &:-& algebraic expression or symbol.
 
 
 \subsubsection{find\_companion}
+\label{linalg:find_companion}
 
-\hspace*{0.175in} {\tt find\_companion(${\cal A}$,x);}
+\hspace*{0.175in} {\tt find\_companion($\mathcal{A}$,x);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a matrix. \\
-x          &:-& the variable.
+$\mathcal{A}$ &:-& a matrix. \\
+$x$          &:-& the variable.
 \end{tabular}
 
 {\bf Synopsis:} 
@@ -870,7 +871,7 @@ from which it was made.
 \begin{flushleft}
 \hspace*{0.175in}
 \begin{math}  
-{\tt find\_companion}({\cal C},x) = x^4+17*x^3-9*x^2+11
+{\tt find\_companion}(\mathcal{C},x) = x^4+17*x^3-9*x^2+11
 \end{math}  
 \end{flushleft}
 
@@ -881,28 +882,29 @@ from which it was made.
 \hspace*{0.175in} {\tt companion}.
 
 \subsubsection{get\_columns, get\_rows}
-
+\label{linalg:get_columns}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt get\_columns(${\cal A}$,column\_list);}
+
+\hspace*{0.175in} {\tt get\_columns($\mathcal{A}$,column\_list);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a matrix. \\
-c          &:-& either a positive integer or a list of positive 
+$\mathcal{A}$ &:-& a matrix. \\
+$c$          &:-& either a positive integer or a list of positive 
                 integers.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt get\_columns} removes the columns of ${\cal A}$ specified in 
-                column\_list and returns them as a list of column 
+{\tt get\_columns} removes the columns of $\mathcal{A}$ specified in 
+                \texttt{column\_list} and returns them as a list of column 
                 matrices. 
 
 \end{addtolength}
 \hspace*{0.175in} {\tt get\_rows} performs the same task on the rows of 
-                ${\cal A}$. 
+                $\mathcal{A}$. 
 
 {\bf Examples:}
 
@@ -910,7 +912,7 @@ c          &:-& either a positive integer or a list of positive
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt get\_columns}({\cal A},\{1,3\}) & = & 
+{\tt get\_columns}(\mathcal{A},\{1,3\}) & = & 
 \left\{ 
         \left( \begin{array}{c} 1 \\ 4 \\ 7 \end{array} \right),
         \left( \begin{array}{c} 3 \\ 6 \\ 9 \end{array} \right) 
@@ -925,7 +927,7 @@ c          &:-& either a positive integer or a list of positive
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt get\_rows}({\cal A},2) & = & 
+{\tt get\_rows}(\mathcal{A},2) & = & 
 \left\{ 
         \left( \begin{array}{ccc} 4 & 5 & 6 \end{array} \right)
 \right\} 
@@ -940,11 +942,12 @@ c          &:-& either a positive integer or a list of positive
 
 
 \subsubsection{get\_rows}
-
+\label{linalg:get_rows}
 \hspace*{0.175in} see: {\tt get\_columns}.
 
 
 \subsubsection{gram\_schmidt}
+\label{linalg:gram_schmidt}
 
 %{\bf How to use it:}
 
@@ -952,7 +955,7 @@ c          &:-& either a positive integer or a list of positive
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-\veclist &:-& \parbox[t]{.62\linewidth}{linearly independent vectors.
+\veclist &:-& \parbox[t]{.62\linewidth}{linearly-independent vectors.
                              Each vector must be written as a list, 
                              eg:\{1,0,0\}. }
 \end{tabular}
@@ -960,9 +963,7 @@ c          &:-& either a positive integer or a list of positive
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt gram\_schmidt} performs the gram\_schmidt 
-                orthonormalisation on the input vectors. 
-
+{\tt gram\_schmidt} performs the Gram-Schmidt orthonormalisation on the input vectors. 
 It returns a list of orthogonal normalised vectors.
 
 \end{addtolength}
@@ -979,24 +980,23 @@ It returns a list of orthogonal normalised vectors.
 \{ \frac{2*\sqrt{5}}{5} , \frac{-\sqrt{5}}{5} \}\}$
 
 \subsubsection{hermitian\_tp}
-
+\label{linalg:hermitian_tp}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt hermitian\_tp(${\cal A}$);}
+\hspace*{0.175in} {\tt hermitian\_tp($\mathcal{A}$);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a matrix. 
+$\mathcal{A}$ &:-& a matrix. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-                {\tt hermitian\_tp} computes the hermitian transpose of 
-                ${\cal A}$. 
+         {\tt hermitian\_tp} computes the hermitian transpose of $\mathcal{A}$. 
 
-This is a matrix in which the (i,$\,$j)'th entry is the conjugate of 
-the (j,$\,$i)'th entry of ${\cal A}$. 
+This is a matrix in which the $(i,j)$th entry is the conjugate of the $(j,i)$th
+entry of $\mathcal{A}$.
 
 \end{addtolength}
 
@@ -1005,7 +1005,7 @@ the (j,$\,$i)'th entry of ${\cal A}$.
 \begin{flushleft}  
 \hspace*{0.175in}
 \begin{math}  
-{\cal J} = \left( \begin{array}{ccc} i+1 & i+2 & i+3 \\ 4 & 5 & 2 \\ 1 &
+\mathcal{J} = \left( \begin{array}{ccc} i+1 & i+2 & i+3 \\ 4 & 5 & 2 \\ 1 &
 i & 0 
 \end{array} \right)
 \end{math}  
@@ -1017,7 +1017,7 @@ i & 0
 \hspace*{0.1in}
 \begin{math}        
 \begin{array}{ccc}
-{\tt hermitian\_tp}({\cal J}) & = & 
+{\tt hermitian\_tp}(\mathcal{J}) & = & 
 \left( \begin{array}{ccc} -i+1 & 4 & 1 \\ -i+2 & 5 & -i \\-i+3 & 2 & 0
 \end{array} \right)
 \end{array}
@@ -1031,7 +1031,7 @@ transpose of a matrix - see {\REDUCE} User's Manual[2].}.
 
 
 \subsubsection{hessian}
-
+\label{linalg:hessian}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt hessian(expr,variable\_list);}
@@ -1046,11 +1046,10 @@ variable\_list &:-& either a single variable or a list of variables.
 
 \begin{addtolength}{\leftskip}{0.22in}
                 {\tt hessian} computes the hessian matrix of expr w.r.t.
-                the varibles in variable\_list. 
+                the varibles in \texttt{variable\_list}. 
 
-This is an n by n matrix
-                where n is the number of variables and the (i,$\,$j)'th 
-                entry is df(expr,variable\_list(i),variable\_list(j)).
+This is an $n\times n$ matrix where $n$ is the number of variables and the
+$(i,j)$th entry is \texttt{df(expr,variable\_list(i),variable\_list(j))}.
 
 \end{addtolength}
 
@@ -1076,7 +1075,7 @@ differentiation - see {\REDUCE} User's Manual[2]}.
 
 
 \subsubsection{hilbert}
-
+\label{linalg:hilbert}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt hilbert(square\_size,expr);}
@@ -1091,10 +1090,10 @@ expr         &:-& an algebraic expression.
 
 \begin{addtolength}{\leftskip}{0.22in}
 {\tt hilbert} computes the square hilbert matrix of 
-                dimension square\_size. 
+                dimension \texttt{square\_size}. 
 
-This is the symmetric matrix in
-                which the (i,$\,$j)'th entry is 1/(i+j-expr).
+This is the symmetric matrix in which the $(i,j)$th entry is
+$1/(i+j-\texttt{expr})$.
 
 \end{addtolength}
 
@@ -1116,7 +1115,7 @@ This is the symmetric matrix in
 
 
 \subsubsection{jacobian}
-
+\label{linalg:mat_jacobian}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt mat\_jacobian(expr\_list,variable\_list);}
@@ -1136,14 +1135,12 @@ variable\_list &:-& either a single variable or a list of variables.
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt mat\_jacobian} computes the jacobian matrix of expr\_list w.r.t. 
-variable\_list. 
+{\tt mat\_jacobian} computes the jacobian matrix of \texttt{expr\_list} w.r.t. 
+\texttt{variable\_list}. 
 
-This is a matrix whose (i,$\,$j)'th entry is df(expr\_list(i),
-variable\_list(j)).
-
-The matrix is n by m where n is the 
-                number of variables and m the number of expressions.
+This is a matrix whose $(i,j)$th entry
+is \texttt{df(expr\_list(i),variable\_list(j))}.  The matrix is $n\times m$
+where $n$ is the number of variables and $m$ the number of expressions.
 
 \end{addtolength}
 
@@ -1173,7 +1170,7 @@ however us of that name was in conflict with another Reduce package.
 
 
 \subsubsection{jordan\_block}
-
+\label{linalg:jordan_block}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt jordan\_block(expr,square\_size);}
@@ -1187,13 +1184,12 @@ square\_size &:-& a positive integer.
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt jordan\_block} computes the square jordan block matrix ${\cal J}$
-                of dimension square\_size. 
+{\tt jordan\_block} computes the square jordan block matrix $\mathcal{J}$
+                of dimension \texttt{square\_size}.
 
-The entries of ${\cal J}$ are:
-                ${\cal J}$(i,i) = expr for i=1 
-                \ldots n, ${\cal J}$(i,i+1) = 1 for i=1 
-                \ldots n-1, and all other entries are 0.
+The entries of $\mathcal{J}$ are: $\mathcal{J}(i,i) = \texttt{expr}$ for
+                $i=1,\ldots,n$, $\mathcal{J}(i,i+1) = 1$ for $i=1,\ldots,n-1$,
+                and all other entries are 0.
 
 \end{addtolength}
 
@@ -1217,38 +1213,33 @@ The entries of ${\cal J}$ are:
 
 
 \subsubsection{lu\_decom}
-
+\label{linalg:lu_decom}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt lu\_decom(${\cal A}$);}
+\hspace*{0.175in} {\tt lu\_decom($\mathcal{A}$);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& \parbox[t]{.848\linewidth}{a matrix containing either 
+$\mathcal{A}$ &:-& \parbox[t]{.848\linewidth}{a matrix containing either 
 numeric entries or imaginary entries with numeric coefficients.}
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-              {\tt lu\_decom} performs LU decomposition on ${\cal A}$,
-              ie: it returns \{${\cal L,U}$\} where ${\cal L}$
-              is a lower diagonal matrix, ${\cal U}$ an upper diagonal
-              matrix and ${\cal A} = {\cal LU}$.
-
+  {\tt lu\_decom} performs LU decomposition on $\mathcal{A}$, ie: it returns
+  \{${\cal L,U}$\} where ${\cal L}$ is a lower diagonal matrix, ${\cal U}$ an
+  upper diagonal matrix and $\mathcal{A} = {\cal LU}$.
 \end{addtolength}
 
 {\bf caution:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-The algorithm used can swap the rows of ${\cal A}$ 
-                during the calculation. This means that ${\cal LU}$ does
-                not equal ${\cal A}$ but a row equivalent of it. Due to
-                this, {\tt lu\_decom} returns \{${\cal L,U}$,vec\}. The
-                call {\tt convert(${\cal A}$,vec)} will return the 
-                matrix that has been decomposed, ie: ${\cal LU} = $
-                {\tt convert(${\cal A}$,vec)}.
-
+  The algorithm used can swap the rows of $\mathcal{A}$ during the calculation. This
+  means that ${\cal LU}$ does not equal $\mathcal{A}$ but a row equivalent of it. Due
+  to this, {\tt lu\_decom} returns \{${\cal L,U}$,vec\}. The call {\tt
+  convert($\mathcal{A}$,vec)} will return the matrix that has been decomposed, ie:
+  ${\cal LU} = $ {\tt convert($\mathcal{A}$,vec)}.
 \end{addtolength}
 
 {\bf Examples:}
@@ -1356,7 +1347,7 @@ ${\tt convert({\cal P},third lu}$) \hspace*{0.1in} & = & \left(
 
 
 \subsubsection{make\_identity}
-
+\label{linalg:make_identity}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt make\_identity(square\_size);}
@@ -1391,7 +1382,7 @@ square\_size &:-& a positive integer.
 
 
 \subsubsection{matrix\_augment, matrix\_stack}
-
+\label{linalg:matrix_augment}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt matrix\_augment(\{\matlist\});}\lazyfootnote{}
@@ -1404,10 +1395,10 @@ square\_size &:-& a positive integer.
 {\bf Synopsis:} %{\bf What it does:}
 
 \hspace*{0.175in} {\tt matrix\_augment} sticks the matrices in 
-                  matrix\_list together horizontally. 
+                  \texttt{matrix\_list} together horizontally. 
 
 \hspace*{0.175in} 
-{\tt matrix\_stack} sticks the matrices in matrix\_list 
+{\tt matrix\_stack} sticks the matrices in \texttt{matrix\_list}
                 together vertically.
 
 {\bf Examples:}
@@ -1445,7 +1436,7 @@ square\_size &:-& a positive integer.
 
 
 \subsubsection{matrixp}
-
+\label{linalg:matrixp}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt matrixp(test\_input);}
@@ -1465,7 +1456,7 @@ test\_input &:-& anything you like.
 
 {\bf Examples:}
 
-\hspace*{0.175in} {\tt matrixp}(${\cal A}$) = t 
+\hspace*{0.175in} {\tt matrixp}($\mathcal{A}$) = t 
 
 \hspace*{0.175in} {\tt matrixp}(doodlesackbanana) = nil
 
@@ -1475,29 +1466,29 @@ test\_input &:-& anything you like.
 
 
 \subsubsection{matrix\_stack}
-
+\label{linalg:matrix_stack}
 \hspace*{0.175in} see: {\tt matrix\_augment}.
 
 
 \subsubsection{minor}
-
+\label{linalg:minor}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt minor(${\cal A}$,r,c);}
+\hspace*{0.175in} {\tt minor($\mathcal{A}$,r,c);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix. \\
-r,c        &:-& positive integers.
+$\mathcal{A}$ &:-& a matrix. \\
+$r,c$        &:-& positive integers.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-                {\tt minor} computes the (r,c)'th minor of ${\cal A}$.
+                {\tt minor} computes the $(r,c)$th minor of $\mathcal{A}$.
  
-                This is created by removing the r'th row and the c'th 
-                column from ${\cal A}$.
+                This is created by removing the $r$th row and the $c$th 
+                column from $\mathcal{A}$.
 
 \end{addtolength}
                 
@@ -1507,7 +1498,7 @@ r,c        &:-& positive integers.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt minor}({\cal A},1,3) & = & 
+{\tt minor}(\mathcal{A},1,3) & = & 
         \left( \begin{array}{cc} 4 & 5 \\ 7 & 8
  \end{array} \right) 
 \end{array}
@@ -1520,14 +1511,14 @@ r,c        &:-& positive integers.
 
 
 \subsubsection{mult\_columns, mult\_rows}
-
+\label{linalg:mult_columns}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt mult\_columns(${\cal A}$,column\_list,expr);}
+\hspace*{0.175in} {\tt mult\_columns($\mathcal{A}$,column\_list,expr);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l}
-${\cal A}$   &:-& a matrix. \\
+$\mathcal{A}$   &:-& a matrix. \\
 column\_list &:-& a positive integer or a list of positive integers. \\
 expr        &:-& an algebraic expression.
 \end{tabular}
@@ -1535,11 +1526,11 @@ expr        &:-& an algebraic expression.
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt mult\_columns} returns a copy of ${\cal A}$ in which
+{\tt mult\_columns} returns a copy of $\mathcal{A}$ in which
                 the columns specified in column\_list have been 
 multiplied by expr. 
 
-{\tt mult\_rows} performs the same task on the rows of ${\cal A}$.
+{\tt mult\_rows} performs the same task on the rows of $\mathcal{A}$.
 
 \end{addtolength}
 
@@ -1549,7 +1540,7 @@ multiplied by expr.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt mult\_columns}({\cal A},\{1,3\},x) & = & 
+{\tt mult\_columns}(\mathcal{A},\{1,3\},x) & = & 
         \left( \begin{array}{ccc} x & 2 & 3*x \\ 4*x & 5 & 6*x \\ 7*x & 
 8 & 9*x 
  \end{array} \right) 
@@ -1563,7 +1554,7 @@ multiplied by expr.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt mult\_rows}({\cal A},2,10) & = & 
+{\tt mult\_rows}(\mathcal{A},2,10) & = & 
         \left( \begin{array}{ccc} 1 & 2 & 3 \\ 40 & 50 & 60 \\ 7 & 8 & 
 9 \end{array} \right) 
 \end{array}
@@ -1576,26 +1567,27 @@ multiplied by expr.
 
 
 \subsubsection{\tt mult\_rows}
-
+\label{linalg:mult_rows}
 \hspace*{0.175in} see: {\tt mult\_columns}.
 
 
 \subsubsection{pivot}
+\label{linalg:pivot}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt pivot(${\cal A}$,r,c);}
+\hspace*{0.175in} {\tt pivot($\mathcal{A}$,r,c);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix. \\
-r,c        &:-& positive integers such that ${\cal A}$(r,c) neq 0.
+$\mathcal{A}$ &:-& a matrix. \\
+$r,c$        &:-& positive integers such that $\mathcal{A}(r,c) \neq 0$.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt pivot} pivots ${\cal A}$ about its (r,c)'th entry.
+{\tt pivot} pivots $\mathcal{A}$ about its $(r,c)$th entry.
  
 To do this, multiples of the r'th row are added to every
      other row in the matrix. 
@@ -1611,7 +1603,7 @@ This means that the c'th column
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt pivot}({\cal A},2,3) & = & 
+{\tt pivot}(\mathcal{A},2,3) & = & 
         \left( \begin{array}{ccc} -1 & -0.5 & 0 \\ 4 & 5 & 6 \\ 1 & 0.5 
 & 0
  \end{array} \right) 
@@ -1625,28 +1617,28 @@ This means that the c'th column
 
 
 \subsubsection{pseudo\_inverse}
-
+\label{linalg:pseudo_inverse}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt pseudo\_inverse(${\cal A}$);}
+\hspace*{0.175in} {\tt pseudo\_inverse($\mathcal{A}$);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix.
+$\mathcal{A}$ &:-& a matrix.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
 {\tt pseudo\_inverse}, also known as the Moore-Penrose inverse, computes
-the pseudo inverse of ${\cal A}$. 
+the pseudo inverse of $\mathcal{A}$. 
 
-Given the singular value decomposition of ${\cal A}$, i.e: ${\cal A} = 
+Given the singular value decomposition of $\mathcal{A}$, i.e: $\mathcal{A} = 
 {\cal U} 
-\sum {\cal V}^T$, then the pseudo inverse ${\cal A}^{-1}$ is defined 
-by ${\cal A}^{-1} = {\cal V}^T \sum^{-1} {\cal U}$.
+\sum {\cal V}^T$, then the pseudo inverse $\mathcal{A}^{-1}$ is defined 
+by $\mathcal{A}^{-1} = {\cal V}^T \sum^{-1} {\cal U}$.
 
-Thus ${\cal A}$ $ * $ {\tt pseudo\_inverse}$({\cal A}) = {\cal I}$.
+Thus $\mathcal{A}$ $ * $ {\tt pseudo\_inverse}$(\mathcal{A}) = {\cal I}$.
 
 \end{addtolength}
 
@@ -1664,7 +1656,7 @@ Thus ${\cal A}$ $ * $ {\tt pseudo\_inverse}$({\cal A}) = {\cal I}$.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt pseudo\_inverse}({\cal A}) & = & 
+{\tt pseudo\_inverse}(\mathcal{A}) & = & 
         \left( \begin{array}{cc} -0.2 & 0.1 \\ -0.05 & 0.05 \\ 0.1 & 0 
 \\ 0.25 & -0.05 
  \end{array} \right) 
@@ -1677,21 +1669,21 @@ Thus ${\cal A}$ $ * $ {\tt pseudo\_inverse}$({\cal A}) = {\cal I}$.
 \hspace*{0.175in} {\tt svd}.
 
 \subsubsection{random\_matrix}
-
+\label{linalg:random_matrix}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt random\_matrix(r,c,limit);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-r,c,$\,$limit &:-& positive integers. \\
+$r,c$, limit &:-& positive integers. \\
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt random\_matrix} creates an r by c matrix with random
-                entries in the range $-$limit $<$ entry $<$ limit.
+{\tt random\_matrix} creates an $r\times c$ matrix with random entries in the
+range $-\text{limit} < \text{entry} < \text{limit}$.
 
 \end{addtolength}
 
@@ -1700,21 +1692,21 @@ r,c,$\,$limit &:-& positive integers. \\
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
 {\tt imaginary} \hspace*{0.175in} &:-& \parbox[t]{0.685\linewidth}{if 
-on then matrix entries are x+i$*$y where $-$limit $<$ x,y $<$ limit.} 
+on, then matrix entries are $x+iy$ where $-\text{limit} < x,y < \text{limit}$.} 
 \end{tabular}
 
 \vspace*{0.04in}
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-{\tt not\_negative} &:-& \parbox[t]{0.685\linewidth}{if on then 0 $<$ 
-entry $<$ limit. In the imaginary case we have 0 $<$ x,y $<$ limit.} 
+{\tt not\_negative} &:-& \parbox[t]{0.685\linewidth}{if on then $0 < 
+\text{entry} < \text{limit}$. In the imaginary case we have $0<x,y<\text{limit}$.} 
 \end{tabular}
 
 \vspace*{0.04in}
 \hspace*{0.1in}
 \begin{tabular}{l l l}
 {\tt only\_integer} &:-& \parbox[t]{0.685\linewidth}{if on then each 
-entry is an integer. In the imaginary case x and y are integers.} 
+entry is an integer. In the imaginary case $x,y$ are integers.} 
 \end{tabular}
 
 \vspace*{0.04in}
@@ -1758,14 +1750,15 @@ matrix is upper triangular.} \\
 
 
 \subsubsection{remove\_columns, remove\_rows}
+\label{linalg:remove_columns}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt remove\_columns(${\cal A}$,column\_list);}
+\hspace*{0.175in} {\tt remove\_columns($\mathcal{A}$,column\_list);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$   &:-& a matrix. \\
+$\mathcal{A}$   &:-& a matrix. \\
 column\_list &:-& either a positive integer or a list of 
                   positive integers.
 \end{tabular}
@@ -1773,10 +1766,10 @@ column\_list &:-& either a positive integer or a list of
 {\bf Synopsis:} %{\bf What it does:}
 
 \hspace*{0.175in} {\tt remove\_columns} removes the columns specified in
-                column\_list from ${\cal A}$. 
+                column\_list from $\mathcal{A}$. 
 
 \hspace*{0.175in} {\tt remove\_rows} performs the same task on the rows 
-                of ${\cal A}$.
+                of $\mathcal{A}$.
 
 {\bf Examples:} 
 
@@ -1784,7 +1777,7 @@ column\_list &:-& either a positive integer or a list of
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt remove\_columns}({\cal A},2) & = & 
+{\tt remove\_columns}(\mathcal{A},2) & = & 
         \left( \begin{array}{cc} 1 & 3 \\ 4 & 6 \\ 7 & 9  
  \end{array} \right) 
 \end{array}
@@ -1797,7 +1790,7 @@ column\_list &:-& either a positive integer or a list of
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt remove\_rows}({\cal A},\{1,3\}) & = & 
+{\tt remove\_rows}(\mathcal{A},\{1,3\}) & = & 
         \left( \begin{array}{ccc} 4 & 5 & 6
  \end{array} \right) 
 \end{array}
@@ -1811,25 +1804,26 @@ column\_list &:-& either a positive integer or a list of
 
 
 \subsubsection{remove\_rows}
-
+\label{linalg:remove_rows}
 \hspace*{0.175in} see: {\tt remove\_columns}.
 
 
 \subsubsection{row\_dim}
+\label{linalg:row_dim}
 
 \hspace{0.175in} see: {\tt column\_dim}.
 
 
 \subsubsection{rows\_pivot}
-
+\label{linalg:rows_pivot}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt rows\_pivot(${\cal A}$,r,c,\{row\_list\});}
+\hspace*{0.175in} {\tt rows\_pivot($\mathcal{A}$,r,c,\{row\_list\});}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix. \\
-r,c        &:-& positive integers such that ${\cal A}$(r,c) neq 0.\\
+$\mathcal{A}$ &:-& a matrix. \\
+r,c        &:-& positive integers such that $\mathcal{A}$(r,c) neq 0.\\
 row\_list  &:-& positive integer or a list of positive integers.
 \end{tabular}
 
@@ -1870,7 +1864,7 @@ the pivot only to the rows specified in row\_list.
 
 
 \subsubsection{simplex}
-
+\label{linalg:simplex}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt simplex(max/min,objective function,\{linear 
@@ -1930,14 +1924,15 @@ x+0.1y+0.5z<=12$,\\
 
 
 \subsubsection{squarep}
+\label{linalg:squarep}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt squarep(${\cal A}$);}
+\hspace*{0.175in} {\tt squarep($\mathcal{A}$);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix.
+$\mathcal{A}$ &:-& a matrix.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
@@ -1960,7 +1955,7 @@ ${\cal A}$ &:-& a matrix.
 
 \vspace*{0.1in}
 
-\hspace*{0.175in} {\tt squarep}(${\cal A}$) = t 
+\hspace*{0.175in} {\tt squarep}($\mathcal{A}$) = t 
 
 \hspace*{0.175in} {\tt squarep}(${\cal L}$) = nil
 
@@ -1970,19 +1965,19 @@ ${\cal A}$ &:-& a matrix.
 
 
 \subsubsection{stack\_rows}
-
+\label{linalg:stack_rows}
 \hspace*{0.175in} see: {\tt augment\_columns}.
 
 
 \subsubsection{sub\_matrix}
-
+\label{linalg:sub_matrix}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt sub\_matrix(${\cal A}$,row\_list,column\_list);}
+\hspace*{0.175in} {\tt sub\_matrix($\mathcal{A}$,row\_list,column\_list);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$              &:-& a matrix. \\
+$\mathcal{A}$              &:-& a matrix. \\
 row\_list, column\_list &:-& \parbox[t]{.605\linewidth}{either a 
 positive integer or a list of positive integers.}
 \end{tabular}
@@ -2004,7 +1999,7 @@ columns specified in column\_list.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt sub\_matrix}({\cal A},\{1,3\},\{2,3\}) & = & 
+{\tt sub\_matrix}(\mathcal{A},\{1,3\},\{2,3\}) & = & 
         \left( \begin{array}{cc} 2 & 3 \\ 8 & 9
  \end{array} \right) 
 \end{array}
@@ -2017,30 +2012,30 @@ columns specified in column\_list.
 
 
 \subsubsection{svd (singular value decomposition)}
-
+\label{linalg:svd}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt svd(${\cal A}$);}
+\hspace*{0.175in} {\tt svd($\mathcal{A}$);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix containing only numeric entries.
+$\mathcal{A}$ &:-& a matrix containing only numeric entries.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt svd} computes the singular value decomposition of ${\cal A}$. 
+{\tt svd} computes the singular value decomposition of $\mathcal{A}$. 
 
-It returns \{${\cal U},\sum,{\cal V}$\} where ${\cal A} = {\cal U} 
+It returns \{${\cal U},\sum,{\cal V}$\} where $\mathcal{A} = {\cal U} 
 \sum {\cal V}^T$ and $\sum = diag(\sigma_{1}, \ldots ,\sigma_{n}). \; 
-\sigma_{i}$ for $i= (1 \ldots n)$ are the singular values of ${\cal A}$.
+\sigma_{i}$ for $i= (1 \ldots n)$ are the singular values of $\mathcal{A}$.
  
 
-n is the column dimension of ${\cal A}$.
+n is the column dimension of $\mathcal{A}$.
 
-The singular values of ${\cal A}$ are the non-negative square roots of 
-the eigenvalues of ${\cal A}^T {\cal A}$. 
+The singular values of $\mathcal{A}$ are the non-negative square roots of 
+the eigenvalues of $\mathcal{A}^T \mathcal{A}$. 
 
 ${\cal U}$ and ${\cal V}$ are such that ${\cal UU}^T = {\cal VV}^T = 
 {\cal V}^T {\cal V} = {\cal I}_n$.
@@ -2071,24 +2066,24 @@ ${\cal U}$ and ${\cal V}$ are such that ${\cal UU}^T = {\cal VV}^T =
 
 
 \subsubsection{swap\_columns, swap\_rows}
-
+\label{linalg:swap_columns} 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt swap\_columns(${\cal A}$,c1,c2);}
+\hspace*{0.175in} {\tt swap\_columns($\mathcal{A}$,c1,c2);}
 
 \hspace*{0.1in} 
 \begin{tabular}{l l l}
-${\cal A}$ &:-& a matrix. \\
+$\mathcal{A}$ &:-& a matrix. \\
 c1,c1      &:-& positive integers. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
 \hspace*{0.175in} 
-{\tt swap\_columns} swaps column c1 of ${\cal A}$ with column c2. 
+{\tt swap\_columns} swaps column c1 of $\mathcal{A}$ with column c2. 
 
 \hspace*{0.175in} {\tt swap\_rows} performs the same task on 2 rows of 
-                ${\cal A}$.
+                $\mathcal{A}$.
 
 {\bf Examples:}
 
@@ -2096,7 +2091,7 @@ c1,c1      &:-& positive integers.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt swap\_columns}({\cal A},2,3) & = & 
+{\tt swap\_columns}(\mathcal{A},2,3) & = & 
         \left( \begin{array}{ccc} 1 & 3 & 2 \\ 4 & 6 & 5 \\ 7 & 9 & 8
  \end{array} \right) 
 \end{array}
@@ -2109,21 +2104,21 @@ c1,c1      &:-& positive integers.
 
 
 \subsubsection{swap\_entries}
-
+\label{linalg:swap_entries}
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt swap\_entries(${\cal A}$,\{r1,c1\},\{r2,c2\});}
+\hspace*{0.175in} {\tt swap\_entries($\mathcal{A}$,\{r1,c1\},\{r2,c2\});}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$  &:-& a matrix. \\
+$\mathcal{A}$  &:-& a matrix. \\
 r1,c1,r2,c2 &:-& positive integers.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
 
-\hspace*{0.175in} {\tt swap\_entries} swaps ${\cal A}$(r1,c1) with 
-                ${\cal A}$(r2,c2).
+\hspace*{0.175in} {\tt swap\_entries} swaps $\mathcal{A}$(r1,c1) with 
+                $\mathcal{A}$(r2,c2).
 
 {\bf Examples:}
 
@@ -2131,7 +2126,7 @@ r1,c1,r2,c2 &:-& positive integers.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt swap\_entries}({\cal A},\{1,1\},\{3,3\}) & = & 
+{\tt swap\_entries}(\mathcal{A},\{1,1\},\{3,3\}) & = & 
         \left( \begin{array}{ccc} 9 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 1
  \end{array} \right) 
 \end{array}
@@ -2144,19 +2139,20 @@ r1,c1,r2,c2 &:-& positive integers.
 
 
 \subsubsection{swap\_rows}
-
+\label{linalg:swap_rows}
 \hspace*{0.175in} see: {\tt swap\_columns}.
 
 
 \subsubsection{symmetricp}
+\label{linalg:symmetricp}
 
 %{\bf How to use it:}
 
-\hspace*{0.175in} {\tt symmetricp(${\cal A}$);}
+\hspace*{0.175in} {\tt symmetricp($\mathcal{A}$);}
 
 \hspace*{0.1in}  
 \begin{tabular}{l l l} 
-${\cal A}$ &:-& a matrix. 
+$\mathcal{A}$ &:-& a matrix. 
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
@@ -2179,7 +2175,7 @@ ${\cal A}$ &:-& a matrix.
 
 \vspace*{0.1in}
 
-\hspace*{0.175in} {\tt symmetricp}(${\cal A}$) = nil 
+\hspace*{0.175in} {\tt symmetricp}($\mathcal{A}$) = nil 
 
 \hspace*{0.175in} {\tt symmetricp}(${\cal M}$) = t
 
@@ -2189,7 +2185,7 @@ ${\cal A}$ &:-& a matrix.
 
 
 \subsubsection{toeplitz}
-
+\label{linalg:toeplitz}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt toeplitz(\{\exprlist{}\});} \lazyfootnote{}
@@ -2230,13 +2226,13 @@ It has dimension n where n is the
 \end{flushleft}
 
 \subsubsection{triang\_adjoint}
-
+\label{linalg:triang_adjoint}
 %{\bf How to use it:}
-\hspace*{0.175in} {\tt triang\_adjoint(${\cal A}$);}
+\hspace*{0.175in} {\tt triang\_adjoint($\mathcal{A}$);}
 
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-${\cal A}$  &:-& a matrix.
+$\mathcal{A}$  &:-& a matrix.
 \end{tabular}
 
 {\bf Synopsis:} %{\bf What it does:}
@@ -2244,11 +2240,11 @@ ${\cal A}$  &:-& a matrix.
 
 \begin{addtolength}{\leftskip}{0.22in}
 {\tt triang\_adjoint} computes the triangularizing adjoint ${\cal F}$ of
-matrix ${\cal A}$ due to the algorithm of Arne Storjohann. ${\cal F}$ is
+matrix $\mathcal{A}$ due to the algorithm of Arne Storjohann. ${\cal F}$ is
 lower triangular matrix and the resulting matrix ${\cal T}$ of
 ${\cal F * A = T}$ is upper triangular with the property that the $i$-th
 entry in the diagonal of ${\cal T}$ is the determinant of the principal
-$i$-th submatrix of the matrix ${\cal A}$.
+$i$-th submatrix of the matrix $\mathcal{A}$.
 
 \end{addtolength}
 
@@ -2258,7 +2254,7 @@ $i$-th submatrix of the matrix ${\cal A}$.
 \hspace*{0.1in}
 \begin{math}
 \begin{array}{ccc}
-{\tt triang\_adjoint}({\cal A}) & = &
+{\tt triang\_adjoint}(\mathcal{A}) & = &
 \left( \begin{array}{ccc} 1 & 0 & 0 \\ -4 & 1 & 0 \\ -3 & 6 & -3
 \end{array} \right)
 \end{array}
@@ -2271,7 +2267,7 @@ $i$-th submatrix of the matrix ${\cal A}$.
 \hspace*{0.1in}
 \begin{math}
 \begin{array}{ccc}
-{\cal F} * {\cal A} & = &
+{\cal F} * \mathcal{A} & = &
 \left( \begin{array}{ccc} 1 & 2 & 3 \\ 0 & -3 & -6 \\ 0 & 0 & 0
 \end{array} \right)
 \end{array}
@@ -2279,7 +2275,7 @@ $i$-th submatrix of the matrix ${\cal A}$.
 \end{flushleft}
 
 \subsubsection{Vandermonde}
-
+\label{linalg:Vandermonde}
 %{\bf How to use it:}
 
 \hspace*{0.175in} {\tt vandermonde}(\{\exprlist{}\}); \addtocounter
@@ -2294,14 +2290,9 @@ $i$-th submatrix of the matrix ${\cal A}$.
 {\bf Synopsis:} %{\bf What it does:}  
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt Vandermonde} creates the Vandermonde matrix from
-                the expression list. 
-
-This is the square matrix in which
-                the (i,$\,$j)'th entry is expr\_list(i) $^{(j-1)}$.
-
-It has dimension n where n is the number of expressions.
-
+  {\tt Vandermonde} creates the Vandermonde matrix from the expression list.
+  This is the square matrix in which the $(i,j)$th entry is $\text{expr}_i^{(j-1)}$.
+  It has dimension $n$, where $n$ is the number of expressions.
 \end{addtolength}
 
 {\bf Examples:}
@@ -2310,21 +2301,21 @@ It has dimension n where n is the number of expressions.
 \hspace*{0.1in}
 \begin{math}  
 \begin{array}{ccc}
-{\tt vandermonde}(\{x,2*y,3*z\}) & = & 
-        \left( \begin{array}{ccc} 1 & x & x^2 \\ 1 & 2*y & 4*y^2 \\ 1 
-& 3*z & 9*z^2 
+  {\tt vandermonde}(\{x,2*y,3*z\}) & = & 
+  \left( \begin{array}{ccc} 1 & x & x^2 \\ 1 & 2*y & 4*y^2 \\ 1 
+    & 3*z & 9*z^2 
  \end{array} \right) 
 \end{array}
 \end{math}  
 \end{flushleft}
 
 \subsubsection{kronecker\_product}
-
-\hspace*{0.175in} {\tt kronecker\_product}($Mat_1,Mat_2$)
+\label{linalg:kronecker_product}
+\hspace*{0.175in} {\tt kronecker\_product}($M_1,M_2$)
 
 \hspace*{0.1in}
 \begin{tabular}{l l l}
-$Mat_1,Mat_2$ &:-& Matrices
+$M_1,M_2$ &:-& Matrices
 \end{tabular}
 
 {\bf Synopsis:} 
