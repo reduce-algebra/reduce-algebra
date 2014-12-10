@@ -711,9 +711,8 @@ here the result is the list with numbers $(-1\,\, -2\,\, -3 \cdots -10)$.
 The lists produced by {\em collect} and {\em join} are in ``correct" 
 order.
 {\bf Warning}: In symbolic mode  {\em join} links the lists 
-{\bf in place} for maximum speed
-\footnote{In algebraic mode {\em join} operates different: the operatend
-are copied before linking them to one result list}:
+{\bf in place} for maximum speed\footnote{In algebraic mode {\em join} operates differently: the operands
+are copied before linking them into one result list.}:
 The last {\em CDR} pointer  of the first list is modified to 
 point to the head of the second list , and so on.
 This is no problem if the joined objects are freshly built
@@ -1394,7 +1393,7 @@ is  $nil$ if there is no constant term.
 will be represented internally by
 
 \begin{verbatim}
-  (((X .2) ((Y. 1). 1). 1) ((X. 1) ((Y. 1). 2)) ((Y. 2). 1). 3)
+  (((X. 2) ((Y. 1). 1). 1) ((X. 1) ((Y. 1). 2). 1) ((Y. 2). 1). 3)
 \end{verbatim}
 
 with the components
@@ -1402,7 +1401,8 @@ with the components
 \item{mvar}: \verb+X+
 \item{ldeg}: \verb+2+
 \item{lc}: \verb+((Y. 1). 1). 1)+  = $(y+1)$
-\item{red}: \verb+(((X. 1) ((Y. 1). 2)) ((Y. 2). 1). 3)+ = $xy^2+3$.
+\item{red}: \verb+(((X. 1) ((Y. 1). 2). 1) ((Y. 2). 1). 3)+ \\
+ = $ x(2y+1)+y^2+3$.
 \end{itemize}
 
 \subsection{Operations on standard forms}
