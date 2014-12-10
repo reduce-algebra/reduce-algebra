@@ -1,4 +1,4 @@
-% Author: Alan Barnes <barnesa@aston.ac.uk>
+% Author: Alan Barnes <Alan.Barnes45678@gmail.com>
 
 psexplim 8;
 
@@ -380,12 +380,289 @@ y + ---*y  + ----*y  + -----*y  + O(y )
      3        15        315
 
 
+% original series altered by pschangevar (list surgery)
+tan!-series;
+
+
+     1   3    2    5    17    7      9
+y + ---*y  + ----*y  + -----*y  + O(y )
+     3        15        315
+ 
+
+tmp := pscopy(cos!-sin!-series);
+
+
+            1   2    5    4    37    6     457    8      9
+tmp := 1 - ---*x  + ----*x  - -----*x  + -------*x  + O(x )
+            2        24        720        40320
+ % deep copy
+pschangevar(tmp, z);
+
+
+     1   2    5    4    37    6     457    8      9
+1 - ---*z  + ----*z  - -----*z  + -------*z  + O(z )
+     2        24        720        40320
+
+cos!-sin!-series;
+
+
+     1   2    5    4    37    6     457    8      9
+1 - ---*x  + ----*x  - -----*x  + -------*x  + O(x )
+     2        24        720        40320
+
+
+psexplim 20;
+
+
+8
+
+ % Produces the power series summation for n=0 to infinity of x**(n*n).
+sum!-series1  := pssum(n=0,1,x,0,n*n);
+
+
+                        4    9    16      21
+sum-series1 := 1 + x + x  + x  + x   + O(x  )
+
+df(sum!-series1,x);
+
+
+       3      8       15      21
+1 + 4*x  + 9*x  + 16*x   + O(x  )
+
+ps(sin(sum!-series1-1) , x, 0);
+
+
+     1   3    4     1    5    1   6     1     7    1    8    181441   9
+x - ---*x  + x  + -----*x  - ---*x  - ------*x  + ----*x  + --------*x
+     6             120        2        5040        24        362880
+
+     1    10    16632001   11    6719    12    233513281    13    3326401   14
+ - -----*x   - ----------*x   - -------*x   + ------------*x   - ---------*x
+    720         39916800         40320         6227020800         3628800
+
+     1686484801     15    555508801   16    163015073020799   17
+ - ---------------*x   + -----------*x   - -----------------*x
+    1307674368000         479001600         355687428096000
+
+    44295451201   18    31256064742331521    19    1050204355201    20      21
+ - -------------*x   - --------------------*x   + ----------------*x   + O(x  )
+    87178291200         121645100408832000         20922789888000
+
+
+% Produces the power series expansion of atan(y-1) about y=1.
+sum!-series2 := pssum(m=1,(-1)**(m-1)/(2m-1),y,1,2m-1);
+
+
+                        1         3    1         5    1         7    1         9
+sum-series2 := y - 1 - ---*(y - 1)  + ---*(y - 1)  - ---*(y - 1)  + ---*(y - 1)
+                        3              5              7              9
+
+                   1          11    1          13    1          15
+                - ----*(y - 1)   + ----*(y - 1)   - ----*(y - 1)
+                   11               13               15
+
+                   1          17    1          19            21
+                + ----*(y - 1)   - ----*(y - 1)   + O((y - 1)  )
+                   17               19
+
+ps(tan sum!-series2, y, 1);
+
+
+                 21
+y - 1 + O((y - 1)  )
+
+ps(int(sum!-series2, y), y, 1);
+
+
+ 1         2    1          4    1          6    1          8    1          10
+---*(y - 1)  - ----*(y - 1)  + ----*(y - 1)  - ----*(y - 1)  + ----*(y - 1)
+ 2              12              30              56              90
+
+     1          12     1          14     1          16     1          18
+ - -----*(y - 1)   + -----*(y - 1)   - -----*(y - 1)   + -----*(y - 1)
+    132               182               240               306
+
+     1          20            21
+ - -----*(y - 1)   + O((y - 1)  )
+    380
+
+
+psexplim 6;
+
+
+20
+
+
+% some limited functionality of abs(ps)
+abs(sin!-series^2);
+
+
+ 2    1   4    2    6      7
+x  - ---*x  + ----*x  + O(x )
+      3        45
+
+abs(cos!-series);
+
+
+         1   2    1    4     1    6      7
+abs(1 - ---*x  + ----*x  - -----*x  + O(x ))
+         2        24        720
+
+
+% incorrect/incomplete results obtained with many of the following inputs
+% using latest Sourceforge versions (Nov 2014) but now corrected
+
+% bug in abs
+abs(cos!-series*sin!-series^2);
+
+
+     2    5   4    91    6      7
+abs(x  - ---*x  + -----*x  + O(x ))
+          6        360
+
+
+% bug in fancy printing of constant power series in big O term
+ps(cos x^2+sin x^2, x, 1);
+
+
+      2         2
+cos(1)  + sin(1)
+
+
+psexplim 3;
+
+
+6
+
+tmp := ps(sin(a*x),x,a);
+
+
+                                           2   2
+            2         2               sin(a )*a          2
+tmp := sin(a ) + cos(a )*a*(x - a) - ------------*(x - a)
+                                          2
+
+                2   3
+           cos(a )*a          3            4
+        - ------------*(x - a)  + O((x - a) )
+               6
+
+% correct in both versions
+tmp1 := df(tmp,a);
+
+
+             2            2         2   2
+tmp1 := cos(a )*a + (cos(a ) - sin(a )*a )*(x - a)
+
+                       2   2          2
+            a*( - cos(a )*a  - 2*sin(a ))         2
+         + -------------------------------*(x - a)
+                          2
+
+             2            2         2   2
+            a *( - 3*cos(a ) + sin(a )*a )         3            4
+         + --------------------------------*(x - a)  + O((x - a) )
+                          6
+
+psfunction tmp1;
+
+
+cos(a*x)*x
+
+
+% incomplete/incorrect results obtained with int with variable expansion pt
+tmp := ps(int(tmp,a),x,a);
+
+
+                2           2         2   2
+           cos(a )     cos(a ) + sin(a )*a
+tmp :=  - --------- + ----------------------*(x - a)
+              a                  2
+                                a
+
+                2   4          2           2   2
+           cos(a )*a  - 2*cos(a ) - 2*sin(a )*a          2
+        + ---------------------------------------*(x - a)
+                              3
+                           2*a
+
+                     2   4          2         2   6          2   2
+            - 3*cos(a )*a  + 6*cos(a ) - sin(a )*a  + 6*sin(a )*a          3
+        + ---------------------------------------------------------*(x - a)
+                                       4
+                                    6*a
+
+                   4
+        + O((x - a) )
+
+psfunction tmp;
+
+
+  - cos(a*x)
+-------------
+      x
+
+
+tmp:=ps(sin a*sin x,x,a^3);
+
+
+                                                        3
+            3                3               3     sin(a )*sin(a)        3 2
+tmp := sin(a )*sin(a) + cos(a )*sin(a)*(x - a ) - ----------------*(x - a )
+                                                         2
+
+                3
+           cos(a )*sin(a)        3 3           3 4
+        - ----------------*(x - a )  + O((x - a ) )
+                 6
+
+% incorrect in previous version
+tmp := ps(int(tmp,a),x,a^3);
+
+
+                                                                  3
+                      3         3               3     cos(a)*sin(a )        3 2
+tmp :=  - cos(a)*sin(a ) - cos(a )*cos(a)*(x - a ) + ----------------*(x - a )
+                                                            2
+
+                3
+           cos(a )*cos(a)        3 3           3 4
+        + ----------------*(x - a )  + O((x - a ) )
+                 6
+
+psfunction tmp;
+
+
+ - cos(a)*sin(x)
+
+
+tmp := ps(sin sin(a*x), x, a);
+
+
+                2          2           2
+tmp := sin(sin(a )) + cos(a )*cos(sin(a ))*a*(x - a)
+
+            2       2 2          2              2        2
+           a *(cos(a ) *sin(sin(a )) + cos(sin(a ))*sin(a ))         2
+        - ---------------------------------------------------*(x - a)  + (
+                                   2
+
+               2   3
+          cos(a )*a
+
+                    2 2          2              2            2           2
+          *( - cos(a ) *cos(sin(a )) - cos(sin(a )) + 3*sin(a )*sin(sin(a ))))/6
+
+               3            4
+       *(x - a)  + O((x - a) )
+
+% fails in both versions 
+% (in new version as sin sin can't be integrated in closed form)
+ps(int(tmp,a),x,a);
+
+
+***** Can't integrate this series (expansion pt depends on integration variable)
+ 
+
+
 end;
-
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
-
-End of Lisp run after 0.01+0.04 seconds
-real 0.20
-user 0.01
-sys 0.07

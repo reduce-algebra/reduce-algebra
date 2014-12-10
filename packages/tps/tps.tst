@@ -1,4 +1,4 @@
-% Author: Alan Barnes <barnesa@aston.ac.uk>
+% Author: Alan Barnes <Alan.Barnes45678@gmail.com>
 
 psexplim 8;
 % expand as far as 8th power (default is 6)
@@ -71,5 +71,58 @@ psreverse tmp;
 % NB expansion of log x  in powers of (x-1)
 
 pschangevar(tan!-series,y);
+
+% original series altered by pschangevar (list surgery)
+tan!-series; 
+
+tmp := pscopy(cos!-sin!-series); % deep copy
+pschangevar(tmp, z);
+cos!-sin!-series;
+
+psexplim 20;
+ % Produces the power series summation for n=0 to infinity of x**(n*n).
+sum!-series1  := pssum(n=0,1,x,0,n*n);
+df(sum!-series1,x);
+ps(sin(sum!-series1-1) , x, 0);
+
+% Produces the power series expansion of atan(y-1) about y=1.
+sum!-series2 := pssum(m=1,(-1)**(m-1)/(2m-1),y,1,2m-1);
+ps(tan sum!-series2, y, 1);
+ps(int(sum!-series2, y), y, 1);
+
+psexplim 6;
+
+% some limited functionality of abs(ps)
+abs(sin!-series^2);
+abs(cos!-series);
+
+% incorrect/incomplete results obtained with many of the following inputs
+% using latest Sourceforge versions (Nov 2014) but now corrected
+
+% bug in abs
+abs(cos!-series*sin!-series^2);
+
+% bug in fancy printing of constant power series in big O term
+ps(cos x^2+sin x^2, x, 1);
+
+psexplim 3;
+tmp := ps(sin(a*x),x,a);
+% correct in both versions
+tmp1 := df(tmp,a);
+psfunction tmp1;
+
+% incomplete/incorrect results obtained with int with variable expansion pt
+tmp := ps(int(tmp,a),x,a);
+psfunction tmp;
+
+tmp:=ps(sin a*sin x,x,a^3);
+% incorrect in previous version
+tmp := ps(int(tmp,a),x,a^3);
+psfunction tmp;
+
+tmp := ps(sin sin(a*x), x, a);
+% fails in both versions 
+% (in new version as sin sin can't be integrated in closed form)
+ps(int(tmp,a),x,a);
 
 end;

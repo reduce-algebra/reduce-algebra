@@ -77,7 +77,7 @@ symbolic procedure ps!:mkvar ps;
 begin scalar var0, var;
   var := ps!:depvar ps;
   var0 := ps!:expansion!-point ps;
-  if var0 = 0 or var0 = 'ps!:inf then
+  if  var0 = 0 or var0 = 'ps!:inf then
      return var
   else if numberp var0 and var0 < 0 then
      return {'plus, var, -var0}
@@ -93,14 +93,16 @@ symbolic procedure ps!:big!-o(ps, ord);
   %
   % Generates a big-O notation for power series
   %
-  "O" . ps!:mkpow(ps!:mkvar ps,
-                  ord,
-                            (ps!:expansion!-point ps = 'ps!:inf));
+    "O" . ps!:mkpow(ps!:mkvar ps,
+                    ord, (ps!:expansion!-point ps = 'ps!:inf));
 
 symbolic procedure ps!:print1 u;
 begin scalar prepexpr, rest;
     prepexpr := prep!:ps(u, ps!:exp!-lim);
-    rest := {ps!:big!-o(u, ps!:exp!-lim+1)};
+    if null ps!:expansion!-point u then
+       rest := nil
+    else
+       rest := {ps!:big!-o(u, ps!:exp!-lim+1)};
     return
        if not eqcar (prepexpr, 'plus) then
           'plus . (prepexpr or 0) . rest

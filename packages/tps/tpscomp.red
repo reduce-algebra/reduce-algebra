@@ -270,13 +270,19 @@ begin scalar r1, r2;
 end;
 
 symbolic procedure ps!:int!-crule(a,d,n);
-begin scalar r,arg1, psord, intvar;
+begin scalar r,arg1, psord, intvar, x;
   intvar := rand2 a;
   if not idp intvar then
     typerr(intvar, "kernel: ps!:int!-crule");
-  if depends(intvar, n) then
-    rerror(tps,11,
-       "Can't integrate series when expansion point is non-constant ");
+  if depends(n, intvar) then
+    << r := ps!:compile(rand1 a,d,n);     	  
+       x := prepsqxx simp {'int, ps!:value r, intvar};
+       if depends(x,'int) then
+         rerror(tps,11,
+           "Can't integrate this series (expansion pt depends on integration variable)")
+        else
+           return ps!:compile(x,d,n);
+    >>;
   arg1:=ps!:compile(prepsqxx simp!* rand1 a,d,n);
   r:= make!-ps(list('int,arg1,intvar), ps!:arg!-values a,d,n);
   psord:= ps!:find!-order arg1;
@@ -287,7 +293,7 @@ begin scalar r,arg1, psord, intvar;
      else  % expansion about infinity
          if (psord < 2) and (ps!:evaluate(arg1,1) neq (nil ./ 1)) then
            rerror(tps,13,"Logarithmic Singularity at Infinity");
-  ps!:find!-order r;
+ ps!:find!-order r;
   return r;
 end;
 
@@ -347,7 +353,7 @@ symbolic procedure ps!:unknown!-crule(a,d,n);
               ps!:set!-expression(r,list('int, dfdx, d));
               knownps:=(aval . s) . knownps;
               ps!:level:=ps!:level-1;
-              r
+             r
             >> )
             (make!-ps(nil,aval,d,n), cdar unknowns))
             (ps!:differentiate(a,d), (aval . gensym()) . unknowns)

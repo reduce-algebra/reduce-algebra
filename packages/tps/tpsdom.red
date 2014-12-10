@@ -31,7 +31,6 @@ global '(domainlist!*);
 
 symbolic (domainlist!*:=union('(!:ps!:),domainlist!*));
 % symbolic here seems to be essential in Cambridge Lisp systems
-
 put('tps,'tag,'!:ps!:);
 put('!:ps!:,'dname,'tps);
 flag('(!:ps!:),'field);
@@ -118,13 +117,12 @@ symbolic procedure ps!:diff!:(u,v);
          u:=make!-ps(list('df,u,v), deriv,
                      ps!:depvar u,ps!:expansion!-point u);
          ps!:find!-order u;
-         u
+        u
       >>)
   ./ 1)
    where (deriv = prepsqxx simp!* list('df, ps!:value u,v));
 
 put('!:ps!:,'domain!-diff!-fn,'ps!:diff!:);
-
 symbolic procedure ps!:depends!-fn(u,v);
    depends(ps!:value u, v);
 
@@ -154,7 +152,7 @@ symbolic procedure ps!:operator!:(op,u,v);
                        op));
           if null x0 then x0 := y0
           else if null y0 then y0:=x0;
-        >>;
+       >>;
         if null x0 then  % both are constant power series
            << if x and y then
                 if x eq y then nil else
@@ -183,7 +181,7 @@ symbolic procedure ps!:operator!:(op,u,v);
   end;
 
 symbolic procedure ps!:zerop!: u;
-  (numberp v and zerop v) where v=ps!:value u;
+ (numberp v and zerop v) where v=ps!:value u;
 
 symbolic procedure ps!:onep!: u;
   onep ps!:value u;
@@ -191,12 +189,20 @@ symbolic procedure ps!:onep!: u;
 symbolic procedure ps!:prepfn!: u;
    u;
 
+% symbolic procedure ps!:abs!: u;
+%  begin scalar x;
+%     x := simp {'abs,ps!:value u};
+%     if kernp x and eqcar(mvar numr x,'abs)
+%       then return !*kk2f {'abs,u}
+%      else return numr simpps1(mk!*sq x,ps!:depvar u, ps!:expansion!-point u);
+
 symbolic procedure ps!:abs!: u;
   begin scalar x;
-     x := simp {'abs,ps!:value u};
-     if kernp x and eqcar(mvar numr x,'abs)
-       then return !*kk2f {'abs,u}
-      else return numr simpps1(mk!*sq x,ps!:depvar u, ps!:expansion!-point u);
+     x := prepsqxx simp {'abs,ps!:value u};
+      if depends(x,'abs) then
+       return !*kk2f {'abs,u}
+      else
+ 	return numr simpps1(x, ps!:depvar u, ps!:expansion!-point u);
   end;
 
 initdmode 'tps;

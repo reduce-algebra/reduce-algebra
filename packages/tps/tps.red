@@ -1,7 +1,7 @@
 module tps; % Extendible Power Series.
 
-% Author: Alan Barnes <barnesa@aston.ac.uk>.
-% Version 1.54 January 1996.
+% Author: Alan Barnes <barnesa@aston.ac.uk<Alan.barnes45678@gmail.com>.
+% Version 1.6 December 2014
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -39,7 +39,7 @@ module tps; % Extendible Power Series.
 %          <ps-expression
 %          <simplification flag>])
 %
-% <order> is the exponent of the first term of the series and is also
+% <order>  is the exponent of the first term of the series and is also
 %          used to modify the index when accessing components of the
 %          series which are addressed by power
 %
@@ -56,7 +56,7 @@ module tps; % Extendible Power Series.
 %          power series variables appearing inside other power series
 %          expressions
 %
-% <terms>  is an alist containing the terms of the series computed so
+ % <terms>  is an alist containing the terms of the series computed so
 %          far, access is controlled using <order> as an index base.
 %
 % <ps-expression> is a power series object corresponding to the prefix
@@ -78,10 +78,11 @@ module tps; % Extendible Power Series.
 % object
 
 
-create!-package('(tps tpscomp tpseval tpsdom tpsfns tpsrev
+ create!-package('(tps tpscomp tpseval tpsdom tpsfns tpsrev
                   tpssum tpsmisc tpsconv),
                 '(contrib tps));
 
+  
 fluid '(ps!:exp!-lim  knownps ps!:level  ps!:max!-order);
 
 % Some structure selectors and referencers.
@@ -254,7 +255,7 @@ symbolic procedure simpps1(form,depvar,about);
   else if not kernp simp!* depvar then
      typerr(depvar, "kernel:  simpps")
   else if  smember(depvar,(about:=prepsqxx simp!* about)) then
-     rerror(tps,7,"Expansion point depends on depvar:  simpps")
+     rerror(tps,7,"Expansion point depends on dependent variable:  simpps")
   else
      begin scalar knownps, ps!:level;
         ps!:level := 0;
