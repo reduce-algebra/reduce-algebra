@@ -87,9 +87,11 @@ lisp procedure gak(form,oplist,l);
             where x=mvar form$
 
 
-lisp operator get_kernels;
+% 10/12/2014 Modified by R. Vitolo in order to avoid a name clash
+% with a procedure from the package CRACK
+lisp operator cdiff_get_kernels;
 
-lisp procedure get_kernels(exprss,oplist);
+lisp procedure cdiff_get_kernels(exprss,oplist);
    'list . gak(numr simp!* exprss,
       if null oplist
       then nil
