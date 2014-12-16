@@ -102,6 +102,10 @@ symbolic procedure lamstat;
         return y
    end;
 
+% The following looks like a global introduction of LAMBDA as introducing
+% special syntax. However individualised treatment in xread.red ensures that
+% this syntax is only recognised in symbolic mode.
+
 put ('lambda,'stat,'lamstat);
 
 
