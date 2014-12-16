@@ -196,7 +196,7 @@ symbolic procedure procstat1 mode;
        else if atom (x := car x) then x := list x;   % No arguments.
       fname!* := car x;   % Function name.
       if idp fname!* % and null(type memq ftypes!*)
-        then if null fname!* or fname!* eq 't or fname!* eq 'lambda
+        then if null fname!* or fname!* eq 't
                then progn(rsverr fname!*, go to a3)
               else if (z := gettype fname!*)
                        and null(z memq '(procedure operator))
@@ -207,7 +207,7 @@ symbolic procedure procstat1 mode;
        else lprie list(y,"invalid as parameter list");
       go to a2;
   a1: fname!* := scan();
-      if not idp fname!* or fname!* eq 'lambda
+      if not idp fname!*
         then progn(typerr(fname!*,"procedure name"), go to a3);
       scan();
       y := errorset!*(list('read_param_list,mkquote mode),nil);

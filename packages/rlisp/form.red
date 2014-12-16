@@ -159,9 +159,7 @@ symbolic procedure form1(u,vars,mode);
         then return getvect(u,vars,mode)
        else if flagp(car u,'modefn)
         then return convertmode(cadr u,vars,mode,car u)
-       else if (x := get(car u,'formfn)) and
-% Do not treat LAMBDA specially if in algebraic mode.
-        (!*mode eq 'symbolic or car u neq 'lambda)
+       else if (x := get(car u,'formfn))
         then return macrochk(apply3(x,u,vars,mode),mode)
        else if get(car u,'stat) eq 'rlis
         then return macrochk(formrlis(u,vars,mode),mode)
@@ -183,8 +181,7 @@ symbolic procedure form1(u,vars,mode);
       x := formlis(cdr u,vars,mode);
       y := if x=cdr u then u else car u . x;
       return if mode eq 'symbolic
-% Again a special exemption for lambda when in algebraic mode.
-              or (get(car u,'stat) and car u neq 'lambda)
+              or get(car u,'stat)
               or cdr u and eqcar(cadr u,'quote)
                        and null(!*micro!-version and null !*defn)
               or intexprnp(y,vars) and null !*composites

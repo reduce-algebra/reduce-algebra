@@ -107,9 +107,7 @@ symbolic procedure xread1 u;
          % a diphthong whose first character is a colon.
 %        else if nxtsym!* eq '!: then nil
          else if flagp(z,'delim) then go to delimit
-         else if (y := get(z,'stat)) and
-% Ignore the STAT property on LAMBDA if in algebraic mode.
-           (!*mode eq 'symbolic or null (z eq 'lambda)) then go to stat
+         else if y := get(z,'stat) then go to stat
          else if null !*reduce4 and flagp(z,'type)
           then progn(w := lispapply('decstat,nil) . w, go to a);
   a2:   y := nil;
@@ -135,8 +133,8 @@ symbolic procedure xread1 u;
          else z := xread1 'paren;
         if flagp(u,'struct) then progn(z := remcomma z, go to a3)
          else if null eqcar(z,'!*comma!*) then go to a3
-         else if null w
-           then (if u eq 'lambda and !*mode eq 'symbolic then go to a3
+         else if null w         % then go to a3
+           then (if u eq 'lambda then go to a3
                  else symerr("Improper delimiter",nil))
          else w := (car w . cdr z) . cdr w;
         go to next;
@@ -177,13 +175,7 @@ symbolic procedure xread1 u;
         z2 := mkvar(car w,z);
   un1:  w:= cdr w;
         if null w then go to un2
-% There USED to be some special detection of LAMBDA here but that was removed
-% well before I looked into making lambda act differently in symbolic and
-% algebraic modes...
-        % Next line used to be toknump car w, but this test catches more
-%        else if null idp car w and null eqcar(car w,'lambda)
          else if atom car w and null idp car w
-%           and null eqcar(car w,'lambda)
           then symerr("Missing operator",nil);
         z2 := list(car w,z2);
         go to un1;
@@ -226,8 +218,6 @@ symbolic procedure xread1 u;
         %  then symerr("Invalid combination of prefix and infix operator",nil);
         x:= (y . z) . x;
         if null(z eq '!*comma!*) then go to in3
-% The "lambda" checked for here is the argument to xread, and that should
-% be a case that only arises if a lambda expression was already being parsed.
          else if cdr x or null u or u memq '(lambda paren)
             or flagp(u,'struct)
           then go to next
