@@ -1974,9 +1974,16 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     }
 #else
 #ifdef WIN32
-    char helpFile[256];
-    GetModuleFileName(NULL, helpFile, 250);
-    strcpy(helpFile+strlen(helpFile)-3, "doc");
+    char helpFile[LONGEST_LEGAL_FILENAME];
+    char *q;
+//  GetModuleFileName(NULL, helpFile, 250);
+// Using GetModuleFileName causes confusion with the ACN scheme where a
+// multi-purpose stub loads the exact version of Reduce that you really
+// want...
+    sprintf(helpFile, "%s/reduce.doc", programDir);
+    for (q=helpFile; *q!=0; q++)
+        if (*q == '/') *q = '\\';
+// printf("\n>>> %s <<<\n", helpFile); fflush(stdout);
     HINSTANCE n = ShellExecute(NULL,            // parent window for popup
                               "open",           // verb
                               "index.html",     // file to open
