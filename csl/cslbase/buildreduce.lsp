@@ -9,7 +9,7 @@
 % run it has a full complement of functions in the modules u01.c to u60.c.
 %
 %
-%           bootstrapreduce -z buildreduce.lsp -D@srcdir=<DIR>
+%           bootstrapreduce -z buildreduce.lsp -D@srcdir=<DIR> -D@reduce=<DIR>
 %
 % Builds a system "bootstrapreduce.img" that does not depend on any
 % custom C code. The main use of this slow system is for profiling
@@ -17,7 +17,7 @@
 % done this image is logically unnecessary.
 %
 %
-%           reduce -z buildreduce.lsp -D@srcdir=<DIR>
+%           reduce -z buildreduce.lsp -D@srcdir=<DIR> -D@reduce=<dir>
 %
 % Here the files u01.c to u60.c and u01.lsp to u60.lsp must already
 % have been created, and that the reduce executable has them compiled in.
@@ -1482,7 +1482,6 @@ load!-module 'remake;
 
 << initreduce();
    date!* := "Bootstrap version";
-%  !@reduce := symbol!-value gensym();
    preserve('begin, "REDUCE", t) >>;
 
 symbolic;
@@ -1581,10 +1580,6 @@ symbolic restart!-csl nil;
 
 (load!-package 'entry)
 
-% (write!-help!-module "$srcdir/../util/reduce.inf" nil)
-%
-% (load!-module 'cslhelp)
-
 (setq version!* "Reduce (Free CSL version)")
 
 (setq date!* (date))
@@ -1595,18 +1590,37 @@ symbolic restart!-csl nil;
 
 (setq no_init_file nil)
 
-% (setq !@csl (setq !@reduce (symbol!-value (gensym))))
+% restart-csl re-applied the -D@srcdir=<DIR> -D@reduce=<DIR> command-line
+% options and as a consequence the variables !@srcdir and !@reduce will be
+% set here. This is perhaps convenient for people who run Reduce with the
+% binaries sitting exactly where they where originally built, or at least
+% on a computer where the path to the source files used to build Reduce still
+% being valid. It would however be a MESS to try to rely on these on (for
+% instance) another machine. I had thus considered the line
+%          (setq !@csl (setq !@reduce (symbol!-value (gensym))))
+% which is intende to unset those variables so leaving things clean. However
+% some developers really like to be able to do incremental builds to Reduce
+% and so to help them I will leave things as they are and also ensure
+% that everything is ready for package!-remake. I am not 100% happy about this
+% since I view it as supporting and hence encouraging practises that I count
+% as delicate (especially as regards built vs installed Reduce and dependencies
+% between modules) so I still HOPE that most people who are developing
+% stuff will rebuild Reduce from scratch rather often.
+
+(load!-package 'remake)
+(get_configuration_data)
 
 % If the user compiles a new FASL module then I will let it
 % generate native code by default. I build the bulk of REDUCE
 % without that since I have statically-selected hot-spot compilation
 % that gives me what I believe to be a better speed/space tradeoff.
 
-% Oh well, let's change that and disable it by dafault since at least on
+% Oh well, let's change that and disable it by default since at least on
 % windows there are problems with windows vs cygwin file-names.
 
 (fluid '(!*native_code))
-(setq !*native_code nil)   % Try T if you are VERY keen...
+(setq !*native_code nil)   % The native compilation option that I was
+                           % considering at one stage is no longer available.
 
 (preserve 'begin (bldmsg "%w, %w ..." version!* date!*) t)
 % Note that (preserve) here arranges to reload the image that it
