@@ -1,5 +1,8 @@
 # Makefile for getting ready to make Windows installer package
 
+BUILDTOPDIR=C
+REVISION=HEAD
+
 # If the following path to Inno Setup is correct then running "make" will
 # be able to run Inno Setup automatically. If it is not then there will
 # be no terrible harm, but when you run "make" it will end by displaying
@@ -15,7 +18,7 @@ all:	package-win
 # has been created it just sits there and prevents re-building of its
 # component
 
-# "C" is a copy of the main Reduce source tree. It will include
+# "$(BUILDTOPDIR)" is a copy of the main Reduce source tree. It will include
 # everything that is checked in to the subversion repository but it will
 # not include locally created files. If you have updated a file locally
 # (even if you have not yet committed your changes) then that update will
@@ -26,17 +29,17 @@ all:	package-win
 # up getting ready to distribute large amounts of temporary or experimental
 # material.
 
-C.stamp:
-	rm -rf C
-	( time svn export .. C ) > C.log
-	touch C.stamp
+$(BUILDTOPDIR).stamp:
+	rm -rf $(BUILDTOPDIR)
+	( time svn export -R $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
+	touch $(BUILDTOPDIR).stamp
 
 # The CSL version of Reduce gets build using an elaborate scheme that
 # creates a sort of Windows "fat binary" such that a single binary can be
 # used on 32 or 64-bit systems and to run as a Windowed version or under
 # a Windows console - or under cygwin mintty or using an X server!
 
-csl.stamp:	C.stamp
+csl.stamp:	$(BUILDTOPDIR).stamp
 	script -c "time ./cslbuild.sh" csl.log
 	touch csl.stamp
 
@@ -44,8 +47,8 @@ csl.stamp:	C.stamp
 # it is built in the clean tree it will be a fully fresh pair of versions
 # fully re-build here.
 
-psl.stamp:	C.stamp
-	(cd C ; \
+psl.stamp:	$(BUILDTOPDIR).stamp
+	(cd $(BUILDTOPDIR) ; \
 		./configure --with-psl ; \
 		./configure --with-psl -with-m32 ; \
 		script -c "time make psl" ../psl.log )
@@ -54,11 +57,11 @@ psl.stamp:	C.stamp
 # Documentation is also re-generated in the clean tree so that regardless
 # of history it should end up fresh and tidy.
 
-docs.stamp:	C.stamp
-	(cd C/doc/misc ; script -c "time make"  ../../../docmisc.log )
-	(cd C/doc/manual ; script -c "time make" ../../../docmanual.log )
+docs.stamp:	$(BUILDTOPDIR).stamp
+	(cd $(BUILDTOPDIR)/doc/misc ; script -c "time make"  ../../../docmisc.log )
+	(cd $(BUILDTOPDIR)/doc/manual ; script -c "time make" ../../../docmanual.log )
 	touch docs.stamp
-	
+
 # reduce.iss is the script for Inno Setup. It is created here by
 # setting the string @here@ in it to the absolute path to this
 # directory. That is so that when Inno Setup processes it there is no
@@ -72,10 +75,10 @@ reduce.iss:	reduce.iss.in
 # images for both 32 and 64-bit versions and then invoking Inno Setup
 # to pack up everything.
 
-package-win:	C.stamp csl.stamp psl.stamp docs.stamp reduce.iss
-	C/psl/saveimage.sh C/pslbuild/x86_64-pc-windows \
+package-win:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp reduce.iss
+	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/x86_64-pc-windows \
 		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
-	C/psl/saveimage.sh C/pslbuild/i686-pc-windows \
+	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/i686-pc-windows \
 		$(abspath .) '$$reduce/lib/psl'
 	if test -x "$(inno)/ISCC.exe"; then "$(inno)/ISCC" reduce.iss;\
 		else echo Please run Innosetup on winbuild/reduce.iss; fi
@@ -86,7 +89,7 @@ package-win:	C.stamp csl.stamp psl.stamp docs.stamp reduce.iss
 # directory "Output"
 
 clean:
-	rm -rf cyg*.exe add*.exe *red*.exe *.img C \
+	rm -rf cyg*.exe add*.exe *red*.exe *.img $(BUILDTOPDIR) \
 		cslwin32 cslwin64 cslcyg32 cslcyg64 \
 		cslbuild log reduce.iss dll*.c *.stamp
 

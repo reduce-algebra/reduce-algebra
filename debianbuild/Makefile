@@ -3,6 +3,7 @@ SNAPSHOT=$(shell LANG=C date "+%Y%m%d")
 NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog
 BUILDTOPDIR=C
+REVISION=HEAD
 
 all:	update-changelog reduce-packages
 
@@ -21,7 +22,7 @@ update-changelog:
 
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
-	( time svn export -r HEAD .. $(BUILDTOPDIR) ) | tee $(BUILDTOPDIR).log
+	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) | tee $(BUILDTOPDIR).log
 	touch $(BUILDTOPDIR).stamp
 
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages
