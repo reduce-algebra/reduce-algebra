@@ -270,6 +270,10 @@ put('mat,'formfn,'formmat);
 
 defautoload(formmat,'(matrix),expr,3);
 
+defautoload(matstat,'(matrix),expr,0);
+
+put('mat,'stat,'matstat);
+
 defautoload(generateident,'(matrix));
 
 defautoload(lnrsolve,'(matrix),expr,2);
