@@ -1,0 +1,182 @@
+
+1: 
+linelength 72;
+
+
+80
+
+
+in "boxdisplay.red"$
+
+
+nil
+
+
+lisp;
+
+
+nil
+
+
+on backtrace$
+
+
+
+PrintPrefixForm '(plus a b)$
+
+
+a + b
+
+
+PrintPrefixForm '(expt (plus a b) 2)$
+
+
+       2
+(a + b) 
+
+
+PrintPrefixForm '(quotient (expt (plus a b) 2) (expt (plus a c) 2))$
+
+
+        2 
+ (a + b)  
+----------
+        2 
+ (a + c)  
+
+
+PrintPrefixForm '(quotient (minus (expt (plus a b) 2)) (plus a c))$
+
+
+           2 
+  - (a + b)  
+-------------
+    a + c    
+
+
+PrintPrefixForm '(expt (plus (expt a 2) (expt b 2)) 3)$
+
+
+           3
+/  2    2 \ 
+| a  + b  | 
+\         / 
+
+
+PrintPrefixForm
+  '(int (quotient 1 (sqrt (difference (expt a 2) (expt x 2)))) x)$
+
+
+ /                     
+ |         1           
+ | ----------------- dx
+ |         2    2      
+ /  sqrt( a  - x  )    
+
+
+
+share w$
+
+
+
+algebraic(
+  w := x**2*y**7*a + x**2*y**3*(b + 5) + x*(7*c - 1) + y*(d - 9) + p + 123)$
+
+
+
+factor x,y$
+
+
+
+PrintPrefixForm prepsq cadr w$
+
+
+   2  7      2  3                        2  3                
+a*x *y  + b*x *y  + 7*c*x + d*y + p + 5*x *y  - x - 9*y + 123
+
+
+PrintPrefixForm prepsq!* cadr w$
+
+
+ 2  7      2  3                                            
+x *y *a + x *y *(b + 5) + x*(7*c - 1) + y*(d - 9) + p + 123
+
+
+
+
+algebraic (w := (a+b)**10);
+
+
+      10       9         8  2        7  3        6  4
+w := a   + 10*a *b + 45*a *b  + 120*a *b  + 210*a *b  + 252*
+
+      5  5        4  6        3  7       2  8         9    10
+     a *b  + 210*a *b  + 120*a *b  + 45*a *b  + 10*a*b  + b
+
+
+PrintPrefixForm prepsq cadr w$
+
+
+ 10       9         8  2        7  3        6  4        5  5   
+a   + 10*a *b + 45*a *b  + 120*a *b  + 210*a *b  + 252*a *b  + 
+
+     4  6        3  7       2  8         9    10
+210*a *b  + 120*a *b  + 45*a *b  + 10*a*b  + b  
+
+
+PrintPrefixForm list('setq,'w,prepsq cadr w);
+
+
+      10       9         8  2        7  3        6  4        5  5   
+w := a   + 10*a *b + 45*a *b  + 120*a *b  + 210*a *b  + 252*a *b  + 
+
+     4  6        3  7       2  8         9    10
+210*a *b  + 120*a *b  + 45*a *b  + 10*a*b  + b  
+
+nil
+
+
+
+algebraic;
+
+
+
+vector p1,p2,p3,p4,p5,p6;
+
+
+
+w := g(l,p1,p2,p3,p4,p5,p6);
+
+
+w := p1.p2*p3.p4*p5.p6 - p1.p2*p3.p5*p4.p6 + p1.p2*p3.p6*p4.
+
+     p5 - p1.p3*p2.p4*p5.p6 + p1.p3*p2.p5*p4.p6 - p1.p3*p2.p6
+
+     *p4.p5 + p1.p4*p2.p3*p5.p6 - p1.p4*p2.p5*p3.p6 + p1.p4*
+
+     p2.p6*p3.p5 - p1.p5*p2.p3*p4.p6 + p1.p5*p2.p4*p3.p6 - p1
+
+     .p5*p2.p6*p3.p4 + p1.p6*p2.p3*p4.p5 - p1.p6*p2.p4*p3.p5 
+
+     + p1.p6*p2.p5*p3.p4
+
+
+lisp (PrintPrefixForm prepsq cadr w)$
+
+
+p1.p2*p3.p4*p5.p6 - p1.p2*p3.p5*p4.p6 + p1.p2*p3.p6*p4.p5
+
+ - p1.p3*p2.p4*p5.p6 + p1.p3*p2.p5*p4.p6 - p1.p3*p2.p6*p4.p5 + 
+
+p1.p4*p2.p3*p5.p6 - p1.p4*p2.p5*p3.p6 + p1.p4*p2.p6*p3.p5
+
+ - p1.p5*p2.p3*p4.p6 + p1.p5*p2.p4*p3.p6 - p1.p5*p2.p6*p3.p4 + 
+
+p1.p6*p2.p3*p4.p5 - p1.p6*p2.p4*p3.p5 + p1.p6*p2.p5*p3.p4
+
+
+end;
+
+2: 
+
+leaving lisp...

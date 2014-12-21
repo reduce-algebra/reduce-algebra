@@ -1,0 +1,134 @@
+\documentstyle[11pt]{article}
+
+\newcommand{\REDUCE}{{\sf REDUCE}}
+\newcommand{\MACSYMA}{{\sf MACSYMA}}
+\newcommand{\MAPLE}{{\sf MAPLE}}
+\newcommand{\Mathematica}{{\sf Mathematica}}
+\newcommand{\PSL}{{\sf PSL}}
+\renewcommand{\today}{Apr 27, 1990}
+
+\begin{document}
+
+\title{Two-dimensional display of algebraic expressions
+       in \REDUCE}
+
+\author{Rainer Sch\"opf\\
+        Institut f\"ur Theoretische Physik\\
+        der Universit\"at Heidelberg\\
+        Philosophenweg 16\\
+        D-6900 Heidelberg\\
+        Federal Republic of Germany\\
+        Email: \verb|<BK4@DHDURZ1.BITNET>|}
+
+\maketitle
+
+\begin{abstract}
+  This short note describes a method to display algebraic expressions
+  in a device independent way.
+\end{abstract}
+
+\section{Introduction}
+
+The idea came from Donald E. Knuth's typesetting program \TeX.
+This program handles everything in terms of boxes and glue (the space
+between boxes).
+
+\section{Structure of algebraic expressions}
+
+An algebraic expression consists either of a single undividable
+object (i.e.\ a symbol denoting a variable) or of an operator ($op$)
+and any number of operands ($arg_{1}\ldots arg_{n}$, $n\geq 0$) which
+are again algebraic expressions.
+
+\section{Display boxes}
+
+Every algebraic expression is represented by a so-called
+{\em display box\/} which looks like follows:\\
+\begin{figure}[htb]
+  \setlength{\unitlength}{1mm}
+  \begin{picture}(120,60)
+    \put(40,10){\line(1,0){30}}
+    \put(40,10){\line(0,1){50}}
+    \put(70,10){\line(0,1){50}}
+    \put(40,60){\line(1,0){30}}
+    \put(40,30){\line(1,0){30}}
+    \put(40,30){\circle*{2}}
+    \put(39,30){\makebox(0,0)[r]{Reference point $\longrightarrow$}}
+    \put(55,31){\makebox(0,0)[b]{Baseline}}
+    \put(40,7){\makebox(30,0)[t]{$\longleftarrow$%
+                                 \hfill width\hfill
+                                 $\longrightarrow$}}
+    \put(80,10){\makebox(0,20){depth}}
+    \put(80,30){\makebox(0,30){height}}
+    \put(80,60){\makebox(0,0)[t]{$\Bigg\uparrow$}}
+    \put(80,34){\makebox(0,0)[b]{$\Bigg\downarrow$}}
+    \put(80,29){\makebox(0,0)[t]{$\Big\uparrow$}}
+    \put(80,12){\makebox(0,0)[b]{$\Big\downarrow$}}
+  \end{picture}
+  \caption{A display box.}
+\end{figure}
+
+The display box is constructed by recursively descending the
+corresponding algebraic expression.  We impose the restriction that the
+display boxes of the operands are entirely contained in the box of the
+whole expression.  Furthermore, the operands' display boxes must not
+overlap.  This restriction is not crucial but will turn out to be
+useful later on.
+
+As an example consider the algebraic expression
+\begin{displaymath}
+  (a + b) ^{2}
+\end{displaymath}
+In LISP prefix form this may be represented as
+\begin{center} \tt
+  (expt (plus a b) 2)
+\end{center}
+Drawing the boxes we get
+\begin{center}
+  \setlength{\fboxsep}{0.2pt}
+  \fbox{%
+    $\fbox{$(\fbox{$a$} + \fbox{$b$})$}^{\fbox{\footnotesize$2$}}$}
+\end{center}
+This example shows some nice features of the proposed scheme
+\begin{itemize}
+  \item It is possible to provide special kinds of display boxes for
+    special operators, e.g. in this case \verb|expt|.
+  \item It is possible to use different sizes for different output
+    devices, e.g., a smaller font for superscripts if the display
+    device supports it.
+  \item The transformation into a two-dimensional printed
+    representation is rather simple.
+  \item It is possible to use a mouse or similar device to select parts
+    of an algebraic expression interactively.
+  \item There are several ways to break an expression across lines:
+    a simple look-ahead mechanism is possible, but also a global
+    optimization scheme \`a la \TeX.
+\end{itemize}
+      
+\section{Implementation considerations}
+
+A prototype of such a system was implemented.
+A display box is a data type with the following components:
+\begin{itemize}
+  \item height, depth, and width,
+  \item the expression it represents,
+  \item the operator of the expression,
+  \item a flag indicating that the expression has to be printed
+    with braces around it,
+  \item for each argument of the operator: the position of its display
+    box relative to the reference point of the enclosing box,
+  \item a penalty to be used if this box is to be broken across several
+    lines (for certain line-breaking schemes only),
+  \item a pointer to the enclosing box (to facilitate use of a mouse).
+\end{itemize}
+Transformation to the printed representation is done by
+allocating a two-dimensional array and filling it.
+(Array slices would be useful here.)
+As for breaking across lines, we implemented a simple mechanism that
+checks whether the next box to be printed fits on the line and
+determines the break point if necessary.
+It seems that this is sufficient to get reasonable line breaks.
+However, the prototype implementation is neither very efficient nor
+does it handle all possible cases.
+
+\end{document}
