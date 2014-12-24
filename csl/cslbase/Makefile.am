@@ -1315,20 +1315,27 @@ else !mac_framework
 # I must ensure that users know that they do not have the right to separate
 # out the fonts for separate use. Also I should observe that the original
 # distribution that I used is in the csl/support-packages directory of a full
-# reduce file-set.
-	$(CP) $(srcdir)/$(fontsdir)/MANIFEST-Latin-Modern.txt reduce.$(fontsdir)/MANIFEST-Latin-Modern.txt
-	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
-	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
+# reduce file-set. Well my newer experiment is to look at the STIX fonts
+# instead, so for now I will just comment out copying of the Latin Modern
+# ones...
+#	$(CP) $(srcdir)/$(fontsdir)/MANIFEST-Latin-Modern.txt reduce.$(fontsdir)/MANIFEST-Latin-Modern.txt
+#	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern.txt reduce.$(fontsdir)/README-Latin-Modern.txt
+#	$(CP) $(srcdir)/$(fontsdir)/README-Latin-Modern-Math.txt reduce.$(fontsdir)/README-Latin-Modern-Math.txt
 	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
 	$(CP) $(srcdir)/cm-unicode/README.cm-unicode reduce.$(fontsdir)/README.cm-unicode
+	$(CP) $(srcdir)/$(fontsdir)/STIX*.pdf reduce.$(fontsdir)
 if windows
 # With Windows I will want a .ttf version for any time I am using gdiplus.
+# However on a Windows platform under Cygwin and using X11 I would rather
+# have the .otf version, so I will copy the .ttf version as well rather then
+# instead of the .otf file.
 	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/l*.ttf reduce.$(fontsdir)
-else !windows
+#	$(CP) $(srcdir)/$(fontsdir)/l*.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/STIX*.ttf reduce.$(fontsdir)
+endif windows
 	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/l*.otf reduce.$(fontsdir)
-endif !windows
+#	$(CP) $(srcdir)/$(fontsdir)/l*.otf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/STIX*.otf reduce.$(fontsdir)
 # The DejaVu Sans Mono font covers a range of characters that CMTT does not..
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32
@@ -1336,7 +1343,10 @@ endif !windows
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf reduce.$(fontsdir)
 # I will also use fireflysung and sazanami fonts to cover the CJK range
 # I list every file I am copying individually to avoid (eg) any backups or
-# subversion admin files ending up where I do not want them.
+# subversion admin files ending up where I do not want them. Hmmm I do not
+# know enough about CJK to sort out what I like here, but keeping fireflysung
+# and also two sazanami fonts seems excessive! I am going to keep
+# fireflysung for now.
 	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
 	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
 	$(CP) $(srcdir)/fireflysung-1.3.0/COPYRIGHT reduce.$(fontsdir)/COPYRIGHT.fireflysung
@@ -1347,22 +1357,22 @@ endif !windows
 	$(CP) $(srcdir)/fireflysung-1.3.0/license/big5/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/big5
 	$(CP) $(srcdir)/fireflysung-1.3.0/license/english/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/english
 	$(CP) $(srcdir)/fireflysung-1.3.0/license/gb/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/gb
-	$(CP) $(srcdir)/sazanami-20040629/README reduce.$(fontsdir)/README.sazanami
-	$(CP) $(srcdir)/sazanami-20040629/sazanami-gothic.ttf reduce.$(fontsdir)
-	$(CP) $(srcdir)/sazanami-20040629/sazanami-mincho.ttf reduce.$(fontsdir)
-	mkdir -p reduce.$(fontsdir)/doc.sazanami
-	mkdir -p reduce.$(fontsdir)/doc.sazanami/ayu
-	mkdir -p reduce.$(fontsdir)/doc.sazanami/kappa
-	mkdir -p reduce.$(fontsdir)/doc.sazanami/misaki
-	mkdir -p reduce.$(fontsdir)/doc.sazanami/mplus
-	mkdir -p reduce.$(fontsdir)/doc.sazanami/oradano
-	mkdir -p reduce.$(fontsdir)/doc.sazanami/shinonome
-	$(CP)  $(srcdir)/sazanami-20040629/doc/ayu/README.txt reduce.$(fontsdir)/doc.sazanami/ayu
-	$(CP)  $(srcdir)/sazanami-20040629/doc/kappa/README reduce.$(fontsdir)/doc.sazanami/kappa
-	$(CP)  $(srcdir)/sazanami-20040629/doc/misaki/misakib8.txt reduce.$(fontsdir)/doc.sazanami/misaki
-	$(CP)  $(srcdir)/sazanami-20040629/doc/mplus/LICENSE_J reduce.$(fontsdir)/doc.sazanami/mplus
-	$(CP)  $(srcdir)/sazanami-20040629/doc/oradano/README.txt reduce.$(fontsdir)/doc.sazanami/oradano
-	$(CP)  $(srcdir)/sazanami-20040629/doc/shinonome/LICENSE reduce.$(fontsdir)/doc.sazanami/shinonome
+#	$(CP) $(srcdir)/sazanami-20040629/README reduce.$(fontsdir)/README.sazanami
+#	$(CP) $(srcdir)/sazanami-20040629/sazanami-gothic.ttf reduce.$(fontsdir)
+#	$(CP) $(srcdir)/sazanami-20040629/sazanami-mincho.ttf reduce.$(fontsdir)
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami/ayu
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami/kappa
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami/misaki
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami/mplus
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami/oradano
+#	mkdir -p reduce.$(fontsdir)/doc.sazanami/shinonome
+#	$(CP)  $(srcdir)/sazanami-20040629/doc/ayu/README.txt reduce.$(fontsdir)/doc.sazanami/ayu
+#	$(CP)  $(srcdir)/sazanami-20040629/doc/kappa/README reduce.$(fontsdir)/doc.sazanami/kappa
+#	$(CP)  $(srcdir)/sazanami-20040629/doc/misaki/misakib8.txt reduce.$(fontsdir)/doc.sazanami/misaki
+#	$(CP)  $(srcdir)/sazanami-20040629/doc/mplus/LICENSE_J reduce.$(fontsdir)/doc.sazanami/mplus
+#	$(CP)  $(srcdir)/sazanami-20040629/doc/oradano/README.txt reduce.$(fontsdir)/doc.sazanami/oradano
+#	$(CP)  $(srcdir)/sazanami-20040629/doc/shinonome/LICENSE reduce.$(fontsdir)/doc.sazanami/shinonome
 
 endif !mac_framework
 else !wx

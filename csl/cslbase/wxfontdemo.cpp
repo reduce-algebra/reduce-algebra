@@ -56,8 +56,7 @@
 // I view as more interesting). Sometimes the names you need to give the
 // private fonts differ as between Macintosh and other platforms, and
 // fontmap.c contains a list of the names I expect to behave. Eg
-//  "CMU Typewriter Text" or "CMU Typewriter Text Regular", and
-//  "Latin Modern Math", "LM Roman 7" etc.
+//  "CMU Typewriter Text" or "CMU Typewriter Text Regular", ...
 //
 // The flag --tex adjusts for a private adjustment to the TeX character
 // encoding and is only for use with the fonts csl-cmr10 and so on...
@@ -72,10 +71,7 @@
 //
 // The code is intended to allow me to check that I can in fact access the
 // private fonts, and where necessary to confirm which codepoint corresponds
-// to a particular character. For instance in "Latin Modern Math" a block
-// of characters starting at U+1d400 support a range of symbols and
-// alphabets that would otherwise have been in the "Math Italic" TeX
-// fonts.
+// to a particular character.
 
 // This demonstrates attaching to private fonts, use of some bitmaps that
 // show what characters are available in them, and the display of
@@ -235,7 +231,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int tex, page, bold, italic, math;
+int tex, page, bold, italic;
 
 int get_current_directory(char *s, int n)
 {
@@ -597,19 +593,7 @@ int main(int argc, char *argv[])
     {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
         else if (strcmp(argv[1], "--help") == 0)
         {
-//
-// I hope that a "--help" message counts as "prominent notice" and that the
-// wording here will satisfy those responsible for the Latin Modern fonts.
-//
-printf("This program contains bitmaps that show font coverage of some of\n");
-printf("the Latin Modern Fonts. The license terms of those fonts mean that\n");
-printf("any derived information falls under the LaTeX Project Public\n");
-printf("License which requires prominent notice of how to find the orininal\n");
-printf("fonts and full information about transformations made. This information\n");
-printf("should be in the wxfonts or reduce.wxfonts directory associated with\n");
-printf("this program and if necessary copies of everything relevant are in the\n");
-printf("trunk/csl/cslbase/wxfonts and trunk/csl/cslbase/glyphinfo.c locations\n");
-printf("in the subversion repositary at reduce-algebra.sf.net.\n");
+            printf("wxfontdemo \"font name\"\n");
             exit(0);   
         }
     }
@@ -684,68 +668,68 @@ static const char *fontNames[] =
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective.
     "cmuntt.ttf",          // CMU Typewriter Text
-    "DejaVuSansMono.otf",  // DejaVu Sans Mono
+//  "DejaVuSansMono.otf",  // DejaVu Sans Mono
     "fireflysung.ttf",     // AR PL New Sung
-    "sazanami-gothic.ttf", // Sazanami Gothic
-    "sazanami-mincho.ttf", // Sazanami Mincho
 #ifdef WIN32
-// For Windows I am rendering everything under gdiplus (which lets me scale
-// things nicely) and it appears that some .otf fonts (including ones that
-// contain embedded bitmaps) do not display that way. So I will use fonts
-// downgraded to mere .ttf format.
-    "latinmodern-math.ttf",       "lmmono10-italic.ttf",         "lmmono10-regular.ttf",
-    "lmmono12-regular.ttf",       "lmmono8-regular.ttf",         "lmmono9-regular.ttf",
-    "lmmonocaps10-oblique.ttf",   "lmmonocaps10-regular.ttf",    "lmmonolt10-bold.ttf",
-    "lmmonolt10-boldoblique.ttf", "lmmonolt10-oblique.ttf",      "lmmonolt10-regular.ttf",
-    "lmmonoltcond10-oblique.ttf", "lmmonoltcond10-regular.ttf",  "lmmonoprop10-oblique.ttf",
-    "lmmonoprop10-regular.ttf",   "lmmonoproplt10-bold.ttf",     "lmmonoproplt10-boldoblique.ttf",
-    "lmmonoproplt10-oblique.ttf", "lmmonoproplt10-regular.ttf",  "lmmonoslant10-regular.ttf",
-    "lmroman10-bold.ttf",         "lmroman10-bolditalic.ttf",    "lmroman10-italic.ttf",
-    "lmroman10-regular.ttf",      "lmroman12-bold.ttf",          "lmroman12-italic.ttf",
-    "lmroman12-regular.ttf",      "lmroman17-regular.ttf",       "lmroman5-bold.ttf",
-    "lmroman5-regular.ttf",       "lmroman6-bold.ttf",           "lmroman6-regular.ttf",
-    "lmroman7-bold.ttf",          "lmroman7-italic.ttf",         "lmroman7-regular.ttf",
-    "lmroman8-bold.ttf",          "lmroman8-italic.ttf",         "lmroman8-regular.ttf",
-    "lmroman9-bold.ttf",          "lmroman9-italic.ttf",         "lmroman9-regular.ttf",
-    "lmromancaps10-oblique.ttf",  "lmromancaps10-regular.ttf",   "lmromandemi10-oblique.ttf",
-    "lmromandemi10-regular.ttf",  "lmromandunh10-oblique.ttf",   "lmromandunh10-regular.ttf",
-    "lmromanslant10-bold.ttf",    "lmromanslant10-regular.ttf",  "lmromanslant12-regular.ttf",
-    "lmromanslant17-regular.ttf", "lmromanslant8-regular.ttf",   "lmromanslant9-regular.ttf",
-    "lmromanunsl10-regular.ttf",  "lmsans10-bold.ttf",           "lmsans10-boldoblique.ttf",
-    "lmsans10-oblique.ttf",       "lmsans10-regular.ttf",        "lmsans12-oblique.ttf",
-    "lmsans12-regular.ttf",       "lmsans17-oblique.ttf",        "lmsans17-regular.ttf",
-    "lmsans8-oblique.ttf",        "lmsans8-regular.ttf",         "lmsans9-oblique.ttf",
-    "lmsans9-regular.ttf",        "lmsansdemicond10-oblique.ttf","lmsansdemicond10-regular.ttf",
-    "lmsansquot8-bold.ttf",       "lmsansquot8-boldoblique.ttf", "lmsansquot8-oblique.ttf",
-    "lmsansquot8-regular.ttf"
+    "STIXGeneral-Bold.ttf",
+    "STIXGeneral-BoldItalic.ttf",
+    "STIXGeneral-Italic.ttf",
+    "STIXGeneral-Regular.ttf",
+    "STIXIntegralsD-Bold.ttf",
+    "STIXIntegralsD-Regular.ttf",
+    "STIXIntegralsSm-Bold.ttf",
+    "STIXIntegralsSm-Regular.ttf",
+    "STIXIntegralsUp-Bold.ttf",
+    "STIXIntegralsUpD-Bold.ttf",
+    "STIXIntegralsUpD-Regular.ttf",
+    "STIXIntegralsUp-Regular.ttf",
+    "STIXIntegralsUpSm-Bold.ttf",
+    "STIXIntegralsUpSm-Regular.ttf",
+    "STIXNonUnicode-Bold.ttf",
+    "STIXNonUnicode-BoldItalic.ttf",
+    "STIXNonUnicode-Italic.ttf",
+    "STIXNonUnicode-Regular.ttf",
+    "STIXSizeFiveSym-Regular.ttf",
+    "STIXSizeFourSym-Bold.ttf",
+    "STIXSizeFourSym-Regular.ttf",
+    "STIXSizeOneSym-Bold.ttf",
+    "STIXSizeOneSym-Regular.ttf",
+    "STIXSizeThreeSym-Bold.ttf",
+    "STIXSizeThreeSym-Regular.ttf",
+    "STIXSizeTwoSym-Bold.ttf",
+    "STIXSizeTwoSym-Regular.ttf",
+    "STIXVariants-Bold.ttf",
+    "STIXVariants-Regular.ttf"
 #else
-// On Linux and Macintosh (and other Unix-like platforms) I will try using
-// the original .otf versions of the fonts...
-    "latinmodern-math.otf",       "lmmono10-italic.otf",         "lmmono10-regular.otf",
-    "lmmono12-regular.otf",       "lmmono8-regular.otf",         "lmmono9-regular.otf",
-    "lmmonocaps10-oblique.otf",   "lmmonocaps10-regular.otf",    "lmmonolt10-bold.otf",
-    "lmmonolt10-boldoblique.otf", "lmmonolt10-oblique.otf",      "lmmonolt10-regular.otf",
-    "lmmonoltcond10-oblique.otf", "lmmonoltcond10-regular.otf",  "lmmonoprop10-oblique.otf",
-    "lmmonoprop10-regular.otf",   "lmmonoproplt10-bold.otf",     "lmmonoproplt10-boldoblique.otf",
-    "lmmonoproplt10-oblique.otf", "lmmonoproplt10-regular.otf",  "lmmonoslant10-regular.otf",
-    "lmroman10-bold.otf",         "lmroman10-bolditalic.otf",    "lmroman10-italic.otf",
-    "lmroman10-regular.otf",      "lmroman12-bold.otf",          "lmroman12-italic.otf",
-    "lmroman12-regular.otf",      "lmroman17-regular.otf",       "lmroman5-bold.otf",
-    "lmroman5-regular.otf",       "lmroman6-bold.otf",           "lmroman6-regular.otf",
-    "lmroman7-bold.otf",          "lmroman7-italic.otf",         "lmroman7-regular.otf",
-    "lmroman8-bold.otf",          "lmroman8-italic.otf",         "lmroman8-regular.otf",
-    "lmroman9-bold.otf",          "lmroman9-italic.otf",         "lmroman9-regular.otf",
-    "lmromancaps10-oblique.otf",  "lmromancaps10-regular.otf",   "lmromandemi10-oblique.otf",
-    "lmromandemi10-regular.otf",  "lmromandunh10-oblique.otf",   "lmromandunh10-regular.otf",
-    "lmromanslant10-bold.otf",    "lmromanslant10-regular.otf",  "lmromanslant12-regular.otf",
-    "lmromanslant17-regular.otf", "lmromanslant8-regular.otf",   "lmromanslant9-regular.otf",
-    "lmromanunsl10-regular.otf",  "lmsans10-bold.otf",           "lmsans10-boldoblique.otf",
-    "lmsans10-oblique.otf",       "lmsans10-regular.otf",        "lmsans12-oblique.otf",
-    "lmsans12-regular.otf",       "lmsans17-oblique.otf",        "lmsans17-regular.otf",
-    "lmsans8-oblique.otf",        "lmsans8-regular.otf",         "lmsans9-oblique.otf",
-    "lmsans9-regular.otf",        "lmsansdemicond10-oblique.otf","lmsansdemicond10-regular.otf",
-    "lmsansquot8-bold.otf",       "lmsansquot8-boldoblique.otf", "lmsansquot8-oblique.otf",
-    "lmsansquot8-regular.otf"
+    "STIXGeneral-Bold.otf",
+    "STIXGeneral-BoldItalic.otf",
+    "STIXGeneral-Italic.otf",
+    "STIXGeneral-Regular.otf",
+    "STIXIntegralsD-Bold.otf",
+    "STIXIntegralsD-Regular.otf",
+    "STIXIntegralsSm-Bold.otf",
+    "STIXIntegralsSm-Regular.otf",
+    "STIXIntegralsUp-Bold.otf",
+    "STIXIntegralsUpD-Bold.otf",
+    "STIXIntegralsUpD-Regular.otf",
+    "STIXIntegralsUp-Regular.otf",
+    "STIXIntegralsUpSm-Bold.otf",
+    "STIXIntegralsUpSm-Regular.otf",
+    "STIXNonUnicode-Bold.otf",
+    "STIXNonUnicode-BoldItalic.otf",
+    "STIXNonUnicode-Italic.otf",
+    "STIXNonUnicode-Regular.otf",
+    "STIXSizeFiveSym-Regular.otf",
+    "STIXSizeFourSym-Bold.otf",
+    "STIXSizeFourSym-Regular.otf",
+    "STIXSizeOneSym-Bold.otf",
+    "STIXSizeOneSym-Regular.otf",
+    "STIXSizeThreeSym-Bold.otf",
+    "STIXSizeThreeSym-Regular.otf",
+    "STIXSizeTwoSym-Bold.otf",
+    "STIXSizeTwoSym-Regular.otf",
+    "STIXVariants-Bold.otf",
+    "STIXVariants-Regular.otf"
 #endif
 };
 
@@ -814,7 +798,7 @@ bool fontApp::OnInit()
     char **myargv = (char **)argv;
     tex = 0;
     page = 0;
-    bold = italic = math = 0;
+    bold = italic = 0;
     const char *font = "default";  // A default font name to ask for.
     int size = 48;           // a default size.
     for (int i=0; i<argc; i++)
@@ -834,7 +818,6 @@ bool fontApp::OnInit()
 // recover so I can debug things. I have already set up programName etc
     printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
 
-    if (strcmp(font, "Latin Modern Math") == 0) math = 1;
     printf("Try for font \"%s\" at size=%d\n", font, size);
     fflush(stdout);
 
@@ -905,12 +888,6 @@ void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
            "wxfontdemo (A C Norman 2014)\n"
            "wxWidgets version: %s\n"
            "Operating system: %s\n"
-// The next brief section tries to satisfy the LaTeX Project Public
-// License as it applies to the font coverage bitmaps that get compiled
-// in to this code.
-           "Full Latin Modern Font details available via\n"
-           "reduce-algebra.sourcefoge.net in csl/support-packages\n"
-           "subdirectory of source archive",
            wxVERSION_STRING,
            wxGetOsDescription()),
        "About wxfontdemo",
@@ -1047,7 +1024,11 @@ void fontPanel::OnPaint(wxPaintEvent &event)
 
 // Check if the font appears to contain any characters at all. In some
 // cases where an unrecognised name is passed it might not!
-        if (once++ == 0)
+//
+// When I tried the STIX fonts I seem to get crashes within GetTextExtent
+// for reasions that I do not at present understand... so at least for now
+// I will remove this attempt to cont characters!
+        if (0 && once++ == 0) // Disable just for now
         {   int howmany = 0; 
             for (int i=0; howmany<30 && i<0xffff; i++)
             {   wxString s((wchar_t)i);
@@ -1125,9 +1106,6 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                 }
                 wxString c(ccc);
                 double offset = d1-h1;
-#ifdef WIN32
-                if (math) offset = -47.0;
-#endif
                 gc->DrawText(c,
                     ((double)CELLWIDTH)*(j+1),
                     ((double)CELLHEIGHT)*(i/32+1)+
