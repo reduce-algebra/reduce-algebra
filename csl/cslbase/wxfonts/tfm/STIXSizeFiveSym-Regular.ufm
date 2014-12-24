@@ -1,0 +1,50 @@
+StartFontMetrics 4.1
+FontName STIXSizeFiveSym-Regular
+FullName STIXSizeFiveSym-Regular
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXSizeFiveSym
+Weight Regular
+Version Version 1.1.0
+Characters 34
+ItalicAngle -15.1
+Ascender 960
+Descender -454
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox -3000 -454 3238 960
+StartCharMetrics 284
+U 32 ; WX 250 ; N space ; G 3 ; B 0 -177 3000 -127 ;
+U 95 ; WX 3000 ; N underscore ; G 4 ; B 0 -177 3000 -127 ;
+U 710 ; WX 2328 ; N uni02C6 ; G 6 ; B 0 572 2328 816 ;
+U 732 ; WX 2328 ; N uni02DC ; G 8 ; B 0 617 2328 780 ;
+U 160 ; WX 250 ; N uni00A0 ; G 5 ; B 0 572 2328 816 ;
+U 711 ; WX 2328 ; N uni02C7 ; G 7 ; B 0 572 2328 816 ;
+U 759 ; WX 2328 ; N uni02F7 ; G 9 ; B 0 -280 2328 -117 ;
+U 770 ; WX 0 ; N uni0302 ; G 10 ; B -2485 572 -157 816 ;
+U 771 ; WX 0 ; N uni0303 ; G 11 ; B -2485 617 -157 780 ;
+U 773 ; WX 0 ; N uni0305 ; G 12 ; B -3000 770 0 820 ;
+U 780 ; WX 0 ; N uni030C ; G 13 ; B -2485 572 -157 816 ;
+U 816 ; WX 0 ; N uni0330 ; G 14 ; B -2485 -280 -157 -117 ;
+U 818 ; WX 0 ; N uni0332 ; G 15 ; B -3000 -177 0 -127 ;
+U 824 ; WX 0 ; N uni0338 ; G 16 ; B -561 -454 -123 960 ;
+U 8254 ; WX 3000 ; N uni203E ; G 17 ; B 0 770 3000 820 ;
+U 8400 ; WX 0 ; N uni20D0 ; G 18 ; B -3000 584 0 749 ;
+U 8401 ; WX 0 ; N uni20D1 ; G 19 ; B -3000 584 0 749 ;
+U 8406 ; WX 0 ; N uni20D6 ; G 20 ; B -3000 482 0 735 ;
+U 8407 ; WX 0 ; N uni20D7 ; G 21 ; B -3000 482 0 735 ;
+U 8428 ; WX 0 ; N uni20EC ; G 22 ; B -3000 -288 0 -123 ;
+U 8429 ; WX 0 ; N uni20ED ; G 23 ; B -3000 -288 0 -123 ;
+U 8430 ; WX 0 ; N uni20EE ; G 24 ; B -3000 -279 0 -26 ;
+U 8431 ; WX 0 ; N uni20EF ; G 25 ; B -3000 -279 0 -26 ;
+U 9140 ; WX 3237 ; N uni23B4 ; G 26 ; B 90 544 3147 766 ;
+U 9141 ; WX 3237 ; N uni23B5 ; G 27 ; B 90 -83 3147 139 ;
+U 9180 ; WX 3237 ; N uni23DC ; G 28 ; B 0 -189 3237 80 ;
+U 9181 ; WX 3237 ; N uni23DD ; G 29 ; B 0 573 3237 842 ;
+U 9182 ; WX 3238 ; N uni23DE ; G 30 ; B 0 -90 3238 181 ;
+U 9183 ; WX 3238 ; N uni23DF ; G 31 ; B 0 573 3238 844 ;
+U 9184 ; WX 3164 ; N uni23E0 ; G 32 ; B 0 -212 3164 66 ;
+U 9185 ; WX 3164 ; N uni23E1 ; G 33 ; B 0 564 3164 842 ;
+EndCharMetrics
+EndFontMetrics

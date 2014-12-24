@@ -1,0 +1,48 @@
+StartFontMetrics 4.1
+FontName STIXIntegralsUpSm-Regular
+FullName STIXIntegralsUpSm-Regular
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXIntegralsUpSm
+Weight Regular
+Version Version 1.1.0
+Characters 32
+ItalicAngle 0.0
+Ascender 1055
+Descender -455
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox 12 -283 1081 784
+StartCharMetrics 285
+U 32 ; WX 250 ; N space ; G 3 ; B 52 -189 375 690 ;
+U 160 ; WX 250 ; N uni00A0 ; G 4 ; B 52 -189 375 690 ;
+U 8747 ; WX 357 ; N uni222B ; G 5 ; B 52 -189 375 690 ;
+U 8748 ; WX 587 ; N uni222C ; G 6 ; B 52 -189 605 690 ;
+U 8749 ; WX 817 ; N uni222D ; G 7 ; B 52 -189 835 690 ;
+U 8750 ; WX 452 ; N uni222E ; G 8 ; B 52 -189 412 690 ;
+U 8751 ; WX 682 ; N uni222F ; G 9 ; B 52 -189 642 690 ;
+U 8752 ; WX 909 ; N uni2230 ; G 10 ; B 52 -189 869 690 ;
+U 8753 ; WX 480 ; N uni2231 ; G 11 ; B 52 -189 447 690 ;
+U 8754 ; WX 480 ; N uni2232 ; G 12 ; B 52 -189 448 690 ;
+U 8755 ; WX 480 ; N uni2233 ; G 13 ; B 52 -189 470 690 ;
+U 10763 ; WX 556 ; N uni2A0B ; G 14 ; B 41 -190 515 694 ;
+U 10764 ; WX 1044 ; N uni2A0C ; G 15 ; B 68 -190 1081 694 ;
+U 10765 ; WX 420 ; N uni2A0D ; G 16 ; B 68 -190 391 694 ;
+U 10766 ; WX 420 ; N uni2A0E ; G 17 ; B 68 -190 391 694 ;
+U 10767 ; WX 520 ; N uni2A0F ; G 18 ; B 39 -190 482 694 ;
+U 10768 ; WX 324 ; N uni2A10 ; G 19 ; B 41 -190 380 694 ;
+U 10769 ; WX 480 ; N uni2A11 ; G 20 ; B 52 -190 447 694 ;
+U 10770 ; WX 450 ; N uni2A12 ; G 21 ; B 68 -190 410 694 ;
+U 10771 ; WX 450 ; N uni2A13 ; G 22 ; B 68 -189 412 690 ;
+U 10772 ; WX 550 ; N uni2A14 ; G 23 ; B 68 -189 512 690 ;
+U 10773 ; WX 450 ; N uni2A15 ; G 24 ; B 50 -189 410 690 ;
+U 10774 ; WX 450 ; N uni2A16 ; G 25 ; B 50 -191 410 694 ;
+U 10775 ; WX 611 ; N uni2A17 ; G 26 ; B 12 -190 585 694 ;
+U 10776 ; WX 450 ; N uni2A18 ; G 27 ; B 48 -190 412 694 ;
+U 10777 ; WX 450 ; N uni2A19 ; G 28 ; B 59 -190 403 694 ;
+U 10778 ; WX 450 ; N uni2A1A ; G 29 ; B 59 -190 403 694 ;
+U 10779 ; WX 379 ; N uni2A1B ; G 30 ; B 68 -189 416 784 ;
+U 10780 ; WX 357 ; N uni2A1C ; G 31 ; B 52 -283 400 690 ;
+EndCharMetrics
+EndFontMetrics

@@ -1,0 +1,47 @@
+StartFontMetrics 4.1
+FontName STIXIntegralsUp-Bold
+FullName STIXIntegralsUp-Bold
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXIntegralsUp
+Weight Bold
+Version Version 1.1.0
+Characters 31
+ItalicAngle 0.0
+Ascender 1055
+Descender -455
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox 35 -455 1337 959
+StartCharMetrics 284
+U 32 ; WX 250 ; N space ; G 3 ; B 59 -320 467 824 ;
+U 160 ; WX 250 ; N uni00A0 ; G 4 ; B 59 -320 467 824 ;
+U 8747 ; WX 425 ; N uni222B ; G 5 ; B 59 -320 467 824 ;
+U 8748 ; WX 715 ; N uni222C ; G 6 ; B 59 -320 757 824 ;
+U 8749 ; WX 1005 ; N uni222D ; G 7 ; B 59 -320 1047 824 ;
+U 8750 ; WX 394 ; N uni222E ; G 8 ; B 35 -310 483 834 ;
+U 8751 ; WX 650 ; N uni222F ; G 9 ; B 35 -320 739 824 ;
+U 8752 ; WX 951 ; N uni2230 ; G 10 ; B 54 -320 1047 824 ;
+U 8753 ; WX 484 ; N uni2231 ; G 11 ; B 54 -320 553 824 ;
+U 8754 ; WX 445 ; N uni2232 ; G 12 ; B 35 -320 534 824 ;
+U 8755 ; WX 456 ; N uni2233 ; G 13 ; B 35 -320 545 824 ;
+U 10764 ; WX 1295 ; N uni2A0C ; G 14 ; B 59 -320 1337 824 ;
+U 10765 ; WX 511 ; N uni2A0D ; G 15 ; B 59 -320 553 824 ;
+U 10766 ; WX 511 ; N uni2A0E ; G 16 ; B 59 -320 553 824 ;
+U 10767 ; WX 592 ; N uni2A0F ; G 17 ; B 59 -320 634 824 ;
+U 10768 ; WX 385 ; N uni2A10 ; G 18 ; B 35 -320 474 824 ;
+U 10769 ; WX 484 ; N uni2A11 ; G 19 ; B 54 -320 553 824 ;
+U 10770 ; WX 417 ; N uni2A12 ; G 20 ; B 35 -320 486 824 ;
+U 10771 ; WX 424 ; N uni2A13 ; G 21 ; B 54 -320 493 824 ;
+U 10772 ; WX 535 ; N uni2A14 ; G 22 ; B 54 -320 604 824 ;
+U 10773 ; WX 416 ; N uni2A15 ; G 23 ; B 35 -320 505 824 ;
+U 10774 ; WX 459 ; N uni2A16 ; G 24 ; B 35 -320 528 824 ;
+U 10775 ; WX 824 ; N uni2A17 ; G 25 ; B 45 -320 884 824 ;
+U 10776 ; WX 527 ; N uni2A18 ; G 26 ; B 45 -320 587 824 ;
+U 10777 ; WX 567 ; N uni2A19 ; G 27 ; B 45 -320 632 824 ;
+U 10778 ; WX 567 ; N uni2A1A ; G 28 ; B 45 -320 632 824 ;
+U 10779 ; WX 479 ; N uni2A1B ; G 29 ; B 45 -320 521 959 ;
+U 10780 ; WX 411 ; N uni2A1C ; G 30 ; B 35 -455 511 824 ;
+EndCharMetrics
+EndFontMetrics

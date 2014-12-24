@@ -1,0 +1,40 @@
+StartFontMetrics 4.1
+FontName STIXSizeOneSym-Bold
+FullName STIXSizeOneSym-Bold
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXSizeOneSym
+Weight Bold
+Version Version 1.1.0
+Characters 24
+ItalicAngle 0.0
+Ascender 1588
+Descender -363
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox 1 -241 1321 1588
+StartCharMetrics 269
+U 32 ; WX 250 ; N space ; G 3 ; B 158 -126 439 1104 ;
+U 40 ; WX 468 ; N parenleft ; G 4 ; B 158 -126 439 1104 ;
+U 41 ; WX 468 ; N parenright ; G 5 ; B 29 -126 310 1104 ;
+U 47 ; WX 579 ; N slash ; G 6 ; B 14 -126 564 1104 ;
+U 91 ; WX 408 ; N bracketleft ; G 7 ; B 186 -126 407 1104 ;
+U 92 ; WX 579 ; N uni005C ; G 8 ; B 14 -126 564 1104 ;
+U 93 ; WX 408 ; N bracketright ; G 9 ; B 1 -126 222 1104 ;
+U 123 ; WX 595 ; N braceleft ; G 10 ; B 115 -126 503 1104 ;
+U 125 ; WX 595 ; N braceright ; G 11 ; B 92 -126 480 1104 ;
+U 160 ; WX 250 ; N uni00A0 ; G 12 ; B 60 22 1281 1500 ;
+U 8512 ; WX 1341 ; N uni2140 ; G 13 ; B 60 22 1281 1500 ;
+U 8719 ; WX 1355 ; N uni220F ; G 14 ; B 35 49 1321 1500 ;
+U 8720 ; WX 1355 ; N uni2210 ; G 15 ; B 34 49 1320 1500 ;
+U 8721 ; WX 1292 ; N uni2211 ; G 16 ; B 60 49 1215 1500 ;
+U 8730 ; WX 1061 ; N uni221A ; G 17 ; B 109 -241 1119 1588 ;
+U 8968 ; WX 476 ; N uni2308 ; G 18 ; B 186 -126 470 1104 ;
+U 8969 ; WX 476 ; N uni2309 ; G 19 ; B 6 -126 292 1104 ;
+U 8970 ; WX 476 ; N uni230A ; G 20 ; B 184 -126 470 1104 ;
+U 8971 ; WX 476 ; N uni230B ; G 21 ; B 6 -126 290 1104 ;
+U 10216 ; WX 579 ; N uni27E8 ; G 22 ; B 99 -126 481 1104 ;
+U 10217 ; WX 579 ; N uni27E9 ; G 23 ; B 98 -126 480 1104 ;
+EndCharMetrics
+EndFontMetrics

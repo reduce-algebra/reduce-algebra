@@ -1,0 +1,47 @@
+StartFontMetrics 4.1
+FontName STIXIntegralsD-Bold
+FullName STIXIntegralsD-Bold
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXIntegralsD
+Weight Bold
+Version Version 1.1.0
+Characters 31
+ItalicAngle -14.0
+Ascender 2182
+Descender -451
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox 24 -451 2330 2182
+StartCharMetrics 284
+U 32 ; WX 250 ; N space ; G 3 ; B 56 -269 1136 2000 ;
+U 160 ; WX 250 ; N uni00A0 ; G 4 ; B 56 -269 1136 2000 ;
+U 8747 ; WX 686 ; N uni222B ; G 5 ; B 56 -269 1136 2000 ;
+U 8748 ; WX 1084 ; N uni222C ; G 6 ; B 56 -269 1534 2000 ;
+U 8749 ; WX 1482 ; N uni222D ; G 7 ; B 56 -269 1932 2000 ;
+U 8750 ; WX 736 ; N uni222E ; G 8 ; B 56 -269 1136 2000 ;
+U 8751 ; WX 1134 ; N uni222F ; G 9 ; B 56 -269 1534 2000 ;
+U 8752 ; WX 1532 ; N uni2230 ; G 10 ; B 56 -269 1932 2000 ;
+U 8753 ; WX 736 ; N uni2231 ; G 11 ; B 56 -269 1136 2000 ;
+U 8754 ; WX 736 ; N uni2232 ; G 12 ; B 56 -269 1136 2000 ;
+U 8755 ; WX 736 ; N uni2233 ; G 13 ; B 56 -269 1136 2000 ;
+U 10764 ; WX 1880 ; N uni2A0C ; G 14 ; B 56 -269 2330 2000 ;
+U 10765 ; WX 736 ; N uni2A0D ; G 15 ; B 56 -269 1136 2000 ;
+U 10766 ; WX 736 ; N uni2A0E ; G 16 ; B 56 -269 1136 2000 ;
+U 10767 ; WX 736 ; N uni2A0F ; G 17 ; B 56 -269 1136 2000 ;
+U 10768 ; WX 736 ; N uni2A10 ; G 18 ; B 56 -269 1136 2000 ;
+U 10769 ; WX 736 ; N uni2A11 ; G 19 ; B 56 -269 1136 2000 ;
+U 10770 ; WX 836 ; N uni2A12 ; G 20 ; B 56 -269 1136 2000 ;
+U 10771 ; WX 736 ; N uni2A13 ; G 21 ; B 56 -269 1136 2000 ;
+U 10772 ; WX 926 ; N uni2A14 ; G 22 ; B 56 -269 1136 2000 ;
+U 10773 ; WX 736 ; N uni2A15 ; G 23 ; B 56 -269 1136 2000 ;
+U 10774 ; WX 836 ; N uni2A16 ; G 24 ; B 56 -269 1136 2000 ;
+U 10775 ; WX 911 ; N uni2A17 ; G 25 ; B 24 -269 1131 2000 ;
+U 10776 ; WX 736 ; N uni2A18 ; G 26 ; B 56 -269 1136 2000 ;
+U 10777 ; WX 836 ; N uni2A19 ; G 27 ; B 56 -269 1136 2000 ;
+U 10778 ; WX 836 ; N uni2A1A ; G 28 ; B 56 -269 1136 2000 ;
+U 10779 ; WX 746 ; N uni2A1B ; G 29 ; B 56 -269 1146 2182 ;
+U 10780 ; WX 696 ; N uni2A1C ; G 30 ; B 56 -451 1146 2000 ;
+EndCharMetrics
+EndFontMetrics

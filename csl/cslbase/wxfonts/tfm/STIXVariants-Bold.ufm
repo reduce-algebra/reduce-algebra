@@ -1,0 +1,56 @@
+StartFontMetrics 4.1
+FontName STIXVariants-Bold
+FullName STIXVariants-Bold
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXVariants
+Weight Bold
+Version Version 1.1.0
+Characters 40
+ItalicAngle 0.0
+Ascender 1055
+Descender -455
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox 0 -293 1306 943
+StartCharMetrics 292
+U 32 ; WX 250 ; N space ; G 3 ; B 126 -189 214 691 ;
+U 124 ; WX 340 ; N uni007C ; G 4 ; B 126 -189 214 691 ;
+U 160 ; WX 250 ; N uni00A0 ; G 5 ; B 60 0 526 666 ;
+U 411 ; WX 536 ; N uni019B ; G 6 ; B 60 0 526 666 ;
+U 8242 ; WX 394 ; N uni2032 ; G 7 ; B 44 12 350 586 ;
+U 8243 ; WX 713 ; N uni2033 ; G 8 ; B 44 12 669 586 ;
+U 8244 ; WX 1032 ; N uni2034 ; G 9 ; B 44 12 988 586 ;
+U 8245 ; WX 394 ; N uni2035 ; G 10 ; B 44 12 350 586 ;
+U 8246 ; WX 713 ; N uni2036 ; G 11 ; B 44 12 669 586 ;
+U 8247 ; WX 1032 ; N uni2037 ; G 12 ; B 44 12 988 586 ;
+U 8279 ; WX 1351 ; N uni2057 ; G 13 ; B 43 12 1306 586 ;
+U 8512 ; WX 780 ; N uni2140 ; G 14 ; B 55 0 725 691 ;
+U 8592 ; WX 428 ; N uni2190 ; G 15 ; B 68 55 428 451 ;
+U 8593 ; WX 556 ; N uni2191 ; G 16 ; B 80 -15 476 680 ;
+U 8594 ; WX 428 ; N uni2192 ; G 17 ; B 0 55 360 451 ;
+U 8595 ; WX 556 ; N uni2193 ; G 18 ; B 80 -15 476 680 ;
+U 8657 ; WX 714 ; N uni21D1 ; G 19 ; B 40 -15 674 600 ;
+U 8659 ; WX 714 ; N uni21D3 ; G 20 ; B 40 -15 674 600 ;
+U 8709 ; WX 584 ; N uni2205 ; G 21 ; B 36 -74 548 729 ;
+U 8719 ; WX 734 ; N uni220F ; G 22 ; B 27 0 707 676 ;
+U 8720 ; WX 734 ; N uni2210 ; G 23 ; B 27 0 707 676 ;
+U 8721 ; WX 690 ; N uni2211 ; G 24 ; B 39 0 649 676 ;
+U 8726 ; WX 518 ; N uni2216 ; G 25 ; B 45 -193 473 732 ;
+U 8730 ; WX 800 ; N uni221A ; G 26 ; B 112 28 844 943 ;
+U 8733 ; WX 750 ; N uni221D ; G 27 ; B 56 0 687 431 ;
+U 8739 ; WX 290 ; N uni2223 ; G 28 ; B 89 -19 201 451 ;
+U 8772 ; WX 750 ; N uni2244 ; G 29 ; B 68 -45 683 543 ;
+U 8775 ; WX 750 ; N uni2247 ; G 30 ; B 68 -144 683 648 ;
+U 8777 ; WX 750 ; N uni2249 ; G 31 ; B 68 -64 683 598 ;
+U 8800 ; WX 750 ; N uni2260 ; G 32 ; B 68 -183 682 687 ;
+U 8802 ; WX 750 ; N uni2262 ; G 33 ; B 68 -243 682 747 ;
+U 8808 ; WX 750 ; N uni2268 ; G 34 ; B 80 -293 670 728 ;
+U 8809 ; WX 750 ; N uni2269 ; G 35 ; B 80 -293 670 728 ;
+U 8814 ; WX 750 ; N uni226E ; G 36 ; B 80 -166 670 672 ;
+U 8815 ; WX 750 ; N uni226F ; G 37 ; B 80 -166 670 672 ;
+U 8816 ; WX 750 ; N uni2270 ; G 38 ; B 80 -236 670 742 ;
+U 8817 ; WX 750 ; N uni2271 ; G 39 ; B 80 -236 670 742 ;
+EndCharMetrics
+EndFontMetrics

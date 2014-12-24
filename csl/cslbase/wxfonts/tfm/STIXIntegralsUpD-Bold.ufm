@@ -1,0 +1,47 @@
+StartFontMetrics 4.1
+FontName STIXIntegralsUpD-Bold
+FullName STIXIntegralsUpD-Bold
+Notice Copyright [c] 2001-2011 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physic
+EncodingScheme FontSpecific
+FamilyName STIXIntegralsUpD
+Weight Bold
+Version Version 1.1.0
+Characters 31
+ItalicAngle 0.0
+Ascender 2182
+Descender -451
+UnderlineThickness 20
+UnderlinePosition -123
+IsFixedPitch false
+FontBBox -35 -451 1640 2182
+StartCharMetrics 284
+U 32 ; WX 250 ; N space ; G 3 ; B 58 -269 560 2000 ;
+U 160 ; WX 250 ; N uni00A0 ; G 4 ; B 58 -269 560 2000 ;
+U 8747 ; WX 515 ; N uni222B ; G 5 ; B 58 -269 560 2000 ;
+U 8748 ; WX 875 ; N uni222C ; G 6 ; B 58 -269 920 2000 ;
+U 8749 ; WX 1239 ; N uni222D ; G 7 ; B 59 -269 1281 2000 ;
+U 8750 ; WX 626 ; N uni222E ; G 8 ; B 56 -269 695 2000 ;
+U 8751 ; WX 1039 ; N uni222F ; G 9 ; B 39 -269 1039 2000 ;
+U 8752 ; WX 1384 ; N uni2230 ; G 10 ; B 36 -269 1395 2000 ;
+U 8753 ; WX 632 ; N uni2231 ; G 11 ; B 47 -269 760 2000 ;
+U 8754 ; WX 639 ; N uni2232 ; G 12 ; B 56 -269 769 2000 ;
+U 8755 ; WX 598 ; N uni2233 ; G 13 ; B 56 -269 778 2000 ;
+U 10764 ; WX 1595 ; N uni2A0C ; G 14 ; B 58 -269 1640 2000 ;
+U 10765 ; WX 552 ; N uni2A0D ; G 15 ; B -35 -269 590 2000 ;
+U 10766 ; WX 642 ; N uni2A0E ; G 16 ; B 35 -269 680 2000 ;
+U 10767 ; WX 675 ; N uni2A0F ; G 17 ; B 25 -269 752 2000 ;
+U 10768 ; WX 640 ; N uni2A10 ; G 18 ; B 56 -269 646 2000 ;
+U 10769 ; WX 632 ; N uni2A11 ; G 19 ; B 47 -269 760 2000 ;
+U 10770 ; WX 625 ; N uni2A12 ; G 20 ; B 58 -269 654 2000 ;
+U 10771 ; WX 557 ; N uni2A13 ; G 21 ; B 58 -269 626 2000 ;
+U 10772 ; WX 708 ; N uni2A14 ; G 22 ; B 58 -269 789 2000 ;
+U 10773 ; WX 626 ; N uni2A15 ; G 23 ; B 56 -269 695 2000 ;
+U 10774 ; WX 718 ; N uni2A16 ; G 24 ; B 56 -269 747 2000 ;
+U 10775 ; WX 963 ; N uni2A17 ; G 25 ; B 24 -269 1057 2000 ;
+U 10776 ; WX 681 ; N uni2A18 ; G 26 ; B 62 -269 692 2000 ;
+U 10777 ; WX 832 ; N uni2A19 ; G 27 ; B 65 -269 898 2000 ;
+U 10778 ; WX 832 ; N uni2A1A ; G 28 ; B 65 -269 898 2000 ;
+U 10779 ; WX 733 ; N uni2A1B ; G 29 ; B 0 -269 773 2182 ;
+U 10780 ; WX 525 ; N uni2A1C ; G 30 ; B 58 -451 831 2000 ;
+EndCharMetrics
+EndFontMetrics
