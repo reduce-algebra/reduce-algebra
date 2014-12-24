@@ -1,10 +1,10 @@
 #! /bin/bash
 
-for x in STIX*.ttf
+for x in *.ttf
 do
   echo ttf2ufm -a -F $x ${x%.ttf}
   ttf2ufm -a -F $x ${x%.ttf}
 done
 
-mv STIX*.ufm tfm
+mv *.ufm tfm
 
