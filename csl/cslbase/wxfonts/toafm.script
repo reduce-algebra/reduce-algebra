@@ -1,0 +1,13 @@
+# Quick and dirty hack: generate a Postscript version of a font - the main
+# reason for doing this is that a metric (.afm) file gets created at the
+# same time and that is what I want!
+# Found on http://www.stuermer.ch/blog/convert-otf-to-ttf-font-on-ubuntu.html
+# where credit is given to Thomas Maier.
+#
+# Since this is so short and merely scripts fontforge a bit I feel reasonably
+# comfortable including it here...
+Print("Opening "+$1);
+Open($1);
+Print("Saving "+$1:r+".ps");
+Generate($1:r+".ps");
+Quit(0);
