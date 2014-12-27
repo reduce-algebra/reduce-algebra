@@ -65,23 +65,28 @@ gosper_representation:=nil;
 zeilberger_representation:=nil;
 
 % operator gamma,binomial;   % Now in entry.red.
-operator hypergeom,pochhammer;
+symbolic <<
+   (algebraic operator hypergeom,pochhammer) where !*msg = nil>>;
 operator summ,zb_f,zb_sigma;
 operator local_gamma,local_prod;
-gamma1!*rules:={
-gamma(~k)=> factorial(k-1)
- when fixp(k) and k>0
-};
-let gamma1!*rules;
-
-pochhammer!*rules:={
-pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
-   when fixp k and k < 20 and k > 0,
-pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
-   when fixp z and z > 0
-};
-
-let pochhammer!*rules;
+%%%
+%%%Rules for gamma and pochhammer now part of the core
+%%%
+%%gamma1!*rules:={
+%%gamma(~k)=> factorial(k-1)
+%% when fixp(k) and k>0
+%%};
+%%let gamma1!*rules;
+%%
+%%pochhammer!*rules:={
+%%pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
+%%   when fixp k and k < 20 and k > 0,
+%%pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
+%%   when fixp z and z > 0
+%%};
+%%
+%%
+%%let pochhammer!*rules;
 
 onerules:=
 {gamma(~zb_x)=>1,
