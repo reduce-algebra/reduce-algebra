@@ -975,7 +975,7 @@ remflag('(rcons),'lose);   % We must use this definition.
 symbolic procedure rcons u;
    begin scalar x,y;
       argnochk ('cons . u);
-      if (y := getrtype(x := revlis u)) eq 'hvector
+      if (y := getrtypeor(x := revlis u)) eq 'hvector
         then return if get('cons,'opmtch) and (z := opmtch('cons . x))
                    then reval z
                  else prepsq subs2 simpdot x
