@@ -958,7 +958,8 @@ symbolic;
 % Cross-product is easy : we simply tell Reduce that up-arrow is a
 %  synonym for CROSS
 
-newtok '((!^) cross);
+%% Commented out since it interferes with exponentiation
+%%newtok '((!^) cross);
 
 % Dot is more difficult : the period (.) is already defined as the
 %  CONS function, and unfortunately REVAL1 spots this before it
