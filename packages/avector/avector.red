@@ -975,15 +975,17 @@ remflag('(rcons),'lose);   % We must use this definition.
 symbolic procedure rcons u;
    begin scalar x,y;
       argnochk ('cons . u);
-      if (y := getrtype(x := reval cadr u)) eq 'vector
-        then return mk!*sq simpdot u
+      if (y := getrtype(x := revlis u)) eq 'hvector
+        then return if get('cons,'opmtch) and (z := opmtch('cons . x))
+                   then reval z
+                 else prepsq subs2 simpdot x
 % The following line was added to enable . to be used as vector product
 % (Amended by M. MacCallum)
        else if (y eq '!3vector)
          then return apply('vectordot,
                            {for each j in u collect vecsimp!* j})
-       else if not(y eq 'list) then typerr(x,"list")
-       else return 'list . reval car u . cdr x
+       else if not(getrtype cadr x eq 'list) then typerr(x,"list")
+       else return 'list . car x . cdadr x
    end;
 
 vectorfn('cons,'vectordot);
