@@ -616,7 +616,7 @@ int main(int argc, char *argv[])
 fprintf(dest, "// charmetrics.h                           Copyright (C) 2014 Codemist Ltd\n");
 fprintf(dest, "\n");
 fprintf(dest, "\n");
-fprintf(dest, "// $ Id: $\n");
+fprintf(dest, "// $Id$\n");
 fprintf(dest, "\n");
 fprintf(dest, "\n");
 fprintf(dest, "/**************************************************************************\n");
