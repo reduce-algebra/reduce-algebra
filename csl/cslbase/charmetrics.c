@@ -1,7 +1,7 @@
 // charmetrics.c                           Copyright (C) 2014 Codemist Ltd
 
 
-// $Id: charmetrics.c 2688 2014-09-20 16:52:18Z arthurcnorman $
+// $Id$
 
 
 /**************************************************************************
