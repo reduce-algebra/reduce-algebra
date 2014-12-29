@@ -163,6 +163,9 @@ symbolic procedure getrtype2 u;
               else if (x:= get(car u,'rtype)) and (x:= get(x,'rtypefn))
                then apply1(x,cdr u)
               else if x := get(car u,'rtypefn) then apply1(x,cdr u)
+ 	      else if flagp(car u,'matmapfn) and cdr u
+                 and getrtype cadr u eq 'matrix
+               then 'matrix
               else nil
    end;
 
@@ -973,7 +976,7 @@ symbolic;
 remflag('(rcons),'lose);   % We must use this definition.
 
 symbolic procedure rcons u;
-   begin scalar x,y;
+   begin scalar x,y,z;
       argnochk ('cons . u);
       if (y := getrtypeor(x := revlis u)) eq 'hvector
         then return if get('cons,'opmtch) and (z := opmtch('cons . x))
