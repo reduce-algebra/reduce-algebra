@@ -57,7 +57,13 @@ symbolic procedure addsq(u,v);
         y := addf(multf(denr z,numr u),multf(numr z,numr v));
         if null y then return nil ./ 1;
         z := multf(denr u,denr z);
-        return if x=1 or (x := gcdf(y,x))=1 then y ./ z
+        if (x := gcdf(y,x)) neq 1 then <<y := quotf(y,x);
+                                         z := quotf(z,x)>>;
+        if !*gcd then return if x=1 then y ./ z else canonsq(y ./ z);
+% If gcd is off (which is the default) y and z can still have an
+% incomplete gcd. Therefore to ensure full simplification we need to
+% take (the incomplete) gcd of y and z and divide it out.
+        return if (x := gcdf(y,z))=1 then canonsq(y ./ z)
                 else canonsq(quotf(y,x) ./ quotf(z,x))
     end;
 
