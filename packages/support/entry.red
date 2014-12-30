@@ -288,6 +288,10 @@ defautoload(nullspace!-eval,matrix);
 
 put('nullspace,'psopfn,'nullspace!-eval);
 
+defautoload(readmatproc,'(matrix),expr,0);
+
+put('matrixproc,'stat,'readmatproc);
+
 % ODESolve entry point.
 
 put('odesolve,'psopfn,'odesolve!-eval);
