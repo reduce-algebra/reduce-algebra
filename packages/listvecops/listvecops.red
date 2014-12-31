@@ -72,6 +72,9 @@ symbolic procedure listdifference2(u,v,w);
 
 put('difference,'listfn,'listdifference);
 
+put('difference,'rtypefn,'getrtypeor); % This is different from the default.
+                                       % It is needed to process aggregates.
+
 symbolic procedure listminus(u,v);
    begin scalar x;
      x := reval1(car u,v);
