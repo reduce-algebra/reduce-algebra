@@ -34,6 +34,14 @@
  *************************************************************************/
 
 
+#ifdef CREATE
+#include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 // This takes a bunch of font information files and creates some C
 // tables that can be used to access the information rapidly.
 
@@ -41,13 +49,29 @@
 // inspects the raw font metric and kerning files and creates a file
 // called charmetrics.h containing a packed version of it. Otherwise it
 // makes the code that inspects those tables and retrieves information.
+// The "raw" input files are in ".afm" (Adobe Font Metric) format and
+// the ones I use here were created from some .otf and .ttf font files
+// using fontforge. The fonts I start from have generous licenses that
+// permit re-distribution and so even more so I will hold that the
+// file generated here that contains metrics is not subject to any
+// severe limits on its use.
 
+// I also generate a charmetrics.red that can give access to the same
+// information from within Reduce...
 
 // I have inspected the fonts that concern me and the sizes
 // shown here will suffice. There are less than 32000 characters in
 // total defined in all of the fonts I have (fireflysung is by far
 // the biggest with over 17K characters defined). There are also less
 // then 5000 kerning pairs listed. I will in fact have 31 distinct fonts.
+
+// The code to create the font data tables is very careless and would
+// be thoroughly succeptible to all sorts of bad effects from buffer overflow
+// if it were ever to be fed font files other than the ones distributed with
+// it. Here I follow a path of fixed and unchecked size limits in a search
+// for code simplicity in a utility I only intend for use in a single
+// context. But anybody minded to add extra fonts MUST be aware and should
+// check all the limits before running anything.
 
 // "wx -L" tells me that all my font-metric files have lines that are
 // less than 750 characters long. The worst case is for the cmuntt font
@@ -64,13 +88,6 @@
 #define MAXLIGATURES 100
 #define MAXLINE  750
 
-#ifdef CREATE
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #else // CREATE
 #ifdef TEST
 #include <stdio.h>
@@ -83,6 +100,9 @@
 
 #include "charmetrics.h"  // A file I must have created earlier
 #endif // CREATE
+
+#define IS_LIGATURE 0x00200000
+#define IS_BLOCKEND 0x00400000
 
 // The list of font codes here must be kept in step with the list
 // of names in the table.
@@ -237,10 +257,9 @@ static int pack_character(int font, int codepoint)
 //                        77 cases of ligatures in all so this final
 //                        table is not too bulky.
 // The kern information starts at offset 1 so that a kern index of zero can
-// indicate no kerning is needed. If two leading characters had identical
-// kerning information this would allow that to be shared. The range of
-// kern adjustment I see in my fonts is -149 to 87, and so the 9-bit
-// field I have (coping with -256 to +255) will suffice.
+// indicate no kerning is needed. The range of kern adjustment I see in my
+// fonts is -149 to 87, and so the 9-bit field I have (coping with -256 to
+// +255) will suffice.
 //
 // For successful lookups the cost is best for items that were inserted
 // into the table first. In this case I view it as an optimisation to put
@@ -272,6 +291,7 @@ static int32_t   lly[MAXCHARS];
 static int32_t   urx[MAXCHARS];
 static int32_t   ury[MAXCHARS];
 static char      uninames[MAXCHARS][MAXUNILEN];
+static int       kernreference[MAXCHARS];
 
 // For ligature information I will store the identity of the
 // start character and then the names of the follower and the
@@ -282,6 +302,8 @@ static int       ligfont[MAXLIGATURES];
 static int32_t   ligstart[MAXLIGATURES];
 static char      ligfollow[MAXLIGATURES][MAXUNILEN];
 static char      ligreplacement[MAXLIGATURES][MAXUNILEN];
+static int32_t   ligfollowcode[MAXLIGATURES];
+static int32_t   ligreplacementcode[MAXLIGATURES];
 
 // For kerning information I will store the identity of the
 // start and follow characters and the integer adjustment to be made.
@@ -291,10 +313,43 @@ static int       kernfont[MAXKERNS];
 static char      kernstart[MAXKERNS][MAXUNILEN];
 static char      kernfollow[MAXKERNS][MAXUNILEN];
 static int       kernadjustment[MAXKERNS];
+static int32_t   kernstartcode[MAXKERNS];
+static int32_t   kernfollowcode[MAXKERNS];
 
 static int kernp = 0;
-static uint16_t fontkern[F_end];
+static int16_t  fontkern[F_end];
 static uint32_t kerntable[MAXKERNS];
+static char     ktstart[MAXKERNS][MAXUNILEN];
+static char     ktfollow[MAXKERNS][MAXUNILEN];
+static int      ktadjustment[MAXKERNS];
+static char     ktfont[MAXKERNS][32];
+static int      ktfontn[MAXKERNS];
+
+static int ligp = 0;
+static uint32_t ligtable[MAXLIGATURES];
+static char ltfirst[MAXLIGATURES][MAXUNILEN],
+            ltfollow[MAXLIGATURES][MAXUNILEN],
+            ltname[MAXLIGATURES][MAXUNILEN],
+            ltfont[MAXLIGATURES][32];
+
+// It will be necessary at times to look up a name given its name
+
+int32_t decodename(int fontnum, const char *name)
+{
+    int i;
+    for (i=0; i<charcount; i++)
+        if (fontnum == fontkey[i] &&
+            strcmp(name, uninames[i]) == 0)
+    {
+#if 0
+        printf("Font %s name %s decodes to codepoint %d\n",
+               fontnames[fontnum], name, codepoint[i]);
+#endif
+        return codepoint[i];
+    }
+    printf("Character called %s not found in font %d\n", name, fontnum);
+    exit(EXIT_FAILURE);
+}
 
 // The hash table will end up holding information about around 32000
 // characters. It is arranged in lines each of which store data on
@@ -333,7 +388,7 @@ int main(int argc, char *argv[])
     FILE *src;
     char filename[100];
     int i, probes = 0, p1 = 0, p2 = 0, n1 = 0, n2 = 0, occupancy = 0;
-    charcount = 0;
+    nkerns = charcount = 0;
 // I will map characters from u+000000 to u+01ffff but not beyond - that
 // way I will only need 17 bits to specify a codepoint.
     for (fontnum=0; fontnum<F_end; fontnum++)
@@ -345,14 +400,22 @@ int main(int argc, char *argv[])
         {   printf("Unable to access %s\n", filename);
             exit(EXIT_FAILURE);
         }
-        nkerns = 0; // count kern info just within this font
         for (;;)
         {   int ia, ib, ic, id;
             int32_t cp, wid, bb1, bb2, bb3, bb4;
             char unn[MAXLINE], lig1[MAXLINE], lig2[MAXLINE];
+            cp = -1;
+            wid = bb1 = bb2 = bb3 = bb4 = 0;
+            unn[0] = lig1[0] = lig2[0] = 0;
+            ia = ib = ic = id = 0;
             if (fgets(line, sizeof(line)-1, src) == NULL) break;
+            if (strncmp(line, "EndFontMetrics", 14) == 0) break;
             ia = (int)strlen(line);
-            if (ia > 0) line[ia-1] = 0; // discard final newline
+            while (ia >= 0 &&
+                   (line[ia] == 0 || line[ia] == '\n' || line[ia] == '\r'))
+                ia--;
+            line[ia+1] = 0; // discard final newline
+            if (ia == 0) break;
             strcpy(saveline, line);
             if (strncmp(line, "StartCharMetrics", 16) == 0)
             {   relevant = 1;
@@ -376,6 +439,9 @@ int main(int argc, char *argv[])
                     strcpy(kernstart[nkerns], lig1);
                     strcpy(kernfollow[nkerns], lig2);
                     kernadjustment[nkerns] = ia;
+#if 0
+                    printf("[%d] %s + %s => %d\n", nkerns, lig1, lig2, ia);
+#endif
                     nkerns++;
                 }
                 else
@@ -428,6 +494,7 @@ int main(int argc, char *argv[])
                     }
                     if (cp == -1)
                     {   if (sscanf(unn, "u%x", &ia) == 1) cp = ia;
+                        else if (sscanf(unn, "uni%x", &ia) == 1) cp = ia;
                         else if (strcmp(unn, ".notdef") != 0)
                             printf("Dodgy character: %s\n", saveline);
                     }
@@ -455,11 +522,19 @@ int main(int argc, char *argv[])
                     {   printf("Bad segment \"%s\" in .afm file\n", p);
                         exit(EXIT_FAILURE);
                     }
-                    ligfont[nligatures] = fontnum;
-                    ligstart[nligatures] = cp;
-                    strcpy(ligfollow[nligatures], lig1);
-                    strcpy(ligreplacement[nligatures], lig2);
-                    nligatures++;
+// I observe some redundant ligature statements in the font metrics I use,
+// so that the same information appears twice in a row. I filter that
+// case out here.
+                    if (nligatures == 0 ||
+                        fontnum != ligfont[nligatures-1] ||
+                        cp != ligstart[nligatures-1] ||
+                        strcmp(lig1, ligfollow[nligatures-1]) != 0)
+                    {   ligfont[nligatures] = fontnum;
+                        ligstart[nligatures] = cp;
+                        strcpy(ligfollow[nligatures], lig1);
+                        strcpy(ligreplacement[nligatures], lig2);
+                        nligatures++;
+                    }
                     break;
                 case 0:
                     break;
@@ -474,9 +549,10 @@ int main(int argc, char *argv[])
 // The information I now have is
 // fontnum, cp                          key
 // wid, bb1, bb2, bb3, bb4, unn         data
-            if (cp == -1) continue;
             if (cp < 0 || cp > 0x01ffff)
-            {   printf("Discarding character with codepoint %d\n", cp);
+            {   if (strcmp(unn, ".notdef") != 0)
+                    printf("Discarding character <%s> with codepoint %d\n",
+                           unn, cp);
                 continue;
             }
             if (cp >= 0xd000 && cp < 0xe000)
@@ -487,6 +563,7 @@ int main(int argc, char *argv[])
             fontkey[charcount] = fontnum;
             codepoint[charcount] = cp;
             width[charcount] = wid;
+            strcpy(uninames[charcount], unn);
             llx[charcount] = bb1;
             lly[charcount] = bb2;
             urx[charcount] = bb3;
@@ -495,72 +572,136 @@ int main(int argc, char *argv[])
         }
         fclose(src);
     }
-// Start to move kern information...
-    fontkern[fontnum] = kernp;
+    printf("About to resolve kern and ligature names\n");
+    printf("nkerns = %d nligatures = %d\n", nkerns, nligatures);
+    for (i=0; i<nkerns; i++)
+        kernstartcode[i] = decodename(kernfont[i], kernstart[i]);
+    for (i=0; i<nkerns; i++)
+        kernfollowcode[i] = decodename(kernfont[i], kernfollow[i]);
+    for (i=0; i<nligatures; i++)
+        ligfollowcode[i] = decodename(ligfont[i], ligfollow[i]);
+    for (i=0; i<nligatures; i++)
+        ligreplacementcode[i] = decodename(ligfont[i], ligreplacement[i]);
 // Now I have read everything. I should now transfer information from the
 // raw tables it is in at present into the hash table I want it to end up in.
     for (i=0; i<HASHTABLESIZE; i++)
     {   int j;
         for (j=0; j<10; j++) hashtable[i][j] = 0;
     }
-    for (i=0; i<charcount; i++)
-    {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
-        int key = fullkey >> 2; // because my hash table has line-size 4
+// Before I fill in the main hash table I need to collect kern and ligature
+// information.
+    kernp = ligp = 0;
+    for (fontnum=0; fontnum<F_end; fontnum++)
+    {   fontkern[fontnum] = kernp-1;
+        for (i=0; i<charcount; i++)
+        {   int j, v, kkk = 0;
+// I wish to process all chars from each font in order. In fact they will
+// be in my table that way, but I still code things to scan once for each font.
+            if (fontkey[i] != fontnum) continue;
+// Now I will transfer any ligature and kern info about this character
+// into kerntable & ligtable.
+            v = 0;
+            for (j=0; j<nkerns; j++)
+            {   if (kernfont[j] == fontnum &&
+                    kernstartcode[j] == codepoint[i])
+                {   strcpy(ktstart[kernp], kernstart[j]);
+                    strcpy(ktfollow[kernp], kernfollow[j]);
+                    ktadjustment[kernp] = kernadjustment[j];
+                    strcpy(ktfont[kernp], fontnames[fontnum]);
+                    ktfontn[kernp] = fontnum;
+                    if (kkk == 0) kkk = kernp | 0x80000000;
+                    kerntable[kernp++] =
+                        (kernadjustment[j]<<23) | kernfollowcode[j];
+                    v = 1;
+                }
+            }
+            for (j=0; j<nligatures; j++)
+            {   if (ligfont[j] == fontnum &&
+                    ligstart[j] == codepoint[i])
+                {   strcpy(ktstart[kernp], uninames[i]);
+                    strcpy(ktfollow[kernp], ligfollow[j]);
+                    ktadjustment[kernp] = 9999;
+                    strcpy(ktfont[kernp], fontnames[fontnum]);
+                    ktfontn[kernp] = fontnum;
+                    if (kkk == 0) kkk = kernp | 0x80000000;
+                    kerntable[kernp++] =
+                        (ligp<<23) | IS_LIGATURE | ligfollowcode[j];
+                    strcpy(ltfirst[ligp], uninames[i]);
+                    strcpy(ltfollow[ligp], ligfollow[j]);
+                    strcpy(ltname[ligp], ligreplacement[j]);
+                    strcpy(ltfont[ligp], fontnames[fontnum]);
+                    ligtable[ligp++] = ligreplacementcode[j];
+                    v = 1;
+                }
+            }
+            if (v) kerntable[kernp-1] |= IS_BLOCKEND;
+#if 0
+            if (kkk != 0)
+                printf("Setting kernreference %d (cp=%d/%c) to %d\n",
+                       i, codepoint[i],
+                       ((33 <= codepoint[i] && codepoint[i] < 0x7f) ?
+                        codepoint[i] : '?'),
+                       kkk & 0x7fffffff);
+#endif
+            kernreference[i] = kkk;
+        }
+    }
+
+    for (fontnum=0; fontnum<F_end; fontnum++)
+    {   for (i=0; i<charcount; i++)
+        {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
+            int key = fullkey >> 2; // because my hash table has line-size 4
 // I compute two hash values - one for the initial probe position and
 // the second to give an stride,
-        int j, v, h1, h2;
-        uint64_t w;
-        h1 = (uint32_t)(1103515245*key) % (uint32_t)HASHTABLESIZE;
-        h2 = 1+(uint32_t)(169*key) % (uint32_t)(HASHTABLESIZE-1);
-        if (h1 < 0 || h1 >= HASHTABLESIZE ||
-            h2 <= 0 || h2 >= HASHTABLESIZE)
-        {   printf("Hash calculation failed %d %d\n", h1, h2);
-            exit(1);
-        }
-        for (;;)
-        {   v = (int)hashtable[h1][0] & 0x7ffff;
-            probes++;
-            if (probes > 1000000)
-            {   printf("Excessive probe count %d %d\n", h1, h2);
-                printf("i = %d\n", i);
+            int j, v, h1, h2, kkk=0;
+            uint64_t w;
+// I wish to process all chars from each font in order. In fact they will
+// be in my table that way, but I still code things to scan once for each font.
+            if (fontkey[i] != fontnum) continue;
+            h1 = (uint32_t)(1103515245*key) % (uint32_t)HASHTABLESIZE;
+            h2 = 1+(uint32_t)(169*key) % (uint32_t)(HASHTABLESIZE-1);
+            if (h1 < 0 || h1 >= HASHTABLESIZE ||
+                h2 <= 0 || h2 >= HASHTABLESIZE)
+            {   printf("Hash calculation failed %d %d\n", h1, h2);
                 exit(1);
             }
-            if (v == 0 || v == key) break;
-            h1 += h2;
-            if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
-        }
-        if (v == 0)
-        {   occupancy++;
-            if (occupancy > HASHTABLESIZE-10)
-            {   printf("Excessive occupancy %d %d\n", h1, h2);
-                printf("i = %d\n", i);
-                printf("%d of %d lines used\n", occupancy, HASHTABLESIZE);
-                exit(1);
-            }
-            hashtable[h1][0] = key;
-        }
-// Pack and write in the messy information about width and bounding boxes.
-        w = ((uint64_t)width[i] & 0x1fff) << 51 |
-            ((uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
-            ((uint64_t)(lly[i]+1000) & 0x0fff) << 26 |
-            ((uint64_t)(urx[i]+500) & 0x1fff) << 13 |
-            ((uint64_t)(ury[i]+1000) & 0x1fff);
-        hashtable[h1][1+(fullkey&3)] = w;
-// Here I must put the kern and ligature table offsets. I need to scan the
-// kern table for ones that match the current startchar...
-        for (j=0; j<nkerns; j++)
-        {   if (strcmp(kernstart[j], uninames[i]) == 0)
-            {   int k;
-                printf("Found kern info following %d\n", codepoint[i]);
-                for (k=0; k<charcount; k++)
-                {   if (fontkey[k] == fontnum &&
-                        strcmp(kernfollow[j], uninames[k]) == 0)
-                    {   printf("Found complete kern\n");
-// Must patch hash0[h1] here...
-                        kerntable[kernp++] =
-                              codepoint[k] | (kernadjustment[j]<<21);
-                    }
+            for (;;)
+            {   v = (int)hashtable[h1][0] & 0x7ffff;
+                probes++;
+                if (probes > 1000000)
+                {   printf("Excessive probe count %d %d\n", h1, h2);
+                    printf("i = %d\n", i);
+                    exit(1);
                 }
+                if (v == 0 || v == key) break;
+                h1 += h2;
+                if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
+            }
+            if (v == 0)
+            {   occupancy++;
+                if (occupancy > HASHTABLESIZE-10)
+                {   printf("Excessive occupancy %d %d\n", h1, h2);
+                    printf("i = %d\n", i);
+                    printf("%d of %d lines used\n", occupancy, HASHTABLESIZE);
+                    exit(1);
+                }
+                hashtable[h1][0] = key;
+            }
+// Pack and write in the messy information about width and bounding boxes.
+            w = ((uint64_t)width[i] & 0x1fff) << 51 |
+                ((uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
+                ((uint64_t)(lly[i]+1000) & 0x0fff) << 26 |
+                ((uint64_t)(urx[i]+500) & 0x1fff) << 13 |
+                ((uint64_t)(ury[i]+1000) & 0x1fff);
+            hashtable[h1][1+(fullkey&3)] = w;
+// Finally merge in an offset to any kern info that might be available
+            if (kernreference[i] != 0)
+            {   int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontnum];
+#if 0
+                printf("Fill in kern ref %d as %d\n",
+                       kernreference[i] & 0x7fffffff, (int)q);
+#endif
+                hashtable[h1][0] |= q << (19+11*(fullkey&3));
             }
         }
     }
@@ -575,7 +716,7 @@ int main(int argc, char *argv[])
     printf("Hash probes = %d [occupancy = %d, average = %.2f]\n", probes,
            occupancy, (double)probes/(double)charcount);
 
-// Assess hash table performance
+// Assess hash table performance just to be cautious!
     probes = 0;
     for (i=0; i<=0x7ffff; i++)
     {   int v;
@@ -613,6 +754,7 @@ int main(int argc, char *argv[])
            (double)p2/(double)n2);
     printf("Total space = %d\n", HASHTABLESIZE*(5*8));
     {   FILE *dest = fopen("charmetrics.h", "w");
+        FILE *rdest = fopen("charmetrics.red", "w");
 fprintf(dest, "// charmetrics.h                           Copyright (C) 2014 Codemist Ltd\n");
 fprintf(dest, "\n");
 fprintf(dest, "\n");
@@ -649,8 +791,152 @@ fprintf(dest, " * DAMAGE.                                                       
 fprintf(dest, " *************************************************************************/\n");
 fprintf(dest, "\n");
 fprintf(dest, "// Character metric hash table created using the program charmetrics.c\n");
+fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
+fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
 fprintf(dest, "\n");
+fprintf(rdest, "%% Character metrics for the STIX (and some other) fonts...\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "%% Character metric hash table created using the program charmetrics.c\n");
+fprintf(rdest, "%% sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
+fprintf(rdest, "%% contains README files with full credits to the fonts this is used with\n");
+fprintf(rdest, "%% Author: Arthur Norman\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "%% Redistribution and use in source and binary forms, with or without\n");
+fprintf(rdest, "%% modification, are permitted provided that the following conditions are met:\n");
+fprintf(rdest, "%%\n");
+fprintf(rdest, "%%    * Redistributions of source code must retain the relevant copyright\n");
+fprintf(rdest, "%%      notice, this list of conditions and the following disclaimer.\n");
+fprintf(rdest, "%%    * Redistributions in binary form must reproduce the above copyright\n");
+fprintf(rdest, "%%      notice, this list of conditions and the following disclaimer in the\n");
+fprintf(rdest, "%%      documentation and/or other materials provided with the distribution.\n");
+fprintf(rdest, "%%\n");
+fprintf(rdest, "%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n");
+fprintf(rdest, "%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,\n");
+fprintf(rdest, "%% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n");
+fprintf(rdest, "%% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR\n");
+fprintf(rdest, "%% CONTRIBUTORS\n");
+fprintf(rdest, "%% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n");
+fprintf(rdest, "%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n");
+fprintf(rdest, "%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n");
+fprintf(rdest, "%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n");
+fprintf(rdest, "%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n");
+fprintf(rdest, "%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n");
+fprintf(rdest, "%% POSSIBILITY OF SUCH DAMAGE.\n");
+fprintf(rdest, "%%\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "%% Also be aware of the (generally permissive) licenses associated with the\n");
+fprintf(rdest, "%% fonts. Fill README files and license terms for the fonts themselves\n");
+fprintf(rdest, "%% are in csl/cslbase/wxfonts.\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "%% $Id$\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "#if (or (memq 'psl lispsystem!*) (memq 'jlisp lispsystem!*))\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "%% CSL has special vectors that hold just 16-bit integers and 32-bit\n");
+fprintf(rdest, "%% integers and use of those will decrease the amount of memory consumed\n");
+fprintf(rdest, "%% here. However if PSL does not have these it does not matter much since I\n");
+fprintf(rdest, "%% can just use ordinary Lisp vectors...\n");
+fprintf(rdest, "%% I set initial contents as all 0 rather than all nil since these are\n");
+fprintf(rdest, "%% supposed to contain (small) integer values.\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic procedure mkvect32 n;\n");
+fprintf(rdest, "  begin\n");
+fprintf(rdest, "    scalar r;\n");
+fprintf(rdest, "    r := mkvect n;\n");
+fprintf(rdest, "    for i := 0:n do putv(r, i, 0);\n");
+fprintf(rdest, "    return r\n");
+fprintf(rdest, "  end;\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic inline procedure putv32(v, n, x); putv(v, n, x);\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic inline procedure getv32(v, n); getv(v, n);\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic procedure mkvect16 n;\n");
+fprintf(rdest, "  begin\n");
+fprintf(rdest, "    scalar r;\n");
+fprintf(rdest, "    r := mkvect n;\n");
+fprintf(rdest, "    for i := 0:n do putv(r, i, 0);\n");
+fprintf(rdest, "    return r\n");
+fprintf(rdest, "  end;\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic inline procedure putv16(v, n, x); putv(v, n, x);\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic inline procedure getv16(v, n); getv(v, n);\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "#endif\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "put('cmuntt, 'font_number,                      0);\n");
+fprintf(rdest, "put('General_Bold, 'font_number,                1);\n");
+fprintf(rdest, "put('General_BoldItalic, 'font_number,          2);\n");
+fprintf(rdest, "put('General_Italic, 'font_number,              3);\n");
+fprintf(rdest, "put('General, 'font_number,                     4);\n");
+fprintf(rdest, "put('IntegralsD_Bold, 'font_number,             5);\n");
+fprintf(rdest, "put('IntegralsD, 'font_number,                  6);\n");
+fprintf(rdest, "put('IntegralsSm_Bold, 'font_number,            7);\n");
+fprintf(rdest, "put('IntegralsSm, 'font_number,                 8);\n");
+fprintf(rdest, "put('IntegralsUp_Bold, 'font_number,            9);\n");
+fprintf(rdest, "put('IntegralsUpD_Bold, 'font_number,           10);\n");
+fprintf(rdest, "put('IntegralsUpD, 'font_number,                11);\n");
+fprintf(rdest, "put('IntegralsUp, 'font_number,                 12);\n");
+fprintf(rdest, "put('IntegralsUpSm_Bold, 'font_number,          13);\n");
+fprintf(rdest, "put('IntegralsUpSm, 'font_number,               14);\n");
+fprintf(rdest, "put('NonUnicode_Bold, 'font_number,             15);\n");
+fprintf(rdest, "put('NonUnicode_BoldItalic, 'font_number,       16);\n");
+fprintf(rdest, "put('NonUnicode_Italic, 'font_number,           17);\n");
+fprintf(rdest, "put('NonUnicode, 'font_number,                  18);\n");
+fprintf(rdest, "put('SizeFiveSym, 'font_number,                 19);\n");
+fprintf(rdest, "put('SizeFourSym_Bold, 'font_number,            20);\n");
+fprintf(rdest, "put('SizeFourSym, 'font_number,                 21);\n");
+fprintf(rdest, "put('SizeOneSym_Bold, 'font_number,             22);\n");
+fprintf(rdest, "put('SizeOneSym, 'font_number,                  23);\n");
+fprintf(rdest, "put('SizeThreeSym_Bold, 'font_number,           24);\n");
+fprintf(rdest, "put('SizeThreeSym, 'font_number,                25);\n");
+fprintf(rdest, "put('SizeTwoSym_Bold, 'font_number,             26);\n");
+fprintf(rdest, "put('SizeTwoSym, 'font_number,                  27);\n");
+fprintf(rdest, "put('Variants_Bold, 'font_number,               28);\n");
+fprintf(rdest, "put('Variants, 'font_number,                    29);\n");
+fprintf(rdest, "put('fireflysung, 'font_number,                 30);\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic procedure list_to_vec16 l;\n");
+fprintf(rdest, "  begin\n");
+fprintf(rdest, "    scalar r, n;\n");
+fprintf(rdest, "    r := mkvect16 (n := sub1 length l);\n");
+fprintf(rdest, "    for i := 0:n do <<\n");
+fprintf(rdest, "       putv16(r, i, car l);\n");
+fprintf(rdest, "       l := cdr l >>;\n");
+fprintf(rdest, "    return r\n");
+fprintf(rdest, "  end;\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic procedure list_to_vec32 l;\n");
+fprintf(rdest, "  begin\n");
+fprintf(rdest, "    scalar r, n;\n");
+fprintf(rdest, "    r := mkvect32 (n := sub1 length l);\n");
+fprintf(rdest, "    for i := 0:n do <<\n");
+fprintf(rdest, "       putv32(r, i, car l);\n");
+fprintf(rdest, "       l := cdr l >>;\n");
+fprintf(rdest, "    return r\n");
+fprintf(rdest, "  end;\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "%% This one will take a list whose elements are thenselves 10-element lists\n");
+fprintf(rdest, "%% of 32-bit integers.\n");
+fprintf(rdest, "%%\n");
+fprintf(rdest, "symbolic procedure list_to_metric_table l;\n");
+fprintf(rdest, "  begin\n");
+fprintf(rdest, "    scalar r, n;\n");
+fprintf(rdest, "    r := mkvect (n := sub1 length l);\n");
+fprintf(rdest, "    for i := 0:n do <<\n");
+fprintf(rdest, "       putv(r, i, list_to_vec32 car l);\n");
+fprintf(rdest, "       l := cdr l >>;\n");
+fprintf(rdest, "    return r\n");
+fprintf(rdest, "  end;\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "fluid '(hashsize!* metrics_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
+fprintf(rdest, "\n");
+fprintf(rdest, "symbolic (hashsize!* := 10883);\n");
+fprintf(rdest, "\n");
         fprintf(dest, "const uint64_t charmetrics[%d][5] = \n{", HASHTABLESIZE);
+        fprintf(rdest, "#eval (setq metrics_hash!* (list_to_metric_table '\n    (");
         for (i=0; i<HASHTABLESIZE; i++)
         {   if (i != 0) fprintf(dest, ",");
             fprintf(dest,
@@ -659,28 +945,173 @@ fprintf(dest, "\n");
                 hashtable[i][0],
                 hashtable[i][1], hashtable[i][2],
                 hashtable[i][3], hashtable[i][4]);
+            fprintf(rdest, "\n     (0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32,
+                (int)hashtable[i][0], (int)(hashtable[i][0]>>32),
+                (int)hashtable[i][1], (int)(hashtable[i][1]>>32),
+                (int)hashtable[i][2]);
+            fprintf(rdest, "\n      0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 ")",
+                                      (int)(hashtable[i][2]>>32),
+                (int)hashtable[i][3], (int)(hashtable[i][3]>>32),
+                (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
         }
         fprintf(dest, "\n};\n\n");
-        fprintf(dest, "const uint16_t fontkern[] = \n{");
+        fprintf(rdest, "\n    )))\n\n");
+        fprintf(dest, "const int16_t fontkern[] = \n{");
+        fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
         for (i=0; i<F_end; i++)
-        {   if (i != 0) fprintf(dest, ",");
-            fprintf(dest, "\n    0x%.4x", fontkern[i]);
+        {   int w = fprintf(dest, "\n    %d", fontkern[i]);
+            if (i != F_end-1) fprintf(dest, ",");
+            else fprintf(dest, " ");
+            while (++w < 16) fprintf(dest, " ");
+            w = fprintf(rdest, "\n    %d ", fontkern[i]);
+            while (++w < 16) fprintf(dest, " ");
+            fprintf(dest, "// %s", fontnames[i]);
+            if (i != F_end-2 &&
+                fontkern[i+1] != fontkern[i])
+                fprintf(dest, " [%d items]", fontkern[i+1]-fontkern[i]);
+            fprintf(rdest, "%% %s", fontnames[i]);
+            if (i != F_end-2 &&
+                fontkern[i+1] != fontkern[i])
+                fprintf(rdest, " [%d items]", fontkern[i+1]-fontkern[i]);
         }
         fprintf(dest, "\n};\n\n");
+        fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const uint32_t kerntable[] = \n{");
+        fprintf(rdest, "#eval (setq kerntable!* (list_to_vec32 '\n    (");
         for (i=0; i<kernp; i++)
-        {   if (i != 0) fprintf(dest, ",");
-            fprintf(dest, "\n    0x%.8" PRIx32, kerntable[i]);
+        {   fprintf(dest, "\n    0x%.8" PRIx32, kerntable[i]);
+            if (i != kernp-1) fprintf(dest, ",");
+            else fprintf(dest, " ");
+            fprintf(rdest, "\n    0x%.8" PRIx32 " ", kerntable[i]);
+            if ((kerntable[i] & IS_LIGATURE) != 0)
+                fprintf(dest, "   // [%d:%d] %s + %s ligature #%d (%s)",
+                               i, i-fontkern[ktfontn[i]],
+                               ktstart[i], ktfollow[i],
+                               kerntable[i]>>23, ktfont[i]);
+            else
+                fprintf(dest, "   // [%d:%d] %s + %s : %d (%s)",
+                               i, i-fontkern[ktfontn[i]],
+                               ktstart[i], ktfollow[i],
+                               ktadjustment[i], ktfont[i]);
+            if ((kerntable[i] & IS_BLOCKEND) != 0) fprintf(dest, " ;;");
+            if ((kerntable[i] & IS_LIGATURE) != 0)
+                fprintf(rdest, "   %% [%d:%d] %s + %s ligature #%d (%s)",
+                               i, i-fontkern[ktfontn[i]],
+                               ktstart[i], ktfollow[i],
+                               kerntable[i]>>23, ktfont[i]);
+            else
+                fprintf(rdest, "   %% [%d:%d] %s + %s : %d (%s)",
+                               i, i-fontkern[ktfontn[i]],
+                               ktstart[i], ktfollow[i],
+                               ktadjustment[i], ktfont[i]);
+            if ((kerntable[i] & IS_BLOCKEND) != 0) fprintf(rdest, " ;;");
         }
         fprintf(dest, "\n};\n\n");
+        fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const uint32_t ligaturetable[] = \n{");
-        for (i=0; i<kernp; i++)
-        {   if (i != 0) fprintf(dest, ",");
-            fprintf(dest, "\n    0x%.8" PRIx32, kerntable[i]);
+        fprintf(rdest, "#eval (setq ligaturetable!* (list_to_vec32 '\n    (");
+        for (i=0; i<ligp; i++)
+        {   int l = fprintf(dest, "\n    %" PRId32, ligtable[i]);
+            if (i != ligp-1) fprintf(dest, ",");
+            else fprintf(dest, " ");
+            while (++l < 12) fprintf(dest, " ");
+            l = fprintf(rdest, "\n    %" PRId32 " ", ligtable[i]);
+            while (++l < 12) fprintf(rdest, " ");
+            fprintf(dest, "   // [%d] %s + %s => %s (%s)",
+                          i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
+            fprintf(rdest, "   %% [%d] %s + %s => %s (%s)",
+                          i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
         }
         fprintf(dest, "\n};\n\n");
+        fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "// end of charmetrics.h\n");
+        fprintf(rdest, "%% The use of #eval means that the metrics above have been defined at\n");
+        fprintf(rdest, "%% parse time. I now need to ensure that they will be available even\n");
+        fprintf(rdest, "%% when this code is passed through the compiler and hence everything\n");
+        fprintf(rdest, "%% goes via a FASL file. The slighly curious macro here should achieve\n");
+        fprintf(rdest, "%% that.\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "symbolic macro procedure get_character_metrics u;\n");
+        fprintf(rdest, "  list('progn,\n");
+        fprintf(rdest, "    list('setq, 'metrics_hash!*, mkquote metrics_hash!*),\n");
+        fprintf(rdest, "    list('setq, 'fontkern!*, mkquote fontkern!*),\n");
+        fprintf(rdest, "    list('setq, 'kerntable!*, mkquote kerntable!*),\n");
+        fprintf(rdest, "    list('setq, 'ligaturetable!*, mkquote ligaturetable!*),\n");
+        fprintf(rdest, "    \"character metrics established\");\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "%% The call to the macro here expands into four simple assignments.\n");
+        fprintf(rdest, "symbolic get_character_metrics();\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "fluid '(c_width c_llx c_lly c_urx c_ury c_kerninfo);\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "%% This code looks up a font/codepoint pair in the tables and returns\n");
+        fprintf(rdest, "%% a character width (escapement) and a bounding box. It leaves behind\n");
+        fprintf(rdest, "%% c_kerninfo - and index into a kern and ligature table.\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "symbolic procedure lookupchar(fontnum, codepoint);\n");
+        fprintf(rdest, "  begin\n");
+        fprintf(rdest, "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
+        fprintf(rdest, "    fullkey := lshift(fontnum, 16) +\n");
+        fprintf(rdest, "      (if codepoint >= 0x10000 then 0xd000 + logand(codepoint, 0xfff)\n");
+        fprintf(rdest, "       else codepoint);\n");
+        fprintf(rdest, "    key := lshift(fullkey, -2);\n");
+        fprintf(rdest, "    h1 := remainder(logand(1103515245*key, 0xffffffff), hashsize!*);\n");
+        fprintf(rdest, "    h2 := add1 remainder(169*key, sub1 hashsize!*);\n");
+        fprintf(rdest, " a: v := logand(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
+        fprintf(rdest, "    if v = key then go to b\n");
+        fprintf(rdest, "    else if v = 0 then return nil;\n");
+        fprintf(rdest, "    h1 := h1 + h2;\n");
+        fprintf(rdest, "    if h1 >= hashsize!* then h1 := h1 - hashsize!*;\n");
+        fprintf(rdest, "    go to a;\n");
+        fprintf(rdest, " b:\n");
+        fprintf(rdest, "    v := 2*logand(fullkey, 3);\n");
+        fprintf(rdest, "    wlo := getv32(w, v+2);\n");
+        fprintf(rdest, "    whi := getv32(w, v+3);\n");
+        fprintf(rdest, "    c_width := logand(lshift(whi, -19), 0x1fff);\n");
+        fprintf(rdest, "    c_llx := logand(lshift(whi, -6), 0x1fff) - 3000;\n");
+        fprintf(rdest, "    c_lly := logand(lshift(wlo, -26), 0x3f) +\n");
+        fprintf(rdest, "             logand(lshift(whi, 6), 0xfc0) - 1000;\n");
+        fprintf(rdest, "    c_urx := logand(lshift(wlo, -13), 0x1fff) - 500;\n");
+        fprintf(rdest, "    c_ury := logand(wlo, 0x1fff) - 1000;\n");
+        fprintf(rdest, "    if v = 0 then c_kerninfo := logand(lshift(getv32(w, 0), -19), 0x7ff)\n");
+        fprintf(rdest, "    else if v = 2 then c_kerninfo := logand(lshift(getv32(w, 0), -30), 0x3) +\n");
+        fprintf(rdest, "                                     logand(lshift(getv32(w, 1), 2), 0x7fc)\n");
+        fprintf(rdest, "    else if v = 4 then c_kerninfo := logand(lshift(getv32(w, 1), -9), 0x7ff)\n");
+        fprintf(rdest, "    else c_kerninfo := logand(lshift(getv32(w, 1), -20), 0x7ff);\n");
+        fprintf(rdest, "    if not zerop c_kerninfo then\n");
+        fprintf(rdest, "      c_kerninfo := c_kerninfo + getv16(fontkern!*, fontnum);\n");
+        fprintf(rdest, "    return t\n");
+        fprintf(rdest, "  end;\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "symbolic procedure lookupkernadjustment codepoint;\n");
+        fprintf(rdest, "  begin\n");
+        fprintf(rdest, "    scalar i, w;\n");
+        fprintf(rdest, "    if zerop (i := c_kerninfo) then return 0;\n");
+        fprintf(rdest, " a: w := getv32(kerntable!*, i);\n");
+        fprintf(rdest, "    if logand(w, 0x001fffff) = codepoint and\n");
+        fprintf(rdest, "      zerop logand(w, 0x00200000) then return w / 0x00800000\n");
+        fprintf(rdest, "    else if not zerop logand(w, 0x00400000) then return 0;\n");
+        fprintf(rdest, "    i := add1 i;\n");
+        fprintf(rdest, "    go to a\n");
+        fprintf(rdest, "  end;\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "symbolic procedure lookupligature codepoint;\n");
+        fprintf(rdest, "  begin\n");
+        fprintf(rdest, "    scalar i, w;\n");
+        fprintf(rdest, "    if zerop (i := c_kerninfo) then return nil;\n");
+        fprintf(rdest, " a: w := getv32(kerntable!*, i);\n");
+        fprintf(rdest, "    if logand(w, 0x001fffff) = codepoint and\n");
+        fprintf(rdest, "      not zerop logand(w, 0x00200000) then\n");
+        fprintf(rdest, "        return getv32(ligaturetable!*, logand(lshift(w, -23), 0x1ff))\n");
+        fprintf(rdest, "    else if not zerop logand(w, 0x00400000) then return 0;\n");
+        fprintf(rdest, "    i := add1 i;\n");
+        fprintf(rdest, "    go to a\n");
+        fprintf(rdest, "  end;\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "end;\n\n");
+        fprintf(rdest, "%% end of charmetrics.red\n");
         fclose(dest);
+        fclose(rdest);
     }
     return 0;
 }
@@ -735,10 +1166,10 @@ int lookupchar(int fontnum, int codepoint)
     c_ury = ((int)w & 0x1fff) - 1000;
 // Based on the font and 11 bits of information from the hash table I will
 // set up a pointer into kerntable. The interpretation of that will be
-// considered in the function lookupkerninfo. If the 11 bit field contains
-// zero then there is neither kern nor ligature information associated
-// with this character.
-    v = (int)(w >> (19+11*(fullkey&3))) & 0x7ff;
+// considered in the function lookupkernandligature. If the 11 bit field
+// contains zero then there is neither kern nor ligature information
+// associated with this character.
+    v = (int)(charmetrics[h1][0] >> (19+11*(fullkey&3))) & 0x7ff;
     if (v != 0) v += fontkern[fontnum];
 // c_kerninfo will be left zero if there is no information, otherwise an
 // index into a table.
@@ -751,7 +1182,7 @@ int lookupchar(int fontnum, int codepoint)
 // codepoint of the successor character (which must be in the same
 // font). Thus the complete sequence will be
 //      lookupchar(font_number, codepoint_for_first_character);
-//      lookupkerninfo)codepoint_for_second_character);
+//      lookupkernandligature(codepoint_for_second_character);
 // This returns an int32_t where the bottom 21 bits are a codepoint for
 // a character that can replace the two that were specified. For instance
 // this can return a single ligature "fi" is the two input codepoints are
@@ -767,11 +1198,10 @@ int lookupchar(int fontnum, int codepoint)
 // decreased by 109 units, while when a "T" is followed by a "W" an extra
 // 41 units (and perhaps less obviously an "L" followd by "-" (hyphen)
 // calls for even more extra space than that.
+//
+// I provide variants that collect just kern or just ligature information.
 
-#define IS_LIGATURE 0x00200000
-#define IS_BLOCKEND 0x00400000
-
-int32_t lookupkerninfo(int codepoint)
+int32_t lookupkernandligature(int codepoint)
 {
     int32_t r = 0;
     uint32_t w;
@@ -784,7 +1214,7 @@ int32_t lookupkerninfo(int codepoint)
 // kern information at all, and when there is any it will usually be
 // pretty limited so average costs here should end up low.
     do
-    {   w = kerntable[i];
+    {   w = kerntable[i++];
 // The kern table contains a sequence of 32-bit words. The low 21 bits of
 // each is a codepoint being the second character of a pair. The next two
 // bits are flags. One indicates whether the word is documenting kern or
@@ -792,7 +1222,15 @@ int32_t lookupkerninfo(int codepoint)
 // relating to a lead character. That leaves 9 bits. For kern information
 // that is a 9-bit signed spacing adjustment. For ligatures it is a
 // 9 bit unsigned index into a table of codepoints giving the single
-// character to be used to replace the initial pair.
+// character to be used to replace the initial pair. Note that one pair
+// of characters can (and often well!) have both kern and ligature information
+// which is why the return value here can hand back both and why searching
+// continues through all information about the relevant pair. It would be a
+// MESS if the tables included two entries for the same character pair but
+// yielding different results! I ought to police that while creating the
+// tables.
+// Because w is an unsigned value I do not need to mask the result of the
+// right shift.
         if ((w & 0x001fffff) == codepoint)
         {   if ((w & IS_LIGATURE) != 0) r |= ligaturetable[w >> 23];
             else r |= (w & 0xff800000);
@@ -801,30 +1239,88 @@ int32_t lookupkerninfo(int codepoint)
     return r;
 }
 
+// Much the same as the above but ONLY looks for kern information and returns
+// its result as a simple integer. In case kern information is found this
+// is just slightly faster than using the more general method.
+
+int32_t lookupkernadjustment(int codepoint)
+{
+    int32_t w;
+    int i;
+    if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
+    do
+    {   w = kerntable[i++];
+// The shift right in the return statement relies on w being a signed
+// value and on signed shifts being arithmetic.
+        if ((w & 0x001fffff) == codepoint &&
+            (w & IS_LIGATURE) == 0) return (w >> 23);
+    } while ((w & IS_BLOCKEND) == 0);
+    return 0;
+}
+
+// Much the same as the above but ONLY looks for ligature information.
+
+int32_t lookupligature(int codepoint)
+{
+    uint32_t w;
+    int i;
+    if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
+    do
+    {   w = kerntable[i++];
+// I made w unsigned so that the shift right returned an unsigned index.
+        if ((w & 0x001fffff) == codepoint &&
+            (w & IS_LIGATURE) != 0) return ligaturetable[w >> 23];
+    } while ((w & IS_BLOCKEND) == 0);
+    return 0;
+}
+
 #ifdef TEST
 // If TEST is defined then this code will try some very minimal tests.
 // Expected output is
 //
-//   Hash table size was 10883
-//   "e": width 444   BB 25 -10 424 460
-//   "f": width 333   BB 20 0 383 683
-//   "g": width 500   BB 28 -218 470 460
-//   "h": width 500   BB 9 0 487 683
-//   "i": width 278   BB 16 0 253 683
-//   "j": width 278   BB -70 -218 194 683
-//   "k": width 500   BB 7 0 505 683
-//   "l": width 278   BB 19 0 257 683
-//   "m": width 778   BB 16 0 775 460
+//    Hash table size was 10883
+//    "e": width 444   BB 25 -10 424 460  (3656)
+//    "f": width 333   BB 20 0 383 683  (3662)
+//    "g": width 500   BB 28 -218 470 460  (3689)
+//    "h": width 500   BB 9 0 487 683  (3702)
+//    "i": width 278   BB 16 0 253 683  (3704)
+//    "j": width 278   BB -70 -218 194 683  (0)
+//    "k": width 500   BB 7 0 505 683  (3707)
+//    "l": width 278   BB 19 0 257 683  (3725)
+//    "m": width 778   BB 16 0 775 460  (3727)
+//    Kern/ligature data for sequence f-i is 14 64257
+//    Kern/ligature data for sequence f-l is 44 64258
 //
+// The last two lines say that if in font STIXGeneral-Regular an "f" is
+// followed by an "i" then either the two may have their spacing adjusted
+// by 14 units or the pair may be replaced by the character at codepoint
+// 64257 (which is "fi")... and similarly for "f" followed by "l". The output
+// higher up tells us that in this font there are no special cases involving
+// a "j" followed by something else. "BB" is for "Bounding Box" and the
+// four numbers are for lower-left-x, lower-left-y, upper-right-x and
+// upper-right-y in that order.
 
 int main(int argc, char *argv[])
 {
-    int i;
+    int i, r;
     printf("Hash table size was %d\n", HASHTABLESIZE);
     for (i='e'; i<'n'; i++)
-    {   lookupchar(F_General, i);
-        printf("\"%c\": width %d   BB %d %d %d %d\n",
-               i, c_width, c_llx, c_lly, c_urx, c_ury);
+    {   r = lookupchar(F_General, i);
+        if (r) printf("\"%c\": width %d   BB %d %d %d %d  (%d)\n",
+                      i, c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo);
+        else printf("\"%c\" char not found\n", i);
+        fflush(stdout);
+    }
+    if (!lookupchar(F_General, 'f')) printf("Character \"f\" not found\n");
+    else
+    {   int32_t k = lookupkernandligature('i');
+        printf("Kern/ligature data for sequence f-i is %d %d\n",
+               (int)(k >> 23), (int)(k & 0x001fffff));
+        fflush(stdout);
+        k = lookupkernandligature('l');
+        printf("Kern/ligature data for sequence f-l is %d %d\n",
+               (int)(k >> 23), (int)(k & 0x001fffff));
+        fflush(stdout);
     }
     return 0;
 }

@@ -10,6 +10,12 @@ lispfile:
 	./lispfile.sh
 
 
+.PHONY:	charmetrics.h
+charmetrics.h:	charmetrics.c
+	gcc -DCREATE charmetrics.c -o charmetrics && \
+	./charmetrics && \
+	gcc -DTEST charmetrics.c -o charmetrictest && \
+	./charmetrictest
 
 .PHONY: coverage.c
 coverage.c:
