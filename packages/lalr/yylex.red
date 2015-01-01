@@ -199,6 +199,7 @@ symbolic procedure lex_keywords l;
      if not get(x, 'lex_code) then << % may have been seen already
         lex_keyword_names := x . lex_keyword_names;
         put(x, 'lex_code, lex_next_code);
+        lex_codename := (lex_next_code . x) . lex_codename;
         lex_next_code := lex_next_code + 1;
 % Recurse to deal with prefixes...
         pre := list2widestring reverse cdr reverse w;

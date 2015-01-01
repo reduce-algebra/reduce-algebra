@@ -54,12 +54,12 @@ Lisp_Object make_lisp_integer64(int64_t n)
 #ifdef COMMON
     exit_count = 1;
 #endif
-    if (n < 0x10000000 && n >= -0x10000000) return fixnum_of_int((int32_t)n);
+    if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int((int32_t)n);
     n1 = n >> 4;
-    if (n1 < 0x10000000 && n1 >= -0x10000000)
+    if (n1 < 0x08000000 && n1 >= -0x08000000)
         return make_one_word_bignum((int32_t)n);
     n1 = n1 >> 35;
-    if (n1 < 0x10000000 && n1 >= -0x10000000)
+    if (n1 < 0x08000000 && n1 >= -0x08000000)
         return make_two_word_bignum((int32_t)(n >> 31),
             (int32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
@@ -74,9 +74,9 @@ Lisp_Object make_lisp_integer32(int32_t n)
 #ifdef COMMON
     exit_count = 1;
 #endif
-    if (n < 0x10000000 && n >= -0x10000000) return fixnum_of_int(n);
+    if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int(n);
     n1 = n >> 4;
-    if (n1 < 0x10000000 && n1 >= -0x10000000)
+    if (n1 < 0x08000000 && n1 >= -0x08000000)
         return make_one_word_bignum(n);
     return make_two_word_bignum(n >> 31, n & 0x7fffffff);
 }

@@ -1,5 +1,4 @@
-% Test cases for the parser generator. This all runs in
-% symbolic mode...
+% Test cases for the parser generator. This all runs in symbolic mode...
 
 
 %
@@ -50,6 +49,16 @@
 % of it will also be grouped to form single entities. So if "<-->" is a
 % terminal then '<', '<-' and '<--' will each by parsed as single tokens, and
 % any of them that are not used as terminals will be classified as !:symbol.
+%
+% As well as terminals and non-terminals (which are wrirrent as symbols or
+% strings) it is possible to write one of
+%     (OPT s1 s2 ...)           0 or 1 instances of the sequence s1, ...
+%     (STAR s1 s2 ...)          0, 1, 2, ... instances
+%     (PLUS s1 s2 ...)          1, 2, 3, ... instances
+%     (LIST sep s1 s2 ...)      like (STAR s1 s2 ...) but with the single
+%                               item sep between each instance.
+%     (LISTPLUS sep s1 ...)     like (PLUS s2 ...) but with sep interleaved.
+%     (OR s1 s2 ...)            one or other of the tokens shown.
 %
 % When the lexer processes input it will return a numeric code that identifies
 % the type of the item seen, so in a production one might write
@@ -181,6 +190,11 @@ pparse()$
 d d ;
 
 
+% Now switch off the tracing. It is useful whiloe debugging this
+% package but is typically rather over the top for normal use.
+
+off tracelex, lalr_verbose;
+
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
 % "Compilers: principles, techniques and tools", second edition 2007).
 %
@@ -255,523 +269,159 @@ a*b+c*d;
 pparse()$
 a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
 
-% Now the same example with the tracing switched off so you can see
-% what output would arise in production code.
+% Demonstrate various of the short-hand notations...
 
-off tracelex, lalr_verbose;
-
-lalr_construct_parser gtest;
-
-pparse()$
-a^b^c;
+lalr_construct_parser '(
+ (S
+% (opt ...) means that the included material is optional.
+          (("begin" (opt "and" "also") "end"))));
 
 pparse()$
-a*b+c*d;
+begin end
+;;
 
 pparse()$
-a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
+begin and also end
+;;
+
+lalr_construct_parser '(
+ (S
+% (star ...) is for zero or mor instances of something.
+          (((star "a") "end") !$1)));
+
+pparse()$
+end
+;;
+
+pparse()$
+a a a a a a end
+;;
+
+lalr_construct_parser '(
+ (S
+% (plus ...) is for one or more repetitions of an item
+          (((plus "a") "end") !$1)));
+
+pparse()$
+a end
+;;
+
+pparse()$
+a a a a a a end
+;;
+
+lalr_construct_parser '(
+ (S
+% (list delimiter item-description) is a sequence of zero
+% or more items, and if there are several that are separated by the
+% indicated delimiter. 
+          (((list ";" !:symbol) "eof") !$1)));
+
+pparse()$
+
+several ; words ; here eof
+;;
+
+lalr_construct_parser '(
+ (S
+% (listplus delimiter item-description) is as (list ...) however it
+% requires at least one item.
+          (((listplus ";" !:symbol) "eof") !$1)));
+
+pparse()$
+
+several ; words ; here eof
+;;
+
+lalr_construct_parser '(
+ (S
+% (or x y z) may be a more compact way of writing what could
+% otherwise by given as multiple productions, so for instance
+% (or "+" "-" "*" "/") would match one of the listed operators.
+          (((star (or "a" "b")) "end") !$1)));
+
+pparse()$
+end
+;;
+
+pparse()$
+a b b a end
+;;
+
+
+% The next example shows all the above put together to parse what is
+% in effect a small programming language. Although it is not yet a large
+% grammar it illustrates painfull clearly how poor performange of the
+% parser generator can be if ut used what Aho, Sethi and Ullman describe as
+% the "Easy but space-consuming LALR table construction" method.
+
+lalr_precedence '(!:left ("*" "/")
+                         ("+" "-")
+                  !:none ("<" "<=" "==" "neq" ">=" ">")
+                  !:right ":=" "="
+                  !:left ("then" "else" "return"));
+
+mini_language := '(
+ (program
+          (((listplus ";" expression) "eof") !$1))
+
+ (expression
+          ((funcall))
+          ((expression "*" expression) (list 'times !$1 !$3))
+          ((expression "/" expression) (list 'quotient !$1 !$3))
+          ((expression "+" expression) (list 'plus !$1 !$3))
+          ((expression "-" expression) (list 'difference !$1 !$3))
+          ((expression "<" expression) (list 'lessp !$1 !$3))
+          ((expression "<=" expression) (list 'lesseq !$1 !$3))
+          ((expression "==" expression) (list 'equals !$1 !$3))
+          ((expression "neq" expression) (list 'neq !$1 !$3))
+          ((expression "=>" expression) (list 'geq !$1 !$3))
+          ((expression ">" expression) (list 'greaterp !$1 !$3))
+          ((expression ":=" expression) (list 'setq !$1 !$3))
+          (("fun" funcall "=" expression) (list 'fun !$2 !$4))
+          (("if" sequence "then" expression)
+             (list 'cond, list(!$2, !$4)))
+          (("if" sequence "then" sequence "else" expression)
+             (list 'cond, list(!$2, !$4), list(t, !$6)))
+          (("go" (opt "to") !:symbol) (list 'go !$3))
+          (("goto" !:symbol) (list 'go !$2))
+          (("return" expression)))
+
+(funcall
+          ((closedexpression))
+          ((funcall closedexpression)))
+
+(closedexpression
+          ((!:symbol))
+          ((!:number))
+          ((plus !:string))  % Several strings in a row just concatenate
+          (("let" sequence "in" sequence "end") (list 'letstat !$2 !$4))
+          (("(" exprlist ")") (cons 'paren !$2))
+          (("(" sequence ")") (cons 'paren !$2))
+          (("[" exprlist "]") (cons 'bracket !$2)))
+
+(exprlist (((list "," expression))))
+
+(sequence
+          (((list ";" expression)))))$
+
+% The grammar shown here can be processed, however at the moment the
+% code in genparser.red uses the "simple but inefficient" scheme from Aho
+% et al. to generate LALR parsing tables and a consequence is that even for
+% this apparently reasonable grammar it takes a remarkably long time and
+% way too much memory. When the parser-generator has been upgraded to
+% merge states as they are constructed it will only take seconds (rather than
+% many minutes) to deal with this and the example can be re-enabled.
+%                                                     ACN   January 2015
+
+% lalr_construct_parser mini_language;
+%
+% pparse()$
+%
+% fun f(a,b) = a + b;
+% f(22,33)
+% eof
 
-
-#if nil  % Skip the rest of this test file...
-
-
-% Now a much more complicated grammar - one that recognizes the syntax of
-% RLISP. In order to survive this grammar my paser generator will need to
-% be extended to deal with ambiguous grammars both to cope with the
-% standard problem of "dangling else" clauses and to use precedence
-% declarations to disambiguate the uses of infix operators. Well at
-% present the grammar is written in a grossly bloated form so that
-% operator predcedence is hard wired into it... that too will need changing.
-
-% Note that a naive implementaion of LALR parser table generation via
-% initial construction of a full LR(1) table leads to ridiculous expense
-% when processing a grammar of this scale.
-
-rlisp_grammar := '(
-
-(command         ((  cmnd sep ))
-                 ((  end sep ))
-                 ((  command cmnd sep ))
-                 ((  command end sep ))
-)
-
-
-(sep             ((  ";" ))
-                 ((  "$" ))
-)
-
-
-(proc_type       ((  "symbolic" ))
-                 ((  "algebraic" ))
-)
-
-
-(proc_qual       ((  "expr" ))
-                 ((  "macro" ))
-                 ((  "smacro" ))
-)
-
-
-(sym_list        ((  ")" ))
-                 ((  "," !:symbol sym_list ))
-)
-
-
-(infix           ((  "setq" ))
-                 ((  "or" ))
-                 ((  "and" ))
-                 ((  "member" ))
-                 ((  "memq" ))
-                 ((  "=" ))
-                 ((  "neq" ))
-                 ((  "eq" ))
-                 ((  ">=" ))
-                 ((  ">" ))
-                 ((  "<=" ))
-                 ((  "<" ))
-                 ((  "freeof" ))
-                 ((  "+" ))
-                 ((  "-" ))
-                 ((  "*" ))
-                 ((  "/" ))
-                 ((  "^" ))
-                 ((  "**" ))
-                 ((  "." ))
-)
-
-(prefix          ((  "not" ))
-                 ((  "+" ))
-                 ((  "-" ))
-)
-
-
-(proc_head       ((  !:symbol ))
-                 ((  !:symbol !:symbol ))
-                 ((  !:symbol "(" ")" ))
-                 ((  !:symbol "(" !:symbol sym_list ))
-                 ((  prefix !:symbol ))
-                 ((  !:symbol infix !:symbol ))
-)
-
-
-(proc_def        ((  "procedure" proc_head sep cmnd ))
-                 ((  proc_type "procedure" proc_head sep cmnd ))
-                 ((  proc_qual "procedure" proc_head sep cmnd ))
-                 ((  proc_type proc_qual "procedure" proc_head sep cmnd ))
-)
-
-
-% The type "!:rlistat" is dodgy here... it doe snot (yet) exist!
-
-(rlistat         ((  !:rlistat ))
-                 ((  "in" ))
-                 ((  "on" ))
-)
-
-
-(rltail          ((  expr ))
-                 ((  expr "," rltail ))
-)
-
-
-(cmnd            ((  expr ))
-                 ((  rlistat rltail ))
-)
-
-
-(if_stmt         ((  "if" expr "then" cmnd "else" cmnd ))
-                 ((  "if" expr "then" cmnd ))
-)
-
-
-(for_update      ((  ":" expr ))
-                 ((  "step" expr "until" expr ))
-)
-
-
-(for_action      ((  "do" ))
-                 ((  "sum" ))
-                 ((  "collect" ))
-)
-
-
-(for_inon        ((  "in" ))
-                 ((  "on" ))
-)
-
-
-(for_stmt        ((  "for" !:symbol !:setq expr for_update for_action cmnd ))
-                 ((  "for" "each" !:symbol for_inon expr for_action cmnd ))
-                 ((  "foreach" !:symbol for_inon expr for_action cmnd ))
-)
-
-
-(while_stmt      ((  "while" expr "do" cmnd ))
-)
-
-
-(repeat_stmt     ((  "repeat" cmnd "until" expr ))
-)
-
-
-(return_stmt     ((  "return" ))
-                 ((  "return" expr ))
-)
-
-
-(goto_stmt       ((  "goto" !:symbol ))
-                 ((  "go" !:symbol ))
-                 ((  "go" "to" !:symbol ))
-)
-
-
-(group_tail      ((  ">>" ))
-                 ((  sep ">>" ))
-                 ((  sep cmnd group_tail ))
-)
-
-
-(group_expr      ((  "<<" cmnd group_tail ))
-)
-
-
-(scalar_tail     ((  sep ))
-                 ((  "," !:symbol scalar_tail ))
-                 ((  "," integer scalar_tail ))
-)
-
-
-(scalar_def      ((  "scalar" !:symbol scalar_tail ))
-                 ((  "integer" !:symbol scalar_tail ))
-)
-
-
-(scalar_defs     ((  scalar_def ))
-                 ((  scalar_defs scalar_def ))
-)
-
-
-(block_tail      ((  "end" ))
-                 ((  cmnd "end" ))
-                 ((  !:symbol ":" block_tail ))
-                 ((  cmnd sep block_tail ))
-                 ((  sep block_tail ))
-)
-
-(block_expr      ((  "begin" scalar_defs block_tail ))
-                 ((  "begin" block_tail ))
-)
-
-
-(lambda_vars     ((  sep ))
-                 ((  "," !:symbol lambda_vars ))
-)
-
-
-(lambda_expr     ((  "lambda" !:symbol lambda_vars cmnd ))
-                 ((  "lambda" "(" ")" sep cmnd ))
-                 ((  "lambda" "(" !:symbol sym_list sep cmnd ))
-)
-
-
-(expr            ((  rx0 ))
-                 ((  lx0 ))
-)
-
-
-(rx0             ((  lx0 "where" !:symbol "=" rx1 ))
-                 ((  rx1 ))
-)
-
-
-(lx0             ((  lx0 "where" !:symbol "=" lx1 ))
-                 ((  lx1 ))
-)
-
-
-(rx1             ((  lx2 ":=" rx1 ))
-                 ((  rx2 ))
-)
-
-
-(lx1             ((  lx2 ":=" lx1 ))
-                 ((  lx2 ))
-)
-
-
-(rx2tail         ((  rx3 ))
-                 ((  lx3 "or" rx2tail ))
-)
-
-(rx2             ((  lx3 "or" rx2tail ))
-                 ((  rx3 ))
-)
-
-
-(lx2tail         ((  lx3 ))
-                 ((  lx3 "or" lx2tail ))
-)
-
-(lx2             ((  lx3 "or" lx2tail ))
-                 ((  lx3 ))
-)
-
-
-(rx3tail         ((  rx4 ))
-                 ((  lx4 "and" rx3tail ))
-)
-
-(rx3             ((  lx4 "and" rx3tail ))
-                 ((  rx4 ))
-)
-
-
-(lx3tail         ((  lx4 ))
-                 ((  lx4 "and" lx3tail ))
-)
-
-(lx3             ((  lx4 "and" lx3tail ))
-                 ((  lx4 ))
-)
-
-
-(rx4             ((  "not" rx4 ))
-                 ((  rx5 ))
-)
-
-
-(lx4             ((  "not" lx4 ))
-                 ((  lx5 ))
-)
-
-% The fact that this lists "member" and "memq" (etc) here makes those names
-% keywords, and so possibly disables use as function names as in
-%    member(a, b)
-
-(rx5             ((  lx6 "member" ry6 ))
-                 ((  lx6 "memq" ry6 ))
-                 ((  lx6 "=" ry6 ))
-                 ((  lx6 "neq" ry6 ))
-                 ((  lx6 "eq" ry6 ))
-                 ((  lx6 ">=" ry6 ))
-                 ((  lx6 ">" ry6 ))
-                 ((  lx6 "<=" ry6 ))
-                 ((  lx6 "<" ry6 ))
-                 ((  lx6 "freeof" ry6 ))
-                 ((  rx6 ))
-)
-
-
-(lx5             ((  lx6 "member" ly6 ))
-                 ((  lx6 "memq" ly6 ))
-                 ((  lx6 "=" ly6 ))
-                 ((  lx6 "neq" ly6 ))
-                 ((  lx6 "eq" ly6 ))
-                 ((  lx6 ">=" ly6 ))
-                 ((  lx6 ">" ly6 ))
-                 ((  lx6 "<=" ly6 ))
-                 ((  lx6 "<" ly6 ))
-                 ((  lx6 "freeof" ly6 ))
-                 ((  lx6 ))
-)
-
-
-(ry6             ((  "not" ry6 ))
-                 ((  rx6 ))
-)
-
-
-(ly6             ((  "not" ly6 ))
-                 ((  lx6 ))
-)
-
-
-(rx6tail         ((  ry6a ))
-                 ((  ly6a "+" rx6tail ))
-)
-
-(rx6             ((  lx6a "+" rx6tail ))
-                 ((  rx6a ))
-)
-
-
-(lx6tail         ((  ly6a ))
-                 ((  ly6a "+" lx6tail ))
-)
-
-(lx6             ((  lx6a "+" lx6tail ))
-                 ((  lx6a ))
-)
-
-
-(ry6a            ((  not ry6a ))
-                 ((  rx6a ))
-)
-
-
-(rx6a            ((  lx6a "-" ry7 ))
-                 ((  rx7 ))
-)
-
-
-(ly6a            ((  not ly6a ))
-                 ((  lx6a ))
-)
-
-
-(lx6a            ((  lx6a "-" ly7 ))
-                 ((  lx7 ))
-)
-
-
-(ry7             ((  not ry7 ))
-                 ((  rx7 ))
-)
-
-
-(rx7             ((  "+" ry7 ))
-                 ((  "-" ry7 ))
-                 ((  rx8 ))
-)
-
-
-(ly7             ((  not ly7 ))
-                 ((  lx7 ))
-)
-
-
-(lx7             ((  "+" ly7 ))
-                 ((  "-" ly7 ))
-                 ((  lx8 ))
-)
-
-
-(rx8tail         ((  ry9 ))
-                 ((  ly9 "*" rx8tail ))
-)
-
-(rx8             ((  lx9 "*" rx8tail ))
-                 ((  rx9 ))
-)
-
-
-(lx8tail         ((  ly9 ))
-                 ((  ly9 "*" lx8tail ))
-)
-
-(lx8             ((  lx9 "*" lx8tail ))
-                 ((  lx9 ))
-)
-
-
-(ry9             ((  "not" ry9 ))
-                 ((  "+" ry9 ))
-                 ((  "-" ry9 ))
-                 ((  rx9 ))
-)
-
-
-(rx9             ((  lx9 "/" ry10 ))
-                 ((  rx10 ))
-)
-
-
-(ly9             ((  "not" ly9 ))
-                 ((  "+" ly9 ))
-                 ((  "-" ly9 ))
-                 ((  lx9 ))
-)
-
-
-(lx9             ((  lx9 "/" ly10 ))
-                 ((  lx10 ))
-)
-
-
-(ly10            ((  "not" ly10 ))
-                 ((  "+" ly10 ))
-                 ((  "-" ly10 ))
-                 ((  lx10 ))
-)
-
-
-(lx10            ((  lx11 "^" ly10 ))
-                 ((  lx11 ))
-)
-
-
-(ry10            ((  "not" ry10 ))
-                 ((  "+" ry10 ))
-                 ((  "-" ry10 ))
-                 ((  rx10 ))
-)
-
-
-(rx10            ((  lx11 "^" ry10 ))
-                 ((  rx11 ))
-)
-
-
-(ry11            ((  "not" ry11 ))
-                 ((  "+" ry11 ))
-                 ((  "-" ry11 ))
-                 ((  rx11 ))
-)
-
-
-(rx11            ((  x12 "." ry11 ))
-                 ((  if_stmt ))
-                 ((  for_stmt ))
-                 ((  while_stmt ))
-                 ((  repeat_stmt ))
-                 ((  return_stmt ))
-                 ((  goto_stmt ))
-                 ((  lambda_expr ))
-                 ((  proc_type ))
-                 ((  proc_def ))
-                 ((  endstat ))
-)
-
-
-(ly11            ((  "not" ly11 ))
-                 ((  "+" ly11 ))
-                 ((  "-" ly11 ))
-                 ((  lx11 ))
-)
-
-
-(lx11            ((  x12 "." ly11 ))
-                 ((  x12 ))
-)
-
-
-(arg_list        ((  expr ")" ))
-                 ((  expr "," arg_list ))
-)
-
-
-(x12             ((  x13 "[" expr "]" ))
-                 ((  x13 "(" ")" ))
-                 ((  x13 "(" expr "," arg_list ))
-                 ((  x13 x12 ))
-                 ((  x13 ))
-)
-
-
-(x13             ((  !:symbol ))
-                 ((  !:number ))
-                 ((  !:string ))
-                 ((  !:list ))     % Both 'xxx and `xxx here
-                 ((  group_expr ))
-                 ((  block_expr ))
-                 ((  "(" expr ")" ))
-)
-)$
-
-
-% lalr_construct_parser rlisp_grammar;
-
-#endif
 
 end;
 

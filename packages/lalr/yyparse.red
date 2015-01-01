@@ -73,7 +73,7 @@ symbolic procedure get_goto(state, non_terminal);
 
 symbolic procedure get_action_without_lookahead(state);
   begin
-    scalar w1, w2;
+    scalar w1;
     w1 := getv16(action_index, state);
     if getv16(action_terminal, w1) neq -1 then return nil
     else return getv16(action_result, w1)

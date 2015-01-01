@@ -60,6 +60,56 @@ module 'genparser;
 % with either a forward or a back-quote, as in
 %       '(some quoted lisp-like data)
 %
+% In addition it will be possible to write shorthand items on the right
+% hand side of a production:
+%        (opt X Y Z)
+%        (star X Y Z)
+%        (plus X Y Z)
+%        (list S X Y Z)
+%        (listplus S X Y Z)
+%        (or A B C)
+% where each are replaced by a new non-terminal G and a further rule(s)
+% are then added:
+%
+% (opt X Y Z) is either X Y Z or nothing
+%   (G (())              % value will be either nil or (list X Y Z)
+%      ((X Y Z)))        % or if only one item X then X.
+%
+% (star X Y Z) is zero or more repetitions of X Y Z, and the
+% value it returns is a list of whatever each X Y Z generated
+%   (G (())              % value is a list of items in the sequence
+%      ((G1 G) (cons !$1 !$2)))
+%   (G1 ((X Y Z))
+%
+% (plus X Y Z) is like (star X Y Z) except that it demands at least
+% one instance of X Y Z is present.
+%   (G  ((G1) (list !$1))
+%       ((G1 G) (cons !$1 !$2))) 
+%   (G1 ((X Y Z)))
+%
+% (list del X Y Z) gives a sequence of X Y Z entities with del as a
+% separator. A typical use might be in
+%   (funcall ((!:symbol "("
+%                       (list "," expression)
+%                       ")")) (cons !$1 !$3))
+% to recognise function calls such as "f(A,B,C)" in a typical language.  
+%   (G  (())
+%       ((G2 G1) (cons !$1 !$2))
+%   (G1 (())
+%       ((del G2 G1) (cons !$2 !$3)))
+%   (G2 ((X Y Z)))
+%
+% (listplus del X Y Z) is just like (list del X Y Z) except that it demands
+% at least one item.
+%   (G  ((G2 G1) (cons !$1 !$2))
+%   (G1 (())
+%       ((del G2 G1) (cons !$2 !$3)))
+%   (G2 ((X Y Z)))
+%
+% (or A B C) is for one of the given symbols
+%   (G ((A))
+%      ((B))
+%      ((C)))
 
 % Precedence can be applied using a call such as
 %   lalr_precedence '(!:right "^" !:left ("*" "/") ("+" "-") !:none "=");
@@ -114,7 +164,7 @@ inline procedure lalr_productions x;
 inline procedure lalr_set_productions(x, y);
     put(x, 'produces, y);
 
-fluid '(lalr_precedence!* lalr_precedence_table);
+fluid '(lex_codename lalr_precedence!* lalr_precedence_table);
 
 symbolic procedure lalr_precedence l;
   begin
@@ -263,7 +313,7 @@ symbolic procedure lalr_set_grammar g;
     tnum := -1;
     for each x in non_terminals do
       for each a in lalr_productions x do <<
-% I will alloacte one action code for each case where I have a distinct
+% I will allocate one action code for each case where I have a distinct
 % non-terminal A with a number n of items in the associated production
 % and a particular semantic action S.
         w := assoc((x . length car a) . cdr a, action_map);
@@ -274,6 +324,8 @@ symbolic procedure lalr_set_grammar g;
 % in place of the action itself.
         rplacd(a, list cdr w) >>;
     action_map := reversip action_map;
+    if not zerop posn() then terpri();
+    princ tnum; printc " semantic actions";
     action_fn := mkvect sub1 tnum;
     action_n := mkvect8 sub1 tnum;
     action_A := mkvect16 sub1 tnum;
@@ -299,7 +351,8 @@ symbolic procedure lalr_prin_symbol x;
     if x = 0 then princ "$"
     else if x = nil then princ "<empty>"
     else if x = '!. then princ "."
-    else if numberp x and (w := assoc(x, lex_codename)) then prin cdr w
+    else if numberp x and (w := assoc(x, lex_codename)) then <<
+      princ '!"; princ cdr w; princ '!" >>
     else if stringp x then prin x
 % I print the name of the symbol in upper case even if it was in lower or
 % mixed case internally. I might worry about the consequences if both (say)
@@ -412,9 +465,12 @@ symbolic procedure lalr_calculate_first g;
 %    X :          note empty right hand size here.
 %    Y :
 %    Q :   a ...
+% however "empty" should only go into the first set of a symbol if ALL
+% the items on the RHs can generate empty.
   begin
     scalar w, y, z, more_added;
 %   princ "lalr_calculate_first "; print g;
+% Any symbol that can directly reduce to empty has empty in its FIRST set.
     for each x in g do
       if assoc(nil, lalr_productions x) then put(x, 'lalr_first, '(nil));
     repeat <<
@@ -429,9 +485,9 @@ symbolic procedure lalr_calculate_first g;
           while y and
                 not numberp car y
                 and member(nil, (w := get(car y, 'lalr_first))) do <<
-            z := union(w, z);
+            z := union(delete(nil, w), z);
             y := cdr y >>;
-          if null y then nil
+          if null y then z := union('(nil), z)
           else if numberp car y then z := union(list car y, z)
           else z := union(get(car y, 'lalr_first), z) >>;
         if z neq get(x, 'lalr_first) then more_added := t;
@@ -479,9 +535,12 @@ symbolic procedure lalr_print_items(heading, cc);
     printc heading
   end;
 
+fluid '(item_count);
+
 symbolic procedure lalr_items();
   begin
     scalar c, val, done, w, w1, w2, n, x1;
+    item_count := 0;
     val := lalr_productions '!S!';
     if cdr val then error(0, "Starting state must only reduce to one thing")
     else val := caar val;
@@ -515,6 +574,7 @@ symbolic procedure lalr_items();
 % If the set has not been seen at all before then it should be allocated
 % a number and added to my collection.
               else <<
+                item_count := item_count + 1;
                 c := (w . (n := n + 1)) . c;
                 puthash(x1, goto_cache,
                            (cdr i . n) . gethash(x1, goto_cache));
@@ -525,6 +585,7 @@ symbolic procedure lalr_items();
 % I think that I can now manage without seeing the LR(1) items...
 %   if !*lalr_verbose then lalr_print_items("LR(1) Items:", c);
 %
+    princ "Number of items put into goto cache = "; print item_count;
     return c
   end;
 
@@ -535,7 +596,7 @@ symbolic procedure lalr_items();
 
 symbolic procedure lalr_closure i;
   begin
-    scalar pending, a, rule, tail, done, ff, w;
+    scalar pending, a, rule, tail, ff, w;
     pending := i;
     while pending do <<
       ff := car pending;  % [(A -> alpha . B beta), a]
@@ -603,14 +664,9 @@ symbolic procedure lalr_cached_goto(i, x);
 symbolic procedure lalr_remove_duplicates x;
   begin
     scalar r;
-    if null x then return nil;
-    x := sort(x, function ordp);
-    r := list car x;
-    x := cdr x;
-    while x do <<
-      if not (car x = car r) then r := car x . r;
-      x := cdr x >>;
-    return r
+    for each a in x do
+      if not member(a, r) then r := a . r;
+    return reversip r
   end;
 
 symbolic procedure lalr_core i;
@@ -698,6 +754,7 @@ symbolic procedure lalr_make_actions c;
           aa := list(0, 'accept) . aa >>;
         action_table := (cdr i . lalr_remove_duplicates aa) . action_table >>;
     action_table := lalr_resolve_conflicts action_table;
+    princ "Action index size = "; print caar action_table;
     action_index := mkvect16 caar action_table;
     action_table := reversip action_table;
     if !*lalr_verbose then lalr_print_actions action_table;
@@ -738,6 +795,7 @@ symbolic procedure lalr_make_actions c;
           rr := -rx >>;
           w := (tt . rr) . w;
           j := j + 1 end >>;
+    princ "Action terminal table size = "; print j;
     action_terminal := mkvect16 sub1 j;
     action_result := mkvect16 sub1 j;
     while j > 0 do <<
@@ -791,13 +849,14 @@ symbolic procedure lalr_resolve_conflicts action_table;
 
 symbolic procedure lalr_resolve_conflicts1 x;
   begin
-    scalar r, w, s, shift, reduce, rterm, p1, p2;
+    scalar r, w, x2, s, shift, reduce, rterm, p1, p2;
 % Here I have a list of items each of which is of the form
 %        (k (shift n))
 % or     (k (reduce (X ...) ..)
 % where k is a numeric code standing for a terminal. I want to identify all
 % cases where there are repeats on k. So I will sort on that field and then
 % matching cases will be adjacent.
+% came first in that.
     x := sort(x, function lesspcar);
     while x do <<
       w := list car x;
@@ -813,13 +872,18 @@ symbolic procedure lalr_resolve_conflicts1 x;
           if eqcar(cadr q, 'shift) then shift := q
           else if null reduce then reduce := q
           else <<
+% I think that proper people view a reduce/reduce conflict as a real
+% problem with that grammar - one that needs correcting. So I will
+% generate a message and then run with whichever of the two reductions
+% I happen to have seen first. I will not guarantee that this strategy
+% relates to the order in which rules were specified in the grammar.
             if not zerop posn() then terpri();
-            princ "+++ reduce/reduce conflict on ";
+            princ "+++++ Reduce/reduce conflict on ";
             prin cadr cadr reduce;
             princ " and ";
             print cadr cadr q;
-% Pick which one to keep here...
-            nil >>;
+            princ "Resolved in favour of ";
+            print cadr cadr reduce >>;
           if shift and reduce then <<
             rterm := nil;
             s := cadr cadr reduce;
@@ -845,7 +909,7 @@ symbolic procedure lalr_resolve_conflicts1 x;
               else shift := nil >>
             else <<
               if not zerop posn() then terpri();
-              princ "+++ shift/reduce conflict for ";
+              princ "+++ Shift/reduce conflict for ";
               s := cadr cadr reduce;
               lalr_prin_symbol car s;
               princ " ->";
@@ -855,7 +919,7 @@ symbolic procedure lalr_resolve_conflicts1 x;
               princ " followed  by ";
               lalr_prin_symbol car shift;
               terpri();
-              printc "Resolved in favour of SHIFT operation";
+              printc "Resolved in favour of the shift operation";
               reduce := nil >> >>;
         if shift then w := list shift
         else if reduce then w := list reduce
@@ -946,6 +1010,7 @@ symbolic procedure lalr_make_gotos();
             r := ((-1) . w) . r;
             p := p + 1 >> >>;
     goto_index := mkvect16 sub1 length non_terminals;
+    princ "goto table size = "; print p;
     goto_old_state := mkvect16 sub1 p;
     goto_new_state := mkvect16 sub1 p;
     for each x in r1 do putv16(goto_index, car x, cdr x);
@@ -960,12 +1025,102 @@ symbolic procedure lalr_make_gotos();
       princ "goto_new_state: "; print16 goto_new_state >>
   end;
 
+fluid '(pending_rules!*);
+
+symbolic procedure lalr_expand_grammar g;
+  begin
+    scalar pending_rules!*, w, r;
+    pending_rules!* := g;
+% The use of the fluid variable pending_rules!* here is because when I
+% expand one rule that may generate othersd which willl themselves in turn
+% need to be scanned.
+    while pending_rules!* do <<
+      w := car pending_rules!*;
+      pending_rules!* := cdr pending_rules!*;
+      r := (expand_rule w) . r >>;
+    return reverse r
+  end;
+
+symbolic procedure expand_rule u;
+  car u .
+    for each x in cdr u collect
+      ((for each y in car x collect expand_terminal y) . cdr x);
+
+symbolic procedure expand_terminal z;
+  begin
+    scalar g1, g2, g3;
+    if atom z then return z
+    else if eqcar(z, 'opt) then <<
+      g1 := gensym();
+      pending_rules!* :=
+        list(g1,
+             '(()),
+             list cdr z) . pending_rules!*;
+      return g1 >>
+    else if eqcar(z, 'star) then <<
+      g1 := gensym();
+      g2 := gensym();
+      if cdr z and null cddr z and atom cadr z then g2 := cadr z
+      else pending_rules!* := list(g2, list cdr z) . pending_rules!*;
+      pending_rules!* :=
+        list(g1,
+             '(()),
+             list(list(g2, g1), '(cons !$1 !$2))) . pending_rules!*;
+      return g1 >>
+    else if eqcar(z, 'plus) then <<
+      g1 := gensym();
+      g2 := gensym();
+      if cdr z and null cddr z and atom cadr z then g2 := cadr z
+      else pending_rules!* := list(g2, list cdr z) . pending_rules!*;
+      pending_rules!* :=
+        list(g1,
+             list(list g2, '(list !$1)),
+             list(list(g2, g1), '(cons !$1 !$2))) . pending_rules!*;
+      return g1 >>
+    else if eqcar(z, 'list) and cdr z then <<
+      g1 := gensym();
+      g2 := gensym();
+      g3 := gensym();
+      if cddr z and null cdddr z and atom caddr z then g2 := caddr z
+      else pending_rules!* := list(g2, list cddr z) . pending_rules!*;
+      pending_rules!* :=
+        list(g3,
+             '(()),
+             list(list(cadr z, g2, g3), '(cons !$2 !$3))) . pending_rules!*;
+      pending_rules!* :=
+        list(g1,
+             '(()),
+             list(list(g2, g3), '(cons !$1 !$2))) . pending_rules!*;
+      return g1 >>
+    else if eqcar(z, 'listplus) and cdr z then <<
+      g1 := gensym();
+      g2 := gensym();
+      g3 := gensym();
+      if cddr z and null cdddr z and atom caddr z then g2 := caddr z
+      else pending_rules!* := list(g2, list cddr z) . pending_rules!*;
+      pending_rules!* :=
+        list(g3,
+             '(()),
+             list(list(cadr z, g2, g3), '(cons !$2 !$3))) . pending_rules!*;
+      pending_rules!* :=
+        list(g1,
+             list(list(g2, g3), '(cons !$1 !$2))) . pending_rules!*;
+      return g1 >>
+    else if eqcar(z, 'or) then <<
+      g1 := gensym();
+      pending_rules!* :=
+        (g1 . for each q in cdr z collect list list q) . pending_rules!*;
+      return g1 >>
+    else error(0, "Invalid item in a rule")
+  end;
+
 % A main driver function that performs all the steps involved
 % in building parse tables for a given grammar.
 
 symbolic procedure lalr_construct_parser g;
   begin
     scalar c, cc, renamings;
+    g := lalr_expand_grammar g; % Deal with "opt", "star" etc.
     lalr_set_grammar g;
 %
 % The procedure used here at present is a naive one that first creates

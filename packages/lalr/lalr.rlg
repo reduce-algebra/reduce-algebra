@@ -1,5 +1,4 @@
-% Test cases for the parser generator. This all runs in
-% symbolic mode...
+% Test cases for the parser generator. This all runs in symbolic mode...
 
 
 %
@@ -50,6 +49,16 @@
 % of it will also be grouped to form single entities. So if "<-->" is a
 % terminal then '<', '<-' and '<--' will each by parsed as single tokens, and
 % any of them that are not used as terminals will be classified as !:symbol.
+%
+% As well as terminals and non-terminals (which are wrirrent as symbols or
+% strings) it is possible to write one of
+%     (OPT s1 s2 ...)           0 or 1 instances of the sequence s1, ...
+%     (STAR s1 s2 ...)          0, 1, 2, ... instances
+%     (PLUS s1 s2 ...)          1, 2, 3, ... instances
+%     (LIST sep s1 s2 ...)      like (STAR s1 s2 ...) but with the single
+%                               item sep between each instance.
+%     (LISTPLUS sep s1 ...)     like (PLUS s2 ...) but with sep interleaved.
+%     (OR s1 s2 ...)            one or other of the tokens shown.
 %
 % When the lexer processes input it will return a numeric code that identifies
 % the type of the item seen, so in a production one might write
@@ -206,88 +215,93 @@ Non-terminal symbols are:
                     | "d"                       { }
                     ;
 
+3 semantic actions
 Action map:
 0:          nil
 1:          nil
 2:          nil
 3:          nil
 FIRST sets for each non-terminal:
-S':             c d
-S:              c d
-C:              c d
+S':             "c" "d"
+S:              "c" "d"
+C:              "c" "d"
+Number of items put into goto cache = 9
 Merged Items:
 Item number 0
   S' -> . S  :  $
-  C -> . c C  :  c
-  C -> . c C  :  d
-  C -> . d  :  c
-  C -> . d  :  d
+  C -> . "c" C  :  "c"
+  C -> . "c" C  :  "d"
+  C -> . "d"  :  "c"
+  C -> . "d"  :  "d"
   S -> . C C  :  $
           C GOTO state 1
           S GOTO state 2
-          c GOTO state 4
-          d GOTO state 3
+          "c" GOTO state 4
+          "d" GOTO state 3
 Item number 1
-  C -> . c C  :  $
-  C -> . d  :  $
+  C -> . "c" C  :  $
+  C -> . "d"  :  $
   S -> C . C  :  $
           C GOTO state 6
-          c GOTO state 4
-          d GOTO state 3
+          "c" GOTO state 4
+          "d" GOTO state 3
 Item number 2
   S' -> S .  :  $
 Item number 3
-  C -> d .  :  c
-  C -> d .  :  d
-  C -> d .  :  $
+  C -> "d" .  :  "c"
+  C -> "d" .  :  "d"
+  C -> "d" .  :  $
 Item number 4
-  C -> . c C  :  c
-  C -> . c C  :  d
-  C -> . c C  :  $
-  C -> . d  :  c
-  C -> . d  :  d
-  C -> . d  :  $
-  C -> c . C  :  c
-  C -> c . C  :  d
-  C -> c . C  :  $
+  C -> . "c" C  :  "c"
+  C -> . "c" C  :  "d"
+  C -> . "c" C  :  $
+  C -> . "d"  :  "c"
+  C -> . "d"  :  "d"
+  C -> . "d"  :  $
+  C -> "c" . C  :  "c"
+  C -> "c" . C  :  "d"
+  C -> "c" . C  :  $
           C GOTO state 5
-          c GOTO state 4
-          d GOTO state 3
+          "c" GOTO state 4
+          "d" GOTO state 3
 Item number 5
-  C -> c C .  :  c
-  C -> c C .  :  d
-  C -> c C .  :  $
+  C -> "c" C .  :  "c"
+  C -> "c" C .  :  "d"
+  C -> "c" C .  :  $
 Item number 6
   S -> C C .  :  $
 End of Merged Items:
+Action index size = 6
 Actions:
-0                   c                   (shift 4)
-0                   d                   (shift 3)
-1                   c                   (shift 4)
-1                   d                   (shift 3)
+0                   "c"                 (shift 4)
+0                   "d"                 (shift 3)
+1                   "c"                 (shift 4)
+1                   "d"                 (shift 3)
 2                   $                   accept
-3                   c                   reduce C -> d { 3 }
-3                   d                   reduce C -> d { 3 }
-3                   $                   reduce C -> d { 3 }
-4                   c                   (shift 4)
-4                   d                   (shift 3)
-5                   c                   reduce C -> c C { 2 }
-5                   d                   reduce C -> c C { 2 }
-5                   $                   reduce C -> c C { 2 }
+3                   "c"                 reduce C -> "d" { 3 }
+3                   "d"                 reduce C -> "d" { 3 }
+3                   $                   reduce C -> "d" { 3 }
+4                   "c"                 (shift 4)
+4                   "d"                 (shift 3)
+5                   "c"                 reduce C -> "c" C { 2 }
+5                   "d"                 reduce C -> "c" C { 2 }
+5                   $                   reduce C -> "c" C { 2 }
 6                   $                   reduce S -> C C { 1 }
+Action terminal table size = 14
 action_index #V16[0 2 4 5 8 10 13]
 action_terminal #V16[6 -1 6 -1 -1 6 5 -1 6 -1 6 5 -1 -1]
 action_result #V16[4 3 4 3 0 -3 -3 -3 4 3 -2 -2 -2 -1]
 action_fn [nil nil nil]
 action_n #V8[2 2 1]
 action_A #V16[1 2 2]
-0         C GOTO state 1
-1         C GOTO state 6
 4         C GOTO state 5
+1         C GOTO state 6
+0         C GOTO state 1
 0         S GOTO state 2
+goto table size = 4
 goto_index: #V16[0 3 0]
-goto_old_state: #V16[0 1 -1 -1]
-goto_new_state: #V16[1 6 5 2]
+goto_old_state: #V16[4 1 -1 -1]
+goto_new_state: #V16[5 6 1 2]
 
 nil
 
@@ -402,6 +416,15 @@ Seems to have finished...
 
 
 
+% Now switch off the tracing. It is useful whiloe debugging this
+% package but is typically rather over the top for normal use.
+
+off tracelex, lalr_verbose;
+
+
+nil
+
+
 % Example 4.46 from the Red Dragon (4.61 in Aho, Lam, Sethi and Ullman,
 % "Compilers: principles, techniques and tools", second edition 2007).
 %
@@ -439,128 +462,11 @@ neatprintc "## R => L") !$1)))
 
 lalr_construct_parser g4_46;
 
-Terminal symbols are:
- !:eof:0 !:symbol:1 !:string:2 !:number:3 !:list:4 "*":5
-    "=":6
-Non-terminal symbols are:
-[0]S'               : S                         { }
-                    ;
-[1]S                : L "=" R                   { (neatprintc "## S => L = R") (
-list (quote equal) !$1 !$3) }
-                    | R                         { (neatprintc "## S => R") !$1 }
-                    ;
-[2]L                : "*" R                     { (neatprintc "## L => * R") (
-list (quote star) !$2) }
-                    | :SYMBOL                   { (neatprintc "## L => symbol") 
-!$1 }
-                    ;
-[3]R                : L                         { (neatprintc "## R => L") !$1 }
-                    ;
-
-Action map:
-0:          nil
-1:          ((neatprintc "## S => L = R") (list (quote equal) !$1 !$3))
-2:          ((neatprintc "## S => R") !$1)
-3:          ((neatprintc "## L => * R") (list (quote star) !$2))
-4:          ((neatprintc "## L => symbol") !$1)
-5:          ((neatprintc "## R => L") !$1)
-FIRST sets for each non-terminal:
-S':             !* !:symbol
-S:              !* !:symbol
-L:              !* !:symbol
-R:              !* !:symbol
-Merged Items:
-Item number 0
-  S' -> . S  :  $
-  L -> . !* R  :  !=
-  L -> . !* R  :  $
-  L -> . !:symbol  :  !=
-  L -> . !:symbol  :  $
-  R -> . L  :  $
-  S -> . L != R  :  $
-  S -> . R  :  $
-          L GOTO state 2
-          R GOTO state 1
-          S GOTO state 3
-          !* GOTO state 5
-          !:symbol GOTO state 4
-Item number 1
-  S -> R .  :  $
-Item number 2
-  R -> L .  :  $
-  S -> L . != R  :  $
-          != GOTO state 8
-Item number 3
-  S' -> S .  :  $
-Item number 4
-  L -> !:symbol .  :  !=
-  L -> !:symbol .  :  $
-Item number 5
-  L -> . !* R  :  !=
-  L -> . !* R  :  $
-  L -> . !:symbol  :  !=
-  L -> . !:symbol  :  $
-  L -> !* . R  :  !=
-  L -> !* . R  :  $
-  R -> . L  :  !=
-  R -> . L  :  $
-          L GOTO state 7
-          R GOTO state 6
-          !* GOTO state 5
-          !:symbol GOTO state 4
-Item number 6
-  L -> !* R .  :  !=
-  L -> !* R .  :  $
-Item number 7
-  R -> L .  :  !=
-  R -> L .  :  $
-Item number 8
-  L -> . !* R  :  $
-  L -> . !:symbol  :  $
-  R -> . L  :  $
-  S -> L != . R  :  $
-          L GOTO state 7
-          R GOTO state 9
-          !* GOTO state 5
-          !:symbol GOTO state 4
-Item number 9
-  S -> L != R .  :  $
-End of Merged Items:
-Actions:
-0                   !*                  (shift 5)
-0                   !:symbol            (shift 4)
-1                   $                   reduce S -> R { 2 }
-2                   !=                  (shift 8)
-2                   $                   reduce R -> L { 5 }
-3                   $                   accept
-4                   !=                  reduce L -> !:symbol { 4 }
-4                   $                   reduce L -> !:symbol { 4 }
-5                   !*                  (shift 5)
-5                   !:symbol            (shift 4)
-6                   !=                  reduce L -> !* R { 3 }
-6                   $                   reduce L -> !* R { 3 }
-7                   !=                  reduce R -> L { 5 }
-7                   $                   reduce R -> L { 5 }
-8                   !*                  (shift 5)
-8                   !:symbol            (shift 4)
-9                   $                   reduce S -> L != R { 1 }
-action_index #V16[0 2 3 5 6 8 10 12 14 16]
-action_terminal #V16[5 -1 -1 6 -1 -1 6 -1 5 -1 6 -1 6 -1 5 -1 -1]
-action_result #V16[5 4 -2 8 -5 0 -4 -4 5 4 -3 -3 -5 -5 5 4 -1]
-action_fn [lalr_action_function_9 lalr_action_function_1 lalr_action_function_6 
-lalr_action_function_4 lalr_action_function_8]
-action_n #V8[3 1 2 1 1]
-action_A #V16[1 1 2 2 3]
-0         L GOTO state 2
-5         L GOTO state 7
-8         L GOTO state 7
-0         R GOTO state 1
-5         R GOTO state 6
-8         R GOTO state 9
-0         S GOTO state 3
-goto_index: #V16[0 5 0 2]
-goto_old_state: #V16[0 -1 0 5 -1 -1]
-goto_new_state: #V16[2 7 1 6 9 3]
+5 semantic actions
+Number of items put into goto cache = 13
+Action index size = 9
+Action terminal table size = 17
+goto table size = 6
 
 nil
 
@@ -569,43 +475,13 @@ pparse()$
 
 
 
-leftsym =("action" 3 "state" 4 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 1 turn into l
-Apply lalr_action_function_4 to 1 items (leftsym)
+leftsym =
 ## L => symbol
-now get goto for 0 and l = ("get_goto" 0 2)
-("next state" 2)
-2
-("get_goto" 0 2)
-("next state" 2)
- rightsym ;("action" 3 "state" 4 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 1 turn into l
-Apply lalr_action_function_4 to 1 items (rightsym)
+ rightsym ;
 ## L => symbol
-now get goto for 8 and l = ("get_goto" 8 2)
-("next state" 7)
-7
-("get_goto" 8 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items (rightsym)
 ## R => L
-now get goto for 8 and r = ("get_goto" 8 3)
-("next state" 9)
-9
-("get_goto" 8 3)
-("next state" 9)
-("action" 0 "state" 9 "non_terminals" (!S!' s l r) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_9 to 3 items (leftsym != rightsym)
 ## S => L = R
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 3)
-3
-("get_goto" 0 1)
-("next state" 3)
-Seems to have finished... 
+
 = (equal leftsym rightsym)
 
 
@@ -614,134 +490,23 @@ pparse()$
 
 
 
-****abc =("action" 3 "state" 4 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 1 turn into l
-Apply lalr_action_function_4 to 1 items (abc)
+****abc =
 ## L => symbol
-now get goto for 5 and l = ("get_goto" 5 2)
-("next state" 7)
-7
-("get_goto" 5 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items (abc)
 ## R => L
-now get goto for 5 and r = ("get_goto" 5 3)
-("next state" 6)
-6
-("get_goto" 5 3)
-("next state" 6)
-("action" 2 "state" 6 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 2 turn into l
-Apply lalr_action_function_6 to 2 items (!* abc)
 ## L => * R
-now get goto for 5 and l = ("get_goto" 5 2)
-("next state" 7)
-7
-("get_goto" 5 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items ((star abc))
 ## R => L
-now get goto for 5 and r = ("get_goto" 5 3)
-("next state" 6)
-6
-("get_goto" 5 3)
-("next state" 6)
-("action" 2 "state" 6 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 2 turn into l
-Apply lalr_action_function_6 to 2 items (!* (star abc))
 ## L => * R
-now get goto for 5 and l = ("get_goto" 5 2)
-("next state" 7)
-7
-("get_goto" 5 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items ((star (star abc)))
 ## R => L
-now get goto for 5 and r = ("get_goto" 5 3)
-("next state" 6)
-6
-("get_goto" 5 3)
-("next state" 6)
-("action" 2 "state" 6 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 2 turn into l
-Apply lalr_action_function_6 to 2 items (!* (star (star abc)))
 ## L => * R
-now get goto for 5 and l = ("get_goto" 5 2)
-("next state" 7)
-7
-("get_goto" 5 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items ((star (star (star abc))))
 ## R => L
-now get goto for 5 and r = ("get_goto" 5 3)
-("next state" 6)
-6
-("get_goto" 5 3)
-("next state" 6)
-("action" 2 "state" 6 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 2 turn into l
-Apply lalr_action_function_6 to 2 items (!* (star (star (star abc))))
 ## L => * R
-now get goto for 0 and l = ("get_goto" 0 2)
-("next state" 2)
-2
-("get_goto" 0 2)
-("next state" 2)
- *def ;("action" 3 "state" 4 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 1 turn into l
-Apply lalr_action_function_4 to 1 items (def)
+ *def ;
 ## L => symbol
-now get goto for 5 and l = ("get_goto" 5 2)
-("next state" 7)
-7
-("get_goto" 5 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items (def)
 ## R => L
-now get goto for 5 and r = ("get_goto" 5 3)
-("next state" 6)
-6
-("get_goto" 5 3)
-("next state" 6)
-("action" 2 "state" 6 "non_terminals" (!S!' s l r) "A" 2)
-RHS count 2 turn into l
-Apply lalr_action_function_6 to 2 items (!* def)
 ## L => * R
-now get goto for 8 and l = ("get_goto" 8 2)
-("next state" 7)
-7
-("get_goto" 8 2)
-("next state" 7)
-("action" 4 "state" 7 "non_terminals" (!S!' s l r) "A" 3)
-RHS count 1 turn into r
-Apply lalr_action_function_8 to 1 items ((star def))
 ## R => L
-now get goto for 8 and r = ("get_goto" 8 3)
-("next state" 9)
-9
-("get_goto" 8 3)
-("next state" 9)
-("action" 0 "state" 9 "non_terminals" (!S!' s l r) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_9 to 3 items ((star (star (star (star abc)))) != (
-star def))
 ## S => L = R
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 3)
-3
-("get_goto" 0 1)
-("next state" 3)
-Seems to have finished... 
+
 = (equal (star (star (star (star abc)))) (star def))
 
 
@@ -781,3258 +546,17 @@ gtest := '((S  ((P))
 
 lalr_precedence '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
 
-Predecence for "^" is (31 . 29)
-Predecence for "**" is (31 . 29)
-Predecence for "*" is (26 . 28)
-Predecence for "/" is (26 . 28)
-Predecence for "+" is (23 . 25)
-Predecence for "-" is (23 . 25)
-Predecence for "=" is (21 . 21)
 
 nil
 
 
 lalr_construct_parser gtest;
 
-Terminal symbols are:
- !:eof:0 !:symbol:1 !:string:2 !:number:3 !:list:4 ")":5
-    "(":6 "=":7(21 . 21) "-":8(23 . 25) "+":9(23 . 25) "/":10(26 . 28)
-    "*":11(26 . 28) "**":12(31 . 29) "^":13(31 . 29)
-Non-terminal symbols are:
-[0]S'               : S                         { }
-                    ;
-[1]S                : P                         { }
-                    | S "^" S                   { (list (quote pow) !$1 !$3) }
-                    | S "**" S                  { (list (quote pow) !$1 !$3) }
-                    | S "*" S                   { (list (quote tms) !$1 !$3) }
-                    | S "/" S                   { (list (quote quot) !$1 !$3) }
-                    | S "+" S                   { (list (quote plus) !$1 !$3) }
-                    | S "-" S                   { (list (quote diff) !$1 !$3) }
-                    | S "=" S                   { (list (quote eq) !$1 !$3) }
-                    | "-" S                     { (list (quote minus) !$2) }
-                    | "+" S                     { !$2 }
-                    ;
-[2]P                : "(" S ")"                 { !$2 }
-                    | :SYMBOL                   { }
-                    | :STRING                   { }
-                    | :NUMBER                   { }
-                    ;
-
-Action map:
-0:          nil
-1:          nil
-2:          ((list (quote pow) !$1 !$3))
-3:          ((list (quote tms) !$1 !$3))
-4:          ((list (quote quot) !$1 !$3))
-5:          ((list (quote plus) !$1 !$3))
-6:          ((list (quote diff) !$1 !$3))
-7:          ((list (quote eq) !$1 !$3))
-8:          ((list (quote minus) !$2))
-9:          (!$2)
-10:         (!$2)
-11:         nil
-FIRST sets for each non-terminal:
-S':             !+ !- !( !:number !:string !:symbol
-S:              !+ !- !( !:number !:string !:symbol
-P:              !( !:number !:string !:symbol
-Merged Items:
-Item number 0
-  S' -> . S  :  $
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  $
-          P GOTO state 1
-          S GOTO state 2
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 1
-  S -> P .  :  !^
-  S -> P .  :  12
-  S -> P .  :  !*
-  S -> P .  :  !/
-  S -> P .  :  !+
-  S -> P .  :  !-
-  S -> P .  :  !=
-  S -> P .  :  !)
-  S -> P .  :  $
-Item number 2
-  S' -> S .  :  $
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 3
-  P -> !:symbol .  :  !^
-  P -> !:symbol .  :  12
-  P -> !:symbol .  :  !*
-  P -> !:symbol .  :  !/
-  P -> !:symbol .  :  !+
-  P -> !:symbol .  :  !-
-  P -> !:symbol .  :  !=
-  P -> !:symbol .  :  !)
-  P -> !:symbol .  :  $
-Item number 4
-  P -> !:string .  :  !^
-  P -> !:string .  :  12
-  P -> !:string .  :  !*
-  P -> !:string .  :  !/
-  P -> !:string .  :  !+
-  P -> !:string .  :  !-
-  P -> !:string .  :  !=
-  P -> !:string .  :  !)
-  P -> !:string .  :  $
-Item number 5
-  P -> !:number .  :  !^
-  P -> !:number .  :  12
-  P -> !:number .  :  !*
-  P -> !:number .  :  !/
-  P -> !:number .  :  !+
-  P -> !:number .  :  !-
-  P -> !:number .  :  !=
-  P -> !:number .  :  !)
-  P -> !:number .  :  $
-Item number 6
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> !( . S !)  :  !^
-  P -> !( . S !)  :  12
-  P -> !( . S !)  :  !*
-  P -> !( . S !)  :  !/
-  P -> !( . S !)  :  !+
-  P -> !( . S !)  :  !-
-  P -> !( . S !)  :  !=
-  P -> !( . S !)  :  !)
-  P -> !( . S !)  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-          P GOTO state 1
-          S GOTO state 12
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 7
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> !- . S  :  !^
-  S -> !- . S  :  12
-  S -> !- . S  :  !*
-  S -> !- . S  :  !/
-  S -> !- . S  :  !+
-  S -> !- . S  :  !-
-  S -> !- . S  :  !=
-  S -> !- . S  :  !)
-  S -> !- . S  :  $
-          P GOTO state 1
-          S GOTO state 10
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 8
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> !+ . S  :  !^
-  S -> !+ . S  :  12
-  S -> !+ . S  :  !*
-  S -> !+ . S  :  !/
-  S -> !+ . S  :  !+
-  S -> !+ . S  :  !-
-  S -> !+ . S  :  !=
-  S -> !+ . S  :  !)
-  S -> !+ . S  :  $
-          P GOTO state 1
-          S GOTO state 9
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 9
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> !+ S .  :  !^
-  S -> !+ S .  :  12
-  S -> !+ S .  :  !*
-  S -> !+ S .  :  !/
-  S -> !+ S .  :  !+
-  S -> !+ S .  :  !-
-  S -> !+ S .  :  !=
-  S -> !+ S .  :  !)
-  S -> !+ S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 10
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> !- S .  :  !^
-  S -> !- S .  :  12
-  S -> !- S .  :  !*
-  S -> !- S .  :  !/
-  S -> !- S .  :  !+
-  S -> !- S .  :  !-
-  S -> !- S .  :  !=
-  S -> !- S .  :  !)
-  S -> !- S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 12
-  P -> !( S . !)  :  !^
-  P -> !( S . !)  :  12
-  P -> !( S . !)  :  !*
-  P -> !( S . !)  :  !/
-  P -> !( S . !)  :  !+
-  P -> !( S . !)  :  !-
-  P -> !( S . !)  :  !=
-  P -> !( S . !)  :  !)
-  P -> !( S . !)  :  $
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-          !) GOTO state 43
-Item number 19
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S != . S  :  !^
-  S -> S != . S  :  12
-  S -> S != . S  :  !*
-  S -> S != . S  :  !/
-  S -> S != . S  :  !+
-  S -> S != . S  :  !-
-  S -> S != . S  :  !=
-  S -> S != . S  :  !)
-  S -> S != . S  :  $
-          P GOTO state 1
-          S GOTO state 39
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 20
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S !- . S  :  !^
-  S -> S !- . S  :  12
-  S -> S !- . S  :  !*
-  S -> S !- . S  :  !/
-  S -> S !- . S  :  !+
-  S -> S !- . S  :  !-
-  S -> S !- . S  :  !=
-  S -> S !- . S  :  !)
-  S -> S !- . S  :  $
-          P GOTO state 1
-          S GOTO state 38
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 21
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S !+ . S  :  !^
-  S -> S !+ . S  :  12
-  S -> S !+ . S  :  !*
-  S -> S !+ . S  :  !/
-  S -> S !+ . S  :  !+
-  S -> S !+ . S  :  !-
-  S -> S !+ . S  :  !=
-  S -> S !+ . S  :  !)
-  S -> S !+ . S  :  $
-          P GOTO state 1
-          S GOTO state 37
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 22
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S !/ . S  :  !^
-  S -> S !/ . S  :  12
-  S -> S !/ . S  :  !*
-  S -> S !/ . S  :  !/
-  S -> S !/ . S  :  !+
-  S -> S !/ . S  :  !-
-  S -> S !/ . S  :  !=
-  S -> S !/ . S  :  !)
-  S -> S !/ . S  :  $
-          P GOTO state 1
-          S GOTO state 36
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 23
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S !* . S  :  !^
-  S -> S !* . S  :  12
-  S -> S !* . S  :  !*
-  S -> S !* . S  :  !/
-  S -> S !* . S  :  !+
-  S -> S !* . S  :  !-
-  S -> S !* . S  :  !=
-  S -> S !* . S  :  !)
-  S -> S !* . S  :  $
-          P GOTO state 1
-          S GOTO state 35
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 24
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S 12 . S  :  !^
-  S -> S 12 . S  :  12
-  S -> S 12 . S  :  !*
-  S -> S 12 . S  :  !/
-  S -> S 12 . S  :  !+
-  S -> S 12 . S  :  !-
-  S -> S 12 . S  :  !=
-  S -> S 12 . S  :  !)
-  S -> S 12 . S  :  $
-          P GOTO state 1
-          S GOTO state 34
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 25
-  P -> . !( S !)  :  !^
-  P -> . !( S !)  :  12
-  P -> . !( S !)  :  !*
-  P -> . !( S !)  :  !/
-  P -> . !( S !)  :  !+
-  P -> . !( S !)  :  !-
-  P -> . !( S !)  :  !=
-  P -> . !( S !)  :  !)
-  P -> . !( S !)  :  $
-  P -> . !:number  :  !^
-  P -> . !:number  :  12
-  P -> . !:number  :  !*
-  P -> . !:number  :  !/
-  P -> . !:number  :  !+
-  P -> . !:number  :  !-
-  P -> . !:number  :  !=
-  P -> . !:number  :  !)
-  P -> . !:number  :  $
-  P -> . !:string  :  !^
-  P -> . !:string  :  12
-  P -> . !:string  :  !*
-  P -> . !:string  :  !/
-  P -> . !:string  :  !+
-  P -> . !:string  :  !-
-  P -> . !:string  :  !=
-  P -> . !:string  :  !)
-  P -> . !:string  :  $
-  P -> . !:symbol  :  !^
-  P -> . !:symbol  :  12
-  P -> . !:symbol  :  !*
-  P -> . !:symbol  :  !/
-  P -> . !:symbol  :  !+
-  P -> . !:symbol  :  !-
-  P -> . !:symbol  :  !=
-  P -> . !:symbol  :  !)
-  P -> . !:symbol  :  $
-  S -> . P  :  !^
-  S -> . P  :  12
-  S -> . P  :  !*
-  S -> . P  :  !/
-  S -> . P  :  !+
-  S -> . P  :  !-
-  S -> . P  :  !=
-  S -> . P  :  !)
-  S -> . P  :  $
-  S -> . S !^ S  :  !^
-  S -> . S !^ S  :  12
-  S -> . S !^ S  :  !*
-  S -> . S !^ S  :  !/
-  S -> . S !^ S  :  !+
-  S -> . S !^ S  :  !-
-  S -> . S !^ S  :  !=
-  S -> . S !^ S  :  !)
-  S -> . S !^ S  :  $
-  S -> . S 12 S  :  !^
-  S -> . S 12 S  :  12
-  S -> . S 12 S  :  !*
-  S -> . S 12 S  :  !/
-  S -> . S 12 S  :  !+
-  S -> . S 12 S  :  !-
-  S -> . S 12 S  :  !=
-  S -> . S 12 S  :  !)
-  S -> . S 12 S  :  $
-  S -> . S !* S  :  !^
-  S -> . S !* S  :  12
-  S -> . S !* S  :  !*
-  S -> . S !* S  :  !/
-  S -> . S !* S  :  !+
-  S -> . S !* S  :  !-
-  S -> . S !* S  :  !=
-  S -> . S !* S  :  !)
-  S -> . S !* S  :  $
-  S -> . S !/ S  :  !^
-  S -> . S !/ S  :  12
-  S -> . S !/ S  :  !*
-  S -> . S !/ S  :  !/
-  S -> . S !/ S  :  !+
-  S -> . S !/ S  :  !-
-  S -> . S !/ S  :  !=
-  S -> . S !/ S  :  !)
-  S -> . S !/ S  :  $
-  S -> . S !+ S  :  !^
-  S -> . S !+ S  :  12
-  S -> . S !+ S  :  !*
-  S -> . S !+ S  :  !/
-  S -> . S !+ S  :  !+
-  S -> . S !+ S  :  !-
-  S -> . S !+ S  :  !=
-  S -> . S !+ S  :  !)
-  S -> . S !+ S  :  $
-  S -> . S !- S  :  !^
-  S -> . S !- S  :  12
-  S -> . S !- S  :  !*
-  S -> . S !- S  :  !/
-  S -> . S !- S  :  !+
-  S -> . S !- S  :  !-
-  S -> . S !- S  :  !=
-  S -> . S !- S  :  !)
-  S -> . S !- S  :  $
-  S -> . S != S  :  !^
-  S -> . S != S  :  12
-  S -> . S != S  :  !*
-  S -> . S != S  :  !/
-  S -> . S != S  :  !+
-  S -> . S != S  :  !-
-  S -> . S != S  :  !=
-  S -> . S != S  :  !)
-  S -> . S != S  :  $
-  S -> . !+ S  :  !^
-  S -> . !+ S  :  12
-  S -> . !+ S  :  !*
-  S -> . !+ S  :  !/
-  S -> . !+ S  :  !+
-  S -> . !+ S  :  !-
-  S -> . !+ S  :  !=
-  S -> . !+ S  :  !)
-  S -> . !+ S  :  $
-  S -> . !- S  :  !^
-  S -> . !- S  :  12
-  S -> . !- S  :  !*
-  S -> . !- S  :  !/
-  S -> . !- S  :  !+
-  S -> . !- S  :  !-
-  S -> . !- S  :  !=
-  S -> . !- S  :  !)
-  S -> . !- S  :  $
-  S -> S !^ . S  :  !^
-  S -> S !^ . S  :  12
-  S -> S !^ . S  :  !*
-  S -> S !^ . S  :  !/
-  S -> S !^ . S  :  !+
-  S -> S !^ . S  :  !-
-  S -> S !^ . S  :  !=
-  S -> S !^ . S  :  !)
-  S -> S !^ . S  :  $
-          P GOTO state 1
-          S GOTO state 27
-          !+ GOTO state 8
-          !- GOTO state 7
-          !( GOTO state 6
-          !:number GOTO state 5
-          !:string GOTO state 4
-          !:symbol GOTO state 3
-Item number 27
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S !^ S .  :  !^
-  S -> S !^ S .  :  12
-  S -> S !^ S .  :  !*
-  S -> S !^ S .  :  !/
-  S -> S !^ S .  :  !+
-  S -> S !^ S .  :  !-
-  S -> S !^ S .  :  !=
-  S -> S !^ S .  :  !)
-  S -> S !^ S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 34
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S 12 S .  :  !^
-  S -> S 12 S .  :  12
-  S -> S 12 S .  :  !*
-  S -> S 12 S .  :  !/
-  S -> S 12 S .  :  !+
-  S -> S 12 S .  :  !-
-  S -> S 12 S .  :  !=
-  S -> S 12 S .  :  !)
-  S -> S 12 S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 35
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S !* S .  :  !^
-  S -> S !* S .  :  12
-  S -> S !* S .  :  !*
-  S -> S !* S .  :  !/
-  S -> S !* S .  :  !+
-  S -> S !* S .  :  !-
-  S -> S !* S .  :  !=
-  S -> S !* S .  :  !)
-  S -> S !* S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 36
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S !/ S .  :  !^
-  S -> S !/ S .  :  12
-  S -> S !/ S .  :  !*
-  S -> S !/ S .  :  !/
-  S -> S !/ S .  :  !+
-  S -> S !/ S .  :  !-
-  S -> S !/ S .  :  !=
-  S -> S !/ S .  :  !)
-  S -> S !/ S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 37
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S !+ S .  :  !^
-  S -> S !+ S .  :  12
-  S -> S !+ S .  :  !*
-  S -> S !+ S .  :  !/
-  S -> S !+ S .  :  !+
-  S -> S !+ S .  :  !-
-  S -> S !+ S .  :  !=
-  S -> S !+ S .  :  !)
-  S -> S !+ S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 38
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S !- S .  :  !^
-  S -> S !- S .  :  12
-  S -> S !- S .  :  !*
-  S -> S !- S .  :  !/
-  S -> S !- S .  :  !+
-  S -> S !- S .  :  !-
-  S -> S !- S .  :  !=
-  S -> S !- S .  :  !)
-  S -> S !- S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 39
-  S -> S . !^ S  :  !^
-  S -> S . !^ S  :  12
-  S -> S . !^ S  :  !*
-  S -> S . !^ S  :  !/
-  S -> S . !^ S  :  !+
-  S -> S . !^ S  :  !-
-  S -> S . !^ S  :  !=
-  S -> S . !^ S  :  !)
-  S -> S . !^ S  :  $
-  S -> S . 12 S  :  !^
-  S -> S . 12 S  :  12
-  S -> S . 12 S  :  !*
-  S -> S . 12 S  :  !/
-  S -> S . 12 S  :  !+
-  S -> S . 12 S  :  !-
-  S -> S . 12 S  :  !=
-  S -> S . 12 S  :  !)
-  S -> S . 12 S  :  $
-  S -> S . !* S  :  !^
-  S -> S . !* S  :  12
-  S -> S . !* S  :  !*
-  S -> S . !* S  :  !/
-  S -> S . !* S  :  !+
-  S -> S . !* S  :  !-
-  S -> S . !* S  :  !=
-  S -> S . !* S  :  !)
-  S -> S . !* S  :  $
-  S -> S . !/ S  :  !^
-  S -> S . !/ S  :  12
-  S -> S . !/ S  :  !*
-  S -> S . !/ S  :  !/
-  S -> S . !/ S  :  !+
-  S -> S . !/ S  :  !-
-  S -> S . !/ S  :  !=
-  S -> S . !/ S  :  !)
-  S -> S . !/ S  :  $
-  S -> S . !+ S  :  !^
-  S -> S . !+ S  :  12
-  S -> S . !+ S  :  !*
-  S -> S . !+ S  :  !/
-  S -> S . !+ S  :  !+
-  S -> S . !+ S  :  !-
-  S -> S . !+ S  :  !=
-  S -> S . !+ S  :  !)
-  S -> S . !+ S  :  $
-  S -> S . !- S  :  !^
-  S -> S . !- S  :  12
-  S -> S . !- S  :  !*
-  S -> S . !- S  :  !/
-  S -> S . !- S  :  !+
-  S -> S . !- S  :  !-
-  S -> S . !- S  :  !=
-  S -> S . !- S  :  !)
-  S -> S . !- S  :  $
-  S -> S . != S  :  !^
-  S -> S . != S  :  12
-  S -> S . != S  :  !*
-  S -> S . != S  :  !/
-  S -> S . != S  :  !+
-  S -> S . != S  :  !-
-  S -> S . != S  :  !=
-  S -> S . != S  :  !)
-  S -> S . != S  :  $
-  S -> S != S .  :  !^
-  S -> S != S .  :  12
-  S -> S != S .  :  !*
-  S -> S != S .  :  !/
-  S -> S != S .  :  !+
-  S -> S != S .  :  !-
-  S -> S != S .  :  !=
-  S -> S != S .  :  !)
-  S -> S != S .  :  $
-          !^ GOTO state 25
-          12 GOTO state 24
-          !* GOTO state 23
-          !/ GOTO state 22
-          !+ GOTO state 21
-          !- GOTO state 20
-          != GOTO state 19
-Item number 43
-  P -> !( S !) .  :  !^
-  P -> !( S !) .  :  12
-  P -> !( S !) .  :  !*
-  P -> !( S !) .  :  !/
-  P -> !( S !) .  :  !+
-  P -> !( S !) .  :  !-
-  P -> !( S !) .  :  !=
-  P -> !( S !) .  :  !)
-  P -> !( S !) .  :  $
-End of Merged Items:
-Shift/reduce conflict: P1=(21 . 21)  P2=(21 . 21)
-Shift/reduce conflict: P1=(23 . 25)  P2=(21 . 21)
-Shift/reduce conflict: P1=(23 . 25)  P2=(21 . 21)
-Shift/reduce conflict: P1=(26 . 28)  P2=(21 . 21)
-Shift/reduce conflict: P1=(26 . 28)  P2=(21 . 21)
-Shift/reduce conflict: P1=(31 . 29)  P2=(21 . 21)
-Shift/reduce conflict: P1=(31 . 29)  P2=(21 . 21)
-Shift/reduce conflict: P1=(21 . 21)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(21 . 21)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(21 . 21)  P2=(26 . 28)
-Shift/reduce conflict: P1=(23 . 25)  P2=(26 . 28)
-Shift/reduce conflict: P1=(23 . 25)  P2=(26 . 28)
-Shift/reduce conflict: P1=(26 . 28)  P2=(26 . 28)
-Shift/reduce conflict: P1=(26 . 28)  P2=(26 . 28)
-Shift/reduce conflict: P1=(31 . 29)  P2=(26 . 28)
-Shift/reduce conflict: P1=(31 . 29)  P2=(26 . 28)
-Shift/reduce conflict: P1=(21 . 21)  P2=(26 . 28)
-Shift/reduce conflict: P1=(23 . 25)  P2=(26 . 28)
-Shift/reduce conflict: P1=(23 . 25)  P2=(26 . 28)
-Shift/reduce conflict: P1=(26 . 28)  P2=(26 . 28)
-Shift/reduce conflict: P1=(26 . 28)  P2=(26 . 28)
-Shift/reduce conflict: P1=(31 . 29)  P2=(26 . 28)
-Shift/reduce conflict: P1=(31 . 29)  P2=(26 . 28)
-Shift/reduce conflict: P1=(21 . 21)  P2=(31 . 29)
-Shift/reduce conflict: P1=(23 . 25)  P2=(31 . 29)
-Shift/reduce conflict: P1=(23 . 25)  P2=(31 . 29)
-Shift/reduce conflict: P1=(26 . 28)  P2=(31 . 29)
-Shift/reduce conflict: P1=(26 . 28)  P2=(31 . 29)
-Shift/reduce conflict: P1=(31 . 29)  P2=(31 . 29)
-Shift/reduce conflict: P1=(31 . 29)  P2=(31 . 29)
-Shift/reduce conflict: P1=(21 . 21)  P2=(31 . 29)
-Shift/reduce conflict: P1=(23 . 25)  P2=(31 . 29)
-Shift/reduce conflict: P1=(23 . 25)  P2=(31 . 29)
-Shift/reduce conflict: P1=(26 . 28)  P2=(31 . 29)
-Shift/reduce conflict: P1=(26 . 28)  P2=(31 . 29)
-Shift/reduce conflict: P1=(31 . 29)  P2=(31 . 29)
-Shift/reduce conflict: P1=(31 . 29)  P2=(31 . 29)
-Shift/reduce conflict: P1=(21 . 21)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(21 . 21)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(23 . 25)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(26 . 28)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Shift/reduce conflict: P1=(31 . 29)  P2=(23 . 25)
-Actions:
-0                   !+                  (shift 8)
-0                   !-                  (shift 7)
-0                   !(                  (shift 6)
-0                   !:number            (shift 5)
-0                   !:string            (shift 4)
-0                   !:symbol            (shift 3)
-1                   !^                  reduce S -> P { 1 }
-1                   12                  reduce S -> P { 1 }
-1                   !*                  reduce S -> P { 1 }
-1                   !/                  reduce S -> P { 1 }
-1                   !+                  reduce S -> P { 1 }
-1                   !-                  reduce S -> P { 1 }
-1                   !=                  reduce S -> P { 1 }
-1                   !)                  reduce S -> P { 1 }
-1                   $                   reduce S -> P { 1 }
-2                   !^                  (shift 25)
-2                   12                  (shift 24)
-2                   !*                  (shift 23)
-2                   !/                  (shift 22)
-2                   !+                  (shift 21)
-2                   !-                  (shift 20)
-2                   !=                  (shift 19)
-2                   $                   accept
-3                   !^                  reduce P -> !:symbol { 11 }
-3                   12                  reduce P -> !:symbol { 11 }
-3                   !*                  reduce P -> !:symbol { 11 }
-3                   !/                  reduce P -> !:symbol { 11 }
-3                   !+                  reduce P -> !:symbol { 11 }
-3                   !-                  reduce P -> !:symbol { 11 }
-3                   !=                  reduce P -> !:symbol { 11 }
-3                   !)                  reduce P -> !:symbol { 11 }
-3                   $                   reduce P -> !:symbol { 11 }
-4                   !^                  reduce P -> !:string { 11 }
-4                   12                  reduce P -> !:string { 11 }
-4                   !*                  reduce P -> !:string { 11 }
-4                   !/                  reduce P -> !:string { 11 }
-4                   !+                  reduce P -> !:string { 11 }
-4                   !-                  reduce P -> !:string { 11 }
-4                   !=                  reduce P -> !:string { 11 }
-4                   !)                  reduce P -> !:string { 11 }
-4                   $                   reduce P -> !:string { 11 }
-5                   !^                  reduce P -> !:number { 11 }
-5                   12                  reduce P -> !:number { 11 }
-5                   !*                  reduce P -> !:number { 11 }
-5                   !/                  reduce P -> !:number { 11 }
-5                   !+                  reduce P -> !:number { 11 }
-5                   !-                  reduce P -> !:number { 11 }
-5                   !=                  reduce P -> !:number { 11 }
-5                   !)                  reduce P -> !:number { 11 }
-5                   $                   reduce P -> !:number { 11 }
-6                   !+                  (shift 8)
-6                   !-                  (shift 7)
-6                   !(                  (shift 6)
-6                   !:number            (shift 5)
-6                   !:string            (shift 4)
-6                   !:symbol            (shift 3)
-7                   !+                  (shift 8)
-7                   !-                  (shift 7)
-7                   !(                  (shift 6)
-7                   !:number            (shift 5)
-7                   !:string            (shift 4)
-7                   !:symbol            (shift 3)
-8                   !+                  (shift 8)
-8                   !-                  (shift 7)
-8                   !(                  (shift 6)
-8                   !:number            (shift 5)
-8                   !:string            (shift 4)
-8                   !:symbol            (shift 3)
-9                   !^                  (shift 25)
-9                   12                  (shift 24)
-9                   !*                  (shift 23)
-9                   !/                  (shift 22)
-9                   !+                  reduce S -> !+ S { 9 }
-9                   !-                  reduce S -> !+ S { 9 }
-9                   !=                  reduce S -> !+ S { 9 }
-9                   !)                  reduce S -> !+ S { 9 }
-9                   $                   reduce S -> !+ S { 9 }
-10                  !^                  (shift 25)
-10                  12                  (shift 24)
-10                  !*                  (shift 23)
-10                  !/                  (shift 22)
-10                  !+                  reduce S -> !- S { 8 }
-10                  !-                  reduce S -> !- S { 8 }
-10                  !=                  reduce S -> !- S { 8 }
-10                  !)                  reduce S -> !- S { 8 }
-10                  $                   reduce S -> !- S { 8 }
-12                  !^                  (shift 25)
-12                  12                  (shift 24)
-12                  !*                  (shift 23)
-12                  !/                  (shift 22)
-12                  !+                  (shift 21)
-12                  !-                  (shift 20)
-12                  !=                  (shift 19)
-12                  !)                  (shift 43)
-19                  !+                  (shift 8)
-19                  !-                  (shift 7)
-19                  !(                  (shift 6)
-19                  !:number            (shift 5)
-19                  !:string            (shift 4)
-19                  !:symbol            (shift 3)
-20                  !+                  (shift 8)
-20                  !-                  (shift 7)
-20                  !(                  (shift 6)
-20                  !:number            (shift 5)
-20                  !:string            (shift 4)
-20                  !:symbol            (shift 3)
-21                  !+                  (shift 8)
-21                  !-                  (shift 7)
-21                  !(                  (shift 6)
-21                  !:number            (shift 5)
-21                  !:string            (shift 4)
-21                  !:symbol            (shift 3)
-22                  !+                  (shift 8)
-22                  !-                  (shift 7)
-22                  !(                  (shift 6)
-22                  !:number            (shift 5)
-22                  !:string            (shift 4)
-22                  !:symbol            (shift 3)
-23                  !+                  (shift 8)
-23                  !-                  (shift 7)
-23                  !(                  (shift 6)
-23                  !:number            (shift 5)
-23                  !:string            (shift 4)
-23                  !:symbol            (shift 3)
-24                  !+                  (shift 8)
-24                  !-                  (shift 7)
-24                  !(                  (shift 6)
-24                  !:number            (shift 5)
-24                  !:string            (shift 4)
-24                  !:symbol            (shift 3)
-25                  !+                  (shift 8)
-25                  !-                  (shift 7)
-25                  !(                  (shift 6)
-25                  !:number            (shift 5)
-25                  !:string            (shift 4)
-25                  !:symbol            (shift 3)
-27                  !^                  (shift 25)
-27                  12                  (shift 24)
-27                  !*                  reduce S -> S !^ S { 2 }
-27                  !/                  reduce S -> S !^ S { 2 }
-27                  !+                  reduce S -> S !^ S { 2 }
-27                  !-                  reduce S -> S !^ S { 2 }
-27                  !=                  reduce S -> S !^ S { 2 }
-27                  !)                  reduce S -> S !^ S { 2 }
-27                  $                   reduce S -> S !^ S { 2 }
-34                  !^                  (shift 25)
-34                  12                  (shift 24)
-34                  !*                  reduce S -> S 12 S { 2 }
-34                  !/                  reduce S -> S 12 S { 2 }
-34                  !+                  reduce S -> S 12 S { 2 }
-34                  !-                  reduce S -> S 12 S { 2 }
-34                  !=                  reduce S -> S 12 S { 2 }
-34                  !)                  reduce S -> S 12 S { 2 }
-34                  $                   reduce S -> S 12 S { 2 }
-35                  !^                  (shift 25)
-35                  12                  (shift 24)
-35                  !*                  reduce S -> S !* S { 3 }
-35                  !/                  reduce S -> S !* S { 3 }
-35                  !+                  reduce S -> S !* S { 3 }
-35                  !-                  reduce S -> S !* S { 3 }
-35                  !=                  reduce S -> S !* S { 3 }
-35                  !)                  reduce S -> S !* S { 3 }
-35                  $                   reduce S -> S !* S { 3 }
-36                  !^                  (shift 25)
-36                  12                  (shift 24)
-36                  !*                  reduce S -> S !/ S { 4 }
-36                  !/                  reduce S -> S !/ S { 4 }
-36                  !+                  reduce S -> S !/ S { 4 }
-36                  !-                  reduce S -> S !/ S { 4 }
-36                  !=                  reduce S -> S !/ S { 4 }
-36                  !)                  reduce S -> S !/ S { 4 }
-36                  $                   reduce S -> S !/ S { 4 }
-37                  !^                  (shift 25)
-37                  12                  (shift 24)
-37                  !*                  (shift 23)
-37                  !/                  (shift 22)
-37                  !+                  reduce S -> S !+ S { 5 }
-37                  !-                  reduce S -> S !+ S { 5 }
-37                  !=                  reduce S -> S !+ S { 5 }
-37                  !)                  reduce S -> S !+ S { 5 }
-37                  $                   reduce S -> S !+ S { 5 }
-38                  !^                  (shift 25)
-38                  12                  (shift 24)
-38                  !*                  (shift 23)
-38                  !/                  (shift 22)
-38                  !+                  reduce S -> S !- S { 6 }
-38                  !-                  reduce S -> S !- S { 6 }
-38                  !=                  reduce S -> S !- S { 6 }
-38                  !)                  reduce S -> S !- S { 6 }
-38                  $                   reduce S -> S !- S { 6 }
-39                  !^                  (shift 25)
-39                  12                  (shift 24)
-39                  !*                  (shift 23)
-39                  !/                  (shift 22)
-39                  !+                  (shift 21)
-39                  !-                  (shift 20)
-39                  !)                  reduce S -> S != S { 7 }
-39                  $                   reduce S -> S != S { 7 }
-43                  !^                  reduce P -> !( S !) { 10 }
-43                  12                  reduce P -> !( S !) { 10 }
-43                  !*                  reduce P -> !( S !) { 10 }
-43                  !/                  reduce P -> !( S !) { 10 }
-43                  !+                  reduce P -> !( S !) { 10 }
-43                  !-                  reduce P -> !( S !) { 10 }
-43                  !=                  reduce P -> !( S !) { 10 }
-43                  !)                  reduce P -> !( S !) { 10 }
-43                  $                   reduce P -> !( S !) { 10 }
-action_index #V16[0 6 15 23 32 41 50 56 62 68 77 0 86 0 0 0 0 0 0 94 100 106 112
- 118 124 130 0 136 0 0 0 0 0 0 145 154 163 172 181 190 0 0 0 198]
-action_terminal #V16[9 8 6 3 2 -1 13 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 -1 13
- 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 5 -1 9 8 6 3 2 -1 
-9 8 6 3 2 -1 9 8 6 3 2 -1 13 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 5 -1 13 12 11
- 10 9 8 7 -1 9 8 6 3 2 -1 9 8 6 3 2 -1 9 8 6 3 2 -1 9 8 6 3 2 -1 9 8 6 3 2 -1 9 
-8 6 3 2 -1 9 8 6 3 2 -1 13 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 5 -1 13 12 11 
-10 9 8 7 5 -1 13 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 5 -1 13 12 11 10 9 8 7 5 
--1 13 12 11 10 9 8 5 -1 13 12 11 10 9 8 7 5 -1]
-action_result #V16[8 7 6 5 4 3 -1 -1 -1 -1 -1 -1 -1 -1 -1 25 24 23 22 21 20 19 0
- -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11 -11
- -11 -11 -11 -11 -11 -11 -11 8 7 6 5 4 3 8 7 6 5 4 3 8 7 6 5 4 3 25 24 23 22 -9 
--9 -9 -9 -9 25 24 23 22 -8 -8 -8 -8 -8 25 24 23 22 21 20 19 43 8 7 6 5 4 3 8 7 6
- 5 4 3 8 7 6 5 4 3 8 7 6 5 4 3 8 7 6 5 4 3 8 7 6 5 4 3 8 7 6 5 4 3 25 24 -2 -2 
--2 -2 -2 -2 -2 25 24 -2 -2 -2 -2 -2 -2 -2 25 24 -3 -3 -3 -3 -3 -3 -3 25 24 -4 -4
- -4 -4 -4 -4 -4 25 24 23 22 -5 -5 -5 -5 -5 25 24 23 22 -6 -6 -6 -6 -6 25 24 23 
-22 21 20 -7 -7 -10 -10 -10 -10 -10 -10 -10 -10 -10]
-action_fn [nil lalr_action_function_33 lalr_action_function_40 
-lalr_action_function_47 lalr_action_function_52 lalr_action_function_57 
-lalr_action_function_59 lalr_action_function_19 lalr_action_function_14 
-lalr_action_function_68 nil]
-action_n #V8[1 3 3 3 3 3 3 2 2 3 1]
-action_A #V16[1 1 1 1 1 1 1 1 1 2 2]
-0         P GOTO state 1
-6         P GOTO state 1
-7         P GOTO state 1
-8         P GOTO state 1
-19        P GOTO state 1
-20        P GOTO state 1
-21        P GOTO state 1
-22        P GOTO state 1
-23        P GOTO state 1
-24        P GOTO state 1
-25        P GOTO state 1
-0         S GOTO state 2
-6         S GOTO state 12
-7         S GOTO state 10
-8         S GOTO state 9
-19        S GOTO state 39
-20        S GOTO state 38
-21        S GOTO state 37
-22        S GOTO state 36
-23        S GOTO state 35
-24        S GOTO state 34
-25        S GOTO state 27
-goto_index: #V16[0 1 0]
-goto_old_state: #V16[-1 0 6 7 8 19 20 21 22 23 24 -1]
-goto_new_state: #V16[1 2 12 10 9 39 38 37 36 35 34 27]
-
-nil
-
-
-pparse()$
-
-
-a^("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (a)
-now get goto for 0 and p = ("get_goto" 0 2)
-("next state" 1)
-1
-("get_goto" 0 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (a)
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-b^("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (b)
-now get goto for 25 and p = ("get_goto" 25 2)
-("next state" 1)
-1
-("get_goto" 25 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (b)
-now get goto for 25 and s = ("get_goto" 25 1)
-("next state" 27)
-27
-("get_goto" 25 1)
-("next state" 27)
-c;("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (c)
-now get goto for 25 and p = ("get_goto" 25 2)
-("next state" 1)
-1
-("get_goto" 25 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (c)
-now get goto for 25 and s = ("get_goto" 25 1)
-("next state" 27)
-27
-("get_goto" 25 1)
-("next state" 27)
-("action" 1 "state" 27 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_33 to 3 items (b !^ c)
-now get goto for 25 and s = ("get_goto" 25 1)
-("next state" 27)
-27
-("get_goto" 25 1)
-("next state" 27)
-("action" 1 "state" 27 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_33 to 3 items (a !^ (pow b c))
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-Seems to have finished... 
-= (pow a (pow b c))
-
-
-pparse()$
-
-
-a*b("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (a)
-now get goto for 0 and p = ("get_goto" 0 2)
-("next state" 1)
-1
-("get_goto" 0 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (a)
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-+("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (b)
-now get goto for 23 and p = ("get_goto" 23 2)
-("next state" 1)
-1
-("get_goto" 23 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (b)
-now get goto for 23 and s = ("get_goto" 23 1)
-("next state" 35)
-35
-("get_goto" 23 1)
-("next state" 35)
-("action" 2 "state" 35 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_40 to 3 items (a !* b)
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-c*d("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (c)
-now get goto for 21 and p = ("get_goto" 21 2)
-("next state" 1)
-1
-("get_goto" 21 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (c)
-now get goto for 21 and s = ("get_goto" 21 1)
-("next state" 37)
-37
-("get_goto" 21 1)
-("next state" 37)
-;("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (d)
-now get goto for 23 and p = ("get_goto" 23 2)
-("next state" 1)
-1
-("get_goto" 23 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (d)
-now get goto for 23 and s = ("get_goto" 23 1)
-("next state" 35)
-35
-("get_goto" 23 1)
-("next state" 35)
-("action" 2 "state" 35 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_40 to 3 items (c !* d)
-now get goto for 21 and s = ("get_goto" 21 1)
-("next state" 37)
-37
-("get_goto" 21 1)
-("next state" 37)
-("action" 4 "state" 37 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_52 to 3 items ((tms a b) !+ (tms c d))
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-Seems to have finished... 
-= (plus (tms a b) (tms c d))
-
-
-pparse()$
-
-
-a * ("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (a)
-now get goto for 0 and p = ("get_goto" 0 2)
-("next state" 1)
-1
-("get_goto" 0 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (a)
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-(b/("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (b)
-now get goto for 6 and p = ("get_goto" 6 2)
-("next state" 1)
-1
-("get_goto" 6 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (b)
-now get goto for 6 and s = ("get_goto" 6 1)
-("next state" 12)
-12
-("get_goto" 6 1)
-("next state" 12)
-c +("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (c)
-now get goto for 22 and p = ("get_goto" 22 2)
-("next state" 1)
-1
-("get_goto" 22 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (c)
-now get goto for 22 and s = ("get_goto" 22 1)
-("next state" 36)
-36
-("get_goto" 22 1)
-("next state" 36)
-("action" 3 "state" 36 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_47 to 3 items (b !/ c)
-now get goto for 6 and s = ("get_goto" 6 1)
-("next state" 12)
-12
-("get_goto" 6 1)
-("next state" 12)
- d/("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (d)
-now get goto for 21 and p = ("get_goto" 21 2)
-("next state" 1)
-1
-("get_goto" 21 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (d)
-now get goto for 21 and s = ("get_goto" 21 1)
-("next state" 37)
-37
-("get_goto" 21 1)
-("next state" 37)
-e/("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (e)
-now get goto for 22 and p = ("get_goto" 22 2)
-("next state" 1)
-1
-("get_goto" 22 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (e)
-now get goto for 22 and s = ("get_goto" 22 1)
-("next state" 36)
-36
-("get_goto" 22 1)
-("next state" 36)
-("action" 3 "state" 36 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_47 to 3 items (d !/ e)
-now get goto for 21 and s = ("get_goto" 21 1)
-("next state" 37)
-37
-("get_goto" 21 1)
-("next state" 37)
-f)("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (f)
-now get goto for 22 and p = ("get_goto" 22 2)
-("next state" 1)
-1
-("get_goto" 22 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (f)
-now get goto for 22 and s = ("get_goto" 22 1)
-("next state" 36)
-36
-("get_goto" 22 1)
-("next state" 36)
-("action" 3 "state" 36 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_47 to 3 items ((quot d e) !/ f)
-now get goto for 21 and s = ("get_goto" 21 1)
-("next state" 37)
-37
-("get_goto" 21 1)
-("next state" 37)
-("action" 4 "state" 37 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_52 to 3 items ((quot b c) !+ (quot (quot d e) f))
-now get goto for 6 and s = ("get_goto" 6 1)
-("next state" 12)
-12
-("get_goto" 6 1)
-("next state" 12)
- ^("action" 9 "state" 43 "non_terminals" (!S!' s p) "A" 2)
-RHS count 3 turn into p
-Apply lalr_action_function_68 to 3 items (!( (plus (quot b c) (quot (quot d e) f
-)) !))
-now get goto for 23 and p = ("get_goto" 23 2)
-("next state" 1)
-1
-("get_goto" 23 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items ((plus (quot b c) (quot (quot d e) f)))
-now get goto for 23 and s = ("get_goto" 23 1)
-("next state" 35)
-35
-("get_goto" 23 1)
-("next state" 35)
- 2 ^("action" 10 "state" 5 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (2)
-now get goto for 25 and p = ("get_goto" 25 2)
-("next state" 1)
-1
-("get_goto" 25 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (2)
-now get goto for 25 and s = ("get_goto" 25 1)
-("next state" 27)
-27
-("get_goto" 25 1)
-("next state" 27)
- g -("action" 10 "state" 3 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items (g)
-now get goto for 25 and p = ("get_goto" 25 2)
-("next state" 1)
-1
-("get_goto" 25 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items (g)
-now get goto for 25 and s = ("get_goto" 25 1)
-("next state" 27)
-27
-("get_goto" 25 1)
-("next state" 27)
-("action" 1 "state" 27 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_33 to 3 items (2 !^ g)
-now get goto for 25 and s = ("get_goto" 25 1)
-("next state" 27)
-27
-("get_goto" 25 1)
-("next state" 27)
-("action" 1 "state" 27 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_33 to 3 items ((plus (quot b c) (quot (quot d e) f))
-!^ (pow 2 g))
-now get goto for 23 and s = ("get_goto" 23 1)
-("next state" 35)
-35
-("get_goto" 23 1)
-("next state" 35)
-("action" 2 "state" 35 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_40 to 3 items (a !* (pow (plus (quot b c) (quot (quot
-d e) f)) (pow 2 g)))
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
- "str" ("action" 10 "state" 4 "non_terminals" (!S!' s p) "A" 2)
-RHS count 1 turn into p
-Apply nil to 1 items ("str")
-now get goto for 20 and p = ("get_goto" 20 2)
-("next state" 1)
-1
-("get_goto" 20 2)
-("next state" 1)
-("action" 0 "state" 1 "non_terminals" (!S!' s p) "A" 1)
-RHS count 1 turn into s
-Apply nil to 1 items ("str")
-now get goto for 20 and s = ("get_goto" 20 1)
-("next state" 38)
-38
-("get_goto" 20 1)
-("next state" 38)
-("action" 5 "state" 38 "non_terminals" (!S!' s p) "A" 1)
-RHS count 3 turn into s
-Apply lalr_action_function_57 to 3 items ((tms a (pow (plus (quot b c) (quot (
-quot d e) f)) (pow 2 g))) !- "str")
-now get goto for 0 and s = ("get_goto" 0 1)
-("next state" 2)
-2
-("get_goto" 0 1)
-("next state" 2)
-Seems to have finished... 
-= (diff (tms a (pow (plus (quot b c) (quot (quot d e) f)) (pow 2 g))) "str")
-;
-
-
-nil
-
-
-% Now the same example with the tracing switched off so you can see
-% what output would arise in production code.
-
-off tracelex, lalr_verbose;
-
-
-nil
-
-
-lalr_construct_parser gtest;
-
+11 semantic actions
+Number of items put into goto cache = 101
+Action index size = 83
+Action terminal table size = 347
+goto table size = 21
 
 nil
 
@@ -4062,515 +586,347 @@ a * (b/c + d/e/f) ^ 2 ^ g - "str"
 nil
 
 
+% Demonstrate various of the short-hand notations...
 
-#if nil  % Skip the rest of this test file...
+lalr_construct_parser '(
+ (S
+% (opt ...) means that the included material is optional.
+          (("begin" (opt "and" "also") "end"))));
 
+3 semantic actions
+Number of items put into goto cache = 6
+Action index size = 6
+Action terminal table size = 8
+goto table size = 2
 
-% Now a much more complicated grammar - one that recognizes the syntax of
-% RLISP. In order to survive this grammar my paser generator will need to
-% be extended to deal with ambiguous grammars both to cope with the
-% standard problem of "dangling else" clauses and to use precedence
-% declarations to disambiguate the uses of infix operators. Well at
-% present the grammar is written in a grossly bloated form so that
-% operator predcedence is hard wired into it... that too will need changing.
+nil
 
-% Note that a naive implementaion of LALR parser table generation via
-% initial construction of a full LR(1) table leads to ridiculous expense
-% when processing a grammar of this scale.
 
-rlisp_grammar := '(
+pparse()$
 
-(command         ((  cmnd sep ))
-                 ((  end sep ))
-                 ((  command cmnd sep ))
-                 ((  command end sep ))
-)
 
+begin end
 
-(sep             ((  ";" ))
-                 ((  "$" ))
-)
+= (begin nil end)
+;
 
 
-(proc_type       ((  "symbolic" ))
-                 ((  "algebraic" ))
-)
+nil
+;
 
 
-(proc_qual       ((  "expr" ))
-                 ((  "macro" ))
-                 ((  "smacro" ))
-)
+nil
 
 
-(sym_list        ((  ")" ))
-                 ((  "," !:symbol sym_list ))
-)
+pparse()$
 
 
-(infix           ((  "setq" ))
-                 ((  "or" ))
-                 ((  "and" ))
-                 ((  "member" ))
-                 ((  "memq" ))
-                 ((  "=" ))
-                 ((  "neq" ))
-                 ((  "eq" ))
-                 ((  ">=" ))
-                 ((  ">" ))
-                 ((  "<=" ))
-                 ((  "<" ))
-                 ((  "freeof" ))
-                 ((  "+" ))
-                 ((  "-" ))
-                 ((  "*" ))
-                 ((  "/" ))
-                 ((  "^" ))
-                 ((  "**" ))
-                 ((  "." ))
-)
+begin and also end
 
-(prefix          ((  "not" ))
-                 ((  "+" ))
-                 ((  "-" ))
-)
+= (begin (and also) end)
+;
 
 
-(proc_head       ((  !:symbol ))
-                 ((  !:symbol !:symbol ))
-                 ((  !:symbol "(" ")" ))
-                 ((  !:symbol "(" !:symbol sym_list ))
-                 ((  prefix !:symbol ))
-                 ((  !:symbol infix !:symbol ))
-)
+nil
+;
 
 
-(proc_def        ((  "procedure" proc_head sep cmnd ))
-                 ((  proc_type "procedure" proc_head sep cmnd ))
-                 ((  proc_qual "procedure" proc_head sep cmnd ))
-                 ((  proc_type proc_qual "procedure" proc_head sep cmnd ))
-)
+nil
 
 
-% The type "!:rlistat" is dodgy here... it doe snot (yet) exist!
+lalr_construct_parser '(
+ (S
+% (star ...) is for zero or mor instances of something.
+          (((star "a") "end") !$1)));
 
-(rlistat         ((  !:rlistat ))
-                 ((  "in" ))
-                 ((  "on" ))
-)
+3 semantic actions
+Number of items put into goto cache = 5
+Action index size = 5
+Action terminal table size = 8
+goto table size = 3
 
+nil
 
-(rltail          ((  expr ))
-                 ((  expr "," rltail ))
-)
 
+pparse()$
 
-(cmnd            ((  expr ))
-                 ((  rlistat rltail ))
-)
 
+end
 
-(if_stmt         ((  "if" expr "then" cmnd "else" cmnd ))
-                 ((  "if" expr "then" cmnd ))
-)
+= nil
+;
 
 
-(for_update      ((  ":" expr ))
-                 ((  "step" expr "until" expr ))
-)
+nil
+;
 
 
-(for_action      ((  "do" ))
-                 ((  "sum" ))
-                 ((  "collect" ))
-)
+nil
 
 
-(for_inon        ((  "in" ))
-                 ((  "on" ))
-)
+pparse()$
 
 
-(for_stmt        ((  "for" !:symbol !:setq expr for_update for_action cmnd ))
-                 ((  "for" "each" !:symbol for_inon expr for_action cmnd ))
-                 ((  "foreach" !:symbol for_inon expr for_action cmnd ))
-)
+a a a a a a end
 
+= (a a a a a a)
+;
 
-(while_stmt      ((  "while" expr "do" cmnd ))
-)
 
+nil
+;
 
-(repeat_stmt     ((  "repeat" cmnd "until" expr ))
-)
 
+nil
 
-(return_stmt     ((  "return" ))
-                 ((  "return" expr ))
-)
 
+lalr_construct_parser '(
+ (S
+% (plus ...) is for one or more repetitions of an item
+          (((plus "a") "end") !$1)));
 
-(goto_stmt       ((  "goto" !:symbol ))
-                 ((  "go" !:symbol ))
-                 ((  "go" "to" !:symbol ))
-)
+3 semantic actions
+Number of items put into goto cache = 5
+Action index size = 5
+Action terminal table size = 7
+goto table size = 3
 
+nil
 
-(group_tail      ((  ">>" ))
-                 ((  sep ">>" ))
-                 ((  sep cmnd group_tail ))
-)
 
+pparse()$
 
-(group_expr      ((  "<<" cmnd group_tail ))
-)
 
+a end
 
-(scalar_tail     ((  sep ))
-                 ((  "," !:symbol scalar_tail ))
-                 ((  "," integer scalar_tail ))
-)
+= (a)
+;
 
 
-(scalar_def      ((  "scalar" !:symbol scalar_tail ))
-                 ((  "integer" !:symbol scalar_tail ))
-)
+nil
+;
 
 
-(scalar_defs     ((  scalar_def ))
-                 ((  scalar_defs scalar_def ))
-)
+nil
 
 
-(block_tail      ((  "end" ))
-                 ((  cmnd "end" ))
-                 ((  !:symbol ":" block_tail ))
-                 ((  cmnd sep block_tail ))
-                 ((  sep block_tail ))
-)
+pparse()$
 
-(block_expr      ((  "begin" scalar_defs block_tail ))
-                 ((  "begin" block_tail ))
-)
 
+a a a a a a end
 
-(lambda_vars     ((  sep ))
-                 ((  "," !:symbol lambda_vars ))
-)
+= (a a a a a a)
+;
 
 
-(lambda_expr     ((  "lambda" !:symbol lambda_vars cmnd ))
-                 ((  "lambda" "(" ")" sep cmnd ))
-                 ((  "lambda" "(" !:symbol sym_list sep cmnd ))
-)
+nil
+;
 
 
-(expr            ((  rx0 ))
-                 ((  lx0 ))
-)
+nil
 
 
-(rx0             ((  lx0 "where" !:symbol "=" rx1 ))
-                 ((  rx1 ))
-)
+lalr_construct_parser '(
+ (S
+% (list delimiter item-description) is a sequence of zero
+% or more items, and if there are several that are separated by the
+% indicated delimiter. 
+          (((list ";" !:symbol) "eof") !$1)));
 
+5 semantic actions
+Number of items put into goto cache = 8
+Action index size = 8
+Action terminal table size = 12
+goto table size = 4
 
-(lx0             ((  lx0 "where" !:symbol "=" lx1 ))
-                 ((  lx1 ))
-)
+nil
 
 
-(rx1             ((  lx2 ":=" rx1 ))
-                 ((  rx2 ))
-)
+pparse()$
 
 
-(lx1             ((  lx2 ":=" lx1 ))
-                 ((  lx2 ))
-)
 
+several ; words ; here eof
 
-(rx2tail         ((  rx3 ))
-                 ((  lx3 "or" rx2tail ))
-)
+= (several words here)
+;
 
-(rx2             ((  lx3 "or" rx2tail ))
-                 ((  rx3 ))
-)
 
+nil
+;
 
-(lx2tail         ((  lx3 ))
-                 ((  lx3 "or" lx2tail ))
-)
 
-(lx2             ((  lx3 "or" lx2tail ))
-                 ((  lx3 ))
-)
+nil
 
 
-(rx3tail         ((  rx4 ))
-                 ((  lx4 "and" rx3tail ))
-)
+lalr_construct_parser '(
+ (S
+% (listplus delimiter item-description) is as (list ...) however it
+% requires at least one item.
+          (((listplus ";" !:symbol) "eof") !$1)));
 
-(rx3             ((  lx4 "and" rx3tail ))
-                 ((  rx4 ))
-)
+4 semantic actions
+Number of items put into goto cache = 8
+Action index size = 8
+Action terminal table size = 11
+goto table size = 4
 
+nil
 
-(lx3tail         ((  lx4 ))
-                 ((  lx4 "and" lx3tail ))
-)
 
-(lx3             ((  lx4 "and" lx3tail ))
-                 ((  lx4 ))
-)
+pparse()$
 
 
-(rx4             ((  "not" rx4 ))
-                 ((  rx5 ))
-)
 
+several ; words ; here eof
 
-(lx4             ((  "not" lx4 ))
-                 ((  lx5 ))
-)
+= (several words here)
+;
 
-% The fact that this lists "member" and "memq" (etc) here makes those names
-% keywords, and so possibly disables use as function names as in
-%    member(a, b)
 
-(rx5             ((  lx6 "member" ry6 ))
-                 ((  lx6 "memq" ry6 ))
-                 ((  lx6 "=" ry6 ))
-                 ((  lx6 "neq" ry6 ))
-                 ((  lx6 "eq" ry6 ))
-                 ((  lx6 ">=" ry6 ))
-                 ((  lx6 ">" ry6 ))
-                 ((  lx6 "<=" ry6 ))
-                 ((  lx6 "<" ry6 ))
-                 ((  lx6 "freeof" ry6 ))
-                 ((  rx6 ))
-)
+nil
+;
 
 
-(lx5             ((  lx6 "member" ly6 ))
-                 ((  lx6 "memq" ly6 ))
-                 ((  lx6 "=" ly6 ))
-                 ((  lx6 "neq" ly6 ))
-                 ((  lx6 "eq" ly6 ))
-                 ((  lx6 ">=" ly6 ))
-                 ((  lx6 ">" ly6 ))
-                 ((  lx6 "<=" ly6 ))
-                 ((  lx6 "<" ly6 ))
-                 ((  lx6 "freeof" ly6 ))
-                 ((  lx6 ))
-)
+nil
 
 
-(ry6             ((  "not" ry6 ))
-                 ((  rx6 ))
-)
+lalr_construct_parser '(
+ (S
+% (or x y z) may be a more compact way of writing what could
+% otherwise by given as multiple productions, so for instance
+% (or "+" "-" "*" "/") would match one of the listed operators.
+          (((star (or "a" "b")) "end") !$1)));
 
+5 semantic actions
+Number of items put into goto cache = 8
+Action index size = 8
+Action terminal table size = 19
+goto table size = 5
 
-(ly6             ((  "not" ly6 ))
-                 ((  lx6 ))
-)
+nil
 
 
-(rx6tail         ((  ry6a ))
-                 ((  ly6a "+" rx6tail ))
-)
+pparse()$
 
-(rx6             ((  lx6a "+" rx6tail ))
-                 ((  rx6a ))
-)
 
+end
 
-(lx6tail         ((  ly6a ))
-                 ((  ly6a "+" lx6tail ))
-)
+= nil
+;
 
-(lx6             ((  lx6a "+" lx6tail ))
-                 ((  lx6a ))
-)
 
+nil
+;
 
-(ry6a            ((  not ry6a ))
-                 ((  rx6a ))
-)
 
+nil
 
-(rx6a            ((  lx6a "-" ry7 ))
-                 ((  rx7 ))
-)
 
+pparse()$
 
-(ly6a            ((  not ly6a ))
-                 ((  lx6a ))
-)
 
+a b b a end
 
-(lx6a            ((  lx6a "-" ly7 ))
-                 ((  lx7 ))
-)
+= (a b b a)
+;
 
 
-(ry7             ((  not ry7 ))
-                 ((  rx7 ))
-)
+nil
+;
 
 
-(rx7             ((  "+" ry7 ))
-                 ((  "-" ry7 ))
-                 ((  rx8 ))
-)
+nil
 
 
-(ly7             ((  not ly7 ))
-                 ((  lx7 ))
-)
 
+% The next example shows all the above put together to parse what is
+% in effect a small programming language. Although it is not yet a large
+% grammar it illustrates painfull clearly how poor performange of the
+% parser generator can be if ut used what Aho, Sethi and Ullman describe as
+% the "Easy but space-consuming LALR table construction" method.
 
-(lx7             ((  "+" ly7 ))
-                 ((  "-" ly7 ))
-                 ((  lx8 ))
-)
+lalr_precedence '(!:left ("*" "/")
+                         ("+" "-")
+                  !:none ("<" "<=" "==" "neq" ">=" ">")
+                  !:right ":=" "="
+                  !:left ("then" "else" "return"));
 
 
-(rx8tail         ((  ry9 ))
-                 ((  ly9 "*" rx8tail ))
-)
+nil
 
-(rx8             ((  lx9 "*" rx8tail ))
-                 ((  rx9 ))
-)
 
+mini_language := '(
+ (program
+          (((listplus ";" expression) "eof") !$1))
 
-(lx8tail         ((  ly9 ))
-                 ((  ly9 "*" lx8tail ))
-)
+ (expression
+          ((funcall))
+          ((expression "*" expression) (list 'times !$1 !$3))
+          ((expression "/" expression) (list 'quotient !$1 !$3))
+          ((expression "+" expression) (list 'plus !$1 !$3))
+          ((expression "-" expression) (list 'difference !$1 !$3))
+          ((expression "<" expression) (list 'lessp !$1 !$3))
+          ((expression "<=" expression) (list 'lesseq !$1 !$3))
+          ((expression "==" expression) (list 'equals !$1 !$3))
+          ((expression "neq" expression) (list 'neq !$1 !$3))
+          ((expression "=>" expression) (list 'geq !$1 !$3))
+          ((expression ">" expression) (list 'greaterp !$1 !$3))
+          ((expression ":=" expression) (list 'setq !$1 !$3))
+          (("fun" funcall "=" expression) (list 'fun !$2 !$4))
+          (("if" sequence "then" expression)
+             (list 'cond, list(!$2, !$4)))
+          (("if" sequence "then" sequence "else" expression)
+             (list 'cond, list(!$2, !$4), list(t, !$6)))
+          (("go" (opt "to") !:symbol) (list 'go !$3))
+          (("goto" !:symbol) (list 'go !$2))
+          (("return" expression)))
 
-(lx8             ((  lx9 "*" lx8tail ))
-                 ((  lx9 ))
-)
+(funcall
+          ((closedexpression))
+          ((funcall closedexpression)))
 
+(closedexpression
+          ((!:symbol))
+          ((!:number))
+          ((plus !:string))  % Several strings in a row just concatenate
+          (("let" sequence "in" sequence "end") (list 'letstat !$2 !$4))
+          (("(" exprlist ")") (cons 'paren !$2))
+          (("(" sequence ")") (cons 'paren !$2))
+          (("[" exprlist "]") (cons 'bracket !$2)))
 
-(ry9             ((  "not" ry9 ))
-                 ((  "+" ry9 ))
-                 ((  "-" ry9 ))
-                 ((  rx9 ))
-)
+(exprlist (((list "," expression))))
 
+(sequence
+          (((list ";" expression)))))$
 
-(rx9             ((  lx9 "/" ry10 ))
-                 ((  rx10 ))
-)
 
 
-(ly9             ((  "not" ly9 ))
-                 ((  "+" ly9 ))
-                 ((  "-" ly9 ))
-                 ((  lx9 ))
-)
+% The grammar shown here can be processed, however at the moment the
+% code in genparser.red uses the "simple but inefficient" scheme from Aho
+% et al. to generate LALR parsing tables and a consequence is that even for
+% this apparently reasonable grammar it takes a remarkably long time and
+% way too much memory. When the parser-generator has been upgraded to
+% merge states as they are constructed it will only take seconds (rather than
+% many minutes) to deal with this and the example can be re-enabled.
+%                                                     ACN   January 2015
 
+% lalr_construct_parser mini_language;
+%
+% pparse()$
+%
+% fun f(a,b) = a + b;
+% f(22,33)
+% eof
 
-(lx9             ((  lx9 "/" ly10 ))
-                 ((  lx10 ))
-)
-
-
-(ly10            ((  "not" ly10 ))
-                 ((  "+" ly10 ))
-                 ((  "-" ly10 ))
-                 ((  lx10 ))
-)
-
-
-(lx10            ((  lx11 "^" ly10 ))
-                 ((  lx11 ))
-)
-
-
-(ry10            ((  "not" ry10 ))
-                 ((  "+" ry10 ))
-                 ((  "-" ry10 ))
-                 ((  rx10 ))
-)
-
-
-(rx10            ((  lx11 "^" ry10 ))
-                 ((  rx11 ))
-)
-
-
-(ry11            ((  "not" ry11 ))
-                 ((  "+" ry11 ))
-                 ((  "-" ry11 ))
-                 ((  rx11 ))
-)
-
-
-(rx11            ((  x12 "." ry11 ))
-                 ((  if_stmt ))
-                 ((  for_stmt ))
-                 ((  while_stmt ))
-                 ((  repeat_stmt ))
-                 ((  return_stmt ))
-                 ((  goto_stmt ))
-                 ((  lambda_expr ))
-                 ((  proc_type ))
-                 ((  proc_def ))
-                 ((  endstat ))
-)
-
-
-(ly11            ((  "not" ly11 ))
-                 ((  "+" ly11 ))
-                 ((  "-" ly11 ))
-                 ((  lx11 ))
-)
-
-
-(lx11            ((  x12 "." ly11 ))
-                 ((  x12 ))
-)
-
-
-(arg_list        ((  expr ")" ))
-                 ((  expr "," arg_list ))
-)
-
-
-(x12             ((  x13 "[" expr "]" ))
-                 ((  x13 "(" ")" ))
-                 ((  x13 "(" expr "," arg_list ))
-                 ((  x13 x12 ))
-                 ((  x13 ))
-)
-
-
-(x13             ((  !:symbol ))
-                 ((  !:number ))
-                 ((  !:string ))
-                 ((  !:list ))     % Both 'xxx and `xxx here
-                 ((  group_expr ))
-                 ((  block_expr ))
-                 ((  "(" expr ")" ))
-)
-)$
-
-
-% lalr_construct_parser rlisp_grammar;
-
-#endif
 
 end;
 
 nil
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 516 ms
+Time (counter 1): 288 ms  plus GC time: 6 ms
 
-End of Lisp run after 0.51+0.04 seconds
-real 0.76
-user 0.00
-sys 0.04
+End of Lisp run after 0.28+0.06 seconds
+real 0.56
+user 0.01
+sys 0.09
