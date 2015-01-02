@@ -26224,32 +26224,32 @@ symbolic procedure lookupchar(fontnum, codepoint);
   begin
     scalar v, h1, h2, w, whi, wlo, fullkey, key;
     fullkey := lshift(fontnum, 16) +
-      (if codepoint >= 0x10000 then 0xd000 + logand(codepoint, 0xfff)
+      (if codepoint >= 0x10000 then 0xd000 + land(codepoint, 0xfff)
        else codepoint);
     key := lshift(fullkey, -2);
-    h1 := remainder(logand(1103515245*key, 0xffffffff), hashsize!*);
+    h1 := remainder(land(1103515245*key, 0xffffffff), hashsize!*);
     h2 := add1 remainder(169*key, sub1 hashsize!*);
- a: v := logand(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);
+ a: v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);
     if v = key then go to b
     else if v = 0 then return nil;
     h1 := h1 + h2;
     if h1 >= hashsize!* then h1 := h1 - hashsize!*;
     go to a;
  b:
-    v := 2*logand(fullkey, 3);
+    v := 2*land(fullkey, 3);
     wlo := getv32(w, v+2);
     whi := getv32(w, v+3);
-    c_width := logand(lshift(whi, -19), 0x1fff);
-    c_llx := logand(lshift(whi, -6), 0x1fff) - 3000;
-    c_lly := logand(lshift(wlo, -26), 0x3f) +
-             logand(lshift(whi, 6), 0xfc0) - 1000;
-    c_urx := logand(lshift(wlo, -13), 0x1fff) - 500;
-    c_ury := logand(wlo, 0x1fff) - 1000;
-    if v = 0 then c_kerninfo := logand(lshift(getv32(w, 0), -19), 0x7ff)
-    else if v = 2 then c_kerninfo := logand(lshift(getv32(w, 0), -30), 0x3) +
-                                     logand(lshift(getv32(w, 1), 2), 0x7fc)
-    else if v = 4 then c_kerninfo := logand(lshift(getv32(w, 1), -9), 0x7ff)
-    else c_kerninfo := logand(lshift(getv32(w, 1), -20), 0x7ff);
+    c_width := land(lshift(whi, -19), 0x1fff);
+    c_llx := land(lshift(whi, -6), 0x1fff) - 3000;
+    c_lly := land(lshift(wlo, -26), 0x3f) +
+             land(lshift(whi, 6), 0xfc0) - 1000;
+    c_urx := land(lshift(wlo, -13), 0x1fff) - 500;
+    c_ury := land(wlo, 0x1fff) - 1000;
+    if v = 0 then c_kerninfo := land(lshift(getv32(w, 0), -19), 0x7ff)
+    else if v = 2 then c_kerninfo := land(lshift(getv32(w, 0), -30), 0x3) +
+                                     land(lshift(getv32(w, 1), 2), 0x7fc)
+    else if v = 4 then c_kerninfo := land(lshift(getv32(w, 1), -9), 0x7ff)
+    else c_kerninfo := land(lshift(getv32(w, 1), -20), 0x7ff);
     if not zerop c_kerninfo then
       c_kerninfo := c_kerninfo + getv16(fontkern!*, fontnum);
     return t
@@ -26260,9 +26260,9 @@ symbolic procedure lookupkernadjustment codepoint;
     scalar i, w;
     if zerop (i := c_kerninfo) then return 0;
  a: w := getv32(kerntable!*, i);
-    if logand(w, 0x001fffff) = codepoint and
-      zerop logand(w, 0x00200000) then return w / 0x00800000
-    else if not zerop logand(w, 0x00400000) then return 0;
+    if land(w, 0x001fffff) = codepoint and
+      zerop land(w, 0x00200000) then return w / 0x00800000
+    else if not zerop land(w, 0x00400000) then return 0;
     i := add1 i;
     go to a
   end;
@@ -26272,10 +26272,10 @@ symbolic procedure lookupligature codepoint;
     scalar i, w;
     if zerop (i := c_kerninfo) then return nil;
  a: w := getv32(kerntable!*, i);
-    if logand(w, 0x001fffff) = codepoint and
-      not zerop logand(w, 0x00200000) then
-        return getv32(ligaturetable!*, logand(lshift(w, -23), 0x1ff))
-    else if not zerop logand(w, 0x00400000) then return 0;
+    if land(w, 0x001fffff) = codepoint and
+      not zerop land(w, 0x00200000) then
+        return getv32(ligaturetable!*, land(lshift(w, -23), 0x1ff))
+    else if not zerop land(w, 0x00400000) then return 0;
     i := add1 i;
     go to a
   end;
