@@ -101,6 +101,7 @@ plain_showmathdemo = showmathdemo
 plain_wxdemo  = wxdemo
 plain_wxfontdemo = wxfontdemo
 plain_wxdvi = wxdvi
+plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 else !exeext
@@ -116,6 +117,7 @@ plain_showmathdemo = showmathdemo.unnecessary.except.on.windows
 plain_wxdemo  = wxdemo.unnecessary.except.on.windows
 plain_wxfontdemo = wxfontdemo.unnecessary.except.on.windows
 plain_wxdvi = wxdvi.unnecessary.except.on.windows
+plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
 endif !exeext
@@ -131,6 +133,7 @@ endif !exeext
 .PHONY: $(plain_wxdemo)
 .PHONY: $(plain_wxfontdemo)
 .PHONY: $(plain_wxdvi)
+.PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_dyndemo)
@@ -228,7 +231,7 @@ foxdemotarget =
 endif !fox
 
 if wx
-wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
+wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmath$(EXEEXT) wxshowmathdemo$(EXEEXT)
 else !wx
 wxdemotarget =
 endif !wx
@@ -502,6 +505,10 @@ wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+
+wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c
+wxshowmath_LDADD = $(fwin_icon)
+wxshowmath_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
@@ -985,6 +992,18 @@ endif !darwin
 endif !debug
 if mac_framework
 	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
+endif mac_framework
+
+wxshowmath$(EXEEXT): $(wxshowmath_OBJECTS) $(wxshowmath_DEPENDENCIES) $(WXDEPS)
+	-$(RM) -f wxshowmath$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxshowmath$(EXEEXT) $(wxshowmath_OBJECTS) $(wxshowmath_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxshowmath$(EXEEXT)
+endif !darwin
+endif !debug
+if mac_framework
+	$(srcdir)/create_bundle.sh wxshowmath $(srcdir)
 endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
@@ -1478,6 +1497,9 @@ $(plain_wxfontdemo):	wxfontdemo.exe
 
 $(plain_wxdvi):	wxdvi.exe
 	echo "make wxdvi.exe is preferred"
+
+$(plain_wxshowmath):	wxshowmath.exe
+	echo "make wxshowmath.exe is preferred"
 
 $(plain_wxshowmathdemo):	wxshowmathdemo.exe
 	echo "make wxshowmathdemo.exe is preferred"

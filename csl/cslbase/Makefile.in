@@ -125,7 +125,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 @fox_TRUE@am__EXEEXT_1 = foxdemo$(EXEEXT) fontdemo$(EXEEXT) \
 @fox_TRUE@	showmathdemo$(EXEEXT)
 @wx_TRUE@am__EXEEXT_2 = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) \
-@wx_TRUE@	wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
+@wx_TRUE@	wxdvi$(EXEEXT) wxshowmath$(EXEEXT) \
+@wx_TRUE@	wxshowmathdemo$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__bootstrapreduce_SOURCES_DIST = arith01.c arith02.c arith03.c \
 	arith04.c arith05.c arith06.c arith07.c arith08.c arith09.c \
@@ -290,6 +291,8 @@ am__wxpsl_SOURCES_DIST = wxpsl.cpp fwin.c termed.c wxfwin.c \
 @wx_TRUE@am_wxpsl_OBJECTS = wxpsl.$(OBJEXT) $(am__objects_3)
 wxpsl_OBJECTS = $(am_wxpsl_OBJECTS)
 wxpsl_LDADD = $(LDADD)
+am_wxshowmath_OBJECTS = wxshowmath.$(OBJEXT) charmetrics.$(OBJEXT)
+wxshowmath_OBJECTS = $(am_wxshowmath_OBJECTS)
 am_wxshowmathdemo_OBJECTS = wxshowmathdemo.$(OBJEXT)
 wxshowmathdemo_OBJECTS = $(am_wxshowmathdemo_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -341,14 +344,15 @@ SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
 	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
 	$(wxdemo_SOURCES) $(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
-	$(wxpsl_SOURCES) $(wxshowmathdemo_SOURCES)
+	$(wxpsl_SOURCES) $(wxshowmath_SOURCES) \
+	$(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
 	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
 	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
 	$(wxfontdemo_SOURCES) $(am__wxpsl_SOURCES_DIST) \
-	$(wxshowmathdemo_SOURCES)
+	$(wxshowmath_SOURCES) $(wxshowmathdemo_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -568,6 +572,8 @@ csl_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_3) \
 @exeext_TRUE@plain_wxfontdemo = wxfontdemo
 @exeext_FALSE@plain_wxdvi = wxdvi.unnecessary.except.on.windows
 @exeext_TRUE@plain_wxdvi = wxdvi
+@exeext_FALSE@plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
+@exeext_TRUE@plain_wxshowmath = wxshowmath
 @exeext_FALSE@plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 @exeext_TRUE@plain_wxshowmathdemo = wxshowmathdemo
 @exeext_FALSE@plain_dyndemo = dyndemo.unnecessary.except.on.windows
@@ -607,7 +613,7 @@ RM = rm
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@wxdemotarget = 
-@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
+@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmath$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @wx_FALSE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 @wx_TRUE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
@@ -815,6 +821,9 @@ wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c
+wxshowmath_LDADD = $(fwin_icon)
+wxshowmath_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -1100,6 +1109,10 @@ termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES) $(EXTRA_termdemo
 @wx_FALSE@	@rm -f wxpsl$(EXEEXT)
 @wx_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS)
 
+@wx_FALSE@wxshowmath$(EXEEXT): $(wxshowmath_OBJECTS) $(wxshowmath_DEPENDENCIES) $(EXTRA_wxshowmath_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxshowmath$(EXEEXT)
+@wx_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(wxshowmath_OBJECTS) $(wxshowmath_LDADD) $(LIBS)
+
 @wx_FALSE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(EXTRA_wxshowmathdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxshowmathdemo$(EXEEXT)
 @wx_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS)
@@ -1124,6 +1137,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith12.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/char.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/charmetrics.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith01.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith02.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith03.Po@am__quote@
@@ -1321,6 +1335,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxpsl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmath.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmathdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxterminal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/x86defs.Po@am__quote@
@@ -3994,6 +4009,7 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 .PHONY: $(plain_wxdemo)
 .PHONY: $(plain_wxfontdemo)
 .PHONY: $(plain_wxdvi)
+.PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_dyndemo)
@@ -4321,6 +4337,12 @@ $(srcdir)/Makefile.am:
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdvi$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
 
+@wx_TRUE@wxshowmath$(EXEEXT): $(wxshowmath_OBJECTS) $(wxshowmath_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-$(RM) -f wxshowmath$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmath$(EXEEXT) $(wxshowmath_OBJECTS) $(wxshowmath_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmath$(EXEEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmath $(srcdir)
+
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-$(RM) -f wxdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
@@ -4614,6 +4636,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxdvi):	wxdvi.exe
 @exeext_TRUE@@wx_TRUE@	echo "make wxdvi.exe is preferred"
+
+@exeext_TRUE@@wx_TRUE@$(plain_wxshowmath):	wxshowmath.exe
+@exeext_TRUE@@wx_TRUE@	echo "make wxshowmath.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxshowmathdemo):	wxshowmathdemo.exe
 @exeext_TRUE@@wx_TRUE@	echo "make wxshowmathdemo.exe is preferred"

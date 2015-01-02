@@ -1,11 +1,11 @@
-// charmetrics.c                           Copyright (C) 2014 Codemist Ltd
+// charmetrics.c                           Copyright (C) 2015 Codemist Ltd
 
 
 // $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -57,7 +57,17 @@
 // severe limits on its use.
 
 // I also generate a charmetrics.red that can give access to the same
-// information from within Reduce...
+// information from within Reduce... I am considering use from Java as well
+// but somewhat amazingly Java deals with statically initialised arrays
+// in a way that puts limits on their size such as to BREAK this - and
+// so with a naive conversion I get both a "code too large" and a
+// "too many constants" error from the Java compiler. The first of these
+// persists even if I split the main hash table to give just one
+// column at a time - so an initialised array of 10000 simple long values
+// more than Java is willing to support. Thus any Java code will need to
+// load metric information from a resource, and I think that C code that
+// uses the charmetrics.h file as created here can be used to create the
+// data that will be loaded. Ugh.
 
 // I have inspected the fonts that concern me and the sizes
 // shown here will suffice. There are less than 32000 characters in
@@ -140,7 +150,7 @@
 #define F_fireflysung                 30
 #define F_end                         31
 
-static const char *fontnames[] =
+const char *fontnames[] =
 {
     "cmuntt",
     "STIXGeneral-Bold",
@@ -755,14 +765,14 @@ int main(int argc, char *argv[])
     printf("Total space = %d\n", HASHTABLESIZE*(5*8));
     {   FILE *dest = fopen("charmetrics.h", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
-fprintf(dest, "// charmetrics.h                           Copyright (C) 2014 Codemist Ltd\n");
+fprintf(dest, "// charmetrics.h                           Copyright (C) 2015 Codemist Ltd\n");
 fprintf(dest, "\n");
 fprintf(dest, "\n");
 fprintf(dest, "// $Id$\n");
 fprintf(dest, "\n");
 fprintf(dest, "\n");
 fprintf(dest, "/**************************************************************************\n");
-fprintf(dest, " * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *\n");
+fprintf(dest, " * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *\n");
 fprintf(dest, " *                                                                        *\n");
 fprintf(dest, " * Redistribution and use in source and binary forms, with or without     *\n");
 fprintf(dest, " * modification, are permitted provided that the following conditions are *\n");
@@ -793,7 +803,44 @@ fprintf(dest, "\n");
 fprintf(dest, "// Character metric hash table created using the program charmetrics.c\n");
 fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
 fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
-fprintf(dest, "\n");
+fprintf(dest, "\n\n");
+fprintf(dest, "#define F_cmuntt                      0\n");
+fprintf(dest, "#define F_General_Bold                1\n");
+fprintf(dest, "#define F_General_BoldItalic          2\n");
+fprintf(dest, "#define F_General_Italic              3\n");
+fprintf(dest, "#define F_General                     4\n");
+fprintf(dest, "#define F_IntegralsD_Bold             5\n");
+fprintf(dest, "#define F_IntegralsD                  6\n");
+fprintf(dest, "#define F_IntegralsSm_Bold            7\n");
+fprintf(dest, "#define F_IntegralsSm                 8\n");
+fprintf(dest, "#define F_IntegralsUp_Bold            9\n");
+fprintf(dest, "#define F_IntegralsUpD_Bold           10\n");
+fprintf(dest, "#define F_IntegralsUpD                11\n");
+fprintf(dest, "#define F_IntegralsUp                 12\n");
+fprintf(dest, "#define F_IntegralsUpSm_Bold          13\n");
+fprintf(dest, "#define F_IntegralsUpSm               14\n");
+fprintf(dest, "#define F_NonUnicode_Bold             15\n");
+fprintf(dest, "#define F_NonUnicode_BoldItalic       16\n");
+fprintf(dest, "#define F_NonUnicode_Italic           17\n");
+fprintf(dest, "#define F_NonUnicode                  18\n");
+fprintf(dest, "#define F_SizeFiveSym                 19\n");
+fprintf(dest, "#define F_SizeFourSym_Bold            20\n");
+fprintf(dest, "#define F_SizeFourSym                 21\n");
+fprintf(dest, "#define F_SizeOneSym_Bold             22\n");
+fprintf(dest, "#define F_SizeOneSym                  23\n");
+fprintf(dest, "#define F_SizeThreeSym_Bold           24\n");
+fprintf(dest, "#define F_SizeThreeSym                25\n");
+fprintf(dest, "#define F_SizeTwoSym_Bold             26\n");
+fprintf(dest, "#define F_SizeTwoSym                  27\n");
+fprintf(dest, "#define F_Variants_Bold               28\n");
+fprintf(dest, "#define F_Variants                    29\n");
+fprintf(dest, "#define F_fireflysung                 30\n");
+fprintf(dest, "#define F_end                         31\n\n");
+fprintf(dest, "extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;\n");
+fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
+fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
+fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
+fprintf(dest, "extern int32_t lookupligature(int codepoint);\n\n");
 fprintf(rdest, "%% Character metrics for the STIX (and some other) fonts...\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "%% Character metric hash table created using the program charmetrics.c\n");

@@ -1,11 +1,11 @@
-// charmetrics.h                           Copyright (C) 2014 Codemist Ltd
+// charmetrics.h                           Copyright (C) 2015 Codemist Ltd
 
 
 // $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,6 +36,46 @@
 // Character metric hash table created using the program charmetrics.c
 // sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts
 // contains README files with full credits to the fonts this is used with
+
+
+#define F_cmuntt                      0
+#define F_General_Bold                1
+#define F_General_BoldItalic          2
+#define F_General_Italic              3
+#define F_General                     4
+#define F_IntegralsD_Bold             5
+#define F_IntegralsD                  6
+#define F_IntegralsSm_Bold            7
+#define F_IntegralsSm                 8
+#define F_IntegralsUp_Bold            9
+#define F_IntegralsUpD_Bold           10
+#define F_IntegralsUpD                11
+#define F_IntegralsUp                 12
+#define F_IntegralsUpSm_Bold          13
+#define F_IntegralsUpSm               14
+#define F_NonUnicode_Bold             15
+#define F_NonUnicode_BoldItalic       16
+#define F_NonUnicode_Italic           17
+#define F_NonUnicode                  18
+#define F_SizeFiveSym                 19
+#define F_SizeFourSym_Bold            20
+#define F_SizeFourSym                 21
+#define F_SizeOneSym_Bold             22
+#define F_SizeOneSym                  23
+#define F_SizeThreeSym_Bold           24
+#define F_SizeThreeSym                25
+#define F_SizeTwoSym_Bold             26
+#define F_SizeTwoSym                  27
+#define F_Variants_Bold               28
+#define F_Variants                    29
+#define F_fireflysung                 30
+#define F_end                         31
+
+extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;
+extern int lookupchar(int fontnum, int codepoint);
+extern int32_t lookupkernandligature(int codepoint);
+extern int32_t lookupkernadjustment(int codepoint);
+extern int32_t lookupligature(int codepoint);
 
 const uint64_t charmetrics[10883][5] = 
 {

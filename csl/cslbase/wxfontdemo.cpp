@@ -49,7 +49,7 @@
 
 // Driving instructions:
 //
-//   ./wxfontdemo "fontname" [--italic] [--bold] [--tex]
+//   ./wxfontdemo "fontname" [--italic] [--bold] [--regular] [--tex]
 //
 // The fontname is either the name of a font installed on the system
 // or is one of the private fonts provided here (and those are the cases
@@ -231,7 +231,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int tex, page, bold, italic;
+int tex, page, regular, bold, italic;
 
 int get_current_directory(char *s, int n)
 {
@@ -664,72 +664,87 @@ IMPLEMENT_APP_NO_MAIN(fontApp)
 
 static const char *fontNames[] =
 {
-// Right now I will add in ALL the fonts I have collected!
-// This can make sense in a font demo program but in a more serious
-// application I should be a little more selective.
+// This adds the fonts that I expect to be used in my wxWidgets code.
     "cmuntt.ttf",          // CMU Typewriter Text
-//  "DejaVuSansMono.otf",  // DejaVu Sans Mono
     "fireflysung.ttf",     // AR PL New Sung
 #ifdef WIN32
-    "STIXGeneral-Bold.ttf",
-    "STIXGeneral-BoldItalic.ttf",
-    "STIXGeneral-Italic.ttf",
     "STIXGeneral-Regular.ttf",
-    "STIXIntegralsD-Bold.ttf",
+    "STIXGeneral-Bold.ttf",
+    "STIXGeneral-Italic.ttf",
+    "STIXGeneral-BoldItalic.ttf",
+
     "STIXIntegralsD-Regular.ttf",
-    "STIXIntegralsSm-Bold.ttf",
+    "STIXIntegralsD-Bold.ttf",
+
     "STIXIntegralsSm-Regular.ttf",
-    "STIXIntegralsUp-Bold.ttf",
-    "STIXIntegralsUpD-Bold.ttf",
-    "STIXIntegralsUpD-Regular.ttf",
+    "STIXIntegralsSm-Bold.ttf",
+
     "STIXIntegralsUp-Regular.ttf",
-    "STIXIntegralsUpSm-Bold.ttf",
+    "STIXIntegralsUp-Bold.ttf",
+
+    "STIXIntegralsUpD-Regular.ttf",
+    "STIXIntegralsUpD-Bold.ttf",
+
     "STIXIntegralsUpSm-Regular.ttf",
-    "STIXNonUnicode-Bold.ttf",
-    "STIXNonUnicode-BoldItalic.ttf",
-    "STIXNonUnicode-Italic.ttf",
+    "STIXIntegralsUpSm-Bold.ttf",
+
     "STIXNonUnicode-Regular.ttf",
-    "STIXSizeFiveSym-Regular.ttf",
-    "STIXSizeFourSym-Bold.ttf",
-    "STIXSizeFourSym-Regular.ttf",
-    "STIXSizeOneSym-Bold.ttf",
+    "STIXNonUnicode-Bold.ttf",
+    "STIXNonUnicode-Italic.ttf",
+    "STIXNonUnicode-BoldItalic.ttf",
+
     "STIXSizeOneSym-Regular.ttf",
-    "STIXSizeThreeSym-Bold.ttf",
-    "STIXSizeThreeSym-Regular.ttf",
-    "STIXSizeTwoSym-Bold.ttf",
     "STIXSizeTwoSym-Regular.ttf",
-    "STIXVariants-Bold.ttf",
+    "STIXSizeThreeSym-Regular.ttf",
+    "STIXSizeFourSym-Regular.ttf",
+    "STIXSizeFiveSym-Regular.ttf",
+
+    "STIXSizeOneSym-Bold.ttf",
+    "STIXSizeTwoSym-Bold.ttf",
+    "STIXSizeThreeSym-Bold.ttf",
+    "STIXSizeFourSym-Bold.ttf",
+
     "STIXVariants-Regular.ttf"
+    "STIXVariants-Bold.ttf",
 #else
-    "STIXGeneral-Bold.otf",
-    "STIXGeneral-BoldItalic.otf",
-    "STIXGeneral-Italic.otf",
     "STIXGeneral-Regular.otf",
-    "STIXIntegralsD-Bold.otf",
+    "STIXGeneral-Bold.otf",
+    "STIXGeneral-Italic.otf",
+    "STIXGeneral-BoldItalic.otf",
+
     "STIXIntegralsD-Regular.otf",
-    "STIXIntegralsSm-Bold.otf",
+    "STIXIntegralsD-Bold.otf",
+
     "STIXIntegralsSm-Regular.otf",
-    "STIXIntegralsUp-Bold.otf",
-    "STIXIntegralsUpD-Bold.otf",
-    "STIXIntegralsUpD-Regular.otf",
+    "STIXIntegralsSm-Bold.otf",
+
     "STIXIntegralsUp-Regular.otf",
-    "STIXIntegralsUpSm-Bold.otf",
+    "STIXIntegralsUp-Bold.otf",
+
+    "STIXIntegralsUpD-Regular.otf",
+    "STIXIntegralsUpD-Bold.otf",
+
     "STIXIntegralsUpSm-Regular.otf",
-    "STIXNonUnicode-Bold.otf",
-    "STIXNonUnicode-BoldItalic.otf",
-    "STIXNonUnicode-Italic.otf",
+    "STIXIntegralsUpSm-Bold.otf",
+
     "STIXNonUnicode-Regular.otf",
-    "STIXSizeFiveSym-Regular.otf",
-    "STIXSizeFourSym-Bold.otf",
-    "STIXSizeFourSym-Regular.otf",
-    "STIXSizeOneSym-Bold.otf",
+    "STIXNonUnicode-Bold.otf",
+    "STIXNonUnicode-Italic.otf",
+    "STIXNonUnicode-BoldItalic.otf",
+
     "STIXSizeOneSym-Regular.otf",
-    "STIXSizeThreeSym-Bold.otf",
-    "STIXSizeThreeSym-Regular.otf",
-    "STIXSizeTwoSym-Bold.otf",
     "STIXSizeTwoSym-Regular.otf",
-    "STIXVariants-Bold.otf",
+    "STIXSizeThreeSym-Regular.otf",
+    "STIXSizeFourSym-Regular.otf",
+    "STIXSizeFiveSym-Regular.otf",
+
+    "STIXSizeOneSym-Bold.otf",
+    "STIXSizeTwoSym-Bold.otf",
+    "STIXSizeThreeSym-Bold.otf",
+    "STIXSizeFourSym-Bold.otf",
+
     "STIXVariants-Regular.otf"
+    "STIXVariants-Bold.otf",
 #endif
 };
 
@@ -798,13 +813,14 @@ bool fontApp::OnInit()
     char **myargv = (char **)argv;
     tex = 0;
     page = 0;
-    bold = italic = 0;
+    regular = bold = italic = 0;
     const char *font = "default";  // A default font name to ask for.
     int size = 48;           // a default size.
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
         if (strcmp(myargv[i], "--tex") == 0) tex = 1;
+        if (strcmp(myargv[i], "--regular") == 0) regular = 1;
         if (strcmp(myargv[i], "--bold") == 0) bold = 1;
         if (strcmp(myargv[i], "--italic") == 0) italic = 1;
         else if (myargv[i][0] == '-')
@@ -988,6 +1004,7 @@ void fontPanel::OnPaint(wxPaintEvent &event)
         }
         wxFontInfo ffi(10);
         ffi.FaceName(fontname);
+        if (regular) ffi.Bold(false);
         if (bold) ffi.Bold();
         if (italic) ffi.Italic();
         wxFont ff(ffi);
