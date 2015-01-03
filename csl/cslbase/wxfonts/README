@@ -36,6 +36,10 @@ Deja Vu Sans Mono might have been a sans-serif alternative to CMU Typewriter
 and the two fonts do not have quite the same coverage so use of both could
 fill some gaps - but for now I count that as more complication than it is
 worth. I used to have some sazanami CJK fonts but keeping just fireflysung
-simplifies things for me.
+simplifies things for me... for instance Debian now lists the Sazanami fonts
+as legacy and deprecated. In the future I should probably transition to using
+the Source Han Solo (aka Noto) CJK fonts which were releqased in mid 2014.
+However at a first try fontforge can not access the bulk of the characters in
+them (!) so that will have to wait.
 
-                                                  A C Norman. December 2014
+                                                  A C Norman. January 2015

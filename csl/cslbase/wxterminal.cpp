@@ -303,8 +303,6 @@ enum
     FONT_DUMMY,   // Used with menu items added and then instantly removed!
     FONT_CMTT,
     FONT_DEJA,
-    FONT_SAZANAMI,
-    FONT_FIREFLY,
     FONT_POINT10,
     FONT_POINT12,
     FONT_POINT14,
@@ -379,8 +377,6 @@ public:
     void OnEditEnd();
     void OnFontCMTT();
     void OnFontDeja();
-    void OnFontSazanami();
-    void OnFontFirefly();
     void OnFontPoint10();
     void OnFontPoint12();
     void OnFontPoint14();
@@ -451,7 +447,6 @@ public:
     int rowHeight, rowCount, virtualRowCount;
     wxFont *fixedPitch, *fixedAlternate, *fixedCJK;
 private:
-    wxString cjkFontName;
     int currentFont;
     const wxColour *textColour;
 
@@ -669,10 +664,6 @@ public:
     {   panel->OnFontCMTT(); };
     void OnFontDeja(wxCommandEvent &event)
     {   panel->OnFontDeja(); };
-    void OnFontSazanami(wxCommandEvent &event)
-    {   panel->OnFontSazanami(); };
-    void OnFontFirefly(wxCommandEvent &event)
-    {   panel->OnFontFirefly(); };
     void OnFontPoint10(wxCommandEvent &event)
     {   panel->OnFontPoint10(); };
     void OnFontPoint12(wxCommandEvent &event)
@@ -738,8 +729,6 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_MENU(EDIT_END,             fwinFrame::OnEditEnd)
     EVT_MENU(FONT_CMTT,            fwinFrame::OnFontCMTT)
     EVT_MENU(FONT_DEJA,            fwinFrame::OnFontDeja)
-    EVT_MENU(FONT_SAZANAMI,        fwinFrame::OnFontSazanami)
-    EVT_MENU(FONT_FIREFLY,         fwinFrame::OnFontFirefly)
     EVT_MENU(FONT_POINT10,         fwinFrame::OnFontPoint10)
     EVT_MENU(FONT_POINT12,         fwinFrame::OnFontPoint12)
     EVT_MENU(FONT_POINT14,         fwinFrame::OnFontPoint14)
@@ -916,8 +905,6 @@ static const char*fontNames[] =
     "DejaVuSansMono",    // "DejaVu Sans Mono"                .otf
     "cmuntt",            // "CMU Typewriter Text (Regular)"   .ttf
     "fireflysung",       // "AR PL New Sung"                  .ttf
-    "sazanami-gothic",   // "Sazanami Gothic (Regular)"       .ttf
-    "sazanami-mincho",   // "Sazanami Mincho (Regular)"       .ttf
 
 
 
@@ -928,134 +915,448 @@ static const char*fontNames[] =
 // On Linux and Macintosh (and other Unix-like platforms) I will try using
 // the original .otf versions of the fonts...
 
-// Font containing characters from cmsy10, cmmi10, cmex10 etc etc.
-    "latinmodern-math",            // Latin Modern Math
+    "STIXGeneral-Regular",
+    "STIXGeneral-Bold",
+    "STIXGeneral-Italic",
+    "STIXGeneral-BoldItalic",
 
-// ROMAN FACES
+    "STIXIntegralsD-Regular",
+    "STIXIntegralsD-Bold",
 
-// Like cmr10 (etc) but with a wider range of characters.
-    "lmroman5-regular",            // LM Roman Regular 5
-    "lmroman6-regular",            // LM Roman Regular 6
-    "lmroman7-regular",            // LM Roman Regular 7
-    "lmroman8-regular",            // LM Roman Regular 8
-    "lmroman9-regular",            // LM Roman Regular 9
-    "lmroman10-regular",           // LM Roman Regular 10
-    "lmroman12-regular",           // LM Roman Regular 12
-    "lmroman17-regular",           // LM Roman Regular 17
+    "STIXIntegralsSm-Regular",
+    "STIXIntegralsSm-Bold",
 
-// Bold variant on the above.
-    "lmroman5-bold",             
-    "lmroman6-bold",             
-    "lmroman7-bold",             
-    "lmroman8-bold",             
-    "lmroman9-bold",             
-    "lmroman10-bold",            
-    "lmroman12-bold",            
+    "STIXIntegralsUp-Regular",
+    "STIXIntegralsUp-Bold",
 
-// Italic
-    "lmroman7-italic",           
-    "lmroman8-italic",           
-    "lmroman9-italic",           
-    "lmroman10-italic",          
-    "lmroman12-italic",          
+    "STIXIntegralsUpD-Regular",
+    "STIXIntegralsUpD-Bold",
 
-// Bold Italic - but which stage only one size is provided.
-    "lmroman10-bolditalic",      
+    "STIXIntegralsUpSm-Regular",
+    "STIXIntegralsUpSm-Bold",
 
-// Roman Slanted (n.b. not Italic!)
-    "lmromanslant8-regular",     
-    "lmromanslant9-regular",     
-    "lmromanslant10-regular",    
-    "lmromanslant12-regular",    
-    "lmromanslant17-regular",    
+    "STIXNonUnicode-Regular",
+    "STIXNonUnicode-Bold",
+    "STIXNonUnicode-Italic",
+    "STIXNonUnicode-BoldItalic",
 
-// Slanted Bold
-    "lmromanslant10-bold",       
+    "STIXSizeOneSym-Regular",
+    "STIXSizeTwoSym-Regular",
+    "STIXSizeThreeSym-Regular",
+    "STIXSizeFourSym-Regular",
+    "STIXSizeFiveSym-Regular",
 
-// Roman with small caps in place of lower case
-    "lmromancaps10-regular",     
-    "lmromancaps10-oblique",     
+    "STIXSizeOneSym-Bold",
+    "STIXSizeTwoSym-Bold",
+    "STIXSizeThreeSym-Bold",
+    "STIXSizeFourSym-Bold",
 
-// Roman demi-condensed
-    "lmromandemi10-regular",     
-    "lmromandemi10-oblique",     
+    "STIXVariants-Regular",
+    "STIXVariants-Bold"
+};
 
-// Roman Dunhill (risers seem very tall)
-    "lmromandunh10-regular",     
-    "lmromandunh10-oblique",     
+#ifndef fontsdir
+#define fontsdir reduce.wxfonts
+#endif
 
-// Roman Unslanted (has very twisty serifs)
-    "lmromanunsl10-regular",     
+#define toString(x) toString1(x)
+#define toString1(x) #x
 
-// SANS SERIF FACES
+void add_custom_fonts()
+{
+#ifndef MACINTOSH
+// Note that on a Mac I put the required fonts in the Application Bundle.
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   char nn[LONGEST_LEGAL_FILENAME];
+#ifdef WIN32
+        sprintf(nn,"%s/%s/%s.ttf",
+                    programDir, toString(fontsdir), fontNames[i]);
+#else
+        sprintf(nn,"%s/%s/%s.otf",
+                    programDir, toString(fontsdir), fontNames[i]);
+#endif
+        wxString widename(nn);
+        if (!wxFont::AddPrivateFont(widename))
+            logprintf("Adding font %s failed\n", nn);
+    }
+    if (!wxFont::ActivatePrivateFonts())
+            logprintf("Activating private fonts failed\n");
+#endif // MACINTOSH
+}
 
-// Basic Sans Serif in various design-sizes
-    "lmsans8-regular",           
-    "lmsans9-regular",           
-    "lmsans10-regular",          
-    "lmsans12-regular",          
-    "lmsans17-regular",          
 
-// Bold variant
-    "lmsans10-bold",             
 
-// Oblique versions
-    "lmsans8-oblique",           
-    "lmsans9-oblique",           
-    "lmsans10-oblique",          
-    "lmsans12-oblique",          
-    "lmsans17-oblique",          
 
-// Bold Oblique
-    "lmsans10-boldoblique",      
+//
+// Now that start of my code in a proper sense!
+//
+//
 
-// Semi-condensed
-    "lmsansdemicond10-regular",  
-    "lmsansdemicond10-oblique",  
 
-// Sans Quot (for use in quotations)
-    "lmsansquot8-regular",
-    "lmsansquot8-bold",          
-    "lmsansquot8-oblique",       
-    "lmsansquot8-boldoblique",   
+double showmathPanel::DVItoScreen(int n)
+{
+// At present this is a fixed scaling. I may well want to make it variable
+// at some later stage. The scaling here, which is based on an assumption
+// I make about the dots-per-inch resolution of my display, will end up
+// important when establishing fonts.
+    return (double)n/65536.0;
+}
 
-// MONOSPACED FONTS
+double showmathPanel::DVItoScreenUP(int n)
+{
+// This ROUND UP to the next integer, and that is needed so that (eg)
+// very thin rules end up at least one pixel wide. Well I round up by
+// adding a value just under 1.0 then truncating. That recipe works OK for
+// positive arguments!
+// well using wxGraphicsContext I do not need to round.
+    return (double)n/65536.0;
+}
 
-// Basic monospaced font in various design sizes
-    "lmmono8-regular",           
-    "lmmono9-regular",           
-    "lmmono10-regular",          
-    "lmmono12-regular",          
+void showmathPanel::SetRule(int height, int width)
+{
+#if 0
+    logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
+                                        height, (double)height/65537.0);
+#endif
+// The curious re-scaling here is so that the border of the rectangle does not
+// end up fatter than the rectangle itself.
+    wxGraphicsMatrix xform = gc->GetTransform();
+    gc->Scale(0.01, 0.01);
+//    gc->DrawRectangle(100.0*DVItoScreen(h), 100.0*DVItoScreen(v-height),
+//                      100.0*DVItoScreenUP(width), 100.0*DVItoScreenUP(height));
+    gc->SetTransform(xform);
+}
 
-// Italic
-    "lmmono10-italic",           
 
-// With small caps instead of lower case
-    "lmmonocaps10-regular",      
-    "lmmonocaps10-oblique",      
 
-// "Light"
-    "lmmonolt10-regular",        
-    "lmmonolt10-bold",           
-    "lmmonolt10-oblique",        
-    "lmmonolt10-boldoblique",    
+bool showmathApp::OnInit()
+{
+// I find that the real type of argv is NOT "char **" but it supports
+// the cast indicated here to turn it into what I expect.
+    char **myargv = (char **)argv;
 
-// "Light Condensed"
-    "lmmonoltcond10-regular",    
-    "lmmonoltcond10-oblique",    
+#if DEBUG
+    logprintf("in showmathApp::OnInit\n");
+#endif
+    add_custom_fonts();
+#if DEBUG
+    logprintf("fonts added\n");
+#endif
 
-// Proportional
-    "lmmonoprop10-regular",      
-    "lmmonoprop10-oblique",      
+    const char *showmathfilename = NULL;
+    if (argc > 1) showmathfilename = myargv[1];
+    
+#if DEBUG
+    logprintf("showmathfilename=%s\n",
+              showmathfilename == NULL ?"<null>" : showmathfilename);
+#endif
 
-// Proportional Light
-    "lmmonoproplt10-regular",    
-    "lmmonoproplt10-bold",       
-    "lmmonoproplt10-oblique",    
-    "lmmonoproplt10-boldoblique",
+    showmathFrame *frame = new showmathFrame(showmathfilename);
+    frame->Show(true);
+#if DEBUG
+    logprintf("OnInint complete\n");
+#endif
+    return true;
+}
 
-// Slanted
-    "lmmonoslant10-regular"      
+showmathFrame::showmathFrame(const char *showmathfilename)
+       : wxFrame(NULL, wxID_ANY,"wxshowmath")
+{
+    SetIcon(wxICON(fwin));
+    int numDisplays = wxDisplay::GetCount(); // how many displays?
+// It is not clear to me what I should do if there are several displays,
+// and if there are none I am probably in a mess!
+    if (numDisplays != 1)
+    {   logprintf("There seem to be %d displays\n", numDisplays);
+    }
+    wxDisplay d0(0);                         // just look at display 0
+    wxRect screenArea(d0.GetClientArea());   // omitting task bar
+    screenWidth = screenArea.GetWidth();
+    screenHeight = screenArea.GetHeight();
+    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
+// I will want to end up saving screen size (and even position) between runs
+// of this program.
+    int width = 1280;      // default size.
+    int height = 1024;
+// If the default size would fill over 90% of screen width or height I scale
+// down to make it fit better.
+    if (10*width > 9*screenWidth)
+    {   height = height*9*screenWidth/(10*width);
+        width = 9*screenWidth/10;
+        logprintf("reset to %d by %d to fix width\n", width, height);
+    }
+    if (10*height > 9*screenHeight)
+    {   width = width*9*screenHeight/(10*height);
+        height = 9*screenHeight/10;
+        logprintf("reset to %d by %d to fix height\n", width, height);
+    }
+    panel = new showmathPanel(this, showmathfilename);
+    SetMinClientSize(wxSize(400, 100));
+    SetSize(width, height);
+    wxSize client(GetClientSize());
+    int w = client.GetWidth() % 80;
+    if (w != 0) SetSize(width-w, height);
+    Centre();
+}
+
+
+static unsigned char default_data[4] = "x";
+
+// When I construct this I must avoid the wxTAB_TRAVERSAL style since that
+// tends to get characters passed to child windows not this one. Avoiding
+// that is the reason behind providing so many arguments to the parent
+// constructor
+
+showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename)
+       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
+                 wxDefaultSize, 0L,"showmathPanel")
+{
+// I will read in any data once here and put it in a character buffer.
+    FILE *f = NULL;
+    if (showmathfilename == NULL) showmathData = default_data;
+    else
+    {   stringInput = NULL;
+        f = fopen(showmathfilename,"r");
+        if (f == NULL)
+        {   logprintf("File \"%s\" not found\n", showmathfilename);
+            exit(1);
+        }
+        fseek(f, (off_t)0, SEEK_END);
+        off_t len = ftell(f);
+        showmathData = (unsigned char *)malloc((size_t)len);
+        fseek(f, (off_t)0, SEEK_SET);
+        for (int i=0; i<len; i++) showmathData[i] = getc(f);
+        fclose(f);
+    }
+    for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
+    fixedPitchValid = false;
+}
+
+
+void showmathFrame::OnClose(wxCloseEvent &WXUNUSED(event))
+{
+    Destroy();
+#ifdef WIN32
+// Otherwise under XP bad things happen for me. Like the application
+// re-launching. I do not think I understand, but the extreme action of
+// utterly killing the process does what I need!
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
+    exit(0);    // I want the whole application to terminate here!
+#endif
+}
+
+void showmathFrame::OnExit(wxCommandEvent &WXUNUSED(event))
+{
+    Destroy();
+#ifdef WIN32
+    TerminateProcess(GetCurrentProcess(), 1);
+#else
+    exit(0);    // I want the whole application to terminate here!
+#endif
+}
+
+void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
+{
+// At present this never gets activated!
+    wxMessageBox(
+       wxString::Format(
+"wxshowmath (A C Norman 2015)\nwxWidgets version: %s\nOperating system: %s",
+           wxVERSION_STRING,
+           wxGetOsDescription()),
+       "About wxshowmath",
+       wxOK | wxICON_INFORMATION,
+       this);
+}
+
+void showmathFrame::OnSize(wxSizeEvent &WXUNUSED(event))
+{
+    wxSize client(GetClientSize());
+    panel->SetSize(client);
+    panel->Refresh();
+}
+
+void showmathPanel::OnChar(wxKeyEvent &event)
+{
+// This merely records the character in the log file.
+    const char *msg ="OnChar", *raw ="";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
+}
+
+void showmathPanel::OnKeyDown(wxKeyEvent &event)
+{
+// Again merely log the event.
+    const char *msg ="OnKeyDown", *raw ="";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
+    event.Skip();
+}
+
+void showmathPanel::OnKeyUp(wxKeyEvent &event)
+{
+// Merely log the event.
+    const char *msg ="OnKeyUp", *raw ="";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
+    event.Skip();
+}
+
+void showmathPanel::OnMouse(wxMouseEvent &event)
+{
+// Log but take no action.
+    logprintf("Mouse event\n");
+    event.Skip();
+//  Refresh();     // forces redraw of everything
+}
+
+void showmathPanel::OnPaint(wxPaintEvent &event)
+{
+    wxPaintDC mydc(this);
+    gc = wxGraphicsContext::Create(mydc);
+    if (gc == NULL) return;
+// The next could probably be done merely by setting a background colour
+    wxColour c1(230, 200, 255);
+    wxBrush b1(c1);
+    gc->SetBrush(b1);
+    wxSize window(mydc.GetSize());
+    logprintf("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
+    gc->DrawRectangle(0.0, 0.0,
+                      (double)window.GetWidth(),
+                      (double)window.GetHeight());
+
+#if defined WIN32 && 0
+// The Windows default behaviour fails to antialias some of the cmex10
+// tall characters, and so unless I force antialiasing here I get MOST
+// symbols rendered nicely, but big integral signs and parentheses badly
+// blocky when the display exceeds a certain size. This is clearly down to
+// the system default smoothing switching off for characters over a certain
+// size, but it is far from clear that there is a trivial place where I
+// can adjust for that, and anyway nobody wants to have to set a system-
+// wide option just for the benefit of this application. I will need to
+// review this when I test using the STIX fonts, but given that my diagnosis
+// is that it is GDI+ hurting me I will leave this code in place for now.
+    Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
+    g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
+#endif
+// The graphicsFixedPitch font will be for a line spacing of exactly 100
+// pixels. This is of course HUGE, but I will scale it as relevant. Note
+// also that I will need to check font names used in the code here since
+// exactly the same font files may end up needing different names to refer
+// to them as between Windows, Linux and OSX.
+    graphicsFixedPitch =
+       gc->CreateFont(
+           wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("CMU Typewriter Text"))));
+    double dwidth, dheight, ddepth, dleading;
+    gc->SetFont(graphicsFixedPitch);
+    gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
+    em = dwidth;
+    logprintf("(D)em=%#.6g\n", em);
+    logprintf("(D)height = %#.6g total height = %#.6g leading = %#.6g\n",
+        dheight-ddepth-dleading, dheight, dleading);
+
+    double screenWidth = (double)window.GetWidth();
+    double lineWidth = 80.0*em;
+    double scale = screenWidth/lineWidth;
+// This will now scale everything so that I end up with 80 characters from
+// that fixed-pitch font across the width of my window.
+    gc->Scale(scale, scale);
+    logprintf("Scale now %.6g\n", scale);
+
+    gc->SetFont(graphicsFixedPitch);
+    double width, height, descent, xleading;
+    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g fixedpitch\n", width, height, descent, xleading);
+    graphicsFixedPitchBaseline = height - descent;
+// Sort of for fun I put a row of 80 characters at the top of the screen
+// so I can show how fixed pitch stuff might end up being rendered.
+    gc->SetFont(graphicsFixedPitch);
+    for (int i=0; i<80; i++)
+        gc->DrawText(wxString((wchar_t)(i+0x21)), (double)i*em, 100.0-graphicsFixedPitchBaseline);
+#if 0
+    wxColour c2(29, 99, 25);
+    wxBrush b2(c2);
+    gc->SetBrush(b2);
+    for (int x=0; x<1000; x+=10)
+    for (int y=0; y<=1000; y+=10)
+    if (((x/10)+(y/10)) & 1 != 0)
+        gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
+#endif
+// Now I need to do something more serious!
+    wxGraphicsFont general =
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXGeneral"))));
+    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
+    gc->SetFont(general);
+    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g general\n", width, height, descent, xleading);
+    double generalBaseline = height - descent;
+    wxGraphicsFont huge =
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 5000)).FaceName(wxT("STIXGeneral"))));
+    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
+    gc->SetFont(huge);
+    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g huge\n", width, height, descent, xleading);
+    double hugeBaseline = height - descent;
+    wxGraphicsFont symbols =
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXSizeOneSym"))));
+    if (symbols.IsNull()) logprintf("STIXSizeOneSym font not created\n");
+    else logprintf("Sym font should be OK\n");
+    gc->SetFont(symbols);
+    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    gc->GetTextExtent(wxString((wchar_t)'j'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    double symbolsBaseline = height - descent;
+
+    gc->SetFont(general);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI), 1000.0, 500.0-generalBaseline);
+    gc->SetFont(symbols);
+    gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
+    logprintf("(D)em=%#.3g\n", dwidth);
+    logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+        dheight-ddepth-dleading, dheight, dleading);
+    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_UPPER_HOOK);
+    printf("upper hook   %d %d\n", c_lly, c_ury);
+    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+    printf("middle piece %d %d\n", c_lly, c_ury);
+    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_LOWER_HOOK);
+    printf("lower hook   %d %d\n", c_lly, c_ury);
+    lookupchar(F_SizeOneSym, unicode_CURLY_BRACKET_EXTENSION);
+    printf("extension    %d %d\n", c_lly, c_ury);
+#define H (101.0)
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK),   800.0, 450.0-H-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), 800.0, 450.0-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION),         800.0, 450.0+H-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK),   800.0, 450.0+2.0*H-symbolsBaseline);
+    gc->SetFont(general);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA), 450.0+3.0*H, 900.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)0x237c), 1100.0, 800.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)0x3c0), 1300.0, 800.0-generalBaseline);
+    gc->SetFont(huge);
+    gc->DrawText(wxString((wchar_t)'M'), 100.0, 5000.0-hugeBaseline);
+
+// I will mark all the fonts I might have created as invalid now
+// that the context they were set up for is being left.
+    for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
+    logprintf("About to delete gc\n");
+    delete gc;
+    gc = NULL; // just to be tidy!
+    return;
+}
+
+
+// end of wxshowmath.cpp
+
+
+
 };
 
 #endif // MACINTOSH
@@ -1859,8 +2160,6 @@ fwinFrame::fwinFrame()
     fontMenu->AppendSeparator();
 // The next line is a hack that keeps the two sets of radio buttons separate.
     fontMenu->Remove(fontMenu->Append(FONT_DUMMY, "dummy"));
-    fontMenu->AppendRadioItem(FONT_SAZANAMI, "&Sazanami", "Use Sazanami CJK Font");
-    fontMenu->AppendRadioItem(FONT_FIREFLY, "&Firefly Sung", "Use Firefly Sung CJK Font");
     fontMenu->AppendSeparator();
 // The next line is a hack that keeps the two sets of radio buttons separate.
     fontMenu->Remove(fontMenu->Append(FONT_DUMMY, "dummy"));
@@ -1961,16 +2260,7 @@ fwinText::fwinText(fwinFrame *parent)
     fontPriorityCMTT = false;
 // The available CJK fonts here are
 //     Windows & Unix            Macintosh
-//     Sazanami Mincho           Sazanami Mincho Regular
-//     Sazanami Gothic           Sazanami Gothic Regular
 //     AR PL New Sung            AR PL New Sung
-// Right at present I will make a selection, but in due course I will
-// provide a menu-driven option to let the user select.
-#ifdef MACINTOSH
-    cjkFontName = "Sazanami Mincho Regular";
-#else
-    cjkFontName = "Sazanami Mincho";
-#endif
     wxColour c1(230, 200, 255);
     SetBackgroundColour(c1);
 // These will be reviewed when I first paint the screen
@@ -3375,16 +3665,6 @@ void fwinText::OnFontDeja()
     FWIN_LOG(("OnFontDeja"));
 }
 
-void fwinText::OnFontSazanami()
-{
-    FWIN_LOG(("OnFontSazanami"));
-}
-
-void fwinText::OnFontFirefly()
-{
-    FWIN_LOG(("OnFontFirefly"));
-}
-
 void fwinText::OnFontPoint10()
 {
     FWIN_LOG(("OnFontPoint10"));
@@ -4613,7 +4893,7 @@ void fwinText::SetupFonts(wxDC &dc)
         fixedPitch->SetFaceName("CMU Typewriter Text");
 #endif
         fixedAlternate->SetFaceName("DejaVu Sans Mono");
-        fixedCJK->SetFaceName(cjkFontName);
+        fixedCJK->SetFaceName("AR PL New Sung");
         fixedPitch->SetPointSize(1000);
         fixedAlternate->SetPointSize(1000);
         fixedCJK->SetPointSize(1000);

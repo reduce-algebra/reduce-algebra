@@ -150,6 +150,7 @@ public:
 
 private:
     wxGraphicsFont graphicsFixedPitch;
+    double graphicsFixedPitchBaseline;
     bool fixedPitchValid;
 
     void RenderDVI();        // sub-function used by OnPaint
@@ -158,33 +159,13 @@ private:
     unsigned char *showmathData;  // the .showmath file's contents are stored here
     unsigned const char *stringInput;
 
-    int u2();                // read 1-4 bytes as signed or unsigned value
-    int u3();
-    int s1();
-    int s2();
-    int s3();
-    int s4();
-
-    void DefFont(int k);     // showmath file font definition
-    void SelectFont(int k);
-    void SetChar(int c);     // showmath display charcter and move on
-    void PutChar(int c);     // showmath just display character
     void SetRule(int height, int width);
     double DVItoScreen(int n);  // map coordinates
     double DVItoScreenUP(int n);// ditto but used for rule widths
 
-    int32_t h, v, w, x, y, z;// working values used in DVI decoding
-
-    int32_t C[10], p;        // set by start of a page and not used!
-
-// showmath files can call for an essentially unlimited number of distinct
-// fonts - where one"font" here is not just to do with shape but also with
-// size. If I pre-scanned the showmath data I could identify the largest font
-// number used and allocate a table of exactly the right size. But for now
-// I will use a fixed limit.
-//
 #define MAX_FONTS 32
     wxGraphicsFont graphicsFont[MAX_FONTS];       // the fonts I use here
+    double graphicsFontBaseline[MAX_FONTS];
     bool graphicsFontValid[MAX_FONTS];            // the fonts I use here
     double em;
 
@@ -785,38 +766,6 @@ double showmathPanel::DVItoScreenUP(int n)
     return (double)n/65536.0;
 }
 
-void showmathPanel::SetChar(int32_t c)
-{
-#if 0
-    logprintf("SetChar%d [%c] %d %d\n", (int)c, (c <  0x20 || c >= 0x7f ? ' ' : (int)c), (int)h, (int)v);
-#endif
-    wxString s = (wchar_t)c;
-    double width, height, descent, xleading;
-    gc->GetTextExtent(s, &width, &height, &descent, &xleading);
-    gc->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
-// Now I must increase h by the width (in scaled points) of the character
-// I just set. This is not dependent at all on the way I map DVI internal
-// coordinates to screen ones.
-
-//??     int32_t ww = currentFontWidth->charwidth[c & 0x7f];
-//??     int32_t design = currentFontWidth->designsize;
-//?? // ww is now the width as extracted from the .tfm file, and that applies
-//?? // to the glyph if it is set at its standard size. So adjust for all of
-//?? // that and end up in TeX coordinate units.
-//??     int32_t texwidth =
-//??         (int32_t)(0.5 + (double)design*(double)ww/
-//??                         (double)(1<<24));
-//??     h += texwidth;
-#if 0
-// Now I want to compare the width that TeX thinks the character has with
-// what wxWidgets thinks. So I convert the TeX width to pixels.
-    double twp = (double)(1024*1024)*(double)texwidth/
-                 (72.0*65536.0*1000.0);
-    logprintf("TeX says %#.6g wxWidgets says %.6g (%.6g)\n",
-        twp, (double)width, twp/(double)width);
-#endif
-}
-
 void showmathPanel::SetRule(int height, int width)
 {
 #if 0
@@ -827,8 +776,8 @@ void showmathPanel::SetRule(int height, int width)
 // end up fatter than the rectangle itself.
     wxGraphicsMatrix xform = gc->GetTransform();
     gc->Scale(0.01, 0.01);
-    gc->DrawRectangle(100.0*DVItoScreen(h), 100.0*DVItoScreen(v-height),
-                      100.0*DVItoScreenUP(width), 100.0*DVItoScreenUP(height));
+//    gc->DrawRectangle(100.0*DVItoScreen(h), 100.0*DVItoScreen(v-height),
+//                      100.0*DVItoScreenUP(width), 100.0*DVItoScreenUP(height));
     gc->SetTransform(xform);
 }
 
@@ -890,7 +839,7 @@ showmathFrame::showmathFrame(const char *showmathfilename)
         width = 9*screenWidth/10;
         logprintf("reset to %d by %d to fix width\n", width, height);
     }
-    if (10*height > 9 * screenHeight)
+    if (10*height > 9*screenHeight)
     {   width = width*9*screenHeight/(10*height);
         height = 9*screenHeight/10;
         logprintf("reset to %d by %d to fix height\n", width, height);
@@ -1025,20 +974,16 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
-    logprintf("OnPaint: graphicsContext created at %p\n", gc);
     if (gc == NULL) return;
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
-    logprintf("colour and brush made\n");
     gc->SetBrush(b1);
-    logprintf("setbrush done\n");
     wxSize window(mydc.GetSize());
     logprintf("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
     gc->DrawRectangle(0.0, 0.0,
                       (double)window.GetWidth(),
                       (double)window.GetHeight());
-    logprintf("background drawn\n");
 
 #if defined WIN32 && 0
 // The Windows default behaviour fails to antialias some of the cmex10
@@ -1054,19 +999,20 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
     g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
 #endif
-    logprintf("Need to create fixed pitch font\n");
-// The graphicsFixedPitch font will be for a line spacing of exactly 10
-// pixels. This is of course TINY, but I will scale it as relevant. Note
-// also that I will need to check font names since exactly the same font
-// files may end up needing different names to refer to them as between
-// Windows, Linux and OSX.
-    graphicsFixedPitch = gc->CreateFont(10.0, wxT("CMU Typewriter Text"));
+// The graphicsFixedPitch font will be for a line spacing of exactly 100
+// pixels. This is of course HUGE, but I will scale it as relevant. Note
+// also that I will need to check font names used in the code here since
+// exactly the same font files may end up needing different names to refer
+// to them as between Windows, Linux and OSX.
+    graphicsFixedPitch =
+       gc->CreateFont(
+           wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("CMU Typewriter Text"))));
     double dwidth, dheight, ddepth, dleading;
     gc->SetFont(graphicsFixedPitch);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
     em = dwidth;
-    logprintf("(D)em=%#.3g\n", em);
-    logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+    logprintf("(D)em=%#.6g\n", em);
+    logprintf("(D)height = %#.6g total height = %#.6g leading = %#.6g\n",
         dheight-ddepth-dleading, dheight, dleading);
 
     double screenWidth = (double)window.GetWidth();
@@ -1077,35 +1023,79 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     gc->Scale(scale, scale);
     logprintf("Scale now %.6g\n", scale);
 
+    gc->SetFont(graphicsFixedPitch);
+    double width, height, descent, xleading;
+    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g fixedpitch\n", width, height, descent, xleading);
+    graphicsFixedPitchBaseline = height - descent;
 // Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
     gc->SetFont(graphicsFixedPitch);
     for (int i=0; i<80; i++)
-    {   wxString c1 = (wchar_t)(i+0x21);
-        gc->DrawText(c1, (double)i*em, 10.0);
-    }
-
+        gc->DrawText(wxString((wchar_t)(i+0x21)), (double)i*em, 100.0-graphicsFixedPitchBaseline);
+#if 0
+    wxColour c2(29, 99, 25);
+    wxBrush b2(c2);
+    gc->SetBrush(b2);
+    for (int x=0; x<1000; x+=10)
+    for (int y=0; y<=1000; y+=10)
+    if (((x/10)+(y/10)) & 1 != 0)
+        gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
+#endif
 // Now I need to do something more serious!
     wxGraphicsFont general =
-        gc->CreateFont(wxFont(wxFontInfo(10).FaceName(wxT("STIXGeneral"))));
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXGeneral"))));
     if (general.IsNull()) logprintf("STIXGeneral font not created\n");
+    gc->SetFont(general);
+    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g general\n", width, height, descent, xleading);
+    double generalBaseline = height - descent;
+    wxGraphicsFont huge =
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 5000)).FaceName(wxT("STIXGeneral"))));
+    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
+    gc->SetFont(huge);
+    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g huge\n", width, height, descent, xleading);
+    double hugeBaseline = height - descent;
     wxGraphicsFont symbols =
-        gc->CreateFont(wxFont(wxFontInfo(10).FaceName(wxT("STIXSizeOneSym"))));
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXSizeOneSym"))));
     if (symbols.IsNull()) logprintf("STIXSizeOneSym font not created\n");
     else logprintf("Sym font should be OK\n");
-    gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI), 100.0, 100.0);
     gc->SetFont(symbols);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK), 130.0, 90.0);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), 130.0, 100.0);
-    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION), 130.0, 110.0);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK), 130.0, 120.0);
-    gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA), 130.0, 140.0);
-    gc->DrawText(wxString((wchar_t)0x237c), 160.0, 130.0);
-    gc->DrawText(wxString((wchar_t)0x3c0), 180.0, 130.0);
+    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    gc->GetTextExtent(wxString((wchar_t)'j'), &width, &height, &descent, &xleading);
+    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    double symbolsBaseline = height - descent;
 
-//  RenderDVI();
+    gc->SetFont(general);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI), 1000.0, 500.0-generalBaseline);
+    gc->SetFont(symbols);
+    gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
+    logprintf("(D)em=%#.3g\n", dwidth);
+    logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+        dheight-ddepth-dleading, dheight, dleading);
+    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_UPPER_HOOK);
+    printf("upper hook   %d %d\n", c_lly, c_ury);
+    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+    printf("middle piece %d %d\n", c_lly, c_ury);
+    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_LOWER_HOOK);
+    printf("lower hook   %d %d\n", c_lly, c_ury);
+    lookupchar(F_SizeOneSym, unicode_CURLY_BRACKET_EXTENSION);
+    printf("extension    %d %d\n", c_lly, c_ury);
+#define H (101.0)
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK),   800.0, 450.0-H-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), 800.0, 450.0-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION),         800.0, 450.0+H-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK),   800.0, 450.0+2.0*H-symbolsBaseline);
+    gc->SetFont(general);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA), 450.0+3.0*H, 900.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)0x237c), 1100.0, 800.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)0x3c0), 1300.0, 800.0-generalBaseline);
+    gc->SetFont(huge);
+    gc->DrawText(wxString((wchar_t)'M'), 100.0, 5000.0-hugeBaseline);
 
 // I will mark all the fonts I might have created as invalid now
 // that the context they were set up for is being left.

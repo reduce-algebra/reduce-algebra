@@ -8,3 +8,7 @@ than when generating Postscript output in a screen-print procedure.
 
 See the top-level files in the tetex directory for further commentary.
 
+I now understand how to extract this metric information directly from
+.otf or .ttf fonts and so would not need the pre-made versions. I will
+nevetheless leave things here at least until I am certain I have removed
+everything derived from tetex.

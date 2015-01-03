@@ -13,13 +13,13 @@ else
 fi
 printf "Using %s for fontforge\n" $ff
 
-for i in STIX*.otf cmuntt.otf fireflysung.ttf
+for i in *.otf fireflysung.ttf
 do
   "$ff" -script toafm.script $i
 done
 
 # I do not really want the ".ps" files - just the .afm ones
 rm *.ps
-mv *.afm tfm
+mv *.afm metrics
 
 printf "Conversion complete\n"

@@ -1,5 +1,8 @@
  /* fontmap.c                           Copyright (C) 2014 Codemist Ltd */
 
+#error DEFUNCT
+
+// This has in effect been replaces by charmetrics.c...
 
 /**************************************************************************
  * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
@@ -48,67 +51,11 @@ const char *fontfilename[][2] =
 #ifdef MACINTOSH
     {"CMU Typewriter Text Regular",   "cmuntt"},
     {"DejaVu Sans Mono",              "DejaVuSansMono"},
-    {"AR PL New Sung",                "fireflysung"},
-    {"Latin Modern Math",             "latinmodern-math"},
-    {"LM Mono 8",                     "lmmono"},
-    {"LM Mono 9",                     "lmmono"},
-    {"LM Mono 10",                    "lmmono"},
-    {"LM Mono 12",                    "lmmono"},
-    {"LM Mono Caps 10",               "lmmono"},
-    {"LM Mono Light 10",              "lmmono"},
-    {"LM Mono Light Cond 10",         "lmmono"},
-    {"LM Mono Slanted 10",            "lmmono"},
-    {"LM Mono Prop 10",               "lmmonoprop"},
-    {"LM Mono Prop Light 10",         "lmmonoprop"},
-    {"LM Roman 5",                    "lmroman"},
-    {"LM Roman 6",                    "lmroman"},
-    {"LM Roman 7",                    "lmroman"},
-    {"LM Roman 8",                    "lmroman"},
-    {"LM Roman 9",                    "lmroman"},
-    {"LM Roman 10",                   "lmroman"},
-    {"LM Roman 12",                   "lmroman"},
-    {"LM Roman 17",                   "lmroman"},
-    {"LM Sans 8",                     "lmsans"},
-    {"LM Sans 9",                     "lmsans"},
-    {"LM Sans 10",                    "lmsans"},
-    {"LM Sans 12",                    "lmsans"},
-    {"LM Sans 17",                    "lmsans"},
-    {"LM Sans Demi Cond 10",          "lmsans"},
-    {"LM Sans Quot 8",                "lmsans"},
-    {"Sazanami Gothic Regular",       "sazanami-gothic"},
-    {"Sazanami Mincho Regular",       "sazanami-mincho"}
+    {"AR PL New Sung",                "fireflysung"}
 #else /* MAC */
     {"CMU Typewriter Text",           "cmuntt"},
     {"DejaVu Sans Mono",              "DejaVuSansMono"},
-    {"AR PL New Sung",                "fireflysung"},
-    {"Latin Modern Math",             "latinmodern-math"},
-    {"LM Mono 8",                     "lmmono"},
-    {"LM Mono 9",                     "lmmono"},
-    {"LM Mono 10",                    "lmmono"},
-    {"LM Mono 12",                    "lmmono"},
-    {"LM Mono Caps 10",               "lmmono"},
-    {"LM Mono Light 10",              "lmmono"},
-    {"LM Mono Light Cond 10",         "lmmono"},
-    {"LM Mono Slanted 10",            "lmmono"},
-    {"LM Mono Prop 10",               "lmmonoprop"},
-    {"LM Mono Prop Light 10",         "lmmonoprop"},
-    {"LM Roman 5",                    "lmroman"},
-    {"LM Roman 6",                    "lmroman"},
-    {"LM Roman 7",                    "lmroman"},
-    {"LM Roman 8",                    "lmroman"},
-    {"LM Roman 9",                    "lmroman"},
-    {"LM Roman 10",                   "lmroman"},
-    {"LM Roman 12",                   "lmroman"},
-    {"LM Roman 17",                   "lmroman"},
-    {"LM Sans 8",                     "lmsans"},
-    {"LM Sans 9",                     "lmsans"},
-    {"LM Sans 10",                    "lmsans"},
-    {"LM Sans 12",                    "lmsans"},
-    {"LM Sans 17",                    "lmsans"},
-    {"LM Sans Demi Cond 10",          "lmsans"},
-    {"LM Sans Quot 8",                "lmsans"},
-    {"Sazanami Gothic",               "sazanami-gothic"},
-    {"Sazanami Mincho",               "sazanami-mincho"}
+    {"AR PL New Sung",                "fireflysung"}
 #endif /* MAC */
 };
 

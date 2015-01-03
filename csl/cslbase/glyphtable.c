@@ -1,5 +1,11 @@
 /* glyphtable.c                          Copyright (C) 2014 Codemist Ltd */
 
+#error DEFUNCT
+
+// THis code using glyphIgo etc is now supplanted by use of fontforge
+// to create .afm files for the relevant fonts. Hence its output file,
+// coverage.c is also no longer relevant.
+
 /* Build bitmap tables relating to characters present in fonts */
 
 /**************************************************************************

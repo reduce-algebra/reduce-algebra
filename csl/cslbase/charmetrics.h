@@ -71,11 +71,19 @@
 #define F_fireflysung                 30
 #define F_end                         31
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;
 extern int lookupchar(int fontnum, int codepoint);
 extern int32_t lookupkernandligature(int codepoint);
 extern int32_t lookupkernadjustment(int codepoint);
 extern int32_t lookupligature(int codepoint);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 const uint64_t charmetrics[10883][5] = 
 {

@@ -578,6 +578,9 @@ int main(int argc, char *argv[])
             lly[charcount] = bb2;
             urx[charcount] = bb3;
             ury[charcount] = bb4;
+{ int height = bb4 - bb2;
+  if (height == 1000) printf("Font %d code %d\n", fontnum, cp);
+} // @@@
             charcount++;
         }
         fclose(src);
@@ -836,11 +839,17 @@ fprintf(dest, "#define F_Variants_Bold               28\n");
 fprintf(dest, "#define F_Variants                    29\n");
 fprintf(dest, "#define F_fireflysung                 30\n");
 fprintf(dest, "#define F_end                         31\n\n");
+fprintf(dest, "#ifdef __cplusplus\n");
+fprintf(dest, "extern \"C\" {\n");
+fprintf(dest, "#endif // __cplusplus\n\n");
 fprintf(dest, "extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;\n");
 fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupligature(int codepoint);\n\n");
+fprintf(dest, "#ifdef __cplusplus\n");
+fprintf(dest, "}\n");
+fprintf(dest, "#endif // __cplusplus\n\n");
 fprintf(rdest, "%% Character metrics for the STIX (and some other) fonts...\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "%% Character metric hash table created using the program charmetrics.c\n");

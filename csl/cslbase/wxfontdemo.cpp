@@ -1,4 +1,4 @@
-// wxfontdemo.cpp                                Copyright A C Norman 2014.
+// wxfontdemo.cpp                                Copyright A C Norman 2015.
 
 // A sample wxWidgets application to display fonts.
 //
@@ -16,7 +16,7 @@
 // wxWidgets.
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,9 +54,8 @@
 // The fontname is either the name of a font installed on the system
 // or is one of the private fonts provided here (and those are the cases
 // I view as more interesting). Sometimes the names you need to give the
-// private fonts differ as between Macintosh and other platforms, and
-// fontmap.c contains a list of the names I expect to behave. Eg
-//  "CMU Typewriter Text" or "CMU Typewriter Text Regular", ...
+// private fonts differ as between Macintosh and other platforms.
+// Eg "CMU Typewriter Text" or "CMU Typewriter Text Regular", ...
 //
 // The flag --tex adjusts for a private adjustment to the TeX character
 // encoding and is only for use with the fonts csl-cmr10 and so on...
@@ -152,6 +151,8 @@
 #include <ctype.h>
 #include <time.h>
 #include <signal.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -178,6 +179,8 @@ extern char *getcwd(char *s, size_t n);
 #if !defined __WXMSW__ && !defined __WXPM__
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
+
+#include "charmetrics.h"
 
 class fontApp : public wxApp
 {
@@ -814,9 +817,9 @@ bool fontApp::OnInit()
     tex = 0;
     page = 0;
     regular = bold = italic = 0;
-    const char *font = "default";  // A default font name to ask for.
+    const char *font = "CMU Typewriter Text";  // A default font name to ask for.
     int size = 48;           // a default size.
-    for (int i=0; i<argc; i++)
+    for (int i=1; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
         if (strcmp(myargv[i], "--tex") == 0) tex = 1;
@@ -969,11 +972,28 @@ void fontPanel::OnMouse(wxMouseEvent &event)
     Refresh();
 }
 
-//
-// Maps showing character coverage of the private fonts I may use...
-//
-
-#include "fontmap.c"
+// The following function will catalogue the fonts I expectr to allow
+int find_fontnum(const char *s)
+{
+    if (strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
+// Note that Bold and Italic are picked up by options --bold and --italic
+// not through the font name.
+    if (strcmp(s, "STIXGeneral") == 0) return F_General;
+    if (strcmp(s, "STIXIntegralsD") == 0) return F_IntegralsD;
+    if (strcmp(s, "STIXIntegralsSm") == 0) return F_IntegralsSm;
+    if (strcmp(s, "STIXIntegralsUpD") == 0) return F_IntegralsUpD;
+    if (strcmp(s, "STIXIntegralsUp") == 0) return F_IntegralsUp;
+    if (strcmp(s, "STIXIntegralsUpSm") == 0) return F_IntegralsUpSm;
+    if (strcmp(s, "STIXNonUnicode") == 0) return F_NonUnicode;
+    if (strcmp(s, "STIXSizeOneSym") == 0) return F_SizeOneSym;
+    if (strcmp(s, "STIXSizeTwoSym") == 0) return F_SizeTwoSym;
+    if (strcmp(s, "STIXSizeThreeSym") == 0) return F_SizeThreeSym;
+    if (strcmp(s, "STIXSizeFourSym") == 0) return F_SizeFourSym;
+    if (strcmp(s, "STIXSizeFiveSym") == 0) return F_SizeFiveSym;
+    if (strcmp(s, "STIXVariants") == 0) return F_Variants;
+    if (strcmp(s, "AR PL New Sung") == 0) return F_fireflysung;
+    return -1;
+}
 
 static int once = 0;
 
@@ -1017,8 +1037,8 @@ void fontPanel::OnPaint(wxPaintEvent &event)
             fflush(stdout);
         }
         wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
-        uint32_t *map = find_glyphmap(fontname);
-        if (map != NULL) printf("Map of available codepoints found\n");
+        int fontnum = find_fontnum(fontname);
+        if (fontnum >= 0) printf("Map of available codepoints found\n");
         else printf("No map of valid codepoints\n");
 // Draw row and column labels
         wxFont labels(wxFontInfo(3));
@@ -1080,27 +1100,8 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                                 4.0*4.0, 4.0*4.0);
                 gc->SetTransform(save);
                 int k = i + j;
-// The "tex" mode is intended for use with the TeX fonts csl-cmr10 and
-// friends, where the original TeX encoding is (almost) used. But that
-// encoding leads to real pain when the Unicode points used correspond to
-// control characters - and so in the fonts used a range of characters are
-// mapped to various odd codes - and this fragment of program allows for
-// that so that the display is as if the original TeX encoding had been
-// supported. This scheme is now being retired since I will be using
-// Unicode fonts for everything and so the TeX encoding mess gets left
-// behind. Whew!
-                if (tex)
-                {   if (k < 0xa) k = 0xa1 + k;
-                    else if (k == 0xa) k = 0xc5;
-                    else if (k == 0x14) k = 0x2219;
-                    else if (k < 0x20) k = 0xa3 + k;
-                    else if (k == 0x20) k = 0xc3;
-                    else if (k == 0x7f) k = 0xc4;
-                    else if (k >= 0x80) k += 0x80*page;
-                }
-                else k += 0x80*page;
-                if (map != NULL &&
-                    char_present(k, map) == 0)
+                k += 0x80*page;
+                if (fontnum >= 0 && lookupchar(fontnum, k) == 0)
                 {   gc->DrawRectangle(
                        (double)CELLWIDTH*(j+1)+CELLWIDTH/3.0,
                        (double)CELLHEIGHT*(i/32+1)+CELLHEIGHT/3.0,
