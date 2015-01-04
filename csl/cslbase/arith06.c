@@ -1799,7 +1799,6 @@ setup_type const arith06_setup[] =
     {"lnot",                    Llognot, too_many_1, wrong_no_1},
     {"logxor",                  Lidentity, Llogxor2, Lboolfn},
     {"lxor",                    Lidentity, Llogxor2, Lboolfn},
-    {"land",                    Lidentity, Llogand2, Lboolfn},
     {"leqv",                    Lidentity, Llogeqv2, Lboolfn},
     {"lnot",                    Llognot, too_many_1, wrong_no_1},
     {"lsd",                     Llsd, too_many_1, wrong_no_1},
