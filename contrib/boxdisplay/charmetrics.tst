@@ -1,6 +1,7 @@
 % Small test of the character metrics table data.
 
 lisp;
+on comp;
 
 in "charmetrics.red"$
 

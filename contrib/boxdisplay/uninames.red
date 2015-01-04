@@ -27291,5 +27291,7 @@ put('Plane_15_Private_Use__Last, 'codepoint, 0xFFFFD);
 put('Plane_16_Private_Use__First, 'codepoint, 0x100000);
 put('Plane_16_Private_Use__Last, 'codepoint, 0x10FFFD) >>$
 
+end;
+
 % end of uninames.red
 

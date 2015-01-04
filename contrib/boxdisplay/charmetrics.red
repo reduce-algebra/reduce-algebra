@@ -70,37 +70,37 @@ symbolic inline procedure getv16(v, n); getv(v, n);
 
 #endif
 
-put('cmuntt, 'font_number,                      0);
-put('General_Bold, 'font_number,                1);
-put('General_BoldItalic, 'font_number,          2);
-put('General_Italic, 'font_number,              3);
-put('General, 'font_number,                     4);
-put('IntegralsD_Bold, 'font_number,             5);
-put('IntegralsD, 'font_number,                  6);
-put('IntegralsSm_Bold, 'font_number,            7);
-put('IntegralsSm, 'font_number,                 8);
-put('IntegralsUp_Bold, 'font_number,            9);
-put('IntegralsUpD_Bold, 'font_number,           10);
-put('IntegralsUpD, 'font_number,                11);
-put('IntegralsUp, 'font_number,                 12);
-put('IntegralsUpSm_Bold, 'font_number,          13);
-put('IntegralsUpSm, 'font_number,               14);
-put('NonUnicode_Bold, 'font_number,             15);
-put('NonUnicode_BoldItalic, 'font_number,       16);
-put('NonUnicode_Italic, 'font_number,           17);
-put('NonUnicode, 'font_number,                  18);
-put('SizeFiveSym, 'font_number,                 19);
-put('SizeFourSym_Bold, 'font_number,            20);
-put('SizeFourSym, 'font_number,                 21);
-put('SizeOneSym_Bold, 'font_number,             22);
-put('SizeOneSym, 'font_number,                  23);
-put('SizeThreeSym_Bold, 'font_number,           24);
-put('SizeThreeSym, 'font_number,                25);
-put('SizeTwoSym_Bold, 'font_number,             26);
-put('SizeTwoSym, 'font_number,                  27);
-put('Variants_Bold, 'font_number,               28);
-put('Variants, 'font_number,                    29);
-put('fireflysung, 'font_number,                 30);
+put('cmuntt, 'font_number,                      0)$
+put('General_Bold, 'font_number,                1)$
+put('General_BoldItalic, 'font_number,          2)$
+put('General_Italic, 'font_number,              3)$
+put('General, 'font_number,                     4)$
+put('IntegralsD_Bold, 'font_number,             5)$
+put('IntegralsD, 'font_number,                  6)$
+put('IntegralsSm_Bold, 'font_number,            7)$
+put('IntegralsSm, 'font_number,                 8)$
+put('IntegralsUp_Bold, 'font_number,            9)$
+put('IntegralsUpD_Bold, 'font_number,           10)$
+put('IntegralsUpD, 'font_number,                11)$
+put('IntegralsUp, 'font_number,                 12)$
+put('IntegralsUpSm_Bold, 'font_number,          13)$
+put('IntegralsUpSm, 'font_number,               14)$
+put('NonUnicode_Bold, 'font_number,             15)$
+put('NonUnicode_BoldItalic, 'font_number,       16)$
+put('NonUnicode_Italic, 'font_number,           17)$
+put('NonUnicode, 'font_number,                  18)$
+put('SizeFiveSym, 'font_number,                 19)$
+put('SizeFourSym_Bold, 'font_number,            20)$
+put('SizeFourSym, 'font_number,                 21)$
+put('SizeOneSym_Bold, 'font_number,             22)$
+put('SizeOneSym, 'font_number,                  23)$
+put('SizeThreeSym_Bold, 'font_number,           24)$
+put('SizeThreeSym, 'font_number,                25)$
+put('SizeTwoSym_Bold, 'font_number,             26)$
+put('SizeTwoSym, 'font_number,                  27)$
+put('Variants_Bold, 'font_number,               28)$
+put('Variants, 'font_number,                    29)$
+put('fireflysung, 'font_number,                 30)$
 
 symbolic procedure list_to_vec16 l;
   begin
@@ -26203,7 +26203,7 @@ symbolic (hashsize!* := 10883);
 % goes via a FASL file. The slighly curious macro here should achieve
 % that.
 
-symbolic macro procedure get_character_metrics u;
+symbolic macro procedure get_character_metrics !*unused!*;
   list('progn,
     list('setq, 'metrics_hash!*, mkquote metrics_hash!*),
     list('setq, 'fontkern!*, mkquote fontkern!*),
@@ -26261,7 +26261,10 @@ symbolic procedure lookupkernadjustment codepoint;
     if zerop (i := c_kerninfo) then return 0;
  a: w := getv32(kerntable!*, i);
     if land(w, 0x001fffff) = codepoint and
-      zerop land(w, 0x00200000) then return w / 0x00800000
+      zerop land(w, 0x00200000) then <<
+      w := land(lshift(w, -23), 0x1ff);
+      if not zerop land(w, 0x100) then w := w - 0x200;
+      return w >>
     else if not zerop land(w, 0x00400000) then return 0;
     i := add1 i;
     go to a
