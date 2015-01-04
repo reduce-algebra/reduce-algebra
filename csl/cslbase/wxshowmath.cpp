@@ -1,4 +1,4 @@
-// wxshowmath.cpp
+// wx"
 
 /**************************************************************************
  * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
@@ -156,7 +156,7 @@ private:
     void RenderDVI();        // sub-function used by OnPaint
     wxGraphicsContext *gc;   // ditto but in wxGraphics mode
 
-    unsigned char *showmathData;  // the .showmath file's contents are stored here
+    char *showmathData;  // the .showmath file's contents are stored here
     unsigned const char *stringInput;
 
     void SetRule(int height, int width);
@@ -830,7 +830,7 @@ showmathFrame::showmathFrame(const char *showmathfilename)
     logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
 // I will want to end up saving screen size (and even position) between runs
 // of this program.
-    int width = 1280;      // default size.
+    int width = 1121;      // default size. Chosen so that scale will be 1!
     int height = 1024;
 // If the default size would fill over 90% of screen width or height I scale
 // down to make it fit better.
@@ -848,13 +848,74 @@ showmathFrame::showmathFrame(const char *showmathfilename)
     SetMinClientSize(wxSize(400, 100));
     SetSize(width, height);
     wxSize client(GetClientSize());
-    int w = client.GetWidth() % 80;
-    if (w != 0) SetSize(width-w, height);
     Centre();
 }
 
 
-static unsigned char default_data[4] = "x";
+static char default_data[4096] =
+    "deffont 1 General 24;"
+    "put 1 -408 0 84;"
+    "put 1 14256 0 104;"
+    "put 1 26256 0 101;"
+    "put 1 36912 0 32;"
+    "put 1 42912 0 98;"
+    "put 1 54912 0 111;"
+    "put 1 66384 0 121;"
+    "put 1 78384 0 32;"
+    "put 1 84384 0 115;"
+    "put 1 93528 0 116;"
+    "put 1 100152 0 111;"
+    "put 1 112152 0 111;"
+    "put 1 124152 0 100;"
+    "put 1 136152 0 32;"
+    "put 1 142152 0 111;"
+    "put 1 154152 0 110;"
+    "put 1 166152 0 32;"
+    "put 1 172152 0 116;"
+    "put 1 179016 0 104;"
+    "put 1 191016 0 101;"
+    "put 1 201672 0 32;"
+    "put 1 207672 0 98;"
+    "put 1 219672 0 117;"
+    "put 1 231672 0 114;"
+    "put 1 240168 0 110;"
+    "put 1 252168 0 105;"
+    "put 1 258840 0 110;"
+    "put 1 270840 0 103;"
+    "put 1 282840 0 32;"
+    "put 1 288840 0 100;"
+    "put 1 300840 0 101;"
+    "put 1 311496 0 99;"
+    "put 1 321624 0 107;"
+    "put 1 333744 0 44;"
+    "put 1 339744 0 32;"
+    "put 1 345744 0 119;"
+    "put 1 363072 0 104;"
+    "put 1 375072 0 101;"
+    "put 1 385728 0 110;"
+    "put 1 397728 0 99;"
+    "put 1 408384 0 101;"
+    "put 1 419040 0 32;"
+    "put 1 425040 0 97;"
+    "put 1 435696 0 108;"
+    "put 1 442368 0 108;"
+    "put 1 449040 0 32;"
+    "put 1 455040 0 98;"
+    "put 1 467040 0 117;"
+    "put 1 479040 0 116;"
+    "put 1 485712 0 32;"
+    "put 1 491712 0 104;"
+    "put 1 503712 0 101;"
+    "put 1 514368 0 32;"
+    "put 1 520368 0 104;"
+    "put 1 532368 0 97;"
+    "put 1 543024 0 100;"
+    "put 1 555024 0 32;"
+    "put 1 561024 0 102;"
+    "put 1 570072 0 108;"
+    "put 1 576744 0 101;"
+    "put 1 587400 0 100;"
+    "put 1 599400 0 46;";
 
 // When I construct this I must avoid the wxTAB_TRAVERSAL style since that
 // tends to get characters passed to child windows not this one. Avoiding
@@ -869,7 +930,8 @@ showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename
     FILE *f = NULL;
     if (showmathfilename == NULL) showmathData = default_data;
     else
-    {   stringInput = NULL;
+    {   int i;
+        stringInput = NULL;
         f = fopen(showmathfilename,"r");
         if (f == NULL)
         {   logprintf("File \"%s\" not found\n", showmathfilename);
@@ -877,9 +939,10 @@ showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename
         }
         fseek(f, (off_t)0, SEEK_END);
         off_t len = ftell(f);
-        showmathData = (unsigned char *)malloc((size_t)len);
+        showmathData = (char *)malloc(4+(size_t)len);
         fseek(f, (off_t)0, SEEK_SET);
-        for (int i=0; i<len; i++) showmathData[i] = getc(f);
+        for (i=0; i<len; i++) showmathData[i] = getc(f);
+        showmathData[i] = 0;
         fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
@@ -970,6 +1033,14 @@ void showmathPanel::OnMouse(wxMouseEvent &event)
 //  Refresh();     // forces redraw of everything
 }
 
+static void convert_font_name(char *dest, char *src)
+{
+// I may need to think about how to force Bold or Italic here...
+    if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
+    else if (strcmp(src, "fireflysung") == 0) strcpy(dest, "AR PL Sung");
+    else sprintf(dest, "STIX%s", src);
+}
+
 void showmathPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
@@ -999,14 +1070,11 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
     g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
 #endif
-// The graphicsFixedPitch font will be for a line spacing of exactly 100
-// pixels. This is of course HUGE, but I will scale it as relevant. Note
-// also that I will need to check font names used in the code here since
-// exactly the same font files may end up needing different names to refer
-// to them as between Windows, Linux and OSX.
+// The graphicsFixedPitch font will be for a line spacing of 24 pixels,
+// but I will scale it as relevant.
     graphicsFixedPitch =
        gc->CreateFont(
-           wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("CMU Typewriter Text"))));
+           wxFont(wxFontInfo(wxSize(0, 24)).FaceName(wxT("CMU Typewriter Text"))));
     double dwidth, dheight, ddepth, dleading;
     gc->SetFont(graphicsFixedPitch);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
@@ -1032,7 +1100,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
 // so I can show how fixed pitch stuff might end up being rendered.
     gc->SetFont(graphicsFixedPitch);
     for (int i=0; i<80; i++)
-        gc->DrawText(wxString((wchar_t)(i+0x21)), (double)i*em, 100.0-graphicsFixedPitchBaseline);
+        gc->DrawText(wxString((wchar_t)(i+0x21)), (double)i*em, 24.0-graphicsFixedPitchBaseline);
 #if 0
     wxColour c2(29, 99, 25);
     wxBrush b2(c2);
@@ -1044,21 +1112,14 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
 #endif
 // Now I need to do something more serious!
     wxGraphicsFont general =
-        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXGeneral"))));
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 24)).FaceName(wxT("STIXGeneral"))));
     if (general.IsNull()) logprintf("STIXGeneral font not created\n");
     gc->SetFont(general);
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
     printf("%.6g %.6g %.6g %.6g general\n", width, height, descent, xleading);
     double generalBaseline = height - descent;
-    wxGraphicsFont huge =
-        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 5000)).FaceName(wxT("STIXGeneral"))));
-    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
-    gc->SetFont(huge);
-    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g huge\n", width, height, descent, xleading);
-    double hugeBaseline = height - descent;
     wxGraphicsFont symbols =
-        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXSizeOneSym"))));
+        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 24)).FaceName(wxT("STIXSizeOneSym"))));
     if (symbols.IsNull()) logprintf("STIXSizeOneSym font not created\n");
     else logprintf("Sym font should be OK\n");
     gc->SetFont(symbols);
@@ -1071,7 +1132,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     double symbolsBaseline = height - descent;
 
     gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI), 1000.0, 500.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI), 500.0, 400.0-generalBaseline);
     gc->SetFont(symbols);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
     logprintf("(D)em=%#.3g\n", dwidth);
@@ -1085,17 +1146,49 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     printf("lower hook   %d %d\n", c_lly, c_ury);
     lookupchar(F_SizeOneSym, unicode_CURLY_BRACKET_EXTENSION);
     printf("extension    %d %d\n", c_lly, c_ury);
-#define H (101.0)
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK),   800.0, 450.0-H-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), 800.0, 450.0-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION),         800.0, 450.0+H-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK),   800.0, 450.0+2.0*H-symbolsBaseline);
+#define H (24.0)
+#define XX 120.0
+#define YY 100.0
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK),   XX, YY-H-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), XX, YY-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION),         XX, YY+H-symbolsBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK),   XX, YY+2.0*H-symbolsBaseline);
     gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA), 450.0+3.0*H, 900.0-generalBaseline);
-    gc->DrawText(wxString((wchar_t)0x237c), 1100.0, 800.0-generalBaseline);
-    gc->DrawText(wxString((wchar_t)0x3c0), 1300.0, 800.0-generalBaseline);
-    gc->SetFont(huge);
-    gc->DrawText(wxString((wchar_t)'M'), 100.0, 5000.0-hugeBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA),        XX, YY+100.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW), XX+100.0, YY+100.0-generalBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI),  XX+150.0, YY+100.0-generalBaseline);
+
+    char *in = showmathData;
+    do
+    {   int x, y, n, cp, size;
+        char name[64], name1[64];
+        while (isspace(*in)) in++;
+        if (*in == 0) break;
+        if (sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
+// deffont number name size;   define font with given number
+            0 <= n &&
+            n < MAX_FONTS)
+        {   convert_font_name(name1, name);
+            printf("font[%d] = \"%s\" size %d\n", n, name1, size);
+            graphicsFont[n] =
+                gc->CreateFont(
+                    wxFont(wxFontInfo(wxSize(0, size)).FaceName(name1)));
+        }
+        else if (sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
+        {
+// put fontnum xpos ypos codepoint;  dump character onto screen
+// note x & y in units of 1/1000 point.
+            printf("Font %d (%d,%d) char %d\n", n, x, y, cp);
+            gc->SetFont(graphicsFont[n]);
+            gc->DrawText(wxString((wchar_t)cp),
+                         x/1000, 500-y/1000);
+        }
+        else printf("\nLine <%.32s> unrecognised\n", in);
+        in = strchr(in, ';');
+        if (in != NULL) in++;
+    } while (in != NULL);
+    
+
 
 // I will mark all the fonts I might have created as invalid now
 // that the context they were set up for is being left.

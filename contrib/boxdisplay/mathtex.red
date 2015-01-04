@@ -26,7 +26,7 @@ in "uninames.red"$
 #if (memq 'psl lispsystem!*)
 
 % This will only be used on numbers here, so issues of Unicode do
-% not intrude.
+% not intrude. It takes an input and returns a list of codepoints.
 
 symbolic procedure explodecn u;
   for each x in explode2 u collect car id2list x;
@@ -34,6 +34,8 @@ symbolic procedure explodecn u;
 #endif
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 % Question: With this many components should a Display_Box be
 % converted to be represented as a vector or a tree-like structure
@@ -135,10 +137,14 @@ CurrentSize := 24;
 % c_width, c_llx etc set with information about a bounding box for the
 % text. Again remember that all this is done in internal units that would
 % make a 1-point character fit in a box of height 1000.
+% This uses the escapement and kern info for characters within the name
+% but positions the material so that its bounding box starts at x=0 and so
+% the proper output information is c_llx, c_lly, c_urx and c_ury, with
+% c_width not useful. Furthermore c_llx should always be zero.
 
-symbolic procedure MeasureSymbol a;
+symbolic procedure MeasureAtom a;
   begin
-    scalar c, w, r, first, k, height, depth, left, right;
+    scalar c, w, r, first, height, depth, left, right;
 % The next line takes a symbol and delivers a list of the Unicode
 % characters that make it up. So for instance
 %      wideid2list '!#alpha;!#omega;;     => (945 969)
@@ -148,15 +154,12 @@ symbolic procedure MeasureSymbol a;
     else if stringp a then c := widestring2list a
     else c := wideid2list a;
     prin2 "TRACE: "; print c;
-    w := k := 0;
     first := t;
     for each x in c do <<
 % If I am on the second or subsequent character of a word then I cgeck to
 % see if it kerns with this character, and adjust my running width (w)
 % accordingly.
-      if not first then k := lookupkernadjustment x;
-      prin2 "** Kern info = "; print k;
-      w := w + k;
+      if not first then w := w + lookupkernadjustment x;
 % Now look up the width of the current character (and in the process leave
 % behind information that can be used for kerning the one that will come
 % after it. I will make it an ERROR to try to use a character not supported
@@ -164,8 +167,9 @@ symbolic procedure MeasureSymbol a;
       if not lookupchar(CurrentFont, x) then
         error(0, "Character not available in font");
       if first then <<
-        left := c_llx;
-        right := c_urx;
+        w := -c_llx;
+        left := 0;
+        right := c_urx - c_llx;
         height := c_ury;
         depth := c_lly >>
       else <<
@@ -179,22 +183,31 @@ symbolic procedure MeasureSymbol a;
     c_urx := CurrentSize*right;
     c_lly := CurrentSize*depth;
     c_ury := CurrentSize*height;
-    c_width := CurrentSize*w;
     return reversip r
   end;
 
 % The two test cases here should yield different spacings because of
-% kerning.  Specifically "VAR" shoudl end up narrower than "VRA".
+% kerning.  Specifically "VAR" should end up narrower than "VRA".
 
-MeasureSymbol '!V!A!R;
-c_width;
-MeasureSymbol '!V!R!A;
-c_width;
+MeasureAtom '!V!A!R;
+{c_llx, c_lly, c_urx, c_ury};
+MeasureAtom '!V!R!A;
+{c_llx, c_lly, c_urx, c_ury};
+
 
 
 
 symbolic procedure BuildAtomDisplayBox exp;
-  MakeDisplayBox(1,0,lengthc exp,exp,nil,nil,nil,nil,nil)$
+  begin
+    scalar w;
+    w := MeasureAtom exp; % This depends on CurrentFont and CurrentSize
+% For typical characters both height and depth will be positive. I only
+% record the advance, not the left and right components of the bounding
+% box. That may be wrong, because for instance a character will in general
+% have nonzero left and right bearings. The data stored here will be
+% a list of pairs (offset . codepoint).
+    return MakeDisplayBox(c_height,-c_depth,c_width,w,nil,nil,nil,nil,nil)
+  end$
 
 symbolic inline procedure OpHeight op;
   1$
@@ -619,5 +632,39 @@ symbolic procedure PrintPrefixForm u;
         breaks := cdr breaks >> >>
   end$
 
+
+% I will put some test cases in here...
+
+symbolic procedure testatom(id, font, size, filename);
+  begin
+    scalar a, b, ff;
+    CurrentFont := get(compress explodec font, 'font_number);
+    CurrentSize := size;
+    print list(font, CurrentFont, CurrentSize);
+    b := MeasureAtom id;
+    ff := open(filename, 'output);
+    a := wrs ff;
+    princ "deffont 1 "; princ font; princ " "; princ size; printc ";";
+    for each c in b do <<
+      princ "put 1 ";
+      prin car c;
+      princ " 0 ";
+      prin cdr c;
+      printc ";" >>;
+    wrs a;
+    close ff;
+  end;
+
+testatom(
+    "The boy stood on the burning deck, whence all but he had fled!",
+    "General",
+    '24,
+    "burning.dat");
+
+testatom(
+    "The boy stood on the burning deck, whence all but he had fled!",
+    "cmuntt",
+    '36,
+    "burning1.dat");
 
 end;
