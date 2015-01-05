@@ -291,7 +291,8 @@ am__wxpsl_SOURCES_DIST = wxpsl.cpp fwin.c termed.c wxfwin.c \
 @wx_TRUE@am_wxpsl_OBJECTS = wxpsl.$(OBJEXT) $(am__objects_3)
 wxpsl_OBJECTS = $(am_wxpsl_OBJECTS)
 wxpsl_LDADD = $(LDADD)
-am_wxshowmath_OBJECTS = wxshowmath.$(OBJEXT) charmetrics.$(OBJEXT)
+am_wxshowmath_OBJECTS = wxshowmath.$(OBJEXT) charmetrics.$(OBJEXT) \
+	unimaths.$(OBJEXT)
 wxshowmath_OBJECTS = $(am_wxshowmath_OBJECTS)
 am_wxshowmathdemo_OBJECTS = wxshowmathdemo.$(OBJEXT)
 wxshowmathdemo_OBJECTS = $(am_wxshowmathdemo_OBJECTS)
@@ -821,7 +822,7 @@ wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
-wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c
+wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c unimaths.c
 wxshowmath_LDADD = $(fwin_icon)
 wxshowmath_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
@@ -1329,6 +1330,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/termdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/termed.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/textdefs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unimaths.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wstring.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdvi.Po@am__quote@

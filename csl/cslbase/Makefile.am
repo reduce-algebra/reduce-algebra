@@ -506,7 +506,7 @@ wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c
+wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c unimaths.c
 wxshowmath_LDADD = $(fwin_icon)
 wxshowmath_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
