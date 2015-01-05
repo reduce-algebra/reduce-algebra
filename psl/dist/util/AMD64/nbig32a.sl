@@ -1309,6 +1309,17 @@ error
 (de biglshift (u v) (checkifreallybig (blshift u v)))
 
 (de lshift (u v)
+   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
+   (if (intp u)
+     (cond ((wleq v (minus bitsperword)) 0)
+           ((wlessp v 0) (wshift u v))
+           ((and (betap u) (wlessp v (iquotient bitsperword 2)))
+                  (sys2int (wshift u v)))
+           (t (biglshift (sys2big u) v)))
+     % Use int2big, not sys2big, since we might have fixnums.
+     (biglshift (int2big u) v)))
+
+(de old-lshift (u v)
   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
   (if (betap u) 
     (cond ((wleq v (minus bitsperword)) 0)
