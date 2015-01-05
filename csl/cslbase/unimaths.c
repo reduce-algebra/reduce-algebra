@@ -94,7 +94,7 @@ case MATH_SCRIPT:
         if (c == 'M') return unicode_SCRIPT_CAPITAL_M;
         if (c == 'R') return unicode_SCRIPT_CAPITAL_R;
         if (c == 'e') return unicode_SCRIPT_SMALL_E;
-        if (c == 'g') return unicode_SCRIPT_SMALL_E;
+        if (c == 'g') return unicode_SCRIPT_SMALL_G;
         if (c == 'o') return unicode_SCRIPT_SMALL_O;
         return r+unicode_MATHEMATICAL_SCRIPT_CAPITAL_A;
 case MATH_BOLD_SCRIPT:
