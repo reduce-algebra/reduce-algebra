@@ -118,72 +118,145 @@
 // of names in the table.
 
 #define F_cmuntt                      0
-#define F_General_Bold                1
-#define F_General_BoldItalic          2
+
+#define F_General                     1
+#define F_General_Bold                2
 #define F_General_Italic              3
-#define F_General                     4
-#define F_IntegralsD_Bold             5
-#define F_IntegralsD                  6
-#define F_IntegralsSm_Bold            7
-#define F_IntegralsSm                 8
-#define F_IntegralsUp_Bold            9
-#define F_IntegralsUpD_Bold           10
+#define F_General_BoldItalic          4
+
+#define F_IntegralsD                  5
+#define F_IntegralsD_Bold             6
+
+#define F_IntegralsSm                 7
+#define F_IntegralsSm_Bold            8
+
+#define F_IntegralsUp                 9
+#define F_IntegralsUp_Bold            10
+
 #define F_IntegralsUpD                11
-#define F_IntegralsUp                 12
-#define F_IntegralsUpSm_Bold          13
-#define F_IntegralsUpSm               14
-#define F_NonUnicode_Bold             15
-#define F_NonUnicode_BoldItalic       16
+#define F_IntegralsUpD_Bold           12
+
+#define F_IntegralsUpSm               13
+#define F_IntegralsUpSm_Bold          14
+
+#define F_NonUnicode                  15
+#define F_NonUnicode_Bold             16
 #define F_NonUnicode_Italic           17
-#define F_NonUnicode                  18
-#define F_SizeFiveSym                 19
-#define F_SizeFourSym_Bold            20
-#define F_SizeFourSym                 21
-#define F_SizeOneSym_Bold             22
-#define F_SizeOneSym                  23
+#define F_NonUnicode_BoldItalic       18
+
+#define F_SizeOneSym                  19
+#define F_SizeOneSym_Bold             20
+#define F_SizeTwoSym                  21
+#define F_SizeTwoSym_Bold             22
+#define F_SizeThreeSym                23
 #define F_SizeThreeSym_Bold           24
-#define F_SizeThreeSym                25
-#define F_SizeTwoSym_Bold             26
-#define F_SizeTwoSym                  27
-#define F_Variants_Bold               28
-#define F_Variants                    29
+#define F_SizeFourSym                 25
+#define F_SizeFourSym_Bold            26
+#define F_SizeFiveSym                 27
+
+#define F_Variants                    28
+#define F_Variants_Bold               29
+
 #define F_fireflysung                 30
 #define F_end                         31
 
-const char *fontnames[] =
+// In the ".afm" files and hence the main metrics I work with each
+// character is measured and positioned relative to a base-line. However
+// when wxWidgets draws things it uses the top left corner of a bounding
+// box for text as its reference point. However the "bounding box" used
+// does not seem to be related to any information I can find in the .afm
+// file so I file values by running a wxWidgets program and seeing what
+// it reports and put in a table of values here...
+
+const uint16_t chardepth[] =
+{
+    1027,     //   cmuntt
+
+    1055,     //   STIXGeneral
+    1055,     //   STIXGeneral-Bold
+    1055,     //   STIXGeneral-Italic
+    1055,     //   STIXGeneral-BoldItalic
+
+    2182,     //   STIXIntegralsD
+    2182,     //   STIXIntegralsD-Bold
+
+    1055,     //   STIXIntegralsSm
+    1055,     //   STIXIntegralsSm-Bold
+
+    1055,     //   STIXIntegralsUp
+    1055,     //   STIXIntegralsUp-Bold
+
+    2182,     //   STIXIntegralsUpD
+    2182,     //   STIXIntegralsUpD-Bold
+
+    1055,     //   STIXIntegralsUpSm
+    1055,     //   STIXIntegralsUpSm-Bold
+
+    1450,     //   STIXNonUnicode
+    1450,     //   STIXNonUnicode-Bold
+    1450,     //   STIXNonUnicode-Italic
+    1450,     //   STIXNonUnicode-BoldItalic              
+
+    1588,     //   STIXSizeOneSym
+    1588,     //   STIXSizeOneSym-Bold
+    2095,     //   STIXSizeTwoSym
+    2095,     //   STIXSizeTwoSym-Bold
+    2604,     //   STIXSizeThreeSym
+    2604,     //   STIXSizeThreeSym-Bold
+    2604,     //   STIXSizeFourSym
+    2604,     //   STIXSizeFourSym-Bold
+
+     960,     //   STIXSizeFiveSym
+
+    1055,     //   STIXVariants
+    1055,     //   STIXVariants-Bold
+
+     885      //   fireflysung
+};
+
+const char *fontnames[31] =
 {
     "cmuntt",
-    "STIXGeneral-Bold",
-    "STIXGeneral-BoldItalic",
-    "STIXGeneral-Italic",
+
     "STIXGeneral-Regular",
-    "STIXIntegralsD-Bold",
+    "STIXGeneral-Bold",
+    "STIXGeneral-Italic",
+    "STIXGeneral-BoldItalic",
+
     "STIXIntegralsD-Regular",
-    "STIXIntegralsSm-Bold",
+    "STIXIntegralsD-Bold",
+
     "STIXIntegralsSm-Regular",
-    "STIXIntegralsUp-Bold",
-    "STIXIntegralsUpD-Bold",
-    "STIXIntegralsUpD-Regular",
+    "STIXIntegralsSm-Bold",
+
     "STIXIntegralsUp-Regular",
-    "STIXIntegralsUpSm-Bold",
+    "STIXIntegralsUp-Bold",
+
+    "STIXIntegralsUpD-Regular",
+    "STIXIntegralsUpD-Bold",
+
     "STIXIntegralsUpSm-Regular",
-    "STIXNonUnicode-Bold",
-    "STIXNonUnicode-BoldItalic",
-    "STIXNonUnicode-Italic",
+    "STIXIntegralsUpSm-Bold",
+
     "STIXNonUnicode-Regular",
-    "STIXSizeFiveSym-Regular",
-    "STIXSizeFourSym-Bold",
-    "STIXSizeFourSym-Regular",
-    "STIXSizeOneSym-Bold",
+    "STIXNonUnicode-Bold",
+    "STIXNonUnicode-Italic",
+    "STIXNonUnicode-BoldItalic",
+
     "STIXSizeOneSym-Regular",
-    "STIXSizeThreeSym-Bold",
-    "STIXSizeThreeSym-Regular",
-    "STIXSizeTwoSym-Bold",
+    "STIXSizeOneSym-Bold",
     "STIXSizeTwoSym-Regular",
-    "STIXVariants-Bold",
+    "STIXSizeTwoSym-Bold",
+    "STIXSizeThreeSym-Regular",
+    "STIXSizeThreeSym-Bold",
+    "STIXSizeFourSym-Regular",
+    "STIXSizeFourSym-Bold",
+    "STIXSizeFiveSym-Regular",
+
     "STIXVariants-Regular",
-    "fireflysung",
-    NULL
+    "STIXVariants-Bold",
+
+    "fireflysung"
 };
 
 // The font metric information I use will be quite bulky, so I will be
@@ -807,38 +880,52 @@ fprintf(dest, "// Character metric hash table created using the program charmetr
 fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
 fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
 fprintf(dest, "\n\n");
+fprintf(dest, "// The list of font codes here must be kept in step with the list\n");
+fprintf(dest, "// of names in the table.\n");
+fprintf(dest, "\n");
 fprintf(dest, "#define F_cmuntt                      0\n");
-fprintf(dest, "#define F_General_Bold                1\n");
-fprintf(dest, "#define F_General_BoldItalic          2\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_General                     1\n");
+fprintf(dest, "#define F_General_Bold                2\n");
 fprintf(dest, "#define F_General_Italic              3\n");
-fprintf(dest, "#define F_General                     4\n");
-fprintf(dest, "#define F_IntegralsD_Bold             5\n");
-fprintf(dest, "#define F_IntegralsD                  6\n");
-fprintf(dest, "#define F_IntegralsSm_Bold            7\n");
-fprintf(dest, "#define F_IntegralsSm                 8\n");
-fprintf(dest, "#define F_IntegralsUp_Bold            9\n");
-fprintf(dest, "#define F_IntegralsUpD_Bold           10\n");
+fprintf(dest, "#define F_General_BoldItalic          4\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_IntegralsD                  5\n");
+fprintf(dest, "#define F_IntegralsD_Bold             6\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_IntegralsSm                 7\n");
+fprintf(dest, "#define F_IntegralsSm_Bold            8\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_IntegralsUp                 9\n");
+fprintf(dest, "#define F_IntegralsUp_Bold            10\n");
+fprintf(dest, "\n");
 fprintf(dest, "#define F_IntegralsUpD                11\n");
-fprintf(dest, "#define F_IntegralsUp                 12\n");
-fprintf(dest, "#define F_IntegralsUpSm_Bold          13\n");
-fprintf(dest, "#define F_IntegralsUpSm               14\n");
-fprintf(dest, "#define F_NonUnicode_Bold             15\n");
-fprintf(dest, "#define F_NonUnicode_BoldItalic       16\n");
+fprintf(dest, "#define F_IntegralsUpD_Bold           12\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_IntegralsUpSm               13\n");
+fprintf(dest, "#define F_IntegralsUpSm_Bold          14\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_NonUnicode                  15\n");
+fprintf(dest, "#define F_NonUnicode_Bold             16\n");
 fprintf(dest, "#define F_NonUnicode_Italic           17\n");
-fprintf(dest, "#define F_NonUnicode                  18\n");
-fprintf(dest, "#define F_SizeFiveSym                 19\n");
-fprintf(dest, "#define F_SizeFourSym_Bold            20\n");
-fprintf(dest, "#define F_SizeFourSym                 21\n");
-fprintf(dest, "#define F_SizeOneSym_Bold             22\n");
-fprintf(dest, "#define F_SizeOneSym                  23\n");
+fprintf(dest, "#define F_NonUnicode_BoldItalic       18\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_SizeOneSym                  19\n");
+fprintf(dest, "#define F_SizeOneSym_Bold             20\n");
+fprintf(dest, "#define F_SizeTwoSym                  21\n");
+fprintf(dest, "#define F_SizeTwoSym_Bold             22\n");
+fprintf(dest, "#define F_SizeThreeSym                23\n");
 fprintf(dest, "#define F_SizeThreeSym_Bold           24\n");
-fprintf(dest, "#define F_SizeThreeSym                25\n");
-fprintf(dest, "#define F_SizeTwoSym_Bold             26\n");
-fprintf(dest, "#define F_SizeTwoSym                  27\n");
-fprintf(dest, "#define F_Variants_Bold               28\n");
-fprintf(dest, "#define F_Variants                    29\n");
+fprintf(dest, "#define F_SizeFourSym                 25\n");
+fprintf(dest, "#define F_SizeFourSym_Bold            26\n");
+fprintf(dest, "#define F_SizeFiveSym                 27\n");
+fprintf(dest, "\n");
+fprintf(dest, "#define F_Variants                    28\n");
+fprintf(dest, "#define F_Variants_Bold               29\n");
+fprintf(dest, "\n");
 fprintf(dest, "#define F_fireflysung                 30\n");
-fprintf(dest, "#define F_end                         31\n\n");
+fprintf(dest, "#define F_end                         31\n");
+fprintf(dest, "\n");
 fprintf(dest, "#ifdef __cplusplus\n");
 fprintf(dest, "extern \"C\" {\n");
 fprintf(dest, "#endif // __cplusplus\n\n");
@@ -847,6 +934,8 @@ fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupligature(int codepoint);\n\n");
+fprintf(dest, "extern const uint16_t chardepth[31];\n");
+fprintf(dest, "extern const char *fontnames[31];\n\n");
 fprintf(dest, "#ifdef __cplusplus\n");
 fprintf(dest, "}\n");
 fprintf(dest, "#endif // __cplusplus\n\n");
@@ -923,35 +1012,45 @@ fprintf(rdest, "\n");
 fprintf(rdest, "#endif\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "put('cmuntt, 'font_number,                      0)$\n");
-fprintf(rdest, "put('General_Bold, 'font_number,                1)$\n");
-fprintf(rdest, "put('General_BoldItalic, 'font_number,          2)$\n");
+
+fprintf(rdest, "put('General, 'font_number,                     1)$\n");
+fprintf(rdest, "put('General_Bold, 'font_number,                2)$\n");
 fprintf(rdest, "put('General_Italic, 'font_number,              3)$\n");
-fprintf(rdest, "put('General, 'font_number,                     4)$\n");
-fprintf(rdest, "put('IntegralsD_Bold, 'font_number,             5)$\n");
-fprintf(rdest, "put('IntegralsD, 'font_number,                  6)$\n");
-fprintf(rdest, "put('IntegralsSm_Bold, 'font_number,            7)$\n");
-fprintf(rdest, "put('IntegralsSm, 'font_number,                 8)$\n");
-fprintf(rdest, "put('IntegralsUp_Bold, 'font_number,            9)$\n");
-fprintf(rdest, "put('IntegralsUpD_Bold, 'font_number,           10)$\n");
+fprintf(rdest, "put('General_BoldItalic, 'font_number,          4)$\n");
+
+fprintf(rdest, "put('IntegralsD, 'font_number,                  5)$\n");
+fprintf(rdest, "put('IntegralsD_Bold, 'font_number,             6)$\n");
+
+fprintf(rdest, "put('IntegralsSm, 'font_number,                 7)$\n");
+fprintf(rdest, "put('IntegralsSm_Bold, 'font_number,            8)$\n");
+
+fprintf(rdest, "put('IntegralsUp, 'font_number,                 9)$\n");
+fprintf(rdest, "put('IntegralsUp_Bold, 'font_number,            10)$\n");
+
 fprintf(rdest, "put('IntegralsUpD, 'font_number,                11)$\n");
-fprintf(rdest, "put('IntegralsUp, 'font_number,                 12)$\n");
-fprintf(rdest, "put('IntegralsUpSm_Bold, 'font_number,          13)$\n");
-fprintf(rdest, "put('IntegralsUpSm, 'font_number,               14)$\n");
-fprintf(rdest, "put('NonUnicode_Bold, 'font_number,             15)$\n");
-fprintf(rdest, "put('NonUnicode_BoldItalic, 'font_number,       16)$\n");
+fprintf(rdest, "put('IntegralsUpD_Bold, 'font_number,           12)$\n");
+
+fprintf(rdest, "put('IntegralsUpSm, 'font_number,               13)$\n");
+fprintf(rdest, "put('IntegralsUpSm_Bold, 'font_number,          14)$\n");
+
+fprintf(rdest, "put('NonUnicode, 'font_number,                  15)$\n");
+fprintf(rdest, "put('NonUnicode_Bold, 'font_number,             16)$\n");
 fprintf(rdest, "put('NonUnicode_Italic, 'font_number,           17)$\n");
-fprintf(rdest, "put('NonUnicode, 'font_number,                  18)$\n");
-fprintf(rdest, "put('SizeFiveSym, 'font_number,                 19)$\n");
-fprintf(rdest, "put('SizeFourSym_Bold, 'font_number,            20)$\n");
-fprintf(rdest, "put('SizeFourSym, 'font_number,                 21)$\n");
-fprintf(rdest, "put('SizeOneSym_Bold, 'font_number,             22)$\n");
-fprintf(rdest, "put('SizeOneSym, 'font_number,                  23)$\n");
+fprintf(rdest, "put('NonUnicode_BoldItalic, 'font_number,       18)$\n");
+
+fprintf(rdest, "put('SizeOneSym, 'font_number,                  19)$\n");
+fprintf(rdest, "put('SizeOneSym_Bold, 'font_number,             20)$\n");
+fprintf(rdest, "put('SizeTwoSym, 'font_number,                  21)$\n");
+fprintf(rdest, "put('SizeTwoSym_Bold, 'font_number,             22)$\n");
+fprintf(rdest, "put('SizeThreeSym, 'font_number,                23)$\n");
 fprintf(rdest, "put('SizeThreeSym_Bold, 'font_number,           24)$\n");
-fprintf(rdest, "put('SizeThreeSym, 'font_number,                25)$\n");
-fprintf(rdest, "put('SizeTwoSym_Bold, 'font_number,             26)$\n");
-fprintf(rdest, "put('SizeTwoSym, 'font_number,                  27)$\n");
-fprintf(rdest, "put('Variants_Bold, 'font_number,               28)$\n");
-fprintf(rdest, "put('Variants, 'font_number,                    29)$\n");
+fprintf(rdest, "put('SizeFourSym, 'font_number,                 25)$\n");
+fprintf(rdest, "put('SizeFourSym_Bold, 'font_number,            26)$\n");
+fprintf(rdest, "put('SizeFiveSym, 'font_number,                 27)$\n");
+
+fprintf(rdest, "put('Variants, 'font_number,                    28)$\n");
+fprintf(rdest, "put('Variants_Bold, 'font_number,               29)$\n");
+
 fprintf(rdest, "put('fireflysung, 'font_number,                 30)$\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "symbolic procedure list_to_vec16 l;\n");

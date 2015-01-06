@@ -366,7 +366,7 @@ put('smacro,'macrofn,'applsmacro);
 %
 % The constructors need to be written out by hand as in
 %    inline procedure u .+ v; u . v;
-% if only because althout they deliver cons cells the may do mre than that
+% if only because although they deliver cons cells they may do more than that
 % (eg at one stage at least it was arranged that powers were stored uniquely).
 % The underscore is used for fields that are not to be named. Note that
 % several sets of accessors can be defined on one line.

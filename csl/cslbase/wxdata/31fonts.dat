@@ -1,0 +1,105 @@
+% I have exactly 31 fonts that I am willing to use (at present) and
+% sets a character from each.
+
+% for STIXGeneral I will set "A"
+deffont 1 General 60;
+put 1 00000 0 65;
+
+deffont 1 General-Bold 60;
+put 1 40000 0 65;
+
+deffont 1 General-Italic 60;
+put 1 80000 0 65;
+
+deffont 1 General-BoldItalic 60;
+put 1 120000 0 65;
+ 
+% The Symbol fonts provide a range of sizes of "("
+deffont 1 SizeOneSym 60;
+put 1 160000 0 40;
+
+deffont 1 SizeTwoSym 60;
+put 1 200000 0 40;
+
+deffont 1 SizeThreeSym 60;
+put 1 240000 0 40;
+
+deffont 1 SizeFourSym 60;
+put 1 280000 0 40;
+
+% SizeFiveSymbol only really provides wide horizontal things, so here
+% is a big horizontal brace, positioned somewhat away from other things.
+deffont 1 SizeFiveSym 60;
+put 1 300000 180000 9182;
+
+deffont 1 SizeOneSym-Bold 60;
+put 1 320000 0 40;
+
+deffont 1 SizeTwoSym-Bold 60;
+put 1 360000 0 40;
+
+deffont 1 SizeThreeSym-Bold 60;
+put 1 400000 0 40;
+
+deffont 1 SizeFourSym-Bold 60;
+put 1 440000 0 40;
+
+% The "variant" I illustrate here is an alternative style of Union.
+deffont 1 Variants 60;
+put 1 480000 0 8746;
+
+deffont 1 Variants-Bold 60;
+put 1 520000 0 8746;
+
+% Triple integral...
+deffont 1 IntegralsD 60;
+put 1 100000 -200000 8752;
+
+deffont 1 IntegralsD-Bold 60;
+put 1 200000 -200000 8752;
+
+deffont 1 IntegralsSm 60;
+put 1 300000 -200000 8752;
+
+deffont 1 IntegralsSm-Bold 60;
+put 1 400000 -200000 8752;
+
+deffont 1 IntegralsUpD 60;
+put 1 500000 -200000 8752;
+
+deffont 1 IntegralsUpD-Bold 60;
+put 1 600000 -200000 8752;
+
+deffont 1 IntegralsUp 60;
+put 1 700000 -200000 8752;
+
+deffont 1 IntegralsUp-Bold 60;
+put 1 800000 -200000 8752;
+
+deffont 1 IntegralsUpSm 60;
+put 1 900000 -200000 8752;
+
+deffont 1 IntegralsUpSm-Bold 60;
+put 1 1000000 -200000 8752;
+
+% A mix of equal, equivalent - all crossed out
+deffont 1 NonUnicode 60;
+put 1 100000 -320000 57381;
+
+deffont 1 NonUnicode-Bold 60;
+put 1 200000 -320000 57381;
+
+deffont 1 NonUnicode-Italic 60;
+put 1 300000 -320000 57381;
+
+deffont 1 NonUnicode-BoldItalic 60;
+put 1 400000 -320000 57381;
+
+deffont 1 cmuntt 60;
+put 1 500000 -320000 65;
+
+% Showing CJK output.
+deffont 1 fireflysung 60;
+put 1 600000 -320000 24859;
+
+
