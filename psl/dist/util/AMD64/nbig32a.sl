@@ -1312,7 +1312,7 @@ error
    (setq v (int2sys v))  % bigger numbers make no sense as shift amount
    (if (intp u)
      (cond ((wleq v (minus bitsperword)) 0)
-           ((wlessp v 0) (wshift u v))
+           ((wlessp v 0) (sys2int (wshift u v)))
            ((and (betap u) (wlessp v (iquotient bitsperword 2)))
                   (sys2int (wshift u v)))
            (t (biglshift (sys2big u) v)))
