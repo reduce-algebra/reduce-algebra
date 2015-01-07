@@ -19,11 +19,6 @@ mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/Resources
 mkdir -p $1.app/Contents/Resources/Fonts
 F="$1.app/Contents/Resources/Fonts"
-cp $srcdir/wxfonts/README                        $F/README.BaKoMa
-cp $srcdir/wxfonts/BaKoMa-AMS.Fonts              $F
-cp $srcdir/wxfonts/BaKoMa-CM.Fonts               $F
-cp $srcdir/wxfonts/README.news                   $F/README.news.BaKoMa
-cp $srcdir/wxfonts/LICENCE                       $F/LICENCE.BaKoMa
 cp $srcdir/wxfonts/STIX*.pdf                     $F
 cp $srcdir/wxfonts/*.ttf                         $F
 cp $srcdir/cm-unicode/LICENSE                    $F/LICENSE.cm-unicode
@@ -34,7 +29,9 @@ cp $srcdir/dejavu-fonts-ttf-2.32/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.
 cp $srcdir/dejavu-fonts-ttf-2.32/README           $F/README.dejavu-fonts-ttf-2.32
 cp $srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
 cp $srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
-# I will also use fireflysung fonts to cover the CJK range
+# I will use fireflysung fonts to cover the CJK range. I hope that at some
+# time I may be able to move to use of SourceHanSans/Noto... but that time
+// has not yet come.
 cp $srcdir/fireflysung-1.3.0/fireflysung.ttf      $F
 cp $srcdir/fireflysung-1.3.0/AUTHORS              $F/AUTHORS.fireflysung
 cp $srcdir/fireflysung-1.3.0/COPYRIGHT            $F/COPYRIGHT.fireflysung

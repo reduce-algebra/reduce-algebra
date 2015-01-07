@@ -105,13 +105,14 @@ extern char *getcwd(char *s, size_t n);
 
 static FILE *logfile = NULL;
 
-static void logprintf(const char *fmt, ...)
+static int logprintf(const char *fmt, ...)
 {
     va_list a;
+    int r = 0;
     if (logfile == NULL) logfile = fopen("wxshowmath.log","w");
     if (logfile != NULL)
     {   va_start(a, fmt);
-        vfprintf(logfile, fmt, a);
+        r = vfprintf(logfile, fmt, a);
         fflush(logfile);
         va_end(a);
     }
@@ -120,10 +121,11 @@ static void logprintf(const char *fmt, ...)
 // attached to my program, and in that case it will be convenient to sent the
 // trace output there as well as to a file.
     va_start(a, fmt);
-    vprintf(fmt, a);
+    r = vprintf(fmt, a);
     va_end(a);
     fflush(stdout);
 #endif
+    return r;
 }
 
 
@@ -792,6 +794,9 @@ bool showmathApp::OnInit()
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
+#ifdef WIN32
+    char tidyfilename[1000];
+#endif
 
 #if DEBUG
     logprintf("in showmathApp::OnInit\n");
@@ -803,6 +808,18 @@ bool showmathApp::OnInit()
 
     const char *showmathfilename = NULL;
     if (argc > 1) showmathfilename = myargv[1];
+
+#ifdef WIN32
+// As a convenience for when I am running under cygwin/mintty/bash I will
+// detect file-names that start "/cygdrive/X/..." and map to "X:/...".
+    if (showmathfilename != NULL &&
+        strncmp(showmathfilename, "/cygdrive/", 10) == 0 &&
+        showmathfilename[11] == '/')
+    {   sprintf(tidyfilename, "%c:%s",
+                showmathfilename[10], showmathfilename+11);
+        showmathfilename = tidyfilename;
+    }
+#endif
     
 #if DEBUG
     logprintf("showmathfilename=%s\n",
@@ -1225,15 +1242,16 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
             0 <= n &&
             n < MAX_FONTS)
         {   int flags = convert_font_name(name1, name);
+            int col;
             logprintf("font[%d] = \"%s\" size %d\n", n, name1, size);
             graphicsFont[n] = gc->CreateFont((double)size, name1, flags & 0xffff);
-
             gc->SetFont(graphicsFont[n]);
             gc->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
             logprintf("( %s/%d: %.6g %.6g [%.6g]\n",
                 name1, size, height, descent, height-descent);
-            graphicsBaseline[n] = height - descent;
-
+            col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
+            while (col++ < 20) logprintf(" ");
+            logprintf("// %s\n", name);
             graphicsBaseline[n] =
                 (double)size * (double)chardepth[(flags >> 16) & 0x1f] / 1000.0;
             logprintf("from table baseline offset = %.6g\n", graphicsBaseline[n]);

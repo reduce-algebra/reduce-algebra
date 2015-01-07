@@ -1,0 +1,13 @@
+% This is a start at a sample of tall delimiters built up out of
+% piles of tops, tails and extensions
+
+
+deffont 1 SizeOneSym 24;
+
+put 1 10000 0 9128;
+put 1 10000 24240 9130;
+put 1 10000 48480 9127;
+put 1 10000 -24240 9130;
+put 1 10000 -48480 9129;
+
+ 

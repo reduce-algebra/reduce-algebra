@@ -168,50 +168,136 @@
 // file so I file values by running a wxWidgets program and seeing what
 // it reports and put in a table of values here...
 
+// To re-calculate these values you could check out revision 2912 of
+// Reduce, configure "--with-csl --with-wx", make wxshowmath and run
+// wxshowmath or wxdata/fontsizes.dat. The trace output should include
+//....        Need to process CMU Typewriter Text
+//....        Gives CMU Typewriter Text with flags 0
+//....        font[0] = "CMU Typewriter Text" size 10000
+//....        ( CMU Typewriter Text/10000: 12597.7 2330 [10267.7]
+//....            1027,           // cmuntt
+//....        from table baseline offset = 10270
+//....        convert General
+//....        Need to process STIXGeneral
+//....        Gives STIXGeneral with flags 10000
+//....        font[1] = "STIXGeneral" size 10000
+//....        ( STIXGeneral/10000: 15097.7 4550 [10547.7]
+//....            1055,           // General
+// and I extracted the information I need here using
+//    grep "    // " wxshowmath.log > DESTINATION
+// I edited the file to remove a comma after the final entry...
+
+// I note with some distress that the adjustments needed here differ
+// across operating systems. That backs up the fact that this data can not
+// be deduced from a set of Adobe Font Metrics. So although in many cases
+// the numbers match up, for General-BoldItalic the win32 case is out of
+// line with the other two platforms. For all the Integrals fonts the
+// Macintosh offset is odd man out. Fireflysung makes Linux the exceptional
+// case. This feels nearly bad enough to make me feel I need to calculate
+// all of these at run-time despite the ugly cost. Well for the MOMENT I will
+// go with this compile-time table and choice, but note the pain-levels
+// involved.
+
 const uint16_t chardepth[] =
 {
-    1027,     //   cmuntt
-
-    1055,     //   STIXGeneral
-    1055,     //   STIXGeneral-Bold
-    1055,     //   STIXGeneral-Italic
-    1055,     //   STIXGeneral-BoldItalic
-
-    2182,     //   STIXIntegralsD
-    2182,     //   STIXIntegralsD-Bold
-
-    1055,     //   STIXIntegralsSm
-    1055,     //   STIXIntegralsSm-Bold
-
-    1055,     //   STIXIntegralsUp
-    1055,     //   STIXIntegralsUp-Bold
-
-    2182,     //   STIXIntegralsUpD
-    2182,     //   STIXIntegralsUpD-Bold
-
-    1055,     //   STIXIntegralsUpSm
-    1055,     //   STIXIntegralsUpSm-Bold
-
-    1450,     //   STIXNonUnicode
-    1450,     //   STIXNonUnicode-Bold
-    1450,     //   STIXNonUnicode-Italic
-    1450,     //   STIXNonUnicode-BoldItalic              
-
-    1588,     //   STIXSizeOneSym
-    1588,     //   STIXSizeOneSym-Bold
-    2095,     //   STIXSizeTwoSym
-    2095,     //   STIXSizeTwoSym-Bold
-    2604,     //   STIXSizeThreeSym
-    2604,     //   STIXSizeThreeSym-Bold
-    2604,     //   STIXSizeFourSym
-    2604,     //   STIXSizeFourSym-Bold
-
-     960,     //   STIXSizeFiveSym
-
-    1055,     //   STIXVariants
-    1055,     //   STIXVariants-Bold
-
-     885      //   fireflysung
+#if defined WIN32
+    1027,           // cmuntt
+    1055,           // General
+    1055,           // General-Bold
+    1055,           // General-Italic
+    1055,           // General-BoldItalic
+    2182,           // IntegralsD
+    2182,           // IntegralsD-Bold
+    1055,           // IntegralsSm
+    1055,           // IntegralsSm-Bold
+    1055,           // IntegralsUp
+    1055,           // IntegralsUp-Bold
+    2182,           // IntegralsUpD
+    2182,           // IntegralsUpD-Bold
+    1055,           // IntegralsUpSm
+    1055,           // IntegralsUpSm-Bold
+    1450,           // NonUnicode
+    1450,           // NonUnicode-Bold
+    1450,           // NonUnicode-Italic
+    1450,           // NonUnicode-BoldItalic
+    1588,           // SizeOneSym
+    1588,           // SizeOneSym-Bold
+    2095,           // SizeTwoSym
+    2095,           // SizeTwoSym-Bold
+    2604,           // SizeThreeSym
+    2604,           // SizeThreeSym-Bold
+    2604,           // SizeFourSym
+    2604,           // SizeFourSym-Bold
+    960,            // SizeFiveSym
+    1055,           // Variants
+    1055,           // Variants-Bold
+    885             // fireflysung
+#elif defined __linux__ || defined __CYGWIN__
+    1027,           // cmuntt
+    1055,           // General
+    1055,           // General-Bold
+    1055,           // General-Italic
+    1042,           // General-BoldItalic
+    2182,           // IntegralsD
+    2182,           // IntegralsD-Bold
+    1055,           // IntegralsSm
+    1055,           // IntegralsSm-Bold
+    1055,           // IntegralsUp
+    1055,           // IntegralsUp-Bold
+    2182,           // IntegralsUpD
+    2182,           // IntegralsUpD-Bold
+    1055,           // IntegralsUpSm
+    1055,           // IntegralsUpSm-Bold
+    1450,           // NonUnicode
+    1450,           // NonUnicode-Bold
+    1450,           // NonUnicode-Italic
+    1450,           // NonUnicode-BoldItalic
+    1588,           // SizeOneSym
+    1588,           // SizeOneSym-Bold
+    2095,           // SizeTwoSym
+    2095,           // SizeTwoSym-Bold
+    2604,           // SizeThreeSym
+    2604,           // SizeThreeSym-Bold
+    2604,           // SizeFourSym
+    2604,           // SizeFourSym-Bold
+    960,            // SizeFiveSym
+    1055,           // Variants
+    1055,           // Variants-Bold
+    928             // fireflysung
+#else
+// The main case that uses this fall-through is OSX. 
+    1027,           // cmuntt
+    1055,           // General
+    1055,           // General-Bold
+    1055,           // General-Italic
+    1042,           // General-BoldItalic
+    967,            // IntegralsD
+    967,            // IntegralsD-Bold
+    967,            // IntegralsSm
+    967,            // IntegralsSm-Bold
+    967,            // IntegralsUp
+    967,            // IntegralsUp-Bold
+    967,            // IntegralsUpD
+    967,            // IntegralsUpD-Bold
+    967,            // IntegralsUpSm
+    967,            // IntegralsUpSm-Bold
+    967,            // NonUnicode
+    967,            // NonUnicode-Bold
+    967,            // NonUnicode-Italic
+    967,            // NonUnicode-BoldItalic
+    1588,           // SizeOneSym
+    1588,           // SizeOneSym-Bold
+    2095,           // SizeTwoSym
+    2095,           // SizeTwoSym-Bold
+    2604,           // SizeThreeSym
+    2604,           // SizeThreeSym-Bold
+    2604,           // SizeFourSym
+    2604,           // SizeFourSym-Bold
+    967,            // SizeFiveSym
+    967,            // Variants
+    967,            // Variants-Bold
+    885             // fireflysung
+#endif
 };
 
 const char *fontnames[31] =
