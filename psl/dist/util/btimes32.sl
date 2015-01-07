@@ -133,7 +133,7 @@
              (setq c (wplus2 c addressingunitsperitem))
              (putmem c (+c 0 (getmem c))))
     %%  (setq *second-value* 0)  % 01-Nov-94
-)))
+))
 
 (de romanclear(a l)
    (while (igreaterp l 0)
