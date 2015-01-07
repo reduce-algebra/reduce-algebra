@@ -193,14 +193,14 @@
 // the numbers match up, for General-BoldItalic the win32 case is out of
 // line with the other two platforms. For all the Integrals fonts the
 // Macintosh offset is odd man out. Fireflysung makes Linux the exceptional
-// case. This feels nearly bad enough to make me feel I need to calculate
-// all of these at run-time despite the ugly cost. Well for the MOMENT I will
-// go with this compile-time table and choice, but note the pain-levels
-// involved.
+// case. 
+// So I provide three versions of this table (it is not very large) and
+// a tolerably cheap run-time test can pick which one to use.
 
-const uint16_t chardepth[] =
+const uint16_t *chardepth = NULL;
+
+const uint16_t chardepth_WIN32[] =
 {
-#if defined WIN32
     1027,           // cmuntt
     1055,           // General
     1055,           // General-Bold
@@ -232,7 +232,10 @@ const uint16_t chardepth[] =
     1055,           // Variants
     1055,           // Variants-Bold
     885             // fireflysung
-#elif defined __linux__ || defined __CYGWIN__
+};
+
+const uint16_t chardepth_X11[] =
+{
     1027,           // cmuntt
     1055,           // General
     1055,           // General-Bold
@@ -264,8 +267,10 @@ const uint16_t chardepth[] =
     1055,           // Variants
     1055,           // Variants-Bold
     928             // fireflysung
-#else
-// The main case that uses this fall-through is OSX. 
+};
+
+const uint16_t chardepth_OSX[] =
+{
     1027,           // cmuntt
     1055,           // General
     1055,           // General-Bold
@@ -297,7 +302,6 @@ const uint16_t chardepth[] =
     967,            // Variants
     967,            // Variants-Bold
     885             // fireflysung
-#endif
 };
 
 const char *fontnames[31] =
@@ -1020,7 +1024,10 @@ fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupligature(int codepoint);\n\n");
-fprintf(dest, "extern const uint16_t chardepth[31];\n");
+fprintf(dest, "extern const uint16_t chardepth_WIN32[31];\n");
+fprintf(dest, "extern const uint16_t chardepth_X11[31];\n");
+fprintf(dest, "extern const uint16_t chardepth_OSX[31];\n");
+fprintf(dest, "extern const uint16_t *chardepth;\n");
 fprintf(dest, "extern const char *fontnames[31];\n\n");
 fprintf(dest, "#ifdef __cplusplus\n");
 fprintf(dest, "}\n");

@@ -16,7 +16,7 @@
  *       with the distribution.                                           *
  *                                                                        *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
- *"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
  * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
  * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
@@ -1152,6 +1152,62 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     gc->Scale(scale, scale);
     logprintf("Scale now %.6g\n", scale); fflush(stdout);
 
+// Now I should find how all my fonts will be arranged in termd of the
+// distance from the index point used by wxWidgets to the font base-line
+// as relevent in .afm metrics.
+    for (;;)
+    {   int ddd;
+        wxGraphicsFont tf1 =
+            gc->CreateFont(10000.0,
+                           "STIXGeneral",
+                           wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
+        gc->SetFont(tf1);
+        gc->GetTextExtent(wxString((wchar_t)'X'),
+            &dwidth, &dheight, &ddepth, &dleading);
+        logprintf("%.6g %.6g [%.6g]\n",
+            dheight, ddepth, dheight-ddepth);
+        ddd = (int)((dheight - ddepth)/10.0 + 0.5);
+        if (ddd == chardepth_WIN32[F_General_BoldItalic])
+        {   chardepth = chardepth_WIN32;
+            tf1 = graphicsFixedPitch;
+            break;
+        }
+        tf1 =
+            gc->CreateFont(10000.0,
+                           "AR PL New Sung",
+                           wxFONTFLAG_DEFAULT);
+        gc->SetFont(tf1);
+        gc->GetTextExtent(wxString((wchar_t)'X'),
+            &dwidth, &dheight, &ddepth, &dleading);
+        logprintf("%.6g %.6g [%.6g]\n",
+            dheight, ddepth, dheight-ddepth);
+        ddd = (int)((dheight - ddepth)/10.0 + 0.5);
+        if (ddd == chardepth_X11[F_fireflysung])
+        {   chardepth = chardepth_X11;
+            tf1 = graphicsFixedPitch;
+            break;
+        }
+        tf1 =
+            gc->CreateFont(10000.0,
+                           "IntegralsD",
+                           wxFONTFLAG_DEFAULT);
+        gc->SetFont(tf1);
+        gc->GetTextExtent(wxString((wchar_t)unicode_INTEGRAL),
+            &dwidth, &dheight, &ddepth, &dleading);
+        logprintf("%.6g %.6g [%.6g]\n",
+            dheight, ddepth, dheight-ddepth);
+        ddd = (int)((dheight - ddepth)/10.0 + 0.5);
+        if (ddd == chardepth_OSX[F_IntegralsD])
+        {   chardepth = chardepth_OSX;
+            tf1 = graphicsFixedPitch;
+            break;
+        }
+        logprintf("\n+++ Character positioning not recognized\n");
+        chardepth = chardepth_X11;
+        tf1 = graphicsFixedPitch;
+        break;
+    }
+
     gc->SetFont(graphicsFixedPitch);
     double width, height, descent, xleading;
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
@@ -1172,6 +1228,8 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
     if (((x/10)+(y/10)) & 1 != 0)
         gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
 #endif
+
+
 // Now I need to do something more serious!
     wxGraphicsFont general =
         gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("STIXGeneral"))));

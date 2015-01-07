@@ -94,7 +94,10 @@ extern int32_t lookupkernandligature(int codepoint);
 extern int32_t lookupkernadjustment(int codepoint);
 extern int32_t lookupligature(int codepoint);
 
-extern const uint16_t chardepth[31];
+extern const uint16_t chardepth_WIN32[31];
+extern const uint16_t chardepth_X11[31];
+extern const uint16_t chardepth_OSX[31];
+extern const uint16_t *chardepth;
 extern const char *fontnames[31];
 
 #ifdef __cplusplus
