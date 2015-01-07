@@ -222,7 +222,7 @@ compiletime
 deflist('((iminus iminus)),'unary);
 
 symbolic inline procedure ashift (m,d);
-  if negintp m then -lshift(-m,d) else lshift(m,d);
+  if and(numberp m, m < 0) then -lshift(-m,d) else lshift(m,d);
 
 symbolic inline procedure oddintp x;
    wand(if bigp x then wgetv(inf x,2)
