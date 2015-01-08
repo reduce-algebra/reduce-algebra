@@ -168,7 +168,7 @@
 // file so I file values by running a wxWidgets program and seeing what
 // it reports and put in a table of values here...
 
-// To re-calculate these values you could check out revision 2912 of
+// To re-calculate these values you could check out revision 2916 of
 // Reduce, configure "--with-csl --with-wx", make wxshowmath and run
 // wxshowmath or wxdata/fontsizes.dat. The trace output should include
 //....        Need to process CMU Typewriter Text
@@ -186,6 +186,10 @@
 // and I extracted the information I need here using
 //    grep "    // " wxshowmath.log > DESTINATION
 // I edited the file to remove a comma after the final entry...
+// (revisions much before then may not display the relevant
+// information - ones significantly after may have removed the trace
+// output...).
+
 
 // I note with some distress that the adjustments needed here differ
 // across operating systems. That backs up the fact that this data can not
@@ -1354,7 +1358,7 @@ fprintf(rdest, "\n");
         fprintf(rdest, "    if land(w, 0x001fffff) = codepoint and\n");
         fprintf(rdest, "      not zerop land(w, 0x00200000) then\n");
         fprintf(rdest, "        return getv32(ligaturetable!*, land(lshift(w, -23), 0x1ff))\n");
-        fprintf(rdest, "    else if not zerop land(w, 0x00400000) then return 0;\n");
+        fprintf(rdest, "    else if not zerop land(w, 0x00400000) then return nil;\n");
         fprintf(rdest, "    i := add1 i;\n");
         fprintf(rdest, "    go to a\n");
         fprintf(rdest, "  end;\n");

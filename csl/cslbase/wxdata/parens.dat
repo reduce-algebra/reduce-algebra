@@ -1,22 +1,15 @@
-% In Chapter 17 of the TeX book there is an illustration of
-% "... some of the different sizes of parentheses..." and this
-% is an investigation in the same vein. In due course it will build up
-% huge parentheses using extensions. Right now the vertical alignment is
-% a MESS, and the main cause for this to exist os so that there is
-% an example where that can be investigated and fixed.
-
-deffont 1 General 16;
-deffont 2 General 20;
-deffont 3 General 24;
+deffont 1 General 17 % tiny;
+deffont 2 General 19 % small;
+deffont 3 General 24 % regular;
 deffont 4 SizeOneSym 24;
 deffont 5 SizeTwoSym 24;
 deffont 6 SizeThreeSym 24;
 deffont 7 SizeFourSym 24;
 
-put 7  40000  -24684 40;
-put 6  50000  -20064 40;
-put 5  60000  -15444 40;
-put 4  70000  -10824 40;
-put 3  80000  -5988 40;
-put 2  90000  -4990 40;
-put 1 100000  -3992 40;
+put 7 1000 0 40;
+put 6 15000 0 40;
+put 5 30000 0 40;
+put 4 45000 0 40;
+put 3 60000 0 40;
+put 2 75000 0 40;
+put 1 90000 0 40;
