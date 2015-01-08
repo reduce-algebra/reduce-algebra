@@ -175,7 +175,7 @@ symbolic procedure matrixmap(u,v);
 
 put('matrix,'aggregatefn,'matrixmap);
 
-flag('(df int taylor),'matmapfn);
+flag('(abs df int taylor),'matmapfn);
 
 flag('(det trace),'matfn);
 
