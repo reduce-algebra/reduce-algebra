@@ -61,14 +61,27 @@ z := spat3(u,v,w) - 3*spat3(v,u,w);
  
 spat3(u,v,w)+spat3(u,w,v);
 
-% Accesing list elements with infix operator _ .
+% Accesing list elements
 
 l := {1,{2,3},4};
+
+lnth(l,3);
+
+% or alternatively with the infix operator _ .
 
 l _2*3;
 
 l _2 _2;
 
+% Changing list elements.
+
+l _ 2 _ 2 := three;
+
+l;
+
+lnth(l,3) := {5,6};
+
+l;
 
 end;
 

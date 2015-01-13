@@ -185,13 +185,6 @@ precedence ldot,times;
 
 newtok '((!* !.) ldot);
 
-% Provide underscore as an infix operator for part as an alternative to
-% access list elements (as used by Rene).
-
-infix part;
-newtok '(( !_ ) part);
-precedence part,times;
-
 symbolic procedure listdf(u,v);
    begin scalar x;
      x := reval1(car u,v);
@@ -209,6 +202,59 @@ symbolic procedure listint(u,v);
 
 put('int,'listfn,'listint);
 put('int,'rtypefn,'getrtypecar);
+
+symbolic procedure listnth u;
+   begin scalar n;
+     n := reval1(cadr u,t);
+     u := reval1(car u,t);
+     return nth(cdr u,n)
+   end;
+
+put('lnth,'psopfn,'listnth);
+
+put('lnth,'rtypefn,'(lambda (x) (quote yetunknowntype)));
+
+% Provide underscore as an infix operator for part as an alternative to
+% access list elements (as used by Rene).
+
+infix lnth;
+newtok '(( !_ ) lnth);
+precedence lnth,times;
+
+
+% The following allows for destructively changing elements
+% of a list via lnth(l,j) := <exprn>.
+% It would have been nice to interface the Lisp function nth
+% to algebraic mode. However, using nth on the lhs on an
+% assignment makes this awkward to do as the setqfn facility
+% is mode less and one would need to write formfn's for the
+% lower level functions involved. Therefore it is not done
+% at the moment. 
+
+symbolic procedure setlnth u;
+   begin scalar l,i,x;
+     l := cdr lntheval0 car u;
+     i := reval cadr u;
+     x := reval caddr u;
+     setcar(pnth(l,i),x);
+     rmsubs();
+     return x
+   end;
+
+symbolic procedure lntheval0 u;
+   begin scalar x;
+     if atom u then if eqcar(x := get(u,'avalue),'list) 
+                       then return cadr x
+                     else rederr {u," is not a list"};
+     if car u eq 'list then return u
+      else if car u eq 'lnth 
+        then return nth(lntheval0 cadr u,caddr u + 1);
+     rederr {u," invalid expression for lnth"}
+   end;
+
+put('setlnth!*,'psopfn,'setlnth);
+
+put('lnth,'setqfn,'(lambda (u v w) (setlnth!* u v w)));
 
 % A lazy hack to allow for list procedures.
 % 
