@@ -1,5 +1,16 @@
 // charmetrics.c                           Copyright (C) 2015 Codemist Ltd
 
+//=======================================================================//
+//                                                                       //
+//  WARNING. In "-DCREATE=1" mode this program takes about 40 minutes    //
+//  of CPU time on a computer that in 2015 counts as fairly fast. So     //
+//  when you run it be prepared to be reasonably patient. The slow run   //
+//  really only needed to be done once to extract font information from  //
+//  a collection of ".afm" files and form it into a compact table, so it //
+//  should only need to be run if the fonts being used change.           //
+//                                                                       //
+//=======================================================================//
+
 
 // $Id$
 
@@ -41,6 +52,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 // This takes a bunch of font information files and creates some C
 // tables that can be used to access the information rapidly.
@@ -55,6 +67,59 @@
 // permit re-distribution and so even more so I will hold that the
 // file generated here that contains metrics is not subject to any
 // severe limits on its use.
+
+// You can also pass -DSTART=nnn and -DBEST=m. That will start checking
+// for a hash table of size nnn and investigate upwards from there until
+// it finds the m-th one that it can pack all the data in.
+//
+// I ran this code with a small value of START so it ran for a VERY long time
+// and the setting that using -DCOMPACT=1 gives as a default is the one
+// that uses the smallest tables I know of. Obviously no table can be
+// smaller than the number of hash cells that will be used (10042) so
+// starting my scan from there will find the most compact arrangement
+// that the very cheap and simple hash functions used here offer - and the
+// search with START=10042 runs for around a day of CPU time. The default
+// setting here slightly larger tables but ends up with lower costs. The
+// choice between these (and many other options) is a micro-optimisation
+// that hardly matters except as a matter of neurosis and pride.
+
+#ifdef COMPACT
+
+#ifndef BEST
+#define BEST 1
+#endif
+
+#ifndef START
+#define START 10289
+#endif
+
+#else
+
+#ifndef BEST
+#define BEST 4
+#endif
+
+#ifndef START
+#define START 10361
+#endif
+
+#endif
+
+// The default setting creates a table of size 10361 which is 96.9% full.
+// All Basic Latin codepoints are looked up in just one probe. On average
+// Western and Mathematical characters are found in 1.591 probes, while
+// overall including all the CJK characters the average for a successful
+// lookup is 1.724 probes. The worst case lookup and all unsuccessful
+// cases are 3 probes.
+//
+// The COMPACT case make the table just slightly smaller at 10289, which
+// means that the occupancy is 97.6%. To put things in numbers that saves
+// 2880 bytes when the full table size is a little over 400 Kbytes in size.
+// Again all Basic Latin characters (ie those with code U+0000 to U+007f) that
+// are present in the fonts are found on the first probe. This time Western
+// and Maths characters average out at 1.764 and the full character set at
+// 1.852. Worst case remains at 3 probes.
+
 
 // I also generate a charmetrics.red that can give access to the same
 // information from within Reduce... I am considering use from Java as well
@@ -82,6 +147,13 @@
 // for code simplicity in a utility I only intend for use in a single
 // context. But anybody minded to add extra fonts MUST be aware and should
 // check all the limits before running anything.
+
+// My code here is also not especially tidy, and it uses C-99 style "//"
+// comments (as here!) and <stding.h> with uint64_t, UINT64_C() and their
+// friends. In fact gcc has supported both of these for some time now and
+// since this is a run-once sort of program I feel I can rely on using
+// either a tolerably recent gcc or some other C compiler that supports
+// C-99.
 
 // "wx -L" tells me that all my font-metric files have lines that are
 // less than 750 characters long. The worst case is for the cmuntt font
@@ -199,7 +271,9 @@
 // Macintosh offset is odd man out. Fireflysung makes Linux the exceptional
 // case. 
 // So I provide three versions of this table (it is not very large) and
-// a tolerably cheap run-time test can pick which one to use.
+// a tolerably cheap run-time test can pick which one to use. I feel it is
+// nicer for my runtime code to check no more than 3 cases to choose between
+// these tables rather than getting it to measure all 31 fonts.
 
 const uint16_t *chardepth = NULL;
 
@@ -365,7 +439,7 @@ const char *fontnames[31] =
 // tables. Because I am always carrying my font identifier it is only
 // necessary to arrange to be clash-free within a single font. Whew.
 // A conseqence will be that I can use just 16-bit "adjusted
-// codepoints" and that plus 5 bits of font leaves me needed 21 bits.
+// codepoints" and that plus 5 bits of font leaves me needing 21 bits.
 
 static int pack_character(int font, int codepoint)
 {
@@ -382,7 +456,10 @@ static int pack_character(int font, int codepoint)
 // If at any stage I added more fonts I would need to review this!
     if (codepoint >= 0x10000)
         codepoint = 0xd000 + (codepoint & 0xfff);
-    return (font<<16) | codepoint; // A 21-bit code.
+// I need the bottom two bits of this packed code to be the bottom
+// two bits of the codepoint because my hash table will be using
+// buckets of four adjacent codepoints.
+    return (font << 16) | codepoint;
 }
 
 // I will store information in a hash table that puts four codepoints per
@@ -392,25 +469,21 @@ static int pack_character(int font, int codepoint)
 // bits of key. That leaves me with space to put four 11-bit kern entries
 // in, one for each of the 4 codepoints covered. There will be a 31-entry
 // table indexed by font that gives a value to be added to one of these
-// offsets. That allows for up to 1024 kern entried per font. I count 1016
+// offsets. That allows for up to 2048 kern entries per font. I count 1016
 // kern declarations and 16 ligature declarations for STIXGeneral-Regular
-// and those together add up to 1032 which is over 1024. However I believe
-// that the index I need just has to be to the first of a run of kerning
-// information so I may JUST survice. Or JUST miss! However in desparation
-// I can squeeze one extra bit of offset for every fourth codepoint, and if
-// I arrange that that falls on the one that will end up last in the kern
-// table I should end up OK!
+// and those together add up to 1032 which fits reasonably.
 //
 // I assessed having individual entries is the hash table and line sizes
 // of 2 and 8 as well as 4. A line size of 8 saves a small emount of space
 // but at the cost of seeming noticably messier. A line size of only 2
-// consumes distinctly more memory. //
+// consumes distinctly more memory.
+//
 // The other four 64-bit values each hold four 13-bit fields and one 12
 // bit one. These store the character width and its bounding box. For my
 // fonts I observe
 //     0   <=   width   <=  3238        use 13 bits unsigned
 //   -3000 <=   llx     <=  930         use 13 bits unsigned offset by -3000
-//    -522 <=   lly     <=  820         use 12 bits unsigned offset by -1000
+//    -522 <=   lly     <=  820         use *12* bits unsigned offset by -1000
 //    -234 <=   urx     <=  3472        use 13 bits unsigned offset by -500
 //    -166 <=   ury     <=  2604        use 13 bits unsigned offset by -1000
 // that packing is a bit ugly but ends up using exactly 64 bits which is
@@ -433,17 +506,11 @@ static int pack_character(int font, int codepoint)
 //                        for replacement characters. I only seem to see
 //                        77 cases of ligatures in all so this final
 //                        table is not too bulky.
-// The kern information starts at offset 1 so that a kern index of zero can
+// The kern index values atart at 1 so that a kern index of zero can
 // indicate no kerning is needed. The range of kern adjustment I see in my
 // fonts is -149 to 87, and so the 9-bit field I have (coping with -256 to
-// +255) will suffice.
+// +255) will suffice comfortably.
 //
-// For successful lookups the cost is best for items that were inserted
-// into the table first. In this case I view it as an optimisation to put
-// the large CJK font (fireflysung) in last. This should arrange that
-// successful lookup of cmuntt and all the STIX fonts happens really
-// rapidly - say in around 1.2 probes.
-
 
 #ifdef CREATE
 
@@ -517,13 +584,7 @@ int32_t decodename(int fontnum, const char *name)
     for (i=0; i<charcount; i++)
         if (fontnum == fontkey[i] &&
             strcmp(name, uninames[i]) == 0)
-    {
-#if 0
-        printf("Font %s name %s decodes to codepoint %d\n",
-               fontnames[fontnum], name, codepoint[i]);
-#endif
         return codepoint[i];
-    }
     printf("Character called %s not found in font %d\n", name, fontnum);
     exit(EXIT_FAILURE);
 }
@@ -532,12 +593,12 @@ int32_t decodename(int fontnum, const char *name)
 // characters. It is arranged in lines each of which store data on
 // four characters, so assuming few isolated character codes that
 // means it will use around 8000 entries. I make its size a prime.
-// If I make it 10883 then my tables are fairly full so an unsuccessful
-// lookup may involve a dozen probes, but each successful probe will
-// cost an avarage of under 3 probes.
-//
+// If I make it 10091 then my tables are fairly full - around 99.5%.
+// The hashing scheme I use will guarantee that not many probes are
+// needed even at this high loading level!!!
 
-#define HASHTABLESIZE 10883
+#define MAXHASHTABLESIZE 10505
+int HASHTABLESIZE = START;
 
 // This is around 400 Kbytes... I tend to count that as quite large.
 // By far the largest contribution to it is data from fireflysung.afm.
@@ -546,7 +607,148 @@ int32_t decodename(int fontnum, const char *name)
 // to save space by having an index of bounding boxes does not appear to be
 // useful.
 
-static uint64_t hashtable[HASHTABLESIZE][5];
+static uint64_t hashtable[MAXHASHTABLESIZE][5];
+
+// In my hashing schere I sometimes relocate items. An entry in
+// pinned that is non-zero will inhibit this. This marking is only
+// relevant while creating the table.
+//
+int pinned[MAXHASHTABLESIZE];
+
+
+//==================================================================
+
+static int probes = 0, occupancy = 0;
+
+// I do some breadth-first (well iterative deepening) search when trying
+// to insert characters in the table. This parameter limits the depth of
+// the search.
+#define MAXDEPTH 13
+
+// calcplaces selects the three locations that a key might hash to.
+// It is desirable to balance how well it spreads things out against
+// how costly it might be to compute, and you can see here that it
+// is seriously simple here. Because my hashing will be limited to
+// just three probes all issues of having a probe sequence that eventually
+// visits everywhere do not apply. I can even survive if the stride is
+// sometimes zero since in those cases all that happens is that the
+// key concerned will have to end up in its home position!
+
+int secondhash = 2;
+
+#define SECONDHASHMODULUS (HASHTABLESIZE-secondhash)
+
+static void calcplaces(uint32_t key, uint32_t *p)
+{
+    int base = key % HASHTABLESIZE;
+    int stride = key % (HASHTABLESIZE-secondhash);
+    p[0] = base;
+    p[1] = (base + stride) % HASHTABLESIZE;
+    p[2] = (2*base + stride) % HASHTABLESIZE;
+}
+
+// hashinsert will return -1 on failure, otherwise the index into the
+// hash table where the item was inserted.
+// I think I view it as a little amazing that the code here is as compact
+// as it is!
+
+int hashinsert(uint32_t key, int depth)
+{
+    uint32_t p[5], r;
+    uint32_t d[5];
+    int i, depth1;
+    calcplaces(key, p);
+// If the key is already in the table just return
+    for (i=0; i<3; i++)
+        if ((hashtable[p[i]][0] & 0x7ffff) == key) return p[i];
+// If one of the preferred gaps is free then use it. To start with I will use
+// insertions in order of preference.
+    for (i=0; i<3; i++)
+    {   if (hashtable[p[i]][0] == 0)
+        {   hashtable[p[i]][0] = key;
+// There is a delicacy here. When I FIRST insert an entry I can afford to
+// write the whole of the word in the hashtable not just the field within
+// that that could hold a key...
+            return p[i];
+        }
+    }
+// Now I need to move something that has previously been inserted in order
+// to make space for the new item. If the depth parameter says I have run
+// our of energy to search then just report failure.
+    if (depth <= 0) return -1;
+// ... otherwise try in turn seeing if it is possible to clear each of
+// the places this item would like to go. I do this in a spirit of
+// iterative deepening so I prefer adjustments that only move a small
+// number of items. Ie this is a breadth-first search.
+//
+// An alternative sceheme would be a random walk...
+    for (depth1=0; depth1<depth; depth1++)
+    {   for (i=0; i<3; i++)
+        {   int w;
+            if (pinned[p[i]]) continue;  // do not move pinned thing
+            w = hashtable[p[i]][0];      // displaced key
+            hashtable[p[i]][0] = key;    // put this in where it would like to go
+            if (hashinsert(w, depth1)>=0) return p[i];
+            hashtable[p[i]][0] = w;      // re-insert failed so restore things
+        }
+    }
+// If none of the re-works help then I give up.
+    return -1;
+}
+
+// Display information on how many of each categroy of character will end
+// up needing 1, 2 or 3 probes.
+
+int report()
+{
+    int i, k, pins = 0, r = 0;
+    for (i=0; i<HASHTABLESIZE; i++)
+        if (pinned[i]) pins++;
+    for (k=0; k<3; k++)
+    {   uint32_t p[5];
+        uint32_t n1=0, n2=0, n3=0;
+        for (i=0; i<charcount; i++)
+        {   int font = fontkey[i];
+            int cp = codepoint[i];
+            int fullkey = pack_character(font, cp); // 21-bit key
+            int key = fullkey >> 2; // because my hash table has line-size 4
+            int w;
+            if (cp == 0) continue;
+            switch (k)
+            {
+        case 0: if (cp >= 0x80) continue;
+                break;
+        case 1: if (font == F_fireflysung) continue;
+                break;
+        default:break;
+            }
+            calcplaces(key, p);
+            if (key == hashtable[p[0]][0]) n1++;
+            else if (key == hashtable[p[1]][0]) n2++;
+            else if (key == hashtable[p[2]][0]) n3++;
+            else printf("Error data not found\n");
+        }
+        switch (k)
+        {
+    case 0: printf("U+0000-U+007f ");
+            r = n2 + n3;
+            break;
+    case 1: printf("Western fonts ");
+            break;
+    default:printf("Everything    ");
+            break;
+        }
+        printf("%5d %5d %5d: %6.3f", n1, n2, n3,
+           (double)(1*n1+2*n2+3*n3)/
+           (double)(n1+n2+n3));
+        if (k == 2) printf(" pins=%d", pins);
+        printf("\n");
+    }
+    return r;
+}
+
+
+
 
 static char      line[MAXLINE];
 static char      saveline[MAXLINE];
@@ -558,13 +760,19 @@ int minw=10000, minllx=10000, minlly=10000, minurx=10000, minury=10000;
 int main(int argc, char *argv[])
 {
     const char *f;
-    int fontnum;
+    int pass, fontnum, best;
     char *p, *q;
     int relevant = 0;
     int kerndata = 0;
     FILE *src;
+    time_t ttt;
     char filename[100];
-    int i, probes = 0, p1 = 0, p2 = 0, n1 = 0, n2 = 0, occupancy = 0;
+    int i, probes  = 0, p1 = 0, p2 = 0, n1 = 0, n2 = 0,
+        occupancy = 0, fail, qq;
+    setvbuf(stdout, NULL, _IONBF, 1);
+//==========================================================================
+// (1) Read in all the metrics
+//==========================================================================
     nkerns = charcount = 0;
 // I will map characters from u+000000 to u+01ffff but not beyond - that
 // way I will only need 17 bits to specify a codepoint.
@@ -762,25 +970,20 @@ int main(int argc, char *argv[])
         ligfollowcode[i] = decodename(ligfont[i], ligfollow[i]);
     for (i=0; i<nligatures; i++)
         ligreplacementcode[i] = decodename(ligfont[i], ligreplacement[i]);
-// Now I have read everything. I should now transfer information from the
-// raw tables it is in at present into the hash table I want it to end up in.
-    for (i=0; i<HASHTABLESIZE; i++)
-    {   int j;
-        for (j=0; j<10; j++) hashtable[i][j] = 0;
-    }
+// Now I have read everything.
+//
 // Before I fill in the main hash table I need to collect kern and ligature
 // information.
     kernp = ligp = 0;
     for (fontnum=0; fontnum<F_end; fontnum++)
     {   fontkern[fontnum] = kernp-1;
         for (i=0; i<charcount; i++)
-        {   int j, v, kkk = 0;
+        {   int j, v = 0, kkk = 0;
 // I wish to process all chars from each font in order. In fact they will
 // be in my table that way, but I still code things to scan once for each font.
             if (fontkey[i] != fontnum) continue;
 // Now I will transfer any ligature and kern info about this character
 // into kerntable & ligtable.
-            v = 0;
             for (j=0; j<nkerns; j++)
             {   if (kernfont[j] == fontnum &&
                     kernstartcode[j] == codepoint[i])
@@ -789,6 +992,9 @@ int main(int argc, char *argv[])
                     ktadjustment[kernp] = kernadjustment[j];
                     strcpy(ktfont[kernp], fontnames[fontnum]);
                     ktfontn[kernp] = fontnum;
+// kkk will be the index in the kernel tables of the FIRST item
+// relating to this start character. It has 0x80000000 forced in so
+// that it is a nonzero value even if the kernel table index is zero.
                     if (kkk == 0) kkk = kernp | 0x80000000;
                     kerntable[kernp++] =
                         (kernadjustment[j]<<23) | kernfollowcode[j];
@@ -814,8 +1020,11 @@ int main(int argc, char *argv[])
                     v = 1;
                 }
             }
-            if (v) kerntable[kernp-1] |= IS_BLOCKEND;
-#if 0
+// v was set if I found at least one kern or ligature entry starting
+// with this character. Noticing that here means I can look back and
+// be certain that the previous block just ended.
+            if (v && kernp!=0) kerntable[kernp-1] |= IS_BLOCKEND;
+#if 1
             if (kkk != 0)
                 printf("Setting kernreference %d (cp=%d/%c) to %d\n",
                        i, codepoint[i],
@@ -826,63 +1035,171 @@ int main(int argc, char *argv[])
             kernreference[i] = kkk;
         }
     }
+// Make really certain that the table is terminated.
+    if (kernp!=0) kerntable[kernp-1] |= IS_BLOCKEND;
 
-    for (fontnum=0; fontnum<F_end; fontnum++)
-    {   for (i=0; i<charcount; i++)
-        {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
-            int key = fullkey >> 2; // because my hash table has line-size 4
-// I compute two hash values - one for the initial probe position and
-// the second to give an stride,
-            int j, v, h1, h2, kkk=0;
-            uint64_t w;
-// I wish to process all chars from each font in order. In fact they will
-// be in my table that way, but I still code things to scan once for each font.
-            if (fontkey[i] != fontnum) continue;
-            h1 = (uint32_t)(1103515245*key) % (uint32_t)HASHTABLESIZE;
-            h2 = 1+(uint32_t)(169*key) % (uint32_t)(HASHTABLESIZE-1);
-            if (h1 < 0 || h1 >= HASHTABLESIZE ||
-                h2 <= 0 || h2 >= HASHTABLESIZE)
-            {   printf("Hash calculation failed %d %d\n", h1, h2);
-                exit(1);
-            }
-            for (;;)
-            {   v = (int)hashtable[h1][0] & 0x7ffff;
-                probes++;
-                if (probes > 1000000)
-                {   printf("Excessive probe count %d %d\n", h1, h2);
-                    printf("i = %d\n", i);
+    printf("charcount = %d\n", charcount);
+//==========================================================================
+// (2) Try inserting everything in to the hash table
+//==========================================================================
+    best = BEST;
+    for (HASHTABLESIZE=START; HASHTABLESIZE<MAXHASHTABLESIZE; HASHTABLESIZE++)
+    {   for (secondhash=1; secondhash<100; secondhash++)
+        {   memset(hashtable, 0, sizeof(hashtable));
+            memset(pinned, 0, sizeof(pinned));
+            fail = 0;
+            for (pass=0; pass<2; pass++)
+            for (i=0; i<charcount; i++)
+            {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
+                int key = fullkey >> 2; // because my hash table has line-size 4
+                int h1;
+                if (codepoint[i] == 0) continue;
+                if (pass == 0 && codepoint[i] > 0x7f) continue;
+                if (key != (key & 0x7ffff) ||
+                    key == 0)
+                {   printf("key = %x disaster\n", key);
                     exit(1);
                 }
-                if (v == 0 || v == key) break;
-                h1 += h2;
-                if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
-            }
-            if (v == 0)
-            {   occupancy++;
-                if (occupancy > HASHTABLESIZE-10)
-                {   printf("Excessive occupancy %d %d\n", h1, h2);
-                    printf("i = %d\n", i);
-                    printf("%d of %d lines used\n", occupancy, HASHTABLESIZE);
-                    exit(1);
-                }
-                hashtable[h1][0] = key;
-            }
-// Pack and write in the messy information about width and bounding boxes.
-            w = ((uint64_t)width[i] & 0x1fff) << 51 |
-                ((uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
-                ((uint64_t)(lly[i]+1000) & 0x0fff) << 26 |
-                ((uint64_t)(urx[i]+500) & 0x1fff) << 13 |
-                ((uint64_t)(ury[i]+1000) & 0x1fff);
-            hashtable[h1][1+(fullkey&3)] = w;
-// Finally merge in an offset to any kern info that might be available
-            if (kernreference[i] != 0)
-            {   int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontnum];
+                h1 = hashinsert(key, MAXDEPTH);
+                if (h1 < 0)
+                {
 #if 0
-                printf("Fill in kern ref %d as %d\n",
-                       kernreference[i] & 0x7fffffff, (int)q);
+                    printf("hash table creation failed on %d of %d chars (%d)\n",
+                           i, charcount, __LINE__);
+                    printf("After %d of %d Failed to insert %d\n",
+                        i, charcount, pack_character(fontkey[i], codepoint[i])/4);
 #endif
-                hashtable[h1][0] |= q << (19+11*(fullkey&3));
+                    fail = 1;
+                    break;;
+                }
+                else if (pass == 0) pinned[h1] = 1;
             }
+            if (fail)
+            {
+#if 0
+                printf("tablesize %d failed at %.3f%%\n",
+                    HASHTABLESIZE, (100.0*(double)i)/(double)charcount);
+#endif
+                printf("."); // So I see at least something!
+                continue;
+            }
+            occupancy = 0;
+            for (i=0; i<HASHTABLESIZE; i++)
+                if (hashtable[i][0] != 0) occupancy++;
+            printf("tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
+                    HASHTABLESIZE, secondhash,
+                   (100.0*(double)occupancy)/(double)HASHTABLESIZE);
+            if (report() != 0) continue;
+//=====================================================
+// Here everything is in the hash table and everything
+// in Basic Latin is in its home position. So I will
+// try to optimise Western and Mathematical characters.
+// Start by pinning them all.
+//=====================================================
+            ttt = time(NULL) + 20;
+            for (i=0; i<HASHTABLESIZE; i++)
+            {   int key = hashtable[i][0] & 0x1fffff;
+                int font = key >> 14;
+                int codepoint = 4*(key & 0x3fff);
+                if (font == F_fireflysung || codepoint == 0) continue;
+                pinned[i] = 1;
+            }
+            printf("About to optimise\n");
+            for (qq=0; qq<20; qq++)
+            {   printf("{%d}", qq);
+                for (i=0; i<HASHTABLESIZE; i++)
+                {   int key = hashtable[i][0] & 0x1fffff;
+                    int font = key >> 14;
+                    int codepoint = 4*(key & 0x3fff);
+                    int w;
+                    int aim = qq > 9 ? 1 : 0;
+                    uint32_t p[3];
+                    if (font == F_fireflysung || codepoint == 0) continue;
+// Now I have a Western/Mathematical character.
+                    calcplaces(key, p);
+                    if (i == p[0]) continue; // Already in the right place!
+#if 0
+                    if (pinned[p[aim]])
+                        printf("Can not move because destination is pinned\n");
+#endif
+                    if (pinned[p[aim]]) continue;
+                    w = hashtable[p[aim]][0]; // thing that is in its way!
+                    hashtable[i][0] = 0;       // gap where lifted item was
+                    hashtable[p[aim]][0] = key;
+                    pinned[i] = 0;
+                    pinned[p[aim]] = 1;
+                    if (hashinsert(w, MAXDEPTH)>=0)
+                    {   printf("[%.2f%%] Moved %d/%d to better location\n",
+                               100.0*((double)qq + (double)i/(double)HASHTABLESIZE)/20.0,
+                               font, codepoint);
+                        continue;
+                    }
+                    if (time(NULL) > ttt)
+                    {   printf("[%.2f%%] still working\n",
+                               100.0*((double)qq +
+                                      (double)i/(double)HASHTABLESIZE)/20.0);
+                        ttt = time(NULL) + 20;
+                    }
+                    hashtable[p[aim]][0] = w;      // re-insert failed so restore things
+                    hashtable[i][0] = key;
+                    pinned[i] = 1;
+                    pinned[p[aim]] = 0;
+                }
+            }
+            printf("Western things moved to better positions where possible\n");
+            printf("tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
+                    HASHTABLESIZE, secondhash,
+                   (100.0*(double)occupancy)/(double)HASHTABLESIZE);
+            printf("empty lines in hash consume %d bytes\n",
+                   40*(HASHTABLESIZE-occupancy));
+            report();
+            if (--best <= 0) break;
+        }
+        printf(":%d", HASHTABLESIZE); // Outer loop marker
+        if (best <= 0) break;
+    }
+
+//=====================================================================
+// Now the table should have everything in it and so I can merely fill
+// in the actual metric information
+//=====================================================================
+    printf("\nNow I want to put data into the hash table.\n");
+    for (i=0; i<charcount; i++)
+    {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
+        int key = fullkey >> 2; // because my hash table has line-size 4
+        if (codepoint[i] == 0) continue;
+        int h1;
+        uint64_t w;
+// This call should not actually INSERT since the key should already be
+// present!
+        h1 = hashinsert(key, MAXDEPTH);
+        if (h1 < 0)
+        {   uint32_t pp[3];
+            printf("hash table creation failed on %d of %d chars (%d)\n",
+                   i, charcount, __LINE__);
+            printf("Failed to insert %d\n,",
+                pack_character(fontkey[i], codepoint[i])/4);
+            calcplaces(key, pp);
+            printf("%d: %d\n", pp[0], (int)(hashtable[pp[0]][0] & 0x7ffff));
+            printf("%d: %d\n", pp[1], (int)(hashtable[pp[1]][0] & 0x7ffff));
+            printf("%d: %d\n", pp[2], (int)(hashtable[pp[2]][0] & 0x7ffff));
+            exit(1);
+        }
+// Pack and write in the messy information about width and bounding boxes.
+        w = ((uint64_t)width[i] & 0x1fff) << 51 |
+            ((uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
+            ((uint64_t)(lly[i]+1000) & 0x0fff) << 26 |
+            ((uint64_t)(urx[i]+500) & 0x1fff) << 13 |
+            ((uint64_t)(ury[i]+1000) & 0x1fff);
+        hashtable[h1][1+(fullkey&3)] = w;
+// Finally merge in an offset to any kern info that might be available
+        if (kernreference[i] != 0)
+        {   int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontkey[i]];
+#if 1
+            printf("Fill in kern ref %d as %d\n",
+                   kernreference[i] & 0x7fffffff, (int)q);
+#endif
+            hashtable[h1][0] |= q << (19+11*(fullkey&3));
         }
     }
 
@@ -893,46 +1210,72 @@ int main(int argc, char *argv[])
     printf("lly %d %d (%d)\n", minlly, maxlly, maxlly-minlly);
     printf("urx %d %d (%d)\n", minurx, maxurx, maxurx-minurx);
     printf("ury %d %d (%d)\n", minury, maxury, maxury-minury);
-    printf("Hash probes = %d [occupancy = %d, average = %.2f]\n", probes,
-           occupancy, (double)probes/(double)charcount);
 
 // Assess hash table performance just to be cautious!
-    probes = 0;
-    for (i=0; i<=0x7ffff; i++)
-    {   int v;
-        int h1 = (uint32_t)(1103515245*i) % (uint32_t)HASHTABLESIZE;
-        int h2 = 1+(uint32_t)(169*i) % (uint32_t)(HASHTABLESIZE-1);
-        if (h1 < 0 || h1 >= HASHTABLESIZE ||
-            h2 <= 0 || h2 >= HASHTABLESIZE)
-        {   printf("Hash calculation failed %d %d\n", h1, h2);
-            exit(1);
-        }
-        probes = 0;
-        for (;;)
-        {   v = (int)hashtable[h1][0] & 0x7ffff;
-            probes++;
-            if (probes > 1000)
-            {   printf("Excessive probe count %d %d\n", h1, h2);
-                printf("i = %d\n", i);
+    for (pass=0; pass<3; pass++)
+    {   p1 = n1 = 0;
+        printf("Start pass %d\n", pass);
+        for (i=0; i<charcount; i++)
+        {   int v, probes;
+            int fullkey = pack_character(fontkey[i], codepoint[i]);
+            int key = fullkey>>2;
+            int h1, h2, h3;
+            int pp[3];
+            calcplaces(key, pp);
+            if (codepoint[i] == 0) continue;
+            if (pass == 1 && fontkey[i] == F_fireflysung) continue;
+            if (pass == 0 && codepoint[i] >= 0x80) continue;
+            h1 = key % HASHTABLESIZE;
+            if (h1 != pp[0])
+            {   printf("Disaster 1\n");
                 exit(1);
             }
-            if (v == 0 || v == i) break;
-            h1 = (h1 + h2) % HASHTABLESIZE;
-        }
-        if (v == 0)
-        {   p1 += probes;
+            v = (int)hashtable[h1][0] & 0x7ffff;
+            if (v != key)
+            {   h2 = h1 + (key % (SECONDHASHMODULUS));
+                if (h2 >= HASHTABLESIZE) h2 = h2 - HASHTABLESIZE;
+                if (h2 != pp[1])
+                {   printf("Disaster 2\n");
+                    printf("key=%d h1=%d h2=%d\n", key, h1, h2);
+                    printf("%d %d %d\n", pp[0], pp[1], pp[2]);
+                    printf("HTS=%d 2MOD=%d off=%d\n", HASHTABLESIZE, SECONDHASHMODULUS,
+                           HASHTABLESIZE-SECONDHASHMODULUS);
+                    exit(1);
+                }
+                v = (int)hashtable[h2][0] & 0x7ffff;
+                if (v != key)
+                {   h3 = h1 + h2;
+                    if (h3 >= HASHTABLESIZE) h3 = h3 - HASHTABLESIZE;
+                    if (h3 != pp[2])
+                    {   printf("Disaster 3\n");
+                        exit(1);
+                    }
+                    v = (int)hashtable[h3][0] & 0x7ffff;
+                    p1 += 3;
+                    if (v != key)
+                    {   printf("Searching case %d for font %d char %d key %x\n",
+                            i, fontkey[i], codepoint[i], key);
+                        printf("Failed!!\n");
+                        exit(1);
+                    }
+                }
+                else p1 += 2;
+            }
+            else p1 += 1;
             n1++;
         }
-        else
-        {   p2 += probes;
-            n2++;
-        }
+        printf("probes:%d / chars:%d\n", p1, n1);
+        printf("Probe count averages = %.2f (pass %d)\n",
+               (double)p1/(double)n1, pass);
     }
-    printf("Average unsucessful probe count overall = %.2f\n",
-           (double)p1/(double)n1);
-    printf("Average sucessful probe count overall = %.2f\n",
-           (double)p2/(double)n2);
     printf("Total space = %d\n", HASHTABLESIZE*(5*8));
+    p1 = 0;
+    for (i=0; i<HASHTABLESIZE; i++)
+    {   if (hashtable[i][0] != 0) p1++;
+    }
+    printf("%d of %d entries (%d of %d bytes) used: %.4f\n",
+        p1, HASHTABLESIZE, 40*p1, 40*HASHTABLESIZE, (double)p1/(double)HASHTABLESIZE);
+
     {   FILE *dest = fopen("charmetrics.h", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
 fprintf(dest, "// charmetrics.h                           Copyright (C) 2015 Codemist Ltd\n");
@@ -970,6 +1313,7 @@ fprintf(dest, " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 fprintf(dest, " * DAMAGE.                                                                *\n");
 fprintf(dest, " *************************************************************************/\n");
 fprintf(dest, "\n");
+fprintf(dest, "\n#include <stdint.h>\n\n");
 fprintf(dest, "// Character metric hash table created using the program charmetrics.c\n");
 fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
 fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
@@ -1185,15 +1529,15 @@ fprintf(rdest, "  end;\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "fluid '(hashsize!* metrics_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
 fprintf(rdest, "\n");
-fprintf(rdest, "symbolic (hashsize!* := 10883);\n");
+fprintf(rdest, "symbolic (hashsize!* := %d);\n", HASHTABLESIZE);
 fprintf(rdest, "\n");
         fprintf(dest, "const uint64_t charmetrics[%d][5] = \n{", HASHTABLESIZE);
         fprintf(rdest, "#eval (setq metrics_hash!* (list_to_metric_table '\n    (");
         for (i=0; i<HASHTABLESIZE; i++)
         {   if (i != 0) fprintf(dest, ",");
             fprintf(dest,
-                "\n    {0x%.16" PRIx64 ", 0x%.16" PRIx64 ", 0x%.16" PRIx64 ","
-                "\n                         0x%.16" PRIx64 ", 0x%.16" PRIx64 "}",
+                "\n    {UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "),"
+                "\n                                   UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 ")}",
                 hashtable[i][0],
                 hashtable[i][1], hashtable[i][2],
                 hashtable[i][3], hashtable[i][4]);
@@ -1207,6 +1551,7 @@ fprintf(rdest, "\n");
                 (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
         }
         fprintf(dest, "\n};\n\n");
+        fprintf(dest, "#define SECONDHASHMODULUS %d\n\n", HASHTABLESIZE-secondhash);
         fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const int16_t fontkern[] = \n{");
         fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
@@ -1216,7 +1561,7 @@ fprintf(rdest, "\n");
             else fprintf(dest, " ");
             while (++w < 16) fprintf(dest, " ");
             w = fprintf(rdest, "\n    %d ", fontkern[i]);
-            while (++w < 16) fprintf(dest, " ");
+            while (++w < 16) fprintf(rdest, " ");
             fprintf(dest, "// %s", fontnames[i]);
             if (i != F_end-2 &&
                 fontkern[i+1] != fontkern[i])
@@ -1307,17 +1652,23 @@ fprintf(rdest, "\n");
         fprintf(rdest, "      (if codepoint >= 0x10000 then 0xd000 + land(codepoint, 0xfff)\n");
         fprintf(rdest, "       else codepoint);\n");
         fprintf(rdest, "    key := lshift(fullkey, -2);\n");
-        fprintf(rdest, "    h1 := remainder(land(1103515245*key, 0xffffffff), hashsize!*);\n");
-        fprintf(rdest, "    h2 := add1 remainder(169*key, sub1 hashsize!*);\n");
-        fprintf(rdest, " a: v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
-        fprintf(rdest, "    if v = key then go to b\n");
-        fprintf(rdest, "    else if v = 0 then return nil;\n");
-        fprintf(rdest, "    h1 := h1 + h2;\n");
-        fprintf(rdest, "    if h1 >= hashsize!* then h1 := h1 - hashsize!*;\n");
-        fprintf(rdest, "    go to a;\n");
-        fprintf(rdest, " b:\n");
+        fprintf(rdest, "    h1 := remainder(land(key, 0x7fffffff), %d);\n", HASHTABLESIZE);
+        fprintf(rdest, "    %% Hash table probe 1.\n");
+        fprintf(rdest, "    v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
+        fprintf(rdest, "    if not (v = key) then <<\n");
+        fprintf(rdest, "      h2 := h1 + remainder(key, %d);\n", HASHTABLESIZE-secondhash);
+        fprintf(rdest, "      if h2 >= %d then h2 := h2 - %d;\n", HASHTABLESIZE, HASHTABLESIZE);
+        fprintf(rdest, "      %% Hash table probe 2.\n");
+        fprintf(rdest, "      v := land(getv32(w := getv(metrics_hash!*, h2), 0), 0x7ffff);\n");
+        fprintf(rdest, "      if not (v = key) then <<\n");
+        fprintf(rdest, "        h1 := h1 + h2;\n");
+        fprintf(rdest, "        if h1 >= %d then h1 := h1 - %d;\n", HASHTABLESIZE, HASHTABLESIZE);
+        fprintf(rdest, "        %% Hash table probe 3.\n");
+        fprintf(rdest, "        v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
+        fprintf(rdest, "        if not (v = key) then return nil >> >>;\n");
         fprintf(rdest, "    v := 2*land(fullkey, 3);\n");
         fprintf(rdest, "    wlo := getv32(w, v+2);\n");
+        fprintf(rdest, "    if wlo = 0 then return nil; %% in hash table but no character here.\n");
         fprintf(rdest, "    whi := getv32(w, v+3);\n");
         fprintf(rdest, "    c_width := land(lshift(whi, -19), 0x1fff);\n");
         fprintf(rdest, "    c_llx := land(lshift(whi, -6), 0x1fff) - 3000;\n");
@@ -1343,7 +1694,7 @@ fprintf(rdest, "\n");
         fprintf(rdest, "    if land(w, 0x001fffff) = codepoint and\n");
         fprintf(rdest, "      zerop land(w, 0x00200000) then <<\n");
         fprintf(rdest, "        w := land(lshift(w, -23), 0x1ff);\n");
-        fprintf(rdest, "        if not zerop land(w, 0x1ff) then w := w - 0x200;\n");
+        fprintf(rdest, "        if not zerop land(w, 0x100) then w := w - 0x200;\n");
         fprintf(rdest, "        return w >>\n");
         fprintf(rdest, "    else if not zerop land(w, 0x00400000) then return 0;\n");
         fprintf(rdest, "    i := add1 i;\n");
@@ -1396,24 +1747,23 @@ int lookupchar(int fontnum, int codepoint)
 // the second to give an stride,
     int v, h1, h2;
     uint64_t w;
-    h1 = (uint32_t)(1103515245*key) % (uint32_t)HASHTABLESIZE;
-    h2 = 1+(uint32_t)(169*key) % (uint32_t)(HASHTABLESIZE-1);
-// On a successful search this will take an average of around 1.2 probes for
-// the Western fonts and maybe 2.5 probes for the CJK font. Unsuccessful
-// searches will need on average around 12 probes.
-    for (;;)
-    {   v = (int)charmetrics[h1][0] & 0x7ffff;
-        if (v == key) break;
-        if (v == 0) return 0; // Not found
-// Here I judge that modern high performance computers will use branch
-// prediction to arrange that the conditional here is almost free, while
-// older ones would have had slow division/remainder hardware, and so
-// the alternative code     h1 = (h1 + h2) % HASHTABLESIZE;    is pretty
-// well never to be preferred.
+    h1 = key % HASHTABLESIZE;
+    v = (int)charmetrics[h1][0] & 0x7ffff;
+    if (v != key)
+    {   h2 = key % SECONDHASHMODULUS;
         h1 += h2;
         if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
+        v = (int)charmetrics[h1][0] & 0x7ffff;
+        if (v != key)
+        {   h1 += h2;
+            if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
+            v = (int)charmetrics[h1][0] & 0x7ffff;
+            if (v != key) return 0;
+        }
     }
     w = charmetrics[h1][1+(fullkey&3)];
+// Even though the cache line exists this entry in it may be unused.
+    if (w == 0) return 0;
     c_width = (int)(w >> 51) & 0x1fff;
     c_llx = ((int)(w >> 38) & 0x1fff) - 3000;
     c_lly = ((int)(w >> 26) & 0x0fff) - 1000;
@@ -1558,7 +1908,10 @@ int32_t lookupligature(int codepoint)
 int main(int argc, char *argv[])
 {
     int i, r;
-    printf("Hash table size was %d\n", HASHTABLESIZE);
+    printf("====== Test program starting ======\n");
+    printf("Hash table size was %d\n", (int)HASHTABLESIZE);
+    printf("Second modulus %d (%d)\n", (int)SECONDHASHMODULUS,
+           (int)(HASHTABLESIZE-SECONDHASHMODULUS));
     for (i='e'; i<'n'; i++)
     {   r = lookupchar(F_General, i);
         if (r) printf("\"%c\": width %d   BB %d %d %d %d  (%d)\n",

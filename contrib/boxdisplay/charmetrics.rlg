@@ -1,0 +1,92 @@
++++ Transcript to charmetrics.rlg started at Wed Jan 14 11:45:52 2015 +++
+Reduce (Free CSL version), 01-Jan-15 ...
+
+% Small test of the character metrics table data.
+
+lisp;
+nil
+
+
+on comp;
+nil
+
+
+
+in "charmetrics.red"$+++ list_to_vec16 compiled, 29 + 20 bytes
+
+list_to_vec16
++++ list_to_vec32 compiled, 29 + 20 bytes
+
+list_to_vec32
++++ list_to_metric_table compiled, 34 + 16 bytes
+
+list_to_metric_table
+
+nil
+
+10289
+
+*** local variable *unused* in procedure get_character_metrics not used 
++++ get_character_metrics_welhte5bbbea compiled, 53 + 40 bytes
+
+get_character_metrics
+
+"character metrics established"
+
+nil
++++ lookupchar compiled, 304 + 180 bytes
+
+lookupchar
++++ lookupkernadjustment compiled, 58 + 60 bytes
+
+lookupkernadjustment
++++ lookupligature compiled, 50 + 52 bytes
+
+lookupligature
+
+nil
+
+
+
+<<
+  for i := id2int '!e:id2int '!m do
+    begin
+      if not lookupchar(get('General, 'font_number), i) then
+        printc "Lookup failed"
+      else print list(i, c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo);
+    end;
+  lookupchar(get('General, 'font_number), id2int '!f);
+  princ "Kern info for f-i is "; print lookupkernadjustment id2int '!i;
+  princ "Ligature for f-i is "; print lookupligature id2int '!i;
+  princ "Kern info for f-l is "; print lookupkernadjustment id2int '!l;
+  princ "Ligature for f-l is "; print lookupligature id2int '!l;
+  nil >>;(101 444 25 -10 424 460 630)
+(102 333 20 0 383 683 636)
+(103 500 28 -218 470 460 663)
+(104 500 9 0 487 683 676)
+(105 278 16 0 253 683 678)
+(106 278 -70 -218 194 683 0)
+(107 500 7 0 505 683 681)
+(108 278 19 0 257 683 699)
+(109 778 16 0 775 460 701)
+Kern info for f-i is 14
+Ligature for f-i is 64257
+Kern info for f-l is 44
+Ligature for f-l is 64258
+
+nil
+
+
+
+
+end;
+
+
+
+
+
+
+
+*** End-of-file read 
+
++++ Transcript closed at end of run +++
