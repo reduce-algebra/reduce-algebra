@@ -46,6 +46,8 @@ put('!~map,'psopfn,'map!-eval);
 
 put('!~map,'rtypefn,'getrtypecadr);
 
+put('select,'rtypefn,'getrtypecadr);
+
 symbolic procedure getrtypecadr u; getrtype cadr u;
 
 symbolic procedure map!-eval u;
