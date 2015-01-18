@@ -1,0 +1,28 @@
+
+% This worked
+xn := select(~x < 0, {1,2,-3,4});
+
+
+xn := {-3}
+  abs(xn);
+
+
+{3}
+
+
+% This triggered an error
+abs select(~x < 0, {1,2,-3,4});
+
+
+{3}
+
+
+% And this one as well
+select(~x < 0, {1,2});
+
+
+{}
+
+
+end;
+

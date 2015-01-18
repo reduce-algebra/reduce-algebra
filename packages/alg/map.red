@@ -117,7 +117,11 @@ symbolic procedure select!-eval u;
         pair(cdr map!-eval1(l,w,function(lambda y;y),'lispeval),cdr l)
       join if car q and car q neq 0 then {cdr q};
   if r then return car l . r;
-  if (r:=atsoc(car l,'((plus . 0)(times . 1)(and . 1)(or . 0))))
+  if (r:=atsoc(car l,'((plus . 0)
+                       (times . 1)
+		       (and . 1)
+                       (or . 0)
+		       (list . (list)))))
     then return cdr r
    else rederr {"empty selection for operator ",car l}
  end;
