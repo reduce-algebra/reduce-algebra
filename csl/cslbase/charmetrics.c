@@ -111,6 +111,13 @@
 // overall including all the CJK characters the average for a successful
 // lookup is 1.724 probes. The worst case lookup and all unsuccessful
 // cases are 3 probes.
+// Note that for a common or gerden hash table the average cost of a
+// successful lookup would be ln(1/(1-alpha)/alpha if hashing was perfectly
+// uniform: that would give the same performance for Western characters at
+// a loading of 63.7% and overall at around 70% so what I have done here
+// mainly saves space by allowing a hash table loading of almost 97% rather
+// then 70% - this saving is around 150 Kbytes (in the C code version of the
+// tables). 
 //
 // The COMPACT case make the table just slightly smaller at 10289, which
 // means that the occupancy is 97.6%. To put things in numbers that saves
@@ -699,7 +706,7 @@ int hashinsert(uint32_t key, int depth)
 // Display information on how many of each categroy of character will end
 // up needing 1, 2 or 3 probes.
 
-int report()
+int report(char *flag)
 {
     int i, k, pins = 0, r = 0;
     for (i=0; i<HASHTABLESIZE; i++)
@@ -730,12 +737,12 @@ int report()
         }
         switch (k)
         {
-    case 0: printf("U+0000-U+007f ");
+    case 0: printf("%sU+0000-U+007f ", flag);
             r = n2 + n3;
             break;
-    case 1: printf("Western fonts ");
+    case 1: printf("%sWestern fonts ", flag);
             break;
-    default:printf("Everything    ");
+    default:printf("%sEverything    ", flag);
             break;
         }
         printf("%5d %5d %5d: %6.3f", n1, n2, n3,
@@ -1089,7 +1096,7 @@ int main(int argc, char *argv[])
             printf("tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
                     HASHTABLESIZE, secondhash,
                    (100.0*(double)occupancy)/(double)HASHTABLESIZE);
-            if (report() != 0) continue;
+            if (report("") != 0) continue;
 //=====================================================
 // Here everything is in the hash table and everything
 // in Basic Latin is in its home position. So I will
@@ -1147,12 +1154,14 @@ int main(int argc, char *argv[])
                 }
             }
             printf("Western things moved to better positions where possible\n");
-            printf("tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
+// I arrange that the definitive report for this case has "@" characters at
+// the start of each line.
+            printf("@tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
                     HASHTABLESIZE, secondhash,
                    (100.0*(double)occupancy)/(double)HASHTABLESIZE);
-            printf("empty lines in hash consume %d bytes\n",
+            printf("@empty lines in hash consume %d bytes\n",
                    40*(HASHTABLESIZE-occupancy));
-            report();
+            report("@");
             if (--best <= 0) break;
         }
         printf(":%d", HASHTABLESIZE); // Outer loop marker

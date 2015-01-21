@@ -1193,7 +1193,7 @@ static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
  *    insert items into the table until it is just under 70% full.
  *    remob (eg via EXPORT) items until the table is just over 25% full.
  * note that so far there will have been no need to rehash
- *    insert more items, but select them so that thir hash values are all
+ *    insert more items, but select them so that their hash values are all
  *    different from the ones used before. You should be able to end up
  *    with 70% of the table full of valid symbols and 30% left as the value
  *    fixnum_of_int(1) which represents a place where a deleted symbol used
@@ -1204,6 +1204,15 @@ static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
  * does not suffer in this way - only lookup.  To help with this horror I set
  * rehash_pending if the lookup uses a number of probes > 75% of the table
  * size. This should only arise in degenerate cases!
+ */
+/*
+ * January 2015: I now believe I can use a scheme hashing scheme that will
+ * behave much better than the one that I originally used.
+ * Firstly because of the misery that in CSL there is an upper limit
+ * on the size of vectors I still need to support segmented tables. Also
+ * note that the code here is quite separate from that in fns3.c where
+ * hash tables for direct use by users are iplemented. I ought to consolidate
+ * these two implementations of hashing!
  */
 {
     Header h;

@@ -1285,6 +1285,9 @@ case 4:
  */
     hashstride = (1 + (hashcode % (uint32_t)((size >> 1)-1)))*2;
     hashgap = -1;
+/*
+ * I now know how to do better than this!
+ */
     for (nprobes=0;nprobes<size;nprobes++)
     {   Lisp_Object q = ht_elt(v, p+1);
         CSLbool cf;

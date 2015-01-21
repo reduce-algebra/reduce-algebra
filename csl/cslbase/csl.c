@@ -1871,12 +1871,19 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         case '-':
                 if (c2 != 0) 
                 {   w = &opt[2];
+/*! options [--cygwin] \item [{\ttfamily --cygwin}] \index{{\ttfamily --cygwin}}
+ * On Windows this flag is used to specify that a cygwin rather that a native
+ * windows version of Reduce is needed. This can be the situation in some
+ * cases where the foreign function interface is to be used.
+ */
+                    if (strcmp(w, "cygwin") == 0)
+                    { }
 /*! options [--texmacs] \item [{\ttfamily --texmacs}] \index{{\ttfamily --texmacs}}
  * If CSL/Reduce is launched from texmacs this command-line flag should be
  * used to arrange that the {\ttfamily texmacs} flag is set in
  * {\ttfamily lispsystem!*}, and the code may then do special things.
  */
-                    if (strcmp(w, "texmacs") == 0)
+                    else if (strcmp(w, "texmacs") == 0)
                     { }
 /*! options [--gui] \item [{\ttfamily --gui}] \index{{\ttfamily --gui}}
  * Encourage the system to run in its own window. Similar behaviour
@@ -2005,6 +2012,10 @@ term_printf(
   "-- filename  redirect output to the given file so it does not appear\n");
 term_printf(
   "     on the screen.\n");
+term_printf(
+  "--cygwin [on Windows] try to use the cygwin version of Reduce rather\n");
+term_printf(
+  "     than a native Windows version, regardless of other circumstances.\n");
 term_printf(
   "--texmacs run in texmacs mode. You must use the plugin from the\n");
 term_printf(
