@@ -549,23 +549,29 @@ int main(int argc, char* argv[])
 //     that if I was under mintty (etc) stdin and stdout would appear to
 //     be attached to pipes rather than to a disk file.
 //
+// However if a command line flag "--cygwin" is provided I will make that
+// force use of Cygwin. That use-case is required for people to use the
+// "cuba" package on Windows because the Cuba-4.1 library is not available
+// for and will not build for native Windows. If "--cygwin" is specified
+// the code will only even attempt to run a GUI if DISPLAY is set, and in
+// that case it will expect an X-windows server to be available for use.
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     HANDLE h0 = GetStdHandle(STD_INPUT_HANDLE);
     HANDLE h1 = GetStdHandle(STD_OUTPUT_HANDLE);
     int t0 = GetFileType(h0),
         t1 = GetFileType(h1);
     int gcsbi = GetConsoleScreenBufferInfo(h1, &csbi);
-    int dashdash = 0, i;
+    int force_cygwin = 0, dashdash = 0, i;
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--") == 0)
-        {   dashdash = 1;
-            break;
+    {   if (strcmp(argv[i], "--") == 0) dashdash = 1;
+        else if (strcmp(argv[i], "--cygwin") == 0) force_cygwin = 1;
         }
     }
-    if (gcsbi ||              // console available: can use Windows API
-        dashdash ||           // "--" seen: no console API needed
-        t0==FILE_TYPE_DISK || // stdin or stdout disk: no console API needed
-        t1==FILE_TYPE_DISK) possibly_under_cygwin = 0;
+    if (!force_cywgin &&
+        (gcsbi ||              // console available: can use Windows API
+         dashdash ||           // "--" seen: no console API needed
+         t0==FILE_TYPE_DISK || // stdin or stdout disk: no console API needed
+         t1==FILE_TYPE_DISK)) possibly_under_cygwin = 0;
 //
 // This stub runs as 32-bit code, but if it is on a 64-bit version of
 // windows it will be running under "wow64". Checking for that should allow
@@ -581,11 +587,12 @@ int main(int argc, char* argv[])
     int wow64 = IsWow64();
 
 #ifdef DEBUG
-// While debugging this code a "-32" on the command line disables 64 bit use.
+// While debugging this code a "--32" on the command line disables 64 bit use.
 // The only need for that that I can really see is when checking the code
-// to verify that it works.
+// to verify that it works. But if somebody found a situation where it was
+// valuable I could reinstate and publicise it.
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "-32") == 0)
+    {   if (strcmp(argv[i], "--32") == 0)
         {   wow64 = 0;
         }
     }
@@ -634,12 +641,16 @@ int main(int argc, char* argv[])
 #endif // FAT64
         }
 // If one of stdin or stdout is not connected to a cygwin console there is
-// no point in trying to use cygwin at all.
-        if (rc != 0) possibly_under_cygwin = 0;
+// no point in trying to use cygwin at all. That is unless the user is
+// explicitly forcing things. If the user specified "--cygwin" and does
+// not launch from a context where cygwin1.dll and so on are available
+// they need to expect failure.
+        if (!force_cygwin && rc != 0) possibly_under_cygwin = 0;
 // If DISPLAY and SSH_ENV are both null then I will look at the command
-// line options...
+// line options... "--cygwin" trumps most other options.
         else if (getenv("DISPLAY") == NULL &&
-                 getenv("SSH_HOST") == NULL)
+                 getenv("SSH_HOST") == NULL &&
+                 !force_cygwin)
         {   int nogui = 0;
 // ... I look for "--nogui" (or the abbreviations "-w" or "-w-") ...
             for (i=1; i<argc; i++)

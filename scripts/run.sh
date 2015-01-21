@@ -13,6 +13,18 @@ xWindows_NT)
 # (1) I am on a 32-bit Windows
 # (2) I am on 64-bit Windows running 32-bit cygwin
 # (3) I am running 64-bit cygwin
+# and coupled with that the user may have specified "--cygwin" on the command
+# line.
+  case $* in
+  *--cygwin*)
+    cygwin="yes"
+    notcygwin="no"
+    ;;
+  *)
+    cygwin="no"
+    notcygwin="yes"
+    ;;
+  esac
   case `uname -a` in
   *x86_64*)
 # 64-bit cygwin
@@ -22,7 +34,7 @@ xWindows_NT)
   *WOW64*)
 # 32-bit cygwin on 64-bit Windows
     c64=""
-    try64="yes"
+    try64="$notcygwin"
     ;;
   *)
 # 32-bit Windows
@@ -33,20 +45,25 @@ xWindows_NT)
   pre=""
   suffix=".com"
   xtra=""
-  if ! $here/../bin/not-under-cygwin.exe $*
+  if test "x$cygwin" = "xyes"
   then
-    $here/../bin/cygwin${c64}-isatty.exe $*
-    case $? in
-    0)
-      xtra="--gui"
-      ;;
-    1)
-      pre="cygwin${c64}-"
-      suffix=".exe"
-      ;;
-    *)
-      ;;
-    esac
+    suffix=".exe"
+  else
+    if ! $here/../bin/not-under-cygwin.exe $*
+    then
+      $here/../bin/cygwin${c64}-isatty.exe $*
+      case $? in
+      0)
+        xtra="--gui"
+        ;;
+      1)
+        pre="cygwin${c64}-"
+        suffix=".exe"
+        ;;
+      *)
+        ;;
+      esac
+    fi
   fi
 
 # I put an ordered list of preferences here. I put 64-bit release
@@ -57,17 +74,32 @@ xWindows_NT)
 # the first of these where I find a built version...
   if test "$try64" = "yes"
   then
-    versions="x86_64-pc-windows x86_64-pc-windows-wx \
+    if text "x$cygwin" = "xyes"
+    then
+      versions="x86_64-pc-cygwin x86_64-pc-cygwin-wx \
+            x86_64-pc-cygwin-nogui \
+            x86_64-pc-cygwin-debug x86_64-pc-window-wx-debug \
+            x86_64-pc-cygwin-nogui-debug"
+    else
+      versions="x86_64-pc-windows x86_64-pc-windows-wx \
             x86_64-pc-windows-nogui \
             i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
             x86_64-pc-windows-debug x86_64-pc-window-wx-debug \
             x86_64-pc-windows-nogui-debug \
             i686-pc-windows-debug i686-pc-windows-wx-debug \
             i686-pc-windows-nogui-debug"
+    fi
   else
-    versions="i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
+    if test "x$cygwin" = "xyes"
+    then
+      versions="i686-pc-cygwin i686-pc-cygwin-wx i686-pc-cygwin-nogui \
+            i686-pc-cygwin-debug i686-pc-cygwin-wx-debug \
+            i686-pc-cygwin-nogui-debug"
+    else
+      versions="i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
             i686-pc-windows-debug i686-pc-windows-wx-debug \
             i686-pc-windows-nogui-debug"
+    fi
   fi
   for hx in $versions
   do
@@ -78,8 +110,20 @@ xWindows_NT)
       exit 0
     fi
   done
-  host0="i686-pc-windows"
-  host="i686-pc-windows"
+  if test "x$cygwin" = "xyes"
+  then
+    if test "x$try64" = "xyes"
+    then
+      host0="i686-pc-cygwin"
+      host="i686-pc-cygwin"
+    else
+      host0="x86_64-pc-cygwin"
+      host="x86_64-pc-cygwin"
+    fi
+  else
+    host0="i686-pc-windows"
+    host="i686-pc-windows"
+  fi
   ;;
 *)
   host0=`$here/../config.guess`
@@ -98,32 +142,7 @@ xWindows_NT)
 esac
 
 # Here a there does not seem to be a version made for the EXACT operating
-# system version that we are running on at present. So to try to be kind I
-# will try to see if there is one for a version that may be related. In this
-# case "related" should mean using the same CPU (eg as in i686 vs x86_64)
-# and with the same "OS vendor" (eg debian, ubuntu, fedora etc). The effect
-# is intended to be that if you have installed say a version intended for
-# ubuntu 8.10 while in fact you are now running ubuntu 9.04 then things
-# will work. But because there is a potential conflict here (eg a version
-# built for fedora 9 might now work on fedora 2) I will display an alert 
-# about the possible issue. Furthermore in this case (because I would like
-# you to install a version exactly matching your operating system) I will
-# not update the run script and so will do the tedious search every time.
-
-host1=`$here/findhost.sh $host0 --short`
-for hx in $here/../cslbuild/${host1}*
-do
-  if test -x $hx/csl/$ap
-  then
-    hx1=`echo $hx | sed -e 's+.*/++'`
-    echo "You are running $host but the nearest match"
-    echo "I can find was built for $hx1. I will try"
-    echo "it, but if there are problems you need to compile"
-    echo "a version for yourself using \"./configure; make\"".
-    exec $hx/csl/$ap $*
-    exit 0
-  fi
-done
+# system version that we are running on at present.
 
 echo Failed to find a version of $ap that you have built
 echo try "./configure; make" to build one.

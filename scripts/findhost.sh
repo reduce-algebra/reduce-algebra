@@ -32,37 +32,8 @@ then
   fi
 fi
 
-a=$0
-c=unknown
-case $a in
-/* )
-  c=$a  
-  ;;
-*/* )
-  case $a in
-  ./* )
-    a=`echo $a | $SED -e s+./++`
-    ;;
-  esac
-  c=`pwd`/$a
-  ;;
-* ) 
-  for d in $PATH
-  do
-    if test -x $d/$a
-    then
-      c=$d/$a
-    fi
-  done
-  if test $c = "unknown" ;then
-    echo "Unable to find full path for script. Please re-try"
-    echo "launching it using a fully rooted path."
-    exit 1
-  fi
-  ;;
-esac
-
-here=`echo $c | $SED -e 's+/[^/]*$++'`
+here=`dirname "$0"`
+here=`cd "$here" ; pwd`
 
 host=$1
 shift

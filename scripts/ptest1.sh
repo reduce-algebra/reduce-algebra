@@ -7,6 +7,13 @@
 #    scripts/test1.sh [--keep] [--csl or --psl] package_name 
 # OR scripts/test1.sh [--keep] [--csl or --psl] regressions testname
 
+# I want this script to be one I can launch from anywhere, so
+# to access files etc I need to know where it lives.
+
+here=`dirname "$0"`
+here=`cd "$here" ; pwd`
+here=`dirname "$here"`
+
 keep="no"
 
 csl="yes"
@@ -48,41 +55,6 @@ case $1 in
   ;;
 esac
 
-# I want this script to be one I can launch from anywhere, so
-# to access files etc I need to know where it lives.
-
-a=$0
-c=unknown
-case $a in
-/* )
-  c=$a  
-  ;;
-*/* )
-  case $a in
-  ./* )
-    a=`echo $a | sed -e s+./++`
-    ;;
-  esac
-  c=`pwd`/$a
-  ;;
-* ) 
-  for d in $PATH
-  do
-    if test -x $d/$a
-    then
-      c=$d/$a
-    fi
-  done
-  if test $c = "unknown" ;then
-    echo "Unable to find full path for script. Please re-try"
-    echo "launching it using a fully rooted path."
-    exit 1
-  fi
-  ;;
-esac
-
-here=`echo $c | sed -e 's+/[^/]*$++'`
-here=`echo $here | sed -e 's+/[^/]*$++'`
 
 loader=""
 
