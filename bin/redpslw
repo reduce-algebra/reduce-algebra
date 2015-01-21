@@ -39,3 +39,7 @@ while test -h "$c"; do
 done
 here=`echo $c | sed -e 's+/[^/]*$++;s+/[^/]*$++'`
 exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*

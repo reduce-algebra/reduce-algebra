@@ -128,10 +128,12 @@ symbolic procedure BuildDisplayBox (exp,parens!?);
 %    huge          40
 %    Huge          50
 
-fluid '(CurrentFont CurrentSize);
+fluid '(CurrentFont CurrentSize !*ligatures);
 
 CurrentFont := get('General, 'font_number);
 CurrentSize := 24;
+% I can enable or disable use of ligatures...
+!*ligatures := t;
 
 % This returns a list of x-offsets and codepoints, and also leave
 % c_width, c_llx etc set with information about a bounding box for the
@@ -149,14 +151,29 @@ symbolic procedure MeasureAtom a;
 % characters that make it up. So for instance
 %      wideid2list '!#alpha;!#omega;;     => (945 969)
 % (note that the symbol there contains two Greek letters).
-% This function can be given a symbol or a string or a number.
-    if numberp a then c := explodecn a
-    else if stringp a then c := widestring2list a
-    else c := wideid2list a;
-    prin2 "TRACE: "; print c;
+% This funution can be given a symbol or a string or a number.
+    if numberp a then first := explodecn a
+    else if stringp a then first := widestring2list a
+    else first := wideid2list a;
+    prin2 "TRACE: "; print first;
+    if !*ligatures then <<
+% Now I will deal with any ligatures
+      if null first then c := nil
+      else while first do <<
+        c := car first . c;
+        first := cdr first;
+        while first and
+              lookupchar(CurrentFont, car c) and
+              (w := lookupligature car first) do <<
+          c := w . cdr c;
+          first := cdr first >> >>;
+      c := reversip c;
+      prin2 "TRACE (after ligature expansion): "; print c >>
+    else c := first;
+    w := nil;
     first := t;
     for each x in c do <<
-% If I am on the second or subsequent character of a word then I cgeck to
+% If I am on the second or subsequent character of a word then I check to
 % see if it kerns with this character, and adjust my running width (w)
 % accordingly.
       if not first then w := w + lookupkernadjustment x;
@@ -650,21 +667,36 @@ symbolic procedure testatom(id, font, size, filename);
       prin car c;
       princ " 0 ";
       prin cdr c;
-      printc ";" >>;
+      princ ";";
+      if 0x20 < cdr c and cdr c < 0x7f then <<
+        while posn() < 20 do princ " ";
+        princ " % ";
+        princ list2string list cdr c >>;
+      terpri() >>;
     wrs a;
     close ff;
   end;
 
+!*ligatures := nil;
+
 testatom(
-    "The boy stood on the burning deck, whence all but he had fled!",
+    "Triffle and sponge fingers flip with difficulty! VA AV AA VV ",
     "General",
     '24,
     "burning.dat");
 
+!*ligatures := t;
+
+testatom(
+    "Triffle and sponge fingers flip with difficulty! VA AV AA VV ",
+    "General",
+    '24,
+    "burning-lig.dat");
+
 testatom(
     "The boy stood on the burning deck, whence all but he had fled!",
     "cmuntt",
-    '36,
+    '30,
     "burning1.dat");
 
 end;

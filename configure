@@ -2526,12 +2526,11 @@ $as_echo "$as_me: cygextra = $cygextra" >&6;}
 # somebody used "--with-force" this may configure whether you are on a
 # 32 or 64-bit version of cygwin, but normally the test to see if the
 # configuration has already been done will avoid confusion and
-# redundant work. Well actually I will not configure the mingw variants
-# if I am on 64-bit cygwin just yet... at some later stage I may re-enable
-# that but at present 64-bit cygwin and 32-bit cygwin do not interact
-# quite well enoug and e.g. little utilities like reswrap, objtype and
-# makeheaders will fail if first built on one and then used on the other.
-      if test "x$cyg32" = "xyes"
+# redundant work. I build the native windows versions whether I am on
+# a 32 or 64-bit cygwin. PLEASE do not configure from both 32 and 64-bit
+# cygwins in the same tree since then both would prepare to build native
+# windows code but the two environments would clash.
+      if test "x$cyg32" = "xyes" || test "x$cyg64" = "xyes"
       then
         for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
         do
