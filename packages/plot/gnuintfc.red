@@ -228,8 +228,8 @@ symbolic procedure channelflush x;
 
 symbolic procedure gtmpnam base;
   if null tempdir!* then base
-  else compress ('!" . append(explodec tempdir!*,
-                              car explodec dirchar!* . cdr explode base));
+  else compress ('!" . append(explode2 tempdir!*,
+                              car explode2 dirchar!* . cdr explode base));
 
 % In general I want the initialisation actions indicated here to be
 % obeyed at load-time. I achieve this by packaging them all inside
@@ -257,7 +257,7 @@ begin
 % where a Cygwin version of Reduce is trying to use the native Windows
 % version of gnuplot. I believe I can detect this by seeing of
 % the plotcommand!* starts off as "/cygdrive/"...
-  w := explodec plotcommand!*;
+  w := explode2 plotcommand!*;
   if eqcar(w, '!") and
      eqcar(w:= cdr w, '!/) and
      eqcar(w:= cdr w, 'c) and

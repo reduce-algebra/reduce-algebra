@@ -252,7 +252,7 @@ operator rlrndseed;
 
 #if (memq 'csl lispsystem!*)
    procedure rltools_trunk();
-      compress('!" . append(explodec !@reduce, '(!/ !")));
+      compress('!" . append(explode2 !@reduce, '(!/ !")));
 
    symbolic procedure get_resource_directory();
       concat(get!-lisp!-directory(), "/reduce.resources");

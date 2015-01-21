@@ -136,7 +136,7 @@ symbolic procedure cedit n;
               rederr list("Entry",car n,"not found")>>;
       crbuf!* := nil;
       % Following line changed for CL version.
-      x := foreach y in x conc explodec y;
+      x := foreach y in x conc explode2 y;
       terpri();
       editp x;
       terpri();

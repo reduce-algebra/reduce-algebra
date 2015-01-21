@@ -67,8 +67,6 @@ global '(
 if null plotcommand!* then rederr
       " no support of GNUPLOT for this installation";
 
-if null getd 'explodec then copyd ('explodec, 'explode2); % for PSL
-
 fluid '(plot!-files!* plotpipe!*);
 
 symbolic procedure gp!-init();
@@ -320,7 +318,7 @@ symbolic procedure gp!-plotoptions();
       scalar a, b;
       a := x;
       if not idp a then a := car a;
-      b := explodec a;
+      b := explode2 a;
       if eqcar(b, 'n) and eqcar(cdr b, 'o) then <<
          a := compress cddr b;
          b := "unset " >>

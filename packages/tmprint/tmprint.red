@@ -1127,7 +1127,7 @@ symbolic procedure fancy!-maprint!-atom(l,p);
          return x >>
      else if stringp l or (idp l and contains!-tex!-special l) then <<
          fancy!-line!* := '!\mathrm!{ . fancy!-line!*;
-         for each c in explodec l do fancy!-tex!-character c;
+         for each c in explode2 l do fancy!-tex!-character c;
          fancy!-line!* := '!} . fancy!-line!* >>
      else if not numberp l or (not (l<0) or p<=get('minus,'infix))
          then fancy!-prin2!*(l,'index)

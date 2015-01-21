@@ -214,6 +214,8 @@ symbolic procedure red!-char!-downcase u;
 
 flag('(red!-char!-downcase),'lose);
 
+symbolic procedure explodec x;
+   explode2 x;  % For CSL compatibility
 
 
 % symbolic procedure orderp(u,v);
