@@ -1,0 +1,187 @@
+\documentclass[11pt]{article}
+% The fontenc package would be useful to suppoty "{" and "}" characters
+% in a \texttt context, however it is not always automatically available.
+% So when you see warnings about those characters here is a place you could
+% change to get rid of it.
+%\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsfonts,color}
+\usepackage[pdftex,colorlinks=true,linkcolor=blue,extension=pdf]{hyperref}
+
+\newcommand{\Reduce}{\textsc{Reduce}}
+\newcommand{\Cuba}{\textsc{Cuba}}
+
+\title{{\Reduce} interface to the {\Cuba} integration library}
+\author{Kostas N. Oikonomou\\ AT\&T Labs Research, Middletown, NJ, U.S.A.
+  \\ \small\texttt{ko@research.att.com}}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The \texttt{cuba} package is an interface between {\Reduce} (CSL) and the
+{\Cuba} library for multi-dimensional numerical integration.  The libary can be
+found at \url{http://www.feynarts.de/cuba}.  It offers a choice of four
+independent methods: Vegas, Suave, Divonne, and Cuhre. The first three are Monte
+Carlo-based, the fourth is a deterministic algorithm.  It is recommended to read
+the {\Cuba} manual, and, optionally, to look at the other documentation provided
+on the site.
+
+The integrals are evaluated \emph{only} over hyper-rectangles\footnote{{\Cuba}
+  itself evaluates all integrals over the unit hypercube, but the {\Reduce}
+  interface provides a small extension, allowing the user to integrate over an
+  arbitrary hyper-rectangle.}.  As an example of what can be done using the
+\texttt{cuba} package in {\Reduce}, say $f$ is a function $\mathbb{R}^3\to
+\mathbb{R}$ and we want to compute
+\begin{equation*}
+  \int_{a_1}^{b_1} \int_{a_2}^{b_2} \int_{a_3}^{b_3} f(x_1,x_2,x_3)\, dx_1 \,
+  dx_2 \, dx_3
+\end{equation*}
+using the \texttt{Vegas} algorithm, one of the choices provided by {\Cuba}.
+This is done by saying
+\begin{table*}[h]
+  \centering
+  \ttfamily
+  \begin{tabular}{l}
+    load\_package cuba; \\
+    on rounded; \\
+    cuba\_int(f,{{a1,b1},{a2,b2},{a3,b3}},Vegas);
+  \end{tabular}
+\end{table*}\\
+if the ``Vegas'' algorithm is to be used.  Although quite a bit of effort has
+gone into making the package work even when not in rounded mode, it is probably
+best to have \texttt{on rounded}.
+
+The {\Reduce} function \texttt{f} defining the integrand is assumed to take a
+3-element \emph{list} $x$ as input and return the value $f(x)$ of the
+integrand at the point $x\in\mathbb{R}^3$.  If so, \texttt{cuba\_int(...)} will
+return a list of the form
+\begin{center}
+  \texttt{\{value, error, probability, number of regions,
+            number of evaluations, status\}}
+\end{center}
+where \texttt{value} is the value of the integral, \texttt{error} is an
+indication of the probable error, and \texttt{status} indicates whether the
+algorithm terminated successfully or not.  Consult the {\Cuba} manual for the
+other quantities.
+
+
+\section{Installation}
+
+At present the Reduce parts of this package can only build using the CSL
+version of Reduce, but in that context get compiled automatically as part
+of the full standard system. However the code for {\Cuba} and the C-coded
+interface between that and Reduce has to be built by hand, and the current
+arrangements make that work when all the Reduce sources have been installed
+and Reduce is built from scratch.
+
+In that case you should identify the directory \verb+packages/foreign/cuba+
+in the Reduce source tree and select it as current. Ensure that the command
+\verb+wget+ is available on your platform and then You can then go
+\verb+make+ to fetch {\Cuba} from its home site, compile it and then create
+the dynamic library that forms a link between Cuba and Reduce.
+
+This should work on any sufficiently modern Unix-like system, including
+either the 32 or 64-bit version of Cygwin. The term "modern" here refers
+to Linux systems using releases from no older then the very end of 2011:
+any such will probably provide a version of the gcc C compiler (ie one
+from 4.6.x onwards) sufficient for Cuba. This corresponds to Ubuntu from
+release 11.10 onwards or Fedora from about version 15.
+
+To use the Cuba package on Windows you must run a Cygwin version of CSL
+Reduce not a native windows one. That means that if you want the benefit of
+a GUI you must have an X server running and the environment variable
+DISPLAY set up for it. Passing the command-line flag ``\verb+--cygwin+'' to
+the CSL version of Reduce should cause a suitable version of the system to
+be loaded, and this probably needs to be done from the command line of
+a cygwin terminal. This limitation is because the main Cuba library does not
+support native Windows.
+
+Anybody with either and older version of an operating system or one other
+then (Free)BSD, OSX, Linux or Cygwin may need to identify a C compiler
+that can handle Cuba (any that support enough of the features of the 2011
+C standard should suffice) and edit "Makefile" to set the C compiler and
+any flags or options that it needs. Slightly more extreme alterations will
+be needed if the linking command that makes the dynamic interface library
+needs changing.
+
+
+\section{The interface}
+
+Currently, the interface provides the functions listed in Table \ref{tab:intf}.
+The table gives minimal explanations, consult the {\Cuba} manual for details.
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|p{0.45\textwidth}|}\hline
+    \texttt{cuba\_gen\_par(name,value)} & Set the generally-applicable parameter
+      \emph{name} (a string) to \emph{value} \\
+    \texttt{cuba\_vegas\_par(name,value)}  &   Set a Vegas-specific parameter \\
+    \texttt{cuba\_suave\_par(name,value)}  &   Set a Suave-specific parameter \\
+    \texttt{cuba\_divonne\_par(name,value)} &  Set a Divonne-specific parameter \\
+    \texttt{cuba\_cuhre\_par(name,value)}   &  Set a Cuhre-specific parameter \\
+    \hline
+    \texttt{cuba\_verbosity(v)}  & For $v=0,1,2$ \texttt{cuba\_int} will provide
+    more informative output \\
+    \hline
+    \texttt{cuba\_set\_flags\_bit(i)}      & Set the $i$th bit of the global
+    \texttt{flags} \\
+    \texttt{cuba\_clear\_flags\_bit(i)}    & Clear the $i$th bit of the global
+    \texttt{flags} \\
+    \texttt{cuba\_statefile(fname)} & file \texttt{fname} will be used for
+    checkpointing a long-running integration \\
+    \hline
+    \texttt{cuba\_int(f,$\{\{a_1,b_1\},\dots\}\}$,alg)}    & Integrate
+    the {\Reduce} function $f$ over the hyper-rectangle
+    $\{a_1,b_1\}\times\cdots\times\{a_m,b_m\}$ using algorithm \texttt{alg} \\
+      \hline
+  \end{tabular}
+  \caption{\label{tab:intf}Functionality of the {\Reduce} interface to the
+    {\Cuba} library.}
+\end{table}
+
+There are some features of {\Cuba} that are not handled by this version of the
+interface: vector integrands, i.e. functions from $\mathbb{R}^n\to\mathbb{R}^m$
+with $m>1$, integration routines that can do more than $2^{32}$ evaluations, and
+some of the parallelization features.
+\clearpage
+
+\section {The \texttt{cuba} package}
+
+\subsection{Structure}
+
+This is not of interest to most users, but the package consists of the following
+files\footnote{If the list of files and comments is confusing, refer to the
+  Acknowledgments.}:
+\begin{table*}[h]
+  \centering
+  \begin{tabular}{|l|p{0.6\textwidth}|} \hline
+    \texttt{redcuba.c} & Builds \texttt{libredcuba.so}, a ``glue'' library
+    between the actual {\Cuba} library \texttt{libcuba.a} and {\Reduce}/CSL \\
+    \texttt{C\_call\_CSL.h} &  The ``procedural'' interface from C to CSL, used
+    in the above \\ \hline
+    \texttt{cuba.red}       & The module defining the {\Cuba} package \\
+    \texttt{cuba\_main.red} &  The {\Reduce} module (symbolic procedures) implementing
+    the interface \\ 
+    \texttt{alg\_intf.red}  & Utilities for interfacing between algebraic and
+     symbolic modes \\
+    \texttt{cuba.tst} & A {\Reduce} test file. \\
+    \hline
+  \end{tabular}
+\end{table*}
+
+\subsection{Debugging}
+
+To debug the interface, there is a variable \texttt{DEBUG} in
+\texttt{redcuba.c}, normally set to 0.  By setting it to 1 or 2 and re-making
+\texttt{libredcuba.so} the package will produce various debugging messages that
+should be useful.
+
+
+
+\subsubsection*{Acknowledgments}
+Thanks to Arthur Norman for his invaluable support in navigating the intricacies
+of {\Reduce}, algebraic and symbolic mode, RLISP, Standard Lisp, CSL, etc.
+
+
+\end{document}

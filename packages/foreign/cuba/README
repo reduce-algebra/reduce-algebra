@@ -1,0 +1,9 @@
+This is an interface between Reduce/CSL and the Cuba library for
+multi-dimensional numerical integration by a choice of methods.
+See http://www.feynarts.de/cuba.
+
+Cuba itself evaluates all integrals over the unit hypercube, but the Reduce
+interface provides a small extension, allowing the user to integrate over an 
+arbitrary hyper-rectangle.
+
+Installation instructions are in cuba.pdf.
