@@ -33,6 +33,9 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
+#endif
 
 #include <stdint.h>
 

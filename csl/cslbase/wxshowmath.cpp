@@ -1,5 +1,9 @@
 // wxshowmath.cpp                            Copyright (C) 2015, A C Norman    
 
+// As of 21/01/15 this seems not to work on 64-bit windows even though
+// it does on 32-bit. Investigate!
+
+
 /**************************************************************************
  * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
@@ -60,6 +64,10 @@
 
 // I may be old fashioned, but I will be happier using C rather than C++
 // libraries here.
+
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
+#endif
 
 #include <string.h>
 #include <stdlib.h>

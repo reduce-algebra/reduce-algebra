@@ -65,6 +65,10 @@
 #include <time.h>
 #include <stdarg.h>
 
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
+#endif
+
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif

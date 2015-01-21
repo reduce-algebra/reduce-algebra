@@ -95,6 +95,10 @@
 
 #ifdef HAVE_STDINT_H
 
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
+#endif
+
 #include <stdint.h>
 
 #else /* HAVE_STDINT_H */

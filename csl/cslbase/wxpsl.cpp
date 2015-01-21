@@ -54,6 +54,10 @@
 #include <windows.h>
 #endif
 
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

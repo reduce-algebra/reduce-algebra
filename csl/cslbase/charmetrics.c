@@ -1322,6 +1322,9 @@ fprintf(dest, " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 fprintf(dest, " * DAMAGE.                                                                *\n");
 fprintf(dest, " *************************************************************************/\n");
 fprintf(dest, "\n");
+fprintf(dest, "#ifdef __cplusplus\n");
+fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");
+fprintf(dest, "#endif\n");
 fprintf(dest, "\n#include <stdint.h>\n\n");
 fprintf(dest, "// Character metric hash table created using the program charmetrics.c\n");
 fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");

@@ -91,6 +91,9 @@ static Display *dpy;
 #include "termed.h"
 #include "wxterminal.h"      // my own header file.
 
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
+#endif
 
 #include <string.h>
 #include <stdlib.h>
