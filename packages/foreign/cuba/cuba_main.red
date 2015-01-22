@@ -43,7 +43,7 @@ libredcuba_loc!* := lto_sconcat {rltools_trunk(),
 if filep libredcuba_loc!* then
    libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
 else
-   redrror {"Can't open the Cuba library ", libredcuba_loc!*};
+   rederr {"Can't open the Cuba library ", libredcuba_loc!*};
 
 %% Setting parameters
 cuba_statefile!*   := find!-foreign!-function("cuba_statefile", libredcuba!*);
