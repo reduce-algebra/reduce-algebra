@@ -755,7 +755,6 @@ void fwin_putchar(int c)
  * ordinary C stream functions for normal output. Provided I do an
  * fflush(stdout) before requesting input I should be OK.
  */
-    FWIN_LOG(("Writing char [%.2x] \'%c\'\n", c, c));
 #ifdef __CYGWIN__
     FWIN_LOG(("cygwin case\n"));
 /*
@@ -1563,7 +1562,7 @@ unsigned long int pack_date(int year, int mon, int day,
     return r*60 + sec;
 }
 
-typedef struct date_and_type
+typedef struct date_and_type_
 {
     unsigned long int date;
     unsigned long int type;
@@ -2086,7 +2085,7 @@ void scan_files(const char *dir,
 
 
 FILE *open_file(char *filename, char *old, size_t n,
-                char *mode, FILE *old_file)
+                const char *mode, FILE *old_file)
 {
 /*
  * mode is something like "r" or "w" or "rb", as needed by fopen(),
@@ -2116,6 +2115,7 @@ FILE *open_file(char *filename, char *old, size_t n,
         if (old_file == NULL) ff = fopen(filename, mode);
         else ff = freopen(filename, mode, old_file);
     }
+    if (ff != NULL) setvbuf(ff, NULL, _IOFBF, 0x10000);
     return ff;
 }
 

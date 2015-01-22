@@ -87,10 +87,12 @@ pthread_t thread1;
 
 extern const char *colour_spec;
 
+#include "FXReduceMenus.cpp"
+
 FXMenuBar *main_menu_bar;
 
-FXMenuPane *fileMenu, *editMenu, *fontMenu,
-           *breakMenu, *helpMenu;
+FXMenuPane *fileMenu, *editMenu,
+           *reduceMenu, *helpMenu;
 
 int rootWidth, rootHeight;
 
@@ -367,8 +369,21 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
                                 (FXObject *)text, FXTerminal::ID_PRINT);
     new FXMenuCommand(fileMenu, "Pri&nt Selection...", NULL,
                                 (FXObject *)text, FXTerminal::ID_PRINT_SELECTION);
+    new FXMenuCommand(fileMenu, "&Break\tCtl-C\tInterrupt", NULL,
+                                (FXObject *)text, FXTerminal::ID_BREAK);
+    new FXMenuCommand(fileMenu, "Bac&ktrace\tCtl-G\tInterrupt/backtrace", NULL,
+                                (FXObject *)text, FXTerminal::ID_BACKTRACE);
+    new FXMenuCommand(fileMenu, "&Pause\tCtl-S", NULL,
+                                (FXObject *)text, FXTerminal::ID_PAUSE);
+    new FXMenuCommand(fileMenu, "&Resume\tCtl-Q", NULL,
+                                (FXObject *)text, FXTerminal::ID_RESUME);
+    new FXMenuCommand(fileMenu, "&Stop/Go\tCtl-Z", NULL,
+                                (FXObject *)text, FXTerminal::ID_STOP);
+    new FXMenuCommand(fileMenu, "&Discard Output\tCtl-O", NULL,
+                                (FXObject *)text, FXTerminal::ID_DISCARD);
     new FXMenuCommand(fileMenu, "&Quit\tCtl-\\\tQuit the application.", NULL,
                                 application_object, FXApp::ID_QUIT);
+
 // I make this F&ile not &File since alt-F will be for "move forward one
 // word" using emacs-like key bindings.
     new FXMenuTitle(main_menu_bar, "F&ile", NULL, fileMenu);
@@ -394,34 +409,48 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
                                 (FXObject *)text, FXTerminal::ID_HOME);
     new FXMenuCommand(editMenu, "&End", NULL,
                                 (FXObject *)text, FXTerminal::ID_END);
+    new FXMenuCommand(editMenu, "&Font...", NULL,
+                                (FXObject *)text, FXTerminal::ID_FONT);
+    new FXMenuCommand(editMenu, "&Reset Font", NULL,
+                                (FXObject *)text, FXTerminal::ID_RESET_FONT);
+    new FXMenuCommand(editMenu, "Reset &Window", NULL,
+                                (FXObject *)text, FXTerminal::ID_RESET_WINDOW);
 
     new FXMenuTitle(main_menu_bar, "&Edit", NULL, editMenu);
 
-    fontMenu = new FXMenuPane(main_window);
-    new FXMenuCommand(fontMenu, "&Font...", NULL,
-                                (FXObject *)text, FXTerminal::ID_FONT);
-    new FXMenuCommand(fontMenu, "&Reset Font", NULL,
-                                (FXObject *)text, FXTerminal::ID_RESET_FONT);
-    new FXMenuCommand(fontMenu, "Reset &Window", NULL,
-                                (FXObject *)text, FXTerminal::ID_RESET_WINDOW);
-    new FXMenuTitle(main_menu_bar, "F&ont", NULL, fontMenu);
-
-    breakMenu = new FXMenuPane(main_window);
-    new FXMenuCommand(breakMenu, "&Break\tCtl-C\tInterrupt", NULL,
-                                (FXObject *)text, FXTerminal::ID_BREAK);
-    new FXMenuCommand(breakMenu, "Bac&ktrace\tCtl-G\tInterrupt/backtrace", NULL,
-                                (FXObject *)text, FXTerminal::ID_BACKTRACE);
-    new FXMenuCommand(breakMenu, "&Pause\tCtl-S", NULL,
-                                (FXObject *)text, FXTerminal::ID_PAUSE);
-    new FXMenuCommand(breakMenu, "&Resume\tCtl-Q", NULL,
-                                (FXObject *)text, FXTerminal::ID_RESUME);
-    new FXMenuCommand(breakMenu, "&Stop/Go\tCtl-Z", NULL,
-                                (FXObject *)text, FXTerminal::ID_STOP);
-    new FXMenuCommand(breakMenu, "&Discard Output\tCtl-O", NULL,
-                                (FXObject *)text, FXTerminal::ID_DISCARD);
-
-    new FXMenuTitle(main_menu_bar, "B&reak", NULL, breakMenu);
-
+// Add the special Reduce menus...
+    {   const char **red = reduceMenus, *p;
+        char curTop[32], topName[32], subName[64], *q;
+        curTop[0] = 0;
+        reduceMenu = NULL;
+        while (*red != NULL)
+        {   p = *red++;
+            q = topName;
+            while (*p != '@') *q++ = *p++;
+            *q = 0;
+            p++;
+            q = subName;
+            while (*p != '@') *q++ = *p++;
+            *q = 0;
+printf("%s : %s\n", topName, subName);
+// Do I now have a new top-level menu name?
+            if (strcmp(topName, curTop) != 0)
+            {   if (reduceMenu != NULL)
+                {   new FXMenuTitle(main_menu_bar, curTop, NULL, reduceMenu);
+printf("put %s at top\n", curTop);
+                }
+                reduceMenu = new FXMenuPane(main_window);
+                strcpy(curTop, topName);
+printf("create new sub-menu for %s\n", curTop);
+            }
+// Add a sub-menu item
+            new FXMenuCommand(reduceMenu, subName, NULL,
+                                (FXObject *)text, FXTerminal::ID_REDUCE);
+        }
+// The final top-level menu now needs setting up.
+printf("final top level item is %s\n", curTop);
+        new FXMenuTitle(main_menu_bar, curTop, NULL, reduceMenu);
+    }
     helpMenu = new FXMenuPane(main_window);
     new FXMenuCommand(helpMenu, "&Help\tF1\tHelp", NULL,
                                 (FXObject *)text, FXTerminal::ID_HELP);

@@ -246,22 +246,23 @@ am_libFOX_1_6_a_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	FXRangef.$(OBJEXT) FXRanged.$(OBJEXT) FXRealSlider.$(OBJEXT) \
 	FXRealSpinner.$(OBJEXT) FXRecentFiles.$(OBJEXT) \
 	FXRectangle.$(OBJEXT) FXRegion.$(OBJEXT) FXRegistry.$(OBJEXT) \
-	FXReplaceDialog.$(OBJEXT) FXRex.$(OBJEXT) \
-	FXRootWindow.$(OBJEXT) FXRuler.$(OBJEXT) FXRulerView.$(OBJEXT) \
-	FXScrollArea.$(OBJEXT) FXScrollBar.$(OBJEXT) \
-	FXScrollPane.$(OBJEXT) FXScrollWindow.$(OBJEXT) \
-	FXSearchDialog.$(OBJEXT) FXSeparator.$(OBJEXT) \
-	FXSettings.$(OBJEXT) FXShell.$(OBJEXT) FXShutter.$(OBJEXT) \
-	FXSize.$(OBJEXT) FXSlider.$(OBJEXT) FXSocket.$(OBJEXT) \
-	FXSpinner.$(OBJEXT) FXSpheref.$(OBJEXT) FXSphered.$(OBJEXT) \
-	FXSplashWindow.$(OBJEXT) FXSplitter.$(OBJEXT) \
-	FXSpring.$(OBJEXT) FXStat.$(OBJEXT) FXStatusBar.$(OBJEXT) \
-	FXStatusLine.$(OBJEXT) FXStream.$(OBJEXT) FXString.$(OBJEXT) \
-	FXStringDict.$(OBJEXT) FXSwitcher.$(OBJEXT) FXSystem.$(OBJEXT) \
-	FXTGAIcon.$(OBJEXT) FXTGAImage.$(OBJEXT) FXTIFIcon.$(OBJEXT) \
-	FXTIFImage.$(OBJEXT) FXTabBar.$(OBJEXT) FXTabBook.$(OBJEXT) \
-	FXTabItem.$(OBJEXT) FXTable.$(OBJEXT) FXText.$(OBJEXT) \
-	FXTextCodec.$(OBJEXT) FXTextField.$(OBJEXT) FXThread.$(OBJEXT) \
+	FXReplaceDialog.$(OBJEXT) FXReduceDialog.$(OBJEXT) \
+	FXReduceMenus.$(OBJEXT) FXRex.$(OBJEXT) FXRootWindow.$(OBJEXT) \
+	FXRuler.$(OBJEXT) FXRulerView.$(OBJEXT) FXScrollArea.$(OBJEXT) \
+	FXScrollBar.$(OBJEXT) FXScrollPane.$(OBJEXT) \
+	FXScrollWindow.$(OBJEXT) FXSearchDialog.$(OBJEXT) \
+	FXSeparator.$(OBJEXT) FXSettings.$(OBJEXT) FXShell.$(OBJEXT) \
+	FXShutter.$(OBJEXT) FXSize.$(OBJEXT) FXSlider.$(OBJEXT) \
+	FXSocket.$(OBJEXT) FXSpinner.$(OBJEXT) FXSpheref.$(OBJEXT) \
+	FXSphered.$(OBJEXT) FXSplashWindow.$(OBJEXT) \
+	FXSplitter.$(OBJEXT) FXSpring.$(OBJEXT) FXStat.$(OBJEXT) \
+	FXStatusBar.$(OBJEXT) FXStatusLine.$(OBJEXT) \
+	FXStream.$(OBJEXT) FXString.$(OBJEXT) FXStringDict.$(OBJEXT) \
+	FXSwitcher.$(OBJEXT) FXSystem.$(OBJEXT) FXTGAIcon.$(OBJEXT) \
+	FXTGAImage.$(OBJEXT) FXTIFIcon.$(OBJEXT) FXTIFImage.$(OBJEXT) \
+	FXTabBar.$(OBJEXT) FXTabBook.$(OBJEXT) FXTabItem.$(OBJEXT) \
+	FXTable.$(OBJEXT) FXText.$(OBJEXT) FXTextCodec.$(OBJEXT) \
+	FXTextField.$(OBJEXT) FXThread.$(OBJEXT) \
 	FXToggleButton.$(OBJEXT) FXToolBar.$(OBJEXT) \
 	FXToolBarGrip.$(OBJEXT) FXToolBarShell.$(OBJEXT) \
 	FXToolBarTab.$(OBJEXT) FXToolTip.$(OBJEXT) \
@@ -813,6 +814,8 @@ FXRectangle.cpp \
 FXRegion.cpp \
 FXRegistry.cpp \
 FXReplaceDialog.cpp \
+FXReduceDialog.cpp \
+FXReduceMenus.cpp \
 FXRex.cpp \
 FXRootWindow.cpp \
 FXRuler.cpp \
@@ -1190,6 +1193,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXRealSpinner.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXRecentFiles.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXRectangle.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXReduceDialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXReduceMenus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXRegion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXRegistry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FXReplaceDialog.Po@am__quote@

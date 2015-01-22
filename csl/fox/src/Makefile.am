@@ -411,6 +411,8 @@ FXRectangle.cpp \
 FXRegion.cpp \
 FXRegistry.cpp \
 FXReplaceDialog.cpp \
+FXReduceDialog.cpp \
+FXReduceMenus.cpp \
 FXRex.cpp \
 FXRootWindow.cpp \
 FXRuler.cpp \

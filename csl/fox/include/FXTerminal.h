@@ -139,6 +139,7 @@ extern int windowed;
 extern const char *colour_spec;
 extern FXApp *application_object;
 extern FXMainWindow1 *main_window;
+extern const char *reduceMenus[];
 extern "C" {
 #ifdef WIN32
 extern DWORD __stdcall worker_thread(void *);
@@ -219,6 +220,7 @@ public:
   long onCmdLoadModule(FXObject *c, FXSelector s, void *ptr);
   long onCmdFlipSwitch(FXObject *c, FXSelector s, void *ptr);
   long onCmdSelectBrowser(FXObject *c, FXSelector s, void *ptr);
+  long onCmdReduce(FXObject *c, FXSelector s, void *ptr);
   long onCmdHelp(FXObject *c, FXSelector s, void *ptr);
   long onCmdAbout(FXObject *c, FXSelector s, void *ptr);
 
@@ -341,6 +343,8 @@ public:
     ID_ABOUT,
     ID_LOAD_MODULE,
     ID_FLIP_SWITCH,
+
+    ID_REDUCE,     // for the new "Calculus", "Algebra" etc menu items...
     ID_LAST
     };
 

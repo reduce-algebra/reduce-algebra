@@ -180,6 +180,9 @@ FXDEFMAP(FXTerminal) FXTerminalMap[] =
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_RESUME, FXTerminal::onCmdResume),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_STOP, FXTerminal::onCmdStop),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_DISCARD, FXTerminal::onCmdDiscard),
+
+    FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_REDUCE, FXTerminal::onCmdReduce),
+
 #ifndef WIN32
 #if !defined MACINTOSH || !defined MAC_FRAMEWORK
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_BROWSER, FXTerminal::onCmdSelectBrowser),
@@ -1728,6 +1731,54 @@ long FXTerminal::onCmdFlipSwitch(FXObject *c, FXSelector s, void *ptr)
             else *p = 'n';
             break;
         }
+    }
+    setFocus();   // I am uncertain, but without this I lose focus...
+    return 1;
+}
+
+long FXTerminal::onCmdReduce(FXObject *c, FXSelector s, void *ptr)
+{
+// Here I have one of the Reduce-specific menu items that needs to create
+// a dialog box that will eventually return a string that is to be inserted
+// in the iput buffer. I search the list of menus to find just which one
+// was involved...
+    keyFlags &= ~ESC_PENDING;
+    FXString ss = ((FXMenuCommand *)c)->getText();
+    const char *mtext = ss.text();
+    int l = (int)strlen(mtext);
+    const char **m = reduceMenus, *p;
+    while (*m != NULL)
+    {   p = *m++; // A particular menu string
+        while (*p != '@') p++; // Skip top-level menu name
+        p++;                   // past the "@"
+        if (strncmp(mtext, p, l) == 0 && p[l] == '@') break;
+    }
+    if (*m == NULL) return 1; // Not found - this is a BUG
+    p = p+l+1;
+// Now p is a string that looks like:
+//    Dialog Box Title @ n @ f<1> @ f<2> @ .. @ f<n> @ template
+// and it should display a box that shows roughly
+//      ---------------------------
+//      | Dialog Box Title        |
+//      | f1  ################### |
+//      | ....................... |
+//      | fn  ################### |
+//      |    cancel         OK    |
+//      ---------------------------
+// where "###" denote fields that the user fills in, but that possibly have
+// some initial content to get them started.
+    if (isEditable())
+    {   killSelection();
+        setInputText("", 0);
+        appendStyledText("Reduce command \"", 16, STYLE_INPUT);
+        appendStyledText(mtext, strlen(mtext), STYLE_INPUT);
+        appendStyledText("\";", 2, STYLE_INPUT);
+        onCmdInsertNewline(c, s, ptr);
+    }
+    else
+    {   string_ahead("Reduce command \"");
+        string_ahead(mtext);
+        string_ahead("\";\n");
     }
     setFocus();   // I am uncertain, but without this I lose focus...
     return 1;

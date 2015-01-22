@@ -97,4 +97,6 @@ February 2014: Move towards some Unicode interface to terminal handling so
               name.
      (Apr 18) more care with 2-byte wchar_t, and make "TERM=dumb" behave.
 
+December 2014: Change logic for finding help files.
+
 <end of CHANGED>
