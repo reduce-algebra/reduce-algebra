@@ -74,7 +74,7 @@ xWindows_NT)
 # the first of these where I find a built version...
   if test "$try64" = "yes"
   then
-    if text "x$cygwin" = "xyes"
+    if test "x$cygwin" = "xyes"
     then
       versions="x86_64-pc-cygwin x86_64-pc-cygwin-wx \
             x86_64-pc-cygwin-nogui \

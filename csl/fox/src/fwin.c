@@ -756,7 +756,7 @@ void fwin_putchar(int c)
  * fflush(stdout) before requesting input I should be OK.
  */
 #ifdef __CYGWIN__
-    FWIN_LOG(("cygwin case\n"));
+//@@FWIN_LOG(("cygwin case\n"));
 /*
  * If I have built the system under Cygwin then we are running under
  * Windows. To keep files tidy I will (mostly) insert CRs at line-end
