@@ -92,6 +92,8 @@
 // that looks truly weird be aware it may be a feature not a bug. 
 
 
+#define __STDC_CONSTANT_MACROS 1
+
 #include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
@@ -143,10 +145,6 @@
 
 // I may be old fashioned , but I will be happier using C rather than C++
 // libraries here.
-
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS 1
-#endif
 
 #include <string.h>
 #include <stdlib.h>

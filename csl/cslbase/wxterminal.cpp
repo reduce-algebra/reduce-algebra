@@ -53,11 +53,6 @@
 #include <wx/print.h>
 #include <wx/printdlg.h>
 
-// I am moving to a view that this code is only for use within the
-// CSL tree... so it might as well include the full set of CSL header files
-
-#include "headers.h"
-
 #include "config.h"
 
 #ifdef WIN32
@@ -91,9 +86,6 @@ static Display *dpy;
 #include "termed.h"
 #include "wxterminal.h"      // my own header file.
 
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS 1
-#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -146,15 +138,10 @@ static int returncode = 0;
 // See cmtt_coverage lower down in this code
 
 extern uint32_t cmtt_coverage[];
-extern uint32_t deja_coverage[];
 
 #define CMTT_AVAIL(ch)    \
     ((ch) <= 0xffff &&    \
      ((cmtt_coverage[((ch)>>5) & 0x7ff] >> (31-((ch) & 0x1f))) & 1) != 0)
-
-#define DEJA_AVAIL(ch)    \
-    ((ch) <= 0x2fff &&    \
-     ((deja_coverage[((ch)>>5) & 0x7ff] >> (31-((ch) & 0x1f))) & 1) != 0)
 
 
 #if !defined __WXMSW__ && !defined __WXPM__
@@ -304,8 +291,6 @@ enum
     EDIT_END,
 
     FONT_DUMMY,   // Used with menu items added and then instantly removed!
-    FONT_CMTT,
-    FONT_DEJA,
     FONT_POINT10,
     FONT_POINT12,
     FONT_POINT14,
@@ -378,8 +363,6 @@ public:
     void OnEditRedraw();
     void OnEditHome();
     void OnEditEnd();
-    void OnFontCMTT();
-    void OnFontDeja();
     void OnFontPoint10();
     void OnFontPoint12();
     void OnFontPoint14();
@@ -444,11 +427,10 @@ public:
 #define PAUSE_DISCARD    4
 
     class fwinFrame *frame;
-    bool fontPriorityCMTT;
     int sbWidth;
     int windowWidth, windowHeight;
     int rowHeight, rowCount, virtualRowCount;
-    wxFont *fixedPitch, *fixedAlternate, *fixedCJK;
+    wxFont *fixedPitch, *fixedCJK;
 private:
     int currentFont;
     const wxColour *textColour;
@@ -663,10 +645,6 @@ public:
     {   panel->OnEditHome(); };
     void OnEditEnd(wxCommandEvent &event)
     {   panel->OnEditEnd(); };
-    void OnFontCMTT(wxCommandEvent &event)
-    {   panel->OnFontCMTT(); };
-    void OnFontDeja(wxCommandEvent &event)
-    {   panel->OnFontDeja(); };
     void OnFontPoint10(wxCommandEvent &event)
     {   panel->OnFontPoint10(); };
     void OnFontPoint12(wxCommandEvent &event)
@@ -730,8 +708,6 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_MENU(EDIT_REDRAW,          fwinFrame::OnEditRedraw)
     EVT_MENU(EDIT_HOME,            fwinFrame::OnEditHome)
     EVT_MENU(EDIT_END,             fwinFrame::OnEditEnd)
-    EVT_MENU(FONT_CMTT,            fwinFrame::OnFontCMTT)
-    EVT_MENU(FONT_DEJA,            fwinFrame::OnFontDeja)
     EVT_MENU(FONT_POINT10,         fwinFrame::OnFontPoint10)
     EVT_MENU(FONT_POINT12,         fwinFrame::OnFontPoint12)
     EVT_MENU(FONT_POINT14,         fwinFrame::OnFontPoint14)
@@ -811,21 +787,21 @@ wxThread::ExitCode fwinWorker::Entry()
              rc, pause_on_exit));
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
     wxQueueEvent(panel, event);
-    return (wxThread::ExitCode)rc;
+    return (wxThread::ExitCode)(intptr_t)rc;
 }
 
-//int get_current_directory(char *s, int n)
-//{
-//    if (getcwd(s, n) == 0)
-//    {   switch(errno)
-//        {
-//    case ERANGE: return -2; // negative return value flags an error.
-//    case EACCES: return -3;
-//    default:     return -4;
-//        }
-//    }
-//    else return strlen(s);
-//}
+int get_current_directory(char *s, int n)
+{
+    if (getcwd(s, n) == 0)
+    {   switch(errno)
+        {
+    case ERANGE: return -2; // negative return value flags an error.
+    case EACCES: return -3;
+    default:     return -4;
+        }
+    }
+    else return strlen(s);
+}
 
 /*
  * The next procedure is responsible for establishing information about
@@ -905,474 +881,20 @@ const char *my_getenv(const char *s)
 
 static const char*fontNames[] =
 {
-    "DejaVuSansMono",    // "DejaVu Sans Mono"                .otf
     "cmuntt",            // "CMU Typewriter Text (Regular)"   .ttf
-    "fireflysung",       // "AR PL New Sung"                  .ttf
-
-
-
-// For Windows I am rendering everything under gdiplus (which lets me scale
-// things nicely) and it appears that some .otf fonts (including ones that
-// contain embedded bitmaps) do not display that way. So I will use fonts
-// downgraded to mere .ttf format.
-// On Linux and Macintosh (and other Unix-like platforms) I will try using
-// the original .otf versions of the fonts...
-
-    "STIXGeneral-Regular",
-    "STIXGeneral-Bold",
-    "STIXGeneral-Italic",
-    "STIXGeneral-BoldItalic",
-
-    "STIXIntegralsD-Regular",
-    "STIXIntegralsD-Bold",
-
-    "STIXIntegralsSm-Regular",
-    "STIXIntegralsSm-Bold",
-
-    "STIXIntegralsUp-Regular",
-    "STIXIntegralsUp-Bold",
-
-    "STIXIntegralsUpD-Regular",
-    "STIXIntegralsUpD-Bold",
-
-    "STIXIntegralsUpSm-Regular",
-    "STIXIntegralsUpSm-Bold",
-
-    "STIXNonUnicode-Regular",
-    "STIXNonUnicode-Bold",
-    "STIXNonUnicode-Italic",
-    "STIXNonUnicode-BoldItalic",
-
-    "STIXSizeOneSym-Regular",
-    "STIXSizeTwoSym-Regular",
-    "STIXSizeThreeSym-Regular",
-    "STIXSizeFourSym-Regular",
-    "STIXSizeFiveSym-Regular",
-
-    "STIXSizeOneSym-Bold",
-    "STIXSizeTwoSym-Bold",
-    "STIXSizeThreeSym-Bold",
-    "STIXSizeFourSym-Bold",
-
-    "STIXVariants-Regular",
-    "STIXVariants-Bold"
-};
-
-#ifndef fontsdir
-#define fontsdir reduce.wxfonts
-#endif
-
-#define toString(x) toString1(x)
-#define toString1(x) #x
-
-void add_custom_fonts()
-{
-#ifndef MACINTOSH
-// Note that on a Mac I put the required fonts in the Application Bundle.
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   char nn[LONGEST_LEGAL_FILENAME];
-#ifdef WIN32
-        sprintf(nn,"%s/%s/%s.ttf",
-                    programDir, toString(fontsdir), fontNames[i]);
-#else
-        sprintf(nn,"%s/%s/%s.otf",
-                    programDir, toString(fontsdir), fontNames[i]);
-#endif
-        wxString widename(nn);
-        if (!wxFont::AddPrivateFont(widename))
-            logprintf("Adding font %s failed\n", nn);
-    }
-    if (!wxFont::ActivatePrivateFonts())
-            logprintf("Activating private fonts failed\n");
-#endif // MACINTOSH
-}
-
-
-
-
-//
-// Now that start of my code in a proper sense!
-//
-//
-
-
-double showmathPanel::DVItoScreen(int n)
-{
-// At present this is a fixed scaling. I may well want to make it variable
-// at some later stage. The scaling here, which is based on an assumption
-// I make about the dots-per-inch resolution of my display, will end up
-// important when establishing fonts.
-    return (double)n/65536.0;
-}
-
-double showmathPanel::DVItoScreenUP(int n)
-{
-// This ROUND UP to the next integer, and that is needed so that (eg)
-// very thin rules end up at least one pixel wide. Well I round up by
-// adding a value just under 1.0 then truncating. That recipe works OK for
-// positive arguments!
-// well using wxGraphicsContext I do not need to round.
-    return (double)n/65536.0;
-}
-
-void showmathPanel::SetRule(int height, int width)
-{
-#if 0
-    logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
-                                        height, (double)height/65537.0);
-#endif
-// The curious re-scaling here is so that the border of the rectangle does not
-// end up fatter than the rectangle itself.
-    wxGraphicsMatrix xform = gc->GetTransform();
-    gc->Scale(0.01, 0.01);
-//    gc->DrawRectangle(100.0*DVItoScreen(h), 100.0*DVItoScreen(v-height),
-//                      100.0*DVItoScreenUP(width), 100.0*DVItoScreenUP(height));
-    gc->SetTransform(xform);
-}
-
-
-
-bool showmathApp::OnInit()
-{
-// I find that the real type of argv is NOT "char **" but it supports
-// the cast indicated here to turn it into what I expect.
-    char **myargv = (char **)argv;
-
-#if DEBUG
-    logprintf("in showmathApp::OnInit\n");
-#endif
-    add_custom_fonts();
-#if DEBUG
-    logprintf("fonts added\n");
-#endif
-
-    const char *showmathfilename = NULL;
-    if (argc > 1) showmathfilename = myargv[1];
-    
-#if DEBUG
-    logprintf("showmathfilename=%s\n",
-              showmathfilename == NULL ?"<null>" : showmathfilename);
-#endif
-
-    showmathFrame *frame = new showmathFrame(showmathfilename);
-    frame->Show(true);
-#if DEBUG
-    logprintf("OnInint complete\n");
-#endif
-    return true;
-}
-
-showmathFrame::showmathFrame(const char *showmathfilename)
-       : wxFrame(NULL, wxID_ANY,"wxshowmath")
-{
-    SetIcon(wxICON(fwin));
-    int numDisplays = wxDisplay::GetCount(); // how many displays?
-// It is not clear to me what I should do if there are several displays,
-// and if there are none I am probably in a mess!
-    if (numDisplays != 1)
-    {   logprintf("There seem to be %d displays\n", numDisplays);
-    }
-    wxDisplay d0(0);                         // just look at display 0
-    wxRect screenArea(d0.GetClientArea());   // omitting task bar
-    screenWidth = screenArea.GetWidth();
-    screenHeight = screenArea.GetHeight();
-    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
-// I will want to end up saving screen size (and even position) between runs
-// of this program.
-    int width = 1280;      // default size.
-    int height = 1024;
-// If the default size would fill over 90% of screen width or height I scale
-// down to make it fit better.
-    if (10*width > 9*screenWidth)
-    {   height = height*9*screenWidth/(10*width);
-        width = 9*screenWidth/10;
-        logprintf("reset to %d by %d to fix width\n", width, height);
-    }
-    if (10*height > 9*screenHeight)
-    {   width = width*9*screenHeight/(10*height);
-        height = 9*screenHeight/10;
-        logprintf("reset to %d by %d to fix height\n", width, height);
-    }
-    panel = new showmathPanel(this, showmathfilename);
-    SetMinClientSize(wxSize(400, 100));
-    SetSize(width, height);
-    wxSize client(GetClientSize());
-    int w = client.GetWidth() % 80;
-    if (w != 0) SetSize(width-w, height);
-    Centre();
-}
-
-
-static unsigned char default_data[4] = "x";
-
-// When I construct this I must avoid the wxTAB_TRAVERSAL style since that
-// tends to get characters passed to child windows not this one. Avoiding
-// that is the reason behind providing so many arguments to the parent
-// constructor
-
-showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename)
-       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
-                 wxDefaultSize, 0L,"showmathPanel")
-{
-// I will read in any data once here and put it in a character buffer.
-    FILE *f = NULL;
-    if (showmathfilename == NULL) showmathData = default_data;
-    else
-    {   stringInput = NULL;
-        f = fopen(showmathfilename,"r");
-        if (f == NULL)
-        {   logprintf("File \"%s\" not found\n", showmathfilename);
-            exit(1);
-        }
-        fseek(f, (off_t)0, SEEK_END);
-        off_t len = ftell(f);
-        showmathData = (unsigned char *)malloc((size_t)len);
-        fseek(f, (off_t)0, SEEK_SET);
-        for (int i=0; i<len; i++) showmathData[i] = getc(f);
-        fclose(f);
-    }
-    for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
-    fixedPitchValid = false;
-}
-
-
-void showmathFrame::OnClose(wxCloseEvent &WXUNUSED(event))
-{
-    Destroy();
-#ifdef WIN32
-// Otherwise under XP bad things happen for me. Like the application
-// re-launching. I do not think I understand, but the extreme action of
-// utterly killing the process does what I need!
-    TerminateProcess(GetCurrentProcess(), 1);
-#else
-    exit(0);    // I want the whole application to terminate here!
-#endif
-}
-
-void showmathFrame::OnExit(wxCommandEvent &WXUNUSED(event))
-{
-    Destroy();
-#ifdef WIN32
-    TerminateProcess(GetCurrentProcess(), 1);
-#else
-    exit(0);    // I want the whole application to terminate here!
-#endif
-}
-
-void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
-{
-// At present this never gets activated!
-    wxMessageBox(
-       wxString::Format(
-"wxshowmath (A C Norman 2015)\nwxWidgets version: %s\nOperating system: %s",
-           wxVERSION_STRING,
-           wxGetOsDescription()),
-       "About wxshowmath",
-       wxOK | wxICON_INFORMATION,
-       this);
-}
-
-void showmathFrame::OnSize(wxSizeEvent &WXUNUSED(event))
-{
-    wxSize client(GetClientSize());
-    panel->SetSize(client);
-    panel->Refresh();
-}
-
-void showmathPanel::OnChar(wxKeyEvent &event)
-{
-// This merely records the character in the log file.
-    const char *msg ="OnChar", *raw ="";
-    int c = event.GetUnicodeKey();
-    if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
-}
-
-void showmathPanel::OnKeyDown(wxKeyEvent &event)
-{
-// Again merely log the event.
-    const char *msg ="OnKeyDown", *raw ="";
-    int c = event.GetUnicodeKey();
-    if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
-    event.Skip();
-}
-
-void showmathPanel::OnKeyUp(wxKeyEvent &event)
-{
-// Merely log the event.
-    const char *msg ="OnKeyUp", *raw ="";
-    int c = event.GetUnicodeKey();
-    if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
-    event.Skip();
-}
-
-void showmathPanel::OnMouse(wxMouseEvent &event)
-{
-// Log but take no action.
-    logprintf("Mouse event\n");
-    event.Skip();
-//  Refresh();     // forces redraw of everything
-}
-
-void showmathPanel::OnPaint(wxPaintEvent &event)
-{
-    wxPaintDC mydc(this);
-    gc = wxGraphicsContext::Create(mydc);
-    if (gc == NULL) return;
-// The next could probably be done merely by setting a background colour
-    wxColour c1(230, 200, 255);
-    wxBrush b1(c1);
-    gc->SetBrush(b1);
-    wxSize window(mydc.GetSize());
-    logprintf("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
-    gc->DrawRectangle(0.0, 0.0,
-                      (double)window.GetWidth(),
-                      (double)window.GetHeight());
-
-#if defined WIN32 && 0
-// The Windows default behaviour fails to antialias some of the cmex10
-// tall characters, and so unless I force antialiasing here I get MOST
-// symbols rendered nicely, but big integral signs and parentheses badly
-// blocky when the display exceeds a certain size. This is clearly down to
-// the system default smoothing switching off for characters over a certain
-// size, but it is far from clear that there is a trivial place where I
-// can adjust for that, and anyway nobody wants to have to set a system-
-// wide option just for the benefit of this application. I will need to
-// review this when I test using the STIX fonts, but given that my diagnosis
-// is that it is GDI+ hurting me I will leave this code in place for now.
-    Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
-    g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
-#endif
-// The graphicsFixedPitch font will be for a line spacing of exactly 100
-// pixels. This is of course HUGE, but I will scale it as relevant. Note
-// also that I will need to check font names used in the code here since
-// exactly the same font files may end up needing different names to refer
-// to them as between Windows, Linux and OSX.
-    graphicsFixedPitch =
-       gc->CreateFont(
-           wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("CMU Typewriter Text"))));
-    double dwidth, dheight, ddepth, dleading;
-    gc->SetFont(graphicsFixedPitch);
-    gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-    em = dwidth;
-    logprintf("(D)em=%#.6g\n", em);
-    logprintf("(D)height = %#.6g total height = %#.6g leading = %#.6g\n",
-        dheight-ddepth-dleading, dheight, dleading);
-
-    double screenWidth = (double)window.GetWidth();
-    double lineWidth = 80.0*em;
-    double scale = screenWidth/lineWidth;
-// This will now scale everything so that I end up with 80 characters from
-// that fixed-pitch font across the width of my window.
-    gc->Scale(scale, scale);
-    logprintf("Scale now %.6g\n", scale);
-
-    gc->SetFont(graphicsFixedPitch);
-    double width, height, descent, xleading;
-    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g fixedpitch\n", width, height, descent, xleading);
-    graphicsFixedPitchBaseline = height - descent;
-// Sort of for fun I put a row of 80 characters at the top of the screen
-// so I can show how fixed pitch stuff might end up being rendered.
-    gc->SetFont(graphicsFixedPitch);
-    for (int i=0; i<80; i++)
-        gc->DrawText(wxString((wchar_t)(i+0x21)), (double)i*em, 100.0-graphicsFixedPitchBaseline);
-#if 0
-    wxColour c2(29, 99, 25);
-    wxBrush b2(c2);
-    gc->SetBrush(b2);
-    for (int x=0; x<1000; x+=10)
-    for (int y=0; y<=1000; y+=10)
-    if (((x/10)+(y/10)) & 1 != 0)
-        gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
-#endif
-// Now I need to do something more serious!
-    wxGraphicsFont general =
-        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXGeneral"))));
-    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
-    gc->SetFont(general);
-    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g general\n", width, height, descent, xleading);
-    double generalBaseline = height - descent;
-    wxGraphicsFont huge =
-        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 5000)).FaceName(wxT("STIXGeneral"))));
-    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
-    gc->SetFont(huge);
-    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g huge\n", width, height, descent, xleading);
-    double hugeBaseline = height - descent;
-    wxGraphicsFont symbols =
-        gc->CreateFont(wxFont(wxFontInfo(wxSize(0, 100)).FaceName(wxT("STIXSizeOneSym"))));
-    if (symbols.IsNull()) logprintf("STIXSizeOneSym font not created\n");
-    else logprintf("Sym font should be OK\n");
-    gc->SetFont(symbols);
-    gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
-    gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
-    gc->GetTextExtent(wxString((wchar_t)'j'), &width, &height, &descent, &xleading);
-    printf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
-    double symbolsBaseline = height - descent;
-
-    gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_PI), 1000.0, 500.0-generalBaseline);
-    gc->SetFont(symbols);
-    gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-    logprintf("(D)em=%#.3g\n", dwidth);
-    logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
-        dheight-ddepth-dleading, dheight, dleading);
-    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_UPPER_HOOK);
-    printf("upper hook   %d %d\n", c_lly, c_ury);
-    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
-    printf("middle piece %d %d\n", c_lly, c_ury);
-    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_LOWER_HOOK);
-    printf("lower hook   %d %d\n", c_lly, c_ury);
-    lookupchar(F_SizeOneSym, unicode_CURLY_BRACKET_EXTENSION);
-    printf("extension    %d %d\n", c_lly, c_ury);
-#define H (101.0)
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK),   800.0, 450.0-H-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), 800.0, 450.0-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION),         800.0, 450.0+H-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK),   800.0, 450.0+2.0*H-symbolsBaseline);
-    gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA), 450.0+3.0*H, 900.0-generalBaseline);
-    gc->DrawText(wxString((wchar_t)0x237c), 1100.0, 800.0-generalBaseline);
-    gc->DrawText(wxString((wchar_t)0x3c0), 1300.0, 800.0-generalBaseline);
-    gc->SetFont(huge);
-    gc->DrawText(wxString((wchar_t)'M'), 100.0, 5000.0-hugeBaseline);
-
-// I will mark all the fonts I might have created as invalid now
-// that the context they were set up for is being left.
-    for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
-    logprintf("About to delete gc\n");
-    delete gc;
-    gc = NULL; // just to be tidy!
-    return;
-}
-
-
-// end of wxshowmath.cpp
-
-
-
+    "fireflysung"        // "AR PL New Sung"                  .ttf
 };
 
 #endif // MACINTOSH
 
 // Some characters map onto double-width symbols from the CJK fonts, while
-// many come from either cmuntt or DejaVuSansMono and are single width.
+// many come from cmuntt and are single width.
 // A VERY few characters are synthesised by drawing them since they are not
 // available in either of the main fonts I am using! I expect any characters
 // from the CJK fonts that have codes under 0x2000 to be "half width".
 
 #define double_width(ch)                \
     (!CMTT_AVAIL((ch)) &&               \
-     !DEJA_AVAIL((ch)) &&               \
      ((ch) >= 0x2000)  &&               \
      ((ch) != 0x2135)  && /* alefsym */ \
      ((ch) != 0x2118)  && /* weierp */  \
@@ -1932,112 +1454,6 @@ uint32_t cmtt_coverage[2048] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 
-uint32_t deja_coverage[384] =
-{
-    0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
-    0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
-    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-    0xffffffff, 0xffffffff, 0xf007ffff, 0xf3ff8ecf,
-    0xffffffff, 0xcfffffff, 0xcc0cffff, 0xffffffff,
-    0xffffffff, 0xffffffdf, 0xc3ccf3fe, 0xffc21000,
-    0xffffffff, 0xffffffff, 0x10000080, 0x40000c22,
-    0x0febffff, 0xdfffffff, 0xfffeffff, 0xc000ffff,
-    0xffffffff, 0xffffffff, 0xffffffff, 0x30003000,
-    0x0000fff0, 0x3c3ff030, 0xf999ffff, 0xffffffc0,
-    0x0000c03c, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x03680411, 0x7fffffe0, 0xfffffc20, 0xfffc0873,
-    0x9b004080, 0x08410002, 0x00080000, 0x0000ffc0,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    /* Code 800 */
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x69a40f7f, 0x7537ffd8, 0x00fc0000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    /* Code 1000 */
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x0000ffff, 0xfffffff8,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    /* Code 1800 */
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x20c00b07, 0x000efffb, 0xfffffff0, 0x3c000190,
-    0x0400001f, 0xffffff7f, 0x00000000, 0x00000000,
-    0xfffff0ff, 0xfffcffff, 0xfffc0fff, 0xf0ffffcf,
-    0xffffffd1, 0xc00cc3cc, 0x033c00fc, 0xfcf3fcc0,
-    0xfffffcfc, 0xffffffff, 0xfcfcff55, 0xfffffffc,
-    0xffffffff, 0xfffffbff, 0xfbfff3f7, 0xffff3bfe,
-    /* Code 2000 */
-    0xffeffdff, 0xf2ffff6e, 0x07c00001, 0x003fcfff,
-    0xfffef800, 0xfffffcc0, 0x00000000, 0x00000000,
-    0x24070764, 0x2a320000, 0x00001fff, 0x00000000,
-    0x0000ffff, 0xffffffff, 0xffffffff, 0xffffffff,
-    0xfffd75ff, 0x81fc0ffc, 0x7fffffff, 0xffc7ffff,
-    0xfff1e7ff, 0xfc000000, 0x0604003f, 0xffc10000,
-    0xfefffccf, 0xc79005fe, 0x79dcb9fb, 0x9cdf9fe4,
-    0xf0f0041f, 0xfffe0000, 0x00030000, 0x00000000,
-    0x00000000, 0x10000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-    0xffffffff, 0xffff00ff, 0xffffffff, 0xffffffff,
-    0xfff0fff8, 0xc000c000, 0x00000000, 0x00000000,
-    0x7bcfffff, 0xff7fffff, 0xfff5e2fe, 0x7ffffc00,
-    0x000008ff, 0xffff7ffe, 0x06000000, 0x80c00000,
-    /* Code 2800 */
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00100030,
-    0x00000000, 0x00010000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00003fe0, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x0807876f,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000080, 0x3c020000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000
-// I will not use any characters from this font beyond this point.
-};
-
 
 #ifdef WIN32
 
@@ -2158,8 +1574,6 @@ fwinFrame::fwinFrame()
     editMenu->Append(EDIT_HOME, "&Home", "Home");
     editMenu->Append(EDIT_END, "&End", "End");
 
-    fontMenu->AppendRadioItem(FONT_CMTT, "Computer &Modern", "Prefer Computer Modern (cmtt) Font");
-    fontMenu->AppendRadioItem(FONT_DEJA, "&DejaVu", "Prefer DejaVu Typewriter Text Font");
     fontMenu->AppendSeparator();
 // The next line is a hack that keeps the two sets of radio buttons separate.
     fontMenu->Remove(fontMenu->Append(FONT_DUMMY, "dummy"));
@@ -2259,11 +1673,9 @@ fwinText::fwinText(fwinFrame *parent)
 {
     frame = parent;
     sbWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, this);
-    fixedPitch = fixedAlternate = fixedCJK = NULL;
-    fontPriorityCMTT = false;
+    fixedPitch = fixedCJK = NULL;
 // The available CJK fonts here are
-//     Windows & Unix            Macintosh
-//     AR PL New Sung            AR PL New Sung
+//     AR PL New Sung
     wxColour c1(230, 200, 255);
     SetBackgroundColour(c1);
 // These will be reviewed when I first paint the screen
@@ -3658,16 +3070,6 @@ void fwinText::OnEditEnd()
     FWIN_LOG(("END\n"));
 }
 
-void fwinText::OnFontCMTT()
-{
-    FWIN_LOG(("OnFontCMTT"));
-}
-
-void fwinText::OnFontDeja()
-{
-    FWIN_LOG(("OnFontDeja"));
-}
-
 void fwinText::OnFontPoint10()
 {
     FWIN_LOG(("OnFontPoint10"));
@@ -4724,7 +4126,7 @@ int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
 {
     int k = 0;
     int n = 0, state = 0;
-    uint32_t uc;    // Unicode char that is being reconstructed.
+    uint32_t uc = 0;    // Unicode char that is being reconstructed.
     while (k != ends)
     {   uint32_t c = s[k] & 0xff;
         k++;
@@ -4886,7 +4288,6 @@ void fwinText::SetupFonts(wxDC &dc)
     windowHeight = window.GetHeight();
     if (fixedPitch == NULL)
     {   fixedPitch = new wxFont();
-        fixedAlternate = new wxFont();
         fixedCJK   = new wxFont();
 // It worries me that exactly the same OpenType font needs to be
 // called for using slighly different names on different platforms.
@@ -4895,10 +4296,8 @@ void fwinText::SetupFonts(wxDC &dc)
 #else
         fixedPitch->SetFaceName("CMU Typewriter Text");
 #endif
-        fixedAlternate->SetFaceName("DejaVu Sans Mono");
         fixedCJK->SetFaceName("AR PL New Sung");
         fixedPitch->SetPointSize(1000);
-        fixedAlternate->SetPointSize(1000);
         fixedCJK->SetPointSize(1000);
         font_width *p = cm_font_width;
         while (p->name != NULL &&
@@ -4914,8 +4313,6 @@ void fwinText::SetupFonts(wxDC &dc)
         double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
         pixelsPerPoint = em/fmEm;
         fixedPitch->SetPointSize(10);
-        dc.GetTextExtent((wchar_t)0x21d0, &width, &height, &depth, &leading, fixedAlternate);
-        FWIN_LOG(("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading));
         dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
         FWIN_LOG(("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading));
     }
@@ -4924,8 +4321,6 @@ void fwinText::SetupFonts(wxDC &dc)
     FWIN_LOG(("windowWidth = %d scaleAdjustment = %.3g\n", windowWidth, scaleAdjustment));
     fixedPitch->SetPointSize(10);
     fixedPitch->Scale(scaleAdjustment);
-    fixedAlternate->SetPointSize(10);
-    fixedAlternate->Scale(scaleAdjustment);
     fixedCJK->SetPointSize(10);
     fixedCJK->Scale(scaleAdjustment);
     dc.SetFont(*fixedPitch);
@@ -4972,8 +4367,7 @@ void fwinText::MainDraw(wxDC &dc,
     dc.SetTextForeground(*textColour);
     dc.SetFont(*fixedPitch);
 #define FONT_CMTT  0
-#define FONT_DEJA  1
-#define FONT_CJK   2
+#define FONT_CJK   1
     currentFont = FONT_CMTT;
     int p = 0;
     int y = 0;
@@ -5053,15 +4447,15 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
         switch (ch)
         {
     case 0x03d2:  // upsih
-// Code 0x3d2 is not available in cmutt, but it is in DejaVu. However in
+// Code 0x3d2 is not available in cmutt. However in
 // cmuntt the normal capital Upsilon comes out curly, so I merely map the
 // code onto that.
-            if (fontPriorityCMTT) ch = 0x03a5;
+            ch = 0x03a5;
             break;
     case 0x03a5:  // upsilon
 // Well as explained above, the cmuntt capital Upsilon is a curly one, and
 // I want a non-curly version here. A capital Y provides the correct shape.
-            if (fontPriorityCMTT) ch = 'Y';
+            ch = 'Y';
             break;
     case 0x2118:  // weierp
 // There is no script capital P in any of the fonts I am using at present,
@@ -5125,19 +4519,7 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
 // I will map any such onto a display of a question mark.
         else if (ch > 0xffff) cs = "?";
         else cs = (wchar_t)ch;
-        if (fontPriorityCMTT && CMTT_AVAIL(ch))
-        {   if (currentFont != FONT_CMTT)
-            {   dc.SetFont(*fixedPitch);
-                currentFont = FONT_CMTT;
-            }
-        }
-        else if (DEJA_AVAIL(ch))
-        {   if (currentFont != FONT_DEJA)
-            {   dc.SetFont(*fixedAlternate);
-                currentFont = FONT_DEJA;
-            }
-        }
-        else if (!fontPriorityCMTT && CMTT_AVAIL(ch))
+        if (CMTT_AVAIL(ch))
         {   if (currentFont != FONT_CMTT)
             {   dc.SetFont(*fixedPitch);
                 currentFont = FONT_CMTT;
@@ -5444,88 +4826,6 @@ void fwin_showmath(const char *s)
 {
     if (!windowed) return;
     FWIN_LOG(("fwin_showmath called\n"));
-// The current version of this is going to be pretty outrageous!
-// It will suppose you have latex installed on your computer and will
-// invoke it to convert the formula you just created into .dvi format.
-    char tempd[LONGEST_LEGAL_FILENAME];
-#ifdef WIN32
-    int rc;
-    memset(tempd, 0, sizeof(tempd));
-    rc = GetTempPathA(LONGEST_LEGAL_FILENAME, tempd);
-    if (rc == 0 || rc >= LONGEST_LEGAL_FILENAME) strcpy(tempd, "C:");
-    DWORD procid = GetCurrentProcessId();
-    char *ww;
-    for (ww=tempd; *ww!=0; ww++) if (*ww == '\\') *ww = '/';
-#else
-    const char *tt = my_getenv("TMPDIR");
-    memset(tempd, 0, sizeof(tempd));
-    if (tt == NULL) strcpy(tempd, "/tmp");
-    else strcpy(tempd, tt);
-    pid_t procid = getpid();
-#endif
-    int dirlen = strlen(tempd);
-    if (tempd[dirlen-1] == '/') dirlen--;
-    FWIN_LOG(("temp = \"%s\" length %d\n", tempd, dirlen));
-    sprintf(&tempd[dirlen], "/reduce-%d.tex", (int)procid);
-    FWIN_LOG(("TeX file will be in \"%s\"\n", tempd));
-    FILE *f = fopen(tempd, "w");
-    fprintf(f, "\\documentclass{article}\n");
-    fprintf(f, "\\pagestyle{empty}\n");
-    fprintf(f, "\\setlength{\\oddsidemargin}{0in}\n");
-    fprintf(f, "\\setlength{\\evensidemargin}{0in}\n");
-    fprintf(f, "\\setlength{\\topmargin}{0in}\n");
-    fprintf(f, "\\setlength{\\headheight}{0in}\n");
-    fprintf(f, "\\setlength{\\headsep}{0in}\n");
-// Actually I will be in a MESS if a single formula uses more than a page
-// of output. I will worry about that later! Specifically I may need to ensure
-// that my dvi-rendering code shows multiple pages neatly and worry about
-// specing at the end of a page.
-    fprintf(f, "\\setlength{\\textheight}{11in}\n");
-    fprintf(f, "\\begin{document}\n");
-    fprintf(f, "%s\n", s);
-    fprintf(f, "\\end{document}\n");
-    fclose(f);
-    char cmd[LONGEST_LEGAL_FILENAME];
-    memset(cmd, 0, sizeof(cmd));
-//
-// Under Windows I want to have cygwin installed and on your "PATH", with
-// tex included. However the command "latex" in that case is a cygwin-style
-// symbolic link, and the "system()" function does not accept it. To work
-// around that I explicitly invoke the bash shell. For this to behave you MUST
-// have c:\cygwin\bin (or wherever you have put things) on your PATH so that
-// bash and cygwin1.dll can be found. I really rather dislike this situation.
-//
-#ifdef WIN32
-    sprintf(cmd, "bash -c \"latex --output-directory=%.*s reduce-%d.tex\"",
-                 dirlen, tempd, (int)procid);
-#else
-    sprintf(cmd, "latex --output-directory=%.*s reduce-%d.tex",
-                 dirlen, tempd, procid);
-#endif
-    FWIN_LOG(("TeX is: \"%s\"\n", s));
-    FWIN_LOG(("Command: \"%s\"\n", cmd));
-    int src = system(cmd);
-    FWIN_LOG(("system returns %d\n", src));
-#ifdef WIN32
-    sprintf(cmd, ".\\wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, (int)procid);
-#else
-    sprintf(cmd, "./wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, (int)procid);
-#endif
-    FWIN_LOG(("Cmd: \"%s\"\n", cmd));
-    system(cmd);
-#ifdef WIN32
-#define delfile DeleteFileA
-#else
-#define delfile remove
-#endif
-//  delfile(tempd);     // Preserve the TeX file...
-    sprintf(&tempd[dirlen], "/reduce-%d.aux", (int)procid);
-    delfile(tempd);
-    sprintf(&tempd[dirlen], "/reduce-%d.log", (int)procid);
-    delfile(tempd);
-    sprintf(&tempd[dirlen], "/reduce-%d.dvi", (int)procid);
-// Just for now I will leave the .dvi file around...
-//  delfile(tempd);
 }
 
 
@@ -5565,7 +4865,7 @@ void fwin_ensure_screen()
 
 extern "C"
 {
-static review_switch_settings_function *preview_switch_settings = NULL;
+static review_switch_settings_function *review_switch_settings = NULL;
 }
 
 static int update_next_time = 0;
@@ -5586,8 +4886,8 @@ int fwin_getchar()
         return panel->inputBuffer[panel->inputBufferP++];
 // Now however a new line of input is needed, so I have to request it from
 // the user-interface thread.
-    if (update_next_time && preview_switch_settings != NULL)
-    {   (*preview_switch_settings)();
+    if (update_next_time && review_switch_settings != NULL)
+    {   (*review_switch_settings)();
         update_next_time = 0;
     }
     if (delay_callback != NULL) (*delay_callback)(1);
@@ -5647,7 +4947,7 @@ void fwin_menus(char **modules, char **switches,
     switches_list = switches;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    preview_switch_settings = f;
+    review_switch_settings = f;
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MENUS);
     panel->GetEventHandler()->QueueEvent(event);
 }
