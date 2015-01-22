@@ -42,8 +42,23 @@ libredcuba_loc!* := lto_sconcat {rltools_trunk(),
                                  "packages/foreign/cuba/libredcuba.so"};
 if filep libredcuba_loc!* then
    libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
-else
-   rederr {"Can't open the Cuba library ", libredcuba_loc!*};
+else <<
+   if filep lto_sconcat {rltools_trunk(),
+                         "packages/foreign/cuba/Makefile"} then
+   begin
+      scalar w;
+      w := lto_sconcat {rltools_trunk(), "packages/foreign/cuba"};
+% One bad thing here is that lto_sconcat is coded so it fails if some of
+% the strings passed contain double-quote marks, and I would have liked to
+% use some here!
+      w := lto_sconcat {"sh -c 'cd ", w, "; make'"};
+      system w
+   end;
+% The call to SYSTEM might have managed to create the library, so
+% check again!
+   if filep libredcuba_loc!* then
+      libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
+   else rederr {"Can't open the Cuba library ", libredcuba_loc!*} >>;
 
 %% Setting parameters
 cuba_statefile!*   := find!-foreign!-function("cuba_statefile", libredcuba!*);
