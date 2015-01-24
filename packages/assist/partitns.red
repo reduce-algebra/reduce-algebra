@@ -186,7 +186,7 @@ symbolic procedure simpdel u;
     idc:=for each y in idc collect
                      if null !*id2num y and memq(y,car x) then list('dum,y)
                       else y;
-    if permp!:(idvn:=ordn idv,idv)=permp!:(idcn:=ordn idc,idc) then bool:=t;
+    if permp(idvn:=ordn idv,idv)=permp(idcn:=ordn idc,idc) then bool:=t;
     % the form of these new lists is ((dum a) (dum b) ..ak..) etc ...
    % 1. they contain only  numeric indices:
       if num_indlistp append(idvn,idcn) then
@@ -373,10 +373,10 @@ symbolic procedure simpepsi u;
   if car x  eq 'mixed or not num_indlistp cdr x then
    begin scalar xx,xy;
     xx:=ordn ind;
-    bool:=permp!:(xx,ind);
+    bool:=permp(xx,ind);
     if car x eq 'mixed then
             <<xy:=cont_before_cov ind;
-                 if null permp!:(xy,xx) then bool:=not bool>>;
+                 if null permp(xy,xx) then bool:=not bool>>;
     return if bool then
                      !*k2f(epsi . if car x eq 'mixed then
                                   xy else xx)
@@ -416,7 +416,7 @@ symbolic procedure num_epsi_non_euclid(epsi,ind);
  x:=ordn cdr ind;
  return if car ind eq 'cont then
              (if y then y
-               else  if permp!:(x,cdr ind) then !*k2f(epsi . x)
+               else  if permp(x,cdr ind) then !*k2f(epsi . x)
                         else negf !*k2f(epsi . x))where
                                              y=!*q2f match_kvalue(epsi,x,nil)
            else
@@ -424,18 +424,18 @@ symbolic procedure num_epsi_non_euclid(epsi,ind);
                  if sgn!* = 1  then
                       if evenp length cdr x then
                         (if y then y
-                           else  if permp!:(x,cdr ind) then !*k2f(epsi . x)
+                           else  if permp(x,cdr ind) then !*k2f(epsi . x)
                                   else negf !*k2f(epsi . x))where
                                             y=!*q2f match_kvalue(epsi,x,nil)
                        else
                        (if y then negf y
-                         else if permp!:(x,cdr ind) then negf !*k2f(epsi . x)
+                         else if permp(x,cdr ind) then negf !*k2f(epsi . x)
                         else  !*k2f(epsi . x))where
                                             y=!*q2f match_kvalue(epsi,x,nil)
                   else
                  if sgn!* =-1 then
                       (if y then negf y
-                       else if permp!:(x,cdr ind) then negf !*k2f(epsi . x)
+                       else if permp(x,cdr ind) then negf !*k2f(epsi . x)
                               else !*k2f(epsi . x))where
                                             y=!*q2f match_kvalue(epsi,x,nil)
                  else nil
@@ -464,7 +464,7 @@ symbolic procedure num_epsi_euclid(ind);
 % here epsi(1,2,  n)=1=epsi(-1,-2, ... -n)
   begin scalar x;
     x:=ordn ind;
-  return if permp!:(x,ind) then 1
+  return if permp(x,ind) then 1
           else -1
   end;
 

@@ -74,11 +74,11 @@ symbolic procedure depends(u,v);
     else nil;
 
 % an "importation" from EXCALC:
-
-symbolic procedure permp!:(u,v);
-% True if v is an even permutation of u NIl otherwise.
-    if null u then t else if car u = car v then permp!:(cdr u,cdr v)
-     else not permp!:(cdr u,subst(car v,car u,cdr v));
+% no longer necessary, permp is now part of core
+%%symbolic procedure permp!:(u,v);
+%%% True if v is an even permutation of u NIl otherwise.
+%%    if null u then t else if car u = car v then permp!:(cdr u,cdr v)
+%%     else not permp!:(cdr u,subst(car v,car u,cdr v));
 
 % global and fluid variables defined.
 

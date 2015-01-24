@@ -247,7 +247,7 @@ symbolic procedure simptensor u;
                      else cdr x)
                             then nil ./ 1
                else
-             (if not permp!:(z,cdr x) then
+             (if not permp(z,cdr x) then
                       negsq mksq(car x . if varl then varl . z
                                           else z,1)
               else mksq(car x . if varl then varl . z

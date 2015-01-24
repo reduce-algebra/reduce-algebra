@@ -54,7 +54,7 @@ symbolic procedure sym_sign u;
 % u is a standard form for the kernel of a tensor.
 % if the permutation sign  of indices is + then returns u else
 % returns negf u.
- (if permp!:(ordn y,y) then u else negf u)where y=car select_vars mvar u;
+ (if permp(ordn y,y) then u else negf u)where y=car select_vars mvar u;
 
 symbolic procedure simpsumsym(u);
 % The use is SYMMETRIZE(LIST(A,B,...J),operator,perm_function,[perm_sign])
@@ -76,7 +76,7 @@ symbolic procedure simpsumsym(u);
      flag(list oper, 'listargp);
   sym:=if cdddr u then
           if cadddr u eq 'perm_sign then t;
-  if sym and null permp!:(cdar u, ordn cdar u) then thesign:=-thesign;
+  if sym and null permp(cdar u, ordn cdar u) then thesign:=-thesign;
 if not(gettype fn eq 'procedure) then typerr(fn,"procedure");
   ut:= select_vars car u;
   uu:=(if flagp(fn,'opfn) then <<boolfn:=t; reval x>>
