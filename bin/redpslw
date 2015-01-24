@@ -43,3 +43,8 @@ exec $here/scripts/runpsl.sh bpslw redpsl $*
 exec $here/scripts/runpsl.sh bpslw redpsl $*
 exec $here/scripts/runpsl.sh bpslw redpsl $*
 exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*
+exec $here/scripts/runpsl.sh bpslw redpsl $*

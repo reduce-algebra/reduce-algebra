@@ -32,22 +32,8 @@ The scripts here automatically detect the nature on the machine that they are
 being run on and on that basis link through and launch the relevant version
 of the code.
 
-Finally there is a matter of overhead. Detecting and decoding file locations
-costs some effort. At one stage I had an elaborate scheme where the first time
-a script was run it replaced itself with either a symbolic link or a shorter
-script that invoked the program faster. Further investigation showed that the
-relevant scripts were only seriously or uncomfortably slow on cygwin, and that
-by re-working them I could make them fast enough that I am happy to go back to
-the marginally simpler setup.
-
-When I had this scheme that automatically updated scripts to match the current
-machine I needed versions of the scripts that did not do that, and I gave then
-names with a suffix "-s". Those scripts are now redundand and will be removed
-sometime.
-
 The file .../trunk/scripts/resetall.sh can be used to restore all these
-scripts to their original state, and should be used before creating an
-archive for distribution.
+scripts to their original state.
 
 The programs provided for at present are
 
@@ -55,7 +41,6 @@ The programs provided for at present are
                  redcsl will probably cause a window to pop up, but
                  "redcsl -w" causes the code to run as a console application.
    redpsl        Reduce using the PSL Lisp system.
-   redpslw       On Microsoft Windows this runs the PSL Reduce in a window
 
 The following may be of use of CSL developers but are not intended to be
 of general use to people who are not suffering problems or debugging new code:
@@ -64,10 +49,8 @@ of general use to people who are not suffering problems or debugging new code:
                  full version, and where the function "lisp mapstore()" may
                  be used to collect profiling information.
    csl           The CSL Lisp system.
-   fontdemo      tests or demonstrates the Maths fonts used here
-   fwindemo      tests or demonstrates the user-interface aspect of CSL Reduce
-   showmathdemo  tests or demonstrates maths display in the CSL version 
 
+There may be other scripts as well!
 
 At present for the CSL versions there is one further complication. If an
 exact match for your operating system can not be found in the set of installed
@@ -76,8 +59,9 @@ displayed to explain. There is no clever arrangement to cause near matches
 to be tested for in a special order. The idea behind this is so that eg if
 you had binaries for say fedora 9 installed and were actually running a
 different version of fedora (say 10) then the code will TRY the fedora 9
-binary. But in this case it will not replace the script with a faster way
-of accessing the potentially suspect version.
+binary. This fall-back arrangement is not guaranteed to work, and in case
+of uncertainty please configure and rebuild everything for your current
+computer.
 
 
-                                                     Arthur Norman. July 2009
+                                                   Arthur Norman. 2009-2015

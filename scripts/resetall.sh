@@ -2,8 +2,8 @@
 
 # Reset all entries in the "bin" directory to a generic state
 
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd`
 
 #rm -rf $here/../bin/*
 cp $here/README-BIN $here/../bin/README

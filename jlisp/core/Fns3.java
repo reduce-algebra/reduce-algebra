@@ -2285,6 +2285,20 @@ class StringpFn extends BuiltinFunction
 
 static Charset utf8 = Charset.forName("UTF-8");
 
+// string-store is MUCH nastier than I had thought! What I am trying to
+// achieve is a model where strings behave as if stored using UTF-8, and
+// string-store overwrites a single byte. The problem is that when I
+// am using this to create a string containing (eg) a small greek letter a
+// I start with a byte-vector of length 2: <0,0> and then write in 0xce, 0xb1
+// to complete it. However that tries to go through the sequence
+//   <0, 0>
+//   <0xc1, 0>
+//   <0xc1, 0xb1>
+// and the middle one of those is not a valid UTF-8 sequence. The consequence
+// is that I can not use the system provided scheme to map it on to a Java
+// String, and if I can and I then try to convert it back I can not expect
+// to end up back where I started.
+
 class String_storeFn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
@@ -2321,7 +2335,6 @@ class String2listFn extends BuiltinFunction
     {
         LispObject r = Jlisp.nil;
         String s;
-        int prev = -1;
         if (arg1 instanceof Symbol)
         {   ((Symbol)arg1).completeName();
             s = ((Symbol)arg1).pname;
@@ -2330,16 +2343,10 @@ class String2listFn extends BuiltinFunction
             s = ((LispString)arg1).string;
         else return error("not a string for string2list");
 // This must emit its output in UTF-8
-        for (char c : s.toCharArray())
-        {   int ic = (int)c;
-            if (ic >= 0xd800 && ic < 0xdc00) // lead surrogate
-                prev = ic & 0x3ff;
-            else
-            {   if (prev >= 0 && ic >= 0xdc00 && ic < 0xe000) // trail
-                    ic = (ic & 0x3ff) + (prev << 10) + 0x10000;
-                r = new Cons(LispInteger.valueOf(ic), r);
-                prev = -1;
-            }
+        for (byte c : s.getBytes(utf8))
+        {   int ic = 0xff & (int)c;
+//System.out.printf("Character code = %d = %x\n", ic, ic); // @@@
+            r = new Cons(LispInteger.valueOf(ic), r);
         }
         return Fns.reversip(r);
     }
