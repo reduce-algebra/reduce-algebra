@@ -217,6 +217,12 @@ df(h(u1),v1);
 
 df(f(g(u),h(u)),u);
 
+% test for odesolve
+symbolic (!*df_partial := t);
+df(f(g(u),h(u)),u);
+symbolic (!*df_partial := nil);
+
+
 on allowdfint;
 
 depend xx,vv;

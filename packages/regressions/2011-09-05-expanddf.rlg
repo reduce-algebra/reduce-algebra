@@ -563,6 +563,22 @@ df(f(g(u),h(u)),u);
 df(f(g(u),h(u)),u)
 
 
+% test for odesolve
+symbolic (!*df_partial := t);
+
+
+t
+
+df(f(g(u),h(u)),u);
+
+
+df(g(u),u)*f!_1(g(u),h(u)) + df(h(u),u)*f!_2(g(u),h(u))
+
+symbolic (!*df_partial := nil);
+
+
+
+
 on allowdfint;
 
 
@@ -603,10 +619,3 @@ df(xx,vv)*f(vv,xx) + int(df(f(vv,xx),vv),xx)
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.06 seconds
-real 0.21
-user 0.00
-sys 0.07
