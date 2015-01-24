@@ -274,9 +274,10 @@ symbolic procedure cali!=min(b,a,f);
 
 % symbolic procedure makelist u; 'list . u;
 
-symbolic procedure subsetp(u,v);
-% true :<=> u \subset v
-  if null u then t else member(car u,v) and subsetp(cdr u,v);
+%% commented out 2015-01-24 since defined in rlisp/rsupport.red
+%%symbolic procedure subsetp(u,v);
+%%% true :<=> u \subset v
+%%  if null u then t else member(car u,v) and subsetp(cdr u,v);
 
 symbolic procedure disjoint(a,b);
   if null a then t else not member(car a,b) and disjoint(cdr a,b);

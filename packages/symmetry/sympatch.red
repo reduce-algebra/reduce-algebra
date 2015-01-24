@@ -42,24 +42,26 @@ symbolic procedure rprint u;
       prinos buff
    end;
 
-% error in treatment of roots in connection
-% with conjugate of complex numbers
-
-symbolic procedure reimexpt u;
-   if cadr u eq 'e
-     then addsq(reimcos list('cos,reval list('times,'i,caddr u)),
-                multsq(simp list('minus,'i),
-                    reimsin list('sin,reval list('times,'i,caddr u))))
-    else if fixp cadr u and cadr u > 0
-              and eqcar(caddr u,'quotient)
-              and fixp cadr caddr u
-              and fixp caddr caddr u
-     then mksq(u,1)
-    else addsq(mkrepart u,multsq(simp 'i,mkimpart u));
-
-put('expt,'cmpxsplitfn,'reimexpt);
-put('cos,'cmpxsplitfn,'reimcos);
-put('sin,'cmpxsplitfn,'reimsin);
+% % error in treatment of roots in connection
+% % with conjugate of complex numbers
+%
+% No longer needed, code is part of core 
+%
+% symbolic procedure reimexpt u;
+%    if cadr u eq 'e
+%      then addsq(reimcos list('cos,reval list('times,'i,caddr u)),
+%                 multsq(simp list('minus,'i),
+%                     reimsin list('sin,reval list('times,'i,caddr u))))
+%     else if fixp cadr u and cadr u > 0
+%               and eqcar(caddr u,'quotient)
+%               and fixp cadr caddr u
+%               and fixp caddr caddr u
+%      then mksq(u,1)
+%     else addsq(mkrepart u,multsq(simp 'i,mkimpart u));
+% 
+% put('expt,'cmpxsplitfn,'reimexpt);
+% put('cos,'cmpxsplitfn,'reimcos);
+% put('sin,'cmpxsplitfn,'reimsin);
 endmodule;
 
 % algebraic repart(pi):=pi;   % Present in 3.4.1 and later versions.
