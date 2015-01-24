@@ -21,10 +21,9 @@ fi
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
 
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
 here=`dirname "$here"`
-
 export here
 
 # if test $# = 0

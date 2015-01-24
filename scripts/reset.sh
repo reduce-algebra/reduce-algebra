@@ -13,7 +13,7 @@ fi
 # some of its sub-scripts will not be so generous. So find out where it
 # lives so that other locations can be found relative to that.
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd`
+here=`cd \`dirname "$here"\` ; pwd -P`
 
 mkdir -p $here/../bin
 
@@ -26,7 +26,7 @@ redcsl)
   ;;
 redpsl)
   echo "exec \$here/scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1
-  echo "exec \$here/scripts/runpsl.sh bpslw $1 \$*" >> $here/../bin/$1w
+# echo "exec \$here/scripts/runpsl.sh bpslw $1 \$*" >> $here/../bin/${1}w
   ;;
 *)
   echo "exec \$here/scripts/run.sh \$here/scripts $1 $1 \$*" >> $here/../bin/$1
@@ -38,7 +38,8 @@ chmod +x $here/../bin/$1
 
 case $1 in
 redpsl)
-  rm -f $here/../bin/redpsl.bat $here/../bin/redpslw.bat
+  rm -f $here/../bin/redpsl.bat
+# rm -f $here/../bin/redpslw.bat
   cp $here/redpsl.bat $here/../bin
   cp $here/redpslw.bat $here/../bin
   ;;

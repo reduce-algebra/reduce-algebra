@@ -7,6 +7,14 @@
 #    scripts/testall.sh [--install] --csl   test just the CSL version
 #    scripts/testall.sh [--install] --psl   test just the PSL version
 
+# I want this script to be one I can launch from anywhere, so
+# to access files etc I need to know where it lives.
+
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+
+
 # The flags are mostly handled by being passed down to the test1.sh script
 
 install=
@@ -43,13 +51,6 @@ else
     exit 1
   fi
 fi
-
-# I want this script to be one I can launch from anywhere, so
-# to access files etc I need to know where it lives.
-
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
-here=`dirname "$here"`
 
 #
 # Remove old log files

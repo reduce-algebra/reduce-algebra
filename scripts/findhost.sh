@@ -32,8 +32,8 @@ then
   fi
 fi
 
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
 
 host=$1
 shift

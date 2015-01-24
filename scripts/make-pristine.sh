@@ -18,9 +18,9 @@ then
   exit 1
 fi
 
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
-here=`dirname "$here"`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
+echo `dirname "$here"`
 
 echo $here
 save=`pwd`

@@ -3,7 +3,7 @@
 # Expand tabs in all REDUCE source files
 
 here=`dirname "$0"`
-here=`cd "$here" ; pwd`
+here=`cd "$here" ; pwd -P`
 
 cd $here
 

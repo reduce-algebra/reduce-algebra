@@ -14,8 +14,9 @@
 # some of its sub-scripts will not be so generous. So find out where it
 # lives so that other locations can be found relative to that.
 
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
+
 
 ap="$1"
 scr="$2"

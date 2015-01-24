@@ -3,10 +3,8 @@
 # The following MESS is here to check whether the autoconf-related files
 # are all up to date.
 
-here=`dirname "$0"`
-here=`cd "$here" ; pwd`
-cd $here/..
-
+a="$0";while test -L "$a";do a=`ls -ld "$a" | sed 's/.*-> //'`;done
+cd `dirname "$a"`
 
 # Step 1: aclocal.m4 must be later than configure.ac
 
