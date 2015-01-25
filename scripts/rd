@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# rd
+#  This script is intended to compile a single ".red" file letting
+# the user specify either that the CSL or PSL version should be updated
+# and with options moticated by those one might pass to a C compiler.
+
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
@@ -28,6 +34,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
+
+# I want this script to be one I can launch from anywhere, but at least
+# some of its sub-scripts will not be so generous. So find out where it
+# lives so that other locations can be found relative to that. 
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+me="$here"
+here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+# Because "rd" lives in the scripts sub-directory of the man Reduce sources
+# trunk, here will now be the absolute path to the trunk. 
 
 awk1='BEGIN {
     in_rlint=0
@@ -123,9 +139,6 @@ END {
     if (!havecr) printf("\n")
 }'
 
-me=$0
-here=$(here.sh)
-
 forceremake=nil
 export lisp
 lisps=""
@@ -205,7 +218,7 @@ fi
 
 if [ "$lisp" = "csl" ]; then
     IMG="$here/cslbuild/$MACHINE/csl/reduce.img"
-    REDUCE="$here/cslbuild/$MACHINE/csl/reduce -w -i $IMG -o $IMG"
+    REDUCE="$here/cslbuild/$MACHINE/csl/reduce -w -o $IMG"
     if [ $debug -eq 1 ] ; then
 	echo "IMG =     $IMG"
 	echo "REDUCE =  $REDUCE"
