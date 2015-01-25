@@ -199,6 +199,10 @@ class Fns3
         {"stringp",                     new StringpFn()},
         {"string-length",               new String_lengthFn()},
         {"string-store",                new String_storeFn()},
+        {"string-store1",               new String_storeFn()},
+        {"string-store2",               new String_store2Fn()},
+        {"string-store3",               new String_store3Fn()},
+        {"string-store4",               new String_store4Fn()},
         {"string2list",                 new String2listFn()},
         {"stub1",                       new Stub1Fn()},
         {"stub2",                       new Stub2Fn()},
@@ -2311,6 +2315,63 @@ class String_storeFn extends BuiltinFunction
         int i = n.value;
         byte [] v1 = v.getBytes(utf8);
         v1[i] = (byte)((LispSmallInteger)args[2]).value;
+        ((LispString)args[0]).string = new String(v1, utf8);
+        return args[2];
+    }
+}
+
+class String_store2Fn extends BuiltinFunction
+{
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length != 4)
+            return error("string-store2 called with " + args.length +
+                "args when 4 expected");
+        String v = ((LispString)args[0]).string;
+        LispSmallInteger n = (LispSmallInteger)args[1];
+        int i = n.value;
+        byte [] v1 = v.getBytes(utf8);
+        v1[i] = (byte)((LispSmallInteger)args[2]).value;
+        v1[i+1] = (byte)((LispSmallInteger)args[3]).value;
+        ((LispString)args[0]).string = new String(v1, utf8);
+        return args[2];
+    }
+}
+
+class String_store3Fn extends BuiltinFunction
+{
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length != 5)
+            return error("string-store3 called with " + args.length +
+                "args when 5 expected");
+        String v = ((LispString)args[0]).string;
+        LispSmallInteger n = (LispSmallInteger)args[1];
+        int i = n.value;
+        byte [] v1 = v.getBytes(utf8);
+        v1[i] = (byte)((LispSmallInteger)args[2]).value;
+        v1[i+1] = (byte)((LispSmallInteger)args[3]).value;
+        v1[i+2] = (byte)((LispSmallInteger)args[4]).value;
+        ((LispString)args[0]).string = new String(v1, utf8);
+        return args[2];
+    }
+}
+
+class String_store4Fn extends BuiltinFunction
+{
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length != 6)
+            return error("string-store4 called with " + args.length +
+                "args when 6 expected");
+        String v = ((LispString)args[0]).string;
+        LispSmallInteger n = (LispSmallInteger)args[1];
+        int i = n.value;
+        byte [] v1 = v.getBytes(utf8);
+        v1[i] = (byte)((LispSmallInteger)args[2]).value;
+        v1[i+1] = (byte)((LispSmallInteger)args[3]).value;
+        v1[i+2] = (byte)((LispSmallInteger)args[4]).value;
+        v1[i+3] = (byte)((LispSmallInteger)args[5]).value;
         ((LispString)args[0]).string = new String(v1, utf8);
         return args[2];
     }

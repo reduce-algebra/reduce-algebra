@@ -127,6 +127,51 @@ symbolic procedure bytelist2id u;
 %
 % symbolic procedure int2id u; % built in / defined in csl.red
 
+% Here I will want the strings that I work with to be treated as if
+% they are sequences of octets forming an UTF-8 encoded string. I update
+% these sequences, and if I do so in a non-atomic manner I can have
+% intermediate states that are not valid UTF-8 sequences. That does not
+% hurt too much on CSL or PSL where the native string representations are
+% as sequences of octets. However for any Lisp that stores strings in a way
+% that can only support valud Unicode that is an issue. So I have an
+% abstraction here that writes the sequences of octets that make up the
+% UTF-8 representation of a single codepoint, and in the simple case I
+% just write byte at a time but for Jlisp (in particular) I need to
+% ensure that these are treated atomically. So jlisp has functions
+% to write 2, 3 and 4 bytes into a string and the intent is that these are
+% used when those bytes form part of a single UTF-8 group. I flag them
+% with 'lose here so that for jlisp the built-in versions happen. For CSL and
+% PSL I make writing 2, 3 or 4 bytes into procedures. I had wanted to make
+% these inline procedures or smacros but it is too early in the bootstrapping
+% for that. But the extra procedure call will only happen if an character
+% outside the basic Latin set (U+0000 to U+007f) is being processed, so I
+% am not too worried. Also note here that again for bootstrapping reasons
+% I have to write MEMQ using infix notation...
+
+if 'jlisp memq lispsystem!* then
+  flag('(string!-store1 string!-store2 string!-store3 string!-store4), 'lose);
+
+symbolic procedure string!-store1(s, n, c);
+  string!-store(s, n, c);
+
+symbolic procedure string!-store2(s, n, c1, c2);
+  progn(
+    string!-store(s, n, c1),
+    string!-store(s, n+1, c2));
+
+symbolic procedure string!-store3(s, n, c1, c2, c3);
+  progn(
+    string!-store(s, n, c1),
+    string!-store(s, n+1, c2),
+    string!-store(s, n+2, c3));
+
+symbolic procedure string!-store4(s, n, c1, c2, c3, c4);
+  progn(
+    string!-store(s, n, c1),
+    string!-store(s, n+1, c2),
+    string!-store(s, n+2, c3),
+    string!-store(s, n+3, c4));
+
 % Take a list of integers (now each in the range 0-0x0010ffff) and
 % turn it into a string encoding those using utf-8
 %
@@ -161,22 +206,25 @@ symbolic procedure list2widestring u;
     else if stringp n and n neq "" then n := car widestring2list n;
     u := cdr u;
     if n < 128 then progn(
+% I use string!-store rather than the more proper name string!-store1 here
+% since I believe that string!-store will be the version built into the Lisp
+% I am using.
       string!-store(s, len, n),
       (len := len + 1))
     else if n < 2048 then progn(
-      string!-store(s, len, 192 + lshift(n, (iminus 6))),
-      string!-store(s, len+1, 128 + land(n, 63)),
+      string!-store2(s, len, 192 + lshift(n, (iminus 6)),
+                             128 + land(n, 63)),
       (len := len + 2))
     else if n < 65536 then progn(
-      string!-store(s, len, 224 + lshift(n, (iminus 12))),
-      string!-store(s, len+1, 128 + land(lshift(n, (iminus 6)), 63)),
-      string!-store(s, len+2, 128 + land(n, 63)),
+      string!-store3(s, len, 224 + lshift(n, (iminus 12)),
+                             128 + land(lshift(n, (iminus 6)), 63),
+                             128 + land(n, 63)),
       (len := len + 3))
     else progn(
-      string!-store(s, len, 240 + lshift(n, (iminus 18))),
-      string!-store(s, len+1, 128 + land(lshift(n, (iminus 12)), 63)),
-      string!-store(s, len+2, 128 + land(lshift(n, (iminus 6)), 63)),
-      string!-store(s, len+3, 128 + land(n, 63)),
+      string!-store4(s, len, 240 + lshift(n, (iminus 18)),
+                             128 + land(lshift(n, (iminus 12)), 63),
+                             128 + land(lshift(n, (iminus 6)), 63),
+                             128 + land(n, 63)),
       (len := len + 4));
     go to c;
   end;
