@@ -1,6 +1,5 @@
 #! /bin/sh
 
-
 # This is used to try to run a program, allowing for the fact
 # that possibly many architectures have been built in the tree.
 
@@ -28,9 +27,9 @@ host=`$here/findhost.sh $host`
 
 mkdir -p $here/../bin
 
-if test "x$host" = "xi686-pc-windows" || test "x$host" = "x86_64-pc-windows"
+if test "x$host" = "xi686-pc-windows" || test "x$host" = "xx86_64-pc-windows"
 then
-  case `uname` in
+  case `uname -a` in
   *CYGWIN*WOW64* | *CYGWIN*x86_64*)
     pathlist="x86_64-pc-windows x86_64-pc-windows-debug i686-pc-windows i686-pc-windows-debug"
     ;;
@@ -75,6 +74,7 @@ else
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
+      printf "here = %s\n" 
       ulimit -s unlimited
       exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
       exit 0
