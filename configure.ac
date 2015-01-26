@@ -451,13 +451,18 @@ case $inplace in
       fi
 # At some stage in the future I very much hope that it will be possible to
 # (cross) build both 32 and 64-bit cygwin code from just one of the
-# platforms - but at present neither has enough development libraries
-# available to make that the case. So here I will only configure the
-# version for the platform I am on. But if you run "configure" on each of
-# 32 and 64-bit cygwin then you should end up with both variants set up.
+# platforms using either platfornm - but at present the 64-bit world does
+# not have enough development libraries available to support that. So here
+# I will only configure to build both 32 and 64 bit versiosn if I am
+# running on cyg32 but only the 64-bit if I am on cyg64.
+#
+# Note that I will need to coordinte what I do here with the scripts in
+# winbuild that arrange to create all possible versions... and I probably
+# want an option that will cause this configure scrrip to fall back and make
+# just exactly one system.
       if test "x$cyg32" = "xyes"
       then
-        cygplatforms="i686-pc-cygwin"
+        cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
       fi
       if test "x$cyg64" = "xyes"
       then

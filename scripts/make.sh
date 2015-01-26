@@ -116,19 +116,26 @@ rc=0
 list=""
 if test "$buildcsl" = "yes"
 then
-# If I am running in a 64-bit cygwin shell then I will only even try to
-# build 64-bit cygwin versions. At some later stage when the 64-bit
-# cygwin environment is fully stable I should be able to build any of the
-# windows variants there, but at the time of writing things are not yet
-# ready for that.
+# If I am in a 64-bit cygwin shell I can make not just the 64-bit cygwin
+# version but also both 32 and 64-bit (native, mingw) Windows variants.
+# The last time I checked the 64-bit cygwin world did not have quite enough
+# libraries available for installation to make it possible for me to
+# cross-build a set of 32-bit cygwin executables here. Every so often I
+# should check and update re that.
+#
+# NOTE that these directories MUST ONLY have "make" run in them when running
+# using the version of cygwin used to configure them, so mixing use of
+# 32 and 64-bit cygwin is delicate!
+    list="cslbuild/i686-pc-cygwin* cslbuild/*-windows*"
   if test "x$cyg64" = "xyes"
   then
-    list="cslbuild/x86_64-pc-cygwin*"
+    list="cslbuild/x86_64-pc-cygwin* cslbuild/*-windows*"
   elif test "x$cyg32" = "xyes"
   then
 # If I am in a 32-bit cygwin shell I can make not just the 32-bit cygwin
 # version but also both 32 and 64-bit (native, mingw) Windows variants.
-    list="cslbuild/i686-pc-cygwin* cslbuild/*-windows*"
+# These days I can also (cross) build a 64-bit cygwin version...
+    list="cslbuild/i686-pc-cygwin* cslbuild/x86_64-pc-cygwin* cslbuild/*-windows*"
   else
 # If I am not running on windows my default behaviour will be to build
 # just versions that use the operating system I am running on. Anybody

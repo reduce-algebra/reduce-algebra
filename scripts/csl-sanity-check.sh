@@ -10,7 +10,7 @@
 # lives so that other locations can be found relative to that.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-cd `dirname "$here"`
+here=`cd \`dirname "$here"\` ; pwd -P`
 
 if autoconf -o /dev/null >/dev/null 2>&1
 then
