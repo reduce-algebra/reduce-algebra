@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 if test -f /proc/cpuinfo
 then
   case `grep -i ^processor /proc/cpuinfo | wc -l`

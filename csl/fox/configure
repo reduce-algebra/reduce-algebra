@@ -635,6 +635,7 @@ xp64_FALSE
 xp64_TRUE
 GL_LIBS
 X_BASE_LIBS
+XFT_CONFIG
 FOX_BYTEORDER
 X_EXTRA_LIBS
 X_LIBS
@@ -6126,6 +6127,9 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
 case $host_os in
+  *bsd*)
+    CXXFLAGS="$CXXFLAGS -I/usr/local/include -I/usr/local/include/freetype2"
+  ;;
   *darwin*)
 # Ugh! With macports the autoconf recipe that establishes X11 paths
 # fails to include this one but it is needed!
@@ -8019,11 +8023,67 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xft" >&5
 $as_echo "$with_xft" >&6; }
 if test "x$with_xft" != "xno"; then
-XFTCFLAGS="-I/usr/include/freetype2"
-XFTLIBS="-lfreetype -lXft"
-saved_cppflags="${CXXFLAGS}"
-CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
-X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
+  for ac_prog in xft-config
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_XFT_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $XFT_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_XFT_CONFIG="$XFT_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_XFT_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+XFT_CONFIG=$ac_cv_path_XFT_CONFIG
+if test -n "$XFT_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XFT_CONFIG" >&5
+$as_echo "$XFT_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$XFT_CONFIG" && break
+done
+test -n "$XFT_CONFIG" || XFT_CONFIG="no"
+
+  if test "$XFT_CONFIG" != "no"
+  then
+    XFTCFLAGS=`$XFT_CONFIG --cflags`
+    XFTLIBS=`$XFT_CONFIG --libs`
+    saved_cppflags="${CXXFLAGS}"
+    CXXFLAGS="$CXXFLAGS -DHAVE_XFT_H=1 $xft_cflags"
+    X_BASE_LIBS="$X_BASE_LIBS $XFTLIBS"
+  else
+    XFTCFLAGS="-I/usr/include/freetype2"
+    XFTLIBS="-lfreetype -lXft"
+    saved_cppflags="${CXXFLAGS}"
+    CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
+    X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
+  fi
 fi
 
 
@@ -8532,6 +8592,8 @@ done
 
 case $host_os in
   *darwin*)
+# I should review this annually since OSX tends not to value backwards
+# compatibility!
     CC="MACOSX_DEPLOYMENT_TARGET=10.9 $CC"
     CXX="MACOSX_DEPLOYMENT_TARGET=10.9 $CXX"
   ;;

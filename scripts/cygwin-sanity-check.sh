@@ -1,4 +1,5 @@
- #! /bin/bash
+#! /bin/bash
+# Only used from cygwin so I can assume bash is available.
 
 # This little script is intended to check if all the cygwin
 # packages that you need in order to build the CSL version of
@@ -12,7 +13,7 @@
 
 
 #
-# In October 2014 I believe that if I run under cygwin32 I can build
+# In January 2015 I believe that if I run under cygwin32 I can build
 # binaries for i686-pc-cygwin, i686-pc-windows, x86_64-pc-cygwin
 # and x86_64-pc-windows. If I am running on top of a 64-bit version of
 # Windows I can create the Reduce image files using any of these apart

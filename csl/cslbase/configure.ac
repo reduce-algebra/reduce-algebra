@@ -771,7 +771,8 @@ then
   then
 # I will not even look for Xft if I am building for win32 not X.
 #
-# Furthermore I will not try xft-config if I am cross-compiling. This may
+# Furthermore I will not try xft-con
+fig if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
     AC_ARG_WITH(xft,
       AC_HELP_STRING([--with-xft],
@@ -796,6 +797,7 @@ then
 # may get some libraries mentioned more than once in LIBS - I hope that
 # will not cause pain.
         AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+        xft_found="yes"
         AC_MSG_NOTICE([xft-config found, so Xft should be available])
       else
 # here xft-config is NOT present, but it may be that xft headers and

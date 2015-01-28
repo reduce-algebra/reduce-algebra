@@ -79,6 +79,9 @@ AC_PROG_RANLIB
 AC_CANONICAL_HOST
 
 case $host_os in
+  *bsd*)
+    CXXFLAGS="$CXXFLAGS -I/usr/local/include -I/usr/local/include/freetype2"
+  ;;
   *darwin*)
 # Ugh! With macports the autoconf recipe that establishes X11 paths
 # fails to include this one but it is needed!
@@ -215,11 +218,22 @@ AC_MSG_CHECKING(for Xft support)
 AC_ARG_WITH(xft,[  --with-xft              enable Xft support])
 AC_MSG_RESULT([$with_xft])
 if test "x$with_xft" != "xno"; then
-XFTCFLAGS="-I/usr/include/freetype2"
-XFTLIBS="-lfreetype -lXft"
-saved_cppflags="${CXXFLAGS}"
-CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
-X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
+  AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
+    [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH])
+  if test "$XFT_CONFIG" != "no"
+  then
+    XFTCFLAGS=`$XFT_CONFIG --cflags`
+    XFTLIBS=`$XFT_CONFIG --libs`
+    saved_cppflags="${CXXFLAGS}"
+    CXXFLAGS="$CXXFLAGS -DHAVE_XFT_H=1 $xft_cflags"
+    X_BASE_LIBS="$X_BASE_LIBS $XFTLIBS"
+  else    
+    XFTCFLAGS="-I/usr/include/freetype2"
+    XFTLIBS="-lfreetype -lXft"
+    saved_cppflags="${CXXFLAGS}"
+    CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
+    X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
+  fi
 fi
 
 
@@ -376,6 +390,8 @@ AC_CHECK_HEADERS([unistd.h])
 
 case $host_os in
   *darwin*)
+# I should review this annually since OSX tends not to value backwards
+# compatibility!
     CC="MACOSX_DEPLOYMENT_TARGET=10.9 $CC"
     CXX="MACOSX_DEPLOYMENT_TARGET=10.9 $CXX"
   ;;

@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 # Install all new logs with names of form *.rlg in current directory
 # to where they belong. This is based on the new scripts/testall.sh model
