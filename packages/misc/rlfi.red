@@ -88,6 +88,8 @@ flag('(!a!lp!h!a !b!e!t!a !g!a!m!m!a !d!e!l!t!a !e!p!s!i!l!o!n
        omega Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega
        infty hbar nabla perp),'symbol);
 
+flag('(cdots), 'symbol);  % added by A Barnes for Taylor and TPS
+
 flag('(!h!a!t !c!h!e!c!k !b!r!e!v!e !a!c!u!t!e !g!r!a!v!e !t!i!l!d!e
        !b!a!r !v!e!c !d!o!t !d!d!o!t hat check breve acute grave tilde
        bar vec dot ddot),'accdef);
@@ -650,14 +652,27 @@ begin
   maprintla(arg,get('times,'infix) - 1);
   return ex
 end;
+
 put('sum,'laprifn,'sumprla);
 put('product,'laprifn,'sumprla);
 flag('(sum product),'fulla);
 
 symbolic procedure sqprla(args,p);
 % Prints standard quotient
-maprintla(prepsq!* car args,p);
+   maprintla(prepsq!* car args,p);
+
 put('!*sq,'laprifn,'sqprla);
+
+% next two procedures added by  Alan  Barnes Jan. 2015
+symbolic procedure ps!:prla(arg, p);
+  maprintla(ps!:print1 cons('!:ps!:, arg), p);
+
+put('!:ps!:, 'laprifn, 'ps!:prla);
+
+symbolic procedure tayprla(arg, p);
+  maprintla(Taylor!*print1 cons('taylor!*, arg), p);
+
+put('Taylor!*, 'laprifn, 'tayprla);
 
 symbolic procedure dfprla(dfex,p);
 % Prints derivaves
@@ -738,6 +753,7 @@ put('arbcomplex,'indexed,'(down));
 algebraic;
 
 operator pdf,dint,product;
+defid !.!.!., name=cdots;    % for Taylor & TPS (added by A.Barnes, Jan 2015)
 
 endmodule;
 
