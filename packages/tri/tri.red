@@ -1,4 +1,4 @@
-% TeX-REDUCE-Interface 0.70
+% TeX-REDUCE-Interface 0.71
 % set GREEK asserted
 % set LOWERCASE asserted
 % \tolerance 10
@@ -23,9 +23,10 @@ module tri;
 % LISP.
 % ======================================================================
 % Authors: Werner Antweiler, Andreas Strotmann, Volker Winkelmann.
-% Modifications: David Hartley.
+% Modifications: David Hartley & Alan Barnes
 %
 % Last Update: 14-Jul-96                                    Version 0.70
+% Last Update: 22-Jan-2015                                  Version 0.71
 % Permission to distribute under BSD License granted by authors January 2009
 % ======================================================================
 
@@ -263,6 +264,7 @@ makeops('(
 (union          100     ((x) (f) (r))           nil)
 (setdiff        100     ((x) (f) (y))           nil)
 (taylor!*       100     ((apply maketaylor))    nil) % precedence like plus
+(!:ps!:         100     ((apply make!:ps!:))    nil) % precedence like plus
 (times          200     ((x) (f) (r))           (recip quotient))
 (wedge          200     ((x) (f) (r))           nil) % EXCALC
 (quotient       200     ((f) (z) !}!{ (z) !})   nil)
@@ -298,8 +300,8 @@ makeops('(
 (hodge          999     ((f) (y))               nil) % EXCALC
 (partdf         999     ((f) (apply makepartdf)) nil)          % EXCALC
 (d              999     (!\!d!  (x))            nil)           % EXCALC
-(!:ps!:         999     ((apply make!:ps!:))    nil)           % TPS
-(rest!_order    999     (!{ !\!r!m!  !O !} (x)) nil)           % TPS
+%(!:ps!:         999     ((apply make!:ps!:))    nil)           % TPS
+%(rest!_order    999     (!{ !\!r!m!  !O !} (x)) nil)           % TPS
 %-----------+----------+----------------------+------------------------+
 ));
 
@@ -508,111 +510,117 @@ symbolic procedure makeint(op,arg,prec);
 symbolic procedure maketaylor(op,arg,prec);
    mktag(apply1(get(op,'fancy!-reform),op . arg),prec,nil);
 
-% The following is part of the interface to TPS.
-% Andreas Strotmann, 19 Mar 93
+% This replaces the old interface to TPS by Andreas Strotman
+% Alan Barnes 22 Jan 2015
 
-% ps:numberp inline required for compilation; copied over from tps.red
+symbolic procedure make!:ps!:(op,arg,prec);
+   mktag(apply1(get(op,'fancy!-reform),op . arg),prec,nil);
 
-symbolic inline procedure ps!:numberp u;
-  numberp u or (pairp u and car u neq '!:ps!: and get(car u,'dname));
+% % The following is part of the interface to TPS.
+% % Andreas Strotmann, 19 Mar 93
+% 
+% % ps:numberp inline required for compilation; copied over from tps.red
 
-% fluid declaration to avoid compiler warnings
-fluid '(ps!:exp!-lim);
+% symbolic inline procedure ps!:numberp u;
+%   numberp u or (pairp u and car u neq '!:ps!: and get(car u,'dname));
 
-% symbolic procedure ps!:prin!: p;
-symbolic procedure make!:ps!:(op, arg, prec);  % TPS interface,
-%  (lambda (first,u,delta,symbolic!-exp!-pt,about,atinf);
- (lambda (first,u,delta,symbolic!-exp!-pt,about,atinf,texps,p);
-  <<  % if !*nat and posn!*<20 then orig!*:=posn!*;
-      atinf:=(about='ps!:inf);
-      ps!:find!-order p;
-      delta:=prepf((ps!:depvar p) .** 1 .*1 .+
-              (negf  if atinf then nil
-                      % expansion about infinity
-                      else if idp about then !*k2f about
-                      else if ps!:numberp about then !*n2f about
-                      else if (u:=!*pre2dp about) then !*n2f u
-                      else !*k2f(symbolic!-exp!-pt:= compress
-                         append(explode ps!:depvar p, explode '0))));
-%      if symbolic!-exp!-pt then prin2!* "[";
-%      prin2!* "{";
-      texps := nconc(texps, list '!\!{ );
-%
-      for i:=(ps!:order p): ps!:exp!-lim do
-        << u:=ps!:term(p,i);
-           if not null numr u then
-              <<if minusf numr u then <<u:=negsq u; % prin2!* " - ">>
-                                        texps := nconc(texps, list '!-)
-                                        >>
-                  else if not first then % prin2!* " + ";
-                                        texps := nconc(texps, list '!+);
-                first := nil;
-%                if posn!*>55 then <<terpri!* nil;prin2!* "  ">>;
-                if denr u neq 1 then % prin2!* "(";
-                                     texps := nconc(texps, list '!\!( );
-                if u neq '(1 . 1) then
-                        % maprint(prepsq u,get('times,'infix))
-                        texps := nconc(texps,
-                                       mktag(prepsq u,
-                                             get('times, 'texprec),
-                                             nil))
-                  else if i=0 then % prin2!* 1;
-                                   texps := nconc(texps, list '!1);
-                if denr u neq 1 then % prin2!* ")";
-                                     texps := nconc(texps, list '!\!) );
-                if i neq 0 and u neq '(1 . 1) then % prin2!* "*";
-                        texps := nconc(texps,list get('times,'texname));
-                if i neq 0 then
-                % xprinf(!*p2f mksp(delta,
-                %        if atinf then -i else i),nil,nil)
-                  texps := (lambda i;
-                             nconc(texps,
-                                   mktag (if (i = 1) then delta
-                                            else list('expt, delta, i),
-                                          get('times, 'texprec),
-                                          nil)))
-                           (if atinf then -i else i);
-              >>
-       >>;
-      if first then % prin2!* "0";
-                    texps := nconc(texps, list '!0 );
-      % if posn!*>55 then terpri!* nil;
-      u:=ps!:exp!-lim +1;
-      texps := (lambda u;
-                nconc(texps,
-                      '!+ . mktag(list('rest!_order,
-                                        if (u = 1) then delta
-                                            else list('expt, delta, u)),
-                                  get('plus, 'texprec),
-                                  nil)))
-                (if atinf then -u else u);
-      %if (u=1) and not atinf and (about neq 0) then
-      %      prin2!* " + O"
-      %else prin2!* " + O(";
-      %xprinf(!*p2f mksp(delta,if atinf then -u else u),nil,nil);
-      %if (u=1) and not atinf and (about neq 0) then
-      %        prin2!* "}"
-      %   else prin2!* ")}";
-      texps := nconc(texps, list '!\!} );
-      if symbolic!-exp!-pt then
-        << %if posn!*>45 then terpri!* nil;
-           %prin2!* "  where ";
-           texps := nconc(texps, list '!_!{ );
-           %prin2!* symbolic!-exp!-pt;
-           texps := nconc(texps, texexplode symbolic!-exp!-pt);
-           %prin2!* " = ";
-           texps := nconc(texps, list '!= );
-           %maprin about;
-           texps := nconc(texps, mktag(makeprefix about,
-                                         get('equal, 'texprec),  nil));
-           texps := nconc(texps, list '!} );
-           %prin2!* "]"
-        >>;
-  texps
-  >>)
-%  (t,nil,nil,nil,ps!:expansion!-point p,nil);
- (t,nil,nil,nil,ps!:expansion!-point(op . arg),nil,nil,op . arg);
-
+% % fluid declaration to avoid compiler warnings
+% fluid '(ps!:exp!-lim);
+% 
+% % symbolic procedure ps!:prin!: p;
+% symbolic procedure make!:ps!:(op, arg, prec);  % TPS interface,
+% %  (lambda (first,u,delta,symbolic!-exp!-pt,about,atinf);
+%  (lambda (first,u,delta,symbolic!-exp!-pt,about,atinf,texps,p);
+%   <<  % if !*nat and posn!*<20 then orig!*:=posn!*;
+%       atinf:=(about='ps!:inf);
+%       ps!:find!-order p;
+%       delta:=prepf((ps!:depvar p) .** 1 .*1 .+
+%               (negf  if atinf then nil
+%                       % expansion about infinity
+%                       else if idp about then !*k2f about
+%                       else if ps!:numberp about then !*n2f about
+%                       else if (u:=!*pre2dp about) then !*n2f u
+%                       else !*k2f(symbolic!-exp!-pt:= compress
+%                          append(explode ps!:depvar p, explode '0))));
+% %      if symbolic!-exp!-pt then prin2!* "[";
+% %      prin2!* "{";
+%       texps := nconc(texps, list '!\!{ );
+% %
+%       for i:=(ps!:order p): ps!:exp!-lim do
+%         << u:=ps!:term(p,i);
+%            if not null numr u then
+%               <<if minusf numr u then <<u:=negsq u; % prin2!* " - ">>
+%                                         texps := nconc(texps, list '!-)
+%                                         >>
+%                   else if not first then % prin2!* " + ";
+%                                         texps := nconc(texps, list '!+);
+%                 first := nil;
+% %                if posn!*>55 then <<terpri!* nil;prin2!* "  ">>;
+%                 if denr u neq 1 then % prin2!* "(";
+%                                      texps := nconc(texps, list '!\!( );
+%                 if u neq '(1 . 1) then
+%                         % maprint(prepsq u,get('times,'infix))
+%                         texps := nconc(texps,
+%                                        mktag(prepsq u,
+%                                              get('times, 'texprec),
+%                                              nil))
+%                   else if i=0 then % prin2!* 1;
+%                                    texps := nconc(texps, list '!1);
+%                 if denr u neq 1 then % prin2!* ")";
+%                                      texps := nconc(texps, list '!\!) );
+%                 if i neq 0 and u neq '(1 . 1) then % prin2!* "*";
+%                         texps := nconc(texps,list get('times,'texname));
+%                 if i neq 0 then
+%                 % xprinf(!*p2f mksp(delta,
+%                 %        if atinf then -i else i),nil,nil)
+%                   texps := (lambda i;
+%                              nconc(texps,
+%                                    mktag (if (i = 1) then delta
+%                                             else list('expt, delta, i),
+%                                           get('times, 'texprec),
+%                                           nil)))
+%                            (if atinf then -i else i);
+%               >>
+%        >>;
+%       if first then % prin2!* "0";
+%                     texps := nconc(texps, list '!0 );
+%       % if posn!*>55 then terpri!* nil;
+%       u:=ps!:exp!-lim +1;
+%       texps := (lambda u;
+%                 nconc(texps,
+%                       '!+ . mktag(list('rest!_order,
+%                                         if (u = 1) then delta
+%                                             else list('expt, delta, u)),
+%                                   get('plus, 'texprec),
+%                                   nil)))
+%                 (if atinf then -u else u);
+%       %if (u=1) and not atinf and (about neq 0) then
+%       %      prin2!* " + O"
+%       %else prin2!* " + O(";
+%       %xprinf(!*p2f mksp(delta,if atinf then -u else u),nil,nil);
+%       %if (u=1) and not atinf and (about neq 0) then
+%       %        prin2!* "}"
+%       %   else prin2!* ")}";
+%       texps := nconc(texps, list '!\!} );
+%       if symbolic!-exp!-pt then
+%         << %if posn!*>45 then terpri!* nil;
+%            %prin2!* "  where ";
+%            texps := nconc(texps, list '!_!{ );
+%            %prin2!* symbolic!-exp!-pt;
+%            texps := nconc(texps, texexplode symbolic!-exp!-pt);
+%            %prin2!* " = ";
+%            texps := nconc(texps, list '!= );
+%            %maprin about;
+%            texps := nconc(texps, mktag(makeprefix about,
+%                                          get('equal, 'texprec),  nil));
+%            texps := nconc(texps, list '!} );
+%            %prin2!* "]"
+%         >>;
+%   texps
+%   >>)
+% %  (t,nil,nil,nil,ps!:expansion!-point p,nil);
+%  (t,nil,nil,nil,ps!:expansion!-point(op . arg),nil,nil,op . arg);
+% 
 %ff
 % ----------------------------------------------------------------------
 % Section 1.3 : Making a TeX Item
@@ -643,8 +651,8 @@ symbolic procedure make!:ps!:(op, arg, prec);  % TPS interface,
 %      <v1> etc. ..... atoms which will be bound to specific TeX items
 %                      by its property 'TEXNAME
 % ----------------------------------------------------------------------
-
-inline procedure tri_triassert(name,item); put(name,'texname,item);
+ 
+ inline procedure tri_triassert(name,item); put(name,'texname,item);
 inline procedure tri_assertl(l); for each v in l do tri_triassert(car v,cadr v);
 inline procedure tri_retract(name); put(name,'texname,nil);
 inline procedure tri_retractl(l); for each v in l do tri_retract(car v);
@@ -1702,7 +1710,7 @@ symbolic operator texretractset;
 
 % ------------------------ Default Initializations ---------------------
 
-<< prin2 "% TeX-REDUCE-Interface 0.70"; terpri() >>;
+<< prin2 "% TeX-REDUCE-Interface 0.71"; terpri() >>;
 texassertset(greek); texassertset(lowercase);
 texassertset '!Greek; texassertset '!Uppercase;
 textolerance(10); texpagewidth(150);
