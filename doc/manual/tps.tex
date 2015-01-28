@@ -109,12 +109,28 @@ Syntax:
 
 Calling this operator sets an internal variable of the
 TPS package to the value of UPTO (which should evaluate to an integer).
-The value returned is the previous value of this variable.
+
+This internal variable controls how many terms of a power series are printed.
+The value returned by {\tt PSEXPLIM} is the previous value of this variable.
 The default value is six.
  
 If {\tt PSEXPLIM} is called with no argument, the current value for
 the expansion limit is returned.
- 
+
+\subsection{PSPRINTORDER Switch}
+
+\ttindextype{PSPRINTORDER}{Switch}
+Syntax:
+
+\hspace*{2em} {\tt ON PSPRINTORDER}
+
+\hspace*{4em} or
+
+\hspace*{2em} {\tt OFF PSPRINTORDER}
+
+When {\tt ON} this switch causes the remainder of the power series
+to be printed in big-O notation.   Otherwise, three dots are printed.
+ The default is {\tt ON}.
 
 \subsection{PSORDLIM Operator}
 
