@@ -33,7 +33,7 @@ module tpsconv;
 
 exports prep!:ps, ps!:print1, ps!:print, ps!:print0;
 
-fluid '(ps!:exp!-lim !*fort !*nat );
+fluid '(ps!:exp!-lim !*fort !*nat !*psprintorder);
 
 symbolic procedure prep!:ps(ps, highest!-order);
 begin scalar x, var, inv;
@@ -101,8 +101,11 @@ begin scalar prepexpr, rest;
     prepexpr := prep!:ps(u, ps!:exp!-lim);
     if null ps!:expansion!-point u then
        rest := nil
+    else if !*psprintorder then 
+       rest := {ps!:big!-o(u, ps!:exp!-lim+1)}
     else
-       rest := {ps!:big!-o(u, ps!:exp!-lim+1)};
+       rest := {'!.!.!.};
+
     return
        if not eqcar (prepexpr, 'plus) then
           'plus . (prepexpr or 0) . rest
@@ -128,8 +131,6 @@ symbolic procedure ps!:print(u,p);
 symbolic procedure ps!:print0 u;
     ps!:print(u,0);
 
-Comment We need another printing function for use with the
-        TeX-REDUCE interface; %not yet done;
 
 endmodule;
 

@@ -1,7 +1,7 @@
 module tps; % Extendible Power Series.
 
 % Author: Alan Barnes <barnesa@aston.ac.uk<Alan.barnes45678@gmail.com>.
-% Version 1.6 December 2014
+% Version 1.61 Jan 2015
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -83,7 +83,10 @@ module tps; % Extendible Power Series.
                 '(contrib tps));
 
   
-fluid '(ps!:exp!-lim  knownps ps!:level  ps!:max!-order);
+fluid '(ps!:exp!-lim  knownps ps!:level  ps!:max!-order !*psprintorder);
+
+switch psprintorder=on;   % add Jan 2015 for consistemcy with taylor
+
 
 % Some structure selectors and referencers.
 
