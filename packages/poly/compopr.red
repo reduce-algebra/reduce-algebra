@@ -256,6 +256,17 @@ symbolic procedure reimsin u;
    where rearg = prepsq simprepart cdr u,
          imarg = prepsq simpimpart cdr u;
 
+put('sinh,'cmpxsplitfn,'reimsinh);
+
+symbolic procedure reimsinh u;
+   addsq(multsq(simp list('sinh,rearg),
+                simp list('cos,imarg)),
+         multsq(simp 'i,
+                multsq(simp list('cosh,rearg),
+                       simp list('sin,imarg))))
+   where rearg = prepsq simprepart cdr u,
+         imarg = prepsq simpimpart cdr u;
+
 put('cos,'cmpxsplitfn,'reimcos);
 
 symbolic procedure reimcos u;
@@ -267,13 +278,28 @@ symbolic procedure reimcos u;
    where rearg = prepsq simprepart cdr u,
          imarg = prepsq simpimpart cdr u;
 
+put('cosh,'cmpxsplitfn,'reimcosh);
+
+symbolic procedure reimcosh u;
+   addsq(multsq(simp list('cosh,rearg),
+                simp list('cos,imarg)),
+         multsq(simp 'i,
+                multsq(simp list('sinh,rearg),
+                       simp list('sin,imarg))))
+   where rearg = prepsq simprepart cdr u,
+         imarg = prepsq simpimpart cdr u;
+
 put('expt,'cmpxsplitfn,'reimexpt);
 
 symbolic procedure reimexpt u;
-   if cadr u eq 'e
-     then addsq(reimcos list('cos,reval list('times,'i,caddr u)),
-                multsq(simp list('minus,'i),
-                    reimsin list('sin,reval list('times,'i,caddr u))))
+   if cadr u eq 'e %or numberp cadr u
+     then multsq(simp {'exp,{'times,{'log,cadr u},prepsq simprepart cddr u}},
+                 addsq(reimcos {'cos,imarg},
+                       multsq(simp 'i,reimsin {'sin,imarg})))
+            where imarg = {'times,{'log,cadr u},prepsq simpimpart cddr u}
+%     then addsq(reimcos list('cos,reval list('times,'i,caddr u)),
+%                multsq(simp list('minus,'i),
+%                    reimsin list('sin,reval list('times,'i,caddr u))))
     else if fixp cadr u and cadr u > 0
               and eqcar(caddr u,'quotient)
               and fixp cadr caddr u

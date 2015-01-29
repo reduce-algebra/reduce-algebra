@@ -139,6 +139,8 @@ put('sign,'simpfn,'simp!-sign);
 sign_rules :=
    { sign ~x => (if x>0 then 1 else if x<0 then -1 else 0)
         when numberp x and impart x=0,
+     sign(e) => 1,
+     sign(pi) => 1,
      sign(-~x) => -sign(x),
 %%   sign( ~x * ~y) =>  sign x * sign y
 %%         when numberp sign x or numberp sign y,
@@ -151,7 +153,9 @@ sign_rules :=
      sign( ~x ^ ~n) => sign x when fixp n and 
                                    lisp(not (!*complex or !*precise_complex)),
      sign(sqrt ~a)  => 1 when sign a=1,
-     sign( ~a ^ ~x) => 1 when sign a=1 and impart x=0,
+     sign(sinh ~x)  => sign(x) when realvaluedp x,
+     sign(cosh ~x)  => 1 when realvaluedp x,
+     sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
 %%   sign(abs ~a)   => 1,
      sign ~a => rd!-sign a when rd!-sign a,
      % Next rule here for convenience.
@@ -187,6 +191,9 @@ for all x let logb(a**x,a)=x;
 for all x let log10(10**x)=x;
 
 for all x let 10^log10(x)=x;
+
+let impart(log(~a)) => 0 when numberp a and a>0;
+let repart(log(~a)) => log(a) when numberp a and a>0;
 
 %% The following rule interferes with HE vector simplification,
 %% until the problem is resolved use a more complicated rule

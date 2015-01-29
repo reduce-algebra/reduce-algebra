@@ -1,0 +1,73 @@
+
+% Testing repart/impart
+
+repart exp x;
+
+
+ repart(x)
+e         *cos(impart(x))
+
+
+repart(5^x);
+
+
+        x
+repart(5 )
+
+
+impart(log(5));
+
+
+0
+
+
+repart sinh x;
+
+
+cos(impart(x))*sinh(repart(x))
+
+impart sinh x;
+
+
+cosh(repart(x))*sin(impart(x))
+
+repart cosh x;
+
+
+cos(impart(x))*cosh(repart(x))
+
+impart cosh x;
+
+
+sin(impart(x))*sinh(repart(x))
+
+
+abs(cosh x);
+
+
+abs(cosh(x))
+
+abs(exp x);
+
+
+     x
+abs(e )
+
+
+realvalued x;
+
+
+abs(cosh x);
+
+
+cosh(x)
+
+abs(exp x);
+
+
+ x
+e
+
+
+end;
+
