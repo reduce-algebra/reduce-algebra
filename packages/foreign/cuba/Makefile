@@ -30,7 +30,10 @@ all: libredcuba.so cuba.pdf
 # (4) Configure it, specifying the location to be used for an installed
 #     copy but trusting the Cuba developers and maintainers as regards all
 #     other choices;
-# (5) Compile and move the resulting libraries to the right place;
+# (5) Compile and move the resulting libraries to the right place. Note that
+#     to build Cuba-4.1 requires the GNU version of "make" since its
+#     own Makefile is not compatible with the older style make utility present
+#     on some BSD systems.
 # (6) Discard the fetched and the unpacked copies of source and build
 #     files so as not to leave space occupied.
 
@@ -43,18 +46,20 @@ build_cuba cuba/lib/libcuba.a:
 	cd Cuba-4.1 && \
 	case `uname -a` in \
 	*Linux* | *linux* )  \
-	CC="gcc" ; CXX="g++" ; CFLAGS="-O3 -fPIC"; ;; \
+	CC="gcc" ; CXX="g++" ; CFLAGS="-O3 -fPIC" ; m="$(MAKE)" ; ;; \
 	*Cygwin* | *CYGWIN* | *cygwin*) \
-	CC="gcc" ; CXX="g++" ; CFLAGS="-O3"; ;; \
-	*BSD* | *bsd* | *Darwin* | *darwin*) \
-	CC="clang" ; CXX = "clang++" ; CFLAGS="-O3 -fPIC"; ;; \
+	CC="gcc" ; CXX="g++" ; CFLAGS="-O3" ; m="$(MAKE)" ; ;; \
+	*Darwin* | *darwin*) \
+	CC="clang" ; CXX="clang++" ; CFLAGS="-O3 -fPIC" ; m="$(MAKE)" ; ;; \
+	*BSD* | *bsd*) \
+	CC="clang" ; CXX="clang++" ; CFLAGS="-O3 -fPIC" ; m="gmake" ; ;; \
 	*) \
 	printf "Unknown machine: Please update the Makefile\n" ; \
 	exit 1 ; ;; \
 	esac && \
 	./configure --prefix="$$CUBA" \
 		CC="$$CC" CFLAGS="$$CFLAGS" CXX="$$CXX" && \
-	make install && \
+	$$m install && \
 	cd .. && \
 	rm -rf Cuba-4.1 Cuba-4.1.tar.gz
 
